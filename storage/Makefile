@@ -21,6 +21,12 @@ include Make.methods
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
+install: all
+	$(LI_XPUB) libstorage.$(EXTLIB) $D$(PATHLIB)/libstorage.$(EXTLIB)
+	for F in $(PROGRAMS) ; do \
+	    $(LI_XPRI) $$F $D$(PATHBIN)/`basename $$F` ; \
+	done
+
 library: libstorage.$(EXTLIB)
 
 programs: $(PROGRAMS)
@@ -81,14 +87,6 @@ libstorage$(PROFSUFFIX).a: $(SOURCES)
 	mv libstorage.a libstorage$(PROFSUFFIX).a
 	$(RANLIB) libstorage$(PROFSUFFIX).a
 	rm -f $(OBJECTS)
-
-
-##  Low-level install actions.
-
-install: $(D)$(PATHLIB)/libstorage.$(EXTLIB) $(INSTALLED)
-
-$(D)$(PATHLIB)/libstorage.$(EXTLIB): libstorage.$(EXTLIB)
-	$(LI_XPUB) libstorage.$(EXTLIB) $@
 
 
 ##  Dependencies.  Default list, below, is probably good enough.

@@ -14,16 +14,21 @@ LIBAUTH       = libauth.o
 SOURCES       = auth_krb5.c auth_smb.c ckpasswd.c domain.c ident.c libauth.c \
 		radius.c
 
-INSTALLED     = $(D)$(PATHAUTHPASSWD)/auth_smb \
-		$(D)$(PATHAUTHPASSWD)/ckpasswd \
-		$(D)$(PATHAUTHPASSWD)/radius \
-		$(D)$(PATHAUTHRESOLV)/domain \
-		$(D)$(PATHAUTHRESOLV)/ident
-
 all: $(ALL)
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
+
+install: all
+	if [ x"$(KRB5_AUTH)" != x ] ; then \
+	    $(LI_XPUB) auth_krb5 $(D)$(PATHAUTHPASSWD)/auth_krb5 ; \
+	fi
+	for F in auth_smb ckpasswd radius ; do \
+	    $(LI_XPUB) $$F $D$(PATHAUTHPASSWD)/$$F ; \
+	done
+	for F in domain ident ; do \
+	    $(LI_XPUB) $$F $D$(PATHAUTHRESOLV)/$$F ; \
+	done
 
 clobber clean distclean:
 	rm -f *.o $(ALL)
@@ -68,22 +73,6 @@ $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
 $(LIBSMB):	; (cd smbval ; $(MAKE))
 $(LIBAUTH): 	libauth.h libauth.c
-
-
-##  Installation rules.  Installation commands set in Makefile.global.
-##  auth_krb5 is conditionally installed, so it has to be handled as a special
-##  case.
-
-install: $(INSTALLED) $(KRB5_AUTH)
-	if [ x"$(KRB5_AUTH)" != x ] ; then \
-	    $(LI_XPUB) auth_krb5 $(D)$(PATHAUTHPASSWD)/auth_krb5 ; \
-	fi
-
-$(D)$(PATHAUTHPASSWD)/auth_smb:		auth_smb	; $(LI_XPUB) $? $@
-$(D)$(PATHAUTHPASSWD)/ckpasswd:		ckpasswd	; $(LI_XPUB) $? $@
-$(D)$(PATHAUTHPASSWD)/radius:		radius		; $(LI_XPUB) $? $@
-$(D)$(PATHAUTHRESOLV)/domain:		domain		; $(LI_XPUB) $? $@
-$(D)$(PATHAUTHRESOLV)/ident:		ident		; $(LI_XPUB) $? $@
 
 
 ##  Dependencies.  Default list, below, is probably good enough.

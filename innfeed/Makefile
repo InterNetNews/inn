@@ -19,14 +19,15 @@ INCLUDES      = article.h buffer.h configfile.h config_y.h connection.h \
 OBJECTS	      = article.o buffer.o config_l.o config_y.o endpoint.o host.o \
 		innlistener.o main.o misc.o tape.o version.o
 
-INSTALLED     = $(D)$(PATHBIN)/imapfeed		\
-		$(D)$(PATHBIN)/innfeed		\
-		$(D)$(PATHBIN)/procbatch
-
 all: $(ALL)
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
+
+install: all
+	$(LI_XPRI) innfeed $D$(PATHBIN)/innfeed
+	$(LI_XPRI) imapfeed $D$(PATHBIN)/imapfeed
+	$(CP_XPRI) procbatch $D$(PATHBIN)/procbatch
 
 clean:
 	rm -f *.o $(ALL) version.c innfeed-convcfg
@@ -80,15 +81,6 @@ innfeed-convcfg: innfeed-convcfg.in $(FIXSCRIPT)
 
 tst: config_y.c config_l.c
 	gcc -DWANT_MAIN -o tst -g -Wall config_y.c config_l.c -ly -ll
-
-
-##  Installation rules.  Installation commands set in Makefile.global.
-
-install: $(INSTALLED)
-
-$(D)$(PATHBIN)/innfeed:		innfeed		; $(LI_XPRI) $? $@
-$(D)$(PATHBIN)/imapfeed:	imapfeed	; $(LI_XPRI) $? $@
-$(D)$(PATHBIN)/procbatch:	procbatch	; $(CP_XPRI) $? $@
 
 
 ##  Profiling.  These rules have not been checked for a while and may need

@@ -220,12 +220,6 @@ sub write_makefile {
     print MAKE makefile_var ('METHOD_SOURCES', @$sources);
     print MAKE makefile_var ('EXTRA_SOURCES', @$extra);
     print MAKE makefile_var ('PROGRAMS', @$programs);
-    my @installed = map {
-        my $program = $_;
-        $program =~ s%.*/%%;
-        '$(D)$(PATHBIN)/' . $program
-    } @$programs;
-    print MAKE makefile_var ('INSTALLED', @installed);
     for (@$makefiles) {
         print MAKE "\n\n##  Included from $_\n\n";
         open (FRAG, $_) or die "Can't open $_: $!\n";

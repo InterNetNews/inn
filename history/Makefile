@@ -20,6 +20,9 @@ include Make.methods
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
+install: all
+	$(LI_XPUB) libinnhist.$(EXTLIB) $D$(PATHLIB)/libinnhist.$(EXTLIB)
+
 library: libinnhist.$(EXTLIB)
 
 programs: $(PROGRAMS)
@@ -79,14 +82,6 @@ libinnhist$(PROFSUFFIX).a: $(SOURCES)
 	mv libinnhist.a libinnhist$(PROFSUFFIX).a
 	$(RANLIB) libinnhist$(PROFSUFFIX).a
 	rm -f $(OBJECTS)
-
-
-##  Low-level install actions.
-
-install: $(D)$(PATHLIB)/libinnhist.$(EXTLIB) 
-
-$(D)$(PATHLIB)/libinnhist.$(EXTLIB): libinnhist.$(EXTLIB)
-	$(LI_XPUB) libinnhist.$(EXTLIB) $@
 
 
 ##  Dependencies.  Default list, below, is probably good enough.

@@ -7,6 +7,3 @@ buffindexed/buffindexed_d: buffindexed/buffindexed_d.o libstorage.$(EXTLIB) $(LI
 	$(LIBLD) $(LDFLAGS) -o $@ buffindexed/buffindexed_d.o \
 	    buffindexed/shmem.o expire.o ov.o \
 	    $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) $(LIBS)
-
-$(D)$(PATHBIN)/buffindexed_d: buffindexed/buffindexed_d
-	$(LI_XPRI) $? $@

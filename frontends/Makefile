@@ -16,30 +16,28 @@ SOURCES	      = ctlinnd.c decode.c encode.c getlist.c inews.c innconfval.c \
 
 PATHRNEWS     = $(PATHBIN)/rnews.libexec
 
-INSTALLED     = $(D)$(PATHBIN)/cnfsheadconf	\
-		$(D)$(PATHBIN)/cnfsstat		\
-		$(D)$(PATHBIN)/ctlinnd		\
-		$(D)$(PATHBIN)/getlist		\
-		$(D)$(PATHBIN)/inews		\
-		$(D)$(PATHBIN)/innconfval	\
-		$(D)$(PATHBIN)/mailpost		\
-		$(D)$(PATHBIN)/ovdb_init	\
-		$(D)$(PATHBIN)/ovdb_monitor	\
-		$(D)$(PATHBIN)/ovdb_server	\
-		$(D)$(PATHBIN)/ovdb_stat	\
-		$(D)$(PATHBIN)/pullnews		\
-		$(D)$(PATHBIN)/rnews		\
-		$(D)$(PATHBIN)/scanspool	\
-		$(D)$(PATHBIN)/sm		\
-		$(D)$(PATHRNEWS)/c7unbatch	\
-		$(D)$(PATHRNEWS)/decode		\
-		$(D)$(PATHRNEWS)/encode		\
-		$(D)$(PATHRNEWS)/gunbatch
-
 all: $(ALL)
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
+
+install: all
+	$(LI_INEWS) inews $D$(PATHBIN)/inews
+	$(LI_RNEWS) rnews $D$(PATHBIN)/rnews
+	$(CP_XPRI) cnfsheadconf $D$(PATHBIN)/cnfsheadconf
+	for F in cnfsstat mailpost pullnews scanspool ; do \
+	    $(CP_XPUB) $$F $D$(PATHBIN)/$$F ; \
+	done
+	for F in ctlinnd ovdb_init ovdb_monitor ovdb_server ovdb_stat ; do \
+	    $(LI_XPRI) $$F $D$(PATHBIN)/$$F ; \
+	done
+	for F in getlist innconfval sm ; do \
+	    $(LI_XPUB) $$F $D$(PATHBIN)/$$F ; \
+	done
+	$(CP_XPUB) c7unbatch $D$(PATHBIN)/rnews.libexec/c7unbatch
+	$(LI_XPUB) decode $D$(PATHBIN)/rnews.libexec/decode
+	$(LI_XPUB) encode $D$(PATHBIN)/rnews.libexec/encode
+	$(CP_XPUB) gunbatch $D$(PATHBIN)/rnews.libexec/gunbatch
 
 clean:
 	rm -f *.o $(ALL)
@@ -115,32 +113,6 @@ sys2nf:		sys2nf.o      $(LIBINN)	; $(LINK) sys2nf.o  $(INNLIBS)
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
 $(LIBHIST):	; (cd ../history ; $(MAKE))
-
-
-##  Installation rules.  Installation commands set in Makefile.global.
-
-install: $(INSTALLED)
-
-$(D)$(PATHBIN)/inews:               inews               ; $(LI_INEWS) $? $@
-$(D)$(PATHBIN)/rnews:               rnews               ; $(LI_RNEWS) $? $@
-
-$(D)$(PATHBIN)/cnfsheadconf:        cnfsheadconf        ; $(CP_XPRI) $? $@
-$(D)$(PATHBIN)/cnfsstat:            cnfsstat            ; $(CP_XPRI) $? $@
-$(D)$(PATHBIN)/ctlinnd:             ctlinnd             ; $(LI_XPRI) $? $@
-$(D)$(PATHBIN)/getlist:             getlist             ; $(LI_XPUB) $? $@
-$(D)$(PATHBIN)/innconfval:          innconfval          ; $(LI_XPUB) $? $@
-$(D)$(PATHBIN)/mailpost:            mailpost            ; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/ovdb_init:           ovdb_init		; $(LI_XPRI) $? $@
-$(D)$(PATHBIN)/ovdb_monitor:        ovdb_monitor	; $(LI_XPRI) $? $@
-$(D)$(PATHBIN)/ovdb_server:         ovdb_server		; $(LI_XPRI) $? $@
-$(D)$(PATHBIN)/ovdb_stat:           ovdb_stat		; $(LI_XPRI) $? $@
-$(D)$(PATHBIN)/pullnews:            pullnews            ; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/scanspool:           scanspool           ; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/sm:                  sm                  ; $(LI_XPUB) $? $@
-$(D)$(PATHRNEWS)/c7unbatch:         c7unbatch           ; $(CP_XPUB) $? $@
-$(D)$(PATHRNEWS)/decode:            decode              ; $(LI_XPUB) $? $@
-$(D)$(PATHRNEWS)/encode:            encode              ; $(LI_XPUB) $? $@
-$(D)$(PATHRNEWS)/gunbatch:          gunbatch            ; $(CP_XPUB) $? $@
 
 
 ##  Dependencies.  Default list, below, is probably good enough.

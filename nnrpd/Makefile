@@ -15,12 +15,13 @@ INCLUDES	= cache.h nnrpd.h post.h sasl_config.h tls.h
 
 OBJECTS		= $(SOURCES:.c=.o)
 
-INSTALLED	= $(D)$(PATHBIN)/nnrpd
-
 all: $(ALL)
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
+
+install: all
+	$(LI_XPUB) nnrpd $D$(PATHBIN)/nnrpd
 
 clean:
 	rm -f *.o $(ALL) nnrpdp profiled
@@ -47,13 +48,6 @@ python.o:	python.c ; $(CC) $(CFLAGS) $(PYTHON_CPPFLAGS) -c python.c
 
 nnrpd: $(OBJECTS) $(LIBHIST) $(LIBSTORAGE) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) $(NNRPDLIBS)
-
-
-##  Installation rules.  Installation commands set in Makefile.global.
-
-install: $(INSTALLED)
-
-$(D)$(PATHBIN)/nnrpd:	nnrpd	; $(LI_XPUB) $? $@
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))

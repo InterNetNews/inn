@@ -9,15 +9,15 @@ ALL	      = controlbatch controlchan docheckgroups gpgverify perl-nocem \
 
 MAN	      = ../doc/man/perl-nocem.8 ../doc/man/pgpverify.1
 
-INSTALLED     = $(D)$(PATHBIN)/controlbatch	\
-		$(D)$(PATHBIN)/controlchan	\
-		$(D)$(PATHBIN)/docheckgroups	\
-		$(D)$(PATHBIN)/gpgverify	\
-		$(D)$(PATHBIN)/perl-nocem	\
-		$(D)$(PATHBIN)/pgpverify	\
-		$(D)$(PATHBIN)/signcontrol
-
 all: $(ALL)
+
+install: all
+	for F in $(ALL) ; do \
+	    $(CP_XPUB) $$F $D$(PATHBIN)/$$F ; \
+	done
+	for M in modules/*.pl ; do \
+	    $(CP_RPUB) $$M $D$(PATHCONTROL)/`basename $$M` ; \
+	done
 
 man: $(MAN)
 
@@ -50,21 +50,3 @@ signcontrol:	signcontrol.in   $(FIX) ; $(FIX) -i signcontrol.in
 
 ../doc/man/pgpverify.1: pgpverify
 	$(POD2MAN) -s 1 $? > $@
-
-
-##  Installation rules.  Installation commands set in Makefile.global.
-
-COPY = ../$(INSTALL) $(OWNER) -m 644 -B .OLD
-
-install: $(INSTALLED)
-	cd modules && for M in *.pl ; do \
-	    $(COPY) $$M $D$(PATHCONTROL)/$$M ; \
-	done
-
-$(D)$(PATHBIN)/controlbatch:	controlbatch	; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/controlchan:	controlchan	; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/docheckgroups:	docheckgroups	; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/gpgverify:	gpgverify	; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/perl-nocem:	perl-nocem	; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/pgpverify:	pgpverify	; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/signcontrol:	signcontrol	; $(CP_XPUB) $? $@

@@ -13,12 +13,13 @@ SOURCES		= art.c cc.c chan.c icd.c innd.c keywords.c lc.c nc.c \
 
 OBJECTS		= $(SOURCES:.c=.o)
 
-INSTALLED	= $(D)$(PATHBIN)/innd
-
 all: $(ALL)
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
+
+install: all
+	$(LI_XPRI) innd $D$(PATHBIN)/innd
 
 clean:
 	rm -f *.o $(ALL) inndp
@@ -41,13 +42,6 @@ python.o:	python.c ; $(CC) $(CFLAGS) $(PYTHON_CPPFLAGS) -c python.c
 
 innd: $(OBJECTS) $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) $(INNDLIBS)
-
-
-##  Installation rules.  Installation commands set in Makefile.global.
-
-install: $(INSTALLED)
-
-$(D)$(PATHBIN)/innd:	innd	; $(LI_XPRI) $? $@
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
