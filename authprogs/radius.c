@@ -2,6 +2,7 @@
 **
 **  Authenticate a user against a remote radius server.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <netinet/in.h>
@@ -177,7 +178,7 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     int got;
     fd_set rdfds;
     uint32_t nvalue;
-    ARGTYPE slen;
+    socklen_t slen;
 
     /* first, build the sockaddrs */
     memset(&sinl, '\0', sizeof(sinl));
