@@ -160,8 +160,13 @@ for loop in 1 2 3 4 5 6 7 8 9 10; do
     .*) cp $origdir/$host active; status=$? ;;
      *)
         if [ -z "$ftp" ]; then
-           echo "getlist -h $host" >>$out
-           if getlist -h $host > active 2>>$out; then
+           port=`expr "$host" : '.*:\(.*\)'`
+           if [ -n "$port" ]; then
+             port="-p $port"
+             host=`expr "$host" : '\(.*\):.*'`
+           fi
+           echo "getlist -h $host $port" >>$out
+           if getlist -h $host $port > active 2>>$out; then
              :
            else
              status=$NOSYNC
