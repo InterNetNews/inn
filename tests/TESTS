@@ -8,6 +8,7 @@ lib/pread
 lib/pwrite
 lib/qio
 lib/setenv
+lib/snprintf
 lib/strerror
 lib/wildmat
 lib/xmalloc

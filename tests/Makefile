@@ -11,7 +11,7 @@ CFLAGS	= $(GCFLAGS)
 
 TESTS	= lib/concat.t lib/date.t lib/error.t lib/hstrerror.t \
 	lib/inet_aton.t lib/inet_ntoa.t lib/memcmp.t lib/pread.t \
-	lib/pwrite.t lib/qio.t lib/strerror.t lib/xwrite.t
+	lib/pwrite.t lib/qio.t lib/snprintf.t lib/strerror.t lib/xwrite.t
 
 ##  Extra stuff that needs to be built before tests can be run.
 
@@ -84,6 +84,12 @@ lib/setenv.o: ../lib/setenv.c
 
 lib/setenv.tr: lib/setenv.o lib/setenv-t.o
 	$(LINK) lib/setenv.o lib/setenv-t.o $(LIBINN)
+
+lib/snprintf.o: ../lib/snprintf.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/snprintf.c
+
+lib/snprintf.t: lib/snprintf.o lib/snprintf-t.o
+	$(LINK) lib/snprintf.o lib/snprintf-t.o
 
 lib/strerror.o: ../lib/strerror.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/strerror.c
