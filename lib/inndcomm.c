@@ -59,6 +59,12 @@ ICCopen()
     int		mask;
     int		oerrno;
 
+    if (innconf == NULL) {
+	if (ReadInnConf() < 0) {
+	    ICCfailure = "innconf";
+	    return -1;
+	}
+    }
     /* Create a temporary name. */
     if (ICCsockname == NULL)
 	ICCsockname = COPY(cpcatpath(innconf->pathrun, _PATH_TEMPSOCK));
