@@ -328,8 +328,7 @@ main(ac, av)
 	}
 
 	/* Create a temporary file. */
-	p = getenv("TMPDIR");
-	(void)sprintf(temp, "%s/nntpgetXXXXXX", p ? p : _PATH_TMP);
+	(void)sprintf(temp, "%s/nntpgetXXXXXX", innconf->pathtmp);
 	(void)mktemp(temp);
 	if ((F = fopen(temp, "w+")) == NULL) {
 	    (void)fprintf(stderr, "Can't open \"%s\", %s\n",

@@ -44,14 +44,11 @@ STATIC FILE *
 OpenTemp()
 {
     FILE	*F;
-    char	*p;
     char	buff[SMBUF];
     int		i;
 
     /* Get filename. */
-    if ((p = getenv("TMPDIR")) == NULL)
-	p = "/usr/tmp";
-    (void)sprintf(buff, "%s/shrinkXXXXXX", p);
+    (void)sprintf(buff, "%s/shrinkXXXXXX", innconf->pathtmp);
     (void)mktemp(buff);
 
     /* Open the file. */
@@ -355,6 +352,8 @@ main(ac, av)
     Verbose = FALSE;
     no_op = FALSE;
     (void)umask(NEWSUMASK);
+
+    if (ReadInnConf() < 0) exit(1);
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "m:s:vn")) != EOF)
