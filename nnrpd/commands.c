@@ -709,8 +709,6 @@ CMDpost(ac, av)
        * invoke the spaghetti factor). 
        */
       if ((path = (char *) PostRecFilename(ClientIP,PERMuser)) == NULL) {
-        syslog(L_ERROR,"%s Unable to create postrec directories: %s",
-               ClientHost,strerror(errno));
         Reply("%s\r\n", NNTP_CANTPOST);
         return;
       }

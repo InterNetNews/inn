@@ -601,6 +601,8 @@ char
 
      sprintf(dirbuff,"%s/%03d%03d/%03d",postrec_dir,addr[3],addr[2],addr[1]);
      if (!MakeDirectory(dirbuff,TRUE)) {
+       syslog(L_ERROR,"%s Unable to create postrec directories '%s': %s",
+               ClientHost,dirbuff,strerror(errno));
        return NULL;
      }
      sprintf(buff,"%s/%03d",dirbuff,addr[0]);
