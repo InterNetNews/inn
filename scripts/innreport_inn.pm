@@ -1205,7 +1205,7 @@ sub collect {
   }
   ########
   ## nnrpd
-  if ($prog eq "nnrpd")
+  if ($prog =~ /^nnrpd(?:-ssl)?$/)
   {
     # Fix a small bug of nnrpd (inn 1.4*)
     $left =~ s/^ /\? /o;
