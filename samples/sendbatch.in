@@ -149,13 +149,14 @@ do
 #	    ')`
 ## = ()<	POS=@<INNWATCH_BLOCKS>@>()=
 	POS=4
-	FREE=`${INNDF} ${UUSPOOL} | ${AWK} '/^\// { print $POS; exit }'`
+	DOLLAR="$"
+	FREE=`${INNDF} ${UUSPOOL} | ${AWK} "/^\// { print ${DOLLAR}${POS}; exit }"`
 	if [ -n "${FREE}" -a "${FREE}" -lt ${SPOOLFREE} ] ; then
 	    echo "${PROG}:  No space on ${UUSPOOL} for ${SITE} (${FREE})."
 	    rm -f ${LOCK}
 	    continue
 	fi
-    fi
+#    fi
 
     ##  Check the host's queue size?
     QUEUE=0
