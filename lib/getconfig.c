@@ -218,6 +218,7 @@ void SetDefaults()
     innconf->nnrpdposthost = NULL;
     innconf->nnrpdpostport = NNTP_PORT;
     innconf->nnrpperlauth = FALSE;
+    innconf->nnrppythonauth = FALSE;
     innconf->addnntppostinghost = TRUE;
     innconf->addnntppostingdate = TRUE;
 
@@ -689,6 +690,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_NNRPPERLAUTH, bit);
 		if (!bit && boolval != -1) innconf->nnrpperlauth = boolval;
 		SET_CONFIG(CONF_VAR_NNRPPERLAUTH);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_NNRPPYTHONAUTH)) {
+		TEST_CONFIG(CONF_VAR_NNRPPYTHONAUTH, bit);
+		if (!bit && boolval != -1) innconf->nnrppythonauth = boolval;
+		SET_CONFIG(CONF_VAR_NNRPPYTHONAUTH);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ADDNNTPPOSTINGHOST)) {
 		TEST_CONFIG(CONF_VAR_ADDNNTPPOSTINGHOST, bit);
