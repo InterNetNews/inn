@@ -840,7 +840,7 @@ CMDxgtitle(ac, av)
     else
 	p = av[1];
 
-    if (!PERMdefault) {
+    if (!PERMspecified && !PERMdefault) {
 	Printf("%d list follows\r\n", NNTP_XGTITLE_OK);
 	Printf(".\r\n");
 	return;
