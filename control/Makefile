@@ -29,9 +29,11 @@ pgpverify:	pgpverify.in     $(FIX) ; $(FIX) pgpverify.in
 
 ##  Installation rules.  Installation commands set in Makefile.global.
 
+COPY = $(UPINSTALL) $(OWNER) -m 644 -B .OLD
+
 install: $(INSTALLED)
 	cd modules && for M in *.pl ; do \
-	    $(CP_RPUB) $$M $D$(PATHCONTROL)/$$M ; \
+	    $(COPY) $$M $D$(PATHCONTROL)/$$M ; \
 	done
 
 $(D)$(PATHBIN)/controlbatch:	controlbatch	; $(CP_XPUB) $? $@
