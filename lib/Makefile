@@ -90,12 +90,14 @@ $(D)$(PATHLIB)/libinn.$(EXTLIB): libinn.$(EXTLIB)
 
 ##  Dependencies.  Default list, below, is probably good enough.
 
-depend: Makefile $(SOURCES)
+depend: Makefile $(SOURCES) ../include/autoconfig.h
 	$(MAKEDEPEND) $(CFLAGS) $(PERLINC) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 setenv.o: setenv.c ../include/configdata.h ../include/config.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
+hstrerror.o: hstrerror.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h
 argparse.o: argparse.c ../include/configdata.h ../include/config.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
 checkart.o: checkart.c ../include/configdata.h ../include/config.h \
@@ -112,14 +114,19 @@ concat.o: concat.c ../include/config.h ../include/libinn.h \
  ../include/macros.h
 conffile.o: conffile.c ../include/config.h ../include/clibrary.h \
  ../include/conffile.h ../include/libinn.h ../include/macros.h
-dbz.o: dbz.c
+date.o: date.c ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h
+dbz.o: dbz.c ../include/config.h ../include/clibrary.h \
+ ../include/md5.h ../include/libinn.h ../include/macros.h \
+ ../include/dbz.h
 defdist.o: defdist.c ../include/configdata.h ../include/config.h \
  ../include/clibrary.h ../include/libinn.h ../include/paths.h \
  ../include/macros.h
 findheader.o: findheader.c ../include/configdata.h ../include/config.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/qio.h
-genid.o: genid.c ../include/config.h ../include/libinn.h
+genid.o: genid.c ../include/config.h ../include/libinn.h \
+ ../include/macros.h
 getconfig.o: getconfig.c ../include/config.h ../include/clibrary.h \
  ../include/innconf.h ../include/libinn.h ../include/macros.h \
  ../include/paths.h
