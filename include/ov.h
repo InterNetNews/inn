@@ -10,7 +10,7 @@ extern "C" {
 
 BOOL OVopen(int mode);
 BOOL OVgroupstats(char *group, int *lo, int *hi, int *count, int *flag);
-BOOL OVgroupadd(char *group, char *flag);
+BOOL OVgroupadd(char *group, ARTNUM lo, char *flag);
 BOOL OVgroupdel(char *group);
 BOOL OVadd(TOKEN token, char *data, int len);
 BOOL OVcancel(TOKEN token);
