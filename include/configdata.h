@@ -82,10 +82,10 @@ typedef char		*CSTRING;
 #define DIR_DIRENT
     /* Use flock, lockf, or nothing to lock files? */
     /* =()<#define LOCK_@<LOCK_STYLE>@>()= */
-#define LOCK_FLOCK
+#define LOCK_LOCKF
     /* Does your (struct tm) have a tm_gmtoff field? */
     /* =()<#define @<HAVE_TM_GMTOFF>@_HAVE_TM_GMTOFF>()= */
-#define DO_HAVE_TM_GMTOFF
+#define DONT_HAVE_TM_GMTOFF
     /* Does your (struct stat) have a st_blksize field? */
     /* =()<#define @<HAVE_ST_BLKSIZE>@_HAVE_ST_BLKSIZE>()= */
 #define DO_HAVE_ST_BLKSIZE
@@ -325,7 +325,7 @@ typedef int		BOOL;
 */
 
     /* =()<#define @<PERL_SUPPORT>@_PERL>()= */
-#define DO_PERL
+#define DONT_PERL
 
 
 #endif /* ! defined (__configdata_h__) */

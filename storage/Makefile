@@ -9,7 +9,7 @@ IFTRUE	= @$(SHELL) ../iftrue.sh
 P	= 
 
 ##  =()<PERLINC = @<PERL_INC>@>()=
-PERLINC = -I/CORE
+PERLINC = 
 ##  =()<LINTLIBSTYLE	= @<LINTLIBSTYLE>@>()=
 LINTLIBSTYLE	= NONE
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@ -I. $(PERLINC)>()=

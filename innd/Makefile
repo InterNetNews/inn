@@ -4,9 +4,9 @@ include ../Makefile.global
 ##  =()<P	= @<P>@>()=
 P	= 
 ##  =()<PERLLIB = @<PERL_LIB>@>()=
-PERLLIB = -L/CORE 
+PERLLIB = 
 ##  =()<PERLINC = @<PERL_INC>@>()=
-PERLINC = -I/CORE
+PERLINC = 
 ##  =()<TCLINC	= @<TCL_INC>@>()=
 TCLINC	= 
 
