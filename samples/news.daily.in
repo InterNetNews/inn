@@ -51,6 +51,7 @@ EXPDIR=
 EXPIREFLAGS="-v1"
 SAPI=`innconfval storageapi 2>/dev/null | tr ${AZ} ${az}`
 if [ X${SAPI} = X"true" -o X${SAPI} = X"yes" -o X${SAPI} = X"on" ]; then
+    SAPI="true"
     EXPIREOVER=expireindex
     INDEXFILE=${MOST_LOGS}/expire.index.rm
     EXPIREFLAGS="${EXPIREFLAGS} -c -e"
