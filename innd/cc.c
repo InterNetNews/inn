@@ -242,6 +242,10 @@ CCaddhist(av)
     /* Check to see if we were passed a hash first. */
     i = strlen(av[0]);
     if (av[0][0]=='[' && av[0][i-1] == ']') {
+	if (i != ((sizeof(HASH) * 2) + 2))
+	    return "1 Bad Hash";
+	if (av[4] != NULL && *av[4] != '\0' && !IsToken(av[4]))
+	    return "1 Bad Token";
         hash = TextToHash(&av[0][1]);
 	/* Put something bogus in here.  This should never be referred
 	   to unless someone tries to add a [msgidhash].... history
