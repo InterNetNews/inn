@@ -35,7 +35,7 @@
  *	-q hostid	silence errors from a host (see -b)	  (def: -q 0)
  *	-s size		ignore names longer than size (0=no lim)  (def: -s 0)
  *	-t hostid	ignore bad top level groups from:(see -b) (def: -t 2)
- *	-T		no new hierarchies (requires -S dir)	  (def: allow)
+ *	-T		no new hierarchies                  	  (def: allow)
  *	-v verbose_lvl	verbosity level				  (def: -v 0)
  *			    0   no debug or status reports
  *			    1   summary if work done
@@ -758,7 +758,7 @@ usage()
     (void) fprintf(stderr,
  "    -t hostid\tignore bad top level grps from: (see -b)     (def: -t 2)\n");
     (void) fprintf(stderr,
-       "    -T\t\tno new hierarchies (needs -S dir)\t     (def: allow)\n");
+       "    -T\t\tno new hierarchies               \t     (def: allow)\n");
     (void) fprintf(stderr,
 	"    -v verbose_lvl\tverbosity level\t\t\t     (def: -v 0)\n");
     (void) fprintf(stderr,
