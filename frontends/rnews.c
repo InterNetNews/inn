@@ -142,7 +142,7 @@ WaitForChildren(int n)
     pid_t pid;
 
     while (--n >= 0) {
-        pid = waitpid(-1, NULL, 0);
+        pid = waitpid(-1, NULL, WNOHANG);
         if (pid == (pid_t) -1 && errno != EINTR) {
             if (errno != ECHILD)
                 syslog(L_ERROR, "cant wait %m");
