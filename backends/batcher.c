@@ -14,6 +14,7 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/timer.h"
 #include "libinn.h"
 #include "paths.h"
 #include "storage.h"
