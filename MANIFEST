@@ -52,14 +52,7 @@ backends/shrinkfile.c       1 Shrink file by removing data from beginning
 config                      1 Configuration files (Directory)
 config.guess                1 Script for libtool
 config.sub                  1 Script for libtool
-config/Makefile             1 Makefile for config changes
-config/checkconf.sh         1 Syntax-check the config.data file
-config/config.scoreboard    1 Template config.data file
-config/files.list           1 Official list of files to be edited
 config/fixinterps.pl        1 Interpreter path fixup script.
-config/subst.c              1 C version of subst script
-config/subst.sh             1 Script to edit files in place
-config/whsubst.sh           1 Script to search the subst victims files
 configure                   1 Script to setup configuration before making inn
 configure.in                1 File to create configure
 contrib                     1 External contributions (Directory)
@@ -200,7 +193,6 @@ doc/sgml/inn.conf.sgml      1 SGML version of inn.conf.pod
 doc/sgml/inndstart.sgml     1 SGML version of inndstart.pod
 doc/sgml/install.sgml       1 SGML version of install.pod
 doc/sgml/readme.sgml        1 SGML version of readme.pod
-doc/typical.subst           1 Script to replace typical values
 expire                      1 Expiration and recovery (Directory)
 expire/Makefile             1 Makefile for expiration
 expire/convdate.c           1 Date string conversions
@@ -228,7 +220,8 @@ frontends/sm.c              1 Get article or overview data from token
 frontends/sys2nf.c          1 Sys file to newsfeeds conversion aide
 iftrue.sh                   1 Execute command if test(1) is true
 include                     1 Header files (Directory)
-include/clibrary.h.in       1 C library declarations
+include/acconfig.h          1 Master file for config.h.in
+include/clibrary.h          1 C library portability
 include/conffile.h          1 Header file for reading *.conf files
 include/config.h.in         1 Template configuration data 
 include/configdata.h        1 Configuration data, used by everyone
@@ -288,7 +281,7 @@ innfeed/configfile.y        1 A bison input file for innfeed config file
 innfeed/connection.c        1 Implementation of the Connection class
 innfeed/connection.h        1 Public interface to the Connection class
 innfeed/contrib             1 Contribute programs (Directory)
-innfeed/contrib/README.newsresp_c 1 Descriptoin of newsresp
+innfeed/contrib/README.newsresp_c 1 Description of newsresp
 innfeed/contrib/newsresp.c  1 Measure server response time
 innfeed/endpoint.c          1 Implementation of the EndPoint object class
 innfeed/endpoint.h          1 Public interface to the EndPoint class
