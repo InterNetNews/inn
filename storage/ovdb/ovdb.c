@@ -2,6 +2,9 @@
  * ovdb.c
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2000-03-29 : Add DB_RMW flag to the 'get' of get-modify-put sequences
+ * 2000-02-17 : Update expire behavior to be consistent with current
+ *              ov3 and buffindexed
  * 2000-01-13 : Fix to make compatible with unmodified nnrpd/article.c
  * 2000-01-04 : Added data versioning
  * 1999-12-20 : Added BerkeleyDB 3.x compatibility
@@ -870,7 +873,7 @@ retry:
 	val.ulen = sizeof gs;
 	val.flags = DB_DBT_USERMEM;
 
-	switch(ret = groupstats->get(groupstats, tid, &key, &val, 0)) {
+	switch(ret = groupstats->get(groupstats, tid, &key, &val, DB_RMW)) {
 	case 0:
 	    if(val.size != sizeof gs)	/* invalid size; rewrite groupstats */
 		new = 1;
@@ -1055,7 +1058,7 @@ retry:
     val.ulen = sizeof gs;
     val.flags = DB_DBT_USERMEM;
 
-    switch(ret = groupstats->get(groupstats, tid, &key, &val, 0)) {
+    switch(ret = groupstats->get(groupstats, tid, &key, &val, DB_RMW)) {
     case 0:
 	break;
     case DB_NOTFOUND:
@@ -1390,12 +1393,6 @@ BOOL ovdb_expiregroup(char *group, int *lo)
     key.data = &dk;
     key.size = sizeof dk;
 
-    if(! innconf->groupbaseexpiry) {
-	/* we only need to retrieve tokens */
-	val.flags = DB_DBT_PARTIAL;
-	val.dlen = sizeof(struct ovdata);
-    }
-
     switch(ret = cursor->c_get(cursor, &key, &val, DB_SET_RANGE)) {
     case 0:
     case DB_NOTFOUND:
@@ -1431,7 +1428,7 @@ retry:
 	    val.ulen = sizeof gs;
 	    val.flags = DB_DBT_USERMEM;
 
-	    switch(ret = groupstats->get(groupstats, tid, &key, &val, 0)) {
+	    switch(ret = groupstats->get(groupstats, tid, &key, &val, DB_RMW)) {
 	    case 0:
 		break;
 	    case DB_NOTFOUND:
@@ -1487,21 +1484,25 @@ retry:
 	} else {
 	    memcpy(&ovd, val.data, sizeof ovd);
 
-	    if((ah = SMretrieve(ovd.token, RETR_STAT)) == NULL) { 
-		delete = 1;
+	    ah = NULL;
+	    if (SMprobe(SELFEXPIRE, &ovd.token, NULL)) {
+		if((ah = SMretrieve(ovd.token, RETR_STAT)) == NULL) { 
+		    delete = 1;
+		}
 	    } else {
+		if (!innconf->groupbaseexpiry
+			&& !OVhisthasmsgid((char *)val.data + sizeof(ovd))) {
+		    delete = 1;
+		}
+	    }
+	    if(ah)
 		SMfreearticle(ah);
-		if (innconf->groupbaseexpiry &&
+	    if (!delete && innconf->groupbaseexpiry &&
 			OVgroupbasedexpire(ovd.token, group,
 				(char *)val.data + sizeof(ovd),
 				val.size - sizeof(ovd),
 				ovd.arrived, ovd.expires)) {
-		    delete = 1;
-		} else {
-		    newcount++;
-		    if(newlo == 0 || artnum < newlo)
-			newlo = artnum;
-		}
+		delete = 1;
 	    }
 	}
 
@@ -1516,6 +1517,10 @@ retry:
 		syslog(L_ERROR, "OVDB: expiregroup: c_del: %s", db_strerror(ret));
 		return FALSE;
 	    }
+	} else {
+	    newcount++;
+	    if(newlo == 0 || artnum < newlo)
+		newlo = artnum;
 	}
 	
 	/* go to the next record */
