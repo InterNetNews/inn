@@ -1719,7 +1719,7 @@ STATIC void *ovopensearch(char *group, int low, int high, BOOL needov) {
   search = NEW(OVSEARCH, 1);
   search->hi = high;
   search->lo = low;
-  search->cur = -1;
+  search->cur = 0;
   search->group = COPY(group);
   search->needov = needov;
   search->gloc = gloc;
