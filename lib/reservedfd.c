@@ -58,7 +58,7 @@ BOOL fdreserve(int fdnum) {
 
 FILE *Fopen(const char *p, char *type, int index) {
     FILE *nfp;
-    if (p == NULL || *p == NULL)
+    if (p == NULL || *p == '\0')
 	return NULL;
     if (index < 0 || index > Maxfd || Reserved_fd[index] == NULL)
 	return fopen(p, type);
