@@ -53,7 +53,7 @@
 #define _PATH_EXPIRECTL		"expire.ctl"
 #define _PATH_SCHEMA		"overview.fmt"
 #define _PATH_MOTD		"motd.news"
-#define _PATH_STORAGECTL	"storage.ctl"
+#define _PATH_STORAGECTL	"storage.conf"
 #define _PATH_OVERVIEWCTL	"overview.ctl"
 
 /* Default prefix path is pathspool */

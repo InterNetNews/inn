@@ -303,6 +303,12 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_NICENEWNEWS			"nicenewnews"
 #define CONF_VAR_NICENEWNEWS			93
     { _CONF_NICENEWNEWS,			"",	2, 1 },
+#define _CONF_USECONTROLCHAN			"usecontrolchan"
+#define CONF_USECONTROLCHAN			94
+    { _CONF_USECONTROLCHAN,			"",	2, 1 },
+#define _CONF_MERGETOGROUPS			"mergetogroups"
+#define CONF_MERGETOGROUPS			95
+    { _CONF_MERGETOGROUPS,			"",	2, 1 }
 };
-#define MAX_CONF_VAR 94
+#define MAX_CONF_VAR 96
 

@@ -7,9 +7,6 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__ 
 
-/* Define if you want to use a channel feed for control message */
-#undef USE_CONTROLCHAN
-
 /* Change to fork() if your vfork() is broken */
 #define FORK() vfork()
 

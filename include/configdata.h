@@ -94,9 +94,6 @@
     /* Null-terminated set of illegal distribution patterns. */
     /* =()<#define BAD_DISTRIBS	@<BAD_DISTRIBS>@>()= */
 #define BAD_DISTRIBS	"*.*",NULL
-    /* File unknown "to.*" groups into the "to" newsgroup? */
-    /* =()<#define @<MERGE_TO_GROUPS>@_MERGE_TO_GROUPS>()= */
-#define DONT_MERGE_TO_GROUPS
     /* Have innd throttle itself after this many I/O errors. */
     /* =()<#define IO_ERROR_COUNT	@<IO_ERROR_COUNT>@>()= */
 #define IO_ERROR_COUNT	50
