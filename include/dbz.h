@@ -1,6 +1,11 @@
 #ifndef __DBZ_H__
 #define __DBZ_H__
 
+/* Need the definition of HASH. */
+#ifndef __LIBINN_H__
+# include "libinn.h"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
