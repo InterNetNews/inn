@@ -223,13 +223,13 @@ create_socket(struct binding *binding, const char *spec)
     else
         die("unknown protocol family %d in %s", binding->family, spec);
     if (fd < -1)
-        die("cannot create socket for %s", spec);
+        sysdie("cannot create socket for %s", spec);
 
     /* Mark it reusable if possible. */
 #ifdef SO_REUSEADDR
     flag = 1;
     if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) < 0)
-        die("cannot mark socket reusable for %s", spec);
+        sysdie("cannot mark socket reusable for %s", spec);
 #endif
 
     /* Fill in the struct. */
@@ -317,7 +317,7 @@ main(int argc, char *argv[])
             write(STDOUT_FILENO, "no\n", 3);
             create_socket(&binding, argv[i]);
             if (!bind_address(&binding, argv[i]))
-                sysdie("socket binding failed for %s", argv[i]);
+                sysdie("cannot bind socket for %s", argv[i]);
             send_fd(binding.fd);
         }
     }
