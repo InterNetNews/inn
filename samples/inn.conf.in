@@ -100,9 +100,9 @@ pathnews:		@prefix@
 pathbin:		@prefix@/bin
 pathfilter:		@prefix@/bin/filter
 pathcontrol:		@prefix@/bin/control
-pathdb:			@prefix@/db
-pathetc:		@prefix@/etc
-pathrun:		@prefix@/run
+pathdb:			@DBDIR@
+pathetc:		@ETCDIR@
+pathrun:		@RUNDIR@
 pathlog:		@LOGDIR@
 pathhttp:		@LOGDIR@
 pathspool:		@SPOOLDIR@

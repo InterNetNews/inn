@@ -6,6 +6,10 @@ echo "# or obtain a known good config.data for your O/S" >>config/config.data
 
 AC_PREFIX_DEFAULT(/usr/local/news)
 
+dnl Fix the paths
+test "x$prefix" = xNONE && prefix=$ac_default_prefix
+test "x$exec_prefix" = xNONE && exec_prefix=$ac_default_prefix
+
 dnl Parse the arguments
 AC_ARG_ENABLE(pgp-verify,[  --enable-pgp-verify     use pgp control verification], DO_PGP=DO, DO_PGP=DONT)
 AC_SUBST(DO_PGP)
@@ -25,17 +29,20 @@ dnl
 AC_ARG_WITH(keywords,[  --with-keywords         Overview keyword support],DO_KEYWORDS=DO,DO_KEYWORDS=DONT)
 AC_SUBST(DO_KEYWORDS)
 dnl
+AC_ARG_WITH(db-dir,[  --with-db-dir=PATH   News database files [PREFIX/db]], DBDIR=$with_db_dir, DBDIR=$prefix/db)
+AC_SUBST(DBDIR)
+dnl
+AC_ARG_WITH(run-dir,[  --with-run-dir=PATH   News pid/runtime files [PREFIX/run]], RUNDIR=$with_run_dir, ETCDIR=$prefix/run)
+AC_SUBST(RUNDIR)
+dnl
+AC_ARG_WITH(etc-dir,[  --with-etc-dir=PATH   News config files [PREFIX/etc]], ETCDIR=$with_etc_dir, ETCDIR=$prefix/etc)
+AC_SUBST(ETCDIR)
+dnl
 AC_ARG_WITH(spool-dir,[  --with-spool-dir=PATH   News storage (default /var/news/spool)], SPOOLDIR=$with_spool_dir, SPOOLDIR=/var/news/spool)
 AC_SUBST(SPOOLDIR)
 dnl
 AC_ARG_WITH(log-dir,[  --with-log-dir=PATH     Logging directory (default /var/log/news)], LOGDIR=$with_log_dir, LOGDIR=/var/log/news)
 AC_SUBST(LOGDIR)
-dnl
-AC_ARG_WITH(news-user,[  --with-news-user=UID    News user id (default news)], NEWSUSER=$with_news_user, NEWSUSER=news)
-AC_SUBST(NEWSUSER)
-dnl
-AC_ARG_WITH(news-group,[  --with-news-group=GID   News group id (default news)], NEWSGRP=$with_news_group, NEWSGRP=news)
-AC_SUBST(NEWSGRP)
 dnl
 AC_ARG_WITH(tmp-path,[  --with-tmp-path=PATH    Temporary files directory], TMPPATH=$with_tmp_path, if test -d /var/tmp; then
 	TMPPATH=/var/tmp
@@ -45,13 +52,15 @@ else
 	else
 		TMPPATH=/tmp
 	fi
-fi) dnl HACK
+fi) 
+AC_ARG_WITH(news-user,[  --with-news-user=UID    News user id (default news)], NEWSUSER=$with_news_user, NEWSUSER=news)
+AC_SUBST(NEWSUSER)
+dnl
+AC_ARG_WITH(news-group,[  --with-news-group=GID   News group id (default news)], NEWSGRP=$with_news_group, NEWSGRP=news)
+AC_SUBST(NEWSGRP)
+dnl
 AC_SUBST(TMPPATH)
 AC_ARG_WITH(sendmail,[  --with-sendmail=PATH    Specify sendmail], SENDMAIL=$with_sendmail)
-
-dnl Fix the paths
-test "x$prefix" = xNONE && prefix=$ac_default_prefix
-test "x$exec_prefix" = xNONE && exec_prefix=$ac_default_prefix
 
 AC_CACHE_CHECK(for MANDIR,MANDIR, MANDIR=`eval echo $mandir`)
 ac_cv_subst_manpath="$MANDIR"

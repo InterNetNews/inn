@@ -10,19 +10,19 @@
 #PROF	= -pg
 
 ##  How to make a lint library; pick BSD, SYSV, or NONE.
-LINTLIBSTYLE            NONE
+LINTLIBSTYLE	= NONE
 ##  Flags for lint.  AIX wants "-wkD"; it and others don't want "-z".
-LINTFLAGS               -b -h -z  -I../include $(DEFS)
+LINTFLAGS	= -b -h -z  -I../include $(DEFS)
 ##  Some lints insist on putting out the filename and other crap.
 ##  Possible values:
 ##      LINTFILTER              | sed -n -f ../sedf.aix
 ##      LINTFILTER              | sed -n -f ../sedf.osx
 ##      LINTFILTER              | sed -n -f ../sedf.sun
 ##      LINTFILTER              | sed -n -f ../sedf.sysv
-LINTFILTER              | sed -n -f ../sedf.sun
+LINTFILTER	= | sed -n -f ../sedf.sun
 
 ##  Ctags command.  Use echo if you don't have ctags.
-CTAGS                   /usr/bin/ctags -t -w
+CTAGS		= /usr/bin/ctags -t -w
 
 # Values below this point are generally set by configure ... you shouldn't
 # need to look before here .. you can though, if you really want
