@@ -12,6 +12,7 @@
 #include <dirent.h>
 #include <ctype.h>
 #include <sys/types.h>
+#include <netinet/in.h>
 #include <clibrary.h>
 #include <errno.h>
 #include <limits.h>
