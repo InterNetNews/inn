@@ -9,6 +9,7 @@
 #include <sys/uio.h>
 
 #include "inn/innconf.h"
+#include "inn/mmap.h"
 #include "innd.h"
 #include "ov.h"
 
@@ -493,7 +494,7 @@ ICDwriteactive(void)
 {
 #ifdef HAVE_MMAP
     if (msync_page(ICDactpointer, ICDactsize, MS_ASYNC) < 0) {
-        syslog(L_FATAL, "%s msync failed %s 0x%x %d %m", LogName, ICDactpath, ICDactpointer, ICDactsize);
+        syslog(L_FATAL, "%s msync failed %s 0x%lx %d %m", LogName, ICDactpath, (unsigned long) ICDactpointer, ICDactsize);
         exit(1);
     }
 #else /* !HAVE_MMAP */
