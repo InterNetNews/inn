@@ -82,6 +82,11 @@ do
 	;;
     -g)
         COMP="; exec ${GZIP} ${GZIPFLAGS}"
+        ECHO="echo '#! cunbatch'"
+        continue
+        ;;
+    +g)
+        COMP="; exec ${GZIP} ${GZIPFLAGS}"
         ECHO="echo '#! gunbatch'"
         continue
         ;;
