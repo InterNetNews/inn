@@ -17,7 +17,8 @@ High Priority Projects:
   parsers in INN.  [Russ is actively working on this.]
 
 * Add man pages for the default authenticators, as well as documentation
-  on the readers.conf external program interface.
+  on the readers.conf external program interface.  A good place to start
+  is authprogs/README.readers.conf.
 
 * Add documentation of adding and removing CNFS cycbuffs.
 
@@ -58,7 +59,10 @@ High Priority Projects:
 
 * Some installed binaries and configuration files don't have man pages.
   In particular, man pages are needed for actsync.conf, actsync.ign,
-  innreport.conf, and news2mail.cf.
+  innreport.conf, and news2mail.cf.  (Some of these configuration files
+  could instead be obsoleted by better implementations with better
+  configuration syntaxes, or merged into other existing more general
+  configuration files.)
 
 
 Future Projects:
@@ -173,16 +177,21 @@ Future Projects:
 
 * Revisit support for aliased groups and what nnrpd does with them.
   Should posts to the alias automatically be redirected to the real group?
-  Also, the new overview API, for at least some of the overview methods,
-  truncated the group status at one character and lost the name of the
-  group to which a group is aliased; that needs to be fixed.
+  Regardless, the error return should provide useful information about
+  where to post instead.  Also, the new overview API, for at least some of
+  the overview methods, truncated the group status at one character and
+  lost the name of the group to which a group is aliased; that needs to be
+  fixed.
 
 * Add documentation for slave servers.  [Russ has articles from
   inn-workers that can be used as a beginning.]
 
 * sendbatch and send-uucp do the same thing.  So do send-nntp and
   nntpsend, mostly.  Might be a good idea to unify them into single
-  programs (and easier to maintain).
+  programs (and easier to maintain).  It would be nice to have a C News
+  style configurable batch generator where you could configure the size,
+  compression, and sending method for each peer in a file and generate all
+  batches with a single command.
 
 * More details as to *why* a message ID is bad would be useful to return
   to the user, particularly for rnews, inews, etc.  rnews also reportedly
@@ -202,9 +211,9 @@ Future Projects:
   replacement, if the system doesn't have it).  [Matus Uhlar was working
   on this.]
 
-* innfeed breaks Xref slaving if it ever goes to a backlog, since it then
-  starts sending articles out of order and most of the overview methods
-  can't deal with this.  There should be a configuration option that would
+* innfeed does odd things to Xref slaving if it ever goes to a backlog,
+  since it then starts sending articles out of order and this can confuse
+  reading clients.  There should be a configuration option that would
   cause it to spool any new articles if there's a backlog and always
   process the backlog in order.  [Sven Paulus had a preliminary patch for
   this, which Russ has.]
@@ -218,7 +227,10 @@ Future Projects:
 
 * nnrpd should have support for fixing broken Date headers supplied by
   clients, although now that most clients have been fixed for Y2K this may
-  be less of a problem.
+  be less of a problem.  This should probably only affect a narrow set of
+  Date headers with known problems, if done at all.  Conversely, locally
+  posted articles should really get a stricter check than parsedate, which
+  accepts a huge variety of things.
 
 * It's been reported that innd doesn't deal well with syntax violations in
   incoming.conf and doesn't correctly report the problems (and inncheck
@@ -239,13 +251,25 @@ Future Projects:
 
 * nnrpd's NNTP command parsing interacts poorly with AUTHINFO and
   passwords containing spaces.  The correct solution isn't clear; check
-  with the current NNTP RFC draft?
+  with the current NNTP RFC draft and how existing clients handle it?
 
 * Some servers reject some IHAVE, TAKETHIS, or CHECK commands with 500
   syntax errors (particularly for long message IDs), and innfeed doesn't
   handle this particularly well at the moment.  It really should have an
   error handler for this case.  [Sven Paulus has a preliminary patch that
   needs testing.]
+
+* actsyncd could stand a rewrite and cleaner handling of both
+  configuration and syncing against multiple sources which are canonical
+  for different sets of groups.
+
+* There are various available patches for Cancel-Lock and an Internet
+  draft; support should be added to INN for both generation and
+  verification (definitely optional and not on by default at this point).
+
+* It would be nice to be able to reload inn.conf (although difficult, due
+  to the amount of data that's generated from it and stashed in various
+  places).
 
 
 Long-Term Projects:
@@ -265,11 +289,15 @@ Long-Term Projects:
   the Perl loading code needs considerable cleanup.  [Russ is planning on
   working on this at some point.]
 
+* The innd filter should be able to specify additional or replacement
+  groups into which an article should be filed, or even spool the article
+  to a local disk file rather than storing it.  (See the stuff that the
+  nnrpd filter can already do.)
+
 * Add authentication via SASL to nnrpd.  This is a boatload of additional
   issues, particularly if we want to add authentication methods like
-  Kerberos that require their own separate libraries.  Best to start with
-  just the basic framework and the required authentication type and then
-  see what other people contribute.
+  Kerberos that require their own separate libraries (although we should
+  use Cyrus's SASL libraries, which will simplify a lot of that).
 
 * When articles expire out of a storage method with self-expire
   functionality, the overview and history entries for those articles
@@ -306,13 +334,15 @@ Long-Term Projects:
   subset of the users is allowed to access, is far too difficult.  For a
   good starting list of additional functionality that should be made
   available, look at everything the Perl authentication hooks can do.
+  This should probably wait for the configuration file parsing rewrite.
 
 * Allow nnrpd to spawn long-running helper processes.  Not only would this
   be useful for handling authentication (so that the auth hooks could work
   without execing a program on every connection), but it may allow for
   other architectures for handling requests (such as a pool of helpers
-  that deal only with overview requests).  [Aidan Culley has ideas along
-  these lines.]
+  that deal only with overview requests).  More than that, nnrpd should
+  *be* a long-running helper process that innd can feed open file
+  descriptors to.  [Aidan Culley has ideas along these lines.]
 
 * The tradspool storage method requires assigning a number to every
   newsgroup (for use in a token).  Currently this is maintained in a
@@ -340,11 +370,20 @@ Long-Term Projects:
   inspection and some cleanup.  A good place to start would be tracing
   through the pause and throttle code and write up a clear description of
   what gets locked where and what is safely restarted and what isn't.
+  Long term, there needs to be a library locking routine used by
+  *everything* that needs to write to the history file, active file, etc.
+  and that keeps track of the PID of the process locking things and is
+  accessible via ctlinnd.
 
 * The proliferation of configuration files should be significantly
   reduced.  For example, cycbuff.conf, buffindexed.conf, and storage.conf
   could probably be combined; innfeed.conf, newsfeeds, and incoming.conf
   would ideally be combined; and several of the other small auxilliary
-  configuration files could be rolled into other, more general
-  configuration files.  This probably shouldn't be done until the new
-  configuration parsing infrastructure is in place.
+  files could be rolled into other, more general configuration files.
+  This probably shouldn't be done until the new configuration parsing
+  infrastructure is in place.
+
+* One would ideally not want to offer articles to a peer that that peer
+  has offered to us (even if we didn't accept them from that peer).  This
+  is really hard to do right, but even a small cache might increase feed
+  performance.
