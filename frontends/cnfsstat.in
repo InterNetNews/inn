@@ -6,7 +6,7 @@
 #  Copyright Andreas Lamrecht 1998
 #  <Andreas.Lamprect@siemens.at>
 #
-#  Modified by Kjetil T. Homme 1998
+#  Modified by Kjetil T. Homme 1998, 2000
 #  <kjetilho@ifi.uio.no>
 #
 #  Modified by Robert R. Collier 1998
@@ -16,54 +16,11 @@
 
 use vars qw($opt_l $opt_h $opt_a $opt_s);
 use Getopt::Long;
-
-# required for >32bit ints
-require 'bigint.pl';
+use Math::BigInt;
+use English;
 
 my($conffile) = "$inn::pathetc/cycbuff.conf";
-my($storagectl) = "$inn::pathetc/storage.ctl";
 my($storageconf) = "$inn::pathetc/storage.conf";
-
-# Hex to bigint conversion routine
-# bhex(HEXSTRING) returns BIGINT  (with leading + chopped off)
-#
-# In most langauge, unlimited size integers are done using string math
-# libraries usually called bigint.  (Java, Perl, etc...)
-
-# Bigint's are really just strings.
-
-# Mathematics routines for bigint's:
-
-#   bneg(BINT) return BINT              negation
-#   babs(BINT) return BINT              absolute value
-#   bcmp(BINT,BINT) return CODE         compare numbers (undef,<0,=0,>0)
-#   badd(BINT,BINT) return BINT         addition
-#   bsub(BINT,BINT) return BINT         subtraction
-#   bmul(BINT,BINT) return BINT         multiplication
-#   bdiv(BINT,BINT) return (BINT,BINT)  division (quo,rem) just quo if scalar
-#   bmod(BINT,BINT) return BINT         modulus
-#   bgcd(BINT,BINT) return BINT         greatest common divisor
-#   bnorm(BINT) return BINT             normalization
-
-sub bhex {
-    my $hexValue = shift;
-    $hexValue =~ s/^0x//;
-    
-    my $integerValue = '0';
-    for (my $i = 0; $i < length($hexValue); $i+=2) {
-        # Could be more efficient going at larger increments, but byte
-        # by byte is safer for the case of 9 byte values, 11 bytes, etc.. 
- 
-        my $byte = substr($hexValue,$i,2);
-        my $byteIntValue = hex($byte);
-
-        $integerValue = bmul($integerValue,'256');        
-        $integerValue = badd($integerValue,"$byteIntValue");
-        }
-
-    $integerValue =~ s/^\+//;
-    return $integerValue;
-    }
 
 sub usage {
     print <<_end_;
@@ -101,11 +58,11 @@ if ($opt_s) {
     eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1 };
     if ($use_syslog) {
 	if (defined &Sys::Syslog::setlogsock && $] >= 5.00403) {
-          # we really need a common module to work all this junk out
-          if ($^O eq "dec_osf") {
-            sub Sys::Syslog::_PATH_LOG { "/dev/log" }
-          }
-          Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf/;
+	    # we really need a common module to work all this junk out
+	    if ($OSNAME eq "dec_osf") {
+		sub Sys::Syslog::_PATH_LOG { "/dev/log" }
+            }
+            Sys::Syslog::setlogsock('unix') if $OSNAME =~ /linux|dec_osf/;
         }
 	openlog ('cnfsstat', 'pid', $inn::syslog_facility);
     } else {
@@ -127,119 +84,11 @@ unless (&read_cycbuffconf) {
     exit (1);
 }
 
-unless (&read_storageconf || &read_storagectl) {
-    print STDERR "No valid $storageconf or $storagectl.\n";
+unless (&read_storageconf) {
+    print STDERR "No valid $storageconf.\n";
     exit (1);
 }
 
-sub read_cycbuffconf {
-    return 0 unless open (CONFFILE, $conffile);
-
-    while(<CONFFILE>) {
-	$_ =~ s/^\s*(.*?)\s*$/$1/;
-	# Here we handle continuation lines
-	while (m/\\$/) {
-	    $contline = <CONFFILE>;
-	    $contline =~ s/^\s*(.*?)\s*$/$1/;
-	    chop;
-	    $_ .= $contline;
-	}
-	# \x23 below is #.  Emacs perl-mode gets confused by the "comment"
-	next if($_ =~ /^\s*$/ || $_ =~ /^\x23/);
-	next if($_ =~ /^cycbuffupdate:/ || $_ =~ /^refreshinterval:/);
-	
-	if($_ =~ /^metacycbuff:/) {
-	    @line = split(/:/, $_);
-	    if($class{$line[1]}) {
-		print STDERR "Class $line[1] more than one time in CycBuff Conffile $conffile ...\n";
-		return 0;
-	    }
-
-	    $class{$line[1]} = $line[2];
-	    next;
-	}
-
-	if ($_ =~ /^cycbuff/) {
-	    @line = split(/:/, $_);
-	    if($buff{$line[1]}) {
-		print STDERR "Buff $line[1] more than one time in CycBuff Conffile $conffile ...\n";
-		return 1;
-	    }
-	    $buff{$line[1]} = $line[2];
-	    next;
-	}
-
-	print STDERR "Unknown config line \"$_\" in CycBuff Conffile $conffile ...\n";
-    }
-    close(CONFFILE);
-    return 1;
-}
-
-sub read_storagectl {
-    return 0 unless open (STOR, $storagectl);
-
-    while (<STOR>) {
-	$_ =~ s/^\s*(.*?)\s*$/$1/;
-	next if $_ =~ /^\s*$/ || $_ =~ /^#/;
-
-	if ($_ =~ /^cnfs:/) {
-	    @line = split(/:/, $_);
-	    if($#line != 5) {
-		print STDERR "Wrong Storage Control Line \"$_\" in $storagectl ...\n";
-		return 0;
-	    }
-	    
-	    if($stor{$line[5]}) {
-		print STDERR "CNFS Storage Line \"$_\" more than one time in $storagectl ...\n";
-		return 0;
-	    }
-	    $stor{$line[5]} = join(":", @line[1 .. 4]);
-	    push(@storsort, $line[5]);
-	}
-    }
-    close(STOR);
-    return 1;
-}
-
-sub read_storageconf {
-    my $line = 0;
-    return 0 unless open (STOR, $storageconf);
-
-    while (<STOR>) {
-	++$line;
-	next if /^\s*#/;
-
-	# defaults
-	%key = ("NEWSGROUPS" => "*",
-		"SIZE" => "0,0");
-		
-	if (/method\s+cnfs\s+\{/) {
-	    while (<STOR>) {
-		++$line;
-		next if /^\s*#/;
-		last if /\}/;
-		if (/(\w+):\s+(\S+)/i) {
-		    $key{uc($1)} = $2;
-		}
-	    }
-	    unless (defined $key{'CLASS'} && defined $key{'OPTIONS'}) {
-		print STDERR "storage.conf:$line: ".
-			"Missing 'class' or 'options'\n";
-		return 0;
-	    }
-
-	    $key{'SIZE'} .= ",0" unless $key{'SIZE'} =~ /,/;
-	    $key{'SIZE'} =~ s/,/:/;
-	    
-	    if (!defined $stor{$key{'OPTIONS'}}) {
-		$stor{$key{'OPTIONS'}} = "$key{'NEWSGROUPS'}:$key{'CLASS'}:" .
-			"$key{'SIZE'}:$key{'OPTIONS'}";
-		push(@storsort, $key{'OPTIONS'});
-	    }
-	}
-    }
-    return 1;
-}
 
 &mrtg($obuffer) if $obuffer;
 &mrtg_config if $opt_p;
@@ -337,44 +186,114 @@ if(defined($opt_l)) {
     goto START;
 }
 
+sub read_cycbuffconf {
+    return 0 unless open (CONFFILE, $conffile);
+
+    while(<CONFFILE>) {
+	$_ =~ s/^\s*(.*?)\s*$/$1/;
+	# Here we handle continuation lines
+	while (m/\\$/) {
+	    $contline = <CONFFILE>;
+	    $contline =~ s/^\s*(.*?)\s*$/$1/;
+	    chop;
+	    $_ .= $contline;
+	}
+	# \x23 below is #.  Emacs perl-mode gets confused by the "comment"
+	next if($_ =~ /^\s*$/ || $_ =~ /^\x23/);
+	next if($_ =~ /^cycbuffupdate:/ || $_ =~ /^refreshinterval:/);
+	
+	if($_ =~ /^metacycbuff:/) {
+	    @line = split(/:/, $_);
+	    if($class{$line[1]}) {
+		print STDERR "Class $line[1] more than one time in CycBuff Conffile $conffile ...\n";
+		return 0;
+	    }
+
+	    $class{$line[1]} = $line[2];
+	    next;
+	}
+
+	if ($_ =~ /^cycbuff/) {
+	    @line = split(/:/, $_);
+	    if($buff{$line[1]}) {
+		print STDERR "Buff $line[1] more than one time in CycBuff Conffile $conffile ...\n";
+		return 1;
+	    }
+	    $buff{$line[1]} = $line[2];
+	    next;
+	}
+
+	print STDERR "Unknown config line \"$_\" in CycBuff Conffile $conffile ...\n";
+    }
+    close(CONFFILE);
+    return 1;
+}
+
+sub read_storageconf {
+    my $line = 0;
+    return 0 unless open (STOR, $storageconf);
+
+    while (<STOR>) {
+	++$line;
+	next if /^\s*#/;
+
+	# defaults
+	%key = ("NEWSGROUPS" => "*",
+		"SIZE" => "0,0");
+		
+	if (/method\s+cnfs\s+\{/) {
+	    while (<STOR>) {
+		++$line;
+		next if /^\s*#/;
+		last if /\}/;
+		if (/(\w+):\s+(\S+)/i) {
+		    $key{uc($1)} = $2;
+		}
+	    }
+	    unless (defined $key{'CLASS'} && defined $key{'OPTIONS'}) {
+		print STDERR "storage.conf:$line: ".
+			"Missing 'class' or 'options'\n";
+		return 0;
+	    }
+
+	    $key{'SIZE'} .= ",0" unless $key{'SIZE'} =~ /,/;
+	    $key{'SIZE'} =~ s/,/:/;
+	    
+	    if (!defined $stor{$key{'OPTIONS'}}) {
+		$stor{$key{'OPTIONS'}} = "$key{'NEWSGROUPS'}:$key{'CLASS'}:" .
+			"$key{'SIZE'}:$key{'OPTIONS'}";
+		push(@storsort, $key{'OPTIONS'});
+	    }
+	}
+    }
+    return 1;
+}
+
 sub print_cycbuff_head {
-    my($buffpath) = $_[0];
-    my($name,$len,$free,$update,$cyclenum,$nupdate_str,$nago_str,$oupdate_str,$oago_str) = &get_cycbuff_info($buffpath);
+    my ($buffpath) = $_[0];
+    my ($name, $len, $free, $update, $cyclenum, $oldart) =
+	    &get_cycbuff_info($buffpath);
     
     if ($use_syslog) {
 	($name) = split(/\b/, $name);
 	$name =~ s/\0//g;
-	syslog ('notice', '%s Buffer %s, len: %d  Mbytes, used: %.2f Mbytes (%4.1f%%) %3d cycles', $logline, $name, $len / (1024 * 1024), $free / (1024 * 1024), 100 * $free/$len, $cyclenum);
+	syslog ('notice', '%s Buffer %s, len: %d  Mbytes, used: %.2f Mbytes (%4.1f%%) %3d cycles',
+		$logline, $name, $len / (1024 * 1024), $free / (1024 * 1024),
+		100 * $free/$len, $cyclenum);
 	return 0;
-    } else {
-        $name =~ s/\0//g;
-	print " Buffer $name, len: ";
-	printf("%.2f", $len / (1024 * 1024));
-	print " Mbytes, used: ";
-	printf("%.2f Mbytes", $free / (1024 * 1024));
-	printf(" (%4.1f%%) %3d cycles", 100 * $free/$len, $cyclenum);
     }
-    
-    print "\n  Newest: $nupdate_str, $nago_str ago\n";
-    
+
+    $name =~ s/\0//g;
+    print " Buffer $name, size: ", &human_readable($len, 4);
+    print ", current: ", &human_readable($free, 4);
+    printf("  %.2f cycles\n", $cyclenum + $free/$len);
+    my ($when, $ago) = &make_time($update);
+    print "  Newest: $when, $ago ago\n";
+
     if ($opt_a) {
-	print "  Oldest: $oupdate_str, $oago_str ago\n";
+	my ($when, $ago) = &make_time($oldart);
+	print "  Oldest: $when, $ago ago\n";
     }
-}
-
-sub lookup_age {
-    my ($msgid) = @_;
-
-    # This isn't really sufficient; we should use a safe fork.
-    $msgid =~ s/\\/\\\\/;
-    $msgid =~ s/\'/\'\\\'\'/;
-
-    my $history = `$inn::pathbin/grephistory -l '$msgid' 2>&1`;
-    if ($history =~ /\t(\d+)~/) {
-	return $1;
-    }
-    print "  (Missing $msgid)\n";
-    return 0;
 }
 
 sub make_time {
@@ -394,6 +313,27 @@ sub make_time {
     push (@ret, sprintf("%4d days, %2d:%02d:%02d",
 			$mday, $hour, $min, $t));
     return @ret;
+}
+
+sub human_readable {
+    my ($val, $digits) = @_;
+
+    my @name = ("kBytes", "MBytes", "GBytes", "TBytes");
+    my $base = 1024;
+    my $factor = 1024;
+
+    my $unit = $#name;
+    my $scaled = $val / $base / $factor**$unit;
+    while ($scaled < 1 && $unit) {
+	$scaled *= $factor;
+	$unit--;
+    }
+    my $predigits = int(log($scaled) / log(10));
+    $predigits = 0 if $predigits < 0;
+    my $postdigits = $digits - $predigits - 1;
+    ++$digits;
+
+    return sprintf ("%${digits}.${postdigits}f %s", $scaled, $name[$unit]);
 }
 
 sub mrtg {
@@ -458,7 +398,8 @@ sub get_cycbuff_info {
 	exit(1);
     }
     
-    ($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma)  = unpack("a8 a16 a64 a16 a16 a16 a16", $buff);
+    ($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma) =
+	    unpack("a8 a16 a64 a16 a16 a16 a16", $buff);
     
     if(!$magic) {
 	print STDERR "Error while unpacking header ...\n";
@@ -471,53 +412,104 @@ sub get_cycbuff_info {
     my($cyclenum) = hex($cyclenuma) - 1;
     
     if ($opt_a) {
-	
-	# The 16384 is a fuzz factor.  New articles are actually
-	# written a little past free.
-	
-	$offset = 0;
-	$minartoffset = int($len / (512 * 8)) + 512;
-	$tonextblock = 16384 - ($minartoffset & (16384 - 1));
-	$minartoffset += $tonextblock;
-  do_seek:
-	while (!($cyclenum == 0 && $free == $minartoffset)) {
-	    $offset += 16384;
-	    seek (BUFF, $cyclenum ? $free + $offset : 0, 0);
 
-	    $num_tries = 0;
-	    while (<BUFF>) {
-		next unless /^message-id:\s+(<.*>)/i;
-		$num_tries++;
-		
-		# We give up if the article is missing in history, or else
-		# we stand a high risk of checking the whole cycbuff...
-		
-		$time = &lookup_age ($1);
- 		if (!$time) {
-		    if ($num_tries > 10) {
-			$oupdate_str = "beats me";
-			$oago_str = "who knows how long";
-			last do_seek; # give up
-		    } else {
-			next;	# try again
-		    }
-		}
-
-		# Is the article newer than the last update?
-		if ($time >= $update) {
-		    $update = $time;
-		    next do_seek;
-		}
-	  
-		($oupdate_str, $oago_str) = &make_time ($time);
-		last do_seek;
-	    }
+	my $pagesize = 16384;
+	my $minartoffset = int($len / (512 * 8)) + 512;
+	# Align upwards:
+	$minartoffset = ($minartoffset + $pagesize) & ~($pagesize - 1);
+	
+	if ($cyclenum == 0 && $free == $minartoffset) {
+	    # The cycbuff has no articles yet.
+	    goto done;
 	}
-    }
-    
-    my ($nupdate_str, $nago_str) = &make_time ($update);
 
+	# Don't loop endlessly, set rough upper bound
+	my $sentinel = $cyclenum == 0 ? $free : $len;
+	my $offset = $cyclenum == 0 ? $minartoffset : $free + $pagesize;
+
+	seek (BUFF, $offset, 0) || die "seek: $!\n";
+	sysread (BUFF, $buff, $pagesize)
+		|| die "read: $!\n";
+	do {
+	    sysread (BUFF, $chunk, $pagesize) || die "read: $!\n";
+	    
+	    $buff .= $chunk;
+	    while ($buff =~ /^message-id:\s+(<.*?>)/mi) {
+		$buff = $POSTMATCH;
+		$oldart = &lookup_age ($1);
+		next unless $oldart;
+		
+		# Is the article newer than the last update?
+		if ($oldart >= $update) {
+		    $update = $oldart;
+		} elsif ($oldart < $update - 60) {
+		    goto done;
+		}
+	    }
+	    # Just in case we chopped Message-ID in two, use the end
+	    # at the front in next iteration.
+	    $buff = substr ($buff, -512);
+
+	} while ($sentinel -= $pagesize > 0);
+    }
+
+done:    
     close(BUFF);
-    return($name,$len,$free,$update,$cyclenum,$nupdate_str,$nago_str,$oupdate_str,$oago_str);
+    return($name,$len,$free,$update,$cyclenum,$oldart);
 }
 
+sub lookup_age {
+    my ($msgid) = @_;
+
+    my $history = &safe_run("grephistory", "-l", $msgid);
+    if ($history =~ /\t(\d+)~/) {
+	return $1;
+    }
+    print "  (Missing $msgid)\n";
+    return 0;
+}
+
+sub safe_run {
+    my $output = "";
+
+    my $pid = open(KID_TO_READ, "-|");
+    die "fork: $!\n" unless defined $pid;
+    if ($pid) {
+	while (<KID_TO_READ>) {
+	    $output .= $_;
+	}
+	close(KID_TO_READ);
+    } else {
+	exec(@_) || die "can't exec $_[0]: $!";
+	# NOTREACHED
+    }
+    return $output;
+}
+
+# Hex to bigint conversion routine
+# bhex(HEXSTRING) returns BIGINT  (with leading + chopped off)
+#
+# In most languages, unlimited size integers are done using string math
+# libraries usually called bigint.  (Java, Perl, etc...)
+
+# Bigint's are really just strings.
+
+sub bhex {
+    my $hexValue = shift;
+    $hexValue =~ s/^0x//;
+    
+    my $integerValue = new Math::BigInt '0';
+    for (my $i = 0; $i < length($hexValue); $i += 2) {
+        # Could be more efficient going at larger increments, but byte
+        # by byte is safer for the case of 9 byte values, 11 bytes, etc.. 
+ 
+        my $byte = substr($hexValue, $i, 2);
+        my $byteIntValue = hex($byte);
+
+        $integerValue = $integerValue * "256";
+        $integerValue = $integerValue + "$byteIntValue";
+    }
+
+    $integerValue =~ s/^\+//;
+    return $integerValue;
+}
