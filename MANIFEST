@@ -235,7 +235,7 @@ frontends/rnews.c                     UUCP unbatcher
 frontends/scanspool.in                Scan spool directory for trash
 frontends/signcontrol.in              PGP control message signing program
 frontends/sm.c                        Get article or overview data from token
-frontends/sys2nf.c                    Sys file to newsfeeds conversion aide
+frontends/sys2nf.c                    Sys file to newsfeeds conversion aid
 include                               Header files (Directory)
 include/acconfig.h                    Master file for config.h.in
 include/clibrary.h                    C library portability
