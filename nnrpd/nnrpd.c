@@ -695,8 +695,11 @@ main(argc, argv, env)
     int			lfd, fd;
     ARGTYPE		clen;
     struct sockaddr_in	ssa, csa;
+    struct stat		Sb;
     PID_T		pid = -1;
-   
+    GID_T               NewsGID;
+    UID_T               NewsUID;
+    int                 one = 1;
 
 #if	!defined(HPUX)
     /* Save start and extent of argv for TITLEset. */
@@ -768,7 +771,12 @@ main(argc, argv, env)
 	    syslog(L_FATAL, "can't open socket (%m)");
 	    exit(1);
 	}
-	    
+
+	if (setsockopt(lfd,SOL_SOCKET,SO_REUSEADDR,&one,sizeof(one)) < 0) {
+	    syslog(L_FATAL, "can't set socket options (%m)");
+	    exit(1);
+	}
+
 	ssa.sin_family = AF_INET;
 	ssa.sin_addr.s_addr = ListenAddr;
 	ssa.sin_port = htons(ListenPort);
@@ -777,6 +785,22 @@ main(argc, argv, env)
 	    fprintf(stderr, "%s: can't bind (%s)\n", argv[0], strerror(errno));
 	    syslog(L_FATAL, "can't bind local address (%m)");
 	    exit(1);
+	}
+
+	/* If started as root, switch to news uid */
+	if (getuid() == 0) {
+	    if (stat(innconf->pathrun, &Sb) < 0 || !S_ISDIR(Sb.st_mode)) {
+		syslog(L_FATAL, "nnrpd cant stat %s %m", innconf->pathrun);
+		exit(1);
+	    }
+	    NewsUID = Sb.st_uid;
+	    NewsGID = Sb.st_gid;
+	    (void)setgid(NewsGID);
+	    if (getgid() != NewsGID)
+		syslog(L_ERROR, "nnrpd cant setgid to %d %m", NewsGID);
+	    (void)setuid(NewsUID);
+	    if (getuid() != NewsUID)
+		syslog(L_ERROR, "nnrpd cant setuid to %d %m", NewsUID);
 	}
 
 	/* Detach */
