@@ -105,6 +105,7 @@ do
 	;;
     Xlowmark)
 	LOWMARKFILE=${MOST_LOGS}/expire.lowmark
+	DORENUMBER=false
  	;;
     Xnotdaily)
         DAILY=false
@@ -181,11 +182,6 @@ then
 	echo "news.daily: cannot do expireover (expireindex) without expire">&2
 	exit 1
     fi
-    if ${DOEXPIREOVER} && [ -z "$RMFILE" ]
-    then
-	echo "news.daily: cannot do expireover (expireindex) without delayrm">&2
-	exit 1
-    fi
 fi
 
 test -n "${EXPDIR}" && {
@@ -193,14 +189,18 @@ test -n "${EXPDIR}" && {
 	EXPIREFLAGS="${EXPIREFLAGS} '-d${EXPDIR}' '-r${REASON}'"
 }
 
-test -n "${RMFILE}" && {
-    if [ X${SAPI} = X"true" ]; then
+if [ X${SAPI} = X"true" ]; then
+    test -n "${RMFILE}" && {
 	EXPIREFLAGS="${EXPIREFLAGS} -u${INDEXFILE} -z${RMFILE}"
+    }
+    ${DOEXPIREOVER} && {
 	EXPIREOVERFLAGS="${EXPIREOVERFLAGS} -z ${INDEXFILE}"
-    else
+    }
+else
+    test -n "${RMFILE}" && {
 	EXPIREFLAGS="${EXPIREFLAGS} -z${RMFILE}"
-    fi
-}
+    }
+fi
 
 test -n "${LOWMARKFILE}" && {
     EXPIREFLAGS="${EXPIREFLAGS} -Z${LOWMARKFILE}"
