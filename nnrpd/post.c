@@ -17,6 +17,7 @@
 #define FLUSH_ERROR(F)		(fflush((F)) == EOF || ferror((F)))
 #define HEADER_DELTA		20
 
+STATIC char     *tmpPtr ;
 STATIC char	Error[SMBUF];
 STATIC char	NGSEPS[] = NG_SEPARATOR;
 STATIC char	**OtherHeaders;
@@ -89,6 +90,60 @@ HEADER *EndOfTable = ENDOF(Table);
 
 
 
+/* Join() and MaxLength() are taken from innd.c */
+/*
+**  Turn any \r or \n in text into spaces.  Used to splice back multi-line
+**  headers into a single line.
+*/
+STATIC char *
+Join(text)
+    register char	*text;
+{
+    register char	*p;
+
+    for (p = text; *p; p++)
+	if (*p == '\n' || *p == '\r')
+	    *p = ' ';
+    return text;
+}
+
+/*
+**  Return a short name that won't overrun our bufer or syslog's buffer.
+**  q should either be p, or point into p where the "interesting" part is.
+*/
+char *
+MaxLength(p, q)
+    char		*p;
+    char		*q;
+{
+    static char		buff[80];
+    register int	i;
+
+    /* Already short enough? */
+    i = strlen(p);
+    if (i < sizeof buff - 1)
+	return Join(p);
+
+    /* Simple case of just want the begining? */
+    if (q - p < sizeof buff - 4) {
+	(void)strncpy(buff, p, sizeof buff - 4);
+	(void)strcpy(&buff[sizeof buff - 4], "...");
+    }
+    /* Is getting last 10 characters good enough? */
+    else if ((p + i) - q < 10) {
+	(void)strncpy(buff, p, sizeof buff - 14);
+	(void)strcpy(&buff[sizeof buff - 14], "...");
+	(void)strcpy(&buff[sizeof buff - 11], &p[i - 10]);
+    }
+    else {
+	/* Not in last 10 bytes, so use double elipses. */
+	(void)strncpy(buff, p, sizeof buff - 17);
+	(void)strcpy(&buff[sizeof buff - 17], "...");
+	(void)strncpy(&buff[sizeof buff - 14], &q[-5], 10);
+	(void)strcpy(&buff[sizeof buff - 4], "...");
+    }
+    return Join(buff);
+}
 /*
 **  Trim trailing spaces, return pointer to first non-space char.
 */
@@ -219,7 +274,7 @@ CheckControl(ctrl)
 	;
     else {
 	(void)sprintf(Error, "\"%s\" is not a valid control message",
-		ctrl);
+		MaxLength(ctrl,ctrl));
 	return Error;
     }
     *p = save;
@@ -242,7 +297,7 @@ CheckDistribution(p)
     do {
 	for (dp = BadDistribs; *dp; dp++)
 	    if (wildmat(p, *dp)) {
-		(void)sprintf(Error, "Illegal distribution \"%s\"", p);
+		(void)sprintf(Error, "Illegal distribution \"%s\"", MaxLength(p,p));
 		return Error;
 	    }
     } while ((p = strtok((char *)NULL, SEPS)) != NULL);
@@ -620,7 +675,8 @@ ValidNewsgroups(hdr, article)
 	case NF_FLAG_MODERATED:
 	    if (!approved) {
 		DISPOSE(groups);
-		DISPOSE(DDend(h));
+		tmpPtr = DDend(h);
+		DISPOSE(tmpPtr);
 		return MailArticle(GPNAME(gp), article);
 	    }
 	    break;
@@ -649,9 +705,10 @@ ValidNewsgroups(hdr, article)
     DISPOSE(groups);
 
     if (!FoundOne && !IsNewgroup)
-	(void)sprintf(Error, "No valid newsgroups in \"%s\"", hdr);
+	(void)sprintf(Error, "No valid newsgroups in \"%s\"", MaxLength(hdr,hdr));
     if (Error[0]) {
-	DISPOSE(DDend(h));
+        tmpPtr = DDend(h);
+	DISPOSE(tmpPtr) ;
 	return Error;
     }
 
@@ -823,7 +880,8 @@ ARTpost(article, idbuff)
     if (idbuff != NULL)
       idbuff [0] = '\0' ;
     
-    strcpy(frombuf, HDR(_from));
+    strncpy(frombuf, HDR(_from), sizeof(frombuf) - 1);
+    frombuf[sizeof(frombuf) - 1] = '\0';
     HeaderCleanFrom(frombuf);
     p = strchr(frombuf, '@');
     if (p) {
@@ -935,7 +993,9 @@ ARTpost(article, idbuff)
 
     /* Send a quit and close down */
     SendQuit(FromServer, ToServer);
-    if (idbuff)
-	(void)strcpy(idbuff, HDR(_messageid));
+    if (idbuff) {
+	(void)strncpy(idbuff, HDR(_messageid), SMBUF - 1);
+	idbuff[SMBUF - 1] = '\0';
+    }
     return NULL;
 }

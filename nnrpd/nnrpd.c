@@ -446,7 +446,8 @@ StartConnection(accesslist)
 	(void)strncpy(ClientIp, inet_ntoa(sin.sin_addr), sizeof(ClientIp));
     }
 
-    strncpy (LogName,ClientHost,sizeof(LogName)-1) ;
+    strncpy (LogName,ClientHost,sizeof(LogName) - 1) ;
+    LogName[sizeof(LogName) - 1] = '\0';
 
     syslog(L_NOTICE, "%s connect", ClientHost);
     if (!PERMinfile(ClientHost, ClientAddr, (char *)NULL, (char *)NULL,

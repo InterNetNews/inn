@@ -209,6 +209,13 @@ CMDnewnews(ac, av)
 	    (ac >= 5 && *av[ac - 1] == '<') ? av[ac - 1] : "none");
     syslog(L_NOTICE, "%s newnews %s", ClientHost, line);
 
+    /* Optimization in case client asks for !* (no groups) */
+    if (EQ(av[1], "!*")) {
+	Reply("%s\r\n", NNTP_NEWNEWSOK);
+	Printf(".\r\n");
+	return;
+    }
+
     /* Parse the newsgroups. */
     AllGroups = EQ(av[1], "*");
     if (!AllGroups && !NGgetlist(&groups, av[1])) {
@@ -240,13 +247,6 @@ CMDnewnews(ac, av)
 	    return;
 	}
 	AllDists = FALSE;
-    }
-
-    /* Optimization in case client asks for !* (no groups) */
-    if (!strcmp(groups[0], "!*")) {
-	Reply("%s\r\n", NNTP_NEWNEWSOK);
-	Printf(".\r\n");
-	return;
     }
 
     if ((F = fopen(HISTORY, "r")) == NULL) {

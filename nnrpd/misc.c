@@ -196,6 +196,9 @@ NNTPtoGMT(av1, av2)
     else if (hour < 0 || hour > 23)
 	return -1;
 
+    if (year < 50)
+      year += 100 ;
+    
     for (seconds = 0, year += 1900, i = 1970; i < year; i++)
 	seconds += DaysInYear(i);
     if (DaysInYear(year) == 366 && month > 2)
@@ -243,9 +246,8 @@ HISgetent(msg_id, fulldata)
     register int	i;
     char		*save;
     char		buff[BIG_BUFFER];
-    OFFSET_T		l;
-    datum		key;
-    datum		value;
+    HASH		key;
+    OFFSET_T		offset;
     struct stat		Sb;
 
     if (!setup) {
@@ -257,15 +259,9 @@ HISgetent(msg_id, fulldata)
     }
 
     /* Set the key value, fetch the entry. */
-    for (p = key.dptr = msg_id; *p; p++)
-	if (*p == HIS_FIELDSEP || *p == '\n')
-	    *p = HIS_BADCHAR;
-    key.dsize = p - key.dptr + 1;
-    value = dbzfetch(key);
-    if (value.dptr == NULL)
+    key = HashMessageID(msg_id);
+    if ((offset = dbzfetch(key)) < 0)
 	return NULL;
-    for (q = (char *)&l, p = value.dptr, i = sizeof l; --i >= 0; )
-	*q++ = *p++;
 
     /* Open history file if we need to. */
     if (hfp == NULL) {
@@ -277,12 +273,12 @@ HISgetent(msg_id, fulldata)
     }
 
     /* Seek and read. */
-    if (fseek(hfp, l, SEEK_SET) == -1) {
-	syslog(L_ERROR, "%s cant fseek to %ld %m", ClientHost, l);
+    if (fseek(hfp, offset, SEEK_SET) == -1) {
+	syslog(L_ERROR, "%s cant fseek to %ld %m", ClientHost, offset);
 	return NULL;
     }
     if (fgets(buff, sizeof buff, hfp) == NULL) {
-	syslog(L_ERROR, "%s cant fgets from %ld %m", ClientHost, l);
+	syslog(L_ERROR, "%s cant fgets from %ld %m", ClientHost, offset);
 	return NULL;
     }
     if ((p = strchr(buff, '\n')) != NULL)
@@ -290,7 +286,7 @@ HISgetent(msg_id, fulldata)
 
     /* Skip first two fields. */
     if ((p = strchr(buff, '\t')) == NULL) {
-	syslog(L_ERROR, "%s bad_history at %ld for %s", ClientHost, l, msg_id);
+	syslog(L_ERROR, "%s bad_history at %ld for %s", ClientHost, offset, msg_id);
 	return NULL;
     }
     if ((p = strchr(p + 1, '\t')) == NULL)

@@ -712,7 +712,7 @@ CMDfetch(ac, av)
         Reply("%s\r\n", ARTnoartingroup);
 	return;
     }
-    Reply("%d %s %s %s\r\n", what->ReplyCode, buff, GetHeader("Message-ID", FALSE), what->Item); 
+    Reply("%d %s %.512s %s\r\n", what->ReplyCode, buff, msgid, what->Item); 
     if (what->Type != STstat)
 	ARTsend(what->Type);
     if (ac > 1)
