@@ -10,11 +10,11 @@ CFLAGS	= $(GCFLAGS) -I.
 ##  list.  If they need other things compiled, those other things should be
 ##  added to EXTRA.
 
-TESTS	= lib/buffer.t lib/concat.t lib/confparse.t lib/date.t lib/hashtab.t \
-	lib/hstrerror.t lib/inet_aton.t lib/inet_ntoa.t lib/md5.t \
-	lib/memcmp.t lib/messages.t lib/mkstemp.t lib/pread.t lib/pwrite.t \
-	lib/qio.t lib/snprintf.t lib/strerror.t lib/strlcat.t lib/strlcpy.t \
-	lib/uwildmat.t lib/vector.t lib/wire.t lib/xwrite.t \
+TESTS	= lib/buffer.t lib/concat.t lib/confparse.t lib/date.t lib/hash.t \
+	lib/hashtab.t lib/hstrerror.t lib/inet_aton.t lib/inet_ntoa.t \
+	lib/md5.t lib/memcmp.t lib/messages.t lib/mkstemp.t lib/pread.t \
+	lib/pwrite.t lib/qio.t lib/snprintf.t lib/strerror.t lib/strlcat.t \
+	lib/strlcpy.t lib/uwildmat.t lib/vector.t lib/wire.t lib/xwrite.t \
 	overview/tradindexed.t
 
 ##  Extra stuff that needs to be built before tests can be run.
@@ -54,6 +54,9 @@ lib/confparse.t: lib/confparse-t.o libtest.o $(LIBINN)
 
 lib/date.t: lib/date-t.o libtest.o $(LIBINN)
 	$(LINK) lib/date-t.o libtest.o $(LIBINN)
+
+lib/hash.t: lib/hash-t.o libtest.o $(LIBINN)
+	$(LINK) lib/hash-t.o libtest.o $(LIBINN)
 
 lib/hashtab.t: lib/hashtab-t.o libtest.o $(LIBINN)
 	$(LINK) lib/hashtab-t.o libtest.o $(LIBINN)
