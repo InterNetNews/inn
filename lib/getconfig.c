@@ -954,6 +954,7 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_NOREADER, bit);
 		if (!bit && boolval != -1) innconf->noreader = boolval;
 		SET_CONFIG(CONF_VAR_NOREADER);
+	    } else
 	    if (EQ(ConfigBuff,_CONF_SOURCEADDRESS)) {
 		TEST_CONFIG(CONF_VAR_SOURCEADDRESS, bit);
 		if (!bit) {
