@@ -20,6 +20,7 @@ install:	$D$(PATHBIN)/convdate $D$(PATHBIN)/expire \
 
 clobber clean:
 	rm -f *.o $(ALL)
+	rm -rf .libs
 	rm -f expirep expireoverp profiled
 	rm -f all install 
 
@@ -27,37 +28,37 @@ tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../lib/*.c ../include/*.h
 
 convdate:	$(P) convdate.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ convdate.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ convdate.o $(LIBNEWS) $(LIBS)
 
 expire:		$(P) expire.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ expire.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ expire.o $(LIBNEWS) $(LIBS)
 
 expireover:	$(P) expireover.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ expireover.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ expireover.o $(LIBNEWS) $(LIBS)
 
 expireindex:	$(P) expireindex.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ expireindex.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ expireindex.o $(LIBNEWS) $(LIBS)
 
 fastrm:	$(P) fastrm.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ fastrm.o $(LIBNEWS) $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ fastrm.o $(LIBNEWS) $(LIBNEWS) $(LIBS)
 
 grephistory:	$(P) grephistory.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ grephistory.o $(LIBNEWS) $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ grephistory.o $(LIBNEWS) $(LIBNEWS) $(LIBS)
 
 makeactive:	$(P) makeactive.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ makeactive.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ makeactive.o $(LIBNEWS) $(LIBS)
 
 makehistory:	$(P) makehistory.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ makehistory.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ makehistory.o $(LIBNEWS) $(LIBS)
 
 newsrequeue:	$(P) newsrequeue.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ newsrequeue.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ newsrequeue.o $(LIBNEWS) $(LIBS)
 
 prunehistory:	$(P) prunehistory.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ prunehistory.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ prunehistory.o $(LIBNEWS) $(LIBS)
 
 $(LIBNEWS):
-	(cd ../lib ; $(MAKE) install)
+	(cd ../lib ; $(MAKE) )
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
 profiled:	expirep expireoverp
@@ -84,25 +85,25 @@ expireoverp:	expireover.c
 
 ##  Low-level install actions.
 $D$(PATHBIN)/convdate:		convdate
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
 $D$(PATHBIN)/expire:		expire
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
 $D$(PATHBIN)/expireover:		expireover
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
 $D$(PATHBIN)/expireindex:		expireindex
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
 $D$(PATHBIN)/fastrm:		fastrm
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
 $D$(PATHBIN)/grephistory:	grephistory
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
 $D$(PATHBIN)/makeactive:	makeactive
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
 $D$(PATHBIN)/makehistory:	makehistory
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
 $D$(PATHBIN)/newsrequeue:	newsrequeue
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
 $D$(PATHBIN)/prunehistory:	prunehistory
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES)
