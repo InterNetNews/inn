@@ -62,13 +62,25 @@ Before You Begin
       to use gcc instead (note that gcc has some known problems compiling
       calls to inet_ntoa() on IRIX platforms).
 
-    * INN requires at least Perl 5.003 to build and to run several
-      subsystems, and requires at least 5.004 for embedded Perl filters to
-      work.  All versions of Perl previous to 5.004 are buggy (including
-      security problems) and INN is tested primarily with newer versions of
-      Perl, so it's highly recommended that you install the latest stable
+    * INN requires at least Perl 5.004_03 to build and to run several
+      subsystems.  INN is tested primarily with newer versions of Perl, so
+      it's generally recommended that you install the latest stable
       distribution of Perl before compiling INN.  For instructions on
-      obtaining and installing Perl, see <http://www.perl.com/latest/>.
+      obtaining and installing Perl, see
+      <http://www.perl.com/pub/language/info/software.html>.
+
+      If you're using a version of Perl prior to 5.6.0, you may need to make
+      sure that the Perl versions of your system header files have been
+      generated in order for Sys::Syslog to work properly (used by various
+      utility programs, including controlchan).  To do this, run the
+      following two commands:
+
+          # cd /usr/include
+          # h2ph * sys/*
+
+      An even better approach is to install Perl 5.6.1 or later, which have
+      a fixed version of Sys::Syslog that doesn't require this (as well as
+      many other improvements over earlier versions of Perl).
 
     * The INN Makefiles use the syntax "include FILE", rather than the
       syntax expected by some BSDish systems of ".include <FILE>".  If your
@@ -83,8 +95,7 @@ Before You Begin
       it's actively developed, supports OpenPGP, is freely available and
       free to use for any purpose (including in the US), and (as of version
       1.0.4 at least) supports RSA signatures used by most current control
-      message senders.  You need to install both GnuPG and pgpgpg from
-      <http://www.gnupg.org/>; a link for pgpgpg is under "Front ends."
+      message senders.
 
       Alternately, you can install PGP from <http://www.pgp.com/> or one of
       the international versions of it.  Be warned, however, that the
@@ -226,12 +237,11 @@ Installing INN
     --with-perl
         Enables support for embedded Perl, allowing you to install filter
         scripts written in Perl.  Highly recommended, because many really
-        good spam filters are written in Perl.  You will need Perl 5.004 or
-        later installed on your system to use this option (otherwise, INN
-        will not compile).  See doc/hook-perl for all the details.
+        good spam filters are written in Perl.  See doc/hook-perl for all
+        the details.
 
-        Even if you do not use this option, INN still requires Perl to build
-        (but an earlier version may suffice).
+        Even if you do not use this option, INN still requires Perl to
+        build.
 
     --with-python
         Enables support for Python, allowing you to install filter and
@@ -630,23 +640,6 @@ Configuring INN
         kernel) to increase it.  See the File Descriptor Limits entry
         elsewhere in this document for complete details.
 
-    usecontrolchan
-        If set to true, all control messages except for cancels will be
-        ignored by innd so that they can be processed by an external program
-        (controlchan).  This is *highly* recommended, since controlchan will
-        serialize control message processing and prevent your system load
-        from exploding when you get a flood of control messages.  The only
-        reason why it isn't enabled by default is that it requires you to
-        set up a special feed in newsfeeds (see below) and requires you to
-        run:
-
-            # cd /usr/include
-            # h2ph * sys/*
-
-        if you're using a version of Perl prior to 5.6.0 so that the
-        Sys::Syslog Perl module works correctly.  (Otherwise, controlchan
-        will log messages to errlog, which probably isn't what you want.)
-
     There are tons of other possible settings; you may want to read through
     inn.conf(5) to get a feel for your options.  Don't worry if you don't
     understand the purpose of most of them right now.  Some of the settings
@@ -811,17 +804,17 @@ Configuring INN
     innfeed directory.  For more information on IMAP in general, look at RFC
     2060.
 
-    Finally, if you set usecontrolchan to "true" in inn.conf, you need to
-    set up an entry for the controlchan program.  This entry should look
-    like:
+    Finally, there is a special entry for controlchan for processing
+    newsgroup control messages that should always be in newsfeeds unless you
+    never want to honor any newsgroup control messages.  This entry should
+    look like:
 
         controlchan!\
             :!*,control,control.*,!control.cancel\
             :Tc,Wnsm:/usr/local/news/bin/controlchan
 
     (modified for the actual path to controlchan if you put it somewhere
-    else).  You should be able to just uncomment the example entry in the
-    sample newsfeeds file, making sure the path is correct.
+    else).
 
     For those of you upgrading from earlier versions of INN, note that the
     functionality of overchan and crosspost is now incorporated into INN and
