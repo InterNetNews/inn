@@ -114,7 +114,7 @@ DB_LIBS		= @DB_LIBS@ @ZLIB_LIBS@
 LIBINN		= $(abs_builddir)/lib/libinn$(LIBSUFFIX).$(EXTLIB)
 LIBHIST		= $(abs_builddir)/history/libinnhist$(LIBSUFFIX).$(EXTLIB)
 LIBSTORAGE	= $(abs_builddir)/storage/libstorage$(LIBSUFFIX).$(EXTLIB)
-STORAGE_LIBS	= @DB_LDFLAGS@ @DB_LIBS@
+STORAGE_LIBS	= $(DB_LDFLAGS) $(DB_LIBS)
 
 CRYPT_LIBS	= @CRYPT_LIBS@
 DBM_LIBS	= @DBM_LIBS@
