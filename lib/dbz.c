@@ -168,15 +168,19 @@ static OFFSET_T tagboth;		/* tagbits|taghere */
 #define PACKED __attribute__ ((packed))
 #endif
 
-#if defined(__SUNPRO_C) || defined(_nec_ews)
+#if defined(__SUNPRO_C) || defined(_nec_ews) || defined (sgi)
+#if !defined(lint) && defined(__SUNPRO_C)
 #pragma pack(1)
+#endif /* nor lint, nor sgi, nor _nec_ews */
 typedef struct {
     char               hash[DBZ_INTERNAL_HASH_SIZE];
 } erec;
 typedef struct {
     unsigned long      offset;
 } idxrec;
+#if !defined(lint) && defined(__SUNPRO_C)
 #pragma pack()
+#endif /* nor lint, nor sgi, nor _nec_ews */
 #else
 typedef struct {
     char               hash[DBZ_INTERNAL_HASH_SIZE];
@@ -1117,7 +1121,7 @@ DBZSTORE_RESULT dbzstore(const HASH key, const OFFSET_T data) {
     DEBUG(("store: used count %ld\n", conf.used[0]));
     dirty = 1;
     if (!set_pag(&srch, value))
-        return DBZSTORE_ERROR;
+	return DBZSTORE_ERROR;
     return DBZSTORE_OK;
 #else	/* DO_TAGGED_HASH */
 
@@ -1142,7 +1146,7 @@ DBZSTORE_RESULT dbzstore(const HASH key, const OFFSET_T data) {
     if (!set(&srch, &idxtab, &ivalue))
 	return DBZSTORE_ERROR;
     if (!set(&srch, &etab, &evalue))
-        return DBZSTORE_ERROR;
+	return DBZSTORE_ERROR;
     return DBZSTORE_OK;
 #endif	/* DO_TAGGED_HASH */
 }
@@ -1300,7 +1304,7 @@ static BOOL getcore(hash_table *tab) {
 	    DEBUG(("getcore: mmap failed\n"));
 	    return FALSE;
 	}
-#if defined (MADV_RANDOM)
+#if defined (MADV_RANDOM) && !defined(_nec_ews)
 	/* not present in all versions of mmap() */
 	madvise(it, (size_t)conf.tsize * sizeof(tab->reclen), MADV_RANDOM);
 #endif
