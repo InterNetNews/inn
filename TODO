@@ -326,6 +326,8 @@ Needed Bug Fixes
   innfeed generates.  It should ideally generate some summary, or at least
   note that some error has occurred and the logs should be examined.
 
+* Someone should go through the BUGS sections of all of the manpages and
+  fix those for which the current behavior is unacceptable.
 
 Requested New Features
 
