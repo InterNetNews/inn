@@ -3,6 +3,7 @@
 **  Expire overview database.
 */
 #include <stdio.h>
+#include <errno.h>
 #include "configdata.h"
 #include "clibrary.h"
 #include "qio.h"
@@ -25,8 +26,12 @@ int main(int argc, char *argv[]) {
     char			*line;
     char			*p;
     BOOL                RebuildData = FALSE;
+    int				lo;
+    FILE			*F;
+    BOOL			LowmarkFile;
+    char			*lofile;
 
-    while ((i = getopt(argc, argv, "df:")) != EOF) {
+    while ((i = getopt(argc, argv, "df:Z:")) != EOF) {
 	switch (i) {
 	case 'f':	    
 	    strcpy(activefn, optarg);
@@ -34,20 +39,36 @@ int main(int argc, char *argv[]) {
 	case 'd':
 	    RebuildData = TRUE;
 		break;
+	case 'Z':
+	    LowmarkFile = TRUE;
+	    lofile = COPY(optarg);
+		break;
 	default:
 	    usage();
 	    }
     }
 
     if (ReadInnConf() < 0) exit(1);
+
+    if (LowmarkFile) {
+	if (unlink(lofile) < 0 && errno != ENOENT)
+	    (void)fprintf(stderr, "Warning: expireover can't remove %s, %s\n",
+		    lofile, strerror(errno));
+	if ((F = fopen(lofile, "a")) == NULL) {
+	    (void)fprintf(stderr, "expireover: can't open %s, %s\n",
+		    lofile, strerror(errno));
+	    exit(1);
+	}
+    }
+
     i = 1;
     if (SMsetup(SM_PREOPEN, (void *)&i) && !SMinit()) {
-	fprintf(stderr, "cant initialize storage method, %s",SMerrorstr);
+	fprintf(stderr, "expireover: cant initialize storage method, %s",SMerrorstr);
 	exit(1);
 	}
 
     if (!OV3open(1, OV3_READ | OV3_WRITE)) {
-	fprintf(stderr, "Could not open OV3 database\n");
+	fprintf(stderr, "expireover: could not open OV3 database\n");
 	exit(1);
     }
 
@@ -57,7 +78,8 @@ int main(int argc, char *argv[]) {
 	qp = QIOfdopen(fileno(stdin));
     } else {
 	if ((qp = QIOopen(activefn)) == NULL) {
-	    fprintf(stderr, "Could not open active file (%s)\n", activefn);
+	    fprintf(stderr, "expireover: could not open active file (%s)\n", activefn);
+		OV3close();
 		exit(1);
 	    }
 	}
@@ -66,19 +88,26 @@ int main(int argc, char *argv[]) {
 	if ((p = strchr(line, ' ')) != NULL)
 	    *p = '\0';
 	if ((p = strchr(line, '\t')) != NULL)
-	*p = '\0';
+	    *p = '\0';
 
 	if (RebuildData) {
 	    if (!OV3rebuilddatafromindex(line)) {
-		fprintf(stderr, "Could not rebuld data for %s\n", line);
-		}
-	            continue;
+		fprintf(stderr, "expireover: could not rebuld data for %s\n", line);
+	    }
+	    continue;
 	}
-	if (!OV3expiregroup(line)) {
-	    fprintf(stderr, "Could not expire %s\n", line);
-    }
+	if (OV3expiregroup(line, &lo)) {
+	    if (LowmarkFile) {
+		(void)fprintf(F, "%s %u\n", line, lo);
+	    }
+	} else {
+	    fprintf(stderr, "expireover: could not expire %s\n", line);
+	}
     }
 
     OV3close();
+    if (LowmarkFile && (fclose(F) == EOF)) {
+	(void)fprintf(stderr, "expireover: can't close %s, %s\n", lofile, strerror(errno));
+    }
     return 0;
 }
