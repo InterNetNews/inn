@@ -1,18 +1,18 @@
-=head1 Welcome to INN 2.4!
+=head1 Welcome to INN 2.5!
 
 Please read this document thoroughly before trying to install INN.  You'll
 be glad you did.
 
-If you are upgrading from a previous major release of INN, it is
+If you are upgrading from a major release of INN prior to 2.3, it is
 recommended that you make copies of your old configuration files and use
-them as guides for doing a clean installation and configuration of 2.4.
+them as guides for doing a clean installation and configuration of 2.5.
 Many config files have changed, some have been added, and some have been
 removed.  You'll find it much easier to start with a fresh install than to
 try to update your old installation.  This is particularly true if you're
 upgrading from a version of INN prior to 2.0.
 
-If you are upgrading from an earlier minor release of INN, you may be able
-to just update the binaries, scripts, and man pages by running:
+If you are upgrading from INN 2.3 or later, you may be able to just update
+the binaries, scripts, and man pages by running:
 
     make update
 
@@ -26,6 +26,10 @@ can't read the data structures written by INN compiled without that flag,
 and vice versa).  If you don't remember what options you used but you have
 your old build tree, look at the comments at the beginning of
 F<config.status>.
+
+If you use C<make update> to upgrade from a previous major release of INN,
+also look at the new sample configuration files in F<samples> to see if
+there are new options of interest to you.
 
 For more information about recent changes, see F<NEWS>.
 
