@@ -118,7 +118,7 @@ the buffers in which the articles will be stored.
 Create a large file on top of a regular file system.  The easiest way to
 do this is probably with dd(1), using a command like:
 
-    dd if=/dev/zero of=/path/to/cycbuff bs=1024k count=<size>
+    dd if=/dev/zero of=/path/to/cycbuff bs=1024 count=<size>
 
 where <size> is the size from the cycbuff line in F<cycbuff.conf>.
 F<INSTALL> contains a script that will generate these commands for you

@@ -238,7 +238,7 @@ Create a large file on top of a regular file system.  The easiest way to
 do this is probably with \fIdd\fR\|(1), using a command like:
 .Sp
 .Vb 1
-\&    dd if=/dev/zero of=/path/to/cycbuff bs=1024k count=<size>
+\&    dd if=/dev/zero of=/path/to/cycbuff bs=1024 count=<size>
 .Ve
 .Sp
 where <size> is the size from the cycbuff line in \fIcycbuff.conf\fR.
