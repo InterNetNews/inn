@@ -887,7 +887,7 @@ int main(int ac, char *av[])
 		CantConnect(buff, mode, fd);
 	}
 #else
-	if (!OpenRemote((char *)NULL, buff))
+	if (!OpenRemote((char *)NULL, port, buff))
 	    CantConnect(buff, mode, fd);
 #endif	/* defined(DO_RNEWSLOCALCONNECT) */
     }
