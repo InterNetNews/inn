@@ -14,6 +14,7 @@ extern char *errors;
 
 BEGIN_DECLS
 
+void test_init(int count);
 void ok(int n, int success);
 void ok_int(int n, int wanted, int seen);
 void ok_string(int n, const char *wanted, const char *seen);

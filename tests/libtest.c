@@ -22,6 +22,19 @@ char *errors = NULL;
 
 
 /*
+**  Initialize things.  Turns on line buffering on stdout and then prints out
+**  the number of tests in the test suite.
+*/
+void
+test_init(int count)
+{
+    if (setvbuf(stdout, NULL, _IOLBF, BUFSIZ) != 0)
+        syswarn("cannot set stdout to line buffered");
+    printf("%d\n", count);
+}
+
+
+/*
 **  Takes a boolean success value and assumes the test passes if that value
 **  is true and fails if that value is false.
 */
