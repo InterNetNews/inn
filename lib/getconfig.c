@@ -628,15 +628,15 @@ int ReadInnConf()
 		if (!bit) innconf->clienttimeout = atoi(p);
 		SET_CONFIG(CONF_VAR_CLIENTTIMEOUT);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_ALLOWREADERS)) {
-		TEST_CONFIG(CONF_VAR_ALLOWREADERS, bit);
+	    if (EQ(ConfigBuff,_CONF_READERSWHENSTOPPED)) {
+		TEST_CONFIG(CONF_VAR_READERSWHENSTOPPED, bit);
 		if (!bit && boolval != -1) {
 		    if (boolval == TRUE)
 			innconf->readerswhenstopped = FALSE;
 		    else
 			innconf->readerswhenstopped = TRUE;
 		}
-		SET_CONFIG(CONF_VAR_ALLOWREADERS);
+		SET_CONFIG(CONF_VAR_READERSWHENSTOPPED);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ALLOWNEWNEWS)) {
 		TEST_CONFIG(CONF_VAR_ALLOWNEWNEWS, bit);
