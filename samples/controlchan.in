@@ -34,7 +34,7 @@ if (!$inn::pathhost) {
   $inn::pathhost = `$inn::newsbin/innconfval pathhost`;
   chomp $inn::pathhost;
 }
-
+@inn::mailcmd = split /\s+/, $inn::mailcmd; #for nonstandard mailers
 my $use_syslog = 0;
 
 ## Comment out this line if you don't want to try to syslog
@@ -359,7 +359,7 @@ sub logger {
     $ArtFH = open_article($token);
     next if (!defined($ArtFH));
     *ARTICLE = $ArtFH;
-    $kid = open2(\*R, \*MAIL, $inn::mailcmd, "-s", $message, $inn::newsmaster);
+    $kid = open2(\*R, \*MAIL, @inn::mailcmd, "-s", $message, $inn::newsmaster);
     for (<ARTICLE>) {
       print MAIL ("    ", $_);
     }

@@ -26,7 +26,7 @@ sub control_sendme {
     *ARTICLE = $artfh;
     
   SMHEAD: while(<ARTICLE>) { last SMHEAD if /^$/ }
-    $kid = open2(\*R, \*MAIL, $inn::mailcmd, "-s",
+    $kid = open2(\*R, \*MAIL, @inn::mailcmd, "-s",
 	  "sendme by $sender", $inn::newsmaster);
     while (<ARTICLE>) {
       s/^~/~~/;

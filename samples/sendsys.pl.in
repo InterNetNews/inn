@@ -25,7 +25,7 @@ sub control_sendsys {
     print TEMPFILE ("$sender has requested that you send a copy\n",
 		    "of your newsgroups file.\n\n",
 		    "If this is acceptable, type:\n",
-		    "  $inn::mailcmd -s \"sendsys reply from ",
+		    "  @inn::mailcmd -s \"sendsys reply from ",
 		    "$inn::pathhost\" $replyto < $inn::newsfeeds\n\n",
 		    "The control message follows:\n\n");
     
@@ -50,7 +50,7 @@ sub control_sendsys {
     } else {
       # Send the file.
       open NEWSFEEDS, "<$inn::newsfeeds";
-      $kid = open2(\*R, \*MAIL, $inn::mailcmd, "-s",
+      $kid = open2(\*R, \*MAIL, @inn::mailcmd, "-s",
 	    "sendsys reply from $inn::pathhost", $replyto);
       print MAIL $_ while <NEWSFEEDS>;  
       print MAIL "\n";

@@ -30,7 +30,7 @@ sub control_ihave {
     while (<ARTICLE>) {
       last IHHEAD if /^$/;
     }
-    $kid = open2(\*R, \*MAIL, $inn::mailcmd, "-s",
+    $kid = open2(\*R, \*MAIL, @inn::mailcmd, "-s",
 	  "ihave by $sender", $inn::newsmaster);
     while (<ARTICLE>) {
       s/^~/~~/;
