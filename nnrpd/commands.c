@@ -396,6 +396,33 @@ CMDdate(ac, av)
 
 
 /*
+**  List a single newsgroup.  Called by LIST ACTIVE with a single argument.
+**  This is quicker than parsing the whole active file, but only works with
+**  single groups.  It also doesn't work for aliased groups, since overview
+**  doesn't know what group the group is aliased to (yet).  Returns whether we
+**  were able to answer the command.
+*/
+static BOOL
+CMD_list_single(char *group)
+{
+    char *grplist[2] = { NULL, NULL };
+    int lo, hi, flag;
+
+    if (PERMspecified) {
+        grplist[0] = group;
+        if (!PERMmatch(PERMreadlist, grplist))
+            return FALSE;
+    }
+    if (OVgroupstats(group, &lo, &hi, NULL, &flag) && flag != '=') {
+        Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, INFOactive.Format);
+        Printf("%s %010d %010d %c\r\n.\r\n", group, hi, lo, flag);
+        return TRUE;
+    }
+    return FALSE;
+}
+
+
+/*
 **  List active newsgroups, newsgroup descriptions, and distributions.
 */
 /* ARGSUSED0 */
@@ -410,7 +437,6 @@ CMDlist(int ac, char *av[])
     LISTINFO		*lp;
     char		*wildarg = NULL;
     char		savec;
-    int			lo, hi, flag;
 
     p = av[1];
     if (p == NULL || caseEQ(p, "active")) {
@@ -419,16 +445,8 @@ CMDlist(int ac, char *av[])
 	lp = &INFOactive;
 	if (ac == 3) {
 	    wildarg = av[2];
-
-            /* Try to do this the quick way for a single group, but
-               currently some overview backends don't support group aliases
-               fully, so if the flag is '=' for an alias, fall through to
-               the slow way. */
-	    if (OVgroupstats(wildarg, &lo, &hi, NULL, &flag) && flag != '=') {
-		Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);
-		Printf("%s %010d %010d %c\r\n.\r\n", wildarg, hi, lo, flag);
+            if (CMD_list_single(wildarg))
 		return;
-	    }
 	}
     } else if (caseEQ(p, "active.times"))
 	lp = &INFOactivetimes;
