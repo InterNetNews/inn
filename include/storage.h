@@ -52,6 +52,7 @@ extern int              SMerrno;
 extern char             *SMerrorstr;
 
 typedef enum {SELFEXPIRE, SMARTNGNUM} PROBETYPE;
+typedef enum {SM_ALL, SM_HEAD, SM_CANCELEDART} FLUSHTYPE;
 
 struct artngnum {
     char	*groupname;
@@ -70,6 +71,7 @@ ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount);
 void      SMfreearticle(ARTHANDLE *article);
 BOOL      SMcancel(TOKEN token);
 BOOL      SMprobe(PROBETYPE type, TOKEN *token, void *value);
+BOOL      SMflushcacheddata(FLUSHTYPE type);
 void      SMshutdown(void);
 
 #ifdef __cplusplus

@@ -98,7 +98,6 @@ struct conf_vars {
 	int xrefslave;		/* master server for slaving */
 	char *complaints;	/* Addr for X-Complaints-To: header */
 	int spoolfirst;		/* Spool newly posted article or only on error*/
-	int writelinks;		/* Write crossposts to the history */
 	int timer;		/* Performance monitoring interval */
 	int status;		/* Status file update interval */
 	int articlemmap;	/* mmap articles? */
@@ -190,6 +189,7 @@ struct conf_vars {
 	int wireformat; /* enable/disable wire format for tradspool */
 	char *ovmethod;
         int useoverchan; /* should innd write overview, or should overchan */
+        int immediatecancel;
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;

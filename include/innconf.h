@@ -66,9 +66,9 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_SPOOLFIRST			"spoolfirst"
 #define CONF_VAR_SPOOLFIRST			14
     { _CONF_SPOOLFIRST,				"",	2, 1 },
-#define _CONF_WRITELINKS			"writelinks"
-#define CONF_VAR_WRITELINKS			15
-    { _CONF_WRITELINKS,				"",	2, 1 },
+#define _CONF_IMMEDIATECANCEL			"immediatecancel"
+#define CONF_VAR_IMMEDIATECANCEL		15
+    { _CONF_IMMEDIATECANCEL,			"",	2, 1 },
 #define _CONF_TIMER				"timer"
 #define CONF_VAR_TIMER				16
     { _CONF_TIMER,				"",	2, 1 },
