@@ -300,6 +300,9 @@ Code Cleanup Projects:
 * Switch nnrpd over to using lib/timer.c instead of its own messy 
   timing code.  [Jeff knows about this.]
 
+* Clean up the use of ifdef for sockets, perhaps involving the creation
+  of include/portable/socket.h.
+
 
 Needed Bug Fixes:
 
