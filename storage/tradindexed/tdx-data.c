@@ -24,6 +24,7 @@
 
 #include "inn/history.h"
 #include "inn/messages.h"
+#include "inn/mmap.h"
 #include "libinn.h"
 #include "ov.h"
 #include "ovinterface.h"
@@ -881,7 +882,7 @@ entry_audit(struct group_data *data, struct index_entry *entry,
  clear:
     entry->offset = 0;
     entry->length = 0;
-    msync(entry, sizeof(*entry), MS_ASYNC);
+    mapcntl(entry, sizeof(*entry), MS_ASYNC);
 }
 
 
@@ -970,7 +971,7 @@ tdx_data_audit(const char *group, struct group_entry *index, bool fix)
     /* All done.  Close things down and flush the data we changed, if
        necessary. */
     if (changed)
-        msync(index, sizeof(*index), MS_ASYNC);
+        mapcntl(index, sizeof(*index), MS_ASYNC);
 
  end:
     tdx_data_close(data);
