@@ -1302,7 +1302,8 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	}
     }
     /* checking the bitmap to ensure cah.size is not broken was dropped */
-    if ((innconf->cnfscheckfudgesize != 0) && (ntohl(cah.size) > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
+    if (innconf->cnfscheckfudgesize != 0 && innconf->maxartsize != 0 &&
+	(ntohl(cah.size) > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
 	char buf1[24], buf2[24], buf3[24];
 	strcpy(buf1, CNFSofft2hex(cycbuff->free, FALSE));
 	strcpy(buf2, CNFSofft2hex(middle, FALSE));
