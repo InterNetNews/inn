@@ -16,7 +16,7 @@
 #include "configdata.h"
 #include "clibrary.h"
 #include "libinn.h"
-#include "ov3.h"
+#include "ov.h"
 #define MAINLINE
 #include "nnrpd.h"
 #include <netdb.h>
@@ -206,7 +206,7 @@ ExitWithStats(int x)
  	close(STDERR);    	
      }
     
-    OV3close();
+    OVclose();
 
     exit(x);
 }
@@ -570,7 +570,7 @@ STATIC void SetupDaemon(void) {
 	ExitWithStats(1);
     }
     ARTreadschema();
-    if (!OV3open(1, OV3_READ)) {
+    if (!OVopen(OV_READ)) {
 	/* This shouldn't really happen. */
 	syslog(L_NOTICE, "%s cant open overview %m", ClientHost);
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
@@ -816,7 +816,7 @@ main(int argc, char *argv[], char *env[])
 	    for (i = 0; (pid = fork()) < 0; i++) {
 		if (i == MAX_FORKS) {
 		    syslog(L_FATAL, "cant fork %m -- giving up");
-		    OV3close();
+		    OVclose();
 		    exit(1);
 		}
 		syslog(L_NOTICE, "cant fork %m -- waiting");
@@ -850,7 +850,7 @@ main(int argc, char *argv[], char *env[])
     /* Setup. */
     if (GetTimeInfo(&Now) < 0) {
 	syslog(L_FATAL, "cant gettimeinfo %m");
-	OV3close();
+	OVclose();
 	exit(1);
     }
     STATstart = TIMEINFOasDOUBLE(Now);

@@ -12,7 +12,7 @@
 #include <time.h>
 #endif	/* defined(DO_NEED_TIME) */
 #include <sys/time.h>
-#include "ov3.h"
+#include "ov.h"
 #include "post.h"
 
 #define FLUSH_ERROR(F)		(fflush((F)) == EOF || ferror((F)))
@@ -676,7 +676,7 @@ STATIC STRING ValidNewsgroups(char *hdr, char **modgroup)
 		sprintf(Error, "You are not allowed to post to %s\r\n", p);
 	    }
         }
-	if (!OV3groupstats(p, NULL, NULL, NULL, &flag))
+	if (!OVgroupstats(p, NULL, NULL, NULL, &flag))
 	    continue;
 	FoundOne = TRUE;
 	DDcheck(h, p);

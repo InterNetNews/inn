@@ -18,7 +18,7 @@
 #include <sys/time.h>
 #include "clibrary.h"
 #include "nnrpd.h"
-#include "ov3.h"
+#include "ov.h"
 
 
 /*
@@ -283,7 +283,7 @@ STATIC BOOL ARTinstorebyartnum(int artnum)
     
     if (innconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
-    if (!OV3getartinfo(GRPcur, artnum, NULL, NULL, &token))
+    if (!OVgetartinfo(GRPcur, artnum, NULL, NULL, &token))
 	return FALSE;
   
     art = SMretrieve(token, RETR_STAT);
@@ -314,7 +314,7 @@ STATIC BOOL ARTopen(int artnum)
     }
     ARTclose();
 
-    if (!OV3getartinfo(GRPcur, artnum, NULL, NULL, &token))
+    if (!OVgetartinfo(GRPcur, artnum, NULL, NULL, &token))
 	return FALSE;
   
     if ((ARThandle = SMretrieve(token, RETR_ALL)) == NULL)
@@ -838,13 +838,13 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 	return;
     }
 
-    if ((handle = OV3opensearch(GRPcur, range.Low, range.High)) == NULL) {
+    if ((handle = (void *)OVopensearch(GRPcur, range.Low, range.High)) == NULL) {
 	Reply("%d %s fields follow\r\n.\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
 	return;
     }
 
     Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
-    while (OV3search(handle, &artnum, &data, &len, &token)) {
+    while (OVsearch(handle, &artnum, &data, &len, &token)) {
 	if (!ARTinstorebytoken(token))
 	    continue;
 	p = OVERGetHeader(data, Overview);
@@ -853,7 +853,7 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 	SendIOb(p, strlen(p));
 	SendIOb("\r\n", 2);	
     }
-    OV3closesearch(handle);
+    OVclosesearch(handle);
     SendIOb(".\r\n", 3);
     PushIOb();
 }
@@ -895,20 +895,20 @@ FUNCTYPE CMDxover(int ac, char *av[])
     }
 
     OVERcount++;
-    if ((handle = OV3opensearch(GRPcur, range.Low, range.High)) == NULL) {
+    if ((handle = (void *)OVopensearch(GRPcur, range.Low, range.High)) == NULL) {
 	Reply("%d %s fields follow\r\n.\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
 	return;
     }
 
     Reply("%d %s fields follow\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, av[1]);
-    while (OV3search(handle, &artnum, &data, &len, &token)) {
+    while (OVsearch(handle, &artnum, &data, &len, &token)) {
 	if (innconf->nnrpdcheckart && !ARTinstorebytoken(token))
 	    continue;
 	OVERhit++;
 	OVERsize += len;
 	SendIOv(data, len);
     }
-    OV3closesearch(handle);
+    OVclosesearch(handle);
     SendIOv(".\r\n", 3);
     PushIOv();
     gettimeofday(&etv, NULL);
@@ -988,14 +988,14 @@ FUNCTYPE CMDxpat(int ac, char *av[])
 	return;
     }
 
-    if ((handle = OV3opensearch(GRPcur, range.Low, range.High)) == NULL) {
+    if ((handle = (void *)OVopensearch(GRPcur, range.Low, range.High)) == NULL) {
 	Reply("%d %s fields follow\r\n.\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
 	return;
     }	
 	
     Printf("%d %s matches follow.\r\n", NNTP_HEAD_FOLLOWS_VAL, header);
     pattern = Glom(&av[3]);
-    while (OV3search(handle, &artnum, &data, &len, &token)) {
+    while (OVsearch(handle, &artnum, &data, &len, &token)) {
 	if (!ARTinstorebytoken(token))
 	    continue;
 	if ((p = OVERGetHeader(data, Overview)) != NULL) {
@@ -1007,7 +1007,7 @@ FUNCTYPE CMDxpat(int ac, char *av[])
     }
 	}
     }
-    OV3closesearch(handle);
+    OVclosesearch(handle);
     SendIOb(".\r\n", 3);
     PushIOb();
     DISPOSE(pattern);

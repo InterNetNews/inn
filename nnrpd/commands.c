@@ -9,7 +9,7 @@
 #include "configdata.h"
 #include "clibrary.h"
 #include "nnrpd.h"
-#include "ov3.h"
+#include "ov.h"
 
 typedef struct _LISTINFO {
     STRING	Path;
@@ -388,7 +388,7 @@ CMDlist(int ac, char *av[])
 	lp = &INFOactive;
 	if (ac == 3) {
 	    wildarg = av[2];
-	    if (OV3groupstats(wildarg, &lo, &hi, NULL, &flag)) {
+	    if (OVgroupstats(wildarg, &lo, &hi, NULL, &flag)) {
 		syslog(L_NOTICE, "%s shortcut list active %s", ClientHost, wildarg);
 		Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);
 		printf("%s %010d %010d %c\r\n.\r\n", wildarg, hi, lo, flag);
@@ -599,7 +599,7 @@ FUNCTYPE CMDnewgroups(int ac, char *av[])
 	if ((q = strchr(p, ' ')) == NULL)
 	    continue;
 	*q++ = '\0';
-	if ((atol(q) < date) || !OV3groupstats(p, &lo, &hi, &count, &flag))
+	if ((atol(q) < date) || !OVgroupstats(p, &lo, &hi, &count, &flag))
 	    continue;
 
 	if (PERMspecified) {

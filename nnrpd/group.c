@@ -12,7 +12,7 @@
 #include "configdata.h"
 #include "clibrary.h"
 #include "nnrpd.h"
-#include "ov3.h"
+#include "ov.h"
 
 /*
 **  Change to or list the specified newsgroup.  If invalid, stay in the old
@@ -41,7 +41,7 @@ FUNCTYPE CMDgroup(int ac, char *av[])
 	group = av[1];
     }
     
-    if (!OV3groupstats(group, &ARTlow, &ARThigh, &count, NULL)) {
+    if (!OVgroupstats(group, &ARTlow, &ARThigh, &count, NULL)) {
 	Reply("%s %s\r\n", NOSUCHGROUP, group);
 	return;
     }
@@ -79,14 +79,14 @@ FUNCTYPE CMDgroup(int ac, char *av[])
 	GRPcur = COPY(group);
     } else {
 	/* Must be doing a "listgroup" command. */
-	if ((handle = OV3opensearch(group, ARTlow, ARThigh)) != NULL) {
+	if ((handle = OVopensearch(group, ARTlow, ARThigh)) != NULL) {
 	Reply("%d Article list follows\r\n", NNTP_GROUPOK_VAL);
-	    while (OV3search(handle, &i, NULL, NULL, &token)) {
+	    while (OVsearch(handle, &i, NULL, NULL, &token)) {
 		if (!ARTinstorebytoken(token))
 		    continue;
 		Printf("%ld\r\n", i);
 	    }
-	    OV3closesearch(handle);
+	    OVclosesearch(handle);
 	Printf(".\r\n");
 	    GRPcount++;
 	    ARTnumber = ARTlow;
