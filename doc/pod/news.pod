@@ -1,3 +1,27 @@
+=head1 Changes from 2.3.4 to 2.3.5
+
+=over 2
+
+=item *
+
+Clients using POST are no longer permitted to provide an Injector-Info
+header.
+
+=item *
+
+Fixed a bug causing posts with Followup-To set to a moderated group to be
+rejected if the posting user didn't have permission to approve postings.
+
+=item *
+
+Fixed bugs in inncheck with setuid rnews or setgid inews, in innconfval
+with inn.conf parameters containing shell metacharacters but no spaces,
+and in parsedate.y with some versions of yacc.  Fixed a variety of
+size-related printf format warnings (e.g., %d vs. %ld) thanks to the work
+of Winfried Szukalski.
+
+=back
+
 =head1 Changes from 2.3.3 to 2.3.4
 
 =over 2
