@@ -65,6 +65,7 @@ contrib                               External contributions (Directory)
 contrib/README.contrib                README file for the contrib contents
 contrib/README.newsresp_c             Docs for newsresp.c
 contrib/backupfeed                    Suck down news via a reading connection
+contrib/batchpurge.pl                 Remove expired articles from batches
 contrib/cleannewsgroups.pl            Script to clean newsgroups file
 contrib/cleanoi                       Script to clean overview index files
 contrib/count_overview.pl             Count overview entries
