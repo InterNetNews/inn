@@ -1071,7 +1071,8 @@ AC_OUTPUT(
 	samples/writelog
 	storage/buildconfig 
 	syslog/syslog.conf
+	,
+	chmod +x storage/buildconfig
 )
 
-chmod +x storage/buildconfig
 cat .now_do
