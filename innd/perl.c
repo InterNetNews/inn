@@ -117,8 +117,8 @@ PLartfilter(char *artBody, int lines)
         SvCUR_set(body, strlen(artBody));
         SvLEN_set(body, 0);
         SvPOK_on(body);
-        SvREADONLY_on(body);
-        SvREFCNT_inc(body);
+        (void) SvREADONLY_on(body);
+        (void) SvREFCNT_inc(body);
         hv_store(hdr, "__BODY__", 8, body, 0);
     }
 
