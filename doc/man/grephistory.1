@@ -11,9 +11,6 @@ grephistory \- display file names from Usenet history file
 .BI \-f " filename"
 ]
 [
-.B \-h
-]
-[
 .B \-i
 ]
 [
@@ -29,9 +26,6 @@ grephistory \- display file names from Usenet history file
 .B \-s
 ]
 [
-.B \-t
-]
-[
 .I messageid
 ]
 .SH DESCRIPTION
@@ -40,7 +34,7 @@ queries the
 .IR dbz (3)
 index into the
 .IR history (5)
-file for an article having a specified Message-ID or hash key of Message-ID.
+file for an article having a specified Message-ID.
 .PP
 If
 .I messageid
@@ -60,10 +54,6 @@ will only print the filename of the token of an existing article.
 .B \-f
 To specify a different value for the history file and database, use
 the ``\fB\-f\fP'' flag.
-.TP
-.B \-h
-If the ``\fB\-h\fP'' flag is used then the hash of the Message-ID
-will be printed regardless of its existense.
 .TP
 .B \-i
 If the ``\fB\-i\fP'' flag is used, then
@@ -97,10 +87,6 @@ will read a similar list from its standard input.
 It will print on standard output a list of filenames for each article
 that is still available.
 This flag is used in processing ``sendme'' control messages.
-.TP
-.B \-t
-If the ``\fB\-t\fP'' flag is used, then only the offset into the history text
-file is printed.
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 .de R$
