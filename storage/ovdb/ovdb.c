@@ -1209,10 +1209,7 @@ static int check_version(void)
 	return ret;
     }
 #if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
-    TXN_START(t_open_version, tid);
-    ret = vdb->open(vdb, tid, "version", NULL, DB_BTREE, _db_flags, 0666);
-    if (ret == 0)
-	TXN_COMMIT(t_open_version, tid);
+    ret = vdb->open(vdb, NULL, "version", NULL, DB_BTREE, _db_flags, 0666);
 #else
     ret = vdb->open(vdb, "version", NULL, DB_BTREE, _db_flags, 0666);
 #endif
