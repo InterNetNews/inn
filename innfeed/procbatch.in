@@ -107,7 +107,7 @@ while (<INPUT>) {
 	@F = split ;
 
         # Check the format of the line vigorously	
-        next unless (m!^\S+/\d+ <.+@.+> \S+!) ;  
+        next unless (m!^\S+/\d+ <.+@.+> \S+! || m!^@[0-9A-F]+@ <.+@.+> \S+!) ;  
 
 	if ( $opt_c ) {
 		if ( ! -f "$spoolArts/$F[0]" )  {
