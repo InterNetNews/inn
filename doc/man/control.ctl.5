@@ -7,9 +7,7 @@ The file
 .I <pathetc in inn.conf>/control.ctl
 is used to determine what action is taken when a control message
 is received.
-If
-.I <usecontrolchan in inn.conf>
-is ``true'', it is read by the
+It is read by the
 .I controlchan
 script, which can be invoked as channel program by
 .IR innd (8).
@@ -18,13 +16,6 @@ When
 is modified,
 .I controlchan
 notices this automatically and reload it.
-If
-.I <usecontrolchan in inn.conf>
-is ``false'', it is read by the
-.I parsecontrol
-script, which is called by all the control scripts.
-(For an explanation of how the control scripts are invoked, see
-.IR innd (8).)
 .PP
 The file consists of a series of lines; blank lines and lines beginning
 with a number sign (``#'') are ignored.
