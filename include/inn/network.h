@@ -12,6 +12,9 @@
 
 #include <inn/defines.h>
 
+/* Forward declarations to avoid unnecessary includes. */
+struct addrinfo;
+
 BEGIN_DECLS
 
 /* Create a socket and bind it to the specified address and port (either IPv4
@@ -27,6 +30,12 @@ int network_bind_ipv6(const char *address, unsigned short port);
    fds will be set to an array containing the resulting file descriptors, with
    count holding the count returned. */
 void network_bind_all(unsigned short port, int **fds, int *count);
+
+/* Create a socket and connect it to the remote service given by the linked
+   list of addrinfo structs.  Returns the new file descriptor on success and
+   -1 on failure, with the error left in errno.  The source address is set
+   based on innconf->sourceaddress and innconf->sourceaddress6. */
+int network_connect(struct addrinfo *);
 
 END_DECLS
 

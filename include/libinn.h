@@ -146,7 +146,7 @@ extern int      NNTPlocalopen(FILE **FromServerp, FILE **ToServerp,
                               char *errbuff);
 extern int      NNTPremoteopen(int port, FILE **FromServerp,
                                FILE **ToServerp, char *errbuff);
-extern int      NNTPconnect(char *host, int port, FILE **FromServerp,
+extern int      NNTPconnect(const char *host, int port, FILE **FromServerp,
                             FILE **ToServerp, char *errbuff);
 extern int      NNTPsendarticle(char *, FILE *F, bool Terminate);
 extern int      NNTPsendpassword(char *server, FILE *FromServer,

@@ -130,14 +130,14 @@ network_bind_ipv6(const char *address, unsigned short port)
         address = "::";
     return network_bind(fd, AF_INET6, address, port) ? fd : -1;
 }
-#else
+#else /* HAVE_INET6 */
 int
 network_bind_ipv6(const char *address, unsigned short port)
 {
     warn("cannot bind %s,%hu: not built with IPv6 support", address, port);
     return -1;
 }
-#endif
+#endif /* HAVE_INET6 */
 
 
 /*
@@ -196,7 +196,7 @@ network_bind_all(unsigned short port, int **fds, int *count)
     }
     freeaddrinfo(addrs);
 }
-#else
+#else /* HAVE_INET6 */
 void
 network_bind_all(unsigned short port, int **fds, int *count)
 {
@@ -204,4 +204,78 @@ network_bind_all(unsigned short port, int **fds, int *count)
     *count = 1;
     *fds[0] = network_bind_ipv4("0.0.0.0", port);
 }
+#endif /* HAVE_INET6 */
+
+
+/*
+**  Binds the given socket to an appropriate source address for its family,
+**  using innconf information.  Returns true on success and false on failure.
+*/
+static bool
+network_source(int fd, int family)
+{
+    if (family == AF_INET && innconf->sourceaddress != NULL) {
+        struct sockaddr_in saddr;
+
+        if (strcmp(innconf->sourceaddress, "all") == 0)
+            return true;
+        memset(&saddr, 0, sizeof(saddr));
+        saddr.sin_family = AF_INET;
+        if (!inet_aton(innconf->sourceaddress, &saddr.sin_addr))
+            return false;
+        return bind(fd, (struct sockaddr *) &saddr, sizeof(saddr)) == 0;
+    }
+#ifdef HAVE_INET6
+    else if (family == AF_INET6 && innconf->sourceaddress6 != NULL) {
+        struct sockaddr_in6 saddr;
+
+        if (strcmp(innconf->sourceaddress6, "all") == 0)
+            return true;
+        memset(&saddr, 0, sizeof(saddr));
+        saddr.sin_family = AF_INET6;
+        if (inet_pton(AF_INET6, innconf->sourceaddress6, &saddr) < 1)
+            return false;
+        return bind(fd, (struct sockaddr *) &saddr, sizeof(saddr)) == 0;
+    }
 #endif
+    else
+        return true;
+}
+
+
+/*
+**  Given a linked list of addrinfo structs representing the remote service,
+**  try to create a local socket and connect to that service.  Try each
+**  address in turn until one of them connects.  Returns the file descriptor
+**  of the open socket on success, or -1 on failure.  Tries to leave the
+**  reason for the failure in errno.
+*/
+int
+network_connect(struct addrinfo *ai)
+{
+    int fd = -1;
+    int oerrno;
+    bool success;
+
+    for (success = false; ai != NULL; ai = ai->ai_next) {
+        if (fd >= 0)
+            close(fd);
+        fd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+        if (fd < 0)
+            continue;
+        if (!network_source(fd, ai->ai_family))
+            continue;
+        if (connect(fd, ai->ai_addr, ai->ai_addrlen) == 0) {
+            success = true;
+            break;
+        }
+    }
+    if (success)
+        return fd;
+    else {
+        oerrno = errno;
+        close(fd);
+        errno = oerrno;
+        return -1;
+    }
+}
