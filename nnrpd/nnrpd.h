@@ -278,8 +278,10 @@ extern void perlAuthInit(void);
 #endif /* DO_PERL */
 
 #ifdef	DO_PYTHON
-int PY_authenticate(char *clientHost, char *clientIpString, char *serverHost, char *Username, char *Password, char *accesslist);
-int PY_authorize(char *clientHost, char *clientIpString, char *ServerHost, char *Username, char *NewsGroup, int PostFlag, char **reply_message);
+int PY_authenticate(char *clientHost, char *clientIpString, char *serverHost, char *username, char *password, char *accesslist);
+int PY_authorize(char *clientHost, char *clientIpString, char *serverHost, char *username, char *NewsGroup, int PostFlag, char **reply_message);
+void PY_close(void);
+void PY_setup(void);
 #endif	/* DO_PYTHON */
 
 void line_free(struct line *);
