@@ -24,6 +24,24 @@ STATIC char	*Archive = NULL;
 STATIC char	*ERRLOG = NULL;
 
 /*
+**  Return a YYYYMM string that represents the current year/month
+*/
+STATIC char *
+DateString()
+{
+    STATIC char		ds[10];
+    time_t		now;
+    struct tm		*x;
+
+    time(&now);
+    x = localtime(&now);
+    sprintf(ds, "%d%d", x->tm_year + 1900, x->tm_mon + 1);
+
+    return ds;
+}
+
+
+/*
 **  Try to make one directory.  Return FALSE on error.
 */
 STATIC BOOL
@@ -235,15 +253,18 @@ Copy(src, dest)
 **  Copy an article from memory into a file.
 */
 STATIC BOOL
-CopyArt(ARTHANDLE *art, char *dest)
+CopyArt(ARTHANDLE *art, char *dest, BOOL Concat)
 {
     register FILE	*out;
     char		*p,*q,*last;
     ARTHANDLE		article;
     size_t		i;
+    char		*mode = "w";
+
+    if (Concat) mode = "a";
 
     /* Open the output file. */
-    if ((out = fopen(dest, "w")) == NULL) {
+    if ((out = fopen(dest, mode)) == NULL) {
 	/* Failed; make any missing directories and try again. */
 	if ((p = strrchr(dest, '/')) != NULL) {
 	    if (!MakeArchiveDirectory(dest)) {
@@ -251,7 +272,7 @@ CopyArt(ARTHANDLE *art, char *dest)
 			dest, strerror(errno));
 		return FALSE;
 	    }
-	    out = fopen(dest, "w");
+	    out = fopen(dest, mode);
 	}
 	if (p == NULL || out == NULL) {
 	    (void)fprintf(stderr, "Can't open \"%s\" for writing, %s\n",
@@ -278,11 +299,15 @@ CopyArt(ARTHANDLE *art, char *dest)
     }
 
     /* Write the data. */
+    if (Concat) {
+	/* Write a separator... */
+	fprintf(out, "-----------\n");
+    }
     if (fwrite(article.data, article.len, 1, out) != 1) {
 	(void)fprintf(stderr, "Can't write \"%s\", %s\n",
 		dest, strerror(errno));
 	(void)fclose(out);
-	(void)unlink(dest);
+	if (!Concat) (void)unlink(dest);
 	return FALSE;
     }
 
@@ -290,18 +315,57 @@ CopyArt(ARTHANDLE *art, char *dest)
     if (ferror(out) || fflush(out) == EOF) {
 	(void)fprintf(stderr, "Can't close \"%s\", %s\n",
 		dest, strerror(errno));
-	(void)unlink(dest);
+	if (!Concat) (void)unlink(dest);
 	(void)fclose(out);
 	return FALSE;
     }
     if (fclose(out) == EOF) {
 	(void)fprintf(stderr, "Can't close \"%s\", %s\n",
 		dest, strerror(errno));
-	(void)unlink(dest);
+	if (!Concat) (void)unlink(dest);
 	return FALSE;
     }
 
     return TRUE;
+}
+
+
+/*
+**  Write an index entry.  Ignore I/O errors; our caller checks for them.
+*/
+STATIC void
+WriteArtIndex(art, FullName, ShortName)
+    ARTHANDLE		*art;
+    char		*FullName;
+    char		*ShortName;
+{
+    register char	*p;
+    register int	i;
+    char		Subject[BUFSIZ];
+    char		MessageID[BUFSIZ];
+
+    Subject[0] = '\0';		/* default to null string */
+    p = (char *)HeaderFindMem(art->data, art->len, "Subject", 7);
+    if (p != NULL) {
+	for (i=0; *p != '\r' && *p != '\n' && *p != '\0'; i++) {
+	    Subject[i] = *p++;
+	}
+	Subject[i] = '\0';
+    }
+
+    MessageID[0] = '\0';	/* default to null string */
+    p = (char *)HeaderFindMem(art->data, art->len, "Message-ID", 10);
+    if (p != NULL) {
+	for (i=0; *p != '\r' && *p != '\n' && *p != '\0'; i++) {
+	    MessageID[i] = *p++;
+	}
+	MessageID[i] = '\0';
+    }
+
+    (void)printf("%s %s %s\n",
+	    ShortName,
+	    MessageID[0] ? MessageID : "<none>",
+	    Subject[0] ? Subject : "<none>");
 }
 
 
@@ -313,6 +377,107 @@ Usage()
 {
     (void)fprintf(stderr, "Usage error.\n");
     exit(1);
+}
+
+
+/*
+** Crack an Xref line apart into separate strings, each of the form "ng:artnum".
+** Return in "lenp" the number of newsgroups found.
+** 
+** This routine blatantly stolen from tradspool.c
+*/
+static char **
+CrackXref(char *xref, unsigned int *lenp) {
+    char *p;
+    char **xrefs;
+    char *q;
+    unsigned int len, xrefsize;
+    unsigned int slen;
+
+    len = 0;
+    xrefsize = 5;
+    xrefs = NEW(char *, xrefsize);
+
+    /* skip pathhost */
+    if ((p = strchr(xref, ' ')) == NULL) {
+	fprintf(stderr, "archive: Could not find pathhost in Xref header");
+	return NULL;
+    }
+    /* skip next spaces */
+    for (p++; *p == ' ' ; p++) ;
+    while (TRUE) {
+	/* check for EOL */
+	/* shouldn't ever hit null w/o hitting a \r\n first, but best to be paranoid */
+	if (*p == '\n' || *p == '\r' || *p == 0) {
+	    /* hit EOL, return. */
+	    *lenp = len;
+	    return xrefs;
+	}
+	/* skip to next space or EOL */
+	for (q=p; *q && *q != ' ' && *q != '\n' && *q != '\r' ; ++q) ;
+
+	slen = q-p;
+	xrefs[len] = NEW(char, slen+1);
+	strncpy(xrefs[len], p, slen);
+	xrefs[len][slen] = '\0';
+
+	if (++len == xrefsize) {
+	    /* grow xrefs if needed. */
+	    xrefsize *= 2;
+	    RENEW(xrefs, char *, xrefsize);
+	}
+
+ 	p = q;
+	/* skip spaces */
+	for ( ; *p == ' ' ; p++) ;
+    }
+}
+
+
+/*
+** Crack an groups pattern parameter apart into separate strings
+** Return in "lenp" the number of patterns found.
+*/
+static char **
+CrackGroups(char *group, unsigned int *lenp) {
+    char *p;
+    char **groups;
+    char *q;
+    unsigned int len, grpsize;
+    unsigned int slen;
+
+    len = 0;
+    grpsize = 5;
+    groups = NEW(char *, grpsize);
+
+    /* skip leading spaces */
+    for (p=group; *p == ' ' ; p++) ;
+    while (TRUE) {
+	/* check for EOL */
+	/* shouldn't ever hit null w/o hitting a \r\n first, but best to be paranoid */
+	if (*p == '\n' || *p == '\r' || *p == 0) {
+	    /* hit EOL, return. */
+	    *lenp = len;
+	    return groups;
+	}
+	/* skip to next comma, space, or EOL */
+	for (q=p; *q && *q != ',' && *q != ' ' && *q != '\n' && *q != '\r' ; ++q) ;
+
+	slen = q-p;
+	groups[len] = NEW(char, slen+1);
+	strncpy(groups[len], p, slen);
+	groups[len][slen] = '\0';
+
+	if (++len == grpsize) {
+	    /* grow groups if needed. */
+	    grpsize *= 2;
+	    RENEW(groups, char *, grpsize);
+	}
+
+ 	p = q;
+	/* skip commas and spaces */
+	for ( ; *p == ' ' || *p == ',' ; p++) ;
+    }
 }
 
 
@@ -328,21 +493,28 @@ main(ac, av)
     BOOL		Flat;
     BOOL		Move;
     BOOL		Redirect;
+    BOOL		Concat;
     char		*Index;
     char		*last;
     char		buff[BUFSIZ];
     char		temp[BUFSIZ];
     char		dest[BUFSIZ];
-    char		*groups, *q;
+    char		**groups, *q, *ng;
+    char		**xrefs;
+    char		*xrefhdr;
     ARTHANDLE		*art;
     TOKEN		token;
     struct stat		Sb;
+    unsigned int	numgroups, numxrefs;
+    int			j;
+    BOOL		doit;
 
     /* First thing, set up logging and our identity. */
     openlog("archive", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
+    Concat = FALSE;
     Flat = FALSE;
     Index = NULL;
     Move = FALSE;
@@ -350,15 +522,21 @@ main(ac, av)
     (void)umask(NEWSUMASK);
     ERRLOG = COPY(cpcatpath(innconf->pathlog, _PATH_ERRLOG));
     Archive = innconf->patharchive;
+    groups = NULL;
+    numgroups = 0;
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "a:fi:mr")) != EOF)
+    while ((i = getopt(ac, av, "a:cfi:mp:r")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
 	    /* NOTREACHED */
 	case 'a':
 	    Archive = optarg;
+	    break;
+	case 'c':
+	    Flat = TRUE;
+	    Concat = TRUE;
 	    break;
 	case 'f':
 	    Flat = TRUE;
@@ -368,6 +546,9 @@ main(ac, av)
 	    break;
 	case 'm':
 	    Move = TRUE;
+	    break;
+	case 'p':
+	    groups = CrackGroups(optarg, &numgroups);
 	    break;
 	case 'r':
 	    Redirect = FALSE;
@@ -441,49 +622,74 @@ main(ac, av)
 	    }
 
 	    /* Determine groups from the Xref header */
-    	    groups = (char *)HeaderFindMem(art->data, art->len, "Xref", 4);
-
-	    /* Skip over the newsserver name */
-	    while (*groups!=' ' && *groups!='\r' && *groups!='\n') {
-		groups++;
+    	    xrefhdr = (char *)HeaderFindMem(art->data, art->len, "Xref", 4);
+	    if (xrefhdr == NULL) {
+		fprintf(stderr, "archive: cant find Xref: header");
+		SMfreearticle(art);
+		continue;
 	    }
-	    while (*groups==' ') {
-		groups++;
+
+	    if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
+		fprintf(stderr, "archive: bogus Xref: header");
+		SMfreearticle(art);
+		continue;
 	    }
 
 	    /* Process each newsgroup... */
-	    while (*groups!='\r' && *groups!='\n' && *groups!='\0') {
-		p = Name;
-		while(*groups!=' ' && *groups!='\r' && *groups!='\n') {
-		    *p++ = *groups++; 
-		}
-		*p='\0';
-		if ((p=strchr(Name, ':')) == NULL) {
-		    fprintf(stderr, "archive: bogus xref '%s'\n", Name);
+	    for (i=0; i<numxrefs; i++) {
+		/* Check for group limits... -p flag */
+		if ((p=strchr(xrefs[i], ':')) == NULL) {
+		    fprintf(stderr, "archive: bogus xref '%s'\n", xrefs[i]);
 		    continue;
 		}
-		*p='/';
-
-		if (!Flat) {
-		    for (p=Name; *p; p++) {
-			if (*p == '.') {
-			    *p = '/';
-			}
+		if (numgroups > 0) {
+		    *p = '\0';
+		    ng = xrefs[i];
+		    doit = FALSE;
+		    for (j=0; j<numgroups && !doit; j++) {
+			if (wildmat(ng, groups[j]) != 0) doit=TRUE;
 		    }
 		}
+		*p = '/';
+		if (doit) {
+		    p = Name;
+		    q = xrefs[i];
+		    while(*q) {
+		        *p++ = *q++;
+		    }
+		    *p='\0';
 
-		if (!CopyArt(art, dest)) {
-		    fprintf(stderr, 
-			"archive: %s->%s failed\n", buff, dest);
+		    if (!Flat) {
+		        for (p=Name; *p; p++) {
+			    if (*p == '.') {
+			        *p = '/';
+			    }
+		        }
+		    }
+
+		    if (Concat) {
+			p = strrchr(Name, '/');
+			q = DateString();
+			p++;
+			while (*q) {
+			    *p++ = *q++;
+			}
+			*p = '\0';
+		    }
+			
+		    if (!CopyArt(art, dest, Concat)) {
+		        fprintf(stderr, 
+			    "archive: %s->%s failed\n", buff, dest);
+		    }
+
+	            /* Write index. */
+	            if (Index) {
+	                WriteArtIndex(art, dest, Name);
+	                if (ferror(stdout) || fflush(stdout) == EOF)
+		            (void)fprintf(stderr, "Can't write index for \"%s\", %s\n",
+			            Name, strerror(errno));
+	            }
 		}
-
-	        /* Write index. */
-	        if (Index) {
-	            WriteIndex(dest, Name);
-	            if (ferror(stdout) || fflush(stdout) == EOF)
-		        (void)fprintf(stderr, "Can't write index for \"%s\", %s\n",
-			        Name, strerror(errno));
-	        }
 	    }
 
 	    /* Free up the article storage space */
