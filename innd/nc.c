@@ -9,6 +9,7 @@
 #include "clibrary.h"
 #include "innd.h"
 #include "dbz.h"
+#include "qio.h"
 
 #define BAD_COMMAND_COUNT	10
 #define SAVE_AMT		10
@@ -27,9 +28,6 @@ typedef struct _NCDISPATCH {
     int		Size;
 } NCDISPATCH;
 
-#if	0
-static FUNCTYPE	NCarticle();
-#endif	/* 0 */
 static FUNCTYPE	NCauthinfo();
 static FUNCTYPE	NChead();
 static FUNCTYPE	NChelp();
@@ -81,7 +79,6 @@ STATIC char		*NCquietlist[] = {
     INND_QUIET_BADLIST
 };
 STATIC char		NCterm[] = "\r\n";
-STATIC char		NCdotterm[] = ".\r\n";
 STATIC char 		NCdot[] = "." ;
 STATIC char		NCbadcommand[] = NNTP_BAD_COMMAND;
 STATIC STRING		NCgreeting;
@@ -275,55 +272,14 @@ NCwritedone(cp)
 
 
 
-#if	0
-/*
-**  The "article" command.
-*/
-STATIC FUNCTYPE
-NCarticle(cp)
-    register CHANNEL	*cp;
-{
-    register char	*p;
-    register char	*q;
-    char		*art;
-
-    /* Snip off the Message-ID. */
-    for (p = cp->In.Data + STRLEN("article"); ISWHITE(*p); p++)
-	continue;
-    if (NCbadid(cp, p))
-	return;
-
-    /* Get the article filenames, and the article header+body. */
-    if ((art = ARTreadarticle(HISfilesfor(p))) == NULL) {
-	NCwritereply(cp, NNTP_DONTHAVEIT);
-	return;
-    }
-
-    /* Write it. */
-    NCwritereply(cp, NNTP_ARTICLE_FOLLOWS);
-    for (p = art; ((q = strchr(p, '\n')) != NULL); p = q + 1) {
-	if (*p == '.')
-	    WCHANappend(cp, ".", 1);
-	WCHANappend(cp, p, q - p);
-	WCHANappend(cp, NCterm, STRLEN(NCterm));
-    }
-
-    /* Write the terminator. */
-    WCHANappend(cp, NCdotterm, STRLEN(NCdotterm));
-}
-#endif	/* 0 */
-
-
 /*
 **  The "head" command.
 */
-STATIC FUNCTYPE
-NChead(cp)
-    CHANNEL		*cp;
+STATIC FUNCTYPE NChead(CHANNEL *cp)
 {
-    register char	*p;
-    register char	*q;
-    char		*head;
+    char	        *p;
+    char	        *q;
+    QIOSTATE            *qp;
 
     /* Snip off the Message-ID. */
     for (p = cp->In.Data + STRLEN("head"); ISWHITE(*p); p++)
@@ -331,23 +287,32 @@ NChead(cp)
     if (NCbadid(cp, p))
 	return;
 
-    /* Get the article filenames, and the header. */
-    if ((head = ARTreadheader(HISfilesfor(HashMessageID(p)))) == NULL) {
+    /* Get the article filenames; open the first file */
+    if ((q = HISfilesfor(HashMessageID(p))) == NULL) {
+	NCwritereply(cp, NNTP_DONTHAVEIT);
+	return;
+    }
+    if ((p = strchr(q, ' ')))
+	*p = '\0';
+    
+    if ((qp = QIOopen(q)) == NULL) {
 	NCwritereply(cp, NNTP_DONTHAVEIT);
 	return;
     }
 
     /* Write it. */
-    NCwritereply(cp, NNTP_HEAD_FOLLOWS);
-    for (p = head; ((q = strchr(p, '\n')) != NULL); p = q + 1) {
+    WCHANappend(cp, NNTP_HEAD_FOLLOWS, STRLEN(NNTP_HEAD_FOLLOWS));
+    WCHANappend(cp, NCterm, STRLEN(NCterm));
+    for (p = QIOread(qp); (p != NULL) && (*p != '\0'); p = QIOread(qp)) {
 	if (*p == '.')
 	    WCHANappend(cp, ".", 1);
-	WCHANappend(cp, p, q - p);
+	WCHANappend(cp, p, QIOlength(qp));
 	WCHANappend(cp, NCterm, STRLEN(NCterm));
     }
 
     /* Write the terminator. */
-    WCHANappend(cp, NCdotterm, STRLEN(NCdotterm));
+    NCwritereply(cp, NCdot, STRLEN(NCdot));
+    QIOclose(qp);
 }
 
 
@@ -357,7 +322,9 @@ NChead(cp)
 STATIC FUNCTYPE NCstat(CHANNEL *cp)
 {
     char	        *p;
+    char                *q;
     char		*buff;
+    QIOSTATE            *qp;
 
     /* Snip off the Message-ID. */
     for (p = cp->In.Data + STRLEN("stat"); ISWHITE(*p); p++)
@@ -365,12 +332,20 @@ STATIC FUNCTYPE NCstat(CHANNEL *cp)
     if (NCbadid(cp, p))
 	return;
 
-    /* Get the article filenames; read the header (to make sure not
+    /* Get the article filenames; open the first file (to make sure
      * the article is still here). */
-    if (ARTreadheader(HISfilesfor(HashMessageID(p))) == NULL) {
+    if ((buff = HISfilesfor(HashMessageID(p))) == NULL) {
 	NCwritereply(cp, NNTP_DONTHAVEIT);
 	return;
     }
+    if ((q = strchr(buff, ' ')))
+	*q = '\0';
+    
+    if ((qp = QIOopen(buff)) == NULL) {
+	NCwritereply(cp, NNTP_DONTHAVEIT);
+	return;
+    }
+    QIOclose(qp);
 
     /* Write the message. */
     buff = NEW(char, strlen(p) + 16);
