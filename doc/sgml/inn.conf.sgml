@@ -1,0 +1,2102 @@
+<!DOCTYPE book PUBLIC "-//Davenport//DTD DocBook V2.4.1//EN" "/opt/texmf/gmat/sgml/Davenport/dtds/2.4.1/docbook.dtd">
+<!-- -->
+<!-- $Id$ -->
+<!-- -->
+<!-- $Log$
+<!-- Revision 1.1  1999/07/15 08:32:46  rra
+<!-- Reorganized and largely rewritten, removing documentation for inn.conf
+<!-- parameters which are no longer used and written in POD with generated
+<!-- *roff and SGML.
+<!-- -->
+<!-- -->
+<!-- General reminders: -->
+
+<book>
+
+<chapter id="pod2docbook-ch-1"><title>inn.conf - Configuration data for InterNetNews programs
+
+</title>
+<chapter id="pod2docbook-ch-1"><title>NAME
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+inn.conf - Configuration data for InterNetNews programs
+
+
+</para>
+
+<sect1 id="pod2docbook-ch-1-sect-1"><title>DESCRIPTION
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+<emphasis>inn.conf</emphasis> in <emphasis>pathetc</emphasis> is the primary general configuration file for all InterNetNews programs.
+Settings which control the general operation of various programs, as well
+as the paths to all portions of the news installation, are found here. The
+INNCONF environment variable, if set, specifies an alternate path to <emphasis>inn.conf</emphasis>.
+
+
+</para>
+
+<para>
+Blank lines and lines starting with a number sign (<literal>#</literal>) are ignored. All other lines specify parameters, and should be of the
+following form:
+
+
+</para>
+
+<para>
+<screen>
+    &lt;name&gt;: &lt;value&gt;
+</screen>
+
+
+</para>
+
+<para>
+(Any amount of whitespace can be put after the colon and is optional.)
+Everything after the colon and optional whitespace up to the end of the
+line is taken as the value. Multi-word values should not be put in quotes;
+if they are, the quotes will be taken as part of the value, not as
+delimiters. &lt;name&gt; is case-sensitive; <literal>server</literal> is not the same as
+<literal>Server</literal> or <literal>SERVER</literal>. (<emphasis>inn.conf</emphasis> parameters are generally all in lowercase.)
+
+
+</para>
+
+<para>
+If &lt;name&gt; occurs more than once in the file, the first value is used. Some
+parameters specified in the file may be overridden by environment
+variables. Most parameters have default values if not specified in
+<emphasis>inn.conf</emphasis>; those defaults are noted in the description of each parameter.
+
+
+</para>
+
+<para>
+Many parameters take a boolean value. For all such parameters, the value
+may be specified as <literal>true</literal>, <literal>yes</literal>, or <literal>on</literal> to turn it on and may be any of <literal>false</literal>, <literal>no</literal>, or <literal>off</literal> to turn it off. The case of these values is not significant.
+
+
+</para>
+
+<para>
+This file is intended to be fairly static. Any changes made to it will
+generally not affect any running programs until they restart. Unlike nearly
+every other configuration file, <emphasis>inn.conf</emphasis> cannot be reloaded dynamically using <literal>ctlinnd(8);</literal>
+<literal>innd(8)</literal> must be stopped and restarted for relevant
+changes to <emphasis>inn.conf</emphasis> to take effect.
+
+
+</para>
+
+<para>
+This documentation is extremely long and organized as a reference manual
+rather than as a tutorial. If this is your first exposure to INN and these
+parameters, it would be better to start by reading other man pages and
+referring to this one only when an <emphasis>inn.conf</emphasis> parameter is explicitly mentioned.
+
+
+</para>
+
+</sect1>
+
+<sect1 id="pod2docbook-ch-1-sect-2"><title>PARAMETERS
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<sect2 id="pod2docbook-ch-1-sect-2-a"><title>General Settings
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+These parameters are used by a wide variety of different components of INN.
+
+
+</para>
+
+<variableList>
+<varlistentry><term><emphasis>domain
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+This should be the domain name of the local host. It should not have a
+leading period, and it should not be a full host address. It is used only
+if the <literal>GetFQDN()</literal> routine in <literal>libinn(3)</literal>
+cannot get the fully-qualified domain name by using either the
+<literal>gethostname(3)</literal> or <literal>gethostbyname(3)</literal>
+calls. The check is very simple; if either routine returns a name with a
+period in it, then it is assumed to have the full domain name. The default
+value is unset.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>innflags
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The flags to pass to innd on startup. See <literal>innd(8)</literal> for
+details on the possible flags. The default value is unset.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>mailcmd
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The path to the program to be used for mailing reports and control
+messages. The default is <emphasis>pathbin</emphasis>/innmail. This should not normally need to be changed.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>mta
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The command to use when mailing postings to moderators and for the use of
+<literal>innmail(1).</literal> The message, with headers and an added To:
+header, will be piped into this program. The string <literal>%s</literal>, if present, will be replaced by the e-mail address of the moderator. It's
+strongly recommended for this command to include <literal>%s</literal> on the command line rather than use the addresses in the To: and Cc:
+headers of the message, since the latter approach allows the news server to
+be abused as a mechanism to send mail to arbitrary addresses and will
+result in unexpected behavior. There is no default value for this
+parameter; it must be set in <emphasis>inn.conf</emphasis> or a fatal error message will be logged via syslog.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathhost
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+What to put into the Path: header to represent the local site. This is
+added to the Path: header of all articles that pass through the system,
+including locally posted articles, and is also used when processing some
+control messages and when naming the server in status reports. There is no
+default value; this parameter must be set in <emphasis>inn.conf</emphasis> or INN will not start. A good value to use is the fully-qualified hostname
+of the system.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>server
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The name of the default NNTP server. If <emphasis>nnrpdposthost</emphasis> is not set and UNIX domain sockets are not supported,
+<literal>nnrpd(8)</literal> tries to hand off locally-posted articles
+through an INET domain socket to this server.
+<literal>actsync(8),</literal> <literal>nntpget(8),</literal> and
+<literal>getlist(8)</literal> also use this value as the default server to
+connect to. In the latter cases, the value of the NNTPSERVER environment
+variable, if it exists, overrides this. The default value is unset.
+
+
+</para>
+
+</listitem></varlistentry></variablelist>
+
+</sect2>
+
+<sect2 id="pod2docbook-ch-1-sect-2-b"><title>Feed Configuration
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+These parameters govern incoming and outgoing feeds: what size of articles
+are accepted, what filtering and verification is performed on them, whether
+articles in groups not carried by the server are still stored and
+propagated, and other similar settings.
+
+
+</para>
+
+<variableList>
+<varlistentry><term><emphasis>artcutoff
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Articles older than this number of days are dropped. This setting should
+probably match the setting on the <literal>/remember/</literal> line in <emphasis>expire.ctl</emphasis>. The default value is <literal>14</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>bindaddress
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Which IP address <literal>innd(8)</literal> should bind itself to. This
+must be in dotted-quad format (nnn.nnn.nnn.nnn). If set to <literal>all</literal> or not set, innd defaults to listening on all interfaces. The value of the
+INND_BIND_ADDRESS environment variable, if set, overrides this setting. The
+default value is unset.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>hiscachesize
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+If set to a value other than <literal>0</literal>, a hash of recently received message IDs is kept in memory to speed
+history lookups. The value is the amount of memory to devote to the cache
+in kilobytes. The cache is only used for incoming feeds and a small cache
+can hold quite a few message IDs, so large values aren't necessarily useful
+unless you have incoming feeds that are badly delayed. A good value for a
+system with more than one incoming feed is <literal>256</literal>; systems with only one incoming feed should probably leave this at <literal>0</literal>. The default value is <literal>0</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>ignorenewsgroups
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether newsgroup creation control messages (newgroup and rmgroup) should
+be fed as if they were posted to the newsgroup they are creating or
+deleting rather than to the newsgroups listed in the Newsgroups: header. If
+this parameter is set, the newsgroup affected by the control message will
+be extracted from the Control: or Subject: header and the article will be
+fed as if its Newsgroups: header contained solely that newsgroup. This is
+useful for routing control messages to peers when they are posted to
+irrelevant newsgroups that shouldn't be matched against the peer's desired
+newsgroups in <emphasis>newsfeeds</emphasis>. This is a boolean value and the default is false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>linecountfuzz
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+If set to something other than <literal>0</literal>, the line count of the article is checked against the Lines: header of the
+article (if present) and the artice is rejected if the values differ by
+more than this amount. A reasonable setting is <literal>5</literal>, which is the standard maximum signature length plus one (some injection
+software calculates the Lines: header before adding the signature). The
+default value is <literal>0</literal>, which tells INN not to check the Lines: header of incoming articles.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>maxartsize
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The maximum size of article (headers and body) that will be accepted by the
+server, in bytes. A value of <literal>0</literal> allows any size of article. The default value is <literal>1000000</literal> (approximately 1MB). See also
+<emphasis>localmaxartsize</emphasis>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>maxconnections
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The maximum number of incoming NNTP connections <literal>innd(8)</literal>
+will accept. The default value is <literal>50</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathalias
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+If set, this value is prepended to the Path: header of accepted posts
+(before <emphasis>pathhost</emphasis>) if it doesn't already appear in the Path: header. The main purpose of
+this parameter is to configure all news servers within a particular
+organization to add a common identity string to the Path: header. The
+default value is unset.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pgpverify
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to enable PGP verification of control messages other than cancel.
+This is a boolean value and the default is false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>port
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+What TCP port <literal>innd(8)</literal> should listen on. The default
+value is <literal>119</literal>, the standard NNTP port.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>refusecybercancels
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to refuse all articles whose message IDs start with
+<literal>&lt;cancel.</literal>. This message ID convention is widely followed by spam cancellers, so the
+vast majority of such articles will be cancels of spam. This check, if
+enabled, is done before the history check and the message ID is not written
+to the history file. This is a boolean value and the default is false.
+
+
+</para>
+
+<para>
+This is a somewhat messy, inefficient, and inexact way of refusing spam
+cancels. A much better way is to ask all of your upstream peers to not send
+to you any articles with <literal>cyberspam</literal> in the Path: header (usually accomplished by having them mark <literal>cyberspam</literal> as an alias for your machine in their feed configuration). The filtering
+enabled by this parameter is hard-coded; general filtering of message IDs
+can be done via the embedded filtering support.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>remembertrash
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+By default, <literal>innd(8)</literal> records rejected articles in history
+so that, if offered the same article again, it can be refused before it is
+sent. If you wish to disable this behavior, set this to false. This can
+cause a substantial increase in the amount of bandwidth consumed by
+incoming news if you have several peers and reject a lot of articles, so be
+careful with it. Even if this is set to true, INN won't log some rejected
+articles to history if there's reason to believe the article might be
+accepted if offered by a different peer, so there is usually no reason to
+set this to false (although doing so can decrease the size of the history
+file). This is a boolean value and the default is true.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>sourceaddress
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Which local IP address to bind to for outgoing NNTP sockets (used by
+<literal>innxmit(8)</literal> among other programs). This must be in
+dotted-quad format (nnn.nnn.nnn.nnn). If set to <literal>all</literal> or not set, the operating system will choose the source IP address for
+outgoing connections. The default value is unset.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>usecontrolchan
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to handle control messages (other than cancel) in an external
+program rather than internally in <literal>innd(8).</literal> Enabling this
+is highly recommended, as INN's internal control message handling can cause
+performance problems and behaves very poorly under heavy load. If you want
+to enable this, you also must set up a channel feed to
+<literal>controlchan(8)</literal> in <literal>newsfeeds(5)</literal> and
+ensure that the group <literal>control.cancel</literal> exists on your server. You may also have to do a few additional things to
+allow controlchan to work correctly; see <literal>controlchan(8)</literal>
+for the details. This is a boolean value and the default is false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>verifycancels
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Set this to true to enable a simplistic check on all cancel messages,
+attempting to verify (by simple header comparison) that the cancel message
+is from the same person as the original post. This can't be done if the
+cancel arrives before the article does, and is extremely easy to spoof.
+While this check may once have served a purpose, it's now essentially
+security via obscurity, commonly avoided by abusers, and probably not
+useful. This is a boolean value, and the default is false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>wanttrash
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Set this to true if you want to file articles posted to unknown newsgroups
+(newsgroups not in the <emphasis>active</emphasis> file) into the <literal>junk</literal> newsgroup rather than rejecting them. This is sometimes useful for a
+transit news server that needs to propagate articles in all newsgroups
+regardless if they're carried locally. This is a boolean value and the
+default is false.
+
+
+</para>
+
+</listitem></varlistentry></variablelist>
+
+</sect2>
+
+<sect2 id="pod2docbook-ch-1-sect-2-c"><title>Article Storage
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+These parameters affect how articles are stored on disk.
+
+
+</para>
+
+<variableList>
+<varlistentry><term><emphasis>cnfscheckfudgesize
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+If set to a value other than <literal>0</literal>, the claimed size of articles in CNFS cycbuffs is checked against <emphasis>maxartsize</emphasis> plus this value, and if larger, the CNFS cycbuff is considered corrupt.
+This can be useful as a sanity check after a system crash, but be careful
+using this parameter if you have changed <emphasis>maxartsize</emphasis> recently. The default value is <literal>0</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>mergetogroups
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to file all postings to <literal>to.*</literal> groups in the pseudonewsgroup
+<literal>to</literal>. If this is set to true, the newsgroup <literal>to</literal> must exist in the
+<emphasis>active</emphasis> file or INN will not start. This is a boolean value and the default is
+false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>storeonxref
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+If set to true, articles will be stored based on the newsgroup names in the
+Xref: header rather than in the Newsgroups: header. This affects what the
+patterns in <emphasis>storage.conf</emphasis> apply to. The primary interesting effect of setting this to true is to file
+all control messages according to what storage class the control
+pseudogroups are filed in rather than according to the newsgroups the
+control messages are posted to. This is a boolean value and the default is
+false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>wireformat
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Only used with the tradspool storage method, this says whether to write
+articles in wire format. Wire format means storing articles with \r\n at
+the end of each line and with periods at the beginning of lines doubled,
+the article format required by the NNTP protocol. Articles stored in this
+format are suitable for sending directly to a network connection without
+requiring conversion, and therefore setting this to true can make the
+server more efficient. Storage methods other than tradspool always store
+articles in wire format. This is a boolean value and the default is false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>xrefslave
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to act as the slave of another server. If set, INN attempts to
+duplicate exactly the article numbering of the server feeding it by looking
+at the Xref: header of incoming articles and assigning the same article
+numbers to articles as was noted in the Xref: header from the upstream
+server. The result is that clients should be able to point at either server
+interchangeably (using some load balancing scheme, for example) and see the
+same internal article numbering. Servers with this parameter set should
+generally only have one upstream feed, and should always have <emphasis>nnrpdposthost</emphasis> set to hand locally posted articles off to the master server. This is a
+boolean value and the default is false.
+
+
+</para>
+
+</listitem></varlistentry></variablelist>
+
+</sect2>
+
+<sect2 id="pod2docbook-ch-1-sect-2-d"><title>Reading
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+These parameters affect the behavior of INN for readers. Most of them are
+used by <literal>nnrpd(8).</literal> There are some special sets of
+settings that are broken out separately after the initial alphabetized
+list.
+
+
+</para>
+
+<variableList>
+<varlistentry><term><emphasis>allownewnews
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to allow use of the NEWNEWS command by clients. Allowing this can
+be a performance problem for the server, since the data structures used by
+INN are ill-suited for this sort of request, but it is recommended by RFC
+977. This is a boolean value and the default is true.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>articlemmap
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to attempt to <literal>mmap()</literal> articles. Setting this to
+true will give better performance on most systems, but some systems have
+problems with <literal>mmap().</literal> If this is set to false, articles
+will be read into memory before being sent to readers. This is a boolean
+value and the default is false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>clienttimeout
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+How long (in seconds) a client connection can be idle before it exits. When
+setting this parameter, be aware that some newsreaders use the same
+connection for reading and posting and don't deal well with the connection
+timing out while a post is being composed. If the system isn't having a
+problem with too many long-lived connections, it may be a good idea to
+increase this value to <literal>3600</literal> (an hour). The default value is <literal>600</literal>
+(ten minutes).
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>nnrpdcheckart
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether <literal>nnrpd(8)</literal> should check the existence of an
+article before listing it as present in response to an NNTP command. The
+primary use of this setting is to prevent nnrpd from returning information
+about articles which are no longer present on the server but which still
+have overview data available. Checking the existence of articles before
+returning overview information slows down the overview commands, but
+reduces the number of ``article is missing'' errors seen by the client.
+This is a boolean value and the default is true.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>nnrpperlauth
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to use the Perl hook in <literal>nnrpd(8)</literal> to authenticate
+readers. If this is enabled, normal readers.conf(5) authentication will not
+be used, and instead the Perl hook will be called to authenticate
+connections. This is a boolean value and the default is false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>noreader
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Normally, <literal>innd(8)</literal> will fork a copy of
+<literal>nnrpd(8)</literal> for all incoming connections from hosts not
+listed in <emphasis>incoming.conf</emphasis>. If this parameter is set to true, those connections will instead be
+rejected with a 502 error code. This should be set to true for a
+transit-only server that doesn't support readers, if nnrpd is being started
+out of inetd, or if nnrpd is run in daemon mode. This is a boolean value
+and the default is false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>readerswhenstopped
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to allow readers to connect even if the server is paused or
+throttled. This is only applicable if <literal>nnrpd(8)</literal> is
+spawned from <literal>innd(8)</literal> rather than run out of inetd or in
+daemon mode. This is a boolean value and the default is false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>readertrack
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to enable the tracking system for client reading and posting. See
+nnrpd.track(5) for more information. This is a boolean value and the
+default is false.
+
+
+</para>
+
+</listitem></varlistentry></variablelist>
+
+<para>
+INN has optional support for generating keyword information automatically
+from article body text and putting that information in overview for the use
+of clients that know to look for it. The following parameters control that
+feature.
+
+
+</para>
+
+<para>
+This may be too slow if you're taking a substantial feed, and probably will
+not be useful for the average news reader; enabling this is not recommended
+unless you have some specific intention to take advantage of it.
+
+
+</para>
+
+<variableList>
+<varlistentry><term><emphasis>keywords
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether the keyword generation support should be enabled. This is a boolean
+value and the default is false.
+
+
+</para>
+
+<para>
+FIXME: Currently, support for keyword generation is configured into INN
+semi-randomly (based on whether configure found the regex library); it
+should be an option to configure and that option should be mentioned here.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>keyartlimit
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Articles larger than this value in bytes will not have keywords generated
+for them (since it would take too long to do so). The default value is
+<literal>100000</literal> (approximately 100KB).
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>keylimit
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Maximum number of bytes allocated for keyword data. If there are more
+keywords than will fit, separated by commas, into this many bytes, the rest
+are discarded. The default value is <literal>512</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>keymaxwords
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Maximum number of keywords that will be generated for an article. (The
+keyword generation code will attempt to discard ``noise'' words, so the
+number of keywords actually writen into the overview will usually be
+smaller than this even if the maximum number of keywords is found.) The
+default value is <literal>250</literal>.
+
+
+</para>
+
+</listitem></varlistentry></variablelist>
+
+</sect2>
+
+<sect2 id="pod2docbook-ch-1-sect-2-e"><title>Posting
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+These parameters are only used by <literal>nnrpd(8),</literal>
+<literal>inews(1),</literal> and other programs that accept or generate
+postings. There are some special sets of settings that are broken out
+separately after the initial alphabetized list.
+
+
+</para>
+
+<variableList>
+<varlistentry><term><emphasis>checkincludedtext
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to check local postings for the ratio of new to quoted text and
+reject them if that ratio is under 50%. Included text is recognized by
+looking for lines beginning with <literal>&gt;</literal>, <literal>|</literal>, or <literal>:</literal>. This is a boolean value and the default is false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>complaints
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The value of the X-Complaints-To: header added to all local posts. The
+default is the newsmaster's e-mail address. (If the newsmaster, selected at
+configure time and defaulting to <literal>usenet</literal>, doesn't contain <literal>@</literal>, the address will consist of the newsmaster, a <literal>@</literal>, and the value of
+<emphasis>fromhost</emphasis>.)
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>fromhost
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Contains a domain used to construct e-mail addresses. The address of the
+local news administrator will be given as &lt;user&gt;@<emphasis>fromhost</emphasis>, where &lt;user&gt; is the newsmaster user set at compile time (<literal>usenet</literal> by default). This setting will also be used by
+<literal>mailpost(8)</literal> to fully qualify addresses and by
+<literal>inews(1)</literal> to generate the Sender: header (and From:
+header if missing). The value of the FROMHOST environment variable, if set,
+overrides this setting. The default is the fully-qualified domain name of
+the local host.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>localmaxartsize
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The maximum article size (in bytes) for locally posted articles. Articles
+larger than this will be rejected. Also see <emphasis>maxartsize</emphasis>. The default value is <literal>1000000</literal> (approximately 1MB).
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>mimecontenttype
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+If MIME headers are being added (see <emphasis>mimeversion</emphasis>), this parameter specifies the value of the Content-Type: header. The
+default value is
+<literal>text/plain; charset=US-ASCII</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>mimeencoding
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+If MIME headers are being added (see <emphasis>mimeversion</emphasis>), this parameter specifies the value of the Content-Transfer-Encoding:
+header. The default value is <literal>7bit</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>mimeversion
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+If this parameter is set, <literal>nnrpd(8)</literal> will add the required
+MIME (Multipurpose Internet Mail Extensions) headers to all articles that
+do not have a MIME-Version: header. This parameter specifies the MIME
+version, and should normally be <literal>1.0</literal>. Use of this parameter is not recommended under most circumstances, since
+there is no way to be certain that the added MIME headers will be correct
+for all articles. The default value is unset.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>moderatormailer
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The address to which to send submissions for moderated groups. It is only
+used if the <emphasis>moderators</emphasis> file doesn't exist, or if the moderated group to which an article is posted
+is not matched by any entry in that file, and takes the same form as an
+entry in the <emphasis>moderators</emphasis> file. In most cases,
+<literal>%s@moderators.isc.org</literal> is a good value for this parameter (<literal>%s</literal> is expanded into a form of the newsgroup name). See
+<literal>moderators(5)</literal> for more details about the syntax. The
+default is unset. If this parameter isn't set and an article is posted to a
+moderated group that does not have a matching entry in the <emphasis>moderators</emphasis> file, the posting will be rejected with an error.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>nnrpdauthsender
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to generate a Sender: header based on reader authentication. If
+this parameter is set, a Sender: header will be added to local posts
+containing the authenticated user name and the reader's hostname. If this
+is enabled but authentication does not return a username, the Sender:
+header will be removed from all posts even if the poster includes one. This
+is a boolean value and the default is false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>nnrpdposthost
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+If set, <literal>nnrpd(8)</literal> and <literal>rnews(1)</literal> will
+pass all locally posted articles to the specified host rather than trying
+to inject them locally. This should always be set if <emphasis>xrefslave</emphasis> is true. The default value is unset.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>nnrpdpostport
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The port on the remote server to connect to to post when <emphasis>nnrpdposthost</emphasis>
+is used. The default value is <literal>119</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>organization
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+What to put in the Organization: header if it is left blank by the poster.
+The value of the ORGANIZATION environment variable, if set, overrides this
+setting. The default is unset, which tells INN not to insert an
+Organization: header.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>spoolfirst
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+If true, <literal>nnrpd(8)</literal> will spool new articles rather than
+attempting to send them to <literal>innd(8).</literal> If false, nnrpd will
+spool articles only if it receives an error trying to send them to innd.
+Setting this to true can be useful if nnrpd must respond as fast as
+possible to the client; however, when set, articles will not appear to
+readers until they are given to innd. nnrpd won't do this; <literal>rnews -U</literal> must be run periodically to take the spooled articles and post them. This
+is a boolean value and the default is false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>strippostcc
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to strip To:, Cc:, and Bcc: headers out of all local posts via
+<literal>nnrpd(8).</literal> The primary purpose of this setting is to
+prevent abuse of the news server by posting to a moderated group and
+including To: or Cc: headers in the post so that the news server will send
+the article to arbitrary addresses. INN now protects against this abuse in
+other ways provided <emphasis>mta</emphasis> is set to a command that includes <literal>%s</literal> and honors it, so this is generally no longer needed. This is a boolean
+value and the default is false.
+
+
+</para>
+
+</listitem></varlistentry></variablelist>
+
+<para>
+<literal>nnrpd(8)</literal> has support for controlling high-volume posters
+via an exponential backoff algorithm, as configured by the following
+parameters.
+
+
+</para>
+
+<para>
+Exponential posting backoff works as follows: News clients are indexed by
+IP address (or username, see <emphasis>backoffauth</emphasis> below). Each time a post is received from an IP address, the time of
+posting is stored (along with the previous sleep time, see below). After a
+configurable number of posts in a configurable period of time,
+<literal>nnrpd(8)</literal> will activate posting backoff and begin to
+sleep for increasing periods of time before actually posting anything.
+Posts will still be accepted, but an increasingly reduced rate.
+
+
+</para>
+
+<para>
+After backoff has been activated, the length of time to sleep is computed
+based on the difference in time between the last posting and the current
+posting. If this difference is less than <emphasis>backoffpostfast</emphasis>, the new sleep time will be 1 + (previous sleep time * <emphasis>backoffk</emphasis>). If this difference is less than <emphasis>backoffpostslow</emphasis> but greater than
+<emphasis>backoffpostfast</emphasis>, then the new sleep time will equal the previous sleep time. If this
+difference is greater than <emphasis>backoffpostslow</emphasis>, the new sleep time is zero and posting backoff is deactivated for this
+poster.
+
+
+</para>
+
+<para>
+Exponential posting backoff will not be enabled unless <emphasis>backoffdb</emphasis> is set and <emphasis>backoffpostfast</emphasis> and <emphasis>backoffpostslow</emphasis> are set to something other than their default values.
+
+
+</para>
+
+<para>
+Here are the parameters that control exponential posting backoff:
+
+
+</para>
+
+<variableList>
+<varlistentry><term><emphasis>backoffauth
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to index posting backoffs by user rather than by source IP address.
+You must be using authentication in <literal>nnrpd(8)</literal> for a value
+of true to have any meaning. This is a boolean value and the default is
+false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>backoffdb
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The path to a directory, writeable by the news user, that will contain the
+backoff database. There is no default for this parameter; you must provide
+a path to an existing and writeable directory to enable exponential
+backoff.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>backoffk
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The amount to multiply the previous sleep time by if the user is still
+posting too quickly. A value of <literal>2</literal> will double the sleep time for each excessive post. The default value is <literal>1</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>backoffpostfast
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Postings from the same identity that arrive in less than this amount of
+time (in seconds) will trigger increasing sleep time in the backoff
+algorithm. The default value is <literal>0</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>backoffpostslow
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Postings from the same identity that arrive in greater than this amount of
+time (in seconds) will reset the backoff algorithm. Another way to look at
+this constant is to realize that posters will be allowed to post 86400/<emphasis>backoffpostslow</emphasis> posts per day. The default value is <literal>1</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>backofftrigger
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+This many postings are allowed before the backoff algorithm is triggered.
+The default value is <literal>10000</literal>.
+
+
+</para>
+
+</listitem></varlistentry></variablelist>
+
+</sect2>
+
+<sect2 id="pod2docbook-ch-1-sect-2-f"><title>Monitoring
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+These parameters control the behavior of <literal>innwatch(8),</literal>
+the program that monitors INN and informs the news administrator if
+anything goes wrong with it.
+
+
+</para>
+
+<variableList>
+<varlistentry><term><emphasis>doinnwatch
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to start <literal>innwatch(8)</literal> from rc.news. This is a
+boolean value, and the default is true.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>innwatchbatchspace
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Free space in <emphasis>pathoutgoing</emphasis>, in <literal>inndf(8)</literal> output units, at which
+<literal>innd(8)</literal> will be throttled by
+<literal>innwatch(8),</literal> assuming a default innwatch.ctl(5). The
+default value is <literal>800</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>innwatchlibspace
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Free space in <emphasis>pathdb</emphasis>, in <literal>inndf(8)</literal> output units, at which
+<literal>innd(8)</literal> will be throttled by
+<literal>innwatch(8),</literal> assuming a default innwatch.ctl(5). The
+default value is <literal>25000</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>innwatchloload
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Load average times 100 at <literal>innd(8)</literal> will be restarted by
+<literal>innwatch(8)</literal> (undoing a previous pause or throttle),
+assuming a default innwatch.ctl(5). The default value is <literal>1000</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>innwatchhiload
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Load average times 100 at which <literal>innd(8)</literal> will be
+throttled by <literal>innwatch(8),</literal> assuming a default
+innwatch.ctl(5). The default value is <literal>2000</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>innwatchpauseload
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Load average times 100 at which <literal>innd(8)</literal> will be paused
+by <literal>innwatch(8),</literal> assuming a default innwatch.ctl(5). The
+default value is <literal>1500</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>innwatchsleeptime
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+How long (in seconds) <literal>innwatch(8)</literal> will sleep between
+each check of INN. The default value is <literal>600</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>innwatchspoolnodes
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Free inodes in <emphasis>patharticles</emphasis> at which <literal>innd(8)</literal> will be throttled by
+<literal>innwatch(8),</literal> assuming a default innwatch.ctl(5). The
+default value is
+<literal>200</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>innwatchspoolspace
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Free space in <emphasis>patharticles</emphasis> and <emphasis>pathoverview</emphasis>, in <literal>inndf(8)</literal> output units, at which
+<literal>innd(8)</literal> will be throttled by
+<literal>innwatch(8),</literal> assuming a default innwatch.ctl(5). The
+default value is <literal>8000</literal>.
+
+
+</para>
+
+</listitem></varlistentry></variablelist>
+
+</sect2>
+
+<sect2 id="pod2docbook-ch-1-sect-2-g"><title>Logging
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+These parameters control what information INN logs.
+
+
+</para>
+
+<variableList>
+<varlistentry><term><emphasis>docnfsstat
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to start <literal>cnfsstat(8)</literal> when
+<literal>innd(8)</literal> is started. cnfsstat will log the status of all
+CNFS cycbuffs to syslog on a periodic basis. This is a boolean value and
+the default is false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>logartsize
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether the size of accepted articles (in bytes) should be written to the
+article log file. This is useful for flow rate statistics and is
+recommended. This is a boolean value and the default is true.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>logcancelcomm
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Set this to true to log <literal>ctlinnd cancel</literal> commands to syslog. This is a boolean value and the default is false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>logcycles
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+How many old logs <literal>scanlogs(8)</literal> keeps.
+<literal>scanlogs(8)</literal> is generally run by news.daily(8) and will
+archive compressed copies of this many days worth of old logs. The default
+value is <literal>3</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>logipaddr
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether the verified name of the remote feeding host should be logged to
+the article log for incoming articles rather than the last entry in the
+Path: header. The only reason to ever set this to false is due to some
+interactions with <emphasis>newsfeeds</emphasis> flags; see <literal>newsfeeds(5)</literal> for more information. This is a
+boolean value and the default is true.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>logsitename
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether the names of the sites to which accepted articles will be sent
+should be put into the article log file. This is useful for debugging and
+statistics and can be used by <literal>newsrequeue(8).</literal> This is a
+boolean value and the default is true.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>nnrpdoverstats
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether nnrpd overview statistics should be logged via syslog. This can be
+useful for measuring overview performance. This is a boolean value and the
+default is false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>nntpactsync
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+How many articles to process on an incoming channel before logging the
+activity. The default value is <literal>200</literal>.
+
+
+</para>
+
+<para>
+FIXME: This is a rather unintuitive name for this parameter.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>nntplinklog
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to put the storage API token for accepted articles (used by
+nntplink) in the article log. This is a boolean value and the default is
+false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>status
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+How frequently (in seconds) <literal>innd(8)</literal> should write out a
+status report. The report is written to <emphasis>pathlog</emphasis>/inn.status. If this is set to <literal>0</literal> or
+<literal>false</literal>, status reporting is disabled. The default value is <literal>0</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>timer
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+How frequently (in seconds) <literal>innd(8)</literal> should report
+performance timings to syslog. If this is set to <literal>0</literal> or <literal>false</literal>, performance timing is disabled. Enabling this is highly recommended, and
+<literal>innreport(8)</literal> can produce a nice summary of the timings.
+The default value is <literal>0</literal>.
+
+
+</para>
+
+</listitem></varlistentry></variablelist>
+
+</sect2>
+
+<sect2 id="pod2docbook-ch-1-sect-2-h"><title>System Tuning
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+The following parameters can be modified to tune the low-level operation of
+INN. In general, you shouldn't need to modify any of them except possibly <emphasis>rlimitnofile</emphasis>.
+
+
+</para>
+
+<variableList>
+<varlistentry><term><emphasis>badiocount
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+How many read or write failures until a channel is put to sleep or closed.
+The default value is <literal>5</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>blockbackoff
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Each time an attempted write returns EWOULDBLOCK,
+<literal>innd(8)</literal> will wait for an increasing number of seconds
+before trying it again. This is the multiplier for the sleep time. The
+default value is <literal>120</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>chaninacttime
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The time (in seconds) to wait between noticing inactive channels. The
+default value is <literal>600</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>chanretrytime
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+How many seconds to wait before a channel restarts. The default value is
+<literal>300</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>icdsynccount
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+How many article writes between updating the active and history files. The
+default value is <literal>10</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>maxforks
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+How many times to attempt a <literal>fork(2)</literal> before giving up.
+The default value is 10.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>nicekids
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+If set to anything other than <literal>0</literal>, all child processes of <literal>innd(8)</literal> will have this
+<literal>nice(2)</literal> value. This is usually used to give all child
+processes of <literal>innd(8)</literal> a lower priority (higher nice
+value) so that <literal>innd(8)</literal> can get the lion's share of the
+CPU when it needs it. The default value is <literal>4</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>nicenewnews
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+If set to anything greater than <literal>0</literal>, all <literal>nnrpd(8)</literal> processes that receive and process a
+NEWNEWS command will <literal>nice(2)</literal> themselves to this value
+(giving other nnrpd processes a higher priority). The default value is
+<literal>0</literal>. Note that this value will be ignored if set to a lower value than
+<emphasis>nicennrpd</emphasis> (or <emphasis>nicekids</emphasis> if <literal>nnrpd(8)</literal> is spawned from <literal>innd(8)).</literal>
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>nicennrpd
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+If set to anything greater than <literal>0</literal>, all <literal>nnrpd(8)</literal> processes will <literal>nice(1)</literal>
+themselves to this value. This gives other news processes a higher priority
+and can help <literal>overchan(8)</literal> keep up with incoming news (if
+that's the object, be sure <literal>overchan(8)</literal> isn't also set to
+a lower priority via
+<emphasis>nicekids</emphasis>). The default value is <literal>0</literal>, which will cause <literal>nnrpd(8)</literal> processes spawned from
+<literal>innd(8)</literal> to use the value of <emphasis>nicekids</emphasis> and <literal>nnrpd(8)</literal> run as a daemon to use the system default
+priority. Note that for <literal>nnrpd(8)</literal> processes spawned from
+<literal>innd(8),</literal> this value will be ignored if set to a value
+lower than <emphasis>nicekids</emphasis>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pauseretrytime
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Wait for this many seconds before noticing inactive channels. The default
+value is <literal>300</literal>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>peertimeout
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+How long (in seconds) an <literal>innd(8)</literal> incoming channel may be
+inactive before innd closes it. The default value is <literal>3600</literal> (an hour).
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>rlimitnofile
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The maximum number of file descriptors that <literal>innd(8)</literal> or
+<literal>innfeed(8)</literal> can have open at once. If
+<literal>innd(8)</literal> or <literal>innfeed(8)</literal> attempts to
+open more file descriptors than this value, it is possible the program may
+throttle or otherwise suffer reduced functionality. The number of open file
+descriptors is roughly the maximum number of incoming feeds and outgoing
+batches for <literal>innd(8)</literal> and the number of outgoing streams
+for <literal>innfeed(8).</literal> If this parameter is set to a negative
+value, the default limit of the operating system will be used; this will
+normally be adequate on systems other than Solaris. Nearly all operating
+systems have some hard maximum limit beyond which this value cannot be
+raised, usually either 128, 256, or 1024. The default value of this
+parameter is -1. Setting it to 1024 on Solaris systems is highly
+recommended.
+
+
+</para>
+
+</listitem></varlistentry></variablelist>
+
+</sect2>
+
+<sect2 id="pod2docbook-ch-1-sect-2-i"><title>Paths and File Names
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<variableList>
+<varlistentry><term><emphasis>overviewname
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The file name to use for overview data under the original overview
+mechanism. This value is not currently used. The default is <emphasis>.overview</emphasis>
+and probably never needs to be changed.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>patharchive
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Where to store archived news. The default value is <emphasis>pathspool</emphasis>/archive.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>patharticles
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The path to where the news articles are stored (for storage methods other
+than CNFS). The default value is <emphasis>pathspool</emphasis>/spool.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathbin
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The path to the news binaries. The default value is <emphasis>pathnews</emphasis>/bin.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathcontrol
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The path to the files that handle control messages. If you are using
+<literal>controlchan(8)</literal> (<emphasis>usecontrolchan</emphasis> is set), the code for handling each separate type of control message is
+located here. If you are using INN's built-in control message handling,
+each executable file in this directory represents a handler for the
+Control: message with the same name as that file. Be very careful what you
+put in this directory executable, as it can potentially be a severe
+security risk. The default value is
+<emphasis>pathbin</emphasis>/control.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathdb
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The path to the database files used and updated by the server (currently,
+active, active.times, history and its indices, and newsgroups). The default
+value is <emphasis>pathnews</emphasis>/db.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathetc
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The path to the news configuration files. The default value is
+<emphasis>pathnews</emphasis>/etc.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathfilter
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The path to the Perl, Tcl, and Python filters. The default value is
+<emphasis>pathbin</emphasis>/filter.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathhttp
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Where any HTML files (such as periodic status reports) are placed. If the
+news reports should be available in real-time on the web, the files in this
+directory should be served by a web server. The default value is the value
+of <emphasis>pathlog</emphasis>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathincoming
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Location where incoming batched news is stored. The default value is
+<emphasis>pathspool</emphasis>/incoming.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathlog
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Where the news log files are written. The default value is
+<emphasis>pathnews</emphasis>/log.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathnews
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The home directory of the news user and usually the root of the news
+hierarchy. There is no default; this parameter must be set in <emphasis>inn.conf</emphasis>
+or INN will refuse to start.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathoutgoing
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Default location for outgoing feed files. The default value is
+<emphasis>pathspool</emphasis>/outgoing.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathoverview
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The path to news overview files. The default value is
+<emphasis>pathspool</emphasis>/overview.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathrun
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The path to files required while the server is running and run-time state
+information. This includes lock files and the sockets for communicating
+with <literal>innd(8).</literal> This directory and the control sockets in
+it should be protected from unprivileged users other than the news user.
+The default value is <emphasis>pathnews</emphasis>/run.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathspool
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The root of the news spool hierarchy. This used mostly to set the defaults
+for other parameters, and to determine the path to the backlog directory
+for <literal>innfeed(8).</literal> The default value is <emphasis>pathnews</emphasis>/spool.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathtmp
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Where INN puts temporary files. For security reasons, this is not the same
+as the system temporary files directory (INN creates a lot of temporary
+files with predictable names and does not go to particularly great lengths
+to protect against symlink attacks and the like; this is safe provided that
+normal users can't write into its temporary directory). It must be on the
+same partition as <emphasis>pathincoming</emphasis> for <literal>rnews(1)</literal> to work correctly. The default value is set
+at configure time and defaults to <emphasis>pathnews</emphasis>/tmp.
+
+
+</para>
+
+</listitem></varlistentry></variablelist>
+
+</sect2>
+
+</sect1>
+
+<sect1 id="pod2docbook-ch-1-sect-3"><title>EXAMPLE
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+Here is a very minimalist example that only sets those parameters that are
+required.
+
+
+</para>
+
+<para>
+<screen>
+    mta:                /usr/lib/sendmail -oi -oem %s
+    pathhost:           news.example.com
+    pathnews:           /usr/local/news
+</screen>
+
+
+</para>
+
+<para>
+For a more comprehensive example, see the sample <emphasis>inn.conf</emphasis> distributed with INN and installed as a starting point; it contains all of
+the default values for reference.
+
+
+</para>
+
+</sect1>
+
+<sect1 id="pod2docbook-ch-1-sect-4"><title>HISTORY
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+Written by Rich <literal>$alz</literal> &lt;rsalz@uunet.uu.net&gt; for
+InterNetNews and since modified, updated, and reorganized by innumerable
+other people.
+
+
+</para>
+
+<para>
+$Id$
+
+
+</para>
+
+</sect1>
+
+<sect1 id="pod2docbook-ch-1-sect-5"><title>SEE ALSO
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+<literal>inews(1),</literal> <literal>innd(8),</literal>
+<literal>innwatch(8),</literal> <literal>nnrpd(8),</literal>
+<literal>rnews(1).</literal>
+
+
+</para>
+
+<para>
+Nearly every program in INN uses this file to one degree or another. The
+above are just the major and most frequently mentioned ones.
+
+</para>
+
+</sect1>
+
+</chapter>
+
+
+</book>    <!-- End of the book -->
