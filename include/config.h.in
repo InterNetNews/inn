@@ -501,6 +501,9 @@
 /* Define if you have a dbm library. */
 #undef HAVE_DBM
 
+/* Some versions of glibc need this defined for pread/pwrite. */
+#undef _GNU_SOURCE
+
 /* Define if OpenSSL is available. */
 #undef HAVE_SSL
 

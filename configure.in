@@ -687,6 +687,14 @@ if test x"$DO_LFS" = xDO ; then
         AC_MSG_RESULT(no)
         AC_MSG_ERROR([Large files not supported on this platform])
         ;;
+    *-linux*)
+        AC_MSG_RESULT(maybe)
+        LFS_CFLAGS="-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+        LFS_LDFLAGS=""
+        LFS_LIBS=""
+        AC_DEFINE([_GNU_SOURCE], 1,
+                  [Some versions of glibc need this defined for pread/pwrite.])
+        ;;
     *-solaris*)
         AC_MSG_RESULT(ok)
         AC_PATH_PROG(GETCONF, getconf)
