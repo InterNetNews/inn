@@ -754,11 +754,6 @@
   ||##[autoconf]
   ||#### =()<WANT_PGPVERIFY		@<WANT_PGPVERIFY>@>()=
   ||WANT_PGPVERIFY		@DO_PGP@
-[IN1.7=@14][WDF=autoconf][WOR=yes]
-  ||##  PGP binary.
-  ||##[autoconf]
-  ||#### =()<_PATH_PGP		@<_PATH_PGP>@>()=
-  ||_PATH_PGP		@ac_cv_subst_path_pgp@
 [IN1.7=@15][comments]
   ||
   ||##
