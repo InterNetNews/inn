@@ -67,10 +67,10 @@ struct tst *tst_init(int width);
    option determiens the behavior.  If set to TST_REPLACE, the data for that
    key is replaced with the new data value and the old value is returned in
    exist_ptr.  Otherwise, TST_DUPLICATE_KEY is returned.  If key is zero
-   length, TST_NULL_KEY is returned.  On success, TST_OK is returned.
+   length, TST_NULL_KEY is returned.  If data is NULL, TST_NULL_DATA is
+   returned.  On success, TST_OK is returned.
 
-   The data argument must never be NULL, as NULL is returned by tst_search to
-   indicate that a key was not found.  For a simple existence tree, use the
+   The data argument may not be NULL.  For a simple existence tree, use the
    struct tst pointer as the data. */
 int tst_insert(const unsigned char *key, void *data, struct tst *, int option,
                void **exist_ptr);
