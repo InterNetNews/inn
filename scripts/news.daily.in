@@ -75,8 +75,8 @@ REASON=
 SCANARG=
 DOGROUPBASEEXPIRY=false
 
-if [ "${GROUPBASEEXPIRY}" = "true" ];
-    if [ "${ENABLEOVERVIEW}" = "true" ];
+if [ "${GROUPBASEEXPIRY}" = "true" ]; then
+    if [ "${ENABLEOVERVIEW}" = "true" ]; then
 	DOGROUPBASEEXPIRY=true
     else
 	DOEXPIREOVER=false
