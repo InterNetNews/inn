@@ -86,24 +86,35 @@ write_test_config(FILE *file)
     return true;
 }
 
-/* Read in a configuration file from the provided FILE *, write it to disk,
-   parse the temporary config file, and return the resulting config_group in
-   the pointer passed as the second parameter.  Returns true on success,
-   false on end of file.  The group is parsed with a warning handler that
-   saves any warning messages into the errors global. */
-static bool
-parse_test_config(FILE *file, config_group *group)
+/* Parse a given config file with errors, setting the appropriate error
+   handler for the duration of the parse to save errors into the errors
+   global.  Returns the resulting config_group. */
+static config_group
+parse_error_config(const char *filename)
 {
-    if (!write_test_config(file))
-        return false;
+    config_group group;
 
     if (errors != NULL) {
         free(errors);
         errors = NULL;
     }
-    warn_set_handlers(1, string_error);
 
-    *group = config_parse_file("config/tmp");
+    warn_set_handlers(1, string_error);
+    group = config_parse_file(filename);
+    warn_set_handlers(1, error_log_stderr);
+    return group;
+}
+
+/* Read in a configuration file from the provided FILE *, write it to disk,
+   parse the temporary config file, and return the resulting config_group in
+   the pointer passed as the second parameter.  Returns true on success,
+   false on end of file. */
+static bool
+parse_test_config(FILE *file, config_group *group)
+{
+    if (!write_test_config(file))
+        return false;
+    *group = parse_error_config("config/tmp");
     unlink("config/tmp");
     return true;
 }
@@ -165,9 +176,11 @@ main(void)
     bool b_value = false;
     long l_value = 1;
     const char *s_value;
+    char *long_param, *long_value;
     int n;
+    FILE *tmpfile;
 
-    puts("61");
+    puts("69");
 
     if (access("config/valid", F_OK) < 0)
         if (access("lib/config/valid", F_OK) == 0)
@@ -211,25 +224,65 @@ main(void)
 
     /* Strings. */
     ok(26, config_param_string(group, "string1", &s_value));
-    ok_string(27, s_value, "foo");
+    ok_string(27, "foo", s_value);
     ok(28, config_param_string(group, "string2", &s_value));
-    ok_string(29, s_value, "bar");
+    ok_string(29, "bar", s_value);
     ok(30, config_param_string(group, "string3", &s_value));
-    ok_string(31, s_value, "this is a test");
+    ok_string(31, "this is a test", s_value);
     ok(32, config_param_string(group, "string4", &s_value));
-    ok_string(33, s_value, "this is a test");
+    ok_string(33, "this is a test", s_value);
     ok(34, config_param_string(group, "string5", &s_value));
-    ok_string(35, s_value,
-              "this is \a\b\f\n\r\t\v a test \' of \" escapes \?\\");
+    ok_string(35, "this is \a\b\f\n\r\t\v a test \' of \" escapes \?\\",
+              s_value);
     ok(36, config_param_string(group, "string6", &s_value));
-    ok_string(37, s_value, "# this is not a comment");
+    ok_string(37, "# this is not a comment", s_value);
     ok(38, config_param_string(group, "string7", &s_value));
-    ok_string(39, s_value, "lost \nyet?");
+    ok_string(39, "lost \nyet?", s_value);
 
     config_free(group);
 
+    /* Missing newline. */
+    group = config_parse_file("config/no-newline");
+    ok(40, group != NULL);
+    if (group == NULL) {
+        ok(41, false);
+        ok(42, false);
+    } else {
+        ok(41, config_param_string(group, "parameter", &s_value));
+        ok_string(42, "value", s_value);
+        config_free(group);
+    }
+
+    /* Extremely long parameter and value. */
+    tmpfile = fopen("config/tmp", "w");
+    if (tmpfile == NULL)
+        sysdie("cannot create config/tmp");
+    long_param = xcalloc(20001, 1);
+    memset(long_param, 'a', 20000);
+    fprintf(tmpfile, "%s: ", long_param);
+    long_value = xcalloc(64 * 1024 + 1, 1);
+    memset(long_value, 'b', 64 * 1024);
+    fprintf(tmpfile, "%s", long_value);
+    fclose(tmpfile);
+    group = config_parse_file("config/tmp");
+    ok(43, group != NULL);
+    if (group == NULL) {
+        ok(44, false);
+        ok(45, false);
+    } else {
+        ok(44, config_param_string(group, long_param, &s_value));
+        ok_string(45, long_value, s_value);
+        config_free(group);
+    }
+    free(long_param);
+    free(long_value);
+
     /* Errors. */
-    n = test_errors(40);
+    group = parse_error_config("config/null");
+    ok(46, group == NULL);
+    ok_string(47, "config/null: invalid NUL character found in file\n",
+              errors);
+    n = test_errors(48);
     n = test_warnings(n);
 
     return 0;
