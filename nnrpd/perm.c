@@ -141,11 +141,12 @@ static int	ConfigBitsize;
 #define PERMvirtualhost		51
 #define PERMnewsmaster		52
 #define PERMlocaladdress	53
+#define PERMrejectwith		54
 #ifdef HAVE_SSL
-#define PERMrequire_ssl		54
-#define PERMMAX			55
+#define PERMrequire_ssl		55
+#define PERMMAX			56
 #else
-#define PERMMAX			54
+#define PERMMAX			55
 #endif
 
 #define TEST_CONFIG(a, b) \
@@ -224,6 +225,7 @@ static CONFTOKEN PERMtoks[] = {
   { PERMvirtualhost, "virtualhost:" },
   { PERMnewsmaster, "newsmaster:" },
   { PERMlocaladdress, "localaddress:" },
+  { PERMrejectwith, "reject_with:" },
 #ifdef HAVE_SSL
   { PERMrequire_ssl, "require_ssl:" },
 #endif
@@ -383,6 +385,8 @@ static ACCESSGROUP *copy_accessgroup(ACCESSGROUP *orig)
 	ret->post = COPY(orig->post);
     if (orig->users)
 	ret->users = COPY(orig->users);
+    if (orig->rejectwith)
+	ret->users = COPY(orig->rejectwith);
     if (orig->fromhost)
 	ret->fromhost = COPY(orig->fromhost);
     if (orig->pathhost)
@@ -497,6 +501,8 @@ static void free_accessgroup(ACCESSGROUP *del)
 	DISPOSE(del->post);
     if (del->users)
 	DISPOSE(del->users);
+    if (del->rejectwith)
+	DISPOSE(del->rejectwith);
     if (del->fromhost)
 	DISPOSE(del->fromhost);
     if (del->pathhost)
@@ -726,6 +732,10 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
       case PERMusers:
 	curaccess->users = COPY(tok->name);
 	CompressList(curaccess->users);
+	SET_CONFIG(oldtype);
+	break;
+      case PERMrejectwith:
+	curaccess->rejectwith = COPY(tok->name);
 	SET_CONFIG(oldtype);
 	break;
       case PERMnewsgroups:
@@ -1114,6 +1124,7 @@ static void PERMreadfile(char *filename)
 
 		/* stuff that belongs in an accessgroup */
 	      case PERMusers:
+	      case PERMrejectwith:
 	      case PERMnewsgroups:
 	      case PERMread:
 	      case PERMpost:
@@ -1425,6 +1436,13 @@ void PERMgetpermissions()
     }
     if (i >= 0) {
 	/* found the right access group */
+	if (access_realms[i]->rejectwith) {
+	    syslog(L_ERROR, "%s rejected by rule (%s)",
+		ClientHost, access_realms[i]->rejectwith);
+	    Reply("%d Permission denied:  %s\r\n",
+		NNTP_ACCESS_VAL, access_realms[i]->rejectwith);
+	    ExitWithStats(1, TRUE);
+	}
 	if (access_realms[i]->read) {
 	    cp = COPY(access_realms[i]->read);
 	    PERMspecified = NGgetlist(&PERMreadlist, cp);

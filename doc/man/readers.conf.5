@@ -457,6 +457,12 @@ access, one can have just a read: parameter and no post: parameter.)
 If this parameter is present, this access group is only considered when
 finding privileges for users matching auth groups with this same key:
 parameter.
+.Ip "\fBreject_with:\fR" 4
+.IX Item "reject_with:"
+If this parameter is present, a client matching this block will be
+disconnected with a \*(L"Permission denied\*(R" message containing the contents
+(a \*(L"reason\*(R") of this parameter.  Some newsreaders will then display the 
+reason to the user.
 .Ip "\fBlocaltime:\fR" 4
 .IX Item "localtime:"
 If a Date: header is not included in a posted article, \fInnrpd\fR\|(8) normally

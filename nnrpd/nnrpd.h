@@ -53,6 +53,7 @@ typedef struct _ACCESSGROUP {
     char *read;
     char *post;
     char *users; 
+    char *rejectwith;
     int allownewnews;
     int locpost;
     int allowapproved;

@@ -335,6 +335,13 @@ If this parameter is present, this access group is only considered when
 finding privileges for users matching auth groups with this same key:
 parameter.
 
+=item B<reject_with:>
+
+If this parameter is present, a client matching this block will be
+disconnected with a "Permission denied" message containing the contents
+(a "reason") of this parameter.  Some newsreaders will then display the 
+reason to the user.
+
 =item B<localtime:>
 
 If a Date: header is not included in a posted article, nnrpd(8) normally
