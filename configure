@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.163.2.23 
+# From configure.in Revision: 1.163.2.24 
 
 
 ## libtool.m4 - Configure libtool for the target system. -*-Shell-script-*-
@@ -4836,7 +4836,7 @@ done
 
 
 if test x"$ac_cv_header_ndbm_h" = xno ; then
-    for ac_hdr in db1/ndbm.h
+    for ac_hdr in db1/ndbm.h gdbm-ndbm.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6

@@ -18,8 +18,12 @@
 # ifdef HAVE_NDBM_H
 #  include <ndbm.h>
 # else
-#  ifdef HAVE_DB1_NDBM_H
-#   include <db1/ndbm.h>
+#  ifdef HAVE_GDBM_NDBM_H
+#   include <gdbm-ndbm.h>
+#  else
+#   ifdef HAVE_DB1_NDBM_H
+#    include <db1/ndbm.h>
+#   endif
 #  endif
 # endif
 #endif
