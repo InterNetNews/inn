@@ -1031,7 +1031,8 @@ ARTpost(char *article,
 
 #if defined(DO_PERL)
     /* Calls the Perl subroutine for headers management */
-    if ((p = HandleHeaders(article)) != NULL) {
+    p = PERMaccessconf->nnrpdperlfilter ? HandleHeaders(article) : NULL;
+    if (p != NULL) {
 	if (idbuff) {
 	    if (modgroup)
 		snprintf(idbuff, sizeof(idbuff),
