@@ -768,7 +768,6 @@ DoMemArt(ARTHANDLE *art, BOOL Overview, BOOL Update, FILE *out, FILE *index, BOO
 		if (*p == '\t' || *p == '\n' || *p == '\r')
 		    *p = ' ';
 	}
-	BUFFappend(&Buff, NUL, STRLEN(NUL));
 	if (!OVERstore(art->token, Buff.Data, Buff.Left)) {
 	    (void)fprintf(stderr, "Can't write overview data, %s\n", strerror(errno));
 	    exit(1);
@@ -1528,7 +1527,7 @@ main(int ac, char *av[])
     ac -= optind;
     av += optind;
     if (ac || (Overwrite && Update) || (Verbose && !Update) ||
-	(Update && Translate != NO_TRANS))
+	(Update && Translate != NO_TRANS) || (Translate == FROM_HIST && !OverPath))
 	Usage();
     if ((p = strrchr(TextFile, '/')) == NULL) {
 	/* find the default history file directory */
@@ -1593,7 +1592,7 @@ main(int ac, char *av[])
     ARTreadschema(Overview);
     if (Overview) {
 	OVERmmap = innconf->overviewmmap;
-	if (OVERmmap)
+	if (Translate == FROM_HIST && OVERmmap)
 	    val = TRUE;
 	else
 	    val = FALSE;
