@@ -1,8 +1,8 @@
 ##  $Revision$
 include ../../Makefile.global
 
-CC	= ../$(LIBCC)
-CP	= ../$(LIBTOOL) cp
+CC	= $(UPLIBCC)
+CP	= $(UPLIBTOOL) cp
 
 CFLAGS	= $(GCFLAGS) -I../../include -I..
 
@@ -11,11 +11,12 @@ IFTRUE	= @$(SHELL) ../iftrue.sh
 SOURCES = cnfs.c
 OBJECTS = cnfs.o
 LOBJECTS = cnfs.lo
+ROBJECTS = cnfs.$(EXTOBJ)
 
 all:			$(OBJECTS) moveobjs
 
 moveobjs: $(OBJECTS)
-	$(CP) -p $(LOBJECTS) ../objs
+	$(CP) -p $(ROBJECTS) ../objs
 
 clobber clean:
 	rm -f *.o *.lo obj/*.o *~
