@@ -366,7 +366,7 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(fcntl.h limits.h memory.h sgtty.h stdarg.h)
 AC_CHECK_HEADERS(stdlib.h string.h sys/file.h sys/filio.h sys/ioctl.h)
 AC_CHECK_HEADERS(sys/select.h sys/signal.h sys/time.h syslog.h unistd.h)
-AC_CHECK_HEADERS(varargs.h dirent.h wait.h getopt.h)
+AC_CHECK_HEADERS(varargs.h dirent.h wait.h getopt.h sys/sysinfo.h)
 
 # Digital Unix malloc.h looks pretty broken (no function declarations).
 if test X${DECUNIX} = Xyes
