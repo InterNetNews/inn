@@ -510,6 +510,16 @@ Long-Term Projects:
   should be possible once we have a history API that allows changing the
   storage location of an article in-place.
 
+* Set up the infrastructure required so that INN can use alloca.  This
+  would significantly decrease the number of calls to malloc needed and
+  would be a lot more convenient.
+
+* A serious investigation into whether INN could use a garbage collector
+  is probably a good idea.  The network buffers probably need to be
+  handled with decidated code, but there are a lot of other incidental
+  allocations and deallocations that may be much more efficient and safer
+  using a garbage collector.
+
 
 Complete Code Reorganization
 
