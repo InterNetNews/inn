@@ -282,7 +282,7 @@ incoming_conf
     'xrefslave',		0,
     'complaints',		0,
     'spoolfirst',		0,
-    'writelinks',		0,
+    'immediatecancel',		0,
     'timer',			0,
     'status',			0,
     'articlemmap',		0,

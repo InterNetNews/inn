@@ -98,7 +98,7 @@ nnrpdposthost:
 nnrpdpostport:		119
 spoolfirst:		false
 wireformat:		false
-writelinks:		true
+immediatecancel:	false
 articlemmap:		false
 bindaddress:		all
 sourceaddress:		any
