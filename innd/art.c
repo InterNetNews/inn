@@ -601,6 +601,7 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
     vp->iov_base = HDR(_xref);
     vp->iov_len  = ARTheaders[_xref].Length;
     size += (vp++)->iov_len;
+    ARTheaders[_xref].Found = 1;
 
 
     end = vp;
