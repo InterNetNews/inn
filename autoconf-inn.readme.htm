@@ -1,0 +1,556 @@
+<A NAME=INN_Autoconfigure></A><CENTER><H2>INN Autoconfigure</H2><BR>
+<BR>
+</CENTER><STRONG>Overview of Changes.</STRONG><BR>
+There are four &quot;source&quot; files which should ship in the standard tar.<BR>
+<UL><LI>	 config/config.scoreboard<BR>
+	<UL>This is the main source file.  config.dist and config.data are generated files now.<BR>
+<BR>
+		NOTE TO INN-DEVELOPERS: DO NOT EDIT CONFIG.DIST or CONFIG.DATA<BR>
+		ALL CHANGES TO CONFIG.DATA SHOULD BE CHANGED IN CONFIG.SCOREBOARD.<BR>
+<BR>
+		config.scoreboard is used to generate:<BR>
+		<UL>	config.data.in  (used by the configure script to generate config.data)<BR>
+			config.dist<BR>
+		</UL><BR>
+	</UL><BR>
+<LI>	 configure.in<BR>
+	<UL>	This is the configure generation script.  Run through autoconf-2.12<BR>
+	</UL><BR>
+<LI>	 config/config.dist.subst<BR>
+	<UL>	used to generate config.dist from config.data.in<BR>
+	</UL><BR>
+<LI>	 autoconf-inn.readme<BR>
+	<UL>	external documentation of the above, describing action items remaining, migration paths, etc.<BR>
+	</UL><BR>
+<BR>
+</UL>Additionally there are three &quot;pre-generated files&quot; which should ship in the standard tar.   This will permit installation without autoconf.  It will also allow configuration by editting config.dist (or config.data) by hand (without running configure.)<BR>
+<UL><LI>	 configure<BR>
+<LI>	 config/config.data.in<BR>
+<LI>	 config/config.dist<BR>
+<BR>
+</UL><STRONG>Appropriate Makefile rules</STRONG> <BR>
+(add to the appropriate Makefiles.)<BR>
+<BR>
+<PRE>configure: configure.in
+	/path-to-autoconf-2.12/autoconf -m/path-to-autoconf-2.12
+
+</PRE>And in the config/Makefile:<BR>
+<BR>
+<PRE>config.data.in: config.scoreboard
+	fgrep &quot;  ||&quot; config.scoreboard | sed 's/  ||//g' &gt;config.data.in
+
+config.dist: config.data.in config.dist.subst
+	cp config.data.in config.dist
+	subst -f config.dist.subst config.dist
+
+</PRE><STRONG>INN-autoconf Usage documentation</STRONG><BR>
+<A HREF=#INN_autoconf_Running_the_shell_script>INN-autoconf Running the shell script</A><BR>
+<BR>
+<STRONG>INN-autoconf Developer documentation</STRONG><BR>
+<A HREF=#INN_autoconf_Migration_away_from_config_data>INN-autoconf Migration away from config.data</A><BR>
+<A HREF=#INN_autoconf_config_scoreboard>INN-autoconf config.scoreboard</A><BR>
+<A HREF=#INN_autoconf_Software_Action_Items>INN-autoconf Software Action Items</A><BR>
+<A HREF=#INN_autoconf_Completed_Software_Action_Items>INN-autoconf Completed Software Action Items</A><BR>
+<BR>
+<BR>
+<HR>
+<A NAME=INN_autoconf_Running_the_shell_script></A><CENTER><H3>INN-autoconf Running the shell script</H3><BR>
+<BR>
+</CENTER><STRONG>Requirements to run configure</STRONG><BR>
+<UL><LI>	PATH variable must be set, to find awk, sh, Mail, etc.<BR>
+	<BR>
+<LI>	 Some reasonable compiler must be in the path.<BR>
+	<BR>
+<LI>	 /usr/ucb/cc is rejected as &quot;bogus&quot;, even if it is a symlink to elsewhere.<BR>
+	<BR>
+<LI>	 If gcc is on your system, then make sure it is in the path.<BR>
+<BR>
+<LI>	 configure requires config/config.data.in also<BR>
+<BR>
+<BR>
+</UL><STRONG>Procedure</STRONG><BR>
+<UL><LI>	 NOTE: MAKE A BACKUP COPY OF ANY config.data YOU INTEND TO SAVE.<BR>
+	It will be replaced when running configure!<BR>
+<BR>
+<LI>	Run<BR>
+<PRE>	<UL>	configure </UL>
+</PRE>	(This will generate config/config.data)<BR>
+<BR>
+<LI>	Edit config/config.data as appropriate.  Items which are marked [autoconf] are either determined automatically<BR>
+	or can be adjusted with a command line parameter.<BR>
+<BR>
+</UL><STRONG>Command line options</STRONG><BR>
+To see a list of all command line parameters accepted as options:<BR>
+<PRE>	configure --help | more
+
+</PRE>The options most likely to be changed from site to site:<BR>
+<PRE>  --bindir=DIR            user executables in DIR [EPREFIX/bin]
+  --mandir=DIR            man documentation in DIR [PREFIX/man]
+  --enable-pgp-verify     use pgp control verification
+  --with-tcl              TCL script support
+  --with-perl             Perl script support
+  --with-config-path=PATH Configurations pathname (default /var/news/etc)
+  --with-var-path=PATH    Data files (history, etc) pathname (default /var/news/etc)
+  --with-run-path=PATH    Running information pathname (default /var/news/run)
+  --with-lock-path=PATH   Directory for file locking (default /var/news/lock)
+  --with-spool-dir=PATH   News storage (default /var/news/spool)
+  --with-log-dir=PATH     Logging directory (default /var/log/news)
+  --with-news-user=UID    News user id (default news)
+  --with-news-group=GID   News group id (default news)
+  --with-tmp-path=PATH    Temporary files directory
+</PRE><HR>
+<A NAME=INN_autoconf_Migration_away_from_config_data></A><CENTER><H2>INN-autoconf Migration away from config.data</H2><BR>
+<BR>
+</CENTER><STRONG>Eventual goal: removal of config.data</STRONG><BR>
+config.data will go away when all of the following are true:<BR>
+<UL><LI>	 all items which are confparam are supported in config.cache<BR>
+<BR>
+<LI>	 all items which are AC_SUBST are supported in config.cache.<BR>
+		configure.in forces a binary choice (either/or) for some items:<BR>
+			pid_t either int or pid_t<BR>
+			off_t either long or off_t<BR>
+		This is actually unacceptable.<BR>
+<BR>
+<LI>	 subst is not needed, and there are only  AC_SUBST target files.<BR>
+<BR>
+<LI>	 all items which are WDF=fixed and WOR=yes are in inn.conf<BR>
+		(until then, config.data has the only way to change them.)<BR>
+<BR>
+<LI>	 documentation is moved elsewhere<BR>
+<BR>
+</UL><STRONG>Procedure for moving items out of config.data</STRONG><BR>
+<UL><LI>	 IMPORTANT: Edit only config.scoreboard.<BR>
+<BR>
+<LI>	 config.scoreboard is the place where all configurable items are documented, so even if something is removed,<BR>
+	or obsoleted, it might be better to comment it out, rather than deleting lines.<BR>
+	<BR>
+<LI>	 Comment lines in config.scoreboard begin with the four character sequence:<BR>
+			'<SAMP> #||</SAMP>'<BR>
+<BR>
+<BR>
+</UL><STRONG>Procedure for adding items to config.data</STRONG><BR>
+<UL><LI>	 IMPORTANT: Edit only config.scoreboard.<BR>
+<BR>
+<LI>	 Should not want to do this very often.  Only compile-time items should get added to config.data, every other configurable should be done through inn.conf.  Want to move more items from [WDF=confparam][WOR=yes] to <BR>
+[</UL>WDF=fixed][WOR=yes]<BR>
+<BR>
+	Every WDF=confparam item requires an ac_cv_ and config.data variable.  And possibly a inn.conf item.    This is a lot of overhead, which should be minimized.  If the default behavior will be acceptable or used in 95% of the installations, then it is appropriate to have the default be WDF=fixed, and change it via inn.conf at runtime.<BR>
+<BR>
+<UL><LI>	If the default is autoconf, or will be a AC_SUBST macro, then write the autoconf code for it. (See procedure for<BR>
+</UL>adding items to configure.in)<BR>
+<BR>
+<STRONG>Procedure for adding items to configure.in</STRONG><BR>
+<UL><LI>	 All autoconf SUBST value targets should be names of the form:<BR>
+<PRE>	ac_cv_subst_xxxxxx
+
+</PRE>	Where xxxxx matches the name in the config.data file, converted to all lowercase.<BR>
+	Example:<BR>
+<PRE>	  ||ACT_STYLE		@ac_cv_subst_act_style@
+
+<LI></PRE>	 All subst value targets should be overridable in config.cache.<BR>
+<BR>
+<LI>	 There are &quot;multi-layered&quot; subst value determination:<BR>
+	First a &quot;yes&quot; &quot;no&quot; value is determined (perhaps by a standard autoconf test)<BR>
+	But config.data does not want YES or NO  settings.<BR>
+<BR>
+	The yes or no value is converted to the actual required ac_subst value<BR>
+	through the YN_to_cv_subst() macro.  This macro tests to see if the<BR>
+	value has already been set (which permits cache overrides), and sets one or the other two values<BR>
+	if not.<BR>
+<BR>
+</UL>Make sure the string tests are correct.  May fail if not defined.<BR>
+<UL><LI>	 example:<BR>
+<PRE>		if $not_defined = &quot;whatever&quot;
+</PRE>	Could fail: if $not_define<BR>
+	Solution: prefix with x$notdefined, or fail if notdefined?<BR>
+<BR>
+<BR>
+</UL><STRONG>Procedure for changing config.dist</STRONG><BR>
+<UL><LI><STRONG>	 </STRONG>IMPORTANT: Edit only config.scoreboard and config.dist.subst<BR>
+<BR>
+<LI>	 Change the default value by changing config.dist.subst<BR>
+</UL><HR>
+<HR>
+<A NAME=INN_autoconf_config_scoreboard></A><CENTER><H2>INN-autoconf config.scoreboard</H2><BR>
+<BR>
+</CENTER><STRONG>Purpose of config.scoreboard</STRONG><BR>
+<UL><LI>	 Source file for config.data.in<BR>
+		<SAMP>fgrep &quot;  ||&quot; config.scoreboard | sed 's/  ||//g' &gt;config.data.in</SAMP><BR>
+<BR>
+<LI>	 Indirectly the source file for config.dist.<BR>
+		Config.data.in is the source file for the distribution config.dist<BR>
+<PRE>		cp config.data.in config.data
+		subst -f config.dist.subst config.data
+
+<LI></PRE>	 Documentation <BR>
+		previous location<BR>
+		How the default is configured<BR>
+		migration of entries to autoconf and inn.conf<BR>
+<BR>
+</UL><STRONG>Line Syntax</STRONG><BR>
+<UL><LI>	 Lines beginning with the four characters ' <SAMP>  ||</SAMP>' are written to config.data.in<BR>
+<BR>
+<LI>	 Lines beginning with the four characters ' <SAMP> #||</SAMP>' are comments, only appearing in config.scoreboard<BR>
+<BR>
+<LI>	 Beginning with a space allows easy parsing by custom development tools.  <BR>
+		Each entry starts with a non-blank in column 0.<BR>
+<BR>
+</UL><STRONG>Entries</STRONG><BR>
+<UL><LI>	 Entries appear in the order they need to be written to config.data.in<BR>
+<BR>
+<LI>	 Each entry starts with a line with a non-blank character (a left square bracket='[') in column 0.<BR>
+		This describes <BR>
+			the location of the entry in the old config.data (for 1.7), <BR>
+			how the compiled-in default is selected.  <BR>
+			whether run-time overriding is desired, <BR>
+			the priority for migration.<BR>
+<BR>
+</UL><STRONG>Descriptor tags</STRONG><BR>
+ &quot;IN1.7&quot;:		(&quot;Where it is now&quot;)<BR>
+  One of:<BR>
+     @config.data:section-number<BR>
+     fixed<BR>
+     not	does not exist: (a new feature)<BR>
+<BR>
+ &quot;WDF&quot; Want-default:	(&quot;What selects the compile-time default&quot;)<BR>
+ One of:<BR>
+     fixed<BR>
+     autoconf		(can be user-specified in config.cache also)<BR>
+     confparam		(configure command line options.  There are defaults if omitted)<BR>
+<BR>
+ &quot;WOR&quot; Want-override:	(&quot;How is the default behavior overridden&quot;)<BR>
+ One of<BR>
+     no		Can only be changed at compile-time<BR>
+     yes	run-time<BR>
+<BR>
+ &quot;CUR&quot;  Current:  	(&quot;Where it is in the 1.8-current tree&quot;  How much<BR>
+                       progress has been made.)<BR>
+     1.7	(not ready.  Still in the 1.7 state)<BR>
+     WDF	Compile-time default is as wanted<BR>
+     WDF&amp;inn.conf	Compile-time default is as wanted, and can<BR>
+			be overridden via run-time code.<BR>
+     <BR>
+ &quot;P&quot; PRIORITY:		(&quot;Priority for moving to the wanted location:&quot;)<BR>
+ One of<BR>
+     --	(complete)<BR>
+     high<BR>
+     moderate<BR>
+     low<BR>
+<BR>
+Example:<BR>
+<BR>
+[<PRE>IN1.7=@4][WDF=autoconf][WOR=no][CUR=1.7][P=high]
+  ||##  How should non-blocking I/O be done?  Pick IOCTL or FCNTL.
+  ||#### =()&lt;NBIO_STYLE		@&lt;NBIO_STYLE&gt;@&gt;()=
+  ||NBIO_STYLE		@DO_FIONBIO@
+
+</PRE><HR>
+<A NAME=Requirements_specification__INN_configuration_method></A>Requirements specification: INN configuration method<BR>
+The current config.data serves a couple of purposes:<BR>
+    1. Allows configuration for compiler and operating system.<BR>
+<BR>
+    2. Allows selection of certain behavior of INN<BR>
+          (where directories are, CHECK_INCLUDED_TEXT, etc)<BR>
+<BR>
+    3. Documents the choices and selections of the settings.<BR>
+<BR>
+    4. Allows sharing and comparing with others using similar<BR>
+          systems.  I.e. &quot;It _is_ useful on other systems.&quot;<BR>
+<BR>
+    5. Provides an upgrade path for previous config.data, because<BR>
+          config.data is a subst &quot;victim&quot; file.  (This is<BR>
+          why INN FAQ part 9 can be so &quot;compact.&quot;)<BR>
+<BR>
+    6. Provides a great deal of frustration to first-time (and<BR>
+          some long time) INN administrators.<BR>
+<BR>
+<HR>
+To make sure all AC_SUBST variables are replaced:<BR>
+<PRE>	fgrep -v &quot;#&quot; config/config.auto | fgrep &quot;@&quot;
+
+</PRE>To get config.dist.subst from a standard config.data<BR>
+<PRE>	fgrep -v &quot;#&quot; config/config.dist &gt;config.dist.subst
+
+</PRE>Creating the dist file<BR>
+<PRE>cp config.auto.in config.dist
+subst -f config.dist.subst config.dist
+
+</PRE>Compare the dist file<BR>
+<PRE>	fgrep -v &quot;##[autoconf]&quot; &lt;config.dist | sed 's/()=\[autoconf\]/()=/' &gt;out
+	diff out config.dist.1.8
+
+
+
+</PRE><HR>
+<A NAME=INN_autoconf_Software_Action_Items></A><CENTER><H3>INN-autoconf Software Action Items</H3><BR>
+</CENTER>These are items which are not completed.<BR>
+Tagged with severity:<BR>
+	[critical]<BR>
+	[defect]<BR>
+	[annoyance]<BR>
+	[improvement]<BR>
+	[wish]<BR>
+	[maintenance]<BR>
+Or a completion tag:<BR>
+	[d]	Done. completed<BR>
+	[reported]	Should be changed elsewhere.<BR>
+	[partial]<BR>
+	[n]	No longer wanted.  Change in design, etc.  Defferred.<BR>
+<BR>
+<STRONG>Development tools/Maintenance Software Action Items</STRONG><BR>
+Need to test default and specified -with-dir items to make sure they work as intended.<BR>
+<BR>
+[partial]Need to clean up variable names....Can have an ac_cv name, translated to an @SUBST@ name, translated to a 	<BR>
+	#define in a header file somewhere.<BR>
+<BR>
+[annoyance]Get 4 errors when building...  I think these are coming out of standard AUTOCONF macros...<BR>
+	configure.in:143: warning: AC_TRY_RUN called without default to allow cross compiling<BR>
+	configure.in:147: warning: AC_TRY_RUN called without default to allow cross compiling<BR>
+	configure.in:151: warning: AC_TRY_RUN called without default to allow cross compiling<BR>
+	configure.in:165: warning: AC_TRY_RUN called without default to allow cross compiling<BR>
+<BR>
+<STRONG>Current config.data/INN Software action items</STRONG><BR>
+<STRONG>(discovered while doing this.)</STRONG><BR>
+[reported]_PATH_CONTROLPROGS is wrong directory for .pl and .tcl files....  Potential security problem.<BR>
+<BR>
+[reported]Code in lib/closeonexec.c has to change, since CLX_STYLE can be fcntl even if FD_CLOEXEC was not defined. Should try to use FD_CLOEXEC if it exists.<BR>
+	#ifndef FD_CLOEXEC<BR>
+	#define FD_CLOEXEC 1<BR>
+	#endif<BR>
+	....<BR>
+<BR>
+[n]Various stray spaces at end of lines.<BR>
+	Not reported but fixed in config.scoreboard<BR>
+<BR>
+<STRONG>Usage and User-level features Software Action Items</STRONG><BR>
+(See also:<A HREF=#Requirements_specification__INN_configuration_method>Requirements specification: INN configuration method</A>)<BR>
+<BR>
+[annoyance]configure parameter validation:<BR>
+	Check that AC_ARG_WITH paths are not yes<BR>
+<BR>
+[annoyance]Need to document how to not have such a long command line: (Use config.cache entries)<BR>
+	This action item severity level is considered &quot;annoyance&quot; since it can be changed in config.data<BR>
+<BR>
+[annoyance]all command-line params must be available in config.cache<BR>
+	Not all with_ items are stored/overridable by config.cache.  <BR>
+	This action item severity level is considered &quot;annoyance&quot; since it can be changed in config.data<BR>
+<BR>
+[wish]Maybe could have a few profiles of uses...<BR>
+	Private server<BR>
+	Readerbox<BR>
+	feederbox<BR>
+<BR>
+[wish]Should have a --with-fsstd option<BR>
+<BR>
+[wish]Upgrade method using existing config.data or innshellvars.<BR>
+	From innshellvars only?<BR>
+<BR>
+[wish]Must be able to be cross compiled.<BR>
+	sizeof tests without running<BR>
+<BR>
+[n]How port settings from one system to another?<BR>
+	For this go-around, it is done through config.data.<BR>
+<BR>
+[n]Documentation of what the acceptable values are for a choice.<BR>
+	Documentation of what values are configurable, and where to find them.<BR>
+	For now: config.scoreboard  (which is shipped as config.data)<BR>
+<BR>
+<BR>
+<STRONG>Software Action Items: configure.in and individual test mechanisms</STRONG><BR>
+[improvement]11-21-97 what about using innmail instead of Mail (like in 1.6b*) ?<BR>
+<BR>
+[wish]autoconf man pages specify problem with link on some systems.  Can this be tested? <A HREF=#INN_autoconf_test_for_link_exit>INN-autoconf test for link exit</A><BR>
+<BR>
+[wish]Can the NBIO and CLX styles be tested?  Perhaps let it as is.<BR>
+<BR>
+[annoyance]Perhaps don't want AC_CACHE checks for NBIO and CLX.  They can be unknown, which you don't want!<BR>
+	Solution is to delete config.cache, or prime it with reasonable values.<BR>
+<BR>
+[annoyance]Not sure that all ac_cv_ items are being cached.  Does this have to be specified?  What happens with the AC_PATH_PROG mentioned items?  Are they just subst targets or are they in config.cache also....<BR>
+<BR>
+[partial] <A HREF=#INN_autoconf__tests_for_LIBRARIES>INN-autoconf: tests for LIBRARIES</A>.  Still may not be right.<BR>
+<BR>
+[wish]Are LOCK_STYLE selections OK?<BR>
+<BR>
+[annoyance]Perl/Tcl support has to be compiled in.  So would be able to override to turn off, but not to turn on.  Perhaps should have another inn.conf parameter....<BR>
+[<PRE>IN1.7=@17][WDF=confparam][WOR=no]
+  ||##  Do you want Perl support?  Pick DO or DONT
+  ||#### =()&lt;PERL_SUPPORT	@&lt;PERL_SUPPORT&gt;@&gt;()=
+  ||PERL_SUPPORT		@DO_PERL@
+
+[</PRE><STRONG>wish]Items which should be autoconf, but are not yet.</STRONG><BR>
+[<PRE>IN1.7=@4][WDF=autoconf][WOR=no]
+  ||##  What predicate, if any, the &lt;ctype.h&gt; macros need
+  ||#### =()&lt;CTYPE			@&lt;CTYPE&gt;@&gt;()=
+  ||CTYPE			(isascii((c)) &amp;&amp; isXXXXX((c)))
+  ||#CTYPE			((c) &gt; 0 &amp;&amp; isXXXXX((c)))
+  ||#CTYPE			isXXXXX((c))
+[IN1.7=@4][WDF=autoconf][WOR=no]
+  ||##  Does your AF_UNIX bind use sizeof for the socket size?  Pick DO or DONT.
+  ||#### =()&lt;BIND_USE_SIZEOF		@&lt;BIND_USE_SIZEOF&gt;@&gt;()=
+  ||BIND_USE_SIZEOF		DO
+[IN1.7=@4][WDF=autoconf][WOR=no]
+  ||##  What is a file offset?  MUST BE LONG FOR NOW.
+  ||#### =()&lt;OFFSET_T			@&lt;OFFSET_T&gt;@&gt;()=
+  ||OFFSET_T		long
+[IN1.7=@4][WDF=autoconf][WOR=no]
+  ||##  Function that returns no value, and a pointer to it.  Pick int or void
+  ||#### =()&lt;FUNCTYPE		@&lt;FUNCTYPE&gt;@&gt;()=
+  ||FUNCTYPE		void
+[IN1.7=@6][WDF=autoconf][WOR=no]
+  ||##  What type of pointer does mmap() manage? Normally ``caddr_t'' or ``void *''
+  ||##  or ``char *''
+  ||#### =()&lt;MMAP_PTR		@&lt;MMAP_PTR&gt;@&gt;()=
+  ||MMAP_PTR		caddr_t
+[IN1.7=@6][WDF=autoconf][WOR=no]
+  ||##  What type of pointer does mmap() manage? Normally ``caddr_t'' or ``void *''
+  ||##  or ``char *''
+  ||#### =()&lt;MMAP_PTR		@&lt;MMAP_PTR&gt;@&gt;()=
+  ||MMAP_PTR		caddr_t
+[IN1.7=@6][WDF=autoconf][WOR=no]
+  ||##  Should we msync when using mmap? Pick DO or DONT. Useful
+  ||##  with some slightly broken mmap implementations. (like HPUX and BSD/OS).
+  ||#### =()&lt;MMAP_SYNC		@&lt;MMAP_SYNC&gt;@&gt;()=
+  ||MMAP_SYNC		DONT
+[IN1.7=@6][WDF=autoconf][WOR=no]
+  ||##  Should we call your msync() with 3 args? (addr,len,flags)
+  ||##  Choose DO or DONT.
+  ||#### =()&lt;MSYNC_3_ARG		@&lt;MSYNC_3_ARG&gt;@&gt;()=
+  ||MSYNC_3_ARG		DONT
+[IN1.7=@6][WDF=autoconf][WOR=no]
+  ||##  Do you have uustat, or just uuq?  Pick DO or DONT
+  ||#### =()&lt;HAVE_UUSTAT		@&lt;HAVE_UUSTAT&gt;@&gt;()=
+  ||HAVE_UUSTAT		DO
+[IN1.7=@6][WDF=autoconf][WOR=no]
+  ||##  Should INN do some setsockopts on network connections. Pick DO or DONT.
+  ||##  Some versions of Solaris should set to DONT (pre 2.4 it seems)
+  ||#### =()&lt;SET_SOCKOPT		@&lt;SET_SOCKOPT&gt;@&gt;()=
+  ||SET_SOCKOPT		DO
+<HR>
+<A NAME=INN_autoconf_Completed_Software_Action_Items></A><CENTER></PRE><H3><SAMP>INN-autoconf Completed Software Action Items</SAMP></H3><BR>
+</CENTER>This is useful as design documentation<BR>
+<BR>
+[d]11/21/97 Changed to have target config.data.in, instead of config.auto.in<BR>
+[d]11/17/97 separate.wri should be used to generate the new config.data.  Definitely should be the source of the 	<BR>
+	config.auto.in  This is to permit having only one source file to update....Use config.scoreboard<BR>
+<BR>
+[d]Need to clean up the naming conventions.  <BR>
+[d]This means a reworking of the DODONT macro...<BR>
+<BR>
+[d]11/21/97 Make it match 1.8.  There are some items which changed default value from 1.7 to 1.8<BR>
+	LIBS changed to not have -lutil<BR>
+	HAVE_SETPROCTITLE changed to DO<BR>
+	HAVE_TM_GMTOFF changed to DO<BR>
+	CLX_STYLE changed to FCNTL<BR>
+	LEX added<BR>
+<BR>
+[d]11/21/97 add LEX autoconf<BR>
+<BR>
+[d]11/18/97 James wants everything in config.data in the order that it appears for 1.5.1<BR>
+	So need to generate from that....<BR>
+	Take entries from separate.wri and put them into config.dist, then build the distributed config.dst from that....<BR>
+	need to mark as &quot;autoconf&quot;<BR>
+<BR>
+[d]Add support for VARPATH, data files<BR>
+<BR>
+[d]Add support for VARPATH, data files<BR>
+<BR>
+[d]Fixed AC_ARG_WITH macro arguments....<BR>
+<BR>
+[d]Defaults should match config.dist<BR>
+<BR>
+[d]Need some separate ETCPATH or something for config.data.  with-varpath=<BR>
+<BR>
+[d]Even when run using --with flags, some paths not selected?<BR>
+<BR>
+[d]Socket test fails.  What library needs to be linked?  And why doesn't this fail instead of reporting &quot;no&quot;<BR>
+<BR>
+[d]The echo \c stuff is not right.  (Had to do with PATH mucking)<BR>
+<BR>
+	<BR>
+<BR>
+<STRONG>Development tools/Maintenance Software Action Items</STRONG><BR>
+[d]Need an easy way to compare config files<BR>
+<BR>
+[d]Need way to find references to a value....  inn-1.7/srcfind inn-1.7/multfind<BR>
+<BR>
+[d]Need to take the config file and separate out what goes where....<BR>
+	prefix config.dist (or maybe config.data.in)<BR>
+	tag, then<BR>
+	use MLSORT<BR>
+<BR>
+[d]Need <A HREF=#INN_autoconf_config_scoreboard>INN-autoconf config.scoreboard</A><BR>
+<BR>
+<STRONG>Test and verification procedures</STRONG><BR>
+[d]Need to see how much config.data.in can be used to generate the standard config.dist<BR>
+<BR>
+Need to test default and specified -with-dir items.<BR>
+<BR>
+[partial]Need to clean up variable names....Can have an ac_cv name, translated to an @SUBST@ name, translated to a #definein a header file somewhere.<BR>
+<BR>
+[d]DO_FIONBIO, and DO_FIOCLEX are poor names for subst variables.<BR>
+<BR>
+<STRONG>Current config.data/INN Software action items</STRONG><BR>
+<STRONG>(discovered while doing this.)</STRONG><BR>
+<BR>
+[d]getdtab.c is always in libinn, so placing it into MISSING_SRC is a typo of the config.data comments<BR>
+<BR>
+<STRONG>Usage and User-level features Software Action Items</STRONG><BR>
+[n]May want to &quot;back out&quot; some of the items which are set by command line params.  There are too many....<BR>
+<BR>
+[d]11/21/97 Commented out the path override <BR>
+<BR>
+[n]How port settings from one system to another?<BR>
+	For this go-around, it is done through config.data.<BR>
+<BR>
+<STRONG>Software Action Items: configure.in and individual test mechanisms</STRONG><BR>
+[d] convert_to_cv_subst macro was broken.  Would have failed to work if direct.h<BR>
+<BR>
+[d]The only way that wait3() is called is with the third argument NULL, so the wait3 RUSAGE check done by <BR>
+	AC_CHECK_WAIT3 is irrelevant.  Changed it to use waitpid() if it exists.<BR>
+<BR>
+[d]The current AC_HEADER_TIME test (used to generate NEEDTIME) defaults to DO.  It is DONT only if there is a <BR>
+	problem.  This is a variance from the usage in INN, but is probably safer....<BR>
+<HR>
+<A NAME=INN_autoconf__tests_for_LIBRARIES></A><CENTER><H3>INN-autoconf: tests for LIBRARIES</H3><BR>
+</CENTER>Removed -lelf -lresolv<BR>
+	to see what failed on Solaris 2.5<BR>
+	nlist() call from nnrpd/loadave.o<BR>
+<BR>
+	-lresolv is not needed, apparently on Solaris 2.5<BR>
+	Look through the nm output shows<BR>
+		gethostbyname2<BR>
+		inet_aton<BR>
+	Based on this, added AC_CHECK_LIB(elf, nlist)<BR>
+<BR>
+Removed lib crypt test.  Was only used for auth_progs.<BR>
+<BR>
+1.5.1/config/config.data<BR>
+	-lutil<BR>
+1.5.1/sample-configs/config.data-freebsd-2.0<BR>
+	-lgnumalloc<BR>
+1.5.1/sample-configs/config.data-AUX 3.1<BR>
+	-lbsd<BR>
+1.5.1/sample-configs/config.data-DYNIXPTX2.1<BR>
+	-lnsl -lsocket -lseq -linet -lnsl<BR>
+1.5.1/sample-configs/config.data-IRIX-5.2<BR>
+	-lelf<BR>
+1.5.1/sample-configs/config.data-NEWSOS-4.2.1<BR>
+	-lmld<BR>
+1.5.1/sample-configs/config.data-Solaris2.3-4<BR>
+	-lnsl -lsocket -lelf -lresolv<BR>
+1.5.1/sample-configs/config.data-SunOS-4.1.X<BR>
+	-lresolv<BR>
+1.5.1/sample-configs/config.data-Ultrix4.3<BR>
+	-lresolve -l44bsd<BR>
+1.5.1/sample-configs/config.data-UX4800<BR>
+	-lelf -lnsl -lsocket<BR>
+1.5.1/sample-configs/config.data-UXPDS<BR>
+	-lnsl -lsocket -lelf<BR>
+<HR>
+<A NAME=INN_autoconf_test_for_link_exit></A><CENTER><H2>INN-autoconf test for link exit</H2><BR>
+</CENTER>From the Autoconv texinfo file<BR>
+A few systems have linkers that do not return a failure exit status when there are unresolved functions in the link. This bug makes the configuration scripts produced by Autoconf unusable on those systems. However, some of them can be given options that make the exit status correct. This is a problem that Autoconf does not currently handle automatically. If users encounter this problem, they might be able to solve it by setting LDFLAGS in the environment to pass whatever options the linker needs (for example, '-Wl,-dn' on MIPS RISC/OS). <BR>
+<BR>
+Can this be tested?<BR>
+<HR>

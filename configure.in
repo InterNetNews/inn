@@ -1,0 +1,598 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(config/config.data.in)
+AC_PREFIX_DEFAULT(/usr/local/news)
+
+dnl Parse the arguments
+AC_ARG_ENABLE(pgp-verify,[  --enable-pgp-verify     use pgp control verification], DO_PGP=DO, DO_PGP=DONT)
+AC_SUBST(DO_PGP)
+dnl
+AC_ARG_WITH(tcl,[  --with-tcl              TCL script support], DO_TCL=DO
+TCL_LIB="-ltcl -lm"
+TCL_INC="-I/usr/local/include", DO_TCL=DONT
+TCL_LIB=""
+TCL_INC="")
+AC_SUBST(DO_TCL)
+AC_SUBST(TCL_LIB)
+AC_SUBST(TCL_INC)
+dnl
+AC_ARG_WITH(perl,[  --with-perl             Perl script support], DO_PERL=DO, DO_PERL=DONT)
+AC_SUBST(DO_PERL)
+dnl
+AC_ARG_WITH(config-path,[  --with-config-path=PATH Configurations pathname (default /var/news/etc)], CONFPATH=$with_config_path, CONFPATH=/var/news/etc)
+AC_SUBST(CONFPATH)
+dnl
+AC_ARG_WITH(var-path,[  --with-var-path=PATH    Data files (history, etc) pathname (default /var/news/etc)], VARPATH=$with_var_path, VARPATH=/var/news/etc)
+AC_SUBST(VARPATH)
+dnl
+AC_ARG_WITH(run-path,[  --with-run-path=PATH    Running information pathname (default /var/news/run)], RUNPATH=$with_run_path, RUNPATH=/var/news/run)
+AC_SUBST(RUNPATH)
+dnl
+AC_ARG_WITH(lock-path,[  --with-lock-path=PATH   Directory for file locking (default /var/news/lock)], LOCKPATH=$with_lock_path, LOCKPATH=/var/news/locks)
+AC_SUBST(LOCKPATH)
+dnl
+AC_ARG_WITH(spool-dir,[  --with-spool-dir=PATH   News storage (default /var/news/spool)], SPOOLDIR=$with_spool_dir, SPOOLDIR=/var/news/spool)
+AC_SUBST(SPOOLDIR)
+dnl
+AC_ARG_WITH(log-dir,[  --with-log-dir=PATH     Logging directory (default /var/log/news)], LOGDIR=$with_log_dir, LOGDIR=/var/log/news)
+AC_SUBST(LOGDIR)
+dnl
+AC_ARG_WITH(news-user,[  --with-news-user=UID    News user id (default news)], NEWSUSER=$with_news_user, NEWSUSER=news)
+AC_SUBST(NEWSUSER)
+dnl
+AC_ARG_WITH(news-group,[  --with-news-group=GID   News group id (default news)], NEWSGRP=$with_news_group, NEWSGRP=news)
+AC_SUBST(NEWSGRP)
+dnl
+AC_ARG_WITH(tmp-path,[  --with-tmp-path=PATH    Temporary files directory], TMPPATH=$with_tmp_path, if test -d /var/tmp; then
+	TMPPATH=/var/tmp
+else
+	if test -d /usr/tmp; then
+		TMPPATH=/usr/tmp
+	else
+		TMPPATH=/tmp
+	fi
+fi) dnl HACK
+AC_SUBST(TMPPATH)
+
+dnl Fix the paths
+test "x$prefix" = xNONE && prefix=$ac_default_prefix
+test "x$exec_prefix" = xNONE && exec_prefix=/usr/news
+
+AC_CACHE_CHECK(for manpath,ac_cv_subst_manpath,
+               ac_cv_subst_manpath=`eval echo $mandir`)
+AC_SUBST(ac_cv_subst_manpath)
+
+AC_CACHE_CHECK(for bindir,ac_cv_subst_binpath,
+               ac_cv_subst_binpath=`eval echo $bindir`)
+AC_SUBST(ac_cv_subst_binpath)
+
+dnl Checks for programs.
+AC_PROG_AWK
+AC_PROG_CC
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+AC_PROG_RANLIB
+AC_PROG_YACC
+AC_PROG_LEX
+
+dnl System specific
+AC_AIX
+AC_ISC_POSIX
+
+
+dnl Checks for pathnames
+ac_save_path="$PATH"
+
+dnl 11/21/97 Path must be set before running.
+dnl PATH="$PATH:/usr/local/sbin:/usr/local/bin:/usr/local/lib:/usr/ucb:/usr/ucb/bin:/lib:/usr/lib:/sbin:/usr/sbin"
+dnl if the path mucking above must be done, we have to redo the echo test...
+if (echo "testing\c"; echo 1,2,3) | grep c >/dev/null; then
+  # Stardent Vistra SVR4 grep lacks -e, says ghazi@caip.rutgers.edu.
+  if (echo -n testing; echo 1,2,3) | sed s/-n/xn/ | grep xn >/dev/null; then
+    ac_n= ac_c='
+' ac_t='	'
+  else
+    ac_n=-n ac_c= ac_t=
+  fi
+else
+  ac_n= ac_c='\c' ac_t=
+fi
+
+
+AC_PATH_PROG(PATH_CTAGS,ctags,echo)
+
+AC_CACHE_CHECK(for path to ctags,ac_cv_subst_ctags,
+ac_cv_subst_ctags=$PATH_CTAGS
+if test $ac_cv_subst_ctags = echo
+then
+	ac_cv_subst_ctags="$ac_cv_subst_ctags"
+else
+	ac_cv_subst_ctags="$ac_cv_subst_ctags -t -w"
+fi)
+AC_SUBST(ac_cv_subst_ctags)
+
+AC_PATH_PROG(ac_cv_subst_innwatch_df,df)
+AC_PATH_PROG(ac_cv_subst_path_awk,awk)
+AC_PATH_PROG(ac_cv_subst_path_compress,compress)
+AC_PATH_PROG(ac_cv_subst_path_egrep,egrep)
+AC_PATH_PROG(ac_cv_subst_path_gzip,gzip)
+AC_PATH_PROG(ac_cv_subst_path_mail,Mail)
+AC_PATH_PROG(ac_cv_subst_path_perl,perl)
+AC_PATH_PROG(ac_cv_subst_path_pgp,pgp)
+AC_PATH_PROG(ac_cv_subst_path_sed,sed)
+AC_PATH_PROG(ac_cv_subst_path_sendmail,sendmail)
+AC_PATH_PROG(ac_cv_subst_path_sort,sort)
+AC_PATH_PROG(ac_cv_subst_path_sh,sh)
+PATH="$ac_save_path"
+dnl If the path mucking above must be done, redo the echo test.
+if (echo "testing\c"; echo 1,2,3) | grep c >/dev/null; then
+  # Stardent Vistra SVR4 grep lacks -e, says ghazi@caip.rutgers.edu.
+  if (echo -n testing; echo 1,2,3) | sed s/-n/xn/ | grep xn >/dev/null; then
+    ac_n= ac_c='
+' ac_t='	'
+  else
+    ac_n=-n ac_c= ac_t=
+  fi
+else
+  ac_n= ac_c='\c' ac_t=
+fi
+
+dnl parse arguments
+
+dnl Checks for libraries.
+dnl Removed (only in auth_progs): AC_CHECK_LIB(crypt,  crypt)
+AC_CHECK_LIB(util,   setproctitle)
+AC_CHECK_LIB(44bsd,  inet_addr)
+AC_CHECK_LIB(resolv, gethostbyname)
+AC_CHECK_LIB(nsl, gethostbyname)
+AC_CHECK_LIB(socket, socket)
+AC_CHECK_LIB(elf, nlist)
+dnl Check for PERL location
+if test x${DO_PERL} = xDO ; then
+	AC_MSG_CHECKING(for Perl configuration)
+	perl_core_path=`$PATH_PERL -e 'use Config; print $Config{archlib}'`
+	perl_core_libs=`$PATH_PERL -e 'use Config; print $Config{libs}'`
+	PERL_LIB="-L${perl_core_path}/CORE ${perl_core_libs}"
+	PERL_INC="-I${perl_core_path}/CORE"
+	AC_MSG_RESULT($perl_core_path)
+else
+	PERL_LIB=""
+	PERL_INC=""
+fi
+AC_SUBST(PERL_LIB)
+AC_SUBST(PERL_INC)
+
+dnl Checks for header files.
+AC_HEADER_DIRENT
+AC_HEADER_STDC
+AC_HEADER_TIME
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS(fcntl.h limits.h malloc.h memory.h sgtty.h stdarg.h stdlib.h string.h sys/file.h sys/filio.h sys/ioctl.h sys/select.h sys/signal.h sys/time.h syslog.h unistd.h varargs.h)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_STRUCT_ST_BLKSIZE
+AC_STRUCT_TM
+AC_TYPE_SIZE_T
+AC_TYPE_UID_T
+AC_TYPE_OFF_T
+AC_TYPE_PID_T
+AC_CACHE_CHECK(for atomical variable, ac_cv_type_atomic, AC_TRY_COMPILE([#include <signal.h>
+#ifdef HAVE_SYS_SIGNAL_H
+#include <sys/signal.h>
+#endif],[sig_atomic_t i],ac_cv_type_atomic=sig_atomic_t,ac_cv_type_atomic=int))
+AC_SUBST(ac_cv_type_atomic)
+AC_HEADER_TIME
+AC_CACHE_CHECK(for tm_gmtoff in struct tm, ac_cv_struct_tm_gmtoff, AC_TRY_COMPILE([#include <time.h>],[struct tm t; t.tm_gmtoff = 0],ac_cv_struct_tm_gmtoff=yes,ac_cv_struct_tm_gmtoff=no))
+AC_CACHE_CHECK(for union wait, ac_cv_union_wait, AC_TRY_COMPILE([#include <wait.h>],[union wait w],ac_cv_union_wait=yes,ac_cv_union_wait=no))
+# Size of integers
+AC_CHECK_SIZEOF(int)
+if test $ac_cv_sizeof_int = 4; then
+	ac_cv_subst_int32_t=int
+else
+	AC_CHECK_SIZEOF(long)
+	if test $ac_cv_sizeof_long = 4; then
+		ac_cv_subst_int32_t=long
+	else
+		AC_CHECK_SIZEOF(short)
+		if test $ac_cv_sizeof_short = 4; then
+			ac_cv_subst_int32_t=short
+		else
+			AC_MSG_ERROR(No 32bits integer available!)
+		fi
+	fi
+fi
+AC_SUBST(ac_cv_subst_int32_t)
+
+dnl Checks for library functions.
+AC_PROG_GCC_TRADITIONAL
+AC_FUNC_MEMCMP
+AC_FUNC_MMAP
+AC_FUNC_SETVBUF_REVERSED
+AC_TYPE_SIGNAL
+AC_SUBST(ac_cv_type_signal)
+AC_FUNC_VFORK
+AC_FUNC_VPRINTF
+dnl Actually INN doesn't care about the rusage argument AC_FUNC_WAIT3
+AC_CHECK_FUNCS(fchmod getdtab gethostname getrlimit getrusage gettimeofday memchr memcmp memcpy memmove memset mkdir mkfifo mktemp select setbuffer setproctitle setsid socket)
+AC_CHECK_FUNCS(strcasecmp strchr strcspn strerror strrchr strspn strstr symlink sysconf syslog ulimit)
+AC_CHECK_FUNCS(waitpid)
+dnl
+AC_CACHE_CHECK(for return type of abort, ac_cv_type_abort, AC_TRY_COMPILE([#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif],[int a;a=abort()],ac_cv_type_abort=int,ac_cv_type_abort=void))
+AC_SUBST(ac_cv_type_abort)
+AC_CACHE_CHECK(for return type of alarm, ac_cv_type_alarm, AC_TRY_COMPILE([#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif],[unsigned int alarm()],ac_cv_type_alarm="unsigned int",ac_cv_type_alarm=int))
+AC_SUBST(ac_cv_type_alarm)
+AC_CACHE_CHECK(for return type of sleep, ac_cv_type_sleep, AC_TRY_COMPILE([#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif],[unsigned int sleep()],ac_cv_type_sleep="unsigned int",ac_cv_type_sleep=int))
+AC_SUBST(ac_cv_type_sleep)
+AC_CACHE_CHECK(for return type of qsort, ac_cv_type_qsort, AC_TRY_COMPILE([#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif],[int a;a=qsort(0,0,0,0)],ac_cv_type_qsort=int,ac_cv_type_qsort=void))
+AC_SUBST(ac_cv_type_qsort)
+AC_CACHE_CHECK(for return type of free, ac_cv_type_free, AC_TRY_COMPILE([#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#else
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#endif],[int a;a=free(0)],ac_cv_type_free=int,ac_cv_type_free=void))
+AC_SUBST(ac_cv_type_free)
+AC_CACHE_CHECK(for return type of exit, ac_cv_type_exit, AC_TRY_COMPILE([#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif],[int a;a=exit(0)],ac_cv_type_exit=int,ac_cv_type_exit=void))
+AC_SUBST(ac_cv_type_exit)
+AC_CACHE_CHECK(for return type of _exit, ac_cv_type__exit, AC_TRY_COMPILE([#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif],[int a;a=_exit(0)],ac_cv_type__exit=int,ac_cv_type__exit=void))
+AC_SUBST(ac_cv_type__exit)
+
+AC_CACHE_CHECK(for union wait, ac_cv_union_wait, AC_TRY_COMPILE([#include <wait.h>],[union wait w],ac_cv_union_wait=yes,ac_cv_union_wait=no))
+# Size of integers
+
+dnl Locking style
+AC_CHECK_FUNCS(flock)
+if test $ac_cv_func_flock = yes; then
+	ac_lock_style=FLOCK
+else
+	AC_CHECK_FUNCS(lockf)
+	if test $ac_cv_func_lockf = yes; then
+		ac_lock_style=LOCKF
+	else
+		AC_CHECK_FUNCS(fcntl)
+		if test $ac_cv_func_lockf = yes; then
+			ac_lock_style=FCNTL
+		else
+			ac_lock_style=NONE
+		fi
+	fi
+fi
+AC_SUBST(ac_lock_style)
+
+dnl Macros check
+AC_CACHE_CHECK(for AF_UNIX, ac_cv_subst_have_unix_domain, AC_EGREP_CPP(yes, [#include <sys/socket.h>
+#ifdef AF_UNIX
+yes
+#endif], ac_cv_af_unix=DO, ac_cv_af_unix=DONT))
+AC_SUBST(ac_cv_subst_have_unix_domain)
+
+dnl ********************************************
+dnl Close-on-exec style.....fjc mibsoftware.com
+AC_CACHE_CHECK(for close on exec style, ac_cv_subst_clx_style,
+if test $ac_cv_header_fcntl_h = yes; then
+	AC_EGREP_CPP(yes, [#include <fcntl.h>
+#ifdef FD_CLOEXEC
+yes
+#endif], ac_cv_subst_clx_style=FCNTL, ac_cv_subst_clx_style=unknown)
+else
+	ac_cv_subst_clx_style=unknown
+fi)
+
+if test ${ac_cv_subst_clx_style} = "unknown"
+then
+dnl ** Round two.
+dnl ** no FD_CLOEXEC defined, but we really want to use it.
+dnl ** if FD_SETFD is defined, we assume that it will work.
+
+if test $ac_cv_header_fcntl_h = yes; then
+	AC_EGREP_CPP(yes, [#include <fcntl.h>
+#ifdef FD_SETFD
+yes
+#endif], ac_cv_subst_clx_style=FCNTL, ac_cv_subst_clx_style=unknown)
+fi
+fi
+
+if test ${ac_cv_subst_clx_style} = "unknown"
+then
+dnl ** Round three
+dnl ** FIOCLEX
+if test $ac_cv_header_sys_filio_h = yes; then
+	AC_EGREP_CPP(yes, [#include <sys/filio.h>
+#ifdef FIOCLEX
+yes
+#endif], ac_cv_subst_clx_style=IOCTL, ac_cv_subst_clx_style=unknown)
+fi
+fi
+
+if test ${ac_cv_subst_clx_style} = "unknown"
+then
+	AC_MSG_ERROR(Must set ac_cv_subst_clx_style)
+fi
+AC_SUBST(ac_cv_subst_clx_style)
+dnl ********************************************
+
+
+dnl ********************************************
+dnl Non-blocking I/O style.....fjc mibsoftware.com
+dnl Want to avoid fcntl(FNDELAY) which is inconsistent.
+dnl if O_NONBLOCK is present we use that.
+dnl fall back to FIONBIO
+
+AC_CACHE_CHECK(for nbio style, ac_cv_subst_nbio_style,
+if test $ac_cv_header_fcntl_h = yes; then
+	AC_EGREP_CPP(yes, [#include <fcntl.h>
+#ifdef O_NONBLOCK
+yes
+#endif], ac_cv_subst_nbio_style=FCNTL, ac_cv_subst_nbio_style=unknown)
+else
+	ac_cv_subst_nbio_style=unknown
+fi)
+
+if test $ac_cv_subst_nbio_style = unknown; then
+if test $ac_cv_header_sys_filio_h = yes; then
+	AC_EGREP_CPP(yes, [#include <sys/filio.h>
+#ifdef FIONBIO
+yes
+#endif], ac_cv_subst_nbio_style=IOCTL, ac_cv_subst_nbio_style=unknown)
+else
+	ac_cv_subst_nbio_style=unknown
+fi
+fi
+
+if test ${ac_cv_subst_nbio_style} = "unknown"
+then
+	AC_MSG_ERROR(Must set ac_cv_subst_nbio_style)
+fi
+AC_SUBST(ac_cv_subst_nbio_style)
+dnl ***************************************************
+
+
+dnl ***************************************************
+dnl Non-standard checks
+AC_CACHE_CHECK(log level for news, ac_cv_log_news, AC_EGREP_CPP(yes, [#include <syslog.h>
+#ifdef LOG_NEWS
+yes
+#endif
+], ac_cv_log_news=LOG_NEWS, ac_cv_log_news=LOG_LOCAL1))
+AC_SUBST(ac_cv_log_news)
+
+AC_CACHE_CHECK(generic pointer, ac_cv_type_generic,
+AC_TRY_COMPILE([#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#else
+#include <stdlib.h>
+#endif],[void *a; a = malloc(sizeof(a))], ac_cv_type_generic=void,
+ac_cv_type_generic=char));
+AC_SUBST(ac_cv_type_generic)
+
+dnl ***************************************************
+
+
+dnl ***************************************************
+dnl Convert a yes no value to a ac_cv_subst value which
+dnl is not already overridden by config.cache
+AC_DEFUN(YN_to_cv_subst, [
+if test "x${$2}" = "x"
+then
+dnl Not already set....
+if test x${$1} = "xno"
+then
+    echo setting $2...$4 
+	$2=$4
+else
+    if test x${$1} = "xyes"
+    then
+	    echo setting $2...$3
+	    $2=$3
+	else
+	    AC_MSG_ERROR($1 = ${$1}. Must be yes or no)
+	fi
+fi
+else
+    echo "setting $2... (cached) ${$2}" 
+fi
+AC_SUBST($2)])
+dnl ***************************************************
+
+
+dnl ***************************************************
+dnl Convert an enumerated value to a ac_cv_subst value which
+dnl is not already overridden by config.cache
+AC_DEFUN(convert_to_cv_subst, [
+if test "x${$2}" = "x"
+then
+dnl Not already set....
+if test ${$1} = "$3"
+then
+    echo setting $2...$4 
+	$2=$4
+else
+    if test ${$1} = $5
+    then
+	    echo setting $2...$6
+	    $2=$6
+	else
+	    AC_MSG_ERROR($1 = ${$1}. Must be $3 or $4)
+	fi
+fi
+else
+    echo "setting $2... (cached) ${$2}" 
+fi
+AC_SUBST($2)])
+dnl ***************************************************
+
+
+dnl ***************************************************
+dnl VARSTYLE code revamped fjc mibsoftware.com
+AC_CACHE_CHECK(varstyle, ac_cv_subst_varstyle,
+if test ${ac_cv_header_stdc} = "yes"; then
+	if test ${ac_cv_header_stdarg_h} = "no"; then
+		if test ${ac_cv_header_varargs_h} = "no"; then
+			ac_cv_subst_varstyle=NONE
+		else
+			ac_cv_subst_varstyle=VARARGS
+		fi
+	else
+		ac_cv_subst_varstyle=STDARGS
+	fi
+else
+	if test ${ac_cv_header_varargs_h} = "no"; then
+		ac_cv_subst_varstyle=NONE
+	else
+		ac_cv_subst_varstyle=VARARGS
+	fi
+fi)
+AC_SUBST(ac_cv_subst_varstyle)
+dnl ***************************************************
+
+
+dnl ***************************************************
+if test ${ac_cv_type_uid_t} = "no"; then
+dnl DEBUG: should cache check these first!
+	ac_cv_subst_uid_t=int
+	ac_cv_subst_gid_t=int
+else
+dnl DEBUG: should cache check these first!
+	ac_cv_subst_uid_t=uid_t
+	ac_cv_subst_gid_t=gid_t
+fi
+AC_SUBST(ac_cv_subst_uid_t)
+AC_SUBST(ac_cv_subst_gid_t)
+dnl ***************************************************
+
+
+dnl ***************************************************
+dnl DEBUG: should check for predefined ac_cv_subst_fdcount_style
+dnl fjc mibsoftware.com Removed getrlimit.  Prefer SYSCONF
+if test ${ac_cv_func_getdtab} = "no"; then
+	if test ${ac_cv_func_sysconf} = "no"; then
+		if test ${ac_cv_func_ulimit} = "no"; then
+			ac_cv_subst_fdcount_style=CONSTANT
+		else
+			ac_cv_subst_fdcount_style=ULIMIT
+		fi
+	else
+		ac_cv_subst_fdcount_style=SYSCONF
+    fi
+else
+	ac_cv_subst_fdcount_style=GETDTAB
+fi
+AC_SUBST(ac_cv_subst_fdcount_style)
+dnl ***************************************************
+
+
+dnl ***************************************************
+dnl Convert ac_cv_ yes or no values into subst values for config.data
+dnl (but only if the cv_subst value is not already defined.  This is
+dnl to permit overriding in config.cache
+YN_to_cv_subst(ac_cv_c_const, ac_cv_subst_use_char_const, DO, DONT)
+convert_to_cv_subst(ac_header_dirent,ac_cv_subst_dir_style, dirent.h,DIRENT, direct.h,DIRECT)
+YN_to_cv_subst(ac_cv_header_string_h, ac_cv_subst_str_header, "<string.h>", \"mystring.h\")
+YN_to_cv_subst(ac_cv_header_memory_h, ac_cv_subst_mem_header, "<memory.h>", \"mymemory.h\")
+YN_to_cv_subst(ac_cv_type_size_t, ac_cv_subst_size_t, size_t, unsigned)
+YN_to_cv_subst(ac_cv_type_pid_t, ac_cv_subst_pid_t, pid_t, int)
+YN_to_cv_subst(ac_cv_type_off_t, ac_cv_subst_lseekval, off_t, long)
+YN_to_cv_subst(ac_cv_header_unistd_h, ac_cv_subst_have_unistd, DO, DONT)
+YN_to_cv_subst(ac_cv_func_setbuffer, ac_cv_subst_have_setbuffer, DO, DONT)
+YN_to_cv_subst(ac_cv_func_gettimeofday, ac_cv_subst_have_gettimeofday, DO, DONT)
+YN_to_cv_subst(ac_cv_func_setproctitle, ac_cv_subst_have_setproctitle, DO, DONT)
+YN_to_cv_subst(ac_cv_func_fchmod, ac_cv_subst_have_fchmod, DO, DONT)
+YN_to_cv_subst(ac_cv_func_setsid, ac_cv_subst_have_setsid, DO, DONT)
+YN_to_cv_subst(ac_cv_struct_tm_gmtoff, ac_cv_subst_have_tm_gmtoff, DO, DONT)
+YN_to_cv_subst(ac_cv_struct_st_blksize, ac_cv_subst_have_st_blksize, DO, DONT)
+YN_to_cv_subst(ac_cv_func_waitpid, ac_cv_subst_have_waitpid, DO, DONT)
+YN_to_cv_subst(ac_cv_union_wait, ac_cv_subst_have_union_wait, DO, DONT)
+YN_to_cv_subst(ac_cv_func_vfork_works, ac_cv_subst_fork, fork, vfork)
+YN_to_cv_subst(ac_cv_header_vfork_h, ac_cv_subst_have_vfork, DO, DONT)
+YN_to_cv_subst(ac_cv_func_symlink, ac_cv_subst_have_symlink, DO, DONT)
+YN_to_cv_subst(ac_cv_func_getrusage, ac_cv_subst_res_style, RUSAGE, TIMES)
+YN_to_cv_subst(ac_cv_header_time, ac_cv_subst_need_time, DO, DONT)
+YN_to_cv_subst(ac_cv_func_mmap_fixed_mapped, ac_cv_subst_act_style, MMAP, READ)
+
+dnl Missing sources
+MISSING_MAN=""
+MISSING_SRC=""
+MISSING_OBJ=""
+if test ${ac_cv_func_strcasecmp} = "no"
+then
+	MISSING_MAN="strcasecmp.3 "
+	MISSING_SRC="strcasecmp.c "
+	MISSING_OBJ="strcasecmp.o "
+fi
+if test ${ac_cv_func_syslog} = "no"
+then
+	MISSING_MAN="${MISSING_MAN}syslog.3 "
+	MISSING_SRC="${MISSING_SRC}syslog.c "
+	MISSING_OBJ="${MISSING_OBJ}syslog.o "
+fi
+if test ${ac_cv_func_strerror} = "no"
+then
+	MISSING_SRC="${MISSING_SRC}strerror.c "
+	MISSING_OBJ="${MISSING_OBJ}strerror.o "
+fi
+dnl *******************************************************
+dnl fjc mibsoftware.com getdtab is a fixed part of INN now.
+dnl if test ${ac_cv_func_getdtab} = "no"
+dnl then
+dnl	MISSING_SRC="${MISSING_SRC}getdtab.c "
+dnl 	MISSING_OBJ="${MISSING_OBJ}getdtab.o "
+dnl fi
+if test ${ac_cv_func_mktemp} = "no"
+then
+	MISSING_SRC="${MISSING_SRC}mktemp.c "
+	MISSING_OBJ="${MISSING_OBJ}mktemp.o "
+fi
+if test ${ac_cv_func_memcpy} = "no"
+then
+	MISSING_SRC="${MISSING_SRC}memcpy.c "
+	MISSING_OBJ="${MISSING_OBJ}memcpy.o "
+fi
+if test ${ac_cv_func_memmove} = "no"
+then
+	MISSING_SRC="${MISSING_SRC}memmove.c "
+	MISSING_OBJ="${MISSING_OBJ}memmove.o "
+fi
+if test ${ac_cv_func_memchr} = "no"
+then
+	MISSING_SRC="${MISSING_SRC}memchr.c "
+	MISSING_OBJ="${MISSING_OBJ}memchr.o "
+fi
+if test ${ac_cv_func_memcmp} = "no"
+then
+	MISSING_SRC="${MISSING_SRC}memcmp.c "
+	MISSING_OBJ="${MISSING_OBJ}memcmp.o "
+fi
+if test ${ac_cv_func_memset} = "no"
+then
+	MISSING_SRC="${MISSING_SRC}memset.c "
+	MISSING_OBJ="${MISSING_OBJ}memset.o "
+fi
+if test ${ac_cv_func_strchr} = "no"
+then
+	MISSING_SRC="${MISSING_SRC}strchr.c "
+	MISSING_OBJ="${MISSING_OBJ}strchr.o "
+fi
+if test ${ac_cv_func_strrchr} = "no"
+then
+	MISSING_SRC="${MISSING_SRC}strrchr.c "
+	MISSING_OBJ="${MISSING_OBJ}strrchr.o "
+fi
+AC_SUBST(MISSING_MAN)
+AC_SUBST(MISSING_SRC)
+AC_SUBST(MISSING_OBJ)
+
+
+AC_OUTPUT(config/config.data)
