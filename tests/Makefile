@@ -63,7 +63,8 @@ lib/getaddrinfo.o: ../lib/getaddrinfo.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/getaddrinfo.c
 
 lib/getaddrinfo.t: lib/getaddrinfo.o lib/getaddrinfo-t.o libtest.o $(LIBINN)
-	$(LINK) lib/getaddrinfo.o lib/getaddrinfo-t.o libtest.o $(LIBINN)
+	$(LINK) lib/getaddrinfo.o lib/getaddrinfo-t.o libtest.o \
+	    $(LIBINN) $(LIBS)
 
 lib/hash.t: lib/hash-t.o libtest.o $(LIBINN)
 	$(LINK) lib/hash-t.o libtest.o $(LIBINN)
