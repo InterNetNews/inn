@@ -5255,7 +5255,23 @@ done
 
 ac_given_srcdir=$srcdir
 
-trap 'rm -fr `echo "config/config.data Makefile.global include/paths.h samples/actsync.ign samples/innwatch.ctl samples/innreport.conf samples/inncheck samples/innshellvars samples/innshellvars.pl samples/innshellvars.csh samples/innshellvars.tcl site/subst.pl storage/buildconfig makedirs.sh include/config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+trap 'rm -fr `echo "Makefile.global 
+	makedirs.sh 
+	config/config.data 
+	include/paths.h 
+	samples/actsync.cfg 
+	samples/inncheck 
+	samples/innshellvars 
+	samples/innshellvars.csh 
+	samples/innshellvars.pl 
+	samples/innshellvars.tcl 
+	samples/innreport.conf 
+	samples/innwatch.ctl 
+	samples/startup.tcl 
+	site/subst.pl 
+	storage/buildconfig 
+	syslog/syslog.conf
+ include/config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
@@ -5398,7 +5414,23 @@ EOF
 
 cat >> $CONFIG_STATUS <<EOF
 
-CONFIG_FILES=\${CONFIG_FILES-"config/config.data Makefile.global include/paths.h samples/actsync.ign samples/innwatch.ctl samples/innreport.conf samples/inncheck samples/innshellvars samples/innshellvars.pl samples/innshellvars.csh samples/innshellvars.tcl site/subst.pl storage/buildconfig makedirs.sh"}
+CONFIG_FILES=\${CONFIG_FILES-"Makefile.global 
+	makedirs.sh 
+	config/config.data 
+	include/paths.h 
+	samples/actsync.cfg 
+	samples/inncheck 
+	samples/innshellvars 
+	samples/innshellvars.csh 
+	samples/innshellvars.pl 
+	samples/innshellvars.tcl 
+	samples/innreport.conf 
+	samples/innwatch.ctl 
+	samples/startup.tcl 
+	site/subst.pl 
+	storage/buildconfig 
+	syslog/syslog.conf
+"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then
