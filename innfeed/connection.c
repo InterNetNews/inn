@@ -88,11 +88,11 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "config.h"
 #include "clibrary.h"
 
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <assert.h>
 #include <errno.h>
 #include <netdb.h>
-#include <netinet/in.h>
 #include <signal.h>
 #include <sys/file.h>
 #include <sys/socket.h>

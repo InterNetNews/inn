@@ -40,6 +40,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "config.h"
 #include "clibrary.h"
 
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <assert.h>
 #include <ctype.h>
@@ -47,7 +48,6 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <float.h>
 #include <math.h>
 #include <netdb.h>
-#include <netinet/in.h>
 #include <syslog.h>
 #include <sys/param.h>
 
