@@ -13,13 +13,20 @@ article received by innd from a peer, or by nnrpd from a reader. The
 subroutine causes nnrpd or innd to accept or reject the article. This will
 be most useful for spam killing.
 
-To include Perl support you need to have version perl 5.003. Version 5.001
-defintely doesn't work. 5.002 might, but hasn't been tried. Go to
+To include Perl support, you need to have perl 5.003. For dynamic loading
+support, you will definitely need 5.004 or later. Version 5.001 will most
+certainly not work at all, and 5.002 might, but has not bee tested. Go to
 http://www.perl.com/CPAN for the latest Perl goodies.
 
 In config.dist there is a section (#17) devoted to Perl. You must set
 PERL_SUPPORT to DO and PERL_INC and PERL_LIB to the appropriate values for
-your system for the compilation to work properly.
+your system for the compilation to work properly. For dynamic loading
+support to work properly, you'll need to include the output of:
+
+	perl -MExtUtils::Embed -e ldopts
+
+in the value for PERL_LIB, or you will end up with errors like "ld: fatal
+error: Symbol referencing errors" when compiling.
 
 --------------------------------------------------
 
@@ -59,7 +66,10 @@ value of the article. The standard headers are:
 
 	Approved, Control, Date, Distribution, Expires, From, Lines,
 	Message-ID, Newsgroups, Path, Reply-To, Sender, Subject, Supersedes,
-	Bytes, Also-Control, References
+	Bytes, Also-Control, References, __BODY__
+
+	The special header value of "__BODY__" contains the body of the
+article, for special content-based filters.
 
 For example:
 
@@ -71,9 +81,9 @@ For example:
 	   'Organization', 'Spammers Anonymous',
 	   'Lines' '5',
 	   'Distribution', 'world'
-	   'Message-ID', '<6.20232.842369548@home.octet.com.au>'
+	   'Message-ID', '<6.20232.842369548@home.octet.com.au>',
+	   '__BODY__', 'Send five dollars to the ISC, c/o ...'
 	   )
-
 
 If ``filter_art'' returns a null string (not a zero), then the article is
 accepted. If it returns a non-zero value, then it is rejected, and the
@@ -107,3 +117,23 @@ You should always do 'perl -c -w file' before starting or reloading. If you
 change the file after innd is running, and then reload it, filtering wil be
 disabled if there was an error in the file. At which point you'll have to
 fix the file and reload it.
+
+--------------------------------------------------
+
+Available packages using filter_innd.pl and filter_nnrpd.pl:
+
+This is an unofficial list of known filtering packages at the time of
+publication. This is not an endorsement of these filters by the ISC or the
+INN developers, but is included as assistance in locating packages which
+make use of this filter mechanism.
+
+CleanFeed		Jeremy Nixon <jeremy@exit109.com>
+http://www.exit109.com/~jeremy/news/antispam.html
+	A spam filter catching excessive multi-posting and a host of other
+	filtering tools. Uses filter_innd.pl exclusively, requires MD5
+	perl module.
+
+Usenet II Filter	Edward S. Marshall <emarshal@xnet.com>
+http://www.xnet.com/~emarshal/inn/filter_nnrpd.pl
+	Checks for "soundness" according to Usenet II guidelines in the
+	net.* hierarchy. Designed to use filter_nnrpd.pl.
