@@ -92,7 +92,6 @@ clobber realclean:	clean
 	@echo ""
 	rm -f Install.ms inn*.tar.Z inn*.tar.gz Part0? MANIFEST.BAK
 	rm -rf inews.* rnews.* nntplib.*
-	rm -f lib/dbz.c include/dbz.h doc/dbz.3z
 	rm -f tags */tags core */core a.out */a.out foo */foo
 	rm -f CHANGES *~
 	rm -fr $(TARDIR)
