@@ -21,6 +21,10 @@
 #include <sys/un.h>
 #endif	
 
+/* Linux doesn't have bool, yet sets _G_HAVE_BOOL to true.  Hello? */
+#ifdef DO_NEED_BOOL
+typedef int bool;
+#endif
 
 /*
 **  An entry in the dispatch table.  The name, and implementing function,
