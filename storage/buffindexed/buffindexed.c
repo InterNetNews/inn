@@ -892,6 +892,7 @@ BOOL buffindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
   HASH		grouphash;
   GROUPLOC	gloc;
   GROUPENTRY	*ge;
+  void		*handle;
 
   gloc = GROUPfind(group);
   if (!GROUPLOCempty(gloc)) {
@@ -904,6 +905,12 @@ BOOL buffindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
   GROUPlockhash(LOCK_WRITE);
   gloc = GROUPnewnode();
   ge = &GROUPentries[gloc.recno];
+  if (HashEmpty(ge->hash)) {
+    /* maybe group was deleted without buffindexed_groupdel()
+       this may happen if active is reloaded after modification */
+    if (ge->count != 0 && (handle = ovopensearch(group, ge->low, ge->high, TRUE)) != NULL)
+      ovclosesearch(handle, TRUE);
+  }
   setinitialge(ge, grouphash, flag, GROUPheader->hash[i], lo, hi);
   GROUPheader->hash[i] = gloc;
   GROUPlockhash(LOCK_UNLOCK);
@@ -1518,8 +1525,11 @@ BOOL buffindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOK
 	srchov.index = ovblock->ovindex[search->cur].index;
 	srchov.blocknum = ovblock->ovindex[search->cur].blocknum;
 	gdb = searchgdb(&srchov);
-	if (gdb == NULL)
+	if (gdb == NULL) {
+	  if (len)
+	    *len = 0;
 	  return TRUE;
+	}
 	*data = gdb->data + ovblock->ovindex[search->cur].offset;
       }
     }
