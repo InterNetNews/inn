@@ -1,4 +1,5 @@
-#!@_PATH_PERL@
+#! /usr/bin/perl
+# fixscript will replace this line with require innshellvars.pl
 
 ##########################################################################
 #
@@ -87,8 +88,6 @@
 
 use strict;
 
-require "@LIBDIR@/innshellvars.pl"; #@AUTOCONF@
-
 ## Do you want to create a Web page. Pick DO or DONT.
 my $HTML = "DO";
 
@@ -96,7 +95,7 @@ my $HTML = "DO";
 my $GRAPH = "DO";
 
 ## Directory for the Web pages (used only if the previous line is active)
-my $HTML_dir = "$inn::pathhttp"; #@AUTOCONF@
+my $HTML_dir = "$inn::pathhttp";
 
 ## Directory for the pictures (need HTML support) in the file space
 my $IMG_dir = "$HTML_dir/pics";
