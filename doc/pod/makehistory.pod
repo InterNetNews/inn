@@ -4,7 +4,7 @@ makehistory - Initialize or rebuild INN history database
 
 =head1 SYNOPSIS
 
-B<makehistory> [B<-abFIOx>] [B<-f> I<filename>] [B<-l> I<count>]
+B<makehistory> [B<-abeFIOx>] [B<-f> I<filename>] [B<-l> I<count>]
 [B<-T> I<tmpdir>]
 
 =head1 DESCRIPTION
@@ -36,6 +36,11 @@ running or you can corrupt the history.
 
 Delete any messages found in the spool that do not have valid Message-ID
 headers in them.
+
+=item B<-e>
+
+Compute Bytes headers which is used for overview data.  This option is valid
+only if B<-O> flag is specified and overview.fmt includes C<Bytes:>.
 
 =item B<-f> I<filename>
 
