@@ -27,6 +27,10 @@ and vice versa).  If you don't remember what options you used but you have
 your old build tree, look at the comments at the beginning of
 F<config.status>.
 
+If you made ckpasswd setuid root so that you could use system passwords,
+you'll have to do that again after make update.  (It's much better to use
+PAM instead if you can.)
+
 If you use C<make update> to upgrade from a previous major release of INN,
 also look at the new sample configuration files in F<samples> to see if
 there are new options of interest to you.
