@@ -99,11 +99,19 @@ Here's the relevant portion of my innwatch.ctl:
 #include <sys/mount.h>
 #endif /* HAVE_SYS_MOUNT_H */
 #define STATFUNCT	statfs
+#if defined (__ultrix__)
+#define STATSTRUC	fs_data
+#define STATAVAIL	fd_req.bfreen
+#define STATMULTI	fd_req.bsize
+#define STATINODE	fd_req.gfree
+#define STATTYPES	u_int
+#else
 #define STATSTRUC	statfs
 #define STATAVAIL	f_bavail
 #define STATMULTI	f_bsize
-#define STATINODE	f_ffree;
+#define STATINODE	f_ffree
 #define STATTYPES	long
+#endif
 #define STATFORMT	"%ld"
 #define STATFORMTPAD	"%*ld"
 #endif /* HAVE_STATFS */
@@ -116,7 +124,11 @@ Printspace(char *path, BOOL inode, BOOL needpadding)
 	struct STATSTRUC buf;
 	STATTYPES value;
 
+#if defined (__ultrix__)
+	if (STATFUNCT(path, &buf) < 1) {
+#else
 	if (STATFUNCT(path, &buf) != 0) {
+#endif
 		value = 0L;	 /* if there's an error - free space is zero */
 	} else {
 		if (!inode) {
@@ -127,9 +139,13 @@ Printspace(char *path, BOOL inode, BOOL needpadding)
 #ifdef CAREFULL_STATMULTI
 			if (x==0) x=buf.CAREFULL_STATMULTI;
 #endif
+#if defined (__ultrix__)
+			value = buf.STATAVAIL;
+#else
 			value = (STATTYPES)
 				(((double) buf.STATAVAIL * x) /
 				(STATTYPES) KILOBYTES);
+#endif
 		} else {
 			value = buf.STATINODE;	  /* simple! */
 		}
