@@ -51,6 +51,7 @@ verifycancels:          false
 wanttrash:              false
 wipcheck:               5
 wipexpire:              10
+dontrejectfiltered:	false
 
 # Article Storage
 
