@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
+#include "dbz.h"
 #include "configdata.h"
 #include "macros.h"
 #include "clibrary.h"
@@ -36,6 +37,9 @@ STATIC FILE		*EXPunlinkfile;
 STATIC char		*ACTIVE;
 STATIC ARTOVERFIELD	*ARTfields;
 STATIC int		ARTfieldsize;
+STATIC BOOL		ReadOverviewfmt = FALSE;
+STATIC char		**arts;
+STATIC enum KRP		*krps;
 
 /* Statistics */
 STATIC long		EXPprocessed;
@@ -53,6 +57,10 @@ STATIC long		EXPoverindexdrop;
 #define OVFMT_UNINIT	-2
 #define OVFMT_NODATE	-1
 #define OVFMT_NOXREF	-1
+
+STATIC int		Dateindex = OVFMT_UNINIT; 
+STATIC int		Xrefindex = OVFMT_UNINIT;
+STATIC int		Messageidindex = OVFMT_UNINIT;
 
 typedef struct _BUFFER {
     int		Size;
@@ -974,13 +982,56 @@ STATIC char *OVERGetHeader(char *p, int field)
 }
 
 /*
+**  Read overview.fmt and find index for headers
+*/
+STATIC OVfindheaderindex() {
+    FILE	*F;
+    char	*active;
+    int		i;
+
+    if (ReadOverviewfmt)
+    return;
+    ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
+    if ((active = ReadInFile(ACTIVE, (struct stat *)NULL)) == NULL) {
+	(void)fprintf(stderr, "Can't read %s, %s\n",
+	ACTIVE, strerror(errno));
+	exit(1);
+    }
+    BuildGroups(active);
+    F = fopen(cpcatpath(innconf->pathetc, _PATH_EXPIRECTL), "r");
+    if (!EXPreadfile(F)) {
+	(void)fclose(F);
+	(void)fprintf(stderr, "Format error in expire.ctl\n");
+	exit(1);
+    }
+    (void)fclose(F);
+    ARTreadschema();
+    if (Dateindex == OVFMT_UNINIT) {
+	for (Dateindex = OVFMT_NODATE, i = 0; i < ARTfieldsize; i++) {
+	    if (caseEQ(ARTfields[i].Header, "Date")) {
+		Dateindex = i;
+		break;
+	    } else if (caseEQ(ARTfields[i].Header, "Xref")) {
+		Xrefindex = i;
+		break;
+	    } else if (caseEQ(ARTfields[i].Header, "Message-ID")) {
+		Messageidindex = i;
+		break;
+	    }
+	}
+    }
+    arts = NEW(char *, nGroups);
+    krps = NEW(enum KRP, nGroups);
+    ReadOverviewfmt = TRUE;
+    return;
+}
+
+/*
 **  Do the work of expiring one line.  Assumes article still exists in the
 **  spool.  Returns TRUE if article should be purged, or return FALSE.
 */
 BOOL OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t arrived, time_t expires)
 {
-    static BOOL		Initialized = FALSE;
-    static BUFFER	New;
     static char		*Group = NULL;
     char	        *p;
     int	                i;
@@ -992,51 +1043,14 @@ BOOL OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t ar
     BOOL		remove;
     ARTHANDLE		*article;
     char		*Xref;
-    char		*active;
-    FILE		*F;
-    static int		Dateindex = OVFMT_UNINIT; 
-    static int		Xrefindex = OVFMT_UNINIT;
-    static char		**arts;
-    static enum KRP	*krps;
 
     if (SMprobe(SELFEXPIRE, &token, NULL)) {
 	if (!OVignoreselfexpire)
 	    /* this article should be kept */
 	    return FALSE;
     }
-    if (!Initialized) {
-	ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
-	if ((active = ReadInFile(ACTIVE, (struct stat *)NULL)) == NULL) {
-	    (void)fprintf(stderr, "Can't read %s, %s\n",
-		ACTIVE, strerror(errno));
-	    exit(1);
-	}
-	BuildGroups(active);
-	F = fopen(cpcatpath(innconf->pathetc, _PATH_EXPIRECTL), "r");
-	if (!EXPreadfile(F)) {
-	    (void)fclose(F);
-	    (void)fprintf(stderr, "Format error in expire.ctl\n");
-	    exit(1);
-	}
-	(void)fclose(F);
-	ARTreadschema();
-	if (Dateindex == OVFMT_UNINIT) {
-	    for (Dateindex = OVFMT_NODATE, i = 0; i < ARTfieldsize; i++) {
-		if (caseEQ(ARTfields[i].Header, "Date")) {
-		    Dateindex = i;
-		    break;
-		}
-	    }
-	    for (Xrefindex = OVFMT_NOXREF, i = 0; i < ARTfieldsize; i++) {
-		if (caseEQ(ARTfields[i].Header, "Xref")) {
-		    Xrefindex = i;
-		    break;
-		}
-	    }
-	}
-	arts = NEW(char *, nGroups);
-	krps = NEW(enum KRP, nGroups);
-	Initialized = TRUE;
+    if (!ReadOverviewfmt) {
+	OVfindheaderindex();
     }
 
     if (OVusepost) {
@@ -1103,6 +1117,30 @@ BOOL OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t ar
     }
 
     /* this article should be kept */
+    return FALSE;
+}
+
+BOOL OVhisthasmsgid(char *data) {
+    char		*p;
+    static STRING	History;
+    HASH		key;
+    OFFSET_T		offset;
+
+    if (!ReadOverviewfmt) {
+	OVfindheaderindex();
+    }
+    if (History == NULL) {
+	History = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
+	if (!dbzinit(History)) {
+	    syslog(L_ERROR, "OVhisthasmsgid: dbzinit failed '%s'", History);
+	    return FALSE;
+	}
+    }
+    if ((p = OVERGetHeader(data, Messageidindex)) == NULL)
+	return FALSE;
+    key = HashMessageID(p);
+    if (dbzfetch(key, &offset))
+	return TRUE;
     return FALSE;
 }
 
