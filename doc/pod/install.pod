@@ -760,7 +760,7 @@ peer, news.example.com is what they put in the Path: header (if different
 than the actual name of the server), and <newsgroups> is the wildmat
 pattern of newsgroups they want.
 
-Finally, if you set usecontrolchan to "yes" in F<inn.conf>, you need to
+Finally, if you set usecontrolchan to "true" in F<inn.conf>, you need to
 set up an entry for the controlchan program.  This entry should look like:
 
     controlchan!\

@@ -729,8 +729,9 @@ Configuring INN
     (if different than the actual name of the server), and <newsgroups> is
     the wildmat pattern of newsgroups they want.
 
-    Finally, if you set usecontrolchan to "yes" in inn.conf, you need to set
-    up an entry for the controlchan program.  This entry should look like:
+    Finally, if you set usecontrolchan to "true" in inn.conf, you need to
+    set up an entry for the controlchan program.  This entry should look
+    like:
 
         controlchan!\
             :!*,control,control.*,!control.cancel\
