@@ -241,6 +241,7 @@ HISwrite(struct history *h, const char *key, time_t arrived,
 	/* if we successfully wrote it, add it to the cache */
 	hash = HashMessageID(key);
 	his_cacheadd(h, hash, TRUE);
+	h->dirty = 1;
     }
     TMRstop(TMR_HISWRITE);
 
