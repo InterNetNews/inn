@@ -109,7 +109,8 @@ cert:
 
 ##  Cleanup targets.  clean deletes all compilation results but leaves the
 ##  configure results.  distclean or clobber removes everything not part of
-##  the distribution tarball.
+##  the distribution tarball.  maintclean removes some additional files
+##  created as part of the release process.
 clean:
 	@for D in $(CLEANDIRS) ; do \
 	    echo '' ; \
@@ -122,10 +123,12 @@ clobber realclean distclean:
 	    cd $$D && $(MAKE) $(FLAGS) clobber && cd .. ; \
 	done
 	@echo ''
+	rm -f LIST.* Makefile.global TAGS tags config.cache config.log
+	rm -f config.status libtool support/fixscript
+
+maintclean: distclean
 	rm -rf $(TARDIR)
-	rm -f inn*.tar.gz CHANGES ChangeLog LIST.* TAGS tags
-	rm -f config.cache config.log config.status libtool
-	rm -f support/fixscript Makefile.global
+	rm -f CHANGES ChangeLog inn*.tar.gz
 
 
 ##  Other generic targets.
