@@ -45,6 +45,8 @@ B<bool HIScheck(struct history *>I<history>B<, const char *>I<key>B<);>
 
 B<bool HISwrite(struct history *>I<history>B<, const char *>I<key>B<, time_t >I<arrived>B<, time_t >I<posted>B<, time_t >I<expires>B<, const TOKEN *>I<token>B<);>
 
+B<bool HISremember(struct history *>I<history>B<, const char *>I<key>B<, time_t >I<arrived>B<);>
+
 B<bool HISreplace(struct history *>I<history>B<, const char *>I<key>B<, time_t >I<arrived>B<, time_t >I<posted>B<, time_t >I<expires>B<, const TOKEN *>I<token>B<);>
 
 B<bool HISexpire(struct history *>I<history>B<, const char *>I<path>B<, const char *>I<reason>B<, bool >I<writing>B<, void *>I<cookie>B<, time_t >I<threshold>B<, bool (*>I<exists>B<)(void *cookie, time_t arrived, time_t posted, time_t expires, const TOKEN *token));>
@@ -107,24 +109,30 @@ can be found, B<HISlookup> will return B<false>. If a token is found
 I<arrived>, I<expires> and I<posted> are filled in with the message
 arrival, expiry and posting times respectively (or zero if the time
 component is not available), in addition to I<token> being set to the
-retrieved token and a function return value of true. Any of arrived,
-expires, posted or token may be B<NULL> in which case that component is
-not returned to the caller, without affecting the return value.
+retrieved token and a function return value of B<true>. Any of
+arrived, expires, posted or token may be B<NULL> in which case that
+component is not returned to the caller, without affecting the return
+value.
 
 B<HIScheck> checks the database I<history> for I<key> (normally the
 Message-ID); if I<key> has previously been set via B<HISwrite>,
-B<HIScheck> returns true, else B<false>.
+B<HIScheck> returns B<true>, else B<false>.
 
-B<HISwrite> writes a new entry to the database I<history> to be
-associated with I<key>. I<arrived>, I<posted>, I<expired> specify the
-arrival, posting and expiry time respectively; I<posted> and
-I<expired> may be specifed as <= 0 in which case that component shall
-be treated as absent in the database. I<token> is associated with the
-specified I<key>; if B<NULL> then the history database merely remembers
-that this I<key> has been seen, together with its arrival
-time. B<HISwrite> returns true on success, or B<false> on failure. The
-behaviour when I<key> is not unique with respect to the existing
-entries in I<history> is unspecified.
+B<HISwrite> writes a new entry to the database I<history> associated
+with I<key>. I<arrived>, I<posted>, I<expired> specify the arrival,
+posting and expiry time respectively; I<posted> and I<expired> may be
+specifed as <= 0 in which case that component shall be treated as
+absent in the database. I<token> is associated with the specified
+I<key>. B<HISwrite> returns B<true> on success, or B<false> on
+failure. The behaviour when I<key> is not unique with respect to the
+existing entries in I<history> is unspecified.
+
+B<HISremember> writes a new entry to the database I<history>
+associated with I<key>, merely remembering that this I<key> has been
+seen, together with its arrival time I<arrived>. B<HISremember>
+returns B<true> on success, or B<false> on failure. The behaviour when
+I<key> is not unique with respect to the existing entries in
+I<history> is unspecified.
 
 B<HISreplace> replaces an existing entry in the database I<history>,
 associated with I<key>. I<arrived>, I<posted>, I<expired> specify the
@@ -133,7 +141,8 @@ I<expired> may be specifed as <= 0 in which case that component shall
 be treated as absent in the database. I<token> is associated with the
 specified I<key>; if B<NULL> then the history database merely
 remembers that this I<key> has been seen, together with its arrival
-time. B<HISreplace> returns true on success, or B<false> on failure.
+time. B<HISreplace> returns B<true> on success, or B<false> on
+failure.
 
 B<HISexpire> expires the history database associated with I<history>,
 creating a new, replacement, database in the same location if I<path>
@@ -158,8 +167,8 @@ token are passed to the discrimination function I<exists>.
 If I<exists>() returns B<false> it indicates that stored entity
 associated with token is no longer available (or no longer required),
 but the history entry should be kept until it meets the I<threshold>
-constraint. If I<exists>() returns true the entry is kept as is in the
-newly expired history database.
+constraint. If I<exists>() returns B<true> the entry is kept as is in
+the newly expired history database.
 
 The I<exists> function is passed the arrival, posting and expiry
 times, in addition to the token associated with the entry. Note that
