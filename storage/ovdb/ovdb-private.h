@@ -106,7 +106,7 @@ int ovdb_getgroupinfo(char *group, struct groupinfo *gi, int ignoredeleted, DB_T
 
 bool ovdb_getlock(int mode);
 bool ovdb_releaselock(void);
-bool ovdb_check_pidfile(char *file);
+bool ovdb_check_pidfile(const char *file);
 bool ovdb_check_user(void);
 
 #define OVDB_LOCKFN "ovdb.sem"
@@ -188,8 +188,8 @@ label: { \
 
 #define TRYAGAIN EAGAIN
 
-#else
-/* version 3 */
+#elif DB_VERSION_MAJOR < 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR < 1)
+/* version 3 and 4.0 */
 
 #define TXN_START(label, tid) \
 label: { \
@@ -206,6 +206,27 @@ label: { \
 
 #define TXN_ABORT(label, tid) txn_abort(tid)
 #define TXN_COMMIT(label, tid) txn_commit(tid, 0)
+
+#define TRYAGAIN DB_LOCK_DEADLOCK
+
+#else
+/* version 4.1 and later */
+
+#define TXN_START(label, tid) \
+label: { \
+  int txn_ret; \
+  txn_ret = OVDBenv->txn_begin(OVDBenv, NULL, &tid, 0); \
+  if (txn_ret != 0) { \
+    syslog(L_ERROR, "OVDB: " #label " txn_begin: %s", db_strerror(ret)); \
+    tid = NULL; \
+  } \
+}
+
+#define TXN_RETRY(label, tid) \
+{ (tid)->abort(tid); goto label; }
+
+#define TXN_ABORT(label, tid) (tid)->abort(tid)
+#define TXN_COMMIT(label, tid) (tid)->commit(tid, 0)
 
 #define TRYAGAIN DB_LOCK_DEADLOCK
 
