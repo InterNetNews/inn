@@ -305,6 +305,7 @@ char *HISgetent(HASH *key, BOOL flag, OFFSET_T *off)
     struct stat		Sb;
     struct timeval	stv, etv;
     static int		entrysize = 0;
+    int			i;
 #ifndef DO_TAGGED_HASH
     idxrec		ionevalue;
     idxrecext		iextvalue;
@@ -405,8 +406,16 @@ char *HISgetent(HASH *key, BOOL flag, OFFSET_T *off)
     }
     stv = etv;
     if (flag && (off == NULL)) {
-	if (fgets(buff, sizeof buff, hfp) == NULL) {
-	    syslog(L_ERROR, "%s cant fgets from %ld %m", ClientHost, offset);
+	if ((i = read(fileno(hfp), buff, sizeof buff)) == NULL) {
+	    syslog(L_ERROR, "%s cant read from %ld %m", ClientHost, offset);
+	    return NULL;
+	}
+	if (i == sizeof buff)
+	    buff[i-1] = '\0';
+	else
+	    buff[i] = '\0';
+	if (strchr(buff, '\n') == NULL) {
+	    syslog(L_ERROR, "%s cant find end of line %ld %m", ClientHost, offset);
 	    return NULL;
 	}
     } else {
