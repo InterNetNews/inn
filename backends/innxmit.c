@@ -140,12 +140,16 @@ STATIC FILE *HistorySeek(char *MessageID)
     static char		*History = NULL;
     static FILE		*F;
     OFFSET_T		offset;
+#ifndef	DO_TAGGED_HASH
+    idxrec		ionevalue;
+    idxrecext		iextvalue;
+#endif
 
     /* Open the history file. */
     if (F == NULL) {
 	if (History == NULL)
 	    History = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
-	if (!dbminit(History)) {
+	if (!dbzinit(History)) {
 	    (void)fprintf(stderr, "Can't set up \"%s\" database, %s\n",
 		    History, strerror(errno));
 	    SMshutdown();
@@ -160,8 +164,20 @@ STATIC FILE *HistorySeek(char *MessageID)
     }
 
     /* Do the lookup. */
+#ifdef	DO_TAGGED_HASH
     if ((offset = dbzfetch(HashMessageID(MessageID))) < 0)
 	return NULL;
+#else
+    if (innconf->extendeddbz) {
+	if (!dbzfetch(HashMessageID(MessageID), &iextvalue))
+	    return NULL;
+	offset = iextvalue.offset[HISTOFFSET];
+    } else {
+	if (!dbzfetch(HashMessageID(MessageID), &ionevalue))
+	    return NULL;
+	offset = ionevalue.offset;
+    }
+#endif
 
     /* Get the seek offset, and seek. */
     if (fseek(F, offset, SEEK_SET) == -1)

@@ -97,6 +97,10 @@ main(ac, av)
     STRING		History;
     BUFFER		Line;
     BOOL		Passing;
+#ifndef DO_TAGGED_HASH
+    idxrec		ionevalue;
+    idxrecext		iextvalue;
+#endif
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
@@ -126,7 +130,7 @@ main(ac, av)
 	Usage();
 
     /* Open files. */
-    if (!dbminit(History)) {
+    if (!dbzinit(History)) {
 	(void)fprintf(stderr, "Can't set up \"%s\" database, %s\n",
 		History, strerror(errno));
 	exit(1);
@@ -175,11 +179,29 @@ main(ac, av)
 
 	/* Look up the article. */
 	key = HashMessageID(buff);
+#ifdef	DO_TAGGED_HASH
 	if ((where = dbzfetch(key)) < 0) {
 	    (void)fprintf(stderr, "No entry for \"%s\", %s\n",
 		    buff, strerror(errno));
 	    continue;
 	}
+#else
+	if (innconf->extendeddbz) {
+	    if (!dbzfetch(key, &iextvalue)) {
+		(void)fprintf(stderr, "No entry for \"%s\", %s\n",
+		    buff, strerror(errno));
+		continue;
+	    }
+	    where = iextvalue.offset[HISTOFFSET];
+	} else {
+	    if (!dbzfetch(key, &ionevalue)) {
+		(void)fprintf(stderr, "No entry for \"%s\", %s\n",
+		    buff, strerror(errno));
+		continue;
+	    }
+	    where = ionevalue.offset;
+	}
+#endif
 
 	if (fseek(rfp,  where, SEEK_SET) == -1) {
 	    (void)fprintf(stderr, "Can't fseek for \"%s\", %s\n",

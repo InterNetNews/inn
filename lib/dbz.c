@@ -164,32 +164,6 @@ static OFFSET_T tagboth;		/* tagbits|taghere */
  * make it a bit easier if we want to store more in here.
  */
 
-#ifdef __GNUC__
-#define PACKED __attribute__ ((packed))
-#endif
-
-#if defined(__SUNPRO_C) || defined(_nec_ews) || defined(sgi) || defined(sun)
-#if !defined(lint) && defined(__SUNPRO_C)
-#pragma pack(1)
-#endif /* nor lint, nor sgi, nor _nec_ews */
-typedef struct {
-    char               hash[DBZ_INTERNAL_HASH_SIZE];
-} erec;
-typedef struct {
-    unsigned long      offset;
-} idxrec;
-#if !defined(lint) && defined(__SUNPRO_C)
-#pragma pack()
-#endif /* nor lint, nor sgi, nor _nec_ews */
-#else
-typedef struct {
-    char               hash[DBZ_INTERNAL_HASH_SIZE];
-} PACKED erec;
-typedef struct {
-    unsigned long      offset;
-} PACKED idxrec;
-#endif
-
 /* A new, from-scratch database, not built as a rebuild of an old one,
  * needs to know table size.  Normally the user supplies this info,
  * but there have to be defaults.
@@ -307,7 +281,7 @@ static hash_table etab;         /* existance hash table, used for existance chec
 #endif
 static BOOL dirty;		/* has a store() been done? */
 static erec empty_rec;          /* empty rec to compare against
-				   initalized in dbminit */
+				   initalized in dbzinit */
 
 /* misc. forwards */
 static char *enstring(const char *s1, const char *s2);
@@ -482,8 +456,8 @@ BOOL dbzfresh(const char *name, const long size, const int fillpercent)
 	return FALSE;
 #endif	/* DO_TAGGED_HASH */
 
-    /* and punt to dbminit for the hard work */
-    return dbminit(name);
+    /* and punt to dbzinit for the hard work */
+    return dbzinit(name);
 }
 
 #ifdef	DO_TAGGED_HASH
@@ -662,8 +636,8 @@ BOOL dbzagain(const char *name, const char *oldname)
 	return FALSE;
 #endif
 
-    /* and let dbminit do the work */
-    return dbminit(name);
+    /* and let dbzinit do the work */
+    return dbzinit(name);
 }
 
 static BOOL openhashtable(const char *base, const char *ext, hash_table *tab,
@@ -737,7 +711,7 @@ static void closehashtable(hash_table *tab) {
 static BOOL openbasefile(const char *name) {
     basef = fopen(name, "r");
     if (basef == NULL) {
-	DEBUG(("dbminit: basefile open failed\n"));
+	DEBUG(("dbzinit: basefile open failed\n"));
 	basefname = enstring(name, "");
 	if (basefname == NULL) {
 	    (void) fclose(pagtab.f);
@@ -758,17 +732,17 @@ static BOOL openbasefile(const char *name) {
 #endif	/* DO_TAGGED_HASH */
 
 /*
- * dbminit - open a database, creating it (using defaults) if necessary
+ * dbzinit - open a database, creating it (using defaults) if necessary
  *
  * We try to leave errno set plausibly, to the extent that underlying
- * functions permit this, since many people consult it if dbminit() fails.
+ * functions permit this, since many people consult it if dbzinit() fails.
  * return TRUE for success, FALSE for failure
  */
-int dbminit(const char *name) {
+int dbzinit(const char *name) {
     char *fname;
 
     if (opendb) {
-	DEBUG(("dbminit: dbminit already called once\n"));
+	DEBUG(("dbzinit: dbzinit already called once\n"));
 	errno = 0;
 	return FALSE;
     }
@@ -783,14 +757,14 @@ int dbminit(const char *name) {
 	readonly = FALSE;
     DISPOSE(fname);
     if (dirf == NULL) {
-	DEBUG(("dbminit: can't open .dir file\n"));
+	DEBUG(("dbzinit: can't open .dir file\n"));
 	return FALSE;
     }
     CloseOnExec(fileno(dirf), 1);
 
     /* pick up configuration */
     if (!getconf(dirf, &conf)) {
-	DEBUG(("dbminit: getconf failure\n"));
+	DEBUG(("dbzinit: getconf failure\n"));
 	fclose(dirf);
 	errno = EDOM;	/* kind of a kludge, but very portable */
 	return FALSE;
@@ -812,8 +786,12 @@ int dbminit(const char *name) {
     taghere = conf.tagenb << conf.tagshift;
     tagboth = tagbits | taghere;
 #else
-    if (!openhashtable(name, idx, &idxtab, sizeof(idxrec),
-		options.idx_incore)) {
+    if ((innconf == NULL) && (ReadInnConf() < 0)) {
+	fclose(dirf);
+	return FALSE;
+    }
+    if (!openhashtable(name, idx, &idxtab, (innconf->extendeddbz ?
+		sizeof(idxrecext) : sizeof(idxrec)), options.idx_incore)) {
 	fclose(dirf);
 	return FALSE;
     }
@@ -829,7 +807,7 @@ int dbminit(const char *name) {
     opendb = TRUE;
     prevp = FRESH;
     memset(&empty_rec, '\0', sizeof(empty_rec));
-    DEBUG(("dbminit: succeeded\n"));
+    DEBUG(("dbzinit: succeeded\n"));
     return TRUE;
 }
 
@@ -846,14 +824,14 @@ static char *enstring(const char *s1, const char *s2)
     return p;
 }
 
-/* dbmclose - close a database
+/* dbzclose - close a database
  */
-BOOL dbmclose(void)
+BOOL dbzclose(void)
 {
     BOOL ret = TRUE;
 
     if (!opendb) {
-	DEBUG(("dbmclose: not opened!\n"));
+	DEBUG(("dbzclose: not opened!\n"));
 	return FALSE;
     }
 
@@ -863,7 +841,7 @@ BOOL dbmclose(void)
 #ifdef	DO_TAGGED_HASH
     closehashtable(&pagtab);
     if (fclose(basef) == EOF) {
-	fprintf(stderr, "dbmclose: fclose(basef) failed\n");
+	fprintf(stderr, "dbzclose: fclose(basef) failed\n");
 	ret = FALSE;
     }
     if (basefname != NULL)
@@ -875,11 +853,11 @@ BOOL dbmclose(void)
 #endif
 
     if (fclose(dirf) == EOF) {
-	DEBUG(("dbmclose: fclose(dirf) failed\n"));
+	DEBUG(("dbzclose: fclose(dirf) failed\n"));
 	ret = FALSE;
     }
 
-    DEBUG(("dbmclose: %s\n", (ret == 0) ? "succeeded" : "failed"));
+    DEBUG(("dbzclose: %s\n", (ret == 0) ? "succeeded" : "failed"));
     if (ret)
 	opendb = FALSE;
     return ret;
@@ -956,22 +934,30 @@ BOOL dbzexists(const HASH key) {
  * Returns the offset of the text file for input key,
  * or -1 if NOTFOUND or error occurs.
  */
-OFFSET_T dbzfetch(const HASH key) {
 #ifdef	DO_TAGGED_HASH
+OFFSET_T dbzfetch(const HASH key) {
 #define	MAX_NB2RD	(DBZMAXKEY + MAXFUZZYLENGTH + 2)
 #define MIN_KEY_LENGTH	6	/* strlen("<1@a>") + strlen("\t") */
     char *bp, buffer[MAX_NB2RD];
     int keylen, j, nb2r;
     HASH hishash;
     char *keytext = NULL;
-#endif
     OFFSET_T offset = NOTFOUND;
+#else
+BOOL dbzfetch(const HASH key, void *ivalue) {
+    idxrec	*ionevalue = (idxrec *)ivalue;
+    idxrecext	*iextvalue = (idxrecext *)ivalue;
+#endif
 
     prevp = FRESH;
 
     if (!opendb) {
 	DEBUG(("dbzfetch: database not open!\n"));
+#ifdef	DO_TAGGED_HASH
 	return NOTFOUND;
+#else
+	return FALSE;
+#endif
     }
 
     start(&srch, key, FRESH);
@@ -1040,47 +1026,69 @@ OFFSET_T dbzfetch(const HASH key) {
 	DEBUG(("fetch: successful\n"));
 	return offset;
     }
-#else	/* DO_TAGGED_HASH */
-    if (search(&srch) == TRUE) {
-	/* Actually get the data now */
-	if ((options.idx_incore != INCORE_NO) && (srch.place < conf.tsize)) {
-	    memcpy(&offset, &((idxrec *)idxtab.core)[srch.place], sizeof(idxrec));
-	    offset = ntohl(offset);
-	} else {
-	    if (lseek(idxtab.fd, srch.place * idxtab.reclen, SEEK_SET) < 0) {
-		DEBUG(("fetch: seek failed\n"));
-		idxtab.pos = -1;
-		srch.aborted = 1;
-		return NOTFOUND;
-	    }
-	    if (read(idxtab.fd, &offset, sizeof(offset)) != sizeof(offset)) {
-		DEBUG(("fetch: read failed\n"));
-		idxtab.pos = -1;
-		srch.aborted = 1;
-		return NOTFOUND;
-	    }
-	    offset = ntohl(offset);
-	}
-	DEBUG(("fetch: successful\n"));
-	return offset;
-    }
-#endif
 
     /* we didn't find it */
     DEBUG(("fetch: failed\n"));
     prevp = &srch;			/* remember where we stopped */
     return NOTFOUND;
+#else	/* DO_TAGGED_HASH */
+    if (search(&srch) == TRUE) {
+	/* Actually get the data now */
+	if ((options.idx_incore != INCORE_NO) && (srch.place < conf.tsize)) {
+	    if (innconf->extendeddbz)
+		memcpy(ivalue, &((idxrecext *)idxtab.core)[srch.place], sizeof(idxrecext));
+	    else
+		memcpy(ivalue, &((idxrec *)idxtab.core)[srch.place], sizeof(idxrec));
+	} else {
+	    if (lseek(idxtab.fd, srch.place * idxtab.reclen, SEEK_SET) < 0) {
+		DEBUG(("fetch: seek failed\n"));
+		idxtab.pos = -1;
+		srch.aborted = 1;
+		return FALSE;
+	    }
+	    if (innconf->extendeddbz) {
+		if (read(idxtab.fd, ivalue, sizeof(idxrecext)) != sizeof(idxrecext)) {
+		    DEBUG(("fetch: read failed\n"));
+		    idxtab.pos = -1;
+		    srch.aborted = 1;
+		    return FALSE;
+		}
+	    } else {
+		if (read(idxtab.fd, ivalue, sizeof(idxrec)) != sizeof(idxrec)) {
+		    DEBUG(("fetch: read failed\n"));
+		    idxtab.pos = -1;
+		    srch.aborted = 1;
+		    return FALSE;
+		}
+	    }
+	}
+	if (innconf->extendeddbz) {
+	    iextvalue->offset[HISTOFFSET] = ntohl(iextvalue->offset[HISTOFFSET]);
+	    iextvalue->offset[OVEROFFSET] = ntohl(iextvalue->offset[OVEROFFSET]);
+	} else
+	    ionevalue->offset = ntohl(ionevalue->offset);
+	DEBUG(("fetch: successful\n"));
+	return TRUE;
+    }
+
+    /* we didn't find it */
+    DEBUG(("fetch: failed\n"));
+    prevp = &srch;			/* remember where we stopped */
+    return NULL;
+#endif
 }
 
 /*
  * dbzstore - add an entry to the database
  * returns TRUE for success and FALSE for failure
  */
-DBZSTORE_RESULT dbzstore(const HASH key, const OFFSET_T data) {
 #ifdef	DO_TAGGED_HASH
+DBZSTORE_RESULT dbzstore(const HASH key, const OFFSET_T data) {
     OFFSET_T value;
 #else
-    idxrec   ivalue;
+DBZSTORE_RESULT dbzstore(const HASH key, void *ivalue) {
+    idxrec	*ionevalue = (idxrec *)ivalue;
+    idxrecext	*iextvalue = (idxrecext *)ivalue;
     erec     evalue;
     int	     offset;
 #endif
@@ -1135,15 +1143,16 @@ DBZSTORE_RESULT dbzstore(const HASH key, const OFFSET_T data) {
     DEBUG(("store: used count %ld\n", conf.used[0]));
     dirty = TRUE;
 
-    /* copy the value in to ensure alignment */
-    memcpy(&offset, &data, sizeof(data) < sizeof(offset) ? sizeof(data) : sizeof(offset));
-    offset = htonl(offset);
-    memcpy(&ivalue.offset, &offset, sizeof(offset));
+    if (innconf->extendeddbz) {
+	iextvalue->offset[HISTOFFSET] = htonl(iextvalue->offset[HISTOFFSET]);
+	iextvalue->offset[OVEROFFSET] = htonl(iextvalue->offset[OVEROFFSET]);
+    } else
+	ionevalue->offset = htonl(ionevalue->offset);
     memcpy(&evalue.hash, &srch.hash,
 	   sizeof(evalue.hash) < sizeof(srch.hash) ? sizeof(evalue.hash) : sizeof(srch.hash));
 
     /* Set the value in the index first since we don't care if it's out of date */
-    if (!set(&srch, &idxtab, &ivalue))
+    if (!set(&srch, &idxtab, ivalue))
 	return DBZSTORE_ERROR;
     if (!set(&srch, &etab, &evalue))
 	return DBZSTORE_ERROR;
@@ -1719,6 +1728,10 @@ char *argv[];
     dbzoptions opt;
     dbz_incore_val incore = INCORE_MEM;
     struct timeval start, end;
+#ifndef DO_TAGGED_HASH
+    idxrec	ionevalue;
+    idxrecext	iextvalue;
+#endif
 
     for (i=1; i<argc; i++)
 	if (strcmp(argv[i], "-i") == 0)
@@ -1763,12 +1776,12 @@ char *argv[];
 	dbzdebug(1);
 #endif
 	gettimeofday(&start, NULL);
-	if (dbminit(history) < 0) {
-	    fprintf(stderr, "cant dbminit %s\n", history);
+	if (dbzinit(history) < 0) {
+	    fprintf(stderr, "cant dbzinit %s\n", history);
 	    exit(1);
 	}
 	gettimeofday(&end, NULL);
-	printf("dbminit: %d msec\n", timediffms(start, end));
+	printf("dbzinit: %d msec\n", timediffms(start, end));
     }
 
     gettimeofday(&start, NULL);
@@ -1791,11 +1804,25 @@ char *argv[];
 		exit(1);
 	    }
 	} else {
+#ifdef	DO_TAGGED_HASH
 	    val = dbzfetch(key);
 	    if (val == NOTFOUND) {
 		fprintf(stderr, "line %d can't fetch %s\n", line, ibuf);
 		exit(1);
 	    }
+#else
+	    if (innconf->extendeddbz) {
+		if (!dbzfetch(key, &iextvalue)) {
+		    fprintf(stderr, "line %d can't fetch %s\n", line, ibuf);
+		    exit(1);
+		}
+	    } else {
+		if (!dbzfetch(key, &ionevalue)) {
+		    fprintf(stderr, "line %d can't fetch %s\n", line, ibuf);
+		    exit(1);
+		}
+	    }
+#endif
 	}
     }
     gettimeofday(&end, NULL);
@@ -1805,9 +1832,9 @@ char *argv[];
 	line, (double)i / (double)line);
 
     gettimeofday(&end, NULL);
-    dbmclose();
+    dbzclose();
     gettimeofday(&end, NULL);
-    printf("dbmclose: %d msec\n", timediffms(start, end));
+    printf("dbzclose: %d msec\n", timediffms(start, end));
     return(0);
 }
 #endif	/* DBZTEST */

@@ -106,8 +106,8 @@ void HISsetup(void)
 	opt.exists_incore = HISincore ? INCORE_MMAP : INCORE_NO;
 #endif
 	dbzsetoptions(opt);
-	if (!dbminit(HIShistpath)) {
-	    syslog(L_FATAL, "%s cant dbminit %s %m", HIShistpath, LogName);
+	if (!dbzinit(HIShistpath)) {
+	    syslog(L_FATAL, "%s cant dbzinit %s %m", HIShistpath, LogName);
 	    exit(1);
 	}
     }
@@ -149,8 +149,8 @@ void HISclose(void)
 {
     if (HISwritefp != NULL) {
 	HISsync();
-	if (!dbmclose())
-	    syslog(L_ERROR, "%s cant dbmclose %m", LogName);
+	if (!dbzclose())
+	    syslog(L_ERROR, "%s cant dbzclose %m", LogName);
 	if (fclose(HISwritefp) == EOF)
 	    syslog(L_ERROR, "%s cant fclose history %m", LogName);
 	HISwritefp = NULL;
@@ -177,6 +177,10 @@ char *HISfilesfor(const HASH MessageID)
     OFFSET_T		offset;
     char	        *p;
     int	                i;
+#ifndef DO_TAGGED_HASH
+    idxrec		ionevalue;
+    idxrecext		iextvalue;
+#endif
 
     TMRstart(TMR_HISGREP);
     
@@ -184,10 +188,26 @@ char *HISfilesfor(const HASH MessageID)
     	return NULL;
     
     /* Get the seek value into the history file. */
+#ifdef	DO_TAGGED_HASH
     if ((offset = dbzfetch(MessageID)) < 0) {
 	TMRstop(TMR_HISGREP);
 	return NULL;
     }
+#else
+    if (innconf->extendeddbz) {
+	if (!dbzfetch(MessageID, &iextvalue)) {
+	    TMRstop(TMR_HISGREP);
+	    return NULL;
+	}
+	offset = iextvalue.offset[HISTOFFSET];
+    } else {
+	if (!dbzfetch(MessageID, &ionevalue)) {
+	    TMRstop(TMR_HISGREP);
+	    return NULL;
+	}
+	offset = ionevalue.offset;
+    }
+#endif
     TMRstop(TMR_HISGREP);
 
     /* Get space. */
@@ -303,11 +323,16 @@ STATIC void HISslashify(char *p)
 /*
 **  Write a history entry.
 */
-BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
+BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
 {
     static char		NOPATHS[] = "";
     long		offset;
     int			i;
+#ifndef DO_TAGGED_HASH
+    void		*ivalue;
+    idxrec		ionevalue;
+    idxrecext		iextvalue;
+#endif
     
     if (HISwritefp == NULL)
         return FALSE;
@@ -356,6 +381,7 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
     }
 
     /* Set up the database values and write them. */
+#ifdef	DO_TAGGED_HASH
     if (dbzstore(hash, offset) == DBZSTORE_ERROR) {
 	i = errno;
 	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
@@ -363,6 +389,23 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
 	TMRstop(TMR_HISWRITE);
 	return FALSE;
     }
+#else
+    if (innconf->extendeddbz) {
+        iextvalue.offset[HISTOFFSET] = offset;
+        OVERsetoffset(token, (int *)&iextvalue.offset[OVEROFFSET], &iextvalue.overindex);
+        ivalue = (void *)&iextvalue;
+    } else {
+        ionevalue.offset = offset;
+        ivalue = (void *)&ionevalue;
+    }
+    if (dbzstore(hash, ivalue) == DBZSTORE_ERROR) {
+	i = errno;
+	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
+	IOError("history database", i);
+	TMRstop(TMR_HISWRITE);
+	return FALSE;
+    }
+#endif
     HIScacheadd(hash, TRUE);
     TMRstop(TMR_HISWRITE);
     
@@ -378,6 +421,11 @@ BOOL HISremember(const HASH hash)
 {
     long		offset;
     int			i;
+#ifndef DO_TAGGED_HASH
+    void		*ivalue;
+    idxrec		ionevalue;
+    idxrecext		iextvalue;
+#endif
 
     TMRstart(TMR_HISWRITE);
     
@@ -401,6 +449,7 @@ BOOL HISremember(const HASH hash)
     } 
 
     /* Set up the database values and write them. */
+#ifdef	DO_TAGGED_HASH
     if (dbzstore(hash, offset) == DBZSTORE_ERROR) {
 	i = errno;
 	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
@@ -408,6 +457,24 @@ BOOL HISremember(const HASH hash)
 	TMRstop(TMR_HISWRITE);
 	return FALSE;
     }
+#else
+    if (innconf->extendeddbz) {
+        iextvalue.offset[HISTOFFSET] = offset;
+        iextvalue.offset[OVEROFFSET] = 0;
+	iextvalue.overindex = OVER_NONE;
+        ivalue = (void *)&iextvalue;
+    } else {
+        ionevalue.offset = offset;
+        ivalue = (void *)&ionevalue;
+    }
+    if (dbzstore(hash, ivalue) == DBZSTORE_ERROR) {
+	i = errno;
+	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
+	IOError("history database", i);
+	TMRstop(TMR_HISWRITE);
+	return FALSE;
+    }
+#endif
     HIScacheadd(hash, TRUE);
     TMRstop(TMR_HISWRITE);
     

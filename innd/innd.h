@@ -510,7 +510,7 @@ extern STRING		CCcancel();
 extern STRING		CCcheckfile();
 
 extern BOOL		HIShavearticle(const HASH MessageID);
-extern BOOL		HISwrite(const ARTDATA *Data, HASH hash, char *paths);
+extern BOOL		HISwrite(const ARTDATA *Data, HASH hash, char *paths, TOKEN *token);
 extern BOOL             HISremember(const HASH MessageID);
 extern char		*HISfilesfor(const HASH MessageID);
 extern void		HISclose(void);

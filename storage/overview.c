@@ -31,8 +31,28 @@ static BOOL		OVERmmap = TRUE;
 #define DEFAULTMODE	"a"
 #define MAXOVERLINE	4096
 
+
 /*
-** Read overview.ctl to determin which overview file is to be written.
+** get offset and overindex from token.
+*/
+void OVERsetoffset(TOKEN *token, int *offset, unsigned char *overindex)
+{
+    *overindex = token->index;
+    *offset = token->offset;
+}
+
+/*
+** make token.
+*/
+void OVERmaketoken(TOKEN *token, int offset, unsigned char overindex)
+{
+    token->index = overindex;
+    token->offset = offset;
+    token->cancelled = FALSE;
+}
+
+/*
+** Read overview.ctl to determine which overview file is to be written.
 */
 STATIC OVERCONFIG OVERreadconfig(BOOL New)
 {
@@ -500,9 +520,7 @@ BOOL OVERstore(TOKEN *token, char *Overdata, int Overlen) {
 		syslog(L_ERROR, "OVER cant flush overview file, index %d: %m", config->index);
 		return FALSE;
 	    }
-	    token->index = config->index;
-	    token->offset = offset;
-	    token->cancelled = FALSE;
+	    OVERmaketoken(token, offset, config->index);
 	    break;
 	}
     }

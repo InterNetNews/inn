@@ -256,13 +256,19 @@ RemoveDBZFiles(char *p)
 STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 {
     QIOSTATE	        *qp;
-    char	        *p;
+    char	        *p, *q;
     char	        *save;
     long	        count;
     long		where;
     HASH		key;
     char		temp[SMBUF];
     dbzoptions          opt;
+#ifndef	DO_TAGGED_HASH
+    TOKEN	token;
+    void        *ivalue;
+    idxrec      ionevalue;  
+    idxrecext   iextvalue; 
+#endif
 
     xchdir(HISTORYDIR);
 
@@ -336,6 +342,35 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 		continue;
 	    }
 	    key = TextToHash(p+1);
+#ifndef	DO_TAGGED_HASH
+	    if (((save = strchr(save + 1, '@')) != NULL) &&
+		((q = strchr(save + 1, '@')) != NULL)) {
+		*(++q) = '\0';
+		if (!IsToken(save)) {
+		    fprintf(stderr, "Invalid token %s for hash %s, skipping\n", q, p);
+		    continue;
+		}
+		if (innconf->extendeddbz) {
+		    iextvalue.offset[HISTOFFSET] = where;
+		    token = TextToToken(save);
+		    OVERsetoffset(&token, (int *)&iextvalue.offset[OVEROFFSET], &iextvalue.overindex); 
+		    ivalue = (void *)&iextvalue;
+		} else {
+		    ionevalue.offset = where;
+		    ivalue = (void *)&ionevalue;
+		}
+	    } else {
+		if (innconf->extendeddbz) {
+		    iextvalue.offset[HISTOFFSET] = where;
+		    iextvalue.offset[OVEROFFSET] = 0;
+		    iextvalue.overindex = OVER_NONE;
+		    ivalue = (void *)&iextvalue;
+		} else {
+		    ionevalue.offset = where;
+		    ivalue = (void *)&ionevalue;
+		}
+	    }
+#endif
 	    break;
 	case '<':
 	    key = HashMessageID(p);
@@ -344,7 +379,11 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 	    fprintf(stderr, "Invalid message-id \"%s\" in history text\n", p);
 	    continue;
 	}
+#ifdef	DO_TAGGED_HASH
 	switch (dbzstore(key, (OFFSET_T)where)) {
+#else
+	switch (dbzstore(key, ivalue)) {
+#endif
 	case DBZSTORE_EXISTS:
             fprintf(stderr, "Duplicate message-id \"%s\" in history text\n", p);
 	    break;
@@ -374,7 +413,7 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 
     /* Close files. */
     QIOclose(qp);
-    if (!dbmclose()) {
+    if (!dbzclose()) {
 	(void)fprintf(stderr, "Can't close history, %s\n", strerror(errno));
 	if (temp[0])
 	    (void)unlink(temp);
@@ -1531,7 +1570,7 @@ main(int ac, char *av[])
 		    strerror(errno));
 	    exit(1);
 	}
-	if (!dbminit(TextFile)) {
+	if (!dbzinit(TextFile)) {
 	    (void)fprintf(stderr, "Can't open dbz file, %s\n",
 		    strerror(errno));
 	    ErrorExit(TRUE, DoRebuild);
@@ -1637,7 +1676,7 @@ main(int ac, char *av[])
 
     if (Update) {
 	INNDrunning = TRUE;
-	if (!dbmclose()) {
+	if (!dbzclose()) {
 	    (void)fprintf(stderr, "Can't close DBZ file, %s\n",
 		    strerror(errno));
 	    ErrorExit(Update, DoRebuild);

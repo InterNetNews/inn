@@ -127,13 +127,33 @@ FindFile(F, id, name)
     HASH		key;
     OFFSET_T		offset;
     char		date[SMBUF];
+#ifndef	DO_TAGGED_HASH
+    idxrec		ionevalue;
+    idxrecext		iextvalue;
+#endif
 
     /* Do the lookup. */
     key = HashMessageID(id);
+#ifdef	DO_TAGGED_HASH
     if ((offset = dbzfetch(key)) < 0) {
 	(void)fprintf(stderr, "Can't find \"%s\"\n", id);
 	return NULL;
     }
+#else
+    if (innconf->extendeddbz) {
+	if (!dbzfetch(key, &iextvalue)) {
+	    (void)fprintf(stderr, "Can't find \"%s\"\n", id);
+	    return NULL;
+	}
+	offset = iextvalue.offset[HISTOFFSET];
+    } else {
+	if (!dbzfetch(key, &ionevalue)) {
+	    (void)fprintf(stderr, "Can't find \"%s\"\n", id);
+	    return NULL;
+	}
+	offset = ionevalue.offset;
+    }
+#endif
 
     /* Get the seek offset, and seek. */
     if (fseek(F, offset, SEEK_SET) == -1) {
@@ -836,7 +856,7 @@ main(ac, av)
     qp = QIOfdopen((int)fileno(stdin));
 
     /* Open the history file. */
-    if (!dbminit(History)) {
+    if (!dbzinit(History)) {
 	(void)fprintf(stderr, "Can't set up \"%s\" database, %s\n",
 		History, strerror(errno));
 	exit(1);
@@ -936,7 +956,7 @@ main(ac, av)
     /* That's all she wrote. */
     QIOclose(qp);
     (void)fclose(F);
-    (void)dbmclose();
+    (void)dbzclose();
     exit(0);
     /* NOTREACHED */
 }

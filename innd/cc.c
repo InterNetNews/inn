@@ -239,14 +239,24 @@ CCaddhist(av)
     BOOL		ok;
     HASH                hash;
     int			i;
+    TOKEN		token;
+    int			offset;
+    unsigned char	index;
 
     /* Check to see if we were passed a hash first. */
     i = strlen(av[0]);
     if (av[0][0]=='[' && av[0][i-1] == ']') {
 	if (i != ((sizeof(HASH) * 2) + 2))
 	    return "1 Bad Hash";
-	if (av[4] != NULL && *av[4] != '\0' && !IsToken(av[4]))
-	    return "1 Bad Token";
+	index = OVER_NONE;
+	offset = 0;
+	OVERsetoffset(&token, &offset, &index);
+	if (av[4] != NULL && *av[4] != '\0') {
+	    if (!IsToken(av[4]))
+		return "1 Bad Token";
+	    else
+		token = TextToToken(av[4]);
+	}
         hash = TextToHash(&av[0][1]);
 	/* Put something bogus in here.  This should never be referred
 	   to unless someone tries to add a [msgidhash].... history
@@ -288,11 +298,11 @@ CCaddhist(av)
     Data.Posted = atol(av[3]);
 
     if (Mode == OMrunning)
-	ok = HISwrite(&Data, hash, av[4]);
+	ok = HISwrite(&Data, hash, av[4], &token);
     else {
 	/* Possible race condition, but documented in ctlinnd manpage. */
 	HISsetup();
-	ok = HISwrite(&Data, hash, av[4]);
+	ok = HISwrite(&Data, hash, av[4], &token);
 	HISclose();
     }
     return ok ? NULL : "1 Write failed";
