@@ -322,11 +322,13 @@ sub human_readable {
     my $base = 1024;
     my $factor = 1024;
 
-    my $unit = $#name;
-    my $scaled = $val / $base / $factor**$unit;
-    while ($scaled < 1 && $unit) {
-	$scaled *= $factor;
-	$unit--;
+    my $unit = -1;
+    my $oldscaled = $val / $base;
+    my $scaled = $oldscaled;
+    while ( ( $scaled > 0 ) && ( $unit < $#name ) ) {
+	$oldscaled = $scaled;
+	$scaled /= $factor;
+	$unit++;
     }
     my $predigits = length (int($scaled));
     my $postdigits = $digits - $predigits - 1;
