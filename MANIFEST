@@ -200,6 +200,7 @@ doc/pod/news.pod                      Master file for NEWS
 doc/pod/ovdb.pod                      Master file for ovdb.5
 doc/pod/ovdb_recover.pod              Master file for ovdb_recover.8
 doc/pod/ovdb_upgrade.pod              Master file for ovdb_upgrade.8
+doc/pod/passwd.nntp.pod               Master file for passwd.nntp.5
 doc/pod/readers.conf.pod              Master file for readers.conf.5
 doc/pod/readme.pod                    Master file for README
 doc/pod/sasl.conf.pod                 Master file for sasl.conf.5
@@ -384,7 +385,6 @@ lib/xfopena.c                         Open a FILE in append mode
 lib/xmalloc.c                         Failsafe memory allocation wrapper
 lib/xsignal.c                         signal() wrapper using sigaction
 lib/xwrite.c                          write that handles partial transfers
-lib/xwritev.c                         writev that handles partial transfers
 nnrpd                                 Reader server (Directory)
 nnrpd/Makefile                        Makefile for nnrpd
 nnrpd/article.c                       Article-related routines
