@@ -21,8 +21,8 @@
 #include "config.h"
 #include "clibrary.h"
 #include <errno.h>
-#ifdef HAVE_SYS_SELECT_H
-#include <sys/select.h>
+#if HAVE_SYS_SELECT_H
+# include <sys/select.h>
 #endif
 
 /* FreeBSD 3.4 RELEASE needs <sys/time.h> before <sys/resource.h>. */
