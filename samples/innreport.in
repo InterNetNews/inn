@@ -486,6 +486,7 @@ if ($HTML) {
       $/ = "";
       $HTML_header = <F>;
       close (F);
+      $/ = "\n";
     };
   }
   if (defined $output{'default'}{'html_footer_file'}) {
@@ -495,6 +496,7 @@ if ($HTML) {
       $/ = "";
       $HTML_footer = <F>;
       close (F);
+      $/ = "\n";
     }
   }
 }
