@@ -5,15 +5,17 @@ ovdb - Overview storage method for INN
 =head1 DESCRIPTION
 
 Ovdb is a storage method that uses the BerkeleyDB library to store overview
-data.  It requires version 2.6.x or later of the BerkeleyDB library; it has been
-tested with versions 2.7.7 and 3.0.55.  Ovdb makes use of the full
-transaction/logging/locking functionality of the BerkeleyDB environment.
-BerkeleyDB may be downloaded from http://www.sleepycat.com .
+data.  It requires version 2.6.x or later of the BerkeleyDB library; it is
+known to work well with version 2.7.7.  There is also a 3.0.55, but it is
+not very stable (though ovdb will compile correctly with it).
+Ovdb makes use of the full transaction/logging/locking functionality of the
+BerkeleyDB environment.  BerkeleyDB may be downloaded from
+http://www.sleepycat.com .
 
 The BerkeleyDB distribution is (by default) installed into
 F</usr/local/BerkeleyDB>, with subdirectories F<lib/>, F<include/>, and
 F<bin/> for the library, headers, and support tools, respectively.
-Version 3.x uses F</usr/local/BerkeleyDB.3.0> instead.
+Version 3.x uses F</usr/local/BerkeleyDB.3.x> instead.
 Ovdb uses some of the support tools in the F<bin/> subdirectory; namely
 F<db_archive>, F<db_checkpoint>, and F<db_deadlock>.
 
@@ -29,11 +31,12 @@ The ovdb database will take up more disk space for a given spool than
 the other overview methods.  Plan on needing at least 1.1 KB for every
 article in your spool (not counting crossposts).  So, if you have 5
 million articles, you'll need at least 5.5 GB of disk space for ovdb.
+With BerkeleyDB 2.x, the db files are 'grow only'; the library will
+not shrink them, even if data is removed.  So, reserving extra space
+above the estimate is a good idea.
 Plus, you'll need additional space for transaction logs: at least 40 MB,
-preferably 100 MB or more.  (The logs may be on a different filesystem
--- see the DB_CONFIG section.)  If space is running tight, you can shrink
-the ovXXXX database files by dumping and reloading them (to remove unused
-space within the database file).
+preferably 100 MB.  (The logs may be on a different filesystem
+-- see the DB_CONFIG section.)
 
 =head1 CONFIGURATION
 
@@ -126,7 +129,9 @@ F<rc.news>:
 
 Runs C<ovdb_recover>.  This will perform any needed recovery on the
 database; e.g., if there was a crash that may have left the database
-in an inconsistent state.  This is done before innd is started.
+in an inconsistent state.  This is done before innd is started.  If
+the innd.pid file is present but innd is not running (i.e., unclean
+shutdown), rc.news will supply the C<-f> argument to C<ovdb_recover>
 
 =item *
 
@@ -145,7 +150,7 @@ error message.
 If a program accessing the database crashes, or otherwise exits
 uncleanly, it might leave a stale lock in the database.  This lock
 could cause other processes to deadlock on that stale lock.  To
-fix this, shut down all processes that access overview (using
+fix this, shut down all news processes (using
 C<kill -9> if necessary) then run C<ovdb_recover -f> as the
 news user, e.g.: C<su news -c "/PATHBIN/ovdb_recover -f">
 This will remove all locks plus repair any damage caused by
