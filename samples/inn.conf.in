@@ -24,6 +24,7 @@ checkincludedtext:	false
 maxforks:		10
 maxartsize:		1000000
 nicekids:		4
+nicenewnews:		0
 verifycancels:		false
 logcancelcomm:		false
 wanttrash:		false
@@ -50,11 +51,11 @@ nnrpdoverstats:		false
 storeonxref:		true
 nnrpdcheckart:		true
 storemsgid:		true
-backoff_auth:		false
-backoff_db:		@DBDIR@/backoff
-backoff_postfast:	0L
-backoff_postslow:	1L
-backoff_trigger:	10000L
+backoffauth:		false
+backoffdb:		@DBDIR@/backoff
+backoffpostfast:	0L
+backoffpostslow:	1L
+backofftrigger:		10000L
 mimeversion:
 mimecontenttype:
 mimeencoding:

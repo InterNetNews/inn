@@ -10,6 +10,6 @@
 ##			see shrinkfile(1).
 ##	<args>		Other args to pass to innxmit
 ##  Everything after the pound sign is ignored.
-nsavax:erehwon.nsavax.gov::-S -t60
-walldrug:walldrug.com:4m-1m:-T1800 -t300
-kremvax:kremvax.cis:2m:
+#nsavax:erehwon.nsavax.gov::-S -t60
+#walldrug:walldrug.com:4m-1m:-T1800 -t300
+#kremvax:kremvax.cis:2m:

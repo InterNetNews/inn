@@ -11,4 +11,4 @@
 ##	<style>		Optional authentication style, defaults to "authinfo"
 ##  <name> and <pass> can be empty string; a peer innd doesn't need a
 ##  <name>, for example.
-news.foo.com:rsalz:martha
+#news.foo.com:rsalz:martha
