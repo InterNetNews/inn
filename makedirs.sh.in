@@ -6,8 +6,8 @@ PATHNEWS=@prefix@
 PATHBIN=${PATHNEWS}/bin
 PATHETC=@ETCDIR@
 PATHLIB=@LIBDIR@
-PATHCONTROL=${PATHBIN}/control
-PATHFILTER=${PATHBIN}/filter
+PATHCONTROL=@CONTROLDIR@
+PATHFILTER=@FILTERDIR@
 PATHRUN=@RUNDIR@
 PATHLOG=@LOGDIR@
 PATHDB=@DBDIR@
@@ -47,6 +47,9 @@ MAN=`echo $MAN8 | sed -e 's@\(.*\)/[^/]*@\1@'`
 NEWSUSER=@NEWSUSER@
 NEWSGROUP=@NEWSGRP@
 
+DIRMODE=@DIRMODE@
+RUNDIRMODE=@RUNDIRMODE@
+
 PFLAG="$1"
 umask 0
 set -x
@@ -67,10 +70,10 @@ for F in \
 	chgrp ${NEWSGROUP} ${DESTDIR}${F} || exit 1
 	case ${F} in
 	${PATHRUN})
-	    chmod 0770 ${DESTDIR}${F} || exit 1
+	    chmod ${RUNDIRMODE} ${DESTDIR}${F} || exit 1
 	    ;;
 	*)
-	    chmod 0775 ${DESTDIR}${F} || exit 1
+	    chmod ${DIRMODE} ${DESTDIR}${F} || exit 1
 	    ;;
 	esac
     fi

@@ -73,6 +73,18 @@ AC_ARG_WITH(log-dir,
 	LOGDIR=$prefix/log)
 AC_SUBST(LOGDIR)
 
+AC_ARG_WITH(control-dir,
+	[  --with-control-dir=PATH Control programs [PREFIX/bin/control]],
+	CONTROLDIR=$with_control_dir,
+	CONTROLDIR=$prefix/bin/control)
+AC_SUBST(CONTROLDIR)
+
+AC_ARG_WITH(filter-dir,
+	[  --with-filter-dir=PATH  Embedded filters [PREFIX/bin/filter]],
+	FILTERDIR=$with_filter_dir,
+	FILTERDIR=$prefix/bin/filter)
+AC_SUBST(FILTERDIR)
+
 AC_ARG_WITH(tmp-path,
 	[  --with-tmp-path=PATH    Temporary files directory [PREFIX/tmp]], 
 	TMPPATH=$with_tmp_path, 
@@ -97,9 +109,54 @@ AC_ARG_WITH(news-master,
 	NEWSMASTER=usenet)
 AC_SUBST(NEWSMASTER)
 
+NEWSUMASK=02
+FILEMODE=0664
+DIRMODE=0775
+RUNDIRMODE=0770
+AC_ARG_WITH(news-umask,
+	[  --with-news-umask=UMASK umask for news files [002]],
+	with_news_umask=`echo "$with_news_umask" | sed 's/^0*//'`
+	if test "x$with_news_umask" = x22
+	then
+	  NEWSUMASK=022
+	  FILEMODE=0644
+	  DIRMODE=0755
+	  RUNDIRMODE=0750
+	else
+	  if test "x$with_news_umask" != x2
+	  then
+	    AC_MSG_ERROR(Valid umasks are 02 or 022)
+	  fi
+	fi)
+AC_SUBST(NEWSUMASK)
+AC_SUBST(FILEMODE)
+AC_SUBST(DIRMODE)
+AC_SUBST(RUNDIRMODE)
+
 AC_ARG_WITH(sendmail,
-	[  --with-sendmail=PATH    Specify sendmail], 
+	[  --with-sendmail=PATH    Specify path to sendmail],
 	SENDMAIL=$with_sendmail)
+
+INEWSMODE=2555
+AC_ARG_ENABLE(setgid-inews,
+	[  --disable-setgid-inews  Don't install inews setgid],
+	if test "x$enableval" = xno
+	then
+	  INEWSMODE=0550
+	fi)
+AC_SUBST(INEWSMODE)
+
+RNEWSGRP=uucp
+RNEWSMODE=4550
+AC_ARG_ENABLE(uucp-rnews,
+	[  --disable-uucp-rnews    Don't install rnews setuid, group uucp],
+	if test "x$enableval" = xno
+	then
+	  RNEWSGRP=$NEWSGRP
+	  RNEWSMODE=0500
+	fi)
+AC_SUBST(RNEWSGRP)
+AC_SUBST(RNEWSMODE)
 
 AC_DEFUN(AC_DECUNIX,
 [AC_REQUIRE([AC_PROG_CC])dnl
