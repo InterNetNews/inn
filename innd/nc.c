@@ -711,33 +711,6 @@ NC_unimp(CHANNEL *cp)
 
 
 /*
-**  Remove the \r\n and leading dot escape that the NNTP protocol adds.
-*/
-STATIC void
-NCclean(BUFFER *bp)
-{
-    char	*end;
-    char	*p;
-    char	*dest;
-
-    for (p = bp->Data, dest = p, end = p + bp->Used; p < end; ) {
-	if (p[0] == '\r' && p[1] == '\n') {
-	    p += 2;
-	    *dest++ = '\n';
-	    if (p[0] == '.' && p[1] == '.') {
-		p += 2;
-		*dest++ = '.';
-	    }
-	}
-	else
-	    *dest++ = *p++;
-    }
-    *dest = '\0';
-    bp->Used = dest - bp->Data;
-}
-
-
-/*
 **  Check whatever data is available on the channel.  If we got the
 **  full amount (i.e., the command or the whole article) process it.
 */
@@ -1049,7 +1022,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		syslog(L_NOTICE, "%s internal rejecting too long command line (%d > %d)",
 		    CHANname(cp), i, NNTP_STRLEN);
 		cp->LargeCmdSize = 0;
-		(void)sprintf(buff, "%d command exceeds local limit of %ld bytes",
+		sprintf(buff, "%d command exceeds local limit of %d bytes",
 			NNTP_BAD_COMMAND_VAL, NNTP_STRLEN);
 		cp->State = CSgetcmd;
 		NCwritereply(cp, buff);
