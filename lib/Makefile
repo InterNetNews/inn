@@ -19,7 +19,7 @@ SOURCES = $(MISSING_SRC) \
 	makedir.c md5.c nonblocking.c parsedate.c perl.c pread.c pwrite.c \
 	radix32.c readin.c remopen.c reservedfd.c resource.c rwlock.c \
 	sendarticle.c sendpass.c tempname.c waitnb.c wildmat.c xfopena.c \
-	xmalloc.c xmemerr.c xrealloc.c xwrite.c xwritev.c
+	xmalloc.c xmemerr.c xrealloc.c xsignal.c xwrite.c xwritev.c
 OBJECTS = $(MISSING_OBJ) \
 	argparse.o checkart.o cleanfrom.o clientactive.o clientlib.o \
 	closeonexec.o concat.o conffile.o dbz.o defdist.o findheader.o \
@@ -28,7 +28,7 @@ OBJECTS = $(MISSING_OBJ) \
 	makedir.o md5.o nonblocking.o parsedate.o pread.o pwrite.o radix32.o \
 	readin.o remopen.o reservedfd.o resource.o rwlock.o sendarticle.o \
 	sendpass.o tempname.o waitnb.o wildmat.o xfopena.o xmalloc.o \
-	xmemerr.o xrealloc.o xwrite.o xwritev.o
+	xmemerr.o xrealloc.o xsignal.o xwrite.o xwritev.o
 LOBJECTS	= $(OBJECTS:.o=.lo)
 
 all:			libinn.$(EXTLIB) perl.o ../include/autoconfig.h
