@@ -167,11 +167,11 @@ ExitWithStats(x)
     /* Tracking code - Make entries in the logfile(s) to show that we have
 	finished with this session */
     if (RARTenable) {
-	syslog(L_NOTICE, "Tracking Disabled for %s (%s)", ClientHost, Username);
+	syslog(L_NOTICE, "%s Tracking Disabled (%s)", ClientHost, Username);
 	if (LLOGenable) {
-		fprintf(locallog, "Tracking Disabled for %s (%s)\n", ClientHost, Username);
+		fprintf(locallog, "%s Tracking Disabled (%s)\n", ClientHost, Username);
 		fclose(locallog);
-		syslog(L_NOTICE,"Local Logging ends %s (%s) %s",ClientHost, Username, LocalLogFileName);
+		syslog(L_NOTICE,"%s Local Logging ends (%s) %s",ClientHost, Username, LocalLogFileName);
 	}
     }
     if (ARTget)
@@ -624,7 +624,7 @@ main(argc, argv, env)
     /* Parse arguments.   Must COPY() optarg if used because the
      * TITLEset() routine would clobber it! */
     Reject = NULL;
-    RARTenable=TRUE;
+    RARTenable=FALSE;
     LLOGenable=FALSE;
     while ((i = getopt(argc, argv, "Rr:s:S:t:l")) != EOF)
 	switch (i) {
@@ -733,19 +733,19 @@ main(argc, argv, env)
 	RARTenable=TrackClient(ClientHost,Username);
 
     if (RARTenable) {
-	syslog(L_NOTICE, "Tracking Enabled for %s (%s)", ClientHost, Username);
+	syslog(L_NOTICE, "%s Tracking Enabled (%s)", ClientHost, Username);
 	pid=getpid();
 	gettimeofday(&tv,NULL);
 	count += pid;
 	vid = tv.tv_sec ^ tv.tv_usec ^ pid ^ count;
 	sprintf(LocalLogFileName, "%s/tracklogs/log-%ld", _PATH_MOST_LOGS,vid);
 	if ((locallog=fopen(LocalLogFileName, "w")) != NULL) {
-		syslog(L_NOTICE, "Local Logging begins %s (%s) %s",ClientHost, Username, LocalLogFileName);
-		fprintf(locallog, "Tracking Enabled for %s (%s)\n", ClientHost, Username);
+		syslog(L_NOTICE, "%s Local Logging begins (%s) %s",ClientHost, Username, LocalLogFileName);
+		fprintf(locallog, "%s Tracking Enabled (%s)\n", ClientHost, Username);
 		fflush(locallog);
 		LLOGenable=TRUE;
 	} else {
-		syslog(L_NOTICE, "Local Logging failed %s (%s) %s", ClientHost, Username, LocalLogFileName);
+		syslog(L_NOTICE, "%s Local Logging failed (%s) %s", ClientHost, Username, LocalLogFileName);
 	}
     }
 

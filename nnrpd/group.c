@@ -568,9 +568,9 @@ GRPreport()
 				strcat(repbuff, ",");
 			RARTtable[pp]=-1;
 		}
-		syslog(L_NOTICE, "artcount %s(%s):%s:%s", ClientHost, Username, buff, repbuff);
+		syslog(L_NOTICE, "%s artcount (%s):%s:%s", ClientHost, Username, buff, repbuff);
 		if (LLOGenable) {
-			fprintf(locallog, "artcount %s(%s):%s:%s\n", ClientHost, Username, buff, repbuff);
+			fprintf(locallog, "%s artcount (%s):%s:%s\n", ClientHost, Username, buff, repbuff);
 			fflush(locallog);
 		}
 		RARTcount=0;
