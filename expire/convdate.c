@@ -22,7 +22,7 @@ string.  The default output is the output of ctime (normally the same format\n\
 as returned by the date command).  If -d is given, the output is formatted\n\
 as a valid Usenet article Date header.  If -l is given with -d, format the\n\
 time in local time rather than UTC.  If no options are given, the -s\n\
-behavior is the default; if no dates are given, the current time is used.";
+behavior is the default; if no dates are given, the current time is used.\n";
 
 /* Whether to format the output as a Date header. */
 static bool date_format = false;
@@ -119,9 +119,9 @@ convdate(const char *date, char mode)
 int
 main(int argc, char *argv[])
 {
-    int         option, status;
-    char        mode = 0;
-    char *      date;
+    int option, status;
+    char *date;
+    char mode = '\0';
 
     error_program_name = "convdate";
 
@@ -145,11 +145,13 @@ main(int argc, char *argv[])
             mode = option;
             break;
         default:
-            die("%s", usage);
+            fprintf(stderr, "%s", usage);
+            exit(1);
             break;
         }
     }
-    if (mode == 0) mode = 's';
+    if (mode == '\0')
+        mode = 's';
     argc -= optind;
     argv += optind;
 
