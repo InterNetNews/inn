@@ -1305,11 +1305,11 @@ STATIC void ARTcontrol(ARTDATA *Data, HASH hash, char *Control)
      * the name is "safe" -- no slashes in the pathname. */
     if (p - Control + STRLEN( _PATH_BADCONTROLPROG) >= SMBUF-4
      || strchr(Control, '/') != NULL)
-	FileGlue(buff, innconf->pathcontrol, '/', _PATH_BADCONTROLPROG);
+	FileGlue(buff, innconf->pathetc, '/', _PATH_BADCONTROLPROG);
     else {
 	FileGlue(buff, innconf->pathcontrol, '/', Control);
 	if (stat(buff, &Sb) < 0 || (Sb.st_mode & EXECUTE_BITS) == 0)
-	    FileGlue(buff, innconf->pathcontrol, '/', _PATH_BADCONTROLPROG);
+	    FileGlue(buff, innconf->pathetc, '/', _PATH_BADCONTROLPROG);
     }
 
     /* If it's an ihave or sendme, check the site named in the message. */

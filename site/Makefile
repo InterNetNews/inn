@@ -79,7 +79,7 @@ REST		= \
 	inn.conf moderators innreport.conf innreport_inn.pm \
 	control.ctl expire.ctl nntpsend.ctl \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
-	sample.control motd.news storage.ctl overview.ctl cycbuff.conf
+	motd.news storage.ctl overview.ctl cycbuff.conf
 
 ALL		= $(MOST) $(REST)
 
@@ -91,7 +91,7 @@ REST_INSTALLED	= \
 	$D$(PATHETC)/innreport.conf $D$(PATHETC)/innreport_inn.pm \
 	$D$(PATH_CTLWATCH) $D$(PATH_DISTPATS) \
 	$D$(PATH_ACTSYNC_CFG) $D$(PATH_ACTSYNC_IGN) \
-	$D$(CTLBIN)/sample.control $D$(PATH_MOTD) $D$(PATH_STORAGECTL) \
+	$D$(PATH_MOTD) $D$(PATH_STORAGECTL) \
 	$D$(PATH_OVERVIEWCTL) $D$(PATH_CYCBUFFCONFIG)
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
@@ -211,7 +211,6 @@ $D$(PATH_TCL_FILTER): filter.tcl	; $(COPY_RPRI) $? $@
 $D$(PATH_ACTSYNC_CFG): actsync.cfg	; $(COPY_RPRI) $? $@
 $D$(PATH_ACTSYNC_IGN): actsync.ign	; $(COPY_RPRI) $? $@
 $D$(PATHBIN)/scanspool: scanspool	; $(COPY_XPRI) $? $@
-$D$(CTLBIN)/sample.control: sample.control ; $(COPY_RPRI) $? $@
 $D$(PATH_MOTD): motd.news		; $(COPY_RPRI) $? $@
 
 REASON	= 'Installing site config files from site/Makefile'
@@ -273,7 +272,6 @@ passwd.nntp:	../samples/passwd.nntp		; $(COPY) $? $@
 pgpverify:	../samples/pgpverify		; $(COPY) $? $@
 rc.news:	../samples/rc.news		; $(COPY) $? $@
 rmgroup:	../samples/rmgroup		; $(COPY) $? $@
-sample.control: ../samples/sample.control	; $(COPY) $? $@
 scanlogs:	../samples/scanlogs		; $(COPY) $? $@
 scanspool:	../samples/scanspool		; $(COPY) $? $@
 send-ihave:	../samples/send-ihave		; $(COPY) $? $@
