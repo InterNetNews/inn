@@ -888,7 +888,7 @@ listen_loop:
 
 #if defined(DO_PERL)
     /* Load the Perl code */
-    PERLsetup(NULL, cpcatpath(p, innconf->pathfilter, _PATH_PERL_FILTER_NNRPD), "filter_post");
+    PERLsetup(NULL, cpcatpath(innconf->pathfilter, _PATH_PERL_FILTER_NNRPD), "filter_post");
     PerlFilter (TRUE) ;
 #endif /* defined(DO_PERL) */
 

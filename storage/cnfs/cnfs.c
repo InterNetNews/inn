@@ -622,8 +622,10 @@ STATIC BOOL CNFSread_config(void) {
     int		ctab_i;
     BOOL	metacycbufffound = FALSE;
 
-    if ((config = ReadInFile(_PATH_CYCBUFFCONFIG, (struct stat *)NULL)) == NULL) {
-	syslog(L_ERROR, "%s: cannot read %s", LocalLogName, _PATH_CYCBUFFCONFIG, NULL);
+    if ((config = ReadInFile(cpcatpath(innconf->pathetc, _PATH_CYCBUFFCONFIG),
+				(struct stat *)NULL)) == NULL) {
+	syslog(L_ERROR, "%s: cannot read %s", LocalLogName,
+		cpcatpath(innconf->pathetc, _PATH_CYCBUFFCONFIG), NULL);
 	DISPOSE(config);
 	return FALSE;
     }

@@ -71,9 +71,9 @@ static void BreakToken(TOKEN token, int *time, int *seqnum) {
 static char *MakePath(int time, int seqnum, const STORAGECLASS class) {
     char *path;
     
-    /* _PATH_SPOOL + '/time-zz/xx/xx/yyyy-xxxx' */
-    path = NEW(char, strlen(_PATH_SPOOL) + 32);
-    sprintf(path, "%s/time-%02x/%02x/%02x/%04x-%04x", _PATH_SPOOL,
+    /* innconf->patharticles + '/time-zz/xx/xx/yyyy-xxxx' */
+    path = NEW(char, strlen(innconf->patharticles) + 32);
+    sprintf(path, "%s/time-%02x/%02x/%02x/%04x-%04x", innconf->patharticles,
 	    class, (time >> 16) & 0xff, (time >> 8) & 0xff, seqnum,
 	    (time & 0xff) | ((time >> 16 & 0xff00)));
     return path;
@@ -354,7 +354,7 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
     ARTHANDLE           *art;
     int                 seqnum;
 
-    path = NEW(char, strlen(_PATH_SPOOL) + 32);
+    path = NEW(char, strlen(innconf->patharticles) + 32);
     if (article == NULL) {
 	priv.top = NULL;
 	priv.sec = NULL;
@@ -396,7 +396,7 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
 			DISPOSE(path);
 			return NULL;
 		    }
-		    sprintf(path, "%s", _PATH_SPOOL);
+		    sprintf(path, "%s", innconf->patharticles);
 		    if ((priv.top = opendir(path)) == NULL) {
 			SMseterror(SMERR_UNDEFINED, NULL);
 			DISPOSE(path);
@@ -409,21 +409,21 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
 			return NULL;
 		    }
 		}
-		sprintf(path, "%s/%s", _PATH_SPOOL, priv.topde->d_name);
+		sprintf(path, "%s/%s", innconf->patharticles, priv.topde->d_name);
 		if ((priv.sec = opendir(path)) == NULL)
 		    continue;
 	    }
-	    sprintf(path, "%s/%s/%s", _PATH_SPOOL, priv.topde->d_name, priv.secde->d_name);
+	    sprintf(path, "%s/%s/%s", innconf->patharticles, priv.topde->d_name, priv.secde->d_name);
 	    if ((priv.ter = opendir(path)) == NULL)
 		continue;
 	}
-	sprintf(path, "%s/%s/%s/%s", _PATH_SPOOL, priv.topde->d_name, priv.secde->d_name, priv.terde->d_name);
+	sprintf(path, "%s/%s/%s/%s", innconf->patharticles, priv.topde->d_name, priv.secde->d_name, priv.terde->d_name);
 	if ((priv.artdir = opendir(path)) == NULL)
 	    continue;
     }
     if (de == NULL)
 	return NULL;
-    sprintf(path, "%s/%s/%s/%s/%s", _PATH_SPOOL, priv.topde->d_name, priv.secde->d_name, priv.terde->d_name, de->d_name);
+    sprintf(path, "%s/%s/%s/%s/%s", innconf->patharticles, priv.topde->d_name, priv.secde->d_name, priv.terde->d_name, de->d_name);
 
     art = OpenArticle(path, amount);
     if (art == (ARTHANDLE *)NULL) {

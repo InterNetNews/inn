@@ -8,8 +8,7 @@
 #include	<unistd.h>
 #include	<sys/types.h>
 
-/* =()<#define _PATH_CYCBUFFCONFIG	"@<_PATH_CYCBUFFCONFIG>@">()= */
-#define _PATH_CYCBUFFCONFIG	"/var/news/etc/cycbuff.conf"
+#define _PATH_CYCBUFFCONFIG	"cycbuff.conf"
 
 /* =()<typedef @<CYCBUFF_OFF_T>@	CYCBUFF_OFF_T;>()= */
 typedef off_t	CYCBUFF_OFF_T;
