@@ -184,7 +184,7 @@ BOOL ARTreadschema(void)
     /* Open file, count lines. */
     if (SCHEMA == NULL)
 	SCHEMA = COPY(cpcatpath(innconf->pathetc, _PATH_SCHEMA));
-    if ((F = fopen(SCHEMA, "r")) == NULL)
+    if ((F = Fopen(SCHEMA, "r", TEMPORARYOPEN)) == NULL)
 	return FALSE;
     for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
 	continue;
@@ -221,7 +221,7 @@ BOOL ARTreadschema(void)
     }
     fp->Header = NULL;
 
-    (void)fclose(F);
+    (void)Fclose(F);
     return ok;
 }
 

@@ -240,7 +240,7 @@ CCaddhist(av)
     HASH                hash;
     int			i;
     TOKEN		token;
-    int			offset;
+    OFFSET_T		offset;
     unsigned char	index;
 
     /* Check to see if we were passed a hash first. */
@@ -1033,7 +1033,7 @@ CCnewgroup(av)
      * 4.1 has broken libc which can't handle fd's greater than 127. */
     if ((fd = open(TIMES, O_WRONLY | O_APPEND | O_CREAT, 0664)) < 0) {
 	oerrno = errno;
-	syslog(L_ERROR, "%s cant fopen %s %m", LogName, TIMES);
+	syslog(L_ERROR, "%s cant open %s %m", LogName, TIMES);
 	IOError(WHEN, oerrno);
     }
     else {

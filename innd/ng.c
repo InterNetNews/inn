@@ -373,27 +373,27 @@ BOOL NGrenumber(NEWSGROUP *ngp)
 					strlen(innconf->overviewname) + 32);
 	sprintf(p, "%s/%s/%s.index", innconf->pathoverview, ngp->Dir,
 					innconf->overviewname);
-	if ((fi = fopen(p, "r")) == NULL) {
+	if ((fi = Fopen(p, "r", TEMPORARYOPEN)) == NULL) {
 	    DISPOSE(p);
 	    return TRUE;
 	}
 	DISPOSE(p);
 	if (innconf->overviewmmap) {
 	    if (fstat(fileno(fi), &sb) < 0) {
-		fclose(fi);
+		Fclose(fi);
 		return TRUE;
 	    }
 	    count = sb.st_size / OVERINDEXPACKSIZE;
 	    if (count == 0) {
-		fclose(fi);
+		Fclose(fi);
 		return TRUE;
 	    }
 	    if ((mapped = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, count * OVERINDEXPACKSIZE,
 		PROT_READ, MAP__ARG, fileno(fi), 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
-		fclose(fi);
+		Fclose(fi);
 		return TRUE;
 	    }
-	    fclose(fi);
+	    Fclose(fi);
 	    /* assumes .overview.index is sorted */
 	    UnpackOverIndex((*mapped)[0], &index);
 	    if (index.artnum < lomark)
@@ -411,7 +411,7 @@ BOOL NGrenumber(NEWSGROUP *ngp)
 		if (index.artnum > himark)
 		    himark = index.artnum;
 	    }
-	    fclose(fi);
+	    Fclose(fi);
 	}
     } else {
         /* Scan the directory. */

@@ -111,7 +111,7 @@ static void STATUSsummary(void)
 #endif /* defined(DO_PERL) */
  
   sprintf (TempString, "%s/%s", innconf->pathhttp, STATUS_FILE);
-  if ((F = fopen(TempString, "w")) == NULL)
+  if ((F = Fopen(TempString, "w", TEMPORARYOPEN)) == NULL)
     return;
 
 #if defined(HTML_STATUS)
@@ -299,7 +299,7 @@ static void STATUSsummary(void)
   fprintf (F,"</PRE>\n</BODY>\n</HTML>\n");
 #endif /* defined(HTML_STATUS) */
 
-  (void)fclose(F);
+  (void)Fclose(F);
 }
 
 void STATUSmainloophook(void)

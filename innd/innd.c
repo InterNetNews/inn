@@ -745,6 +745,11 @@ int main(int ac, char *av[])
 	syslog(L_NOTICE, "%s cant dup2 %d to 0 %m", LogName, i);
     (void)close(i);
 #endif	/* !defined(__CENTERLINE__) */
+    i = dbzneedfilecount();
+    if (!fdreserve(2 + i)) { /* TEMPORARYOPEN, INND_HISTORY and i */
+	syslog(L_FATAL, "%s cant reserve file descriptors %m", LogName);
+	exit(1);
+    }
 
     /* Set up our permissions. */
     (void)umask(NEWSUMASK);

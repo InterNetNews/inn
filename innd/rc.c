@@ -655,7 +655,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     *count = 0;
     maxgroup = 0;
     /* Open the server file. */
-    if ((F = fopen(filename, "r")) == NULL) {
+    if ((F = Fopen(filename, "r", TEMPORARYOPEN)) == NULL) {
 	syslog(L_FATAL, "%s cant read %s: %m", LogName, filename);
 	exit(1);
     }
@@ -1107,7 +1107,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
       syslog(L_ERROR, "%s Syntax error in %s at or before line %d", LogName, 
 	     filename, linecount);
 
-    if (fclose(F) == EOF)
+    if (Fclose(F) == EOF)
 	syslog(L_ERROR, "%s cant fclose %s %m", LogName, filename);
 
     DISPOSE(default_params.Password);
@@ -1154,7 +1154,7 @@ RCwritelist(char *filename)
     register char		*q;
     register char		*r;
 
-    if ((F = fopen(filename, "w")) == NULL) {
+    if ((F = Fopen(filename, "w", TEMPORARYOPEN)) == NULL) {
         syslog(L_FATAL, "%s cant write %s: %m", LogName, filename);
         return;
     }
@@ -1247,7 +1247,7 @@ RCwritelist(char *filename)
 	    fprintf(F, "# ***ERROR***\n");
 	}
     }
-    if (fclose(F) == EOF)
+    if (Fclose(F) == EOF)
         syslog(L_ERROR, "%s cant fclose %s %m", LogName, filename);
 
 }

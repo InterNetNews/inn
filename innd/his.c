@@ -83,7 +83,7 @@ void HISsetup(void)
 	if (HIShistpath == NULL)
 	    HIShistpath = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
 	/* Open the history file for appending formatted I/O. */
-	if ((HISwritefp = fopen(HIShistpath, "a")) == NULL) {
+	if ((HISwritefp = Fopen(HIShistpath, "a", INND_HISTORY)) == NULL) {
 	    syslog(L_FATAL, "%s cant fopen %s %m", LogName, HIShistpath);
 	    exit(1);
 	}
@@ -151,7 +151,7 @@ void HISclose(void)
 	HISsync();
 	if (!dbzclose())
 	    syslog(L_ERROR, "%s cant dbzclose %m", LogName);
-	if (fclose(HISwritefp) == EOF)
+	if (Fclose(HISwritefp) == EOF)
 	    syslog(L_ERROR, "%s cant fclose history %m", LogName);
 	HISwritefp = NULL;
 	if (close(HISreadfd) < 0)
@@ -392,7 +392,7 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
 #else
     if (innconf->extendeddbz) {
         iextvalue.offset[HISTOFFSET] = offset;
-        OVERsetoffset(token, (int *)&iextvalue.offset[OVEROFFSET], &iextvalue.overindex);
+        OVERsetoffset(token, &iextvalue.offset[OVEROFFSET], &iextvalue.overindex);
         ivalue = (void *)&iextvalue;
     } else {
         ionevalue.offset = offset;
