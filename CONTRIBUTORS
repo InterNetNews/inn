@@ -1,8 +1,6 @@
-The following is a list of the people who've helped out by contributing
-code since I took over the project.  More people have contributed code to
-INN before I started managing it. If anyone's name has been left out
-(probably), or if I've not correctly attributed something to you (ditto),
-please let me know (don't be embarrased). Same goes for past contributors.
+The following is a list of the people (in roughly chronological order)
+who've helped out If anyone's name has been left out (probably), or if
+something has been incorrectory to you (ditto), please let us know. 
 
 Rich Salz:
 	Designed and wrote most of it.
@@ -49,6 +47,36 @@ Alan Barrett:
 
 Greg Patten:
 	Wrote the perl innlog
+
+Clayton O'Neill:
+	Wrote the articles storage API and implemented the timehash and
+	regular storage mechanisms with it. He made significant
+	modifications to dbz.
+
+Vincent Archer:
+	Wrote the initial autoconf scripts.
+
+Forrest J. Cavalier III:
+	Provided a lot of bug fixes to 1.5.2. He extended the autoconf
+	setup a lot to work with version 2.0
+
+Marc Fournier:
+	Provided various bug fixes and did a lot of work integrating other
+	peoples patches and looking after the CVS pool.
+
+Scott Fritchie:
+	Wrote the CNFS storage back end.
+
+Dave Hayes:
+	Along with some bugfixes, Dave wrote the posting-backoff code for 
+	nnrpd and the patches to the perl hooks to make the headers modifiable.
+
+Joe Greco:
+	Wrote the code for measuring the timing of various parts of innd.
+
+Sang-yong Suh:
+	Provided the fuzzy offset technique to dbz.
+
 
 
 The following people helped above and beyond the call of duty with
