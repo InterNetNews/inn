@@ -5,6 +5,9 @@ nnrpd \- NNTP server for on-campus hosts
 .SH SYNOPSIS
 .B nnrpd
 [
+.BI \-L
+]
+[
 .BI \-r " reason"
 ]
 [
@@ -60,6 +63,12 @@ can also prevent high-volume posters from abusing your resources. See the
 discussion of exponential backoff in 
 .IR inn.conf (5).
 .SH OPTIONS
+.TP
+.B \-L
+This option enables the nnrpd tracking option which allows more detailed
+logging of articles read and posted by a reader. See the
+.I nnrpd.track (8)
+man page for more details.
 .TP
 .B \-r
 If the ``\-r'' flag is used, then
