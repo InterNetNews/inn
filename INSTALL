@@ -352,6 +352,10 @@ Configuring INN
                        is required.  Or ihave and sendme cannot get correct
 	               name, then the messages are incorrect.
 
+  innflags             This allows you pass flags to the INN server process
+                       when it starts up.  If you use the `crosspost' feed
+                       (which is recommended) then you must set this to `-L'.
+
   2. newsfeeds (REQUIRED)
 
   The newsfeeds file determines how incoming articles are redistributed to
@@ -466,8 +470,19 @@ Configuring INN
 
   The incoming.conf file describes what machines are allowed to connect to
   your host to feed articles. In previous versions of INN a different
-  file (hosts.nntp) was used to do some of what incoming.conf can do. See
-  the incoming.conf manpage for more details.
+  file (hosts.nntp) was used to do some of what incoming.conf can do.
+
+  You can get started for a single feed by adding an entry like this:
+
+         peer my-feed-site.domain.com {
+         }
+
+  ..assuming that you will be receiving articles from 
+  my-feed-site.domain.com.  Note that this doesn't cause remote sites
+  to start feeding you news - it merely allows them to do so if they so
+  choose.
+
+  See the incoming.conf man page for full details.
 
   4. cycbuff.conf (Required only if using the CNFS article storage method)
 
