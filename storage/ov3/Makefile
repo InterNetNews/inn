@@ -32,6 +32,7 @@ depend:	Makefile $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 ov3.o: ov3.c ../../include/config.h ../../include/inn/defines.h \
- ../../include/clibrary.h ../../include/libinn.h \
- ../../include/macros.h ../../include/ov.h ../../include/storage.h \
- ../../include/paths.h ../ovinterface.h tradindexed.h
+ ../../include/clibrary.h ../../include/portable/mmap.h \
+ ../../include/libinn.h ../../include/macros.h ../../include/ov.h \
+ ../../include/storage.h ../../include/inn/history.h \
+ ../../include/paths.h ../ovinterface.h tradindexed.h structure.h
