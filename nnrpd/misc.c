@@ -14,6 +14,15 @@
 #include "nnrpd.h"
 #include "dbz.h"
 
+#ifdef HAVE_SSL
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <openssl/bio.h>
+#include <openssl/pem.h>
+#include "tls.h"
+#include "sasl_config.h"
+#endif 
+
 STATIC BOOL		setup = FALSE;
 STATIC FILE		*hfp = NULL;
 STATIC ino_t		ino = 0;
@@ -21,6 +30,11 @@ STATIC ino_t		ino = 0;
 #define ASCtoNUM(c)		((c) - '0')
 #define CHARStoINT(c1, c2)	(ASCtoNUM((c1)) * 10 + ASCtoNUM((c2)))
 #define DaysInYear(y) ((y) % 4 ? 365 : (y) % 100 ? 366 : (y) % 400 ? 365 : 366)
+
+#ifdef HAVE_SSL
+extern SSL *tls_conn;
+extern int nnrpd_starttls_done;
+#endif 
 
 
 /*
@@ -545,7 +559,14 @@ READTYPE READline(char *start, int  size, int timeout)
 	    }
 	    if (i == 0 || !FD_ISSET(STDIN, &rmask))
 		return RTtimeout;
+#ifdef HAVE_SSL
+	    if (tls_conn)
+	      count = SSL_read(tls_conn, buffer, sizeof buffer);
+	    else
+	      count = read(STDIN, buffer, sizeof buffer);
+#else
 	    count = read(STDIN, buffer, sizeof buffer);
+#endif
 	    if (count < 0) {
 		syslog(L_TRACE, "%s cant read %m", ClientHost);
 		return RTtimeout;
@@ -872,4 +893,59 @@ RateLimit(sleeptime,path)
      return 1;
 }
 
+#ifdef HAVE_SSL
+/*
+**  The "STARTTLS" command.  RFC2595.
+*/
+/* ARGSUSED0 */
 
+FUNCTYPE
+CMDstarttls(ac, av)
+    int		ac;
+    char	*av[];
+{
+  SSL_CTX *ctx;
+  int result;
+
+  openlog("starttls", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+  sasl_config_read();
+
+  if (nnrpd_starttls_done == 1)
+    {
+      Reply("%d Already successfully executed STARTTLS\r\n", NNTP_STARTTLS_DONE_VAL);
+      return;
+    }
+
+  result=tls_init_serverengine(5,        /* depth to verify */
+			       1,        /* can client auth? */
+			       0,        /* required client to auth? */
+			       (char *)sasl_config_getstring("tls_ca_file", ""),
+			       (char *)sasl_config_getstring("tls_ca_path", ""),
+			       (char *)sasl_config_getstring("tls_cert_file", ""),
+			       (char *)sasl_config_getstring("tls_key_file", ""));
+
+  if (result == -1) {
+    Reply("%d Error initializing TLS\r\n", NNTP_STARTTLS_BAD_VAL);
+    
+    syslog(L_ERROR, "error initializing TLS: "
+	   "[CA_file: %s] [CA_path: %s] [cert_file: %s] [key_file: %s]",
+	   (char *) sasl_config_getstring("tls_ca_file", ""),
+	   (char *) sasl_config_getstring("tls_ca_path", ""),
+	   (char *) sasl_config_getstring("tls_cert_file", ""),
+	   (char *) sasl_config_getstring("tls_key_file", ""));
+    return;
+  }
+  Reply("%d Begin TLS negotiation now\r\n", NNTP_STARTTLS_NEXT_VAL);
+  (void)fflush(stdout);
+
+  /* must flush our buffers before starting tls */
+  
+  result=tls_start_servertls(0, /* read */
+			     1); /* write */
+  if (result==-1) {
+    Reply("%d Starttls failed\r\n", NNTP_STARTTLS_BAD_VAL);
+    return;
+  }
+  nnrpd_starttls_done = 1;
+}
+#endif /* HAVE_SSL */

@@ -24,6 +24,16 @@
 #  include <shadow.h>
 #endif /* HAVE_GETSPNAM */
 
+#ifdef HAVE_SSL
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <openssl/bio.h>
+#include <openssl/pem.h>
+#include "tls.h"
+extern SSL *tls_conn;
+int nnrpd_starttls_done = 0;
+#endif 
+
 /*
 ** Here is some defensive code to protect the news server from hosts,
 ** mostly PC's, that sometimes make a connection and then never give
@@ -91,6 +101,9 @@ extern FUNCTYPE	CMDxover();
 extern FUNCTYPE	CMDxpat();
 extern FUNCTYPE	CMDxpath();
 extern FUNCTYPE	CMD_unimp();
+#ifdef HAVE_SSL
+extern FUNCTYPE	CMDstarttls();
+#endif
 
 int LLOGenable;
 extern int TrackClient();
@@ -100,6 +113,10 @@ STATIC char	CMDfetchhelp[] = "[MessageID|Number]";
 STATIC CMDENT	CMDtable[] = {
     {	"authinfo",	CMDauthinfo,	FALSE,	3,	CMDany,
 	"user Name|pass Password|generic <prog> <args>" },
+#ifdef HAVE_SSL
+    {	"starttls",	CMDstarttls,	FALSE,	1,	1,
+	NULL },
+#endif
     {	"article",	CMDfetch,	TRUE,	1,	2,
 	CMDfetchhelp },
     {	"body",		CMDfetch,	TRUE,	1,	2,
@@ -500,10 +517,22 @@ Reply VA_PARAM(const char *, fmt)
     char *      p;
     char        buff[2048];
 
-    VA_START(fmt);
-    vprintf(fmt, args);
-    va_end(args);
-
+#ifdef HAVE_SSL
+    if (tls_conn) {
+      VA_START(fmt);
+      vsprintf(buff,fmt, args);
+      va_end(args);
+      SSL_write(tls_conn, buff, strlen(buff));
+    } else {
+      VA_START(fmt);
+      vprintf(fmt, args);
+      va_end(args);
+    }
+#else
+      VA_START(fmt);
+      vprintf(fmt, args);
+      va_end(args);
+#endif
     if (Tracing) {
         oerrno = errno;
         VA_START(fmt);
@@ -520,6 +549,26 @@ Reply VA_PARAM(const char *, fmt)
         errno = oerrno;
     }
 }
+
+#ifdef HAVE_SSL
+void
+Printf VA_PARAM(const char *, fmt)
+{
+    va_list     args;
+    char        buff[2048];
+
+    if (tls_conn) {
+      VA_START(fmt);
+      vsprintf(buff,fmt, args);
+      va_end(args);
+      SSL_write(tls_conn, buff, strlen(buff));
+    } else {
+      VA_START(fmt);
+      vprintf(fmt, args);
+      va_end(args);
+    }
+}
+#endif /* HAVE_SSL */
 #endif /* VA_PARAM */
 
 

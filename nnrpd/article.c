@@ -15,6 +15,14 @@
 #include "nnrpd.h"
 #include "ov.h"
 
+#ifdef HAVE_SSL
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <openssl/bio.h>
+#include <openssl/pem.h>
+#include "tls.h"
+extern SSL *tls_conn;
+#endif 
 
 /*
 **  Data structures for use in ARTICLE/HEAD/BODY/STAT common code.
@@ -112,11 +120,24 @@ BOOL PushIOv(void) {
     fflush(stdout);
     if (MaxBytesPerSecond != 0)
 	return PushIOvRateLimited();
-
-    if (writev(STDOUT_FILENO, iov, queued_iov) <= 0) {
+#ifdef HAVE_SSL
+    if (tls_conn) {
+      if (SSL_writev(tls_conn, iov, queued_iov) <= 0) {
         queued_iov = 0;
 	return FALSE;
+      }
+    } else {
+      if (writev(STDOUT_FILENO, iov, queued_iov) <= 0) {
+        queued_iov = 0;
+	return FALSE;
+      }
     }
+#else
+    if (writev(STDOUT_FILENO, iov, queued_iov) <= 0) {
+      queued_iov = 0;
+      return FALSE;
+    }
+#endif
     queued_iov = 0;
     return TRUE;
 }
@@ -143,10 +164,24 @@ STATIC int		highwater = 0;
 
 BOOL PushIOb(void) {
     fflush(stdout);
+#ifdef HAVE_SSL
+    if (tls_conn) {
+      if (SSL_write(tls_conn, _IO_buffer_, highwater) != highwater) {
+        highwater = 0;
+        return FALSE;
+      }
+    } else {
+      if (write(STDOUT_FILENO, _IO_buffer_, highwater) != highwater) {
+	highwater = 0;
+	return FALSE;
+      }
+    }
+#else
     if (write(STDOUT_FILENO, _IO_buffer_, highwater) != highwater) {
         highwater = 0;
         return FALSE;
     }
+#endif
     highwater = 0;
     return TRUE;
 }
@@ -906,6 +941,7 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	Reply("%d %s fields follow\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, av[1]);
     else
 	Reply("%d %d fields follow\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, ARTnumber);
+    (void)fflush(stdout);
     if (PERMaccessconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
     while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {

@@ -421,7 +421,7 @@ CMDlist(int ac, char *av[])
 	    wildarg = av[2];
 	    if (OVgroupstats(wildarg, &lo, &hi, NULL, &flag)) {
 		Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);
-		printf("%s %010d %010d %c\r\n.\r\n", wildarg, hi, lo, flag);
+		Printf("%s %010d %010d %c\r\n.\r\n", wildarg, hi, lo, flag);
 		return;
 	    }
 	}
@@ -867,7 +867,6 @@ CMDpost(ac, av)
 	POSTrejected++;
     }
 }
-
 
 /*
 **  The "xpath" command.  An uncommon extension.

@@ -1,17 +1,19 @@
 ##  $Revision$
 include ../Makefile.global
 
-CFLAGS = $(GCFLAGS)
+CFLAGS = $(GCFLAGS) $(SSLINC)
 
 NNRPD	= ${PATHBIN}/nnrpd
 
 SOURCES	= \
 	article.c group.c commands.c misc.c newnews.c nnrpd.c \
-	perl.c perm.c post.c loadave.c track.c python.c
+	perl.c perm.c post.c loadave.c track.c python.c tls.c \
+	sasl_config.c
 
 OBJECTS	= \
 	article.o group.o commands.o misc.o newnews.o \
-	perl.o perm.o post.o loadave.o track.o python.o
+	perl.o perm.o post.o loadave.o track.o python.o tls.o \
+	sasl_config.o
 
 ALL	= nnrpd
 
@@ -38,7 +40,7 @@ clobber clean:
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../lib/*.c nnrpd.h ../include/*.h
 
-BIGLIST = $(OBJECTS) $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(PERLLIB) $(PYTHONLIB) $(LIBS)
+BIGLIST = $(OBJECTS) $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(PERLLIB) $(PYTHONLIB) $(SSLLIB) $(LIBS)
 
 nnrpd:		$(P) nnrpd.o $(OBJECTS) $(LIBSTORAGE) $(LIBINN)
 	@rm -f $@

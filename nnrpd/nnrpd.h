@@ -44,7 +44,6 @@
 **  Some convenient shorthands.
 */
 typedef struct in_addr	INADDR;
-#define Printf		printf
 
 
 /*
@@ -209,6 +208,12 @@ extern void             Reply();
 # else
 #  define Reply printf
 # endif
+#endif
+
+#ifdef HAVE_SSL
+extern void             Printf();
+#else
+#define Printf printf
 #endif
 
 char *HandleHeaders(char *article);
