@@ -30,7 +30,6 @@ char    *HISTORY = NULL;
 char    *ACTIVETIMES = NULL;
 char    NOACCESS[] = NNTP_ACCESS;
 char    *NEWSGROUPS = NULL;
-BOOL    PERMdefault = FALSE;
 
 void
 #if     defined(VAR_VARARGS)

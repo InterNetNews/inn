@@ -129,6 +129,7 @@ struct conf_vars {
         int keylimit;		/* max allocated space for keywords. */
         int keyartlimit;        /* Max size of an article for keyword generation */
         int keymaxwords;	/* Max count of interesting workd */
+        int nnrpperlauth;       /* Use perl for nnrpd authentication */
 
 	char *pathnews;	
 	char *pathbin;

@@ -17,6 +17,7 @@ PATH_PERL_FILTER_INND	= ${PATHFILTER}/filter_innd.pl
 PATH_PERL_FILTER_NNRPD	= ${PATHFILTER}/filter_nnrpd.pl
 PATH_TCL_STARTUP	= ${PATHFILTER}/startup.tcl
 PATH_TCL_FILTER		= ${PATHFILTER}/filter.tcl
+PATH_NNRPAUTH           = ${PATHFILTER}/nnrpd_auth.pl
 PATH_NEWSBOOT		= ${PATHBIN}/rc.news
 PATH_PARSECTL		= ${PATHBIN}/parsecontrol
 
@@ -52,7 +53,7 @@ MOST	= rc.news checkgroups default ihave newgroup \
 	sendbatch inncheck innstat pgpverify innwatch innreport \
 	innshellvars innshellvars.pl innshellvars.csh innshellvars.tcl \
 	scanspool innmail checkgroups.pl ihave.pl newgroup.pl rmgroup.pl \
-	sendme.pl sendsys.pl senduuname.pl version.pl cnfsstat
+	sendme.pl sendsys.pl senduuname.pl version.pl
 
 ##  Scripts from above, plus site-specific config files.
 REST		= \
@@ -62,7 +63,7 @@ REST		= \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
 	motd.news storage.conf overview.ctl cycbuff.conf \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
-	startup.tcl filter.tcl
+	startup.tcl filter.tcl nnrpd_auth.pl
 
 ALL		= $(MOST) $(REST)
 
@@ -95,7 +96,8 @@ REST_INSTALLED	= \
 	$D$(PATH_OVERVIEWCTL) $D$(PATH_CYCBUFFCONFIG) \
 	$D$(PATH_INNFEEDCTL) $D$(PATH_PERL_STARTUP_INND) \
 	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
-	$D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER)
+	$D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER) \
+	$D$(PATH_NNRPAUTH)
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
 
@@ -222,6 +224,7 @@ $D$(PATH_PERL_FILTER_INND): filter_innd.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_FILTER_NNRPD): filter_nnrpd.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_TCL_STARTUP): startup.tcl	; $(COPY_RPRI) $? $@
 $D$(PATH_TCL_FILTER): filter.tcl	; $(COPY_RPRI) $? $@
+$D$(PATH_NNRPAUTH): nnrpd_auth.pl       ; $(COPY_RPRI) $? $@
 $D$(PATH_ACTSYNC_CFG): actsync.cfg	; $(COPY_RPRI) $? $@
 $D$(PATH_ACTSYNC_IGN): actsync.ign	; $(COPY_RPRI) $? $@
 $D$(PATHBIN)/scanspool: scanspool	; $(COPY_XPRI) $? $@
@@ -252,6 +255,7 @@ default:	../samples/default		; $(COPY) $? $@
 docheckgroups:	../samples/docheckgroups	; $(COPY) $? $@
 expire.ctl:	../samples/expire.ctl		; $(COPY) $? $@
 filter.tcl:	../samples/filter.tcl		; $(COPY) $? $@
+nnrpd_auth.pl:  ../samples/nnrpd_auth.pl	; $(COPY) $? $@
 filter_innd.pl:	../samples/filter_innd.pl	; $(COPY) $? $@
 filter_nnrpd.pl: ../samples/filter_nnrpd.pl	; $(COPY) $? $@
 expirerm:	../samples/expirerm		; $(COPY) $? $@

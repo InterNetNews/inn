@@ -206,6 +206,7 @@ CMDauthinfo(ac, av)
     static char	User[30];
     static char	Password[30];
     char	accesslist[BIG_BUFFER];
+    int         code;
 
     if (caseEQ(av[1], "generic")) {
 	char *logrec = Glom(av);
@@ -254,27 +255,42 @@ CMDauthinfo(ac, av)
 	(void)strncpy(Password, av[2], sizeof Password - 1);
 	Password[sizeof Password - 1] = 0;
 
-	if (EQ(User, PERMuser) && EQ(Password, PERMpass)) {
-	    syslog(L_NOTICE, "%s user %s", ClientHost, User);
-	    Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
-	    PERMneedauth = FALSE;
-	    PERMauthorized = TRUE;
-	    return;
-	}
-	if (PERMinfile((char *)NULL, (char *)NULL, User, Password,
-		accesslist, NNRPACCESS)) {
-	    PERMspecified = NGgetlist(&PERMlist, accesslist);
-	    syslog(L_NOTICE, "%s user %s", ClientHost, User);
-	    Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
-	    PERMneedauth = FALSE;
-	    PERMauthorized = TRUE;
-	    return;
+	if (innconf->nnrpperlauth) {
+	    code = perlAuthenticate(ClientHost, ClientIp, User, Password, accesslist);
+	    if (code == NNTP_AUTH_OK_VAL) {
+		PERMspecified = NGgetlist(&PERMlist, accesslist);
+		syslog(L_NOTICE, "%s user %s", ClientHost, User);
+		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
+		PERMneedauth = FALSE;
+		PERMauthorized = TRUE;
+		return;
+	    } else {
+		syslog(L_NOTICE, "%s bad_auth", ClientHost);
+		Reply("%d Authentication error\r\n", NNTP_ACCESS_VAL);
+		ExitWithStats(1);
+	    }
+	} else {
+	    if (EQ(User, PERMuser) && EQ(Password, PERMpass)) {
+		syslog(L_NOTICE, "%s user %s", ClientHost, User);
+		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
+		PERMneedauth = FALSE;
+		PERMauthorized = TRUE;
+		return;
+	    }
+	    if (PERMinfile((char *)NULL, (char *)NULL, User, Password,
+			   accesslist, NNRPACCESS)) {
+		PERMspecified = NGgetlist(&PERMlist, accesslist);
+		syslog(L_NOTICE, "%s user %s", ClientHost, User);
+		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
+		PERMneedauth = FALSE;
+		PERMauthorized = TRUE;
+		return;
+	    }
 	}
 
 	syslog(L_NOTICE, "%s bad_auth", ClientHost);
 	Reply("%d Authentication error\r\n", NNTP_ACCESS_VAL);
 	ExitWithStats(1);
-
     }
 
 }
@@ -341,7 +357,7 @@ CMDlist(ac, av)
 		grplist[0] = av[2];
 		grplist[1] = NULL;
 		Reply("%d list:\r\n", NNTP_LIST_FOLLOWS_VAL);
-		if (PERMmatch(PERMdefault, PERMlist, grplist))
+		if (PERMmatch(PERMlist, grplist))
 			Printf("%s %ld %ld %c%s\r\n.\r\n",
 		      		GPNAME(gp), (long)GPHIGH(gp), (long)GPLOW(gp),
 		      		GPFLAG(gp), GPALIAS(gp) ? GPALIAS(gp) : "");
@@ -400,7 +416,7 @@ CMDlist(ac, av)
     }
 
     Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);
-    if (!PERMspecified && !PERMdefault) {
+    if (!PERMspecified) {
 	/* Optmize for unlikely case of no permissions and FALSE default. */
 	(void)QIOclose(qp);
 	Printf(".\r\n");
@@ -429,7 +445,7 @@ CMDlist(ac, av)
 		    continue;
 		*save = '\0';
 		grplist[0] = q;
-		if (!PERMmatch(PERMdefault, PERMlist, grplist))
+		if (!PERMmatch(PERMlist, grplist))
 		    continue;
 		*save = ':';
 	    }
@@ -453,7 +469,7 @@ CMDlist(ac, av)
 	      
 	if (PERMspecified) {
 	    grplist[0] = p;
-	    if (!PERMmatch(PERMdefault, PERMlist, grplist))
+	    if (!PERMmatch(PERMlist, grplist))
 		continue;
 	}
 	if (wildarg && !wildmat(p, wildarg))
@@ -561,10 +577,10 @@ CMDnewgroups(ac, av)
 	if (PERMspecified) {
 	    grplist[0] = p;
 	    grplist[1] = NULL;
-	    if (!PERMmatch(PERMdefault, PERMlist, grplist))
+	    if (!PERMmatch(PERMlist, grplist))
 		continue;
 	}
-	else if (!PERMdefault)
+	else 
 	    continue;
 
 	if (!All) {

@@ -230,6 +230,7 @@ void SetDefaults()
     innconf->keyartlimit = 100000;
     innconf->keymaxwords = 250;
     innconf->nnrpdposthost = NULL;
+    innconf->nnrpperlauth = FALSE;
 
     innconf->pathnews = NULL;
     innconf->pathbin = NULL;
@@ -729,6 +730,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_READERTRACK, bit);
 		if (!bit && boolval != -1) innconf->readertrack = boolval;
 		SET_CONFIG(CONF_VAR_READERTRACK);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_NNRPPERLAUTH)) {
+		TEST_CONFIG(CONF_VAR_NNRPPERLAUTH, bit);
+		if (!bit && boolval != -1) innconf->nnrpperlauth = boolval;
+		SET_CONFIG(CONF_VAR_NNRPPERLAUTH);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_STRIPPOSTCC)) {
 		TEST_CONFIG(CONF_VAR_STRIPPOSTCC, bit);

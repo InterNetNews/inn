@@ -25,6 +25,8 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "post.h"
 #include <syslog.h> 
 #include "macros.h"
+#include "nntp.h"
+#include "nnrpd.h"
 
 #if defined(DO_PERL)
 
@@ -43,7 +45,6 @@ extern char PERMuser[];
 extern char **OtherHeaders;
 extern int OtherCount;
 extern BOOL HeadersModified;
-extern char *ClientHost;
 static int HeaderLen;
 
 /* #define DEBUG_MODIFY only if you want to see verbose outout */
@@ -52,9 +53,7 @@ static FILE *flog;
 void dumpTable(char *msg);
 #endif /* DEBUG_MODIFY */
 
-char *
-HandleHeaders(article)
-   char         *article;
+char *HandleHeaders(char *article)
 {
    dSP;
    HEADER	*hp;
@@ -190,6 +189,156 @@ HandleHeaders(article)
    if (buf[0] != '\0') 
       return buf ;
    return NULL;
+}
+
+int perlConnect(char *ClientHost, char *ClientIP, char *accesslist) {
+    dSP;
+    HV              *attribs;
+    int             rc;
+    SV              *sv;
+    char            *p;
+    int             code;
+    
+    if (!PerlFilterActive)
+	return NNTP_ACCESS_VAL;
+
+    ENTER;
+    SAVETMPS;
+    attribs = perl_get_hv("attributes", TRUE);
+    hv_store(attribs, "type", 4, newSVpv("connect", 0), 0);
+    hv_store(attribs, "hostname", 8, newSVpv(ClientHost, 0), 0);
+    hv_store(attribs, "ipaddress", 9, newSVpv(ClientIP, 0), 0);
+    
+    PUSHMARK(SP);
+    rc = perl_call_pv("authenticate", G_EVAL|G_ARRAY);
+
+    SPAGAIN;
+
+    if (rc == 0 ) { /* Error occured, same as checking $@ */
+	syslog(L_ERROR, "Perl function authenticate died: %s",
+	       SvPV(GvSV(errgv), na));
+	Reply("%d Internal Error (1).  Goodbye\r\n", NNTP_ACCESS_VAL);
+	ExitWithStats(1);
+    }
+
+    if (rc != 4) {
+	syslog(L_ERROR, "Perl function authenticate returned wrong number of results: %d", rc);
+	Reply("%d Internal Error (2).  Goodbye\r\n", NNTP_ACCESS_VAL);
+	ExitWithStats(1);
+    }
+
+    p = POPp;
+    strcpy(accesslist, p); 
+    sv = POPs; PERMcanpost = SvTRUE(sv);
+    sv = POPs; PERMcanread = SvTRUE(sv); 
+    code = POPi;
+
+    if ((code == NNTP_POSTOK_VAL) || (code == NNTP_NOPOSTOK_VAL))
+	code = PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL;
+
+    if (code == NNTP_AUTH_NEEDED_VAL) 
+	PERMneedauth = TRUE;
+
+    hv_undef(attribs);
+
+    PUTBACK;
+    FREETMPS;
+    LEAVE;
+    
+    return code;
+}
+
+int perlAuthInit(char *ClientHost, char *ClientIP, char *accesslist) {
+    dSP;
+    int             rc;
+    
+    if (!PerlFilterActive)
+	return NNTP_ACCESS_VAL;
+
+    ENTER;
+    SAVETMPS;
+    PUSHMARK(SP);
+    
+    if (perl_get_cv("auth_init", 0) != NULL) 
+	rc = perl_call_pv("auth_init", G_EVAL|G_DISCARD);
+
+    SPAGAIN;
+
+
+    if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
+	syslog(L_ERROR, "Perl function authenticate died: %s",
+	       SvPV(GvSV(errgv), na));
+	Reply("%d Internal Error (1).  Goodbye\r\n", NNTP_ACCESS_VAL);
+	ExitWithStats(1);
+    }
+
+    while (rc--) {
+	POPs;
+    }
+
+    PUTBACK;
+    FREETMPS;
+    LEAVE;
+    
+}
+
+int perlAuthenticate(char *ClientHost, char *ClientIP, char *user, char *passwd, char *accesslist) {
+    dSP;
+    HV              *attribs;
+    int             rc;
+    SV              *sv;
+    char            *p;
+    int             code;
+    
+    if (!PerlFilterActive)
+	return NNTP_ACCESS_VAL;
+
+    ENTER;
+    SAVETMPS;
+    attribs = perl_get_hv("attributes", TRUE);
+    hv_store(attribs, "type", 4, newSVpv("authenticate", 0), 0);
+    hv_store(attribs, "hostname", 8, newSVpv(ClientHost, 0), 0);
+    hv_store(attribs, "ipaddress", 9, newSVpv(ClientIP, 0), 0);
+    hv_store(attribs, "username", 8, newSVpv(user, 0), 0);
+    hv_store(attribs, "password", 8, newSVpv(passwd, 0), 0);
+    
+    PUSHMARK(SP);
+    rc = perl_call_pv("authenticate", G_EVAL|G_ARRAY);
+
+    SPAGAIN;
+
+    if (rc == 0 ) { /* Error occured, same as checking $@ */
+	syslog(L_ERROR, "Perl function authenticate died: %s",
+	       SvPV(GvSV(errgv), na));
+	Reply("%d Internal Error (1).  Goodbye\r\n", NNTP_ACCESS_VAL);
+	ExitWithStats(1);
+    }
+
+    if (rc != 4) {
+	syslog(L_ERROR, "Perl function authenticate returned wrong number of results: %d", rc);
+	Reply("%d Internal Error (2).  Goodbye\r\n", NNTP_ACCESS_VAL);
+	ExitWithStats(1);
+    }
+
+    p = POPp;
+    strcpy(accesslist, p); 
+    sv = POPs; PERMcanpost = SvTRUE(sv);
+    sv = POPs; PERMcanread = SvTRUE(sv); 
+    code = POPi;
+
+    if ((code == NNTP_POSTOK_VAL) || (code == NNTP_NOPOSTOK_VAL))
+	code = PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL;
+
+    if (code == NNTP_AUTH_NEEDED_VAL) 
+	PERMneedauth = TRUE;
+
+    hv_undef(attribs);
+
+    PUTBACK;
+    FREETMPS;
+    LEAVE;
+    
+    return code;
 }
 
 #ifdef DEBUG_MODIFY

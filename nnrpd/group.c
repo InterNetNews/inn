@@ -729,12 +729,11 @@ FUNCTYPE CMDgroup(int ac, char *av[])
     if (PERMspecified) {
 	grplist[0] = group;
 	grplist[1] = NULL;
-	if (!PERMmatch(PERMdefault, PERMlist, grplist)) {
+	if (!PERMmatch(PERMlist, grplist)) {
 	    Reply("%s %s\r\n", NOSUCHGROUP, group);
 	    return;
 	}
-    }
-    else if (!PERMdefault) {
+    } else {
 	Reply("%s %s\r\n", NOSUCHGROUP, group);
 	return;
     }
@@ -847,7 +846,7 @@ CMDxgtitle(ac, av)
     else
 	p = av[1];
 
-    if (!PERMspecified && !PERMdefault) {
+    if (!PERMspecified) {
 	Printf("%d list follows\r\n", NNTP_XGTITLE_OK);
 	Printf(".\r\n");
 	return;
@@ -871,7 +870,7 @@ CMDxgtitle(ac, av)
 	    if (PERMspecified) {
 		grplist[0] = line;
 		grplist[1] = NULL;
-		if (!PERMmatch(PERMdefault, PERMlist, grplist))
+		if (!PERMmatch(PERMlist, grplist))
 		    continue;
 	    }
 	    *q = save;

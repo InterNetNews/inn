@@ -97,14 +97,11 @@ Glom(av)
 **  Match a list of newsgroup specifiers against a list of newsgroups.
 **  func is called to see if there is a match.
 */
-BOOL
-PERMmatch(match, Pats, list)
-    register BOOL	match;
-    char		**Pats;
-    char		**list;
+BOOL PERMmatch(char **Pats, char **list)
 {
-    register int	i;
-    register char	*p;
+    int	                i;
+    char	        *p;
+    int                 match = FALSE;
 
     if (Pats[0] == NULL)
 	return TRUE;
@@ -138,7 +135,7 @@ PERMartok(qp)
     char		*p;
 
     if (!PERMspecified)
-	return PERMdefault;
+	return FALSE;
 
     if ((p = GetHeader("Newsgroups", FALSE)) == NULL)
         return 1;
@@ -146,7 +143,7 @@ PERMartok(qp)
 	/* No newgroups or null entry. */
 	return 1;
 
-    return PERMmatch(PERMdefault, PERMlist, grplist);
+    return PERMmatch(PERMlist, grplist);
 }
 
 

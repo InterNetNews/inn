@@ -59,8 +59,7 @@ char	*ACTIVETIMES = NULL;
 char	*HISTORY = NULL;
 char	*NEWSGROUPS = NULL;
 char	*NNRPACCESS = NULL;
-    /* Default permission -- change with adb. */
-BOOL	PERMdefault = FALSE;
+
 BOOL	ForceReadOnly = FALSE;
 char 	LocalLogFileName[256];
 
@@ -521,14 +520,13 @@ PERMinfile(hp, ip, user, pass, accesslist, accessfile)
 /*
 **  Determine access rights of the client.
 */
-STATIC void
-StartConnection(accesslist)
-    char		*accesslist;
+STATIC void StartConnection(char *accesslist)
 {
     struct sockaddr_in	sin;
     ARGTYPE		length;
     char		buff[SMBUF];
     char		*ClientAddr;
+    int                 code;
 
     /* Get the peer's name. */
     length = sizeof sin;
@@ -592,12 +590,22 @@ StartConnection(accesslist)
     LogName[sizeof(LogName) - 1] = '\0';
 
     syslog(L_NOTICE, "%s connect", ClientHost);
-    if (!PERMinfile(ClientHost, ClientAddr, (char *)NULL, (char *)NULL,
-	    accesslist, NNRPACCESS)) {
-	syslog(L_NOTICE, "%s no_access", ClientHost);
-	Printf("%d You are not in my access file.  Goodbye.\r\n",
-	    NNTP_ACCESS_VAL);
-	ExitWithStats(1);
+    if (innconf->nnrpperlauth) {
+	if ((code = perlConnect(ClientHost, ClientIp, accesslist)) == 502) {
+	    syslog(L_NOTICE, "%s no_access", ClientHost);
+	    Printf("%d You are not in my access file. Goodbye.\r\n",
+		   NNTP_ACCESS_VAL);
+	    ExitWithStats(1);
+	}
+    } else {
+	if (!PERMinfile(ClientHost, ClientAddr, (char *)NULL, (char *)NULL,
+			accesslist, NNRPACCESS)) {
+	    syslog(L_NOTICE, "%s no_access", ClientHost);
+	    Printf("%d You are not in my access file.  Goodbye.\r\n",
+		   NNTP_ACCESS_VAL);
+	    ExitWithStats(1);
+	}
+	PERMneedauth = PERMuser[0] != '\0' && PERMpass[0] != '\0';
     }
 }
 
@@ -699,6 +707,28 @@ WaitChild(s)
     (void)signal(s, WaitChild);
 }
 
+STATIC void SetupDaemon(void) {
+    BOOL                val;
+    
+#if defined(DO_PERL)
+    /* Load the Perl code */
+    PERLsetup(NULL, cpcatpath(innconf->pathfilter, _PATH_PERL_FILTER_NNRPD), "filter_post");
+    if (innconf->nnrpperlauth) {
+	PERLsetup(NULL, cpcatpath(innconf->pathfilter, _PATH_PERL_AUTH), "authenticate");
+	PerlFilter(TRUE);
+	perlAuthInit();
+    } else {
+	PerlFilter(TRUE);
+    }
+#endif /* defined(DO_PERL) */
+    
+    val = TRUE;
+    if (innconf->storageapi && SMsetup(SM_PREOPEN, (void *)&val) && !SMinit()) {
+	syslog(L_NOTICE, "%s cant initialize storage method, %s", ClientHost, SMerrorstr);
+	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+	ExitWithStats(1);
+    }
+}
 
 /*
 **  Print a usage message and exit.
@@ -887,7 +917,7 @@ main(argc, argv, env)
 
 	/* Detach */
 	if ((pid = FORK()) < 0) {
-	    fprintf(stderr, "%s: can't ford (%s)\n", argv[0], strerror(errno));
+	    fprintf(stderr, "%s: can't fork (%s)\n", argv[0], strerror(errno));
 	    syslog(L_FATAL, "can't fork (%m)");
 	    exit(1);
 	} else if (pid != 0) 
@@ -905,6 +935,7 @@ main(argc, argv, env)
 
 	/* Set signal handle to care for dead children */
 	(void)signal(SIGCHLD, WaitChild);
+	SetupDaemon();
  
 	TITLEset("nnrpd: accepting connections");
  	
@@ -941,7 +972,9 @@ listen_loop:
 	/* Only automatically reap children in the listening process */
 	(void)signal(SIGCHLD, SIG_DFL);
  
-    }  /* DaemonMode */
+    } else {
+	SetupDaemon();
+    }/* DaemonMode */
 
     /* Setup. */
     if (GetTimeInfo(&Now) < 0) {
@@ -982,7 +1015,7 @@ listen_loop:
 
     /* Get permissions and see if we can talk to this client */
     StartConnection(accesslist);
-    if (!PERMcanread && !PERMcanpost) {
+    if (!PERMcanread && !PERMcanpost && !PERMneedauth) {
 	syslog(L_NOTICE, "%s no_permission", ClientHost);
 	Printf("%d You have no permission to talk.  Goodbye.\r\n",
 	       NNTP_ACCESS_VAL);
@@ -990,7 +1023,6 @@ listen_loop:
     }
 
     /* Proceed with initialization. */
-    PERMneedauth = PERMuser[0] != '\0' && PERMpass[0] != '\0';
     PERMspecified = NGgetlist(&PERMlist, accesslist);
     TITLEset("connect");
 
@@ -1028,18 +1060,6 @@ listen_loop:
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
 	ExitWithStats(1);
     }
-
-    if (innconf->storageapi && !SMinit()) {
-	syslog(L_NOTICE, "%s cant initialize storage method, %s", ClientHost, SMerrorstr);
-	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
-	ExitWithStats(1);
-    }
-
-#if defined(DO_PERL)
-    /* Load the Perl code */
-    PERLsetup(NULL, cpcatpath(innconf->pathfilter, _PATH_PERL_FILTER_NNRPD), "filter_post");
-    PerlFilter (TRUE) ;
-#endif /* defined(DO_PERL) */
 
     Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
 	   PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL,
