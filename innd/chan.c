@@ -331,7 +331,7 @@ CHANclose(CHANNEL *cp, const char *name)
 	    if ((label = RClabelname(cp)) != NULL) {
 		for(tfd = 0; tfd <= CHANlastfd; tfd++) {
 		    tempchan = &CHANtable[tfd];
-		    if(tempchan->fd > 0 &&
+		    if(tempchan->fd > 0 && tempchan->Type == CTnntp &&
 			((tmplabel = RClabelname(tempchan)) != NULL) &&
 			strcmp(label, tmplabel) == 0 &&
 			tempchan->ActiveCnx == 0) {
