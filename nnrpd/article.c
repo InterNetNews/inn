@@ -915,10 +915,14 @@ STATIC BOOL OVERopen(void)
 		return FALSE;
 	    }
 	    OVERlen = sb.st_size;
-	    if ((int)(OVERmem = (char *)mmap(0, OVERlen, PROT_READ, MAP_SHARED, fd, 0)) == -1) {
+	    if (OVERlen > 0) {
+		if ((int)(OVERmem = (char *)mmap(0, OVERlen, PROT_READ, MAP_SHARED, fd, 0)) == -1) {
+		    OVERmem = NULL;
+		    close(fd);
+		    return FALSE;
+		}
+	    } else {
 		OVERmem = NULL;
-		close(fd);
-		return FALSE;
 	    }
 	    close(fd);
 	} else {

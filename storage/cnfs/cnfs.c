@@ -256,7 +256,8 @@ STATIC void CNFSflushallheads(void) {
   CYCBUFF	*cycbuff;
 
   for (cycbuff = cycbufftab; cycbuff != (CYCBUFF *)NULL; cycbuff = cycbuff->next) {
-    syslog(L_NOTICE, "%s: CNFSflushallheads: flushing %s", LocalLogName, cycbuff->name);
+    if (cycbuff->needflush)
+	syslog(L_NOTICE, "%s: CNFSflushallheads: flushing %s", LocalLogName, cycbuff->name);
     (void)CNFSflushhead(cycbuff);
   }
 }

@@ -359,12 +359,15 @@ STATIC void GRPscandir(char *dir)
 	}
 	icount = sb.st_size / OVERINDEXPACKSIZE;
 	if (OVERmmap) {
-	    if ((tmp = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, icount * OVERINDEXPACKSIZE,
+	    if (icount > 0) {
+		if ((tmp = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, icount * OVERINDEXPACKSIZE,
 			    PROT_READ, MAP__ARG, fd, 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
-		syslog(L_ERROR, "%s cant mmap index %s %m", ClientHost, dir);
-		close(fd);
-		return;
-	    }
+		    syslog(L_ERROR, "%s cant mmap index %s %m", ClientHost, dir);
+		    close(fd);
+		    return;
+		}
+	    } else
+		tmp = (char (*)[][OVERINDEXPACKSIZE])NULL;
 	} else {
 	    tmp = (char (*)[][OVERINDEXPACKSIZE])NEW(char, icount * OVERINDEXPACKSIZE);
 	    if (read(fd, tmp, icount * OVERINDEXPACKSIZE) != (icount * OVERINDEXPACKSIZE)) {
@@ -385,10 +388,12 @@ STATIC void GRPscandir(char *dir)
 	OVERindex = tmp;
 	OVERicount = icount;
 	
-	if (ARTarraysize == 0) {
-	    ARTnumbers = NEW(ARTLIST, OVERicount);
-	} else {
-	    ARTnumbers = RENEW(ARTnumbers, ARTLIST, OVERicount);
+	if (OVERicount > 0) {
+	    if (ARTarraysize == 0) {
+		ARTnumbers = NEW(ARTLIST, OVERicount);
+	    } else {
+		ARTnumbers = RENEW(ARTnumbers, ARTLIST, OVERicount);
+	    }
 	}
 	ARTarraysize = OVERicount;
 	for (i = 0; i < OVERicount; i++) {
