@@ -4678,65 +4678,43 @@ echo "$ac_t""$ac_cv_subst_have_unix_domain" 1>&6
 
 echo $ac_n "checking for close on exec style""... $ac_c" 1>&6
 echo "configure:4681: checking for close on exec style" >&5
-if eval "test \"`echo '$''{'ac_cv_subst_clx_style'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  if test $ac_cv_header_fcntl_h = yes; then
+CLX_STYLE=pre_test
+if test $ac_cv_header_fcntl_h = yes; then
 	cat > conftest.$ac_ext <<EOF
-#line 4687 "configure"
+#line 4685 "configure"
 #include "confdefs.h"
 #include <fcntl.h>
 #ifdef FD_CLOEXEC
 yes
-#endif
-EOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  egrep "yes" >/dev/null 2>&1; then
-  rm -rf conftest*
-  ac_cv_subst_clx_style=FCNTL
-else
-  rm -rf conftest*
-  ac_cv_subst_clx_style=unknown
-fi
-rm -f conftest*
-
-else
-	ac_cv_subst_clx_style=unknown
-fi
-fi
-
-echo "$ac_t""$ac_cv_subst_clx_style" 1>&6
-
-if test ${ac_cv_subst_clx_style} = "unknown"
-then
-
-if test $ac_cv_header_fcntl_h = yes; then
-	cat > conftest.$ac_ext <<EOF
-#line 4716 "configure"
-#include "confdefs.h"
-#include <fcntl.h>
-#ifdef FD_SETFD
+#else
+# ifdef FD_SETFD
 yes
+# endif
 #endif
 EOF
 if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
   egrep "yes" >/dev/null 2>&1; then
   rm -rf conftest*
-  ac_cv_subst_clx_style=FCNTL
+  cat >> confdefs.h <<\EOF
+#define CLX_FCNTL 1
+EOF
+ echo "$ac_t""FCNTL" 1>&6
 else
   rm -rf conftest*
-  ac_cv_subst_clx_style=unknown
+  CLX_STYLE=unknown
 fi
 rm -f conftest*
 
-fi
+else
+	CLX_STYLE=unknown
 fi
 
-if test ${ac_cv_subst_clx_style} = "unknown"
+if test ${CLX_STYLE} = "unknown"
 then
+CLX_STYLE=pre_test
 if test $ac_cv_header_sys_filio_h = yes; then
 	cat > conftest.$ac_ext <<EOF
-#line 4740 "configure"
+#line 4718 "configure"
 #include "confdefs.h"
 #include <sys/filio.h>
 #ifdef FIOCLEX
@@ -4746,32 +4724,36 @@ EOF
 if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
   egrep "yes" >/dev/null 2>&1; then
   rm -rf conftest*
-  ac_cv_subst_clx_style=IOCTL
+  cat >> confdefs.h <<\EOF
+#define CLX_IOCTL 1
+EOF
+ echo "$ac_t""IOCTL" 1>&6
 else
   rm -rf conftest*
-  ac_cv_subst_clx_style=unknown
+  CLX_STYLE=unknown
 fi
 rm -f conftest*
 
+else
+	CLX_STYLE=unknown
 fi
 fi
 
-if test ${ac_cv_subst_clx_style} = "unknown"
+if test ${CLX_STYLE} = "unknown"
 then
-	{ echo "configure: error: Must set ac_cv_subst_clx_style" 1>&2; exit 1; }
+	{ echo "configure: error: Must set CLX_STYLE" 1>&2; exit 1; }
 fi
-
 
 
 
 echo $ac_n "checking for nbio style""... $ac_c" 1>&6
-echo "configure:4769: checking for nbio style" >&5
+echo "configure:4751: checking for nbio style" >&5
 if eval "test \"`echo '$''{'ac_cv_subst_nbio_style'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   if test $ac_cv_header_fcntl_h = yes; then
 	cat > conftest.$ac_ext <<EOF
-#line 4775 "configure"
+#line 4757 "configure"
 #include "confdefs.h"
 #include <fcntl.h>
 #ifdef O_NONBLOCK
@@ -4798,7 +4780,7 @@ echo "$ac_t""$ac_cv_subst_nbio_style" 1>&6
 if test $ac_cv_subst_nbio_style = unknown; then
 if test $ac_cv_header_sys_filio_h = yes; then
 	cat > conftest.$ac_ext <<EOF
-#line 4802 "configure"
+#line 4784 "configure"
 #include "confdefs.h"
 #include <sys/filio.h>
 #ifdef FIONBIO
@@ -4828,12 +4810,12 @@ fi
 
 
 echo $ac_n "checking log level for news""... $ac_c" 1>&6
-echo "configure:4832: checking log level for news" >&5
+echo "configure:4814: checking log level for news" >&5
 if eval "test \"`echo '$''{'ac_cv_log_news'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 4837 "configure"
+#line 4819 "configure"
 #include "confdefs.h"
 #include <syslog.h>
 #ifdef LOG_NEWS
@@ -4857,12 +4839,12 @@ echo "$ac_t""$ac_cv_log_news" 1>&6
 
 
 echo $ac_n "checking generic pointer""... $ac_c" 1>&6
-echo "configure:4861: checking generic pointer" >&5
+echo "configure:4843: checking generic pointer" >&5
 if eval "test \"`echo '$''{'ac_cv_type_generic'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 4866 "configure"
+#line 4848 "configure"
 #include "confdefs.h"
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
@@ -4873,7 +4855,7 @@ int main() {
 void *a; a = malloc(sizeof(a))
 ; return 0; }
 EOF
-if { (eval echo configure:4877: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:4859: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_type_generic=void
 else
@@ -5423,7 +5405,6 @@ s%@ac_cv_type_free@%$ac_cv_type_free%g
 s%@ac_cv_type_exit@%$ac_cv_type_exit%g
 s%@ac_cv_type__exit@%$ac_cv_type__exit%g
 s%@ac_cv_subst_have_unix_domain@%$ac_cv_subst_have_unix_domain%g
-s%@ac_cv_subst_clx_style@%$ac_cv_subst_clx_style%g
 s%@ac_cv_subst_nbio_style@%$ac_cv_subst_nbio_style%g
 s%@ac_cv_log_news@%$ac_cv_log_news%g
 s%@ac_cv_type_generic@%$ac_cv_type_generic%g

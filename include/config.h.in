@@ -48,6 +48,10 @@
 # endif
 #endif
 
+/* Define one of the following for 'close on exec' */
+#undef CLX_FCNTL
+#undef CLX_IOCTL
+
 /* Define if you have <string.h> */
 #undef HAVE_STRING_H 
 

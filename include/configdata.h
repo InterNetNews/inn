@@ -83,9 +83,6 @@ typedef char		*CSTRING;
     /* Do you have Unix-domain sockets? */
     /* =()<#define @<HAVE_UNIX_DOMAIN>@_HAVE_UNIX_DOMAIN>()= */
 #define DO_HAVE_UNIX_DOMAIN
-    /* How should close-on-exec be done? */
-    /* =()<#define CLX_@<CLX_STYLE>@>()= */
-#define CLX_FCNTL
     /* How should non-blocking I/O be done? */
     /* =()<#define NBIO_@<NBIO_STYLE>@>()= */
 #define NBIO_FCNTL

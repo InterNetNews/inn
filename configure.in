@@ -387,47 +387,42 @@ AC_SUBST(ac_cv_subst_have_unix_domain)
 
 dnl ********************************************
 dnl Close-on-exec style.....fjc mibsoftware.com
-AC_CACHE_CHECK(for close on exec style, ac_cv_subst_clx_style,
+AC_MSG_CHECKING(for close on exec style)
+CLX_STYLE=pre_test
 if test $ac_cv_header_fcntl_h = yes; then
 	AC_EGREP_CPP(yes, [#include <fcntl.h>
 #ifdef FD_CLOEXEC
 yes
-#endif], ac_cv_subst_clx_style=FCNTL, ac_cv_subst_clx_style=unknown)
-else
-	ac_cv_subst_clx_style=unknown
-fi)
-
-if test ${ac_cv_subst_clx_style} = "unknown"
-then
-dnl ** Round two.
-dnl ** no FD_CLOEXEC defined, but we really want to use it.
-dnl ** if FD_SETFD is defined, we assume that it will work.
-
-if test $ac_cv_header_fcntl_h = yes; then
-	AC_EGREP_CPP(yes, [#include <fcntl.h>
-#ifdef FD_SETFD
+#else
+# ifdef FD_SETFD
 yes
-#endif], ac_cv_subst_clx_style=FCNTL, ac_cv_subst_clx_style=unknown)
-fi
+# endif
+#endif], 
+	[AC_DEFINE(CLX_FCNTL) AC_MSG_RESULT(FCNTL)], 
+	CLX_STYLE=unknown)
+else
+	CLX_STYLE=unknown
 fi
 
-if test ${ac_cv_subst_clx_style} = "unknown"
+if test ${CLX_STYLE} = "unknown"
 then
-dnl ** Round three
-dnl ** FIOCLEX
+CLX_STYLE=pre_test
 if test $ac_cv_header_sys_filio_h = yes; then
 	AC_EGREP_CPP(yes, [#include <sys/filio.h>
 #ifdef FIOCLEX
 yes
-#endif], ac_cv_subst_clx_style=IOCTL, ac_cv_subst_clx_style=unknown)
+#endif], 
+	[AC_DEFINE(CLX_IOCTL) AC_MSG_RESULT(IOCTL)], 
+	CLX_STYLE=unknown)
+else
+	CLX_STYLE=unknown
 fi
 fi
 
-if test ${ac_cv_subst_clx_style} = "unknown"
+if test ${CLX_STYLE} = "unknown"
 then
-	AC_MSG_ERROR(Must set ac_cv_subst_clx_style)
+	AC_MSG_ERROR(Must set CLX_STYLE)
 fi
-AC_SUBST(ac_cv_subst_clx_style)
 dnl ********************************************
 
 

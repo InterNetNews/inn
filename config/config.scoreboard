@@ -191,11 +191,6 @@
   ||#### =()<BIND_USE_SIZEOF		@<BIND_USE_SIZEOF>@>()=
   ||BIND_USE_SIZEOF		DO
 [IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  How should close-on-exec be done?  Pick IOCTL or FCNTL.
-  ||##[autoconf]
-  ||#### =()<CLX_STYLE		@<CLX_STYLE>@>()=
-  ||CLX_STYLE		@ac_cv_subst_clx_style@
-[IN1.7=@4][WDF=autoconf][WOR=no]
   ||##  How should non-blocking I/O be done?  Pick IOCTL or FCNTL.
   ||##[autoconf]
   ||#### =()<NBIO_STYLE		@<NBIO_STYLE>@>()=
