@@ -1,6 +1,6 @@
 
-#ifndef _P_P_PORTABILITY_H_
-#define _P_P_PORTABILITY_H_
+#ifndef PPPORT_H
+#define PPPORT_H 1
 
 /* Perl/Pollution/Portability Version 1.0003 */
 
@@ -175,15 +175,16 @@ __DATA__
 #endif
 
 #if (PERL_VERSION < 5)
-#  ifdef WIN32
-#	define dTHR extern int Perl___notused
-#  else
-#	define dTHR extern int errno
-#  endif
+#	undef dTHR
+#	ifdef WIN32
+#		define dTHR extern int Perl___notused
+#	else
+#		define dTHR extern int errno
+#	endif
 #endif
 
 #ifndef boolSV
 #	define boolSV(b) ((b) ? &PL_sv_yes : &PL_sv_no)
 #endif
 
-#endif /* _P_P_PORTABILITY_H_ */
+#endif /* !PPPORT_H */
