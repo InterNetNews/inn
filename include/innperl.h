@@ -13,6 +13,12 @@
 
 BEGIN_DECLS
 
+/* Provide an alternate version of newXS that takes const char strings for the
+   first and third parameters and casts them to the char * that Perl
+   expects. */
+#define inn_newXS(name, func, file) \
+    newXS((char *)(name), func, (char *)(file))
+
 extern bool PerlFilterActive;
 
 extern bool PerlFilter(bool value);
