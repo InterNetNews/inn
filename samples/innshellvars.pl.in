@@ -30,7 +30,6 @@ $locks = $pathrun;
 $newsbin = $pathbin;
 $innddir = $pathrun;
 $newsetc = $pathetc;
-$newslib = $pathlib;
 $newslbin = "$pathnews/local";
 
 $active = "${pathdb}/active" ;
