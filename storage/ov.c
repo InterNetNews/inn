@@ -26,20 +26,6 @@
 
 /* FIXME: The following variables are shared between this file and expire.c.
    This should be cleaned up with a better internal interface. */
-time_t          OVnow;
-char *          ACTIVE;
-FILE *          EXPunlinkfile;
-bool            OVignoreselfexpire;
-bool            OVusepost;
-bool            OVkeep;
-bool            OVearliest;
-bool            OVquiet;
-int             OVnumpatterns;
-char **         OVpatterns;
-
-time_t		OVrealnow;
-bool		OVstatall;
-
 static bool	OVdelayrm;
 static OV_METHOD	ov;
 

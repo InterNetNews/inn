@@ -38,6 +38,18 @@ bool OVgroupmatch(const char *group);
 bool OVhisthasmsgid(struct history *, const char *data);
 void OVEXPremove(TOKEN token, bool deletedgroups, char **xref, int ngroups);
 void OVEXPcleanup(void);
+bool OVstatall;
+time_t OVnow;
+char *ACTIVE;
+FILE *EXPunlinkfile;
+bool OVignoreselfexpire;
+bool OVusepost;
+bool OVkeep;
+bool OVearliest;
+bool OVquiet;
+int  OVnumpatterns;
+char **OVpatterns;
+time_t OVrealnow;
 
 #define DEFAULT_MAX_XREF_LEN 8192
 
