@@ -35,6 +35,9 @@ innd, inndstart \- InterNetNews daemon
 .BI \-m " mode"
 ]
 [
+.B \-N
+]
+[
 .BI \-n " flag"
 ]
 [
@@ -222,6 +225,13 @@ The argument should start with a single letter
 or
 .IR t ,
 to emulate the ``go,'' ``pause,'' or ``throttle'' commands, respectively.
+.TP
+.B \-N
+The ``\-N'' flag specifies to disable any kind of filter(Perl, Tcl and Python)
+when
+.I innd
+starts.  To enable filter after the server runs, you need to turn it on by
+.IR ctlinnd (8).
 .TP
 .B \-n
 The ``\-n'' flag specifies whether or not pausing or throttling the server
