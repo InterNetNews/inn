@@ -60,6 +60,9 @@ libinn.a:       $(OBJECTS)
 perl.o: perl.c
 	$(CC) $(CFLAGS) $(PERLINC) $(LDFLAGS) -c perl.c
 
+../include/inn/system.h:
+	(cd ../include && $(MAKE))
+
 ../include/inn/version.h:
 	(cd ../include && $(MAKE))
 
@@ -176,8 +179,8 @@ messages.o: messages.c ../include/config.h ../include/inn/defines.h \
 mkstemp.o: mkstemp.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/time.h
 mmap.o: mmap.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/mmap.h \
- ../include/portable/mmap.h
+ ../include/clibrary.h ../include/portable/mmap.h \
+ ../include/inn/messages.h ../include/inn/mmap.h
 parsedate.o: parsedate.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
@@ -233,6 +236,8 @@ vector.o: vector.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/vector.h ../include/libinn.h
 version.o: version.c ../include/config.h ../include/inn/defines.h \
  ../include/inn/version.h
+wire.o: wire.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/wire.h
 xfopena.o: xfopena.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
 xmalloc.o: xmalloc.c ../include/config.h ../include/inn/defines.h \
