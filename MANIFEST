@@ -122,6 +122,7 @@ control/modules/version.pl            version controlchan handler
 control/pgpverify.in                  Verify control messages with PGP
 doc                                   Documentation (Directory)
 doc/Makefile                          Makefile for documentation
+doc/compliance-nntp                   INN compliance with the NNTP standard
 doc/config-design                     Configuration parser design principles
 doc/config-semantics                  Configuration file semantics
 doc/config-syntax                     Configuration file syntax
