@@ -12,6 +12,7 @@
 #include "inn/innconf.h"
 #include "libinn.h"
 #include "macros.h"
+#include "string.h"
 
 /* Scale time back a bit, for shorter Message-ID's. */
 #define OFFSET	673416000L
