@@ -358,7 +358,9 @@ else
         AC_MSG_RESULT($OPENSSL_DIR)
 	SSL_LIB="-L${OPENSSL_DIR}/lib"
 	AC_CHECK_LIB(rsaref, RSAPublicEncrypt,
-		SSL_LIB="${SSL_LIB} -lRSAglue -lrsaref",,$SSL_LIB)
+	    [AC_CHECK_LIB(RSAglue, RSAPublicEncrypt,
+	        SSL_LIB="-lRSAglue -lrsaref ${SSL_LIB}",,-lrsaref $SSL_LIB)]
+	    ,,$SSL_LIB)
 	AC_CHECK_LIB(crypto,BIO_accept,
 		SSL_LIB="-lcrypto ${SSL_LIB}",
 		[AC_MSG_ERROR(Can not find OpenSSL)],
