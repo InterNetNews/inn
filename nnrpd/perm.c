@@ -1940,7 +1940,7 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password)
 	    GetProgInput(foo);
 	    done = (ubuf[0] != '\0');
 	    if (done)
-		syslog(L_TRACE, "%s auth authenticator succesful, user %s", ClientHost, ubuf);
+		syslog(L_TRACE, "%s auth authenticator successful, user %s", ClientHost, ubuf);
 	    else
 		syslog(L_TRACE, "%s auth authenticator failed", ClientHost);
 	    DISPOSE(foo);
