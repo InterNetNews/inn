@@ -187,4 +187,9 @@ __DATA__
 #	define boolSV(b) ((b) ? &PL_sv_yes : &PL_sv_no)
 #endif
 
+/* Perl tries to export a bunch of its own functions.  Mutter. */
+#undef die
+#undef list
+#undef warn
+
 #endif /* !PPPORT_H */
