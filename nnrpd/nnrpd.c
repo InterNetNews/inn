@@ -701,7 +701,7 @@ STATIC void SetupDaemon(void) {
     
     val = TRUE;
     if (SMsetup(SM_PREOPEN, (void *)&val) && !SMinit()) {
-	syslog(L_NOTICE, "%s cant initialize storage method, %s", ClientHost, SMerrorstr);
+	syslog(L_NOTICE, "cant initialize storage method, %s", SMerrorstr);
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
 	ExitWithStats(1, TRUE);
     }
@@ -711,7 +711,7 @@ STATIC void SetupDaemon(void) {
     }
     if (!OVopen(OV_READ)) {
 	/* This shouldn't really happen. */
-	syslog(L_NOTICE, "%s cant open overview %m", ClientHost);
+	syslog(L_NOTICE, "cant open overview %m");
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
 	ExitWithStats(1, TRUE);
     }
