@@ -272,7 +272,20 @@ then
 	fi
 fi
 AC_CHECK_LIB(nsl, gethostbyname)
-AC_CHECK_LIB(socket, socket)
+dnl Unisys system includes gethostbyname in libsocket but needs libnsl for socket
+AC_CHECK_LIB(socket, socket, ac_need_libsocket=1, ac_try_nsl=1)
+if test x$ac_need_libsocket = x1
+then
+LIBS="$LIBS -lsocket"
+fi
+if test x$ac_try_nsl = x1
+then
+	AC_CHECK_LIB(nsl, gethostbyname, ac_need_libnsl=1)
+	if test x$ac_need_libnsl = x1
+	then
+		LIBS="$LIBS -lnsl"
+	fi
+fi
 AC_CHECK_LIB(elf, nlist)
 dnl AIX needs flock from libbsd
 AC_CHECK_LIB(bsd,flock)
