@@ -45,8 +45,7 @@
 /* Used for unused parameters to silence gcc warnings. */
 #define UNUSED  __attribute__((__unused__))
 
-/* Make available the bool type.  INN internally uses TRUE and FALSE instead
-   in a lot of places, so make them available as well. */
+/* Make available the bool type. */
 #if INN_HAVE_STDBOOL_H
 # include <stdbool.h>
 #else
@@ -68,6 +67,6 @@
 /* Tell Perl that we have a bool type. */
 #ifndef HAS_BOOL
 # define HAS_BOOL 1
-#endif /* HAS_BOOL */
+#endif
 
 #endif /* !INN_DEFINES_H */
