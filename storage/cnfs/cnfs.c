@@ -914,7 +914,7 @@ BOOL cnfs_init(BOOL *selfexpire) {
     return TRUE;
 }
 
-TOKEN cnfs_store(const ARTHANDLE article, STORAGECLASS class) {
+TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
     TOKEN               token;
     char		*p;
     CYCBUFF		*cycbuff = NULL;
@@ -1029,7 +1029,7 @@ TOKEN cnfs_store(const ARTHANDLE article, STORAGECLASS class) {
     return CNFSMakeToken(artcycbuffname, artoffset, artcyclenum, class, article.token);
 }
 
-ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
+ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     char		cycbuffname[9];
     CYCBUFF_OFF_T	offset;
     U_INT32_T		cycnum;
@@ -1289,7 +1289,7 @@ BOOL cnfs_cancel(TOKEN token) {
     return TRUE;
 }
 
-ARTHANDLE *cnfs_next(const ARTHANDLE *article, RETRTYPE amount) {
+ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
     ARTHANDLE           *art;
     CYCBUFF		*cycbuff;
     PRIV_CNFS		priv, *private;
