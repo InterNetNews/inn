@@ -66,7 +66,7 @@ struct sockaddr_storage {
 
 /* Use convenient, non-uglified names for the fields since we use them quite a
    bit in code. */
-#if !HAVE_STRUCT_SOCKADDR_STORAGE_SS_FAMILY
+#if HAVE_STRUCT_SOCKADDR_STORAGE && !HAVE_STRUCT_SOCKADDR_STORAGE_SS_FAMILY
 # define ss_family __ss_family
 # define ss_len    __ss_len
 #endif
