@@ -12,7 +12,7 @@ CFLAGS	= $(GCFLAGS)
 CPP.c		= $(CC) $(CFLAGS) -E -I.
 COMPILE.c	= $(CC) $(CFLAGS) -c -I.
 LINK.o		= $(LIBTOOL) $(CC) $(LDFLAGS) ($LIBS)
-LINK.c		= $(LIBTOOL) $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
+LINK.c		= $(LIBTOOL) $(CC) $(CFLAGS) $(LDFLAGS)
 OUTPUT_OPTION	= -o $@
 
 
@@ -108,7 +108,7 @@ all: innfeed startinnfeed
 install: $(ALL_INSTALLED)
 
 innfeed: $(OBJS) version.o $(MALLOC) $(LIBNEWS)
-	$(LINK.c) -o $@ $(OBJS) version.o $(LIBNEWS) $(LIBNEWS)
+	$(LINK.c) -o $@ $(OBJS) version.o $(LIBNEWS) $(LIBNEWS) $(LIBS)
 
 $D$(PATHBIN)/innfeed: innfeed
 	$(LIBTOOL) ../installit.sh $(OWNER) -m 550 -b .OLD $? $@
@@ -165,10 +165,10 @@ startinnfeed.o: startinnfeed.c
 	$(COMPILE.c) $?
 
 startinnfeed: startinnfeed.o $(EXTRA_SRC:.c=.o)
-	$(LINK.c) -o $@ $? $(LIBNEWS)
+	$(LINK.c) -o $@ $? $(LIBNEWS) $(LIBS)
 
 uio_maxiov: uio_maxiov.o
-	$(LINK.c) -o $@ uio_maxiov.o
+	$(LINK.c) -o $@ uio_maxiov.o $(LIBS)
 
 check-maxiov: uio_maxiov
 	@./uio_maxiov
