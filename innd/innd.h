@@ -577,6 +577,7 @@ extern BOOL		RCnolimit();
 extern BOOL		RCauthorized();
 extern int		RCcanpost();
 extern char		*RChostname();
+extern char		*RClabelname(CHANNEL *cp);
 extern void		RCclose();
 extern void		RChandoff();
 extern void		RCreadlist();

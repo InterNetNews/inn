@@ -817,6 +817,7 @@ void CHANreadloop(void)
     CHANNEL             *tempchan;
     int                 found;
     int                 tfd;
+    char		*label, *tmplabel;
 
     TMRinit();
     STATUSinit();
@@ -910,12 +911,16 @@ void CHANreadloop(void)
                    (cp->Type == CTnntp) &&
                    (cp->ActiveCnx == 0)) {
                     found = 1;
-                    for(tfd = 0; tfd < CHANlastfd; tfd++) {
-                       tempchan = &CHANtable[tfd];
-                       if(cp->Address.s_addr == tempchan->Address.s_addr) {
-                          if(tempchan->ActiveCnx == found)
-                            found++;
-                       }
+		    if ((label = RClabelname(cp)) != NULL) {
+                        for(tfd = 0; tfd < CHANlastfd; tfd++) {
+                           tempchan = &CHANtable[tfd];
+		           if ((tmplabel = RClabelname(tempchan)) == NULL)
+			        continue;
+                           if(strcmp(label, tmplabel) == 0) {
+                              if(tempchan->ActiveCnx != 0)
+                                found++;
+                           }
+                        }
                     }
                     cp->ActiveCnx = found;
 		}
