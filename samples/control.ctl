@@ -643,9 +643,9 @@ checkgroups:admin@england.news-admin.org:england.*:verify-england-usenet
 # *PGP*   See comment at top of file.
 newgroup:*:es.*:drop
 rmgroup:*:es.*:drop
-checkgroups:moderador@news.rediris.es:es.*:verify-es.news.anuncios
-newgroup:moderador@news.rediris.es:es.*:verify-es.news.anuncios
-rmgroup:moderador@news.rediris.es:es.*:verify-es.news.anuncios
+checkgroups:moderador@news.rediris.es:es.*:verify-es.news
+newgroup:moderador@news.rediris.es:es.*:verify-es.news
+rmgroup:moderador@news.rediris.es:es.*:verify-es.news
 
 ## ESP (Spanish-language newsgroups)
 # Contact: <mod-ena@ennui.org>
