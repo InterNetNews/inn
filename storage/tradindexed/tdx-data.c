@@ -764,7 +764,7 @@ tdx_data_expire_start(const char *group, struct group_data *data,
         index->count++;
     }
 
-    /* Done; the rest happens in tdx_data_expire_finish. */
+    /* Done; the rest happens in tdx_data_rebuild_finish. */
     tdx_data_close(new_data);
     return true;
 

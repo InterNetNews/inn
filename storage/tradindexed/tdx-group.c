@@ -894,9 +894,6 @@ tdx_expire(const char *group, ARTNUM *low, struct history *history)
     if (new_entry.low == 0)
         new_entry.low = new_entry.high + 1;
     tdx_index_rebuild_finish(index, entry, &new_entry);
-
-    /* Return the lowmark to our caller.  If there are no articles in the
-       group, this should be one more than the high water mark. */
     if (low != NULL)
         *low = entry->low;
     tdx_index_close(index);
