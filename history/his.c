@@ -165,9 +165,9 @@ static bool
 his_checknull(struct history *h)
 {
     if (h != NULL)
-	return true;
+	return false;
     errno = EBADF;
-    return false;
+    return true;
 
 }
 
