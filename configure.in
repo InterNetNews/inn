@@ -430,9 +430,11 @@ AC_SUBST(ac_cv_subst_int32_t)
 
 # Checkd for long long
 AC_CHECK_SIZEOF(long long)
-echo "							$ac_cv_sizeof_long_long"
 if test $ac_cv_sizeof_long_long = 8; then
+	echo "checking for long long... yes"
 	AC_DEFINE(HAVE_LONG_LONG)
+else
+	echo "checking for long long... no"
 fi
 
 
