@@ -1250,7 +1250,7 @@ bool tradspool_ctl(PROBETYPE type, TOKEN *token, void *value) {
     struct artngnum *ann;
     unsigned long ngnum;
     unsigned long artnum;
-    char *ng;
+    char *ng, *p;
 
     switch (type) { 
     case SMARTNGNUM:
@@ -1269,6 +1269,9 @@ bool tradspool_ctl(PROBETYPE type, TOKEN *token, void *value) {
 		return false;
 	}
 	ann->groupname = xstrdup(ng);
+        for (p = ann->groupname; *p != 0; p++)
+            if (*p == '/')
+                *p = '.';
 	ann->artnum = (ARTNUM)artnum;
 	return true;
     default:
