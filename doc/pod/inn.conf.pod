@@ -711,7 +711,7 @@ to have any meaning.  This is a boolean value and the default is false.
 
 The path to a directory, writeable by the news user, that will contain the
 backoff database.  There is no default for this parameter; you must
-provide a path to an existing and writeable directory to enable
+provide a path to an creatable and writeable directory, if exists, to enable
 exponential backoff.
 
 =item I<backoffk>

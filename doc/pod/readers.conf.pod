@@ -346,8 +346,8 @@ reason to the user.
 
 If this parameter is present (and nonzero) it is used for nnrpd's 
 rate-limiting code.  The client will only be able to download at this 
-speed (in bytes/second).  Note that at present these limits are 
-ignored if compiled with SSL support.
+speed (in bytes/second).  Note that if SSL is being used, limiting
+is applied to the pre-encryption datastream.
 
 =item B<localtime:>
 

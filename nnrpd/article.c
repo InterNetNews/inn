@@ -63,6 +63,19 @@ static SENDDATA		SENDhead = {
 static struct iovec	iov[IOV_MAX];
 static int		queued_iov = 0;
 
+bool PushIOvHelper(struct iovec* vec, int* countp) {
+    int result;
+#ifdef HAVE_SSL
+    result = tls_conn
+	     ? SSL_writev(tls_conn, vec, *countp)
+	     : writev(STDOUT_FILENO, vec, *countp);
+#else
+    result = writev(STDOUT_FILENO, vec, *countp);
+#endif
+    *countp = 0;
+    return (result <= 0 ? FALSE : TRUE);
+}
+
 bool PushIOvRateLimited(void) {
     struct timeval      start, end;
     struct iovec        newiov[IOV_MAX];
@@ -92,10 +105,8 @@ bool PushIOvRateLimited(void) {
 	    }
 	}
 	gettimeofday(&start, NULL);
-	if (writev(STDOUT_FILENO, newiov, newiov_len) <= 0) {
-	    queued_iov = 0;
+	if (PushIOvHelper(newiov, &newiov_len) == FALSE)
 	    return FALSE;
-	}
 	gettimeofday(&end, NULL);
 	/* Normalize it so we can just do straight subtraction */
 	if (end.tv_usec < start.tv_usec) {
@@ -126,28 +137,9 @@ bool PushIOvRateLimited(void) {
 
 bool PushIOv(void) {
     fflush(stdout);
-#ifdef HAVE_SSL
-    if (tls_conn) {
-      if (SSL_writev(tls_conn, iov, queued_iov) <= 0) {
-        queued_iov = 0;
-	return FALSE;
-      }
-    } else {
-      if (writev(STDOUT_FILENO, iov, queued_iov) <= 0) {
-        queued_iov = 0;
-	return FALSE;
-      }
-    }
-#else
     if (MaxBytesPerSecond != 0)
 	return PushIOvRateLimited();
-    if (writev(STDOUT_FILENO, iov, queued_iov) <= 0) {
-      queued_iov = 0;
-      return FALSE;
-    }
-#endif
-    queued_iov = 0;
-    return TRUE;
+    return PushIOvHelper(iov, &queued_iov);
 }
 
 bool SendIOv(char *p, int len) {

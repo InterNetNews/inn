@@ -526,9 +526,21 @@ InitBackoffConstants()
   /* Need this database for backing off */
   (void)strncpy(postrec_dir,PERMaccessconf->backoff_db,SMBUF);
   if (stat(postrec_dir, &st) < 0) {
-    syslog(L_ERROR, "%s cannot stat backoff_db '%s': %s",ClientHost,postrec_dir,strerror(errno));
+    if (ENOENT == errno) {
+      if (!MakeDirectory(postrec_dir, true)) {
+	syslog(L_ERROR, "%s cannot create backoff_db '%s': %s",ClientHost,postrec_dir,strerror(errno));
+	return;
+      }
+    } else {
+      syslog(L_ERROR, "%s cannot stat backoff_db '%s': %s",ClientHost,postrec_dir,strerror(errno));
+      return;
+    }
+  }
+  if (!S_ISDIR(st.st_mode)) {
+    syslog(L_ERROR, "%s backoff_db '%s' is not a directory",ClientHost,postrec_dir);
     return;
   }
+
   BACKOFFenabled = TRUE;
 
   return;
