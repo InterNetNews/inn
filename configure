@@ -6415,7 +6415,7 @@ trap 'rm -fr `echo "Makefile.global
 	samples/writelog
 	storage/buildconfig 
 	syslog/syslog.conf
- include/config.h:include/config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+	 include/config.h:include/config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
@@ -6644,7 +6644,7 @@ CONFIG_FILES=\${CONFIG_FILES-"Makefile.global
 	samples/writelog
 	storage/buildconfig 
 	syslog/syslog.conf
-"}
+	"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then
@@ -6810,6 +6810,7 @@ cat >> $CONFIG_STATUS <<EOF
 
 EOF
 cat >> $CONFIG_STATUS <<\EOF
+chmod +x storage/buildconfig
 
 exit 0
 EOF
@@ -6818,5 +6819,4 @@ rm -fr confdefs* $ac_clean_files
 test "$no_create" = yes || ${CONFIG_SHELL-/bin/sh} $CONFIG_STATUS || exit 1
 
 
-chmod +x storage/buildconfig
 cat .now_do
