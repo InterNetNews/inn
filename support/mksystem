@@ -45,5 +45,6 @@ $1 '
 ' $2
 
 cat <<EOF
+
 #endif /* INN_SYSTEM_H */
 EOF
