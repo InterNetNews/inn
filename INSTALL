@@ -133,6 +133,15 @@ Installing INN
     and group.  You can change these if you want but these are the defaults
     and it's easier to stick with them on a new installation.
 
+    WARNING: By default, INN installs various configuration files as
+    group-writeable, and in general INN is not hardened from a security
+    standpoint against an attack by someone who is already in the news
+    group.  In general, you should consider membership in the news group as
+    equivalent to access to the news account.  You should not rely on being
+    able to keep anyone with access to the news GID from converting that
+    into access to the news UID.  The recommended configuration is to have
+    the only member of the group "news" be the user "news".
+
     Installing INN so that all of its files are under a single directory
     tree, rather than scattering binaries, libraries, and man pages
     throughout the file system, is strongly recommended.  It helps keep
