@@ -8,10 +8,12 @@
 #include "clibrary.h"
 #include "libinn.h"
 #include "macros.h"
+#include "paths.h"
 
 /* Global and initialized; to work around SunOS -Bstatic bug, sigh. */
 STATIC char		ConfigBuff[SMBUF] = "";
 int		format = 0;
+char *innconffile = _PATH_CONFIG;
 
 int isnum(char *v)
 {

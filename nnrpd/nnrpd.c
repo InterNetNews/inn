@@ -642,14 +642,13 @@ main(argc, argv, env)
     BOOL		val;
     char		*p;
     int			vid=0; 
-    int 		pid=-1;
     int 		count=123456789;
     struct		timeval tv;
     unsigned short	ListenPort = NNTP_PORT;
     unsigned long	ListenAddr = htonl(INADDR_ANY);
     int			lfd, fd, clen;
     struct sockaddr_in	ssa, csa;
-    PID_T		pid;
+    PID_T		pid = -1;
    
 
 #if	!defined(HPUX)

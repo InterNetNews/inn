@@ -50,7 +50,7 @@ MOST	= rc.news overview.fmt checkgroups default ihave newgroup \
 	rmgroup sendme sendsys senduuname version parsecontrol writelog \
 	docheckgroups news.daily scanlogs expirerm \
 	tally.control nntpsend send-ihave send-nntp send-uucp \
-	sendbatch inncheck innstat pgpverify innwatch innreport.pl \
+	sendbatch inncheck innstat pgpverify innwatch innreport \
 	innshellvars \
 	innshellvars.pl innshellvars.csh innshellvars.tcl filter.tcl \
 	startup.tcl startup_innd.pl filter_innd.pl filter_nnrpd.pl \
@@ -66,7 +66,7 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(PATH_SCHEMA) $D$(CTLBIN)/checkgroups \
 	$D$(NEWSBIN)/nntpsend $D$(NEWSLIB)/send-ihave $D$(NEWSLIB)/send-nntp \
 	$D$(NEWSLIB)/send-uucp $D$(NEWSBIN)/sendbatch $D$(NEWSBIN)/inncheck \
 	$D$(NEWSBIN)/innstat $D$(NEWSBIN)/pgpverify $D$(NEWSBIN)/innwatch \
-	$D$(NEWSBIN)/innreport.pl $D$(PATH_SHELLVARS) \
+	$D$(NEWSBIN)/innreport $D$(PATH_SHELLVARS) \
 	$D$(PATH_PERL_SHELLVARS) $D$(PATH_PERL_STARTUP_INND) \
 	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
 	$D$(PATH_TCL_SHELLVARS) $D$(PATH_TCL_STARTUP) $D$(PATH_CSH_SHELLVARS) \
@@ -196,7 +196,7 @@ $D$(PATH_SHELLVARS):	innshellvars	; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_SHELLVARS): innshellvars.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_TCL_SHELLVARS): innshellvars.tcl ; $(COPY_RPRI) $? $@
 $D$(PATH_CSH_SHELLVARS): innshellvars.csh ; $(COPY_RPRI) $? $@
-$D$(NEWSBIN)/innreport.pl: innreport.pl	; $(COPY_XPRI) $? $@
+$D$(NEWSBIN)/innreport: innreport	; $(COPY_XPRI) $? $@
 $D$(NEWSLIB)/innreport_inn.pm: innreport_inn.pm	; $(COPY_RPRI) $? $@
 $D$(NEWSLIB)/innreport.conf: innreport.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_STORAGECTL): storage.ctl	; $(COPY_RPRI) $? $@

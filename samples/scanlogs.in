@@ -246,7 +246,7 @@ OLD_LOG=${OLD}/${BASE}.0
 BASE=`basename ${SYSLOG_NOTICE}`
 OLD_SYSLOG=${OLD}/${BASE}.0
 if [ -s ${OLD_SYSLOG} -o -s ${OLD_LOG} ] ; then
-    ${NEWSBIN}/innreport.pl -f ${NEWSLIB}/innreport.conf ${OLD_SYSLOG} ${OLD_LOG}
+    ${NEWSBIN}/innreport -f ${NEWSLIB}/innreport.conf ${OLD_SYSLOG} ${OLD_LOG}
     echo ---------
     echo ''
 fi
