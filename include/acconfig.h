@@ -279,7 +279,6 @@ typedef unsigned long           ARTNUM;
 
 typedef FUNCTYPE        (*FUNCPTR)();
 
-typedef void *          ALIGNPTR;
 typedef char const *    STRING;
 typedef char * const    CSTRING;
 
@@ -313,16 +312,6 @@ typedef int             BOOL;
    timezone. */
 #ifdef TIME_WITH_SYS_TIME
 # define DO_NEED_TIME
-#endif
-
-/* Use HAVE_MMAP instead of ACT_MMAP. */
-#ifdef HAVE_MMAP
-# define ACT_MMAP
-#endif
-
-/* Use MMAP_NEEDS_MSYNC instead of DO_MMAP_SYNC. */
-#ifdef MMAP_NEEDS_MSYNC
-# define DO_MMAP_SYNC
 #endif
 
 /* Only used in innd/art.c, should be moved there. */
