@@ -1061,7 +1061,8 @@ STATIC char *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const H
     char	        *local;
     char		buff[SMBUF];
 
-    files = HISfilesfor(hash);
+    if ((files = HISfilesfor(hash)) == NULL)
+	return NULL;
 
     /* Get the author header. */
     if ((p = strchr(files, ' ')) != NULL)
