@@ -126,17 +126,19 @@ $(D)$(PATHRNEWS)/gunbatch:          gunbatch            ; $(CP_XPUB) $? $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 
+DBFLAGS = -DUSE_BERKELEY_DB -DDB_VERSION_MAJOR=3
+
 depend:	Makefile $(SOURCES)
-	$(MAKEDEPEND) -DUSE_BERKELEY_DB $(CFLAGS) $(SOURCES)
+	$(MAKEDEPEND) $(DBFLAGS) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 ctlinnd.o: ctlinnd.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inndcomm.h ../include/libinn.h \
  ../include/macros.h ../include/paths.h
-decode.o: decode.c ../include/configdata.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h
-encode.o: encode.c ../include/configdata.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h
+decode.o: decode.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+encode.o: encode.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
 getlist.o: getlist.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/qio.h ../include/macros.h \
  ../include/libinn.h ../include/paths.h
@@ -146,17 +148,17 @@ inews.o: inews.c ../include/config.h ../include/inn/defines.h \
 innconfval.o: innconfval.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
  ../include/macros.h ../include/paths.h
-ovdb_init.o: ovdb_init.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
- ../include/ov.h ../include/storage.h ../storage/ovdb/ovdb.h \
+ovdb_init.o: ovdb_init.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/ov.h \
+ ../include/storage.h ../storage/ovdb/ovdb.h \
  ../storage/ovdb/ovdb-private.h
 ovdb_monitor.o: ovdb_monitor.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
  ../include/ov.h ../include/storage.h ../storage/ovdb/ovdb.h \
  ../storage/ovdb/ovdb-private.h
-ovdb_stat.o: ovdb_stat.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
- ../include/ov.h ../include/storage.h ../storage/ovdb/ovdb.h \
+ovdb_stat.o: ovdb_stat.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/macros.h ../include/paths.h \
+ ../include/storage.h ../include/ov.h ../storage/ovdb/ovdb.h \
  ../storage/ovdb/ovdb-private.h
 rnews.o: rnews.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
