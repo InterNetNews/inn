@@ -32,8 +32,8 @@ Reading information from nnrpd
 
     When nnrpd calls an authenticator, the lines it passes are
 
-        ClientAuthname: user\r
-        ClientPassword: pass\r
+        ClientAuthname: user\r\n
+        ClientPassword: pass\r\n
 
     where *user* and *pass* are the username and password provided by the
     client (e.g. using AUTHINFO).  In addition, nnrpd generally also passes
@@ -44,12 +44,12 @@ Reading information from nnrpd
 
     When nnrpd calls a resolver, the lines it passes are
 
-        ClientHost: hostname\r
-        ClientIP: IP-address\r
-        ClientPort: port\r
-        LocalIP: IP-address\r
-        LocalPort: port\r
-        .\r
+        ClientHost: hostname\r\n
+        ClientIP: IP-address\r\n
+        ClientPort: port\r\n
+        LocalIP: IP-address\r\n
+        LocalPort: port\r\n
+        .\r\n
 
     where *hostname* indicates a string representing the hostname if
     available, *IP-address* is a numeric IP address (dotted-quad for IPv4,
@@ -80,7 +80,7 @@ Returning information to nnrpd
     with a domain appended) by writing to standard output.  The line it
     should write is exactly:
 
-        user:username\r
+        user:username\r\n
 
     where *username* is the string that nnrpd should use in matching
     readers.conf access blocks.
