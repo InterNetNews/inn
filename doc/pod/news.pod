@@ -5,7 +5,7 @@
 =item *
 
 SECURITY: Handle the special filing of control messages into per-type
-newsgroups more robust.  This closes a potentially exploitable buffer
+newsgroups more robustly.  This closes a potentially exploitable buffer
 overflow.  Thanks to Dan Riley for his excellent bug report.
 
 =item *

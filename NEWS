@@ -1,8 +1,8 @@
 Changes from 2.4.0 to 2.4.1
 
     * SECURITY: Handle the special filing of control messages into per-type
-      newsgroups more robust.  This closes a potentially exploitable buffer
-      overflow.  Thanks to Dan Riley for his excellent bug report.
+      newsgroups more robustly.  This closes a potentially exploitable
+      buffer overflow.  Thanks to Dan Riley for his excellent bug report.
 
     * Fixed article handling in innd so that articles without a Path header
       (arising from peers sending malformatted articles or injecting
