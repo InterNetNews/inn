@@ -21,11 +21,10 @@
 **
 **   - We can only be executed by the NEWSUSER and NEWSGRP, both compile-
 **     time constants; otherwise, we exit.  Similarly, we will only setuid()
-**     and setgid() to the NEWSUSER and NEWSGRP.  This is to prevent someone
-**     other than the NEWSUSER but still able to execute inndstart for
-**     whatever reason from using it to run innd as the news user with bogus
-**     configuration information, thereby possibly compromising the news
-**     account.
+**     to the NEWSUSER.  This is to prevent someone other than the NEWSUSER
+**     but still able to execute inndstart for whatever reason from using it
+**     to run innd as the news user with bogus configuration information,
+**     thereby possibly compromising the news account.
 **
 **   - The only ports < 1024 that we'll bind to are 119 and 443, or a port
 **     given at configure time with --with-innd-port.  This is to prevent
@@ -42,30 +41,26 @@
 **  things like LD_PRELOAD).  It may be desireable to map those to UIDs at
 **  configure time to prevent this attack.
 */
-#include <stdio.h>
-#include <sys/types.h>
 #include "config.h"
-#include "configdata.h"
 #include "clibrary.h"
 #include "paths.h"
 #include "libinn.h"
 #include "macros.h"
 
 #include <syslog.h>
-#include <pwd.h>
-#include <grp.h>
-#include <sys/stat.h>
 #include <errno.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+#include <grp.h>
+#include <pwd.h>
+#include <sys/stat.h>
 #include <fcntl.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 
-/* Some odd systems need the time headers included before sys/resource.h. */
+/* Some odd systems need sys/time.h included before sys/resource.h. */
 #ifdef HAVE_RLIMIT
-# ifdef DO_NEED_TIME
-#  include <time.h>
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
 # endif
-# include <sys/time.h>
 # include <sys/resource.h>
 #endif
 
@@ -77,6 +72,7 @@
 
 /* To run innd under the debugger, uncomment this and fix the path. */
 /* #define DEBUGGER "/usr/ucb/dbx" */
+
 
 #ifdef HAVE_RLIMIT
 /*
@@ -102,20 +98,30 @@ set_descriptor_limit(int n)
 
 
 /*
-**  Set the real and effective UID and GID to desired values, exiting on
-**  any error.
+**  Drop or regain privileges.  On systems with POSIX saved UIDs, we can
+**  simply set the effective UID directly, since the saved UID preserves our
+**  ability to get back root access.  Otherwise, we have to swap the real
+**  and effective UIDs (which doesn't work correctly on AIX).  Assume any
+**  system with seteuid() has POSIX saved UIDs.  First argument is the new
+**  effective UID, second argument is the UID to preserve (not used if the
+**  system has seteuid()).
 */
 static void
-set_user (uid_t ruid, gid_t rgid, uid_t euid, gid_t egid)
+set_user (uid_t euid, uid_t ruid)
 {
-    if (setregid(rgid, egid) < 0) {
-        syslog(L_ERROR, "setregid(%d, %d) failed: %m", rgid, egid);
+#ifdef HAVE_SETEUID
+    if (seteuid(euid) < 0) {
+        syslog(L_ERROR, "seteuid(%d) failed: %m", euid);
         exit(1);
     }
+#else
+# ifdef HAVE_SETREUID
     if (setreuid(ruid, euid) < 0) {
         syslog(L_ERROR, "setreuid(%d, %d) failed: %m", ruid, euid);
         exit(1);
     }
+# endif /* HAVE_SETREUID */
+#endif /* HAVE_SETEUID */
 }
 
 
@@ -176,7 +182,7 @@ main(int argc, char *argv[])
 
     /* Drop all supplemental groups and drop privileges to read inn.conf. */
     if (setgroups(1, &news_gid) < 0) syslog(L_ERROR, "can't setgroups: %m");
-    set_user(0, 0, news_uid, news_gid);
+    set_user(news_uid, 0);
     if (ReadInnConf() < 0) exit(1);
 
     /* Ensure that pathrun exists and that it has the right ownership. */
@@ -277,7 +283,7 @@ main(int argc, char *argv[])
 
     /* Now, regain privileges so that we can change system limits and bind
        to our desired port. */
-    set_user(news_uid, news_gid, 0, 0);
+    set_user(0, news_uid);
 
     /* innconf->rlimitnofile <= 0 says to leave it alone. */
 #ifdef HAVE_RLIMIT
