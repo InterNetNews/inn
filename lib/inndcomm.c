@@ -239,7 +239,7 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
 	*replyp = NULL;
 
     buff += HEADER_SIZE;	/* Advance to leave space for length +
-                                   protocol version info. */
+    bufsiz -= HEADER_SIZE;         protocol version info. */
 
     /* Format the message. */
     snprintf(buff, bufsiz, "%s%c%c", ICCsockname, SC_SEP, cmd);
@@ -247,6 +247,7 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
 	*p++ = SC_SEP;
         *p = '\0';
         strlcat(buff, q, bufsiz);
+        p += strlen(q);
     }
 
     /* Send message. */
