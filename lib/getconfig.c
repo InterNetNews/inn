@@ -36,8 +36,9 @@ STATIC int		ConfigBitsize;
 	locations.
   OR:
 	include/paths.h		:	Add #define _CONF_VARNAME "varname"
+	include/innconf.h	:	Add to conf_defaults
 	include/libinn.h	:	Add varname to conf_vars struct
-	lib/getconfig.c		:	SetDefaults() & ReadConfig(), ClearInnConf()
+	lib/getconfig.c		:	SetDefaults() & ReadInnConf(), ClearInnConf()
 	samples/inn.conf	:	Set the default value
 	doc/inn.conf.5		:	Document it!
 	wherever you need it	:	Use as innconf->varname
@@ -199,7 +200,7 @@ void SetDefaults()
     innconf->linecountfuzz = 0;
     innconf->peertimeout = 1 * 60 * 60;
     innconf->clienttimeout = 10 * 60;
-    innconf->allowreaders = FALSE;
+    innconf->readerswhenstopped = FALSE;
     innconf->allownewnews = TRUE;
     innconf->localmaxartsize = 1000000L;
     innconf->logartsize = TRUE;
@@ -267,6 +268,7 @@ void SetDefaults()
     innconf->nicenewnews = 0;
     innconf->usecontrolchan = FALSE;
     innconf->mergetogroups = FALSE;
+    innconf->noreader = FALSE;
 }
 
 void ClearInnConf()
@@ -630,9 +632,9 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_ALLOWREADERS, bit);
 		if (!bit && boolval != -1) {
 		    if (boolval == TRUE)
-			innconf->allowreaders = FALSE;
+			innconf->readerswhenstopped = FALSE;
 		    else
-			innconf->allowreaders = TRUE;
+			innconf->readerswhenstopped = TRUE;
 		}
 		SET_CONFIG(CONF_VAR_ALLOWREADERS);
 	    } else
@@ -937,14 +939,19 @@ int ReadInnConf()
 		SET_CONFIG(CONF_VAR_NICENEWNEWS);
 	    } else 
 	    if (EQ(ConfigBuff,_CONF_USECONTROLCHAN)) {
-		TEST_CONFIG(CONF_USECONTROLCHAN, bit);
+		TEST_CONFIG(CONF_VAR_USECONTROLCHAN, bit);
 		if (!bit && boolval != -1) innconf->usecontrolchan = boolval;
-		SET_CONFIG(CONF_USECONTROLCHAN);
+		SET_CONFIG(CONF_VAR_USECONTROLCHAN);
 	    } else 
 	    if (EQ(ConfigBuff,_CONF_MERGETOGROUPS)) {
-		TEST_CONFIG(CONF_MERGETOGROUPS, bit);
+		TEST_CONFIG(CONF_VAR_MERGETOGROUPS, bit);
 		if (!bit && boolval != -1) innconf->mergetogroups = boolval;
-		SET_CONFIG(CONF_MERGETOGROUPS);
+		SET_CONFIG(CONF_VAR_MERGETOGROUPS);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_NOREADER)) {
+		TEST_CONFIG(CONF_VAR_NOREADER, bit);
+		if (!bit && boolval != -1) innconf->noreader = boolval;
+		SET_CONFIG(CONF_VAR_NOREADER);
 	    }
 	}
 	(void)Fclose(F);
