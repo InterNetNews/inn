@@ -983,8 +983,10 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		cp->Rejected++;
 
 		/* Write a local cancel entry so nobody else gives it to us. */
-		    if (!HISremember(cp->CurrentMessageIDHash))
-			syslog(L_ERROR, "%s cant cancel %s %s", LogName, av[0], q); 
+		    if (!HISremember(cp->CurrentMessageIDHash)) 
+		    	if (!HIShavearticle(cp->CurrentMessageIDHash))
+			    syslog(L_ERROR, "%s cant cancel %s", LogName, 
+			        HashToText(cp->CurrentMessageIDHash)); 
 
 		/* Clear the work-in-progress entry. */
 		NCclearwip(cp);
