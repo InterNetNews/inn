@@ -592,6 +592,8 @@ sub collect {
     return 1 if $left =~ /CNFS-sm: cycbuff \S+ rollover to cycle/o;
     # CNFS-sm: CNFSflushallheads: flushing - possibly interesting
     return 1 if $left =~ /CNFS-sm: CNFSflushallheads: flushing /o;
+    # Cleanfeed status reports
+    return 1 if $left =~ /^filter: status/o;
   }
   ########
   ## innfeed
