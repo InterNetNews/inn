@@ -100,7 +100,7 @@ main(int argc, char *argv[])
     if (!innconf_read(NULL))
         exit(1);
 
-    while ((option = getopt(argc, argv, "iqrdR")) != EOF) {
+    while ((option = getopt(argc, argv, "iqrdRSH")) != EOF) {
         switch (option) {
         case 'd':
         case 'r':
