@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  NNTP server for readers (NNRP) for InterNetNews.
 **
@@ -802,7 +802,7 @@ main(int argc, char *argv[])
 	    Usage();
 	    /* NOTREACHED */
 	case 'c':		/* use alternate readers.conf */
-	    ConfFile = COPY(optarg);
+	    ConfFile = concatpath(innconf->pathetc, optarg);
 	    break;
  	case 'b':			/* bind to a certain address in
  	        			   daemon mode */
