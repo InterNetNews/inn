@@ -155,7 +155,7 @@ INEWSMODE=0550
 AC_ARG_ENABLE(setgid-inews,
     [  --enable-setgid-inews   Install inews setgid],
     if test "x$enableval" = xyes ; then
-        INEWSMODE=2555
+        INEWSMODE=02555
     fi)
 AC_SUBST(INEWSMODE)
 
@@ -165,7 +165,7 @@ AC_ARG_ENABLE(uucp-rnews,
     [  --enable-uucp-rnews     Install rnews setuid, group uucp],
     if test "x$enableval" = xyes ; then
         RNEWSGRP=uucp
-        RNEWSMODE=4550
+        RNEWSMODE=04550
     fi)
 AC_SUBST(RNEWSGRP)
 AC_SUBST(RNEWSMODE)

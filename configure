@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.163.2.25 
+# From configure.in Revision: 1.163.2.26 
 
 
 ## libtool.m4 - Configure libtool for the target system. -*-Shell-script-*-
@@ -938,7 +938,7 @@ INEWSMODE=0550
 if test "${enable_setgid_inews+set}" = set; then
   enableval="$enable_setgid_inews"
   if test "x$enableval" = xyes ; then
-        INEWSMODE=2555
+        INEWSMODE=02555
     fi
 fi
 
@@ -951,7 +951,7 @@ if test "${enable_uucp_rnews+set}" = set; then
   enableval="$enable_uucp_rnews"
   if test "x$enableval" = xyes ; then
         RNEWSGRP=uucp
-        RNEWSMODE=4550
+        RNEWSMODE=04550
     fi
 fi
 
