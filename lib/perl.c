@@ -322,6 +322,9 @@ XS(XS_INN_syslog)
     const char *logmsg;
     int priority;
 
+    /* Suppress warnings for the mandatory XS argument. */
+    cv = cv;
+
     if (items != 2)
         croak("Usage: INN::syslog(level, message)");
 
@@ -346,8 +349,8 @@ void
 xs_init(pTHX)
 {
     dXSUB_SYS;
-    newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, "perl.c");
-    newXS("INN::syslog", XS_INN_syslog, "perl.c");
+    inn_newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, "perl.c");
+    inn_newXS("INN::syslog", XS_INN_syslog, "perl.c");
 }
 
 #endif /* defined(DO_PERL) */

@@ -295,6 +295,9 @@ XS(XS_INN_addhist)
     char        tbuff[32];
     char*       parambuf[6];
 
+    /* Suppress warnings for the mandatory XS argument. */
+    cv = cv;
+
     if (items < 1 || items > 5)
         croak("Usage INN::addhist(msgid,[arrival,articletime,expire,token])");
 
@@ -337,6 +340,9 @@ XS(XS_INN_article)
     char *      p;
     size_t      len;
 
+    /* Suppress warnings for the mandatory XS argument. */
+    cv = cv;
+
     if (items != 1)
 	croak("Usage: INN::article(msgid)");
 
@@ -368,6 +374,9 @@ XS(XS_INN_cancel)
     char        *msgid;
     char        *parambuf[2];
 
+    /* Suppress warnings for the mandatory XS argument. */
+    cv = cv;
+
     if (items != 1)
         croak("Usage: INN::cancel(msgid)");
 
@@ -394,6 +403,9 @@ XS(XS_INN_filesfor)
     char        *msgid;
     TOKEN       token;
 
+    /* Suppress warnings for the mandatory XS argument. */
+    cv = cv;
+
     if (items != 1)
         croak("Usage: INN::filesfor(msgid)");
 
@@ -413,6 +425,9 @@ XS(XS_INN_havehist)
 {
     dXSARGS;
     char        *msgid;
+
+    /* Suppress warnings for the mandatory XS argument. */
+    cv = cv;
 
     if (items != 1)
         croak("Usage: INN::havehist(msgid)");
@@ -438,6 +453,9 @@ XS(XS_INN_head)
     ARTHANDLE * art;
     char *      p;
     size_t      len;
+
+    /* Suppress warnings for the mandatory XS argument. */
+    cv = cv;
 
     if (items != 1)
         croak("Usage: INN::head(msgid)");
@@ -472,6 +490,9 @@ XS(XS_INN_newsgroup)
     char *      end;
     int         size;
 
+    /* Suppress warnings for the mandatory XS argument. */
+    cv = cv;
+
     if (items != 1)
         croak("Usage: INN::newsgroup(group)");
     newsgroup = (char *) SvPV(ST(0), PL_na);
@@ -499,13 +520,13 @@ XS(XS_INN_newsgroup)
 void
 PLxsinit(void)
 {
-    newXS("INN::addhist", XS_INN_addhist, "perl.c");
-    newXS("INN::article", XS_INN_article, "perl.c");
-    newXS("INN::cancel", XS_INN_cancel, "perl.c");
-    newXS("INN::havehist", XS_INN_havehist, "perl.c");
-    newXS("INN::head", XS_INN_head, "perl.c");
-    newXS("INN::newsgroup", XS_INN_newsgroup, "perl.c");
-    newXS("INN::filesfor", XS_INN_filesfor, "perl.c");
+    inn_newXS("INN::addhist", XS_INN_addhist, "perl.c");
+    inn_newXS("INN::article", XS_INN_article, "perl.c");
+    inn_newXS("INN::cancel", XS_INN_cancel, "perl.c");
+    inn_newXS("INN::havehist", XS_INN_havehist, "perl.c");
+    inn_newXS("INN::head", XS_INN_head, "perl.c");
+    inn_newXS("INN::newsgroup", XS_INN_newsgroup, "perl.c");
+    inn_newXS("INN::filesfor", XS_INN_filesfor, "perl.c");
 }
 
 #endif /* defined(DO_PERL) */
