@@ -23,7 +23,7 @@ PATH_CONTROLCTL	= /var/news/etc/control.ctl
 ##  =()<PATH_EXPIRECTL	= @<_PATH_EXPIRECTL>@>()=
 PATH_EXPIRECTL	= /var/news/etc/expire.ctl
 ##  =()<PATH_INNDHOSTS	= @<_PATH_INNDHOSTS>@>()=
-PATH_INNDHOSTS	= /var/news/etc/hosts.nntp
+PATH_INNDHOSTS	= /var/news/etc/incoming.conf
 PATH_NOLIMIT = $(PATH_INNDHOSTS).nolimit
 ##  =()<PATH_MODERATORS	= @<_PATH_MODERATORS>@>()=
 PATH_MODERATORS	= /var/news/etc/moderators
@@ -113,7 +113,7 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(PATH_SCHEMA) $D$(CTLBIN)/checkgroups \
 ##  Scripts from above, plus site-specific config files.
 REST		= \
 	newsfeeds \
-	hosts.nntp hosts.nntp.nolimit nnrp.access passwd.nntp \
+	hosts.nntp.nolimit nnrp.access passwd.nntp \
 	inn.conf moderators innreport.conf innreport_inn.pm \
 	control.ctl expire.ctl nntpsend.ctl \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
@@ -192,7 +192,7 @@ COPY_XPRI	= $(SHELL) ../installit.sh $(OWNER) -m 0550 -b .OLD
 COPY_XPUB	= $(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD
 
 ##  Order:  innd, control, expire, inews, sending, misc
-$D$(PATH_INNDHOSTS):	hosts.nntp	; $(COPY_RPRI) $? $@
+$D$(PATH_INNDHOSTS):	incoming.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_NOLIMIT):	hosts.nntp.nolimit ; $(COPY_RPRI) $? $@
 $D$(PATH_NEWSFEEDS):	newsfeeds	; $(COPY_RPUB) $? $@
 $D$(PATH_NNRPACCESS):	nnrp.access	; $(COPY_RPRI) $? $@
@@ -277,7 +277,7 @@ filter.tcl:	../samples/filter.tcl		; $(COPY) $? $@
 filter_innd.pl:	../samples/filter_innd.pl	; $(COPY) $? $@
 filter_nnrpd.pl: ../samples/filter_nnrpd.pl	; $(COPY) $? $@
 expirerm:	../samples/expirerm		; $(COPY) $? $@
-hosts.nntp:	../samples/hosts.nntp		; $(COPY) $? $@
+incoming.conf:	../samples/incoming.conf		; $(COPY) $? $@
 hosts.nntp.nolimit: ../samples/hosts.nntp.nolimit ; $(COPY) $? $@
 ihave:		../samples/ihave		; $(COPY) $? $@
 inn.conf:	../samples/inn.conf		; $(COPY) $? $@
