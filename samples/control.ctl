@@ -565,8 +565,8 @@ newgroup:eric@*cirr.com:dfw.*:doit
 rmgroup:eric@*cirr.com:dfw.*:doit
 
 ## DK (Denmark)
-# URL: http://www.DK.net/Usenet/
-# Key URL: http://www.DK.net/Usenet/pgp.html
+# URL: http://www.usenet.dk/
+# Key URL: http://www.usenet.dk/grupper/control_pubkey.html
 # Key fingerprint = 7C B2 C7 50 F3 7D 5D 73  8C EE 2E 3F 55 80 72 FF
 # *PGP*   See comment at top of file.
 newgroup:*:dk.*:drop
