@@ -1677,7 +1677,7 @@ static bool MatchHost(char *hostlist, char *host, char *ip)
 		struct in_addr ia, net, tmp;
 #ifdef HAVE_INET6
 		struct in6_addr ia6, net6;
-		uint8_t	bits8;
+		unsigned char bits8;
 #endif
 		unsigned int mask;
 
@@ -1710,7 +1710,7 @@ static bool MatchHost(char *hostlist, char *host, char *ip)
 			    ret = FALSE;
 			    break;
 			} else if ( (c+1)*8 > mask ) {
-			    for (bits8 = b = 0; b < mask && b < 8; b++)
+			    for (bits8 = b = 0; b < (mask % 8); b++)
 				bits8 |= (1 << (7 - b));
 			    if ((ia6.s6_addr[c] & bits8) !=
 			    	(net6.s6_addr[c] & bits8) ) {
