@@ -118,8 +118,9 @@ static char * CNFSofft2hex(off_t offset, bool leadingzeros) {
     static char	buf[24];
     char	*p;
 
-    if (sizeof(off_t) <= 4) {
-	snprintf(buf, sizeof(buf), (leadingzeros) ? "%016lx" : "%lx", offset);
+    if (sizeof(off_t) <= sizeof(unsigned long)) {
+	snprintf(buf, sizeof(buf), (leadingzeros) ? "%016lx" : "%lx",
+                 (unsigned long) offset);
     } else { 
 	int	i;
 
