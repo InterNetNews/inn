@@ -1,10 +1,3 @@
-[IN1.7=NO][comments]
- #||This file is the source file for config.data.in.  
- #||   To generate config.data.in, run the following:
- #||       grep "^  ||" config.scoreboard | sed 's/  ||//g' >config.data.in
- #||
- #||   See the INN autoconf.readme for the rest of the documentation.
- #||
 [IN1.7=@1][comments]
   ||##  $Revision$
   ||##
@@ -69,17 +62,6 @@
   ||##  BSD4.4 or NONE.
   ||#### =()<MANPAGESTYLE		@<MANPAGESTYLE>@>()=
   ||MANPAGESTYLE		SOURCE
-[IN1.7=@1][WDF=autoconf][WOR=no]
-  ||##  Where various manpages should go
-  ||##[autoconf]
-  ||#### =()<MAN1			@<MAN1>@>()=[autoconf]
-  ||MAN1			@ac_cv_subst_manpath@/man1
-  ||#### =()<MAN3			@<MAN3>@>()=[autoconf]
-  ||MAN3			@ac_cv_subst_manpath@/man3
-  ||#### =()<MAN5			@<MAN5>@>()=[autoconf]
-  ||MAN5			@ac_cv_subst_manpath@/man5
-  ||#### =()<MAN8			@<MAN8>@>()=[autoconf]
-  ||MAN8			@ac_cv_subst_manpath@/man8
 [IN1.7=@1][WDF=autoconf][WOR=no]
   ||##  Ctags command.  Use echo if you don't have ctags.
   ||##[autoconf]
@@ -169,16 +151,6 @@
   ||
   ||##
   ||##  4.  C LIBRARY DIFFERENCES
-[IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  If you don't have <string.h>, set this to "mystring.h"
-  ||##[autoconf]
-  ||#### =()<STR_HEADER		@<STR_HEADER>@>()=
-  ||STR_HEADER		@ac_cv_subst_str_header@
-[IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  If you don't have <memory.h>, set this to "mymemory.h"
-  ||##[autoconf]
-  ||#### =()<MEM_HEADER		@<MEM_HEADER>@>()=
-  ||MEM_HEADER		@ac_cv_subst_mem_header@
 [IN1.7=@4][WDF=autoconf][WOR=no][P=high]
   ||##  What is a file offset?  MUST BE LONG FOR NOW.
   ||#### =()<OFFSET_T		@<OFFSET_T>@>()=

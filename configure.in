@@ -586,8 +586,6 @@ dnl (but only if the cv_subst value is not already defined.  This is
 dnl to permit overriding in config.cache
 YN_to_cv_subst(ac_cv_c_const, ac_cv_subst_use_char_const, DO, DONT)
 convert_to_cv_subst(ac_header_dirent,ac_cv_subst_dir_style, dirent.h,DIRENT, direct.h,DIRECT)
-YN_to_cv_subst(ac_cv_header_string_h, ac_cv_subst_str_header, "<string.h>", \"mystring.h\")
-YN_to_cv_subst(ac_cv_header_memory_h, ac_cv_subst_mem_header, "<memory.h>", \"mymemory.h\")
 YN_to_cv_subst(ac_cv_type_size_t, ac_cv_subst_size_t, size_t, unsigned)
 YN_to_cv_subst(ac_cv_type_pid_t, ac_cv_subst_pid_t, pid_t, int)
 YN_to_cv_subst(ac_cv_type_off_t, ac_cv_subst_lseekval, off_t, long)

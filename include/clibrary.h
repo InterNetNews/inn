@@ -53,10 +53,18 @@ typedef int INT32_T;
 typedef sig_atomic_t SIGVAR;
 #endif	/* defined(SIG_DFL) */
 
-/* =()<#include @<STR_HEADER>@>()= */
-#include <string.h>
-/* =()<#include @<MEM_HEADER>@>()= */
-#include <memory.h>
+#ifdef HAVE_STRING_H
+# include <string.h>
+#else
+# include "mystring.h"
+#endif
+
+#ifdef HAVE_MEMORY_H
+# include <memory.h>
+#else
+# include "mymemory.h"
+#endif
+
 #include <stdlib.h>
 
 
