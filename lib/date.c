@@ -528,12 +528,14 @@ parse_legacy_month(const char *p, const struct rule *rule UNUSED, int *value)
 
     for (end = p; *end != '\0' && CTYPE(isalpha, *end); end++)
         ;
+    if (*end == '.')
+        end++;
     if (end == p)
         return NULL;
     size = end - p;
     if (size == 3 || (size == 4 && p[3] == '.')) {
         for (i = 0; i < ARRAY_SIZE(MONTH); i++)
-            if (strncasecmp(MONTH[i], p, rule->max) == 0) {
+            if (strncasecmp(MONTH[i], p, 3) == 0) {
                 p += size;
                 *value = i;
                 return p;
