@@ -413,7 +413,7 @@ NChelp(CHANNEL *cp)
     WCHANappend(cp, NNTP_HELP_FOLLOWS,strlen(NNTP_HELP_FOLLOWS));
     WCHANappend(cp, NCterm,strlen(NCterm));
     for (dp = NCcommands; dp < ARRAY_END(NCcommands); dp++)
-	if (dp->Function != NC_unimp) {
+	if (dp->Function != NC_unimp && dp->Function != NC_reader) {
             if ((!StreamingOff && cp->Streaming) ||
                 (dp->Function != NCcheck && dp->Function != NCtakethis)) {
                 WCHANappend(cp, "\t", 1);
