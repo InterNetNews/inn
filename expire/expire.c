@@ -693,7 +693,7 @@ EXPdoline(out, line, length, arts, krps)
        text file.  Unfortunately, this is the only clean way to do this */
     switch (fields[0][0]) {
     case '[':
-	if (strlen(fields[0]) != (sizeof(HASH) + 2)) {
+	if (strlen(fields[0]) != ((sizeof(HASH) * 2) + 2)) {
 	    fprintf(stderr, "Invalid length for hash %s, skipping\n", fields[0]);
 	    return TRUE;
 	}

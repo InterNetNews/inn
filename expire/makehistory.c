@@ -160,7 +160,7 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 	*save = '\0';
 	switch (*p) {
 	case '[':
-	    if (strlen(p) != (sizeof(HASH) + 2)) {
+	    if (strlen(p) != ((sizeof(HASH) * 2) + 2)) {
 		fprintf(stderr, "Invalid length for hash %s, skipping\n", p);
 		continue;
 	    }
