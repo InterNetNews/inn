@@ -5,6 +5,7 @@
 **  then we pass the connection off to the standard nntp daemon.
 */
 #include <stdio.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include "configdata.h"
@@ -359,7 +360,8 @@ RCreader(CHANNEL *cp)
     /* Get the connection. */
     size = sizeof remote;
     if ((fd = accept(cp->fd, (struct sockaddr *)&remote, &size)) < 0) {
-	syslog(L_ERROR, "%s cant accept RCreader %m", LogName);
+	if (errno != EWOULDBLOCK)
+	    syslog(L_ERROR, "%s cant accept RCreader %m", LogName);
 	return;
     }
 
