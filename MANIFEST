@@ -188,6 +188,7 @@ doc/man/tally.control.8               Manpage for tally.control
 doc/man/wildmat.3                     Manpage for wildmat library routine
 doc/man/writelog.8                    Manpage for writelog
 doc/pod                               POD documentation (Directory)
+doc/pod/convdate.pod                  Master file for convdate.1
 doc/pod/dbprocs.pod                   Master file for dbprocs.8
 doc/pod/hacking.pod                   Master file for HACKING
 doc/pod/hook-perl.pod                 Master file for README.perl_hook

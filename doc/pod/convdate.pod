@@ -1,0 +1,106 @@
+=head1 NAME
+
+convdate - Convert time/date strings and numbers
+
+=head1 SYNOPSIS
+
+B<convdate> [B<-dhl>] [B<-c> | B<-n> | B<-s>] [I<date> ...]
+
+=head1 DESCRIPTION
+
+B<convdate> translates the date/time strings given on the command line,
+outputting the results one to a line.  The input can either be a date in
+some format that parsedate(3) can parse or the number of seconds since
+epoch (if B<-c> is given).  The output is either ctime(3) results, the
+number of seconds since epoch, or a Usenet Date: header, depending on the
+options given.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-c>
+
+Each argument is taken to be the number of seconds since epoch (a time_t)
+rather than a date.
+
+=item B<-d>
+
+Output a valid Usenet Date: header instead of the results of ctime(3) for
+each date given on the command line.  This is useful for testing the
+algorithm used to generate Date: headers for local posts.  Normally, the
+date will be in UTC, but see the B<-l> option.
+
+=item B<-h>
+
+Print usage information and exit.
+
+=item B<-l>
+
+Only makes sense in combination with B<-d>.  If given, Date: headers
+generated will use the local time zone instead of UTC.
+
+=item B<-n>
+
+Rather than outputting the results of ctime(3) or a Date: header, output
+each date given as the number of seconds since epoch (a time_t).  This
+option doesn't make sense in combination with B<-d>.
+
+=item B<-s>
+
+Pass each given date to parsedate(3) and print the results of ctime(3) (or
+a Date: header if B<-d> is given).  This is the default behavior.
+
+=back
+
+=head1 EXAMPLES
+
+Note that relative times or times with partial information use the current
+time to fill in the rest of the date, so dates like "12pm" are taken to be
+12pm of the day when convdate is run.  This is a property of parsedate(3);
+see the man page for more information.  Most of these examples are from
+the original man page dating from 1991 and were run in the -0400 time
+zone.
+
+    % convdate 'feb 10 10am'
+    Sun Feb 10 10:00:00 1991
+
+    % convdate 12pm 5/4/90
+    Fri Dec 13 00:00:00 1991
+    Fri May  4 00:00:00 1990
+
+Note that 12pm and 5/4/90 are two *separate* arguments and therefore
+result in two results.  Note also that a date with no time is taken to be
+at midnight.
+
+    % convdate -n 'feb 10 10am' '12pm 5/4/90'
+    666198000
+    641880000
+
+    % convdate -c 666198000
+    Sun Feb 10 10:00:00 1991
+
+ctime(3) results are in the local time zone.  Compare to:
+
+    % convdate -dc 666198000
+    Sun, 10 Feb 1991 15:00:00 +0000 (UTC)
+
+    % env TZ=PST8PDT convdate -dlc 666198000
+    Sun, 10 Feb 1991 07:00:00 -0800 (PST)
+
+    % env TZ=EST5EDT convdate -dlc 666198000
+    Sun, 10 Feb 1991 10:00:00 -0500 (EST)
+
+The system library functions generally use the environment variable TZ to
+determine (or at least override) the local time zone.
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net>, rewritten and updated by Russ
+Allbery <rra@stanford.edu> for the B<-d> and B<-l> flags.
+
+$Id$
+
+=head1 SEE ALSO
+
+parsedate(3).
