@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.219 
+# From configure.in Revision: 1.220 
 # libtool.m4 - Configure libtool for the host system. -*-Shell-script-*-
 ## Copyright 1996, 1997, 1998, 1999, 2000, 2001
 ## Free Software Foundation, Inc.
@@ -9111,7 +9111,7 @@ else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
   rm -rf conftest*
-  inn_cv_c99_vamacros=no
+  inn_cv_c_c99_vamacros=no
 fi
 rm -f conftest*
 fi
