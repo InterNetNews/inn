@@ -328,7 +328,8 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
     /* Set up the database values and write them. */
     if (dbzstore(hash, offset) == DBZSTORE_ERROR) {
 	i = errno;
-	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
+	syslog(L_ERROR, "%s cant dbzstore [%s]@%lu: %m", LogName,
+	       HashToText(hash), offset);
 	IOError("history database", i);
 	TMRstop(TMR_HISWRITE);
 	return FALSE;
@@ -373,7 +374,8 @@ BOOL HISremember(const HASH hash)
     /* Set up the database values and write them. */
     if (dbzstore(hash, offset) == DBZSTORE_ERROR) {
 	i = errno;
-	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
+	syslog(L_ERROR, "%s cant dbzstore [%s]@%lu: %m", LogName,
+	       HashToText(hash), offset);
 	IOError("history database", i);
 	TMRstop(TMR_HISWRITE);
 	return FALSE;
