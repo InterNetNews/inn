@@ -351,7 +351,7 @@ WriteOverLine(TOKEN *token, char *xrefs, int xrefslen,
 
     if (sorttype == OVNOSORT) {
 	if (Fork) {
-	    (void)fprintf(Overchan, "%s %d %d ", TokenToText(*token), arrived, expires);
+	    (void)fprintf(Overchan, "%s %ld %ld ", TokenToText(*token), arrived, expires);
 	    if (fwrite((POINTER)overdata, (SIZE_T)1, (SIZE_T)overlen, Overchan) != overlen) {
 		fprintf(stderr, "makehistory: writing overview failed\n");
 		exit(1);
@@ -407,11 +407,11 @@ WriteOverLine(TOKEN *token, char *xrefs, int xrefslen,
 	/* q points to start of ng name, r points to its end. */
 	strncpy(temp, q, r-q);
 	temp[r-q] = '\0';
-	fprintf(OverTmpFile, "%s\t%10lu\t%u\t%s\t", temp,
+	fprintf(OverTmpFile, "%s\t%10lu\t%lu\t%s\t", temp,
                 (unsigned long) arrived, (unsigned long) expires,
                 TokenToText(*token));
     } else
-	fprintf(OverTmpFile, "%10lu\t%u\t%s\t", (unsigned long) arrived,
+	fprintf(OverTmpFile, "%10lu\t%lu\t%s\t", (unsigned long) arrived,
                 (unsigned long) expires,
                 TokenToText(*token));
 
