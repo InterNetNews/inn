@@ -361,6 +361,11 @@ sub collect {
        $innd_control{"flush_file"}++;
        return 1;
      }
+    # too many connections from site
+    if ($left =~ /too many connections from (\S+)/o) {
+      $innd_max_conn{$1}++;
+      return 1;
+    }
     # overview exit 0 elapsed 23 pid 28461
     return 1 if $left =~ m/\S+ exit \d+ .*$/o;
     # internal rejecting huge article
