@@ -486,6 +486,12 @@ Requested New Features:
 
 * Provide an innshellvars equivalent for Python.
 
+* inncheck should check the syntax of all the various files that are
+  returned by LIST commands, since having those files present with the
+  wrong syntax could result in non-compliant responses from the server.
+  Possibly the server should also refuse to send malformatted lines to
+  the client.
+
 
 General Projects:
 
