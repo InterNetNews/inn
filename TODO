@@ -629,6 +629,14 @@ Long-Term Projects:
   generate all of the makefiles, which would make running configure take
   much longer than it does currently.
 
+* Look at adding some kind of support for MODE CANCEL via network sockets
+  and fixing up the protocol so that it could possibly be standardized
+  (the easiest thing to do would probably be to change it into a CANCEL
+  command).  If we want to get to the point where INN can accept and even
+  propagate such feeds from dedicated spam filters or the like, there must
+  also be some mechanism of negotiating policy in order to decide what
+  cancels the server wants to be fed.
+
 
 Complete Code Reorganization
 
