@@ -99,7 +99,7 @@ void ovdb_close(void) { }
 #error Need BerkeleyDB 2.6.x, 2.7.x, or 3.x
 #endif
 #else
-#if DB_VERSION_MAJOR != 3
+#if DB_VERSION_MAJOR != 3 && DB_VERSION_MAJOR != 4
 #error Need BerkeleyDB 2.6.x, 2.7.x, or 3.x
 #endif
 #endif
@@ -401,13 +401,23 @@ static int open_db_file(int which)
     if(ovdb_conf.pagesize > 0)
 	(dbs[which])->set_pagesize(dbs[which], ovdb_conf.pagesize);
 
+#if (DB_VERSION_MAJOR >= 4 && DB_VERSION_MAJOR >= 1)
+/* starting sometime early db 4.X, db->open gets a new parameter */
+    if(ret = (dbs[which])->open(dbs[which], 0, _dbnames[which], NULL,
+        DB_BTREE, _db_flags, 0666)) {
+	(dbs[which])->close(dbs[which], 0);
+	dbs[which] = NULL;
+	return ret;
+    }
+#else
     if(ret = (dbs[which])->open(dbs[which], _dbnames[which], NULL, DB_BTREE,
 		_db_flags, 0666)) {
 	(dbs[which])->close(dbs[which], 0);
 	dbs[which] = NULL;
 	return ret;
     }
-#endif
+#endif /* #if DB_VERSION_MAJOR >= 4 */
+#endif /* #if DB_VERSION_MAJOR == 2 */
     return 0;
 }
 
@@ -590,7 +600,7 @@ static BOOL delete_old_stuff()
     return TRUE;
 }
 
-#if DB_VERSION_MAJOR == 3
+#if DB_VERSION_MAJOR >= 3
 static int upgrade_database(char *name)
 {
     int ret;
@@ -659,7 +669,7 @@ int ovdb_open_berkeleydb(int mode, int flags)
     if(flags & OVDB_RECOVER)
 	ai_flags |= DB_RECOVER;
 
-#if DB_VERSION_MAJOR == 2 || DB_VERSION_MINOR < 2
+#if DB_VERSION_MAJOR == 2 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR < 2)
     if(ovdb_conf.txn_nosync)
 	ai_flags |= DB_TXN_NOSYNC;
 #endif
@@ -697,12 +707,12 @@ int ovdb_open_berkeleydb(int mode, int flags)
     OVDBenv->set_errcall(OVDBenv, OVDBerror);
     OVDBenv->set_cachesize(OVDBenv, 0, ovdb_conf.cachesize, 1);
 
-#if DB_VERSION_MINOR >= 2
+#if (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 2) || DB_VERSION_MAJOR >= 4
     if(ovdb_conf.txn_nosync)
 	OVDBenv->set_flags(OVDBenv, DB_TXN_NOSYNC, 1);
 #endif
 
-#if DB_VERSION_MINOR == 0
+#if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR == 0
     if(ret = OVDBenv->open(OVDBenv, ovdb_conf.home, NULL, ai_flags, 0666)) {
 #else
     if(ret = OVDBenv->open(OVDBenv, ovdb_conf.home, ai_flags, 0666)) {
@@ -726,12 +736,22 @@ int ovdb_open_berkeleydb(int mode, int flags)
 	syslog(L_FATAL, "OVDB: open: db_create: %s", db_strerror(ret));
 	return ret;
     }
-    if(ret = vdb->open(vdb, "version", NULL, DB_BTREE,
+
+#if (DB_VERSION_MAJOR >= 4 && DB_VERSION_MAJOR >= 1)
+/* starting sometime early db 4.X, db->open gets a new parameter */
+    if(ret = vdb->open(vdb, 0, "version", NULL, DB_BTREE,
 		_db_flags, 0666)) {
 	vdb->close(vdb, 0);
 	syslog(L_FATAL, "OVDB: open: version->open: %s", db_strerror(ret));
 	return ret;
     }
+#else
+    if(ret = vdb->open(vdb, "version", NULL, DB_BTREE, _db_flags, 0666)) {
+        vdb->close(vdb, 0);
+        syslog(L_FATAL, "OVDB: open: version->open: %s", db_strerror(ret));
+        return ret;
+    }
+#endif /* DB_VERSION_MAJOR >= 4 */
 #endif /* DB_VERSION_MAJOR == 2 */
 
     memset(&key, 0, sizeof key);
@@ -841,33 +861,62 @@ BOOL ovdb_open(int mode)
 	syslog(L_FATAL, "OVDB: open: db_create: %s", db_strerror(ret));
 	return FALSE;
     }
+
+#if (DB_VERSION_MAJOR >= 4 && DB_VERSION_MAJOR >= 1)
+/* starting sometime early db 4.X, db->open gets a new parameter */
+    if(ret = groupstats->open(groupstats, 0, "groupstats", NULL,
+        DB_BTREE, _db_flags, 0666)) {
+	groupstats->close(groupstats, 0);
+	syslog(L_FATAL, "OVDB: open: groupstats->open: %s", db_strerror(ret));
+	return FALSE;
+    }
+#else
     if(ret = groupstats->open(groupstats, "groupstats", NULL, DB_BTREE,
 		_db_flags, 0666)) {
 	groupstats->close(groupstats, 0);
 	syslog(L_FATAL, "OVDB: open: groupstats->open: %s", db_strerror(ret));
 	return FALSE;
     }
+#endif /* #if DB_VERSION_MAJOR >= 4 */
     if(ret = db_create(&groupsbyname, OVDBenv, 0)) {
 	syslog(L_FATAL, "OVDB: open: db_create: %s", db_strerror(ret));
 	return FALSE;
     }
+#if (DB_VERSION_MAJOR >= 4 && DB_VERSION_MAJOR >= 1)
+    if(ret = groupsbyname->open(groupsbyname, 0, "groupsbyname", NULL, DB_HASH,
+		_db_flags, 0666)) {
+	groupsbyname->close(groupsbyname, 0);
+	syslog(L_FATAL, "OVDB: open: groupsbyname->open: %s", db_strerror(ret));
+	return FALSE;
+    }
+#else
     if(ret = groupsbyname->open(groupsbyname, "groupsbyname", NULL, DB_HASH,
 		_db_flags, 0666)) {
 	groupsbyname->close(groupsbyname, 0);
 	syslog(L_FATAL, "OVDB: open: groupsbyname->open: %s", db_strerror(ret));
 	return FALSE;
     }
+#endif /* #if DB_VERSION_MAJOR >= 4 */
     if(ret = db_create(&groupaliases, OVDBenv, 0)) {
 	syslog(L_FATAL, "OVDB: open: db_create: %s", db_strerror(ret));
 	return FALSE;
     }
+#if (DB_VERSION_MAJOR >= 4 && DB_VERSION_MAJOR >= 1)
+    if(ret = groupaliases->open(groupaliases, 0, "groupaliases", NULL, DB_HASH,
+		_db_flags, 0666)) {
+	groupaliases->close(groupaliases, 0);
+	syslog(L_FATAL, "OVDB: open: groupaliases->open: %s", db_strerror(ret));
+	return FALSE;
+    }
+#else
     if(ret = groupaliases->open(groupaliases, "groupaliases", NULL, DB_HASH,
 		_db_flags, 0666)) {
 	groupaliases->close(groupaliases, 0);
 	syslog(L_FATAL, "OVDB: open: groupaliases->open: %s", db_strerror(ret));
 	return FALSE;
     }
-#endif
+#endif /* #if DB_VERSION_MAJOR >= 4 */
+#endif /* #if DB_VERSION_MAJOR == 2 */
 
     Cutofflow = FALSE;
     return TRUE;
