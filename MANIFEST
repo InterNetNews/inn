@@ -205,6 +205,7 @@ doc/pod                               POD documentation (Directory)
 doc/pod/Makefile                      Maintainer rules for derived files
 doc/pod/ckpasswd.pod                  Master file for ckpasswd.1
 doc/pod/convdate.pod                  Master file for convdate.1
+doc/pod/expireover.pod                Master file for expireover.8
 doc/pod/fastrm.pod                    Master file for fastrm.1
 doc/pod/hacking.pod                   Master file for HACKING
 doc/pod/hook-perl.pod                 Master file for README.perl_hook
