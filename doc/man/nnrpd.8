@@ -8,6 +8,9 @@ nnrpd \- NNTP server for on-campus hosts
 .BI \-b " address"
 ]
 [
+.BI \-c " conffile"
+]
+[
 .B \-D
 ]
 [
@@ -83,6 +86,13 @@ when started as a standalone daemon using the ``\-D'' flag.
 This has to be a valid Internet
 address in dotted-quad format belonging to an interface of the local
 host.
+.TP
+.B \-c
+The ``\-c'' flag makes
+.I nnrpd
+use another file other than default
+.IR readers.conf (5)
+for access control.
 .TP
 .B \-D
 If specified, this parameter causes 

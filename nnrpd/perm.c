@@ -1181,7 +1181,7 @@ again:
     return;
 }
 
-void PERMgetaccess(void)
+void PERMgetaccess(char *nnrpaccess)
 {
     int i;
     char *uname;
@@ -1203,7 +1203,7 @@ void PERMgetaccess(void)
 	ConfigBit = NEW(char, ConfigBitsize);
 	memset(ConfigBit, '\0', ConfigBitsize);
     }
-    PERMreadfile(cpcatpath(innconf->pathetc, _PATH_NNRPACCESS));
+    PERMreadfile(nnrpaccess);
 
     strip_accessgroups();
 

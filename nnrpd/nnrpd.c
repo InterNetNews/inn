@@ -545,7 +545,7 @@ STATIC void StartConnection()
 	SetDefaultAccess(PERMaccessconf);
     } else {
 #endif	/* DO_PYTHON */
-	PERMgetaccess();
+	PERMgetaccess(NNRPACCESS);
 	PERMgetpermissions();
 #ifdef DO_PYTHON
     }
@@ -763,6 +763,7 @@ main(int argc, char *argv[])
     FILE                *pidfile;
     struct passwd	*pwd;
     int			clienttimeout;
+    char		*ConfFile = NULL;
 #if HAVE_GETSPNAM
     struct group	*grp;
     GID_T		shadowgid;
@@ -791,14 +792,17 @@ main(int argc, char *argv[])
     if (ReadInnConf() < 0) exit(1);
 
 #ifdef HAVE_SSL
-    while ((i = getopt(argc, argv, "b:Di:g:op:Rr:s:tS")) != EOF)
+    while ((i = getopt(argc, argv, "c:b:Di:g:op:Rr:s:tS")) != EOF)
 #else
-    while ((i = getopt(argc, argv, "b:Di:g:op:Rr:s:t")) != EOF)
+    while ((i = getopt(argc, argv, "c:b:Di:g:op:Rr:s:t")) != EOF)
 #endif /* HAVE_SSL */
 	switch (i) {
 	default:
 	    Usage();
 	    /* NOTREACHED */
+	case 'c':		/* use alternate readers.conf */
+	    ConfFile = COPY(optarg);
+	    break;
  	case 'b':			/* bind to a certain address in
  	        			   daemon mode */
  	    ListenAddr = inet_addr(optarg);
@@ -856,7 +860,10 @@ main(int argc, char *argv[])
     ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
     ACTIVETIMES = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVETIMES));
     NEWSGROUPS = COPY(cpcatpath(innconf->pathdb, _PATH_NEWSGROUPS));
-    NNRPACCESS = COPY(cpcatpath(innconf->pathetc, _PATH_NNRPACCESS));
+    if(ConfFile)
+        NNRPACCESS = ConfFile;
+    else
+        NNRPACCESS = COPY(cpcatpath(innconf->pathetc,_PATH_NNRPACCESS));
     SPOOLlen = strlen(innconf->patharticles);
 
     if (DaemonMode) {
