@@ -8,6 +8,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/setproctitle.h"
 #include "portable/wait.h"
 #include "inn/messages.h"
 
