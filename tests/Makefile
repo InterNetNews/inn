@@ -13,8 +13,8 @@ CFLAGS	= $(GCFLAGS) -I.
 TESTS	= lib/buffer.t lib/concat.t lib/confparse.t lib/date.t lib/hashtab.t \
 	lib/hstrerror.t lib/inet_aton.t lib/inet_ntoa.t lib/md5.t \
 	lib/memcmp.t lib/messages.t lib/mkstemp.t lib/pread.t lib/pwrite.t \
-	lib/qio.t lib/snprintf.t lib/strerror.t lib/uwildmat.t lib/vector.t \
-	lib/xwrite.t overview/tradindexed.t
+	lib/qio.t lib/snprintf.t lib/strerror.t lib/strlcpy.t lib/uwildmat.t \
+	lib/vector.t lib/xwrite.t overview/tradindexed.t
 
 ##  Extra stuff that needs to be built before tests can be run.
 
@@ -131,6 +131,12 @@ lib/strerror.o: ../lib/strerror.c
 
 lib/strerror.t: lib/strerror.o lib/strerror-t.o libtest.o
 	$(LINK) lib/strerror.o lib/strerror-t.o libtest.o
+
+lib/strlcpy.o: ../lib/strlcpy.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/strlcpy.c
+
+lib/strlcpy.t: lib/strlcpy.o lib/strlcpy-t.o libtest.o
+	$(LINK) lib/strlcpy.o lib/strlcpy-t.o libtest.o
 
 lib/uwildmat.t: lib/uwildmat-t.o $(LIBINN)
 	$(LINK) lib/uwildmat-t.o $(LIBINN)

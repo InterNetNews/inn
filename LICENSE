@@ -51,7 +51,7 @@ not comprehensively):
    backends/shrinkfile.c, frontends/scanspool.in, lib/concat.c,
    lib/hstrerror.c, lib/inet_aton.c, lib/inet_ntoa.c, lib/memcmp.c,
    lib/parsedate.y, lib/pread.c, lib/pwrite.c, lib/setenv.c, lib/seteuid.c,
-   and lib/strerror.c are in the public domain.
+   lib/strlcpy.c, and lib/strerror.c are in the public domain.
 
    control/gpgverify.in, control/pgpverify.in and control/signcontrol.in
    are under a license very similar to the above but with UUNET

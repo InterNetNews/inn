@@ -454,6 +454,7 @@ lib/snprintf.c                        snprintf and vsnprintf replacement
 lib/sockaddr.c                        Manipulation of sockaddr structs
 lib/strcasecmp.c                      Case-insenstive string comparison (BSD)
 lib/strerror.c                        String representation of errno
+lib/strlcpy.c                         strlcpy replacement
 lib/strspn.c                          Skip bytes in a string (BSD)
 lib/strtok.c                          Split a string into tokens (BSD)
 lib/timer.c                           Generic profile timer
@@ -659,6 +660,7 @@ tests/lib/setenv-t.c                  Tests for lib/setenv.c
 tests/lib/setenv.t                    Wrapper for setenv tests
 tests/lib/snprintf-t.c                Tests for lib/snprintf.c
 tests/lib/strerror-t.c                Tests for lib/strerror.c
+tests/lib/strlcpy-t.c                 Tests for lib/strlcpy.c
 tests/lib/vector-t.c                  Tests for lib/vector.c
 tests/lib/uwildmat-t.c                Tests for lib/uwildmat.c
 tests/lib/xmalloc.c                   Helper program for xmalloc tests

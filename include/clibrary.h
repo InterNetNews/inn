@@ -99,6 +99,9 @@ extern ssize_t          pread(int, void *, size_t, off_t);
 #if !HAVE_PWRITE
 extern ssize_t          pwrite(int, const void *, size_t, off_t);
 #endif
+#if !HAVE_SETENV
+extern int              setenv(const char *, const char *, int);
+#endif
 #if !HAVE_SETEUID
 extern int              seteuid(uid_t);
 #endif
@@ -109,8 +112,8 @@ extern int              snprintf(char *, size_t, const char *, ...)
 #if !HAVE_STRERROR
 extern const char *     strerror(int);
 #endif
-#if !HAVE_SETENV
-extern int              setenv(const char *, const char *, int);
+#if !HAVE_STRLCPY
+extern size_t           strlcpy(char *, const char *, size_t);
 #endif
 #if NEED_DECLARATION_VSNPRINTF
 extern int              vsnprintf(char *, size_t, const char *, va_list);

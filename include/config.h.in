@@ -29,7 +29,7 @@
 **  do the reverse to disable.
 */
 
-/* A null-terminated list of wildmat(5) patterns matching illegal
+/* A null-terminated list of uwildmat(3) patterns matching illegal
    distributions.  inews and nnrpd will reject posts with a distribution
    matching one of these patterns. */
 #define BAD_DISTRIBS            "*.*", NULL
@@ -267,6 +267,9 @@
 /* Define if you have the strerror function.  */
 #undef HAVE_STRERROR
 
+/* Define if you have the strlcpy function.  */
+#undef HAVE_STRLCPY
+
 /* Define if you have the strncasecmp function.  */
 #undef HAVE_STRNCASECMP
 
@@ -408,11 +411,11 @@
 /* Define if BerkeleyDB is available. */
 #undef USE_BERKELEY_DB
 
-/* Define if SASL is available. */
-#undef HAVE_SASL
-
 /* Define if OpenSSL is available. */
 #undef HAVE_SSL
+
+/* Define if SASL is available. */
+#undef HAVE_SASL
 
 /* Define to compile in Perl script support. */
 #undef DO_PERL
