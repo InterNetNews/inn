@@ -256,32 +256,43 @@ case "$BERKELEY_DB_DIR" in
 
   yes)
     AC_MSG_CHECKING(for BerkeleyDB location)
-    for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1 BerkeleyDB.3.2
-    do
-      for d in /opt /usr /usr/local
-      do
-	if test -d "$d/$v" ; then
-	  BERKELEY_DB_DIR="$d/$v"  
-	fi
-      done
+    for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1 BerkeleyDB.3.2 ; do
+        for d in /usr /opt /usr/local ; do
+            test -d "$d/$v" && BERKELEY_DB_DIR="$d/$v"  
+        done
     done
 
-    if test "$BERKELEY_DB_DIR" = "yes" ; then
-      if test -d /usr/local/include/db2 ; then
-	BERKELEY_DB_LDFLAGS="-L/usr/local/lib"
-	BERKELEY_DB_CFLAGS="-I/usr/local/include/db2"
-	BERKELEY_DB_LIB="-ldb2"
-	BERKELEY_DB_BINDIR="/usr/local/bin"
-	AC_MSG_RESULT(FreeBSD locations)
-      else
-	AC_MSG_ERROR(Can not find BerkeleyDB)
-      fi
+    if test x"$BERKELEY_DB_DIR" = xyes ; then
+        for v in db3 db2 ; do
+            if test -d "/usr/local/include/$v" ; then
+                BERKELEY_DB_LDFLAGS="-L/usr/local/lib"
+                BERKELEY_DB_CFLAGS="-I/usr/local/include/$v"
+                BERKELEY_DB_LIB="-l$v"
+                BERKELEY_DB_BINDIR="/usr/local/bin"
+                AC_MSG_RESULT(FreeBSD locations)
+                break
+            fi
+        done
+        if test x"$BERKELEY_DB_LIB" = x ; then
+            for v in db3 db2 ; do
+                if test -d "/usr/include/$v" ; then
+                    BERKELEY_DB_CFLAGS="-I/usr/include/$v"
+                    BERKELEY_DB_LIB="-l$v"
+                    BERKELEY_DB_BINDIR="/usr/bin"
+                    AC_MSG_RESULT(Linux locations)
+                    break
+                fi
+            done
+            if test x"$BERKELEY_DB_LIB" = x ; then        
+                AC_MSG_ERROR(Cannot find BerkeleyDB)
+            fi
+        fi
     else
-      BERKELEY_DB_LDFLAGS="-L$BERKELEY_DB_DIR/lib"
-      BERKELEY_DB_CFLAGS="-I$BERKELEY_DB_DIR/include"
-      BERKELEY_DB_LIB="-ldb"
-      BERKELEY_DB_BINDIR="$BERKELEY_DB_DIR/bin"
-      AC_MSG_RESULT($BERKELEY_DB_DIR)
+        BERKELEY_DB_LDFLAGS="-L$BERKELEY_DB_DIR/lib"
+        BERKELEY_DB_CFLAGS="-I$BERKELEY_DB_DIR/include"
+        BERKELEY_DB_LIB="-ldb"
+        BERKELEY_DB_BINDIR="$BERKELEY_DB_DIR/bin"
+        AC_MSG_RESULT($BERKELEY_DB_DIR)
     fi
     AC_DEFINE(USE_BERKELEY_DB)
     ;;
