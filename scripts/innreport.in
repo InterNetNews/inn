@@ -765,7 +765,7 @@ sub Make_Index {
   my $result = sprintf <<EOF;
 <HTML><HEAD>
 <TITLE>$Title: index</TITLE>
-</HEAD><BODY$body>
+</HEAD><BODY $body>
 $HTML_header
 <HR ALIGN=CENTER SIZE=\"4\" WIDTH=\"100%%\">
 <BR><CENTER><FONT SIZE=\"+2\">
@@ -1754,7 +1754,7 @@ sub Write_all_results {
     open (HTML, "> $HTML_output") || die "Error: cant open $HTML_output\n";
 
     print HTML "<HTML>\n<HEAD>\n<TITLE>$Title: $first_date</TITLE>\n" .
-      "<!-- innreport $version -->\n</HEAD>\n<BODY$body>\n" .
+      "<!-- innreport $version -->\n</HEAD>\n<BODY $body>\n" .
       "$HTML_header\n<CENTER><H1>$title</H1>\n" .
       "<H3>$first_date -- $last_date</H3>\n</CENTER>\n<P><HR><P>\n";
 
