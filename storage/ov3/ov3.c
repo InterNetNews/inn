@@ -733,132 +733,47 @@ STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, 
     return TRUE;
 }
 
-BOOL tradindexed_add(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
-    char                *next;
-    static char         *xrefdata, *patcheck;
-    char		*xrefstart;
-    static int          datalen = 0;
-    BOOL                found = FALSE;
-    int                 xreflen;
-    int                 i;
-    char                *group;
-    int                 artnum;
+BOOL tradindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires) {
     GROUPHANDLE         *gh;
     GROUPENTRY		*ge;
-    char                overdata[BIG_BUFFER];
     GROUPLOC            gloc;
 
-    /*
-     * find last Xref: in the overview line.  Note we need to find the *last*
-     * Xref:, since there have been corrupted articles on Usenet with Xref:
-     * fragments stuck in other header lines.  The last Xref: is guaranteed
-     * to be from our server. 
-     */
-     
-    for (next = data; ((len - (next - data)) > 6 ) && ((next = memchr(next, 'X', len - (next - data))) != NULL); ) {
-	if (memcmp(next, "Xref: ", 6) == 0) {
-	    found =  TRUE;
-	    xrefstart = next;
-	}
-	next++;
-    }
-    
-    if (!found)
+    if ((gh = OV3opengroup(group, TRUE)) == NULL) {
+	/*
+	** check to see if group is in group.index, and if not, just 
+	** continue (presumably the group was rmgrouped earlier, but we
+	** still have articles referring to it in spool).
+	*/
+	gloc = GROUPfind(group);
+	if (GROUPLOCempty(gloc))
+	    return TRUE;
+	/*
+	** group was there, but open failed for some reason, return err.
+	*/
 	return FALSE;
+    }	
 
-    next = xrefstart;
-    for (i = 0; (i < 2) && (next < (data + len)); i++) {
-	if ((next = memchr(next, ' ', len - (next - data))) == NULL)
-	    return FALSE;
-	next++;
-    }
-    xreflen = len - (next - data);
-    if (datalen == 0) {
-	datalen = BIG_BUFFER;
-	xrefdata = NEW(char, datalen);
-	if (innconf->ovgrouppat != NULL)
-	    patcheck = NEW(char, datalen);
-    }
-    if (xreflen > datalen) {
-	datalen = xreflen;
-	RENEW(xrefdata, char, datalen + 1);
-	if (innconf->ovgrouppat != NULL)
-	    RENEW(patcheck, char, datalen + 1);
-    }
-    if (innconf->ovgrouppat != NULL) {
-	memcpy(patcheck, next, xreflen);
-	patcheck[xreflen] = '\0';
-	for (group = patcheck; group && *group; group = memchr(next, ' ', next - patcheck)) {
-	    while (isspace((int)*group))
-		group++;
-	    if ((next = memchr(group, ':', xreflen - (group - xrefdata))) == NULL)
-		return FALSE;
-	    *next++ = '\0';
-	    if (!OVgroupmatch(group)) {
-		if (!SMprobe(SELFEXPIRE, &token, NULL) && innconf->groupbaseexpiry)
-		    /* this article will never be expired, since it does not
-		       have self expiry function in stored method and
-		       groupbaseexpiry is true */
-		    return FALSE;
-		return TRUE;
-	    }
-	}
-    }
-    memcpy(xrefdata, next, xreflen);
-    xrefdata[xreflen] = '\0';
-    for (group = xrefdata; group && *group; group = memchr(next, ' ', xreflen - (next - xrefdata))) {
-	/* Parse the xref part into group name and article number */
-	while (isspace((int)*group))
-	    group++;
-	if ((next = memchr(group, ':', xreflen - (group - xrefdata))) == NULL)
-	    return FALSE;
-	*next++ = '\0';
-	artnum = atoi(next);
-	if (artnum <= 0)
-	    continue;
-
-	if ((gh = OV3opengroup(group, TRUE)) == NULL) {
-	    /*
-	    ** check to see if group is in group.index, and if not, just 
-	    ** continue (presumably the group was rmgrouped earlier, but we
-	    ** still have articles referring to it in spool).
-	    */
-	    gloc = GROUPfind(group);
-	    if (GROUPLOCempty(gloc))
-		continue;
-	    /*
-	    ** group was there, but open failed for some reason, return err.
-	    */
-	    return FALSE;
-	}	
-	sprintf(overdata, "%d\t", artnum);
-	i = strlen(overdata);
-	memcpy(overdata + i, data, len);
-	i += len;
-	memcpy(overdata + i, "\r\n", 2);
-	i += 2;
-
-	/* pack group if needed. */
-	ge = &GROUPentries[gh->gloc.recno];
-	if (Cutofflow && ge->low > artnum) {
-	    OV3closegroup(gh, TRUE);
-	    continue;
-	}
-	if (ge->base > artnum) {
-	    if (!OV3packgroup(group, OV3padamount + ge->base - artnum)) {
-		OV3closegroup(gh, TRUE);
-		return FALSE;
-	    }
-	    /* sigh. need to close and reopen group after packing. */
-	    OV3closegroup(gh, TRUE);
-	    if ((gh = OV3opengroup(group, TRUE)) == NULL)
-		return FALSE;
-	}
-	GROUPlock(gh->gloc, LOCK_WRITE);
-	OV3addrec(ge, gh, artnum, token, overdata, i, arrived, expires);
-	GROUPlock(gh->gloc, LOCK_UNLOCK);
+    /* pack group if needed. */
+    ge = &GROUPentries[gh->gloc.recno];
+    if (Cutofflow && ge->low > artnum) {
 	OV3closegroup(gh, TRUE);
-    }        
+	return TRUE;
+    }
+    if (ge->base > artnum) {
+	if (!OV3packgroup(group, OV3padamount + ge->base - artnum)) {
+	    OV3closegroup(gh, TRUE);
+	    return FALSE;
+	}
+	/* sigh. need to close and reopen group after packing. */
+	OV3closegroup(gh, TRUE);
+	if ((gh = OV3opengroup(group, TRUE)) == NULL)
+	    return FALSE;
+    }
+    GROUPlock(gh->gloc, LOCK_WRITE);
+    OV3addrec(ge, gh, artnum, token, data, len, arrived, expires);
+    GROUPlock(gh->gloc, LOCK_UNLOCK);
+    OV3closegroup(gh, TRUE);
+
     return TRUE;
 }
 
