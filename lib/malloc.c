@@ -115,7 +115,7 @@ botch(s)
 #endif
 #endif
 
-POINTER malloc(SIZE_T nbytes)
+void * malloc(size_t nbytes)
 {
   	union overhead *p;
   	int bucket = 0;
@@ -233,7 +233,7 @@ static morecore(int bucket)
   	}
 }
 
-FREEVAL free(POINTER cp)
+void free(void * cp)
 {   
   	int size;
 	union overhead *op;
@@ -278,7 +278,7 @@ FREEVAL free(POINTER cp)
  */
 int reall_srchlen = 4;	/* 4 should be plenty, -1 =>'s whole list */
 
-POINTER realloc(POINTER cp, SIZE_T nbytes)
+void * realloc(void * cp, size_t nbytes)
 {   
   	u_int onb;
 	union overhead *op;
