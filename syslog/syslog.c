@@ -58,6 +58,8 @@ static char sccsid[] = "@(#)syslog.c	5.28 (Berkeley) 6/27/90";
 #include <netinet/in.h>
 #endif	/* defined(INET_SYSLOG) */
 
+#include "config.h"
+
 #ifndef	_PATH_LOGNAME
     /* if you are running an old syslog, change /dev/log to the same as it
      * is in syslogd.c */
@@ -74,8 +76,8 @@ static char	*LogTag = "syslog";	/* string to tag the entry with */
 static int	LogFacility = LOG_USER;	/* default facility code */
 
 extern char *index(), *strcpy(), *strncpy(), *strcat();
-/* =()<extern @<SIZE_T>@	strlen();>()= */
-extern size_t	strlen();
+
+extern SIZE_T	strlen();
 
 /*
 **  Return a string representation of errno.

@@ -721,6 +721,9 @@ AC_OUTPUT(
 	Makefile.global 
 	makedirs.sh 
 	config/config.data 
+	backends/actmerge.sh
+	backends/actsyncd.sh
+	backends/sendxbatches.sh
 	include/clibrary.h
 	include/paths.h 
 	samples/actsync.cfg 

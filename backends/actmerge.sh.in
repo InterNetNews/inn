@@ -1,4 +1,4 @@
-#!/bin/sh
+#!@_PATH_SH@
 # @(#) $Id$
 # @(#) Under RCS control in /usr/local/news/src/inn/local/RCS/actmerge.sh,v
 #
@@ -26,8 +26,9 @@
 
 # preset vars
 #
-# =()<. @<_PATH_SHELLVARS>@>()=
-. @CONFPATH@/innshellvars
+
+. @ETCDIR@/innshellvars
+
 # Our lock file
 LOCK=${LOCKS}/LOCK.actmerge
 # where actsync is located

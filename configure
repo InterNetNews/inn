@@ -5279,6 +5279,9 @@ trap 'rm -fr `echo "BUILD
 	Makefile.global 
 	makedirs.sh 
 	config/config.data 
+	backends/actmerge.sh
+	backends/actsyncd.sh
+	backends/sendxbatches.sh
 	include/clibrary.h
 	include/paths.h 
 	samples/actsync.cfg 
@@ -5471,6 +5474,9 @@ CONFIG_FILES=\${CONFIG_FILES-"BUILD
 	Makefile.global 
 	makedirs.sh 
 	config/config.data 
+	backends/actmerge.sh
+	backends/actsyncd.sh
+	backends/sendxbatches.sh
 	include/clibrary.h
 	include/paths.h 
 	samples/actsync.cfg 

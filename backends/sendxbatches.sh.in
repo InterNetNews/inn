@@ -1,4 +1,4 @@
-#!/bin/sh
+#!@_PATH_SH@
 # $Id$ 
 # By petri@ibr.cs.tu-bs.de with mods by libove@jerry.alf.dec.com
 #
@@ -14,8 +14,7 @@ then
 	exit 1
 fi
 
-##  =()<. @<_PATH_SHELLVARS>@>()=
-. @CONFPATH@/innshellvars
+. @ETCDIR@/innshellvars
 
 LOCK=${LOCKS}/LOCK.sendxbatches
 shlock -p $$ -f ${LOCK}
