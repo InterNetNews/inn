@@ -73,7 +73,7 @@ group_path(const char *group)
             length += 2;
     length += 2 + 1 + strlen(group) + 1;
     path = xmalloc(length);
-    strcpy(path, innconf->pathoverview);
+    strlcpy(path, innconf->pathoverview, length);
     p = path + strlen(innconf->pathoverview);
     for (gp = group; gp != NULL; gp = strchr(gp, '.')) {
         if (gp != group)
@@ -84,8 +84,7 @@ group_path(const char *group)
         }
     }
     *p++ = '/';
-    strcpy(p, group);
-    path[length - 1] = '\0';
+    strlcpy(p, group, length - (p - path));
     return path;
 }
 

@@ -675,7 +675,7 @@ void CMDfetch(int ac, char *av[])
 	    Reply("%s\r\n", ARTnoartingroup);
 	    return;
 	}
-	strcpy(buff, av[1]);
+	strlcpy(buff, av[1], sizeof(buff));
 	tart=(ARTNUM)atol(buff);
     }
 

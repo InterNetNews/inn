@@ -123,8 +123,7 @@ int main (int argc, char **argv)
   bool checkConfig = false ;
   bool val;
 
-  strcpy (dateString,ctime(&now)) ;
-  dateString [24] = '\0' ;
+  strlcpy (dateString,ctime(&now),sizeof (dateString)) ;
 
   message_program_name = strrchr (argv [0],'/');
   if (message_program_name == NULL)

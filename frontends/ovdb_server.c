@@ -632,7 +632,7 @@ main(int argc, char *argv[])
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
     sa.sun_family = AF_UNIX;
     path = concatpath(innconf->pathrun, OVDB_SERVER_SOCKET);
-    strcpy(sa.sun_path, path);
+    strlcpy(sa.sun_path, path, sizeof(sa.sun_path));
     unlink(sa.sun_path);
     free(path);
     ret = bind(listensock, (struct sockaddr *)&sa, sizeof sa);

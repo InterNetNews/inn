@@ -427,7 +427,7 @@ setup_dir(char *dir, int filecount)
     else if (*dir == '/')
         absolute = dir;
     else if (*dir == '\0') {
-        strcpy(path, "/");
+        strlcpy(path, "/", sizeof(path));
         absolute = path;
     } else {
         /* Strip off leading "./". */
@@ -446,8 +446,8 @@ setup_dir(char *dir, int filecount)
         copy_segments(path, base_dir, base_depth + 1);
         if (strlen(path) + strlen(dir) + 2 > MAX_DIR_LEN)
             die("path %s too long", dir);
-        strcat(path, "/");
-        strcat(path, dir);
+        strlcat(path, "/", sizeof(path));
+        strlcat(path, dir, sizeof(path));
         absolute = path;
     }
 
@@ -496,7 +496,8 @@ setup_dir(char *dir, int filecount)
             if (prefix_len == 0) {
                 while (q > current_dir && *--q != '/')
                     ;
-                strcpy(q + 1, p);
+                q[1] = '\0';
+                strlcat(current_dir, p, sizeof(current_dir));
             }
             return true;
         }
@@ -549,7 +550,7 @@ unlink_filelist(filelist *list, int filecount)
        the threshold, just remove the files. */
     if (sort_threshold == 0 || filecount < sort_threshold) {
         for (i = 0; i < list->count; i++) {
-            strcpy(file, list->files[i]);
+            strlcpy(file, list->files[i], sizeof(prefix_dir) - prefix_len);
             unlink_file(prefix_dir);
         }
         filelist_free(list);
@@ -586,7 +587,7 @@ unlink_filelist(filelist *list, int filecount)
     for (i = 0, entry = readdir(dir); entry != NULL; entry = readdir(dir))
         if (filelist_lookup(list, entry->d_name) != NULL) {
             i++;
-            strcpy(file, entry->d_name);
+            strlcpy(file, entry->d_name, sizeof(prefix_dir) - prefix_len);
             unlink_file(prefix_dir);
             if (i == list->count)
                 break;
@@ -703,7 +704,7 @@ main(int argc, char *argv[])
     base_dir = *arg;
     if (*base_dir != '/' || bad_path(base_dir))
         die("bad base path %s", base_dir);
-    strcpy(current_dir, base_dir);
+    strlcpy(current_dir, base_dir, sizeof(current_dir));
     if (chdir(current_dir) < 0)
         sysdie("can't chdir to base path %s", current_dir);
 

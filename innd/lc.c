@@ -85,7 +85,7 @@ LCsetup(void)
     }
     memset(&server, 0, sizeof server);
     server.sun_family = AF_UNIX;
-    strcpy(server.sun_path, LCpath);
+    strlcpy(server.sun_path, LCpath, sizeof(server.sun_path));
     if (bind(i, (struct sockaddr *) &server, SUN_LEN(&server)) < 0) {
 	syslog(L_FATAL, "%s cant bind %s %m", LogName, LCpath);
 	exit(1);

@@ -233,7 +233,7 @@ void shutDown (InnListener l)
       char dateString [30] ;
 
       gHostStats();
-      strcpy (dateString,ctime (&now)) ;
+      strlcpy (dateString,ctime (&now),sizeof (dateString)) ;
       dateString [24] = '\0' ;
 
       if (fastExit)

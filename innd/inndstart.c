@@ -315,12 +315,12 @@ main(int argc, char *argv[])
        what port we just created and bound to for it. */
     innd_argv = xmalloc((1 + argc + 1) * sizeof(char *));
     i = 0;
-    strcpy(pflag, "-p ");
+    strlcpy(pflag, "-p ", sizeof(pflag));
     for (j = 0; s[j] > 0; j++) {
 	char temp[16];
 
 	snprintf(temp, sizeof(temp), "%d,", s[j]);
-	strcat(pflag, temp);
+	strlcat(pflag, temp, sizeof(pflag));
     }
     /* chop off the trailing , */
     j = strlen(pflag) - 1;

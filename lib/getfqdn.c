@@ -53,8 +53,10 @@ char *GetFQDN(char *domain)
 
     /* First, see if the main name is a FQDN.  It should be. */
     if (hp != NULL && strchr(hp->h_name, '.') != NULL) {
-	if (strlen(hp->h_name) < sizeof buff - 1)
-	    return strcpy(buff, hp->h_name);
+	if (strlen(hp->h_name) < sizeof buff - 1) {
+	    strlcpy(buff, hp->h_name, sizeof(buff));
+            return buff;
+        }
 	/* Doesn't fit; make sure we don't return bad data next time. */
 	buff[0] = '\0';
 	return hp->h_name;
@@ -65,8 +67,10 @@ char *GetFQDN(char *domain)
 	while ((p = *ap++) != NULL)
 	    if (strchr(p, '.') != NULL) {
 		/* Deja-vous all over again. */
-		if (strlen(p) < sizeof buff - 1)
-		    return strcpy(buff, p);
+		if (strlen(p) < sizeof buff - 1) {
+		    strlcpy(buff, p, sizeof(buff));
+                    return buff;
+                }
 		buff[0] = '\0';
 		return p ;
 	    }
@@ -77,7 +81,7 @@ char *GetFQDN(char *domain)
     if (strlen(buff) + 1 + strlen(p) > sizeof buff - 1)
 	/* Doesn't fit. */
 	return NULL;
-    strcat(buff, ".");
-    strcat(buff, p);
+    strlcat(buff, ".", sizeof(buff));
+    strlcat(buff, p, sizeof(buff));
     return buff;
 }

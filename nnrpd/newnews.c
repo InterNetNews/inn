@@ -80,7 +80,7 @@ static char **GetGroups(char *p) {
   for (Xref++; *Xref == ' '; Xref++);
   if (!Xrefbuf)
     Xrefbuf = xmalloc(BIG_BUFFER);
-  strcpy(Xrefbuf, Xref);
+  strlcpy(Xrefbuf, Xref, BIG_BUFFER);
   if ((q = strchr(Xrefbuf, '\t')) != NULL)
     *q = '\0';
   p = Xrefbuf;

@@ -268,7 +268,7 @@ static int client_connect()
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
     sa.sun_family = AF_UNIX;
     path = concatpath(innconf->pathrun, OVDB_SERVER_SOCKET);
-    strcpy(sa.sun_path, path);
+    strlcpy(sa.sun_path, path, sizeof(sa.sun_path));
     free(path);
 #else
     sa.sin_family = AF_INET;

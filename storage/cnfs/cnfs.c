@@ -881,9 +881,10 @@ static int CNFSUsedBlock(CYCBUFF *cycbuff, off_t offset,
 	offset > cycbuff->len) {
 	char	bufoff[64], bufmin[64], bufmax[64];
 	SMseterror(SMERR_INTERNAL, NULL);
-	strcpy(bufoff, CNFSofft2hex(offset, false));
-	strcpy(bufmin, CNFSofft2hex(cycbuff->minartoffset, false));
-	strcpy(bufmax, CNFSofft2hex(cycbuff->len, false));
+	strlcpy(bufoff, CNFSofft2hex(offset, false), sizeof(bufoff));
+	strlcpy(bufmin, CNFSofft2hex(cycbuff->minartoffset, false),
+                sizeof(bufmin));
+	strlcpy(bufmax, CNFSofft2hex(cycbuff->len, false), sizeof(bufmax));
 	syslog(L_ERROR,
 	       "%s: CNFSUsedBlock: invalid offset %s, min = %s, max = %s",
 	       LocalLogName, bufoff, bufmin, bufmax);
@@ -1288,7 +1289,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     if (innconf->cnfscheckfudgesize != 0 && innconf->maxartsize != 0 &&
 	(ntohl(cah.size) > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
 	char buf1[24];
-	strcpy(buf1, CNFSofft2hex(cycbuff->free, false));
+	strlcpy(buf1, CNFSofft2hex(cycbuff->free, false), sizeof(buf1));
 	SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER fudge size overflow");
 	syslog(L_ERROR, "%s: fudge size overflows bitmaps %s %s:0x%s: %u",
 	LocalLogName, TokenToText(token), cycbuffname, buf1, ntohl(cah.size));

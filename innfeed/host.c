@@ -1098,7 +1098,7 @@ Host newHost (InnListener listener, HostParams p)
   if (maxIpNameLen == 0)
     {
       start = theTime() ;
-      strcpy (startTime,ctime (&start)) ;
+      strlcpy (startTime,ctime (&start),sizeof (startTime)) ;
       myPid = getpid() ;
     }
   
@@ -3096,7 +3096,7 @@ static void hostLogStatus (void)
       
       now = time (NULL) ;
       sec = (long) (now - start) ;
-      strcpy (timeString,ctime (&now)) ;
+      strlcpy (timeString,ctime (&now),sizeof (timeString)) ;
 
       if (genHtml)
         {

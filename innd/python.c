@@ -193,17 +193,17 @@ PYmode(Mode, NewMode, reason)
 	return;
 
     switch (Mode) {
-    default:		strcpy(oldmode, "unknown");	break;
-    case OMrunning:	strcpy(oldmode, "running");	break;
-    case OMpaused:	strcpy(oldmode, "paused");	break;
-    case OMthrottled:	strcpy(oldmode, "throttled");	break;
+    default:		strlcpy(oldmode, "unknown", 10);	break;
+    case OMrunning:	strlcpy(oldmode, "running", 10);	break;
+    case OMpaused:	strlcpy(oldmode, "paused", 10);		break;
+    case OMthrottled:	strlcpy(oldmode, "throttled", 10);	break;
     }
 
     switch (NewMode) {
-    default:		strcpy(newmode, "unknown");	break;
-    case OMrunning:	strcpy(newmode, "running");	break;
-    case OMpaused:	strcpy(newmode, "paused");	break;
-    case OMthrottled:	strcpy(newmode, "throttled");	break;
+    default:		strlcpy(newmode, "unknown", 10);	break;
+    case OMrunning:	strlcpy(newmode, "running", 10);	break;
+    case OMpaused:	strlcpy(newmode, "paused", 10);		break;
+    case OMthrottled:	strlcpy(newmode, "throttled", 10);	break;
     }
 
     result = PyObject_CallFunction(mode_method, "sss",

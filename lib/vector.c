@@ -375,13 +375,13 @@ vector_join(const struct vector *vector, const char *seperator)
     seplen = strlen(seperator);
     for (size = 0, i = 0; i < vector->count; i++)
         size += strlen(vector->strings[i]);
-    size += (vector->count - 1) * seplen;
+    size += (vector->count - 1) * seplen + 1;
 
-    string = xmalloc(size + 1);
-    strcpy(string, vector->strings[0]);
+    string = xmalloc(size);
+    strlcpy(string, vector->strings[0], size);
     for (i = 1; i < vector->count; i++) {
-        strcat(string, seperator);
-        strcat(string, vector->strings[i]);
+        strlcat(string, seperator, size);
+        strlcat(string, vector->strings[i], size);
     }
 
     return string;
@@ -396,13 +396,13 @@ cvector_join(const struct cvector *vector, const char *seperator)
     seplen = strlen(seperator);
     for (size = 0, i = 0; i < vector->count; i++)
         size += strlen(vector->strings[i]);
-    size += (vector->count - 1) * seplen;
+    size += (vector->count - 1) * seplen + 1;
 
-    string = xmalloc(size + 1);
-    strcpy(string, vector->strings[0]);
+    string = xmalloc(size);
+    strlcpy(string, vector->strings[0], size);
     for (i = 1; i < vector->count; i++) {
-        strcat(string, seperator);
-        strcat(string, vector->strings[i]);
+        strlcat(string, seperator, size);
+        strlcat(string, vector->strings[i], size);
     }
 
     return string;

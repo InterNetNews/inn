@@ -58,7 +58,7 @@ server_init(char *host, int port)
     if (get_server(line2, (int)sizeof line2) < 0)
 	return -1;
     if (atoi(line2) != NNTP_BAD_COMMAND_VAL)
-	strcpy(ser_line, line2);
+	strlcpy(ser_line, line2, sizeof(ser_line));
 
     /* Connected; return server's reply code. */
     return atoi(ser_line);

@@ -1382,8 +1382,9 @@ void PERMgetaccess(char *nnrpaccess)
 	uname = strchr(PERMuser, '@');
 	if (!uname && auth_realms[i]->default_domain) {
 	    /* append the default domain to the username */
-	    strcat(PERMuser, "@");
-	    strcat(PERMuser, auth_realms[i]->default_domain);
+	    strlcat(PERMuser, "@", sizeof(PERMuser));
+	    strlcat(PERMuser, auth_realms[i]->default_domain,
+                    sizeof(PERMuser));
 	}
 	PERMneedauth = false;
 	success_auth = auth_realms[i];
@@ -1445,8 +1446,9 @@ void PERMlogin(char *uname, char *pass, char *errorstr)
 	uname = strchr(PERMuser, '@');
 	if (!uname && auth_realms[i]->default_domain) {
 	    /* append the default domain to the username */
-	    strcat(PERMuser, "@");
-	    strcat(PERMuser, auth_realms[i]->default_domain);
+	    strlcat(PERMuser, "@", sizeof(PERMuser));
+	    strlcat(PERMuser, auth_realms[i]->default_domain,
+                    sizeof(PERMuser));
 	}
 	PERMneedauth = false;
 	PERMauthorized = true;
@@ -2104,7 +2106,7 @@ static char *ResolveUser(AUTHGROUP *auth)
 	foo = ExecProg(arg0, args);
 	if (foo) {
 	    GetConnInfo(auth->res_methods[i], buf);
-	    strcat(buf, ".\r\n");
+	    strlcat(buf, ".\r\n", sizeof(buf));
 	    xwrite(foo->wrfd, buf, strlen(buf));
 	    close(foo->wrfd);
 
@@ -2177,9 +2179,9 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
                 if (code == NNTP_AUTH_OK_VAL) {
                     /* Set the value of ubuf to the right username */
                     if (newUser[0] != '\0') {
-                      strcpy(ubuf, newUser);
+                      strlcpy(ubuf, newUser, sizeof(ubuf));
                     } else {
-                      strcpy(ubuf, username);
+                      strlcpy(ubuf, username, sizeof(ubuf));
                     }
 
                     syslog(L_NOTICE, "%s user %s", ClientHost, ubuf);
@@ -2221,7 +2223,7 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
                      "ClientAuthname: %s\r\n", username);
 	    snprintf(buf+strlen(buf), sizeof(buf) - strlen(buf) - 3,
                      "ClientPassword: %s\r\n", password);
-	    strcat(buf, ".\r\n");
+	    strlcat(buf, ".\r\n", sizeof(buf));
 	    xwrite(foo->wrfd, buf, strlen(buf));
 	    close(foo->wrfd);
 

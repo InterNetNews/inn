@@ -1792,7 +1792,8 @@ RChostname(const CHANNEL *cp)
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
 	if (RCaddressmatch(&cp->Address, &rp->Address))
 	    return rp->Name;
-    (void)strcpy(buff, sprint_sockaddr((struct sockaddr *)&cp->Address));
+    strlcpy(buff, sprint_sockaddr((struct sockaddr *)&cp->Address),
+            sizeof(buff));
     return buff;
 }
 

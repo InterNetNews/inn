@@ -77,7 +77,7 @@ STATUSinit(void)
   
   STATUSlast_time = STATUSgettime();	/* First invocation */
   now = time (NULL) ;
-  strcpy (start_time, ctime (&now)) ;
+  strlcpy(start_time, ctime(&now), sizeof(start_time));
 }
 
 static char *
@@ -139,8 +139,9 @@ STATUSsummary(void)
   tmp = head = NULL;
   for (i = 0; (cp = CHANiter(&i, CTnntp)) != NULL; ) {
     j = 0;
-    strcpy(TempString,
-	    cp->Address.ss_family == 0 ? "localhost" : RChostname(cp));
+    strlcpy(TempString,
+	    cp->Address.ss_family == 0 ? "localhost" : RChostname(cp),
+            sizeof(TempString));
     for (status = head ; status != NULL ; status = status->next) {
 	if (strcmp(TempString, status->name) == 0)
 	    break;
@@ -148,9 +149,10 @@ STATUSsummary(void)
     if (status == NULL) {
       status = xmalloc(sizeof(STATUS));
       peers++;                                              /* a new peer */
-      strcpy (status->name, TempString);                         /* name */
-      strcpy (status->ip_addr,
-	sprint_sockaddr((struct sockaddr *)&cp->Address));    /* ip address */
+      strlcpy(status->name, TempString, sizeof(status->name));
+      strlcpy(status->ip_addr,
+              sprint_sockaddr((struct sockaddr *)&cp->Address),
+              sizeof(status->ip_addr));
       status->can_stream = cp->Streaming;
       status->seconds = status->Size = status->DuplicateSize = 0;
       status->Ihave = status->Ihave_Duplicate =
@@ -218,7 +220,7 @@ STATUSsummary(void)
 
   /* Header */
   now = time (NULL);
-  strcpy (TempString, ctime (&now));
+  strlcpy (TempString, ctime (&now), sizeof(TempString));
   fprintf (F, "Updated: %s", TempString);
   fprintf (F, "(peers: %d, active-cxns: %d, sleeping-cxns: %d)\n\n",
 	   peers, activeCxn, sleepingCxns);

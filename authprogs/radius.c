@@ -324,13 +324,13 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
       req.data[2] = '\0';
       if (config->prefix) {
 	req.data[1] += strlen(config->prefix);
-	strcat((char *)&req.data[2], config->prefix);
+	strlcat((char *) &req.data[2], config->prefix, sizeof(req.data) - 2);
       }
       req.data[1] += strlen(uname);
-      strcat((char *)&req.data[2], uname);
+      strlcat((char *)&req.data[2], uname, sizeof(req.data) - 2);
       if (!strchr(uname, '@') && config->suffix) {
 	req.data[1] += strlen(config->suffix);
-	strcat((char *)&req.data[2], config->suffix);
+	strlcat((char *)&req.data[2], config->suffix, sizeof(req.data) - 2);
       }
       req.datalen = req.data[1];
 
@@ -341,7 +341,8 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
       passlen = (strlen(pass) + 15) / 16;
       passlen *= 16;
       req.data[req.datalen+1] = passlen+2;
-      strcpy((char *)&req.data[req.datalen+2], pass);
+      strlcpy((char *)&req.data[req.datalen+2], pass,
+              sizeof(req.data) - req.datalen - 2);
       passlen -= strlen(pass);
       while (passlen--)
 	req.data[req.datalen+passlen+2+strlen(pass)] = '\0';

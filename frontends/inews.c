@@ -663,6 +663,7 @@ AppendSignature(bool UseMalloc, char *article, char *homedir, int *linesp)
     static char	NOSIG[] = "Can't add your .signature (%s), article not posted";
     int		i;
     int		length;
+    size_t      artsize;
     char	*p;
     char	buff[BUFSIZ];
     FILE	*F;
@@ -703,15 +704,16 @@ AppendSignature(bool UseMalloc, char *article, char *homedir, int *linesp)
 
     /* Grow the article to have the signature. */
     i = strlen(article);
+    artsize = i + sizeof(SIGSEP) - 1 + length + 1;
     if (UseMalloc) {
-	p = xmalloc(i + (sizeof SIGSEP - 1) + length + 1);
-	strcpy(p, article);
+        p = xmalloc(artsize);
+        strlcpy(p, article, artsize);
 	article = p;
     }
     else
-        article = xrealloc(article, i + (sizeof SIGSEP - 1) + length + 1);
-    strcpy(&article[i], SIGSEP);
-    strcpy(&article[i + sizeof SIGSEP - 1], buff);
+        article = xrealloc(article, artsize);
+    strlcat(article, SIGSEP, artsize);
+    strlcat(article, buff, artsize);
     return article;
 }
 

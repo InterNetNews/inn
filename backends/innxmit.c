@@ -221,10 +221,12 @@ stalloc(char *Article, char *MessageID, ARTHANDLE *art, int hash) {
     ** If filename ever is longer than SPOOLNAMEBUFF then code will abort.
     ** If ID is ever longer than NNTP_STRLEN then other code would break.
     */
-    if (!stbuf[i].st_fname) stbuf[i].st_fname = xmalloc(SPOOLNAMEBUFF);
-    if (!stbuf[i].st_id) stbuf[i].st_id = xmalloc(NNTP_STRLEN);
-    strcpy(stbuf[i].st_fname, Article);
-    strcpy(stbuf[i].st_id, MessageID);
+    if (!stbuf[i].st_fname)
+        stbuf[i].st_fname = xmalloc(SPOOLNAMEBUFF);
+    if (!stbuf[i].st_id)
+        stbuf[i].st_id = xmalloc(NNTP_STRLEN);
+    strlcpy(stbuf[i].st_fname, Article, SPOOLNAMEBUFF);
+    strlcpy(stbuf[i].st_id, MessageID, NNTP_STRLEN);
     stbuf[i].art = art;
     stbuf[i].st_hash = hash;
     stbuf[i].st_retry = 0;

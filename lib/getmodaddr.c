@@ -102,7 +102,7 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
     char		name[SMBUF];
     int                 fd;
 
-    strcpy(name, group);
+    strlcpy(name, group, sizeof(name));
     address[0] = '\0';
 
     if (FromServer==NULL || ToServer==NULL){

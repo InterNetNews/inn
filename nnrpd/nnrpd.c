@@ -361,8 +361,8 @@ Address2Name(INADDR *ap, char *hostname, int i)
     /* Only needed for misconfigured YP/NIS systems. */
     if (ap->s_addr != INADDR_LOOPBACK && strchr(hostname, '.') == NULL
      && (p = innconf->domain) != NULL) {
-	strcat(hostname, ".");
-	strcat(hostname, p);
+	strlcat(hostname, ".", i);
+	strlcat(hostname, p, i);
     }
 
     /* Make all lowercase, for wildmat. */
@@ -496,11 +496,12 @@ static void StartConnection(void)
     if (getpeername(STDIN_FILENO, (struct sockaddr *)&ssc, &length) < 0) {
       if (!isatty(STDIN_FILENO)) {
 	    syslog(L_TRACE, "%s cant getpeername %m", "?");
-            strcpy(ClientHost, "?"); /* so stats generation looks correct. */
+             /* so stats generation looks correct. */
+            strlcpy(ClientHost, "?", sizeof(ClientHost));
 	    Printf("%d I can't get your name.  Goodbye.\r\n", NNTP_ACCESS_VAL);
 	    ExitWithStats(1, true);
 	}
-        strcpy(ClientHost, "stdin");
+        strlcpy(ClientHost, "stdin", sizeof(ClientHost));
     }
 
     else {
@@ -874,7 +875,7 @@ main(int argc, char *argv[])
     LLOGenable = false;
     GRPcur = NULL;
     MaxBytesPerSecond = 0;
-    strcpy(Username, "unknown");
+    strlcpy(Username, "unknown", sizeof(Username));
 
     /* Set up the pathname, first thing, and teach our error handlers about
        the name of the program. */
@@ -1088,7 +1089,7 @@ main(int argc, char *argv[])
 	}
 
 	if (ListenPort == NNTP_PORT)
-	    strcpy(buff, "nnrpd.pid");
+	    strlcpy(buff, "nnrpd.pid", sizeof(buff));
 	else
 	    snprintf(buff, sizeof(buff), "nnrpd-%d.pid", ListenPort);
         path = concatpath(innconf->pathrun, buff);
@@ -1219,7 +1220,7 @@ main(int argc, char *argv[])
         }
     }
 
-    strcpy (LogName, "?");
+    strlcpy(LogName, "?", sizeof(LogName));
 
     /* Catch SIGPIPE so that we can exit out of long write loops */
     xsignal(SIGPIPE, CatchPipe);

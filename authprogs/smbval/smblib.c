@@ -83,15 +83,15 @@ SMB_Handle_Type SMB_Connect_Server(SMB_Handle_Type Con_Handle,
 
   /* Init some things ... */
 
-  strcpy(con -> service, "");
-  strcpy(con -> username, "");
-  strcpy(con -> password, "");
-  strcpy(con -> sock_options, "");
-  strcpy(con -> address, "");
-  strcpy(con -> desthost, server);
-  strcpy(con -> PDomain, NTdomain);
-  strcpy(con -> OSName, SMBLIB_DEFAULT_OSNAME);
-  strcpy(con -> LMType, SMBLIB_DEFAULT_LMTYPE);
+  strlcpy(con->service, "", sizeof(con->service));
+  strlcpy(con->username, "", sizeof(con->username));
+  strlcpy(con->password, "", sizeof(con->password));
+  strlcpy(con->sock_options, "", sizeof(con->sock_options));
+  strlcpy(con->address, "", sizeof(con->address));
+  strlcpy(con->desthost, server, sizeof(con->desthost));
+  strlcpy(con->PDomain, NTdomain, sizeof(con->PDomain));
+  strlcpy(con->OSName, SMBLIB_DEFAULT_OSNAME, sizeof(con->OSName));
+  strlcpy(con->LMType, SMBLIB_DEFAULT_LMTYPE, sizeof(con->LMType));
 
   SMB_Get_My_Name(con -> myname, sizeof(con -> myname));
 
@@ -165,7 +165,7 @@ int SMB_Logon_Server(SMB_Handle_Type Con_Handle, char *UserName,
 
   }
 
-  strcpy(pword, PassWord);
+  strlcpy(pword, PassWord, sizeof(pword));
   if (Con_Handle -> encrypt_passwords)
   {
     pass_len=24;

@@ -1661,7 +1661,7 @@ ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
 	  *p++ = ' ';
 	  bp->used++;
 	}
-	bp->used += strlen(strcpy(p, sp->Name));
+	bp->used += strlcpy(p, sp->Name, bp->size - bp->used);
       }
     }
   }
@@ -2321,7 +2321,7 @@ ARTpost(CHANNEL *cp)
     }
     TMRstop(TMR_OVERV);
   }
-  strcpy(data->TokenText, TokenToText(token));
+  strlcpy(data->TokenText, TokenToText(token), sizeof(data->TokenText));
 
   /* Update history if we didn't get too many I/O errors above. */
   if ((Mode != OMrunning) ||
