@@ -1,7 +1,5 @@
 #!/usr/local/bin/perl
 
-require 5.003;
-
 if (scalar(@ARGV) <= 0) {
     printf STDERR "No storage methods are available\n";
     exit(1);
@@ -10,8 +8,6 @@ if (scalar(@ARGV) <= 0) {
 foreach $file (@ARGV) {
     open(CFG, $file) || die "$!";
     while (<CFG>) {
-	chomp;
-
 	s/^\s+//;
 	s/\s+$//;
 	if (/^name\s*=\s*(\S+)/) {
@@ -56,7 +52,7 @@ foreach $method (keys %methods) {
     if ($first) {
 	print DEF " },\n";
     }
-    print DEF "\t{ \"$method\", TOKEN_", uc($method), ", \n\t  ";
+    print DEF "\t{ \"$method\", TOKEN_\U$method\E, \n\t  ";
     print DEF $method, "_init, ", $method, "_store, \n\t  ", $method, "_retrieve, ";
     print DEF $method, "_next, \n\t  ", $method, "_freearticle, ", $method, "_cancel, \n\t  ";
     print DEF $method, "_shutdown";
@@ -76,7 +72,8 @@ print H "#define __METHODS_H__\n\n";
 print H "#include <interface.h>\n\n";
 print H "#define NUM_STORAGE_METHODS\t", scalar(keys(%methods)), "\n\n";
 foreach $method (keys %methods) {
-    printf H "#define TOKEN_%-40s%d\n", uc($method), $methodnum{$methods{$method}};
+    printf H "#define TOKEN_%-40s%d\n", "\U$method\E",
+                                        $methodnum{$methods{$method}};
 }
 print H "\n";
 print H "extern STORAGE_METHOD storage_methods[NUM_STORAGE_METHODS];\n\n";
