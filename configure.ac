@@ -399,8 +399,10 @@ dnl See if struct sockaddr_storage is available, and if so, how its members
 dnl are named.
 AC_CHECK_TYPES([struct sockaddr_storage],
     [AC_CHECK_MEMBERS([struct sockaddr_storage.ss_family], , ,
-        [#include <sys/socket.h>])], ,
-    [#include <sys/socket.h>])
+        [#include <sys/types.h>
+        #include <sys/socket.h>])], ,
+    [#include <sys/types.h>
+    #include <sys/socket.h>])
 
 dnl Checks for macros.
 INN_MACRO_IN6_ARE_ADDR_EQUAL
