@@ -860,7 +860,10 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 	    return TRUE;
 	}
 	key = TextToHash(&fields[0][1]);
-	Hastoken = TRUE;
+	if (innconf->storageapi)
+	    Hastoken = TRUE;
+	else
+	    Hastoken = FALSE;
 	break;
     case '<':
 	key = HashMessageID(fields[0]);

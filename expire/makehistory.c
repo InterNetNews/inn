@@ -347,8 +347,10 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 		((q = strchr(save + 1, '@')) != NULL)) {
 		*(++q) = '\0';
 		if (!IsToken(save)) {
-		    fprintf(stderr, "Invalid token %s for hash %s, skipping\n", q, p);
-		    continue;
+		    /* assumes traditional spool */
+		    ionevalue.offset = where;
+		    ivalue = (void *)&ionevalue;
+		    break;
 		}
 		if (innconf->extendeddbz) {
 		    iextvalue.offset[HISTOFFSET] = where;
@@ -849,6 +851,7 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
     int			crossnum;
     time_t		Arrived;
     char		buff[SPOOLNAMEBUFF];
+    BOOL		HasHash;
 
     if ((qp = QIOopen(ACTIVE)) == NULL) {
 	(void)fprintf(stderr, "Can't open %s, %s\n", ACTIVE, strerror(errno));
@@ -887,13 +890,9 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 		(void)fprintf(stderr, IGNORING, line);
 		continue;
 	    }
-	    switch (fields[0][0]) {
-	    case '[':
-		if (strlen(fields[0]) != ((sizeof(HASH) * 2) + 2)) {
-		    fprintf(stderr, "Invalid length for hash %s, skipping\n", fields[0]);   
-		    break;
-		}
-		if (i == 2) {
+	    if (i == 2) {
+		switch (fields[0][0]) {
+		case '[':
 		    if (out != NULL) {
 			i = fprintf(out, "%s%c%s\n", fields[0], HIS_FIELDSEP, fields[1]);
 			if (i == EOF || ferror(out)) {
@@ -902,12 +901,32 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 			}
 		    }
 		    break;
-		} else if (!RemoveOld) {
-		    /* just make index */
-		    if (!IsToken(fields[2])) {
-			fprintf(stderr, "Invalid token %s, skipping\n", fields[2]);   
-			break;
+		case '<':
+		    if (out != NULL) {
+			i = fprintf(out, "[%s]%c%s\n", HashToText(HashMessageID(fields[0])), HIS_FIELDSEP, fields[1]);
+			if (i == EOF || ferror(out)) {
+			    (void)fprintf(stderr, "Can't write history line, %s\n", strerror(errno));     
+			    exit(1);
+			}
 		    }
+		    break;
+		default:
+		    fprintf(stderr, "Invalid message-id \"%s\" in history text\n", fields[0]);
+		    break;
+		}
+		continue;
+	    }
+	    if (fields[0][0] == '[') {
+		if (strlen(fields[0]) != ((sizeof(HASH) * 2) + 2)) {
+		    fprintf(stderr, "Invalid length for hash %s, skipping\n", fields[0]);   
+		    continue;
+		} else
+		    HasHash = TRUE;
+	    } else
+		HasHash = FALSE;
+	    if (IsToken(fields[2])) {
+		if (!RemoveOld) {
+		    /* just make index */
 		    if (out != NULL) {
 			i = fprintf(out, "%s%c%s%c%s\n", fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP, fields[2]);
 			if (i == EOF || ferror(out)) {
@@ -967,10 +986,6 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 		    }
 		    break;
 		}
-		if (!IsToken(fields[2])) {
-		    fprintf(stderr, "Invalid token %s, skipping\n", fields[2]);   
-		    break;
-		}
 		token = TextToToken(fields[2]);
 		if ((art = SMretrieve(token, RETR_ALL)) == (ARTHANDLE *)NULL) {
 		    /* fprintf(stderr, "Cannot retrieve %s, skipping\n", fields[2]); */
@@ -999,17 +1014,7 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 		arth.token = &token;
 		DoMemArt(&arth, Overview, FALSE, out, index, TRUE);
 		break;
-	    case '<':
-		if (i == 2) {
-		    if (out != NULL) {
-			i = fprintf(out, "[%s]%c%s\n", HashToText(HashMessageID(fields[0])), HIS_FIELDSEP, fields[1]);
-			if (i == EOF || ferror(out)) {
-			    (void)fprintf(stderr, "Can't write history line, %s\n", strerror(errno));     
-			    exit(1);
-			}
-		    }
-		    break;
-		}
+	    } else {
 		if ((p = strchr(fields[1], HIS_SUBFIELDSEP)) == (char *)NULL)
 		    Arrived = atol(fields[1]);
 		else {
@@ -1023,7 +1028,10 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 		if (!ReadInMem(arts[0], &arth, Tradspooldir)) {
 		    /* maybe article is cancelled, just recored the hash */
 		    if (out != NULL) {
-			i = fprintf(out, "[%s]%c%s\n", HashToText(HashMessageID(fields[0])), HIS_FIELDSEP, fields[1]);
+			if (HasHash)
+			    i = fprintf(out, "%s%c%s\n", fields[0], HIS_FIELDSEP, fields[1]);
+			else
+			    i = fprintf(out, "[%s]%c%s\n", HashToText(HashMessageID(fields[0])), HIS_FIELDSEP, fields[1]);
 			if (i == EOF || ferror(out)) {
 			    (void)fprintf(stderr, "Can't write history line, %s\n", strerror(errno));     
 			    exit(1);
@@ -1051,9 +1059,6 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 		}
 		arth.token = &token;
 		DoMemArt(&arth, Overview, FALSE, out, index, TRUE);
-		break;
-	    default:
-		fprintf(stderr, "Invalid message-id \"%s\" in history text\n", fields[0]);
 		break;
 	    }
 	} else
