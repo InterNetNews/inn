@@ -8,6 +8,10 @@
 
 #include "libinn.h"
 
+/* Prototype write and writev to avoid warnings. */
+ssize_t write(int, const void *, size_t);
+ssize_t writev(int, const struct iovec *, int);
+
 /* We need the definition of struct iovec, but if we allow the system to
    prototype writev, it could conflict with our definition.  So mask it. */
 #define writev system_writev
@@ -34,13 +38,15 @@ write(int fd UNUSED, const void *data, size_t n)
 {
     size_t total;
 
-    if (write_fail) return 0;
+    if (write_fail)
+        return 0;
     if (write_interrupt && (write_interrupt++ % 2) == 0) {
         errno = EINTR;
         return -1;
     }
     total = (n < 32) ? n : 32;
-    if (256 - write_offset < total) total = 256 - write_offset;
+    if (256 - write_offset < total)
+        total = 256 - write_offset;
     memcpy(write_buffer + write_offset, data, total);
     write_offset += total;
     return total;
@@ -51,16 +57,18 @@ write(int fd UNUSED, const void *data, size_t n)
 ssize_t
 writev(int fd UNUSED, const struct iovec *iov, int iovcnt)
 {
-    int left, total, i;
-    size_t n;
+    int total, i;
+    size_t left, n;
 
-    if (write_fail) return 0;
+    if (write_fail)
+        return 0;
     if (write_interrupt && (write_interrupt++ % 2) == 0) {
         errno = EINTR;
         return -1;
     }
     left = 256 - write_offset;
-    if (left > 32) left = 32;
+    if (left > 32)
+        left = 32;
     total = 0;
     for (i = 0; i < iovcnt && left != 0; i++) {
         n = (iov[i].iov_len < left) ? iov[i].iov_len : left;
