@@ -50,8 +50,11 @@ main(void)
        exactly as large as the buffer. */
     if (fstat(fd, &st) == 0 && S_ISREG(st.st_mode)) {
         size = st.st_blksize;
-        if (size > 4 * 8192 || size < 4096)
+        if (size > 4 * 8192)
             size = 8192;
+	else
+	    while(size < 8192)
+		size += st.st_blksize;
     }
 #endif /* HAVE_ST_BLKSIZE */
 
