@@ -1,0 +1,2 @@
+# Test a lack of newline at the end of the configuration file.
+parameter: value
