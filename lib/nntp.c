@@ -171,7 +171,10 @@ nntp_read_line(struct nntp *nntp, time_t timeout, char **line)
     size_t offset;
     size_t start = 0;
 
-    if (in->used + in->left == in->size)
+    /* Compact the buffer if there are fewer than 128 characters left; this
+       limit is chosen somewhat arbitrarily, but note that most NNTP lines
+       are fairly short. */
+    if (in->used + in->left + 128 >= in->size)
         buffer_compact(in);
     while (status == NNTP_READ_OK) {
         if (buffer_find_string(in, "\r\n", start, &offset)) {
@@ -186,6 +189,8 @@ nntp_read_line(struct nntp *nntp, time_t timeout, char **line)
            boundaries. */
         start = (in->left > 0) ? in->left - 1 : 0;
         status = nntp_read_data(nntp, timeout);
+        if (in->used + in->left + 128 >= in->size)
+            buffer_compact(in);
     }
     return status;
 }
