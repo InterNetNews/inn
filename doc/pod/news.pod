@@ -1,4 +1,4 @@
-=head1 Changes from 2.3.2 to 2.3.3 (in progress)
+=head1 Changes from 2.3.2 to 2.3.3
 
 =over 2
 
@@ -12,10 +12,36 @@ for more details.
 
 =item *
 
-An off-by-one bug in repacking overview index files and a reliability bug
-with writing overview data were both fixed in the tradindexed overview
-method, hopefully making it somewhat more reliable, particularly for
-makehistory.
+Two bugs in repacking overview index files and a reliability bug with
+writing overview data were all fixed in the tradindexed overview method,
+hopefully making it somewhat more reliable, particularly for makehistory.
+
+=item *
+
+pgpverify now supports using GnuPG to check signatures (rather than PGP)
+without the pgpgpg wrapper.  GnuPG can check both old-style RSA signatures
+and new OpenPGP signatures and is recommended over PGP 2.6.
+
+=item *
+
+If rc.news.local exists in the INN binary directory, run it whenever
+rc.news is run, passing the start or stop argument to it.  This is
+available as a hook for local startup and shutdown code.
+
+=item *
+
+The default history table hash sizes were increased because a too-small
+value can cause serious performance problems (whereas a too-large hash
+just wastes a bit of disk space).
+
+=item *
+
+The sample control.ctl file has been extensively updated.
+
+=item *
+
+Various other more minor bug fixes, standards compliance fixes, and
+documentation improvements.
 
 =back
 
