@@ -68,9 +68,7 @@ AC_DEFUN([INN_MACRO_SUN_LEN],
 [AC_TRY_LINK(
 [#include <sys/types.h>
 #include <sys/un.h>],
-[struct sockaddr_un sun;
-int i;
-i = SUN_LEN(&sun);],
+    [struct sockaddr_un s_un; int i; i = SUN_LEN(&s_un);],
     inn_cv_macro_sun_len=yes,
     inn_cv_macro_sun_len=no)])
 if test x"$inn_cv_macro_sun_len" = xyes ; then
