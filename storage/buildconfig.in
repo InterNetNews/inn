@@ -1,14 +1,17 @@
 #! /usr/bin/perl
 
 require 5.003;
+use File::Basename;
 
 if (scalar(@ARGV) <= 0) {
     printf STDERR "No storage methods are available\n";
     exit(1);
 }
 
+$objects = "";
 foreach $file (@ARGV) {
     open(CFG, $file) || die "$!";
+    $dir = dirname $file;
     while (<CFG>) {
 	chomp;
 
@@ -32,6 +35,12 @@ foreach $file (@ARGV) {
 	    $number{$number} = $file;
 	    $methodnum{$file} = $number;
 	    next;
+	}
+	if (/^modules\s*=\s*(.*)/) {
+	    (@objs) = split /\s+/,$1;
+	    foreach $i (@objs) {
+		$objects .= " $dir/$i";
+	    }
 	}
     }
     close(CFG);
@@ -100,6 +109,9 @@ foreach $method (keys %methods) {
     print LIST "$path ";
 }
 print LIST "\n";
+print LIST "SM_OBJECTS = $objects\n";
+$objects =~ s/\.o\b/.lo/g;
+print LIST "LSM_OBJECTS = $objects\n";
 close(LIST);
 `cmp -s Make.methods Make.methods.new`;
 if ($? == 0) { unlink("Make.methods.new"); }

@@ -10,6 +10,7 @@
 #endif
 
 #include "libinn.h"
+#include "macros.h"
 
 /* Scale time back a bit, for shorter Message-ID's. */
 #define OFFSET	673416000L
@@ -28,8 +29,13 @@ GenerateMessageID(char *domain)
 	return NULL;
     Radix32(Now.time - OFFSET, sec32);
     Radix32(getpid(), pid32);
-    if ((p = GetFQDN(domain)) == NULL)
-	return NULL;
+    if ((domain != NULL && innconf->domain == NULL) ||
+	(domain != NULL && innconf->domain != NULL && !EQ(domain, innconf->domain))) {
+	p = domain;
+    } else {
+	if ((p = GetFQDN(domain)) == NULL)
+	    return NULL;
+    }
     sprintf(buff, "<%s$%s$%d@%s>", sec32, pid32, ++count, p);
     return buff;
 }

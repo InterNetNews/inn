@@ -107,9 +107,8 @@ and non-blocking I/O.
 If no data is available, then it will flush its in-core data structures.
 The default number of seconds to timeout before flushing is
 set as
-.I <DEFAULT_TIMEOUT in config.data>
+.I <DEFAULT_TIMEOUT in include/config.h>
 (typically
-.\" =()<.IR @<typDEFAULT_TIMEOUT>@ ) >()=
 .IR 300 ) 
 seconds.
 .PP
@@ -123,6 +122,12 @@ file, an article file, or the history database, it will send itself
 a ``throttle'' command.
 This will also happen if it gets too many I/O errors while writing
 to any files.
+.PP
+Some parameters in
+.IR inn.conf (5)
+can also be set innd's option.  In this case, parameters in
+.IR inn.conf (5)
+are overridden by those options.
 .SH OPTIONS
 .TP
 .B \-a
@@ -196,16 +201,16 @@ is changed with this value.
 This option allows you to bind innd to a specific interface IP address.
 The IP address must be in dotted quad (nnn.nnn.nnn.nnn) format. See also
 the ``bindaddress'' option in
-.IR inn.conf (5)
+.IR inn.conf (5).
 .TP
 .B \-l
 To limit the size of an article, use the ``\fB\-l\fP'' flag.
 If this flag is used, then any article bigger than
 .I size
-bytes will be rejected.
-The default is 1000000L bytes.
-Checking can be disabled by using a value
-of zero.
+bytes will be rejected.  The default is 1000000L bytes.  Checking can be
+disabled by using a value of zero.  See also the ``maxartsize'' and
+\&``localmaxartsize'' option in
+.IR inn.conf (5).
 .TP
 .B \-m
 To start the server in a paused or throttled state (see
@@ -226,7 +231,7 @@ of ``\fBn\fP'' will
 allow newsreading even when the server is not running.
 The default is to allow reading, but can also be changed with the
 ``readerswhenstopped'' option in
-.IR inn.conf (5)
+.IR inn.conf (5).
 .TP
 .B \-o
 To limit the number of files that will be kept open for outgoing file
@@ -285,8 +290,7 @@ a site does not want to run
 .I innd
 with root privileges.
 .SH "CONTROL MESSAGES"
-Arriving articles that have a Control header or have a Subject header that
-starts with the five characters \&``cmsg\ '' are called
+Arriving articles that have a Control header are called
 .IR "control messages" .
 Except for the cancel message, these messages are implemented by
 external programs in the
@@ -555,7 +559,6 @@ This is revision \\$3, dated \\$4.
 .SH "SEE ALSO"
 active(5),
 ctlinnd(8),
-crosspost(8),
 dbz(3),
 history(5),
 incoming.conf(5),

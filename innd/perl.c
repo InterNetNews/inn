@@ -279,7 +279,7 @@ XS(XS_INN_addhist)
 
     /* If any of the times are missing, they should default to now. */
     if (i < 4) {
-        sprintf(tbuff, "%ld", time((long *) 0));
+        sprintf(tbuff, "%ld", (long) time((time_t *) 0));
         for (; i < 4; i++)
             parambuf[i] = tbuff;
     }

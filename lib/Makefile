@@ -10,7 +10,7 @@ CFLAGS  = $(GCFLAGS)
 
 SOURCES = $(MISSING_SRC) \
 	argparse.c checkart.c cleanfrom.c clientactive.c clientlib.c \
-	closeonexec.c concat.c conffile.c dbz.c defdist.c findheader.c \
+	closeonexec.c concat.c conffile.c date.c dbz.c defdist.c findheader.c \
 	genid.c getconfig.c getdtab.c getfqdn.c getmodaddr.c gettime.c \
 	grpalias.c hash.c inndcomm.c localopen.c lockfile.c makedir.c \
 	md5.c nonblocking.c parsedate.c perl.c qio.c radix32.c readin.c \
@@ -20,7 +20,7 @@ SOURCES = $(MISSING_SRC) \
 
 OBJECTS = $(MISSING_OBJ) \
 	argparse.o checkart.o cleanfrom.o clientactive.o clientlib.o \
-	closeonexec.o concat.o conffile.o dbz.o defdist.o findheader.o \
+	closeonexec.o concat.o conffile.o date.o dbz.o defdist.o findheader.o \
 	genid.o getconfig.o getdtab.o getfqdn.o getmodaddr.o gettime.o \
 	grpalias.o hash.o inndcomm.o localopen.o lockfile.o makedir.o \
 	md5.o nonblocking.o parsedate.o qio.o radix32.o readin.o \
@@ -30,13 +30,13 @@ OBJECTS = $(MISSING_OBJ) \
 
 LOBJECTS= $(OBJECTS:.o=.lo)
 
-all:		libinn.$(EXTLIB) perl.o ../include/autoconfig.h
+all:		../include/inn/version.h libinn.$(EXTLIB) perl.o ../include/autoconfig.h
 
 install:	all $(D)$(PATHLIB)/libinn.$(EXTLIB)
 
 clobber clean:
 	rm -f *.o *.lo libinn.la libinn.a parsedate.c parsedate qiotest
-	rm -f profiled libinn_p.a endian version.c
+	rm -f profiled libinn_p.a endian ../include/inn/version.h
 	rm -rf .libs
 
 tags ctags:	$(SOURCES)
@@ -62,8 +62,9 @@ perl.o: perl.c
 ../include/autoconfig.h: endian
 	./endian >../include/autoconfig.h
 
-version.c:	mkversion ../Makefile.global
-	./mkversion '$(VERSION)' '$(VERSION_EXTRA)'
+../include/inn/version.h:	mkversion ../Makefile.global
+	-mkdir ../include/inn > /dev/null 2>&1
+	./mkversion '$(VERSION)' '$(VERSION_EXTRA)' $@
 
 parsedate.c:	parsedate.y
 	@echo Expect 6 shift/reduce conflicts
@@ -90,12 +91,14 @@ $(D)$(PATHLIB)/libinn.$(EXTLIB): libinn.$(EXTLIB)
 
 ##  Dependencies.  Default list, below, is probably good enough.
 
-depend: Makefile $(SOURCES)
+depend: Makefile $(SOURCES) ../include/autoconfig.h
 	$(MAKEDEPEND) $(CFLAGS) $(PERLINC) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 setenv.o: setenv.c ../include/configdata.h ../include/config.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
+hstrerror.o: hstrerror.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h
 argparse.o: argparse.c ../include/configdata.h ../include/config.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
 checkart.o: checkart.c ../include/configdata.h ../include/config.h \
@@ -112,14 +115,19 @@ concat.o: concat.c ../include/config.h ../include/libinn.h \
  ../include/macros.h
 conffile.o: conffile.c ../include/config.h ../include/clibrary.h \
  ../include/conffile.h ../include/libinn.h ../include/macros.h
-dbz.o: dbz.c
+date.o: date.c ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h
+dbz.o: dbz.c ../include/config.h ../include/clibrary.h \
+ ../include/md5.h ../include/libinn.h ../include/macros.h \
+ ../include/dbz.h
 defdist.o: defdist.c ../include/configdata.h ../include/config.h \
  ../include/clibrary.h ../include/libinn.h ../include/paths.h \
  ../include/macros.h
 findheader.o: findheader.c ../include/configdata.h ../include/config.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/qio.h
-genid.o: genid.c ../include/config.h ../include/libinn.h
+genid.o: genid.c ../include/config.h ../include/libinn.h \
+ ../include/macros.h
 getconfig.o: getconfig.c ../include/config.h ../include/clibrary.h \
  ../include/innconf.h ../include/libinn.h ../include/macros.h \
  ../include/paths.h
@@ -177,7 +185,7 @@ tempname.o: tempname.c ../include/config.h ../include/clibrary.h
 waitnb.o: waitnb.c ../include/config.h
 wildmat.o: wildmat.c ../include/configdata.h ../include/config.h \
  ../include/clibrary.h
-version.o: version.c
+version.o: version.c ../include/inn/version.h
 xfopena.o: xfopena.c ../include/configdata.h ../include/config.h \
  ../include/clibrary.h
 xmalloc.o: xmalloc.c ../include/config.h ../include/libinn.h

@@ -7,8 +7,13 @@
 #include "libinn.h"
 #include "methods.h"
 
-BOOL trash_init(BOOL *selfexpire) {
-    *selfexpire = TRUE;
+BOOL trash_init(SMATTRIBUTE *attr) {
+    if (attr == NULL) {
+	SMseterror(SMERR_INTERNAL, "attr is NULL");
+	return FALSE;
+    }
+    attr->selfexpire = TRUE;
+    attr->expensivestat = FALSE;
     return TRUE;
 }
 

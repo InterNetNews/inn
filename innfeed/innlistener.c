@@ -56,6 +56,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "host.h"
 #include "innlistener.h"
 #include "msgs.h"
+#include "nntp.h"
 #include "tape.h"
 
 #define LISTENER_INPUT_BUFFER (1024 * 8) /* byte size of the input buffer */
@@ -533,6 +534,12 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
              rest of the command line. Will return null if file is missing. */
           article = newArticle (fileName, msgid) ;
           *fileNameEnd = ' ' ;
+
+          /* Check the message ID length */
+          if (strlen(msgid) > NNTP_MSGID_MAXLEN) {
+            syslog(LOG_ERR,INN_MSGID_SIZE,NNTP_MSGID_MAXLEN,msgid) ;
+            *(msgidEnd+1) = '\0' ;
+          }
           *msgidEnd = ' ' ;
 
           /* Check if message ID starts with < and ends with > */

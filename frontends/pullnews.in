@@ -388,7 +388,11 @@ sub crossFeedGroup {
            $narticles, $first, $last ;
     printf LOG "\tOur current highest: %d", $prevHigh, ;
     
-    return 0 if ! $narticles || ! $name ;
+    return 0 if ! $name ;
+    if ($narticles  == 0) {
+	print LOG " (nothing to get)\n";
+	return 1 ;
+    }
 
     if ($prevHigh == -1 || $last <= $prevHigh) {
 	# we connected OK but there's nothing there, or we just want 

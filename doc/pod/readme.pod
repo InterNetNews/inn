@@ -1,9 +1,5 @@
 =head1 Welcome to INN 2.3!
 
-This is the current development version of INN 2.3.  This code is under
-active development and may or may not be stable at any given time.
-Contributions and bug reports are welcome and encouraged.
-
 This work is sponsored by the Internet Software Consortium.
 
 Please see F<INSTALL> for installation instructions, F<NEWS> for what's
@@ -45,7 +41,7 @@ uses to talk to another news server over TCP/IP is called NNTP (Network
 News Transport Protocol).
 
 INN supports accepting articles via either NNTP connections or via UUCP.
-innd, the heard of INN, handles NNTP feeding connections directly; UUCP
+innd, the heart of INN, handles NNTP feeding connections directly; UUCP
 newsfeeds use rnews (included in INN) to hand articles off to innd.  Other
 parts of INN handle feeding articles out to other news servers, most
 commonly innfeed (for real-time outgoing feeds) or nntpsend and innxmit
@@ -65,7 +61,7 @@ server administrator to reject unwanted articles (such as spam and other
 abuses of Usenet).
 
 INN is free software, supported by the Internet Software Consortium and
-volunteers around the world.  See L<Supporting the INN Effort> below.
+volunteers around the world.  See L<"Supporting the INN Effort"> below.
 
 =head1 Prerequisites
 
@@ -85,7 +81,7 @@ make extensive use of mmap(), which can cause problems on some older
 operating systems.  See F<INSTALL> for a list of systems it is known to
 work on.  If you encounter problems compiling or running INN, or if you
 successfully run INN on a platform that isn't listed in F<INSTALL>, please
-let us know (see L<Contacting the Maintainers> below).
+let us know (see L<"Reporting Bugs"> below).
 
 Perl 5.003 or later is required to build INN.  Perl 5.004 is required if
 you want the embedded Perl filter support (which is highly recommended;
@@ -108,7 +104,7 @@ outgoing feeds have to be set up and tested).  Be prepared to take some
 time to understand what's going on and how all the pieces fit together.
 If you have any specific suggestions for documentation, or comments about
 things that are unclear, please send them to the INN maintainers (see
-L<Contacting the Maintainers> below).
+L<"Reporting Bugs"> below).
 
 See F<INSTALL> for step-by-step instructions for setting up and
 configuring a news server.
@@ -207,6 +203,62 @@ deserves a lion's share of the credit for writing INN in the first place
 and making it the most popular news server software on the planet (no NNTP
 yet to the moon, but we plan to be there first).
 
+=head1 Related Packages
+
+INN users may also be interested in the following software packages that
+work with INN or are based on it.  Please note that none of this software
+is developed or maintained by ISC; we don't support it and generally can't
+answer questions about it.
+
+=over 4
+
+=item CleanFeed
+
+URL: <http://www.exit109.com/~jeremy/news/cleanfeed.html>
+
+CleanFeed is an extremely powerful spam filter, probably the most widely
+used spam filter on Usenet currently.  It catches excessive multiposting
+and a host of other things, and is highly configurable.  Note that it
+requires that INN be built with Perl support (the B<--with-perl> option to
+configure).
+
+=item GUP (Group Update Program)
+
+URL: <ftp://ftp.debian.org/debian/dists/unstable/main/source/news/>
+
+GUP provides a way for your peers to update their newsfeeds entries as
+they want without having to ask you to edit the configuration file all the
+time.  It's useful when feeding peers who take limited and very specific
+feeds that change periodically.
+
+=item inflow
+
+URL: <http://www.switch.ch/netnews/wg/netnews-wg.html>
+
+inflow generates graphs of news flow statistics in real time from INN's
+logs (things like articles accepted per peer, volume accepted per peer,
+and the like).
+
+=item PersonalINN
+
+URL: <http://www.ritual.org/summer/pinn/>
+
+PersonalINN is a version of INN modified for personal use and with a
+friendly GUI built on top of it.  It is available for NeXTSTEP or OPENSTEP
+only, unfortunately.
+
+=item suck
+
+URL: <http://home.att.net/~bobyetman/>
+
+suck is a separate package for downloading a news feed via a reading
+connection (rather than via a direct NNTP or UUCP feed) and sending
+outgoing local posts via POST.  It's intended primarily for personal or
+small-organization news servers who get their news via an ISP and are too
+small to warrant setting up a regular news feed.
+
+=back
+
 =head1 Supporting the INN Effort
 
 Note that INN is supported by the Internet Software Consortium, and
@@ -219,11 +271,8 @@ kind hearted folk such as yourself.
 The Internet Software Consortium has also commissioned a DHCP server
 implementation, handles the official support/release of BIND, and supports
 the Kerberos Version 5 effort at MIT.  You can learn more about the ISC's
-goals and accomplishments from the web page at http://www.isc.org/isc/.
+goals and accomplishments from the web page at <http://www.isc.org/>.
 
-=begin text
-
-James Brister
-inn@isc.org
-
-=end text
+                                        Russ Allbery
+                                        Katsuhiro Kondou
+                                        <inn@isc.org>

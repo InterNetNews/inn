@@ -27,8 +27,8 @@ INN has been confirmed to work on the following operating systems:
 
   AIX 4.3
   FreeBSD 2.2.x and up
-  HP-UX 10.20
-  Linux 2.x (tested with libc 5.4 or libc 6.0)
+  HP-UX 10.20 and up
+  Linux 2.x (tested with libc 5.4 or glibc 2.0 and up)
   SCO 5.0.4 (tested with gcc 2.8.1 and cc)
   Solaris 2.5.x and up
   UnixWare 7.1
@@ -169,7 +169,10 @@ options are:
 Sets the installation prefix for INN.  The default is F</usr/local/news>.
 All of INN's programs and support files will be installed under this
 directory.  This should match the home directory of your news user (it
-will make installation and maintenance easier).
+will make installation and maintenance easier).  It is not recommended to
+set this to /usr; if you decide to do that anyway, make sure to point
+INN's temporary directory at a directory that isn't world-writeable (see
+B<--with-tmp-path> below).
 
 =item B<--with-db-dir>=PATH
 
@@ -184,13 +187,22 @@ to a different file system.
 =item B<--with-spool-dir>=PATH
 
 Sets the prefix for the news spool (when using any storage method other
-than CNFS) and the overview spool.  The default is F<PREFIX/pool>.  This
+than CNFS) and the overview spool.  The default is F<PREFIX/spool>.  This
 is another common portion of INN to move to a different file system (often
 F</news>).
 
 It's also possible to set the paths for most other sections of the INN
 installation independently; see C<./configure --help> and look for the
 B<--with-*-dir>=PATH options.
+
+=item B<--with-tmp-path>=PATH
+
+Sets the directory in which INN will create temporary files.  This should
+under no circumstances be the same as the system temporary directory or
+otherwise be set to a world-writeable directory, since INN doesn't take
+care to avoid symlink attacks and other security problems possible with a
+world-writeable directory.  This directory should be reserved for the
+exclusive use of INN and only writeable by the news user.
 
 =item B<--enable-tagged-hash>
 
@@ -282,18 +294,30 @@ and world-executable so that non-privileged users on the news server
 machine can use inews to post articles locally (somewhat faster than
 opening a new network connection).  For standalone news servers, by far
 the most common configuration now, there's no need to use this option;
-even if you have regular login accounts on your news server, nearly all
-news readers these days handle posting through a network connection and
-don't need a local setgid inews to post.  Installing inews setgid was the
-default prior to INN 2.3.
+even if you have regular login accounts on your news server, INN's inews
+can post fine via a network connection to your running news server and
+doesn't need to use the local socket (which is what setgid enables it to
+do).  Installing inews setgid was the default prior to INN 2.3.
+
+=item B<--with-berkeleydb=PATH>
+
+Enables support for Berkeley DB (2.x or 3.x), which means that it will
+then be possible to use the ovdb overview method if you wish.  Enabling
+this configure option doesn't mean you'll be required to use ovdb, but it
+does require that Berkeley DB be installed on your system.  If a path is
+given, it sets the installed directory of Berkeley DB (configure will
+search for it in some standard locations, but if you have it installed
+elsewhere, you may need this option).
 
 =item B<--with-openssl=PATH>
 
-Enables support for SSL for news reading, which means it is possible to
-have SSL or TLS encrypted NNTP connections between your server and
-newsreaders.  This option requires OpenSSL.  If a path is given, it sets
-the installed directory of OpenSSL.  You must then make a certificate and
-private key.
+Enables support for SSL for news reading, which means it will be possible
+to have SSL or TLS encrypted NNTP connections between your server and
+newsreaders.  This option requires OpenSSL be installed on your system.
+If a path is given, it sets the installed directory of OpenSSL.  After
+compiling and installing INN with this option, you'll still need to make a
+certificate and private key to use SSL.  See below for details on how to
+do that.
 
 =back
 
@@ -443,6 +467,9 @@ stores overview data in a Berkeley DB database; it's fast and very robust,
 but requires more disk space.  See the ovdb(5) man page for more
 information on it.
 
+Note that ovdb has not been as widely tested as the other overview
+mechanisms and should be considered experimental.
+
 If buffindexed is chosen, you will need to create the buffers for it to
 use (very similar to creating CNFS buffers) and list the available buffers
 in buffindexed.conf.  See buffindexed.conf(5) for more information.
@@ -533,7 +560,7 @@ operation:
 If set to true then INN will support the NEWNEWS command for news readers.
 While this can be an expensive operation, its speed has been improved
 considerably as of INN 2.3 and it's probably safe to turn on without
-risking excessive server load.  The default is false.
+risking excessive server load.  The default is true.
 
 =item complaints
 
@@ -717,7 +744,7 @@ remote.example.com, but it puts news.example.com in the Path: header.  If
 the remote site puts its actual hostname in the Path: header, you won't
 need the C</news.example.com> part.
 
-This entry will cause innd to write out a file in ~news/db/outgoing named
+This entry will cause innd to write out a file in ~news/spool/outgoing named
 remote.example.com and containing the message ID and storage token of each
 message to send to that site.  innxmit knows how to read this format of
 file and send those articles to the remote site.  For information on
@@ -838,9 +865,10 @@ using CNFS, skip this section.
 CNFS stores articles in logical objects called metacycbuffs.  Each of the
 metacycbuffs is in turn composed of one or more physical buffers called
 cycbuffs.  As articles are written to the metacycbuff each article is
-written to the next cycbuff in the list in a round-robin fashion.  This is
-so that you can distribute the individual cycbuffs across multiple
-physical disks and balance the load between them.
+written to the next cycbuff in the list in a round-robin fashion (unless
+sequential mode is specified, in which case each cycbuff is filled before
+moving on to the next).  This is so that you can distribute the individual
+cycbuffs across multiple physical disks and balance the load between them.
 
 There are two ways to create your cycbuffs:
 
@@ -850,10 +878,10 @@ There are two ways to create your cycbuffs:
 
 Use a raw disk partition (best).  This will give you the most speed, but
 it requires your OS support mmap() on a block device.  Solaris supports
-this, FreeBSD and Linux do not.  Also on many PC-based Unixes it is
-difficult to create more than eight partitions, which may limit your
-options.  See L<Creating the Article Spool> for more discussion of how to
-set this up.
+this, FreeBSD and Linux (without patches) do not.  Also on many PC-based
+Unixes it is difficult to create more than eight partitions, which may
+limit your options.  See L<Creating the Article Spool> for more discussion
+of how to set this up.
 
 =item 2.
 
@@ -879,11 +907,12 @@ make up the metacycbuff, the size of those cycbuffs and where they will be
 stored.  Some OSes do not support files larger than 2GB which will force
 all of your cycbuffs to be < 2GB.  Linux is known to have this limitation,
 FreeBSD does not.  Some OSes that support large files don't support block
-access to large raw partitions (Solaris is in this category); on those
-OSes, if you want cycbuffs over 2GB, you'll have to use regular files.  If
-in doubt, keep your cycbuffs smaller than 2GB.  Also when laying out your
-cycbuffs, you will want to try to arrange them across as many physical
-disks as possible (or use a striped disk array and put them all on that).
+access to large raw partitions (Solaris prior to Solaris 7 or not running
+in 64-bit mode is in this category); on those OSes, if you want cycbuffs
+over 2GB, you'll have to use regular files.  If in doubt, keep your
+cycbuffs smaller than 2GB.  Also when laying out your cycbuffs, you will
+want to try to arrange them across as many physical disks as possible (or
+use a striped disk array and put them all on that).
 
 For each cycbuff you will be creating, add a line to F<cycbuff.conf> like
 the following:
@@ -910,6 +939,13 @@ choice.  The last part of the entry is a comma-separated list of all of
 the cycbuffs that should be used to build this metacycbuff.  Each cycbuff
 should only appear in one metacycbuff line, and all metacycbuff lines must
 occur after all cycbuff lines in the file.
+
+If you want INN to fill each cycbuff before moving on to the next one
+rather than writing to them round-robin, add C<:SEQUENTIAL> to the end of
+the metacycbuff line.  This may give noticeably better performance when
+using multiple cycbuffs on the same spindle (such as partitions or slices
+of a larger disk), but will probably give worse performance if your
+cycbuffs are spread out across a lot of spindles.
 
 =head2 storage.conf
 
@@ -981,7 +1017,7 @@ needed when you edit the F<expire.ctl> file a bit later.
 This file sets the expiration policy for articles stored on the server.
 Only one entry is required for all storage classes; it looks like:
 
-    /remember/:14
+    /remember/:10
 
 This entry says how long to keep the message IDs for articles that have
 already expired in the history file so that the server doesn't accept them
@@ -991,7 +1027,7 @@ spool, you want to keep them around in your history file for a little
 while to ensure you don't get duplicates.
 
 INN will reject any articles more than a certain number of days old (the
-artcutoff parameter in F<inn.conf>, defaulting to 14); the number on the
+artcutoff parameter in F<inn.conf>, defaulting to 10); the number on the
 C</remember/> line should match that.
 
 CNFS makes no further use of F<expire.ctl>, since articles stored in CNFS
@@ -1097,6 +1133,14 @@ There's a small shell script in cycbuff.conf(5) that may help with this.
 Make sure to create the device files in the location INN expects them
 (specified in F<cycbuff.conf>).
 
+Solaris users please note:  On Solaris, do not use raw devices that
+include the first cylinder of the disk.  Solaris doesn't protect the
+superblock from being overwritten by an application writing to raw devices
+and includes it in the first cylinder of the disk, so unless you use a
+slice that starts with cylinder 1 instead of 0, INN will invalidate the
+partition table when it tries to initialize the cycbuff and all further
+accesses will fail until you repartition.
+
 =head1 Creating the Database Files
 
 At this point, you need to set up the news database directory
@@ -1138,6 +1182,7 @@ F<inn.conf>.
 Next, you need to create an empty history database.  To do this, type:
 
     cd ~news/db
+    touch history
     makedbz -i
 
 When it finishes, rename the files it created to remove the C<.n> in the

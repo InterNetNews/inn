@@ -2,20 +2,16 @@
 
 include ../../Makefile.global
 
-CP      = $(UPLIBTOOL) cp
 CFLAGS  = $(GCFLAGS) -I../../include -I..
 
 SOURCES = buffindexed.c
 OBJECTS = buffindexed.o
 ROBJECTS= buffindexed.$(EXTOBJ)
 
-all: $(OBJECTS) moveobjs
+all: $(OBJECTS)
 
 .c.o:
 	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
-
-moveobjs: $(OBJECTS)
-	$(CP) -p $(ROBJECTS) ../objs
 
 debug:	buffindexed
 

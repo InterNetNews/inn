@@ -9,14 +9,16 @@
 # `authenticate', then that function will be called during processing of a
 # connect, auth request or disconnect.  Attributes about the connection are 
 # passed to the program in the %attributes global variable.  It should return 
-# an array with 4 elements:
+# an array with 5 elements:
 #
 # 1) NNTP response code.  Should be one of the codes from %connectcodes or %authcodes
 # 2) Reading Allowed. Should be a boolean value.
 # 3) Posting Allowed. Should be a boolean value.
 # 4) Wildmat expression that says what groups to provide access to.
+# 5) Maximum bytes per second a client is permitted to use for retrieving
+#    articles
 #
-# All four of these are required.  If there is a problem with them then nnrpd
+# All five of these are required.  If there is a problem with them then nnrpd
 # will die and syslog the exact reason.
 
 #
@@ -96,19 +98,19 @@ sub checkuser {
   my $pass = $attributes{'password'};
 
   if (!defined($users{$user})) {
-    return ($authcodes{'denied'}, undef, undef, undef);
+    return ($authcodes{'denied'}, undef, undef, undef, undef);
   }
   my ($password, $news_post, $maxcon, $subscription) = split(/\t/, $users{$user});
   my ($salt) = substr($password, 0, 2);
   if (crypt($pass, $salt) ne $password) {
-    return ($authcodes{'denied'}, undef, undef, undef);
+    return ($authcodes{'denied'}, undef, undef, undef, undef);
   }
   $news_post = lc($news_post);
   $news_post = ($news_post eq 'y') ? 1 : 0;
   if (!defined($subscription)) {
     $subscription = $defaultgroups;
   }
-  return ($authcodes{'allowed'}, 1, $news_post , $subscription);
+  return ($authcodes{'allowed'}, 1, $news_post , $subscription, undef);
 }
 
 sub permtocode {
@@ -132,16 +134,16 @@ sub checkhost {
       $block = $block & $mask;
       $ip = unpack('N', pack('C4', split(/\./, $attributes{ipaddress})));
       if (($ip & $mask) == $block) {
-        return (permtocode($read, $post) , $read, $post, $key->{groups});
+        return (permtocode($read, $post) , $read, $post, $key->{groups}, undef);
       }
     }
     if ($attributes{ipaddress} =~ /$key->{block}/) {
-      return (permtocode($read, $post), $read, $post, $key->{groups});
+      return (permtocode($read, $post), $read, $post, $key->{groups}, undef);
     }
     if ($attributes{hostname} =~ /$key->{block}/) {
-      return (permtocode($read, $post), $read, $post, $key->{groups});
+      return (permtocode($read, $post), $read, $post, $key->{groups}, undef);
     }
   }
-  return ($connectcodes{'permdenied'}, undef, undef, undef);
+  return ($connectcodes{'permdenied'}, undef, undef, undef, undef);
 }
 

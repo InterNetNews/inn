@@ -1,0 +1,116 @@
+=head1 NAME
+
+ckpasswd - nnrpd password authenticator
+
+=head1 SYNOPSIS
+
+B<ckpasswd> [B<-s>] [B<-d> I<database>] [B<-f> I<filename>]
+
+=head1 DESCRIPTION
+
+B<ckpasswd> is the basic password authenticator for nnrpd, suitable for
+being run from an auth stanza in readers.conf(5).  See readers.conf(5) for
+more information on how to configure an nnrpd authenticator.
+
+B<ckpasswd> accepts a username and password from nnrpd and tells nnrpd(8)
+whether that's the correct password for that username.  By default, when
+given no arguments, it checks the password against the password field
+returned by getpwnam(3).  Note that these days most systems no longer make
+real passwords available via getpwnam(3) (some still do if and only if the
+program calling getpwnam(3) is running as root).
+
+Note that B<ckpasswd> expects all passwords to be stored encrypted by the
+system crypt(3) function and calls crypt(3) on the supplied password
+before comparing it to the expected password.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-d> I<database>
+
+Read passwords from a database (ndbm or dbm format depending on what your
+system has) rather than by using getpwnam(3).  B<ckpasswd> expects
+I<database>.dir and I<database>.pag to exist and to be a database keyed by
+username with the encrypted passwords as the values.
+
+While INN doesn't come with a program intended specifically to create such
+databases, on most systems it's fairly easy to write a Perl script to do
+so.  Something like:
+
+    #!/usr/bin/perl
+    use NDBM_File;
+    use Fcntl;
+    tie (%db, 'NDBM_File', '/path/to/database', O_RDWR | O_CREAT, 0640)
+        or die "Cannot open /path/to/database: $!\n";
+    $| = 1;
+    print "Username: ";
+    my $user = <STDIN>;
+    chomp $user;
+    print "Password: ";
+    my $passwd = <STDIN>;
+    chomp $passwd;
+    my @alphabet = ('.', '/', 0..9, 'A'..'Z', 'a'..'z');
+    my $salt = join '', @alphabet[rand 64, rand 64];
+    $db{$user} = crypt ($passwd, $salt);
+    untie %db;
+
+Note that this will echo back the password when typed; there are obvious
+improvements that could be made to this, but it should be a reasonable
+start.
+
+This option will not be available on systems without dbm or ndbm
+libraries.
+
+=item B<-f> I<filename>
+
+Read passwords from the given file rather than using getpwnam(3).  The
+file is expected to be formatted like a system password file, at leat
+vaguely.  That means each line should look something like:
+
+    username:pdIh9NCNslkq6
+
+(and each line may have an additional colon after the encrypted password
+and additional data; that data will be ignored by B<ckpasswd>).  INN does
+not come with a utility to create the encrypted passwords, but it's a
+quick job with Perl (see the example script under B<-d>).
+
+=item B<-s>
+
+Check passwords against the result of getspnam(3) instead of getpwnam(3).
+This function, on those systems that supports it, reads from /etc/shadow
+or similar more restricted files.  If you want to check passwords supplied
+to nnrpd(8) against system account passwords, you will probably have to
+use this option on most systems.
+
+Most systems require special privileges to call getspnam(3), so in order
+to use this option you may need to make B<ckpasswd> setgid to some group
+(like group "shadow") or even setuid root.  B<ckpasswd> has not been
+specifically audited for such uses!  It is, however, a very small program
+that you should be able to check by hand for security.
+
+This configuration is not recommended if it can be avoided, since the NNTP
+protocol has no way of protecting passwords from casual interception, and
+using system passwords to authenticate NNTP connections therefore opens
+you up to the risk of password sniffing.  If you do use system passwords
+to authenticate connections, you should seriously consider only doing NNTP
+through ssh tunnels or over SSL.
+
+=back
+
+=head1 EXAMPLES
+
+See readers.conf(5) for examples of nnrpd(8) authentication configuration
+that uses B<ckpasswd> to check passwords.
+
+=head1 HISTORY
+
+Written by Russ Allbery E<lt>rra@stanford.eduE<gt> for InterNetNews.
+
+$Id$
+
+=head1 SEE ALSO
+
+readers.conf(5), nnrpd(8)
+
+=cut

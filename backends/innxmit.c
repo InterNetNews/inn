@@ -606,8 +606,10 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 	return FALSE;
     if (GotInterrupt)
 	Interrupted(Article, MessageID);
-    if (Debug)
+    if (Debug) {
+	(void)fprintf(stderr, "> [ article %d ]\n", art->len);
 	(void)fprintf(stderr, "> .\n");
+    }
 
     if (CanStream) return TRUE;	/* streaming mode does not wait for ACK */
 
@@ -751,14 +753,14 @@ takethis(int i) {
     ARTHANDLE	*art;
     TOKEN	token;
 
+    if (!IsToken(stbuf[i].st_fname)) {
+	strel(i);
+	++STATmissing;
+	return FALSE; /* Not an error. Could be canceled or expired */
+    }
+    token = TextToToken(stbuf[i].st_fname);
     if (!stbuf[i].art) { /* should already be open but ... */
 	/* Open the article. */
-	if (!IsToken(stbuf[i].st_fname)) {
-	    strel(i);
-	    ++STATmissing;
-	    return FALSE; /* Not an error. Could be canceled or expired */
-	}
-	token = TextToToken(stbuf[i].st_fname);
 	if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
 	    strel(i);
 	    ++STATmissing;
@@ -766,6 +768,14 @@ takethis(int i) {
 	}
 	stbuf[i].art = NEW(ARTHANDLE, 1);
 	*stbuf[i].art = *art;
+    } else if (SMprobe(SELFEXPIRE, &token, NULL)) {
+	/* examine if the article still exists */
+	if ((art = SMretrieve(token, RETR_STAT)) == NULL) {
+	    strel(i);
+	    ++STATmissing;
+	    return FALSE; /* Not an error. Could be canceled or expired */
+	}
+	SMfreearticle(art);
     }
     /* send "takethis <ID>" to the other system */
     (void)sprintf(buff, "takethis %s", stbuf[i].st_id);
@@ -918,6 +928,7 @@ int main(int ac, char *av[]) {
     BOOL		val;
     TOKEN		token;
 
+    (void)openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
 
@@ -982,9 +993,6 @@ int main(int ac, char *av[]) {
 	exit(1);
     }
 
-    (void)openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
-
-    
     val = TRUE;
     if (!SMsetup(SM_PREOPEN,(void *)&val)) {
 	fprintf(stderr, "Can't setup the storage manager\n");
@@ -1007,7 +1015,7 @@ int main(int ac, char *av[]) {
 	SMshutdown();
 	exit(1);
     }
-    if (LockFile(QIOfileno(BATCHqp), TRUE) < 0) {
+    if (!lock_file(QIOfileno(BATCHqp), LOCK_WRITE, TRUE)) {
 #if	defined(EWOULDBLOCK)
 	if (errno == EWOULDBLOCK) {
 	    SMshutdown();

@@ -1445,7 +1445,7 @@ static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
           p = bufferBase (modeBuffer) ;
 
           /* now issue the MODE STREAM command */
-          d_printf (1,"%s:%d Issuing the streaming command: %s",
+          d_printf (1,"%s:%d Issuing the streaming command: %s\n",
                    hostPeerName (cxn->myHost),cxn->ident,MODE_CMD) ;
 
           strcpy (p, MODE_CMD) ;
@@ -1516,9 +1516,11 @@ static void getModeResponse (EndPoint e, IoStatus i, Buffer *b, void *d)
     }
   else if (i != IoDone)
     {
-      errno = endPointErrno (e) ;
-      syslog (LOG_ERR, RESPONSE_READ_FAILED, peerName, cxn->ident) ;
-
+      if (i != IoEOF)
+        {
+          errno = endPointErrno (e) ;
+          syslog (LOG_ERR, RESPONSE_READ_FAILED, peerName, cxn->ident) ;
+        }
       cxnSleepOrDie (cxn) ;
     }
   else if (strchr (p, '\n') == NULL)
@@ -1645,8 +1647,11 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
 
   if (i != IoDone)
     {                           /* uh oh. */
-      errno = endPointErrno (e) ;
-      syslog (LOG_ERR, RESPONSE_READ_FAILED, peerName, cxn->ident) ;
+      if (i != IoEOF)
+        {
+          errno = endPointErrno (e) ;
+          syslog (LOG_ERR, RESPONSE_READ_FAILED, peerName, cxn->ident) ;
+        }
       freeBufferArray (b) ;
 
       cxnLogStats (cxn,true) ;
@@ -2737,9 +2742,27 @@ static void processResponse439 (Connection cxn, char *response)
 
   if (cxn->takeRespHead == NULL) /* peer is confused */
     {
-      syslog (LOG_NOTICE,BAD_RESPONSE,
-              hostPeerName (cxn->myHost),cxn->ident,439) ;
-      cxnSleepOrDie (cxn) ;
+      /* NNTPRelay return 439 for check <messid> if messid is bad */
+      if (cxn->checkRespHead == NULL) /* peer is confused */
+        {
+          syslog (LOG_NOTICE,BAD_RESPONSE,
+                  hostPeerName (cxn->myHost),cxn->ident,439) ;
+          cxnSleepOrDie (cxn) ;
+        }
+      else
+        {
+          if ((artHolder = artHolderByMsgId (msgid, cxn->checkRespHead)) == NULL)
+            noSuchMessageId (cxn,439,msgid,response) ;
+          else
+            {
+              cxn->checksRefused++ ;
+              remArtHolder (artHolder, &cxn->checkRespHead, &cxn->articleQTotal) ;
+              if (cxn->articleQTotal == 0)
+                cxnIdle (cxn) ;
+              hostArticleNotWanted (cxn->myHost, cxn, artHolder->article);
+              delArtHolder (artHolder) ;
+            }
+        }
     }
   else if (msgid == NULL || strlen (msgid) == 0 ||
            (artHolder = artHolderByMsgId (msgid, cxn->takeRespHead)) == NULL)
@@ -3743,7 +3766,7 @@ static Buffer buildCheckBuffer (Connection cxn)
           const char *msgid = artMsgId (p->article) ;
 
           sprintf (t,"CHECK %s\r\n", msgid) ;
-          d_printf (5,"%s:%d Command %s", peerName, cxn->ident, t) ;
+          d_printf (5,"%s:%d Command %s\n", peerName, cxn->ident, t) ;
 
           tlen += strlen (t) ;
 
@@ -3845,7 +3868,7 @@ static Buffer *buildTakethisBuffers (Connection cxn, Buffer checkBuffer)
               sprintf (t, "TAKETHIS %s\r\n", msgid) ;
               bufferSetDataSize (takeBuffer, strlen (t)) ;
 
-              d_printf (5,"%s:%d Command %s", peerName, cxn->ident, t) ;
+              d_printf (5,"%s:%d Command %s\n", peerName, cxn->ident, t) ;
 
               ASSERT (writeIdx <= lenArray) ;
               rval [writeIdx++] = takeBuffer ;

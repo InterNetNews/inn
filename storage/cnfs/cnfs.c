@@ -6,18 +6,17 @@
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
 #include <netinet/in.h>
 #include <syslog.h> 
 #include <sys/mman.h>
 #include <sys/stat.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
-
-#ifdef HAVE_LIMITS_H
-# include <limits.h>
-#endif
+#include <sys/uio.h>
 
 #ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>
@@ -34,10 +33,10 @@
 #include "libinn.h"
 #include "macros.h"
 #include "methods.h"
+#include "paths.h"
 
 #include "cnfs.h"
 #include "cnfs-private.h"
-#include "paths.h"
 
 typedef struct {
     /**** Stuff to be cleaned up when we're done with the article */
@@ -985,12 +984,18 @@ STATIC void CNFSshutdowncycbuff(CYCBUFF *cycbuff) {
     cycbuff->fd = -1;
 }
 
-BOOL cnfs_init(BOOL *selfexpire) {
+BOOL cnfs_init(SMATTRIBUTE *attr) {
     int			ret;
     METACYCBUFF	*metacycbuff;
     CYCBUFF	*cycbuff;
 
-    *selfexpire = FALSE;
+    if (attr == NULL) {
+	syslog(L_ERROR, "%s: attr is NULL", LocalLogName);
+	SMseterror(SMERR_INTERNAL, "attr is NULL");
+	return FALSE;
+    }
+    attr->selfexpire = TRUE;
+    attr->expensivestat = FALSE;
     if (innconf == NULL) {
 	if ((ret = ReadInnConf()) < 0) {
 	    syslog(L_ERROR, "%s: ReadInnConf failed, returned %d", LocalLogName, ret);
@@ -1054,8 +1059,6 @@ BOOL cnfs_init(BOOL *selfexpire) {
 	CNFSshutdowncycbuff(cycbuff);
       }
     }
-
-    *selfexpire = TRUE;
     return TRUE;
 }
 
@@ -1310,7 +1313,8 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	}
     }
     /* checking the bitmap to ensure cah.size is not broken was dropped */
-    if ((innconf->cnfscheckfudgesize != 0) && (ntohl(cah.size) > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
+    if (innconf->cnfscheckfudgesize != 0 && innconf->maxartsize != 0 &&
+	(ntohl(cah.size) > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
 	char buf1[24], buf2[24], buf3[24];
 	strcpy(buf1, CNFSofft2hex(cycbuff->free, FALSE));
 	strcpy(buf2, CNFSofft2hex(middle, FALSE));

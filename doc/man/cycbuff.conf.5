@@ -68,10 +68,10 @@ metacycbuff:meta_cyclic_buffer_name:buffer_names[:mode]
 .RE
 .PP
 \&``Meta_cyclic_buffer_name'' is the symbolic name of meta-cyclic buffer.
-This name is referred at ``options'' field at ``cnfs'' lines in
+This name is referred at ``options'' field at ``cnfs'' entries in
 .IR storage.conf (5).
-\&``Buffer_names'' is comma separated list of buffer names of ``cycbuff.''
-These buffer names should be defined at ``metacycbuff'' lines.
+\&``Buffer_names'' is comma separated list of symbolic names of ``cycbuff.''
+These buffer names should be defined at ``cycbuff'' lines.
 If ``buffer_names'' has more than one buffer names, CNFS method
 stores articles into each ``cycbuff'' in order cyclically.
 \&``Mode'' is the mode of storing article.  Currently there are two mode;
@@ -80,7 +80,7 @@ articles into each cycbuff in round robin way.  Mode ``SEQUENTIAL'' is to store
 articles sequentially into one cycbuff until it is filled up.  ``Mode'' is
 optional and the default value without this option is ``INTERLEAVE''.
 .PP
-Also it is necessary to set up ``options'' field at ``cnfs'' lines in
+Also it is necessary to set up ``options'' field at ``cnfs'' entries in
 .IR storage.conf (5)
 to use CNFS method.
 That field should be one of ``meta_cyclic_buffer_name'' defined at
@@ -102,12 +102,11 @@ recommended method.  Partition the disks to make each partition
 slightly larger (a few MB larger) than the intended size of each cycbuff.
 It is not recommend to use the block device files already located in ``/dev.''
 Instead, use "mknod" to create a new set of block device files.
-In order to do this, do an "ls -l" of the /dev/dsk partition and then a
-subsequent "ls -l" of the destination of the symbolic link under /devices.
+In order to do this, do an "ls -Ll" of the /dev/dsk partition.
 The major and minor device numbers are in the fifth and sixth columns (right
 before the date) respectively.  This information should be fed to "mknod"
 to make a "block-type special file" (b).
-Here is a short script that accomplishes this when fed the /dev/dsk/
+Here is a short script that accomplishes this when fed the ``/dev/dsk/''
 partition name:
 .sp 1
 .nf
@@ -123,9 +122,10 @@ mknod /cycbuff/$disk b $major $minor
 .fi
 The created device files themselves consume very little space.
 .PP
-In either case, make certain that each cycbuff file is owned by your
-news user, news group, and has rw modes for the owner and group (mode
-0664 or 0660).
+In either case, make certain that each overview buffer file is owned by
+.IR <USER\ specified\ with\ \-\-with\-news\-user\ at\ configure> ,
+.IR <GROUP\ specified\ with\ \-\-with\-news\-group\ at\ configure> ,
+and has read/write modes for the owner and group (mode ``0664'' or ``0660'').
 .PP
 When you first start innd and everything is configured properly, you
 should see messages in news.notice which look like:

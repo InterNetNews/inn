@@ -238,6 +238,13 @@ for (;;) {
 	next ;
     }
 
+    # strip out news trace headers since otherwise posting may fail.  other
+    # trace headers will be renamed to add 'X-' so we don't have to worry
+    # about them.
+    if (/^X-(Trace|Complaints-To):\s*/sio) {
+        next ;
+    }
+
     # random unknown header.  prepend 'X-' if it's not already there.
     $_ = "X-$_" unless /^X-/sio ;
     $weird_mail_hdrs .= "$_\n";

@@ -31,6 +31,7 @@ extern const char       inn_version_string[];
    eventually go away entirely. */
 extern const char *     INNVersion(void);
 
+#define HAVE_INN_VERSION_H
 
 /*
 **  MEMORY MANAGEMENT
@@ -74,11 +75,10 @@ extern FILE     *CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer, c
 extern void	CAclose(void);
 
 /* File locking. */
-extern int      LockFile(int fd, BOOL block);
+typedef enum { LOCK_READ, LOCK_WRITE, LOCK_UNLOCK } LOCKTYPE;
+extern BOOL      lock_file(int fd, LOCKTYPE type, BOOL block);
 
 #ifdef HAVE_FCNTL
-typedef enum { LOCK_READ, LOCK_WRITE, LOCK_UNLOCK } LOCKTYPE;
-
 extern BOOL     LockRange(int fd, LOCKTYPE type, BOOL block,
                           OFFSET_T offset, OFFSET_T size);
 #endif
@@ -237,6 +237,7 @@ typedef struct _TIMEINFO {
     long	tzone;
 } TIMEINFO;
 extern time_t	parsedate(char *p, TIMEINFO *now);
+extern BOOL     makedate(time_t, BOOL local, char *buff, size_t buflen);
 extern int	GetTimeInfo(TIMEINFO *Now);
 
 /* Hash functions */

@@ -49,9 +49,8 @@ qio \- quick I/O part of InterNetNews library
 .B "    QIOSTATE	*qp;"
 .SH DESCRIPTION
 The routines described in this manual page are part of
-.IR libstorage (3).
-They are used to provide quick read access to files or articles specified
-with tokens.
+.IR libinn (3).
+They are used to provide quick read access to files.
 All routines are not available for token.
 The letters ``QIO'' stand for
 .IR Q uick
@@ -61,12 +60,6 @@ The letters ``QIO'' stand for
 opens the file
 .I name
 for reading.  If 
-.I name
-is the token of an article,
-.I QIOopen
-calls
-.IR SMretrieve .
-If 
 .I <HAVE_ST_BLKSIZE in include/config.h>
 is defined,
 .I QIOopen

@@ -468,6 +468,11 @@ STATIC BOOL OV3mmapgroup(GROUPHANDLE *gh) {
 	return FALSE;
     }
     gh->indexlen = sb.st_size;
+    if (gh->datalen == 0 || gh->indexlen == 0) {
+	gh->datamem = (char *)-1;
+	gh->indexmem = (INDEXENTRY *)-1;
+	return TRUE;
+    }
     if (!gh->datamem) {
 	if ((gh->datamem = (char *)mmap(0, gh->datalen, PROT_READ, MAP_SHARED,
 					gh->datafd, 0)) == (char *)-1) {
@@ -804,10 +809,8 @@ void *tradindexed_opensearch(char *group, int low, int high) {
 	base = ge->base;
     } while (ge->indexinode != oldinode);
 
-    if (high < base || low < base) { /* Check for corrupted group entry */
+    if (high < base || low < base) { /* return NULL if searching range is out */
       OV3closegroup(gh, FALSE);
-      syslog(L_ERROR, "tradindexed: Group %s has a corrupted group entry", 
-	     group);
       return NULL;
     }
 
@@ -829,6 +832,8 @@ BOOL ov3search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token
     OV3SEARCH           *search = (OV3SEARCH *)handle;
     INDEXENTRY           *ie;
 
+    if (search->gh->datamem == (char *)-1 || search->gh->indexmem == (INDEXENTRY *)-1)
+	return FALSE;
     for (ie = search->gh->indexmem;
 	 ((char *)&ie[search->cur] < (char *)search->gh->indexmem + search->gh->indexlen) &&
 	     (search->cur <= search->limit) &&
@@ -843,11 +848,12 @@ BOOL ov3search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token
 	   no index room for it */
 	return FALSE;
     }
+
+    ie = &ie[search->cur];
     if (ie->offset > search->gh->datalen || ie->offset + ie->length > search->gh->datalen)
 	/* index may be corrupted, do not go further */
 	return FALSE;
 
-    ie = &ie[search->cur];
     if (artnum)
 	*artnum = search->base + search->cur;
     if (len)
@@ -1105,50 +1111,16 @@ BOOL tradindexed_expiregroup(char *group, int *lo) {
     newge.base = newge.low = newge.count = 0;
     while (ov3search(handle, &artnum, &data, &len, &token, &arrived, &expires)) {
 	ah = NULL;
-	if (SMprobe(SELFEXPIRE, &token, NULL)) {
+	if (!SMprobe(EXPENSIVESTAT, &token, NULL) || OVstatall) {
 	    if ((ah = SMretrieve(token, RETR_STAT)) == NULL)
 		continue;
+	    SMfreearticle(ah);
 	} else {
-	    if (!innconf->groupbaseexpiry && !OVhisthasmsgid(data))
+	    if (!OVhisthasmsgid(data))
 		continue; 
 	}
-	if (ah)
-	    SMfreearticle(ah);
 	if (innconf->groupbaseexpiry && OVgroupbasedexpire(token, group, data, len, arrived, expires))
 	    continue;
-#if 0
-	if (p = strchr(data, '\t')) {
-	    for (p--; (p >= data) && isdigit((int) *p); p--);
-	    if (p >= data) {
-		printf("bad article %s:%d\n", group, artnum);
-		sprintf(overdata, "%d\t", artnum);
-		i = strlen(overdata);
-		p = overdata + i;
-		memcpy(p, data, len - newlen - 2);
-		p = overdata + len - 2;
-		memcpy(p, "\r\n", 2);
-		OV3addrec(&newge, newgh, artnum, token, overdata, len, arrived, expires);
-		continue;
-	    }
-	}
-	if (atoi(data) != artnum) {
-	    printf("misnumbered article %s:%d\n", group, artnum);
-	    if ((p = strstr(data, "Xref: ")) == NULL) {
-		syslog(L_ERROR, "tradindexed: could not find Xref header in %s:%d", group, artnum);
-		continue;
-	    }
-	    if ((p = strchr(p, ' ')) == NULL) {
-		syslog(L_ERROR, "tradindexed: could not find space after Xref header in %s:%d", group, artnum);
-		continue;
-	    }
-	    if ((p = strstr(p, group)) == NULL) {
-		syslog(L_ERROR, "tradindexed: could not find group name in Xref header in %s:%d", group, artnum);
-		continue;
-	    }
-	    p += strlen(group) + 1;
-	    artnum = atoi(p);
-	}
-#endif
 	OV3addrec(&newge, newgh, artnum, token, data, len, arrived, expires);
     }
     do {
@@ -1217,6 +1189,10 @@ BOOL tradindexed_ctl(OVCTLTYPE type, void *val) {
 	return TRUE;
       case OVCUTOFFLOW:
 	Cutofflow = *(BOOL *)val;
+	return TRUE;
+    case OVSTATICSEARCH:
+	i = (int *)val;
+	*i = FALSE;
 	return TRUE;
     default:
 	return FALSE;

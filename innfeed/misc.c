@@ -80,7 +80,7 @@ char *program ;                 /* this should be set to argv[0] */
 int debuggingOutput ;
 u_int loggingLevel ;
 char **PointersFreedOnExit ;
-static void log (int level, const char *fmt, va_list args) ;
+static void dolog (int level, const char *fmt, va_list args) ;
 
 
 
@@ -122,7 +122,7 @@ bool debuggingDump = true ;
 extern void (*gPrintInfo) (void) ;
 void (*gCleanUp) (void) = 0 ;
 
-static void log (int level, const char *fmt, va_list args)
+static void dolog (int level, const char *fmt, va_list args)
 {
   time_t now = time (NULL) ;
   char timeString [30] ;
@@ -139,7 +139,7 @@ static void log (int level, const char *fmt, va_list args)
 
   p = malloc (out + 10) ;
   vsprintf (p,fmt,args) ;
-  syslog (level,p) ;
+  syslog (level,"%s",p) ;
 }
 
 void logOrPrint (int level, FILE *fp, const char *fmt, ...)
@@ -167,7 +167,7 @@ void die (const char *fmt, ...)
   va_list ap ;
 
   va_start (ap, fmt) ;
-  log (LOG_ERR,fmt,ap) ;
+  dolog (LOG_ERR,fmt,ap) ;
   va_end (ap) ;
 
 #if SNAPSHOT_ON_DIE
@@ -192,7 +192,7 @@ void warn (const char *fmt, ...)
   va_list ap ;
 
   va_start (ap, fmt) ;
-  log (LOG_WARNING,fmt,ap) ;
+  dolog (LOG_WARNING,fmt,ap) ;
   va_end (ap) ;
 }
 
@@ -202,45 +202,10 @@ void logAndExit (int exitVal, const char *fmt, ...)
   va_list ap ;
 
   va_start (ap,fmt) ;
-  log (LOG_CRIT,fmt,ap) ;
+  dolog (LOG_CRIT,fmt,ap) ;
   va_end (ap) ;
 
   exit (exitVal) ;
-}
-
-
-
-static const char * const pvt_h_errlist[] = {
-  "Resolver Error 0 (no error)",
-  "Unknown host",                         /* 1 HOST_NOT_FOUND */
-  "Host name lookup failure",             /* 2 TRY_AGAIN */
-  "Unknown server error",                 /* 3 NO_RECOVERY */
-  "No address associated with name",      /* 4 NO_ADDRESS */
-};
-
-static int pvt_h_nerr = (sizeof pvt_h_errlist / sizeof pvt_h_errlist[0]);
-
-#if defined(hpux) || defined(__hpux) || defined(_SCO_DS)
-extern int h_errno;
-#endif
-
-/* return a friendly string for the current value of h_errno. Pinched from
-   Stevens */
-const char *host_err_str (void)
-{
-  static char msgstr [200] ;
-
-  if (h_errno != 0)
-    {
-      if (h_errno > 0 && h_errno < pvt_h_nerr)
-        sprintf (msgstr,"(%s)", pvt_h_errlist[h_errno]) ;
-      else
-        sprintf (msgstr,"(herrno = %d)", h_errno) ;
-    }
-  else
-    msgstr [0] = '\0' ;
-
-  return msgstr ;
 }
 
 

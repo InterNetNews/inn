@@ -180,6 +180,7 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     int got;
     fd_set rdfds;
     uint32_t nvalue;
+    ARGTYPE slen;
 
     /* first, build the sockaddrs */
     memset(&sinl, '\0', sizeof(sinl));
@@ -357,9 +358,9 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 	    tmout.tv_usec = 0;
 	    continue;
 	}
-	jlen = sizeof(sinl);
+	slen = sizeof(sinl);
 	if ((jlen = recvfrom(sock, (char *)&req, sizeof(req)-sizeof(int), 0, 
-	                     (struct sockaddr*) &sinl, &jlen)) < 0) {
+	                     (struct sockaddr*) &sinl, &slen)) < 0) {
 	    fprintf(stderr, "radius: couldnt recvfrom: %s\n", strerror(errno));
 	    break;
 	}
@@ -418,9 +419,11 @@ int main(int argc, char *argv[])
     FILE *f;
     rad_config_t radconfig;
     int retval;
+    char *radius_config;
 
     bzero(&radconfig, sizeof(rad_config_t));
     haveother = havefile = 0;
+    if (ReadInnConf() < 0) exit(1);
 
     while ((opt = getopt(argc, argv, "f:h:p:P:q:s:l:S")) != -1) {
 	switch (opt) {
@@ -510,13 +513,15 @@ int main(int argc, char *argv[])
     if (argc != optind)
 	exit(2);
     if (!havefile) {
-	if (!(f = fopen(_PATH_RADIUS_CONFIG, "r"))) {
-	    fprintf(stderr, "couldn't open config file %s: %s\n", optarg,
+	radius_config = cpcatpath(innconf->pathetc, _PATH_RADIUS_CONFIG);
+	if (!(f = fopen(radius_config, "r"))) {
+	    fprintf(stderr, "couldn't open config file %s: %s\n", radius_config,
                     strerror(errno));
 	} else {
             read_config(f, &radconfig);
             fclose(f);
         }
+	DISPOSE(radius_config);
     }
     if (!radconfig.radhost) {
 	fprintf(stderr, "No radius host to authenticate against.\n");

@@ -14,7 +14,7 @@ It serves two purposes: it defines how long history entries for expired or
 rejected articles are retained, and it determines how long articles not
 stored in a self-expiring storage method are retained.
 If all of the storage methods used by the server are self-expiring (such
-as CNFS), only the /remember/ setting described below is necessary or
+as CNFS), only the ``/remember/'' setting described below is necessary or
 used.
 .PP
 Blank lines and lines beginning with a number sign (``#'') are ignored.
@@ -22,7 +22,7 @@ All other lines should be in one of two formats.
 .PP
 The first format specifies how long to keep history entries for articles
 that aren't present in the news spool.
-These are articles which have either already expired out of all newsgroups
+These are articles which have either already expired out of spool
 or which the server rejected (and ``remembertrash'' was set to true in
 .IR inn.conf (5)).
 There should only be one line in this format, which looks like:
@@ -64,11 +64,12 @@ pattern:modflag:keep:default:purge
 .fi
 .RE
 The former is used for class based expiry which means ``groupbaseexpiry'' in
-.I inn.conf
+.IR inn.conf (5)
 is ``false'', and the latter is used for group based expiry which
 means ``groupbaseexpiry'' in
 .I inn.conf
 is ``true''.
+Both formats can not coexist each other.
 .PP
 Where
 .IR classnum
@@ -116,20 +117,19 @@ and
 \(em specify the boundaries within which an Expires
 header will be honored.
 They are ignored if an article has no Expires header.
-(In other words, if an article has an Expires header, and the time at
-which the header says it should expire is sooner than the
+(In other words, if an article does not have an Expires header,
+only
 .I default
-field, the Expires header is be honored instead.
-Similarly, if the Expires header specifies a time longer than the
+field is used and the Date header is be honored to expire.
+But if an article has an Expires header,
 .I default
-field, it is honored instead.
-But articles are expired no faster than the time set with
+is not used, and articles are expired no faster than the time set with
 .I keep
 and kept no longer than the time specified with
 .I purge
 regardless of Expires headers).
 One should think of the fields as ``lower-bound default upper-bound.''
-Since most articles do not have explicit expiration dates,
+Since most articles do not have an Expires header,
 the second field tends to be the most important and most commonly applied
 one.
 .PP
@@ -137,12 +137,12 @@ The
 .I keep
 field specifies how many days an article should be kept before it will
 be removed.
-No article in the matching newsgroups will be removed if it has been filed
-for less then
+No article in the matching newsgroups or class will be removed if it has been
+received for less than
 .I keep
-days, regardless of any expiration date.
+days, regardless of Expires header.
 If this field is the word ``never,'' no article in the matching newsgroups
-will ever be expired.
+or class will ever be expired.
 .PP
 The
 .I default
@@ -170,9 +170,9 @@ is not defined,
 .I default
 and
 .I purge
-are assumed to be all ``0''.
+are assumed to be all ``0''.  (See below for default definition.)
 .PP
-It is often useful to honor the expiration headers in articles, especially
+It is often useful to honor the Expires header in articles, especially
 those in moderated groups.
 To do this, set
 .I keep
@@ -185,17 +185,40 @@ to never (or alternately set
 to some large number, like 365 days for a maximum article life of a year).
 To ignore any Expires header, set all three fields to the same value.
 .PP
-There can be exactly one line with a
+For group based expiry, there must be exactly one line with a
+.I pattern
+of ``*'' and a
+.I modflags
+of ``A'' \(em this matches all groups and is used to set the expiration
+default.
+And for class base expiry, there can be exactly one line with a
 .I class
 of ``255'' \(em this matches all class and can be used to set the expiration
 default.
-It should be the first expiration line.
+In either case, it should be the first expiration line.
 .SH EXAMPLES
+For class based expiry;
 .nf
+.in +0.5i
 ##  How long to keep expired history
 /remember/:5
 ##  class 0 stay for two weeks
 0:14:14:14
+.in -0.5i
+.fi
+For group based expiry;
+.nf
+.in +0.5i
+##  How long to keep expired history
+/remember/:5
+##  Most things stay for two weeks
+*:A:14:14:14
+##  Believe expiration dates in moderated groups,
+##  up to six weeks
+*:M:1:30:42
+##  Keep local stuff for a long time
+foo.*:A:30:30:30
+.in -0.5i
 .fi
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
@@ -207,4 +230,5 @@ This is revision \\$3, dated \\$4.
 expire(8),
 expireover(8),
 inn.conf(5),
-storage.conf(5).
+storage.conf(5),
+wildmat(3).

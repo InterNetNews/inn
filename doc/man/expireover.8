@@ -23,6 +23,9 @@ expireover \- Expire entries from the news overview database
 .B \-q
 ]
 [
+.B \-s
+]
+[
 .BI \-w " number"
 ]
 [
@@ -43,32 +46,30 @@ If ``groupbaseexpiry'' in
 .I inn.conf
 is ``true'',
 .I expireover
-also expires articles.  If it's ``false'', ``\fI\-e\fP'', ``\fI\-k\fP'',
-\&``\fI\-N\fP'', ``\fI\-p\fP'', ``\fI\-q\fP'', ``\fI\-w\fP'' and ``\fI\-z\fP''
+also expires articles.  If it's ``false'', ``\fB\-e\fP'', ``\fB\-k\fP'',
+\&``\fB\-N\fP'', ``\fB\-p\fP'', ``\fB\-q\fP'', ``\fB\-w\fP'' and ``\fB\-z\fP''
 flags are ignored.
 .SH OPTIONS
 .TP
 .B \-e
-If the ``\fI\-e\fP'' flag is used, then as soon as the first cross posting
+If the ``\fB\-e\fP'' flag is used, then as soon as the first cross posting
 of the article expires, all overview entries relevant to the article are
 removed.
-Note that you cannot use both ``\fI\-e\fP'' and ``\fI\-k\fP'' flag at the
+Note that you cannot use both ``\fB\-e\fP'' and ``\fB\-k\fP'' flag at the
 same time.
 .TP
 .B \-f
-When the ``\fB\-\fPs'' flag is used, then
+When the ``\fB\-f\fP'' flag is used, then
 .I expireover
 will use it as newsgroup list instead of
-.IR active (5)
-file.
-To specify an alternate file, use the ``\fB\-f\fP'' flag; a name 
-of ``\fB\-\fP'' is
-taken to mean the standard input.
+.I <pathdb in inn.conf>/active
+file.  A name of ``\fB\-\fP'' is taken to mean the standard input.
 .TP
 .B \-k
-If this flag is used then articles are removed when they have been 
+When the ``\fB\-f\fP'' flag is used, then
+articles are removed when they have been 
 expired from all the groups they appear in.
-Note that you cannot use both ``\fI\-e\fP'' and ``\fI\-k\fP'' flag at the
+Note that you cannot use both ``\fB\-e\fP'' and ``\fB\-k\fP'' flag at the
 same time.
 .TP
 .B \-N 
@@ -80,19 +81,27 @@ purges articles and overview entries with the control file.
 .TP 
 .B \-p
 .I Expireover
-makes its decisions on the time the article arrived.
+makes its decisions on the time the article arrived by default.
 This means articles are often kept a little longer than with other
 expiration programs that base their decisions on the article's posting
 date.
-To use the article's posting date, use the ``\fI\-p\fP'' flag.
+To use the article's posting date, use the ``\fB\-p\fP'' flag.
 .TP
 .B \-q 
 .I Expireover
 normally prints statistics at the end of process.
 To suppress this action, use the ``\fB\-q\fP'' flag.
 .TP
+.B \-s 
+.I Expireover
+normally checks the existense of articles only if ``EXPENSIVESTAT'' of
+its storage method is set to ``FALSE''.  To do stat all articles regardless
+of ``EXPENSIVESTAT'', use the ``\fB\-s\fP'' flag.  See
+.IR storage.conf (5)
+for ``EXPENSIVESTAT''.
+.TP
 .B \-w
-Use the ``\fI\-w\fP'' flag to ``warp'' time so that
+Use the ``\fB\-w\fP'' flag to ``warp'' time so that
 .I expireover
 thinks it is running at some time other then the current time.
 The value should be a signed floating point number of the number of days
@@ -100,7 +109,7 @@ to use as the offset.
 .TP 
 .B \-z
 If the ``\fB\-z\fP'' flag is used, then articles are not removed, but their
-names are appended to the specified
+toknes are appended to the specified
 .IR file .
 See the description of
 .I delayrm
@@ -109,8 +118,10 @@ in
 .TP
 .B \-Z
 If the ``\fB\-Z\fP'' flag is used, then the lowest article numbers for
-each newsgroup are written to the specified file.
-This flag can be usable when doing ``ctlinnd lomark lofile''.
+each newsgroup after expiry are written to the specified
+.I lofile
+with newsgroup name.
+This flag can be used when doing ``ctlinnd lomark lofile''.
 .SH HISTORY
 Written by Rob Robertson <rob@violet.berkeley.edu>
 and Rich $alz <rsalz@uunet.uu.net>

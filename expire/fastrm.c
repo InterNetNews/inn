@@ -88,7 +88,7 @@ int main(int ac, char *av[])
 	if (!IsToken(line))
 	    continue;
 	token = TextToToken(line);
-	if (!SMcancel(token) && SMerrorstr != NULL)
+	if (!SMcancel(token) && SMerrno != SMERR_NOENT && SMerrorstr != NULL)
 	    fprintf(stderr, "Could not remove %s: %s\n", line, SMerrorstr);
 	empty_error = FALSE;
     }

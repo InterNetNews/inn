@@ -85,7 +85,6 @@ static void strip_accessgroups();
 static METHOD *copy_method(METHOD*);
 static void free_method(METHOD*);
 static AUTHGROUP *copy_authgroup(AUTHGROUP*);
-static void setdefaultaccess(ACCESSGROUP*);
 static void free_authgroup(AUTHGROUP*);
 static ACCESSGROUP *copy_accessgroup(ACCESSGROUP*);
 static void free_accessgroup(ACCESSGROUP*);
@@ -156,7 +155,9 @@ static int	ConfigBitsize;
 #define PERMbackoff_trigger	48
 #define PERMnnrpdcheckart	49
 #define PERMnnrpdauthsender	50
-#define PERMMAX			51
+#define PERMvirtualhost		51
+#define PERMnewsmaster		52
+#define PERMMAX			53
 
 #define TEST_CONFIG(a, b) \
     { \
@@ -231,6 +232,8 @@ static CONFTOKEN PERMtoks[] = {
   { PERMbackoff_trigger, "backoff_trigger:" },
   { PERMnnrpdcheckart, "nnrpdcheckart:" },
   { PERMnnrpdauthsender, "nnrpdauthsender:" },
+  { PERMvirtualhost, "virtualhost:" },
+  { PERMnewsmaster, "newsmaster:" },
   { 0, 0 }
 };
 
@@ -394,16 +397,19 @@ static ACCESSGROUP *copy_accessgroup(ACCESSGROUP *orig)
 	ret->nnrpdposthost = COPY(orig->nnrpdposthost);
     if (orig->backoff_db)
 	ret->backoff_db = COPY(orig->backoff_db);
+    if (orig->newsmaster)
+	ret->newsmaster = COPY(orig->newsmaster);
     return(ret);
 }
 
-static void setdefaultaccess(ACCESSGROUP *curaccess)
+void SetDefaultAccess(ACCESSGROUP *curaccess)
 {
+    curaccess->allownewnews = innconf->allownewnews;;
+    curaccess->locpost = FALSE;
     curaccess->localtime = FALSE;
     curaccess->strippath = FALSE;
     curaccess->nnrpdperlfilter = TRUE;
     curaccess->nnrpdpythonfilter = TRUE;
-    curaccess->allownewnews = innconf->allownewnews;;
     if (innconf->fromhost)
 	curaccess->fromhost = COPY(innconf->fromhost);
     if (innconf->pathhost)
@@ -436,6 +442,8 @@ static void setdefaultaccess(ACCESSGROUP *curaccess)
     curaccess->backoff_trigger = innconf->backoff_trigger;
     curaccess->nnrpdcheckart = innconf->nnrpdcheckart;
     curaccess->nnrpdauthsender = innconf->nnrpdauthsender;
+    curaccess->virtualhost = FALSE;
+    curaccess->newsmaster = NULL;
 }
 
 static void free_authgroup(AUTHGROUP *del)
@@ -493,12 +501,14 @@ static void free_accessgroup(ACCESSGROUP *del)
 	DISPOSE(del->nnrpdposthost);
     if (del->backoff_db)
 	DISPOSE(del->backoff_db);
+    if (del->newsmaster)
+	DISPOSE(del->newsmaster);
     DISPOSE(del);
 }
 
 static void ReportError(CONFFILE *f, char *err)
 {
-    syslog(L_NOTICE, "%s syntax error in %s(%d), %s", ClientHost,
+    syslog(L_ERROR, "%s syntax error in %s(%d), %s", ClientHost,
       f->filename, f->lineno, err);
     Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
     ExitWithStats(1, TRUE);
@@ -753,6 +763,42 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	if (boolval != -1) curaccess->nnrpdpythonfilter = boolval;
 	SET_CONFIG(oldtype);
 	break;
+      case PERMfromhost:
+	if (curaccess->fromhost)
+	    DISPOSE(curaccess->fromhost);
+	curaccess->fromhost = COPY(tok->name);
+	SET_CONFIG(oldtype);
+	break;
+      case PERMpathhost:
+	if (curaccess->pathhost)
+	    DISPOSE(curaccess->pathhost);
+	curaccess->pathhost = COPY(tok->name);
+	SET_CONFIG(oldtype);
+	break;
+      case PERMorganization:
+	if (curaccess->organization)
+	    DISPOSE(curaccess->organization);
+	curaccess->organization = COPY(tok->name);
+	SET_CONFIG(oldtype);
+	break;
+      case PERMmoderatormailer:
+	if (curaccess->moderatormailer)
+	    DISPOSE(curaccess->moderatormailer);
+	curaccess->moderatormailer = COPY(tok->name);
+	SET_CONFIG(oldtype);
+	break;
+      case PERMdomain:
+	if (curaccess->domain)
+	    DISPOSE(curaccess->domain);
+	curaccess->domain = COPY(tok->name);
+	SET_CONFIG(oldtype);
+	break;
+      case PERMcomplaints:
+	if (curaccess->complaints)
+	    DISPOSE(curaccess->complaints);
+	curaccess->complaints = COPY(tok->name);
+	SET_CONFIG(oldtype);
+	break;
       case PERMspoolfirst:
 	if (boolval != -1) curaccess->spoolfirst = boolval;
 	SET_CONFIG(oldtype);
@@ -785,6 +831,12 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	if (boolval != -1) curaccess->addnntppostingdate = boolval;
 	SET_CONFIG(oldtype);
 	break;
+      case PERMnnrpdposthost:
+	if (curaccess->nnrpdposthost)
+	    DISPOSE(curaccess->nnrpdposthost);
+	curaccess->nnrpdposthost = COPY(tok->name);
+	SET_CONFIG(oldtype);
+	break;
       case PERMnnrpdpostport:
 	curaccess->nnrpdpostport = atoi(tok->name);
 	SET_CONFIG(oldtype);
@@ -795,6 +847,12 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	break;
       case PERMbackoff_auth:
 	if (boolval != -1) curaccess->backoff_auth = boolval;
+	SET_CONFIG(oldtype);
+	break;
+      case PERMbackoff_db:
+	if (curaccess->backoff_db)
+	    DISPOSE(curaccess->backoff_db);
+	curaccess->backoff_db = COPY(tok->name);
 	SET_CONFIG(oldtype);
 	break;
       case PERMbackoff_k:
@@ -821,6 +879,16 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	if (boolval != -1) curaccess->nnrpdauthsender = boolval;
 	SET_CONFIG(oldtype);
 	break;
+      case PERMvirtualhost:
+	if (boolval != -1) curaccess->virtualhost = boolval;
+	SET_CONFIG(oldtype);
+	break;
+      case PERMnewsmaster:
+	if (curaccess->newsmaster)
+	    DISPOSE(curaccess->newsmaster);
+	curaccess->newsmaster = COPY(tok->name);
+	SET_CONFIG(oldtype);
+	break;
       default:
 	ReportError(f, "Unexpected token.");
 	break;
@@ -840,14 +908,18 @@ static void PERMreadfile(char *filename)
     int		oldtype;
     char	*str	    = NULL;
 
-    cf		= NEW(CONFCHAIN, 1);
-    cf->f	= CONFfopen(filename);
-    cf->parent	= 0;
-
     if(filename != NULL) {
 	syslog(L_TRACE, "Reading access from %s", 
 	       filename == NULL ? "(NULL)" : filename);
     }
+
+    cf		= NEW(CONFCHAIN, 1);
+    if ((cf->f = CONFfopen(filename)) == NULL) {
+	syslog(L_ERROR, "%s cannot open %s: %m", ClientHost, filename);
+	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+	ExitWithStats(1, TRUE);
+    }
+    cf->parent	= 0;
 
     /* are we editing an AUTH or ACCESS group? */
 
@@ -958,7 +1030,7 @@ static void PERMreadfile(char *filename)
 			curaccess = NEW(ACCESSGROUP, 1);
 			memset((POINTER) curaccess, 0, sizeof(ACCESSGROUP));
 			memset(ConfigBit, '\0', ConfigBitsize);
-			setdefaultaccess(curaccess);
+			SetDefaultAccess(curaccess);
 		    }
 		    curaccess->name = str;
 		    inwhat = 2;
@@ -1039,6 +1111,8 @@ static void PERMreadfile(char *filename)
 	      case PERMbackoff_trigger:
 	      case PERMnnrpdcheckart:
 	      case PERMnnrpdauthsender:
+	      case PERMvirtualhost:
+	      case PERMnewsmaster:
 		if (!curgroup) {
 		    curgroup = NEW(GROUP, 1);
 		    memset((POINTER) curgroup, 0, sizeof(GROUP));
@@ -1049,7 +1123,7 @@ static void PERMreadfile(char *filename)
 		    (void)memset((POINTER)curgroup->access, 0,
 		      sizeof(ACCESSGROUP));
 		    memset(ConfigBit, '\0', ConfigBitsize);
-		    setdefaultaccess(curgroup->access);
+		    SetDefaultAccess(curgroup->access);
 		}
 		accessdecl_parse(curgroup->access, cf->f, tok);
 		break;
@@ -1150,7 +1224,8 @@ void PERMgetaccess(void)
 	    canauthenticate = 1;
     uname = 0;
     while (!uname && i--) {
-	uname = ResolveUser(auth_realms[i]);
+	if ((uname = ResolveUser(auth_realms[i])) != NULL)
+	    PERMauthorized = TRUE;
 	if (!uname && auth_realms[i]->default_user)
 	    uname = auth_realms[i]->default_user;
     }
@@ -1226,6 +1301,7 @@ void PERMlogin(char *uname, char *pass)
 	    strcat(PERMuser, auth_realms[i]->default_domain);
 	}
 	PERMneedauth = FALSE;
+	PERMauthorized = TRUE;
 	success_auth = auth_realms[i];
     }
 }
@@ -1256,6 +1332,7 @@ void PERMgetpermissions()
     int i;
     char *cp, **list;
     char *user[2];
+    static ACCESSGROUP *noaccessconf;
 
     if (ConfigBit == NULL) {
 	if (PERMMAX % 8 == 0)
@@ -1268,6 +1345,10 @@ void PERMgetpermissions()
     if (!success_auth) {
 	/* if we haven't successfully authenticated, we can't do anything. */
 	syslog(L_TRACE, "%s no_success_auth", ClientHost);
+	if (!noaccessconf)
+	    noaccessconf = NEW(ACCESSGROUP, 1);
+	PERMaccessconf = noaccessconf;
+	SetDefaultAccess(PERMaccessconf);
 	return;
     }
     for (i = 0; access_realms[i]; i++)
@@ -1317,8 +1398,41 @@ void PERMgetpermissions()
 	    PERMcanpost = FALSE;
 	}
 	PERMaccessconf = access_realms[i];
-    } else
+	if (PERMaccessconf->virtualhost) {
+	    if (PERMaccessconf->domain == NULL) {
+		syslog(L_ERROR, "%s virtualhost needs domain parameter(%s)",
+		    ClientHost, PERMaccessconf->name);
+		Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+		ExitWithStats(1, TRUE);
+	    }
+	    if (VirtualPath)
+		DISPOSE(VirtualPath);
+	    if (EQ(innconf->pathhost, PERMaccessconf->pathhost)) {
+		/* use domain, if pathhost in access relm matches one in
+		   inn.conf to differentiate virtual host */
+		if (innconf->domain != NULL && EQ(innconf->domain, PERMaccessconf->domain)) {
+		    syslog(L_ERROR, "%s domain parameter(%s) in readers.conf must be different from the one in inn.conf",
+			ClientHost, PERMaccessconf->name);
+		    Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+		    ExitWithStats(1, TRUE);
+		}
+		VirtualPathlen = strlen(PERMaccessconf->domain) + strlen("!");
+		VirtualPath = NEW(char, VirtualPathlen + 1);
+		sprintf(VirtualPath, "%s!", PERMaccessconf->domain);
+	    } else {
+		VirtualPathlen = strlen(PERMaccessconf->pathhost) + strlen("!");
+		VirtualPath = NEW(char, VirtualPathlen + 1);
+		sprintf(VirtualPath, "%s!", PERMaccessconf->pathhost);
+	    }
+	} else
+	    VirtualPathlen = 0;
+    } else {
+	if (!noaccessconf)
+	    noaccessconf = NEW(ACCESSGROUP, 1);
+	PERMaccessconf = noaccessconf;
+	SetDefaultAccess(PERMaccessconf);
 	syslog(L_TRACE, "%s no_access_realm", ClientHost);
+    }
 }
 
 /* strip blanks out of a string */
@@ -1413,7 +1527,7 @@ static void add_authgroup(AUTHGROUP *group)
     } else {
 	for (i = 0; auth_realms[i]; i++)
 	    ;
-	auth_realms = RENEW(auth_realms, AUTHGROUP*, i+2);
+	RENEW(auth_realms, AUTHGROUP*, i+2);
     }
     auth_realms[i] = group;
     auth_realms[i+1] = 0;
@@ -1429,7 +1543,7 @@ static void add_accessgroup(ACCESSGROUP *group)
     } else {
 	for (i = 0; access_realms[i]; i++)
 	    ;
-	access_realms = RENEW(access_realms, ACCESSGROUP*, i+2);
+	RENEW(access_realms, ACCESSGROUP*, i+2);
     }
     access_realms[i] = group;
     access_realms[i+1] = 0;
@@ -1555,7 +1669,8 @@ static void GetConnInfo(METHOD *method, char *buf)
 {
     struct sockaddr_in cli, loc;
     int gotsin;
-    int i, j;
+    int i;
+    ARGTYPE j;
 
     j = sizeof(cli);
     gotsin = (getpeername(0, (struct sockaddr*)&cli, &j) == 0);

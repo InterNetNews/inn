@@ -24,6 +24,7 @@
 STATIC int	OVnumpatterns;
 STATIC char	**OVpatterns;
 time_t		OVrealnow;
+BOOL		OVstatall;
 
 STATIC BOOL	OVdelayrm;
 STATIC BOOL	OVusepost;
@@ -125,13 +126,23 @@ BOOL OVopen(int mode) {
 	    return FALSE;
 	}
     }
+    if (!innconf->enableoverview) {
+	syslog(L_FATAL, "enableoverview is not true");
+	(void)fprintf(stderr, "enableoverview is not true\n");
+	return FALSE;
+    }
+    if (innconf->ovmethod == NULL) {
+	syslog(L_FATAL, "ovmethod is not defined");
+	(void)fprintf(stderr, "ovmethod is not defined\n");
+	return FALSE;
+    }
     for (i=0;i<NUM_OV_METHODS;i++) {
 	if (!strcmp(innconf->ovmethod, ov_methods[i].name))
 	    break;
     }
     if (i == NUM_OV_METHODS) {
 	syslog(L_FATAL, "%s is not found for ovmethod", innconf->ovmethod);
-	(void)fprintf(stderr, "%s is not found for ovmethod", innconf->ovmethod);
+	(void)fprintf(stderr, "%s is not found for ovmethod\n", innconf->ovmethod);
 	return FALSE;
     }
     ov = ov_methods[i];
@@ -187,9 +198,9 @@ BOOL OVgroupdel(char *group) {
 }
 
 BOOL OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
-    char		*next;
+    char		*next, *nextcheck;
     static char		*xrefdata, *patcheck, *overdata;
-    char		*xrefstart;
+    char		*xrefstart, *xrefend;
     static int		xrefdatalen = 0, overdatalen = 0;
     BOOL		found = FALSE;
     int			xreflen;
@@ -229,6 +240,14 @@ BOOL OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
         next++;
     }
     xreflen = len - (next - data);
+
+    /*
+     * If there are other fields beyond Xref in overview, then
+     * we must find Xref's end, or data following is misinterpreted.
+     */
+    if (xrefend = memchr(next, '\t', xreflen))
+	xreflen = xrefend - next;
+
     if (xrefdatalen == 0) {
         xrefdatalen = BIG_BUFFER;
         xrefdata = NEW(char, xrefdatalen);
@@ -253,12 +272,12 @@ BOOL OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
     if (innconf->ovgrouppat != NULL) {
         memcpy(patcheck, next, xreflen);
         patcheck[xreflen] = '\0';
-        for (group = patcheck; group && *group; group = memchr(next, ' ', next - patcheck)) {
+        for (group = patcheck; group && *group; group = memchr(nextcheck, ' ', xreflen - (nextcheck - patcheck))) {
             while (isspace((int)*group))
                 group++;
-            if ((next = memchr(group, ':', xreflen - (group - xrefdata))) == NULL)
+            if ((nextcheck = memchr(group, ':', xreflen - (patcheck - group))) == NULL)
                 return FALSE;
-            *next++ = '\0';
+            *nextcheck++ = '\0';
             if (!OVgroupmatch(group)) {
                 if (!SMprobe(SELFEXPIRE, &token, NULL) && innconf->groupbaseexpiry)
                     /* this article will never be expired, since it does not
@@ -364,7 +383,8 @@ BOOL OVctl(OVCTLTYPE type, void *val) {
 	(void)fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
-    if (type == OVGROUPBASEDEXPIRE) {
+    switch (type) {
+    case OVGROUPBASEDEXPIRE:
 	if (!innconf->groupbaseexpiry) {
 	    syslog(L_ERROR, "OVGROUPBASEDEXPIRE is not allowed if groupbaseexpiry if false");
 	    (void)fprintf(stderr, "OVGROUPBASEDEXPIRE is not allowed if groupbaseexpiry if false");
@@ -392,8 +412,12 @@ BOOL OVctl(OVCTLTYPE type, void *val) {
 	OVearliest = ((OVGE *)val)->earliest;
 	OVignoreselfexpire = ((OVGE *)val)->ignoreselfexpire;
 	return TRUE;
+    case OVSTATALL:
+	OVstatall = *(BOOL *)val;
+	return TRUE;
+    default:
+	return ((*ov.ctl)(type, val));
     }
-    return ((*ov.ctl)(type, val));
 }
 
 void OVclose(void) {
@@ -895,6 +919,8 @@ STATIC void ARTreadschema(void)
     ARTOVERFIELD		*fp;
     int				i;
     char			buff[SMBUF];
+    BOOL			foundxref = FALSE;
+    BOOL			foundxreffull = FALSE;
 
     /* Open file, count lines. */
     if ((F = fopen(cpcatpath(innconf->pathetc, _PATH_SCHEMA), "r")) == NULL)
@@ -922,10 +948,18 @@ STATIC void ARTreadschema(void)
 	fp->HasHeader = FALSE;
 	fp->Header = COPY(buff);
 	fp->Length = strlen(buff);
+	if (caseEQ(buff, "Xref")) {
+	    foundxref = TRUE;
+	    foundxreffull = fp->NeedsHeader;
+	}
 	fp++;
     }
     ARTfieldsize = fp - ARTfields;
     (void)fclose(F);
+    if (!foundxref || !foundxreffull) {
+	(void)fprintf(stderr, "'Xref:full' must be included in %s", cpcatpath(innconf->pathetc, _PATH_SCHEMA));
+	exit(1);
+    }
 }
 
 /*
@@ -1124,6 +1158,9 @@ BOOL OVhisthasmsgid(char *data) {
     static STRING	History;
     HASH		key;
     OFFSET_T		offset;
+    static FILE		*F;
+    int			i, c;
+    char		buff[(sizeof(TOKEN) * 2) + 3];
 
     if (!ReadOverviewfmt) {
 	OVfindheaderindex();
@@ -1134,11 +1171,31 @@ BOOL OVhisthasmsgid(char *data) {
 	    syslog(L_ERROR, "OVhisthasmsgid: dbzinit failed '%s'", History);
 	    return FALSE;
 	}
+	if ((F = fopen(History, "r")) == NULL) {
+	    syslog(L_ERROR, "OVhisthasmsgid: fopen failed '%s', %m", History);
+	    return FALSE;
+	}
     }
     if ((p = OVERGetHeader(data, Messageidindex)) == NULL)
 	return FALSE;
     key = HashMessageID(p);
-    if (dbzfetch(key, &offset))
+    if (!dbzfetch(key, &offset))
+	return FALSE;
+    if (fseek(F, offset, SEEK_SET) == -1) {
+	syslog(L_ERROR, "OVhisthasmsgid: fseek failed to %ld '%s', %m", offset, History);
+	return FALSE;
+    }
+    for (i = 2; (c = getc(F)) != EOF && c != '\n'; )
+	if (c == HIS_FIELDSEP && --i == 0)
+	    break;
+    if (c != HIS_FIELDSEP)
+	return FALSE;
+    i = 0;
+    while ((c = getc(F)) != EOF && c != ' ' && c != '\n' && i < (sizeof(TOKEN) * 2) + 2) {
+	buff[i++] = (char)c;
+    }
+    buff[i] = '\0';
+    if (IsToken(buff))
 	return TRUE;
     return FALSE;
 }

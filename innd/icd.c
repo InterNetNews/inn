@@ -314,6 +314,12 @@ BOOL ICDrmgroup(NEWSGROUP *ngp)
     BOOL	ret;
     char	*Name;
 
+    /* Don't let anyone remove newsgroups that INN requires exist. */
+    if (EQ(ngp->Name, "junk") || EQ(ngp->Name, "control"))
+        return FALSE;
+    if (innconf->mergetogroups && EQ(ngp->Name, "to"))
+        return FALSE;
+
     Name = COPY(ngp->Name);
     /* If this is the first group in the file, write everything after. */
     if (ngp == &Groups[0]) {

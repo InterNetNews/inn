@@ -98,8 +98,7 @@ is:
 	exit 1
   fi
 
-  ##  The next line should match <PATH_SHELLVARS in config.data>
-  . /var/news/etc/innshellvars
+  . <PREFIX specified with \-\-prefix at configure>/innshellvars
 
   site="$1"; host="$2"; shift; shift
 
@@ -113,10 +112,10 @@ Written by Stefan Petri <petri@ibr.cs.tu-bs.de>, modelled after
 .IR innxmit (8)
 and the XBATCH patch for the nntp reference implementation.
 .SH "SEE ALSO"
-innxmit(8),
-nntpsend(8),
 ctlinnd(8),
 inn.conf(5),
 innd(8),
+innxmit(8),
 newsfeeds(5),
+nntpsend(8),
 shlock(1).

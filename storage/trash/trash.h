@@ -9,7 +9,7 @@
 #include <configdata.h>
 #include <interface.h>
 
-BOOL trash_init(BOOL *selfexpire);
+BOOL trash_init(SMATTRIBUTE *attr);
 TOKEN trash_store(const ARTHANDLE article, const STORAGECLASS class);
 ARTHANDLE *trash_retrieve(const TOKEN token, const RETRTYPE amount);
 ARTHANDLE *trash_next(const ARTHANDLE *article, const RETRTYPE amount);

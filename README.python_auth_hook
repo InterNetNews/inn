@@ -131,3 +131,7 @@ FUNCTIONS SUPPLIED BY THE BUILT-IN NNRPD MODULE:
                               native syslog.
 
     See README.python_hook for details.
+
+=-=-=
+This document and Python authentication&authorization support for nnrpd was written by 
+Ilya Etingof <ilya@glas.net>, 12/1999

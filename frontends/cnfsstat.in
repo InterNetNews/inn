@@ -285,7 +285,7 @@ sub print_cycbuff_head {
 
     $name =~ s/\0//g;
     print " Buffer $name, size: ", &human_readable($len, 4);
-    print ", current: ", &human_readable($free, 4);
+    print ", position: ", &human_readable($free, 4);
     printf("  %.2f cycles\n", $cyclenum + $free/$len);
     my ($when, $ago) = &make_time($update);
     print "  Newest: $when, $ago ago\n";
@@ -317,20 +317,24 @@ sub make_time {
 
 sub human_readable {
     my ($val, $digits) = @_;
+    $val =~ s/\+//;
 
     my @name = ("kBytes", "MBytes", "GBytes", "TBytes");
     my $base = 1024;
     my $factor = 1024;
 
-    my $unit = $#name;
-    my $scaled = $val / $base / $factor**$unit;
-    while ($scaled < 1 && $unit) {
-	$scaled *= $factor;
-	$unit--;
+    my $unit = -1;
+    my $oldscaled = $val / $base;
+    my $scaled = $oldscaled;
+    while ( ( int($scaled) > 0 ) && ( $unit < $#name ) ) {
+	$oldscaled = $scaled;
+	$scaled /= $factor;
+	$unit++;
     }
-    my $predigits = int(log($scaled) / log(10));
-    $predigits = 0 if $predigits < 0;
+    $scaled = $oldscaled;
+    my $predigits = length (int($scaled));
     my $postdigits = $digits - $predigits - 1;
+    $postdigits = 0 if $postdigits < 0;
     ++$digits;
 
     return sprintf ("%${digits}.${postdigits}f %s", $scaled, $name[$unit]);
@@ -373,6 +377,30 @@ sub mrtg_buffer {
 	print "<BR><TT>$stor{$class}</TT>\n";
         print "\n";
         1;
+}
+
+sub bigsysseek {
+    my($handle, $offset) = @_;
+
+    # $offset may be a bigint; and have a value that doesn't fit in a signed long.
+    # Even with largefiles enabled, perl will still truncate the argument to lseek64
+    # to 32 bits.  So we seek multiple times, <2G at a time.
+
+    if($offset > 2147483647) {
+	# Since perl truncates the return value of lseek64 to 32 bits, it might
+	# see a successful return value as negative, and return FALSE (undef).
+	# So we must ignore the return value of sysseek and assume that it worked.
+
+	seek($handle, 0, 0);
+	while($offset > 2000000000) {
+	    sysseek($handle, 2000000000, 1);
+	    $offset -= 2000000000;
+	}
+	sysseek($handle, $offset, 1);
+	return 1;
+    } else {
+	return sysseek($handle, $offset, 0);
+    }
 }
 
 sub get_cycbuff_info {
@@ -427,7 +455,7 @@ sub get_cycbuff_info {
 	my $sentinel = $cyclenum == 0 ? $free : $len;
 	my $offset = $cyclenum == 0 ? $minartoffset : $free + $pagesize;
 
-	seek (BUFF, $offset, 0) || die "seek: $!\n";
+	bigsysseek (BUFF, $offset) || die "sysseek: $!\n";
 	sysread (BUFF, $buff, $pagesize)
 		|| die "read: $!\n";
 	do {

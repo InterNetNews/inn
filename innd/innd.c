@@ -398,8 +398,7 @@ AllocationFailure(const char *what, size_t size, const char *file, int line)
 **  We ran out of space or other I/O error, throttle ourselves.
 */
 void
-ThrottleIOError(when)
-    char	*when;
+ThrottleIOError(char *when)
 {
     char	buff[SMBUF];
     STRING	p;
@@ -417,6 +416,30 @@ ThrottleIOError(when)
 	    syslog(L_ERROR, "%s cant throttle %s", LogName, p);
 	syslog(L_FATAL, "%s throttle %s", LogName, buff);
 	errno = oerrno;
+	ThrottledbyIOError = TRUE;
+    }
+}
+
+/*
+**  No matching storage.conf, throttle ourselves.
+*/
+void
+ThrottleNoMatchError(void)
+{
+    char	buff[SMBUF];
+    STRING	p;
+    int		oerrno;
+
+    if (Mode == OMrunning) {
+	if (Reservation) {
+	    DISPOSE(Reservation);
+	    Reservation = NULL;
+	}
+	(void)sprintf(buff, "%s storing article -- throttling",
+	    SMerrorstr);
+	if ((p = CCblock(OMthrottled, buff)) != NULL)
+	    syslog(L_ERROR, "%s cant throttle %s", LogName, p);
+	syslog(L_FATAL, "%s throttle %s", LogName, buff);
 	ThrottledbyIOError = TRUE;
     }
 }
@@ -583,6 +606,7 @@ int main(int ac, char *av[])
     _res.options &= ~(RES_DEFNAMES | RES_DNSRCH);
 #endif	/* defined(DO_FAST_RESOLV) */
 
+    openlog(path, logflags, LOG_INN_SERVER);
   /* Set some options from inn.conf(5) that can be overridden with
      command-line options if they exist */
     if (ReadInnConf() < 0) exit(1);
@@ -695,8 +719,6 @@ int main(int ac, char *av[])
     if (ModeReason && innconf->readerswhenstopped)
 	NNRPReason = COPY(ModeReason);
 
-    openlog(path, logflags, LOG_INN_SERVER);
-
     if (ShouldSyntaxCheck) {
 	if ((p = (char *) CCcheckfile((char **)NULL)) == NULL)
 	    exit(0);
@@ -712,13 +734,6 @@ int main(int ac, char *av[])
     }
 
     val = TRUE;
-
-    if (innconf->enableoverview) {
-	if (!OVopen(OV_WRITE)) {
-	    syslog(L_FATAL, "%s cant open overview method", LogName);
-	    exit(1);
-	}
-    }
 
     /* Get the Path entry. */
     if (innconf->pathhost == NULL) {
@@ -814,6 +829,13 @@ int main(int ac, char *av[])
 	    xchown(ERRLOG);
 	if (BufferedLogs && (ErrlogBuffer = NEW(char, LogBufferSize)) != NULL)
 	    SETBUFFER(Errlog, ErrlogBuffer, LogBufferSize);
+    }
+
+    if (innconf->enableoverview) {
+	if (!OVopen(OV_WRITE)) {
+	    syslog(L_FATAL, "%s cant open overview method", LogName);
+	    exit(1);
+	}
     }
 
     /* Set number of open channels. */

@@ -1,8 +1,26 @@
-Upgrading from 2.2 to 2.3
+Changes from 2.3.0 to 2.3.1
 
-    This section is still a work in progress.  There may be additional
-    things to watch out for not listed here; if you run across any, please
-    let inn-bugs@isc.org know about them.
+    * inews no longer downloads the active file, no longer tries to send
+      postings to moderated groups to the moderator directly, and in general
+      duplicates less of the functionality of nnrpd, instead letting nnrpd
+      handle it.  This fixes the problem of inews not working properly for
+      users other than news without being setgid.
+
+    * Added a man page for ckpasswd.
+
+    * A serious bug in the embedded Perl authentication hooks was fixed,
+      thanks to Jan Rychter.
+
+    * The annoying compilation problem with embedded Perl filtering on Linux
+      systems without libgdbm installed should be fixed.
+
+    * INN now complaints loudly at configure time if the configured path for
+      temporary files is world-writeable, since this configuration can be a
+      security hole.
+
+    * Many other varied bug fixes and documentation fixes of all sorts.
+
+Upgrading from 2.2 to 2.3
 
     Simply doing a make update is not sufficient to upgrade; the history and
     overview information will also have to be regenerated, since the formats
@@ -25,9 +43,14 @@ Upgrading from 2.2 to 2.3
     (Change the /usr/local/news/tmp path to some directory that has plenty
     of temporary space, and leave off -O if you're running a transit-only
     server and don't intend to expire based on group name, and therefore
-    don't need overview.)  This will generate a new history file as
-    history.n and rebuild overview at the same time.  If you want to preseve
-    a record of expired message IDs in the history file, run:
+    don't need overview.)  Or use:
+
+        makehistory -b -f history.n -O -F
+
+    (This is suitable for ``buffindexed'' ovmethod.) Both will generate a
+    new history file as history.n and rebuild overview at the same time.  If
+    you want to preseve a record of expired message IDs in the history file,
+    run:
 
         awk 'NF==2 { print; }' < history >> history.n
 
@@ -47,9 +70,21 @@ Upgrading from 2.2 to 2.3
     For a reader machine, nnrp.access has been replaced by readers.conf. 
     There currently isn't a program to convert between the old format and
     the new format (if you'd like to contribute one, it would be welcomed
-    gratefully).  You may need to look over the sample readers.conf and
-    readers.conf(5) to understand how to write a file equivalent to your
-    current nnrp.access.
+    gratefully).  The new file is unfortunately considerably more complex to
+    support its new capabilities; please carefully read the example
+    readers.conf provided and the man page when setting up your initial
+    configuration.  The provided commented-out examples cover the most
+    common installation (IP-based authentication for all machines on the
+    local network).
+
+    INN makes extensive use of mmap for the new overview mechanisms, so at
+    the present time NFS-mounting the spool and overview from one central
+    server on multiple reader machines probably isn't feasible in this
+    version.  mmap tends to interact poorly with NFS (at the least, NFS
+    clients won't see updates to the mapped files in situations where they
+    should).  (The preferred way to fix this would, rather than backing out
+    the use of mmap or making it optional, to add support for Diablo-style
+    header feeds and pull-on-demand of articles from a master server.)
 
     The flags for overchan have changed, plus you probably don't want to run
     overchan at all any more.  Letting innd write overview data itself
@@ -63,6 +98,26 @@ Upgrading from 2.2 to 2.3
     traditional spool).  If you have an entry for crosspost in newsfeeds,
     remove it.
 
+    If you're importing a traditional spool from a pre-storage API INN
+    server, it's strongly recommended that you use NNTP to feed the articles
+    to your new server rather than trying to build overview and history
+    directly from the old spool.  It's more reliable and ensures that
+    everything gets put into the right place.  The easiest way to do this is
+    to generate, on your old server, a list of all of your existing article
+    files and then feed that list to innxmit.
+
+    If you are using a version of Cleanfeed that still has a line in it
+    like:
+
+        $lines = $hdr{'__BODY__'} =~ tr/\n/\n/;
+
+    you will need to change this line to:
+
+        $lines = $hdr{'__LINES__'};
+
+    to work with INN 2.3 or later.  This is due to an internal optimization
+    of the interface to embedded filters that's new in INN 2.3.
+
 Changes from 2.2 to 2.3
 
     * New readers.conf file (replaces nnrp.access) which allows more
@@ -72,16 +127,22 @@ Changes from 2.2 to 2.3
     * Unified overview has been replaced with an overview API, and there are
       now three separate overview implementations to choose from.  One
       (tradindexed) is very like traditional overview but uses an additional
-      index file for faster responses to readers.  The second (buffindexed)
-      uses circular buffers and can handle a higher incoming article rate
-      while still being fast for readers.  The third (ovdb) uses Berkeley DB
-      to store overview information (so you need to have Berkeley DB
-      installed to use it).  The ovmethod key in inn.conf chooses the
-      overview method to use.
+      index file.  The second (buffindexed) uses large buffers rather than
+      separate files for each group and can handle a higher incoming article
+      rate while still being fast for readers.  The third (ovdb) uses
+      Berkeley DB to store overview information (so you need to have
+      Berkeley DB installed to use it).  The ovmethod key in inn.conf
+      chooses the overview method to use.
+
+      Note that ovdb has not been as widely tested as the other overview
+      mechanisms and should be considered experimental.
 
     * All article storage and retrieval is now done via the storage API. 
       Traditional spool is now available as a storage type under the storage
-      API.
+      API.  (Note that the current traditional spool implementation causes
+      nightly expire to be extremely slow for a large number of articles, so
+      it's not recommended that you use the tradspool storage method for the
+      majority of a large spool.)
 
     * The timecaf storage method has been added, similar to timehash but
       storing multiple articles in a single file.  See INSTALL for details
@@ -95,17 +156,16 @@ Changes from 2.2 to 2.3
     * To simplify anti-abuse filtering, and to be more compliant with news
       standards and proposed standards, INN now treats as control messages
       only articles containing a Control header.  A Subject line beginning
-      with `cmesg ' is no longer sufficient for a message to be considered a
+      with "cmsg " is no longer sufficient for a message to be considered a
       control message, and the Also-Control header is no longer supported.
 
     * inews is not installed setgid news and rnews is not installed setuid
       root by default any more.  If you need the old permissions, you have
       to give a flag to configure.  See INSTALL for more details.
 
-    * The INN build system no longer uses subst.  This should be mostly
-      transparent to users, apart from the old annoyance of modifications to
-      include files being overridden again by subst when building INN being
-      a thing of the past.
+    * The INN build system no longer uses subst.  (This will be transparent
+      to most users; it's an improvement and modernization of how INN is
+      configured.)
 
     * The build and installation system has been substantially overhauled. 
       make update now updates scripts as well as binaries and documentation,
