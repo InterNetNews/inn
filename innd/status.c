@@ -34,7 +34,7 @@ typedef struct _STATUS {
     unsigned long  Unwanted_g;
     unsigned long  Unwanted_s;
     unsigned long  Unwanted_f;
-    unsigned long  Size;
+    float          Size;
     unsigned long  Check;
     unsigned long  Check_send;
     unsigned long  Check_deferred;
@@ -77,7 +77,7 @@ void STATUSinit(void)
   strcpy (start_time, ctime (&now)) ;
 }
 
-char *PrettySize (unsigned long size, char *str)
+char *PrettySize (float size, char *str)
 {
   if (size > 1073741824) /* 1024*1024*1024 */
     sprintf (str, "%.1fGb", size / 1073741824.);
@@ -102,7 +102,7 @@ static void STATUSsummary(void)
   unsigned long     accepted = 0;
   unsigned long     refused = 0;
   unsigned long     rejected = 0;
-  unsigned long     size = 0;
+  float             size = 0;
   int               peers = 0;
   char              TempString [SMBUF];
   STATUS            status[MAX_PEER];

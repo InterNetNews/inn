@@ -147,7 +147,7 @@ typedef struct _CHANNEL {
     u_long		Unwanted_g;
     u_long		Unwanted_u;
     u_long		Unwanted_o;
-    u_long		Size;
+    float		Size;
     u_long		Check;
     u_long		Check_send;
     u_long		Check_deferred;

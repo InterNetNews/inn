@@ -2693,8 +2693,18 @@ STRING ARTpost(CHANNEL *cp)
 
     /* We wrote the history, so modify it and save it for output. */
     if (innconf->storageapi) {
-	Data.Replic = HDR(_xref) + Path.Used;
-	Data.ReplicLength = ARTheaders[_xref].Length - Path.Used;
+	if (innconf->xrefslave) {
+	    if ((p = memchr(HDR(_xref), ' ', ARTheaders[_xref].Length)) == NULL) {
+		Data.Replic = HDR(_xref);
+		Data.ReplicLength = 0;
+	    } else {
+		Data.Replic = p + 1;
+		Data.ReplicLength = ARTheaders[_xref].Length - (p + 1 - HDR(_xref));
+	    }
+	} else {
+	    Data.Replic = HDR(_xref) + Path.Used;
+	    Data.ReplicLength = ARTheaders[_xref].Length - Path.Used;
+	}
     } else {
 	for (Data.Replic = Files.Data, p = (char *)Data.Replic; *p; p++)
 	    if (*p == ' ')
