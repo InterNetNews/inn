@@ -303,8 +303,8 @@ Configuring INN
 
   overviewmmap         Overview data is mmaped and reading overview would be
                        faster with this.  Note that on some systems (NextStep
-                       is reported so far) it would be worse than ever.  For 
-                       those systems overviewmmap should be "no".
+                       and IRIX-6.5 are reported so far) it would be worse than
+                       ever.  For those systems overviewmmap should be "no".
 
   2. newsfeeds (REQUIRED)
 
