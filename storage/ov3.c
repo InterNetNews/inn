@@ -849,6 +849,7 @@ void OV3getdirpath(char *group, char *path) {
 	*p++ = '/';
     }
     *p = '\0';
+    freeargify(&groupparts);
 }
 
 void OV3getIDXfilename(char *group, char *path) {
