@@ -60,12 +60,16 @@ undefined value. It has access to a global associative array called
 ``%hdr'', which contains values for all standard headers with a non-null
 value of the article. The standard headers are:
 
-	Approved, Control, Date, Distribution, Expires, From, Lines,
-	Message-ID, Newsgroups, Path, Reply-To, Sender, Subject, Supersedes,
-	Bytes, Also-Control, References, __BODY__
+        Approved, Control, Date, Distribution, Expires, From, Lines,
+        Message-ID, Newsgroups, Path, Reply-To, Sender, Subject, Supersedes,
+        Bytes, Also-Control, References, Keywords, X-Trace,
+        NNTP-Posting-Host, Followup-To, Organization, Content-Type,
+        Content-Base, Content-Disposition, X-Newsreader, X-Mailer,
+        X-Cancelled-By, X-Canceled-By, Cancel-Key, __BODY__, __LINES__
 
 	The special header value of "__BODY__" contains the body of the
-article, for special content-based filters.
+article.  The special header value of "__LINES__" contains the number of lines
+in the body of the article.
 
 For example:
 
