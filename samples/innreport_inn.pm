@@ -1227,9 +1227,11 @@ sub collect {
     # group
     if ($left =~ /(\S+) group (\S+) (\d+)$/o) {
       my ($server, $group, $num) = ($1, $2, $3);
-      $nnrpd_group{$group} += $num;
-      my ($hierarchy) = $group =~ /^([^\.]+).*$/o;
-      $nnrpd_hierarchy{$hierarchy} += $num;
+      if ($num != 0) {
+	$nnrpd_group{$group} += $num;
+	my ($hierarchy) = $group =~ /^([^\.]+).*$/o;
+	$nnrpd_hierarchy{$hierarchy} += $num;
+      }
       return 1;
     }
     # post failed 
