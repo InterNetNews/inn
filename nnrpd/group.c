@@ -88,7 +88,7 @@ void CMDgroup(int ac, char *av[])
 	GRPcount++;
 	ARTnumber = ARTlow;
 	if (GRPcur) {
-	    if (!caseEQ(GRPcur, group)) {
+	    if (!EQ(GRPcur, group)) {
 		OVctl(OVCACHEFREE, &boolval);
 		DISPOSE(GRPcur);
 		GRPcur = COPY(group);
@@ -109,7 +109,7 @@ void CMDgroup(int ac, char *av[])
 	    GRPcount++;
 	    ARTnumber = ARTlow;
 	    if (GRPcur) {
-		if (!caseEQ(GRPcur, group)) {
+		if (!EQ(GRPcur, group)) {
 		    OVctl(OVCACHEFREE, &boolval);
 		    DISPOSE(GRPcur);
 		    GRPcur = COPY(group);
