@@ -755,7 +755,7 @@ AC_HEADER_SYS_WAIT
 
 dnl Generic checks for header files.
 dnl NOTUSED: sys/file.h sys/ioctl.h
-AC_CHECK_HEADERS(crypt.h fcntl.h inttpes.h limits.h ndbm.h stddef.h stdint.h \
+AC_CHECK_HEADERS(crypt.h fcntl.h inttypes.h limits.h ndbm.h stddef.h stdint.h \
                  string.h sys/bitypes.h sys/file.h sys/filio.h sys/ioctl.h \
                  sys/param.h sys/select.h sys/sysinfo.h sys/time.h unistd.h)
 

@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.174 
+# From configure.in Revision: 1.175 
 
 
 ## libtool.m4 - Configure libtool for the target system. -*-Shell-script-*-
@@ -4638,7 +4638,7 @@ EOF
 fi
 
 
-for ac_hdr in crypt.h fcntl.h inttpes.h limits.h ndbm.h stddef.h stdint.h \
+for ac_hdr in crypt.h fcntl.h inttypes.h limits.h ndbm.h stddef.h stdint.h \
                  string.h sys/bitypes.h sys/file.h sys/filio.h sys/ioctl.h \
                  sys/param.h sys/select.h sys/sysinfo.h sys/time.h unistd.h
 do
