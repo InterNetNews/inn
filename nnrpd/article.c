@@ -54,7 +54,7 @@ static SENDDATA		SENDhead = {
 };
 
 
-static struct iovec	iov[IOV_MAX];
+static struct iovec	iov[IOV_MAX > 1024 ? 1024 : IOV_MAX];
 static int		queued_iov = 0;
 
 static bool PushIOvHelper(struct iovec* vec, int* countp) {
@@ -72,7 +72,7 @@ static bool PushIOvHelper(struct iovec* vec, int* countp) {
 
 static bool PushIOvRateLimited(void) {
     struct timeval      start, end;
-    struct iovec        newiov[IOV_MAX];
+    struct iovec        newiov[IOV_MAX > 1024 ? 1024 : IOV_MAX];
     int                 newiov_len;
     int                 sentiov;
     int                 i;
