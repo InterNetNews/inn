@@ -97,7 +97,11 @@ STATIC void Rebuild(OFFSET_T size, BOOL IgnoreOld, BOOL Overwrite)
     }
     else {
 	temp[0] = '\0';
-	RemoveDBZFiles(TextFile);
+	/* 
+	** only do removedbz files if a. we're using something besides 
+	** $pathdb/history, or b. we're ignoring the old db.
+	*/
+	if (!EQ(TextFile, HISTORY) || IgnoreOld) RemoveDBZFiles(TextFile);
 	p = TextFile;
     }
 
@@ -230,7 +234,6 @@ main(int argc, char **argv)
 	    break;
 	case 'o':
 	    Overwrite = TRUE;
-	    IgnoreOld = TRUE;
 	    break;
 	case 'i':
 	    IgnoreOld = TRUE;
