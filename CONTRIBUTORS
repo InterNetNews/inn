@@ -201,8 +201,8 @@ Jeffrey M. Vinocur:
         particularly to nnrpd.
 
 Erik Klavon:
-        Significantly reworked nnrpd perl hooks to be more useful in
-        combination with the readers.conf mechanism.
+        Significantly reworked nnrpd Perl and Python hooks to be more useful
+        in combination with the readers.conf mechanism.
 
 Nathan Lutchansky:
         Added IPv6 support to innfeed, nnrpd, and supporting programs.
