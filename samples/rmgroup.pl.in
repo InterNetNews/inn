@@ -1,4 +1,5 @@
 #!@_PATH_PERL@
+# $Id$
 # rmgroup.pl - The rmgroup control message.
 # Version 0.1, 8-AUG-1998
 #  Parameters: params sender reply-to token site action[=log] approved
@@ -70,16 +71,15 @@ sub control_rmgroup {
         }
     }
     elsif (($action eq "doit") && ($status !~ /(no change|unapproved)/)) {
-        # Remove the group.  Meow!
-        system("$inn::newsbin/ctlinnd " .
-               "-s rmgroup $groupname");
+        # Remove the group.
+        system("$inn::newsbin/ctlinnd", "-s", "rmgroup", $groupname);
 
         # Update newsgroups too.
         # Get a lock on newsgroups
         $locktry = 0;
         GETNGLOCK:
         while ($locktry < 60) {
-            if (system("$inn::newsbin/shlock -p $pid -f " .
+            if (system("$inn::newsbin/shlock", "-p", $pid, "-f",
                 "$inn::locks/LOCK.newsgroups")) {
                 $locktry++;
                 sleep(2);

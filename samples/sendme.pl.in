@@ -1,4 +1,5 @@
 #!@_PATH_PERL@
+# $Id$
 # sendme.pl - The sendme control message.
 # Version 0.1, 19-AUG-1998
 #  Parameters: params sender reply-to token site action[=log] approved
@@ -20,50 +21,48 @@ sub control_sendme {
 	$ngname, $ngdesc, $modcmd);
 
     if ($action eq "mail") {
-        open(TEMPFILE, ">$tempfile");
-
-        $artfh = open_article($token);
-        next if (!defined($artfh));
-        *ARTICLE = $artfh;
+	$artfh = open_article($token);
+	next if (!defined($artfh));
+	*ARTICLE = $artfh;
 
         SMHEAD: while(<ARTICLE>) { last SMHEAD if /^$/ }
+        open2(\*R, \*MAIL, $inn::mailcmd, "-s",
+		"sendme by $sender", $inn::newsmaster);
         while (<ARTICLE>) {
             s/^~/~~/;
-            print TEMPFILE $_;
+            print MAIL $_;
         }
-        close(ARTICLE);
-        close(TEMPFILE);
-        system("$inn::mailcmd ".
-               "-s \"sendme by $sender\" $inn::newsmaster < $tempfile");
-        unlink($tempfile);
+        close ARTICLE;
+        close R;
+        close MAIL;
     }
     elsif ($action eq "log") {
-        if (!$logging) {
-            print "sendme $sender\n";
-        }
-        else {
-            logger($token, $logging, "sendme $sender");
-        }
+	if (!$logging) {
+	    print "sendme $sender\n";
+	}
+	else {
+	    logger($token, $logging, "sendme $sender");
+	}
     }
     elsif ($action eq "doit") {
-        open(GREPHIST, "|grephistory -s > $tempfile");
+	open(GREPHIST, "|grephistory -s > $tempfile");
 
-        $artfh = open_article($token);
-        next if (!defined($artfh));
-        *ARTICLE = $artfh;
+	$artfh = open_article($token);
+	next if (!defined($artfh));
+	*ARTICLE = $artfh;
 
-        SMHEAD2: while(<ARTICLE>) { last SMHEAD2 if /^$/ }
-        while (<ARTICLE>) { print GREPHIST $_ }
-        close(ARTICLE);
-        close(GREPHIST);
-        ## xxx Need to lock the work file?
-        if (-s $tempfile) {
-            open(TEMPFILE, "<$tempfile");
-            open(BATCH, ">>$inn::batch/$site.work");
-            while (<TEMPFILE>) { print BATCH $_ }
-            close(BATCH);
-            close(TEMPFILE);
-        }
-        unlink($tempfile);
+	SMHEAD2: while(<ARTICLE>) { last SMHEAD2 if /^$/ }
+	while (<ARTICLE>) { print GREPHIST $_ }
+	close(ARTICLE);
+	close(GREPHIST);
+	## xxx Need to lock the work file?
+	if (-s $tempfile && $site =~ /(^[a-zA-Z0-9.-_]+$)/) {
+	    open(TEMPFILE, "<$tempfile");
+	    open(BATCH, ">>$inn::batch/$1.work");
+	    while (<TEMPFILE>) { print BATCH $_ }
+	    close(BATCH);
+	    close(TEMPFILE);
+	}
+	unlink($tempfile);
     }
 }

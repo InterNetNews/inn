@@ -1,4 +1,5 @@
 #!@_PATH_PERL@
+# $Id$
 # newgroup.pl - The newgroup control message.
 # Version 0.2, 31-AUG-1998
 #  Parameters: params sender reply-to token site action[=log] approved
@@ -37,8 +38,8 @@ sub control_newgroup {
         elsif (/\s/) {
             $errmsg = "Whitespace in group name";
         }
-        elsif (/[\`\/:]/) {
-            $errmsg = "Unsafe group name";
+        elsif (/[\`\/:;]/) {
+            $errmsg = "unsafe group name";
         }
         elsif (/^\./ || /\.$/ || /\.\./) {
             $errmsg = "Bad dots in group name";
@@ -60,7 +61,7 @@ sub control_newgroup {
         
         # per-component checking
         $nc = (@component = split(/\./));
-        for ($i = 0; $i <= $nc; $i++) {
+        for ($i = 0; $i <= $#component; $i++) {
             $c = $component[$i];
             if ($c =~ /^[0-9]+$/) {
                 $errmsg = 'all-numeric name component';
@@ -86,7 +87,8 @@ sub control_newgroup {
             elsif ($c =~ /--|__|\+\+./) { # sigh, c++ etc must be allowed
                 $errmsg = 'repeated punctuation in name';
             }
-            #elsif (($c eq $component[$i + 1]) && ($c eq $component[$i + 2])) {
+            #elsif ($i+2 <= $#component && ($c eq $component[$i + 1]) &&
+            #				($c eq $component[$i + 2])) {
             #    $errmsg = 'repeated component(s) in name';
             #}
         }
@@ -96,10 +98,11 @@ sub control_newgroup {
         }        
     }
 
-    if ($errmsg) {print $errmsg,"\n"};
-
-    # Did our group name survive?
-    if (! $errmsg) {
+    if ($errmsg) {
+	if (!$logging) { print "skipping newgroup ($errmsg)\n" }
+	else { logger($token, $logging, "skipping newgroup ($errmsg)") }
+    }
+    else {    # Our group name survived.
         # Scan active to see what sort of change we are making.
         open ACTIVE, $inn::active;
         $qgroup = quotemeta ($groupname);
@@ -158,8 +161,8 @@ sub control_newgroup {
         }
         elsif (($action eq "doit") && ($status !~ /(no change|unapproved)/)) {
             # Create the group.  Meow!
-            system("$inn::newsbin/ctlinnd " .
-                   "-s newgroup $groupname $modcmd $sender");
+            system("$inn::newsbin/ctlinnd", "-s", "newgroup",
+		$groupname, $modcmd, $sender);
 
             # If there's a tag line, update newsgroups too.
 
@@ -186,8 +189,8 @@ sub control_newgroup {
                 $locktry = 0;
                 GETNGLOCK:
                 while ($locktry < 60) {
-                    if (system("$inn::newsbin/shlock -p $pid -f " .
-                                "$inn::locks/LOCK.newsgroups")) {
+                    if (system("$inn::newsbin/shlock", "-p", "$pid",
+				"-f", "$inn::locks/LOCK.newsgroups")) {
                         $locktry++;
                         sleep(2);
                     }

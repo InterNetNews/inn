@@ -1,9 +1,10 @@
 #!@_PATH_PERL@
+# $Id$
 ###########################################################################
 # controlchan - read a feed, sniff out control messages, and send them to
 # the appropriate script.
 #
-# updated Mon Aug 31 1998
+# updated Sep 28 1998
 #
 # Give this program its own newsfeed.  Make sure that you've created the
 # newsgroup control.cancel so that you don't have to scan through cancels,
@@ -16,15 +17,21 @@
 #    :Tc,Wnsm\
 #    :@prefix@/bin/controlchan
 #
-# And don't forget to comment out the dispatch stuff in art.c!
 ###########################################################################
 
 require 5.004;
 
+use IPC::Open2; # Makes mailing easier.
+#use strict;
+#no strict "refs";
+
+$ENV{'PATH'} = '/bin:/usr/bin';
+delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
+
 ## *** Change this to be correct for your site. *** ##
 require "@LIBDIR@/innshellvars.pl" ;
 
-$use_syslog = 0;
+my $use_syslog = 0;
 ## Comment out this eval line if you don't want to try to syslog
 eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1 };
 
@@ -37,7 +44,7 @@ my $lastctl = 0;
 
 my (@headers, %hdrcount, %hdrval, $msgid, $token, $progname, @progparams,
     $pathhost, @ctllist, $action, $logname, $act_log, $errmsg, @ctlprogs,
-    $subfind, $SM, $keyowner, $pgpresult, $artfh);
+    $subfind, $SM, $keyowner, $pgpresult, $artfh, $sitepath, $newsgrouppats);
 
 # If we have $newsbin/sm, this must be an INN 2.x installation.
 # Otherwise, we'll fake it on older
@@ -53,14 +60,21 @@ if (-e "$inn::newsbin/sm") {
 # as a sub in the form control_xxx.  For example, if control_newgroup()
 # exists, we will use that when encountering a newgroup control.  If
 # control_newgroup() is undefined, we'll use the old shell version.
-chdir $inn::controlprogs;
-@ctlprogs = <*.pl>;
+
+# This stuff looks weird, but perl -T doesn't like globbing.
+# It's our private directory, we should be able to trust it.
+opendir CTL, $inn::controlprogs or die ("can't open ctlprogs");
+@ctlprogs=grep { /\.pl$/ && !/filter_(?:innd|nnrpd)|startup_innd/ &&
+	-f "$inn::controlprogs/$_" } readdir(CTL);
+closedir CTL;
 for (@ctlprogs) {
-    next if (/filter_(?:innd|nnrpd)|startup_innd/); #thanks Jeremy
-    s/^/$inn::controlprogs\//;
-    do($_);
-    syslog ('notice', 'loaded %s', $_) if ($use_syslog);
+    if (/(^[a-z.]+$)/) {
+	do "$inn::controlprogs/$1";
+	if ($use_syslog) { syslog ('notice', 'loaded $inn::controlprogs/%s', $1) }
+	else { print "loaded $inn::controlprogs/$1\n" }
+    }
 }
+
 
 CHANITEM:
 while (<STDIN>) {
@@ -93,8 +107,7 @@ while (<STDIN>) {
     }
     close ARTICLE;
 
-    # warn on failed header retrieval?
-if (1) {
+    # warn on failed header retrieval
     if (! @headers) {
 	if ($use_syslog) {
 	    syslog ('notice', 'No headers in article %s', $msgid);
@@ -104,7 +117,6 @@ if (1) {
 	}
         next CHANITEM;
     }
-} # (0/1)
 
     if (! exists $hdrcount{approved}) { $hdrcount{approved} = 0 }
 
@@ -161,7 +173,7 @@ if (1) {
 
     next CHANITEM if ($progname =~ /^(cancel)$/);
 
-    if ($progname =~ /[^\w\d]/) {
+    if ($progname !~ /(^[a-z]+$)/) {
 	if ($use_syslog) {
 	    syslog ('notice', 'Naughty control in article %s', $msgid);
 	}
@@ -170,33 +182,7 @@ if (1) {
 		   ": Naughty control in article $msgid\n";
 	}
     }
-
-
-    for ($hdrval{'Reply-To'}, $hdrval{Sender}) {
-	if (EvilMeta ($_)) {
-            if ($use_syslog) {
-		syslog ('notice', 'Bad address in control %s', $msgid);
-	    }
-	    else {
-		print scalar localtime,
-		   ": Bad address in control $msgid\n";
-		next CHANITEM;
-	    }
-	}
-    }
-
-    for (@progparams) {
-	if (EvilMeta ($_)) {
-            if ($use_syslog) {
-		syslog ('notice', 'Bad parameter in control %s', $msgid);
-	    }
-	    else {
-		print scalar localtime,
-		    ": Bad parameter in control $msgid\n";
-		next CHANITEM;
-	    }
-	}
-    }
+    else { $progname = $1 }
 
     # Do we want to process the message?  Let's check the permissions.
     ($action, $logname, $newsgrouppats) = split(/=/, ctlperm($progname,
@@ -215,7 +201,7 @@ if (1) {
     #       ": $progname:$hdrval{Sender}:@progparams:$action=$logname\n");
 
     if ($action eq "drop") {
-        next CHANITEM
+	next CHANITEM
     }
     elsif ($action =~ /^_pgp/) {
         $errmsg = "skipping $progname ";
@@ -258,8 +244,8 @@ if (1) {
     else {                      # old style
         $progname = $inn::controlprogs . '/' . $progname ;
     	if (-e $progname) {
-            system("'$progname', '$hdrval{Sender}' ",
-                   "'$hdrval{'Reply-To'}', '$token', '$sitepath'");
+            system($progname, $hdrval{Sender}, $hdrval{'Reply-To'},
+			$token, $sitepath);
         }
         else {                  # This replaces the 'default' script.
             if ($logname) {
@@ -290,20 +276,10 @@ sub CleanAddy {
         $_ = shift;
         s/(\s+)?\(.*\)(\s+)?//g;
         s/^.*<(.*)>.*$/$1/;
-        s/[^\w\d\-\!\@\.:+%]//g;
-        s/^[^A-Za-z0-9]+//g;
+	s/[^-a-zA-Z0-9+_.@%]//g; # protect /bin/mail
+	s/^-//; # protect /bin/mail
         return $_;
 }
-
-
-sub EvilMeta { # Find evil meta characters
-    $_ = shift;
-    if ( /[\[\]\/\$&(){}\`\'\"\;\\|<>\~\^]/ or /^[^A-Za-z0-9]/) {
-	return $_;
-    }
-    return "";
-}
-
 
 # Read control.ctl and put it into @ctllist.
 #  Params:  none
@@ -391,18 +367,22 @@ sub logger {
     my $message = shift;
     my ($lockfile, $locktry, $lockpid);
     my $pid = $$;
+    my $tempfile = "$inn::tmpdir/controlchan.$pid";
+
+    if ($logfile =~ /(^[^.\/].*)/ ) { $logfile = $1  }
+    else { $logfile = "control" }
 
     if ($logfile eq "mail") {
-        open(LOGFILE,
-	     "|$inn::mailcmd -s '$message' $inn::newsmaster");
 
         $artfh = open_article($token);
         next if (!defined($artfh));
         *ARTICLE = $artfh;
 
-        for (<ARTICLE>) { print LOGFILE ("    ", $_) }
+	open2(\*R, \*MAIL, $inn::mailcmd, "-s", $message, $inn::newsmaster);
+        for (<ARTICLE>) { print MAIL ("    ", $_) }
         close (ARTICLE);
-        close (LOGFILE);
+	close R;
+	close MAIL;
         return;
     }
     elsif ($logfile !~ /\//) { $logfile = "$inn::most_logs/$logfile.log" }
@@ -418,7 +398,7 @@ sub logger {
     # to confuse other programs.
     $locktry = 0;
     GETLOGLOCK: while ($locktry < 60) {
-        if (system("$shlock -p $pid -f $lockfile")) {
+        if (system($shlock, "-p", $pid, "-f", $lockfile)) {
             $locktry++;
             sleep(2);
         }
@@ -461,16 +441,17 @@ sub open_article {
     local(*ART);
 
     my $fail = 0;
-    if ($SM eq "cat") {
-      $fail = 1 if (!open(ART,"<$token"));
-    }
-    else {
-      $fail = 1 if (!open(ART, "$SM $token|"));
-    }
+    if ($SM eq "cat") { $fail = 1 if (!open(ART,"<$token")) }
+    else { $fail = 1 if (!open(ART, "$SM $token|")) }
     if ($fail) {
-      print scalar localtime,
-            ": Cannot open article '$token' using method'$SM': $!\n";
-      return undef;
+	if ($use_syslog) {
+	    syslog ('notice', 'Cannot open article %s using method %s: %s',
+		    $token, $SM, $!);
+	}
+	else {
+	    print(scalar localtime,
+		": Cannot open article '$token' using method'$SM': $!\n");
+	}
     }
     return(*ART);
 }

@@ -1,6 +1,7 @@
 #!@_PATH_PERL@
+# $Id$
 # checkgroups.pl - The checkgroups control message.
-# Version 0.1, 19-AUG-1998
+# Version 0.2, 28 Sep 1998
 #  Parameters: params sender reply-to token site action[=log] approved
 sub control_checkgroups {
     my $artfh;
@@ -59,19 +60,26 @@ sub control_checkgroups {
         }
     }
     elsif ($action eq "doit") {
-        # Do checkgroups.  Meow!
-        open(TEMPFILE,">$tempfile");
+        # Do checkgroups.
+        open(TEMPART,">$tempfile.art");
 
         $artfh = open_article($token);
         next if (!defined($artfh));
         *ARTICLE = $artfh;
 
         CGHEAD2: while (<ARTICLE>) { last CGHEAD2 if /^$/ }
-        while (<ARTICLE>) { print TEMPFILE ($_)    if (! /^\s+$/) }
-        close(TEMPFILE);
-        close(ARTICLE);
-        system("@LIBDIR@/docheckgroups '$newsgrouppats' < $tempfile | " .
-               "$inn::newsbin/writelog $logging \"checkgroups by $sender\"");
-        unlink($tempfile);
+        while (<ARTICLE>) { print TEMPART ($_)		if (! /^\s+$/) }
+	close ARTICLE;
+	close TEMPART;
+
+	open OLDIN, "<&STDIN";
+	open OLDOUT, "<&STDOUT";
+	open STDIN, "<$tempfile.art";
+	open STDOUT, ">$tempfile";
+        system ("@LIBDIR@/docheckgroups", $newsgrouppats);
+	open STDIN, "<&OLDIN";
+	open STDOUT, "<&OLDOUT";
+	logger($tempfile, $logging, "checkgroups by $sender");
+	unlink ($tempfile, "$tempfile.art");
     }
 }

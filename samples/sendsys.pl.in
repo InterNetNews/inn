@@ -1,4 +1,5 @@
 #!@_PATH_PERL@
+# $Id$
 # sendsys.pl - The sendsys control message.
 # Version 0.1, 18-AUG-1998
 #  Parameters: params sender reply-to token site action[=log] approved
@@ -49,12 +50,19 @@ sub control_sendsys {
     }
     elsif ($action =~ /^(doit|doifarg)$/) {
         if (($action eq "doifarg") && ($params[0] ne $inn::pathhost)) {
-            print "skipped sendsys $sender\n";
+	    print "skipped sendsys $sender\n";
 	}
 	else {
             # Send the file.
-            system("$inn::mailcmd -s \"sendsys reply from " .
-                    "$inn::pathhost\" $replyto < $inn::newsfeeds\n\n");
+	    open NEWSFEEDS, "<$inn::newsfeeds";
+	    open2(\*R, \*MAIL, $inn::mailcmd, "-s",
+			"sendsys reply from $inn::pathhost", $replyto);
+	    while (<NEWSFEEDS>) { print MAIL $_ }
+	    print MAIL "\n";
+
+	    close NEWSFEEDS;
+	    close R;
+	    close MAIL;
             # Now, log what we did.
             if ($logging) {
                 $errmsg = "sendsys $sender to $replyto";

@@ -1,4 +1,5 @@
 #!@_PATH_PERL@
+# $Id$
 # senduuname.pl - The senduuname control message.
 # Version 0.1, 19-AUG-1998
 #  Parameters: params sender reply-to token site action[=log] approved
@@ -55,10 +56,14 @@ sub control_senduuname {
             print "skipped senduuname $sender\n";
         }
         else {
-            system("uuname | " .
-                   "$inn::mailcmd -s \"senduuname reply from " .
-                   "$inn::pathhost\" $replyto\n\n");
-            if ($logging) {
+	    open UUNAME, "uuname|";
+	    open2 (\*R, \*MAIL, $inn::mailcmd, "-s",
+		   "senduuname reply from $inn::pathhost", $replyto);
+	    while(<UUNAME>) { print MAIL $_ }
+	    close UUNAME;
+	    close R;
+	    close MAIL;
+	    if ($logging) {
                 $errmsg = "senduuname $sender to $replyto";
                 logger($token, $logging, $errmsg);
             }

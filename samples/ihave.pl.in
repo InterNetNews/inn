@@ -1,4 +1,5 @@
 #!@_PATH_PERL@
+# $Id$
 # ihave.pl - The ihave control message.
 # Version 0.1, 19-AUG-1998
 #  Parameters: params sender reply-to token site action[=log] approved
@@ -20,22 +21,21 @@ sub control_ihave {
 	$ngname, $ngdesc, $modcmd);
 
     if ($action eq "mail") {
-        open(TEMPFILE, ">$tempfile");
 
-        $artfh = open_article($token);
-        next if (!defined($artfh));
-        *ARTICLE = $artfh;
+	$artfh = open_article($token);
+	next if (!defined($artfh));
+	*ARTICLE = $artfh;
 
-        IHHEAD: while(<ARTICLE>) { last IHHEAD if /^$/ }
-        while (<ARTICLE>) {
-            s/^~/~~/;
-            print TEMPFILE $_;
-        }
-        close(ARTICLE);
-        close(TEMPFILE);
-        system("$inn::mailcmd ".
-               "-s \"ihave by $sender\" $inn::newsmaster < $tempfile");
-        unlink($tempfile);
+	IHHEAD: while(<ARTICLE>) { last IHHEAD if /^$/ }
+	open2(\*R, \*MAIL, $inn::mailcmd, "-s",
+		"ihave by $sender", $inn::newsmaster);
+	while (<ARTICLE>) {
+	    s/^~/~~/;
+	    print MAIL $_;
+	}
+	close ARTICLE;
+	close R;
+	close MAIL;
     }
     elsif ($action eq "log") {
         if (!$logging) {
@@ -46,26 +46,28 @@ sub control_ihave {
         }
     }
     elsif ($action eq "doit") {
-        open(GREPHIST, "|grephistory -i > $tempfile");
+	
+	open(GREPHIST, "|grephistory -i > $tempfile");
+	$artfh = open_article($token);
+	next if (!defined($artfh));
+	*ARTICLE = $artfh;
 
-        $artfh = open_article($token);
-        next if (!defined($artfh));
-        *ARTICLE = $artfh;
+	IHHEAD2: while(<ARTICLE>) { last IHHEAD2 if /^$/ }
+	while (<ARTICLE>) { print GREPHIST $_ }
+	close(ARTICLE);
+	close(GREPHIST);
 
-        IHHEAD2: while(<ARTICLE>) { last IHHEAD2 if /^$/ }
-        while (<ARTICLE>) { print GREPHIST $_ }
-        close(ARTICLE);
-        close(GREPHIST);
-        if (-s $tempfile) {
-            open(TEMPFILE, "<$tempfile");
-            open(INEWS, "|$inn::inews -h");
-            print INEWS "Newsgroups: to.$site\n";
-            print INEWS "Subject: cmsg sendme $inn::pathhost\n";
-            print INEWS "Control: sendme $inn::pathhost\n\n";
-            while (<TEMPFILE>) { print INEWS $_ }
-            close(TEMPFILE);
-            close(INEWS);
+	if (-s "$tempfile") {
+	    open2(\*R, \*INEWS, $inn::inews, "-h");
+	    print INEWS "Newsgroups: to.$site\n",
+			"Subject: cmsg sendme $pathhost\n",
+			"Control: sendme $pathhost\n\n";
+	    open TEMPFILE, "<$tempfile";
+	    while(<TEMPFILE>) { print INEWS $_ }
+	    close R;
+            close INEWS;
+	    close TEMPFILE;
         }
-        unlink($tempfile);
+	unlink ($tempfile);
     }
 }

@@ -1,4 +1,5 @@
 #!@_PATH_PERL@
+# $Id$
 # version.pl - The version control message.
 # Version 0.1, 19-AUG-1998
 #  Parameters: params sender reply-to token site action[=log] approved
@@ -13,7 +14,7 @@ sub control_version {
     my ($action, $logging) = split(/=/, shift);
     my $approved = shift;
 
-    my $VERSION = "$inn::version";
+    my $VERSION = $inn::version;
     $VERSION = "(unknown version)" if (not $VERSION);
 
     my $groupname = $params[0];
@@ -29,7 +30,7 @@ sub control_version {
         print TEMPFILE ("$sender has requested information about your\n");
         print TEMPFILE ("news software version.\n\n");
         print TEMPFILE ("If this is acceptable, type:\n");
-        print TEMPFILE ("  echo \"InterNetNews $VERSION\" | ",
+        print TEMPFILE ("  echo \"InterNetNews\ $VERSION\" | ",
                         "$inn::mailcmd -s \"version reply from ",
                         "$inn::pathhost\" $replyto\n\n");
         print TEMPFILE ("The control message follows:\n\n");
@@ -58,9 +59,11 @@ sub control_version {
             print "skipped version $sender\n";
         }
         else {
-            system("echo \"InterNetNews $VERSION\" | " .
-                   "$inn::mailcmd -s \"version reply from " .
-                   "$inn::pathhost\" $replyto\n\n");
+	    open2 (\*R, \*MAIL, $inn::mailcmd, "-s",
+		   "version reply from $inn::pathhost", $replyto);
+	    print MAIL "InterNetNews $VERSION\n";
+	    close R;
+	    close MAIL;
             # Now, log what we did.
             if ($logging) {
                 $errmsg = "version $sender to $replyto";
