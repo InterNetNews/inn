@@ -2,6 +2,7 @@ authprogs/ckpasswd
 authprogs/domain
 lib/buffer
 lib/concat
+lib/conffile
 lib/confparse
 lib/date
 lib/dispatch

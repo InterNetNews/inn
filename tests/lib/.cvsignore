@@ -2,6 +2,7 @@
 .pure
 buffer.t
 concat.t
+conffile.t
 confparse.t
 date.t
 dispatch.t

@@ -10,8 +10,8 @@ CFLAGS	= $(GCFLAGS) -I.
 ##  list.  If they need other things compiled, those other things should be
 ##  added to EXTRA.
 
-TESTS	= lib/buffer.t lib/concat.t lib/confparse.t lib/date.t \
-	lib/dispatch.t lib/getaddrinfo.t lib/hash.t lib/hashtab.t \
+TESTS	= lib/buffer.t lib/concat.t lib/conffile.t lib/confparse.t \
+	lib/date.t lib/dispatch.t lib/getaddrinfo.t lib/hash.t lib/hashtab.t \
 	lib/hstrerror.t lib/inet_aton.t lib/inet_ntoa.t lib/innconf.t \
 	lib/list.t lib/md5.t lib/memcmp.t lib/messages.t lib/mkstemp.t \
 	lib/pread.t lib/pwrite.t lib/qio.t lib/snprintf.t lib/strerror.t \
@@ -50,6 +50,9 @@ lib/buffer.t: lib/buffer-t.o libtest.o $(LIBINN)
 
 lib/concat.t: lib/concat-t.o libtest.o $(LIBINN)
 	$(LINK) lib/concat-t.o libtest.o $(LIBINN)
+
+lib/conffile.t: lib/conffile-t.o libtest.o $(LIBINN)
+	$(LINK) lib/conffile-t.o libtest.o $(LIBINN)
 
 lib/confparse.t: lib/confparse-t.o libtest.o $(LIBINN)
 	$(LINK) lib/confparse-t.o libtest.o $(LIBINN)

@@ -723,6 +723,7 @@ tests/lib/articles/strange            An article with CR and LF in headers
 tests/lib/articles/truncated          An article truncated in the headers
 tests/lib/buffer-t.c                  Tests for lib/buffer.c
 tests/lib/concat-t.c                  Tests for lib/concat.c
+tests/lib/conffile-t.c                Tests for lib/conffile.c
 tests/lib/config                      Testing config files (Directory)
 tests/lib/config/errors               Various config files with errors
 tests/lib/config/line-endings         A config file with varied line endings
