@@ -251,16 +251,6 @@ RCreader(cp)
     }
 
     /*
-    ** Clear any IP_OPTIONS, including source routing, on the socket
-    */
-    if (RCfix_options(fd, &remote) != 0) {
-	/* shouldn't happen, but we're bit paranoid at this point */
-	if (close(fd) < 0)
-	    syslog(L_ERROR, "%s cant close %d %m", LogName, fd);
-	return;
-    }
-
-    /*
     ** If RemoteTimer is not zero, then check the limits on incoming
     ** connections on a total and per host basis.
     **
