@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Here be declarations of routines and variables in the C library.
 **  Including this file is the equivalent of including all of the following
@@ -17,10 +17,6 @@
 **  adding them to INN's library.  vfork.h is included if it exists.  If
 **  the system doesn't define a SUN_LEN macro, one will be provided.  Also
 **  provides some standard #defines and typedefs.
-**
-**  This file also does some additional things that it shouldn't be doing
-**  any more; those are all below the LEGACY comment.  Those will eventually
-**  be removed; don't depend on them continuing to remain in this file.
 */
 
 #ifndef CLIBRARY_H
@@ -128,10 +124,10 @@ extern int              vsnprintf(char *, size_t, const char *, va_list);
 #endif
 
 /* "Good enough" replacements for standard functions. */
-#ifndef HAVE_ATEXIT
+#if !HAVE_ATEXIT
 # define atexit(arg) on_exit((arg), 0)
 #endif
-#ifndef HAVE_STRTOUL
+#if !HAVE_STRTOUL
 # define strtoul(a, b, c) strtol((a), (b), (c))
 #endif
 
@@ -150,6 +146,14 @@ extern int              vsnprintf(char *, size_t, const char *, va_list);
 # define SEEK_SET 0
 # define SEEK_CUR 1
 # define SEEK_END 2
+#endif
+
+/* POSIX requires that these be defined in <unistd.h>.  If one of them has
+   been defined, all the rest almost certainly have. */
+#ifndef STDIN_FILENO
+# define STDIN_FILENO   0
+# define STDOUT_FILENO  1
+# define STDERR_FILENO  2
 #endif
 
 /* On some systems, the macros defined by <ctype.h> are only vaild on ASCII
@@ -175,59 +179,8 @@ extern int              vsnprintf(char *, size_t, const char *, va_list);
 #endif
 
 /* Used to name the elements of the array passed to pipe(). */
-#define PIPE_READ               0
-#define PIPE_WRITE              1
-
-
-/*
-**  LEGACY
-**
-**  Everything below this point is here so that parts of INN that haven't
-**  been tweaked to use more standard constructs don't break.  Don't count
-**  on any of this staying around, and if you're knee-deep in a file that
-**  uses any of this, please consider fixing it.
-*/
-
-/* All occurrances of these typedefs anywhere should be replaced by their
-   ANSI/ISO/standard C definitions given in these typedefs.  autoconf magic
-   will make sure that everything except void works fine, and void we're
-   just assuming works. */
-typedef void *          POINTER;
-typedef const void *    CPOINTER;
-typedef size_t          SIZE_T;
-typedef uid_t           UID_T;
-typedef gid_t           GID_T;
-typedef pid_t           PID_T;
-
-/* Some functions like accept() and getsockopt() take a pointer to a size_t
-   on some platforms and a pointer to an int on others (and socklen_t on
-   others).  Just always use socklen_t and let autoconf take care of it. */
-#define	ARGTYPE         socklen_t
-
-/* autoconf deals with these; just use them directly. */
-typedef caddr_t         MMAP_PTR;
-
-/* Return type of signal handlers.  autoconf defines RETSIGTYPE for this
-   purpose; use that instead. */
-#define SIGHANDLER      RETSIGTYPE
-
-/* There used to be lots of portability here to handle systems that have
-   fd_set but not the FD_SET() family of macros.  Since then, various other
-   parts of INN have started using fd_set directly without complaints.  The
-   intersection between those systems and systems with ANSI C compilers is
-   probably now empty, so see if this breaks anyone. */
-#define FDSET           fd_set
-
-/* This needs to be moved into libinn.h, since we don't guarantee to provide
-   getopt() functionality. */
-extern int              optind;
-extern char             *optarg;
-
-/* POSIX requires STDIN_FILENO, STDOUT_FILENO, and STDERR_FILENO; we should
-   be using those instead. */
-#define STDIN                   0
-#define STDOUT                  1
-#define STDERR                  2
+#define PIPE_READ       0
+#define PIPE_WRITE      1
 
 END_DECLS
 
