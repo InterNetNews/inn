@@ -12,6 +12,7 @@ package inn ;
 eval `@prefix@/bin/innconfval -p`;
 
 $newshome = $pathnews;
+$newslib = "@LIBDIR@";
 $spooldir = $pathspool;
 $most_logs = $pathlog;
 
