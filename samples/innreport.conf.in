@@ -301,7 +301,7 @@ section inn_flow {
 		total         "100";
         };
         column {
-                name          "kb/sec";
+                name          "KB/sec";
 		format_name   "%7s";
 		value         "$inn_flow_size{$key} / 
 		                       $inn_flow_time{$key} / 1024";

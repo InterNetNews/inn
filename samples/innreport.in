@@ -2313,8 +2313,8 @@ sub NiceByte {
 
   $size = 0 unless defined $size;
   $t = $size / 1024 / 1024 / 1024 > 1 ?
-    sprintf "%.1f Gb", $size / 1024 / 1024 / 1024 :
-      ($size / 1024 / 1024 > 1 ? sprintf "%.1f Mb", $size / 1024 / 1024 :
+    sprintf "%.1f GB", $size / 1024 / 1024 / 1024 :
+      ($size / 1024 / 1024 > 1 ? sprintf "%.1f MB", $size / 1024 / 1024 :
 	sprintf "%.1f kb", $size / 1024);
   return $t;
 }
@@ -2322,8 +2322,8 @@ sub NiceByte {
 sub kb2i {
   my $s = shift;
   my ($i, $u) = $s =~ m/^(\S+) (\S+)$/;
-  $i *= 1024 if $u =~ m/Mb/o;
-  $i *= 1024 * 1024 if $u =~ m/Gb/o;
+  $i *= 1024 if $u =~ m/MB/o;
+  $i *= 1024 * 1024 if $u =~ m/GB/o;
   return $i;
 }
 
