@@ -137,7 +137,8 @@ SITEfindvariable(char *name)
 static char *
 SITEexpandvariables(char *site)
 {
-    char *p, *q, *r, *s;
+    char *p, *r, *s;
+    char *q = NULL;
     int c = 0;
     char modifier;
     char varname[64];

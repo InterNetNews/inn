@@ -172,7 +172,7 @@ CCcurrmode(void)
     /* Server's mode. */
     switch (Mode) {
     default:
-	(void)sprintf(buff, "Unknown %d", Mode);
+	snprintf(buff, sizeof(buff), "Unknown %d", Mode);
 	return buff;
     case OMrunning:
 	return "running";
@@ -214,7 +214,7 @@ CCgetid(char *p, const char **store)
 	RENEW(Save.Data, char, Save.Size);
     }
     *store = Save.Data;
-    (void)sprintf((char *)*store, "<%s>", p);
+    snprintf(Save.Data, Save.Size, "<%s>", p);
     return NULL;
 }
 
@@ -1014,6 +1014,7 @@ CCnewgroup(char *av[])
     const char *		who;
     char		*buff;
     int			oerrno;
+    size_t              length;
 
     if (TIMES == NULL)
 	TIMES = concatpath(innconf->pathdb, _PATH_ACTIVETIMES);
@@ -1056,10 +1057,9 @@ CCnewgroup(char *av[])
 	if (*who == '\0')
 	    who = NEWSMASTER;
 
-	/* %s + ' ' + %ld + ' ' + %s + '\n' + terminator */
-	buff = NEW(char, strlen(Name) + 1 + 20 + 1 + strlen(who) + 1 + 1);
-
-	(void)sprintf(buff, "%s %ld %s\n", Name, Now.time, who);
+        length = snprintf(NULL, 0, "%s %ld %s\n", Name, Now.time, who) + 1;
+        buff = xmalloc(length);
+        snprintf(buff, length, "%s %ld %s\n", Name, Now.time, who);
 	if (xwrite(fd, buff, strlen(buff)) < 0) {
 	    oerrno = errno;
 	    syslog(L_ERROR, "%s cant write %s %m", LogName, TIMES);
@@ -1619,7 +1619,7 @@ CCtimer(char *av[])
 	value = 0;
     else {
 	for (p = av[0]; *p; p++) {
-	    if (!isdigit(*p))
+	    if (!CTYPE(isdigit, *p))
 		return "1 parameter should be a number or 'off'";
 	}
 	value = atoi(av[0]);
@@ -1658,7 +1658,7 @@ CCstatus(char *av[])
 	value = 0;
     else {
 	for (p = av[0]; *p; p++) {
-	    if (!isdigit(*p))
+	    if (!CTYPE(isdigit, *p))
 		return "1 parameter should be a number or 'off'";
 	}
 	value = atoi(av[0]);

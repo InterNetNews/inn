@@ -252,6 +252,9 @@ Spawn(int niceval, int fd0, int fd1, int fd2, char * const av[])
     execv(av[0], av);
     syslog(L_FATAL, "%s cant exec in %s %m", LogName, av[0]);
     _exit(1);
+
+    /* Not reached. */
+    return -1;
 }
 
 /*
@@ -270,8 +273,8 @@ ThrottleIOError(const char *when)
             DISPOSE(Reservation);
             Reservation = NULL;
         }
-        (void)sprintf(buff, "%s writing %s file -- throttling",
-            strerror(oerrno), when);
+        snprintf(buff, sizeof(buff), "%s writing %s file -- throttling",
+                 strerror(oerrno), when);
         if ((p = CCblock(OMthrottled, buff)) != NULL)
             syslog(L_ERROR, "%s cant throttle %s", LogName, p);
         syslog(L_FATAL, "%s throttle %s", LogName, buff);
@@ -294,8 +297,8 @@ ThrottleNoMatchError(void)
             DISPOSE(Reservation);
             Reservation = NULL;
         }
-        (void)sprintf(buff, "%s storing article -- throttling",
-            SMerrorstr);
+        snprintf(buff, sizeof(buff), "%s storing article -- throttling",
+                 SMerrorstr);
         if ((p = CCblock(OMthrottled, buff)) != NULL)
             syslog(L_ERROR, "%s cant throttle %s", LogName, p);
         syslog(L_FATAL, "%s throttle %s", LogName, buff);

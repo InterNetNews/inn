@@ -182,7 +182,7 @@ GoodIdent(int fd, char *identd)
 	return FALSE;
     }
 
-    sprintf(buf,"%d,%d\r\n",port2, port1);
+    snprintf(buf,sizeof(buf),"%d,%d\r\n",port2, port1);
     write(ident_fd,buf, strlen(buf));
     memset( buf, 0, 80 );
     lu=read(ident_fd, buf, 79); /* pas encore parfait ("not yet perfect"?) */
@@ -476,7 +476,7 @@ RChandoff(int fd, HANDOFF h)
     argv[1] = "-s                                                ";
     i = 2;
     if (NNRPReason) {
-	(void)sprintf(buff, "-r%s", NNRPReason);
+	snprintf(buff, sizeof(buff), "-r%s", NNRPReason);
 	argv[i++] = buff;
     }
     if (NNRPTracing)
@@ -666,7 +666,9 @@ RCreader(CHANNEL *cp)
 	    if (new->MaxCnx > 0 && new->HoldTime == 0) {
 		CHANsetActiveCnx(new);
 		if((new->ActiveCnx > new->MaxCnx) && (new->fd > 0)) {
-		    sprintf(buff, "You are limited to %d connection%s", new->MaxCnx, (new->MaxCnx != 1) ? "s" : "");
+		    snprintf(buff, sizeof(buff),
+                             "You are limited to %d connection%s",
+                             new->MaxCnx, (new->MaxCnx != 1) ? "s" : "");
 		    NCwriteshutdown(new, buff);
 		    syslog(L_NOTICE, "too many connections from %s", rp->Label);
 		} else {
@@ -1418,7 +1420,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  break;
 	}
 	RCadddata(data, &infocount, K_MAX_CONN, T_STRING, word);
-	for (p = word; isdigit(*p) && *p != '\0'; p++);
+	for (p = word; CTYPE(isdigit, *p) && *p != '\0'; p++);
 	if (!strcmp (word, "none") || !strcmp (word, "unlimited")) {
 	  max = 0;
 	} else {
@@ -1451,7 +1453,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  break;
 	}
 	RCadddata(data, &infocount, K_HOLD_TIME, T_STRING, word);
-	for (p = word; isdigit(*p) && *p != '\0'; p++);
+	for (p = word; CTYPE(isdigit, *p) && *p != '\0'; p++);
 	if (*p != '\0') {
 	  syslog(L_ERROR, MUST_BE_INT, LogName, filename, linecount);
 	  break;
@@ -1662,7 +1664,7 @@ RCwritelistvalue(FILE *F, char *value)
 /*
 **  Write the incoming configuration (memory->disk)
 */
-static void
+static void UNUSED
 RCwritelist(char *filename)
 {
     FILE	*F;

@@ -155,10 +155,10 @@ TCLCksumArt(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
     char buf[100];
 
-    sprintf(buf, "%08x",
-	    makechecksum(TCLCurrData->Body,
-			 &TCLCurrArticle->Data[TCLCurrArticle->Used] - 
-			 TCLCurrData->Body));
+    snprintf(buf, sizeof(buf), "%08x",
+             makechecksum(TCLCurrData->Body,
+                          &TCLCurrArticle->Data[TCLCurrArticle->Used] - 
+                          TCLCurrData->Body));
     Tcl_SetResult(interp, buf, TCL_VOLATILE);
     return TCL_OK;
 }

@@ -285,7 +285,7 @@ ICDnewgroup(char *Name, char *Rest)
 	syslog(L_ERROR, "%s too_long %s", LogName, MaxLength(Name, Name));
 	return FALSE;
     }
-    (void)sprintf(buff, "%s 0000000000 0000000001 %s\n", Name, Rest);
+    snprintf(buff, sizeof(buff), "%s 0000000000 0000000001 %s\n", Name, Rest);
     ICDiovset(&iov[0], ICDactpointer, ICDactsize);
     ICDiovset(&iov[1], buff, strlen(buff));
 

@@ -294,7 +294,7 @@ PY_addhist(self, args)
     if (!PyArg_ParseTuple(args, "s#", &msgid, &msgidlen))
 	return NULL;
 
-    sprintf(tbuff, "%d",time((long *)0));
+    snprintf(tbuff, sizeof(tbuff), "%d", time(NULL));
 
     parambuf[0] = msgid;
     parambuf[1] = parambuf[2] = parambuf[3] = tbuff;

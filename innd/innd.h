@@ -208,7 +208,7 @@ typedef struct _ARTDATA {
   int		  XrefBufLength;	/* buffer length of generated Xref
 					   header */
   LISTBUFFER	  Distribution;		/* distribution list */
-  char	      *   Feedsite;		/* who gives me this article */
+  const char  *   Feedsite;		/* who gives me this article */
   int		  FeedsiteLength;	/* length of Feedsite */
   LISTBUFFER	  Path;			/* path name list */
   int		  StoredGroupLength;	/* 1st newsgroup name in Xref */

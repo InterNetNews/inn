@@ -166,8 +166,8 @@ catch_terminate(int sig)
 static void
 xmalloc_abort(const char *what, size_t size, const char *file, int line)
 {
-    fprintf(stderr, "SERVER cant %s %lu bytes at %s line %d: %m", what,
-            (unsigned long) size, file, line);
+    fprintf(stderr, "SERVER cant %s %lu bytes at %s line %d: %s", what,
+            (unsigned long) size, file, line, strerror(errno));
     syslog(LOG_CRIT, "SERVER cant %s %lu bytes at %s line %d: %m", what,
            (unsigned long) size, file, line);
     abort();
@@ -383,11 +383,9 @@ main(int ac, char *av[])
 	    case 'p':	Mode = OMpaused;	break;
 	    case 't':	Mode = OMthrottled;	break;
 	    }
-	    if (Mode != OMrunning) {
-		(void)sprintf(buff, "%sed from command line",
-			Mode == OMpaused ? "Paus" : "Throttl");
-		ModeReason = COPY(buff);
-	    }
+	    if (Mode != OMrunning)
+                ModeReason = concat(OMpaused ? "Paus" : "Throttl",
+                                    "ed from the command line", (char *) 0);
 	    break;
 	case 'N':
 	    filter = FALSE;

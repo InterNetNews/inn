@@ -342,7 +342,9 @@ CHANclose(CHANNEL *cp, const char *name)
                name, (long)(Now.time - cp->Started),
                cp->Received);
             else {
-	    sprintf(buff, "accepted size %.0f duplicate size %.0f", cp->Size, cp->DuplicateSize);
+	    snprintf(buff, sizeof(buff),
+                     "accepted size %.0f duplicate size %.0f", cp->Size,
+                     cp->DuplicateSize);
 	    syslog(L_NOTICE,
 		"%s closed seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld %s",
 		name, (long)(Now.time - cp->Started),
@@ -458,30 +460,31 @@ CHANname(const CHANNEL *cp)
 
     switch (cp->Type) {
     default:
-	(void)sprintf(buff, "?%d(#%d@%d)?", cp->Type, cp->fd, cp - CHANtable);
+	snprintf(buff, sizeof(buff), "?%d(#%d@%d)?", cp->Type, cp->fd,
+                 cp - CHANtable);
 	break;
     case CTany:
-	(void)sprintf(buff, "any:%d", cp->fd);
+	snprintf(buff, sizeof(buff), "any:%d", cp->fd);
 	break;
     case CTfree:
-	(void)sprintf(buff, "free:%d", cp->fd);
+	snprintf(buff, sizeof(buff), "free:%d", cp->fd);
 	break;
     case CTremconn:
-	(void)sprintf(buff, "remconn:%d", cp->fd);
+	snprintf(buff, sizeof(buff), "remconn:%d", cp->fd);
 	break;
     case CTreject:
-	(void)sprintf(buff, "%s rejected", RChostname(cp));
+	snprintf(buff, sizeof(buff), "%s rejected", RChostname(cp));
 	break;
     case CTnntp:
-	(void)sprintf(buff, "%s:%d",
-		cp->Address.ss_family == 0 ? "localhost" : RChostname(cp),
-		cp->fd);
+	snprintf(buff, sizeof(buff), "%s:%d",
+                 cp->Address.ss_family == 0 ? "localhost" : RChostname(cp),
+                 cp->fd);
 	break;
     case CTlocalconn:
-	(void)sprintf(buff, "localconn:%d", cp->fd);
+	snprintf(buff, sizeof(buff), "localconn:%d", cp->fd);
 	break;
     case CTcontrol:
-	(void)sprintf(buff, "control:%d", cp->fd);
+	snprintf(buff, sizeof(buff), "control:%d", cp->fd);
 	break;
     case CTexploder:
     case CTfile:
@@ -495,13 +498,13 @@ CHANname(const CHANNEL *cp)
 		break;
 	    }
 	if (pid == 0)
-	    (void)sprintf(buff, "%s:%d:%s",
-		    MaxLength(p, p), cp->fd,
-		    cp->Type == CTfile ? "file" : "proc");
+	    snprintf(buff, sizeof(buff), "%s:%d:%s",
+                     MaxLength(p, p), cp->fd,
+                     cp->Type == CTfile ? "file" : "proc");
 	else
-	    (void)sprintf(buff, "%s:%d:%s:%ld",
-		    MaxLength(p, p), cp->fd,
-		    cp->Type == CTfile ? "file" : "proc", (long)pid);
+	    snprintf(buff, sizeof(buff), "%s:%d:%s:%ld",
+                     MaxLength(p, p), cp->fd,
+                     cp->Type == CTfile ? "file" : "proc", (long)pid);
 	break;
     }
     return buff;

@@ -111,7 +111,7 @@ main(int argc, char *argv[])
     /* Exit if run by any other user or group. */
     real_uid = getuid();
     if (real_uid != news_uid)
-        die("must be run by user %s (%d), not %d", NEWSUSER, news_uid,
+        die("must be run by user %s (%lu), not %lu", NEWSUSER, news_uid,
             real_uid);
 
     /* Drop all supplemental groups and drop privileges to read inn.conf.
@@ -120,7 +120,7 @@ main(int argc, char *argv[])
     if (setgroups(1, &news_gid) < 0)
         syswarn("can't setgroups (is inndstart setuid root?)");
     if (seteuid(news_uid) < 0)
-        sysdie("can't seteuid to %d", news_uid);
+        sysdie("can't seteuid to %lu", news_uid);
     if (ReadInnConf() < 0)
         exit(1);
 
@@ -217,7 +217,7 @@ main(int argc, char *argv[])
 	hints.ai_family = PF_UNSPEC;
 	hints.ai_flags = AI_PASSIVE;
 	hints.ai_socktype = SOCK_STREAM;
-	sprintf(service, "%d", port);
+	snprintf(service, sizeof(service), "%d", port);
 	error = getaddrinfo(NULL, service, &hints, &addr);
 	if (error < 0)
 	    die("getaddrinfo: %s", gai_strerror(error));
@@ -302,9 +302,9 @@ main(int argc, char *argv[])
 
     /* Now, permanently drop privileges. */
     if (setgid(news_gid) < 0 || getgid() != news_gid)
-        sysdie("can't setgid to %d", news_gid);
+        sysdie("can't setgid to %lu", news_gid);
     if (setuid(news_uid) < 0 || getuid() != news_uid)
-        sysdie("can't setuid to %d", news_uid);
+        sysdie("can't setuid to %lu", news_uid);
 
     /* Build the argument vector for innd.  Pass -p<port> to innd to tell it
        what port we just created and bound to for it. */
@@ -314,7 +314,7 @@ main(int argc, char *argv[])
     for (j = 0; s[j] > 0; j++) {
 	char temp[16];
 
-	sprintf(temp, "%d,", s[j]);
+	snprintf(temp, sizeof(temp), "%d,", s[j]);
 	strcat(pflag, temp);
     }
     /* chop off the trailing , */

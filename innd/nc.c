@@ -193,7 +193,7 @@ NCpostit(CHANNEL *cp)
     cp->Received++;
     if (cp->Sendid.Size > 3) { /* We be streaming */
       cp->Takethis_Ok++;
-      (void)sprintf(buff, "%d", NNTP_OK_RECID_VAL);
+      snprintf(buff, sizeof(buff), "%d", NNTP_OK_RECID_VAL);
       cp->Sendid.Data[0] = buff[0];
       cp->Sendid.Data[1] = buff[1];
       cp->Sendid.Data[2] = buff[2];
@@ -209,8 +209,8 @@ NCpostit(CHANNEL *cp)
   }
   cp->Reported++;
   if (cp->Reported >= innconf->nntpactsync) {
-    sprintf(buff, "accepted size %.0f duplicate size %.0f", cp->Size,
-      cp->DuplicateSize);
+    snprintf(buff, sizeof(buff), "accepted size %.0f duplicate size %.0f",
+             cp->Size, cp->DuplicateSize);
     syslog(L_NOTICE,
       "%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld %s",
       CHANname(cp), (long)(Now.time - cp->Started),
@@ -307,6 +307,7 @@ NCstat(CHANNEL *cp)
     TOKEN		token;
     ARTHANDLE		*art;
     char		*buff;
+    size_t              length;
 
     /* Snip off the Message-ID. */
     for (p = cp->In.Data + cp->Start + STRLEN("stat"); ISWHITE(*p); p++)
@@ -328,8 +329,9 @@ NCstat(CHANNEL *cp)
     SMfreearticle(art);
 
     /* Write the message. */
-    buff = NEW(char, strlen(p) + 16);
-    (void)sprintf(buff, "%d 0 %s", NNTP_NOTHING_FOLLOWS_VAL, p);
+    length = snprintf(NULL, 0, "%d 0 %s", NNTP_NOTHING_FOLLOWS_VAL, p) + 1;
+    buff = xmalloc(length);
+    snprintf(buff, length, "%d 0 %s", NNTP_NOTHING_FOLLOWS_VAL, p);
     NCwritereply(cp, buff);
     DISPOSE(buff);
 }
@@ -635,15 +637,17 @@ NCmode(CHANNEL *cp)
     else if (caseEQ(p, "stream") &&
              (!StreamingOff && cp->Streaming)) {
 	char buff[16];
-	(void)sprintf(buff, "%d StreamOK.", NNTP_OK_STREAM_VAL);
+
+	snprintf(buff, sizeof(buff), "%d StreamOK.", NNTP_OK_STREAM_VAL);
 	NCwritereply(cp, buff);
 	syslog(L_NOTICE, "%s NCmode \"mode stream\" received",
 		CHANname(cp));
 	return;
     } else if (caseEQ(p, "cancel") && cp->privileged) {
        char buff[16];
-        cp->State = CScancel;
-       (void)sprintf(buff, "%d CancelOK.", NNTP_OK_CANCEL_VAL);
+
+       cp->State = CScancel;
+       snprintf(buff, sizeof(buff), "%d CancelOK.", NNTP_OK_CANCEL_VAL);
        NCwritereply(cp, buff);
        syslog(L_NOTICE, "%s NCmode \"mode cancel\" received",
                CHANname(cp));
@@ -696,8 +700,8 @@ NC_unimp(CHANNEL *cp)
 	continue;
     cp->Start = cp->Next;
     *p = '\0';
-    (void)sprintf(buff, "%d \"%s\" not implemented; try \"help\".",
-	    NNTP_BAD_COMMAND_VAL, MaxLength(q, q));
+    snprintf(buff, sizeof(buff), "%d \"%s\" not implemented; try \"help\".",
+             NNTP_BAD_COMMAND_VAL, MaxLength(q, q));
     NCwritereply(cp, buff);
 }
 
@@ -903,8 +907,9 @@ NCproc(CHANNEL *cp)
 	if (cp->Sendid.Size)
 	  NCwritereply(cp, cp->Sendid.Data);
 	else {
-	  (void)sprintf(buff, "%d Article exceeds local limit of %ld bytes",
-	    NNTP_REJECTIT_VAL, innconf->maxartsize);
+	  snprintf(buff, sizeof(buff),
+                   "%d Article exceeds local limit of %ld bytes",
+                   NNTP_REJECTIT_VAL, innconf->maxartsize);
 	  NCwritereply(cp, buff);
         }
 	cp->LargeArtSize = 0;
@@ -935,7 +940,7 @@ NCproc(CHANNEL *cp)
 	NCclearwip(cp);
 	if (cp->Sendid.Size > 3) { /* We be streaming */
 	  cp->Takethis_Err++;
-	  (void)sprintf(buff, "%d", NNTP_ERR_FAILID_VAL);
+	  snprintf(buff, sizeof(buff), "%d", NNTP_ERR_FAILID_VAL);
 	  cp->Sendid.Data[0] = buff[0];
 	  cp->Sendid.Data[1] = buff[1];
 	  cp->Sendid.Data[2] = buff[2];
@@ -998,8 +1003,8 @@ NCproc(CHANNEL *cp)
 	syslog(L_NOTICE, "%s internal rejecting too long command line (%d > %d)",
 	  CHANname(cp), i, NNTP_STRLEN);
 	cp->LargeCmdSize = 0;
-	sprintf(buff, "%d command exceeds limit of %d bytes",
-	  NNTP_BAD_COMMAND_VAL, NNTP_STRLEN);
+	snprintf(buff, sizeof(buff), "%d command exceeds limit of %d bytes",
+                 NNTP_BAD_COMMAND_VAL, NNTP_STRLEN);
 	cp->State = CSgetcmd;
 	cp->Start = cp->Next;
 	NCwritereply(cp, buff);
@@ -1046,24 +1051,24 @@ NCproc(CHANNEL *cp)
 	now = time(NULL);
 	failed = 0;
 	/* time+channel file descriptor should make an unique file name */
-	sprintf(buff, "%s/%ld%d.tmp", innconf->pathincoming,
-					now, cp->fd);
+	snprintf(buff, sizeof(buff), "%s/%ld%d.tmp", innconf->pathincoming,
+                 now, cp->fd);
 	fd = open(buff, O_WRONLY|O_CREAT|O_EXCL, ARTFILE_MODE);
 	if (fd < 0) {
 	  oerrno = errno;
 	  failed = 1;
 	  syslog(L_ERROR, "%s cannot open outfile %s for xbatch: %m",
 	    CHANname(cp), buff);
-	  sprintf(buff, "%s cant create file: %s", NNTP_RESENDIT_XBATCHERR,
-	    strerror(oerrno));
+	  snprintf(buff, sizeof(buff), "%s cant create file: %s",
+                   NNTP_RESENDIT_XBATCHERR, strerror(oerrno));
 	  NCwritereply(cp, buff);
 	} else {
 	  if (write(fd, cp->In.Data, cp->XBatchSize) != cp->XBatchSize) {
 	    oerrno = errno;
 	    syslog(L_ERROR, "%s cant write batch to file %s: %m", CHANname(cp),
 	      buff);
-	    sprintf(buff, "%s cant write batch to file: %s",
-	      NNTP_RESENDIT_XBATCHERR, strerror(oerrno));
+	    snprintf(buff, sizeof(buff), "%s cant write batch to file: %s",
+                     NNTP_RESENDIT_XBATCHERR, strerror(oerrno));
 	    NCwritereply(cp, buff);
 	    failed = 1;
 	  }
@@ -1072,18 +1077,19 @@ NCproc(CHANNEL *cp)
 	  oerrno = errno;
 	  syslog(L_ERROR, "%s error closing batch file %s: %m", CHANname(cp),
 	    failed ? "" : buff);
-	  sprintf(buff, "%s error closing batch file: %s",
-	    NNTP_RESENDIT_XBATCHERR, strerror(oerrno));
+	  snprintf(buff, sizeof(buff), "%s error closing batch file: %s",
+                   NNTP_RESENDIT_XBATCHERR, strerror(oerrno));
 	  NCwritereply(cp, buff);
 	  failed = 1;
 	}
-	sprintf(buff2, "%s/%ld%d.x", innconf->pathincoming, now, cp->fd);
+	snprintf(buff2, sizeof(buff2), "%s/%ld%d.x", innconf->pathincoming,
+                 now, cp->fd);
 	if (rename(buff, buff2)) {
 	  oerrno = errno;
 	  syslog(L_ERROR, "%s cant rename %s to %s: %m", CHANname(cp),
 	    failed ? "" : buff, buff2);
-	  sprintf(buff, "%s cant rename batch to %s: %s",
-	    NNTP_RESENDIT_XBATCHERR, buff2, strerror(oerrno));
+	  snprintf(buff, sizeof(buff), "%s cant rename batch to %s: %s",
+                   NNTP_RESENDIT_XBATCHERR, buff2, strerror(oerrno));
 	  NCwritereply(cp, buff);
 	  failed = 1;
 	}
@@ -1189,7 +1195,7 @@ NCsetup(void)
     if (p == NULL)
 	/* Worked in main, now it fails?  Curious. */
 	p = Path.Data;
-    (void)sprintf(buff, "%d %s InterNetNews server %s ready",
+    snprintf(buff, sizeof(buff), "%d %s InterNetNews server %s ready",
 	    NNTP_POSTOK_VAL, p, inn_version_string);
     NCgreeting = COPY(buff);
 }
@@ -1422,7 +1428,9 @@ NCcancel(CHANNEL *cp)
     res = CCcancel(av);
     if (res) {
         char buff[SMBUF];
-        (void)sprintf(buff, "%d %s", NNTP_ERR_CANCEL_VAL, MaxLength(res, res));
+
+        snprintf(buff, sizeof(buff), "%d %s", NNTP_ERR_CANCEL_VAL,
+                 MaxLength(res, res));
         syslog(L_NOTICE, "%s cant_cancel %s", CHANname(cp),
                MaxLength(res, res));
         NCwritereply(cp, buff);

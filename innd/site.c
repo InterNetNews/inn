@@ -407,19 +407,19 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	case FEED_TIMERECEIVED:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    sprintf(pbuff, "%ld", Data->Arrived);
+	    snprintf(pbuff, sizeof(pbuff), "%ld", Data->Arrived);
 	    BUFFappend(bp, pbuff, strlen(pbuff));
 	    break;
 	case FEED_TIMEPOSTED:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    sprintf(pbuff, "%ld", Data->Posted);
+	    snprintf(pbuff, sizeof(pbuff), "%ld", Data->Posted);
 	    BUFFappend(bp, pbuff, strlen(pbuff));
 	    break;
 	case FEED_TIMEEXPIRED:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    sprintf(pbuff, "%ld", Data->Expires);
+	    snprintf(pbuff, sizeof(pbuff), "%ld", Data->Expires);
 	    BUFFappend(bp, pbuff, strlen(pbuff));
 	    break;
 	case FEED_MESSAGEID:
@@ -518,7 +518,7 @@ SITEsend(SITE *sp, ARTDATA *Data)
 
 	if (NeedShell(buff, (const char **)argv, (const char **)ENDOF(argv))) {
 	    argv[0] = SITEshell;
-	    argv[1] = "-c";
+	    argv[1] = (char *) "-c";
 	    argv[2] = buff;
 	    argv[3] = NULL;
 	}
@@ -588,7 +588,7 @@ SITEstartprocess(SITE *sp)
     process = COPY(sp->Param);
     if (NeedShell(process, (const char **)argv, (const char **)ENDOF(argv))) {
 	argv[0] = SITEshell;
-	argv[1] = "-c";
+	argv[1] = (char *) "-c";
 	argv[2] = process;
 	argv[3] = NULL;
     }

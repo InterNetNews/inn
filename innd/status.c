@@ -109,17 +109,18 @@ STATUSsummary(void)
   float			size = 0;
   float			DuplicateSize = 0;
   int			peers = 0;
-  char			TempString [SMBUF];
+  char                  TempString[SMBUF];
+  char			*path;
   STATUS		*head, *status, *tmp;
   char			str[9];
   time_t		now;
  
 #if defined(HTML_STATUS)
-  sprintf (TempString, "%s/%s", innconf->pathhttp, STATUS_FILE);
+  path = concatpath(innconf->pathhttp, STATUS_FILE);
 #else
-  sprintf (TempString, "%s/%s", innconf->pathlog, STATUS_FILE);
+  path = concatpath(innconf->pathlog, STATUS_FILE);
 #endif
-  if ((F = Fopen(TempString, "w", TEMPORARYOPEN)) == NULL)
+  if ((F = Fopen(path, "w", TEMPORARYOPEN)) == NULL)
     return;
 
 #if defined(HTML_STATUS)
