@@ -3,6 +3,7 @@
  * ovdb 2.00 beta4
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2002-08-13 : Change BOOL to bool, remove portability to < 2.4.
  * 2002-08-11 : Cleaned up use of sprintf and fixed a bunch of warnings.
  * 2002-02-28 : Update getartinfo for the overview API change in 2.4.  This
  *              breaks compatibility with INN 2.3.x....
@@ -67,30 +68,26 @@
 
 #include "config.h"
 #include "clibrary.h"
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
+#include "portable/socket.h"
+#include "portable/time.h"
+#include <errno.h>
+#include <fcntl.h>
 #ifdef HAVE_LIMITS_H
 # include <limits.h>
 #endif
-#include <fcntl.h>
-#include <stdlib.h>
-#include <string.h>
-#include <syslog.h>
-#include <errno.h>
+#include <pwd.h>
 #include <signal.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif
-#include <pwd.h>
+#include <syslog.h>
+
 #include "macros.h"
 #include "conffile.h"
 #include "libinn.h"
 #include "paths.h"
 #include "storage.h"
+
 #include "ov.h"
 #include "ovinterface.h"
 #include "ovdb.h"
@@ -100,74 +97,46 @@
 # include <sys/un.h>
 #endif
 
-#ifdef HAVE_INN_VERSION_H
-#include "inn/version.h"
-#else
-/* 2.3.0 doesn't have version.h */
-#define INN_VERSION_MAJOR 2
-#define INN_VERSION_MINOR 3
-#define INN_VERSION_PATCH 0
-#endif
-
-#if INN_VERSION_MINOR >= 4
-#include "portable/time.h"
-#else
-#ifdef TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# ifdef HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
-#endif
-#endif
-
-#if INN_VERSION_MINOR == 3
-#define close_on_exec(fd, flag) CloseOnExec((fd), (flag))
-#endif
-
 #ifndef USE_BERKELEY_DB
 
 /* Provide stub functions if we don't have db */
 
-BOOL ovdb_open(int mode)
+bool ovdb_open(int mode)
 {
     syslog(L_FATAL, "OVDB: ovdb support not enabled");
     return FALSE;
 }
 
-BOOL ovdb_groupstats(char *group, int *lo, int *hi, int *count, int *flag)
+bool ovdb_groupstats(char *group, int *lo, int *hi, int *count, int *flag)
 { return FALSE; }
 
-BOOL ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
+bool ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
 { return FALSE; }
 
-BOOL ovdb_groupdel(char *group)
+bool ovdb_groupdel(char *group)
 { return FALSE; }
 
-BOOL ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires)
+bool ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires)
 { return FALSE; }
 
-BOOL ovdb_cancel(TOKEN token)
+bool ovdb_cancel(TOKEN token)
 { return FALSE; }
 
 void *ovdb_opensearch(char *group, int low, int high)
 { return NULL; }
 
-BOOL ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived)
+bool ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived)
 { return FALSE; }
 
 void ovdb_closesearch(void *handle) { }
 
-BOOL ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
+bool ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
 { return FALSE; }
 
-BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
+bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 { return FALSE; }
 
-BOOL ovdb_ctl(OVCTLTYPE type, void *val)
+bool ovdb_ctl(OVCTLTYPE type, void *val)
 { return FALSE; }
 
 void ovdb_close(void) { }
@@ -181,7 +150,7 @@ DB_ENV *OVDBenv = NULL;
 int ovdb_errmode = OVDB_ERR_SYSLOG;
 
 static int OVDBmode;
-static BOOL Cutofflow;
+static bool Cutofflow;
 static DB **dbs = NULL;
 static int oneatatime = 0;
 static int current_db = -1;
@@ -385,7 +354,7 @@ char *db_strerror(int err)
 #endif /* DB_VERSION_MAJOR == 2 */
 
 
-static BOOL conf_bool_val(char *str, BOOL *value)
+static bool conf_bool_val(char *str, bool *value)
 {
     if(caseEQ(str, "on") || caseEQ(str, "true") || caseEQ(str, "yes")) {
 	*value = TRUE;
@@ -398,7 +367,7 @@ static BOOL conf_bool_val(char *str, BOOL *value)
     return FALSE;
 }
 
-static BOOL conf_long_val(char *str, long *value)
+static bool conf_long_val(char *str, long *value)
 {
     long v;
 
@@ -418,7 +387,7 @@ void read_ovdb_conf(void)
     char *path;
     CONFFILE *f;
     CONFTOKEN *tok;
-    BOOL b;
+    bool b;
     long l;
 
     if(confread)
@@ -879,7 +848,7 @@ static int delete_all_records(int whichdb, group_id_t gno)
 
 /* This function deletes overview records for deleted or forgotton groups */
 /* argument: 0 = process deleted groups   1 = process forgotton groups */
-static BOOL delete_old_stuff(int forgotton)
+static bool delete_old_stuff(int forgotton)
 {
     DBT key, val;
     DBC *cursor;
@@ -1101,7 +1070,7 @@ static int count_records(struct groupinfo *gi)
  * without testing the pidfile.
  */
 static int lockfd = -1;
-BOOL ovdb_getlock(int mode)
+bool ovdb_getlock(int mode)
 {
     if(lockfd == -1) {
 	char *lockfn = concatpath(innconf->pathrun, OVDB_LOCKFN);
@@ -1141,9 +1110,9 @@ BOOL ovdb_getlock(int mode)
     }
 }
 
-BOOL ovdb_releaselock(void)
+bool ovdb_releaselock(void)
 {
-    BOOL r;
+    bool r;
     if(lockfd == -1)
 	return TRUE;
     r = inn_lock_file(lockfd, INN_LOCK_UNLOCK, FALSE);
@@ -1152,7 +1121,7 @@ BOOL ovdb_releaselock(void)
     return r;
 }
 
-BOOL ovdb_check_pidfile(char *file)
+bool ovdb_check_pidfile(char *file)
 {
     int f, pid;
     char buf[SMBUF];
@@ -1185,7 +1154,7 @@ BOOL ovdb_check_pidfile(char *file)
 }
 
 /* make sure the effective uid is that of NEWSUSER */
-BOOL ovdb_check_user(void)
+bool ovdb_check_user(void)
 {
     struct passwd *p;
     static int result = -1;
@@ -1387,7 +1356,7 @@ int ovdb_open_berkeleydb(int mode, int flags)
     return 0;
 }
 
-BOOL ovdb_open(int mode)
+bool ovdb_open(int mode)
 {
     int i, ret;
 
@@ -1500,7 +1469,7 @@ BOOL ovdb_open(int mode)
 }
 
 
-BOOL ovdb_groupstats(char *group, int *lo, int *hi, int *count, int *flag)
+bool ovdb_groupstats(char *group, int *lo, int *hi, int *count, int *flag)
 {
     int ret;
     struct groupinfo gi;
@@ -1561,7 +1530,7 @@ BOOL ovdb_groupstats(char *group, int *lo, int *hi, int *count, int *flag)
     return TRUE;
 }
 
-BOOL ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
+bool ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
 {
     DBT key, val;
     struct groupinfo gi;
@@ -1708,7 +1677,7 @@ BOOL ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
     return TRUE;
 }
 
-BOOL ovdb_groupdel(char *group)
+bool ovdb_groupdel(char *group)
 {
     DBT key, val;
     struct groupinfo gi;
@@ -1778,7 +1747,7 @@ BOOL ovdb_groupdel(char *group)
     return TRUE;
 }
 
-BOOL ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires)
+bool ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires)
 {
     static size_t databuflen = 0;
     static char *databuf;
@@ -1922,7 +1891,7 @@ BOOL ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
     return TRUE;
 }
 
-BOOL ovdb_cancel(TOKEN token UNUSED)
+bool ovdb_cancel(TOKEN token UNUSED)
 {
     return TRUE;
 }
@@ -1995,7 +1964,7 @@ void *ovdb_opensearch(char *group, int low, int high)
     return (void *)s;
 }
 
-BOOL ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived)
+bool ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived)
 {
     struct ovdbsearch *s = (struct ovdbsearch *)handle;
     DBT key, val;
@@ -2157,7 +2126,7 @@ void ovdb_closesearch(void *handle)
     }
 }
 
-BOOL ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
+bool ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
 {
     int ret, cdb = 0;
     group_id_t cgid = 0;
@@ -2269,7 +2238,7 @@ BOOL ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
     return TRUE;
 }
 
-BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
+bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 {
     DB *db, *ndb = NULL;
     DBT key, val, nkey, gkey, gval;
@@ -2502,20 +2471,6 @@ BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
 		memcpy(&ovd, val.data, sizeof ovd);
 
 		ah = NULL;
-#if INN_VERSION_MAJOR == 2 && INN_VERSION_MINOR == 3 && INN_VERSION_PATCH == 0
-		if (SMprobe(SELFEXPIRE, &ovd.token, NULL)) {
-		    if((ah = SMretrieve(ovd.token, RETR_STAT)) == NULL) { 
-			delete = 1;
-		    }
-		} else {
-		    if (!innconf->groupbaseexpiry
-			    && !OVhisthasmsgid(h, (char *)val.data + sizeof(ovd))) {
-			delete = 1;
-		    }
-		}
-		if(ah)
-		    SMfreearticle(ah);
-#else
 		if (!SMprobe(EXPENSIVESTAT, &ovd.token, NULL) || OVstatall) {
 		    if((ah = SMretrieve(ovd.token, RETR_STAT)) == NULL) {
 			delete = 1;
@@ -2526,7 +2481,6 @@ BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
 			delete = 1;
 		    }
 		}
-#endif
 		if (!delete && innconf->groupbaseexpiry &&
 			    OVgroupbasedexpire(ovd.token, group,
 				    (char *)val.data + sizeof(ovd),
@@ -2698,13 +2652,11 @@ BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
     return TRUE;
 }
 
-BOOL ovdb_ctl(OVCTLTYPE type, void *val)
+bool ovdb_ctl(OVCTLTYPE type, void *val)
 {
     int *i;
     OVSORTTYPE *sorttype;
-#if INN_VERSION_MINOR >= 4
     bool *boolval;
-#endif
 
     switch (type) {
     case OVSPACE:
@@ -2716,19 +2668,17 @@ BOOL ovdb_ctl(OVCTLTYPE type, void *val)
         *sorttype = OVNEWSGROUP;
         return TRUE;
     case OVCUTOFFLOW:
-        Cutofflow = *(BOOL *)val;
+        Cutofflow = *(bool *)val;
         return TRUE;
     case OVSTATICSEARCH:
 	i = (int *)val;
 	*i = TRUE;
 	return TRUE;
-#if INN_VERSION_MINOR >= 4
     case OVCACHEKEEP:
     case OVCACHEFREE:
         boolval = (bool *)val;
         *boolval = FALSE;
         return TRUE;
-#endif
     default:
         return FALSE;
     }
