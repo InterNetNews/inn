@@ -1,4 +1,6 @@
-#!@_PATH_PERL@
+#! /usr/bin/perl
+# fixscript will replace this line with require innshellvars.pl
+
 # @(#)scanspool.pl	1.20 4/6/92 00:47:35
 #
 # Written by:  Landon Curt Noll		(chongo was here  /\../\)
@@ -95,7 +97,6 @@
 # perl requirements
 #
 require "getopts.pl";
-require "@LIBDIR@/innshellvars.pl" ;
 
 # setup non-buffered stdout and stderr
 #

@@ -1,4 +1,4 @@
-#!@_PATH_PERL@
+#! /usr/bin/perl
 # 
 # Author:       James Brister <brister@vix.com> -- berkeley-unix --
 # Start Date:   Sat, 10 Oct 1998 21:40:11 +0200

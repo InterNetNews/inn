@@ -1,4 +1,6 @@
-#!@_PATH_PERL@
+#! /usr/bin/perl
+# fixscript will replace this line with require innshellvars.pl
+
 #  $Id$
 # 
 #  Copyright Andreas Lamrecht 1998
@@ -14,9 +16,6 @@
 
 use vars qw($opt_l $opt_h $opt_a $opt_s);
 use Getopt::Long;
-
-# Set common paths (actually just $pathetc ...)
-require '@LIBDIR@/innshellvars.pl';
 
 # required for >32bit ints
 require 'bigint.pl';

@@ -1,4 +1,5 @@
-#!@_PATH_PERL@
+#! /usr/bin/perl
+# fixscript will replace this line with require innshellvars.pl
 
 # mailpost - yet another mail-to-news filter
 # doka 11may99 [fixed duplicate headers problem]
@@ -22,8 +23,6 @@ my $msg ;
 END {
     unlink ($tmpfile) if $tmpfile ;		# incase we die()
 }
-
-require "@LIBDIR@/innshellvars.pl" ;
 
 my $LOCK_SH = 1;
 my $LOCK_EX = 2;

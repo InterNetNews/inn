@@ -2,16 +2,16 @@
 
 include ../Makefile.global
 
-CFLAGS	= $(GCFLAGS)
+CFLAGS        = $(GCFLAGS)
 
-SOURCES	= ctlinnd.c inews.c rnews.c sm.c
+ALL	      = c7unbatch cnfsheadconf cnfsstat ctlinnd decode encode \
+		getlist gunbatch inews innconfval mailpost pullnews \
+		rnews scanspool signcontrol sm
 
-ALL	= inews rnews ctlinnd getlist innconfval decode encode sm
+SOURCES	      = ctlinnd.c decode.c encode.c getlist.c inews.c innconfval.c \
+		rnews.c sm.c
 
-all:		$(ALL)
-	date >$@
-
-PATHRNP       = $(PATHBIN)/rnews.libexec
+PATHRNEWS     = $(PATHBIN)/rnews.libexec
 
 INSTALLED     = $(D)$(PATHBIN)/cnfsheadconf	\
 		$(D)$(PATHBIN)/cnfsstat		\
@@ -25,82 +25,85 @@ INSTALLED     = $(D)$(PATHBIN)/cnfsheadconf	\
 		$(D)$(PATHBIN)/scanspool	\
 		$(D)$(PATHBIN)/signcontrol	\
 		$(D)$(PATHBIN)/sm		\
-		$(D)$(PATHRNP)/c7unbatch	\
-		$(D)$(PATHRNP)/decode		\
-		$(D)$(PATHRNP)/encode		\
-		$(D)$(PATHRNP)/gunbatch
+		$(D)$(PATHRNEWS)/c7unbatch	\
+		$(D)$(PATHRNEWS)/decode		\
+		$(D)$(PATHRNEWS)/encode		\
+		$(D)$(PATHRNEWS)/gunbatch
 
-clobber clean:
+all: $(ALL)
+
+clean:
 	rm -f *.o $(ALL)
 	rm -rf .libs
-	rm -f all install profiled
+
+clobber: clean
+	rm -f tags
 
 tags ctags:	$(SOURCES)
-	$(CTAGS) $(SOURCES) ../lib/*.c ../include/*.h
+	$(CTAGS) $(SOURCES)
 
-inews:		$(P) inews.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ inews.o $(NNTPLIB) $(LIBNEWS) $(LIBS)
-rnews:		$(P) rnews.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ rnews.o $(NNTPLIB) $(LIBNEWS) $(LIBNEWS) $(LIBS)
-ctlinnd:	$(P) ctlinnd.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ ctlinnd.o $(LIBNEWS) $(LIBS)
-sm:		$(P) sm.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ sm.o $(LIBNEWS) $(LIBNEWS) $(LIBS)
-getlist:	$(P) getlist.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ getlist.o $(LIBNEWS) $(LIBS)
-innconfval:	$(P) innconfval.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ innconfval.o $(LIBNEWS) $(LIBS)
-decode:		$(P) decode.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ decode.o $(LIBNEWS) $(LIBS)
-encode:		$(P) encode.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ encode.o $(LIBNEWS) $(LIBS)
+
+##  Compilation rules.
+
+LINK 		= $(LIBTOOL) $(CC) $(LDFLAGS) -o $@
+NEWSLIBS	= $(LIBNEWS) $(LIBS)
+FIX		= $(FIXSCRIPT)
+
+ctlinnd:	ctlinnd.o    $(LIBNEWS)	; $(LINK) ctlinnd.o    $(NEWSLIBS)
+decode:		decode.o		; $(LINK) decode.o
+encode:		encode.o		; $(LINK) encode.o
+getlist:	getlist.o    $(LIBNEWS)	; $(LINK) getlist.o    $(NEWSLIBS)
+inews:		inews.o      $(LIBNEWS)	; $(LINK) inews.o      $(NEWSLIBS)
+innconfval:	innconfval.o $(LIBNEWS)	; $(LINK) innconfval.o $(NEWSLIBS)
+rnews:		rnews.o      $(LIBNEWS)	; $(LINK) rnews.o      $(NEWSLIBS)
+sm:		sm.o         $(LIBNEWS)	; $(LINK) sm.o         $(NEWSLIBS)
+
+cnfsheadconf:	cnfsheadconf.in  $(FIX)	; $(FIX) cnfsheadconf.in
+cnfsstat:	cnfsstat.in      $(FIX)	; $(FIX) cnfsstat.in
+mailpost:	mailpost.in      $(FIX)	; $(FIX) mailpost.in
+pullnews:	pullnews.in      $(FIX)	; $(FIX) -i pullnews.in
+scanspool:	scanspool.in     $(FIX)	; $(FIX) scanspool.in
+signcontrol:	signcontrol.in   $(FIX)	; $(FIX) -i signcontrol.in
+
+c7unbatch:	../Makefile.global
+	echo '#! $(SHELL)' > c7unbatch
+	echo 'decode | $(COMPRESS) -d' >> c7unbatch
+
+gunbatch:	../Makefile.global
+	echo '#! $(SHELL)' > gunbatch
+	echo 'exec $(GZIP) -d -c' >> gunbatch
 
 ##  Not normally built.
-feedone:		feedone.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ feedone.o $(LIBNEWS) $(LIBS)
-sys2nf:		sys2nf.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ sys2nf.o $(LIBNEWS) $(LIBS)
+feedone:	feedone.o    $(LIBNEWS)	; $(LINK) feedone.o    $(NEWSLIBS)
+sys2nf:		sys2nf.o     $(LIBNEWS)	; $(LINK) sys2nf.o     $(NEWSLIBS)
+
+$(LIBINN):
+	(cd ../lib ; $(MAKE))
+$(LIBSTORAGE):
+	(cd ../storage ; $(MAKE))
 
 
-$(LIBNEWS):
-	(cd ../lib ; $(MAKE) )
-
-profiled:
-	cp /dev/null profiled
-
-##
-.SUFFIXES: .c .src
-.c.src:
-	#load $(CFLAGS) $<
-
-
-##  Installation rules.
+##  Installation rules.  Installation commands set in Makefile.global.
 
 install: $(INSTALLED)
 
-LT_INEW = $(LIBTOOL) ../installit.sh $(OWNER) -m $(INEWSMODE) -b .OLD
-LT_RNEW = $(LIBTOOL) ../installit.sh $(ROWNER) -m $(RNEWSMODE) -b .OLD
-LT_XPRI = $(LIBTOOL) ../installit.sh $(OWNER) -m 0550 -b .OLD
-LT_XPUB = $(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD
-CP_XPRI = ../installit.sh $(OWNER) -m 0550 -b .OLD
-CP_XPUB = ../installit.sh $(OWNER) -m 0555 -b .OLD
+$(D)$(PATHBIN)/inews:               inews               ; $(LI_INEWS) $? $@
+$(D)$(PATHBIN)/rnews:               rnews               ; $(LI_RNEWS) $? $@
 
 $(D)$(PATHBIN)/cnfsheadconf:        cnfsheadconf        ; $(CP_XPRI) $? $@
 $(D)$(PATHBIN)/cnfsstat:            cnfsstat            ; $(CP_XPRI) $? $@
-$(D)$(PATHBIN)/ctlinnd:             ctlinnd             ; $(LT_XPRI) $? $@
-$(D)$(PATHBIN)/getlist:             getlist             ; $(LT_XPUB) $? $@
-$(D)$(PATHBIN)/inews:               inews               ; $(LT_INEW) $? $@
-$(D)$(PATHBIN)/innconfval:          innconfval          ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/ctlinnd:             ctlinnd             ; $(LI_XPRI) $? $@
+$(D)$(PATHBIN)/getlist:             getlist             ; $(LI_XPUB) $? $@
+$(D)$(PATHBIN)/innconfval:          innconfval          ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/mailpost:            mailpost            ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/pullnews:            pullnews            ; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/rnews:               rnews               ; $(LT_RNEW) $? $@
 $(D)$(PATHBIN)/scanspool:           scanspool           ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/signcontrol:         signcontrol         ; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/sm:                  sm                  ; $(LT_XPUB) $? $@
-$(D)$(PATHRNP)/c7unbatch:           c7unbatch           ; $(CP_XPUB) $? $@
-$(D)$(PATHRNP)/decode:              decode              ; $(LT_XPUB) $? $@
-$(D)$(PATHRNP)/encode:              encode              ; $(LT_XPUB) $? $@
-$(D)$(PATHRNP)/gunbatch:            gunbatch            ; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/sm:                  sm                  ; $(LI_XPUB) $? $@
+$(D)$(PATHRNEWS)/c7unbatch:         c7unbatch           ; $(CP_XPUB) $? $@
+$(D)$(PATHRNEWS)/decode:            decode              ; $(LI_XPUB) $? $@
+$(D)$(PATHRNEWS)/encode:            encode              ; $(LI_XPUB) $? $@
+$(D)$(PATHRNEWS)/gunbatch:          gunbatch            ; $(CP_XPUB) $? $@
 
 
 ##  Dependencies.  Default list, below, is probably good enough.
