@@ -183,6 +183,9 @@
 /* Define to a suitable 32-bit type if standard headers don't define.  */
 #undef int32_t
 
+/* Define to the max vectors in an iovec.  */
+#undef IOV_MAX
+
 /* The log facility to use for INN logging.  Server is for innd itself.  */
 #undef LOG_INN_PROG
 #undef LOG_INN_SERVER

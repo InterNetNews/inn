@@ -240,6 +240,9 @@
 /* Define to a suitable 32-bit type if standard headers don't define.  */
 #undef int32_t
 
+/* Define to the max vectors in an iovec.  */
+#undef IOV_MAX
+
 /* The log facility to use for INN logging.  Server is for innd itself.  */
 #undef LOG_INN_PROG
 #undef LOG_INN_SERVER
@@ -370,6 +373,9 @@
 
 /* Define if you have the strcspn function.  */
 #undef HAVE_STRCSPN
+
+/* Define if you have the strdup function.  */
+#undef HAVE_STRDUP
 
 /* Define if you have the strerror function.  */
 #undef HAVE_STRERROR
