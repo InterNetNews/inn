@@ -2105,7 +2105,7 @@ STRING ARTpost(CHANNEL *cp)
 	    return buff;
     	}
     } else {
-	ARTassignnumbers();
+            ARTassignnumbers();
     }
 
     /* Now we can file it. */
@@ -2230,6 +2230,12 @@ STRING ARTpost(CHANNEL *cp)
     /* If we just flushed the active (above), now flush history. */
     if (ICDactivedirty == 0)
 	HISsync();
+
+    /* We wrote the history, so modify it and save it for output. */
+    for (Data.Replic = Files.Data, p = (char *)Data.Replic; *p; p++)
+	if (*p == ' ')
+	    *p = ',';
+    Data.ReplicLength = p - Data.Replic;
 
     /* Start logging, then propagate the article. */
     ARTlog(&Data, Accepted ? ART_ACCEPT : ART_JUNK, (char *)NULL);

@@ -307,6 +307,8 @@ typedef struct _ARTDATA {
     int		FeedsiteLength;
     STRING      Path;
     int		PathLength;
+    STRING	Replic;
+    int		ReplicLength;
     BUFFER	*Headers;
     BUFFER	*Overview;
 } ARTDATA;
