@@ -4,9 +4,10 @@
 */
 #include <stdio.h>
 #include <sys/types.h>
+#include <netinet/in.h>
 #include "configdata.h"
-#include "innd.h"
 #include "clibrary.h"
+#include "innd.h"
 
 /* Minutes - basically, keep the connection open but idle */
 #define PAUSE_BEFORE_DROP               5
