@@ -119,7 +119,7 @@ clobber realclean distclean:
 	done
 	@echo ''
 	rm -rf inews.* rnews.* $(TARDIR)
-	rm -f inn*.tar.gz CHANGES ChangeLog TAGS tags
+	rm -f inn*.tar.gz CHANGES ChangeLog LIST.* TAGS tags
 	rm -f config.cache config.log config.status libtool
 	rm -f include/autoconfig.h include/config.h include/paths.h
 	rm -f support/fixscript Makefile.global
@@ -161,3 +161,11 @@ release: ChangeLog
 ##  requires cvs2cl be available somewhere.
 ChangeLog:
 	support/mkchangelog
+
+
+##  Check the MANIFEST against the files present in the current tree,
+##  building a list with find and running diff between the lists.
+check-manifest:
+	sed -e 1,2d -e 's/ .*//' MANIFEST > LIST.manifest
+	find . -print | sed -e 's/^\.\///' -e /CVS/d | sort > LIST.real
+	diff -u LIST.manifest LIST.real
