@@ -187,7 +187,6 @@ const struct config config_table[] = {
     { K(nnrpdauthsender),       BOOL    (false) },
     { K(nnrpdloadlimit),        NUMBER  (16) },
     { K(nnrpdoverstats),        BOOL    (false) },
-    { K(nnrpperlauth),          BOOL    (false) },
     { K(nnrppythonauth),        BOOL    (false) },
     { K(organization),          STRING  (NULL) },
     { K(readertrack),           BOOL    (false) },
@@ -272,6 +271,12 @@ innconf_set_defaults(void)
         if (innconf->bindaddress != NULL)
             free(innconf->bindaddress);
         innconf->bindaddress = xstrdup(value);
+    }
+    value = getenv("INND_BIND_ADDRESS6");
+    if (value != NULL) {
+        if (innconf->bindaddress6 != NULL)
+            free(innconf->bindaddress6);
+        innconf->bindaddress6 = xstrdup(value);
     }
 
     /* Some parameters have defaults that depend on other parameters. */
