@@ -19,8 +19,6 @@ extern "C" {
 #define DBZ_INTERNAL_HASH_SIZE   4
 #else
 #define DBZ_INTERNAL_HASH_SIZE   6
-#define HISTOFFSET	0
-#define OVEROFFSET	1
 #endif
 
 typedef enum {DBZSTORE_OK, DBZSTORE_EXISTS, DBZSTORE_ERROR} DBZSTORE_RESULT;
@@ -32,11 +30,7 @@ typedef struct {
        called.  */
     BOOL             writethrough;
     /* Whether to do hash lookups from disk, memory or a mmap'ed file */
-#ifdef	DO_TAGGED_HASH
     dbz_incore_val   pag_incore;
-#else
-    dbz_incore_val   idx_incore;
-#endif
     dbz_incore_val   exists_incore;
     /* Whether dbzstore should update the database async or sync.  This
        is only applicable if you're not mmaping the database */
@@ -57,9 +51,6 @@ typedef struct {
 typedef struct {
     char		hash[DBZ_INTERNAL_HASH_SIZE];
 } PACKED erec;
-typedef struct {
-    OFFSET_T		offset;
-} PACKED idxrec;
 #if !defined(lint) && (defined(__SUNPRO_C) || defined(_nec_ews))
 #pragma pack()
 #endif /* nor lint, nor__SUNPRO_C, nor _nec_ews */
@@ -72,13 +63,8 @@ extern BOOL dbzclose(void);
 extern BOOL dbzfresh(const char *name, const OFFSET_T size, const int fillpercent);
 extern BOOL dbzagain(const char *name, const char *oldname);
 extern BOOL dbzexists(const HASH key);
-#ifdef	DO_TAGGED_HASH
-extern OFFSET_T dbzfetch(const HASH key);
+extern BOOL dbzfetch(const HASH key, OFFSET_T *value);
 extern DBZSTORE_RESULT dbzstore(const HASH key, const OFFSET_T data);
-#else
-extern BOOL dbzfetch(const HASH key, idxrec *ivalue);
-extern DBZSTORE_RESULT dbzstore(const HASH key, idxrec *ivalue);
-#endif
 extern BOOL dbzsync(void);
 extern long dbzsize(const OFFSET_T contents);
 extern BOOL dbzdebug(const int value);
