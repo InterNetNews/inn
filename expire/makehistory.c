@@ -639,16 +639,19 @@ DoMemArt(ARTHANDLE *art, BOOL Overview, BOOL Update, FILE *out, FILE *index, BOO
 	for (i = Missfieldsize, fp = Missfields; --i >= 0;fp++) {
 	    if ((fp->Header = (char *)HeaderFindMem(art->data, art->len, fp->Headername, fp->HeadernameLength)) != (char *)NULL) {
 		fp->HasHeader = TRUE;
-		for (p = fp->Header, p1 = (char *)NULL; p < art->data + art->len; p++) {
-		    if (p1 != (char *)NULL && *p1 == '\n' && !ISWHITE(*p))
-			break;
+		for (p = fp->Header, p1 = p2 = (char *)NULL; p < art->data + art->len; p++) {
+		    if (p2 != (char *)NULL && *p2 == '\r' &&
+			p1 != (char *)NULL && *p1 == '\n' &&
+			!ISWHITE(*p))
+		        break;
+		    p2 = p1;
 		    p1 = p;
 		}
-		if (p == art->data + art->len) {
+		if (p >= art->data + art->len) {
 		    /* not found for this header */
-		    continue;
+		  continue;
 		}
-		fp->HeaderLength = p - fp->Header;
+		fp->HeaderLength = p2 - fp->Header;
 	    }
 	}
     }
@@ -1160,6 +1163,8 @@ DoNewsgroup(char *group, FILE *out, BOOL RemoveBad, BOOL Update, TRANS Translate
 	p = ep->d_name;
 	if (!CTYPE(isdigit, *p) || strspn(p, "0123456789") != strlen(p))
 	    continue;
+
+	strcpy(q, p);
 
 	/* Is this a regular file? */
 	if (stat(p, &Sb) < 0) {
