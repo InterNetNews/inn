@@ -639,8 +639,8 @@ int main(int ac, char *av[])
 	    default:
 		Usage();
 		/* NOTREACHED */
-	    case 'n':	innconf->allowreaders = TRUE;	break;
-	    case 'y':	innconf->allowreaders = FALSE;	break;
+	    case 'n':	innconf->readerswhenstopped = TRUE;	break;
+	    case 'y':	innconf->readerswhenstopped = FALSE;	break;
 	    }
 	    break;
 	case 'o':
@@ -688,7 +688,7 @@ int main(int ac, char *av[])
     ac -= optind;
     if (ac != 0)
 	Usage();
-    if (ModeReason && innconf->allowreaders)
+    if (ModeReason && innconf->readerswhenstopped)
 	NNRPReason = COPY(ModeReason);
 
     openlog(path, logflags, LOG_INN_SERVER);

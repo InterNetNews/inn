@@ -469,7 +469,8 @@ RCreader(CHANNEL *cp)
 	    break;
 	}
 
-    /* If not a server, and not allowing anyone, hand him off. */
+    /* If not a server, and not allowing anyone, hand him off unless
+       not spawning nnrpd in which case we return an error. */
     if ((i >= 0) && !rp->Skip) {
 	new = NCcreate(fd, rp->Password[0] != '\0', FALSE);
         new->Streaming = rp->Streaming;
@@ -478,11 +479,23 @@ RCreader(CHANNEL *cp)
         new->MaxCnx = rp->MaxCnx;
     } else if (AnyIncoming && !rp->Skip) {
 	new = NCcreate(fd, FALSE, FALSE);
-    } else {
+    } else if (!innconf->noreader) {
 	RChandoff(fd, HOnntpd);
 	if (close(fd) < 0)
 	    syslog(L_ERROR, "%s cant close %d %m", LogName, fd);
 	return;
+    } else {
+	reject_val = NNTP_ACCESS_VAL;
+	reject_message = NNTP_ACCESS;
+        new = CHANcreate(fd, CTreject, CSwritegoodbye, RCrejectreader,
+            RCrejectwritedone);
+        new->Address.s_addr = remote.sin_addr.s_addr;
+        new->Rejected = reject_val;
+        RCHANremove(new);
+        WCHANset(new, reject_message, (int)strlen(reject_message));
+        WCHANappend(new, RCterm, STRLEN(RCterm));
+        WCHANadd(new);
+        return;
     }
 
     new->Address.s_addr = remote.sin_addr.s_addr;

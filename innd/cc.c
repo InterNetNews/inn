@@ -746,7 +746,7 @@ CCgo(av)
     Mode = OMrunning;
     ThrottledbyIOError = FALSE;
 
-    if (NNRPReason && innconf->allowreaders) {
+    if (NNRPReason && innconf->readerswhenstopped) {
 	av[0] = YES;
 	av[1] = p;
 	(void)CCreaders(av);
@@ -896,7 +896,7 @@ CCmode(av)
     /* Newsreaders. */
     *p++ = '\n';
     p += strlen(strcpy(p, "Readers "));
-    if (innconf->allowreaders)
+    if (innconf->readerswhenstopped)
 	p += strlen(strcpy(p, "follow "));
     else
 	p += strlen(strcpy(p, "separate "));
@@ -1135,7 +1135,7 @@ CCparam(av)
 	syslog(L_NOTICE, "%s changed -l %ld", LogName, innconf->maxartsize);
 	break;
     case 'n':
-	if (!CCparsebool('n', &innconf->allowreaders, *p))
+	if (!CCparsebool('n', &innconf->readerswhenstopped, *p))
 	    return BADVAL;
 	break;
     case 'o':
@@ -1208,7 +1208,7 @@ CCblock(NewMode, reason)
     if (ModeReason)
 	DISPOSE(ModeReason);
     ModeReason = COPY(reason);
-    if (NNRPReason == NULL && innconf->allowreaders) {
+    if (NNRPReason == NULL && innconf->readerswhenstopped) {
 	av[0] = NO;
 	av[1] = ModeReason;
 	(void)CCreaders(av);
