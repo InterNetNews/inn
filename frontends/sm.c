@@ -10,7 +10,7 @@
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
-#include "qio.h"
+#include "storage.h"
 
 void Usage(void) {
     fprintf(stderr, "Usage sm [-q] [-r] [-d] [-R] [-i] token [token] [token] ...\n");
