@@ -3786,7 +3786,7 @@ static int validateReal (FILE *fp, const char *name, double low,
                   name,v->v.real_val,low) ;
       v->v.real_val = setval ;
     }
-  else if (high != DBL_MAX && v->v.real_val > high)
+  else if (v != NULL && high != DBL_MAX && v->v.real_val > high)
     {
       logOrPrint (LOG_ERR,fp,
                   "ME config: value of %s (%f) is higher than maximum of %f",
