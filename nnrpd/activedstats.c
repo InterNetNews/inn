@@ -34,6 +34,8 @@
 
 #include	<stdio.h>
 #include	<sys/time.h>
+#include	<sys/types.h>
+
 #include "configdata.h"
 #include "clibrary.h"
 #include "libinn.h"
