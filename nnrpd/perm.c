@@ -15,35 +15,59 @@
 #include <signal.h>
 
 /* data types */
+typedef struct _CONFCHAIN {
+    CONFFILE *f;
+    struct _CONFCHAIN *parent;
+} CONFCHAIN;
+
+typedef struct _METHOD {
+    char *name;
+    char *program;
+    char *users;	/* only used for auth_methods, not for res_methods. */
+    char **extra_headers;
+    char **extra_logs;
+} METHOD;
+
 typedef struct _AUTHGROUP {
     char *name;
+    char *key;
     char *hosts;
-    char **res_methods;
-    char **auth_methods;
+    METHOD **res_methods;
+    METHOD **auth_methods;
     char *default_user;
     char *default_domain;
 } AUTHGROUP;
 
 typedef struct _ACCESSGROUP {
     char *name;
+    char *key;
     char *read;
     char *post;
     char *users;
     int newnews;
     int locpost;
+    int used;
 } ACCESSGROUP;
 
 typedef struct _GROUP {
+    char *name;
     struct _GROUP *above;
     AUTHGROUP *auth;
     ACCESSGROUP *access;
 } GROUP;
 
 /* function declarations */
+static void PERMreadfile(char *filename);
+static void authdecl_parse(AUTHGROUP*, CONFFILE*, CONFTOKEN*);
+static void accessdecl_parse(ACCESSGROUP*, CONFFILE*, CONFTOKEN*);
+static void method_parse(METHOD*, CONFFILE*, CONFTOKEN*, int);
+
 static void add_authgroup(AUTHGROUP*);
 static void add_accessgroup(ACCESSGROUP*);
 static void strip_accessgroups();
 
+static METHOD *copy_method(METHOD*);
+static void free_method(METHOD*);
 static AUTHGROUP *copy_authgroup(AUTHGROUP*);
 static void free_authgroup(AUTHGROUP*);
 static ACCESSGROUP *copy_accessgroup(ACCESSGROUP*);
@@ -51,8 +75,11 @@ static void free_accessgroup(ACCESSGROUP*);
 
 static void CompressList(char*);
 static int MatchClient(AUTHGROUP*);
+static int MatchUser(char*, char*);
 static char *ResolveUser(AUTHGROUP*);
 static char *AuthenticateUser(AUTHGROUP*, char*, char*);
+
+static void GrowArray(void***, void*);
 
 /* global variables */
 static AUTHGROUP **auth_realms;
@@ -60,6 +87,75 @@ static AUTHGROUP *success_auth;
 static ACCESSGROUP **access_realms;
 
 /* function definitions */
+static void GrowArray(void ***array, void *el)
+{
+    int i;
+
+    if (!*array) {
+	*array = NEW(void*, 2);
+	i = 0;
+    } else {
+	for (i = 0; (*array)[i]; i++)
+	    ;
+	*array = RENEW(*array, void*, i+2);
+    }
+    (*array)[i++] = el;
+    (*array)[i] = 0;
+}
+
+static METHOD *copy_method(METHOD *orig)
+{
+    METHOD *ret;
+    int i;
+
+    ret = NEW(METHOD, 1);
+
+    ret->name = COPY(orig->name);
+    ret->program = COPY(orig->program);
+    if (orig->users)
+	ret->users = COPY(orig->users);
+    else
+	ret->users = 0;
+
+    ret->extra_headers = 0;
+    if (orig->extra_headers) {
+	for (i = 0; orig->extra_headers[i]; i++)
+	    GrowArray((void***) &ret->extra_headers,
+	      (void*) COPY(orig->extra_headers[i]));
+    }
+
+    ret->extra_logs = 0;
+    if (orig->extra_logs) {
+	for (i = 0; orig->extra_logs[i]; i++)
+	    GrowArray((void***) &ret->extra_logs,
+	      (void*) COPY(orig->extra_logs[i]));
+    }
+
+    return(ret);
+}
+
+static void free_method(METHOD *del)
+{
+    int j;
+
+    if (del->extra_headers) {
+	for (j = 0; del->extra_headers[j]; j++)
+	    DISPOSE(del->extra_headers[j]);
+	DISPOSE(del->extra_headers);
+    }
+    if (del->extra_logs) {
+	for (j = 0; del->extra_logs[j]; j++)
+	    DISPOSE(del->extra_logs[j]);
+	DISPOSE(del->extra_logs);
+    }
+    if (del->program)
+	DISPOSE(del->program);
+    if (del->users)
+	DISPOSE(del->users);
+    DISPOSE(del->name);
+    DISPOSE(del);
+}
+
 static AUTHGROUP *copy_authgroup(AUTHGROUP *orig)
 {
     AUTHGROUP *ret;
@@ -74,30 +170,29 @@ static AUTHGROUP *copy_authgroup(AUTHGROUP *orig)
     else
 	ret->name = 0;
 
+    if (orig->key)
+	ret->key = COPY(orig->key);
+    else
+	ret->key = 0;
+
     if (orig->hosts)
 	ret->hosts = COPY(orig->hosts);
     else
 	ret->hosts = 0;
 
+    ret->res_methods = 0;
     if (orig->res_methods) {
 	for (i = 0; orig->res_methods[i]; i++)
-	    ;
-	ret->res_methods = NEW(char*, i+1);
-	for (i = 0; orig->res_methods[i]; i++)
-	    ret->res_methods[i] = COPY(orig->res_methods[i]);
-	ret->res_methods[i] = 0;
-    } else
-	ret->res_methods = 0;
+	    GrowArray((void***) &ret->res_methods,
+	      (void*) copy_method(orig->res_methods[i]));;
+    }
 
+    ret->auth_methods = 0;
     if (orig->auth_methods) {
 	for (i = 0; orig->auth_methods[i]; i++)
-	    ;
-	ret->auth_methods = NEW(char*, i+1);
-	for (i = 0; orig->auth_methods[i]; i++)
-	    ret->auth_methods[i] = COPY(orig->auth_methods[i]);
-	ret->auth_methods[i] = 0;
-    } else
-	ret->auth_methods = 0;
+	    GrowArray((void***) &ret->auth_methods,
+	      (void*) copy_method(orig->auth_methods[i]));
+    }
 
     if (orig->default_user)
 	ret->default_user = COPY(orig->default_user);
@@ -125,6 +220,11 @@ static ACCESSGROUP *copy_accessgroup(ACCESSGROUP *orig)
     else
 	ret->name = 0;
 
+    if (orig->key)
+	ret->key = COPY(orig->key);
+    else
+	ret->key = 0;
+
     if (orig->read)
 	ret->read = COPY(orig->read);
     else
@@ -149,16 +249,18 @@ static void free_authgroup(AUTHGROUP *del)
 
     if (del->name)
 	DISPOSE(del->name);
+    if (del->key)
+	DISPOSE(del->key);
     if (del->hosts)
 	DISPOSE(del->hosts);
     if (del->res_methods) {
 	for (i = 0; del->res_methods[i]; i++)
-	    DISPOSE(del->res_methods[i]);
+	    free_method(del->res_methods[i]);
 	DISPOSE(del->res_methods);
     }
     if (del->auth_methods) {
 	for (i = 0; del->auth_methods[i]; i++)
-	    DISPOSE(del->auth_methods[i]);
+	    free_method(del->auth_methods[i]);
 	DISPOSE(del->auth_methods);
     }
     if (del->default_user)
@@ -172,6 +274,8 @@ static void free_accessgroup(ACCESSGROUP *del)
 {
     if (del->name)
 	DISPOSE(del->name);
+    if (del->key)
+	DISPOSE(del->key);
     if (del->read)
 	DISPOSE(del->read);
     if (del->post)
@@ -183,8 +287,8 @@ static void free_accessgroup(ACCESSGROUP *del)
 
 static void ReportError(CONFFILE *f, char *err)
 {
-    syslog(L_NOTICE, "%s syntax error in readers.conf(%d), %s", ClientHost,
-      f->lineno, err);
+    syslog(L_NOTICE, "%s syntax error in %s(%d), %s", ClientHost,
+      f->filename, f->lineno, err);
     Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
     ExitWithStats(1);
 }
@@ -196,25 +300,30 @@ static void ReportError(CONFFILE *f, char *err)
 #define PERMaccess	5
 #define PERMhost	6
 #define PERMauthprog	7
-#define PERMresprog	8
-#define PERMdefuser	9
-#define PERMdefdomain	10
-#define PERMusers	11
-#define PERMnewsgroups	12
-#define PERMread	13
-#define PERMpost	14
-#define PERMaccessrp	15
+#define PERMresolv	8
+#define PERMresprog	9
+#define PERMdefuser	10
+#define PERMdefdomain	11
+#define PERMusers	12
+#define PERMnewsgroups	13
+#define PERMread	14
+#define PERMpost	15
+#define PERMaccessrp	16
+#define PERMheader	17
+#define PERMalsolog	18
+#define PERMprogram	19
+#define PERMinclude	20
+#define PERMkey		21
 
 static CONFTOKEN PERMtoks[] = {
   { PERMlbrace, "{" },
   { PERMrbrace, "}" },
-#if 0	/* group declarations not ready yet */
   { PERMgroup, "group" },
-#endif
   { PERMauth, "auth" },
   { PERMaccess, "access" },
   { PERMhost, "hosts:" },
   { PERMauthprog, "auth:" },
+  { PERMresolv, "res" },
   { PERMresprog, "res:" },
   { PERMdefuser, "default:" },
   { PERMdefdomain, "default-domain:" },
@@ -223,12 +332,189 @@ static CONFTOKEN PERMtoks[] = {
   { PERMread, "read:" },
   { PERMpost, "post:" },
   { PERMaccessrp, "access:" },
+  { PERMheader, "header:" },
+  { PERMalsolog, "log:" },
+  { PERMprogram, "program:" },
+  { PERMinclude, "include" },
+  { PERMkey, "key:" },
   { 0, 0 }
 };
 
+static void method_parse(METHOD *method, CONFFILE *f, CONFTOKEN *tok, int auth)
+{
+    int oldtype;
+    int i;
+
+    oldtype = tok->type;
+    tok = CONFgettoken(0, f);
+    if (!tok)
+	ReportError(f, "Expected value.");
+    switch (oldtype) {
+      case PERMheader:
+	GrowArray((void***) &method->extra_headers, (void*) COPY(tok->name));
+	break;
+      case PERMalsolog:
+	GrowArray((void***) &method->extra_logs, (void*) COPY(tok->name));
+	break;
+      case PERMusers:
+	if (!auth)
+	    ReportError(f, "Unexpected users: directive in file.");
+	else if (method->users)
+	    ReportError(f, "Multiple users: directive in file.");
+	method->users = COPY(tok->name);
+	break;
+      case PERMprogram:
+	if (method->program)
+	    ReportError(f, "Multiple program: directives in auth/res decl.");
+	method->program = COPY(tok->name);
+	break;
+    }
+}
+
+static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
+{
+    int oldtype;
+    int i;
+    METHOD *m;
+
+    oldtype = tok->type;
+    tok = CONFgettoken(PERMtoks, f);
+    if (!tok)
+	ReportError(f, "Expected value.");
+    switch (oldtype) {
+      case PERMkey:
+	if (curauth->key)
+	    ReportError(f, "Duplicated 'key:' field in authgroup.");
+	curauth->key = COPY(tok->name);
+	break;
+      case PERMhost:
+	if (curauth->hosts)
+	    ReportError(f, "Duplicated 'hosts:' line in authgroup.");
+	curauth->hosts = COPY(tok->name);
+	CompressList(curauth->hosts);
+	break;
+      case PERMdefdomain:
+	if (curauth->default_domain)
+	    ReportError(f, "Duplicated 'default-domain:' line in authgroup.");
+	curauth->default_domain = COPY(tok->name);
+	break;
+      case PERMdefuser:
+	if (curauth->default_user)
+	    ReportError(f, "Duplicated 'default:' user in authgroup.");
+	curauth->default_user = COPY(tok->name);
+	break;
+      case PERMresolv:
+      case PERMresprog:
+	m = NEW(METHOD, 1);
+	(void) memset((POINTER) m, 0, sizeof(METHOD));
+	GrowArray((void***) &curauth->res_methods, (void*) m);
+
+	if (oldtype == PERMresprog)
+	    m->program = COPY(tok->name);
+	else {
+	    m->name = COPY(tok->name);
+	    tok = CONFgettoken(PERMtoks, f);
+	    if (!tok || tok->type != PERMlbrace)
+		ReportError(f, "Expected '{' after 'res'");
+	    tok = CONFgettoken(PERMtoks, f);
+	    while (tok && tok->type != PERMrbrace) {
+		method_parse(m, f, tok, 0);
+		tok = CONFgettoken(PERMtoks, f);
+	    }
+	    if (!tok)
+		ReportError(f, "Unexpected EOF.");
+	}
+	break;
+      case PERMauth:
+      case PERMauthprog:
+	m = NEW(METHOD, 1);
+	(void) memset((POINTER) m, 0, sizeof(METHOD));
+	GrowArray((void***) &curauth->auth_methods, (void*) m);
+	if (oldtype == PERMauthprog)
+	    m->program = COPY(tok->name);
+	else {
+	    m->name = COPY(tok->name);
+	    tok = CONFgettoken(PERMtoks, f);
+	    if (!tok || tok->type != PERMlbrace)
+		ReportError(f, "Expected '{' after 'auth'");
+	    tok = CONFgettoken(PERMtoks, f);
+	    while (tok && tok->type != PERMrbrace) {
+		method_parse(m, f, tok, 1);
+		tok = CONFgettoken(PERMtoks, f);
+	    }
+	    if (!tok)
+		ReportError(f, "Unexpected EOF.");
+	}
+	break;
+      default:
+	ReportError(f, "Unexpected token.");
+	break;
+    }
+}
+
+static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
+{
+    int oldtype;
+
+    oldtype = tok->type;
+    tok = CONFgettoken(0, f);
+    if (!tok)
+	ReportError(f, "Expected value.");
+    switch (oldtype) {
+      case PERMkey:
+	if (curaccess->key)
+	    ReportError(f, "Duplicated 'key:' field in accessgroup.");
+	curaccess->key = COPY(tok->name);
+	break;
+      case PERMusers:
+	if (curaccess->users)
+	    ReportError(f, "Duplicated 'users:' field in accessgroup.");
+	curaccess->users = COPY(tok->name);
+	CompressList(curaccess->users);
+	break;
+      case PERMnewsgroups:
+	if (curaccess->read || curaccess->post)
+	    /* syntax error..  can't set read: or post: _and_ use
+	     * newsgroups: */
+	    ReportError(f, "read: or post: newsgroups already set.");
+	curaccess->read = COPY(tok->name);
+	CompressList(curaccess->read);
+	curaccess->post = COPY(tok->name);
+	CompressList(curaccess->post);
+	break;
+      case PERMread:
+	if (curaccess->read)
+	    ReportError(f, "read: newsgroups already set.");
+	curaccess->read = COPY(tok->name);
+	CompressList(curaccess->read);
+	break;
+      case PERMpost:
+	if (curaccess->post)
+	    ReportError(f, "post: newsgroups already set.");
+	curaccess->post = COPY(tok->name);
+	CompressList(curaccess->post);
+	break;
+      case PERMaccessrp:
+	if (curaccess->read && strchr(tok->name, 'R') == NULL) {
+	    DISPOSE(curaccess->read);
+	    curaccess->read = 0;
+	}
+	if (curaccess->post && strchr(tok->name, 'P') == NULL) {
+	    DISPOSE(curaccess->post);
+	    curaccess->post = 0;
+	}
+	curaccess->newnews = (strchr(tok->name, 'N') != NULL);
+	curaccess->locpost = (strchr(tok->name, 'L') != NULL);
+	break;
+      default:
+	ReportError(f, "Unexpected token.");
+	break;
+    }
+}
+
 static void PERMreadfile(char *filename)
 {
-    CONFFILE *f;
+    CONFCHAIN *cf, *hold;
     CONFTOKEN *tok;
     int inwhat;
     GROUP *curgroup, *newgroup;
@@ -239,90 +525,75 @@ static void PERMreadfile(char *filename)
     int i;
     char errorstr[SMBUF];
 
-    f = CONFfopen(filename);
+    cf = NEW(CONFCHAIN, 1);
+    cf->f = CONFfopen(filename);
+    cf->parent = 0;
     /* are we editing an AUTH or ACCESS group? */
     inwhat = 0;
     newgroup = curgroup = 0;
-    while ((tok = CONFgettoken(PERMtoks, f)) != NULL) {
+    tok = CONFgettoken(PERMtoks, cf->f);
+    while (tok != NULL) {
 	if (inwhat == 0) {
 	    /* top-level parser */
 	    switch (tok->type) {
-	      case PERMgroup:
-		/* nested group declaration. */
-		tok = CONFgettoken(PERMtoks, f);
+		/* include a child file */
+	      case PERMinclude:
+		tok = CONFgettoken(0, cf->f);
 		if (!tok)
-		    ReportError(f, "Unexpected EOF");
-		switch(tok->type) {
-		  case PERMlbrace:
-		    /* nested group declaration */
-		    newgroup = NEW(GROUP, 1);
-		    newgroup->above = curgroup;
-		    if (curgroup) {
-			newgroup->auth = copy_authgroup(curgroup->auth);
-			newgroup->access = copy_accessgroup(curgroup->access);
-		    } else {
-			newgroup->auth = 0;
-			newgroup->access = 0;
-		    }
-		    curgroup = newgroup;
-		    break;
-		  case PERMauth:
-		    /* authentication info for the current group */
-		    tok = CONFgettoken(PERMtoks, f);
-		    if (tok->type != PERMlbrace)
-			ReportError(f, "Expected '{'");
-		    if (!curgroup->auth) {
-		        curgroup->auth = NEW(AUTHGROUP, 1);
-		        curgroup->auth->hosts = 0;
-		        curgroup->auth->res_methods = 0;
-		        curgroup->auth->auth_methods = 0;
-		        curgroup->auth->name = 0;
-		        curgroup->auth->default_user = 0;
-		        curgroup->auth->default_domain = 0;
-		    }
-		    curauth = curgroup->auth;
-		    inwhat = 1;
-		    break;
-		  case PERMaccess:
-		    /* access info for the current group */
-		    tok = CONFgettoken(PERMtoks, f);
-		    if (tok->type != PERMlbrace)
-			ReportError(f, "Expected '{'");
-		    if (!curgroup->access) {
-		        curgroup->access = NEW(ACCESSGROUP, 1);
-		        curgroup->access->users = 0;
-		        curgroup->access->read = 0;
-		        curgroup->access->post = 0;
-		        curgroup->access->name = 0;
-		    }
-		    curaccess = curgroup->access;
-		    inwhat = 2;
-		    break;
-		  default:
-		    ReportError(f, "Unexpected token in group declaration.");
-		    break;
-		}
+		    ReportError(cf->f, "Expected filename after 'include'.");
+		hold = NEW(CONFCHAIN, 1);
+		hold->parent = cf;
+		/* unless the filename's path is fully qualified, open it
+		 * relative to /news/etc */
+		if (*tok->name == '/')
+		    hold->f = CONFfopen(tok->name);
+		else
+		    hold->f = CONFfopen(cpcatpath(innconf->pathetc, tok->name));
+		if (!hold->f)
+		    ReportError(cf->f, "Couldn't open 'include' filename.");
+		cf = hold;
+		goto again;
 		break;
+
+		/* nested group declaration. */
+	      case PERMgroup:
+		tok = CONFgettoken(PERMtoks, cf->f);
+		if (!tok)
+		    ReportError(cf->f, "Unexpected EOF at group name");
+		newgroup = NEW(GROUP, 1);
+		newgroup->above = curgroup;
+		newgroup->name = COPY(tok->name);
+		tok = CONFgettoken(PERMtoks, cf->f);
+		if (!tok || tok->type != PERMlbrace)
+		    ReportError(cf->f, "Expected '{' after group name");
+		/* nested group declaration */
+		if (curgroup) {
+		    newgroup->auth = copy_authgroup(curgroup->auth);
+		    newgroup->access = copy_accessgroup(curgroup->access);
+		} else {
+		    newgroup->auth = 0;
+		    newgroup->access = 0;
+		}
+		curgroup = newgroup;
+		break;
+
+		/* beginning of an auth or access group decl */
 	      case PERMauth:
 	      case PERMaccess:
 		oldtype = tok->type;
-		if ((tok = CONFgettoken(PERMtoks, f)) == 0)
-		    ReportError(f, "Expected identifier.");
+		if ((tok = CONFgettoken(PERMtoks, cf->f)) == 0)
+		    ReportError(cf->f, "Expected identifier.");
 		str = COPY(tok->name);
-		tok = CONFgettoken(PERMtoks, f);
+		tok = CONFgettoken(PERMtoks, cf->f);
 		if (tok->type != PERMlbrace)
-		    ReportError(f, "Expected '{'");
+		    ReportError(cf->f, "Expected '{'");
 		switch (oldtype) {
 		  case PERMauth:
 		    if (curgroup && curgroup->auth)
 			curauth = copy_authgroup(curgroup->auth);
 		    else {
 			curauth = NEW(AUTHGROUP, 1);
-			curauth->hosts = 0;
-			curauth->res_methods = 0;
-			curauth->auth_methods = 0;
-			curauth->default_user = 0;
-			curauth->default_domain = 0;
+			memset((POINTER) curauth, 0, sizeof(AUTHGROUP));
 		    }
 		    curauth->name = str;
 		    inwhat = 1;
@@ -332,31 +603,64 @@ static void PERMreadfile(char *filename)
 			curaccess = copy_accessgroup(curgroup->access);
 		    else {
 			curaccess = NEW(ACCESSGROUP, 1);
-			curaccess->users = 0;
-			curaccess->post = 0;
-			curaccess->read = 0;
-			curaccess->newnews = innconf->allownewnews;
-			curaccess->locpost = 0;
+			memset((POINTER) curaccess, 0, sizeof(ACCESSGROUP));
 		    }
 		    curaccess->name = str;
 		    inwhat = 2;
 		    break;
 		}
 		break;
-	      case PERMrbrace:
+
 		/* end of a group declaration */
+	      case PERMrbrace:
 		if (!curgroup)
-		    ReportError(f, "Unmatched '}'");
+		    ReportError(cf->f, "Unmatched '}'");
 		newgroup = curgroup;
 		curgroup = curgroup->above;
 		if (newgroup->auth)
 		    free_authgroup(newgroup->auth);
 		if (newgroup->access)
 		    free_accessgroup(newgroup->access);
-		free((void*) newgroup);
+		DISPOSE(newgroup->name);
+		DISPOSE(newgroup);
+		break;
+
+		/* stuff that belongs in an authgroup */
+	      case PERMhost:
+	      case PERMauthprog:
+	      case PERMresprog:
+	      case PERMdefuser:
+	      case PERMdefdomain:
+		if (!curgroup) {
+		    curgroup = NEW(GROUP, 1);
+		    memset((POINTER) curgroup, 0, sizeof(GROUP));
+		}
+		if (!curgroup->auth) {
+		    curgroup->auth = NEW(AUTHGROUP, 1);
+		    (void)memset((POINTER)curgroup->auth, 0, sizeof(AUTHGROUP));
+		}
+		authdecl_parse(curgroup->auth, cf->f, tok);
+		break;
+
+		/* stuff that belongs in an accessgroup */
+	      case PERMusers:
+	      case PERMnewsgroups:
+	      case PERMread:
+	      case PERMpost:
+	      case PERMaccessrp:
+		if (!curgroup) {
+		    curgroup = NEW(GROUP, 1);
+		    memset((POINTER) curgroup, 0, sizeof(GROUP));
+		}
+		if (!curgroup->access) {
+		    curgroup->access = NEW(ACCESSGROUP, 1);
+		    (void)memset((POINTER)curgroup->access, 0,
+		      sizeof(ACCESSGROUP));
+		}
+		accessdecl_parse(curgroup->access, cf->f, tok);
 		break;
 	      default:
-		ReportError(f, "Unexpected token.");
+		ReportError(cf->f, "Unexpected token.");
 		break;
 	    }
 	} else if (inwhat == 1) {
@@ -368,119 +672,33 @@ static void PERMreadfile(char *filename)
 		    add_authgroup(curauth);
 		else if (curauth->name)
 		    free_authgroup(curauth);
-		continue;
+		goto again;
 	    }
-	    oldtype = tok->type;
-	    tok = CONFgettoken(0, f);
-	    if (!tok)
-		ReportError(f, "Expected value.");
-	    switch (oldtype) {
-	      case PERMhost:
-		if (curauth->hosts)
-		    ReportError(f, "Duplicated 'hosts:' line in authgroup.");
-		curauth->hosts = COPY(tok->name);
-		CompressList(curauth->hosts);
-		break;
-	      case PERMdefdomain:
-		if (curauth->default_domain)
-		    ReportError(f, "Duplicated 'default-domain:' line in authgroup.");
-		curauth->default_domain = COPY(tok->name);
-		break;
-	      case PERMdefuser:
-		if (curauth->default_user)
-		    ReportError(f, "Duplicated 'default:' user in authgroup.");
-		curauth->default_user = COPY(tok->name);
-		break;
-	      case PERMresprog:
-		if (!curauth->res_methods) {
-		    curauth->res_methods = NEW(char*, 2);
-		    i = 0;
-		} else {
-		    for (i = 0; curauth->res_methods[i]; i++)
-			;
-		    curauth->res_methods = RENEW(curauth->res_methods, char*, i+2);
-		}
-		curauth->res_methods[i] = COPY(tok->name);
-		curauth->res_methods[i+1] = 0;
-		break;
-	      case PERMauthprog:
-		if (!curauth->auth_methods) {
-		    curauth->auth_methods = NEW(char*, 2);
-		    i = 0;
-		} else {
-		    for (i = 0; curauth->auth_methods[i]; i++)
-			;
-		    curauth->auth_methods = RENEW(curauth->auth_methods, char*, i+2);
-		}
-		curauth->auth_methods[i] = COPY(tok->name);
-		curauth->auth_methods[i+1] = 0;
-		break;
-	      default:
-		ReportError(f, "Unexpected token.");
-		break;
-	    }
+	    authdecl_parse(curauth, cf->f, tok);
 	} else if (inwhat == 2) {
 	    /* accessgroup parser */
 	    if (tok->type == PERMrbrace) {
 		inwhat = 0;
 		if (curaccess->name)
 		    add_accessgroup(curaccess);
-		continue;
+		goto again;
 	    }
-	    oldtype = tok->type;
-	    tok = CONFgettoken(0, f);
-	    if (!tok)
-		ReportError(f, "Expected value.");
-	    switch (oldtype) {
-	      case PERMusers:
-		if (curaccess->users)
-		    ReportError(f, "Duplicated 'users:' field in accessgroup.");
-		curaccess->users = COPY(tok->name);
-		CompressList(curaccess->users);
-		break;
-	      case PERMnewsgroups:
-		if (curaccess->read || curaccess->post)
-		    /* syntax error..  can't set read: or post: _and_ use
-		     * newsgroups: */
-		    ReportError(f, "read: or post: newsgroups already set.");
-		curaccess->read = COPY(tok->name);
-		CompressList(curaccess->read);
-		curaccess->post = COPY(tok->name);
-		CompressList(curaccess->post);
-		break;
-	      case PERMread:
-		if (curaccess->read)
-		    ReportError(f, "read: newsgroups already set.");
-		curaccess->read = COPY(tok->name);
-		CompressList(curaccess->read);
-		break;
-	      case PERMpost:
-		if (curaccess->post)
-		    ReportError(f, "post: newsgroups already set.");
-		curaccess->post = COPY(tok->name);
-		CompressList(curaccess->post);
-		break;
-	      case PERMaccessrp:
-		if (curaccess->read && strchr(tok->name, 'R') == NULL) {
-		    DISPOSE(curaccess->read);
-		    curaccess->read = 0;
-		}
-		if (curaccess->post && strchr(tok->name, 'P') == NULL) {
-		    DISPOSE(curaccess->post);
-		    curaccess->post = 0;
-		}
-		curaccess->newnews = (strchr(tok->name, 'N') != NULL);
-		curaccess->locpost = (strchr(tok->name, 'L') != NULL);
-		break;
-	      default:
-		ReportError(f, "Unexpected token.");
-		break;
-	    }
+	    accessdecl_parse(curaccess, cf->f, tok);
 	} else
 	    /* should never happen */
 	    ;
+again:
+	/* go back up the 'include' chain. */
+	tok = CONFgettoken(PERMtoks, cf->f);
+	while (!tok && cf) {
+	    hold = cf;
+	    cf = hold->parent;
+	    CONFfclose(hold->f);
+	    DISPOSE(hold);
+	    if (cf)
+		tok = CONFgettoken(PERMtoks, cf->f);
+	}
     }
-    CONFfclose(f);
     return;
 }
 
@@ -494,6 +712,7 @@ void PERMgetaccess(void)
     access_realms = 0;
     success_auth = 0;
     PERMcanread = PERMcanpost = PERMlocpost = 0;
+    PERMreadlist = PERMpostlist = 0;
     PERMreadfile(cpcatpath(innconf->pathetc, _PATH_NNRPACCESS));
     strip_accessgroups();
     if (!auth_realms) {
@@ -533,6 +752,19 @@ void PERMgetaccess(void)
 	ExitWithStats(1);
     } else
 	PERMneedauth = 1;
+    /* check maximum allowed permissions for any host that matches (for
+     * the greeting string) */
+    for (i = 0; access_realms[i]; i++) {
+	if (!PERMcanread)
+	    PERMcanread = (access_realms[i]->read != NULL);
+	if (!PERMcanpost)
+	    PERMcanpost = (access_realms[i]->post != NULL);
+    }
+    if (!i) {
+	/* no applicable access groups. Zeroing all these makes INN 
+	 * return permission denied to client. */
+	PERMcanread = PERMcanpost = PERMneedauth = 0;
+    }
 }
 
 void PERMlogin(char *uname, char *pass)
@@ -563,22 +795,46 @@ void PERMlogin(char *uname, char *pass)
     }
 }
 
+static int MatchUser(char *pat, char *user)
+{
+    char *cp, **list;
+    char *userlist[2];
+    int ret;
+
+    if (!pat)
+	return(1);
+    if (!user || !*user)
+	return(0);
+    cp = COPY(pat);
+    list = 0;
+    NGgetlist(&list, cp);
+    userlist[0] = user;
+    userlist[1] = 0;
+    ret = PERMmatch(list, userlist);
+    DISPOSE(cp);
+    DISPOSE(list);
+    return(ret);
+}
+
 void PERMgetpermissions()
 {
     int i;
-    char **list, *cp;
+    char *cp, **list;
     char *user[2];
 
     if (!success_auth) {
 	/* if we haven't successfully authenticated, we can't do anything. */
+	syslog(L_TRACE, "%s no_success_auth", ClientHost);
 	return;
     }
-    user[0] = PERMuser;
-    user[1] = 0;
     for (i = 0; access_realms[i]; i++)
 	;
+    user[0] = PERMuser;
+    user[1] = 0;
     while (i--) {
-	if (!strcmp(access_realms[i]->name, success_auth->name)) {
+	if ((!success_auth->key && !access_realms[i]->key) ||
+	  (access_realms[i]->key && success_auth->key &&
+	   strcmp(access_realms[i]->key, success_auth->key) == 0)) {
 	    if (!access_realms[i]->users)
 		break;
 	    else if (!*PERMuser)
@@ -587,10 +843,14 @@ void PERMgetpermissions()
 	    list = 0;
 	    NGgetlist(&list, cp);
 	    if (PERMmatch(list, user)) {
+		syslog(L_TRACE, "%s match_user %s %s", ClientHost,
+		  PERMuser, access_realms[i]->users);
 		DISPOSE(cp);
 		DISPOSE(list);
 		break;
-	    }
+	    } else
+		syslog(L_TRACE, "%s no_match_user %s %s", ClientHost,
+		  PERMuser, access_realms[i]->users);
 	    DISPOSE(cp);
 	    DISPOSE(list);
 	}
@@ -601,17 +861,22 @@ void PERMgetpermissions()
 	    cp = COPY(access_realms[i]->read);
 	    PERMspecified = NGgetlist(&PERMreadlist, cp);
 	    PERMcanread = 1;
-	} else
+	} else {
+	    syslog(L_TRACE, "%s no_read %s", ClientHost, access_realms[i]->name);
 	    PERMcanread = 0;
+	}
 	if (access_realms[i]->post) {
 	    cp = COPY(access_realms[i]->post);
 	    NGgetlist(&PERMpostlist, cp);
 	    PERMcanpost = 1;
-	} else
+	} else {
+	    syslog(L_TRACE, "%s no_post %s", ClientHost, access_realms[i]->name);
 	    PERMcanpost = 0;
+	}
 	PERMnewnews = access_realms[i]->newnews;
 	PERMlocpost = access_realms[i]->locpost;
-    }
+    } else
+	syslog(L_TRACE, "%s no_access_realm", ClientHost);
 }
 
 /* strip blanks out of a string */
@@ -720,11 +985,34 @@ static void add_accessgroup(ACCESSGROUP *group)
     access_realms[i+1] = 0;
 }
 
+/* clean out access groups that don't apply to any of our auth groups. */
 static void strip_accessgroups()
 {
-    int from, to;
-    /* whatever.  I'll get around to this function sooner or later, but it's
-     * not important right now. */
+    int i, j;
+
+    /* flag the access group as used or not */
+    for (j = 0; access_realms[j]; j++)
+	access_realms[j]->used = 0;
+    for (i = 0; auth_realms[i]; i++) {
+	for (j = 0; access_realms[j]; j++)
+	    if (! access_realms[j]->used) {
+		if (!access_realms[j]->key && !auth_realms[i]->key)
+		    access_realms[j]->used = 1;
+		else if (access_realms[j]->key && auth_realms[i]->key &&
+		  strcmp(access_realms[j]->key, auth_realms[i]->key) == 0)
+		    access_realms[j]->used = 1;
+	    }
+    }
+    /* strip out unused access groups */
+    i = j = 0;
+    while (access_realms[i]) {
+	if (access_realms[i]->used)
+	    access_realms[j++] = access_realms[i];
+	else
+	    syslog(L_TRACE, "%s removing access group %s", access_realms[i]->name);
+	i++;
+    }
+    access_realms[j] = 0;
 }
 
 typedef struct _EXECSTUFF {
@@ -772,7 +1060,7 @@ static EXECSTUFF *ExecProg(char *arg0, char **args)
     return(ret);
 }
 
-static void GetConnInfo(char *buf)
+static void GetConnInfo(METHOD *method, char *buf)
 {
     struct sockaddr_in cli, loc;
     int gotsin;
@@ -791,6 +1079,12 @@ static void GetConnInfo(char *buf)
 	sprintf(buf+strlen(buf), "ClientPort: %d\r\n", ntohs(cli.sin_port));
 	sprintf(buf+strlen(buf), "LocalIP: %s\r\n", inet_ntoa(loc.sin_addr));
 	sprintf(buf+strlen(buf), "LocalPort: %d\r\n", ntohs(loc.sin_port));
+    }
+    /* handle this here, since we only get here when we're about to exec
+     * something. */
+    if (method->extra_headers) {
+	for (i = 0; method->extra_headers[i]; i++)
+	    sprintf(buf+strlen(buf), "%s\r\n", method->extra_headers[i]);
     }
 }
 
@@ -915,7 +1209,7 @@ static void GetProgInput(EXECSTUFF *prog)
 /* execute a series of resolvers to get the remote username */
 static char *ResolveUser(AUTHGROUP *auth)
 {
-    int i;
+    int i, j;
     char *cp;
     char **args;
     char *arg0;
@@ -936,8 +1230,13 @@ static char *ResolveUser(AUTHGROUP *auth)
     ubuf[0] = '\0';
     for (i = 0; auth->res_methods[i]; i++) {
 	/* build the command line */
-	syslog(L_TRACE, "%s res starting resolver %s", ClientHost, auth->res_methods[i]);
-	cp = COPY(auth->res_methods[i]);
+	syslog(L_TRACE, "%s res starting resolver %s", ClientHost, auth->res_methods[i]->program);
+	if (auth->res_methods[i]->extra_logs) {
+	    for (j = 0; auth->res_methods[i]->extra_logs[j]; j++)
+		syslog(L_NOTICE, "%s res also-log: %s", ClientHost,
+		  auth->res_methods[i]->extra_logs[j]);
+	}
+	cp = COPY(auth->res_methods[i]->program);
 	args = 0;
 	Argify(cp, &args);
 	arg0 = NEW(char, strlen(resdir)+strlen(args[0])+1);
@@ -945,7 +1244,7 @@ static char *ResolveUser(AUTHGROUP *auth)
 	/* exec the resolver */
 	foo = ExecProg(arg0, args);
 	if (foo) {
-	    GetConnInfo(buf);
+	    GetConnInfo(auth->res_methods[i], buf);
 	    strcat(buf, ".\r\n");
 	    xwrite(foo->wrfd, buf, strlen(buf));
 	    close(foo->wrfd);
@@ -976,14 +1275,12 @@ static char *ResolveUser(AUTHGROUP *auth)
 /* execute a series of authenticators to get the remote username */
 static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password)
 {
-    int i;
+    int i, j;
     char *cp;
     char **args;
     char *arg0;
     char *resdir;
     EXECSTUFF *foo;
-    struct sockaddr_in sin;
-    int gotsin;
     int tmp, status;
     int done;
     char buf[BIG_BUFFER];
@@ -996,13 +1293,20 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password)
     sprintf(resdir, "%s/%s/", cpcatpath(innconf->pathbin, _PATH_AUTHDIR),
       _PATH_AUTHDIR_PASSWD);
 
-    i = sizeof(sin);
-    gotsin = (getpeername(0, (struct sockaddr*)&sin, &i) == 0);
     ubuf[0] = '\0';
     for (i = 0; auth->auth_methods[i]; i++) {
+	if (auth->auth_methods[i]->users &&
+	  !MatchUser(auth->auth_methods[i]->users, username))
+	    continue;
+
 	/* build the command line */
-	syslog(L_TRACE, "%s auth starting authenticator %s", ClientHost, auth->auth_methods[i]);
-	cp = COPY(auth->auth_methods[i]);
+	syslog(L_TRACE, "%s auth starting authenticator %s", ClientHost, auth->auth_methods[i]->program);
+	if (auth->auth_methods[i]->extra_logs) {
+	    for (j = 0; auth->auth_methods[i]->extra_logs[j]; j++)
+		syslog(L_NOTICE, "%s auth also-log: %s", ClientHost,
+		  auth->auth_methods[i]->extra_logs[j]);
+	}
+	cp = COPY(auth->auth_methods[i]->program);
 	args = 0;
 	Argify(cp, &args);
 	arg0 = NEW(char, strlen(resdir)+strlen(args[0])+1);
@@ -1010,7 +1314,7 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password)
 	/* exec the authenticator */
 	foo = ExecProg(arg0, args);
 	if (foo) {
-	    GetConnInfo(buf);
+	    GetConnInfo(auth->auth_methods[i], buf);
 	    sprintf(buf+strlen(buf), "ClientAuthname: %s\r\n", username);
 	    sprintf(buf+strlen(buf), "ClientPassword: %s\r\n", password);
 	    strcat(buf, ".\r\n");
