@@ -420,10 +420,14 @@ sub shlock {
         sleep 2;
     }
 
-    open(LOCKFILE, $lockfile);
-    my $lockpid = <LOCKFILE> || "($!)";
-    close LOCKFILE;
-    logdie("Cannot get lock $lockfile, held by $lockpid");
+    my $lockreason;
+    if (open(LOCKFILE, $lockfile)) {
+        $lockreason = 'held by ' . (<LOCKFILE> || '?');
+        close LOCKFILE;
+    } else {
+        $lockreason = $!;
+    }
+    logdie("Cannot get lock $lockfile: $lockreason");
     return undef;
 }
 
