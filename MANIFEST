@@ -162,12 +162,13 @@ expire/prunehistory.c       1 Prune file names from history file
 expire/reap.pch             1 Patch to reap to print files and Message-IDs
 frontends                   1 Inews, rnews, ctlinnd (Directory)
 frontends/Makefile          1 Makefile for frontends
-frontends/c7unbatch.sh      1 Decode and uncompress input
+frontends/c7unbatch.sh.in   1 Decode and uncompress input
 frontends/ctlinnd.c         1 Send control request to innd
 frontends/decode.c          1 Decode 7-bit data into binary file
 frontends/encode.c          1 Encode binary file into 7-bit data
 frontends/feedone.c         1 Test rig to feed a single NNTP article
 frontends/getlist.c         1 Get active or other file from NNTP server
+frontends/gunbatch.sh.in    1 Decode and gunzip input
 frontends/inews.c           1 Send article to local NNTP server
 frontends/innconfval.c      1 Get an INN configuration parameter
 frontends/rn.pch            1 Patch to RN to build with INN
