@@ -417,7 +417,7 @@ STATIC BOOL ARTopenbyid(char *msg_id, ARTNUM *ap)
     TOKEN		token;
 
     *ap = 0;
-    if ((p = HISgetent(&hash, FALSE, NULL)) == NULL)
+    if ((p = HISgetent(&hash, innconf->storageapi ? FALSE : TRUE, NULL)) == NULL)
 	return FALSE;
 
     if (IsToken(p)) {
