@@ -238,6 +238,7 @@ doc/pod                               POD documentation (Directory)
 doc/pod/Makefile                      Maintainer rules for derived files
 doc/pod/checklist.pod                 Master file for doc/checklist
 doc/pod/ckpasswd.pod                  Master file for ckpasswd.1
+doc/pod/control.ctl.pod               Master file for control.ctl.5
 doc/pod/convdate.pod                  Master file for convdate.1
 doc/pod/expireover.pod                Master file for expireover.8
 doc/pod/fastrm.pod                    Master file for fastrm.1
