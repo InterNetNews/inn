@@ -47,7 +47,7 @@ EXTRAS		= testListener.pl inet_addr.c uio_maxiov.c configfile.y \
 		  procbatch.in innfeed-convcfg.in malloc.c ChangeLog \
 		  startinnfeed.c
 
-OBJS		= $(SRC:.c=.o) $(EXTRA_SRC:.c=.o) \
+OBJS		= $(SRC:.c=.o) \
 		  config_l.o config_y.o
 
 INNFEED_BIN	= $D$(PATHBIN)/innfeed
@@ -164,7 +164,7 @@ listing::
 startinnfeed.o: startinnfeed.c
 	$(COMPILE.c) $?
 
-startinnfeed: startinnfeed.o $(EXTRA_SRC:.c=.o)
+startinnfeed: startinnfeed.o
 	$(LINK.c) -o $@ $? $(LIBNEWS) $(LIBS)
 
 uio_maxiov: uio_maxiov.o
