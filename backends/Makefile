@@ -5,11 +5,10 @@ include ../Makefile.global
 CFLAGS        = $(GCFLAGS)
 
 ALL           = actmerge actsync actsyncd archive batcher buffchan \
-		controlbatch cvtbatch filechan inndf innxmit innxbatch \
-		mod-active news2mail nntpget nntpsend overchan send-ihave \
-		send-nntp send-uucp sendbatch sendxbatches shlock shrinkfile
-
-EXTRA         = controlchan pgpverify
+		controlbatch controlchan cvtbatch filechan inndf innxmit \
+		innxbatch mod-active news2mail nntpget nntpsend overchan \
+		pgpverify send-ihave send-nntp send-uucp sendbatch \
+		sendxbatches shlock shrinkfile
 
 SOURCES       = actsync.c archive.c batcher.c buffchan.c cvtbatch.c \
 		filechan.c inndf.c innxbatch.c innxmit.c map.c nntpget.c \
@@ -49,7 +48,7 @@ clean:
 	rm -rf .libs
 
 clobber: clean
-	rm -f $(EXTRA) tags
+	rm -f tags
 
 tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES)
@@ -86,9 +85,11 @@ filechan:	filechan.o map.o $(LIBINN)
 actmerge:	actmerge.in      $(FIX)	; $(FIX) actmerge.in
 actsyncd:	actsyncd.in      $(FIX)	; $(FIX) actsyncd.in
 controlbatch:	controlbatch.in  $(FIX)	; $(FIX) controlbatch.in
+controlchan:	controlchan.in   $(FIX) ; $(FIX) controlchan.in
 mod-active:	mod-active.in    $(FIX)	; $(FIX) mod-active.in
 news2mail:	news2mail.in     $(FIX)	; $(FIX) news2mail.in
 nntpsend:	nntpsend.in      $(FIX)	; $(FIX) nntpsend.in
+pgpverify:	pgpverify.in     $(FIX)	; $(FIX) pgpverify.in
 send-ihave:	send-ihave.in    $(FIX)	; $(FIX) send-ihave.in
 send-nntp:	send-nntp.in     $(FIX)	; $(FIX) send-nntp.in
 send-uucp:	send-uucp.in     $(FIX)	; $(FIX) send-uucp.in
