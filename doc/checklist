@@ -1,0 +1,125 @@
+$Id$
+
+This is an installation checklist written by Rebecca Ore, intended to be
+the beginning of a different presentation of the information in INSTALL,
+since getting started with installing INN can be complex.  Further
+clarifications, updates, and expansion is welcome.
+
+
+create a directory for news/make sure there is a news user who owns
+        the news/ directory and subdirectories.
+
+Su news and download the INN tarball to news/ or news/src (I have
+        this).
+
+Add ~/new/bin to the news user's path and ~/news/bin/man to the news
+        user's manpath in your shell .*rc file:
+
+For Bash and my system, this is:
+
+PATH=/sbin:/bin:/usr/bin:/usr/sbin:/usr/pkg/bin:/usr/local/bin:/usr/pkg/sbin:/news/bin
+export PATH
+MANPATH=/news/man:/usr/share/man:/usr/pkg/man
+export MANPATH
+
+You can do this before or after building and installing the program,
+but before configuring INN as the various man pages and inncheck are
+very helpful.  Inncheck gives a rough check on the appropriateness of
+the configuration files as you go.  It's the equivalent of perl -cw
+yourfile.pl for perl scripts.
+        
+Unpack INN and make sure the basic configure options give the /news
+        directory that you're using, configure with perl and
+        --with-tagged-hash if not using NetBSD with cycbuffs or OpenBSD.
+Consider other compile time directory options for /db/ and for /spool,
+        use them now or when setting up inn.conf.
+Configure;make; su to root and make install.  Check all directories to
+        make sure all files are owned by news in the group news.
+
+Configuring the /news/etc files:
+
+Cd /news/etc and open separate window/use print-out of INSTALL in the
+        root of the source tree.
+You must fill in the default moderators address, your fully qualified
+        domain names and path.
+Fill in all the blanks, change the file descriptor limits to
+                something like 500.
+Configure files starting  from incoming.conf (news peers) to
+        readers.conf.  You can always start taking feeds and sending
+        out articles before you have readers.conf tweaked perfectly.
+
+If using cycbuffs, open cycbuff.conf and open an
+        additional xterm to create the cycbuff as described in
+        INSTALL.  As you create them, record in cycbuff.conf the paths and
+        sizes.  Save paths and sizes in a separate text file on another machine
+        in case you ever blow away the wrong file.  Name the
+        metacycbuff, then configure storage.conf.
+
+In storage.conf, be sure that all sizes of articles can be accomodated.
+
+In newsfeeds, if using innfeed, use the option which doens't require you
+        to do a separate innfeed configuration unless you know more than I do.
+
+In readers.conf, remember that auth and access can be separated.  
+
+        Begin with auth.  Your auth for password users could look like
+        this:
+        
+        auth "foreignokay" {
+        auth: "ckpasswd -d /news4/db/newsusers"
+        }
+
+        There is a perl script in the ckpasswd man page if you want to
+        do authentications by password and have the appropriate
+        libraries.  Copy it to /news/bin, name the file something like
+        makepasswd.pl and change the internal paths to whatever you're
+        using and whereever you're putting the newsusers database.
+
+        
+        Follow with the access stanzas. Be sure to include a failure
+        stanza first, then follow by the access stanzas that allow
+        reading and posting:
+
+        access fail {
+        newsgroups: !*
+        } 
+
+        access "bofhonly" {
+        users: "jnixon"
+        newsgroups: "bofh.*,paradoxa.*"
+        access: "Read Post"
+        }
+
+        
+The default options in expire.ctl work fine if you have cycbuffs, if
+        not, configure to suit.
+ 
+Check over moderators, control.ctl.
+
+If doing nntpsend batches, do these.
+
+Run inncheck and fix anything noted.
+
+Import an active file and run inncheck again. Change where noted
+(there's a gotcha in the ISC's active list 000000 000000 (whatever
+number of 000000's should be 0000000 00000001).
+
+touch ~news/db/newsgroups
+touch ~news/db/active.times
+cd ~news/db
+makedbz -i
+Rename files to remove the .n. in the db file names.
+Chmod 644 the db files.
+
+Create the cron jobs and make the changes in syslog as noted in
+INSTALL.  Also create the cron job for nntpsend if you've chosen that
+over innfeed.
+
+Create the log files.
+
+Start inn by typing rc.news (~news/bin should be in your path).
+
+Check /news/log/news.notice to see if everything went well, also ps
+-aux to see if innd is running.
+
+Man ctlinnd now.
