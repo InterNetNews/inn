@@ -119,6 +119,7 @@ pathoverview:		@SPOOLDIR@/overview
 pathoutgoing:		@SPOOLDIR@/outgoing
 pathincoming:		@SPOOLDIR@/incoming
 patharchive:		@SPOOLDIR@/archive
+pathuniover:		@SPOOLDIR@/uniover
 overviewname:		.overview
 #
 # ---------------------------------
