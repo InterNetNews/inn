@@ -153,9 +153,9 @@ main(int ac, char *av[])
     if (!HIScheck(history, key)) {
 	if (What == 'n') {
 	    if (Verbosity > 0)
-		warn("not found (hash is %s)", HashToText(HashMessageID(key)));
+		die("not found (hash is %s)", HashToText(HashMessageID(key)));
 	    else
-		warn("not found");
+		die("not found");
 	}
     }
     else if (What != 'q') {
