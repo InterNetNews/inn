@@ -1250,15 +1250,19 @@ struct sockaddr *hostIpAddr (Host host)
     }
 
   if (host->ipAddrs)
-    {
-      returnAddr = host->ipAddrs[host->nextIpAddr] ;
-      if (host->ipAddrs[++host->nextIpAddr] == NULL)
-	host->nextIpAddr = 0 ;
-    }
+    returnAddr = host->ipAddrs[host->nextIpAddr] ;
   else
     returnAddr = NULL ;
 
   return returnAddr ;
+}
+
+
+void hostIpFailed (Host host)
+{
+  if (host->ipAddrs)
+      if (host->ipAddrs[++host->nextIpAddr] == NULL)
+	host->nextIpAddr = 0 ;
 }
 
 

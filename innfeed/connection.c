@@ -639,6 +639,7 @@ bool cxnConnect (Connection cxn)
   if (rval < 0 && errno != EINPROGRESS)
     {
       syslog (LOG_ERR, CONNECT_ERROR, peerName, cxn->ident) ;
+      hostIpFailed (cxn->myHost) ;
       close (fd) ;
 
       cxnSleepOrDie (cxn) ;
@@ -1331,6 +1332,7 @@ static void connectionDone (EndPoint e, IoStatus i, Buffer *b, void *d)
          the SO_ERROR value out of the socket. */
       errno = optval ;
       syslog (LOG_NOTICE,CONNECTION_FAILURE,peerName,cxn->ident) ;
+      hostIpFailed (cxn->myHost) ;
 
       cxnSleepOrDie (cxn) ;
     }

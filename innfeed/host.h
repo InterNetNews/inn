@@ -107,6 +107,9 @@ void hostSendArticle (Host host, Article article) ;
 /* return an IP address for the host */
 struct sockaddr *hostIpAddr (Host host) ;
 
+/* mark the current IP address as failed and rotate to the next one */
+void hostIpFailed (Host host) ;
+
 /*
  * Functions used by the Connection to indicate Connection state.
  */
