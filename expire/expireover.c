@@ -14,6 +14,7 @@
 #include <pwd.h>
 #include <signal.h>
 #include <syslog.h>
+#include <time.h>
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
