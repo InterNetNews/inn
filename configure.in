@@ -1163,75 +1163,26 @@ AC_CONFIG_HEADER(include/config.h)
 AC_OUTPUT(
         Makefile.global
         makedirs.sh
-        backends/actmerge
-        backends/actsyncd
-        backends/controlbatch
         backends/controlchan
-        backends/mod-active
-        backends/news2mail
-        backends/nntpsend
         backends/pgpverify
-        backends/send-ihave
-        backends/send-nntp
-        backends/send-uucp
-        backends/sendbatch
-        backends/sendxbatches
-        expire/expirerm
-        frontends/c7unbatch
-        frontends/cnfsheadconf
-        frontends/cnfsstat
-        frontends/gunbatch
-        frontends/mailpost
-        frontends/pullnews
-        frontends/scanspool
-        frontends/signcontrol
         include/paths.h
-        innfeed/innfeed-convcfg
-        innfeed/procbatch
         samples/actsync.cfg
         samples/checkgroups
-        samples/checkgroups.pl
-        samples/default
-        samples/docheckgroups
-        samples/ihave
-        samples/ihave.pl
         samples/inn.conf
         samples/innreport.conf
         samples/innwatch.ctl
-        samples/newgroup
-        samples/newgroup.pl
         samples/newsfeeds
         samples/nnrpd_auth.pl
-        samples/parsecontrol
-        samples/rmgroup
-        samples/rmgroup.pl
-        samples/sendme
-        samples/sendme.pl
-        samples/sendsys
-        samples/sendsys.pl
-        samples/senduuname
-        samples/senduuname.pl
         samples/startup.tcl
-        samples/version
-        samples/version.pl
         scripts/inncheck
-        scripts/innmail
         scripts/innreport
         scripts/innshellvars
         scripts/innshellvars.pl
         scripts/innshellvars.tcl
-        scripts/innstat
-        scripts/innwatch
         scripts/news.daily
-        scripts/rc.news
-        scripts/scanlogs
-        scripts/simpleftp
-        scripts/tally.control
-        scripts/writelog
-        storage/buildconfig
-        storage/ovbuildconfig
+        support/fixscript
         ,
-        chmod +x storage/buildconfig storage/ovbuildconfig
+        chmod +x support/fixscript
 )
 
 cat .now_do
