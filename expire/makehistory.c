@@ -460,6 +460,9 @@ DoArt(ARTHANDLE *art)
 		    p1 != (char *)NULL && *p1 == '\n' &&
 		    !ISWHITE(*p))
 		    break;
+		if (p1 != (char *)NULL && *p1 == '\n' &&
+		    !ISWHITE(*p))
+		    break;
 		p2 = p1;
 		p1 = p;
 	    }
@@ -467,7 +470,10 @@ DoArt(ARTHANDLE *art)
 		/* not found for this header */
 		continue;
 	    }
-            fp->HeaderLength = p2 - fp->Header;
+	    if (p2 != (char *)NULL && *p2 == '\r')
+		fp->HeaderLength = p2 - fp->Header;
+	    else
+		fp->HeaderLength = p1 - fp->Header;
 	}
     }
     if (Missfieldsize > 0) {
@@ -479,6 +485,9 @@ DoArt(ARTHANDLE *art)
 			p1 != (char *)NULL && *p1 == '\n' &&
 			!ISWHITE(*p))
 		        break;
+		    if (p1 != (char *)NULL && *p1 == '\n' &&
+			!ISWHITE(*p))
+		        break;
 		    p2 = p1;
 		    p1 = p;
 		}
@@ -486,7 +495,10 @@ DoArt(ARTHANDLE *art)
 		    /* not found for this header */
 		  continue;
 		}
-		fp->HeaderLength = p2 - fp->Header;
+		if (p2 != (char *)NULL && *p2 == '\r')
+		    fp->HeaderLength = p2 - fp->Header;
+		else
+		    fp->HeaderLength = p1 - fp->Header;
 	    }
 	}
     }
