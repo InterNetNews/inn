@@ -38,8 +38,11 @@ buffer_size(int fd UNUSED)
        only use this value for regular files. */
     if (fstat(fd, &st) == 0 && S_ISREG(st.st_mode)) {
         size = st.st_blksize;
-        if (size > (4 * QIO_BUFFERSIZE) || size < (QIO_BUFFERSIZE / 2))
+        if (size > (4 * QIO_BUFFERSIZE))
             size = QIO_BUFFERSIZE;
+	else
+	    while(size < QIO_BUFFERSIZE)
+		size += st.st_blksize;
     }
 #endif /* HAVE_STRUCT_STAT_ST_BLKSIZE */
 
