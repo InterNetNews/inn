@@ -9,6 +9,8 @@
 #include <sys/uio.h>
 #include <storage.h>
 
+#include "config.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -19,6 +21,12 @@ extern "C" {
 typedef long	*ALIGNPTR;
 extern ALIGNPTR	xmalloc(unsigned int i);
 extern ALIGNPTR	xrealloc(char *p, unsigned int i);
+
+#ifdef VAR_STDARGS
+extern void *   concat(const char *first, ...);
+#else
+extern void *   concat();
+#endif    
 
 /* Headers. */
 extern char	        *GenerateMessageID(void);
