@@ -16,14 +16,14 @@ Usage: convdate -n [date ...]\n\
        convdate [-dl] -c [time ...]\n\
        convdate [-dl] [-s] [date ...]\n\
 \n\
-convdate -n converts a date (in any format parseable by parsedate) to the\n\
-number of seconds since epoch.  convdate -s does the same, but converts\n\
-to a date string.  convdate -c converts seconds since epoch to a date\n\
-string.  The default output is the output of ctime (normally the same format\n\
-as returned by the date command).  If -d is given, the output is formatted\n\
-as a valid Usenet article Date header.  If -l is given with -d, format the\n\
-time in local time rather than UTC.  If no options are given, the -s\n\
-behavior is the default; if no dates are given, the current time is used.\n";
+convdate -n converts a date in RFC 2822 format to the number of seconds\n\
+since epoch.  convdate -s does the same, but converts to a date string.\n\
+convdate -c converts seconds since epoch to a date string.  The default\n\
+output is the output of ctime (normally the same format as returned by the\n\
+date command).  If -d is given, the output is formatted as a valid Usenet\n\
+article Date header.  If -l is given with -d, format the time in local\n\
+time rather than UTC.  If no options are given, the -s behavior is the\n\
+default; if no dates are given, the current time is used.\n";
 
 /* Whether to format the output as a Date header. */
 static bool date_format = false;
@@ -100,7 +100,7 @@ convdate(const char *date, char mode)
             seconds = (time_t) atol(date);
         }
     } else {
-        seconds = parsedate((char *) date, NULL);
+        seconds = parsedate_rfc2822_lax(date);
         if (seconds == (time_t) -1) {
             warn("can't convert \"%s\"", date);
             return false;
