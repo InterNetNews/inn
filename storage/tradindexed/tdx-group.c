@@ -837,21 +837,19 @@ tdx_expire(const char *group, ARTNUM *low, struct history *history)
         goto fail;
     }
 
-    /* Almost done.  Update the group index. */
+    /* Almost done.  Update the group index.  If there are no articles in the
+       group, the low water mark should be one more than the high water
+       mark. */
     if (new_entry.low == 0)
-        new_entry.low = new_entry.high;
+        new_entry.low = new_entry.high + 1;
     *entry = new_entry;
     msync(entry, sizeof(*entry), MS_ASYNC);
     index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
 
     /* Return the lowmark to our caller.  If there are no articles in the
        group, this should be one more than the high water mark. */
-    if (low != NULL) {
-        if (entry->count == 0)
-            *low = entry->high + 1;
-        else
-            *low = entry->low;
-    }
+    if (low != NULL)
+        *low = entry->low;
     tdx_index_close(index);
     return true;
 
@@ -1063,24 +1061,14 @@ index_audit_loc(struct group_index *index, int *loc, long number,
 static void
 index_audit_deleted(struct group_entry *entry, long number, bool fix)
 {
-    bool error = false;
-
-    if (HashEmpty(entry->hash) && entry->deleted == 0) {
-        warn("tradindexed: entry %ld has zero hash but no delete time",
-             number);
-        error = true;
-        if (fix)
-            entry->deleted = time(NULL);
-    }
     if (entry->deleted != 0 && !HashEmpty(entry->hash)) {
         warn("tradindexed: entry %ld has a delete time but a non-zero hash",
              number);
-        error = true;
-        if (fix)
+        if (fix) {
             HashClear(&entry->hash);
+            msync(entry, sizeof(*entry), MS_ASYNC);
+        }
     }
-    if (fix && error)
-        msync(entry, sizeof(*entry), MS_ASYNC);
 }
 
 
@@ -1111,7 +1099,7 @@ index_audit_header(struct group_index *index, bool fix)
         current = *parent;
         while (current != -1) {
             entry = &index->entries[current];
-            if (bucket != index_bucket(entry->hash)) {
+            if (entry->deleted == 0 && bucket != index_bucket(entry->hash)) {
                 warn("tradindexed: entry %ld is in bucket %ld instead of its"
                      " correct bucket %ld", current, bucket,
                      index_bucket(entry->hash));
@@ -1147,7 +1135,7 @@ index_audit_header(struct group_index *index, bool fix)
         entry = &index->entries[current];
         index_audit_deleted(entry, current, fix);
         reachable[current] = true;
-        if (entry->deleted == 0) {
+        if (!HashEmpty(entry->hash) && entry->deleted == 0) {
             warn("tradindexed: undeleted entry %ld in free list", current);
             if (fix) {
                 entry_splice(entry, parent);
@@ -1262,7 +1250,7 @@ tdx_index_audit(bool fix)
     hashmap = hashmap_load();
     for (bucket = 0; bucket < index->count; bucket++) {
         entry = &index->entries[bucket];
-        if (entry->deleted != 0)
+        if (HashEmpty(entry->hash) || entry->deleted != 0)
             continue;
         index_audit_group(index, entry, hashmap, fix);
     }
