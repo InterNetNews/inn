@@ -79,3 +79,19 @@ GetConfigValue(value)
 	return "7bit";
     return NULL;
 }
+
+/*
+**  Get a boolean config value and return it by value
+*/
+BOOL GetBooleanConfigValue(char *key, BOOL defaultvalue) {
+    char *value;
+
+    if ((value = GetConfigValue(key)) == NULL)
+	return defaultvalue;
+
+    if (caseEQ(value, "on") || caseEQ(value, "true") || caseEQ(value, "yes"))
+	return TRUE;
+    if (caseEQ(value, "off") || caseEQ(value, "false") || caseEQ(value, "no"))
+	return FALSE;
+    return defaultvalue;
+}

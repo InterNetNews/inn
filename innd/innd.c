@@ -584,9 +584,6 @@ main(ac, av)
     char		buff[SMBUF];
     char		*master;
     char		*p;
-    char		*wireformat;
-    char		*xrefslave;
-    char                *timespool;
     FILE		*F;
     BOOL		ShouldFork;
     BOOL		ShouldRenumber;
@@ -757,31 +754,11 @@ main(ac, av)
     }
     
     /* Get the setting for Wireformat */
-    if ((wireformat = GetConfigValue(_CONF_WIREFORMAT)) == NULL)
-	WireFormat = FALSE;
-
-    if (caseEQ(wireformat, "on") || caseEQ(wireformat, "true") || caseEQ(wireformat, "yes"))
-	WireFormat = TRUE;
-    else
-	WireFormat = FALSE;
-   
+    WireFormat = GetBooleanConfigValue(_CONF_WIREFORMAT, FALSE);
     /* Get the setting for Xref slaving */
-    if ((xrefslave = GetConfigValue(_CONF_XREFSLAVE)) == NULL)
-	XrefSlave = FALSE;
-
-    if (caseEQ(xrefslave, "on") || caseEQ(xrefslave, "true") || caseEQ(xrefslave, "yes"))
-	XrefSlave = TRUE;
-    else
-	XrefSlave = FALSE;
-
+    XrefSlave = GetBooleanConfigValue(_CONF_XREFSLAVE, FALSE);
     /* Get the setting for time spool */
-    if ((timespool = GetConfigValue(_CONF_TIMESPOOL)) == NULL)
-	TimeSpool = FALSE;
-
-    if (caseEQ(timespool, "on") || caseEQ(timespool, "true") || caseEQ(timespool, "yes"))
-	TimeSpool = TRUE;
-    else
-        TimeSpool = FALSE;
+    TimeSpool = GetBooleanConfigValue(_CONF_TIMESPOOL, FALSE);
 
     /* Get the Path entry. */
     if ((path = GetConfigValue(_CONF_PATHHOST)) == NULL) {

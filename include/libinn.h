@@ -35,6 +35,7 @@ extern void	CAclose();
 extern char	*GetFQDN();
 extern char	*GetConfigValue();
 extern char	*GetFileConfigValue();
+extern BOOL      GetBooleanConfigValue();
 extern char	*GetModeratorAddress();
 
 /* Time functions. */
