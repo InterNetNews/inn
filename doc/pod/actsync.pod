@@ -745,7 +745,8 @@ controlled via a command line option?
 =head1 HISTORY
 
 Written by Landon Curt Noll <chongo@toad.com> for InterNetNews.  Updated
-to support ftp fetching by David Lawrence <tale@isc.org>.
+to support ftp fetching by David Lawrence <tale@isc.org>.  Converted to
+POD by Russ Allbery <rra@stanford.edu>.
 
 $Id$
 
