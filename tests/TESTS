@@ -32,5 +32,6 @@ lib/xmalloc
 lib/xwrite
 overview/buffindexed
 overview/tradindexed
+storage/sm
 util/convdate
 util/innbind

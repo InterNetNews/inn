@@ -1,0 +1,9 @@
+Path: news.example.com!not-for-mail
+Newsgroups: example.config
+Subject: Test article #2
+From: user@example.com
+Date: Sat, 06 Mar 2004 21:39:54 -0800
+Message-ID: <example-2@example.com>
+Xref: news.example.com example.config:1
+
+This is a test message to example.config in native format.

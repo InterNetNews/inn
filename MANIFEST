@@ -776,6 +776,17 @@ tests/overview/data/reversed          Same as basic, but in reverse order
 tests/overview/munge-data             Support script to generate test data
 tests/overview/overview-t.c           Basic tests for overview methods
 tests/runtests.c                      The test suite driver program
+tests/storage                         Test suite for storage (Directory)
+tests/storage/articles                Testing news articles (Directory)
+tests/storage/articles/1              News article for testing
+tests/storage/articles/2              News article for testing
+tests/storage/articles/3              News article for testing
+tests/storage/db                      Skeleton database for testing (Directory)
+tests/storage/db/active               Skeleton active file for testing
+tests/storage/etc                     Configuration for testing (Directory)
+tests/storage/etc/inn.conf            Basic inn.conf file for testing
+tests/storage/etc/storage.conf        Storage configuration for testing
+tests/storage/sm.t                    Tests for frontends/sm
 tests/util                            Test suite for utilities (Directory)
 tests/util/convdate.t                 Tests for expire/convdate
 tests/util/innbind-t.c                Tests for backends/innbind
