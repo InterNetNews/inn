@@ -21,7 +21,7 @@
 #include "nntp.h"
 #include "paths.h"
 #include "storage.h"
-
+#include "inn/vector.h"
 
 /*
 **  Maximum input line length, sigh.
@@ -251,8 +251,8 @@ extern bool ARTinstorebytoken(TOKEN token);
 extern int TrackClient(char *client, char* user);
 
 #ifdef  DO_PERL
-extern char **perlAccess(char *clientHost, char *clientIpString, char *serverHost, char *user);
-extern int perlAuthenticate(char *clientHost, char *clientIpString, char *serverHost, char *user, char *passwd, char *accesslist, char *errorstring);
+extern void perlAccess(char *clientHost, char *clientIpString, char *serverHost, char *user, struct vector *access_vec);
+extern int perlAuthenticate(char *clientHost, char *clientIpString, char *serverHost, char *user, char *passwd, char *errorstring);
 extern int perlAuthInit(void);
 #endif /* DO_PERL */
 

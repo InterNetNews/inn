@@ -202,43 +202,42 @@ void loadPerl(void) {
     PerlLoaded = TRUE;
 }
 
-static char *itoa(int n) {
-  static char s[32];  /* definitely more than log10(maxint) */
-  snprintf(s, sizeof(s), "%d", n);
-  return s;
-}
-
-char **perlAccess(char *clientHost, char *clientIpString, char *serverHost, char *user) {
+void perlAccess(char *clientHost, char *clientIP, char *serverHost, char *user, struct vector *access_vec) {
   dSP;
   HV              *attribs;
   SV              *sv;
   int             rc, i;
-  char            *p, *key, *val, **access_array;
+  char            *p, *key, *val;
 
   if (!PerlFilterActive)
-       return 0;
+    return;
 
   ENTER;
   SAVETMPS;
-  
+
   attribs = perl_get_hv("attributes", TRUE);
   hv_store(attribs, "hostname", 8, newSVpv(clientHost, 0), 0);
-  hv_store(attribs, "ipaddress", 9, newSVpv(clientIpString, 0), 0);
+  hv_store(attribs, "ipaddress", 9, newSVpv(clientIP, 0), 0);
   hv_store(attribs, "interface", 9, newSVpv(serverHost, 0), 0);
   hv_store(attribs, "username", 8, newSVpv(user, 0), 0);
 
   PUSHMARK(SP);
 
-  if (perl_get_cv("access", 0) != NULL)
-       rc = perl_call_pv("access", G_EVAL|G_ARRAY);
+  if (perl_get_cv("access", 0) == NULL) {
+    syslog(L_ERROR, "Perl function access not defined");
+    Reply("%d Internal Error (3).  Goodbye\r\n", NNTP_ACCESS_VAL);
+    ExitWithStats(1, TRUE);
+  }
+
+  rc = perl_call_pv("access", G_EVAL|G_ARRAY);
 
   SPAGAIN;
 
   if (rc == 0 ) { /* Error occured, same as checking $@ */
-      syslog(L_ERROR, "Perl function access died: %s",
-             SvPV(ERRSV, PL_na));
-      Reply("%d Internal Error (1).  Goodbye\r\n", NNTP_ACCESS_VAL);
-      ExitWithStats(1, TRUE);
+    syslog(L_ERROR, "Perl function access died: %s",
+           SvPV(ERRSV, PL_na));
+    Reply("%d Internal Error (1).  Goodbye\r\n", NNTP_ACCESS_VAL);
+    ExitWithStats(1, TRUE);
   }
 
   if ((rc % 2) != 0) {
@@ -246,16 +245,9 @@ char **perlAccess(char *clientHost, char *clientIpString, char *serverHost, char
     Reply("%d Internal Error (2).  Goodbye\r\n", NNTP_ACCESS_VAL);
     ExitWithStats(1, TRUE);
   }
-  
-  i = (rc / 2) + 1;
-  access_array = calloc(i, sizeof(char *));
-  i--;
-  p = itoa(i);
-  access_array[0] = COPY(p);
-  free(p);
-  
-  i = 0;
-  
+
+  vector_resize(access_vec, (rc / 2));
+
   for (i = (rc / 2); i >= 1; i--) {
     sv = POPs;
     p = SvPV_nolen(sv);
@@ -263,12 +255,12 @@ char **perlAccess(char *clientHost, char *clientIpString, char *serverHost, char
     sv = POPs;
     p = SvPV_nolen(sv);
     key = COPY(p);
-  
+
     key = strcat(key, ": \"");
     key = strcat(key, val);
     key = strcat(key, "\"\n");
-    access_array[i] = COPY(key);
-        
+    vector_add(access_vec, key);
+
     free(key);
     free(val);
   }
@@ -277,7 +269,6 @@ char **perlAccess(char *clientHost, char *clientIpString, char *serverHost, char
   FREETMPS;
   LEAVE;
 
-  return access_array;
 }
 
 int perlAuthInit(void) {
@@ -291,8 +282,13 @@ int perlAuthInit(void) {
     SAVETMPS;
     PUSHMARK(SP);
     
-    if (perl_get_cv("auth_init", 0) != NULL) 
-	rc = perl_call_pv("auth_init", G_EVAL|G_DISCARD);
+    if (perl_get_cv("auth_init", 0) == NULL) {
+      syslog(L_ERROR, "Perl function auth_init not defined");
+      Reply("%d Internal Error (3).  Goodbye\r\n", NNTP_ACCESS_VAL);
+      ExitWithStats(1, TRUE);
+    }
+
+    rc = perl_call_pv("auth_init", G_EVAL|G_DISCARD);
 
     SPAGAIN;
 
@@ -314,7 +310,7 @@ int perlAuthInit(void) {
     
 }
 
-int perlAuthenticate(char *clientHost, char *clientIpString, char *serverHost, char *user, char *passwd, char *accesslist, char *errorstring) {
+int perlAuthenticate(char *clientHost, char *clientIpString, char *serverHost, char *user, char *passwd, char *errorstring) {
     dSP;
     HV              *attribs;
     int             rc;

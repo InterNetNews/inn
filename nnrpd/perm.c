@@ -81,7 +81,7 @@ static char *ResolveUser(AUTHGROUP*);
 static char *AuthenticateUser(AUTHGROUP*, char*, char*, char*);
 
 static void GrowArray(void***, void*);
-static void PERMarraytoaccess(ACCESSGROUP *acc, const char *name, char **array, int array_len);
+static void PERMvectortoaccess(ACCESSGROUP *acc, const char *name, struct vector *acccess_vec);
 
 /* global variables */
 static AUTHGROUP **auth_realms;
@@ -986,16 +986,16 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
     }
 }
 
-static void PERMarraytoaccess(ACCESSGROUP *acc, const char *name, char **array, int array_len) {
+static void PERMvectortoaccess(ACCESSGROUP *acc, const char *name, struct vector *access_vec) {
     CONFTOKEN	*tok	    = NULL;
     CONFFILE    *file;
     char        *str;
-    int i;
+    unsigned int i;
 
     file	= NEW(CONFFILE, 1);
     memset(file, 0, sizeof(CONFFILE));
-    file->array = array;
-    file->array_len = array_len;
+    file->array = access_vec->strings;
+    file->array_len = access_vec->count;
  
     memset(ConfigBit, '\0', ConfigBitsize);
 
@@ -1003,7 +1003,7 @@ static void PERMarraytoaccess(ACCESSGROUP *acc, const char *name, char **array, 
     str = COPY(name);
     acc->name = str;
 
-    for (i = 0; i <= array_len; i++) {
+    for (i = 0; i <= access_vec->count; i++) {
       tok = CONFgettoken(PERMtoks, file);
 
       if (tok != NULL) {
@@ -1469,11 +1469,10 @@ void PERMgetpermissions()
     char *cp, **list;
     char *user[2];
     static ACCESSGROUP *noaccessconf;
-    char **access_array;
-    char *p, *uname;
+    char *uname;
     char *cpp, *perl_path;
     char **args;
-    int array_len = 0;
+    struct vector *access_vec;
 
     if (ConfigBit == NULL) {
 	if (PERMMAX % 8 == 0)
@@ -1508,18 +1507,17 @@ void PERMgetpermissions()
         uname = COPY(PERMuser);
         DISPOSE(args);        
         
-        args = perlAccess(ClientHost, ClientIpString, ServerHost, uname);
-        p = args[0];
-        array_len = atoi(p);
-        access_array = args;
-        access_array++;
+        access_vec = vector_new();
 
+        perlAccess(ClientHost, ClientIpString, ServerHost, uname, access_vec);
         DISPOSE(uname);
 
         access_realms[0] = NEW(ACCESSGROUP, 1);
         memset(access_realms[0], 0, sizeof(ACCESSGROUP));
 
-        PERMarraytoaccess(access_realms[0], "perl-dyanmic", access_array, array_len);
+        PERMvectortoaccess(access_realms[0], "perl-dyanmic", access_vec);
+
+        vector_free(access_vec);
       } else {
         syslog(L_ERROR, "No script specified in auth method.\n");
         Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
@@ -2123,7 +2121,7 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
                 free(perl_path);
                 perlAuthInit();
           
-                code = perlAuthenticate(ClientHost, ClientIpString, ServerHost, username, password, accesslist, errorstr);
+                code = perlAuthenticate(ClientHost, ClientIpString, ServerHost, username, password, errorstr);
                 if (code == NNTP_AUTH_OK_VAL) {
                     syslog(L_NOTICE, "%s user %s", ClientHost, username);
                     if (LLOGenable) {
