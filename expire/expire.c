@@ -637,7 +637,11 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length)
     if (out == NULL)
 	return TRUE;
 
+#ifdef DO_TAGGED_HASH
+    if (ferror(out) || fflush(out) == EOF) {
+#else
     if (ferror(out)) {
+#endif
 	(void)fprintf(stderr, "Can't write new history, %s\n",
 		strerror(errno));
 	return FALSE;
