@@ -129,40 +129,17 @@ PERMmatch(match, Pats, list)
 */
 BOOL
 PERMartok(qp)
-    register QIOSTATE	*qp;
 {
     static char		**grplist;
-    register char	*p;
-    register char	*q;
+    char		*p;
     BOOL		found;
 
     if (!PERMspecified)
 	return PERMdefault;
 
-    for (found = FALSE; ; ) {
-	p = QIOread(qp);
-	if (p == NULL) {
-	    if (QIOtoolong(qp))
-		continue;
-	    break;
-	}
-
-	if (*p == '\n')
-	    /* End of header */
-	    break;
-	if (*p != 'N' && *p != 'n')
-	    continue;
-	if ((q = strchr(p, ':')) == NULL)
-	    continue;
-	*q = '\0';
-	if (caseEQ(p, "newsgroups")) {
-	    found = NGgetlist(&grplist, q + 2);
-	    break;
-	}
-    }
-    (void)QIOrewind(qp);
-
-    if (!found)
+    if ((p = GetHeader("Newsgroups", FALSE)) == NULL)
+        return 1;
+    if (NGgetlist(&grplist, p))
 	/* No newgroups or null entry. */
 	return 1;
 
@@ -440,7 +417,7 @@ READline(start, size, timeout)
 		return RTtimeout;
 	    count = read(STDIN, buffer, sizeof buffer);
 	    if (count < 0) {
-		syslog(L_ERROR, "%s cant read %m", ClientHost);
+		syslog(L_TRACE, "%s cant read %m", ClientHost);
 		return RTtimeout;
 	    }
 	    if (count == 0)
