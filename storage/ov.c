@@ -1184,17 +1184,13 @@ bool OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t ar
 
 bool OVhisthasmsgid(struct history *h, char *data) {
     char		*p;
-    HASH		key;
-    off_t		offset;
-    int			i, c;
 
     if (!ReadOverviewfmt) {
 	OVfindheaderindex();
     }
     if ((p = OVERGetHeader(data, Messageidindex)) == NULL)
 	return FALSE;
-    if (!HISlookup(h, p, NULL, NULL, NULL, NULL))
-	return FALSE;
+    return HISlookup(h, p, NULL, NULL, NULL, NULL);
 }
 
 bool OVgroupmatch(char *group) {
