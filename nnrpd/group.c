@@ -155,7 +155,7 @@ GRPactivedfind(group)
 	    if (buffer.NameNull) buffer.Name[0] = 0;
 	    if (buffer.AliasNull) buffer.Alias[0] = 0;
 	    sprintf(data, buffer.Name);
-	    sprintf(data,"%s %-10ld %-10ld %c %s", buffer.Name, buffer.High,
+	    sprintf(data,"%s %ld %ld %c %s", buffer.Name, buffer.High,
 				buffer.Low, buffer.Flag, buffer.Alias);
 	    gp.Ptr = (char *)&data;
 	    gp.Next = NULL;
