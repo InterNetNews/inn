@@ -1,0 +1,40 @@
+.TH innreport.pl 8
+.SH NAME
+innreport.pl \- summarize INN log files.
+.SH SYNOPSIS
+innreport.pl -f innreport.conf [ -[no]options ] [ logfiles ]
+.SH DESCRIPTION
+.I Innreport.pl
+is a
+.IR perl (1)
+script that summarizes INN log files. It is normally invoked by
+.IR scanlogs (8).
+Supported programs are
+.IR innd (8), 
+.IR innfeed (1), 
+.IR innxmit (8), 
+.I nntplink, 
+.IR nnrpd (8), 
+.IR batcher (8), 
+.IR rnews (1), 
+.IR crosspost (8)
+and a few others.
+.SH OPTIONS
+There are lots of 'em. Run innreport.pl with ``\-h'' or ``\-help'' to get full
+details.
+.SH HISTORY
+Written by Fabien Tassin <tassin@eerie.fr> for InterNetNews. 
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+
+.SH "SEE ALSO"
+innd(8),
+innfeed(8),
+innxmit(8),
+news.daily(8),
+newslog(5),
+nnrpd(8),
+scanlogs(8),
+writelog(8).
