@@ -27,6 +27,9 @@
 #include "ov.h"
 #include "paths.h"
 #include "qio.h"
+#include "ov.h"
+#include "ovinterface.h"
+#include "tradindexed.h"
 #include "storage.h"
 
 /* Data structure for specifying a location in the group index */
@@ -70,6 +73,7 @@ typedef struct {
     OFFSET_T           offset;
     int                length;
     time_t             arrived;
+    time_t             expires;
     TOKEN              token;
 } INDEXENTRY;
 
@@ -139,7 +143,7 @@ STATIC BOOL GROUPexpand(int mode);
 STATIC BOOL OV3packgroup(char *group, int delta);
 STATIC GROUPHANDLE *OV3opengroup(char *group, BOOL needcache);
 STATIC void OV3cleancache(void);
-STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, char *data, int len, time_t arrived);
+STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires);
 STATIC BOOL OV3closegroup(GROUPHANDLE *gh, BOOL needcache);
 STATIC void OV3getdirpath(char *group, char *path);
 STATIC void OV3getIDXfilename(char *group, char *path);
@@ -688,7 +692,7 @@ STATIC BOOL OV3closegroup(GROUPHANDLE *gh, BOOL needcache) {
     return TRUE;
 }
 
-STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, char *data, int len, time_t arrived) {
+STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires) {
     INDEXENTRY          ie;
     int                 base;
     
@@ -713,6 +717,7 @@ STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, 
     ie.length = len;
     ie.offset -= ie.length;
     ie.arrived = arrived;
+    ie.expires = expires;
     ie.token = token;
     
     if (pwrite(gh->indexfd, &ie, sizeof(ie), (artnum - base) * sizeof(ie)) != sizeof(ie)) {
@@ -728,9 +733,9 @@ STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, 
     return TRUE;
 }
 
-BOOL tradindexed_add(TOKEN token, char *data, int len, time_t arrived) {
+BOOL tradindexed_add(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
     char                *next;
-    static char         *xrefdata;
+    static char         *xrefdata, *patcheck;
     char		*xrefstart;
     static int          datalen = 0;
     BOOL                found = FALSE;
@@ -771,10 +776,33 @@ BOOL tradindexed_add(TOKEN token, char *data, int len, time_t arrived) {
     if (datalen == 0) {
 	datalen = BIG_BUFFER;
 	xrefdata = NEW(char, datalen);
+	if (innconf->ovgrouppat != NULL)
+	    patcheck = NEW(char, datalen);
     }
     if (xreflen > datalen) {
 	datalen = xreflen;
 	RENEW(xrefdata, char, datalen + 1);
+	if (innconf->ovgrouppat != NULL)
+	    RENEW(patcheck, char, datalen + 1);
+    }
+    if (innconf->ovgrouppat != NULL) {
+	memcpy(patcheck, next, xreflen);
+	patcheck[xreflen] = '\0';
+	for (group = patcheck; group && *group; group = memchr(next, ' ', next - patcheck)) {
+	    while (isspace((int)*group))
+		group++;
+	    if ((next = memchr(group, ':', xreflen - (group - xrefdata))) == NULL)
+		return FALSE;
+	    *next++ = '\0';
+	    if (!OVgroupmatch(group)) {
+		if (!SMprobe(SELFEXPIRE, &token, NULL) && innconf->groupbaseexpiry)
+		    /* this article will never be expired, since it does not
+		       have self expiry function in stored method and
+		       groupbaseexpiry is true */
+		    return FALSE;
+		return TRUE;
+	    }
+	}
     }
     memcpy(xrefdata, next, xreflen);
     xrefdata[xreflen] = '\0';
@@ -827,7 +855,7 @@ BOOL tradindexed_add(TOKEN token, char *data, int len, time_t arrived) {
 		return FALSE;
 	}
 	GROUPlock(gh->gloc, LOCK_WRITE);
-	OV3addrec(ge, gh, artnum, token, overdata, i, arrived);
+	OV3addrec(ge, gh, artnum, token, overdata, i, arrived, expires);
 	GROUPlock(gh->gloc, LOCK_UNLOCK);
 	OV3closegroup(gh, TRUE);
     }        
@@ -882,7 +910,7 @@ void *tradindexed_opensearch(char *group, int low, int high) {
     return (void *)search;
 }
 
-BOOL tradindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived) {
+BOOL ov3search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived, time_t *expires) {
     OV3SEARCH           *search = (OV3SEARCH *)handle;
     INDEXENTRY           *ie;
 
@@ -912,10 +940,16 @@ BOOL tradindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOK
 	*token = ie->token;
     if (arrived)
 	*arrived = ie->arrived;
+    if (expires)
+	*expires = ie->expires;
 
     search->cur++;
 
     return TRUE;
+}
+
+BOOL tradindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived) {
+  return(ov3search(handle, artnum, data, len, token, arrived, NULL));
 }
 
 void tradindexed_closesearch(void *handle) {
@@ -1111,8 +1145,10 @@ BOOL tradindexed_expiregroup(char *group, int *lo) {
     char                bakidx[BIG_BUFFER], oldidx[BIG_BUFFER], newidx[BIG_BUFFER];
     char                bakdat[BIG_BUFFER], olddat[BIG_BUFFER], newdat[BIG_BUFFER];
     struct stat         sb;
-    time_t		arrived;
+    time_t		arrived, expires;
 
+    if (group == NULL)
+	return TRUE;
     gloc = GROUPfind(group);
     if (GROUPLOCempty(gloc))
 	return FALSE;
@@ -1149,10 +1185,12 @@ BOOL tradindexed_expiregroup(char *group, int *lo) {
     }
     newge = *ge;
     newge.base = newge.low = newge.count = 0;
-    while (tradindexed_search(handle, &artnum, &data, &len, &token, &arrived)) {
+    while (ov3search(handle, &artnum, &data, &len, &token, &arrived, &expires)) {
 	if ((ah = SMretrieve(token, RETR_STAT)) == NULL)
 	    continue;
-	SMfreearticle(ah);
+        SMfreearticle(ah);
+	if (innconf->groupbaseexpiry && OVgroupbasedexpire(token, group, data, len, arrived, expires))
+	    continue;
 #if 0
 	if (p = strchr(data, '\t')) {
 	    for (p--; (p >= data) && isdigit((int) *p); p--);
@@ -1164,7 +1202,7 @@ BOOL tradindexed_expiregroup(char *group, int *lo) {
 		memcpy(p, data, len - newlen - 2);
 		p = overdata + len - 2;
 		memcpy(p, "\r\n", 2);
-		OV3addrec(&newge, newgh, artnum, token, overdata, len, arrived);
+		OV3addrec(&newge, newgh, artnum, token, overdata, len, arrived, expires);
 		continue;
 	    }
 	}
@@ -1186,7 +1224,7 @@ BOOL tradindexed_expiregroup(char *group, int *lo) {
 	    artnum = atoi(p);
 	}
 #endif
-	OV3addrec(&newge, newgh, artnum, token, data, len, arrived);
+	OV3addrec(&newge, newgh, artnum, token, data, len, arrived, expires);
     }
     do {
 	if (stat(newidx, &sb) < 0) {

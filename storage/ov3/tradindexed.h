@@ -9,7 +9,7 @@ BOOL tradindexed_open(int mode);
 BOOL tradindexed_groupstats(char *group, int *lo, int *hi, int *count, int *flag);
 BOOL tradindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag);
 BOOL tradindexed_groupdel(char *group);
-BOOL tradindexed_add(TOKEN token, char *data, int len, time_t arrived);
+BOOL tradindexed_add(TOKEN token, char *data, int len, time_t arrived, time_t expires);
 BOOL tradindexed_cancel(TOKEN token);
 void *tradindexed_opensearch(char *group, int low, int high);
 BOOL tradindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived);
