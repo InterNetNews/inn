@@ -667,8 +667,7 @@ STATIC STRING ValidNewsgroups(char *hdr, char **modgroup)
     if ((p = strtok(groups, NGSEPS)) == NULL)
 	return "Can't parse newsgroups line";
 
-    /* Don't mail article if just checking Followup-To line. */
-    approved = HDR(_approved) != NULL || modgroup == NULL;
+    approved = HDR(_approved) != NULL;
 
     Error[0] = '\0';
     FoundOne = FALSE;
@@ -709,7 +708,7 @@ STATIC STRING ValidNewsgroups(char *hdr, char **modgroup)
 	case NF_FLAG_MODERATED:
 	    if (approved && !PERMaccessconf->allowapproved) {
 		(void)sprintf(Error, "You are not allowed to approve postings");
-	    } else if (!approved && !*modgroup) {
+	    } else if (!approved && modgroup != NULL && !*modgroup) {
 		*modgroup = COPY(p);
 	    }
 	    break;
