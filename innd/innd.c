@@ -449,7 +449,7 @@ main(int ac, char *av[])
     ac -= optind;
     if (ac != 0)
 	Usage();
-    if (ModeReason && innconf->readerswhenstopped)
+    if (ModeReason && !innconf->readerswhenstopped)
 	NNRPReason = xstrdup(ModeReason);
 
     if (ShouldSyntaxCheck) {
