@@ -5,6 +5,12 @@ sm \- command line interface to the storage manager
 .SH SYNOPSIS
 .I sm
 [
+.B \-d
+]
+[
+.B \-i
+]
+[
 .B \-q
 ]
 [
@@ -12,12 +18,6 @@ sm \- command line interface to the storage manager
 ]
 [
 .B \-r
-]
-[
-.B \-d
-]
-[
-.B \-o
 ]
 .I token
 [
@@ -36,6 +36,15 @@ is a token of the article which is stored by storage api, and it is stored
 as the third field of history line.
 .SH OPTIONS
 .TP
+.B \-d \-r
+If the ``\fB\-d\fP'' or ``\fB\-r\fP'' flag is used,
+then the program removes the article associated with the token.
+.TP
+.B \-i
+If the ``\fB\-i\fP'' flag is used,
+then the program shows the newsgroup name and article number
+associated with the token.
+.TP
 .B \-q
 If the ``\fB\-q\fP'' flag is used,
 all error messages except usage are suppressed.
@@ -44,18 +53,10 @@ all error messages except usage are suppressed.
 If the ``\fB\-R\fP'' flag is used,
 then the program shows the raw article spooled into storage method
 associated with the token.
-.TP
-.B \-d \-r
-If the ``\fB\-d\fP'' or ``\fB\-r\fP'' flag is used,
-then the program removes the article associated with the token.
-.TP
-.B \-o
-If the ``\fB\-o\fP'' flag is used,
-then the program shows the overview data associated with the token.
 .SH HISTORY
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
 .de R$
 This is revision \\$3, dated \\$4.
 ..
 .SH "SEE ALSO"
-history(5), overview.ctl(8), storage.conf(5).
+history(5), storage.conf(5).

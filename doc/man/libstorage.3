@@ -28,7 +28,7 @@ libstorage \- InterNetNews Storage API library routines
 
 .B "BOOL SMcancel(TOKEN token);"
 
-.B "BOOL SMprobe(PROBETYPE type, TOKEN *token);
+.B "BOOL SMprobe(PROBETYPE type, TOKEN *token, void *value);
 
 .B "void SMshutdown(void);"
 
@@ -235,10 +235,16 @@ is not set to true with
 .I SMprobe
 checks the token on
 .IR PROBETYPE .
-Currently, only
+Currently,
 .I SELFEXPIRE
-is supported and this can be used to see if the method of the token
+and
+.I SMARTNGNUM
+are supported.
+.I SELFEXPIRE
+can be used to see if the method of the token
 has self expire functionality.
+.I SMARTNGNUM
+is used to get newsgroup name and article number of the token.
 .PP
 .I SMshutdown
 calls the shutdown for each configured storage method and
