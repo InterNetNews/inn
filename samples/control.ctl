@@ -921,17 +921,16 @@ newgroup:news@news.biu.ac.il:israel.*:doit
 rmgroup:news@news.biu.ac.il:israel.*|il.*:doit
 
 ## IT (Italian)
+# Contact: gcn@news.nic.it
+# URL: http://www.news.nic.it/
+# Key fingerprint = 94 A4 F7 B5 46 96 D6 C7  A6 73 F2 98 C4 8C D0 E0
+# Key URL: http://www.news.nic.it/pgp.txt
 # *PGP*   See comment at top of file.
 newgroup:*:it.*:drop
 rmgroup:*:it.*:drop
-checkgroups:stefano@unipi.it:it.*:verify-it.announce.newgroups
-newgroup:stefano@unipi.it:it.*:verify-it.announce.newgroups
-rmgroup:stefano@unipi.it:it.*:verify-it.announce.newgroups
-
-# newgroup:news@ghost.sm.dsi.unimi.it:it.*:doit
-# newgroup:stefano@*unipi.it:it.*:doit
-# rmgroup:news@ghost.sm.dsi.unimi.it:it.*:doit
-# rmgroup:stefano@*unipi.it:it.*:doit
+checkgroups:gcn@news.nic.it:it.*:verify-gcn@news.nic.it
+newgroup:gcn@news.nic.it:it.*:verify-gcn@news.nic.it
+rmgroup:gcn@news.nic.it:it.*:verify-gcn@news.nic.it
 
 ## ITALIA (Italy)
 # Contact: news@news.cineca.it
