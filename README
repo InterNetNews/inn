@@ -1,444 +1,72 @@
-$Revision$
+Welcome to INN 2.0!
 
-Welcome to inn 1.5.1
+  This is the public release of version 2.0 of InterNet News (INN). This work
+  is sponsored by the Internet Software Consortium.
 
-	This is the public release of version 1.5.1 of InterNet News. This
-	work is sponsored by the Internet Software Consortium.
+  This release is a major upgrade from previous versions, hence the change
+  from major version 1 to 2. Please see the INSTALL document for installation
+  and upgrade instructions.
 
-	This release, while having various bug fixes and a few minor
-	enhancements, is mostly here to fix a security hole in
-	parsecontrol. It is recommended that if you are running 1.5 you
-	upgrade immediately. If you're running 1.4 you have the same bug
-	present, and should probably upgrade as well.
+Reporting Bugs
 
-Some history:
-	1.4sec was the last release produced by Rich Salz, the original
-	author of INN. 1.4sec came out in the middle of 1993. After that
-	Rich was unable to dedicate the time necessary to maintain it (and
-	I now fully understand why). Dave Barr unofficially took over and
-	produced 4 releases with a lot of help from the user
-	community. Dave's 4 releases contained a lot of bug fixes and some
-	functionality additions.
+  I'm gathering information on who uses INN. If you haven't do so for
+  a previous version of INN, then please do the following:
 
-	Rich Salz, at the beginning of 1996, handed the source pool
-	over to me as part of the agreement that the ISC would take over
-	maintenance and development of future INN releases. Starting with
-	Rich's post 1.4 source pool, I merged in the changes that had
-	occured through the 4 'unoff' versions, and then added quite a few
-	bug fixes, enhancements etc. 3 alpha and 2 beta versions later you
-	have the result of all that work.
+        uname -a | Mail -s "2.0 usage survey" inn-survey@isc.org
 
-Who's responsible:
-	Even though most of the code has been written by other people, I'm
-	the one to blame for all this. I went cross-eyed double checking
-	every change that went into this release, so all errors are mine.
+  I will appreciate it. You won't get a reply.
 
-Who to thank:
-	Rich Salz deserves a big thank-you for writing INN in the first
-	place and then being kind enough to bless me and the ISC as the
-	keepers of the flame. Paul Vixie at the ISC provided the financing
-	necessary to keep me in espresso coffee through too many sleepless
-	nights (and the boot up the backside to make the nights
-        sleepless). Dave Barr did a fine job holding the fort while INN was in
-	limbo, and getting INN into its current form without the unoff
-	releases to work with would have been a much longer job.
+  I'm interested in all bug reports. Not just on the programs, but on
+  the documentation too. Please send *all* such reports to:
 
-	Many, many other people have help in various ways. As I said above,
-	most of the code has been written by other people and my job has
-	been to stitch it all together. The CONTRIBUTORS file lists who
-	helped.
+        inn-bugs@isc.org
 
-Bug reports etc.
-	I'm gathering information on who uses INN. If you haven't do so for
-	a previous version of INN, then please do the following:
+  even if you post to usenet, please CC the above address. All other
+  INN mail should go to:
 
-		uname -a | Mail -s "1.5.1 usage survey" inn-survey@isc.org
+        inn@isc.org
+  
+  For general "how do I do this" questions you should post to
+  news.software.nntp as there a lot of experienced INN users there, and I
+  don't have the time necessary to help except when something is obviously
+  broken.
 
-	I will appreciate it. You won't get a reply.
+  Have fun!
 
-	I'm interested in all bug reports. Not just on the programs, but on
-	the documentation too. Please send *all* such reports to:
+Who's Responsible / Who to Thank
 
-		inn-bugs@isc.org
+  See the CONTRIBUTORS file for a list of people responsible for this whole
+  mess. :-)
 
-	even if you post to usenet, please CC the above address. All other
-	INN mail should go to:
+Supporting the INN Effort
 
-		inn@isc.org
-	
-	For general "how do I do this" questions you should post to
-	news.software.nntp as there a lot of experienced INN users there,
-	and I don't have the time necessary to help except when something
-	is obviously broken.
+  Note that INN is supported by the Internet Software Consortium, and although
+  it is free for use and redistribution and incorporation into vendor products
+  and export and anything else you can think of, it costs money to produce.
+  That money comes from ISP's, hardware and software vendors, companies who
+  make extensive use of the software, and generally kind hearted folk such as
+  yourself.  
 
-	Have fun and while no postcard is necessary (I move too frequently
-	these days).
+  The Internet Software Consortium has also commissioned a DHCP server
+  implementation, handles the official support/release of BIND, and supports
+  the Kerberos Version 5 effort at MIT.  You can learn more about the ISC's
+  goals and accomplishments from the web page at <URL:http://www.isc.org/isc/>.
 
-To support the effort:
-        Note that INN is supported by the Internet Software Consortium,
-        and although it is free for use and redistribution and incorporation
-        into vendor products and export and anything else you can think of,
-        it costs money to produce.  That money comes from ISP's, hardware and
-        software vendors, companies who make extensive use of the software,
-        and generally kind hearted folk such as yourself.  
+Some History
 
-        The Internet Software Consortium has also commissioned a DHCP
-        server implementation, handles the official support/release of
-        BIND, and supports the Kerberos Version 5 effort at MIT.  You can
-        learn more about the ISC's goals and accomplishments from the web
-        page at <URL:http://www.isc.org/isc/>.
+  1.4sec was the last release produced by Rich Salz, the original author of
+  INN. 1.4sec came out in the middle of 1993. After that Rich was unable to
+  dedicate the time necessary to maintain it (and I now fully understand why).
+  Dave Barr unofficially took over and produced 4 releases with a lot of help
+  from the user community. Dave's 4 releases contained a lot of bug fixes and
+  some functionality additions.
 
+  Rich Salz, at the beginning of 1996, handed the source pool over to me as
+  part of the agreement that the ISC would take over maintenance and
+  development of future INN releases. Starting with Rich's post 1.4 source
+  pool, I merged in the changes that had occured through the four 'unoff'
+  versions, and then added quite a few bug fixes, enhancements etc.
 
 James Brister
 inn@isc.org		(INN related mail)
 brister@vix.com		(non-INN mail)
-
----------------------------------------------------------------------------
-A couple notes:
-
-+ A normal 'make update' doesn't install various config files on top of your
-  existing ones (for good reason). However I highly recommend you use the
-  new control.ctl file. It has a lot more entries in it and most defaults
-  are changed to log, rather than mail, and also to use pgp to verify
-  certain control messages. Installing this file will reduce the amount of
-  damage and or mailbombing that occurs with forged control messages. More
-  details below.
-
-+ If your system doesn't have a sample config.data file in the sample-configs
-  directory (or if the one in that directory for your system is wrong) then
-  please send me yours and I'll include it in there.
-
-			 -------------------------
-
-Changes since 1.5:
-
-	- security hole in parsecontrol fixed.
-	- the main 'all' build rule now causes the 'subst' processing to
-	  only report files that got changed. Files that didn't get changed
-	  are not mentioned.
-	- innxmit now has an '-l' flag to turn off the logging of the
-	  reason the remote rejected an article.
-	- nntpget is fixed when it offers an article to the local server,
-	  but the server doesn't want it.
-	- bug fix in ihave control message generation.
-	- bug fix in takethis command handling (when no message id given).
-	- bug fix to scanlogs for certain broken sort(1) program (HP) that
-	  put a newline on the end of empty input.
-	- innwatch is now started by default in rc.news
-	- The full Path header is now passed to perl scripts, rather than
-	  just the first entry.
-	- bug fixed in expireover when processing folded headers.
-	- Mailing of bad control messages is configurable (in config.data)
-	- TCL include file path now configurable.
-	- The sample config files are more complete.
-	- Bug fix in clibrary.h that was causing dbz.c to always use MMAP.
-	- Bug fixed in logging of successful posting to moderated group.
-	- Bug fix in perl hooks that was corrupting return value from subrs/
-
-			 -------------------------
-
-Changes since 1.5b2:
-
-	- The memory leaks in the perl hooks are plugged. These hooks look
-	  to be a very valuable way of trimming make-money-fast posts and
-	  excessive multi-postings.
-
-	- If news.daily is called with the 'delayrm' argument, then the
-	  temporary file expire writes to is uniquely named (the pid is
-	  added to the end). If something kills expirerm before it's
-	  finished unlinking expired article, then the next news.daily wont
-	  delete the temp file (so you can use it to remove the
-	  articles). If expirem finishes properly, then the temp file is
-	  moved to its normal spot (MOST_LOGS/expire.list).
-
-	- If a control message is malformed (such as a broken control
-	  header), then the bad control message is no longer mailed to the
-	  new admin and is simply logged to $MOST_LOGS/badcontrol.log. Admins
-	  who lived through the recent swarm of badly forged rmgroup messages
-	  will appreciate this I think.
-
-	- Using PGP for control message verification is now the default. It
-	  is turned on in for all heirarchies I know of that are managed by
-	  someone signing their control messages. I don't have the pgp keys
-	  for all these people though. I only have the keys for
-	  tale@uunet.uu.net (who does the big-8) and for control@usenet.fr
-	  (who manages fr.*).  To turn this off (and I really recommend you
-	  don't do that unless you have to) you need to change control.ctl
-	  and config.data.
-
-	- If pgp doesn't exist on your system, and you forget fix config.data
-	  and/or control.ctl, then all failed verifications due to missing
-	  pgp binary, get logged to MOST_LOGS/failedpgp.log.
-
-	- If pgp ran, but fails to verify a control message (e.g. due to a
-	  missing signature), then the control message is logged to
-	  MOST_LOGS/badpgp.log.
-
-	- nnrpd will kill itself (via an alarm) if it gets hung in sending
-	  data to a client. The timeout for this is DEFAULT_TIMEOUT in
-	  config.data.
-
-	- Bug fixed in makehistory when creating a history file with the
-	  '-s' and '-i' flags. Shoulds result in better dbz performance for
-	  such history files.
-
-	- rnews exits with a non-zero exit code if the article it's
-	  processing has malformed headers.
-
-			 -------------------------
-
-Rev 1.5b2 is mostly just bug fixes over 1.5b1.
-
-	- a fairly major performance fix (hammering of disk the active file
-	  was on).
-
-	- slowed down some unnecessary buffer expansion.
-
-	- bug fix when accepting articles just slightly over max-size limit.
-
-	- The manpages for sections 1 and 8 have been cleaned up to show
-	  options more clearly.
-
-	- Various new man pages (some being split up versions of other pages).
-
-	- A new directory authprogs that has a sample authorization program
-	  for use with the nnrpd 'authinfo generic'. This is not integrated
-	  in any way (not even a makefile) and is more for the curious
-	  right now than for serious use. See the readme file in there.
-
-	- A new installation step will fixup the #! line of any perl
-	  scripts to match the value you defined in config.data.
-
-	- grephistory has a new '-t' flag.
-
-	- more sample code (commented out) in the perl filters.
-
-	- innlog.pl understands more stuff in the log file.
-
-	- added an innshellvars.csh for those who login as news (or anyone
-	  crazy enough to program in the c-shell).
-
-Some random notes:
-
-	This isn't new, but I need to remind some people: don't use 1.4
-	binaries with 1.5. The message protocol to/from innd defined in
-	lib/inndcomm.c changed for 1.5 and so old programs, or anything
-	you've written and linked to an old libinn.a, is doomed to
-	fail. This is most evident with ctlinnd.
-
-	dbz.c is distributed in pre-patched form. It's still an old dbz,
-	though. 
-
-	The LIKE_PULLERS config variable (if set to DONT--the default) can
-	adversely affect certain types of news readers (gnus seems to be
-	one). If a human starts complaining about slow reader response,
-	they're probably using one of these clients. A more intelligent
-	solution than the LIKE_PULLERS will be investigated
-	(suggestions welcome). If complaints get bad, set it to DO and
-	recompile.
-
-
-There are still some known problems:
-
-	- The perl hooks leak memory.
-
-	- If the target of a funnel feed gets dropped and the funnel feed
-	  itself doesn't get dropped, then the next time a article arrives
-	  that should get fed to the funnel entry, innd will core dump.
-
-	  e.g. in newsfeeds
-
-		foo:*:Tm:bar
-		bar:!*:Tf,Wnm*:
-
-	  if you 'ctlinnd drop bar', then things go bad very very quickly.
-
-	- The 'offered' count reported by innxmit is wrong if innxmit stops
-	  issuing CHECKs and only issue TAKETHIS commands.
-
-			 -------------------------
-
-Differences from the 1.5a3 alpha release.
-
-	+ A contrib directory has been included to add useful things that
-	  for one reason or another (usually lack of time on my part) can't
-	  be a full part of inn (yet, at least).
-
-	+ Some bug fixes.
-
-	+ new 'notdaily' argument for news.daily. Use this on extra times
-	  during the day that you run news.daily. (dneedham).
-
-Things actually in earlier releases but not properly noted in this README
-back then:
-
-	+ innd will catch the SIGUSR1 signal and recreate the control
-	  channel (for when something deletes the named socket) (dneedham).
-
-	+ 'cmsg' in Subject lines is ignored. The Control header is all tha
-	  matters.
-
-	+ inews now asks the server it's talking to for the moderator
-	  address info, so copying a moderators file around the network is
-	  no longer necessary (dneedham).
-
----------------------------------------------------------------------------
-This is the third and last alpha of inn 1.5.
-
-This release includes the following new features.
-
-	- Perl support based on work done by Christophe Wolfhugel. It's had
-	  some testing done, but no extensive experience with things like
-	  memory footprint etc. See README.perl_hook for more details.
-	- Poison newsgroup flag ``@'' in newsfeeds by John Stapleton. See
-	  the newsfeeds(5) man page.
-	- John Stapleton's support for misbehaving readers: (a) short timeout
-	  on first read (to catch readers who connect and then go away
-	  immediately) and (b) restrict the number of times a remote system
-	  can connect per N seconds. (See the `-X' `-H' and `-T' flags in
-	  the innd.8 man page.)
-	- Support for '-e' in expire (expire on earliest crosspost) by John
-	  Levine.
-	- Perl and tcl versions of innshellvars.
-	- If LOG_SIZE is set to DO in config.data, then the size of each
-	  article will be put in the log entry.
-	- If LIKE_PULLERS is set to DONT, then a small sleep is done on 
-	  ARTICLE commands, and on HEAD and BODY after the first 100
-	  commands done. This won't hinder normal readers, but will slow
-	  down ``sucking'' feeds.
-	- Updates to nntpsend an shrinkfile from chongo.
-	- Default pathnames in config.data are a little more consistent. 
-	- Some bug fixes.	
-
-From here on out, all new features will have to wait for 1.6. This version
-will turn into a publically advertised beta test fairly soon. Please hammer
-on it and send in all bug reports to <inn@isc.org>.
-
----------------------------------------------------------------------------
-
-The first alpha was a merge of several things: Rich's original 1.5 alpha
-code; the 1.4unoff4 release put out by Dave Barr; Bob Halley's TCL
-filtering extension.
-
-The second alpha included:
-
-	- PGP verification of control messages (from tale).
-	- actsync program (from chongo)
-	- Patches for spooling in nnrpd if innd is unavailable (from dneedham)
-	- XBATCH (compressed rnews-ready batches) support (via Matthias U.)
-	- The '-x' option from innd is removed and adding
-	  Xref headers the standard behaviour. (from dneedham)
-	- The message format used by libcomm now includes a protocol 
-	  version and a byte-count header (so ctlinnd from previous 
-	  version won't work with this version).
-	- A new 'p' flag for the newsfeeds entries: the time the article
-	  was posted (from Matthias U.)
-	- A LIST SUBSCRIPTIONS command for nnrpd (from dneedham).
-	- gzip compress recognition to rnews (from Matthias U.)
-	- A method of limiting those peers (in hosts.nntp) that can use
-	  streaming (based on Christophe W.'s idea).
-
-	Heaps of other more minor patches from various people (see the
-	CHANGES) file.
-
-Please send *all* mail regarding inn to me at the following address:
-
-	inn@isc.org
-
-Even if it is going to some mailing list that I'm already on, CC to
-inn@isc.org anyway.
-
-I'm especially interested in documentation gaps. Not that I like writing
-documentation.
-
-Thanks
-
-James
-
-------------------------------------------------------------------------------
-InterNetNews -- the Internet meets Netnews
-------------------------------------------
-"Remember to tell your kids about the days when USENET was store and
- forward."  -- Jim Thompson, as part of a message that said he was getting
- under 200ms propagation, disk to disk.
-
-InterNetNews is a complete Usenet system.  The cornerstone of the package
-is innd, an NNTP server that multiplexes all I/O.  Think of it as an nntpd
-merged with the B News inews, or as a C News relaynews that reads multiple
-NNTP streams.  Newsreading is handled by a separate server, nnrpd, that is
-spawned for each client.  Both innd and nnrpd have some slight variances
-from the NNTP protocol; see the manpages.
-
-The distribution is a compressed tar file. A new directory
-and unpack the tar file in that directory.  For example:
-	; mkdir inn
-	; cd inn
-	; ftp ftp.uu.net
-	ftp> user anonymous <you@your.host.name>
-	ftp> type image
-	ftp> get news/nntp/inn/inn.tar.Z inn.tar.Z
-	ftp> quit
-	; uncompress <inn.tar.Z | tar vxf -
-	; rm inn.tar.Z
-
-The installation instructions are in Install.ms.  This is an nroff/troff
-document that uses the -ms macro package, and is about 30 typeset pages.
-(If you have groff use "-mgs".) The distribution has this file split into
-two pieces; you can join them by typing either of the following commmands:
-	; make Install.ms
-	; cat Install.ms.? >Install.ms
-You should probably print out a copy of config/config.dist when you print
-out the installation manual.
-
-Please read the COPYRIGHT.  This package has NO WARRANTY; use at your
-own risk.
-
-When updating from a previous release, you will usually want to do "make
-update" from the top-level directory; this will only install the programs.
-To update your scripts and config files, cd into the "site" directory and
-do "make clean" -- this will remove any files that are unchanged from
-the official release.  Then do "make diff >diff"; this will show you what
-changes you will have to merge in.  Now merge in your changes (from
-where the files are, ie. /usr/lib/news...) into the files in
-$INN/site.  (You may find that due to the bug fixes and new features in
-this release, you may not need to change any of the scripts, just the
-configuration files).  Finally, doing "make install" will install
-everything.
-
-If you have a previous release you will probably also want to update the
-pathnames, etc., in the new config file from your old config.  Here is one
-way to do that:
-	% cd config
-	% make subst
-	% cp config.dist config.data
-	% ./subst -f {OLDFILE} config.data
-where "{OLDFILE}" names your old config.data file.
-
-Configuration is done using subst.   Subst is in config/subst.sh and
-doc/subst.1.  The history file is written using DBZ.  The DBZ sources and
-manual page are in the dbz directory.  Unlike subst, DBZ is kept
-separately, to make it easier to track the C News release.  The subst
-script and DBZ data utilities are currently at the "Performance Release"
-patch date.  Thanks to Henry Spencer and Geoff Collyer for permission to
-use and redistribute subst, and to Jon Zeef for permission to use DBZ as
-modified by Henry.
-
-This version includes new support for TCL filtering of articles (to either
-reject or accept them). This work is done by Bob Halley. See the file
-README.tcl_hook for more details.
-
-This version includes support for Geoff Collyer's news overview package,
-known as nov.  Nov replaces the external databases used by nn, trn, etc.,
-with a common text database.  INN support includes programs to build and
-maintain the overview database, and an XOVER command added to nnrpd (the
-news-reading daemon) that is becoming a common extension to fetch the
-overview data from an NNTP connection.  Nnrpd uses the overview database
-internally, if it exists, making certain commands (e.g., XHDR) much
-faster.  The nov package includes a newsreader library that you will need,
-and some utilities that you will not; it is available on world.std.com in
-the file src/news/nov.dist.tar.Z.  Prototypes of modified newsreaders are
-in the in src/news/READER.dist.tar.Z -- most maintainers will be providing
-official support very soon.  To make it explicit:  if you already have a
-newsreader that can use the overview database, either via my NNTP xover
-command, or by reading directly from NFS, then INN has all you need.
-
