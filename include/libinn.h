@@ -120,7 +120,7 @@ struct conf_vars {
 	char *bindaddress;	/* Which interface IP to bind to */
 	int port;		/* Which port INND should listen on */
 	int readertrack;	/* Enable/Disable the reader tracking system */
-	int strippostcc;	/* Strip To:, CC: and BCC: lines from posts */
+	int strippostcc;	/* Strip To:, Cc: and Bcc: lines from posts */
 };
 extern struct	conf_vars *innconf;
 extern char	*GetFQDN(void);

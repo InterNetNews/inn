@@ -5,7 +5,22 @@ innconfval \- get an InterNetNews configuration parameter
 .SH SYNOPSIS
 .B innconfval
 [
+.B \-c
+]
+[
 .B \-f
+]
+[
+.B -i path_to_innconf
+]
+[
+.B \-p
+]
+[
+.B \-s
+]
+[
+.B \-t
 ]
 [
 .I parameter...
@@ -15,8 +30,13 @@ innconfval \- get an InterNetNews configuration parameter
 prints the values of the parameters specified on the command line.
 Values are retrieved from the
 .IR inn.conf (5)
-file and are described there.
+file and are described there. If no parameters are specified, all
+the values are printed on separate lines. This is most useful with
+the other options for setting up assignment of variables.
 .SH OPTIONS
+.TP
+.B \-c
+Print values as csh set commands
 .TP
 .B \-f
 Values are retrieved by using the
@@ -26,6 +46,20 @@ if the ``\fB\-f\fP'' flag is used. Otherwise the
 routine is used.
 Both are described in
 .IR libinn (3).
+.TP
+.B \-i
+Values are read from the specified file. This overrides the compile
+time default for
+.IR inn.conf (5)
+.TP
+.B \-p
+Print values as perl assignment commands
+.TP
+.B \-s
+Print values as shell set commands
+.TP
+.B \-t
+Print values as tcl assignment commands
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 .de R$

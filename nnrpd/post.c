@@ -89,9 +89,9 @@ HEADER	Table[] = {
     {	"Posted",		FALSE,	HTobs },
     {	"Posting-Version",	FALSE,	HTobs },
     {	"Relay-Version",	FALSE,	HTobs },
-    {   "CC",			TRUE, HTstd },
+    {   "Cc",			TRUE, HTstd },
 #define _cc		32
-    {   "BCC",			TRUE, HTstd },
+    {   "Bcc",			TRUE, HTstd },
 #define _bcc		33
     {   "To",			TRUE, HTstd },
 #define _to		34

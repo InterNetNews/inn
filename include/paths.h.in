@@ -219,5 +219,5 @@
 #define _CONF_INNPORT		"port"
    /* Enable/Disable the reader tracking system */
 #define _CONF_READERTRACK	"readertrack"
-   /* Enable/Disable stripping of To:, CC: and BCC: headers of local posts */
+   /* Enable/Disable stripping of To:, Cc: and Bcc: headers of local posts */
 #define _CONF_STRIPPOSTCC	"strippostcc"
