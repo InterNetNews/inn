@@ -89,6 +89,7 @@
 ../samples/rc.news
 ../samples/rmgroup
 ../samples/scanlogs
+../samples/scanlogs-backend.pl
 ../samples/scanspool
 ../samples/send-ihave
 ../samples/send-nntp

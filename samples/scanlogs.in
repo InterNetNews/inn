@@ -141,7 +141,6 @@ if ${ROTATE} ; then
 
     ##  Tally control messages if we logged them.
     test -n "${CONTROL_DATA}" && cat ${CONTROL_DATA} | ${TALLY_CONTROL}
-    ${TALLY_UNWANTED} <${LOG}.old
 
     ${PAUSED} && ctlinnd -s go "Flushing log and syslog files" 2>&1
 
@@ -243,75 +242,7 @@ rm -f ${OLD_EXPLOG}
 BASE=`basename ${LOG}`
 OLD_LOG=${OLD}/${BASE}.0
 if [ -f ${OLD_LOG} ]; then
-    ${AWK} '$4 == "-" || $4 == "j" { print }' <${OLD_LOG} >${PROBS}
-
-    ${AWK} '$4 == "-" { print $5; }' ${PROBS} > ${T}
-    if [ -s ${T} ] ; then
-	echo Top ${TOP} sites sending bad articles:
-	sort < ${T} | uniq -c | sort -nr | ${SED} ${TOP}q
-	echo ''
-    fi
-
-    ${AWK} '$4 == "j" { print $5; }' ${PROBS} > ${T}
-    if [ -s ${T} ] ; then
-	echo Top ${TOP} sites sending junked "(unwanted)" articles:
-	sort < ${T} | uniq -c | sort -nr | ${SED} ${TOP}q
-	echo ''
-    fi
-
-
-    ${EGREP} '437 Unwanted distribution' ${PROBS} > ${T}
-    if [ -s ${T} ] ; then
-	echo Top ${TOP} unwanted distributions by number of articles:
-	${SED} 's/.*"\(.*\)".*/\1/' < ${T} \
-	    | sort | uniq -c | sort -nr | ${SED} ${TOP}q
-	echo ''
-    fi
-
-    ${EGREP} '437 Unapproved for' ${PROBS} > ${T} 
-    if [ -s ${T} ] ; then
-	echo Top ${TOP} supposedly-moderated groups with unmoderated postings:
-	${SED} 's/.*"\(.*\)".*/\1/' ${T} \
-	    | sort | uniq -c | sort -nr | ${SED} ${TOP}q
-	echo ''
-    fi
-
-    ${EGREP} '437 Unwanted newsgroup' ${PROBS} > ${T}
-    if [ -s ${T} ] ; then
-	echo Top ${TOP} unwanted newsgroups:
-	${SED} 's/.*"\(.*\)".*/\1/' ${T} \
-	    | sort | uniq -c | sort -nr | ${SED} ${TOP}q
-	echo ''
-    fi
-
-    ${EGREP} '437 Unwanted site' ${PROBS} > ${T} 
-    if [ -s ${T} ] ; then
-	echo Top ${TOP} unwanted sites:
-	${SED} 's/.*site \(.*\) in path.*/\1/' ${T} \
-	    | sort | uniq -c | sort -nr | ${SED} ${TOP}q
-	echo ''
-    fi
-
-    ##  Your egrep may complain about this regular expression being too long;
-    ##  if so, complain to your vendor and try GNU egrep.
-    P1='No body|EOF in headers|"Message-ID"|No colon-space in '
-    P2='Missing ".*" header|Linecount|Bad Date|Too old'
-    ${EGREP} "${P1}|${P2}" ${PROBS} > ${T} 
-    if [ -s ${T} ] ; then
-	echo Top ${TOP} general message problems:
-	${SED} -e 's/.*437 //' -e 's/Linecount.*/Linecount wrong/' \
-	    -e 's/Too old.*/Too old/' ${T} \
-	    | sort | uniq -c | sort -nr | ${SED} ${TOP}q
-	echo ''
-    fi
-
-    ${EGREP} "${P1}|${P2}" ${PROBS} | ${AWK} '{print $5}' > ${T} 
-    if [ -s ${T} ] ; then
-	echo Top ${TOP} sites sending news with bad headers:
-	sort < ${T} | uniq -c | sort -nr | ${SED} ${TOP}q
-	echo ''
-    fi
-    rm -f ${PROBS}
+    scanlogs-backend.pl < ${OLD_LOG}
 fi
 rm -f ${OLD_LOG}
 
