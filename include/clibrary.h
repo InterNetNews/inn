@@ -134,7 +134,7 @@ extern int              vsnprintf(char *, size_t, const char *, va_list);
 # define atexit(arg) on_exit((arg), 0)
 #endif
 #if !HAVE_STRTOUL
-# define strtoul(a, b, c) strtol((a), (b), (c))
+# define strtoul(a, b, c) (unsigned long) strtol((a), (b), (c))
 #endif
 
 /* mmap() flags.  This really doesn't belong in this header file; it should
