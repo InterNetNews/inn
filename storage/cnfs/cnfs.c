@@ -169,6 +169,10 @@ STATIC void CNFScleancycbuff(void) {
     CYCBUFF	*cycbuff, *nextcycbuff;
 
     for (cycbuff = cycbufftab; cycbuff != (CYCBUFF *)NULL;) {
+      if (cycbuff->fdrd >= 0)
+	close(cycbuff->fdrd);
+      if (cycbuff->fdrdwr >= 0)
+	close(cycbuff->fdrdwr);
       nextcycbuff = cycbuff->next;
       DISPOSE(cycbuff);
       cycbuff = nextcycbuff;
@@ -508,6 +512,7 @@ STATIC BOOL CNFSinit_disks(void) {
 		   LocalLogName, cycbuff->path);
 	    return FALSE;
 	} else {
+	    CloseOnExec(fd, 1);
 	    cycbuff->fdrd = fd;
 	}
     }
@@ -517,6 +522,7 @@ STATIC BOOL CNFSinit_disks(void) {
 		   LocalLogName, cycbuff->path);
 	    return FALSE;
 	} else {
+	    CloseOnExec(fd, 1);
 	    cycbuff->fdrdwr = fd;
 	}
     }

@@ -957,12 +957,14 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 	EXPprocessed++;
 
 	if (Selfexpired) {
-	    for (i = 0; i < count; i++) {
-		p = arts[i];
-		if (*p == '\0')
-		    /* Shouldn't happen. */
-		    continue;
-		EXPremove(p, &size, TRUE);
+	    if (Hasover) {
+		for (i = 0; i < count; i++) {
+		    p = arts[i];
+		    if (*p == '\0')
+			/* Shouldn't happen. */
+			continue;
+		    EXPremove(p, &size, TRUE);
+		}
 	    }
 	    if (EXPremember > 0 && out != NULL) {
 		where = Offset;
