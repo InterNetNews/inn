@@ -705,6 +705,9 @@ void SMshutdown(void) {
     while (subscriptions) {
 	old = subscriptions;
 	subscriptions = subscriptions->next;
+	for (i = 0; i < old->numpatterns; i++) {
+	  DISPOSE(old->patterns[i]);
+	}
 	DISPOSE(old->patterns);
 	DISPOSE(old->options);
 	DISPOSE(old);
