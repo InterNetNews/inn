@@ -28,7 +28,7 @@
 
 #include "config.h"
 #include "smblib-priv.h"
-#define uchar unsigned char
+typedef unsigned char uchar;
 extern int DEBUGLEVEL;
 
 #include "byteorder.h"

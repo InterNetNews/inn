@@ -28,7 +28,7 @@
 int SMBlib_errno;
 int SMBlib_SMB_Error;
 #define SMBLIB_ERRNO
-#define uchar unsigned char
+typedef unsigned char uchar;
 #include "config.h"
 #include "smblib-priv.h"
 
