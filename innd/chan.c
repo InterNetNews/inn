@@ -980,7 +980,7 @@ CHANreadloop(void)
 	    unsigned long now = TMRnow();
 
 	    if (now >= innconf->timer * 1000) {
-		TMRsummary(timer_name);
+		TMRsummary("ME", timer_name);
 		InndHisLogStats();
 		MyTime.tv_sec = innconf->timer;
 	    }

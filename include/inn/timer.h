@@ -26,7 +26,7 @@ enum {
 void            TMRinit(unsigned int);
 void            TMRstart(unsigned int);
 void            TMRstop(unsigned int);
-void            TMRsummary(const char *const *labels);
+void            TMRsummary(const char *prefix, const char *const *labels);
 unsigned long   TMRnow(void);
 void            TMRfree(void);
 

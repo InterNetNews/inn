@@ -681,7 +681,7 @@ void Run (void)
 	  unsigned long now = TMRnow () ;
 	  if (now - last_summary > (innconf->timer * 1000))
 	    {
-	      TMRsummary (timer_name) ;
+	      TMRsummary ("ME", timer_name) ;
 	      last_summary = now;
 	    }
 	}

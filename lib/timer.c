@@ -171,7 +171,7 @@ TMRfree(void)
 /*
 **  Allocate a new timer node.  Takes the id and the parent pointer.
 */
-struct timer *
+static struct timer *
 TMRnew(unsigned int id, struct timer *parent)
 {
     struct timer *timer;
@@ -332,23 +332,26 @@ TMRsumone(const char *const *labels, struct timer *timer, char *buf,
 **  reset them for the next polling interval.
 */
 void
-TMRsummary(const char *const *labels)
+TMRsummary(const char *prefix, const char *const *labels)
 {
     char *buf;
     unsigned int i;
-    size_t len;
-    size_t off = 0;
+    size_t len, off;
 
     /* To find the needed buffer size, note that a 64-bit unsigned number can 
        be up to 20 digits long, so each timer can be 52 characters.  We also
-       allow another 29 characters for the introductory message.  We may have 
-       timers recurring at multiple points in the structure, so this may not
-       be long enough, but this is over-sized enough that it shouldn't be a
-       problem.  We use snprintf, so if the buffer isn't large enough it will 
-       just result in logged errors. */
-    len = 52 * timer_count + 29 + 1;
+       allow another 27 characters for the introductory timestamp, plus some
+       for the prefix.  We may have timers recurring at multiple points in
+       the structure, so this may not be long enough, but this is over-sized
+       enough that it shouldn't be a problem.  We use snprintf, so if the
+       buffer isn't large enough it will just result in logged errors. */
+    len = 52 * timer_count + 27 + (prefix == NULL ? 0 : strlen(prefix)) + 1;
     buf = xmalloc(len);
-    off += snprintf(buf, len, "ME time %ld ", TMRgettime(true));
+    if (prefix == NULL)
+        off = 0;
+    else
+        off = snprintf(buf, len, "%s ", prefix);
+    off += snprintf(buf + off, len - off, "time %ld ", TMRgettime(true));
     for (i = 0; i < timer_count; i++)
         if (timers[i] != NULL)
             off += TMRsumone(labels, timers[i], buf + off, len - off);
