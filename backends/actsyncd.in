@@ -153,8 +153,8 @@ for loop in 1 2 3 4 5 6 7 8 9 10; do
     # get the active file to compare against
     status=0
     case $host in
-    /*) cp $host          active ;;
-    .*) cp $origdir/$host active ;;
+    /*) cp $host          active; status=$? ;;
+    .*) cp $origdir/$host active; status=$? ;;
      *)
         if [ -z "$ftp" ]; then
            echo "getlist -h $host" >>$out
