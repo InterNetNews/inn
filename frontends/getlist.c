@@ -157,7 +157,7 @@ get_authinfo(const char *server, char **username, char **password)
         return false;
     }
     free(path);
-    while ((line = QIOread(passwords) != NULL) {
+    while ((line = QIOread(passwords)) != NULL) {
         if (line[0] == '\0' || line[0] == '#')
             continue;
         info = cvector_split(line, ':', info);
