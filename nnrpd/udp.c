@@ -16,9 +16,11 @@ int create_udp_socket(int port)
 	int s;
 	struct sockaddr_in sin;
 
+	if (make_udp_sockaddr(&sin, "localhost") < 0) {
+		return(-1);
+	}
 	sin.sin_port = htons(port);
 	sin.sin_family = AF_INET;
-	sin.sin_addr.s_addr = INADDR_ANY;
 
 	if ((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 		perror("create_udp_socket: socket");
