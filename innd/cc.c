@@ -771,123 +771,92 @@ CChangup(char *av[])
 static const char *
 CCmode(char *unused[] UNUSED)
 {
-    char	*p;
-    int		i;
-    int		h;
-    char	buff[BUFSIZ];
-#if defined(DO_PERL)
-    char        *stats;
-#endif /* defined(DO_PERL) */
+    int count, index;
 
-    /* FIXME: We assume here that BUFSIZ is >= 512, and that none of
-     * ModeReason, RejectReason, Reservation, NNRPReason, or the Perl filter
-     * statistics are longer than MAX_REASON_LEN bytes (or actually, the
-     * average of their lengths is <= MAX_REASON_LEN).  If this is not true,
-     * the sprintf's/strcpy's below are likely to overflow buff with somewhat
-     * nasty consequences...
-     */
+#ifdef DO_PERL
+    char *stats;
+#endif
 
-    p = buff;
-    p += strlen(strcpy(buff, "0 Server "));
+    buffer_sprintf(&CCreply, false, "0 Server ");
 
     /* Server's mode. */
     switch (Mode) {
     default:
-	sprintf(p, "Unknown %d", Mode);
-	p += strlen(p);
+        buffer_sprintf(&CCreply, true, "Unknown %d\n", Mode);
 	break;
     case OMrunning:
-	p += strlen(strcpy(p, "running"));
+        buffer_sprintf(&CCreply, true, "running\n");
 	break;
     case OMpaused:
-	p += strlen(strcpy(p, "paused "));
-	p += strlen(strcpy(p, ModeReason));
+        buffer_sprintf(&CCreply, true, "paused %s\n", ModeReason);
 	break;
     case OMthrottled:
-	p += strlen(strcpy(p, "throttled "));
-	p += strlen(strcpy(p, ModeReason));
+        buffer_sprintf(&CCreply, true, "throttled %s\n", ModeReason);
 	break;
     }
-    *p++ = '\n';
-    if (RejectReason) {
-	p += strlen(strcpy(p, "Rejecting "));
-	p += strlen(strcpy(p, RejectReason));
-    }
+    if (RejectReason)
+        buffer_sprintf(&CCreply, true, "Rejecting %s\n", RejectReason);
     else
-	p += strlen(strcpy(p, "Allowing remote connections"));
+        buffer_sprintf(&CCreply, true, "Allowing remote connections\n");
 
     /* Server parameters. */
-    for (i = 0, h = 0; CHANiter(&h, CTnntp) != NULL; )
-	i++;
-    *p++ = '\n';
-    sprintf(p, "Parameters c %ld i %ld (%d) l %ld o %d t %ld H %d T %d X %d %s %s",
-                  innconf->artcutoff, innconf->maxconnections, i,
-                  innconf->maxartsize, MaxOutgoing, (long)TimeOut.tv_sec,
-                  RemoteLimit, RemoteTotal, (int) RemoteTimer,
+    for (count = 0, index = 0; CHANiter(&index, CTnntp) != NULL; )
+	count++;
+    buffer_sprintf(&CCreply, true, "Parameters c %ld i %ld (%d) l %ld o %d"
+                   " t %ld H %d T %d X %ld %s %s\n",
+                  innconf->artcutoff, innconf->maxconnections, count,
+                  innconf->maxartsize, MaxOutgoing, (long) TimeOut.tv_sec,
+                  RemoteLimit, RemoteTotal, (long) RemoteTimer,
                   innconf->xrefslave ? "slave" : "normal",
                   AnyIncoming ? "any" : "specified");
-    p += strlen(p);
 
     /* Reservation. */
-    *p++ = '\n';
-    if (Reservation) {
-	sprintf(p, "Reserved %s", Reservation);
-	p += strlen(p);
-    }
+    if (Reservation)
+        buffer_sprintf(&CCreply, true, "Reserved %s\n", Reservation);
     else
-	p += strlen(strcpy(p, "Not reserved"));
+        buffer_sprintf(&CCreply, true, "Not reserved\n");
 
     /* Newsreaders. */
-    *p++ = '\n';
-    p += strlen(strcpy(p, "Readers "));
+    buffer_sprintf(&CCreply, true, "Readers ");
     if (innconf->readerswhenstopped)
-	p += strlen(strcpy(p, "independent "));
+        buffer_sprintf(&CCreply, true, "independent ");
     else
-	p += strlen(strcpy(p, "follow "));
+        buffer_sprintf(&CCreply, true, "follow ");
     if (NNRPReason == NULL)
-	p += strlen(strcpy(p, "enabled"));
-    else {
-	sprintf(p, "disabled %s", NNRPReason);
-	p += strlen(p);
-    }
+        buffer_sprintf(&CCreply, true, "enabled");
+    else
+        buffer_sprintf(&CCreply, true, "disabled %s", NNRPReason);
 
-#if defined(DO_TCL)
-    *p++ = '\n';
-    p += strlen(strcpy(p, "Tcl filtering "));
+#ifdef DO_TCL
+    buffer_sprintf(&CCreply, true, "\nTcl filtering ");
     if (TCLFilterActive)
-	p += strlen(strcpy(p, "enabled"));
+        buffer_sprintf(&CCreply, true, "enabled");
     else
-	p += strlen(strcpy(p, "disabled"));
-#endif /* defined(DO_TCL) */
+        buffer_sprintf(&CCreply, true, "disabled");
+#endif
 
-#if defined(DO_PERL)
-    *p++ = '\n';
-    p += strlen(strcpy(p, "Perl filtering "));
+#ifdef DO_PERL
+    buffer_sprintf(&CCreply, true, "\nPerl filtering ");
     if (PerlFilterActive)
-        p += strlen(strcpy(p, "enabled"));
+        buffer_sprintf(&CCreply, true, "enabled");
     else
-        p += strlen(strcpy(p, "disabled"));
-
-    /* Perl filter status. */
+        buffer_sprintf(&CCreply, true, "disabled");
     stats = PLstats();
     if (stats != NULL) {
-        *p++ = '\n';
-        p += strlen(strcpy(p, "Perl filter stats: "));
-        p += strlen(strcpy(p, stats));
+        buffer_sprintf(&CCreply, true, "\nPerl filter stats: %s", stats);
         free(stats);
     }    
-#endif /* defined(DO_PERL) */
+#endif
 
-#if defined(DO_PYTHON)
-    *p++ = '\n';
-    p += strlen(strcpy(p, "Python filtering "));
+#ifdef DO_PYTHON
+    buffer_sprintf(&CCreply, true, "\nPython filtering ");
     if (PythonFilterActive)
-        p += strlen(strcpy(p, "enabled"));
+        buffer_sprintf(&CCreply, true, "enabled");
     else
-        p += strlen(strcpy(p, "disabled"));
-#endif /* defined(DO_PYTHON) */
+        buffer_sprintf(&CCreply, true, "disabled");
+#endif
 
-    buffer_set(&CCreply, buff, strlen(buff) + 1);
+    buffer_append(&CCreply, "", 1);
     return CCreply.data;
 }
 
