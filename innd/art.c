@@ -2490,10 +2490,12 @@ ARTpost(CHANNEL *cp)
     if (ARTxrefslave(data) == FALSE) {
       if (HDR_FOUND(HDR__XREF)) {
 	snprintf(cp->Error, sizeof(cp->Error),
-                 "%d Invalid Xref header \"%s\"", NNTP_REJECTIT_VAL,
+                 "%d Xref header \"%s\" invalid in xrefslave mode",
+                 NNTP_REJECTIT_VAL,
                  MaxLength(HDR(HDR__XREF), HDR(HDR__XREF)));
       } else {
-	snprintf(cp->Error, sizeof(cp->Error), "%d No Xref header",
+	snprintf(cp->Error, sizeof(cp->Error),
+                 "%d Xref header required in xrefslave mode",
                  NNTP_REJECTIT_VAL);
       }
       ARTlog(data, ART_REJECT, cp->Error);
