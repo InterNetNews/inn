@@ -99,7 +99,7 @@ STATIC CMDENT	CMDtable[] = {
     {	"last",		CMDnextlast,	TRUE,	1,	1,
 	NULL },
     {	"list",		CMDlist,	TRUE,	1,	3,
-	"[active|active.times|newsgroups|distributions|distrib.pats|overview.fmt|subscriptions]" },
+	"[active|active.times|newsgroups|distributions|distrib.pats|overview.fmt|subscriptions|motd]" },
     {	"listgroup",	CMDgroup,	TRUE,	1,	2,
 	"newsgroup" },
     {	"mode",		CMDmode,	FALSE,	2,	2,
