@@ -14,14 +14,13 @@
 actsync, actsyncd \- synchronize newsgroups
 .SH SYNOPSIS
 .B actsync
-[\fB\-b\fP\fI hostid\fP] [\fB\-d\fP\fI hostid\fP] [\fB\-g\fP\fI max\fP]
-[\fB\-i\fP\fI ignore_file\fP] 
+[\fB\-A\fP] [\fB\-b\fP\fI hostid\fP] [\fB\-d\fP\fI hostid\fP] [\fB\-g\fP\fI max\fP]
 .br
-	   [\fB\-I\fP\fI hostid\fP] [\fB\-k\fP] [\fB\-l\fP\fI hostid\fP] [\fB\-m\fP] [\fB\-n\fP\fI name\fP]
+	   [\fB\-i\fP\fI ignore_file\fP] [\fB\-I\fP\fI hostid\fP] [\fB\-k\fP] [\fB\-l\fP\fI hostid\fP] [\fB\-m\fP]
 .br
-	   [\fB\-o\fP\fI fmt\fP] [\fB\-p\fP\fI min_%_unchg\fP] [\fB\-q\fP\fI hostid\fP] [\fB\-s\fP\fI size\fP]
+	   [\fB\-n\fP\fI name\fP] [\fB\-o\fP\fI fmt\fP] [\fB\-p\fP\fI min_%_unchg\fP] [\fB\-q\fP\fI hostid\fP]
 .br
-	   [\fB\-s spool_dir\fP] [\fB\-t\fP\fI hostid\fP] [\fB\-T\fP] [\fB\-v\fP\fI verbose_lvl\fP]
+	   [\fB\-s\fP\fI size\fP] [\fB\-t\fP\fI hostid\fP] [\fB\-T\fP] [\fB\-v\fP\fI verbose_lvl\fP]
 .br
 	   [\fB\-z\fP\fI sec\fP] [\fIhost1\fP] \fIhost2\fP
 .sp 1
@@ -209,6 +208,10 @@ The options to
 .IR actsync (8)
 are as follows:
 .PP
+.TP
+.B \-A
+.IR actsync (8)
+tries to authenticate before issuing LIST command.
 .TP
 .BI \-b " hostid"
 This flag causes

@@ -14,6 +14,9 @@ innxmit \- send Usenet articles to a remote NNTP server
 .B \-d
 ]
 [
+.B \-H
+]
+[
 .B \-l
 ]
 [
@@ -114,6 +117,13 @@ Use the ``\fB\-d\fP'' flag to print debugging information on standard error.
 This will show the protocol transactions between
 .I innxmit
 and the NNTP server on the remote host.
+.TP
+.B \-H
+If the ``\fB\-H\fP'' flag is given, then only headers are sent to
+.I host
+for all articles except control messages.
+And Bytes: header is also included even if it does not exist in the original
+article.  ``\fB\-H\fP'' flag is useful for diablo reader.
 .TP
 .B \-l
 The ``\fB\-l\fP'' flag is used to turn on logging of reasons the remote gives

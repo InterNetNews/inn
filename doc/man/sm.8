@@ -19,7 +19,6 @@ sm \- command line interface to the storage manager
 [
 .B \-r
 ]
-.I token
 [
 .I token
 ] ...
@@ -33,6 +32,8 @@ shows the whole article associated with the token.
 The
 .I token
 is a token of the article, and it is stored as the third field of history line.
+Standard input is used to read tokens, unless token is given.  Each token is
+listed in each line in the case.
 .SH OPTIONS
 .TP
 .B \-d \-r

@@ -5,6 +5,9 @@ getlist \- get a list from an NNTP server
 .SH SYNOPSIS
 .I getlist
 [
+.B \-A
+]
+[
 .BI \-h " host"
 ]
 [
@@ -38,6 +41,10 @@ or
 .I <pathdb in inn.conf>/newsgroups
 files, respectively.
 .SH OPTIONS
+.TP
+.B \-A
+If the ``\fB\-A\fP'' flag is used, then the program tries to authenticates
+before issuing LIST command.
 .TP
 .B \-h
 If the ``\fB\-h\fP'' flag is used, then the program connects to the server
