@@ -1,4 +1,9 @@
 
-Please check the top of Makefile.global, include/config.h and include/paths.h
-before running make, to ensure that everything was set correctly.
+Please check the following files before running make, to ensure that 
+everything was set correctly.
+
+	Makefile.global
+	include/config.h
+	include/paths.h
+	innfeed/config.h
 
