@@ -820,7 +820,21 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 	}
 
     if (Overview < 0 ) {
-	Reply("%d Header not in index\r\n", NNTP_SYNTAX_VAL);
+        Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
+        for (i = range.Low; i <= range.High && range.High > 0; i++) {
+            if (!ARTopen(i))
+                continue;
+            p = GetHeader(av[1], IsLines);
+            if (!p)
+                continue;
+            (void)sprintf(buff, "%d ", i);
+            SendIOb(buff, strlen(buff));
+            SendIOb(p, strlen(p));
+            SendIOb("\r\n", 2);
+            ARTclose();
+        }
+        SendIOb(".\r\n", 3);
+        PushIOb();
 	return;
     }
 
