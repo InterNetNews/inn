@@ -406,7 +406,7 @@ EXTERN char		*ModeReason;	/* NNTP reject message		*/
 EXTERN char		*NNRPReason;	/* NNRP reject message		*/
 EXTERN char		*Reservation;	/* Reserved lock message	*/
 EXTERN char		*RejectReason;	/* NNTP reject message		*/
-extern char		SPOOL[];
+extern char		*SPOOL;
 EXTERN char		*Version;
 EXTERN FILE		*Errlog;
 EXTERN FILE		*Log;
@@ -536,6 +536,7 @@ extern NEWSGROUP	*NGfind();
 extern CHANNEL		*NCcreate();
 extern void		NGparsefile();
 extern BOOL		NGrenumber();
+extern BOOL		NGlowmark(NEWSGROUP *ngp, long lomark);
 
 extern void		NCclearwip(CHANNEL *cp);
 extern void		NCclose();

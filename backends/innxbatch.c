@@ -363,6 +363,7 @@ char *av[];
   int			XBATCHsize;
 
   /* Set defaults. */
+  if (ReadInnConf() < 0) exit(-1);
   ConnectTimeout = 0;
   TotalTimeout = 0;
   (void)umask(NEWSUMASK);

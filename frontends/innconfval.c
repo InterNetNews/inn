@@ -34,30 +34,30 @@ printit(char *v, char *val)
 {
     switch (format) {
 	case 0: printf("%s\n", val); break;
-	case 1:
+	case 1:   /* sh */
 	    v = upit(v);
 	    if (strchr(val, ' ') == NULL)
-	    	printf("%s=%s; export %s\n", v, val, v);
+	    	printf("%s=%s; export %sl;\n", v, val, v);
 	    else
-	    	printf("%s=\"%s\"; export %s\n", v, val, v);
+	    	printf("%s=\"%s\"; export %s;\n", v, val, v);
 	    break;
-	case 2:
+	case 2:   /* csh */
 	    if (strchr(val, ' ') == NULL)
-	    	printf("set %s = %s\n", v, val);
+	    	printf("set inn_%s = %s\n", v, val);
 	    else
-	    	printf("set %s = \"%s\"\n", v, val);
+	    	printf("set inn_%s = \"%s\"\n", v, val);
 	    break;
-	case 3:
+	case 3:   /* perl */
 	    if (isnum(val))
 	    	printf("$%s = %s\n", v, val);
 	    else
 	    	printf("$%s = \"%s\"\n", v, val);
 	    break;
-	case 4:
+	case 4:   /* tcl */
 	    if (isnum(val))
-	    	printf("set %s %s\n", v, val);
+	    	printf("set inn_%s %s\n", v, val);
 	    else
-	    	printf("set %s \"%s\"\n", v, val);
+	    	printf("set inn_%s \"%s\"\n", v, val);
 	    break;
     }
 }
@@ -135,9 +135,7 @@ main(ac, av)
     /* Loop over parameters, each a config value. */
     while ((p = *av++) != NULL) {
 	val = File ? GetFileConfigValue(p) : GetConfigValue(p);
-	if (val == NULL)
-	    (void)fprintf(stderr, "No value for %s parameter\n", p);
-	else
+	if (val != NULL)
 	    printit(p, val);
     }
 

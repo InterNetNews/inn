@@ -332,7 +332,6 @@ STATIC int ARTcompare(CPOINTER p1, CPOINTER p2)
 */
 STATIC void GRPscandir(char *dir)
 {
-    static char		SPOOL[] = _PATH_SPOOL;
     static int		ARTarraysize;
     DIRENTRY	        *ep;
     DIR	                *dp;
@@ -348,8 +347,8 @@ STATIC void GRPscandir(char *dir)
     ARTsize = 0;
     GRPcount++;
 
-    path = NEW(char, strlen(_PATH_OVERVIEWDIR) + strlen(dir) + strlen(_PATH_OVERVIEW) + 32);
-    sprintf(path, "%s/%s/%s.index", _PATH_OVERVIEWDIR, dir, _PATH_OVERVIEW);
+    path = NEW(char, strlen(OVERVIEWDIR) + strlen(dir) + strlen(innconf->overviewname) + 32);
+    sprintf(path, "%s/%s/%s.index", OVERVIEWDIR, dir, innconf->overviewname);
     if ((fd = open(path, O_RDONLY)) >= 0) {
 	DISPOSE(path);
 	if (fstat(fd, &sb) < 0) {

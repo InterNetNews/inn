@@ -16,7 +16,7 @@ ACTIVEFILE=${ACTIVE}
 ##  Number of lines of error in each category to report.
 TOP=${TOP-20}
 ##  NN log file.
-NN=${NEWSLIB}/nn/Log
+NN=${PATHETC}/nn/Log
 ##  Where nntpsend, if used, writes its log information.
 NNTPSEND=${MOST_LOGS}/nntpsend.log
 ##  Where news.daily places expire output, unless noexplog was used.
@@ -29,8 +29,8 @@ SYSLOG_NOTICE=${MOST_LOGS}/news.notice
 SYSLOGS="${SYSLOG_CRIT} ${SYSLOG_ERR} ${SYSLOG_NOTICE}"
 
 ##  Where tally control and unwanted processors are found.
-TALLY_CONTROL=${NEWSBIN}/tally.control
-TALLY_UNWANTED=${NEWSBIN}/tally.unwanted
+TALLY_CONTROL=${PATHBIN}/tally.control
+TALLY_UNWANTED=${PATHBIN}/tally.unwanted
 UNWANTED_LOG=${MOST_LOGS}/unwanted.log
 CONTROL_LOG=${MOST_LOGS}/control.log
 CONTROL_DATA=
@@ -246,7 +246,7 @@ OLD_LOG=${OLD}/${BASE}.0
 BASE=`basename ${SYSLOG_NOTICE}`
 OLD_SYSLOG=${OLD}/${BASE}.0
 if [ -s ${OLD_SYSLOG} -o -s ${OLD_LOG} ] ; then
-    ${NEWSBIN}/innreport -f ${NEWSLIB}/innreport.conf ${OLD_SYSLOG} ${OLD_LOG}
+    ${PATHBIN}/innreport -f ${PATHETC}/innreport.conf ${OLD_SYSLOG} ${OLD_LOG}
     echo ---------
     echo ''
 fi

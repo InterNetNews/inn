@@ -15,7 +15,7 @@
 typedef struct iovec	IOVEC;
 
 
-STATIC char		ICDactpath[] = _PATH_ACTIVE;
+STATIC char		*ICDactpath = NULL;
 STATIC char		*ICDactpointer;
 STATIC int		ICDactfd;
 STATIC int		ICDactsize;
@@ -147,12 +147,16 @@ ICDrenumberactive()
 */
 STATIC BOOL ICDwritevactive(IOVEC *vp, int vpcount)
 {
-    static char		BACKUP[] = _PATH_OLDACTIVE;
-    static char         NEWACT[] = _PATH_NEWACTIVE;
+    static char		*BACKUP = NULL;
+    static char         *NEWACT = NULL;
     static char		WHEN[] = "backup active";
     int	                fd;
     int			oerrno;
 
+    if (BACKUP == NULL)
+	BACKUP = COPY(cpcatpath(innconf->pathdb, _PATH_OLDACTIVE));
+    if (NEWACT == NULL)
+	NEWACT = COPY(cpcatpath(innconf->pathdb, _PATH_NEWACTIVE));
     /* Write the current file to a backup. */
     if (unlink(BACKUP) < 0 && errno != ENOENT) {
 	oerrno = errno;
@@ -338,7 +342,8 @@ ICDreadactive(endp)
 	*endp = ICDactpointer + ICDactsize;
 	return ICDactpointer;
     }
-
+    if (ICDactpath == NULL) 
+	ICDactpath = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
     if ((ICDactfd = open(ICDactpath, O_RDWR)) < 0) {
 	syslog(L_FATAL, "%s cant open %s %m", LogName, ICDactpath);
 	exit(1);

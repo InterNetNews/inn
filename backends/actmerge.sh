@@ -31,7 +31,7 @@
 # Our lock file
 LOCK=${LOCKS}/LOCK.actmerge
 # where actsync is located
-ACTSYNC=${NEWSBIN}/actsync
+ACTSYNC=${PATHBIN}/actsync
 # exit value of actsync if unable to get an active file
 NOSYNC=127
 # args used by actsync a fetch of an active file

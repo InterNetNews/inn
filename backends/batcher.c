@@ -42,7 +42,7 @@ STATIC long	MaxArts;
 STATIC long	MaxBytes;
 STATIC SIGVAR	GotInterrupt;
 STATIC STRING	Separator = "#! rnews %ld";
-
+STATIC char	*ERRLOG;
 
 /*
 **  Start a batch process.
@@ -93,7 +93,6 @@ RequeueAndExit(Cookie, line, BytesInArt)
     static char	LINE1[] = "batcher %s times user %.3f system %.3f elapsed %.3f";
     static char	LINE2[] ="batcher %s stats batches %d articles %d bytes %ld";
     static char	NOWRITE[] = "batcher %s cant write spool %s\n";
-    static char	BATCHDIR[] = _PATH_BATCHDIR;
     char	temp[BUFSIZ];
     char	buff[BUFSIZ];
     int		i;
@@ -136,7 +135,7 @@ RequeueAndExit(Cookie, line, BytesInArt)
 
     /* Make an appropriate spool file. */
     if (Input == NULL)
-	(void)sprintf(temp, "%s/%s", BATCHDIR, Host);
+	(void)sprintf(temp, "%s/%s", innconf->pathoutgoing, Host);
     else
 	(void)sprintf(temp, "%s.bch", Input);
     if ((F = xfopena(temp)) == NULL) {
@@ -216,8 +215,7 @@ main(ac, av)
     char	*av[];
 {
     static char	SKIPPING[] = "batcher %s skipping \"%.40s...\" %s\n";
-    static char SPOOL[] = _PATH_SPOOL;
-    static char	BATCHDIR[] = _PATH_BATCHDIR;
+    static char *SPOOL = NULL;
     BOOL	Redirect;
     FILE	*F;
     STRING	AltSpool;
@@ -237,9 +235,12 @@ main(ac, av)
     struct stat	Sb;
 
     /* Set defaults. */
+    if (ReadInnConf() < 0) exit(-1);
     AltSpool = NULL;
     Redirect = TRUE;
     (void)umask(NEWSUMASK);
+    SPOOL = innconf->patharticles;
+    ERRLOG = COPY(cpcatpath(innconf->pathlog, _PATH_ERRLOG));
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "a:A:b:B:i:N:p:rs:S:v")) != EOF)
@@ -294,8 +295,9 @@ main(ac, av)
     Host = av[0];
     if ((Input = av[1]) != NULL) {
 	if (Input[0] != '/') {
-	    Input = NEW(char, STRLEN(BATCHDIR) + 1 + strlen(av[1]) + 1);
-	    (void)sprintf(Input, "%s/%s", BATCHDIR, av[1]);
+	    Input = NEW(char, strlen(innconf->pathoutgoing) +  1+
+					strlen(av[1]) + 1);
+	    (void)sprintf(Input, "%s/%s", innconf->pathoutgoing, av[1]);
 	}
 	if (freopen(Input, "r", stdin) == NULL) {
 	    (void)fprintf(stderr, "batcher %s cant open %s %s\n",
@@ -305,7 +307,7 @@ main(ac, av)
     }
 
     if (Redirect)
-	(void)freopen(_PATH_ERRLOG, "a", stderr);
+	(void)freopen(ERRLOG, "a", stderr);
 
     /* Go to where the articles are. */
     if (chdir(SPOOL) < 0) {
@@ -352,9 +354,9 @@ main(ac, av)
 
 	/* Strip of leading spool pathname. */
 	if (line[0] == '/'
-	 && line[STRLEN(SPOOL)] == '/'
-	 && EQn(line, SPOOL, STRLEN(SPOOL)))
-	    p = line + STRLEN(SPOOL) + 1;
+	 && line[strlen(SPOOL)] == '/'
+	 && EQn(line, SPOOL, strlen(SPOOL)))
+	    p = line + strlen(SPOOL) + 1;
 	else
 	    p = line;
 

@@ -5,7 +5,7 @@
 
 PROG=newgroup
 ##  Some shells don't pass in $* unless we explicitly pass it in here.
-. ${NEWSBIN}/parsecontrol "$@"
+. ${PATHBIN}/parsecontrol "$@"
 
 ##  Valid parameters and group name?
 case "$#" in
@@ -98,11 +98,11 @@ case ${ACTION} in
 mail)
     P1=$1
     P2=$2
-    export FROM WORD NEWSBIN P1 P2 ARTICLE
+    export FROM WORD PATHBIN P1 P2 ARTICLE
     (
 	echo "${FROM} requested that $1 be ${WORD}."
 	echo 'To do this, type the following:'
-	echo "	${NEWSBIN}/ctlinnd newgroup ${P1} ${P2} ${FROM}"
+	echo "	${PATHBIN}/ctlinnd newgroup ${P1} ${P2} ${FROM}"
 	echo ''
 	echo 'The original article was:'
 	${SM} ${ARTICLE}

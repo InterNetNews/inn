@@ -121,6 +121,22 @@ struct conf_vars {
 	int port;		/* Which port INND should listen on */
 	int readertrack;	/* Enable/Disable the reader tracking system */
 	int strippostcc;	/* Strip To:, Cc: and Bcc: lines from posts */
+	char *overviewname;	/* Name of the file to store overview data */
+
+	char *pathnews;	
+	char *pathbin;
+	char *pathfilter;
+	char *pathcontrol;
+	char *pathdb;
+	char *pathetc;
+	char *pathrun;
+	char *pathlog;
+	char *pathspool;
+	char *patharticles;
+	char *pathoverview;
+	char *pathoutgoing;
+	char *pathincoming;
+	char *patharchive;
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;
@@ -129,7 +145,8 @@ extern char	*GetConfigValue(char *value);
 extern char	*GetFileConfigValue(char *value);
 extern BOOL      GetBooleanConfigValue(char *value, BOOL DefaultValue);
 extern char	*GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group);
-extern int ReadInnConf(char *configfile);
+extern int ReadInnConf();
+extern char *cpcatpath(char *p, char *f);
 
 /* Time functions. */
 typedef struct _TIMEINFO {

@@ -21,7 +21,7 @@
 . _INNSHELLVARS_
 
 EXPLOG=${MOST_LOGS}/expire.log
-INNSTAT=${NEWSBIN}/innstat
+INNSTAT=${PATHBIN}/innstat
 HOSTNAME=`hostname`
 DATE=`date`
 AZ=ABCDEFGHIJKLMNOPQRSTUVWXYZ
@@ -60,10 +60,10 @@ fi
 HISTDIR="`dirname ${HISTORY}`"
 TOUT=600   # timeout value for ctlinnd commands
 if [ -z "${HISTDIR}" -o X"." = X"${HISTDIR}" -o ! -d "${HISTDIR}" ]; then
-    if [ -d "${NEWSLIB}/hist" ]; then
-	HISTDIR="${NEWSLIB}/hist"
+    if [ -d "${PATHETC}/hist" ]; then
+	HISTDIR="${PATHETC}/hist"
     else
-	HISTDIR="${NEWSLIB}"
+	HISTDIR="${PATHETC}"
     fi
 fi
 EXPIREOVERFLAGS=
@@ -197,7 +197,7 @@ if ${DOMAIL} ; then
     exec 3>&1 >${TEMP} 2>&1
 fi
 
-cd ${NEWSLIB}
+cd ${PATHETC}
 
 ##  Show the status of the news system.
 ${DOSTAT} && {
@@ -445,7 +445,7 @@ fi
 
 ##  All done
 if ${DAILY} ; then
-    date >${NEWSLIB}/.news.daily
+    date >${PATHETC}/.news.daily
 fi
 ${RNEWS} -U
 exit 0

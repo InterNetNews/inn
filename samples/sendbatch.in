@@ -200,7 +200,7 @@ do
 
     ## Create batches.
     if [ ${BATCHBYTES} -gt 0 ] ; then
-	${NEWSBIN}/batcher -B ${BATCHBYTES} -b ${MAXBYTES} -p "${UUXCOM}" \
+	${PATHBIN}/batcher -B ${BATCHBYTES} -b ${MAXBYTES} -p "${UUXCOM}" \
 	    ${SITE} ${BATCHFILE}
     fi
 

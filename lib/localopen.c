@@ -13,6 +13,7 @@
 #if	defined(DO_HAVE_UNIX_DOMAIN)
 #include <sys/un.h>
 #endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
+#include "libinn.h"
 
 
 /*
@@ -40,7 +41,9 @@ int NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff)
     /* Connect to the server. */
     (void)memset((POINTER)&server, 0, sizeof server);
     server.sun_family = AF_UNIX;
-    (void)strcpy(server.sun_path, _PATH_NNTPCONNECT);
+    (void)strcpy(server.sun_path, innconf->pathrun);
+    (void)strcat(server.sun_path, "/");
+    (void)strcat(server.sun_path, _PATH_NNTPCONNECT);
     if (connect(i, (struct sockaddr *)&server, AF_UNIX_SOCKSIZE(server)) < 0) {
 	oerrno = errno;
 	(void)close(i);

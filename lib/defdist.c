@@ -37,9 +37,9 @@ struct _DDHANDLE *DDstart(FILE *FromServer, FILE *ToServer)
     char	name[sizeof _PATH_TEMPACTIVE + 10];
 
     /* Open the file. */
-    if ((F = fopen(_PATH_DISTPATS, "r")) != NULL)
+    if ((F = fopen(cpcatpath(innconf->pathetc, _PATH_DISTPATS), "r")) != NULL) {
 	name[0] = '\0';
-    else {
+    } else {
 	/* Not available locally; try remotely. */
 	if (FromServer == NULL || ToServer == NULL)
 	    /* We're probably nnrpd running on the server and the

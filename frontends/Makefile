@@ -4,7 +4,7 @@ include ../Makefile.global
 ##  =()<P	= @<P>@>()=
 P	= 
 
-RNEWSPROGS	= ${NEWSBIN}/rnews.libexec
+RNEWSPROGS	= ${PATHBIN}/rnews.libexec
 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
 LINTFLAGS	= -b -h -z  -I../include $(DEFS)
@@ -23,11 +23,11 @@ ALL	= inews rnews ctlinnd getlist innconfval decode encode sm
 all:		$(ALL)
 	date >$@
 
-install:	$(NEWSBIN)/inews $(NEWSBIN)/rnews \
-		$(NEWSBIN)/ctlinnd $(NEWSBIN)/getlist $(NEWSBIN)/innconfval \
+install:	$(PATHBIN)/inews $(PATHBIN)/rnews \
+		$(PATHBIN)/ctlinnd $(PATHBIN)/getlist $(PATHBIN)/innconfval \
 		$(RNEWSPROGS)/c7unbatch \
 		$(RNEWSPROGS)/decode $(RNEWSPROGS)/encode \
-		$(NEWSBIN)/sm
+		$(PATHBIN)/sm
 
 clobber clean:
 	rm -f *.o $(ALL)
@@ -83,17 +83,17 @@ profiled:
 	#load $(CFLAGS) $<
 
 ##  Low-level install actions.
-$(NEWSBIN)/inews:		inews
+$(PATHBIN)/inews:		inews
 	$(SHELL) ../installit.sh $(OWNER) -m 02555 -b .OLD $? $@
-$(NEWSBIN)/rnews:		rnews
+$(PATHBIN)/rnews:		rnews
 	$(SHELL) ../installit.sh $(ROWNER) -m 04550 -b .OLD $? $@
-$(NEWSBIN)/ctlinnd:	ctlinnd
+$(PATHBIN)/ctlinnd:	ctlinnd
 	$(SHELL) ../installit.sh $(OWNER) -m  0550 -b .OLD $? $@
-$(NEWSBIN)/sm:	sm
+$(PATHBIN)/sm:	sm
 	$(SHELL) ../installit.sh $(OWNER) -m  0550 -b .OLD $? $@
-$(NEWSBIN)/getlist:	getlist
+$(PATHBIN)/getlist:	getlist
 	$(SHELL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
-$(NEWSBIN)/innconfval:	innconfval
+$(PATHBIN)/innconfval:	innconfval
 	$(SHELL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
 $(RNEWSPROGS)/c7unbatch:	c7unbatch.sh
 	$(SHELL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@

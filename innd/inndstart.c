@@ -57,7 +57,6 @@ SetDescriptorLimit(i)
 
 int main(int ac, char *av[])
 {
-    static char		INNDDIR[] = _PATH_INNDDIR;
     GID_T		NewsGID;
     UID_T		NewsUID;
     struct sockaddr_in	server;
@@ -72,12 +71,15 @@ int main(int ac, char *av[])
     char		buff[BUFSIZ];
     STRING		env[8];
     struct stat		Sb;
+    char		*inndpath;
 
     (void)openlog("inndstart", L_OPENLOG_FLAGS, LOG_INN_PROG);
 
+    if (ReadInnConf() < 0) exit(1);
+
     /* Make sure INND directory exists. */
-    if (stat(INNDDIR, &Sb) < 0 || !S_ISDIR(Sb.st_mode)) {
-	syslog(L_FATAL, "inndstart cant stat %s %m", INNDDIR);
+    if (stat(innconf->pathrun, &Sb) < 0 || !S_ISDIR(Sb.st_mode)) {
+	syslog(L_FATAL, "inndstart cant stat %s %m", innconf->pathrun);
 	exit(1);
     }
     NewsUID = Sb.st_uid;
@@ -141,13 +143,14 @@ int main(int ac, char *av[])
     /* Build the new argument vector. */
     argv = NEW(STRING, 2 + ac + 1);
     j = 0;
+    inndpath = cpcatpath(innconf->pathbin, "innd");
 #if	defined(DEBUGGER)
     argv[j++] = DEBUGGER;
-    argv[j++] = _PATH_INND;
+    argv[j++] = inndpath;
     argv[j] = NULL;
     (void)printf("Use -dp%d\n", i);
 #else
-    argv[j++] = _PATH_INND;
+    argv[j++] = inndpath;
     argv[j++] = pflag;
     for (i = 1; av[i]; ) {
 	if ((strncmp(av[i], "-p", 2) != 0) && (strncmp(av[i], "-P", 2) != 0) &&
@@ -169,7 +172,7 @@ int main(int ac, char *av[])
 
     /* Set up the environment. */
     (void)sprintf(buff, "PATH=%s:%s:/bin:/usr/bin:/usr/ucb",
-	    _PATH_NEWSBIN, _PATH_NEWSLIB);
+	    innconf->pathbin, innconf->pathetc);
     env[0] = COPY(buff);
     (void)sprintf(buff, "TMPDIR=%s", _PATH_TMP);
     env[1] = COPY(buff);
@@ -179,7 +182,7 @@ int main(int ac, char *av[])
     env[3] = COPY(buff);
     (void)sprintf(buff, "USER=%s", NEWSMASTER);
     env[4] = COPY(buff);
-    (void)sprintf(buff, "HOME=%s", _PATH_NEWSHOME);
+    (void)sprintf(buff, "HOME=%s", innconf->pathnews);
     env[5] = COPY(buff);
     i = 6;
     /* linux uglyness */

@@ -77,8 +77,8 @@ typedef struct _ARTOVERFIELD {
 /*
 **  Global variables.
 */
-STATIC char		SPOOL[] = _PATH_SPOOL;
-STATIC char		*SCHEMA = _PATH_SCHEMA;
+STATIC char		*SPOOL = NULL;
+STATIC char		*SCHEMA;
 STATIC BOOL		InSpoolDir;
 STATIC BOOL		Verbose;
 STATIC BOOL		Quiet;
@@ -226,7 +226,7 @@ STATIC void RemoveLines(char *group, LIST *Deletes)
     }
 
     /* Lock the group. */
-    (void)sprintf(lockfile, "%s/.LCK%s", group, _PATH_OVERVIEW);
+    (void)sprintf(lockfile, "%s/.LCK%s", group, innconf->overviewname);
     lfd = open(lockfile, O_WRONLY | O_TRUNC | O_CREAT, ARTFILE_MODE);
     if (lfd < 0) {
         if (!Quiet)
@@ -235,7 +235,7 @@ STATIC void RemoveLines(char *group, LIST *Deletes)
     }
 
     /* Open file, lock it. */
-    (void)sprintf(file, "%s/%s", group, _PATH_OVERVIEW);
+    (void)sprintf(file, "%s/%s", group, innconf->overviewname);
     for (i = 0; i < 15; i++) {
 	if ((fd = open(file, O_RDWR)) < 0) {
 	    (void)fprintf(stderr, "Can't open %s, %s\n", file, strerror(errno));
@@ -644,7 +644,7 @@ STATIC void AddLines(char *group, LIST *Adds)
 	lp->Start = New.Data + lp->Offset;
 
     /* Lock the group. */
-    (void)sprintf(lockfile, "%s/.LCK%s", group, _PATH_OVERVIEW);
+    (void)sprintf(lockfile, "%s/.LCK%s", group, innconf->overviewname);
     lfd = open(lockfile, O_WRONLY | O_TRUNC | O_CREAT, ARTFILE_MODE);
     if (lfd < 0) {
 	(void)fprintf(stderr, "Can't open %s, %s\n", lockfile, strerror(errno));
@@ -652,7 +652,7 @@ STATIC void AddLines(char *group, LIST *Adds)
     }
 
     /* Open file, lock it. */
-    (void)sprintf(file, "%s/%s", group, _PATH_OVERVIEW);
+    (void)sprintf(file, "%s/%s", group, innconf->overviewname);
     for ( ; ; ) {
 	if ((fd = open(file, O_RDWR | O_CREAT, ARTFILE_MODE)) < 0) {
 	    (void)fprintf(stderr, "Can't open %s, %s\n", file, strerror(errno));
@@ -868,7 +868,7 @@ STATIC LIST *GetOverviewList(char *group, int *numentries)
     *numentries = 0;
 
     /* Open the file. */
-    (void)sprintf(file, "%s/%s", group, _PATH_OVERVIEW);
+    (void)sprintf(file, "%s/%s", group, innconf->overviewname);
     if ((qp = QIOopen(file)) == NULL)
 	return NULL;
 
@@ -1148,12 +1148,18 @@ int main(int ac, char *av[])
     char		*Name;
 
     /* Set defaults. */
-    Dir = _PATH_OVERVIEWDIR;
-    Name = _PATH_ACTIVE;
     AddEntries = FALSE;
     ReadSpool = FALSE;
     SortedInput = FALSE;
+
+    if (ReadInnConf() < 0) exit(-1); 
+
     (void)umask(NEWSUMASK);
+
+    Dir = innconf->pathoverview;
+    Name = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
+    SCHEMA = COPY(cpcatpath(innconf->pathetc, _PATH_SCHEMA));
+    SPOOL = innconf->patharticles;
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "aD:f:nO:qsvz")) != EOF)

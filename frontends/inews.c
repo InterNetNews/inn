@@ -49,7 +49,6 @@ STATIC char     *tmpPtr ;
 STATIC BOOL	Dump;
 STATIC BOOL	Revoked;
 STATIC BOOL	Spooling;
-STATIC char	SPOOLNEWS[] = _PATH_SPOOLNEWS;
 STATIC char	**OtherHeaders;
 STATIC char	NGSEPS[] = NG_SEPARATOR;
 STATIC char	SIGSEP[] = SIG_SEPARATOR;
@@ -592,7 +591,7 @@ ProcessHeaders(AddOrg, linecount, pwp)
     }
 
     /* Set From or Sender. */
-    if ((p = GetConfigValue(_CONF_FROMHOST)) == NULL)
+    if ((p = innconf->fromhost) == NULL)
 	PerrorExit(TRUE, "Can't get host name");
     if (HDR(_from) == NULL)
 	HDR(_from) = FormatUserName(pwp, p);
@@ -724,7 +723,7 @@ ProcessHeaders(AddOrg, linecount, pwp)
     /* Set Organization. */
     if (AddOrg
      && HDR(_organization) == NULL
-     && (p = GetConfigValue(_CONF_ORGANIZATION)) != NULL) {
+     && (p = innconf->organization) != NULL) {
 	HDR(_organization) = COPY(p);
     }
 
@@ -897,7 +896,7 @@ MailArticle(group, article)
 
     /* Now build up the command (ignore format/argument mismatch errors,
      * in case %s isn't in _PATH_SENDMAIL) and send the headers. */
-    if ((mta = GetConfigValue(_CONF_MTA)) == NULL) {
+    if ((mta = innconf->mta) == NULL) {
 	(void)sprintf(buff, _PATH_SENDMAIL, address);
     }
     else {
@@ -1116,7 +1115,7 @@ Spoolit(article, Length, deadfile)
     struct stat		Sb;
 
     /* Try to write to the spool dir, else the deadfile. */
-    if ((stat(SPOOLNEWS, &Sb) >= 0 && S_ISDIR(Sb.st_mode))
+    if ((stat(innconf->pathincoming, &Sb) >= 0 && S_ISDIR(Sb.st_mode))
      || (F = xfopena(deadfile)) == NULL) {
 	TempName(SPOOLTEMP, temp);
 	(void)umask(0);
@@ -1145,7 +1144,7 @@ Spoolit(article, Length, deadfile)
 
     if (deadfile == NULL) {
 	/* Put the file in a good place. */
-	TempName(SPOOLNEWS, buff);
+	TempName(innconf->pathincoming, buff);
 	if (rename(temp, buff) < 0)
 	    PerrorExit(FALSE, "Can't rename spool file");
     }
@@ -1197,6 +1196,9 @@ main(ac, av)
     Dump = FALSE;
     DoSignature = TRUE;
     AddOrg = TRUE;
+
+    if (ReadInnConf() < 0) exit(-1);
+
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
@@ -1302,17 +1304,15 @@ main(ac, av)
 	article = StripOffHeaders(article);
     for (i = 0, p = article; (p = strchr(p, '\n')) != NULL; i++, p++)
 	continue;
-    if (GetBooleanConfigValue(_CONF_CHECK_INC_TEXT, TRUE) == TRUE) {
+    if (innconf->checkincludedtext)
 	CheckIncludedText(article, i);
-    }
     if (DoSignature)
 	article = AppendSignature(Mode == 'h', article, pwp->pw_dir, &SigLines);
     else
 	SigLines = 0;
     ProcessHeaders(AddOrg, i + SigLines, pwp);
     Length = strlen(article);
-    if (((p = GetConfigValue(_CONF_LOCAL_MAX_ARTSIZE)) != NULL) &&
-		(atoi(p) > 0) && (Length > atoi(p))) {
+    if ((innconf->localmaxartsize > 0) && (Length > innconf->localmaxartsize)) {
 	(void)fprintf(stderr,
 		"Article is bigger then local limit of %ld bytes\n",
 		atoi(p));

@@ -16,7 +16,6 @@
 */
 void PackOverIndex(OVERINDEX *index, char *result) {
     unsigned long       i;
-    unsigned char       c;
     int                 intoverage;
     
     intoverage = sizeof(i) - 4;
@@ -31,7 +30,6 @@ void PackOverIndex(OVERINDEX *index, char *result) {
 
 void UnpackOverIndex(char *packedindex, OVERINDEX *index) {
     unsigned long       i;
-    unsigned char       c;
     char                buff[sizeof(i)];
     int                 intoverage;
 

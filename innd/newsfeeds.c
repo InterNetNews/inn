@@ -10,7 +10,7 @@
 
 
 STATIC SITE	SITEnull;
-STATIC char	SITEfeedspath[] = _PATH_NEWSFEEDS;
+STATIC char	*SITEfeedspath = NULL;
 
 
 /*
@@ -51,6 +51,8 @@ SITEreadfile(ReadOnly)
     struct stat		Sb;
     char		*data;
 
+    if (SITEfeedspath == NULL)
+	SITEfeedspath = COPY(cpcatpath(innconf->pathetc, _PATH_NEWSFEEDS));
     if (old_strings != NULL) {
 	/* If the file hasn't changed, return a copy of the old data. */
 	if (stat(SITEfeedspath, &Sb) >= 0
@@ -165,7 +167,6 @@ SITEsetlist(patlist, subbed, poison, poisonEntry)
 */
 STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 {
-    static char		BATCH[] = _PATH_BATCHDIR;
     int	                i;
     int	                j;
     NEWSGROUP	        *ngp;
@@ -277,8 +278,9 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 	    else if (*p == '/')
 		sp->SpoolName = COPY(p);
 	    else {
-		sp->SpoolName = NEW(char, STRLEN(BATCH) + 1 + strlen(p) + 1);
-		FileGlue(sp->SpoolName, BATCH, '/', p);
+		sp->SpoolName = NEW(char, strlen(innconf->pathoutgoing) + 1 +
+						strlen(p) + 1);
+		FileGlue(sp->SpoolName, innconf->pathoutgoing, '/', p);
 	    }
 	    break;
 	case 'G':
@@ -389,19 +391,22 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
     if (*f4 == '\0' && sp != &ME) {
 	if (sp->Type != FTfile && sp->Type != FTlogonly)
 	    return "empty field 4";
-	sp->Param = NEW(char, STRLEN(BATCH) + 1 + sp->NameLength + 1);
-	FileGlue(sp->Param, BATCH, '/', sp->Name);
+	sp->Param = NEW(char, strlen(innconf->pathoutgoing) + 1 +
+						sp->NameLength + 1);
+	FileGlue(sp->Param, innconf->pathoutgoing, '/', sp->Name);
     }
     else if (sp->Type == FTfile && *f4 != '/') {
-	sp->Param = NEW(char, STRLEN(BATCH) + 1 + strlen(f4) + 1);
-	FileGlue(sp->Param, BATCH, '/', f4);
+	sp->Param = NEW(char, strlen(innconf->pathoutgoing) + 1 +
+						strlen(f4) + 1);
+	FileGlue(sp->Param, innconf->pathoutgoing, '/', f4);
     }
     else
 	sp->Param = COPY(f4);
 
     if (sp->SpoolName == NULL) {
-	sp->SpoolName = NEW(char, STRLEN(BATCH) + 1 + strlen(sp->Name) + 1);
-	FileGlue(sp->SpoolName, BATCH, '/', sp->Name);
+	sp->SpoolName = NEW(char, strlen(innconf->pathoutgoing) + 1 +
+						strlen(sp->Name) + 1);
+	FileGlue(sp->SpoolName, innconf->pathoutgoing, '/', sp->Name);
     }
 
     /* Make sure there is only one %s, and only one *. */

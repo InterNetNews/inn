@@ -348,6 +348,7 @@ BOOL NGrenumber(NEWSGROUP *ngp)
     struct stat		sb;
     char		(*mapped)[][OVERINDEXPACKSIZE];
     int			count;
+
     /* Get a valid offset into the active file. */
     if (ICDneedsetup) {
 	syslog(L_ERROR, "%s unsynched must reload before renumber", LogName);
@@ -367,8 +368,10 @@ BOOL NGrenumber(NEWSGROUP *ngp)
     lomark = himark + 1;
 
     if (innconf->storageapi) {
-	p = NEW(char, strlen(_PATH_OVERVIEWDIR) + strlen(ngp->Dir) + strlen(_PATH_OVERVIEW) + 32);
-	sprintf(p, "%s/%s/%s.index", _PATH_OVERVIEWDIR, ngp->Dir, _PATH_OVERVIEW);
+	p = NEW(char, strlen(innconf->pathoverview) + strlen(ngp->Dir) +
+					strlen(innconf->overviewname) + 32);
+	sprintf(p, "%s/%s/%s.index", innconf->pathoverview, ngp->Dir,
+					innconf->overviewname);
 	if ((fi = fopen(p, "r")) == NULL) {
 	    DISPOSE(p);
 	    return TRUE;

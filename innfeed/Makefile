@@ -54,13 +54,13 @@ EXTRAS		= testListener.pl inet_addr.c uio_maxiov.c configfile.y \
 OBJS		= $(SRC:.c=.o) \
 		  config_l.o config_y.o
 
-INNFEED_BIN	= $(NEWSBIN)/innfeed
+INNFEED_BIN	= $(PATHBIN)/innfeed
 
-STARTINNFEED	= $(NEWSBIN)/startinnfeed
+STARTINNFEED	= $(PATHBIN)/startinnfeed
 
 
-ALL_INSTALLED	= $(NEWSBIN)/innfeed $(NEWSBIN)/startinnfeed \
-		  $(NEWSBIN)/procbatch $(NEWSBIN)/convertconfig
+ALL_INSTALLED	= $(PATHBIN)/innfeed $(PATHBIN)/startinnfeed \
+		  $(PATHBIN)/procbatch $(PATHBIN)/convertconfig
 
 MAN_INSTALLED   = $(MANDIR)/man1/innfeed.1 $(MANDIR)/man5/innfeed.conf.5
 
@@ -117,19 +117,19 @@ install: $(ALL_INSTALLED)
 innfeed: $(OBJS) version.o $(MALLOC) $(LIBNEWS)
 	$(LINK.c) -o $@ $(OBJS) version.o $(LIBNEWS) $(LIBNEWS)
 
-$D$(NEWSBIN)/innfeed: innfeed
+$D$(PATHBIN)/innfeed: innfeed
 	$(SHELL) ../installit.sh $(OWNER) -m 550 -b .OLD $? $@
 
-$D$(NEWSBIN)/procbatch: procbatch
+$D$(PATHBIN)/procbatch: procbatch
 	$(SHELL) ../installit.sh $(OWNER) -m 550 -b .OLD $? $@
 
 
-$D$(NEWSBIN)/convertconfig: convertconfig
+$D$(PATHBIN)/convertconfig: convertconfig
 	$(SHELL) ../installit.sh $(OWNER) -m 550 -b .OLD $? $@
 	$(SAVEOLD)
 	$(COPYFILE)
 
-$D$(NEWSBIN)/startinnfeed: startinnfeed
+$D$(PATHBIN)/startinnfeed: startinnfeed
 	-$(SHELL) ../installit.sh -O root -G $(NEWSGROUP) -m 4550 -b .OLD $? $@
 	@ME=`(whoami || /usr/ucb/whoami) 2> /dev/null` ;\
 	if [ "X$$ME" = Xroot ]; then \

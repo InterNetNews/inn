@@ -36,9 +36,9 @@ BOOL		Tracing = FALSE;
 BOOL		DoLinks = TRUE;
 BOOL		DoCancels = TRUE;
 char		LogName[] = "SERVER";
-char		SPOOL[] = _PATH_SPOOL;
+char		*SPOOL = NULL;
 int		ErrorCount = IO_ERROR_COUNT;
-int		SPOOLlen = STRLEN(SPOOL);
+int		SPOOLlen;
 OPERATINGMODE	Mode = OMrunning;
 int		RemoteLimit = REMOTELIMIT;
 time_t		RemoteTimer = REMOTETIMER;
@@ -57,10 +57,9 @@ int		KeepLintQuiet = 0;
 
 STATIC char	*ErrlogBuffer;
 STATIC char	*LogBuffer;
-STATIC char	ERRLOG[] = _PATH_ERRLOG;
-STATIC char	INNDDIR[] = _PATH_INNDDIR;
-STATIC char	LOG[] = _PATH_LOGFILE;
-STATIC char	PID[] = _PATH_SERVERPID;
+STATIC char	*ERRLOG = NULL;
+STATIC char	*LOG = NULL;
+STATIC char	*PID = NULL;
 STATIC UID_T	NewsUID;
 STATIC GID_T	NewsGID;
 
@@ -320,7 +319,7 @@ GetNewsOwnerships()
     struct stat	Sb;
 
     /* Make sure item exists and is of the right type. */
-    if (stat(INNDDIR, &Sb) < 0)
+    if (stat(innconf->pathrun, &Sb) < 0)
 	return FALSE;
     if (!S_ISDIR(Sb.st_mode))
 	return FALSE;
@@ -349,7 +348,7 @@ void
 ReopenLog(F)
     FILE	*F;
 {
-    char	buff[sizeof LOG + sizeof ERRLOG + 4 + 1];
+    char	buff[SMBUF];
     char	*Name;
     char	*Buffer;
     int		mask;
@@ -579,12 +578,9 @@ int main(int ac, char *av[])
 
   /* Set some options from inn.conf(5) that can be overridden with
      command-line options if they exist */
-
-     if ((i = ReadInnConf(_PATH_CONFIG)) < 0) {
-	if (i == -1) (void)fprintf(stderr, "Cannot open %s\n", _PATH_CONFIG);
-	if (i == -2) (void)fprintf(stderr, "Cannot malloc for innconf\n");
-	exit(1);
-     }
+    if (ReadInnConf() < 0) exit(1);
+    LOG = COPY(cpcatpath(innconf->pathlog, _PATH_LOGFILE));
+    ERRLOG = COPY(cpcatpath(innconf->pathlog, _PATH_ERRLOG));
 
     if (innconf->allowreaders)
 	NNRPFollows = TRUE;
@@ -712,6 +708,8 @@ int main(int ac, char *av[])
 	exit(1);
     }
 
+    SPOOL = innconf->patharticles;
+    SPOOLlen = strlen(SPOOL);
     /* Go to where the data is. */
     if (chdir(SPOOL) < 0) {
 	syslog(L_FATAL, "%s cant chdir %s %m", LogName, SPOOL);
@@ -830,6 +828,8 @@ int main(int ac, char *av[])
     }
 
     /* See if another instance is alive. */
+    if (PID == NULL)
+	PID = COPY(cpcatpath(innconf->pathrun, _PATH_SERVERPID));
     if ((F = fopen(PID, "r")) != NULL) {
 	if (fgets(buff, sizeof buff, F) != NULL
 	 && ((pid = (PID_T) atol(buff)) > 0)
@@ -909,7 +909,8 @@ int main(int ac, char *av[])
 
 #if defined(DO_PERL)
     /* Load the Perl code */
-    PERLsetup(_PATH_PERL_STARTUP_INND, _PATH_PERL_FILTER_INND, "filter_art");
+    PERLsetup(cpcatpath(innconf->pathfilter, _PATH_PERL_STARTUP_INND),
+	cpcatpath(innconf->pathfilter, _PATH_PERL_FILTER_INND), "filter_art");
     PerlFilter (TRUE) ;
 #endif /* defined(DO_PERL) */
  

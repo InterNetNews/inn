@@ -15,7 +15,7 @@ PROF	= -pg
 
 CFLAGS += $(PERLINC)
 
-NNRPD	= ${NEWSBIN}/nnrpd
+NNRPD	= ${PATHBIN}/nnrpd
 
 SOURCES	= \
 	article.c group.c commands.c misc.c newnews.c nnrpd.c \

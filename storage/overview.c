@@ -212,16 +212,16 @@ BOOL OVERsetup(OVERSETUP type, void *value) {
 	if (value != (void *)NULL)
 	    OVERctl = COPY((char *)value);
 	else {
-	    OVERctl = COPY(_PATH_OVERVIEWCTL);
+	    OVERctl = COPY(cpcatpath(innconf->pathetc, _PATH_OVERVIEWCTL));
 	}
 	break;
     case OVER_DIR:
 	DISPOSE(OVERdir);
-	OVERdir = COPY((char *)(value ? value : _PATH_OVERVIEWDIR));
+	OVERdir = COPY((char *)(value ? value : innconf->pathoverview));
 	break;
     case OVER_NEWDIR:
 	DISPOSE(OVERnewdir);
-	OVERnewdir = COPY((char *)(value ? value : _PATH_OVERVIEWDIR));
+	OVERnewdir = COPY((char *)(value ? value : innconf->pathoverview));
 	break;
     case OVER_MODE:
 	DISPOSE(OVERmode);
@@ -251,13 +251,13 @@ BOOL OVERinit(void) {
 	return TRUE;
 
     if (OVERctl == (char *)NULL) {
-	OVERctl = COPY(_PATH_OVERVIEWCTL);
+	OVERctl = COPY(cpcatpath(innconf->pathetc, _PATH_OVERVIEWCTL));
     }
     if (OVERdir == (char *)NULL) {
-	OVERdir = COPY(_PATH_OVERVIEWDIR);
+	OVERdir = innconf->pathoverview;
     }
     if (OVERnewdir == (char *)NULL) {
-	OVERnewdir = COPY(_PATH_OVERVIEWDIR);
+	OVERnewdir = innconf->pathoverview;
     }
     if (OVERmode == (char *)NULL) {
 	OVERmode = COPY(DEFAULTMODE);

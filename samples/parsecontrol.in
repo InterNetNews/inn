@@ -4,8 +4,8 @@
 
 . _INNSHELLVARS_
 
-WRITELOG=${NEWSBIN}/writelog
-SM="${NEWSBIN}/sm -q"
+WRITELOG=${PATHBIN}/writelog
+SM="${PATHBIN}/sm -q"
 
 PGPVERIFY=false
 if [ "X$WANT_PGPVERIFY" = XDO ]; then

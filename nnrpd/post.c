@@ -462,7 +462,7 @@ ProcessHeaders(linecount)
 
     /* Set Organization */
     if (HDR(_organization) == NULL
-     && (p = GetConfigValue(_CONF_ORGANIZATION)) != NULL) {
+     && (p = innconf->organization) != NULL) {
 	(void)strcpy(orgbuff, p);
 	HDR(_organization) = orgbuff;
     }
@@ -473,13 +473,13 @@ ProcessHeaders(linecount)
 
     /* MIME headers. */
     if (HDR(_mimeversion) == NULL
-     && (p = GetConfigValue(_CONF_MIMEVERSION)) != NULL) {
+     && (p = innconf->mimeversion) != NULL) {
 	(void)strcpy(mimeversion, p);
 	HDR(_mimeversion) = mimeversion;
 
 	/* Set Content-Type */
 	if (HDR(_contenttype) == NULL) {
-	    if ((p = GetConfigValue(_CONF_CONTENTTYPE)) == NULL)
+	    if ((p = innconf->mimecontenttype) == NULL)
 		return "Can't get \"Content-Type\" header";
 	    (void)strcpy(mimetype, p);
 	    HDR(_contenttype) = mimetype;
@@ -487,7 +487,7 @@ ProcessHeaders(linecount)
 
 	/* Set Content-Transfer-Encoding */
 	if (HDR(_contenttransferencoding) == NULL) {
-	    if ((p = GetConfigValue(_CONF_ENCODING)) == NULL)
+	    if ((p = innconf->mimeencoding) == NULL)
 		return "Can't get \"Content-Transfer-Encoding\" header";
 	    (void)strcpy(mimeencoding, p);
 	    HDR(_contenttransferencoding) = mimeencoding;
@@ -519,10 +519,10 @@ ProcessHeaders(linecount)
     HDR (_xtrace) = tracebuff ;
 
     /* X-Complaints-To; set */
-    if ((p = GetConfigValue (_CONF_COMPLAINTS)) != NULL)
+    if ((p = innconf->complaints) != NULL)
       sprintf (complaintsbuff, "%s",p) ;
     else {
-      if ((p = GetConfigValue (_CONF_FROMHOST)) != NULL) 
+      if ((p = innconf->fromhost) != NULL) 
 	sprintf (complaintsbuff, "%s@%s",
                 NEWSMASTER, p);
     }
@@ -530,7 +530,7 @@ ProcessHeaders(linecount)
 	HDR(_xcomplaintsto) = complaintsbuff ;
 
     /* Clear out some headers that should not be here */
-    if (GetBooleanConfigValue(_CONF_STRIPPOSTCC, FALSE)) {
+    if (innconf->strippostcc) {
 	HDR(_cc) = NULL;
 	HDR(_bcc) = NULL;
 	HDR(_to) = NULL;
@@ -609,7 +609,7 @@ MailArticle(group, article)
 
     /* Now build up the command (ignore format/argument mismatch errors,
      * in case %s isn't in _PATH_SENDMAIL) and send the headers. */
-    if ((mta = GetConfigValue(_CONF_MTA)) == NULL) {
+    if ((mta = innconf->mta) == NULL) {
 	(void)sprintf(buff, _PATH_SENDMAIL, address);
     }
     else {
@@ -811,7 +811,7 @@ Spoolit(article, Error)
     sprintf(CANTSPOOL, "%s and can't write text to local spool file", Error);
 
     /* Try to write it to the spool dir. */
-    TempName(_PATH_SPOOLNEWS, temp);
+    TempName(innconf->pathincoming, temp);
     /* rnews -U ignores files starting with . */
     strrchr(temp, '/')[1] = '.';
     if ((F = fopen(temp, "w")) == NULL) {
@@ -849,7 +849,7 @@ Spoolit(article, Error)
     if (fclose(F))
 	return CANTSPOOL;
 
-    TempName(_PATH_SPOOLNEWS, path);
+    TempName(innconf->pathincoming, path);
     if (rename(temp, path) < 0) {
         syslog(L_FATAL, "cant rename %s %s %m", temp, path);
 	return CANTSPOOL;
@@ -877,7 +877,7 @@ ARTpost(article, idbuff)
     FILE		*ftd;
     int			result;
 
-    sprintf(TrackID,"%s/trackposts/track.", _PATH_MOST_LOGS);
+    sprintf(TrackID,"%s/trackposts/track.", innconf->pathlog);
 
     /* Set up the other headers list. */
     if (OtherHeaders == NULL) {
@@ -897,7 +897,7 @@ ARTpost(article, idbuff)
     for (i = 0, p = article; p; i++, p = next + 1)
 	if ((next = strchr(p, '\n')) == NULL)
 	    break;
-    if (GetBooleanConfigValue(_CONF_CHECK_INC_TEXT, TRUE) == TRUE) {
+    if (innconf->checkincludedtext) {
 	if ((error = CheckIncludedText(article, i)) != NULL)
 		return error;
     }
@@ -935,8 +935,8 @@ ARTpost(article, idbuff)
      && !EQ(p, "poster")
      && (error = ValidNewsgroups(p, (char *)NULL)) != NULL)
 	return error;
-    if (((p = GetConfigValue(_CONF_LOCAL_MAX_ARTSIZE)) != NULL) &&
-			(atoi(p) > 0) && (strlen(article) > atoi(p))) {
+    if ((innconf->localmaxartsize > 0) &&
+		(strlen(article) > innconf->localmaxartsize)) {
 	    (void)sprintf(Error,
 		"Article is bigger then local limit of %ld bytes\n",
 		atoi(p));
@@ -949,7 +949,7 @@ ARTpost(article, idbuff)
         return p;
 #endif /* defined(DO_PERL) */
 
-    if (GetBooleanConfigValue(_CONF_NNRP_SPOOLFIRST, FALSE))
+    if (innconf->spoolfirst)
 	return Spoolit(article, Error);
 
     if (Offlinepost)

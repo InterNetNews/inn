@@ -824,7 +824,7 @@ BOOL cnfs_init(BOOL *selfexpire) {
 
     *selfexpire = FALSE;
     if (innconf == NULL) {
-	if ((ret = ReadInnConf(_PATH_CONFIG)) < 0) {
+	if ((ret = ReadInnConf()) < 0) {
 	    syslog(L_ERROR, "%s: ReadInnConf failed, returned %d", LocalLogName, ret);
 	    SMseterror(SMERR_INTERNAL, "ReadInnConf() failed");
 	    return FALSE;

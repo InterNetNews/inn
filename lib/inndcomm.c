@@ -28,7 +28,7 @@
 
 #define MIN_BUFFER_SIZE		4096
 
-STATIC char			ICCsockname[sizeof _PATH_TEMPSOCK];
+STATIC char			*ICCsockname = NULL;
 #if	defined(DO_HAVE_UNIX_DOMAIN)
 STATIC struct sockaddr_un	ICCserv;
 STATIC struct sockaddr_un	ICCclient;
@@ -59,7 +59,8 @@ ICCopen()
     int		oerrno;
 
     /* Create a temporary name. */
-    (void)strcpy(ICCsockname, _PATH_TEMPSOCK);
+    if (ICCsockname == NULL)
+	ICCsockname = COPY(cpcatpath(innconf->pathrun, _PATH_TEMPSOCK));
     (void)mktemp(ICCsockname);
     if (unlink(ICCsockname) < 0 && errno != ENOENT) {
 	ICCfailure = "unlink";
@@ -89,7 +90,9 @@ ICCopen()
     /* Name the server's socket. */
     (void)memset((POINTER)&ICCserv, 0, sizeof ICCserv);
     ICCserv.sun_family = AF_UNIX;
-    (void)strcpy(ICCserv.sun_path, _PATH_NEWSCONTROL);
+    (void)strcpy(ICCserv.sun_path, innconf->pathrun);
+    (void)strcat(ICCserv.sun_path, "/");
+    (void)strcat(ICCserv.sun_path, _PATH_NEWSCONTROL);
 #else
     /* Make a named pipe and open it. */
     mask = umask(0);
@@ -145,7 +148,7 @@ ICCserverpid()
     char		buff[SMBUF];
 
     pid = 1;
-    if ((F = fopen(_PATH_SERVERPID, "r")) != NULL) {
+    if ((F = fopen(cpcatpath(innconf->pathrun, _PATH_SERVERPID), "r")) != NULL) {
 	if (fgets(buff, sizeof buff, F) != NULL)
 	    pid = (PID_T) atol(buff);
 	(void)fclose(F);
@@ -257,7 +260,7 @@ ICCcommand(cmd, argv, replyp)
 	return -1;
     }
 #else
-    if ((fd = open(_PATH_NEWSCONTROL, O_WRONLY)) < 0) {
+    if ((fd = open(cpcatpath(inconf->pathrun, _PATH_NEWSCONTROL), O_WRONLY)) < 0) {
 	DISPOSE(buff);
 	ICCfailure = "open";
 	return -1;

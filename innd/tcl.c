@@ -19,8 +19,8 @@ BOOL             TCLFilterActive;
 BUFFER           *TCLCurrArticle;
 ARTDATA          *TCLCurrData;
 
-STATIC char      TCLSTARTUP[] = _PATH_TCL_STARTUP;
-STATIC char      TCLFILTER[] = _PATH_TCL_FILTER;
+STATIC char      *TCLSTARTUP = NULL;
+STATIC char      *TCLFILTER = NULL;
 
 
 void
@@ -49,6 +49,8 @@ TCLreadfilter()
     }
 
     /* read the filter file */
+    if (TCLFILTER == NULL)
+	TCLFILTER = COPY(cpcatpath(innconf->pathfilter, _PATH_TCL_FILTER));
     code = Tcl_EvalFile(TCLInterpreter, TCLFILTER);
     if (code != TCL_OK) {
 	syslog(L_ERROR, "%s cant evaluate Tcl filter file: %s", LogName,
@@ -177,6 +179,8 @@ TCLsetup()
     int code;
     
     TCLInterpreter = Tcl_CreateInterp();
+    if (TCLSTARTUP == NULL)
+	TCLSTARTUP = cpcatrpath(innconf->pathfilter, _PATH_TCL_STARTUP);
     code = Tcl_EvalFile(TCLInterpreter, TCLSTARTUP);
     if (code != TCL_OK) {
 	syslog(L_FATAL, "%s cant read Tcl startup file: %s", LogName,

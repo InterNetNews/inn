@@ -166,7 +166,7 @@ void SITEmark(SITE *sp, NEWSGROUP *ngp) {
 */
 BOOL ARTreadschema(void)
 {
-    static char			SCHEMA[] = _PATH_SCHEMA;
+    static char			*SCHEMA = NULL;
     FILE		        *F;
     int		                i;
     char	 	        *p;
@@ -181,6 +181,8 @@ BOOL ARTreadschema(void)
     }
 
     /* Open file, count lines. */
+    if (SCHEMA == NULL)
+	SCHEMA = COPY(cpcatpath(innconf->pathetc, _PATH_SCHEMA));
     if ((F = fopen(SCHEMA, "r")) == NULL)
 	return FALSE;
     for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
@@ -1240,7 +1242,6 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const BOOL Trusted)
 */
 STATIC void ARTcontrol(ARTDATA *Data, HASH hash, char *Control)
 {
-    static char		CTLBIN[] = _PATH_CONTROLPROGS;
     char	        *p;
     char		buff[SMBUF];
     char		*av[6];
@@ -1268,11 +1269,11 @@ STATIC void ARTcontrol(ARTDATA *Data, HASH hash, char *Control)
      * the name is "safe" -- no slashes in the pathname. */
     if (p - Control + STRLEN( _PATH_BADCONTROLPROG) >= SMBUF-4
      || strchr(Control, '/') != NULL)
-	FileGlue(buff, CTLBIN, '/', _PATH_BADCONTROLPROG);
+	FileGlue(buff, innconf->pathcontrol, '/', _PATH_BADCONTROLPROG);
     else {
-	FileGlue(buff, CTLBIN, '/', Control);
+	FileGlue(buff, innconf->pathcontrol, '/', Control);
 	if (stat(buff, &Sb) < 0 || (Sb.st_mode & EXECUTE_BITS) == 0)
-	    FileGlue(buff, CTLBIN, '/', _PATH_BADCONTROLPROG);
+	    FileGlue(buff, innconf->pathcontrol, '/', _PATH_BADCONTROLPROG);
     }
 
     /* If it's an ihave or sendme, check the site named in the message. */
@@ -1743,7 +1744,7 @@ STRING ARTpost(CHANNEL *cp)
     int			hopcount;
     char		**distributions;
     STRING		error;
-    int			error_code;
+    int			error_code = 0;
     char		ControlWord[SMBUF];
     int			ControlHeader;
     int			oerrno;
@@ -1933,10 +1934,9 @@ STRING ARTpost(CHANNEL *cp)
 	ControlHeader = _control;
     else if (HDR(_alsocontrol)[0] != '\0')
 	ControlHeader = _alsocontrol;
-    else {
+    else 
 	ControlHeader = -1;
-	LikeNewgroup = FALSE;
-    }
+    LikeNewgroup = FALSE;
     if (ControlHeader >= 0) {
 	/* Nip off the first word into lowercase. */
 	(void)strncpy(ControlWord, HDR(ControlHeader), sizeof ControlWord);

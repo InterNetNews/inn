@@ -48,10 +48,10 @@ typedef struct _ARTOVERFIELD {
 typedef enum {NO_TRANS, FROM_HIST, FROM_SPOOL} TRANS;
 #define MAXOVERLINE	4096
 
-STATIC char		*ACTIVE = _PATH_ACTIVE;
-STATIC char		SPOOL[] = _PATH_SPOOL;
+STATIC char		*ACTIVE = NULL;
+STATIC char		*SPOOL= NULL;
 STATIC char		*HISTORYDIR;
-STATIC char		HISTORY[] = _PATH_HISTORY;
+STATIC char		*HISTORY = NULL;
 STATIC char		MESSAGEID[] = "Message-ID:";
 STATIC char		EXPIRES[] = "Expires:";
 STATIC char		DATE[] = "Date:";
@@ -60,7 +60,7 @@ STATIC BOOL		INNDrunning;
 STATIC char		*TextFile;
 STATIC char		Reason[] = "makehistory is running";
 STATIC TIMEINFO		Now;
-STATIC char		*SCHEMA = _PATH_SCHEMA;
+STATIC char		*SCHEMA = NULL;
 STATIC ARTOVERFIELD	*ARTfields;
 STATIC int		ARTfieldsize;
 STATIC ARTOVERFIELD	*Datep = (ARTOVERFIELD *)NULL;
@@ -1359,6 +1359,11 @@ main(int ac, char *av[])
     FILE		*index = (FILE *)NULL;
 
     /* Set defaults. */
+    if (ReadInnConf() < 0) exit (-1);
+    HISTORY = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
+    ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
+    SCHEMA = COPY(cpcatpath(innconf->pathdb, _PATH_SCHEMA));
+    SPOOL = innconf->patharticles;
     TextFile = HISTORY;
     DoRebuild = TRUE;
     JustRebuild = FALSE;
@@ -1480,7 +1485,7 @@ main(int ac, char *av[])
 	Usage();
     if ((p = strrchr(TextFile, '/')) == NULL) {
 	/* find the default history file directory */
-	HISTORYDIR = COPY(_PATH_HISTORY);
+	HISTORYDIR = COPY(HISTORY);
 	p = strrchr(HISTORYDIR, '/');
 	if (p != NULL) {
 	    *p = '\0';
@@ -1540,7 +1545,7 @@ main(int ac, char *av[])
     }
     ARTreadschema(Overview);
     if (Overview) {
-	OVERmmap = GetBooleanConfigValue(_CONF_OVERMMAP, TRUE);
+	OVERmmap = innconf->overviewmmap;
 	if (OVERmmap)
 	    val = TRUE;
 	else

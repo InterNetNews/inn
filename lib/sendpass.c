@@ -33,8 +33,9 @@ int NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer)
 	return -1;
 
     /* Open the password file; coarse check on errno, but good enough. */
-    if ((F = fopen(_PATH_NNTPPASS, "r")) == NULL)
+    if ((F = fopen(cpcatpath(innconf->pathetc, _PATH_NNTPPASS), "r")) == NULL) {
 	return errno == EPERM ? -1 : 0;
+    }
 
     /* Scan the file, skipping blank and comment lines. */
     while (fgets(buff, sizeof buff, F) != NULL) {

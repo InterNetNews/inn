@@ -146,7 +146,7 @@ BOOL SendIOb(char *p, int len) {
 */
 void ARTreadschema(void)
 {
-    static char			SCHEMA[] = _PATH_SCHEMA;
+    static char			*SCHEMA = NULL;
     FILE			*F;
     char			*p;
     ARTOVERFIELD		*fp;
@@ -154,6 +154,8 @@ void ARTreadschema(void)
     char			buff[SMBUF];
 
     /* Open file, count lines. */
+    if (SCHEMA == NULL)
+	SCHEMA = COPY(cpcatpath(innconf->pathetc, _PATH_SCHEMA));
     if ((F = fopen(SCHEMA, "r")) == NULL)
 	return;
     for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
@@ -377,7 +379,7 @@ STATIC BOOL ARTopenbyid(char *msg_id, ARTNUM *ap)
 	    }
 	    CloseOnExec(QIOfileno(ARTqp), TRUE);
 	}
-	p += strlen(_PATH_SPOOL) + 1;
+	p += strlen(SPOOL) + 1;
 	if ((q = strrchr(p, '/')) != NULL)
 	    *q++ = '\0';
 	if (GRPlast[0] && EQ(p, GRPlast))
@@ -911,7 +913,7 @@ STATIC BOOL OVERopen(void)
 	    return FALSE;
 
 	OVERarticle = 0;
-	(void)sprintf(name, "%s/%s/%s", _PATH_OVERVIEWDIR, GRPlast, _PATH_OVERVIEW);
+	(void)sprintf(name, "%s/%s/%s", OVERVIEWDIR, GRPlast, innconf->overviewname);
 	if (OVERmmap) {
 	    if ((fd = open(name, O_RDONLY)) < 0)
 		return FALSE;

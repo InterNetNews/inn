@@ -147,6 +147,61 @@ useful for statistics.
 .I logipaddr
 Should the IP address of a host be logged rather than the entry in
 the Path: line. This is useful for tracking forged postings.
+.TP
+.I overviewname
+What file name to use for storing overview data. Defaults to
+``.overview''.
+.TP
+.I pathnews
+The news user home directory and sometimes the root of the news
+hierarchy.
+.TP
+.I pathbin
+The path to the news binaries.
+.TP
+.I pathfiler
+The path to the perl and TCL filters
+.TP
+.I pathcontrol
+The path to the news control files. The files in this directory represent
+the commands that will be executed based on the Control: line in
+news articles. Be careful what you put in here, as it can become a
+security risk.
+.TP
+.I pathdb
+The path to the database files used and changed by the server. Files
+currently in this directory are: active, history* and newsgroups.
+Historically, this defaulted to pathetc, but is not split.
+.TP
+.I pathetc
+The news configuration files.
+.TP
+.I pathrun
+Files required while the server is running. This includes locks and
+the channel socket.
+.TP
+.I pathlog
+Where the news log files are written.
+.TP
+.I pathspool
+The root of the news spool hierarchy. This isn't actually used at
+the moment.
+.TP
+.I patharticles
+Path where the news articles are stored.
+.TP
+.I pathoverview
+Path to news overview files. Can be set to the same as ``patharticles''
+if ``overviewname'' is set to something sensible.
+.TP
+.I pathoutgoing
+Default path for outgoing feed files.
+.TP
+.I pathincoming
+Path where incoming batched news is stored.
+.TP
+.I patharchive
+A path to store archived news.
 .PP
 The following parameters are used only by 
 .I nnrpd

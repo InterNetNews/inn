@@ -31,9 +31,9 @@ DistMatches(distribs, files)
     /* Loop through the file list, trying to open one of them.. */
     for (save = files[0]; *files; files++) {
       /* this next line makes me nervous--from unoff4... */
-	(void)sprintf(buff, "%s/%s/%s", _PATH_SPOOL, files[0],
+	(void)sprintf(buff, "%s/%s/%s", SPOOL, files[0],
 		files[0] + strlen(files[0]) + 1);
-	for (p = &buff[STRLEN(_PATH_SPOOL)]; *p; p++)
+	for (p = &buff[strlen(SPOOL)]; *p; p++)
 	    if (*p == '.')
 		*p = '/';
 	if ((qp = QIOopen(buff)) != NULL)

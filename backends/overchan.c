@@ -75,7 +75,7 @@ STATIC BOOL WriteData(char *Dir, char *Art, char *Rest, BOOL Complain)
     struct stat		Sb;
 
     /* Name the data file. */
-    (void)sprintf(file, "%s/%s", Dir, _PATH_OVERVIEW);
+    (void)sprintf(file, "%s/%s", Dir, innconf->overviewname);
     /* Open and lock the file. */
     for ( ; ; ) {
 	if ((fd = open(file, O_WRONLY | O_CREAT | O_APPEND, ARTFILE_MODE)) < 0) {
@@ -139,7 +139,7 @@ STATIC BOOL WriteUnifiedData(HASH *Hash, char *Dir, char *Art)
     char                packed[OVERINDEXPACKSIZE];
 
     /* Name the data file. */
-    (void)sprintf(file, "%s/%s.index", Dir, _PATH_OVERVIEW);
+    (void)sprintf(file, "%s/%s.index", Dir, innconf->overviewname);
     /* Open and lock the file. */
     for ( ; ; ) {
 	if ((fd = open(file, O_WRONLY | O_CREAT | O_APPEND, ARTFILE_MODE)) < 0) {
@@ -303,7 +303,8 @@ int main(int ac, char *av[])
     char		*Dir;
 
     /* Set defaults. */
-    Dir = _PATH_OVERVIEWDIR;
+    if (ReadInnConf() < 0) exit(-1);
+    Dir = innconf->pathoverview;
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
@@ -324,7 +325,7 @@ int main(int ac, char *av[])
 		Dir, strerror(errno));
 	exit(1);
     }
-    StorageAPI = GetBooleanConfigValue(_CONF_STORAGEAPI, FALSE);
+    StorageAPI = innconf->storageapi;
 
     if (ac == 0)
 	ProcessIncoming(QIOfdopen(STDIN));

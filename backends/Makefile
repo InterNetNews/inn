@@ -29,7 +29,7 @@ all:		$(ALL)
 install:	
 	for i in ${ALL}; \
 		do $(SHELL) ../installit.sh $(OWNER) -m 0555 \
-			-b .OLD $${i} ${NEWSBIN}/$${i}; \
+			-b .OLD $${i} ${PATHBIN}/$${i}; \
 	done
 
 clobber clean:

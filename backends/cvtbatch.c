@@ -34,7 +34,7 @@ main(ac, av)
     int			ac;
     char		*av[];
 {
-    static char		SPOOL[] = _PATH_SPOOL;
+    static char		*SPOOL = NULL;
     static char		HDR[] = "Message-ID:";
     int			i;
     register QIOSTATE	*qp;
@@ -46,6 +46,8 @@ main(ac, av)
     register BOOL	Dirty;
     struct stat		Sb;
 
+    if (ReadInnConf() < 0) exit(-1);
+    SPOOL = innconf->patharticles;
     /* Parse JCL. */
     format = "nm";
     while ((i = getopt(ac, av, "w:")) != EOF)
@@ -80,9 +82,9 @@ main(ac, av)
     qp = QIOfdopen((int)fileno(stdin));
     while ((line = QIOread(qp)) != NULL) {
 	if (line[0] == '/'
-	 && line[STRLEN(SPOOL)] == '/'
-	 && EQn(line, SPOOL, STRLEN(SPOOL)))
-	    line += STRLEN(SPOOL) + 1;
+	 && line[strlen(SPOOL)] == '/'
+	 && EQn(line, SPOOL, strlen(SPOOL)))
+	    line += strlen(SPOOL) + 1;
 
 	for (p = line; *p; p++)
 	    if (ISWHITE(*p)) {

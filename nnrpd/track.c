@@ -32,7 +32,7 @@ int TrackClient(char *client, char *user)
 	FILE *fd;
 	char line[MAX_LEN],*p,*pp,*lp;
 
-	strcpy(dbfile, _PATH_NEWSLIB);
+	strcpy(dbfile, innconf->pathetc);
 	strcat(dbfile, "/nnrpd.track");
 
 	RARTon=FALSE;

@@ -109,7 +109,7 @@ static void STATUSsummary(void)
   extern int        PerlFilterActive;
 #endif /* defined(DO_PERL) */
  
-  sprintf (TempString, "%s/%s", _PATH_MOST_LOGS, STATUS_FILE);
+  sprintf (TempString, "%s/%s", innconf->pathlog, STATUS_FILE);
   if ((F = fopen(TempString, "w")) == NULL)
     return;
 
@@ -221,7 +221,7 @@ static void STATUSsummary(void)
     fprintf (F, "%d days\n", (int) (innconf->artcutoff / 3600L / 24L));
   else
     fprintf (F, "none\n");
-  fprintf (F, "               Timeout period: %d seconds\n",
+  fprintf (F, "               Timeout period: %ld seconds\n",
 	   (long)TimeOut.tv_sec);
   if (innconf->remembertrash) {
 	fprintf (F, "               Remember Trash: Yes\n");
@@ -278,11 +278,11 @@ static void STATUSsummary(void)
     fprintf (F, "       size: %-8s ",        PrettySize(status[j].Size, str));
     fprintf (F, "       bad sites: %-7ld\n", status[j].Unwanted_s);
     fprintf (F, "  Protocol:\n");
-    fprintf (F, "      Ihave: %-6ld SendIt[%d]: %-6ld    Got[%d]: %-6ld Deferred[%d]: %d\n",
+    fprintf (F, "      Ihave: %-6ld SendIt[%d]: %-6ld    Got[%d]: %-6ld Deferred[%d]: %ld\n",
 	     status[j].Ihave, NNTP_SENDIT_VAL, status[j].Ihave_SendIt,
 	     NNTP_HAVEIT_VAL, status[j].Ihave_Duplicate, NNTP_RESENDIT_VAL,
 	     status[j].Ihave_Deferred);
-    fprintf (F, "      Check: %-6ld SendIt[%d]: %-6ld    Got[%d]: %-6ld Deferred[%d]: %d\n",
+    fprintf (F, "      Check: %-6ld SendIt[%d]: %-6ld    Got[%d]: %-6ld Deferred[%d]: %ld\n",
 	     status[j].Check, NNTP_OK_SENDID_VAL, status[j].Check_send,
 	     NNTP_ERR_GOTID_VAL, status[j].Check_got, NNTP_RESENDID_VAL,
 	     status[j].Check_deferred);

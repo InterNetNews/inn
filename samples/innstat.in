@@ -30,7 +30,7 @@ ctlinnd mode 2>&1
 ##  Show disk usage.  You might have to change this.
 echo ''
 echo 'Disk usage:'
-${INNDF} ${SPOOL} ${OVERVIEWDIR} ${NEWSLIB} ${INCOMING} ${BATCH} ${MOST_LOGS} |
+${INNDF} ${SPOOL} ${OVERVIEWDIR} ${PATHETC} ${INCOMING} ${BATCH} ${MOST_LOGS} |
 	grep '/dev/' | sort -u
 
 ##  Show size of batch files.

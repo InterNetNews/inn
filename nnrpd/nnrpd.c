@@ -44,10 +44,13 @@ typedef struct _CMDENT {
 
 
 char	NOACCESS[] = NNTP_ACCESS;
-char	ACTIVE[] = _PATH_ACTIVE;
-char	ACTIVETIMES[] = _PATH_ACTIVETIMES;
-char	HISTORY[] = _PATH_HISTORY;
-char	NEWSGROUPS[] = _PATH_NEWSGROUPS;
+char	*ACTIVE = NULL;
+char	*ACTIVETIMES = NULL;
+char	*HISTORY = NULL;
+char	*NEWSGROUPS = NULL;
+char	*NNRPACCESS = NULL;
+char	*SPOOL = NULL;
+char	*OVERVIEWDIR = NULL;
     /* Default permission -- change with adb. */
 BOOL	PERMdefault = FALSE;
 BOOL	ForceReadOnly = FALSE;
@@ -215,7 +218,7 @@ CMDhelp(ac, av)
 	else
 	    Printf("  %s %s\r\n", cp->Name, cp->Help);
     Printf("Report problems to <%s@%s>\r\n",
-	NEWSMASTER, GetConfigValue(_CONF_FROMHOST));
+	NEWSMASTER, innconf->fromhost);
     Reply(".\r\n");
 }
 
@@ -324,7 +327,7 @@ Address2Name(ap, hostname, i)
 
     /* Only needed for misconfigured YP/NIS systems. */
     if (strchr(hostname, '.') == NULL
-     && (p = GetConfigValue(_CONF_DOMAIN)) != NULL) {
+     && (p = innconf->domain) != NULL) {
 	(void)strcat(hostname, ".");
 	(void)strcat(hostname, p);
     }
@@ -503,7 +506,7 @@ StartConnection(accesslist)
 
     syslog(L_NOTICE, "%s connect", ClientHost);
     if (!PERMinfile(ClientHost, ClientAddr, (char *)NULL, (char *)NULL,
-	    accesslist, _PATH_NNRPACCESS)) {
+	    accesslist, NNRPACCESS)) {
 	syslog(L_NOTICE, "%s no_access", ClientHost);
 	Printf("%d You are not in my access file.  Goodbye.\r\n",
 	    NNTP_ACCESS_VAL);
@@ -662,6 +665,11 @@ main(argc, argv, env)
     Reject = NULL;
     RARTenable=FALSE;
     LLOGenable=FALSE;
+
+    openlog("nnrpd", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+
+    if (ReadInnConf() < 0) exit(-1);
+
     while ((i = getopt(argc, argv, "b:Di:lop:Rr:S:s:t")) != EOF)
 	switch (i) {
 	default:
@@ -707,7 +715,13 @@ main(argc, argv, env)
     if (argc)
 	Usage();
 
-    openlog("nnrpd", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    HISTORY = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
+    ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
+    ACTIVETIMES = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVETIMES));
+    NEWSGROUPS = COPY(cpcatpath(innconf->pathdb, _PATH_NEWSGROUPS));
+    NNRPACCESS = COPY(cpcatpath(innconf->pathetc, _PATH_NNRPACCESS));
+    SPOOL = innconf->patharticles;
+    OVERVIEWDIR = innconf->pathoverview;
 
     if (DaemonMode) {
 	if ((lfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -777,22 +791,18 @@ listen_loop:
     }
     STATstart = TIMEINFOasDOUBLE(Now);
 
-    if ((MyHostName = GetConfigValue(_CONF_PATHHOST)) == NULL) {
+    MyHostName = innconf->pathhost;
+    if (MyHostName == NULL) {
 	syslog(L_FATAL, "cant getconfigvalue %m");
 	ExitWithStats(1);
     }
-    MyHostName = COPY(MyHostName);
 
+    ClientTimeout = innconf->clienttimeout;
+    PERMnewnews = innconf->allownewnews;
+    ARTmmap = innconf->articlemmap;
+    OVERmmap = innconf->overviewmmap;
+    StorageAPI = innconf->storageapi;
 
-    if ((p = GetConfigValue(_CONF_CLIENT_TIMEOUT)) != NULL)
-	ClientTimeout = atoi(p);
-    else
-	ClientTimeout = 10*60;
-    PERMnewnews = GetBooleanConfigValue(_CONF_ALLOW_NEWNEWS, TRUE);
-
-    ARTmmap = GetBooleanConfigValue(_CONF_ARTMMAP, TRUE);
-    OVERmmap = GetBooleanConfigValue(_CONF_OVERMMAP, TRUE);
-    StorageAPI = GetBooleanConfigValue(_CONF_STORAGEAPI, FALSE);
     if (OVERmmap)
 	val = TRUE;
     else
@@ -851,7 +861,7 @@ listen_loop:
 	gettimeofday(&tv,NULL);
 	count += pid;
 	vid = tv.tv_sec ^ tv.tv_usec ^ pid ^ count;
-	sprintf(LocalLogFileName, "%s/tracklogs/log-%ld", _PATH_MOST_LOGS,vid);
+	sprintf(LocalLogFileName, "%s/tracklogs/log-%ld", innconf->pathlog,vid);
 	if ((locallog=fopen(LocalLogFileName, "w")) != NULL) {
 		syslog(L_NOTICE, "%s Local Logging begins (%s) %s",ClientHost, Username, LocalLogFileName);
 		fprintf(locallog, "%s Tracking Enabled (%s)\n", ClientHost, Username);
@@ -878,7 +888,7 @@ listen_loop:
 
 #if defined(DO_PERL)
     /* Load the Perl code */
-    PERLsetup(NULL, _PATH_PERL_FILTER_NNRPD, "filter_post");
+    PERLsetup(NULL, cpcatpath(p, innconf->pathfilter, _PATH_PERL_FILTER_NNRPD), "filter_post");
     PerlFilter (TRUE) ;
 #endif /* defined(DO_PERL) */
 

@@ -59,14 +59,14 @@
 #            or greater.
 #          - look at the parameters in the configuration file (section
 #            'default')
-#          - copy the configuration file into ${NEWSLIB}/innreport.conf
-#          - copy the INN module into ${NEWSLIB}/innreport_inn.pm
-#          - copy this script into ${NEWSLIB}/innreport
+#          - copy the configuration file into ${PATHETC}/innreport.conf
+#          - copy the INN module into ${PATHETC}/innreport_inn.pm
+#          - copy this script into ${PATHETC}/innreport
 #          - be sure that the news user can run it (chmod 755 or 750)
 #          - in "scanlog", comment the line containing innlog and add:
-#            ${NEWSLIB}/innreport -f ${NEWSLIB}/innreport.conf ${OLD_SYSLOG}
+#            ${PATHETC}/innreport -f ${PATHETC}/innreport.conf ${OLD_SYSLOG}
 #            or, if you want to change some options:
-#    ${NEWSLIB}/innreport -f ${NEWSLIB}/innreport.conf options ${OLD_SYSLOG}
+#    ${PATHETC}/innreport -f ${PATHETC}/innreport.conf options ${OLD_SYSLOG}
 #
 # Report: please report bugs (preferably) to the innreport mailing list
 #         (see below) or directly to the author (do not forget to

@@ -8,10 +8,10 @@
 #include "paths.h"
 #include "libinn.h"
 #include "macros.h"
+#include "logging.h"
 
 /* Global and initialized; to work around SunOS -Bstatic bug, sigh. */
 STATIC char		ConfigBuff[SMBUF] = "";
-
 /*
   To add a new config value, add it to the following:
 	Use the comment embedded method in include/libinn.h, then
@@ -26,8 +26,23 @@ STATIC char		ConfigBuff[SMBUF] = "";
 	wherever you need it	:	Use as innconf->varname
 */
 
-struct	conf_vars *innconf = NULL;
-char *innconffile = _PATH_CONFIG;
+struct conf_vars	*innconf = NULL;
+char			*innconffile = _PATH_CONFIG;
+char			pathbuff[SMBUF];
+
+char *cpcatpath(p, f)
+    char *p;
+    char *f;
+{
+    if (strchr(f, '/') != NULL) {
+	return(f);
+    } else {
+	strcpy(pathbuff, p);
+	strcat(pathbuff, "/");
+	strcat(pathbuff, f);
+    }
+    return(pathbuff);
+}
 
 char *GetFileConfigValue(char *value)
 {
@@ -115,7 +130,7 @@ void SetDefaults()
 char *p;	/* Temporary working variable */
 /* BEGIN_AUTO_INSERTED_SECTION from ../include/libinn.h ||DEFAULT */
 innconf->fromhost = NULL;
-if (p = getenv(_ENV_FROMHOST)) { innconf->fromhost = COPY(p); }
+if ((p = getenv(_ENV_FROMHOST)) != NULL) { innconf->fromhost = COPY(p); }
 /* END_AUTO_INSERTED_SECTION from ../include/libinn.h ||DEFAULT */
     innconf->server = NULL;
     innconf->pathhost = NULL;
@@ -136,7 +151,7 @@ if (p = getenv(_ENV_FROMHOST)) { innconf->fromhost = COPY(p); }
     innconf->storageapi = FALSE;
     innconf->articlemmap = FALSE;
     innconf->overviewmmap = TRUE;
-    innconf->mta = _PATH_SENDMAIL;
+    innconf->mta = NULL;
     innconf->checkincludedtext = FALSE;
     innconf->maxforks = MAX_FORKS;
     innconf->maxartsize = 1000000L;
@@ -167,6 +182,22 @@ if (p = getenv(_ENV_FROMHOST)) { innconf->fromhost = COPY(p); }
     innconf->port = NNTP_PORT;
     innconf->readertrack = FALSE;
     innconf->strippostcc = FALSE;
+    innconf->overviewname = NULL;
+
+    innconf->pathnews = NULL;
+    innconf->pathbin = NULL;
+    innconf->pathfilter = NULL;
+    innconf->pathcontrol = NULL;
+    innconf->pathdb = NULL;
+    innconf->pathetc = NULL;
+    innconf->pathrun = NULL;
+    innconf->pathlog = NULL;
+    innconf->pathspool = NULL;
+    innconf->patharticles = NULL;
+    innconf->pathoverview = NULL;
+    innconf->pathoutgoing = NULL;
+    innconf->pathincoming = NULL;
+    innconf->patharchive = NULL;
 }
 
 void ClearInnConf()
@@ -185,14 +216,86 @@ if (innconf->fromhost != NULL) DISPOSE(innconf->fromhost);
     if (innconf->complaints != NULL) DISPOSE(innconf->complaints);
     if (innconf->mta != NULL) DISPOSE(innconf->mta);
     if (innconf->bindaddress != NULL) DISPOSE(innconf->bindaddress);
+    if (innconf->overviewname != NULL) DISPOSE(innconf->bindaddress);
+
+    if (innconf->pathnews != NULL) DISPOSE(innconf->pathnews);
+    if (innconf->pathbin != NULL) DISPOSE(innconf->pathbin);
+    if (innconf->pathfilter != NULL) DISPOSE(innconf->pathfilter);
+    if (innconf->pathcontrol != NULL) DISPOSE(innconf->pathcontrol);
+    if (innconf->pathdb != NULL) DISPOSE(innconf->pathdb);
+    if (innconf->pathetc != NULL) DISPOSE(innconf->pathetc);
+    if (innconf->pathrun != NULL) DISPOSE(innconf->pathrun);
+    if (innconf->pathlog != NULL) DISPOSE(innconf->pathlog);
+    if (innconf->pathspool != NULL) DISPOSE(innconf->pathspool);
+    if (innconf->patharticles != NULL) DISPOSE(innconf->patharticles);
+    if (innconf->pathoverview != NULL) DISPOSE(innconf->pathoverview);
+    if (innconf->pathoutgoing != NULL) DISPOSE(innconf->pathoutgoing);
+    if (innconf->pathincoming != NULL) DISPOSE(innconf->pathincoming);
+    if (innconf->patharchive != NULL) DISPOSE(innconf->patharchive);
 }
 
-int ReadInnConf(char *configfile)
+/*
+   Make sure some compulsory inn.conf values are set and set them
+   to defaults if possible 
+*/
+int CheckInnConf()
+{
+    if (innconf->mta == NULL)
+	innconf->mta = COPY(_PATH_SENDMAIL);
+    if (innconf->overviewname == NULL) 
+	innconf->overviewname = COPY(".overview");
+
+    if (innconf->pathnews == NULL) {
+	syslog(L_FATAL, "Must set 'pathnews' in inn.conf");
+	(void)fprintf(stderr, "Must set 'pathnews' in inn.conf");
+	return(-1);
+    }
+    if (innconf->pathbin == NULL) {
+	innconf->pathbin = COPY(cpcatpath(innconf->pathnews, "bin"));
+    }
+    if (innconf->pathfilter == NULL) {
+	innconf->pathfilter = COPY(cpcatpath(innconf->pathnews, "filter"));
+    }
+    if (innconf->pathcontrol == NULL) {
+	innconf->pathcontrol = COPY(cpcatpath(innconf->pathnews, "control"));
+    }
+    if (innconf->pathdb == NULL) {
+	innconf->pathdb = COPY(cpcatpath(innconf->pathnews, "db"));
+    }
+    if (innconf->pathetc == NULL) {
+	innconf->pathetc = COPY(cpcatpath(innconf->pathnews, "etc"));
+    }
+    if (innconf->pathrun == NULL) {
+	innconf->pathrun = COPY(cpcatpath(innconf->pathnews, "run"));
+    }
+    if (innconf->pathlog == NULL) {
+	innconf->pathlog = COPY(cpcatpath(innconf->pathnews, "log"));
+    }
+    if (innconf->pathspool == NULL) {
+	innconf->pathspool = COPY(cpcatpath(innconf->pathnews, "spool"));
+    }
+    if (innconf->patharticles == NULL) {
+	innconf->patharticles = COPY(cpcatpath(innconf->pathspool, "articles"));
+    }
+    if (innconf->pathoverview == NULL) {
+	innconf->pathoverview = COPY(cpcatpath(innconf->pathspool, "overview"));
+    }
+    if (innconf->pathoutgoing == NULL) {
+	innconf->pathoutgoing = COPY(cpcatpath(innconf->pathspool, "outgoing"));
+    }
+    if (innconf->pathincoming == NULL) {
+	innconf->pathincoming = COPY(cpcatpath(innconf->pathspool, "incoming"));
+    }
+    if (innconf->patharchive == NULL) {
+	innconf->patharchive = COPY(cpcatpath(innconf->pathspool, "archive"));
+    }
+    return(0);
+}
+
+int ReadInnConf()
 {
     FILE	        *F;
-    int	                i;
     char	        *p;
-    char	        c;
     int			boolval;
 
     if (innconf != NULL) {
@@ -200,14 +303,20 @@ int ReadInnConf(char *configfile)
 	DISPOSE(innconf);
     }
     innconf = NEW(struct conf_vars, 1);
-    if (innconf == NULL)
-	return(-2);
+    if (innconf == NULL) {
+	syslog(L_FATAL, "Cannot malloc for innconf");
+        (void)fprintf(stderr, "Cannot malloc for innconf\n");
+	return(-1);
+    }
     SetDefaults();
+    syslog(L_NOTICE, "Reading config from %s", innconffile);
     /* Read the config file. */
-    if ((F = fopen(configfile, "r")) != NULL) {
+    if ((F = fopen(innconffile, "r")) != NULL) {
 	while (fgets(ConfigBuff, sizeof ConfigBuff, F) != NULL) {
 	    if ((p = strchr(ConfigBuff, '\n')) != NULL)
 		*p = '\0';
+	    else
+		ConfigBuff[sizeof(ConfigBuff)-1] = '\0';
 	    if (ConfigBuff[0] == '\0' || ConfigBuff[0] == COMMENT_CHAR)
 		continue;
 	    if ((p = strchr(ConfigBuff, ':')) != NULL)
@@ -380,9 +489,59 @@ if (innconf->fromhost == NULL) { innconf->fromhost = COPY(p); }
 	    } else
 	    if (EQ(ConfigBuff,_CONF_STRIPPOSTCC)) {
 		if (boolval != -1) innconf->strippostcc = boolval;
+	    } else
+	    if (EQ(ConfigBuff,_CONF_OVERVIEWNAME)) {
+		    innconf->overviewname =  COPY(p);
+
+	    } else
+	    if (EQ(ConfigBuff,_CONF_PATHNEWS)) {
+		    innconf->pathnews =  COPY(p);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_PATHBIN)) {
+		    innconf->pathbin =  COPY(p);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_PATHFILTER)) {
+		    innconf->pathfilter =  COPY(p);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_PATHCONTROL)) {
+		    innconf->pathcontrol =  COPY(p);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_PATHDB)) {
+		    innconf->pathdb =  COPY(p);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_PATHETC)) {
+		    innconf->pathetc =  COPY(p);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_PATHRUN)) {
+		    innconf->pathrun =  COPY(p);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_PATHLOG)) {
+		    innconf->pathlog =  COPY(p);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_PATHSPOOL)) {
+		    innconf->pathspool =  COPY(p);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_PATHARTICLES)) {
+		    innconf->patharticles =  COPY(p);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_PATHOVERVIEW)) {
+		    innconf->pathoverview =  COPY(p);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_PATHOUTGOING)) {
+		    innconf->pathoutgoing =  COPY(p);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_PATHINCOMING)) {
+		    innconf->pathincoming =  COPY(p);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_PATHARCHIVE)) {
+		    innconf->patharchive =  COPY(p);
 	    }
 	}
 	(void)fclose(F);
-    } else return(-1);
-    return(0);
+    } else {
+	syslog(L_FATAL, "Cannot open %s", _PATH_CONFIG);
+	(void)fprintf(stderr, "Cannot open %s\n", _PATH_CONFIG);
+	return(-1);
+    }
+    return(CheckInnConf());
 }

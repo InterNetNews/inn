@@ -29,7 +29,6 @@
 #include "qio.h"
 
 
-STATIC BOOL	InSpoolDir;
 STATIC char	*Dir;
 
 STATIC int	debug = FALSE;
@@ -293,7 +292,8 @@ main(ac, av)
     QIOSTATE		*qp;
 
     /* Set defaults. */
-    Dir = _PATH_SPOOL;
+    if (ReadInnConf() < 0) exit(-1);
+    Dir = innconf->patharticles;
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
@@ -314,7 +314,6 @@ main(ac, av)
 	}
     ac -= optind;
     av += optind;
-    InSpoolDir = EQ(Dir, _PATH_SPOOL);
 
     if (chdir(Dir) < 0) {
 	(void)fprintf(stderr, "crosspost cant chdir %s %s\n",

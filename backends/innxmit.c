@@ -137,12 +137,14 @@ STATIC char		*AltPath;
 */
 STATIC FILE *HistorySeek(char *MessageID)
 {
-    static char		History[] = _PATH_HISTORY;
+    static char		*History = NULL;
     static FILE		*F;
     OFFSET_T		offset;
 
     /* Open the history file. */
     if (F == NULL) {
+	if (History == NULL)
+	    History = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
 	if (!dbminit(History)) {
 	    (void)fprintf(stderr, "Can't set up \"%s\" database, %s\n",
 		    History, strerror(errno));
@@ -1129,8 +1131,7 @@ Usage()
 
 int main(int ac, char *av[])
 {
-    static char		SPOOL[] = _PATH_SPOOL;
-    static char		BATCHDIR[] = _PATH_BATCHDIR;
+    static char		*SPOOL = NULL;
     static char		SKIPPING[] = "Skipping \"%s\" --%s?\n";
     int	                i;
     char	        *p;
@@ -1149,9 +1150,13 @@ int main(int ac, char *av[])
     int                 port = NNTP_PORT;
 
     /* Set defaults. */
+    if (ReadInnConf() < 0) exit(-1);
+
     ConnectTimeout = 0;
     TotalTimeout = 0;
     AltSpool = NULL;
+    SPOOL = innconf->patharticles;
+    
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
@@ -1226,8 +1231,9 @@ int main(int ac, char *av[])
 
     /* Open the batch file and lock others out. */
     if (BATCHname[0] != '/') {
-	BATCHname = NEW(char, STRLEN(BATCHDIR) + 1 + strlen(av[1]) + 1);
-	(void)sprintf(BATCHname, "%s/%s", BATCHDIR, av[1]);
+	BATCHname = NEW(char, strlen(innconf->pathoutgoing) + 1 +
+						strlen(av[1]) + 1);
+	(void)sprintf(BATCHname, "%s/%s", innconf->pathoutgoing, av[1]);
     }
     if (((i = open(BATCHname, O_RDWR)) < 0) || ((BATCHqp = QIOfdopen(i)) == NULL)) {
 	(void)fprintf(stderr, "Can't open \"%s\", %s\n",
@@ -1407,9 +1413,9 @@ int main(int ac, char *av[])
 
 	/* Split the line into possibly two fields. */
 	if (Article[0] == '/'
-	 && Article[STRLEN(SPOOL)] == '/'
-	 && EQn(Article, SPOOL, STRLEN(SPOOL)))
-	    Article += STRLEN(SPOOL) + 1;
+	 && Article[strlen(SPOOL)] == '/'
+	 && EQn(Article, SPOOL, strlen(SPOOL)))
+	    Article += strlen(SPOOL) + 1;
 	if ((MessageID = strchr(Article, ' ')) != NULL) {
 	    *MessageID++ = '\0';
 	    if (*MessageID != '<'

@@ -223,6 +223,9 @@ main(ac, av)
     Since = NULL;
     Offer = FALSE;
     Update = NULL;
+
+    if (ReadInnConf() < 0) exit(1);
+
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
@@ -256,11 +259,12 @@ main(ac, av)
 	    break;
 	case 'o':
 	    /* Open the history file. */
-	    if (!dbminit(_PATH_HISTORY)) {
+	    if (!dbminit(cpcatpath(innconf->pathdb, _PATH_HISTORY))) {
 		(void)fprintf(stderr, "Can't open history, %s\n",
 		    strerror(errno));
 		exit(1);
 	    }
+	    if (strchr(_PATH_HISTORY, '/') == NULL) DISPOSE(p);
 	    Offer = TRUE;
 	    break;
 	case 't':

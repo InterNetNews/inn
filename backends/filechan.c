@@ -38,8 +38,9 @@ main(ac, av)
     UID_T		myuid;
 
     /* Set defaults. */
+    if (ReadInnConf() < 0) exit(-1);
     Fields = 1;
-    Directory = _PATH_BATCHDIR;
+    Directory = innconf->pathoutgoing;
     Map = FALSE;
     myuid = geteuid();
     (void)umask(NEWSUMASK);

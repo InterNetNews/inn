@@ -70,7 +70,7 @@ STATIC STRING	CCperl();
 #endif /* defined(DO_PERL) */
 STATIC STRING	CClowmark();
 
-STATIC char		CCpath[] = _PATH_NEWSCONTROL;
+STATIC char		*CCpath = NULL;
 STATIC char		**CCargv;
 STATIC char		CCnosite[] = "1 No such site";
 STATIC char		CCwrongtype[] = "1 Wrong site type";
@@ -955,7 +955,7 @@ STATIC STRING
 CCnewgroup(av)
     char		*av[];
 {
-    static char		TIMES[] = _PATH_ACTIVETIMES;
+    static char		*TIMES = NULL;
     static char		WHEN[] = "updating active.times";
     register int	fd;
     register char	*p;
@@ -965,6 +965,9 @@ CCnewgroup(av)
     STRING		who;
     char		*buff;
     int			oerrno;
+
+    if (TIMES == NULL)
+	TIMES = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVETIMES));
 
     Name = av[0];
     if (Name[0] == '.' || strspn(Name, "0123456789") == strlen(Name))
@@ -1241,17 +1244,17 @@ STATIC STRING
 CCxexec(av)
     char	*av[];
 {
-    static char	INND[] = _PATH_INND;
-    static char	INNDSTART[] = _PATH_INNDSTART;
+    char	*inndstart;
     char	*p;
 
     if (CCargv == NULL)
 	return "1 no argv!";
     
+    inndstart = COPY(cpcatpath(innconf->pathbin, "inndstart"));
     /* Get the pathname. */
     p = av[0];
     if (*p == '\0' || EQ(p, "innd") || EQ(p, "inndstart"))
-	CCargv[0] = INNDSTART;
+	CCargv[0] = inndstart;
     else
 	return "1 Bad value";
 
@@ -1362,7 +1365,7 @@ CCreload(av)
 	}
     }
     else if (EQ(p, "inn.conf")) {
-	ReadInnConf(_PATH_CONFIG);
+	ReadInnConf();
     }
 #if defined(DO_TCL)
     else if (EQ(p, "filter.tcl")) {
@@ -1880,6 +1883,8 @@ CCsetup()
     struct sockaddr_un	server;
 #endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
 
+    if (CCpath == NULL)
+	CCpath = COPY(cpcatpath(innconf->pathrun, _PATH_NEWSCONTROL));
     /* Remove old detritus. */
     if (unlink(CCpath) < 0 && errno != ENOENT) {
 	syslog(L_FATAL, "%s cant unlink %s %m", LogName, CCpath);

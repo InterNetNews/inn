@@ -19,10 +19,9 @@
 #include "macros.h"
 
 
-STATIC STRING	Archive = _PATH_ARCHIVEDIR;
-STATIC char	SPOOL[] = _PATH_SPOOL;
-static char	BATCHDIR[] = _PATH_BATCHDIR;
-
+STATIC char	*Archive = NULL;
+STATIC char	*SPOOL = NULL;
+STATIC char	*ERRLOG = NULL;
 
 /*
 **  Try to make one directory.  Return FALSE on error.
@@ -263,11 +262,15 @@ main(ac, av)
     struct stat		Sb;
 
     /* Set defaults. */
+    if (ReadInnConf() < 0) exit(-1);
     Flat = FALSE;
     Index = NULL;
     Move = FALSE;
     Redirect = TRUE;
     (void)umask(NEWSUMASK);
+    SPOOL = innconf->patharticles;
+    ERRLOG = COPY(cpcatpath(innconf->pathlog, _PATH_ERRLOG));
+    Archive = innconf->patharchive;
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "a:fi:mr")) != EOF)
@@ -304,7 +307,7 @@ main(ac, av)
 
     /* Do file redirections. */
     if (Redirect)
-	(void)freopen(_PATH_ERRLOG, "a", stderr);
+	(void)freopen(ERRLOG, "a", stderr);
     if (ac == 1 && freopen(av[0], "r", stdin) == NULL) {
 	(void)fprintf(stderr, "archive:  Can't open \"%s\" for input, %s\n",
 		av[0], strerror(errno));
@@ -413,11 +416,11 @@ main(ac, av)
     /* Make an appropriate spool file. */
     p = av[0];
     if (p == NULL)
-	(void)sprintf(temp, "%s/%s", BATCHDIR, "archive");
+	(void)sprintf(temp, "%s/%s", innconf->pathoutgoing, "archive");
     else if (*p == '/')
 	(void)sprintf(temp, "%s.bch", p);
     else
-	(void)sprintf(temp, "%s/%s.bch", BATCHDIR, p);
+	(void)sprintf(temp, "%s/%s.bch", innconf->pathoutgoing, p);
     if ((F = xfopena(temp)) == NULL) {
 	(void)fprintf(stderr, "archive: Can't spool to \"%s\", %s\n",
 	    temp, strerror(errno));

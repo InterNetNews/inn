@@ -85,8 +85,8 @@ STATIC BOOL		EXPkeep;
 STATIC BOOL		EXPearliest;
 STATIC BOOL		ClassicExpire = FALSE;
 STATIC BOOL		Ignoreselfexpire = FALSE;
-STATIC char		ACTIVE[] = _PATH_ACTIVE;
-STATIC char		SPOOL[] = _PATH_SPOOL;
+STATIC char		*ACTIVE;
+STATIC char		*SPOOL = NULL;
 STATIC int		nGroups;
 STATIC FILE		*EXPunlinkfile;
 STATIC FILE		*EXPunlinkindex;
@@ -1384,17 +1384,23 @@ int main(int ac, char *av[])
     Server = TRUE;
     IgnoreOld = FALSE;
     History = "history";
-    HistoryText = _PATH_HISTORY;
     HistoryPath = NULL;
     OverPath = NULL;
     Writing = TRUE;
     TimeWarp = 0;
     UnlinkFile = FALSE;
     LowmarkFile = FALSE;
+
+    if (ReadInnConf() < 0) exit(-1);
+
+    HistoryText = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
+    ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
+    SPOOL = innconf->patharticles;
+
     (void)umask(NEWSUMASK);
 
     /* find the default history file directory */
-    EXPhistdir = COPY(_PATH_HISTORY);
+    EXPhistdir = COPY(HistoryText);
     p = strrchr(EXPhistdir, '/');
     if (p != NULL) {
 	*p = '\0';
@@ -1500,7 +1506,7 @@ int main(int ac, char *av[])
     if (av[0])
 	F = EQ(av[0], "-") ? stdin : EXPfopen(FALSE, av[0], "r");
     else
-	F = EXPfopen(FALSE, _PATH_EXPIRECTL, "r");
+	F = EXPfopen(FALSE, cpcatpath(innconf->pathetc, _PATH_EXPIRECTL), "r");
     if (!EXPreadfile(F)) {
 	(void)fclose(F);
 	(void)fprintf(stderr, "Format error in expire.ctl\n");
@@ -1612,8 +1618,8 @@ int main(int ac, char *av[])
     }
 
     /* Main processing loop. */
-    StorageAPI = GetBooleanConfigValue(_CONF_STORAGEAPI, FALSE);
-    OVERmmap = GetBooleanConfigValue(_CONF_OVERMMAP, TRUE);
+    StorageAPI = innconf->storageapi;
+    OVERmmap = innconf->overviewmmap;
     if (OVERmmap)
 	val = TRUE;
     else

@@ -197,6 +197,7 @@ int main(int ac, char *av[])
     char		buff[SMBUF];
 
     /* Set defaults. */
+    if (ReadInnConf() < 0) exit(-1);
     Silent = FALSE;
     NeedHelp = FALSE;
     ICCsettimeout(CTLINND_TIMEOUT);
@@ -303,8 +304,10 @@ int main(int ac, char *av[])
     i = ICCcommand(cp->Letter, av, &reply);
     if (i < 0) {
 	i = errno;
-	if (stat(_PATH_SERVERPID, &Sb) < 0)
+	p = cpcatpath(innconf->pathrun, _PATH_SERVERPID);
+	if (stat(p, &Sb) < 0)
 	    (void)fprintf(stderr, "No innd.pid file; did server die?\n");
+	if (strchr(_PATH_SERVERPID, '/') == NULL) DISPOSE(p);
 	(void)sprintf(buff, "send \"%s\" command", cp->Command);
 	errno = i;
 	Failed(buff);

@@ -32,13 +32,15 @@ Splice(name, Line)
     register char	*name;
     BUFFER		*Line;
 {
-    static char		SPOOL[] = _PATH_SPOOL;
+    static char		*SPOOL = NULL;
     register char	*last;
     register char	*p;
     register char	*end;
     register int	i;
     register int	j;
 
+    if (SPOOL == NULL)
+	SPOOL = innconf->patharticles;
     /* Make sure it's a relative pathname. */
     if (name[0] == '/'
      && name[STRLEN(SPOOL)] == '/'
@@ -100,7 +102,9 @@ main(ac, av)
     BOOL		Passing;
 
     /* Set defaults. */
-    History = _PATH_HISTORY;
+    if (ReadInnConf() < 0) exit(-1);
+
+    History = cpcatpath(innconf->pathdb, _PATH_HISTORY);
     Line.Size = BUFSIZ;
     Line.Data = NEW(char, Line.Size);
     Line.Used = 0;

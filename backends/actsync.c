@@ -3229,14 +3229,15 @@ exec_cmd(mode, cmd, grp, type, who)
 	}
 
 	/* exec the ctlinnd command */
+	p = cpcatpath(innconf->pathbin, _PATH_CTLINND);
 	if (type == NULL) {
-	    execl(_PATH_CTLINND,
+	    execl(p,
 		  CTLINND_NAME, CTLINND_TIME_OUT, cmd, grp, NULL);
 	} else if (who == NULL) {
-	    execl(_PATH_CTLINND,
+	    execl(p,
 		  CTLINND_NAME, CTLINND_TIME_OUT, cmd, grp, type, NULL);
 	} else {
-	    execl(_PATH_CTLINND,
+	    execl(p,
 		  CTLINND_NAME, CTLINND_TIME_OUT, cmd, grp, type, who, NULL);
 	}
 

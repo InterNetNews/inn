@@ -24,7 +24,7 @@
 */
 STATIC BOOL GetName(FILE *F, char *buff, BOOL *Againp)
 {
-    static char		SPOOL[] = _PATH_SPOOL;
+    static char		*SPOOL = NULL;
     int	                c;
     char	        *p;
 
@@ -34,6 +34,8 @@ STATIC BOOL GetName(FILE *F, char *buff, BOOL *Againp)
     if (c == EOF || c == '\n')
 	return FALSE;
 
+    if (SPOOL == NULL)
+	SPOOL = innconf->patharticles;
     (void)strcpy(buff, SPOOL);
     p = &buff[STRLEN(SPOOL)];
     *p++ = '/';
@@ -187,7 +189,10 @@ main(int ac, char *av[])
     char		Name[SPOOLNAMEBUFF];
 
     /* Set defaults. */
-    History = _PATH_HISTORY;
+    if (ReadInnConf() < 0) exit(-1);
+
+    History = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
+
     What = '?';
 
     /* Parse JCL. */

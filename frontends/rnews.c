@@ -34,7 +34,7 @@ typedef struct _HEADER {
 STATIC BOOL	Verbose;
 STATIC char	*InputFile = "stdin";
 STATIC char	*UUCPHost;
-STATIC char	SPOOLNEWS[] = _PATH_SPOOLNEWS;
+STATIC char	*PATHBADNEWS = NULL;
 STATIC char	SPOOLTEMP[] = _PATH_SPOOLTEMP;
 STATIC FILE	*FromServer;
 STATIC FILE	*ToServer;
@@ -203,7 +203,7 @@ STATIC void Reject(const char *article, const char *reason, const char *arg)
     }
 
 #if	defined(DO_RNEWS_SAVE_BAD)
-    TempName(_PATH_BADNEWS, buff);
+    TempName(PATHBADNEWS, buff);
     if ((F = fopen(buff, "w")) == NULL) {
 	syslog(L_ERROR, "cant fopen %s %m", buff);
 	return;
@@ -479,7 +479,7 @@ UnpackOne(fdp, countp)
     int		*countp;
 {
 #if	defined(DO_RNEWSPROGS)
-    char	path[sizeof _PATH_RNEWSPROGS + 1 + SMBUF + 1];
+    char	path[(SMBUF * 2) + 1];
     char	*p;
 #endif	/* defined(DO_RNEWSPROGS) */
     char	buff[SMBUF];
@@ -489,6 +489,7 @@ UnpackOne(fdp, countp)
     int		gzip = 0;
     BOOL	HadCount;
     BOOL	SawCunbatch;
+    int		len;
 
     *countp = 0;
     for (SawCunbatch = FALSE, HadCount = FALSE; ; ) {
@@ -577,8 +578,15 @@ UnpackOne(fdp, countp)
 	    p++;
 	else
 	    p = &buff[3];
-	(void)sprintf(path, "%s/%s", _PATH_RNEWSPROGS, p);
-	for (p = &path[sizeof _PATH_RNEWSPROGS]; *p; p++)
+	if (strchr(_PATH_RNEWSPROGS, '/') == NULL) {
+	    (void)sprintf(path, "%s/%s/%s", innconf->pathbin,
+					_PATH_RNEWSPROGS, p);
+	    len = strlen(innconf->pathbin) + 1 + sizeof _PATH_RNEWSPROGS;
+	} else {
+	    (void)sprintf(path, "%s/%s", _PATH_RNEWSPROGS, p);
+	    len = sizeof _PATH_RNEWSPROGS;
+	}
+	for (p = &path[len]; *p; p++)
 	    if (ISWHITE(*p)) {
 		*p = '\0';
 		break;
@@ -615,9 +623,9 @@ Unspool()
     int			i;
 
     /* Go to the spool directory, get ready to scan it. */
-    if (chdir(SPOOLNEWS) < 0) {
-	xperror(SPOOLNEWS);
-	syslog(L_FATAL, "cant cd %s %m", SPOOLNEWS);
+    if (chdir(innconf->pathincoming) < 0) {
+	xperror(innconf->pathincoming);
+	syslog(L_FATAL, "cant cd %s %m", innconf->pathincoming);
 	exit(1);
     }
     if ((dp = opendir(".")) == NULL) {
@@ -661,7 +669,7 @@ Unspool()
 	WaitForChildren(i);
 
 	if (!ok) {
-	    TempName(_PATH_BADNEWS, buff);
+	    TempName(PATHBADNEWS, buff);
 	    (void)fprintf(stderr, "Unspooling failed saving to %s\n", buff);
 	    syslog(L_ERROR, "cant unspool saving to %s", buff);
 	    if (rename(InputFile, buff) < 0) {
@@ -732,7 +740,7 @@ Spool(fd, mode)
     }
 
     /* Move temp file into the spool area, and exit appropriately. */
-    TempName(SPOOLNEWS, buff);
+    TempName(innconf->pathincoming, buff);
     if (rename(temp, buff) < 0) {
 	syslog(L_FATAL, "cant rename %s to %s %m", temp, buff);
 	status++;
@@ -821,7 +829,10 @@ int main(int ac, char *av[])
 	exit(1);
     }
 #endif
+     if (ReadInnConf() < 0) exit(-1);
      UUCPHost = getenv(_ENV_UUCPHOST);
+     PATHBADNEWS = cpcatpath(innconf->pathincoming, _PATH_BADNEWS);
+     
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */

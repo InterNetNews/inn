@@ -22,10 +22,10 @@ if [ -f ${SERVERPID} ] ; then
     RFLAG="-r"
 fi
 
-if [ ! -f ${NEWSLIB}/.news.daily ] ; then
+if [ ! -f ${PATHETC}/.news.daily ] ; then
     echo 'No .news.daily file; need to run news.daily?' | eval ${MAIL}
 else
-    case `find ${NEWSLIB}/.news.daily -mtime +1 -print 2>/dev/null` in
+    case `find ${PATHETC}/.news.daily -mtime +1 -print 2>/dev/null` in
     "")
 	;;
     *)
@@ -48,7 +48,7 @@ if [ ! -s ${ACTIVE} ] ; then
     fi
     RFLAG="-r"
     # You might want to rebuild the DBZ database, too:
-    #cd ${NEWSLIB} \
+    #cd ${PATHETC} \
     #		&& makehistory -r \
     #		&& mv history.n.dir history.dir \
     #		&& mv history.n.index history.index
@@ -79,6 +79,6 @@ for F in ${RMFILE} ${RMFILE}.*; do
 		'Unlinking articles listed in'
 	    echo ${F}
 	) | eval ${MAIL}
-	${NEWSBIN}/expirerm ${F}
+	${PATHBIN}/expirerm ${F}
     fi
 done &

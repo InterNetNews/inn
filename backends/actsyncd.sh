@@ -27,13 +27,13 @@
 # Our lock file
 LOCK=${LOCKS}/LOCK.actsyncd
 # where actsync is located
-ACTSYNC=${NEWSBIN}/actsync
+ACTSYNC=${PATHBIN}/actsync
 # timeout for ctlinnd
 TIMEOUT=120
 # exit value of actsync if unable to get an active file
 NOSYNC=127
 # where ctlinnd lives
-CTLINND="${NEWSBIN}/ctlinnd"
+CTLINND="${PATHBIN}/ctlinnd"
 # by default we xexec instead of reloading
 XEXEC=
 export XEXEC
@@ -134,7 +134,7 @@ shlock -p $$ -f ${LOCK} || {
 
 # setup
 #
-activenew="${NEWSLIB}/active.new.$$"
+activenew="${PATHETC}/active.new.$$"
 out="${TMPDIR}/.sync.$$"
 trap "rm -f $activenew $out ${LOCK}; exit" 0 1 2 3 15
 rm -f "$out"

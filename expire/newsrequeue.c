@@ -86,7 +86,7 @@ GetName(F, buff)
     register FILE	*F;
     register char	*buff;
 {
-    static char		SPOOL[] = _PATH_SPOOL;
+    static char		*SPOOL = NULL;
     register int	c;
     register char	*p;
 
@@ -96,6 +96,8 @@ GetName(F, buff)
     if (c == EOF || c == '\n')
 	return FALSE;
 
+    if (SPOOL == NULL)
+	SPOOL = innconf->patharticles;
     (void)strcpy(buff, SPOOL);
     p = &buff[STRLEN(SPOOL)];
     *p++ = '/';
@@ -780,11 +782,13 @@ main(ac, av)
     int			nntplinklog;
 
     /* Set defaults. */
-    Active = _PATH_ACTIVE;
-    History = _PATH_HISTORY;
-    Newsfeeds = _PATH_NEWSFEEDS;
+    if (ReadInnConf() < 0) exit(-1);
+
+    Active = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
+    History = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
+    Newsfeeds = COPY(cpcatpath(innconf->pathdb, _PATH_NEWSFEEDS));
     Logfile = FALSE;
-    nntplinklog = GetBooleanConfigValue(_CONF_NNTPLINK_LOG, FALSE);
+    nntplinklog = innconf->nntplinklog;
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "a:d:h:ln:")) != EOF)

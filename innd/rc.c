@@ -61,8 +61,8 @@ typedef struct _REMOTETABLE {
 STATIC INADDR		*RCmaster;
 STATIC int		RCnmaster;
 STATIC char		*RCslaveflag;
-STATIC char		RCnnrpd[] = _PATH_NNRPD;
-STATIC char		RCnntpd[] = _PATH_NNTPD;
+STATIC char		*RCnnrpd = NULL;
+STATIC char		*RCnntpd = NULL;
 STATIC CHANNEL		*RCchan;
 STATIC REMOTEHOST_DATA	*RCpeerlistfile;
 STATIC REMOTEHOST	*RCpeerlist;
@@ -310,6 +310,10 @@ RChandoff(int fd, HANDOFF h)
     char	buff[SMBUF];
     int		i;
 
+    if (RCnnrpd == NULL)
+	RCnnrpd = COPY(cpcatpath(innconf->pathbin, "nnrpd"));
+    if (RCnntpd == NULL)
+	RCnntpd = COPY(cpcatpath(innconf->pathbin, "nnrpd"));
 #if	defined(SOL_SOCKET) && defined(SO_KEEPALIVE)
     /* Set KEEPALIVE to catch broken socket connections. */
     i = 1;
@@ -358,7 +362,7 @@ RCreader(CHANNEL *cp)
     register REMOTEHOST	*rp;
     CHANNEL		*new;
     char		*name;
-    long		reject_val;
+    long		reject_val = 0;
     char		*reject_message;
     int			count;
     int			found;
@@ -640,7 +644,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     register REMOTEHOST		*rp;
     register char		*word;
     register REMOTEHOST		*groups;
-    register REMOTEHOST		*group_params;
+    register REMOTEHOST		*group_params = NULL;
     register REMOTEHOST		peer_params;
     register REMOTEHOST		default_params;
     BOOL			bool;
@@ -1180,8 +1184,7 @@ RCwritelist(char *filename)
     /* Write a standard header.. */
 
     /* Find the filename */
-    p = NEW (char, sizeof _PATH_INNDHOSTS);
-    (void)strcpy (p, _PATH_INNDHOSTS);
+    p = cpcatpath(innconf->pathetc, _PATH_INNDHOSTS);
     for (r = q = p; *p; p++)
         if (*p == '/')
 	   q = p + 1;
@@ -1274,8 +1277,10 @@ RCwritelist(char *filename)
 void
 RCreadlist()
 {
-    static char	INNDHOSTS[] = _PATH_INNDHOSTS;
+    static char	*INNDHOSTS = NULL;
 
+    if (INNDHOSTS == NULL)
+	INNDHOSTS = COPY(cpcatpath(innconf->pathetc, _PATH_INNDHOSTS));
     StreamingOff = FALSE;
     RCreadfile(&RCpeerlistfile, &RCpeerlist, &RCnpeerlist, INNDHOSTS);
     /* RCwritelist("/tmp/incoming.conf.new"); */

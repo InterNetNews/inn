@@ -46,7 +46,7 @@ if [ -s ${T}/$$remove ] ; then
 	${SED} "s/^/#	/" ${T}/$$remove
 	echo "# You can remove them by executing the commands:"
 	for i in `cat ${T}/$$remove` ; do
-	    echo "	${NEWSBIN}/ctlinnd rmgroup $i"
+	    echo "	${PATHBIN}/ctlinnd rmgroup $i"
 	    ${EGREP} "^$i	" ${NEWSGROUPS} >>${T}/$$ngdel
 	done
 	echo ''
@@ -59,11 +59,11 @@ if [ -s ${T}/$$add ] ; then
 	${SED} "s/^/#	/" ${T}/$$add
 	echo "# You can do this by executing the command(s):"
 	for i in `cat ${T}/$$add.unmod` ; do
-	    echo "	${NEWSBIN}/ctlinnd newgroup $i y ${FROM}"
+	    echo "	${PATHBIN}/ctlinnd newgroup $i y ${FROM}"
 	    ${EGREP} "^$i	" ${T}/$$msg >>${T}/$$ngadd
 	done
 	for i in `cat ${T}/$$add.mod` ; do
-	    echo "	${NEWSBIN}/ctlinnd newgroup $i m ${FROM}"
+	    echo "	${PATHBIN}/ctlinnd newgroup $i m ${FROM}"
 	    ${EGREP} "^$i	" ${T}/$$msg >>${T}/$$ngadd
 	done
 	echo ''
@@ -76,7 +76,7 @@ if [ -s ${T}/$$ismod ] ; then
 	${SED} "s/^/#	/" ${T}/$$ismod
 	echo "# You can correct this by executing the following:"
 	for i in `cat ${T}/$$ismod` ; do
-	    echo "	${NEWSBIN}/ctlinnd changegroup $i y"
+	    echo "	${PATHBIN}/ctlinnd changegroup $i y"
 	    ${EGREP} "^$i	" ${T}/$$msg >>${T}/$$ngchng
 	done
 	echo ''
@@ -89,7 +89,7 @@ if [ -s ${T}/$$notmod ] ; then
 	${SED} "s/^/#	/" ${T}/$$notmod
 	echo "# You can correct this by executing the following:"
 	for i in `cat ${T}/$$notmod` ;do
-	    echo "	${NEWSBIN}/ctlinnd changegroup $i m"
+	    echo "	${PATHBIN}/ctlinnd changegroup $i m"
 	    ${EGREP} "^$i	" ${T}/$$msg >>${T}/$$ngchng
 	done
 	echo ''

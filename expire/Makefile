@@ -22,11 +22,11 @@ ALL	=	convdate expire expireover fastrm grephistory \
 
 all:		$(ALL)
 
-install:	$D$(NEWSBIN)/convdate $D$(NEWSBIN)/expire \
-		$D$(NEWSBIN)/expireover $D$(NEWSBIN)/fastrm \
-		$D$(NEWSBIN)/grephistory $D$(NEWSBIN)/makeactive \
-		$D$(NEWSBIN)/makehistory $D$(NEWSBIN)/newsrequeue \
-		$D$(NEWSBIN)/prunehistory $D$(NEWSBIN)/expireindex
+install:	$D$(PATHBIN)/convdate $D$(PATHBIN)/expire \
+		$D$(PATHBIN)/expireover $D$(PATHBIN)/fastrm \
+		$D$(PATHBIN)/grephistory $D$(PATHBIN)/makeactive \
+		$D$(PATHBIN)/makehistory $D$(PATHBIN)/newsrequeue \
+		$D$(PATHBIN)/prunehistory $D$(PATHBIN)/expireindex
 
 clobber clean:
 	rm -f *.o $(ALL)
@@ -106,25 +106,25 @@ expireoverp:	expireover.c
 	#load $(CFLAGS) $<
 
 ##  Low-level install actions.
-$D$(NEWSBIN)/convdate:		convdate
+$D$(PATHBIN)/convdate:		convdate
 	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/expire:		expire
+$D$(PATHBIN)/expire:		expire
 	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/expireover:		expireover
+$D$(PATHBIN)/expireover:		expireover
 	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/expireindex:		expireindex
+$D$(PATHBIN)/expireindex:		expireindex
 	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/fastrm:		fastrm
+$D$(PATHBIN)/fastrm:		fastrm
 	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/grephistory:	grephistory
+$D$(PATHBIN)/grephistory:	grephistory
 	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/makeactive:	makeactive
+$D$(PATHBIN)/makeactive:	makeactive
 	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/makehistory:	makehistory
+$D$(PATHBIN)/makehistory:	makehistory
 	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/newsrequeue:	newsrequeue
+$D$(PATHBIN)/newsrequeue:	newsrequeue
 	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/prunehistory:	prunehistory
+$D$(PATHBIN)/prunehistory:	prunehistory
 	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
 
 ##  Dependencies.  Default list, below, is probably good enough.

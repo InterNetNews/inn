@@ -69,7 +69,7 @@ typedef struct _ARTOVERFIELD {
 /*
 **  Global variables.
 */
-STATIC char		SPOOL[] = _PATH_SPOOL;
+STATIC char		*SPOOL = NULL;
 STATIC BOOL		InSpoolDir;
 STATIC BOOL		Verbose;
 STATIC BOOL		Quiet;
@@ -256,7 +256,7 @@ STATIC void RefreshLines(char *group, LIST *Refresh)
     }
 
     /* Lock the group. */
-    (void)sprintf(ilockfile, "%s/.LCK%s.index", group, _PATH_OVERVIEW);
+    (void)sprintf(ilockfile, "%s/.LCK%s.index", group, innconf->overviewname);
     ilfd = open(ilockfile, O_WRONLY | O_TRUNC | O_CREAT, ARTFILE_MODE);
     if (ilfd < 0) {
 	if (!MakeOverDir(group)) {
@@ -271,7 +271,7 @@ STATIC void RefreshLines(char *group, LIST *Refresh)
     }
 
     /* Open file, lock it. */
-    (void)sprintf(ifile, "%s/%s.index", group, _PATH_OVERVIEW);
+    (void)sprintf(ifile, "%s/%s.index", group, innconf->overviewname);
     for (i = 0; i < 15; i++) {
 	if ((ifd = open(ifile, O_RDWR | O_CREAT, ARTFILE_MODE)) < 0) {
 	    (void)fprintf(stderr, "Can't open %s, %s\n", ifile, strerror(errno));
@@ -585,7 +585,9 @@ int main(int ac, char *av[])
     char		*Dir;
 
     /* Set defaults. */
-    Dir = _PATH_OVERVIEWDIR;
+    if (ReadInnConf() < 0) exit(-1);
+    SPOOL = innconf->patharticles;
+    Dir = innconf->pathoverview;
     SortedInput = FALSE;
     Append = FALSE;
     Lowmark = FALSE;
@@ -636,7 +638,7 @@ int main(int ac, char *av[])
     }
     InSpoolDir = EQ(Dir, SPOOL);
 
-    OVERmmap = GetBooleanConfigValue(_CONF_OVERMMAP, TRUE);
+    OVERmmap = innconf->overviewmmap;
     /* Do work. */
     if (ac == 0)
 	Expire(SortedInput, QIOfdopen(STDIN));

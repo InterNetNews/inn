@@ -13,7 +13,7 @@
 
 
 STATIC char	GMApathname[sizeof _PATH_TEMPMODERATORS];
-STATIC FILE	*GMAfp;
+STATIC FILE	*GMAfp = NULL;
 
 
 /*
@@ -102,7 +102,7 @@ char *GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group)
          *  This should be part of nnrpd or the like running on the server.
          *  Open the server copy of the moderators file.
          */
-        GMAfp = fopen(_PATH_MODERATORS, "r");
+	GMAfp = fopen(cpcatpath(innconf->pathetc, _PATH_MODERATORS), "r");
     }else{
         /*
          *  Get a local copy of the moderators file from the server.

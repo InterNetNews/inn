@@ -6,7 +6,7 @@
 
 PROG=checkgroups
 ##  Some shells don't pass in $* unless we explicitly pass it in here.
-. ${NEWSBIN}/parsecontrol "$@"
+. ${PATHBIN}/parsecontrol "$@"
 
 case ${ACTION} in
 mail)

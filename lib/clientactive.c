@@ -24,7 +24,7 @@ FILE *CAopen(FILE *FromServer, FILE *ToServer)
 {
     /* Use a local (or NFS-mounted) copy if available.  Make sure we don't
      * try to delete it when we close it. */
-    if ((CAfp = fopen(_PATH_CLIENTACTIVE, "r")) != NULL) {
+    if ((CAfp = fopen(cpcatpath(innconf->pathetc, _PATH_CLIENTACTIVE), "r")) != NULL) {
 	CApathname[0] = '\0';
 	return CAfp;
     }

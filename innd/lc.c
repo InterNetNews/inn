@@ -13,7 +13,7 @@
 #if	defined(DO_HAVE_UNIX_DOMAIN)
 #include <sys/un.h>
 
-STATIC char	LCpath[] = _PATH_NNTPCONNECT;
+STATIC char	*LCpath = NULL;
 STATIC CHANNEL	*LCchan;
 
 
@@ -64,6 +64,8 @@ LCsetup()
     int			i;
     struct sockaddr_un	server;
 
+    if (LCpath == NULL)
+	LCpath = COPY(cpcatpath(innconf->pathrun, _PATH_NNTPCONNECT));
     /* Remove old detritus. */
     if (unlink(LCpath) < 0 && errno != ENOENT) {
 	syslog(L_FATAL, "%s cant unlink %s %m", LogName, LCpath);

@@ -21,7 +21,7 @@
 
 PROGNAME=`basename $0`
 LOCK=${LOCKS}/LOCK.${PROGNAME}
-CTLFILE=${NEWSLIB}/${PROGNAME}.ctl
+CTLFILE=${PATHETC}/${PROGNAME}.ctl
 LOG=${MOST_LOGS}/${PROGNAME}.log
 
 ##  Set defaults.

@@ -16,7 +16,7 @@ typedef struct __HISCACHE {
 
 typedef enum {HIScachehit, HIScachemiss, HIScachedne} HISresult;
 
-STATIC char		HIShistpath[] = _PATH_HISTORY;
+STATIC char		*HIShistpath = NULL;
 STATIC FILE		*HISwritefp;
 STATIC int		HISreadfd;
 STATIC int		HISdirty;
@@ -76,10 +76,11 @@ HISresult HIScachelookup(HASH MessageID) {
 */
 void HISsetup(void)
 {
-    char *HIScachesizestr;
     dbzoptions opt;
     
     if (HISwritefp == NULL) {
+	if (HIShistpath == NULL)
+	    HIShistpath = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
 	/* Open the history file for appending formatted I/O. */
 	if ((HISwritefp = fopen(HIShistpath, "a")) == NULL) {
 	    syslog(L_FATAL, "%s cant fopen %s %m", LogName, HIShistpath);

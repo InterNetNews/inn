@@ -374,7 +374,6 @@ main(ac, av)
     int			ac;
     char		*av[];
 {
-    static char		BATCHDIR[] = _PATH_BATCHDIR;
     register QIOSTATE	*qp;
     register int	i;
     register int	Fields;
@@ -384,8 +383,11 @@ main(ac, av)
     char		*Directory;
     BOOL		Redirect;
     FILE		*F;
+    char		*ERRLOG;
 
     /* Set defaults. */
+    if (ReadInnConf() < 0) exit(-1);
+    ERRLOG = COPY(cpcatpath(innconf->pathlog, _PATH_ERRLOG));
     Directory = NULL;
     Fields = 1;
     Format = NULL;
@@ -461,10 +463,10 @@ main(ac, av)
 
     /* Do some basic set-ups. */
     if (Redirect)
-	(void)freopen(_PATH_ERRLOG, "a", stderr);
+	(void)freopen(ERRLOG, "a", stderr);
     if (Format == NULL) {
-	Format = NEW(char, STRLEN(BATCHDIR) + 1 + 2 + 1);
-	(void)sprintf(Format, "%s/%%s", BATCHDIR);
+	Format = NEW(char, strlen(innconf->pathoutgoing) + 1 + 2 + 1);
+	(void)sprintf(Format, "%s/%%s", innconf->pathoutgoing);
     }
     if (Directory && chdir(Directory) < 0) {
 	(void)fprintf(stderr, "buffchan cant chdir %s %s\n",

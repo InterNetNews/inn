@@ -17,7 +17,9 @@
 #include "macros.h"
 
 
-STATIC char	ACTIVE[] = _PATH_ACTIVE;
+STATIC char	*ACTIVE = NULL;
+STATIC char	*SPOOL = NULL;
+STATIC char	*OVERVIEWDIR = NULL;
 STATIC BOOL	StorageAPI;
 STATIC BOOL	OVERmmap;
 
@@ -36,8 +38,8 @@ ReadOverviewIndex(char *name, long *lomark, long *himark)
     OVERINDEX	index;
     char	packed[OVERINDEXPACKSIZE];
 
-    p = NEW(char, strlen(_PATH_OVERVIEWDIR) + strlen(name) + strlen(_PATH_OVERVIEW) + 32);
-    sprintf(p, "%s/%s/%s.index", _PATH_OVERVIEWDIR, name, _PATH_OVERVIEW);
+    p = NEW(char, strlen(OVERVIEWDIR) + strlen(name) + strlen(innconf->overviewname) + 32);
+    sprintf(p, "%s/%s/%s.index", OVERVIEWDIR, name, innconf->overviewname);
     if ((fi = fopen(p, "r")) == NULL) {
 	return;
     }
@@ -311,7 +313,12 @@ main(int ac, char *av[])
     /* Set defaults. */
     OldFile = FALSE;
     ComputeMarks = FALSE;
+
+    if (ReadInnConf() < 0) exit(-1);
+
     (void)umask(NEWSUMASK);
+
+    ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "mo")) != EOF)
@@ -331,10 +338,12 @@ main(int ac, char *av[])
     if (ac || (ComputeMarks && !OldFile))
 	Usage();
 
-    StorageAPI = GetBooleanConfigValue(_CONF_STORAGEAPI, FALSE);
-    OVERmmap = GetBooleanConfigValue(_CONF_OVERMMAP, TRUE);
+    StorageAPI = innconf->storageapi;
+    OVERmmap = innconf->overviewmmap;
     /* Go to where the articles are. */
-    if (chdir(StorageAPI ? _PATH_OVERVIEWDIR : _PATH_SPOOL) < 0) {
+    SPOOL = innconf->patharticles;
+    OVERVIEWDIR = innconf->pathoverview;
+    if (chdir(StorageAPI ? OVERVIEWDIR : SPOOL) < 0) {
 	(void)fprintf(stderr, "Can't change to spool directory, %s\n",
 		strerror(errno));
 	exit(1);

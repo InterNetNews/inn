@@ -548,11 +548,13 @@ NClist(cp)
     for (p = cp->In.Data + STRLEN("list"); ISWHITE(*p); p++)
 	continue;
     if (caseEQ(p, "newsgroups")) {
-	trash = p = ReadInFile(_PATH_NEWSGROUPS, (struct stat *)NULL);
+	trash = p = ReadInFile(cpcatpath(innconf->pathdb, _PATH_NEWSGROUPS),
+			(struct stat *)NULL);
 	end = p + strlen(p);
     }
     else if (caseEQ(p, "active.times")) {
-	trash = p = ReadInFile(_PATH_ACTIVETIMES, (struct stat *)NULL);
+	trash = p = ReadInFile(cpcatpath(innconf->pathdb, _PATH_ACTIVETIMES),
+			(struct stat *)NULL);
 	end = p + strlen(p);
     }
     else if (*p == '\0' || (caseEQ(p, "active"))) {
@@ -1004,7 +1006,8 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		now = time(NULL);
 		failed = 0;
 		/* time+channel file descriptor should make an unique file name */
-		sprintf(buff, "%s/%ld%d.tmp", _PATH_XBATCHES, now, cp->fd);
+		sprintf(buff, "%s/%ld%d.tmp", innconf->pathincoming,
+						now, cp->fd);
 		fd = open(buff, O_WRONLY|O_CREAT|O_EXCL, ARTFILE_MODE);
 		if (fd < 0) {
 		    oerrno = errno;
@@ -1034,7 +1037,8 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		    NCwritereply(cp, buff);
 		    failed = 1;
 		}
-		sprintf(buff2, "%s/%ld%d.x", _PATH_XBATCHES, now, cp->fd);
+		sprintf(buff2, "%s/%ld%d.x", innconf->pathincoming,
+						now, cp->fd);
 		if (rename(buff, buff2)) {
 		    oerrno = errno;
 		    syslog(L_ERROR, "%s cant rename %s to %s: %m",

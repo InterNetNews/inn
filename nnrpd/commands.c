@@ -19,11 +19,11 @@ typedef struct _LISTINFO {
 
 
 STATIC LISTINFO		INFOactive = {
-    ACTIVE, TRUE, "active newsgroups",
+    _PATH_ACTIVE, TRUE, "active newsgroups",
     "Newsgroups in form \"group high low flags\""
 };
 STATIC LISTINFO		INFOactivetimes = {
-    ACTIVETIMES, FALSE, "creation times",
+    _PATH_ACTIVETIMES, FALSE, "creation times",
     "Group creations in form \"name time who\""
 };
 STATIC LISTINFO		INFOdistribs = {
@@ -39,7 +39,7 @@ STATIC LISTINFO		INFOdistribpats = {
     "Default distributions in form \"weight:pattern:value\""
 };
 STATIC LISTINFO		INFOgroups = {
-    NEWSGROUPS, FALSE, "newsgroup descriptions",
+    _PATH_NEWSGROUPS, FALSE, "newsgroup descriptions",
     "Descriptions in form \"group description\""
 };
 STATIC LISTINFO		INFOmoderators = {
@@ -95,7 +95,10 @@ PERMgeneric(av, accesslist)
 	    return(-1);
 	}
 
-    (void)sprintf(path, "%s/%s", _PATH_AUTHDIR, av[0]);
+    if (strchr(_PATH_AUTHDIR,'/') == NULL)
+	(void)sprintf(path, "%s/%s/%s", innconf->pathbin, _PATH_AUTHDIR, av[0]);
+    else
+	(void)sprintf(path, "%s/%s", _PATH_AUTHDIR, av[0]);
 
 #if !defined(S_IXUSR) && defined(_S_IXUSR)
 #define S_IXUSR _S_IXUSR
@@ -117,11 +120,7 @@ PERMgeneric(av, accesslist)
 	return -1;
     }
 
-    if ((p = GetConfigValue(_CONF_MAX_FORKS)) != NULL)   
-    {
-	max_forks = atoi(p);
-    }
-    else max_forks = MAX_FORKS;
+    max_forks = innconf->maxforks;
     for (i = 0; (pid = FORK()) < 0; i++) {
 	if (i == max_forks) {
 	    Reply("%d Can't fork %s\r\n", NNTP_TEMPERR_VAL,
@@ -262,7 +261,7 @@ CMDauthinfo(ac, av)
 	    return;
 	}
 	if (PERMinfile((char *)NULL, (char *)NULL, User, Password,
-		accesslist, _PATH_NNRPACCESS)) {
+		accesslist, NNRPACCESS)) {
 	    PERMspecified = NGgetlist(&PERMlist, accesslist);
 	    syslog(L_NOTICE, "%s user %s", ClientHost, User);
 	    Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
@@ -379,8 +378,7 @@ CMDlist(ac, av)
 	Reply("%s\r\n", NNTP_SYNTAX_USE);
 	return;
     }
-
-    if ((qp = QIOopen(lp->File)) == NULL) {
+    if ((qp = QIOopen(cpcatpath(innconf->pathetc, (char *)lp->File))) == NULL) {
 	if (!lp->Required && errno == ENOENT) {
 	    Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);
 	    Printf(".\r\n");

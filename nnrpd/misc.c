@@ -308,7 +308,7 @@ char *HISgetent(HASH *key, BOOL fulldata)
 	for (p = save; *p; p++)
 	    if (*p == '.')
 		*p = '/';
-	(void)sprintf(path, "%s/%s", _PATH_SPOOL, save);
+	(void)sprintf(path, "%s/%s", SPOOL, save);
 	if (stat(path, &Sb) >= 0)
 	    return path;
 	if (q == NULL)

@@ -5,7 +5,7 @@
 
 PROG=senduuname
 ##  Some shells don't pass in $* unless we explicitly pass it in here.
-. ${NEWSBIN}/parsecontrol "$@"
+. ${PATHBIN}/parsecontrol "$@"
 
 SUBJECT="Senduuname reply from `innconfval pathhost`"
 case ${ACTION} in

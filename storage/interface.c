@@ -139,7 +139,6 @@ STORAGE_SUB *SMGetConfig(STORAGETYPE type, STORAGE_SUB *sub) {
 
 /* Open the config file and parse it, generating the policy data */
 static BOOL SMreadconfig(void) {
-    char                path[sizeof(_PATH_STORAGECTL) + 16];
     FILE                *f;
     char                line[1024];
     int                 i;
@@ -159,13 +158,12 @@ static BOOL SMreadconfig(void) {
 	method_data[i].initialized = INIT_NO;
 	method_data[i].configured = FALSE;
     }
-    sprintf(path, "%s", _PATH_STORAGECTL);
-    if ((f = fopen(path, "r")) == NULL) {
+    if ((f = fopen(cpcatpath(innconf->pathetc, _PATH_STORAGECTL), "r")) == NULL) {
 	SMseterror(SMERR_UNDEFINED, NULL);
-	syslog(L_ERROR, "SM Could not open %s: %m", path);
+	syslog(L_ERROR, "SM Could not open %s: %m",
+			cpcatpath(innconf->pathetc, _PATH_STORAGECTL));
 	return FALSE;
     }
-
     
     while (fgets(line, 1024, f) != NULL) {
 	linenum++;

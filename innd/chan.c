@@ -750,10 +750,8 @@ void CHANreadloop(void)
     char		*p;
     time_t		LastUpdate;
     CHANNEL             *tempchan;
-    int                 j;
     int                 found;
     int                 tfd;
-    char                *tempname;
 
     TMRinit();
     STATUSinit();
