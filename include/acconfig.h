@@ -209,6 +209,9 @@
 /* Define to `int' if <signal.h> doesn't define.  */
 #undef sig_atomic_t
 
+/* Define to `int' if <sys/socket.h> doesn't define.  */
+#undef socklen_t
+
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #undef ssize_t
 

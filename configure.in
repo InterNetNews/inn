@@ -534,9 +534,9 @@ AC_HEADER_SYS_WAIT
 
 dnl Generic checks for header files.
 dnl NOTUSED: sys/file.h sys/ioctl.h
-AC_CHECK_HEADERS(fcntl.h limits.h ndbm.h stddef.h stdint.h sys/file.h \
-                 sys/filio.h sys/ioctl.h sys/select.h sys/sysinfo.h \
-                 sys/time.h unistd.h)
+AC_CHECK_HEADERS(crypt.h fcntl.h limits.h ndbm.h stddef.h stdint.h \
+                 sys/file.h sys/filio.h sys/ioctl.h sys/select.h \
+                 sys/sysinfo.h sys/time.h unistd.h)
 
 dnl Some Linux systems have db1/ndbm.h instead of ndbm.h.
 if test x"$ac_cv_header_ndbm_h" = xno ; then
@@ -545,7 +545,7 @@ fi
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_STRUCT_ST_BLKSIZE
-AC_STRUCT_TM            dnl NOTUSED
+AC_STRUCT_TM
 AC_C_CONST
 AC_TYPE_SIZE_T
 AC_TYPE_UID_T
@@ -580,9 +580,8 @@ $3],
     fi
 ])
 
-dnl If sig_atomic_t is available, use it instead of int as the type of a
-dnl variable that can be set inside signal handlers.
 INN_CHECK_TYPE(sig_atomic_t, int, [#include <signal.h>])
+INN_CHECK_TYPE(socklen_t, int, [#include <sys/socket.h>])
 
 dnl Check for the number of elements in an iovec (IOV_MAX).  SVr4 systems
 dnl appear to use that name for this limit (checked Solaris 2.6, IRIX 6.5,
@@ -656,7 +655,8 @@ changequote([, ]),
 ])
 INN_MACRO_IOV_MAX
 
-dnl Check for SUN_LEN.
+dnl Check for SUN_LEN (size of a Unix domain socket struct, macro required
+dnl POSIX.1g but not that widespread yet).
 AC_DEFUN(INN_MACRO_SUN_LEN, [
     AC_MSG_CHECKING(for SUN_LEN)
     AC_CACHE_VAL(inn_cv_macro_sun_len, AC_TRY_LINK([
@@ -678,7 +678,7 @@ AC_DEFUN(INN_MACRO_SUN_LEN, [
 INN_MACRO_SUN_LEN
 
 dnl FIXME: The external variable timezone is available on some platforms and
-dnl accomplishes the same purpose (but is more standard).
+dnl accomplishes the same purpose.
 AC_CACHE_CHECK(for tm_gmtoff in struct tm, inn_cv_struct_tm_gmtoff,
     AC_TRY_LINK([#include <time.h>],
         [struct tm t; t.tm_gmtoff = 0],
@@ -734,9 +734,6 @@ INN_CHECK_TYPE(int32_t, $INN_INT32,
 ])
 
 dnl Figure out the unsigned version.
-if test x"$ac_cv_type_int32_t" = xyes ; then
-    INN_INT32=int32_t
-fi
 INN_CHECK_TYPE(uint32_t, unsigned $INN_INT32,
 [#ifdef HAVE_STDINT_H
 # include <stdint.h>
@@ -757,8 +754,8 @@ dnl FIXME: fchmod and gettimeofday are checked some of the places they're
 dnl used, but not all of them.
 AC_CHECK_FUNCS(atexit fchmod fcntl gethostname getpagesize getrusage \
                getspnam gettimeofday mkfifo setbuffer sigaction setsid \
-               socketpair statvfs strcspn strdup strncasecmp strstr \
-               strtoul symlink waitpid)
+               socketpair statvfs strcspn strncasecmp strstr strtoul \
+               symlink waitpid)
 
 dnl We only care if we have setreuid() if we don't have seteuid().
 AC_CHECK_FUNCS(seteuid setreuid, break)
@@ -793,7 +790,7 @@ fi
 
 dnl If we can't find any of the following, we have replacements for them.
 AC_REPLACE_FUNCS(getopt inet_aton inet_ntoa pread pwrite strcasecmp \
-                 strerror strspn)
+                 strdup strerror strspn)
 
 MISSING_OBJ="$LIBOBJS"
 MISSING_SRC=`echo "$MISSING_OBJ" | sed 's/\.o/.c/g'`
