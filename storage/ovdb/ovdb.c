@@ -881,6 +881,7 @@ static bool delete_old_stuff(int forgotton)
     DB_TXN *tid;
     struct groupinfo gi;
     char **dellist = NULL;
+    size_t *dellistsz = NULL;
     int listlen, listcount = 0;
     int i, ret = 0;
 
@@ -890,9 +891,12 @@ static bool delete_old_stuff(int forgotton)
             free(dellist[i]);
         free(dellist);
     }
+    if (dellistsz != NULL)
+	free(dellistsz);
     listlen = 20;
     listcount = 0;
     dellist = xmalloc(listlen * sizeof(char *));
+    dellistsz = xmalloc(listlen * sizeof(size_t));
 
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
@@ -907,6 +911,7 @@ static bool delete_old_stuff(int forgotton)
         warn("OVDB: delete_old_stuff: groupinfo->cursor: %s",
              db_strerror(ret));
 	free(dellist);
+	free(dellistsz);
 	return false;
     }
 
@@ -920,13 +925,14 @@ static bool delete_old_stuff(int forgotton)
 	}
 	if((!forgotton && (gi.status & GROUPINFO_DELETED))
 		|| (forgotton && (gi.expired < eo_start))) {
-	    dellist[listcount] = xmalloc(key.size + 1);
+	    dellist[listcount] = xmalloc(key.size);
 	    memcpy(dellist[listcount], key.data, key.size);
-	    dellist[listcount][key.size] = 0;
+	    dellistsz[listcount] = key.size;
 	    listcount++;
 	    if(listcount >= listlen) {
 		listlen += 20;
                 dellist = xrealloc(dellist, listlen * sizeof(char *));
+                dellistsz = xrealloc(dellistsz, listlen * sizeof(size_t));
 	    }
 	}
     }
@@ -944,6 +950,7 @@ static bool delete_old_stuff(int forgotton)
         for (i = 0; i < listcount; ++i)
             free(dellist[i]);
         free(dellist);
+        free(dellistsz);
         return false;
     }
 
@@ -953,7 +960,15 @@ static bool delete_old_stuff(int forgotton)
 	if(tid==NULL)
 	    goto out;
 
-        ret = ovdb_getgroupinfo(dellist[i], &gi, false, tid, DB_RMW);
+	/* Can't use ovdb_getgroupinfo here */
+	key.data = dellist[i];
+	key.size = dellistsz[i];
+	val.data = &gi;
+	val.ulen = sizeof(struct groupinfo);
+	val.flags = DB_DBT_USERMEM;
+
+	ret = groupinfo->get(groupinfo, tid, &key, &val, DB_RMW);
+
 	switch (ret)
         {
 	case 0:
@@ -964,8 +979,12 @@ static bool delete_old_stuff(int forgotton)
 	    TXN_ABORT(t_dos, tid);
 	    continue;
 	default:
-            warn("OVDB: delete_old_stuff: getgroupinfo: %s",
+            warn("OVDB: delete_old_stuff: groupinfo->get: %s",
                  db_strerror(ret));
+	    TXN_ABORT(t_dos, tid);
+	    continue;
+	}
+	if(val.size != sizeof(struct groupinfo)) {
 	    TXN_ABORT(t_dos, tid);
 	    continue;
 	}
@@ -1010,8 +1029,6 @@ static bool delete_old_stuff(int forgotton)
 		continue;
 	    }
 	}
-	key.data = dellist[i];
-	key.size = strlen(dellist[i]);
 
 	/* delete the corresponding groupaliases record (if exists) */
 	switch(groupaliases->del(groupaliases, tid, &key, 0)) {
@@ -1042,6 +1059,7 @@ out:
     for(i = 0; i < listcount; i++)
 	free(dellist[i]);
     free(dellist);
+    free(dellistsz);
     return true;
 }
 
