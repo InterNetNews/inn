@@ -564,7 +564,7 @@ RCwritedone()
 /*
  * Read something (a word or a double quoted string) from a file.
  */
-char *RCreaddata (int *num, FILE *F)
+char *RCreaddata (int *num, FILE *F, BOOL *toolong)
 {
   register char *p;
   register char *s;
@@ -572,12 +572,15 @@ char *RCreaddata (int *num, FILE *F)
   char          *word;
   register BOOL flag;
 
+  *toolong = FALSE;
   if (*RCbuff == '\0') {
     if (feof (F)) return (NULL);
     fgets(RCbuff, sizeof RCbuff, F);
     (*num)++;
-    if (strlen (RCbuff) == sizeof RCbuff)
+    if (strlen (RCbuff) == sizeof RCbuff) {
+      *toolong = TRUE;
       return (NULL); /* Line too long */
+    }
   }
   p = RCbuff;
   do {
@@ -594,8 +597,10 @@ char *RCreaddata (int *num, FILE *F)
        flag = FALSE;
        fgets(RCbuff, sizeof RCbuff, F);
        (*num)++;
-       if (strlen (RCbuff) == sizeof RCbuff)
+       if (strlen (RCbuff) == sizeof RCbuff) {
+	 *toolong = TRUE;
 	 return (NULL); /* Line too long */
+       }
        continue;
      }
      break;
@@ -610,8 +615,10 @@ char *RCreaddata (int *num, FILE *F)
 	*t++ = '\n';
 	fgets(t, sizeof RCbuff - strlen (RCbuff), F);
 	(*num)++;
-	if (strlen (RCbuff) == sizeof RCbuff)
+	if (strlen (RCbuff) == sizeof RCbuff) {
+	  *toolong = TRUE;
 	  return (NULL); /* Line too long */
+	}
 	if ((s = strchr(t, '\n')) != NULL)
 	  *s = '\0';
       }
@@ -679,7 +686,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     register REMOTEHOST		*group_params = NULL;
     register REMOTEHOST		peer_params;
     register REMOTEHOST		default_params;
-    BOOL			flag, bit;
+    BOOL			flag, bit, toolong;
 
  
     *RCbuff = '\0';
@@ -750,13 +757,13 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     peer_params.Keysetbit = 0;
 
     /* Read the file to add all the hosts. */
-    while ((word = RCreaddata (&linecount, F)) != NULL) {
+    while ((word = RCreaddata (&linecount, F, &toolong)) != NULL) {
 
       /* group */
       if (!strncmp (word, GROUP,  sizeof GROUP)) {
 	DISPOSE(word);
 	/* name of the group */
-	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	if ((word = RCreaddata (&linecount, F, &toolong)) == NULL) {
 	  syslog(L_ERROR, GROUP_NAME, LogName, filename, linecount);
 	  break;
 	}
@@ -785,7 +792,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  groups[groupcount - 2].Pattern : default_params.Pattern;
 	group_params->Password = groupcount > 1 ?
 	  groups[groupcount - 2].Password : default_params.Password;
-	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	if ((word = RCreaddata (&linecount, F, &toolong)) == NULL) {
 	  syslog(L_ERROR, LEFT_BRACE, LogName, filename, linecount);
 	  break;
 	}
@@ -810,7 +817,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	      filename, linecount);
 	  break;
 	}
-	if ((word = RCreaddata (&linecount, F)) == NULL)
+	if ((word = RCreaddata (&linecount, F, &toolong)) == NULL)
 	{
 	  syslog(L_ERROR, PEER_NAME, LogName, filename, linecount);
 	  break;
@@ -835,7 +842,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  group_params->Password : default_params.Password;
 	peer_params.Keysetbit = 0;
 
-	if ((word = RCreaddata (&linecount, F)) == NULL)
+	if ((word = RCreaddata (&linecount, F, &toolong)) == NULL)
 	{
 	  syslog(L_ERROR, LEFT_BRACE, LogName, filename, linecount);
 	  break;
@@ -1020,7 +1027,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
 	  break;
 	}
-	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	if ((word = RCreaddata (&linecount, F, &toolong)) == NULL) {
 	  break;
 	}
 	if (!strcmp (word, "true"))
@@ -1052,7 +1059,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
 	  break;
 	}
-	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	if ((word = RCreaddata (&linecount, F, &toolong)) == NULL) {
 	  break;
 	}
 	if (!strcmp (word, "true"))
@@ -1084,7 +1091,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
 	  break;
 	}
-	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	if ((word = RCreaddata (&linecount, F, &toolong)) == NULL) {
 	  break;
 	}
 	if (!strcmp (word, "true"))
@@ -1116,7 +1123,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
 	  break;
 	}
-	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	if ((word = RCreaddata (&linecount, F, &toolong)) == NULL) {
 	  break;
 	}
 	RCadddata(data, &infocount, K_MAX_CONN, T_STRING, word);
@@ -1142,7 +1149,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
 	  break;
 	}
-	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	if ((word = RCreaddata (&linecount, F, &toolong)) == NULL) {
 	  break;
 	}
 	RCadddata(data, &infocount, K_HOLD_TIME, T_STRING, word);
@@ -1164,7 +1171,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
 	  break;
 	}
-	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	if ((word = RCreaddata (&linecount, F, &toolong)) == NULL) {
 	  break;
 	}
 	RCadddata(data, &infocount, K_HOSTNAME, T_STRING, word);
@@ -1181,7 +1188,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
 	  break;
 	}
-	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	if ((word = RCreaddata (&linecount, F, &toolong)) == NULL) {
 	  break;
 	}
 	RCadddata(data, &infocount, K_PASSWORD, T_STRING, word);
@@ -1204,7 +1211,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  break;
 	}
 	DISPOSE(word);
-	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	if ((word = RCreaddata (&linecount, F, &toolong)) == NULL) {
 	  break;
 	}
 	RCadddata(data, &infocount, K_PATTERNS, T_STRING, word);
@@ -1227,7 +1234,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
 	  break;
 	}
-	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	if ((word = RCreaddata (&linecount, F, &toolong)) == NULL) {
 	  break;
 	}
 	RCadddata(data, &infocount, K_EMAIL, T_STRING, word);
@@ -1250,7 +1257,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
 	  break;
 	}
-	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	if ((word = RCreaddata (&linecount, F, &toolong)) == NULL) {
 	  break;
 	}
 	RCadddata(data, &infocount, K_COMMENT, T_STRING, word);
@@ -1265,7 +1272,11 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	continue;
       }
 
-      syslog(L_ERROR, "%s Unknown value line %d: %s",
+      if (toolong)
+	syslog(L_ERROR, "%s line too long at %d: %s",
+	     LogName, --linecount, filename);
+      else
+	syslog(L_ERROR, "%s Unknown value line %d: %s",
 	     LogName, linecount, filename);
       DISPOSE(word);
       break;
