@@ -31,6 +31,9 @@ nnrpd \- NNTP server for on-campus hosts
 [
 .B \-t
 ]
+[
+.B \-S
+]
 .SH DESCRIPTION
 .I Nnrpd
 is an NNTP server for newsreaders.
@@ -157,6 +160,14 @@ when started as a standalone daemon using the ``\-D'' flag.
 This has to be a valid Internet
 address in dotted-quad format belonging to an interface of the local
 host.
+.TP
+.B \-S
+If specified, 
+.I nnrpd
+start a negotiation for SSL session as soon as connected.
+To use this option,
+.I nnrpd
+must be built with OpenSSL at compile time.
 .SH "PROTOCOL DIFFERENCES"
 .I Nnrpd
 implements the NNTP commands defined in RFC 977, with the following
