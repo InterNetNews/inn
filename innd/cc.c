@@ -641,6 +641,12 @@ typedef enum { false = 0, true = 1 } bool;
 #include <perl.h>
 #include <XSUB.h>
 
+/* Perl 5.004 didn't define ERRSV and PL_na was called na. */
+#ifndef ERRSV
+# define ERRSV GvSV(errgv)
+# define PL_na na
+#endif
+
 extern CV *perl_filter_cv ;
 
 STATIC STRING
@@ -2077,7 +2083,7 @@ XS(XS_INN_head)
     if (items != 1)
         croak("Usage: INN::head(msgid)");
 
-    msgid = (char *)SvPV(ST(0),na);
+    msgid = (char *)SvPV(ST(0),PL_na);
 
     /* Get the article filenames; open the first file */
     if ((q = HISfilesfor(HashMessageID(msgid))) == NULL) {
@@ -2120,7 +2126,7 @@ XS(XS_INN_article)
     if (items != 1)
 	croak("Usage: INN::article(msgid)");
 
-    msgid = (char *)SvPV(ST(0),na);
+    msgid = (char *)SvPV(ST(0),PL_na);
 
     /* Get the article filenames; open the first file */
     if ((q = HISfilesfor(HashMessageID(msgid))) == NULL) {
@@ -2162,8 +2168,8 @@ XS(XS_INN_syslog)
     if (items != 2)
         croak("Usage: INN::syslog(level, message)");
 
-    loglevel = (char *)SvPV(ST(0),na);
-    logmsg = (char *)SvPV(ST(1),na);
+    loglevel = (char *)SvPV(ST(0),PL_na);
+    logmsg = (char *)SvPV(ST(1),PL_na);
 
     switch (*loglevel) {
 	default:		priority = LOG_NOTICE ;
