@@ -1,0 +1,29 @@
+=head1 NAME
+
+ovdb_server - overview 'helper' server
+
+=head1 SYNOPSYS
+
+Use C<ovdb_init> to start ovdb_server
+
+=head1 DESCRIPTION
+
+If the C<readserver> parameter in F<ovdb.conf> is true,
+C<ovdb_init> will start C<ovdb_server>.
+
+C<ovdb_server> opens the overview database, and accesses it
+on behalf of the nnrpd reader processes.
+
+To shut down ovdb_server, send a TERM signal to the process ID
+in F<I<pathrun>/ovdb_server.pid> .  The parent process will shut
+down its children and wait for their exit before exiting itself.
+
+=head1 HISTORY
+
+Written by Heath Kehoe E<lt>hakehoe@avalon.netE<gt> for InterNetNews.
+
+=head1 SEE ALSO
+
+ovdb(5), ovdb_init(8)
+
+=cut
