@@ -26,7 +26,10 @@ John Stapleton:
 	Wrote the too-many-connects support ('-X -H -T' flags to innd).
 	
 Landon Curt Noll:
-	Wrote actsync, nntpsend, shrinkfile.
+	Wrote or cwo-wrote actsync, nntpsend, shrinkfile, innstat,
+	news.daily, tally.control and misc man pages. He also was the
+	person originally behind the site directory 
+	configuration/installation process.
 
 John Levine:
 	Wrote the '-e' support for expire (expire on shortest time).
