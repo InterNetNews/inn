@@ -363,9 +363,10 @@ sub collect {
                    artcncl\ (\d+)\((\d+)\)\s+      # artcncl
                    hishave\ (\d+)\((\d+)\)         # hishave
                    (?:\s+hisgrep\ (\d+)\((\d+)\)   # hisgrep (optional)
+                   (?:\s+artclean\ (\d+)\((\d+)\)  # artclean (optional)
 		   (?:\s+perl\ (\d+)\((\d+)\)      # perl (optional)
 		   (?:\s+overv\ (\d+)\((\d+)\)     # overv (optional)
-		   (?:\s+python\ (\d+)\((\d+)\))?)?)?)?)?   # python (optional)
+		   (?:\s+python\ (\d+)\((\d+)\))?)?)?)?)?)?  # python (optional)
 	           \s*$/ox) {
       $innd_time_times += $1;
       $innd_time_time{'idle'} += $2;
@@ -439,21 +440,29 @@ sub collect {
         $innd_time_max{'history grep'} = $20 / ($21 || 1)
 	  if $21 && $innd_time_max{'history grep'} < $20 / ($21 || 1);
         if (defined($22) && defined($23)) {
-          $innd_time_time{'perl filter'} += $22;
-          $innd_time_num{'perl filter'} += $23;
-          $innd_time_min{'perl filter'} = $22 / ($23 || 1)
-	    if $23 && $innd_time_min{'perl filter'} > $22 / ($23 || 1);
-          $innd_time_max{'perl filter'} = $22 / ($23 || 1)
-	    if $23 && $innd_time_max{'perl filter'} < $22 / ($23 || 1);
-	  if (defined($24) && defined($25))  {
-	    $innd_time_time{'overview write'} += $24;
-	    $innd_time_num{'overview write'} += $25;
-	    $innd_time_min{'overview write'} = $24 / ($25 || 1)
-	      if $25 && $innd_time_min{'overview write'} > $24 / ($25 || 1);
-	    $innd_time_max{'overview write'} = $24 / ($25 || 1)
-	      if $25 && $innd_time_max{'overview write'} < $24 / ($25 || 1);
+          $innd_time_time{'article clean'} += $22;
+          $innd_time_num{'article clean'} += $23;
+          $innd_time_min{'article clean'} = $22 / ($23 || 1)
+	    if $23 && $innd_time_min{'article clean'} > $22 / ($23 || 1);
+          $innd_time_max{'article clean'} = $22 / ($23 || 1)
+	  if $23 && $innd_time_max{'article clean'} < $22 / ($23 || 1);
+	}
+        if (defined($24) && defined($25)) {
+          $innd_time_time{'perl filter'} += $24;
+          $innd_time_num{'perl filter'} += $25;
+          $innd_time_min{'perl filter'} = $24 / ($25 || 1)
+	    if $25 && $innd_time_min{'perl filter'} > $24 / ($25 || 1);
+          $innd_time_max{'perl filter'} = $24 / ($25 || 1)
+	    if $25 && $innd_time_max{'perl filter'} < $24 / ($25 || 1);
+	  if (defined($26) && defined($27))  {
+	    $innd_time_time{'overview write'} += $26;
+	    $innd_time_num{'overview write'} += $27;
+	    $innd_time_min{'overview write'} = $26 / ($27 || 1)
+	      if $27 && $innd_time_min{'overview write'} > $26 / ($27 || 1);
+	    $innd_time_max{'overview write'} = $26 / ($27 || 1)
+	      if $27 && $innd_time_max{'overview write'} < $26 / ($27 || 1);
 	  }
-        }
+	}
       }
       return 1;
     }
