@@ -284,6 +284,12 @@ The client may read articles.
 
 The client may post articles.
 
+=item A
+
+The client may post articles with Approved: headers (in other words, may
+approve articles for moderated newsgroups).  By default, this is not
+allowed.
+
 =item N
 
 The client may use the NEWNEWS command, overriding the global setting.
