@@ -190,7 +190,7 @@ extern char		*Glom();
 extern int		Argify();
 extern void		ExitWithStats(int x, bool readconf);
 extern bool		GetGroupList();
-extern char		*GetHeader();
+extern char		*GetHeader(char *header, bool IsLines);
 extern void		GRPreport();
 extern long		LOCALtoGMT();
 extern bool		NGgetlist();
