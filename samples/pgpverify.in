@@ -25,7 +25,7 @@ $0 =~ s(^.*/)();                # trim /path/to/prog to prog
 # this is, by design, case-sensitive with regards to the headers it checks.
 # it's also insistent about the colon-space rule.
 while (<>) {
-  chop;
+  s/[\n\r]$//g;
   last if /^$/;
   if (/^(\S+):[ \t](.+)/) {
     ($label, $value) = ($1, $2);

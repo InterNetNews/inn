@@ -43,7 +43,7 @@ ${EGREP} "^(${PROG}|all):" <${CTLFILE} >${TEMP}
 
 ##  Get any arguments.
 if grep "^Control:[ 	]*${PROG}" <${ARTICLE} >/dev/null 2>&1 ; then
-    set X `${SED} -n -e "s/^Control:[ 	]*${PROG}//p" -e '/^$/q' <${ARTICLE}`
+    set X `${SED} -n -e "s/^Control:[ 	]*${PROG}//p" -e '/^$/q' <${ARTICLE} |tr -d '\r'`
     shift
 else
     if grep "^Subject:[ 	]*cmsg[ 	]*${PROG}" \
