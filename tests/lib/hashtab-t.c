@@ -69,8 +69,6 @@ main(void)
     testing = xstrdup("testing");
     strange = xstrdup("strange");
     change = xstrdup("change");
-    foo = xstrdup("foo");
-    bar = xstrdup("bar");
 
     puts("38");
     hash = hash_create(4, hash_string, string_key, string_equal,
@@ -106,7 +104,6 @@ main(void)
     ok(22, hash_lookup(hash, "thingie") == NULL);
     ok(23, !hash_delete(hash, "thingie"));
     ok(24, hash_delete(hash, "strange"));
-    strange = xstrdup("strange");
     ok(25, hash_lookup(hash, "strange") == NULL);
     ok(26, hash_count(hash) == 3);
 
@@ -124,6 +121,12 @@ main(void)
 
     /* Test hash creation with an odd size.  This previously could result
        in the wrong table size being allocated. */
+    test = xstrdup("test");
+    testing = xstrdup("testing");
+    strange = xstrdup("strange");
+    change = xstrdup("change");
+    foo = xstrdup("foo");
+    bar = xstrdup("bar");
     hash = hash_create(5, hash_string, string_key, string_equal,
                        string_delete);
     ok(29, hash != NULL);
@@ -181,6 +184,8 @@ main(void)
         }
     }
     puts("ok 38");
+
+    hash_free(hash);
 
     return 0;
 }
