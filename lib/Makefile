@@ -10,7 +10,7 @@ CFLAGS  = $(GCFLAGS)
 
 SOURCES = $(MISSING_SRC) \
 	argparse.c checkart.c cleanfrom.c clientactive.c clientlib.c \
-	closeonexec.c concat.c conffile.c dbz.c defdist.c findheader.c \
+	closeonexec.c concat.c conffile.c date.c dbz.c defdist.c findheader.c \
 	genid.c getconfig.c getdtab.c getfqdn.c getmodaddr.c gettime.c \
 	grpalias.c hash.c inndcomm.c localopen.c lockfile.c makedir.c \
 	md5.c nonblocking.c parsedate.c perl.c qio.c radix32.c readin.c \
@@ -20,7 +20,7 @@ SOURCES = $(MISSING_SRC) \
 
 OBJECTS = $(MISSING_OBJ) \
 	argparse.o checkart.o cleanfrom.o clientactive.o clientlib.o \
-	closeonexec.o concat.o conffile.o dbz.o defdist.o findheader.o \
+	closeonexec.o concat.o conffile.o date.o dbz.o defdist.o findheader.o \
 	genid.o getconfig.o getdtab.o getfqdn.o getmodaddr.o gettime.o \
 	grpalias.o hash.o inndcomm.o localopen.o lockfile.o makedir.o \
 	md5.o nonblocking.o parsedate.o qio.o radix32.o readin.o \
