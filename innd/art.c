@@ -463,6 +463,7 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
     end = p += ARTheaders[_xref].Length;
     memcpy(p, "\r\n\r\n", 4);
     p += 4;
+    ARTheaders[_xref].Found = 1;
     memcpy(p, Data->Body, &Article->Data[Article->Used] - Data->Body);
     p += &Article->Data[Article->Used] - Data->Body;
     memcpy(p, ".\r\n", 3);
