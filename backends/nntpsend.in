@@ -15,6 +15,8 @@
 ##	-t timeout	innxmit timeout to make connection (def: 180)
 ##	-T limit	innxmit connection transmit time limit (def: forever)
 ##	-P portnum	port number to use
+##	-l		innxmit, log rejected articles
+##	-N		innxmit, disable streaming mode
 ##	-n		do not lock for nntpsend, do not sleep between sets
 ##	host fqdn	send to host and qualified domain (def: nntpsend.ctl)
 ##  If no "host fqdn" pairs appear on the command line, then ${CTLFILE}
@@ -33,6 +35,8 @@ P_FLAG=
 R_FLAG=
 S_FLAG=
 C_FLAG=
+L_FLAG=
+S2_FLAG=
 TRUNC_SIZE=
 T_FLAG=
 TIMELIMIT=
@@ -53,6 +57,9 @@ while ${MORETODO} ; do
     X-D)
 	NO_LOG_FLAG="true"
 	;;
+    X-l)
+	L_FLAG="-l"
+	;;
     X-p)
 	P_FLAG="-p"
 	;;
@@ -61,6 +68,9 @@ while ${MORETODO} ; do
 	;;
     X-S)
 	S_FLAG="-S"
+	;;
+    X-N)
+	S2_FLAG="-s"
 	;;
     X-c)
 	C_FLAG="-c"
@@ -217,6 +227,7 @@ cat ${INPUT} | while read SITE HOST SIZE_ARG FLAGS; do
     S2_PARAM=
     C_PARAM=
     PP_PARAM=
+    L_PARAM=
     TIMEOUT_PARAM=
     TIMELIMIT_PARAM=
     if [ -z "${FLAGS}" ]; then
@@ -246,6 +257,9 @@ cat ${INPUT} | while read SITE HOST SIZE_ARG FLAGS; do
 	    ;;
 	X-s)
 	    S2_PARAM="-s"
+	    ;;
+	X-l)
+	    L_PARAM="-l"
 	    ;;
 	X-t)
 	    if [ -z "$2" ] ; then
@@ -310,6 +324,11 @@ cat ${INPUT} | while read SITE HOST SIZE_ARG FLAGS; do
 	INNFLAGS="${INNFLAGS} ${P_FLAG}"
     else
 	test -n "${P_PARAM}" && INNFLAGS="${INNFLAGS} ${P_PARAM}"
+    fi
+    if [ -n "${L_FLAG}" ]; then
+	INNFLAGS="${INNFLAGS} ${L_FLAG}"
+    else
+	test -n "${L_PARAM}" && INNFLAGS="${INNFLAGS} ${L_PARAM}"
     fi
     if [ -n "${R_FLAG}" ]; then
 	INNFLAGS="${INNFLAGS} ${R_FLAG}"

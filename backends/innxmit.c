@@ -74,7 +74,7 @@ static int CanStream = FALSE;	/* Result of stream negotation */
 static int DoCheck   = TRUE;	/* Should check before takethis? */
 static char modestream[] = "mode stream";
 static long retries = 0;
-static int logRejects = TRUE ;  /* syslog the 437 responses. */
+static int logRejects = FALSE ;  /* syslog the 437 responses. */
 
 
 
@@ -87,6 +87,7 @@ STATIC char	STAT2[] = "%s times user %.3f system %.3f elapsed %.3f";
 STATIC char	GOT_RESENDIT[] = "%s requeued %s %s";
 STATIC char	GOT_BADCOMMAND[] = "%s rejected %s %s";
 STATIC char	REJECTED[] = "%s rejected %s (%s) %s";
+STATIC char	REJ_STREAM[] = "%s rejected (%s) %s";
 STATIC char	CANT_CONNECT[] = "%s connect failed %s";
 STATIC char	CANT_AUTHENTICATE[] = "%s authenticate failed %s";
 STATIC char	IHAVE_FAIL[] = "%s ihave failed %s";
@@ -890,6 +891,12 @@ strlisten() {
 		
 	case NNTP_ERR_FAILID_VAL:
 	    STATrejectedsize += (double) stbuf[i].st_size;
+	    if (logRejects)
+		syslog(L_NOTICE, REJ_STREAM, REMhost,
+		    stbuf[i].st_fname, REMclean(buff));
+/* XXXXX Caution THERE BE DRAGONS, I don't think this logs properly
+   The message ID is returned in the peer response... so this is redundant
+		    stbuf[i].st_id, stbuf[i].st_fname, REMclean(buff)); */
 	    strel(i); /* release entry */
 	    STATrejected++;
 	    stnofail = 0;
@@ -906,7 +913,7 @@ strlisten() {
 STATIC NORETURN
 Usage() {
     (void)fprintf(stderr,
-	"Usage: innxmit [-a] [-c] [-d] [-p] [-r] [-s] [-t#] [-T#] host file\n");
+	"Usage: innxmit [-a] [-c] [-d] [-l] [-p] [-r] [-s] [-t#] [-T#] host file\n");
     exit(1);
 }
 
@@ -957,7 +964,7 @@ int main(int ac, char *av[]) {
 	    Debug = TRUE;
 	    break;
         case 'l':
-            logRejects = FALSE ;
+            logRejects = TRUE ;
             break ;
 	case 'p':
 	    AlwaysRewrite = TRUE;

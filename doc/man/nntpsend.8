@@ -16,6 +16,12 @@ nntpsend \- send Usenet articles to remote site
 .B \-d
 ]
 [
+.B \-l
+]
+[
+.B \-N
+]
+[
 .B \-n
 ]
 [
@@ -130,13 +136,15 @@ If the ``\-s'' flag is used, then
 will be invoked to perform a head truncation on the batchfile and the flag
 will be passed to it.
 .TP
-.B "\-a \-c \-P \-p \-r \-S \-T \-t"
-The ``\fB\-a\fP'', ``\fB\-c\fP'', ``\fB\-P\fP'', ``\fB\-p\fP'', ``\fB\-r\fP'',
-\``\fB\-S\fP'', ``\fB\-T\fP'' and ``\fB\-t\fP''
-flags are passed on to the
-child
+.B "\-a \-c \-l \-N \-P \-p \-r \-S \-T \-t"
+The ``\fB\-a\fP'', ``\fB\-c\fP'', ``\fB\-l\fP'', ``\fB\-P\fP'', ``\fB\-p\fP'',
+``\fB\-r\fP'', \``\fB\-S\fP'', ``\fB\-T\fP'' and ``\fB\-t\fP''
+flags are passed on to the child
 .I innxmit
-program. See 
+program. ``\-N'' flag is passed as ``\fB\-s\fP'' flag on to the child
+.I innxmit
+program.
+See 
 .IR innxmit (8)
 for more details.
 Note that if the ``\-p'' flag is used then no connection is made and
