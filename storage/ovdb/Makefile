@@ -5,14 +5,16 @@ include ../../Makefile.global
 top	= ../..
 CFLAGS	= $(GCFLAGS) -I.. $(BERKELEY_DB_CFLAGS)
 
-SOURCES = ovdb.c
-OBJECTS = ovdb.o
-LOBJECTS = ovdb.lo
-ROBJECTS = ovdb.$(EXTOBJ)
+SOURCES	= ovdb.c
+OBJECTS	= ovdb.o
 
 .SUFFIXES: .lo
 
-all:			$(OBJECTS)
+all: objects
+
+objects: $(OBJECTS)
+
+install programs:
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
@@ -21,12 +23,10 @@ warnings:
 	$(LIBCC) $(CFLAGS) -c $*.c -o $@
 
 clobber clean distclean:
-	rm -f *.o *.lo obj/*.o *~
-	rm -f profiled
-	rm -f all install lint lint.all
+	rm -f *.o *.lo
 	rm -rf .libs
 
-tags ctags:	$(SOURCES)
+tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../../include/*.h ../*.h
 
 ##  Dependencies.  Default list, below, is probably good enough.

@@ -2,16 +2,21 @@
 
 include ../../Makefile.global
 
-top     = ../..
-CFLAGS  = $(GCFLAGS) -I..
+top		= ../..
+CFLAGS		= $(GCFLAGS) -I..
 
-SOURCES = buffindexed.c
-OBJECTS = buffindexed.o
-ROBJECTS= buffindexed.$(EXTOBJ)
+SOURCES		= buffindexed.c
+OBJECTS		= buffindexed.o
+
+STORELIBS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
 
 .SUFFIXES: .lo
 
-all: $(OBJECTS)
+all: objects
+
+objects: $(OBJECTS)
+
+install programs:
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
@@ -19,20 +24,18 @@ warnings:
 .c.o .c.lo:
 	$(LIBCC) $(CFLAGS) -c $*.c -o $@
 
-debug:	buffindexed
+debug: buffindexed
 
 buffindexed:
 	rm -f buffindexed.o ../objs/*.o
 	$(CC) $(CFLAGS) -DDEBUG -c buffindexed.c
-	$(LIBLD) $(LDFLAGS) -o $@ ../*/*.o ../interface.o ../methods.o ../ov.o ../ovmethods.o $(LIBINN) $(LIBS)
+	$(LIBLD) $(LDFLAGS) -o $@ $(STORELIBS)
 
 clobber clean distclean:
-	rm -f *.o *.lo obj/*.o
-	rm -f profiled
-	rm -f all install lint lint.all
+	rm -f *.o *.lo
 	rm -rf .libs
 
-tags ctags:	$(SOURCES)
+tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../../include/*.h ../*.h
 
 ##  Dependencies.  Default list, below, is probably good enough.

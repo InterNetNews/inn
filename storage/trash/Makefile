@@ -5,14 +5,16 @@ include ../../Makefile.global
 top	= ../..
 CFLAGS	= $(GCFLAGS) -I..
 
-SOURCES = trash.c
-OBJECTS = trash.o
-LOBJECTS = trash.lo
-ROBJECTS = trash.$(EXTOBJ)
+SOURCES	= trash.c
+OBJECTS	= trash.o
 
 .SUFFIXES: .lo
 
-all:			$(OBJECTS)
+all: objects
+
+objects: $(OBJECTS)
+
+install programs:
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
@@ -21,10 +23,10 @@ warnings:
 	$(LIBCC) $(CFLAGS) -c $*.c -o $@
 
 clobber clean distclean:
-	rm -f *.o *.lo obj/*.o profiled
+	rm -f *.o *.lo
 	rm -rf .libs
 
-tags ctags:	$(SOURCES)
+tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../../include/*.h ../*.h
 
 ##  Dependencies.  Default list, below, is probably good enough.

@@ -2,17 +2,19 @@
 
 include ../../Makefile.global
 
-top	 = ../..
-CFLAGS	 = $(GCFLAGS) -I.. 
+top	= ../..
+CFLAGS	= $(GCFLAGS) -I.. 
 
-SOURCES  = cnfs.c
-OBJECTS  = cnfs.o
-LOBJECTS = cnfs.lo
-ROBJECTS = cnfs.$(EXTOBJ)
+SOURCES = cnfs.c
+OBJECTS = cnfs.o
 
 .SUFFIXES: .lo
 
-all:		$(OBJECTS)
+all: objects
+
+objects: $(OBJECTS)
+
+install programs:
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
@@ -21,12 +23,10 @@ warnings:
 	$(LIBCC) $(CFLAGS) -c $*.c
 
 clobber clean distclean:
-	rm -f *.o *.lo obj/*.o
-	rm -f profiled
-	rm -f all install
+	rm -f *.o *.lo
 	rm -rf .libs
 
-tags ctags:	$(SOURCES)
+tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../../include/*.h ../*.h
 
 ##  Dependencies.  Default list, below, is probably good enough.
