@@ -432,7 +432,8 @@ Expires: header, C<0> otherwise.
 
 =item f
 
-The storage API token of the article (the same as C<n>).
+The storage API token of the article (the same as C<n>).  The article can
+be retrieved given the storage API token by using sm(8).
 
 =item g
 
@@ -451,7 +452,8 @@ The message ID of the article.
 
 =item n
 
-The storage API token of the article.
+The storage API token of the article.  The article can be retrieved given
+the storage API token by using sm(8).
 
 =item p
 
