@@ -122,7 +122,7 @@ error_log_syslog(int pri, int len, const char *fmt, va_list args, int err)
                 len + 1, __FILE__, __LINE__, strerror(errno));
         exit(1);
     }
-    vsnprintf(buffer, len, fmt, args);
+    vsnprintf(buffer, len + 1, fmt, args);
     syslog(pri, err ? "%s: %m" : "%s", buffer);
     free(buffer);
 }
