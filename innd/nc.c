@@ -473,6 +473,8 @@ NCihave(CHANNEL *cp)
 	}
 	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_HAVEIT_VAL, perlrc);
 	NCwritereply(cp, cp->Sendid.Data);
+	DISPOSE(cp->Sendid.Data);
+	cp->Sendid.Size = 0;
 	return;
     }
 #endif
