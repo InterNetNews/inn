@@ -27,6 +27,11 @@ int main(int argc, char *argv[])
     struct servent *s;
     char buf[2048];
     struct res_info *res;
+    struct sockaddr_in *lsin, *csin;
+#ifdef HAVE_INET6
+    struct sockaddr_storage *lss;
+    struct sockaddr_in6 *lsin6, *csin6;
+#endif
     int sock;
     int opt;
     int truncate_domain = 0;
@@ -35,7 +40,6 @@ int main(int argc, char *argv[])
     unsigned int got;
     int lport, cport, identport;
     char *endstr;
-    socklen_t length;
 
     message_program_name = "ident";
 
@@ -75,28 +79,32 @@ int main(int argc, char *argv[])
         die("did not get client information from nnrpd");
 
 #ifdef HAVE_INET6
-    if( ((struct sockaddr_storage *)(res->local))->ss_family == AF_INET6 )
+    lss = (struct sockaddr_storage *)(res->local);
+    lsin6 = (struct sockaddr_in6 *)(res->local);
+    csin6 = (struct sockaddr_in6 *)(res->client);
+    if( lss->ss_family == AF_INET6 )
     {
-	lport = ntohs( ((struct sockaddr_in6 *)(res->local))->sin6_port );
-	((struct sockaddr_in6 *)(res->local))->sin6_port = 0;
-	cport = ntohs( ((struct sockaddr_in6 *)(res->client))->sin6_port );
-	((struct sockaddr_in6 *)(res->client))->sin6_port = htons( identport );
+	lport = ntohs( lsin6->sin6_port );
+	lsin6->sin6_port = 0;
+	cport = ntohs( csin6->sin6_port );
+	csin6->sin6_port = htons( identport );
 	sock = socket(PF_INET6, SOCK_STREAM, 0);
     } else
 #endif
     {
-	lport = htons( ((struct sockaddr_in *)(res->local))->sin_port );
-	((struct sockaddr_in *)(res->local))->sin_port = 0;
-	cport = htons( ((struct sockaddr_in *)(res->client))->sin_port );
-	((struct sockaddr_in *)(res->client))->sin_port = htons( identport );
+	lsin = (struct sockaddr_in *)(res->local);
+	lport = htons( lsin->sin_port );
+	lsin->sin_port = 0;
+	csin = (struct sockaddr_in *)(res->client);
+	cport = htons( csin->sin_port );
+	csin->sin_port = htons( identport );
 	sock = socket(PF_INET, SOCK_STREAM, 0);
     }
-    if ( sock < 0 )
+    if (sock < 0)
         sysdie("cannot create socket");
-    length = SA_LEN((struct sockaddr *) (res->local));
-    if (bind(sock, (struct sockaddr*) (res->local), length) < 0)
+    if (bind(sock, res->local, SA_LEN(res->local)) < 0)
         sysdie("cannot bind socket");
-    if (connect(sock, (struct sockaddr*) (res->client), length) < 0) {
+    if (connect(sock, res->client, SA_LEN(res->local)) < 0) {
         if (errno != ECONNREFUSED)
             sysdie("cannot connect to ident server");
         else
