@@ -765,10 +765,8 @@ YY_RULE_SETUP
     }
   else
     {
-      fprintf (stderr,"Including (%d) from %s\n",
+      d_printf (1,"Including (%d) from %s\n",
                include_stack_ptr + 1,yytext) ;
-      syslog (LOG_NOTICE,"Including (%d) from %s\n",
-              include_stack_ptr + 1, yytext) ;
       include_stack[include_stack_ptr].state = YY_CURRENT_BUFFER;
       include_stack[++include_stack_ptr].name = strdup (yytext) ;
       yy_switch_to_buffer(yy_create_buffer(yyin, YY_BUF_SIZE));
