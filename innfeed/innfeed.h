@@ -48,7 +48,7 @@
 /* in host.c */
 #define DNS_RETRY_PERIOD 	900 		/* dns-retry */
 #define DNS_EXPIRE_PERIOD 	86400 		/* dns-expire */
-#define CLOSE_PERIOD 		(60 * 60) 	/* close-period */
+#define CLOSE_PERIOD 		(60 * 60 * 24) 	/* close-period */
 #define GEN_HTML		false 		/* gen-html */
 #define INNFEED_STATUS 		"innfeed.status" /* status-file */
 #define LOG_CONNECTION_STATS 	0 		/* connection-stats */
