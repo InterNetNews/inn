@@ -33,4 +33,4 @@ typedef struct RFCNB_Pkt {
 
 } RFCNB_Pkt;
 
-
+void RFCNB_Free_Pkt(struct RFCNB_Pkt *pkt);
