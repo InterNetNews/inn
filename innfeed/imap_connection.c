@@ -34,7 +34,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <time.h>
-#include <sys/syslog.h>
+#include <syslog.h>
 
 #include "buffer.h"
 #include "connection.h"
