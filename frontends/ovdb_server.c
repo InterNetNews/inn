@@ -167,7 +167,7 @@ sigfunc(int sig)
     signalled = 1;
 }
 
-static int putpid(char *path)
+static int putpid(const char *path)
 {
     char buf[30];
     int fd = open(path, O_WRONLY|O_TRUNC|O_CREAT, 0664);
@@ -314,6 +314,14 @@ process_cmd(struct reader *r)
 	case CMD_OPENSRCH:
 	case CMD_ARTINFO:
 	    r->state = STATE_READGROUP;
+	    if(cmd->grouplen == 0) {
+		/* shoudn't happen... */
+		r->mode = MODE_CLOSED;
+		close(r->fd);
+		DISPOSE(r->buf);
+		r->buf = NULL;
+		return 0;
+	    }
 	    r->buflen += cmd->grouplen;
 	    RENEW(r->buf, char, r->buflen);
 	    return 1;
@@ -322,9 +330,11 @@ process_cmd(struct reader *r)
 
     switch(cmd->what) {
     case CMD_GROUPSTATS:
+	((char *)r->buf)[r->buflen - 1] = 0;	/* make sure group is null-terminated */
 	do_groupstats(r);
 	break;
     case CMD_OPENSRCH:
+	((char *)r->buf)[r->buflen - 1] = 0;
 	do_opensrch(r);
 	break;
     case CMD_SRCH:
@@ -334,9 +344,10 @@ process_cmd(struct reader *r)
 	do_closesrch(r);
 	break;
     case CMD_ARTINFO:
+	((char *)r->buf)[r->buflen - 1] = 0;
 	do_artinfo(r);
 	break;
-    case CMD_QUIT:
+    default:
 	r->mode = MODE_CLOSED;
 	close(r->fd);
 	DISPOSE(r->buf);
@@ -442,8 +453,8 @@ delclient(int which)
     	DISPOSE(r->buf);
     }
     DISPOSE(r);
-    numreaders--;
-    for(i = which; i < numreaders; i++)
+    /* numreaders will get decremented by the calling function */
+    for(i = which; i < numreaders-1; i++)
     	readertab[i] = readertab[i+1];
 }
 
@@ -540,20 +551,16 @@ serverproc(void)
 		    handle_write(readertab[i]);
 		break;
 	    }
-	    /* this is not in the switch because the connection
-		may have been closed in handle_read */
-	    if(readertab[i]->mode == MODE_CLOSED) {
-	        delclient(i);
-		i--;
-	    }
 	}
 
 	if(signalled)
 	    break;
 
 	for(i = 0; i < numreaders; i++) {
-	    if(readertab[i]->lastactive + CLIENT_TIMEOUT < now) {
+	    if(readertab[i]->mode == MODE_CLOSED
+		  || readertab[i]->lastactive + CLIENT_TIMEOUT < now) {
 	    	delclient(i);
+		numreaders--;
 		i--;
 	    }
 	}
