@@ -1,7 +1,7 @@
 .TH DBZ 3 "6 Sep 1997"
 .BY "INN"
 .SH NAME
-dbminit, dbzfresh, dbzagain, dbmclose \- database routines
+dbzinit, dbzfresh, dbzagain, dbzclose \- database routines
 .br
 dbzexists, dbzfetch, dbzstore \- database routines
 .br
@@ -10,9 +10,9 @@ dbzsync, dbzsize, dbzgetoptions, dbzsetoptions, dbzdebug \- database routines
 .nf
 .B #include <dbz.h>
 .PP
-.B BOOL dbminit(const char *base);
+.B BOOL dbzinit(const char *base);
 .PP
-.B BOOL dbmclose(void);
+.B BOOL dbzclose(void);
 .PP
 .B BOOL dbzfresh(const char *base, const long size);
 .PP
@@ -21,8 +21,10 @@ dbzsync, dbzsize, dbzgetoptions, dbzsetoptions, dbzdebug \- database routines
 .B BOOL dbzexists(const HASH key);
 .PP
 .B OFFSET_T dbzfetch(const HASH key);
+.B BOOL dbzfetch(const HASH key, void *ivalue);
 .PP
 .B BOOL dbzstore(const HASH key, const OFFSET_T offset);
+.B BOOL dbzstore(const HASH key, void *ivalue);
 .PP
 .B BOOL dbzsync(void);
 .PP
@@ -58,19 +60,30 @@ consisting of files
 which must already exist.
 (If the database is new, they should be zero-length files.)
 Subsequent accesses go to that database until
-.I dbmclose
+.I dbzclose
 is called to close the database.
 .PP
 .I Dbzfetch
 searches the database for the specified
 .IR key ,
 returning the corresponding
-.IR value
-if any.
+.I value
+if any, if
+.I <DBZ_TAGGED_HASH in config.data>
+is ``DO''.  If
+.I <DBZ_TAGGED_HASH in config.data>
+is ``DONT'', it returns TRUE and content of
+.I ivalue
+is set.
 .I Dbzstore
 stores the
 .IR key - value
-pair in the database.
+pair in the database, if
+.I <DBZ_TAGGED_HASH in config.data>
+is ``DO''.  If
+.I <DBZ_TAGGED_HASH in config.data>
+is ``DONT'', it stores the content of
+.IR ivalue .
 .I Dbzstore
 will fail unless the database files are writeable.
 .I Dbzexists 
@@ -79,7 +92,7 @@ optimized for this operation and it may be significantly faster than dbzfetch.
 .PP
 .I Dbzfresh
 is a variant of
-.I dbminit
+.I dbzinit
 for creating a new database with more control over details.
 .PP
 .IR Dbzfresh 's
@@ -137,7 +150,7 @@ is synonymous with the local default;
 the normal default is suitable for tables of 5,000,000
 key-value pairs.
 Calling
-.I dbminit(name)
+.I dbzinit(name)
 with the database files empty is equivalent to calling
 .IR dbzfresh(name, 0) .
 .PP
@@ -147,7 +160,7 @@ This also permits some memory of past sizes of the old database, so that
 a new database size can be chosen to cover expected fluctuations.
 .I Dbzagain
 is a variant of
-.I dbminit
+.I dbzinit
 for creating a new database as a new generation of an old database.
 The database files for
 .I oldbase
@@ -169,7 +182,7 @@ is massively faster if its first hash table is in memory.
 If the incore flag is set to INCORE_MEM,
 an attempt is made to read the table in when
 the database is opened, and
-.I dbmclose
+.I dbzclose
 writes it out to disk again (if it was read successfully and
 has been modified).
 .I Dbzsetoptions
@@ -195,7 +208,7 @@ fails with an error.
 .IR Store s
 to an in-memory database are not (in general) written out to the file
 until
-.IR dbmclose
+.IR dbzclose
 or
 .IR dbzsync ,
 so if robustness in the presence of crashes
@@ -262,7 +275,7 @@ An
 of
 .B EDOM
 from
-.I dbminit
+.I dbzinit
 indicates that the database did not appear to be in
 .I dbz
 format.
