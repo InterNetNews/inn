@@ -85,7 +85,6 @@ static void strip_accessgroups();
 static METHOD *copy_method(METHOD*);
 static void free_method(METHOD*);
 static AUTHGROUP *copy_authgroup(AUTHGROUP*);
-static void setdefaultaccess(ACCESSGROUP*);
 static void free_authgroup(AUTHGROUP*);
 static ACCESSGROUP *copy_accessgroup(ACCESSGROUP*);
 static void free_accessgroup(ACCESSGROUP*);
@@ -403,13 +402,15 @@ static ACCESSGROUP *copy_accessgroup(ACCESSGROUP *orig)
     return(ret);
 }
 
-static void setdefaultaccess(ACCESSGROUP *curaccess)
+void SetDefaultAccess(ACCESSGROUP *curaccess)
 {
+    curaccess->allownewnews = innconf->allownewnews;;
+    curaccess->locpost = FALSE;
+    curaccess->allowapproved = FALSE;
     curaccess->localtime = FALSE;
     curaccess->strippath = FALSE;
     curaccess->nnrpdperlfilter = TRUE;
     curaccess->nnrpdpythonfilter = TRUE;
-    curaccess->allownewnews = innconf->allownewnews;;
     if (innconf->fromhost)
 	curaccess->fromhost = COPY(innconf->fromhost);
     if (innconf->pathhost)
@@ -442,6 +443,8 @@ static void setdefaultaccess(ACCESSGROUP *curaccess)
     curaccess->backoff_trigger = innconf->backoff_trigger;
     curaccess->nnrpdcheckart = innconf->nnrpdcheckart;
     curaccess->nnrpdauthsender = innconf->nnrpdauthsender;
+    curaccess->virtualhost = FALSE;
+    curaccess->newsmaster = NULL;
 }
 
 static void free_authgroup(AUTHGROUP *del)
@@ -1024,7 +1027,7 @@ static void PERMreadfile(char *filename)
 			curaccess = NEW(ACCESSGROUP, 1);
 			memset((POINTER) curaccess, 0, sizeof(ACCESSGROUP));
 			memset(ConfigBit, '\0', ConfigBitsize);
-			setdefaultaccess(curaccess);
+			SetDefaultAccess(curaccess);
 		    }
 		    curaccess->name = str;
 		    inwhat = 2;
@@ -1117,7 +1120,7 @@ static void PERMreadfile(char *filename)
 		    (void)memset((POINTER)curgroup->access, 0,
 		      sizeof(ACCESSGROUP));
 		    memset(ConfigBit, '\0', ConfigBitsize);
-		    setdefaultaccess(curgroup->access);
+		    SetDefaultAccess(curgroup->access);
 		}
 		accessdecl_parse(curgroup->access, cf->f, tok);
 		break;
@@ -1326,6 +1329,7 @@ void PERMgetpermissions()
     int i;
     char *cp, **list;
     char *user[2];
+    static ACCESSGROUP *noaccessconf;
 
     if (ConfigBit == NULL) {
 	if (PERMMAX % 8 == 0)
@@ -1415,8 +1419,13 @@ void PERMgetpermissions()
 	    }
 	} else
 	    VirtualPathlen = 0;
-    } else
+    } else {
+	if (!noaccessconf)
+	    noaccessconf = NEW(ACCESSGROUP, 1);
+	PERMaccessconf = noaccessconf;
+	SetDefaultAccess(PERMaccessconf);
 	syslog(L_TRACE, "%s no_access_realm", ClientHost);
+    }
 }
 
 /* strip blanks out of a string */

@@ -83,6 +83,9 @@ BOOL	DaemonMode = FALSE;
 #if HAVE_GETSPNAM
 STATIC char	*ShadowGroup;
 #endif
+#if	defined(DO_NNRP_GETHOSTBYADDR)
+STATIC char 	HostErrorStr[SMBUF];
+#endif	/* defined(DO_NNRP_GETHOSTBYADDR) */
 
 extern FUNCTYPE	CMDauthinfo();
 extern FUNCTYPE	CMDdate();
@@ -344,31 +347,33 @@ TITLEset(what)
 
 
 #if	defined(DO_NNRP_GETHOSTBYADDR)
+
 /*
 **  Convert an IP address to a hostname.  Don't trust the reverse lookup,
 **  since anyone can fake .in-addr.arpa entries.
 */
 STATIC BOOL
-Address2Name(ap, hostname, i)
-    register INADDR		*ap;
-    register char		*hostname;
-    register int		i;
+Address2Name(INADDR *ap, char *hostname, int i)
 {
-    register char		*p;
-    register struct hostent	*hp;
+    char		*p;
+    struct hostent	*hp;
 #if	defined(h_addr)
-    register char		**pp;
+    char		**pp;
 #endif
 
     /* Get the official hostname, store it away. */
-    if ((hp = gethostbyaddr((char *)ap, sizeof *ap, AF_INET)) == NULL)
+    if ((hp = gethostbyaddr((char *)ap, sizeof *ap, AF_INET)) == NULL) {
+	herror(HostErrorStr);
 	return FALSE;
+    }
     (void)strncpy(hostname, hp->h_name, i);
     hostname[i - 1] = '\0';
 
     /* Get addresses for this host. */
-    if ((hp = gethostbyname(hostname)) == NULL)
+    if ((hp = gethostbyname(hostname)) == NULL) {
+	herror(HostErrorStr);
 	return FALSE;
+    }
 
     /* Make sure one of those addresses is the address we got. */
 #if	defined(h_addr)
@@ -413,6 +418,7 @@ STATIC void StartConnection()
     char		*ClientAddr;
     char		accesslist[BIG_BUFFER];
     int                 code;
+    static ACCESSGROUP	*authconf;
 
     /* Get the peer's name. */
     length = sizeof sin;
@@ -439,11 +445,18 @@ STATIC void StartConnection()
 
 	/* Get client's name. */
 #if	defined(DO_NNRP_GETHOSTBYADDR)
+	HostErrorStr[0] = '\0';
 	if (!Address2Name(&sin.sin_addr, ClientHost, (int)sizeof ClientHost)) {
 	    (void)strcpy(ClientHost, inet_ntoa(sin.sin_addr));
-	    syslog(L_NOTICE,
-		"? cant gethostbyaddr %s %m -- using IP address for access",
-		ClientHost);
+	    if (HostErrorStr[0] == '\0') {
+		syslog(L_NOTICE,
+		    "? cant gethostbyaddr %s %m -- using IP address for access",
+		    ClientHost);
+	    } else {
+		syslog(L_NOTICE,
+		    "? cant gethostbyaddr %s %s -- using IP address for access",
+		    ClientHost, HostErrorStr);
+	    }
 	    ClientAddr = ClientHost;
             ClientIP = inet_addr(ClientHost);
 	}
@@ -464,11 +477,18 @@ STATIC void StartConnection()
 	    ExitWithStats(1, TRUE);
 	}
 #ifdef DO_NNRP_GETHOSTBYADDR
+	HostErrorStr[0] = '\0';
 	if (!Address2Name(&sin.sin_addr, ServerHost, sizeof(ServerHost))) {
 	    strcpy(ServerHost, inet_ntoa(sin.sin_addr));
-	    syslog(L_NOTICE,
-		   "? cant gethostbyaddr %s %m -- using IP address for access",
-		   ClientHost);
+	    if (HostErrorStr[0] == '\0') {
+		syslog(L_NOTICE,
+		    "? cant gethostbyaddr %s %m -- using IP address for access",
+		    ClientHost);
+	    } else {
+		syslog(L_NOTICE,
+		    "? cant gethostbyaddr %s %s -- using IP address for access",
+		    ClientHost, HostErrorStr);
+	    }
 	}
 #else
         strcpy(ServerHost, inet_ntoa(sin.sin_addr));
@@ -489,6 +509,10 @@ STATIC void StartConnection()
 	}
 	NGgetlist(&PERMreadlist, accesslist);
 	PERMpostlist = PERMreadlist;
+	if (!authconf)
+	    authconf = NEW(ACCESSGROUP, 1);
+	PERMaccessconf = authconf;
+	SetDefaultAccess(PERMaccessconf);
     } else {
 #endif	/* DO_PERL */
 
@@ -506,6 +530,10 @@ STATIC void StartConnection()
 	    PERMspecified = NGgetlist(&PERMreadlist, accesslist);
 	    PERMpostlist = PERMreadlist;
 	}
+	if (!authconf)
+	    authconf = NEW(ACCESSGROUP, 1);
+	PERMaccessconf = authconf;
+	SetDefaultAccess(PERMaccessconf);
     } else {
 #endif	/* DO_PYTHON */
 	PERMgetaccess();
