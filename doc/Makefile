@@ -27,6 +27,8 @@ etags:
 clean:
 	@$(MAKE) $(FLAGS) WHAT_TO_MAKE=$@ common
 
+clobber: clean
+
 ##  Common target.
 common:
 	@for D in $(DIRS) ; do \
