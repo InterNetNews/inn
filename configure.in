@@ -369,7 +369,10 @@ else
 	    [AC_CHECK_LIB(RSAglue, RSAPublicEncrypt,
                           [SSL_LIB="-lRSAglue -lrsaref"], , -lrsaref)])
 	AC_CHECK_LIB(crypto, BIO_new,
-		     SSL_LIB="-lcrypto $SSL_LIB",
+                     [AC_CHECK_LIB(dl, DSO_load,
+		                   SSL_LIB="-lcrypto -ldl $SSL_LIB",
+		                   SSL_LIB="-lcrypto $SSL_LIB",
+                                   -lcrypto -ldl $SSL_LIB)],
                      [AC_MSG_ERROR(Can not find OpenSSL)],
                      $SSL_LIB)
 	AC_CHECK_LIB(ssl, SSL_library_init,
