@@ -3282,7 +3282,7 @@ EOF
 fi
 
 
-if test x$ac_cv_prog_gcc = xyes; then
+if test $ac_cv_prog_gcc = yes; then
     echo $ac_n "checking whether ${CC-cc} needs -traditional""... $ac_c" 1>&6
 echo "configure:3288: checking whether ${CC-cc} needs -traditional" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_gcc_traditional'+set}'`\" = set"; then
@@ -5279,7 +5279,7 @@ trap 'rm -fr `echo "BUILD
 	Makefile.global 
 	makedirs.sh 
 	config/config.data 
-	include/config.h
+	include/clibrary.h
 	include/paths.h 
 	samples/actsync.cfg 
 	samples/checkgroups
@@ -5471,7 +5471,7 @@ CONFIG_FILES=\${CONFIG_FILES-"BUILD
 	Makefile.global 
 	makedirs.sh 
 	config/config.data 
-	include/config.h
+	include/clibrary.h
 	include/paths.h 
 	samples/actsync.cfg 
 	samples/checkgroups

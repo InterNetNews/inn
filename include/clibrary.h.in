@@ -27,16 +27,14 @@ typedef const void *CPOINTER;
     /* What is a file offset?  Will not work unless long! */
     /* =()<typedef @<OFFSET_T>@ OFFSET_T;>()= */
 typedef long OFFSET_T;
+
     /* What is the type of an object size? */
-    /* =()<typedef @<SIZE_T>@ SIZE_T;>()= */
 typedef size_t SIZE_T;
     /* What is the type of a passwd uid and gid, for use in chown(2)? */
-    /* =()<typedef @<UID_T>@ UID_T;>()= */
 typedef uid_t UID_T;
-    /* =()<typedef @<GID_T>@ GID_T;>()= */
 typedef gid_t GID_T;
-    /* =()<typedef @<PID_T>@ PID_T;>()= */
 typedef pid_t PID_T;
+
     /* =()<typedef @<U_INT32_T>@ U_INT32_T;>()= */
 typedef unsigned int U_INT32_T;
     /* =()<typedef @<INT32_T>@ INT32_T;>()= */
