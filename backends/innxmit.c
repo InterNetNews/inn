@@ -144,9 +144,6 @@ STATIC FILE *HistorySeek(char *MessageID)
     static char		*History = NULL;
     static FILE		*F;
     OFFSET_T		offset;
-#ifndef	DO_TAGGED_HASH
-    idxrec		ionevalue;
-#endif
 
     /* Open the history file. */
     if (F == NULL) {
@@ -167,14 +164,8 @@ STATIC FILE *HistorySeek(char *MessageID)
     }
 
     /* Do the lookup. */
-#ifdef	DO_TAGGED_HASH
-    if ((offset = dbzfetch(HashMessageID(MessageID))) < 0)
+    if (!dbzfetch(HashMessageID(MessageID), &offset))
 	return NULL;
-#else
-	if (!dbzfetch(HashMessageID(MessageID), &ionevalue))
-	    return NULL;
-	offset = ionevalue.offset;
-#endif
 
     /* Get the seek offset, and seek. */
     if (fseek(F, offset, SEEK_SET) == -1)
