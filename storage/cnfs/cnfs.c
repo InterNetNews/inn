@@ -926,7 +926,7 @@ TOKEN cnfs_store(const ARTHANDLE article, STORAGECLASS class) {
 
     cycbuff = metacycbuff->members[metacycbuff->memb_next];  
     /* Article too big? */
-    if (cycbuff->free + article.len > cycbuff->len - CNFS_BLOCKSIZE - 1) {
+    if (article.len > cycbuff->len - cycbuff->free - CNFS_BLOCKSIZE - 1) {
 	for (middle = cycbuff->free ;middle < cycbuff->len - CNFS_BLOCKSIZE - 1;
 	    middle += CNFS_BLOCKSIZE) {
 	    CNFSUsedBlock(cycbuff, middle, TRUE, FALSE);
