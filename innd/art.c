@@ -2619,6 +2619,9 @@ STRING ARTpost(CHANNEL *cp)
 		TMRstop(TMR_ARTWRITE);
 		p += strlen(strcpy(p, Data.Name));
 		Data.NameLength = strlen(Data.Name);
+		if (!innconf->writelinks)
+		    /* need just one file for feeder */
+		    break;
 	    } else {
 		TMRstart(TMR_ARTLINK);
 		/* Link to the main article. */
