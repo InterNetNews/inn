@@ -1211,7 +1211,7 @@ STATIC char *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const H
     if (!EQ(local, p)) {
 	files = NULL;
 	(void)sprintf(buff, "\"%.50s\" wants to cancel %s by \"%.50s\"",
-		      p, MessageID, local);
+		      p, MaxLength(MessageID, MessageID), local);
 	ARTlog(Data, ART_REJECT, buff);
     }
     DISPOSE(p);
@@ -2222,7 +2222,7 @@ STRING ARTpost(CHANNEL *cp)
     perlrc = (char *)HandleArticle(Data.Body, Data.LinesValue);
     TMRstop(TMR_PERL);
     if (perlrc != NULL) {
-        (void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, perlrc);
+        (void)sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL, perlrc);
         syslog(L_NOTICE, "rejecting[perl] %s %s", Data.MessageID, buff);
         ARTlog(&Data, ART_REJECT, buff);
         if (innconf->remembertrash && (Mode == OMrunning) &&
@@ -2263,7 +2263,7 @@ STRING ARTpost(CHANNEL *cp)
         (void)Tcl_UnsetVar(TCLInterpreter, "Headers", TCL_GLOBAL_ONLY);
         if (code == TCL_OK) {
 	    if (strcmp(TCLInterpreter->result, "accept") != 0) {
-	        (void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, 
+	        (void)sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL, 
 			      TCLInterpreter->result);
 		syslog(L_NOTICE, "rejecting[tcl] %s %s", Data.MessageID, buff);
 		ARTlog(&Data, ART_REJECT, buff);
@@ -2456,7 +2456,7 @@ STRING ARTpost(CHANNEL *cp)
 	    continue;
 	else if (canpost < 0) {
 	    (void)sprintf(buff, "%d Won't accept posts in \"%s\"",
-		NNTP_REJECTIT_VAL, p);
+		NNTP_REJECTIT_VAL, MaxLength(p, p));
 	    ARTlog(&Data, ART_REJECT, buff);
 	    if (distributions)
 		DISPOSE(distributions);
