@@ -118,8 +118,7 @@ clobber realclean distclean:
 	    cd $$D && $(MAKE) $(FLAGS) clobber && cd .. ; \
 	done
 	@echo ''
-	rm -rf inews.* rnews.* $(TARDIR)
-	rm -f inn*.tar.gz CHANGES ChangeLog LIST.* TAGS tags
+	rm -f CHANGES LIST.* TAGS tags
 	rm -f config.cache config.log config.status libtool
 	rm -f include/autoconfig.h include/config.h include/paths.h
 	rm -f support/fixscript Makefile.global
