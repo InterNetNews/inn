@@ -12,6 +12,9 @@
 #include "portable/socket.h"
 #include "portable/wait.h"
 #include <errno.h>
+#ifdef HAVE_STREAMS_SENDFD
+# include <stropts.h>
+#endif
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
@@ -50,30 +53,96 @@ network_set_reuseaddr(int fd)
 
 
 /*
+**  Function used as a die handler in child processes to prevent any atexit
+**  functions from being run and any buffers from being flushed twice.
+*/
+static int
+network_child_fatal(void)
+{
+    _exit(1);
+    return 1;
+}
+
+
+/*
+**  Receive a file descriptor from a STREAMS pipe if supported and return the
+**  file descriptor.  If not supported, always warn and return -1 for failure.
+*/
+#ifdef HAVE_STREAMS_SENDFD
+static int
+network_recvfd(int pipe)
+{
+    struct strrecvfd fdrec;
+
+    if (ioctl(pipe, I_RECVFD, &fdrec) < 0) {
+        syswarn("cannot receive file descriptor from innbind");
+        return -1;
+    } else
+        return fdrec.fd;
+}
+#else /* !HAVE_STREAMS_SENDFD */
+static int
+network_recvfd(int pipe UNUSED)
+{
+    return -1;
+}
+#endif
+
+
+/*
 **  Call innbind to bind a socket to a privileged port.  Takes the file
 **  descriptor, the family, the bind address (as a string), and the port
-**  number, and returns true on success and false on failure.
+**  number.  Returns the bound file descriptor, which may be different than
+**  the provided file descriptor if the system didn't support binding in a
+**  subprocess, or -1 on error.
 */
-static bool
+static int
 network_innbind(int fd, int family, const char *address, unsigned short port)
 {
     char *path;
-    char spec[128];
-    pid_t child;
-    int result, status;
+    char buff[128];
+    int pipefds[2];
+    pid_t child, result;
+    int status;
 
-    /* Run innbind to bind the socket. */
+    /* Open a pipe to innbind and run it to bind the socket. */
+    if (pipe(pipefds) < 0) {
+        syswarn("cannot create pipe");
+        return -1;
+    }
     path = concatpath(innconf->pathbin, "innbind");
-    snprintf(spec, sizeof(spec), "%d,%d,%s,%hu", fd, family, address, port);
+    snprintf(buff, sizeof(buff), "%d,%d,%s,%hu", fd, family, address, port);
     child = fork();
     if (child < 0) {
         syswarn("cannot fork innbind for %s,%hu", address, port);
-        return false;
+        return -1;
     } else if (child == 0) {
-        execl(path, path, spec, NULL);
-        sysdie("cannot exec innbind for %s,%hu", address, port);
+        message_fatal_cleanup = network_child_fatal;
+        close(1);
+        if (dup2(pipefds[1], 1) < 0)
+            sysdie("cannot dup pipe to stdout");
+        close(pipefds[0]);
+        if (execl(path, path, buff, (char *) 0) < 0)
+            sysdie("cannot exec innbind for %s,%hu", address, port);
     }
+    close(pipefds[1]);
     free(path);
+
+    /* Read the results from innbind.  This will either be ok\n or no\n
+       followed by an attempt to pass a new file descriptor back. */
+    status = read(pipefds[0], buff, 3);
+    buff[3] = '\0';
+    if (status == 0) {
+        warn("innbind returned no output, assuming failure");
+        fd = -1;
+    } else if (status < 0) {
+        syswarn("cannot read from innbind");
+        fd = -1;
+    } else if (strcmp(buff, "no\n") == 0) {
+        fd = network_recvfd(pipefds[0]);
+    } else if (strcmp(buff, "ok\n") != 0) {
+        fd = -1;
+    }
 
     /* Wait for the results of the child process. */
     do {
@@ -81,13 +150,13 @@ network_innbind(int fd, int family, const char *address, unsigned short port)
     } while (result == -1 && errno == EINTR);
     if (result != child) {
         syswarn("cannot wait for innbind for %s,%hu", address, port);
-        return false;
+        return -1;
     }
     if (WIFEXITED(status) && WEXITSTATUS(status) == 0)
-        return true;
+        return fd;
     else {
         warn("innbind failed for %s,%hu", address, port);
-        return false;
+        return -1;
     }
 }
 
@@ -99,7 +168,7 @@ network_innbind(int fd, int family, const char *address, unsigned short port)
 int
 network_bind_ipv4(const char *address, unsigned short port)
 {
-    int fd;
+    int fd, bindfd;
     struct sockaddr_in server;
     struct in_addr addr;
 
@@ -117,9 +186,12 @@ network_bind_ipv4(const char *address, unsigned short port)
 
     /* Flesh out the socket and do the bind if we can.  Otherwise, call
        network_innbind to do the work. */
-    if (port < 1024 && geteuid() != 0)
-        return network_innbind(fd, AF_INET, address, port) ? fd : -1;
-    else {
+    if (port < 1024 && geteuid() != 0) {
+        bindfd = network_innbind(fd, AF_INET, address, port);
+        if (bindfd != fd)
+            close(fd);
+        return bindfd;
+    } else {
         server.sin_family = AF_INET;
         server.sin_port = htons(port);
         if (!inet_aton(address, &addr)) {
@@ -148,7 +220,7 @@ network_bind_ipv4(const char *address, unsigned short port)
 int
 network_bind_ipv6(const char *address, unsigned short port)
 {
-    int fd;
+    int fd, bindfd;
     struct sockaddr_in6 server;
     struct in6_addr addr;
 
@@ -167,9 +239,12 @@ network_bind_ipv6(const char *address, unsigned short port)
 
     /* Flesh out the socket and do the bind if we can.  Otherwise, call
        network_innbind to do the work. */
-    if (port < 1024 && geteuid() != 0)
-        return network_innbind(fd, AF_INET6, address, port) ? fd : -1;
-    else {
+    if (port < 1024 && geteuid() != 0) {
+        bindfd = network_innbind(fd, AF_INET6, address, port);
+        if (bindfd != fd)
+            close(fd);
+        return bindfd;
+    } else {
         server.sin6_family = AF_INET6;
         server.sin6_port = htons(port);
         if (inet_pton(AF_INET6, address, &addr) < 1) {
@@ -239,7 +314,6 @@ network_bind_all(unsigned short port, int **fds, int *count)
         else
             continue;
         if (fd >= 0) {
-            network_set_reuseaddr(fd);
             if (*count >= size) {
                 size += 2;
                 *fds = xrealloc(*fds, size * sizeof(int));
@@ -254,9 +328,17 @@ network_bind_all(unsigned short port, int **fds, int *count)
 void
 network_bind_all(unsigned short port, int **fds, int *count)
 {
-    *fds = xmalloc(sizeof(int));
-    *count = 1;
-    *fds[0] = network_bind_ipv4("0.0.0.0", port);
+    int fd;
+
+    fd = network_bind_ipv4("0.0.0.0", port);
+    if (fd >= 0) {
+        *fds = xmalloc(sizeof(int));
+        *fds[0] = fd;
+        *count = 1;
+    } else {
+        *fds = NULL;
+        *count = 0;
+    }
 }
 #endif /* HAVE_INET6 */
 
@@ -327,9 +409,11 @@ network_connect(struct addrinfo *ai)
     if (success)
         return fd;
     else {
-        oerrno = errno;
-        close(fd);
-        errno = oerrno;
+        if (fd >= 0) {
+            oerrno = errno;
+            close(fd);
+            errno = oerrno;
+        }
         return -1;
     }
 }
