@@ -96,4 +96,4 @@ radius.o: radius.c libauth.h ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h \
  ../include/portable/socket.h ../include/portable/time.h \
  ../include/inn/md5.h ../include/libinn.h ../include/macros.h \
- ../include/nntp.h ../include/paths.h
+ ../include/nntp.h ../include/paths.h ../include/conffile.h
