@@ -120,6 +120,24 @@ tst_grow_node_free_list(struct tst *tst)
 
 
 /*
+**  Grab a node from the free list and initialize it with the given value.
+*/
+static struct node *
+tst_get_free_node(struct tst *tst, unsigned char value)
+{
+    struct node *free_node;
+
+    if (tst->free_list == NULL)
+        tst_grow_node_free_list(tst);
+    free_node = tst->free_list;
+    tst->free_list = tst->free_list->middle;
+    free_node->middle = NULL;
+    free_node->value = value;
+    return free_node;
+}
+
+
+/*
 **  tst_init allocates memory for members of struct tst, and allocates the
 **  first node_line_width nodes.  The value for width must be chosen very
 **  carefully.  One node is required for every character in the tree.  If you
@@ -161,7 +179,6 @@ tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
            void **exist_ptr)
 {
     struct node *current_node;
-    struct node *new_node_tree_begin = NULL;
     int key_index;
     bool perform_loop = true;
 
@@ -172,17 +189,13 @@ tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
         return TST_NULL_KEY;
 
     if (tst->head[*key] == NULL) {
-        if (tst->free_list == NULL)
-            tst_grow_node_free_list(tst);
-        tst->head[*key] = tst->free_list;
-        tst->free_list = tst->free_list->middle;
+        tst->head[*key] = tst_get_free_node(tst, key[1]);
         current_node = tst->head[*key];
-        current_node->value = key[1];
         if (key[1] == '\0') {
             current_node->middle = data;
             return TST_OK;
-        } else
-            perform_loop = false;
+        }
+        perform_loop = false;
     }
 
     current_node = tst->head[*key];
@@ -200,13 +213,8 @@ tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
             }
 
             if (current_node->middle == NULL) {
-                if (tst->free_list == NULL)
-                    tst_grow_node_free_list(tst);
-                current_node->middle = tst->free_list;
-                tst->free_list = tst->free_list->middle;
-                new_node_tree_begin = current_node;
+                current_node->middle = tst_get_free_node(tst, key[key_index]);
                 current_node = current_node->middle;
-                current_node->value = key[key_index];
                 break;
             } else {
                 current_node = current_node->middle;
@@ -217,31 +225,21 @@ tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
 
         if (LEFTP(current_node, key[key_index])) {
             if (current_node->left == NULL)  {
-                if (tst->free_list == NULL)
-                    tst_grow_node_free_list(tst);
-                current_node->left = tst->free_list;
-                tst->free_list = tst->free_list->middle;
-                new_node_tree_begin = current_node;
+                current_node->left = tst_get_free_node(tst, key[key_index]);
                 current_node = current_node->left;
-                current_node->value = key[key_index];
                 if (key[key_index] == '\0') {
                     current_node->middle = data;
                     return TST_OK;
-                } else
-                    break;
+                }
+                break;
             } else {
                 current_node = current_node->left;
                 continue;
             }
         } else {
             if (current_node->right == NULL) {
-                if (tst->free_list == NULL)
-                    tst_grow_node_free_list(tst);
-                current_node->right = tst->free_list;
-                tst->free_list = tst->free_list->middle;
-                new_node_tree_begin = current_node;
+                current_node->right = tst_get_free_node(tst, key[key_index]);
                 current_node = current_node->right;
-                current_node->value = key[key_index];
                 break;
             } else {
                 current_node = current_node->right;
@@ -252,12 +250,8 @@ tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
 
     do {
         key_index++;
-        if (tst->free_list == NULL)
-            tst_grow_node_free_list(tst);
-        current_node->middle = tst->free_list;
-        tst->free_list = tst->free_list->middle;
+        current_node->middle = tst_get_free_node(tst, key[key_index]);
         current_node = current_node->middle;
-        current_node->value = key[key_index];
     } while (key[key_index] != '\0');
 
     current_node->middle = data;
