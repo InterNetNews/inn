@@ -276,6 +276,8 @@ STATIC BOOL Process(char *article)
     default:
 	Reject(article, "unknown_reply after ihave %s", buff);
 	return TRUE;
+    case NNTP_RESENDIT_VAL:
+	return FALSE;
     case NNTP_SENDIT_VAL:
 	break;
     case NNTP_HAVEIT_VAL:
