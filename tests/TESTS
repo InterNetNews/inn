@@ -1,4 +1,5 @@
 lib/concat
+lib/confparse
 lib/date
 lib/error
 lib/hashtab
@@ -12,6 +13,7 @@ lib/qio
 lib/setenv
 lib/snprintf
 lib/strerror
+lib/vector
 lib/wildmat
 lib/xmalloc
 lib/xwrite
