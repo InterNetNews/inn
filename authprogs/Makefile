@@ -1,53 +1,56 @@
-##  $Revision$
+##  $Id$
 
 include ../Makefile.global
 
-CFLAGS	= $(GCFLAGS)
+CFLAGS        = $(GCFLAGS)
 
-SOURCES	=	ckpasswd.c ident.c pwcheck.c radius.c domain.c
+ALL           = ckpasswd domain ident pwcheck radius
 
-ALLPASS	=	ckpasswd pwcheck radius
-ALLRES	=	ident domain
-ALL	=	$(ALLPASS) $(ALLRES)
+SOURCES       = ckpasswd.c domain.c ident.c pwcheck.c radius.c
 
-all:		$(ALL)
+INSTALLED     = $(D)$(PATHAUTHPASSWD)/ckpasswd \
+		$(D)$(PATHAUTHPASSWD)/pwcheck \
+		$(D)$(PATHAUTHPASSWD)/radius \
+		$(D)$(PATHAUTHRESOLV)/domain \
+		$(D)$(PATHAUTHRESOLV)/ident
 
-install:	all
-	for i in ${ALLPASS}; \
-		do $(LIBTOOL) ../installit.sh $(OWNER) -m 0555 \
-			-b .OLD $${i} $D${PATHBIN}/auth/passwd/$${i}; \
-	done
-	for i in ${ALLRES}; \
-		do $(LIBTOOL) ../installit.sh $(OWNER) -m 0555 \
-			-b .OLD $${i} $D${PATHBIN}/auth/resolv/$${i}; \
-	done
+all: $(ALL)
 
 clobber clean:
 	rm -f *.o $(ALL)
 	rm -rf .libs
-	rm -f all install profiled
 
-tags ctags:	$(SOURCES)
+tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../lib/*.c ../include/*.h
 
-pwcheck:	$(P) pwcheck.o
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ pwcheck.o $(LIBS)
 
-radius:	$(P) radius.o
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ radius.o $(LIBS) $(LIBNEWS)
+##  Compilation rules.
 
-ckpasswd:	$(P) ckpasswd.o
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ ckpasswd.o $(LIBS) $(DBMLIB)
+LINK		= $(LIBTOOL) $(CC) $(LDFLAGS) -o $@
+NEWSLIBS        = $(LIBINN) $(LIBS)
 
-ident:	$(P) ident.o
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ ident.o $(LIBS)
+ckpasswd:	ckpasswd.o		; $(LINK) ckpasswd.o $(DBMLIB) $(LIBS)
+domain:		domain.o      $(LIBINN) ; $(LINK) domain.o   $(NEWSLIBS)
+ident:		ident.o			; $(LINK) ident.o    $(LIBS)
+pwcheck:	pwcheck.o		; $(LINK) pwcheck.o  $(LIBS)
+radius:		radius.o      $(LIBINN)	; $(LINK) radius.o   $(NEWSLIBS)
 
-domain:	$(P) domain.o
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ domain.o $(LIBS) $(LIBNEWS)
+$(LIBINN):
+	(cd ../lib ; $(MAKE))
+$(LIBSTORAGE):
+	(cd ../storage ; $(MAKE))
 
 
-$(LIBNEWS):
-	(cd ../lib ; $(MAKE) )
+##  Installation rules.  Installation commands set in Makefile.global.
+
+install: $(INSTALLED)
+
+$(D)$(PATHAUTHPASSWD)/ckpasswd:		ckpasswd	; $(LI_XPUB) $? $@
+$(D)$(PATHAUTHPASSWD)/pwcheck:		pwcheck		; $(LI_XPUB) $? $@
+$(D)$(PATHAUTHPASSWD)/radius:		radius		; $(LI_XPUB) $? $@
+$(D)$(PATHAUTHRESOLV)/domain:		domain		; $(LI_XPUB) $? $@
+$(D)$(PATHAUTHRESOLV)/ident:		ident		; $(LI_XPUB) $? $@
+
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES)
