@@ -732,10 +732,6 @@ STATIC BOOL CNFSread_config(void) {
 	return FALSE;
     }
     for (from = to = config; *from; ) {
-	if (ctab_free == 0)
-	  ctab = NEW(char *, 1);
-	else
-	  RENEW(ctab, char *, ctab_free+1);
 	if (*from == '#') {	/* Comment line? */
 	    while (*from && *from != '\n')
 		from++;				/* Skip past it */
@@ -746,6 +742,10 @@ STATIC BOOL CNFSread_config(void) {
 	    from++;
 	    continue;				/* Back to top of loop */
 	}
+	if (ctab_free == 0)
+	  ctab = NEW(char *, 1);
+	else
+	  RENEW(ctab, char *, ctab_free+1);
 	/* If we're here, we've got the beginning of a real entry */
 	ctab[ctab_free++] = to = from;
 	while (1) {
