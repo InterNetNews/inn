@@ -25,6 +25,8 @@ typedef struct __S_SUB__ {
     int                 type;        /* Index into storage_methods of the one to use */
     int                 minsize;     /* Minimum size to send to this method */
     int                 maxsize;     /* Maximum size to send to this method */
+    time_t		minexpire;   /* Minimum expire offset to send method */
+    time_t		maxexpire;   /* Maximum expire offset to send method */
     int                 numpatterns; /* Number of patterns in patterns */
     int                 class;       /* Number of the storage class for this subscription */
     char                **patterns;  /* Array of patterns to check against

@@ -16,6 +16,7 @@
 #include <methods.h>
 #include <interface.h>
 #include <errno.h>
+#include <conffile.h>
 
 typedef enum {INIT_NO, INIT_DONE, INIT_FAIL} INITTYPE;
 typedef struct {
@@ -139,23 +140,81 @@ STORAGE_SUB *SMGetConfig(STORAGETYPE type, STORAGE_SUB *sub) {
     return (STORAGE_SUB *)NULL;
 }
 
+static time_t parse_time(char *tmbuf)
+{
+    char *startnum;
+    time_t ret;
+    int tmp;
+
+    ret = 0;
+    startnum = tmbuf;
+    while (*tmbuf) {
+	if (!isdigit(*tmbuf)) {
+	    tmp = atol(startnum);
+	    switch (*tmbuf) {
+	      case 'M':
+		ret += tmp*60*60*24*31;
+		break;
+	      case 'h':
+		ret += tmp*60*60*24;
+		break;
+	      case 'm':
+		ret += tmp*60*60;
+		break;
+	      case 's':
+		ret += tmp*60;
+		break;
+	      default:
+		return(0);
+	    }
+	}
+	tmbuf++;
+    }
+    return(ret);
+}
+
+#define SMlbrace  1
+#define SMrbrace  2
+#define SMmethod  10
+#define SMgroups  11
+#define SMsize    12
+#define SMclass   13
+#define SMexpire  14
+#define SMoptions 15
+
+static CONFTOKEN smtoks[] = {
+  { SMlbrace,	"{" },
+  { SMrbrace,	"}" },
+  { SMmethod,	"method" },
+  { SMgroups,	"newsgroups:" },
+  { SMsize,	"size:" },
+  { SMclass,	"class:" },
+  { SMexpire,	"expires:" },
+  { SMoptions,	"options:" },
+  { 0, 0 }
+};
+
 /* Open the config file and parse it, generating the policy data */
 static BOOL SMreadconfig(void) {
-    FILE                *f;
+    CONFFILE            *f;
+    CONFTOKEN           *tok;
+    int			type;
     char                line[1024];
     int                 i;
     char                *p;
     char                *q;
-    int                 linenum = 0;
     char                *method;
-    char                *patterns;
+    char                *patterns = 0;
     int                 minsize;
     int                 maxsize;
+    time_t		minexpire;
+    time_t		maxexpire;
     int                 class;
     STORAGE_SUB         *checksub;
     STORAGE_SUB         *sub = NULL;
     STORAGE_SUB         *prev = NULL;
-    char		*options;
+    char		*options = 0;
+    int			inbrace;
 
     /* if innconf isn't already read in, do so. */
     if (innconf == NULL) {
@@ -169,123 +228,139 @@ static BOOL SMreadconfig(void) {
 	method_data[i].initialized = INIT_NO;
 	method_data[i].configured = FALSE;
     }
-    if ((f = Fopen(cpcatpath(innconf->pathetc, _PATH_STORAGECTL), "r", TEMPORARYOPEN)) == NULL) {
+    if ((f = CONFfopen(cpcatpath(innconf->pathetc, _PATH_STORAGECTL))) == NULL) {
 	SMseterror(SMERR_UNDEFINED, NULL);
 	syslog(L_ERROR, "SM Could not open %s: %m",
 			cpcatpath(innconf->pathetc, _PATH_STORAGECTL));
 	return FALSE;
     }
     
-    while (fgets(line, 1024, f) != NULL) {
-	linenum++;
-	if ((p = strchr(line, '#')) != NULL)
-	    *p = '\0';
-	
-	for (p = q = line; *p != '\0'; p++)
-	    if (!isspace(*p))
-		*q++ = *p;
-
-	*q = '\0';
-	
-	if (!line[0])
-	    continue;
-	
-	if ((p = strchr(line, ':')) == NULL) {
-	    SMseterror(SMERR_CONFIG, "Could not find end of the first field");
-	    syslog(L_ERROR, "SM could not find end of first field, line %d", linenum);
-	    (void)Fclose(f);
-	    return FALSE;
-	}
-	method = line;
-	*p = '\0';
-	patterns = ++p;
-	class = minsize = maxsize = 0;
-	options = (char *)NULL;
-	if ((p = strchr(p, ':')) != NULL) {
-	    *p = '\0';
-	    p++;
-	}
-	if (p && *p) {
-	    q = p;
-	    if ((p = strchr(p, ':')) != NULL) {
-		*p = '\0';
-		class = atoi(q);
-		p++;
-		if (*p) {
-		    q = p;
-		    if ((p = strchr(p, ':')) != NULL) {
-			*p = '\0';
-		        minsize = atoi(q);
-		        p++;
-		        if (*p) {
-			    q = p;
-			    if ((p = strchr(++p, ':')) != NULL) {
-				*p = '\0';
-				maxsize = atoi(q);
-				p++;
-				if (*p) {
-				    options = COPY(p);
-				}
-			    } else
-				maxsize = atoi(q);
-		        }
-		    } else
-			minsize = atoi(q);
-		}
-	    } else
-		class = atoi(q);
-	}
-	sub = NEW(STORAGE_SUB, 1);
-	sub->type = TOKEN_EMPTY;
-	for (i = 0; i < NUM_STORAGE_METHODS; i++) {
-	    if (!strcasecmp(method, storage_methods[i].name)) {
-		sub->type = storage_methods[i].type;
-		method_data[i].configured = TRUE;
-		break;
-	    }
-	}
-	for (checksub = subscriptions; checksub != NULL; checksub = checksub->next) {
-	    if ((checksub->class == class) && (sub->type == checksub->type)) {
-		SMseterror(SMERR_CONFIG, "duplicated class");
-		syslog(L_ERROR, "SM duplicated class within the same storage method '%s', class %d, line %d", method, class, linenum);
-		DISPOSE(options);
-		DISPOSE(sub);
-		(void)Fclose(f);
+    inbrace = 0;
+    while ((tok = CONFgettoken(smtoks, f)) != NULL) {
+	if (!inbrace) {
+	    if (tok->type != SMmethod) {
+		SMseterror(SMERR_CONFIG, "Expected 'method' keyword");
+		syslog(L_ERROR, "SM expected 'method' keyword, line %d", f->lineno);
 		return FALSE;
 	    }
+	    if ((tok = CONFgettoken(0, f)) == NULL) {
+		SMseterror(SMERR_CONFIG, "Expected method name");
+		syslog(L_ERROR, "SM expected method name, line %d", f->lineno);
+		return FALSE;
+	    }
+	    method = COPY(tok->name);
+	    if ((tok = CONFgettoken(smtoks, f)) == NULL || tok->type != SMlbrace) {
+		SMseterror(SMERR_CONFIG, "Expected '{'");
+		syslog(L_ERROR, "SM Expected '{', line %d", f->lineno);
+		return FALSE;
+	    }
+	    inbrace = 1;
+	} else {
+	    type = tok->type;
+	    if (type == SMrbrace)
+		inbrace = 0;
+	    else {
+		if ((tok = CONFgettoken(0, f)) == NULL) {
+		    SMseterror(SMERR_CONFIG, "Keyword with no value");
+		    syslog(L_ERROR, "SM keyword with no value, line %d", f->lineno);
+		    return FALSE;
+		}
+		p = tok->name;
+		switch(type) {
+		  case SMgroups:
+		    if (patterns)
+			DISPOSE(patterns);
+		    patterns = COPY(tok->name);
+		    break;
+		  case SMsize:
+		    minsize = atoi(p);
+		    if ((p = strchr(p, ',')) != NULL) {
+			p++;
+			maxsize = atoi(p);
+		    }
+		    break;
+		  case SMclass:
+		    class = atoi(p);
+		    break;
+		  case SMexpire:
+		    q = strchr(p, ',');
+		    if (q)
+			*q++ = 0;
+		    minexpire = parse_time(p);
+		    if (q)
+			maxexpire = parse_time(q);
+		    break;
+		  case SMoptions:
+		    if (options)
+			DISPOSE(options);
+		    options = COPY(p);
+		    break;
+		  default:
+		    SMseterror(SMERR_CONFIG, "Unknown keyword in method declaration");
+		    syslog(L_ERROR, "SM Unknown keyword in method declaration, line %d: %s", f->lineno, tok->name);
+		    DISPOSE(method);
+		    return FALSE;
+		    break;
+		}
+	    }
 	}
-	if (sub->type == TOKEN_EMPTY) {
-	    SMseterror(SMERR_CONFIG, "Invalid storage method name");
-	    syslog(L_ERROR, "SM no configured storage methods are named '%s', line %d", method, linenum);
-	    DISPOSE(options);
-	    DISPOSE(sub);
-	    (void)Fclose(f);
-	    return FALSE;
-	}
-	sub->minsize = minsize;
-	sub->maxsize = maxsize;
-	sub->class = class;
-	sub->options = options;
+	if (!inbrace) {
+	    /* just finished a declaration */
+	    sub = NEW(STORAGE_SUB, 1);
+	    sub->type = TOKEN_EMPTY;
+	    for (i = 0; i < NUM_STORAGE_METHODS; i++) {
+		if (!strcasecmp(method, storage_methods[i].name)) {
+		    sub->type = storage_methods[i].type;
+		    method_data[i].configured = TRUE;
+		    break;
+		}
+	    }
+	    if (sub->type == TOKEN_EMPTY) {
+		SMseterror(SMERR_CONFIG, "Invalid storage method name");
+		syslog(L_ERROR, "SM no configured storage methods are named '%s'", method);
+		DISPOSE(options);
+		DISPOSE(sub);
+		return FALSE;
+	    }
+	    sub->minsize = minsize;
+	    sub->maxsize = maxsize;
+	    sub->class = class;
+	    sub->options = options;
+	    sub->minexpire = minexpire;
+	    sub->maxexpire = maxexpire;
+	    options = 0;
+
+	    minsize = 0;
+	    maxsize = 0;
+	    minexpire = 0;
+	    maxexpire = 0;
+	    class = 0;
+	    DISPOSE(method);
+	    method = 0;
+	    
 	
-	/* Count the number of patterns and allocate space*/
-	for (i = 1, p = patterns; *p && (p = strchr(p+1, ',')); i++);
+	    /* Count the number of patterns and allocate space*/
+	    for (i = 1, p = patterns; *p && (p = strchr(p+1, ',')); i++);
 
-	sub->numpatterns = i;
-	sub->patterns = NEW(char *, i);
-	if (!prev)
-	    subscriptions = sub;
+	    sub->numpatterns = i;
+	    sub->patterns = NEW(char *, i);
+	    if (!prev)
+		subscriptions = sub;
 
-	/* Store the patterns. */
-	for (i = 0, p = strtok(patterns, ","); p != NULL; i++, p = strtok(NULL, ","))
-	    sub->patterns[i] = COPY(p);
+	    /* Store the patterns. */
+	    for (i = 0, p = strtok(patterns, ","); p != NULL; i++, p = strtok(NULL, ","))
+		sub->patterns[i] = COPY(p);
+	    DISPOSE(patterns);
+	    patterns = 0;
 
-	if (prev)
-	    prev->next = sub;
-	prev = sub;
-	sub->next = NULL;
+	    if (prev)
+		prev->next = sub;
+	    prev = sub;
+	    sub->next = NULL;
+	}
     }
     
-    (void)Fclose(f);
+    (void)CONFfclose(f);
 
     return TRUE;
 }
@@ -440,6 +515,9 @@ TOKEN SMstore(const ARTHANDLE article) {
     STORAGE_SUB         *sub;
     TOKEN               result;
     char                *groups;
+    TIMEINFO		Now;
+    char		*expire;
+    time_t		expiretime;
 
     if (!SMopenmode) {
 	result.type = TOKEN_EMPTY;
@@ -470,10 +548,22 @@ TOKEN SMstore(const ARTHANDLE article) {
 	}
     }
 
+    expiretime = 0;
+    if (expire = (char *)HeaderFindMem(article.data, article.len, "Expires", 7)) {
+	/* optionally parse expire header */
+	expiretime = parsedate(expire, &Now);
+	if (expiretime == -1)
+	    expiretime = 0;
+	else
+	    expiretime -= Now.time;
+    }
+
     for (sub = subscriptions; sub != NULL; sub = sub->next) {
 	if (!(method_data[typetoindex[sub->type]].initialized == INIT_FAIL) &&
 	    (article.len >= sub->minsize) &&
 	    (!sub->maxsize || (article.len <= sub->maxsize)) &&
+	    (expiretime >= sub->minexpire) &&
+	    (!sub->maxexpire || (expiretime <= sub->maxexpire)) &&
 	    MatchGroups(groups, sub->numpatterns, sub->patterns)) {
 	    if (InitMethod(typetoindex[sub->type]))
 		return storage_methods[typetoindex[sub->type]].store(article, sub->class);
