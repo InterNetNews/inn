@@ -160,6 +160,7 @@
 #define _ENV_FROMHOST		"FROMHOST"
     /* =()<#define _ENV_UUCPHOST	"@<_ENV_UUCPHOST>@">()= */
 #define _ENV_UUCPHOST	"UU_MACHINE"
+#define _ENV_INNBINDADDR	"INND_BIND_ADDRESS"
 
 
 /*
@@ -263,6 +264,10 @@
 #define _CONF_BLOCK_BACKOFF	"blockbackoff"
    /* How many article-writes between active and history updates */
 #define _CONF_ICD_SYNC_COUNT	"icdsynccount"
+   /* The IP address of the interface for innd to listen on */
+#define _CONF_INNBINDADDR	"bindaddress"
+   /* The port for innd to listen on */
+#define _CONF_INNPORT		"port"
      
 /*
 **  13.  TCL Support

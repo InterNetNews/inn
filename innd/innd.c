@@ -527,7 +527,6 @@ int main(int ac, char *av[])
 {
     static char		WHEN[] = "PID file";
     int			i;
-    int			port;
     int			fd;
     int			logflags;
     char		buff[SMBUF];
@@ -570,7 +569,6 @@ int main(int ac, char *av[])
     ShouldRenumber = FALSE;
     ShouldSyntaxCheck = FALSE;
     logflags = L_OPENLOG_FLAGS | LOG_NOWAIT;
-    port = NNTP_PORT;
     fd = -1;
     master = NULL;
 
@@ -622,6 +620,10 @@ int main(int ac, char *av[])
 	case 'i':
 	    MaxIncoming = atoi(optarg);
 	    break;
+	case 'I':
+	    if (innconf->bindaddress) DISPOSE(innconf->bindaddress);
+	    innconf->bindaddress = COPY(optarg);
+	    break;
 	case 'l':
 	    innconf->maxartsize = atol(optarg);
 	    break;
@@ -663,7 +665,7 @@ int main(int ac, char *av[])
 	    }
 	    break;
 	case 'P':
-	    port = atoi(optarg);
+	    innconf->port = atoi(optarg);
 	    break;
 	case 'r':
 	    ShouldRenumber = TRUE;
@@ -875,7 +877,7 @@ int main(int ac, char *av[])
     HISsetup();
     CCsetup();
     LCsetup();
-    RCsetup(port, fd, master);
+    RCsetup(fd, master);
     WIPsetup();
     NCsetup(i);
     ARTsetup();

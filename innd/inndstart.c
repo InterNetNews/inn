@@ -27,6 +27,9 @@
 
 /* #define DEBUGGER "/usr/ucb/dbx" */
 
+#ifndef		INADDR_NONE
+#define		INADDR_NONE	0
+#endif
 
 #if	NOFILE_LIMIT > 0
 /*
@@ -99,6 +102,9 @@ int main(int ac, char *av[])
 #endif	/* defined(SO_REUSEADDR) */
     (void)memset((POINTER)&server, 0, sizeof server);
     server.sin_port = htons(NNTP_PORT);
+    p = GetConfigValue(_CONF_INNPORT);
+    if (p != NULL) 
+	server.sin_port = htons(atoi(p));
     for (j = 1; av[j]; j++) {
 	if (!strncmp("-P", av[j], 2)) {
 	    server.sin_port = htons(atoi(&av[j][2]));
@@ -106,7 +112,26 @@ int main(int ac, char *av[])
 	}
     }
     server.sin_family = AF_INET;
+
     server.sin_addr.s_addr = htonl(INADDR_ANY);
+    p = GetConfigValue(_CONF_INNBINDADDR);
+    if ((p != NULL) && !EQ(p, "any")) {
+	server.sin_addr.s_addr = inet_addr(p);
+	if (server.sin_addr.s_addr == INADDR_NONE) {
+	    syslog(L_FATAL, "inndstart unable to determine bind ip (%s) %m", p);
+	    exit(1);
+	}
+    }
+    for (j = 1; av[j]; j++) {
+	if (!strncmp("-I", av[j], 2)) {
+	    server.sin_addr.s_addr = inet_addr(&av[j][2]);
+	    if (server.sin_addr.s_addr == INADDR_NONE) {
+		syslog(L_FATAL, "inndstart unable to determine bind ip (%s) %m",
+					&av[j][2]);
+	    	exit(1);
+	    }
+	}
+    }
     if (bind(i, (struct sockaddr *)&server, sizeof server) < 0) {
 	syslog(L_FATAL, "inndstart cant bind %m");
 	exit(1);
@@ -125,7 +150,8 @@ int main(int ac, char *av[])
     argv[j++] = _PATH_INND;
     argv[j++] = pflag;
     for (i = 1; av[i]; ) {
-	if ((strncmp(av[i], "-p", 2) != 0) && (strncmp(av[i], "-P", 2) != 0))
+	if ((strncmp(av[i], "-p", 2) != 0) && (strncmp(av[i], "-P", 2) != 0) &&
+		(strncmp(av[i], "-I", 2) != 0))
 	argv[j++] = av[i++];
 	else
 	    i++;

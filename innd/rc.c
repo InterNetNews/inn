@@ -26,6 +26,10 @@ extern unsigned long	htonl(); /* nobody should really need this anymore */
 #define COPYADDR(dest, src) \
 	    (void)memcpy((POINTER)dest, (POINTER)src, (SIZE_T)sizeof (INADDR))
 
+#ifndef		INADDR_NONE
+#define		INADDR_NONE     0
+#endif
+
 /*
 **  A remote host has an address and a password.
 */
@@ -1330,8 +1334,7 @@ BOOL RCcanpost(CHANNEL *cp, char *group)
 **  Create the channel.
 */
 void
-RCsetup(port, i, master)
-    register int	port;
+RCsetup(i, master)
     register int	i;
     char		*master;
 {
@@ -1356,9 +1359,17 @@ RCsetup(port, i, master)
 	    syslog(L_ERROR, "%s cant setsockopt RCreader %m", LogName);
 #endif	/* defined(SO_REUSEADDR) */
 	(void)memset((POINTER)&server, 0, sizeof server);
-	server.sin_port = htons(port);
+	server.sin_port = htons(innconf->port);
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = htonl(INADDR_ANY);
+	if (innconf->bindaddress) {
+	    server.sin_addr.s_addr = inet_addr(innconf->bindaddress);
+	    if (server.sin_addr.s_addr == INADDR_NONE) {
+		syslog(L_FATAL, "inndstart unable to determine bind ip (%s) %m",
+					innconf->bindaddress);
+		exit(1);
+	    }
+	}
 	if (bind(i, (struct sockaddr *)&server, sizeof server) < 0) {
 	    syslog(L_FATAL, "%s cant bind RCreader %m", LogName);
 	    exit(1);

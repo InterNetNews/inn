@@ -72,6 +72,9 @@ char *GetConfigValue(char *value)
     if (EQ(value, _CONF_FROMHOST)
      && (p = getenv(_ENV_FROMHOST)) != NULL)
 	return p;
+    if (EQ(value, _CONF_INNBINDADDR)
+     && (p = getenv(_ENV_INNBINDADDR)) != NULL)
+	return p;
 
     if ((p = GetFileConfigValue(value)) != NULL)
 	return p;
@@ -152,6 +155,8 @@ void SetDefaults()
     innconf->badiocount = 5;
     innconf->blockbackoff = 120;
     innconf->icdsynccount = 10;
+    innconf->bindaddress = NULL;
+    innconf->port = NNTP_PORT;
 }
 
 void ClearInnConf()
@@ -167,6 +172,7 @@ void ClearInnConf()
     if (innconf->mimeencoding != NULL) DISPOSE(innconf->mimeencoding);
     if (innconf->complaints != NULL) DISPOSE(innconf->complaints);
     if (innconf->mta != NULL) DISPOSE(innconf->mta);
+    if (innconf->bindaddress != NULL) DISPOSE(innconf->bindaddress);
 }
 
 int ReadInnConf(char *configfile)
@@ -259,6 +265,7 @@ int ReadInnConf(char *configfile)
 	    } else
 	    if (EQ(ConfigBuff,_CONF_STORAGEAPI)) {
 		if (boolval != -1) innconf->storageapi = boolval;
+		if (innconf->storageapi == TRUE) innconf->wireformat = TRUE;
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ARTMMAP)) {
 		if (boolval != -1) innconf->articlemmap = boolval;
@@ -346,6 +353,15 @@ int ReadInnConf(char *configfile)
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ICD_SYNC_COUNT)) {
 		innconf->icdsynccount = atoi(p);
+	    }
+	    if (EQ(ConfigBuff,_CONF_INNBINDADDR)) {
+		if (EQ(p,"any"))
+		    innconf->bindaddress =  NULL;
+		else
+		    innconf->bindaddress =  COPY(p);
+	    }
+	    if (EQ(ConfigBuff,_CONF_INNPORT)) {
+		innconf->port = atoi(p);
 	    }
 	}
 	(void)fclose(F);

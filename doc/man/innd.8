@@ -26,6 +26,9 @@ innd, inndstart \- InterNetNews daemon
 .BI \-i " count"
 ]
 [
+.BI \-I "IP_address"
+]
+[
 .BI \-l " size"
 ]
 [
@@ -184,6 +187,12 @@ To limit the number of incoming NNTP connections, use the ``\fB\-i\fP'' flag.
 A value of zero will suppress this check.
 The default is 50, but can also be changed with the ``maxconnections''
 option in
+.I inn.conf (5)
+.TP
+.B \-I
+This option allows you to bind innd to a specific interface IP address.
+The IP address must be in dotted quad (nnn.nnn.nnn.nnn) format. See also
+the ``bindaddress'' option in
 .I inn.conf (5)
 .TP
 .B \-l

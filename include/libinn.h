@@ -88,6 +88,8 @@ struct conf_vars {
 	int badiocount;		/* Read/write failures until chan is put to sleep or closed? */
 	int blockbackoff;	/* Multiplier for sleep in EWOULDBLOCK writes */
 	int icdsynccount;	/* How many article-writes between active and history updates */
+	char *bindaddress;	/* Which interface IP to bind to */
+	int port;		/* Which port INND should listen on */
 };
 extern struct	conf_vars *innconf;
 extern char	*GetFQDN(void);

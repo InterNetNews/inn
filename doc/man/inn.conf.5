@@ -319,6 +319,18 @@ A multiplier (in seconds) for sleep in ``EWOULDBLOCK'' writes.
 .TP
 .I icdsynccount
 How many article writes between active and history file updates.
+.TP
+.I bindaddress
+Which interface IP address
+.I innd
+should bind to. Must be in dotted-quad
+format (nnn.nnn.nnn.nnn). Defaults to the first interface allocated
+by the system.
+.TP
+.I port
+Which TCP port
+.I innd
+should listen on. Defaults to the 119 - the standard nntp port.
 .PP
 The following parameters are used only by
 .I nnrpd
