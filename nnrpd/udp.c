@@ -6,7 +6,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <string.h>
-#include <sys/syslog.h>
+#include <syslog.h>
 #include "config.h"
 
 int create_udp_socket(int port, int portexclude)
