@@ -180,6 +180,8 @@ BOOL ARTreadschema(void)
     ARTHEADER		        *hp;
     BOOL			ok;
     char			buff[SMBUF];
+    BOOL			foundxref = FALSE;
+    BOOL			foundxreffull = FALSE;
 
     if (ARTfields != NULL) {
 	DISPOSE(ARTfields);
@@ -211,8 +213,12 @@ BOOL ARTreadschema(void)
 	}
 	else
 	    fp->NeedHeader = FALSE;
+	if (caseEQ(buff, "Xref")) {
+	    foundxref = TRUE;
+	    foundxreffull = fp->NeedHeader;
+	}
 	for (hp = ARTheaders; hp < ENDOF(ARTheaders); hp++)
-	    if (EQ(buff, hp->Name)) {
+	    if (caseEQ(buff, hp->Name)) {
 		fp->Header = hp;
 		break;
 	    }
@@ -227,6 +233,10 @@ BOOL ARTreadschema(void)
     fp->Header = NULL;
 
     (void)Fclose(F);
+    if (!foundxref || !foundxreffull) {
+	syslog(L_FATAL, "%s 'Xref:full' must be included in %s", LogName, SCHEMA);
+	exit(1); 
+    }
     return ok;
 }
 
