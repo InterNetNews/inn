@@ -71,14 +71,12 @@ struct node {
    allocated at a time, and node_lines holds a linked list of groups of nodes.
    The free_list is a linked list (through the middle pointers) of available
    nodes to use, and head holds pointers to the first nodes for each possible
-   first letter of the string.
-
-   FIXME: Currently only supports ASCII strings. */
+   first letter of the string. */
 struct tst {
     int node_line_width;
     struct node_lines *node_lines;
     struct node *free_list;
-    struct node *head[127];
+    struct node *head[256];
 };
 
 /* A simple linked list structure used to hold all the groups of nodes. */
@@ -166,12 +164,12 @@ tst_insert(unsigned char *key, void *data, struct tst *tst, int option,
     if (key[0] == 0)
         return TST_NULL_KEY;
 
-    if (tst->head[(int) key[0]] == NULL) {
+    if (tst->head[*key] == NULL) {
         if (tst->free_list == NULL)
             tst_grow_node_free_list(tst);
-        tst->head[(int) key[0]] = tst->free_list;
+        tst->head[*key] = tst->free_list;
         tst->free_list = tst->free_list->middle;
-        current_node = tst->head[(int) key[0]];
+        current_node = tst->head[*key];
         current_node->value = key[1];
         if (key[1] == 0) {
             current_node->middle = data;
@@ -180,7 +178,7 @@ tst_insert(unsigned char *key, void *data, struct tst *tst, int option,
             perform_loop = 0;
     }
 
-    current_node = tst->head[(int) key[0]];
+    current_node = tst->head[*key];
     key_index = 1;
     while (perform_loop == 1) {
         if (key[key_index] == current_node->value) {
@@ -285,7 +283,7 @@ tst_search(unsigned char *key, struct tst *tst)
     if (tst->head[(int) key[0]] == NULL)
         return NULL;
 
-    current_node = tst->head[(int) key[0]];
+    current_node = tst->head[*key];
     key_index = 1;
 
     while (current_node != NULL) {
@@ -331,12 +329,12 @@ tst_delete(unsigned char *key, struct tst *tst)
     if (key[0] == 0)
         return NULL;
 
-    if (tst->head[(int) key[0]] == NULL)
+    if (tst->head[*key] == NULL)
         return NULL;
 
     last_branch = NULL;
     last_branch_parent = NULL;
-    current_node = tst->head[(int) key[0]];
+    current_node = tst->head[*key];
     current_node_parent = NULL;
     key_index = 1;
     while (current_node != NULL) {
@@ -373,8 +371,8 @@ tst_delete(unsigned char *key, struct tst *tst)
         return NULL;
 
     if (last_branch == NULL) {
-        next_node = tst->head[(int) key[0]];
-         tst->head[(int)key[0]] = NULL;
+        next_node = tst->head[*key];
+        tst->head[*key] = NULL;
     } else if (last_branch->left == NULL && last_branch->right == NULL) {
         if (last_branch_parent->left == last_branch)
             last_branch_parent->left = NULL;
@@ -394,7 +392,7 @@ tst_delete(unsigned char *key, struct tst *tst)
         }
 
         if (last_branch_parent == NULL)
-            tst->head[(int) key[0]] = last_branch_replacement;
+            tst->head[*key] = last_branch_replacement;
         else {
             if (last_branch_parent->left == last_branch)
                 last_branch_parent->left = last_branch_replacement;

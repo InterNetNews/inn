@@ -30,7 +30,7 @@ main(void)
     char foo[] = "foo";
     char testing[] = "testing";
     char Strange[] = "Strange";
-    char change[] = "change";
+    char change[] = "çhange";
 
     puts("36");
 
@@ -46,13 +46,13 @@ main(void)
     ok(9, tst_insert(U"testing", testing, tst, 0, NULL) == TST_OK);
     ok(10, tst_insert(U"t", t, tst, 0, NULL) == TST_OK);
     ok(11, tst_insert(U"Strange", Strange, tst, 0, NULL) == TST_OK);
-    ok(12, tst_insert(U"change", change, tst, 0, NULL) == TST_OK);
+    ok(12, tst_insert(U"çhange", change, tst, 0, NULL) == TST_OK);
     ok(13, tst_insert(U"", foo, tst, 0, NULL) == TST_NULL_KEY);
     ok(14, tst_insert(NULL, foo, tst, 0, NULL) == TST_NULL_KEY);
     ok_string(15, "testing", tst_search(U"testing", tst));
     ok_string(16, "t", tst_search(U"t", tst));
     ok_string(17, "Strange", tst_search(U"Strange", tst));
-    ok_string(18, "change", tst_search(U"change", tst));
+    ok_string(18, "çhange", tst_search(U"çhange", tst));
     ok_string(19, "foo", tst_search(U"test", tst));
     ok(20, tst_search(U"", tst) == NULL);
     ok(21, tst_search(U"Peter", tst) == NULL);
@@ -66,7 +66,7 @@ main(void)
     ok_string(29, "foo", tst_search(U"test", tst));
     ok_string(30, "testing", tst_delete(U"testing", tst));
     ok_string(31, "foo", tst_search(U"test", tst));
-    ok_string(32, "change", tst_delete(U"change", tst));
+    ok_string(32, "çhange", tst_delete(U"çhange", tst));
     ok_string(33, "foo", tst_delete(U"test", tst));
     tst_cleanup(tst);
     ok(34, true);
