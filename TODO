@@ -133,15 +133,6 @@ Scheduled for INN 2.6
 
 High Priority Projects
 
-* Modulo warnings from system headers and warnings where the compiler is
-  simply wrong and there's no equally readable way to rewrite the code,
-  INN should compile cleanly under "make warnings".  It should be possible
-  for maintainers to routinely compile INN with make warnings to catch
-  problems.  Note that -Wcast-qual warnings cannot be avoided entirely
-  because we don't want to write redundant functions for regular and const
-  strings and because of such things as struct iovec; -Wcast-qual will be
-  removed from make warnings when this task is reasonably complete.
-
 * INN shouldn't flush all feeds (particularly all program feeds) on
   newgroup or rmgroup.  Currently it reloads newsfeeds to reparse all of
   the wildmat patterns and rebuild the peer lists associated with the
@@ -218,10 +209,10 @@ Code Cleanup Projects
 
 * Eliminate everything in the LEGACY section of config.h.
 
-* Move all compile-time configuration in config.h either into a separate
-  header (such as inn/options.h) or turn it into a configuration file
-  directive or a command-line option.  In particular, the rnews
-  configuration should probably be an rnews-specific section of inn.conf.
+* Go over include/inn/options.h and try to eliminate as many of the
+  compile-time options there as possible.  They should all be run-time
+  options instead if at all possible, maybe in specific sub-sections of
+  inn.conf.
 
 * Move include/paths.h to include/inn/paths.h and change _PATH as a prefix
   to INN_PATH to move the identifiers out of the C reserved namespace.
@@ -229,9 +220,8 @@ Code Cleanup Projects
   anything needed by innfeed (and eliminating the separate innfeed header
   serving the same purpose).
 
-* Move include/nntp.h to include/inn/nntp.h and at the same time look at
-  standardizing the names of all of the #defines it provides, including
-  the message class.  [Russ has a start on this.]
+* Update all INN code to use include/inn/nntp.h for NNTP codes and
+  eliminate include/nntp.h.
 
 * Get rid of GetTimeInfo and TIMEINFO.  All the struct is is a struct
   timeval plus time zone information.  All of the parts of INN that deal
@@ -240,10 +230,6 @@ Code Cleanup Projects
   at most gettimeofday, and there's no reason to compute the time zone
   everywhere.  Plus, it makes the code more readable to use standard
   functions and data types.
-
-* putman.sh should be merged into support/install-sh (which would mean
-  giving up any pretext of using the standard install-sh script, but that
-  should be fine).
 
 * Use vectors or cvectors everywhere that argify and friends are currently
   used and eliminate the separate implementation in nnrpd/misc.c.
@@ -268,7 +254,8 @@ Code Cleanup Projects
 * The source and bind addresses currently also take "any" or "all"
   wildcards, which can more easily be specified by just not setting them
   at all.  Remove those special strings, modify innupgrade to fix inn.conf
-  files using them, and simplify the code.
+  files using them, and simplify the code.  (It's not completely clear
+  that this is the right thing to do.)
 
 
 Needed Bug Fixes
@@ -287,10 +274,6 @@ Needed Bug Fixes
 
 * makedbz should be more robust in the presence of malformed history
   lines, discarding with them or otherwise dealing with them.
-
-* CNFS, if the cycbuff is larger than 2GB and it doesn't have large file
-  support, reports a mysterious file not found error because it assumes
-  all errors from stat are the result of the cycbuff not being found.
 
 * Some servers reject some IHAVE, TAKETHIS, or CHECK commands with 500
   syntax errors (particularly for long message IDs), and innfeed doesn't
@@ -334,10 +317,6 @@ Needed Bug Fixes
   article dispositions don't add up to the offered count like they should.
   Some article handling must not be recorded properly.
 
-* innd's counting of article size doesn't always work properly, and it can
-  accept articles that are larger than its configured limit.  It's not
-  clear exactly where this is happening.
-
 * If a channel feed exits immediately, innd respawns it immediately,
   causing thrashing of the system and a huge spew of errors in syslog.  It
   should mark the channel as dormant for some period of time before
@@ -366,12 +345,6 @@ Needed Bug Fixes
   their server that way.  (It's not clear that the latter is actually a
   bug, given the new USEFOR attempt to allow folding of Path headers, but
   the space needs to be removed for WP feeds.)
-
-* Error handling in the history backend needs to be reviewed, since it
-  currently is always printing out errno regardless of whether it's
-  meaningful.  The error handling needs to record errno if it's useful and
-  the reporting function should only print it out if it's useful for that
-  error.
 
 * innd returns 437 for articles that were accepted but filed in the junk
   group.  It should probably return the appropriate 2xx status code in
@@ -463,8 +436,7 @@ Requested New Features
 
 * It would be nice to be able to reload inn.conf (although difficult, due
   to the amount of data that's generated from it and stashed in various
-  places).  This will need to wait for the new configuration parsing
-  library and an inn.conf parser that uses it.
+  places).
 
 * remembertrash currently rejects and remembers articles with syntax
   errors as well as things like unwanted newsgroups and unwanted
@@ -592,15 +564,16 @@ General Projects
   the user, particularly for rnews, inews, etc.  innd also rejects message
   IDs with trailing spaces, which can be hard to check.
 
-* Support putting the active file and history file in different
-  directories without hand-editing a bunch of files.
+* Support putting the history file in different directory from the other
+  (much smaller) db files without hand-editing a bunch of files.
 
 * nnrpd's NNTP command parsing interacts poorly with AUTHINFO and
   passwords containing spaces.  The correct solution isn't clear; check
   with the current NNTP RFC draft and how existing clients handle it?
 
 * frontends/pullnews and contrib/backupfeed solve the same problem; the
-  best ideas of both should be unified into one script.
+  best ideas of both should be unified into one script.  frontends/nntpget
+  also does the same thing and should also be included.
 
 * actsyncd could stand a rewrite and cleaner handling of both
   configuration and syncing against multiple sources which are canonical
@@ -619,6 +592,7 @@ Long-Term Projects
 
 * INN's header handling needs to be checked against the current USEFOR
   draft.  This may want wait until after we have a header parsing library.
+  It should definitely wait until USEFOR gets its act together.
 
 * The innd filter should be able to specify additional or replacement
   groups into which an article should be filed, or even spool the article
@@ -629,15 +603,14 @@ Long-Term Projects
   issues, particularly if we want to add authentication methods like
   Kerberos that require their own separate libraries (although we should
   use Cyrus's SASL libraries, which will simplify a lot of that).
-  [Jeffrey Vinocur is working on a standard for this.]
+  [Ken Murchison has this mostly done.]
 
 * When articles expire out of a storage method with self-expire
   functionality, the overview and history entries for those articles
   should also be expired immediately.  Otherwise, things like the GROUP
   command don't give the correct results.  This will likely require a
   callback that can be passed to CNFS that is called to do the overview
-  and history cleanup for each article overwritten.  It will also require
-  the new history API.
+  and history cleanup for each article overwritten.
 
 * Feed control, namely allowing your peers to set policy on what articles
   you feed them (not just newsgroups but max article size and perhaps even
@@ -662,7 +635,6 @@ Long-Term Projects
   subset of the users is allowed to access, is far too difficult.  For a
   good starting list of additional functionality that should be made
   available, look at everything the Perl authentication hooks can do.
-  This should probably wait for the configuration file parsing rewrite.
 
 * Allow nnrpd to spawn long-running helper processes.  Not only would this
   be useful for handling authentication (so that the auth hooks could work
@@ -725,16 +697,9 @@ Long-Term Projects
 
 * A serious investigation into whether INN could use a garbage collector
   is probably a good idea.  The network buffers probably need to be
-  handled with decidated code, but there are a lot of other incidental
+  handled with dedicated code, but there are a lot of other incidental
   allocations and deallocations that may be much more efficient and safer
   using a garbage collector.
-
-* Look at integrating asprintf and vasprintf.  Russ already tried this
-  once and couldn't see a good way of doing it (particularly vasprintf)
-  without hooking deep into an sprintf implementation, because the simple
-  hack of calling vsnprintf first, allocating that much memory, and then
-  calling it again on the new buffer doesn't work for vasprintf (you can't
-  reprocess the arguments).
 
 * Support building in a separate directory than the source tree.  It may
   be best to just support this via lndir rather than try to do it in
