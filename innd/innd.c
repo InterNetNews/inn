@@ -584,7 +584,8 @@ main(int ac, char *av[])
        it, so call PROCsetup after RCsetup to not interpose a signal
        handler. */
     CHANsetup(i);
-    InndHisOpen();
+    if (Mode == OMrunning)
+        InndHisOpen();
     CCsetup();
     LCsetup();
     RCsetup();
