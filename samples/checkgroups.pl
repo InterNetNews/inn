@@ -1,4 +1,3 @@
-#!@_PATH_PERL@
 # $Id$
 # Copyright (c)1998 G.J. Andruk
 # checkgroups.pl - The checkgroups control message.

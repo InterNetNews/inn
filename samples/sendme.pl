@@ -1,9 +1,8 @@
-#!@_PATH_PERL@
 # $Id$
 # Copyright (c)1998 G.J. Andruk
-# ihave.pl - The ihave control message.
+# sendme.pl - The sendme control message.
 #  Parameters: params sender reply-to token site action[=log] approved
-sub control_ihave {
+sub control_sendme {
   my $artfh;
   
   my @params = split(/\s+/,shift);
@@ -15,23 +14,19 @@ sub control_ihave {
   my $approved = shift;
   
   my $pid = $$;
-  my $tempfile = "$inn::tmpdir/ihave.$pid";
+  my $tempfile = "$inn::tmpdir/sendme.$pid";
   
   my ($errmsg, $status, $nc, @component, @oldgroup, $locktry,
       $ngname, $ngdesc, $modcmd, $kid);
   
   if ($action eq "mail") {
-    
     $artfh = open_article($token);
     next if (!defined($artfh));
     *ARTICLE = $artfh;
     
-  IHHEAD:
-    while (<ARTICLE>) {
-      last IHHEAD if /^$/;
-    }
+  SMHEAD: while(<ARTICLE>) { last SMHEAD if /^$/ }
     $kid = open2(\*R, \*MAIL, @inn::mailcmd, "-s",
-	  "ihave by $sender", $inn::newsmaster);
+	  "sendme by $sender", $inn::newsmaster);
     while (<ARTICLE>) {
       s/^~/~~/;
       print MAIL $_;
@@ -42,37 +37,30 @@ sub control_ihave {
     waitpid($kid, 0);
   } elsif ($action eq "log") {
     if (!$logging) {
-      logmsg ('notice', 'ihave %s', $sender);
+      logmsg ('notice', 'sendme from %s', $sender);
     } else {
-      logger($token, $logging, "ihave $sender");
+      logger($token, $logging, "sendme $sender");
     }
   } elsif ($action eq "doit") {
+    open(GREPHIST, "|grephistory -s > $tempfile");
     
-    open(GREPHIST, "|grephistory -i > $tempfile");
     $artfh = open_article($token);
     next if (!defined($artfh));
     *ARTICLE = $artfh;
     
-  IHHEAD2:
-    while (<ARTICLE>) {
-      last IHHEAD2 if /^$/;
-    }
+  SMHEAD2: while(<ARTICLE>) { last SMHEAD2 if /^$/ }
     print GREPHIST $_ while <ARTICLE>;  
     close(ARTICLE);
     close(GREPHIST);
-    
-    if (-s "$tempfile") {
-      $kid = open2(\*R, \*INEWS, $inn::inews, "-h");
-      print INEWS ("Newsgroups: to.$site\n",
-		   "Subject: cmsg sendme $inn::pathhost\n",
-		   "Control: sendme $inn::pathhost\n\n");
-      open TEMPFILE, "<$tempfile";
-      print INEWS $_ while <TEMPFILE>;  
-      close R;
-      close INEWS;
-      close TEMPFILE;
-      waitpid($kid, 0);
+    ## xxx Need to lock the work file?
+    if (-s $tempfile && ($site =~ /(^[a-zA-Z0-9.-_]+$)/)) {
+      open(TEMPFILE, "<$tempfile");
+      open(BATCH, ">>$inn::batch/$1.work");
+      print BATCH $_ while <TEMPFILE>;  
+      close(BATCH);
+      close(TEMPFILE);
     }
-    unlink ($tempfile);
+    unlink($tempfile);
   }
 }
+

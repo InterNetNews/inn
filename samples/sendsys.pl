@@ -1,9 +1,8 @@
-#!@_PATH_PERL@
 # $Id$
 # Copyright (c)1998 G.J. Andruk
-# senduuname.pl - The senduuname control message.
+# sendsys.pl - The sendsys control message.
 #  Parameters: params sender reply-to token site action[=log] approved
-sub control_senduuname {
+sub control_sendsys {
   my $artfh;
   
   my @params = split(/\s+/,shift);
@@ -14,22 +13,19 @@ sub control_senduuname {
   my ($action, $logging) = split(/=/, shift);
   my $approved = shift;
   
-  my $groupname = $params[0];
-  
   my $pid = $$;
-  my $tempfile = "$inn::tmpdir/senduuname.$pid";
+  my $tempfile = "$inn::tmpdir/sendsys.$pid";
   
   my ($errmsg, $status, $nc, @component, @oldgroup, $locktry,
       $ngname, $ngdesc, $modcmd, $kid);
   
   if ($action eq "mail") {
-    open (TEMPFILE, ">$tempfile");
-    print TEMPFILE ("$sender has requested information about your\n",
-		    "UUCP name.\n\n",
+    open(TEMPFILE, ">$tempfile");
+    print TEMPFILE ("$sender has requested that you send a copy\n",
+		    "of your newsgroups file.\n\n",
 		    "If this is acceptable, type:\n",
-		    "  uuname | ",
-		    "$inn::mailcmd -s \"senduuname reply from ",
-		    "$inn::pathhost\" $replyto\n\n",
+		    "  $inn::mailcmd -s \"sendsys reply from ",
+		    "$inn::pathhost\" $replyto < $inn::newsfeeds\n\n",
 		    "The control message follows:\n\n");
     
     $artfh = open_article($token);
@@ -39,31 +35,34 @@ sub control_senduuname {
     print TEMPFILE $_ while <ARTICLE>;  
     close(ARTICLE);
     close(TEMPFILE);
-    logger($tempfile, "mail", "senduuname $sender\n");
+    logger($tempfile, "mail", "sendsys $sender\n");
     unlink($tempfile);
   } elsif ($action eq "log") {
     if (!$logging) {
-      logmsg ('notice', 'senduuname %s', $sender);
+      logmsg ('notice', 'sendsys %s', $sender);
     } else {
-      logger($token, $logging, "senduuname $sender");
+      logger($token, $logging, "sendsys $sender");
     }
   } elsif ($action =~ /^(doit|doifarg)$/) {
     if (($action eq "doifarg") && ($params[0] ne $inn::pathhost)) {
-      logmsg ('notice', 'skipped senduuname %s', $sender);
+      logmsg ('notice', 'skipped sendsys %s', $sender);
     } else {
-      open UUNAME, "uuname|";
-      $kid = open2 (\*R, \*MAIL, $inn::mailcmd, "-s",
-	     "senduuname reply from $inn::pathhost", $replyto);
-      print MAIL $_ while <UUNAME>;  
-      close UUNAME;
+      # Send the file.
+      open NEWSFEEDS, "<$inn::newsfeeds";
+      $kid = open2(\*R, \*MAIL, $inn::mailcmd, "-s",
+	    "sendsys reply from $inn::pathhost", $replyto);
+      print MAIL $_ while <NEWSFEEDS>;  
+      print MAIL "\n";
+      
+      close NEWSFEEDS;
       close R;
       close MAIL;
       waitpid($kid, 0);
+      # Now, log what we did.
       if ($logging) {
-	$errmsg = "senduuname $sender to $replyto";
+	$errmsg = "sendsys $sender to $replyto";
 	logger($token, $logging, $errmsg);
       }
     }
   }
 }
-
