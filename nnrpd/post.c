@@ -23,8 +23,9 @@ extern int LLOGenable;
 STATIC char     *tmpPtr ;
 STATIC char	Error[SMBUF];
 STATIC char	NGSEPS[] = NG_SEPARATOR;
-STATIC char	**OtherHeaders;
-STATIC int	OtherCount;
+char	**OtherHeaders;
+int	OtherCount;
+BOOL   HeadersModified;
 STATIC int	OtherSize;
 STATIC BOOL	WasMailed;
 STATIC STRING	BadDistribs[] = {
@@ -944,7 +945,7 @@ ARTpost(article, idbuff)
 
 #if defined(DO_PERL)
     /* Calls the Perl subroutine for headers management */
-    if ((p = (char *)HandleHeaders()) != NULL)
+    if ((p = (char *)HandleHeaders(article)) != NULL)
         return p;
 #endif /* defined(DO_PERL) */
 
