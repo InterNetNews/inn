@@ -600,10 +600,11 @@ WaitChild(s)
     int pid;
 
     for (;;) {
-       pid = wait3(&status, WNOHANG, (struct rusage *) 0);
+       pid = waitnb(&status);
        if (pid <= 0)
        	    break;
     }
+    (void)signal(s, WaitChild);
 }
 
 
@@ -648,8 +649,6 @@ main(argc, argv, env)
     unsigned long	ListenAddr = htonl(INADDR_ANY);
     int			lfd, fd, clen;
     struct sockaddr_in	ssa, csa;
-    struct sigaction	siga;
-    sigset_t		blockmask;
     PID_T		pid;
    
 
@@ -738,13 +737,7 @@ main(argc, argv, env)
 	setsid();
  
 	/* Set signal handle to care for dead children */
-	sigemptyset(&blockmask);
-	sigaddset(&blockmask, SIGCHLD);
-	siga.sa_handler = WaitChild;
-	siga.sa_mask = blockmask;
-	siga.sa_flags = 0;
-	siga.sa_restorer = NULL;
-	(void)sigaction(SIGCHLD, &siga, NULL);
+	(void)signal(SIGCHLD, WaitChild);
  
 	TITLEset("nnrpd: accepting connections");
  	
