@@ -263,6 +263,7 @@ void SetDefaults()
     innconf->wireformat = FALSE;
     innconf->ovmethod = NULL;
     innconf->useoverchan = FALSE;
+    innconf->ovmmapthreshold = 10000;
 }
 
 void ClearInnConf()
@@ -944,6 +945,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_USEOVERCHAN, bit);
 		if (!bit && boolval != -1 ) innconf->useoverchan = boolval;
 		SET_CONFIG(CONF_VAR_USEOVERCHAN);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_OVMMAPTHRESHOLD)) {
+		TEST_CONFIG(CONF_VAR_OVMMAPTHRESHOLD, bit);
+		if (!bit) innconf->ovmmapthreshold = atoi(p);
+		SET_CONFIG(CONF_VAR_OVMMAPTHRESHOLD);
 	    }
 	}
 	(void)Fclose(F);
