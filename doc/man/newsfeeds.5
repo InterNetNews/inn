@@ -184,8 +184,11 @@ which should be chosen from the following set:
 		Newsgroups header all exist in active
 	o	Overview data is created if storage
 		api is turned on
-	p	Do not check Path header for the sitename before 
-		propagating (the exclusions are still checked).
+	O	Propagate articles without X-Trace header
+		even if ``O'' flag is specified
+	p	Do not check Path header for the sitename
+		before propagating (the exclusions are
+		still checked).
 .fi
 If both ``c'' and ``C'' are specified simultaneously,
 the last specified one is adopted.
@@ -264,21 +267,23 @@ which should be chosen from the following set:
 	u	Only unmoderated groups
 .fi
 .TP
-.BI P priority
-The nice priority that this channel or program feed should receive.
-This should be a positive number between 0 and 20, and is the priority
-that the new process will run with.  This can be used to raise the
-priority to normal if you are using the nicekids inn.conf variable.
-.TP
 .BI O Originator
 If this is used then articles sent to this feed must contain a X-Trace
 header and the first field in the header must match the parameter used with
 this flag.
 .I Originator
-can be a
+can be a list of
 .IR wildmat (3)-style
-pattern.  One use of this is to restrict the feed to locally generated posts.
-.I 
+pattern.  The list is separated by ``/''.
+Article is never sent, if the first character of the pattern
+begins with ``@'' and rest of the pattern matches.
+One use of this is to restrict the feed to locally generated posts.
+.TP
+.BI P priority
+The nice priority that this channel or program feed should receive.
+This should be a positive number between 0 and 20, and is the priority
+that the new process will run with.  This can be used to raise the
+priority to normal if you are using the nicekids inn.conf variable.
 .TP
 .BI S size
 If the amount of data queued for the site gets to be larger than
