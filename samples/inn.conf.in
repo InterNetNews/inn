@@ -67,6 +67,7 @@ activedenable:		false
 activedupdate:		30
 activedport:		1119
 nnrpperlauth:		false
+nnrpdauthsender:	false
 #
 # 
 # These options are unlikely to need changing in most situations
