@@ -33,7 +33,7 @@ main(void)
     int i;
     struct iovec iov[4];
 
-    puts("16");
+    puts("19");
 
     /* Test xwrite. */
     for (i = 0; i < 256; i++)
@@ -114,6 +114,13 @@ main(void)
     iov[0].iov_len = 255;
     test_write(15, xwritev(0, iov, 1), -1);
     test_write(16, xpwrite(0, data + 1, 255, 0), -1);
+
+    /* Test zero-length writes. */
+    test_write(17, xwrite(0, "   ", 0), 0);
+    test_write(18, xpwrite(0, "   ", 0, 2), 0);
+    iov[0].iov_base = data + 1;
+    iov[0].iov_len = 2;
+    test_write(19, xwritev(0, iov, 0), 0);
 
     return 0;
 }
