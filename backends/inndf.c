@@ -51,8 +51,6 @@
 #include "ov.h"
 #include "paths.h"
 
-#define INNDFFILE	"innfs.conf" /* relative to pathetc */
-
 /* The portability mess.  Hide everything in macros so that the actual code
    is relatively clean.  SysV uses statvfs, BSD uses statfs, and ULTRIX is
    just weird (and isn't worth checking for in configure).
@@ -66,9 +64,11 @@
 # include <sys/statvfs.h>
 # define df_stat(p, s)  (statvfs((p), (s)) == 0)
 # define df_declare(s)  struct statvfs s
+# define df_total(s)    ((s).f_blocks)
 # define df_avail(s)    ((s).f_bavail)
-# define df_bsize(s)    ((s).f_frsize == 0 ? (s).f_bsize : (s).f_frsize)
-# define df_inodes(s)   ((s).f_favail)
+# define df_scale(s)    ((s).f_frsize == 0 ? (s).f_bsize : (s).f_frsize)
+# define df_files(s)    ((s).f_files)
+# define df_favail(s)   ((s).f_favail)
 #elif HAVE_STATFS
 # if HAVE_SYS_VFS_H
 #  include <sys/vfs.h>
@@ -82,15 +82,19 @@
 # ifdef __ultrix__
 #  define df_stat(p, s) (statfs((p), (s)) >= 1)
 #  define df_declare(s) struct fs_data s
-#  define df_avail(s)   ((s).fd_req.bfreen)
-#  define df_bsize(s)   ((s).fd_req.bsize)
-#  define df_inodes(s)  ((s).fd_req.gfree)
+#  define df_total(s)   ((s).fd_btot)
+#  define df_avail(s)   ((s).fd_bfreen)
+#  define df_scale(s)   1024
+#  define df_files(s)   ((s).fd_gtot)
+#  define df_favail(s)  ((s).fd_gfree)
 # else
 #  define df_stat(p, s) (statfs((p), (s)) == 0)
 #  define df_declare(s) struct statfs s
+#  define df_total(s)   ((s).f_blocks)
 #  define df_avail(s)   ((s).f_bavail)
-#  define df_bsize(s)   ((s).f_bsize)
-#  define df_inodes(s)  ((s).f_ffree)
+#  define df_scale(s)   ((s).f_bsize)
+#  define df_files(s)   ((s).f_files)
+#  define df_favail(s)  ((s).f_ffree)
 # endif
 #else
 # error "Platform not supported.  Neither statvfs nor statfs available."
@@ -102,30 +106,31 @@ Usage: inndf [-i] [-f filename] [-F] <directory> [<directory> ...]\n\
        inndf -o\n\
 \n\
 The first form gives the free space in kilobytes (or the count of free\n\
-inodes if -i is given) in the file systems given by the arguments.  The\n\
-second form gives the total count of overview records stored.  Thie third\n\
-form gives the percentage space allocated to overview that's been used (if\n\
-the overview method used supports this query.\n\
-If -f is given, the corresponding file should contain a list of directories\n\
-to use in addition to those given by the arguments. Syntax of this file is\n\
-as follow:\n\
-Blank lines are ignored. Everything after a '#' is ignored too.\n\
-The -F flag is like -f execpt that the filename is <pathetc>/inndf.conf";
+inodes if -i is given) in the file systems given by the arguments.  If\n\
+-f is given, the corresponding file should be a list of directories to\n\
+check in addition to the arguments.  -F uses <pathetc>/filesystems as the\n\
+file and is otherwise the same.\n\
+\n\
+The second form gives the total count of overview records stored.  The\n\
+third form gives the percentage space allocated to overview that's been\n\
+used (if the overview method used supports this query.";
 
 /*
 **  Given a path, a flag saying whether to look at inodes instead of free
 **  disk space, and a flag saying whether to format in columns, print out
-**  the amount of free space or inodes on that file system.
+**  the amount of free space or inodes on that file system.  Returns the
+**  percentage free, which may be printed out by the caller.
 */
 void
-printspace(const char *path, bool inode, bool pad)
+printspace(const char *path, bool inode, bool fancy)
 {
     df_declare(info);
     unsigned long amount;
+    double percent;
 
     if (df_stat(path, &info)) {
         if (inode) {
-            amount = df_inodes(info);
+            amount = df_favail(info);
         } else {
             /* Do the multiplication in floating point to try to retain
                accuracy if the free space in bytes would overflow an
@@ -137,61 +142,56 @@ printspace(const char *path, bool inode, bool pad)
                easy to cast back into an unsigned long a value that
                overflows, and one then gets silently wrong results. */
             amount = (unsigned long)
-                (((double) df_avail(info) * df_bsize(info)) / 1024L);
+                (((double) df_avail(info) * df_scale(info)) / 1024L);
         }
     } else {
         /* On error, free space is zero. */
         amount = 0;
     }
-    printf(pad ? "%10lu" : "%lu", amount);
+    printf(fancy ? "%10lu" : "%lu", amount);
+    if (fancy) {
+        printf(inode ? " inodes available " : " Kbytes available ");
+        if (inode)
+            percent = (double) df_favail(info) / df_files(info);
+        else
+            percent = (double) df_avail(info) / df_total(info);
+        percent = 100. - (100. * percent);
+        if (percent < 9.95)
+            printf("  (%3.1f%%)", percent);
+        else if (percent < 99.95)
+            printf(" (%4.1f%%)", percent);
+        else
+            printf("(%5.1f%%)", percent);
+    }
 }
 
-char **
-readfile(char *filename, int fatal)
+void
+printspace_formatted(const char *path, bool inode)
 {
-    char **list, **p, *s, *r, c;
-    int n;
-    QIOSTATE *qp;
+    printf("%-40s ", path);
+    printspace(path, inode, true);
+    printf("\n");
+}
 
-    qp = QIOopen(filename);
-    if (qp == NULL) {
-        if (fatal)
-            sysdie("can't open %s", filename);
-        return NULL;
-    }
-    list =  (char **) malloc(sizeof(char *));
-    *list = NULL;
-    n = 0;
+char *
+readline(QIOSTATE *qp)
+{
+    char *line, *p;
 
-    for (;;) {
-        s = QIOread(qp);
-        if (s == NULL)
-            break; /* end of file */
-        /* skip comments */
-        if ((r = strchr(s, '#')) != NULL)
-            *r = '\0';
-        /* skip blanks */
-        for (; *s == ' ' || *s == '\t'; s++);
-        if (*s == '\0')
-            continue; /* empty line */
-        while (*s != '\0') {
-            for (r = s; *r != ' ' && *r != '\t' && *r != '\0'; r++);
-            c = *r;
-            *r = '\0';
-            n++;
-            list = realloc(list, (n + 1) * sizeof(char *));
-            for (p = list; *p != NULL; p++);
-            *p = strdup(s);
-            *(p + 1) = NULL;
-            s = r;
-            if (c != '\0')
-                s++;
-            /* skip blanks */
-            for (; *s == ' ' || *s == '\t'; s++);
+    for (line = QIOread(qp); line != NULL; line = QIOread(qp)) {
+        p = strchr(line, '#');
+        if (p != NULL)
+            *p = '\0';
+        for (; *line == ' ' || *line == '\t'; line++)
+            ;
+        if (*line != '\0') {
+            for (p = line; *p != '\0' && *p != ' ' && *p != '\t'; p++)
+                ;
+            *p = '\0';
+            return line;
         }
     }
-    QIOclose(qp);
-    return list;
+    return NULL;
 }
 
 int
@@ -200,12 +200,12 @@ main(int argc, char *argv[])
     int option, i, count;
     unsigned long total;
     QIOSTATE *qp;
-    char *active, *group, *p;
+    char *active, *group, *line, *p;
+    char *file = NULL;
     bool inode = false;
     bool overview = false;
     bool ovcount = false;
-    char *file = NULL;
-    int fatal = 1;
+    bool use_filesystems = false;
 
     while ((option = getopt(argc, argv, "hinof:F")) != EOF) {
         switch (option) {
@@ -224,13 +224,17 @@ main(int argc, char *argv[])
             overview = true;
             break;
         case 'f':
-            file = strdup(optarg);
+            if (file != NULL)
+                die("inndf: Only one of -f or -F may be given");
+            file = xstrdup(optarg);
             break;
         case 'F':
+            if (file != NULL)
+                die("inndf: Only one of -f or -F may be given");
             if (ReadInnConf() < 0)
                 exit(1);
-            file = concatpath(innconf->pathetc, INNDFFILE);
-            fatal = 0;
+            file = concatpath(innconf->pathetc, INN_PATH_FILESYSTEMS);
+            use_filesystems = true;
             break;
         }
     }
@@ -252,30 +256,31 @@ main(int argc, char *argv[])
         printspace(argv[0], inode, false);
         printf("\n");
     } else {
-        for (i = 0; i < argc; i++) {
-            printf("%-40s ", argv[i]);
-            printspace(argv[i], inode, true);
-            printf(inode ? " inodes available\n" : " Kbytes available\n");
+        for (i = 0; i < argc; i++)
+            printspace_formatted(argv[i], inode);
+        if (file != NULL) {
+            qp = QIOopen(file);
+            if (qp == NULL) {
+                if (!use_filesystems)
+                    sysdie("can't open %s", file);
+            } else {
+                line = readline(qp);
+                while (line != NULL) {
+                    printspace_formatted(line, inode);
+                    line = readline(qp);
+                }
+                QIOclose(qp);
+            }
+            free(file);
         }
-    }
-    if (file != NULL) {
-        char **l, **p;
-
-        for (p = l = readfile(file, fatal); p != NULL && *p != NULL; p++) {
-            printf("%-40s ", *p);
-            printspace(*p, inode, true);
-            printf(inode ? " inodes available\n" : " Kbytes available\n");
-            free(*p);
-        }
-        free(l);
-        free(file);
     }
 
     /* If we're going to be getting information from overview, do the icky
        initialization stuff. */
     if (overview || ovcount) {
-        if (fatal && ReadInnConf() < 0)
-            exit(1);
+        if (!use_filesystems)
+            if (ReadInnConf() < 0)
+                exit(1);
         if (!OVopen(OV_READ))
             die("OVopen failed");
     }
