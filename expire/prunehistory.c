@@ -6,67 +6,11 @@
 #include "config.h"
 #include "clibrary.h"
 #include <errno.h>
-#include <fcntl.h>
 #include <syslog.h>
 
-#include "dbz.h"
 #include "libinn.h"
-#include "macros.h"
 #include "paths.h"
-
-
-/*
-**  A reusable data buffer.
-*/
-typedef struct _BUFFER {
-    char	*Data;
-    int		Size;
-    int		Used;
-} BUFFER;
-
-
-/*
-**  Convert a pathname into a history-like entry.
-*/
-static void
-Splice(name, Line)
-    register char	*name;
-    BUFFER		*Line;
-{
-    register char	*last;
-    register char	*p;
-    register char	*end;
-    register int	i;
-    register int	j;
-
-    /* Make sure it's a relative pathname. */
-    if (name[0] == '/'
-     && name[strlen(innconf->patharticles)] == '/'
-     && EQn(name, innconf->patharticles, strlen(innconf->patharticles)))
-	name += strlen(innconf->patharticles);
-
-    /* Turn foo/bar/baz into foo.bar/baz and get the length. */
-    for (last = NULL, p = name; *p; p++)
-	if (*p == '/') {
-	    last = p;
-	    *p = '.';
-	}
-    if (last)
-	*last = '/';
-    i = p - name;
-    if (i == 0 || i > Line->Used)
-	/* No file (shouldn't happen) or line too small to hold it. */
-	return;
-
-    /* Look for the string; allow it to appear multiple times. */
-    end = &Line->Data[Line->Used - i];
-    for (p = Line->Data; p <= end; )
-	if (*p == *name && EQn(p, name, i) && (p == end || ISWHITE(p[i])))
-	    for (j = i; --j >= 0; )
-		*p++ = ' ';
-	else
-	    p++;
-}
+#include "inn/history.h"
 
 
 /*
@@ -75,29 +19,20 @@ Splice(name, Line)
 static void
 Usage(void)
 {
-    fprintf(stderr, "Usage:  prunehistory [-f file] [input]\n");
-    exit(1);
+    fprintf(stderr, "Usage:  prunehistory [-p] [-f file] [input]\n");
 }
 
 
 int
-main(ac, av)
-    int			ac;
-    char		*av[];
+main(int ac, char *av[])
 {
-    static char		SEPS[] = " \t";
     char                *p;
-    FILE                *rfp;
-    int                 wfd;
-    int                 c;
     int                 i;
-    off_t		where;
     char		buff[BUFSIZ];
-    char		*files;
-    HASH		key;
     const char		*History;
-    BUFFER		Line;
     bool		Passing;
+    struct history	*history;
+    int			rc = 0;
 
     /* First thing, set up logging and our identity. */
     openlog("prunehistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);      
@@ -106,9 +41,6 @@ main(ac, av)
     if (ReadInnConf() < 0) exit(1);
 
     History = concatpath(innconf->pathdb, _PATH_HISTORY);
-    Line.Size = BUFSIZ;
-    Line.Data = NEW(char, Line.Size);
-    Line.Used = 0;
     Passing = FALSE;
 
     /* Parse JCL. */
@@ -126,34 +58,29 @@ main(ac, av)
 	}
     ac -= optind;
     av += optind;
-    if (ac)
+    if (ac) {
 	Usage();
+	rc = 1;
+	goto fail;
+    }
 
-    /* Open files. */
-    if (!dbzinit(History)) {
-	(void)fprintf(stderr, "Can't set up \"%s\" database, %s\n",
+    history = HISopen(History, innconf->hismethod, HIS_RDWR, NULL);
+    if (history == NULL) {
+	fprintf(stderr, "Can't set up \"%s\" database, %s\n",
 		History, strerror(errno));
-	exit(1);
-    }
-    if ((rfp = fopen(History, "r")) == NULL) {
-	(void)fprintf(stderr, "Can't open \"%s\" for reading, %s\n",
-		History, strerror(errno));
-	exit(1);
-    }
-    if ((wfd = open(History, O_WRONLY)) < 0) {
-	(void)fprintf(stderr, "Can't open \"%s\" for writing, %s\n",
-		History, strerror(errno));
-	(void)fclose(rfp);
-	exit(1);
+	rc = 1;
+	goto fail;
     }
 
     /* Loop over all input. */
     while (fgets(buff, sizeof buff, stdin) != NULL) {
+	time_t arrived, posted, expires;
+
 	if ((p = strchr(buff, '\n')) == NULL) {
 	    if (Passing)
-		(void)printf("%s\n", buff);
+		printf("%s\n", buff);
 	    else
-		(void)fprintf(stderr, "Line too long, ignored:\n\t%s\n", buff);
+		fprintf(stderr, "Line too long, ignored:\n\t%s\n", buff);
 	    continue;
 	}
 	*p = '\0';
@@ -161,114 +88,40 @@ main(ac, av)
 	/* Ignore blank and comment lines. */
 	if (buff[0] == '\0' || buff[0] == COMMENT_CHAR) {
 	    if (Passing)
-		(void)printf("%s\n", buff);
+		printf("%s\n", buff);
 	    continue;
 	}
 
 	if (buff[0] != '<' || (p = strchr(buff, '>')) == NULL) {
 	    if (Passing)
-		(void)printf("%s\n", buff);
+		printf("%s\n", buff);
 	    else
-		(void)fprintf(stderr,
+		fprintf(stderr,
 		    "Line doesn't start with a <Message-ID>, ignored:\n\t%s\n",
 		    buff);
 	    continue;
 	}
 	*++p = '\0';
-	files = p + 1;
 
-	/* Look up the article. */
-	key = HashMessageID(buff);
-	if (!dbzfetch(key, &where)) {
-	    (void)fprintf(stderr, "No entry for \"%s\", %s\n",
-		buff, strerror(errno));
-	    continue;
-	}
-
-	if (fseeko(rfp, where, SEEK_SET) == -1) {
-	    (void)fprintf(stderr, "Can't fseeko for \"%s\", %s\n",
-		    buff, strerror(errno));
-	    continue;
-	}
-
-	/* Move forward to the filename fields, and note where they start. */
-	for (i = 2; (c = getc(rfp)) != EOF && c != '\n'; )
-	    if (c == HIS_FIELDSEP && --i == 0)
-		break;
-	if (c != HIS_FIELDSEP) {
-	    (void)fprintf(stderr, "Bad text line for \"%s\", %s\n",
-		    buff, strerror(errno));
-	    continue;
-	}
-	where = ftello(rfp);
-
-	/* Read the the first chunk. */
-	i = fread(Line.Data, 1, BUFSIZ, rfp);
-	if (i <= 0) {
-	    (void)fprintf(stderr, "Bad read for \"%s\", %s\n",
-		    buff, strerror(errno));
-	    continue;
-	}
-	Line.Used = i;
-
-	/* No newline; get another chunk and try again. */
-	while ((p = memchr(Line.Data, '\n', Line.Used)) == NULL) {
-	    if (Line.Used + BUFSIZ >= Line.Size) {
-		Line.Size += BUFSIZ;
-		RENEW(Line.Data, char, Line.Size);
-	    }
-	    i = fread(&Line.Data[Line.Used], 1, BUFSIZ, rfp);
-	    if (i <= 0)
-		break;
-	    Line.Used += i;
-	    if (Line.Used >= BUFSIZ * 10) {
-		(void)fprintf(stderr, "Too long:  ");
-		break;
-	    }
-	}
-	if (p == NULL) {
-	    (void)fprintf(stderr, "Can't read line for \"%s\", %s\n",
-		    buff, strerror(errno));
-	    continue;
-	}
-	Line.Used = p - Line.Data;
-
-	/* Get the write pointer ready. */
-	if (lseek(wfd, where, SEEK_SET) == -1) {
-	    (void)fprintf(stderr, "Can't lseek back for \"%s\", %s\n",
-		    buff, strerror(errno));
-	    continue;
-	}
-
-	/* If Message-ID was only thing on line, zap the text line. */
-	if (*files == '\0') {
-	    memset(Line.Data, ' ', Line.Used);
-	    if (xwrite(wfd, Line.Data, Line.Used) < 0)
-		(void)fprintf(stderr, "Can't blank \"%s\", %s\n",
+	if (HISlookup(history, buff, &arrived, &posted, &expires, NULL)) {
+	    if (!HISreplace(history, buff, arrived, posted, expires, NULL)) {
+		fprintf(stderr, "Can't write new text for \"%s\", %s\n",
 			buff, strerror(errno));
-	    continue;
-	}
-
-	/* Prune out all the found filenames. */
-	if ((p = strtok(files, SEPS)) == NULL) {
-	    (void)fprintf(stderr, "Bad input, \"%s\"\n", files);
-	    continue;
-	}
-	do {
-	    Splice(p, &Line);
-	} while ((p = strtok((char *)NULL, SEPS)) != NULL);
-
-	/* Write out the new line. */
-	if (xwrite(wfd, Line.Data, Line.Used) < 0)
-	    (void)fprintf(stderr, "Can't write new text for \"%s\", %s\n",
+	    }
+	} else {
+	    fprintf(stderr, "No entry for \"%s\", %s\n",
 		    buff, strerror(errno));
+	}
     }
 
+ fail:
     /* Close files; we're done. */
-    if (close(wfd) < 0)
-	(void)fprintf(stderr, "Can't close \"%s\", %s\n",
+    if (!HISclose(history)) {
+	fprintf(stderr, "Can't close \"%s\", %s\n",
 		History, strerror(errno));
-    (void)fclose(rfp);
-    exit(0);
-    /* NOTREACHED */
+	rc = 1;
+    }
+
+    closelog();
+    return rc;
 }

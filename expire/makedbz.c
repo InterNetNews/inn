@@ -15,6 +15,11 @@
 #include "paths.h"
 #include "storage.h"
 
+/* FIXME: once we figure out how to integrate this stuff with the
+ * history API this external visibility of internal voodoo should
+ * go */
+#define HIS_FIELDSEP            '\t'
+
 char *TextFile = NULL;
 char *HistoryDir = NULL;
 char *HISTORY = NULL;
@@ -251,5 +256,6 @@ main(int argc, char **argv)
     }
 
     Rebuild(size, IgnoreOld, Overwrite);
+    closelog();
     exit(0);
 }

@@ -16,6 +16,7 @@
 #include "ov.h"
 #include "paths.h"
 #include "storage.h"
+#include "inn/history.h"
 
 
 /*
@@ -36,7 +37,7 @@ bool NukeBadArts;
 char *SchemaPath = NULL;
 char *ActivePath = NULL;
 char *HistoryPath = NULL;
-FILE *HistFile;
+struct history *History;
 FILE *Overchan;
 bool DoOverview;
 bool Fork;
@@ -154,9 +155,6 @@ GetMessageID(char *p)
     }
     memcpy(B.Data, p, length + 1);
 
-    for (p = B.Data; *p; p++)
-	if (*p == HIS_FIELDSEP)
-	    *p = HIS_BADCHAR;
     return B.Data;
 }
 
@@ -342,7 +340,7 @@ WriteOverLine(TOKEN *token, char *xrefs, int xrefslen,
 
     if (sorttype == OVNOSORT) {
 	if (Fork) {
-	    (void)fprintf(Overchan, "%s %d %d ", TokenToText(*token), arrived, expires);
+	    (void)fprintf(Overchan, "%s %ld %ld ", TokenToText(*token), (long)arrived, (long)expires);
 	    if (fwrite(overdata, 1, overlen, Overchan) != overlen) {
 		fprintf(stderr, "makehistory: writing overview failed\n");
 		exit(1);
@@ -398,11 +396,11 @@ WriteOverLine(TOKEN *token, char *xrefs, int xrefslen,
 	/* q points to start of ng name, r points to its end. */
 	strncpy(temp, q, r-q);
 	temp[r-q] = '\0';
-	fprintf(OverTmpFile, "%s\t%10lu\t%u\t%s\t", temp,
+	fprintf(OverTmpFile, "%s\t%10lu\t%lu\t%s\t", temp,
                 (unsigned long) arrived, (unsigned long) expires,
                 TokenToText(*token));
     } else
-	fprintf(OverTmpFile, "%10lu\t%u\t%s\t", (unsigned long) arrived,
+	fprintf(OverTmpFile, "%10lu\t%lu\t%s\t", (unsigned long) arrived,
                 (unsigned long) expires,
                 TokenToText(*token));
 
@@ -543,8 +541,6 @@ DoArt(ARTHANDLE *art)
     time_t			Arrived;
     time_t			Expires;
     time_t			Posted;
-    char			*hash;
-    HASH			key;
     char			overdata[BIG_BUFFER];
     char			bytes[BIG_BUFFER];
     struct artngnum		ann;
@@ -657,8 +653,6 @@ DoArt(ARTHANDLE *art)
      * check if msgid is in history if in update mode, or if article is 
      * newer than start time of makehistory. 
      */
-    key = HashMessageID(MessageID);
-    hash = HashToText(key);
 
     if (!Datep->HasHeader) {
 	Posted = Arrived;
@@ -702,20 +696,14 @@ DoArt(ARTHANDLE *art)
     }
 
     if (!NoHistory) {
+	bool r;
+
 	if (Expires > 0)
-	    i = fprintf(HistFile, "[%s]%c%lu%c%lu%c%lu%c%s\n",
-			hash, HIS_FIELDSEP,
-			(unsigned long)Arrived, HIS_SUBFIELDSEP,
-			(unsigned long)Expires,
-			HIS_SUBFIELDSEP, (unsigned long)Posted, HIS_FIELDSEP,
-			TokenToText(*art->token));
+	    r = HISwrite(History, MessageID,
+			 Arrived, Posted, Expires, art->token);
 	else
-	    i = fprintf(HistFile, "[%s]%c%lu%c%s%c%lu%c%s\n",
-			hash, HIS_FIELDSEP,
-			(unsigned long)Arrived, HIS_SUBFIELDSEP, HIS_NOEXP,
-			HIS_SUBFIELDSEP, (unsigned long)Posted, HIS_FIELDSEP,
-			TokenToText(*art->token));
-	if (i == EOF || ferror(HistFile)) {
+	    r = HISremember(History, MessageID, Arrived);
+	if (r == false) {
 	    (void)fprintf(stderr, "makehistory: Can't write history line, %s\n", strerror(errno));
 	    exit(1);
 	}
@@ -726,10 +714,11 @@ DoArt(ARTHANDLE *art)
 void
 Usage(void)
 {
-    fprintf(stderr, "Usage: makehistory [-b] [-f file] [-O] [-I] [-l overtmpsegsize [-a] [-x] [-T tmpdir]\n");
+    fprintf(stderr, "Usage: makehistory [-b] [-f file] [-O] [-I] [-l overtmpsegsize [-a] [-s size] [-x] [-T tmpdir]\n");
     fprintf(stderr, "\t-b -- delete bad articles from spool\n");
     fprintf(stderr, "\t-e -- read entire articles to compute proper Bytes headers\n");
     fprintf(stderr, "\t-f -- write history entries to file (default $pathdb/history)\n");
+    fprintf(stderr, "\t-s size -- size new history database for approximately size entries\n");
     fprintf(stderr, "\t-a -- open output history file in append mode\n");
     fprintf(stderr, "\t-O -- create overview entries for articles\n");
     fprintf(stderr, "\t-I -- do not create overview entries for articles below lowmark in active\n");
@@ -801,9 +790,9 @@ main(int argc, char **argv)
     int i, val;
     char *HistoryDir;
     char *p;
-    dbzoptions opt;
     char *buff;
-    
+    struct histopts histopts = {0};
+
     /* First thing, set up logging and our identity. */
     openlog("makehistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
 	
@@ -823,7 +812,7 @@ main(int argc, char **argv)
     NoHistory = FALSE;
     RetrMode = RETR_HEAD;
 
-    while ((i = getopt(argc, argv, "aebf:Il:OT:xF")) != EOF) {
+    while ((i = getopt(argc, argv, "aebf:Il:OT:xFs:")) != EOF) {
 	switch(i) {
 	case 'T':
 	    TmpDir = optarg;
@@ -854,6 +843,9 @@ main(int argc, char **argv)
 	    break;
 	case 'e':
 	    RetrMode = RETR_ALL;
+	    break;
+	case 's':
+	    histopts.npairs = atoi(optarg);
 	    break;
 	    
 	default:
@@ -925,10 +917,14 @@ main(int argc, char **argv)
 	exit(1);
     }
 
+    /* Initialise the history manager */
     if (!NoHistory) {
-	/* Open the history file */
-	HistFile = fopen(HistoryPath, AppendMode ? "a" : "w");
-	if (HistFile == NULL) {
+	int flags = HIS_RDWR | HIS_CREAT | HIS_INCORE;
+
+	if (!AppendMode)
+	    flags |= HIS_CREAT;
+	History = HISopen(HistoryPath, innconf->hismethod, flags, &histopts);
+	if (History == NULL) {
 	    fprintf(stderr, "makehistory: can't open %s: %s\n", HistoryPath, strerror(errno));
 	    exit(1);
 	}
@@ -956,7 +952,7 @@ main(int argc, char **argv)
 
     if (!NoHistory) {
 	/* close history file. */
-	if (fflush(HistFile) == EOF || ferror(HistFile) || fclose(HistFile) == EOF) {
+	if (!HISclose(History)) {
 	    (void)fprintf(stderr, "Can't close history file, %s\n",	strerror(errno));
 	    exit(1);
 	}
