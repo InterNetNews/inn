@@ -702,7 +702,7 @@ ARTHANDLE *timecaf_next(const ARTHANDLE *article, const RETRTYPE amount) {
     } else {
 	priv = *(PRIV_TIMECAF *)article->private;
 	DISPOSE(article->private);
-	DISPOSE(article);
+	DISPOSE((void *)article);
 	if (innconf->articlemmap) {
 #if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
 	    madvise(priv.mmapbase, priv.mmaplen, MADV_DONTNEED);
@@ -802,6 +802,12 @@ BOOL timecaf_ctl(PROBETYPE type, TOKEN *token, void *value) {
     default:
 	return FALSE;
     }
+}
+
+BOOL timecaf_flushcacheddata(FLUSHTYPE type) {
+    if (type == SM_ALL || type == SM_CANCELEDART)
+	DoCancels();
+    return TRUE;
 }
 
 void timecaf_shutdown(void) {
