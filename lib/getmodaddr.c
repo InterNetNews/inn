@@ -33,7 +33,7 @@ void GMAclose(void)
 /*
 **  Internal library routine.
 */
-FILE *GMA_listopen(char *pathname, FILE *FromServer, FILE *ToServer, char *request)
+FILE *GMA_listopen(char *pathname, FILE *FromServer, FILE *ToServer)
 {
     char	buff[BUFSIZ];
     char	*p;
@@ -85,7 +85,7 @@ FILE *GMA_listopen(char *pathname, FILE *FromServer, FILE *ToServer, char *reque
 /*
 **  Read the moderators file, looking for a moderator.
 */
-char *GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group)
+char *GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group, char *moderatormailer)
 {
     static char		address[SMBUF];
     char	        *p;
@@ -149,7 +149,7 @@ char *GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group)
     }
 
     /* If we don't have an address, see if the config file has a default. */
-    if ((save = innconf->moderatormailer) == NULL)
+    if ((save = moderatormailer) == NULL)
 	return NULL;
 
     for (p = name; *p; p++)

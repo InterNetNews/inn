@@ -116,7 +116,7 @@ char *GetConfigValue(char *value)
 
     /* Some values have defaults if not in the file. */
     if (EQ(value, _CONF_FROMHOST) || EQ(value, _CONF_PATHHOST))
-	return GetFQDN();
+	return GetFQDN(innconf->domain);
     return NULL;
 }
 
@@ -317,15 +317,15 @@ int CheckInnConf()
     static char *tmpdir = NULL;
     static unsigned int dirlen = 0;
 
-    if (GetFQDN() == NULL) {
+    if (GetFQDN(innconf->domain) == NULL) {
 	syslog(L_FATAL, "Hostname does not resolve or 'domain' in inn.conf is missing");
 	(void)fprintf(stderr, "Hostname does not resolve or 'domain' in inn.conf is missing");
 	return(-1);
     }
     if (innconf->fromhost == NULL) {
-	innconf->fromhost = COPY(GetFQDN());
+	innconf->fromhost = COPY(GetFQDN(innconf->domain));
     }
-    if (innconf->pathhost == NULL && ((innconf->pathhost = COPY(GetFQDN())) == NULL)) {
+    if (innconf->pathhost == NULL && ((innconf->pathhost = COPY(GetFQDN(innconf->domain))) == NULL)) {
 	syslog(L_FATAL, "Must set 'pathhost' in inn.conf");
 	(void)fprintf(stderr, "Must set 'pathhost' in inn.conf");
 	return(-1);

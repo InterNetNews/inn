@@ -20,7 +20,7 @@ static char *CONFgetword(CONFFILE *F)
   if (!F->buf || !F->buf[0]) {
     if (feof (F->f)) return (NULL);
     if (!F->buf) {
-      F->sbuf = SMBUF;
+      F->sbuf = BIG_BUFFER;
       F->buf = NEW(char, F->sbuf);
     }
     fgets(F->buf, F->sbuf, F->f);

@@ -13,7 +13,7 @@
 /*
 **  Get the fully-qualified domain name for this host.
 */
-char *GetFQDN(void)
+char *GetFQDN(char *domain)
 {
     static char		buff[SMBUF];
     struct hostent	*hp;
@@ -73,7 +73,7 @@ char *GetFQDN(void)
 	    }
 
     /* Give up:  Get the domain config param and append it. */
-    if ((p = innconf->domain) == NULL || *p == '\0')
+    if ((p = domain) == NULL || *p == '\0')
 	return NULL;
     if (strlen(buff) + 1 + strlen(p) > sizeof buff - 1)
 	/* Doesn't fit. */

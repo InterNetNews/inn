@@ -15,7 +15,7 @@
 #define OFFSET	673416000L
 
 char *
-GenerateMessageID(void)
+GenerateMessageID(char *domain)
 {
     static char		buff[SMBUF];
     static int		count;
@@ -28,7 +28,7 @@ GenerateMessageID(void)
 	return NULL;
     Radix32(Now.time - OFFSET, sec32);
     Radix32(getpid(), pid32);
-    if ((p = GetFQDN()) == NULL)
+    if ((p = GetFQDN(domain)) == NULL)
 	return NULL;
     sprintf(buff, "<%s$%s$%d@%s>", sec32, pid32, ++count, p);
     return buff;
