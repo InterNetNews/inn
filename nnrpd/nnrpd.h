@@ -209,9 +209,6 @@ EXTERN int	VirtualPathlen;
 EXTERN struct history *History;
 EXTERN struct line NNTPline;
 
-#if	NNRP_LOADLIMIT > 0
-extern int		GetLoadAverage(void);
-#endif	/* NNRP_LOADLIMIT > 0 */
 extern const char	*ARTpost(char *article, char *idbuff, bool ihave,
 				 bool *permanent);
 extern void		ARTclose(void);

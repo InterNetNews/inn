@@ -88,11 +88,6 @@
 /* Length of listen queue for innd. */
 #define MAXLISTEN               25
 
-/* nnrpd refuses reader connections if the system load is higher than this.
-   Set it to -1 to disable that check.  Only supported on systems with the
-   getloadavg() function. */
-#define NNRP_LOADLIMIT          16
-
 /* The standard NNTP port. */
 #define NNTP_PORT               119
 
