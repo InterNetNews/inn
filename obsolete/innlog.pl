@@ -638,6 +638,7 @@ while ($line = <>)
 	    $innfeed_connect{$host}++;
 	    next;
 	}
+	next if ($Fld[7] eq "hostChkCxn");
 	if ($Fld[7] eq "checkpoint") {
 	    next if $colon;
 	    $cp_innfeed_seconds{$host} = $Fld[9];
