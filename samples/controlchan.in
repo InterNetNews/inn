@@ -1,9 +1,7 @@
 #!@_PATH_PERL@
 ###########################################################################
 # controlchan - read a feed, sniff out control messages, and send them to
-# the appropriate script, meow a bit as needed.
-#
-# Version 0.2.3, 19-AUG-1998
+# the appropriate script.
 #
 # Give this program its own newsfeed.  Make sure that you've created the
 # newsgroup control.cancel so that you don't have to scan through cancels,
@@ -28,7 +26,7 @@ my $lastctl = 0;
 
 my (@headers, %hdrcount, %hdrval, $msgid, $token, $progname, @progparams,
     $pathhost, @ctllist, $action, $logname, $act_log, $errmsg, @ctlprogs,
-    $subfind, $SM);
+    $subfind, $SM, $keyowner, $pgpresult);
 
 # If we have $newsbin/sm, this must be an INN 2.x installation.
 # Otherwise, we'll plop in the cat command to fake it on older
@@ -98,8 +96,8 @@ if (1) {
     # check for duplicate controls/supersedes; these are goof-ups or
     # denial-of-service attacks, don't process.
     if ($hdrcount{control} > 1) {
-        logger($token, "controlchan",
-               "Multiple control headers in in article $msgid");
+           print (scalar localtime,
+                 ": Multiple control headers in in article $msgid");
         next CHANITEM;
     }
 
@@ -171,18 +169,10 @@ if (1) {
                 $errmsg .= "y ";
             }
         }
-        $errmsg .= $hdrval{Sender} . " ";
+        $errmsg .= $hdrval{Sender} . " (pgpverify failed)";
 
-        if ($action eq "_pgpnone") {
-            $errmsg .= "(no PGP signature)"
-        } elsif ($action eq "_pgpbad") {
-            $errmsg .= "(bad PGP signature)"
-        } elsif ($action eq "_pgpunknown") {
-            $errmsg .= "(unknown PGP signature)"
-        } else {
-            $errmsg .= "(pgpverify error)"
-        }
-        logger($token, $logname, $errmsg);
+        print scalar localtime, ": $errmsg in $msgid\n";
+        #logger($token, $logname, $errmsg);
 	next CHANITEM;
     }
 
@@ -283,22 +273,16 @@ sub ctlperm {
         }
     }
 
-    if ($action =~ /^verify-/) {
+    if ($action =~ /^verify-(.+)/) {
         #print "PGP\n";
-        $command = "$SM $token | $inn::newsbin/pgpverify >/dev/null";
-        $result = system ($command) / 256;
-
-        if ($result == 0) {
+	$keyowner = $1;
+	$keyowner =~ s/=.+//;
+	open(PGPCHECK, "$SM $token|$inn::newsbin/pgpverify|");
+	$pgpresult = <PGPCHECK>;
+	close PGPCHECK;
+	chomp $pgpresult;
+        if ($keyowner eq $pgpresult) {
             $action =~ s/^[^=]+/doit/;
-        }
-        elsif ($result == 1) {
-            $action =~ s/^[^=]+/_pgpnone/;
-        }
-        elsif ($result == 2) {
-            $action =~ s/^[^=]+/_pgpunknown/;
-        }
-        elsif ($result == 3) {
-            $action =~ s/^[^=]+/_pgpbad/;
         }
         else {
             $action =~ s/^[^=]+/_pgpfail/;
