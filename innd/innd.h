@@ -402,6 +402,7 @@ EXTERN int              Overfdcount;
 EXTERN int		SeqNum;
 EXTERN STRING		path;
 EXTERN BUFFER		Path;
+EXTERN BUFFER		Pathalias;
 EXTERN char		*ModeReason;	/* NNTP reject message		*/
 EXTERN char		*NNRPReason;	/* NNRP reject message		*/
 EXTERN char		*Reservation;	/* Reserved lock message	*/

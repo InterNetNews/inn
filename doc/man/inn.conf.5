@@ -288,19 +288,24 @@ for the on value of this constant to have any meaning.
 .I readertrack
 This is a boolean value. If on, the article tracking system is
 enabled for client reading/posting. See the
-.I nnrpd.track (5)
+.IR nnrpd.track (5)
 man page for details. The default is ``no''.
 .TP
 .I strippostcc
 This is a boolean value. If on, To:, Cc: and Bcc: lines are stripped from
 local posts through
-.I nnrpd (8).
+.IR nnrpd (8).
 Default is ``no''. This is aimed mainly at stopping abuse of posting
 to moderated newsgroups, whereby those headers are added by the client
 and honoured by the mailer when mailed to the moderator.
 .PP
 The following parameters are used only by
 .I innd.
+.TP
+.I pathalias
+This specifies the name prepended before pathhost, if it is not appeared
+in the Path header line.
+If this is not specified, nothing is prepended before pathhost.
 .TP
 .I hiscachesize
 If this is set to a non-zero number then history file lookups are cached.
@@ -453,12 +458,13 @@ The following flags are only used by the startup script ``rc.news''.
 .TP
 .I innflags
 The flags to pass to INN on startup. See the
-.I innd (8)
+.IR innd (8)
 man page for details. The default flags are ``-i0''.
 .TP
 .I doinnwatch
 If set to ``no'' then do not start
-.I innwatch (8). Default is to start it.
+.IR innwatch (8).
+Default is to start it.
 .PP
 Note that this file can be identical on all machines in an organization.
 .SH EXAMPLE

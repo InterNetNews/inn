@@ -204,6 +204,12 @@ STATIC OVERCONFIG OVERreadconfig(BOOL New)
 ** setup overview environment (directory etc.)
 */
 BOOL OVERsetup(OVERSETUP type, void *value) {
+    /* if innconf isn't already read in, do so. */
+    if (innconf == NULL) {
+	if (ReadInnConf(_PATH_CONFIG) < 0) {
+	    return FALSE;
+	}
+    }
     if (Initialized)
 	return FALSE;
     switch (type) {
@@ -247,6 +253,12 @@ BOOL OVERsetup(OVERSETUP type, void *value) {
 BOOL OVERinit(void) {
     OVERCONFIG		status;
 
+    /* if innconf isn't already read in, do so. */
+    if (innconf == NULL) {
+	if (ReadInnConf(_PATH_CONFIG) < 0) {
+	    return FALSE;
+	}
+    }
     if (Initialized)
 	return TRUE;
 

@@ -390,11 +390,46 @@ PERMinfile(hp, ip, user, pass, accesslist, accessfile)
 	    continue;
 	}
 
-	if (hp)
+	if (hp) {
 	    /* Got an address; try to match either the IP address or as
 	     * a text hostname. */
-	    if (!(ip && wildmat(ip, fields[0])) && !wildmat(hp, fields[0]))
+	    int ipmatch = FALSE;
+	    int hostmatch = FALSE;
+	    int netmatch = FALSE;
+
+	    /* compare IP number and first field */
+	    if (ip && wildmat(ip, fields[0]))
+		ipmatch = TRUE;
+
+	    /* compare hostname and first field */
+	    if (wildmat(hp, fields[0]))
+		hostmatch = TRUE;
+
+	    /* try a netmask match */
+	    if (ip && (p = strchr(fields[0], '/')) != (char *)NULL) {
+		int bits, c;
+		struct in_addr ia, net;
+		unsigned int mask;
+
+		*p = '\0';
+		ia.s_addr = inet_addr(ip);
+		net.s_addr = inet_addr(fields[0]);
+		if (ia.s_addr != (unsigned int)INADDR_NONE &&
+		    net.s_addr != (unsigned int)INADDR_NONE) {
+		    mask = inet_addr(p+1);
+		    if (strchr(p+1, '.') == (char *)NULL) {
+		    /* if (mask == (unsigned int)INADDR_NONE) { */
+			for (bits = c = 0; c < mask && c < 32; c++)
+			    bits |= (1 << (31 - c));
+			mask = htonl(bits);
+		    }
+		    if ((ia.s_addr & mask) == (net.s_addr & mask))
+			netmatch = TRUE;
+		}
+	    }
+	    if (!ipmatch && !hostmatch && !netmatch)
 		continue;
+	}
 
 	/* If the PERM field starts with '/', then we go to another file */
 	if (*fields[1] == '/') {

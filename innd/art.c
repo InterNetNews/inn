@@ -56,6 +56,7 @@ STATIC ARTOVERFIELD		*ARTfields;
 STATIC char		ARTctl[] = "control";
 STATIC char		ARTjnk[] = "junk";
 STATIC char		*ARTpathme;
+BOOL			AddAlias;
 
 /*
 **  Different types of rejected articles.
@@ -433,7 +434,7 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
 	return result;
     }
 
-    size = Article->Used + 6 + ARTheaders[_xref].Length + 4 + 3 + Path.Used + 64 + 1;
+    size = Article->Used + 6 + ARTheaders[_xref].Length + 4 + 3 + Path.Used + Pathalias.Used + 64 + 1;
     p =  artbuff = NEW(char, size);
     
     if (strncmp(Path.Data, path, Path.Used) != 0) {
@@ -441,11 +442,26 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
 	p += path - Article->Data;
 	memcpy(p, Path.Data, Path.Used);
 	p += Path.Used;
+	if (AddAlias) {
+	    memcpy(p, Pathalias.Data, Pathalias.Used);
+	    p += Pathalias.Used;
+	}
 	memcpy(p, path, Data->Body - path - 1);
 	p += Data->Body - path - 1;
     } else {
-	memcpy(p, Article->Data, Data->Body - Article->Data - 1);
-	p += Data->Body - Article->Data - 1;
+	if (AddAlias) {
+	    memcpy(p, Article->Data, path - Article->Data);
+	    p += path - Article->Data;
+	    memcpy(p, Path.Data, Path.Used);
+	    p += Path.Used;
+	    memcpy(p, Pathalias.Data, Pathalias.Used);
+	    p += Pathalias.Used;
+	    memcpy(p, path + Path.Used, Data->Body - path - Path.Used - 1);
+	    p += Data->Body - path - Path.Used - 1;
+	} else {
+	    memcpy(p, Article->Data, Data->Body - Article->Data - 1);
+	    p += Data->Body - Article->Data - 1;
+	}
     }
 
     if (ARTheaders[_lines].Found == 0) {
@@ -524,7 +540,7 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
 **  shown below separated by pipe signs.  The items in square brackets are
 **  "inserted" by this routine.
 **	|headers...
-**	Path: |[Path.Data]|rest of path...
+**	Path: |[Path.Data]/[Pathalias.Data]|rest of path...
 **	headers...
 **	|[Lines header, if needed]|
 **	|[Xref header]|
@@ -540,7 +556,7 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
     IOVEC	        *vp;
     long	        size;
     char	        *p;
-    IOVEC		iov[9];
+    IOVEC		iov[10];
     IOVEC		*end;
     char		bytesbuff[SMBUF];
     int			i;
@@ -572,11 +588,31 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
         vp->iov_base = Path.Data;
         vp->iov_len  = Path.Used;
         size += (vp++)->iov_len;
+	if (AddAlias) {
+	    vp->iov_base = Pathalias.Data;
+	    vp->iov_len  = Pathalias.Used;
+	    size += (vp++)->iov_len;
+	}
+	vp->iov_base = p;
+	vp->iov_len  = Data->Body - p - (innconf->wireformat == 1);
+	size += (vp++)->iov_len;
+    } else {
+	if (AddAlias) {
+            vp->iov_base = Path.Data;
+            vp->iov_len  = Path.Used;
+            size += (vp++)->iov_len;
+	    vp->iov_base = Pathalias.Data;
+	    vp->iov_len  = Pathalias.Used;
+	    size += (vp++)->iov_len;
+	    vp->iov_base = p + Path.Used;
+	    vp->iov_len  = Data->Body - p - Path.Used - (innconf->wireformat == 1);
+	    size += (vp++)->iov_len;
+	} else {
+	    vp->iov_base = p;
+	    vp->iov_len  = Data->Body - p - (innconf->wireformat == 1);
+	    size += (vp++)->iov_len;
+	}
     }
-        
-    vp->iov_base = p;
-    vp->iov_len  = Data->Body - p - (innconf->wireformat == 1);
-    size += (vp++)->iov_len;
 
     if (NeedPath) {
 	Data->Path = p;
@@ -1770,6 +1806,9 @@ STRING ARTpost(CHANNEL *cp)
     if (*Data.Replyto == '\0')
 	Data.Replyto = HDR(_from);
     hops = ARTparsepath(HDR(_path), &hopcount);
+    AddAlias = FALSE;
+    if (Pathalias.Data != NULL && !ListHas(hops, innconf->pathalias))
+	AddAlias = TRUE;
     if (innconf->logipaddr) {
 	Data.Feedsite = RChostname(cp);
 	if (Data.Feedsite == NULL)

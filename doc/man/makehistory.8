@@ -369,8 +369,12 @@ f\&i
 if makehistory \-r \-s `wc \-l <history` \-f history.n; then
     mv history.n history
     mv history.n.dir history.dir
+# if <DBZ_TAGGED_HASH in config.data> == DO
+    mv history.n.pag history.pag
+# else DONT
     mv history.n.index history.index
     mv history.n.hash history.hash
+# fi
 f\&i
 ctlinnd go ''
 .fi

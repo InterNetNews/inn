@@ -735,6 +735,14 @@ int main(int ac, char *av[])
     Path.Used = strlen(innconf->pathhost) + 1;
     Path.Data = NEW(char, Path.Used + 1);
     (void)sprintf(Path.Data, "%s!", innconf->pathhost);
+    if (innconf->pathalias == NULL) {
+	Pathalias.Used = 0;
+	Pathalias.Data = NULL;
+    } else {
+	Pathalias.Used = strlen(innconf->pathalias) + 1;
+	Pathalias.Data = NEW(char, Pathalias.Used + 1);
+	(void)sprintf(Pathalias.Data, "%s!", innconf->pathalias);
+    }
 
 #if	!defined(__CENTERLINE__)
     /* Set standard input to /dev/null. */

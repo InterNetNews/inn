@@ -134,6 +134,7 @@ if ((p = getenv(_ENV_FROMHOST)) != NULL) { innconf->fromhost = COPY(p); }
 /* END_AUTO_INSERTED_SECTION from ../include/libinn.h ||DEFAULT */
     innconf->server = NULL;
     innconf->pathhost = NULL;
+    innconf->pathalias = NULL;
     innconf->organization = NULL;
     innconf->moderatormailer = NULL;
     innconf->domain = NULL;
@@ -208,6 +209,7 @@ if (innconf->fromhost != NULL) DISPOSE(innconf->fromhost);
 /* END_AUTO_INSERTED_SECTION from ../include/libinn.h ||CLEAR */
     if (innconf->server != NULL) DISPOSE(innconf->server);
     if (innconf->pathhost != NULL) DISPOSE(innconf->pathhost);
+    if (innconf->pathalias != NULL) DISPOSE(innconf->pathalias);
     if (innconf->organization != NULL) DISPOSE(innconf->organization);
     if (innconf->moderatormailer != NULL) DISPOSE(innconf->moderatormailer);
     if (innconf->domain != NULL) DISPOSE(innconf->domain);
@@ -348,6 +350,9 @@ if (innconf->fromhost == NULL) { innconf->fromhost = COPY(p); }
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHHOST)) {
 		innconf->pathhost = COPY(p);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_PATHALIAS)) {
+		innconf->pathalias = COPY(p);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ORGANIZATION)) {
 		innconf->organization = COPY(p);

@@ -73,6 +73,7 @@ struct conf_vars {
 
 	char *server;		/* NNTP server to post to */
 	char *pathhost;		/* Host for the Path line */
+	char *pathalias;	/* Prepended Host for the Path line */
 	char *organization;	/* Data for the Organization line */
 	char *moderatormailer;	/* Default host to mail moderated articles */
 	char *domain;		/* Default domain of local host */

@@ -31,6 +31,8 @@ The first field is a
 .IR wildmat (3)-style
 pattern specifying the names or Internet address of a set of
 .IR hosts .
+Internet address style can be specified with slash ``/'' followed by
+netmask (e.g. ``/25'' or ``255.255.255.128'').
 Before a match is checked, the client's hostname (or its Internet
 address if
 .IR gethostbyaddr (3)

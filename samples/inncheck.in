@@ -283,6 +283,7 @@ hosts_nntp
     'moderatormailer',		0,
     'organization',		0,
     'pathhost',			0,
+    'pathalias',		0,
     'server',			0,
     'mime-version',		0,
     'mime-contenttype',		0,
@@ -376,6 +377,9 @@ inn_conf
 	} elsif ( $k eq "pathhost" ) {
 	    print "$file:$line: pathhost has a ! in it\n"
 		if $v =~ /!/;
+	} elsif ( $k eq "pathalias" ) {
+	    print "$file:$line: pathalias has a ! in it\n"
+		if $v =~ /!/;
 	} elsif ( $k eq "server" ) {
 	    print "$file:$line: server (`$v') isn't local hostname\n"
 		if $pedantic && $fqdn !~ /^$v/;
@@ -436,7 +440,7 @@ moderators
 %newsfeeds'flags = (
     '<',	'^\d+$',
     '>',	'^\d+$',
-    'A',	'^[dp]+$',
+    'A',	'^[dpc]+$',
     'B',	'^\d+(/\d+)?$',
     'F',	'^.+$',
     'G',	'^\d+$',
@@ -445,7 +449,7 @@ moderators
     'N',	'^[mu]$',
     'S',	'^\d+$',
     'T',	'^[cflmpx]$',
-    'W',	'^[*nfgbmstDNHOR]*$',
+    'W',	'^[bfghmnpst*DHNPOR]*$',
 );
 
 sub

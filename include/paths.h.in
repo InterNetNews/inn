@@ -115,6 +115,8 @@
 #define _CONF_SERVER		"server"
     /* Host for the Path line; default is FQDN. */
 #define _CONF_PATHHOST		"pathhost"
+    /* Alias to add to the Path if not already present */
+#define _CONF_PATHALIAS		"pathalias"
     /* Data for the Organization line if getenv(_ENV_ORGANIZATION) is NULL. */
 #define _CONF_ORGANIZATION	"organization"
     /* Default host to mail moderated articles to. */
