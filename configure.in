@@ -428,6 +428,14 @@ else
 fi
 AC_SUBST(ac_cv_subst_int32_t)
 
+# Checkd for long long
+AC_CHECK_SIZEOF(long long)
+echo "							$ac_cv_sizeof_long_long"
+if test $ac_cv_sizeof_long_long = 8; then
+	AC_DEFINE(HAVE_LONG_LONG)
+fi
+
+
 dnl Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
 AC_FUNC_MEMCMP
