@@ -138,6 +138,9 @@ Brian Kantor
 Kenichi OKADA
         Added SSL and SASL support for nnrpd.
 
+Ilya Etingof
+        Added Python authentication support for nnrpd.
+
 Also:
 
 Dave Barr:
