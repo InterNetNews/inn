@@ -60,7 +60,6 @@ $eval .= "  }\n";
 $eval .= "}\n";
 
 &ctlinnd("pause $pausemsg");
-&ctlinnd("flush ''");
 
 open(OLDACT, "< $oldact") || die "$0: open $oldact: $!\n";
 open(NEWACT, "> $newact") || die "$0: open $newact: $!\n";
