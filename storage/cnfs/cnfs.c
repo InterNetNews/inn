@@ -344,8 +344,15 @@ static bool CNFSparse_part_line(char *l) {
   memset(cycbuff->path, '\0', CNFSPASIZ);
   strlcpy(cycbuff->path, l, CNFSPASIZ);
   if (stat(cycbuff->path, &sb) < 0) {
-    syslog(L_ERROR, "%s: file '%s' : %m, ignoring '%s' cycbuff",
-	   LocalLogName, cycbuff->path, cycbuff->name);
+    if (errno == EOVERFLOW) {
+      syslog(L_ERROR, "%s: file '%s' : %s, ignoring '%s' cycbuff",
+	     LocalLogName, cycbuff->path,
+	     "Overflow (probably >2GB without largefile support)",
+	     cycbuff->name);
+    } else {
+      syslog(L_ERROR, "%s: file '%s' : %m, ignoring '%s' cycbuff",
+	     LocalLogName, cycbuff->path, cycbuff->name);
+    }
     free(cycbuff);
     return false;
   }
