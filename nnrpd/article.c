@@ -92,6 +92,7 @@ STATIC int		OVERlen;		/* Length of the overview file */
 STATIC FILE		*OVERfp = NULL;		/* Open overview file	*/
 STATIC ARTNUM		OVERarticle;		/* Current article	*/
 STATIC int		OVERopens;		/* Number of opens done	*/
+STATIC char *		OVERmempos;		/* Current position in mmaped overview file */
 
 STATIC struct iovec	iov[IOV_MAX];
 STATIC int		queued_iov = 0;
@@ -1133,6 +1134,8 @@ STATIC BOOL OVERopen(void)
 		    close(fd);
 		    return FALSE;
 		}
+		else
+			OVERmempos = OVERmem;
 	    } else {
 		OVERmem = NULL;
 	    }
@@ -1199,7 +1202,8 @@ STATIC char *OVERfind(ARTNUM artnum, int *linelen)
 	if (i < 0 || ARTnumbers[i].ArtNum != artnum)
 	    return NULL;
 	if (OVERmem) {
-	    for (nextline = OVERmem; nextline < OVERmem + OVERlen; nextline++) {
+	    for (nextline = (OVERarticle > artnum)? OVERmem:OVERmempos; nextline < OVERmem + OVERlen; nextline++) {
+		OVERmempos=nextline;
 		OVERarticle = atol(nextline);
 		if (!(OVERarticle < artnum)) {
 		    OVERline = nextline;
