@@ -51,59 +51,6 @@
 #define STATEDIR	"/var"
 
 /*
- * Unix pwcheck daemon-authenticated login (shadow password)
- */
-
-int
-login_plaintext(user, pass)
-const char *user;
-const char *pass;
-{
-    int s;
-    struct sockaddr_un srvaddr;
-    int r;
-    struct iovec iov[10];
-    static char response[1024];
-    int start, n;
-
-    s = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (s == -1) return errno;
-
-    memset((char *)&srvaddr, 0, sizeof(srvaddr));
-    srvaddr.sun_family = AF_UNIX;
-    strcpy(srvaddr.sun_path, STATEDIR);
-    strcat(srvaddr.sun_path, "/pwcheck/pwcheck");
-    r = connect(s, (struct sockaddr *)&srvaddr, sizeof(srvaddr));
-    if (r == -1) {
-	syslog(L_NOTICE,
-            "connect failed to pwcheck daemon - check permissions");
-	return 1;
-    }
-
-    iov[0].iov_base = (char *)user;
-    iov[0].iov_len = strlen(user)+1;
-    iov[1].iov_base = (char *)pass;
-    iov[1].iov_len = strlen(pass)+1;
-
-    retry_writev(s, iov, 2);
-
-    start = 0;
-    while (start < sizeof(response) - 1) {
-	n = read(s, response+start, sizeof(response) - 1 - start);
-	if (n < 1) break;
-	start += n;
-    }
-
-    close(s);
-
-    if (start > 1 && !strncmp(response, "OK", 2)) return 0;
-
-    response[start] = '\0';
-    return 1;
-}
-
-
-/*
  * Keep calling the writev() system call with 'fd', 'iov', and 'iovcnt'
  * until all the data is written out or an error occurs.
  */
@@ -183,6 +130,59 @@ unsigned nbyte;
 	nbyte -= n;
     }
 }
+
+/*
+ * Unix pwcheck daemon-authenticated login (shadow password)
+ */
+
+int
+login_plaintext(user, pass)
+const char *user;
+const char *pass;
+{
+    int s;
+    struct sockaddr_un srvaddr;
+    int r;
+    struct iovec iov[10];
+    static char response[1024];
+    int start, n;
+
+    s = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (s == -1) return errno;
+
+    memset((char *)&srvaddr, 0, sizeof(srvaddr));
+    srvaddr.sun_family = AF_UNIX;
+    strcpy(srvaddr.sun_path, STATEDIR);
+    strcat(srvaddr.sun_path, "/pwcheck/pwcheck");
+    r = connect(s, (struct sockaddr *)&srvaddr, sizeof(srvaddr));
+    if (r == -1) {
+	syslog(L_NOTICE,
+            "connect failed to pwcheck daemon - check permissions");
+	return 1;
+    }
+
+    iov[0].iov_base = (char *)user;
+    iov[0].iov_len = strlen(user)+1;
+    iov[1].iov_base = (char *)pass;
+    iov[1].iov_len = strlen(pass)+1;
+
+    retry_writev(s, iov, 2);
+
+    start = 0;
+    while (start < sizeof(response) - 1) {
+	n = read(s, response+start, sizeof(response) - 1 - start);
+	if (n < 1) break;
+	start += n;
+    }
+
+    close(s);
+
+    if (start > 1 && !strncmp(response, "OK", 2)) return 0;
+
+    response[start] = '\0';
+    return 1;
+}
+
 
 int main()
 {
