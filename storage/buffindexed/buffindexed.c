@@ -2151,7 +2151,7 @@ void buffindexed_close(void) {
   ovbufftab = NULL;
 }
 
-#ifdef DEBUG
+#ifdef BUFF_DEBUG
 static int countgdb(void) {
   int			i, count = 0;
   GROUPDATABLOCK	*gdb;
@@ -2272,4 +2272,4 @@ main(int argc, char **argv) {
     }
   }
 }
-#endif /* DEBUG */
+#endif /* BUFF_DEBUG */
