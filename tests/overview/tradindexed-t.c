@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 
 #include "inn/hashtab.h"
+#include "inn/vector.h"
 #include "libinn.h"
 #include "libtest.h"
 #include "ov.h"
@@ -295,13 +296,85 @@ overview_verify_data(const char *data)
     return status;
 }
 
+/* Try an overview search and verify that all of the data is returned in the
+   right order.  The first group mentioned in the provided data file will be
+   the group the search is done in, and the search will cover all articles
+   from the second article to the second-to-the-last article in the group.
+   Returns true if everything checks out, false otherwise. */
+static bool
+overview_verify_search(const char *data)
+{
+    unsigned long artnum, overnum, i;
+    unsigned long start = 0;
+    unsigned long end = 0;
+    unsigned long last = 0;
+    struct vector *expected;
+    char *line, *group;
+    FILE *overview;
+    char buffer[4096];
+    int length;
+    TOKEN token;
+    void *search;
+    time_t arrived;
+    bool status = true;
+
+    overview = fopen(data, "r");
+    if (overview == NULL)
+        sysdie("Cannot open %s for reading", data);
+    expected = vector_new();
+    if (fgets(buffer, sizeof(buffer), overview) == NULL)
+        die("Unexpected end of file in %s", data);
+    overview_data_parse(buffer, &artnum);
+    group = xstrdup(buffer);
+    while (fgets(buffer, sizeof(buffer), overview) != NULL) {
+        line = overview_data_parse(buffer, &artnum);
+        if (strcmp(group, buffer) != 0)
+            continue;
+        vector_add(expected, line);
+        if (start == 0)
+            start = artnum;
+        end = last;
+        last = artnum;
+    }
+    search = tradindexed_opensearch(group, start, end);
+    if (search == NULL) {
+        warn("Unable to open search for %s:%lu", buffer, artnum);
+        status = false;
+    }
+    i = 0;
+    while (tradindexed_search(search, &overnum, &line, &length, &token,
+                              &arrived)) {
+        if (!check_data(group, overnum, expected->strings[i], line, length,
+                        token))
+            status = false;
+        if ((unsigned long) arrived != overnum * 10) {
+            warn("Arrival time wrong for %s:%lu: %lu != %lu", group, overnum,
+                 (unsigned long) arrived, overnum * 10);
+            status = false;
+        }
+        i++;
+    }
+    tradindexed_closesearch(search);
+    if (overnum != end) {
+        warn("End of search in %s wrong: %lu != %lu", group, overnum, end);
+        status = false;
+    }
+    if (i != expected->count - 1) {
+        warn("Didn't see all expected entries in %s", group);
+        status = false;
+    }
+    free(group);
+    vector_free(expected);
+    return status;
+}
+
 int
 main(void)
 {
     struct hash *groups;
     bool status;
 
-    puts("10");
+    puts("12");
 
     if (!overview_init())
         die("Opening the overview database failed, cannot continue");
@@ -313,23 +386,25 @@ main(void)
     hash_traverse(groups, overview_verify_groups, &status);
     ok(3, status);
     ok(4, overview_verify_data("data/basic"));
+    ok(5, overview_verify_search("data/basic"));
     tradindexed_close();
     system("/bin/rm -r tdx-tmp");
-    ok(5, true);
+    ok(6, true);
 
     if (!overview_init())
         die("Opening the overview database failed, cannot continue");
-    ok(6, true);
+    ok(7, true);
 
     groups = overview_load("data/reversed");
-    ok(7, true);
+    ok(8, true);
     status = true;
     hash_traverse(groups, overview_verify_groups, &status);
-    ok(8, status);
-    ok(9, overview_verify_data("data/basic"));
+    ok(9, status);
+    ok(10, overview_verify_data("data/basic"));
+    ok(11, overview_verify_search("data/basic"));
     tradindexed_close();
     system("/bin/rm -r tdx-tmp");
-    ok(10, true);
+    ok(12, true);
 
     return 0;
 }
