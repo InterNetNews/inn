@@ -8,13 +8,14 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include "inn/innconf.h"
 #include "innd.h"
 
 #if     defined(DO_TCL)
 
 Tcl_Interp       *TCLInterpreter;
 bool             TCLFilterActive;
-BUFFER           *TCLCurrArticle;
+struct buffer    *TCLCurrArticle;
 ARTDATA          *TCLCurrData;
 
 static char      *TCLSTARTUP = NULL;
@@ -156,8 +157,7 @@ TCLCksumArt(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
     char buf[100];
 
     snprintf(buf, sizeof(buf), "%08x",
-             makechecksum(TCLCurrData->Body,
-                          &TCLCurrArticle->Data[TCLCurrArticle->Used] - 
+             makechecksum(TCLCurrArticle->data + TCLCurrData->Body,
                           TCLCurrData->Body));
     Tcl_SetResult(interp, buf, TCL_VOLATILE);
     return TCL_OK;
