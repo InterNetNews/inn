@@ -476,8 +476,6 @@ if ($HTML) {
       my $ddm = (index "JanFebMarAprMayJunJulAugSepOctNovDec", $m) / 3;
       # Adjust the year because syslog doesn't record it. We assume that
       # it's the current year unless the last date is in the future.
-      $dy-- if (&ConvDate ("$last_date") > $ts + 60 * ($tm + 60 * ($th + 24 *
-         ($dd + substr("000031059090120151181212243273304334", $dm * 3, 3)))));
       my $ld = &ConvDate($last_date);
       $dy-- if $ld > $ts + 60 * ($tm + 60 * ($th + 24 * ($dd - 1 +
         substr("000031059090120151181212243273304334", $dm * 3, 3)))) ||
