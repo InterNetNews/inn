@@ -11,7 +11,7 @@ CFLAGS	= $(GCFLAGS)
 
 TESTS	= lib/concat.t lib/date.t lib/error.t lib/inet_aton.t \
 	lib/inet_ntoa.t lib/memcmp.t lib/pread.t lib/pwrite.t \
-	lib/strerror.t lib/xwrite.t
+	lib/qio.t lib/strerror.t lib/xwrite.t
 
 ##  Extra stuff that needs to be built before tests can be run.
 
@@ -69,6 +69,9 @@ lib/pwrite.o: ../lib/pwrite.c
 
 lib/pwrite.t: lib/pwrite.o lib/pwrite-t.o
 	$(LINK) lib/pwrite.o lib/pwrite-t.o $(LIBINN)
+
+lib/qio.t: lib/qio-t.o $(LIBINN)
+	$(LINK) lib/qio-t.o $(LIBINN)
 
 lib/setenv.o: ../lib/setenv.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/setenv.c
