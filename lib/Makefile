@@ -161,6 +161,7 @@ innvers.o:	../include/patchlevel.h
 localopen.o:	../include/macros.h
 localopen.o:	../include/nntp.h
 localopen.o:	../include/paths.h
+md5.o:		../include/md5.h
 parsedate.o:	../include/macros.h
 qio.o:		../include/macros.h
 qio.o:		../include/qio.h
