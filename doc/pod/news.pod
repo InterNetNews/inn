@@ -1,3 +1,41 @@
+=head1 Changes from 2.3.0 to 2.3.1
+
+=over 2
+
+=item *
+
+inews no longer downloads the active file, no longer tries to send
+postings to moderated groups to the moderator directly, and in general
+duplicates less of the functionality of nnrpd, instead letting nnrpd
+handle it.  This fixes the problem of inews not working properly for users
+other than news without being setgid.
+
+=item *
+
+Added a man page for ckpasswd.
+
+=item *
+
+A serious bug in the embedded Perl authentication hooks was fixed, thanks
+to Jan Rychter.
+
+=item *
+
+The annoying compilation problem with embedded Perl filtering on Linux
+systems without libgdbm installed should be fixed.
+
+=item *
+
+INN now complaints loudly at configure time if the configured path for
+temporary files is world-writeable, since this configuration can be a
+security hole.
+
+=item *
+
+Many other varied bug fixes and documentation fixes of all sorts.
+
+=back
+
 =head1 Upgrading from 2.2 to 2.3
 
 Simply doing a make update is not sufficient to upgrade; the history and
