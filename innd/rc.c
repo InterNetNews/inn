@@ -40,6 +40,7 @@ typedef struct _REMOTEHOST {
     char	*Name;          /* Hostname */
     INADDR	Address;        /* List of ip adresses */
     char	*Password;      /* Optional password */
+    char 	*Identd;		/* Optional identd */
     BOOL	Streaming;      /* Streaming allowed ? */
     BOOL	Skip;	        /* Skip this peer ? */
     BOOL	NoResendId;	/* Don't send RESEND responses ? */
@@ -78,6 +79,7 @@ STATIC char		RCbuff[BIG_BUFFER];
 #define STREAMING       "streaming:"
 #define MAX_CONN        "max-connections:"
 #define PASSWORD        "password:"
+#define IDENTD	        "identd:"
 #define PATTERNS        "patterns:"
 #define EMAIL	        "email:"
 #define COMMENT	        "comment:"
@@ -86,8 +88,9 @@ STATIC char		RCbuff[BIG_BUFFER];
 #define HOLD_TIME	"hold-time:"
 
 typedef enum {K_END, K_BEGIN_PEER, K_BEGIN_GROUP, K_END_PEER, K_END_GROUP,
-	      K_STREAM, K_HOSTNAME, K_MAX_CONN, K_PASSWORD, K_EMAIL,
-	      K_PATTERNS, K_COMMENT, K_SKIP, K_NORESENDID, K_HOLD_TIME
+	      K_STREAM, K_HOSTNAME, K_MAX_CONN, K_PASSWORD, K_IDENTD,
+	      K_EMAIL, K_PATTERNS, K_COMMENT, K_SKIP, K_NORESENDID,
+	      K_HOLD_TIME
 	     } _Keywords;
 
 typedef enum {T_STRING, T_BOOLEAN, T_INTEGER} _Types;
@@ -112,6 +115,75 @@ STATIC REMOTETABLE	remotetable[REMOTETABLESIZE];
 STATIC int		remotecount;
 STATIC int		remotefirst;
 
+/*
+ * Check that the client has the right identd. Return TRUE if is the
+ * case, false, if not.
+ */
+BOOL
+GoodIdent(int fd, char *identd)
+{
+#define PORT_IDENTD 113
+    char IDENTuser[20];
+    struct sockaddr_in s_ident;
+    struct sockaddr_in s_local;
+    struct sockaddr_in s_distant;
+    int ident_fd, len=sizeof(struct sockaddr);
+    u_short port1,port2;
+    ssize_t lu;
+
+    if(identd[0] == '\0') {
+         return TRUE;
+    }
+    
+    IDENTuser[0]='\0';
+    if ((getsockname(fd,(struct sockaddr *)&s_local,&len)) < 0) {
+	 syslog(L_ERROR, "can't do getsockname for identd");
+	 s_local.sin_port=NNTP_PORT;
+	 s_local.sin_family=AF_INET;
+	 s_local.sin_addr.s_addr = htonl(INADDR_ANY);
+    }
+    if ((getpeername(fd,(struct sockaddr *)&s_distant,&len)) < 0) {
+	 syslog(L_ERROR, "can't do getsockname for identd");
+	 s_distant.sin_port=1024;
+	 s_distant.sin_family=AF_INET;
+	 s_distant.sin_addr.s_addr = htonl(INADDR_ANY);
+    }
+    port1=ntohs(s_local.sin_port);
+    port2=ntohs(s_distant.sin_port);
+    s_local.sin_port=0;
+    memcpy (&s_ident, &s_distant, sizeof(struct sockaddr_in));
+    s_ident.sin_port=htons(PORT_IDENTD);
+    if ((ident_fd=socket(PF_INET, SOCK_STREAM, 0)) < 0) {
+	 syslog(L_ERROR, "can't open socket for identd (%m)");
+    } else /* Je met pas de setsockopt... Tant pis ! */
+    if (bind(ident_fd,(struct sockaddr *)&s_local,len)<0) {
+	 syslog(L_ERROR, "can't bind socket for identd (%m)");
+    } else
+    if ((connect(ident_fd, (struct sockaddr *)&s_ident,
+		 sizeof(struct sockaddr_in))) < 0) {
+	 syslog(L_ERROR, "can't connect to identd (%m)");
+    } else
+    {
+	 char buf[40], *buf2;
+	 sprintf(buf,"%d,%d\r\n",port2, port1);
+	 write(ident_fd,buf, strlen(buf)+1);
+	 lu=read(ident_fd, buf, 39); /* pas encore parfait */
+	 if (lu>=0) buf[lu]='\0';
+	 if ((lu>0) && (strstr(buf,"ERROR")==NULL) && ((buf2=strrchr(buf,':'))!=NULL)) 
+	 {
+	   strncpy(IDENTuser,buf2+2,strlen(buf2)-1);
+	   IDENTuser[39]='\0';
+	   buf2=strchr(IDENTuser,'\r');
+	   if (!buf2) buf2=strchr(IDENTuser,'\n');
+	   if (buf2) *buf2='\0';
+	 } else { 
+	   strncpy(IDENTuser,"UNKNOWN",10);
+	   IDENTuser[10]='\0';
+	 }
+	 close(ident_fd);
+    }
+    return (EQ(identd, IDENTuser));
+}
 
 /*
  * Split text into comma-separated fields.  Return an allocated
@@ -225,7 +297,6 @@ RCauthorized(register CHANNEL *cp, char *pass)
     /* Anonymous hosts should not authenticate. */
     return FALSE;
 }
-
 
 /*
 **  See if a host is limited or not.
@@ -482,6 +553,17 @@ RCreader(CHANNEL *cp)
 	    break;
 	}
 
+    /* We check now the identd if we have to */
+    if(! GoodIdent(fd, rp->Identd))
+    {
+        if (!innconf->noreader) {
+	    RChandoff(fd, HOnntpd);
+	    if (close(fd) < 0)
+	        syslog(L_ERROR, "%s cant close %d %m", LogName, fd);
+	    return;
+	}
+    }
+    
     /* If not a server, and not allowing anyone, hand him off unless
        not spawning nnrpd in which case we return an error. */
     if ((i >= 0) && !rp->Skip) {
@@ -660,6 +742,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    char *filename)
 {
     static char			NOPASS[] = "";
+    static char			NOIDENTD[] = "";
     static char			NOEMAIL[] = "";
     static char			NOCOMMENT[] = "";
     register FILE		*F;
@@ -691,6 +774,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    DISPOSE(rp->Email);
 	    DISPOSE(rp->Comment);
 	    DISPOSE(rp->Password);
+	    DISPOSE(rp->Identd);
 	    if (rp->Patterns) {
 		DISPOSE(rp->Patterns[0]);
 		DISPOSE(rp->Patterns);
@@ -725,6 +809,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     rp->Email = COPY(NOEMAIL);
     rp->Comment = COPY(NOCOMMENT);
     rp->Password = COPY(NOPASS);
+    rp->Identd = COPY(NOIDENTD);
     rp->Patterns = NULL;
     rp->MaxCnx = 0;
     rp->Streaming = TRUE;
@@ -745,6 +830,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     default_params.MaxCnx = 0;
     default_params.HoldTime = 0;
     default_params.Password = COPY(NOPASS);
+    default_params.Identd = COPY(NOIDENTD);
     default_params.Email = COPY(NOEMAIL);
     default_params.Comment = COPY(NOCOMMENT);
     default_params.Pattern = NULL;
@@ -786,6 +872,8 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  groups[groupcount - 2].Pattern : default_params.Pattern;
 	group_params->Password = groupcount > 1 ?
 	  groups[groupcount - 2].Password : default_params.Password;
+	group_params->Identd = groupcount > 1 ?
+	  groups[groupcount - 2].Identd : default_params.Identd;
 	group_params->MaxCnx = groupcount > 1 ?
 	  groups[groupcount - 2].MaxCnx : default_params.MaxCnx;
 	group_params->HoldTime = groupcount > 1 ?
@@ -839,6 +927,8 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  group_params->Pattern : default_params.Pattern;
 	peer_params.Password = groupcount > 0 ?
 	  group_params->Password : default_params.Password;
+	peer_params.Identd = groupcount > 0 ?
+	  group_params->Identd : default_params.Identd;
 	peer_params.MaxCnx = groupcount > 0 ?
 	  group_params->MaxCnx : default_params.MaxCnx;
 	peer_params.HoldTime = groupcount > 0 ?
@@ -886,6 +976,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	      rp->Name = COPY (*q);
 	      rp->Label = COPY (peer_params.Label);
 	      rp->Password = COPY(peer_params.Password);
+	      rp->Identd = COPY(peer_params.Identd);
 	      rp->Skip = peer_params.Skip;
 	      rp->Streaming = peer_params.Streaming;
 	      rp->NoResendId = peer_params.NoResendId;
@@ -937,6 +1028,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 		rp->Skip = peer_params.Skip;
 		rp->NoResendId = peer_params.NoResendId;
 		rp->Password = COPY(peer_params.Password);
+		rp->Identd = COPY(peer_params.Identd);
 		rp->Patterns = peer_params.Pattern != NULL ?
 		  RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
 		rp->MaxCnx = peer_params.MaxCnx;
@@ -955,6 +1047,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 		rp->Skip = peer_params.Skip;
 		rp->NoResendId = peer_params.NoResendId;
 		rp->Password = COPY(peer_params.Password);
+		rp->Identd = COPY(peer_params.Identd);
 		rp->Patterns = peer_params.Pattern != NULL ?
 		  RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
 		rp->MaxCnx = peer_params.MaxCnx;
@@ -980,6 +1073,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	      rp->Skip = peer_params.Skip;
 	      rp->NoResendId = peer_params.NoResendId;
 	      rp->Password = COPY(peer_params.Password);
+	      rp->Identd = COPY(peer_params.Identd);
 	      rp->Patterns = peer_params.Pattern != NULL ?
 		RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
 	      rp->MaxCnx = peer_params.MaxCnx;
@@ -997,6 +1091,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    rp->Skip = peer_params.Skip;
 	    rp->NoResendId = peer_params.NoResendId;
 	    rp->Password = COPY(peer_params.Password);
+	    rp->Identd = COPY(peer_params.Identd);
 	    rp->Patterns = peer_params.Pattern != NULL ?
 	      RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
 	    rp->MaxCnx = peer_params.MaxCnx;
@@ -1221,6 +1316,29 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	continue;
       }
 
+      /* identd */
+      if (!strncmp (word, IDENTD, sizeof IDENTD)) {
+	DISPOSE(word);
+	TEST_CONFIG(K_IDENTD, bit);
+        if (bit) {
+	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
+	  break;
+	}
+	if ((word = RCreaddata (&linecount, F, &toolong)) == NULL) {
+	  break;
+	}
+	RCadddata(data, &infocount, K_IDENTD, T_STRING, word);
+	if (peer_params.Label != NULL)
+	  peer_params.Identd = word;
+	else
+	  if (groupcount > 0 && group_params->Label != NULL)
+	    group_params->Identd = word;
+	  else
+	    default_params.Identd = word;
+	SET_CONFIG(K_IDENTD);
+	continue;
+      }
+
       /* patterns */
       if (!strncmp (word, PATTERNS, sizeof PATTERNS)) {
 	TEST_CONFIG(K_PATTERNS, bit);
@@ -1319,6 +1437,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	syslog(L_ERROR, "%s cant fclose %s %m", LogName, filename);
 
     DISPOSE(default_params.Password);
+    DISPOSE(default_params.Identd);
 }
 
 
@@ -1442,6 +1561,12 @@ RCwritelist(char *filename)
 	  case K_PASSWORD:
 	    RCwritelistindent (F, inc);
 	    fprintf(F, "%s\t", PASSWORD);
+	    RCwritelistvalue (F, RCpeerlistfile[i].value);
+	    fputc ('\n', F);
+	    break;
+	  case K_IDENTD:
+	    RCwritelistindent (F, inc);
+	    fprintf(F, "%s\t", IDENTD);
 	    RCwritelistvalue (F, RCpeerlistfile[i].value);
 	    fputc ('\n', F);
 	    break;
@@ -1625,6 +1750,7 @@ RCclose()
 	    DISPOSE(rp->Label);
 	    DISPOSE(rp->Email);
 	    DISPOSE(rp->Password);
+	    DISPOSE(rp->Identd);
 	    DISPOSE(rp->Comment);
 	    if (rp->Patterns) {
 		DISPOSE(rp->Patterns[0]);
