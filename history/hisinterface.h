@@ -11,7 +11,7 @@ struct histopts;
 
 typedef struct hismethod {
     const char *name;
-    void *(*open)(const char *path, int flags, const struct histopts *opts);
+    void *(*open)(const char *path, int flags);
     bool (*close)(void *);
     bool (*sync)(void *);
     bool (*lookup)(void *, const char *, time_t *, time_t *, time_t *,
@@ -21,14 +21,15 @@ typedef struct hismethod {
 		  const struct token *);
     bool (*replace)(void *, const char *, time_t, time_t, time_t,
 		    const struct token *);
-    bool (*expire)(void *, const char *, const char *, void *, time_t,
+    bool (*expire)(void *, const char *, const char *, bool, void *, time_t,
 		   bool (*)(void *, time_t, time_t, time_t,
 			    struct token *));
-    bool (*walk)(void *, void *,
+    bool (*walk)(void *, const char *, void *,
 		 bool (*)(void *, time_t, time_t, time_t,
 			  const struct token *));
     const char *(*error)(void *);
     bool (*remember)(void *, const char *, time_t);
+    bool (*ctl)(void *, int, void *);
 } HIS_METHOD;
 
 enum { S_HIScacheadd, S_HIScachelookup, S_HISsetup, S_HISsync,

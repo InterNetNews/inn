@@ -59,7 +59,6 @@ struct history {
     void *sub;
     struct hiscache *cache;
     size_t cachesize;
-    int dirty;
     struct histstats stats;
 };
 
@@ -114,8 +113,7 @@ his_cachelookup(struct history *h, HASH MessageID)
 }
 
 struct history *
-HISopen(const char *path, const char *method, int flags,
-	const struct histopts *opts)
+HISopen(const char *path, const char *method, int flags)
 {
     struct history *h;
     int i;
@@ -135,9 +133,8 @@ HISopen(const char *path, const char *method, int flags,
     h->methods = &his_methods[i];
     h->cache = NULL;
     h->cachesize = 0;
-    h->dirty = 0;
     h->stats = nullhist;
-    h->sub = (*h->methods->open)(path, flags, opts);
+    h->sub = (*h->methods->open)(path, flags);
     if (h->sub == NULL) {
 	free(h);
 	h = NULL;
@@ -168,11 +165,7 @@ HISsync(struct history *h)
     if (h == NULL)
 	return false;
     TMRstart(TMR_HISSYNC);
-    if (h->dirty) {
-	r = (*h->methods->sync)(h->sub);
-	if (r == true)
-	    h->dirty = 0;
-    }
+    r = (*h->methods->sync)(h->sub);
     TMRstop(TMR_HISSYNC);
     return r;
 }
@@ -241,7 +234,6 @@ HISwrite(struct history *h, const char *key, time_t arrived,
 	/* if we successfully wrote it, add it to the cache */
 	hash = HashMessageID(key);
 	his_cacheadd(h, hash, TRUE);
-	h->dirty = 1;
     }
     TMRstop(TMR_HISWRITE);
 
@@ -278,31 +270,39 @@ HISreplace(struct history *h, const char *key, time_t arrived,
     if (h == NULL)
 	return false;
     r = (*h->methods->replace)(h->sub, key, arrived, posted, expires, token);
+    if (r == true) {
+	HASH hash;
+
+	/* if we successfully wrote it, add it to the cache */
+	hash = HashMessageID(key);
+	his_cacheadd(h, hash, TRUE);
+    }
     return r;
 }
 
 bool
-HISwalk(struct history *h, void *cookie,
+HISwalk(struct history *h, const char *reason, void *cookie,
 	bool (*callback)(void *, time_t, time_t, time_t, const TOKEN *))
 {
     bool r;
 
     if (h == NULL)
 	return false;
-    r = (*h->methods->walk)(h->sub, cookie, callback);
+    r = (*h->methods->walk)(h->sub, reason, cookie, callback);
     return r;
 }
 
 bool
 HISexpire(struct history *h, const char *path, const char *reason,
-	  void *cookie, time_t threshold,
+	  bool writing, void *cookie, time_t threshold,
 	  bool (*exists)(void *, time_t, time_t, time_t, TOKEN *))
 {
     bool r;
 
     if (h == NULL)
 	return false;
-    r = (*h->methods->expire)(h->sub, path, reason, cookie, threshold, exists);
+    r = (*h->methods->expire)(h->sub, path, reason, writing,
+			      cookie, threshold, exists);
     return r;
 }
 
@@ -351,6 +351,21 @@ HISerror(struct history *h)
     if (h == NULL)
 	return NULL;
     r = (*h->methods->error)(h->sub);
+    return r;
+}
+
+
+/*
+**  control interface to underlying method
+*/
+bool
+HISctl(struct history *h, int selector, void *val)
+{
+    bool r;
+
+    if (h == NULL)
+	return NULL;
+    r = (*h->methods->ctl)(h->sub, selector, val);
     return r;
 }
 
