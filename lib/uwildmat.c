@@ -196,7 +196,7 @@ match_pattern(const unsigned char *text, const unsigned char *start,
     const unsigned char *q, *endclass;
     const unsigned char *p = start;
     bool ismeta;
-    int matched;
+    int matched, width;
     uint32_t c;
 
     for (; p <= end; p++) {
@@ -240,11 +240,15 @@ match_pattern(const unsigned char *text, const unsigned char *start,
                function call overhead. */
             ismeta = (*p == '[' || *p == '?' || *p == '\\');
             while (*text) {
+                width = ISUTF8(*text) ? utf8_length(text, NULL) : 1;
                 if (ismeta) {
-                    matched = match_pattern(text++, p, end);
+                    matched = match_pattern(text, p, end);
+                    text += width;
                 } else {
-                    while (*text && *text != *p)
-                        text++;
+                    while (*text && *text != *p) {
+                        text += width;
+                        width = ISUTF8(*text) ? utf8_length(text, NULL) : 1;
+                    }
                     if (!*text)
                         return ABORT;
                     matched = match_pattern(++text, p + 1, end);
