@@ -513,7 +513,7 @@ STATIC void StartConnection()
 		   NNTP_ACCESS_VAL);
 	    ExitWithStats(1, TRUE);
 	}
-	NGgetlist(&PERMreadlist, accesslist);
+	PERMspecified = NGgetlist(&PERMreadlist, accesslist);
 	PERMpostlist = PERMreadlist;
 	if (!authconf)
 	    authconf = NEW(ACCESSGROUP, 1);
