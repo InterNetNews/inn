@@ -94,7 +94,7 @@ clobber realclean:	clean
 	rm -f CHANGES *~
 	rm -fr $(TARDIR)
 	rm -f config.cache config.log include/config.h
-	rm -f Makefile.global makedirs.sh config/config.data 
+	rm -f makedirs.sh config/config.data 
 	rm -f include/paths.h samples/actsync.cfg samples/inncheck 
 	rm -f samples/innshellvars samples/innshellvars.csh 
 	rm -f samples/innshellvars.pl samples/innshellvars.tcl 
@@ -102,6 +102,7 @@ clobber realclean:	clean
 	rm -f site/subst.pl storage/buildconfig syslog/syslog.conf
 	@echo ""
 	cd site ; make clobber ; cd ..
+	rm -f Makefile.global 
 
 ##  Update syslog.
 syslogfix:
