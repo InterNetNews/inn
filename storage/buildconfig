@@ -1,4 +1,4 @@
-#!/loc/bin/perl
+#!/usr/local/bin/perl
 
 require 5.003;
 

@@ -11,7 +11,7 @@
 #
 organization:		A poorly-installed InterNetNews site
 server:			localhost
-pathhost:		our.path.host
+pathhost:		@HOSTNAME@
 #
 # ---------------------------------
 # These options can be changed and reloaded with 'ctlinnd reload inn.conf'
@@ -23,8 +23,8 @@ pathhost:		our.path.host
 # END_AUTO_INSERTED_SECTION from ../include/libinn.h ||SAMPLE
 #pathalias:		our.path.hub.host
 #complaints:		abuse@our.domain
-mta:			/usr/lib/sendmail -oi %s
-mailcmd:		/news/bin/innmail
+mta:			@SENDMAIL@ -oi %s
+mailcmd:		@prefix@/bin/innmail
 checkincludedtext:	no
 maxforks:		10
 maxartsize:		1000000
@@ -96,21 +96,21 @@ doinnwatch:		yes
 # ---------------------------------
 # Paths to various aspects of the news system
 #
-pathnews:		/news
-pathbin:		/news/bin
-pathfilter:		/news/bin/filter
-pathcontrol:		/news/bin/control
-pathdb:			/news/db
-pathetc:		/news/etc
-pathrun:		/news/run
-pathlog:		/news/log
-pathhttp:		/news/log
-pathspool:		/news/spool
-patharticles:		/news/spool/articles
-pathoverview:		/news/spool/overview
-pathoutgoing:		/news/spool/outgoing
-pathincoming:		/news/spool/incoming
-patharchive:		/news/spool/archive
+pathnews:		@prefix@
+pathbin:		@prefix@/bin
+pathfilter:		@prefix@/bin/filter
+pathcontrol:		@prefix@/bin/control
+pathdb:			@prefix@/db
+pathetc:		@prefix@/etc
+pathrun:		@prefix@/run
+pathlog:		@LOGDIR@
+pathhttp:		@LOGDIR@
+pathspool:		@SPOOLDIR@
+patharticles:		@SPOOLDIR@/articles
+pathoverview:		@SPOOLDIR@/overview
+pathoutgoing:		@SPOOLDIR@/outgoing
+pathincoming:		@SPOOLDIR@/incoming
+patharchive:		@SPOOLDIR@/archive
 overviewname:		.overview
 #
 # ---------------------------------

@@ -47,7 +47,7 @@ else
 	fi
 fi) dnl HACK
 AC_SUBST(TMPPATH)
-AC_ARG_WITH(sendmail,[  --with-sendmail=PATH    Specify sendmail], ac_cv_subst_path_sendmail=$with_sendmail)
+AC_ARG_WITH(sendmail,[  --with-sendmail=PATH    Specify sendmail], SENDMAIL=$with_sendmail)
 
 dnl Fix the paths
 test "x$prefix" = xNONE && prefix=$ac_default_prefix
@@ -57,6 +57,9 @@ AC_CACHE_CHECK(for MANDIR,MANDIR, MANDIR=`eval echo $mandir`)
 ac_cv_subst_manpath="$MANDIR"
 AC_SUBST(MANDIR)
 AC_SUBST(ac_cv_subst_manpath)
+
+HOSTNAME=`uname -n`
+AC_SUBST(HOSTNAME)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -178,20 +181,20 @@ dnl
 if test "${with_sendmail+set}" = set
 then
 dnl don't change it!
-echo using $ac_cv_subst_path_sendmail for sendmail
+echo using $SENDMAIL for sendmail
 else
-  AC_PATH_PROG(ac_cv_subst_path_sendmail,sendmail)
-  if test "x$ac_cv_subst_path_sendmail" = x
+  AC_PATH_PROG(SENDMAIL,sendmail)
+  if test "x$SENDMAIL" = x
   then
     echo No sendmail in path.  Looking in likely places.
     PATH=$PATH:/usr/lib:/usr/sbin:/usr/ucblib
-    AC_PATH_PROG(ac_cv_subst_path_sendmail,sendmail)
-    if test "x$ac_cv_subst_path_sendmail" = x
+    AC_PATH_PROG(SENDMAIL,sendmail)
+    if test "x$SENDMAIL" = x
     then
        AC_MSG_ERROR(sendmail is a required program not found.  Run with --with-sendmail option.)
     else
-       echo sendmail was found at $ac_cv_subst_path_sendmail.  If this is correct, re-run
-	echo using --with-sendmail=$ac_cv_subst_path_sendmail
+       echo sendmail was found at $SENDMAIL.  If this is correct, re-run
+	echo using --with-sendmail=$SENDMAIL
        AC_MSG_ERROR(sendmail is a required program not found in path.  Run with --with-sendmail option.)
     fi
   fi
@@ -685,6 +688,7 @@ AC_OUTPUT(
 	samples/docheckgroups
 	samples/expirerm
 	samples/ihave
+	samples/inn.conf
 	samples/inncheck 
 	samples/innmail
 	samples/innreport
