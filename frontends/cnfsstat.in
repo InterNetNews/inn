@@ -367,7 +367,7 @@ sub lookup_age {
     $msgid =~ s/\\/\\\\/;
     $msgid =~ s/\'/\'\\\'\'/;
 
-    my $history = `grephistory -l '$msgid' 2>&1`;
+    my $history = `$inn::pathbin/grephistory -l '$msgid' 2>&1`;
     if ($history =~ /\t(\d+)~/) {
 	return $1;
     }
