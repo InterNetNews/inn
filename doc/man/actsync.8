@@ -130,7 +130,12 @@ The newsgroup synchronization, by default, involves all newsgroups
 found on both hosts.
 One may also synchronize a subset of newsgroups by directing
 .IR actsync (8)
-to ignore certain newsgroups from both systems.
+to ignore certain newsgroups from both systems.  Only newsgroups with
+valid names will be synchronized.  To be valid, a newsgroup name must
+consist only of alphanumeric characters, ``.'', ``+'', ``-'', and ``_''.
+One may not have two ``.''s in a row.  The first character must be
+alphanumeric, as must any character following a ``.''.  The name may not
+end in a ``.'' character.
 .PP
 The
 .IR actsyncd (8)
