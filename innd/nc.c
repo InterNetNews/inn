@@ -573,13 +573,13 @@ NClist(CHANNEL *cp)
     char		*trash;
     char		*end;
 
+    for (p = cp->In.Data + cp->Start + STRLEN("list"); ISWHITE(*p); p++)
+	continue;
+    cp->Start = cp->Next;
     if (cp->Nolist) {
 	NCwritereply(cp, NCbadcommand);
 	return;
     }
-    for (p = cp->In.Data + cp->Start + STRLEN("list"); ISWHITE(*p); p++)
-	continue;
-    cp->Start = cp->Next;
     if (caseEQ(p, "newsgroups")) {
 	trash = p = ReadInFile(cpcatpath(innconf->pathdb, _PATH_NEWSGROUPS),
                                NULL);
@@ -681,6 +681,7 @@ static void
 NCxpath(CHANNEL *cp)
 {
     /* not available for storageapi */
+    cp->Start = cp->Next ;
     NCwritereply(cp, NNTP_BAD_COMMAND);
     return;
 }
