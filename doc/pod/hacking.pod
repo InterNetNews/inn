@@ -366,10 +366,6 @@ Other files in include, most notably F<libinn.h>, are interfaces to
 particular bits of INN library functionality or are used for other
 purposes; see the comments in each file.
 
-Finally, many INN source files still include F<configdata.h>; this header
-file is now obsolete (merged into F<config.h> and F<clibrary.h>) and
-should be removed where it appears.
-
 Eventually, the header files will be separated into installed header files
 and uninstalled header files; the latter are those headers that are used
 only for compiling INN and aren't useful for users of INN's libraries
