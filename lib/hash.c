@@ -27,10 +27,10 @@ static HASH empty= { { 0, 0, 0, 0, 0, 0, 0, 0,
  * Returns: pointer into s, or NULL for "nowhere"
  */
 static char *
-cipoint(char *s, size_t size)
+cipoint(const char *s, size_t size)
 {
     char *p;
-    static char post[] = "postmaster";
+    static const char post[] = "postmaster";
     static int plen = sizeof(post) - 1;
 
     if ((p = memchr(s, '@', size))== NULL)	/* no local/domain split */
@@ -60,19 +60,27 @@ Hash(const void *value, const size_t len)
 HASH
 HashMessageID(const char *MessageID)
 {
-    char                *new;
+    char                *new = NULL;
     char                *cip;
     char                *p;
     int                 len;
     HASH                hash;
 
-    new = xstrdup(MessageID);
-    if ((cip = cipoint(new, len))) {
-	for (p = cip + 1; *p; p++)
-	    *p = tolower(*p);
+    len = strlen(MessageID);
+    if ((cip = cipoint(MessageID, len))) {
+	for (p = cip + 1; *p; p++) {
+	    if (!islower(*p)) {
+		if (!new) {
+		    new = xstrdup(MessageID);
+		    p = new + (p - MessageID);
+		}
+		*p = tolower(*p);
+	    }
+	}
     }
-    hash = Hash(new, len);
-    DISPOSE(new);
+    hash = Hash(new ? new : MessageID, len);
+    if (new)
+	free(new);
     return hash;
 }
 
