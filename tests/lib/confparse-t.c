@@ -14,6 +14,15 @@ ok(int n, int success)
     printf("%sok %d\n", success ? "" : "not ", n);
 }
 
+static void
+ok_string(int n, const char *saw, const char *expected)
+{
+    if (strcmp(saw, expected) == 0)
+        printf("ok %d\n", n);
+    else
+        printf("not ok %d\n  saw: %s\n  not: %s\n", n, saw, expected);
+}
+
 int
 main(void)
 {
@@ -66,21 +75,20 @@ main(void)
 
     /* Strings. */
     ok(26, config_param_string(group, "string1", &s_value));
-    ok(27, strcmp(s_value, "foo") == 0);
+    ok_string(27, s_value, "foo");
     ok(28, config_param_string(group, "string2", &s_value));
-    ok(29, strcmp(s_value, "bar") == 0);
+    ok_string(29, s_value, "bar");
     ok(30, config_param_string(group, "string3", &s_value));
-    ok(31, strcmp(s_value, "this is a test") == 0);
+    ok_string(31, s_value, "this is a test");
     ok(32, config_param_string(group, "string4", &s_value));
-    ok(33, strcmp(s_value, "this is a test") == 0);
+    ok_string(33, s_value, "this is a test");
     ok(34, config_param_string(group, "string5", &s_value));
-    ok(35,
-       strcmp(s_value,
-              "this is \a\b\f\n\r\t\v a test \' of \" escapes \?\\") == 0);
+    ok_string(35, s_value,
+              "this is \a\b\f\n\r\t\v a test \' of \" escapes \?\\");
     ok(36, config_param_string(group, "string6", &s_value));
-    ok(37, strcmp(s_value, "# this is not a comment") == 0);
+    ok_string(37, s_value, "# this is not a comment");
     ok(38, config_param_string(group, "string7", &s_value));
-    ok(39, strcmp(s_value, "lost \nyet?") == 0);
+    ok_string(39, s_value, "lost \nyet?");
 
     config_free(group);
     return 0;
