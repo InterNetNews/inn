@@ -1998,7 +1998,10 @@ bool hostCxnGone (Host host, Connection cxn)
     if (host->connections [i] == cxn)
       {
         if (!amClosing (host))
-          syslog (LOG_ERR,CONNECTION_DISAPPEARING,host->params->peerName,i) ;
+          {
+            syslog (LOG_ERR,CONNECTION_DISAPPEARING,host->params->peerName,i) ;
+            cxnLogStats (host->connections [i], true) ;
+          }
         host->connections [i] = NULL ;
         if (host->cxnActive [i])
           {
