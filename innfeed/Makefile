@@ -5,6 +5,8 @@ include ../Makefile.global
 ####           NOTHING BELOW HERE IS REALLY CONFIGURABLE          ####
 ######################################################################
 
+CFLAGS	= $(GCFLAGS)
+
 .SUFFIXES:	.E .sh .pl
 
 CPP.c		= $(CC) $(CFLAGS) -E -I.

@@ -84,6 +84,7 @@ static void use_rcsid (const char *rId) {   /* Never called */
 #include "buffer.h"
 #include "msgs.h"
 #include "host.h"
+#include "clibrary.h"
 
 
 #if defined (__bsdi__) && (defined (_ANSI_SOURCE) || defined (_POSIX_SOURCE))
@@ -1212,7 +1213,8 @@ static IoStatus doWrite (EndPoint endp)
 
 static IoStatus doExcept (EndPoint endp)
 {
-  int optval, size ;
+  int optval;
+  ARGTYPE size ;
   int fd = endPointFd (endp) ;
 
   if (getsockopt (fd, SOL_SOCKET, SO_ERROR,

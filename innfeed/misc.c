@@ -61,6 +61,10 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <unistd.h>
 #endif
 
+#if defined (_AIX41)
+#include <time.h>
+#endif
+
 #include <signal.h>
 
 #include "configdata.h"

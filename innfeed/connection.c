@@ -124,6 +124,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "article.h"
 #include "msgs.h"
 #include "configfile.h"
+#include "clibrary.h"
 
 #if defined (NDEBUG)
 #define VALIDATE_CONNECTION(x) ((void) 0)
@@ -1244,7 +1245,8 @@ static void connectionDone (EndPoint e, IoStatus i, Buffer *b, void *d)
   Buffer *readBuffers ;
   Connection cxn = (Connection) d ;
   const char *peerName ;
-  int optval, size ;
+  int optval;
+  ARGTYPE size ;
 
   ASSERT (b == NULL) ;
   ASSERT (cxn->state == cxnConnectingS) ;
