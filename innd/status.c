@@ -119,7 +119,7 @@ static void STATUSsummary(void)
 
   fprintf (F,"<HTML>\n<HEAD>\n<META HTTP-EQUIV=\"Refresh\" CONTENT=\"%d;\">\n",
 	   innconf->status < MIN_REFRESH ? MIN_REFRESH : innconf->status);
-  fprintf (F, "<TITLE>%s: incoming feeds</TITLE>\n", Path.Data);
+  fprintf (F, "<TITLE>%s: incoming feeds</TITLE>\n", innconf->pathhost);
   fprintf (F, "</HEAD>\n<BODY>\n<PRE>\n") ;
 #endif /* defined(HTML_STATUS) */
 
