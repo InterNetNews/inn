@@ -26,17 +26,6 @@
 #include "dbz.h"
 #include "macros.h"
 
-
-/*
-**  Supported encoding schemes.
-*/
-typedef enum _MIMEXFERTYPE {
-    MTnotmime,
-    MTquotedprintable,
-    MTbase64
-} MIMEXFERTYPE;
-
-
 #define OUTPUT_BUFFER_SIZE	(16 * 1024)
 
 /* Streaming extensions to NNTP.  This extension removes the lock-step
@@ -106,8 +95,6 @@ STATIC BOOL		Debug;
 STATIC BOOL		DoRequeue = TRUE;
 STATIC BOOL		Purging;
 STATIC BOOL		STATprint;
-STATIC BOOL		Mime;
-STATIC MIMEXFERTYPE	MimeArticle = MTnotmime;
 STATIC char		*BATCHname;
 STATIC char		*BATCHtemp;
 STATIC char		*REMhost;
@@ -131,8 +118,6 @@ STATIC unsigned long	STATrejected;
 STATIC unsigned long	STATmissing;
 STATIC double		STATacceptedsize;
 STATIC double		STATrejectedsize;
-STATIC char		*AltSpool;
-STATIC char		*AltPath;
 
 
 /*
@@ -344,14 +329,6 @@ REMwrite(p, i, escdot)
 	    REMbuffend = &REMbuffer[size];
 	}
     }
-
-    if (MimeArticle != MTnotmime)
-        if ((*p == 'C' && EQn(p, HDR, STRLEN(HDR)))
-         || ((*p == 'C' || *p == 'c') && caseEQn(p, HDR, STRLEN(HDR)))) {
-	    (void)memcpy((POINTER)REMbuffptr, (POINTER)COD, STRLEN(COD));
-	    REMbuffptr += STRLEN(COD);
-	    return TRUE;
-        }
 
     /* Dot escape, text of the line, line terminator. */
     if (escdot && (*p == '.'))
@@ -719,7 +696,6 @@ REMsendarticle(Article, MessageID, qp)
     register QIOSTATE	*qp;
 {
     register char	*p;
-    register BOOL	ok;
     register BOOL	InHeaders;
     long		length;
     char		buff[NNTP_STRLEN];
@@ -744,30 +720,13 @@ REMsendarticle(Article, MessageID, qp)
 	if (*p == '\0')
 	    InHeaders = FALSE;
 
-	if (InHeaders || MimeArticle == MTnotmime) {
+	if (InHeaders) {
 	    if (!REMwrite(p, QIOlength(qp), TRUE)) {
 	        (void)fprintf(stderr, "Can't send \"%s\", %s\n",
 		        Article, strerror(errno));
 	        return FALSE;
 	    }
 	    length += QIOlength(qp);
-	}
-	else {
-	    switch (MimeArticle) {
-	    default:
-	    case MTbase64:
-		ok = FALSE;
-		break;
-	    case MTquotedprintable:
-		ok = REMwriteQuoted(p, QIOlength(qp));
-		length += QIOlength(qp);
-		break;
-	    }
-	    if (!ok) {
-		(void)fprintf(stderr, "Can't send \"%s\", %s\n",
-			Article, strerror(errno));
-		return FALSE;
-	    }
 	}
 	if (GotInterrupt)
 	    Interrupted(Article, MessageID);
@@ -778,9 +737,6 @@ REMsendarticle(Article, MessageID, qp)
 		Article, strerror(errno));
 	return FALSE;
     }
-    if (Debug)
-	(void)fprintf(stderr, "> [ article %ld ]%s\n", length,
-	     MimeArticle == MTnotmime ? "" : " (Mime: quoted-printable)");
     if (GotInterrupt)
 	Interrupted(Article, MessageID);
     if (Debug)
@@ -873,57 +829,6 @@ GetMessageID(qp)
 	}
     return NULL;
 }
-
-
-/*
-**  Get the MIME Content headers from an open article.
-*/
-STATIC void
-GetMimeHeaders(qp, Encodingp, Typep)
-    register QIOSTATE	*qp;
-    register char	**Encodingp;
-    register char	**Typep;
-{
-    static char		ENC_HDR[] = "Content-Transfer-Encoding:";
-    static char		TYPE_HDR[] = "Content-Type:";
-    static char		Encoding[SMBUF + 1];
-    static char		ContentType[SMBUF + 1];
-    register char	*p;
-
-    for (*Encodingp = *Typep = NULL; (p = QIOread(qp)) != NULL && *p; ) {
-	if (*p != 'C' && *p != 'c')
-	    continue;
-	if (caseEQn(p, ENC_HDR, STRLEN(ENC_HDR))) {
-	    for (p += STRLEN(ENC_HDR); ISWHITE(*p); p++)
-		continue;
-	    if (*p == '\0' || (int)strlen(p) > sizeof Encoding)
-		/* Header is empty or too long. */
-		continue;
-	    (void)strcpy(Encoding, p);
-	    *Encodingp = Encoding;
-	    if (*Typep)
-		break;
-	}
-	else if (caseEQn(p, TYPE_HDR, STRLEN(TYPE_HDR))) {
-	    for (p += STRLEN(TYPE_HDR); ISWHITE(*p); p++)
-		continue;
-	    if (*p == '\0' || (int)strlen(p) > sizeof ContentType)
-		/* Header is empty or too long. */
-		break;
-	    (void)strcpy(ContentType, p);
-	    /* Strip off any subtype part. */
-	    for (p = ContentType; *p; p++)
-		if (*p == '/' || *p == ';') {
-		    *p = '\0';
-		    break;
-		}
-	    *Typep = ContentType;
-	    if (*Encodingp)
-		break;
-	}
-    }
-}
-
 
 
 /*
@@ -994,16 +899,9 @@ takethis(i)
     if (!stbuf[i].st_qp) { /* should already be open but ... */
 	/* Open the article. */
 	if (!(stbuf[i].st_qp = QIOopen(stbuf[i].st_fname))) {
-	    /* can not open it. Should check AltPath */
-	    if (AltPath && (*(stbuf[i].st_fname) != '/')) {
-		(void)sprintf(AltPath, "%s/%s", AltSpool, stbuf[i].st_fname);
-		stbuf[i].st_qp = QIOopen(AltPath);
-	    }
-	    if (!(stbuf[i].st_qp)) {
-		strel(i);
-		++STATmissing;
-		return FALSE; /* Not an error. Could be canceled or expired */
-	    }
+	    strel(i);
+	    ++STATmissing;
+	    return FALSE; /* Not an error. Could be canceled or expired */
 	}
     }
     /* send "takethis <ID>" to the other system */
@@ -1136,7 +1034,7 @@ STATIC NORETURN
 Usage()
 {
     (void)fprintf(stderr,
-	"Usage: innxmit [-a] [-c] [-d] [-M] [-p] [-r] [-s] [-t#] [-T#] host file\n");
+	"Usage: innxmit [-a] [-c] [-d] [-p] [-r] [-s] [-t#] [-T#] host file\n");
     exit(1);
 }
 
@@ -1166,20 +1064,15 @@ int main(int ac, char *av[])
 
     ConnectTimeout = 0;
     TotalTimeout = 0;
-    AltSpool = NULL;
     
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "lA:acdMprst:T:vP:")) != EOF)
+    while ((i = getopt(ac, av, "lacdprst:T:vP:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
 	    /* NOTREACHED */
-	case 'A':
-	    AltSpool = optarg;
-	    AltPath = NEW(char, SPOOLNAMEBUFF + strlen(AltSpool));
-	    break;
 	case 'P':
 	    port = atoi(COPY(optarg));
 	    break;
@@ -1195,9 +1088,6 @@ int main(int ac, char *av[])
         case 'l':
             logRejects = FALSE ;
             break ;
-	case 'M':
-	    Mime = TRUE;
-	    break;
 	case 'p':
 	    AlwaysRewrite = TRUE;
 	    Purging = TRUE;
@@ -1473,38 +1363,16 @@ int main(int ac, char *av[])
         }
 
 	/* Open the article. */
-	if ((qp = QIOopen(Article)) == NULL
-	 && AltSpool
-	 && *Article != '/') {
-	    (void)sprintf(AltPath, "%s/%s", AltSpool, Article);
-	    qp = QIOopen(AltPath);
-	}
+	qp = QIOopen(Article);
 
 	if (qp == NULL) {
-	    if (IsToken(Article)) {
-		if ((SMerrno == SMERR_NOENT) || (SMerrno == SMERR_UNINIT)) {
-		    ++STATmissing;
-		    continue;
-		} else {
-		    (void)fprintf(stderr, "Requeue \"%s\", %s\n",
-			Article, SMerrorstr);
-		    Requeue(Article, MessageID);
-		}
-	    }
-	    switch (errno) {
-	    default:
-		(void)fprintf(stderr, "Requeue \"%s\", %s\n",
-			Article, strerror(errno));
-		Requeue(Article, MessageID);
-		break;
-	    case ENOENT:
-		/* Cancelled or expired.  We could look the file up
-		 * in the history database and see if it does exist. */
+	    if ((SMerrno == SMERR_NOENT) || (SMerrno == SMERR_UNINIT)) {
 		++STATmissing;
-		break;
-	    case ENOTDIR:
-		(void)fprintf(stderr, SKIPPING, Article, "mangled");
-		break;
+		continue;
+	    } else {
+		(void)fprintf(stderr, "Requeue \"%s\", %s\n",
+		    Article, SMerrorstr);
+		Requeue(Article, MessageID);
 	    }
 	    continue;
 	}
@@ -1529,26 +1397,6 @@ int main(int ac, char *av[])
 		Requeue(Article, (char *)NULL);
 		continue;
 	    }
-	}
-	if (Mime == TRUE) {
-	    MimeArticle = MTnotmime;
-	    GetMimeHeaders(qp, &ContentEncoding, &ContentType);
-	    if (QIOrewind(qp) < 0) {
-		(void)fprintf(stderr, "Can't rewind \"%s\", %s -- requeue\n",
-			Article, strerror(errno));
-		QIOclose(qp);
-		Requeue(Article, (char *)NULL);
-		continue;
-	    }
-	    if (ContentEncoding 
-		&& (caseEQ(ContentEncoding, "binary")
-		 || caseEQ(ContentEncoding, "8bit"))) {
-		if (ContentType == NULL || caseEQ(ContentType, "text"))
-		    MimeArticle = MTquotedprintable;
-		} else {
-		    /* Shouldbe MTbase64, but not implemented yet. */
-		    MimeArticle = MTnotmime;
-		}
 	}
 	if (GotInterrupt)
 	    Interrupted(Article, MessageID);
