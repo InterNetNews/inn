@@ -385,7 +385,10 @@ STATIC void SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	case FEED_PATH:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, Path.Data, Path.Used);
+	    if (!Hassamepath)
+		BUFFappend(bp, Path.Data, Path.Used);
+	    if (AddAlias)
+		BUFFappend(bp, Pathalias.Data, Pathalias.Used);
 	    BUFFappend(bp, Data->Path, Data->PathLength);
 	    break;
 	case FEED_REPLIC:

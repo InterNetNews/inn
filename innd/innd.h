@@ -432,6 +432,8 @@ EXTERN SITE		ME;
 EXTERN struct timeval	TimeOut;
 EXTERN TIMEINFO		Now;		/* Reasonably accurate time	*/
 EXTERN BOOL		ThrottledbyIOError;
+EXTERN BOOL		AddAlias;
+EXTERN BOOL		Hassamepath;
 
 /*
 ** Table size for limiting incoming connects.  Do not change the table

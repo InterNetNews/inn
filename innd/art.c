@@ -57,7 +57,6 @@ STATIC ARTOVERFIELD		*ARTfields;
 STATIC char		ARTctl[] = "control";
 STATIC char		ARTjnk[] = "junk";
 STATIC char		*ARTpathme;
-BOOL			AddAlias;
 
 /*
 **  Different types of rejected articles.
@@ -435,9 +434,10 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
     }
 
     size = Article->Used + 6 + ARTheaders[_xref].Length + 4 + 3 + Path.Used + Pathalias.Used + 64 + 1;
-    p =  artbuff = NEW(char, size);
+    p = artbuff = NEW(char, size);
     
     if (strncmp(Path.Data, path, Path.Used) != 0) {
+	Hassamepath = FALSE;
 	memcpy(p, Article->Data, path - Article->Data);
 	p += path - Article->Data;
 	memcpy(p, Path.Data, Path.Used);
@@ -449,6 +449,7 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
 	memcpy(p, path, Data->Body - path - 1);
 	p += Data->Body - path - 1;
     } else {
+	Hassamepath = TRUE;
 	if (AddAlias) {
 	    memcpy(p, Article->Data, path - Article->Data);
 	    p += path - Article->Data;
@@ -462,6 +463,14 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
 	    memcpy(p, Article->Data, Data->Body - Article->Data - 1);
 	    p += Data->Body - Article->Data - 1;
 	}
+    }
+
+    if (NeedPath) {
+	Data->Path = path;
+	for (i = Data->Body - path; --i >= 0; path++)
+	    if (*path == '\r' || *path == '\n')
+		break;
+	Data->PathLength = path - Data->Path;
     }
 
     if (ARTheaders[_lines].Found == 0) {
@@ -585,6 +594,7 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
 
     /* Do not append the same path twice */
     if (strncmp(Path.Data, p, Path.Used) != 0) {
+	Hassamepath = FALSE;
         vp->iov_base = Path.Data;
         vp->iov_len  = Path.Used;
         size += (vp++)->iov_len;
@@ -597,6 +607,7 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
 	vp->iov_len  = Data->Body - p - (innconf->wireformat == 1);
 	size += (vp++)->iov_len;
     } else {
+	Hassamepath = TRUE;
 	if (AddAlias) {
             vp->iov_base = Path.Data;
             vp->iov_len  = Path.Used;
@@ -617,7 +628,7 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
     if (NeedPath) {
 	Data->Path = p;
 	for (i = Data->Body - p; --i >= 0; p++)
-	    if (*p == '\n')
+	    if (*p == '\r' || *p == '\n')
 		break;
 	Data->PathLength = p - Data->Path;
     }
