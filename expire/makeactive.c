@@ -70,7 +70,7 @@ ReadOverviewIndex(char *name, long *lomark, long *himark)
 	}
 	(void)munmap((MMAP_PTR)mapped, count * OVERINDEXPACKSIZE);
     } else {
-	while (fread(&packed, OVERINDEXPACKSIZE, 1, fi) == 1) {
+	while (fread(packed, OVERINDEXPACKSIZE, 1, fi) == 1) {
 	    UnpackOverIndex(packed, &index);
 	    if (index.artnum < *lomark)
 		*lomark = index.artnum;

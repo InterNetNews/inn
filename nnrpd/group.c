@@ -618,7 +618,7 @@ STATIC void GRPscandir(char *dir, GROUPENTRY *ge)
 	    if (ARTarraysize == 0) {
 		ARTnumbers = NEW(ARTLIST, OVERicount);
 	    } else {
-		ARTnumbers = RENEW(ARTnumbers, ARTLIST, OVERicount);
+		RENEW(ARTnumbers, ARTLIST, OVERicount);
 	    }
 	    ARTarraysize = OVERicount;
 	    for (i = 0; i < OVERicount; i++) {

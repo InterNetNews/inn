@@ -871,7 +871,7 @@ GetMessageID(qp)
 		break;
 	    if (strlen(p) >= buffsize) {
 		if (buffsize)
-		    buff = RENEW(buff, char, strlen(p) + 1);
+		    RENEW(buff, char, strlen(p) + 1);
 		else
 		    buff = NEW(char, strlen(p) + 1);
 		

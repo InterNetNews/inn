@@ -208,7 +208,7 @@ HiLowWater(name, hi, low, oldhi, oldlow)
 	    if ((munmap((MMAP_PTR)mapped, count * OVERINDEXPACKSIZE)) < 0)
 		return FALSE;
 	} else {
-	    while (fread(&packed, OVERINDEXPACKSIZE, 1, fi) == 1) {
+	    while (fread(packed, OVERINDEXPACKSIZE, 1, fi) == 1) {
 		UnpackOverIndex(packed, &index);
 		if (index.artnum < lowmark)
 		    lowmark = index.artnum;

@@ -66,7 +66,7 @@ HASH HashMessageID(const char *MessageID) {
     len = strlen(MessageID);
     if (newlen <= len) {
 	if (new)
-	    new = RENEW(new, char, len + 1);
+	    RENEW(new, char, len + 1);
 	else
 	    new = NEW(char, len + 1);
 	newlen = len + 1;
