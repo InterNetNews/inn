@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.244.2.1 
+# From configure.in Revision: 1.244.2.2 
 # libtool.m4 - Configure libtool for the host system. -*-Shell-script-*-
 ## Copyright 1996, 1997, 1998, 1999, 2000, 2001
 ## Free Software Foundation, Inc.
@@ -7159,7 +7159,7 @@ else
   ;;
   *)
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
-  ac_dummy=""$PATH:/usr/sbin:/usr/lib""
+  ac_dummy=""/usr/sbin:/usr/lib""
   for ac_dir in $ac_dummy; do 
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
