@@ -1123,6 +1123,13 @@ Creating the Article Spool (CNFS only)
     specified in cycbuff.conf.  This will create a zero-filled file of the
     correct size; it may take a while, so be prepared to wait.
 
+    Here's a command that will print out the dd commands that you should
+    run:
+
+        awk -F: \
+        '/^cy/ { printf "dd if=/dev/zero of=%s bs=1k count=%s\n", $3, $4 }' \
+        cycbuff.conf
+
     If you are using raw devices, you don't technically have to do anything
     at all (since INN is capable of using the devices in /dev), but you
     probably want to create special device files for those devices somewhere
