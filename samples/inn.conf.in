@@ -97,7 +97,7 @@ keyartlimit:		100000
 keymaxwords:		250
 #
 # Other options
-innflags:		-i0
+innflags:		
 doinnwatch:		yes
 #
 # ---------------------------------
