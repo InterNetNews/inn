@@ -556,10 +556,12 @@ static bool fillContents (Article article)
 	if (opened)
 	    articlesize = article->arthandle->len;
 	else {
-	    syslog(LOG_ERR, "Could not retrieve %s: %s",
-		   article->fname, SMerrorstr);
-	    article->articleOk = false;
-	    return false;
+	    if (SMerrno != SMERR_NOENT) {
+		syslog(LOG_ERR, "Could not retrieve %s: %s",
+		       article->fname, SMerrorstr);
+		article->articleOk = false;
+		return false;
+	    }
 	}
     } else {
 	struct stat sb ;
