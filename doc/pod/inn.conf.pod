@@ -568,6 +568,12 @@ tracked.  Which user and client, that is recorded, is determined by
 nnrpd.track.  See nnrpd.track(5) for more information.  This is a boolean
 value and the default is false.
 
+=item I<nnrpdloadlimit>
+
+If set to a value other than C<0>, connections to nnrpd will be refused
+if the system load average is higher than this value.  The default value
+is C<16>.
+
 =back
 
 INN has optional support for generating keyword information automatically

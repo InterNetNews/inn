@@ -240,6 +240,7 @@ struct conf_vars {
     int readertrack;            /* Use the reader tracking system? */
     int nfsreader;              /* Use NFS reader functionality */
     int tradindexedmmap;        /* Whether to mmap for tradindexed */
+    int nnrpdloadlimit;		/* Maximum getloadvg() we allow */
 
     /* Reading -- Keyword Support */
     char keywords;              /* Generate keywords in overview? */

@@ -335,6 +335,7 @@ incoming_conf
     'readertrack',              0,
     'nfsreader',                0,
     'tradindexedmmap',          0,
+    'nnrpdloadlimit',           0,
 
     'keywords',                 0,
     'keyartlimit',              0,

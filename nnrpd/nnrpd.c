@@ -1158,14 +1158,14 @@ main(int argc, char *argv[])
 #endif /* HAVE_SSL */
 
     /* If requested, check the load average. */
-    if (NNRP_LOADLIMIT > 0) {
+    if (innconf->nnrpdloadlimit > 0) {
         double load[1];
 
         if (getloadavg(load, 1) < 0)
             warn("cannot obtain system load");
         else {
-            if ((int)(load[0] + 0.5) > NNRP_LOADLIMIT) {
-                syslog(L_NOTICE, "load %.2f > %d", load[0], NNRP_LOADLIMIT);
+            if ((int)(load[0] + 0.5) > innconf->nnrpdloadlimit) {
+                syslog(L_NOTICE, "load %.2f > %d", load[0], innconf->nnrpdloadlimit);
                 Reply("%d load at %.2f, try later\r\n", NNTP_GOODBYE_VAL,
                       load[0]);
                 ExitWithStats(1, TRUE);

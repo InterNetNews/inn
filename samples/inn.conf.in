@@ -82,6 +82,7 @@ readerswhenstopped:     false
 readertrack:            false
 nfsreader:              false
 tradindexedmmap:        true
+nnrpdloadlimit:         16
 
 # Reading -- Keyword Support
 #

@@ -357,5 +357,8 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_TRADINDEXEDMMAP			"tradindexedmmap"
 #define CONF_VAR_TRADINDEXEDMMAP		114
     { _CONF_TRADINDEXEDMMAP,			"",	2, 0 },
+#define _CONF_NNRPDLOADLIMIT			"nnrpdloadlimit"
+#define CONF_VAR_NNRPDLOADLIMIT			115
+    { _CONF_NNRPDLOADLIMIT,			"",	2, 0 },
 };
-#define MAX_CONF_VAR 115
+#define MAX_CONF_VAR 116

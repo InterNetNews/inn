@@ -205,6 +205,7 @@ SetDefaults(void)
     innconf->readertrack = FALSE;
     innconf->nfsreader = FALSE;
     innconf->tradindexedmmap = TRUE;
+    innconf->nnrpdloadlimit = NNRP_LOADLIMIT;
     innconf->strippostcc = FALSE;
     innconf->keywords = FALSE;		
     innconf->keylimit = 512 ;		
@@ -709,6 +710,11 @@ ReadInnConf(void)
 		TEST_CONFIG(CONF_VAR_TRADINDEXEDMMAP, bit);
 		if (!bit && boolval != -1) innconf->tradindexedmmap = boolval;
 		SET_CONFIG(CONF_VAR_TRADINDEXEDMMAP);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_NNRPDLOADLIMIT)) {
+		TEST_CONFIG(CONF_VAR_NNRPDLOADLIMIT, bit);
+		if (!bit) innconf->nnrpdloadlimit = atoi(p);
+		SET_CONFIG(CONF_VAR_NNRPDLOADLIMIT);
 	    } else 
 	    if (EQ(ConfigBuff,_CONF_NNRPPERLAUTH)) {
 		TEST_CONFIG(CONF_VAR_NNRPPERLAUTH, bit);
