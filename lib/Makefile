@@ -33,7 +33,7 @@ OBJECTS = $(MISSING_OBJ) \
 	readin.o remopen.o reservedfd.o resource.o sendarticle.o sendpass.o tempname.o \
 	waitnb.o wildmat.o xfopena.o xmalloc.o xmemerr.o xrealloc.o xwrite.o \
 	xwritev.o
-LOBJECTS	= $(OBJECTS:.o=.$(EXTOBJ))
+LOBJECTS	= $(OBJECTS:.o=.lo)
 
 all:			libinn.$(EXTLIB) perl.o ../include/autoconfig.h
 
