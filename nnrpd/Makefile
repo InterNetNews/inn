@@ -24,7 +24,7 @@ install:	$D$(NNRPD)
 
 ##  Low-level install actions.
 $D$(NNRPD):	nnrpd
-	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
+	$(LI_XPUB) $? $@
 
 clobber clean:
 	rm -f *.o $(ALL)
