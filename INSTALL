@@ -169,6 +169,8 @@ Installing INN
                           extendeddbz: extendeddbz in inn.conf
                           tablesize:   value in 3rd field on the 1st line in
                                        history.dir
+                          NOTE: --with-largefiles can not be used with
+                          --enable-tagged-hash
 
   --with-perl             Enables support for Perl, allowing you to install
                           filter scripts written in Perl. Highly recommended,

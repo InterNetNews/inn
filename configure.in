@@ -345,6 +345,13 @@ AC_SUBST(LOG_COMPRESS)
 AC_SUBST(LOG_COMPRESSEXT)
 dnl
 AC_ARG_ENABLE(tagged-hash,[  --enable-tagged-hash    use tagged hash table for history], DO_DBZ_TAGGED_HASH=DO, DO_DBZ_TAGGED_HASH=DONT)
+if test "x$DO_LFS" = "xDO"
+then
+    if test "x$DO_DBZ_TAGGED_HASH" = "xDO"
+    then
+       AC_MSG_ERROR(--enable-tagged-hash and --with-largefiles can not be used at the same time.)
+    fi
+fi
 AC_SUBST(DO_DBZ_TAGGED_HASH)
 dnl Automatic check for Mail is frequently wrong.  Use innmail to have
 dnl a single interface.
