@@ -78,6 +78,7 @@
 ../samples/expirerm
 ../samples/ihave
 ../samples/inncheck
+../samples/innmail
 ../samples/innreport.conf
 ../samples/innstat
 ../samples/innwatch

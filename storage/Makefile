@@ -18,8 +18,8 @@ CFLAGS	= -I. $(DEFS) -g -Wall $(PERLINC)
 LDFLAGS	= 
 ##  =()<LINTLIBSTYLE	= @<LINTLIBSTYLE>@>()=
 LINTLIBSTYLE	= NONE
-##  =()<LINTFLAGS	= @<LINTFLAGS>@ $(PERLINC)>()=
-LINTFLAGS	= -b -h -z $(DEFS) $(PERLINC)
+##  =()<LINTFLAGS	= @<LINTFLAGS>@ -I. $(PERLINC)>()=
+LINTFLAGS	= -b -h -z $(DEFS) -I. $(PERLINC)
 ##  =()<LINTFILTER	= @<LINTFILTER>@>()=
 LINTFILTER	= | sed -n -f ../sedf.sun
 ##  =()<YACC	= @<YACC>@>()=
@@ -51,6 +51,10 @@ methods:
 	done
 
 install:		all ../libstorage.a 
+
+lint:	all ../libstorage.a
+	@rm -f lint
+	-lint $(LINTFLAGS) $(SOURCES)  $(LINTLIB) $(LINTFILTER)  >lint
 
 clobber clean:
 	rm -f *.o objs/* libstorage.a *~
