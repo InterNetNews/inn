@@ -1760,14 +1760,17 @@ ARTmakeoverview(CHANNEL *cp)
     }
     if (overview->used + overview->left + len > overview->size)
         buffer_resize(overview, overview->size + len);
-    for (i = 0, q = &overview->data[overview->left] ; i < len ; p++, q++, i++) {
-      /* we can replace consecutive '\r', '\n' and '\r' with one ' ' here */
-      if (*p == '\t' || *p == '\n' || *p == '\r')
-	*q = ' ';
-      else
-	*q = *p;
+    for (i = 0, q = overview->data + overview->left; i < len; p++, q++, i++) {
+        if (*p == '\r' && i < len - 1 && p[1] == '\n') {
+            p++;
+            continue;
+        }
+        if (*p == '\0' || *p == '\t' || *p == '\n' || *p == '\r')
+            *q++ = ' ';
+        else
+            *q++ = *p;
+        overview->left++;
     }
-    overview->left += len;
 
     /* Patch the old keywords back in. */
     if (DO_KEYWORDS && innconf->keywords) {
