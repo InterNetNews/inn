@@ -323,6 +323,13 @@ Needed Bug Fixes
   on innd to check the message ID.  The message ID checking code from
   innd/art.c should be moved into lib so that nnrpd can use it as well.
 
+* Currently, if the list of newsgroups on an Xref slave is out of sync
+  with the newsgroups on the master, receiving an article crossposted to
+  one of the groups that doesn't exist on the slave will cause the slave
+  to throttle.  This isn't the best behavior; the server should either
+  optionally create the missing newsgroup or just ignore that crossposted
+  group (and modify Xref accordingly?).
+
 * Someone should go through the BUGS sections of all of the manpages and
   fix those for which the current behavior is unacceptable.
 
