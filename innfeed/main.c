@@ -328,13 +328,6 @@ int main (int argc, char **argv)
         InputFile = "";
     }
 
-  if (subProgram != NULL && (talkToSelf == true || InputFile))
-    {
-      dprintf (0,"Cannot specify '-s' with '-x' or an input file\n") ;
-      syslog (LOG_ERR,"Incorrect arguments: '-s' with '-x' or an input file\n");
-      usage (1) ;
-    }
-
   /*
    * set up the config file name and then read the file in. Order is important.
    */
@@ -364,6 +357,14 @@ int main (int argc, char **argv)
 
   rval = readConfig (configFile,(checkConfig ? stderr : NULL),
                      checkConfig,loggingLevel > 0);
+
+  if (subProgram != NULL && (talkToSelf == true || InputFile))
+    {
+      dprintf (0,"Cannot specify '-s' with '-x' or an input file\n") ;
+      syslog (LOG_ERR,"Incorrect arguments: '-s' with '-x' or an input file\n");
+      usage (1) ;
+    }
+
   if (checkConfig)
     {
       if (!rval)
@@ -781,6 +782,15 @@ static int mainConfigLoadCbk (void *data)
 
   /***************************************************/
   
+  if (getString (topScope,"input-file",&p,NO_INHERIT))
+    {
+      if (*p != '\0')
+	InputFile = buildFilename (getTapeDirectory(),p) ;
+      else
+	InputFile = "" ;
+      free (p) ;
+    }
+  
   if (getString (topScope,"pid-file",&p,NO_INHERIT))
     {
       pidFile = buildFilename (getTapeDirectory(),p) ;
@@ -914,6 +924,17 @@ static int mainOptionsProcess (void *data)
         }
       else
         addString (topScope,"log-file",strdup (lopt)) ;
+    }
+
+  if (InputFile != NULL)
+    {
+      if ((v = findValue (topScope,"input-file",NO_INHERIT)) != NULL)
+        {
+          FREE (v->v.charp_val) ;
+          v->v.charp_val = strdup (InputFile) ;
+        }
+      else
+        addString (topScope,"input-file",strdup (InputFile)) ;
     }
 
   return 1 ;

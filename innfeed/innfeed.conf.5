@@ -151,13 +151,18 @@ There is a maximum nesting depth of 10.
 .SH "GLOBAL VALUES"
 .PP
 The following listing show all the keys that apply to the process as
-whole. These are not required, but innfeed will issue a warning if they are
-not defined.
+whole. These are not required (compiled-in defaults are used where needed).
 .TP
 .B news-spool
 This key requires a pathname value. It specifies where the top of the
 article spool is. This corresponds to the ``\fI\-a\fP'' command-line
 option.
+.TP
+.B input-file
+This key requires a pathname value. It specifies the pathname (relative to
+the \fIbacklog-directory\fP) that should be read in funnel-file mode. This
+corresponds to giving a filename as an argument on the command-line (i.e.
+its presence also implies that funnel-file mode should be used).
 .TP
 .B pid-file
 This key requires a pathname value. It specifies the pathname (relative to

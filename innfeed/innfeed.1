@@ -101,7 +101,8 @@ only limitations are the process limits for open file descriptors and memory.
 .I Innfeed
 has three modes of operation: channel, funnel-file and batch.
 .PP
-Channel mode is used when no filename is given on the command line and 
+Channel mode is used when no filename is given on the command line,
+the ``input-file'' keyword is \fInot\fP given in the config file, \fIand\fP
 the ``\fI\-x\fP'' option is \fInot\fP given.
 In channel mode innfeed runs with stdin connected via a pipe to
 innd. Whenever innd closes this pipe (and it has several reasons during
@@ -111,7 +112,8 @@ issuing a QUIT command. This means innfeed may take a while to exit
 depending on how slow your peers are. It never (well, almost never) just
 drops the connection.
 .PP
-Funnel-file mode is used when a filename is given as an argument.
+Funnel-file mode is used when a filename is given as an argument
+or the ``input-file'' keyword is given in the config file.
 In funnel file mode it reads the specified file for the same formatted
 information as innd would give in channel mode. It is expected that innd is
 continually writing to this file, so when innfeed reaches the end of the file
