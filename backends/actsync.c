@@ -72,7 +72,7 @@
 #include <dirent.h>
 #include "clibrary.h"
 #include "libinn.h"
-#include "qio.h"
+#include "inn/qio.h"
 #include "paths.h"
 #include "macros.h"
 
@@ -817,7 +817,7 @@ get_active(host, hostid, len, grp, errs)
     FILE *FromServer;		/* stream from server */
     FILE *ToServer;		/* stream to server */
     QIOSTATE *qp;		/* QIO active state */
-    char buff[QIO_BUFFER+1];	/* QIO buffer */
+    char buff[8192+1];		/* QIO buffer */
     char *line;			/* the line just read */
     struct grp *ret;		/* array of groups to return */
     struct grp *cur;		/* current grp entry being formed */
