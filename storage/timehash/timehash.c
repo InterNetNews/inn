@@ -478,5 +478,20 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
     return art;
 }
 
+BOOL timehash_ctl(PROBETYPE type, TOKEN *token, void *value) {
+    struct artngnum *ann;
+
+    switch (type) {
+    case SMARTNGNUM:
+	if ((ann = (struct artngnum *)value) == NULL)
+	    return FALSE;
+	/* make SMprobe() call timehash_retrieve() */
+	ann->artnum = 0;
+	return TRUE;
+    default:
+	return FALSE;
+    }
+}
+
 void timehash_shutdown(void) {
 }
