@@ -4,10 +4,7 @@
 distrib.pats \- default values for Usenet Distribution header
 .SH DESCRIPTION
 The file
-.I <_PATH_DISTPATS in config.data>
-(typically
-.\" =()<.I @<typ_PATH_DISTPATS>@)>()=
-.I /var/news/etc/distrib.pats)
+.I <pathetc in inn.conf>/distrib.pats
 is used to determine the default value of the Distribution header.
 It consists of a series of lines; blank lines and lines beginning
 with a number sign (``#'') are ignored.
@@ -50,4 +47,4 @@ This is revision \\$3, dated \\$4.
 ..
 .R$ $Id$
 .SH "SEE ALSO"
-inews(1), libinn(3).
+inews(1), inn.conf(5), libinn(3).

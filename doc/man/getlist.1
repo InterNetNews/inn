@@ -33,15 +33,9 @@ or
 These values request the
 .IR active (5),
 .IR active.times ,
-.I <_PATH_NNRPDIST in config.data> 
-(typically
-.\" =()<.IR @<typ_PATH_NNRPDIST>@ ),>()=
-.IR /var/news/etc/distributions ),
+.IR <pathetc\ in\ inn.conf>/distributions .
 or
-.I <_PATH_NEWSGROUPS in config.data>
-(typically
-.\" =()<.I @<typ_PATH_NEWSGROUPS>@ )>()=
-.I /var/news/etc/newsgroups )
+.I <pathdb in inn.conf>/newsgroups
 files, respectively.
 .SH OPTIONS
 .TP
@@ -93,4 +87,4 @@ Written by Landon Curt Noll <chongo@toad.com> for InterNetNews.
 This is revision \\$3, dated \\$4.
 ..
 .SH "SEE ALSO"
-active(5), nnrpd(8), wildmat(3).
+active(5), inn.conf(5), nnrpd(8), wildmat(3).

@@ -4,10 +4,7 @@
 inn.conf \- configuration data for InterNetNews programs
 .SH DESCRIPTION
 The file
-.I <_PATH_CONFIG in config.data>
-(typically
-.\" =()<.I @<typ_PATH_CONFIG>@)>()=
-.I /var/news/etc/inn.conf)
+.I <PREFIX specified with \-\-prefix at configure>/etc/inn.conf
 is used to determine various parameters.
 Blank lines and lines starting with a number sign (``#'') are ignored.
 All other lines specify parameters that may be read, and should be of
@@ -80,9 +77,12 @@ in it, then it is assumed to have the full domain name.
 .TP
 .I overviewmmap
 If this is false then nnrpd, expire and makehistory will use regular file access to access overviews 
-and overview indices, otherwise it will mmap() them.  Setting this to true
+and overview indices, otherwise it will
+.IR mmap (2)
+them.  Setting this to true
 will give better performance on most system, but some system do have problems
-with mmap().
+with
+.IR mmap (2).
 The default value is ``true.''
 .TP
 .I storageapi
@@ -94,11 +94,13 @@ be used.
 If storage api is used, any overview database will be stored as unified
 overview which is needed if nnrpd will be used.
 To specify which index is used for unified overview, you need to edit
-overview.ctl.
+.IR <pathetc\ in\ inn.conf>/overview.ctl .
 If you run innd as a feeder only, you do not need overview.ctl.
 .TP
 .I maxforks
-How many times to attempt a fork() before giving up.
+How many times to attempt a
+.IR fork (2)
+before giving up.
 .TP
 .I maxartsize
 The maximum size article (in bytes) that will be accepted by the
@@ -159,8 +161,9 @@ What file name to use for storing overview data. Defaults to
 .TP
 .I keywords
 Should keywords be generated in the overview databases. Must be a boolean
-value. Default is false. Changing this requires also changing overview.fmt and
-removing the exising overview database.
+value. Default is false. Changing this requires also changing
+.I <pathetc in inn.conf>/overview.fmt
+and removing the exising overview database.
 .TP
 .I keylimit
 Maximum number of bytes allocated internally for building keyword data.

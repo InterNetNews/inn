@@ -4,10 +4,7 @@
 overview.fmt \- format of news overview database
 .SH DESCRIPTION
 The file
-.I <_PATH_SCHEMA in config.data>
-(typically
-.\" =()<.I @<typ_PATH_SCHEMA>@)>()=
-.I /var/news/etc/overview.fmt)
+.I <pathetc in inn.conf>/overview.fmt
 specifies the organization of the news overview database.
 Blank lines and lines beginning with a number sign (``#'') are ignored.
 The order of lines in this file is important; it determines the order
@@ -47,3 +44,5 @@ package written by Geoff Collyer <geoff@world.std.com>.
 This is revision \\$3, dated \\$4.
 ..
 .R$ $Id$
+.SH "SEE ALSO"
+inn.conf(5)

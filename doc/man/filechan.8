@@ -56,10 +56,7 @@ used to specify a different number of initial fields.
 By default,
 .I filechan
 writes its output into the directory
-.I <_PATH_BATCHDIR in config.data> 
-(typically
-.\" =()<.IR @<typ_PATH_BATCHDIR>@ .)>()=
-.IR /var/news/spool/out.going .)
+.IR <pathoutgoing\ in\ inn.conf> .
 The ``\fB\-d\fP'' flag may be used to specify a directory the program should
 change to before starting.
 .TP
@@ -142,5 +139,6 @@ This is revision \\$3, dated \\$4.
 .R$ $Id$
 .SH "SEE ALSO"
 buffchan(8),
+inn.conf(5),
 innd(8),
 newsfeeds(5).

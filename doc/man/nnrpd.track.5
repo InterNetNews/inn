@@ -4,10 +4,7 @@
 nnrpd.track \- file to specify hosts to be tracked by nnrpd.
 .SH DESCRIPTION
 This file, which is located in
-.I <_PATH_NEWSLIB>
-(typically
-.\" =()<.I @<typ_PATH_NEWSLIB>@)>()=
-.I /var/news/etc)
+.I <PATH in configure>/etc
 specifies which hosts are to have their activities recorded during an
 .I nnrpd
 session.
@@ -47,6 +44,7 @@ This is revision \\$3, dated \\$4.
 ..
 .R$ $Id$
 .SH "SEE ALSO"
+inn.conf(5),
 innd(8),
 newsfeeds(5),
 nnrpd(8),

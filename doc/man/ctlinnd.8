@@ -345,9 +345,8 @@ does a ``readers'' command with ``no'' as the flag and
 as the text.
 .TP
 .BI perl " flag"
-Enable or disable perl news filtering, when 
-.I <PERL_SUPPORT in config.data>
-== DO.
+Enable or disable perl news filtering, if
+.IR <\-\-with\-perl\ is\ specified\ at\ configure> .
 If
 .I flag
 starts with the letter ``y'' then filtering is enabled.  If it starts with
@@ -403,8 +402,7 @@ file is reloaded; if it is the word ``overview.ctl'' then the
 .IR overview.ctl (5)
 file is reloaded.
 If
-.I <PERL_SUPPORT in config.data>
-== DO
+.I <\-\-with\-perl is specified at configure>
 and it is the word ``filter.perl'' then the
 .IR filter_innd.pl
 file is reloaded.  If a Perl procedure named ``filter_before_reload'' exists,
@@ -421,8 +419,7 @@ to do this. The
 file cannot be reloaded.
 
 If
-.IR <TCL_SUPPORT in config.data>
-== DO
+.I <\-\-with\-tcl is specified at configure>
 and it is the word ``filter.tcl'' then the
 .IR filter.tcl
 file is reloaded.  If a TCL procedure named ``filter_before_reload'' exists,
@@ -500,9 +497,8 @@ can be a numeric signal number or the word ``hup,'' ``int,'' or ``term'';
 case is not significant.
 .TP
 .BI tcl " flag"
-Enable or disable Tcl news filtering, when
-.I <TCL_SUPPORT in config.data>
-== DO.
+Enable or disable Tcl news filtering, if
+.IR <\-\-with\-tcl\ is\ specified\ at\ configure> .
 If
 .I flag
 starts with the letter ``y'' then filtering is enabled.  If it starts with
@@ -556,10 +552,7 @@ routine.
 .BI xexec " path"
 The server gets ready to shut itself down, but instead of exiting it
 execs
-.I <_PATH_INNDSTART in config.data>
-(typically 
-.\"=()<.I @<typ_PATH_INNDSTART>@ )>()=
-.I /usr/news/bin/inndstart )
+.I <PREFIX specified with \-\-prefix at configure>/inndstart
 with all of its original arguments except for ``\fB\-r\fP''.
 .I Path
 can be any of ``innd'', ``inndstart'' or an empty string.

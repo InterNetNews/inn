@@ -368,14 +368,14 @@ parameter with information about the current time and tzone.
 The ``time'' and ``usec'' fields will be filled in by a call to
 .IR gettimeofday (2)
 when
-.I <HAVE_GETTIMEOFDAY in config.data>
-== DO.  Otherwise, the ``time'' field will be filled in by a call to
+.I <$ac_cv_func_gettimeofday in config.cache>
+is ``yes''.  Otherwise, the ``time'' field will be filled in by a call to
 .IR time (2),
 and the ``usec'' field will be set to zero.
 The ``tzone'' field will be filled in with the current offset from GMT.
-When
+If
 .I <HAVE_TM_GMTOFF in config.data>
-== DO this is done by calling
+is ``DO'', this is done by calling
 .IR localtime (3)
 and taking the value of the ``tm_gmtoff'' field, negating it, and dividing
 it by 60.
@@ -393,7 +393,7 @@ This routine returns \-1 on failure, or zero on success.
 .I NNTPlocalopen
 when
 .I <HAVE_UNIX_DOMAIN in config.data>
-== DO, 
+is ``DO'', 
 opens a connection to the private port of an InterNetNews server running on
 the local host.
 It returns \-1 on failure, or zero on success.
@@ -409,7 +409,7 @@ filled in with the text of the server's reply.
 This routine is not for general use.
 When
 .I <HAVE_UNIX_DOMAIN in config.data>
-is not DO, this
+is ``DONT'', this
 is a stub routine, for compatibility with systems that have Unix-domain
 stream sockets.
 It always returns \-1.

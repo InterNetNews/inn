@@ -120,10 +120,7 @@ seconds.
 .TP
 .B \-r
 By default, the program sets its standard error to
-.I <_PATH_ERRLOG in config.data> .
-(typically
-.\" =()<.IR @<typ_PATH_ERRLOG>@ .)>()=
-.IR /var/log/news/errlog .)
+.IR <pathlog\ in\ inn.conf>/errlog .
 
 
 To suppress this redirection, use the ``\fB\-r\fP'' flag.
@@ -138,10 +135,7 @@ This is a
 format string which should have a single ``%s'' parameter which will be given
 the field.
 The default value is
-.I <_PATH_BATCHDIR in config.data>/ %s
-(typically
-.\" =()<.IR @<typ_PATH_BATCHDIR>@/ %s .)>()=
-.IR /var/news/spool/out.going/ %s .)
+.IR <pathoutgoing\ in\ inn.conf>/%s .
 See the description of this flag in
 .IR filechan (8).
 .TP
@@ -166,8 +160,8 @@ Applications can tell that the ``flush'' has completed by renaming the
 file before issuing the command;
 .I buffchan
 has completed the command when the original filename re-appears.
-.I if <HAVE_FCHMOD in config.data>
-== DO, then 
+.I if <$ac_cv_func_fchmod in config.cache>
+is ``yes'', then 
 .IP 
 .I Buffchan
 also changes the access permissions of the file from read-only for
@@ -204,5 +198,6 @@ This is revision \\$3, dated \\$4.
 .SH "SEE ALSO"
 ctlinnd(8),
 filechan(8),
+inn.conf(5),
 innd(8),
 newsfeeds(5).

@@ -4,10 +4,7 @@
 overview.ctl \- configuration file for unified overview
 .SH DESCRIPTION
 The file
-.I <_PATH_OVERVIEWCTL in config.data>
-(typically
-.\" =()<.I @<typ_PATH_OVERVIEWCTL>@)>()=
-.I /var/news/etc/overview.ctl)
+.I <pathetc in inn.conf>
 is required if the new storage API is used on machines running
 .IR nnrpd (8).
 Optional on feed-only machines.
@@ -59,10 +56,7 @@ is only used for matching.
 .PP
 If a newsgroup matches wildmat pattern, overview data is stored
 in
-.I <_PATH_OVERVIEWDIR in config.data>/index_number/overview
-(typically
-.\" =()<.IR @<typ_PATH_OVERVIEWDIR>@/index_number/overview .)>()=
-.IR /var/news/spool/over.view/index_number/overview .)
+.IR <pathoverview\ in\ inn.conf>/index_number/overview .
 Note that the file is interpreted in order and first match line
 is used to store overview data.
 .PP
@@ -84,6 +78,7 @@ ctlinnd(8),
 expire(8),
 expireindex(8),
 expireover(8),
+inn.conf(5),
 innd(8),
 history(5),
 newsfeeds(5),

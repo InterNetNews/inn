@@ -3,10 +3,7 @@
 newslog \- description of Usenet log files
 .SH DESCRIPTION
 Most log files created by Usenet programs reside in the
-.I <_PATH_MOST_LOGS in config.data>
-(typically
-.\" =()<.I @<typ_PATH_MOST_LOGS>@ )>()=
-.I /var/log/news )
+.I <pathlog in inn.conf>
 directory and have a ``.log'' extension.
 Several versions are usually kept with an additional extension such as ``.1'',
 ``.2'', etc. \(em the higher the number, the older the log.
@@ -83,10 +80,7 @@ This file contains the standard output and standard error of any program
 spawned by
 .IR innd (8).
 The most common programs are the control-message handlers found in
-.I <_PATH_CONTROLPROGS in config.data> .
-(typically
-.\" =()<.IR @<typ_PATH_CONTROLPROGS>@ )>()=
-.IR /usr/news/bin/control )
+.IR <pathcontrol\ in\ inn.conf> .
 This file should be empty.
 .I Scanlogs
 will print the entire contents of this log file if it is non-empty.
@@ -133,11 +127,10 @@ will print the entire contents of this log file if it is non-empty.
 You should have the following line in your
 .IR syslog.conf (5)
 file.  (A typical entry is shown; it should agree with
-.I <_PATH_MOST_LOGS in config.data>)
+.I <pathlog in inn.conf>)
 .RS
 .RS
-.\" =()<news.crit  @<typ_PATH_MOST_LOGS>@/news.crit>()=
-news.crit  /var/log/news/news.crit
+news.crit  <pathlog in inn.conf>/news.crit
 .RE
 .RE
 .TP
@@ -150,14 +143,13 @@ This log file should be empty.
 .I Scanlogs
 will print the entire contents of this log file if it is non-empty.
 You should have the following line in your
-.I syslog.conf (5)
+.IR syslog.conf (5)
 file:
 (A typical entry is shown; it should agree with
-.I <_PATH_MOST_LOGS in config.data>)
+.I <pathlog in inn.conf>)
 .RS
 .RS
-.\" =()<news.err  @<typ_PATH_MOST_LOGS>@/news.err>()=
-news.err  /var/log/news/news.err
+news.err  <pathlog in inn.conf>/news.err
 .RE
 .RE
 .TP
@@ -170,17 +162,16 @@ are appended to this file via
 uses the
 .IR perl (1)
 script
-.I innlog.pl
+.IR innreport (8)
 to summarize this file.
 You should have the following line in your
-.I syslog.conf (5)
+.IR syslog.conf (5)
 file:
 (A typical entry is shown; it should agree with
-.I <_PATH_MOST_LOGS in config.data>)
+.I <pathlog in inn.conf>)
 .RS
 .RS
-.\" =()<news.notice  @<typ_PATH_MOST_LOGS>@/news.notice>()=
-news.notice  /var/log/news/news.notice
+news.notice  <pathlog in inn.conf>/news.notice
 .RE
 .RE
 .TP

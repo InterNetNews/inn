@@ -76,19 +76,13 @@ text file and the associated
 .IR dbz (3)
 database.
 The default name of the text file is
-.I <_PATH_HISTORY in config.data> 
-(typically
-.\" =()<.IR @<typ_PATH_HISTORY>@ );>()=
-.IR /var/news/etc/history );
+.IR <pathdb\ in\ inn.conf>/history ;
 to specify a different name, use the ``\fB\-f\fP'' flag.
 .I Makehistory
 scans the
 .IR active (5)
 file to determine which newsgroup directories within the spool directory,
-.I <_PATH_SPOOL in config.data> 
-(typically
-.\" =()<.IR @<typ_PATH_SPOOL>@ ,)>()=
-.IR /var/news/spool/articles ,)
+.IR <patharticles\ in\ inn.conf> ,
 should be scanned.
 (If a group is removed, but its spool directory still exists,
 .I makehistory
@@ -117,10 +111,7 @@ history entries).
 .B \-a
 If the ``\fB\-a\fP'' flag is given then the argument is the active file to
 use rather than the default one of
-.I <_PATH_ACTIVE in config.data> 
-(typically
-.\" =()<.IR @<typ_PATH_ACTIVE>@ .)>()=
-.IR /var/news/etc/active .)
+.IR <pathdb\ in\ inn.conf>/active .
 .TP
 .B \-b
 If the ``\-b'' flag is used, then
@@ -133,10 +124,7 @@ If the ``\fB\-D\fP'' flag is used, then
 is used as traditional spool directory.  This directory is used for
 translating traditional stored articles into new storing method through storage
 api.  The default is
-.I <_PATH_SPOOL in config.data>
-(typically
-.\" =()<.IR @<typ_PATH_SPOOL>@ .)>()=
-.IR /var/news/spool/articles .)
+.IR <patharticles\ in\ inn.conf> .
 This flag is valid if ``\fB\-t\fP'' flag is used.
 .TP
 .B \-d
@@ -145,10 +133,7 @@ If the ``\fB\-d\fP'' flag is used, then
 is used as overview directory.  This directory is used for
 translating traditional stored articles into new storing method through storage
 api.  The default is
-.I <_PATH_OVERVIEW in config.data>
-(typically
-.\" =()<.IR @<typ_PATH_OVERVIEWDIR>@ .)>()=
-.IR /var/news/spool/over.view .)
+.IR <pathoverview\ in\ inn.conf> .
 This flag is valid if ``\fB\-t\fP'' flag is used.
 .TP
 .B \-f
@@ -173,10 +158,7 @@ If the ``\fB\-h\fP'' flag is used, then
 is used as old history.  This file is used for translating traditional
 stored articles into new storing method through storage api.  The default
 is
-.I <_PATH_HISTORY in config.data>
-(typically
-.\" =()<.IR @<typ_PATH_HISTORY>@ .)>()=
-.IR /var/news/etc/history .)
+.IR <pathdb\ in\ inn.conf>/history .
 This flag is valid if ``\fB\-t\fP'' flag is used.
 .TP
 .B \-I
@@ -190,8 +172,7 @@ you can make new overview index file.  To do this,
 .PP
 .RS
 .nf
-.\" =()<sort -t' ' +1 -2 file \&| @<typ_PATH_NEWSBIN>@/expireindex -a -o -z>()=
-sort -t' ' +1 -2 file \&| /usr/news/bin/expireindex -a -o -z
+sort -t' ' +1 -2 file \&| <PREFIX specified with --prefix at configure>/expireindex -a -o -z
 .fi
 .sp 1
 This flag is valid if ``\fB\-t\fP'' flag is used.
@@ -262,9 +243,6 @@ needs to create a temporary file that contains one line for each article
 it finds, which can become very large.
 This file is created in the
 .I <_PATH_TMP in config.data>
-(typically
-.\" =()<.I @<typ_PATH_TMP>@)>()=
-.I /var/tmp)
 directory.  The ``TMPDIR'' environment variable may be used to specify a
 different directory.  Alternatively, the ``\fB\-T\fP'' flag may be used to
 specify a temporary directory.  In addition, the
@@ -354,8 +332,7 @@ commands:
 .RS
 .nf
 ctlinnd throttle "Rebuilding history file"
-.\" =()<cd @<typ_PATH_NEWSLIB>@>()=
-cd /var/news/etc
+cd <pathetc in inn.conf>
 if makehistory \-n \-f history.n ; then
     :
 else
@@ -369,7 +346,7 @@ f\&i
 if makehistory \-r \-s `wc \-l <history` \-f history.n; then
     mv history.n history
     mv history.n.dir history.dir
-# if <DBZ_TAGGED_HASH in config.data> == DO
+# if <DBZ_TAGGED_HASH in config.data> is DO
     mv history.n.pag history.pag
 # else DONT
     mv history.n.index history.index
@@ -387,8 +364,7 @@ If the news spool area is split across multiple partitions, the following
 commands should probably be run before the database is regenerated:
 .RS
 .nf
-.\" =()<cd @<typ_PATH_SPOOL>@>()=
-cd /var/news/spool/articles
+cd <patharticles in inn.conf>
 find . -type l -name '[1-9][0-9]*' -print | xargs -t rm
 .fi
 .RE
@@ -405,6 +381,7 @@ ctlinnd(8),
 dbz(3),
 filechan(8),
 history(5),
+inn.conf(5),
 innd(8),
 newsfeeds(5),
 makeactive(8),

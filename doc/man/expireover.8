@@ -38,10 +38,7 @@ expireover \- Expire entries from the news overview database
 .I Expireover
 expires entries from the news overview database.
 It reads a list of pathnames (relative to the spool directory,
-.I <_PATH_SPOOL in config.data> ,
-typically
-.\" =()<.IR @<typ_PATH_SPOOL>@ ),>()=
-.IR /var/news/spool/articles ),
+.IR <patharticles\ in\ inn.conf> ,
 from the specified
 .I files
 or standard input if none are specified.
@@ -49,8 +46,11 @@ or standard input if none are specified.
 It then removes any mention of those articles from the appropriate overview
 database.
 .PP
-If you have turned on the storage manager with the 'storageapi' in inn.conf (5),
-you need to use expireindex (8) to expire overveiw index.
+If you have turned on the storage manager with the 'storageapi' in
+.IR inn.conf (5),
+you need to use
+.IR expireindex (8)
+to expire overveiw index.
 .SH OPTIONS
 .TP
 .B \-a
@@ -68,10 +68,7 @@ to add only a subset of the newsgroups.
 .B \-D
 The ``\-D'' flag can be used to specify where the databases are stored.
 The default directory is
-.I <_PATH_OVERVIEWDIR in config.data> 
-(typically
-.\" =()<.IR @<typ_PATH_OVERVIEWDIR>@ .)>()=
-.IR /var/news/spool/over.view .)
+.IR <pathoverview\ in\ inn.conf> .
 .TP
 .B \-f
 When the ``\fB\-\fPs'' flag is used, then
@@ -126,4 +123,5 @@ This is revision \\$3, dated \\$4.
 .SH "SEE ALSO"
 expire(8),
 expireindex(8),
+inn.conf(5),
 overview.fmt(5).

@@ -27,20 +27,14 @@ If the load gets too high, or the disk gets too full, it throttles the server.
 When the condition restores, it unblocks the server.
 In addition, on each pass through the loop it will check the
 logfile
-.I <_PATH_MOST_LOGS in config.data>/news.crit
-(typically
-.\" =()<.I @<typ_PATH_MOST_LOGS>@/news.crit )>()=
-.I /var/log/news/news.crit )
+.I <pathlog in inn.conf>/news.crit
 to see if it has been modified, and send mail to the news administrator
 if so.
 .PP
 Upon receipt of an interrupt signal (SIGINT),
 .IR innwatch
 will report its status in the file
-.I <_PATH_INNWSTATUS in config.data> 
-(typically
-.\" =()<.I @<typ_PATH_INNWSTATUS>@ .)>()=
-.I /var/news/run/innwatch.status .)
+.IR <pathrun\ in\ inn.conf>/innwatch.status .
 .SH OPTIONS
 .TP
 .B \-l 
@@ -61,5 +55,6 @@ This is revision \\$3, dated \\$4.
 .R$ $Id$
 .SH "SEE ALSO"
 ctlinnd(8), 
+inn.conf(5),
 innwatch.ctl(5),
 shlock(1).

@@ -4,10 +4,7 @@
 control.ctl \- specify handling of Usenet control messages
 .SH DESCRIPTION
 The file
-.I <_PATH_CONTROLCTL in config.data>
-(typically
-.\" =()<.I @<typ_PATH_CONTROLCTL>@ )>()=
-.I /var/news/etc/control.ctl )
+.I <pathetc in inn.conf>/control.ctl
 is used to determine what action is taken when a control message
 is received.
 It is read by the
@@ -33,7 +30,7 @@ of the person posting the message.
 The matching is done using the shell's
 .I case
 statement; see
-.I sh (1)
+.IR sh (1)
 for details.
 .PP
 If the control message is ``newgroup'' or ``rmgroup'' then the third
@@ -77,10 +74,7 @@ A null string is equivalent to /dev/null.
 A pathname that starts with a slash is taken as the absolute filename to
 use as the log.
 All other pathnames are written to
-.I <_PATH_MOST_LOGS in config.data>/file.log 
-(typically
-.\" =()<.IR @<typ_PATH_MOST_LOGS>@/ file .log .)>()=
-.IR /var/log/news/ file .log .)
+.IR <pathlog\ in\ inn.conf>/file.log .
 The log is written by
 .I writelog
 (see
@@ -95,7 +89,7 @@ If the value starts with the string ``verify-'', for example,
 message will be done using the key issued by the ``user'' defined by the
 rest of the string -- ``news.announce.newsgroups'' in this example.
 .TP
-.BR verify-* =file
+.BI verify-*= file
 PGP verification is done as for the ``verify-*'' entries, and a log entry
 is written to the specified file.
 .TP
@@ -103,12 +97,9 @@ is written to the specified file.
 A one-line log notice is sent to standard error.
 .I Innd
 normally directs this to the file
-.I <_PATH_ERRLOG in config.data> 
-(typically
-.\" =()<.IR @<typ_PATH_ERRLOG>@ .)>()=
-.IR /var/log/news/errlog .)
+.IR <pathlog\ in\ inn.conf>/errlog .
 .TP
-.BI log =file
+.BI log= file
 A log entry is written to the specified log file,
 .IR file ,
 which is interpreted as described above.
@@ -139,6 +130,7 @@ This is revision \\$3, dated \\$4.
 ..
 .R$ $Id$
 .SH "SEE ALSO"
+inn.conf(5),
 innd(8),
 newsfeeds(5),
 scanlogs(8).

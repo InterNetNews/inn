@@ -4,10 +4,7 @@
 expire.ctl \- control file for Usenet article expiration
 .SH DESCRIPTION
 The file
-.I <_PATH_EXPIRECTL in config.data>
-(typically
-.\" =()<.I @<typ_PATH_EXPIRECTL>@)>()=
-.I /var/news/etc/expire.ctl)
+.I <pathetc in inn.conf>/expire.ctl
 is the default control file for the
 .IR expire (8)
 program, which reads it at start-up.
@@ -109,7 +106,8 @@ If
 .I purge
 is the word ``never'' then the article will never be deleted.
 .PP
-If you have turned on the storage manager with the 'storageapi' in inn.conf (5)
+If you have turned on the storage manager with the 'storageapi' in
+.IR inn.conf (5)
 option and you don't use ``\-c'' option with expire,
 then you will need to use a slightly different format for specifying expiration
 times for storage classes:
@@ -120,7 +118,9 @@ classnum:keep:default:purge
 .RE
 Where
 .I classnum 
-is the number that you specified in storage.ctl (5).  The 
+is the number that you specified in
+.IR storage.ctl (5).
+The 
 rest of the fields are identical to the 5 field format.
 .PP
 It is often useful to honor the expiration headers in articles, especially
@@ -163,4 +163,6 @@ This is revision \\$3, dated \\$4.
 .R$ $Id$
 .SH "SEE ALSO"
 expire(8),
+inn.conf(5),
+storage.ctl(5),
 wildmat(3).

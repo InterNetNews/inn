@@ -153,11 +153,7 @@ file is required to have 4 lines:
 .in +0.5i
 .nf
 \fBhost=\fP\fIhost2\fP
-\fBspool=\fP\fI<_PATH_SPOOL in config.data>\fP
-(typically
-.\" =()<\fBspool=\fP\fI@<typ_PATH_SPOOL>@\fP>()=
-\fBspool=\fP\fI/var/news/spool/articles\fP
-)
+\fBspool=\fP\fI<patharticles in inn.conf>\fP
 \fBignore_file=\fP\fIignore_file\fP
 \fBflags=\fP\fIactsyncd\fP (8) options
 .fi
@@ -929,14 +925,10 @@ file:
 host=news.uu.net
 
 # location of the ignore file
-# (setup as <_PATH_ACTSYNC_IGN in config.data> )
-.\" =()<ignore_file=@<typ_PATH_ACTSYNC_IGN>@>()=
-ignore_file=/var/news/etc/actsync.ign
+ignore_file=<PREFIX specified with \-\-prefix at configure>/etc/actsync.ign
 
 # where news articles are kept
-# (given by <_PATH_SPOOL in config.data> )
-.\" =()<spool=@<typ_PATH_SPOOL>@>()=
-spool=/var/news/spool/articles
+spool=<patharticles in inn.conf>
 
 # actsync(8) flags
 #
@@ -949,11 +941,10 @@ flags=\-o x \-v 2 \-q 2
 .in -0.5i
 .PP
 and then by running actsyncd with the path to the config
-file. (setup as <_PATH_ACTSYNC_CFG in config.data>).  Typically:
+file.
 .PP
 .in +0.5i
-.\" =()<actsyncd @<typ_PATH_ACTSYNC_CFG>@>()=
-actsyncd /var/news/etc/actsync.cfg
+actsyncd <PREFIX specified with \-\-prefix at configure>/etc/actsync.cfg
 .in -0.5i
 .PP
 One may produce a trial 
@@ -962,7 +953,7 @@ run without changing anything
 on the server by supplying the \fBdebug_level\fP arg:
 .sp 1
 .in +0.5i
-actsyncd /usr/local/news/actsync.cfg 2
+actsyncd <PREFIX specified with \-\-prefix at configure>/etc/actsync.cfg 2
 .in -0.5i
 .PP
 The \fBdebug_level\fP causes
@@ -983,8 +974,7 @@ be in \fB\-o debug_outfmt\fP instead of in \fB\-o a1\fP format.
 The following /bin/sh command:
 .sp 1
 .in +0.5i
-.\" =()<actsyncd @<typ_PATH_ACTSYNC_CFG>@ 4 >cmd 2>dbg>()=
-actsyncd /var/news/etc/actsync.cfg 4 >cmd 2>dbg
+actsyncd <PREFIX specified with \-\-prefix at configure>/etc/actsync.cfg 4 >cmd 2>dbg
 .in -0.5i
 .PP
 Will operate in debug mode,
@@ -1027,8 +1017,7 @@ To determine the differences between your old active and
 your current default server:
 .PP
 .in +0.5i
-.\" =()<actsync @<typ_PATH_OLDACTIVE>@ \->()=
-actsync /var/news/etc/active.old \-
+actsync <pathetc in inn.conf>/active.old \-
 .in -0.5i
 .PP
 To report but not fix any newsgroup problems with the current active file:
@@ -1088,8 +1077,7 @@ Thus, a much better and safer version of the above would be:
 .in +0.5i
 ctlinnd pause 'running actsync'
 rm -f active.new
-.\" =()<actsync ... flags ... \-o a1 -S @<typ_PATH_SPOOL>@ erehwon.honey.edu > active.new>()=
-actsync ... flags ... \-o a1 -S /var/news/spool/articles erehwon.honey.edu > active.new
+actsync ... flags ... \-o a1 -S <patharticles in inn.conf> erehwon.honey.edu > active.new
 rm -f active.old
 ln active active.old
 mv active.new active
@@ -1134,6 +1122,8 @@ Perhaps the timeout value should be controlled via a command line option?
 .br
 .IR ctlinnd (8),
 .br
-.IR getlist (8)
+.IR getlist (8),
+.br
+.IR inn.conf (5).
 .SH HISTORY
 Written by Landon Curt Noll <chongo@toad.com> for InterNetNews.

@@ -54,14 +54,8 @@ in the
 file, for example:
 .sp
 .RS
-crosspost:*:Tc,Ap,WR:<_PATH_NEWSBIN in config.data>/crosspost
+crosspost!:*:Tc,WR:<PREFIX specified with \-\-prefix at configure>/bin/crosspost
 .RE
-(typically
-.RS
-.\" =()<crosspost:*:Tc,Ap,WR:@<typ_PATH_NEWSBIN>@/crosspost>()=
-crosspost:*:Tc,Ap,WR:/usr/news/bin/crosspost
-.RE
-)
 .sp
 .PP
 To process the history file and re-create all the links for all articles
@@ -75,10 +69,7 @@ awk <history -F'	' '(NF > 2){print $3}' | crosspost
 .PP
 The ``\-D'' flag can be used to specify where the article spool is stored.
 The default directory is
-.I <_PATH_SPOOL in config.data> 
-(typically
-.\" =()<.IR @<typ_PATH_SPOOL>@ .)>()=
-.IR /var/news/spool/articles .)
+.IR <patharticles\ in\ inn.conf> .
 .PP
 By default
 .I crosspost
@@ -88,5 +79,6 @@ to prevent this.
 .SH HISTORY
 Written by Jerry Aguirre <jerry@ATC.Olivetti.Com>.
 .SH "SEE ALSO"
-newsfeeds(5),
-innd(8).
+inn.conf(5),
+innd(8),
+newsfeeds(5).

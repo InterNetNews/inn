@@ -30,7 +30,7 @@ modify the functions performed, as well as change the arguments given to
 and
 .IR expireover (8)
 or
-.IR expireindex (8) .
+.IR expireindex (8).
 .PP
 .I News.daily
 should be run once a day, typically out of
@@ -103,10 +103,7 @@ Using this keyword disables this function.
 .I noexplog
 .I Expire
 normally appends information to
-.I <_PATH_MOST_LOGS in config.data>/expire.log
-(typically 
-.\" =()<.I @<typ_PATH_MOST_LOGS>@/expire.log)>()=
-.I /var/log/news/expire.log)
+.I <pathlog in inn.conf>/expire.log
 (see
 .IR newslog (5)).
 Using this keyword causes the
@@ -167,7 +164,8 @@ If the file is empty, no message is sent.
 The
 .I expireover
 program is called after expiration to purge the overview databases.
-If you have turned on the storage manager with the 'storageapi' in inn.conf (5),
+If you have turned on the storage manager with the 'storageapi' in
+.IR inn.conf (5),
 .I expireindex
 program is called instead.
 .TP
@@ -209,6 +207,7 @@ active(5),
 ctlinnd(8), 
 expire(8),
 fastrm(8),
+inn.conf(5),
 newslog(5),
 newslog(8),
 innwatch.ctl(5),

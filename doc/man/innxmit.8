@@ -46,7 +46,9 @@ innxmit \- send Usenet articles to a remote NNTP server
 .I Innxmit
 connects to the NNTP server at the specified
 .I host
-(validating itself via passwd.nntp(5) if possible) 
+(validating itself via
+.IR passwd.nntp (5)
+if possible) 
 and sends it the articles specified in the batchfile named
 .IR file .
 It is normally invoked by a script run out of
@@ -60,11 +62,8 @@ command to flush the batchfile.
 If the
 .I file
 is not an absolute pathname, it is taken relative to the
-.I <_PATH_BATCHDIR in config.data>
-directory
-(typically
-.\" =()<.I @<typ_PATH_BATCHDIR>@ .)>()=
-.I /var/news/spool/out.going .)
+.I <pathoutgoing in inn.conf>
+directory.
 It is normally written by specifying the ``Wnm'' flags in the
 .IR newsfeeds (5)
 file.
@@ -82,10 +81,7 @@ The
 field names the article to be sent.
 If it is not an absolute pathname it is taken relative to the news
 spool directory,
-.I <_PATH_SPOOL in config.data> 
-(typically
-.\" =()<.IR @<typ_PATH_SPOOL>@ .)>()=
-.IR /var/news/spool/articles .)
+.IR <patharticles\ in\ inn.conf> .
 If the
 .I Message-ID
 field is not specified, it will be obtained by scanning the article.
@@ -211,6 +207,7 @@ This is revision \\$3, dated \\$4.
 .R$ $Id$
 .SH "SEE ALSO"
 ctlinnd(8),
+inn.conf(5),
 innd(8),
 newsfeeds(5),
 shlock(1).

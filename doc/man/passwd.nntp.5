@@ -4,10 +4,7 @@
 passwd.nntp \- passwords for connecting to remote NNTP servers
 .SH DESCRIPTION
 The file
-.I <_PATH_NNTPPASS in config.data>
-(typically
-.\" =()<.I @<typ_PATH_NNTPPASS>@)>()=
-.I /var/news/etc/passwd.nntp)
+.I <pathetc in inn.conf>/passwd.nntp
 contains host-name-password triplets for use when authenticating client
 programs to NNTP servers.
 This file is normally interpreted by the
@@ -50,5 +47,6 @@ This is revision \\$3, dated \\$4.
 ..
 .R$ $Id$
 .SH "SEE ALSO"
+inn.conf(5),
 innd(8),
 libinn(3).

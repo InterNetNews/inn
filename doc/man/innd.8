@@ -89,20 +89,20 @@ and
 files into memory.
 It then opens the NNTP port to receive articles from remote sites (see 
 the ``\fB\-p\fP'' option),
-When
+If
 .I <HAVE_UNIX_DOMAIN in config.data>
-== DO,
+is ``DO'',
 a Unix-domain stream socket to receive articles from local processes
 such as
 .IR nnrpd (8)
 and
 .IR rnews (1),
 and a Unix-domain datagram socket for use by 
-.IR ctlinnd (8) .
-When
+.IR ctlinnd (8).
+If
 .I <HAVE_UNIX_DOMAIN in config.data>
-is not DO named pipes are used instead.
-.IR ctlinnd (8)
+is ``DONT'', named pipes are used instead.
+.IR Ctlinnd (8)
 is used to direct the server to perform certain actions.
 It also opens the
 .IR history (5)
@@ -152,7 +152,7 @@ For example ``\fB\-c21\fP'' will reject any articles that were posted more than
 21 days ago.
 A value of zero will suppress this check. The default is 14 days, but
 can be changed with the ``artcutoff'' option in
-.I inn.conf (5)
+.IR inn.conf (5)
 .TP
 .B \-C
 If the ``\fB\-C\fP'' flag is used, then
@@ -195,13 +195,13 @@ To limit the number of incoming NNTP connections, use the ``\fB\-i\fP'' flag.
 A value of zero will suppress this check.
 The default is 50, but can also be changed with the ``maxconnections''
 option in
-.I inn.conf (5)
+.IR inn.conf (5)
 .TP
 .B \-I
 This option allows you to bind innd to a specific interface IP address.
 The IP address must be in dotted quad (nnn.nnn.nnn.nnn) format. See also
 the ``bindaddress'' option in
-.I inn.conf (5)
+.IR inn.conf (5)
 .TP
 .B \-l
 To limit the size of an article, use the ``\fB\-l\fP'' flag.
@@ -218,7 +218,7 @@ If the ``\fB\-L\fP'' flag is used, then
 will not create the links for cross posted articles.
 A feed only type of site could use this option to improve performance.
 Or it can be combined with a channel feed to the
-.I crosspost(8)
+.IR crosspost (8)
 program to move the delay associated with creating the links out of
 the innd processing loop.
 .TP
@@ -241,7 +241,7 @@ of ``\fBn\fP'' will
 allow newsreading even when the server is not running.
 The default is to allow reading, but can also be changed with the
 ``allowreaders'' option in
-.I inn.conf (5)
+.IR inn.conf (5)
 .TP
 .B \-o
 To limit the number of files that will be kept open for outgoing file
@@ -287,10 +287,7 @@ If the ``\-S'' flag is used, then
 will run in ``slave'' mode.
 When running as a slave, the server will only accept articles from the
 specified
-.IR host ,
-which must use the
-.I "``xreplic''"
-protocol extension described below.
+.IR host .
 Note that the host must either appear in the
 .I hosts.nntp
 file, or the server must be started with the ``\fB\-a\fP'' flag.
@@ -324,11 +321,8 @@ starts with the five characters \&``cmsg\ '' are called
 .IR "control messages" .
 Except for the cancel message, these messages are implemented by
 external programs in the
-.I <_PATH_CONTROLPROGS in config.data>
-directory
-(typically
-.\" =()<.IR @<typ_PATH_CONTROLPROGS>@ .) >()=
-.IR /usr/news/bin/control .) 
+.I <pathcontrol in inn.conf>
+directory.
 (Cancel messages update the history database, so they must be handled
 internally; the cost of syncing, locking, then unlocking would be too
 high given the number of cancel messages that are received.)
@@ -336,10 +330,7 @@ high given the number of cancel messages that are received.)
 When a control message arrives, the first word of the text is converted
 to lowercase except for ``cancel'' and used as the name of the program to execute; if the named
 program does not exist, then a program named
-.I <_PATH_BADCONTROLPROG in config.data>
-(typically
-.\" =()<.IR @<typ_PATH_BADCONTROLPROG>@ ) >()=
-.IR default ) 
+.I <pathcontrol in inn.conf>/default
 is executed.
 .PP
 All control programs are invoked with four parameters.
@@ -378,9 +369,9 @@ If the message is approved and posted to the name of the group being created
 or removed, then the message will be sent to all sites whose subscription
 patterns would cause them to receive articles posted in that group.
 .PP
-When
+If
 .I <MERGE_TO_GROUPS in config.data>
-== DO, if an article is posted to a newsgroup that starts with the three
+is ``DO'', if an article is posted to a newsgroup that starts with the three
 letters ``to.'' it will get special treatment if the newsgroup does not
 exist in the
 .I active
@@ -424,32 +415,20 @@ The command
 is intended for future use, and is currently treated the same way.
 .IP 4.
 A new command,
-\&``\fIxreplic news.group/art[,news.group/art]\fP'',
-is provided.
-This is similar to the
-\&``\fIihave\fP''
-command (the same reply codes are used) except for the data that follows
-the command word.
-The data consists of entries separated by a single comma.
-Each entry consists of a newsgroup name, a slash, and an article number.
-Once processed, the article will be filed in the newsgroup and article
-numbers specified in the command.
-.IP 5.
-A new command,
 \&``\fIxpath messageid\fP'',
 is provided.
 The server responds with a
 223 response and a space-separated list of filenames where the article
 was filed.
-.IP 6.
+.IP 5.
 The commands to support streaming transfer
 \&``\fIcheck messageid\fP'' and ``\fItakethis messageid\fP'' are provided.
-.IP 7.
+.IP 6.
 A batch transfer command ``\fIxbatch byte-count\fP'' is also provided. This
 command will read \fIbyte-count\fP bytes and store them for later
 processing by rnews(1) (which must be started seperately). See the programs
 innxbatch and sendxbatches.sh.
-.IP 8.
+.IP 7.
 The only other commands implemented are
 \&``\fIhead\fP'' ,
 \&``\fIhelp\fP'' ,
@@ -503,7 +482,7 @@ mon dd hh:mm:ss.mmm - feed <Message-ID> reason...
 .PP
 There can also be a hostname and size field after the Message-ID
 depending on the ``nntplinklog'' and ``logsize'' options in
-.I inn.conf (5)
+.IR inn.conf (5)
 .PP
 The first three fields are the date and time to millisecond resolution.
 The fifth field is the site that sent the article (based on the Path

@@ -4,10 +4,7 @@
 active, active.times \- list of active Usenet newsgroups
 .SH DESCRIPTION
 The file
-.I <_PATH_ACTIVE in config.data>
-(typically
-.\" =()<.I @<typ_PATH_ACTIVE>@ )>()=
-.I /var/news/etc/active )
+.I <pathdb in inn.conf>/_PATH_ACTIVE
 lists the newsgroups that the local site receives.
 Each newsgroup should be listed only once.
 Each line specifies one group; their order in the file does not matter.
@@ -20,7 +17,7 @@ If no valid newsgroups are specified, the article is either
 filed into the newsgroup ``junk'' and only propagated to sites that receive
 the ``junk'' newsgroup or it is ignored completely, depending on the
 ``wanttrash'' option in
-.I inn.conf (5)
+.IR inn.conf (5)
 .PP
 Each line consists of four fields specified by a space:
 .PP
@@ -33,8 +30,8 @@ Each line consists of four fields specified by a space:
 The first field is the name of the newsgroup.
 If
 .I <MERGE_TO_GROUPS in config.data>
-== DO 
-Newsgroups that start with the three characters ``to.'' are treated
+is ``DO'',
+newsgroups that start with the three characters ``to.'' are treated
 specially; see
 .IR innd (8).
 The second field is the highest article number that has been used in that
@@ -83,11 +80,7 @@ created with
 An alias newsgroup should not point to another alias.
 .PP
 The file
-.IR <_PATH_ACTIVETIMES in config.data>
-(typically
-.\" =()<.I @<typ_PATH_ACTIVETIMES>@>()=
-.I /var/news/etc/active.times
-)
+.I <pathdb in inn.conf>/_PATH_ACTIVETIMES
 provides a chronological record of when newsgroups are created.
 This file is normally updated by
 .IR innd (8)
@@ -119,4 +112,4 @@ This is revision \\$3, dated \\$4.
 ..
 .R$ $Id$
 .SH "SEE ALSO"
-ctlinnd(8), innd(8).
+ctlinnd(8), inn.conf(5), innd(8).

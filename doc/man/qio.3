@@ -76,11 +76,11 @@ If
 is zero, then
 if 
 .I <HAVE_ST_BLKSIZE in config.data>
-== DO
+is ``DO'',
 .I QIOopen
 will call
 .IR stat (2)
-and use the returned block size; if that fails (or HAVE_ST_BLKSIZE is not DO)
+and use the returned block size; if that fails (or HAVE_ST_BLKSIZE is DONT)
 it will use QIO_BUFFER.
 It returns NULL on error, or a pointer to a handle to be used in other calls.
 .I QIOfdopen

@@ -81,10 +81,7 @@ expire \- Usenet article and history expiration program
 scans the
 .IR history (5)
 text file
-.I <_PATH_HISTORY in config.data>
-(typically 
-.\" =()<.I @<typ_PATH_HISTORY>@ )>()=
-.I /var/news/etc/history )
+.I <pathdb in inn.conf>/history
 and uses the information recorded in it to purge old news articles.
 If you have turned on the storage manager with the 'storageapi' in
 .IR inn.conf (5)
@@ -156,11 +153,8 @@ uses the old
 database to determine the size of the new one.
 If ``\fB\-d\fP'' flag is not used together, and the output file name will be
 with an extension of ``.n.''
-The default without ``\fB\-h\fP'' flag is <_PATH_HISTORY in config.data>
-(typically
-.\" =()<.I @<typ_PATH_HISTORY>@ .>()=
-.I /var/news/etc/history .
-)
+The default without ``\fB\-h\fP'' flag is
+.IR <pathdb\ in\ inn.conf>/history .
 .TP
 .B \-i
 To ignore the old database, use the ``\fB\-i\fP'' flag.
@@ -169,7 +163,8 @@ To ignore the old database, use the ``\fB\-i\fP'' flag.
 If this flag is used then articles are removed when they have been
 expired from all the groups they appear in.  This is intended for use
 on news spools that are on a single filesystem and/or with the time
-based spool. (See inn.conf(5))
+based spool. (See
+.IR inn.conf (5))
 .TP
 .B \-l
 .I Expire
@@ -308,10 +303,7 @@ according to the rules in
 .IR expire.ctl (5).
 A single dash (``\-'') may be used to read the file from standard input.
 If no file is specified, the file
-.I <_PATH_EXPIRECTL in config.data>
-(typically 
-.\" =()<.IR @<typ_PATH_EXPIRECTL>@ )>()=
-.IR /var/news/etc/expire.ctl )
+.I <pathetc in inn.conf>/expire.ctl
 is read.
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
@@ -324,5 +316,6 @@ ctlinnd(8),
 dbz(3),
 expire.ctl(5),
 history(5),
+inn.conf(5),
 innd(8),
 inndcomm(3).
