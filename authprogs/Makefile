@@ -45,7 +45,7 @@ AUTHLIBS	= $(LIBAUTH) $(LIBINN) $(LIBS)
 
 CK_LIBS		= $(CRYPTLIB) $(SHADOWLIB) $(PAMLIB) $(DBMLIB) $(AUTHLIBS)
 SMB_LIBS	= $(LIBSMB) $(AUTHLIBS)
-KRB5_LIBS	= $(KRB5LIB) $(AUTHLIBS)
+KRB5_LIBS	= $(AUTHLIBS) $(KRB5LIB)
 
 auth_krb5:	auth_krb5.o $(LIBAUTH)	; $(LINK) auth_krb5.o $(KRB5_LIBS)
 auth_smb:	auth_smb.o  $(LIBSMB)	; $(LINK) auth_smb.o  $(SMB_LIBS)
