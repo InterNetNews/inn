@@ -9,6 +9,7 @@
  *	      [-t hostid][-T][-v verbose_lvl][-z sec]
  *	      [host1] host2
  *
+ *      -A              use authentication to server
  *	-b hostid	ignore *.bork.bork.bork groups from:	  (def: -b 0)
  *			    0   from neither host
  *			    1	from host1
@@ -258,6 +259,7 @@ int host2_hilow_all = 0;	/* 1 => use host2 hi/low on all groups */
 int host1_ign_print = 0;	/* 1 => print host1 ignored groups too */
 int v_flag = 0;			/* default verbosity level */
 int z_flag = 4;			/* sleep z_flag sec per exec if -o x */
+int A_flag = 0;
 
 /* forward declarations */
 static struct grp *get_active();    /* get an active file from a remote host */
@@ -355,8 +357,11 @@ process_args(argc, argv, host1, host2)
 
     /* parse args */
     program = argv[0];
-    while ((i = getopt(argc,argv,"b:d:g:i:I:kl:mn:o:p:q:s:t:Tv:z:")) != EOF) {
+    while ((i = getopt(argc,argv,"Ab:d:g:i:I:kl:mn:o:p:q:s:t:Tv:z:")) != EOF) {
 	switch (i) {
+	case 'A':
+	    A_flag = 1;
+	    break;
 	case 'b':		/* -b {0|1|2|12|21} */
 	    switch (atoi(optarg)) {
 	    case 0:
@@ -681,7 +686,7 @@ static void
 usage()
 {
     (void) fprintf(stderr,
-      "usage: %s [-b hostid][-d hostid][-i ignore_file][-I hostid][-k]\n",
+      "usage: %s [-A][-b hostid][-d hostid][-i ignore_file][-I hostid][-k]\n",
 	  program);
     (void) fprintf(stderr,
       "\t[-l hostid][-m][-n name][-o fmt][-p min_%%_unchg][-q hostid]\n");
@@ -689,6 +694,8 @@ usage()
       "\t[-s size][-t hostid][-T][-v verbose_lvl][-z sec]\n");
     (void) fprintf(stderr, "\t[host1] host2\n\n");
 
+    (void) fprintf(stderr,
+	"    -A\tuse authentication to server\n");
     (void) fprintf(stderr,
 	"    -b hostid\tignore *.bork.bork.bork groups from:\t(def: -b 0)\n");
     (void) fprintf(stderr,
@@ -878,6 +885,13 @@ get_active(host, hostid, len, grp, errs)
 	    DISPOSE(rhost);
 	    exit(NOT_REACHED);
 	}
+
+        if(A_flag && NNTPsendpassword(rhost, FromServer, ToServer) < 0) {
+            (void) fprintf(stderr, "can't authenticate to server\n");
+            DISPOSE(rhost);
+            exit(NOT_REACHED);
+        }
+
 	DISPOSE(rhost);
 
 	/* get the active data from the server */

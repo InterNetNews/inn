@@ -15,6 +15,7 @@
 #include <syslog.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 
 #include "dbz.h"
 #include "inn/qio.h"
@@ -68,6 +69,7 @@ static int TryStream = TRUE;	/* Should attempt stream negotation? */
 static int CanStream = FALSE;	/* Result of stream negotation */
 static int DoCheck   = TRUE;	/* Should check before takethis? */
 static char modestream[] = "mode stream";
+static char modeheadfeed[] = "mode headfeed";
 static long retries = 0;
 static int logRejects = FALSE ;  /* syslog the 437 responses. */
 
@@ -99,6 +101,7 @@ static bool		Debug;
 static bool		DoRequeue = TRUE;
 static bool		Purging;
 static bool		STATprint;
+static bool		HeadersFeed;
 static char		*BATCHname;
 static char		*BATCHtemp;
 static char		*REMhost;
@@ -598,6 +601,33 @@ Interrupted(char *Article, char *MessageID) {
 
 
 /*
+**  Returns the length of the headers.
+*/
+static int
+HeadersLen(ARTHANDLE *art, int *iscmsg) {
+    char	*p;
+    char	lastchar = -1;
+
+    /* from nnrpd/article.c ARTsendmmap() */
+    for (p = art->data; p < (art->data + art->len); p++) {
+	if (*p == '\r')
+	    continue;
+	if (*p == '\n') {
+	    if (lastchar == '\n') {
+		if (*(p-1) == '\r')
+		    p--;
+		break;
+	    }
+	    if (*(p + 1) == 'C' && caseEQn(p + 1, "Control: ", 9))
+		*iscmsg = 1;
+	}
+	lastchar = *p;
+    }
+    return (p - art->data);
+}
+
+
+/*
 **  Send a whole article to the server.
 */
 static bool
@@ -606,8 +636,30 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 
     if (!REMflush())
 	return FALSE;
-    if (xwrite(ToServer, art->data, art->len) < 0)
-	return FALSE;
+    if (HeadersFeed) {
+	struct iovec vec[3];
+	char buf[20];
+	int iscmsg = 0;
+	int len = HeadersLen(art, &iscmsg);
+
+	vec[0].iov_base = art->data;
+	vec[0].iov_len = len;
+	/* Add 14 bytes, which maybe will be the length of the Bytes header */
+	sprintf(buf, "Bytes: %d\r\n", art->len + 14);
+	vec[1].iov_base = buf;
+	vec[1].iov_len = strlen(buf);
+	if (iscmsg) {
+	    vec[2].iov_base = art->data + len;
+	    vec[2].iov_len = art->len - len;
+	} else {
+	    vec[2].iov_base = ".\r\n";
+	    vec[2].iov_len = 3;
+	}
+	if (xwritev(ToServer, vec, 3) < 0)
+	    return FALSE;
+    } else
+	if (xwrite(ToServer, art->data, art->len) < 0)
+	    return FALSE;
     if (GotInterrupt)
 	Interrupted(Article, MessageID);
     if (Debug) {
@@ -896,7 +948,7 @@ static void
 Usage(void)
 {
     (void)fprintf(stderr,
-	"Usage: innxmit [-a] [-c] [-d] [-l] [-p] [-r] [-s] [-t#] [-T#] host file\n");
+	"Usage: innxmit [-a] [-c] [-d] [-H] [-l] [-p] [-r] [-s] [-t#] [-T#] host file\n");
     exit(1);
 }
 
@@ -1011,7 +1063,7 @@ int main(int ac, char *av[]) {
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "lacdprst:T:vP:")) != EOF)
+    while ((i = getopt(ac, av, "lacdHprst:T:vP:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -1027,6 +1079,9 @@ int main(int ac, char *av[]) {
 	    break;
 	case 'd':
 	    Debug = TRUE;
+	    break;
+	case 'H':
+	    HeadersFeed = TRUE;
 	    break;
         case 'l':
             logRejects = TRUE ;
@@ -1207,6 +1262,35 @@ int main(int ac, char *av[]) {
 		    stbuf[i].art = 0;
 		}
 		stnq = 0;
+	    }
+	}
+	if (HeadersFeed) {
+	    if (!REMwrite(modeheadfeed, strlen(modeheadfeed), FALSE)) {
+		fprintf(stderr, "Can't negotiate %s, %s\n",
+			modeheadfeed, strerror(errno));
+	    }
+	    if (Debug)
+		fprintf(stderr, ">%s\n", modeheadfeed);
+	    if (!REMread(buff, sizeof buff)) {
+		fprintf(stderr, "No reply to %s, %s\n",
+				modeheadfeed, strerror(errno));
+	    } else {
+		if (Debug)
+		    fprintf(stderr, "< %s", buff);
+
+		/* Parse the reply. */
+		switch (atoi(buff)) {
+		case 250:		/* YES! */
+		    break;
+		case NNTP_BAD_COMMAND_VAL: /* normal refusal */
+		    fprintf(stderr, "\"%s\" not allowed -- %s\n",
+			    modeheadfeed, buff);
+		    exit(1);
+		default:
+		    fprintf(stderr, "Unknown reply to \"%s\" -- %s",
+			    modeheadfeed, buff);
+		    exit(1);
+		}
 	    }
 	}
     }
