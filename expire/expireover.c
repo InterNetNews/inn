@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
     char	*p;
     int		lo;
     FILE	*F;
-    BOOL	val, Nonull, LowmarkFile = FALSE;
+    BOOL	val, Nonull, statart, LowmarkFile = FALSE;
     char	*lofile;
     OVGE	ovge;
 
@@ -52,7 +52,8 @@ int main(int argc, char *argv[]) {
     ovge.filename = NULL;
     ovge.delayrm = FALSE;
     val = TRUE;
-    while ((i = getopt(argc, argv, "ef:kNpqw:z:Z:")) != EOF) {
+    statart = FALSE;
+    while ((i = getopt(argc, argv, "ef:kNpqsw:z:Z:")) != EOF) {
 	switch (i) {
 	case 'e':
 	    ovge.earliest = TRUE;
@@ -71,6 +72,9 @@ int main(int argc, char *argv[]) {
 	    break;
 	case 'q':
 	    ovge.quiet = TRUE;
+	    break;
+	case 's':
+	    statart = TRUE;
 	    break;
 	case 'w':
 	    ovge.timewarp = (time_t)(atof(optarg) * 86400.);
@@ -128,9 +132,13 @@ int main(int argc, char *argv[]) {
     if (innconf->groupbaseexpiry) {
 	(void)time(&ovge.now);
 	if (!OVctl(OVGROUPBASEDEXPIRE, (void *)&ovge)) {
-	    fprintf(stderr, "expireover: OVctl failed\n");
+	    fprintf(stderr, "expireover: OVctl(OVGROUPBASEDEXPIRE) failed\n");
 	    exit(1);
 	}
+    }
+    if (!OVctl(OVSTATALL, (void *)&statart)) {
+	fprintf(stderr, "expireover: OVctl(OVSTATALL) failed\n");
+	exit(1);
     }
 
     if (activefn[0] == '\0') {
