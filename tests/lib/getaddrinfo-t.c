@@ -47,7 +47,7 @@ main(void)
     saddr = (struct sockaddr_in *) ai->ai_addr;
     ok(11, saddr->sin_port == htons(25));
     ok(12, saddr->sin_addr.s_addr == INADDR_LOOPBACK);
-    freeaddrinfo(ai);
+    test_freeaddrinfo(ai);
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_flags = AI_PASSIVE;
@@ -57,7 +57,7 @@ main(void)
     saddr = (struct sockaddr_in *) ai->ai_addr;
     ok(15, saddr->sin_port == htons(25));
     ok(16, saddr->sin_addr.s_addr == INADDR_ANY);
-    freeaddrinfo(ai);
+    test_freeaddrinfo(ai);
 
     hints.ai_socktype = 0;
     ok(17, test_getaddrinfo(NULL, "smtp", &hints, &ai) == 0);
@@ -65,7 +65,7 @@ main(void)
     saddr = (struct sockaddr_in *) ai->ai_addr;
     ok(19, saddr->sin_port == htons(25));
     ok(20, saddr->sin_addr.s_addr == INADDR_ANY);
-    freeaddrinfo(ai);
+    test_freeaddrinfo(ai);
 
     hints.ai_flags = AI_NUMERICSERV;
     ok(21, test_getaddrinfo(NULL, "smtp", &hints, &ai) == EAI_NONAME);
@@ -75,7 +75,7 @@ main(void)
     saddr = (struct sockaddr_in *) ai->ai_addr;
     ok(25, saddr->sin_port == htons(25));
     ok(26, saddr->sin_addr.s_addr == INADDR_LOOPBACK);
-    freeaddrinfo(ai);
+    test_freeaddrinfo(ai);
 
     ok(27, test_getaddrinfo(NULL, NULL, NULL, &ai) == EAI_NONAME);
     hints.ai_flags = 2000;
@@ -98,7 +98,7 @@ main(void)
     saddr = (struct sockaddr_in *) ai->ai_addr;
     ok(37, saddr->sin_port == 0);
     ok(38, saddr->sin_addr.s_addr == addr.s_addr);
-    freeaddrinfo(ai);
+    test_freeaddrinfo(ai);
 
     ok(39, test_getaddrinfo("10.20.30.40", "smtp", &hints, &ai) == 0);
     ok(40, ai->ai_family == AF_INET);
@@ -108,7 +108,7 @@ main(void)
     saddr = (struct sockaddr_in *) ai->ai_addr;
     ok(44, saddr->sin_port == htons(25));
     ok(45, saddr->sin_addr.s_addr == addr.s_addr);
-    freeaddrinfo(ai);
+    test_freeaddrinfo(ai);
 
     hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV;
     ok(46, test_getaddrinfo("10.2.3.4", "smtp", &hints, &ai) == EAI_NONAME);
@@ -117,7 +117,7 @@ main(void)
     saddr = (struct sockaddr_in *) ai->ai_addr;
     ok(49, saddr->sin_port == htons(25));
     ok(50, saddr->sin_addr.s_addr == addr.s_addr);
-    freeaddrinfo(ai);
+    test_freeaddrinfo(ai);
 
     hints.ai_flags = AI_NUMERICHOST | AI_CANONNAME;
     ok(51, test_getaddrinfo("10.20.30.40", "smtp", &hints, &ai) == 0);
@@ -125,7 +125,7 @@ main(void)
     saddr = (struct sockaddr_in *) ai->ai_addr;
     ok(53, saddr->sin_port == htons(25));
     ok(54, saddr->sin_addr.s_addr == addr.s_addr);
-    freeaddrinfo(ai);
+    test_freeaddrinfo(ai);
 
     hints.ai_flags = 0;
     hints.ai_socktype = SOCK_DGRAM;
@@ -135,7 +135,7 @@ main(void)
     saddr = (struct sockaddr_in *) ai->ai_addr;
     ok(58, saddr->sin_port == htons(53));
     ok(59, saddr->sin_addr.s_addr == addr.s_addr);
-    freeaddrinfo(ai);
+    test_freeaddrinfo(ai);
 
     /* Hopefully this will always resolve. */
     hints.ai_socktype = SOCK_STREAM;
@@ -146,7 +146,7 @@ main(void)
     ok(63, saddr->sin_port == htons(80));
     ok(64, saddr->sin_addr.s_addr != INADDR_ANY);
     addr = saddr->sin_addr;
-    freeaddrinfo(ai);
+    test_freeaddrinfo(ai);
 
     hints.ai_flags = AI_CANONNAME;
     ok(65, test_getaddrinfo("www.isc.org", "80", &hints, &ai) == 0);
@@ -154,7 +154,7 @@ main(void)
     saddr = (struct sockaddr_in *) ai->ai_addr;
     ok(67, saddr->sin_port == htons(80));
     ok(68, saddr->sin_addr.s_addr == addr.s_addr);
-    freeaddrinfo(ai);
+    test_freeaddrinfo(ai);
 
     /* Included because it had multiple A records. */
     ok(69, test_getaddrinfo("cnn.com", "80", NULL, &ai) == 0);
@@ -162,7 +162,7 @@ main(void)
     ok(70, saddr->sin_port == htons(80));
     ok(71, saddr->sin_addr.s_addr != INADDR_ANY);
     addr = saddr->sin_addr;
-    freeaddrinfo(ai);
+    test_freeaddrinfo(ai);
 
     hints.ai_flags = AI_CANONNAME;
     ok(72, test_getaddrinfo("foo.invalid", NULL, NULL, &ai) == EAI_NONAME);
@@ -195,7 +195,7 @@ main(void)
     }
     if (found)
         ok(75, true);
-    freeaddrinfo(ai);
+    test_freeaddrinfo(ai);
 
     return 0;
 }
