@@ -1438,9 +1438,8 @@ sub collect {
   ## overchan
   if ($prog eq "overchan") {
     # times
-    if ($left =~ /(\S+) timings (\d+) arts (\d+) of (\d+) ms$/o) {
-      my ($server, $articles, $work_time, $run_time) = ($1, $2, $3, $4);
-      $server = lc $server unless $CASE_SENSITIVE;
+    if ($left =~ /timings (\d+) arts (\d+) of (\d+) ms$/o) {
+      my ($articles, $work_time, $run_time) = ($1, $2, $3);
       # ??? What to do with numbers
       return 1;
     }
