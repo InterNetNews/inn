@@ -196,7 +196,7 @@ main(int argc, char **argv)
 			printf("OVopen failed\n");
 			exit(1);
 		}
-		if (OVprobe(OVSPACE, (void *)&i))
+		if (OVctl(OVSPACE, (void *)&i))
 			printf("%d %% overview space used\n", i);
 	}
 	exit(0);
