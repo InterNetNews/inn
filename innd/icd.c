@@ -5,15 +5,12 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/mmap.h"
 #include <netinet/in.h>
 #include <sys/uio.h>
 
 #include "innd.h"
 #include "ov.h"
-
-#ifdef HAVE_MMAP
-# include <sys/mman.h>
-#endif
 
 static char		*ICDactpath = NULL;
 static char		*ICDactpointer;
@@ -160,9 +157,9 @@ ICDwritevactive(struct iovec *vp, int vpcount)
     int			oerrno;
 
     if (BACKUP == NULL)
-	BACKUP = COPY(cpcatpath(innconf->pathdb, _PATH_OLDACTIVE));
+	BACKUP = concatpath(innconf->pathdb, _PATH_OLDACTIVE);
     if (NEWACT == NULL)
-	NEWACT = COPY(cpcatpath(innconf->pathdb, _PATH_NEWACTIVE));
+	NEWACT = concatpath(innconf->pathdb, _PATH_NEWACTIVE);
     /* Write the current file to a backup. */
     if (unlink(BACKUP) < 0 && errno != ENOENT) {
 	oerrno = errno;
@@ -387,7 +384,7 @@ ICDreadactive(endp)
 	return ICDactpointer;
     }
     if (ICDactpath == NULL) 
-	ICDactpath = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
+	ICDactpath = concatpath(innconf->pathdb, _PATH_ACTIVE);
     if ((ICDactfd = open(ICDactpath, O_RDWR)) < 0) {
 	syslog(L_FATAL, "%s cant open %s %m", LogName, ICDactpath);
 	exit(1);
@@ -432,22 +429,11 @@ void
 ICDwriteactive(void)
 {
 #ifdef HAVE_MMAP
-# ifdef MMAP_NEEDS_MSYNC
-#  ifdef HAVE_MSYNC_3_ARG
     if (msync(ICDactpointer, ICDactsize, MS_ASYNC) < 0) {
         syslog(L_FATAL, "%s msync failed %s %m", LogName, ICDactpath);
         exit(1);
     }
-#  else /* !HAVE_MSYNC_3_ARG */
-    if (msync(ICDactpointer, ICDactsize) < 0) {
-        syslog(L_FATAL, "%s msync failed %s %m", LogName, ICDactpath);
-        exit(1);
-    }
-#  endif /* HAVE_MSYNC_3_ARG */
-# endif /* MMAP_NEEDS_MSYNC */
-
 #else /* !HAVE_MMAP */
-
     if (lseek(ICDactfd, 0, SEEK_SET) == -1) {
 	syslog(L_FATAL, "%s cant rewind %s %m", LogName, ICDactpath);
 	exit(1);
