@@ -11,13 +11,15 @@ TEXT	= ../../HACKING ../../INSTALL ../../NEWS ../../README
 
 MAN1	= ../man/convdate.1
 
+MAN3	= ../man/qio.3 ../man/wildmat.3
+
 MAN5	= ../man/inn.conf.5 ../man/ovdb.5 ../man/readers.conf.5 \
 	../man/sasl.conf.5
 
 MAN8	= ../man/dbprocs.8 ../man/inndstart.8 ../man/makehistory.8 \
 	../man/ovdb_recover.8 ../man/ovdb_upgrade.8
 
-all: $(TEXT) $(MAN1) $(MAN5) $(MAN8)
+all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 
 ../../HACKING:		hacking.pod		; $(POD2TEXT) $? > $@
 ../../INSTALL:		install.pod		; $(POD2TEXT) $? > $@
@@ -25,6 +27,9 @@ all: $(TEXT) $(MAN1) $(MAN5) $(MAN8)
 ../../README:		readme.pod		; $(POD2TEXT) $? > $@
 
 ../man/convdate.1:	convdate.pod		; $(POD2MAN) -s 1 $? > $@
+
+../man/qio.3:		qio.pod			; $(POD2MAN) -s 3 $? > $@
+../man/wildmat.3:	wildmat.pod		; $(POD2MAN) -s 3 $? > $@
 
 ../man/inn.conf.5:	inn.conf.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/ovdb.5:		ovdb.pod		; $(POD2MAN) -s 5 $? > $@
