@@ -7,15 +7,13 @@
 */
 #include "config.h"
 #include "clibrary.h"
+#include "portable/wait.h"
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <syslog.h>
 #include <sys/stat.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 
 #include "libinn.h"
 #include "macros.h"
@@ -138,20 +136,18 @@ StartChild(fd, path, argv)
 /*
 **  Wait for the specified number of children.
 */
-STATIC void
-WaitForChildren(i)
-    register int	i;
+static void
+WaitForChildren(int n)
 {
-    register PID_T	pid;
-    int			status;
+    pid_t pid;
 
-    while (--i >= 0) {
-	pid = waitnb(&status);
-	if (pid < 0) {
-	    if (errno != ECHILD)
-		syslog(L_ERROR, "cant wait %m");
-	    break;
-	}
+    while (--n >= 0) {
+        pid = waitpid(-1, NULL, 0);
+        if (pid == (pid_t) -1 && errno != EINTR) {
+            if (errno != ECHILD)
+                syslog(L_ERROR, "cant wait %m");
+            break;
+        }
     }
 }
 
