@@ -811,6 +811,8 @@ OpenArticle(const char *path, RETRTYPE amount) {
     char *p;
     struct stat sb;
     ARTHANDLE *art;
+    char *wfarticle;
+    int wflen;
 
     if (amount == RETR_STAT) {
 	if (access(path, R_OK) < 0) {
@@ -869,6 +871,9 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	if (p[-1] == '\r') {
 	    private->mmapped = TRUE;
 	} else {
+	    wfarticle = ToWireFmt(private->artbase, private->artlen, &wflen);
+	    private->artbase = wfarticle;
+	    private->artlen = wflen;
 	    private->mmapped = FALSE;
 #if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
 	    madvise(private->artbase, private->artlen, MADV_DONTNEED);
@@ -877,12 +882,6 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	}
     } else {
 	private->mmapped = FALSE;
-    }
-    if (!innconf->articlemmap || !private->mmapped) {
-	char *wfarticle;
-	int wflen;
-	BOOL needtranslate;
-
 	private->artbase = NEW(char, private->artlen);
 	if (read(fd, private->artbase, private->artlen) < 0) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
@@ -900,12 +899,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	    DISPOSE(art);
 	    return NULL;
 	}
-	if (p[-1] == '\r') {
-	    needtranslate = FALSE;
-	} else {
-	    needtranslate = TRUE;
-	}
-	if (needtranslate || (innconf->wireformat && !private->mmapped)) {
+	if (p[-1] != '\r') {
 	    /* need to make a wireformat copy of the article */
 	    wfarticle = ToWireFmt(private->artbase, private->artlen, &wflen);
 	    DISPOSE(private->artbase);
