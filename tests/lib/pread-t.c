@@ -5,9 +5,7 @@
 #include "libinn.h"
 
 #include <errno.h>
-#if HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
+#include <fcntl.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
