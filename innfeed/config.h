@@ -59,6 +59,7 @@
 #define TAPE_ROTATE_PERIOD 	60 		/* backlog-rotate-period */
 #define TAPE_CHECKPOINT_PERIOD 	30 		/* backlog-ckpt-period */
 #define TAPE_NEWFILE_PERIOD 	600 		/* backlog-newfile-period */
+#define TAPE_DISABLE		0		/* no-backlog */
 
 /* in main.c */
 #define NEWSSPOOL 		"/var/news/spool/articles" /* news-spool */

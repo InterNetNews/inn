@@ -1740,9 +1740,7 @@ void setSigHandler (int signum, void (*ptr)(int))
 static void handleSignals (void)
 {
   int i ;
-#if defined(USE_SIGACTION)
-  sigset_t set, oset ;
-#elif defined(USE_SIGVEC)
+#if defined(USE_SIGVEC)
   int mask ;
 #endif
 

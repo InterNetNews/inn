@@ -2799,9 +2799,6 @@ static void processResponse335 (Connection cxn, char *response)
  */
 static void processResponse400 (Connection cxn, char *response)
 {
-  char buffer [10] ;
-  size_t len = sizeof (buffer) - 1 ;
-  
   if (!(cxn->state == cxnFlushingS ||
         cxn->state == cxnFeedingS ||
         cxn->state == cxnIdleS ||

@@ -143,6 +143,9 @@ struct tape_s
 
     /* true if articles that are output are NOT later input. */
     bool noRotate ;     
+
+    /* true if no articles should ever be spooled */
+    bool noBacklog ;
 };
 
 
@@ -409,12 +412,20 @@ static void initTape (Tape nt)
   nt->outputSize = 0 ;
   nt->lossage = 0 ;
 
+  nt->noBacklog = false ;
   nt->backlogFactor = 0.0 ;
   nt->outputLowLimit = 0 ;
   nt->outputHighLimit = 0 ;
 
   if (!talkToSelf)
     {
+      int bval ;
+
+      if (getBool (s, "no-backlog", &bval, INHERIT))
+        nt->noBacklog = (bval ? true : false);
+      else
+        nt->noBacklog = TAPE_DISABLE;
+
       if (getInteger (s,"backlog-limit",&nt->outputLowLimit,INHERIT))
         {
           if (!getReal (s,"backlog-factor",&nt->backlogFactor,INHERIT))
@@ -435,6 +446,9 @@ static void initTape (Tape nt)
         syslog (LOG_ERR,NODEFN,"backlog-limit") ;
     }
   
+  dprintf (1, "%s spooling: %s\n", nt->peerName, 
+  	   nt->noBacklog ? "disabled" : "enabled");
+
   dprintf (1,"%s tape backlog limit: [%ld %ld]\n",nt->peerName,
            nt->outputLowLimit,
            nt->outputHighLimit) ;
@@ -505,6 +519,8 @@ void tapeLogStatus (Tape tape, FILE *fp)
 {
   if (tape == NULL)
     fprintf (fp,"(no tape)\n") ;
+  else if (tape->noBacklog)
+      fprintf (fp,"                 spooling: DISABLED\n");
   else 
     {
       fprintf (fp,"                 backlog low limit: %ld\n",
@@ -633,6 +649,10 @@ void tapeTakeArticle (Tape tape, Article article)
   const char *fname, *msgid ;
 
   ASSERT (tape != NULL) ;
+
+  /* return immediately if spooling disabled - jgarzik */
+  if (tape->noBacklog)
+    return;
 
   fname = artFileName (article) ;
   msgid = artMsgId (article) ;

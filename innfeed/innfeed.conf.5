@@ -355,6 +355,10 @@ then it will make it harder to get out of no-CHECK mode when necessary
 This key requires a postive integer value. It defines the tcp/ip port
 number to use when connecting to the remote.
 .TP
+.B no-backlog
+This key requires a boolean value. It specifies whether spooling should
+be enabled (false, the default) or disabled (true).
+.TP
 .B backlog-limit
 This key requires a non-negative integer value. If the number is 0 then
 backlog files are allowed to grown without bound when the peer is unable to

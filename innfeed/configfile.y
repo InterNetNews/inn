@@ -901,7 +901,7 @@ int readConfig (const char *file, FILE *errorDest, int justCheck, int dump)
         atexit (configCleanup) ;
     }
 
-  if (file == NULL || strlen (file) == NULL || !fileExistsP (file))
+  if (file == NULL || strlen (file) == 0 || !fileExistsP (file))
     {
       logOrPrint (LOG_ERR,errorDest,NOSUCH_CONFIG, file ? file : "(null)") ;
       dprintf (1,"No such config file: %s\n", file ? file : "(null)") ;

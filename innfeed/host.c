@@ -254,8 +254,6 @@ long procArtsMissing ;
 
 static HostParams defaultParams=NULL;
 
-static bool factorSet ;
-
 static HostHolder blockedHosts ; /* lists of hosts we can't lock */
 static TimeoutId tryBlockedHostsId = 0 ;
 static time_t lastStatusLog ;
@@ -748,8 +746,8 @@ void hostAlterMaxConnections(Host host,
 	  for (i = 0 ; i < lAbsMaxCxns ; i++)
 	    {
 	      host->connections [i] = NULL ;
-	      host->cxnActive[i] = NULL;
-	      host->cxnSleeping[i] = NULL;
+	      host->cxnActive[i] = false ;
+	      host->cxnSleeping[i] = false ;
 	    }
 	  host->connections[lAbsMaxCxns] = NULL;
 	}
@@ -769,8 +767,8 @@ void hostAlterMaxConnections(Host host,
 		   i < lAbsMaxCxns ; i++)
 		{
 		  host->connections[i+1] = NULL; /* array always 1 larger */
-		  host->cxnActive[i] = NULL;
-		  host->cxnSleeping[i] = NULL;
+		  host->cxnActive[i] = false ;
+		  host->cxnSleeping[i] = false ;
 		}
 	    }
 	}
@@ -908,7 +906,7 @@ Host newDefaultHost (InnListener listener,
 		     const char *name) 
 {
   HostParams p;
-  Host h;
+  Host h = NULL;
 
   if (FindBlockedHost(name)==NULL)
     {
