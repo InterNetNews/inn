@@ -2,6 +2,7 @@
 **
 **  Overview buffer and index method.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <assert.h>
@@ -15,6 +16,10 @@
 
 #ifdef HAVE_LIMITS_H
 # include <limits.h>
+#endif
+
+#ifndef MAP_FAILED
+# define MAP_FAILED     (caddr_t) -1
 #endif
 
 #include "libinn.h"
@@ -66,10 +71,10 @@ typedef struct _OVBUFF {
   int			magicver;		/* Magic version number */
   int			fd;			/* file descriptor for this
 						   ovbuff */
-  OFFSET_T		len;			/* Length of writable area, in
+  off_t 		len;			/* Length of writable area, in
 						   bytes */
-  OFFSET_T		base;			/* Offset (relative to byte 0 of
-						   file) to base block */
+  off_t 		base;			/* Offset (relative to byte
+                                                   0 of file) to base block */
   unsigned int		freeblk;		/* next free block number no
 						   freeblk left if equals
 						   totalblk */
@@ -79,7 +84,7 @@ typedef struct _OVBUFF {
 						   header */
   caddr_t		bitfield;		/* Bitfield for ovbuff block in
 						   use */
-  BOOL			needflush;		/* true if OVBUFFHEAD is needed
+  bool			needflush;		/* true if OVBUFFHEAD is needed
 						   to be flushed */
   struct _OVBUFF	*next;			/* next ovbuff */
   int			nextchunk;		/* next chunk */
@@ -99,7 +104,7 @@ typedef struct _OVINDEX {
   unsigned int	blocknum;	/* overview data block number */
   short		index;		/* overview data block index */
   TOKEN		token;		/* token for this article */
-  OFFSET_T	offset;		/* offset from the top in the block */
+  off_t         offset;		/* offset from the top in the block */
   int		len;		/* length of the data */
   time_t	arrived;	/* arrived time of article */
   time_t	expires;	/* expire time of article */
@@ -144,7 +149,7 @@ struct ov_name_table {
   struct ov_name_table	*next;
 };
 
-STATIC struct ov_name_table *name_table = NULL;
+static struct ov_name_table *name_table = NULL;
 #endif /* OV_DEBUG */
 
 #define GROUPHEADERHASHSIZE (16 * 1024)
@@ -178,7 +183,7 @@ typedef struct {
   ARTNUM	curhigh;	/* High water mark in group */
   ARTNUM	curlow;		/* Low water mark in group */
   OV		curdata;	/* current offset for this ovbuff */
-  OFFSET_T	curoffset;	/* current offset for this ovbuff */
+  off_t         curoffset;	/* current offset for this ovbuff */
 } GROUPENTRY;
 
 typedef struct _GIBLIST {
@@ -199,13 +204,13 @@ typedef struct {
   int			lo;
   int			hi;
   int			cur;
-  BOOL			needov;
+  bool			needov;
   GROUPLOC		gloc;
 } OVSEARCH;
 
 #define GROUPDATAHASHSIZE	25
 
-STATIC GROUPDATABLOCK	*groupdatablock[GROUPDATAHASHSIZE];
+static GROUPDATABLOCK	*groupdatablock[GROUPDATAHASHSIZE];
 
 typedef enum {PREPEND_BLK, APPEND_BLK} ADDINDEX;
 typedef enum {SRCH_FRWD, SRCH_BKWD} SRCH;
@@ -215,47 +220,47 @@ typedef enum {SRCH_FRWD, SRCH_BKWD} SRCH;
 
 #define	_PATH_OVBUFFCONFIG	"buffindexed.conf"
 
-STATIC char LocalLogName[] = "buffindexed";
-STATIC long		pagesize = 0;
-STATIC OVBUFF		*ovbufftab;
-STATIC int              GROUPfd;
-STATIC GROUPHEADER      *GROUPheader = NULL;
-STATIC GROUPENTRY       *GROUPentries = NULL;
-STATIC int              GROUPcount = 0;
-STATIC GROUPLOC         GROUPemptyloc = { -1 };
+static char LocalLogName[] = "buffindexed";
+static long		pagesize = 0;
+static OVBUFF		*ovbufftab;
+static int              GROUPfd;
+static GROUPHEADER      *GROUPheader = NULL;
+static GROUPENTRY       *GROUPentries = NULL;
+static int              GROUPcount = 0;
+static GROUPLOC         GROUPemptyloc = { -1 };
 #define	NULLINDEX	(-1)
-STATIC OV 	        ovnull = { 0, NULLINDEX };
+static OV 	        ovnull = { 0, NULLINDEX };
 typedef unsigned long	ULONG;
-STATIC ULONG		onarray[64], offarray[64];
-STATIC int		longsize = sizeof(long);
-STATIC BOOL		Nospace;
-STATIC BOOL		Needunlink;
-STATIC BOOL		Cutofflow;
+static ULONG		onarray[64], offarray[64];
+static int		longsize = sizeof(long);
+static bool		Nospace;
+static bool		Needunlink;
+static bool		Cutofflow;
 
-STATIC int ovbuffmode;
-STATIC int ovpadamount = 128;
+static int ovbuffmode;
+static int ovpadamount = 128;
 
-STATIC GROUPLOC GROUPnewnode(void);
-STATIC BOOL GROUPremapifneeded(GROUPLOC loc);
-STATIC void GROUPLOCclear(GROUPLOC *loc);
-STATIC BOOL GROUPLOCempty(GROUPLOC loc);
-STATIC BOOL GROUPlockhash(enum locktype type);
-STATIC BOOL GROUPlock(GROUPLOC gloc, enum locktype type);
-STATIC BOOL GROUPfilesize(int count);
-STATIC BOOL GROUPexpand(int mode);
-STATIC void *ovopensearch(char *group, int low, int high, BOOL needov);
-STATIC void ovclosesearch(void *handle, BOOL freeblock);
-STATIC OVINDEX	*Gib;
-STATIC GIBLIST	*Giblist;
-STATIC int	Gibcount;
-STATIC char	*Gdb;
+static GROUPLOC GROUPnewnode(void);
+static bool GROUPremapifneeded(GROUPLOC loc);
+static void GROUPLOCclear(GROUPLOC *loc);
+static bool GROUPLOCempty(GROUPLOC loc);
+static bool GROUPlockhash(enum locktype type);
+static bool GROUPlock(GROUPLOC gloc, enum locktype type);
+static bool GROUPfilesize(int count);
+static bool GROUPexpand(int mode);
+static void *ovopensearch(char *group, int low, int high, bool needov);
+static void ovclosesearch(void *handle, bool freeblock);
+static OVINDEX	*Gib;
+static GIBLIST	*Giblist;
+static int	Gibcount;
+static char	*Gdb;
 
 #ifdef MMAP_MISSES_WRITES
 /* With HP/UX, you definitely do not want to mix mmap-accesses of
    a file with read()s and write()s of the same file */
-STATIC OFFSET_T mmapwrite(int fd, void *buf, OFFSET_T nbyte, OFFSET_T offset) {
+static off_t mmapwrite(int fd, void *buf, off_t nbyte, off_t offset) {
   int		pagefudge, len;
-  OFFSET_T	mmapoffset;
+  off_t         mmapoffset;
   caddr_t	addr;
 
   pagefudge = offset % pagesize;
@@ -271,10 +276,10 @@ STATIC OFFSET_T mmapwrite(int fd, void *buf, OFFSET_T nbyte, OFFSET_T offset) {
 }
 #endif /* MMAP_MISSES_WRITES */
 
-STATIC BOOL ovparse_part_line(char *l) {
+static bool ovparse_part_line(char *l) {
   char		*p;
   struct stat	sb;
-  OFFSET_T	len, base;
+  off_t         len, base;
   int		tonextblock;
   OVBUFF	*ovbuff, *tmp = ovbufftab;
 
@@ -313,7 +318,7 @@ STATIC BOOL ovparse_part_line(char *l) {
   l = ++p;
 
   /* Length/size of symbolic partition */
-  len = strtoul(l, NULL, 10) * (OFFSET_T)1024;     /* This value in KB in decimal */
+  len = strtoul(l, NULL, 10) * 1024;     /* This value in KB in decimal */
   /*
   ** The minimum article offset will be the size of the bitfield itself,
   ** len / (blocksize * 8), plus however many additional blocks the OVBUFFHEAD
@@ -352,7 +357,7 @@ STATIC BOOL ovparse_part_line(char *l) {
 ** ovbuffread_config() -- Read the overview partition/file configuration file.
 */
 
-STATIC BOOL ovbuffread_config(void) {
+static bool ovbuffread_config(void) {
   char		*config, *from, *to, **ctab = (char **)NULL;
   int		ctab_free = 0;  /* Index to next free slot in ctab */
   int		ctab_i;
@@ -415,14 +420,14 @@ STATIC BOOL ovbuffread_config(void) {
   return TRUE;
 }
 
-STATIC char hextbl[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+static char hextbl[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 			'a', 'b', 'c', 'd', 'e', 'f'};
 
-STATIC char *offt2hex(OFFSET_T offset, BOOL leadingzeros) {
+static char *offt2hex(off_t offset, bool leadingzeros) {
   static char	buf[24];
   char	*p;
 
-  if (sizeof(OFFSET_T) <= 4) {
+  if (sizeof(off_t) <= 4) {
     sprintf(buf, (leadingzeros) ? "%016lx" : "%lx", offset);
   } else {
     int	i;
@@ -445,14 +450,14 @@ STATIC char *offt2hex(OFFSET_T offset, BOOL leadingzeros) {
     return buf;
 }
 
-STATIC OFFSET_T hex2offt(char *hex) {
-  if (sizeof(OFFSET_T) <= 4) {
-    OFFSET_T	rpofft;
+static off_t hex2offt(char *hex) {
+  if (sizeof(off_t) <= 4) {
+    off_t	rpofft;
     sscanf(hex, "%lx", &rpofft);
     return rpofft;
   } else {
     char		diff;
-    OFFSET_T	n = (OFFSET_T) 0;
+    off_t	n = 0;
 
     for (; *hex != '\0'; hex++) {
       if (*hex >= '0' && *hex <= '9')
@@ -476,7 +481,7 @@ STATIC OFFSET_T hex2offt(char *hex) {
   }
 }
 
-STATIC void ovreadhead(OVBUFF *ovbuff) {
+static void ovreadhead(OVBUFF *ovbuff) {
   OVBUFFHEAD	rpx;
   char		buff[OVBUFFLASIZ+1];
 
@@ -490,7 +495,7 @@ STATIC void ovreadhead(OVBUFF *ovbuff) {
   return;
 }
 
-STATIC void ovflushhead(OVBUFF *ovbuff) {
+static void ovflushhead(OVBUFF *ovbuff) {
   OVBUFFHEAD	rpx;
 
   if (!ovbuff->needflush)
@@ -518,16 +523,16 @@ STATIC void ovflushhead(OVBUFF *ovbuff) {
   return;
 }
 
-STATIC BOOL ovlock(OVBUFF *ovbuff, enum locktype type) {
+static bool ovlock(OVBUFF *ovbuff, enum locktype type) {
   return lock_range(ovbuff->fd, type, true, 0, sizeof(OVBUFFHEAD));
 }
 
-STATIC BOOL ovbuffinit_disks(void) {
+static bool ovbuffinit_disks(void) {
   OVBUFF	*ovbuff = ovbufftab;
   char		buf[64];
   OVBUFFHEAD	*rpx;
   int		i, fd;
-  OFFSET_T	tmpo;
+  off_t         tmpo;
 
   /*
   ** Discover the state of our ovbuffs.  If any of them are in icky shape,
@@ -539,13 +544,13 @@ STATIC BOOL ovbuffinit_disks(void) {
 	syslog(L_ERROR, "%s: ERROR opening '%s' : %m", LocalLogName, ovbuff->path);
 	return FALSE;
       } else {
-	CloseOnExec(fd, 1);
+	close_on_exec(fd, true);
 	ovbuff->fd = fd;
       }
     }
     if ((ovbuff->bitfield =
 	 mmap((caddr_t) 0, ovbuff->base, ovbuffmode & OV_WRITE ? (PROT_READ | PROT_WRITE) : PROT_READ,
-	      MAP_SHARED, ovbuff->fd, (off_t) 0)) == (MMAP_PTR) -1) {
+	      MAP_SHARED, ovbuff->fd, (off_t) 0)) == MAP_FAILED) {
       syslog(L_ERROR,
 	       "%s: ovinitdisks: mmap for %s offset %d len %d failed: %m",
 	       LocalLogName, ovbuff->path, 0, ovbuff->base);
@@ -616,8 +621,8 @@ STATIC BOOL ovbuffinit_disks(void) {
   return TRUE;
 }
 
-STATIC int ovusedblock(OVBUFF *ovbuff, int blocknum, BOOL set_operation, BOOL setbitvalue) {
-  OFFSET_T	longoffset;
+static int ovusedblock(OVBUFF *ovbuff, int blocknum, bool set_operation, bool setbitvalue) {
+  off_t         longoffset;
   int		bitoffset;	/* From the 'left' side of the long */
   ULONG		bitlong, mask;
 
@@ -643,7 +648,7 @@ STATIC int ovusedblock(OVBUFF *ovbuff, int blocknum, BOOL set_operation, BOOL se
   if ( bitlong & mask ) return 1; else return 0;
 }
 
-STATIC void ovnextblock(OVBUFF *ovbuff) {
+static void ovnextblock(OVBUFF *ovbuff) {
   int		i, j, last, lastbit, left;
   ULONG		mask = 0x80000000;
   ULONG		*table;
@@ -695,7 +700,7 @@ STATIC void ovnextblock(OVBUFF *ovbuff) {
   return;
 }
 
-STATIC OVBUFF *getovbuff(OV ov) {
+static OVBUFF *getovbuff(OV ov) {
   OVBUFF	*ovbuff = ovbufftab;
   for (; ovbuff != (OVBUFF *)NULL; ovbuff = ovbuff->next) {
     if (ovbuff->index == ov.index)
@@ -705,9 +710,9 @@ STATIC OVBUFF *getovbuff(OV ov) {
 }
 
 #ifdef OV_DEBUG
-STATIC OV ovblocknew(GROUPENTRY *ge) {
+static OV ovblocknew(GROUPENTRY *ge) {
 #else
-STATIC OV ovblocknew(void) {
+static OV ovblocknew(void) {
 #endif /* OV_DEBUG */
   static OVBUFF	*ovbuffnext = NULL;
   OVBUFF	*ovbuff;
@@ -786,9 +791,9 @@ STATIC OV ovblocknew(void) {
 }
 
 #ifdef OV_DEBUG
-STATIC void ovblockfree(OV ov, GROUPENTRY *ge) {
+static void ovblockfree(OV ov, GROUPENTRY *ge) {
 #else
-STATIC void ovblockfree(OV ov) {
+static void ovblockfree(OV ov) {
 #endif /* OV_DEBUG */
   OVBUFF	*ovbuff;
 #ifdef OV_DEBUG
@@ -836,7 +841,7 @@ STATIC void ovblockfree(OV ov) {
   return;
 }
 
-BOOL buffindexed_open(int mode) {
+bool buffindexed_open(int mode) {
   char		dirname[1024];
   char		*groupfn;
   struct stat	sb;
@@ -930,7 +935,7 @@ BOOL buffindexed_open(int mode) {
       return FALSE;
     }
   }
-  CloseOnExec(GROUPfd, 1);
+  close_on_exec(GROUPfd, true);
 
   DISPOSE(groupfn);
   Cutofflow = FALSE;
@@ -938,7 +943,7 @@ BOOL buffindexed_open(int mode) {
   return TRUE;
 }
 
-STATIC GROUPLOC GROUPfind(char *group, BOOL Ignoredeleted) {
+static GROUPLOC GROUPfind(char *group, bool Ignoredeleted) {
   HASH		grouphash;
   unsigned int	i;
   GROUPLOC	loc;
@@ -960,7 +965,7 @@ STATIC GROUPLOC GROUPfind(char *group, BOOL Ignoredeleted) {
   return GROUPemptyloc;
 }
 
-BOOL buffindexed_groupstats(char *group, int *lo, int *hi, int *count, int *flag) {
+bool buffindexed_groupstats(char *group, int *lo, int *hi, int *count, int *flag) {
   GROUPLOC	gloc;
 
   gloc = GROUPfind(group, FALSE);
@@ -980,7 +985,7 @@ BOOL buffindexed_groupstats(char *group, int *lo, int *hi, int *count, int *flag
   return TRUE;
 }
 
-STATIC void setinitialge(GROUPENTRY *ge, HASH grouphash, char *flag, GROUPLOC next, ARTNUM lo, ARTNUM hi) {
+static void setinitialge(GROUPENTRY *ge, HASH grouphash, char *flag, GROUPLOC next, ARTNUM lo, ARTNUM hi) {
   ge->hash = grouphash;
   if (lo != 0)
     ge->low = lo;
@@ -992,7 +997,7 @@ STATIC void setinitialge(GROUPENTRY *ge, HASH grouphash, char *flag, GROUPLOC ne
   ge->next = next;
 }
 
-BOOL buffindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
+bool buffindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
   unsigned int	i;
   HASH		grouphash;
   GROUPLOC	gloc;
@@ -1037,14 +1042,14 @@ BOOL buffindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
   return TRUE;
 }
 
-STATIC BOOL GROUPfilesize(int count) {
+static bool GROUPfilesize(int count) {
   return (count * sizeof(GROUPENTRY)) + sizeof(GROUPHEADER);
 }
 
 /* Check if the given GROUPLOC refers to GROUPENTRY that we don't have mmap'ed,
 ** if so then see if the file has been grown by another writer and remmap
 */
-STATIC BOOL GROUPremapifneeded(GROUPLOC loc) {
+static bool GROUPremapifneeded(GROUPLOC loc) {
   struct stat	sb;
 
   if (loc.recno < GROUPcount)
@@ -1075,7 +1080,7 @@ STATIC BOOL GROUPremapifneeded(GROUPLOC loc) {
 }
 
 /* This function does not need to lock because it's callers are expected to do so */
-STATIC BOOL GROUPexpand(int mode) {
+static bool GROUPexpand(int mode) {
   int	i;
   int	flag = 0;
 
@@ -1120,7 +1125,7 @@ STATIC BOOL GROUPexpand(int mode) {
   return TRUE;
 }
 
-STATIC GROUPLOC GROUPnewnode(void) {
+static GROUPLOC GROUPnewnode(void) {
   GROUPLOC	loc;
 
   /* If we didn't find any free space, then make some */
@@ -1135,7 +1140,7 @@ STATIC GROUPLOC GROUPnewnode(void) {
   return loc;
 }
 
-BOOL buffindexed_groupdel(char *group) {
+bool buffindexed_groupdel(char *group) {
   GROUPLOC	gloc;
   GROUPENTRY	*ge;
   void		*handle;
@@ -1152,19 +1157,19 @@ BOOL buffindexed_groupdel(char *group) {
   return TRUE;
 }
 
-STATIC void GROUPLOCclear(GROUPLOC *loc) {
+static void GROUPLOCclear(GROUPLOC *loc) {
   loc->recno = -1;
 }
 
-STATIC BOOL GROUPLOCempty(GROUPLOC loc) {
+static bool GROUPLOCempty(GROUPLOC loc) {
   return (loc.recno < 0);
 }
 
-STATIC BOOL GROUPlockhash(enum locktype type) {
+static bool GROUPlockhash(enum locktype type) {
   return lock_range(GROUPfd, type, true, 0, sizeof(GROUPHEADER));
 }
 
-STATIC BOOL GROUPlock(GROUPLOC gloc, enum locktype type) {
+static bool GROUPlock(GROUPLOC gloc, enum locktype type) {
   return lock_range(GROUPfd,
 	     type,
 	     true,
@@ -1173,9 +1178,9 @@ STATIC BOOL GROUPlock(GROUPLOC gloc, enum locktype type) {
 }
 
 #ifdef OV_DEBUG
-STATIC BOOL ovsetcurindexblock(GROUPENTRY *ge, GROUPENTRY *georig) {
+static bool ovsetcurindexblock(GROUPENTRY *ge, GROUPENTRY *georig) {
 #else
-STATIC BOOL ovsetcurindexblock(GROUPENTRY *ge) {
+static bool ovsetcurindexblock(GROUPENTRY *ge) {
 #endif /* OV_DEBUG */
   OVBUFF	*ovbuff;
   OV		ov;
@@ -1227,15 +1232,15 @@ STATIC BOOL ovsetcurindexblock(GROUPENTRY *ge) {
 }
 
 #ifdef OV_DEBUG
-STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires, GROUPENTRY *georig) {
+static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires, GROUPENTRY *georig) {
 #else
-STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires) {
+static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires) {
 #endif /* OV_DEBUG */
   OV		ov;
   OVINDEX	ie;
   OVBUFF	*ovbuff;
   OVINDEXHEAD	ovindexhead;
-  BOOL		needupdate = FALSE;
+  bool		needupdate = FALSE;
 #ifdef OV_DEBUG
   int		recno;
 #endif /* OV_DEBUG */
@@ -1365,7 +1370,7 @@ STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
   return TRUE;
 }
 
-BOOL buffindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires) {
+bool buffindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires) {
   GROUPLOC	gloc;
   GROUPENTRY	*ge;
 
@@ -1402,14 +1407,14 @@ BOOL buffindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data, int le
   return TRUE;
 }
 
-BOOL buffindexed_cancel(TOKEN token) {
+bool buffindexed_cancel(TOKEN token) {
     return TRUE;
 }
 
 #ifdef OV_DEBUG
-STATIC void freegroupblock(GROUPENTRY *ge) {
+static void freegroupblock(GROUPENTRY *ge) {
 #else
-STATIC void freegroupblock(void) {
+static void freegroupblock(void) {
 #endif /* OV_DEBUG */
   GROUPDATABLOCK	*gdb;
   int			i;
@@ -1434,7 +1439,7 @@ STATIC void freegroupblock(void) {
   }
 }
 
-STATIC void ovgroupunmap(void) {
+static void ovgroupunmap(void) {
   GROUPDATABLOCK	*gdb, *gdbnext;
   int			i;
   GIBLIST		*giblist, *giblistnext;
@@ -1461,13 +1466,13 @@ STATIC void ovgroupunmap(void) {
   }
 }
 
-STATIC void insertgdb(OV *ov, GROUPDATABLOCK *gdb) {
+static void insertgdb(OV *ov, GROUPDATABLOCK *gdb) {
   gdb->next = groupdatablock[(ov->index + ov->blocknum) % GROUPDATAHASHSIZE];
   groupdatablock[(ov->index + ov->blocknum) % GROUPDATAHASHSIZE] = gdb;
   return;
 }
 
-STATIC GROUPDATABLOCK *searchgdb(OV *ov) {
+static GROUPDATABLOCK *searchgdb(OV *ov) {
   GROUPDATABLOCK	*gdb;
 
   gdb = groupdatablock[(ov->index + ov->blocknum) % GROUPDATAHASHSIZE];
@@ -1478,7 +1483,7 @@ STATIC GROUPDATABLOCK *searchgdb(OV *ov) {
   return gdb;
 }
 
-STATIC int INDEXcompare(CPOINTER p1, CPOINTER p2) {
+static int INDEXcompare(const void *p1, const void *p2) {
   OVINDEX	*oi1;
   OVINDEX	*oi2;
  
@@ -1487,12 +1492,12 @@ STATIC int INDEXcompare(CPOINTER p1, CPOINTER p2) {
   return oi1->artnum - oi2->artnum;
 }
 
-STATIC BOOL ovgroupmmap(GROUPENTRY *ge, int low, int high, BOOL needov) {
+static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
   OV			ov = ge->baseindex;
   OVBUFF		*ovbuff;
   GROUPDATABLOCK	*gdb;
   int			pagefudge, base, limit, i, count, len;
-  OFFSET_T		offset, mmapoffset;
+  off_t                 offset, mmapoffset;
   OVBLOCK		*ovblock;
   caddr_t		addr;
   GIBLIST		*giblist;
@@ -1520,7 +1525,7 @@ STATIC BOOL ovgroupmmap(GROUPENTRY *ge, int low, int high, BOOL needov) {
     pagefudge = offset % pagesize;
     mmapoffset = offset - pagefudge;
     len = pagefudge + OV_BLOCKSIZE;
-    if ((addr = mmap((caddr_t) 0, len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == (MMAP_PTR) -1) {
+    if ((addr = mmap((caddr_t) 0, len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == MAP_FAILED) {
       syslog(L_ERROR, "%s: ovgroupmmap could not mmap index block: %m", LocalLogName);
       ovgroupunmap();
       return FALSE;
@@ -1553,7 +1558,7 @@ STATIC BOOL ovgroupmmap(GROUPENTRY *ge, int low, int high, BOOL needov) {
     munmap(addr, len);
   }
   Gibcount = count;
-  qsort((POINTER)Gib, Gibcount, sizeof(OVINDEX), INDEXcompare);
+  qsort(Gib, Gibcount, sizeof(OVINDEX), INDEXcompare);
   /* Remove duplicates. */
   for (i = 0; i < Gibcount - 1; i++) {
     if (Gib[i].artnum == Gib[i+1].artnum) {
@@ -1593,7 +1598,7 @@ STATIC BOOL ovgroupmmap(GROUPENTRY *ge, int low, int high, BOOL needov) {
       pagefudge = offset % pagesize;
       mmapoffset = offset - pagefudge;
       gdb->len = pagefudge + OV_BLOCKSIZE;
-      if ((gdb->addr = mmap((caddr_t) 0, gdb->len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == (MMAP_PTR) -1) {
+      if ((gdb->addr = mmap((caddr_t) 0, gdb->len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == MAP_FAILED) {
         syslog(L_ERROR, "%s: ovgroupmmap could not mmap data block: %m", LocalLogName);
         DISPOSE(gdb);
         ovgroupunmap();
@@ -1609,7 +1614,7 @@ STATIC BOOL ovgroupmmap(GROUPENTRY *ge, int low, int high, BOOL needov) {
   return TRUE;
 }
 
-STATIC void *ovopensearch(char *group, int low, int high, BOOL needov) {
+static void *ovopensearch(char *group, int low, int high, bool needov) {
   GROUPLOC		gloc;
   GROUPENTRY		*ge;
   OVSEARCH		*search;
@@ -1652,7 +1657,7 @@ void *buffindexed_opensearch(char *group, int low, int high) {
   return(handle);
 }
 
-BOOL ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived, time_t *expires) {
+bool ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived, time_t *expires) {
   OVSEARCH		*search = (OVSEARCH *)handle;
   OVBLOCK		*ovblock;
   OV			srchov;
@@ -1707,11 +1712,11 @@ BOOL ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
   return TRUE;
 }
 
-BOOL buffindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived) {
+bool buffindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived) {
   return(ovsearch(handle, artnum, data, len, token, arrived, NULL));
 }
 
-STATIC void ovclosesearch(void *handle, BOOL freeblock) {
+static void ovclosesearch(void *handle, bool freeblock) {
   OVSEARCH	*search = (OVSEARCH *)handle;
 #ifdef OV_DEBUG
   GROUPENTRY	*ge;
@@ -1744,10 +1749,10 @@ void buffindexed_closesearch(void *handle) {
   GROUPlock(gloc, LOCK_UNLOCK);
 }
 
-BOOL buffindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token) {
+bool buffindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token) {
   GROUPLOC	gloc;
   void		*handle;
-  BOOL		retval;
+  bool		retval;
 
   gloc = GROUPfind(group, FALSE);
   if (GROUPLOCempty(gloc)) {
@@ -1764,7 +1769,7 @@ BOOL buffindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, T
   return retval;
 }
 
-BOOL buffindexed_expiregroup(char *group, int *lo) {
+bool buffindexed_expiregroup(char *group, int *lo) {
   void		*handle;
   GROUPENTRY	newge, *ge;
   GROUPLOC	gloc, next;
@@ -1875,7 +1880,7 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
   return TRUE;
 }
 
-BOOL buffindexed_ctl(OVCTLTYPE type, void *val) {
+bool buffindexed_ctl(OVCTLTYPE type, void *val) {
   int		total, used, *i;
   OVBUFF	*ovbuff = ovbufftab;
   OVSORTTYPE	*sorttype;
@@ -1897,7 +1902,7 @@ BOOL buffindexed_ctl(OVCTLTYPE type, void *val) {
     *sorttype = OVNOSORT;
     return TRUE;
   case OVCUTOFFLOW:
-    Cutofflow = *(BOOL *)val;
+    Cutofflow = *(bool *)val;
     return TRUE;
   case OVSTATICSEARCH:
     i = (int *)val;
@@ -1913,7 +1918,7 @@ void buffindexed_close(void) {
   OVBUFF	*ovbuffnext, *ovbuff = ovbufftab;
 #ifdef OV_DEBUG
   FILE		*F = NULL;
-  PID_T		pid;
+  pid_t		pid;
   char		*path = NULL;
   int		j;
   struct ov_trace_array *trace;
@@ -1985,7 +1990,7 @@ void buffindexed_close(void) {
 }
 
 #ifdef DEBUG
-STATIC int countgdb(void) {
+static int countgdb(void) {
   int			i, count = 0;
   GROUPDATABLOCK	*gdb;
 
