@@ -4,7 +4,11 @@
 #
 # Changes from 1.5 to 1.6:
 #  -- eliminated subprocess use (except pgp, of course)
+#  -- interlock against competing signing processes
 #  -- allow optional headers; see $use_or_add
+#  -- added simple comments about why particular headers are signed
+#  -- made error messages a tad more helpful for situations when it is hard
+#     to know what message was trying to be signed (such as via an "at" job)
 #  -- set $action, $group, $moderated to "" to prevent unusued variable
 #     warnings in the event a Control header can't be parsed
 #  -- moved assignment of $pgpend out of loop.
@@ -23,16 +27,24 @@
 # CONFIGURATION
 
 # pgp variables.
+#
 # STORING YOUR PASS PHRASE IN A FILE IS A POTENTIAL SECURITY HOLE.
 # make sure you know what you're doing if you do it.
 # if you don't use pgppassfile, you can only use this script interactively.
 # if you DO use pgppassfile, it is possible that someone could steal
 #  your passphrase either by gaining access to the file or by seeing
 #  the environment of a running pgpverify program.
+#
+# $pgplock is used because pgp does not guard itself against concurrent
+# read/write access to its randseed.bin file.  A writable file is needed;
+# The default value is to use the .pgp/config.txt file in the home directory
+# of the user running the program.  Note that this will only work to lock
+# against other instances of signcontrol, not all pgp uses.
 $pgpsigner = 'INSERT_YOUR_PGP_USERID';
 $pgppassfile = '';      # file with pass phrase for $pgpsigner
-$pgp = "@_PATH_PGP@";
+$pgp = "@_PATH_PGP";
 $pgpheader = "X-PGP-Sig";
+$pgplock = (getpwuid($<))[7] . '/.pgp/config.txt';
 
 # this program is strict about always wanting to be consistent about
 # what headers appear in the control messages.  the defaults for the
@@ -64,13 +76,20 @@ $force{'X-Info'}='ftp://ftp.isc.org/pub/pgpcontrol/README.html'
 # 
 # $use_or_add{'Reply-To'} = 'YOUR_REPLY_ADDRESS';
 # $use_or_add{'Oranization'} = 'YOUR_ORGANIZATION';
-# $use_or_add{'Distribition'} = 'MESSAGE_DISTRIBUTION';
+# $use_or_add{'Distribution'} = 'MESSAGE_DISTRIBUTION';
 
 # host for message-id; this could be determined automatically based on where
 # it is run, but consistency is the goal here
 $id_host = 'FULL_HOST_NAME';
 
 # headers to sign.  Sender is included because non-PGP authentication uses it.
+# The following should always be signed:
+#  Subject    -- some older news systems use it to identify the control action.
+#  Control    -- most news systems use this to determine what to do.
+#  Message-ID -- guards against replay attacks.
+#  Date       -- guards against replay attacks.
+#  From       -- used by news systems as part of authenticating the message.
+#  Sender     -- used by news systems as part of authenticating the message.
 @signheaders = ('Subject', 'Control', 'Message-ID', 'Date', 'From', 'Sender');
 
 # headers to remove from real headers of final message.
@@ -88,8 +107,10 @@ $id_host = 'FULL_HOST_NAME';
 #   Path, From, Newsgroups, Subject, Message-ID, Date
 # if you take out these, your control message is not very useful:
 #   Control, Approved
-# any headers here will not be removed even if in @ignoreheaders.
-# any headers present but not in @orderheaders or @ignoreheaders is an error.
+# any headers in @ignoreheaders also in @orderheaders are silently dropped.
+# any non-null header in the input but not in @orderheaders or @ignoreheaders
+#   is an error.
+# null headers are silently dropped.
 @orderheaders =
   ('Path', 'From', 'Newsgroups', 'Subject', 'Control', 'Approved',
    'Message-ID', 'Date', 'Lines', 'X-Info', $pgpheader);
@@ -127,6 +148,10 @@ $0 =~ s#^.*/##;
 
 die "Usage: $0 < message\n" if @ARGV > 0;
 
+umask(0022);                    # flock needs a writable file, if we create it
+open(LOCK, ">>$pgplock") || die "$0: open $lock: $!, exiting\n";
+flock(LOCK, 2);                 # block until locked
+
 &setgrouppat;
 
 $die = '';
@@ -134,10 +159,21 @@ $die = '';
 &readhead;
 &readbody;
 
-die $die if $die;
+if ($die) {
+  if ($group) {
+    die "$0: ERROR PROCESSING ${action}group $group:\n", $die;
+  } elsif ($action eq 'check') {
+    die "$0: ERROR PROCESSING checkgroups:\n", $die;
+  } elsif ($header{'Subject'}) {
+    die "$0: ERROR PROCESSING Subject: $header{'Subject'}\n", $die;
+  } else {
+    die $die;
+  } 
+}
 
 &signit;
 
+close(LOCK) || warn "$0: close $lock: $!\n";
 exit 0;
 
 sub
@@ -265,7 +301,7 @@ readbody
 
   undef $/;
   $body = $_ = <STDIN>;
-  $header{'Lines'} = $body =~ tr/\n/\n/;
+  $header{'Lines'} = $body =~ tr/\n/\n/ if $body;
 
   # the following tests are based on the structure of a news.announce.newgroups
   # newgroup message; even if you comment out the "first line" test, please
@@ -396,15 +432,16 @@ signit
   die "$0: unexpected data following $pgpend\n" unless eof(FH);
   close(FH) || warn "$0: close pipe from pgp returned status $?\n";
 
-  $head = '';
-  foreach $header (@orderheaders) {
-    $head .= "$header: $header{$header}\n";
-    delete $header{$header};
-  }
-
   for (@ignoreheaders) {
     delete $header{$_} if defined $header{$_};
   }
+
+  $head = '';
+  foreach $header (@orderheaders) {
+    $head .= "$header: $header{$header}\n" if $header{$header};
+    delete $header{$header};
+  }
+
   foreach $header (keys %header) {
     die "$0: unexpected header $header left in header array\n";
   }
@@ -413,8 +450,6 @@ signit
   print STDOUT "\n";
   print STDOUT $body;
 }
-
-exit 0;
 
 # Our lawyer told me to include the following.  The upshot of it is
 # that you can use the software for free as much as you like.
