@@ -60,7 +60,7 @@ MOST	= rc.news checkgroups default ihave newgroup \
 
 ##  Scripts from above, plus site-specific config files.
 REST		= \
-	newsfeeds incoming.conf nnrp.access nnrpd.track passwd.nntp \
+	newsfeeds incoming.conf nnrpd.track passwd.nntp \
 	inn.conf moderators innreport.conf innreport_inn.pm \
 	control.ctl expire.ctl nntpsend.ctl overview.fmt \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
@@ -305,7 +305,6 @@ news.daily:	../samples/news.daily		; $(COPY) $? $@
 news2mail:	../samples/news2mail		; $(COPY) $? $@
 news2mail.cf:	../samples/news2mail.cf		; $(COPY) $? $@
 newsfeeds:	../samples/newsfeeds		; $(COPY) $? $@
-nnrp.access:	../samples/nnrp.access		; $(COPY) $? $@
 nnrpd.track:	../samples/nnrpd.track		; $(COPY) $? $@
 nntpsend.ctl:	../samples/nntpsend.ctl		; $(COPY) $? $@
 nntpsend:	../samples/nntpsend		; $(COPY) $? $@
