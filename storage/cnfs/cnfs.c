@@ -29,6 +29,12 @@
 #include "cnfs.h"
 #include "cnfs-private.h"
 
+/* Temporary until cnfs_mapcntl is handled like msync_page.  Make MS_ASYNC
+   disappear on platforms that don't have it. */
+#ifndef MS_ASYNC
+# define MS_ASYNC 0
+#endif
+
 typedef struct {
     /**** Stuff to be cleaned up when we're done with the article */
     char		*base;		/* Base of mmap()ed art */
