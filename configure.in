@@ -657,7 +657,6 @@ AC_OUTPUT(
 	makedirs.sh 
 	config/config.data 
 	include/paths.h 
-	innfeed/Makefile
 	samples/actsync.cfg 
 	samples/checkgroups
 	samples/default

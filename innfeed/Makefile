@@ -4,10 +4,6 @@ include ../Makefile.global
 ##  =()<P	= @<P>@>()=
 P	= 
 
-# Uncomment the next line if you don't have a inet_aton() in your
-# libraries (Solaris is one such OS).
-EXTRA_SRC	= @EXTRA_SRC@
-
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
 LINTFLAGS	= -b -h -z  -I../include $(DEFS)
 

@@ -5471,7 +5471,6 @@ trap 'rm -fr `echo "Makefile.global
 	makedirs.sh 
 	config/config.data 
 	include/paths.h 
-	innfeed/Makefile
 	samples/actsync.cfg 
 	samples/checkgroups
 	samples/default
@@ -5663,7 +5662,6 @@ CONFIG_FILES=\${CONFIG_FILES-"Makefile.global
 	makedirs.sh 
 	config/config.data 
 	include/paths.h 
-	innfeed/Makefile
 	samples/actsync.cfg 
 	samples/checkgroups
 	samples/default

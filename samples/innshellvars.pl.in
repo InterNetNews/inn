@@ -13,7 +13,7 @@ eval `@prefix@/bin/innconfval -p`;
 
 $newshome = $pathnews;
 $spooldir = $pathspool;
-$most_logs = $pathlogs;
+$most_logs = $pathlog;
 
 $errlog = "${most_logs}/errlog" ;
 $log = "${most_logs}/news" ;
