@@ -67,6 +67,11 @@ B<nnrpd> continues running until killed.  This means that it reads
 F<inn.conf> once on startup and never again until restarted. B<nnrpd>
 should therefore be restarted if inn.conf is changed.
 
+When started in daemon mode, B<nnrpd> will write its PID into a file in
+the I<pathrun> directory.  The file will be named F<nnrpd-%d.pid>, where
+C<%d> is replaced with the port that B<nnrpd> is configured to listen on
+(119 unless the B<-P> option is given).
+
 =item B<-f>
 
 If specified, B<nnrpd> does not detach itself and runs in the
