@@ -237,11 +237,23 @@ CCaddhist(av)
     STRING		p;
     BOOL		ok;
     HASH                hash;
+    int			i;
 
-    /* Check the fields. */
-    if ((p = CCgetid(av[0], &Data.MessageID)) != NULL)
-	return p;
-    hash = HashMessageID(Data.MessageID);
+    /* Check to see if we were passed a hash first. */
+    i = strlen(av[0]);
+    if (av[0][0]=='[' && av[0][i-1] == ']') {
+        hash = TextToHash(&av[0][1]);
+	/* Put something bogus in here.  This should never be referred
+	   to unless someone tries to add a [msgidhash].... history
+	   entry to an innd set with 'storageapi' off, which isn't a
+	   very sensible thing to do. */
+	Data.MessageID = "<bogus@messsageid>";
+    } else {
+        /* Try to take what we were given as a <messageid> */
+        if ((p = CCgetid(av[0], &Data.MessageID)) != NULL)
+	  return p;
+	hash = HashMessageID(Data.MessageID);
+    }
     if (HIShavearticle(hash))
 	return "1 Duplicate";
     if (strspn(av[1], DIGITS) != strlen(av[1]))
