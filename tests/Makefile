@@ -99,7 +99,7 @@ lib/qio.t: lib/qio-t.o libtest.o $(LIBINN)
 lib/setenv.o: ../lib/setenv.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/setenv.c
 
-lib/setenv.tr: lib/setenv.o lib/setenv-t.o libtest.o
+lib/setenv.tr: lib/setenv.o lib/setenv-t.o libtest.o $(LIBINN)
 	$(LINK) lib/setenv.o lib/setenv-t.o libtest.o $(LIBINN)
 
 lib/snprintf.o: ../lib/snprintf.c
