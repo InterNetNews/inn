@@ -593,7 +593,7 @@ STATIC enum KRP EXPkeepit(char *Entry, time_t when, time_t Expires)
     unsigned long	ArtNum;
     enum KRP		retval = Remove;
 
-    if (!ClassicExpire && IsToken(Entry)) {
+    if (IsToken(Entry)) {
 	token = TextToToken(Entry);
 	class = EXPclasses[token.class];
 	if (class.Missing) {
