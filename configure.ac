@@ -353,8 +353,9 @@ dnl Check for whether various symbols are declared.
 AC_CHECK_DECLS([pread, pwrite, snprintf, vsnprintf])
 AC_CHECK_DECLS([h_errno], , , [#include <netdb.h>])
 AC_CHECK_DECLS([inet_aton, inet_ntoa], , ,
-    [#include <netinet/in.h>
-    #include <arpa/inet.h>])
+[#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>])
 AC_CHECK_DECLS([altzone], , , [#include <time.h>])
 
 dnl Checks for compiler characteristics.
@@ -368,7 +369,9 @@ AC_STRUCT_ST_BLKSIZE
 AC_STRUCT_TM
 AC_STRUCT_TIMEZONE
 AC_CHECK_MEMBERS([struct tm.tm_gmtoff])
-AC_CHECK_MEMBERS([struct sockaddr.sa_len], , , [#include <sys/socket.h>])
+AC_CHECK_MEMBERS([struct sockaddr.sa_len], , ,
+[#include <sys/types.h>
+#include <sys/socket.h>])
 
 dnl Checks for types.
 INN_TYPE_INT32_T
