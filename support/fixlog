@@ -54,7 +54,7 @@ while (<>) {
                     $indent = 1;
                     $found = 1 if ($check eq $file || $check =~ /\*/);
                     push (@data, $_);
-                } elsif (/^\s+- /) {
+                } elsif (/^\s*- /) {
                     next if ($indent > 0 && !$found);
                     $found++;
                     undef @data;
@@ -62,9 +62,8 @@ while (<>) {
                     print "\n$_";
                 } elsif (/^\s+/) {
                     next if ($indent > 0 && !$found);
-                    if ($indent > 0) {
-                        s/^\s+//;
-                    } else {
+                    s/^\s+//;
+                    if ($indent <= 0) {
                         print @data;
                         undef @data;
                         $indent = -1;

@@ -150,7 +150,9 @@ Julio Sanchez:
         Wrote the initial libtool support for INN.
 
 Igor Timkin:
-        Added min-queue-connection support to innfeed.
+        Added min-queue-connection support to innfeed, added outgoing
+        volume logging and reporting, and provided a variety of bug
+        fixes.
 
 Heath Kehoe:
         Various portability and bug fixes, wrote the ovdb overview
@@ -181,6 +183,12 @@ Dave Barr:
         before the ISC took over. He released 4 unofficial versions that 
         provided a good boost to what the ISC started with.  Minor work
         on 2.0, mostly with example files and minor code tweaks.
+
+James Brister:
+        The chief maintainer of INN from when the ISC took over
+        maintenance through the 2.2 release, James is also the original
+        author of innfeed and has made fixes, improvements, and feature
+        additions all over the code.
 
 Marc Fournier:
         Provided various bug fixes and did a lot of work integrating other

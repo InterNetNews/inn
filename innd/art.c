@@ -180,6 +180,8 @@ BOOL ARTreadschema(void)
     ARTHEADER		        *hp;
     BOOL			ok;
     char			buff[SMBUF];
+    BOOL			foundxref = FALSE;
+    BOOL			foundxreffull = FALSE;
 
     if (ARTfields != NULL) {
 	DISPOSE(ARTfields);
@@ -211,8 +213,12 @@ BOOL ARTreadschema(void)
 	}
 	else
 	    fp->NeedHeader = FALSE;
+	if (caseEQ(buff, "Xref")) {
+	    foundxref = TRUE;
+	    foundxreffull = fp->NeedHeader;
+	}
 	for (hp = ARTheaders; hp < ENDOF(ARTheaders); hp++)
-	    if (EQ(buff, hp->Name)) {
+	    if (caseEQ(buff, hp->Name)) {
 		fp->Header = hp;
 		break;
 	    }
@@ -227,6 +233,10 @@ BOOL ARTreadschema(void)
     fp->Header = NULL;
 
     (void)Fclose(F);
+    if (!foundxref || !foundxreffull) {
+	syslog(L_FATAL, "%s 'Xref:full' must be included in %s", LogName, SCHEMA);
+	exit(1); 
+    }
     return ok;
 }
 
@@ -517,7 +527,9 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
     SMerrno = SMERR_NOERROR;
     result = SMstore(arth);
     if (result.type == TOKEN_EMPTY) {
-	if (SMerrno != SMERR_NOERROR)
+	if (SMerrno == SMERR_NOMATCH)
+	    ThrottleNoMatchError();
+	else if (SMerrno != SMERR_NOERROR)
 	    IOError("SMstore", SMerrno);
 	DISPOSE(artbuff);
 	return result;
@@ -680,6 +692,10 @@ BOOL ARTidok(const char *MessageID)
 {
     int	                c;
     const char	        *p;
+
+    /* Check the length of the message ID. */
+    if (MessageID == NULL || strlen(MessageID) > NNTP_MSGID_MAXLEN)
+        return FALSE;
 
     /* Scan local-part:  "< atom|quoted [ . atom|quoted]" */
     p = MessageID;
@@ -1013,7 +1029,7 @@ STATIC TOKEN *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const 
     if (!EQ(q, p)) {
 	token = NULL;
 	(void)sprintf(buff, "\"%.50s\" wants to cancel %s by \"%.50s\"",
-		      p, MessageID, q);
+		      p, MaxLength(MessageID, MessageID), q);
 	ARTlog(Data, ART_REJECT, buff);
     }
     DISPOSE(p);
@@ -1812,8 +1828,13 @@ ARTmakekeys(hp, body, v, l)
 	    break;
     }
     /* note #words we didn't get to add. */
+    /* This code can potentially lead to a buffer overflow if the number of
+       ignored words is greater than 100, under some circumstances.  It's
+       temporarily disabled until fixed. */
+#if 0
     if (word_index < distinct_words - 1)
 	sprintf(chase, ",%d", (distinct_words - word_index) - 1);
+#endif
     hp->Length = strlen(hp->Value);
 
 out:
@@ -1879,6 +1900,16 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
 	    BUFFappend(&Overview, COLONSPACE, STRLEN(COLONSPACE));
 	}
 	i = Overview.Left;
+	if (caseEQ(hp->Name, "Newsgroups")) {
+	    /* HDR(_newsgroups) is separated by '\0', so use Data->Newsgroups
+	       instead */
+	    BUFFappend(&Overview, Data->Newsgroups, Data->NewsgroupsLength);
+	} else {
+	    BUFFappend(&Overview, hp->Value, hp->Length);
+	}
+	for (p = &Overview.Data[i]; i < Overview.Left; p++, i++)
+	    if (*p == '\t' || *p == '\n' || *p == '\r')
+		*p = ' ';
 
 #if	defined(DO_KEYWORDS)
 	if (innconf->keywords) {
@@ -1892,11 +1923,6 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
 	    }
 	}
 #endif	/* defined(DO_KEYWORDS) */
-
-	BUFFappend(&Overview, hp->Value, hp->Length);
-	for (p = &Overview.Data[i]; i < Overview.Left; p++, i++)
-	    if (*p == '\t' || *p == '\n' || *p == '\r')
-		*p = ' ';
     }
 }
 
@@ -2024,7 +2050,7 @@ STRING ARTpost(CHANNEL *cp)
 			   Data.LinesValue);
     TMRstop(TMR_PYTHON);
     if (filterrc != NULL) {
-        (void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, filterrc);
+        (void)sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL, filterrc);
         syslog(L_NOTICE, "rejecting[python] %s %s", Data.MessageID, buff);
         ARTlog(&Data, ART_REJECT, buff);
         if (innconf->remembertrash && (Mode == OMrunning) &&
@@ -2043,7 +2069,7 @@ STRING ARTpost(CHANNEL *cp)
     filterrc = PLartfilter(Data.Body, Data.LinesValue);
     TMRstop(TMR_PERL);
     if (filterrc) {
-        sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, filterrc);
+        sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL, filterrc);
         syslog(L_NOTICE, "rejecting[perl] %s %s", Data.MessageID, buff);
         ARTlog(&Data, ART_REJECT, buff);
         if (innconf->remembertrash && (Mode == OMrunning) &&
@@ -2084,7 +2110,7 @@ STRING ARTpost(CHANNEL *cp)
         (void)Tcl_UnsetVar(TCLInterpreter, "Headers", TCL_GLOBAL_ONLY);
         if (code == TCL_OK) {
 	    if (strcmp(TCLInterpreter->result, "accept") != 0) {
-	        (void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, 
+	        (void)sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL, 
 			      TCLInterpreter->result);
 		syslog(L_NOTICE, "rejecting[tcl] %s %s", Data.MessageID, buff);
 		ARTlog(&Data, ART_REJECT, buff);
@@ -2128,11 +2154,9 @@ STRING ARTpost(CHANNEL *cp)
 		NNTP_REJECTIT_VAL,
 		MaxLength(p, p));
 	ARTlog(&Data, ART_REJECT, buff);
-#if	defined(DO_REMEMBER_TRASH)
-        if (Mode == OMrunning && !HISwrite(&Data, ""))
+        if (innconf->remembertrash && Mode == OMrunning && !HISremember(hash))
             syslog(L_ERROR, "%s cant write history %s %m",
                    LogName, Data.MessageID);
-#endif	/* defined(DO_REMEMBER_TRASH) */
 	DISPOSE(distributions);
 	ARTreject(buff, article);
 	return buff;
@@ -2305,7 +2329,7 @@ STRING ARTpost(CHANNEL *cp)
 	}
 	else if (canpost < 0) {
 	    (void)sprintf(buff, "%d Won't accept posts in \"%s\"",
-		NNTP_REJECTIT_VAL, p);
+		NNTP_REJECTIT_VAL, MaxLength(p, p));
 	    ARTlog(&Data, ART_REJECT, buff);
 	    if (distributions)
 		DISPOSE(distributions);
@@ -2369,11 +2393,11 @@ STRING ARTpost(CHANNEL *cp)
 	    if (NoHistoryUpdate) {
 		(void)sprintf(buff, "%d Can't post to \"%s\"",
 		    NNTP_REJECTIT_VAL,
-		    MaxLength(HDR(_newsgroups), HDR(_newsgroups)));
+		    MaxLength(Data.Newsgroups, Data.Newsgroups));
 	    } else {
 	    (void)sprintf(buff, "%d Unwanted newsgroup \"%s\"",
 		NNTP_REJECTIT_VAL,
-		MaxLength(HDR(_newsgroups), HDR(_newsgroups)));
+		MaxLength(Data.Newsgroups, Data.Newsgroups));
 	    }
 	    ARTlog(&Data, ART_REJECT, buff);
 	    if (!innconf->wanttrash) {
@@ -2388,9 +2412,9 @@ STRING ARTpost(CHANNEL *cp)
 	    } else {
 	    /* if !GroupMissing, then all the groups the article was posted
 	     * to have a flag of "x" in our active file, and therefore
-	     * we should throw the article away:  if you have define
-	     * DO_WANT_TRASH, then you want all trash except that which
-	     * you explicitly excluded in your active file. */
+	     * we should throw the article away:  if you have set
+	     * innconf->remembertrash set, then you want all trash except that
+	     * which you explicitly excluded in your active file. */
 		if (!GroupMissing) {
                     if (innconf->remembertrash && (Mode == OMrunning) &&
 				!HISremember(hash))
@@ -2463,10 +2487,7 @@ STRING ARTpost(CHANNEL *cp)
     
     token = ARTstore(article, &Data);
     if (token.type == TOKEN_EMPTY) {
-	if (SMerrno != SMERR_NOERROR)
-	    syslog(L_ERROR, "%s cant store article: %s", LogName, SMerrorstr);
-	else
-	    syslog(L_ERROR, "%s cant store article: no matching entry in storage.conf", LogName);
+	syslog(L_ERROR, "%s cant store article: %s", LogName, SMerrorstr);
 	sprintf(buff, "%d cant store article", NNTP_RESENDIT_VAL);
 	ARTlog(&Data, ART_REJECT, buff);
 	if ((Mode == OMrunning) && !HISremember(hash))
@@ -2550,6 +2571,11 @@ STRING ARTpost(CHANNEL *cp)
 	IOError("logging nntplink", oerrno);
 	clearerr(Log);
     }
+    /* Calculate Max Article Time */
+    i = Now.time - cp->ArtBeg;
+    if(i > cp->ArtMax)
+	cp->ArtMax = i;
+    cp->ArtBeg = 0;
 
     cp->Size += Data.SizeValue;
     if (innconf->logartsize) {

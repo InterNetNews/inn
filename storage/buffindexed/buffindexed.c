@@ -1899,10 +1899,14 @@ BOOL buffindexed_ctl(OVCTLTYPE type, void *val) {
     return TRUE;
   case OVSORT:
     sorttype = (OVSORTTYPE *)val;
-    *sorttype = OVARRIVED;
+    *sorttype = OVNOSORT;
     return TRUE;
   case OVCUTOFFLOW:
     Cutofflow = *(BOOL *)val;
+    return TRUE;
+  case OVSTATICSEARCH:
+    i = (int *)val;
+    *i = FALSE;
     return TRUE;
   default:
     return FALSE;
@@ -1911,9 +1915,9 @@ BOOL buffindexed_ctl(OVCTLTYPE type, void *val) {
 
 void buffindexed_close(void) {
   struct stat	sb;
+  OVBUFF	*ovbuffnext, *ovbuff = ovbufftab;
 #ifdef OV_DEBUG
   FILE		*F = NULL;
-  OVBUFF	*ovbuff = ovbufftab;
   PID_T		pid;
   char		*path = NULL;
   int		j;
@@ -1978,6 +1982,11 @@ void buffindexed_close(void) {
       return;
     }
   }
+  for (; ovbuff != (OVBUFF *)NULL; ovbuff = ovbuffnext) {
+    ovbuffnext = ovbuff->next;
+    DISPOSE(ovbuff);
+  }
+  ovbufftab = NULL;
 }
 
 #ifdef DEBUG

@@ -31,11 +31,9 @@ rnews \- receive news from a UUCP connection
 .SH DESCRIPTION
 .I Rnews
 reads messages typically queued by a UUCP newsfeed and
-sends them to the local InterNetNews server (either ``localhost'', or the
+sends them to the InterNetNews server (either ``localhost'', or the
 value defined by the variable 
-.I nnrpdposthost
-in the file
-.IR inn.conf ).
+.IR <nnrpdposthost\ in\ inn.conf> .
 .PP
 The message is read from the specified input file, or standard input
 if no input is named.
@@ -65,9 +63,8 @@ This is for historical compatibility \(em there is no program named
 A compressed batch will start with a ``#! cunbatch'' line, then contain a
 series of articles separated by ``#! rnews nnn'' lines.
 If 
-.I <RNEWSPROGS in config.data>
-is ``DO''
-and the command is any other word, then
+.I <DO_RNEWSPROGS in include/config.h>
+is defined and the command is any other word, then
 .I rnews
 will try to execute a program with that name in the directory
 .IR <pathbin\ in\ inn.conf>/bin/rnews.libexec .
@@ -76,9 +73,8 @@ The batch will be fed into the program's standard input, and the
 standard output will be read back as input into
 .IR rnews .
 If 
-.I <RNEWS_SAVE_BAD in config.data> 
-is ``DO''
-and
+.I <DO_RNEWS_SAVE_BAD in include/config.h> 
+is defined and
 .I rnews
 detects any problems with an article such as a missing header, or
 an unintelligible reply from the server, it will save a copy of the article
@@ -87,22 +83,29 @@ in the
 directory.
 .SH OPTIONS
 .TP
-.B \-U
-If the server is not available, the message is spooled into a new file
-created in the
-.I <patharticles in inn.conf>
-directory.
-The ``\fB\-U\fP'' flag may be used to send all spooled messages to the
-server once it becomes available again, and can be invoked regularly
-by
-.IR cron (8).
+.B \-h
+If the ``\fB\-h\fP'' flag is given, or failing that, the
+environment variable
+.I <_ENV_UUCPHOST in include/paths.h>
+(typically
+.IR UU_MACHINE )
+is set, then
+.I rnews
+will log the Message-ID and host via
+.IR syslog (3)
+for each article offered to the server.
+Logging will only be done if the value is not an empty string.
 .TP
 .B \-N
 Normally, if unpacking the input fails it is re-spooled to
-.I <patharticles in inn.conf>
+.I <pathincoming in inn.conf>
 for another attempt later.  If the ``\fB\-N\fP'' flag is used then no such
 re-spooling is done and rnews exits with status value ``9'' to indicate
 this.
+.TP
+.B \-P
+If the ``\fB\-P\fP'' flag is used, then the articles will be sent to the
+specified port on the remote host.
 .TP
 .B \-r
 If the ``\fB\-r\fP'' flag is used, then the articles will be sent to the
@@ -111,9 +114,15 @@ named remote host instead of the default host.
 .B \-S
 \&``\fB\-S\fP'' flag is equivalent to ``\fB\-r\fP'' flag.
 .TP
-.B \-P
-If the ``\fB\-P\fP'' flag is used, then the articles will be sent to the
-specified port on the remote host.
+.B \-U
+If the server is not available, the message is spooled into a new file
+created in the
+.I <pathincoming in inn.conf>
+directory.
+The ``\fB\-U\fP'' flag may be used to send all spooled messages to the
+server once it becomes available again, and can be invoked regularly
+by
+.IR cron (8).
 .TP
 .B \-v
 If the ``\fB\-v\fP'' flag is used, it will print a notice of all errors on the
@@ -121,20 +130,6 @@ standard error, naming the input file (if known) and printing the first
 few characters of the input.
 Errors are always logged through
 .IR syslog (3).
-.TP
-.B \-h
-If the ``\fB\-h\fP'' flag is given, or failing that, the
-environment variable
-.I <_ENV_UUCPHOST in config.data>
-(typically
-.\" =()<.IR @<typ_ENV_UUCPHOST>@ )>()=
-.IR UU_MACHINE )
-is set, then
-.I rnews
-will log the Message-ID and host via
-.IR syslog (3)
-for each article offered to the server.
-Logging will only be done if the value is not an empty string.
 .SH BUGS
 .I Rnews
 cannot process articles that have embedded \e0's in them.

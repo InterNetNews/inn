@@ -187,9 +187,9 @@ BOOL OVgroupdel(char *group) {
 }
 
 BOOL OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
-    char		*next;
+    char		*next, *nextcheck;
     static char		*xrefdata, *patcheck, *overdata;
-    char		*xrefstart;
+    char		*xrefstart, *xrefend;
     static int		xrefdatalen = 0, overdatalen = 0;
     BOOL		found = FALSE;
     int			xreflen;
@@ -229,6 +229,14 @@ BOOL OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
         next++;
     }
     xreflen = len - (next - data);
+
+    /*
+     * If there are other fields beyond Xref in overview, then
+     * we must find Xref's end, or data following is misinterpreted.
+     */
+    if (xrefend = memchr(next, '\t', xreflen))
+	xreflen = xrefend - next;
+
     if (xrefdatalen == 0) {
         xrefdatalen = BIG_BUFFER;
         xrefdata = NEW(char, xrefdatalen);
@@ -253,12 +261,12 @@ BOOL OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
     if (innconf->ovgrouppat != NULL) {
         memcpy(patcheck, next, xreflen);
         patcheck[xreflen] = '\0';
-        for (group = patcheck; group && *group; group = memchr(next, ' ', next - patcheck)) {
+        for (group = patcheck; group && *group; group = memchr(nextcheck, ' ', xreflen - (nextcheck - patcheck))) {
             while (isspace((int)*group))
                 group++;
-            if ((next = memchr(group, ':', xreflen - (group - xrefdata))) == NULL)
+            if ((nextcheck = memchr(group, ':', xreflen - (patcheck - group))) == NULL)
                 return FALSE;
-            *next++ = '\0';
+            *nextcheck++ = '\0';
             if (!OVgroupmatch(group)) {
                 if (!SMprobe(SELFEXPIRE, &token, NULL) && innconf->groupbaseexpiry)
                     /* this article will never be expired, since it does not
@@ -895,6 +903,8 @@ STATIC void ARTreadschema(void)
     ARTOVERFIELD		*fp;
     int				i;
     char			buff[SMBUF];
+    BOOL			foundxref = FALSE;
+    BOOL			foundxreffull = FALSE;
 
     /* Open file, count lines. */
     if ((F = fopen(cpcatpath(innconf->pathetc, _PATH_SCHEMA), "r")) == NULL)
@@ -922,10 +932,18 @@ STATIC void ARTreadschema(void)
 	fp->HasHeader = FALSE;
 	fp->Header = COPY(buff);
 	fp->Length = strlen(buff);
+	if (caseEQ(buff, "Xref")) {
+	    foundxref = TRUE;
+	    foundxreffull = fp->NeedsHeader;
+	}
 	fp++;
     }
     ARTfieldsize = fp - ARTfields;
     (void)fclose(F);
+    if (!foundxref || !foundxreffull) {
+	(void)fprintf(stderr, "'Xref:full' must be included in %s", cpcatpath(innconf->pathetc, _PATH_SCHEMA));
+	exit(1);
+    }
 }
 
 /*

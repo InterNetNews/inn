@@ -5,10 +5,16 @@ inews \- send a Usenet article to the local news server for distribution
 .SH SYNOPSIS
 .B inews
 [
-.B \-h
+.B \-A
 ]
 [
 .B \-D
+]
+[
+.B \-h
+]
+[
+.B \-N
 ]
 [
 .B \-O
@@ -21,6 +27,12 @@ inews \- send a Usenet article to the local news server for distribution
 ]
 [
 .B \-S
+]
+[
+.B \-V
+]
+[
+.B \-W
 ]
 [
 .I "header_flags"
@@ -44,32 +56,38 @@ server as specified in the
 file for distribution.
 .SH OPTIONS
 .TP
-.B \-h
-In the standard mode of operation, the input consists of the article
-headers, a blank line, and the message body.
-For compatibility with older software, the ``\fB\-h\fP'' flag must be used.
-If there are no headers in the message, then this flag may be omitted.
-.B \-p
-If the ``\fB\-p\fP'' flag is used, then the articles will be sent to the
-specified port on the remote host.
-.TP
-.B \-O
-The default Organization header will be provided if none is present
-in the article or if the ``\fB\-o\fP'' flag is not used.
-To prevent adding the default, use the ``\fB\-O\fP'' flag.
+.B "\-A \-V \-W"
+For compatibility with C News,
+.I inews
+accepts, but ignores, the ``\fB\-A\fP'', ``\fB\-V\fP'' and ``\fB\-W\fP'' flags.
 .TP
 .B \-D
 As a debugging aide, if the ``\fB\-D\fP'' flag is used, the consistency checks
 will be performed, and the article will be sent to the standard output,
 rather then sent to the server.
 .TP
-.B "\-A \-V \-W"
-For compatibility with C News,
-.I inews
-accepts, but ignores, the ``\fB\-A\fP'', ``\fB\-V\fP'' and ``\fB\-W\fP'' flags.
+.B \-h
+In the standard mode of operation, the input consists of the article
+headers, a blank line, and the message body.
+For compatibility with older software, the ``\fB\-h\fP'' flag must be used.
+If there are no headers in the message, then this flag may be omitted.
 .TP
 .B \-N
 The C News ``\fB\-N\fP'' flag is treated as the ``\fB\-D\fP'' flag.
+.TP
+.B \-O
+The default Organization header will be provided if none is present
+in the article or if the ``\fB\-o\fP'' flag is not used.
+To prevent adding the default, use the ``\fB\-O\fP'' flag.
+.TP
+.B \-p
+If the ``\fB\-p\fP'' flag is used, then the articles will be sent through the
+specified port on the remote host.
+.TP
+.B \-R
+If the ``\fB\-R\fP'' flag is used then
+.I inews
+will reject any attempts to post control messages.
 .TP
 .B \-S
 If a file named
@@ -81,11 +99,6 @@ If the file cannot be read, or if it is too long (for example, more than
 four lines or one standard I/O buffer), or if some other problem occurs,
 then the article will not be posted.
 To suppress this action use the ``\fB\-S\fP'' flag.
-.TP
-.B \-R
-If the ``\fB\-R\fP'' flag is used then
-.I inews
-will reject any attempts to post control messages.
 .TP
 .I header_flags
 Several headers may be specified on the command line, shown in the
@@ -102,13 +115,13 @@ The options, and their equivalent header, are as follows:
     c       Control
     d       Distribution
     e       Expires
+    F       References
     f       From
-    w       Followup-To
     n       Newsgroups
+    o       Organization
     r       Reply-To
     t       Subject
-    F       References
-    o       Organization
+    w       Followup-To
     x       Path prefix
 .fi
 .RE
@@ -141,9 +154,9 @@ It will query the remote news server for a moderators listing. If
 that doesn't succeed, it will fallback to using the local
 .IR moderators (5)
 file to determine the mailing address.
-If no address is found, it will use the
+If no address is found, it will use ``moderatormailer'' in
 .IR inn.conf
-file to determine a ``last-chance'' host to try.
+to determine a ``last-chance'' host to try.
 .PP
 If the NNTP server needs to authenticate the client,
 .I inews

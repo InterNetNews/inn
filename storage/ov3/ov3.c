@@ -468,6 +468,11 @@ STATIC BOOL OV3mmapgroup(GROUPHANDLE *gh) {
 	return FALSE;
     }
     gh->indexlen = sb.st_size;
+    if (gh->datalen == 0 || gh->indexlen == 0) {
+	gh->datamem = (char *)-1;
+	gh->indexmem = (INDEXENTRY *)-1;
+	return TRUE;
+    }
     if (!gh->datamem) {
 	if ((gh->datamem = (char *)mmap(0, gh->datalen, PROT_READ, MAP_SHARED,
 					gh->datafd, 0)) == (char *)-1) {
@@ -804,10 +809,8 @@ void *tradindexed_opensearch(char *group, int low, int high) {
 	base = ge->base;
     } while (ge->indexinode != oldinode);
 
-    if (high < base || low < base) { /* Check for corrupted group entry */
+    if (high < base || low < base) { /* return NULL if searching range is out */
       OV3closegroup(gh, FALSE);
-      syslog(L_ERROR, "tradindexed: Group %s has a corrupted group entry", 
-	     group);
       return NULL;
     }
 
@@ -829,6 +832,8 @@ BOOL ov3search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token
     OV3SEARCH           *search = (OV3SEARCH *)handle;
     INDEXENTRY           *ie;
 
+    if (search->gh->datamem == (char *)-1 || search->gh->indexmem == (INDEXENTRY *)-1)
+	return FALSE;
     for (ie = search->gh->indexmem;
 	 ((char *)&ie[search->cur] < (char *)search->gh->indexmem + search->gh->indexlen) &&
 	     (search->cur <= search->limit) &&
@@ -843,11 +848,12 @@ BOOL ov3search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token
 	   no index room for it */
 	return FALSE;
     }
+
+    ie = &ie[search->cur];
     if (ie->offset > search->gh->datalen || ie->offset + ie->length > search->gh->datalen)
 	/* index may be corrupted, do not go further */
 	return FALSE;
 
-    ie = &ie[search->cur];
     if (artnum)
 	*artnum = search->base + search->cur;
     if (len)
@@ -1217,6 +1223,10 @@ BOOL tradindexed_ctl(OVCTLTYPE type, void *val) {
 	return TRUE;
       case OVCUTOFFLOW:
 	Cutofflow = *(BOOL *)val;
+	return TRUE;
+    case OVSTATICSEARCH:
+	i = (int *)val;
+	*i = FALSE;
 	return TRUE;
     default:
 	return FALSE;

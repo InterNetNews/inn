@@ -168,13 +168,13 @@ STATIC char **GetGroups(char *p) {
   return i ? list : NULL;
 }
 
-STATIC BOOL HaveSeen(char *group, char **groups, char **xrefs) {
+STATIC BOOL HaveSeen(BOOL AllGroups, char *group, char **groups, char **xrefs) {
   char *list[2];
 
   list[1] = NULL;
   for ( ; *xrefs; xrefs++) {
     list[0] = *xrefs;
-    if (PERMmatch(groups, list) && (!PERMspecified || (PERMspecified && PERMmatch(PERMreadlist, list)))) {
+    if ((!AllGroups && PERMmatch(groups, list)) && (!PERMspecified || (PERMspecified && PERMmatch(PERMreadlist, list)))) {
       if (!strcmp(*xrefs, group))
 	return FALSE;
       else
@@ -304,6 +304,7 @@ FUNCTYPE CMDnewnews(int ac, char *av[]) {
       }
     }
     grplist[0] = group = p;
+    grplist[1] = NULL;
     if (PERMspecified && !PERMmatch(PERMreadlist, grplist))
       continue;
     if (!AllGroups && !PERMmatch(groups, grplist))
@@ -341,7 +342,7 @@ FUNCTYPE CMDnewnews(int ac, char *av[]) {
 	    SMfreearticle(art);
 	  continue;
 	}
-	if (HaveSeen(group, groups, xrefs)) {
+	if (HaveSeen(AllGroups, group, groups, xrefs)) {
 	  if (Msgid == OVFMT_NOMSGID)
 	    SMfreearticle(art);
 	  continue;

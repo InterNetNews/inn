@@ -171,7 +171,7 @@ Installing INN
     --with-spool-dir=PATH
         Sets the prefix for the news spool (when using any storage method
         other than CNFS) and the overview spool.  The default is
-        PREFIX/pool.  This is another common portion of INN to move to a
+        PREFIX/spool.  This is another common portion of INN to move to a
         different file system (often /news).
 
         It's also possible to set the paths for most other sections of the
@@ -263,16 +263,29 @@ Installing INN
         faster than opening a new network connection).  For standalone news
         servers, by far the most common configuration now, there's no need
         to use this option; even if you have regular login accounts on your
-        news server, nearly all news readers these days handle posting
-        through a network connection and don't need a local setgid inews to
-        post.  Installing inews setgid was the default prior to INN 2.3.
+        news server, INN's inews can post fine via a network connection to
+        your running news server and doesn't need to use the local socket
+        (which is what setgid enables it to do).  Installing inews setgid
+        was the default prior to INN 2.3.
+
+    --with-berkeleydb=PATH
+        Enables support for Berkeley DB (2.x or 3.x), which means that it
+        will then be possible to use the ovdb overview method if you wish. 
+        Enabling this configure option doesn't mean you'll be required to
+        use ovdb, but it does require that Berkeley DB be installed on your
+        system.  If a path is given, it sets the installed directory of
+        Berkeley DB (configure will search for it in some standard
+        locations, but if you have it installed elsewhere, you may need this
+        option).
 
     --with-openssl=PATH
-        Enables support for SSL for news reading, which means it is possible
-        to have SSL or TLS encrypted NNTP connections between your server
-        and newsreaders.  This option requires OpenSSL.  If a path is given,
-        it sets the installed directory of OpenSSL.  You must then make a
-        certificate and private key.
+        Enables support for SSL for news reading, which means it will be
+        possible to have SSL or TLS encrypted NNTP connections between your
+        server and newsreaders.  This option requires OpenSSL be installed
+        on your system.  If a path is given, it sets the installed directory
+        of OpenSSL.  After compiling and installing INN with this option,
+        you'll still need to make a certificate and private key to use SSL. 
+        See below for details on how to do that.
 
     For the most common installation, a standalone news server, a suggested
     set of options is:
@@ -417,6 +430,9 @@ Choosing an Article Storage Format
     database; it's fast and very robust, but requires more disk space.  See
     the ovdb(5) man page for more information on it.
 
+    Note that ovdb has not been as widely tested as the other overview
+    mechanisms and should be considered experimental.
+
     If buffindexed is chosen, you will need to create the buffers for it to
     use (very similar to creating CNFS buffers) and list the available
     buffers in buffindexed.conf.  See buffindexed.conf(5) for more
@@ -505,8 +521,7 @@ Configuring INN
         If set to true then INN will support the NEWNEWS command for news
         readers.  While this can be an expensive operation, its speed has
         been improved considerably as of INN 2.3 and it's probably safe to
-        turn on without risking excessive server load.  The default is
-        false.
+        turn on without risking excessive server load.  The default is true.
 
     complaints
         Used to set the value of the X-Complaints-To: header which is added
@@ -685,7 +700,7 @@ Configuring INN
     If the remote site puts its actual hostname in the Path: header, you
     won't need the `/news.example.com' part.
 
-    This entry will cause innd to write out a file in ~news/db/outgoing
+    This entry will cause innd to write out a file in ~news/spool/outgoing
     named remote.example.com and containing the message ID and storage token
     of each message to send to that site.  innxmit knows how to read this
     format of file and send those articles to the remote site.  For
@@ -810,18 +825,20 @@ Configuring INN
     the metacycbuffs is in turn composed of one or more physical buffers
     called cycbuffs.  As articles are written to the metacycbuff each
     article is written to the next cycbuff in the list in a round-robin
-    fashion.  This is so that you can distribute the individual cycbuffs
-    across multiple physical disks and balance the load between them.
+    fashion (unless sequential mode is specified, in which case each cycbuff
+    is filled before moving on to the next).  This is so that you can
+    distribute the individual cycbuffs across multiple physical disks and
+    balance the load between them.
 
     There are two ways to create your cycbuffs:
 
     1.  Use a raw disk partition (best).  This will give you the most speed,
         but it requires your OS support mmap() on a block device.  Solaris
-        supports this, FreeBSD and Linux do not.  Also on many PC-based
-        Unixes it is difficult to create more than eight partitions, which
-        may limit your options.  See the Creating the Article Spool entry
-        elsewhere in this document for more discussion of how to set this
-        up.
+        supports this, FreeBSD and Linux (without patches) do not.  Also on
+        many PC-based Unixes it is difficult to create more than eight
+        partitions, which may limit your options.  See the Creating the
+        Article Spool entry elsewhere in this document for more discussion
+        of how to set this up.
 
     2.  Use a real file on a filesystem.  This will be a bit slower than
         using a raw disk partition, but it should work on any Unix system.
@@ -876,6 +893,13 @@ Configuring INN
     the cycbuffs that should be used to build this metacycbuff.  Each
     cycbuff should only appear in one metacycbuff line, and all metacycbuff
     lines must occur after all cycbuff lines in the file.
+
+    If you want INN to fill each cycbuff before moving on to the next one
+    rather than writing to them round-robin, add `:SEQUENTIAL' to the end of
+    the metacycbuff line.  This may give noticeably better performance when
+    using multiple cycbuffs on the same spindle (such as partitions or
+    slices of a larger disk), but will probably give worse performance if
+    your cycbuffs are spread out across a lot of spindles.
 
   storage.conf
 
@@ -948,7 +972,7 @@ Configuring INN
     This file sets the expiration policy for articles stored on the server. 
     Only one entry is required for all storage classes; it looks like:
 
-        /remember/:14
+        /remember/:10
 
     This entry says how long to keep the message IDs for articles that have
     already expired in the history file so that the server doesn't accept
@@ -958,7 +982,7 @@ Configuring INN
     file for a little while to ensure you don't get duplicates.
 
     INN will reject any articles more than a certain number of days old (the
-    artcutoff parameter in inn.conf, defaulting to 14); the number on the
+    artcutoff parameter in inn.conf, defaulting to 10); the number on the
     `/remember/' line should match that.
 
     CNFS makes no further use of expire.ctl, since articles stored in CNFS
@@ -1108,6 +1132,7 @@ Creating the Database Files
     Next, you need to create an empty history database.  To do this, type:
 
         cd ~news/db
+        touch history
         makedbz -i
 
     When it finishes, rename the files it created to remove the `.n' in the

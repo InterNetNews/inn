@@ -63,9 +63,8 @@
 #define _PATH_SCHEMA		"overview.fmt"
 #define _PATH_MOTD		"motd.news"
 #define _PATH_STORAGECTL	"storage.conf"
-#define _PATH_OVERVIEWCTL	"overview.ctl"
-#define _PATH_RADIUS_CONFIG	"@ETCDIR@/radius.conf"
-#define _PATH_SASL_CONFIG	"@ETCDIR@/sasl.conf"
+#define _PATH_RADIUS_CONFIG	"radius.conf"
+#define _PATH_SASL_CONFIG	"sasl.conf"
 
 /* Default prefix path is pathspool. */
 #define _PATH_SPOOL		"articles"

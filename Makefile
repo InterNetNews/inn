@@ -74,8 +74,8 @@ install: directories
 	@echo 'Do not forget to update your cron entries, and also run'
 	@echo 'makedbz if you need to.  If this is a first-time installation'
 	@echo 'a minimal active file has been installed.  You will need to'
-	@echo 'run "makedbz -i" to initialize the history database.  See'
-	@echo 'INSTALL for more information.'
+	@echo 'touch history and run "makedbz -i" to initialize the history'
+	@echo 'database.  See INSTALL for more information.'
 	@echo ''
 
 directories:
@@ -119,7 +119,7 @@ clobber realclean distclean:
 	done
 	@echo ''
 	rm -rf inews.* rnews.* $(TARDIR)
-	rm -f inn*.tar.gz TAGS tags LIST.*
+	rm -f inn*.tar.gz CHANGES ChangeLog TAGS tags
 	rm -f config.cache config.log config.status libtool
 	rm -f include/autoconfig.h include/config.h include/paths.h
 	rm -f support/fixscript Makefile.global
@@ -141,24 +141,23 @@ TAGS etags:
 ##  isn't in the MANIFEST, it doesn't go into the release.  We also update
 ##  the version information in Makefile.global.in to remove the prerelease
 ##  designation and update all timestamps to the date the release is made.
-release:
+release: ChangeLog
 	rm -rf $(TARDIR)
 	rm -f inn*.tar.gz
 	mkdir $(TARDIR)
-	for d in `sed $(DISTDIRS) MANIFEST` ; do mkdir $$i ; done
-	for f in `sed $(DISTFILES) MANIFEST` ; do \
+	for d in `sed $(DISTDIRS) < MANIFEST` ; do mkdir $$d ; done
+	for f in `sed $(DISTFILES) < MANIFEST` ; do \
 	    cp $$f $(TARDIR)/$$f || exit 1 ; \
 	done
 	sed 's/= CVS prerelease/=/' < Makefile.global.in \
 	    > $(TARDIR)/Makefile.global.in
-	find $(TARDIR) -type -f -print | xargs touch -t `date +%m%d%H%M.%S`
+	cp ChangeLog $(TARDIR)
+	find $(TARDIR) -type f -print | xargs touch -t `date +%m%d%H%M.%S`
 	tar cf $(TARFILE) $(TARDIR)
 	$(GZIP) -9 $(TARFILE)
 
-
-##  Check the MANIFEST against the files present in the current tree,
-##  building a list with find and running diff between the lists.
-check-manifest:
-	sed -e 1,2d -e 's/ .*//' MANIFEST > LIST.manifest
-	find . -print | sed -e 's/^\.\///' -e /CVS/d | sort > LIST.real
-	diff -u LIST.manifest LIST.real
+##  Generate the ChangeLog using support/mkchangelog.  This should only be
+##  run by a maintainer since it depends on cvs log working and also
+##  requires cvs2cl be available somewhere.
+ChangeLog:
+	support/mkchangelog

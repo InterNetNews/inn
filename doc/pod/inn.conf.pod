@@ -127,7 +127,7 @@ stored and propagated, and other similar settings.
 
 Articles older than this number of days are dropped.  This setting should
 probably match the setting on the C</remember/> line in F<expire.ctl>.
-The default value is C<14>.
+The default value is C<10>.
 
 =item I<bindaddress>
 
@@ -203,7 +203,8 @@ Path: header.  The default value is unset.
 =item I<pgpverify>
 
 Whether to enable PGP verification of control messages other than cancel.
-This is a boolean value and the default is false.
+This is a boolean value and the default is based on whether configure found
+pgp or pgpv.
 
 =item I<port>
 
@@ -354,8 +355,8 @@ If set, restricts the overview data stored by INN to only the newsgroups
 matching this comma-separated list of wildmat expressions.  Newsgroups not
 matching this setting may not be readable, and if I<groupbaseexpiry> is
 set to true and the storage method for these newsgroups does not have
-self-expire functionality, storing overview data will fail.  This is a
-boolean value and the default is false.
+self-expire functionality, storing overview data will fail.
+The default is unset.
 
 =item I<ovmethod>
 

@@ -120,13 +120,12 @@ extern size_t strspn();
 # define strtoul(a, b, c) strtol((a), (b), (c))
 #endif
 
-/* Large file support.  Use the off_t versions, if available. */
-#ifdef HAVE_FTELLO
-# define ftell ftello
-#endif
-#ifdef HAVE_FSEEKO
-# define fseek fseeko
-#endif
+/* Large file support.  Always use the off_t versions, which we provide if
+   not available. */
+#undef fseek
+#undef ftell
+#define fseek fseeko
+#define ftell ftello
 
 /* mmap() flags.  This really doesn't belong in this header file; it should
    be moved to a header file specifically for mmap-related things. */

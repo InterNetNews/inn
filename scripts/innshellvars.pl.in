@@ -42,8 +42,6 @@ $newsfeeds = "${newsetc}/newsfeeds" ;
 $newsgroups = "${pathdb}/newsgroups" ;
 $oldactive = "${pathdb}/active.old" ;
 $path_motd = "${newsetc}/motd.news" ;
-$path_storagectl = "${newsetc}/storage.ctl" ;
-$path_overviewctl = "${newsetc}/overview.ctl" ;
 $localgroups = "$newsetc/localgroups" ;
 $expirectl = "${newsetc}/expire.ctl" ;
 
@@ -79,6 +77,8 @@ $pgp = "@_PATH_PGP@" ;
 $sort = "@_PATH_SORT@" ;
 $getftp = "@GETFTP@" ;
 $compress = "@COMPRESS@" ;
+$gzip = "@GZIP@" ;
+$uncompress = "@UNCOMPRESS@" ;
 $log_compress = "@LOG_COMPRESS@" ;
 $z = "@LOG_COMPRESSEXT@" ;
 

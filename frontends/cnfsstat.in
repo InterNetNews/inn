@@ -285,7 +285,7 @@ sub print_cycbuff_head {
 
     $name =~ s/\0//g;
     print " Buffer $name, size: ", &human_readable($len, 4);
-    print ", current: ", &human_readable($free, 4);
+    print ", position: ", &human_readable($free, 4);
     printf("  %.2f cycles\n", $cyclenum + $free/$len);
     my ($when, $ago) = &make_time($update);
     print "  Newest: $when, $ago ago\n";
@@ -322,15 +322,18 @@ sub human_readable {
     my $base = 1024;
     my $factor = 1024;
 
-    my $unit = $#name;
-    my $scaled = $val / $base / $factor**$unit;
-    while ($scaled < 1 && $unit) {
-	$scaled *= $factor;
-	$unit--;
+    my $unit = -1;
+    my $oldscaled = $val / $base;
+    my $scaled = $oldscaled;
+    while ( ( int($scaled) > 0 ) && ( $unit < $#name ) ) {
+	$oldscaled = $scaled;
+	$scaled /= $factor;
+	$unit++;
     }
-    my $predigits = int(log($scaled) / log(10));
-    $predigits = 0 if $predigits < 0;
+    $scaled = $oldscaled;
+    my $predigits = length (int($scaled));
     my $postdigits = $digits - $predigits - 1;
+    $postdigits = 0 if $postdigits < 0;
     ++$digits;
 
     return sprintf ("%${digits}.${postdigits}f %s", $scaled, $name[$unit]);

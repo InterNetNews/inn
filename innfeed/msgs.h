@@ -117,6 +117,7 @@
 #define INN_GONE                "ME source lost . Exiting"
 #define INN_IO_ERROR            "ME source read error Exiting : %m"
 #define INN_BAD_CMD             "ME source format bad Exiting : %s"
+#define INN_MSGID_SIZE          "ME message id exceeds limit of %d octets : %s"
 #define TOO_MANY_HOSTS          "ME internal too may hosts. (max is %d)"
 #define DYNAMIC_PEER            "ME unconfigured peer %s added"
 #define UNKNOWN_PEER            "ME unconfigured peer %s"

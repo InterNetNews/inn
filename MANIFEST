@@ -7,8 +7,6 @@ HISTORY                               Messages of historical significance
 INSTALL                               INN installation instructions
 LICENSE                               Legal mumbo-jumbo
 MANIFEST                              This shipping list
-MakeInews                             Make an inews distribution kit
-MakeRnews                             Make an rnews distribution kit
 Makefile                              Top-level makefile
 Makefile.global.in                    Make variables for all Makefiles
 NEWS                                  Changes since last version
@@ -38,7 +36,6 @@ backends/batcher.c                    Make news batches
 backends/buffchan.c                   Buffered funnel to file splitter
 backends/controlbatch.in              Batch program for controlchan
 backends/controlchan.in               Channel program for control messages
-backends/crosspost.c                  Crosspost link maker
 backends/cvtbatch.c                   Add fields to simple batchfile
 backends/filechan.c                   Split a funnel into separate files
 backends/inndf.c                      df used for innwatch
@@ -64,14 +61,13 @@ configure.in                          Source file for configure
 contrib                               External contributions (Directory)
 contrib/README.contrib                README file for the contrib contents
 contrib/README.newsresp_c             Docs for newsresp.c
-contrib/cleanoi                       Script to clean overview index files
+contrib/cleannewsgroups.pl            Script to clean newsgroups file
 contrib/count_overview.pl             Count overview entries
 contrib/expirectl                     Generate expire.ctl from template
 contrib/findmissing.pl                Locate articles not in history
 contrib/findreadgroups.pl             Track which groups are being read
 contrib/fixhist                       Script to clean history
 contrib/format_overview.pl            Format output of count_overview.pl
-contrib/listoi.c                      Display an overview.index file
 contrib/makeexpctl.pl                 Create expire.ctl based on read articles
 contrib/makestorconf.pl               Create storage.conf from read articles
 contrib/mkbuf                         Create cycbuff for HP-UX
@@ -89,7 +85,6 @@ doc/control-messages                  tal's description of control messages
 doc/man                               nroff documentation (Directory)
 doc/man/Makefile                      Makefile for nroff documentation
 doc/man/active.5                      Manpage for active database
-doc/man/actived.8                     Manpage for active daemon
 doc/man/actsync.8                     Manpage for active file synch program
 doc/man/actsyncd.8                    Manpage for active synch daemon
 doc/man/archive.8                     Manpage for archive backend
@@ -102,7 +97,6 @@ doc/man/cnfsstat.8                    Manpage for cnfsstat
 doc/man/control.ctl.5                 Manpage for control.ctl config file
 doc/man/controlchan.8                 Manpage for controlchan backend
 doc/man/convdate.1                    Manpage for convdate utility
-doc/man/crosspost.8                   Manpage for crosspost backend
 doc/man/ctlinnd.8                     Manpage for ctlinnd frontend
 doc/man/cvtbatch.8                    Manpage for cvtbatch utility
 doc/man/cycbuff.conf.5                Manpage for cycbuff.conf config file
@@ -111,7 +105,6 @@ doc/man/dbz.3                         Manpage for DBZ database interface
 doc/man/distrib.pats.5                Manpage for distrib.pats config file
 doc/man/expire.8                      Manpage for expire
 doc/man/expire.ctl.5                  Manpage for expire.ctl config file
-doc/man/expireindex.8                 Manpage for expireindex
 doc/man/expireover.8                  Manpage for expireover
 doc/man/expirerm.8                    Manpage for expirerm
 doc/man/fastrm.8                      Manpage for fastrm utility
@@ -139,7 +132,6 @@ doc/man/innxmit.8                     Manpage for innxmit
 doc/man/libinn.3                      Manpage for INN library routines
 doc/man/libstorage.3                  Manpage for storage API library routines
 doc/man/mailpost.8                    Manpage for mailpost frontend
-doc/man/makeactive.8                  Manpage for makeactive
 doc/man/makedbz.8                     Manpage for makedbz
 doc/man/makehistory.8                 Manpage for makehistory
 doc/man/mod-active.8                  Manpage for mod-active
@@ -160,7 +152,6 @@ doc/man/ovdb.5                        Manpage for the ovdb storage module
 doc/man/ovdb_recover.8                Manpage for ovdb_recover utility
 doc/man/ovdb_upgrade.8                Manpage for ovdb_upgrade
 doc/man/overchan.8                    Manpage for overchan backend
-doc/man/overview.ctl.5                Manpage for overview.ctl config file
 doc/man/overview.fmt.5                Manpage for overview.fmt config file
 doc/man/parsedate.3                   Manpage for parsedate library routine
 doc/man/passwd.nntp.5                 Manpage for passwd.nntp config file
@@ -180,9 +171,7 @@ doc/man/simpleftp.1                   Manpage for simpleftp utility
 doc/man/sm.8                          Manpage for sm
 doc/man/startinnfeed.1                Manpage for startinnfeed
 doc/man/storage.conf.5                Manpage for storage.conf config file
-doc/man/storage.ctl.5                 Manpage for storage.ctl config file
 doc/man/strcasecmp.3                  Manpage for strcasecmp (from BSD)
-doc/man/subst.1                       Manpage for subst
 doc/man/tally.control.8               Manpage for tally.control
 doc/man/wildmat.3                     Manpage for wildmat library routine
 doc/man/writelog.8                    Manpage for writelog
@@ -193,6 +182,7 @@ doc/pod/hook-perl.pod                 Master file for README.perl_hook
 doc/pod/inn.conf.pod                  Master file for inn.conf.5
 doc/pod/inndstart.pod                 Master file for inndstart.8
 doc/pod/install.pod                   Master file for INSTALL
+doc/pod/makehistory.pod               Master file for makehistory.8
 doc/pod/news.pod                      Master file for NEWS
 doc/pod/ovdb.pod                      Master file for ovdb.5
 doc/pod/ovdb_recover.pod              Master file for ovdb_recover.8
@@ -319,10 +309,13 @@ lib/clientlib.c                       Replacement for C News library routine
 lib/closeonexec.c                     Make a descriptor close-on-exec
 lib/concat.c                          Concatenate strings with dynamic memory
 lib/conffile.c                        Routines for reading *.conf files
+lib/date.c                            Date parsing and conversion routines
 lib/dbz.c                             DBZ database library
 lib/defdist.c                         Determine default Distribution header
 lib/endian.c                          Determine system's endianness
 lib/findheader.c                      Find a header in an article
+lib/fseeko.c                          fseeko replacement
+lib/ftello.c                          ftello replacement
 lib/genid.c                           Generate a message ID
 lib/getconfig.c                       Parse the inn.conf file
 lib/getdtab.c                         Get number of allowable open files
@@ -332,6 +325,7 @@ lib/getopt.c                          Help parse command line
 lib/gettime.c                         Get time and timezone info
 lib/grpalias.c                        Group alias code used for OV3
 lib/hash.c                            Create hash from message ID
+lib/hstrerror.c                       Error reporting for resolver
 lib/inet_aton.c                       Extra source for inet_aton routine
 lib/inet_ntoa.c                       Convert inaddr to string (BSD)
 lib/inndcomm.c                        Library routines to talk to innd
@@ -530,7 +524,7 @@ storage/trash/Makefile                Makefile for trash storage method
 storage/trash/method.config           buildconfig definition
 storage/trash/trash.c                 Trash storage routines
 storage/trash/trash.h                 Header file for trash storage
-support                               Tools for building INN
+support                               Tools for building INN (Directory)
 support/config.guess                  Determine system type for libtool
 support/config.sub                    Canonicalize system type for libtool
 support/fixscript.in                  Interpreter path fixup script

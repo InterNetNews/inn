@@ -217,8 +217,10 @@ control_ctl
 sub
 expire_ctl
 {
-    local ($rem, $v, $def, $flag, $keep, $default, $purge);
+    local ($rem, $v, $def, $class, $pat, $flag, $keep, $default, $purge, $groupbaseexpiry);
 
+    $groupbaseexpiry = $inn::groupbaseexpiry;
+    $groupbaseexpiry =~ tr/A-Z/a-z/;
     input: while ( <IN> ) {
 	next input if &spacious($file, ++$line);
 
@@ -236,13 +238,26 @@ expire_ctl
 	}
 
 	##  Could check for conflicting lines, but that's hard.
-	unless ( ($class, $keep, $default, $purge) =
-         /^(\d+):([\d\.]+|never):([\d\.]+|never):([\d\.]+|never)$/ ) {
-	    print "$file:$line: malformed line.\n";
-	    next input;
+	if ($groupbaseexpiry =~ /^true$/ || $groupbaseexpiry =~ /^yes$/ ||
+	    $groupbaseexpiry =~ /^on$/) {
+	    unless ( ($pat, $flag, $keep, $default, $purge) =
+	     /^([^:])+:([^:]+):([\d\.]+|never):([\d\.]+|never):([\d\.]+|never)$/ ) {
+		print "$file:$line: malformed line.\n";
+		next input;
+	    }
+	    print "$file:$line: duplicate default line\n"
+		if $pat eq "*" && $flag eq "a" && $def++;
+	    print "$file:$line: unknown modflag `$flag'\n"
+		if $flag !~ /[mMuUaAxX]/;
+	} else {
+	    unless ( ($class, $keep, $default, $purge) =
+	     /^(\d+):([\d\.]+|never):([\d\.]+|never):([\d\.]+|never)$/ ) {
+		print "$file:$line: malformed line.\n";
+		next input;
+	    }
+	    print "$file:$line: invalid class\n"
+		if $class < 0;
 	}
-	print "$file:$line: invalid class\n"
-	    if $class < 0;
 	print "$file:$line: purge `$purge' younger than default `$default'.\n"
 	    if $purge ne "never" && $default > $purge;
 	print "$file:$line: default `$default' younger than keep `$keep'.\n"
@@ -508,7 +523,7 @@ moderators
 %newsfeeds'flags = (
     '<',	'^\d+$',
     '>',	'^\d+$',
-    'A',	'^[cCdeop]+$',
+    'A',	'^[cCdeoOp]+$',
     'B',	'^\d+(/\d+)?$',
     'C',	'^\d+$',
     'F',	'^.+$',
@@ -520,7 +535,7 @@ moderators
     'P',	'^\d+$',
     'S',	'^\d+$',
     'T',	'^[cflmpx]$',
-    'W',	'^[bfghmnpst*DHNPOR]*$',
+    'W',	'^[befghmnpst*DGHNPOR]*$',
 );
 
 sub
@@ -881,7 +896,7 @@ intersect
 @newsbin_public = (
     'archive', 'batcher', 'buffchan', 'convdate', 'cvtbatch', 'expire',
     'filechan', 'getlist', 'grephistory', 'innconfval', 'innxmit',
-    'makeactive', 'makehistory', 'newsrequeue', 'nntpget', 'overchan',
+    'makehistory', 'newsrequeue', 'nntpget', 'overchan',
     'prunehistory', 'shlock', 'shrinkfile'
 );
 @newsbin_private = (

@@ -606,8 +606,10 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 	return FALSE;
     if (GotInterrupt)
 	Interrupted(Article, MessageID);
-    if (Debug)
+    if (Debug) {
+	(void)fprintf(stderr, "> [ article %d ]\n", art->len);
 	(void)fprintf(stderr, "> .\n");
+    }
 
     if (CanStream) return TRUE;	/* streaming mode does not wait for ACK */
 
@@ -918,6 +920,7 @@ int main(int ac, char *av[]) {
     BOOL		val;
     TOKEN		token;
 
+    (void)openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
 
@@ -982,9 +985,6 @@ int main(int ac, char *av[]) {
 	exit(1);
     }
 
-    (void)openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
-
-    
     val = TRUE;
     if (!SMsetup(SM_PREOPEN,(void *)&val)) {
 	fprintf(stderr, "Can't setup the storage manager\n");
@@ -1007,7 +1007,7 @@ int main(int ac, char *av[]) {
 	SMshutdown();
 	exit(1);
     }
-    if (LockFile(QIOfileno(BATCHqp), TRUE) < 0) {
+    if (!lock_file(QIOfileno(BATCHqp), LOCK_WRITE, TRUE)) {
 #if	defined(EWOULDBLOCK)
 	if (errno == EWOULDBLOCK) {
 	    SMshutdown();

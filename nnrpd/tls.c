@@ -6,21 +6,6 @@
 
    Keywords: TLS, OpenSSL
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; see the file COPYING.
-   If not, write to the Free Software Foundation,
-   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
    Commentary:
 
    [RFC 2246] "The TLS Protocol Version 1.0"
@@ -44,6 +29,38 @@
 #include <string.h>
 #include <syslog.h>
 #include <sys/uio.h>
+
+/* taken from lib/parsedate.c */
+#ifndef WRITEV_USE_ALLOCA
+#ifdef alloca
+#define WRITEV_USE_ALLOCA
+#else /* alloca not defined */
+#ifdef __GNUC__
+#define WRITEV_USE_ALLOCA
+#define alloca __builtin_alloca
+#else /* not GNU C.  */
+#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi) || (defined (__sun) && defined (__i386))
+#define WRITEV_USE_ALLOCA
+#include <alloca.h>
+#else /* not sparc */
+#if (defined (_MSDOS) || defined (_MSDOS_)) && !defined (__TURBOC__)
+#else /* not MSDOS, or __TURBOC__ */
+#if defined(_AIX)
+ #pragma alloca
+#define WRITEV_USE_ALLOCA
+#endif /* not _AIX */
+#endif /* not MSDOS, or __TURBOC__ */
+#endif /* not sparc */
+#endif /* not GNU C */
+#endif /* alloca not defined */
+#endif /* WRITEV_USE_ALLOCA not defined */
+#ifdef WRITEV_USE_ALLOCA
+#define WRITEV_ALLOC alloca
+#else
+#define WRITEV_ALLOC malloc
+#endif
+
+
 
 /* OpenSSL library. */
 
@@ -585,7 +602,7 @@ SSL_writev (ssl, vector, count)
   for (i = 0; i < count; ++i)
     bytes += vector[i].iov_len;
   /* Allocate a temporary buffer to hold the data.  */
-  buffer = (char *) alloca (bytes);
+  buffer = (char *) WRITEV_ALLOC (bytes);
   /* Copy the data into BUFFER.  */
   to_copy = bytes;
   bp = buffer;

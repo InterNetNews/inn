@@ -13,8 +13,9 @@ performs a number of important Usenet administrative functions.
 This includes producing a status report, removing old news articles, 
 processing log files, rotating the archived log files, renumbering the
 active file, 
-removing any old socket files found in the ``firewall'' directory,
-and collecting the output.
+removing any old socket files found in the
+.I <pathrun in inn.conf>
+directory, and collecting the output.
 .I "This program should be run under the news administrator's id, not as root."
 .PP
 By default, 
@@ -158,7 +159,7 @@ If the file is empty, no message is sent.
 .I expireover
 The
 .I expireover
-program is called after expiration to purge the overview databases or indices.
+program is called after expiration to purge the overview databases.
 If no overview data is created, the ``expireover''
 keyword is not needed.  This is the case that the server runs only for
 feeder(no reader).

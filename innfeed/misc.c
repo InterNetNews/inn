@@ -139,7 +139,7 @@ static void log (int level, const char *fmt, va_list args)
 
   p = malloc (out + 10) ;
   vsprintf (p,fmt,args) ;
-  syslog (level,p) ;
+  syslog (level,"%s",p) ;
 }
 
 void logOrPrint (int level, FILE *fp, const char *fmt, ...)
@@ -206,41 +206,6 @@ void logAndExit (int exitVal, const char *fmt, ...)
   va_end (ap) ;
 
   exit (exitVal) ;
-}
-
-
-
-static const char * const pvt_h_errlist[] = {
-  "Resolver Error 0 (no error)",
-  "Unknown host",                         /* 1 HOST_NOT_FOUND */
-  "Host name lookup failure",             /* 2 TRY_AGAIN */
-  "Unknown server error",                 /* 3 NO_RECOVERY */
-  "No address associated with name",      /* 4 NO_ADDRESS */
-};
-
-static int pvt_h_nerr = (sizeof pvt_h_errlist / sizeof pvt_h_errlist[0]);
-
-#if defined(hpux) || defined(__hpux) || defined(_SCO_DS)
-extern int h_errno;
-#endif
-
-/* return a friendly string for the current value of h_errno. Pinched from
-   Stevens */
-const char *host_err_str (void)
-{
-  static char msgstr [200] ;
-
-  if (h_errno != 0)
-    {
-      if (h_errno > 0 && h_errno < pvt_h_nerr)
-        sprintf (msgstr,"(%s)", pvt_h_errlist[h_errno]) ;
-      else
-        sprintf (msgstr,"(herrno = %d)", h_errno) ;
-    }
-  else
-    msgstr [0] = '\0' ;
-
-  return msgstr ;
 }
 
 
