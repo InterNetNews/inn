@@ -310,7 +310,7 @@ void ClearInnConf()
 int CheckInnConf()
 {
     static char *tmpdir = NULL;
-    static int dirlen = 0;
+    static unsigned int dirlen = 0;
 
     if (GetFQDN() == NULL) {
 	syslog(L_FATAL, "Hostname does not resolve or 'domain' in inn.conf is missing");

@@ -98,7 +98,7 @@ void HashClear(HASH *hash) {
 char *HashToText(const HASH hash) {
     STATIC char         hex[] = "0123456789ABCDEF";
     char                *p;
-    int                 i;
+    unsigned int        i;
     STATIC char         hashstr[(sizeof(HASH)*2) + 1];
 
     for (p = (char *)&hash, i = 0; i < sizeof(HASH); i++, p++) {
