@@ -97,6 +97,7 @@ int ovdb_getgroupinfo(char *group, struct groupinfo *gi, int ignoredeleted, DB_T
 BOOL ovdb_getlock(int mode);
 BOOL ovdb_releaselock(void);
 BOOL ovdb_check_monitor(void);
+BOOL ovdb_check_user(void);
 
 #define OVDB_LOCKFN "ovdb.sem"
 #define OVDB_MONITOR_PIDFILE "ovdb_monitor.pid"

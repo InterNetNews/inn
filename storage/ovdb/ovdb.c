@@ -1,8 +1,10 @@
 /*
  * ovdb.c
- * ovdb 2.00 beta
+ * ovdb 2.00 beta1
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2000-09-15 : added ovdb_check_user(); tweaked some error msgs; fixed an
+ *              improper use of RENEW
  * 2000-08-28:  New major release: version 2.00 (beta)
  *    + "groupsbyname" and "groupstats" databases replaced with "groupinfo".
  *    + ovdb_recover, ovdb_upgrade, and dbprocs are now deprecated; their
@@ -57,6 +59,7 @@
 #include <signal.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <pwd.h>
 #include "macros.h"
 #include "conffile.h"
 #include "libinn.h"
@@ -629,7 +632,7 @@ static BOOL delete_old_stuff(int forgotton)
 	    listcount++;
 	    if(listcount >= listlen) {
 		listlen += 20;
-		dellist = RENEW(dellist, char *, listlen);
+		RENEW(dellist, char *, listlen);
 	    }
 	}
     }
@@ -885,6 +888,23 @@ BOOL ovdb_check_monitor(void)
     return TRUE;
 }
 
+/* make sure the effective uid is that of NEWSUSER */
+BOOL ovdb_check_user(void)
+{
+    struct passwd *p;
+    static int result = -1;
+
+    if(result == -1) {
+	p = getpwnam(NEWSUSER);
+	if(!p) {
+	    syslog(L_FATAL, "OVDB: getpwnam(" NEWSUSER ") failed: %m");
+	    return FALSE;
+	}
+	result = (p->pw_uid == geteuid());
+    }
+    return result;
+}
+
 static int check_version()
 {
     int ret;
@@ -1060,11 +1080,15 @@ BOOL ovdb_open(int mode)
 #endif
 
     if(OVDBenv != NULL) {
-	syslog(L_ERROR, "ovdb_open called more than once");
+	syslog(L_ERROR, "OVDB: ovdb_open called more than once");
+	return FALSE;
+    }
+    if(!ovdb_check_user()) {
+	syslog(L_FATAL, "OVDB: must be running as " NEWSUSER " to access overview.");
 	return FALSE;
     }
     if(!ovdb_getlock(OVDB_LOCK_NORMAL)) {
-	syslog(L_ERROR, "ovdb_getlock failed: %m");
+	syslog(L_FATAL, "OVDB: ovdb_getlock failed: %m");
 	return FALSE;
     }
 
