@@ -260,8 +260,8 @@ FindNGByNum(unsigned long ngnumber) {
     return NULL; 
 }
 
-#define _PATH_TRADSPOOLNGDB "ts.ng.db"
-#define _PATH_NEWTSNGDB "ts.ng.db.new"
+#define _PATH_TRADSPOOLNGDB "tradspool.map"
+#define _PATH_NEWTSNGDB "tradspool.map.new"
 
 
 /* dump DB to file. */
@@ -653,6 +653,19 @@ OpenArticle(const char *path, RETRTYPE amount) {
     struct stat sb;
     ARTHANDLE *art;
 
+    if (amount == RETR_STAT) {
+	if (access(path, R_OK) < 0) {
+	    SMseterror(SMERR_UNDEFINED, NULL);
+	    return NULL;
+	}
+	art = NEW(ARTHANDLE, 1);
+	art->type = TOKEN_TRADSPOOL;
+	art->data = NULL;
+	art->len = 0;
+	art->private = NULL;
+	return art;
+    }
+
     if ((fd = open(path, O_RDONLY)) < 0) {
 	SMseterror(SMERR_UNDEFINED, NULL);
 	return NULL;
@@ -660,14 +673,6 @@ OpenArticle(const char *path, RETRTYPE amount) {
 
     art = NEW(ARTHANDLE, 1);
     art->type = TOKEN_TRADSPOOL;
-
-    if (amount == RETR_STAT) {
-	art->data = NULL;
-	art->len = 0;
-	art->private = NULL;
-	close(fd);
-	return art;
-    }
 
     if (fstat(fd, &sb) < 0) {
 	SMseterror(SMERR_UNDEFINED, NULL);
@@ -804,17 +809,24 @@ tradspool_cancel(TOKEN token) {
     ** good things for performance of fastrm...  -- rmtodd
     */
     if ((article = OpenArticle(path, RETR_HEAD)) == NULL) {
+	DISPOSE(path);
 	SMseterror(SMERR_UNDEFINED, NULL);
         return FALSE;
     }
 
     xrefhdr = (char *)HeaderFindMem(article->data, article->len, "Xref", 4);
     if (xrefhdr == NULL) {
-	SMseterror(SMERR_UNDEFINED, NULL);
-        return FALSE;
+	/* for backwards compatibility; there is no Xref unless crossposted
+	   for 1.4 and 1.5 */
+	if (unlink(path) < 0) result = FALSE;
+	DISPOSE(path);
+	tradspool_freearticle(article);
+        return result;
     }
 
     if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
+	DISPOSE(path);
+	tradspool_freearticle(article);
         SMseterror(SMERR_UNDEFINED, NULL);
         return FALSE;
     }
@@ -859,7 +871,10 @@ FindDir(DIR *dir, char *dirname) {
     while ((de = readdir(dir)) != NULL) {
 	namelen = strlen(de->d_name);
 	for (i = 0, flag = TRUE ; i < namelen ; ++i) {
-	    if (!isdigit(de->d_name[i])) flag = FALSE;
+	    if (!isdigit(de->d_name[i])) {
+		flag = FALSE;
+		break;
+	    }
 	}
 	if (!flag) continue; /* if not all digits, skip this entry. */
 
@@ -883,13 +898,16 @@ FindDir(DIR *dir, char *dirname) {
 ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
     PRIV_TRADSPOOL priv;
     PRIV_TRADSPOOL *newpriv;
-    char *path;
+    char *path, *linkpath;
     struct dirent *de;
     ARTHANDLE *art;
     unsigned long artnum;
     int i;
     static TOKEN token;
     unsigned char namelen;
+    char **xrefs;
+    char *xrefhdr, *ng, *p;
+    unsigned int numxrefs;
 
     if (article == NULL) {
 	priv.ngtp = NULL;
@@ -900,13 +918,15 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	priv = *(PRIV_TRADSPOOL *) article->private;
 	DISPOSE(article->private);
 	DISPOSE(article);
-	if (innconf->articlemmap) {
+	if (priv.artbase != NULL) {
+	    if (innconf->articlemmap) {
 #if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-	    madvise(priv.artbase, priv.artlen, MADV_DONTNEED);
+		madvise(priv.artbase, priv.artlen, MADV_DONTNEED);
 #endif
-	    munmap(priv.artbase, priv.artlen);
-	} else {
-	    DISPOSE(priv.artbase);
+		munmap(priv.artbase, priv.artlen);
+	    } else {
+		DISPOSE(priv.artbase);
+	    }
 	}
     }
 
@@ -957,6 +977,36 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	art->data = NULL;
 	art->len = 0;
 	art->private = (void *)NEW(PRIV_TRADSPOOL, 1);
+	newpriv = (PRIV_TRADSPOOL *) art->private;
+	newpriv->artbase = NULL;
+    } else {
+	/* skip linked (not symlinked) crossposted articles */
+	xrefhdr = (char *)HeaderFindMem(art->data, art->len, "Xref", 4);
+	if (xrefhdr != NULL) {
+	    if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
+		art->len = 0;
+	    } else {
+		/* assumes first one is the original */
+		if ((p = strchr(xrefs[0], ':')) != NULL) {
+		    *p++ = '\0';
+		    ng = xrefs[i];
+		    DeDotify(ng);
+		    artnum = atol(p);
+
+		    linkpath = NEW(char, strlen(innconf->patharticles) + strlen(ng) + 32);
+		    sprintf(linkpath, "%s/%s/%lu", innconf->patharticles, ng, artnum);
+		    if (strcmp(path, linkpath) != 0) {
+			/* this is linked article, skip it */
+			art->len = 0;
+		    }
+		    DISPOSE(linkpath);
+		}
+	    }
+	    for (i = 0 ; i < numxrefs ; ++i) DISPOSE(xrefs[i]);
+	    DISPOSE(xrefs);
+	}
+	/* for backwards compatibility; assumes no Xref unless crossposted
+	   for 1.4 and 1.5: just fall through */
     }
     newpriv = (PRIV_TRADSPOOL *) art->private;
     newpriv->nextindex = priv.nextindex;
