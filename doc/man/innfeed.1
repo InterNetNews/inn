@@ -432,9 +432,16 @@ The ``\fI\-y\fP'' flag is used to allow dynamic peer binding. If this flag is
 used and article information is received from innd that specifies an
 unknown peer, then the peer name is taken to be the IP name too, and an
 association with it is created. Using this it is possible to only 
-have the global defaults in the innfeed.conf(5) file, provided the 
-peername as used
-by innd is the same as the ip name.
+have the global defaults in the
+.IR innfeed.conf (5)
+file, provided the peername as used by innd is the same as the ip name.
+Note that
+.I innfeed
+with ``\fI\-y\fP'' and no peer in
+.IR innfeed.conf (5)
+would cause a problem that
+.I innfeed
+drops the first article.
 .TP
 .B \-z
 The ``\fI\-z\fP'' flag is used to cause each connection, in a parallel feed
