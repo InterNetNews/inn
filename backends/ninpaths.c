@@ -46,7 +46,7 @@ long total=0, 		/* Total articles processed */
      sites=0;		/* Total sites known */
 
 /* malloc and warn if out of mem */
-void *
+static void *
 wmalloc(size_t s)
 {
     void *p=malloc(s);
@@ -56,7 +56,7 @@ wmalloc(size_t s)
 }
 
 /* Hash function due to Glenn Fowler / Landon Curt Noll / Phong Vo */
-int
+static int
 hash(const char *str)
 {
     unsigned long val;
@@ -70,7 +70,7 @@ hash(const char *str)
 }
 
 /* Look up a host in the hash table. Add if necessary. */
-struct nrec *
+static struct nrec *
 hhost(const char *n)
 {
     struct nrec *h;
@@ -96,7 +96,7 @@ hhost(const char *n)
 }
 
 /* Look up a tally record between hosts. Add if necessary. */
-struct trec *
+static struct trec *
 tallyrec(struct nrec *r, struct nrec *h)
 {
     struct trec *t;
@@ -134,7 +134,7 @@ tallyrec(struct nrec *r, struct nrec *h)
    where sitea and siteb are numbers of the S-records starting at 0
 */
 
-int
+static int
 writedump(FILE *f)
 {
     int i, j;
@@ -189,7 +189,7 @@ writedump(FILE *f)
 
 /* Write dump to a named file. Substitute %d in file name with system time. */
 
-void
+static void
 writedumpfile(const char *n)
 {
     char buf[MAXFNAME];
@@ -211,7 +211,7 @@ writedumpfile(const char *n)
 
 /* Read a dump file. */
 
-int
+static int
 readdump(FILE *f)
 {
     int a, b;
@@ -299,7 +299,7 @@ readdump(FILE *f)
 
 /* Read dump from a file. */
 
-int
+static int
 readdumpfile(const char *n)
 {
     FILE *d;
@@ -323,7 +323,7 @@ readdumpfile(const char *n)
 
 /* Process a Path line. */
 
-int
+static int
 pathline(char *c)
 {
     char *c2;
@@ -356,7 +356,7 @@ pathline(char *c)
 
 /* Take Path lines from file (stdin used here). */
 
-void
+static void
 procpaths(FILE *f)
 {
     char buf[MAXLINE];
@@ -394,7 +394,7 @@ procpaths(FILE *f)
 
 /* Output a report suitable for mailing. From inpaths 2.5 */
 
-void
+static void
 report(const char *hostname, int verbose)
 {
     double avgAge;
@@ -472,8 +472,6 @@ report(const char *hostname, int verbose)
     fprintf(stderr, "Processed %ld hosts, %ld links.\n", nhosts, nlinks);
 #endif
 }
-
-extern char *optarg;
 
 int
 main(int argc, char *argv[])
