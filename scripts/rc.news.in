@@ -63,6 +63,10 @@ Xstop)
 	fi
     fi
 
+    if [ -f ${PATHBIN}/rc.news.local ]; then
+        ${PATHBIN}/rc.news.local stop
+    fi
+
     exit 0
 ;;
 esac
@@ -195,5 +199,5 @@ done &
 
 # Run any additional local startup commands.
 if [ -f ${PATHBIN}/rc.news.local ] ; then
-    . ${PATHBIN}/rc.news.local
+    ${PATHBIN}/rc.news.local start
 fi
