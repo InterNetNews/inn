@@ -3,6 +3,7 @@
  * ovdb 2.00 beta1
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2000-09-19 : *lo wasn't being set in ovdb_expiregroup
  * 2000-09-15 : added ovdb_check_user(); tweaked some error msgs; fixed an
  *              improper use of RENEW
  * 2000-08-28:  New major release: version 2.00 (beta)
@@ -1826,7 +1827,7 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 	syslog(L_ERROR, "OVDB: expiregroup: ovdb_getgroupinfo failed: %s", db_strerror(ret));
     case DB_NOTFOUND:
 	TXN_ABORT(t_expgroup_1, tid);
-	return TRUE;
+	return FALSE;
     }
 
     if(gi.status & GROUPINFO_EXPIRING) {
@@ -1835,7 +1836,7 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 	case 0:
 	case EPERM:
 	    TXN_ABORT(t_expgroup_1, tid);
-	    return TRUE;
+	    return FALSE;
 	}
 
 	/* a previous expireover run must've died.  We'll clean
@@ -2125,6 +2126,8 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 	TXN_COMMIT(t_expgroup_cleanup, tid);
     }
 
+    if(lo)
+	*lo = gi.low;
     return TRUE;
 }
 
