@@ -20,6 +20,9 @@
 /* Define to 1 to compile in support for keyword generation code. */
 #undef DO_KEYWORDS
 
+/* Define to use large files. */
+#undef DO_LARGEFILES
+
 /* Define to compile in Perl script support. */
 #undef DO_PERL
 

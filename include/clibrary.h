@@ -78,15 +78,37 @@
 
 BEGIN_DECLS
 
+/* Handle defining fseeko and ftello.  If HAVE_FSEEKO is defined, the system
+   header files take care of this for us.  Otherwise, see if we're building
+   with large file support.  If we are, we have to provide some real fseeko
+   and ftello implementation; declare them if they're not already declared and
+   we'll use replacement versions in libinn.  If we're not using large files,
+   we can safely just use fseek and ftell.
+
+   We'd rather use fseeko and ftello unconditionally, even when we're not
+   building with large file support, since they're a better interface.
+   Unfortunately, they're available but not declared on some systems unless
+   building with large file support, the AC_FUNC_FSEEKO Autoconf function
+   always turns on large file support, and our fake declarations won't work on
+   some systems (like HP_UX).  This is the best compromise we've been able to
+   come up with. */
+#if !HAVE_FSEEKO
+# if DO_LARGEFILES
+#  if !HAVE_DECL_FSEEKO
+extern int              fseeko(FILE *, off_t, int);
+#  endif
+#  if !HAVE_DECL_FTELLO
+extern off_t            ftello(FILE *);
+#  endif
+# else
+#  define fseeko(f, o, w) fseek((f), (long)(o), (w))
+#  define ftello(f)       ftell(f)
+# endif
+#endif
+
 /* Provide prototypes for functions not declared in system headers.  Use the
    HAVE_DECL macros for those functions that may be prototyped but
    implemented incorrectly or implemented without a prototype. */
-#if !defined(HAVE_FSEEKO) && !defined(HAVE_DECL_FSEEKO)
-extern int              fseeko(FILE *, off_t, int);
-#endif
-#if !defined(HAVE_FTELLO) && !defined(HAVE_DECL_FTELLO)
-extern off_t            ftello(FILE *);
-#endif
 #if !HAVE_MKSTEMP
 extern int              mkstemp(char *);
 #endif

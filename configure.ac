@@ -341,6 +341,7 @@ dnl If configuring with large file support, determine the right flags to
 dnl use based on the platform.
 if test x"$inn_enable_largefiles" = xyes ; then
     AC_SYS_LARGEFILE
+    AC_DEFINE([DO_LARGEFILES], [1], [Define to use large files.])
 fi
 
 dnl Start by checking for standard C headers.  AC_HEADER_STDC will set
@@ -466,12 +467,16 @@ AC_REPLACE_FUNCS(getaddrinfo getpagesize hstrerror inet_aton mkstemp pread \
                  setenv symlink)
 
 dnl Probe for fseeko and ftello, which take off_t instead of int.
-AC_FUNC_FSEEKO
-if test x"$ac_cv_func_fseeko" != xyes ; then
-    INN_TYPE_FPOS_T_LARGE
-    AC_CHECK_DECLS([fseeko, ftello])
-    AC_LIBOBJ([fseeko])
-    AC_LIBOBJ([ftello])
+if test x"$inn_enable_largefiles" = xyes ; then
+    AC_FUNC_FSEEKO
+    if test x"$ac_cv_func_fseeko" != xyes ; then
+        INN_TYPE_FPOS_T_LARGE
+        AC_CHECK_DECLS([fseeko, ftello])
+        AC_LIBOBJ([fseeko])
+        AC_LIBOBJ([ftello])
+    fi
+else
+    AC_CHECK_DECLS([fseeko])
 fi
 
 dnl Probe for mmap properties.
