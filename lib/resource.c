@@ -7,8 +7,8 @@
 #include "clibrary.h"
 #include "macros.h"
 
+#ifdef HAVE_GETRUSAGE
 
-#if	defined(RES_RUSAGE)
 #include <sys/time.h>
 #include <sys/resource.h>
 
@@ -27,10 +27,9 @@ int GetResourceUsage(double *usertime, double *systime)
     *systime = TIMEVALasDOUBLE(R.ru_stime);
     return 0;
 }
-#endif	/* defined(RES_RUSAGE) */
 
+#else /* HAVE_GETRUSAGE */
 
-#if	defined(RES_TIMES)
 #include <sys/param.h>
 #include <sys/times.h>
 
@@ -50,4 +49,5 @@ int GetResourceUsage(double *usertime, double *systime)
     *systime = CPUTIMEasDOUBLE(T.tms_stime, T.tms_cstime);
     return 0;
 }
-#endif	/* defined(RES_TIMES) */
+
+#endif /* !HAVE_GETRUSAGE */
