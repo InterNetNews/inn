@@ -1,7 +1,7 @@
 ##  $Revision$
 include ../Makefile.global
 
-CFLAGS += $(PERLINC)
+CFLAGS = $(GCFLAGS) $(PERLINC)
 
 NNRPD	= ${PATHBIN}/nnrpd
 

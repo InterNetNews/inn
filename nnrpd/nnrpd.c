@@ -484,7 +484,7 @@ StartConnection(accesslist)
     char		*accesslist;
 {
     struct sockaddr_in	sin;
-    int			length;
+    ARGTYPE		length;
     char		buff[SMBUF];
     char		*ClientAddr;
 
@@ -692,7 +692,8 @@ main(argc, argv, env)
     struct		timeval tv;
     unsigned short	ListenPort = NNTP_PORT;
     unsigned long	ListenAddr = htonl(INADDR_ANY);
-    int			lfd, fd, clen;
+    int			lfd, fd;
+    ARGTYPE		clen;
     struct sockaddr_in	ssa, csa;
     PID_T		pid = -1;
    
