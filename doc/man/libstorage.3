@@ -35,25 +35,33 @@ libstorage \- InterNetNews Storage API library routines
 .B "int SMerrno;"
 .B "char *SMerrorstr;"
 
-.B "BOOL OVERsetup(OVERSETUP type, void *value);"
+#include "ov.h"
 
-.B "BOOL OVERinit(void);"
+.B "BOOL OVopen(int mode);"
 
-.B "BOOL OVERnewinit(void);"
+.B "BOOL OVctl(OVCTLTYPE type, void *val);"
 
-.B "BOOL OVERreinit(void);"
+.B "BOOL OVgroupstats(char *group, int *lo, int *hi, int *count, int *flag);"
 
-.B "BOOL OVERreplace(void);"
+.B "BOOL OVgroupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag);"
 
-.B "int OVERgetnum(void);"
+.B "BOOL OVgroupdel(char *group);"
 
-.B "BOOL OVERstore(TOKEN *token, char *overdata, int overlen);"
+.B "BOOL OVadd(TOKEN token, char *data, int len, time_t arrived);"
 
-.B "char *OVERretrieve(TOKEN *token, int *overlen);"
+.B "BOOL OVcancel(TOKEN token);"
 
-.B "BOOL OVERcancel(TOKEN *token);"
+.B "void *OVopensearch(char *group, int low, int high);"
 
-.B "void OVERshutdown(void);"
+.B "BOOL OVsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived);"
+
+.B "void OVclosesearch(void *handle);"
+
+.B "BOOL OVgetartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token);"
+
+.B "BOOL OVexpiregroup(char *group, int *lo);"
+
+.B "void OVclose(void);"
 
 .fi
 .SH DESCRIPTION
@@ -72,22 +80,18 @@ to be redundant since the message-id already is a unique identifier for the
 article, however, since the storage method generates the token, it can
 encode all the information it needs to locate the article in the token.
 .PP
-Unified overview is a new method to access overview database. With this
-method, all overview database are stored in a pre-configured overview
-database files.  It is different from traditional overview database
-storage with which overview database is stored in each newsgroup directory.
-Instead, overview index which indicates article number and Message\-ID
-hash is stored in each newsgroup directory.
-If storage api is used, you should set up unified overview which is configured
-by
-.IR overview.ctl (5)
-if the server runs
-.IR nnrpd (8).
+\&``OV'' is a common utility routines for accessing newsgroups and overview
+data independent of particular overview method.
+The ``OV'' function is to isolate the applications from the
+individual methods.
 .PP
 All articles passed through storage api are assumed to be wire formatted.
 Wire formatted means that ``\\CR\\LF'' at the end of lines, ``.'' at the
 beginnig of lines and ``.\\CR\\LF'' at the end of article on nntp stream are not
 stripped.  This has performance win when transferring articles.
+For ``tradspool'' method, wire format can be disabled.  This is just for
+compatibility which is needed by some old tool written for traditional
+spool.
 .PP
 .I IsToken
 checks to see if the text is formatted as a text token string.
@@ -245,97 +249,88 @@ and
 .I SMerrorstr
 indicates the reason of the last error concerning storage manager.
 .PP
-.I OVERsetup
-configures some parameters for use by
-.IR OVERinit .
+.I OVopen
+calls the setup function for configured method which is specified as
+\&``ovmethod'' in
+.IR inn.conf (5).
+.I Mode
+is constructed from following.
+.sp 1
+.in +0.5i
+.nf
+OV_READ	allow read open for overview
+	method
+OV_WRITE	allow write open for overview
+	method
+.fi
+.in -0.5i
+.sp 1
+This function should be called prior to all other OV functions which
+begin with ``OV''.
+.PP
+.I OVctl
+probes or set some parameters for overview method.
 .I Type
 is one of following.
 .sp 1
 .in +0.5i
 .nf
-OVER_CTL	specify overview.ctl file name
-OVER_DIR	specify unified overview directory
-OVER_NEWDIR	specify new unified overview directory
-OVER_MODE	specify unified overview open mode
-OVER_NEWMODE	specify new unified overview open mode
-OVER_MMAP	mmap unified overview
+OVSPACE	probe overview space usage
+OVSORT	probe which key is suitable for
+	overview method
+OVCUTOFFLOW	do not add overview data, if the
+	data is under lowest article
 .fi
 .in -0.5i
 .sp 1
-The
-.I value
-is the pointer which tells each type's value. Open mode is equivalent value to
-.IR fopen (3)'s
-mode.
-It returns TRUE if setup is successful or returns FALSE if not.
 .PP
-.I OVERinit
-calls the setup function and opens configured overview file based on
-.IR OVERsetup .
-This function should be called prior to all other unified overview
-functions which begin with ``OVER'' except
-.IR OVERsetup .
-It returns TRUE if initialization is successful or returns FALSE if not.
+.I OVgroupstats
+retrieves specified newsgroup information from overview method.
 .PP
-.I OVERnewinit
-calls the setup function and opens configured new overview file based on
-.IR OVERsetup .
-If
-.I OVERnewinit
-is called, then
-.I OVERstore
-stores overview database into new overview file not into current overview
-file which is opened by
-.IR OVERinit .
-This function is intended to be used unified overview expiry together with
-.I OVERreinit
-and
-.IR OVERreplace .
-It returns TRUE if initialization is successful or returns FALSE if not.
+.I OVgroupadd
+informs overview method to specified newsgroup is added.
 .PP
-.I OVERreinit
-reinitialize current overview file.  This is intended to read rest of
-overview file when
-.IR expire (8)
-reaches end of history and pauses
-.IR innd (8).
-It returns TRUE if re initialization is successful or returns FALSE if not.
+.I OVgroupdel
+informs overview method to specified newsgroup is removed.
 .PP
-.I OVERreplace
-replaces current overview file with new one.
-It returns TRUE if replace is successful or returns FALSE if not.
+.I OVadd
+stores an overview data.
 .PP
-.I OVERgetnum
-tells the number of file descriptor which is opened as unified overview
-file.  It just tells current overview file, and does not include new overview
-file.
-It returns the number if initialization is done or returns ``\-1'' if not.
+.I OVcancel
+requests overview method to delete an overview data specified with token.
 .PP
-.I OVERstore
-stores overview data into configured unified overview file.
-.I Index
-and
-.I offset
-is written into
-.IR token .
-It returns TRUE if the store is successful or returns FALSE if not.
+.I OVopensearch
+requests overview method to prepare overview data retrieval.
+The request range is determined by low and high.
 .PP
-.I OVERretrieve
-retrieves overview data which is indicated by
-.IR token.
-It returns the pointer if the retrieval is successful and
-.I overlen
-is set or returns NULL if not.
+.I OVsearch
+retrieves information; article number, overview data or arrival time.
+.I OVsearch
+should be called with NULL handle when it is the 1st time.
+And subsequent
+.I OVsearch
+should be called with the handle which is got at preveous
+.IR OVsearch .
+.I OVsearch
+returns TRUE, unless it reaches high which is specified by
+.IR OVopensearch .
+Retrieved overview data are sorted by article number, and len is 0
+if there is no overview data for article.
 .PP
-.I OVERcancel
-marks
-.IR token 's
-overview data is canceled.
-It returns TRUE if cancellation is successful or returns FALSE if not.
+.I OVclosesearch
+frees all resources which is allocated by
+.IR OVopensearch .
 .PP
-.I OVERshutdown
-calls the shutdown for each configured unified overview
-then free any resources it has allocated for itself.
+.I OVgetartinfo
+retrieves overview data and token specified with artnum.
+.PP
+.I OVexpiregroup
+expires overview data for the newsgroup.
+.I OVexpiregroup
+checks the existense of the article and purge overview data if it's gone.
+.PP
+.I OVclose
+frees all resources which is used by overview method.
 .SH HISTORY
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
 .de R$

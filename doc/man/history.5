@@ -24,22 +24,10 @@ as
 .IR \et :
 .RS
 .nf
-<Message\-ID>   \et   date
-<Message\-ID>   \et   date   \et   files
 [Hash]         \et   date
 [Hash]         \et   date   \et   token
 .fi
 .RE
-.PP
-The
-.I Message\-ID
-field is the value of the article's Message-ID header, including the
-angle brackets.
-This appears if articles are not stored by storage api and
-.I storemsgid
-in
-.IR inn.conf (5)
-is ``true''.
 .PP
 The
 .I Hash
@@ -67,27 +55,21 @@ The third sub-field is the value of the article's Date header, recording
 when the article was posted.
 .PP
 The
-.I files
-field is a set of entries separated by one or more spaces.
-Each entry consists of the name of the newsgroup, a slash, and the article
-number.
-This field is empty if the article has been expired.
-.PP
-The
 .I token
 field is a token of the article which is stored by storage api.
 This field consists of an atmark, a token, and an atmark.
 This field is empty if the article has been expired.
 .PP
-For example, an article cross-posted to comp.sources.unix and
-comp.sources.d that was posted on February 10, 1991 (and received three
-minutes later), with an expiration date of May 5, 1991, could have a
-history line (broken into two lines for display) like the
+For example, an article whose Message-ID was
+<7q2saq$sal$1@isrv4.pa.vix.com>, posted on 26 Aug 1999 08:02:34 GMT and
+recieved at 26 Aug 1999 08:06:54 GMT, could have a
+history line (broken into three lines for display) like the
 following:
 .RS
 .nf
-<312@litchi.foo.com>  \et  666162000~673329600~666162180  \et
-    comp.sources.unix/1104 comp.sources.d/7056
+[E6184A5BC2898A35A3140B149DE91D5C]  \et
+    935678987~-~935678821  \et
+    @030154574F00000000000007CE3B000004BA@
 .fi
 .RE
 .PP

@@ -48,107 +48,8 @@ default) to ensure the server never accepts duplicates.
 .PP
 This setting does not affect article expirations.
 .PP
-Most of the lines in this file will be in the second format, five
+Most of the lines in this file will be in the second format, four
 colon-separated fields as follows:
-.RS
-.nf
-pattern:modflag:keep:default:purge
-.fi
-.RE
-The
-.I pattern
-field is a list of
-.IR wildmat (3)-style
-patterns, separated by commas.
-This field specifies the newsgroups to which the line is applied.
-Note that the file is interpreted in order and the last line that
-matches will be used, so general patterns (like a single asterisk to set
-the defaults) should appear at the beginning of the file, before more
-specific settings.
-.PP
-The
-.I modflag
-field can be used to further limit newsgroups to which the line applies,
-and should be chosen from the following set:
-.RS
-.nf
-M	Only moderated groups
-U	Only unmoderated groups
-A	All groups
-X	Removes the article from all groups that it appears in
-.fi
-.RE
-(The X flag is special; normally articles are not completely deleted until
-they expire out of every group they were posted to, but if an article is
-expired by a line with an X, it is deleted out of all newsgroups it was
-posted to immediately.)
-.PP
-The next three fields are used to determine how long an article
-should be kept.
-Each field should be either a number of days (fractions like ``8.5'' are
-allowed) or the word ``never.''
-The most common use is to specify the default value for how long an
-article should be kept.
-The first and third fields \(em
-.I keep
-and
-.I purge
-\(em specify the boundaries within which an Expires
-header will be honored.
-They are ignored if an article has no Expires header.
-(In other words, if an article has an Expires header, and the time at
-which the header says it should expire is sooner than the
-.I default
-field, the Expires header is be honored instead.
-Similarly, if the Expires header specifies a time longer than the
-.I default
-field, it is honored instead.
-But articles are expired no faster than the time set with
-.I keep
-and kept no longer than the time specified with
-.I purge
-regardless of Expires headers).
-One should think of the fields as ``lower-bound default upper-bound.''
-Since most articles do not have explicit expiration dates, 
-the second field tends to be the most important and most commonly applied
-one.
-.PP
-The
-.I keep
-field specifies how many days an article should be kept before it will
-be removed.
-No article in the matching newsgroups will be removed if it has been filed
-for less then
-.I keep
-days, regardless of any expiration date.
-If this field is the word ``never,'' no article in the matching newsgroups
-will ever be expired.
-.PP
-The
-.I default
-field specifies how long to keep an article if no Expires header
-is present.
-If this field is the word ``never'' then articles without explicit
-expiration dates will never be expired.
-.PP
-The
-.I purge
-field specifies the upper bound on how long an article can be kept.
-No article will be kept longer then the number of days specified by this
-field.
-All articles will be removed after then have been kept for
-.I purge
-days.
-If
-.I purge
-is the word ``never'' then the article will never be deleted.
-.PP
-If you have turned on the storage manager with the ``storageapi'' in
-.IR inn.conf (5)
-option and you don't the use ``\fB-c\fP'' option with expire, or if
-overview data for the article is not created,
-then you will need to use a slightly different format for specifying expiration
-times for storage classes:
 .RS
 .nf
 classnum:keep:default:purge
@@ -193,12 +94,8 @@ It should be the first expiration line.
 .nf
 ##  How long to keep expired history
 /remember/:5
-##  Most things stay for two weeks
-*:A:14:14:14
-##  Believe expiration dates in moderated groups, up to six weeks
-*:M:1:30:42
-##  Keep local stuff for a long time
-foo.*:A:30:30:30
+##  class 0 stay for two weeks
+0:14:14:14
 .fi
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.

@@ -32,9 +32,6 @@ innd, inndstart \- InterNetNews daemon
 .BI \-l " size"
 ]
 [
-.B \-L
-]
-[
 .BI \-m " mode"
 ]
 [
@@ -66,9 +63,6 @@ innd, inndstart \- InterNetNews daemon
 ]
 [
 .BI \-X " seconds"
-]
-[
-.B \-Z
 ]
 
 .B inndstart
@@ -213,16 +207,6 @@ The default is 1000000L bytes.
 Checking can be disabled by using a value
 of zero.
 .TP
-.B \-L
-If the ``\fB\-L\fP'' flag is used, then
-.I innd
-will not create the links for cross posted articles.
-A feed only type of site could use this option to improve performance.
-Or it can be combined with a channel feed to the
-.IR crosspost (8)
-program to move the delay associated with creating the links out of
-the innd processing loop.
-.TP
 .B \-m
 To start the server in a paused or throttled state (see
 .IR ctlinnd (8))
@@ -290,11 +274,6 @@ seconds.
 .B \-u
 The logs are normally buffered; use the ``\fB\-u\fP'' flag to have them
 unbuffered.
-.TP
-.B "\-Z"
-The ``\fB\-Z\fP'' flag turns off streaming, so that
-.I innd
-will not accept the `mode stream' or other streaming commands.
 .PP
 .I Inndstart
 is a small front-end program that opens the NNTP port, sets its

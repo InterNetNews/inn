@@ -8,6 +8,10 @@ inndf \- Replacement for 'df | awk' in innwatch.ctl
 .B \-i
 ]
 .I filesystem(s)
+\&|
+[
+.B \-o
+]
 .SH DESCRIPTION
 .I inndf
 is a replacement for 'df | awk' in
@@ -18,17 +22,22 @@ or used in
 reports free Kilobytes (not disk blocks) or free inodes.
 Kilobytes in this case means 1024 bytes.
 .PP
-If the ``\-i'' flag is used, then the number of free inodes are reported
-instead of the number of free Kilobytes.
-.PP
 If arguments are multiply specified, the output includes multiple lines
 which shows each specified argument and the value.  This is used by
 .IR innstat (8).
 .PP
 .I inndf
 doesn't sync, forks less, is less complicated, etc.
-.PP
-Portability issues are handled in the source, so read it.
+.SH OPTIONS
+.TP
+.B \-i
+If the ``\-i'' flag is used, then the number of free inodes are reported
+instead of the number of free Kilobytes.
+.TP
+.B \-o
+If the ``\-o'' flag is used, then overview space usage are reported as
+percentage.  ``\-o'' cannot be always available.  This can be available
+for ``buffindexed'' ovmethod currently.
 .SH HISTORY
 Inndf was written by Ian Dickinson <idickins@fore.com>.
 The initial manual page was written by Swa Frantzen <Swa.Frantzen@Belgium.EU.net>.

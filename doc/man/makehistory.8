@@ -5,67 +5,28 @@ makehistory \- tools to recover Usenet history database.
 .SH SYNOPSIS
 .B makehistory
 [
-.BI \-A " oldtmp"
-]
-[
-.BI \-a " active"
+.B \-a
 ]
 [
 .B \-b
 ]
 [
-.BI \-D " dir"
-]
-[
-.BI \-d " dir"
-]
-[
 .BI \-f " filename"
 ]
 [
-.BI \-h " file"
+.B \-I
 ]
 [
-.BI \-I " file"
-]
-[
-.B \-i
-]
-[
-.B \-n
+.BI \-l " val"
 ]
 [
 .B \-O
 ]
 [
-.B \-o
-]
-[
-.B \-R
-]
-[
-.B \-r
-]
-[
-.B \-S
-]
-[
-.BI \-s " size"
-]
-[
 .BI \-T " tmpdir"
 ]
 [
-.B \-t " [ H|h|S|s ]"
-]
-[
-.B \-U
-]
-[
 .B \-u
-]
-[
-.B \-v
 ]
 [
 .B \-x
@@ -75,69 +36,30 @@ makehistory \- tools to recover Usenet history database.
 .I Makehistory
 rebuilds the
 .IR history (5)
-text file and the associated
+text file.
 .IR dbz (3)
-database.
+database is rebuild by
+.IR makedbz (8).
 The default name of the text file is
 .IR <pathdb\ in\ inn.conf>/history ;
 to specify a different name, use the ``\fB\-f\fP'' flag.
 .I Makehistory
-scans the
-.IR active (5)
-file to determine which newsgroup directories within the spool directory,
-.IR <patharticles\ in\ inn.conf> ,
-should be scanned.
-(If a group is removed, but its spool directory still exists,
-.I makehistory
-will ignore it.)
-The program reads each file found and writes a history line for it.
+scans spool through storage manager,
+reads each article, and writes a history line for it.
 .PP
 .I Makehistory
-also restores articles stored by traditional method through storage api.
-If this is done, unified overview database and its index can be created
-together.  The translation into traditional method is not supported.
-.PP
-After the text file is written,
-.I makehistory
-will build the
-.I dbz
-database.
+can also rebuild overview database throuth overview method.
 .SH OPTIONS
 .TP
-.B \-A
-If the ``\fB\-A\fP'' flag is used then the argument given is the pathname
-.I makehistory
-can use to store a copy of the history file as it's being built. It will be
-appended to, so existing data will not be lost (and so should be valid
-history entries).
-.TP
 .B \-a
-If the ``\fB\-a\fP'' flag is given then the argument is the active file to
-use rather than the default one of
-.IR <pathdb\ in\ inn.conf>/active .
+If the ``\fB\-a\fP'' flag is given then the
+.IR history (5)
+is opened as appended mode.
 .TP
 .B \-b
 If the ``\-b'' flag is used, then
 .I makehistory
 will remove any articles that do not have valid Message-ID headers in them.
-.TP
-.B \-D
-If the ``\fB\-D\fP'' flag is used, then
-.I dir
-is used as traditional spool directory.  This directory is used for
-translating traditional stored articles into new storing method through storage
-api.  The default is
-.IR <patharticles\ in\ inn.conf> .
-This flag is valid if ``\fB\-t\fP'' flag is used.
-.TP
-.B \-d
-If the ``\fB\-d\fP'' flag is used, then
-.I dir
-is used as overview directory.  This directory is used for
-translating traditional stored articles into new storing method through storage
-api.  The default is
-.IR <pathoverview\ in\ inn.conf> .
-This flag is valid if ``\fB\-t\fP'' flag is used.
 .TP
 .B \-f
 If the ``\fB\-f\fP'' flag is used, then the database files are named
@@ -155,103 +77,28 @@ is made and the database files are written as
 and
 .IR history.n.dir .
 .TP
-.B \-h
-If the ``\fB\-h\fP'' flag is used, then
-.I file
-is used as old history.  This file is used for translating traditional
-stored articles into new storing method through storage api.  The default
-is
-.IR <pathdb\ in\ inn.conf>/history .
-This flag is valid if ``\fB\-t\fP'' flag is used.
-.TP
 .B \-I
-If the ``\fB\-I\fP'' flag is used, then the index of article overview are
-appended to the specified
-.IR file .
-This file can be created if storage api is used and ``\fB\-O\fP'' flag
-is used.  With this
-.IR file ,
-you can make new overview index file.  To do this,
-.PP
-.RS
-.nf
-sort -t' ' +1 -2 file \&| <PREFIX specified with --prefix at configure>/expireindex -a -o -z
-.fi
-.sp 1
-If translation is done based on history, the ``\fB\-I\fP'' and ``\fB\-O\fP''
-flag is used without ``\fB\-R\fP'' flag and the article is stored through
-storage api,
-.I makehistory
-just makes index for overview data and history.  In case that only index for
-overview data needed to be created, use the ``\fB\-x\fP'' flag not to
-create new history.
-.RE
+If the ``\fB\-I\fP'' flag is used, then
+.IR makehistory (8)
+tells overview method not to store overview data under lowest article number in
+.IR active(5).
 .TP
-.B \-i
-To ignore the old database use the ``\fB\-i\fP'' flag.
-Using the ``\fB\-o\fP'' flag implies the ``\fB\-i\fP'' flag.
+.B \-l
+specifies how many entries before flushing overview data to overview method.
+Default is 100000, and 0 will never flush before all entries are created.
+This number should be large as possible, since the performance of storing
+overview data depends on how small the number of flush.  But note that
+you need more space to store temporary overview data.  The estimation of
+the space is (300 * val) bytes.
 .TP
 .B \-O
 If the ``\fB\-O\fP'' flag is used, then overview database is also created.
-This can be used for translating traditional stored articles into new storing
-method through storage api.
-Note that if the ``\fB\-O\fP'' flag is used, existing overview database
-will be overwritten.  To avoid this behavior, use ``\fB\-d\fP'' flag to
-specify another overview directory.
-.TP
-.B \-o
-If the ``\fB\-o\fP'' flag is used, then the link is not made and any existing
-history files are overwritten.
-If the old database exists,
-.I makehistory
-will use it to determine the size of the new database.
-.sp 1
-Note if ``\fB\-t\fP'' with ``H'' or ``h'' is specified together, ``\fB\-o\fP''
-will break old history and the operation is failed.
-.TP
-.B \-n
-To scan the spool directory without rebuilding the
-.I dbz
-files, use the ``\fB\-n\fP'' flag.
-If used with ``\fB-u\fP'', the server will not be throttled while scanning.
-.TP
-.B \-R
-If the ``\fB\-R\fP'' flag is used, then old articles are removed if translation
-is done.  This is used for translating traditional stored articles into new
-storing method through storage api.
-This flag is valid if ``\fB\-t\fP'' flag is used.
-.TP
-.B \-r
-To just build the
-.I dbz
-files from an existing text file, use the ``\fB\-r\fP'' flag.
-The ``\fB\-i\fP'' or ``\fB\-s\fP'' flags can be useful if there are no valid
-.I dbz
-files to use.
-.TP
-.B \-S
-If the ``\fB\-S\fP'' flag is used, then articles stored by traditional method
-are ignored.  This can be used for translating traditional stored articles into new
-storing method through storage api.
-.TP
-.B \-s
-The program will also ignore any old database if the ``\fB\-s\fP'' flag is used
-to specify the approximate number of entries in the new database.
-Accurately specifying the size is an optimization that will create a more
-efficient database.
-(The size should be the estimated eventual size of the file, typically
-the size of the old file.)
-For more information, see the discussion of
-.I dbzfresh
-and
-.I dbzsize
-in
-.IR dbz (3).
+Overview data is needed to provide reader service.  Overview data is not
+needed for feed only system.
 .TP
 .B \-T
 .I Makehistory
-needs to create a temporary file that contains one line for each article
-it finds, which can become very large.
+needs to create a temporary file, if overview data is also created.
 This file is created in the
 .I <pathtmp in inn.conf>
 directory.  The ``\fB\-T\fP'' flag may be used to
@@ -275,49 +122,6 @@ used by
 is
 .IR <pathtmp\ in\ inn.conf> .
 .TP
-.B \-t
-If the ``\fB\-t\fP'' flag is used, then 
-.I makehistory
-translates stored articles into new storing method through
-storage api.  With an additional flag, 
-.I makehistory
-determines to how to retrieve traditional stored articles.
-.sp 1
-.in +0.5i
-.nf
-H       retrieve from history
-h       same as H
-S       retrieve from spool
-s       same as S
-.fi
-.in -0.5i
-.sp 1
-Retrieving from history translates articles stored by both traditional method
-and storage api.  Retrieving from spool will only translates articles stored by
-traditional method.
-Normally, translation from spool takes longer time, since
-.I makehistory
-reads every directory for each newsgroup in
-.IR active (5)
-even if no article exists.
-.sp 1
-If translating from spool,
-.I makehistory
-adds ``Xref'' header with pathname, if the article has no ``Xref'' header.
-If
-.I makehistory
-does this, the article is assumed not to be crossposted.
-.sp 1
-\&``\fB\-t\fP'' flag and ``\fB\-u\fP'' cannot be used together.
-.TP
-.B \-U
-If the ``\fB\-U\fP'' flag is used, then any crossposted (linked) articles
-are removed if translation is done.  This is used for translating traditional
-stored articles into new storing method through storage api.
-This flag is valid if ``\fB\-t\fP'' flag is used.
-If ``\fB\-U\fP'' flag is not used even if ``\fB\-t\fP'' flag is used,
-there still remain all crossposted (linked) articles, and 
-.TP
 .B \-u
 If the ``\fB\-u\fP'' flag is given, then
 .I makehistory
@@ -334,17 +138,10 @@ The command ``makehistory\ \-bu'' is useful after a system crash, to delete
 any mangled articles and bring the article database back into a more
 consistent state.
 .TP
-.B \-v
-If the ``\fB\-v\fP'' flag is used with the ``\fB\-u\fP'' flag, then
-.I makehistory
-will put a copy of all added lines on its standard output.
-.TP
 .B \-x
 If the ``\fB\-x\fP'' flag is used,
 .I makehistory
 will never write history.
-This flag is valid only if the ``\fB\-t\fP'' with ``h'' and ``\fB\-O\fP'' is
-used without ``\fB\-R\fP'' flag.
 .TP
 .SH EXAMPLES
 .PP
@@ -354,9 +151,9 @@ commands:
 .PP
 .RS
 .nf
-ctlinnd throttle "Rebuilding history file"
+ctlinnd shutdown "Rebuilding history file"
 cd <pathetc in inn.conf>
-if makehistory \-n \-f history.n ; then
+if makehistory \-b \-n \-f history.n -O -l 300000 -I ; then
     :
 else
     echo Error creating history file!
@@ -366,7 +163,7 @@ f\&i
 # It is not necessary for the history file to be sorted.
 # awk 'NF==2 { print; }' <history >>history.n
 # View history file for mistakes.
-if makehistory \-r \-s `wc \-l <history` \-f history.n; then
+if makedbz \-r \-s `wc \-l <history` \-f history.n; then
     mv history.n history
     mv history.n.dir history.dir
 # if <DBZ_TAGGED_HASH in config.data> is DO
@@ -376,7 +173,7 @@ if makehistory \-r \-s `wc \-l <history` \-f history.n; then
     mv history.n.hash history.hash
 # fi
 f\&i
-ctlinnd go ''
+su - news -c <pathbin in inn.conf>/rc.news
 .fi
 .RE
 .SH HISTORY
@@ -389,10 +186,8 @@ This is revision \\$3, dated \\$4.
 active(5),
 ctlinnd(8),
 dbz(3),
-filechan(8),
 history(5),
 inn.conf(5),
 innd(8),
 newsfeeds(5),
-makeactive(8),
-newsrequeue(8).
+makedbz(8).

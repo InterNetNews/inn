@@ -1,0 +1,87 @@
+.\" $Revision$
+.TH BUFFINDEXED.CONF 5
+.SH NAME
+buffindexed.conf \- configuration file for buffindexed ovmethod
+.SH DESCRIPTION
+The file
+.I <pathetc in inn.conf>/buffindexed.conf
+is required if buffindexed ovmethod is used.
+Buffindexed is one of ovmethod which is specified in
+.IR inn.conf (5).
+.PP
+The file consists of a series of lines;
+blank lines and lines beginning with a number sign (``#'') are ignored.
+There is only one kind of configuration line.
+The order of lines in this file is not important.
+.PP
+.RS
+.nf
+index:file_name:buffer_size
+.fi
+.RE
+.PP
+\&``Index'' is an index of overview buffer.
+\&``Index'' must be between 0 and 65535.
+\&``File_name'' is the path to overview buffer file.
+The length of this path should be within 63 letters.
+\&``Buffer_size'' is the length of buffer file in kilobytes
+in decimal (1KB = 1024 bytes).  If the ``file_name'' is not a special
+device, the file must be buffer_size * 1024 bytes.
+.PP
+To create new overview buffer, there are two different methods for creating
+the files.
+.TP
+.BR 1. " Create a big file on top of a standard filesystem."
+The use "dd" to create the overview buffer
+files, such as "dd if=/dev/zero of=/path/to/ovbuff bs=1024 count=N"
+where N is the buffer_size.
+.TP
+.BR 2. " Use block disk devices directly."
+If your operating system will allow you to
+.I mmap()
+block disk devices (Solaris does, FreeBSD does not), this is the
+recommended method.  Partition the disks to make each partition
+slightly larger (a few MB larger) than the intended size of each overview buffer.
+It is not recommend to use the block device files already located in ``/dev.''
+Instead, use "mknod" to create a new set of block device files.
+In order to do this, do an "ls -l" of the /dev/dsk partition and then a
+subsequent "ls -l" of the destination of the symbolic link under /devices.
+The major and minor device numbers are in the fifth and sixth columns (right
+before the date) respectively.  This information should be fed to "mknod"
+to make a "block-type special file" (b).
+Here is a short script that accomplishes this when fed the /dev/dsk/
+partition name:
+.sp 1
+.nf
+.in +0.5i
+#!/bin/sh
+disk=$1
+link=`ls -l /dev/dsk/$disk | awk '{print $11}'`
+major=`ls -l /dev/dsk/$link | awk '{print $5}' | tr -d ,`
+minor=`ls -l /dev/dsk/$link | awk '{print $6}`
+mkdir /ovbuff
+mknod /ovbuff/$disk b $major $minor
+.in -0.5i
+.fi
+The created device files themselves consume very little space.
+.PP
+In either case, make certain that each overview buffer file is owned by your
+news user, news group, and has rw modes for the owner and group (mode
+0664 or 0660).
+.PP
+When you first start innd and everything is configured properly, you
+should see messages in news.notice which look like:
+.sp 1   
+.nf
+.in +0.5i
+Aug 27 00:00:00 kevlar innd: buffindexed: No magic cookie found for buffindexed 0, initializing
+.in -0.5i
+.fi
+.SH HISTORY
+Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+.SH "SEE ALSO"
+inn.conf(5).

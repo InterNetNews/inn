@@ -1,0 +1,46 @@
+.\" $Revision$
+.TH CNFSHEADCONF 8
+.SH NAME
+cnfsheadconf \- set CNFS header
+.SH SYNOPSIS
+.B cnfsheadconf
+[
+.B \-c CLASS
+]
+[
+.B \-h
+]
+[
+.B \-w
+]
+.SH DESCRIPTION
+.I Cnfsheadconf
+reads
+.I <pathetc in inn.conf>/cycbuff.conf
+and
+.I <pathetc in inn.conf>/storage.conf
+to read which cycbuff is available and read specified cycbuff and
+modify the header.
+.SH OPTIONS
+.TP
+.B \-c CLASS
+.I Cnfsheadconf
+prints for the specified class.
+.TP
+.B \-h
+.I Cnfsheadconf
+prints the usage.
+.TP
+.B \-w
+.I Cnfsheadconf
+modifies cycbuff header.
+.SH HISTORY
+Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+.SH "SEE ALSO"
+cycbuff.conf(5),
+inn.conf(5),
+storage.conf(5).
