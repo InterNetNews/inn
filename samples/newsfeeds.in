@@ -113,3 +113,6 @@ ME\
 #	:!*,control,control.*,!control.cancel\
 #	:Tc,Wnsm:@prefix@/bin/controlchan
 
+# news to mail gateway
+#n2m!:!*:Tc,Ac,Wn*:@prefix@/bin/news2mail
+#news-software@localhost.our.domain.com:rec.pets.redants.*:Tm:n2m!
