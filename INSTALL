@@ -243,9 +243,9 @@ Configuring INN
   in this case), and all other comp groups will match the first and second
   patterns and will be excluded by the second pattern.
 
-  In most INN configuration files, lines beginning with a pound sign are
-  considered comments and are ignored. Any deviations from this practice
-  will be noted in the description for that particular file.
+  In most INN configuration files, lines beginning with a "#" symbol
+  are considered comments and are ignored. Any deviations from this
+  practice will be noted in the description for that particular file.
   
   1. inn.conf (REQUIRED)
 
@@ -625,6 +625,41 @@ Configuring INN
 
   The expire.ctl file is the configuration for the expiration policy. See
   the expire.ctl man page for more details.
+
+  8. nnrp.access (REQUIRED)
+
+  The nnrp.access file is the configuration for access to readers.
+
+  Each line should have this format:
+
+    host:access:user:password:groups
+
+  The `host' field can take one of four forms:
+
+    * an IP address, e.g. 192.168.0.1
+
+    * an address range, e.g. 192.168.0.0/24
+
+    * a hostname, e.g. userbox.example.com
+
+    * a wildmat pattern that the hostname must match, e.g. *.example.com
+
+  When checking the access rights for a particular host the last match
+  is used.
+
+  The `access' field shuold contain an "R" to allow read access and/or
+  a "P" to allow posting access.  You can expand these to "Read" and
+  "Post" as in the example that comes with INN.  See the man page for
+  other things that can go here.
+
+  See the man page for details of how to user the `user' and
+  `password' fields.  Leave them blank to use solely host-based
+  authentication.
+
+  The `groups' field defines the newsgroups that a matching host may
+  read as a comma-separated list of wildmat patterns.
+
+  See the nnrp.access man page for more information.
 
 Creating the article spool (CNFS only)
 
