@@ -95,7 +95,8 @@ char *HandleHeaders(char *article)
           continue;
         }
         s++;
-        hv_store(hdr, p, (s - p) - 1, newSVpv(s, 0), 0);
+        t = (*s == ' ' ? s + 1 : s);
+        hv_store(hdr, p, (s - p) - 1, newSVpv(t, 0), 0);
    }
    /* Store user */
    sv_setpv(perl_get_sv("user",TRUE), PERMuser);
