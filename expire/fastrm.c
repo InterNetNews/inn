@@ -690,7 +690,10 @@ int main(int ac, char *av[])
 	fprintf(stderr, "Can't setup storage manager\n");
 	exit(1);
     }
-    SMinit();
+    if (innconf->stotageapi && !SMinit())
+	fprintf(stderr, "Can't initialize storage manager\n");
+	exit(1);
+    }
 
     while ((list = build_dir(&count, &deleted)) != NULL) {
 	empty_error = FALSE;
