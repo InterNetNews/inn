@@ -982,10 +982,12 @@ main(ac, av)
     STRING		HistoryPath;
     STRING		HistoryDB;
     char		*Historydir;
-    char		*Historypag;
+    char		*Historyindex;
+    char		*Historyhash;
     char		*NHistory;
     char		*NHistorydir;
-    char		*NHistorypag;
+    char		*NHistoryindex;
+    char		*NHistoryhash;
     char		*EXPhistdir;
     char		buff[SMBUF];
     register FILE	*out;
@@ -1128,8 +1130,10 @@ main(ac, av)
     HistoryDB = COPY(HistoryText);
     (void)sprintf(buff, "%s.dir", HistoryDB);
     Historydir = COPY(buff);
-    (void)sprintf(buff, "%s.pag", HistoryDB);
-    Historypag = COPY(buff);
+    (void)sprintf(buff, "%s.index", HistoryDB);
+    Historyindex = COPY(buff);
+    (void)sprintf(buff, "%s.hash", HistoryDB);
+    Historyhash = COPY(buff);
     if (HistoryPath)
 	(void)sprintf(buff, "%s/%s.n", HistoryPath, History);
     else
@@ -1137,8 +1141,10 @@ main(ac, av)
     NHistory = COPY(buff);
     (void)sprintf(buff, "%s.dir", NHistory);
     NHistorydir = COPY(buff);
-    (void)sprintf(buff, "%s.pag", NHistory);
-    NHistorypag = COPY(buff);
+    (void)sprintf(buff, "%s.index", NHistory);
+    NHistoryindex = COPY(buff);
+    (void)sprintf(buff, "%s.hash", NHistory);
+    NHistoryhash = COPY(buff);
 
     if (!Writing)
 	out = NULL;
@@ -1150,10 +1156,11 @@ main(ac, av)
 	}
 	out = EXPfopen(TRUE, NHistory, "w");
 	(void)fclose(EXPfopen(TRUE, NHistorydir, "w"));
-	(void)fclose(EXPfopen(TRUE, NHistorypag, "w"));
+	(void)fclose(EXPfopen(TRUE, NHistoryindex, "w"));
+	(void)fclose(EXPfopen(TRUE, NHistoryhash, "w"));
 	if (EXPverbose > 3)
-	    (void)printf("created: %s %s %s\n",
-		    NHistory, NHistorydir, NHistorypag);
+	    (void)printf("created: %s %s %s %s\n",
+		    NHistory, NHistorydir, NHistoryindex, NHistoryhash);
 	dbzgetoptions(&opt);
 	opt.idx_incore = INCORE_MEM;
 	opt.exists_incore = INCORE_MEM;
@@ -1191,7 +1198,8 @@ main(ac, av)
 		if (errno == ENOSPC) {
 		    (void)unlink(NHistory);
 		    (void)unlink(NHistorydir);
-		    (void)unlink(NHistorypag);
+		    (void)unlink(NHistoryindex);
+		    (void)unlink(NHistoryhash);
 		}
 		break;
 	    }
@@ -1265,7 +1273,8 @@ main(ac, av)
 
 	    if (rename(NHistory, HistoryText) < 0
 	     || rename(NHistorydir, Historydir) < 0
-	     || rename(NHistorypag, Historypag) < 0) {
+	     || rename(NHistoryindex, Historyindex) < 0
+	     || rename(NHistoryhash, Historyhash) < 0) {
 		(void)fprintf(stderr, "Can't replace history files, %s\n",
 			strerror(errno));
 		/* Yes -- leave the server paused. */
