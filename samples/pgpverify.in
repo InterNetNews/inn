@@ -1,6 +1,16 @@
-#!@_PATH_PERL@ -ws
+#! /usr/bin/perl -ws
 # written April 1996, tale@isc.org (David C Lawrence)
-# Version 1.9
+# Version 1.10
+#
+# NOTICE TO INN MAINTAINERS:  The version that is shipped with INN
+# is the same as the version that I make available to the rest of the
+# world (including non-INN sites), so please make all changes through me.
+#
+# Changes from 1.9 -> 1.10
+# -- minor diddling for INN 2.0: use $inn'pathtmp if it exists, and
+#    work with the new subst method to find innshellvars.pl
+# -- do not truncate the tmp file when opening, in case it is really linked
+#    to another file
 #
 # Changes from 1.8 -> 1.9
 # -- match 'Bad signature' pgp output to return exit status 3 by removing
@@ -34,11 +44,13 @@
 #    not a link or some other weirdness
 
 # Path to pgp binary; for PGP 5.0, set the path to the pgpv binary.
-$pgp = '@_PATH_PGP@';
+$pgp = '/usr/local/bin/pgp';
 
 # if you keep your keyring somewhere that is not the default used by pgp,
 # uncomment the next line and set appropriately.
 # $ENV{'PGPPATH'} = '/path/to/your/pgp/config';
+
+$tmpdir = "/tmp/pgp$$";
 
 ### Exit value:
 ### 0  good signature
@@ -51,9 +63,9 @@ die "Usage: $0 < message\n" if @ARGV != 0;
 
 $0 =~ s%^.*/%%;                 # trim /path/to/prog to prog
 
-do "@ETCDIR@/innshellvars.pl";
+do '@ETCDIR@/innshellvars.pl';
 $pgp = $inn'pgp if $inn'pgp && $inn'pgp ne "no-pgp-found-during-configure";
-$tmp = $inn'pathtmp . "/pgp$$";
+$tmp = ($inn'pathtmp ? $inn'pathtmp : $tmpdir) . "/pgp$$";
 
 if (! -x $pgp) {
   die "$0: $pgp: ", (-e _ ? "cannot execute" : "no such file"), "\n";
@@ -134,12 +146,15 @@ $message .= "Version: $version\n";
 $message .= $signature;
 $message .= "\n-----END PGP SIGNATURE-----\n";
 
-open(TMP,"> $tmp") || &fail("$0: open > $tmp: $!\n");
+open(TMP,">> $tmp") || &fail("$0: open > $tmp: $!\n");
 
 -f TMP ||
   &fail("$0: $tmp not a plain file, possible security violation attempt\n");
 (stat(_))[3] == 1 ||
   &fail("$0: $tmp has hard links, possible security violation attempt\n");
+
+seek TMP, 0, 0;                 # make sure pointer is at beginning of file
+truncate TMP, 0;                # make sure file is zero length
 
 print TMP $message;
 close(TMP) || warn "$0: close > $tmp: $!\n";
@@ -169,7 +184,7 @@ print if $test;
 if (/Bad signature /) {
   $ok = 3;
 } elsif (/Good signature from user(:  (.*)| "(.*)"\.)/ ||
-    /Good signature made .* by key:\n.+\n +"(.*)"/) {
+         /Good signature made .* by key:\n.+\n +"(.*)"/) {
   $ok = 0;
   $signer = $+;
 } elsif (/Keyring file '(.*)' does not exist/) {
