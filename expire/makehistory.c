@@ -15,6 +15,7 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
+#include "inn/wire.h"
 #include "libinn.h"
 #include "macros.h"
 #include "ov.h"
@@ -526,19 +527,18 @@ DoArt(ARTHANDLE *art)
 	}
     }
     for (fp = ARTfields, i = 0; i < ARTfieldsize; i++, fp++) {
-	if ((fp->Header = HeaderFindMem(art->data, art->len, fp->Headername, fp->HeadernameLength)) != (char *)NULL) {
+        fp->Header = wire_findheader(art->data, art->len, fp->Headername);
+        if (fp->Header != NULL) {
 	    fp->HasHeader = TRUE;
-	    for (p = fp->Header, p1 = (char *)NULL; p < art->data + art->len; p++) {
-		if (p1 != (char *)NULL && (*p1 == '\r' || *p1 == '\n') &&
-		    !ISWHITE(*p))
-		    break;
-		p1 = p;
-	    }
-	    if (p >= art->data + art->len) {
-		/* not found for this header */
+            p = wire_endheader(fp->Header, art->data + art->len - 1);
+            if (p == NULL)
 		continue;
-	    }
-            fp->HeaderLength = p1 - fp->Header;
+
+            /* The true length of the header is p - fp->Header + 1, but p
+               points to the \n at the end of the header, so subtract 2 to
+               peel off the \r\n (we're guaranteed we're dealing with
+               wire-format articles. */
+            fp->HeaderLength = p - fp->Header - 1;
 	} else if (RetrMode == RETR_ALL && strcmp(fp->Headername, "Bytes") == 0)
 	{
 		snprintf(bytes, sizeof(bytes), "%d", art->len);
@@ -549,19 +549,13 @@ DoArt(ARTHANDLE *art)
     }
     if (Missfieldsize > 0) {
 	for (fp = Missfields, i = 0; i < Missfieldsize; i++, fp++) {
-	    if ((fp->Header = HeaderFindMem(art->data, art->len, fp->Headername, fp->HeadernameLength)) != (char *)NULL) {
+            fp->Header = wire_findheader(art->data, art->len, fp->Headername);
+            if (fp->Header != NULL) {
 		fp->HasHeader = TRUE;
-		for (p = fp->Header, p1 = (char *)NULL; p < art->data + art->len; p++) {
-		    if (p1 != (char *)NULL && (*p1 == '\r' || *p1 == '\n') &&
-		        !ISWHITE(*p))
-		    break;
-		    p1 = p;
-		}
-		if (p >= art->data + art->len) {
-		    /* not found for this header */
-		  continue;
-		}
-		fp->HeaderLength = p1 - fp->Header;
+                p = wire_endheader(fp->Header, art->data + art->len - 1);
+                if (p == NULL)
+                    continue;
+		fp->HeaderLength = p - fp->Header - 1;
 	    }
 	}
     }
