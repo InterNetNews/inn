@@ -1579,6 +1579,7 @@ sub collect
   return 1 if ($prog eq "newsx");
   return 1 if ($prog eq "demmf");
   return 1 if ($prog eq "nnnn");
+  return 1 if ($prog eq "controlchan");
   return 0;
 }
 
