@@ -351,7 +351,7 @@ static bool CNFSparse_part_line(char *l) {
   /* Length/size of symbolic partition */
   len = strtoul(l, NULL, 10) * (off_t)1024;	/* This value in KB in decimal */
   if (S_ISREG(sb.st_mode) && len != sb.st_size) {
-    if (sizeof(CYCBUFFEXTERN) > sb.st_size) {
+    if (sizeof(CYCBUFFEXTERN) > (size_t) sb.st_size) {
       syslog(L_NOTICE, "%s: length must be at least '%u' for '%s' cycbuff(%ld bytes)",
 	LocalLogName, sizeof(CYCBUFFEXTERN), cycbuff->name, sb.st_size);
       free(cycbuff);
@@ -560,8 +560,8 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
 			     MAP_SHARED, cycbuff->fd, 0);
     if (cycbuff->bitfield == MAP_FAILED || errno != 0) {
 	syslog(L_ERROR,
-	       "%s: CNFSinitdisks: mmap for %s offset %d len %d failed: %m",
-	       LocalLogName, cycbuff->path, 0, cycbuff->minartoffset);
+	       "%s: CNFSinitdisks: mmap for %s offset %d len %ld failed: %m",
+	       LocalLogName, cycbuff->path, 0, (long) cycbuff->minartoffset);
 	cycbuff->bitfield = NULL;
 	return false;
     }
@@ -1042,6 +1042,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
     static int		iovcnt;
     int			tonextblock;
     CNFSEXPIRERULES	*metaexprule;
+    size_t		left;
 
     for (metaexprule = metaexprulestab; metaexprule != (CNFSEXPIRERULES *)NULL; metaexprule = metaexprule->next) {
 	if (metaexprule->class == class)
@@ -1069,7 +1070,11 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	return token;
     }
     /* Article too big? */
-    if (article.len > cycbuff->len - cycbuff->free - CNFS_BLOCKSIZE - 1) {
+    if (cycbuff->len - cycbuff->free < CNFS_BLOCKSIZE - 1)
+        left = 0;
+    else
+        left = cycbuff->len - cycbuff->free - CNFS_BLOCKSIZE - 1;
+    if (article.len > left) {
 	for (middle = cycbuff->free ;middle < cycbuff->len - CNFS_BLOCKSIZE - 1;
 	    middle += CNFS_BLOCKSIZE) {
 	    CNFSUsedBlock(cycbuff, middle, true, false);
@@ -1267,7 +1272,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	plusoffset = sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER);
     }
 #endif /* OLD_CNFS */
-    if (offset > cycbuff->len - CNFS_BLOCKSIZE - ntohl(cah.size) - 1) {
+    if (offset > cycbuff->len - CNFS_BLOCKSIZE - (off_t) ntohl(cah.size) - 1) {
         if (!SMpreopen) {
 	    SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
 	    syslog(L_ERROR, "%s: could not match article size token %s %s:0x%s:%d: %d",
@@ -1277,7 +1282,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	    return NULL;
 	}
 	CNFSReadFreeAndCycle(cycbuff);
-	if (offset > cycbuff->len - CNFS_BLOCKSIZE - ntohl(cah.size) - 1) {
+	if (offset > cycbuff->len - CNFS_BLOCKSIZE - (off_t) ntohl(cah.size) - 1) {
 	    SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
 	    syslog(L_ERROR, "%s: could not match article size token %s %s:0x%s:%d: %d",
 		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, false), cycnum, ntohl(cah.size));
@@ -1287,7 +1292,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     }
     /* checking the bitmap to ensure cah.size is not broken was dropped */
     if (innconf->cnfscheckfudgesize != 0 && innconf->maxartsize != 0 &&
-	(ntohl(cah.size) > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
+	(ntohl(cah.size) > (size_t) innconf->maxartsize + innconf->cnfscheckfudgesize)) {
 	char buf1[24];
 	strlcpy(buf1, CNFSofft2hex(cycbuff->free, false), sizeof(buf1));
 	SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER fudge size overflow");
@@ -1556,7 +1561,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
     *private = priv;
     private->cycbuff = cycbuff;
     private->offset = middle;
-    if (cycbuff->free + ntohl(cah.size) > cycbuff->len - CNFS_BLOCKSIZE - 1) {
+    if (cycbuff->len - cycbuff->free < (off_t) ntohl(cah.size) + CNFS_BLOCKSIZE + 1) {
 	private->offset += CNFS_BLOCKSIZE;
 	art->data = NULL;
 	art->len = 0;
@@ -1599,7 +1604,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	}
     }
     if (innconf->cnfscheckfudgesize != 0 && innconf->maxartsize != 0 &&
-	(ntohl(cah.size) > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
+	((off_t) ntohl(cah.size) > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
 	art->data = NULL;
 	art->len = 0;
 	art->token = NULL;
