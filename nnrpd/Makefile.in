@@ -20,7 +20,7 @@ CTAGS		= ctags -t -w
 PROF	= -pg
 
 CC      = @CC@
-CFLAGS  = -I../include @CPPFLAGS@ $(PERLINC)
+CFLAGS  = -I../include @CPPFLAGS@ $(PERLINC) @CFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS    = @LIBS@
 

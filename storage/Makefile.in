@@ -23,7 +23,7 @@ PROF	= -pg
 
 RANLIB	= @RANLIB@
 CC      = @CC@
-CFLAGS  = -I. -I../include @CPPFLAGS@ $(PERLINC)
+CFLAGS  = -I. -I../include @CPPFLAGS@ $(PERLINC) @CFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS    = @LIBS@
 

@@ -15,7 +15,7 @@ PERLINC =
 TCLINC	= 
 
 CC      = @CC@
-CFLAGS  = -I../include @CPPFLAGS@ $(PERLINC) $(TCLINC)
+CFLAGS  = -I../include @CPPFLAGS@ $(PERLINC) $(TCLINC) @CFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS    = @LIBS@
 

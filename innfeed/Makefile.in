@@ -7,7 +7,7 @@ D	= $(DESTDIR)
 P	= 
 
 CC      = @CC@
-CFLAGS  = -I../include @CPPFLAGS@ 
+CFLAGS  = -I../include @CPPFLAGS@ @CFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS    = @LIBS@
 

@@ -9,7 +9,7 @@ P	=
 PERLINC = 
 
 CC      = @CC@
-CFLAGS  = -I../include @CPPFLAGS@ $(PERLINC)
+CFLAGS  = -I../include @CPPFLAGS@ $(PERLINC) @CFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS    = @LIBS@
 RANLIB	= @RANLIB@

@@ -7,7 +7,7 @@ IFTRUE	= @$(SHELL) ../iftrue.sh
 P	= 
 
 CC      = @CC@
-CFLAGS  = -I../include -I.. -I../../include @CPPFLAGS@ 
+CFLAGS  = -I../include -I.. -I../../include @CPPFLAGS@ @CFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS    = @LIBS@
 RANLIB	= @RANLIB@
