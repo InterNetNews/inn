@@ -150,7 +150,7 @@ tst_init(int width)
 **  want a simple existence tree, use the tst pointer as the data pointer.
 */
 int
-tst_insert(unsigned char *key, void *data, struct tst *tst, int option,
+tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
            void **exist_ptr)
 {
     struct node *current_node;
@@ -272,7 +272,7 @@ tst_insert(unsigned char *key, void *data, struct tst *tst, int option,
 **  the tst pointer as the data pointer.
 */
 void *
-tst_search(unsigned char *key, struct tst *tst)
+tst_search(const unsigned char *key, struct tst *tst)
 {
     struct node *current_node;
     int key_index;
@@ -315,7 +315,7 @@ tst_search(unsigned char *key, struct tst *tst)
 **  is returned.
 */
 void *
-tst_delete(unsigned char *key, struct tst *tst)
+tst_delete(const unsigned char *key, struct tst *tst)
 {
     struct node *current_node;
     struct node *current_node_parent;

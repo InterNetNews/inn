@@ -71,15 +71,15 @@ struct tst *tst_init(int width);
    The data argument must never be NULL, as NULL is returned by tst_search to
    indicate that a key was not found.  For a simple existence tree, use the
    struct tst pointer as the data. */
-int tst_insert(unsigned char *key, void *data, struct tst *, int option,
+int tst_insert(const unsigned char *key, void *data, struct tst *, int option,
                void **exist_ptr);
 
 /* Search for a key and return the associated data, or NULL if not found. */
-void *tst_search(unsigned char *key, struct tst *);
+void *tst_search(const unsigned char *key, struct tst *);
 
 /* Delete the given key out of the trie, returning the data that it pointed
    to.  If the key was not found, returns NULL. */
-void *tst_delete(unsigned char *key, struct tst *);
+void *tst_delete(const unsigned char *key, struct tst *);
 
 /* Free the given ternary search trie and all resources it uses. */
 void tst_cleanup(struct tst *);
