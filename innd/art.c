@@ -1187,7 +1187,7 @@ STATIC char *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const H
 	local += 5;
     }
     for (local++; *local == ' '; local++);
-    if (*local == NULL)
+    if (*local == '\0')
 	return NULL;
     
     HeaderCleanFrom(local);
