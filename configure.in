@@ -734,8 +734,8 @@ dnl Special checks for header files.
 
 dnl Start by checking for standard C headers.  AC_HEADER_STDC will set
 dnl STDC_HEADERS if stdlib.h, stdarg.h, string.h, and float.h all exist,
-dnl if memchr() (and probably the other mem functions) is in string.h,
-dnl if free() (and probably malloc() and friends) are in stdlib.h, and if
+dnl if memchr (and probably the other mem functions) is in string.h,
+dnl if free (and probably malloc and friends) are in stdlib.h, and if
 dnl ctype.h will work on high-bit characters.
 AC_HEADER_STDC
 
@@ -743,7 +743,7 @@ dnl Only if that wasn't set do we need to go hunting for other headers to
 dnl include on non-ANSI systems and check for functions that all ANSI C
 dnl systems should have.
 if test x"$ac_cv_header_stdc" = xno ; then
-    AC_CHECK_HEADERS(memory.h stdarg.h string.h varargs.h)
+    AC_CHECK_HEADERS(memory.h stdarg.h stdlib.h strings.h varargs.h)
     AC_CHECK_FUNCS(memcpy strchr)
     AC_REPLACE_FUNCS(memchr memmove memset)
 fi
@@ -755,8 +755,8 @@ AC_HEADER_SYS_WAIT
 
 dnl Generic checks for header files.
 dnl NOTUSED: sys/file.h sys/ioctl.h
-AC_CHECK_HEADERS(crypt.h fcntl.h limits.h ndbm.h stddef.h stdint.h \
-                 sys/bitypes.h sys/file.h sys/filio.h sys/ioctl.h \
+AC_CHECK_HEADERS(crypt.h fcntl.h inttpes.h limits.h ndbm.h stddef.h stdint.h \
+                 string.h sys/bitypes.h sys/file.h sys/filio.h sys/ioctl.h \
                  sys/param.h sys/select.h sys/sysinfo.h sys/time.h unistd.h)
 
 dnl Some Linux systems have db1/ndbm.h instead of ndbm.h.

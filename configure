@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.173 
+# From configure.in Revision: 1.174 
 
 
 ## libtool.m4 - Configure libtool for the target system. -*-Shell-script-*-
@@ -4281,7 +4281,7 @@ fi
 
 
 if test x"$ac_cv_header_stdc" = xno ; then
-    for ac_hdr in memory.h stdarg.h string.h varargs.h
+    for ac_hdr in memory.h stdarg.h stdlib.h strings.h varargs.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
@@ -4638,8 +4638,8 @@ EOF
 fi
 
 
-for ac_hdr in crypt.h fcntl.h limits.h ndbm.h stddef.h stdint.h \
-                 sys/bitypes.h sys/file.h sys/filio.h sys/ioctl.h \
+for ac_hdr in crypt.h fcntl.h inttpes.h limits.h ndbm.h stddef.h stdint.h \
+                 string.h sys/bitypes.h sys/file.h sys/filio.h sys/ioctl.h \
                  sys/param.h sys/select.h sys/sysinfo.h sys/time.h unistd.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
