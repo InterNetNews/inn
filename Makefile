@@ -110,7 +110,7 @@ cert:
 	    -keyout $(PATHLIB)/cert.pem
 	chown $(NEWSUSER) $(PATHLIB)/cert.pem
 	chgrp $(NEWSGROUP) $(PATHLIB)/cert.pem
-	chmod 640 $(PATHLIB)/cert.pem
+	chmod 600 $(PATHLIB)/cert.pem
 
 
 ##  Cleanup targets.  clean deletes all compilation results but leaves the
