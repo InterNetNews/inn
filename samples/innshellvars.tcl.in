@@ -85,8 +85,7 @@ set inn_z "@LOG_COMPRESSEXT@"
 set inn_tempsock [ eval exec basename ${inn_innddir}/ctlinndXXXXXX | $inn_sed -e {s/XXXXXX$/*/} ]
 set inn_tempsockdir [ exec echo ${inn_innddir}/ctlinndXXXXXX | $inn_sed -e {s@/[^/]*$@@} ]
 
-##  =()<set inn_have_uustat [ expr { "@<HAVE_UUSTAT>@" == "DO" ? 1 : 0 } ]>()=
-set inn_have_uustat [ expr { "DO" == "DO" ? 1 : 0 } ]
+set inn_have_uustat [ expr { "@HAVE_UUSTAT@" == "DO" ? 1 : 0 } ]
 
 set inn_newsmaster "@NEWSMASTER@"
 set inn_newsuser "@NEWSUSER@"

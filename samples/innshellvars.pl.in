@@ -86,8 +86,7 @@ $z = "@LOG_COMPRESSEXT@" ;
 ($tempsock = "${innddir}/ctlinndXXXXXX") =~ s!.*/(.*)XXXXXX$!$1*! ;
 ($tempsockdir = "${innddir}/ctlinndXXXXXX") =~ s!/[^/]*$!! ;
 
-##  =()<$have_uustat = ("@<HAVE_UUSTAT>@" eq "DO" ? 1 : 0) ;>()=
-$have_uustat = ("DO" eq "DO" ? 1 : 0) ;
+$have_uustat = ("@HAVE_UUSTAT@" eq "DO" ? 1 : 0) ;
 
 $newsmaster = '@NEWSMASTER@' ;
 $newsuser = "@NEWSUSER@" ;
