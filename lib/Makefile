@@ -63,6 +63,7 @@ perl.o: perl.c
 	./endian >../include/autoconfig.h
 
 ../include/inn/version.h:	mkversion ../Makefile.global
+	-mkdir ../include/inn > /dev/null 2>&1
 	./mkversion '$(VERSION)' '$(VERSION_EXTRA)' $@
 
 parsedate.c:	parsedate.y
