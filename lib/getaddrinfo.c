@@ -38,11 +38,15 @@ void test_freeaddrinfo(struct addrinfo *);
 int test_getaddrinfo(const char *, const char *, const struct addrinfo *,
                      struct addrinfo **);
 
-/* Make sure that AI_NUMERICSERV is set to something useful even on platforms
-   that don't support it when testing. */
+/* If the native platform doesn't support AI_NUMERICSERV or AI_NUMERICHOST,
+   pick some other values for them. */
 # if AI_NUMERICSERV == 0
 #  undef AI_NUMERICSERV
 #  define AI_NUMERICSERV 0x0080
+# endif
+# if AI_NUMERICHOST == 0
+#  undef AI_NUMERICHOST
+#  define AI_NUMERICHOST 0x0100
 # endif
 #endif
 
@@ -62,7 +66,7 @@ static const char * const gai_errors[] = {
 
 /* Value representing all of the hint flags set. */
 #if TESTING
-# define AI_INTERNAL_ALL 0x00ff
+# define AI_INTERNAL_ALL 0x01ff
 #else
 # define AI_INTERNAL_ALL 0x007f
 #endif

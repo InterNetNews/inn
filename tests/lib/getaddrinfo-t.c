@@ -8,11 +8,15 @@
 #include "inn/messages.h"
 #include "libtest.h"
 
-/* If the native platform doesn't support AI_NUMERICSERV, pick some other
-   value for it. */
+/* If the native platform doesn't support AI_NUMERICSERV or AI_NUMERICHOST,
+   pick some other values for them. */
 #if AI_NUMERICSERV == 0
 # undef AI_NUMERICSERV
 # define AI_NUMERICSERV 0x0080
+#endif
+#if AI_NUMERICHOST == 0
+# undef AI_NUMERICHOST
+# define AI_NUMERICHOST 0x0100
 #endif
 
 const char *test_gai_strerror(int);
