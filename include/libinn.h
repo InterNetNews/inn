@@ -58,13 +58,14 @@ extern const char *error_program_name;
 **  MEMORY MANAGEMENT
 */
 
-/* The xmalloc, xrealloc, and xstrdup functions are actually macros so that
-   we can pick up the file and line number information for debugging error
-   messages without the user having to pass those in every time. */
+/* The functions are actually macros so that we can pick up the file and line
+   number information for debugging error messages without the user having to
+   pass those in every time. */
 #define xcalloc(n, size)        x_calloc((n), (size), __FILE__, __LINE__)
 #define xmalloc(size)           x_malloc((size), __FILE__, __LINE__)
 #define xrealloc(p, size)       x_realloc((p), (size), __FILE__, __LINE__)
 #define xstrdup(p)              x_strdup((p), __FILE__, __LINE__)
+#define xstrndup(p, size)       x_strndup((p), (size), __FILE__, __LINE__)
 
 /* Last two arguments are always file and line number.  These are internal
    implementations that should not be called directly.  ISO C99 says that
@@ -76,6 +77,7 @@ extern void *x_calloc(size_t, size_t, const char *, int);
 extern void *x_malloc(size_t, const char *, int);
 extern void *x_realloc(void *, size_t, const char *, int);
 extern char *x_strdup(const char *, const char *, int);
+extern char *x_strndup(const char *, size_t, const char *, int);
 
 /* Failure handler takes the function, the size, the file, and the line. */
 typedef void (*xmalloc_handler_t)(const char *, size_t, const char *, int);

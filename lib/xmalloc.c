@@ -15,6 +15,8 @@
 **       buffer = xcalloc(1024);
 **       free(buffer);
 **       buffer = xstrdup(string);
+**       free(buffer);
+**       buffer = xstrndup(string, 25);
 **
 **  xmalloc, xcalloc, xrealloc, and xstrdup behave exactly like their C
 **  library counterparts without the leading x except that they will never
@@ -26,6 +28,10 @@
 **  memory or a call to sleep to hope that system resources return.  If the
 **  handler returns, the interrupted memory allocation function will try its
 **  allocation again (calling the handler again if it still fails).
+**
+**  xstrndup behaves like xstrdup but only copies the given number of
+**  characters.  It allocates an additional byte over its second argument and
+**  always nul-terminates the string.
 **
 **  The default error handler, if none is set by the caller, prints an error
 **  message to stderr and exits with exit status 1.  An error handler must
@@ -120,5 +126,20 @@ x_strdup(const char *s, const char *file, int line)
         p = malloc(len);
     }
     memcpy(p, s, len);
+    return p;
+}
+
+char *
+x_strndup(const char *s, size_t size, const char *file, int line)
+{
+    char *p;
+
+    p = malloc(size + 1);
+    while (p == NULL) {
+        (*xmalloc_error_handler)("strndup", size + 1, file, line);
+        p = malloc(size + 1);
+    }
+    memcpy(p, s, size);
+    p[size] = '\0';
     return p;
 }
