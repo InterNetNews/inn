@@ -1,0 +1,507 @@
+#!/usr/bin/perl -w
+# fixscript will replace this line with require innshellvars.pl
+
+##############################################################################
+# perl-nocem - a NoCeM-on-spool implementation for INN 2.x.
+# Copyright 2000 by Miquel van Smoorenburg <miquels@cistron.nl>
+# Copyright 2001 by Marco d'Itri <md@linux.it>
+# This program is licensed under the terms of the GNU General Public License.
+##############################################################################
+
+require 5.00403;
+use strict;
+
+# XXX FIXME I haven't been able to load it only when installed.
+# If nobody can't fix it just ship the program with this line commented.
+#use Time::HiRes qw(time);
+
+my $keyring = $inn::pathetc . '/pgp/ncmring.gpg';
+
+# XXX To be moved to a config file.
+#sub local_want_cancel_id {
+#    my ($group, $hdrs) = @_;
+#
+## Hippo has too many false positives to be useful outside of pr0n groups
+#    if ($hdrs->{issuer} =~ /(?:Ultra|Spam)Hippo/) {
+#        foreach (split(/,/, $group)) {
+#            return 1 if /^alt\.(?:binar|sex)/;
+#        }
+#        return 0;
+#    }
+#    return 1;
+#}
+
+# no user servicable parts below this line ###################################
+
+# global variables
+my ($working, $got_sighup, $got_sigterm, @ncmperm, $cancel);
+my $use_syslog = 0;
+my $log_open = 0;
+my $nntp_open = 0;
+
+my $logfile = $inn::pathlog . '/perl-nocem.log';
+
+# initialization and main loop ###############################################
+
+eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1; };
+
+if ($use_syslog) {
+    eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
+    Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf/;
+    openlog('nocem', '', $inn::syslog_facility);
+}
+
+if (not $inn::gpgv) {
+    logmsg('cannot find the gpgv binary', 'error');
+    sleep 5;
+    exit 1;
+}
+
+if ($inn::version and not $inn::version =~ /^INN 2\.[0123]\./) {
+    $cancel = \&cancel_nntp;
+} else {
+    $cancel = \&cancel_ctlinnd;
+}
+
+$SIG{HUP}  = \&hup_handler;
+$SIG{INT}  = \&term_handler;
+$SIG{TERM} = \&term_handler;
+$SIG{PIPE} = \&term_handler;
+
+logmsg('starting up');
+
+unless (read_ctlfile()) {
+    sleep 5;
+    exit 1;
+}
+
+while (<STDIN>) {
+    chop;
+    $working = 1;
+    do_nocem($_);
+    $working = 0;
+    term_handler() if $got_sigterm;
+    hup_handler() if $got_sighup;
+}
+
+logmsg('exiting because of EOF', 'debug');
+exit 0;
+
+##############################################################################
+
+# Process one NoCeM notice.
+sub do_nocem {
+    my $token = shift;
+
+    # open the article and verify the notice
+    my $artfh = open_article($token);
+    return if not defined $artfh;
+    my ($msgid, $nid, $issuer, $nocems) = read_nocem($artfh);
+    close $artfh;
+    return unless $nocems;
+
+    &$cancel($nocems);
+    logmsg("Articles cancelled: " . join(' ', @$nocems), 'debug');
+    my $start = time;
+    my $diff = (time - $start) || 0.01;
+    my $nr = scalar @$nocems;
+    logmsg(sprintf("processed notice $nid by $issuer"
+        . " ($nr ids, %.5f s, %.1f/s)", $diff, $nr / $diff));
+}
+
+# - Check if it is a PGP signed NoCeM notice
+# - See if we want it
+# - Then check PGP signature
+sub read_nocem {
+    my $artfh = shift;
+
+    # Examine the first 200 lines to see if it is a PGP signed NoCeM.
+    my $ispgp = 0;
+    my $isncm = 0;
+    my $inhdr = 1;
+    my $i = 0;
+    my $body = '';
+    my ($from, $msgid);
+    while (<$artfh>) {
+        last if $i++ > 200;
+        s/\r\n$/\n/;
+        if ($inhdr) {
+            if (/^$/) {
+                $inhdr = 0;
+            } elsif (/^From:\s+(.*)\s*$/i) {
+                $from =  $1;
+            } elsif (/^Message-ID:\s+(<.*>)/i) {
+                $msgid = $1;
+            }
+        } else {
+            $body .= $_;
+            $ispgp = 1 if /^-----BEGIN PGP SIGNED MESSAGE-----/;
+            if (/^\@\@BEGIN NCM HEADERS/) {
+                $isncm = 1;
+                last;
+            }
+        }
+    }
+
+    # must be a PGP signed NoCeM.
+    if (not $ispgp) {
+        logmsg("Article $msgid: not PGP signed", 'debug');
+        return;
+    }
+    if (not $isncm) {
+        logmsg("Article $msgid: not a NoCeM", 'debug');
+        return;
+    }
+
+    # read the headers of this NoCeM, and check if it's supported.
+    my %hdrs;
+    while (<$artfh>) {
+        s/\r\n/\n/;
+        $body .= $_;
+        last if /^\@\@BEGIN NCM BODY/;
+        my ($key, $val) = /^([^:]+)\s*:\s*(.*)$/;
+        $hdrs{lc $key} = $val;
+    }
+    foreach (qw(action issuer notice-id type version)) {
+        next if $hdrs{$_};
+        logmsg("Article $msgid: missing $_ pseudo header", 'debug');
+        return;
+    }
+    return if not supported_nocem($msgid, \%hdrs);
+
+    # decide if we want it.
+    if (not want_nocem(\%hdrs)) {
+        logmsg("Article $msgid: unwanted ($hdrs{issuer}/$hdrs{type})", 'debug');
+        return;
+    }
+# XXX want_hier() not implemented
+#    if ($hdrs{hierarchies} and not want_hier($hdrs{hierarchies})) {
+#        logmsg("Article $msgid: unwanted hierarchy ($hdrs{hierarchies})",
+#            'debug');
+#        return;
+#    }
+
+    # we do want it, so read the entire article. Also copy it to
+    # a temp file so that we can check the PGP signature when done.
+    my $tmpfile = "$inn::pathtmp/nocem.$$";
+    if (not open(OFD, ">$tmpfile")) {
+        logmsg("cannot open temp file $tmpfile: $!", 'error');
+        return;
+    }
+    print OFD $body;
+    undef $body;
+
+    # process NoCeM body.
+    my $inbody = 1;
+    my @nocems;
+    my ($lastid, $lastgrp);
+    while (<$artfh>) {
+        s/\r\n$/\n/;
+        print OFD;
+        $inbody = 0 if /^\@\@END NCM BODY/;
+        next if not $inbody or /^#/;
+
+        my ($id, $grp) = /^(\S*)\s+(\S+)/;
+        next if not $grp;
+        if ($id) {
+            push @nocems, $lastid
+                if $lastid and want_cancel_id($lastgrp, \%hdrs);
+            $lastid = $id;
+            $lastgrp = $grp;
+        } else {
+            $lastgrp .= ',' . $grp;
+        }
+    }
+    push @nocems, $lastid if $lastid and want_cancel_id($lastgrp, \%hdrs);
+    close OFD;
+
+    # at this point we need to verify the PGP signature.
+    return if not @nocems;
+    my $e = pgp_check($hdrs{issuer}, $msgid, $tmpfile);
+    unlink $tmpfile;
+    return if not $e;
+
+    return ($msgid, $hdrs{'notice-id'}, $hdrs{issuer}, \@nocems);
+}
+
+# XXX not implemented: code to discard notices for groups we don't carry
+sub want_cancel_id {
+    my ($group, $hdrs) = @_;
+
+    return local_want_cancel_id(@_) if defined &local_want_cancel_id;
+    1;
+}
+
+# Do we actually want this NoCeM?
+sub want_nocem {
+    my $hdrs = shift;
+
+    foreach (@ncmperm) {
+        my ($issuer, $type) = split(/\001/);
+        if ($hdrs->{issuer} =~ /$issuer/i) {
+            return 1 if '*' eq $type or lc $hdrs->{type} eq $type;
+        }
+    }
+    return 0;
+}
+
+sub supported_nocem {
+    my ($msgid, $hdrs) = @_;
+
+    if ($hdrs->{version} !~ /^0\.9[0-9]?$/) {
+        logmsg("Article $msgid: version $hdrs->{version} not supported",
+            'debug');
+        return 0;
+    }
+    if ($hdrs->{action} ne 'hide') {
+        logmsg("Article $msgid: action $hdrs->{action} not supported",
+            'debug');
+        return 0;
+    }
+    return 1;
+}
+
+# Check the PGP signature on an article.
+sub pgp_check {
+    my ($issuer, $msgid, $art) = @_;
+
+    # fork and spawn a child
+    my $pid = open(PFD, '-|');
+    if (not defined $pid) {
+        logmsg("pgp_check: cannot fork: $!", 'error');
+        return 0;
+    }
+    if ($pid == 0) {
+        open(STDERR, '>&STDOUT');
+        exec($inn::gpgv, '--status-fd=1',
+            $keyring ? '--keyring=' . $keyring : '', $art);
+        exit 126;
+    }
+
+    # Read the result and check status code.
+    local $_ = join('', <PFD>);
+    my $status = 0;
+    if (not close PFD) {
+        if ($? >> 8) {
+            $status = $? >> 8;
+        } else {
+            logmsg("Article $msgid: $inn::gpgv killed by signal " . ($? & 255));
+            return 0;
+        }
+    }
+#    logmsg("Command line was: $inn::gpg $pgpargs $art", 'debug');
+#    logmsg("Full PGP output: >>>$_<<<", 'debug');
+
+    if (/^\[GNUPG:\]\s+GOODSIG\s+\S+\s+(.*)/m) {
+        return 1 if $1 =~ /\Q$issuer\E/;
+        logmsg("Article $msgid: signed by $1 instead of $issuer");
+    } elsif (/^\[GNUPG:\]\s+NO_PUBKEY\s+(\S+)/m) {
+        logmsg("Article $msgid: $issuer (ID $1) not in keyring");
+    } elsif (/^\[GNUPG:\]\s+BADSIG\s+\S+\s+(.*)/m) {
+        logmsg("Article $msgid: bad signature from $1");
+    } elsif (/^\[GNUPG:\]\s+BADARMOR/m or /^\[GNUPG:\]\s+UNEXPECTED/m) {
+        logmsg("Article $msgid: malformed signature");
+    } elsif (/^\[GNUPG:\]\s+ERRSIG\s+(\S+)/m) {
+        # safety net: we get there if we don't know about some token
+        logmsg("Article $msgid: unknown error (ID $1)");
+    } else {
+        # some other error we don't know about happened.
+        # 126 is returned by the child if exec fails.
+        s/ at \S+ line \d+\.\n$//; s/\n/_/;
+        logmsg("Article $msgid: $inn::gpgv exited "
+            . (($status == 126) ? "($_)" : "with status $status"), 'error');
+    }
+    return 0;
+}
+
+# Read article.
+sub open_article {
+    my $token = shift;
+    
+    if ($token =~ /^\@.+\@$/) {
+        my $pid = open(ART, '-|');
+        if ($pid < 0) {
+            logmsg('Cannot fork: ' . $!, 'error');
+            return undef;
+        }
+        if ($pid == 0) {
+            exec("$inn::newsbin/sm", '-q', $token) or
+                logmsg("Cannot exec sm: $!", 'error');
+            return undef;
+        }
+        return *ART;
+    } else {
+        return *ART if open(ART, $token);
+        logmsg("Cannot open article $token: $!", 'error');
+    }
+    return undef;
+}
+
+# Cancel a number of message-ids. We use ctlinnd to do this,
+# and we run up to 15 of them at the same time (10 usually).
+sub cancel_ctlinnd {
+    my @ids = @{$_[0]};
+
+    while (@ids > 0) {
+        my $max = @ids <= 15 ? @ids : 10;
+        for (my $i = 1; $i <= $max; $i++) {
+            my $msgid = shift @ids;
+            my $pid;
+            sleep 5 until (defined ($pid = fork));
+            if ($pid == 0) {
+                exec "$inn::pathbin/ctlinnd", '-s', '-t', '180',
+                    'cancel', $msgid;
+                exit 126;
+            }
+#            logmsg("cancelled: $msgid [$i/$max]", 'debug');
+        }
+        #    Now wait for all children.
+        while ((my $pid = wait) > 0) {
+            next unless $?;
+            if ($? >> 8) {
+                logmsg("Child $pid died with status " . ($? >> 8), 'error');
+            } else {
+                logmsg("Child $pid killed by signal " . ($? & 255), 'error');
+            }
+        }
+    }
+}
+
+sub cancel_nntp {
+    my $ids = shift;
+    my $r;
+    
+    if (not $nntp_open) {
+        use Socket;
+        if (not socket(NNTP, PF_UNIX, SOCK_STREAM, 0)) {
+            logmsg("socket: $!", 'error');
+            goto ERR;
+        }
+        if (not connect(NNTP, sockaddr_un($inn::pathrun . '/nntpin'))) {
+            logmsg("connect: $!", 'error');
+            goto ERR;
+        }
+        if (($r = <NNTP>) !~ /^200 /) {
+            $r =~ s/\r\n$//;
+            logmsg("bad reply from server: $r", 'error');
+            goto ERR;
+        }
+        select NNTP; $| = 1; select STDOUT;
+        print NNTP "MODE CANCEL\r\n";
+        if (($r = <NNTP>) !~ /^284 /) {
+            $r =~ s/\r\n$//;
+            logmsg("MODE CANCEL not supported: $r", 'error');
+            goto ERR;
+        }
+        $nntp_open = 1;
+    }
+    foreach (@$ids) {
+        print NNTP "$_\r\n";
+        if (($r = <NNTP>) !~ /^289/) {
+            $r =~ s/\r\n$//;
+            logmsg("cannot cancel $_: $r", 'error');
+        }
+    }
+    return;
+
+ERR:
+    logmsg('Switching to ctlinnd...', 'error');
+    cancel_ctlinnd($ids);
+    $cancel = \&cancel_ctlinnd;
+}
+
+sub read_ctlfile {
+    my $permfile = $inn::pathetc . '/nocem.ctl';
+
+    unless (open(CTLFILE, $permfile)) {
+        logmsg("Cannot open $permfile: $!", 'error');
+        return 0;
+    }
+    while (<CTLFILE>) {
+        chop;
+        s/^\s+//; s/\s+$//;
+        next if /^#/ or /^$/;
+        my ($issuer, $type) = split(/:/, lc $_);
+        logmsg("Cannot parse nocem.ctl line <<$_>>", 'error')
+            if not $issuer and $type;
+        $type =~ s/\s//g;
+        push @ncmperm, "$issuer\001$_" foreach split(/,/, $type);
+    }
+    close CTLFILE;
+    return 1;
+}
+
+sub logmsg {
+    my ($msg, $lvl) = @_;
+
+    if (not $use_syslog) {
+        if ($log_open == 0) {
+            open(LOG, ">>$logfile") or die "Cannot open log: $!";
+            $log_open = 1;
+            select LOG; $| = 1; select STDOUT;
+        }
+        $lvl ||= 'notice';
+        print LOG "$lvl: $msg\n";
+        return;
+    }
+    syslog($lvl || 'notice', '%s', $msg);
+}
+
+sub hup_handler {
+    $got_sighup = 1;
+    return if $working;
+    close LOG;
+    $log_open = 0;
+}
+
+sub term_handler {
+    $got_sigterm = 1;
+    return if $working;
+    logmsg('exiting because of signal');
+    exit 1;
+}
+
+# lint food
+print $inn::pathrun.$inn::pathlog.$inn::pathetc.$inn::newsbin.$inn::pathbin
+    . $inn::pathtmp;
+
+__END__
+
+=head1 NAME
+
+perl-nocem - a NoCeM-on-spool implementation for INN 2.x
+
+=head1 SYNOPSIS
+
+Add to the newsfeeds file an entry like this one:
+
+    nocem:!*,alt.nocem.misc,news.lists.filter\
+        :Tc,Wf,Ap:/usr/local/news/bin/perl-nocem
+
+Import new keys with:
+
+    gpg --keyring=/usr/local/news/etc/pgp/ncmring.gpg --import \
+        --allow-non-selfsigned-uid
+
+The nocem.ctl config file contains lines like:
+
+    annihilator-1@erlenstar.demon.co.uk:*
+    clewis@ferret:mmf,spam
+
+=head1 FILES
+
+/usr/local/news/etc/nocem.ctl
+
+=head1 BUGS
+
+The Subject header is not checked for the @@NCM string and there is no
+check for the presence of the References header.
+The Newsgroups pseudo header is not checked, but this can be done in
+local_want_cancel_id().
+The Hierarchies header is ignored.
+
+=head1 AUTHORS
+
+Copyright 2000 by Miquel van Smoorenburg <miquels@cistron.nl>.
+
+Copyright 2001 by Marco d'Itri <md@linux.it>.

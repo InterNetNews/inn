@@ -2,13 +2,14 @@
 
 include ../Makefile.global
 
-ALL	      = controlbatch controlchan docheckgroups gpgverify pgpverify \
-		signcontrol
+ALL	      = controlbatch controlchan docheckgroups gpgverify perl-nocem \
+		pgpverify signcontrol
 
 INSTALLED     = $(D)$(PATHBIN)/controlbatch	\
 		$(D)$(PATHBIN)/controlchan	\
 		$(D)$(PATHBIN)/docheckgroups	\
 		$(D)$(PATHBIN)/gpgverify	\
+		$(D)$(PATHBIN)/perl-nocem	\
 		$(D)$(PATHBIN)/pgpverify	\
 		$(D)$(PATHBIN)/signcontrol
 
@@ -26,8 +27,9 @@ controlbatch:	controlbatch.in  $(FIX) ; $(FIX) controlbatch.in
 controlchan:	controlchan.in   $(FIX) ; $(FIX) controlchan.in
 docheckgroups:	docheckgroups.in $(FIX) ; $(FIX) docheckgroups.in
 gpgverify:	gpgverify.in     $(FIX) ; $(FIX) gpgverify.in
+perl-nocem:	perl-nocem.in    $(FIX) ; $(FIX) perl-nocem.in
 pgpverify:	pgpverify.in     $(FIX) ; $(FIX) pgpverify.in
-signcontrol:	signcontrol.in   $(FIX) ; $(FIX) signcontrol.in
+signcontrol:	signcontrol.in   $(FIX) ; $(FIX) -i signcontrol.in
 
 
 ##  Installation rules.  Installation commands set in Makefile.global.
@@ -43,5 +45,6 @@ $(D)$(PATHBIN)/controlbatch:	controlbatch	; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/controlchan:	controlchan	; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/docheckgroups:	docheckgroups	; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/gpgverify:	gpgverify	; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/perl-nocem:	perl-nocem	; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/pgpverify:	pgpverify	; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/signcontrol:	signcontrol	; $(CP_XPUB) $? $@
