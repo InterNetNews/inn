@@ -15,7 +15,9 @@ printcount () {
 # nnrpd would.  Takes the client host, the domain to check it against, and the
 # user expected.
 runsuccess () {
-    output=`echo ClientHost: $1 | $domain $2 2>&1`
+    output=`( echo ClientHost: $1 ; echo ClientIP: 127.0.0.1 ; \
+              echo ClientPort: 0 ; echo LocalIP: 127.0.0.1 ; \
+              echo LocalPort: 119) | $domain $2 2>&1`
     status=$?
     if test $status = 0 && test x"$output" = x"$3" ; then
         printcount "ok"
@@ -30,7 +32,9 @@ runsuccess () {
 # prints out the right error message.  Takes the client host, the domain to
 # check it against, and the expected output string.
 runfailure () {
-    output=`echo ClientHost: $1 | $domain $2 2>&1`
+    output=`( echo ClientHost: $1 ; echo ClientIP: 127.0.0.1 ; \
+              echo ClientPort: 0 ; echo LocalIP: 127.0.0.1 ; \
+              echo LocalPort: 119) | $domain $2 2>&1`
     status=$?
     if test $status = 1 && test x"$output" = x"$3" ; then
         printcount "ok"
