@@ -543,7 +543,7 @@ char *GetHeader(char *header, BOOL IsLines)
     BOOL		pathheader = FALSE;
     BOOL		xrefheader = FALSE;
 
-    limit = ARThandle->data + ARThandle->len - strlen(header);
+    limit = ARThandle->data + ARThandle->len - strlen(header) - 1;
     for (p = ARThandle->data; p < limit; p++) {
 	if (*p == '\r')
 	    continue;
@@ -552,7 +552,7 @@ char *GetHeader(char *header, BOOL IsLines)
 	}
 	if ((lastchar == '\n') || (p == ARThandle->data)) {
 	    headerlen = strlen(header);
-	    if (caseEQn(p, header, headerlen)) {
+	    if (caseEQn(p, header, headerlen) && p[headerlen] == ':') {
 		for (; (p < limit) && !isspace((int)*p) ; p++);
 		for (; (p < limit) && isspace((int)*p) ; p++);
 		for (q = p; q < limit; q++) 
