@@ -48,6 +48,10 @@
 
 #if defined(DO_PYTHON)
 #include "Python.h"
+#undef PATCHLEVEL /* Python and Perl both #define PATCHLEVEL, so as long as
+                     they have to be included in the same file we have to
+                     make sure that they don't conflict.  We use the Perl
+                     PATCHLEVEL so dump the Python one. */
 #endif /* DO_PYTHON */
 
 typedef short  SITEIDX;
