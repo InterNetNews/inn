@@ -1,0 +1,87 @@
+=head1 NAME
+
+auth_krb5 - nnrpd Kerberos v5 authenticator
+
+=head1 SYNOPSIS
+
+B<auth_krb5> [B<-i> I<instance>]
+
+=head1 DESCRIPTION
+
+This program does authentication for B<nnrpd> against a Kerberos v5 KDC.
+This is NOT real Kerberos authentication using service tickets; instead, a
+username and password is used to attempt to obtain a Kerberos v5 TGT to
+confirm that they are valid.  As such, this authenticator assumes that
+B<nnrpd> has been given the user's username and password, and therefore is
+not as secure as real Kerberos authentication.  It generally should only
+be used with NNTP over SSL to protect the password from sniffing.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-i> I<instance>
+
+If this option is given, I<instance> will be used as the instance of the
+principal received from B<nnrpd> and authentication will be done against
+that principal instead of the base principal.  In other words, a principal
+like C<user>, when passed to B<auth_krb5> invoked with C<-i nntp>, will be
+transformed into C<user/nntp> before attempting Kerberos authentication.
+
+Since giving one's password to B<nnrpd> is not as secure as normal
+Kerberos authentication, this option supports a configuration where all
+users are given a separate instance just for news authentication with its
+own password, so their regular account password isn't exposed via NNTP.
+
+=back
+
+=head1 EXAMPLE
+
+The following readers.conf(5) fragment tells nnrpd to authenticate users
+by attempting to obtain Kerberos v5 TGTs for them, appending an instance
+of C<nntp> to usernames before doing so:
+
+    auth kerberos {
+        auth: "auth_krb5 -i nntp"
+    }
+
+    access kerberos {
+        users: "*/nntp"
+        newsgroups: example.*
+    }
+
+Access is granted to the example.* groups for all users who successfully
+authenticate.
+
+=head1 BUGS
+
+Currently, any username containing realm information (containing C<@>) is
+rejected.  This is to prevent someone from passing in a username
+corresponding to a principal in another realm that they have access to and
+gaining access to the news server via it.  However, this is also something
+that people may wish to do under some circumstances, so there should be a
+better way of handling it (such as, perhaps, a list of acceptable realms
+or a -r flag specifying the realm in which to attempt authentication).
+
+It's not clear the right thing to do when the username passed in contains
+a C</> and B<-i> was also given.  Right now, B<auth_krb5> will create a
+malformed Kerberos principal with multiple instances and attempt to
+authenticate against it, which will fail but perhaps not with the best
+error message.
+
+=head1 HISTORY
+
+Originally written by Christopher P. Lindsey.  This documentation was
+written by Russ Allbery <rra@stanford.edu> based on Christopher's original
+README file.
+
+$Id$
+
+=head1 SEE ALSO
+
+nnrpd(8), readers.conf(5)
+
+The latest version of Christopher's original B<nnrpkrb5auth> may be found
+on his web site at L<http://www.mallorn.com/tools/>.
+
+=cut

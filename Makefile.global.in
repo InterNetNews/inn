@@ -140,6 +140,14 @@ SSLBIN          = @SSL_BIN@
 SASLLIB         = @SASL_LIB@
 SASLINC         = @SASL_INC@
 
+##  Kerberos support.  Additional flags and libraries used when compiling or
+##  linking code that contains Kerberos support.  If Kerberos libraries were
+##  compiled, KRB5_AUTH is also set to the name of the Kerberos v5
+##  authenticator that should be compiled and installed.
+KRB5LIB		= @KRB5_LIB@
+KRB5INC		= @KRB5_INC@
+KRB5_AUTH	= @KRB5_AUTH@
+
 ##  Missing functions.  If non-empty, configure detected that your system
 ##  was missing some standard functions, and INN will be providing its own
 ##  replacements from the lib directory.

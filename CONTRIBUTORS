@@ -140,9 +140,10 @@ Russ Allbery:
         Has done large amounts of clean-up on various pieces of the system
         (especially the documentation and build system), and has helped
         with the CVS pool maintenance.  Improved the speed and portability
-        of the Perl filter, and rewrote inndstart and startinnfeed for
-        security.  Has done extensive work on libinn, breaking out common
-        code from other parts of INN.
+        of the Perl filter.  Rewrote the tradindexed overview method for
+        additional robustness.  Has done extensive work on libinn,
+        breaking out common code from other parts of INN.  Lots of other
+        fixes to various parts of INN.
 
 Kai Henningsen:
         Implemented the C and U flags in newsfeeds.
@@ -252,4 +253,5 @@ Edward S. Marshall, Michael Schroeder, George Lindholm, Don Lewis,
 Christopher Masto, Hiroaki Sengoku, Yury July, Yar Tikhiy, Kees Bakker,
 Peter da Silva, Matt McLeod, Ed Korthof, Jan Rychter, Winfried Magerl,
 Andreas Lamrecht, Duane Currie, Ian Dickinson, Bettina Fink,
-Jochen Erwied, Rebecca Ore, Felicia Neff, Antonio Querubin, Bear Giles
+Jochen Erwied, Rebecca Ore, Felicia Neff, Antonio Querubin, Bear Giles,
+Christopher P. Lindsey
