@@ -1750,7 +1750,7 @@ ARTmakeoverview(CHANNEL *cp)
     }
     if (overview->used + overview->left + len > overview->size)
         buffer_resize(overview, overview->size + len);
-    for (i = 0, q = overview->data + overview->left; i < len; p++, q++, i++) {
+    for (i = 0, q = overview->data + overview->left; i < len; p++, i++) {
         if (*p == '\r' && i < len - 1 && p[1] == '\n') {
             p++;
             continue;
