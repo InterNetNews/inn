@@ -3305,23 +3305,25 @@ done
 
 
 # Digital Unix malloc.h looks pretty broken (no function declarations).
-if test x${DECUNIX} = Xno
+if test x${DECUNIX} = Xyes
 then
+echo "configure: warning: not checking for malloc.h as this is Digital Unix" 1>&2
+else
 for ac_hdr in malloc.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:3315: checking for $ac_hdr" >&5
+echo "configure:3317: checking for $ac_hdr" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 3320 "configure"
+#line 3322 "configure"
 #include "confdefs.h"
 #include <$ac_hdr>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:3325: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:3327: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -3347,8 +3349,6 @@ else
 fi
 done
 
-else
-echo "configure: warning: not checking for malloc.h as this is Digital Unix" 1>&2
 fi
 
 echo $ac_n "checking for working const""... $ac_c" 1>&6
