@@ -89,6 +89,7 @@ static char	*TITLEend;
 #endif	/* !defined(_HPUX_SOURCE) */
 static sig_atomic_t	ChangeTrace;
 bool	DaemonMode = FALSE;
+bool	ForeGroundMode = FALSE;
 #if HAVE_GETSPNAM
 static char	*ShadowGroup;
 #endif
@@ -784,9 +785,9 @@ main(int argc, char *argv[])
     if (ReadInnConf() < 0) exit(1);
 
 #ifdef HAVE_SSL
-    while ((i = getopt(argc, argv, "c:b:Di:g:nop:Rr:s:tS")) != EOF)
+    while ((i = getopt(argc, argv, "c:b:Dfi:g:nop:Rr:s:tS")) != EOF)
 #else
-    while ((i = getopt(argc, argv, "c:b:Di:g:nop:Rr:s:t")) != EOF)
+    while ((i = getopt(argc, argv, "c:b:Dfi:g:nop:Rr:s:t")) != EOF)
 #endif /* HAVE_SSL */
 	switch (i) {
 	default:
@@ -804,6 +805,9 @@ main(int argc, char *argv[])
  	    break;
  	case 'D':			/* standalone daemon mode */
  	    DaemonMode = TRUE;
+ 	    break;
+ 	case 'f':			/* Don't fork on daemon mode */
+ 	    ForeGroundMode = TRUE;
  	    break;
 #if HAVE_GETSPNAM
 	case 'g':
@@ -942,12 +946,14 @@ main(int argc, char *argv[])
 	}
 
 	/* Detach */
-	if ((pid = fork()) < 0) {
+	if (!ForeGroundMode) {
+	  if ((pid = fork()) < 0) {
 	    fprintf(stderr, "%s: can't fork: %s\n", argv[0], strerror(errno));
 	    syslog(L_FATAL, "cant fork: %m");
 	    exit(1);
-	} else if (pid != 0) 
+	  } else if (pid != 0) 
 	    exit(0);
+	}
 
 	setsid();
 

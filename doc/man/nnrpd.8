@@ -14,6 +14,9 @@ nnrpd \- NNTP server for on-campus hosts
 .B \-D
 ]
 [
+.B \-f
+]
+[
 .BI \-g " shadowgroup"
 ]
 [
@@ -120,6 +123,12 @@ continues running until killed.  This means that it reads
 once on startup and never again until restarted.
 .I nnrpd
 should therefore be restarted if inn.conf is changed.
+.TP
+.B \-f
+If specified,
+.I nnrpd
+does not detache itself and runs in the foreground
+when started as a standalone daemon using the ``\-D'' flag.
 .TP
 .B \-g
 On systems that have a shadow password file,
