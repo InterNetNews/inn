@@ -11,7 +11,7 @@ Changes from 2.3.1 to 2.3.2
       fixed.  The response to an ARTICLE command retrieving a message by
       message ID should have the message ID as the third word of the
       response, not the fourth.  Fixing this is reported to *possibly* cause
-      problems with some Netscape versions, but other news servers correctly
+      problems with some Netscape browsers, but other news servers correctly
       follow the protocol.
 
     * Some serious performance problems with expiration of tradspool should

@@ -18,7 +18,7 @@ A very long-standing (since INN 1.0!) NNTP protocol bug in nnrpd was
 fixed.  The response to an ARTICLE command retrieving a message by message
 ID should have the message ID as the third word of the response, not the
 fourth.  Fixing this is reported to *possibly* cause problems with some
-Netscape versions, but other news servers correctly follow the protocol.
+Netscape browsers, but other news servers correctly follow the protocol.
 
 =item *
 
