@@ -252,6 +252,7 @@ typedef struct _SITE {
     BOOL		IgnorePath;
     BOOL		ControlOnly;
     BOOL		DontWantNonExist;
+    BOOL		NeedOverviewCreation;
     int			Hops;
     int			Groupcount;
     FEEDTYPE		Type;

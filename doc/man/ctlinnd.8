@@ -99,8 +99,10 @@ If the article is cross-posted, then the names should be separated by
 whitespace and the
 .I paths
 argument should be inside double quotes.
-If the server is paused or throttled, this command causes it to briefly
+If the server is throttled manually, this command causes it to briefly
 open the history database.
+And if the server is paused or throttled except that case, this command
+is rejected.
 .TP
 .BI allow " reason"
 Remote connections are allowed.
@@ -124,8 +126,10 @@ This does
 .I not
 generate a cancel message.
 The angle brackets are optional.
-If the server is paused or throttled, this command causes it to briefly
+If the server is throttled manually, this command causes it to briefly
 open the history database.
+And if the server is paused or throttled except that case, this command
+is rejected.
 .TP
 .BI changegroup " group rest"
 The newsgroup
@@ -309,7 +313,8 @@ The
 can be omitted and will default to the empty string, and the
 .I rest
 parameter can be omitted and will default to ``y''.
-This command can be done while the server is paused or throttled; it will
+This command can be done while the server is only throttled manually
+or running; it will
 update its internal state when a ``go'' command is sent.
 This command updates the
 .I active.times
@@ -473,6 +478,7 @@ be expired using the default expiration parameters.
 Unlike the ``newgroup'' command, this command does not update the
 .I active.times
 file.
+This command can be done while the server is only throttled manually or running.
 This command is forwarded; see below.
 .TP
 .BI send " feed text..."

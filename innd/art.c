@@ -1604,7 +1604,7 @@ STATIC BOOL ListHas(char **list, char *p)
 /*
 **  Propagate an article to the sites have "expressed an interest."
 */
-STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list)
+STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list, BOOL ControlStore, BOOL OverviewCreated)
 {
     SITE	        *sp;
     int	                i;
@@ -1617,6 +1617,9 @@ STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list)
     /* Work out which sites should really get it. */
     Groupcount = Data->Groupcount;
     for (sp = Sites, i = nSites; --i >= 0; sp++) {
+	if ((sp->IgnoreControl && ControlStore) ||
+	    (sp->NeedOverviewCreation && !OverviewCreated))
+	    sp->Sendit = FALSE;
 	if (sp->Seenit || !sp->Sendit)
 	    continue;
 	sp->Sendit = FALSE;
@@ -2070,6 +2073,7 @@ STRING ARTpost(CHANNEL *cp)
     BOOL		MadeOverview = FALSE;
     BOOL		ControlStore = FALSE;
     BOOL		NonExist = FALSE;
+    BOOL		OverviewCreated = FALSE;
     BUFFER		*article;
     HASH                hash;
     char		linkname[SPOOLNAMEBUFF];
@@ -2528,6 +2532,8 @@ STRING ARTpost(CHANNEL *cp)
 	strcpy(Files.Data, TokenToText(token));
 	strcpy(Data.Name, Files.Data);
 	Data.NameLength = strlen(Data.Name);
+	if (token.index < OVER_NONE)
+	    OverviewCreated = TRUE;
     } else {
 	p = Files.Data;
 	*p = '\0';
@@ -2646,7 +2652,7 @@ STRING ARTpost(CHANNEL *cp)
 	}
     }
     
-    ARTpropagate(&Data, hops, hopcount, distributions);
+    ARTpropagate(&Data, hops, hopcount, distributions, ControlStore, OverviewCreated);
     if (distributions)
 	DISPOSE(distributions);
 
@@ -2672,7 +2678,7 @@ STRING ARTpost(CHANNEL *cp)
 
     /* And finally, send to everyone who should get it */
     for (sp = Sites, i = nSites; --i >= 0; sp++)
-	if (sp->Sendit && (!ControlStore || (ControlStore && !sp->IgnoreControl))) {
+	if (sp->Sendit) {
     	    TMRstart(TMR_SITESEND);
 	    SITEsend(sp, &Data);
     	    TMRstop(TMR_SITESEND);

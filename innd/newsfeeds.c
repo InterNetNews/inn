@@ -199,6 +199,7 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
     sp->Nice = innconf->nicekids;
     sp->ControlOnly = FALSE;
     sp->DontWantNonExist = FALSE;
+    sp->NeedOverviewCreation = FALSE;
 
     /* Nip off the first field, the site name. */
     if ((f2 = strchr(Entry, NF_FIELD_SEP)) == NULL)
@@ -269,6 +270,7 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 			  break;
 		case 'd': sp->DistRequired = TRUE;	break;
 		case 'e': sp->DontWantNonExist = TRUE;	break;
+		case 'o': sp->NeedOverviewCreation = TRUE;	break;
 		case 'p': sp->IgnorePath = TRUE;	break;
 		}
 	    break;
