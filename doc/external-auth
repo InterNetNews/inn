@@ -23,6 +23,11 @@ Reading information from nnrpd
     accept line endings consisting only of LF, and to treat EOF as
     indicating the end of the input even if "." has not been received.)
 
+    Code which reads information in the format discussed below and parses it
+    into convenient structures is available authenticators and resolvers
+    written in C; see libauth(3) for details.  Use of the libauth library
+    will make these programs substantially easier to write and more robust.
+
   For authenticators
 
     When nnrpd calls an authenticator, the lines it passes are
