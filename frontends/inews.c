@@ -929,47 +929,34 @@ OfferArticle(buff, Authorized)
 static void
 Spoolit(char *article, size_t Length, char *deadfile)
 {
-    register HEADER	*hp;
-    register FILE	*F;
-    register int	i;
-    char		temp[BUFSIZ];
-    char		buff[BUFSIZ];
-    struct stat		Sb;
+    HEADER *hp;
+    FILE *F;
+    int i;
 
-    /* Try to write to the spool dir, else the deadfile. */
-    if ((stat(innconf->pathincoming, &Sb) >= 0 && S_ISDIR(Sb.st_mode))
-     || (F = xfopena(deadfile)) == NULL) {
-	TempName(innconf->pathtmp, temp);
-	(void)umask(0);
-	if ((i = open(temp, O_WRONLY | O_CREAT, BATCHFILE_MODE)) < 0
-	 || (F = fdopen(i, "w")) == NULL)
-	    PerrorExit(FALSE, "Can't create spool file");
-	deadfile = NULL;
-    }
+    /* Try to write to the deadfile. */
+    if (deadfile == NULL)
+        return;
+    F = xfopena(deadfile);
+    if (F == NULL)
+        PerrorExit(FALSE, "Can't create spool file");
 
     /* Write the headers and a blank line. */
     for (hp = Table; hp < ENDOF(Table); hp++)
 	if (hp->Value)
-	    (void)fprintf(F, "%s: %s\n", hp->Name, hp->Value);
+	    fprintf(F, "%s: %s\n", hp->Name, hp->Value);
     for (i = 0; i < OtherCount; i++)
-	(void)fprintf(F, "%s\n", OtherHeaders[i]);
-    (void)fprintf(F, "\n");
-    if (FLUSH_ERROR(stdout))
+	fprintf(F, "%s\n", OtherHeaders[i]);
+    fprintf(F, "\n");
+    if (FLUSH_ERROR(F))
 	PerrorExit(FALSE, "Can't write headers");
 
     /* Write the article and exit. */
     if (fwrite(article, 1, Length, F) != Length)
 	PerrorExit(FALSE, "Can't write article");
-    SafeFlush(F);
+    if (FLUSH_ERROR(F))
+	PerrorExit(FALSE, "Can't write article");
     if (fclose(F) == EOF)
 	PerrorExit(FALSE, "Can't close spool file");
-
-    if (deadfile == NULL) {
-	/* Put the file in a good place. */
-	TempName(innconf->pathincoming, buff);
-	if (rename(temp, buff) < 0)
-	    PerrorExit(FALSE, "Can't rename spool file");
-    }
 }
 
 
