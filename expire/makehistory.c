@@ -83,7 +83,6 @@ static void ARTreadschema(BOOL Overview)
     ARTOVERFIELD                *fp;
     int                         i;
     char                        buff[SMBUF];
-    int				missing = 0;
 
     if (Overview) {
 	/* Open file, count lines. */
@@ -253,13 +252,13 @@ RemoveDBZFiles(char *p)
 /*
 **  Rebuild the DBZ file from the text file.
 */
-STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
+STATIC void Rebuild(OFFSET_T size, BOOL IgnoreOld, BOOL Overwrite)
 {
     QIOSTATE	        *qp;
     char	        *p, *q;
     char	        *save;
-    long	        count;
-    long		where;
+    OFFSET_T	        count;
+    OFFSET_T		where;
     HASH		key;
     char		temp[SMBUF];
     dbzoptions          opt;
@@ -1243,7 +1242,7 @@ DoNewsgroup(char *group, FILE *out, BOOL RemoveBad, BOOL Update, TRANS Translate
     /* Read all entries in the directory. */
     while ((ep = readdir(dp)) != NULL) {
 	p = ep->d_name;
-	if (!CTYPE(isdigit, *p) || strspn(p, "0123456789") != strlen(p))
+	if (!CTYPE(isdigit, (int)*p) || strspn(p, "0123456789") != strlen(p))
 	    continue;
 
 	strcpy(q, p);
@@ -1400,8 +1399,7 @@ Usage(void)
 }
 
 
-int
-main(int ac, char *av[])
+int main(int ac, char *av[])
 {
     QIOSTATE		*qp;
     FILE		*out;
@@ -1410,7 +1408,7 @@ main(int ac, char *av[])
     char		*q;
     long		count;
     BUFFER		B;
-    long		size;
+    OFFSET_T		size;
     int			i;
     BOOL		JustRebuild;
     BOOL		DoRebuild;

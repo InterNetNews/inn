@@ -78,8 +78,6 @@ STATIC BOOL		DoNothing;
 STATIC BOOL		Append;
 STATIC BOOL		Lowmark;
 STATIC BOOL		Overwrite;
-STATIC ARTOVERFIELD	*ARTfields;
-STATIC int		ARTfieldsize;
 STATIC BOOL		OVERmmap;
 STATIC char		(*OVERindex)[][OVERINDEXPACKSIZE];
 STATIC int		OVERicount;
@@ -186,7 +184,6 @@ STATIC int ARTcompare(CPOINTER p1, CPOINTER p2)
 STATIC void WriteIndex(int fd)
 {
     int				i, count;
-    OVERINDEX			index;
 
     for (i = 0, count = 0; i < OVERicount; i++) {
 	if (ARTnumbers[i].ArtNum != 0) {
@@ -241,9 +238,7 @@ STATIC BOOL MakeOverDir(char *Name)
 */
 STATIC void RefreshLines(char *group, LIST *Refresh)
 {
-    static int			LineSize;
     ARTLIST		        *an;
-    LINE		        *end;
     char		        *p;
     ARTNUM		        *ap;
     int		                i;
@@ -651,7 +646,7 @@ int main(int ac, char *av[])
 	}
     ac -= optind;
     av += optind;
-    if (Append && Lowmark || Lowmark && SortedInput)
+    if ((Append && Lowmark) || (Lowmark && SortedInput))
 	Usage();
 
     /* Setup. */

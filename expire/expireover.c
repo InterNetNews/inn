@@ -934,7 +934,7 @@ STATIC LIST *GetSpoolList(char *group)
     /* Get all articles. */
     while ((ep = readdir(dp)) != NULL) {
 	p = ep->d_name;
-	if (!CTYPE(isdigit, p[0]) || strspn(p, "0123456789") != strlen(p))
+	if (!CTYPE(isdigit, (int)p[0]) || strspn(p, "0123456789") != strlen(p))
 	    continue;
 	LISTappend(List, atol(p));
     }
@@ -1047,7 +1047,6 @@ STATIC void SpoolUpdate(BOOL AddEntries, char *Name)
     LIST		*Missing;
     int			processed;
     int			overentries;
-    int			oidxentries;
 
     /* Open file. */
     if (EQ(Name, "-"))

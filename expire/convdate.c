@@ -25,7 +25,7 @@ AllDigits(p)
     register char	*p;
 {
     for (; *p; p++)
-	if (!CTYPE(isdigit, *p))
+	if (!CTYPE(isdigit, (int)*p))
 	    return FALSE;
 	return TRUE;
 }

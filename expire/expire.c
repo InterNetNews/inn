@@ -338,7 +338,7 @@ STATIC BOOL EXPgetnum(int line, char *word, time_t *v, char *name)
 		break;
 	    SawDot = TRUE;
 	}
-	else if (!CTYPE(isdigit, *p))
+	else if (!CTYPE(isdigit, (int)*p))
 	    break;
     if (*p) {
 	(void)fprintf(stderr, "Line %d, bad `%c' character in %s field\n",
@@ -421,7 +421,7 @@ STATIC BOOL EXPreadfile(FILE *F)
 	else
 	    p = buff + strlen(buff);
 	while (--p >= buff) {
-	    if (isspace(*p))
+	    if (isspace((int)*p))
                 *p = '\0';
             else
                 break;
@@ -706,7 +706,7 @@ STATIC enum KRP EXPkeepit(char *Entry, time_t when, time_t Expires)
 **  An article can be removed.  Either print a note, or actually remove it.
 **  Also fill in the article size.
 */
-STATIC void EXPremove(char *p, long *size, BOOL index)
+STATIC void EXPremove(char *p, OFFSET_T *size, BOOL index)
 {
     char	        save, *q;
     struct stat		Sb;
@@ -811,7 +811,7 @@ STATIC void EXPlowmark(char *p)
 STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *krps)
 {
     static char		IGNORING[] = "Ignoring bad line, \"%.20s...\"\n";
-    static long		Offset;
+    static OFFSET_T	Offset;
     static BUFFER	New;
     char	        *p;
     char	        *q;
@@ -823,8 +823,8 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
     time_t		Expires;
     time_t		Posted;
     time_t		when;
-    long		where;
-    long		size;
+    OFFSET_T		where;
+    OFFSET_T		size;
     BOOL                poisoned;
     BOOL		keeper;
     BOOL		remove;

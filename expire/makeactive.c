@@ -93,13 +93,6 @@ MakeEntry(char *name, char *rest, long oldhimark, long oldlomark, BOOL ComputeMa
     DIRENTRY	*ep;
     long	j;
     char	*p;
-    FILE	*fi;
-    struct stat	sb;
-    char	(*mapped)[][OVERINDEXPACKSIZE];
-    int		count;
-    int		i;
-    OVERINDEX	index;
-    char	packed[OVERINDEXPACKSIZE];
 
     /* Turn group name into directory name. */
     for (p = name; *p; p++)
@@ -123,7 +116,7 @@ MakeEntry(char *name, char *rest, long oldhimark, long oldlomark, BOOL ComputeMa
 	    /* Scan through all entries in the directory. */
 	    while ((ep = readdir(dp)) != NULL) {
 	        p = ep->d_name;
-	        if (!CTYPE(isdigit, p[0]) || strspn(p, "0123456789") != strlen(p)
+	        if (!CTYPE(isdigit, (int)p[0]) || strspn(p, "0123456789") != strlen(p)
 	         || (j = atol(p)) == 0)
 		    continue;
 	        if (lomark == 0 || j < lomark)

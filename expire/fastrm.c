@@ -636,7 +636,7 @@ int main(int ac, char *av[])
 		continue;
 	    case 'u':
 		dotdot = 1;
-		if (!isdigit(p[1]))
+		if (!isdigit((int)p[1]))
 		    continue;
 		dotdot = atoi(p + 1);
 		if (dotdot >= strlen(DotDot)/(SIZE_T)3)
@@ -644,13 +644,13 @@ int main(int ac, char *av[])
 		break;
 	    case 's':
 		sortdirs = 5;
-		if (!isdigit(p[1]))
+		if (!isdigit((int)p[1]))
 		    continue;
 		sortdirs = atoi(p + 1);
 		break;
 	    case 'c':
 		cdval = 1;
-		if (!isdigit(p[1]))
+		if (!isdigit((int)p[1]))
 		    continue;
 		cdval = atoi(p + 1);
 		break;
