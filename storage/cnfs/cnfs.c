@@ -1112,12 +1112,22 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
 	offset += sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER);
     }
     if (cycbuff->free > cycbuff->len - CNFS_BLOCKSIZE - ntohl(cah.size) - 1) {
-        SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
-        syslog(L_ERROR, "%s: could not match article size token %s %s:0x%s:%ld: %ld",
+        if (!SMpreopen) {
+	    SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
+	    syslog(L_ERROR, "%s: could not match article size token %s %s:0x%s:%ld: %ld",
 		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum, ntohl(cah.size));
-        DISPOSE(art);
-	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
-        return NULL;
+	    DISPOSE(art);
+	    CNFSshutdowncycbuff(cycbuff);
+	    return NULL;
+	}
+	CNFSReadFreeAndCycle(cycbuff);
+	if (cycbuff->free > cycbuff->len - CNFS_BLOCKSIZE - ntohl(cah.size) - 1) {
+	    SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
+	    syslog(L_ERROR, "%s: could not match article size token %s %s:0x%s:%ld: %ld",
+		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum, ntohl(cah.size));
+	    DISPOSE(art);
+	    return NULL;
+	}
     }
     private = NEW(PRIV_CNFS, 1);
     art->private = (void *)private;
