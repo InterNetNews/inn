@@ -31,10 +31,12 @@ inn_lock_range(int fd, enum inn_locktype type, bool block, off_t offset, off_t s
         case INN_LOCK_UNLOCK:   fl.l_type = F_UNLCK;    break;
     }
 
-    fl.l_whence = SEEK_SET;
-    fl.l_start = offset;
-    fl.l_len = size;
+    do {
+	fl.l_whence = SEEK_SET;
+	fl.l_start = offset;
+	fl.l_len = size;
 
-    status = fcntl(fd, block ? F_SETLKW : F_SETLK, &fl);
+	status = fcntl(fd, block ? F_SETLKW : F_SETLK, &fl);
+    } while (status == -1 && errno == EINTR);
     return (status != -1);
 }
