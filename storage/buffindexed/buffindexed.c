@@ -1828,7 +1828,7 @@ BOOL buffindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOK
     }
   }
   if (token) {
-    if (ovblock->ovindex[search->cur].index == NULLINDEX)
+    if (ovblock->ovindex[search->cur].index == NULLINDEX && !search->needov)
       return FALSE;
     *token = ovblock->ovindex[search->cur].token;
   }
