@@ -20,6 +20,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <signal.h>
+#include <stdarg.h>
 #if defined(_HPUX_SOURCE)
 # include <sys/pstat.h>
 #endif
@@ -544,26 +545,11 @@ static void StartConnection()
 }
 
 
-#if defined(STDC_HEADERS) || defined(HAVE_STDARG_H)
-# include <stdarg.h>
-# define VA_PARAM(type, param)  (type param, ...)
-# define VA_START(param)        (va_start(args, param))
-#else
-# ifdef HAVE_VARARGS_H
-#  include <varargs.h>
-#  define VA_PARAM(type, param) (param, va_alist) type param; va_dcl
-#  define VA_START(param)       (va_start(args))
-# endif
-#endif
-
-/* Only compile this function if we have a variadic function mechanism. */
-#ifdef VA_PARAM
-
 /*
 **  Send a reply, possibly with debugging output.
 */
 void
-Reply VA_PARAM(const char *, fmt)
+Reply(const char *fmt, ...)
 {
     va_list     args;
     int         oerrno;
@@ -572,23 +558,23 @@ Reply VA_PARAM(const char *, fmt)
 
 #ifdef HAVE_SSL
     if (tls_conn) {
-      VA_START(fmt);
+      va_start(args, fmt);
       vsprintf(buff,fmt, args);
       va_end(args);
       SSL_write(tls_conn, buff, strlen(buff));
     } else {
-      VA_START(fmt);
+      va_start(args, fmt);
       vprintf(fmt, args);
       va_end(args);
     }
 #else
-      VA_START(fmt);
+      va_start(args, fmt);
       vprintf(fmt, args);
       va_end(args);
 #endif
     if (Tracing) {
         oerrno = errno;
-        VA_START(fmt);
+        va_start(args, fmt);
 
         /* Copy output, but strip trailing CR-LF.  Note we're assuming here
            that no output line can ever be longer than 2045 characters. */
@@ -605,24 +591,23 @@ Reply VA_PARAM(const char *, fmt)
 
 #ifdef HAVE_SSL
 void
-Printf VA_PARAM(const char *, fmt)
+Printf(const char *fmt, ...)
 {
     va_list     args;
     char        buff[2048];
 
     if (tls_conn) {
-      VA_START(fmt);
-      vsprintf(buff,fmt, args);
+      va_start(args, fmt);
+      vsprintf(buff, fmt, args);
       va_end(args);
       SSL_write(tls_conn, buff, strlen(buff));
     } else {
-      VA_START(fmt);
+      va_start(args, fmt);
       vprintf(fmt, args);
       va_end(args);
     }
 }
 #endif /* HAVE_SSL */
-#endif /* VA_PARAM */
 
 
 /*
@@ -666,12 +651,17 @@ WaitChild(int s)
 
 static void SetupDaemon(void) {
     bool                val;
+    char *path;
     
 #if defined(DO_PERL)
     /* Load the Perl code */
-    PERLsetup(NULL, cpcatpath(innconf->pathfilter, _PATH_PERL_FILTER_NNRPD), "filter_post");
+    path = concatpath(innconf->pathfilter, _PATH_PERL_FILTER_NNRPD);
+    PERLsetup(NULL, path, "filter_post");
+    free(path);
     if (innconf->nnrpperlauth) {
-	PERLsetup(NULL, cpcatpath(innconf->pathfilter, _PATH_PERL_AUTH), "authenticate");
+        path = concatpath(innconf->pathfilter, _PATH_PERL_AUTH);
+	PERLsetup(NULL, path, "authenticate");
+        free(path);
 	PerlFilter(TRUE);
 	perlAuthInit();
     } else {
@@ -753,6 +743,7 @@ main(int argc, char *argv[])
     struct passwd	*pwd;
     int			clienttimeout;
     char		*ConfFile = NULL;
+    char                *path;
 #if HAVE_GETSPNAM
     struct group	*grp;
     gid_t		shadowgid;
@@ -849,14 +840,14 @@ main(int argc, char *argv[])
     if (innconf->nicennrpd > 0)
 	nice(innconf->nicennrpd);
 
-    HISTORY = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
-    ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
-    ACTIVETIMES = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVETIMES));
-    NEWSGROUPS = COPY(cpcatpath(innconf->pathdb, _PATH_NEWSGROUPS));
+    HISTORY = concatpath(innconf->pathdb, _PATH_HISTORY);
+    ACTIVE = concatpath(innconf->pathdb, _PATH_ACTIVE);
+    ACTIVETIMES = concatpath(innconf->pathdb, _PATH_ACTIVETIMES);
+    NEWSGROUPS = concatpath(innconf->pathdb, _PATH_NEWSGROUPS);
     if(ConfFile)
         NNRPACCESS = ConfFile;
     else
-        NNRPACCESS = COPY(cpcatpath(innconf->pathetc,_PATH_NNRPACCESS));
+        NNRPACCESS = concatpath(innconf->pathetc,_PATH_NNRPACCESS);
     SPOOLlen = strlen(innconf->patharticles);
 
     if (DaemonMode) {
@@ -952,7 +943,10 @@ main(int argc, char *argv[])
 	    strcpy(buff, "nnrpd.pid");
 	else
 	    sprintf(buff, "nnrpd-%d.pid", ListenPort);
-	if ((pidfile = fopen(cpcatpath(innconf->pathrun, buff), "w")) == NULL) {
+        path = concatpath(innconf->pathrun, buff);
+        pidfile = fopen(path, "w");
+        free(path);
+	if (pidfile == NULL) {
 	    syslog(L_ERROR, "cannot write %s %m", buff);
             exit(1);
 	}
