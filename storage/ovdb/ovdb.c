@@ -588,8 +588,9 @@ static int open_db_file(int which)
     snprintf(name, sizeof(name), "ov%05d", which);
 
 #if DB_VERSION_MAJOR == 2
-    if(ret = db_open(name, DB_BTREE, _db_flags, 0666, OVDBenv,
-		    &_dbinfo, &(dbs[which]))) {
+    ret = db_open(name, DB_BTREE, _db_flags, 0666, OVDBenv, &_dbinfo,
+                  &(dbs[which]));
+    if (ret != 0) {
 	dbs[which] = NULL;
 	return ret;
     }
@@ -1245,7 +1246,6 @@ static int check_version(void)
     DB *vdb;
     DBT key, val;
     u_int32_t dv;
-    DB_TXN *tid;
 
 #if DB_VERSION_MAJOR == 2
     DB_INFO dbinfo;
@@ -1438,9 +1438,10 @@ int ovdb_open_berkeleydb(int mode, int flags)
 bool ovdb_open(int mode)
 {
     int i, ret;
-    DB_TXN *tid;
 #if DB_VERSION_MAJOR == 2
     DB_INFO dbinfo;
+#else
+    DB_TXN *tid;
 #endif
 
     if(OVDBenv != NULL || clientmode) {
