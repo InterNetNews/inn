@@ -3,7 +3,7 @@
 ;;  Lines beginning with a semi-colon are comment lines.
 ;; Files which are no longer config.data subst victims
 ;; are marked ;subst clean.  mibsoft@mibsoftware.com
-../backends/Makefile.in
+../backends/Makefile
 ../backends/actsync.c
 ../backends/actmerge.sh
 ../backends/actsyncd.sh
@@ -59,19 +59,19 @@
 ;subst clean ../doc/sm.8
 ;subst clean ../doc/storage.ctl.5
 ;subst clean ../doc/writelog.8
-../expire/Makefile.in
-../frontends/Makefile.in
+../expire/Makefile
+../frontends/Makefile
 ../include/clibrary.h
 ../include/configdata.h
 ../include/libinn.h
 ../include/logging.h
 ../include/macros.h
 ../include/paths.h
-../innd/Makefile.in
-../innfeed/Makefile.in
-../lib/Makefile.in
+../innd/Makefile
+../innfeed/Makefile
+../lib/Makefile
 ../makedirs.sh
-../nnrpd/Makefile.in
+../nnrpd/Makefile
 ../samples/actsync.cfg
 ;; ../samples/actsync.ign
 ../samples/checkgroups
@@ -112,8 +112,8 @@
 ../samples/version
 ../samples/writelog
 ../site/Makefile
-../storage/Makefile.in
-../storage/timehash/Makefile.in
+../storage/Makefile
+../storage/timehash/Makefile
 ../syslog/syslog.c
 ../syslog/syslog.conf
 ../syslog/syslogd.c
