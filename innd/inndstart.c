@@ -2,6 +2,7 @@
 **
 **  Open the privileged port, then exec innd.
 */
+#include <pwd.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -69,6 +70,7 @@ int main(int ac, char *av[])
     STRING		env[8];
     struct stat		Sb;
     char		*inndpath;
+    struct passwd	*pwd;
 
     (void)openlog("inndstart", L_OPENLOG_FLAGS, LOG_INN_PROG);
 
@@ -77,6 +79,21 @@ int main(int ac, char *av[])
     /* Make sure INND directory exists. */
     if (stat(innconf->pathrun, &Sb) < 0 || !S_ISDIR(Sb.st_mode)) {
 	syslog(L_FATAL, "inndstart cant stat %s %m", innconf->pathrun);
+	exit(1);
+    }
+    if (Sb.st_uid == 0) {
+	syslog(L_FATAL, "inndstart %s must not be owned by root", innconf->pathrun);
+	exit(1);
+    }
+    pwd = getpwnam(NEWSUSER);
+    if (pwd == (struct passwd *)NULL) {
+	syslog(L_FATAL, "inndstart getpwnam(%s): %s", NEWSUSER, strerror(errno));
+	exit(1);
+    } else if (pwd->pw_gid != Sb.st_gid) {
+	syslog(L_FATAL, "inndstart %s must have group %s", innconf->pathrun, NEWSUSER);
+	exit(1);
+    } else if (pwd->pw_uid != Sb.st_uid) {
+	syslog(L_FATAL, "inndstart %s must be owned by %s", innconf->pathrun, NEWSUSER);
 	exit(1);
     }
     NewsUID = Sb.st_uid;
