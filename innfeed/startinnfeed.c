@@ -110,10 +110,15 @@ main(int argc, char *argv[])
     rl.rlim_cur = RLIM_INFINITY;
     rl.rlim_max = RLIM_INFINITY;
 
+# ifdef RLIMIT_DATA
     if (setrlimit(RLIMIT_DATA, &rl) == -1)
         syslog(LOG_WARNING, "can't setrlimit(DATA, INFINITY): %m");
+# endif
+
+# ifdef RLIMIT_STACK
     if (setrlimit(RLIMIT_STACK, &rl) == -1)
         syslog(LOG_WARNING, "can't setrlimit(STACK, INFINITY): %m");
+# endif
 
 # ifdef RLIMIT_NOFILE
     if (innconf->rlimitnofile >= 0) {
