@@ -835,6 +835,8 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    /* Host specified as a text name ? */
 	    if ((hp = gethostbyname(*q)) == NULL) {
 	      syslog(L_ERROR, "%s cant gethostbyname %s %m", LogName, *q);
+	      /* decrement *count, since we never got to add this record. */
+	      (*count)--;
 	      continue;
 	    }
 
