@@ -94,6 +94,8 @@ SITEreadfile(ReadOnly)
 	}
 	*to++ = '\0';
 	if (*site == COMMENT_CHAR || *site == '\0')
+            continue ;
+        if (strspn(site," \t") == strlen (site))
 	    continue;
 	old_strings[i++] = COPY(site);
     }
@@ -562,10 +564,15 @@ SITEparsefile(StartSite)
     subbed = NEW(char, nGroups);
     poison = NEW(char, nGroups);
 
+    ME.Prev = 0; /* Used as a flag to ensure exactly one ME entry */
     for (sp = Sites, errors = 0, i = 0; i < nSites; i++) {
 	p = strings[i];
 	if (p[0] == 'M' && p[1] == 'E' &&
             ((p[2] == NF_FIELD_SEP) || (p[2] == NF_SUBFIELD_SEP))) {
+	    if (ME.Prev == NOSITE) {
+		syslog(L_FATAL, "bad_newsfeeds. Must have exactly one ME entry");
+		errors++;
+	    } else
 	    if ((error = SITEparseone(p, &ME, subbed, poison)) != NULL) {
 		syslog(L_FATAL, "%s bad_newsfeeds %s", MaxLength(p, p), error);
 		errors++;
@@ -584,6 +591,10 @@ SITEparsefile(StartSite)
 	}
 	sp->Working = TRUE;
 	sp++;
+    }
+    if (ME.Prev != NOSITE) {
+	syslog(L_FATAL, "bad_newsfeeds. Must have exactly one ME entry");
+	errors++;
     }
 
     if (errors) {

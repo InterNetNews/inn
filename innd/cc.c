@@ -463,10 +463,13 @@ CCcheckfile(av)
     if (errors == 0)
 	return NULL;
 
-    if (CCreply.Size == 0) {
+    if (CCreply.Data == NULL) {
 	/* If we got the "-s" flag, then CCsetup hasn't been called yet. */
 	CCreply.Size = SMBUF;
 	CCreply.Data = NEW(char, CCreply.Size);
+    } else if (CCreply.Size < SMBUF) {
+	CCreply.Size = SMBUF;
+	RENEW(CCreply.Data, char, CCreply.Size);
     }
 
     (void)sprintf(CCreply.Data, "1 Found %d errors -- see syslog", errors);
@@ -1578,8 +1581,8 @@ CCreader(cp)
     int			written;
 #endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
     int			i;
-    char		buff[BIG_BUFFER + 2];
-    char		copy[BIG_BUFFER + 2];
+    char                buff[BIG_BUFFER + 2];
+    char                copy[BIG_BUFFER + 2];
     char		*argv[SC_MAXFIELDS + 2];
     int			argc;
     int			len;

@@ -243,6 +243,26 @@ RCreader(cp)
     }
 
     /*
+    ** Clear any IP_OPTIONS, including source routing, on the socket
+    */
+    if (RCfix_options(fd, &remote) != 0) {
+	/* shouldn't happen, but we're bit paranoid at this point */
+	if (close(fd) < 0)
+	    syslog(L_ERROR, "%s cant close %d %m", LogName, fd);
+	return;
+    }
+
+    /*
+    ** Clear any IP_OPTIONS, including source routing, on the socket
+    */
+    if (RCfix_options(fd, &remote) != 0) {
+	/* shouldn't happen, but we're bit paranoid at this point */
+	if (close(fd) < 0)
+	    syslog(L_ERROR, "%s cant close %d %m", LogName, fd);
+	return;
+    }
+
+    /*
     ** If RemoteTimer is not zero, then check the limits on incoming
     ** connections on a total and per host basis.
     **
@@ -499,6 +519,7 @@ RCreadfile(list, count, filename)
 	    rp->Name = COPY(hp->h_name);
 	    rp->Password = COPY(pass);
 	    rp->Patterns = (pats && *pats) ? CommaSplit(COPY(pats)) : NULL;
+            rp->Streaming = (*list + j)->Streaming ;
 	    rp++;
 	    continue;
 	}
@@ -515,6 +536,7 @@ RCreadfile(list, count, filename)
 	    rp->Name = COPY(hp->h_name);
 	    rp->Password = COPY(pass);
 	    rp->Patterns = (pats && *pats) ? CommaSplit(COPY(pats)) : NULL;
+            rp->Streaming = (*list + j)->Streaming ;
 	    rp++;
 	}
 #else
@@ -725,4 +747,53 @@ RCclose()
 	RCmaster = NULL;
 	RCnmaster = 0;
     }
+}
+
+ /*
+  * Routine to disable IP-level socket options. This code was taken from 4.4BSD
+  * rlogind source, but all mistakes in it are my fault.
+  *
+  * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
+  *
+  * 21-Jan-1997 smd
+  *     Code copied again, and modified for INN, all new mistakes are mine.
+  * 
+  */
+
+/* fix_options - get rid of IP-level socket options */
+#ifndef IP_OPTIONS
+#define IP_OPTIONS 1
+#endif
+
+int
+RCfix_options(fd, remote)
+int fd;
+struct sockaddr_in	*remote;
+{
+#if IP_OPTIONS
+    unsigned char optbuf[BUFSIZ / 3], *cp;
+    char    lbuf[BUFSIZ], *lp;
+    int     optsize = sizeof(optbuf), ipproto;
+    struct protoent *ip;
+
+    if ((ip = getprotobyname("ip")) != 0)
+	ipproto = ip->p_proto;
+    else
+	ipproto = IPPROTO_IP;
+
+    if (getsockopt(fd, ipproto, IP_OPTIONS, (char *) optbuf, &optsize) == 0
+	&& optsize != 0) {
+	lp = lbuf;
+	for (cp = optbuf; optsize > 0; cp++, optsize--, lp += 3)
+	    sprintf(lp, " %2.2x", *cp);
+	syslog(LOG_NOTICE,
+	       "connect from %s with IP options (ignored):%s",
+	       inet_ntoa(remote->sin_addr), lbuf);
+	if (setsockopt(fd, ipproto, IP_OPTIONS, (char *) 0, optsize) != 0) {
+	    syslog(LOG_ERR, "setsockopt IP_OPTIONS NULL: %m");
+	    return -1;
+	}
+    }
+#endif
+    return 0;
 }

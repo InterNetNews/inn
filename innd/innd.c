@@ -19,7 +19,7 @@
 #endif	/* defined(DO_FAST_RESOLV) */
 
 
-#if	defined(HAVE_SETBUFFER)
+#if	defined(DO_HAVE_SETBUFFER)
 #define SETBUFFER(F, buff, size)	setbuffer((F), (buff), (size))
 STATIC int	LogBufferSize = 4096;
 #else

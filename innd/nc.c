@@ -45,6 +45,7 @@ static FUNCTYPE	NC_unimp();
 static FUNCTYPE	NCxbatch();
 static FUNCTYPE	NCcheck();
 static FUNCTYPE	NCtakethis();
+static FUNCTYPE NCwritedone();
 
 STATIC int		NCcount;	/* Number of open connections	*/
 STATIC NCDISPATCH	NCcommands[] = {
@@ -81,6 +82,7 @@ STATIC char		*NCquietlist[] = {
 };
 STATIC char		NCterm[] = "\r\n";
 STATIC char		NCdotterm[] = ".\r\n";
+STATIC char 		NCdot[] = "." ;
 STATIC char		NCbadcommand[] = NNTP_BAD_COMMAND;
 STATIC STRING		NCgreeting;
 
@@ -94,25 +96,16 @@ STATIC void NCclearwip(CHANNEL *cp) {
 
 /*
 **  Write an NNTP reply message.
-*/
-STATIC void
-NCwritetext(cp, text)
-    CHANNEL	*cp;
-    char	*text;
-{
-    RCHANremove(cp);
-    WCHANset(cp, text, (int)strlen(text));
-    WCHANappend(cp, NCterm, STRLEN(NCterm));
-    WCHANadd(cp);
-    if (Tracing || cp->Tracing)
-	syslog(L_TRACE, "%s > %s", CHANname(cp), text);
-}
-
-
-/*
-**  Write an NNTP reply message.
-**  Call only when we will stay in NCreader mode.
-**  Tries to do the actual write if it will not block.
+**
+**  Tries to do the actual write immediately if it will not block
+**  and if there is not already other buffered output.  Then, if the
+**  write is successful, calls NCwritedone (which does whatever is
+**  necessary to accommodate state changes).  Else, NCwritedone will
+**  be called from the main select loop later.
+**
+**  If the reply that we are writing now is associated with a
+**  state change, then cp->State must be set to its new value
+**  *before* NCwritereply is called.
 */
 STATIC void
 NCwritereply(cp, text)
@@ -121,6 +114,11 @@ NCwritereply(cp, text)
 {
     register BUFFER	*bp;
     register int	i;
+
+    /* XXX could do RCHANremove(cp) here, as the old NCwritetext() used to
+     * do, but that would be wrong if the channel is sreaming (because it
+     * would zap the channell's input buffer).  There's no harm in
+     * never calling RCHANremove here.  */
 
     bp = &cp->Out;
     i = bp->Left;
@@ -132,11 +130,14 @@ NCwritereply(cp, text)
 	    syslog(L_TRACE, "%s NCwritereply %d=write(%d, \"%.15s\", %d)",
 		CHANname(cp), i, cp->fd,  &bp->Data[bp->Used], bp->Left);
 	if (i > 0) bp->Used += i;
-	if (bp->Used == bp->Left) bp->Used = bp->Left = 0;
+	if (bp->Used == bp->Left) {
+	    /* all the data was written */
+	    bp->Used = bp->Left = 0;
+	    NCwritedone(cp);
+	}
 	else i = 0;
     } else i = 0;
     if (i <= 0) {	/* write failed, queue it for later */
-	RCHANremove(cp);
 	WCHANadd(cp);
     }
     if (Tracing || cp->Tracing)
@@ -151,13 +152,19 @@ NCwriteshutdown(cp, text)
     CHANNEL	*cp;
     char	*text;
 {
-    RCHANremove(cp);
+    cp->State = CSwritegoodbye;
+    RCHANremove(cp); /* we're not going to read anything more */
+#if 0
+    /* XXX why would we want to zap whatever was already
+     * in the output buffer? */
     WCHANset(cp, NNTP_GOODBYE, STRLEN(NNTP_GOODBYE));
+#else
+    WCHANappend(cp, NNTP_GOODBYE, STRLEN(NNTP_GOODBYE));
+#endif
     WCHANappend(cp, " ", 1);
     WCHANappend(cp, text, (int)strlen(text));
     WCHANappend(cp, NCterm, STRLEN(NCterm));
     WCHANadd(cp);
-    cp->State = CSwritegoodbye;
 }
 
 
@@ -172,7 +179,7 @@ NCbadid(cp, p)
     if (ARTidok(p))
 	return FALSE;
 
-    NCwritetext(cp, NNTP_HAVEIT_BADID);
+    NCwritereply(cp, NNTP_HAVEIT_BADID);
     syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp), MaxLength(p, p));
     return TRUE;
 }
@@ -221,8 +228,8 @@ NCpostit(cp)
 		cp->Received, cp->Refused, cp->Rejected);
 	    cp->Reported = 0;
 	}
-	NCwritereply(cp, response);
 	cp->State = CSgetcmd;
+	NCwritereply(cp, response);
 	break;
 
     case OMthrottled:
@@ -288,12 +295,12 @@ NCarticle(cp)
 
     /* Get the article filenames, and the article header+body. */
     if ((art = ARTreadarticle(HISfilesfor(p))) == NULL) {
-	NCwritetext(cp, NNTP_DONTHAVEIT);
+	NCwritereply(cp, NNTP_DONTHAVEIT);
 	return;
     }
 
     /* Write it. */
-    NCwritetext(cp, NNTP_ARTICLE_FOLLOWS);
+    NCwritereply(cp, NNTP_ARTICLE_FOLLOWS);
     for (p = art; ((q = strchr(p, '\n')) != NULL); p = q + 1) {
 	if (*p == '.')
 	    WCHANappend(cp, ".", 1);
@@ -326,12 +333,12 @@ NChead(cp)
 
     /* Get the article filenames, and the header. */
     if ((head = ARTreadheader(HISfilesfor(HashMessageID(p)))) == NULL) {
-	NCwritetext(cp, NNTP_DONTHAVEIT);
+	NCwritereply(cp, NNTP_DONTHAVEIT);
 	return;
     }
 
     /* Write it. */
-    NCwritetext(cp, NNTP_HEAD_FOLLOWS);
+    NCwritereply(cp, NNTP_HEAD_FOLLOWS);
     for (p = head; ((q = strchr(p, '\n')) != NULL); p = q + 1) {
 	if (*p == '.')
 	    WCHANappend(cp, ".", 1);
@@ -347,12 +354,10 @@ NChead(cp)
 /*
 **  The "stat" command.
 */
-STATIC FUNCTYPE
-NCstat(cp)
-    CHANNEL		*cp;
+STATIC FUNCTYPE NCstat(CHANNEL *cp)
 {
-    register char	*p;
-    char		buff[SMBUF];
+    char	        *p;
+    char		*buff;
 
     /* Snip off the Message-ID. */
     for (p = cp->In.Data + STRLEN("stat"); ISWHITE(*p); p++)
@@ -363,13 +368,15 @@ NCstat(cp)
     /* Get the article filenames; read the header (to make sure not
      * the article is still here). */
     if (ARTreadheader(HISfilesfor(HashMessageID(p))) == NULL) {
-	NCwritetext(cp, NNTP_DONTHAVEIT);
+	NCwritereply(cp, NNTP_DONTHAVEIT);
 	return;
     }
 
     /* Write the message. */
+    buff = NEW(char, strlen(p) + 16);
     (void)sprintf(buff, "%d 0 %s", NNTP_NOTHING_FOLLOWS_VAL, p);
-    NCwritetext(cp, buff);
+    NCwritereply(cp, buff);
+    DISPOSE(buff);
 }
 
 
@@ -396,7 +403,7 @@ NCauthinfo(cp)
 
     /* Otherwise, make sure we're only getting "authinfo" commands. */
     if (!caseEQn(p, AUTHINFO, STRLEN(AUTHINFO))) {
-	NCwritetext(cp, NNTP_AUTH_NEEDED);
+	NCwritereply(cp, NNTP_AUTH_NEEDED);
 	return;
     }
     for (p += STRLEN(AUTHINFO); ISWHITE(*p); p++)
@@ -405,13 +412,13 @@ NCauthinfo(cp)
     /* Ignore "authinfo user" commands, since we only care about the
      * password. */
     if (caseEQn(p, USER, STRLEN(USER))) {
-	NCwritetext(cp, NNTP_AUTH_NEXT);
+	NCwritereply(cp, NNTP_AUTH_NEXT);
 	return;
     }
 
     /* Now make sure we're getting only "authinfo pass" commands. */
     if (!caseEQn(p, PASS, STRLEN(PASS))) {
-	NCwritetext(cp, NNTP_AUTH_NEEDED);
+	NCwritereply(cp, NNTP_AUTH_NEEDED);
 	return;
     }
     for (p += STRLEN(PASS); ISWHITE(*p); p++)
@@ -419,12 +426,12 @@ NCauthinfo(cp)
 
     /* Got the password -- is it okay? */
     if (!RCauthorized(cp, p)) {
-	NCwritetext(cp, NNTP_AUTH_BAD);
 	cp->State = CSwritegoodbye;
+	NCwritereply(cp, NNTP_AUTH_BAD);
     }
     else {
-	NCwritetext(cp, NNTP_AUTH_OK);
 	cp->State = CSgetcmd;
+	NCwritereply(cp, NNTP_AUTH_OK);
     }
 }
 
@@ -439,7 +446,8 @@ NChelp(cp)
     static char		LINE2[] = "\" at this machine.";
     register NCDISPATCH	*dp;
 
-    NCwritetext(cp, NNTP_HELP_FOLLOWS);
+    WCHANappend(cp, NNTP_HELP_FOLLOWS,STRLEN(NNTP_HELP_FOLLOWS));
+    WCHANappend(cp, NCterm,STRLEN(NCterm));
     for (dp = NCcommands; dp < ENDOF(NCcommands); dp++)
 	if (dp->Function != NC_unimp) {
             if (!StreamingOff || cp->Streaming ||
@@ -453,7 +461,7 @@ NChelp(cp)
     WCHANappend(cp, NEWSMASTER, STRLEN(NEWSMASTER));
     WCHANappend(cp, LINE2, STRLEN(LINE2));
     WCHANappend(cp, NCterm, STRLEN(NCterm));
-    WCHANappend(cp, NCdotterm, STRLEN(NCdotterm));
+    NCwritereply(cp, NCdot) ;
 }
 
 /*
@@ -467,7 +475,7 @@ NCihave(cp)
     register char	*p;
 
     if (AmSlave && !XrefSlave) {
-	NCwritetext(cp, NCbadcommand);
+	NCwritereply(cp, NCbadcommand);
 	return;
     }
 
@@ -479,13 +487,13 @@ NCihave(cp)
 
     if (HIShavearticle(HashMessageID(p))) {
 	cp->Refused++;
-	NCwritetext(cp, NNTP_HAVEIT);
+	NCwritereply(cp, NNTP_HAVEIT);
     }
     else if (WIPinprogress(p, cp, TRUE)) {
-	NCwritetext(cp, NNTP_RESENDIT_LATER);
+	NCwritereply(cp, NNTP_RESENDIT_LATER);
     }
     else {
-	NCwritetext(cp, NNTP_SENDIT);
+	NCwritereply(cp, NNTP_SENDIT);
 	cp->State = CSgetarticle;
     }
 }
@@ -501,7 +509,7 @@ NCxbatch(cp)
     register char	*p;
 
     if (AmSlave) {
-	NCwritetext(cp, NCbadcommand);
+	NCwritereply(cp, NCbadcommand);
 	return;
     }
 
@@ -522,7 +530,7 @@ NCxbatch(cp)
     if (cp->XBatchSize <= 0) {
         syslog(L_NOTICE, "%s got bad xbatch size %ld",
 	       CHANname(cp), cp->XBatchSize);
-	NCwritetext(cp, NNTP_XBATCH_BADSIZE);
+	NCwritereply(cp, NNTP_XBATCH_BADSIZE);
 	return;
     }
 
@@ -543,8 +551,8 @@ NCxbatch(cp)
 	cp->In.Data = NEW(char, cp->In.Size);
     }
 #endif
-    NCwritetext(cp, NNTP_CONT_XBATCH);
     cp->State = CSgetxbatch;
+    NCwritereply(cp, NNTP_CONT_XBATCH);
 }
 
 /*
@@ -574,17 +582,18 @@ NClist(cp)
 	trash = NULL;
     }
     else {
-	NCwritetext(cp, NCbadcommand);
+	NCwritereply(cp, NCbadcommand);
 	return;
     }
 
     /* Loop over all lines, sending the text and \r\n. */
-    NCwritetext(cp, NNTP_LIST_FOLLOWS);
+    WCHANappend(cp, NNTP_LIST_FOLLOWS,STRLEN(NNTP_LIST_FOLLOWS));
+    WCHANappend(cp, NCterm, STRLEN(NCterm)) ;
     for (; p < end && (q = strchr(p, '\n')) != NULL; p = q + 1) {
 	WCHANappend(cp, p, q - p);
 	WCHANappend(cp, NCterm, STRLEN(NCterm));
     }
-    WCHANappend(cp, NCdotterm, STRLEN(NCdotterm));
+    NCwritereply(cp, NCdot);
     if (trash)
 	DISPOSE(trash);
 }
@@ -612,12 +621,12 @@ NCmode(cp)
              (!StreamingOff || (StreamingOff && cp->Streaming))) {
 	char buff[16];
 	(void)sprintf(buff, "%d StreamOK.", NNTP_OK_STREAM_VAL);
-	NCwritetext(cp, buff);
+	NCwritereply(cp, buff);
 	syslog(L_NOTICE, "%s NCmode \"mode stream\" received",
 		CHANname(cp));
 	return;
     } else {
-	NCwritetext(cp, NCbadcommand);
+	NCwritereply(cp, NCbadcommand);
 	return;
     }
     RChandoff(cp->fd, h);
@@ -633,7 +642,7 @@ NCmode(cp)
 STATIC FUNCTYPE NCquit(CHANNEL *cp)
 {
     NCclearwip(cp);
-    NCwritetext(cp, NNTP_GOODBYE_ACK);
+    NCwritereply(cp, NNTP_GOODBYE_ACK);
     cp->State = CSwritegoodbye;
 }
 
@@ -656,7 +665,7 @@ NCxpath(cp)
 	return;
 
     if ((p = HISfilesfor(HashMessageID(p))) == NULL) {
-	NCwritetext(cp, NNTP_DONTHAVEIT);
+	NCwritereply(cp, NNTP_DONTHAVEIT);
 	return;
     }
     i = 3 + 1 + strlen(p);
@@ -669,7 +678,7 @@ NCxpath(cp)
 	RENEW(Reply.Data, char, i + 1);
     }
     (void)sprintf(Reply.Data, "%d %s", NNTP_NOTHING_FOLLOWS_VAL, p);
-    NCwritetext(cp, Reply.Data);
+    NCwritereply(cp, Reply.Data);
 }
 
 
@@ -685,7 +694,7 @@ NCxreplic(cp)
     register int	i;
 
     if (!RCismaster(cp->Address)) {
-	NCwritetext(cp, NCbadcommand);
+	NCwritereply(cp, NCbadcommand);
 	return;
     }
 
@@ -702,8 +711,8 @@ NCxreplic(cp)
     bp->Used = bp->Left;
 
     /* Tell master to send it to us. */
-    NCwritetext(cp, NNTP_SENDIT);
     cp->State = CSgetrep;
+    NCwritereply(cp, NNTP_SENDIT);
 }
 
 
@@ -723,7 +732,7 @@ NC_unimp(cp)
     *p = '\0';
     (void)sprintf(buff, "%d \"%s\" not implemented; try \"help\".",
 	    NNTP_BAD_COMMAND_VAL, MaxLength(cp->In.Data, cp->In.Data));
-    NCwritetext(cp, buff);
+    NCwritereply(cp, buff);
 }
 
 
@@ -808,12 +817,13 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 
 		syslog(L_NOTICE, "%s bad_command %s",
 		    CHANname(cp), MaxLength(bp->Data, bp->Data));
-		NCwritetext(cp, NCbadcommand);
 		if (++(cp->BadCommands) >= BAD_COMMAND_COUNT) {
 		    cp->State = CSwritegoodbye;
+		    NCwritereply(cp, NCbadcommand);
 		    cp->Rest = cp->SaveUsed;
 		    break;
-		}
+		} else
+		    NCwritereply(cp, NCbadcommand);
 		for (j = i + 1; j < cp->SaveUsed; j++)
 		    if (bp->Data[j] == '\n') {
 			if (bp->Data[j - 1] == '\r') break;
@@ -858,11 +868,19 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		}
             
 	    if (dp == ENDOF(NCcommands)) {
-		NCwritetext(cp, NCbadcommand);
 		if (++(cp->BadCommands) >= BAD_COMMAND_COUNT) {
 		    cp->State = CSwritegoodbye;
+		    NCwritereply(cp, NCbadcommand);
 		    cp->Rest = cp->SaveUsed;
-		}
+		} else
+		    NCwritereply(cp, NCbadcommand);
+
+                /* Channel could have been freed by above NCwritereply if 
+                   we're writing-goodbye */
+		if (cp->Type == CTfree) {
+                    return;
+                }
+                
 		for (i = 0; (p = NCquietlist[i]) != NULL; i++)
 		    if (caseEQ(p, bp->Data))
 			break;
@@ -879,9 +897,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 	     && (bp->Data[1] == '\r') && (bp->Data[2] == '\n')) {
 		cp->Rest = 3;	/* null article (canceled?) */
 		cp->Rejected++;
-#if 0
-                syslog(L_NOTICE, "%s empty article", CHANname(cp)) ;
-#endif
+		cp->State = CSgetcmd;
 		if (cp->Sendid.Size > 3) { /* We be streaming */
 		    char buff[4];
 		    (void)sprintf(buff, "%d", NNTP_ERR_FAILID_VAL);
@@ -890,8 +906,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		    cp->Sendid.Data[2] = buff[2];
 		    NCwritereply(cp, cp->Sendid.Data);
 		}
-		else NCwritetext(cp, NNTP_REJECTIT_EMPTY);
-		cp->State = CSgetcmd;
+		else NCwritereply(cp, NNTP_REJECTIT_EMPTY);
 		bp->Used = 0;
 
 		/* Clear the work-in-progress entry. */
@@ -977,9 +992,11 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		cp->LargeArtSize = 0;
 		(void)sprintf(buff, "%d Article exceeds local limit of %ld bytes",
 			NNTP_REJECTIT_VAL, LargestArticle);
-		if (cp->Sendid.Size) NCwritetext(cp, cp->Sendid.Data);
-		else NCwritetext(cp, buff);
 		cp->State = CSgetcmd;
+		if (cp->Sendid.Size)
+		    NCwritereply(cp, cp->Sendid.Data);
+		else
+		    NCwritereply(cp, buff);
 		cp->Rejected++;
 
 		/* Write a local cancel entry so nobody else gives it to us. */
@@ -1050,7 +1067,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 			    CHANname(cp), buff);
 		    sprintf(buff, "%s cant create file: %s",
 			    NNTP_RESENDIT_XBATCHERR, strerror(oerrno));
-		    NCwritetext(cp, buff);
+		    NCwritereply(cp, buff);
 		} else {
 		    if (write(fd, cp->In.Data, cp->XBatchSize) != cp->XBatchSize) {
 			oerrno = errno;
@@ -1058,7 +1075,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 				CHANname(cp), buff);
 			sprintf(buff, "%s cant write batch to file: %s",
 				NNTP_RESENDIT_XBATCHERR, strerror(oerrno));
-			NCwritetext(cp, buff);
+			NCwritereply(cp, buff);
 			failed = 1;
 		    }
 		}
@@ -1068,7 +1085,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 			    CHANname(cp), failed ? "" : buff);
 		    sprintf(buff, "%s error closing batch file: %s",
 			    NNTP_RESENDIT_XBATCHERR, strerror(oerrno));
-		    NCwritetext(cp, buff);
+		    NCwritereply(cp, buff);
 		    failed = 1;
 		}
 		sprintf(buff2, "%s/%ld%d.x", _PATH_XBATCHES, now, cp->fd);
@@ -1078,12 +1095,12 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 			    CHANname(cp), failed ? "" : buff, buff2);
 		    sprintf(buff, "%s cant rename batch to %s: %s",
 			    NNTP_RESENDIT_XBATCHERR, buff2, strerror(oerrno));
-		    NCwritetext(cp, buff);
+		    NCwritereply(cp, buff);
 		    failed = 1;
 		}
 		cp->Reported++;
 		if (!failed) {
-		    NCwritetext(cp, NNTP_OK_XBATCHED);
+		    NCwritereply(cp, NNTP_OK_XBATCHED);
 		    cp->Received++;
 		} else
 		    cp->Rejected++;
@@ -1270,7 +1287,7 @@ NCcreate(fd, MustAuthorize, IsLocal)
     }
     cp->BadReads = 0;
     cp->BadCommands = 0;
-    NCwritetext(cp, NCgreeting);
+    NCwritereply(cp, NCgreeting);
     return cp;
 }
 
@@ -1292,7 +1309,7 @@ NCcheck(cp)
     int			msglen;
 
     if (AmSlave && !XrefSlave) {
-	NCwritetext(cp, NCbadcommand);
+	NCwritereply(cp, NCbadcommand);
 	return;
     }
 

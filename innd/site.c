@@ -260,8 +260,28 @@ SITEflushcheck(sp, bp)
     if (i < sp->StopWriting)
 	WCHANremove(cp);
     if ((sp->StartWriting == 0 || i > sp->StartWriting)
-     && !CHANsleeping(cp))
-	WCHANadd(cp);
+     && !CHANsleeping(cp)) {
+	if (sp->Type == FTchannel) {	/* channel feed, try the write */
+	    int j;
+	    if (bp->Left == 0)
+		return;
+	    j = write(cp->fd, (POINTER)&bp->Data[bp->Used], (SIZE_T)bp->Left);
+	    if (j > 0) {
+		bp->Left -= j;
+		bp->Used += j;
+		i = cp->Out.Left;
+	    }
+	    if (bp->Left <= 0) {
+                /* reset Used, Left on bp, keep channel buffer size from
+                   exploding. */
+                bp->Used = bp->Left = 0;
+		WCHANremove(cp);
+            } else
+		WCHANadd(cp);
+	}
+	else
+	    WCHANadd(cp);
+    }
 
     cp->LastActive = Now.time;
 

@@ -169,13 +169,15 @@ CHANcreate(fd, Type, State, Reader, WriteDone)
 
     /* Make the descriptor close-on-exec and non-blocking. */
     CloseOnExec(fd, TRUE);
+    if (SetNonBlocking(fd, TRUE) < 0
 #if	defined(ENOTSOCK)
-    if (SetNonBlocking(fd, TRUE) < 0 && errno != ENOTSOCK)
-	syslog(L_ERROR, "%s cant nonblock %d %m", LogName, fd);
-#else
-    if (SetNonBlocking(fd, TRUE) < 0)
-	syslog(L_ERROR, "%s cant nonblock %d %m", LogName, fd);
+	    && errno != ENOTSOCK
 #endif	/* defined(ENOTSOCK) */
+#if	defined(ENOTTY)
+	    && errno != ENOTTY
+#endif	/* defined(ENOTTY) */
+    )
+	syslog(L_ERROR, "%s cant nonblock %d %m", LogName, fd);
 
     /* Note control channel, for efficiency. */
     if (Type == CTcontrol) {

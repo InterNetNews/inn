@@ -3,6 +3,7 @@
 **  Open the privileged port, then exec innd.
 */
 #include <stdio.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include "configdata.h"
 #include "clibrary.h"
@@ -19,8 +20,9 @@
 #include <time.h>
 #endif	/* defined(DO_NEED_TIME) */
 #include <sys/time.h>
-#include <sys/resource.h>
 #endif	/* NOFILE_LIMIT > 0 */
+#include <sys/resource.h>
+#include <errno.h>
 
 /* #define DEBUGGER "/usr/ucb/dbx" */
 
