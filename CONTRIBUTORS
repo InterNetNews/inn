@@ -111,6 +111,8 @@ Marc Fournier:
 	Provided various bug fixes and did a lot of work integrating other
 	peoples patches and looking after the CVS pool. 
 
+Joshua M. Thompson
+	Wrote the INSTALL documentation.
 
 The following people helped above and beyond the call of duty with
 testing (provided patches, bug reports, suggestions etc):
