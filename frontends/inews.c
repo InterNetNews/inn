@@ -959,7 +959,8 @@ main(int ac, char *av[])
 	break;
     }
 
-    if (port == 0) port = (innconf->port != 0) ? innconf->port : NNTP_PORT;
+    if (port == 0)
+        port = NNTP_PORT;
 
     /* Try to open a connection to the server. */
     if (NNTPremoteopen(port, &FromServer, &ToServer, buff) < 0) {
