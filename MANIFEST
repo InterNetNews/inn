@@ -2,28 +2,28 @@
 ----------------------------------------------------------
 .now_do                     1 Notification file used by configure
 CHANGES                     1 RCS logs
-CONTRIBUTORS                1 Contributors info.
+CONTRIBUTORS                1 Contributors info
 COPYRIGHT                   1 Legal mumbo-jumbo
+HACKING                     1 Docs for INN coders and maintainers
 HISTORY                     1 Messages of historical significance
 INSTALL                     1 Simple documentation for introducing inn
 MANIFEST                    1 This shipping list
 MakeInews                   1 Make an inews distribution kit
-MakeLib                     1 Make an NNTP clientlib distribution kit
 MakeRnews                   1 Make an rnews distribution kit
 Makefile                    1 Top-level makefile
 Makefile.global.in          1 Template Makefile included by all Makefile
 NEWS                        1 Info about changes since last version
 README                      1 Assorted notes
-README.perl_hook            1 Notes on Christophe Wolfhugel's perl hook.
-README.python_hook          1 Notes on Greg Andruk's python hook.
-README.tcl_hook             1 Bob Halley's TCL hook notes.
+README.perl_hook            1 Notes on Christophe Wolfhugel's Perl hook
+README.python_hook          1 Notes on Greg Andruk's Python hook
+README.tcl_hook             1 Bob Halley's TCL hook notes
 aclocal.m4                  1 M4 macro for libtool
 authprogs                   1 The authorization programs (Directory)
 authprogs/Makefile          1 Makefile for authprograms
 authprogs/README.auth_pass  1 The authprogs README
-authprogs/auth_pass.c       1 A sample prog for use with authinfo generic.
+authprogs/auth_pass.c       1 A sample prog for use with authinfo generic
 authprogs/ckpasswd.c        1 Prog for checking password
-authprogs/domain.c          1 Prog to get the username from remote-user's hostname
+authprogs/domain.c          1 Prog to get username from remote user's hostname
 authprogs/ident.c           1 Prog for checking ident
 authprogs/pwcheck.c         1 Prog for checking password thru socket
 authprogs/radius.c          1 Prog for checking thru radius server
@@ -68,18 +68,18 @@ contrib/cleanoi             1 Script to clean overview index files
 contrib/count_overview.pl   1 Count overview entries
 contrib/expirectl           1 Generate expire.ctl from template
 contrib/findmissing.pl      1 Locate articles not in history.
-contrib/findreadgroups.pl   1 Keep track of which groups are currently being read
+contrib/findreadgroups.pl   1 Track which groups are currently being read
 contrib/fixhist             1 Script to clean history
 contrib/format_overview.pl  1 Format output of count_overview.pl
 contrib/listoi.c            1 Display an overview.index file
-contrib/makeexpctl.pl       1 Create expire.ctl script based on recently read articles
-contrib/makestorconf.pl     1 Create storage.conf script based on recently read articles
+contrib/makeexpctl.pl       1 Create expire.ctl based on recently read articles
+contrib/makestorconf.pl     1 Create storage.conf based on recently read arts
 contrib/newsbot             1 Grep articles and trigger actions
-contrib/pathinfo            1 Scan news headers, record and print various bits of information
+contrib/pathinfo            1 Scan news headers for various information
 contrib/pullart.c           1 Recover text articles from cyclic buffers
 contrib/reset-cnfs.c        1 Reset the state parts of a CNFS buffer
-contrib/showtoken           1 decode SM tokens
-contrib/tunefeed            1 Compare active files with a remote site to tune a feed
+contrib/showtoken           1 Decode SM tokens
+contrib/tunefeed            1 Tune a remote feed by comparing active files
 doc                         1 Manpages (Directory)
 doc/Makefile                1 Makefile for documentation
 doc/control-messages        1 tal's description of control messages
@@ -89,7 +89,7 @@ doc/man                     1 nroff version (Directory)
 doc/man/Makefile            1 Makefile for nroff documentation
 doc/man/active.5            1 Manpage for active config file
 doc/man/actived.8           1 Manpage for actived
-doc/man/actsync.8           1 Mnpage for active file synchro. program.
+doc/man/actsync.8           1 Manpage for active file synchro. program.
 doc/man/actsyncd.8          1 Manpage for active file synchro. program.
 doc/man/archive.8           1 Manpage for archive
 doc/man/batcher.8           1 Manpage for batcher
@@ -114,7 +114,7 @@ doc/man/expireover.8        1 Manpage for expireover
 doc/man/expirerm.8          1 Manpage for expirerm
 doc/man/fastrm.8            1 Manpage for fastrm utility
 doc/man/filechan.8          1 Manpage for filechan backend
-doc/man/getlist.1           1 Manpage page for getlist frontend
+doc/man/getlist.1           1 Manpage for getlist frontend
 doc/man/grephistory.1       1 Manpage for grephistory
 doc/man/history.5           1 Manpage for history file
 doc/man/incoming.conf.5     1 Manpage for incoming.conf config file
@@ -186,6 +186,7 @@ doc/man/tally.unwanted.8    1 Manpage for tally.unwanted
 doc/man/wildmat.3           1 Manpage for wildmat library routine
 doc/man/writelog.8          1 Manpage for writelog
 doc/pod                     1 POD version (Directory)
+doc/pod/hacking.pod         1 Master file for HACKING
 doc/pod/hook-perl.pod       1 Master file for README.perl_hook
 doc/pod/inn.conf.pod        1 Master file for inn.conf.5
 doc/pod/inndstart.pod       1 Master file for inndstart.8
@@ -317,12 +318,13 @@ lib/argparse.c              1 Used for OV3
 lib/checkart.c              1 See if lines are too long for NNTP
 lib/cleanfrom.c             1 Clean out a From line
 lib/clientactive.c          1 Client access to the active file
-lib/clientlib.c             1 Replacements for nntp1.5 "clientlib" routines.
+lib/clientlib.c             1 Replacements for nntp1.5 "clientlib" routines
 lib/closeonexec.c           1 Make a descriptor close-on-exec
+lib/concat.c                1 Concatenate strings with dynamic memory alloc.
 lib/conffile.c              1 Reading *.conf files routines
 lib/dbz.c                   1 DBZ database library
 lib/defdist.c               1 Determine default Distribution header
-lib/endian.c                1 Determine system's endian
+lib/endian.c                1 Determine system's endianness
 lib/findheader.c            1 Find a header in an article
 lib/genid.c                 1 Generate a Message-ID
 lib/getconfig.c             1 Get a config parameter
@@ -407,7 +409,7 @@ samples/actsync.cfg.in      1 Config file for actsync
 samples/actsync.ign         1 Ignore file for actsync
 samples/buffindexed.conf    1 Sample file for buffindexed.conf
 samples/checkgroups.in      1 Checkgroups control message handler
-samples/checkgroups.pl.in   1 Checkgroups control message handler for controlchan
+samples/checkgroups.pl.in   1 Checkgroups handler for controlchan
 samples/cnfsheadconf.in     1 Setup cycbuff header
 samples/cnfsstat.in         1 Show cycbuff status
 samples/control.ctl         1 Access control for control messages
@@ -457,13 +459,13 @@ samples/nntpsend.in         1 Invoke all innxmit's at once
 samples/overview.fmt        1 Format of news overview database
 samples/parsecontrol.in     1 Initial parsing of control messages
 samples/passwd.nntp         1 Sample passwd.nntp(5) file
-samples/pgpverify.in        1 Sample pgpverify program.
+samples/pgpverify.in        1 Sample pgpverify program
 samples/pullnews.in         1 sucking feeder
 samples/rc.news.in          1 News boot script
 samples/readers.conf        1 Sample readers.conf(5) file
 samples/rmgroup.in          1 Rmgroup control message handler
 samples/rmgroup.pl.in       1 Rmgroup control message handler for controlchan
-samples/sample.control      1 Control message for testing PGP.
+samples/sample.control      1 Control message for testing PGP
 samples/scanlogs.in         1 Summarize log files
 samples/scanspool.in        1 Scan spool directory for trash
 samples/send-ihave.in       1 Script to post ihave messages
