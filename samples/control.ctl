@@ -96,9 +96,15 @@ rmgroup:*:*:mail
 ## The Big 8.
 ## COMP, HUMANITIES, MISC, NEWS, REC, SCI, SOC, TALK
 
-# If it *doesn't* come from group-admin@isc.org, forget it
+# If it *doesn't* come from group-admin@isc.org, forget it.
 #newgroup:*:comp.*|humanities.*|misc.*|news.*|rec.*|sci.*|soc.*|talk.*:log
 #rmgroup:*:comp.*|humanities.*|misc.*|news.*|rec.*|sci.*|soc.*|talk.*:log
+
+# This will weed out forgeries for non-Big 8 hierarchies.
+newgroup:group-admin@isc.org:*:drop
+newgroup:tale@*uu.net:*:drop
+rmgroup:group-admin@isc.org:*:drop
+rmgroup:tale@*uu.net:*:drop
 
 # *PGP*   See comment at top of file.
 checkgroups:*:comp.*|humanities.*|misc.*|news.*|rec.*|sci.*|soc.*|talk.*:drop
@@ -174,6 +180,9 @@ rmgroup:*@*:alive.*:doit
 ## Hazelrig's WWW pages at http://www.tezcat.com/~haz1/alt/faqindex.html
 ##
 newgroup:*:alt.*:doit
+# Forgeries
+newgroup:group-admin@isc.org:alt.*:drop
+newgroup:tale@*uu.net:alt.*:drop
 rmgroup:*:alt.*:drop
 #rmgroup:haz1@*nwu.edu:alt.*:doit
 #rmgroup:grobe@*netins.net:alt.*:doit
@@ -687,8 +696,11 @@ rmgroup:control@usenet-fr.news.eu.org:fr.*:verify-control@usenet-fr.news.eu.org
 # newgroup:control@usenet.fr.net:fr.*:doit
 # rmgroup:control@usenet.fr.net:fr.*:doit
 
-## FREE (Open Hierarchy where anyone can craete a group)
+## FREE (Open Hierarchy where anyone can create a group)
 newgroup:*:free.*:doit
+# Forgeries.
+newgroup:group-admin@isc.org:free.*:drop
+newgroup:tale@*uu.net:free.*:drop
 rmgroup:*:free.*:drop
 
 ## FUDAI (Japanese ?)
@@ -1454,8 +1466,8 @@ rmgroup:billmcc@akita.com:seattle.*:doit
 rmgroup:graham@ee.washington.edu:seattle.*:doit
 
 ## SFNET newsgroups (Finland)
-newgroup:hmj@*cs.tut.fi:sfnet.*:doit
-rmgroup:hmj@*cs.tut.fi:sfnet.*:doit
+newgroup:sfnet@*.cs.tut.fi:sfnet.*:doit
+rmgroup:sfnet@*.cs.tut.fi:sfnet.*:doit
 
 ## SHAMASH (Jewish)
 newgroup:archives@israel.nysernet.org:shamash.*:doit
