@@ -34,7 +34,7 @@ my $usage = $0 ;
 $usage =~ s!.*/!! ;
 my $prog = $usage ;
 
-openlog $usage, "pid", "news" ;
+openlog $usage, "pid", $inn::syslog_facility ;
 
 $usage .= "[ -r addr ][ -f addr ][ -a approved ][ -d distribution ]" .
     " [ -m mailing-list ][ -b database ][ -o output-path ] newsgroups" ;

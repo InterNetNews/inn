@@ -98,7 +98,7 @@ if ($opt_s) {
     ## Comment out this eval line if you don't want to try to syslog
     eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1 };
     if ($use_syslog) {
-	openlog ('cnfsstat', 'pid', 'news');
+	openlog ('cnfsstat', 'pid', $inn::syslog_facility);
     } else {
 	print STDERR "Syslog is not available.  -s option is ignored.\n";
     }

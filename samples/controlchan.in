@@ -62,7 +62,7 @@ if ($use_syslog) {
     }
     Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf/;
   }
-  openlog ('controlchan', 'pid', 'news');
+  openlog ('controlchan', 'pid', $inn::syslog_facility);
 }
 
 logmsg ('notice', 'starting');

@@ -81,7 +81,9 @@ $lockdir = $tmpdir;
 # For various reasons, it is impossible to economically have the script
 # figure out how to do syslogging correctly on the machine.
 #
-$syslog = 'news.err';
+$syslog = lc("@SYSLOG_FACILITY@");
+$syslog =~ s/log_//;
+$syslog = "$syslog.err";
 # $syslog = '';  # an empty value means don't try to do syslogging.
 
 # How should syslog be accessed?
