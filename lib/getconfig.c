@@ -151,11 +151,22 @@ void SetDefaults()
 	memset(ConfigBit, '\0', ConfigBitsize);
     }
     innconf->fromhost = NULL;
-    if ((p = getenv(_ENV_FROMHOST)) != NULL) { innconf->fromhost = COPY(p); }
+    if ((p = getenv(_ENV_FROMHOST)) != NULL) {
+	innconf->fromhost = COPY(p);
+	SET_CONFIG(CONF_VAR_FROMHOST);
+    }
     innconf->server = NULL;
+    if ((p = getenv(_ENV_NNTPSERVER)) != NULL) {
+	innconf->server = COPY(p);
+	SET_CONFIG(CONF_VAR_SERVER);
+    }
     innconf->pathhost = NULL;
     innconf->pathalias = NULL;
     innconf->organization = NULL;
+    if ((p = getenv(_ENV_ORGANIZATION)) != NULL) {
+	innconf->organization = COPY(p);
+	SET_CONFIG(CONF_VAR_ORGANIZATION);
+    }
     innconf->moderatormailer = NULL;
     innconf->domain = NULL;
     innconf->mimeversion = NULL;
@@ -201,6 +212,10 @@ void SetDefaults()
     innconf->blockbackoff = 120;
     innconf->icdsynccount = 10;
     innconf->bindaddress = NULL;
+    if ((p = getenv(_ENV_INNBINDADDR)) != NULL) {
+	innconf->bindaddress = COPY(p);
+	SET_CONFIG(CONF_VAR_BINDADDRESS);
+    }
     innconf->port = NNTP_PORT;
     innconf->readertrack = FALSE;
     innconf->strippostcc = FALSE;
@@ -232,6 +247,7 @@ void SetDefaults()
     innconf->logsitename = TRUE;
     innconf->extendeddbz = FALSE;
     innconf->nnrpdoverstats = FALSE;
+    innconf->storeonxref = FALSE;
     innconf->decnetdomain = NULL;
     innconf->backoff_auth = FALSE;
     innconf->backoff_db = NULL;
@@ -257,7 +273,7 @@ void ClearInnConf()
     if (innconf->mta != NULL) DISPOSE(innconf->mta);
     if (innconf->mailcmd != NULL) DISPOSE(innconf->mailcmd);
     if (innconf->bindaddress != NULL) DISPOSE(innconf->bindaddress);
-    if (innconf->overviewname != NULL) DISPOSE(innconf->bindaddress);
+    if (innconf->overviewname != NULL) DISPOSE(innconf->overviewname);
     if (innconf->nnrpdposthost != NULL) DISPOSE(innconf->nnrpdposthost);
 
     if (innconf->pathnews != NULL) DISPOSE(innconf->pathnews);
@@ -830,6 +846,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_NNRPDOVERSTATS, bit);
 		if (!bit && boolval != -1) innconf->nnrpdoverstats = boolval;
 		SET_CONFIG(CONF_VAR_NNRPDOVERSTATS);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_STOREONXREF)) {
+		TEST_CONFIG(CONF_VAR_STOREONXREF, bit);
+		if (!bit && boolval != -1) innconf->storeonxref = boolval;
+		SET_CONFIG(CONF_VAR_STOREONXREF);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_DECNETDOMAIN)) {
 		TEST_CONFIG(CONF_VAR_DECNETDOMAIN, bit);
