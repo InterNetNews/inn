@@ -58,7 +58,7 @@ bool overview_check(const char *data, size_t length, ARTNUM article);
 int overview_index(const char *field, const struct vector *extra);
 struct cvector *overview_split(const char *line, size_t length,
 			       ARTNUM *number, struct cvector *vector);
-char *overview_getheader(const struct cvector *vector, int element,
+char *overview_getheader(const struct cvector *vector, unsigned int element,
 			 const struct vector *extra);
 
 /* offsets into vectors for standard overview headers */
