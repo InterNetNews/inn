@@ -68,9 +68,7 @@ The easiest way to work around this problem is to add
 If you use 386BSD (the Jolitz port, not the BSDI product) you will have to
 set \fIACT_STYLE\fP to ``READ''.
 If you do not do this then the active file will not get updated.
-Another work-around is to insert an ``msync'' call in the ICDwriteactive
-routine in \fIinnd/icd.c\fP.
-This is not supported because I consider the 386BSD behavior to be buggy.
+Another work-around is to set \fIMMAP_SYNC\fP parameter to ``DO.''
 .PP
 The default configuration of some Sequent kernels does not provide enough
 descriptors for \fIinnd\fP to run.
@@ -85,7 +83,7 @@ The most noticeable symptom is probably that \fIinnd\fP will die while
 trying to renumber the \fIactive\fP file.
 You might want to use a freely-redistributable ``dirent'' package such
 as one distributed by the Free Software Foundation.
-You should also make sure to set \fICLX_STYLE\fP to ``FCNTL''
+You should also make sure to set \fICLX_STYLE\fP to ``FCNTL.''
 Finally, you might also want to edit \fIinnd/innd.c\fP where it calculates
 the ``MaxOutgoing'' parmater and increase the fudge number to four.
 .PP
@@ -94,9 +92,7 @@ not supported or, even worse, might result in \fIinnd\fP's data size
 growing.
 The most noticeable symptom is ``cant setsockopt(SNDBUF)'' messages in
 your \fIsyslog\fP output.
-To fix this, either comment out the calls to \fIsetsockopt\fP in
-\fIinnd/nc.c\fP or add ``\-USO_SNDBUF'' to your \fIDEFS\fP config
-parameter.
+To fix this, you should make sure to set \fISET_SOCKOPT\fP to ``DONT.''
 .PP
 I have heard that Sony SVR4 systems have lots of problems.
 You must set \fIHAVE_UNIX_DOMAIN\fP to ``DONT''; sockets in general seem
@@ -137,7 +133,8 @@ Users will generally only notice is that INN is faster; it should be
 100% compatible with the other systems at the user level.
 If you had particular problems that aren't mentioned here, please let me know.
 Note, however, that this is \fInot\fP a tutorial on how to set up a new
-INN system, or convert older software to it; no such document exists.
+INN system, or convert older software to it; no such document exists except
+appendix II ``Converting from other News software''.
 .NH 0
 Configuration Files
 .PP
@@ -222,10 +219,9 @@ shell scripts.
 The number and type of parameters is different from that of C News.
 All control messages consult the file \fIcontrol.ctl\fP before acting on
 the message.  If the sender's address matches with the list of authorized
-addresses (e.g., ``tale@uunet.uu.net'', ``*'', etc.), the control
-message is either acted upon, mailed to the news administrator, or logged.
-For example, messages from ``tale@uunet.uu.net'' (the current moderator
-of news.announce.newgroups) are honored.
+addresses (e.g., ``group-admin@isc.org'', ``*'', etc.), the control
+message is either acted upon, mailed to the news administrator, logged, or dropped.
+For example, messages from ``group-admin@isc.org'' are honored.
 .PP
 The ``control'', ``junk'', and ``to'' newsgroups can be explicitly sent
 or not sent.
@@ -265,7 +261,8 @@ various scripts in the \fIsamples\fP directory.
 Appendix II:  Converting from other News software
 .PP
 INN is a complete news transport and expiration system.
-Since few people will be installing INN from scratch, this section
+Since some people will be installing INN from scratch on top of an older
+news system, this section
 should help you determine what you can ``throw out'' from your earlier
 news setups.
 It is also compatible with much of the existing news software, so you
@@ -324,7 +321,7 @@ This includes \fIxvnews\fP, \fIxrn\fP, \fIrrn\fP and so on.
 INN implements the standard NNTP protocol, with some extensions.
 INN does not provide the extensions used by \fItrn\fP, \fItin\fP or
 other newsreaders.
-INN will not implement all the different indexing systems because the
+(INN will not implement all the different indexing systems because the
 right solution is to have a generic interface that all readers can use.)
 .PP
 For administrative convenience, however, you might wish to have all your
@@ -344,10 +341,9 @@ entire INN distribution available, use the \fIMakeLib\fP script to
 build a distribution directory of the necessary routines.
 Use this script the same way you use the \fIMakeInews\fP script.
 .PP
-\fIRn\fP, \fIrrn\fP, and \fItrn\fP are moving targets so these instructions
-may be out of date.
-The maintainers have agreed to officially support INN, however, which is
-a good thing.
+\fIRn\fP, \fIrrn\fP, and \fItrn\fP are constantly changing so these
+instructions might be out of date.
+The maintainers have agreed to officially support INN, however.
 .PP
 There are two ways to build \fIrn\fP so that it uses the INN library.
 If you don't have the NNTP distribution installed you will have to use
@@ -544,7 +540,7 @@ Note that this has nothing to do with NNTP.  It is a specialized type of
 batched feed that is not used very often.
 To do ihave/sendme with a site named remote, the local site must either
 have a ``to.remote'' newsgroup or be compiled with MERGE_TO_GROUPS set to
-\&``DO''
+\&``DO.''
 .PP
 Accepting an ihave/sendme feed is easy.  Suppose an ``ihave'' message is
 received from a site named remote.  When \fIinnd\fP processes the message
@@ -748,7 +744,7 @@ The following command will zap an active file, setting up the article numbers
 for a new site:
 .DS
 sed <active.old >active.new \e
-   -e 's/^\e([^ ]*\e) [0-9]* [0-9]* \e([^ ]*\e)$/\e1 0000000000 000000001 \e2/'
+   -e 's/^\e([^ ]*\e) [0-9]* [0-9]* \e([^ ]*\e)$/\e1 0000000000 0000000001 \e2/'
 .DE
 .PP
 Once the groups are set up, your newsfeed will periodically connect to
@@ -798,6 +794,7 @@ You will generally want to set up the \fIcron\fP jobs
 so that they are run as the news administrator, and not as root.
 A good version of \fIcron\fP that makes it easy to do this can be found
 on gatekeeper.dec.com in pub/misc/vixie/cron.tar.Z.
+Use this if needed.
 .PP
 You will also need to get one or more programs to read news.
 There are several freely-available programs around.
@@ -823,7 +820,7 @@ data.
 .PP
 In late 1992, Geoff Collyer <geoff@world.std.com> released the \fInov\fP,
 or ``news overview,'' package.
-This included database tools and, and client access routines,
+This included database tools and client access routines,
 that let the current threaded newsreaders use a common, textual,
 database.
 An overview database typically adds adds about 7-9% to your storage
@@ -850,7 +847,7 @@ The easiest way to do this is to add the ``expireover'' keyword to
 the \fIcron\fP job that runs \fInews.daily\fP.
 .PP
 The \fInnrpd\fP server includes two command extensions to access the database;
-they are documented in the ``protocol extensions'' part of \fIdoc/nnrpd.8\fP.
+they are documented in the ``PROTOCOL DIFFERENCES'' part of \fIdoc/nnrpd.8\fP.
 INN does not include any client code or modifications to any newsreaders
 to use the overview data.
 Most maintainers have agreed to support the overview database, including
@@ -882,7 +879,7 @@ Existing MIME headers will not be modified, but missing ones will be added.
 The default values to add to \fIinn.conf\fP are these:
 .DS
 mime-version: 1.0
-mime-contenttype text/plain; charset=us-ascii
+mime-contenttype: text/plain; charset=us-ascii
 mime-encoding: 7bit
 .DE
 An internationalized site might want to use these values:
@@ -914,13 +911,12 @@ does not do any conversion.
 .PP
 In general, be very cautious.
 .PP
-MIME articles can only be sent using \fIinnxmit\fP; work on \fIbatcher\fP
-is in progress.
+MIME articles can only be sent using \fIinnxmit\fP.
 Unless the ``\-M'' flag is used, no MIME conversions are done.
 If the flag is used, the following happens:
 Articles with a Content-Transfer-Encoding header of ``8bit'' or ``binary''
-are forwaded in ``quoted-printable'' format (the ``base64'' format will
-be available soon).
-All other articles -- in particular, those without MIME headers, those of
+are forwarded in ``quoted-printable'' format (the ``base64'' format is
+not supported yet).
+All other articles \(em in particular, those without MIME headers, those of
 type ``message'' or ``multipart,'' those with Content-Transfer-Encoding
-header of ``7bit'' -- are forwarded without any change.
+header of ``7bit'' \(em are forwarded without any change.

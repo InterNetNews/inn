@@ -9,12 +9,12 @@
 .el \{\
 \s-1UNIX\s0\\$1\(dg
 .FS
-\(dg \s-1UNIX\s0 is a registered trademark of Unix Systems Laboratories.
+\(dg \s-1UNIX\s0 is a registered trademark of X/Open Company Ltd.
 .FE
 .nr UX 1
 .\}
 ..
-.DA "February 14, 1992"
+.DA "Northern Winter 1998"
 .TL
 Installing InterNetNews
 .AU
@@ -27,18 +27,14 @@ Internet Software Consortium
 .AB
 This document discusses how to install and set up InterNetNews.
 You should be familiar with Usenet and networks; the first section gives
-references to documentation for these topics, and the last appendix gives
-a Usenet overview for novices.
+references to documentation for these topics, and the appendix IV gives
+a Usenet installation overview for novices.
 .PP
 This document also describes what many of the programs do and how they
 should be used.
 Even if you are a world-class expert at building and maintaining
 public software, you should probably read this.
 .PP
-.de R$
-This is revision \\$3, dated \\$4.
-..
-.R$ $Id$
 .AE
 .NH 1
 Things You Should Know Before You Do Anything
@@ -55,12 +51,20 @@ If you do not have much Usenet experience, you should read
 You might also find it useful to read \fIManaging UUCP and Usenet\fP
 (get the most recent edition available), ISBN 0-937175-48-X.
 Both books are published by O'Reilly & Associates; send inquiries to
-to <nuts@ora.com>.
+to <nuts@ora.com>. 
+.PP
 There is a chapter on INN in \fIThe Internet Connection: A Guide to
 Connectivity and Configuration\fP, ISBN 0-201-54237-4 by Smoot
 Carl-Mitchell and John S. Quarterman.
-It is being published by Addison-Wesley and will be available in
-early 1994 or at the end of 1993.
+It is published by Addison-Wesley.
+.PP
+There is a book called \fIAdministering Usenet 
+New Servers\fP, ISBN 0-201-41967-X, by James McDermott and John E.
+Phillips. Published by Addison-Wesley. It has good INN 1.5.1 coverage.
+.PP 
+In November 1997, there was a new version of \fIManaging Usenet\fP
+(note, no UUCP) about to come out from O'Reilly & Associates. This has a
+large section on INN as well as Cnews.
 .PP
 You should know BSD-derived TCP/IP \(em at least be comfortable with host
 names and dotted-quad addresses.
@@ -81,15 +85,16 @@ document available.
 RFC 977 defines NNTP, the Network News Transfer Protocol.
 RFCs are available from several places, including anonymous FTP
 to nnsc.nsf.net, where they can be found in the directory \fIrfc\fP.
-Both RFCs are currently being revised.
+RFC 977 is currently being revised.
 The 1036 revision is most likely going to be a ``tightening-up''; since
 INN already has a strict interpretation of the RFC, this revision will
 probably not affect InterNetNews very much.
-The 977 revision is adding new features and facilities, and while INN
+The 977 revision is formally adding new features and facilities which are
+currently implemented, and while INN
 will not provide all of them, they will have some impact.
 .PP
 InterNetNews does things differently from other news software.
-The most common Usenet systems for
+Some other Usenet systems for
 .UX
 are B2.11 and C News.
 Both of them require a separate NNTP implementation.
@@ -158,6 +163,11 @@ bulk article transfer).
 Library routines used by all the above.
 .IP \fIinclude\fP 15
 Header files used by all the above.
+.IP \fIdbz\fP 15
+DBZ database package.
+.IP \fIsyslog\fP 15
+Syslog routines for the systems which don't provide proper functions needed
+for INN.
 .PP
 The distribution also includes these directories:
 .IP \fIsamples\fP 15
@@ -169,6 +179,16 @@ A place to store edited copies of the files in the \fIsamples\fP directory.
 Manual pages for all the above.
 .IP \fIconfig\fP 15
 Tools to configure the release for your site.
+.IP \fIsample-configs\fP 15
+Sample configuration data for any system.
+.IP \fIauthprogs\fP 15
+Sample program which can be used for an authentication with nnrpd.
+.IP \fIcontrib\fP 15
+Contributed programs useful for INN.
+.IP \fIobsolete\fP 15
+.IP \fIFAQ\fP 15
+Frequently Asked Questions on INN which is posted at news.software.{b,nntp}
+periodically.
 .PP
 Finally, there are a handful of files in the top-level directory:
 .IP \fIREADME\fP 15
@@ -201,6 +221,20 @@ Script to build an \fIinews\fP distribution directory.
 Script to build an \fIrnews\fP distribution directory.
 .IP \fIsedf.xxx\fP 15
 Various \fIsed\fP scripts to filter the output of \fIlint\fP.
+.IP \fIREADME.perl_hook\fP 15
+A description for PERL filtering.
+.IP \fIREADME.tcl_hook\fP 15
+A description for TCL filtering.
+.IP \fICONTRIBUTORS\fP 15
+Contributors to INN.
+.IP \fIHISTORY\fP 15
+History until INN 1.4.
+.IP \fIiftrue.sh\fP 15
+Script that does test(1).
+.IP \fIinstallit.sh\fP 15
+Script that installs programs, scripts and configuration files for INN.
+.IP \fIPGPKEYS\fP 15
+PGP public keys used for control message authentication.
 .NH 1
 Building the System
 .PP
@@ -298,28 +332,33 @@ This is the hardest part of installing INN.
 \fIDon't panic!\fP
 There are many configuration parameters, but it should be very easy
 for you to determine the answer for most of them.
-To do this, you should copy \fIconfig/config.dist\fP, the distribution
+To do this, choose one of the sample config files which is suitable for your
+system from \fIsample-configs\fP directory, and copy it to
+\fIconfig/config.data\fP. If there is no sample for your system,
+you should copy \fIconfig/config.dist\fP, the distribution
 master, to \fIconfig/config.data\fP, your local copy.
 INN is distributed to compile and run under BSD/OS 2.1 by default.
 .PP
 The configuration file is divided into the following sections:
 .DS
-Make config parameters
-Logging levels         
-Ownerships and file modes
-C library differences
-C library omissions
-Miscellaneous config data
-Paths to common programs
-Paths related to the spool directory
-Execution paths for innd and rnews
-Sockets created by innd or clients
-Log and config files
-Innwatch configuration
-Tcl filtering configuration
-PGP control-message verification configuration
-Local configuration
-Actsync configuration
+MAKE CONFIG PARAMETERS
+LOGGING LEVELS
+OWNERSHIPS AND FILE MODES
+C LIBRARY DIFFERENCES
+C LIBRARY OMISSIONS
+MISCELLANEOUS CONFIG DATA
+PATHS TO COMMON PROGRAMS
+PATHS RELATED TO THE SPOOL DIRECTORY
+EXECUTION PATHS FOR INND AND RNEWS
+SOCKETS CREATED BY INND OR CLIENTS
+LOG AND CONFIG FILES
+INNWATCH CONFIGURATION
+TCL Configuration
+PGP Configuration
+Keyword Configuration
+Local Configuration
+Actsync Configuration
+Perl Configuration
 .DE
 You should have a copy of \fIconfig.data\fP nearby as you read the next
 few sections.
@@ -337,7 +376,7 @@ Do not put quote marks around the values \(em if you do, you will usually
 get a syntax error while compiling the system.
 The discussion below uses quotes only to show where the values start and end.
 .NH 3
-Make config parameters
+MAKE CONFIG PARAMETERS
 .PP
 This section is used primarily to identify the path to your C compiler,
 and what extra libraries or command-line switches are needed.
@@ -399,7 +438,7 @@ where they get installed.
 If you do not want to install any manpages, set \fIMANPAGESTYLE\fP to
 \fINONE\fP.
 .NH 3
-Logging levels
+LOGGING LEVELS
 .PP
 INN uses the modern \fIsyslog\fP that separates messages into both
 levels and categories.
@@ -428,9 +467,9 @@ The \fIscanlogs\fP script assumes that the first three categories above
 are each directed into separate files.
 See \fIdoc/newslog.5\fP, \fIdoc/newslog.8\fP, and \fIsyslog/syslog.conf\fP
 for details.
-Logging is also described in more detail later.
+LOGGING is also described in more detail in the LOG AND CONFIG FILES section.
 .NH 3
-Ownerships and file modes
+OWNERSHIPS AND FILE MODES
 .PP
 The NNTP server needs to open the NNTP port; it is port number 119,
 which requires root access.
@@ -438,7 +477,7 @@ This is the only part of INN that needs this privilege: all other programs
 can run under the distinct user and group id specified by the \fINEWSUSER\fP
 and \fINEWSGROUP\fP parameters.
 Most news administration tasks must be done as user \fINEWSUSER\fP (see the
-explanation of \fIctlinnd\fP below).
+explanation of SOCKETS CREATED BY INND OR CLIENTS section below).
 In addition, \fIinews\fP will only let the \fINEWSUSER\fP user or members of
 the \fINEWSGROUP\fP group post control messages other than cancel.
 .PP
@@ -464,7 +503,7 @@ The \fIxxx_MODE\fP parameters specify the permissions for articles and
 directories created within the spool area, and the active file, all of
 which are owned by user id \fINEWSUSER\fP.
 .NH 3
-C library differences
+C LIBRARY DIFFERENCES
 .PP
 Editing the parameters in this section will require you to look
 around at the files in your \fI/usr/include\fP directory.
@@ -474,7 +513,7 @@ in subroutine calls like \fImemchr\fP and \fIfread\fP.
 The \fILOCK_STYLE\fP parameter specifies how file-locking should be done.
 \fIInnxmit\fP is the only program that locks files; if you use the provided
 scripts, this isn't even necessary, so you can set this to ``NONE'' if you
-have any compile problems.
+have any compile problems (expireover, overchan and filechan use either!)
 .PP
 The \fIDIR_STYLE\fP parameter specifies what is returned by your
 \fIreaddir\fP(3) routine.
@@ -514,15 +553,15 @@ values are pretty much always ignored.
 You can usually determine what these values should be by examining
 your manpages or your \fIlint\fP libraries.
 .NH 3
-C library omissions
+C LIBRARY OMISSIONS
 .PP
 INN uses library routines that might not be present in all
 .UX
 systems, although they should be.
 The \fIlib\fP directory provides versions of some of these routines,
 including copies of the freely-redistributable BSD string routines.
-The \fIMISSING_SRC\fP and \fIMISSING_MAN\fP parameters can be set to
-list those routines that are missing from your C library.
+The \fIMISSING_SRC\fP, \fIMISSING_OBJ\fP and \fIMISSING_MAN\fP parameters can be
+set to list those routines that are missing from your C library.
 If you don't have \fIstrcasecmp\fP and \fIstrncasecmp\fP then you will
 need the \fIstrcasecmp\fP module built into your INN library.
 Add the ``.c'' and ``.o'' names to \fIMISSING_SRC\fP and \fIMISSING_OBJ\fP,
@@ -554,7 +593,7 @@ parameter.
 This will cause \fIlib/Makefile\fP to extract the object files from the ATT
 library, and add them to the INN library.
 .NH 3
-Miscellaneous config data
+MISCELLANEOUS CONFIG DATA
 .PP
 All the parameters in this section become macros in the file
 \fIinclude/configdata.h\fP.
@@ -573,7 +612,6 @@ Apparently some versions of System V Release 4 have this problem.
 This causes problems for programs like \fInnmaster\fP which look at the
 \fIst_mtime\fP field of the \fIstat\fP structure in order to determine if
 any new news has come in.
-(\fINnmaster\fP is part of the \fInn\fP newsreading program.)
 The best work-around is probably an hourly \fIcron\fP job that touches the
 \fIactive\fP file.
 .PP
@@ -606,8 +644,17 @@ FTP to ee.lbl.gov; it is a filter that turns IP addresses into host names.)
 .PP
 The \fIxxx_TIMEOUT\fP parameters control various timers within INN;
 you might want to change some of these depending on your system load.
+.PP
+The \fILIKE_PULLERS\fP parameter controls how to handle clients that appear
+to be doing a sucking feed from your machine (many admins don't like such
+clients). If the value is ``DO'' (the default), then nothing different
+happens. If the value is ``DONT'', then after 100 articles have been sent,
+each article transfer will be followed by a short (1 second) sleep. For
+most readers this isn't a problem, but some clients doe article scoring
+based on the entire body of the article. Such clients will be penalized
+when \fILIKE_PULLERS\fP is set to ``DONT''.
 .NH 3
-Paths to common programs
+PATHS TO COMMON PROGRAMS
 .PP
 INN uses a few standard programs like \fI/bin/sh\fP and \fIsendmail\fP.
 If you don't have \fIsendmail\fP then you must have a program that
@@ -617,7 +664,7 @@ This program is specified by the \fI_PATH_SENDMAIL\fP parameter, and
 is normally ``/usr/lib/sendmail\ -t''.
 The parameter is actually a \fIsprintf\fP format string that will be
 given the destination address as its only argument.
-on some sites (e.g., those running MMDF) the ``\-t'' could be replaced
+On some sites (e.g., those running MMDF) the ``\-t'' could be replaced
 with a ``%s''.
 .PP
 INN puts most of its executables in the directory specified by the
@@ -650,7 +697,7 @@ the Free Software Foundation.
 The \fIscanlogs\fP script has a short test you can run to see if your
 \fIegrep\fP will work.
 .NH 3
-Paths related to the spool directory
+PATHS RELATED TO THE SPOOL DIRECTORY
 .PP
 By default, all news articles are stored in directories under
 \fI/usr/spool/news\fP.
@@ -682,7 +729,7 @@ This should not be a problem, as you can just create the directories
 yourself \(em make sure to set the ownership and modes right \(em and
 re-run the script.
 .NH 3
-Execution paths for innd and rnews
+EXECUTION PATHS FOR INND AND RNEWS
 .PP
 All control messages (other then ``cancel'') are carried out by scripts.
 Your system must be able to \fIexec\fP shell scripts directly.
@@ -697,7 +744,7 @@ The \fI_PATH_RNEWSPROGS\fP directory serves the same purpose for \fIrnews\fP
 when it needs to unpack batches.
 The \fIRNEWSPROGS\fP parameter specifies if the directory is really used.
 .NH 3
-Sockets created by innd or clients
+SOCKETS CREATED BY INND OR CLIENTS
 .PP
 The \fIinnd\fP server and its clients (most notably \fIctlinnd\fP)
 create
@@ -717,7 +764,7 @@ by \fIinnd\fP, as well as the owner of all news articles and files.
 The owner of this directory is set at installation time and specified in
 the ``Ownerships and file modes'' section, above.
 .NH 3
-Log and config files
+LOG AND CONFIG FILES
 .PP
 INN keeps its databases, and some control files their own directory,
 typically named \fI/usr/local/news\fP.
@@ -725,19 +772,19 @@ Log files are kept in \fI/var/log/news\fP.
 There are many parameters in this section that refer to files within
 this directory.
 Some sites will want to globally replace ``/usr/local/news'' with something
-like ``/var/news'', and ``/usr/lib/newsbin'' with ``/var/newsbin''
+like ``/var/news'', and ``/usr/lib/newsbin'' with ``/var/newsbin.''
 .PP
 There are two files that contain access passwords,
 \fI_PATH_NNTPPASS\fP and \fI_PATH_NNRPACCESS\fP.
-The default location for these files is in \fI/usr/local/etc\fP, so that it is
-generally safe to export \fI/usr/local/news\fP (read-only is probably best).
+The default location for these files is in \fI/var/news/etc\fP, so that it is
+generally safe to export \fI/usr/news\fP (read\-only is probably best).
 .PP
 INN programs do extensive logging, and the daily maintenance scripts
 do extensive summary reports and analysis of them.
 It might take you some time to learn your way around the INN logging system;
 start by reading the newslog manpages in the \fIdoc\fP directory.
 .NH 3
-Innwatch configuration
+INNWATCH CONFIGURATION
 .PP
 The INN server, \fIinnd\fP, does not contain any checks to see if there
 is enough free space on the disk or if the system load average is low enough
@@ -760,7 +807,7 @@ Rather than get tangled up in such a mess of #ifdef's, INN uses an
 external program (shell script) that invokes \fIctlinnd\fP to stop and start the
 server as necessary.
 The program, \fIinnwatch\fP, reads the control file \fIinnwatch.ctl\fP.
-\fIInnwatch\fP is documented in \fIdoc/news.daily.8\fP, while \fIinnwatch.ctl\fP
+\fIInnwatch\fP is documented in \fIdoc/innwatch.8\fP, while \fIinnwatch.ctl\fP
 is documented in \fIdoc/innwatch.ctl.5\fP.
 .PP
 The parameters in this section control when the server should stop accepting
@@ -773,10 +820,9 @@ For example, there is a line in the file that has this fragment in it:
 .DE
 This is looking at the fourth field of the second line to get the amount
 of freespace.
-You will have to change the ``2'' and ``4'' here, and on other lines, as
-appropriate for your system.
-(Changing the output of \fIdf\fP seems to be one of the things vendors like
-to do most; it is not worth my time to have INN keep track of all of them.)
+You will have to change the ``2'' and ``4'' here (both can be changed by
+setting \fIINNWATCH_INODES\fP and \fIINNWATCH_BLOCKS\fP respectively),
+and on other lines, as appropriate for your system.
 .PP
 The parameter \fIINNWATCH_SLEEPTIME\fP specifies how frequently
 \fIinnwatch\fP should check the system \(em the other parameters should
@@ -797,7 +843,7 @@ uses (512-byte units, 1K blocks, etc).
 The \fIINNWATCH_SPOOLNODES\fP parameter specifies how many inodes must
 be available in your spool directory.
 .NH 3
-Tcl filtering configuration.
+TCL Configuration
 .PP
 The innd server can be configured to include TCL hooks to be run whenever a
 new article is received and when certain other actions occur. See the file
@@ -821,23 +867,173 @@ for more details (the ``filter'' and ``reload'' commands). A sample is
 included in samples/filter.tcl which will be installed in the location
 defined by this parameter.
 .NH 3
-PGP control message verification.
+PGP Configuration
 .PP
-Inn now has mecahnisms in place that will do PGP
-verification of control messages.
+Inn now has mechanisms in place that will do PGP verification of control
+messages (except for cancels). It is \fIhighly\fP recommended that you use
+PGP if you can. Forged control messages are a serious problem in USENET.
+You can get PGP from \fBhttp://web.mit.edu/network/pgp.html\fP.
 .PP
 The \fIWANT_PGPVERIFY\fP parameter defines whether PGP verification of
-control messages should be done. Select DO or DONT. See the file README.pgp
-for more details on this subject.
+control messages should be done. Select ``DO'' or ``DONT''.
+.PP
+To verify messages, you must have a PGP public key for each signer
+that you wish to trust. It should be entered in a key ring that is
+accessible to the user-id that runs the news system by running
+pgp -ka on a file containing the key to add. For example, at a
+site that runs the news server software as news, the following
+command run by the news user-id should add the key bounded by
+BEGIN and END "PGP PUBLIC KEY BLOCK" lines in the file /tmp/key
+to the default key ring that would be used for authentication:
+.PP
+.RS
+pgp -ka /tmp/key
+.RE
+.PP
+As a general policy rule, control message signers will not use their
+control message keys to introduce other keys, so when PGP asks you
+a question similar to, "Would you trust this user to act as an
+introducer and certify other people's public keys to you?" answer
+that you would not.
+.PP
+After you have added the appropriate key to your key ring, you
+need to tell the news software to validate the control messages
+received. As implemented, the system will perform the requested
+action if the message can be authenticated and it will mail the
+message to the news system administrator if it cannot.
+.PP
+Automatic processing of control messages is handled by control.ctl,
+\fIControl.ctl\fP has several lines at the beginning of it that describe
+the format of the file, and there is an even longer \fIcontrol.ctl\fP(5)
+manual page. PGP verification for many large heirarchies is already enabled
+in \fIcontrol.ctl\fP(5). To enable PGP verification for another heirachy,
+in addition to the normal authorization done by control.ctl, use the action
+"verify-PGP_USERID" in the fourth field. The supplied \fIcontrol.ctl\fP
+file has samples that should be clear.
+.PP
+To test the PGP setup a signed sample control message is in the file
+CONTROLPROGS/sample.control (where CONTROLPROGS is as defined in
+config.data). Copy this to /tmp/sample.control. The file name
+/tmp/sample.control will be used for this example.
+.PP
+To verify the control message, you will need the key for
+news.announce.newgroups and authorization in your news system for
+tale@uunet.uu.net to automatically perform "newgroup". Go ahead
+and enable it for the test even if you don't want to really allow
+this, because it is easy enough to rescind after the test by
+editing the control message authorization file and removing the
+key with pgp -kr news.announce.newgroups.
+.PP
+You can check that the pgpverify part of the system will work
+properly simply by feeding it the sample control message on stdin:
+.PP
+.RS
+pgpverify < /tmp/sample.control
+.RE
+.PP
+If it could run pgp and find the correct key in the default key ring,
+the string "news.announce.newgroups" should be printed. The exit
+status of the script, found in most shells with the command 
+.PP
+echo $?
+.LP
+as the next command after pgpverify, should be 0 (zero).
+.PP
+When pgpverify passes its test, use the procedure below to verify
+the authorization system.
+.PP
+First, cd to the directory where parsecontrol is installed.
+Then execute the following four lines, in order, as the user
+who owns the news system:
+.PP
+.RS
+.nf
+/bin/sh
+PROG=newgroup
+set -- tale@uunet.uu.net "" /tmp/sample.control
+(. ./parsecontrol "$@"; echo $ACTION)
+.fi
+.RE
+.PP
+If the message verified correctly, the echo command should
+output doit; otherwise, verification failed and the output
+should be mail.
+.PP
+Edit /tmp/sample.control and change all occurences of
+newusers to newgroups. Then repeat the parsecontrol
+and echo lines. This time verification should fail.
+.NH 3 
+Keyword Configuration
+.PP
+The keyword generating code, that has been added by Karl Kleinpaste, is off
+by default, as it's a real CPU sucker (does a lot of regexp matching). To
+enable it you must:
+.IP 1. 
+Set KEYWORDS to DO in config.data (and possibly change KEYLIMIT
+ABSURD and MAX_WORDS) and rebuild innd.
+.IP 2. 
+Uncomment the last line of the overview.fmt file so that it
+looks like:
+.RS
+.nf
+     Keywords:full
+.fi
+.RE
+.IP 3. 
+Install and start the new innd.
+.PP
+Of course you need overview generation enabled -- see elsewhere 
+in this document for that.
 .NH 3
-Actsync configuration.
+Local Configuration
+.PP
+At this section local definitions like home directory of \fINEWSUSER\fP are
+specified.
+This parameter is used for setting environment variable handed to innd when
+invoked by inndstart.
+.NH 3
+Actsync configuration
 .PP
 Landon Curt Noll's actsync(8) program has been merged into INN. This section
 defines some variables for the default config file for actsync. See the
 man page for more details on actsync.
 .PP
 The \fIACTSYNC_HOST\fP variable defines which remote host you'll be using
-to synchronize your active file.
+to synchronize your active file. If you don't have a good host to sync to,
+you can get (via anon ftp) ftp://ftp.isc.org/pub/usenet/CONFIG/active.gz
+and have actsync use that.
+.NH 3
+Perl Configuration
+.PP
+The innd server can be configured to include perl hooks to be run the way
+TCL does whenever a new article is received and when certain other actions
+occur.
+Further more, nnrpd can be also configured to include perl hooks to be run
+whenever a new article is posted. This is not supported in TCL.
+See the file README.perl_hook for more details.
+.PP
+The \fIPERL_SUPPORT\fP parameter specifies whether you want to compile in the
+perl support code. Select DO or DONT.
+.PP
+The \fIPERL_LIB\fP parameter specifies the extra libraries you need to link
+against to include perl support. Typically ``-lperl -lm'' are required. If
+you defined \fIPERL_SUPPORT\fP  to DONT, then this should be blank.
+.PP
+The \fI_PATH_PERL_STARTUP_INND\fP parameter specifies the path of the perl
+script that is to be loaded at process startup time. A sample version is
+included in samples/startup_innd.pl which will be installed in the location you
+define here.
+.PP
+The \fI_PATH_PERL_FILTER_INND\fP parameter specifies the path of the perl script
+that is to be loaded upon command by ctlinnd. See the ctlinnd.8 manpage
+for more details (the ``filter'' and ``reload'' commands). A sample is
+included in samples/filter_innd.pl which will be installed in the location
+defined by this parameter.
+.PP
+The \fI_PATH_PERL_FILTER_NNRPD\fP parameter specifies the path of the perl
+script that is to be loaded at process startup time. A sample version is
+included in samples/filter_nnrpd.pl which will be installed in the location you
+define here.
 .PP
 .NH 2
 Typical config.data changes
@@ -1156,13 +1352,6 @@ database, but it can also avoid a great deal of disk I/O.
 You should probably see the DBZ manpage in the \fIdoc\fP directory
 for some (brief) additional discussion of this issue.
 .PP
-If you are using \fIvfork\fP (specified in the \fIFORK\fP parameter),
-or you want to \fImmap\fP the database, then you \fBmust\fP apply the patch.
-The Makefile in \fIlib\fP will normally do it for you automatically, anyway.
-The beginning of the patch file describes the changes made in more detail.
-If you do not apply the patch, then you must add add ``dbzalt.c'' and
-\&``dbzalt.o'' to the MISSING_SRC and MISSING_OBJ parameters.
-.PP
 Apparently the System V 386 compiler can't optimize \fIdbz.c\fP (the
 GNU C compiler doesn't have this problem).
 If you have ``\-O'' in your \fIDBZCFLAGS\fP configuration parameter, then
@@ -1286,6 +1475,10 @@ Unpacks news batches from UUCP sites and offers them to \fIinnd\fP.
 This program controls \fIinnd\fP, directing it to do most of the
 tasks a news administrator will have to do:  create newsgroups,
 update newsfeeds, and the like.
+.IP \fIsys2nf\fP 15
+A program to turn a B or C News \fIsys\fP file into an INN \fInewsfeeds\fP
+file.
+This is a transition aide that is only documented in the source.
 .PP
 To build these programs, type the following:
 .DS
@@ -1332,7 +1525,7 @@ different types of control messages.
 See \fIinnd.8\fP, \fInewsfeeds.5\fP, and \fIactive.5\fP in the \fIdoc\fP
 directory for details.
 .NH 3
-The NetNews Reading Daemon
+Nnrpd
 .PP
 \fIInnd\fP implements a subset of the NNTP protocol \(em only those commands
 that are needed for peer sites to feed news articles.
@@ -1362,6 +1555,8 @@ to your news neighbors.
 This includes the following programs:
 .IP \fIarchive\fP 15
 A simple program to archive news articles.
+.IP \fIactsync\fP 15
+A program to synchronize active file with remote site.
 .IP \fIbatcher\fP 15
 Collects articles into batches for UUCP delivery.
 .IP \fIbuffchan\fP 15
@@ -1372,10 +1567,12 @@ A program that does link creation for cross-posted articles. Runs as a
 channel feed and lets innd hand off some of its i/o activity.
 .IP \fIcvtbatch\fP 15
 A program to turn a file list into an INN batchfile.
-A transition aide that is only documented in the source.
+This is a transition aide.
 .IP \fIfilechan\fP 15
 Another program to split a single \fIinnd\fP stream into separate files.
 It is system-call intensive, but requires no locking protocol.
+.IP \fIinnxbatch\fP 15
+A program to send articles with ``XBATCH'' NNTP command extension.
 .IP \fIinnxmit\fP 15
 A replacement for \fInntpxmit\fP from the reference implementation.
 It reads a file containing a list of articles, and sends them to a host.
@@ -1386,10 +1583,6 @@ A program to provide a locking protocol for shell scripts.
 .IP \fIshrinkfile\fP 15
 A program to shrink a file by removing lines from the beginning.
 It is useful for purging backlogged batchfiles.
-.IP \fIsys2nf\fP 15
-A program to turn a B or C News \fIsys\fP file into an INN \fInewsfeeds\fP
-file.
-This is a transition aide that is only documented in the source.
 .PP
 To build this set of programs, type the following:
 .DS
@@ -1484,8 +1677,10 @@ From there follow the cross-references as you want.
 .NH 1
 Installing the System
 .PP
-Although either \fIinnd\fP or \fIinndstart\fP must be run by root, most
-of the installation does not have to be done as root.
+Although either \fIinnd\fP or \fIinndstart\fP must be run with root
+privileges, the build and most of the installation does not have to be done
+as root \(em only the installation of the inndstart executable requires
+root priviledges, as it is installed as owned by root and setuid.
 The \fI$inn/makedirs.sh\fP script creates all the necessary directories used
 by INN, and sets up the right ownerships and modes: owned by \fINEWSUSER\fP
 in group \fINEWSGROUP\fP with 0775 permissions (the ``firewall'' directory,
@@ -1508,12 +1703,13 @@ This is important:  in any directory (including the top-level one), a
 \&``make\ install'' will install everything in that directory into
 the right place.
 A ``make\ update'' can only be done in the top-level directory or in the
-\fIsite\fP directory, and it only replaces scripts, not configuration files.
+\fIsite\fP directory. The former only replaces executables, not
+configuration files.
 When updating to a new INN release, you will probably want to do an ``update''
 first, and then review the changed files by doing ``make\ diff'' in the
 \fIsite\fP directory, and integrate your local changes as appropriate.
 The Makefile also has other targets that you might find useful, so the
-comments for entries like ``most'' and ``installed-diff', for example.
+comments for entries like ``most'' and ``installed-diff'', for example.
 .PP
 The next, and last, step is to build your INN configuration files and utility
 scripts.
@@ -1522,7 +1718,7 @@ If you have not already done so, type the following:
 cd $inn/site
 make all
 .DE
-This will get copies of the scripts and files from the \fIbackends\fP and the
+This will get copies of the scripts and files from the
 \fIsamples\fP directories and run \fIsubst\fP over them.
 Whenever patches are issued, doing a \fImake\fP in this directory will let
 you know what files have been updated, without destroying your local changes.
@@ -1550,7 +1746,7 @@ The following scripts are normally invoked by \fIcron\fP or at
 system boot time, and should not require many changes:
 .DS
 .ta 1.5i
-innlog.awk	scanlogs
+innlog.pl	scanlogs
 innstat	tally.control
 news.daily	tally.unwanted
 rc.news
@@ -1562,7 +1758,7 @@ defined as the \fINEWSUSER\fP in the config.data file.
 \fIScanlogs\fP calls the other scripts to process the logs.
 You might want to review these scripts just to see what they do.
 Do not get bogged down in the details, just read the comments.
-They are documented in the manpages news.daily(8) newslog(5), and newslog(8).
+They are documented in the manpages news.daily(8), newslog(5), and newslog(8).
 .PP
 There are some utility scripts to send news to your news feeds:
 .DS
@@ -1592,28 +1788,23 @@ They all have manual pages in the \fIdoc\fP directory that describe them:
 expire.ctl	newsfeeds
 hosts.nntp	nnrp.access
 inn.conf	passwd.nntp
-moderators
+moderators	motd.news
 .DE
 .PP
 The last group of files are utility scripts you might find useful:
 .DS
 .ta 1.5i
-inncheck	makegroup
-innwatch	scanspool
+inncheck	innwatch
+scanspool
 .DE
 \fIInncheck\fP is a Perl script to check the syntax and permissions of
 an installed INN system.
 \fIInnreport\fP is an alternate way of summarizing the server's log file.
-It is a Perl script.
+It is a Perl script. It will become the standard log reporting mechanism in
+a future release.
 \fIInnwatch\fP is a shell script to monitor the system and stop the server
 when you are running low on disk space or inodes; it could be run out of your
-\fI_PATH_NEWSBOOT\fP script.
-You might have to edit it to understand your \fIdf\fP output format.
-\fIMakegroup\fP is a front-end to \fIrnews\fP that helps you write
-a control message to create a newsgroup.
-You should review this script because you might have to change the way the
-output of the \fIdate\fP command is parsed, and because you might might
-want to change the default distribution.
+\fI_PATH_NEWSBOOT\fP script \(em it is set to be run by default.
 \fIScanspool\fP is a Perl script to make sure that the active file
 and the contents of your spool tree agree.
 .PP
@@ -1648,7 +1839,7 @@ Programs such as \fIrn\fP (which call \fIPnews\fP) prepare a news article
 and feed it into \fIinews\fP.
 \fIInews\fP validates the news headers, adds its own, and feeds the article
 to the campus \fIinnd\fP server.
-The \fIinews\fP that comes with INN is more useful then the ``mini-inews''
+The \fIinews\fP that comes with INN is more useful than the ``mini-inews''
 that comes with the reference implementation.
 You cannot run the standard B2.11 \fIinews\fP.
 You can run the C News \fIinews\fP, but only on client machines (i.e.,
