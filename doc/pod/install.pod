@@ -972,9 +972,10 @@ artcutoff parameter in F<inn.conf>, defaulting to 14); the number on the
 C</remember/> line should match that.
 
 CNFS makes no further use of F<expire.ctl>, since articles stored in CNFS
-buffers expire automatically when the buffer runs out of free space.
-Currently for timehash, timecaf, and tradspool, F<expire.ctl> takes
-additional entries of the form:
+buffers expire automatically when the buffer runs out of free space.  For
+other storage methods, there are two different syntaxes of this file,
+depending on whether C<groupbaseexpiry> is set in F<inn.conf>.  If it is
+set to false, F<expire.ctl> takes entries of the form:
 
     <storage_class>:<keep>:<default>:<purge>
 
@@ -997,7 +998,18 @@ to honor Expires: headers even if they specify dates far into the future.
 (Note that if <keep> is set to C<never>, all articles with Expires:
 headers are kept forever and the value of <purge> is not used.)
 
-FIXME: We have group-based expiry now; does it work like it used to?
+If the value of C<groupbaseexpiry> is true, F<expire.ctl> takes entries of
+the form:
+
+    <wildmat>:<flag>:<keep>:<default>:<purge>
+
+<wildmat> is a wildmat expression (C<!> and C<@> not permitted, and only a
+single expression, not a comma-separated set of them.  Each expiration
+line applies to groups matching the wildmat expression.  <flag> is C<M>
+for moderated groups, C<U> for unmoderated groups, and C<A> for groups
+with any moderation status; the line only matches groups with a matching
+expiration status.  All of the other fields have the same meaning as
+above.
 
 =head2 readers.conf
 

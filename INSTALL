@@ -940,8 +940,9 @@ Configuring INN
 
     CNFS makes no further use of expire.ctl, since articles stored in CNFS
     buffers expire automatically when the buffer runs out of free space. 
-    Currently for timehash, timecaf, and tradspool, expire.ctl takes
-    additional entries of the form:
+    For other storage methods, there are two different syntaxes of this
+    file, depending on whether `groupbaseexpiry' is set in inn.conf.  If it
+    is set to false, expire.ctl takes entries of the form:
 
         <storage_class>:<keep>:<default>:<purge>
 
@@ -965,7 +966,18 @@ Configuring INN
     future.  (Note that if <keep> is set to `never', all articles with
     Expires: headers are kept forever and the value of <purge> is not used.)
 
-    FIXME: We have group-based expiry now; does it work like it used to?
+    If the value of `groupbaseexpiry' is true, expire.ctl takes entries of
+    the form:
+
+        <wildmat>:<flag>:<keep>:<default>:<purge>
+
+    <wildmat> is a wildmat expression (`!' and `@' not permitted, and only a
+    single expression, not a comma-separated set of them.  Each expiration
+    line applies to groups matching the wildmat expression.  <flag> is `M'
+    for moderated groups, `U' for unmoderated groups, and `A' for groups
+    with any moderation status; the line only matches groups with a matching
+    expiration status.  All of the other fields have the same meaning as
+    above.
 
   readers.conf
 
