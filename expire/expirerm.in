@@ -7,7 +7,7 @@
 MAIL="${MAILCMD} -s 'Problem removing expired files' ${NEWSMASTER}"
 
 #RMPROC="xargs rm"
-RMPROC="fastrm -e"
+RMPROC="fastrm -e ${SPOOL}"
 
 if [ -z "$1" ] ; then
     echo "Expire called with zero list of files on `hostname`" \
