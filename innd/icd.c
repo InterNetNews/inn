@@ -238,10 +238,12 @@ BOOL ICDchangegroup(NEWSGROUP *ngp, char *Rest)
     register int	i;
     IOVEC		iov[3];
     BOOL		ret;
+    char		*Name;
 
     /* Set up the scatter/gather vectors. */
     ICDiovset(&iov[0], ICDactpointer, ngp->Rest - ICDactpointer);
     ICDiovset(&iov[1], Rest, strlen(Rest));
+    Name = COPY(ngp->Name);
     if (++ngp < &Groups[nGroups]) {
 	/* Not the last group, keep the \n from the next line. */
 	i = ngp->Start;
@@ -257,9 +259,12 @@ BOOL ICDchangegroup(NEWSGROUP *ngp, char *Rest)
     ICDiovrelease(&iov[2]);
 
     if (ret) {
-	if (innconf->enableoverview && !OV3groupadd((--ngp)->Name, Rest))
+	if (innconf->enableoverview && !OV3groupadd(Name, Rest)) {
+	    DISPOSE(Name);
 	    return FALSE;
+	}
     }
+    DISPOSE(Name);
     return ret;
 }
 
