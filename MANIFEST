@@ -120,6 +120,7 @@ control/modules/sendsys.pl            sendsys controlchan handler
 control/modules/senduuname.pl         senduuname controlchan handler
 control/modules/version.pl            version controlchan handler
 control/pgpverify.in                  Verify control messages with PGP
+control/signcontrol.in                PGP control message signing program
 doc                                   Documentation (Directory)
 doc/Makefile                          Makefile for documentation
 doc/compliance-nntp                   INN compliance with the NNTP standard
@@ -286,7 +287,6 @@ frontends/ovdb_stat.c                 Display information from ovdb database
 frontends/pullnews.in                 Sucking news feeder
 frontends/rnews.c                     UUCP unbatcher
 frontends/scanspool.in                Scan spool directory for trash
-frontends/signcontrol.in              PGP control message signing program
 frontends/sm.c                        Get article or overview data from token
 frontends/sys2nf.c                    Sys file to newsfeeds conversion aide
 history                               History library routines (Directory)
