@@ -232,7 +232,7 @@ NCpostit(cp)
 	return;
     case OMrunning:
 	wp = &NCwip[cp->fd];
-	response = ARTpost(cp, AmSlave ? &wp->Replic : NULL, wp->MessageID);
+	response = ARTpost(cp, (AmSlave && !XrefSlave) ? &wp->Replic : NULL, wp->MessageID);
 	if (atoi(response) == NNTP_TOOKIT_VAL) {
 	    cp->Received++;
 	    if (cp->Sendid.Size > 3) { /* We be streaming */
@@ -571,7 +571,7 @@ NCihave(cp)
     register char	*p;
     WIP			*who;
 
-    if (AmSlave) {
+    if (AmSlave && !XrefSlave) {
 	NCwritetext(cp, NCbadcommand);
 	return;
     }
@@ -1082,7 +1082,8 @@ NCproc(cp)
 		DISPOSE(cp->Argument);
 		cp->Argument = NULL;
 	    }
-	    NCclean(bp);
+	    if (!WireFormat)
+  	        NCclean(bp);
 	    NCpostit(cp);
 	    cp->State = CSgetcmd;
 	    break;
@@ -1462,7 +1463,7 @@ NCcheck(cp)
     int			msglen;
     WIP			*who;
 
-    if (AmSlave) {
+    if (AmSlave && !XrefSlave) {
 	NCwritetext(cp, NCbadcommand);
 	return;
     }
