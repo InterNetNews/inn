@@ -431,7 +431,6 @@ EXTERN char		*ModeReason;	/* NNTP reject message		*/
 EXTERN char		*NNRPReason;	/* NNRP reject message		*/
 EXTERN char		*Reservation;	/* Reserved lock message	*/
 EXTERN char		*RejectReason;	/* NNTP reject message		*/
-EXTERN char		*Version;
 EXTERN FILE		*Errlog;
 EXTERN FILE		*Log;
 extern char		LogName[];
