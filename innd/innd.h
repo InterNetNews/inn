@@ -440,7 +440,7 @@ extern long		LargestArticle;
 EXTERN NEWSGROUP	**GroupPointers;
 EXTERN NEWSGROUP	*Groups;
 extern OPERATINGMODE	Mode;
-EXTERN SIGVAR		GotTerminate;
+EXTERN sig_atomic_t	GotTerminate;
 EXTERN SITE		*Sites;
 EXTERN SITE		ME;
 EXTERN struct timeval	TimeOut;
