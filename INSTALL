@@ -885,8 +885,7 @@ Configuring INN
         but it requires your OS support mmap() on a block device.  Solaris
         supports this, FreeBSD and Linux (without patches) do not.  Also on
         many PC-based Unixes it is difficult to create more than eight
-        partitions, which may limit your options.  See "Creating the Article
-        Spool" for more discussion of how to set this up.
+        partitions, which may limit your options.
 
     2.  Use a real file on a filesystem.  This will be a bit slower than
         using a raw disk partition, but it should work on any Unix system.
@@ -949,6 +948,9 @@ Configuring INN
     using multiple cycbuffs on the same spindle (such as partitions or
     slices of a larger disk), but will probably give worse performance if
     your cycbuffs are spread out across a lot of spindles.
+
+    Finally, you have to create the cycbuffs.  See "Creating the Article
+    Spool" for more information on how to do that.
 
   storage.conf
 
