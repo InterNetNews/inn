@@ -861,7 +861,7 @@ main(int argc, char **argv)
      */
     while ((art = SMnext(art, RETR_HEAD)) != NULL) {
 	if (art->len == 0) {
-	    if (NukeBadArts && art->data == NULL)
+	    if (NukeBadArts && art->data == NULL && art->token != NULL)
 		(void)SMcancel(*art->token);
 	    continue;
 	}
