@@ -18,13 +18,13 @@ main(void)
 {
     struct vector *vector;
     struct cvector *cvector;
-    const char cstring[] = "This is a test.";
+    const char cstring[] = "This is a\ttest.  ";
     const char tabs[] = "test\t\ting\t";
     char empty[] = "";
     char *string;
     char *p;
 
-    puts("77");
+    puts("81");
 
     vector = vector_new();
     ok(1, vector != NULL);
@@ -86,7 +86,7 @@ main(void)
     cvector_free(cvector);
     free(string);
 
-    vector = vector_split_whitespace("This is a test.", NULL);
+    vector = vector_split_space("This is a\ttest.  ", NULL);
     ok(33, vector->count == 4);
     ok(34, vector->allocated = 4);
     ok(35, strcmp(vector->strings[0], "This") == 0);
@@ -100,17 +100,17 @@ main(void)
     vector = vector_split(cstring, 't', vector);
     ok(42, vector->count == 3);
     ok(43, vector->allocated == 5);
-    ok(44, strcmp(vector->strings[0], "This is a ") == 0);
+    ok(44, strcmp(vector->strings[0], "This is a\t") == 0);
     ok(45, strcmp(vector->strings[1], "es") == 0);
-    ok(46, strcmp(vector->strings[2], ".") == 0);
+    ok(46, strcmp(vector->strings[2], ".  ") == 0);
     ok(47, vector->strings[0] != string);
     p = vector_join(vector, "fe");
-    ok(48, strcmp(p, "This is a feesfe.") == 0);
+    ok(48, strcmp(p, "This is a\tfeesfe.  ") == 0);
     free(p);
     vector_free(vector);
 
     string = xstrdup(cstring);
-    cvector = cvector_split_whitespace(string, NULL);
+    cvector = cvector_split_space(string, NULL);
     ok(49, cvector->count == 4);
     ok(50, cvector->allocated = 4);
     ok(51, strcmp(cvector->strings[0], "This") == 0);
@@ -126,13 +126,13 @@ main(void)
     cvector = cvector_split(string, 't', cvector);
     ok(58, cvector->count == 3);
     ok(59, cvector->allocated == 5);
-    ok(60, strcmp(cvector->strings[0], "This is a ") == 0);
+    ok(60, strcmp(cvector->strings[0], "This is a\t") == 0);
     ok(61, strcmp(cvector->strings[1], "es") == 0);
-    ok(62, strcmp(cvector->strings[2], ".") == 0);
+    ok(62, strcmp(cvector->strings[2], ".  ") == 0);
     ok(63, cvector->strings[0] == string);
-    ok(64, memcmp(string, "This is a \0es\0.", 16) == 0);
+    ok(64, memcmp(string, "This is a\t\0es\0.  ", 18) == 0);
     p = cvector_join(cvector, "oo");
-    ok(65, strcmp(p, "This is a ooesoo.") == 0);
+    ok(65, strcmp(p, "This is a\tooesoo.  ") == 0);
     free(p);
     cvector_free(cvector);
     free(string);
@@ -144,10 +144,10 @@ main(void)
     ok(67, cvector->count == 0);
     cvector_free(cvector);
 
-    vector = vector_split_whitespace("", NULL);
+    vector = vector_split_space("", NULL);
     ok(68, vector->count == 0);
     vector_free(vector);
-    cvector = cvector_split_whitespace(empty, NULL);
+    cvector = cvector_split_space(empty, NULL);
     ok(69, cvector->count == 0);
     cvector_free(cvector);
 
@@ -170,6 +170,17 @@ main(void)
     free(p);
     cvector_free(cvector);
     free(string);
+
+    vector = vector_split_space("foo\nbar", NULL);
+    ok(78, vector->count == 1);
+    ok(79, strcmp(vector->strings[0], "foo\nbar") == 0);
+    vector_free(vector);
+
+    string = xstrdup("foo\nbar");
+    cvector = cvector_split_space(string, NULL);
+    ok(80, cvector->count == 1);
+    ok(81, strcmp(cvector->strings[0], "foo\nbar") == 0);
+    cvector_free(cvector);
 
     return 0;
 }
