@@ -135,6 +135,11 @@ SITEconnect(host)
 	i = NNTPconnect(host, NNTP_PORT, &From, &To, (char *)NULL);
     else {
 	host = innconf->server;
+        if (host == NULL) {
+            fprintf(stderr,
+                    "No server specified and server not set in inn.conf\n");
+            exit(1);
+        }
 	i = NNTPlocalopen(&From, &To, (char *)NULL);
     }
     if (i < 0) {
