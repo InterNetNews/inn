@@ -562,6 +562,7 @@ storage/cnfs/cnfs-private.h           Private header file for CNFS
 storage/cnfs/cnfs.c                   CNFS storage routines
 storage/cnfs/cnfs.h                   Header file for CNFS
 storage/cnfs/method.config            buildconfig definition
+storage/expire.c                      Overview-drive expire implementation
 storage/interface.c                   Storage API glue implementation
 storage/interface.h                   Storage API interface
 storage/ov.c                          Overview API glue implementation

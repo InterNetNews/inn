@@ -34,17 +34,8 @@ bool OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
 bool OVgroupmatch(const char *group);
 bool OVhisthasmsgid(struct history *, const char *data);
 void OVEXPremove(TOKEN token, bool deletedgroups, char **xref, int ngroups);
+void OVEXPcleanup(void);
 
 #define DEFAULT_MAX_XREF_LEN 8192
-
-/*
-**  Information about the schema of the news overview files.
-*/
-typedef struct _ARTOVERFIELD {  
-    char	*Header;
-    int		Length;
-    bool	HasHeader;
-    bool	NeedsHeader;
-} ARTOVERFIELD;
 
 #endif /* __OVINTERFACE_H__ */
