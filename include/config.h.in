@@ -376,12 +376,6 @@
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
 
-/* Define if you have the regex library (-lregex).  */
-#undef HAVE_LIBREGEX
-
-/* Define if you have the shadow library (-lshadow).  */
-#undef HAVE_LIBSHADOW
-
 /* The user that INN should run as. */
 #undef NEWSUSER
 
@@ -415,6 +409,9 @@
 /* Define to use tagged hash for the history file. */
 #undef DO_TAGGED_HASH
 
+/* Define to compile in support for automatic keyword generation code. */
+#undef DO_KEYWORDS
+
 /* Define if BerkeleyDB is available. */
 #undef USE_BERKELEY_DB
 
@@ -435,9 +432,6 @@
 
 /* Define if you have the setproctitle function. */
 #undef HAVE_SETPROCTITLE
-
-/* Define to compile in support for automatic keyword generation */
-#undef DO_KEYWORDS
 
 /* Define if you have a dbm library. */
 #undef HAVE_DBM
