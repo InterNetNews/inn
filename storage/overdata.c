@@ -347,30 +347,29 @@ overview_split(const char *line, size_t length, ARTNUM *number,
 **  the member which the caller is interested in (and must free).
 */
 char *
-overview_getheader(struct cvector *vector, int element)
+overview_getheader(const struct cvector *vector, int element,
+		   const struct vector *extra)
 {
     char *field = NULL;
     size_t len;
     const char *p;
 
-    if (element >= vector->count) {
+    if (element >= vector->count ||
+	(element >= SIZEOF(fields) &&
+	 (element - SIZEOF(fields)) >= extra->count)) {
 	warn("request for invalid overview field %d", element);
 	return NULL;
     }
     /* Note... this routine does not synthesise Newsgroups: on behalf
      * of the caller... */
-    len = vector->strings[element + 1] - vector->strings[element] - 1;
-    if (element > SIZEOF(fields)) {
-	p = memchr(vector->strings[element], ':', len);
-	if (p == NULL) {
-	    warn("malformed overview field: %.*s", len, 
-		 vector->strings[element]);
-	    goto fail;
-	}
-	++p;
-	len -= p - vector->strings[element];
+    if (element >= SIZEOF(fields)) {
+	/* +2 for `: ' */
+	p = vector->strings[element] +
+	    strlen(extra->strings[element - SIZEOF(fields)]) + 2;
+	len = vector->strings[element + 1] - p - 1;
     } else {
 	p = vector->strings[element];
+	len = vector->strings[element + 1] - vector->strings[element] - 1;
     }
     field = xstrndup(p, len);
 
