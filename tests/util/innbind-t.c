@@ -217,7 +217,7 @@ test_ipv6(int n)
     return n;
 }
 #else /* !HAVE_INET6 */
-static void
+static int
 test_ipv6(int n)
 {
     int i;
