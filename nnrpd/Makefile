@@ -138,7 +138,10 @@ sasl_config.o: sasl_config.c ../include/config.h \
  ../include/portable/time.h ../include/inn/qio.h ../include/innperl.h \
  ../include/libinn.h ../include/macros.h ../include/nntp.h \
  ../include/paths.h ../include/storage.h sasl_config.h
-tls.o: tls.c ../include/config.h ../include/inn/defines.h tls.h
+tls.o: tls.c ../include/config.h ../include/inn/defines.h nnrpd.h \
+ ../include/portable/time.h ../include/inn/qio.h ../include/innperl.h \
+ ../include/libinn.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h ../include/storage.h tls.h
 track.o: track.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h nnrpd.h ../include/portable/time.h \
  ../include/inn/qio.h ../include/innperl.h ../include/libinn.h \
