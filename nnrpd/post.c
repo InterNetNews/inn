@@ -168,7 +168,7 @@ TrimSpaces(p)
 
     for (start = p; ISWHITE(*start); start++)
 	continue;
-    for (p = start + strlen(start); p > start && CTYPE(isspace, p[-1]); )
+    for (p = start + strlen(start); p > start && CTYPE(isspace, (int)p[-1]); )
 	*--p = '\0';
     return start;
 }
@@ -209,7 +209,7 @@ StripOffHeaders(article)
     for (p = article; ; ) {
 
 	/* See if it's a known header. */
-	c = CTYPE(islower, *p) ? toupper(*p) : *p;
+	c = CTYPE(islower, (int)*p) ? toupper(*p) : *p;
 	for (hp = Table; hp < ENDOF(Table); hp++)
 	    if (c == hp->Name[0]
 	     && p[hp->Size] == ':'

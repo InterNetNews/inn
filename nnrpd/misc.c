@@ -174,7 +174,7 @@ NNTPtoGMT(av1, av2)
 	return -1;
     (void)sprintf(buff, "%s%s", av1, av2);
     for (p = buff; *p; p++)
-	if (!CTYPE(isdigit, *p))
+	if (!CTYPE(isdigit, (int)*p))
 	    return -1;
 
     year  = CHARStoINT(buff[ 0], buff[ 1]);
@@ -248,7 +248,7 @@ void HIScheck(void)
 /*
 **  Get overview offset
 */
-BOOL OVERgetent(HASH *key, TOKEN *token)
+BOOL OVERgetent(HASH *key, TOKEN *token, OFFSET_T *offset)
 {
     struct timeval	stv, etv;
     idxrec		ionevalue;
@@ -280,10 +280,11 @@ BOOL OVERgetent(HASH *key, TOKEN *token)
 	    OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
 	}
 	OVERmaketoken(token, iextvalue.offset[OVEROFFSET], iextvalue.overindex, iextvalue.overlen);
-    } else {
-	return FALSE;
+	if (offset)
+	    *offset = iextvalue.offset[HISTOFFSET];
+	return TRUE;
     }
-    return TRUE;
+    return FALSE;
 }
 #endif
 
@@ -291,7 +292,7 @@ BOOL OVERgetent(HASH *key, TOKEN *token)
 **  Return the path name of an article if it is in the history file.
 **  Return a pointer to static data.
 */
-char *HISgetent(HASH *key, BOOL flag, OFFSET_T *off)
+char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
 {
     static char		path[BIG_BUFFER];
     char	        *p;
@@ -327,7 +328,7 @@ char *HISgetent(HASH *key, BOOL flag, OFFSET_T *off)
     }
 
     /* Set the key value, fetch the entry. */
-    if (flag && (off != NULL)) {
+    if (useoffset && (off != NULL)) {
 	offset = *off;
 	gettimeofday(&stv, NULL);
     } else {
@@ -402,29 +403,14 @@ char *HISgetent(HASH *key, BOOL flag, OFFSET_T *off)
 	OVERseek+=(etv.tv_usec - stv.tv_usec) / 1000;
     }
     stv = etv;
-    if (flag && (off == NULL)) {
-	if ((i = read(fileno(hfp), buff, sizeof buff)) < 0) {
-	    syslog(L_ERROR, "%s cant read from %ld %m", ClientHost, offset);
-	    return NULL;
-	}
-	if (i == sizeof buff)
-	    buff[i-1] = '\0';
-	else
-	    buff[i] = '\0';
-	if (strchr(buff, '\n') == NULL) {
-	    syslog(L_ERROR, "%s cant find end of line %ld %m", ClientHost, offset);
-	    return NULL;
-	}
-    } else {
-	if (read(fileno(hfp), buff, entrysize) < 0) {
-	    syslog(L_ERROR, "%s cant read from %ld %m", ClientHost, offset);
-	    return NULL;
-	}
-	buff[entrysize+1] = '\0';
-	if (strchr(buff, '\n') == NULL) {
-	    syslog(L_ERROR, "%s cant find end of line %ld %m", ClientHost, offset);
-	    return NULL;
-	}
+    if (read(fileno(hfp), buff, entrysize) < 0) {
+	syslog(L_ERROR, "%s cant read from %ld %m", ClientHost, offset);
+	return NULL;
+    }
+    buff[entrysize+1] = '\0';
+    if (strchr(buff, '\n') == NULL) {
+	syslog(L_ERROR, "%s cant find end of line %ld %m", ClientHost, offset);
+	return NULL;
     }
     if (innconf->nnrpdoverstats) {
 	gettimeofday(&etv, NULL);
@@ -450,7 +436,7 @@ char *HISgetent(HASH *key, BOOL flag, OFFSET_T *off)
     }
 
     /* Want the full data? */
-    if (flag) {
+/*    if (flag) {
 	(void)strcpy(path, save);
 	for (p = path; *p; p++) {
 	    if (*p == '.')
@@ -461,7 +447,7 @@ char *HISgetent(HASH *key, BOOL flag, OFFSET_T *off)
 	    }
 	}
 	return path;
-    }
+	} */
 
     /* Want something we can open; loop over all entries. */
     for ( ; ; save = q + 1) {

@@ -627,6 +627,7 @@ STATIC void GRPscandir(char *dir, GROUPENTRY *ge)
 		ARTnumbers[ARTsize].Token.cancelled = FALSE;
 		ARTnumbers[ARTsize].Token.type = TOKEN_EMPTY;
 		ARTnumbers[ARTsize].Tokenretrieved = FALSE;
+		ARTnumbers[ARTsize].Offset = -1;
 		ARTnumbers[ARTsize++].Index = &(*OVERindex)[i];
 	    }
 	} else
@@ -673,6 +674,7 @@ STATIC void GRPscandir(char *dir, GROUPENTRY *ge)
 	    }
 	    
 	    ARTnumbers[ARTsize].ArtNum = i;
+	    ARTnumbers[ARTsize].Offset = -1;
 	    ARTnumbers[ARTsize++].Index = NULL;
 	}
 	(void)closedir(dp);

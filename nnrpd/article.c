@@ -235,12 +235,19 @@ STATIC BOOL ARTinstore(int i)
 	   return FALSE;
 	}
 	UnpackOverIndex(*(ARTnumbers[i].Index), &index);
-	ARTnumbers[i].Tokenretrieved = TRUE;
-	if ((tokentext = HISgetent(&index.hash, FALSE, NULL)) == (char *)NULL) {
-	   ARTnumbers[i].Token.cancelled = TRUE;
-	   return FALSE;
+	if (HashEmpty(index.hash)) 
+	    return FALSE;
+	if (ARTnumbers[i].Offset >= 0) {
+	    tokentext = HISgetent(&index.hash, TRUE, &ARTnumbers[i].Offset);
+	} else {
+	    tokentext = HISgetent(&index.hash, FALSE, NULL);
+	}
+	if (tokentext == (char *)NULL) {
+	    ARTnumbers[i].Token.cancelled = TRUE;
+	    return FALSE;
 	}
 	token = ARTnumbers[i].Token = TextToToken(tokentext);
+	ARTnumbers[i].Tokenretrieved = TRUE;
 	if (   token.type == TOKEN_EMPTY
 	    || token.index == OVER_NONE
 	    || token.cancelled )
@@ -257,7 +264,8 @@ STATIC BOOL ARTinstore(int i)
     if (art) {
 	SMfreearticle(art);
 	return TRUE;
-    } else return FALSE;
+    } 
+    return FALSE;
 }
 
 /*
@@ -393,12 +401,14 @@ STATIC BOOL ARTopen(char *name)
 		return FALSE;
 	    }
 	    UnpackOverIndex(*(ARTnumbers[i].Index), &index);
-	    ARTnumbers[i].Tokenretrieved = TRUE;
+	    if (HashEmpty(index.hash)) 
+		return FALSE;
 	    if ((tokentext = HISgetent(&index.hash, FALSE, NULL)) == (char *)NULL) {
 		ARTnumbers[i].Token.cancelled = TRUE;
 		return FALSE;
 	    }
 	    token = ARTnumbers[i].Token = TextToToken(tokentext);
+	    ARTnumbers[i].Tokenretrieved = TRUE;
 	}
 	if (token.type != TOKEN_EMPTY && token.index != OVER_NONE && !token.cancelled) {
 	    if ((ARThandle = SMretrieve(token, RETR_ALL)) == NULL) {
@@ -555,19 +565,20 @@ STATIC BOOL IsCancelledByIndex(int i, int artnum)
         return ARTnumbers[i].Token.cancelled = TRUE;
     
     UnpackOverIndex(*(ARTnumbers[i].Index), &index);
+    if (HashEmpty(index.hash)) 
+	return TRUE;
     if (artnum && (index.artnum != artnum))
         return ARTnumbers[i].Token.cancelled = TRUE;
     
 #ifndef DO_TAGGED_HASH
     if (innconf->extendeddbz) {
-        if (!OVERgetent(&index.hash, &ARTnumbers[i].Token))
+        if (!OVERgetent(&index.hash, &ARTnumbers[i].Token, &ARTnumbers[i].Offset))
             return ARTnumbers[i].Token.cancelled = TRUE;
+	return FALSE;
     } else {
         if (HISgetent(&index.hash, FALSE, &ARTnumbers[i].Offset) == (char *)NULL)
             return ARTnumbers[i].Token.cancelled = TRUE;
     }
-    if (innconf->extendeddbz)
-	return FALSE;
 #else
     /* need to call HISgetent here so ARTnumbers[i].Offset will be set for
        code below. */
@@ -761,8 +772,8 @@ char *GetHeader(char *header, BOOL IsLines)
 	    }
 	    if ((lastchar == '\n') || (p == ARTmem)) {
 		if (!strncasecmp(p, header, strlen(header))) {
-		    for (; (p < limit) && !isspace(*p) ; p++);
-		    for (; (p < limit) && isspace(*p) ; p++);
+		    for (; (p < limit) && !isspace((int)*p) ; p++);
+		    for (; (p < limit) && isspace((int)*p) ; p++);
 		    for (q = p; q < limit; q++) 
 			if ((*q == '\r') || (*q == '\n'))
 			    break;
@@ -1490,15 +1501,15 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 	/* Get it from the overview? */
 	if (Overview && !IsCancelled(i, FALSE) && (p = OVERfind(i, &linelen)) != NULL) {
 	    p = OVERGetHeader(p, Overview);
-	    Printf("%ld %s\r\n", i, p && *p ? p : "(none)");
+	    Printf("%d %s\r\n", i, p && *p ? p : "(none)");
 	    continue;
 	}
 
-	(void)sprintf(buff, "%ld", i);
+	(void)sprintf(buff, "%d", i);
 	if (!ARTopen(buff))
 	    continue;
 	p = GetHeader(av[1], IsLines);
-	Printf("%ld %s\r\n", i, p ? p : "(none)");
+	Printf("%d %s\r\n", i, p ? p : "(none)");
 	ARTclose();
     }
     Printf(".\r\n");
@@ -1544,26 +1555,26 @@ FUNCTYPE CMDxover(int ac, char *av[])
 
     OVERcount++;
     Reply("%d data follows\r\n", NNTP_OVERVIEW_FOLLOWS_VAL);
-    for (Opened = OVERopen(), i = range.Low; i <= range.High && range.High > 0; i++) {
-	if (IsCancelled(i, innconf->nnrpdcheckart)) {
+    i = ARTfind(range.Low, innconf->storageapi && innconf->nnrpdcheckart);
+    for (Opened = OVERopen(); (i < ARTsize) && (ARTnumbers[i].ArtNum <= range.High) && (range.High > 0); i++) {
+	if (!ARTinstore(i)) {
 	    if (innconf->storageapi)
 		OVERmiss++;
-	    continue;
 	}
 
-	if (Opened && (p = OVERfind(i, &linelen)) != NULL) {
+	if (Opened && (p = OVERfind(ARTnumbers[i].ArtNum, &linelen)) != NULL) {
 	    OVERhit++;
 	    OVERsize+=linelen;
 	    if ((innconf->storageapi && innconf->overviewmmap) || OVERmem) {
 		if (innconf->storageapi && innconf->overviewmmap) {
-		    (void)sprintf(buff, "%ld\t", i);
+		    (void)sprintf(buff, "%ld\t", ARTnumbers[i].ArtNum);
 		    SendIOb(buff, strlen(buff));
 		}
 		SendIOb(p, linelen);
 		SendIOb("\r\n", 2);
 	    } else {
 	        if (innconf->storageapi) {
-		    Printf("%ld\t%s\r\n", i, p);
+		    Printf("%ld\t%s\r\n", ARTnumbers[i].ArtNum, p);
 		} else {
 		    Printf("%s\r\n", p);
 		}
@@ -1574,7 +1585,7 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	    continue;
 
 	/* This happens with traditional spool */
-	(void)sprintf(buff, "%ld", i);
+	(void)sprintf(buff, "%ld", ARTnumbers[i].ArtNum);
 	if ((p = OVERgen(buff)) != NULL) {
 	    OVERmiss++;
 	    linelen = strlen(p);
@@ -1676,18 +1687,18 @@ FUNCTYPE CMDxpat(int ac, char *av[])
 	 && (p = OVERfind(i, &linelen)) != NULL
 	 && (p = OVERGetHeader(p, Overview)) != NULL) {
 	    if (wildmat(p, pattern))
-		Printf("%ld %s\r\n", i, p);
+		Printf("%d %s\r\n", i, p);
 	    continue;
 	}
 
-	(void)sprintf(buff, "%ld", i);
+	(void)sprintf(buff, "%d", i);
 	
 	if (!ARTopen(buff))
 	    continue;
 	if ((p = GetHeader(av[1], FALSE)) == NULL)
 	    p = "(none)";
 	if (wildmat(p, pattern))
-	    Printf("%ld %s\r\n", i, p);
+	    Printf("%d %s\r\n", i, p);
 	ARTclose();
     }
 

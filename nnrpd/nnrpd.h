@@ -87,9 +87,9 @@ typedef enum _READTYPE {
 typedef struct _ARTLIST {
     ARTNUM              ArtNum;
     char                (*Index)[OVERINDEXPACKSIZE];
-    TOKEN		Token; /* for overview */
-    OFFSET_T		Offset;
-    BOOL		Tokenretrieved;
+    TOKEN		Token;            /* for overview */
+    OFFSET_T		Offset;           /* Offset into history file */
+    BOOL		Tokenretrieved; 
 } ARTLIST;
 
 
