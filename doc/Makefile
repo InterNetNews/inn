@@ -6,11 +6,28 @@
 
 include ../Makefile.global
 
+TOPDOCS	= CONTRIBUTORS HACKING INSTALL LICENSE NEWS README TODO
+
+DOCS	= control-messages history hook-perl hook-python hook-tcl \
+	sample-control
+
 DIRS = man
 
-all depend tags ctags etags clean clobber profiled:
+all:
+clobber clean:
+tags ctags:
+profiled:
+depend:
 
-install:
+install: install-doc
 	@for D in $(DIRS) ; do \
 	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
+	done
+
+install-doc:
+	for F in $(TOPDOCS) ; do \
+	    $(CP_RPUB) ../$$F $D$(PATHDOC)/$$F ; \
+	done
+	for F in $(DOCS) ; do \
+	    $(CP_RPUB) $$F $D$(PATHDOC)/$$F ; \
 	done
