@@ -4,27 +4,27 @@ include ../Makefile.global
 
 CFLAGS  = $(GCFLAGS)
 
-SOURCES = argparse.c checkart.c cleanfrom.c clientactive.c clientlib.c \
-	closeonexec.c concat.c conffile.c date.c dbz.c defdist.c endian.c \
-	error.c findheader.c genid.c getconfig.c getdtab.c getfqdn.c \
-	getmodaddr.c getopt.c gettime.c grpalias.c hash.c hstrerror.c \
-	inet_aton.c inet_ntoa.c inndcomm.c localopen.c lockfile.c \
-	makedir.c md5.c memchr.c memcmp.c memmove.c memset.c mkfifo.c \
-	nonblocking.c parsedate.c perl.c pread.c pwrite.c qio.c radix32.c \
-	readin.c remopen.c reservedfd.c resource.c rwlock.c sendarticle.c \
-	sendpass.c setenv.c strcasecmp.c strdup.c strerror.c strspn.c \
-	strtok.c tempname.c waitnb.c wildmat.c version.c xfopena.c \
-	xmalloc.c xsignal.c xwrite.c
+SOURCES = argparse.c cleanfrom.c clientactive.c clientlib.c closeonexec.c \
+	concat.c conffile.c date.c dbz.c defdist.c endian.c error.c \
+	findheader.c genid.c getconfig.c getdtab.c getfqdn.c getmodaddr.c \
+	getopt.c gettime.c grpalias.c hash.c hstrerror.c inet_aton.c \
+	inet_ntoa.c inndcomm.c localopen.c lockfile.c makedir.c md5.c \
+	memchr.c memcmp.c memmove.c memset.c mkfifo.c nonblocking.c \
+	parsedate.c perl.c pread.c pwrite.c qio.c radix32.c readin.c \
+	remopen.c reservedfd.c resource.c rwlock.c sendarticle.c sendpass.c \
+	setenv.c strcasecmp.c strdup.c strerror.c strspn.c strtok.c \
+	tempname.c waitnb.c wildmat.c version.c xfopena.c xmalloc.c \
+	xsignal.c xwrite.c
 
 OBJECTS = $(LIBOBJS) \
-	argparse.o checkart.o cleanfrom.o clientactive.o clientlib.o \
-	closeonexec.o concat.o conffile.o date.o dbz.o defdist.o error.o \
-	findheader.o genid.o getconfig.o getdtab.o getfqdn.o getmodaddr.o \
-	gettime.o grpalias.o hash.o inndcomm.o localopen.o lockfile.o \
-	makedir.o md5.o nonblocking.o parsedate.o qio.o radix32.o readin.o \
-	remopen.o reservedfd.o resource.o rwlock.o sendarticle.o \
-	sendpass.o tempname.o waitnb.o wildmat.o version.o xfopena.o \
-	xmalloc.o xsignal.o xwrite.o
+	argparse.o cleanfrom.o clientactive.o clientlib.o closeonexec.o \
+	concat.o conffile.o date.o dbz.o defdist.o error.o findheader.o \
+	genid.o getconfig.o getdtab.o getfqdn.o getmodaddr.o gettime.o \
+	grpalias.o hash.o inndcomm.o localopen.o lockfile.o makedir.o md5.o \
+	nonblocking.o parsedate.o qio.o radix32.o readin.o remopen.o \
+	reservedfd.o resource.o rwlock.o sendarticle.o sendpass.o \
+	tempname.o waitnb.o wildmat.o version.o xfopena.o xmalloc.o \
+	xsignal.o xwrite.o
 
 LOBJECTS= $(OBJECTS:.o=.lo)
 
@@ -95,8 +95,6 @@ depend: Makefile $(SOURCES) ../include/autoconfig.h
 argparse.o: argparse.c ../include/configdata.h ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
  ../include/macros.h
-checkart.o: checkart.c ../include/configdata.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h ../include/nntp.h
 cleanfrom.o: cleanfrom.c ../include/configdata.h ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/macros.h
 clientactive.o: clientactive.c ../include/configdata.h \
@@ -114,7 +112,9 @@ conffile.o: conffile.c ../include/config.h ../include/inn/defines.h \
  ../include/macros.h
 date.o: date.c ../include/config.h ../include/inn/defines.h \
  ../include/libinn.h
-dbz.o: dbz.c
+dbz.o: dbz.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/dbz.h ../include/libinn.h \
+ ../include/macros.h ../include/md5.h
 defdist.o: defdist.c ../include/configdata.h ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
  ../include/paths.h ../include/macros.h
