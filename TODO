@@ -250,11 +250,6 @@ Code Cleanup Projects:
   everywhere.  Plus, it makes the code more readable to use standard
   functions and data types.
 
-* Replace all of the temporary file creation code in INN with something
-  built on a safe temporary file function like mkstemp (or a local
-  replacement, if the system doesn't have it).  [Matus Uhlar was working
-  on this.]
-
 * actsyncd could stand a rewrite and cleaner handling of both
   configuration and syncing against multiple sources which are canonical
   for different sets of groups.
@@ -273,13 +268,11 @@ Code Cleanup Projects:
   with cnfsstat).  pullart.c may also stand to be merged into the same
   utility (cnfsadmin might not be a bad name).
 
-* nnrpd's code to get load averages should be pulled out into libinn and
-  made to use configure results.  Similarly (ideally) with its code for
-  setproctitle.
+* The code to set process titles should be pulled out into libinn from
+  nnrpd and the ovdb helper processes.
 
 * Use vectors or cvectors everywhere that argify and friends are currently
-  used and eliminate the separate implementations in lib/argparse.c and in
-  nnrpd/misc.c.
+  used and eliminate the separate implementation in nnrpd/misc.c.
 
 * Rename TRUE and FALSE to true and false everywhere.
 
@@ -301,8 +294,8 @@ Code Cleanup Projects:
 * Switch nnrpd over to using lib/timer.c instead of its own messy 
   timing code.  [Jeff knows about this.]
 
-* Clean up the use of ifdef for sockets, perhaps involving the creation
-  of include/portable/socket.h.
+* Clean up the use of ifdef for sockets, perhaps involving addition of
+  more to include/portable/socket.h.
 
 
 Needed Bug Fixes:
