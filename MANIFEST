@@ -179,6 +179,7 @@ doc/man/innwatch.ctl.5                Manpage for innwatch.ctl config file
 doc/man/innxbatch.8                   Manpage for innxbatch
 doc/man/innxmit.8                     Manpage for innxmit
 doc/man/libinn.3                      Manpage for INN library routines
+doc/man/libinnhist.3                  Manpage for history API library routines
 doc/man/libstorage.3                  Manpage for storage API library routines
 doc/man/mailpost.8                    Manpage for mailpost frontend
 doc/man/makeactive.8                  Manpage for makeactive
@@ -240,6 +241,7 @@ doc/pod/inndf.pod                     Master file for inndf.8
 doc/pod/innmail.pod                   Master file for innmail.1
 doc/pod/inndstart.pod                 Master file for inndstart.8
 doc/pod/install.pod                   Master file for INSTALL
+doc/pod/libinnhist.pod                Master file for libinnhist.3
 doc/pod/qio.pod                       Master file for qio.3
 doc/pod/makehistory.pod               Master file for makehistory.8
 doc/pod/news.pod                      Master file for NEWS
@@ -300,8 +302,10 @@ include/inn                           Installed header files (Directory)
 include/inn/confparse.h               Header file for configuration parser
 include/inn/defines.h                 Portable defs for installed headers
 include/inn/hashtab.h                 Header file for generic hash table
+include/inn/history.h                 Header file for the history API
 include/inn/md5.h                     Header file for MD5 digests
 include/inn/qio.h                     Header file for quick I/O package
+include/inn/sequence.h                Header file for sequence space arithmetic
 include/inn/timer.h                   Header file for generic timers
 include/inn/vector.h                  Header file for vectors of strings
 include/innconf.h                     Header file for inn.conf
@@ -323,7 +327,6 @@ innd/art.c                            Process a received article
 innd/art.h                            Article data types
 innd/cc.c                             Control channel routines
 innd/chan.c                           I/O channel routines
-innd/his.c                            History file routines
 innd/icd.c                            Read and write the active file
 innd/innd.c                           Main and utility routines
 innd/innd.h                           Header file for server
@@ -425,6 +428,7 @@ lib/resource.c                        Get process CPU usage
 lib/rwlock.c                          Read/write locking routines
 lib/sendarticle.c                     Send an article, NNTP style
 lib/sendpass.c                        Send NNTP authentication
+lib/sequence.c                        Sequence space arithmetic routines
 lib/setenv.c                          setenv replacement
 lib/seteuid.c                         seteuid replacement
 lib/snprintf.c                        snprintf and vsnprintf replacement
@@ -441,6 +445,17 @@ lib/xfopena.c                         Open a FILE in append mode
 lib/xmalloc.c                         Failsafe memory allocation wrapper
 lib/xsignal.c                         signal() wrapper using sigaction
 lib/xwrite.c                          write that handles partial transfers
+libhist                               History library routines (Directory)
+libhist/Make.hismethods               Makefile for history methods
+libhist/Makefile                      Makefile for history library
+libhist/his.c                         History API glue implementation
+libhist/hisbuildconfig.in             Construct history interface
+libhist/hisinterface.h                History API interface
+libhist/hisv6/Makefile                Makefile for v6 history
+libhist/hisv6/hismethod.config        hisbuildconfig definition
+libhist/hisv6/hisv6-private.h         Private header file for hisv6
+libhist/hisv6/hisv6.c                 hisv6 history method
+libhist/hisv6/hisv6.h                 Header for hisv6 history
 nnrpd                                 Reader server (Directory)
 nnrpd/Makefile                        Makefile for nnrpd
 nnrpd/article.c                       Article-related routines
