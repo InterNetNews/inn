@@ -435,7 +435,8 @@ dropped.
 .PP
 The local site's name (as determined by the ``pathhost'' value in
 .IR inn.conf (5))
-and an exclamation point are prepended to the Path header.
+and an exclamation point are prepended to the Path header, if
+the first site's name in the header is different from local one.
 .PP
 The Xref header is removed and a new one created.
 .PP
