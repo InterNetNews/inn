@@ -50,18 +50,18 @@ not comprehensively):
    copyright holder.  See the end of those files for details.
 
    backends/shrinkfile.c, frontends/scanspool.in, lib/concat.c,
-   lib/endian.c, lib/inet_aton.c, lib/inet_ntoa.c, lib/memcmp.c,
-   lib/parsedate.y, lib/pread.c, lib/pwrite.c, lib/setenv.c, and
-   lib/strerror.c are in the public domain.
+   lib/hstrerror.c, lib/inet_aton.c, lib/inet_ntoa.c, lib/memcmp.c,
+   lib/parsedate.y, lib/pread.c, lib/pwrite.c, lib/setenv.c, lib/seteuid.c,
+   and lib/strerror.c are in the public domain.
 
-   lib/memchr.c, lib/memmove.c, lib/memset.c, lib/strcasecmp.c,
-   lib/strspn.c, and lib/strtok.c are taken from BSD sources and are
-   covered by the standard BSD license.  See those files for more details.
+   lib/strcasecmp.c, lib/strspn.c, and lib/strtok.c are taken from BSD
+   sources and are covered by the standard BSD license.  See those files
+   for more details.
 
    lib/md5.c is covered under the standard free MD5 license from RSA Data
    Security.  See the file for more details.
 
-   tests/runtests.c is covered under a license very similar to the X
+   tests/runtests.c is covered under a license very similar to the MIT/X
    Consortium license (less restrictive than INN's licese).  See the
    beginning of the file for details.
 
