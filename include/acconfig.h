@@ -273,11 +273,6 @@ typedef bool            BOOL;
 #define NG_SEPARATOR            ","
 #define NG_ISSEP(c)             ((c) == ',')
 
-/* Always use our NNTP server-open routine, not the one from the NNTP client
-   library implementation.  We could probably go clean out the old NNTP
-   client code at some point. */
-#define REM_INND
-
 /* Only used by rnews.  Should be moved there. */
 #define RNEWS_MAGIC1            '#'
 #define RNEWS_MAGIC2            '!'
