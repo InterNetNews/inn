@@ -577,6 +577,11 @@ STATIC BOOL IsCancelledByIndex(int i, int artnum)
     }
     if (innconf->extendeddbz)
 	return FALSE;
+#else
+    /* need to call HISgetent here so ARTnumbers[i].Offset will be set for
+       code below. */
+    if (HISgetent(&index.hash, FALSE, &ARTnumbers[i].Offset) == (char *)NULL)
+            return ARTnumbers[i].Token.cancelled = TRUE;
 #endif
 
     ARTnumbers[i].Tokenretrieved = TRUE;
