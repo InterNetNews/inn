@@ -36,7 +36,6 @@ backends/batcher.c                    Make news batches
 backends/buffchan.c                   Buffered funnel to file splitter
 backends/controlbatch.in              Batch program for controlchan
 backends/controlchan.in               Channel program for control messages
-backends/crosspost.c                  Crosspost link maker
 backends/cvtbatch.c                   Add fields to simple batchfile
 backends/filechan.c                   Split a funnel into separate files
 backends/inndf.c                      df used for innwatch
@@ -86,7 +85,6 @@ doc/control-messages                  tal's description of control messages
 doc/man                               nroff documentation (Directory)
 doc/man/Makefile                      Makefile for nroff documentation
 doc/man/active.5                      Manpage for active database
-doc/man/actived.8                     Manpage for active daemon
 doc/man/actsync.8                     Manpage for active file synch program
 doc/man/actsyncd.8                    Manpage for active synch daemon
 doc/man/archive.8                     Manpage for archive backend
@@ -99,7 +97,6 @@ doc/man/cnfsstat.8                    Manpage for cnfsstat
 doc/man/control.ctl.5                 Manpage for control.ctl config file
 doc/man/controlchan.8                 Manpage for controlchan backend
 doc/man/convdate.1                    Manpage for convdate utility
-doc/man/crosspost.8                   Manpage for crosspost backend
 doc/man/ctlinnd.8                     Manpage for ctlinnd frontend
 doc/man/cvtbatch.8                    Manpage for cvtbatch utility
 doc/man/cycbuff.conf.5                Manpage for cycbuff.conf config file
@@ -108,7 +105,6 @@ doc/man/dbz.3                         Manpage for DBZ database interface
 doc/man/distrib.pats.5                Manpage for distrib.pats config file
 doc/man/expire.8                      Manpage for expire
 doc/man/expire.ctl.5                  Manpage for expire.ctl config file
-doc/man/expireindex.8                 Manpage for expireindex
 doc/man/expireover.8                  Manpage for expireover
 doc/man/expirerm.8                    Manpage for expirerm
 doc/man/fastrm.8                      Manpage for fastrm utility
@@ -136,7 +132,6 @@ doc/man/innxmit.8                     Manpage for innxmit
 doc/man/libinn.3                      Manpage for INN library routines
 doc/man/libstorage.3                  Manpage for storage API library routines
 doc/man/mailpost.8                    Manpage for mailpost frontend
-doc/man/makeactive.8                  Manpage for makeactive
 doc/man/makedbz.8                     Manpage for makedbz
 doc/man/makehistory.8                 Manpage for makehistory
 doc/man/mod-active.8                  Manpage for mod-active
@@ -157,7 +152,6 @@ doc/man/ovdb.5                        Manpage for the ovdb storage module
 doc/man/ovdb_recover.8                Manpage for ovdb_recover utility
 doc/man/ovdb_upgrade.8                Manpage for ovdb_upgrade
 doc/man/overchan.8                    Manpage for overchan backend
-doc/man/overview.ctl.5                Manpage for overview.ctl config file
 doc/man/overview.fmt.5                Manpage for overview.fmt config file
 doc/man/parsedate.3                   Manpage for parsedate library routine
 doc/man/passwd.nntp.5                 Manpage for passwd.nntp config file
@@ -177,7 +171,6 @@ doc/man/simpleftp.1                   Manpage for simpleftp utility
 doc/man/sm.8                          Manpage for sm
 doc/man/startinnfeed.1                Manpage for startinnfeed
 doc/man/storage.conf.5                Manpage for storage.conf config file
-doc/man/storage.ctl.5                 Manpage for storage.ctl config file
 doc/man/strcasecmp.3                  Manpage for strcasecmp (from BSD)
 doc/man/tally.control.8               Manpage for tally.control
 doc/man/wildmat.3                     Manpage for wildmat library routine
