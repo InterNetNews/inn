@@ -233,7 +233,7 @@ configure).
 
 =item GUP (Group Update Program)
 
-URL: <ftp://ftp.debian.org/debian/dists/unstable/main/source/news/>
+URL: <ftp://ftp.debian.org/debian/pool/main/g/gup/>
 
 GUP provides a way for your peers to update their newsfeeds entries as
 they want without having to ask you to edit the configuration file all the
