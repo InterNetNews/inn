@@ -165,6 +165,9 @@
 /* Define if you have both setrlimit() and getrlimit().  */
 #undef HAVE_RLIMIT
 
+/* Define if you have the setproctitle function.  */
+#undef HAVE_SETPROCTITLE
+
 /* Define if <sys/un.h> defines the SUN_LEN macro.  */
 #undef HAVE_SUN_LEN
 
@@ -195,10 +198,6 @@
 
 /* Define if you need to call msync for calls to read to see changes.  */
 #undef MMAP_NEEDS_MSYNC
-
-/* Define one of the following for the non-blocking I/O style to use.  */
-#undef NBIO_FCNTL
-#undef NBIO_IOCTL
 
 /* The user who gets all INN-related e-mail. */
 #undef NEWSMASTER
