@@ -152,14 +152,14 @@ release: ChangeLog
 	rm -rf $(TARDIR)
 	rm -f inn*.tar.gz
 	mkdir $(TARDIR)
-	for d in `sed $(DISTDIRS) MANIFEST` ; do mkdir $$i ; done
+	for d in `sed $(DISTDIRS) MANIFEST` ; do mkdir $$d ; done
 	for f in `sed $(DISTFILES) MANIFEST` ; do \
 	    cp $$f $(TARDIR)/$$f || exit 1 ; \
 	done
 	sed 's/= CVS prerelease/=/' < Makefile.global.in \
 	    > $(TARDIR)/Makefile.global.in
 	cp ChangeLog $(TARDIR)
-	find $(TARDIR) -type -f -print | xargs touch -t `date +%m%d%H%M.%S`
+	find $(TARDIR) -type f -print | xargs touch -t `date +%m%d%H%M.%S`
 	tar cf $(TARFILE) $(TARDIR)
 	$(GZIP) -9 $(TARFILE)
 
