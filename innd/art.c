@@ -1475,7 +1475,8 @@ STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list, 
 		        if (*q == '@') {
 			    if (wildmat(HDR(_xtrace), &q[1])) {
 			        *p = ' ';
-			        continue;
+			        sendit = FALSE;
+				break;
 			    }
 		        } else {
 			    if (wildmat(HDR(_xtrace), q))
