@@ -298,8 +298,9 @@ If not set, innfeed defaults to letting the kernel choose this address.
 The default value is unset.
 .TP
 .B bindaddress6
-This key requires a string value.  It behave like \fBbindaddress\fP except
-for outgoing IPv6 connections.
+This key requires a string value.  It behaves like \fBbindaddress\fP except
+for outgoing IPv6 connections.  A value containing colons must be enclosed
+in double quotes.
 .\"..................................................
 .SH "GLOBAL PEER DEFAULTS"
 .PP

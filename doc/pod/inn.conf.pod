@@ -267,7 +267,9 @@ default value is unset.
 
 =item I<sourceaddress6>
 
-Like I<sourceaddress> but for IPv6 sockets.
+Like I<sourceaddress> but for IPv6 sockets.  Note that you will generally
+need to put double quotes ("") around this value if you set it, since IPv6
+addresses contain colons.
 
 =item I<verifycancels>
 
