@@ -107,7 +107,7 @@ extern void openInputFile (void);
 static char *logFile ;
 static char *newsspool ;
 
-static void sigiot (int sig) ;
+static void sigemt (int sig) ;
 static void sigalrm (int sig) ;
 static void sigchld (int sig) ;
 static void sigint (int sig) ;
@@ -507,7 +507,7 @@ int main (int argc, char **argv)
   setSigHandler (SIGALRM,sigalrm) ;
 
   /* handle signal to flush all the backlog files */
-  setSigHandler (SIGIOT,sigiot) ;
+  setSigHandler (SIGEMT,sigemt) ;
 
   /* we can increment and decrement logging levels by sending SIGUSR{1,2} */
   setSigHandler (SIGUSR1,sigusr) ;
@@ -622,7 +622,7 @@ static void sighup (int sig)
   configHosts (talkToSelf) ;
 }
 
-static void sigiot (int sig)
+static void sigemt (int sig)
 {
   (void) sig ;
 

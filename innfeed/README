@@ -98,10 +98,10 @@ Changes for 0.10
 	5. More information is in the innfeed.status file, including the
 	   reasons return by the remote when it is throttled.
 
-	6. SIGIOT is now a trigger for closing and reopening all the
+	6. SIGEMT is now a trigger for closing and reopening all the
 	   backlog files. If you have scripts that need to fool with the
 	   backlogs, then have the scripts move the backlogs out of the way
-	   and then send the SIGIOT.
+	   and then send the SIGEMT.
 
 Changes for 0.9.3
 
