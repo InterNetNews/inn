@@ -14,6 +14,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <pwd.h>
 #include <syslog.h>
 #include <sys/stat.h>
 
@@ -829,16 +830,25 @@ int main(int ac, char *av[])
     message_handlers_warn(1, message_log_syslog_err);
     message_handlers_die(1, message_log_syslog_err);
 
-    if (setgid(getegid()) < 0)
-        die("cannot setgid to %lu", (unsigned long) getegid());
-    if (setuid(geteuid()) < 0)
-        die("cannot setuid to %lu", (unsigned long) geteuid());
+    /* rnews may be setuid root, group uucp so that the UUCP subsystem can run
+       it.  If that's the case, we want to setuid to the news user.  If it's
+       not, just don't do anything and continue; if we can't access the Unix
+       domain socket, that will become apparent later. */
+    if (getuid() == 0 || geteuid() == 0) {
+        struct passwd *pwd;
+
+        pwd = getpwnam(NEWSUSER);
+        if (pwd == NULL)
+            die("can't resolve %s to a UID (account doesn't exist?)",
+                NEWSUSER);
+        setuid(pwd->pw_uid);
+    }
 
     if (!innconf_read(NULL))
         exit(1);
-     UUCPHost = getenv(_ENV_UUCPHOST);
-     PathBadNews = concatpath(innconf->pathincoming, _PATH_BADNEWS);
-     port = innconf->nnrpdpostport;
+    UUCPHost = getenv(_ENV_UUCPHOST);
+    PathBadNews = concatpath(innconf->pathincoming, _PATH_BADNEWS);
+    port = innconf->nnrpdpostport;
 
     umask(NEWSUMASK);
 
