@@ -2,23 +2,17 @@ dnl Process this file with autoconf to produce a configure script.
 AC_REVISION($Id$)dnl
 AC_PREREQ(2.13)
 
-dnl FIXME: This file currently contains a lot of useful tests for things
-dnl that autoconf doesn't know how to do natively.  Some of those have since
-dnl been put into the autoconf source tree; others may have better versions
-dnl available elsewhere.  No one, to my knowledge, has checked the macros in
-dnl here against other sources, updated them to better versions if
-dnl available, and donated our macros back if no one else has them.  This
-dnl really should be done.
+dnl FIXME: The separable tests in this file should be broken out into
+dnl individual .m4 files and submitted back to autoconf or the general
+dnl macro repository.  autoconf 2.14 should have better support for doing
+dnl this.
 
-dnl A file that should always be in the root directory of the source tree,
-dnl to make sure our source file was set correctly.
 AC_INIT(Makefile.global.in)
 AC_CONFIG_AUX_DIR(support)
-
-dnl Fix the paths.
 AC_PREFIX_DEFAULT(/usr/local/news)
-test "x$prefix" = xNONE && prefix=$ac_default_prefix
-test "x$exec_prefix" = xNONE && exec_prefix=$ac_default_prefix
+
+dnl Make sure $prefix is set so that we can use it internally.
+test x"$prefix" = xNONE && prefix="$ac_default_prefix"
 
 dnl Parse the arguments.  libtool, then specifying alternate paths, then
 dnl various other compile options.
@@ -152,21 +146,21 @@ AC_ARG_ENABLE(tagged-hash,
     DO_DBZ_TAGGED_HASH=DONT)
 AC_SUBST(DO_DBZ_TAGGED_HASH)
 
-INEWSMODE=2555
+INEWSMODE=0550
 AC_ARG_ENABLE(setgid-inews,
-    [  --disable-setgid-inews  Don't install inews setgid],
-    if test "x$enableval" = xno ; then
-        INEWSMODE=0550
+    [  --enable-setgid-inews   Install inews setgid],
+    if test "x$enableval" = xyes ; then
+        INEWSMODE=2555
     fi)
 AC_SUBST(INEWSMODE)
 
-RNEWSGRP=uucp
-RNEWSMODE=4550
+RNEWSGRP=$NEWSGRP
+RNEWSMODE=0500
 AC_ARG_ENABLE(uucp-rnews,
-    [  --disable-uucp-rnews    Don't install rnews setuid, group uucp],
-    if test "x$enableval" = xno ; then
-        RNEWSGRP=$NEWSGRP
-        RNEWSMODE=0500
+    [  --enable-uucp-rnews     Install rnews setuid, group uucp],
+    if test "x$enableval" = xyes ; then
+        RNEWSGRP=uucp
+        RNEWSMODE=4550
     fi)
 AC_SUBST(RNEWSGRP)
 AC_SUBST(RNEWSMODE)
@@ -207,8 +201,8 @@ esac
 AC_SUBST(LOG_COMPRESS)
 AC_SUBST(LOG_COMPRESSEXT)
 
-dnl FIXME: hostname is more reliable on most systems; uname may truncate.
-HOSTNAME=`uname -n`
+dnl Set some configuration file defaults from the machine hostname.
+HOSTNAME=`hostname 2> /dev/null || uname -n`
 AC_SUBST(HOSTNAME)
 
 dnl Use libtool if it was requested.  Otherwise, hunt up that information
@@ -239,23 +233,43 @@ AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 AC_PROG_YACC
 
+dnl On MacOS X Server, -traditional-cpp is needed for gcc for compiling as
+dnl well as preprocessing according to Miro Jurisic <meeroh@meeroh.org>.
+case "$CPP" in
+*-traditional-cpp*)
+    CFLAGS="-traditional-cpp $CFLAGS"
+    ;;
+esac
+
 dnl System specific checks.
 AC_AIX
 AC_ISC_POSIX
 
 case "$host" in
-  *hpux*)
-    if test "$GCC" != "yes"; then
-      # Need flag to turn on ANSI
-      CFLAGS="$CFLAGS -Ae"
-      # Need -g on link command for debug to work properly
-      case "$CFLAGS" in
+
+dnl HP-UX's native compiler needs a special flag to turn on ANSI, and needs
+dnl -g on link as well as compile for debugging to work.
+*hpux*)
+    if test "$GCC" != xyes ; then
+        dnl Need flag to turn on ANSI.
+        CFLAGS="$CFLAGS -Ae"
+
+        dnl Need -g on link command for debug to work properly.
+        case "$CFLAGS" in
         *-g*)
-          LDFLAGS="$LDFLAGS -g"
-        ;;
-      esac
+            LDFLAGS="$LDFLAGS -g"
+            ;;
+        esac
     fi
-  ;;
+    ;;
+
+dnl INN doesn't use alloca(), but Boyd Gerber <gerberb@zenez.com> included
+dnl this fix in his patch to get INN compiling on UnixWare 7.1.  Left in
+dnl just in case bison needs it or INN uses alloca() down the road.
+*UnixWare*|*unixware*)
+    if test x"$GCC" != xyes ; then
+        CFLAGS="$CFLAGS -Kalloca"
+    fi
 esac
   
 dnl Checks for pathnames.
@@ -322,12 +336,12 @@ if test x"$DO_LFS" = xDO ; then
     fi
 fi
 
-dnl Make sure we have both compress and gzip, since the UUCP batching
-dnl scripts require both.  If we're using a log compression method other
-dnl than compress or gzip, check for it too and make sure it exists.  If
-dnl we don't find compress or gzip, just use the bare program names in the
-dnl hope that the path will be better at the time the script runs (or that
-dnl the script will never run).
+dnl Look for both compress and gzip, since the UUCP batching scripts require
+dnl both.  If we're using a log compression method other than compress or
+dnl gzip, check for it too and make sure whatever log compressor we're using
+dnl exists.  If we don't find compress or gzip for the UUCP scripts, just
+dnl use the bare program names in the hope that the path will be better at
+dnl the time the script runs (or that the script will never run).
 case "$LOG_COMPRESS" in
 compress|gzip) ;;
 *)             INN_ENSURE_PATH_PROG(LOG_COMPRESS, "$LOG_COMPRESS")
@@ -366,7 +380,7 @@ else
         echo ''
         if test -n "$SENDMAIL" ; then
             echo "sendmail was found at $SENDMAIL.  If this is correct, re-run"
-            echo with --with-sendmail=$SENDMAIL.
+            echo "with --with-sendmail=$SENDMAIL."
             echo ''
         fi
         AC_MSG_ERROR(sendmail not found, re-run with --with-sendmail)
@@ -1106,97 +1120,6 @@ yes
         AC_MSG_RESULT(yes)
     ],
     AC_MSG_RESULT(no))
-
-dnl FIXME: This is totally the wrong way to do this.  First, it should be
-dnl using the results of config.guess and should be done at the top of
-dnl configure, and second, it should use autoconf's standard check for
-dnl compiler consistency rather than rolling its own test if at all
-dnl possible.
-
-AC_DEFUN(AC_SYS_COMPILER_FLAG,
-[
-  AC_MSG_CHECKING($1)
-  OLD_CFLAGS="[$]CFLAGS"
-  AC_CACHE_VAL(inn_cv_option_$2,
-  [
-    CFLAGS="[$]OLD_CFLAGS $1"
-    AC_TRY_RUN([int main(){exit(0);}],
-               inn_cv_option_$2=yes,
-               inn_cv_option_$2=no, inn_cv_option_$2=no)
-  ])
-  
-  CFLAGS="[$]OLD_CFLAGS"
-  
-  if test x"[$]inn_cv_option_$2" = "xyes" ; then
-    $3="[$]$3 $1"
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-  fi
-])
-
-# We need some special hacks when running slowaris
-AC_PATH_PROG(uname_prog,uname,no)
-AC_MSG_CHECKING(operating system)
-AC_CACHE_VAL(inn_cv_sys_os,
-[
-if test "$uname_prog" != "no"; then
-  inn_cv_sys_os="`uname`"
-
-  case "$inn_cv_sys_os" in
-    SunOS)
-      case "`uname -r`" in
-        5.*) inn_cv_sys_os="Solaris";
-      esac
-    ;;
-  esac
-else
-  inn_cv_sys_os="Not Solaris"
-fi
-])
-AC_MSG_RESULT($inn_cv_sys_os)
-
-case "$inn_cv_sys_os" in
-  SCO*)
-     case "$CFLAGS" in
-       *-belf*) 
-          AC_SYS_COMPILER_FLAG(-belf,sco_belf_option,CFLAGS,[],[
-           case "$LDFLAGS" in
-             *-belf*) ;;
-             *)
-	        echo "Adding -belf option to ldflags."
-                LDFLAGS="$LDFLAGS -belf"
-             ;;
-           esac
-          ])
-	;;
-       *)
-          AC_SYS_COMPILER_FLAG(-belf,sco_belf_option,CFLAGS,[],[
-           case "$LDFLAGS" in
-             *-belf*) ;;
-             *)
-	        echo "Adding -belf option to ldflags."
-                LDFLAGS="$LDFLAGS -belf"
-             ;;
-           esac
-          ])
-       ;;
-     esac
-  ;;
-
-  UnixWare*)
-    if test "$GCC" != "yes"; then
-      # We are using built-in inline function
-      CFLAGS="$CFLAGS -Kalloca"
-      CXX="CC -DNO_CPLUSPLUS_ALLOCA"
-    fi
-  ;;
-
-esac
-AC_SUBST(CFLAGS)
-AC_SUBST(CXX)
-AC_SUBST(LD)
-AC_SUBST(LDFLAGS)
 
 dnl Default to LOG_NEWS for syslog facility if it's available, but if it's
 dnl not, fall back on LOG_LOCAL1.  --with-syslog-facility may have already
