@@ -120,7 +120,8 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     /* Check $@, which will be set if the sub died. */
     buf[0] = '\0';
     if (SvTRUE(ERRSV)) {
-        syslog(L_ERROR, "Perl function filter_art died: %s",
+        syslog(L_ERROR, "Perl function filter_art died on article %s: %s",
+               HDR_FOUND(HDR__MESSAGE_ID) ? HDR(HDR__MESSAGE_ID) : "?",
                SvPV(ERRSV, PL_na));
         (void) POPs;
         PerlFilter(FALSE);
@@ -168,8 +169,8 @@ PLmidfilter(char *messageID)
     /* Check $@, which will be set if the sub died. */
     buf[0] = '\0';
     if (SvTRUE(ERRSV)) {
-        syslog(L_ERROR, "Perl function filter_messageid died: %s",
-               SvPV(ERRSV, PL_na));
+        syslog(L_ERROR, "Perl function filter_messageid died on id %s: %s",
+               messageID, SvPV(ERRSV, PL_na));
         (void) POPs;
         PerlFilter(FALSE);
     } else if (rc == 1) {
