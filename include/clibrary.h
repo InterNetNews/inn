@@ -5,6 +5,7 @@
 **  headers, portably:
 **
 **      #include <sys/types.h>
+**      #include <stdarg.h>
 **      #include <stdio.h>
 **      #include <stdlib.h>
 **      #include <stddef.h>
@@ -27,6 +28,10 @@
 
 /* Make sure we have our configuration information. */
 #include "config.h"
+
+/* Assume stdarg is available; don't bother with varargs support any more.
+   We need this to be able to declare vsnprintf. */
+#include <stdarg.h>
 
 /* This is the same method used by autoconf as of 2000-07-29 for including
    the basic system headers with the addition of handling of strchr,
@@ -81,22 +86,23 @@
 
 BEGIN_DECLS
 
-/* Provide prototypes for functions we could be providing because the target
-   platform is missing them.  Don't provide prototypes for inet_ntoa or
-   memcmp, since they're more often present but not working (eventually,
-   configure should check to see if they're declared in the system headers
-   and we can declare them if they're not). */
-#if !HAVE_HSTRERROR
-extern const char *     hstrerror(int);
-#endif
+/* Provide prototypes for functions not declared in system headers.  Use the
+   NEED_DECLARATION macros for those functions that may be prototyped but
+   implemented incorrectly. */
 #if !HAVE_FSEEKO
 extern int              fseeko(FILE *, off_t, int);
 #endif
 #if !HAVE_FTELLO
 extern off_t            ftello(FILE *);
 #endif
+#if !HAVE_HSTRERROR
+extern const char *     hstrerror(int);
+#endif
 #if !HAVE_INET_ATON
 extern int              inet_aton(const char *, struct in_addr *);
+#endif
+#if NEED_DECLARATION_INET_NTOA
+extern const char *     inet_aton(const struct in_addr);
 #endif
 #if !HAVE_PREAD
 extern ssize_t          pread(int, void *, size_t, off_t);
@@ -104,11 +110,20 @@ extern ssize_t          pread(int, void *, size_t, off_t);
 #if !HAVE_PWRITE
 extern ssize_t          pwrite(int, const void *, size_t, off_t);
 #endif
+#if !HAVE_SETEUID
+extern int              seteuid(uid_t);
+#endif
+#if NEED_DECLARATION_SNPRINTF
+extern int              snprintf(char *, size_t, const char *, ...);
+#endif
 #if !HAVE_STRERROR
 extern const char *     strerror(int);
 #endif
 #if !HAVE_SETENV
 extern int              setenv(const char *, const char *, int);
+#endif
+#if NEED_DECLARATION_VSNPRINTF
+extern int              vsnprintf(char *, size_t, const char *, va_list);
 #endif
 
 /* "Good enough" replacements for standard functions. */
