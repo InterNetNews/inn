@@ -118,6 +118,7 @@ bind_ipv4(int fd, const char *address, unsigned short port, const char *spec)
     struct sockaddr_in server;
     struct in_addr addr;
 
+    memset(&server, '\0', sizeof(server));
     server.sin_family = AF_INET;
     server.sin_port = htons(port);
     if (!inet_aton(address, &addr))
@@ -147,6 +148,7 @@ bind_ipv6(int fd, const char *address, unsigned short port, const char *spec)
     struct sockaddr_in6 server;
     struct in6_addr addr;
 
+    memset(&server, '\0', sizeof(server));
     server.sin6_family = AF_INET6;
     server.sin6_port = htons(port);
     if (inet_pton(AF_INET6, address, &addr) < 1)
