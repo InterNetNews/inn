@@ -45,6 +45,23 @@
  **                      INNFEED PRIVATE SECTION                          **
  ***************************************************************************/
 
+#if defined(sinix)
+/* to avoid duplicate definition when using system derived yacc */
+/* this may be ugly, but do you have another suggestion ? */
+#define yy_yyv _yy_yyv
+#define yyval _yyval
+#define yylval _yylval
+#define yys _yys
+#define yyv _yyv
+#define yyexca _yyexca
+#define yyact _yyact
+#define yypact _yypact
+#define yypgo _yypgo
+#define yyr1 _yyr1
+#define yyr2 _yyr2
+#define yychk _yychk
+#define yydef _yydef
+#endif
 /*
 ** BSD/OS
 */
