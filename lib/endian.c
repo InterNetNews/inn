@@ -87,7 +87,7 @@ int main()
 	exit(1);
     }
 
-#if !defined(INN_MUST_ALIGN) && !defined(__alpha__) && !defined(__alpha)
+#if !defined(INN_MUST_ALIGN) && !defined(__alpha__) && !defined(__alpha) && !defined(__ultrix__)
     /* setup to catch alignment bus errors */
     signal(SIGBUS, buserr);
     signal(SIGSEGV, buserr);	/* some systems will generate SEGV instead! */
