@@ -4,7 +4,7 @@
 #
 # written April 1996, tale@isc.org (David C Lawrence)
 # Currently maintained by Russ Allbery <rra@stanford.edu>
-# Version 1.23, 2003-07-06
+# Version 1.24, 2003-10-05
 #
 # NOTICE TO INN MAINTAINERS:  The version that is shipped with INN is the
 # same as the version that I make available to the rest of the world
@@ -15,6 +15,9 @@
 # and your Perl is too old, please contact me (rra@stanford.edu) and tell
 # me about it; I want to know what old versions of Perl are still used in
 # practice.
+#
+# Changes from 1.23 -> 1.24
+# -- Fix bug in the recognition of wire-format articles.
 #
 # Changes from 1.15 -> 1.23
 # -- Bump version number to match CVS revision number.
@@ -253,12 +256,12 @@ exit $ok;
 # regards to the headers it checks.  It's also insistent about the
 # colon-space rule.
 sub parse_header {
-  my (%header, %dup, $label, $value);
+  my (%header, %dup, $label, $value, $nntp_format);
   while (<>) {
     # If the first header line ends with \r\n, this article is in the
     # encoding it would be in during an NNTP session.  Some article
     # storage managers keep them this way for efficiency.
-    my $nntp_format = /\r\n$/ if $. == 1;
+    $nntp_format = /\r\n$/ if $. == 1;
     s/\r?\n$//;
 
     last if /^$/;
