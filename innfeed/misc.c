@@ -154,10 +154,7 @@ void logOrPrint (int level, FILE *fp, const char *fmt, ...)
     }
   else
     {
-      char buffer [512] ;      /* gag me */
-
-      vsprintf (buffer,fmt,ap) ;
-      syslog (level,buffer) ;
+      dolog (level,fmt,ap) ;
     }
   va_end (ap) ;
 }
