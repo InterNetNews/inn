@@ -855,9 +855,9 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 	SendIOb(p, strlen(p));
 	SendIOb("\r\n", 2);	
     }
-    OVclosesearch(handle);
     SendIOb(".\r\n", 3);
     PushIOb();
+    OVclosesearch(handle);
 }
 
 
@@ -910,9 +910,9 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	OVERsize += len;
 	SendIOv(data, len);
     }
-    OVclosesearch(handle);
     SendIOv(".\r\n", 3);
     PushIOv();
+    OVclosesearch(handle);
     gettimeofday(&etv, NULL);
     OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
     OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;
@@ -1009,8 +1009,8 @@ FUNCTYPE CMDxpat(int ac, char *av[])
     }
 	}
     }
-    OVclosesearch(handle);
     SendIOb(".\r\n", 3);
     PushIOb();
+    OVclosesearch(handle);
     DISPOSE(pattern);
 }
