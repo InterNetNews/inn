@@ -25,10 +25,26 @@ runsuccess () {
     fi
 }
 
+# Run ckpasswd, feeding it the username and password on stdin in the same way
+# that nnrpd would.  Takes a username, a password, any additional options, and
+# the expected output string.
+runpipe () {
+    output=`( echo ClientAuthname: $1 ; echo ClientPassword: $2 ) \
+                | $ckpasswd $3 2>&1`
+    status=$?
+    if test $status = 0 && test x"$output" = x"$4" ; then
+        printcount "ok"
+    else
+        printcount "not ok"
+        echo "  saw: $output"
+        echo "  not: $4"
+    fi
+}
+
 # Run ckpasswd, expecting it to fail, and make sure it fails with status 1 and
 # prints out the right error message.  Takes a username, a password, any
 # additional options, and the expected output string.
-runfailure() {
+runfailure () {
     output=`$ckpasswd -u "$1" -p "$2" $3 2>&1`
     status=$?
     if test $status = 1 && test x"$output" = x"$4" ; then
@@ -47,12 +63,13 @@ done
 ckpasswd=../../authprogs/ckpasswd
 
 # Print the test count.
-echo 6
+echo 7
 
 # First, run the tests that we expect to succeed.
 runsuccess "foo" "foopass" "-f passwd" "User:foo"
 runsuccess "bar" "barpass" "-f passwd" "User:bar"
 runsuccess "baz" ""        "-f passwd" "User:baz"
+runpipe "foo" "foopass" "-f passwd" "User:foo"
 
 # Now, run the tests that we expect to fail.
 runfailure "foo" "barpass" "-f passwd" \
