@@ -78,7 +78,8 @@ QIOopen(const char *name)
     int fd;
 
     fd = open(name, O_RDONLY);
-    if (fd < 0) return NULL;
+    if (fd < 0)
+        return NULL;
     return QIOfdopen(fd);
 }
 
@@ -105,9 +106,11 @@ QIOrewind(QIOSTATE *qp)
 {
     ssize_t nread;
 
-    if (lseek(qp->_fd, 0, SEEK_SET) < 0) return -1;
+    if (lseek(qp->_fd, 0, SEEK_SET) < 0)
+        return -1;
     nread = read(qp->_fd, qp->_buffer, qp->_size);
-    if (nread < 0) return nread;
+    if (nread < 0)
+        return nread;
     qp->_count = nread;
     qp->_start = qp->_buffer;
     qp->_end = qp->_buffer + nread;

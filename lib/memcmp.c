@@ -27,12 +27,15 @@ memcmp(const void *s1, const void *s2, size_t n)
 
     /* It's technically illegal to call memcmp with NULL pointers, but we
        may as well check anyway. */
-    if (!s1) return !s2 ? 0 : -1;
-    if (!s2) return 1;
+    if (!s1)
+        return !s2 ? 0 : -1;
+    if (!s2)
+        return 1;
 
     p1 = (const unsigned char *) s1;
     p2 = (const unsigned char *) s2;
     for (i = 0; i < n; i++, p1++, p2++)
-        if (*p1 != *p2) return (int) *p1 - (int) *p2;
+        if (*p1 != *p2)
+	    return (int) *p1 - (int) *p2;
     return 0;
 }
