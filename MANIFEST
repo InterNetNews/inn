@@ -249,6 +249,8 @@ doc/man/uwildmat.3                    Manpage for uwildmat library routine
 doc/man/writelog.8                    Manpage for writelog
 doc/pod                               POD documentation (Directory)
 doc/pod/Makefile                      Maintainer rules for derived files
+doc/pod/active.pod                    Master file for active.5
+doc/pod/active.times.pod              Master file for active.times.5
 doc/pod/auth_krb5.pod                 Master file for auth_krb5.8
 doc/pod/auth_smb.pod                  Master file for auth_smb.8
 doc/pod/checklist.pod                 Master file for doc/checklist
@@ -256,7 +258,9 @@ doc/pod/ckpasswd.pod                  Master file for ckpasswd.8
 doc/pod/control.ctl.pod               Master file for control.ctl.5
 doc/pod/convdate.pod                  Master file for convdate.1
 doc/pod/cycbuff.conf.pod              Master file for cycbuff.conf.5
+doc/pod/distrib.pats.pod              Master file for distrib.pats.5
 doc/pod/domain.pod                    Master file for domain.8
+doc/pod/expire.ctl.pod                Master file for expire.ctl.5
 doc/pod/expireover.pod                Master file for expireover.8
 doc/pod/external-auth.pod             Master file for doc/external-auth
 doc/pod/fastrm.pod                    Master file for fastrm.1

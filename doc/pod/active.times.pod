@@ -1,0 +1,35 @@
+=head1 NAME
+
+active.times - List of local creation times of newsgroups
+
+=head1 DESCRIPTION
+
+The file I<pathdb>/active.times provides a chronological record of when
+newsgruops were created on the local server.  This file is normally
+updated by B<innd> whenever a newgroup control message is processed or a
+C<ctlinnd newgroup> command is issued, and is used by B<nnrpd> to answer
+NEWGROUPS requests.
+
+Each line consists of three fields:
+
+    <name> <time> <creator>
+
+The first field is the name of the newsgroup.  The second field is the
+time it was created, expressed as the number of seconds since the epoch.
+The third field is the e-mail addrses of the person who created the group,
+as specified in the control message or on the B<ctlinnd> command line, or
+the newsmaster specified at configure time if no creator argument was
+given to B<ctlinnd>.
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Converted to
+POD by Russ Allbery <rra@stanford.edu>
+
+$Id$
+
+=head1 SEE ALSO
+
+active(5), ctlinnd(8), inn.conf(5), innd(8), nnrpd(8)
+
+=cut

@@ -1,0 +1,166 @@
+=head1 NAME
+
+expire.ctl - Configuration file for article expiration
+
+=head1 DESCRIPTION
+
+The file I<pathetc>/expire.ctl is the default configuration file for
+B<expire> and B<expireover>, which read it at start-up.  It serves two
+purposes:  it defines how long history entries for expired or rejected
+articles are remembered, and it determines how long articles stored on the
+server are retained.
+
+Normally, if all of the storage methods used by the server are
+self-expiring (such as CNFS), all lines except the C</remember/> setting
+(described below) are ignored.  This can be changed with the B<-N> option
+to B<expire> or B<expireover>.
+
+Black lines and lines beginning with a number sign (C<#>) are ignored.
+All other lines should be in one of two formats.  The order of the file is
+significant, and the last matching entry will be used.
+
+The first format specifies how long to keep history entries for articles
+that aren't present in the news spool.  These are articles that have
+either already expired, or articles which the server rejected (when
+I<remembertrash> is set to true in F<inn.conf>).  There should be one and
+only one line in this format, which looks like:
+
+    /remember/:<days>
+
+where <days> is a decimal number that specifies the minimum number of days
+a history record for a given message ID is retained, regardless of whether
+the article is present in the spool.  (History entries for articles still
+present in the spool are always retained.)
+
+The primary reason to retain a record of old articles is in case a peer
+offers old articles that were previously accepted but have already
+expired.  Without a history record for such articles, the server would
+accept the article again and readers would see duplicate articles.
+Articles older than a certain number of days won't be accepted by the
+server at all (see I<artcutoff> in inn.conf(5) and the B<-c> flag in
+innd(8)), and this setting should probably match that time period (10 days
+by default) to ensure that the server never accepts duplicates.
+
+Most of the lines in this file will be in the second format, which
+consists of either four or five colon-separated fields:
+
+    <pattern>:<flag>:<keep>:<default>:<purge>
+
+if I<groupbaseexpiry> is true in F<inn.conf> (the default), and otherwise:
+
+    <classnum>:<keep>:<default>:<purge>
+
+All lines must be in the correct format given the current setting of
+I<groupbaseexpiry>, and therefore the two formats cannot co-exist in the
+same file.
+
+Normally, a rule matches a newsgroup through the combination of the
+<pattern> and <flag> fields.  <pattern> is a uwildmat(3)-style pattern,
+specifying the newsgroups to which the line is applied.  Note that the
+last matching entry will be used, so general patterns (such as defaults
+for all groups where <pattern> is C<*>) should appear at the beginning of
+the file before more specific settings.
+
+The <flag> field can be used to further limit newsgroups to which the line
+applies, and should be chosen from the following set:
+
+    M   Only moderated groups
+    U   Only unmoderated groups
+    A   All groups
+    X   Remove the article from all groups it appears in
+
+Normally, articles are not completely deleted until they expire out of
+every group to which they were posted, but if an article is expired
+following a rule where <flag> is X, it is deleted out of all newsgroups to
+which it was posted immediately.
+
+If I<groupbaseexpiry> is instead set to false, there is no <pattern> and
+<flag> field and the above does not apply.  Instead, there is a single
+<classnum> field, which is either a number matching the storage class
+number specified in F<storage.conf> or C<*> to specify a default for all
+storage classes.  All articles stored in a storage class will be expired
+following the instructions in the line with a matching <classnum>, and
+when articles are expired, they're always removed from all groups to which
+they were posted.
+
+The remaining three fields are the same in either format, and are used to
+determine how long an article should be kept.  Each field should be either
+a decimal number of days (fractions like C<8.5> are allowed, but remember
+that articles are only removed when B<expire> or B<expireover> is run,
+normally once a day by B<news.daily>) or the word C<never>.
+
+The middle field, <default>, will be used as the expiration period for
+most articles.  The other two fields, <keep> and <purge>, only come into
+play if the article requests a particular expiration date with an Expires
+header.  Articles with an Expires header will be expired at the date given
+in that header, subject to the constraints that they will be retained at
+least <keep> days and no longer than <purge> days.
+
+If <keep> is set to C<never>, no article matching that line will ever be
+expired.  If <default> is set to C<never>, no article matching that line
+without an explicit Expires header will ever be expired.  If <purge> is
+set to C<never>, Expires headers will be honored no matter how far into
+the future they are.
+
+One should think of the fields as a lower bound, the default, and an upper
+bound.  Since most articles do not have an Expires header, the second
+field is the most important and most commonly applied.
+
+Articles that do not match any expiration rule will not be expired, but
+this is considered an error and will result in a warning.  There should
+always be a default line (a line with a <pattern> of C<*> and <flag> of
+C<A>, or a line with a <classnum> of C<*>), which can explicitly state
+that articles should never expire by default if that's the desired
+configuration.  The default line should generally be the first line of the
+file (except for C</remember/>) so that other expiration rules can
+override it.
+
+It is often useful to honor the Expires header in articles, especially
+those in moderated groups.  To do this, set <keep> to zero, <default> to
+whatever normal expiration you wish, and <purge> to C<never> or some large
+number, like 365 days for a maximum article life of a year.
+
+To ignore any Expires header, set all three fields to the same value.
+
+=head1 EXAMPLES
+
+When I<groupbaseexpiry> is true (the default):
+
+    # Keep expired article history for 10 days, matching artcutoff.
+    /remember/:10
+
+    # Most articles stay for two weeks, ignoring Expires.
+    *:A:14:14:14
+
+    # Accept Expires headers in moderated groups for up to a year and
+    # retain moderated groups for a bit longer.
+    *:M:1:30:365
+
+    # Keep local groups for a long time and local project groups forever.
+    example.*:A:90:90:90
+    example.project.*:A:never:never:never
+
+When I<groupbaseexpiry> is false, for class-based expiration:
+
+    # Keep expired article history for 10 days, matching artcutoff.
+    /remember/:10
+
+    # Set a default expiration of seven days.
+    *:7:7:7
+
+    # Class 0 is retained for two weeks.
+    0:14:14:14
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Converted to
+POD by Russ Allbery <rra@stanford.edu>.
+
+$Id$
+
+=head1 SEE ALSO
+
+expire(8), expireover(8), inn.conf(5), innd(8), news.daily(8),
+storage.conf(5), uwildmat(3)
+
+=cut
