@@ -1103,7 +1103,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
         left = 0;
     else
         left = cycbuff->len - cycbuff->free - CNFS_BLOCKSIZE - 1;
-    if (article.len > (size_t) left) {
+    if ((off_t) article.len > left) {
 	for (middle = cycbuff->free ;middle < cycbuff->len - CNFS_BLOCKSIZE - 1;
 	    middle += CNFS_BLOCKSIZE) {
 	    CNFSUsedBlock(cycbuff, middle, true, false);
