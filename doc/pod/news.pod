@@ -14,10 +14,10 @@ if you were previously using PGP.
 =item *
 
 An item that was noted in NEWS below but was inadvertently left out of
-nnrpd: Users can no longer post articles containing Approved: headers to
-moderated groups by default; they must be specifically given that
-permission with the access: parameter in readers.conf.  See the man page
-for more details.
+nnrpd has actually been added this time:  users can no longer post
+articles containing Approved: headers to moderated groups by default;
+they must be specifically given that permission with the access:
+parameter in readers.conf.  See the man page for more details.
 
 =item *
 
@@ -27,9 +27,9 @@ hopefully making it somewhat more reliable, particularly for makehistory.
 
 =item *
 
-If rc.news.local exists in the INN binary directory, run it whenever
-rc.news is run, passing the start or stop argument to it.  This is
-available as a hook for local startup and shutdown code.
+If rc.news.local exists in the INN binary directory, it will be run with
+the start or stop argument whenever rc.news is run.  This is available
+as a hook for local startup and shutdown code.
 
 =item *
 
