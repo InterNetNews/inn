@@ -120,9 +120,9 @@ static void ARTreadschema(BOOL Overview)
 		Datep = fp;
 	    if (caseEQn(buff, MESSAGEID, STRLEN(MESSAGEID)-1))
 		Msgidp = fp;
-	    if (caseEQn(buff, EXPIRES, STRLEN(EXPIRES))-1)
+	    if (caseEQn(buff, EXPIRES, STRLEN(EXPIRES)-1))
 		Expp = fp;
-	    if (caseEQn(buff, XREF, STRLEN(XREF))-1)
+	    if (caseEQn(buff, XREF, STRLEN(XREF)-1))
 		Xrefp = fp;
 	    fp++;
 	}
@@ -796,7 +796,8 @@ DoMemArt(ARTHANDLE *art, BOOL Overview, BOOL Update, FILE *out, FILE *index, BOO
 		for (p++; *p == ' '; p++);
 	        q = p;
 	    }
-	    i = fprintf(index, "[%s] %s\n", hash, q);
+	    if(*q)
+		i = fprintf(index, "[%s] %s\n", hash, q);
 	    if (i == EOF || ferror(index)) {
 		(void)fprintf(stderr, "Can't write index line, %s\n", strerror(errno));
 		exit(1);
