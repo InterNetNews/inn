@@ -832,7 +832,6 @@ STATIC int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, U_INT32_T cy
     ** avoid a false negative response, *not* a false positive response.
     */
     if (! (cycnum == cycbuff->cyclenum ||
-	(cycbuff->cyclenum == 2 && cycnum + 3 == cycbuff->cyclenum) ||
 	(cycnum == cycbuff->cyclenum - 1 && offset > cycbuff->free) ||
 	(cycnum + 1 == 0 && cycbuff->cyclenum == 2 && offset > cycbuff->free))) {
 	/* We've been overwritten */
