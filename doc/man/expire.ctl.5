@@ -59,8 +59,66 @@ Where
 .I classnum 
 is the number that you specified in
 .IR storage.conf (5).
-The 
-rest of the fields are identical to the 5 field format.
+The next three fields are used to determine how long an article
+should be kept.
+Each field should be either a number of days (fractions like ``8.5'' are
+allowed) or the word ``never.''
+The most common use is to specify the default value for how long an
+article should be kept.
+The first and third fields \(em 
+.I keep
+and
+.I purge
+\(em specify the boundaries within which an Expires
+header will be honored.
+They are ignored if an article has no Expires header.
+(In other words, if an article has an Expires header, and the time at
+which the header says it should expire is sooner than the
+.I default
+field, the Expires header is be honored instead.
+Similarly, if the Expires header specifies a time longer than the
+.I default
+field, it is honored instead.
+But articles are expired no faster than the time set with
+.I keep
+and kept no longer than the time specified with
+.I purge
+regardless of Expires headers).
+One should think of the fields as ``lower-bound default upper-bound.''
+Since most articles do not have explicit expiration dates,
+the second field tends to be the most important and most commonly applied
+one.
+.PP
+The
+.I keep
+field specifies how many days an article should be kept before it will
+be removed.
+No article in the matching newsgroups will be removed if it has been filed
+for less then
+.I keep
+days, regardless of any expiration date.
+If this field is the word ``never,'' no article in the matching newsgroups
+will ever be expired.
+.PP
+The
+.I default
+field specifies how long to keep an article if no Expires header
+is present.
+If this field is the word ``never'' then articles without explicit
+expiration dates will never be expired.
+.PP
+The
+.I purge
+field specifies the upper bound on how long an article can be kept.
+No article will be kept longer then the number of days specified by this
+field.
+All articles will be removed after then have been kept for
+.I purge
+days.
+If
+.I purge
+is the word ``never'' then the article will never be deleted.
+.PP
 If the line for
 .I classnum
 is not defined,
@@ -83,11 +141,9 @@ to never (or alternately set
 to some large number, like 365 days for a maximum article life of a year).
 To ignore any Expires header, set all three fields to the same value.
 .PP
-There must be exactly one line with a
-.I pattern
-of ``*'' and a
-.I modflags
-of ``A'' \(em this matches all groups and is used to set the expiration
+There can be exactly one line with a
+.I class
+of ``255'' \(em this matches all class and can be used to set the expiration
 default.
 It should be the first expiration line.
 .SH EXAMPLES
@@ -106,5 +162,4 @@ This is revision \\$3, dated \\$4.
 .SH "SEE ALSO"
 expire(8),
 inn.conf(5),
-storage.conf(5),
-wildmat(3).
+storage.conf(5).
