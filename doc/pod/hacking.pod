@@ -622,14 +622,14 @@ supfile will download the latest versions from the mainline source:
     inn
 
 where <data-location> should be a directory where CVSup can put its data
-files and <download-location> is where the downloaded source will go.  If
-you want to pull down the entire CVS repository instead (warning: this is
-much larger than just the latest versions of the source), delete the
-C<*default tag=.> line.  The best way to download the CVS repository is to
-download it into a portion of a locally-created CVS repository, so that
-then you can perform standard CVS operations (like cvs log) against the
-downloaded repository.  Creating your own local CVS repository is outside
-the scope of this document.
+files and <download-location> is where the downloaded source will go (it
+will be put into a subdirectory named inn).  If you want to pull down the
+entire CVS repository instead (warning: this is much larger than just the
+latest versions of the source), delete the C<*default tag=.> line.  The
+best way to download the CVS repository is to download it into a portion
+of a locally-created CVS repository, so that then you can perform standard
+CVS operations (like cvs log) against the downloaded repository.  Creating
+your own local CVS repository is outside the scope of this document.
 
 For more general information on using CVSup, see the FreeBSD page on it at
 <http://www.freebsd.org/handbook/mirrors-cvsup.html>.
