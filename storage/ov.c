@@ -375,7 +375,7 @@ BOOL OVctl(OVCTLTYPE type, void *val) {
 	OVkeep = ((OVGE *)val)->keep;
 	OVearliest = ((OVGE *)val)->earliest;
 	OVignoreselfexpire = ((OVGE *)val)->ignoreselfexpire;
-	if ((EXPunlinkfile = fopen(((OVGE *)val)->filename, "w")) == NULL) {
+	if (((OVGE *)val)->filename != NULL && (EXPunlinkfile = fopen(((OVGE *)val)->filename, "w")) == NULL) {
 	    syslog(L_ERROR, "fopen: %s failed: %m", ((OVGE *)val)->filename);
 	    (void)fprintf(stderr, "fopen: %s failed: %s", ((OVGE *)val)->filename, strerror(errno));
 	    return FALSE;
