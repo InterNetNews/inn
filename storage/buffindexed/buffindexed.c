@@ -79,6 +79,7 @@ typedef struct _OVBUFF {
   BOOL			needflush;		/* true if OVBUFFHEAD is needed
 						   to be flushed */
   struct _OVBUFF	*next;			/* next ovbuff */
+  int			nextchunk;		/* next chunk */
 #ifdef OV_DEBUG
   struct ov_trace_array	*trace;
 #endif /* OV_DEBUG */
@@ -344,6 +345,7 @@ STATIC BOOL ovparse_part_line(char *l) {
   ovbuff->next = (OVBUFF *)NULL;
   ovbuff->needflush = FALSE;
   ovbuff->bitfield = (caddr_t)NULL;
+  ovbuff->nextchunk = 1;
 
   if (ovbufftab == (OVBUFF *)NULL)
     ovbufftab = ovbuff;
@@ -655,7 +657,6 @@ STATIC void ovnextblock(OVBUFF *ovbuff) {
   OFFSET_T	longoffset;
   int		bitoffset;	/* From the 'left' side of the long */
   int		i, j, last, lastbit, left;
-  static int	next = 1;
   ULONG		mask = 0x80000000;
   ULONG		*table;
 
@@ -664,7 +665,7 @@ STATIC void ovnextblock(OVBUFF *ovbuff) {
     last++;
   }
   table = ((ULONG *) ovbuff->bitfield + (OV_BEFOREBITF / sizeof(long)));
-  for (i = next ; i < last ; i++) {
+  for (i = ovbuff->nextchunk ; i < last ; i++) {
     if (i == last - 1 && left != 0) {
       for (j = 1 ; j < left ; j++) {
 	mask |= mask >> 1;
@@ -677,11 +678,11 @@ STATIC void ovnextblock(OVBUFF *ovbuff) {
     }
   }
   if (i == last) {
-    for (i = 0 ; i < next ; i++) {
+    for (i = 0 ; i < ovbuff->nextchunk ; i++) {
       if ((table[i] ^ ~0) != 0)
         break;
     }
-    if (i == next) {
+    if (i == ovbuff->nextchunk) {
       ovbuff->freeblk = ovbuff->totalblk;
       return;
     }
@@ -700,9 +701,9 @@ STATIC void ovnextblock(OVBUFF *ovbuff) {
     return;
   }
   ovbuff->freeblk = i * sizeof(long) * 8 + j;
-  next = i + 1;
+  ovbuff->nextchunk = i + 1;
   if (i == last)
-    next = 0;
+    ovbuff->nextchunk = 0;
   return;
 }
 
