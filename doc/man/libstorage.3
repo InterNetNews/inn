@@ -360,8 +360,10 @@ should be called with the handle which is got at preveous
 .I OVsearch
 returns TRUE, unless it reaches high which is specified by
 .IR OVopensearch .
-Retrieved overview data are sorted by article number, and len is 0
-if there is no overview data for article.
+Retrieved overview data are sorted by article number, and len is 0 if
+there is no overview data for article.  Note that the retrieved data
+is not neccessarily null terminated, you should only rely on len octets
+of overview data being present.
 .PP
 .I OVclosesearch
 frees all resources which is allocated by
