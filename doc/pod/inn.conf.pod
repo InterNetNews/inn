@@ -975,12 +975,6 @@ Solaris systems is highly recommended.
 
 =over 4
 
-=item I<overviewname>
-
-The file name to use for overview data under the original overview
-mechanism.  This value is not currently used.  The default is F<.overview>
-and probably never needs to be changed.
-
 =item I<patharchive>
 
 Where to store archived news.  The default value is I<pathspool>/archive.
