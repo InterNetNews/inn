@@ -1,4 +1,4 @@
-Welcome to INN 2.2.2!
+Welcome to INN 2.2.3!
 
   This work is sponsored by the Internet Software Consortium.
 
@@ -211,6 +211,6 @@ Supporting the INN Effort
   more about the ISC's goals and accomplishments from the web page at
   <URL:http://www.isc.org/isc/>.
 
-James Brister
+Russ Allbery & Katsuhiro Kondou
 inn-bugs@isc.org 	-- bug reports.
 inn@isc.org		-- general INN related mail
