@@ -276,6 +276,9 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_PATHTMP				"pathtmp"
 #define CONF_VAR_PATHTMP			84
     { _CONF_PATHTMP,				"",	1, 1 },
+#define _CONF_PATHUNIOVER				"pathuniover"
+#define CONF_VAR_PATHUNIOVER			85
+    { _CONF_PATHUNIOVER,				"",	1, 1 },
 };
-#define MAX_CONF_VAR 85
+#define MAX_CONF_VAR 86
 

@@ -144,6 +144,7 @@ struct conf_vars {
 	char *pathincoming;
 	char *patharchive;
 	char *pathtmp;
+	char *pathuniover;
 	int logsitename;	/* log site names? */
 	char *pathhttp;
 	char *nnrpdposthost;
