@@ -12,7 +12,7 @@ ROBJECTS = ovdb.$(EXTOBJ)
 
 all:			$(OBJECTS) moveobjs
 
-.c.o: $*.c
+.c.o:
 	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
 
 ovdb:
