@@ -424,7 +424,7 @@ XS(XS_INN_head)
 {
     dXSARGS;
     char *      msgid;
-    TOKEN *     token;
+    TOKEN       token;
     ARTHANDLE * art;
     char *      p;
     size_t      len;
@@ -434,10 +434,10 @@ XS(XS_INN_head)
 
     /* Get the article token from the message ID and the history file. */
     msgid = (char *) SvPV(ST(0), PL_na);
-    if (!HISlookup(History, msgid, NULL, NULL, NULL, token)) XSRETURN_UNDEF;
+    if (!HISlookup(History, msgid, NULL, NULL, NULL, &token)) XSRETURN_UNDEF;
 
     /* Retrieve the article header and convert it from wire format. */
-    art = SMretrieve(*token, RETR_HEAD);
+    art = SMretrieve(token, RETR_HEAD);
     if (art == NULL) XSRETURN_UNDEF;
     p = FromWireFmt(art->data, art->len, &len);
     SMfreearticle(art);
