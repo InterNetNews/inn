@@ -1,3 +1,23 @@
+Changes from 2.4 to 2.5
+
+    * inndstart and startinnfeed are no longer part of INN and are no longer
+      used.  Instead, a separate setuid root helper program is used to bind
+      to the news ports (and does only that), and is run by innd and nnrpd
+      when necessary.
+
+      This means that INN may not be able to increase file descriptor limits
+      for itself the way that it could before.  If you get error messages
+      about resetting the file descriptor limits, you may need to increase
+      the file descriptor limits as root before running rc.news as the news
+      user.  See the sample init script in contrib for an example of how to
+      do this.  More information on file descriptor limits can be found in
+      INSTALL.
+
+      In newsfeeds, innfeed should be run directly rather than through
+      startinnfeed.  innupgrade will attempt to take care of this
+      modification during make update.  When starting innd by hand, innd can
+      just be run directly rather than using inndstart.
+
 Upgrading from 2.3 to 2.4
 
     The inn.conf parser has changed between INN 2.3 and 2.4.  Due to that
