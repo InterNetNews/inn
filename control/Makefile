@@ -2,6 +2,8 @@
 
 include ../Makefile.global
 
+top	      = ..
+
 ALL	      = controlbatch controlchan docheckgroups gpgverify perl-nocem \
 		pgpverify signcontrol
 
@@ -41,7 +43,7 @@ signcontrol:	signcontrol.in   $(FIX) ; $(FIX) -i signcontrol.in
 
 ##  Installation rules.  Installation commands set in Makefile.global.
 
-COPY = $(UPINSTALL) $(OWNER) -m 644 -B .OLD
+COPY = ../$(INSTALL) $(OWNER) -m 644 -B .OLD
 
 install: $(INSTALLED)
 	cd modules && for M in *.pl ; do \
