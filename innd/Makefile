@@ -8,12 +8,12 @@ ALL		= innd inndstart
 
 SOURCES		= art.c cc.c chan.c his.c icd.c innd.c inndstart.c lc.c \
 		  nc.c newsfeeds.c ng.c perl.c proc.c python.c rc.c site.c \
-		  status.c tcl.c timer.c wip.c
+		  status.c tcl.c timer.c util.c wip.c
 
 # The objects that are linked into innd.  All SOURCES except inndstart.
 OBJECTS		= art.o cc.o chan.o his.o icd.o innd.o lc.o nc.o \
 		  newsfeeds.o ng.o perl.o proc.o python.o rc.o site.o \
-		  status.o tcl.o timer.o wip.o
+		  status.o tcl.o timer.o util.o wip.o
 
 INSTALLED	= $(D)$(PATHBIN)/innd \
 		  $(D)$(PATHBIN)/inndstart
