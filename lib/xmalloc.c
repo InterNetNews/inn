@@ -1,81 +1,107 @@
-/*  $Id$
+/* $Id$
 **
-**  malloc and realloc which call a memory failure handler on failure and
-**  never returns NULL, so that the rest of the application doesn't have to
-**  check malloc's return status.  The default xmemfailure exits the
-**  application, but this implementation allows for one that waits for a
-**  while and then returns, or performs some other emergency action and will
-**  continue calling malloc as long as xmemfailure keeps returning.
+**  malloc routines with failure handling.
+**
+**  Usage:
+**
+**       extern xmalloc_handler_t memory_error;
+**       extern const char *string;
+**       char *buffer;
+**
+**       xmalloc_error_handler = memory_error;
+**       buffer = xmalloc(1024);
+**       xrealloc(buffer, 2048);
+**       free(buffer);
+**       buffer = xstrdup(string);
+**
+**  xmalloc, xrealloc, and xstrdup behave exactly like their C library
+**  counterparts without the leading x except that they will never return
+**  NULL.  Instead, on error, they call xmalloc_error_handler, passing it
+**  the name of the function whose memory allocation failed, the amount of
+**  the allocation, and the file and line number where the allocation
+**  function was invoked (from __FILE__ and __LINE__).  This function may do
+**  whatever it wishes, such as some action to free up memory or a call to
+**  sleep to hope that system resources return.  If the handler returns, the
+**  interrupted memory allocation function will try its allocation again
+**  (calling the handler again if it still fails).
+**
+**  The default error handler, if none is set by the caller, prints an error
+**  message to stderr and exits with exit status 1.  An error handler must
+**  take a const char * (function name), size_t (bytes allocated), const
+**  char * (file), and int (line).
+**
+**  xmalloc will return a pointer to a valid memory region on an xmalloc of 0
+**  bytes, ensuring this by allocating space for one character instead of 0
+**  bytes.
+**
+**  The functions defined here are actually x_malloc, x_realloc, etc.  The
+**  header file defines macros named xmalloc, etc. that pass the file name
+**  and line number to these functions.
 */
+
 #include "config.h"
 #include "libinn.h"
 
-#include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
 
-#ifdef STDC_HEADERS
+#if STDC_HEADERS
 # include <string.h>
-#else
-# ifdef HAVE_MEMORY_H
-#  include <memory.h>
-# endif
-# ifdef HAVE_STRING_H
-#  include <string.h>
-# endif
+#elif !HAVE_MEMCPY
+# define memcpy(d, s, n)        bcopy((s), (d), (n))
 #endif
 
-/* Assume this will be provided if the system doesn't have it. */
-#ifndef HAVE_STRERROR
-extern char *strerror();
-#endif
+/* The default error handler. */
+static void
+xmalloc_fail(const char *function, size_t size, const char *file, int line)
+{
+    sysdie("failed to %s %lu bytes at %s line %d", function,
+           (unsigned long) size, file, line);
+}
+
+/* Assign to this variable to choose a handler other than the default. */
+xmalloc_handler_t xmalloc_error_handler = xmalloc_fail;
 
 void *
-xmalloc(size_t size, const char *file, int line)
+x_malloc(size_t size, const char *file, int line)
 {
     void *p;
+    size_t real_size;
 
-    p = malloc(size);
+    real_size = (size > 0) ? size : 1;
+    p = malloc(real_size);
     while (p == NULL) {
-        (*xmemfailure)("malloc", size, file, line);
-        p = malloc(size);
+        (*xmalloc_error_handler)("malloc", size, file, line);
+        p = malloc(real_size);
     }
     return p;
 }
 
 void *
-xrealloc(void *p, size_t size, const char *file, int line)
+x_realloc(void *p, size_t size, const char *file, int line)
 {
     void *newp;
 
     newp = realloc(p, size);
-    while (newp == NULL) {
-        (*xmemfailure)("remalloc", size, file, line);
+    while (newp == NULL && size > 0) {
+        (*xmalloc_error_handler)("realloc", size, file, line);
         newp = realloc(p, size);
     }
     return newp;
 }
 
 char *
-xstrdup(const char *s, const char *file, int line)
+x_strdup(const char *s, const char *file, int line)
 {
     char *p;
+    size_t len;
 
-    p = strdup(s);
+    len = strlen(s) + 1;
+    p = malloc(len);
     while (p == NULL) {
-        (*xmemfailure)("strdup", strlen(s), file, line);
-        p = strdup(s);
+        (*xmalloc_error_handler)("strdup", len, file, line);
+        p = malloc(len);
     }
+    memcpy(p, s, len);
     return p;
 }
-
-static int
-xmemerr(const char *what, size_t size, const char *file, int line)
-{
-    fprintf(stderr, "%s:%d Can\'t %s %lu bytes: %s",
-            file, line, what, (unsigned long) size, strerror(errno));
-    exit(1);
-}
-
-/* Set the default error handler. */
-int (*xmemfailure)(const char *, size_t, const char *, int) = xmemerr;
