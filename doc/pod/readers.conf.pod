@@ -311,6 +311,11 @@ adds a new Date: header in UTC.  If this is set to true, the Date: header
 will be formatted in local time instead.  This is a boolean value and the
 default is false.
 
+=item B<newsmaster:>
+
+Used as the contact address in the help message returned by nnrpd(8) if
+the virtualhost: parameter is set to true.
+
 =item B<strippath:>
 
 If set to true, any Path: header provided by a user in a post is stripped
@@ -331,17 +336,15 @@ default is true.
 
 =item B<virtualhost:>
 
-If set to true, nnrpd(8) behaves as a different news server, and also domain
-cannot be unset.  If pathhost is same as in inn.conf, domain is used as
-pathhost.  And if pathhost is same as in inn.conf in this case, nnrpd(8) fails
-to start.  If virtualhost is enabled, some of headers(Path, Message-ID and
-X-Trace) of posted articles will be changed for the virtual host.  And also
-some of headers(Path and Xref) of retrieved artilces will be changed for it.
-
-=item B<newsmaster:>
-
-This is used for contact address listed in help message when virtualhost
-is enabled.
+If set to true, nnrpd(8) will behave as if it's running on a server with a
+different name.  This affects the Path:, Message-ID:, and X-Trace: headers
+of posted articles, as well as the apparent Path: and Xref: headers of all
+articles read by the client.  One of pathhost: or domain: must be set in
+the same access group if this parameter is set to true, and nnrpd(8) will
+act as if the server name is the value of pathhost:, or domain: if
+pathhost: isn't set or is set to the same value as in inn.conf(5).  One of
+these parameters must be set to something different than that set in
+inn.conf.
 
 =back
 
