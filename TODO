@@ -32,11 +32,11 @@ Scheduled for INN 2.4
 Scheduled for INN 2.5
 
 * Rewrite configure, breaking all of the tests out into separate files
-  using the new capabilities in autoconf 2.50 and later.  Replace our
-  local macros with the more general features provided by autoconf.  At
-  the same time, configure.in and Makefile.global.in should be fixed to
-  use the same names as each other for various parameters.  [Russ plans to
-  work on this.]
+  using the new capabilities in autoconf 2.5x.  Replace our local macros
+  with the more general features provided by autoconf.  At the same time,
+  configure.in and Makefile.global.in should be fixed to use the same
+  names as each other for various parameters.  [Russ plans to work on
+  this.]
 
 * Add support for groups, nesting, and vectors to the new configuration
   parsing code.  [Russ plans on doing this.]
@@ -60,12 +60,7 @@ Scheduled for INN 2.5
   this is done, the implementation should really be documented; we do some
   interesting things with embedded filters and it would be nice to have a
   general document describing how we do it.  [Russ is planning on working
-  on this at some point.]
-
-* Add a generic, modular anti-spam and anti-abuse filter, off by default,
-  but coming with INN and prominently mentioned in the INSTALL
-  documentation.  [Andrew Gierth has work in progress that may be usable
-  for this.]
+  on this at some point, but won't get upset if someone starts first.]
 
 * All of INN's documentation should be written in POD, with text and man
   pages generated from the POD source.  Anyone is encouraged to work on
@@ -77,7 +72,6 @@ Scheduled for INN 2.5
   Perl programs, and include the necessary glue so that other Perl modules
   can be added to INN's build tree and installed with INN, allowing their
   capabilities to be available to the portions of INN written in Perl.
-  [Russ plans on doing this.]
 
 * Switch nnrpd over to using the new wildmat routines rather than breaking
   apart strings on commas and matching each expression separately.  This
@@ -85,8 +79,36 @@ Scheduled for INN 2.5
   and may change the interpretation of ! and @ in group permission
   wildmats.
 
+* Rework and clean up the storage API.  The major change is that the
+  initialization function should return a pointer to an opaque struct
+  which stores all of the state of the storage subsystem, rather than all
+  of that being stored in static variables, and then all other functions
+  should take that pointer.  More of the structures should also be opaque,
+  all-caps structure names should be avoided in favor of named structures,
+  SMsetup and SMinit should be combined into one function that takes
+  flags, SMerrno and SMerrorstr should be replaced with functions that
+  return that information, and the wire format utilities should be moved
+  into libinn.
+
+* Rework and clean up the overview API.  The major change is that the
+  initialization function should return a pointer to an opaque struct
+  which stores all of the state of the overview subsystem, rather than all
+  of that being stored in static variables, and then all other functions
+  should take that pointer.  OVctl possibly should instead take and return
+  a struct rather than using an ioctl-style interface.  Currently, the
+  overview functions do a lot of breaking apart of Xref headers and
+  parsing them, which is very ugly; consider having the overview interface
+  always key off a newsgroup name and article number, even for storing.
+  OVadd should probably take a structure and OVsearch should probably
+  return a structure.
+
 
 Scheduled for INN 2.6
+
+* Add a generic, modular anti-spam and anti-abuse filter, off by default,
+  but coming with INN and prominently mentioned in the INSTALL
+  documentation.  [Andrew Gierth has work in progress that may be usable
+  for this.]
 
 * A unified configuration file combining the facilities of newsfeeds,
   incoming.conf, and innfeed.conf, but hopefully more readable and easier
@@ -131,7 +153,10 @@ High Priority Projects
   simply wrong and there's no equally readable way to rewrite the code,
   INN should compile cleanly under "make warnings".  It should be possible
   for maintainers to routinely compile INN with make warnings to catch
-  problems.
+  problems.  Note that -Wcast-qual warnings cannot be avoided entirely
+  because we don't want to write redundant functions for regular and const
+  strings and because of such things as struct iovec; -Wcast-qual will be
+  removed from make warnings when this task is reasonably complete.
 
 * Add documentation of adding and removing CNFS cycbuffs.
 
@@ -159,9 +184,25 @@ High Priority Projects
 * Apparently on Solaris open can also be interrupted by a signal; we may
   need to have an xopen wrapper that checks for EINTR and retries.
 
-* ctlinnd renumber for tradspool no longer works, in the sense that it
-  doesn't detect and fix differences between the files present on disk and
-  the low and high water marks in the active file or in the overview.
+* tradspool has a few annoying problems.  Deleted newsgroups never have
+  their last articles expired, and there is no way of forcibly
+  resynchronizing the articles stored on disk with what overview knows
+  about unless tradindexed is used.  Some sort of utility program to take
+  care of these and to do things like analyze the tradspool.map file
+  should be provided.
+
+* Rewrite inndstart as a helper program that only binds the relevant
+  sockets and then returns them to innd.  Since file descriptors are
+  shared by child processes, this can be done with a program spawned by
+  innd.  This may have gotten more complicated with IPv6.  Drop
+  startinnfeed entirely in favor of recommending people use ulimit in the
+  news init script.
+
+* contrib/mkbuf and contrib/reset-cnfs.c should be combined into a utility
+  for creating and clearing cycbuffs, perhaps combined with cnfsheadconf,
+  and the whole thing moved into storage/cnfs rather than frontends (along
+  with cnfsstat).  pullart.c may also stand to be merged into the same
+  utility (cnfs-util might not be a bad name).
 
 
 Documentation Projects
@@ -183,13 +224,13 @@ Documentation Projects
 
 * Everything installed by INN should have a man page.  Currently, there
   are several binaries and configuration files that don't have man pages.
-  (In some cases, the best thing to do with the configuration file is to
-  merge it into another one or find a way to eliminate it.)
+  (In some cases, the best thing to do with the configuration file may be
+  to merge it into another one or find a way to eliminate it.)
 
 * Document the internal formats of the various overview methods, CNFS,
   timehash, and timecaf.  A lot of this documentation already exists in
-  various forms, but it needs to be cleaned up and collected in one place,
-  preferrably as a man page.
+  various forms, but it needs to be cleaned up and collected in one place
+  for each format, preferrably as a man page.
 
 * Add documentation for slave servers.  [Russ has articles from
   inn-workers that can be used as a beginning.]
@@ -221,9 +262,6 @@ Code Cleanup Projects
   standardizing the names of all of the #defines it provides, including
   the message class.  [Russ has a start on this.]
 
-* frontends/pullnews and contrib/backupfeed solve the same problem; the
-  best ideas of both should be unified into one script.
-
 * Get rid of GetTimeInfo and TIMEINFO.  All the struct is is a struct
   timeval plus time zone information.  All of the parts of INN that deal
   with time zone information are isolated in lib/date.c.  The rest of INN
@@ -232,23 +270,9 @@ Code Cleanup Projects
   everywhere.  Plus, it makes the code more readable to use standard
   functions and data types.
 
-* actsyncd could stand a rewrite and cleaner handling of both
-  configuration and syncing against multiple sources which are canonical
-  for different sets of groups.
-
-* send-nntp and nntpsend basically do the same thing; send-nntp could
-  probably be removed (possibly with some extra support in nntpsend for
-  doing simpler things).
-
 * putman.sh should be merged into support/install-sh (which would mean
   giving up any pretext of using the standard install-sh script, but that
   should be fine).
-
-* contrib/mkbuf and contrib/reset-cnfs.c should be combined into a utility
-  for creating and clearing cycbuffs, perhaps combined with cnfsheadconf,
-  and the whole thing moved into storage/cnfs rather than frontends (along
-  with cnfsstat).  pullart.c may also stand to be merged into the same
-  utility (cnfs-util might not be a bad name).
 
 * Use vectors or cvectors everywhere that argify and friends are currently
   used and eliminate the separate implementation in nnrpd/misc.c.
@@ -258,17 +282,41 @@ Code Cleanup Projects
 * Remove all the register qualifiers for variables everywhere.
 
 * Eliminate all of the needless casts to void that are scattered around to
-  silent old versions of lint.
+  silent lint.
 
-* Break the CNFS code and the tradspool code into multiple source files to
-  make it easier to understand the logical divisions of the code.
+* Eliminate use of NEW, DISPOSE, RENEW, and COPY everywhere in favor of
+  xmalloc, free, xrealloc, and xstrdup.
+
+* Eliminate use of EQ, EQn, caseEQ, and caseEQn everywhere in favor of
+  calling strcmp, strncmp, strcasecmp, and strncasecmp and comparing the
+  result to 0.
+
+* Change SIZEOF and ENDOF to ARRAY_SIZE and ARRAY_END so that it's clearer
+  what they're for and move them from macros.h to inn/defines.h.
+
+* Eliminate use of the STRLEN macro; it's too confusingly named.  In
+  general, this macro should not be needed.  Most compilers will optimize
+  strlen on constant strings, and strlen on a short string isn't a
+  significantly expensive operation regardless.
+
+* Phase out the rest of macros.h, moving the remaining functions to a
+  better include file and possibly renaming them.
+
+* Break up the remainder of libinn.h into multiple inn/* include files for
+  specific functions (such as memory management, wildmat, date handling,
+  NNTP commands, etc.), with an inn/util.h header to collect the remaining
+  random utilities.
+
+* Break the CNFS and tradspool code into multiple source files to make it
+  easier to understand the logical divisions of the code and consider
+  doing the same with the other overview and storage methods.
 
 * Examine the (mostly socket) code that currently should probably be
   compiled with -fno-strict-aliasing on gcc and move the relevant casts
   to within function calls.  [Russ knows about this.]
 
-* Clean up the use of ifdef for sockets, perhaps involving addition of
-  more to include/portable/socket.h.
+* Clean up the use of #ifdef for sockets and IPv6, perhaps involving
+  addition of more to include/portable/socket.h.
 
 
 Needed Bug Fixes
@@ -284,13 +332,6 @@ Needed Bug Fixes
 * INN's startup script should be sure to clean out old lock files and PID
   files for innfeed.  Be careful, though, since innfeed may still be
   running, spawned from a previous innd.
-
-* Various things may break when trying to use data written while compiled
-  with large file support using a server that wasn't so compiled (and vice
-  versa).  The main one is the history file, but tradindexed is also
-  affected and buffindexed has been reported to have problems with this
-  as well.  Ideally, all of INN's data files should be as portable as
-  possible.
 
 * makedbz should be more robust in the presence of malformed history
   lines, discarding with them or otherwise dealing with them.
@@ -466,7 +507,29 @@ Requested New Features
   something like "Local".
 
 * news.daily could detect if expire segfaults and unpause the server.
-  
+
+* When using SSL, track the amount of data that's been transferred to the
+  client and periodically renegotiate the session key.
+
+* When using SSL, use SSL_get_peer to get a verified client certificate,
+  if available, and use it to create an additional header line when
+  posting articles (X-Auth-Poster?).  This header could use:
+
+      X509_NAME_oneline(X509_get_subject_name(peer),...)
+
+  for the full distinguished name, or
+
+      X509_name_get_text_by_NID(X509_get_subject_name(peer),
+                                NID_commonName, ...)
+   
+  for the client's "common name" alone.
+
+* When using SSL, use the server's key to generate an HMAC of the body of
+  the message (and most headers?), then include that digest in the
+  headers.  This allows a news administrator to determine if a complaint
+  about the content of a message is fradulent since the message was
+  changed after transmission.
+
 
 General Projects
 
@@ -511,12 +574,16 @@ General Projects
   passwords containing spaces.  The correct solution isn't clear; check
   with the current NNTP RFC draft and how existing clients handle it?
 
-* Rewrite inndstart as a helper program that only binds the relevant
-  sockets and then returns them to innd.  Since file descriptors are
-  shared by child processes, this can be done with a program spawned by
-  innd.  This may have gotten more complicated with IPv6.  Drop
-  startinnfeed entirely in favor of recommending people use ulimit in the
-  news init script.
+* frontends/pullnews and contrib/backupfeed solve the same problem; the
+  best ideas of both should be unified into one script.
+
+* actsyncd could stand a rewrite and cleaner handling of both
+  configuration and syncing against multiple sources which are canonical
+  for different sets of groups.
+
+* send-nntp and nntpsend basically do the same thing; send-nntp could
+  probably be removed (possibly with some extra support in nntpsend for
+  doing simpler things).
 
 
 Long-Term Projects
@@ -694,6 +761,13 @@ Long-Term Projects
   auth groups.  With those two parameters (and ssl_required:) we
   essentially eliminate the need to run multiple instances of nnrpd just to
   use different configurations.
+
+* Various things may break when trying to use data written while compiled
+  with large file support using a server that wasn't so compiled (and vice
+  versa).  The main one is the history file, but tradindexed is also
+  affected and buffindexed has been reported to have problems with this
+  as well.  Ideally, all of INN's data files should be as portable as
+  possible.
 
 
 Complete Code Reorganization
