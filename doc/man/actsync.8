@@ -191,9 +191,8 @@ used by
 The \fBflags\fP config file line refers to all flags that you wish to pass to
 .IR actsync (8).
 .sp 1
-Note that the \fB\-i ignore_file\fP option,
-the \fB-o format\fP option
-and the \fB-S spool_dir\fP option
+Note that the \fB\-i ignore_file\fP option
+and the \fB-o format\fP option
 should not be given
 in the \fBflags=\fP line because they are automatically taken care of by
 .IR actsyncd (8).
@@ -707,36 +706,6 @@ By default,
 .B size
 is 0 and thus no length checking is performed.
 .TP
-.BR \-S " spool_dir"
-For each new newsgroup (i.e., selected groups found on host2 that
-were not found on host), the newsgroup directory under
-.B spool_dir
-will be examined.
-If storageapi is turned on, this should be the same name as pathoverview in
-.IR inn.conf .
-If this newsgroup directory exists, then the
-hi & low (2nd & 3rd active fields)
-values of the active entry will be changed to
-reflect the range articles found.
-.sp 1
-This flag is only useful with
-.BR \-o " a,"
-.BR \-o " a1,"
-.BR \-o " ak,"
-.BR \-o " aK,"
-.BR \-o " alk,"
-.BR \-o " alK,"
-.BR \-o " ak1 or"
-.BR \-o " aK1."
-The
-.BR \-S " spool_dir"
-will override any hi & low (2nd & 3rd active fields)
-values that would normally have been used.
-This is an important and \fBvery much recommended\fP
-option as it will prevent article number collisions
-on newsgroups that have been removed previous but still
-have unexpired articles in them.
-.TP
 .BR \-t " hostid"
 Ignore improper newsgroups with only a top component
 from
@@ -1084,32 +1053,7 @@ ctlinnd go 'running actsync'
 .fi
 .PP
 It should be noted that the above 'pause', 'actsync', 'reload' and 'go'
-method is faster.  However, in order to avoid article number collisions
-on newsgroups that have been removed previous but still
-have unexpired articles in them, it is \fBvery much recommended\fP
-that the
-.BR \-S " spool_dir"
-be used with any of the
-.BR \-o a*
-flags.
-Thus, a much better and safer version of the above would be:
-.sp 1
-.nf
-.in +0.5i
-ctlinnd pause 'running actsync'
-rm -f active.new
-actsync ... flags ... \-o a1 -S <patharticles or pathoverview in inn.conf> erehwon.honey.edu > active.new
-rm -f active.old
-ln active active.old
-mv active.new active
-ctlinnd reload active 'running actsync'
-ctlinnd go 'running actsync'
-.in -0.5i
-.fi
-.PP
-The above process is similar to what
-.IR actsyncd (8)
-does by default.
+method is faster.
 .PP
 .SH CAUTION
 Careless use of this tool may result in the addition

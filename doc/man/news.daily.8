@@ -25,9 +25,7 @@ By specifying ``keywords'' on the command line, it is possible to
 modify the functions performed, as well as change the arguments given to
 .IR expire (8)
 and
-.IR expireover (8)
-or
-.IR expireindex (8).
+.IR expireover (8).
 .PP
 .I News.daily
 should be run once a day, typically out of
@@ -47,9 +45,7 @@ The following keywords may be used:
 This uses the ``\fB\-z\fP'' flag when invoking
 .I expire
 and
-.IR expireover
-or
-.IR expireindex .
+.IR expireover .
 The names of articles to be removed are written to a temporary file, and
 then renamed after expiration by calling
 .IR expirerm (8).
@@ -163,20 +159,14 @@ If the file is empty, no message is sent.
 The
 .I expireover
 program is called after expiration to purge the overview databases or indices.
-If you have turned on the storage manager with the 'storageapi' in
-.IR inn.conf (5),
-.I expireindex
-program is called instead.  
-If storageapi turned on and no overview data is created, the ``expireover''
+If no overview data is created, the ``expireover''
 keyword is not needed.  This is the case that the server runs only for
 feeder(no reader).
 .TP
 .IR expireoverflags= "'expireover\ args'"
 If the ``expireover'' keyword is used, this keyword may be used to specify
 the flags to be passed to
-.IR expireover
-or
-.IR expireindex .
+.IR expireover .
 If the ``delayrm'' keyword is used, then the default value is ``\-z''
 and the list of deleted files; otherwise, the default value is ``\-s''.
 .TP

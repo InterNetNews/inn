@@ -3,9 +3,7 @@
 .SH NAME
 storage.conf \- configuration file for storage manager
 .SH DESCRIPTION
-If ``storageapi'' is set to ``true'' in
-.IR inn.conf (5),
-the storage API will be used to store articles.  The storage API is a
+The storage manager is a
 unified interface between INN and a variety of different storage method,
 allowing the news administrator to choose between different storage method
 with different tradeoffs (or even use several at the same time for
@@ -14,9 +12,8 @@ need not care what type of storage method was used for a given article;
 the storage manager will figure this out automatically when that article
 is retrieved via the storage API.
 .PP
-If the storage API is used, the file
 .I <pathetc in inn.conf>/storage.conf
-is required.  This file contains the rules to be used in assigning
+file contains the rules to be used in assigning
 articles to different storage methods.
 .PP
 The file consists of a series of storage method entries.
@@ -187,11 +184,8 @@ the sequence number of the article in that newsgroup.  For crossposted
 articles, the article is linked into each newsgroup to which it is
 crossposted (using either hard or symbolic links).  This is the way all
 versions of INN prior to 2.0 stored all articles, as well as being the
-article storage format used by C News and earlier news systems.  This is
-also the way INN stores articles if the storage API is not used (although
-the ``tradspool'' storage API storage method can't directly use
-traditional spools created without the storage API, for a variety of
-reasons).  This method does not have self-expire functionality.
+article storage format used by C News and earlier news systems.
+This method does not have self-expire functionality.
 .TP
 .B trash
 This method silently discards all articles stored in it.  Its only real
