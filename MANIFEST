@@ -242,6 +242,8 @@ include/conffile.h                    Header file for reading *.conf files
 include/config.h.in                   Template configuration data 
 include/configdata.h                  Obsolete header
 include/dbz.h                         Header file for DBZ
+include/inn                           Additional header files (Directory)
+include/inn/defines.h                 Portable defs for installed headers
 include/innconf.h                     Header file for inn.conf
 include/inndcomm.h                    innd control channel commands
 include/libinn.h                      INN library declarations
@@ -376,12 +378,10 @@ lib/strtok.c                          Split a string into tokens (BSD)
 lib/tempname.c                        Temporary filename generator
 lib/waitnb.c                          Non-blocking wait wrapper
 lib/wildmat.c                         Pattern match routine
-lib/writev.c                          Fake writev for sites without it
 lib/xfopena.c                         Open a FILE in append mode
 lib/xmalloc.c                         Failsafe memory allocation wrapper
 lib/xsignal.c                         signal() wrapper using sigaction
 lib/xwrite.c                          write that handles partial transfers
-lib/xwritev.c                         writev that handles partial transfers
 nnrpd                                 Reader server (Directory)
 nnrpd/Makefile                        Makefile for nnrpd
 nnrpd/article.c                       Article-related routines
@@ -536,7 +536,7 @@ storage/trash/Makefile                Makefile for trash storage method
 storage/trash/method.config           buildconfig definition
 storage/trash/trash.c                 Trash storage routines
 storage/trash/trash.h                 Header file for trash storage
-support                               Tools for building INN
+support                               Tools for building INN (Directory)
 support/config.guess                  Determine system type for libtool
 support/config.sub                    Canonicalize system type for libtool
 support/fixscript.in                  Interpreter path fixup script
@@ -544,3 +544,14 @@ support/install-sh                    Installation utility
 support/ltconfig                      Configure libtool
 support/ltmain.sh                     Source for libtool utility
 support/makedepend                    Generate dependencies for C files
+tests                                 Test suite for INN (Directory)
+tests/Makefile                        Makefile for test suite
+tests/TESTS                           List of tests to run
+tests/lib                             Test suite for libinn (Directory)
+tests/lib/concat-t.c                  Tests for lib/concat.c
+tests/lib/error-t.c                   Tests for lib/error.c
+tests/lib/fakewrite.c                 Helper functions for xwrite tests
+tests/lib/strerror-t.c                Tests for lib/strerror.c
+tests/lib/xmalloc.c                   Helper program for xmalloc tests
+tests/lib/xmalloc.t                   Tests for lib/xmalloc.c
+tests/lib/xwrite-t.c                  Tests for lib/xwrite.c
