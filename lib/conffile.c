@@ -19,6 +19,7 @@ static char *CONFgetword(CONFFILE *F)
   char          *word;
   register BOOL flag;
 
+  if (!F) return (NULL);	/* No conf file */
   if (!F->buf || !F->buf[0]) {
     if (feof (F->f)) return (NULL);
     if (!F->buf) {
