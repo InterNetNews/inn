@@ -710,7 +710,7 @@ char *temppath;
     char nulls[1];
 
     strncpy(realpath, cfpath, SPOOLNAMEBUFF);
-    snprintf(path, SPOOLNAMEBUFF, "%s.%d", cfpath, getpid());/* create path with PID attached */
+    sprintf(path, "%s.%d", cfpath, getpid());/* create path with PID attached */
     /* 
     ** Shouldn't be anyone else with our pid trying to write to the temp.
     ** file, but there might be an old one lying around.  Nuke it.
