@@ -1,53 +1,53 @@
-/* -*- c -*-
- *
- * Author:      Christophe Wolfhugel <wolf@pasteur.fr>
- *		(although he wouldn't recognise it anymore so don't blame him)
- * File:        perl.c
- * RCSId:       $Id$
- * Description: Perl hooks for libinn.a
- * 
- */
+/*  $Id$
+**
+**  Embedded Perl support for INN.
+**
+**  Originally written by Christophe Wolfhugel <wolf@pasteur.fr> (although
+**  he wouldn't recongize it any more, so don't blame him) and modified,
+**  expanded, and tweaked by James Brister, Dave Hayes, and Russ Allbery
+**  among others.
+**
+**  This file contains the Perl linkage shared by both nnrpd and innd.  It
+**  assumes Perl 5.004 or later.
+*/
 
-#if ! defined (lint)
-static const char *rcsid = "$Id$" ;
-static void use_rcsid (const char *rid) {   /* Never called */
-  use_rcsid (rcsid) ; use_rcsid (rid) ;
-}
-#endif
+#include "config.h"
 
+/* Skip this entire file if DO_PERL (./configure --with-perl) isn't set. */
+#if DO_PERL
 
-#include <stdio.h>
-#include <sys/types.h>
-#include <syslog.h> 
-#include <fcntl.h>
-#include "configdata.h"
 #include "clibrary.h"
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+#include <syslog.h>
+
 #include "libinn.h"
 #include "macros.h"
-
-#if defined(DO_PERL)
-
-#if defined (DO_NEED_BOOL)
-typedef enum { false = 0, true = 1 } bool;
-#endif
 
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
 #include "ppport.h"
 
-extern void xs_init    _((void));
-extern void boot_DynaLoader _((CV* cv));
+/* Provided by DynaLoader but not declared in Perl's header files. */
+extern void boot_DynaLoader(CV *cv);
 
-int	PerlFilterActive = FALSE;
+/* Forward declarations. */
+int     PERLreadfilter(char *filterfile, char *function);
+void    PerlSilence(void);
+void    PerlUnSilence(void);
+void    xs_init(void);
 
-static PerlInterpreter	*PerlCode;
-CV *perl_filter_cv ;                 /* filter_art or filter_post holder */
+/* Whether Perl filtering is currently active. */
+bool PerlFilterActive = FALSE;
 
-int PERLreadfilter(char *filterfile, char *function);
+/* The filter sub called (filter_art or filter_post). */
+CV *perl_filter_cv;
 
-void PerlSilence();
-void PerlUnSilence();
+/* The embedded Perl interpretor. */
+static PerlInterpreter *PerlCode;
+
 
 void LogPerl()
 {
@@ -219,7 +219,7 @@ int PERLreadfilter(char *filterfile, char *function)
 
 
 /*
-** Stops using the Perl filter
+**  Stops using the Perl filter
 */
 void PerlClose(void)
 {
@@ -229,8 +229,8 @@ void PerlClose(void)
 }
 
 /*
-** Redirects STDOUT/STDERR briefly (otherwise PERL complains to the net connection
-** for NNRPD and that just won't do) -- dave@jetcafe.org
+**  Redirects STDOUT/STDERR briefly (otherwise PERL complains to the net
+**  connection for NNRPD and that just won't do) -- dave@jetcafe.org
 */
 static int savestdout = 0;
 static int savestderr = 0;
