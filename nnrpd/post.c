@@ -573,7 +573,7 @@ CheckIncludedText(p, lines)
 	if ((p = strchr(p, '\n')) == NULL)
 	    break;
     }
-    if ((i * 2 > lines) && (lines > 40))
+    if (i * 2 > lines)
 	return "Article not posted -- more included text than new text";
     return NULL;
 }
