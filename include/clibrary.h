@@ -116,11 +116,8 @@ extern FREEVAL		free();
 extern POINTER		malloc();
 extern POINTER		realloc();
 
-#if	defined (ACT_MMAP) || defined(MMAP)
 /* =()<typedef @<MMAP_PTR>@ MMAP_PTR;>()= */
 typedef caddr_t MMAP_PTR;
-extern MMAP_PTR mmap();
-#endif /* defined (ACT_MMAP) || defined(MMAP) */	
 
 /* Some backward systems need this. */
 extern FILE	*popen();
