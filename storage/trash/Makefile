@@ -1,6 +1,9 @@
 ##  $Revision$
 include ../../Makefile.global
 
+CC	= ../$(LIBCC)
+CP	= ../$(LIBTOOL) cp
+
 CFLAGS	= $(GCFLAGS) -I../../include -I..
 
 IFTRUE	= @$(SHELL) ../iftrue.sh
@@ -15,14 +18,15 @@ PROF	= -pg
 
 SOURCES = trash.c
 OBJECTS = trash.o
+LOBJECTS = trash.lo
 
 all:			$(OBJECTS) moveobjs
 
 moveobjs: $(OBJECTS)
-	cp -p $(OBJECTS) ../objs
+	$(CP) -p $(LOBJECTS) ../objs
 
 clobber clean:
-	rm -f *.o obj/*.o *~
+	rm -f *.o *.lo obj/*.o *~
 	rm -f profiled
 	rm -f all install lint lint.all
 
