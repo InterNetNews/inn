@@ -605,8 +605,10 @@ MailArticle(group, article)
     if ((address = GetModeratorAddress(NULL, NULL, group)) == NULL) {
 	(void)sprintf(Error, "No mailing address for \"%s\" -- %s",
 		group, "ask your news administrator to fix this");
+	DISPOSE(group);  
 	return Error;
     }
+    DISPOSE(group);
 
     /* Now build up the command (ignore format/argument mismatch errors,
      * in case %s isn't in inconf->mta) and send the headers. */
@@ -701,7 +703,7 @@ ValidNewsgroups(hdr, modgroup)
 	    break;
 	case NF_FLAG_MODERATED:
 	    if (!approved && !*modgroup) {
-		*modgroup = GPNAME(gp);
+		*modgroup = COPY(GPNAME(gp));
 	    }
 	    break;
 	case NF_FLAG_IGNORE:
@@ -931,40 +933,68 @@ ARTpost(article, idbuff)
     if (p) {
 	strcpy(frombuf, p+1);
 	p = strrchr(frombuf, '.');
-	if (!p)
+	if (!p) {
+	    if (modgroup)
+		DISPOSE(modgroup);
 	    return "From: address not in Internet syntax";
+	}
     }
-    else
+    else {
+	if (modgroup)
+	    DISPOSE(modgroup);
 	return "From: address not in Internet syntax";
+    }
     if ((p = HDR(_followupto)) != NULL
      && !EQ(p, "poster")
-     && (error = ValidNewsgroups(p, (char **)NULL)) != NULL)
+     && (error = ValidNewsgroups(p, (char **)NULL)) != NULL) {
+	if (modgroup)
+	    DISPOSE(modgroup);
 	return error;
+    }
     if ((innconf->localmaxartsize > 0) &&
 		(strlen(article) > innconf->localmaxartsize)) {
 	    (void)sprintf(Error,
 		"Article is bigger then local limit of %ld bytes\n",
 		atoi(p));
+	    if (modgroup)
+		DISPOSE(modgroup);
 	    return Error;
     }
 
 #if defined(DO_PERL)
     /* Calls the Perl subroutine for headers management */
     if ((p = (char *)HandleHeaders(article)) != NULL) {
-      if (strncmp(p, "DROP", 4) == 0) {
-          syslog(L_NOTICE, "%s post %s", ClientHost, p);
-          return NULL;
-      }
-      else if (strncmp(p, "SPOOL", 5) == 0) {
-          syslog(L_NOTICE, "%s post %s", ClientHost, p);
-          strcpy(SDir, innconf->pathincoming);
-          return SpoolitTo(article, p, modgroup ? strcat(SDir,"/spam/mod")
-                                                : strcat(SDir, "/spam"));
-      }
-      else
-          return p;
+	if (idbuff) {
+	    if (modgroup)
+		sprintf(idbuff, "(mailed to moderator for %s)", modgroup);
+	    else
+		(void)strncpy(idbuff, HDR(_messageid), SMBUF - 1);
+	    idbuff[SMBUF - 1] = '\0';
+	}
+	if (strncmp(p, "DROP", 4) == 0) {
+	    syslog(L_NOTICE, "%s post %s", ClientHost, p);
+	    if (modgroup)
+		DISPOSE(modgroup);
+	    return NULL;
+	}
+	else if (strncmp(p, "SPOOL", 5) == 0) {
+	    syslog(L_NOTICE, "%s post %s", ClientHost, p);
+	    strcpy(SDir, innconf->pathincoming);
+	    if (modgroup)
+	    {
+		DISPOSE(modgroup);
+		return SpoolitTo(article, p, strcat(SDir,"/spam/mod"));
+	    }
+	    else
+		return SpoolitTo(article, p, strcat(SDir,"/spam"));
+	}
+	else
+	{
+	    if (modgroup)
+		DISPOSE(modgroup);
+	    return p;
+	}
     }
-
 #endif /* defined(DO_PERL) */
 
     /* handle mailing to moderated groups */
