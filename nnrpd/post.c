@@ -1180,8 +1180,6 @@ ARTpost(article, idbuff)
 				    DISPOSE(p);
 				}
 			    }
-			} else {
-			    (void)fprintf(ToServer, "%s: %s\r\n", hp->Name, hp->Value);
 			}
 		for (i=0; i<OtherCount; i++)
 			(void)fprintf(ftd,"%s\r\n",OtherHeaders[i]);
