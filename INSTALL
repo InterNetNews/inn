@@ -63,12 +63,7 @@ Before You Begin
       system expects the latter syntax, the recommended solution is to
       install GNU make (ftp://ftp.gnu.org/make/).  You may have GNU make
       already installed as gmake, in which case using gmake rather than make
-      to build INN should be sufficient.  (If GNU make isn't installed as
-      "make", fix the path in site/do-subst.sh to point to GNU make.)
-
-      FIXME: Ideally, we need to either decide to stop supporting subst
-      entirely and get rid of this, or add magic to configure to take care
-      of this for us.
+      to build INN should be sufficient.
 
     * If you want to enable support for authenticated control messages (this
       is NOT required) then you will need to install PGP.  Unfortunately,
@@ -193,6 +188,23 @@ Installing INN
         to enable this, you will need to have a suitable Tcl distribution
         installed.  See README.tcl_hook for all the details.
 
+    --with-innd-port=PORT
+        By default, inndstart refuses to bind to any port under 1024 other
+        than 119 and 433 for security reasons (to prevent attacks on
+        rsh-based commands and replacing standard system daemons).  If you
+        want to run innd on a different port under 1024, you'll need to tell
+        configure what port you intend to use.  (You'll also still need to
+        set the port number in inn.conf or by giving it to inndstart on the
+        command line.)
+
+    --with-syslog-facility=FACILITY
+        Specifies the syslog facility that INN programs should log to.  The
+        default is LOG_NEWS unless configure detects that your system
+        doesn't understand that facility, in which case it uses LOG_LOCAL1. 
+        This flag overrides the automatic detection.  Be sure to specify a
+        facility not used by anything else on your system (one of LOG_LOCAL0
+        through LOG_LOCAL7, for example).
+
     --disable-uucp-rnews
         By default, rnews is installed setuid root, owned by group uucp, and
         mode 4550.  This is so that the UUCP subsystem can run rnews to
@@ -212,13 +224,6 @@ Installing INN
         probably want to use this option to cut down on needless setgid
         binaries.  When this option is used, inews will only be executable
         by users in the news group.
-
-    --with-syslog-facility=LOG_xxxx
-        Allows you to specify a syslog facility that INN programs log to.
-        The default is LOG_NEWS.  Usually, you'll only need this if you
-        are on an OS that doesn't have LOG_NEWS (such as HP/UX).  Be sure
-        to specify a facility that is not used by anything else on your
-        system, such as one of LOG_LOCAL0 through LOG_LOCAL7.
 
     For the most common installation, a standalone news server, a suggested
     set of options is:
@@ -634,8 +639,6 @@ Configuring INN
     exclamation point.  This is a standard convention for all special feeds;
     since the delimiter for the Path: header is `!', no site name containing
     that character can match the name of a real site.
-
-    FIXME: The original entry had an S16384 flag as well.  Is that desired?
 
     Next, set up entries for each remote site to which you will be feeding
     articles.  All of these entries should be of the form:
@@ -1165,9 +1168,12 @@ File Descriptor Limits
     just increase the default file descriptor limit across the board for all
     processes.  You can do that by putting the line:
 
-        set rlim_fd_cur = 1024
+        set rlim_fd_cur = 256
 
-    in /etc/system and rebooting.
+    in /etc/system and rebooting.  You can increase it all the way to 1024
+    (and may need to if you have a particularly large site), but that can
+    cause RPC and some stdio applications to break.  It therefore probably
+    isn't a good idea on a machine that isn't dedicated to INN.
 
 Starting the System
 
