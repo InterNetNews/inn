@@ -443,9 +443,9 @@ const char *artMsgId (Article article)
   /* return size of the article */
 int artSize (Article article)
 {
-  if (article == NULL || article->arthandle == NULL)
+  if (article == NULL || article->contents == NULL)
     return (int)0 ;
-  return article->arthandle->len ;
+  return (int)bufferDataSize(article->contents);
 }
 
 
