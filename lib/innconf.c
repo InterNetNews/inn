@@ -10,6 +10,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include <ctype.h>
 
 #include "inn/confparse.h"
 #include "inn/innconf.h"
@@ -374,6 +375,8 @@ innconf_read(const char *path)
     if (innconf != NULL)
         innconf_free();
     innconf = xmalloc(sizeof(struct conf_vars));
+    if (path == NULL)
+        path = getenv("INNCONF");
     group = config_parse_file(path == NULL ? _PATH_CONFIG : path);
     if (group == NULL)
         return false;
@@ -429,6 +432,181 @@ innconf_free(void)
 
 
 /*
+**  Print a single boolean value with appropriate quoting.
+*/
+static void
+print_boolean(FILE *file, const char *key, bool value,
+              enum innconf_quoting quoting)
+{
+    char *upper, *p;
+
+    switch (quoting) {
+    case INNCONF_QUOTE_NONE:
+        fprintf(file, "%s\n", value ? "true" : "false");
+        break;
+    case INNCONF_QUOTE_SHELL:
+        upper = xstrdup(key);
+        for (p = upper; *p != '\0'; p++)
+            *p = toupper(*p);
+        fprintf(file, "%s=%s; export %s\n", upper, value ? "true" : "false",
+                upper);
+        free(upper);
+        break;
+    case INNCONF_QUOTE_PERL:
+        fprintf(file, "$%s = %d;\n", key, value);
+        break;
+    case INNCONF_QUOTE_TCL:
+        fprintf(file, "set inn_%s \"%s\"\n", key, value ? "true" : "false");
+        break;
+    }
+}
+
+
+/*
+**  Print a single integer value with appropriate quoting.
+*/
+static void
+print_number(FILE *file, const char *key, long value,
+             enum innconf_quoting quoting)
+{
+    char *upper, *p;
+
+    switch (quoting) {
+    case INNCONF_QUOTE_NONE:
+        fprintf(file, "%ld\n", value);
+        break;
+    case INNCONF_QUOTE_SHELL:
+        upper = xstrdup(key);
+        for (p = upper; *p != '\0'; p++)
+            *p = toupper(*p);
+        fprintf(file, "%s=%ld; export %s\n", upper, value, upper);
+        free(upper);
+        break;
+    case INNCONF_QUOTE_PERL:
+        fprintf(file, "$%s = %ld;\n", key, value);
+        break;
+    case INNCONF_QUOTE_TCL:
+        fprintf(file, "set inn_%s %ld\n", key, value);
+        break;
+    }
+}
+
+
+/*
+**  Print a single string value with appropriate quoting.
+*/
+static void
+print_string(FILE *file, const char *key, const char *value,
+             enum innconf_quoting quoting)
+{
+    char *upper, *p;
+    const char *letter;
+    static const char tcl_unsafe[] = "$[]{}\"\\";
+
+    switch (quoting) {
+    case INNCONF_QUOTE_NONE:
+        fprintf(file, "%s\n", value != NULL ? value : "");
+        break;
+    case INNCONF_QUOTE_SHELL:
+        upper = xstrdup(key);
+        for (p = upper; *p != '\0'; p++)
+            *p = toupper(*p);
+        fprintf(file, "%s='", upper);
+        for (letter = value; letter != NULL && *letter != '\0'; letter++) {
+            if (*letter == '\'')
+                fputs("'\\''", file);
+            else if (*letter == '\\')
+                fputs("\\\\", file);
+            else
+                fputc(*letter, file);
+        }
+        fprintf(file, "'; export %s\n", upper);
+        free(upper);
+        break;
+    case INNCONF_QUOTE_PERL:
+        fprintf(file, "$%s = '", key);
+        for (letter = value; letter != NULL && *letter != '\0'; letter++) {
+            if (*letter == '\'' || *letter == '\\')
+                fputc('\\', file);
+            fputc(*letter, file);
+        }
+        fputs("';\n", file);
+        break;
+    case INNCONF_QUOTE_TCL:
+        fprintf(file, "set inn_%s \"", key);
+        for (letter = value; letter != NULL && *letter != '\0'; letter++) {
+            if (strchr(tcl_unsafe, *letter) != NULL)
+                fputc('\\', file);
+            fputc(*letter, file);
+        }
+        fputs("\"\n", file);
+        break;
+    }
+}
+
+
+/*
+**  Print a single paramter to the given file.  Takes an index into the table
+**  specifying the attribute to print and the quoting.
+*/
+static void
+print_parameter(FILE *file, size_t index, enum innconf_quoting quoting)
+{
+    bool bool_val;
+    long long_val;
+    const char *string_val;
+
+    switch (config_table[index].type) {
+    case TYPE_BOOLEAN:
+        bool_val = *CONF_BOOL(innconf, config_table[index].location);
+        print_boolean(file, config_table[index].name, bool_val, quoting);
+        break;
+    case TYPE_NUMBER:
+        long_val = *CONF_LONG(innconf, config_table[index].location);
+        print_number(file, config_table[index].name, long_val, quoting);
+        break;
+    case TYPE_STRING:
+        string_val = *CONF_STRING(innconf, config_table[index].location);
+        print_string(file, config_table[index].name, string_val, quoting);
+        break;
+    default:
+        die("internal error: invalid type in row %d of config table", index);
+        break;
+    }
+}
+
+
+/*
+**  Given a single parameter, find it in the table and print out its value.
+*/
+bool
+innconf_print_value(FILE *file, const char *key, enum innconf_quoting quoting)
+{
+    size_t i;
+
+    for (i = 0; i < SIZEOF(config_table); i++)
+        if (strcmp(key, config_table[i].name) == 0) {
+            print_parameter(file, i, quoting);
+            return true;
+        }
+    return false;
+}
+
+
+/*
+**  Dump the entire inn.conf configuration with appropriate quoting.
+*/
+void
+innconf_dump(FILE *file, enum innconf_quoting quoting)
+{
+    size_t i;
+
+    for (i = 0; i < SIZEOF(config_table); i++)
+        print_parameter(file, i, quoting);
+}
+
+
+/*
 **  Compare two innconf structs to see if they represent identical
 **  configurations.  This routine is mostly used for testing.  Prints warnings
 **  about where the two configurations differ and return false if they differ,
@@ -469,11 +647,11 @@ innconf_compare(struct conf_vars *conf1, struct conf_vars *conf2)
             string2 = *CONF_STRING(conf2, config_table[i].location);
             if (string1 == NULL && string2 != NULL) {
                 warn("string variable %s differs: NULL != %s",
-                     config_table[i].name, "(null)", string2);
+                     config_table[i].name, string2);
                 okay = false;
             } else if (string1 != NULL && string2 == NULL) {
                 warn("string variable %s differs: %s != NULL",
-                     config_table[i].name, string1, "(null)");
+                     config_table[i].name, string1);
                 okay = false;
             } else if (string1 != NULL && string2 != NULL) {
                 if (strcmp(string1, string2) != 0) {
