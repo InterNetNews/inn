@@ -383,9 +383,10 @@ ReopenLog(F)
 **  Function called when memory allocation fails.
 */
 static int
-AllocationFailure(const char *what, size_t size)
+AllocationFailure(const char *what, size_t size, const char *file, int line)
 {
-    syslog(L_FATAL, "%s cant %s %lu bytes: %m", LogName, what, size);
+    syslog(L_FATAL, "%s cant %s %lu bytes at line %d of %s: %m", LogName,
+           what, size, file, line);
     exit(1);
 }
 
