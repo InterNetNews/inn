@@ -888,7 +888,7 @@ FUNCTYPE CMDxover(int ac, char *av[])
 
     Reply("%d %s fields follow\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, av[1]);
     while (OV3search(handle, &artnum, &data, &len, &token)) {
-	if (!ARTinstorebytoken(token))
+	if (innconf->nnrpdcheckart && !ARTinstorebytoken(token))
 	    continue;
 	OVERhit++;
 	OVERsize += len;
