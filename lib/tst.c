@@ -87,6 +87,14 @@ struct node_lines {
 
 
 /*
+**  Given a node and a character, decide whether a new node for that character
+**  should be placed as the left child of that node.  (If false, it should be
+**  placed as the right child.)
+*/
+#define LEFTP(n, c) (((n)->value == 0) ? ((c) < 64) : ((c) < (n)->value))
+
+
+/*
 **  Allocate new nodes for the free list, called when the free list is empty.
 */
 static void
@@ -210,9 +218,7 @@ tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
             }
         }
 
-        if (((current_node->value == 0) && (key[key_index] < 64))
-            || ((current_node->value != 0)
-                && (key[key_index] < current_node->value))) {
+        if (LEFTP(current_node, key[key_index])) {
             if (current_node->left == NULL)  {
                 if (tst->free_list == NULL)
                     tst_grow_node_free_list(tst);
@@ -289,9 +295,7 @@ tst_search(const unsigned char *key, struct tst *tst)
                 key_index++;
                 continue;
             }
-        } else if (((current_node->value == 0) && (key[key_index] < 64))
-                   || ((current_node->value != 0)
-                       && (key[key_index] < current_node->value))) {
+        } else if (LEFTP(current_node, key[key_index])) {
             current_node = current_node->left;
             continue;
         } else {
@@ -344,9 +348,7 @@ tst_delete(const unsigned char *key, struct tst *tst)
                 key_index++;
                 continue;
             }
-        } else if (((current_node->value == 0) && (key[key_index] < 64))
-                   || ((current_node->value != 0)
-                       && (key[key_index] < current_node->value))) {
+        } else if (LEFTP(current_node, key[key_index])) {
             last_branch_parent = current_node;
             current_node_parent = current_node;
             current_node = current_node->left;
