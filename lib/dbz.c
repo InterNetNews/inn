@@ -1113,12 +1113,11 @@ DBZSTORE_RESULT dbzstore(const HASH key, const OFFSET_T data) {
     DEBUG(("store: used count %ld\n", conf.used[0]));
     dirty = TRUE;
 
-    ivalue->offset = ivalue->offset;
     memcpy(&evalue.hash, &srch.hash,
 	   sizeof(evalue.hash) < sizeof(srch.hash) ? sizeof(evalue.hash) : sizeof(srch.hash));
 
     /* Set the value in the index first since we don't care if it's out of date */
-    if (!set(&srch, &idxtab, ivalue))
+    if (!set(&srch, &idxtab, (void *)&data))
 	return DBZSTORE_ERROR;
     if (!set(&srch, &etab, &evalue))
 	return DBZSTORE_ERROR;
