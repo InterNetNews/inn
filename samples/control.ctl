@@ -867,6 +867,18 @@ rmgroup:news@academ.com:houston.*:verify-houston.usenet.config
 # newgroup:news@academ.com:houston.*:doit
 # rmgroup:news@academ.com:houston.*:doit
 
+## HUMANITYQUEST
+# Contact: news-admin@humanityquest.com
+# URL: http://www.humanityquest.com/projects/newsgroups/
+# Key fingerprint = BA3D B306 B6F5 52AA BA8F 32F0 8C4F 5040 16F9 C046
+# Key URL: http://www.humanityquest.com/projects/newsgroups/PGP.htm
+# *PGP*  See comment at top of file.
+newgroup:*:humanityquest.*:drop
+rmgroup:*:humanityquest.*:drop
+checkgroups:news-admin@humanityquest.com:humanityquest.*:verify-humanityquest.admin.config
+newgroup:news-admin@humanityquest.com:humanityquest.*:verify-humanityquest.admin.config
+rmgroup:news-admin@humanityquest.com:humanityquest.*:verify-humanityquest.admin.config
+
 ## HUN (Hungary)
 newgroup:*:hun.*:drop
 rmgroup:*:hun.*:drop
@@ -891,8 +903,13 @@ newgroup:*@*:iconz.*:mail
 rmgroup:*@*:iconz.*:doit
 
 ## IE (Ireland)
-newgroup:usenet@ireland.eu.net:ie.*:doit
-rmgroup:usenet@ireland.eu.net:ie.*:doit
+# Contact: control@usenet.ie
+# *PGP*   See comment at top of file.
+newgroup:*:ie.*:drop
+rmgroup:*:ie.*:drop
+checkgroups:control@usenet.ie:ie.*:verify-control@usenet.ie
+newgroup:control@usenet.ie:ie.*:verify-control@usenet.ie
+rmgroup:control@usenet.ie:ie.*:verify-control@usenet.ie
 
 ## IEEE (Institute of Electrical and Electronic Engineers)
 # Contact: <postoffice@ieee.org>
@@ -909,6 +926,7 @@ rmgroup:rjoyner@uiuc.edu:info.*:doit
 # *PGP*   See comment at top of file.
 newgroup:*:is.*:drop
 rmgroup:*:is.*:drop
+checkgroups:news@isnet.is:is.*:verify-is.isnet
 newgroup:news@isnet.is:is.*:verify-is.isnet
 rmgroup:news@isnet.is:is.*:verify-is.isnet
 
@@ -1036,14 +1054,19 @@ rmgroup:*@*.law.vill.edu:law.*:doit
 newgroup:linus@tiny.lysator.liu.se:liu.*:doit
 rmgroup:linus@tiny.lysator.liu.se:liu.*:doit
 
-## LINUX (Newsfeed from news.lameter.com)
-checkgroups:christoph@lameter.com:linux.*:doit
-newgroup:christoph@lameter.com:linux.*:doit
-rmgroup:christoph@lameter.com:linux.*:doit
+## LINUX (Gated Linux mailing lists)
+# Contact: Marco d'Itri <md@toglimi.linux.it>
+# Key fingerprint = 81 B3 27 99 4F CE 32 D1  1B C9 01 0D BB B3 2E 41
+# *PGP*  See comment at top of file.
+newgroup:*:linux.*:drop
+rmgroup:*:linux.*:drop
+checkgroups:linux-admin@bofh.it:linux.*:verify-linux-admin@bofh.it
+newgroup:linux-admin@bofh.it:linux.*:verify-linux-admin@bofh.it
+rmgroup:linux-admin@bofh.it:linux.*:verify-linux-admin@bofh.it
 
 ## LOCAL (Local-only groups)
 # It is not really a good idea for sites to use these since they
-# may occur on many unconnect sites
+# may occur on many unconnected sites.
 newgroup:*@*:local.*:mail
 rmgroup:*@*:local.*:drop
 
