@@ -1,8 +1,8 @@
 ##  $Revision$
 include ../../Makefile.global
 
-CC	= ../$(LIBCC)
-CP	= ../$(LIBTOOL) cp
+CC	= $(UPLIBCC)
+CP	= $(UPLIBTOOL) cp
 
 CFLAGS	= $(GCFLAGS) -I../../include -I..
 
@@ -19,11 +19,12 @@ PROF	= -pg
 SOURCES = trash.c
 OBJECTS = trash.o
 LOBJECTS = trash.lo
+ROBJECTS = trash.$(EXTOBJ)
 
 all:			$(OBJECTS) moveobjs
 
 moveobjs: $(OBJECTS)
-	$(CP) -p $(LOBJECTS) ../objs
+	$(CP) -p $(ROBJECTS) ../objs
 
 clobber clean:
 	rm -f *.o *.lo obj/*.o *~
