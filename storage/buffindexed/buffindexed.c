@@ -7,14 +7,11 @@
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <syslog.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <time.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 
 #ifdef HAVE_LIMITS_H
 # include <limits.h>
@@ -242,8 +239,8 @@ STATIC GROUPLOC GROUPnewnode(void);
 STATIC BOOL GROUPremapifneeded(GROUPLOC loc);
 STATIC void GROUPLOCclear(GROUPLOC *loc);
 STATIC BOOL GROUPLOCempty(GROUPLOC loc);
-STATIC BOOL GROUPlockhash(LOCKTYPE type);
-STATIC BOOL GROUPlock(GROUPLOC gloc, LOCKTYPE type);
+STATIC BOOL GROUPlockhash(enum locktype type);
+STATIC BOOL GROUPlock(GROUPLOC gloc, enum locktype type);
 STATIC BOOL GROUPfilesize(int count);
 STATIC BOOL GROUPexpand(int mode);
 STATIC void *ovopensearch(char *group, int low, int high, BOOL needov);
@@ -521,8 +518,8 @@ STATIC void ovflushhead(OVBUFF *ovbuff) {
   return;
 }
 
-STATIC BOOL ovlock(OVBUFF *ovbuff, LOCKTYPE type) {
-  return LockRange(ovbuff->fd, type, TRUE, 0, sizeof(OVBUFFHEAD));
+STATIC BOOL ovlock(OVBUFF *ovbuff, enum locktype type) {
+  return lock_range(ovbuff->fd, type, true, 0, sizeof(OVBUFFHEAD));
 }
 
 STATIC BOOL ovbuffinit_disks(void) {
@@ -1163,14 +1160,14 @@ STATIC BOOL GROUPLOCempty(GROUPLOC loc) {
   return (loc.recno < 0);
 }
 
-STATIC BOOL GROUPlockhash(LOCKTYPE type) {
-  return LockRange(GROUPfd, type, TRUE, 0, sizeof(GROUPHEADER));
+STATIC BOOL GROUPlockhash(enum locktype type) {
+  return lock_range(GROUPfd, type, true, 0, sizeof(GROUPHEADER));
 }
 
-STATIC BOOL GROUPlock(GROUPLOC gloc, LOCKTYPE type) {
-  return LockRange(GROUPfd,
+STATIC BOOL GROUPlock(GROUPLOC gloc, enum locktype type) {
+  return lock_range(GROUPfd,
 	     type,
-	     TRUE,
+	     true,
 	     sizeof(GROUPHEADER) + (sizeof(GROUPENTRY) * gloc.recno),
 	     sizeof(GROUPENTRY));
 }

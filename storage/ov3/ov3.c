@@ -7,13 +7,10 @@
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <syslog.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 
 #include "libinn.h"
 #include "macros.h"
@@ -128,8 +125,8 @@ STATIC GROUPLOC GROUPnewnode(void);
 STATIC BOOL GROUPremapifneeded(GROUPLOC loc);
 STATIC void GROUPLOCclear(GROUPLOC *loc);
 STATIC BOOL GROUPLOCempty(GROUPLOC loc);
-STATIC BOOL GROUPlockhash(LOCKTYPE type);
-STATIC BOOL GROUPlock(GROUPLOC gloc, LOCKTYPE type);
+STATIC BOOL GROUPlockhash(enum locktype type);
+STATIC BOOL GROUPlock(GROUPLOC gloc, enum locktype type);
 STATIC BOOL GROUPfilesize(int count);
 STATIC BOOL GROUPexpand(int mode);
 STATIC BOOL OV3packgroup(char *group, int delta);
@@ -430,16 +427,16 @@ STATIC BOOL GROUPLOCempty(GROUPLOC loc) {
     return (loc.recno < 0);
 }
 
-STATIC BOOL GROUPlockhash(LOCKTYPE type) {
-    return LockRange(GROUPfd, type, TRUE, 0, sizeof(GROUPHEADER));
+STATIC BOOL GROUPlockhash(enum locktype type) {
+    return lock_range(GROUPfd, type, true, 0, sizeof(GROUPHEADER));
 }
 
-STATIC BOOL GROUPlock(GROUPLOC gloc, LOCKTYPE type) {
-    return LockRange(GROUPfd,
-		     type,
-		     TRUE,
-		     sizeof(GROUPHEADER) + (sizeof(GROUPENTRY) * gloc.recno),
-		     sizeof(GROUPENTRY));
+STATIC BOOL GROUPlock(GROUPLOC gloc, enum locktype type) {
+    return lock_range(GROUPfd,
+                      type,
+                      true,
+                      sizeof(GROUPHEADER) + (sizeof(GROUPENTRY) * gloc.recno),
+                      sizeof(GROUPENTRY));
 }
 
 STATIC BOOL OV3mmapgroup(GROUPHANDLE *gh) {
