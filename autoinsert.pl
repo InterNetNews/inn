@@ -3,6 +3,8 @@
 # autoinsert.pl - File substitution mechanism generalized, but originally for INN
 # written by dave@jetcafe.org (Dave Hayes). Send bugs there.
 #
+require 5.000; # Perl 4 has no POD
+
 =head1 SYNOPSIS
 	autoinsert.pl target_file
 
@@ -77,18 +79,12 @@
 # 
 # !$Id$
 # !$Log$
-# !Revision 1.1  1998/02/26 16:25:50  mibsoft
-# !Utilities to support one-location config value implementation.
-# !To use:
-# !	Edit include/libinn.h to add a value to the conf_vars
-# !	structure.  Add a section bracketed with #if 0/#endif,
-# !	which includes all documentation, sample value, and
-# !	getconfig.c implementation related to that value.
-# !	  (see the examples in libinn.h)
+# !Revision 1.2  1998/02/27 04:24:54  mibsoft
+# !More robust error checking in the autoinsert.pl utility.
+# !parameters to END_AUTO_INSERTED_SECTION must match the
+# !begin line.
 # !
-# !	Then run ./developconfig.sh to update the effected files.
-# !
-# !autoinsert.pl from dave@jetcafe.org.  Thanks Dave!
+# !From: dave@jetcafe.org
 # !
 #
 ###########
@@ -139,54 +135,60 @@ $state = 0; $line = 0;
 while (<INFILE>) {
     $line++;
 
-    if ($state == 0) {
-	# check for beginning token
-	if (/^\S+\s+BEGIN_AUTO_INSERTED_SECTION\s+(\S+)\s+(\S+)\s+(\S+)\s/o) {
-	    $from = $1;
-	    $file = $2;
-	    $tag = $3;
-	    $sub = "";
-	    
-	    # Yes, it's an error, but we -could- just ignore the line
-	    if ($from ne "from") {
-		warn "Error (line $line): no 'from' token.\n";
-		print OUTFILE;
-		next;
-	    }
-	    
-	    if (! -e $file) {
-		warn "Error (line $line): file '$file' does not exist.\n";
-		print OUTFILE;
-		next;
-	    }
-
-	    # Load our substitutions
-	    print OUTFILE;
-	    if (!open(SUBS,"<$file")) {
-		warn "Error (line $line): can't open '$file': $!.\n";
-		next;
-	    }
-	    while (<SUBS>) {
-		if (/^(\S+)\s+(.*)/) {
-		    $sub .= $2."\n" if ($tag eq $1);
-		}
-	    }
-	    close(SUBS);
-	    
-	    $state = $line;   # Remember where this line was
-	} else {
+    # check for beginning token
+    if (/^\S+\s+BEGIN_AUTO_INSERTED_SECTION\s+(\S+)\s+(\S+)\s+(\S+)\s/o) {
+	if ($state != 0) {
+	    warn "Error (BEGIN on line $state): Mismatched auto insert sections\n";
+	}
+	$from = $1;
+	$file = $2;
+	$tag = $3;
+	$sub = "";
+	
+	# Yes, it's an error, but we -could- just ignore the line
+	if ($from ne "from") {
+	    warn "Error (line $line): no 'from' token.\n";
 	    print OUTFILE;
 	    next;
 	}
-    }
+	
+	if (! -e $file) {
+	    warn "Error (line $line): file '$file' does not exist.\n";
+	    print OUTFILE;
+	    next;
+	}
+	
+	# Load our substitutions
+	print OUTFILE;
+	if (!open(SUBS,"<$file")) {
+	    warn "Error (line $line): can't open '$file': $!.\n";
+	    next;
+	}
+	while ($foo = <SUBS>) {
+	    if ($foo =~ /^(\S+)\s+(.*)/) {
+		$sub .= $2."\n" if ($tag eq $1);
+	    }
+	}
+	close(SUBS);
+	
+	$state = $line;   # Remember where this line was
+	
+	# Clean these up so we can match against them later
+	$from =~ s/([^\w\d])/\\\1/go;
+	$file =~ s/([^\w\d])/\\\1/go;
+	$tag =~ s/([^\w\d])/\\\1/go;
+	next;
+    } 
 
     # check for end token
-    if (/^\S+\s+END_AUTO_INSERTED_SECTION/o) {
+    if (/^\S+\s+END_AUTO_INSERTED_SECTION\s+$from\s+$file\s+$tag/) {
 	$state = 0; 
 	print OUTFILE $sub;
 	print OUTFILE;
 	next;
     }
+
+    print OUTFILE if ($state == 0);
 }
 close(INFILE);
 
