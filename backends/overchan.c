@@ -10,6 +10,7 @@
 #include <syslog.h>
 #include <sys/stat.h>
 
+#include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
@@ -59,7 +60,7 @@ static void ProcessIncoming(QIOSTATE *qp)
 	/* Read the first line of data. */
 	if ((Data = QIOread(qp)) == NULL) {
 	    if (QIOtoolong(qp)) {
-		(void)fprintf(stderr, "overchan line too long\n");
+                warn("line too long");
 		continue;
 	    }
 	    break;
@@ -67,7 +68,7 @@ static void ProcessIncoming(QIOSTATE *qp)
 
 	if (Data[0] != '@' || strlen(Data) < TEXT_TOKEN_LEN+2 
 	    || Data[TEXT_TOKEN_LEN-1] != '@' || Data[TEXT_TOKEN_LEN] != ' ') {
-	    fprintf(stderr, "overchan malformed token, %s\n", Data);
+            warn("malformed token %s", Data);
 	    continue;
 	}
 	token = TextToToken(Data);
@@ -81,9 +82,8 @@ static void ProcessIncoming(QIOSTATE *qp)
 	Data = p;
 	NumArts++;
 	starttime = gettime();
-	if (OVadd(token, Data, strlen(Data), Time, Expires) == OVADDFAILED) {
-	    fprintf(stderr, "overchan: Can't write overview \"%s\", %s\n", Data, strerror(errno));
-	}
+	if (OVadd(token, Data, strlen(Data), Time, Expires) == OVADDFAILED)
+            syswarn("cannot write overview %s", Data);
 	endtime = gettime();
 	TotOvTime += endtime - starttime;
     }
@@ -97,23 +97,29 @@ int main(int ac, char *av[])
     unsigned int	now;
 
     /* First thing, set up logging and our identity. */
-    openlog("overchan", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);           
+    openlog("overchan", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "overchan";
+
+    /* Log warnings and fatal errors to syslog unless we were given command
+       line arguments, since we're probably running under innd. */
+    if (ac == 0) {
+        message_handlers_warn(1, message_log_syslog_err);
+        message_handlers_die(1, message_log_syslog_err);
+        message_handlers_notice(1, message_log_syslog_notice);
+    }
 	
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
     (void)umask(NEWSUMASK);
     if (innconf->enableoverview && !innconf->useoverchan)
-	syslog(L_ERROR, "overchan is running while innd is creating"
-               " overview data (you can ignore this message if you are"
-               " running makehistory -F)");
+        warn("overchan is running while innd is creating overview data (you"
+             " can ignore this message if you are running makehistory -F)");
 
     ac -= 1;
     av += 1;
 
-    if (!OVopen(OV_WRITE)) {
-	syslog(L_FATAL, "overchan cant open overview");
-	exit(1);
-    }
+    if (!OVopen(OV_WRITE))
+        die("cannot open overview");
 
     StartTime = gettime();
     if (ac == 0)
@@ -123,14 +129,13 @@ int main(int ac, char *av[])
 	    if (EQ(*av, "-"))
 		ProcessIncoming(QIOfdopen(STDIN_FILENO));
 	    else if ((qp = QIOopen(*av)) == NULL)
-		(void)fprintf(stderr, "overchan cant open %s %s\n",
-			*av, strerror(errno));
+                syswarn("cannot open %s", *av);
 	    else
 		ProcessIncoming(qp);
     }
     OVclose();
     now = gettime();
-    syslog(L_NOTICE, "overchan timings %u arts %u of %u ms", NumArts, TotOvTime, now-StartTime);
+    notice("timings %u arts %u of %u ms", NumArts, TotOvTime, now - StartTime);
     exit(0);
     /* NOTREACHED */
 }
