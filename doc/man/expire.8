@@ -23,6 +23,9 @@ expire \- Usenet article and history expiration program
 .B \-i
 ]
 [
+.B \-k
+]
+[
 .B \-l
 ]
 [
@@ -104,6 +107,12 @@ database to determine the size of the new one.
 .TP
 .B \-i
 To ignore the old database, use the ``\fB\-i\fP'' flag.
+.TP
+.B \-k
+If this flag is used then articles are removed when they have been
+expired from all the groups they appear in.  This is intended for use
+on news spools that are on a single filesystem and/or with the time
+based spool. (See inn.conf(5))
 .TP
 .B \-l
 .I Expire

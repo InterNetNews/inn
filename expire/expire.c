@@ -44,6 +44,8 @@ typedef struct _NEWSGROUP {
     time_t		Keep;
     time_t		Default;
     time_t		Purge;
+    /* X flag => remove entire article when it expires in this group */
+    BOOL                Poison;
 } NEWSGROUP;
 
 typedef struct _NGHASH {
@@ -70,6 +72,7 @@ STATIC BOOL		EXPquiet;
 STATIC BOOL		EXPsizing;
 STATIC BOOL		EXPtracing;
 STATIC BOOL		EXPusepost;
+STATIC BOOL		EXPkeep;
 STATIC BOOL		EXPearliest;
 STATIC char		ACTIVE[] = _PATH_ACTIVE;
 STATIC char		SPOOL[] = _PATH_SPOOL;
@@ -99,6 +102,8 @@ STATIC int		EXPsplit();
 #if ! defined (atof)            /* NEXT defines aotf as a macro */
 extern double		atof();
 #endif
+
+enum KRP {Keep, Remove, Poison};
 
 
 
@@ -251,6 +256,24 @@ EXPsplit(p, sep, argv, count)
 {
     register int	i;
 
+    if (!p)
+      return 0;
+
+    while (*p == sep)
+      ++p;
+
+    if (!*p)
+      return 0;
+
+    if (!p)
+      return 0;
+
+    while (*p == sep)
+      ++p;
+
+    if (!*p)
+      return 0;
+
     for (i = 1, *argv++ = p; *p; )
 	if (*p++ == sep) {
 	    if (++i == count)
@@ -337,6 +360,7 @@ EXPmatch(p, v, mod)
 		ngp->Keep      = v->Keep;
 		ngp->Default   = v->Default;
 		ngp->Purge     = v->Purge;
+		ngp->Poison    = v->Poison;
 		if (EXPverbose > 4) {
 		    (void)printf("%s", ngp->Name);
 		    (void)printf(" %13.13s", ctime(&v->Keep) + 3);
@@ -426,11 +450,12 @@ EXPreadfile(F)
 	    (void)fprintf(stderr, "Line %d bad modflag\n", i);
 	    return FALSE;
 	}
+	v.Poison = (strchr(fields[1], 'X') != NULL);
 	if (!EXPgetnum(i, fields[2], &v.Keep,    "keep")
 	 || !EXPgetnum(i, fields[3], &v.Default, "default")
 	 || !EXPgetnum(i, fields[4], &v.Purge,   "purge"))
 	    return FALSE;
-	/* These were turned into offsets, so the test is the opposie
+	/* These were turned into offsets, so the test is the opposite
 	 * of what you think it should be.  If Purge isn't forever,
 	 * make sure it's greater then the other two fields. */
 	if (v.Purge) {
@@ -454,6 +479,7 @@ EXPreadfile(F)
 	    EXPdefault.Keep    = v.Keep;
 	    EXPdefault.Default = v.Default;
 	    EXPdefault.Purge   = v.Purge;
+	    EXPdefault.Poison  = v.Poison;
 	    SawDefault = TRUE;
 	}
 
@@ -524,7 +550,7 @@ EXPnotfound(Entry)
 /*
 **  Should we keep the specified article?
 */
-STATIC BOOL
+STATIC enum KRP
 EXPkeepit(Entry, when, Expires)
     char		*Entry;
     time_t		when;
@@ -536,7 +562,7 @@ EXPkeepit(Entry, when, Expires)
     if ((p = strchr(Entry, '/')) == NULL) {
 	(void)fflush(stdout);
 	(void)fprintf(stderr, "Bad entry, \"%s\"\n", Entry);
-	return TRUE;
+	return Keep;
     }
     *p = '\0';
     if ((ngp = NGfind(Entry)) == NULL)
@@ -569,12 +595,17 @@ EXPkeepit(Entry, when, Expires)
     }
 
     /* If no expiration, make sure it wasn't posted before the default. */
-    if (Expires == 0)
-	return when > ngp->Default;
+    if (Expires == 0) {
+	if (when >= ngp->Default)
+	    return Keep;
 
     /* Make sure it's not posted before the purge cut-off and
      * that it's not due to expire. */
-    return when > ngp->Purge && (Expires > Now || when > ngp->Keep);
+    } else {
+        if (when >= ngp->Purge && (Expires >= Now || when >= ngp->Keep))
+	    return Keep;
+    }
+    return ngp->Poison ? Poison : Remove;
 }
 
 
@@ -624,11 +655,12 @@ EXPremove(p, size)
 **  Do the work of expiring one line.
 */
 STATIC BOOL
-EXPdoline(out, line, length, arts)
+EXPdoline(out, line, length, arts, krps)
     FILE		*out;
     char		*line;
     int			length;
     char		**arts;
+    enum KRP            *krps;
 {
     static char		IGNORING[] = "Ignoring bad line, \"%.20s...\"\n";
     static long		Offset;
@@ -645,6 +677,8 @@ EXPdoline(out, line, length, arts)
     time_t		when;
     long		where;
     long		size;
+    BOOL                poisoned;
+    BOOL		keeper;
     datum		key;
     datum		value;
     char		date[20];
@@ -724,6 +758,17 @@ EXPdoline(out, line, length, arts)
 	    RENEW(New.Data, char, New.Size);
 	}
 
+	/* First check all postings */
+
+	poisoned = FALSE;
+	keeper = FALSE;
+	for (i = 0; i < count; ++i) {
+	  if ((krps[i] = EXPkeepit(arts[i], when, Expires)) == Poison)
+	      poisoned = TRUE;
+	  if (EXPkeep && (krps[i] == Keep))
+	      keeper = TRUE;
+	}
+
 	/* The "first" variable tells us if we haven't saved the first
 	 * article yet.  This only matters if we're doing link-saving. */
 	first = EXPlinks && count > 1 ? arts[0] : (char *)NULL;
@@ -734,7 +779,7 @@ EXPdoline(out, line, length, arts)
 		if (*p == '\0')
 		    /* Shouldn't happen. */
 		    continue;
-		if (EXPkeepit(p, when, Expires)) {
+		if (krps[i] == Keep) {
 		    if (EXPverbose > 1)
 		        (void)printf("keep %s\n", p);
 		    if (q > New.Data)
@@ -762,7 +807,7 @@ EXPdoline(out, line, length, arts)
 		if (*p == '\0')
 		    /* Shouldn't happen. */
 		    continue;
-		if (EXPkeepit(p, when, Expires)) {
+		if (!poisoned && ((krps[i] == Keep) || keeper)) {
 		    if (EXPverbose > 1)
 		        (void)printf("keep %s\n", p);
 		    if (first != NULL) {
@@ -927,6 +972,7 @@ main(ac, av)
     FILE		*F;
     char		*active;
     char		**arts;
+    enum KRP            *krps;
     STRING		History;
     STRING		HistoryText;
     STRING		HistoryPath;
@@ -966,7 +1012,7 @@ main(ac, av)
     }
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "f:h:d:eg:ilnpqr:stv:w:xz:")) != EOF)
+    while ((i = getopt(ac, av, "f:h:d:eg:iklnpqr:stv:w:xz:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -988,6 +1034,9 @@ main(ac, av)
 	    break;
 	case 'i':
 	    IgnoreOld = TRUE;
+	    break;
+	case 'k':
+	    EXPkeep = TRUE;
 	    break;
 	case 'l':
 	    EXPlinks = TRUE;
@@ -1121,6 +1170,7 @@ main(ac, av)
 
     /* Main processing loop. */
     arts = NEW(char*, nGroups);
+    krps = NEW(enum KRP, nGroups);
     if ((qp = QIOopen(HistoryText, QIO_BUFFER)) == NULL) {
 	(void)fprintf(stderr, "Can't open history file, %s\n",
 		strerror(errno));
@@ -1128,7 +1178,7 @@ main(ac, av)
     }
     for (Bad = FALSE, line = 1, Paused = FALSE; ; line++) {
 	if ((p = QIOread(qp)) != NULL) {
-	    if (!EXPdoline(out, p, QIOlength(qp), arts)) {
+	    if (!EXPdoline(out, p, QIOlength(qp), arts, krps)) {
 		Bad = TRUE;
 		if (errno == ENOSPC) {
 		    (void)unlink(NHistory);
@@ -1166,6 +1216,7 @@ main(ac, av)
 	Paused = TRUE;
     }
     QIOclose(qp);
+    DISPOSE(krps);
     DISPOSE(arts);
 
     if (Writing) {
