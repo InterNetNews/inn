@@ -85,7 +85,7 @@ MOST	= rc.news overview.fmt checkgroups default ihave newgroup \
 	sendbatch inncheck innstat pgpverify innwatch innlog.pl innshellvars \
 	innshellvars.pl innshellvars.csh innshellvars.tcl filter.tcl \
 	startup.tcl startup_innd.pl filter_innd.pl filter_nnrpd.pl \
-	actsync.cfg actsync.ign scanspool
+	actsync.cfg actsync.ign scanspool storage.ctl
 
 MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(PATH_SCHEMA) $D$(CTLBIN)/checkgroups \
 	$D$(CTLBIN)/default $D$(CTLBIN)/ihave $D$(CTLBIN)/newgroup \
@@ -98,10 +98,10 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(PATH_SCHEMA) $D$(CTLBIN)/checkgroups \
 	$D$(NEWSBIN)/nntpsend $D$(NEWSLIB)/send-ihave $D$(NEWSLIB)/send-nntp \
 	$D$(NEWSLIB)/send-uucp $D$(NEWSBIN)/sendbatch $D$(NEWSBIN)/inncheck \
 	$D$(NEWSBIN)/innstat $D$(NEWSBIN)/pgpverify $D$(NEWSBIN)/innwatch \
-	$D$(NEWSLIB)/innlog.pl $D$(PATH_SHELLVARS) $D$(PATH_PERL_SHELLVARS) \
-	$D$(PATH_PERL_STARTUP_INND) $D$(PATH_PERL_FILTER_INND) \
-	$D$(PATH_PERL_FILTER_NNRPD) $D$(PATH_TCL_SHELLVARS) \
-	$D$(PATH_TCL_STARTUP) $D$(PATH_CSH_SHELLVARS) \
+	$D$(NEWSLIB)/innlog.pl $D$(NEWSLIB)/storage.ctl $D$(PATH_SHELLVARS) \
+	$D$(PATH_PERL_SHELLVARS) $D$(PATH_PERL_STARTUP_INND) \
+	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
+	$D$(PATH_TCL_SHELLVARS) $D$(PATH_TCL_STARTUP) $D$(PATH_CSH_SHELLVARS) \
 	$D$(PATH_TCL_FILTER) $D$(NEWSBIN)/scanspool
 
 ##  Scripts from above, plus site-specific config files.
@@ -230,6 +230,7 @@ $D$(PATH_PERL_SHELLVARS): innshellvars.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_TCL_SHELLVARS): innshellvars.tcl ; $(COPY_RPRI) $? $@
 $D$(PATH_CSH_SHELLVARS): innshellvars.csh ; $(COPY_RPRI) $? $@
 $D$(NEWSLIB)/innlog.pl: innlog.pl	; $(COPY_RPRI) $? $@
+$D$(NEWSLIB)/storage.ctl: storage.ctl	; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_STARTUP_INND): startup_innd.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_FILTER_INND): filter_innd.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_FILTER_NNRPD): filter_nnrpd.pl ; $(COPY_RPRI) $? $@
@@ -271,6 +272,7 @@ ihave:		../samples/ihave		; $(COPY) $? $@
 inn.conf:	../samples/inn.conf		; $(COPY) $? $@
 inncheck:	../samples/inncheck		; $(COPY) $? $@
 innlog.pl:	../samples/innlog.pl		; $(COPY) $? $@
+storage.ctl:	../samples/storage.ctl		; $(COPY) $? $@
 innstat:	../samples/innstat		; $(COPY) $? $@
 innwatch:	../samples/innwatch		; $(COPY) $? $@
 innwatch.ctl:	../samples/innwatch.ctl		; $(COPY) $? $@
