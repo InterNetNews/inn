@@ -80,6 +80,14 @@ Upgrading from 2.2 to 2.3
     traditional spool).  If you have an entry for crosspost in newsfeeds,
     remove it.
 
+    If you're importing a traditional spool from a pre-storage API INN
+    server, it's strongly recommended that you use NNTP to feed the articles
+    to your new server rather than trying to build overview and history
+    directly from the old spool.  It's more reliable and ensures that
+    everything gets put into the right place.  The easiest way to do this is
+    to, on your old server, generate a list of all of your existing article
+    files and then feed that list to innxmit.
+
 Changes from 2.2 to 2.3
 
     * New readers.conf file (replaces nnrp.access) which allows more
@@ -98,7 +106,10 @@ Changes from 2.2 to 2.3
 
     * All article storage and retrieval is now done via the storage API. 
       Traditional spool is now available as a storage type under the storage
-      API.
+      API.  (Note that the current traditional spool implementation causes
+      nightly expire to be extremely slow for a large number of articles, so
+      it's not recommended that you use the tradspool storage method for the
+      majority of a large spool.)
 
     * The timecaf storage method has been added, similar to timehash but
       storing multiple articles in a single file.  See INSTALL for details
