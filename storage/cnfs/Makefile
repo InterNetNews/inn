@@ -32,11 +32,13 @@ tags ctags: $(SOURCES)
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend:	Makefile $(SOURCES)
-	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
+	$(MAKEDEPEND) '$(CFLAGS)' $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 cnfs.o: cnfs.c ../../include/config.h ../../include/inn/defines.h \
  ../../include/clibrary.h ../../include/portable/mmap.h \
- ../../include/portable/time.h ../interface.h ../../include/storage.h \
- ../../include/libinn.h ../../include/macros.h ../methods.h \
- ../../include/paths.h cnfs.h cnfs-private.h
+ ../../include/portable/time.h ../../include/inn/innconf.h \
+ ../interface.h ../../include/storage.h ../../include/libinn.h \
+ ../../include/macros.h ../methods.h ../../include/paths.h \
+ ../../include/inn/wire.h ../../include/inn/mmap.h cnfs.h \
+ cnfs-private.h

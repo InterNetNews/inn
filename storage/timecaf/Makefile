@@ -32,7 +32,7 @@ tags ctags: $(SOURCES)
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend:	Makefile $(SOURCES)
-	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
+	$(MAKEDEPEND) '$(CFLAGS)' $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 caf.o: caf.c ../../include/config.h ../../include/inn/defines.h \
@@ -40,6 +40,7 @@ caf.o: caf.c ../../include/config.h ../../include/inn/defines.h \
  ../../include/macros.h caf.h
 timecaf.o: timecaf.c ../../include/config.h \
  ../../include/inn/defines.h ../../include/clibrary.h \
- ../../include/portable/mmap.h caf.h ../../include/libinn.h \
+ ../../include/portable/mmap.h caf.h ../../include/inn/innconf.h \
+ ../../include/inn/wire.h ../../include/libinn.h \
  ../../include/macros.h ../methods.h ../interface.h \
  ../../include/storage.h timecaf.h ../../include/paths.h

@@ -25,7 +25,7 @@ clobber clean distclean:
 	rm -f *.o smbvalid.a
 
 depend: Makefile $(SOURCES)
-	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
+	$(MAKEDEPEND) '$(CFLAGS)' $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 rfcnb-io.o: rfcnb-io.c ../../include/config.h \

@@ -92,7 +92,7 @@ $(D)$(PATHLIB)/libinn.$(EXTLIB): libinn.$(EXTLIB)
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend: Makefile $(SOURCES) ../include/inn/version.h
-	$(MAKEDEPEND) $(CFLAGS) $(PERLINC) $(SOURCES)
+	$(MAKEDEPEND) '$(CFLAGS) $(PERLINC)' $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 buffer.o: buffer.c ../include/config.h ../include/inn/defines.h \

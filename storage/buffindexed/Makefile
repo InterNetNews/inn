@@ -41,12 +41,12 @@ tags ctags: $(SOURCES)
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend:	$(SOURCES)
-	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
+	$(MAKEDEPEND) '$(CFLAGS)' $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 buffindexed.o: buffindexed.c ../../include/config.h \
  ../../include/inn/defines.h ../../include/clibrary.h \
- ../../include/portable/mmap.h ../../include/libinn.h \
- ../../include/macros.h ../../include/ov.h ../../include/storage.h \
- ../../include/inn/history.h ../../include/paths.h ../ovinterface.h \
- buffindexed.h
+ ../../include/portable/mmap.h ../../include/inn/innconf.h \
+ ../../include/libinn.h ../../include/macros.h ../../include/ov.h \
+ ../../include/storage.h ../../include/inn/history.h \
+ ../../include/paths.h ../ovinterface.h buffindexed.h

@@ -95,7 +95,7 @@ inndp:		$(SOURCES)
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend: Makefile $(SOURCES)
-	$(MAKEDEPEND) $(CFLAGS) $(PERLINC) $(PYTHONINC) $(TCLINC) $(SOURCES)
+	$(MAKEDEPEND) '$(CFLAGS) $(PERLINC) $(PYTHONINC) $(TCLINC)' $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 art.o: art.c ../include/config.h ../include/inn/defines.h \

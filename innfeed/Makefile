@@ -107,7 +107,7 @@ $(D)$(PATHBIN)/startinnfeed: startinnfeed
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend: Makefile $(SOURCES)
-	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
+	$(MAKEDEPEND) '$(CFLAGS)' $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 article.o: article.c innfeed.h ../include/inn/timer.h \

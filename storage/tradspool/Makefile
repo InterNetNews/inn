@@ -32,11 +32,12 @@ tags ctags: $(SOURCES)
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend:	Makefile $(SOURCES)
-	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
+	$(MAKEDEPEND) '$(CFLAGS)' $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 tradspool.o: tradspool.c ../../include/config.h \
  ../../include/inn/defines.h ../../include/clibrary.h \
- ../../include/portable/mmap.h ../../include/inn/qio.h \
+ ../../include/portable/mmap.h ../../include/inn/innconf.h \
+ ../../include/inn/qio.h ../../include/inn/wire.h \
  ../../include/libinn.h ../../include/macros.h ../../include/paths.h \
  ../methods.h ../interface.h ../../include/storage.h tradspool.h

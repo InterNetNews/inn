@@ -139,7 +139,7 @@ $(D)$(PATHRNEWS)/gunbatch:          gunbatch            ; $(CP_XPUB) $? $@
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend:	Makefile $(SOURCES)
-	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
+	$(MAKEDEPEND) '$(CFLAGS)' $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 ctlinnd.o: ctlinnd.c ../include/config.h ../include/inn/defines.h \

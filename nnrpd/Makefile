@@ -72,7 +72,7 @@ nnrpdp:		$(SOURCES)
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend:	$(SOURCES)
-	$(MAKEDEPEND) $(CFLAGS) $(PERLINC) $(PYTHONINC) $(TCLINC) $(SOURCES)
+	$(MAKEDEPEND) '$(CFLAGS) $(PERLINC) $(PYTHONINC) $(TCLINC)' $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 article.o: article.c ../include/config.h ../include/inn/defines.h \

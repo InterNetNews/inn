@@ -32,11 +32,12 @@ tags ctags: $(SOURCES)
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend:	Makefile $(SOURCES)
-	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
+	$(MAKEDEPEND) '$(CFLAGS)' $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 timehash.o: timehash.c ../../include/config.h \
  ../../include/inn/defines.h ../../include/clibrary.h \
- ../../include/portable/mmap.h ../../include/libinn.h \
+ ../../include/portable/mmap.h ../../include/inn/innconf.h \
+ ../../include/inn/wire.h ../../include/libinn.h \
  ../../include/macros.h ../methods.h ../interface.h \
  ../../include/storage.h ../../include/paths.h timehash.h

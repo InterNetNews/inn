@@ -32,12 +32,13 @@ tags ctags: $(SOURCES)
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend:	Makefile $(SOURCES)
-	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
+	$(MAKEDEPEND) '$(CFLAGS)' $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 ovdb.o: ovdb.c ../../include/config.h ../../include/inn/defines.h \
- ../../include/clibrary.h ../../include/macros.h \
- ../../include/conffile.h ../../include/libinn.h ../../include/paths.h \
- ../../include/storage.h ../../include/ov.h \
- ../../include/inn/history.h ../ovinterface.h ovdb.h ovdb-private.h \
- ../../include/inn/version.h ../../include/portable/time.h
+ ../../include/clibrary.h ../../include/portable/socket.h \
+ ../../include/portable/time.h ../../include/conffile.h \
+ ../../include/inn/innconf.h ../../include/libinn.h \
+ ../../include/macros.h ../../include/paths.h ../../include/storage.h \
+ ../../include/ov.h ../../include/inn/history.h ../ovinterface.h \
+ ovdb.h ovdb-private.h
