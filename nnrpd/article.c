@@ -1576,7 +1576,12 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	    OVERmiss++;
 	    linelen = strlen(p);
 	    OVERsize+=linelen;
-	    Printf("%s\r\n", p);
+	    if (OVERmem) {
+                SendIOb(p, linelen);
+                SendIOb("\r\n", 2);
+	    } else {
+                Printf("%s\r\n", p);
+	    }
 	}
     }
     if ((innconf->storageapi && innconf->overviewmmap) || OVERmem) {
