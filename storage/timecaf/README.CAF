@@ -103,7 +103,7 @@ when control.cancel started to hit hundreds of thousands of articles and 8K
 blocksizes.)  In practice, CAF files over 2GB or 4GB may be a problem because
 of unsigned/signed long problems, and ones over 4G are probably impossible 
 on anything besides an Alpha unless you track down all the places in innd
-where they assume OFFSET_T is a long and fix it to work with long longs.  
+where they assume off_t is a long and fix it to work with long longs.  
 
   At some point I'd also like to try some other, more efficient
 directory layout for the CAF files, as opposed to the old 
