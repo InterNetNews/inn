@@ -8,8 +8,8 @@ CFLAGS  = $(GCFLAGS)
 SOURCES = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
 	conffile.c confparse.c daemonize.c date.c dbz.c defdist.c \
 	fdflags.c fdlimit.c findheader.c fseeko.c ftello.c genid.c \
-	getconfig.c getfqdn.c getmodaddr.c gettime.c hash.c hashtab.c \
-	hstrerror.c inet_aton.c inet_ntoa.c inndcomm.c localopen.c \
+	getconfig.c getfqdn.c getmodaddr.c getpagesize.c gettime.c hash.c \
+	hashtab.c hstrerror.c inet_aton.c inet_ntoa.c inndcomm.c localopen.c \
 	lockfile.c makedir.c md5.c memcmp.c messages.c mkstemp.c mmap.c \
 	parsedate.c perl.c pread.c pwrite.c qio.c radix32.c readin.c \
 	remopen.c reservedfd.c resource.c sendarticle.c sendpass.c \
@@ -141,6 +141,8 @@ getfqdn.o: getfqdn.c ../include/config.h ../include/inn/defines.h \
 getmodaddr.o: getmodaddr.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h
+getpagesize.o: getpagesize.c ../include/config.h \
+ ../include/inn/defines.h
 gettime.o: gettime.c ../include/config.h ../include/inn/defines.h \
  ../include/libinn.h
 hash.o: hash.c ../include/config.h ../include/inn/defines.h \

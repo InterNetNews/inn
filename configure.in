@@ -1456,9 +1456,9 @@ fi])
 INN_FUNC_SNPRINTF
 
 dnl Check for various other functions.
-AC_CHECK_FUNCS(atexit getloadavg getpagesize getrlimit getrusage getspnam \
-               setbuffer sigaction setrlimit setsid socketpair statvfs \
-               strncasecmp strtoul symlink sysconf)
+AC_CHECK_FUNCS(atexit getloadavg getrlimit getrusage getspnam setbuffer \
+               sigaction setrlimit setsid socketpair statvfs strncasecmp \
+               strtoul symlink sysconf)
 
 dnl Find a way to get the file descriptor limit.
 if test x"$ac_cv_func_getrlimit" = xno ; then
@@ -1472,8 +1472,9 @@ if test x"$ac_cv_func_statvfs" = xno ; then
 fi
 
 dnl If we can't find any of the following, we have replacements for them.
-AC_REPLACE_FUNCS(fseeko ftello hstrerror inet_aton mkstemp pread pwrite \
-                 seteuid strcasecmp strerror strlcat strlcpy strspn setenv)
+AC_REPLACE_FUNCS(fseeko ftello getpagesize hstrerror inet_aton mkstemp \
+                 pread pwrite seteuid strcasecmp strerror strlcat strlcpy \
+                 strspn setenv)
 
 dnl Source used by INN_TYPE_FPOS_T_LARGE.
 define([_INN_TYPE_FPOS_T_LARGE_SOURCE],
