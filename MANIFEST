@@ -7,8 +7,6 @@ HISTORY                               Messages of historical significance
 INSTALL                               INN installation instructions
 LICENSE                               Legal mumbo-jumbo
 MANIFEST                              This shipping list
-MakeInews                             Make an inews distribution kit
-MakeRnews                             Make an rnews distribution kit
 Makefile                              Top-level makefile
 Makefile.global.in                    Make variables for all Makefiles
 NEWS                                  Changes since last version
@@ -106,6 +104,7 @@ doc/man/crosspost.8                   Manpage for crosspost backend
 doc/man/ctlinnd.8                     Manpage for ctlinnd frontend
 doc/man/cvtbatch.8                    Manpage for cvtbatch utility
 doc/man/cycbuff.conf.5                Manpage for cycbuff.conf config file
+doc/man/dbprocs.8                     Manpage for dbprocs
 doc/man/dbz.3                         Manpage for DBZ database interface
 doc/man/distrib.pats.5                Manpage for distrib.pats config file
 doc/man/expire.8                      Manpage for expire
@@ -186,6 +185,7 @@ doc/man/tally.control.8               Manpage for tally.control
 doc/man/wildmat.3                     Manpage for wildmat library routine
 doc/man/writelog.8                    Manpage for writelog
 doc/pod                               POD documentation (Directory)
+doc/pod/dbprocs.pod                   Master file for dbprocs.8
 doc/pod/hacking.pod                   Master file for HACKING
 doc/pod/hook-perl.pod                 Master file for README.perl_hook
 doc/pod/inn.conf.pod                  Master file for inn.conf.5
@@ -195,6 +195,7 @@ doc/pod/news.pod                      Master file for NEWS
 doc/pod/ovdb.pod                      Master file for ovdb.5
 doc/pod/ovdb_recover.pod              Master file for ovdb_recover.8
 doc/pod/ovdb_upgrade.pod              Master file for ovdb_upgrade.8
+doc/pod/readers.conf.pod              Master file for readers.conf.5
 doc/pod/readme.pod                    Master file for README
 doc/pod/sasl.conf.pod                 Master file for sasl.conf.5
 doc/sample-control                    Sample PGP-signed control message
@@ -423,6 +424,7 @@ samples/moderators                    Moderation submission addresses
 samples/motd.news                     Sample MOTD file
 samples/newgroup.in                   newgroup handler
 samples/newgroup.pl                   newgroup controlchan handler
+samples/newsgroups.minimal            Minimal starting newsgroups file
 samples/news2mail.cf                  news2mail config file
 samples/newsfeeds.in                  innd feed configuration
 samples/nnrpd.py                      Python hooks for nnrpd
@@ -496,6 +498,7 @@ storage/ov3/ov3.c                     tradindexed overview routines
 storage/ov3/ovmethod.config           ovbuildconfig definition
 storage/ov3/tradindexed.h             Header file for tradindexed overview
 storage/ovbuildconfig.in              Construct overview interface
+storage/ovdb                          ovdb overview method (Directory)
 storage/ovdb/Makefile                 Makefile for ovdb overview method
 storage/ovdb/ovdb.c                   ovdb (Berkeley DB) overview method
 storage/ovdb/ovdb.h                   Header for ovdb (Berkeley DB) overview
@@ -532,3 +535,4 @@ support/fixscript.in                  Interpreter path fixup script
 support/install-sh                    Installation utility
 support/ltconfig                      Configure libtool
 support/ltmain.sh                     Source for libtool utility
+support/makedepend                    Generate dependencies for C files
