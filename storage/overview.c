@@ -344,6 +344,7 @@ BOOL OVERreinit(void) {
 		    DISPOSE(path);
 	            return FALSE;
 		}
+		config->size = sb.st_size;
 	    }
 	}
     }
@@ -525,6 +526,8 @@ char *OVERretrieve(TOKEN *token, int *Overlen) {
     if (config == NULL)
 	return (char *)NULL;
     if (OVERmmap) {
+	if (config->size <= token->offset && !OVERreinit())
+	    return (char *)NULL;
 	if (config->size <= token->offset || token->offset < 0)
 	    return (char *)NULL;
 	addr = config->addr + token->offset;

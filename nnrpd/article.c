@@ -850,6 +850,8 @@ STATIC char *OVERGetHeader(char *p, int field)
     if (fp->NeedsHeader) 		/* we're going to need an exact match */
       field = ARTfirstfullfield;
 
+    if (innconf->storageapi)
+	field--;
     /* Skip leading headers. */
     for (; --field >= 0 && *p; p++)
 	if ((p = strchr(p, '\t')) == NULL)
