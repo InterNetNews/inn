@@ -1023,6 +1023,7 @@ ARTclean(ARTDATA *data, char *buff)
 
   /* assumes Message-ID header is required header */
   if (!ARTidok(HDR(HDR__MESSAGE_ID))) {
+    HDR_LEN(HDR__MESSAGE_ID) = 0;
     sprintf(buff, "%d Bad \"Message-ID\" header", NNTP_REJECTIT_VAL);
     TMRstop(TMR_ARTCLEAN);
     return false;
@@ -1797,20 +1798,15 @@ ARTpost(CHANNEL *cp)
   /* Preliminary clean-ups. */
   article = &cp->In;
   artclean = ARTclean(data, cp->Error);
-  if (!artclean)
-    return false;
 
   /* assumes Path header is required header */
   hopcount = ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH), &data->Path);
+  if (!artclean && (!HDR_FOUND(HDR__MESSAGE_ID) || hopcount == 0)) {
+    return false;
+  }
   if (hopcount == 0) {
     snprintf(cp->Error, sizeof(cp->Error), "%d illegal path element",
             NNTP_REJECTIT_VAL);
-    ARTlog(data, ART_REJECT, cp->Error);
-    if (innconf->remembertrash && (Mode == OMrunning) &&
-	!InndHisRemember(HDR(HDR__MESSAGE_ID)))
-      syslog(L_ERROR, "%s cant write history %s %m", LogName,
-	HDR(HDR__MESSAGE_ID));
-    ARTreject(REJECT_OTHER, cp, article);
     return false;
   }
   hops = data->Path.List;
@@ -1832,6 +1828,15 @@ ARTpost(CHANNEL *cp)
     snprintf(cp->Error, sizeof(cp->Error), "%d Duplicate", NNTP_REJECTIT_VAL);
     ARTlog(data, ART_REJECT, cp->Error);
     ARTreject(REJECT_DUPLICATE, cp, article);
+    return false;
+  }
+  if (!artclean) {
+    ARTlog(data, ART_REJECT, cp->Error);
+    if (innconf->remembertrash && (Mode == OMrunning) &&
+	!InndHisRemember(HDR(HDR__MESSAGE_ID)))
+      syslog(L_ERROR, "%s cant write history %s %m", LogName,
+	HDR(HDR__MESSAGE_ID));
+    ARTreject(REJECT_OTHER, cp, article);
     return false;
   }
 
