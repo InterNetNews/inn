@@ -1,24 +1,65 @@
-/*  $Revision$
+/*  $Id$
 **
+**  malloc and realloc which call a memory failure handler on failure and
+**  never returns NULL, so that the rest of the application doesn't have to
+**  check malloc's return status.  The default xmemfailure exits the
+**  application, but this implementation allows for one that waits for a
+**  while and then returns, or performs some other emergency action and will
+**  continue calling malloc as long as xmemfailure keeps returning.
 */
+#include "config.h"
+#include "libinn.h"
+
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
-#include "configdata.h"
-#include "clibrary.h"
-#include <errno.h>
-#include "libinn.h"
-#include "macros.h"
 
+#ifndef STDC_HEADERS
+# ifdef HAVE_MEMORY_H
+#  include <memory.h>
+# endif
+# ifdef HAVE_STRING_H
+#  include <string.h>
+# endif
+#endif
 
-/*
-**  Allocate some memory or call the memory failure handler.
-*/
-ALIGNPTR xmalloc(unsigned int i)
+/* Assume this will be provided if the system doesn't have it. */
+#ifndef HAVE_STRERROR
+extern char *strerror();
+#endif
+
+void *
+xmalloc(size_t size)
 {
-    POINTER		new;
+    void *p;
 
-    while ((new = malloc(i)) == NULL)
-	(*xmemfailure)("malloc", i);
-    return CAST(ALIGNPTR, new);
+    p = malloc(size);
+    while (p == NULL) {
+        (*xmemfailure)("malloc", size);
+        p = malloc(size);
+    }
+    return p;
 }
+
+void *
+xrealloc(void *p, size_t size)
+{
+    void *newp;
+
+    newp = realloc(p, size);
+    while (newp == NULL) {
+        (*xmemfailure)("remalloc", size);
+        newp = realloc(p, size);
+    }
+    return newp;
+}
+
+static int
+xmemerr(const char *what, size_t size)
+{
+    fprintf(stderr, "Can't %s %lu bytes: %s", what, size, strerror(errno));
+    exit(1);
+}
+
+/* Set the default error handler. */
+int (*xmemfailure)(const char *, size_t) = xmemerr;
