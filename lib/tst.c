@@ -175,7 +175,7 @@ tst_init(int width)
 **  pointer.
 */
 int
-tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
+tst_insert(struct tst *tst, const unsigned char *key, void *data, int option,
            void **exist_ptr)
 {
     struct node *current_node = NULL;
@@ -244,7 +244,7 @@ tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
 **  data pointer associated with that key or NULL if it's not found.
 */
 void *
-tst_search(const unsigned char *key, struct tst *tst)
+tst_search(struct tst *tst, const unsigned char *key)
 {
     struct node *current_node;
     int key_index;
@@ -280,7 +280,7 @@ tst_search(const unsigned char *key, struct tst *tst)
 **  the data pointer assocaited with that key, or NULL if it wasn't found.
 */
 void *
-tst_delete(const unsigned char *key, struct tst *tst)
+tst_delete(struct tst *tst, const unsigned char *key)
 {
     struct node *current_node;
     struct node *current_node_parent;

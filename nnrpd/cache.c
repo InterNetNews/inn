@@ -41,9 +41,8 @@ void
 cache_add(const HASH h, const TOKEN t)
 {
     if (msgcachecount < innconf->msgidcachesize) {
-	if (!msgidcache) {
+	if (!msgidcache)
 	    msgidcache = tst_init(innconf->msgidcachesize / 10);
-	}
 	if (msgidcache) {
 	    TOKEN *token = malloc(sizeof *token);
 
@@ -53,7 +52,7 @@ cache_add(const HASH h, const TOKEN t)
 		p = (unsigned char *) HashToText(h);
 		*token = t;
 		
-		if (tst_insert(p, token, msgidcache,
+		if (tst_insert(msgidcache, p, token,
 			       0, NULL) == TST_DUPLICATE_KEY) {
 		    free(token);
 		} else {
@@ -89,7 +88,7 @@ cache_get(const HASH h)
 	   in the TST a structure which includes an LRU list. Then in _add
 	   expire entries from the front of the list as we need to steal them
         */
-	t = tst_delete((unsigned char *) HashToText(h), msgidcache);
+	t = tst_delete(msgidcache, (unsigned char *) HashToText(h));
 	if (t != NULL) {
 	    --msgcachecount;
 	    last_token = *t;
