@@ -1,3 +1,12 @@
+Changes from 2.3.2 to 2.3.3
+[ in progress ]
+
+    * An item that was noted in NEWS below but was inadvertently left out of
+      nnrpd: Users can no longer post articles containing Approved: headers
+      to moderated groups by default; they must be specifically given that
+      permission with the access: parameter in readers.conf.  See the man
+      page for more details.
+
 Changes from 2.3.1 to 2.3.2
 
     * innxmit can again handle regular filenames as input as well as storage
