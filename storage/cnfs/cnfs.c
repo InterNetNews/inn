@@ -43,11 +43,14 @@ STATIC CNFSEXPIRERULES	*metaexprulestab = (CNFSEXPIRERULES *)NULL;
 STATIC long		pagesize = 0;
 
 STATIC TOKEN CNFSMakeToken(char *cycbuffname, CYCBUFF_OFF_T offset,
-		       U_INT32_T cycnum, STORAGECLASS class) {
+		       U_INT32_T cycnum, STORAGECLASS class, TOKEN *oldtoken) {
     TOKEN               token;
     INT32_T		int32;
 
-    memset(&token, '\0', sizeof(token));
+    if (oldtoken == (TOKEN *)NULL)
+	memset(&token, '\0', sizeof(token));
+    else
+	memcpy(&token, oldtoken, sizeof(token));
     /*
     ** XXX We'll assume that TOKENSIZE is 16 bytes and that we divvy it
     ** up as: 8 bytes for cycbuffname, 4 bytes for offset, 4 bytes
@@ -302,7 +305,7 @@ STATIC BOOL CNFSparse_part_line(char *l) {
   CYCBUFF	*cycbuff, *tmp;
 
   /* Symbolic cnfs partition name */
-  if ((p = strchr(l, ':')) == NULL || (p - l <= 0 || p - l > CNFSMAXCYCBUFFNAME)) {
+  if ((p = strchr(l, ':')) == NULL || p - l <= 0 || p - l > CNFSMAXCYCBUFFNAME - 1) {
     syslog(L_ERROR, "%s: bad cycbuff name in line '%s'", LocalLogName, l);
     return FALSE;
   }
@@ -313,7 +316,7 @@ STATIC BOOL CNFSparse_part_line(char *l) {
   l = ++p;
 
   /* Path to cnfs partition */
-  if ((p = strchr(l, ':')) == NULL || p - l <= 0) {
+  if ((p = strchr(l, ':')) == NULL || p - l <= 0 || p - l > CNFSPASIZ - 1) {
     syslog(L_ERROR, "%s: bad pathname in line '%s'", LocalLogName, l);
     DISPOSE(cycbuff);
     return FALSE;
@@ -332,8 +335,8 @@ STATIC BOOL CNFSparse_part_line(char *l) {
   /* Length/size of symbolic partition */
   len = atoi(l) * 1024;		/* This value in KB in decimal */
   if (len != sb.st_size) {
-    syslog(L_ERROR, "%s: bad length '%ld' for '%s' cycbuff(%ld)",
-	   /* Danger... */ LocalLogName, len, cycbuff->name);
+    syslog(L_ERROR, "%s: bad length '%ld' for '%s' cycbuff(%ld bytes)",
+	   /* Danger... */ LocalLogName, len, cycbuff->name, sb.st_size);
     DISPOSE(cycbuff);
     return FALSE;
   }
@@ -956,7 +959,7 @@ TOKEN cnfs_store(const ARTHANDLE article, STORAGECLASS class) {
 	 middle += CNFS_BLOCKSIZE) {
 	CNFSUsedBlock(cycbuff, middle, TRUE, FALSE);
     }
-    return CNFSMakeToken(artcycbuffname, artoffset, artcyclenum, class);
+    return CNFSMakeToken(artcycbuffname, artoffset, artcyclenum, class, article.token);
 }
 
 ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
@@ -1174,7 +1177,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, RETRTYPE amount) {
     tonextblock = CNFS_BLOCKSIZE - (priv.offset & (CNFS_BLOCKSIZE - 1));
     priv.offset += (CYCBUFF_OFF_T) tonextblock;
     art->arrived = cah.arrived;
-    token = CNFSMakeToken(cycbuff->name, offset, cycbuff->cyclenum, cah.class);
+    token = CNFSMakeToken(cycbuff->name, offset, cycbuff->cyclenum, cah.class, (TOKEN *)NULL);
     art->token = &token;
     offset += sizeof(cah);
     pagefudge = offset % pagesize;

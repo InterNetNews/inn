@@ -922,7 +922,7 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 		}
 		token = TextToToken(fields[2]);
 		if ((art = SMretrieve(token, RETR_ALL)) == (ARTHANDLE *)NULL) {
-		    fprintf(stderr, "Cannot retrieve %s, skipping\n", fields[2]);   
+		    /* fprintf(stderr, "Cannot retrieve %s, skipping\n", fields[2]); */
 		    break;
 		}
 		if (artbuff.Left == 0) {
@@ -935,6 +935,7 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 		arth.data = artbuff.Data;
 		arth.len = art->len;
 		arth.arrived = art->arrived;
+		arth.token = &token;
 		(void)memcpy((POINTER)artbuff.Data, (POINTER)art->data, (SIZE_T)art->len);
 		artbuff.Used = art->len;
 		SMfreearticle(art);
@@ -964,6 +965,7 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 		    *p = HIS_SUBFIELDSEP;
 		}
 		arth.arrived = Arrived;
+		arth.token = (TOKEN *)NULL;
 		crossnum = split(fields[2], ' ', arts, count);
 		if (!ReadInMem(arts[0], &arth, Tradspooldir)) {
 		    /* maybe article is cancelled, just recored the hash */
@@ -1207,6 +1209,7 @@ DoNewsgroup(char *group, FILE *out, BOOL RemoveBad, BOOL Update, TRANS Translate
 
 	if (Translate == FROM_SPOOL) {
 	    arth.arrived = Sb.st_mtime;
+	    arth.token = (TOKEN *)NULL;
 	    sprintf(artbuff, "%s/%s", group, p);
 	    if (!ReadInMem(artbuff, &arth, Tradspooldir)) {
 		break;

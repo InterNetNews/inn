@@ -1028,7 +1028,7 @@ CCnewgroup(av)
 	for (p = Name; *p; p++)
 	    if (*p == '.')
 		*p = '/';
-	if (!MakeDirectory(Name, TRUE))
+	if (!innconf->storageapi && !MakeDirectory(Name, TRUE))
 	    syslog(L_NOTICE, "%s cant mkdir %s %m", LogName, Name);
     }
     return NULL;

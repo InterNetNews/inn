@@ -479,6 +479,7 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
     arth.data = artbuff;
     arth.len = Data->SizeValue;
     arth.arrived = (time_t)0;
+    arth.token = (TOKEN *)NULL;
 
     result = SMstore(arth);
     if (result.type == TOKEN_EMPTY) {

@@ -1,3 +1,8 @@
+/*  $Id$
+**
+**  timehash based storing method
+*/
+
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
@@ -31,12 +36,15 @@ typedef enum {FIND_DIR, FIND_ART} FINDTYPE;
 
 static int SeqNum = 0;
 
-static TOKEN MakeToken(time_t time, int seqnum, STORAGECLASS class) {
+static TOKEN MakeToken(time_t time, int seqnum, STORAGECLASS class, TOKEN *oldtoken) {
     TOKEN               token;
     unsigned int        i;
     unsigned short      s;
 
-    memset(&token, '\0', sizeof(token));
+    if (oldtoken == (TOKEN *)NULL)
+	memset(&token, '\0', sizeof(token));
+    else 
+	memcpy(&token, oldtoken, sizeof(token));
     token.type = TOKEN_TIMEHASH;
     token.class = class;
     i = htonl(time);
@@ -79,7 +87,7 @@ static TOKEN *PathToToken(char *path) {
     if (n != 5)
 	return (TOKEN *)NULL;
     time = ((t1 << 16) & 0xff0000) | ((t2 << 8) & 0xff00) | ((t3 << 16) & 0xff000000) | (t3 & 0xff);
-    token = MakeToken(time, seqnum, class);
+    token = MakeToken(time, seqnum, class, (TOKEN *)NULL);
     return &token;
 }
 
@@ -155,7 +163,7 @@ TOKEN timehash_store(const ARTHANDLE article, STORAGECLASS class) {
     }
     close(fd);
     DISPOSE(path);
-    return MakeToken(now, seq, class);
+    return MakeToken(now, seq, class, article.token);
 }
 
 static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
