@@ -1,4 +1,6 @@
-#!@_PATH_PERL@
+#! /usr/bin/perl
+# fixscript will replace this line with require innshellvars.pl
+
 # $Id$
 # Copyright (c)1998 G.J. Andruk
 ###########################################################################
@@ -31,10 +33,6 @@ use IPC::Open2; # Makes mailing easier.
 
 $ENV{'PATH'} = '/bin:/usr/bin';
 delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
-
-## *** Change this to be correct for your site. *** ##
-require "@LIBDIR@/innshellvars.pl" ;
-$inn::newslib = "@LIBDIR@"; # location of docheckgroups
 
 # hackage for pre-2.0 INNs.
 if (!$inn::pathhost) {
