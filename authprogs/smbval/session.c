@@ -23,7 +23,7 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include <malloc.h>
+#include <stdlib.h>
 #include <string.h>
 
 int RFCNB_errno = 0;
