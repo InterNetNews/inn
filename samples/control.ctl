@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2004-05-15
+##  Last modified: 2004-10-12
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -134,7 +134,7 @@ rmgroup:*:a.bsu.*:doit
 # URL: http://abg.news-kiste.de/
 # Admin group: abg.admin
 # Key URL: http://abg.news-kiste.de/abgadmin.asc
-# Key fingerprint = 7D 18 DB E7 5B EB 0D 34  C1 89 5D 45 84 86 D3 A8
+# Key fingerprint = 17 04 9C 48 D7 D7 9C B9  56 9E 5F 64 3D F0 A2 4B
 # *PGP*   See comment at top of file.
 newgroup:*:abg.*:drop
 rmgroup:*:abg.*:drop
@@ -2235,7 +2235,7 @@ rmgroup:*@*.wustl.edu:wu.*:doit
 ## X-PRIVAT (Italian)
 # Contact: dmitry@x-privat.org
 # URL: http://www.x-privat.org/
-# Admin group: x-privat.newsgroup
+# Admin group: x-privat.info
 # Key URL: http://www.x-privat.org/dmitry.asc
 # Key fingerprint = 9B 0A 7E 68 27 80 C7 96  47 6B 03 90 51 05 68 43
 # *PGP*   See comment at top of file.
