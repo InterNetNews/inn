@@ -218,6 +218,9 @@
 /* Define to a suitable 32-bit type if standard headers don't define.  */
 #undef uint32_t
 
+/* Define if we're going to use BerkeleyDB */
+#undef USE_BERKELEY_DB
+
 @BOTTOM@
 
 
