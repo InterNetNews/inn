@@ -1121,21 +1121,27 @@ ARTreject(Reject_type code, CHANNEL *cp, struct buffer *article UNUSED)
       break;
     case REJECT_SITE:
       cp->Unwanted_s++;
+      cp->RejectSize += cp->Next - cp->Start;
       break;
     case REJECT_FILTER:
       cp->Unwanted_f++;
+      cp->RejectSize += cp->Next - cp->Start;
       break;
     case REJECT_DISTRIB:
       cp->Unwanted_d++;
+      cp->RejectSize += cp->Next - cp->Start;
       break;
     case REJECT_GROUP:
       cp->Unwanted_g++;
+      cp->RejectSize += cp->Next - cp->Start;
       break;
     case REJECT_UNAPP:
       cp->Unwanted_u++;
+      cp->RejectSize += cp->Next - cp->Start;
       break;
     case REJECT_OTHER:
       cp->Unwanted_o++;
+      cp->RejectSize += cp->Next - cp->Start;
       break;
     default:
       /* should never be here */
@@ -1810,12 +1816,17 @@ ARTpost(CHANNEL *cp)
   artclean = ARTclean(data, cp->Error);
 
   /* If we don't have Path or Message-ID, we can't continue. */
-  if (!artclean && (!HDR_FOUND(HDR__PATH) || !HDR_FOUND(HDR__MESSAGE_ID)))
+  if (!artclean && (!HDR_FOUND(HDR__PATH) || !HDR_FOUND(HDR__MESSAGE_ID))) {
+    /* cp->Error is set since Path and Message-ID are required header and one
+       of two is not found at ARTclean(). */
+    ARTreject(REJECT_OTHER, cp, article);
     return false;
+  }
   hopcount = ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH), &data->Path);
   if (hopcount == 0) {
     snprintf(cp->Error, sizeof(cp->Error), "%d illegal path element",
             NNTP_REJECTIT_VAL);
+    ARTreject(REJECT_OTHER, cp, article);
     return false;
   }
   hops = data->Path.List;
@@ -2245,7 +2256,7 @@ ARTpost(CHANNEL *cp)
 	    syslog(L_ERROR, "%s cant write history %s %m",
 	      LogName, HDR(HDR__MESSAGE_ID));
 	  ARTreject(REJECT_GROUP, cp, article);
-	    return false;
+	  return false;
 	}
       }
     }

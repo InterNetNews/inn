@@ -326,9 +326,9 @@ sub collect {
       return 1;
     }
     # closed (with times)
-    if ($left =~ /(\S+):\d+ closed seconds (\d+) accepted (\d+) refused (\d+) rejected (\d+) duplicate (\d+) accepted size (\d+) duplicate size (\d+)$/o) {
-      my ($server, $seconds, $accepted, $refused, $rejected, $duplicate, $accptsize, $dupsize) =
-	($1, $2, $3, $4, $5, $6, $7, $8);
+    if ($left =~ /(\S+):\d+ closed seconds (\d+) accepted (\d+) refused (\d+) rejected (\d+) duplicate (\d+) accepted size (\d+) duplicate size (\d+) rejected size (\d+)$/o) {
+      my ($server, $seconds, $accepted, $refused, $rejected, $duplicate, $accptsize, $dupsize, $rjctsize) =
+	($1, $2, $3, $4, $5, $6, $7, $8, $9);
       $server = lc $server unless $CASE_SENSITIVE;
       $innd_seconds{$server} += $seconds;
       $innd_accepted{$server} += $accepted;
@@ -336,6 +336,7 @@ sub collect {
       $innd_rejected{$server} += $rejected;
       $innd_stored_size{$server} += $accptsize;
       $innd_duplicated_size{$server} += $dupsize;
+      $innd_rejected_size{$server} += $rjctsize;
       return 1;
     } elsif ($left =~ /(\S+):\d+ closed seconds (\d+) accepted (\d+) refused (\d+) rejected (\d+)$/o) {
       # closed (with times)
@@ -1783,7 +1784,7 @@ sub adjust {
 	+ ($innd_refused{$key} || 0)
 	+ ($innd_rejected{$key} || 0);
       $innd_offered_size{$key} = ($innd_stored_size{$key} || 0)
-	+ ($innd_duplicated_size{$key} || 0);
+	+ ($innd_duplicated_size{$key} || 0) + ($innd_rejected_size{$key} || 0);
     }
 
 

@@ -213,8 +213,9 @@ NCpostit(CHANNEL *cp)
   }
   cp->Reported++;
   if (cp->Reported >= innconf->nntpactsync) {
-    snprintf(buff, sizeof(buff), "accepted size %.0f duplicate size %.0f",
-             cp->Size, cp->DuplicateSize);
+    snprintf(buff, sizeof(buff),
+      "accepted size %.0f duplicate size %.0f rejected size %.0f",
+       cp->Size, cp->DuplicateSize, cp->RejectSize);
     syslog(L_NOTICE,
       "%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld %s",
       CHANname(cp), (long)(Now.time - cp->Started),
@@ -910,6 +911,7 @@ NCproc(CHANNEL *cp)
         }
 	cp->State = CSgetcmd;
 	cp->Rejected++;
+	cp->RejectSize += cp->Next - cp->Start;
 	cp->Start = cp->Next;
 
 	/* Write a local cancel entry so nobody else gives it to us. */
@@ -928,6 +930,7 @@ NCproc(CHANNEL *cp)
 
       if (*cp->Error != '\0') {
 	cp->Rejected++;
+	cp->RejectSize += cp->Next - cp->Start;
 	cp->State = CSgetcmd;
 	cp->Start = cp->Next;
 	NCclearwip(cp);
@@ -939,27 +942,7 @@ NCproc(CHANNEL *cp)
 	movedata = false;
 	break;
       }
-
-      if (cp->State == CSnoarticle) {
-	/* this should happen when parsing header */
-	cp->Rejected++;
-	cp->State = CSgetcmd;
-	cp->Start = cp->Next;
-	/* Clear the work-in-progress entry. */
-	NCclearwip(cp);
-	if (cp->Sendid.size > 3) { /* We be streaming */
-	  cp->Takethis_Err++;
-	  snprintf(buff, sizeof(buff), "%d", NNTP_ERR_FAILID_VAL);
-	  cp->Sendid.data[0] = buff[0];
-	  cp->Sendid.data[1] = buff[1];
-	  cp->Sendid.data[2] = buff[2];
-	  NCwritereply(cp, cp->Sendid.data);
-	} else
-	  NCwritereply(cp, NNTP_REJECTIT_EMPTY);
-	readmore = false;
-	movedata = false;
-	break;
-      }
+      /* fall thru */
     case CSgotarticle: /* in case caming back from pause */
       /* never move data so long as "\r\n.\r\n" is found, since subsequent data
 	 may also include command line */

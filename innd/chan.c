@@ -264,8 +264,8 @@ CHANclose(CHANNEL *cp, const char *name)
                cp->Received);
             else {
 	    snprintf(buff, sizeof(buff),
-                     "accepted size %.0f duplicate size %.0f", cp->Size,
-                     cp->DuplicateSize);
+                "accepted size %.0f duplicate size %.0f rejected size %.0f", cp->Size,
+                cp->DuplicateSize, cp->RejectSize);
 	    syslog(L_NOTICE,
 		"%s closed seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld %s",
 		name, (long)(Now.time - cp->Started),

@@ -616,13 +616,21 @@ section innd_incoming_vol {
 		value         "bytes($innd_duplicated_size{$key})";
 		total         "bytes(total(%innd_duplicated_size))";
         };
+        column {
+                name          "RejVol";
+		format        "%9s";
+		value         "bytes($innd_rejected_size{$key})";
+		total         "bytes(total(%innd_rejected_size))";
+        };
 	column {
 		name	      "TotalVol";
 		format	      "%9s";
 		value	      "bytes($innd_stored_size{$key} +
-	                               $innd_duplicated_size{$key})";
+	                               $innd_duplicated_size{$key} +
+	                               $innd_rejected_size{$key})";
 		total	      "bytes(total(%innd_stored_size) +
-                                       total(%innd_duplicated_size))";
+                                       total(%innd_duplicated_size) +
+                                       total(%innd_rejected_size))";
 	};
         column {
                 name          "%Acc";
@@ -637,11 +645,13 @@ section innd_incoming_vol {
 		name		"Vol/Art";
 		format		"%9s";
 		value		"bytes(($innd_stored_size{$key} +
-                                        $innd_duplicated_size{$key}) /
+                                        $innd_duplicated_size{$key} +
+                                        $innd_rejected_size{$key}) /
                                        ($innd_accepted{$key} +
                                         $innd_rejected{$key}))";
 		total		"bytes((total(%innd_stored_size) +
-                                        total(%innd_duplicated_size)) /
+                                        total(%innd_duplicated_size) +
+                                        total(%innd_rejected_size)) /
                                      (total(%innd_accepted) +
 	                              total(%innd_rejected)))";
 	};
@@ -664,6 +674,11 @@ section innd_incoming_vol {
 		          name    "Duplicated Volume";
 			  color   "#FFAF00";
 			  value   "%innd_duplicated_size";
+                };
+		data {
+		          name    "Rejected Volume";
+			  color   "#FF0000";
+			  value   "%innd_rejected_size";
                 };
 	};
 };

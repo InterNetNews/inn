@@ -36,6 +36,7 @@ typedef struct _STATUS {
     unsigned long	Unwanted_f;
     float		Size;
     float		DuplicateSize;
+    float		RejectSize;
     unsigned long	Check;
     unsigned long	Check_send;
     unsigned long	Check_deferred;
@@ -110,6 +111,7 @@ STATUSsummary(void)
   unsigned long		rejected = 0;
   float			size = 0;
   float			DuplicateSize = 0;
+  float			RejectSize = 0;
   int			peers = 0;
   char                  TempString[SMBUF];
   char			*path;
@@ -156,6 +158,7 @@ STATUSsummary(void)
               sizeof(status->ip_addr));
       status->can_stream = cp->Streaming;
       status->seconds = status->Size = status->DuplicateSize = 0;
+      status->RejectSize = 0;
       status->Ihave = status->Ihave_Duplicate =
 	status->Ihave_Deferred = status->Ihave_SendIt =
 	status->Ihave_Cybercan = 0;
@@ -208,8 +211,10 @@ STATUSsummary(void)
     status->Takethis_Err += cp->Takethis_Err;
     status->Size += cp->Size;
     status->DuplicateSize += cp->DuplicateSize;
+    status->RejectSize += cp->RejectSize;
     size += cp->Size;
     DuplicateSize += cp->DuplicateSize;
+    RejectSize += cp->RejectSize;
     if (CHANsleeping(cp)) {
       sleepingCxns++;
       status->sleepingCxns++;
@@ -281,9 +286,11 @@ STATUSsummary(void)
 	   rejected, (float) rejected / offered * 100);
   fprintf (F, "      duplicated: %-9ld     %%duplicated: %.1f%%\n",
 	   duplicate, (float) duplicate / offered * 100);
-  fprintf (F, "           bytes: %-7s\n", PrettySize (size + DuplicateSize, str));
+  fprintf (F, "           bytes: %-7s\n", PrettySize (size + DuplicateSize + RejectSize, str));
   fprintf (F, " duplicated size: %-7s  %%duplicated size: %.1f%%\n",
 	   PrettySize(DuplicateSize, str), (float) DuplicateSize / size * 100);
+  fprintf (F, "   rejected size: %-7s    %%rejected size: %.1f%%\n",
+	   PrettySize(RejectSize, str), (float) RejectSize / size * 100);
   fputc ('\n', F) ;
   
   /* Incoming Feeds */
@@ -310,6 +317,7 @@ STATUSsummary(void)
     fprintf (F, "       size: %-8s ",        PrettySize(status->Size, str));
     fprintf (F, "       bad sites: %-7ld ", status->Unwanted_s);
     fprintf (F, "duplicate size: %s\n", PrettySize(status->DuplicateSize, str));
+    fprintf (F, "reject size: %-8s\n",       PrettySize(status->RejectSize, str));
     fprintf (F, "  Protocol:\n");
     fprintf (F, "      Ihave: %-6ld SendIt[%d]: %-6ld    Got[%d]: %-6ld Deferred[%d]: %ld\n",
 	     status->Ihave, NNTP_SENDIT_VAL, status->Ihave_SendIt,

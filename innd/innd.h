@@ -312,6 +312,7 @@ typedef struct _CHANNEL {
   unsigned long	       Unwanted_o;
   float		       Size;
   float		       DuplicateSize;
+  float		       RejectSize;
   unsigned long	       Check;
   unsigned long	       Check_send;
   unsigned long	       Check_deferred;
