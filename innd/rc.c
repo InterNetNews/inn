@@ -163,9 +163,9 @@ GoodIdent(int fd, char *identd)
 	 if (lu>=0) buf[lu]='\0';
 	 if ((lu>0) && (strstr(buf,"ERROR")==NULL) && ((buf2=strrchr(buf,':'))!=NULL)) 
 	 {
-	   *buf2++;
+	   buf2++;
 	   while(*buf2 == ' ')
-	    *buf2++;
+	    buf2++;
 	   strncpy(IDENTuser,buf2,strlen(buf2)+1);
 	   IDENTuser[39]='\0';
 	   buf2=strchr(IDENTuser,'\r');
@@ -304,10 +304,8 @@ RCnolimit(register CHANNEL *cp)
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
 	if (cp->Address.s_addr == rp->Address.s_addr)
-	    if (rp->MaxCnx)
-	        return FALSE;
-            else
-	        return TRUE;
+            return !rp->MaxCnx;
+
     /* Not found in our table; this can't happen. */
     return FALSE;
 }
