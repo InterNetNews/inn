@@ -171,7 +171,10 @@ GoodIdent(int fd, char *identd)
 	 if (lu>=0) buf[lu]='\0';
 	 if ((lu>0) && (strstr(buf,"ERROR")==NULL) && ((buf2=strrchr(buf,':'))!=NULL)) 
 	 {
-	   strncpy(IDENTuser,buf2+2,strlen(buf2)-1);
+	   *buf2++;
+	   while(*buf2 == ' ')
+	    *buf2++;
+	   strncpy(IDENTuser,buf2,strlen(buf2)+1);
 	   IDENTuser[39]='\0';
 	   buf2=strchr(IDENTuser,'\r');
 	   if (!buf2) buf2=strchr(IDENTuser,'\n');
@@ -553,20 +556,21 @@ RCreader(CHANNEL *cp)
 	    break;
 	}
 
-    /* We check now the identd if we have to */
-    if(! GoodIdent(fd, rp->Identd))
-    {
-        if (!innconf->noreader) {
-	    RChandoff(fd, HOnntpd);
-	    if (close(fd) < 0)
-	        syslog(L_ERROR, "%s cant close %d %m", LogName, fd);
-	    return;
-	}
-    }
-    
     /* If not a server, and not allowing anyone, hand him off unless
        not spawning nnrpd in which case we return an error. */
     if ((i >= 0) && !rp->Skip) {
+
+	/* We check now the identd if we have to */
+	if(! GoodIdent(fd, rp->Identd))
+	{
+	    if (!innconf->noreader) {
+		RChandoff(fd, HOnntpd);
+		if (close(fd) < 0)
+		    syslog(L_ERROR, "%s cant close %d %m", LogName, fd);
+		return;
+	    }
+	}
+	
 	if ((new = NCcreate(fd, rp->Password[0] != '\0', FALSE)) != NULL) {
             new->Streaming = rp->Streaming;
             new->Skip = rp->Skip;
