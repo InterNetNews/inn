@@ -39,6 +39,17 @@
 #include "inn/timer.h"
 #include <syslog.h>
 
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+
 /* Timer values.  start stores the time (relative to the last summary) at
    which TMRstart was last called for each timer, or 0 if the timer hasn't
    been started.  cumulative is the total time accrued by that timer since
