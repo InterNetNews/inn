@@ -22,7 +22,6 @@
 
 #include "Python.h"
 
-
 bool		PythonFilterActive;
 char		*filterPath;	/* this gets set in art.c */
 PyObject	*PYFilterObject = NULL;
@@ -47,14 +46,12 @@ PyObject	*close_method = NULL;
 **  Turn filtering on or off.
 */
 void
-PYfilter(value)
-    bool value;
+PYfilter(bool value)
 {
     PythonFilterActive = value;
     syslog(L_NOTICE, "%s Python filtering %s", LogName,
 	   PythonFilterActive ? "enabled" : "disabled");
 }
-
 
 
 /*
@@ -63,9 +60,6 @@ PYfilter(value)
 const char *
 PYcontrol(char **av)
 {
-    char        *p;
-    extern bool PythonFilterActive;
-
     switch (av[0][0]) {
     default:
         return "1 Bad flag";
@@ -86,8 +80,6 @@ PYcontrol(char **av)
 }
 
 
-
-
 /*
 **  Reject articles we don't like.
 */
@@ -98,7 +90,6 @@ PYartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     const HDRCONTENT *hc = data->HdrContent;
     int		hdrnum;
     int		i;
-    char	*p, save;
     static char buf[256];
     PyObject	*result;
 
@@ -129,7 +120,7 @@ PYartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     PyDict_SetItem(PYheaders, PYlineskey, PYheaditem[hdrnum++]);
 
     /* Now see if the filter likes it. */
-    result = PyObject_CallFunction(art_method, "O", PYheaders);
+    result = PyObject_CallFunction(art_method, (char *) "O", PYheaders);
     if ((result != NULL) && PyObject_IsTrue(result))
 	strlcpy(buf, PyString_AS_STRING(result), sizeof(buf));
     else
@@ -139,8 +130,9 @@ PYartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     /* Clean up after ourselves */
     PyDict_Clear(PYheaders);
     for (i = 0; i < hdrnum; i++)
-	if (PYheaditem[i] != Py_None)
+	if (PYheaditem[i] != Py_None) {
 	    Py_DECREF(PYheaditem[i]);
+        }
 
     if (*buf != '\0') 
 	return buf;
@@ -148,14 +140,11 @@ PYartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
 }
 
 
-
 /*
 **  Refuse message IDs offered thru CHECK or IHAVE that we don't like.
 */
 char *
-PYmidfilter(messageID, msglen)
-    char *messageID;
-    int msglen;
+PYmidfilter(char *messageID, int msglen)
 {
     static char		buf[256];
     PyObject		*result;
@@ -163,7 +152,8 @@ PYmidfilter(messageID, msglen)
     if (!PythonFilterActive || PYFilterObject == NULL || msgid_method == NULL)
 	return NULL;
 
-    result = PyObject_CallFunction(msgid_method, "s#", messageID, msglen);
+    result = PyObject_CallFunction(msgid_method, (char *) "s#", messageID,
+                                   msglen);
     if ((result != NULL) && PyObject_IsTrue(result))
 	strlcpy(buf, PyString_AS_STRING(result), sizeof(buf));
     else
@@ -205,7 +195,7 @@ PYmode(Mode, NewMode, reason)
     case OMthrottled:	strlcpy(newmode, "throttled", 10);	break;
     }
 
-    result = PyObject_CallFunction(mode_method, "sss",
+    result = PyObject_CallFunction(mode_method, (char *) "sss",
 				   oldmode, newmode, reason);
     Py_DECREF(result);
 }
@@ -216,13 +206,12 @@ PYmode(Mode, NewMode, reason)
 **  Called by the external module so it can register itself with innd.
 */
 static PyObject *
-PY_set_filter_hook(dummy, args)
-    PyObject *dummy, *args;
+PY_set_filter_hook(PyObject *dummy UNUSED, PyObject *args)
 {
     PyObject	*result = NULL;
     PyObject	*temp;
 
-    if (PyArg_ParseTuple(args, "O:set_filter_hook", &temp)) {
+    if (PyArg_ParseTuple(args, (char *) "O:set_filter_hook", &temp)) {
 	Py_XINCREF(temp);
 	Py_XDECREF(PYFilterObject);
 	PYFilterObject = temp;
@@ -238,13 +227,12 @@ PY_set_filter_hook(dummy, args)
 **  Allow external module to ask innd if an ID is in history.
 */
 static PyObject *
-PY_havehist(self, args)
-    PyObject *self, *args;
+PY_havehist(PyObject *self UNUSED, PyObject *args)
 {
     char	*msgid;
     int		msgidlen;
 
-    if (!PyArg_ParseTuple(args, "s#", &msgid, &msgidlen))
+    if (!PyArg_ParseTuple(args, (char *) "s#", &msgid, &msgidlen))
 	return NULL;
 
     if (HIScheck(History, msgid))
@@ -258,14 +246,13 @@ PY_havehist(self, args)
 **  Allow external module to locally delete an article.
 */
 static PyObject *
-PY_cancel(self, args)
-    PyObject *self, *args;
+PY_cancel(PyObject *self UNUSED, PyObject *args)
 {
     char	*msgid;
     int		msgidlen;
     char	*parambuf[2];
 
-    if (!PyArg_ParseTuple(args, "s#", &msgid, &msgidlen))
+    if (!PyArg_ParseTuple(args, (char *) "s#", &msgid, &msgidlen))
 	return NULL;
 
     parambuf[0]= msgid;
@@ -282,19 +269,18 @@ PY_cancel(self, args)
 **  Stuff an ID into history so that it will be refused later.
 */
 static PyObject *
-PY_addhist(self, args)
-    PyObject *self, *args;
+PY_addhist(PyObject *self UNUSED, PyObject *args)
 {
     char	*msgid;
     int		msgidlen;
-    char	*articlepaths = "";
+    char	*articlepaths = (char *) "";
     char	tbuff[12];
     char	*parambuf[6];
 
-    if (!PyArg_ParseTuple(args, "s#", &msgid, &msgidlen))
+    if (!PyArg_ParseTuple(args, (char *) "s#", &msgid, &msgidlen))
 	return NULL;
 
-    snprintf(tbuff, sizeof(tbuff), "%d", time(NULL));
+    snprintf(tbuff, sizeof(tbuff), "%lu", (unsigned long) time(NULL));
 
     parambuf[0] = msgid;
     parambuf[1] = parambuf[2] = parambuf[3] = tbuff;
@@ -312,17 +298,15 @@ PY_addhist(self, args)
 **  Get a newsgroup's status flag (j, m, n, x, y, =other.group)
 */
 static PyObject *
-PY_newsgroup(self, args)
-    PyObject *self, *args;
+PY_newsgroup(PyObject *self UNUSED, PyObject *args)
 {
     char	*newsgroup;
     int		nglen;
     NEWSGROUP	*ngp;
     char	*end;
-    char	*rest;
     int		size;
 
-    if (!PyArg_ParseTuple(args, "s#", &newsgroup, &nglen))
+    if (!PyArg_ParseTuple(args, (char *) "s#", &newsgroup, &nglen))
 	return NULL;
 
     ngp = NGfind(newsgroup);
@@ -346,15 +330,13 @@ PY_newsgroup(self, args)
 }
 
 
-
 /*
 **  Return an article header to the external module as a string.  We
 **  don't use a buffer object here because that would make it harder,
 **  for example, to compare two on-spool articles.
 */
 static PyObject *
-PY_head(self, args)
-    PyObject *self, *args;
+PY_head(PyObject *self UNUSED, PyObject *args)
 {
     char	*msgid;
     int		msgidlen;
@@ -362,15 +344,15 @@ PY_head(self, args)
     TOKEN	token;
     ARTHANDLE	*art;
     PyObject	*header;
-    int		headerlen;
+    size_t	headerlen;
 
-    if (!PyArg_ParseTuple(args, "s#", &msgid, &msgidlen))
+    if (!PyArg_ParseTuple(args, (char *) "s#", &msgid, &msgidlen))
 	return NULL;
 
     if (! HISlookup(History, msgid, NULL, NULL, NULL, &token))
-	return Py_BuildValue("s", "");	
+	return Py_BuildValue((char *) "s", "");	
     if ((art = SMretrieve(token, RETR_HEAD)) == NULL)
-	return Py_BuildValue("s", "");	
+	return Py_BuildValue((char *) "s", "");	
     p = FromWireFmt(art->data, art->len, &headerlen);
     SMfreearticle(art);
     header = PyString_FromStringAndSize(p, headerlen);
@@ -380,13 +362,11 @@ PY_head(self, args)
 }
 
 
-
 /*
 **  Return a whole article to the external module as a string.
 */
 static PyObject *
-PY_article(self, args)
-    PyObject *self, *args;
+PY_article(PyObject *self UNUSED, PyObject *args)
 {
     char	*msgid;
     int		msgidlen;
@@ -394,15 +374,15 @@ PY_article(self, args)
     TOKEN	token;
     ARTHANDLE	*arth;
     PyObject	*art;
-    int		artlen;
+    size_t	artlen;
 
-    if (!PyArg_ParseTuple(args, "s#", &msgid, &msgidlen))
+    if (!PyArg_ParseTuple(args, (char *) "s#", &msgid, &msgidlen))
 	return NULL;
 
     if (! HISlookup(History, msgid, NULL, NULL, NULL, &token))
-	return Py_BuildValue("s", "");
+	return Py_BuildValue((char *) "s", "");
     if ((arth = SMretrieve(token, RETR_ALL)) == NULL)
-	return Py_BuildValue("s", "");	
+	return Py_BuildValue((char *) "s", "");	
     p = FromWireFmt(arth->data, arth->len, &artlen);
     SMfreearticle(arth);
     art = PyString_FromStringAndSize(p, artlen);
@@ -419,8 +399,7 @@ PY_article(self, args)
 **  editor).
 */
 static PyObject *
-PY_syslog(self, args)
-    PyObject *self, *args;
+PY_syslog(PyObject *self UNUSED, PyObject *args)
 {
     char	*loglevel;
     int		levellen;
@@ -428,7 +407,7 @@ PY_syslog(self, args)
     int		msglen;
     int		priority;
 
-    if (!PyArg_ParseTuple(args, "s#s#",
+    if (!PyArg_ParseTuple(args, (char *) "s#s#",
 			  &loglevel, &levellen, &logmsg, &msglen))
 	return NULL;
 
@@ -450,13 +429,11 @@ PY_syslog(self, args)
 }
 
 
-
 /*
 **  Compute a hash digest for a string.
 */
 static PyObject *
-PY_hashstring(self, args)
-    PyObject *self, *args;
+PY_hashstring(PyObject *self UNUSED, PyObject *args)
 {
     char	*instring, *wpos, *p, *q;
     char	*workstring = NULL;
@@ -464,7 +441,7 @@ PY_hashstring(self, args)
     int		lines = 0;
     HASH	myhash;
 
-    if (!PyArg_ParseTuple(args, "s#|i", &instring, &insize, &lines))
+    if (!PyArg_ParseTuple(args, (char *) "s#|i", &instring, &insize, &lines))
 	return NULL;
 
     /* If a linecount is provided, munge before hashing. */
@@ -525,23 +502,27 @@ PY_hashstring(self, args)
 }
 
 
-
 /*
-**  Make the internal INN module's functions visible to Python.
+**  Make the internal INN module's functions visible to Python.  Python
+**  annoyingly doesn't use const where appropriate in its structure
+**  definitions, so we have to add casts for all of the string parameters that
+**  we're initializing with constant strings.
 */
-static PyMethodDef INNPyMethods[] = {
-    {"set_filter_hook", PY_set_filter_hook,	METH_VARARGS},
-    {"havehist",	PY_havehist,		METH_VARARGS},
-    {"addhist",		PY_addhist,		METH_VARARGS},
-    {"cancel",		PY_cancel,		METH_VARARGS},
-    {"newsgroup",	PY_newsgroup,		METH_VARARGS},
-    {"head",		PY_head,		METH_VARARGS},
-    {"article",		PY_article,		METH_VARARGS},
-    {"syslog",		PY_syslog,		METH_VARARGS},
-    {"hashstring",	PY_hashstring,		METH_VARARGS},
-    {NULL,		NULL}
-};
+#define METHOD(name, func, flags, help) \
+    { (char *)(name), (func), (flags), (char *)(help) }
 
+static PyMethodDef INNPyMethods[] = {
+    METHOD("set_filter_hook", PY_set_filter_hook, METH_VARARGS, ""),
+    METHOD("havehist",        PY_havehist,        METH_VARARGS, ""),
+    METHOD("addhist",         PY_addhist,         METH_VARARGS, ""),
+    METHOD("cancel",          PY_cancel,          METH_VARARGS, ""),
+    METHOD("newsgroup",       PY_newsgroup,       METH_VARARGS, ""),
+    METHOD("head",            PY_head,            METH_VARARGS, ""),
+    METHOD("article",         PY_article,         METH_VARARGS, ""),
+    METHOD("syslog",          PY_syslog,          METH_VARARGS, ""),
+    METHOD("hashstring",      PY_hashstring,      METH_VARARGS, ""),
+    METHOD(NULL,              NULL,               0,            "")
+};
 
 
 /*
@@ -564,13 +545,11 @@ PYclose(void)
 **  Check that a method exists and is callable.	 Set a pointer to
 **  the corresponding PyObject, or NULL if not found.
 */
-void
-PYdefonemethod(methptr, methname)
-    PyObject	**methptr;
-    char	*methname;
+static void
+PYdefonemethod(PyObject **methptr, const char *methname)
 {
     Py_XDECREF(*methptr);
-    *methptr = PyObject_GetAttrString(PYFilterObject, methname);
+    *methptr = PyObject_GetAttrString(PYFilterObject, (char *) methname);
     if (*methptr == NULL)
 	syslog(L_NOTICE, "python method %s not found", methname);
     else if (PyCallable_Check(*methptr) == 0) {
@@ -586,7 +565,7 @@ PYdefonemethod(methptr, methname)
 **  Look up the filter methods, so we will know what's available when
 **  innd wants to call them.
 */
-void
+static void
 PYdefmethods(void)
 {
     PYdefonemethod(&msgid_method, "filter_messageid");
@@ -644,7 +623,6 @@ void
 PYsetup(void)
 {
     const ARTHEADER *hp;
-    int		hdrindex;
 
     setenv("PYTHONPATH", innconf->pathfilter, 1);
     Py_Initialize();
@@ -660,9 +638,9 @@ PYsetup(void)
     }
     syslog(L_NOTICE, "python interpreter initialized OK");
 
-    Py_InitModule("INN", INNPyMethods);
+    Py_InitModule((char *) "INN", INNPyMethods);
 
-    PYFilterModule = PyImport_ImportModule(_PATH_PYTHON_STARTUP_M);
+    PYFilterModule = PyImport_ImportModule((char *) _PATH_PYTHON_STARTUP_M);
     if (PYFilterModule == NULL)
 	syslog(L_ERROR, "failed to import external python module");
 

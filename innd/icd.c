@@ -73,8 +73,7 @@ ICDcloseactive(void)
 **  Set up the hash and in-core tables.
 */
 void
-ICDsetup(StartSites)
-    bool	StartSites;
+ICDsetup(bool StartSites)
 {
     if (ICDneedsetup == true) {
 	ICDneedsetup = false;

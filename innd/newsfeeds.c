@@ -583,7 +583,7 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 	    break;
 	case 'I':
 	    if (*++p && CTYPE(isdigit, *p))
-		sp->Flushpoint = atol(p);
+		sp->Flushpoint = strtoul(p, NULL, 10);
 	    break;
 	case 'N':
 	    while (*++p)
@@ -784,7 +784,7 @@ bool
 SITEfunnelpatch(void)
 {
     int		i;
-    int		length;
+    size_t	length;
     SITE	*sp;
     SITE	*funnel;
     bool	result;

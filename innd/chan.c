@@ -700,7 +700,7 @@ CHANreadtext(CHANNEL *cp)
        FIXME: A better approach would be to limit the number of commands we
        process for each channel. */
     if (innconf->maxcmdreadsize <= 0 || cp->State != CSgetcmd
-        || bp->left < innconf->maxcmdreadsize)
+        || bp->left < (unsigned long) innconf->maxcmdreadsize)
         maxbyte = bp->left;
     else
         maxbyte = innconf->maxcmdreadsize;

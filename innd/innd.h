@@ -454,7 +454,7 @@ typedef struct _SITE {
   struct buffer	  FNLnames;
   int		  Process;
   pid_t		  pid;
-  long		  Flushpoint;
+  size_t	  Flushpoint;
   struct buffer	  Buffer;
   bool		  Buffered;
   char	      **  Originator;

@@ -242,8 +242,10 @@ ARTbuildtree(const ARTHEADER **Table, int lo, int hi)
 static int
 ARTcompare(const void *p1, const void *p2)
 {
-  return strcasecmp(((const ARTHEADER **)p1)[0]->Name,
-    ((const ARTHEADER **)p2)[0]->Name);
+    const char *n1 = ((const ARTHEADER * const *) p1)[0]->Name;
+    const char *n2 = ((const ARTHEADER * const *) p2)[0]->Name;
+
+    return strcasecmp(n1, n2);
 }
 
 
@@ -920,8 +922,9 @@ bodyprocessing:
 		  cp->State = CSgotlargearticle;
 		  cp->Next = ++i;
 		  snprintf(cp->Error, sizeof(cp->Error),
-		    "%d Article of %ld bytes exceeds local limit of %ld bytes",
-		    NNTP_REJECTIT_VAL, i - cp->Start, innconf->maxartsize);
+		    "%d Article of %lu bytes exceeds local limit of %ld bytes",
+		    NNTP_REJECTIT_VAL, (unsigned long) (i - cp->Start),
+                    innconf->maxartsize);
 		} else {
 		  cp->State = CSgotarticle;
 		  i++;

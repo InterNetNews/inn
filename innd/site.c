@@ -527,7 +527,7 @@ SITEsend(SITE *sp, ARTDATA *Data)
 	}
 
 	/* Start the process. */
-	i = Spawn(sp->Nice, 0, (int)fileno(Errlog), (int)fileno(Errlog), argv);
+	i = Spawn(sp->Nice, 0, fileno(Errlog), fileno(Errlog), argv);
 	if (i >= 0)
 	    PROCwatch(i, -1);
 	break;
@@ -1185,7 +1185,7 @@ Common:
     if (Verbose) {
 	sep = "\t";
 	if (sp->Buffered && sp->Flushpoint) {
-	    sprintf(p, "%sFlush @ %ld", sep, sp->Flushpoint);
+	    sprintf(p, "%sFlush @ %lu", sep, (unsigned long) sp->Flushpoint);
 	    p += strlen(p);
 	    sep = "; ";
 	}

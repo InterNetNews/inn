@@ -77,12 +77,10 @@ wvec_length_cmp(const void *p1, const void *p2)
 static int
 ptr_strcmp(const void *p1, const void *p2)
 {
-    int cdiff;
+    const char *const *s1 = p1;
+    const char *const *s2 = p2;
 
-    cdiff = (**(const char **)p1) - (**(const char **)p2);
-    if (cdiff)
-	return cdiff;
-    return strcmp((*(const char **)p1)+1, (*(const char **)p2)+1);
+    return strcmp(*s1, *s2);
 }
 
 /*
@@ -131,9 +129,10 @@ KEYgenerate(
     }
     /* ---------------------------------------------------------------- */
 
-    /* first re-init kw from original value. */
-    if (l > innconf->keylimit - (MAX_WORD_LENGTH+5))	/* mostly arbitrary cutoff: */
-        l = innconf->keylimit - (MAX_WORD_LENGTH+5);	/* room for minimal word vec */
+    /* first re-init kw from original value.  this is a mostly arbitrary
+       cutoff leaving room for a minimal word vec */
+    if (l > (size_t) (innconf->keylimit - (MAX_WORD_LENGTH + 5)))
+        l = innconf->keylimit - (MAX_WORD_LENGTH + 5);
     hc->Value = xmalloc(innconf->keylimit+1);
     if ((v != NULL) && (*v != '\0')) {
         memcpy(hc->Value, v, l);

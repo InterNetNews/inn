@@ -54,8 +54,10 @@ static int		NGHcount;
 static int
 NGcompare(const void *p1, const void *p2)
 {
-    return ((const NEWSGROUP **)p1)[0]->Last -	
-	   ((const NEWSGROUP **)p2)[0]->Last;
+    const NEWSGROUP *const *n1 = p1;
+    const NEWSGROUP *const *n2 = p2;
+
+    return n1[0]->Last - n2[0]->Last;
 }
 
 

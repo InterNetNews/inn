@@ -55,6 +55,16 @@
 /* From art.c.  Ew.  Need header parsing that doesn't use globals. */
 extern char             *filterPath;
 
+/* Prototypes for XS functions. */
+XS(XS_INN_addhist);
+XS(XS_INN_article);
+XS(XS_INN_cancel);
+XS(XS_INN_filesfor);
+XS(XS_INN_havehist);
+XS(XS_INN_head);
+XS(XS_INN_newsgroup);
+
+
 /*
 **  Run an incoming article through the Perl article filter.  Returns NULL
 **  accept the article or a rejection message to reject it.
@@ -300,7 +310,7 @@ XS(XS_INN_addhist)
 
     /* The token defaults to an empty string. */
     if (i == 4)
-        parambuf[4] = "";
+        parambuf[4] = (char *) "";
 
     parambuf[5] = NULL;
 

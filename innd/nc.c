@@ -437,7 +437,7 @@ NCihave(CHANNEL *cp)
     char	*p;
 #if defined(DO_PERL) || defined(DO_PYTHON)
     char	*filterrc;
-    int		msglen;
+    size_t	msglen;
 #endif /*defined(DO_PERL) || defined(DO_PYTHON) */
 
     cp->Ihave++;
@@ -728,7 +728,7 @@ NCproc(CHANNEL *cp)
   NCDISPATCH   	*dp;
   struct buffer	*bp;
   char		buff[SMBUF];
-  int		i, j;
+  size_t	i, j;
   bool		readmore, movedata;
   ARTDATA	*data = &cp->Data;
   HDRCONTENT    *hc = data->HdrContent;
@@ -1043,7 +1043,7 @@ NCproc(CHANNEL *cp)
 	readmore = false;
 	break;
       }
-      if (bp->used < cp->XBatchSize) {
+      if (bp->used < (size_t) cp->XBatchSize) {
 	movedata = false;
 	readmore = true;
 	break;	/* give us more data */
@@ -1303,7 +1303,7 @@ static void
 NCcheck(CHANNEL *cp)
 {
     char		*p;
-    int			idlen, msglen;
+    size_t		idlen, msglen;
 #if defined(DO_PERL) || defined(DO_PYTHON)
     char		*filterrc;
 #endif /* DO_PERL || DO_PYTHON */
@@ -1398,7 +1398,7 @@ static void
 NCtakethis(CHANNEL *cp)
 {
     char	        *p;
-    int			msglen;
+    size_t		msglen;
     WIP                 *wp;
 
     cp->Takethis++;

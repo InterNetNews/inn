@@ -251,104 +251,41 @@ RCCommaSplit(char *text)
     return save;
 }
 
- /*
-  * Routine to disable IP-level socket options. This code was taken from 4.4BSD
-  * rlogind source, but all mistakes in it are my fault.
-  *
-  * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
-  *
-  * 21-Jan-1997 smd
-  *     Code copied again, and modified for INN, all new mistakes are mine.
-  * 
-  */
-
-/* fix_options - get rid of IP-level socket options */
-#ifndef IP_OPTIONS
-#define IP_OPTIONS 1
-#endif
-
-static int
-RCfix_options(int fd, struct sockaddr_storage *remote)
-{
-#if IP_OPTIONS
-    unsigned char optbuf[BUFSIZ / 3], *cp;
-    char    lbuf[BUFSIZ], *lp;
-    socklen_t optsize = sizeof(optbuf);
-    int     ipproto;
-    struct protoent *ip;
-
-    switch (remote->ss_family) {
-    case AF_INET:
-	if ((ip = getprotobyname("ip")) != 0)
-	    ipproto = ip->p_proto;
-	else
-	    ipproto = IPPROTO_IP;
-	break;
-#ifdef HAVE_INET6
-    case AF_INET6:
-	if ((ip = getprotobyname("ipv6")) != 0)
-	    ipproto = ip->p_proto;
-	else
-	    ipproto = IPPROTO_IPV6;
-	break;
-#endif
-    default:
-	syslog(LOG_ERR, "unknown address family: %d", remote->ss_family);
-	return -1;
-    }
-
-    if (getsockopt(fd, ipproto, IP_OPTIONS, (char *) optbuf, &optsize) == 0
-	&& optsize != 0) {
-	lp = lbuf;
-	for (cp = optbuf; optsize > 0; cp++, optsize--, lp += 3)
-	    sprintf(lp, " %2.2x", *cp);
-	syslog(LOG_NOTICE,
-	       "connect from %s with IP options (ignored):%s",
-	       sprint_sockaddr((struct sockaddr *)remote), lbuf);
-	if (setsockopt(fd, ipproto, IP_OPTIONS, (char *) 0, optsize) != 0) {
-	    syslog(LOG_ERR, "setsockopt IP_OPTIONS NULL: %m");
-	    return -1;
-	}
-    }
-#endif
-    return 0;
-}
-
 static bool
 RCaddressmatch(const struct sockaddr_storage *cp, const struct sockaddr_storage *rp)
 {
 #ifdef HAVE_INET6
-    struct sockaddr_in	*sin_cp, *sin_rp;
-    struct sockaddr_in6	*sin6_cp, *sin6_rp;
+    const struct sockaddr_in *sin_cp, *sin_rp;
+    const struct sockaddr_in6 *sin6_cp, *sin6_rp;
 
     if (cp->ss_family == AF_INET6 && rp->ss_family == AF_INET) {
-	sin6_cp = (struct sockaddr_in6 *)cp;
-	sin_rp = (struct sockaddr_in *)rp;
+	sin6_cp = (const struct sockaddr_in6 *)cp;
+	sin_rp = (const struct sockaddr_in *)rp;
 	if (IN6_IS_ADDR_V4MAPPED(&sin6_cp->sin6_addr) &&
 		memcmp(&sin6_cp->sin6_addr.s6_addr[12],
 		    &sin_rp->sin_addr.s_addr, sizeof(struct in_addr)) == 0)
 	    return true;
     } else if (cp->ss_family == AF_INET && rp->ss_family == AF_INET6) {
-	sin_cp = (struct sockaddr_in *)cp;
-	sin6_rp = (struct sockaddr_in6 *)rp;
+	sin_cp = (const struct sockaddr_in *)cp;
+	sin6_rp = (const struct sockaddr_in6 *)rp;
 	if (IN6_IS_ADDR_V4MAPPED(&sin6_rp->sin6_addr) &&
 		memcmp(&sin6_rp->sin6_addr.s6_addr[12],
 		    &sin_cp->sin_addr.s_addr, sizeof(struct in_addr)) == 0)
 	    return true;
     } else if (cp->ss_family == AF_INET6 && rp->ss_family == AF_INET6) {
 #ifdef HAVE_BROKEN_IN6_ARE_ADDR_EQUAL
-	if (!memcmp(&((struct sockaddr_in6 *)cp)->sin6_addr,
-		    &((struct sockaddr_in6 *)rp)->sin6_addr,
+	if (!memcmp(&((const struct sockaddr_in6 *)cp)->sin6_addr,
+		    &((const struct sockaddr_in6 *)rp)->sin6_addr,
 		    sizeof(struct in6_addr)))
 #else
-	if (IN6_ARE_ADDR_EQUAL( &((struct sockaddr_in6 *)cp)->sin6_addr,
-				&((struct sockaddr_in6 *)rp)->sin6_addr))
+	if (IN6_ARE_ADDR_EQUAL( &((const struct sockaddr_in6 *)cp)->sin6_addr,
+				&((const struct sockaddr_in6 *)rp)->sin6_addr))
 #endif
 	    return true;
     } else
 #endif /* INET6 */
-	if (((struct sockaddr_in *)cp)->sin_addr.s_addr ==
-	     ((struct sockaddr_in *)rp)->sin_addr.s_addr)
+	if (((const struct sockaddr_in *)cp)->sin_addr.s_addr ==
+	     ((const struct sockaddr_in *)rp)->sin_addr.s_addr)
 	    return true;
 
     return false;
@@ -487,7 +424,7 @@ RChandoff(int fd, HANDOFF h)
 
     /* Call NNRP; don't send back a QUIT message if Spawn fails since  
      * that's a major error we want to find out about quickly. */
-    (void)Spawn(innconf->nicekids, fd, fd, fd, (char * const *)argv);
+    Spawn(innconf->nicekids, fd, fd, fd, (char * const *)argv);
 }
 
 
@@ -1793,7 +1730,7 @@ RChostname(const CHANNEL *cp)
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
 	if (RCaddressmatch(&cp->Address, &rp->Address))
 	    return rp->Name;
-    strlcpy(buff, sprint_sockaddr((struct sockaddr *)&cp->Address),
+    strlcpy(buff, sprint_sockaddr((const struct sockaddr *)&cp->Address),
             sizeof(buff));
     return buff;
 }
