@@ -6,7 +6,7 @@ AC_PREREQ(2.13)
 
 dnl FIXME: The separable tests in this file should be broken out into
 dnl individual .m4 files and submitted back to autoconf or the general
-dnl macro repository.  autoconf 2.15 should have better support for doing
+dnl macro repository.  autoconf 2.50 should have better support for doing
 dnl this.
 
 AC_INIT(Makefile.global.in)
@@ -990,6 +990,42 @@ AC_FUNC_MEMCMP
 AC_FUNC_VFORK
 AC_TYPE_SIGNAL
 
+dnl Source used by INN_FUNC_INET_NTOA
+define([_INN_FUNC_INET_NTOA_SOURCE],
+[#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#if STDC_HEADERS || HAVE_STRING_H
+# include <string.h>
+#endif
+
+int
+main ()
+{
+  struct in_addr in;
+  in.s_addr = 0x7f000000;
+  exit (!strcmp (inet_ntoa (in), "127.0.0.0") ? 0 : 1);
+}])
+
+dnl Check whether inet_ntoa is present and working.  Since calling inet_ntoa
+dnl involves passing small structs on the stack, present and working
+dnl versions may still not function with gcc on some platforms (such as
+dnl IRIX).
+AC_DEFUN([INN_FUNC_INET_NTOA],
+[AC_CACHE_CHECK(for working inet_ntoa, inn_cv_func_inet_ntoa_works,
+[AC_TRY_RUN(_INN_FUNC_INET_NTOA_SOURCE(),
+            [inn_cv_func_inet_ntoa_works=yes],
+            [inn_cv_func_inet_ntoa_works=no],
+            [inn_cv_func_inet_ntoa_works=no])
+if test "$inn_cv_func_inet_ntoa_works" = yes ; then
+    AC_DEFINE([HAVE_INET_NTOA], 1,
+        [Define if your sstem has a working inet_ntoa function.])
+else
+    LIBOBJS="$LIBOBJS inet_ntoa.${ac_objext}"
+fi])])
+INN_FUNC_INET_NTOA
+
 dnl Check for various other functions.
 dnl
 dnl NOTUSED: gethostname mkfifo strcspn strstr
@@ -1033,21 +1069,8 @@ if test x"$ac_cv_func_statvfs" = xno ; then
 fi
 
 dnl If we can't find any of the following, we have replacements for them.
-AC_REPLACE_FUNCS(getopt inet_aton inet_ntoa pread pwrite strcasecmp \
-                 strdup strerror strspn setenv hstrerror)
-
-MISSING_OBJ="$LIBOBJS"
-MISSING_SRC=`echo "$MISSING_OBJ" | sed 's/\.o/.c/g'`
-
-if test "$ac_cv_func_strcasecmp" = no ; then
-    MISSING_MAN=strcasecmp.3
-else
-    MISSING_MAN=''
-fi
-
-AC_SUBST(MISSING_MAN)
-AC_SUBST(MISSING_SRC)
-AC_SUBST(MISSING_OBJ)
+AC_REPLACE_FUNCS(getopt hstrerror inet_aton pread pwrite strcasecmp \
+                 strdup strerror strspn setenv)
 
 dnl See if mmap sees writes. 
 dnl ========================================================
