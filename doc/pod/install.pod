@@ -372,7 +372,7 @@ do).  Installing inews setgid was the default prior to INN 2.3.
 
 =item B<--with-berkeleydb=PATH>
 
-Enables support for Berkeley DB (2.x or 3.x), which means that it will
+Enables support for Berkeley DB (2.x through 4.2.x), which means that it will
 then be possible to use the ovdb overview method if you wish.  Enabling
 this configure option doesn't mean you'll be required to use ovdb, but it
 does require that Berkeley DB be installed on your system (including the
@@ -380,6 +380,14 @@ header files, not just the runtime libraries).  If a path is given, it
 sets the installed directory of Berkeley DB (configure will search for it
 in some standard locations, but if you have it installed elsewhere, you
 may need this option).
+
+=item B<--with-zlib=PATH>
+
+The ovdb storage method can optionally use compression. If --with-berkeleydb
+is set, and configure finds a suitable BerkeleyDB version, this option
+defaults to yes, otherwise the default is no. If you have zlib but it is
+not installed under /usr/ or /usr/local/, you must specify the directory
+where it is installed.
 
 =item B<--with-openssl=PATH>
 
@@ -545,12 +553,8 @@ write.  buffindexed can keep up with a large feed more easily, since it
 uses large buffers to store all overview information, but it's somewhat
 slower for readers (although not as slow as the unified overview in INN
 2.2).  ovdb stores overview data in a Berkeley DB database; it's fast and
-very robust, but requires more disk space.  See the ovdb(5) man page for
+very robust, but may require more disk space.  See the ovdb(5) man page for
 more information on it.
-
-Note that ovdb has not been as widely tested as the other overview
-mechanisms and should be considered experimental.  tradindexed is the best
-tested and most widely used of the overview implementations.
 
 If buffindexed is chosen, you will need to create the buffers for it to
 use (very similar to creating CNFS buffers) and list the available buffers
