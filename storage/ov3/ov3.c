@@ -1102,8 +1102,13 @@ BOOL tradindexed_expiregroup(char *group, int *lo) {
     newge.base = newge.low = newge.count = 0;
     while (ov3search(handle, &artnum, &data, &len, &token, &arrived, &expires)) {
 	ah = NULL;
-	if (SMprobe(SELFEXPIRE, &token, NULL) && (ah = SMretrieve(token, RETR_STAT)) == NULL)
-	    continue;
+	if (SMprobe(SELFEXPIRE, &token, NULL)) {
+	    if ((ah = SMretrieve(token, RETR_STAT)) == NULL)
+		continue;
+	} else {
+	    if (!innconf->groupbaseexpiry && !OVhisthasmsgid(data))
+		continue; 
+	}
 	if (ah)
 	    SMfreearticle(ah);
 	if (innconf->groupbaseexpiry && OVgroupbasedexpire(token, group, data, len, arrived, expires))
