@@ -152,10 +152,9 @@ printspace(const char *path, bool inode, bool fancy)
     if (fancy) {
         printf(inode ? " inodes available " : " Kbytes available ");
         if (inode)
-            percent = (double) df_favail(info) / df_files(info);
+            percent = 100 * ((double) df_favail(info) / df_files(info));
         else
-            percent = (double) df_avail(info) / df_total(info);
-        percent = 100. - (100. * percent);
+            percent = 100 * ((double) df_avail(info) / df_total(info));
         if (percent < 9.95)
             printf("  (%3.1f%%)", percent);
         else if (percent < 99.95)
