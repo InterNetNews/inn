@@ -79,6 +79,8 @@ $pgp = "@_PATH_PGP@" ;
 $sort = "@_PATH_SORT@" ;
 $getftp = "@GETFTP@" ;
 $compress = "@COMPRESS@" ;
+$gzip = "@GZIP@" ;
+$uncompress = "@UNCOMPRESS@" ;
 $log_compress = "@LOG_COMPRESS@" ;
 $z = "@LOG_COMPRESSEXT@" ;
 
