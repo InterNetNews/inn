@@ -58,11 +58,6 @@ typedef struct _REMOTETABLE {
 static char		*RCslaveflag;
 static char		*RCnnrpd = NULL;
 static char		*RCnntpd = NULL;
-/* FIXME This variable must become an array.
- * Which is the right way to do this?
- * Should an index number be passed from innd.c to CHANcreate()
- * by RCsetup? What about a null-terminated array?
- */
 static CHANNEL		**RCchan;
 static int		chanlimit;
 static REMOTEHOST_DATA	*RCpeerlistfile;
