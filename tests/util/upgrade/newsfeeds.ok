@@ -1,0 +1,6 @@
+# innfeed funnel master.
+innfeed!\
+	:!*\
+	:Tc,Wnm*:/usr/local/news/bin/innfeed
+
+imapfeed!:!*:Tc,Wnm*:/usr/local/news/bin/imapfeed

@@ -39,3 +39,4 @@ storage/makehistory
 storage/sm
 util/convdate
 util/innbind
+util/innupgrade
