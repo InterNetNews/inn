@@ -63,7 +63,6 @@ typedef struct {
     char	cyclenuma[CNFSLASIZ];	/* ASCII version of cyclenum */
 } CYCBUFFEXTERN;
 
-/* =()<#define METACYCBUFF_UPDATE	@<METACYCBUFF_UPDATE>@>()= */
 #define METACYCBUFF_UPDATE	25
 
 typedef struct metacycbuff {

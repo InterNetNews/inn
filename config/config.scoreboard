@@ -787,10 +787,6 @@
   ||
   ||##  18. CNFS partition hackery
   ||##
-[IN1.7=@NO][WDF=confparam][WOR=yes]
-  ||##  Location of the cnfs partition configuration file
-  ||#### =()<_PATH_CYCBUFFCONFIG	@<_PATH_CYCBUFFCONFIG>@>()=
-  ||_PATH_CYCBUFFCONFIG		/var/news/etc/cycbuff.conf
 [IN1.7=@NO][WDF=autoconf][WOR=no]
   ||##  C type to use for offsets (should be a big integer like "off_t" 
   ||##  (or "offset_t" (64 bits) for Solaris 2.5).
@@ -804,9 +800,3 @@
   ||##  use a different system call, namedly llseek().
   ||#### =()<CNFSseekcall		@<CNFSseekcall>@>()=
   ||CNFSseekcall		lseek
-[IN1.7=@NO][WDF=autoconf][WOR=no]
-  ||##  Number of articles to be written to a cycbuff before that cycbuff's
-  ||##  status header is updated.
-  ||#### =()<METACYCBUFF_UPDATE		@<METACYCBUFF_UPDATE>@>()=
-  ||METACYCBUFF_UPDATE		25
-

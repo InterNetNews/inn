@@ -14,10 +14,22 @@ CNFS is one of storage method which can be defined at
 .PP
 The file consists of a series of lines;
 blank lines and lines beginning with a number sign (``#'') are ignored.
-There are two kinds of configuration line; ``cycbuff'' and ``metacycbuff.''
+There are threeo kinds of configuration line; ``cycbuffupdate'', ``cycbuff''
+and ``metacycbuff.''
 The order of lines in this file is not important among the same kind of
 configuration line.  But all ``cycbuff'' lines should be presented before
 any ``metacycbuff'' lines.
+.PP
+\&``Cycbuffupdate'' line is formatted as:
+.PP
+.RS
+.nf
+cycbuffupdate:update
+.fi
+.RE
+.PP
+\&``Update'' is how many article-stores between cycbuff header updates.
+This line can be omitted and the default value is ``25.''
 .PP
 \&``Cycbuff'' line is formatted as:
 .PP

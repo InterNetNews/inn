@@ -42,6 +42,7 @@ STATIC CYCBUFF		*cycbufftab = (CYCBUFF *)NULL;
 STATIC METACYCBUFF 	*metacycbufftab = (METACYCBUFF *)NULL;
 STATIC CNFSEXPIRERULES	*metaexprulestab = (CNFSEXPIRERULES *)NULL;
 STATIC long		pagesize = 0;
+STATIC int		metabuff_update = METACYCBUFF_UPDATE;
 
 STATIC TOKEN CNFSMakeToken(char *cycbuffname, CYCBUFF_OFF_T offset,
 		       U_INT32_T cycnum, STORAGECLASS class, TOKEN *oldtoken) {
@@ -621,6 +622,8 @@ STATIC BOOL CNFSread_config(void) {
     int		ctab_free = 0;	/* Index to next free slot in ctab */
     int		ctab_i;
     BOOL	metacycbufffound = FALSE;
+    BOOL	cycbuffupdatefound = FALSE;
+    int		update;
 
     if ((config = ReadInFile(cpcatpath(innconf->pathetc, _PATH_CYCBUFFCONFIG),
 				(struct stat *)NULL)) == NULL) {
@@ -685,6 +688,25 @@ STATIC BOOL CNFSread_config(void) {
 		DISPOSE(ctab);
 		return FALSE;
 	    }
+	} else if (strncmp(ctab[ctab_i], "cycbuffupdate:", 14) == 0) {
+	    if (cycbuffupdatefound) {
+		syslog(L_ERROR, "%s: duplicate cycbuffupdate entries", LocalLogName);
+		DISPOSE(config);
+		DISPOSE(ctab);
+		return FALSE;
+	    }
+	    cycbuffupdatefound = TRUE;
+	    update = atoi(ctab[ctab_i] + 14);
+	    if (update < 0) {
+		syslog(L_ERROR, "%s: invalid cycbuffupdate", LocalLogName);
+		DISPOSE(config);
+		DISPOSE(ctab);
+		return FALSE;
+	    }
+	    if (update == 0)
+		metabuff_update = METACYCBUFF_UPDATE;
+	    else
+		metabuff_update = update;
 	} else {
 	    syslog(L_ERROR, "%s: Bogus metacycbuff config line '%s' ignored",
 		   LocalLogName, ctab[ctab_i]);
@@ -954,7 +976,7 @@ TOKEN cnfs_store(const ARTHANDLE article, STORAGECLASS class) {
     ** will detect the situation & wrap around correctly.
     */
     metacycbuff->memb_next = (metacycbuff->memb_next + 1) % metacycbuff->count;
-    if (++metacycbuff->write_count % METACYCBUFF_UPDATE == 0) {
+    if (++metacycbuff->write_count % metabuff_update == 0) {
 	for (i = 0; i < metacycbuff->count; i++) {
 	    (void)CNFSflushhead(metacycbuff->members[i]);
 	}
