@@ -10,7 +10,7 @@
 #endif
 
 #if ! defined (INNFEED)
-#define INNFEED "/usr/news/local/innfeed"
+#define INNFEED "innfeed"
 #endif
 
 #include <pwd.h>                /* getpwent */
@@ -24,7 +24,10 @@
 #include <sys/resource.h>       /* setrlimit */
 #include <string.h>
 
-static const char *innfeed = INNFEED;
+#include "logging.h"
+#include "configdata.h"
+#include "clibrary.h"
+#include "libinn.h"
 
 void
 main(int ac, char **av, char **ep)
@@ -32,35 +35,54 @@ main(int ac, char **av, char **ep)
   struct passwd *pwd;
   struct rlimit rl;
   char *progname;
+  char innfeed[256];
+
+  if ((progname = strrchr(av[0], '/')) != NULL)
+	progname++;
+  else
+	progname = av[0];
+
+  openlog (progname,(int)(L_OPENLOG_FLAGS|LOG_PID),LOG_NEWS) ;
+
+  if (ReadInnConf() < 0) {
+      syslog(LOG_ERR, "cant read inn.conf");
+      exit(1);
+  }
 
   /* (try to) unlimit datasize and stacksize for us and our children */
   rl.rlim_cur = rl.rlim_max = RLIM_INFINITY;
 
   if (setrlimit(RLIMIT_DATA, &rl) == -1)
-    (void)fprintf(stderr, "%s: setrlimit(RLIMIT_DATA, RLIM_INFINITY): %s\n",
+    syslog(LOG_WARNING, "%s: setrlimit(RLIMIT_DATA, RLIM_INFINITY): %s",
             *av, strerror(errno));
   if (setrlimit(RLIMIT_STACK, &rl) == -1)
-    (void)fprintf(stderr, "%s: setrlimit(RLIMIT_STACK, RLIM_INFINITY): %s\n",
+    syslog(LOG_WARNING, "%s: setrlimit(RLIMIT_STACK, RLIM_INFINITY): %s",
             *av, strerror (errno));
+#if NOFILE_LIMIT > 0
+  getrlimit(RLIMIT_NOFILE, &rl);
+  if (rl.rlim_max < NOFILE_LIMIT) rl.rlim_max = NOFILE_LIMIT;
+  if (rl.rlim_cur < NOFILE_LIMIT) rl.rlim_cur = NOFILE_LIMIT;
   if (setrlimit(RLIMIT_NOFILE, &rl) == -1)
-    (void)fprintf(stderr, "%s: setrlimit(RLIMIT_NOFILE, RLIM_INFINITY): %s\n",
-            *av, strerror (errno));
+    syslog(LOG_WARNING, "%s: setrlimit(RLIMIT_NOFILE, %d): %s",
+            *av, rl.rlim_cur, strerror (errno));
+#endif
 
   /* stop being root */
   pwd = getpwnam(USER);
   if (pwd == (struct passwd *)NULL)
-    (void)fprintf(stderr, "%s: getpwnam(%s): %s\n", *av, USER,
+    syslog(LOG_ERR, "%s: getpwnam(%s): %s", *av, USER,
                   strerror (errno));
   else if (setgid(pwd->pw_gid) == -1)
-    (void)fprintf(stderr, "%s: setgid(%d): %s\n", *av, pwd->pw_gid,
+    syslog(LOG_ERR, "%s: setgid(%d): %s", *av, pwd->pw_gid,
                   strerror (errno));
   else if (setuid(pwd->pw_uid) == -1)
-    (void)fprintf(stderr, "%s: setuid(%d): %s\n", *av, pwd->pw_uid,
+    syslog(LOG_ERR, "%s: setuid(%d): %s", *av, pwd->pw_uid,
                   strerror (errno));
   else 
     {
       char **evp = NULL ;
-      progname = av[0];
+
+      snprintf(innfeed, sizeof(innfeed), "%s/%s", innconf->pathbin, INNFEED);
       av[0] = (char *) innfeed;
 
 #if defined (USE_DMALLOC)
@@ -81,7 +103,7 @@ main(int ac, char **av, char **ep)
 #endif
       
       if (execve(innfeed, av, evp) == -1)
-        (void)fprintf(stderr, "%s: execve: %s\n",
+        syslog(LOG_ERR, "%s: execve: %s",
                       progname, strerror (errno));
     }
   

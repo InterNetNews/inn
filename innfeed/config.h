@@ -41,9 +41,8 @@
 /**********************************************************************/
 
 /* the path to the run-time config file. If relative, then relative to
-   TAPE_DIRECTORY (or the value of the ``-b'' option). Overridden by ``-c''
-   option. */
-#define CONFIG_FILE "/var/news/etc/innfeed.conf"
+   @ETCDIR@. Overridden by ``-c'' option. */
+#define CONFIG_FILE "innfeed.conf"
 
 
 /*
@@ -54,7 +53,7 @@
  */
 
 /* in tape.c */
-#define TAPE_DIRECTORY 	      "/var/news/spool/innfeed" /* backlog-directory */
+#define TAPE_DIRECTORY 	        "innfeed"   /* [pathspool]/backlog-directory */
 #define TAPE_HIGHWATER 		5 		/* backlog-highwater */
 #define TAPE_ROTATE_PERIOD 	60 		/* backlog-rotate-period */
 #define TAPE_CHECKPOINT_PERIOD 	30 		/* backlog-ckpt-period */
@@ -62,9 +61,9 @@
 #define TAPE_DISABLE		false		/* no-backlog */
 
 /* in main.c */
-#define NEWSSPOOL 		"/var/news/spool/articles" /* news-spool */
-#define PID_FILE 		"innfeed.pid" 	/* pid-file */
-#define LOG_FILE 		"/var/log/news/innfeed.log" /* log-file */
+/*#define NEWSSPOOL 		"/var/news/spool/articles"*/ /* news-spool */
+#define PID_FILE 		"innfeed.pid" 	/* [pathrun]/pid-file */
+#define LOG_FILE 		"innfeed.log"	/* [pathlog]/log-file */
 
 /* in host.c */
 #define DNS_RETRY_PERIOD 	900 		/* dns-retry */
@@ -107,7 +106,7 @@
 /* If this file exists at startup then it's the same as having done
    '-d 1' on the command line. This is a cheap way of avoiding continual
    reloading of the newsfeeds file when debugging. */
-#define DEBUG_FILE "/var/log/news/innfeed.debug"
+#define DEBUG_FILE "innfeed.debug" /* Relative to pathlog */
 
 /* if defined to a non-zero number, then a snapshot will be printed
    whenever die() is called (e.g. on assert failure). This can use up a
@@ -116,7 +115,7 @@
 
 /* the full pathname of the file to get a printed dump of the system when
    a SIGINT is delivered (or SNAPSHOT_ON_DIE is non-zero--see below). */
-#define SNAPSHOT_FILE "/var/tmp/innfeed.snapshot"
+#define SNAPSHOT_FILE "innfeed.snapshot" /* Relative to pathlog */
 
 /* Define this be an existing directory (or NULL). If innfeed deliberatly
    dumps core it will chdir() to this directory first (if non-NULL). If

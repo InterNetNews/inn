@@ -52,7 +52,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <math.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
+/*#include <arpa/inet.h>*/
 #include <limits.h> /* LONG_MAX */
 #include <float.h>
 
@@ -65,6 +65,9 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "innlistener.h"
 #include "msgs.h"
 #include "configfile.h"
+#include "configdata.h"
+#include "clibrary.h"
+#include "libinn.h"
 
 #define REQ 1
 #define NOTREQ 0
@@ -2293,10 +2296,10 @@ void hostSetStatusFile (const char *filename)
     statusFile = strdup (filename) ;
   else
     {
-      const char *tapeDir = getTapeDirectory() ;
+      const char *logDir = innconf->pathlog;
       
-      statusFile = malloc (strlen (tapeDir) + strlen (filename) + 2) ;
-      sprintf (statusFile,"%s/%s",tapeDir,filename) ;
+      statusFile = malloc (strlen (logDir) + strlen (filename) + 2) ;
+      sprintf (statusFile,"%s/%s",logDir,filename) ;
     }
 
   if ((fp = fopen (statusFile,"w")) == NULL)

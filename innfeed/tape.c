@@ -80,7 +80,11 @@ typedef struct direct DIRENTRY ;
 #include "endpoint.h"
 #include "msgs.h"
 #include "configfile.h"
+#include "configdata.h"
+#include "clibrary.h"
+#include "libinn.h"
 
+extern char *dflTapeDir;
 
 #if 0
 /* a structure for temporary storage of articles. */
@@ -208,10 +212,12 @@ int tapeConfigLoadCbk (void *data)
   long iv ;
   int bv ;
   FILE *fp = (FILE *) data ;
-  char *dir ;
+  char *dir, *p ;
 
-  if (getString (topScope,"backlog-directory",&dir,NO_INHERIT))
+  if (getString (topScope,"backlog-directory",&p,NO_INHERIT))
     {
+      dir = buildFilename(innconf->pathspool, p);
+      free(p);
       if (tapeDirectory != NULL && strcmp (tapeDirectory,dir) != 0)
         {
           syslog (LOG_ERR,NO_CHANGE_BACKLOG) ;
@@ -219,19 +225,19 @@ int tapeConfigLoadCbk (void *data)
           dir = strdup (tapeDirectory) ;
         }
 
-      if (!isDirectory (dir) && isDirectory (TAPE_DIRECTORY))
+      if (!isDirectory (dir) && isDirectory (dflTapeDir))
         {
-          logOrPrint (LOG_ERR,fp,BAD_TAPEDIR_CHANGE,dir,TAPE_DIRECTORY) ;
+          logOrPrint (LOG_ERR,fp,BAD_TAPEDIR_CHANGE,dir,dflTapeDir) ;
           FREE (dir) ;
-          dir = strdup (TAPE_DIRECTORY) ;
+          dir = strdup (dflTapeDir) ;
         }
       else if (!isDirectory (dir))
         logAndExit (1,NO_TAPE_DIR) ;
     }
-  else if (!isDirectory (TAPE_DIRECTORY))
+  else if (!isDirectory (dflTapeDir))
     logAndExit (1,NO_TAPE_DIR) ;
   else
-    dir = strdup (TAPE_DIRECTORY) ;
+    dir = strdup (dflTapeDir) ;
   
   if (tapeDirectory != NULL)
     FREE (tapeDirectory) ;
@@ -873,7 +879,7 @@ const char *getTapeDirectory (void)
 #if 0
   if (tapeDirectory == NULL)
     {
-      tapeDirectory = strdup (TAPE_DIRECTORY) ;
+      tapeDirectory = strdup (dflTapeDir) ;
       addPointerFreedOnExit (tapeDirectory) ;
     }
 #endif

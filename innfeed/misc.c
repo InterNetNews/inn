@@ -63,13 +63,9 @@ static void use_rcsid (const char *rid) {   /* Never called */
 
 #include <signal.h>
 
-#if USE_INNLIB
+#include "configdata.h"
+#include "clibrary.h"
 #include "libinn.h"
-#else
-#include <sys/time.h>
-#include <sys/resource.h>
-#endif
-
 #include "misc.h"
 #include "msgs.h"
 #include "endpoint.h"
@@ -89,58 +85,7 @@ static void log (int level, const char *fmt, va_list args) ;
 int maxFds (void)
 {
   static int size = 0 ;
-    
-#if USE_INNLIB
-
   size = getfdcount () ;
-
-#elif defined (FDCOUNT_GETDTAB)
-
-    if (size <= 0)
-      {
-        if ((size = getdtablesize()) < 0)
-          return -1;
-      }
-
-#elif defined (FDCOUNT_GETRLIMIT)
-
-  {
-    struct rlimit rl ;
-      
-    if (size <= 0)
-      {
-        if (getrlimit(RLIMIT_NOFILE, &rl) < 0)
-          return -1 ;
-        size = rl.rlim_cur;
-      }
-  }
-
-#elif defined (FDCOUNT_SYSCONF)
-
-  if (size <= 0)
-    {
-      if ((size = sysconf(_SC_OPEN_MAX)) < 0)
-        return -1;
-    }
-
-#elif defined (FDCOUNT_ULIMIT)
-
-  if (size <= 0)
-    {
-      if ((size = ulimit(4, 0L)) < 0)
-        return -1;
-    }
-
-#elif defined (FDCOUNT_CONSTANT)
-
-#if defined (NOFILE)
-  size = NOFILE ;
-#else
-  size = 20 ;
-#endif
-
-#endif
-
   return size;
 }
 

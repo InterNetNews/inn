@@ -102,6 +102,7 @@ bool RollInputFile = false ;
 const char *pidFile = NULL ;
 bool useMMap = false ;
 void (*gPrintInfo) (void) ;
+char *dflTapeDir;
 
 /* imports */
 extern char *versionInfo ;
@@ -156,6 +157,7 @@ int main (int argc, char **argv)
   time_t now = theTime() ;
   char dateString [30] ;
   char *copt = NULL ;
+  char *debugFile;
   bool checkConfig = false ;
   struct rlimit rl;
   bool val;
@@ -170,6 +172,12 @@ int main (int argc, char **argv)
     program++ ;
 
   gPrintInfo = gprintinfo ;
+
+  if (ReadInnConf() < 0) {
+      openlog (program,(int)(L_OPENLOG_FLAGS|LOG_PID|LOG_PERROR),LOG_NEWS) ;
+      syslog(LOG_ERR, "cant read inn.conf\n");
+      exit(1);
+  }
 
 #if defined (HAVE_MMAP)
   useMMap = true ;
@@ -324,10 +332,6 @@ int main (int argc, char **argv)
       syslog (LOG_NOTICE,STARTING_PROGRAM,versionInfo,dateString) ;
     }
 
-  if (ReadInnConf() < 0) {
-      syslog(LOG_ERR, "cant read inn.conf\n");
-      exit(1);
-  }
   val = TRUE;
   if (!SMsetup(SM_RDWR, (void *)&val) || !SMsetup(SM_PREOPEN, (void *)&val)) {
       syslog(LOG_ERR, "cant setup the storage subsystem\n");
@@ -367,14 +371,8 @@ int main (int argc, char **argv)
                   "Empty pathname for ``-c'' option") ;
       exit (1) ;
     }
-  else if (copt != NULL && bopt != NULL)
-    configFile = buildFilename (bopt,copt) ;
-  else if (bopt != NULL)
-    configFile = buildFilename (bopt,CONFIG_FILE) ;
-  else if (copt != NULL)
-    configFile = buildFilename (TAPE_DIRECTORY,copt) ;
-  else
-    configFile = buildFilename (TAPE_DIRECTORY,CONFIG_FILE) ;
+  configFile = buildFilename(innconf->pathetc, copt ? copt : CONFIG_FILE);
+  dflTapeDir = buildFilename(innconf->pathspool, TAPE_DIRECTORY);
 
   rval = readConfig (configFile,(checkConfig ? stderr : NULL),
                      checkConfig,loggingLevel > 0);
@@ -397,11 +395,12 @@ int main (int argc, char **argv)
   else if (!rval)
     exit (1) ;
 
-  if (loggingLevel == 0 && fileExistsP (DEBUG_FILE))
+  debugFile = buildFilename (innconf->pathlog, DEBUG_FILE);
+  if (loggingLevel == 0 && fileExistsP (debugFile))
     loggingLevel = 1 ;
 
   if (logFile == NULL && ! isatty (fileno (stderr)))
-    logFile = strdup (LOG_FILE) ;
+    logFile = buildFilename (innconf->pathlog, LOG_FILE) ;
 
   if (logFile)
     openLogFile () ;
@@ -547,7 +546,7 @@ static void usage (int val)
            program) ;
   fprintf (stderr,"Version: %s\n\n",versionInfo) ;
   fprintf (stderr,"Config file: %s\n",CONFIG_FILE) ;
-  fprintf (stderr,"Backlog directory: %s\n",TAPE_DIRECTORY) ;
+  fprintf (stderr,"Backlog directory: %s/" TAPE_DIRECTORY "\n", innconf->pathspool) ;
   fprintf (stderr,"\nLegal options are:\n") ;
   fprintf (stderr,"\t-a dir      Use the given directory as the top of the article spool\n") ;
 
@@ -580,14 +579,14 @@ static void usage (int val)
 
   fprintf (stderr,"\t-p file     Write the process id to the given file\n") ;
   fprintf (stderr,"\t            instead of the default of %s\n",PID_FILE);
-  fprintf (stderr,"\t            A relative path is relative to the backlog directory\n") ;
+  fprintf (stderr,"\t            A relative path is relative to %s\n", innconf->pathrun) ;
 
   fprintf (stderr,"\t-s command  run the given command in a subprocess and use\n");
   fprintf (stderr,"\t            its output as article information instead of\n");
   fprintf (stderr,"\t            running under innd\n");
 
   fprintf (stderr,"\t-S file     Use the give filename instead of innfeed.status\n") ;
-  fprintf (stderr,"\t            relative pathnames start from the backlog directory\n") ;
+  fprintf (stderr,"\t            relative pathnames start from %s\n", innconf->pathlog) ;
 
   fprintf (stderr,"\t-v          print version information\n");
 
@@ -746,14 +745,19 @@ static void writePidFile (void)
 
 static void gprintinfo (void)
 {
-  FILE *fp = fopen (SNAPSHOT_FILE,"a") ;
+  char *snapshotFile;
+  FILE *fp;
   time_t now = theTime() ;
 
+  snapshotFile = buildFilename(innconf->pathlog, SNAPSHOT_FILE);
+  fp = fopen (snapshotFile,"a") ;
   if (fp == NULL)
     {
-      syslog (LOG_ERR,FOPEN_FAILURE,SNAPSHOT_FILE) ;
+      syslog (LOG_ERR,FOPEN_FAILURE,snapshotFile) ;
+      free(snapshotFile);
       return ;
     }
+  free(snapshotFile);
 
 #if defined (HAVE_SETBUFFER)
   setbuffer (fp, NULL, 0) ;
@@ -787,18 +791,18 @@ static int mainConfigLoadCbk (void *data)
 
   if (getString (topScope,"news-spool", &p,NO_INHERIT))
     {
-      if ( !isDirectory (p) && isDirectory (NEWSSPOOL) )
+      if ( !isDirectory (p) && isDirectory (innconf->pathspool) )
         {
-          logOrPrint (LOG_WARNING,fp,BADSPOOL_CHANGE,p,NEWSSPOOL) ;
-          p = strdup (NEWSSPOOL) ;
+          logOrPrint (LOG_WARNING,fp,BADSPOOL_CHANGE,p,innconf->pathspool) ;
+          p = strdup (innconf->pathspool) ;
         }
       else if (!isDirectory (p))
-        logAndExit (1,"Bad spool directories: %s, %s\n",p,NEWSSPOOL) ;
+        logAndExit (1,"Bad spool directories: %s, %s\n",p,innconf->pathspool) ;
     }
-  else if (!isDirectory (NEWSSPOOL))
-    logAndExit (1,SPOOL_NODEF,NEWSSPOOL);
+  else if (!isDirectory (innconf->pathspool))
+    logAndExit (1,SPOOL_NODEF,innconf->pathspool);
   else
-    p = strdup (NEWSSPOOL) ;
+    p = strdup (innconf->pathspool) ;
   newsspool = p ;
 
   /***************************************************/
@@ -814,11 +818,11 @@ static int mainConfigLoadCbk (void *data)
   
   if (getString (topScope,"pid-file",&p,NO_INHERIT))
     {
-      pidFile = buildFilename (getTapeDirectory(),p) ;
+      pidFile = buildFilename (innconf->pathrun,p) ;
       free (p) ;
     }
   else
-    pidFile = buildFilename (getTapeDirectory(),PID_FILE) ;
+    pidFile = buildFilename (innconf->pathrun,PID_FILE) ;
   
   if (getInteger (topScope,"debug-level",&ival,NO_INHERIT))
     loggingLevel = (u_int) ival ;
@@ -834,7 +838,7 @@ static int mainConfigLoadCbk (void *data)
   
   if (getString (topScope,"log-file",&p,NO_INHERIT))
     {
-      logFile = buildFilename (getTapeDirectory(),p) ;
+      logFile = buildFilename (innconf->pathlog,p) ;
       FREE (p) ;
     }
   
