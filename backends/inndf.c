@@ -51,6 +51,8 @@
 #include "ov.h"
 #include "paths.h"
 
+#define INNDFFILE	"innfs.conf" /* relative to pathetc */
+
 /* The portability mess.  Hide everything in macros so that the actual code
    is relatively clean.  SysV uses statvfs, BSD uses statfs, and ULTRIX is
    just weird (and isn't worth checking for in configure).
@@ -95,7 +97,7 @@
 #endif
 
 static const char usage[] = "\
-Usage: inndf [-i] <directory> [<directory> ...]\n\
+Usage: inndf [-i] [-f filename] [-F] <directory> [<directory> ...]\n\
        inndf -n\n\
        inndf -o\n\
 \n\
@@ -103,8 +105,12 @@ The first form gives the free space in kilobytes (or the count of free\n\
 inodes if -i is given) in the file systems given by the arguments.  The\n\
 second form gives the total count of overview records stored.  Thie third\n\
 form gives the percentage space allocated to overview that's been used (if\n\
-the overview method used supports this query.";
-
+the overview method used supports this query.\n\
+If -f is given, the corresponding file should contain a list of directories\n\
+to use in addition to those given by the arguments. Syntax of this file is\n\
+as follow:\n\
+Blank lines are ignored. Everything after a '#' is ignored too.\n\
+The -F flag is like -f execpt that the filename is <pathetc>/inndf.conf";
 
 /*
 **  Given a path, a flag saying whether to look at inodes instead of free
@@ -140,6 +146,53 @@ printspace(const char *path, bool inode, bool pad)
     printf(pad ? "%10lu" : "%lu", amount);
 }
 
+char **
+readfile(char *filename, int fatal)
+{
+    char **list, **p, *s, *r, c;
+    int n;
+    QIOSTATE *qp;
+
+    qp = QIOopen(filename);
+    if (qp == NULL) {
+        if (fatal)
+            sysdie("can't open %s", filename);
+        return NULL;
+    }
+    list =  (char **) malloc(sizeof(char *));
+    *list = NULL;
+    n = 0;
+
+    for (;;) {
+        s = QIOread(qp);
+        if (s == NULL)
+            break; /* end of file */
+        /* skip comments */
+        if ((r = strchr(s, '#')) != NULL)
+            *r = '\0';
+        /* skip blanks */
+        for (; *s == ' ' || *s == '\t'; s++);
+        if (*s == '\0')
+            continue; /* empty line */
+        while (*s != '\0') {
+            for (r = s; *r != ' ' && *r != '\t' && *r != '\0'; r++);
+            c = *r;
+            *r = '\0';
+            n++;
+            list = realloc(list, (n + 1) * sizeof(char *));
+            for (p = list; *p != NULL; p++);
+            *p = strdup(s);
+            *(p + 1) = NULL;
+            s = r;
+            if (c != '\0')
+                s++;
+            /* skip blanks */
+            for (; *s == ' ' || *s == '\t'; s++);
+        }
+    }
+    QIOclose(qp);
+    return list;
+}
 
 int
 main(int argc, char *argv[])
@@ -151,8 +204,10 @@ main(int argc, char *argv[])
     bool inode = false;
     bool overview = false;
     bool ovcount = false;
+    char *file = NULL;
+    int fatal = 1;
 
-    while ((option = getopt(argc, argv, "hino")) != EOF) {
+    while ((option = getopt(argc, argv, "hinof:F")) != EOF) {
         switch (option) {
         default:
             die(usage);
@@ -168,12 +223,21 @@ main(int argc, char *argv[])
         case 'o':
             overview = true;
             break;
+        case 'f':
+            file = strdup(optarg);
+            break;
+        case 'F':
+            if (ReadInnConf() < 0)
+                exit(1);
+            file = concatpath(innconf->pathetc, INNDFFILE);
+            fatal = 0;
+            break;
         }
     }
     argc -= optind;
     argv += optind;
 
-    if (argc == 0 && !overview)
+    if (argc == 0 && !overview && !ovcount && file == NULL)
         die(usage);
 
     /* Set the program name now rather than earlier so that it doesn't get
@@ -184,7 +248,7 @@ main(int argc, char *argv[])
        one was given, just print out the number without the path or any
        explanatory text; this mode is used by e.g. innwatch.  Otherwise,
        format things nicely. */
-    if (argc == 1) {
+    if (argc == 1 && !overview && !ovcount && file == NULL) {
         printspace(argv[0], inode, false);
         printf("\n");
     } else {
@@ -194,11 +258,23 @@ main(int argc, char *argv[])
             printf(inode ? " inodes available\n" : " Kbytes available\n");
         }
     }
+    if (file != NULL) {
+        char **l, **p;
+
+        for (p = l = readfile(file, fatal); p != NULL && *p != NULL; p++) {
+            printf("%-40s ", *p);
+            printspace(*p, inode, true);
+            printf(inode ? " inodes available\n" : " Kbytes available\n");
+            free(*p);
+        }
+        free(l);
+        free(file);
+    }
 
     /* If we're going to be getting information from overview, do the icky
        initialization stuff. */
     if (overview || ovcount) {
-        if (ReadInnConf() < 0)
+        if (fatal && ReadInnConf() < 0)
             exit(1);
         if (!OVopen(OV_READ))
             die("OVopen failed");
@@ -223,6 +299,7 @@ main(int argc, char *argv[])
             total += count;
             group = QIOread(qp);
         }
+        QIOclose(qp);
         printf("%lu overview records stored\n", total);
     }
 
