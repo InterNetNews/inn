@@ -126,6 +126,7 @@ LEX             = @LEX@
 PERL            = @_PATH_PERL@
 RANLIB          = @RANLIB@
 YACC            = @YACC@
+UNCOMPRESS      = @UNCOMPRESS@
 
 FIXSCRIPT       = ../support/fixscript
 
