@@ -9,7 +9,7 @@
 #include "libinn.h"
 #include "macros.h"
 
-int getline(CONFFILE *F, char *buffer, int length) {
+int getconfline(CONFFILE *F, char *buffer, int length) {
   if (F->f) {
     fgets(buffer, length, F->f);
   } else if (F->array) {
@@ -46,7 +46,7 @@ static char *CONFgetword(CONFFILE *F)
       F->sbuf = BIG_BUFFER;
       F->buf = NEW(char, F->sbuf);
     }
-    if (getline(F, F->buf, F->sbuf) != 0)
+    if (getconfline(F, F->buf, F->sbuf) != 0)
       return (NULL); /* Line too long */
   }
   do {
@@ -61,7 +61,7 @@ static char *CONFgetword(CONFFILE *F)
      flag = TRUE;
      if (*p == '\0' && !cfeof(F)) {
        flag = FALSE;
-       if (getline(F, F->buf, F->sbuf))
+       if (getconfline(F, F->buf, F->sbuf))
          return (NULL); /* Line too long */
        continue;
      }
@@ -75,7 +75,7 @@ static char *CONFgetword(CONFFILE *F)
              *t != '\0'; t++);
       if (*t == '\0') {
         *t++ = '\n';
-        if (getline(F, t, F->sbuf - strlen(F->buf)))
+        if (getconfline(F, t, F->sbuf - strlen(F->buf)))
           return (NULL); /* Line too long */
         if ((s = strchr(t, '\n')) != NULL)
           *s = '\0';
