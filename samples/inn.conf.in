@@ -56,7 +56,6 @@ noreader:		false
 nnrpdoverstats:		false
 storeonxref:		true
 nnrpdcheckart:		true
-storemsgid:		true
 usecontrolchan:		false
 mergetogroups:		false
 backoffauth:		false
@@ -64,13 +63,7 @@ backoffdb:		@DBDIR@/backoff
 backoffpostfast:	0L
 backoffpostslow:	1L
 backofftrigger:		10000L
-mimeversion:
-mimecontenttype:
-mimeencoding:
 refusecybercancels:	false
-activedenable:		false
-activedupdate:		30
-activedport:		1119
 nnrpperlauth:		false
 nnrpdauthsender:	false
 addnntppostinghost:	false
@@ -150,7 +143,6 @@ pathoutgoing:		@SPOOLDIR@/outgoing
 pathincoming:		@SPOOLDIR@/incoming
 patharchive:		@SPOOLDIR@/archive
 pathuniover:		@SPOOLDIR@/uniover
-overviewname:		.overview
 #
 # ---------------------------------
 #
