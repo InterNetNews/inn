@@ -775,7 +775,7 @@
   ||##  Splitted table method uses two DB files, and may use more memory.
   ||##  If you are short in RAM, say DO, else DONT.
   ||#### =()<DBZ_TAGGED_HASH  @<DBZ_TAGGED_HASH>@>()=
-  ||DBZ_TAGGED_HASH	DO
+  ||DBZ_TAGGED_HASH	DONT
 [IN1.7=@6][WDF=autoconf][WOR=no][P=high]
   ||##  Do you have shadow file?  Pick DO or DONT
   ||#### =()<HAVE_SHADOW		@<HAVE_SHADOW>@>()=
