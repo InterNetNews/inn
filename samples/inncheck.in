@@ -888,7 +888,7 @@ intersect
 ## The modes for the various programs.
 %prog_modes = (
     'inews',		02555,
-    'innd',		 0555,
+    'innd',		 0550,
     'newsboot',		 0550,
     'nnrpd',		 0555,
     'parsectl',		 0550,
@@ -911,7 +911,7 @@ check_all_perms
     foreach ( keys %prog_modes ) {
 	&checkperm($paths{$_}, $prog_modes{$_});
     }
-    &checkperm($paths{'inndstart'}, 4550, 'root', 'bin');
+    &checkperm($paths{'inndstart'}, 04550);
     foreach ( keys %paths ) {
 	&checkperm($paths{$_}, $modes{$_})
 	    if defined $modes{$_};
