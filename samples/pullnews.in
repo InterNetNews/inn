@@ -55,12 +55,13 @@ $SIG{INT} = $SIG{QUIT} = \&outtaHere ;
 use Net::NNTP;
 use Getopt::Std ;
 
-$opt_s = $opt_c = undef ;
-getopts("c:s:q") ;
+$opt_s = $opt_c = $opt_p = undef ;
+getopts("c:p:s:q") ;
 
 $groupFile = $opt_c || "$ENV{HOME}/.pullnews";
 $localServer = $opt_s || "localhost" ;
 $quiet = $opt_q ;
+$localPort = $opt_p || 119;
 
 $| = 1 ;
 
@@ -94,9 +95,9 @@ my @servers = (@ARGV || sort keys %$servers) ;
 
 die "No servers!\n" if ! @servers ;
 
-print "Connecting to downstream host $localServer..." unless $quiet;
-my $localcxn = Net::NNTP->new($localServer) ||
-    die "Cant connect to server $localServer\n" ;
+print "Connecting to downstream host $localServer, port $localPort..." unless $quiet;
+my %localopts = ("Port" => "$localPort");
+my $localcxn = Net::NNTP->new($localServer,%localopts) ||
 print "done.\n" unless $quiet;
 
 SEVER: 
