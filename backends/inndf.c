@@ -1,60 +1,46 @@
-/*
-
-inndf [-i] <filesystem>
-
-Ian Dickinson <idickins@fore.com>
-Wed Jul 26 10:11:38 BST 1995 (My birthday - 27 today!)
-
-$Id$
-
-Replacement for 'df | awk' in innwatch.ctl
-Reports free kilobytes (not disk blocks) or free inodes.
-
-Doesn't sync, forks less, less complicated, etc
-This is non-ANSI C - K&R still lives
-It should be easy to port if you have some sort of statfs() syscall
-
-Compile with -lserver (ie. /usr/lib/libserver.a) if you run Sun's
-Online DiskSuite under SunOS 4.x.  The wrapper functions there
-make the system call transparent - they copy the f_spare values to
-the correct spots, so f_blocks, f_bfree, f_bavail can exceed 2GB.
-
-Compile with -DHAVE_STATVFS for these systems:
-	System V Release 4.x
-	Solaris 2.x
-	HP-UX 10.x
-	OSF1
-
-Compile with -DHAVE_STATFS for these systems:
-	SunOS 4.x/Solaris 1.x
-	HP-UX 9.x
-	Linux
-	NeXTstep 3.x
-
-Thanks to these folks for bug fixes and porting information:
-	Mahesh Ramachandran <rr@eel.ufl.edu>
-	Chuck Swiger <chuck@its.com>
-	Sang-yong Suh <sysuh@kigam.re.kr>
-	Swa Frantzen <Swa.Frantzen@Belgium.EU.net>
-	Brad Dickey <bdickey@haverford.edu>
-	Taso N. Devetzis <devetzis@snet.net>
-	Wei-Yeh Lee <weiyeh@columbia.edu>
-	Jeff Garzik <jeff.garzik@spinne.com>
-	
-Here's the relevant portion of my innwatch.ctl:
-
-##  If load is OK, check space (and inodes) on various filesystems
-##  =()<!!! inndf @<_PATH_SPOOL>@ ! lt ! @<INNWATCH_SPOOLSPACE>@ ! throttle ! No space (spool)>()=
-!!! inndf /news/spool ! lt ! 18000 ! throttle ! No space (spool)
-##  =()<!!! inndf @<_PATH_OVERVIEWDIR>@ ! lt ! @<INNWATCH_NOVSPACE>@ ! throttle ! No space (overview)>()=
-!!! inndf /news/lib/nov ! lt ! 1000 ! throttle ! No space (overview)
-##  =()<!!! inndf @<_PATH_BATCHDIR>@ ! lt ! @<INNWATCH_BATCHSPACE>@ ! throttle ! No space (newsq)>()=
-!!! inndf /news/spool/out.going ! lt ! 11000 ! throttle ! No space (newsq)
-##  =()<!!! inndf @<_PATH_NEWSLIB>@ ! lt ! @<INNWATCH_LIBSPACE>@ ! throttle ! No space (newslib)>()=
-!!! inndf /news/lib ! lt ! 10000 ! throttle ! No space (newslib)
-##  =()<!!! inndf -i @<_PATH_SPOOL>@ ! lt ! @<INNWATCH_SPOOLNODES>@ ! throttle ! No space (spool inodes)>()=
-!!! inndf -i /news/spool ! lt ! 1900 ! throttle ! No space (spool inodes)
-
+/*  $Id$
+**
+**  Reports free kilobytes (not disk blocks) or free inodes.
+**
+**  Written by Ian Dickinson <idickins@fore.com>
+**  Wed Jul 26 10:11:38 BST 1995 (My birthday - 27 today!)
+**
+**  inndf is a replacement for 'df | awk' in innwatch.ctl and for reporting
+**  free space in other INN scripts.  It doesn't sync, it forks less, and
+**  it's generally less complicated.
+**
+**  Usage: inndf [-i] <directory> [<directory> ...]
+**         inndf -n
+**         inndf -o
+**
+**  Compile with -lserver (ie. /usr/lib/libserver.a) if you run Sun's Online
+**  DiskSuite under SunOS 4.x.  The wrapper functions there make the system
+**  call transparent; they copy the f_spare values to the correct spots, so
+**  f_blocks, f_bfree, f_bavail can exceed 2GB.
+**
+**  Compile with -DHAVE_STATVFS for these systems:
+**          System V Release 4.x
+**          Solaris 2.x
+**          HP-UX 10.x
+**          OSF1
+**  
+**  Compile with -DHAVE_STATFS for these systems:
+**          SunOS 4.x/Solaris 1.x
+**          HP-UX 9.x
+**          Linux
+**          NeXTstep 3.x
+**
+**  (Or even better, let autoconf take care of it.)
+**  
+**  Thanks to these folks for bug fixes and porting information:
+**          Mahesh Ramachandran <rr@eel.ufl.edu>
+**          Chuck Swiger <chuck@its.com>
+**          Sang-yong Suh <sysuh@kigam.re.kr>
+**          Swa Frantzen <Swa.Frantzen@Belgium.EU.net>
+**          Brad Dickey <bdickey@haverford.edu>
+**          Taso N. Devetzis <devetzis@snet.net>
+**          Wei-Yeh Lee <weiyeh@columbia.edu>
+**          Jeff Garzik <jeff.garzik@spinne.com>
 */
 
 #include "config.h"
@@ -66,172 +52,191 @@ Here's the relevant portion of my innwatch.ctl:
 #include "paths.h"
 #include "storage.h"
 
-#ifdef HAVE_STATVFS
-#include <sys/statvfs.h>		/* specific includes */
-#define STATFUNCT	statvfs		/* function call */
-#define STATSTRUC	statvfs		/* structure name */
-#define STATAVAIL	f_bavail	/* blocks available */
-#define STATMULTI	f_frsize	/* fragment size/block size */
-#define CAREFULL_STATMULTI f_bsize /* in case f_frsize is 0 */
-#define STATINODE	f_favail	/* inodes available */
-#define STATTYPES	u_long		/* type of f_bavail etc */
-#define STATFORMT	"%lu"		/* format string to match */
-#define STATFORMTPAD	"%*lu"		/* format string to match */
-#endif /* HAVE_STATVFS */
+/* The portability mess.  Hide everything in macros so that the actual code
+   is relatively clean.  SysV uses statvfs, BSD uses statfs, and ULTRIX is
+   just weird (and isn't worth checking for in configure).
 
-#ifdef HAVE_STATFS
-#ifdef HAVE_SYS_VFS_H
-#include <sys/vfs.h>
-#endif /* HAVE_SYS_VFS_H */
-#ifdef HAVE_SYS_PARAM_H
-#include <sys/param.h>
-#endif /* HAVE_SYS_PARAM_H */
-#ifdef HAVE_SYS_MOUNT_H
-#include <sys/mount.h>
-#endif /* HAVE_SYS_MOUNT_H */
-#define STATFUNCT	statfs
-#if defined (__ultrix__)
-#define STATSTRUC	fs_data
-#define STATAVAIL	fd_req.bfreen
-#define STATMULTI	fd_req.bsize
-#define STATINODE	fd_req.gfree
-#define STATTYPES	u_int
+   df_declare declares a variable of the appropriate type to pass to df_stat
+   along with a path; df_stat will return true on success, false on failure.
+   df_avail gives the number of free blocks, the size of those blocks given
+   in df_bsize (which handles SysV's weird fragment vs. preferred block size
+   thing).  df_inodes returns the free inodes. */
+#if HAVE_STATVFS
+# include <sys/statvfs.h>
+# define df_stat(p, s)  (statvfs((p), (s)) == 0)
+# define df_declare(s)  struct statvfs s
+# define df_avail(s)    ((s).f_bavail)
+# define df_bsize(s)    ((s).f_frsize == 0 ? (s).f_bsize : (s).f_frsize)
+# define df_inodes(s)   ((s).f_favail)
+#elif HAVE_STATFS
+# if HAVE_SYS_VFS_H
+#  include <sys/vfs.h>
+# endif
+# if HAVE_SYS_PARAM_H
+#  include <sys/param.h>
+# endif
+# if HAVE_SYS_MOUNT_H
+#  include <sys/mount.h>
+# endif
+# ifdef __ultrix__
+#  define df_stat(p, s) (statfs((p), (s)) >= 1)
+#  define df_declare(s) struct fs_data s
+#  define df_avail(s)   ((s).fd_req.bfreen)
+#  define df_bsize(s)   ((s).fd_req.bsize)
+#  define df_inodes(s)  ((s).fd_req.gfree)
+# else
+#  define df_stat(p, s) (statfs((p), (s)) == 0)
+#  define df_declare(s) struct statfs s
+#  define df_avail(s)   ((s).f_avail)
+#  define df_bsize(s)   ((s).f_bsize)
+#  define df_inodes(s)  ((s).f_ffree)
+# endif
 #else
-#define STATSTRUC	statfs
-#define STATAVAIL	f_bavail
-#define STATMULTI	f_bsize
-#define STATINODE	f_ffree
-#define STATTYPES	long
+# error "Platform not supported.  Neither statvfs nor statfs available."
 #endif
-#define STATFORMT	"%ld"
-#define STATFORMTPAD	"%*ld"
-#endif /* HAVE_STATFS */
 
-#define KILOBYTES	1024L
+static const char usage[] = "\
+Usage: inndf [-i] <directory> [<directory> ...]\n\
+       inndf -n\n\
+       inndf -o\n\
+\n\
+The first form gives the free space in kilobytes (or the count of free\n\
+inodes if -i is given) in the file systems given by the arguments.  The\n\
+second form gives the total count of overview records stored.  Thie third\n\
+form gives the percentage space allocated to overview that's been used (if\n\
+the overview method used supports this query.";
 
+
+/*
+**  Given a path, a flag saying whether to look at inodes instead of free
+**  disk space, and a flag saying whether to format in columns, print out
+**  the amount of free space or inodes on that file system.
+*/
 void
-Printspace(char *path, bool inode, bool needpadding)
+printspace(const char *path, bool inode, bool pad)
 {
-	struct STATSTRUC buf;
-	STATTYPES value;
+    df_declare(info);
+    unsigned long amount;
 
-#if defined (__ultrix__)
-	if (STATFUNCT(path, &buf) < 1) {
-#else
-	if (STATFUNCT(path, &buf) != 0) {
-#endif
-		value = 0L;	 /* if there's an error - free space is zero */
-	} else {
-		if (!inode) {
-			/* this is often the same as just buf.f_bavail */
-			/* but we want to cope with different underlying */
-			/* block/fragment sizes, and avoid overflow */
-			STATTYPES x=buf.STATMULTI;
-#ifdef CAREFULL_STATMULTI
-			if (x==0) x=buf.CAREFULL_STATMULTI;
-#endif
-#if defined (__ultrix__)
-			value = buf.STATAVAIL;
-#else
-			value = (STATTYPES)
-				(((double) buf.STATAVAIL * x) /
-				(STATTYPES) KILOBYTES);
-#endif
-		} else {
-			value = buf.STATINODE;	  /* simple! */
-		}
-	}
+    if (df_stat(path, &info)) {
+        if (inode) {
+            amount = df_inodes(info);
+        } else {
+            /* Do the multiplication in floating point to try to retain
+               accuracy if the free space in bytes would overflow an
+               unsigned long.  This should be safe until file systems larger
+               than 4TB (which may not be much longer -- we should use long
+               long instead if we have it).
 
-	if (needpadding)
-		(void) printf(STATFORMTPAD, 10, value);
-	else
-		(void) printf(STATFORMT, value);
+               Be very careful about the order of casts here; it's too
+               easy to cast back into an unsigned long a value that
+               overflows, and one then gets silently wrong results. */
+            amount = (unsigned long)
+                (((double) df_avail(info) * df_bsize(info)) / 1024L);
+        }
+    } else {
+        /* On error, free space is zero. */
+        amount = 0;
+    }
+    printf(pad ? "%10lu" : "%lu", amount);
 }
 
-void
-Usage(void)
-{
-	(void)fprintf(stderr, "Usage: inndf [-i] director{y|ies} | [-n] -o\n");
-	exit(1);
-}
 
 int
-main(int argc, char **argv)
+main(int argc, char *argv[])
 {
-	bool inode = FALSE;
-	bool overview = FALSE;
-	bool numberofoverview = FALSE;
-	int i, count, total = 0;
-	QIOSTATE *qp;
-	char *p, *q;
+    int option, i, count;
+    unsigned long total;
+    QIOSTATE *qp;
+    char *active, *group, *p;
+    bool inode = false;
+    bool overview = false;
+    bool ovcount = false;
 
-	while ((i = getopt(argc, argv, "ino")) != EOF) {
-		switch (i) {
-		default:
-			Usage();
-			/* not reached */
-		case 'i':
-			inode = TRUE;
-			break;
-		case 'n':
-			overview = TRUE;
-			numberofoverview = TRUE;
-			break;
-		case 'o':
-			overview = TRUE;
-			break;
-		}
-	}
-	argc -= optind;
-	argv += optind;
-	/* This argument handling is gross */
-	if (argc == 0 && overview == FALSE) {
-		Usage();
-		/* not reached */
-	}
-	if (argc == 1) {
-		Printspace(argv[0], inode, FALSE);
-		printf("\n");
-	} else {
-		for (i = 0 ; i < argc ; i++) {
-			printf("%-*s ", 40, argv[i]);
-			Printspace(argv[i], inode, TRUE);
-			if (inode)
-				printf(" inodes available\n");
-			else
-				printf(" Kbytes available\n");
-		}
-	}
-	if (overview) {
-		int i;
-		/* Set defaults. */
-		if (ReadInnConf() < 0) exit(1);
+    while ((option = getopt(argc, argv, "hino")) != EOF) {
+        switch (option) {
+        default:
+            die(usage);
+        case 'h':
+            printf("%s\n", usage);
+            exit(0);
+        case 'i':
+            inode = true;
+            break;
+        case 'n':
+            ovcount = true;
+            break;
+        case 'o':
+            overview = true;
+            break;
+        }
+    }
+    argc -= optind;
+    argv += optind;
 
-		if (!OVopen(OV_READ)) {
-			printf("OVopen failed\n");
-			exit(1);
-		}
-		if (numberofoverview) {
-			if ((qp = QIOopen(cpcatpath(innconf->pathdb, _PATH_ACTIVE))) == NULL) {
-				(void)fprintf(stderr, "inndf: cannot open %s\n",cpcatpath(innconf->pathdb, _PATH_ACTIVE));
-				exit(1);
-			}
-			while ((p = QIOread(qp)) != NULL) {
-				if ((q = strchr(p, ' ')) != NULL)
-					*q = '\0';
-				if (!OVgroupstats(p, NULL, NULL, &count, NULL))
-					continue;
-				total += count;
-			}
-			printf("%d overview data stored\n", total);
-		} else {
-			if (OVctl(OVSPACE, (void *)&i)) {
-				if (i == -1)
-					printf("%s does not support -o\n", innconf->ovmethod);
-				else
-					printf("%d %% overview space used\n", i);
-			}
-		}
-	}
-	exit(0);
+    if (argc == 0 && !overview)
+        die(usage);
+
+    /* Set the program name now rather than earlier so that it doesn't get
+       prepended to usage messages. */
+    error_program_name = "inndf";
+
+    /* If directories were specified, get statistics about them.  If only
+       one was given, just print out the number without the path or any
+       explanatory text; this mode is used by e.g. innwatch.  Otherwise,
+       format things nicely. */
+    if (argc == 1) {
+        printspace(argv[0], inode, false);
+        printf("\n");
+    } else {
+        for (i = 0; i < argc; i++) {
+            printf("%-40s ", argv[i]);
+            printspace(argv[i], inode, true);
+            printf(inode ? " inodes available\n" : " Kbytes available\n");
+        }
+    }
+
+    /* If we're going to be getting information from overview, do the icky
+       initialization stuff. */
+    if (overview || ovcount) {
+        if (ReadInnConf() < 0)
+            exit(1);
+        if (!OVopen(OV_READ))
+            die("OVopen failed");
+    }
+
+    /* For the count, we have to troll through the active file and query the
+       overview backend for each group. */
+    if (ovcount) {
+        active = concatpath(innconf->pathdb, _PATH_ACTIVE);
+        qp = QIOopen(active);
+        if (qp == NULL)
+            sysdie("can't open %s", active);
+
+        total = 0;
+        group = QIOread(qp);
+        while (group != NULL) {
+            p = strchr(group, ' ');
+            if (p != NULL)
+                *p = '\0';
+            if (!OVgroupstats(group, NULL, NULL, &count, NULL))
+                continue;
+            total += count;
+            group = QIOread(qp);
+        }
+        printf("%lu overview records stored\n", total);
+    }
+
+    /* Percentage used is simpler, but only some overview methods understand
+       that query. */
+    if (overview) {
+        if (OVctl(OVSPACE, &count)) {
+            if (count == -1)
+                printf("Space used is meaningless for the %s method\n",
+                       innconf->ovmethod);
+            else
+                printf("%d%% overview space used\n", count);
+        }
+    }
+    exit(0);
 }
