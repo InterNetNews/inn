@@ -60,7 +60,9 @@ NEWSGROUP	= @NEWSGRP@
 INEWSMODE	= @INEWSMODE@
 RNEWSMODE	= @RNEWSMODE@
 
-PATHNEWS        = @prefix@
+prefix          = @prefix@
+
+PATHNEWS        = $(prefix)
 PATHBIN         = $(PATHNEWS)/bin
 PATHETC         = @ETCDIR@
 PATHLIB         = @LIBDIR@

@@ -2,6 +2,7 @@
 ##  $Revision$
 ##  Script to make INN directories.
 
+prefix=@prefix@
 PATHNEWS=@prefix@
 PATHBIN=${PATHNEWS}/bin
 PATHETC=@ETCDIR@
