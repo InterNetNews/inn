@@ -512,7 +512,7 @@ rmgroup:news@newsflash.concordia.ca:concordia.*:doit
 
 ## COURTS (*DEFUNCT*)
 # Contact: trier@ins.cwru.edu
-# This Hierarchy is defunct as of mid 1998.
+# Defunct hierarchy as of mid-1998, please remove any groups that you carry.
 newgroup:*@*:courts.*:mail
 rmgroup:*@*:courts.*:doit
 
@@ -873,7 +873,7 @@ rmgroup:control@usenet.ie:ie.*:verify-control@usenet.ie
 
 ## IEEE (*DEFUNCT* -- Institute of Electrical and Electronic Engineers)
 # Contact: <postoffice@ieee.org>
-# This hierarchy is now defunct.
+# Defunct hierarchy, please remove any groups that you carry.
 newgroup:*@*:ieee.*:mail
 rmgroup:*@*:ieee.*:doit
 
@@ -1116,7 +1116,7 @@ checkgroups:milw@usenet.mil.wi.us:milw.*:verify-milw.config
 newgroup:milw@usenet.mil.wi.us:milw.*:verify-milw.config
 rmgroup:milw@usenet.mil.wi.us:milw.*:verify-milw.config
 
-## MOD (Original top level moderated hierarchy)
+## MOD (*DEFUNCT* -- Original top level moderated hierarchy)
 # Removed in the "Great Renaming" of 1988.
 # Possible revival attempt in mid-97, so watch this space..
 newgroup:*@*:mod.*:mail
@@ -1316,6 +1316,15 @@ rmgroup:news@opus.or.jp:okinawa.*:doit
 newgroup:pkern@gpu.utcc.utoronto.ca:ont.*:doit
 rmgroup:pkern@gpu.utcc.utoronto.ca:ont.*:doit
 
+## OPERA (Opera Software, Oslo, Norway)
+# Contact: usenet@opera.com
+# URL: http://news.opera.com/
+# Key URL: http://news.opera.com/pgpkey-opera-group-admin
+# *PGP*   See comment at top of file.
+newgroup:*@opera.com:opera.*:verify-opera-group-admin
+rmgroup:*@opera.com:opera.*:verify-opera-group-admin
+checkgroups:*@opera.com:opera.*:verify-opera-group-admin
+
 ## OTT (Ottawa, Ontario, Canada)
 # Contact: onag@pinetree.org
 # URL: http://www.pinetree.org/ONAG/
@@ -1405,7 +1414,7 @@ rmgroup:pmelo@*.inescc.pt:pt.*:verify-control@usenet-pt.org
 
 ## PUBNET (*DEFUNCT*)
 # URL: ftp://ftp.isc.org/pub/usenet/control/pubnet/pubnet.config.Z
-# This hierarchy is now defunct.
+# Defunct hierarchy, please remove any groups that you carry.
 newgroup:*@*:pubnet.*:mail
 rmgroup:*@*:pubnet.*:doit
 
@@ -1425,10 +1434,13 @@ rmgroup:coord@new*.relcom.ru:relcom.*:verify-relcom.newsgroups
 newgroup:*@*:rpi.*:mail
 rmgroup:*@*:rpi.*:doit
 
-## SAAR (Saarbruecke, Germany)
-checkgroups:thomas.rachel@gmx.de:saar.*:verify-saar-control
-newgroup:thomas.rachel@gmx.de:saar.*:verify-saar-control
-rmgroup:thomas.rachel@gmx.de:saar.*:verify-saar-control
+## SAAR (Saarland Region, Germany)
+# URL: http://www.saar-admin-news.de/
+# Key URL: http://www.saar-admin-news.de/saar-control.asc
+# *PGP*   See comment at top of file.
+newgroup:control@saar-admin-news.de:saar.*:verify-saar-control
+rmgroup:control@saar-admin-news.de:saar.*:verify-saar-control
+checkgroups:control@saar-admin-news.de:saar.*:verify-saar-control
 
 ## SACHSNET (German)
 newgroup:root@lusatia.de:sachsnet.*:doit
