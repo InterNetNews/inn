@@ -2305,6 +2305,10 @@ void buffindexed_close(void) {
       ovflushhead(ovbuff);
     }
     ovbuffnext = ovbuff->next;
+    if (ovbuff->smc != NULL)
+      smcClose(ovbuff->smc);
+    if (ovbuff->fd >= 0)
+      close(ovbuff->fd);
     free(ovbuff);
   }
   ovbufftab = NULL;
@@ -2349,7 +2353,7 @@ main(int argc, char **argv) {
   }
   fprintf(stdout, "GROUPheader->freelist.recno is %d(0x%08x)\n", GROUPheader->freelist.recno, GROUPheader->freelist.recno);
   group = argv[1];
-  if (isdigit(*group)) {
+  if (CTYPE(isdigit, *group)) {
     gloc.recno = atoi(group);
     ge = &GROUPentries[gloc.recno];
     fprintf(stdout, "left articles are %d for %d, last expiry is %ld\n", ge->count, gloc.recno, (long) ge->expired);
