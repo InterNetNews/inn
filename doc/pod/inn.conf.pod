@@ -258,6 +258,14 @@ While this check may once have served a purpose, it's now essentially
 security via obscurity, commonly avoided by abusers, and probably not
 useful.  This is a boolean value, and the default is false.
 
+=item I<immediatecancel>
+
+Set this to true to cancel article immediately.  Canceled artilces, which
+is stored through timecaf method, is not really canceled within it; that
+is they are cached to be canceld.  This parameter is effective only if
+timecaf method is used and within innd.  This is a boolean value, and the
+default is false.
+
 =item I<wanttrash>
 
 Set this to true if you want to file articles posted to unknown newsgroups
