@@ -2,16 +2,11 @@
 **
 **  Check article, send it to the local server.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
+#include <netinet/in.h>
+
 #include "nnrpd.h"
-#if	defined(DO_NEED_TIME)
-#include <time.h>
-#endif	/* defined(DO_NEED_TIME) */
-#include <sys/time.h>
 #include "ov.h"
 #include "post.h"
 

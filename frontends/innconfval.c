@@ -2,14 +2,14 @@
 **
 **  Get a config value from INN.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
+#include <ctype.h>
+#include <syslog.h>
+
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
-#include <syslog.h>  
 
 /* Global and initialized; to work around SunOS -Bstatic bug, sigh. */
 STATIC char		ConfigBuff[SMBUF] = "";

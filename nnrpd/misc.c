@@ -2,22 +2,17 @@
 **
 **  Miscellaneous support routines.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
-#include "nnrpd.h"
-#include "dbz.h"
-#if	defined(DO_NEED_TIME)
-#include <time.h>
-#endif	/* defined(DO_NEED_TIME) */
-#include <sys/time.h>
+#include <netinet/in.h>
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif
+
+#include "nnrpd.h"
+#include "dbz.h"
 
 STATIC BOOL		setup = FALSE;
 STATIC FILE		*hfp = NULL;
@@ -134,7 +129,7 @@ BOOL PERMmatch(char **Pats, char **list)
 **  Newsgroups line.
 */
 BOOL
-PERMartok(qp)
+PERMartok()
 {
     static char		**grplist;
     char		*p;

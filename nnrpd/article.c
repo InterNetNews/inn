@@ -2,21 +2,12 @@
 **
 **  Article-related routines.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/uio.h>
-#include <string.h>
-#include <sys/mman.h>
-#include <netinet/in.h>
-#include "configdata.h"
-#if defined(HAVE_UNISTD_H)
-# include <unistd.h>
-#endif
-#if	defined(DO_NEED_TIME)
-#include <time.h>
-#endif  /* defined(DO_NEED_TIME) */
-#include <sys/time.h>
+#include "config.h"
 #include "clibrary.h"
+#include <netinet/in.h>
+#include <sys/mman.h>
+#include <sys/uio.h>
+
 #include "nnrpd.h"
 #include "ov.h"
 
@@ -109,7 +100,8 @@ BOOL PushIOvRateLimited(void) {
 	}
 	memmove(iov, &iov[sentiov], (queued_iov - sentiov) * sizeof(struct iovec));
 	queued_iov -= sentiov;
-    }    
+    }
+    return TRUE;
 }
 
 BOOL PushIOv(void) {
@@ -839,7 +831,7 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 	if (len == 0 || innconf->nnrpdcheckart && !ARTinstorebytoken(token))
 	    continue;
 	p = OVERGetHeader(data, Overview);
-	sprintf(buff, "%d ", artnum);
+	sprintf(buff, "%lu ", artnum);
 	SendIOb(buff, strlen(buff));
 	SendIOb(p, strlen(p));
 	SendIOb("\r\n", 2);	
@@ -1027,7 +1019,7 @@ FUNCTYPE CMDxpat(int ac, char *av[])
 	    continue;
 	if ((p = OVERGetHeader(data, Overview)) != NULL) {
 	    if (wildmat(p, pattern)) {
-		sprintf(buff, "%d ", artnum);
+		sprintf(buff, "%lu ", artnum);
 		SendIOb(buff, strlen(buff));
 		SendIOb(p, strlen(p));
 		SendIOb("\r\n", 2);

@@ -2,12 +2,10 @@
 **
 **  Miscellaneous commands.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <time.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
+#include <netinet/in.h>
+
 #include "nnrpd.h"
 #include "ov.h"
 

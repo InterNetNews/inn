@@ -1,18 +1,16 @@
 /*  $Revision$
 **
-** Provide a command line interface to the storage manager
+**  Provide a command line interface to the storage manager
 */
-
-#include <stdio.h>
-#include <errno.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
+#include <errno.h>
+#include <syslog.h>  
+
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
 #include "qio.h"
-#include <syslog.h>  
 
 void Usage(void) {
     fprintf(stderr, "Usage sm [-q] [-r] [-d] [-R] [-i] token [token] [token] ...\n");
@@ -82,7 +80,7 @@ int main(int argc, char **argv) {
 		if (!Quiet)
 		    fprintf(stderr, "Could not get art info %s\n", argv[i]);
 	    } else {
-		fprintf(stdout, "%s: %d\n", ann.groupname, ann.artnum);
+		fprintf(stdout, "%s: %lu\n", ann.groupname, ann.artnum);
 		DISPOSE(ann.groupname);
 	    }
 	} else if (Delete) {

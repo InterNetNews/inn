@@ -6,6 +6,7 @@
 */
 #include "config.h"
 #include "clibrary.h"
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include "libinn.h"
@@ -580,7 +581,7 @@ Usage()
 
 /* ARGSUSED0 */
 int
-main(int argc, char *argv[], char *env[])
+main(int argc, char *argv[])
 {
 #if	NNRP_LOADLIMIT > 0
     int			load;
@@ -594,7 +595,7 @@ main(int argc, char *argv[], char *env[])
     int			i;
     char		*Reject;
     int			timeout;
-    int			vid=0; 
+    unsigned int	vid=0; 
     int 		count=123456789;
     struct		timeval tv;
     unsigned short	ListenPort = NNTP_PORT;
@@ -736,7 +737,7 @@ main(int argc, char *argv[], char *env[])
 	    }
 
 #if HAVE_GETSPNAM
-	    shadowgid = -1;
+	    shadowgid = (gid_t) -1;
 	    /* Find shadowgroup gid if needed */
 	    if (ShadowGroup != NULL) {
 		if ((grp = getgrnam(ShadowGroup)) == NULL)
@@ -750,7 +751,7 @@ main(int argc, char *argv[], char *env[])
 		ShadowGroup = "shadow";
 	    }
 	    /* If we have a shadowgid, try to set it as an extra group. */
-	    if (shadowgid >= 0) {
+	    if (shadowgid != (gid_t) -1) {
 		if (setgroups(1, &shadowgid) < 0)
 		   syslog(L_ERROR, "nnrpd cannot set supplementary group %s %m",
 			ShadowGroup);
@@ -996,4 +997,5 @@ main(int argc, char *argv[], char *env[])
 
     ExitWithStats(0);
     /* NOTREACHED */
+    return 1;
 }

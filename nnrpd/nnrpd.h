@@ -2,24 +2,34 @@
 **
 **  Net News Reading Protocol server.
 */
-#include <sys/stat.h>
-#include <errno.h>
 #include <ctype.h>
-#include <sys/file.h>
-#include <syslog.h>
-#include <fcntl.h>
-#include <sys/socket.h>
+#include <errno.h>
 #include <netinet/in.h>
-#if	defined(DO_NEED_TIME)
-#include <time.h>
-#endif	/* defined(DO_NEED_TIME) */
-#include <sys/time.h>
-#include <syslog.h> 
-#include "paths.h"
-#include "nntp.h"
+#include <syslog.h>
+#include <sys/file.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+
 #include "libinn.h"
-#include "qio.h"
 #include "macros.h"
+#include "nntp.h"
+#include "paths.h"
+#include "qio.h"
 
 
 /*
@@ -164,4 +174,3 @@ char *HandleHeaders(char *article);
 int perlConnect(char *ClientHost, char *ClientIP, char *ServerHost, char *accesslist);
 int perlAuthenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *user, char *passwd, char *accesslist);
 BOOL ARTinstorebytoken(TOKEN token);
-

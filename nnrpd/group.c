@@ -2,15 +2,11 @@
 **
 **  Newsgroups and the active file.
 */
-#include <stdio.h>
-#include <sys/types.h>
+#include "config.h"
+#include "clibrary.h"
 #include <netinet/in.h>
 #include <sys/mman.h>
-#include <sys/time.h>
-#include <unistd.h>
-#include <dirent.h>
-#include "configdata.h"
-#include "clibrary.h"
+
 #include "nnrpd.h"
 #include "ov.h"
 

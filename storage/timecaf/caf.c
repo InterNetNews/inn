@@ -16,6 +16,7 @@
 #include <errno.h>
 #include "macros.h"
 #include "libinn.h"
+#include <time.h>
 
 /* following code lifted from inndf.c */
 
@@ -56,6 +57,7 @@
 #define STATFORMTPAD	"%*ld"
 #endif /* HAVE_STATFS */
 
+int CAFClean(char *path, int verbose, double PercentFreeThreshold);
 
 int caf_error = 0;
 int caf_errno = 0;
@@ -66,7 +68,7 @@ int caf_errno = 0;
 #else
 #define	ASSERT(p)   if (!(p)) botch(__FILE__, __LINE__, "p"); else
 #endif
-static
+static void
 botch(f, l, s)
 char *f, *s;
 int l;

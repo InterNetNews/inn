@@ -2,11 +2,10 @@
 **
 **  The newnews command.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
+#include <netinet/in.h>
+
 #include "nnrpd.h"
 #include "ov.h"
 
@@ -21,7 +20,7 @@
 **  see if its distribution is in the list.
 */
 STATIC BOOL DistMatches(ARTHANDLE *art, char **distribs) {
-  char	**dp;
+  char  **dp;
   char	*p, *p1;
   char	*q;
   BOOL	Nocr;
@@ -53,7 +52,6 @@ STATIC BOOL DistMatches(ARTHANDLE *art, char **distribs) {
 **  get Xref header
 */
 STATIC char *GetXref(ARTHANDLE *art) {
-  char		**dp;
   char		*p, *p1;
   char		*q;
   static char	buff[BIG_BUFFER];
@@ -87,7 +85,6 @@ STATIC char *GetXref(ARTHANDLE *art) {
 **  get Message-ID header
 */
 STATIC char *GetMsgid(ARTHANDLE *art) {
-  char		**dp;
   char		*p, *p1;
   char		*q;
   static char	buff[BIG_BUFFER];
@@ -126,8 +123,6 @@ STATIC char **GetGroups(char *p) {
   static char	**list;
   int		i, len;
   char		*q;
-  int		linelen;
-  static char	*OVERline = NULL;
   static char	*Xrefbuf = NULL;
   char		*Xref = p;
 

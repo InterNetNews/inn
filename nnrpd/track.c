@@ -1,15 +1,11 @@
 /*  $Revision$
 **
-**  tracking database
+**  User and post tracking database.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <dirent.h>
-#include <sys/time.h>
-#include <string.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
+#include <netinet/in.h>
+
 #include "nnrpd.h"
 
 #define MAX_LEN 180

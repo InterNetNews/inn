@@ -1,27 +1,34 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Send an article (prepared by someone on the local site) to the
 **  master news server.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
-#include <sys/stat.h>
-#include <pwd.h>
 #include <grp.h>
-#if	defined(DO_NEED_TIME)
-#include <time.h>
-#endif	/* defined(DO_NEED_TIME) */
-#include <sys/time.h>
-#include <fcntl.h>
-#include "nntp.h"
-#include "paths.h"
+#include <pwd.h>
+#include <syslog.h>  
+#include <sys/stat.h>
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
+#ifdef TM_IN_SYS_TIME
+# include <sys/time.h>
+# ifdef TIME_WITH_SYS_TIME
+#  include <time.h>
+# endif
+#else
+# include <time.h>
+#endif
+
 #include "libinn.h"
 #include "macros.h"
-#include <syslog.h>  
+#include "nntp.h"
+#include "paths.h"
 
 
 #define FLUSH_ERROR(F)		(fflush((F)) == EOF || ferror((F)))
@@ -380,7 +387,7 @@ CheckCancel(msgid, JustReturn)
 STATIC BOOL
 AnAdministrator(name, group)
     char		*name;
-    int			group;
+    gid_t		group;
 {
     struct passwd	*pwp;
     struct group	*grp;
@@ -455,7 +462,7 @@ CheckControl(ctrl, pwp)
 	  || EQ(ctrl, "version")) {
 	strncpy(name, pwp->pw_name, SMBUF);
         name[SMBUF - 1] = '\0';
-	if (!AnAdministrator(name, (int)pwp->pw_gid)) {
+	if (!AnAdministrator(name, pwp->pw_gid)) {
 	    (void)fprintf(stderr,
 		    "Ask your news administrator to do the \"%s\" for you.\n",
 		    ctrl);
@@ -1460,4 +1467,5 @@ main(ac, av)
     /* Close up. */
     QuitServer(0);
     /* NOTREACHED */
+    return 1;
 }

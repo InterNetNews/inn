@@ -5,11 +5,13 @@
 */
 #include "config.h"
 #include "clibrary.h"
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <signal.h>
-#include "nnrpd.h"
+
 #include "conffile.h"
+#include "nnrpd.h"
 
 /* wait portability mess.  Per autoconf, #define macros ourself. */
 #ifdef HAVE_SYS_WAIT_H

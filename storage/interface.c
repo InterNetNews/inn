@@ -2,21 +2,19 @@
 **
 **  Storage Manager interface
 */
-
-#include <stdio.h>
-#include <string.h>
+#include "config.h"
+#include "clibrary.h"
 #include <ctype.h>
-#include <sys/types.h>
-#include <macros.h>
-#include <configdata.h>
-#include <clibrary.h>
-#include <libinn.h>
-#include <syslog.h> 
-#include <paths.h>
-#include <methods.h>
-#include <interface.h>
 #include <errno.h>
-#include <conffile.h>
+#include <syslog.h>
+#include <time.h>
+
+#include "conffile.h"
+#include "interface.h"
+#include "libinn.h"
+#include "macros.h"
+#include "methods.h"
+#include "paths.h"
 
 typedef enum {INIT_NO, INIT_DONE, INIT_FAIL} INITTYPE;
 typedef struct {
@@ -214,7 +212,6 @@ char *FromWireFmt(const char *article, int len, int *newlen) {
 **  get Xref header without pathhost
 */
 STATIC char *GetXref(ARTHANDLE *art) {
-  char	**dp;
   char	*p, *p1;
   char	*q;
   char	*buff;
@@ -238,7 +235,7 @@ STATIC char *GetXref(ARTHANDLE *art) {
   if (!Nocr)
     p = p1;
   /* skip pathhost */
-  for (q; *q == ' '; q++);
+  for (; *q == ' '; q++);
   if ((q = strchr(q, ' ')) == NULL)
     return 0;
   for (q++; *q == ' '; q++);
@@ -898,6 +895,7 @@ BOOL SMflushcacheddata(FLUSHTYPE type) {
 	    !storage_methods[i].flushcacheddata(type))
 	    syslog(L_ERROR, "SM can't flush cached data method '%s'", storage_methods[i].name);
     }
+    return TRUE;
 }
 
 void SMshutdown(void) {

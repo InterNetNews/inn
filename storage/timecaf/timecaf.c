@@ -1,30 +1,28 @@
-/*
-** $Id$
-** timecaf -- like the timehash storage method (and heavily inspired
-** by it), but uses the CAF library to store multiple articles in a
-** single file. 
+/*  $Id$
 **
+**  Like the timehash storage method (and heavily inspired by it), but uses
+**  the CAF library to store multiple articles in a single file.
 */
-
-#include <stdio.h>
-#include <errno.h>
-#include <unistd.h>
-#include <time.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
-#include <dirent.h>
+#include "config.h"
+#include "clibrary.h"
 #include <ctype.h>
-#include <configdata.h>
-#include <clibrary.h>
+#include <dirent.h>
+#include <errno.h>
 #include <syslog.h>
-#include <macros.h>
-#include <configdata.h>
-#include <libinn.h>
-#include <methods.h>
-#include "timecaf.h"
-#include <paths.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <time.h>
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
 #include "caf.h"
+#include "libinn.h"
+#include "macros.h"
+#include "methods.h"
+#include "timecaf.h"
+#include "paths.h"
 
 /* Needed for htonl() and friends on AIX 4.1. */
 #include <netinet/in.h>
