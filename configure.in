@@ -8,6 +8,12 @@ dnl versions of autoconf so that we can stop supporting them.  This means,
 dnl for example, that code excerpts should probably follow the GNU coding
 dnl standards rather than INN's.
 dnl
+dnl The macro archive is at <http://research.cys.de/autoconf-archive/>.  Due
+dnl to the submission format and significant changes to autoconf's internal
+dnl architecture and building-block macros, I'm waiting until autoconf 2.50
+dnl is released and we can convert this file into a bunch of separate files
+dnl before submitting macros to that archive.
+dnl
 dnl If a check is any way non-trivial, please package it up in a macro with
 dnl AC_DEFUN.  This will allow us to easily break up this (far too long)
 dnl file into a directory full of .m4 files for particular checks once
@@ -31,12 +37,6 @@ dnl errors.
 
 AC_REVISION($Revision$)dnl
 AC_PREREQ(2.13)
-
-dnl FIXME: The separable tests in this file should be broken out into
-dnl individual .m4 files and submitted back to autoconf or the general
-dnl macro repository <http://research.cys.de/autoconf-archive/>.  autoconf
-dnl 2.50 will have better support for doing this.
-
 AC_INIT(Makefile.global.in)
 AC_CONFIG_AUX_DIR(support)
 AC_PREFIX_DEFAULT(/usr/local/news)
@@ -104,14 +104,8 @@ INN_ARG_DIR(run, run, RUNDIR,
     [  --with-run-dir=PATH     Path for news PID/runtime files [PREFIX/run]])
 INN_ARG_DIR(spool, spool, SPOOLDIR,
     [  --with-spool-dir=PATH   Path for news storage [PREFIX/spool]])
-
-dnl FIXME: This should be called --with-tmp-dir and use INN_ARG_DIR like the
-dnl others.
-AC_ARG_WITH(tmp-path,
-    [  --with-tmp-path=PATH    Path for temporary files [PREFIX/tmp]],
-    TMPPATH=$with_tmp_path,
-    TMPPATH=$prefix/tmp)
-AC_SUBST(TMPPATH)
+INN_ARG_DIR(tmp, tmp, tmpdir,
+    [  --with-tmp-dir=PATH     Path for temporary files [PREFIX/tmp]])
 
 dnl This is actually give to AC_SUBST later on when we check whether the
 dnl system has the LOG_NEWS facility.
@@ -236,25 +230,18 @@ AC_SUBST(DO_DBZ_TAGGED_HASH)
 dnl Whether to use the OS flags to enable large file support.  Ideally this
 dnl should just always be turned on if possible and the various parts of INN
 dnl that read off_t's from disk should adjust somehow to the size, but INN
-dnl isn't there yet.
-dnl
-dnl FIXME: This should use --enable, not --with.
-AC_ARG_WITH(largefiles,
-    [  --with-largefiles       Support for files larger than 2GB [default=no]],
-    [case "${withval}" in
-    yes) DO_LFS=DO ;;
-    no)  DO_LFS=DONT ;;
-    *)   AC_MSG_ERROR(invalid argument to --with-largefiles) ;;
-    esac],
-    DO_LFS=DONT)
-AC_SUBST(DO_LFS)
-
-dnl Currently tagged hash won't work with large file support; this should
-dnl eventually be fixed, but for right now abort if someone tries it.
-if test x"$DO_LFS" = xDO && test x"$DO_DBZ_TAGGED_HASH" = xDO ; then
-    AC_MSG_ERROR(
-[--enable-tagged-hash and --with-largefiles cannot be used at the same time.])
-fi
+dnl isn't there yet.  Currently tagged hash doesn't work with large file
+dnl support due to assumptions about the size of off_t.
+AC_ARG_ENABLE(largefiles,
+    [  --enable-largefiles     Support for files larger than 2GB [default=no]],
+    [case "${enableval}" in
+    yes) inn_enable_largefiles=yes
+         if test x"$DO_DBZ_TAGGED_HASH" = xDO ; then
+AC_MSG_ERROR([--enable-tagged-hash conflicts with --enable-largefiles.])
+         fi ;;
+    no)  inn_enable_largefiles=no ;;
+    *)   AC_MSG_ERROR(invalid argument to --enable-largefiles) ;;
+    esac])
 
 dnl In order to not pick up the wrong path to sendmail, we're conservative
 dnl about which sendmail we're willing to use.  A user-given value is used
@@ -604,15 +591,9 @@ dnl need any extra libraries, or to need -lsocket -lnsl.  We need to avoid
 dnl linking with libnsl unless we need it, though, since on some OSes where
 dnl it isn't necessary it will totally break networking.  Unisys also
 dnl includes gethostbyname in libsocket but needs libnsl for socket().
-dnl
-dnl FIXME: Once the FAST_RESOLV stuff in innd is removed, we shouldn't need
-dnl libresolv any more, and it probably isn't doing anything good for us.
 AC_SEARCH_LIBS(gethostbyname, nsl)
-AC_CHECK_LIB(resolv, gethostbyname, LIBS="-lresolv $LIBS")
-AC_CHECK_FUNC(socket, ,
-    [AC_CHECK_LIB(socket, socket, LIBS="$LIBS -lsocket",
-        [AC_CHECK_LIB(nsl, socket, LIBS="$LIBS -lsocket -lnsl", , -lsocket)],
-        "$LIBS")])
+AC_SEARCH_LIBS(socket, socket, ,
+    [AC_CHECK_LIB(nsl, socket, LIBS="$LIBS -lsocket -lnsl", , -lsocket)])
 
 dnl FIXME: We should be using inet_aton instead of inet_addr everywhere.
 AC_SEARCH_LIBS(inet_addr, 44bsd)
@@ -640,10 +621,10 @@ if test $ac_cv_lib_regex_regexec = no; then
 fi
 
 dnl Some of the authentication programs want to be able to open dbm files.
-dnl
-dnl FIXME: These conflict.  What order should they really be in?
-AC_CHECK_LIB(dbm, dbm_open, DBM_LIB="-ldbm")
-AC_CHECK_LIB(ndbm, dbm_open, DBM_LIB="-lndbm")
+inn_save_LIBS=$LIBS
+LIBS=
+AC_SEARCH_LIBS(dbm_open, ndbm dbm, DBM_LIB=$LIBS)
+LIBS=$inn_save_LIBS
 AC_SUBST(DBM_LIB)
 
 dnl Libraries and flags for embedded Perl.  Some distributions of Linux have
@@ -703,7 +684,7 @@ dnl If configuring with large file support, determine the right flags to
 dnl use based on the platform.  This is the wrong approach; autoconf 2.50
 dnl comes with a macro that takes the right approach.  But this works well
 dnl enough until autoconf 2.50 is released.
-if test x"$DO_LFS" = xDO ; then
+if test x"$inn_enable_largefiles" = xyes ; then
     AC_MSG_CHECKING(for largefile linkage)
     case "$host" in
     *-aix4.[01]*)
@@ -722,7 +703,7 @@ if test x"$DO_LFS" = xDO ; then
         LFS_LDFLAGS=""
         LFS_LIBS=""
         ;;
-    *-linux*|*-irix*)
+    *-irix*)
         AC_MSG_RESULT(no)
         AC_MSG_ERROR([Large files not supported on this platform])
         ;;
@@ -1504,18 +1485,42 @@ AC_OUTPUT(
         chmod +x support/fixscript
 )
 
-cat .now_do
+dnl Print out some additional information on what to check.
+cat <<EOM
 
-if test -d "$RUNDIR" ; then
-    ownergroup=`echo "${RUNDIR}" | $_PATH_PERL -e 'local (@sb, $owner, $group); $_ = <>; chop; @sb = stat; $owner = (getpwuid($sb[[4]]))[[0]]; $group = (getgrgid($sb[[5]]))[[0]]; print "$owner:$group\n";'`
-    if test x"$ownergroup" != x"${NEWSUSER}:${NEWSGRP}" ; then
-        echo <<EOF
-NOTE: The owner and the group of "${RUNDIR}" which is specified by
-      "--with-run-dir=" is incorrect.  It should be owned by "${NEWSUSER}"
-      with a group of "${NEWSGRP}".  Set its owner and group correctly
-      before you start innd, or run configure again with "--with-run-dir="
-      to specify another directory.  Otherwise, you may encounter serious
-      problems.
-EOF
-    fi
+Please check the following files before running make, to ensure that 
+everything was set correctly.
+
+	Makefile.global
+	include/config.h
+	include/paths.h
+	innfeed/innfeed.h
+
+EOM
+
+dnl Finally, double-check the configured temporary directory.  Some people
+dnl point this at the system temporary directories or at other
+dnl world-writeable directories, which can be a local security hole.
+if $_PATH_PERL -e "exit((stat('$tmpdir'))[[2]] & 2)" > /dev/null ; then
+    :
+else
+    cat <<EOM
+
+WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+
+  The temporary directory you have configured is world-writeable.  It is
+  currently set to $tmpdir.
+
+  This directory is used by INN for temporary files and should only be
+  writeable by the news user.  INN does not go to great lengths to prevent
+  symlink attacks and the like because it assumes this directory is not
+  world-writeable.  By configuring INN in this fashion, you may be
+  introducing a locally exploitable security hole.
+
+  It is STRONGLY recommended that you use a temporary directory reserved for
+  INN's exclusive use, one which is not world-writeable.  You can do this
+  either with --with-tmp-dir or by setting --prefix to something other than
+  /usr or /.
+
+EOM
 fi
