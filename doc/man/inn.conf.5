@@ -124,7 +124,12 @@ is lower part of the same.
 The article name name is of the format tttttttt-ssss, where tttttttt
 is the time the article was recieved in time_t format, and ssss is a
 sequence number to distinguish article that were received in the same second.
-
+.TP
+.I writelinks
+If this is true innd will write all the crossposts of an article to
+the history file, else it will write just the first.  This can be
+useful on servers without readers that don't run crosspost and don't
+link crossposts.
 .PP
 The following parameters are used only by 
 .I nnrpd.

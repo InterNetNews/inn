@@ -189,6 +189,8 @@
 #define _CONF_COMPLAINTS        "complaints"
     /* if true, always spool, else, spool only on error */
 #define _CONF_NNRP_SPOOLFIRST   "spoolfirst"
+   /* if false then don't write crossposts to the history file */
+#define _CONF_WRITELINKS        "writelinks"
      
 /*
 **  13.  TCL Support

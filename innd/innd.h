@@ -350,6 +350,7 @@ extern BOOL		Tracing;
 EXTERN BOOL		XrefSlave;
 EXTERN BOOL		WireFormat;
 EXTERN BOOL		TimeSpool;
+EXTERN BOOL             WriteLinks;
 EXTERN int		SeqNum;
 EXTERN STRING		path;
 EXTERN BUFFER		Path;

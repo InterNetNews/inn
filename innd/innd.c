@@ -759,6 +759,9 @@ main(ac, av)
     XrefSlave = GetBooleanConfigValue(_CONF_XREFSLAVE, FALSE);
     /* Get the setting for time spool */
     TimeSpool = GetBooleanConfigValue(_CONF_TIMESPOOL, FALSE);
+    /* Get the setting for whether or not to write crossposts to the
+       history file */
+    WriteLinks = GetBooleanConfigValue(_CONF_WRITELINKS, TRUE);
 
     /* Get the Path entry. */
     if ((path = GetConfigValue(_CONF_PATHHOST)) == NULL) {
