@@ -1282,7 +1282,7 @@ static void connectionDone (EndPoint e, IoStatus i, Buffer *b, void *d)
   Connection cxn = (Connection) d ;
   const char *peerName ;
   int optval;
-  ARGTYPE size ;
+  socklen_t size ;
 
   ASSERT (b == NULL) ;
   ASSERT (cxn->state == cxnConnectingS) ;
