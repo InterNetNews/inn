@@ -8,16 +8,15 @@
 **  built during XOVER/XHDR/NEWNEWS.  If we hit in the cache when
 **  retrieving articles the (relatively) expensive cost of a trip
 **  through the history database is saved.
-** 
 */
 
 #include "config.h"
 #include "clibrary.h"
 
 #include "inn/innconf.h"
+#include "inn/tst.h"
 #include "libinn.h"
 #include "storage.h"
-#include "tst.h"
 
 #include "cache.h"
 
@@ -78,7 +77,7 @@ cache_get(const HASH h)
 {
     static HASH last_hash;
     static TOKEN last_token;
-    static const TOKEN empty_token = { TOKEN_EMPTY };
+    static const TOKEN empty_token = { TOKEN_EMPTY, 0, "" };
 
     if (HashCompare(&h, &last_hash) == 0 && !HashEmpty(last_hash))
 	return last_token;
@@ -90,7 +89,7 @@ cache_get(const HASH h)
 	   in the TST a structure which includes an LRU list. Then in _add
 	   expire entries from the front of the list as we need to steal them
         */
-	t = tst_delete(HashToText(h), msgidcache);
+	t = tst_delete((unsigned char *) HashToText(h), msgidcache);
 	if (t != NULL) {
 	    --msgcachecount;
 	    last_token = *t;

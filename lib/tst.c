@@ -48,8 +48,45 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include "inn/tst.h"
 #include "libinn.h"
-#include "tst.h"
+
+
+/* A single node in the ternary search trie.  Stores a character, which is
+   part of the string formed by walking the tree from its root down to the
+   node, and left, right, and middle pointers to child nodes.  If value is
+   non-zero (not a nul), middle is the pointer to follow if the desired
+   string's character matches value.  left is used if it's less than value and
+   right is used if it's greater than value.  If value is zero, this is a
+   terminal node, and middle holds a pointer to the data associated with the
+   string that ends at this point. */
+struct node {
+    unsigned char value;
+    struct node *left;
+    struct node *middle;
+    struct node *right;
+};
+
+/* The search trie structure.  node_line_width is the number of nodes that are
+   allocated at a time, and node_lines holds a linked list of groups of nodes.
+   The free_list is a linked list (through the middle pointers) of available
+   nodes to use, and head holds pointers to the first nodes for each possible
+   first letter of the string.
+
+   FIXME: Currently only supports ASCII strings. */
+struct tst {
+    int node_line_width;
+    struct node_lines *node_lines;
+    struct node *free_list;
+    struct node *head[127];
+};
+
+/* A simple linked list structure used to hold all the groups of nodes. */
+struct node_lines {
+    struct node *node_line;
+    struct node_lines *next;
+};
+
 
 /*
 **  tst_init allocates memory for members of struct tst, and allocates the

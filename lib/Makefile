@@ -245,7 +245,8 @@ strtok.o: strtok.c ../include/config.h ../include/inn/defines.h \
 timer.o: timer.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/time.h \
  ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h
-tst.o: tst.c ../include/tst.h
+tst.o: tst.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/tst.h ../include/libinn.h
 uwildmat.o: uwildmat.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
 vector.o: vector.c ../include/config.h ../include/inn/defines.h \

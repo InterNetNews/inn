@@ -76,24 +76,30 @@ depend:	$(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 article.o: article.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h nnrpd.h ../include/portable/socket.h \
+ ../include/clibrary.h ../include/inn/innconf.h \
+ ../include/inn/messages.h nnrpd.h ../include/portable/socket.h \
  ../include/portable/time.h ../include/inn/qio.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \
  ../include/storage.h ../include/inn/vector.h ../include/inn/timer.h \
- ../include/ov.h ../include/inn/history.h tls.h
+ ../include/ov.h ../include/inn/history.h tls.h cache.h
+cache.o: cache.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/innconf.h ../include/inn/tst.h \
+ ../include/libinn.h ../include/storage.h cache.h
 group.o: group.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h nnrpd.h ../include/portable/socket.h \
- ../include/portable/time.h ../include/inn/qio.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h ../include/inn/vector.h ../include/inn/timer.h \
- ../include/ov.h ../include/inn/history.h
+ ../include/clibrary.h ../include/inn/innconf.h nnrpd.h \
+ ../include/portable/socket.h ../include/portable/time.h \
+ ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h \
+ ../include/inn/vector.h ../include/inn/timer.h ../include/ov.h \
+ ../include/inn/history.h
 commands.o: commands.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/wait.h nnrpd.h \
  ../include/portable/socket.h ../include/portable/time.h \
  ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h ../include/paths.h ../include/storage.h \
  ../include/inn/vector.h ../include/inn/timer.h ../include/ov.h \
- ../include/inn/history.h ../include/inn/messages.h
+ ../include/inn/history.h ../include/inn/innconf.h \
+ ../include/inn/messages.h
 line.o: line.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/messages.h nnrpd.h \
  ../include/portable/socket.h ../include/portable/time.h \
@@ -101,19 +107,21 @@ line.o: line.c ../include/config.h ../include/inn/defines.h \
  ../include/nntp.h ../include/paths.h ../include/storage.h \
  ../include/inn/vector.h ../include/inn/timer.h
 misc.o: misc.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h nnrpd.h ../include/portable/socket.h \
- ../include/portable/time.h ../include/inn/qio.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h ../include/inn/vector.h ../include/inn/timer.h \
- tls.h sasl_config.h
+ ../include/clibrary.h ../include/inn/innconf.h nnrpd.h \
+ ../include/portable/socket.h ../include/portable/time.h \
+ ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h \
+ ../include/inn/vector.h ../include/inn/timer.h tls.h sasl_config.h
 newnews.o: newnews.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h nnrpd.h ../include/portable/socket.h \
+ ../include/clibrary.h ../include/inn/innconf.h \
+ ../include/inn/messages.h nnrpd.h ../include/portable/socket.h \
  ../include/portable/time.h ../include/inn/qio.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \
  ../include/storage.h ../include/inn/vector.h ../include/inn/timer.h \
- ../include/ov.h ../include/inn/history.h
+ ../include/ov.h ../include/inn/history.h cache.h
 nnrpd.o: nnrpd.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/wait.h \
+ ../include/clibrary.h ../include/portable/setproctitle.h \
+ ../include/portable/wait.h ../include/inn/innconf.h \
  ../include/inn/messages.h ../include/libinn.h ../include/ov.h \
  ../include/storage.h ../include/inn/history.h nnrpd.h \
  ../include/portable/socket.h ../include/portable/time.h \
@@ -121,43 +129,47 @@ nnrpd.o: nnrpd.c ../include/config.h ../include/inn/defines.h \
  ../include/paths.h ../include/inn/vector.h ../include/inn/timer.h \
  tls.h sasl_config.h
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/macros.h nnrpd.h \
- ../include/portable/socket.h ../include/portable/time.h \
+ ../include/clibrary.h ../include/inn/innconf.h ../include/macros.h \
+ nnrpd.h ../include/portable/socket.h ../include/portable/time.h \
  ../include/inn/qio.h ../include/libinn.h ../include/nntp.h \
  ../include/paths.h ../include/storage.h ../include/inn/vector.h \
  ../include/inn/timer.h post.h ../include/ppport.h \
  ../include/innperl.h
 perm.o: perm.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/wait.h \
- ../include/conffile.h ../include/innperl.h nnrpd.h \
- ../include/portable/socket.h ../include/portable/time.h \
+ ../include/conffile.h ../include/inn/innconf.h ../include/innperl.h \
+ nnrpd.h ../include/portable/socket.h ../include/portable/time.h \
  ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h ../include/paths.h ../include/storage.h \
  ../include/inn/vector.h ../include/inn/timer.h
 post.o: post.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h nnrpd.h ../include/portable/socket.h \
- ../include/portable/time.h ../include/inn/qio.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h ../include/inn/vector.h ../include/inn/timer.h \
- ../include/ov.h ../include/inn/history.h post.h
-python.o: python.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h nnrpd.h ../include/portable/socket.h \
- ../include/portable/time.h ../include/inn/qio.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h ../include/inn/vector.h ../include/inn/timer.h
-sasl_config.o: sasl_config.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h nnrpd.h \
+ ../include/clibrary.h ../include/inn/innconf.h nnrpd.h \
  ../include/portable/socket.h ../include/portable/time.h \
  ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h ../include/paths.h ../include/storage.h \
- ../include/inn/vector.h ../include/inn/timer.h sasl_config.h
+ ../include/inn/vector.h ../include/inn/timer.h ../include/ov.h \
+ ../include/inn/history.h post.h
+python.o: python.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/innconf.h nnrpd.h \
+ ../include/portable/socket.h ../include/portable/time.h \
+ ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h \
+ ../include/inn/vector.h ../include/inn/timer.h
+sasl_config.o: sasl_config.c ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h \
+ ../include/inn/innconf.h nnrpd.h ../include/portable/socket.h \
+ ../include/portable/time.h ../include/inn/qio.h ../include/libinn.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h \
+ ../include/storage.h ../include/inn/vector.h ../include/inn/timer.h \
+ sasl_config.h
 tls.o: tls.c ../include/config.h ../include/inn/defines.h nnrpd.h \
  ../include/portable/socket.h ../include/portable/time.h \
  ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h ../include/paths.h ../include/storage.h \
  ../include/inn/vector.h ../include/inn/timer.h tls.h
 track.o: track.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h nnrpd.h ../include/portable/socket.h \
- ../include/portable/time.h ../include/inn/qio.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h ../include/inn/vector.h ../include/inn/timer.h
+ ../include/clibrary.h ../include/inn/innconf.h nnrpd.h \
+ ../include/portable/socket.h ../include/portable/time.h \
+ ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h \
+ ../include/inn/vector.h ../include/inn/timer.h
