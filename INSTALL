@@ -3,7 +3,7 @@ Welcome to INN 2.4!
     Please read this document thoroughly before trying to install INN. 
     You'll be glad you did.
 
-    If you are upgrading from a previous major release of INN, it is
+    If you are upgrading from a major release of INN prior to 2.3, it is
     recommended that you make copies of your old configuration files and use
     them as guides for doing a clean installation and configuration of 2.4. 
     Many config files have changed, some have been added, and some have been
@@ -11,8 +11,8 @@ Welcome to INN 2.4!
     to try to update your old installation.  This is particularly true if
     you're upgrading from a version of INN prior to 2.0.
 
-    If you are upgrading from an earlier minor release of INN, you may be
-    able to just update the binaries, scripts, and man pages by running:
+    If you are upgrading from INN 2.3 or later, you may be able to just
+    update the binaries, scripts, and man pages by running:
 
         make update
 
@@ -26,6 +26,11 @@ Welcome to INN 2.4!
     flag, and vice versa).  If you don't remember what options you used but
     you have your old build tree, look at the comments at the beginning of
     config.status.
+
+    If you use "make update" to upgrade from INN 2.3, also look at the new
+    sample configuration files in samples to see if there are new options of
+    interest to you.  In particular, control.ctl has been updated and
+    inn.conf has various new options.
 
     For more information about recent changes, see NEWS.
 
