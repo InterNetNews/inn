@@ -57,8 +57,8 @@ The letters ``ICC'' stand for
 .I ICCopen
 creates a
 Unix-domain datagram socket and binds it to the server's control socket, if
-.I <HAVE_UNIX_DOMAIN in config.data>
-is ``DO''.  Otherwise it creates
+.I <HAVE_UNIX_DOMAIN_SOCKETS in include/config.h>
+is defined.  Otherwise it creates
 a named pipe for communicating with the server.
 It returns \-1 on failure or zero on success.
 This routine must be called before any other routine.

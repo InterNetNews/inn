@@ -67,13 +67,14 @@ is the token of an article,
 calls
 .IR SMretrieve .
 If 
-.I <HAVE_ST_BLKSIZE in config.data>
-is ``DO'',
+.I <HAVE_ST_BLKSIZE in include/config.h>
+is defined,
 .I QIOopen
 will call
 .IR stat (2)
-and use the returned block size; if that fails (or HAVE_ST_BLKSIZE is DONT)
-it will use QIO_BUFFER.
+and use the returned block size; if that fails (or
+.I <HAVE_ST_BLKSIZE in include/config.h>
+is not defined) it will use QIO_BUFFER.
 It returns NULL on error, or a pointer to a handle to be used in other calls.
 .I QIOfdopen
 performs the same function except that

@@ -73,11 +73,12 @@ entry to produce appropriate xbatch files (thanks to Karsten Leipold
   nase\e
     :*\e
     :Tc,Wnb\e
-.ds R$ <PREFIX specified with --prefix at configure>
+.ds R$ <PREFIX specified with \-\-prefix at configure>
     :\*(R$/batcher \e
-.ds R$ <_PATH_COMPRESS in config.data>
+.ds R$ <$ac_cv_path_COMPRESS in config.cache>
 .ds P$ <pathoutgoing in inn.conf>
-       -p "(\*(R$ > \*(P$/nase.\e$\e$)" \e
+       -p "(\*(R$ >\e
+       \*(P$/nase.\e$\e$)" \e
        nase.do.main
 .fi
 

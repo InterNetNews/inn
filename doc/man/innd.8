@@ -87,8 +87,8 @@ files into memory.
 It then opens the NNTP port to receive articles from remote sites (see 
 the ``\fB\-p\fP'' option),
 If
-.I <HAVE_UNIX_DOMAIN in config.data>
-is ``DO'',
+.I <HAVE_UNIX_DOMAIN_SOCKETS in include/config.h>
+is defined,
 a Unix-domain stream socket to receive articles from local processes
 such as
 .IR nnrpd (8)
@@ -97,8 +97,8 @@ and
 and a Unix-domain datagram socket for use by 
 .IR ctlinnd (8).
 If
-.I <HAVE_UNIX_DOMAIN in config.data>
-is ``DONT'', named pipes are used instead.
+.I <HAVE_UNIX_DOMAIN_SOCKETS in include/config.h>
+is not defined, named pipes are used instead.
 .IR Ctlinnd (8)
 is used to direct the server to perform certain actions.
 It also opens the
@@ -527,7 +527,7 @@ Whitespace in "Newsgroups" header -- "%s"
 .RE
 Where ``%s'', above, is replaced by more specific information.
 .PP
-Note that if an article is accepted, and <WANT_TRASH in config.data> is
+Note that if an article is accepted, and <wanttrash in inn.conf> is
 set to ``yes'' and none of the newsgroups are valid, it will be logged
 with two lines, a ``j'' line and a minus sign line.
 .PP
