@@ -17,12 +17,13 @@ all:		$(ALL)
 
 install:	
 	for i in ${ALL}; \
-		do $(SHELL) ../installit.sh $(OWNER) -m 0555 \
+		do $(LIBTOOL) ../installit.sh $(OWNER) -m 0555 \
 			-b .OLD $${i} $D${PATHBIN}/$${i}; \
 	done
 
 clobber clean:
 	rm -f *.o $(ALL)
+	rm -rf .libs
 	rm -f all install profiled
 
 tags ctags:	$(SOURCES)
@@ -32,28 +33,28 @@ profiled:
 	cp /dev/null profiled
 
 archive:	$(P) archive.o $(LIBNEWS) 
-	$(CC) $(LDFLAGS) -o $@ archive.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ archive.o $(LIBNEWS) $(LIBS)
 
 batcher:	$(P) batcher.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ batcher.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ batcher.o $(LIBNEWS) $(LIBS)
 
 buffchan:	$(P) buffchan.o map.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ buffchan.o map.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ buffchan.o map.o $(LIBNEWS) $(LIBS)
 
 cvtbatch:	$(P) cvtbatch.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ cvtbatch.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ cvtbatch.o $(LIBNEWS) $(LIBS)
 
 filechan:	$(P) filechan.o map.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ filechan.o map.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ filechan.o map.o $(LIBNEWS) $(LIBS)
 
 nntpget:	$(P) nntpget.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ nntpget.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ nntpget.o $(LIBNEWS) $(LIBS)
 
 innxmit:	$(P) innxmit.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ innxmit.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ innxmit.o $(LIBNEWS) $(LIBS)
 
 innxbatch:	$(P) innxbatch.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ innxbatch.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ innxbatch.o $(LIBNEWS) $(LIBS)
 
 sendxbatches:	$(P) sendxbatches.sh
 	rm -f $@
@@ -61,13 +62,13 @@ sendxbatches:	$(P) sendxbatches.sh
 	chmod +x $@
 
 overchan:	$(P) overchan.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ overchan.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ overchan.o $(LIBNEWS) $(LIBS)
 
 crosspost:	$(P) crosspost.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ crosspost.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ crosspost.o $(LIBNEWS) $(LIBS)
 
 actsync:	$(P) actsync.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ actsync.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ actsync.o $(LIBNEWS) $(LIBS)
 
 actsyncd:	$(P) actsyncd.sh
 	rm -f $@
@@ -80,14 +81,14 @@ actmerge: 	$(P) actmerge.sh
 	chmod +x $@
 
 shlock:		$(P) shlock.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ shlock.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ shlock.o $(LIBNEWS) $(LIBS)
 
 shrinkfile:	$(P) shrinkfile.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ shrinkfile.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ shrinkfile.o $(LIBNEWS) $(LIBS)
 
 
 $(LIBNEWS):
-	(cd ../lib ; $(MAKE) install)
+	(cd ../lib ; $(MAKE) )
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES)

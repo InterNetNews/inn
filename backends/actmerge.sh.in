@@ -27,7 +27,7 @@
 # preset vars
 #
 
-. @ETCDIR@/innshellvars
+. @LIBDIR@/innshellvars
 
 # Our lock file
 LOCK=${LOCKS}/LOCK.actmerge

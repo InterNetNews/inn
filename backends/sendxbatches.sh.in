@@ -14,7 +14,7 @@ then
 	exit 1
 fi
 
-. @ETCDIR@/innshellvars
+. @LIBDIR@/innshellvars
 
 LOCK=${LOCKS}/LOCK.sendxbatches
 shlock -p $$ -f ${LOCK}
