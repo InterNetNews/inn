@@ -329,7 +329,10 @@ struct conf_rec conf_defaults[] = {
     { _CONF_CNFSCHECKFUDGESIZE,			"",	3, 1 },
 #define _CONF_NICENNRPD				"nicennrpd"
 #define CONF_VAR_NICENNRPD			102
-    { _CONF_NICENNRPD,				"",     2, 1 }
+    { _CONF_NICENNRPD,				"",     2, 1 },
+#define _CONF_RLIMITNOFILE			"rlimitnofile"
+#define CONF_VAR_RLIMITNOFILE			103
+    { _CONF_RLIMITNOFILE,			"",     2, 1 }
 };
-#define MAX_CONF_VAR 103
+#define MAX_CONF_VAR 104
 

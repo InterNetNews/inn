@@ -174,6 +174,7 @@ struct conf_vars {
 	int noreader;
 	int nnrpdauthsender;
 	long cnfscheckfudgesize;
+	int rlimitnofile;
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;
