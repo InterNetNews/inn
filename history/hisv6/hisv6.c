@@ -1044,7 +1044,7 @@ hisv6_traverse(struct hisv6 *h, struct hisv6_walkstate *cookie,
 **  parameters the user callback expects
 **/
 static bool
-hisv6_traversecb(struct hisv6 *h, void *cookie, const HASH *hash,
+hisv6_traversecb(struct hisv6 *h UNUSED, void *cookie, const HASH *hash UNUSED,
 		 time_t arrived, time_t posted, time_t expires,
 		 const TOKEN *token)
 {

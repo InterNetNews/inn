@@ -102,42 +102,42 @@
 
 /* Provide stub functions if we don't have db */
 
-bool ovdb_open(int mode)
+bool ovdb_open(int mode UNUSED)
 {
     syslog(L_FATAL, "OVDB: ovdb support not enabled");
     return FALSE;
 }
 
-bool ovdb_groupstats(char *group, int *lo, int *hi, int *count, int *flag)
+bool ovdb_groupstats(char *group UNUSED, int *lo UNUSED, int *hi UNUSED, int *count UNUSED, int *flag UNUSED)
 { return FALSE; }
 
-bool ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
+bool ovdb_groupadd(char *group UNUSED, ARTNUM lo UNUSED, ARTNUM hi UNUSED, char *flag UNUSED)
 { return FALSE; }
 
-bool ovdb_groupdel(char *group)
+bool ovdb_groupdel(char *group UNUSED)
 { return FALSE; }
 
-bool ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires)
+bool ovdb_add(char *group UNUSED, ARTNUM artnum UNUSED, TOKEN token UNUSED, char *data UNUSED, int len UNUSED, time_t arrived UNUSED, time_t expires UNUSED)
 { return FALSE; }
 
-bool ovdb_cancel(TOKEN token)
+bool ovdb_cancel(TOKEN token UNUSED)
 { return FALSE; }
 
-void *ovdb_opensearch(char *group, int low, int high)
+void *ovdb_opensearch(char *group UNUSED, int low UNUSED, int high UNUSED)
 { return NULL; }
 
-bool ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived)
+bool ovdb_search(void *handle UNUSED, ARTNUM *artnum UNUSED, char **data UNUSED, int *len UNUSED, TOKEN *token UNUSED, time_t *arrived UNUSED)
 { return FALSE; }
 
-void ovdb_closesearch(void *handle) { }
+void ovdb_closesearch(void *handle UNUSED) { }
 
-bool ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
+bool ovdb_getartinfo(char *group UNUSED, ARTNUM artnum UNUSED, TOKEN *token UNUSED)
 { return FALSE; }
 
-bool ovdb_expiregroup(char *group, int *lo, struct history *h)
+bool ovdb_expiregroup(char *group UNUSED, int *lo UNUSED, struct history *h UNUSED)
 { return FALSE; }
 
-bool ovdb_ctl(OVCTLTYPE type, void *val)
+bool ovdb_ctl(OVCTLTYPE type UNUSED, void *val UNUSED)
 { return FALSE; }
 
 void ovdb_close(void) { }
