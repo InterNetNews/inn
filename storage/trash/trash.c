@@ -21,7 +21,7 @@ TOKEN trash_store(const ARTHANDLE article, STORAGECLASS class) {
     TOKEN               token;
 
     if (article.token == (TOKEN *)NULL)
-	memset(&token.token, '\0', sizeof(token));
+	memset(&token, '\0', sizeof(token));
     else {
 	memcpy(&token, article.token, sizeof(token));
 	memset(&token.token, '\0', STORAGE_TOKEN_LENGTH);
@@ -36,7 +36,7 @@ ARTHANDLE *trash_retrieve(const TOKEN token, RETRTYPE amount) {
 	SMseterror(SMERR_INTERNAL, NULL);
 	return (ARTHANDLE *)NULL;
     }
-    SMseterror(SMERR_UNDEFINED, NULL);
+    SMseterror(SMERR_NOENT, NULL);
     return (ARTHANDLE *)NULL;
 }
 
@@ -44,7 +44,7 @@ void trash_freearticle(ARTHANDLE *article) {
 }
 
 BOOL trash_cancel(TOKEN token) {
-    SMseterror(SMERR_UNDEFINED, NULL);
+    SMseterror(SMERR_NOENT, NULL);
     return FALSE;
 }
 
