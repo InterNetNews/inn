@@ -216,6 +216,9 @@ Documentation Projects:
   1036, preferrably in a format that could be suitable for future
   inclusion into new revisions of the RFCs.
 
+* Audit readers.conf.5 against perm.c for missing options (include at
+  least is missing from the documentation)
+
 
 Code Cleanup Projects:
 
