@@ -192,6 +192,7 @@ doc/man/libauth.3                     Manpage for authprogs utilty routines
 doc/man/libinn.3                      Manpage for INN library routines
 doc/man/libinnhist.3                  Manpage for history API library routines
 doc/man/libstorage.3                  Manpage for storage API library routines
+doc/man/list.3                        Manpage for list routines
 doc/man/mailpost.8                    Manpage for mailpost frontend
 doc/man/makeactive.8                  Manpage for makeactive
 doc/man/makedbz.8                     Manpage for makedbz
@@ -272,6 +273,7 @@ doc/pod/innupgrade.pod                Master file for innupgrade.8
 doc/pod/install.pod                   Master file for INSTALL
 doc/pod/libauth.pod                   Master file for libauth.3
 doc/pod/libinnhist.pod                Master file for libinnhist.3
+doc/pod/list.pod                      Master file for list.3
 doc/pod/mailpost.pod                  Master file for mailpost.8
 doc/pod/makehistory.pod               Master file for makehistory.8
 doc/pod/news.pod                      Master file for NEWS
@@ -355,6 +357,7 @@ include/inn/defines.h                 Portable defs for installed headers
 include/inn/hashtab.h                 Header file for generic hash table
 include/inn/history.h                 Header file for the history API
 include/inn/innconf.h                 Header file for the innconf struct
+include/inn/list.h                    Header file for list routines
 include/inn/md5.h                     Header file for MD5 digests
 include/inn/messages.h                Header file for message functions
 include/inn/mmap.h                    Header file for mmap() functions
@@ -460,6 +463,7 @@ lib/inet_aton.c                       Extra source for inet_aton routine
 lib/inet_ntoa.c                       Convert inaddr to string (BSD)
 lib/innconf.c                         Parsing and manipulation of inn.conf
 lib/inndcomm.c                        Library routines to talk to innd
+lib/list.c                            List routines
 lib/localopen.c                       Open a local NNTP connection
 lib/lockfile.c                        Try to lock a file descriptor
 lib/makedir.c                         Make directory recursively
@@ -690,6 +694,7 @@ tests/lib/hstrerror-t.c               Tests for lib/hstrerror.c
 tests/lib/inet_aton-t.c               Tests for lib/inet_aton.c
 tests/lib/inet_ntoa-t.c               Tests for lib/inet_ntoa.c
 tests/lib/innconf-t.c                 Tests for lib/innconf.c
+tests/lib/list-t.c                    Tests for lib/list.c
 tests/lib/md5-t.c                     Tests for lib/md5.c
 tests/lib/memcmp-t.c                  Tests for lib/memcmp.c
 tests/lib/messages-t.c                Tests for lib/messages.c

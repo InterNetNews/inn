@@ -1,0 +1,83 @@
+=head1 NAME
+
+list - list routines
+
+=head1 SYNOPSIS
+
+B<#include E<lt>inn/list.hE<gt>>
+
+struct node {
+    struct node *succ;
+    struct node *pred;
+};
+
+struct list {
+    struct node *head;
+    struct node *tail;
+    struct node *tailpred;
+};
+
+B<void list_new(struct list *>I<list>B<);>
+
+B<struct node *list_addhead(struct list *>I<list>B<, struct node *>I<node>B<);>
+
+B<struct node *list_addtail(struct list *>I<list>B<, struct node *>I<node>B<);>
+
+B<struct node *list_head(struct list *>I<list>B<);>
+
+B<struct node *list_tail(struct list *>I<list>B<);>
+
+B<struct node *list_succ(struct node *>I<node>B<);>
+
+B<struct node *list_pred(struct node *>I<node>B<);>
+
+B<struct node *list_remhead(struct list *>I<list>B<);>
+
+B<struct node *list_remtail(struct list *>I<list>B<);>
+
+B<struct node *list_remove(struct node *>I<node>B<);>
+
+B<struct node *list_insert(struct list *>I<list>B<, struct node *>I<node>B<, struct node *>I<pred>B<);>
+
+B<bool list_isempty(struct list *>I<list>B<);>
+
+=head1 DESCRIPTION
+
+B<list_new> initialises the list header I<list> so as to create an
+empty list.
+
+B<list_addhead> adds I<node> to the head of I<list>, returning the node
+just added.
+
+B<list_addtail> adds I<node> to the tail of I<list>, returning the node
+just added.
+
+B<list_head> returns a pointer to the the node at the head of I<list>
+or B<NULL> if the list is empty.
+
+B<list_tail> returns a pointer to the the node at the tail of I<list>
+or B<NULL> if the list is empty.
+
+B<list_succ> returns the next (successor) node on the list after
+I<node> or B<NULL> if I<node> was the final node.
+
+B<list_pred> returns the previous (predecessor) node on the list before
+I<node> or B<NULL> if I<node> was the first node.
+
+B<list_remhead> removes the first node from I<list> and returns it to
+the caller. If the list is empty B<NULL> is returned.
+
+B<list_remtail> removes the last node from I<list> and returns it to
+the caller. If the list is empty B<NULL> is returned.
+
+B<list_remove> removes I<node> from the list it is on and returns it
+to the caller.
+
+B<list_insert> inserts I<node> onto I<list> after the node I<pred>. If
+I<pred> is B<NULL> then I<node> is added to the head of I<list>.
+
+=head1 HISTORY
+
+Written by Alex Kiernan <alex.kiernan@thus.net> for InterNetNews 2.4.0.
+
+$Id$
