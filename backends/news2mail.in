@@ -79,7 +79,7 @@ while ( <STDIN> ) {
 	my @good = grep {  defined $maddr{$_} } @addrs;
 	my @bad  = grep { !defined $maddr{$_} } @addrs;
 
-	if (! @addrs) {
+	if (! @good) {
 		syslog('notice', "unknown listname $_");
 		next;
 		}
@@ -87,7 +87,7 @@ while ( <STDIN> ) {
 	if (@bad) {
 		syslog('info', 'skipping unknown lists: ', join(' ', @bad));
 		}
-	mailto($token, $lnames, @maddr{@addrs});
+	mailto($token, $lnames, @maddr{@good});
 	}
 
 syslog ("info", "end") ;
