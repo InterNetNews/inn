@@ -10,7 +10,7 @@ INSTDIRS      = $(PATHNEWS) $(PATHBIN) $(PATHAUTH) $(PATHAUTHRESOLV) \
 		$(PATHMAN) $(MAN1) $(MAN3) $(MAN5) $(MAN8) $(PATHSPOOL) \
 		$(PATHTMP) $(PATHARCHIVE) $(PATHARTICLES) $(PATHINCOMING) \
 		$(PATHINBAD) $(PATHTAPE) $(PATHOVERVIEW) $(PATHOUTGOING) \
-		$(PATHLOG) $(PATHLOG)/OLD
+		$(PATHLOG) $(PATHLOG)/OLD $(PATHINCLUDE)
 
 ##  LIBDIRS are built before PROGDIRS, make update runs in all UPDATEDIRS,
 ##  and make install runs in all ALLDIRS.  Nothing runs in test except the
