@@ -95,6 +95,16 @@ If MIME headers are being added, this parameter specifies the value of
 the Content-Transfer-Encoding header.
 The default value is ``7bit.''
 .PP
+One parameter is used only by
+.I innd.
+.TP
+.I hiscachesize
+If this is set to a non-zero number then history file lookups are cached.
+This number is the amount of memory to dedicate to the lookup cache in 
+kilobytes.  It is generally useful to have memory allocated to history
+cache if dbz mmaping is turned on.
+
+.PP
 Note that this file can be identical on all machines in an organization.
 .SH EXAMPLE
 .RS
