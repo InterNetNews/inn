@@ -6,7 +6,6 @@
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
-#include <syslog.h>
 #include <time.h>
 
 #include "conffile.h"
@@ -388,7 +387,7 @@ SMreadconfig(void)
     f = CONFfopen(path);
     if (f == NULL) {
 	SMseterror(SMERR_UNDEFINED, NULL);
-        syswarn("SM cant open %s", path);
+        syswarn("SM: cant open %s", path);
         free(path);
 	return false;
     }
@@ -399,18 +398,18 @@ SMreadconfig(void)
 	if (!inbrace) {
 	    if (tok->type != SMmethod) {
 		SMseterror(SMERR_CONFIG, "Expected 'method' keyword");
-		syslog(L_ERROR, "SM expected 'method' keyword, line %d", f->lineno);
+		warn("SM: expected 'method' keyword, line %d", f->lineno);
 		return false;
 	    }
 	    if ((tok = CONFgettoken(0, f)) == NULL) {
 		SMseterror(SMERR_CONFIG, "Expected method name");
-		syslog(L_ERROR, "SM expected method name, line %d", f->lineno);
+		warn("SM: expected method name, line %d", f->lineno);
 		return false;
 	    }
 	    method = xstrdup(tok->name);
 	    if ((tok = CONFgettoken(smtoks, f)) == NULL || tok->type != SMlbrace) {
 		SMseterror(SMERR_CONFIG, "Expected '{'");
-		syslog(L_ERROR, "SM Expected '{', line %d", f->lineno);
+		warn("SM: Expected '{', line %d", f->lineno);
 		return false;
 	    }
 	    inbrace = 1;
@@ -431,7 +430,7 @@ SMreadconfig(void)
 	    else {
 		if ((tok = CONFgettoken(0, f)) == NULL) {
 		    SMseterror(SMERR_CONFIG, "Keyword with no value");
-		    syslog(L_ERROR, "SM keyword with no value, line %d", f->lineno);
+		    warn("SM: keyword with no value, line %d", f->lineno);
 		    return false;
 		}
 		p = tok->name;
@@ -471,8 +470,10 @@ SMreadconfig(void)
 			exactmatch = true;
 		    break;
 		  default:
-		    SMseterror(SMERR_CONFIG, "Unknown keyword in method declaration");
-		    syslog(L_ERROR, "SM Unknown keyword in method declaration, line %d: %s", f->lineno, tok->name);
+		    SMseterror(SMERR_CONFIG,
+                               "Unknown keyword in method declaration");
+		    warn("SM: Unknown keyword in method declaration, line %d:"
+                         " %s", f->lineno, tok->name);
 		    free(method);
 		    return false;
 		    break;
@@ -492,14 +493,15 @@ SMreadconfig(void)
 	    }
 	    if (sub->type == TOKEN_EMPTY) {
 		SMseterror(SMERR_CONFIG, "Invalid storage method name");
-		syslog(L_ERROR, "SM no configured storage methods are named '%s'", method);
+		warn("SM: no configured storage methods are named '%s'",
+                     method);
 		free(options);
 		free(sub);
 		return false;
 	    }
 	    if (!pattern) {
 		SMseterror(SMERR_CONFIG, "pattern not defined");
-		syslog(L_ERROR, "SM no pattern defined");
+                warn("SM: no pattern defined");
 		free(options);
 		free(sub);
 		return false;
@@ -580,7 +582,8 @@ bool SMinit(void) {
 		method_data[i].initialized = INIT_FAIL;
 		method_data[i].selfexpire = false;
 		method_data[i].expensivestat = true;
-		syslog(L_ERROR, "SM storage method '%s' failed initialization", storage_methods[i].name);
+                warn("SM: storage method '%s' failed initialization",
+                     storage_methods[i].name);
 		allok = false;
 	    }
 	}
@@ -589,8 +592,9 @@ bool SMinit(void) {
     if (!allok) {
 	SMshutdown();
 	Initialized = false;
-	SMseterror(SMERR_UNDEFINED, "one or more storage methods failed initialization");
-	syslog(L_ERROR, "SM one or more storage methods failed initialization");
+	SMseterror(SMERR_UNDEFINED,
+                   "one or more storage methods failed initialization");
+        warn("SM: one or more storage methods failed initialization");
 	return false;
     }
     if (!once && atexit(SMshutdown) < 0) {
@@ -621,14 +625,15 @@ static bool InitMethod(STORAGETYPE method) {
 
     if (!method_data[method].configured) {
 	method_data[method].initialized = INIT_FAIL;
-	SMseterror(SMERR_UNDEFINED, "storage method is not configured.");
+	SMseterror(SMERR_UNDEFINED, "storage method is not configured");
 	return false;
     }
     if (!storage_methods[method].init(&smattr)) {
 	method_data[method].initialized = INIT_FAIL;
 	method_data[method].selfexpire = false;
 	method_data[method].expensivestat = true;
-	SMseterror(SMERR_UNDEFINED, "Could not initialize storage method late.");
+	SMseterror(SMERR_UNDEFINED,
+                   "Could not initialize storage method late");
 	return false;
     }
     method_data[method].initialized = INIT_DONE;
@@ -728,8 +733,8 @@ ARTHANDLE *SMretrieve(const TOKEN token, const RETRTYPE amount) {
 	return NULL;
     }
     if (method_data[typetoindex[token.type]].initialized == INIT_NO && !InitMethod(typetoindex[token.type])) {
-	syslog(L_ERROR, "SM could not find token type or method was not initialized (%d)",
-	       token.type);
+        warn("SM: could not find token type or method was not initialized"
+             " (%d)", token.type);
 	SMseterror(SMERR_UNINIT, NULL);
 	return NULL;
     }
@@ -778,7 +783,7 @@ void SMfreearticle(ARTHANDLE *article) {
 	return;
     }
     if (method_data[typetoindex[article->type]].initialized == INIT_NO && !InitMethod(typetoindex[article->type])) {
-	syslog(L_ERROR, "SM can't free article with uninitialized method");
+	warn("SM: can't free article with uninitialized method");
 	return;
     }
     storage_methods[typetoindex[article->type]].freearticle(article);
@@ -795,7 +800,7 @@ bool SMcancel(TOKEN token) {
     }
     if (method_data[typetoindex[token.type]].initialized == INIT_NO && !InitMethod(typetoindex[token.type])) {
 	SMseterror(SMERR_UNINIT, NULL);
-	syslog(L_ERROR, "SM can't cancel article with uninitialized method");
+	warn("SM: can't cancel article with uninitialized method");
 	return false;
     }
     return storage_methods[typetoindex[token.type]].cancel(token);
@@ -815,7 +820,7 @@ bool SMprobe(PROBETYPE type, TOKEN *token, void *value) {
 	}
 	if (method_data[typetoindex[token->type]].initialized == INIT_NO && !InitMethod(typetoindex[token->type])) {
 	    SMseterror(SMERR_UNINIT, NULL);
-	    syslog(L_ERROR, "SM can't cancel article with uninitialized method");
+	    warn("SM: can't probe article with uninitialized method");
 	    return false;
 	}
 	if ((ann = (struct artngnum *)value) == NULL)
@@ -863,7 +868,8 @@ bool SMflushcacheddata(FLUSHTYPE type) {
     for (i = 0; i < NUM_STORAGE_METHODS; i++) {
 	if (method_data[i].initialized == INIT_DONE &&
 	    !storage_methods[i].flushcacheddata(type))
-	    syslog(L_ERROR, "SM can't flush cached data method '%s'", storage_methods[i].name);
+	    warn("SM: can't flush cached data method '%s'",
+                 storage_methods[i].name);
     }
     return true;
 }
@@ -874,7 +880,7 @@ void SMprintfiles(FILE *file, TOKEN token, char **xref, int ngroups) {
     if (method_data[typetoindex[token.type]].initialized == INIT_NO
         && !InitMethod(typetoindex[token.type])) {
 	SMseterror(SMERR_UNINIT, NULL);
-	syslog(L_ERROR, "SM can't print files for article with uninitialized method");
+	warn("SM: can't print files for article with uninitialized method");
 	return;
     }
     storage_methods[typetoindex[token.type]].printfiles(file, token, xref, ngroups);
