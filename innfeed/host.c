@@ -475,7 +475,7 @@ int hostConfigLoadCbk (void *data)
  * or from compiled defaults
  */
 
-HostParams newHostParams(HostParams p)
+static HostParams newHostParams(HostParams p)
 {
   HostParams params;
 
@@ -526,7 +526,7 @@ HostParams newHostParams(HostParams p)
  * Free up a param structure
  */
 
-void freeHostParams(HostParams params)
+static void freeHostParams(HostParams params)
 {
   ASSERT(params != NULL);
   if (params->peerName)
@@ -675,9 +675,9 @@ void configHosts (bool talkSelf)
 }
 
 
-void hostAlterMaxConnections(Host host,
-			     unsigned int absMaxCxns, unsigned int maxCxns,
-			     bool makeConnect)
+static void
+hostAlterMaxConnections(Host host, unsigned int absMaxCxns,
+                        unsigned int maxCxns, bool makeConnect)
 {
   unsigned int lAbsMaxCxns;
   unsigned int i;
@@ -954,7 +954,7 @@ Host newDefaultHost (InnListener listener,
  */
 
 static bool inited = false ;
-Host newHost (InnListener listener, HostParams p)
+static Host newHost (InnListener listener, HostParams p)
 {
   Host nh ; 
 

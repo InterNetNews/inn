@@ -2610,7 +2610,7 @@ static void writeTimeoutCbk (TimeoutId id, void *data)
 /*
  * Called by the EndPoint class when the timer goes off
  */
-void reopenTimeoutCbk (TimeoutId id, void *data)
+static void reopenTimeoutCbk (TimeoutId id, void *data)
 {
   Connection cxn = (Connection) data ;
 
