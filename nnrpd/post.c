@@ -333,9 +333,6 @@ ProcessHeaders(linecount, idbuff)
     static char		tracebuff[SMBUF];
     static char 	complaintsbuff[SMBUF];
     static char		sendbuff[SMBUF];
-    static char		mimeversion[SMBUF];
-    static char		mimetype[SMBUF];
-    static char		mimeencoding[SMBUF];
     register HEADER	*hp;
     register char	*p;
     time_t		t;
@@ -449,29 +446,6 @@ ProcessHeaders(linecount, idbuff)
     /* Keywords; left alone. */
     /* Summary; left alone. */
     /* Approved; left alone. */
-
-    /* MIME headers. */
-    if (HDR(_mimeversion) == NULL
-     && (p = innconf->mimeversion) != NULL) {
-	(void)strcpy(mimeversion, p);
-	HDR(_mimeversion) = mimeversion;
-
-	/* Set Content-Type */
-	if (HDR(_contenttype) == NULL) {
-	    if ((p = innconf->mimecontenttype) == NULL)
-		return "Can't get \"Content-Type\" header";
-	    (void)strcpy(mimetype, p);
-	    HDR(_contenttype) = mimetype;
-	}
-
-	/* Set Content-Transfer-Encoding */
-	if (HDR(_contenttransferencoding) == NULL) {
-	    if ((p = innconf->mimeencoding) == NULL)
-		return "Can't get \"Content-Transfer-Encoding\" header";
-	    (void)strcpy(mimeencoding, p);
-	    HDR(_contenttransferencoding) = mimeencoding;
-	}
-    }
 
     /* Set Lines */
     (void)sprintf(linebuff, "%d", linecount);
