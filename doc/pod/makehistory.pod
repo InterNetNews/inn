@@ -55,11 +55,6 @@ headers in them.
 Compute Bytes headers which is used for overview data.  This option is valid
 only if B<-O> flag is specified and F<overview.fmt> includes C<Bytes:>.
 
-=item B<-f> I<filename>
-
-Rather than writing directly to I<pathdb>/history, instead write to
-I<filename>.
-
 =item B<-F>
 
 Fork a separate process to flush overview data to disk rather than doing
@@ -69,6 +64,11 @@ is being written to the overview database.  The disadvantage is that up to
 twice as much temporary disk space will be used for the generated overview
 data.  This option only makes sense in combination with B<-O>.  With
 C<buffindexed>, the C<overchan> program is invoked to write overview.
+
+=item B<-f> I<filename>
+
+Rather than writing directly to I<pathdb>/history, instead write to
+I<filename>.
 
 =item B<-I>
 
@@ -92,13 +92,6 @@ specify the temporary storage location.  This option has no effect
 with C<buffindexed>, because C<buffindexed> does not need sorted
 overview and no batching is done.
 
-=item B<-s> I<size>
-
-Size the history database for approximately I<size> pairs.  Accurately
-specifying the size is an optimization that will create a more
-efficient database.  (The size should be the estimated eventual size
-of the F<history> file, typically the size of the old file, in lines.)
-
 =item B<-O>
 
 Create the overview database as well as the history file.  Overview
@@ -106,6 +99,13 @@ information is only required if the server supports readers; it is not
 needed for a transit-only server (see I<enableoverview> in inn.conf(5)).
 If you are using the C<buffindexed> overview storage method, erase all of
 your overview buffers before running B<makehistory> with B<-O>.
+
+=item B<-s> I<size>
+
+Size the history database for approximately I<size> pairs.  Accurately
+specifying the size is an optimization that will create a more
+efficient database.  (The size should be the estimated eventual size
+of the F<history> file, typically the size of the old file, in lines.)
 
 =item B<-T> I<tmpdir>
 
