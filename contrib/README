@@ -17,6 +17,10 @@ the binary to somewhere on your PATH to use it.  For details on what each
 program does, see below, as well as the comments at the beginning of each
 file (if any).
 
+In addition to these files, also see the contrib section of the INN FTP
+site at <ftp://ftp.isc.org/isc/inn/contrib/> for more software designed
+to work with INN.
+
                         -------------------------
 
 archivegz
@@ -95,12 +99,6 @@ ninpaths
     up give it a try.  See ninpaths/README for more information; just
     typing make in that directory should be sufficient to build the
     software.
-
-pathinfo
-
-    Scans the Path headers of articles and produces various information
-    and statistics based on what it finds.  There are various configurable
-    parameters at the beginning of the script.
 
 pullart
 
