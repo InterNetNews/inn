@@ -452,8 +452,8 @@ If set, restricts the overview data stored by \s-1INN\s0 to only the newsgroups
 matching this comma-separated list of wildmat expressions.  Newsgroups not
 matching this setting may not be readable, and if \fIgroupbaseexpiry\fR is
 set to true and the storage method for these newsgroups does not have
-self-expire functionality, storing overview data will fail.  This is a
-boolean value and the default is false.
+self-expire functionality, storing overview data will fail.  The default is
+unset.
 .Ip "\fIovmethod\fR" 4
 .IX Item "ovmethod"
 Which overview storage method to use.  Currently supported values are
