@@ -13,7 +13,6 @@
 /* Global and initialized; to work around SunOS -Bstatic bug, sigh. */
 STATIC char		ConfigBuff[SMBUF] = "";
 int		format = 0;
-char *innconffile = _PATH_CONFIG;
 
 int isnum(char *v)
 {

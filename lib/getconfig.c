@@ -27,6 +27,7 @@ STATIC char		ConfigBuff[SMBUF] = "";
 */
 
 struct	conf_vars *innconf = NULL;
+char *innconffile = _PATH_CONFIG;
 
 char *GetFileConfigValue(char *value)
 {
@@ -36,7 +37,7 @@ char *GetFileConfigValue(char *value)
     char	        c;
 
     /* Read the config file. */
-    if ((F = fopen(_PATH_CONFIG, "r")) != NULL) {
+    if ((F = fopen(innconffile, "r")) != NULL) {
 	c = *value;
 	i = strlen(value);
 	while (fgets(ConfigBuff, sizeof ConfigBuff, F) != NULL) {
