@@ -5,18 +5,16 @@ include ../Makefile.global
 top	      = ..
 CFLAGS        = $(GCFLAGS)
 
-ALL           = auth_smb ckpasswd domain ident pwcheck radius
+ALL           = auth_smb ckpasswd domain ident radius
 
 LIBSMB	      = smbval/smbvalid.a
 
 LIBAUTH       = libauth.o
 
-SOURCES       = auth_smb.c ckpasswd.c domain.c ident.c libauth.c pwcheck.c \
-		radius.c
+SOURCES       = auth_smb.c ckpasswd.c domain.c ident.c libauth.c radius.c
 
 INSTALLED     = $(D)$(PATHAUTHPASSWD)/auth_smb \
 		$(D)$(PATHAUTHPASSWD)/ckpasswd \
-		$(D)$(PATHAUTHPASSWD)/pwcheck \
 		$(D)$(PATHAUTHPASSWD)/radius \
 		$(D)$(PATHAUTHRESOLV)/domain \
 		$(D)$(PATHAUTHRESOLV)/ident
@@ -48,7 +46,6 @@ auth_smb:	auth_smb.o  $(LIBSMB)	; $(LINK) auth_smb.o $(SMB_LIBS)
 ckpasswd:	ckpasswd.o  $(LIBAUTH)	; $(LINK) ckpasswd.o $(CK_LIBS)
 domain:		domain.o    $(LIBINN)	; $(LINK) domain.o   $(NEWSLIBS)
 ident:		ident.o     $(LIBAUTH)	; $(LINK) ident.o    $(AUTHLIBS)
-pwcheck:	pwcheck.o   $(LIBAUTH)	; $(LINK) pwcheck.o  $(AUTHLIBS)
 radius:		radius.o    $(AUTH_INN)	; $(LINK) radius.o   $(AUTHLIBS)
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
@@ -62,7 +59,6 @@ $(LIBAUTH): 	libauth.h libauth.c
 install: $(INSTALLED)
 
 $(D)$(PATHAUTHPASSWD)/ckpasswd:		ckpasswd	; $(LI_XPUB) $? $@
-$(D)$(PATHAUTHPASSWD)/pwcheck:		pwcheck		; $(LI_XPUB) $? $@
 $(D)$(PATHAUTHPASSWD)/radius:		radius		; $(LI_XPUB) $? $@
 $(D)$(PATHAUTHPASSWD)/auth_smb:		auth_smb	; $(LI_XPUB) $? $@
 $(D)$(PATHAUTHRESOLV)/domain:		domain		; $(LI_XPUB) $? $@
@@ -76,23 +72,22 @@ depend: Makefile $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 auth_smb.o: auth_smb.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h smbval/valid.h
-ckpasswd.o: ckpasswd.c libauth.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
+ ../include/clibrary.h ../include/inn/messages.h libauth.h \
+ ../include/portable/socket.h smbval/valid.h
+ckpasswd.o: ckpasswd.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/messages.h ../include/inn/qio.h \
+ ../include/inn/vector.h ../include/libinn.h libauth.h \
  ../include/portable/socket.h
 domain.o: domain.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h ../include/macros.h
-ident.o: ident.c libauth.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
- ../include/portable/socket.h ../include/libinn.h ../include/macros.h
-libauth.o: libauth.c libauth.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
+ ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h
+ident.o: ident.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h \
+ ../include/macros.h libauth.h ../include/portable/socket.h
+libauth.o: libauth.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h libauth.h \
  ../include/portable/socket.h
-pwcheck.o: pwcheck.c libauth.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
+radius.o: radius.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/portable/time.h ../include/inn/md5.h \
+ ../include/inn/messages.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/conffile.h libauth.h \
  ../include/portable/socket.h
-radius.o: radius.c libauth.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
- ../include/portable/socket.h ../include/portable/time.h \
- ../include/inn/md5.h ../include/libinn.h ../include/macros.h \
- ../include/nntp.h ../include/paths.h ../include/conffile.h

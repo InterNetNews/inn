@@ -41,10 +41,6 @@ more permissive ones.  Those licenses, if present, will be noted
 prominantly at the top of those source files.  Specifically (but possibly
 not comprehensively):
 
-   authprogs/pwcheck.c may only be used for non-commercial purposes and by
-   Internet Service Providers and other entities for internal purposes.
-   See the beginning of the file for full details.
-
    authprogs/smbval/* and control/perl-nocem.in are under the GNU General
    Public License.  See doc/GPL for a copy of this license.
 

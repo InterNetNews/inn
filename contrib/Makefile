@@ -10,8 +10,8 @@ top           = ..
 CFLAGS        = $(GCFLAGS)
 
 ALL	      = archivegz backupfeed cleannewsgroups delayer findreadgroups \
-		makeexpctl makestorconf mlockfile newsresp pathinfo pullart \
-		respool showtoken stathist thdexpire tunefeed
+		makeexpctl makestorconf mlockfile newsresp pullart respool \
+		showtoken stathist thdexpire tunefeed
 
 all: $(ALL)
 
@@ -43,7 +43,6 @@ delayer:         delayer.in         $(FIX) ; $(FIX) -i delayer.in
 findreadgroups:  findreadgroups.in  $(FIX) ; $(FIX) findreadgroups.in
 makeexpctl:      makeexpctl.in      $(FIX) ; $(FIX) makeexpctl.in
 makestorconf:    makestorconf.in    $(FIX) ; $(FIX) makestorconf.in
-pathinfo:        pathinfo.in        $(FIX) ; $(FIX) -i pathinfo.in
 showtoken:       showtoken.in       $(FIX) ; $(FIX) -i showtoken.in
 stathist:        stathist.in        $(FIX) ; $(FIX) -i stathist.in
 thdexpire:       thdexpire.in       $(FIX) ; $(FIX) thdexpire.in

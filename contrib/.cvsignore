@@ -8,7 +8,6 @@ makeexpctl
 makestorconf
 mlockfile
 newsresp
-pathinfo
 pullart
 respool
 showtoken

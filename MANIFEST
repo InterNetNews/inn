@@ -21,7 +21,6 @@ authprogs/ident.c                     Get username from ident
 authprogs/libauth.c                   Library for talking to nnrpd
 authprogs/libauth.h                   Interface for libauth
 authprogs/pam.conf.example            Example pam.conf file for ckpasswd
-authprogs/pwcheck.c                   Check password through a socket
 authprogs/radius.c                    Get username from RADIUS server
 authprogs/smbval                      The smb auth libraries (Directory)
 authprogs/smbval/Makefile             Libraries for smb auth
@@ -98,7 +97,6 @@ contrib/ninpaths/Makefile             Makefile for ninpaths
 contrib/ninpaths/README               Documentation for ninpaths
 contrib/ninpaths/ninpaths.c           Statistics accumulation program
 contrib/ninpaths/sendinpaths.in       Script to submit accumulated data
-contrib/pathinfo.in                   Scan news headers for information
 contrib/pullart.c                     Recover articles from cyclic buffers
 contrib/reset-cnfs.c                  Reset the state parts of a CNFS buffer
 contrib/respool.c                     Respool articles in the storage manager
