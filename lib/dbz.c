@@ -219,7 +219,11 @@ static dbzconfig conf;
 static dbzoptions options = {
     FALSE,		/* write through off */
     INCORE_NO,		/* index/pag from disk */
+#ifdef HAVE_MMAP
     INCORE_MMAP,	/* exists mmap'ed. ignored in tagged hash mode */
+#else
+    INCORE_NO,		/* exists from disk. ignored in tagged hash mode */
+#endif
     TRUE		/* non-blocking writes */
 };
 
@@ -698,9 +702,13 @@ static void closehashtable(hash_table *tab) {
     if (tab->incore == INCORE_MEM)
 	DISPOSE(tab->core);
     if (tab->incore == INCORE_MMAP) {
+#if defined(HAVE_MMAP)
 	if (munmap((MMAP_PTR) tab->core, (int)conf.tsize * tab->reclen) == -1) {
 	    DEBUG(("closehashtable: munmap failed\n"));
 	}
+#else
+	DEBUG(("closehashtable: can't mmap files\n"));
+#endif
     }
 }
 
@@ -1069,7 +1077,7 @@ BOOL dbzfetch(const HASH key, void *ivalue) {
     /* we didn't find it */
     DEBUG(("fetch: failed\n"));
     prevp = &srch;			/* remember where we stopped */
-    return NULL;
+    return FALSE;
 #endif
 }
 
@@ -1290,6 +1298,7 @@ static BOOL getcore(hash_table *tab) {
     struct stat st;
 
     if (tab->incore == INCORE_MMAP) {
+#if defined(HAVE_MMAP)
 	if (fstat(tab->fd, &st) == -1) {
 	    DEBUG(("getcore: fstat failed\n"));
 	    return FALSE;
@@ -1311,6 +1320,10 @@ static BOOL getcore(hash_table *tab) {
 #if defined (MADV_RANDOM) && !defined(_nec_ews)
 	/* not present in all versions of mmap() */
 	madvise(it, (size_t)conf.tsize * sizeof(tab->reclen), MADV_RANDOM);
+#endif
+#else
+	DEBUG(("getcore: can't mmap files\n"));
+	return FALSE;
 #endif
     } else {
 	it = NEW(char, conf.tsize * tab->reclen);
@@ -1657,6 +1670,15 @@ static BOOL set_pag(searcher *sp, OFFSET_T value) {
  */
 void dbzsetoptions(const dbzoptions o) {
     options = o;
+#ifndef HAVE_MMAP
+    /* Without a working mmap on files, we should avoid it. */
+#ifdef	DO_TAGGED_HASH
+    if (options.pag_incore == INCORE_MMAP) options.pag_incore = INCORE_NO;
+#else
+    if (options.idx_incore == INCORE_MMAP) options.idx_incore = INCORE_NO;
+#endif
+    if (options.exists_incore == INCORE_MMAP) options.exists_incore = INCORE_NO;
+#endif
 }
 
 /* dbzgetoptions - get runtime options for the database.
@@ -1737,7 +1759,11 @@ char *argv[];
 	else if (strcmp(argv[i], "-n") == 0)
 	    incore = INCORE_NO;
 	else if (strcmp(argv[i], "-m") == 0)
+#if defined(HAVE_MMAP)
 	    incore = INCORE_MMAP;
+#else
+            fprintf (stderr, "can't mmap files\n");
+#endif
 	else if (strcmp(argv[i], "-s") == 0)
 	    size = atoi(argv[++i]);
 	else if (*argv[i] != '-' && history == NULL)
