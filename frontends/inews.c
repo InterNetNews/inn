@@ -550,7 +550,7 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
 
     if (HDR(_date) == NULL) {
 	/* Set Date. */
-	if (!makedate(-1, false, buff, sizeof(buff)))
+	if (!makedate(-1, true, buff, sizeof(buff)))
 	    die("cannot generate Date header");
 	HDR(_date) = xstrdup(buff);
     }
