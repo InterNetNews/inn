@@ -19,7 +19,7 @@ MAN5	= ../man/inn.conf.5 ../man/newsfeeds.5 ../man/ovdb.5 \
 	../man/passwd.nntp.5 ../man/readers.conf.5 ../man/sasl.conf.5 \
 	../man/subscriptions.5
 
-MAN8	= ../man/expireover.8 ../man/innd.8 ../man/inndf.8 \
+MAN8	= ../man/expireover.8 ../man/innd.8 ../man/inndf.8 ../man/nnrpd.8 \
 	../man/inndstart.8 ../man/innupgrade.8 ../man/makehistory.8 \
 	../man/ovdb_init.8 ../man/ovdb_monitor.8 ../man/ovdb_server.8 \
 	../man/ovdb_stat.8 ../man/tdx-util.8
@@ -58,6 +58,7 @@ all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 ../man/inndstart.8:	inndstart.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/innupgrade.8:	innupgrade.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/makehistory.8:	makehistory.pod		; $(POD2MAN) -s 8 $? > $@
+../man/nnrpd.8:		nnrpd.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/ovdb_init.8:	ovdb_init.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/ovdb_monitor.8:	ovdb_monitor.pod	; $(POD2MAN) -s 8 $? > $@
 ../man/ovdb_server.8:	ovdb_server.pod		; $(POD2MAN) -s 8 $? > $@
