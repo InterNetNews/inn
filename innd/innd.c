@@ -438,8 +438,10 @@ JustCleanup()
     ICDclose();
     HISclose();
     ARTclose();
-    if (innconf->storageapi)
+    if (innconf->storageapi) {
+	SMshutdown();
 	OVERshutdown();
+    }
 #if defined(DO_TCL)
     TCLclose();
 #endif /* defined(DO_TCL) */

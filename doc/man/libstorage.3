@@ -14,8 +14,6 @@ libstorage \- InterNetNews Storage API library routines
 
 .B "TOKEN TextToToken(const char *text);"
 
-.B "char *SMFindBody(char *article, int len);"
-
 .B "BOOL SMinit(void);"
 
 .B "TOKEN SMstore(const ARTHANDLE article);"
@@ -97,14 +95,10 @@ converts token into text token string.
 .I TextToToken
 converts text into token.
 .PP
-.I SMFindBody
-returns the pointer of the body.
-.PP
 .I SMinit
 calls the setup function for all of the configured methods.
 This function should be called prior to all other storage api functions which
-begin with ``SM'' except for
-.IR SMFindBody .
+begin with ``SM''.
 It returns TRUE if initialization is successful or returns FALSE if not.
 .I SMinit
 returns TRUE, unless all storage methods fail initialization.

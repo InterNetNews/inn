@@ -20,18 +20,6 @@ typedef struct {
 
 METHOD_DATA method_data[NUM_STORAGE_METHODS];
 
-typedef struct __S_SUB__ {
-    int                 type;        /* Index into storage_methods of the one to use */
-    int                 minsize;     /* Minimum size to send to this method */
-    int                 maxsize;     /* Maximum size to send to this method */
-    int                 numpatterns; /* Number of patterns in patterns */
-    int                 class;       /* Number of the storage class for this subscription */
-    char                **patterns;  /* Array of patterns to check against
-					the groups to determine if the article
-					should go to this method */
-    struct __S_SUB__   *next;
-} STORAGE_SUB;
-
 static STORAGE_SUB      *subscriptions = NULL;
 static unsigned int     typetoindex[256];
 int                     SMerrno;
@@ -130,6 +118,19 @@ char *SMFindBody(char *article, int len) {
     return NULL;
 }
 
+STORAGE_SUB *SMGetConfig(STORAGETYPE type, STORAGE_SUB *sub) {
+    if (sub == (STORAGE_SUB *)NULL)
+	sub = subscriptions;
+    else
+	sub = sub->next;
+    for (;sub != NULL; sub = sub->next) {
+	if (sub->type == type) {
+	    return sub;
+	}
+    }
+    return (STORAGE_SUB *)NULL;
+}
+
 /* Open the config file and parse it, generating the policy data */
 static BOOL SMreadconfig(void) {
     char                path[sizeof(_PATH_STORAGECTL) + 16];
@@ -146,6 +147,7 @@ static BOOL SMreadconfig(void) {
     int                 class;
     STORAGE_SUB         *sub = NULL;
     STORAGE_SUB         *prev = NULL;
+    char		*options;
 
     for (i = 0; i < NUM_STORAGE_METHODS; i++) {
 	method_data[i].initialized = INIT_NO;
@@ -182,18 +184,40 @@ static BOOL SMreadconfig(void) {
 	*p = '\0';
 	patterns = ++p;
 	class = minsize = maxsize = 0;
+	options = (char *)NULL;
 	if ((p = strchr(p, ':')) != NULL) {
 	    *p = '\0';
 	    p++;
 	}
 	if (p && *p) {
-	    class = atoi(p);
-	    if ((p = strchr(++p, ':')) != NULL) {
-		minsize = atoi(p);
-		if (p && *p && ((p = strchr(++p, ':')) != NULL)) {
-		    maxsize = atoi(p);
+	    q = p;
+	    if ((p = strchr(p, ':')) != NULL) {
+		*p = '\0';
+		class = atoi(q);
+		p++;
+		if (*p) {
+		    q = p;
+		    if ((p = strchr(p, ':')) != NULL) {
+			*p = '\0';
+		        minsize = atoi(q);
+		        p++;
+		        if (*p) {
+			    q = p;
+			    if ((p = strchr(++p, ':')) != NULL) {
+				*p = '\0';
+				maxsize = atoi(q);
+				p++;
+				if (*p) {
+				    options = COPY(p);
+				}
+			    } else
+				maxsize = atoi(q);
+		        }
+		    } else
+			minsize = atoi(q);
 		}
-	    }
+	    } else
+		class = atoi(q);
 	}
 	sub = NEW(STORAGE_SUB, 1);
 	sub->type = TOKEN_EMPTY;
@@ -207,12 +231,14 @@ static BOOL SMreadconfig(void) {
 	if (sub->type == TOKEN_EMPTY) {
 	    SMseterror(SMERR_CONFIG, "Invalid storage method name");
 	    syslog(L_ERROR, "SM no configured storage methods are named '%s'", method);
+	    DISPOSE(options);
 	    DISPOSE(sub);
 	    return FALSE;
 	}
 	sub->minsize = minsize;
 	sub->maxsize = maxsize;
 	sub->class = class;
+	sub->options = options;
 	
 	/* Count the number of patterns and allocate space*/
 	for (i = 1, p = patterns; *p && (p = strchr(p+1, ',')); i++);
@@ -470,6 +496,7 @@ void SMshutdown(void) {
 	old = subscriptions;
 	subscriptions = subscriptions->next;
 	DISPOSE(old->patterns);
+	DISPOSE(old->options);
 	DISPOSE(old);
     }
     Initialized = FALSE;

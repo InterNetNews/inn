@@ -20,12 +20,12 @@ Each line is formatted as:
 .PP
 .RS
 .nf
-methodname:wildmat:storage_class:minsize:maxsize
+methodname:wildmat:storage_class:minsize:maxsize[:options]
 .fi
 .RE
 .PP
 The ``methodname'' is the name of storage method.
-Currently, only ``timehash'' is available for its name.
+Currently, ``timehash'' and ``cnfs'' are available for its name.
 \&``Wildmat'' refers to a newsgroup pattern that will be parsed with
 .IR wildmat (3).
 Matching newsgroup is against newsgroup name in ``Newsgroups'' header.
@@ -37,6 +37,8 @@ for a description of their use.
 \&``Storage_class'' is also referred at
 .IR expire.ctl (5).
 \&``Minsize'' and ``maxsize'' is the range in which article is stored.
+\&``options'' is method specific option which is needed only for some
+method. See method specific man page for a description of its use.
 .PP
 If a newsgroup matches wildmat pattern and the range, the article is stored
 in that ``storage_class''.

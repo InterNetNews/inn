@@ -241,6 +241,7 @@ ARTHANDLE *timehash_retrieve(const TOKEN token, RETRTYPE amount) {
     int                 seqnum;
     char                *path;
     ARTHANDLE           *art;
+    static TOKEN	ret_token;
     
     if (token.type != TOKEN_TIMEHASH) {
 	SMseterror(SMERR_INTERNAL, NULL);
@@ -249,8 +250,11 @@ ARTHANDLE *timehash_retrieve(const TOKEN token, RETRTYPE amount) {
 
     BreakToken(token, &time, &seqnum);
     path = MakePath(time, seqnum, token.class);
-    if ((art = OpenArticle(path, amount)) != (ARTHANDLE *)NULL)
+    if ((art = OpenArticle(path, amount)) != (ARTHANDLE *)NULL) {
 	art->arrived = time;
+	ret_token = token;
+	art->token = &ret_token;
+    }
     DISPOSE(path);
     return art;
 }
