@@ -9,8 +9,8 @@ include ../Makefile.global
 CFLAGS        = $(GCFLAGS)
 
 ALL	      = archivegz backupfeed cleannewsgroups delayer findreadgroups \
-		makeexpctl makestorconf newsresp pathinfo pullart showtoken \
-		stathist thdexpire tunefeed
+		makeexpctl makestorconf mlockfile newsresp pathinfo pullart \
+		showtoken stathist thdexpire tunefeed
 
 all: $(ALL)
 
@@ -25,6 +25,7 @@ LINK 		= $(CC) $(LDFLAGS) -o $@
 FIX		= $(FIXSCRIPT)
 
 expirectl:	expirectl.o	; $(LINK) expirectl.o
+mlockfile:	mlockfile.o	; $(LINK) mlockfile.o
 newsresp:	newsresp.o	; $(LINK) newsresp.o $(LIBS)
 pullart:	pullart.o	; $(LINK) pullart.o
 
