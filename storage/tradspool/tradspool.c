@@ -1,30 +1,31 @@
-/*
-** $Id$
-** tradspool -- storage manager module for traditional spool format.
+/*  $Id$
+**
+**  Storage manager module for traditional spool format.
 */
-
-#include <stdio.h>
-#include <errno.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
-#include <dirent.h>
+#include "config.h"
+#include "clibrary.h"
 #include <ctype.h>
-#include <configdata.h>
-#include <clibrary.h>
+#include <dirent.h>
+#include <errno.h>
 #include <syslog.h>
-#include <macros.h>
-#include <configdata.h>
-#include <libinn.h>
-#include <methods.h> 
-#include "tradspool.h"
-#include <paths.h>
-#include <qio.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
 
 /* Needed for htonl() and friends on AIX 4.1. */
 #include <netinet/in.h>
     
+#include "libinn.h"
+#include "macros.h"
+#include "paths.h"
+#include "qio.h"
+
+#include "methods.h"
+#include "tradspool.h"
+
 typedef struct {
     char		*artbase; /* start of the article data -- may be mmaped */
     unsigned int	artlen; /* art length. */
