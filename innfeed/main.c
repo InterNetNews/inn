@@ -54,10 +54,6 @@ static void use_rcsid (const char *rid) {   /* Never called */
 # include <fcntl.h>
 #endif
 
-#ifdef HAVE_RLIMIT
-# include <sys/resource.h>
-#endif
-
 #ifdef HAVE_SYS_TIME_H
 # include <sys/time.h>
 #else
@@ -158,7 +154,6 @@ int main (int argc, char **argv)
   char *copt = NULL ;
   char *debugFile;
   bool checkConfig = false ;
-  struct rlimit rl;
   bool val;
 
   strcpy (dateString,ctime(&now)) ;
@@ -485,32 +480,9 @@ int main (int argc, char **argv)
 
   sleep (initialSleep) ;
 
-
-#if defined(HAVE_RLIMIT) && defined(RLIMIT_NOFILE)
-  /* now lower maximum open file limit to match what select(2) can handle. */
-  if (innconf->rlimitnofile >= 0) {
-    if (getrlimit(RLIMIT_NOFILE,&rl) != 0)
-      syslog (LOG_ERR,GETRLIM_FAILED) ;
-    else
-      {
-#if defined (FD_SETSIZE)
-	u_int fd_max = FD_SETSIZE ;
-#else
-	u_int fd_max = sizeof (fd_set) * CHAR_BIT ;
-#endif
-	if (innconf->rlimitnofile < fd_max)
-	  fd_max = innconf->rlimitnofile;
-
-	if (rl.rlim_max > fd_max)
-	  {
-	    rl.rlim_max = rl.rlim_cur = fd_max ;
-	    if (setrlimit (RLIMIT_NOFILE,&rl) != 0)
-	      syslog (LOG_ERR,SETRLIM_FAILED,(long)fd_max);
-	  }
-      }
-  }
-#endif /* HAVE_RLIMIT && RLIMIT_NOFILE */
-      
+  if (innconf->rlimitnofile >= 0)
+    if (setfdlimit (innconf->rlimitnofile) < 0)
+      syslog (LOG_ERR,SETRLIM_FAILED,innconf->rlimitnofile);
   
   configHosts (talkToSelf) ;
 
