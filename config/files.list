@@ -90,7 +90,6 @@
 ../samples/rc.news
 ../samples/rmgroup
 ../samples/scanlogs
-../samples/scanlogs-backend.pl
 ../samples/scanspool
 ../samples/send-ihave
 ../samples/send-nntp
@@ -102,7 +101,6 @@
 ../samples/startup.tcl
 ;; ../samples/filter.tcl
 ../samples/tally.control
-../samples/tally.unwanted
 ../samples/version
 ../samples/writelog
 ../site/Makefile
