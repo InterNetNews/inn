@@ -44,7 +44,7 @@ tags ctags:	$(SOURCES)
 
 libstorage.la:	$(P) $(OBJECTS) $(LOBJECTS)
 	$(CC) $(LDFLAGS) -o libstorage.la $(LOBJECTS) objs/*.lo \
-		-rpath /usr/lib -version-info 2:0:0
+		-rpath $(PATHLIB) -version-info 2:0:0
 
 qiotest: qio.c libstorage.la ../lib/libinn.la
 	$(CC) $(CFLAGS) -DTEST -o qiotest qio.c libstorage.la ../lib/libinn.la
