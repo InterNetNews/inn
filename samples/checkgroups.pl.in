@@ -79,6 +79,9 @@ sub control_checkgroups {
     system ("$inn::newslib/docheckgroups", $newsgrouppats);
     open STDIN, "<&OLDIN";
     open STDOUT, "<&OLDOUT";
+    if (!$logging) {
+      $logging = "mail";
+    }
     logger($tempfile, $logging, "checkgroups by $sender");
     unlink ($tempfile, "$tempfile.art");
   }
