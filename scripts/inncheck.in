@@ -376,7 +376,10 @@ incoming_conf
     'wireformat',		0,
     'addnntppostinghost',	0,
     'addnntppostingdate',	0,
-    'ovmmapthreshold',	0
+    'ovgrouppat',		0,
+    'groupbaseexpiry',		0,
+    'wipcheck',			0,
+    'wipexpire',		0
 );
 %inn_conf'optionals = (
     'innflags',			0,

@@ -63,16 +63,26 @@ if [ -z "${HISTDIR}" -o X"." = X"${HISTDIR}" -o ! -d "${HISTDIR}" ]; then
 	HISTDIR="${PATHETC}"
     fi
 fi
-if [ X${ENABLEOVERVIEW} = X"true" -o X${ENABLEOVERVIEW} = X"yes" -o X${ENABLEOVERVIEW} = X"on" ]; then
+ENABLEOVERVIEW=`echo X${ENABLEOVERVIEW} | tr ${AZ} ${az}`
+if [ ${ENABLEOVERVIEW} = X"true" -o X${ENABLEOVERVIEW} = X"yes" -o X${ENABLEOVERVIEW} = X"on" ]; then
     DOEXPIREOVER=true
     RMFILE=${MOST_LOGS}/expire.rm
 fi
 
 EXPIREOVERFLAGS=
 PROGRAMS=
+POSTPROGRAMS=
 REASON=
 RMFILE=
 SCANARG=
+DOGROUPBASEEXPIRY=false
+
+GROUPBASEEXPIRY=`echo X${GROUPBASEEXPIRY} | tr ${AZ} ${az}`
+if [ ${GROUPBASEEXPIRY} = X"true" -o X${GROUPBASEEXPIRY} = X"yes" -o X${GROUPBASEEXPIRY} = X"on" ]; then
+    DOEXPIREOVER=true
+    RMFILE=${MOST_LOGS}/expire.rm
+    DOGROUPBASEEXPIRY=true
+fi
 
 ##  Parse JCL.
 for I
@@ -147,6 +157,10 @@ do
     X/*)
 	PROGRAMS="${PROGRAMS} ${I}"
 	;;
+    Xpostexec=*)
+	POSTEXEC=`expr "${I}" : 'postexec=\(.*\)'`
+	POSTPROGRAMS="${POSTPROGRAMS} ${POSTEXEC}"
+	;;
     *)
 	echo "Unknown flag ${I}" 1>&2
 	exit 1
@@ -180,7 +194,11 @@ test -n "${EXPDIR}" && {
 }
 
 test -n "${RMFILE}" && {
-	EXPIREFLAGS="${EXPIREFLAGS} -z${RMFILE}"
+	if [ ${DOGROUPBASEEXPIRY} ] ; then
+	    EXPIREOVERFLAGS="${EXPIREOVERFLAGS} -z${RMFILE}"
+	else
+	    EXPIREFLAGS="${EXPIREFLAGS} -z${RMFILE}"
+	fi
     }
 
 test -n "${LOWMARKFILE}" && {
@@ -228,6 +246,38 @@ ${DOLOGS} && {
     echo ''
     scanlogs ${SCANARG}
 }
+
+# group based expiry (delete expired overview first)
+if [ ${DOGROUPBASEEXPIRY} -a ${DOEXPIREOVER} ] ; then
+    if ${DOEXPLOG}; then
+	echo "${EXPIREOVER} start `date`: (${EXPIREOVERFLAGS})" >>${EXPLOG}
+    fi
+    ( exec 2>&1 ; eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" >>${EXPLOG})
+    if ${DOEXPLOG}; then
+	echo "${EXPIREOVER} end `date`" >>${EXPLOG}
+    fi
+    test -n "${LOWMARKFILE}" && {
+	echo "lowmarkrenumber begin `date`: (${LOWMARKFILE})"   >>${EXPLOG}
+	ctlinnd -s -t`wc -l <${ACTIVE}` lowmark ${LOWMARKFILE} 2>&1
+	echo "lowmarkrenumber end `date`"                           >>${EXPLOG}
+	rm -f ${MOST_LOGS}/expire.lastlowmark
+	mv ${LOWMARKFILE} ${MOST_LOGS}/expire.lastlowmark
+    }
+    test -n "${RMFILE}" -a -s "${RMFILE}" && {
+	mv ${RMFILE} ${RMFILE}.$$ && RMFILE=${RMFILE}.$$
+
+	test -n "${TMPDIR}" && SORT="${SORT} -T ${TMPDIR}"	
+	${SORT} -u -o ${RMFILE} ${RMFILE}
+	if ${DOEXPLOG}; then
+	    echo "	expirerm start `date`" >>${EXPLOG}
+	fi
+	expirerm ${RMFILE}
+	if ${DOEXPLOG}; then
+	    echo "	expirerm end `date`" >>${EXPLOG}
+	fi
+    }
+    DOEXPIREOVER=false
+fi
 
 ##  The heart of the matter:  prologs, expire, epilogs.
 if ${DOEXPIRE} ; then
@@ -355,7 +405,7 @@ esac
 rm ${LOCK}
 
 ## Remove the articles that are supposed to go
-if ${DOEXPIRE} ; then
+if [ ${DOEXPIRE} -a ! ${DOGROUPBASEEXPIRY} ] ; then
     test -n "${RMFILE}" -a -s "${RMFILE}" && {
 	mv ${RMFILE} ${RMFILE}.$$ && RMFILE=${RMFILE}.$$
 
@@ -464,6 +514,15 @@ if ${DOMAIL} ; then
     MAIL="${MAILCMD} -s \"${MAILSUBJ}\" ${NEWSMASTER}"
     test -s ${TEMP} && cat ${TEMP} | ${SED} -e 's/^~/~~/' | eval ${MAIL}
     rm -f ${TEMP}
+fi
+
+##  Run any user programs.
+if [ -n "${POSTPROGRAMS}" ] ; then
+    for P in ${POSTPROGRAMS} ; do
+	echo ''
+	echo "${P}:"
+	eval ${P}
+    done
 fi
 
 ##  All done
