@@ -11,7 +11,6 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include <errno.h>
 
 /* If we're running the test suite, rename setenv to avoid conflicts with
    the system version. */
@@ -34,10 +33,8 @@ setenv(const char *name, const char *value, int overwrite)
        function which sets errno and returns in the event of a memory
        allocation failure. */
     envstring = malloc(strlen(name) + 1 + strlen(value) + 1);
-    if (envstring == NULL) {
-        errno = ENOMEM;
+    if (envstring == NULL)
         return -1;
-    }
 
     /* Build the environment string and add it to the environment using
        putenv.  Systems without putenv lose, but XPG4 requires it. */
