@@ -78,6 +78,20 @@ ok_string(int n, const char *wanted, const char *seen)
 
 
 /*
+**  Takes an expected integer and a seen integer and assumes the test passes
+**  if those two numbers match.
+*/
+void
+ok_double(int n, double wanted, double seen)
+{
+    if (wanted == seen)
+        printf("ok %d\n", n);
+    else
+        printf("not ok %d\n  wanted: %g\n    seen: %g\n", n, wanted, seen);
+}
+
+
+/*
 **  An error handler that appends all errors to the errors global.  Used by
 **  error_capture.
 */
