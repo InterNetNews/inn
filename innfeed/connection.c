@@ -4536,8 +4536,7 @@ static void delConnection (Connection cxn)
       free (PointersFreedOnExit) ;
       freeTimeoutQueue () ;
 
-      strcpy (dateString,ctime (&now)) ;
-      dateString [24] = '\0' ;
+      strlcpy (dateString,ctime (&now), sizeof(dateString)) ;
 
       notice ("ME finishing at %s", dateString) ;
 
@@ -4728,47 +4727,47 @@ static const char *stateToString (CxnState state)
   switch (state)
     {
       case cxnStartingS:
-        strcpy (rval,"cxnStartingS") ;
+        strlcpy (rval,"cxnStartingS", sizeof(rval)) ;
         break ;
 
       case cxnWaitingS:
-        strcpy (rval,"cxnWaitingS") ;
+        strlcpy (rval,"cxnWaitingS", sizeof(rval)) ;
         break ;
 
       case cxnConnectingS:
-        strcpy (rval,"cxnConnectingS") ;
+        strlcpy (rval,"cxnConnectingS", sizeof(rval)) ;
         break ;
 
       case cxnIdleS:
-        strcpy (rval,"cxnIdleS") ;
+        strlcpy (rval,"cxnIdleS", sizeof(rval)) ;
         break ;
 
       case cxnIdleTimeoutS:
-        strcpy (rval,"cxnIdleTimeoutS") ;
+        strlcpy (rval,"cxnIdleTimeoutS", sizeof(rval)) ;
         break ;
 
       case cxnFeedingS:
-        strcpy (rval,"cxnFeedingS") ;
+        strlcpy (rval,"cxnFeedingS", sizeof(rval)) ;
         break ;
 
       case cxnSleepingS:
-        strcpy (rval,"cxnSleepingS") ;
+        strlcpy (rval,"cxnSleepingS", sizeof(rval)) ;
         break ;
 
       case cxnFlushingS:
-        strcpy (rval,"cxnFlushingS") ;
+        strlcpy (rval,"cxnFlushingS", sizeof(rval)) ;
         break ;
 
       case cxnClosingS:
-        strcpy (rval,"cxnClosingS") ;
+        strlcpy (rval,"cxnClosingS", sizeof(rval)) ;
         break ;
 
       case cxnDeadS:
-        strcpy (rval,"cxnDeadS") ;
+        strlcpy (rval,"cxnDeadS", sizeof(rval)) ;
         break ;
 
       default:
-        sprintf (rval,"UNKNOWN STATE: %d",state) ;
+        snprintf (rval,sizeof(rval),"UNKNOWN STATE: %d",state) ;
         break ;
     }
 
