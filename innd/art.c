@@ -919,10 +919,13 @@ bodyprocessing:
 		if (cp->State == CSeatarticle) {
 		  cp->State = CSgotlargearticle;
 		  cp->Next = ++i;
-		  return;
-		} else
+		  snprintf(cp->Error, sizeof(cp->Error),
+		    "%d Article of %ld bytes exceeds local limit of %ld bytes",
+		    NNTP_REJECTIT_VAL, i - cp->Start, innconf->maxartsize);
+		} else {
 		  cp->State = CSgotarticle;
-		i++;
+		  i++;
+		}
 		if (*cp->Error != '\0' && HDR_FOUND(HDR__MESSAGE_ID)) {
 		  HDR_PARSE_START(HDR__MESSAGE_ID);
 		  if (HDR_FOUND(HDR__PATH)) {
@@ -950,6 +953,8 @@ bodyprocessing:
 		  ARTlog(data, ART_REJECT, cp->Error);
 		  HDR_PARSE_END(HDR__MESSAGE_ID);
 		}
+		if (cp->State == CSgotlargearticle)
+		  return;
 		goto sizecheck;
 	      }
 #if 0 /* this may be examined in the future */
@@ -976,8 +981,10 @@ endofline:
   }
 sizecheck:
   if ((innconf->maxartsize > 0) &&
-    (limit - cp->Next + cp->LargeArtSize > innconf->maxartsize)) {
-    cp->LargeArtSize += limit - cp->Next;
+    (i - cp->Start - (data->HeaderLines + data->Lines + 4) >
+    innconf->maxartsize)) {
+    /* data->HeaderLines + data->Lines + 4 means that "\r\n" is counted as 1
+       byte and trailing ".\r\n" and body delimitor is excluded */
     cp->State = CSeatarticle;
   }
   cp->Next = i;
