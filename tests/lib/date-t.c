@@ -168,14 +168,14 @@ main(void)
     now = time(NULL);
     status = makedate(-1, false, buff, sizeof(buff));
     if (status) {
-        result = parsedate(buff, NULL);
+        result = parsedate_rfc2822(buff);
         diff = difftime(result, now);
     }
     ok(1, status && diff >= 0 && diff < 10);
     now = time(NULL);
     status = makedate(-1, true, buff, sizeof(buff));
     if (status) {
-        result = parsedate(buff, NULL);
+        result = parsedate_rfc2822(buff);
         diff = difftime(result, now);
     }
     ok(2, status && diff >= 0 && diff < 10);
