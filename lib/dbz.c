@@ -71,6 +71,7 @@ Limited can't tag warnings once per dbzinit() by Sang-yong Suh (May, 1998)
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <ctype.h>
