@@ -657,7 +657,6 @@ void
 Printf(const char *fmt, ...)
 {
     va_list     args;
-    char        buff[2048];
 
 #ifdef HAVE_SSL
     if (tls_conn) {
@@ -744,7 +743,6 @@ WaitChild(int s NO_SIGACTION_UNUSED)
 
 static void SetupDaemon(void) {
     bool                val;
-    time_t statinterval;
 
     val = true;
     if (SMsetup(SM_PREOPEN, (void *)&val) && !SMinit()) {

@@ -356,7 +356,7 @@ static bool CNFSparse_part_line(char *l) {
   if (S_ISREG(sb.st_mode) && len != sb.st_size) {
     if (sizeof(CYCBUFFEXTERN) > (size_t) sb.st_size) {
       syslog(L_NOTICE, "%s: length must be at least '%u' for '%s' cycbuff(%ld bytes)",
-	LocalLogName, sizeof(CYCBUFFEXTERN), cycbuff->name, sb.st_size);
+	LocalLogName, sizeof(CYCBUFFEXTERN), cycbuff->name, (long)sb.st_size);
       free(cycbuff);
       return false;
     }

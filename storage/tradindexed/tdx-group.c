@@ -1075,7 +1075,8 @@ tdx_index_print(const char *name, const struct group_entry *entry,
 {
     fprintf(output, "%s %lu %lu %lu %lu %c %lu %lu\n", name, entry->high,
             entry->low, entry->base, (unsigned long) entry->count,
-            entry->flag, entry->deleted, (unsigned long) entry->indexinode);
+            entry->flag, (unsigned long) entry->deleted,
+            (unsigned long) entry->indexinode);
 }
 
 

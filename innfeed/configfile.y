@@ -49,6 +49,7 @@ static int strNCaseCmp (const char *a, const char *b, size_t len) ;
 
 int yyerror (const char *s) ;
 int yywrap (void) ;
+int yyparse (void) ;
 
 
 #if 0

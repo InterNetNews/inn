@@ -268,7 +268,7 @@ STATUSsummary(void)
 
   /* Global values */
   fprintf (F, "global (process)\n");
-  fprintf (F, "         seconds: %ld\n", seconds);
+  fprintf (F, "         seconds: %ld\n", (long) seconds);
   offered = accepted + refused + rejected;
   fprintf (F, "         offered: %-9ld\n", offered);
   if (!offered) offered = 1; /* to avoid division by zero */
@@ -289,7 +289,7 @@ STATUSsummary(void)
   /* Incoming Feeds */
   for (status = head ; status != NULL ;) {
     fprintf (F, "%s\n",                      status->name);
-    fprintf (F, "    seconds: %-7ld  ",      status->seconds);
+    fprintf (F, "    seconds: %-7ld  ",      (long) status->seconds);
     fprintf (F, "      duplicates: %-7ld ",  status->Duplicate);
     fprintf (F, "    ip address: %s\n",      status->ip_addr);
     fprintf (F, "    offered: %-7ld  ",
