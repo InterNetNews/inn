@@ -642,10 +642,21 @@ DoArt(ARTHANDLE *art)
                 buffer_append(&buffer, COLONSPACE, strlen(COLONSPACE));
 	    }
 	    i = buffer.left;
-            buffer_append(&buffer, fp->Header, fp->HeaderLength);
-	    for (q = &buffer.data[i]; i < buffer.left; q++, i++)
-		if (*q == '\t' || *q == '\n' || *q == '\r')
-		    *q = ' ';
+            if (fp->HeaderLength == 0)
+                continue;
+            buffer_resize(&buffer, buffer.left + fp->HeaderLength);
+            end = fp->Header + fp->HeaderLength - 1;
+            for (p = fp->Header, q = &buffer.data[i]; p <= end; p++) {
+                if (*p == '\r' && p < end && p[1] == '\n') {
+                    p++;
+                    continue;
+                }
+                if (*p == '\0' || *p == '\t' || *p == '\n' || *p == '\r')
+                    *q++ = ' ';
+                else
+                    *q++ = *p;
+                buffer.left++;
+            }
 	}
 	WriteOverLine(art->token, Xrefp->Header, Xrefp->HeaderLength,
 		      buffer.data, buffer.left, Arrived, Expires);
