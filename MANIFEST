@@ -230,7 +230,6 @@ doc/man/radius.conf.5                 Manpage for radius.conf config file
 doc/man/rc.news.8                     Manpage for rc.news
 doc/man/readers.conf.5                Manpage for readers.conf config file
 doc/man/rnews.1                       Manpage for rnews frontend
-doc/man/sasl.conf.5                   Manpage for sasl.conf config file
 doc/man/scanlogs.8                    Manpage for scanlogs
 doc/man/send-nntp.8                   Manpage for send-nntp and send-ihave
 doc/man/send-uucp.8                   Manpage for send-uucp
@@ -302,7 +301,6 @@ doc/pod/radius.pod                    Master file for radius.8
 doc/pod/rc.news.pod                   Master file for rc.news.8
 doc/pod/readers.conf.pod              Master file for readers.conf.5
 doc/pod/readme.pod                    Master file for README
-doc/pod/sasl.conf.pod                 Master file for sasl.conf.5
 doc/pod/sendinpaths.pod               Master file for sendinpaths.8
 doc/pod/simpleftp.pod                 Master file for simpleftp.1
 doc/pod/sm.pod                        Master file for sm.1
@@ -567,8 +565,7 @@ nnrpd/perm.c                          Reading readers.conf
 nnrpd/post.c                          Article processing and posting
 nnrpd/post.h                          Article data types
 nnrpd/python.c                        Python routines for nnrpd
-nnrpd/sasl_config.c                   Configuration for SASL
-nnrpd/sasl_config.h                   SASL data types
+nnrpd/sasl.c                          SASL authentication for nnrpd
 nnrpd/tls.c                           Transport layer security
 nnrpd/tls.h                           Transport layer security data types
 nnrpd/track.c                         Track client behavior
@@ -612,7 +609,6 @@ samples/overview.fmt                  Format of news overview database
 samples/passwd.nntp                   Passwords for remote connections
 samples/radius.conf                   Sample config for RADIUS authentication
 samples/readers.conf                  Reader connection configuration
-samples/sasl.conf.in                  SASL configuration
 samples/startup_innd.pl               Perl startup code for innd
 samples/storage.conf                  Sample storage configuration
 samples/subscriptions                 Sample default subscriptions list
@@ -816,3 +812,10 @@ tests/storage/sm.t                    Tests for frontends/sm
 tests/util                            Test suite for utilities (Directory)
 tests/util/convdate.t                 Tests for expire/convdate
 tests/util/innbind-t.c                Tests for backends/innbind
+tests/util/innupgrade.t               Tests for scripts/innupgrade
+tests/util/upgrade                    innupgrade test files (Directory)
+tests/util/upgrade/inn.conf           inn.conf file that needs fixing
+tests/util/upgrade/inn.conf.ok        Fixed inn.conf file
+tests/util/upgrade/newsfeeds          newsfeeds file that needs fixing
+tests/util/upgrade/newsfeeds.ok       Fixed newsfeeds file
+tests/util/upgrade/sasl.conf          Obsolete sasl.conf config file
