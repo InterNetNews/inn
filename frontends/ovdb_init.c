@@ -316,15 +316,19 @@ static int check_upgrade(int do_upgrade)
 	ret = ovdb_open_berkeleydb(OV_WRITE, OVDB_UPGRADE);
 	if (ret != 0)
 	    return ret;
-#if DB_VERSION_MAJOR >=3
+#if DB_VERSION_MAJOR >= 3
+#if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR == 0
+	ret = OVDBenv->remove(OVDBenv, ovdb_conf.home, NULL, 0);
+#else
 	ret = OVDBenv->remove(OVDBenv, ovdb_conf.home, 0);
+#endif
 	if (ret != 0)
 	    return ret;
-#endif
 	OVDBenv = NULL;
 	ret = ovdb_open_berkeleydb(OV_WRITE, 0);
 	if(ret != 0)
 	    return ret;
+#endif
     }
 
     if(dv > DATA_VERSION) {
