@@ -216,6 +216,14 @@ AC_ARG_WITH(largefiles,
     DO_LFS=DONT)
 AC_SUBST(DO_LFS)
 
+if test "x$DO_LFS" = "xDO"
+then
+    if test "x$DO_DBZ_TAGGED_HASH" = "xDO"
+    then
+        AC_MSG_ERROR(--enable-tagged-hash and --with-largefiles can not be used at the same time.)
+    fi
+fi
+
 AC_ARG_WITH(log-compress,
     [  --with-log-compress=METHOD   Log compression method [gzip]],
     LOG_COMPRESS=$with_log_compress,
