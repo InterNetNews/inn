@@ -1210,6 +1210,7 @@ main(ac, av)
     register char	*p;
     register HEADER	*hp;
     int			j;
+    int			port;
     int			Mode;
     int			SigLines;
     FILE		*F;
@@ -1236,13 +1237,14 @@ main(ac, av)
     Dump = FALSE;
     DoSignature = TRUE;
     AddOrg = TRUE;
+    port = 0;
 
     if (ReadInnConf() < 0) exit(1);
 
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "DNAVWORShx:a:c:d:e:f:n:r:t:F:o:w:")) != EOF)
+    while ((i = getopt(ac, av, "DNAVWORShx:a:c:d:e:f:n:p:r:t:F:o:w:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -1271,6 +1273,9 @@ main(ac, av)
 	case 'x':
 	    Exclusions = NEW(char, strlen(optarg) + 1 + 1);
 	    (void)sprintf(Exclusions, "%s!", optarg);
+	    break;
+	 case 'p':
+	    port = atoi(optarg);
 	    break;
 	/* Header lines that can be specified on the command line. */
 	case 'a':	HDR(_approved) = optarg;		break;
@@ -1305,8 +1310,10 @@ main(ac, av)
 	break;
     }
 
+    if (port == 0) port = (innconf->port != 0) ? innconf->port : NNTP_PORT;
+
     /* Try to open a connection to the server. */
-    if (NNTPremoteopen(NNTP_PORT, &FromServer, &ToServer, buff) < 0) {
+    if (NNTPremoteopen(port, &FromServer, &ToServer, buff) < 0) {
 	Spooling = TRUE;
 	if ((p = strchr(buff, '\n')) != NULL)
 	    *p = '\0';
