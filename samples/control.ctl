@@ -13,7 +13,9 @@
 ##  two files will be kept in sync.  Please refer to the latest version of
 ##  this file for the most up-to-date hierarchy control information and
 ##  please use the latest version if you intend to carry all hierarchies.
-##  You may wish to change the policy for alt.*.
+##
+##  You may wish to review and change the policy for alt.*, free.*, and
+##  it-alt.* below before using this file on your server.
 ##
 ##  Format:
 ##     <message>:<from>:<newsgroups>:<action>
@@ -1078,17 +1080,19 @@ newgroup:gcn@news.nic.it:it.*:verify-gcn@news.nic.it
 rmgroup:gcn@news.nic.it:it.*:verify-gcn@news.nic.it
 
 ## IT-ALT (Alternate Italian)
-# Contact: it-alt@x-privat.org
-# URL: http://www.x-privat.org/it-alt/
-# Admin group: it-alt.config
-# Key URL: http://www.x-privat.org/it-alt/pgp.txt
-# Key fingerprint = 01 AE 93 F7 CE 3B C1 F4  E0 35 8E 23 C4 04 A2 30
-# *PGP*   See comment at top of file.
+#
+# There is no one official control message issuer for the it-alt.*
+# hierarchy, so this file doesn't choose any particular one.  Several
+# different people issue control messages for this hierarchy, which may
+# or may not agree, and sites carrying this hierarchy are encouraged to
+# pick one and add it below.
+#
+# Newgroup and removal requests are to be posted to it-alt.config.  A list
+# of people issuing PGP/GPG signed control messages is available in a
+# periodic posting to news.admin.hierarchies and it-alt.config.
+#
 newgroup:*:it-alt.*:drop
 rmgroup:*:it-alt.*:drop
-checkgroups:it-alt@x-privat.org:it-alt.*:verify-it-alt@x-privat.org
-newgroup:it-alt@x-privat.org:it-alt.*:verify-it-alt@x-privat.org
-rmgroup:it-alt@x-privat.org:it-alt.*:verify-it-alt@x-privat.org
 
 ## ITALIA (Italy)
 # Contact: news@news.cineca.it
