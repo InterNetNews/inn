@@ -1789,7 +1789,7 @@ ARTmakeoverview(CHANNEL *cp)
 bool
 ARTpost(CHANNEL *cp)
 {
-  char		*p, **groups, ControlWord[SMBUF], tmpbuff[32], **hops;
+  char		*p, **groups, ControlWord[SMBUF], **hops, *controlgroup;
   int		i, j, *isp, hopcount, oerrno, canpost;
   NEWSGROUP	*ngp, **ngptr;
   SITE		*sp;
@@ -2205,9 +2205,10 @@ ARTpost(CHANNEL *cp)
    * or control. */
   if (IsControl && Accepted && !ToGroup) {
     ControlStore = true;
-    FileGlue(tmpbuff, "control", '.', ControlWord);
-    if ((ngp = NGfind(tmpbuff)) == NULL)
+    controlgroup = concat("control.", ControlWord, (char *) 0);
+    if ((ngp = NGfind(controlgroup)) == NULL)
       ngp = NGfind(ARTctl);
+    free(controlgroup);
     ngp->PostCount = 0;
     ngptr = GroupPointers;
     *ngptr++ = ngp;
