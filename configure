@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.232 
+# From configure.in Revision: 1.233 
 # libtool.m4 - Configure libtool for the host system. -*-Shell-script-*-
 ## Copyright 1996, 1997, 1998, 1999, 2000, 2001
 ## Free Software Foundation, Inc.
@@ -10245,8 +10245,8 @@ else
 fi
 
 for ac_func in atexit getloadavg getrlimit getrusage getspnam setbuffer \
-               sigaction setrlimit setsid socketpair statvfs strncasecmp \
-               strtoul symlink sysconf
+               sigaction setgroups setrlimit setsid socketpair statvfs \
+               strncasecmp strtoul symlink sysconf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:10253: checking for $ac_func" >&5

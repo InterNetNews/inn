@@ -1467,8 +1467,8 @@ INN_FUNC_SNPRINTF
 
 dnl Check for various other functions.
 AC_CHECK_FUNCS(atexit getloadavg getrlimit getrusage getspnam setbuffer \
-               sigaction setrlimit setsid socketpair statvfs strncasecmp \
-               strtoul symlink sysconf)
+               sigaction setgroups setrlimit setsid socketpair statvfs \
+               strncasecmp strtoul symlink sysconf)
 
 dnl Find a way to get the file descriptor limit.
 if test x"$ac_cv_func_getrlimit" = xno ; then

@@ -247,6 +247,9 @@
 /* Define if you have the seteuid function.  */
 #undef HAVE_SETEUID
 
+/* Define if you have the setgroups function.  */
+#undef HAVE_SETGROUPS
+
 /* Define if you have the setrlimit function.  */
 #undef HAVE_SETRLIMIT
 
