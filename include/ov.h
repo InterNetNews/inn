@@ -43,7 +43,7 @@ bool OVcancel(TOKEN token);
 void *OVopensearch(char *group, int low, int high);
 bool OVsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived);
 void OVclosesearch(void *handle);
-bool OVgetartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token);
+bool OVgetartinfo(char *group, ARTNUM artnum, TOKEN *token);
 bool OVexpiregroup(char *group, int *lo, struct history *h);
 bool OVctl(OVCTLTYPE type, void *val);
 void OVclose(void);

@@ -3,6 +3,8 @@
  * ovdb 2.00 beta4
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2002-02-28 : Update getartinfo for the overview API change in 2.4.  This
+ *              breaks compatibility with INN 2.3.x....
  * 2000-12-12 : Add support for BerkeleyDB DB_SYSTEM_MEM option, controlled
  *            : by ovdb.conf 'useshm' and 'shmkey'
  * 2000-11-27 : Update for DB 3.2.x compatibility
@@ -157,7 +159,7 @@ BOOL ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
 
 void ovdb_closesearch(void *handle) { }
 
-BOOL ovdb_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token)
+BOOL ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
 { return FALSE; }
 
 BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
@@ -2101,7 +2103,7 @@ void ovdb_closesearch(void *handle)
     }
 }
 
-BOOL ovdb_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token)
+BOOL ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
 {
     int ret, cdb;
     group_id_t cgid;
@@ -2115,7 +2117,6 @@ BOOL ovdb_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *t
     if(clientmode) {
 	struct rs_cmd rs;
 	struct rs_artinfo repl;
-	static char *databuf;
 	static int buflen = 0;
 
 	rs.what = CMD_ARTINFO;
@@ -2128,23 +2129,10 @@ BOOL ovdb_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *t
 
 	if(repl.status != CMD_ARTINFO)
 	    return FALSE;
-	if(repl.len > buflen) {
-	    if(buflen == 0) {
-		buflen = repl.len + 512;
-		databuf = NEW(char, buflen);
-	    } else {
-		buflen = repl.len + 512;
-		RENEW(databuf, char, buflen);
-	    }
-	}
-	crecv(databuf, repl.len);
 
 	if(token)
 	    *token = repl.token;
-	if(len)
-	    *len = repl.len;
-	if(data)
-	    *data = databuf;
+
 	return TRUE;
     }
 
@@ -2183,13 +2171,11 @@ BOOL ovdb_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *t
 	key.data = &dk;
 	key.size = sizeof dk;
 
-	if(!data && !len) {
-	    /* caller doesn't need data, so we don't have to retrieve it all */
-	    val.flags = DB_DBT_PARTIAL;
+        /* caller doesn't need data, so we don't have to retrieve it all */
+        val.flags = DB_DBT_PARTIAL;
 
-	    if(token)
-		val.dlen = sizeof(struct ovdata);
-	}
+        if(token)
+            val.dlen = sizeof(struct ovdata);
 
 	switch(ret = db->get(db, NULL, &key, &val, 0)) {
 	case 0:
@@ -2216,16 +2202,10 @@ BOOL ovdb_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *t
 	break;
     }
 
-    if( ( (len || data) && val.size <= sizeof(struct ovdata) )
-	|| (token && val.size < sizeof(struct ovdata) ) ) {
+    if(token && val.size < sizeof(struct ovdata)) {
 	syslog(L_ERROR, "OVDB: getartinfo: data too short");
 	return FALSE;
     }
-
-    if(len)
-	*len = val.size - sizeof(struct ovdata);
-    if(data)
-	*data = (char *)val.data + sizeof(struct ovdata);
 
     if(token) {
 	memcpy(&ovd, val.data, sizeof(struct ovdata));

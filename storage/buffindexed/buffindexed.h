@@ -14,7 +14,7 @@ bool buffindexed_cancel(TOKEN token);
 void *buffindexed_opensearch(char *group, int low, int high);
 bool buffindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived);
 void buffindexed_closesearch(void *handle);
-bool buffindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token);
+bool buffindexed_getartinfo(char *group, ARTNUM artnum, TOKEN *token);
 bool buffindexed_expiregroup(char *group, int *lo, struct history *h);
 bool buffindexed_ctl(OVCTLTYPE type, void *val);
 void buffindexed_close(void);

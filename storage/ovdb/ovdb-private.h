@@ -160,8 +160,6 @@ struct rs_srch {
 struct rs_artinfo {
     uint32_t	status;
     TOKEN	token;
-    int		len;
-    /* char data */
 };
 
 

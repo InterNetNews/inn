@@ -360,14 +360,14 @@ void OVclosesearch(void *handle) {
     return;
 }
 
-bool OVgetartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token) {
+bool OVgetartinfo(char *group, ARTNUM artnum, TOKEN *token) {
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
 	(void)fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
-    return ((*ov.getartinfo)(group, artnum, data, len, token));
+    return ((*ov.getartinfo)(group, artnum, token));
 }
 
 bool OVexpiregroup(char *group, int *lo, struct history *h) {

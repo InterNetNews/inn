@@ -307,7 +307,7 @@ static bool ARTinstorebyartnum(int artnum)
     
     if (PERMaccessconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
-    if (!OVgetartinfo(GRPcur, artnum, NULL, NULL, &token))
+    if (!OVgetartinfo(GRPcur, artnum, &token))
 	return FALSE;
   
     art = SMretrieve(token, RETR_STAT);
@@ -339,7 +339,7 @@ static bool ARTopen(int artnum)
     }
     ARTclose();
 
-    if (!OVgetartinfo(GRPcur, artnum, NULL, NULL, &token))
+    if (!OVgetartinfo(GRPcur, artnum, &token))
 	return FALSE;
   
     gettimeofday(&stv, NULL);

@@ -14,7 +14,7 @@ bool tradindexed_cancel(TOKEN token);
 void *tradindexed_opensearch(char *group, int low, int high);
 bool tradindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived);
 void tradindexed_closesearch(void *handle);
-bool tradindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token);
+bool tradindexed_getartinfo(char *group, ARTNUM artnum, TOKEN *token);
 bool tradindexed_expiregroup(char *group, int *lo, struct history *h);
 bool tradindexed_ctl(OVCTLTYPE type, void *val);
 void tradindexed_close(void);

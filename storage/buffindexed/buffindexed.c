@@ -1842,20 +1842,18 @@ static bool gettoken(ARTNUM artnum, TOKEN *token) {
   return TRUE;
 }
 
-bool buffindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token) {
+bool buffindexed_getartinfo(char *group, ARTNUM artnum, TOKEN *token) {
   GROUPLOC	gloc;
   void		*handle;
   bool		retval, grouplocked = FALSE;
 
   if (Gib != NULL) {
-    if (data != NULL || len != NULL || (Cachesearch != NULL && !EQ(Cachesearch->group, group))) {
+    if (Cachesearch != NULL && !EQ(Cachesearch->group, group)) {
       DISPOSE(Gib);
       Gib = NULL;
-      if (Cachesearch != NULL) {
-        DISPOSE(Cachesearch->group);
-        DISPOSE(Cachesearch);
-        Cachesearch = NULL;
-      }
+      DISPOSE(Cachesearch->group);
+      DISPOSE(Cachesearch);
+      Cachesearch = NULL;
     } else {
       if (gettoken(artnum, token))
 	return TRUE;
@@ -1894,7 +1892,7 @@ bool buffindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, T
     GROUPlock(gloc, INN_LOCK_UNLOCK);
     return FALSE;
   }
-  retval = buffindexed_search(handle, NULL, data, len, token, NULL);
+  retval = buffindexed_search(handle, NULL, NULL, NULL, token, NULL);
   ovclosesearch(handle, FALSE);
   GROUPlock(gloc, INN_LOCK_UNLOCK);
   return retval;

@@ -250,7 +250,7 @@ overview_verify_data(const char *data)
         start = overview_data_parse(buffer, &artnum);
 
         /* Now check that the overview data is correct for that group. */
-        if (!tradindexed_getartinfo(buffer, artnum, NULL, NULL, &token)) {
+        if (!tradindexed_getartinfo(buffer, artnum, &token)) {
             warn("No overview data found for %s:%lu", buffer, artnum);
             status = false;
             continue;

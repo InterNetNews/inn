@@ -932,12 +932,12 @@ void tradindexed_closesearch(void *handle) {
     DISPOSE(search);
 }
 
-bool tradindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token) {
+bool tradindexed_getartinfo(char *group, ARTNUM artnum, TOKEN *token) {
     void                *handle;
     bool                retval;
     if (!(handle = tradindexed_opensearch(group, artnum, artnum)))
 	return FALSE;
-    retval = tradindexed_search(handle, NULL, data, len, token, NULL);
+    retval = tradindexed_search(handle, NULL, NULL, NULL, token, NULL);
     tradindexed_closesearch(handle);
     return retval;
 }

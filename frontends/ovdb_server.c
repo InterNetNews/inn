@@ -356,13 +356,11 @@ do_artinfo(struct reader *r)
     int len;
 
     /*syslog(LOG_DEBUG, "OVDB: rs: do_artinfo: '%s' %d", group, cmd->artlo);*/
-    if(ovdb_getartinfo(group, cmd->artlo, &data, &len, &token)) {
-    	reply = NEW(char, (sizeof(struct rs_artinfo) + len));
+    if(ovdb_getartinfo(group, cmd->artlo, &token)) {
+    	reply = NEW(char, (sizeof(struct rs_artinfo)));
 	reply->status = CMD_ARTINFO;
-	reply->len = len;
 	reply->token = token;
-	memcpy((char *)reply + sizeof(struct rs_artinfo), data, len);
-	r->buflen = sizeof(struct rs_artinfo) + len;
+	r->buflen = sizeof(struct rs_artinfo);
     } else {
     	reply = NEW(struct rs_artinfo, 1);
 	reply->status = CMD_ARTINFO | RPLY_ERROR;

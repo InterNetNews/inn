@@ -22,7 +22,7 @@ typedef struct {
     void	*(*opensearch)(char *group, int low, int high);
     bool	(*search)(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived);
     void	(*closesearch)(void *handle);
-    bool	(*getartinfo)(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token);
+    bool	(*getartinfo)(char *group, ARTNUM artnum, TOKEN *token);
     bool	(*expiregroup)(char *group, int *lo, struct history *h);
     bool	(*ctl)(OVCTLTYPE type, void *val);
     void	(*close)(void);
