@@ -71,33 +71,8 @@ Xstop)
 ;;
 esac
 
-
-AZ=ABCDEFGHIJKLMNOPQRSTUVWXYZ
-az=abcdefghijklmnopqrstuvwxyz
 ##  Pick ${INND} or ${INNDSTART}
 WHAT=${INNDSTART}
-##  Set to true or false
-: ${DOINNWATCH:=true}
-DOINNWATCH=`echo ${DOINNWATCH} | tr ${AZ} ${az}`
-if [ -z "${DOINNWATCH}" \
-     -o "${DOINNWATCH}" = "on" \
-     -o "${DOINNWATCH}" = "true" \
-     -o "${DOINNWATCH}" = "yes" ]; then
-    DOINNWATCH=true
-else
-    DOINNWATCH=false
-fi
-
-: ${DOCNFSSTAT:=false}
-DOCNFSSTAT=`echo ${DOCNFSSTAT} | tr ${AZ} ${az}`
-if [ -z "${DOCNFSSTAT}" \
-     -o "${DOCNFSSTAT}" = "on" \
-     -o "${DOCNFSSTAT}" = "true" \
-     -o "${DOCNFSSTAT}" = "yes" ]; then
-    DOCNFSSTAT=true
-else
-    DOCNFSSTAT=false
-fi
 
 MAIL="${MAILCMD} -s 'Boot-time Usenet warning on `hostname`' ${NEWSMASTER}"
 
