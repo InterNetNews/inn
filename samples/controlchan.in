@@ -1,0 +1,394 @@
+#!@_PATH_PERL@
+###########################################################################
+# controlchan - read a feed, sniff out control messages, and send them to
+# the appropriate script, meow a bit as needed.
+#
+# Version 0.2.2, 18-AUG-1998
+#
+# Give this program its own newsfeed.  Make sure that you've created the
+# newsgroup control.cancel so that you don't have to scan through cancels,
+# which this program won't process anyway.
+#
+# Make a newsfeeds entry like this:
+#
+# controlchan\
+#    :!*,control,control.*,!control.cancel\
+#    :Tc,Wnm\
+#    :/news/bin/controlchan
+#
+# And don't forget to comment out the dispatch stuff in art.c!
+###########################################################################
+
+require 5.004;
+
+## *** Change this to be correct for your site. *** ##
+require "@LIBDIR@/innshellvars.pl" ;
+
+
+my $lastctl = 0;
+my $newctldir = "$inn::newsbin/newcontrol";
+
+my (@headers, %hdrcount, %hdrval, $msgid, $token, $progname, @progparams,
+    $pathhost, @ctllist, $action, $logname, $act_log, $errmsg, @ctlprogs,
+    $subfind, $SM);
+
+
+# If we have $newsbin/sm, this must be an INN 2.x installation.
+# Otherwise, we'll plop in the cat commanjd to fake it on older
+# servers.  Sure it would be more efficient to open the article
+# directly when it's possible, but I'm lazy.
+if (-e "$inn::newsbin/sm") {
+    $SM = "$inn::newsbin/sm";
+}
+else {
+    $SM = "cat";
+}
+
+
+# Scan the newcontrol directory and load *.pl.  This will bring in the
+# new-style control scripts.  For controlchan to use a perl control
+# instead of falling back to the old shell system, it must be declared
+# as a sub in the form control_xxx.  For example, if control_newgroup()
+# exists, we will use that when encountering a newgroup control.  If
+# control_newgroup() is undefined, we'll use the old shell version.
+opendir(CTLDIR, $newctldir);
+@ctlprogs = grep(/\.pl$/, readdir(CTLDIR));
+closedir(CTLDIR);
+for (@ctlprogs) {
+    s/^/$newctldir\//;
+    do($_);
+}
+
+CHANITEM:
+while (<STDIN>) {
+    undef(@headers);
+    undef(%hdrcount);
+    undef(%hdrval);
+
+    chomp;
+    ($token, $msgid) = split(/\s+/, $_);
+    if (not ($token =~ /^\@.+\@$/ or /^\//)) {
+        $token = $inn::spool . '/' . $token;
+    }
+
+    open(ARTICLE, "$SM -q $token|");
+
+    # suck in headers, normalize the strange ones.
+    GETHEADERS:
+    while (<ARTICLE>) {
+        chomp;
+        s/\s+$//;
+        last GETHEADERS if $_ =~ /^$/;
+        s/^Also-Control:/Control:/i;
+        s/^Supersedes:/Control: cancel/i;
+        push @headers, $_;
+        s/:.+//;
+        $hdrcount{lc($_)}++;
+    }
+    close ARTICLE;
+
+    # warn on failed header retrieval?
+if (1) {
+    if (not @headers) {
+        logger($token, "controlchan",
+               "No headers in article $msgid\n");
+        next CHANITEM;
+    }
+} # (0/1)
+
+    if (not exists $hdrcount{approved}) {
+        $hdrcount{approved} = 0;
+    }
+
+    # check for duplicate controls/supersedes; these are goof-ups or
+    # denial-of-service attacks, don't process.
+    if ($hdrcount{control} > 1) {
+        logger($token, "controlchan",
+               "Multiple control headers in in article $msgid");
+        next CHANITEM;
+    }
+
+    # Dig out Sender, From, Reply-to, Control, Path.  If duplicates,
+    # use the first found.  Innd should have weeded out some of this
+    # but the paranoia can't hurt.
+    for (@headers) {
+        if ((/^Sender:/i) && (not defined($hdrval{Sender}))) {
+            $hdrval{Sender} = $_;
+            $hdrval{Sender} =~ s/^[^:]*:\s+//;
+        }
+        elsif ((/^From:/i) && (not defined($hdrval{From}))) {
+            $hdrval{From} = $_;
+            $hdrval{From} =~ s/^[^:]*:\s+//;
+        }
+        elsif ((/^Reply-To:/i) && (not defined($hdrval{'Reply-To'}))) {
+            $hdrval{'Reply-To'} = $_;
+            $hdrval{'Reply-To'} =~ s/^[^:]*:\s+//;
+        }
+        elsif ((/^Control:/i) && (not defined($hdrval{Control}))) {
+            $hdrval{Control} = $_;
+            $hdrval{Control} =~ s/^[^:]+:\s+//;
+        }
+        elsif ((/^Path:/i) && (not defined($hdrval{Path}))) {
+            $hdrval{Path} = $_;
+            $hdrval{Path} =~ s/^[^:]*:\s+//;
+        }
+        elsif ((/^Subject:/i) && (not defined($hdrval{Subject}))) {
+            $hdrval{Subject} = $_;
+            $hdrval{Subject} =~ s/^[^:]*:\s+//;
+        }
+    }
+
+
+    if ((not defined $hdrval{Control}) && ($hdrval{Subject} =~ /^cmsg\s(.+)/)) {
+        $hdrval{Control} = $1;
+        $hdrcount{control} = 1;
+    }
+
+    next CHANITEM if (not exists $hdrcount{control});
+
+    if (not defined($hdrval{Sender})) {
+        $hdrval{Sender} = $hdrval{From};
+    }
+    $hdrval{Sender} = CleanAddy($hdrval{Sender});
+
+    if (not defined($hdrval{'Reply-To'})) {
+        $hdrval{'Reply-To'} = $hdrval{From};
+    }
+    $hdrval{'Reply-To'} = CleanAddy($hdrval{'Reply-To'});
+
+    $hdrval{Path} =~ s/^[^!]+!//;
+    $hdrval{Path} =~ s/[^\w\d\.\-\_].+//;
+
+    $hdrval{Control} =~ s/\s+/ /g;
+
+    if ($hdrval{Control} =~ /\s/) {
+        $hdrval{Control} =~ /^(\S+)(\s+)?(.+)?/;
+        $progname = lc($1);
+        @progparams = split(/\s+/, lc($3));
+    } else {
+        $progname = lc($hdrval{Control});
+    }
+
+    next CHANITEM if ($progname =~ /^(cancel|sendsys|version)$/);
+
+    if ($progname =~ /[^\w\d-]/) {
+                logger($token, "controlchan",
+                       "Naughty control in article $msgid");
+                next CHANITEM;
+    }
+
+    # Do we want to process the message?  Let's check the permissions.
+    ($action, $logname) = split(/=/, ctlperm($progname,
+            $hdrval{Sender}, $progparams[0], $token));
+    $act_log = $action;
+    if ($logname) { $act_log .= "=" . $logname }
+
+    #print"$progname:$hdrval{Sender}:@progparams:$action=$logname\n";
+
+    if ($action eq "drop") {
+	next CHANITEM;
+    }
+    elsif ($action =~ /^_pgp/) {
+        $errmsg = "skipping $progname ";
+        if ($progparams[0] eq "newgroup") {
+            if ($progparams[1] eq "moderated") {
+                $errmsg .= "m ";
+            } else {
+                $errmsg .= "y ";
+            }
+        }
+        $errmsg .= $hdrval{Sender} . " ";
+
+        if ($action eq "_pgpnone") {
+            $errmsg .= "(no PGP signature)"
+        } elsif ($action eq "_pgpbad") {
+            $errmsg .= "(bad PGP signature)"
+        } elsif ($action eq "_pgpunknown") {
+            $errmsg .= "(unknown PGP signature)"
+        } else {
+            $errmsg .= "(pgpverify error)"
+        }
+        logger($token, $logname, $errmsg);
+	next CHANITEM;
+    }
+
+    $subfind = "control_$progname";
+    if (defined (&$subfind)) {	# It's a new-style control message.
+	print "$subfind ", join(" ", @progparams),
+              " $hdrval{Sender} $hdrval{'Reply-To'}, $token, ",
+              "$hdrval{Path}, $act_log, $hdrcount{approved}\n";
+
+        &$subfind (join(" ", @progparams), $hdrval{Sender},
+	           $hdrval{'Reply-To'}, $token, $hdrval{Path},
+	           $act_log, $hdrcount{approved});
+    }
+    else {                      # old style
+        $progname = $inn::controlprogs . '/' . $progname ;
+    	if (-e $progname) {
+            system("'$progname' '$hdrval{Sender}' " .
+                   "'$hdrval{'Reply-To'}' '$token' '$hdrval{Path}'");
+        }
+        else {
+            if ($logname eq "mail") {
+                logger($token, "mail",
+                       "Unknown control message by $hdrval{Sender}");
+            }
+            elsif ($logname) {
+                logger($token, "control",
+                       "Unknown control message by $hdrval{Sender}");
+            }
+            else {
+            	$progname =~ s/.*\///;
+                print("Unknown [$progname] control by $hdrval{Sender}\n");
+            }
+        }
+    }
+}
+
+
+# Strip a mail address, innd-style.
+sub CleanAddy {
+        $_ = shift;
+        s/(\s+)?\(.*\)(\s+)?//g;
+        s/^.*<(.*)>.*$/$1/;
+        return $_;
+}
+
+
+# Read control.ctl and put it into @ctllist.
+#  Params:  none
+#  Returns: none
+sub readctlfile {
+    my @ctlstat = stat($inn::ctlfile);
+    return if ($lastctl == $ctlstat[9]); # mtime hasn't changed.
+
+    undef(@ctllist);
+    open(CTLFILE, "<$inn::ctlfile") or die;
+    while (<CTLFILE>) {
+        chomp;
+        # Not a comment or blank? Convert wildmat to regex
+        if (/^(\s+)?[^#]/ and not (/^$/)) {
+            s/\./\\\./g;
+            s/\@/\\\@/g;
+            s/\*/\.\*/g;
+            s/\$/\\\$/g;
+            s/\?/\./g;
+            s/(.*)/\^$1\$/;
+            s/:/\$:\^/g;
+            push(@ctllist, $_);
+        }
+    }
+    close(CTLFILE);
+    $lastctl = $ctlstat[9];
+}
+
+
+# Parse a control message's permissions.
+#   Params:  (controltype, sender, newsgroup, token)
+#   Returns: action
+sub ctlperm {
+    my $controltype = shift;
+    my $sender = shift;
+    my $newsgroup = shift;
+    my $token = shift;
+
+    my $action = "drop";
+
+    my @ctlline;
+
+    readctlfile();
+
+    for (@ctllist) {
+        @ctlline = split(/:/);
+        if ((($controltype =~ /$ctlline[0]/) and ($sender =~ /$ctlline[1]/))
+                and
+                (($newsgroup eq '') or ($newsgroup =~ $ctlline[2])) ) {
+            $action = $ctlline[3];
+            $action =~ s/.(.+)./$1/;
+        $action =~ s/\\//g;
+        }
+    }
+
+    if ($action =~ /^verify-/) {
+        $command = "$SM $token | $inn::newsbin/pgpverify >/dev/null";
+        $result = system ($command) / 256;
+
+        if ($result == 0) {
+            $action =~ s/^[^=]+/doit/;
+        }
+        elsif ($result == 1) {
+            $action =~ s/^[^=]+/_pgpnone/;
+        }
+        elsif ($result == 2) {
+            $action =~ s/^[^=]+/_pgpunknown/;
+        }
+        elsif ($result == 3) {
+            $action =~ s/^[^=]+/_pgpbad/;
+        }
+        else {
+            $action =~ s/^[^=]+/_pgpfail/;
+        }
+    }
+    return($action);
+}
+
+# Write stuff to a log.
+#  Params:  (token, logfile, message)
+sub logger {
+    my $token = shift;
+    my $logfile = shift;
+    my $message = shift;
+    my ($lockfile, $locktry, $lockpid);
+    my $pid = $$;
+
+    if (($logfile !~ /\//) && ($logfile ne "mail")) {
+        $logfile = "$inn::most_logs/$logfile.log";
+    }
+
+    if ($logfile eq "mail") {
+        open(LOGFILE,
+	     "|$inn::newsbin/innmail -s '$message' $inn::newsmaster");
+        open(ARTICLE, "$SM -q $token|");
+        for (<ARTICLE>) { print LOGFILE ("    ", $_) }
+        close (ARTICLE);
+        close (LOGFILE);
+        return;
+    }
+
+    my $shlock = "$inn::newsbin" . "/shlock";
+
+    $inn::locks = $inn::locks;
+    $lockfile = $logfile;
+    $lockfile =~ s/.*\///;
+    $lockfile = "$inn::locks/LOCK." . $lockfile;
+
+    # We want to make sure the log is ours.  Use shlock so as not
+    # to confluse other, older programs.
+    $locktry = 0;
+    GETLOGLOCK:
+    while ($locktry < 60) {
+        if (system("$shlock -p $pid -f $lockfile")) {
+            $locktry++;
+            sleep(2);
+        } else {
+            $locktry = -1;
+            last GETLOGLOCK;
+        }
+    }
+
+    if ($locktry < 0) {        # we got the lock
+        open(LOGFILE, ">>$logfile");
+        print LOGFILE $message,"\n";
+        open(ARTICLE, "$SM -q $token|");
+        for (<ARTICLE>) { print LOGFILE ("    ", $_) }
+	print LOGFILE "\n";
+        close (ARTICLE);
+        close (LOGFILE);
+        unlink $lockfile;
+    } else {
+        open LOCKFILE, $lockfile;
+        $lockpid = <LOCKFILE>;
+        close LOCKFILE;
+        print "Cannot get lock $lockfile, held by: $lockpid\n"
+    }
+}

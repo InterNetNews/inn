@@ -61,17 +61,17 @@ ME\
 ## Create the links for cross posted articles
 ## If you use this you MUST add -L option to FLAGS in rc.news.
 ## see innd(8)
-#crosspost:*:Tc,Ap,WR:/usr/news/bin/crosspost
+#crosspost:*:Tc,Ap,WR:@prefix@/bin/crosspost
 
 # Feed all moderated source postings to an archiver
 #source-archive!:!*,*sources*,!*wanted*,!*.d\
-#	:Tc,Wn:/usr/news/bin/archive -f -i /usr/spool/news.archive/INDEX
+#	:Tc,Wn:@prefix@/bin/archive -f -i /usr/spool/news.archive/INDEX
 
 ##  News overview
 # use this flag if storage api is used
-#overview!:*:Tc,Ao,WhR,S30000:/usr/news/bin/overchan
+#overview!:*:Tc,Ao,WhR,S30000:@prefix@/bin/overchan
 # else
-#overview!:*:Tc,WO,S30000:/usr/news/bin/overchan
+#overview!:*:Tc,WO,S30000:@prefix@/bin/overchan
 
 # Feed all local non-internal postings to nearnet; sent off-line via
 # nntpsend or send-nntp.
@@ -84,7 +84,7 @@ ME\
 # token.
 #uunet\
 #	:/!foo\
-#	:Tc,Wnm:/usr/news/bin/nntplink -i stdin news.uu.net
+#	:Tc,Wnm:@prefix@/bin/nntplink -i stdin news.uu.net
 
 # Capture all Foo, Incorporated, postings
 #capture\
@@ -101,10 +101,15 @@ ME\
 # would cause a problem that innfeed drops the first article.
 #innfeed!:\
 #	!*,\
-#	:Tc,Wnm*,S30000:/usr/local/news/bin/startinnfeed
+#	:Tc,Wnm*,S30000:@prefix@/bin/startinnfeed
 
 # A real-time feed through innfeed.
 #news.uu.net/uunet\
 #	:!junk,!control/!foo\
 #	:Tm:innfeed!
+
+# Use an external program to handle control messages, except cancel
+#controlchan\
+#	:!*,control,control.*,!control.cancel\
+#	:Tc,Wnm:@prefix@/bin/controlchan
 

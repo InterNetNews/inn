@@ -1,0 +1,120 @@
+#!@_PATH_PERL@
+# rmgroup.pl - The rmgroup control message.
+# Version 0.1, 8-AUG-1998
+#  Parameters: params sender reply-to token site action[=log] approved
+sub control_rmgroup {
+    my @params = split(/\s+/,shift);
+    my $sender = shift;
+    my $replyto = shift;
+    my $token = shift;
+    my $site = shift;
+    my ($action, $logging) = split(/=/, shift);
+    my $approved = shift;
+
+    my $groupname = $params[0];
+
+    my $pid = $$;
+    my $tempfile = "$inn::tmpdir/rmgroup.$pid";
+
+    my ($errmsg, $status, $nc, @component, @oldgroup, $locktry,
+	$ngname, $ngdesc, $modcmd);
+
+    # Scan active to see what sort of change we are making.
+    open ACTIVE, $inn::active;
+    @oldgroup = grep(/^$groupname\s/, <ACTIVE>);
+    @oldgroup = split(/\s+/, $oldgroup[0]);
+    print "MEOW: $oldgroup[0] $oldgroup[1] $oldgroup[2] $oldgroup[3] $modflag\n";
+    close ACTIVE;
+    if (! (scalar @oldgroup)) {
+        $status = "no change";
+    }
+    elsif (! $approved) {
+        $status = "unapproved";
+    }
+    else {
+        $status = "removed";
+    }
+
+    if ($action eq "mail" && ($status !~ /(no change|unapproved)/)) {
+        open(TEMPFILE, ">$tempfile");
+        print TEMPFILE ("$sender asks for $groupname\n");
+        print TEMPFILE ("to be $status.\n\n");
+        print TEMPFILE ("If this is acceptable, type:\n");
+        print TEMPFILE ("  $inn::newsbin/ctlinnd rmgroup ",
+                        "$groupname\n\n");
+        print TEMPFILE ("The control message follows:\n\n");
+        open(ARTICLE, "$inn::newsbin/sm $token|");
+        while (<ARTICLE>) { print TEMPFILE $_ }
+        close(ARTICLE);
+        close(TEMPFILE);
+        logger($tempfile, "mail",
+               "rmgroup $groupname $sender\n");
+        unlink($tempfile);
+    }
+    elsif ($action eq "log") {
+        if (!$logging) {
+        print "skipping rmgroup $groupname ",
+               "$sender (would be $status)\n";
+        }
+        else {
+            logger($token, $logging,
+                   "skipping rmgroup $groupname " .
+                   "$sender (would be $status)");
+        }
+    }
+    elsif (($action eq "doit") && ($status !~ /(no change|unapproved)/)) {
+        # Remove the group.  Meow!
+        system("$inn::newsbin/ctlinnd " .
+               "-s rmgroup $groupname");
+
+        # Update newsgroups too.
+        # Get a lock on newsgroups
+        $locktry = 0;
+        GETNGLOCK:
+        while ($locktry < 60) {
+            if (system("$inn::newsbin/shlock -p $pid -f " .
+                "$inn::locks/LOCK.newsgroups")) {
+                $locktry++;
+                sleep(2);
+            }
+	    else {
+                $locktry = -1;
+                last GETNGLOCK;
+            }
+        }
+
+        if ($locktry > -1) {
+            print "Cannot get lock $inn::locks/LOCK.newsgroups";
+        }
+        else {
+            open(NEWSGROUPS, "<$newsgroups");
+            open(TEMPFILE, ">$tempfile");
+            while (<NEWSGROUPS>) {
+                if (! /$groupname\s/) {
+                    print TEMPFILE $_;
+                }
+            }
+            open(TEMPFILE, "<$tempfile");
+            open(NEWSGROUPS, ">$newsgroups");
+            while (<TEMPFILE>) {
+                print NEWSGROUPS $_;
+            }
+            close TEMPFILE;
+            close NEWSGROUPS;
+            unlink "$inn::locks/LOCK.newsgroups";
+        }
+
+        # Now, log what we did.
+        if ($logging) {
+            $errmsg = "rmgroup $groupname ";
+            $errmsg .=  $status . " ";
+            $errmsg .= $sender;
+            if ($logging eq "mail") {
+                logger($token, "mail", $errmsg);
+            }
+            else {
+                logger($token, "rmgroup", $errmsg);
+            }
+        }
+    }
+}
