@@ -188,7 +188,7 @@ ID	[a-zA-Z][-a-zA-Z0-9._/]+
                           yylval.string = strPtr ;
                           strPtr = 0 ;
                           strPtrLen = strIdx = 0 ;
-                          return (STRING) ;
+                          return (XSTRING) ;
                         }
                       break ;
 
@@ -225,7 +225,7 @@ ID	[a-zA-Z][-a-zA-Z0-9._/]+
               }
             else
               {
-                return (STRING) ;
+                return (XSTRING) ;
               }
           }
 }}

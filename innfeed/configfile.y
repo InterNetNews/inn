@@ -685,7 +685,7 @@ static char *key ;
 %token IVAL
 %token RVAL
 %token NAME
-%token STRING
+%token XSTRING
 %token SCOPE
 %token COLON
 %token LBRACE
@@ -771,7 +771,7 @@ value:	WORD {
 			YYABORT ; 
                 free (key) ;
 	}
-	| STRING { 
+	| XSTRING { 
 		if ((errbuff = addString (currScope, key, $1.string)) != NULL)
 			YYABORT;
                 free (key) ;
