@@ -380,6 +380,12 @@ There must be exactly one such entry, and it should be the first entry
 in the file.
 If the
 .I ME
+entry has an exclusion sub-field, then the articles are rejected
+if any of the names specified as
+.IR exclude s
+appear in the Path header.
+If the
+.I ME
 entry has a subscription list, then that list is automatically
 prepended to the subscription list of all other entries.
 For example, ``*,!control,!junk,!foo.*'' can be used to set up the
