@@ -568,11 +568,19 @@ STATIC BOOL SITEstartprocess(SITE *sp)
     int			*ip;
     int			pan[2];
 
+#if HAVE_SOCKETPAIR
+    /* Create a socketpair. */
+    if (socketpair(PF_UNIX, SOCK_STREAM, 0, pan) < 0) {
+	syslog(L_ERROR, "%s cant socketpair %m", sp->Name);
+	return FALSE;
+    }
+#else
     /* Create a pipe. */
     if (pipe(pan) < 0) {
 	syslog(L_ERROR, "%s cant pipe %m", sp->Name);
 	return FALSE;
     }
+#endif
     CloseOnExec(pan[PIPE_WRITE], TRUE);
 
     /* Set up the argument vector. */
