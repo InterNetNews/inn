@@ -64,7 +64,7 @@ if [ -z "${HISTDIR}" -o X"." = X"${HISTDIR}" -o ! -d "${HISTDIR}" ]; then
     fi
 fi
 ENABLEOVERVIEW=`echo X${ENABLEOVERVIEW} | tr ${AZ} ${az}`
-if [ ${ENABLEOVERVIEW} = X"true" -o X${ENABLEOVERVIEW} = X"yes" -o X${ENABLEOVERVIEW} = X"on" ]; then
+if [ ${ENABLEOVERVIEW} = x"true" -o ${ENABLEOVERVIEW} = x"yes" -o ${ENABLEOVERVIEW} = x"on" ]; then
     DOEXPIREOVER=true
     RMFILE=${MOST_LOGS}/expire.rm
 fi
@@ -78,7 +78,7 @@ SCANARG=
 DOGROUPBASEEXPIRY=false
 
 GROUPBASEEXPIRY=`echo X${GROUPBASEEXPIRY} | tr ${AZ} ${az}`
-if [ ${GROUPBASEEXPIRY} = X"true" -o X${GROUPBASEEXPIRY} = X"yes" -o X${GROUPBASEEXPIRY} = X"on" ]; then
+if [ ${GROUPBASEEXPIRY} = x"true" -o ${GROUPBASEEXPIRY} = x"yes" -o ${GROUPBASEEXPIRY} = x"on" ]; then
     DOEXPIREOVER=true
     RMFILE=${MOST_LOGS}/expire.rm
     DOGROUPBASEEXPIRY=true
@@ -248,7 +248,7 @@ ${DOLOGS} && {
 }
 
 # group based expiry (delete expired overview first)
-if [ ${DOGROUPBASEEXPIRY} -a ${DOEXPIREOVER} ] ; then
+if [ ${DOGROUPBASEEXPIRY} = true -a ${DOEXPIREOVER} = true ] ; then
     if ${DOEXPLOG}; then
 	echo "${EXPIREOVER} start `date`: (${EXPIREOVERFLAGS})" >>${EXPLOG}
     fi
@@ -405,7 +405,7 @@ esac
 rm ${LOCK}
 
 ## Remove the articles that are supposed to go
-if [ ${DOEXPIRE} -a ! ${DOGROUPBASEEXPIRY} ] ; then
+if [ ${DOEXPIRE} = true -a ${DOGROUPBASEEXPIRY} != true ] ; then
     test -n "${RMFILE}" -a -s "${RMFILE}" && {
 	mv ${RMFILE} ${RMFILE}.$$ && RMFILE=${RMFILE}.$$
 
