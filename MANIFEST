@@ -566,8 +566,12 @@ storage/interface.h                   Storage API interface
 storage/ov.c                          Overview API glue implementation
 storage/ov3                           tradindexed overview method (Directory)
 storage/ov3/Makefile                  Makefile for tradindexed overview
+storage/ov3/group.c                   Group index handling for tradindexed
 storage/ov3/ov3.c                     tradindexed overview routines
 storage/ov3/ovmethod.config           ovbuildconfig definition
+storage/ov3/private.h                 Private interface for tradindexed
+storage/ov3/structure.h               On-disk data structures for tradindexed
+storage/ov3/tdx-util.c                Utility program for tradindexed
 storage/ov3/tradindexed.h             Header file for tradindexed overview
 storage/ovdb                          ovdb overview method (Directory)
 storage/ovdb/Makefile                 Makefile for ovdb overview method
@@ -649,4 +653,10 @@ tests/lib/xmalloc.t                   Tests for lib/xmalloc.c
 tests/lib/xwrite-t.c                  Tests for lib/xwrite.c
 tests/libtest.c                       Helper library for writing tests
 tests/libtest.h                       Interface to libtest
+tests/overview                        Test suite for overview (Directory)
+tests/overview/data                   Test overview data (Directory)
+tests/overview/data/basic             Basic set of overview test data
+tests/overview/data/reversed          Same as basic, but in reverse order
+tests/overview/munge-data             Support script to generate test data
+tests/overview/tradindexed-t.c        Tests for storage/ov3/*
 tests/runtests.c                      The test suite driver program
