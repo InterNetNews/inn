@@ -12,9 +12,11 @@
 #include <sys/uio.h>
 
 #include "inn/innconf.h"
+#include "inn/messages.h"
 #include "nnrpd.h"
 #include "ov.h"
 #include "tls.h"
+#include "cache.h"
 
 #ifdef HAVE_SSL
 extern SSL *tls_conn;
@@ -58,8 +60,9 @@ static SENDDATA		SENDhead = {
 static struct iovec	iov[IOV_MAX > 1024 ? 1024 : IOV_MAX];
 static int		queued_iov = 0;
 
-static bool PushIOvHelper(struct iovec* vec, int* countp) {
+static void PushIOvHelper(struct iovec* vec, int* countp) {
     int result;
+    TMRstart(TMR_NNTPWRITE);
 #ifdef HAVE_SSL
     result = tls_conn
 	     ? SSL_writev(tls_conn, vec, *countp)
@@ -67,11 +70,17 @@ static bool PushIOvHelper(struct iovec* vec, int* countp) {
 #else
     result = xwritev(STDOUT_FILENO, vec, *countp);
 #endif
+    TMRstop(TMR_NNTPWRITE);
     *countp = 0;
-    return (result <= 0 ? FALSE : TRUE);
+    if (result == -1) {
+	/* we can't recover, since we can't resynchronise with our
+	 * peer */
+	ExitWithStats(1, TRUE);
+    }
 }
 
-static bool PushIOvRateLimited(void) {
+static void
+PushIOvRateLimited(void) {
     struct timeval      start, end;
     struct iovec        newiov[IOV_MAX > 1024 ? 1024 : IOV_MAX];
     int                 newiov_len;
@@ -102,8 +111,7 @@ static bool PushIOvRateLimited(void) {
 	}
 	assert(sentiov <= queued_iov);
 	gettimeofday(&start, NULL);
-	if (PushIOvHelper(newiov, &newiov_len) == FALSE)
-	    return FALSE;
+	PushIOvHelper(newiov, &newiov_len);
 	gettimeofday(&end, NULL);
 	/* Normalize it so we can just do straight subtraction */
 	if (end.tv_usec < start.tv_usec) {
@@ -129,61 +137,70 @@ static bool PushIOvRateLimited(void) {
 	memmove(iov, &iov[sentiov], (queued_iov - sentiov) * sizeof(struct iovec));
 	queued_iov -= sentiov;
     }
-    return TRUE;
 }
 
-static bool PushIOv(void) {
+static void
+PushIOv(void) {
+    TMRstart(TMR_NNTPWRITE);
     fflush(stdout);
+    TMRstop(TMR_NNTPWRITE);
     if (MaxBytesPerSecond != 0)
-	return PushIOvRateLimited();
-    return PushIOvHelper(iov, &queued_iov);
+	PushIOvRateLimited();
+    else
+	PushIOvHelper(iov, &queued_iov);
 }
 
-static bool SendIOv(const char *p, int len) {
+static void
+SendIOv(const char *p, int len) {
     char                *q;
 
     if (queued_iov) {
 	q = (char *)iov[queued_iov - 1].iov_base + iov[queued_iov - 1].iov_len;
 	if (p == q) {
 	    iov[queued_iov - 1].iov_len += len;
-	    return TRUE;
+	    return;
 	}
     }
     iov[queued_iov].iov_base = (char*)p;
     iov[queued_iov++].iov_len = len;
-    if (queued_iov == sizeof(iov)/sizeof(iov[0]))
-        return PushIOv();
-    return TRUE;
+    if (queued_iov == IOV_MAX)
+	PushIOv();
 }
 
 static char		*_IO_buffer_ = NULL;
 static int		highwater = 0;
 
-static bool PushIOb(void) {
+static void
+PushIOb(void) {
+    TMRstart(TMR_NNTPWRITE);
     fflush(stdout);
 #ifdef HAVE_SSL
     if (tls_conn) {
       if (SSL_write(tls_conn, _IO_buffer_, highwater) != highwater) {
+	TMRstop(TMR_NNTPWRITE);
         highwater = 0;
-        return FALSE;
+        return;
       }
     } else {
-      if (write(STDOUT_FILENO, _IO_buffer_, highwater) != highwater) {
+      if (xwrite(STDOUT_FILENO, _IO_buffer_, highwater) != highwater) {
+	TMRstop(TMR_NNTPWRITE);
 	highwater = 0;
-	return FALSE;
+	return;
       }
     }
 #else
-    if (write(STDOUT_FILENO, _IO_buffer_, highwater) != highwater) {
+    if (xwrite(STDOUT_FILENO, _IO_buffer_, highwater) != highwater) {
+	TMRstop(TMR_NNTPWRITE);
         highwater = 0;
-        return FALSE;
+        return;
     }
 #endif
+    TMRstop(TMR_NNTPWRITE);
     highwater = 0;
-    return TRUE;
 }
 
-static bool SendIOb(const char *p, int len) {
+static void
+SendIOb(const char *p, int len) {
     int tocopy;
     
     if (_IO_buffer_ == NULL)
@@ -198,71 +215,6 @@ static bool SendIOb(const char *p, int len) {
         if (highwater == BIG_BUFFER)
             PushIOb();
     }
-    return TRUE;
-}
-
-
-/*
-**  Read the overview schema.
-*/
-bool ARTreadschema(void)
-{
-    static char			*SCHEMA = NULL;
-    FILE			*F;
-    char			*p;
-    ARTOVERFIELD		*fp;
-    int				i;
-    char			buff[SMBUF];
-    bool			foundxref = FALSE;
-    bool			foundxreffull = FALSE;
-
-    /* Open file, count lines. */
-    if (SCHEMA == NULL)
-	SCHEMA = concatpath(innconf->pathetc, _PATH_SCHEMA);
-    if ((F = fopen(SCHEMA, "r")) == NULL) {
-	syslog(L_ERROR, "%s Can't open %s, %s", ClientHost, SCHEMA, strerror(errno));
-	return FALSE;
-    }
-    for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
-	continue;
-    fseeko(F, 0, SEEK_SET);
-    ARTfields = NEW(ARTOVERFIELD, i + 1);
-
-    /* Parse each field. */
-    for (fp = ARTfields; fgets(buff, sizeof buff, F) != NULL; ) {
-	/* Ignore blank and comment lines. */
-	if ((p = strchr(buff, '\n')) != NULL)
-	    *p = '\0';
-	if ((p = strchr(buff, '#')) != NULL)
-	    *p = '\0';
-	if (buff[0] == '\0')
-	    continue;
-	if ((p = strchr(buff, ':')) != NULL) {
-	    *p++ = '\0';
-	    fp->NeedsHeader = EQ(p, "full");
-	}
-	else
-	    fp->NeedsHeader = FALSE;
-	fp->Header = COPY(buff);
-	fp->Length = strlen(buff);
-	if (caseEQ(buff, "Xref")) {
-	    foundxref = TRUE;
-	    foundxreffull = fp->NeedsHeader;
-	    fp++;
-	    ARTxreffield = fp - ARTfields - 1;
-	    fp->Header = COPY("Newsgroups");
-	    fp->Length = strlen("Newsgroups");
-	    continue;
-	}
-	fp++;
-    }
-    ARTfieldsize = fp - ARTfields;
-    (void)fclose(F);
-    if (!foundxref || !foundxreffull) {
-	syslog(L_ERROR, "%s 'Xref:full' must be included in %s", ClientHost, SCHEMA);
-	return FALSE;
-    }
-    return TRUE;
 }
 
 
@@ -305,7 +257,6 @@ static bool ARTopen(ARTNUM artnum)
 {
     static ARTNUM	save_artnum;
     TOKEN		token;
-    struct timeval	stv, etv;
 
     /* Re-use article if it's the same one. */
     if (save_artnum == artnum) {
@@ -317,16 +268,12 @@ static bool ARTopen(ARTNUM artnum)
     if (!OVgetartinfo(GRPcur, artnum, &token))
 	return FALSE;
   
-    gettimeofday(&stv, NULL);
-    if ((ARThandle = SMretrieve(token, RETR_ALL)) == NULL) {
-	gettimeofday(&etv, NULL);
-	ARTgettime += (etv.tv_sec - stv.tv_sec) * 1000;
-	ARTgettime += (etv.tv_usec - stv.tv_usec) / 1000;
+    TMRstart(TMR_READART);
+    ARThandle = SMretrieve(token, RETR_ALL);
+    TMRstop(TMR_READART);
+    if (ARThandle == NULL) {
 	return FALSE;
     }
-    gettimeofday(&etv, NULL);
-    ARTgettime += (etv.tv_sec - stv.tv_sec) * 1000;
-    ARTgettime += (etv.tv_usec - stv.tv_usec) / 1000;
 
     save_artnum = artnum;
     return TRUE;
@@ -336,29 +283,43 @@ static bool ARTopen(ARTNUM artnum)
 /*
 **  Open the article for a given Message-ID.
 */
-static bool ARTopenbyid(char *msg_id, ARTNUM *ap)
+static bool
+ARTopenbyid(char *msg_id, ARTNUM *ap)
 {
-    TOKEN		token;
-    struct timeval	stv, etv;
+    TOKEN token;
 
     *ap = 0;
-    if (!HISlookup(History, msg_id, NULL, NULL, NULL, &token))
-	return FALSE;
+    token = cache_get(HashMessageID(msg_id));
+    if (token.type == TOKEN_EMPTY) {
+	if (History == NULL) {
+	    time_t statinterval;
 
-    if (token.type == TOKEN_EMPTY)
-	return FALSE;
-    gettimeofday(&stv, NULL);
-    if ((ARThandle = SMretrieve(token, RETR_ALL)) == NULL) {
-	gettimeofday(&etv, NULL);
-	ARTgettime += (etv.tv_sec - stv.tv_sec) * 1000;
-	ARTgettime += (etv.tv_usec - stv.tv_usec) / 1000;
-	return FALSE;
+	    /* Do lazy opens of the history file - lots of clients
+	     * will never ask for anything by message id, so put off
+	     * doing the work until we have to */
+	    History = HISopen(HISTORY, innconf->hismethod, HIS_RDONLY);
+	    if (!History) {
+		syslog(L_NOTICE, "cant initialize history");
+		Reply("%d NNTP server unavailable. Try later.\r\n",
+		      NNTP_TEMPERR_VAL);
+		ExitWithStats(1, TRUE);
+	    }
+	    statinterval = 30;
+	    HISctl(History, HISCTLS_STATINTERVAL, &statinterval);
+	}
+	if (!HISlookup(History, msg_id, NULL, NULL, NULL, &token))
+	    return false;
     }
-    gettimeofday(&etv, NULL);
-    ARTgettime += (etv.tv_sec - stv.tv_sec) * 1000;
-    ARTgettime += (etv.tv_usec - stv.tv_usec) / 1000;
+    if (token.type == TOKEN_EMPTY)
+	return false;
+    TMRstart(TMR_READART);
+    ARThandle = SMretrieve(token, RETR_ALL);
+    TMRstop(TMR_READART);
+    if (ARThandle == NULL) {
+	return false;
+    }
 
-    return TRUE;
+    return true;
 }
 
 /*
@@ -366,7 +327,7 @@ static bool ARTopenbyid(char *msg_id, ARTNUM *ap)
 */
 static void ARTsendmmap(SENDTYPE what)
 {
-    char		*p, *q, *r;
+    const char		*p, *q, *r;
     const char		*s, *path, *xref, *endofpath;
     long		bytecount;
     char		lastchar;
@@ -497,7 +458,7 @@ char *GetHeader(const char *header)
     char		*p, *q, *r, *s, *t, prevchar;
     /* Bogus value here to make sure that it isn't initialized to \n */
     char		lastchar = ' ';
-    char		*limit;
+    const char		*limit;
     static char		*retval = NULL;
     static int		retlen = 0;
     int			headerlen;
@@ -812,103 +773,31 @@ static bool CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
 
 
 /*
-**  Return a field from the overview line or NULL on error.  Return a copy
-**  since we might be re-using the line later.
+**  Apply virtual hosting to an Xref field.
 */
-char *OVERGetHeader(char *p, int len, int field)
+static char *
+vhost_xref(const char *p)
 {
-    static char		*buff;
-    static int		buffsize;
-    int	                i, j = field;
-    ARTOVERFIELD	*fp;
-    char		*next, *q;
-    char                *newsgroupbuff;
-    bool                BuildingNewsgroups = FALSE;
+    char *space;
+    size_t offset;
+    char *field = NULL;
 
-    fp = &ARTfields[field];
-
-    if (caseEQ(fp->Header, "Newsgroups")) {
-	BuildingNewsgroups = TRUE;
-	fp = &ARTfields[ARTxreffield];
+    space = strchr(p, ' ');
+    if (space == NULL) {
+	warn("malformed Xref `%s'", field);
+	goto fail;
     }
-
-    /* Skip leading headers. */
-    for ( ; len >= 0 && field >= 0 && *p;) {
-	if ((q = memchr(p, '\t', len)) == NULL)
-	    return NULL;
-	else
-	    field--;
-	q++;
-	len -= q - p;
-	p = q;
+    offset = space + 1 - p;
+    space = strchr(p + offset, ' ');
+    if (space == NULL) {
+	warn("malformed Xref `%s'", field);
+	goto fail;
     }
-    if (len <= 0 || *p == '\0')
-	return NULL;
-
-    if (fp->NeedsHeader) {		/* find an exact match */
-	if (!caseEQn(fp->Header, p, fp->Length))
-	    return NULL;
-	p += fp->Length + 2;
-	/* skip spaces */
-	for (; *p && *p == ' ' ; p++);
-    }
-
-    /* Figure out length; get space. */
-    next = p;
-    i = len;
-    while (i >= 0 && *next != '\n' && *next != '\r' && *next != '\t') {
-	++next;
-	--i;
-    }
-    if (i <= 0) {
-	return NULL;
-    }
-    i = next - p;
-
-    if (buffsize == 0) {
-	buffsize = i + VirtualPathlen;
-	buff = NEW(char, buffsize + 1);
-    } else if (buffsize < i + VirtualPathlen) {
-	buffsize = i + VirtualPathlen;
-	RENEW(buff, char, buffsize + 1);
-    }
-
-    if ((VirtualPathlen > 0) && ARTxreffield == j) {
-	if ((q = memchr(p, ' ', len)) == NULL) {
-	    return NULL;
-	}
-	memcpy(buff, VirtualPath, VirtualPathlen - 1);
-	memcpy(&buff[VirtualPathlen - 1], q, next - q);
-	buff[VirtualPathlen - 1 + next - q] = '\0';
-    } else {
-        memcpy(buff, p, i);
-        buff[i] = '\0';
-    }
-
-    if (BuildingNewsgroups) {
-	newsgroupbuff = p = COPY(buff);
-	if ((p = strchr(p, ' ')) == NULL) {
-	    DISPOSE(newsgroupbuff);
-	    return NULL;
-	}
-
-	for (buff[0] = '\0', q = buff, p++; *p != '\0'; ) {
-	    if ((next = strchr(p, ':')) == NULL) {
-		DISPOSE(newsgroupbuff);
-		return NULL;
-	    }
-	    *next++ = '\0';
-	    strcat(q, p);
-	    q += (next - p - 1);
-	    if ((p = strchr(next, ' ')) == NULL)
-		break;
-	    *p = ',';
-	}
-	DISPOSE(newsgroupbuff);
-    }
-    return buff;
+    field = concat(PERMaccessconf->domain, space, NULL);
+ fail:
+    free(p);
+    return field;
 }
-
 
 /*
 **  XOVER another extension.  Dump parts of the overview database.
@@ -920,11 +809,13 @@ void CMDxover(int ac, char *av[])
     struct timeval	stv, etv;
     ARTNUM		artnum;
     void		*handle;
-    char		*data, *p, *q;
+    char		*data;
+    const char		*p, *q;
     int			len, useIOb = 0;
     TOKEN		token;
     ARTOVERFIELD	*fp;
     int	                field;
+    struct cvector *vector = NULL;
 
     if (!PERMcanread) {
 	Printf("%s\r\n", NOACCESS);
@@ -991,24 +882,16 @@ void CMDxover(int ac, char *av[])
 	    OVERhit++;
 	    OVERsize += len;
 	}
-	if (VirtualPathlen > 0) {
-	    /* replace path part */
-	    for (field = ARTxreffield, p = data ; field-- >= 0 && p < data + len; ) {
-		if ((p = memchr(p, '\t', data + len - p)) == NULL)
-		    break;
+	vector = overview_split(data, len, NULL, vector);
+	p = overview_getheader(vector, OVERVIEW_MESSAGE_ID, OVextra);
+	cache_add(HashMessageID(p), token);
+	free(p);
+	if (VirtualPathlen > 0 && overhdr_xref != -1) {
+	    p = vector->strings[overhdr_xref] + sizeof("Xref: ") - 1;
+	    while ((p < data + len) && *p == ' ')
 		++p;
-	    }
-	    if (!p || p >= data + len || *p == '\0')
-		continue;
-	    fp = &ARTfields[ARTxreffield];
-	    if (fp->NeedsHeader) {
-		if (!EQn(fp->Header, p, fp->Length))
-		    continue;
-		p += fp->Length + 2;
-		/* skip spaces */
-		for (; *p && *p == ' ' ; p++);
-	    }
-	    if ((q = memchr(p, ' ', data + len - p)) == NULL)
+	    q = memchr(p, ' ', data + len - p);
+	    if (q == NULL)
 		continue;
 	    if(useIOb) {
 		SendIOb(data, p - data);
@@ -1028,6 +911,10 @@ void CMDxover(int ac, char *av[])
 	if (PERMaccessconf->nnrpdoverstats)
 	    gettimeofday(&stv, NULL);
     }
+
+    if (vector)
+	cvector_free(vector);
+
     if (PERMaccessconf->nnrpdoverstats) {
         gettimeofday(&etv, NULL);
         OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
@@ -1051,6 +938,32 @@ void CMDxover(int ac, char *av[])
 
 }
 
+bool
+build_groups(char *buff)
+{
+    char *next, *p, *q, *newsgroupbuff;
+
+    newsgroupbuff = p = COPY(buff);
+    if ((p = strchr(p, ' ')) == NULL) {
+	DISPOSE(newsgroupbuff);
+	return false;
+    }
+
+    for (buff[0] = '\0', q = buff, p++; *p != '\0'; ) {
+	if ((next = strchr(p, ':')) == NULL) {
+	    DISPOSE(newsgroupbuff);
+	    return false;
+	}
+	*next++ = '\0';
+	strcat(q, p);
+	q += (next - p - 1);
+	if ((p = strchr(next, ' ')) == NULL)
+	    break;
+	*p = ',';
+    }
+    DISPOSE(newsgroupbuff);
+    return true;
+}
 
 /*
 **  XHDR and XPAT extensions.  Note that HDR as specified in the new NNTP
@@ -1075,6 +988,8 @@ void CMDpat(int ac, char *av[])
     char                *data;
     int                 len;
     TOKEN               token;
+    bool                BuildingNewsgroups = FALSE;
+    struct cvector *vector = NULL;
 
     if (!PERMcanread) {
 	Printf("%s\r\n", NOACCESS);
@@ -1124,11 +1039,11 @@ void CMDpat(int ac, char *av[])
 	}
 
 	/* In overview? */
-	for (Overview = -1, i = 0; i < ARTfieldsize; i++)
-	    if (caseEQ(ARTfields[i].Header, header)) {
-		Overview = i;
-		break;
-	    }
+	if (caseEQ(header, "Newsgroups")) {
+	    BuildingNewsgroups = TRUE;
+	    Overview = overview_index("Xref", OVextra);
+	} else
+	    Overview = overview_index(header, OVextra);
 
 	/* Not in overview, we have to fish headers out from the articles */
 	if (Overview < 0 ) {
@@ -1165,19 +1080,36 @@ void CMDpat(int ac, char *av[])
 	    if (len == 0 || (PERMaccessconf->nnrpdcheckart
 		&& !ARTinstorebytoken(token)))
 		continue;
-	    if ((p = OVERGetHeader(data, len, Overview)) != NULL) {
+	    vector = overview_split(data, len, NULL, vector);
+	    p = overview_getheader(vector, Overview, OVextra);
+	    if (p != NULL) {
+		if (BuildingNewsgroups) {
+		    if (!build_groups(p)) {
+			free(p);
+			continue;
+		    }
+		} else if (PERMaccessconf->virtualhost &&
+			   Overview == overhdr_xref) {
+		    p = vhost_xref(p);
+		    if (p == NULL)
+			continue;
+		}
 		if (!pattern || uwildmat_simple(p, pattern)) {
 		    snprintf(buff, sizeof(buff), "%lu ", artnum);
 		    SendIOb(buff, strlen(buff));
 		    SendIOb(p, strlen(p));
 		    SendIOb("\r\n", 2);
 		}
+		free(p);
 	    }
 	}
 	SendIOb(".\r\n", 3);
 	PushIOb();
 	OVclosesearch(handle);
     } while (0);
+
+    if (vector)
+	cvector_free(vector);
 
     if (pattern)
 	DISPOSE(pattern);
