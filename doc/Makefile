@@ -14,8 +14,6 @@ MISSING_MAN =
 
 ##  Edit these if you need to.  For example, add "-b .OLD" to the MANFLAGS
 ##  variable (without quotes).
-## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
-OWNER	= -O news -G news
 MANFLAGS = $(OWNER) -m 0444
 
 SEC1	= convdate.1 getlist.1 grephistory.1 inews.1 innconfval.1 installit.1 \
