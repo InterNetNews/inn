@@ -2,18 +2,24 @@
 
 include ../../Makefile.global
 
-top	= ../..
-CFLAGS	= $(GCFLAGS) -I..
+top		= ../..
+CFLAGS		= $(GCFLAGS) -I..
 
-ALL	= #tdx-util
-SOURCES = tdx-cache.c tdx-data.c tdx-group.c tdx-util.c tradindexed.c
-OBJECTS = tdx-cache.o tdx-data.o tdx-group.o tradindexed.o
+PROGRAMS	= tdx-util
+SOURCES 	= tdx-cache.c tdx-data.c tdx-group.c tdx-util.c tradindexed.c
+OBJECTS 	= tdx-cache.o tdx-data.o tdx-group.o tradindexed.o
 
-STORELIBS = $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
+INSTALLED	= $(D)$(PATHBIN)/tdx-util
+
+STORELIBS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
 
 .SUFFIXES: .lo
 
-all: $(ALL) $(OBJECTS)
+all: objects programs
+
+objects: $(OBJECTS)
+
+programs: $(PROGRAMS)
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
@@ -25,11 +31,19 @@ tdx-util: tdx-util.o $(OBJECTS)
 	$(LIBLD) $(LDFLAGS) -o $@ tdx-util.o $(OBJECTS) $(STORELIBS)
 
 clobber clean distclean:
-	rm -f *.o *.lo obj/*.o $(ALL)
+	rm -f *.o *.lo $(ALL)
 	rm -rf .libs
 
 tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../../include/*.h ../*.h
+
+
+##  Installation rules.  Installation commands set in Makefile.global.
+
+install: $(INSTALLED)
+
+$(D)$(PATHBIN)/tdx-util:	tdx-util	; $(LI_XPRI) $? $@
+
 
 ##  Dependencies.  Default list, below, is probably good enough.
 
