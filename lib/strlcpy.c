@@ -14,7 +14,7 @@
 */
 
 #include "config.h"
-#include <string.h>
+#include "clibrary.h"
 
 /* If we're running the test suite, rename strlcpy to avoid conflicts with
    the system version. */

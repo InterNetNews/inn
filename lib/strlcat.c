@@ -15,7 +15,7 @@
 */
 
 #include "config.h"
-#include <string.h>
+#include "clibrary.h"
 
 /* If we're running the test suite, rename strlcat to avoid conflicts with
    the system version. */
