@@ -951,9 +951,6 @@ CHANreadloop(void)
     time_t		LastUpdate;
     HDRCONTENT		*hc;
 
-    if (innconf->timer)
-        TMRinit(TMR_MAX);
-
     STATUSinit();
     
     LastUpdate = GetTimeInfo(&Now) < 0 ? 0 : Now.time;

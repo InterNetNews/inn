@@ -564,7 +564,9 @@ main(int ac, char *av[])
     NCsetup();
     ARTsetup();
     ICDsetup(TRUE);
-    
+    if (innconf->timer)
+        TMRinit(TMR_MAX);
+
     /* Initialize the storage subsystem. */
     flag = true;
     if (!SMsetup(SM_RDWR, &flag) || !SMsetup(SM_PREOPEN, &flag))
