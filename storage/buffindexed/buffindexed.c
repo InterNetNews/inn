@@ -1835,9 +1835,11 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
     return FALSE;
   }
   while (ovsearch(handle, &artnum, &data, &len, &token, &arrived, &expires)) {
-    if (len == 0 || (ah = SMretrieve(token, RETR_STAT)) == NULL)
+    ah = NULL;
+    if (len == 0 || (SMprobe(SELFEXPIRE, &token, NULL) && (ah = SMretrieve(token, RETR_STAT)) == NULL))
       continue; 
-    SMfreearticle(ah);
+    if (ah)
+      SMfreearticle(ah);
     if (innconf->groupbaseexpiry && OVgroupbasedexpire(token, group, data, len, arrived, expires))
       continue;
 #ifdef OV_DEBUG
