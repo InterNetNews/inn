@@ -127,7 +127,6 @@ what:
 	@$(MAKE) -s 'COPY=@echo' $(ALL) | ${AWK} 'NF==2 { print $$2; }'
 
 config:		$(ALL)
-	$(SHELL) ./do-subst.sh $?
 	date >config
 
 ##  Don't use parallel rules -- we want this to be viewed carefully.
