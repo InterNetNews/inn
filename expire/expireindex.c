@@ -168,10 +168,19 @@ STATIC void UnlockGroup(int lfd, char *lockfile)
 
 /*
 **  Sorting predicate to put newsgroup names into numeric order.
+**  Eh???  ...put newsgroup into numeric order. ???
+**  on a 64 bit m/c this might be incorrect, but I fail to see
+**  how it could actually fail...  but anyway.  clutching at straws
 */      
 STATIC int ARTcompare(CPOINTER p1, CPOINTER p2)
 {
-    return ((ARTLIST *)p1)->ArtNum - ((ARTLIST *)p2)->ArtNum;
+/*  return ((ARTLIST *)p1)->ArtNum - ((ARTLIST *)p2)->ArtNum; */
+    unsigned long a, b;
+    a = ((ARTLIST *)p1)->ArtNum;
+    b = ((ARTLIST *)p2)->ArtNum;
+    if ( a < b ) return -1;
+    if ( a == b ) return 0;
+    return 1;
 }
 
 STATIC void WriteIndex(int fd)
@@ -249,12 +258,17 @@ STATIC void RefreshLines(char *group, LIST *Refresh)
     
     ARTsize = 0;
 
+/*
+ * The man page doesn't say anything about -n requiring -v ???
+ */
+
     if (Verbose) {
 	for (ap = Refresh->Articles, i = Refresh->Used; --i >= 0; ap++)
 	    (void)printf("- %s/%ld\n", group, *ap);
-	if (DoNothing)
-	    return;
-    }
+/*	if (DoNothing)
+ *	    return;
+ */ }
+    if (DoNothing) return;
 
     /* Lock the group. */
     (void)sprintf(ilockfile, "%s/.LCK%s.index", group, innconf->overviewname);
@@ -308,18 +322,59 @@ STATIC void RefreshLines(char *group, LIST *Refresh)
 	icount = 0;
     else
 	icount = Sb.st_size / OVERINDEXPACKSIZE;
+
+    i = icount;
+    if (i == 0 ) i = Refresh->Used;
+
     if (OVERmmap) {
-	if (icount != 0 && (tmp = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, icount * OVERINDEXPACKSIZE,
-	    PROT_READ, MAP__ARG, ifd, 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
-	    (void)fprintf(stderr, "cant mmap index %s, %s\n", ifile, strerror(errno));
+
+/*	if (icount != 0 && (tmp = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, icount * OVERINDEXPACKSIZE,
+ *	    PROT_READ, MAP__ARG, ifd, 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
+ *	    (void)fprintf(stderr, "cant mmap index %s, %s\n", ifile, strerror(errno));
+ *	    UnlockGroup(ilfd, ilockfile);
+ *	    (void)close(ifd);
+ *	    return;
+ *	}
+ */
+
+/* we *must* call mmap here.  if we don't we will later call munmap and really 
+   mess things up */
+
+      if (  (tmp = (char (*)[][OVERINDEXPACKSIZE])mmap(
+                        (MMAP_PTR)0, 
+			i * OVERINDEXPACKSIZE,
+	                PROT_READ, 
+                        MAP__ARG, 
+                        ifd, 
+                        0 )
+            ) == (char (*)[][OVERINDEXPACKSIZE] ) -1 
+         ) {
+	    (void)fprintf( stderr, 
+			   "cant mmap index %s, %s\n", 
+			   ifile, 
+			   strerror(errno)
+			 );
 	    UnlockGroup(ilfd, ilockfile);
 	    (void)close(ifd);
 	    return;
-	}
+      }
+
+
     } else {
-	tmp = (char (*)[][OVERINDEXPACKSIZE])NEW(char, icount * OVERINDEXPACKSIZE);
-	if (read(ifd, tmp, icount * OVERINDEXPACKSIZE) != (icount * OVERINDEXPACKSIZE)) {
-	    (void)fprintf(stderr, "cant read index %s, %s\n", ifile, strerror(errno));
+	tmp = (char (*)[][OVERINDEXPACKSIZE]) NEW(
+/*				char, icount * OVERINDEXPACKSIZE); */
+				char, i * OVERINDEXPACKSIZE); 
+	if (read( ifd, 
+                  tmp, 
+/*		  icount * OVERINDEXPACKSIZE	*/
+		  i * OVERINDEXPACKSIZE	
+                ) != (i * OVERINDEXPACKSIZE)
+           ) {
+	     (void)fprintf( stderr, 
+ 		            "cant read index %s, %s\n", 
+			    ifile, 
+			    strerror(errno)
+			  );
 	    UnlockGroup(ilfd, ilockfile);
 	    (void)close(ifd);
 	    return;
@@ -458,7 +513,7 @@ STATIC void Expire(BOOL SortedInput, QIOSTATE *qp)
 		*q++ = '\0';
 		if (List.Used == 0) {
 		    (void)strcpy(group, p);
-		    List.Used = 0;
+		    List.Used = 0;    /* this would seem redundant :-) */
 		}
 		else if (!EQ(p, group)) {
 		    LISTsort(&List);
