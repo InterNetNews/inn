@@ -349,9 +349,10 @@ main(int argc, char *argv[])
        between the argument and the value. */
     for (j = 1; j < argc; j++) {
         if (argv[j][0] == '-' && strchr("pPI", argv[j][1])) {
-            if (strlen(argv[j]) == 2) j++;
+            if (strlen(argv[j]) == 2)
+                continue;
         } else {
-            innd_argv[i++] = argv[j++];
+            innd_argv[i++] = argv[j];
         }
     }
     innd_argv[i] = 0;
