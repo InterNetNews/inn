@@ -69,7 +69,7 @@ ME\
 
 ##  News overview
 # use this flag if storage api is used
-#overview!:*:Tc,WhR:/usr/news/bin/overchan
+#overview!:*:Tc,Ao,WhR:/usr/news/bin/overchan
 # else
 #overview!:*:Tc,WO:/usr/news/bin/overchan
 
@@ -80,6 +80,8 @@ ME\
 #	:Tf,Wnm:nic.near.net
 
 # A real-time nntplink feed
+# If you turn on storageapi, you cannot to use nntplink since it cannot handle
+# token.
 #uunet\
 #	:/!foo\
 #	:Tc,Wnm:/usr/news/bin/nntplink -i stdin news.uu.net
