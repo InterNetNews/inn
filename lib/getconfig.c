@@ -272,6 +272,7 @@ void SetDefaults()
     innconf->overcachesize = 15;
     innconf->enableoverview = TRUE;
     innconf->wireformat = FALSE;
+    innconf->ovmethod = NULL;
 }
 
 void ClearInnConf()
@@ -313,6 +314,7 @@ void ClearInnConf()
     if (innconf->pathuniover != NULL) DISPOSE(innconf->pathuniover);
     if (innconf->decnetdomain != NULL) DISPOSE(innconf->decnetdomain);
     if (innconf->backoff_db != NULL) DISPOSE(innconf->backoff_db);
+    if (innconf->ovmethod != NULL) DISPOSE(innconf->ovmethod);
     memset(ConfigBit, '\0', ConfigBitsize);
 }
 
@@ -412,6 +414,11 @@ int CheckInnConf()
     sprintf(tmpdir, "TMPDIR=%s", innconf->pathtmp);
     putenv(tmpdir);
     /* tmpdir should not be freed for some OS */
+    if (innconf->enableoverview && innconf->ovmethod == NULL) {
+	syslog(L_FATAL, "'ovmethod' must be defined in inn.conf if enableoverview is true");
+	(void)fprintf(stderr, "'ovmethod' must be defined in inn.conf if enableoverview is true");
+	return(-1);
+    }
 
     return(0);
 }
@@ -985,6 +992,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_WIREFORMAT, bit);
 		if (!bit && boolval != -1 ) innconf->wireformat = boolval;
 		SET_CONFIG(CONF_VAR_WIREFORMAT);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_OVMETHOD)) {
+		TEST_CONFIG(CONF_VAR_OVMETHOD, bit);
+		if (!bit) innconf->ovmethod = COPY(p);
+		SET_CONFIG(CONF_VAR_OVMETHOD);
 	    }
 	}
 	(void)Fclose(F);
