@@ -117,6 +117,11 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <sys/ioctl.h>
 #endif
 
+/* Error returns from inet_addr. */
+#ifndef INADDR_NONE
+# define INADDR_NONE 0xffffffff
+#endif
+
 #include "buffer.h"
 #include "connection.h"
 #include "endpoint.h"

@@ -17,6 +17,10 @@
 #include "paths.h"
 #include "libinn.h"
 
+/* Error returns from inet_addr. */
+#ifndef INADDR_NONE
+# define INADDR_NONE 0xffffffff
+#endif
 
 #if	!defined(ntohs) && !defined(NETSWAP)
 extern unsigned short	ntohs();
