@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Open a connection to a remote NNTP server.
 */
@@ -7,17 +7,11 @@
 #include "clibrary.h"
 #include "portable/socket.h"
 #include <errno.h>
-#include <netdb.h>
-
-#ifdef HAVE_UNIX_DOMAIN_SOCKETS
-# include <sys/un.h>
-#endif
 
 #include "inn/innconf.h"
 #include "inn/network.h"
 #include "libinn.h"
 #include "nntp.h"
-#include "paths.h"
 
 
 /*
@@ -45,6 +39,9 @@ NNTPconnect(const char *host, int port, FILE **FromServerp, FILE **ToServerp,
     if (getaddrinfo(host, portbuf, &hints, &ai) != 0)
         return -1;
     fd = network_connect(ai);
+    oerrno = errno;
+    freeaddrinfo(ai);
+    errno = oerrno;
     if (fd < 0)
         return -1;
 
