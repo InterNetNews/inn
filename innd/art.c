@@ -2572,7 +2572,10 @@ STRING ARTpost(CHANNEL *cp)
 
 	token = ARTstore(article, &Data);
 	if (token.type == TOKEN_EMPTY) {
-	    syslog(L_ERROR, "%s cant store article", LogName);
+	    if (SMerrno != SMERR_NOERROR)
+		syslog(L_ERROR, "%s cant store article: %s", LogName, SMerrorstr);
+	    else
+		syslog(L_ERROR, "%s cant store article: no matching entry in storage.conf", LogName);
 	    sprintf(buff, "%d cant store article", NNTP_RESENDIT_VAL);
 	    ARTlog(&Data, ART_REJECT, buff);
 	    if ((Mode == OMrunning) && !HISremember(hash))
