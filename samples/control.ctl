@@ -1011,14 +1011,17 @@ newgroup:rjoyner@uiuc.edu:info.*:doit
 rmgroup:rjoyner@uiuc.edu:info.*:doit
 
 ## IS (Iceland)
-# Contact: Marius Olafsson <news@isnet.is>
+# Contact: IS Group Admins <group-admin@usenet.is>
+# URL: http://www.usenet.is/
 # Admin group: is.isnet
+# Key URL: http://www.usenet.is/group-admin.asc
+# Key fingerprint = 33 32 8D 46 1E 5E 1C 7F  48 60 8E 72 E5 3E CA EA
 # *PGP*   See comment at top of file.
 newgroup:*:is.*:drop
 rmgroup:*:is.*:drop
-checkgroups:news@isnet.is:is.*:verify-is.isnet
-newgroup:news@isnet.is:is.*:verify-is.isnet
-rmgroup:news@isnet.is:is.*:verify-is.isnet
+checkgroups:group-admin@usenet.is:is.*:verify-group-admin@usenet.is
+newgroup:group-admin@usenet.is:is.*:verify-group-admin@usenet.is
+rmgroup:group-admin@usenet.is:is.*:verify-group-admin@usenet.is
 
 ## ISC (Japanese ?)
 checkgroups:news@sally.isc.chubu.ac.jp:isc.*:doit
