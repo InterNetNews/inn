@@ -728,9 +728,11 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
 	RENEW(Headers.Data, char, Headers.Size + 1);
     }
 
+    /* end includes eol for xref and null line, just shorten for eol */
+    end->iov_len  -= innconf->wireformat ? 2 : 1;
     /* Add the data. */
     BUFFset(&Headers, bytesbuff, strlen(bytesbuff));
-    for (vp = iov; vp < end; vp++)
+    for (vp = iov; vp <= end; vp++)
 	BUFFappend(&Headers, vp->iov_base, vp->iov_len);
     BUFFtrimcr(&Headers);
     Data->Headers = &Headers;
