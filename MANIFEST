@@ -55,7 +55,6 @@ configure.in                1 File to create configure
 contrib                     1 External contributions (Directory)
 contrib/README.contrib      1 README file for the contrib contents.
 contrib/cleanoi             1 Script to clean overview index files
-contrib/cnfsstat.pl         1 Show cycbuff status
 contrib/count_overview.pl   1 Count overview entries
 contrib/expirectl           1 Generate expire.ctl from template
 contrib/findmissing.pl      1 locate articles not in history.
@@ -366,6 +365,7 @@ samples/actsync.cfg.in      1 Config file for actsync
 samples/actsync.ign         1 Ignore file for actsync
 samples/checkgroups.in      1 Checkgroups control message handler
 samples/checkgroups.pl.in   1 Checkgroups control message handler for controlchan
+samples/cnfsstat.in         1 Show cycbuff status
 samples/control.ctl         1 Access control for control messages
 samples/controlbatch.in     1 Batch program for controlchan
 samples/controlchan.in      1 Channel program for control messages
