@@ -862,6 +862,11 @@ int main(int ac, char *av[])
     ICDsetup(TRUE);
     if (innconf->storageapi) {
 	innconf->wireformat = TRUE;
+	val = TRUE;
+	if (!SMsetup(SM_RDWR, (void *)&val) || !SMsetup(SM_PREOPEN, (void *)&val)) {
+	    syslog(L_FATAL, "%s cant setup the storage subsystem", LogName);
+	    exit(1);
+	}
 	if (!SMinit()) {
 	    syslog(L_FATAL, "%s cant initialize the storage subsystem %s", LogName, SMerrorstr);
 	    exit(1);
