@@ -9,10 +9,12 @@ OBJECTS  = cnfs.o
 LOBJECTS = cnfs.lo
 ROBJECTS = cnfs.$(EXTOBJ)
 
-all:			$(OBJECTS)
+.SUFFIXES: .lo
 
-.c.o:
-	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
+all:		$(OBJECTS)
+
+.c.o .c.lo:
+	$(UPLIBCC) $(CFLAGS) -c $*.c
 
 clobber clean:
 	rm -f *.o *.lo obj/*.o

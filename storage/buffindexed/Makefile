@@ -8,9 +8,11 @@ SOURCES = buffindexed.c
 OBJECTS = buffindexed.o
 ROBJECTS= buffindexed.$(EXTOBJ)
 
+.SUFFIXES: .lo
+
 all: $(OBJECTS)
 
-.c.o:
+.c.o .c.lo:
 	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
 
 debug:	buffindexed

@@ -9,9 +9,11 @@ OBJECTS = ov3.o
 LOBJECTS = ov3.lo
 ROBJECTS = ov3.$(EXTOBJ)
 
+.SUFFIXES: .lo
+
 all:			$(OBJECTS)
 
-.c.o:
+.c.o .c.lo:
 	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
 
 clobber clean:

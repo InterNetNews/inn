@@ -9,9 +9,11 @@ OBJECTS = caf.o timecaf.o
 LOBJECTS = caf.lo timecaf.lo
 ROBJECTS = caf.$(EXTOBJ) timecaf.$(EXTOBJ)
 
-all:			$(OBJECTS)
+.SUFFIXES: .lo
 
-.c.o:
+all:		$(OBJECTS)
+
+.c.o .c.lo:
 	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
 
 clobber clean:

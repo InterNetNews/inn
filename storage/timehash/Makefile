@@ -9,9 +9,11 @@ OBJECTS = timehash.o
 LOBJECTS = timehash.lo
 ROBJECTS = timehash.$(EXTOBJ)
 
+.SUFFIXES: .lo
+
 all:			$(OBJECTS)
 
-.c.o:
+.c.o .c.lo:
 	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
 
 clobber clean:

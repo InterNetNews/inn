@@ -9,9 +9,11 @@ OBJECTS = ovdb.o
 LOBJECTS = ovdb.lo
 ROBJECTS = ovdb.$(EXTOBJ)
 
+.SUFFIXES: .lo
+
 all:			$(OBJECTS)
 
-.c.o:
+.c.o .c.lo:
 	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
 
 clobber clean:

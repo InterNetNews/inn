@@ -9,9 +9,11 @@ OBJECTS = trash.o
 LOBJECTS = trash.lo
 ROBJECTS = trash.$(EXTOBJ)
 
+.SUFFIXES: .lo
+
 all:			$(OBJECTS)
 
-.c.o:
+.c.o .c.lo:
 	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
 
 clobber clean:
