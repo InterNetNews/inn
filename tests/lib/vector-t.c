@@ -15,6 +15,8 @@ main(void)
     struct cvector *cvector;
     const char cstring[] = "This is a\ttest.  ";
     const char tabs[] = "test\t\ting\t";
+    static const char nulls1[] = "This\0is\0a\0test.";
+    static const char nulls2[] = "This is a\t\0es\0.  ";
     char empty[] = "";
     char *string;
     char *p;
@@ -112,7 +114,7 @@ main(void)
     ok_string(52, "is", cvector->strings[1]);
     ok_string(53, "a", cvector->strings[2]);
     ok_string(54, "test.", cvector->strings[3]);
-    ok(55, memcmp(string, "This\0is\0a\0test.", 16) == 0);
+    ok(55, memcmp(string, nulls1, 16) == 0);
     cvector_add(cvector, cstring);
     ok(56, cvector->strings[4] == cstring);
     ok_int(57, 5, cvector->allocated);
@@ -125,7 +127,7 @@ main(void)
     ok_string(61, "es", cvector->strings[1]);
     ok_string(62, ".  ", cvector->strings[2]);
     ok(63, cvector->strings[0] == string);
-    ok(64, memcmp(string, "This is a\t\0es\0.  ", 18) == 0);
+    ok(64, memcmp(string, nulls2, 18) == 0);
     p = cvector_join(cvector, "oo");
     ok_string(65, "This is a\tooesoo.  ", p);
     free(p);
