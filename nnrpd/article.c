@@ -824,6 +824,10 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp)
 	    Reply("%s\r\n", ARTnocurrart);
 	    return FALSE;
 	}
+	if (!innconf->storageapi) {
+	    rp->High = rp->Low = ARTnumbers[ARTindex].ArtNum;
+	    return TRUE;
+	}
 	rp->High = rp->Low = ARTnumbers[ARTindex].ArtNum;
 	if ((i = ARTfind(rp->High)) < 0)
 	    return FALSE;
@@ -851,6 +855,9 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp)
     /* Got just a single number? */
     if ((p = strchr(av[1], '-')) == NULL) {
 	rp->Low = rp->High = atol(av[1]);
+	if (!innconf->storageapi) {
+	    return TRUE;
+	}
 	if ((i = ARTfind(rp->Low)) < 0)
 	    return FALSE;
 	if (ARTnumbers[i].Token.cancelled)
@@ -912,6 +919,11 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp)
 	    ARTnumbers[i].Token.cancelled = TRUE;
 	    continue;
 	}
+	if ((tokentext = HISgetent(&index.hash, TRUE, &ARTnumbers[i].Offset)) == (char *)NULL) {
+	    ARTnumbers[i].Token.cancelled = TRUE;
+	    continue;
+	}
+	ARTnumbers[i].Token = TextToToken(tokentext);
 #else
 	if (innconf->extendeddbz) {
 	    if (!OVERgetent(&index.hash, &ARTnumbers[i].Token)) {
@@ -926,10 +938,11 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp)
 	}
 #endif
     }
-#ifndef	DO_TAGGED_HASH
+#ifdef	DO_TAGGED_HASH
+    return TRUE;
+#else
     if (innconf->extendeddbz)
 	return TRUE;
-#endif
     for (artnum = rp->Low; artnum <= rp->High; artnum++) {
 	if ((i = ARTfind(artnum)) < 0)
 	    continue;
@@ -942,6 +955,7 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp)
 	ARTnumbers[i].Token = TextToToken(tokentext);
     }
     return TRUE;
+#endif
 }
 
 

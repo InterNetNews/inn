@@ -267,16 +267,21 @@ BOOL OVERgetent(HASH *key, TOKEN *token)
 
     /* Set the key value, fetch the entry. */
     if (innconf->extendeddbz) {
-	gettimeofday(&stv, NULL);
+	if (innconf->nnrpdoverstats)
+	    gettimeofday(&stv, NULL);
 	if (!dbzfetch(*key, &iextvalue)) {
+	    if (innconf->nnrpdoverstats) {
+		gettimeofday(&etv, NULL);
+		OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
+		OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
+	    }
+	    return NULL;
+	}
+	if (innconf->nnrpdoverstats) {
 	    gettimeofday(&etv, NULL);
 	    OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
 	    OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
-	    return NULL;
 	}
-	gettimeofday(&etv, NULL);
-	OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
-	OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
 	OVERmaketoken(token, iextvalue.offset[OVEROFFSET], iextvalue.overindex);
 	token->type = 0; /* this is not true, but just dummy */
     } else {
@@ -300,12 +305,22 @@ char *HISgetent(HASH *key, BOOL flag, OFFSET_T *off)
     OFFSET_T		offset;
     struct stat		Sb;
     struct timeval	stv, etv;
-    const int		entrysize =  1+sizeof(HASH)*2+1+1+10+1+10+1+10+1+1+sizeof(TOKEN)*2+1+1;
+    static int		entrysize = 0;
 #ifndef DO_TAGGED_HASH
     idxrec		ionevalue;
     idxrecext		iextvalue;
 #endif
 
+    if (entrysize == 0) {
+	HASH hash;
+	time_t dummy = ~(time_t)0;
+	TOKEN token;
+	sprintf(buff, "[%s]%c%lu%c%lu%c%lu%c%s\n", HashToText(hash),
+	    HIS_FIELDSEP, dummy, HIS_SUBFIELDSEP,
+	    dummy, HIS_SUBFIELDSEP,
+	    dummy, HIS_FIELDSEP, TokenToText(token));
+	entrysize = strlen(buff);
+    }
     if (!setup) {
 	if (!dbzinit(HISTORY)) {
 	    syslog(L_ERROR, "%s cant dbzinit %s %m", ClientHost, HISTORY);
@@ -322,33 +337,41 @@ char *HISgetent(HASH *key, BOOL flag, OFFSET_T *off)
 	gettimeofday(&stv, NULL);
 #ifdef	DO_TAGGED_HASH
 	if ((offset = dbzfetch(*key)) < 0) {
-	    gettimeofday(&etv, NULL);
-	    OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
-	    OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
+	    if (innconf->nnrpdoverstats) {
+		gettimeofday(&etv, NULL);
+		OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
+		OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
+	    }
 	    return NULL;
 	}
 #else
 	if (innconf->extendeddbz) {
 	    if (!dbzfetch(*key, &iextvalue)) {
-		gettimeofday(&etv, NULL);
-		OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
-		OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
+		if (innconf->nnrpdoverstats) {
+		    gettimeofday(&etv, NULL);
+		    OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
+		    OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
+		}
 		return NULL;
 	    }
 	    offset = iextvalue.offset[HISTOFFSET];
 	} else {
 	    if (!dbzfetch(*key, &ionevalue)) {
-		gettimeofday(&etv, NULL);
-		OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
-		OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
+		if (innconf->nnrpdoverstats) {
+		    gettimeofday(&etv, NULL);
+		    OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
+		    OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
+		}
 		return NULL;
 	    }
 	    offset = ionevalue.offset;
 	}
 #endif
-	gettimeofday(&etv, NULL);
-	OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
-	OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
+	if (innconf->nnrpdoverstats) {
+	    gettimeofday(&etv, NULL);
+	    OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
+	    OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
+	}
 	if (off != NULL) {
 	    *off = offset;
 	    /* just return dummy */
@@ -372,13 +395,15 @@ char *HISgetent(HASH *key, BOOL flag, OFFSET_T *off)
     }
 
     /* Seek and read. */
-    if (fseek(hfp, offset, SEEK_SET) == -1) {
-	syslog(L_ERROR, "%s cant fseek to %ld %m", ClientHost, offset);
+    if (lseek(fileno(hfp), offset, SEEK_SET) == -1) {
+	syslog(L_ERROR, "%s cant lseek to %ld %m", ClientHost, offset);
 	return NULL;
     }
-    gettimeofday(&etv, NULL);
-    OVERseek+=(etv.tv_sec - stv.tv_sec) * 1000;
-    OVERseek+=(etv.tv_usec - stv.tv_usec) / 1000;
+    if (innconf->nnrpdoverstats) {
+	gettimeofday(&etv, NULL);
+	OVERseek+=(etv.tv_sec - stv.tv_sec) * 1000;
+	OVERseek+=(etv.tv_usec - stv.tv_usec) / 1000;
+    }
     stv = etv;
     if (flag && (off == NULL)) {
 	if (fgets(buff, sizeof buff, hfp) == NULL) {
@@ -386,15 +411,21 @@ char *HISgetent(HASH *key, BOOL flag, OFFSET_T *off)
 	    return NULL;
 	}
     } else {
-	if (read(fileno(hfp), buff, entrysize) != entrysize) {
+	if (read(fileno(hfp), buff, entrysize) < 0) {
 	    syslog(L_ERROR, "%s cant read from %ld %m", ClientHost, offset);
 	    return NULL;
 	}
 	buff[entrysize+1] = '\0';
+	if (strchr(buff, '\n') == NULL) {
+	    syslog(L_ERROR, "%s cant find end of line %ld %m", ClientHost, offset);
+	    return NULL;
+	}
     }
-    gettimeofday(&etv, NULL);
-    OVERget+=(etv.tv_sec - stv.tv_sec) * 1000;
-    OVERget+=(etv.tv_usec - stv.tv_usec) / 1000;
+    if (innconf->nnrpdoverstats) {
+	gettimeofday(&etv, NULL);
+	OVERget+=(etv.tv_sec - stv.tv_sec) * 1000;
+	OVERget+=(etv.tv_usec - stv.tv_usec) / 1000;
+    }
     if ((p = strchr(buff, '\n')) != NULL)
 	*p = '\0';
 
