@@ -198,12 +198,12 @@ typedef char * const    CSTRING;
 /* Umask to set...if value here changed, be sure to check the value set
  * in samples/innshellvars.* 
  */
-#define NEWSUMASK       02      
+#define NEWSUMASK       @NEWSUMASK@
 /* Mode that incoming articles are created under. */
-#define ARTFILE_MODE    0664
+#define ARTFILE_MODE    @FILEMODE@
 /* Mode that batch files are created under. */
-#define BATCHFILE_MODE  0664
+#define BATCHFILE_MODE  @FILEMODE@
 /* Mode that directories are created under. */
-#define GROUPDIR_MODE   0775
+#define GROUPDIR_MODE   @DIRMODE@
 
 #endif /* __CONFIG_H__ */
