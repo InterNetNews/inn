@@ -149,7 +149,7 @@ MaxLength(char *p, char *q)
 /*
 **  Trim trailing spaces, return pointer to first non-space char.
 */
-STATIC int
+int
 TrimSpaces(char *p)
 {
     char	*start;

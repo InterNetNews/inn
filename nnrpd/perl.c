@@ -47,7 +47,6 @@ extern char PERMuser[];
 extern char **OtherHeaders;
 extern int OtherCount;
 extern BOOL HeadersModified;
-static int HeaderLen;
 
 /* #define DEBUG_MODIFY only if you want to see verbose outout */
 #ifdef DEBUG_MODIFY
@@ -62,7 +61,7 @@ char *HandleHeaders(char *article)
    HV		*hdr;
    SV           *body;
    int		rc;
-   char		*p;
+   char		*p, *q;
    static char	buf[256];
    register int   i;
    register char *s,*t;
@@ -123,7 +122,6 @@ char *HandleHeaders(char *article)
    HeadersModified = FALSE;
    if (SvTRUE(modswitch)) {
      HeadersModified = TRUE;
-     HeaderLen = 0;
      i = 0;
 
 #ifdef DEBUG_MODIFY     
@@ -145,7 +143,14 @@ char *HandleHeaders(char *article)
        for (hp = Table; hp < EndOfTable; hp++) {
          if (caseEQn(p, hp->Name, hp->Size)) {
            hp->Value = COPY(s);
-           HeaderLen += strlen(s) + hp->Size + 3;
+           hp->Len = TrimSpaces(hp->Value);
+           for (q = hp->Value ; ISWHITE(*q) || *q == '\n' ; q++)
+             continue;
+           hp->Body = q;
+           if (hp->Len == 0) {
+             DISPOSE(hp->Value);
+             hp->Value = hp->Body = NULL;
+           }
            break;
          }
        }
@@ -160,7 +165,6 @@ char *HandleHeaders(char *article)
        t = NEW(char, x);
        sprintf(t,"%s: %s",p,s);
        OtherHeaders[i++] = t;
-       HeaderLen += x; 
      }
      OtherCount = i;
 #ifdef DEBUG_MODIFY
