@@ -793,7 +793,7 @@ int dbzinit(const char *name) {
 	Fclose(dirf);
 	return FALSE;
     }
-    if (!openhashtable(name, idx, &idxtab, sizeof(idxrec), options.idx_incore)) {
+    if (!openhashtable(name, idx, &idxtab, sizeof(of_t), options.pag_incore)) {
 	Fclose(dirf);
 	return FALSE;
     }
@@ -914,9 +914,10 @@ static int okayvalue(of_t value) {
 
 /* dbzexists - check if the given message-id is in the database */
 BOOL dbzexists(const HASH key) {
-
 #ifdef	DO_TAGGED_HASH
-    return (dbzfetch(key) != NOTFOUND);
+    OFFSET_T value;
+
+    return (dbzfetch(key, &value) != 0);
 #else
     
     if (!opendb) {
@@ -936,8 +937,8 @@ BOOL dbzexists(const HASH key) {
  * Returns the offset of the text file for input key,
  * or -1 if NOTFOUND or error occurs.
  */
+BOOL dbzfetch(const HASH key, OFFSET_T *value) {
 #ifdef	DO_TAGGED_HASH
-OFFSET_T dbzfetch(const HASH key) {
 #define	MAX_NB2RD	(DBZMAXKEY + MAXFUZZYLENGTH + 2)
 #define MIN_KEY_LENGTH	6	/* strlen("<1@a>") + strlen("\t") */
     char *bp, buffer[MAX_NB2RD];
@@ -945,19 +946,13 @@ OFFSET_T dbzfetch(const HASH key) {
     HASH hishash;
     char *keytext = NULL;
     of_t offset = NOTFOUND;
-#else
-BOOL dbzfetch(const HASH key, idxrec *ivalue) {
 #endif
 
     prevp = FRESH;
 
     if (!opendb) {
 	DEBUG(("dbzfetch: database not open!\n"));
-#ifdef	DO_TAGGED_HASH
-	return NOTFOUND;
-#else
 	return FALSE;
-#endif
     }
 
     start(&srch, key, FRESH);
@@ -977,12 +972,12 @@ BOOL dbzfetch(const HASH key, idxrec *ivalue) {
 	    offset--;
 	if (fseek(basef, (OFFSET_T) offset, SEEK_SET) != 0) {
 	    DEBUG(("fetch: seek failed\n"));
-	    return NOTFOUND;
+	    return FALSE;
 	}
 	keylen = fread((POINTER)buffer, 1, nb2r, basef);
 	if (keylen < MIN_KEY_LENGTH) {
 	    DEBUG(("fetch: read failed\n"));
-	    return NOTFOUND;
+	    return FALSE;
 	}
 	buffer[keylen] = '\0';	/* terminate the string */
 
@@ -1024,27 +1019,28 @@ BOOL dbzfetch(const HASH key, idxrec *ivalue) {
 	/* we found it */
 	offset += j;
 	DEBUG(("fetch: successful\n"));
-	return offset;
+	*value = offset;
+	return TRUE;
     }
 
     /* we didn't find it */
     DEBUG(("fetch: failed\n"));
     prevp = &srch;			/* remember where we stopped */
-    return NOTFOUND;
+    return FALSE;
 #else	/* DO_TAGGED_HASH */
     if (search(&srch) == TRUE) {
 	/* Actually get the data now */
-	if ((options.idx_incore != INCORE_NO) && (srch.place < conf.tsize)) {
-		memcpy(ivalue, &((idxrec *)idxtab.core)[srch.place], sizeof(idxrec));
+	if ((options.pag_incore != INCORE_NO) && (srch.place < conf.tsize)) {
+	    memcpy(value, &((of_t *)idxtab.core)[srch.place], sizeof(of_t));
 	} else {
-	    if (pread(idxtab.fd, ivalue, sizeof(idxrec), srch.place * idxtab.reclen) != sizeof(idxrec)) {
+	    if (pread(idxtab.fd, value, sizeof(of_t), srch.place * idxtab.reclen) != sizeof(of_t)) {
 		    DEBUG(("fetch: read failed\n"));
 		    idxtab.pos = -1;
 		    srch.aborted = 1;
 		    return FALSE;
 		}
 	    }
-	ivalue->offset = ivalue->offset;
+	*value = *value;
 	DEBUG(("fetch: successful\n"));
 	return TRUE;
     }
@@ -1060,11 +1056,10 @@ BOOL dbzfetch(const HASH key, idxrec *ivalue) {
  * dbzstore - add an entry to the database
  * returns TRUE for success and FALSE for failure
  */
-#ifdef	DO_TAGGED_HASH
 DBZSTORE_RESULT dbzstore(const HASH key, const OFFSET_T data) {
+#ifdef	DO_TAGGED_HASH
     of_t value;
 #else
-DBZSTORE_RESULT dbzstore(const HASH key, idxrec *ivalue) {
     erec     evalue;
 #endif
 
@@ -1178,7 +1173,7 @@ static BOOL getconf(FILE *df, dbzconfig *cp) {
 	cp->tsize = DEFSIZE;
 	for (i = 0; i < NUSEDS; i++)
 	    cp->used[i] = 0;
-	cp->valuesize = sizeof(idxrec) + sizeof(erec);
+	cp->valuesize = sizeof(of_t) + sizeof(erec);
 	cp->fillpercent = 66;
 	DEBUG(("getconf: defaults (%ld)\n", cp->tsize));
 	return TRUE;
@@ -1190,7 +1185,7 @@ static BOOL getconf(FILE *df, dbzconfig *cp) {
 	DEBUG(("getconf error"));
 	return FALSE;
     }
-    if (cp->valuesize != (sizeof(idxrec) + sizeof(erec))) {
+    if (cp->valuesize != (sizeof(of_t) + sizeof(erec))) {
 	DEBUG(("getconf: wrong of_t size (%d)\n", cp->valuesize));
 	return FALSE;
     }
@@ -1601,11 +1596,7 @@ void dbzsetoptions(const dbzoptions o) {
     options = o;
 #ifndef HAVE_MMAP
     /* Without a working mmap on files, we should avoid it. */
-#ifdef	DO_TAGGED_HASH
     if (options.pag_incore == INCORE_MMAP) options.pag_incore = INCORE_NO;
-#else
-    if (options.idx_incore == INCORE_MMAP) options.idx_incore = INCORE_NO;
-#endif
     if (options.exists_incore == INCORE_MMAP) options.exists_incore = INCORE_NO;
 #endif
 }
@@ -1677,7 +1668,7 @@ char *argv[];
     dbzoptions opt;
     dbz_incore_val incore = INCORE_MEM;
     struct timeval start, end;
-    idxrec	ivalue;
+    OFFSET_T	ivalue;
 
     for (i=1; i<argc; i++)
 	if (strcmp(argv[i], "-i") == 0)
@@ -1705,7 +1696,7 @@ char *argv[];
     }
 
     dbzgetoptions(&opt);
-    opt.idx_incore = incore;
+    opt.pag_incore = incore;
     dbzsetoptions(opt);
 
     if (initialize) {
