@@ -2,10 +2,6 @@
 
 include Makefile.global
 
-RELEASE=2
-PATCHLEVEL=3
-VERSION=$(RELEASE).$(PATCHLEVEL)
-
 ##  All installation directories except for $(PATHRUN), which has a
 ##  different mode than the rest.
 INSTDIRS      = $(PATHNEWS) $(PATHBIN) $(PATHAUTH) $(PATHAUTHRESOLV) \
@@ -16,20 +12,22 @@ INSTDIRS      = $(PATHNEWS) $(PATHBIN) $(PATHAUTH) $(PATHAUTHRESOLV) \
 		$(PATHINBAD) $(PATHTAPE) $(PATHOVERVIEW) $(PATHOUTGOING) \
 		$(PATHLOG) $(PATHLOG)/OLD
 
-TARDIR=inn-$(VERSION)
-TARFILE=inn-$(VERSION).tar
-SQUASH=gzip
+##  LIBDIRS are built before PROGDIRS, make update runs in all UPDATEDIRS,
+##  and make install runs in all ALLDIRS.
+LIBDIRS     = lib storage
+PROGDIRS    = innd nnrpd innfeed expire frontends backends authprogs scripts
+UPDATEDIRS  = $(LIBDIRS) $(PROGDIRS) doc
+ALLDIRS     = $(UPDATEDIRS) samples site
 
-LIBDIRS    = lib storage
-PROGDIRS   = innd nnrpd innfeed expire frontends backends authprogs scripts
-UPDATEDIRS = $(LIBDIRS) $(PROGDIRS) doc
-ALLDIRS    = $(UPDATEDIRS) samples site
+##  The directory name and tar file to use when building a release.
+TARDIR      = inn-$(VERSION)
+TARFILE     = $(TARDIR).tar
 
-##  Delete the first two lines and all lines that contain (Directory).
-##  Print only the first field of all other lines.  This gets us just
-##  the list of files from the MANIFEST.
-SEDCOMMANDS = -e 1,2d -e '/(Directory)/d' -e 's/ .*//'
-SEDDIRCMDS = -e '1,2d' -e '/(Directory)/!d' -e 's/ .*//' -e 's;^;$(TARDIR)/;'
+##  DISTDIRS gets all directories from the MANIFEST, and DISTFILES gets all
+##  regular files.  Anything not listed in the MANIFEST will not be included
+##  in a distribution.  These are arguments to sed.
+DISTDIRS    = -e 1,2d -e '/(Directory)/!d' -e 's/ .*//' -e 's;^;$(TARDIR)/;'
+DISTFILES   = -e 1,2d -e '/(Directory)/d' -e 's/ .*//'
 
 
 ##  Major target -- build everything.  Rather than just looping through
@@ -57,17 +55,27 @@ all-nnrpd:	all-libraries	; cd nnrpd     && $(MAKE) all
 all-scripts:			; cd scripts   && $(MAKE) all
 
 
+##  If someone tries to run make before running configure, tell them to run
+##  configure first.
+Makefile.global:
+	@echo 'Run ./configure before running make.  See INSTALL for details.'
+	@exit 1
+
+
 ##  Installation rules.  make install installs everything; make update only
-##  updates the binaries, scripts, and documentation and leaves
-##  configuration files alone.
+##  updates the binaries, scripts, and documentation and leaves config
+##  files alone.
 install: directories
 	@for D in $(ALLDIRS) ; do \
+	    echo '' ; \
 	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
 	done
 	@echo ''
-	@echo Do not forget to update your cron entries, and also run
-	@echo makehistory if you need to.  Create/obtain an active file and
-	@echo run 'makehistory -o' if this is a first-time installation.
+	@echo 'Do not forget to update your cron entries, and also run'
+	@echo 'makedbz if you need to.  If this is a first-time installation'
+	@echo 'a minimal active file has been installed.  You will need to'
+	@echo 'run "makedbz -i" to initialize the history database.  See'
+	@echo 'INSTALL for more information.'
 	@echo ''
 
 directories:
@@ -92,6 +100,7 @@ cert:
 	chown news:news $(PATHLIB)/cert.pem
 	chmod 640 $(PATHLIB)/cert.pem
 
+
 ##  Cleanup targets.  clean deletes all compilation results but leaves the
 ##  configure results.  distclean or clobber removes everything not part of
 ##  the distribution tarball.
@@ -106,7 +115,7 @@ clean:
 clobber realclean distclean:
 	@for D in $(ALLDIRS) ; do \
 	    echo '' ; \
-	    cd $$D && $(MAKE) $(FLAGS) clobber && cd ..; \
+	    cd $$D && $(MAKE) $(FLAGS) clobber && cd .. ; \
 	done
 	@echo ''
 	rm -rf inews.* rnews.* $(TARDIR)
@@ -127,73 +136,18 @@ TAGS etags:
 	etags */*.c */*.h */*/*.c */*/*.h
 
 
-##  If someone tries to run make before running configure, tell them to run
-##  configure first.
-Makefile.global:
-	@echo Run ./configure before running make.  See INSTALL for details.
-	@exit 1
-
-
-release: include/innversion.h samples/version tar
-
-include/innversion.h: Makefile
-	-set -x ; [ -f $@ ] || co -u $@ ; \
-	sed -e 's/^\(#define RELEASE\).*/\1 "$(RELEASE)"/' \
-	    -e 's/^\(#define PATCHLEVEL\).*/\1 "$(PATCHLEVEL)"/' \
-	    -e 's/^\(#define DATE\).*/\1 "'"`date '+%d-%b-%Y'`"'"/' \
-		$@ > $@.new ;\
-	if diff -u $@ $@.new > PATCH.$$$$ 2>&1;then \
-		: ;\
-	elif rcsdiff $@ > /dev/null 2>&1; then \
-		rcsclean -u $@ ;\
-		co -l $@ ;\
-		patch < PATCH.$$$$ ;\
-		ci -u -m'new release' $@ ;\
-	else \
-		ci -l -m'unknown snapshot' $@ ;\
-		patch < PATCH.$$$$ ;\
-		ci -u -m'new release' $@ ;\
-	fi ;\
-	rm -f PATCH.$$$$
-
-
-samples/version: Makefile
-	-set -x ; rcsclean -u $@ ;\
-	co -l $@ ;\
-	sed -e 's/^\(VERSION="\).*/\1INN $(RELEASE).$(PATCHLEVEL)"/' \
-		$@ > $@.new ;\
-	if cmp $@ $@.new > /dev/null 2>&1; then \
-		rm -f $@.new ;\
-		rcsdiff $@ > /dev/null 2>&1 && rcs -u $@ ;\
-	else \
-		mv $@.new $@ ;\
-		ci -u -m'new version $(RELEASE).$(PATCHLEVEL)' $@ ;\
-	fi
-
-
-tardir: MANIFEST CHANGES
+##  Make a release.  We create a release by recreating the directory
+##  structure and then copying over all files listed in the MANIFEST.  If it
+##  isn't in the MANIFEST, it doesn't go into the release.  We also update
+##  all timestamps to the date the release is made.
+release: MANIFEST
 	rm -rf $(TARDIR)
 	rm -f inn*.tar.gz
 	mkdir $(TARDIR)
-	set -x ; for i in `sed $(SEDDIRCMDS) < MANIFEST` ; do mkdir $$i ; done
-
-tar:	tardir
-	for i in `sed $(SEDCOMMANDS) <MANIFEST`;do \
-		[ -f $$i ] || co $$i ; cp $$i $(TARDIR)/$$i;done
-	find $(TARDIR) -type f -print | xargs touch -t `date +%m%d%H%M.%S`
+	for d in `sed $(DISTDIRS) < MANIFEST` ; do mkdir $$i ; done
+	for f in `sed $(DISTFILES) < MANIFEST` ; do \
+	    cp $$f $(TARDIR)/$$f || exit 1 ; \
+	done
+	find $(TARDIR) -type -f -print | xargs touch -t `date +%m%d%H%M.%S`
 	tar cf $(TARFILE) $(TARDIR)
-	$(SQUASH) $(TARFILE)
-
-CHANGES: FORCE
-	-for i in ChangeLog */ChangeLog;do\
-		[ -f $$i -a "X$$i" != Xsite/ChangeLog ] && {\
-			echo "==================================";\
-			echo "From $$i" ; echo "" ;\
-			cat $$i ; echo "" ; echo "" ;\
-		}\
-	done > CHANGES ; exit 0
-
-##  Local convention; for xargs.
-list:	FORCE
-	@sed $(SEDCOMMANDS) <MANIFEST >FILELIST
-FORCE:
+	$(GZIP) -9 $(TARFILE)
