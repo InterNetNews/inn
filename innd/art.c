@@ -1738,9 +1738,14 @@ struct word_entry {
 */
 
 int
-wvec_freq_cmp(w1, w2)
-    struct word_entry *w1, *w2;
+wvec_freq_cmp(p1, p2)
+    CPOINTER p1;
+    CPOINTER p2;
 {
+    struct word_entry *w1, *w2;
+
+    w1 = CAST(struct word_entry*, p1);
+    w2 = CAST(struct word_entry*, p2);
     return w2->count - w1->count;	/* decreasing sort */
 }
 
@@ -1749,9 +1754,14 @@ wvec_freq_cmp(w1, w2)
 */
 
 int
-wvec_length_cmp(w1, w2)
-    struct word_entry *w1, *w2;
+wvec_length_cmp(p1, p2)
+    CPOINTER p1;
+    CPOINTER p2;
 {
+    struct word_entry *w1, *w2;
+
+    w1 = CAST(struct word_entry*, p1);
+    w2 = CAST(struct word_entry*, p2);
     return w2->length - w1->length;	/* decreasing sort */
 }
 
@@ -1760,11 +1770,15 @@ wvec_length_cmp(w1, w2)
 */
 
 int
-ptr_strcmp(s1, s2)
-    char **s1, **s2;
+ptr_strcmp(p1, p2)
+    CPOINTER p1;
+    CPOINTER p2;
 {
-    register int cdiff;
+    int cdiff;
+    char **s1, **s2;
 
+    s1 = CAST(char**, p1);
+    s2 = CAST(char**, p2);
     if (cdiff = (**s1)-(**s2))
 	return cdiff;
     return strcmp((*s1)+1, (*s2)+1);
