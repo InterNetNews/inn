@@ -66,6 +66,7 @@ QIOSTATE *QIOopen(const char *name)
 	qp->Buffer = NEW(char, qp->Size);
 	qp->Start = qp->Buffer;
 	qp->End = qp->Buffer;
+	qp->Count = 0;
 	qp->WireFormat = 1;
 	return qp;
     }
