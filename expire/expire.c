@@ -1126,7 +1126,7 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 	    else if (out) {
 		if (Hastoken && Hasover) {
 		    if (token.type == TOKEN_EMPTY || token.cancelled) {
-			count = EXPsplit(fields[2], ' ', arts, nGroups);
+			count = EXPsplit(Xrefbuf, ' ', arts, nGroups);
 			for (i = 0; i < count; i++) {
 			    p = arts[i];
 			    if (*p == '\0')

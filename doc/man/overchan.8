@@ -56,6 +56,29 @@ The data in the overview files should be expired by running
 This is normally done by adding the ``expireover'' flag to the
 .IR news.daily (8)
 invocation.
+.PP
+If you are using the storage API (see the ``storageapi'' option in
+.IR inn.conf (5)
+), then use something like the
+following line in your
+.IR newsfeeds (5)
+file:
+.PP
+.RS
+.\" =()<overview:*:Tc,WhR:@<_PATH_NEWSBIN>@/overchan>()=
+overview:*:Tc,WhR:/usr/news/bin/overchan
+.RE
+.PP
+This sends the Message-ID hash key, along with the replication
+information to
+.I overchan
+for storing in the format used by
+.IR nnrpd (8).
+This information is basically just
+a combination of the Message-ID hash key and the article number.
+See the
+.IR overview.ctl (5)
+file for more information on storing the overview data.
 .SH OPTIONS
 .TP
 .B \-c
@@ -79,6 +102,4 @@ This is revision \\$3, dated \\$4.
 .SH "SEE ALSO"
 expireover(8),
 news.daily(8),
-newsfeeds(5),
-newsoverview(5),
-newsoverview(8).
+newsfeeds(5).

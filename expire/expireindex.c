@@ -416,25 +416,20 @@ int main(int ac, char *av[])
     QIOSTATE		*qp;
     BOOL		SortedInput;
     char		*Dir;
-    char		*Name;
 
     /* Set defaults. */
     Dir = _PATH_OVERVIEWDIR;
-    Name = _PATH_ACTIVE;
     SortedInput = FALSE;
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "D:f:nqvz")) != EOF)
+    while ((i = getopt(ac, av, "D:nqvz")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
 	    /* NOTREACHED */
 	case 'D':
 	    Dir = optarg;
-	    break;
-	case 'f':
-	    Name = optarg;
 	    break;
 	case 'n':
 	    DoNothing = TRUE;

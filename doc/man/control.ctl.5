@@ -83,6 +83,16 @@ The log is written by
 .B drop
 No action is taken; the message is ignored.
 .TP
+.B verify-*
+If the value starts with the string ``verify-'', for example, 
+\&``verify-news.announce.newgroups'', then PGP verification of the control
+message will be done using the key issued by the ``user'' defined by the
+rest of the string -- ``news.announce.newsgroups'' in this example.
+.TP
+.BR verify-* =file
+PGP verification is done as for the ``verify-*'' entries, and a log entry
+is written to the specified file.
+.TP
 .B log
 A one-line log notice is sent to standard error.
 .I Innd
@@ -104,11 +114,12 @@ For example, with the following three lines:
 .RS
 .nf
 newgroup:*:*:drop
-newgroup:tale@*.uu.net:comp.*|misc.*|news.*|rec.*|sci.*|soc.*|talk.*:doit
+newgroup:group-admin@isc.org:comp.*|humanities.*|misc.*|news.*|\e
+rec.*|sci.*|soc.*|talk.*:verify-news.announce.newgroups
 newgroup:kre@munnari.oz.au:aus.*:mail
 .fi
 .RE
-A newgroup coming from ``tale'' at a UUNET machine will be honored if
+A newgroup coming from ``group-admin'' at a ISC machine will be honored if
 it is in the mainstream Usenet hierarchy.
 If ``kre'' posts a newgroup message creating ``aus.foo'', then mail will
 be sent.

@@ -27,17 +27,20 @@ as
 .nf
 <Message\-ID>   \et   date
 <Message\-ID>   \et   date   \et   files
-[Hash]         \et   date   \et   files
+[Hash]         \et   date   \et   token
 .fi
 .RE
 .PP
 The
 .I Message\-ID
 field is the value of the article's Message-ID header, including the
-angle brackets. The
+angle brackets.
+.PP
+The
 .I Hash
 field is the ASCII representation of the hash of the Message-ID header.  
-This is is used for articles that were discarded after being recieved.
+This appears if articles are stored by storage api, 
+and directly used for the key of the dbz (3).
 .PP
 The
 .I date
@@ -64,6 +67,12 @@ Each entry consists of the name of the newsgroup, a slash, and the article
 number.
 This field is empty if the article has been expired.
 .PP
+The
+.I token
+field is a token of the article which is stored by storage api.
+This field consists of an atmark, a token, and an atmark.
+This field is empty if the article has been expired.
+.PP
 For example, an article cross-posted to comp.sources.unix and
 comp.sources.d that was posted on February 10, 1991 (and received three
 minutes later), with an expiration date of May 5, 1991, could have a
@@ -77,7 +86,7 @@ following:
 .RE
 .PP
 In addition to the text file, there is a
-.IR dbz (3z)
+.IR dbz (3)
 database associated with the file that uses the Message-ID field as a key
 to determine the offset in the text file where the associated line begins.
 For historical reasons, the key includes the trailing \e0 byte
@@ -92,4 +101,4 @@ This is revision \\$3, dated \\$4.
 dbz(3),
 expire(8),
 innd(8),
-news-recovery(8).
+makehistory(8).

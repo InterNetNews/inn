@@ -38,7 +38,7 @@ The set of files checked may be restricted by using \fBfile\fP or
 \fBfile=value\fP arguments. For example, putting \fBhosts.nntp\fP causes
 only the 
 .IR hosts.nntp (5)
-file to be checked. Using \fBhosts.nntp=/tmp/hosts.nntp.tst\fP on the
+file to be checked. Using \fBhosts.nntp=/tmp/hosts.nntp\fP on the
 command line will cause 
 .I inncheck
 to only verify the hosts.nntp file, and it will perform the
@@ -78,7 +78,7 @@ will be the more useful.
 Use the ``\fB\-v\fP'' option to get more verbose output.
 .TP
 .B \-pedantic
-Use the ``\fB\-pedantic\fP option to get reports on things that are not
+Use the ``\fB\-pedantic\fP'' option to get reports on things that are not
 necessarily wrong, but may indicate a bad configuration \(em such as
 \fIinn.conf\fP(5) missing a key.
 .TP
@@ -144,7 +144,7 @@ inncheck -a newsfeeds=/var/tmp/newsfeeds.testing
 .RE
 .SH BUGS
 If the ``\fB-f\fP'' and ``\fB-perm\fP'' options are used together, along with
-\fB\-a\fP or some ``\fBfile\fP'' or ``\fBfile=value\fP'' arguments that
+``\fB\-a\fP'' or some ``\fBfile\fP'' or ``\fBfile=value\fP'' arguments that
 refer to a file with a syntax problem, then the output will no longer be
 valid input for a shell.
 .SH HISTORY

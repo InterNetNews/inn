@@ -10,9 +10,6 @@ prunehistory \- remove file names from Usenet history file
 [
 .B \-p
 ]
-[
-.I input
-]
 .SH DESCRIPTION
 .I Prunehistory
 modifies the
@@ -22,15 +19,13 @@ The filenames are removed by overwriting them with spaces, so that the
 size and position of any following entries does not change.
 .PP
 .I Prunehistory
-reads the named
-.I input
-file, or standard input if no file is given.
+reads the standard input.
 The input is taken as a set of lines.
 Blank lines and lines starting with a number sign (``#'') are ignored.
 All other lines are should consist of a Message-ID followed by zero or
 more filenames.
 .PP
-The Messge-ID is used as the
+The Message-ID is used as the
 .IR dbz (3)
 key to get an offset into the text file.
 If no filenames are mentioned on the input line, then all filenames in
@@ -63,36 +58,6 @@ The default name of the history file is
 .\" =()<.IR @<_PATH_HISTORY>@ ;>()=
 .IR /var/news/etc/history ;
 to specify a different name, use the ``\-f'' flag.
-.SH EXAMPLES
-.PP
-It is a good idea to delete purged entries and rebuild the
-.I dbz
-database every so often by using a script like the following:
-.PP
-.RS
-.nf
-ctlinnd throttle "Rebuilding history database"
-.\" =()<cd @<_PATH_NEWSLIB>@>()=
-cd /var/news/etc
-awk 'NF > 2 {
-	printf "%s\et%s\et%s", $1, $2, $3;
-	for (i = 4; i <= NF; i++)
-		printf " %s", $i;
-	print "\en";
-}' <history >history.n
-if makehistory \-r \-f history.n ; then
-    mv history.n history
-    mv history.n.index history.index
-    mv history.n.hash history.hash
-    mv history.n.dir history.dir
-else
-    echo 'Problem rebuilding history; old file not replaced'
-f\&i
-ctlinnd go "Rebuilding history database"
-.fi
-.RE
-.PP
-Note that this keeps no record of expired articles.
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 .de R$

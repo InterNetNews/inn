@@ -20,6 +20,9 @@ expireover \- Expire entries from the news overview database
 .BI \-O " overview.fmt"
 ]
 [
+.B \-q
+]
+[
 .B \-s
 ]
 [
@@ -43,28 +46,10 @@ or standard input if none are specified.
 (A file name of ``\-'' may be used to specify the standard input.)
 It then removes any mention of those articles from the appropriate overview
 database.
+.PP
+If you have turned on the storage manager with the 'storageapi' in inn.conf (5),
+you need to use expireindex (8) to expire overveiw index.
 .SH OPTIONS
-.TP
-.B \-z
-If the ``\fB\-z\fP'' flag is used, then the input is assumed to be sorted such
-that all entries for a newsgroup appear together so that it can be purged
-at once.
-This flag can be useful when used with the sorted output of
-.IR expire (8)'s
-\&``\fB\-z\fP'' flag.
-.TP
-.B \-s
-If the ``\fB\-\fPs'' flag is used, then
-.I expireover
-will read the spool directory for all groups mentioned in the
-.IR active (5)
-file, and remove the overview entries of any articles that do not appear
-in the directory.
-.TP
-.B \-f
-To specify an alternate file, use the ``\fB\-f\fP'' flag; a name 
-of ``\fB\-\fP'' is
-taken to mean the standard input.
 .TP
 .B \-a
 The ``\fB\-a\fP'' flag reads the spool directory and adds any missing
@@ -78,24 +63,53 @@ Using this flag implies the ``\fB\-s\fP'' flag;
 the ``\fB\-f\fP'' flag may be used
 to add only a subset of the newsgroups.
 .TP
-.B \-v
-To see a list of the entries that would be added or deleted, use 
-the ``\fB\-v\fP''
-flag.
-.TP
-.B \-n
-To perform no real updates, use the ``\fB\-n\fP'' flag.
-.TP
 .B \-D
 The ``\-D'' flag can be used to specify where the databases are stored.
 The default directory is
 .\" =()<.IR @<_PATH_OVERVIEWDIR>@ .>()=
 .IR /var/news/spool/over.view .
 .TP
+.B \-f
+When the ``\fB\-\fPs'' flag is used, then
+.I expireover
+will read the spool directory for all groups mentioned in the
+.IR active (5)
+file.
+To specify an alternate file, use the ``\fB\-f\fP'' flag; a name 
+of ``\fB\-\fP'' is
+taken to mean the standard input.
+.TP
+.B \-n
+To perform no real updates, use the ``\fB\-n\fP'' flag.
+.TP
 .B \-O
 The ``\fB\-O\fP'' flag may be used to specify an alternate location for the
 .IR overview.fmt (5)
 file; this is normally only useful for debugging.
+.TP
+.B \-q
+Not to tell lock file open failure, use the ``\fB\-q\fP'' flag.
+.TP
+.B \-s
+If the ``\fB\-\fPs'' flag is used, then
+.I expireover
+will read the spool directory for all groups mentioned in the
+.IR active (5)
+file, and remove the overview entries of any articles that do not appear
+in the directory.
+.TP
+.B \-v
+To see a list of the entries that would be added or deleted, use 
+the ``\fB\-v\fP''
+flag.
+.TP
+.B \-z
+If the ``\fB\-z\fP'' flag is used, then the input is assumed to be sorted such
+that all entries for a newsgroup appear together so that it can be purged
+at once.
+This flag can be useful when used with the sorted output of
+.IR expire (8)'s
+\&``\fB\-z\fP'' flag.
 .SH HISTORY
 Written by Rob Robertson <rob@violet.berkeley.edu>
 and Rich $alz <rsalz@uunet.uu.net>
@@ -107,4 +121,5 @@ This is revision \\$3, dated \\$4.
 .R$ $Id$
 .SH "SEE ALSO"
 expire(8),
+expireindex(8),
 overview.fmt(5).

@@ -1,7 +1,7 @@
 .\" $Revision$
 .TH NNRP.ACCESS 5
 .SH NAME
-nnrp.access \- access file for on-campus NNTP sites
+nnrp.access \- access file for NNTP news readers.
 .SH DESCRIPTION
 The file
 .\" =()<.I @<_PATH_NNRPACCESS>@>()=
@@ -40,7 +40,7 @@ The second field is a set of letters specifying the permissions granted
 to the client.
 The
 .I perms
-should be chosen from the following set:
+should be chosen from the following set (case is significant):
 .RS
 .nf
 R	The client can retrieve articles
@@ -64,7 +64,7 @@ The fifth field is a set of patterns identifying the newsgroups that
 the client is allowed to access.
 The patterns are interpreted in the same manner as the
 .IR newsfeeds (5)
-file.
+file except for ``@''.
 The default, however, denies access to all groups.
 .PP
 The access file is normally used to provide host-level access control

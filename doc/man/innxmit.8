@@ -38,9 +38,6 @@ innxmit \- send Usenet articles to a remote NNTP server
 .B \-p
 ]
 [
-.B \-S
-]
-[
 .BI \-P " portnum"
 ]
 .I host
@@ -49,6 +46,7 @@ innxmit \- send Usenet articles to a remote NNTP server
 .I Innxmit
 connects to the NNTP server at the specified
 .I host
+(validating itself via passwd.nntp(5) if possible) 
 and sends it the articles specified in the batchfile named
 .IR file .
 It is normally invoked by a script run out of
@@ -72,7 +70,7 @@ Each line in the batchfile should be in one of the following formats:
 .PP
 .RS
 .nf
-filename Message-ID
+filename Message-ID * (see note)
 filename
 .fi
 .RE
@@ -92,6 +90,16 @@ The
 and
 .I Message-Id
 fields are separated by a space.
+.PP
+Note: If you use this format, you can put additional fields on the line
+after the
+.I Message-ID
+so that you can process the batch by a filter in your batch script (such as
+adding the article size and splitting batches by that size).
+.I Innxmit
+will ignore any fields after the
+.I Message-ID,
+but will rewrite the additional fields if it has to requeue any articles.
 .PP
 If a communication error such as a
 .IR write (2)

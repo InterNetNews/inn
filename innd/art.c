@@ -1666,13 +1666,6 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
     Data->Overview = &Overview;
 
     BUFFset(&Overview, "", 0);
-    /* do not pass the token to overchan. */
-    if (!StorageAPI || Filename) {
-	BUFFappend(&Overview, HDR(_xref) + Path.Used, ARTheaders[_xref].Length - Path.Used);
-	for (i = Overview.Left, p = Overview.Data; --i >= 0; p++)
-	    if (*p == '.' || *p == ':')
-		*p = '/';
-    }
 
     /* Write the data, a field at a time. */
     for (fp = ARTfields; fp->Header; fp++) {
@@ -1681,15 +1674,15 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
 	hp = fp->Header;
 	if (!hp->Found)
 	    continue;
-	 if (fp->NeedHeader) {
-	      BUFFappend(&Overview, hp->Name, hp->Size);
-	      BUFFappend(&Overview, COLONSPACE, STRLEN(COLONSPACE));
-	 }
-	 i = Overview.Left;
-	 BUFFappend(&Overview, hp->Value, hp->Length);
-	 for (p = &Overview.Data[i]; i < Overview.Left; p++, i++)
-	     if (*p == '\t' || *p == '\n' || *p == '\r')
-		 *p = ' ';
+	if (fp->NeedHeader) {
+	    BUFFappend(&Overview, hp->Name, hp->Size);
+	    BUFFappend(&Overview, COLONSPACE, STRLEN(COLONSPACE));
+	}
+	i = Overview.Left;
+	BUFFappend(&Overview, hp->Value, hp->Length);
+	for (p = &Overview.Data[i]; i < Overview.Left; p++, i++)
+	    if (*p == '\t' || *p == '\n' || *p == '\r')
+		*p = ' ';
     }
 }
 
@@ -1718,6 +1711,7 @@ STRING ARTpost(CHANNEL *cp)
     BOOL		LikeNewgroup;
     BOOL		ToGroup;
     BOOL		GroupMissing;
+    BOOL		MadeOverview = FALSE;
     BUFFER		*article;
     HASH                hash;
     char		linkname[SPOOLNAMEBUFF];
@@ -2177,6 +2171,7 @@ STRING ARTpost(CHANNEL *cp)
 	}
 	TMRstop(TMR_ARTWRITE);
 	ARTmakeoverview(&Data, FALSE);
+	MadeOverview = TRUE;
 	if (!OVERstore(&token, Data.Overview->Data, Data.Overview->Left))
 	    syslog(L_ERROR, "%s cant store overview for %s", LogName, TokenToText(token));
 	strcpy(Files.Data, TokenToText(token));
@@ -2331,7 +2326,7 @@ STRING ARTpost(CHANNEL *cp)
     }
 
     /* If we need the overview data, write it. */
-    if (NeedOverview)
+    if (NeedOverview && !MadeOverview)
 	ARTmakeoverview(&Data, TRUE);
 
     /* And finally, send to everyone who should get it */

@@ -5,10 +5,16 @@ grephistory \- display file names from Usenet history file
 .SH SYNOPSIS
 .B grephistory
 [
+.B \-e
+]
+[
 .BI \-f " filename"
 ]
 [
-.B \-e
+.B \-i
+]
+[
+.B \-l
 ]
 [
 .B \-n
@@ -17,16 +23,10 @@ grephistory \- display file names from Usenet history file
 .B \-q
 ]
 [
-.B \-l
+.B \-s
 ]
 [
 .B \-t
-]
-[
-.B \-i
-]
-[
-.B \-s
 ]
 [
 .I messageid
@@ -37,7 +37,7 @@ queries the
 .IR dbz (3)
 index into the
 .IR history (5)
-file for an article having a specified Message-ID.
+file for an article having a specified Message-ID or hash key of Message-ID.
 .PP
 If
 .I messageid
@@ -45,8 +45,31 @@ cannot be found in the database, the program prints ``Not found'' and
 exits with a non-zero status.
 If
 .I messageid
-is in the database, the program prints the pathname and exits successfully.
+is in the database, the program prints the pathname or the token of the
+article if the article is stored by storage api and exits successfully.
 .SH OPTIONS
+.TP
+.B \-e
+If the ``\fB\-e\fP'' flag is used, then
+.I grephistory
+will only print the filename of the token of an existing article.
+.TP
+.B \-f
+To specify a different value for the history file and database, use
+the ``\fB\-f\fP'' flag.
+.TP
+.B \-i
+If the ``\fB\-i\fP'' flag is used, then
+.I grephistory
+will read a list of Message-ID's on standard input, one per line.
+Leading and trailing whitespace is ignored, as are any malformed lines.
+It will print on standard output those Message-ID's which are not
+found in the history database.
+This flag is used in processsing ``ihave'' control messages.
+.TP
+.B \-l
+If the ``\fB\-l\fP'' flag is used then the entire line from the history
+file will be displayed.
 .TP
 .B \-n
 If no pathname exists, the program will print ``/dev/null'' and exit
@@ -60,28 +83,6 @@ the ``\fB\-n\fP'' flag.
 If the ``\fB\-q\fP'' flag is used, then no message is displayed.
 The program will still exit with the appropriate exit status.
 .TP
-.B \-t
-If the ``\fB\-t\fP'' flag is used, then only the offset into the history text
-file is printed.
-.TP
-.B \-e
-If the ``\fB\-e\fP'' flag is used, then
-.I grephistory
-will only print the filename of an existing article.
-.TP
-.B \-l
-If the ``\fB\-l\fP'' flag is used then the entire line from the history
-file will be displayed.
-.TP
-.B \-i
-If the ``\fB\-i\fP'' flag is used, then
-.I grephistory
-will read a list of Message-ID's on standard input, one per line.
-Leading and trailing whitespace is ignored, as are any malformed lines.
-It will print on standard output those Message-ID's which are not
-found in the history database.
-This flag is used in processsing ``ihave'' control messages.
-.TP
 .B \-s
 If the ``\fB\-s\fP'' flag is used, then
 .I grephistory
@@ -90,9 +91,9 @@ It will print on standard output a list of filenames for each article
 that is still available.
 This flag is used in processsing ``sendme'' control messages.
 .TP
-.B \-f
-To specify a different value for the history file and database, use
-the ``\fB\-f\fP'' flag.
+.B \-t
+If the ``\fB\-t\fP'' flag is used, then only the offset into the history text
+file is printed.
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 .de R$

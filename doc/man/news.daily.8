@@ -26,13 +26,15 @@ By specifying ``keywords'' on the command line, it is possible to
 modify the functions performed, as well as change the arguments given to
 .IR expire (8)
 and
-.IR expireover (8).
+.IR expireover (8)
+or
+.IR expireindex (8) .
 .PP
 .I News.daily
 should be run once a day, typically out of
 .IR cron (8).
 It may be run more often, but such invocations should at least use the
-\&``notdaily'' keyword to prevent the log files from being processed
+\&``norotate'' keyword to prevent the log files from being processed
 and rotated too fast.
 .PP
 The
@@ -46,9 +48,11 @@ The following keywords may be used:
 This uses the ``\fB\-z\fP'' flag when invoking
 .I expire
 and
-.IR expireover .
+.IR expireover
+or
+.IR expireindex .
 The names of articles to be removed are written to a temporary file, and
-then removed after expiration by calling
+then renamed after expiration by calling
 .IR expirerm (8).
 .TP
 .IR expctl= path
@@ -64,7 +68,7 @@ builds the new
 .IR history (5)
 file and database in the same directory as the current files.
 Using this keyword specifies a different local to build the new files
-(by passing the ''\fB\-d\fP'' flag to
+(by passing the ``\fB\-d\fP'' flag to
 .IR expire ),
 which will then be moved to the right location when finished.
 .TP
@@ -81,8 +85,9 @@ lock.
 .I notdaily
 By default 
 .I news.daily
-expects to be run only once a day. 
-Use this keyword any extra times
+expects to be run only once a day, and it does
+various things (like rotating logs) that normally should only be done on
+daily basis. Use this keyword any extra times
 .I news.daily
 is run in the
 day and the normal logfile processing (and rotation) will not be done.
@@ -158,11 +163,16 @@ If the file is empty, no message is sent.
 The
 .I expireover
 program is called after expiration to purge the overview databases.
+If you have turned on the storage manager with the 'storageapi' in inn.conf (5),
+.I expireindex
+program is called instead.
 .TP
 .IR expireoverflags= "'expireover\ args'"
 If the ``expireover'' keyword is used, this keyword may be used to specify
 the flags to be passed to
-.IR expireover .
+.IR expireover
+or
+.IR expireindex .
 If the ``delayrm'' keyword is used, then the default value is ``\-z''
 and the list of deleted files; otherwise, the default value is ``\-s''.
 .TP
@@ -172,6 +182,16 @@ expiration is done.
 A typical use is to specify an alternate expiration program and use the
 \&``noexpire'' keyword.
 Multiple programs may be specified; they will be invoked in order.
+.TP
+.I lowmark
+If the ``lowmark'' keyword is used, 
+.IR ctlinnd (8)
+lowmark is used for renumbering
+.IR active (5).
+Normal
+.IR ctlinnd (8)
+renumber operation will take long time.  With ``lowmark'' keyword this will
+take less time.
 .SH HISTORY
 .I News.daily
 and this manual page written by Landon Curt Noll <chongo@toad.com> and

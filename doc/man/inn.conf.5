@@ -73,6 +73,25 @@ or
 calls.
 The check is very simple; if either routine returns a name with a period
 in it, then it is assumed to have the full domain name.
+.TP
+.I overviewmmap
+If this is false then nnrpd, expire and makehistory will use regular file access to access overviews 
+and overview indices, otherwise it will mmap() them.  Setting this to true
+will give better performance on most system, but some system do have problems
+with mmap().
+The default value is ``true.''
+.TP
+.I storageapi
+If this is true then all articles will be stored through storage api and
+all articles are assumed to be stored through storage api.
+The default value is ``false.''
+To use storage api, you need to edit storage.ctl to determin which method will
+be used.
+If storage api is used, any overview database will be stored as unified
+overview which is needed if nnrpd will be used.
+To specify which index is used for unified overview, you need to edit
+overview.ctl.
+If you run innd as a feeder only, you do not need overview.ctl.
 .PP
 Three parameters are used only by
 .I nnrpd
@@ -114,6 +133,11 @@ If this is true then innd will write articles in wire format.  Wire format
 articles are stored with a \\r\\n at the end of each line and with periods
 at the beginning of lines doubled.  When used with applications that understand
 wire format, this can be considerably more efficent.
+If 
+.I storageapi
+is ``true'', 
+.I wireformat
+is discarded and articles are always stored in wire format.
 .TP
 .I timespool
 This makes the normal hierarchy a shadow of a time based hierarchy.
@@ -124,12 +148,22 @@ is lower part of the same.
 The article name name is of the format tttttttt-ssss, where tttttttt
 is the time the article was recieved in time_t format, and ssss is a
 sequence number to distinguish article that were received in the same second.
+If 
+.I storageapi
+is ``true'', 
+.I timespool
+is discarded.
 .TP
 .I writelinks
 If this is true innd will write all the crossposts of an article to
 the history file, else it will write just the first.  This can be
 useful on servers without readers that don't run crosspost and don't
 link crossposts.
+If 
+.I storageapi
+is ``true'', 
+.I writelinks
+is discarded.
 .TP
 .I timer
 If this is '0' or 'off', then performance monitoring will be disabled by
@@ -158,12 +192,6 @@ If this is false then nnrpd will use regular file access to access
 articles, otherwise it will mmap() the articles.  Setting this to true
 will give better performance on most systems, but some systems do have 
 problems with mmap().
-.TP
-.I overviewmmap
-If this is false then nnrpd will use regular file access to access overviews 
-and overview indices, otherwise it will mmap() them.  Setting this to true
-will give better performance on most system, but some system do have problems
-with mmap().
 .PP
 Note that this file can be identical on all machines in an organization.
 .SH EXAMPLE

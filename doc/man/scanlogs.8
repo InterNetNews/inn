@@ -6,9 +6,6 @@ scanlogs \- summarize INN log files.
 [
 .B norotate
 ]
-[
-.B nonn
-]
 .SH DESCRIPTION
 .I Scanlogs
 summarizes the information recorded in the INN log files (see
@@ -25,12 +22,6 @@ The following keywords are accepted:
 Using this keyword disables the rotating and cleaning aspect of the log
 processing: the logs files are only scanned for information and no contents
 are altered.
-.TP
-.I nonn
-Normally the
-.I nn
-log file is scanned and rotated.
-Using this keyword disables this function.
 .PP
 If
 .I scanlogs
@@ -44,7 +35,7 @@ This is revision \\$3, dated \\$4.
 ..
 .R$ $Id$
 .SH "SEE ALSO"
-innd(8)
+innd(8),
 newslog(5),
 news.daily(8),
 nnrpd(8).

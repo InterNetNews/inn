@@ -110,15 +110,16 @@ This command has never been fully defined.
 The
 .I "``list''"
 command may be followed by the optional word
-.IR "``active.times''" ,
-.IR "``distributions''" ,
-.IR "``distrib.pats''" ,
-.IR "``newsgroups''" ,
-.IT "``subscriptions''",
+``\fIactive.times\fP'',
+``\fIdistributions\fP'',
+``\fIdistrib.pats\fP'',
+``\fImoderators\fP'',
+``\fInewsgroups\fP'',
+``\fIsubscriptions\fP'',
 or
-.IR "``overview.fmt''"
+``\fIoverview.fmt\fP''
 to get a list of when newsgroups where created, a list of valid distributions,
-a file specifying default distribution patterns, a one-per-line
+a file specifying default distribution patterns, moderators list, a one-per-line
 description of the current set of newsgroups, a list of the automatic group
 subscriptions, or a listing of the
 .IR overview.fmt (5)
@@ -136,8 +137,8 @@ The
 and
 .I "``authinfo pass''"
 commands are implemented.
-These are based on the reference Unix implementation; no other documentation
-is available.
+These are based on the reference Unix implementation. See
+ftp://ds.internic.net/internet-drafts/draft-barber-nntp-imp-07.txt
 .IP 5.
 A new command,
 .IR "``xpat header range|MessageID pat [morepat...]''" ,
@@ -193,7 +194,9 @@ command is provided; see
 The
 .I "``date''"
 command is provided; this is based on the draft NNTP protocol revision.
-It returns a one-line response code of 111 followed by the GMT date
+It returns a one-line response code of
+.I 111
+followed by the GMT date
 and time on the server in the form YYYYMMDDhhmmss.
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.

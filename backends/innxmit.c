@@ -1122,7 +1122,7 @@ STATIC NORETURN
 Usage()
 {
     (void)fprintf(stderr,
-	"Usage: innxmit [-a] [-c] [-d] [-M] [-p] [-r] [-s] [-S] [-t#] [-T#] host file\n");
+	"Usage: innxmit [-a] [-c] [-d] [-M] [-p] [-r] [-s] [-t#] [-T#] host file\n");
     exit(1);
 }
 
@@ -1155,7 +1155,7 @@ int main(int ac, char *av[])
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "lA:acdMprsSt:T:vP:")) != EOF)
+    while ((i = getopt(ac, av, "lA:acdMprst:T:vP:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();

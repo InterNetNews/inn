@@ -14,7 +14,19 @@ makehistory \- tools to recover Usenet history database.
 .B \-b
 ]
 [
+.BI \-D " dir"
+]
+[
+.BI \-d " dir"
+]
+[
 .BI \-f " filename"
+]
+[
+.BI \-h " file"
+]
+[
+.BI \-I " file"
 ]
 [
 .B \-i
@@ -23,10 +35,19 @@ makehistory \- tools to recover Usenet history database.
 .B \-n
 ]
 [
+.B \-O
+]
+[
 .B \-o
 ]
 [
+.B \-R
+]
+[
 .B \-r
+]
+[
+.B \-S
 ]
 [
 .BI \-s " size"
@@ -35,10 +56,16 @@ makehistory \- tools to recover Usenet history database.
 .BI \-T " tmpdir"
 ]
 [
+.B \-t " [ H|h|S|s ]"
+]
+[
+.B \-U
+]
+[
 .B \-u
+]
 [
 .B \-v
-]
 ]
 .SH DESCRIPTION
 .PP
@@ -63,6 +90,9 @@ should be scanned.
 .I makehistory
 will ignore it.)
 The program reads each file found and writes a history line for it.
+.PP
+.I Makehistory
+also translates articles stored by traditional method.
 .PP
 After the text file is written,
 .I makehistory
@@ -89,6 +119,26 @@ If the ``\-b'' flag is used, then
 .I makehistory
 will remove any articles that do not have valid Message-ID headers in them.
 .TP
+.B \-D
+If the ``\fB\-D\fP'' flag is used, then
+.I dir
+is used as traditional spool directory.  This directory is used for
+translating traditional stored articles into new storing method through storage
+api.  The default is
+.\" =()<.IR @<_PATH_SPOOL>@ .>()=
+.IR /var/news/spool/articles .
+This flag is valid if ``\fB\-t\fP'' flag is used.
+.TP
+.B \-d
+If the ``\fB\-d\fP'' flag is used, then
+.I dir
+is used as overview directory.  This directory is used for
+translating traditional stored articles into new storing method through storage
+api.  The default is
+.\" =()<.IR @<_PATH_OVERVIEWDIR>@ .>()=
+.IR /var/news/spool/over.view .
+This flag is valid if ``\fB\-t\fP'' flag is used.
+.TP
 .B \-f
 If the ``\fB\-f\fP'' flag is used, then the database files are named
 .I file.dir
@@ -105,6 +155,44 @@ is made and the database files are written as
 and
 .IR history.n.dir .
 .TP
+.B \-h
+If the ``\fB\-h\fP'' flag is used, then
+.I file
+is used as old history.  This file is used for translating traditional
+stored articles into new storing method through storage api.  The default
+is
+.\" =()<.IR @<_PATH_HISTORY>@ .>()=
+.IR /var/news/etc/history .
+This flag is valid if ``\fB\-t\fP'' flag is used.
+.TP
+.B \-I
+If the ``\fB\-I\fP'' flag is used, then the index of article overview are
+appended to the specified
+.I file .
+This file is created if translating traditional stored articles are stored
+into new storing method through storage api.  Whih this
+.I file ,
+you can make new overview index file.  To do this,
+.PP
+.RS
+.nf
+.\" =()<sort index.file \&| @<_PATH_NEWSBIN>@/overchan>()=
+sort index.file \&| /usr/news/bin/overchan
+.fi
+.PP
+This flag is valid if ``\fB\-t\fP'' flag is used.
+.RE
+.TP
+.B \-i
+To ignore the old database use the ``\fB\-i\fP'' flag.
+Using the ``\fB\-o\fP'' flag implies the ``\fB\-i\fP'' flag.
+.TP
+.B \-O
+If the ``\fB\-O\fP'' flag is used, then overview database is also created.
+This is used for translating traditional stored articles into new storing
+method through storage api.
+This flag is valid if ``\fB\-t\fP'' flag is used.
+.TP
 .B \-o
 If the ``\fB\-o\fP'' flag is used, then the link is not made and any existing
 history files are overwritten.
@@ -112,9 +200,30 @@ If the old database exists,
 .I makehistory
 will use it to determine the size of the new database.
 .TP
-.B \-i
-To ignore the old database use the ``\fB\-i\fP'' flag.
-Using the ``\fB\-o\fP'' flag implies the ``\fB\-i\fP'' flag.
+.B \-n
+To scan the spool directory without rebuilding the
+.I dbz
+files, use the ``\fB\-n\fP'' flag.
+If used with ``\fB-u\fP'', the server will not be throttled while scanning.
+.TP
+.B \-R
+If the ``\fB\-R\fP'' flag is used, then old articles are removed if translation
+is done.  This is used for translating traditional stored articles into new
+storing method through storage api.
+This flag is valid if ``\fB\-t\fP'' flag is used.
+.TP
+.B \-r
+To just build the
+.I dbz
+files from an existing text file, use the ``\fB\-r\fP'' flag.
+The ``\fB\-i\fP'' or ``\fB\-s\fP'' flags can be useful if there are no valid
+.I dbz
+files to use.
+.TP
+.B \-S
+If the ``\fB\-S\fP'' flag is used, then articles stored by traditional method
+are ignored.  This is used for translating traditional stored articles into new
+storing method through storage api.
 .TP
 .B \-s
 The program will also ignore any old database if the ``\fB\-s\fP'' flag is used
@@ -129,41 +238,6 @@ and
 .I dbzsize
 in
 .IR dbz (3).
-.TP
-.B \-u
-If the ``\fB\-u\fP'' flag is given, then
-.I makehistory
-assumes that
-.I innd
-is running.
-It will pause the server while scanning, and then
-send ``addhist'' commands (see
-.IR ctlinnd (8))
-to the server for any article that is not found in the
-.I dbz
-database.
-The command ``makehistory\ \-bu'' is useful after a system crash, to delete
-any mangled articles and bring the article database back into a more
-consistent state.
-.TP
-.B \-v
-If the ``\fB\-v\fP'' flag is used with the ``\fB\-u\fP'' flag, then
-.I makehistory
-will put a copy of all added lines on its standard output.
-.TP
-.B \-n
-To scan the spool directory without rebuilding the
-.I dbz
-files, use the ``\fB\-n\fP'' flag.
-If used with ``\fB-u\fP'', the server will not be paused while scanning.
-.TP
-.B \-r
-To just build the
-.I dbz
-files from an existing text file, use the ``\fB\-r\fP'' flag.
-The ``\fB\-i\fP'' or ``\fB\-s\fP'' flags can be useful if there are no valid
-.I dbz
-files to use.
 .TP
 .B \-T
 .I Makehistory
@@ -184,9 +258,58 @@ flag and its value will be passed to
 On most systems this will change the temporary directory that
 .I sort
 uses.
-if used, this flag and its value will be passed on to the
+If used, this flag and its value will be passed on to the
 .IR sort (1)
 command that is invoked during the build.
+.TP
+.B \-t
+If the ``\fB\-t\fP'' flag is used, then 
+.I makehistory
+translates stored articles into new storing method through
+storage api.  With an additional flag, 
+.I makehistory
+determins to how to retrieve traditional stored articles.
+.sp 1
+.in +0.5i
+.nf
+H       retrieve from history
+h       same as H
+S       retrieve from spool
+s       same as S
+.fi
+.in -0.5i
+.sp 1
+Retrieving from history translates articles stored by both traditional method
+and storage api.  Retrieving from will only translates articles stored by
+traditional method.
+.TP
+.B \-U
+If the ``\fB\-U\fP'' flag is used, then any crossposted (linked) articles
+are removed if translation is done.  This is used for translating traditional
+stored articles into new storing method through storage api.
+This flag is valid if ``\fB\-t\fP'' flag is used.
+.TP
+.B \-u
+If the ``\fB\-u\fP'' flag is given, then
+.I makehistory
+assumes that
+.I innd
+is running.
+It will throttle the server while scanning, and then
+send ``addhist'' commands (see
+.IR ctlinnd (8))
+to the server for any article that is not found in the
+.I dbz
+database.
+The command ``makehistory\ \-bu'' is useful after a system crash, to delete
+any mangled articles and bring the article database back into a more
+consistent state.
+.TP
+.B \-v
+If the ``\fB\-v\fP'' flag is used with the ``\fB\-u\fP'' flag, then
+.I makehistory
+will put a copy of all added lines on its standard output.
+.TP
 .SH EXAMPLES
 .PP
 A typical way to use this program is with the following
@@ -227,7 +350,7 @@ commands should probably be run before the database is regenerated:
 .nf
 .\" =()<cd @<_PATH_SPOOL>@>()=
 cd /var/news/spool/articles
-find . -type l -name '[1-9]*' -print | xargs -t rm
+find . -type l -name '[1-9][0-9]*' -print | xargs -t rm
 .fi
 .RE
 Make sure to run the command on all the appropriate partitions!

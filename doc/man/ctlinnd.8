@@ -155,24 +155,6 @@ feed to
 or more brief status of all feeds if
 .I site
 is an empty string.
-.\" =()<.if '@<PERL_SUPPORT>@'DO' \{\>()=
-.if 'DONT'DO' \{\
-.TP
-.BI perl " flag"
-Enable or disable perl news filtering.
-If
-.I flag
-starts with the letter ``y'' then filtering is enabled.  If it starts with
-``n'', then filtering is disabled.\}
-.\" =()<.if '@<TCL_SUPPORT>@'DO' \{\>()=
-.if 'DONT'DO' \{\
-.TP
-.BI tcl " flag"
-Enable or disable Tcl news filtering.
-If
-.I flag
-starts with the letter ``y'' then filtering is enabled.  If it starts with
-``n'', then filtering is disabled.\}
 .TP
 .BI feedinfo " site"
 Print detailed information about the state of the
@@ -236,6 +218,63 @@ Print a command summary for all commands, or just
 .I command
 if specified.
 .TP
+.BI lowmark " file"
+Reset the lowmarks in the active file based on the contents of the given
+file. Each line in the file must be of the form:
+.IP
+.RS
+.nf
+    group low-value
+.fi
+.RE
+.IP
+for example
+.IP
+.RS
+.nf
+    comp.lang.c++    243
+.fi
+.RE
+.IP
+A useful perl script for this is (called ``findlow''):
+.IP
+.RS
+.nf
+    #!/usr/bin/perl
+    require 5.001 ;
+    require "/var/news/etc/innshellvars.pl" ;
+    chdir $inn::spool or die "cd ($inn::spool): $!\n" ;
+    open(A,"<$inn::active") or die "open ($inn::active): $!\n";
+    while (<A>) {
+		($g,$HI,$LO,$f) = split;
+		$lo = $HI+1;
+		$d = $g; $d =~ y/./\//;
+		opendir(D, $d) or next;
+		while ($f = readdir(D)) {
+			next unless $f =~ /^\d+$/;
+			$l = int($f);
+			if ($l < $lo) { $lo = $l; }
+		}
+		closedir(D);
+		print "$g $lo\n" if $lo != $LO;
+    }
+    close(A);
+.fi
+.RE
+.IP
+Note: the output only mentions groups who's lowmark doesn't match the active
+file value. And a driver shell script is:
+.IP
+.RS
+.nf
+    T=/tmp/lowmark.$$
+    if /usr/news/local/findlow > $T && [ -s $T ]; then
+	ctlinnd -s lowmark $T
+    fi
+    rm $T
+.fi
+.RE
+.TP
 .BI logmode
 Cause the server to log its current operating mode to
 .IR syslog .
@@ -274,6 +313,7 @@ This command updates the
 (see
 .IR active (5))
 file.
+This command is forwarded; see below.
 .TP
 .BI param " letter value"
 Change the command-line parameters of the server.
@@ -300,6 +340,15 @@ If the server was not started with the ``\fB\-ny\fP'' flag, then this command al
 does a ``readers'' command with ``no'' as the flag and
 .I reason
 as the text.
+.\" =()<.if '@<PERL_SUPPORT>@'DO' \{\>()=
+.if 'DONT'DO' \{\
+.TP
+.BI perl " flag"
+Enable or disable perl news filtering.
+If
+.I flag
+starts with the letter ``y'' then filtering is enabled.  If it starts with
+``n'', then filtering is disabled.\}
 .TP
 .BI readers " flag text"
 Allow or disallow newsreaders.
@@ -346,6 +395,8 @@ and
 .I newsfeeds
 files are reloaded; if it is the word ``overview.fmt'' then the
 .IR overview.fmt (5)
+file is reloaded; if it is the word ``overview.ctl'' then the
+.IR overview.ctl (5)
 file is reloaded.
 .\" =()<.if '@<PERL_SUPPORT>@'DO' \{\>()=
 .if 'DONT'DO' \{\
@@ -353,13 +404,13 @@ If it is the word ``filter.perl'' then the
 .IR filter_innd.pl
 file is reloaded.  If a Perl procedure named ``filter_before_reload'' exists,
 it will be called prior to rereading
-.IR filter.tcl.
+.IR filter_innd.pl .
 If a Perl procedure named ``filter_after_reload'' exists, it will be called
 after
-.IR filter.pl
+.IR filter_innd.pl .
 has been reloaded.  Reloading the Perl filter does not enable filtering if
 it is disabled; use
-.IR filter
+.IR perl y
 to do this.\}
 .\" =()<.if '@<TCL_SUPPORT>@'DO' \{\>()=
 .if 'DONT'DO' \{\
@@ -383,6 +434,11 @@ There is no way to reload the data
 .IR inn.conf (5)
 file; the server currently only uses the ``pathhost'' parameter, so this
 restriction should not be a problem.
+.\" =()<.if '@<PERL_SUPPORT>@'DO' \{\>()=
+.if 'DONT'DO' \{\
+The
+.IR startup_innd.pl
+file cannot be reloaded.\}
 .\" =()<.if '@<TCL_SUPPORT>@'DO' \{\>()=
 .if 'DONT'DO' \{\
 The
@@ -391,7 +447,7 @@ file cannot be reloaded.\}
 .TP
 .BI renumber " group"
 Scan the spool directory for the specified newsgroup and update the
-low-water mark in the
+low-water mark and hi-water mark in the
 .I active
 file.
 If
@@ -401,7 +457,7 @@ is an empty string then all newsgroups are scanned.
 .BI reserve " reason"
 The next ``pause'' or ``throttle'' command must use
 .I reason
-as its text.
+as its reason.
 This ``reservation'' is cleared by giving an empty string for the
 .IR reason .
 This command is used by programs like
@@ -418,6 +474,7 @@ be expired using the default expiration parameters.
 Unlike the ``newgroup'' command, this command does not update the
 .I active.times
 file.
+This command is forwarded; see below.
 .TP
 .BI send " feed text..."
 The specified
@@ -439,6 +496,15 @@ which must be a channel or exploder feed.
 .I Sig
 can be a numeric signal number or the word ``hup,'' ``int,'' or ``term'';
 case is not significant.
+.\" =()<.if '@<TCL_SUPPORT>@'DO' \{\>()=
+.if 'DONT'DO' \{\
+.TP
+.BI tcl " flag"
+Enable or disable Tcl news filtering.
+If
+.I flag
+starts with the letter ``y'' then filtering is enabled.  If it starts with
+``n'', then filtering is disabled.\}
 .TP
 .BI throttle " reason"
 Input is throttled so that all existing connections are closed and new
@@ -497,9 +563,8 @@ is ``innd'' then
 is invoked; if it is ``inndstart'' then
 .\" =()<.I @<_PATH_INNDSTART>@>()=
 .I /usr/news/bin/inndstart
-is invoked; if it is an empty string, it will invoke the appropriate program
-depending on whether or not it was started with the ``\-p'' flag;
-any other value is an error.
+is invoked; if it is an empty string, it will invoke the appropriate program.
+Any other value is an error.
 .PP
 In addition to being acted upon within the server, certain commands can
 be forwarded to the appropriate child process.

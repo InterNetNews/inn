@@ -43,7 +43,7 @@ been transferred. If the ``\-T'' flag is used, the time is checked
 just before an article is started; it will not abort a transfer that
 is in progress. Both values are measured in seconds.
 .PP
-Each fileis removed after it has been successfully transferred.
+Each file is removed after it has been successfully transferred.
 .PP
 If a communication error such as a
 .IR write (2)
@@ -100,8 +100,8 @@ is:
 	exit 1
   fi
 
-  ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /var/news/etc/innshellvars
+.\" =()<  . @<_PATH_SHELLVARS>@>()=
+  . /var/news/etc/innshellvars
 
   site="$1"; host="$2"; shift; shift
 

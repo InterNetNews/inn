@@ -130,8 +130,8 @@ The
 daemon provides a convenient interface to configure and run
 .IR actsync (8).
 If a host is not initially reachable,
-the daemon will thrice retry 3 times, waiting 5 minutes before
-each set of 3 retries.
+the daemon will thrice retry 9 times, waiting 6 minutes before
+each retry.
 This daemon runs in the foreground, sending output to standard output
 and standard error.
 .PP
@@ -926,10 +926,12 @@ file:
 host=news.uu.net
 
 # location of the ignore file
-ignore_file=/usr/local/news/actsync.ign
+.\" =()<ignore_file=@<_PATH_ACTSYNC_IGN>@>()=
+ignore_file=/var/news/etc/actsync.ign
 
-# where nwes articles are kept
-spool=/var/spool/news
+# where news articles are kept
+.\" =()<spool=@<_PATH_SPOOL>@>()=
+spool=/var/news/spool/articles
 
 # actsync(8) flags
 #
@@ -944,7 +946,8 @@ flags=\-o x \-v 2 \-q 2
 and then by running:
 .PP
 .in +0.5i
-actsyncd /usr/local/news/actsync.cfg
+.\" =()<actsyncd @<_PATH_ACTSYNC_CFG>@>()=
+actsyncd /var/news/etc/actsync.cfg
 .in -0.5i
 .PP
 One may produce a trial 
@@ -960,7 +963,7 @@ The \fBdebug_level\fP causes
 .IR actsyncd (8)
 to run
 .IR actsync (8)
-with an \fB-v debug_level\fP (overriding any \fB\-v\fP
+with an \fB\-v debug_level\fP (overriding any \fB\-v\fP
 flag on the \fBflags\fP line),
 prevents any changes from being made to the
 .IR active (5)
@@ -970,11 +973,12 @@ and writes debug messages to \fIstandard error\fP.
 If the \fBdebug_outfmt\fP arg is also given to
 .IR actsyncd (8)
 then the data written to \fIstandard output\fP will 
-be in \fB-o fBdebug_outfmt\fP instead of in \fB-o a1\fP format.
+be in \fB\-o debug_outfmt\fP instead of in \fB\-o a1\fP format.
 The following /bin/sh command:
 .sp 1
 .in +0.5i
-actsyncd /usr/local/news/actsync.cfg 4 c >cmd 2>dbg
+.\" =()<actsyncd @<_PATH_ACTSYNC_CFG>@ 4 >cmd 2>dbg>()=
+actsyncd /var/news/etc/actsync.cfg 4 >cmd 2>dbg
 .in -0.5i
 .PP
 Will operate in debug mode,
@@ -1017,7 +1021,8 @@ To determine the differences between your old active and
 your current default server:
 .PP
 .in +0.5i
-actsync /usr/local/news/active.old \-
+.\" =()<actsync @<_PATH_OLDACTIVE>@ \->()=
+actsync /var/news/etc/active.old \-
 .in -0.5i
 .PP
 To report but not fix any newsgroup problems with the current active file:
@@ -1077,7 +1082,8 @@ Thus, a much better and safer version of the above would be:
 .in +0.5i
 ctlinnd pause 'running actsync'
 rm -f active.new
-actsync ... flags ... \-o a1 -S /var/spool/news erehwon.honey.edu > active.new
+.\" =()<actsync ... flags ... \-o a1 -S @<_PATH_SPOOL>@ erehwon.honey.edu > active.new>()=
+actsync ... flags ... \-o a1 -S /var/news/spool/articles erehwon.honey.edu > active.new
 rm -f active.old
 ln active active.old
 mv active.new active

@@ -68,6 +68,9 @@ ME\
 #	:Tc,Wn:/usr/news/bin/archive -f -i /usr/spool/news.archive/INDEX
 
 ##  News overview
+# use this flag if storage api is used
+#overview!:*:Tc,WhR:/usr/news/bin/overchan
+# else
 #overview!:*:Tc,WO:/usr/news/bin/overchan
 
 # Feed all local non-internal postings to nearnet; sent off-line via

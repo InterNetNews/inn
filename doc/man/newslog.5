@@ -140,12 +140,12 @@ news.crit  /var/log/news/news.crit
 All major error messages issued by
 .I innd
 are appended to this file via
-.IR syslog .
+.IR syslog (3).
 This log file should be empty.
 .I Scanlogs
 will print the entire contents of this log file if it is non-empty.
 You should have the following line in your
-.I syslog.conf
+.I syslog.conf (5)
 file:
 .RS
 .RS
@@ -158,14 +158,16 @@ news.err  /var/log/news/news.err
 All standard error messages and status messages issued by
 .I innd
 are appended to this file via
-.IR syslog .
+.IR syslog (3).
 .I Scanlogs
 uses the
-.IR awk (1)
+.IR perl (1)
 script
-.I innlog.awk
+.I innlog.pl
 to summarize this file.
-You should have the following line in your syslog.conf file:
+You should have the following line in your
+.I syslog.conf (5)
+file:
 .RS
 .RS
 .\" =()<news.notice  @<_PATH_MOST_LOGS>@/news.notice>()=

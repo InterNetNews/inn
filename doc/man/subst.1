@@ -29,10 +29,10 @@ file contains one line per substitution.
 A line consists of two fields separated by one or more tabs.
 The first field is the \fIname\fP of the substitution, the second
 is the \fIvalue\fP.
-Neither should contain the character `#', and use of text-editor
-metacharacters like `&' and `\e' is also unwise;
+Neither should contain the character ``#'', and use of text-editor
+metacharacters like ``&'' and ``\e'' is also unwise;
 the name in particular is best restricted to be alphanumeric.
-A line starting with `#' is a comment and is ignored.
+A line starting with ``#'' is a comment and is ignored.
 .PP
 In the \fIvictim\fPs,
 each line on which a substitution is to be made
@@ -42,11 +42,11 @@ must be preceded by a
 The prototype line should be delimited in such a way that it will be
 taken as a comment by whatever program processes the file later.
 The prototype line must contain a ``prototype'' of the target line bracketed
-by `=()<' and `>()=';
+by ``=(\&)<'' and ``>(\&)='';
 everything else on the prototype line is ignored.
 .I Subst
 extracts the prototype, changes all instances of substitution names
-bracketed by `@<' and `>@' to their values,
+bracketed by ``@\&<'' and ``>\&@'' to their values,
 and then replaces the target line with the result.
 .SH OPTIONS
 .TP
@@ -76,7 +76,7 @@ and the \fIvictim\fP file is
 .RS
 .nf
 x = 2;
-/* =()<y = @<FIRST>@ + @<SECOND>@;>()= */
+/* =(\&)<y = @\&<FIRST>\&@ + @\&<SECOND>\&@;>(\&)= */
 y = 88 + 99;
 z = 5;
 .fi
@@ -87,7 +87,7 @@ then ``\fBsubst \-f \fP\fIsubstitutions victim\fP'' changes \fIvictim\fP to:
 .RS
 .nf
 x = 2;
-/* =()<y = @<FIRST>@ + @<SECOND>@;>()= */
+/* =(\&)<y = @\&<FIRST>\&@ + @\&<SECOND>\&@;>(\&)= */
 y = 111 + 222;
 z = 5;
 .fi

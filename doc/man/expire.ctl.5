@@ -48,7 +48,7 @@ should appear before specific group specifications.
 .PP
 The
 .I modflag
-field can be used to modify the newsgroups to which the line applies,
+field can be used to further limit newsgroups to which the line applies,
 and should be chosen from the following set:
 .RS
 .nf
@@ -85,7 +85,7 @@ No article in the newsgroup will be removed if it has been filed
 for less then
 .I keep
 days, regardless of any expiration date.
-If this field is the word ``never'' then an article cannot have been kept
+If this field is the word ``never'' then an article can have been kept
 for enough days so it will never be expired.
 .PP
 The
@@ -107,7 +107,8 @@ If
 .I purge
 is the word ``never'' then the article will never be deleted.
 .PP
-If you have turned on the storage manager with the 'storageapi' inn.conf option, 
+If you have turned on the storage manager with the 'storageapi' in inn.conf (5)
+option and you don't use ``\-c'' option with expire,
 then you will need to use a slightly different format for specifying expiration
 times for storage classes:
 .RS
@@ -117,7 +118,7 @@ classnum:keep:default:purge
 .RE
 Where
 .I classnum 
-is the number that you specified in storage.ctl.  The 
+is the number that you specified in storage.ctl (5).  The 
 rest of the fields are identical to the 5 field format.
 .PP
 It is often useful to honor the expiration headers in articles, especially

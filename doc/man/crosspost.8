@@ -39,7 +39,7 @@ group.name/123 group2.name/456 group3.name/789
 .RE
 .sp
 with one line per article.  Any dots in the input are translated
-into "/" to translate the news group into a pathname.
+into ``/'' to translate the news group into a pathname.
 The first field is assumed to be the name of an existing copy of the
 article.
 .I Crosspost
@@ -66,7 +66,7 @@ use:
 awk <history -F'	' '(NF > 2){print $3}' | crosspost
 .RE
 .sp
-(where the -F is followed by a tab character.)
+(where the ``-F'' is followed by a tab character.)
 .PP
 The ``\-D'' flag can be used to specify where the article spool is stored.
 The default directory is

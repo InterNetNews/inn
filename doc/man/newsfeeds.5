@@ -229,7 +229,7 @@ is one.
 .TP
 .BI I size
 The flag specifies the size of the internal buffer for a file feed.
-If there are more file feeds then allowed by the system, they will
+If there are more file feeds than allowed by the system, they will
 be buffered internally in least-recently-used order.
 If the internal buffer grows bigger then
 .I size
@@ -299,6 +299,7 @@ should be chosen from the following set:
 	g	The newsgroup the article is in;
 		if cross-posted, then the first of the groups this
 		site gets
+	h	Article's Message-ID hash key
 	m	Article's Message-ID
 	n	Article's pathname relative to the spool directory
 	p	The time the article was posted as seconds since epoch.
@@ -315,9 +316,9 @@ should be chosen from the following set:
 		? if none present
 	H	All headers
 	N	Value of the Newsgroups header
+	P	Article's Path header
 	O	Overview data
 	R	Information needed for replication
-	P	Article's Path header
 .fi
 More than one letter can be used; the entries will be separated by a
 space, and written in the order in which they are specified.
@@ -331,9 +332,9 @@ by a blank line.
 An Xref header (even if one does not appear in the filed article)
 and a Bytes header, specifying the article's size, will also be part of
 the headers.
-If used, this should be the only item in the list; if preceeded by
+If used, this should be the only item in the list; if preceded by
 other items, however, a newline will be written before the headers.
-The ``O'' generates input to the
+The ``hR'' (for storage api) or ``O'' (for non-storage api) generates input to the
 .IR overchan (8)
 program.
 It, too, should be the only item in the list.
@@ -368,7 +369,7 @@ entry has a subscription list, then that list is automatically
 prepended to the subscription list of all other entries.
 For example, ``*,!control,!junk,!foo.*'' can be used to set up the
 initial subscription list for all feeds so that local postings are
-not propagated unless ``foo.* explicitly appears in the site's subscription
+not propagated unless ``foo.*'' explicitly appears in the site's subscription
 list.
 Note that most subscriptions should have ``!junk,!control'' in their pattern
 list; see the discussion of ``control messages'' in
@@ -395,12 +396,15 @@ does not transfer articles, but reports that an article should be sent to
 the site.
 .PP
 The simplest feed is one that is fed by a log entry.
-Other than a mention in the news logfile, no data is ever written out.
+Other than a mention in the news logfile
+.\" =()<.IR @<_PATH_LOGFILE>@ ,>()=
+.IR /var/log/news/news ,
+no data is ever written out.
 This is equivalent to a ``Tf'' entry writing to
 .I /dev/null
 except that no file is opened.
 .PP
-A site fed by a file is simplest type of feed.
+A site fed by a file is the next simplest type of feed.
 When the site should receive an article, one line is written to the file
 named by the
 .I param
@@ -444,7 +448,9 @@ the article or
 .I /dev/null
 if the article cannot be opened for some reason.
 Standard output and error
-will be set to the error log.
+will be set to the error log
+.\" =()<.IR @<_PATH_ERRLOG>@ .>()=
+.IR /var/log/news/errlog .
 The process will run with the user and group ID of the
 .\" =()<.I @<_PATH_INNDDIR>@>()=
 .I /var/news/run
@@ -454,7 +460,7 @@ will try to avoid spawning a shell if the command has no shell
 meta-characters; this feature can be defeated by appending a semi-colon
 to the end of the command.
 The full pathname of the program to be run must be specified; for security,
-PATH is not searched.
+PATH environment is not searched.
 .PP
 If the entry is the target of a funnel, and if the ``W*'' flag is used,
 then a single asterisk may be used in the

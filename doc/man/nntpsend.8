@@ -25,9 +25,6 @@ nntpsend \- send Usenet articles to remote site
 .B \-S
 ]
 [
-.B \-l
-]
-[
 .B \-n
 ]
 [
@@ -110,16 +107,13 @@ Any flags given on the command line override the default flags
 for the site.
 .SH OPTIONS
 .TP
-.B \-c
-
-.TP
 .B "\-d \-D"
-The ``\-d'' flag causes
+The ``\-D'' flag causes
 .I nntpsend
 to send output to stdout rather than the log file
 .\" =()<.IR @<_PATH_MOST_LOGS>@/nntpsend.log .>()=
 .IR /var/log/news/nntpsend.log .
-The ``\-D'' flag does the same
+The ``\-d'' flag does the same
 and it passes ``\-d'' to all
 .I innxmit
 invocatins which in turn causes
@@ -129,20 +123,13 @@ to go into debug mode.
 .B \-s
 If the ``\-s'' flag is used, then
 .IR shrinkfile (1)
-will be invoked to perform a tail truncation on the batchfile and the flag
+will be invoked to perform a head truncation on the batchfile and the flag
 will be passed to it.
 .TP
-.B \-l
-If the ``\-l'' (lazy) flag is specified, then the script will be more
-aggressive about deciding there is nothing to be done.
-This can be useful when using
-.I nntpsend
-as a backup for a site fed by
-.IR nntplink .
-.TP
-.B "\-a \-p \-r \-S \-t \-T"
-The ``\fB\-a\fP'', ``\fB\-p\fP'', ``\fB\-P\fP'', ``\fB\-r\fP'',
-\``\fP\-S\fP'', ``\fB\-t\fP'', and ``\fB\-T\fP'' flags are passed on to the
+.B "\-a \-p \-r \-S \-t \-T \-c \-P"
+The ``\fB\-a\fP'', ``\fB\-c\fP'', ``\fB\-p\fP'', ``\fB\-P\fP'', ``\fB\-r\fP'',
+\``\fP\-S\fP'', ``\fB\-t\fP'', ``\fB\-T\fP'', ``\fB\-c\fP'', and ``\fB\-P\fP''
+flags are passed on to the
 child
 .I innxmit
 program. See 
@@ -155,6 +142,13 @@ It is useful to have
 invoke
 .I nntpsend
 with this flag in case a site cannot be reached for an extended period of time.
+.TP
+.B -n
+If the ``\-n'' flag is used, then
+.I nntpsend
+does not use
+.IR shlock (1)
+and does not lock batch files.
 .SH EXAMPLES
 With the following control file:
 .PP
