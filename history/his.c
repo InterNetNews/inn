@@ -45,6 +45,7 @@
 #include "libinn.h"
 #include "macros.h"
 #include "inn/history.h"
+#include "inn/messages.h"
 #include "inn/timer.h"
 #include "hisinterface.h"
 #include "hismethods.h"
