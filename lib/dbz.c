@@ -169,16 +169,20 @@ static int canttag_warned;		/* flag to control can't tag warning */
  * make it a bit easier if we want to store more in here.
  */
 
-/* A new, from-scratch database, not built as a rebuild of an old one,
- * needs to know table size.  Normally the user supplies this info,
- * but there have to be defaults.
+/* A new, from-scratch database, not built as a rebuild of an old one, needs
+ * to know table size.  Normally the user supplies this info, but there have
+ * to be defaults.  Making this too small can have devestating effects on
+ * history speed for the current history implementation whereas making it too
+ * big just wastes disk space, so err on the side of caution.  This may still
+ * be a bit too small.  Assume people using tagged hash are running somewhat
+ * smaller servers.
  */
 #ifndef DEFSIZE
 
 #ifdef	DO_TAGGED_HASH
-#define DEFSIZE		500009		/* I need a prime number */
+#define DEFSIZE		1000003		/* I need a prime number */
 #else
-#define	DEFSIZE		750000
+#define	DEFSIZE		10000000
 #endif
 
 #endif	/* DEFSIZE */
