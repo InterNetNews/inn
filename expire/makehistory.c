@@ -1752,7 +1752,7 @@ main(int ac, char *av[])
     /* Make a temporary file, sort the text file into it. */
     (void)sprintf(temp, "%s/histXXXXXX", tmpdir);
     (void)mktemp(temp);
-    i = 50 + strlen(TempTextFile ? TempTextFile : TextFile) + strlen(temp);
+    i = 50 + strlen(TempTextFile ? TempTextFile : TextFile) + strlen(temp) + strlen(Tflag);
     p = NEW(char, i);
     (void)sprintf(p, "exec sort %s -t'%c' +1n -o %s %s",
 	    Tflag, HIS_FIELDSEP, temp, TempTextFile ? TempTextFile : TextFile);
