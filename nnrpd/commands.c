@@ -8,6 +8,7 @@
 
 #include "nnrpd.h"
 #include "ov.h"
+#include "inn/messages.h"
 
 typedef struct _LISTINFO {
     const char * Path;
@@ -581,7 +582,6 @@ void CMDnewgroups(int ac, char *av[])
     char	        *q;
     char	        **dp;
     QIOSTATE	        *qp;
-    bool		All;
     time_t		date;
     char		*grplist[2];
     int                 hi, lo, count, flag;
@@ -600,16 +600,6 @@ void CMDnewgroups(int ac, char *av[])
     if (date == (time_t) -1) {
         Reply("%d Bad date\r\n", NNTP_SYNTAX_VAL);
         return;
-    }
-
-    if (ac < 5)
-	All = TRUE;
-    else {
-	if (!ParseDistlist(&distlist, av[4])) {
-	    Reply("%d Bad distribution list: %s\r\n", NNTP_SYNTAX_VAL, av[4]);
-	    return;
-	}
-	All = FALSE;
     }
 
     /* Log an error if active.times doesn't exist, but don't return an error
@@ -643,17 +633,6 @@ void CMDnewgroups(int ac, char *av[])
 	else 
 	    continue;
 
-	if (!All) {
-	    if ((q = strchr(p, '.')) == NULL)
-		continue;
-	    for (*q = '\0', dp = distlist; *dp; dp++)
-		if (EQ(p, *dp)) {
-		    *q = '.';
-		    break;
-		}
-	    if (*dp == NULL)
-		continue;
-	}
 	if (grouplist == NULL) {
 	    grouplist = NEW(GROUPDATA, 1000);
 	    listsize = 1000;

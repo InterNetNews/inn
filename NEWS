@@ -83,6 +83,15 @@ Changes from 2.3 to 2.4
       administrators who want to limit the length of lines in locally posted
       articles will need to add this to their local filters instead.
 
+    * nnrpd no longer handles the poorly-specified RFC 977 optional
+      fourth argument to the NEWGROUPS command specifying the
+      "distributions" that the command was supposed to apply to.
+
+      Clients that use that argument will break.  There is not
+      believed to be any such clients, and it's easy enough to just
+      filter the returned list of newsgroups (which is generally
+      fairly short) to achieve the same results.
+
     * All of the applicable bug fixes from the INN 2.3 STABLE series are
       also included in INN 2.4.
 

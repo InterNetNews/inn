@@ -687,58 +687,6 @@ will need to change back.
 
 ------------------------------
 
-  Summary: NEWGROUPS supports the obsolete distribution argument
- Standard: draft-ietf-nntpext-base-13.txt, section 11.3
-  Version: 1.0 to CURRENT 2001-07-07
-Reference: nnrpd/commands.c CMDnewgroups()
- Severity: Allows non-standard behavior
-
-RFC 977 had a poorly-specified optional fourth argument to the NEWGROUPS
-command specifying the "distributions" that the command was supposed to
-apply to.  This has always been implemented as meaning the first segment
-of the newsgroup name.  After some discussion on the ietf-nntp list, it
-was decided that no clients actually used this and that it was confusing
-and had nothing to do with real distributions and could be safely
-removed.
-
-Impact:  A client author may see this and think that it's a widely
-supported argument to the NEWGROUPS command.
-
-Suggested fix:  Remove support for the distribution argument.
-
-Impact of fix:  Clients that use that argument will break.  There is not
-believed to be any such clients, and it's easy enough to just filter the
-returned list of newsgroups (which is generally fairly short) to achieve
-the same results.
-
-------------------------------
-
-  Summary: NEWNEWS supports the obsolete distribution argument
- Standard: draft-ietf-nntpext-base-13.txt, section 11.4
-  Version: 1.0 to CURRENT 2001-07-07
-Reference: nnrpd/newnews.c CMDnewnews()
- Severity: Allows non-standard behavior
-
-RFC 977 had a poorly-specified optional fourth argument to the NEWGROUPS
-command specifying the "distributions" that the command was supposed to
-apply to.  This was specified as meaning the first segment of the
-newsgroup name, but was implemented by opening the article and checking
-against the Distribution header.  After some discussion on the ietf-nntp
-list, it was decided that no clients actually used this and that it could
-be safely removed.
-
-Impact:  A client author may see this and think that it's a widely
-supported argument to the NEWNEWS command.
-
-Suggested fix:  Remove support for the distribution argument.
-
-Impact of fix:  Clients that use that argument will break.  There is not
-believed to be any such clients, and distributions are no longer widely
-used, at least for any purpose that would be well-served by this
-technique.
-
-------------------------------
-
   Summary: innd improperly caches DNS returns
  Standard: draft-ietf-nntpext-base-13.txt, section 14.3
   Version: 1.0 to CURRENT 2001-07-07

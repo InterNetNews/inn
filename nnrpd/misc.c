@@ -200,30 +200,6 @@ NGgetlist(argvp, list)
 }
 
 
-/*
-**  Take an NNTP distribution list <d1,d2,...> and turn it into an array.
-*/
-bool
-ParseDistlist(argvp, list)
-    char		***argvp;
-    char		*list;
-{
-    static char		**argv;
-    register char	*p;
-
-    if (list[0] != '<' || (p = strchr(&list[1], '>')) == NULL)
-	return FALSE;
-    *p = '\0';
-
-    for (p = list + 1; *p; p++)
-	if (*p == ',')
-	    *p = ' ';
-    (void)Argify(list + 1, &argv);
-    *argvp = argv;
-    return TRUE;
-}
-
-
 /*********************************************************************
  * POSTING RATE LIMITS - The following code implements posting rate
  * limits. News clients are indexed by IP number (or PERMuser, see

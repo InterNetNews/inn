@@ -43,21 +43,6 @@ static bool FindHeader(ARTHANDLE *art, const char **pp, const char **qp,
 }
 
 /*
-**  see if its distribution is in the list.
-*/
-static bool DistMatches(ARTHANDLE *art, char **distribs) {
-  char  	**dp;
-  const char	*p, *q;
-
-  if (!FindHeader(art, &p, &q, "distribution", sizeof("distribution")))
-    return FALSE;
-  for (dp = distribs; *dp; dp++)
-    if (caseEQn(q, *dp, p - q))
-      return TRUE;
-  return FALSE;
-}
-
-/*
 **  get Xref header
 */
 static char *GetXref(ARTHANDLE *art) {
@@ -158,18 +143,15 @@ static bool HaveSeen(bool AllGroups, char *group, char **groups, char **xrefs) {
 }
 
 /*
-**  NEWNEWS newsgroups date time ["GMT"|"UTC"] [<distributions>]
-**  Return the Message-ID of any articles after the specified date,
-**  and within the specified distributions.
+**  NEWNEWS newsgroups date time ["GMT"|"UTC"]
+**  Return the Message-ID of any articles after the specified date
 */
 void CMDnewnews(int ac, char *av[]) {
   static char	**groups;
   char		*group;
   char		*p, *q;
   char          *path;
-  bool		AllDists;
   bool		AllGroups;
-  char		**distribs;
   char		**xrefs;
   char		line[BIG_BUFFER];
   time_t	date;
@@ -227,17 +209,6 @@ void CMDnewnews(int ac, char *av[]) {
     return;
   }
 
-  /* Parse the distributions. */
-  if (ac < 6)
-    AllDists = TRUE;
-  else {
-    if (!ParseDistlist(&distribs, av[5])) {
-      Reply("%d Bad distribution %s\r\n", NNTP_SYNTAX_VAL, av[5]);
-      return;
-    }
-    AllDists = FALSE;
-  }
-
   path = concatpath(innconf->pathdb, _PATH_ACTIVE);
   qp = QIOopen(path);
   if (qp == NULL) {
@@ -288,16 +259,13 @@ void CMDnewnews(int ac, char *av[]) {
       while (OVsearch(handle, NULL, &data, &len, &token, &arrived)) {
 	if (len == 0 || date > arrived)
 	  continue;
-	if (!AllDists || Msgid == OVFMT_NOMSGID || Xref == OVFMT_NOXREF) {
+	if (Msgid == OVFMT_NOMSGID || Xref == OVFMT_NOXREF) {
 	  if ((art = SMretrieve(token, RETR_HEAD)) == NULL)
 	    continue;
-	  if (!AllDists && !DistMatches(art, distribs)) {
-	    SMfreearticle(art);
-	    continue;
-	  }
 	  if (Msgid != OVFMT_NOMSGID && Xref != OVFMT_NOXREF)
 	    SMfreearticle(art);
-	}
+	} else if (PERMaccessconf->nnrpdcheckart && !ARTinstorebytoken(token))
+	  continue;
 	if (Xref != OVFMT_NOXREF) {
 	  if ((p = OVERGetHeader(data, len, Xref)) == NULL) {
 	    if (Msgid == OVFMT_NOMSGID)
