@@ -12,7 +12,7 @@
 # INN Usage:
 #   ctlinnd throttle 'fixing history'
 #   ./fixhist <history >history.n
-#   makehistory -r -s `wc -l <history.n` -f history.n
+#   makedbz -s `wc -l <history.n` -f history.n
 #      or use instructions from fixhist to avoid the `wc -l <history.n`
 #   mv history.n history
 #   mv history.n.dir history.dir
@@ -47,10 +47,16 @@ while (<>) {
 	}
 	if ($msgid !~ /^<[^<> ]*>$/) {
 		if ($msgid =~ /^\[[0-9A-F]{32}\]$/) {
-			if ($arts ne "" && ($arts !~ /^\@[0-9A-F]{56}\@$/) &&
-					   ($arts !~ /[^\/]*\/[0-9]*/)) {
-				&tossit();		# malformed msg-ids
-				next;
+			if ($arts ne "") { 
+				if ($arts =~ /^\@[0-9A-F]{56}\@$/) {
+					$arts =~ s/^\@([0-9A-F]{36})([0-9A-F]{20})\@$/\@${1}\@/;
+					print "$msgid\t$dates\t$arts\n";
+					next;
+				}
+				if ($arts !~ /^\@[0-9A-F]{36}\@$/) {
+					&tossit();
+					next;
+				}
 			}
 		} else {
 			&tossit();		# malformed msg-ids
@@ -76,7 +82,7 @@ while (<>) {
 	$count++;
 	$0 = "history line $./$count" if $. % 50000 == 0;
 }
-print STDERR "Done.  Now run:\nmakehistory -r -s $count -f history.n\n";
+print STDERR "Done.  Now run:\nmakedbz -s $count -f history.n\n";
 
 sub tossit {
 	print STDERR "$_\n";
