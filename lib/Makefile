@@ -138,7 +138,7 @@ inndcomm.o:	../include/inndcomm.h
 inndcomm.o:	../include/macros.h
 inndcomm.o:	../include/nntp.h
 inndcomm.o:	../include/paths.h
-innvers.o:	../include/patchlevel.h
+innvers.o:	../include/innversion.h
 localopen.o:	../include/macros.h
 localopen.o:	../include/nntp.h
 localopen.o:	../include/paths.h

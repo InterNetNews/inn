@@ -199,6 +199,7 @@ include/configdata.h        1 Configuration data, used by everyone
 include/dbz.h               1 Header file for DBZ
 include/innconf.h           1 Header file for inn.conf
 include/inndcomm.h          1 Innd control channel commands
+include/innversion.h        1 Official change log
 include/libinn.h            1 InterNetNews library declarations
 include/macros.h            1 Useful syntactic sugar
 include/md5.h               1 Header file for processing md5
@@ -207,7 +208,6 @@ include/mymemory.h          1 Default <memory.h>
 include/myserver.h          1 Replacement for rrn server.h
 include/mystring.h          1 Default <string.h>
 include/nntp.h              1 NNTP command and reply codes
-include/patchlevel.h        1 Official change log
 include/paths.h.in          1 Paths to common programs and files
 include/qio.h               1 Header file for quick I/O package
 include/storage.h           1 Header file for storageAPI

@@ -5,7 +5,7 @@
 #include <sys/types.h>
 #include "configdata.h"
 #include "clibrary.h"
-#include "patchlevel.h"
+#include "innversion.h"
 
     /* Length of string plus trailing space. */
 #define S(x)	sizeof(x)
