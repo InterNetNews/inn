@@ -31,6 +31,7 @@
 #include <time.h>
 
 #include "inn/innconf.h"
+#include "inn/messages.h"
 #include "libinn.h"
 #include "ov.h"
 #include "paths.h"
