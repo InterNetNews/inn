@@ -2,17 +2,9 @@
 ;;  List of InterNetNews files that are fed to subst.
 ;;  Lines beginning with a semi-colon are comment lines.
 ;; Files which are no longer config.data subst victims
-../doc/Makefile
 ../include/clibrary.h
 ../include/configdata.h
 ../include/libinn.h
 ../include/macros.h
 ../include/paths.h
-../innd/Makefile
-../lib/Makefile
-../samples/innreport.conf
-../samples/innwatch.ctl
-../samples/innshellvars
-../samples/innshellvars.pl
-../samples/innshellvars.tcl
 ../storage/cnfs/cnfs-private.h
