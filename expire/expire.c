@@ -698,7 +698,7 @@ int main(int ac, char *av[])
     }
 
     if (!Bad && NHistory != NULL) {
-	(void)sprintf(buff, "%s.done", NHistory);
+	(void)sprintf(buff, "%s.n.done", NHistory);
 	(void)fclose(EXPfopen(FALSE, buff, "w", TRUE, Server, FALSE));
 	CleanupAndExit(Server, FALSE, Bad ? 1 : 0);
     }
