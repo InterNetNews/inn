@@ -1,32 +1,49 @@
-#! /usr/bin/perl
+#! /usr/bin/perl -w
 # written April 1996, tale@isc.org (David C Lawrence)
-# Version 1.6, 14 October 1998
+# Currently maintained by Russ Allbery <rra@stanford.edu>
+# Version 1.8, 2003-07-06
 #
-# Changes from 1.5 to 1.6:
-#  -- eliminated subprocess use (except pgp, of course)
-#  -- interlock against competing signing processes
-#  -- allow optional headers; see $use_or_add
-#  -- added simple comments about why particular headers are signed
-#  -- made error messages a tad more helpful for situations when it is hard
-#     to know what message was trying to be signed (such as via an "at" job)
-#  -- set $action, $group, $moderated to "" to prevent unusued variable
-#     warnings in the event a Control header can't be parsed
-#  -- moved assignment of $pgpend out of loop.
-# Changes from 1.4 to 1.5
-#  -- need to require Text::Tabs to get 'expand' for tabs in checkgroups
-# Changes from 1.3 to 1.4:
-#  -- added checkgroups checking
-#  -- added group name in several error messages (for help w/batch processing)
-#  -- disabled moderator address checking
-#  -- adjusted newsgroups line (ie, tabbing fixed) now correctly substituted
-#     into control message.
-# Changes from 1.2.3 to 1.3:
-#  -- skip minor pgp signature headers like "charset:" after "version:" header
-#     and until the empty line that starts the base64 signature block
+# Changes from 1.6 -> 1.8
+# -- Added support for GnuPG.
+# -- Replace signing code with code from PGP::Sign that generates detached
+#    signatures instead.  Otherwise, GnuPG signatures with DSA keys could
+#    not be verified.  Should still work the same as before with RSA keys.
+# -- Thanks to new signing code, no longer uses a temporary file.
+# -- Only lock when using PGP; GnuPG shouldn't need it.
+#
+# Changes from 1.5 -> 1.6
+# -- eliminated subprocess use (except pgp, of course).
+# -- interlock against competing signing processes.
+# -- allow optional headers; see $use_or_add.
+# -- added simple comments about why particular headers are signed.
+# -- made error messages a tad more helpful for situations when it is hard
+#    to know what message was trying to be signed (such as via an "at"
+#    job).
+# -- set $action, $group, $moderated to "" to prevent unusued variable
+#    warnings in the event a Control header can't be parsed.
+# -- moved assignment of $pgpend out of loop.
+#
+# Changes from 1.4 -> 1.5
+# -- need to require Text::Tabs to get 'expand' for tabs in checkgroups.
+#
+# Changes from 1.3 -> 1.4
+# -- added checkgroups checking.
+# -- added group name in several error messages (for help w/batch
+#    processing).
+# -- disabled moderator address checking.
+# -- adjusted newsgroups line (ie, tabbing fixed) now correctly
+#    substituted into control message.
+#
+# Changes from 1.2.3 -> 1.3
+# -- skip minor pgp signature headers like "charset:" after "version:"
+#    header and until the empty line that starts the base64 signature block.
 
 # CONFIGURATION
 
-# pgp variables.
+# PGP variables.
+#
+# $pgp can be set to the path to GnuPG to use GnuPG instead.  The program
+# name needs to end in gpg so that signcontrol knows GnuPG is being used.
 #
 # STORING YOUR PASS PHRASE IN A FILE IS A POTENTIAL SECURITY HOLE.
 # make sure you know what you're doing if you do it.
@@ -37,24 +54,26 @@
 #
 # $pgplock is used because pgp does not guard itself against concurrent
 # read/write access to its randseed.bin file.  A writable file is needed;
-# The default value is to use the .pgp/config.txt file in the home directory
-# of the user running the program.  Note that this will only work to lock
-# against other instances of signcontrol, not all pgp uses.
+# The default value is to use the .pgp/config.txt file in the home
+# directory of the user running the program.  Note that this will only
+# work to lock against other instances of signcontrol, not all pgp uses.
+# $pgplock is not used if $pgp ends in 'gpg' since GnuPG doesn't need
+# this.
 $pgpsigner = 'INSERT_YOUR_PGP_USERID';
 $pgppassfile = '';      # file with pass phrase for $pgpsigner
-$pgp = "@_PATH_PGP";
+$pgp = "/usr/local/bin/pgp";
 $pgpheader = "X-PGP-Sig";
 $pgplock = (getpwuid($<))[7] . '/.pgp/config.txt';
 
-# this program is strict about always wanting to be consistent about
-# what headers appear in the control messages.  the defaults for the
+# this program is strict about always wanting to be consistent about what
+# headers appear in the control messages.  the defaults for the
 # @... arrays are reasonable, but you should edit the force values.
 
-# these headers are acceptable in input,  but they will be overwritten
-# with these values.  no sanity checking is done on what you put here.
-# also, Subject: is forced to be the Control header prepending by "cmsg".
-# also, Newsgroups: is forced to be just the group being added/removed.
-#                   (but is taken as-is for checkgroups)
+# these headers are acceptable in input, but they will be overwritten with
+# these values.  no sanity checking is done on what you put here.  also,
+# Subject: is forced to be the Control header prepending by "cmsg".  also,
+# Newsgroups: is forced to be just the group being added/removed.
+#             (but is taken as-is for checkgroups)
 $force{'Path'} = 'bounce-back';
 $force{'From'} = 'YOUR_ADDRESS_AND_NAME';
 $force{'Approved'} = 'ADDRESS_FOR_Approved_HEADER';
@@ -63,27 +82,27 @@ $force{'X-Info'}='ftp://ftp.isc.org/pub/pgpcontrol/README.html'
                . 'ftp://ftp.isc.org/pub/pgpcontrol/README';
 
 # these headers are acceptable in input, or if not present then will be
-# created with the given value.  None are enabled by default, because
-# they should not be necessary.  Setting one to a null string will pass
-# through any instance of it found in the input, but not generate one
-# if it is missing.  If you set any $default{} variables, you must also
-# put it in @orderheaders below.
+# created with the given value.  None are enabled by default, because they
+# should not be necessary.  Setting one to a null string will pass through
+# any instance of it found in the input, but not generate one if it is
+# missing.  If you set any $default{} variables, you must also put it in
+# @orderheaders below.
 #
-# Note that Distribution nearly never works correctly, so use it only if you
-# are really sure the propagation of the article will be limited as you intend.
-# This normally means that you control all servers the distribution will go
-# to with an iron fist.
-# 
+# Note that Distribution nearly never works correctly, so use it only if
+# you are really sure the propagation of the article will be limited as
+# you intend.  This normally means that you control all servers the
+# distribution will go to with an iron fist.
+#
 # $use_or_add{'Reply-To'} = 'YOUR_REPLY_ADDRESS';
 # $use_or_add{'Oranization'} = 'YOUR_ORGANIZATION';
 # $use_or_add{'Distribution'} = 'MESSAGE_DISTRIBUTION';
 
-# host for message-id; this could be determined automatically based on where
-# it is run, but consistency is the goal here
+# host for message-id; this could be determined automatically based on
+# where it is run, but consistency is the goal here
 $id_host = 'FULL_HOST_NAME';
 
-# headers to sign.  Sender is included because non-PGP authentication uses it.
-# The following should always be signed:
+# headers to sign.  Sender is included because non-PGP authentication uses
+# it.  The following should always be signed:
 #  Subject    -- some older news systems use it to identify the control action.
 #  Control    -- most news systems use this to determine what to do.
 #  Message-ID -- guards against replay attacks.
@@ -97,9 +116,9 @@ $id_host = 'FULL_HOST_NAME';
 # set to () if you do not want any headers removed.
 @ignoreheaders = ('Sender');
 
-# headers that will appear in final message, and their order of appearance.
-# all _must_ be set, either in input or via the $force{} and $use_or_add{}
-# variables above.
+# headers that will appear in final message, and their order of
+# appearance.  all _must_ be set, either in input or via the $force{} and
+# $use_or_add{} variables above.
 # (exceptions: Date, Lines, Message-ID are computed by this program)
 # if header is in use_or_add with a null value, it will not appear in output.
 # several are required by the news article format standard; if you remove
@@ -115,8 +134,9 @@ $id_host = 'FULL_HOST_NAME';
   ('Path', 'From', 'Newsgroups', 'Subject', 'Control', 'Approved',
    'Message-ID', 'Date', 'Lines', 'X-Info', $pgpheader);
 
-# this program tries to help you out by not letting you sign erroneous names,
-# especially ones that are so erroneous they run afoul of naming standards.
+# this program tries to help you out by not letting you sign erroneous
+# names, especially ones that are so erroneous they run afoul of naming
+# standards.
 #
 # set to match only hierarchies you will use it on
 # include no '|' for a single hierarchy (eg, "$hierarchies = 'uk';").
@@ -141,6 +161,9 @@ $start_component_with_letter = 'MUST';
 
 ## END CONFIGURATION
 
+use Fcntl qw(F_SETFD);
+use FileHandle;
+use IPC::Open3 qw(open3);
 use POSIX qw(setlocale strftime LC_TIME);
 use Text::Tabs;                 # to get 'expand' for tabs in checkgroups
 
@@ -149,8 +172,10 @@ $0 =~ s#^.*/##;
 die "Usage: $0 < message\n" if @ARGV > 0;
 
 umask(0022);                    # flock needs a writable file, if we create it
-open(LOCK, ">>$pgplock") || die "$0: open $lock: $!, exiting\n";
-flock(LOCK, 2);                 # block until locked
+if ($pgp !~ /gpg$/) {
+  open(LOCK, ">>$pgplock") || die "$0: open $lock: $!, exiting\n";
+  flock(LOCK, 2);               # block until locked
+}
 
 &setgrouppat;
 
@@ -173,7 +198,9 @@ if ($die) {
 
 &signit;
 
-close(LOCK) || warn "$0: close $lock: $!\n";
+if ($pgp !~ /gpg$/) {
+  close(LOCK) || warn "$0: close $lock: $!\n";
+}
 exit 0;
 
 sub
@@ -303,9 +330,10 @@ readbody
   $body = $_ = <STDIN>;
   $header{'Lines'} = $body =~ tr/\n/\n/ if $body;
 
-  # the following tests are based on the structure of a news.announce.newgroups
-  # newgroup message; even if you comment out the "first line" test, please
-  # leave the newsgroups line and moderators checks
+  # the following tests are based on the structure of a
+  # news.announce.newgroups newgroup message; even if you comment out the
+  # "first line" test, please leave the newsgroups line and moderators
+  # checks
   if ($action eq 'new') {
     $status = $moderated ? 'a\smoderated' : 'an\sunmoderated';
     $die .= "$0: nonstandard first line in body for $group\n"
@@ -331,8 +359,8 @@ readbody
     } else {
       $die .= "$0: $group newsgroup line not formatted correctly\n";
     }
-    # moderator checks are disabled; some sites were trying to automatically
-    # maintain aliases based on this, which is bad policy.
+    # moderator checks are disabled; some sites were trying to
+    # automatically maintain aliases based on this, which is bad policy.
     if (0 && $moderated) {
       $die .= "$0: $group submission address not formatted correctly\n"
         if $body !~ /\nGroup submission address:   ?\S+@\S+\.\S+\n/m;
@@ -357,80 +385,162 @@ readbody
   }
 }
 
+# Create a detached signature for the given data.  The first argument
+# should be a key id, the second argument the PGP passphrase (which may be
+# null, in which case PGP will prompt for it), and the third argument
+# should be the complete message to sign.
+#
+# In a scalar context, the signature is returned as an ASCII-armored block
+# with embedded newlines.  In array context, a list consisting of the
+# signature and the PGP version number is returned.  Returns undef in the
+# event of an error, and the error text is then stored in @ERROR.
+#
+# This function is taken almost verbatim from PGP::Sign except the PGP
+# style is determined from the name of the program used.
+sub pgp_sign {
+  my ($keyid, $passphrase, $message) = @_;
+
+  # Ignore SIGPIPE, since we're going to be talking to PGP.
+  local $SIG{PIPE} = 'IGNORE';
+
+  # Determine the PGP style.
+  my $pgpstyle = 'PGP2';
+  if    ($pgp =~ /pgps$/) { $pgpstyle = 'PGP5' }
+  elsif ($pgp =~ /gpg$/)  { $pgpstyle = 'GPG'  }
+
+  # Figure out what command line we'll be using.  PGP v6 and PGP v2 use
+  # compatible syntaxes for what we're trying to do.  PGP v5 would have,
+  # except that the -s option isn't valid when you call pgps.  *sigh*
+  my @command;
+  if ($pgpstyle eq 'PGP5') {
+    @command = ($pgp, qw/-baft -u/, $keyid);
+  } elsif ($pgpstyle eq 'GPG') {
+    @command = ($pgp, qw/--detach-sign --armor --textmode -u/, $keyid,
+                qw/--force-v3-sigs --pgp2/);
+  } else {
+    @command = ($pgp, qw/-sbaft -u/, $keyid);
+  }
+
+  # We need to send the password to PGP, but we don't want to use either
+  # the command line or an environment variable, since both may expose us
+  # to snoopers on the system.  So we create a pipe, stick the password in
+  # it, and then pass the file descriptor to PGP.  PGP wants to know about
+  # this in an environment variable; GPG uses a command-line flag.
+  # 5.005_03 started setting close-on-exec on file handles > $^F, so we
+  # need to clear that here (but ignore errors on platforms where fcntl or
+  # F_SETFD doesn't exist, if any).
+  #
+  # Make sure that the file handles are created outside of the if
+  # statement, since otherwise they leave scope at the end of the if
+  # statement and are automatically closed by Perl.
+  my $passfh = new FileHandle;
+  my $writefh = new FileHandle;
+  local $ENV{PGPPASSFD};
+  if ($passphrase) {
+    pipe ($passfh, $writefh);
+    eval { fcntl ($passfh, F_SETFD, 0) };
+    print $writefh $passphrase;
+    close $writefh;
+    if ($pgpstyle eq 'GPG') {
+      push (@command, '--batch', '--passphrase-fd', $passfh->fileno);
+    } else {
+      push (@command, '+batchmode');
+      $ENV{PGPPASSFD} = $passfh->fileno;
+    }
+  }
+
+  # Fork off a pgp process that we're going to be feeding data to, and tell
+  # it to just generate a signature using the given key id and pass phrase.
+  my $pgp = new FileHandle;
+  my $signature = new FileHandle;
+  my $errors = new FileHandle;
+  my $pid = eval { open3 ($pgp, $signature, $errors, @command) };
+  if ($@) {
+    @ERROR = ($@, "Execution of $command[0] failed.\n");
+    return undef;
+  }
+
+  # Write the message to the PGP process.  Strip all trailing whitespace
+  # for compatibility with older pgpverify and attached signature
+  # verification.
+  $message =~ s/[ \t]+\n/\n/g;
+  print $pgp $message;
+
+  # All done.  Close the pipe to PGP, clean up, and see if we succeeded.
+  # If not, save the error output and return undef.
+  close $pgp;
+  local $/ = "\n";
+  my @errors = <$errors>;
+  my @signature = <$signature>;
+  close $signature;
+  close $errors;
+  close $passfh if $passphrase;
+  waitpid ($pid, 0);
+  if ($? != 0) {
+    @ERROR = (@errors, "$command[0] returned exit status $?\n");
+    return undef;
+  }
+
+  # Now, clean up the returned signature and return it, along with the
+  # version number if desired.  PGP v2 calls this a PGP MESSAGE, whereas
+  # PGP v5 and v6 and GPG both (more correctly) call it a PGP SIGNATURE,
+  # so accept either.
+  while ((shift @signature) !~ /-----BEGIN PGP \S+-----\n/) {
+    unless (@signature) {
+      @ERROR = ("No signature from PGP (command not found?)\n");
+      return undef;
+    }
+  }
+  my $version;
+  while ($signature[0] ne "\n" && @signature) {
+    $version = $1 if ((shift @signature) =~ /^Version:\s+(.*?)\s*$/);
+  }
+  shift @signature;
+  pop @signature;
+  $signature = join ('', @signature);
+  chomp $signature;
+  undef @ERROR;
+  return wantarray ? ($signature, $version) : $signature;
+}
+
 sub
 signit
 
 {
-  my($tmp, $head, $header, $signheaders, $pgpflags, $pgpbegin, $pgpend);
-  local(*FH);
+  my($head, $header, $signheaders, $pgpflags, $pgpbegin, $pgpend);
 
-  $tmp = "/tmp/sign-$$";
+  # Form the message to be signed.
   $signheaders = join(",", @signheaders);
-
   $head = "X-Signed-Headers: $signheaders\n";
   foreach $header (@signheaders) {
     $head .= "$header: $header{$header}\n";
   }
-  open(FH, "> $tmp") || die "$0: open $tmp: !$\n";
-  print FH $head;
-  print FH "\n";
-  print FH $body;
-  close(FH) || warn "$0: close TMP: $!\n";
-  die "$0: data to sign corrupted in $tmp\n"
-    if -s $tmp != length($head) + length($body) + 1;
+  my $message = "$head\n$body";
 
+  # Get the passphrase if available.
+  my $passphrase;
   if ($pgppassfile && -f $pgppassfile) {
     $pgppassfile =~ s%^(\s)%./$1%;
-    if (open(PGPPASS, "< $pgppassfile\0")) {
-      $ENV{'PGPPASS'} = <PGPPASS>;
-      close(PGPPASS);
+    if (open (PGPPASS, "< $pgppassfile\0")) {
+      $passphrase = <PGPPASS>;
+      close PGPPASS;
+      chomp $passphrase;
     }
-    chomp $ENV{'PGPPASS'} if $ENV{'PGPPASS'};
-    # if PGPPASS is not now set and non-null, it will be prompted for by pgp
   }
 
-  # -f = write to stdout
-  # -a = ciphertext file in ASCII radix-64 format
-  # -s = sign the plaintext file
-  # -t = plaintext file contains ASCII text, not binary, and
-  #      should be converted to recipient's local text line conventions
-  # -u = userid to use to sign
-  # +verbose=0 = only print errors on stderr
-  open(FH, "exec $pgp -fast -u $pgpsigner +verbose=0 < $tmp 2>/dev/null |") ||
-    die "$0: open pipe from pgp: $!\n";
-  
-  # whack any passphrase out of our environment.  don't let this kid 
-  # you, it does not stop snooping.
-  delete $ENV{'PGPPASS'};
-
-  $pgpbegin = "-----BEGIN PGP SIGNATURE-----";
-  $/ = "$pgpbegin\n";
-  $_ = <FH>;                         # read to signature, discard
-  die "$0: $pgpbegin not found in $_\n" unless /\Q$pgpbegin\E$/;
-
-  # make sure the temp file goes away even if we die now
-  unlink($tmp) || warn "$0: unlink $tmp: $!\n";
-
-  # finish getting the signature
-  $/ = "\n";
-  $_ = <FH>;
-  die "$0: didn't find PGP Version line where expected\n"
-    unless /^Version: (\S+)$/;
-  $header{$pgpheader} = "$1 $signheaders";
-
-  do {                # skip other pgp headers like "charset:" until empty line
-    $_ = <FH>;        # ... is charset significant to this application?
-  } while ! /^$/;
-
-  $pgpend = '-----END PGP SIGNATURE-----';
-  while (<FH>) {
-    chomp;
-    last if /^\Q$pgpend\E$/;
-    $header{$pgpheader} .= "\n\t$_";
+  # Sign the message, getting the signature and PGP version number.
+  my ($signature, $version) = pgp_sign ($pgpsigner, $passphrase, $message);
+  unless ($signature) {
+    die "@ERROR\n$0: could not generate signature\n";
   }
-  $_ = <FH>;
-  die "$0: unexpected data following $pgpend\n" unless eof(FH);
-  close(FH) || warn "$0: close pipe from pgp returned status $?\n";
+
+  # GnuPG has version numbers containing spaces, which breaks our header
+  # format.  Find just some portion that contains a digit.
+  ($version) = ($version =~ /(\S*\d\S*)/);
+
+  # Put the signature into the headers.
+  $signature =~ s/^/\t/mg;
+  $header{$pgpheader} = "$version $signheaders\n$signature";
 
   for (@ignoreheaders) {
     delete $header{$_} if defined $header{$_};
@@ -451,8 +561,8 @@ signit
   print STDOUT $body;
 }
 
-# Our lawyer told me to include the following.  The upshot of it is
-# that you can use the software for free as much as you like.
+# Our lawyer told me to include the following.  The upshot of it is that
+# you can use the software for free as much as you like.
 
 # Copyright (c) 1996 UUNET Technologies, Inc.
 # All rights reserved.
@@ -483,3 +593,8 @@ signit
 # STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# Local variables:
+# cperl-indent-level: 2
+# fill-column: 74
+# End:
