@@ -81,6 +81,8 @@ Limited can't tag warnings once per dbzinit() by Sang-yong Suh (May, 1998)
 #include "libinn.h"
 #include "macros.h"
 
+#include "inn/mmap.h"
+
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
@@ -1054,13 +1056,12 @@ dbzfetch(const HASH key, off_t *value)
 	    memcpy(value, &((of_t *)idxtab.core)[srch.place], sizeof(of_t));
 	} else {
 	    if (pread(idxtab.fd, value, sizeof(of_t), srch.place * idxtab.reclen) != sizeof(of_t)) {
-		    DEBUG(("fetch: read failed\n"));
-		    idxtab.pos = -1;
-		    srch.aborted = 1;
-		    return FALSE;
-		}
+		DEBUG(("fetch: read failed\n"));
+		idxtab.pos = -1;
+		srch.aborted = 1;
+		return FALSE;
 	    }
-	*value = *value;
+	}
 	DEBUG(("fetch: successful\n"));
 	return TRUE;
     }
@@ -1564,10 +1565,16 @@ set(searcher *sp, hash_table *tab, void *value)
 
     /* If we have the index file in memory, use it */
     if ((tab->incore != INCORE_NO) && (sp->place < conf.tsize)) {
-	memcpy((void *)((char *)tab->core + (sp->place * tab->reclen)), value, tab->reclen);
+	void *where = (char *)tab->core + (sp->place * tab->reclen);
+
+	memcpy(where, value, tab->reclen);
 	DEBUG(("set: incore\n"));
-	if (tab->incore == INCORE_MMAP)
+	if (tab->incore == INCORE_MMAP) {
+	    if (innconf->nfswriter) {
+		mapcntl(where, tab->reclen, MS_ASYNC);
+	    }
 	    return TRUE;
+	}
 	if (!options.writethrough)
 	    return TRUE;
     }
