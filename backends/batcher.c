@@ -19,6 +19,7 @@
 #include "qio.h"
 #include <syslog.h> 
 #include "macros.h"
+#include <signal.h>
 
 
 /*
@@ -41,7 +42,7 @@ STATIC long	BytesInBatch = 60 * 1024;
 STATIC long	BytesWritten;
 STATIC long	MaxArts;
 STATIC long	MaxBytes;
-STATIC SIGVAR	GotInterrupt;
+STATIC sig_atomic_t	GotInterrupt;
 STATIC STRING	Separator = "#! rnews %ld";
 STATIC char	*ERRLOG;
 

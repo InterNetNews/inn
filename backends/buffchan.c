@@ -13,7 +13,8 @@
 #include "libinn.h"
 #include "qio.h"
 #include "macros.h"
-#include <syslog.h>  
+#include <syslog.h>
+#include <signal.h>
 
 extern void	MAPread();
 extern char	*MAPname();
@@ -63,7 +64,7 @@ STATIC int	CloseEvery;
 STATIC int	FlushEvery;
 STATIC int	CloseSeconds;
 STATIC int	FlushSeconds;
-STATIC SIGVAR	GotInterrupt;
+STATIC sig_atomic_t	GotInterrupt;
 STATIC SITEHASH	SITEtable[SITE_SIZE];
 STATIC TIMEINFO	Now;
 

@@ -22,6 +22,7 @@
 #include <netdb.h>
 #include <pwd.h>
 #include <grp.h>
+#include <signal.h>
 #if	defined(HPUX)
 #include <sys/pstat.h>
 #endif	/* defined(HPUX) */
@@ -73,7 +74,7 @@ STATIC char	*PushedBack;
 STATIC char	*TITLEstart;
 STATIC char	*TITLEend;
 #endif	/* !defined(HPUX) */
-STATIC SIGVAR	ChangeTrace;
+STATIC sig_atomic_t	ChangeTrace;
 BOOL	DaemonMode = FALSE;
 #if HAVE_GETSPNAM
 STATIC char	*ShadowGroup;
