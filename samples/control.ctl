@@ -544,7 +544,7 @@ newgroup:group-admin@isc.org:*:drop
 newgroup:tale@*uu.net:*:drop
 rmgroup:group-admin@isc.org:*:drop
 rmgroup:tale@*uu.net:*:drop
-checkgroups:group-admin@isc.org:*:verify-news.announce.newgroups
+checkgroups:group-admin@isc.org:comp.*|humanities.*|misc.*|news.*|rec.*|sci.*|soc.*|talk.*:verify-news.announce.newgroups
 newgroup:group-admin@isc.org:comp.*|misc.*:verify-news.announce.newgroups
 newgroup:group-admin@isc.org:humanities.*:verify-news.announce.newgroups
 newgroup:group-admin@isc.org:news.*|rec.*|sci.*:verify-news.announce.newgroups
@@ -1654,9 +1654,9 @@ rmgroup:*:pubnet.*:doit
 # *PGP*   See comment at top of file.
 newgroup:*:relcom.*:drop
 rmgroup:*:relcom.*:drop
-checkgroups:coord@new*.relcom.ru:relcom.*:verify-relcom.newsgroups
-newgroup:coord@new*.relcom.ru:relcom.*:verify-relcom.newsgroups
-rmgroup:coord@new*.relcom.ru:relcom.*:verify-relcom.newsgroups
+checkgroups:coord@*.relcom.ru:relcom.*:verify-relcom.newsgroups
+newgroup:coord@*.relcom.ru:relcom.*:verify-relcom.newsgroups
+rmgroup:coord@*.relcom.ru:relcom.*:verify-relcom.newsgroups
 
 ## RPI (*LOCAL* -- Rensselaer Polytechnic Institute, Troy, NY, USA)
 # Contact: sofkam@rpi.edu
