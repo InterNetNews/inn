@@ -749,7 +749,7 @@ CCgo(av)
     Mode = OMrunning;
     ThrottledbyIOError = FALSE;
 
-    if (NNRPReason && innconf->readerswhenstopped) {
+    if (NNRPReason && !innconf->readerswhenstopped) {
 	av[0] = YES;
 	av[1] = p;
 	(void)CCreaders(av);
@@ -1211,7 +1211,7 @@ CCblock(NewMode, reason)
     if (ModeReason)
 	DISPOSE(ModeReason);
     ModeReason = COPY(reason);
-    if (NNRPReason == NULL && innconf->readerswhenstopped) {
+    if (NNRPReason == NULL && !innconf->readerswhenstopped) {
 	av[0] = NO;
 	av[1] = ModeReason;
 	(void)CCreaders(av);
