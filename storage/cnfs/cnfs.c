@@ -1634,7 +1634,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
     tonextblock = CNFS_BLOCKSIZE - (private->offset & (CNFS_BLOCKSIZE - 1));
     private->offset += (CYCBUFF_OFF_T) tonextblock;
     art->arrived = ntohl(cah.arrived);
-    token = CNFSMakeToken(cycbuff->name, offset, (offset > cycbuff->free) ? cycbuff->cyclenum - 1 : cycbuff->cyclenum, ntohl(cah.class), (TOKEN *)NULL);
+    token = CNFSMakeToken(cycbuff->name, offset, (offset > cycbuff->free) ? cycbuff->cyclenum - 1 : cycbuff->cyclenum, cah.class, (TOKEN *)NULL);
     art->token = &token;
     if (innconf->articlemmap) {
 	offset += sizeof(cah) + plusoffset;
