@@ -382,7 +382,7 @@ AC_CHECK_FUNCS(gettimeofday memchr memcmp memcpy memmove memset)
 AC_CHECK_FUNCS(mkdir mkfifo mktemp select setbuffer setproctitle)
 AC_CHECK_FUNCS(setsid socket strcasecmp strchr strcspn strerror)
 AC_CHECK_FUNCS(strrchr strspn strstr symlink sysconf syslog ulimit)
-AC_CHECK_FUNCS(waitpid)
+AC_CHECK_FUNCS(waitpid socketpair)
 
 
 dnl This portion is similar to what AC_FUNC_MMAP does, only
