@@ -2,11 +2,8 @@
 ''' $RCSfile$$Revision$$Date$
 '''
 ''' $Log$
-''' Revision 1.9  2000/11/14 21:35:25  hkehoe
-''' change default value of nocompact
-'''
-''' Revision 1.8  2000/11/14 03:00:11  hkehoe
-''' ovdb doc updates
+''' Revision 1.10  2000/12/12 20:00:45  hkehoe
+''' Document new options 'useshm' and 'shmkey'
 '''
 '''
 .de Sh
@@ -99,7 +96,7 @@
 .nr % 0
 .rr F
 .\}
-.TH ovdb 5 "INN 2.4" "13/Nov/2000" "InterNetNews Documentation"
+.TH ovdb 5 "INN 2.4.0" "12/Dec/2000" "InterNetNews Documentation"
 .UC
 .if n .hy 0
 .if n .na
@@ -271,6 +268,18 @@ If txn_nosync is set to false, BerkeleyDB flushes the log after every
 transaction.  This minimizes the number of transactions that may be lost
 in the event of a crash, but results in significantly degraded
 performance.  Default is true.
+.Ip "useshm" 4
+If useshm is set to true, BerkeleyDB will use shared memory instead
+of mmap for its environment regions (cache, lock, etc).  With some
+platforms, this may improve performance.  Default is false.
+This parameter is ignored if you have BerkeleyDB 2.x
+.Ip "shmkey" 4
+Sets the shared memory key used by BerkeleyDB when \*(L'useshm\*(R' is true.
+BerkeleyDB will create several (usually 5) shared memory segments,
+using sequentially numbered keys starting with \*(L'shmkey\*(R'.
+Choose a key that does not conflict with any existing shared memory
+segments on your system.  Default is 6400.  This parameter is only
+used with BerkeleyDB 3.1 or newer.
 .Ip "pagesize" 4
 Sets the page size for the \s-1DB\s0 files (in bytes).  Must be a power of 2.
 Best choices are 4096 or 8192.  The default is 8192.
@@ -422,6 +431,10 @@ source distribution, or on the Sleepycat web page: http://www.sleepycat.com/
 .IX Item "numdbfiles"
 
 .IX Item "txn_nosync"
+
+.IX Item "useshm"
+
+.IX Item "shmkey"
 
 .IX Item "pagesize"
 
