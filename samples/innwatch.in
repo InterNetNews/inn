@@ -24,14 +24,14 @@ TIMESTAMP=${LOCKS}/${PROGNAME}.time
 LOGFILE=${MOST_LOGS}/news.crit
 
 ## Default value in case there is no definition in inn.conf
-INNWATCHPAUSELOAD=${INNWATCHPAUSELOAD:=1500}
-INNWATCHHILOAD=${INNWATCHHILOAD:=2000}
-INNWATCHLOLOAD=${INNWATCHLOLOAD:=1000}
-INNWATCHSPOOLSPACE=${INNWATCHSPOOLSPACE:=8000}
-INNWATCHBATCHSPACE=${INNWATCHBATCHSPACE:=800}
-INNWATCHLIBSPACE=${INNWATCHLIBSPACE:=25000}
-INNWATCHSPOOLNODES=${INNWATCHSPOOLNODES:=200}
-INNWATCHSLEEPTIME=${INNWATCHSLEEPTIME:=600}
+: ${INNWATCHPAUSELOAD:=1500}
+: ${INNWATCHHILOAD:=2000}
+: ${INNWATCHLOLOAD:=1000}
+: ${INNWATCHSPOOLSPACE:=8000}
+: ${INNWATCHBATCHSPACE:=800}
+: ${INNWATCHLIBSPACE:=25000}
+: ${INNWATCHSPOOLNODES:=200}
+: ${INNWATCHSLEEPTIME:=600}
 
 ##  Parse JCL.
 while [ $# -gt 0 ] ; do
@@ -184,17 +184,10 @@ while { sleep ${NEXTSLEEP} & wait; } ; : ; do
 						"CND='"'"'" $3 "'"'"'", \
 						"EXP='"'"'" $4 "'"'"'", \
 						"TST='"'"'" $5 "'"'"'", \
-						"LIM='"'"'" $6 "'"'"'", \
+						"LIM=" $6, \
 						"CMD='"'"'" $7 "'"'"'", \
 						"CMT='"'"'" $8 "'"'"'" }'`
 
-	case ${LIM} in
-	[0-9]*)
-	    ;;
-	*)
-	    LIM=`eval echo ${LIM}`
-	    ;;
-	esac
 	##  If there's no label, the label is the line number.
 	test -z "${LAB}" && LAB=${LINE}
 
