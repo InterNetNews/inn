@@ -360,6 +360,9 @@ tdx_search(struct search *search, struct article *artdata)
     struct index_entry *entry;
     size_t max;
 
+    if (search->data->index == NULL || search->data->data == NULL)
+        return false;
+
     max = (search->data->indexlen / sizeof(struct index_entry)) - 1;
     entry = search->data->index + search->current;
     while (search->current <= search->limit && search->current <= max) {
@@ -371,8 +374,16 @@ tdx_search(struct search *search, struct article *artdata)
     if (search->current > search->limit || search->current > max)
         return false;
 
-    /* Make sure that the offset into the data file is sensible.  Otherwise,
-       warn about possible corruption and return a miss. */
+    /* Make sure that the offset into the data file is sensible, and try
+       remapping the data file if the portion the offset is pointing to isn't
+       currently mapped.  Otherwise, warn about possible corruption and return
+       a miss. */
+    if (entry->offset + entry->length > search->data->datalen) {
+        unmap_file(search->data->data, search->data->datalen,
+                   search->data->path, ".IDX");
+        if (!map_data(search->data))
+            return false;
+    }
     if (entry->offset + entry->length > search->data->datalen) {
         warn("Invalid entry for article %lu in %s.IDX: offset %lu length %lu",
              search->current + search->data->base, search->data->path,
