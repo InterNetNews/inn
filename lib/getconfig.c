@@ -409,7 +409,7 @@ int CheckInnConf()
 int ReadInnConf()
 {
     FILE	        *F;
-    char	        *p;
+    char	        *p, *q;
     int			boolval;
     BOOL		bit;
 
@@ -443,6 +443,12 @@ int ReadInnConf()
 	    for ( ; ISWHITE(*p); p++)
 		continue;
 	    if (!*p) continue;
+
+            /* trim trailing whitespace */
+	    q = &p[strlen(p)-1];
+	    while (q>p && ISWHITE(*q))
+		*q-- = '\0';
+
 	    boolval = -1;
 	    if (caseEQ(p, "on") || caseEQ(p, "true") || caseEQ(p, "yes"))
 		boolval = TRUE;
@@ -963,7 +969,7 @@ int ReadInnConf()
 	    } else 
 	    if (EQ(ConfigBuff,_CONF_GROUPBASEEXPIRY)) {
 		TEST_CONFIG(CONF_VAR_GROUPBASEEXPIRY, bit);
-		if (!bit) innconf->groupbaseexpiry = boolval;
+		if (!bit && boolval != -1) innconf->groupbaseexpiry = boolval;
 		SET_CONFIG(CONF_VAR_GROUPBASEEXPIRY);
 	    } else 
 	    if (EQ(ConfigBuff,_CONF_WIPCHECK)) {
