@@ -65,6 +65,8 @@ PATH_TCL_FILTER	= /usr/news/bin/control/filter.tcl
 PATH_ACTSYNC_IGN = /var/news/etc/actsync.ign
 ##  =()<PATH_ACTSYNC_CFG = @<_PATH_ACTSYNC_CFG>@>()=
 PATH_ACTSYNC_CFG = /var/news/etc/actsync.cfg
+##  =()<PATH_MOTD = @<_PATH_MOTD>@>()=
+PATH_MOTD = /var/news/etc/motd.news
 
 ##  =()<AWK	= @<_PATH_AWK>@>()=
 AWK	= /usr/bin/awk
@@ -85,7 +87,7 @@ MOST	= rc.news overview.fmt checkgroups default ihave newgroup \
 	sendbatch inncheck innstat pgpverify innwatch innlog.pl innshellvars \
 	innshellvars.pl innshellvars.csh innshellvars.tcl filter.tcl \
 	startup.tcl startup_innd.pl filter_innd.pl filter_nnrpd.pl \
-	actsync.cfg actsync.ign scanspool storage.ctl
+	actsync.cfg actsync.ign scanspool storage.ctl motd.news
 
 MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(PATH_SCHEMA) $D$(CTLBIN)/checkgroups \
 	$D$(CTLBIN)/default $D$(CTLBIN)/ihave $D$(CTLBIN)/newgroup \
@@ -102,7 +104,7 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(PATH_SCHEMA) $D$(CTLBIN)/checkgroups \
 	$D$(PATH_PERL_SHELLVARS) $D$(PATH_PERL_STARTUP_INND) \
 	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
 	$D$(PATH_TCL_SHELLVARS) $D$(PATH_TCL_STARTUP) $D$(PATH_CSH_SHELLVARS) \
-	$D$(PATH_TCL_FILTER) $D$(NEWSBIN)/scanspool
+	$D$(PATH_TCL_FILTER) $D$(NEWSBIN)/scanspool $D$(PATH_MOTD)
 
 ##  Scripts from above, plus site-specific config files.
 REST		= \
@@ -111,7 +113,7 @@ REST		= \
 	inn.conf moderators \
 	control.ctl expire.ctl nntpsend.ctl \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
-	sample.control
+	sample.control motd.news
 
 ALL		= $(MOST) $(REST)
 
@@ -123,7 +125,7 @@ REST_INSTALLED	= \
 	$D$(PATH_CONTROLCTL) $D$(PATH_EXPIRECTL) $D$(NEWSLIB)/nntpsend.ctl \
 	$D$(PATH_CTLWATCH) $D$(PATH_DISTPATS) \
 	$D$(PATH_ACTSYNC_CFG) $D$(PATH_ACTSYNC_IGN) \
-	$D$(CTLBIN)/sample.control
+	$D$(CTLBIN)/sample.control $D$(PATH_MOTD)
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
 
@@ -240,7 +242,7 @@ $D$(PATH_ACTSYNC_CFG): actsync.cfg	; $(COPY_RPRI) $? $@
 $D$(PATH_ACTSYNC_IGN): actsync.ign	; $(COPY_RPRI) $? $@
 $D$(NEWSBIN)/scanspool: scanspool	; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/sample.control: sample.control ; $(COPY_RPRI) $? $@
-
+$D$(PATH_MOTD): motd.news		; $(COPY_RPRI) $? $@
 
 REASON	= 'Installing site config files from site/Makefile'
 go pause:
@@ -282,6 +284,7 @@ innshellvars.tcl: ../samples/innshellvars.tcl	; $(COPY) $? $@
 innshellvars.csh: ../samples/innshellvars.csh	; $(COPY) $? $@
 moderators:	../samples/moderators		; $(COPY) $? $@
 distrib.pats:	../samples/distrib.pats		; $(COPY) $? $@
+motd.news:	../samples/motd.news		; $(COPY) $? $@
 newgroup:	../samples/newgroup		; $(COPY) $? $@
 news.daily:	../samples/news.daily		; $(COPY) $? $@
 newsfeeds:	../samples/newsfeeds		; $(COPY) $? $@
