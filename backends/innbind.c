@@ -10,12 +10,12 @@
 #include "portable/socket.h"
 #include <errno.h>
 #include <pwd.h>
+#ifdef HAVE_STREAMS_SENDFD
+# include <stropts.h>
+#endif
 #include <syslog.h>
 
-#include "inn/buffer.h"
-#include "inn/innconf.h"
 #include "inn/messages.h"
-#include "inn/network.h"
 #include "inn/vector.h"
 #include "libinn.h"
 
@@ -109,9 +109,10 @@ parse_argument(const char *string, struct binding *binding)
 /*
 **  Bind an IPv4 address, given the file descriptor, string giving the
 **  address, and the port.  The fourth argument is the full binding
-**  specification for error reporting.  Dies on any failure.
+**  specification for error reporting.  Returns true on success, false if
+**  binding failed due to permission denied.  Die on any other failure.
 */
-static void
+static bool
 bind_ipv4(int fd, const char *address, unsigned short port, const char *spec)
 {
     struct sockaddr_in server;
@@ -123,18 +124,24 @@ bind_ipv4(int fd, const char *address, unsigned short port, const char *spec)
         die("invalid IPv4 address %s in %s", address, spec);
     server.sin_addr = addr;
     sin_set_length(&server);
-    if (bind(fd, (struct sockaddr *) &server, sizeof(server)) < 0)
-        sysdie("cannot bind socket for %s", spec);
+    if (bind(fd, (struct sockaddr *) &server, sizeof(server)) < 0) {
+        if (errno == EACCES)
+            return false;
+        else
+            sysdie("cannot bind socket for %s", spec);
+    }
+    return true;
 }
 
 
 /*
 **  Bind an IPv6 address, given the file descriptor, string giving the
 **  address, and the port.  The fourth argument is the full binding
-**  specification for error reporting.  Dies on any failure.
+**  specification for error reporting.  Returns true on success, false if
+**  binding failed due to permission denied.  Die on any other failure.
 */
 #ifdef HAVE_INET6
-static void
+static bool
 bind_ipv6(int fd, const char *address, unsigned short port, const char *spec)
 {
     struct sockaddr_in6 server;
@@ -146,17 +153,23 @@ bind_ipv6(int fd, const char *address, unsigned short port, const char *spec)
         die("invalid IPv6 address %s in %s", address, spec);
     server.sin6_addr = addr;
     sin6_set_length(&server);
-    if (bind(fd, (struct sockaddr *) &server, sizeof(server)) < 0)
-        sysdie("cannot bind socket for %s", spec);
+    if (bind(fd, (struct sockaddr *) &server, sizeof(server)) < 0) {
+        if (errno == EACCES)
+            return false;
+        else
+            sysdie("cannot bind socket for %s", spec);
+    }
+    return true;
 }
 #endif /* HAVE_INET6 */
 
 
 /*
 **  Given a given a struct binding, bind that file descriptor.  Also takes the
-**  command-line argument for error reporting.  Dies on any failure.
+**  command-line argument for error reporting.  Returns true on success, false
+**  if binding failed due to permission denied.  Die on any other failure.
 */
-static void
+static bool
 bind_address(struct binding *binding, const char *spec)
 {
     int fd = binding->fd;
@@ -177,10 +190,10 @@ bind_address(struct binding *binding, const char *spec)
 
     /* Based on the address family, parse either an IPv4 or IPv6 address. */
     if (binding->family == AF_INET)
-        bind_ipv4(fd, binding->address, port, spec);
+        return bind_ipv4(fd, binding->address, port, spec);
 #ifdef HAVE_INET6
     else if (binding->family == AF_INET6)
-        bind_ipv6(fd, binding->address, port, spec);
+        return bind_ipv6(fd, binding->address, port, spec);
 #endif
     else
         die("unknown protocol family %d in %s", binding->family, spec);
@@ -225,59 +238,26 @@ create_socket(struct binding *binding, const char *spec)
 
 
 /*
-**  Given the argument vector for a program to run, drop permissions and
-**  execute the program.  Add in a new -p option with the value given in the
-**  third argument (which says what file descriptors have been bound and are
-**  ready to be listened on).
-**
-**  Use the environment variable IN_INNBIND as a canary; if it is set, refuse
-**  to exec a program again (to avoid exec loops).
+**  Given a file descriptor, attempt to pass it via stdout.  Die on any error.
+**  Currently, file descriptor passing is only implemented for systems that
+**  use STREAMS.
 */
+#ifdef HAVE_STREAMS_SENDFD
 static void
-exec_program(int argc, char *argv[], const char *ports)
+send_fd(int fd)
 {
-    const char **command;
-    int i;
-
-    if (getenv("IN_INNBIND") != NULL)
-        die("IN_INNBIND already set, apparent exec loop");
-    command = xmalloc((argc + 2 + 1) * sizeof(char *));
-    command[0] = argv[0];
-    command[1] = "-p";
-    command[2] = ports;
-    for (i = 3; i - 2 < argc; i++)
-        command[i] = argv[i - 2];
-    command[i] = NULL;
-    if (putenv((char *) "IN_INNBIND=1") < 0)
-        sysdie("cannot putenv IN_INNBIND");
-    if (execv(command[0], (char **) command) < 0)
-        sysdie("exec of %s failed", command[0]);
+    if (isastream(STDOUT_FILENO) != 1)
+        die("cannot pass file descriptor: stdout is not a stream");
+    if (ioctl(STDOUT_FILENO, I_SENDFD, fd) < 0)
+        sysdie("cannot pass file descriptor");
 }
-
-
-/*
-**  Test to see if innbind will work as designed.  Takes the port number to
-**  try to bind to (as a string) and attempts to create a simple IPv4 socket
-**  and use innbind to bind it.  Returns true on success, false on failure.
-*/
-static bool
-innbind_test(const char *string)
+#else /* !HAVE_STREAMS_SENDFD */
+static void
+send_fd(int fd UNUSED)
 {
-    long value;
-    int fd;
-
-    if (!convert_string(string, &value))
-        die("invalid port number %s", string);
-    if (!innconf_read(NULL))
-        exit(1);
-    fd = network_bind_ipv4("127.0.0.1", value);
-    if (fd < 0)
-        return false;
-    else {
-        close(fd);
-        return true;
-    }
+    die("cannot pass file descriptor: STREAMS not supported");
 }
+#endif /* !HAVE_STREAMS_SENDFD */
 
 
 int
@@ -286,8 +266,9 @@ main(int argc, char *argv[])
     struct passwd *pwd;
     uid_t real_uid;
     int i;
+    bool done;
     struct binding binding = { 0, 0, NULL, 0 };
-    struct buffer ports = { 0, 0, 0, NULL };
+    bool force_sendfd = false;
 
     /* Set up the error handlers.  Errors go to stderr and to syslog with a
        priority of LOG_CRIT.  This priority level is too high, but it's chosen
@@ -310,43 +291,35 @@ main(int argc, char *argv[])
                 (unsigned long) pwd->pw_uid, (unsigned long) real_uid);
     }
 
-    /* If the first argument is -t, test whether innbind can work as
-       designed.  We do this by dropping privileges, reading the next argument
-       and interpreting it as the port number, and then trying to bind a
-       simple IPv4 socket to that port. */
-    if (argc > 2 && strcmp(argv[1], "-t") == 0) {
-        if (setuid(real_uid) < 0 || geteuid() != real_uid)
-            sysdie("unable to setuid to %d", real_uid);
-        exit(innbind_test(argv[2]) ? 0 : 1);
+    /* If the first argument is -p, force creation of the socket and file
+       descriptor passing rather than even attempting to bind the socket
+       first. */
+    if (argc > 1 && strcmp(argv[1], "-p") == 0) {
+        force_sendfd = true;
+        argc--;
+        argv++;
     }
+    if (argc < 2)
+        die("no addresses specified");
 
-    /* If the first argument is -e, we have to actually create the sockets and
-       then exec another process.  In this case, there will still be a list of
-       addresses to bind to, but the file descriptor will always be 0.  At the
-       end of the list will be the literal argument "--" and then the program
-       to exec with its arguments.  Otherwise, all we have to do is walk the
-       arguments and bind each address. */
-    if (argc > 1 && strcmp(argv[1], "-e") == 0) {
-        for (i = 2; i < argc; i++) {
-            if (strcmp(argv[i], "--") == 0)
-                break;
-            parse_argument(argv[i], &binding);
+    /* Walk the argument list and try to bind each argument.  For each
+       successful bind, print "ok\n" to stdout.  For each bind that fails with
+       permission denied, print "no\n" to stdout and then immediately attempt
+       to create a new file descriptor and pass it back over stdout. */
+    for (i = 1; i < argc; i++) {
+        parse_argument(argv[i], &binding);
+        done = false;
+        if (!force_sendfd)
+            done = bind_address(&binding, argv[i]);
+        if (done)
+            write(STDOUT_FILENO, "ok\n", 3);
+        else {
+            write(STDOUT_FILENO, "no\n", 3);
             create_socket(&binding, argv[i]);
-            bind_address(&binding, argv[i]);
-            if (i > 2)
-                buffer_append(&ports, ",", 1);
-            buffer_sprintf(&ports, true, "%hu", binding.fd);
+            if (!bind_address(&binding, argv[i]))
+                sysdie("socket binding failed for %s", argv[i]);
+            send_fd(binding.fd);
         }
-        if (argc <= i + 1)
-            die("no program name given to exec");
-        buffer_append(&ports, "", 1);
-        if (setuid(real_uid) < 0 || geteuid() != real_uid)
-            sysdie("unable to setuid to %d", real_uid);
-        exec_program(argc - i - 1, argv + i + 1, ports.data);
-    } else 
-        for (i = 1; i < argc; i++) {
-            parse_argument(argv[i], &binding);
-            bind_address(&binding, argv[i]);
-        }
+    }
     exit(0);
 }
