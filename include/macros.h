@@ -32,8 +32,7 @@ extern "C" {
 #define RENEW(p, T, c)			\
         (p = (T *)xrealloc((char *)(p), (unsigned int)(sizeof (T) * (c))))
 
-/* =()<#define DISPOSE(p)		free((@<POINTER>@ *)p)>()= */
-#define DISPOSE(p)		free((void *)p)
+#define DISPOSE(p)		free(p)
 
     /* This properly belongs in libinn.h. */
 extern int (*xmemfailure)();
