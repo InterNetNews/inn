@@ -1527,7 +1527,7 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
       ovgroupunmap();
       return FALSE;
     }
-    ovblock = (OVBLOCK *)(addr + pagefudge);
+    ovblock = (OVBLOCK *)((char *)addr + pagefudge);
     if (ov.index == ge->curindex.index && ov.blocknum == ge->curindex.blocknum) {
       limit = ge->curindexoffset;
     } else {
@@ -1596,7 +1596,7 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
         ovgroupunmap();
         return FALSE;
       }
-      gdb->data = gdb->addr + pagefudge;
+      gdb->data = (char *)gdb->addr + pagefudge;
       gdb->mmapped = TRUE;
     }
   }
@@ -1726,11 +1726,11 @@ bool ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
 	      syslog(L_ERROR, "%s: ovsearch could not mmap data block: %m", LocalLogName);
 	      return FALSE;
 	    }
-	    gdb->data = search->gdb.data = search->gdb.addr + pagefudge;
+	    gdb->data = search->gdb.data = (char *)search->gdb.addr + pagefudge;
 	    search->gdb.mmapped = TRUE;
 	  }
 	}
-	*data = gdb->data + Gib[search->cur].offset;
+	*data = (char *)gdb->data + Gib[search->cur].offset;
       }
     }
   }
