@@ -101,11 +101,10 @@ his_cachelookup(struct history *h, HASH MessageID)
     memcpy(&loc, ((char *)&MessageID) + (sizeof(HASH) - sizeof(loc)), sizeof(loc));
     i = loc % h->cachesize;
     if (memcmp((char *)&h->cache[i].Hash, (char *)&MessageID, sizeof(HASH)) == 0) {
+	his_logger("HIScachelookup end", S_HIScachelookup);
         if (h->cache[i].Found) {
-	    his_logger("HIScachelookup end", S_HIScachelookup);
             return HIScachehit;
         } else {
-	    his_logger("HIScachelookup end", S_HIScachelookup);
             return HIScachemiss;
         }
     } else {
