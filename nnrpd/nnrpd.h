@@ -42,7 +42,7 @@
 **  Some convenient shorthands.
 */
 typedef struct in_addr	INADDR;
-#define Printf		printf
+#define Printf		(void)printf
 #if	defined(VAR_NONE)
 #define Reply		(void)printf
 #endif	/* defined(VAR_NONE) */

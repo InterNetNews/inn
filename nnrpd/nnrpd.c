@@ -150,13 +150,20 @@ ExitWithStats(x)
     }
 
     GRPreport();
-    syslog(L_NOTICE, "%s exit articles %ld groups %ld",
-	   ClientHost, ARTcount, GRPcount);
+    if (ARTcount)
+        syslog(L_NOTICE, "%s exit articles %ld groups %ld", 
+    	    ClientHost, ARTcount, GRPcount);
     if (POSTreceived ||  POSTrejected)
 	syslog(L_NOTICE, "%s posts received %ld rejected %ld",
 	   ClientHost, POSTreceived, POSTrejected);
     syslog(L_NOTICE, "%s times user %.3f system %.3f elapsed %.3f",
 	ClientHost, usertime, systime, STATfinish - STATstart);
+    if (ARTget)
+        syslog(L_NOTICE, "%s artstats get %d time %d size %d", ClientHost,
+            ARTget, ARTgettime, ARTgetsize);
+    if (OVERcount)
+        syslog(L_NOTICE, "%s overstats count %d hit %d miss %d time %d size %d read %d", ClientHost,
+            OVERcount, OVERhit, OVERmiss, OVERtime, OVERsize, OVERread);
     exit(x);
 }
 
@@ -392,7 +399,7 @@ StartConnection(accesslist)
     ClientAddr = NULL;
     if (getpeername(STDIN, (struct sockaddr *)&sin, &length) < 0) {
 	if (!isatty(STDIN)) {
-	    syslog(L_ERROR, "%s cant getpeername %m", "?");
+	    syslog(L_TRACE, "%s cant getpeername %m", "?");
             (void)strcpy(ClientHost, "?"); /* so stats generation looks correct. */
 	    Printf("%d I can't get your name.  Goodbye.\r\n", NNTP_ACCESS_VAL);
 	    ExitWithStats(1);
@@ -518,6 +525,16 @@ ToggleTrace(s)
     (void)signal(s, ToggleTrace);
 }
 
+/*
+** Got a SIGPIPE; exit cleanly
+*/
+STATIC SIGHANDLER
+CatchPipe(s)
+    int		s;
+{
+    ExitWithStats(0);
+}
+
 
 /*
 **  Print a usage message and exit.
@@ -608,8 +625,8 @@ main(argc, argv, env)
 
     strcpy (LogName,"?") ;
     
-    /* Ignore SIGPIPE, since we'll see closed connections with read. */
-    (void)signal(SIGPIPE, SIG_IGN);
+    /* Catch SIGPIPE so that we can exit out of long write loops */
+    (void)signal(SIGPIPE, CatchPipe);
 
     /* Arrange to toggle tracing. */
     (void)signal(SIGHUP, ToggleTrace);
