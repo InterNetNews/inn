@@ -1,0 +1,350 @@
+This is a rough and informal list of suggested improvements to INN, parts
+of INN that need work, and other tasks yet undone.  Some of these may be
+in progress, in which case the person working on them will be noted in
+square brackets and should be contacted if you want to help.  Otherwise,
+let inn-workers@isc.org know if you'd like to work on any item listed
+below.
+
+The list is divided into higher priority changes that will hopefully be
+done in the near future, small or medium-scale projects for the future,
+and long-term, large-scale problems.
+
+
+High Priority Projects:
+
+* Rewrite the configuration file parsing code, starting with the parser
+  for inn.conf and eventually extending to all of the configuration file
+  parsers in INN.  [Russ is actively working on this.]
+
+* Add man pages for the default authenticators, as well as documentation
+  on the readers.conf external program interface.
+
+* Add documentation of adding and removing CNFS cycbuffs.
+
+* Allow the standardized forms of the XOVER, XPAT, etc. NNTP commands
+  according to the current draft NNTP standard.  They're just synonyms for
+  the existing commands, so this should be easy to add.
+
+* Complete rewrite of history.  History should have a single API and the
+  same interface for both innd and nnrpd, the current WIP cache and
+  history cache should be integrated into that interface, things like
+  message ID hashing should become a selectable property of the history
+  file, and the history API should support multiple backend storage
+  formats and automatically select the right one for an existing history
+  file based on stored metainformation.  [Russ is working on this.]
+
+* Better documentation of UUCP feeds.  [Russ has some saved articles on
+  this that could form the basis of documentation.]
+
+* INN shouldn't flush all feeds (particularly all program feeds) on
+  newgroup or rmgroup.  Currently it reloads newsfeeds to reparse all of
+  the wildmat patterns and rebuild the peer lists associated with the
+  active file on group changes, and this forces a flush of all feeds.
+  The best fix is probably to stash the wildmat pattern (and flags) for
+  each peer when newsfeeds is read and then just using the stashed copy on
+  newgroup or rmgroup, since otherwise the newsfeeds loading code would
+  need significant modification.  But in general, innd is too
+  reload-happy; it should be better at making incremental changes without
+  reloading everything.
+
+* Add authenticated Path support, based on the current USEFOR draft or the
+  behavior of some other servers (such as Diablo).  [Andrew Gierth wrote a
+  patch for part of this a while back, which Russ has.]
+
+* Various parts of INN are using write or writev; they should all use
+  xwrite or xwritev instead.  Even for writes that are unlikely to ever be
+  partial, on some systems system calls aren't restartable and xwrite and
+  xwritev properly handle EINTR returns.
+
+* Some installed binaries and configuration files don't have man pages.
+  In particular, man pages are needed for actsync.conf, actsync.ign,
+  innreport.conf, and news2mail.cf.
+
+
+Future Projects:
+
+* Rewrite configure, breaking all of the tests out into separate files.
+  This really wants autoconf 2.50 and its additional support for including
+  tests from separate files, and autoconf 2.50 will introduce a new set of
+  basic primitives and incorporate a lot of the macros we're already using
+  so that's a good point at which to do this.  At the same time,
+  configure.in and Makefile.global.in should be fixed to use the same
+  names as each other for various parameters.  [Russ plans to work on this
+  after autoconf 2.50 is released.]
+
+* Checkgroups processing should also update the newsgroups file, and it
+  should be possible to synchronize the newsgroups file against external
+  sources when that's done with the active file.  Likewise, when a
+  newgroup is received for a group the server already carries, the
+  newsgroups line should be updated if necessary.  See
+  <ftp://ftp.tin.org/pub/news/servers/utils/docheckgroups> for a partial
+  implementation.
+
+* contrib needs to be reviewed, the best ideas integrated into INN, and
+  some sort of general overview documentation written for everything else,
+  at least sufficient to explain what things are for.
+
+* frontends/pullnews and contrib/backupfeed solve the same problem; the
+  best ideas of both should be unified into one script.
+
+* It may be better for INN on SysV-derived systems to use poll rather than
+  select.  The semantics are better, and on some systems (such as Solaris)
+  select is limited to 1024 file descriptors whereas poll can handle any
+  number.  Unfortunately, the API is drastically different between the
+  two and poll isn't portable, so supporting both cleanly would require a
+  bit of thought.
+
+* Currently only innd and innfeed increase their file descriptor limits.
+  Other parts of INN, notably makehistory, may benefit from doing the same
+  thing (and it should really be a library function).
+
+* Consider implementing the HEADERS command as discussed rather
+  extensively in news.software.nntp.  [Greg Andruk has a preliminary
+  patch.]
+
+* Document the internal formats of the various overview methods, CNFS,
+  timehash, and timecaf.  A lot of this documentation already exists in
+  various forms, but it needs to be cleaned up and collected in one place,
+  preferrably as a man page.
+
+* Look through <http://www.visi.com/~barr/INN.html> for stuff that should
+  be included in INN (in particular, flowstats may be interesting).
+
+* One person wanted to allow access to the news server only to people who
+  are members of a specific Unix group.  ckpasswd could do this as an
+  option and it would probably be easy enough to add.
+
+* rnews currently rejects articles with lines ending in CRLF, according to
+  one report.  This should be checked, and if true, it should be more
+  flexible about line endings.
+
+* The Tcl filtering support code has undergone serious bitrot and needs
+  some work to fix it and make it work with modern versions of Tcl and the
+  current version of INN.  It also lacks a lot of the functionality of the
+  Perl and Python filters, if anyone cares.
+
+* There have been a few requests for the ability to programmatically set
+  the subject of the report generated by news.daily, with escapes that are
+  filled in by the various pieces of information that might be useful.
+
+* A PAM-based authenticator for the readers.conf external authentication
+  support.
+
+* Currently, if open returns a file descriptor higher than select can
+  handle (such as on a Solaris system where the maximum file descriptor
+  limit has been increased above 1024 in /etc/system), INN will crash in a
+  fairly nasty fashion.  It may be possible to check this by comparing
+  with FD_SETSIZE.
+
+* If backoffdb is set in inn.conf and that directory doesn't exist, nnrpd
+  refuses to start.  Either the directory should be created by the install
+  process or nnrpd should just create it if it can.
+
+* A bulk cancel command using the MODE CANCEL interface.  Possibly through
+  ctlinnd, although it may be a bit afield of what ctlinnd is currently
+  for.
+
+* Sven Paulus's patch for nnrpd volume reports should be integrated.  See
+  <ftp://ftp.tin.org/pub/news/servers/inn/unofficial-patches/
+  patch-inn-2.2.x-artstat+list+overstat>.
+
+* LIST NEWSGROUPS should probably only list newsgroups that are marked in
+  the active file as valid groups.
+
+* Lots of people encrypt X-Trace in various ways.  Should that be offered
+  as a standard option?
+
+* Validity checks on the poster's address.  (Although this could also be
+  handled by the nnrpd posting filter.)
+
+* There are a whole bunch of places in the INN source that apply wildmats,
+  possibly comma-separated, to comma-separated lists of newsgroups,
+  sometimes including poison support and sometimes not.  All this code
+  should be centralized into libinn with the basic wildmat code.
+
+* Get rid of GetTimeInfo and TIMEINFO.  All the struct is is a struct
+  timeval plus time zone information.  All of the parts of INN that deal
+  with time zone information should be isolated in lib/date.c; the only
+  thing remaining to move there is the parsing of dates given to NEWNEWS
+  and NEWGROUPS.  The rest of INN uses GetTimeInfo where a plain call to
+  time would often work fine, or at most gettimeofday, and there's no
+  reason to compute the time zone everywhere.  Plus, it makes the code
+  more readable to use standard functions and data types.
+
+* Revisit support for aliased groups and what nnrpd does with them.
+  Should posts to the alias automatically be redirected to the real group?
+  Also, the new overview API, for at least some of the overview methods,
+  truncated the group status at one character and lost the name of the
+  group to which a group is aliased; that needs to be fixed.
+
+* Add documentation for slave servers.  [Russ has articles from
+  inn-workers that can be used as a beginning.]
+
+* sendbatch and send-uucp do the same thing.  So do send-nntp and
+  nntpsend, mostly.  Might be a good idea to unify them into single
+  programs (and easier to maintain).
+
+* More details as to *why* a message ID is bad would be useful to return
+  to the user, particularly for rnews, inews, etc.  rnews also reportedly
+  rejects message IDs with trailing spaces, which can be hard to check.
+
+* Support putting the active file and history file in different
+  directories without hand-editing a bunch of files.
+
+* ctlinnd flushlogs currently renames all of the log files.  It would be
+  nice to support the method of log rotation that most other daemons
+  support, namely to move the logs aside and then tell innd to reopen its
+  log files.  Ideally, that behavior would be triggered with a SIGHUP.
+  scanlogs would have to be modified to handle this.
+
+* Replace all of the temporary file creation code in INN with something
+  built on a safe temporary file function like mkstemp (or a local
+  replacement, if the system doesn't have it).  [Matus Uhlar was working
+  on this.]
+
+* innfeed breaks Xref slaving if it ever goes to a backlog, since it then
+  starts sending articles out of order and most of the overview methods
+  can't deal with this.  There should be a configuration option that would
+  cause it to spool any new articles if there's a backlog and always
+  process the backlog in order.  [Sven Paulus had a preliminary patch for
+  this, which Russ has.]
+
+* Several people have Perl interfaces to pieces of INN that should ideally
+  be part of the INN source tree in some fashion.  Greg Andruk has a bunch
+  of stuff at <http://members.xoom.com/meowing/cssri/>, for example.
+
+* INN's startup script should be sure to clean out old lock files and PID
+  files for innfeed.
+
+* nnrpd should have support for fixing broken Date headers supplied by
+  clients, although now that most clients have been fixed for Y2K this may
+  be less of a problem.
+
+* It's been reported that innd doesn't deal well with syntax violations in
+  incoming.conf and doesn't correctly report the problems (and inncheck
+  doesn't catch them).  Some of this may be fixed with a new configuration
+  parsing infrastructure.
+
+* Various things may break when trying to use data written while compiled
+  with large file support using a server that wasn't so compiled (and vice
+  versa).  The main one is the history file, but also reportedly affected
+  is the buffindexed (and probably the tradindexed) overview method.
+
+* makedbz should be more robust in the presence of malformed history
+  lines, discarding with them or otherwise dealing with them.
+
+* CNFS, if the cycbuff is larger than 2GB and it doesn't have large file
+  support, reports a mysterious file not found error because it assumes
+  all errors from stat are the result of the cycbuff not being found.
+
+* nnrpd's NNTP command parsing interacts poorly with AUTHINFO and
+  passwords containing spaces.  The correct solution isn't clear; check
+  with the current NNTP RFC draft?
+
+* Some servers reject some IHAVE, TAKETHIS, or CHECK commands with 500
+  syntax errors (particularly for long message IDs), and innfeed doesn't
+  handle this particularly well at the moment.  It really should have an
+  error handler for this case.  [Sven Paulus has a preliminary patch that
+  needs testing.]
+
+
+Long-Term Projects:
+
+* Completely rewrite the header parsing and turn it into a library so that
+  all the various parts of INN that have to parse headers (innd, nnrpd,
+  inews, rnews, controlchan, etc.) can all use the same code.  This will
+  probably require a dynamic string library.  [Russ has the beginnings of
+  a suitable dynamic string library, but it needs more work and a test
+  suite.]
+
+* The interface to embedded filters needs to be reworked.  The information
+  about which filters are enabled should be isolated in the filtering API,
+  and there should be standard API calls for filtering message IDs, remote
+  posts, and local posts.  As part of this revision, all of the Perl
+  callbacks should be defined before any of the user code is loaded, and
+  the Perl loading code needs considerable cleanup.  [Russ is planning on
+  working on this at some point.]
+
+* Add authentication via SASL to nnrpd.  This is a boatload of additional
+  issues, particularly if we want to add authentication methods like
+  Kerberos that require their own separate libraries.  Best to start with
+  just the basic framework and the required authentication type and then
+  see what other people contribute.
+
+* When articles expire out of a storage method with self-expire
+  functionality, the overview and history entries for those articles
+  should also be expired immediately.  Otherwise, things like the GROUP
+  command don't give the correct results.  This will likely require a
+  callback that can be passed to CNFS that is called to do the overview
+  and history cleanup for each article overwritten.  It will also require
+  the new history API.
+
+* Feed control, namely allowing your peers to set policy on what articles
+  you feed them (not just newsgroups but max article size and perhaps even
+  filter properties like "non-binary").  Every site does this a bit
+  differently.  Some people have web interfaces, some people use GUP, some
+  people roll their own alternate things.  It would really be nice to have
+  some good way of doing this as part of INN.  It's worth considering an
+  NNTP extension for this purpose, although the first step is to build a
+  generic interface that an NNTP extension, a web page, etc. could all
+  use.  (An alternate way of doing this would be to extend IHAVE to pass
+  the list of newsgroups as part of the command, although this doesn't
+  seem as generally useful.)
+
+* Traffic classification as an extension of filtering.  The filter should
+  be able to label traffic as binary (e.g.) without rejecting it, and
+  newsfeeds should be extended to allow feeding only non-binary articles
+  (e.g.) to a peer.
+
+* The interface between nnrpd and the external authenticators really
+  should be wrapped into a library with a standard API for simplicity of
+  writing authenticators.
+
+* External authenticators should also be able to do things like return a
+  list of groups that a person is allowed to read or post to.  Currently,
+  maintaining a set of users and a set of groups, each of which some
+  subset of the users is allowed to access, is far too difficult.  For a
+  good starting list of additional functionality that should be made
+  available, look at everything the Perl authentication hooks can do.
+
+* Allow nnrpd to spawn long-running helper processes.  Not only would this
+  be useful for handling authentication (so that the auth hooks could work
+  without execing a program on every connection), but it may allow for
+  other architectures for handling requests (such as a pool of helpers
+  that deal only with overview requests).  [Aidan Culley has ideas along
+  these lines.]
+
+* The tradspool storage method requires assigning a number to every
+  newsgroup (for use in a token).  Currently this is maintained in a
+  separate tradspool.map file, but it would be much better to keep that
+  information in the active file where it can't drop out of sync.  A code
+  assigned to each newsgroup would be useful for other things as well,
+  such as hashing the directories for the tradindexed overview.  For use
+  for that purpose, though, the active file would have to be extended to
+  include removed groups, since they'd need to be kept in the active file
+  to reserve their numbers until the last articles expired.
+
+* INN really should be capable of both sending and receiving a
+  headers-only feed (or even an overview-only feed) similar to Diablo and
+  using it for the same things that Diablo does, namely clustering,
+  pull-on-demand for articles, and the like.  This should be implementable
+  as a new backend, although the API may need a few more hooks.  Both a
+  straight headers-only feed that only pulls articles down via NNTP from a
+  remote server and a caching feed where some articles are pre-fed, some
+  articles are pulled down at first read, and some articles are never
+  stored locally should be possible.
+
+* The locking of the active file leaves something to be desired; in
+  general, the locking in INN (for the active file, the history file,
+  spool updates, overview updates, and the like) needs a thorough
+  inspection and some cleanup.  A good place to start would be tracing
+  through the pause and throttle code and write up a clear description of
+  what gets locked where and what is safely restarted and what isn't.
+
+* The proliferation of configuration files should be significantly
+  reduced.  For example, cycbuff.conf, buffindexed.conf, and storage.conf
+  could probably be combined; innfeed.conf, newsfeeds, and incoming.conf
+  would ideally be combined; and several of the other small auxilliary
+  configuration files could be rolled into other, more general
+  configuration files.  This probably shouldn't be done until the new
+  configuration parsing infrastructure is in place.
