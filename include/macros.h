@@ -3,11 +3,11 @@
 **  Here be some useful macros.
 */
 
-#ifndef __MACROS_H__
-#define __MACROS_H__
+#ifndef MACROS_H
+#define MACROS_H 1
 
 /* We've probably already included this; only include it if we need it. */
-#ifndef __CONFIG_H__
+#ifndef CONFIG_H
 # include "config.h"
 #endif
 
@@ -26,13 +26,11 @@
 #endif
 
 /* Memory allocation macros. */
-#define NEW(T, c)               xmalloc(sizeof(T) * (c), __FILE__, __LINE__)
-#define COPY(p)                 xstrdup(p, __FILE__, __LINE__)
+#define NEW(T, c)               xmalloc(sizeof(T) * (c))
+#define COPY(p)                 xstrdup(p)
 #define DISPOSE(p)              free(p)
-#define RENEW(p, T, c)	\
-    (p = xrealloc((p), sizeof(T) * (c), __FILE__, __LINE__))
-
-#define ONALLOCFAIL(func)       (xmemfailure = (func))
+#define RENEW(p, T, c)          (p = xrealloc((p), sizeof(T) * (c)))
+#define ONALLOCFAIL(func)       (xmalloc_error_handler = (func))
 
 /* Wrappers around str[n]cmp.  Don't add the ((a) == (b)) test here; it's
    already been done in places where it's time-critical. */
@@ -63,4 +61,4 @@
 # define RECVorREAD(fd, p, s)   read((fd), (p), (s))
 #endif
 
-#endif /* __MACROS_H__ */
+#endif /* !MACROS_H */
