@@ -1,6 +1,7 @@
 ##  $Revision$
 include ../Makefile.global
 
+CFLAGS	= $(GCFLAGS)
 SHELL	= /bin/sh
 MAKE	= make
 DESTDIR	=
