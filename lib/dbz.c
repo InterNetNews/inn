@@ -78,6 +78,7 @@ Limited can't tag warnings once per dbzinit() by Sang-yong Suh (May, 1998)
 #include <sys/time.h>
 
 #include "dbz.h"
+#include "inn/messages.h"
 #include "inn/innconf.h"
 #include "inn/mmap.h"
 #include "libinn.h"
@@ -90,7 +91,6 @@ Limited can't tag warnings once per dbzinit() by Sang-yong Suh (May, 1998)
 /*
  * "LIA" = "leave it alone unless you know what you're doing".
  *
- * DBZDEBUG	enable debugging
  * DBZTEST      Generate a standalone program for testing and benchmarking
  * DEFSIZE	default table size (not as critical as in old dbz)
  * NMEMORY	number of days of memory for use in sizing new table (LIA)
@@ -259,18 +259,6 @@ typedef struct {
 static searcher srch;
 static searcher *prevp;	/* &srch or FRESH */
 
-/*
- * The double parentheses needed to make this work are ugly, but the
- * alternative (under most compilers) is to pack around 2K of unused
- * strings -- there's just no way to get rid of them.
- */
-#ifdef DBZDEBUG
-static int debug;			/* controlled by dbzdebug() */
-#define DEBUG(args) if (debug) { printf args ; } else
-#else
-#define	DEBUG(args)	;
-#endif
-
 /* Structure for hash tables */
 typedef struct {
     int fd;                     /* Non-blocking descriptor for writes */
@@ -389,7 +377,7 @@ create_truncate(const char *name, const char *pag1)
     f = Fopen(fn, "w", TEMPORARYOPEN);
     free(fn);
     if (f == NULL) {
-	DEBUG(("dbz.c create_truncate: unable to create/truncate %s\n", pag1));
+	syswarn("unable to create/truncate %s", pag1);
 	return false;
     } else
         Fclose(f);
@@ -413,16 +401,16 @@ dbzfresh(const char *name, off_t size)
 #endif
 
     if (opendb) {
-	DEBUG(("dbzfresh: database already open\n"));
+	warn("dbzfresh: database already open");
 	return false;
     }
     if (size != 0 && size < 2) {
-	DEBUG(("dbzfresh: preposterous size (%ld)\n", size));
+	warn("dbzfresh: preposterous size (%ld)", (long) size);
 	return false;
     }
 
     /* get default configuration */
-    if (!getconf((FILE *)NULL, &c))
+    if (!getconf(NULL, &c))
 	return false;	/* "can't happen" */
 
 #ifdef	DO_TAGGED_HASH
@@ -455,7 +443,7 @@ dbzfresh(const char *name, off_t size)
     f = Fopen(fn, "w", TEMPORARYOPEN);
     free(fn);
     if (f == NULL) {
-	DEBUG(("dbzfresh: unable to write config\n"));
+	syswarn("dbzfresh: unable to write config");
 	return false;
     }
     if (putconf(f, &c) < 0) {
@@ -463,7 +451,7 @@ dbzfresh(const char *name, off_t size)
 	return false;
     }
     if (Fclose(f) == EOF) {
-	DEBUG(("dbzfresh: fclose failure\n"));
+	syswarn("dbzfresh: fclose failure");
 	return false;
     }
 
@@ -497,7 +485,7 @@ isprime(long x)
     /* this incidentally prevents ridiculously small tables */
     for (ip = quick; (div1 = *ip) != 0; ip++)
 	if (x % div1 == 0) {
-	    DEBUG(("isprime: quick result on %ld\n", (long)x));
+	    debug("isprime: quick result on %ld", x);
 	    return false;
 	}
 
@@ -525,7 +513,7 @@ dbzsize(off_t contents)
     of_t            n;
 
     if (contents <= 0) {	/* foulup or default inquiry */
-	DEBUG(("dbzsize: preposterous input (%ld)\n", contents));
+	debug("dbzsize: preposterous input (%ld)", (long) contents);
 	return DEFSIZE;
     }
 
@@ -541,12 +529,12 @@ dbzsize(off_t contents)
 #ifdef	DO_TAGGED_HASH
     if (!(n & 1))
         n += 1;			/* make it odd */
-    DEBUG(("dbzsize: tentative size %ld\n", n));
+    debug("dbzsize: tentative size %ld", n);
     while (!isprime(n))		/* look for a prime */
 	n += 2;
 #endif
 
-    DEBUG(("dbzsize: final size %ld\n", n));
+    debug("dbzsize: final size %ld", (long) n);
     return n;
 }
 
@@ -572,7 +560,7 @@ dbzagain(const char *name, const char *oldname)
 #endif
 
     if (opendb) {
-	DEBUG(("dbzagain: database already open\n"));
+	warn("dbzagain: database already open");
 	return false;
     }
 
@@ -581,13 +569,13 @@ dbzagain(const char *name, const char *oldname)
     f = Fopen(fn, "r", TEMPORARYOPEN);
     free(fn);
     if (f == NULL) {
-	DEBUG(("dbzagain: cannot open old .dir file\n"));
+	syswarn("dbzagain: cannot open old .dir file");
 	return false;
     }
     result = getconf(f, &c);
     Fclose(f);
     if (!result) {
-	DEBUG(("dbzagain: getconf failed\n"));
+	syswarn("dbzagain: getconf failed");
 	return false;
     }
 
@@ -601,7 +589,7 @@ dbzagain(const char *name, const char *oldname)
 	    newtable = 1;	/* hasn't got full usage history yet */
     }
     if (top == 0) {
-	DEBUG(("dbzagain: old table has no contents!\n"));
+	debug("dbzagain: old table has no contents!");
 	newtable = 1;
     }
     for (i = NUSEDS-1; i > 0; i--)
@@ -617,7 +605,7 @@ dbzagain(const char *name, const char *oldname)
 	    newtable = 1;	/* hasn't got full usage history yet */
     }
     if (top != 0 && vtop == 0) {
-	DEBUG(("dbzagain: old table has no contents!\n"));
+	debug("dbzagain: old table has no contents!");
 	newtable = 1;
     }
     for (i = NUSEDS-1; i > 0; i--)
@@ -639,13 +627,13 @@ dbzagain(const char *name, const char *oldname)
     f = Fopen(fn, "w", TEMPORARYOPEN);
     free(fn);
     if (f == NULL) {
-	DEBUG(("dbzagain: unable to write new .dir\n"));
+	syswarn("dbzagain: unable to write new .dir");
 	return false;
     }
     i = putconf(f, &c);
     Fclose(f);
     if (i < 0) {
-	DEBUG(("dbzagain: putconf failed\n"));
+	warn("dbzagain: putconf failed");
 	return false;
     }
 
@@ -669,12 +657,14 @@ openhashtable(const char *base, const char *ext, hash_table *tab,
 	      const size_t reclen, const dbz_incore_val incore)
 {
     char *name;
+    int oerrno;
 
     name = concat(base, ext, (char *) 0);
     if ((tab->fd = open(name, readonly ? O_RDONLY : O_RDWR)) < 0) {
-	DEBUG(("openhashtable: could not open raw\n"));
+	syswarn("openhashtable: could not open raw");
+        oerrno = errno;
 	free(name);
-	errno = EDOM;
+        errno = oerrno;
 	return false;
     }
     free(name);
@@ -687,17 +677,19 @@ openhashtable(const char *base, const char *ext, hash_table *tab,
     tab->incore = incore;
     if (tab->incore != INCORE_NO) {
 	if (!getcore(tab)) {
-	    DEBUG(("openhashtable: getcore failure\n"));
+	    syswarn("openhashtable: getcore failure");
+            oerrno = errno;
 	    close(tab->fd);
-	    errno = EDOM;
+            errno = oerrno;
 	    return false;
 	}
     }
 
     if (options.nonblock && nonblocking(tab->fd, true) < 0) {
-	DEBUG(("fcntl: could not set nonblock\n"));
+	syswarn("fcntl: could not set nonblock");
+        oerrno = errno;
 	close(tab->fd);
-	errno = EDOM;
+	errno = oerrno;
 	return false;
     }
     return true;
@@ -710,10 +702,10 @@ static void closehashtable(hash_table *tab) {
     if (tab->incore == INCORE_MMAP) {
 #if defined(HAVE_MMAP)
 	if (munmap(tab->core, (int)conf.tsize * tab->reclen) == -1) {
-	    DEBUG(("closehashtable: munmap failed\n"));
+	    syswarn("closehashtable: munmap failed");
 	}
 #else
-	DEBUG(("closehashtable: can't mmap files\n"));
+	warn("closehashtable: can't mmap files");
 #endif
     }
 }
@@ -724,7 +716,7 @@ openbasefile(const char *name)
 {
     basef = Fopen(name, "r", DBZ_BASE);
     if (basef == NULL) {
-	DEBUG(("dbzinit: basefile open failed\n"));
+	syswarn("dbzinit: basefile open failed");
         basefname = xstrdup(name);
     } else
 	basefname = NULL;
@@ -749,7 +741,7 @@ dbzinit(const char *name)
     char *fname;
 
     if (opendb) {
-	DEBUG(("dbzinit: dbzinit already called once\n"));
+	warn("dbzinit: dbzinit already called once");
 	errno = 0;
 	return false;
     }
@@ -763,14 +755,14 @@ dbzinit(const char *name)
 	readonly = false;
     free(fname);
     if (dirf == NULL) {
-	DEBUG(("dbzinit: can't open .dir file\n"));
+	syswarn("dbzinit: can't open .dir file");
 	return false;
     }
     close_on_exec(fileno(dirf), true);
 
     /* pick up configuration */
     if (!getconf(dirf, &conf)) {
-	DEBUG(("dbzinit: getconf failure\n"));
+	warn("dbzinit: getconf failure");
 	Fclose(dirf);
 	errno = EDOM;	/* kind of a kludge, but very portable */
 	return false;
@@ -808,7 +800,7 @@ dbzinit(const char *name)
     opendb = true;
     prevp = FRESH;
     memset(&empty_rec, '\0', sizeof(empty_rec));
-    DEBUG(("dbzinit: succeeded\n"));
+    debug("dbzinit: succeeded");
     return true;
 }
 
@@ -820,7 +812,7 @@ dbzclose(void)
     bool ret = true;
 
     if (!opendb) {
-	DEBUG(("dbzclose: not opened!\n"));
+	warn("dbzclose: not opened!");
 	return false;
     }
 
@@ -830,7 +822,7 @@ dbzclose(void)
 #ifdef	DO_TAGGED_HASH
     closehashtable(&pagtab);
     if (Fclose(basef) == EOF) {
-	fprintf(stderr, "dbzclose: fclose(basef) failed\n");
+        syswarn("dbzclose: fclose(basef) failed");
 	ret = false;
     }
     if (basefname != NULL)
@@ -842,11 +834,11 @@ dbzclose(void)
 #endif
 
     if (Fclose(dirf) == EOF) {
-	DEBUG(("dbzclose: fclose(dirf) failed\n"));
+	syswarn("dbzclose: fclose(dirf) failed");
 	ret = false;
     }
 
-    DEBUG(("dbzclose: %s\n", (ret == 0) ? "succeeded" : "failed"));
+    debug("dbzclose: %s", (ret == 0) ? "succeeded" : "failed");
     if (ret)
 	opendb = false;
     return ret;
@@ -860,7 +852,7 @@ dbzsync(void)
     bool ret = true;
 
     if (!opendb) {
-	DEBUG(("dbzsync: not opened!\n"));
+	warn("dbzsync: not opened!");
 	return false;
     }
 
@@ -873,7 +865,7 @@ dbzsync(void)
 #else
 	if (!putcore(&idxtab) || !putcore(&etab)) {
 #endif
-	    DEBUG(("dbzsync: putcore failed\n"));
+	    warn("dbzsync: putcore failed");
 	    ret = false;;
 	}
     }
@@ -881,7 +873,7 @@ dbzsync(void)
     if (putconf(dirf, &conf) < 0)
 	ret = false;
 
-    DEBUG(("dbzsync: %s\n", ret ? "succeeded" : "failed"));
+    debug("dbzsync: %s", ret ? "succeeded" : "failed");
     return ret;
 }
 
@@ -913,7 +905,7 @@ dbzexists(const HASH key)
 #else
     
     if (!opendb) {
-	DEBUG(("dbzexists: database not open!\n"));
+	warn("dbzexists: database not open!");
 	return false;
     }
 
@@ -945,7 +937,7 @@ dbzfetch(const HASH key, off_t *value)
     prevp = FRESH;
 
     if (!opendb) {
-	DEBUG(("dbzfetch: database not open!\n"));
+	warn("dbzfetch: database not open!");
 	return false;
     }
 
@@ -958,19 +950,19 @@ dbzfetch(const HASH key, off_t *value)
     nb2r = sizeof(buffer) - 1;
 
     while ((offset = search(&srch)) != NOTFOUND) {
-	DEBUG(("got 0x%lx\n", key_ptr));
+	debug("got 0x%lx", key_ptr);
 
 	/* fetch the key */
 	offset <<= conf.dropbits;
 	if (offset)		/* backspace 1 character to read '\n' */
 	    offset--;
 	if (fseeko(basef, offset, SEEK_SET) != 0) {
-	    DEBUG(("fetch: seek failed\n"));
+	    syswarn("dbzfetch: seek failed");
 	    return false;
 	}
 	keylen = fread(buffer, 1, nb2r, basef);
 	if (keylen < MIN_KEY_LENGTH) {
-	    DEBUG(("fetch: read failed\n"));
+	    syswarn("dbzfetch: read failed");
 	    return false;
 	}
 	buffer[keylen] = '\0';	/* terminate the string */
@@ -982,7 +974,7 @@ dbzfetch(const HASH key, off_t *value)
 		if (*bp == '\n')
 		    break;
 	    if (*bp != '\n') {
-		DEBUG(("dbzfetch: can't locate EOL\n"));
+		debug("dbzfetch: can't locate EOL");
 		/* pag entry should be deleted, but I'm lazy... */
 		continue;
 	    }
@@ -1012,13 +1004,13 @@ dbzfetch(const HASH key, off_t *value)
 
 	/* we found it */
 	offset += j;
-	DEBUG(("fetch: successful\n"));
+	debug("fetch: successful");
 	*value = offset;
 	return true;
     }
 
     /* we didn't find it */
-    DEBUG(("fetch: failed\n"));
+    debug("fetch: failed");
     prevp = &srch;			/* remember where we stopped */
     return false;
 #else	/* DO_TAGGED_HASH */
@@ -1028,18 +1020,18 @@ dbzfetch(const HASH key, off_t *value)
 	    memcpy(value, &((of_t *)idxtab.core)[srch.place], sizeof(of_t));
 	} else {
 	    if (pread(idxtab.fd, value, sizeof(of_t), srch.place * idxtab.reclen) != sizeof(of_t)) {
-		DEBUG(("fetch: read failed\n"));
+		syswarn("fetch: read failed");
 		idxtab.pos = -1;
 		srch.aborted = 1;
 		return false;
 	    }
 	}
-	DEBUG(("fetch: successful\n"));
+	debug("fetch: successful");
 	return true;
     }
 
     /* we didn't find it */
-    DEBUG(("fetch: failed\n"));
+    debug("fetch: failed");
     prevp = &srch;			/* remember where we stopped */
     return false;
 #endif
@@ -1059,11 +1051,11 @@ dbzstore(const HASH key, off_t data)
 #endif
 
     if (!opendb) {
-	DEBUG(("dbzstore: database not open!\n"));
+	warn("dbzstore: database not open!");
 	return DBZSTORE_ERROR;
     }
     if (readonly) {
-	DEBUG(("dbzstore: database open read-only\n"));
+	warn("dbzstore: database open read-only");
 	return DBZSTORE_ERROR;
     }
 
@@ -1077,10 +1069,10 @@ dbzstore(const HASH key, off_t data)
 
     /* now value is in fuzzy format */
     value >>= conf.dropbits;
-    DEBUG(("dbzstore: (%ld)\n", (long)value));
+    debug("dbzstore: (%ld)", (long) value);
 
     if (!okayvalue(value)) {
-	DEBUG(("dbzstore: reserved bit or overflow in 0x%lx\n", value));
+	warn("dbzstore: reserved bit or overflow in 0x%lx", value);
 	return DBZSTORE_ERROR;
     }
 
@@ -1091,7 +1083,7 @@ dbzstore(const HASH key, off_t data)
 
     prevp = FRESH;
     conf.used[0]++;
-    DEBUG(("store: used count %ld\n", conf.used[0]));
+    debug("store: used count %ld", conf.used[0]);
     dirty = 1;
     if (!set_pag(&srch, value))
 	return DBZSTORE_ERROR;
@@ -1105,7 +1097,7 @@ dbzstore(const HASH key, off_t data)
 
     prevp = FRESH;
     conf.used[0]++;
-    DEBUG(("store: used count %ld\n", conf.used[0]));
+    debug("store: used count %ld", conf.used[0]);
     dirty = true;
 
     memcpy(&evalue.hash, &srch.hash,
@@ -1146,9 +1138,9 @@ getconf(FILE *df, dbzconfig *cp)
 	cp->tagshift = TAGSHIFT;
 	cp->dropbits = 0;
 	cp->lenfuzzy = 0;
-	DEBUG(("getconf: defaults (%ld, %c, (0x%lx/0x%lx<<%d %d))\n",
-	cp->tsize, cp->casemap, cp->tagenb, 
-	cp->tagmask, cp->tagshift, cp->dropbits));
+	debug("getconf: defaults (%ld, %c, (0x%lx/0x%lx<<%d %d))",
+              cp->tsize, cp->casemap, cp->tagenb, 
+              cp->tagmask, cp->tagshift, cp->dropbits);
 	return true;
     }
 
@@ -1156,11 +1148,11 @@ getconf(FILE *df, dbzconfig *cp)
 		&cp->valuesize, &cp->fillpercent, &cp->tagenb,
 		&cp->tagmask, &cp->tagshift, &cp->dropbits);
     if (i != 7) {
-	DEBUG(("getconf error"));
+	warn("dbz: bad first line in config");
 	return false;
     }
     if (cp->valuesize != sizeof(of_t)) {
-	DEBUG(("getconf: wrong of_t size (%d)\n", cp->valuesize));
+	warn("dbz: wrong of_t size (%d)", cp->valuesize);
 	return false;
     }
     cp->lenfuzzy = (int)(1 << cp->dropbits) - 1;
@@ -1171,39 +1163,39 @@ getconf(FILE *df, dbzconfig *cp)
 	    cp->used[i] = 0;
 	cp->valuesize = sizeof(of_t) + sizeof(erec);
 	cp->fillpercent = 66;
-	DEBUG(("getconf: defaults (%ld)\n", cp->tsize));
+	debug("getconf: defaults (%ld)", cp->tsize);
 	return true;
     }
 
     i = fscanf(df, "dbz 6 %ld %d %d\n", &cp->tsize,
 		&cp->valuesize, &cp->fillpercent);
     if (i != 3) {
-	DEBUG(("getconf error"));
+        warn("dbz: bad first line in config");
 	return false;
     }
     if (cp->valuesize != (sizeof(of_t) + sizeof(erec))) {
-	DEBUG(("getconf: wrong of_t size (%d)\n", cp->valuesize));
+	warn("dbz: wrong of_t size (%d)", cp->valuesize);
 	return false;
     }
 #endif	/* DO_TAGGED_HASH */
-    DEBUG(("size %ld\n", cp->tsize));
+    debug("size %ld", cp->tsize);
 
     /* second line, the usages */
     for (i = 0; i < NUSEDS; i++)
 	if (!fscanf(df, "%ld", &cp->used[i])) {
-	    DEBUG(("getconf error\n"));
+            warn("dbz: bad usage value in config");
 	    return false;
 	}
-    DEBUG(("used %ld %ld %ld...\n", cp->used[0], cp->used[1], cp->used[2]));
+    debug("used %ld %ld %ld...", cp->used[0], cp->used[1], cp->used[2]);
 
 #ifdef	DO_TAGGED_HASH
     /* third line, the text usages */
     for (i = 0; i < NUSEDS; i++)
 	if (!fscanf(df, "%ld", &cp->vused[i])) {
-	    DEBUG(("getconf error\n"));
+            warn("dbz: bad text usage value in config");
 	    return false;
 	}
-    DEBUG(("vused %ld %ld %ld...\n", cp->vused[0], cp->vused[1], cp->vused[2]));
+    debug("vused %ld %ld %ld...", cp->vused[0], cp->vused[1], cp->vused[2]);
 #endif	/* DO_TAGGED_HASH */
 
     return true;
@@ -1219,7 +1211,7 @@ putconf(FILE *f, dbzconfig *cp)
     int ret = 0;
 
     if (fseeko(f, 0, SEEK_SET) != 0) {
-	DEBUG(("fseeko failure in putconf\n"));
+	syswarn("dbz: fseeko failure in putconf");
 	ret = -1;
     }
 
@@ -1244,7 +1236,7 @@ putconf(FILE *f, dbzconfig *cp)
     if (ferror(f))
 	ret = -1;
 
-    DEBUG(("putconf status %d\n", ret));
+    debug("putconf status %d", ret);
     return ret;
 }
 
@@ -1263,13 +1255,13 @@ getcore(hash_table *tab)
     if (tab->incore == INCORE_MMAP) {
 #if defined(HAVE_MMAP)
 	if (fstat(tab->fd, &st) == -1) {
-	    DEBUG(("getcore: fstat failed\n"));
+	    syswarn("dbz: getcore: fstat failed");
 	    return false;
 	}
 	if ((conf.tsize * tab->reclen) > st.st_size) {
 	    /* file too small; extend it */
 	    if (ftruncate(tab->fd, conf.tsize * tab->reclen) == -1) {
-		DEBUG(("getcore: ftruncate failed\n"));
+		syswarn("dbz: getcore: ftruncate failed");
 		return false;
 	    }
 	}
@@ -1277,7 +1269,7 @@ getcore(hash_table *tab)
                   readonly ? PROT_READ : PROT_WRITE | PROT_READ, MAP_SHARED,
                   tab->fd, 0);
 	if (it == (char *)-1) {
-	    DEBUG(("getcore: mmap failed\n"));
+	    syswarn("dbz: getcore: mmap failed");
 	    return false;
 	}
 #if defined (MADV_RANDOM) && defined(HAVE_MADVISE)
@@ -1285,7 +1277,7 @@ getcore(hash_table *tab)
 	madvise(it, (size_t)conf.tsize * sizeof(tab->reclen), MADV_RANDOM);
 #endif
 #else
-	DEBUG(("getcore: can't mmap files\n"));
+	warn("dbz: getcore: can't mmap files");
 	return false;
 #endif
     } else {
@@ -1293,7 +1285,7 @@ getcore(hash_table *tab)
 	
 	nread = read(tab->fd, it, tab->reclen * conf.tsize);
 	if (nread < 0) {
-	    DEBUG(("getcore: read failed\n"));
+	    syswarn("dbz: getcore: read failed");
 	    free(it);
 	    return false;
 	}
@@ -1354,13 +1346,13 @@ start(searcher *sp, const HASH hash, searcher *osp)
 	if (sp != osp)
 	    *sp = *osp;
 	sp->run--;
-	DEBUG(("search restarted\n"));
+	debug("search restarted");
     } else {
 	sp->shorthash = h;
 	sp->tag = MKTAG(h / conf.tsize);
 	sp->place = h % conf.tsize;
-	DEBUG(("hash %8.8lx tag %8.8lx place %ld\n",
-	    sp->shorthash, sp->tag, sp->place));
+	debug("hash %8.8lx tag %8.8lx place %ld",
+              sp->shorthash, sp->tag, sp->place);
 	sp->tabno = 0;
 	sp->run = -1;
 	sp->aborted = 0;
@@ -1373,7 +1365,7 @@ start(searcher *sp, const HASH hash, searcher *osp)
 	if (sp != osp)
 	    *sp = *osp;
 	sp->run--;
-	DEBUG(("search restarted\n"));
+	debug("search restarted");
     } else {
 	sp->hash = hash;
 	tocopy = sizeof(hash) < sizeof(sp->shorthash) ? sizeof(hash) : sizeof(sp->shorthash);
@@ -1409,11 +1401,11 @@ search(searcher *sp)
 	    taboffset = sp->tabno * conf.tsize;
 	}
 	sp->place = ((sp->shorthash + sp->run) % conf.tsize) + taboffset;
-	DEBUG(("search @ %ld\n", place));
+	debug("search @ %ld", place);
 
 	/* get the tagged value */
 	if ((options.pag_incore != INCORE_NO) && (sp->place < conf.tsize)) {
-	    DEBUG(("search: in core\n"));
+	    debug("search: in core");
 	    value = ((of_t *)pagtab.core)[sp->place];
 	} else {
 	    off_t dest;
@@ -1423,7 +1415,7 @@ search(searcher *sp)
 	    errno = 0;
 	    if (pread(pagtab.fd, &value, sizeof(value), dest) != sizeof(value)) {
 		if (errno != 0) {
-		    DEBUG(("search: read failed\n"));
+		    syswarn("dbz: search: read failed");
 		    pagtab.pos = -1;
 		    sp->aborted = 1;
 		    return(NOTFOUND);
@@ -1436,21 +1428,21 @@ search(searcher *sp)
 
 	/* vacant slot is always cause to return */
 	if (value == VACANT) {
-	    DEBUG(("search: empty slot\n"));
+	    debug("search: empty slot");
 	    return(NOTFOUND);
 	};
 
 	/* check the tag */
 	value = UNBIAS(value);
-	DEBUG(("got 0x%lx\n", value));
+	debug("got 0x%lx", value);
 	if (!HASTAG(value)) {
-	    DEBUG(("tagless\n"));
+	    debug("tagless");
 	    return(value);
 	} else if (TAG(value) == sp->tag) {
-	    DEBUG(("match\n"));
+	    debug("match");
 	    return(NOTAG(value));
 	} else {
-	    DEBUG(("mismatch 0x%lx\n", TAG(value)));
+	    debug("mismatch 0x%lx", TAG(value));
 	}
     }
     /* NOTREACHED */
@@ -1480,11 +1472,11 @@ search(searcher *sp)
 	}
 
 	sp->place = ((sp->shorthash + sp->run) % conf.tsize) + taboffset;
-	DEBUG(("search @ %ld\n", sp->place));
+	debug("search @ %ld", (long) sp->place);
 
 	/* get the value */
 	if ((options.exists_incore != INCORE_NO) && (sp->place < conf.tsize)) {
-	    DEBUG(("search: in core\n"));
+	    debug("search: in core");
 	    memcpy(&value, &((erec *)etab.core)[sp->place], sizeof(erec)); 
 	} else {
 	    off_t dest;
@@ -1494,7 +1486,7 @@ search(searcher *sp)
 	    errno = 0;
 	    if (pread(etab.fd, &value, sizeof(erec), dest) != sizeof(erec)) {
 		if (errno != 0) {
-		    DEBUG(("search: read failed\n"));
+		    debug("search: read failed");
 		    etab.pos = -1;
 		    sp->aborted = 1;
 		    return false;
@@ -1509,12 +1501,12 @@ search(searcher *sp)
 
 	/* Check for an empty record */
 	if (!memcmp(&value, &empty_rec, sizeof(erec))) {
-	    DEBUG(("search: empty slot\n"));
+	    debug("search: empty slot");
 	    return false;
 	}
 
 	/* check the value */
-	DEBUG(("got 0x%lx\n", value));
+	debug("got 0x%.*s", DBZ_INTERNAL_HASH_SIZE, value.hash);
 	if (!memcmp(&value.hash, &sp->hash, DBZ_INTERNAL_HASH_SIZE)) {
 	    return true;
 	}
@@ -1540,7 +1532,7 @@ set(searcher *sp, hash_table *tab, void *value)
 	void *where = (char *)tab->core + (sp->place * tab->reclen);
 
 	memcpy(where, value, tab->reclen);
-	DEBUG(("set: incore\n"));
+	debug("set: incore");
 	if (tab->incore == INCORE_MMAP) {
 	    if (innconf->nfswriter) {
 		msync_page(where, tab->reclen, MS_ASYNC);
@@ -1563,18 +1555,18 @@ set(searcher *sp, hash_table *tab, void *value)
 	    FD_ZERO(&writeset);
 	    FD_SET(tab->fd, &writeset);
 	    if (select(tab->fd + 1, NULL, &writeset, NULL, NULL) < 1) {
-		DEBUG(("set: select failed\n"));
+		syswarn("dbz: set: select failed");
 		sp->aborted = 1;
 		return false;
 	    }
 	    continue;
 	}
-	DEBUG(("set: write failed\n"));
+	syswarn("dbz: set: write failed");
 	sp->aborted = 1;
 	return false;
     }
 
-    DEBUG(("set: succeeded\n"));
+    debug("set: succeeded");
     return true;
 }
 
@@ -1601,7 +1593,7 @@ set_pag(searcher *sp, of_t value)
 	fprintf(stderr, " tagboth = 0x%lx\n", tagboth);
 	canttag_warned = 1;
     }
-    DEBUG(("tagged value is 0x%lx\n", value));
+    debug("tagged value is 0x%lx", value);
     value = BIAS(value);
 
     return set(sp, &pagtab, &value);
@@ -1629,18 +1621,6 @@ dbzgetoptions(dbzoptions *o)
     *o = options;
 }
 
-
-/* dbzdebug - control dbz debugging at run time
- * Returns: old value for dbzdebug
- */
-#ifdef DBZDEBUG
-int dbzdebug(bool value) {
-    bool old = debug;
-
-    debug = value;
-    return old;
-}
-#endif
 
 #ifdef DBZTEST
 
@@ -1734,9 +1714,6 @@ main(int argc, char *argv[])
 	gettimeofday(&end, NULL);
 	printf("dbzfresh: %d msec\n", timediffms(start, end));
     } else {
-#ifdef	DBZDEBUG
-	dbzdebug(1);
-#endif
 	gettimeofday(&start, NULL);
 	if (dbzinit(history) < 0) {
 	    fprintf(stderr, "cant dbzinit %s\n", history);

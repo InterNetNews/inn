@@ -68,7 +68,6 @@ extern bool dbzfetch(const HASH key, off_t *value);
 extern DBZSTORE_RESULT dbzstore(const HASH key, off_t data);
 extern bool dbzsync(void);
 extern long dbzsize(off_t contents);
-extern bool dbzdebug(const int value);
 extern void dbzsetoptions(const dbzoptions options);
 extern void dbzgetoptions(dbzoptions *options);
 
