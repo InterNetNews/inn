@@ -270,6 +270,24 @@ void CHANclose(CHANNEL *cp, char *name)
 	    DISPOSE(cp->Argument);
 	if (cp->fd >= 0 && close(cp->fd) < 0)
 	    syslog(L_ERROR, "%s cant close %s %m", LogName, name);
+ 
+	if (cp->MaxCnx > 0 && cp->Type == CTnntp) {
+	    int tfd;
+	    CHANNEL *tempchan;
+
+	    cp->fd = -1;
+	    for(tfd = 0; tfd < CHANlastfd; tfd++) {
+		tempchan = &CHANtable[tfd];
+		if(tempchan->fd > 0 &&
+		    cp->Address.s_addr == tempchan->Address.s_addr) {
+		    if(tempchan->ActiveCnx == 0) {
+			tempchan->ActiveCnx = cp->ActiveCnx;
+			RCHANadd(tempchan);
+		        break;
+		    }
+		}
+	    }
+	}
     }
 
     /* Mark it unused. */
@@ -879,6 +897,8 @@ void CHANreadloop(void)
                             fd = 0;
                         else
                             fd++;
+			cp->ActiveCnx = 0;
+			RCHANremove(cp);
                     }
                     continue;
                 }
