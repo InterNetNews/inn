@@ -552,6 +552,18 @@ newgroup:brian@nothing.ucsd.edu:sdnet.*:doit=newgroup
 rmgroup:news@network.ucsd.edu:sdnet.*:doit=rmgroup
 rmgroup:brian@nothing.ucsd.edu:sdnet.*:doit=rmgroup
 
+## SE (Sweden)
+## See also http://www.usenet-se.net
+
+# *PGP*   See comment at top of file.
+checkgroups:usenet@usenet-se.net:se.*:verify-usenet-se
+newgroup:usenet@usenet-se.net:se.*:verify-usenet-se
+rmgroup:usenet@usenet-se.net:se.*:verify-usenet-se
+
+#checkgroups:usenet@usenet-se.net:se.*:doit=checkgroups
+#newgroup:usenet@usenet-se.net:se.*:doit=newgroup
+#rmgroup:usenet@usenet-se.net:se.*:doit=rmgroup
+
 ## SEATTLE (Seattle, Washington, USA)
 newgroup:billmcc@akita.com:seattle.*:doit=newgroup
 newgroup:graham@ee.washington.edu:seattle.*:doit=newgroup
