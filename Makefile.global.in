@@ -26,7 +26,7 @@ RANLIB	= @RANLIB@
 AWK	= @_PATH_AWK@
 
 SHELL	= /bin/sh
-MAKE	= make
+@SET_MAKE@
 LIBNEWS	= ../libstorage.a ../libinn.a
 LINTLIB	= ../llib-linn.ln
 
