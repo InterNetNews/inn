@@ -67,7 +67,7 @@ ICCopen(void)
     }
     /* Create a temporary name. */
     if (ICCsockname == NULL)
-	ICCsockname = COPY(cpcatpath(innconf->pathrun, _PATH_TEMPSOCK));
+	ICCsockname = concatpath(innconf->pathrun, _PATH_TEMPSOCK);
     (void)mktemp(ICCsockname);
     if (unlink(ICCsockname) < 0 && errno != ENOENT) {
 	ICCfailure = "unlink";
@@ -152,10 +152,14 @@ ICCserverpid(void)
 {
     pid_t		pid;
     FILE		*F;
+    char                *path;
     char		buff[SMBUF];
 
     pid = 1;
-    if ((F = fopen(cpcatpath(innconf->pathrun, _PATH_SERVERPID), "r")) != NULL) {
+    path = concatpath(innconf->pathrun, _PATH_SERVERPID);
+    F = fopen(path, "r");
+    free(path);
+    if (F != NULL) {
 	if (fgets(buff, sizeof buff, F) != NULL)
 	    pid = atol(buff);
 	(void)fclose(F);
@@ -193,6 +197,7 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
     char		*buff;
     char		*p;
     const char		*q;
+    char                *path;
     char		save;
     int			bufsiz;
     int			i ;
@@ -263,7 +268,10 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
 	return -1;
     }
 #else
-    if ((fd = open(cpcatpath(innconf->pathrun, _PATH_NEWSCONTROL), O_WRONLY)) < 0) {
+    path = concatpath(innconf->pathrun, _PATH_NEWSCONTROL);
+    fd = open(path, O_WRONLY);
+    free(path);
+    if (fd < 0) {
 	DISPOSE(buff);
 	ICCfailure = "open";
 	return -1;

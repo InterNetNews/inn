@@ -95,6 +95,7 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
     static char		address[SMBUF];
     char	        *p;
     char		*save;
+    char                *path;
     char		buff[BUFSIZ];
     char		name[SMBUF];
 
@@ -107,7 +108,9 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
          *  This should be part of nnrpd or the like running on the server.
          *  Open the server copy of the moderators file.
          */
-	GMAfp = fopen(cpcatpath(innconf->pathetc, _PATH_MODERATORS), "r");
+        path = concatpath(innconf->pathetc, _PATH_MODERATORS);
+	GMAfp = fopen(path, "r");
+        free(path);
     }else{
         /*
          *  Get a local copy of the moderators file from the server.
@@ -117,8 +120,11 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
         (void)mktemp(GMApathname);
         GMAfp = GMA_listopen(GMApathname, FromServer, ToServer, "moderators");
 	/* Fallback to the local copy if the server doesn't have it */
-	if (GMAfp == NULL)
-	    GMAfp = fopen(cpcatpath(innconf->pathetc, _PATH_MODERATORS), "r");
+	if (GMAfp == NULL) {
+            path = concatpath(innconf->pathetc, _PATH_MODERATORS);
+	    GMAfp = fopen(path, "r");
+            free(path);
+        }
     }
 
     if (GMAfp != NULL) {

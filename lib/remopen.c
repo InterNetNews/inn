@@ -183,7 +183,7 @@ int NNTPremoteopen(int port, FromServerp, ToServerp, buff)
     if (buff)
 	(void)strcpy(buff, "Text unavailable");
     if (pathserver == NULL)
-	pathserver = COPY(cpcatpath(innconf->pathetc, _PATH_SERVER));
+	pathserver = concatpath(innconf->pathetc, _PATH_SERVER);
     if ((p = getserverbyfile(pathserver)) == NULL)
 	return -1;
     if ((i = server_init(p, port)) < 0)

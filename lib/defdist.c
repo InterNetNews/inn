@@ -34,11 +34,15 @@ DDstart(FILE *FromServer, FILE *ToServer)
     char	buff[BUFSIZ];
     char	*p;
     char	*q;
+    char        *path;
     int		i;
     char	name[256];
 
     /* Open the file. */
-    if ((F = fopen(cpcatpath(innconf->pathetc, _PATH_DISTPATS), "r")) != NULL) {
+    path = concatpath(innconf->pathetc, _PATH_DISTPATS);
+    F = fopen(path, "r");
+    free(path);
+    if (F != NULL) {
 	name[0] = '\0';
     } else {
 	/* Not available locally; try remotely. */

@@ -39,10 +39,13 @@ bool LoadGroupAliases(void) {
     QIOSTATE            *qp;
     char                *line;
     char                linebuf[1024];
-    char                *p, *q;
+    char                *p, *q, *path;
     int                 lineno = 0;
-    
-    if ((qp = QIOopen(cpcatpath(innconf->pathetc, "group.aliases"))) == NULL)
+
+    path = concatpath(innconf->pathetc, "group.aliases");
+    qp = QIOopen(path);
+    free(path);
+    if (qp == NULL)
 	return TRUE;
     memset(AliasTable, '\0', sizeof(AliasTable));
     while ((line = QIOread(qp)) != NULL) {
