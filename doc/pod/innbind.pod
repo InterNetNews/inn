@@ -4,7 +4,7 @@ innbind - Helper program to bind sockets to privileged ports
 
 =head1 SYNOPSIS
 
-B<innbind> I<fd>,I<family>,I<address>,I<port> [...]
+B<innbind> [B<-p>] I<fd>,I<family>,I<address>,I<port> [...]
 
 =head1 DESCRIPTION
 
@@ -13,12 +13,13 @@ Instead, B<innd> and B<nnrpd> use it internally to bind to ports that
 require root privileges to bind to.
 
 This program must be installed setuid root in order for B<innd> or
-B<nnrpd> to bind to ports under 1024.  The only function that it's willing
-to perform is to bind an open file descriptor to a given address and port.
-It can only be run as the news user (as specified at configure time), and
-will only bind to ports 119, 433, an additional port specified with the
-B<--with-innd-port> argument to configure, or ports numbered 1024 or
-higher.
+B<nnrpd> to bind to ports under 1024.  The only functions that it's
+willing to perform are to bind an open file descriptor to a given address
+and port or to create a new socket, bind it, and return the bound socket
+to its caller.  It can only be run as the news user (as specified at
+configure time), and will only bind to ports 119, 433, an additional port
+specified with the B<--with-innd-port> argument to configure, or ports
+numbered 1024 or higher.
 
 Each argument to B<innbind> must be a comma-separated list of four
 elements.  The first is the file descriptor number that should be bound,
@@ -29,16 +30,52 @@ number.  To bind to all addresses with IPv4, use C<0.0.0.0> as the
 address.  To bind to all addresses with IPv6, use C<::> as the address.
 
 Multiple arguments can be specified to tell B<innbind> to bind multiple
-sockets at the same time.  Any errors encountered will cause B<innbind> to
-abort, and error messages will be sent both to syslog and to standard
-error.
+sockets at the same time.  Any errors (other than permission denied -- see
+below) encountered will cause B<innbind> to abort, and error messages will
+be sent both to syslog and to standard error.
+
+By default, B<innbind> attempts to just bind the already open file
+descriptor that it inherits from its caller.  For each successfully bound
+file descriptor (in the order given on the command line), B<innbind>
+prints C<ok> and a newline to its standard output.
+
+On some systems (apparently just STREAMS-based systems), however, even a
+setuid root program cannot bind a socket to a privileged port that was
+created by a process that didn't have permissions.  If B<innbind> gets
+permission denied when trying to bind a socket, it will print C<no> and a
+newline to its standard output.  It will then create a new socket, bind it
+as specified, and then attempt to pass that socket back to its caller
+using the I_SENDFD STREAMS ioctl.  The caller should receive that file
+descriptor with I_RECVFD and use it instead of the one that it created.
+
+Note that file descriptor passing is only supported on STREAMS-based
+systems since it is done with ioctls over a pipe.  However, it is believed
+that those systems are exactly the systems that can't simply bind the
+inherited file descriptor.  If this assumption proves to be incorrect,
+traditional BSD file descriptor passing over a Unix domain socket will
+have to be added.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-p>
+
+If given as the first command-line argument, no attempt will be made to
+bind the inherited file descriptor and B<innbind> will only try creation
+of a new file descriptor and passing it back via standard output.  This
+option is primarily useful for testing.
+
+=back
 
 =head1 SECURITY
 
 As B<innbind> is normally installed setuid root, security is even more of
 an issue for it than for other parts of INN.  It is a fairly short
 program, and if you understand C, you are encouraged to audit it yourself
-to be certain that it does only what it is supposed to do.
+to be certain that it does only what it is supposed to do.  The only INN
+library functions it uses are the vector functions, the message functions
+for error reporting, and xstrdup.
 
 The ports that will be bound are restricted to prevent potential attacks
 made possible by the ability to bind low-numbered ports, such as exploits
@@ -58,11 +95,17 @@ standard error.
 
 =over 4
 
+=item cannot create socket for %s: %s
+
+(Fatal) B<innbind> fell back on attempting to create a new socket to bind
+for the given argument, and the socket creation failed.
+
 =item cannot bind socket for %s: %s
 
 (Fatal) Calling bind for the socket corresponding to the given argument
-failed with a system error.  This can be caused by trying to use IPv6 on
-a system whose kernel does not support it.
+failed with a system error.  If the error indicates permission denied,
+make sure that B<innbind> is setuid root.  This can also be caused by
+trying to use IPv6 on a system whose kernel does not support it.
 
 =item cannot bind to restricted port %hu in %s
 
@@ -83,6 +126,17 @@ that corresponds to a regular file rather than a network socket).
 (Fatal) B<innbind> was unable to get the UID for the news user specified
 during configure (and defaulting to C<news>).  This normally means that
 user isn't in the system passwd file.
+
+=item cannot mark socket reusable for %s: %s
+
+(Fatal) B<innbind> created a new socket for the given argument but was
+unable to mark its bind address reusable (the SO_REUSEADDR socket option).
+
+=item cannot pass file descriptor: %s
+
+(Fatal) B<innbind> created and bound a new file descriptor but was unable
+to pass it back to its caller via its standard output, using the I_SENDFD
+STREAMS ioctl.
 
 =item invalid file descriptor %d: not SOCK_STREAM
 
@@ -126,6 +180,15 @@ AF_INET6 on the system where B<innbind> is run.
 
 (Fatal) When setuid root, B<innbind> may only be run by the news user as
 specified at configure time (C<news> by default), for security reasons.
+
+=item no addresses specified
+
+(Fatal) No arguments were given on the command line (except maybe B<-p>).
+
+=item port may not be zero in %s
+
+(Fatal) The port number portion of the given command-line argument was
+zero.
 
 =item unknown protocol family %s in %s
 
