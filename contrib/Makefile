@@ -9,9 +9,9 @@ include ../Makefile.global
 top           = ..
 CFLAGS        = $(GCFLAGS)
 
-ALL	      = archivegz backupfeed cleannewsgroups delayer findreadgroups \
-		makeexpctl makestorconf mlockfile newsresp pullart respool \
-		showtoken stathist thdexpire tunefeed
+ALL	      = archivegz backlogstat backupfeed cleannewsgroups delayer \
+		findreadgroups makeexpctl makestorconf mlockfile newsresp \
+		pullart respool showtoken stathist thdexpire tunefeed
 
 all: $(ALL)
 
@@ -37,6 +37,7 @@ pullart:	pullart.o	; $(LINK) pullart.o $(LIBINN)
 respool:	respool.o	; $(LINK) respool.o $(STORELIBS)
 
 archivegz:       archivegz.in       $(FIX) ; $(FIX) -i archivegz.in
+backlogstat:     backlogstat.in     $(FIX) ; $(FIX) backlogstat.in
 backupfeed:      backupfeed.in      $(FIX) ; $(FIX) -i backupfeed.in
 cleannewsgroups: cleannewsgroups.in $(FIX) ; $(FIX) cleannewsgroups.in
 delayer:         delayer.in         $(FIX) ; $(FIX) -i delayer.in

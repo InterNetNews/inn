@@ -1,0 +1,118 @@
+#!/usr/bin/perl
+# fixscript will replace this line with require innshellvars.pl
+
+# backlogstat - display backlog to sites
+# based on bklog by bill davidsen <davidsen@tmr.com>
+
+# breaks if backlog-directory in innfeed.conf is not "innfeed"
+my $dir = "$inn::pathspool/innfeed";
+my $Revision = '1.8';
+
+use strict;
+use warnings;
+
+use Getopt::Std;
+use vars qw($opt_H $opt_h $opt_n $opt_t $opt_k $opt_S $opt_d);
+$| = 1;
+
+# option processing
+&getopts('HhntkS:d:') || &Usage;
+&Usage if $opt_h;
+
+# open the directory;
+$dir = $opt_d if $opt_d;
+print "$opt_d\n";
+chdir($dir) or die "Can't cd to $dir";
+opendir(DIR, ".") or die "Can't open dir";
+
+my %nodes;
+while (my $name = readdir(DIR)) {
+	# must be a file, correct name, non-zero size
+	my $size;
+	next unless -f $name;
+	next unless ($size = -s $name);
+	next unless $name =~ m/.*\.(in|out)put/;
+	my $io = $1;
+	(my $nodename = $name) =~ s/\..*//;
+
+	# check for only some sites wanted
+	next if ($opt_S && $nodename !~ /^${opt_S}.*/);
+	# here we do the counts if asked
+	if ($opt_n) {
+		# open the file and count lines
+		if (open(IN, "<$name")) {
+			if ($name =~ m/.*\.input/) {
+				my $offset = <IN> + 0;
+				seek(IN, $offset, 0);
+			}
+			$size = 0;
+			for ($size = 0; <IN> ; ++$size) {};
+			close IN;
+		}
+	} else {
+		# get the offset on .input files
+		if ($name =~ m/.*\.input/ && open(IN, "<$name")) {
+			my $offset = <IN> + 0;
+			$size -= $offset;
+			close IN;
+		}
+	}			
+	$nodes{$nodename} = () unless defined $nodes{$nodename};
+	$nodes{$nodename}->{$io} = ( $opt_k ? $size / 1024 : $size );
+}
+closedir DIR;
+
+# output the data for each node
+if (my $numnodes = keys %nodes) {
+	if ($opt_H) {
+		if ($opt_n) {
+			print "  <---------- posts ----------->\n";
+		} else {
+			print "  <---------- bytes ----------->\n";
+		}
+	}
+	my $ofmt;
+	if ($opt_k) {
+		print "  input(k)  output(k)   total(k) Feed Name\n" if $opt_H;
+		$ofmt = ( $opt_n ? "%10.2f" : "%10.1f" );
+	} else {
+		print "     input     output      total Feed Name\n" if $opt_H;
+		$ofmt = "%10d";
+	}
+	for my $node (sort keys %nodes) {
+		my $hash = $nodes{$node};
+		my $size_in = $hash->{in} || 0;
+		my $size_out = $hash->{out} || 0;
+		my $size_tot = $size_in + $size_out;
+		printf "${ofmt} ${ofmt} ${ofmt} %s\n",
+			$size_in, $size_out, $size_tot, $node;
+	}
+} else {
+	print "NO backlog!\n";
+}
+
+exit 0;
+
+sub Usage
+{
+	print "\n"
+	. "bklog - print innfeed backlog info - v$Revision\n"
+	. "\n"
+	. "Format:\n"
+	. "  bklog [ options ]\n"
+	. "\n"
+	. "Options:\n"
+	. "  -H     output a header at the top of the output\n"
+	. "  -k     scale all numbers in k (1024) units\n"
+	. "  -n     count number of arts, not bytes of backlog filesize\n"
+	. "         Note: this may be SLOW for large files!\n"
+	. "  -Sxx   Display only site names starting with xx\n"
+	. "  -d dir Use \"dir\" instead of \$pathspool/innfeed\n"
+	. "\n"
+	. "  -h     HELP - this is all, you got it!\n"
+	. "\n";
+
+	exit 1;
+}
+
+
