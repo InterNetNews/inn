@@ -23,16 +23,16 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include <stdlib.h>
-#include <string.h>
+#include "config.h"
+#include "clibrary.h"
+#include <errno.h>
+#include <netinet/tcp.h>
+#include <sys/socket.h>
 
 int RFCNB_errno = 0;
 int RFCNB_saved_errno = 0;
 #define RFCNB_ERRNO
 
-#include "config.h"
-#include "std-includes.h"
-#include <netinet/tcp.h>
 #include "rfcnb-priv.h"
 #include "rfcnb-util.h"
 
@@ -298,72 +298,5 @@ int RFCNB_Set_Sock_NoDelay(struct RFCNB_Con *con_Handle, bool yn)
 
   return(setsockopt(con_Handle -> fd, IPPROTO_TCP, TCP_NODELAY, 
 		    (char *)&yn, sizeof(yn)));
-
-}
-
-
-/* Listen for a connection on a port???, when                             */
-/* the connection comes in, we return with the connection                 */
-
-void *RFCNB_Listen()
-
-{
-
-}
-
-/* Pick up the last error response as a string, hmmm, this routine should */
-/* have been different ...                                                */
-
-void RFCNB_Get_Error(char *buffer, int buf_len)
-
-{
-
-  if (RFCNB_saved_errno <= 0) {
-    sprintf(buffer, "%s", RFCNB_Error_Strings[RFCNB_errno]);
-  }
-  else {
-    sprintf(buffer, "%s\n\terrno:%s", RFCNB_Error_Strings[RFCNB_errno],
-	    strerror(RFCNB_saved_errno));
-  }
-
-}
-
-/* Pick up the last error response and returns as a code                 */
-
-int RFCNB_Get_Last_Error()
-
-{
-
-  return(RFCNB_errno);
-
-}
-
-/* Pick up saved errno as well */
-
-int RFCNB_Get_Last_Errno()
-
-{
-
-  return(RFCNB_saved_errno);
-
-}
-
-/* Pick up the last error response and return in string ...             */
-
-int RFCNB_Get_Error_Msg(int code, char *msg_buf, int len)
-
-{
-
-  strncpy(msg_buf, RFCNB_Error_Strings[abs(code)], len);
-
-}
-
-/* Register a higher level protocol print routine */
-
-void RFCNB_Register_Print_Routine(void (*fn)())
-
-{
-
-  Prot_Print_Routine = fn;
 
 }

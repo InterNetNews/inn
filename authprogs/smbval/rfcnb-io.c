@@ -22,65 +22,17 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
-/* #include <features.h> */
+
 #include "config.h"
-#include "std-includes.h"
+#include "clibrary.h"
+#include <errno.h>
+#include <sys/uio.h>
+
 #include "rfcnb-priv.h"
 #include "rfcnb-util.h"
 #include "rfcnb-io.h"
-#include <sys/uio.h>
-#include <sys/signal.h>
-#include <string.h>
 
 int RFCNB_Timeout = 0;    /* Timeout in seconds ... */
-
-void rfcnb_alarm(int sig)
-
-{
-
-  fprintf(stderr, "IO Timed out ...\n");
-
-}
-
-/* Set timeout value and setup signal handling */
-
-int RFCNB_Set_Timeout(int seconds)
-
-{
-  int temp;
-  /* If we are on a Bezerkeley system, use sigvec, else sigaction */
-#ifndef SA_RESTART
-  struct sigvec invec, outvec; 
-#else
-  struct sigaction inact, outact;
-#endif
-
-  RFCNB_Timeout = seconds;
-
-  if (RFCNB_Timeout > 0) { /* Set up handler to ignore but not restart */
-
-#ifndef SA_RESTART
-    invec.sv_handler = (void (*)())rfcnb_alarm;
-    invec.sv_mask = 0;
-    invec.sv_flags = SV_INTERRUPT;
-
-    if (sigvec(SIGALRM, &invec, &outvec)  < 0)
-      return(-1);
-#else
-    inact.sa_handler = (void (*)())rfcnb_alarm;
-    sigemptyset(&inact.sa_mask);
-    inact.sa_flags = 0;    /* Don't restart */
-
-    if (sigaction(SIGALRM, &inact, &outact) < 0)
-      return(-1);
-
-#endif
-
-  }
-
-  return(0);
-
-}
 
 /* Discard the rest of an incoming packet as we do not have space for it
    in the buffer we allocated or were passed ...                         */
@@ -91,10 +43,6 @@ int RFCNB_Discard_Rest(struct RFCNB_Con *con, int len)
   int rest, this_read, bytes_read;
 
   /* len is the amount we should read */
-
-#ifdef RFCNB_DEBUG
-  fprintf(stderr, "Discard_Rest called to discard: %i\n", len);
-#endif
 
   rest = len;
 
@@ -171,10 +119,6 @@ int RFCNB_Put_Pkt(struct RFCNB_Con *con, struct RFCNB_Pkt *pkt, int len)
 
   }
 
-#ifdef RFCNB_DEBUG
-  fprintf(stderr, "Frags = %i, tot_sent = %i\n", i, tot_sent);
-#endif
-
   /* Set up an alarm if timeouts are set ... */
 
   if (RFCNB_Timeout > 0) 
@@ -204,13 +148,6 @@ int RFCNB_Put_Pkt(struct RFCNB_Con *con, struct RFCNB_Pkt *pkt, int len)
   if (RFCNB_Timeout > 0)
     alarm(0);                /* Reset that sucker */
 
-#ifdef RFCNB_DEBUG
-
-  fprintf(stderr, "Len sent = %i ...\n", len_sent);
-  RFCNB_Print_Pkt(stderr, "sent", pkt, len_sent); /* Print what send ... */
-
-#endif
-
   return(len_sent);
 
 }
@@ -235,10 +172,6 @@ int RFCNB_Get_Pkt(struct RFCNB_Con *con, struct RFCNB_Pkt *pkt, int len)
 
   if (len < RFCNB_Pkt_Hdr_Len) { /* What a bozo */
 
-#ifdef RFCNB_DEBUG
-    fprintf(stderr, "Trying to read less than a packet:");
-    perror("");
-#endif
     RFCNB_errno = RFCNBE_BadParam;
     return(RFCNBE_Bad);
 
@@ -252,10 +185,6 @@ int RFCNB_Get_Pkt(struct RFCNB_Con *con, struct RFCNB_Pkt *pkt, int len)
   while (seen_keep_alive) {
 
     if ((read_len = read(con -> fd, hdr, sizeof(hdr))) < 0) { /* Problems */
-#ifdef RFCNB_DEBUG
-      fprintf(stderr, "Reading the packet, we got:");
-      perror("");
-#endif
       if (errno == EINTR)
 	RFCNB_errno = RFCNBE_Timeout;
       else
@@ -269,10 +198,6 @@ int RFCNB_Get_Pkt(struct RFCNB_Con *con, struct RFCNB_Pkt *pkt, int len)
 
     if (read_len == 0) { /* Connection closed, send back eof?  */
 
-#ifdef RFCNB_DEBUG
-      fprintf(stderr, "Connection closed reading\n");
-#endif 
-
       if (errno == EINTR) 
 	RFCNB_errno = RFCNBE_Timeout;
       else
@@ -282,14 +207,7 @@ int RFCNB_Get_Pkt(struct RFCNB_Con *con, struct RFCNB_Pkt *pkt, int len)
 
     }
 
-    if (RFCNB_Pkt_Type(hdr) == RFCNB_SESSION_KEEP_ALIVE) {
-
-#ifdef RFCNB_DEBUG
-      fprintf(stderr, "RFCNB KEEP ALIVE received\n");
-#endif
-      
-    }
-    else {
+    if (RFCNB_Pkt_Type(hdr) != RFCNB_SESSION_KEEP_ALIVE) {
       seen_keep_alive = FALSE;
     }
 
@@ -303,10 +221,6 @@ int RFCNB_Get_Pkt(struct RFCNB_Con *con, struct RFCNB_Pkt *pkt, int len)
 
     memcpy(pkt -> data, hdr, read_len);  /*Copy data */
 
-#ifdef RFCNB_DEBUG
-    RFCNB_Print_Pkt(stderr, "rcvd", pkt, read_len);
-#endif
-
     return(read_len);
 
   }
@@ -314,10 +228,6 @@ int RFCNB_Get_Pkt(struct RFCNB_Con *con, struct RFCNB_Pkt *pkt, int len)
   /* Now, if we got at least a hdr size, alloc space for rest, if we need it */
 
   pkt_len = RFCNB_Pkt_Len(hdr);
-
-#ifdef RFCNB_DEBUG
-  fprintf(stderr, "Reading Pkt: Length = %i\n", pkt_len);
-#endif  
 
   /* Now copy in the hdr */
 
@@ -373,11 +283,6 @@ int RFCNB_Get_Pkt(struct RFCNB_Con *con, struct RFCNB_Pkt *pkt, int len)
 
     }
 
-#ifdef RFCNB_DEBUG
-    fprintf(stderr, "Frag_Len = %i, this_time = %i, this_len = %i, more = %i\n", frag_len,
-                    this_time, this_len, more);
-#endif
-
     read_len = read_len + this_time;  /* How much have we read ... */
 
     /* Now set up the next part */
@@ -391,11 +296,6 @@ int RFCNB_Get_Pkt(struct RFCNB_Con *con, struct RFCNB_Pkt *pkt, int len)
     more = more - this_time;
 
   }
-
-#ifdef RFCNB_DEBUG
-  fprintf(stderr,"Pkt Len = %i, read_len = %i\n", pkt_len, read_len);
-  RFCNB_Print_Pkt(stderr, "rcvd", pkt, read_len + sizeof(hdr));
-#endif
 
   if (read_len < (pkt_len + sizeof(hdr))) {  /* Discard the rest */
 

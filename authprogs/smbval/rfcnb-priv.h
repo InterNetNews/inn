@@ -29,15 +29,13 @@ typedef unsigned short uint16;
 
 #define GLOBAL extern
 
+#include <netinet/in.h>
+
 #include "rfcnb-error.h"
 #include "rfcnb-common.h"
 #include "byteorder.h"
 
-#ifdef RFCNB_PORT
-#define RFCNB_Default_Port RFCNB_PORT
-#else
 #define RFCNB_Default_Port 139
-#endif
 
 #define RFCNB_MAX_STATS 1
 
@@ -106,40 +104,6 @@ typedef char RFCNB_Hdr[4]; /* The header is 4 bytes long with  */
 				(p[3] = (v & 0xFF));
 
 #define RFCNB_Pkt_Type(p) (CVAL(p, RFCNB_Pkt_Type_Offset))
-
-/*typedef struct RFCNB_Hdr {
-
-  unsigned char type;
-  unsigned char flags;
-  int16 len;
-
-  } RFCNB_Hdr;
-
-typedef struct RFCNB_Sess_Pkt {
-    unsigned char type;
-    unsigned char flags;
-    int16 length;
-    unsigned char n1_len;
-    char called_name[33];
-    unsigned char n2_len;
-    char calling_name[33];
-  } RFCNB_Sess_Pkt;
-
-
-typedef struct RFCNB_Nack_Pkt {
-
-  struct RFCNB_Hdr hdr;
-  unsigned char error;
- 
-  } RFCNB_Nack_Pkt;
-
-typedef struct RFCNB_Retarget_Pkt {
-
-  struct RFCNB_Hdr hdr;
-  int dest_ip;
-  unsigned char port;
-
-  } RFCNB_Redir_Pkt; */
 
 /* Static variables */
 

@@ -23,7 +23,6 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include "std-defines.h"
 #include "smblib-common.h"
 #include <sys/types.h>
 #include <unistd.h>
@@ -33,102 +32,12 @@ typedef unsigned int   uint32;
 
 #include "byteorder.h"     /* Hmmm ... hot good */
 
-#define max(a,b) (a < b ? b : a)
-
 #define SMB_DEF_IDF 0x424D53FF        /* "\377SMB" */
  
-/* Core protocol commands */
-
-#define SMBmkdir      0x00   /* create directory */
-#define SMBrmdir      0x01   /* delete directory */
-#define SMBopen       0x02   /* open file */
-#define SMBcreate     0x03   /* create file */
-#define SMBclose      0x04   /* close file */
-#define SMBflush      0x05   /* flush file */
-#define SMBunlink     0x06   /* delete file */
-#define SMBmv         0x07   /* rename file */
-#define SMBgetatr     0x08   /* get file attributes */
-#define SMBsetatr     0x09   /* set file attributes */
-#define SMBread       0x0A   /* read from file */
-#define SMBwrite      0x0B   /* write to file */
-#define SMBlock       0x0C   /* lock byte range */
-#define SMBunlock     0x0D   /* unlock byte range */
-#define SMBctemp      0x0E   /* create temporary file */
-#define SMBmknew      0x0F   /* make new file */
-#define SMBchkpth     0x10   /* check directory path */
-#define SMBexit       0x11   /* process exit */
-#define SMBlseek      0x12   /* seek */
-#define SMBtcon       0x70   /* tree connect */
-#define SMBtdis       0x71   /* tree disconnect */
+/* The protocol commands and constants we need */
 #define SMBnegprot    0x72   /* negotiate protocol */
-#define SMBdskattr    0x80   /* get disk attributes */
-#define SMBsearch     0x81   /* search directory */
-#define SMBsplopen    0xC0   /* open print spool file */
-#define SMBsplwr      0xC1   /* write to print spool file */
-#define SMBsplclose   0xC2   /* close print spool file */
-#define SMBsplretq    0xC3   /* return print queue */
-#define SMBsends      0xD0   /* send single block message */
-#define SMBsendb      0xD1   /* send broadcast message */
-#define SMBfwdname    0xD2   /* forward user name */
-#define SMBcancelf    0xD3   /* cancel forward */
-#define SMBgetmac     0xD4   /* get machine name */
-#define SMBsendstrt   0xD5   /* send start of multi-block message */
-#define SMBsendend    0xD6   /* send end of multi-block message */
-#define SMBsendtxt    0xD7   /* send text of multi-block message */
-
-/* CorePlus protocol                                        */
-
-#define SMBlockread   0x13  /* Lock a range and read it */
-#define SMBwriteunlock 0x14 /* Unlock a range and then write */
-#define SMBreadbraw   0x1a  /* read a block of data without smb header ohead*/
-#define SMBwritebraw  0x1d  /* write a block of data without smb header ohead*/
-#define SMBwritec     0x20  /* secondary write request */
-#define SMBwriteclose 0x2c  /* write a file and then close it */
-
-/* DOS Extended Protocol                                    */
-
-#define SMBreadBraw      0x1A   /* read block raw */
-#define SMBreadBmpx      0x1B   /* read block multiplexed */
-#define SMBreadBs        0x1C   /* read block (secondary response) */
-#define SMBwriteBraw     0x1D   /* write block raw */
-#define SMBwriteBmpx     0x1E   /* write block multiplexed */
-#define SMBwriteBs       0x1F   /* write block (secondary request) */
-#define SMBwriteC        0x20   /* write complete response */
-#define SMBsetattrE      0x22   /* set file attributes expanded */
-#define SMBgetattrE      0x23   /* get file attributes expanded */
-#define SMBlockingX      0x24   /* lock/unlock byte ranges and X */
-#define SMBtrans         0x25   /* transaction - name, bytes in/out */
-#define SMBtranss        0x26   /* transaction (secondary request/response) */
-#define SMBioctl         0x27   /* IOCTL */
-#define SMBioctls        0x28   /* IOCTL  (secondary request/response) */
-#define SMBcopy          0x29   /* copy */
-#define SMBmove          0x2A   /* move */
-#define SMBecho          0x2B   /* echo */
-#define SMBopenX         0x2D   /* open and X */
-#define SMBreadX         0x2E   /* read and X */
-#define SMBwriteX        0x2F   /* write and X */
-#define SMBsesssetupX    0x73   /* Session Set Up & X (including User Logon) */
-#define SMBtconX         0x75   /* tree connect and X */
-#define SMBffirst        0x82   /* find first */
-#define SMBfunique       0x83   /* find unique */
-#define SMBfclose        0x84   /* find close */
-#define SMBinvalid       0xFE   /* invalid command */
-
-/* Any more ? */
-
-#define SMBdatablockID     0x01  /* A data block identifier */
-#define SMBdialectID       0x02  /* A dialect id            */
-#define SMBpathnameID      0x03  /* A pathname ID           */
-#define SMBasciiID         0x04  /* An ascii string ID      */
-#define SMBvariableblockID 0x05  /* A variable block ID     */
-
-/* some other defines we need */
-
-/* Flags defines ... */
-
-#define SMB_FLG2_NON_DOS    0x01 /* We know non dos names             */
-#define SMB_FLG2_EXT_ATR    0x02 /* We know about Extended Attributes */
-#define SMB_FLG2_LNG_NAM    0x04 /* Long names ?                      */
+#define SMBsesssetupX 0x73   /* Session Set Up & X (including User Logon) */
+#define SMBdialectID  0x02   /* a dialect id */
 
 typedef unsigned short WORD;
 typedef unsigned short UWORD;
@@ -210,8 +119,6 @@ typedef unsigned char UCHAR;
 #define SMB_negrLM_mmc_offset   39        /* max mpx count           */
 #define SMB_negrLM_mnv_offset   41        /* max number of VCs       */
 #define SMB_negrLM_rm_offset    43        /* raw mode support bit vec*/
-#define SMB_read_raw_mask       0x01
-#define SMB_write_raw_mask      0x02
 #define SMB_negrLM_sk_offset    45        /* session key, 32 bits    */
 #define SMB_negrLM_st_offset    49        /* Current server time     */
 #define SMB_negrLM_sd_offset    51        /* Current server date     */
@@ -237,126 +144,6 @@ typedef unsigned char UCHAR;
 #define SMB_negrNTLM_bcc_offset 67        /* Bcc                     */
 #define SMB_negrNTLM_len        69
 #define SMB_negrNTLM_buf_offset 69
-
-/* Offsets related to Tree Connect                                      */
-
-#define SMB_tcon_bcc_offset     33
-#define SMB_tcon_buf_offset     35        /* where the data is for tcon */
-#define SMB_tcon_len            35        /* plus the data              */
-
-#define SMB_tconr_mbs_offset    33        /* max buffer size         */
-#define SMB_tconr_tid_offset    35        /* returned tree id        */
-#define SMB_tconr_bcc_offset    37       
-#define SMB_tconr_len           39 
-
-#define SMB_tconx_axc_offset    33        /* And X Command                */
-#define SMB_tconx_axr_offset    34        /* reserved                     */
-#define SMB_tconx_axo_offset    35        /* Next command offset          */
-#define SMB_tconx_flg_offset    37        /* Flags, bit0=1 means disc TID */
-#define SMB_tconx_pwl_offset    39        /* Password length              */
-#define SMB_tconx_bcc_offset    41        /* bcc                          */
-#define SMB_tconx_buf_offset    43        /* buffer                       */
-#define SMB_tconx_len           43        /* up to data ...               */
-
-#define SMB_tconxr_axc_offset   33        /* Where the AndX Command is    */
-#define SMB_tconxr_axr_offset   34        /* Reserved                     */
-#define SMB_tconxr_axo_offset   35        /* AndX offset location         */
-
-/* Offsets related to tree_disconnect                                  */
-
-#define SMB_tdis_bcc_offset     33        /* bcc                     */
-#define SMB_tdis_len            35        /* total len               */
-
-#define SMB_tdisr_bcc_offset    33        /* bcc                     */
-#define SMB_tdisr_len           35
-
-/* Offsets related to Open Request                                     */
-
-#define SMB_open_mod_offset     33        /* Mode to open with       */
-#define SMB_open_atr_offset     35        /* Attributes of file      */
-#define SMB_open_bcc_offset     37        /* bcc                     */
-#define SMB_open_buf_offset     39        /* File name               */
-#define SMB_open_len            39        /* Plus the file name      */
-
-#define SMB_openx_axc_offset    33        /* Next command            */
-#define SMB_openx_axr_offset    34        /* Reserved                */
-#define SMB_openx_axo_offset    35        /* offset of next wct      */
-#define SMB_openx_flg_offset    37        /* Flags, bit0 = need more info */
-                                          /* bit1 = exclusive oplock */
-                                          /* bit2 = batch oplock     */
-#define SMB_openx_mod_offset    39        /* mode to open with       */
-#define SMB_openx_atr_offset    41        /* search attributes       */
-#define SMB_openx_fat_offset    43        /* File attributes         */
-#define SMB_openx_tim_offset    45        /* time and date of creat  */
-#define SMB_openx_ofn_offset    49        /* Open function           */
-#define SMB_openx_als_offset    51        /* Space to allocate on    */
-#define SMB_openx_res_offset    55        /* reserved                */
-#define SMB_openx_bcc_offset    63        /* bcc                     */
-#define SMB_openx_buf_offset    65        /* Where file name goes    */
-#define SMB_openx_len           65
-
-#define SMB_openr_fid_offset    33        /* FID returned            */
-#define SMB_openr_atr_offset    35        /* Attributes opened with  */
-#define SMB_openr_tim_offset    37        /* Last mod time of file   */
-#define SMB_openr_fsz_offset    41        /* File size 4 bytes       */
-#define SMB_openr_acc_offset    45        /* Access allowed          */
-#define SMB_openr_bcc_offset    47
-#define SMB_openr_len           49
-
-#define SMB_openxr_axc_offset   33        /* And X command           */
-#define SMB_openxr_axr_offset   34        /* reserved                */
-#define SMB_openxr_axo_offset   35        /* offset to next command  */
-#define SMB_openxr_fid_offset   37        /* FID returned            */
-#define SMB_openxr_fat_offset   39        /* File attributes returned*/
-#define SMB_openxr_tim_offset   41        /* File creation date etc  */
-#define SMB_openxr_fsz_offset   45        /* Size of file            */
-#define SMB_openxr_acc_offset   49        /* Access granted          */
-
-#define SMB_clos_fid_offset     33        /* FID to close            */
-#define SMB_clos_tim_offset     35        /* Last mod time           */
-#define SMB_clos_bcc_offset     39        /* bcc                     */        
-#define SMB_clos_len            41
-
-/* Offsets related to Write requests                                 */
-
-#define SMB_write_fid_offset    33        /* FID to write            */
-#define SMB_write_cnt_offset    35        /* bytes to write          */
-#define SMB_write_ofs_offset    37        /* location to write to    */
-#define SMB_write_clf_offset    41        /* advisory count left     */
-#define SMB_write_bcc_offset    43        /* bcc = data bytes + 3    */
-#define SMB_write_buf_offset    45        /* Data=0x01, len, data    */
-#define SMB_write_len           45        /* plus the data ...       */
-
-#define SMB_writr_cnt_offset    33        /* Count of bytes written  */
-#define SMB_writr_bcc_offset    35        /* bcc                     */
-#define SMB_writr_len           37
-
-/* Offsets related to read requests */
-
-#define SMB_read_fid_offset     33        /* FID of file to read     */
-#define SMB_read_cnt_offset     35        /* count of words to read  */
-#define SMB_read_ofs_offset     37        /* Where to read from      */
-#define SMB_read_clf_offset     41        /* Advisory count to go    */
-#define SMB_read_bcc_offset     43
-#define SMB_read_len            45
-
-#define SMB_readr_cnt_offset    33        /* Count of bytes returned */
-#define SMB_readr_res_offset    35        /* 4 shorts reserved, 8 bytes */
-#define SMB_readr_bcc_offset    43        /* bcc                     */
-#define SMB_readr_bff_offset    45        /* buffer format char = 0x01 */
-#define SMB_readr_len_offset    46        /* buffer len              */
-#define SMB_readr_len           45        /* length of the readr before data */
-
-/* Offsets for Create file                                           */
-
-#define SMB_creat_atr_offset    33        /* Attributes of new file ... */
-#define SMB_creat_tim_offset    35        /* Time of creation           */
-#define SMB_creat_dat_offset    37        /* 4004BCE :-)                */
-#define SMB_creat_bcc_offset    39        /* bcc                        */
-#define SMB_creat_buf_offset    41
-#define SMB_creat_len           41        /* Before the data            */
-
-#define SMB_creatr_fid_offset   33        /* FID of created file        */
 
 /* Offsets for Delete file                                           */
 
@@ -395,117 +182,22 @@ typedef unsigned char UCHAR;
 #define SMB_ssetpr_bcc_offset  39         /* bcc                            */
 #define SMB_ssetpr_buf_offset  41         /* Native OS etc                  */
 
-/* Offsets for SMB create directory                                         */
-
-#define SMB_creatdir_bcc_offset 33        /* only a bcc here                */
-#define SMB_creatdir_buf_offset 35        /* Where things start             */
-#define SMB_creatdir_len        35
-
-/* Offsets for SMB delete directory                                         */
-
-#define SMB_deletdir_bcc_offset 33        /* only a bcc here                */
-#define SMB_deletdir_buf_offset 35        /* where things start             */
-#define SMB_deletdir_len        35
-
-/* Offsets for SMB check directory                                          */
-
-#define SMB_checkdir_bcc_offset 33        /* Only a bcc here                */
-#define SMB_checkdir_buf_offset 35        /* where things start             */
-#define SMB_checkdir_len        35
-
-/* Offsets for SMB search                                                   */
-
-#define SMB_search_mdc_offset   33        /* Max Dir ents to return         */
-#define SMB_search_atr_offset   35        /* Search attributes              */
-#define SMB_search_bcc_offset   37        /* bcc                            */
-#define SMB_search_buf_offset   39        /* where the action is            */
-#define SMB_search_len          39
-
-#define SMB_searchr_dec_offset  33        /* Dir ents returned              */
-#define SMB_searchr_bcc_offset  35        /* bcc                            */
-#define SMB_searchr_buf_offset  37        /* Where the action starts        */
-#define SMB_searchr_len         37        /* before the dir ents            */
-
-#define SMB_searchr_dirent_len  43        /* 53 bytes                       */
-
-/* Defines for SMB transact and transact2 calls                             */
-
-#define SMB_trans_tpc_offset    33        /* Total param count              */
-#define SMB_trans_tdc_offset    35        /* total Data count               */
-#define SMB_trans_mpc_offset    37        /* Max params bytes to return     */
-#define SMB_trans_mdc_offset    39        /* Max data bytes to return       */
-#define SMB_trans_msc_offset    41        /* Max setup words to return      */
-#define SMB_trans_rs1_offset    42        /* Reserved byte                  */
-#define SMB_trans_flg_offset    43        /* flags                          */
-#define SMB_trans_tmo_offset    45        /* Timeout, long                  */
-#define SMB_trans_rs2_offset    49        /* Next reserved                  */
-#define SMB_trans_pbc_offset    51        /* Param Byte count in buf        */
-#define SMB_trans_pbo_offset    53        /* Offset to param bytes          */
-#define SMB_trans_dbc_offset    55        /* Data byte count in buf         */
-#define SMB_trans_dbo_offset    57        /* Data byte offset               */
-#define SMB_trans_suc_offset    59        /* Setup count - byte             */
-#define SMB_trans_rs3_offset    60        /* Reserved to pad ...            */
-#define SMB_trans_len           61        /* Up to setup, still need bcc    */
-
-#define SMB_transr_tpc_offset   33        /* Total param bytes returned     */
-#define SMB_transr_tdc_offset   35
-#define SMB_transr_rs1_offset   37
-#define SMB_transr_pbc_offset   39
-#define SMB_transr_pbo_offset   41
-#define SMB_transr_pdi_offset   43        /* parameter displacement         */
-#define SMB_transr_dbc_offset   45
-#define SMB_transr_dbo_offset   47
-#define SMB_transr_ddi_offset   49
-#define SMB_transr_suc_offset   51
-#define SMB_transr_rs2_offset   52
-#define SMB_transr_len          53
-
-/* Bit masks for SMB Capabilities ...                       */
-
-#define SMB_cap_raw_mode         0x0001
-#define SMB_cap_mpx_mode         0x0002
-#define SMB_cap_unicode          0x0004
-#define SMB_cap_large_files      0x0008
-#define SMB_cap_nt_smbs          0x0010
-#define SMB_rpc_remote_apis      0x0020
-#define SMB_cap_nt_status        0x0040
-#define SMB_cap_level_II_oplocks 0x0080
-#define SMB_cap_lock_and_read    0x0100
-#define SMB_cap_nt_find          0x0200
-
-/* SMB LANMAN api call defines */
-
-#define SMB_LMapi_SetUserInfo     0x0072
-#define SMB_LMapi_UserPasswordSet 0x0073
- 
-/* Structures and defines we use in the client interface */
-
-/* The protocols we might support. Perhaps a bit ambitious, as only RFCNB */
-/* has any support so far 0(sometimes called NBT)                         */
-
-typedef enum {SMB_RFCNB, SMB_IPXNB, SMB_NETBEUI, SMB_X25} SMB_Transport_Types;
-
-typedef enum {SMB_Con_FShare, SMB_Con_PShare, SMB_Con_IPC} SMB_Con_Types;
-
-typedef enum {SMB_State_NoState, SMB_State_Stopped, SMB_State_Started} SMB_State_Types;
-
 /* The following two arrays need to be in step!              */
 /* We must make it possible for callers to specify these ... */
 
-
-static char *SMB_Prots[] = {"PC NETWORK PROGRAM 1.0", 
-			    "MICROSOFT NETWORKS 1.03",
-			    "MICROSOFT NETWORKS 3.0",
-			    "DOS LANMAN1.0",
-			    "LANMAN1.0",
-			    "DOS LM1.2X002",
-			    "LM1.2X002",
-			    "DOS LANMAN2.1",
-			    "LANMAN2.1",
-			    "Samba",
-			    "NT LM 0.12",
-			    "NT LANMAN 1.0",
-			    NULL};
+static const char *SMB_Prots[] = {"PC NETWORK PROGRAM 1.0", 
+                                  "MICROSOFT NETWORKS 1.03",
+                                  "MICROSOFT NETWORKS 3.0",
+                                  "DOS LANMAN1.0",
+                                  "LANMAN1.0",
+                                  "DOS LM1.2X002",
+                                  "LM1.2X002",
+                                  "DOS LANMAN2.1",
+                                  "LANMAN2.1",
+                                  "Samba",
+                                  "NT LM 0.12",
+                                  "NT LANMAN 1.0",
+                                  NULL};
 
 static int SMB_Types[] = {SMB_P_Core,
                           SMB_P_CorePlus,
@@ -521,20 +213,6 @@ static int SMB_Types[] = {SMB_P_Core,
 		          SMB_P_NT1,
 		          -1};
 
-typedef struct SMB_Status {
-
-  union {
-    struct {
-      unsigned char ErrorClass;
-      unsigned char Reserved;
-      unsigned short Error;
-    } DosError;
-    unsigned int NtStatus;
-  } status;
-} SMB_Status;
-
-typedef struct SMB_Tree_Structure * SMB_Tree_Handle;
-
 typedef struct SMB_Connect_Def * SMB_Handle_Type;
 
 struct SMB_Connect_Def {
@@ -548,8 +226,6 @@ struct SMB_Connect_Def {
 
   char service[80], username[80], password[80], desthost[80], sock_options[80];
   char address[80], myname[80];
-
-  SMB_Tree_Handle first_tree, last_tree;  /* List of trees on this server */
 
   int gid;         /* Group ID, do we need it?                      */
   int mid;         /* Multiplex ID? We might need one per con       */
@@ -576,49 +252,13 @@ struct SMB_Connect_Def {
 
 };
 
-#define SMBLIB_DEFAULT_DOMAIN "STAFF"
 #define SMBLIB_DEFAULT_OSNAME "UNIX of some type"
 #define SMBLIB_DEFAULT_LMTYPE "SMBlib LM2.1 minus a bit"
 #define SMBLIB_MAX_XMIT 65535
 
-#define SMB_Sec_Mode_Share 0
-#define SMB_Sec_Mode_User  1
-
-/* A Tree_Structure                       */
-
-struct SMB_Tree_Structure {
-
-  SMB_Tree_Handle next, prev;
-  SMB_Handle_Type con;
-  char path[129];
-  char device_type[20];
-  int mbs;                   /* Local MBS */
-  int tid;
-
-};
-
-typedef struct SMB_File_Def SMB_File;
-
-struct SMB_File_Def {
-
-  SMB_Tree_Handle tree;
-  char filename[256];          /* We should malloc this ... */
-  UWORD fid;
-  unsigned int lastmod;
-  unsigned int size;           /* Could blow up if 64bit files supported */
-  UWORD access;
-  off_t fileloc;
-
-};
-
 /* global Variables for the library */
-
-extern SMB_State_Types SMBlib_State;
 
 #ifndef SMBLIB_ERRNO
 extern int SMBlib_errno;
 extern int SMBlib_SMB_Error;          /* last Error             */
 #endif
-
-SMB_Tree_Handle SMB_TreeConnect(SMB_Handle_Type con, SMB_Tree_Handle tree,
-				char *path, char *password, char *dev);

@@ -23,13 +23,13 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include <stdlib.h>
+#include "config.h"
+#include "clibrary.h"
 
 int SMBlib_errno;
 int SMBlib_SMB_Error;
 #define SMBLIB_ERRNO
 typedef unsigned char uchar;
-#include "config.h"
 #include "smblib-priv.h"
 
 #include "rfcnb.h"
@@ -37,24 +37,12 @@ typedef unsigned char uchar;
 #include <signal.h>
 #include <string.h>
 
-SMB_State_Types SMBlib_State;
-
 /* Initialize the SMBlib package     */
 
 int SMB_Init()
 
 {
-
-  SMBlib_State = SMB_State_Started;
-
   signal(SIGPIPE, SIG_IGN);   /* Ignore these ... */
-
-/* If SMBLIB_Instrument is defines, turn on the instrumentation stuff */
-#ifdef SMBLIB_INSTRUMENT
-
-  SMBlib_Instrument_Init();
-
-#endif
 
   return 0;
 
@@ -64,43 +52,7 @@ int SMB_Term()
 
 {
 
-#ifdef SMBLIB_INSTRUMENT
-
-  SMBlib_Instrument_Term();       /* Clean up and print results */
-
-#endif
-
   return 0;
-
-}
-
-/* SMB_Create: Create a connection structure and return for later use */
-/* We have other helper routines to set variables                     */
-
-SMB_Handle_Type SMB_Create_Con_Handle()
-
-{
-
-  SMBlib_errno = SMBlibE_NotImpl;
-  return(NULL);
-
-}
-
-int SMBlib_Set_Sock_NoDelay(SMB_Handle_Type Con_Handle, bool yn)
-
-{
-
-
-  if (RFCNB_Set_Sock_NoDelay(Con_Handle -> Trans_Connect, yn) < 0) {
-
-#ifdef DEBUG
-#endif
-
-    fprintf(stderr, "Setting no-delay on TCP socket failed ...\n");
-
-  }
-
-  return(0);
 
 }
 
@@ -140,7 +92,6 @@ SMB_Handle_Type SMB_Connect_Server(SMB_Handle_Type Con_Handle,
   strcpy(con -> PDomain, NTdomain);
   strcpy(con -> OSName, SMBLIB_DEFAULT_OSNAME);
   strcpy(con -> LMType, SMBLIB_DEFAULT_LMTYPE);
-  con -> first_tree = con -> last_tree = NULL; 
 
   SMB_Get_My_Name(con -> myname, sizeof(con -> myname));
 
@@ -185,127 +136,6 @@ SMB_Handle_Type SMB_Connect_Server(SMB_Handle_Type Con_Handle,
       free(con);
     }
     SMBlib_errno = -SMBlibE_CallFailed;
-    return NULL;
-
-  }
-
-  return(con);
-
-}
-
-/* SMB_Connect: Connect to the indicated server                       */
-/* If Con_Handle == NULL then create a handle and connect, otherwise  */
-/* use the handle passed                                              */
-
-char *SMB_Prots_Restrict[] = {"PC NETWORK PROGRAM 1.0",
-			      NULL};
-
-
-SMB_Handle_Type SMB_Connect(SMB_Handle_Type Con_Handle,
-			    SMB_Tree_Handle *tree,
-			    char *service, 
-			    char *username, 
-			    char *password)
-
-{ SMB_Handle_Type con;
-  char *host, *address;
-  char temp[80], called[80], calling[80];
-  int i;
-
-  /* Get a connection structure if one does not exist */
-
-  con = Con_Handle;
-
-  if (Con_Handle == NULL) {
-
-    if ((con = (struct SMB_Connect_Def *)malloc(sizeof(struct SMB_Connect_Def))) == NULL) {
-
-      SMBlib_errno = SMBlibE_NoSpace;
-      return NULL;
-    }
-
-  }
-
-  /* Init some things ... */
-
-  strcpy(con -> service, service);
-  strcpy(con -> username, username);
-  strcpy(con -> password, password);
-  strcpy(con -> sock_options, "");
-  strcpy(con -> address, "");
-  strcpy(con -> PDomain, SMBLIB_DEFAULT_DOMAIN);
-  strcpy(con -> OSName, SMBLIB_DEFAULT_OSNAME);
-  strcpy(con -> LMType, SMBLIB_DEFAULT_LMTYPE);
-  con -> first_tree = con -> last_tree = NULL;
-
-  SMB_Get_My_Name(con -> myname, sizeof(con -> myname));
-
-  con -> port = 0;                    /* No port selected */
-
-  /* Get some things we need for the SMB Header */
-
-  con -> pid = getpid();
-  con -> mid = con -> pid;      /* This will do for now ... */
-  con -> uid = 0;               /* Until we have done a logon, no uid */
-  con -> gid = getgid();
-
-  /* Now figure out the host portion of the service */
-
-  strcpy(temp, service);
-  host = strtok(temp, "/\\");     /* Separate host name portion */
-  strcpy(con -> desthost, host);
-
-  /* Now connect to the remote end, but first upper case the name of the
-     service we are going to call, sine some servers want it in uppercase */
-
-  for (i=0; i < strlen(host); i++)
-    called[i] = toupper(host[i]);
-		       
-  called[strlen(host)] = 0;    /* Make it a string */
-
-  for (i=0; i < strlen(con -> myname); i++)
-    calling[i] = toupper(con -> myname[i]);
-		       
-  calling[strlen(con -> myname)] = 0;    /* Make it a string */
-
-  if (strcmp(con -> address, "") == 0)
-    address = con -> desthost;
-  else
-    address = con -> address;
-
-  con -> Trans_Connect = RFCNB_Call(called,
-				    calling,
-				    address, /* Protocol specific */
-				    con -> port);
-
-  /* Did we get one? */
-
-  if (con -> Trans_Connect == NULL) {
-
-    if (Con_Handle == NULL) {
-      free(con);
-      Con_Handle = NULL;
-    }
-    SMBlib_errno = -SMBlibE_CallFailed;
-    return NULL;
-
-  }
-
-  /* Now, negotiate the protocol */
-
-  if (SMB_Negotiate(con, SMB_Prots_Restrict) < 0) {
-
-    /* Hmmm what should we do here ... We have a connection, but could not
-       negotiate ...                                                      */
-
-    return NULL;
-
-  }
-
-  /* Now connect to the service ... */
-
-  if ((*tree = SMB_TreeConnect(con, NULL, service, password, "A:")) == NULL) {
-
     return NULL;
 
   }
@@ -486,10 +316,6 @@ int SMB_Logon_Server(SMB_Handle_Type Con_Handle, char *UserName,
 
   if (RFCNB_Send(Con_Handle -> Trans_Connect, pkt, pkt_len) < 0){
 
-#ifdef DEBUG
-    fprintf(stderr, "Error sending SessSetupX request\n");
-#endif
-
     RFCNB_Free_Pkt(pkt);
     SMBlib_errno = SMBlibE_SendFailed;
     return(SMBlibE_BAD);
@@ -500,10 +326,6 @@ int SMB_Logon_Server(SMB_Handle_Type Con_Handle, char *UserName,
 
   if (RFCNB_Recv(Con_Handle -> Trans_Connect, pkt, pkt_len) < 0) {
 
-#ifdef DEBUG
-    fprintf(stderr, "Error receiving response to SessSetupAndX\n");
-#endif
-
     RFCNB_Free_Pkt(pkt);
     SMBlib_errno = SMBlibE_RecvFailed;
     return(SMBlibE_BAD);
@@ -513,12 +335,6 @@ int SMB_Logon_Server(SMB_Handle_Type Con_Handle, char *UserName,
   /* Check out the response type ... */
 
   if (CVAL(SMB_Hdr(pkt), SMB_hdr_rcls_offset) != SMBC_SUCCESS) {  /* Process error */
-
-#ifdef DEBUG
-    fprintf(stderr, "SMB_SessSetupAndX failed with errorclass = %i, Error Code = %i\n",
-	    CVAL(SMB_Hdr(pkt), SMB_hdr_rcls_offset),
-	    SVAL(SMB_Hdr(pkt), SMB_hdr_err_offset));
-#endif
 
     SMBlib_SMB_Error = IVAL(SMB_Hdr(pkt), SMB_hdr_rcls_offset);
     RFCNB_Free_Pkt(pkt);
@@ -535,11 +351,6 @@ int SMB_Logon_Server(SMB_Handle_Type Con_Handle, char *UserName,
        }
  /** @@@ mdz: } **/
 
-
-#ifdef DEBUG
-  fprintf(stderr, "SessSetupAndX response. Action = %i\n", 
-          SVAL(SMB_Hdr(pkt), SMB_ssetpr_act_offset));
-#endif
 
   /* Now pick up the UID for future reference ... */
 

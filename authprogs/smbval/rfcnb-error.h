@@ -46,30 +46,3 @@
 #define RFCNBE_CallRejUnSpec 14/* Call rejected, unspecified error      */
 #define RFCNBE_BadParam      15/* Bad parameters passed ...             */
 #define RFCNBE_Timeout       16/* IO Timed out                          */
-
-/* Text strings for the error responses                                 */
-
-static char *RFCNB_Error_Strings[] = {
-
-  "RFCNBE_OK: Routine completed successfully.",
-  "RFCNBE_NoSpace: No space available for a malloc call.",
-  "RFCNBE_BadName: NetBIOS name could not be translated to IP address.",
-  "RFCNBE_BadRead: Read system call returned an error. Check errno.",
-  "RFCNBE_BadWrite: Write system call returned an error. Check errno.",
-  "RFCNBE_ProtErr: A protocol error has occurred.",
-  "RFCNBE_ConGone: Connection dropped during a read or write system call.",
-  "RFCNBE_BadHandle: Bad connection handle passed.",
-  "RFCNBE_BadSocket: Problems creating socket.",
-  "RFCNBE_ConnectFailed: Connection failed. See errno.",
-  "RFCNBE_CallRejNLOCN: Call rejected. Not listening on called name.",
-  "RFCNBE_CallRejNLFCN: Call rejected. Not listening for called name.",
-  "RFCNBE_CallRejCNNP: Call rejected. Called name not present.",
-  "RFCNBE_CallRejInfRes: Call rejected. Name present, but insufficient resources.",
-  "RFCNBE_CallRejUnSpec: Call rejected. Unspecified error.",
-  "RFCNBE_BadParam: Bad parameters passed to a routine.",
-  "RFCNBE_Timeout: IO Operation timed out ..."
-
-};
-
-
-

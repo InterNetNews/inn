@@ -45,6 +45,4 @@ int RFCNB_Hangup(void *con_Handle);
 
 void *RFCNB_Listen();
 
-void RFCNB_Get_Error(char *buffer, int buf_len);
-
 struct RFCNB_Pkt *RFCNB_Alloc_Pkt(int n);

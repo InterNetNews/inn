@@ -68,13 +68,3 @@
 #define SSVALS(buf,pos,val) SVALS(buf,pos)=((int16)(val))
 #define SIVALS(buf,pos,val) IVALS(buf,pos)=((int32)(val))
 #endif
-
-
-/* now the reverse routines - these are used in nmb packets (mostly) */
-#define SREV(x) ((((x)&0xFF)<<8) | (((x)>>8)&0xFF))
-#define IREV(x) ((SREV(x)<<16) | (SREV((x)>>16)))
-
-#define RSVAL(buf,pos) SREV(SVAL(buf,pos))
-#define RIVAL(buf,pos) IREV(IVAL(buf,pos))
-#define RSSVAL(buf,pos,val) SSVAL(buf,pos,SREV(val))
-#define RSIVAL(buf,pos,val) SIVAL(buf,pos,IREV(val))

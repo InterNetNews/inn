@@ -25,15 +25,7 @@
 
 void RFCNB_CvtPad_Name(char *name1, char *name2);
 
-void RFCNB_AName_To_NBName(char *AName, char *NBName);
-
-void RFCNB_NBName_To_AName(char *NBName, char *AName);
-
-void RFCNB_Print_Hex(FILE *fd, struct RFCNB_Pkt *pkt, int Offset, int Len);
-
 struct RFCNB_Pkt *RFCNB_Alloc_Pkt(int n);
-
-void RFCNB_Print_Pkt(FILE *fd, char *dirn, struct RFCNB_Pkt *pkt, int len);
 
 int RFCNB_Name_To_IP(char *host, struct in_addr *Dest_IP);
 
