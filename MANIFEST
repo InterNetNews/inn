@@ -365,6 +365,7 @@ obsolete/README.obsolete    1 README file for obsolete programs
 obsolete/hosts.nntp.nolimit 1 Sample hosts.nntp(5) file
 obsolete/innlog.awk         1 Summarize syslog log files
 obsolete/innlog.pl          1 Perl version of the syslog summary.
+obsolete/innshellvars.csh.in 1 CSH Script to set config parameters
 obsolete/scanlogs-backend.pl 1 Summarize news log file
 obsolete/tally.unwanted     1 Summarize unwanted articles
 samples                     1 Prototype InterNetNews files (Directory)
