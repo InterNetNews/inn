@@ -548,10 +548,11 @@ Convert(Month, Day, Year, Hours, Minutes, Seconds, Meridian, dst)
        so this should not happen, but just ensure it */
     if (Year < 0)
 	Year = -Year;
-    if (Year < 100)
+    if (Year < 100) {
 	Year += 1900;
-    if (Year < EPOCH)
-	Year += 100;
+	if (Year < EPOCH)
+	    Year += 100;
+    }
     for (mp = DaysNormal, yp = LeapYears; yp < ENDOF(LeapYears); yp++)
 	if (Year == *yp) {
 	    mp = DaysLeap;
