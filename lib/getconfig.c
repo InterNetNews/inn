@@ -266,6 +266,7 @@ void SetDefaults()
     innconf->activedport = 1119;
     innconf->storemsgid = TRUE;
     innconf->nicenewnews = 0;
+    innconf->nicennrpd = 0;
     innconf->usecontrolchan = FALSE;
     innconf->mergetogroups = FALSE;
     innconf->noreader = FALSE;
@@ -945,6 +946,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_NICENEWNEWS, bit);
 		if (!bit) innconf->nicenewnews = atoi(p);
 		SET_CONFIG(CONF_VAR_NICENEWNEWS);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_NICENNRPD)) {
+		TEST_CONFIG(CONF_VAR_NICENNRPD, bit);
+		if (!bit) innconf->nicennrpd = atoi(p);
+		SET_CONFIG(CONF_VAR_NICENNRPD);
 	    } else 
 	    if (EQ(ConfigBuff,_CONF_USECONTROLCHAN)) {
 		TEST_CONFIG(CONF_VAR_USECONTROLCHAN, bit);
