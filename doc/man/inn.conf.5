@@ -174,7 +174,15 @@ file size will be three times.
 Whenever
 .I extendeddbz
 is changed, dbz files should be rebuilt with
-.IR makehistory (8).
+.IR makehistory (8)
+like this.
+.sp 1
+.nf
+.in +0.5i
+makehistory -r -s `cat history | wc -l` -f history
+.in -0.5i
+.fi
+.sp 1
 If 
 .I storageapi
 is ``false'', 
