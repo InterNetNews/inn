@@ -629,7 +629,8 @@ STATIC void GRPscandir(char *dir, GROUPENTRY *ge)
 		ARTnumbers[ARTsize].Tokenretrieved = FALSE;
 		ARTnumbers[ARTsize++].Index = &(*OVERindex)[i];
 	    }
-	}
+	} else
+	    close(fd);
 
     } else if (!innconf->storageapi) {
 	DISPOSE(path);
