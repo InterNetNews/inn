@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl5 -w
+#!_PATH_PERL -w
 # written April 1996, tale@uunet.uu.net (David C Lawrence)
 # Version 1.1
 

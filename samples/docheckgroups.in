@@ -1,9 +1,8 @@
-#! /bin/sh
+#!_PATH_SH
 ##  $Revision$
 ##  Script to execute checkgroups text; results to stdout.
+. _INNSHELLVARS_
 
-##  =()<. @<_PATH_SHELLVARS>@>()=
-. @CONFPATH@/innshellvars
 T=${TMPDIR}
 
 cat /dev/null >${T}/$$out

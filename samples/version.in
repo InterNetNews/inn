@@ -1,11 +1,11 @@
-#! /bin/sh
+#!_PATH_SH
 ##  $Revision$
 ##  Version control-message handler
+. _INNSHELLVARS_
 
 PROG=version
 ##  Some shells don't pass in $* unless we explicitly pass it in here.
-##  =()<. @<_PATH_PARSECTL>@ "$@">()=
-. /var/news/etc/parsecontrol "$@"
+. ${NEWSLIB}/parsecontrol "$@"
 
 VERSION="INN 1.8-current"
 

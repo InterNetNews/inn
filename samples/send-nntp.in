@@ -1,9 +1,7 @@
-#! /bin/sh
+#!_PATH_SH
 ##  $Revision$
 ##  SH script to send NNTP news out.
-
-##  =()<. @<_PATH_SHELLVARS>@>()=
-. @CONFPATH@/innshellvars
+. _INNSHELLVARS_
 
 PROGNAME=`basename $0`
 LOG=${MOST_LOGS}/${PROGNAME}.log

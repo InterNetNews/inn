@@ -11,7 +11,7 @@
 #               The contents should mirror innshellvars (the bourne-shell
 #               version). 
 
-set inn_newshome = /usr/news
+set inn_newshome = @prefix@
 set inn_spoolbase = @SPOOLDIR@
 set inn_most_logs = @LOGDIR@
 
@@ -98,8 +98,8 @@ set inn_mailcmd = "/usr/bin/Mail"
 ##  =()<set inn_newsmaster = @<NEWSMASTER>@>()=
 set inn_newsmaster = usenet
 
-##  =()<set inn_newsuser = @<NEWSUSER>@>()=
-set inn_newsuser = news
+
+set inn_newsuser = @NEWSUSER@
 
 ##  =()<set inn_sleeptime = @<INNWATCH_SLEEPTIME>@>()=
 set inn_sleeptime = 600
@@ -119,8 +119,8 @@ set inn_tcl_support = DONT
 ##  =()<if ( ! $?TMPDIR ) setenv TMPDIR @<_PATH_TMP>@>()=
 if ( ! $?TMPDIR ) setenv TMPDIR /var/tmp
 
-## =()<set inn_spooltemp = @<_PATH_SPOOLTEMP>@>()=
-set inn_spooltemp = /var/tmp
+
+set inn_spooltemp = @TMPDIR@
 
 setenv NEWSLBIN ${inn_newshome}/local
 

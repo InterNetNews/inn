@@ -1,4 +1,4 @@
-#! /usr/bin/perl -w
+#!_PATH_PERL -w
 # written April 1996, tale@isc.org (David C Lawrence)
 # Version 1.6
 #

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!_PATH_PERL
 # 
 # Author:       James Brister <brister@vix.com> -- berkeley-unix --
 # Start Date:   Fri, 25 Apr 1997 14:11:23 +0200
@@ -14,8 +14,7 @@ $0 =~ s!.*/!! ;
 require 5.001 ;
 require 'getopts.pl' ;
 
-# =()<require "@<_PATH_PERL_SHELLVARS>@" ;>()=
-require "@CONFPATH@/innshellvars.pl" ;
+require "_INNSHELLVARS_.pl" ;
 
 die "$0: No \$inn::sendmail  variable defined.\n" 
     if ! defined ($inn::sendmail);

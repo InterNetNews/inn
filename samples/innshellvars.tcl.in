@@ -96,8 +96,7 @@ set inn_mailcmd "/usr/bin/Mail"
 ##  =()<set inn_newsmaster "@<NEWSMASTER>@">()=
 set inn_newsmaster "usenet"
 
-##  =()<set inn_newsuser "@<NEWSUSER>@">()=
-set inn_newsuser "news"
+set inn_newsuser "@NEWSUSER@"
 
 ##  =()<scan "@<INNWATCH_SLEEPTIME>@" "%d" inn_sleeptime>()=
 scan "600" "%d" inn_sleeptime
@@ -115,13 +114,12 @@ set inn_perl_support [ expr { "DONT" == "DO" ? 1 : 0 } ]
 set inn_tcl_support [ expr { "DONT" == "DO" ? 1 : 0 } ]
 
 if {[info exists env(TMPDIR)] != 1} {
-    ##  =()<    set env(TMPDIR) "@<_PATH_TMP>@">()=
-    set env(TMPDIR) "/var/tmp"
+    set env(TMPDIR) "@TMPDIR@"
 }
 set inn_tmpdir $env(TMPDIR)
 
 #### =()<set inn_spooltemp "@<_PATH_SPOOLTEMP>@">()=
-set inn_spooltemp "/var/tmp"
+set inn_spooltemp "@TMPDIR@"
 
 ##  =()<scan "@<NEWSUMASK>@" "%o" inn_umask>()=
 scan "02" "%o" inn_umask

@@ -1,13 +1,11 @@
-#! /bin/sh
+#!_PATH_SH
 ##  $Revision$
 ##  Write a log file entry, by either mailing it or writing it safely.
 ##  Usage:
 ##	writelog name text... <input
 ##  where
 ##	name	is 'mail' to mail it, or filename to append to.
-
-##  =()<. @<_PATH_SHELLVARS>@>()=
-. /var/news/etc/innshellvars
+. _INNSHELLVARS_
 
 MAXTRY=60
 

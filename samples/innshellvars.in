@@ -1,4 +1,4 @@
-#! /bin/sh
+#!_PATH_SH
 ##  $Revision$
 ##  Set up any and all shell variables that an INN shell script
 ##  might need.  Also sets umask.
@@ -87,8 +87,9 @@ MAIL_BADCONTROLS=DONT
 MAILCMD="/usr/bin/Mail"
 ##  =()<NEWSMASTER=@<NEWSMASTER>@>()=
 NEWSMASTER=usenet
-##  =()<NEWSUSER=@<NEWSUSER>@>()=
-NEWSUSER=news
+
+NEWSUSER=@NEWSUSER@
+
 ##  =()<SLEEPTIME=@<INNWATCH_SLEEPTIME>@>()=
 SLEEPTIME=600
 ##  =()<WANT_PGPVERIFY=@<WANT_PGPVERIFY>@>()=
@@ -101,8 +102,8 @@ PERL_SUPPORT=DONT
 TCL_SUPPORT=DONT
 ##  =()<TMPDIR=${TMPDIR-@<_PATH_TMP>@}>()=
 TMPDIR=${TMPDIR-/var/tmp}
-#### =()<SPOOLTEMP=@<_PATH_SPOOLTEMP>@>()=
-SPOOLTEMP=/var/tmp
+
+SPOOLTEMP=@TMPDIR@
 
 NEWSLBIN=${NEWSHOME}/local
 export NEWSLBIN

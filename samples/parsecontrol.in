@@ -1,9 +1,9 @@
-#! /bin/sh
+#!_PATH_SH
 ##  $Revision$
 ##  Initial parsing of control messages.
 
-##  =()<. @<_PATH_SHELLVARS>@>()=
-. @CONFPATH@/innshellvars
+. _INNSHELLVARS_
+
 WRITELOG=${NEWSBIN}/writelog
 SM=${NEWSBIN}/sm
 

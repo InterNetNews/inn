@@ -1,4 +1,4 @@
-#!/usr/bin/perl --
+#!_PATH_PERL --
 ##  $Revision$
 ##  Sanity-check the configuration of an INN system
 ##  by Brendan Kehoe <brendan@cygnus.com> and Rich $alz.
@@ -7,21 +7,16 @@ $ST_MODE = 2;
 $ST_UID  = 4;
 $ST_GID  = 5;
 
-## =()<$newsuser = '@<NEWSUSER>@';>()=
-$newsuser = 'news';
-## =()<$newsgroup = '@<NEWSGROUP>@';>()=
-$newsgroup = 'news';
+$newsuser = '@NEWSUSER@';
+$newsgroup = '@NEWSGRP@';
 
 ##  We use simple names, mapping them to the real filenames only when
 ##  we actually need a filename.
 %paths = (
     'active',		'@prefix@/etc/active',
-## =()<    'archive',		'@<_PATH_ARCHIVEDIR>@',>()=
-    'archive',		'/var/news/spool/archive',
-## =()<    'badnews',		'@<_PATH_BADNEWS>@',>()=
-    'badnews',		'/var/news/spool/in.coming/bad',
-## =()<    'batchdir',		'@<_PATH_BATCHDIR>@',>()=
-    'batchdir',		'/var/news/spool/out.going',
+    'archive',		'@SPOOLDIR@/archive',
+    'badnews',		'@SPOOLDIR@/in.coming/bad',
+    'batchdir',		'@SPOOLDIR@/out.going',
     'control.ctl',	'@prefix@/etc/control.ctl',
     'ctlprogs',		'@prefix@/bin/control',
     'expire.ctl',	'@prefix@/etc/expire.ctl',
@@ -33,8 +28,7 @@ $newsgroup = 'news';
     'innddir',		'@prefix@/run',
     'inndstart',	'@prefix@/bin/inndstart',
     'moderators',	'@prefix@/etc/moderators',
-## =()<    'most_logs',	'@<_PATH_MOST_LOGS>@',>()=
-    'most_logs',	'/var/log/news',
+    'most_logs',	'@LOGDIR@',
     'newsbin',		'@prefix@/bin',
     'newsboot',		'@prefix@/bin/rc.news',
     'newsfeeds',	'@prefix@/etc/newsfeeds',
@@ -43,18 +37,14 @@ $newsgroup = 'news';
     'nnrp.access',	'@prefix@/etc/nnrp.access',
     'nnrpd',		'@prefix@/bin/nnrpd',
     'nntpsend.ctl',	'@prefix@/etc/nntpsend.ctl',
-## =()<    'oldlogs',		'@<_PATH_MOST_LOGS>@/OLD',>()=
-    'oldlogs',		'/var/log/news/OLD',
+    'oldlogs',		'@LOGDIR@/OLD',
     'parsectl',		'@prefix@/etc/parsecontrol',
     'passwd.nntp',	'@prefix@/etc/passwd.nntp',
     'rnews',		'@prefix@/bin/rnews',
     'rnewsprogs',	'@prefix@/bin/rnews.libexec',
-## =()<    'spooltemp',		'@<_PATH_SPOOLTEMP>@',>()=
-    'spooltemp',		'/var/tmp',
-## =()<    'spool',		'@<_PATH_SPOOL>@',>()=
-    'spool',		'/var/news/spool/articles',
-## =()<    'spoolnews',	'@<_PATH_SPOOLNEWS>@'>()=
-    'spoolnews',	'/var/news/spool/in.coming'
+    'spooltemp',	'@TMPPATH@',
+    'spool',		'@SPOOLDIR@/articles',
+    'spoolnews',	'@SPOOLDIR@/in.coming'
 );
 
 ##  The sub's that check the config files.

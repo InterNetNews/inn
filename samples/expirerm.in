@@ -1,9 +1,8 @@
-#! /bin/sh
+#!_PATH_SH
 ##  Remove articles listed by expire -z.
 ##  Remove all files specified in the input file.
 
-##  =()<. @<_PATH_SHELLVARS>@>()=
-. @CONFPATH@/innshellvars
+. _INNSHELLVARS_
 
 MAIL="${MAILCMD} -s 'Problem removing expired files' ${NEWSMASTER}"
 

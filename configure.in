@@ -112,6 +112,7 @@ AC_ENSURE_PATH_PROG(_PATH_SED,sed)
 AC_ENSURE_PATH_PROG(_PATH_DF,df)
 AC_ENSURE_PATH_PROG(_PATH_EGREP,egrep)
 AC_ENSURE_PATH_PROG(_PATH_SORT,sort)
+AC_ENSURE_PATH_PROG(_PATH_SH,sh)
 
 AC_PATH_PROG(ac_cv_subst_path_compress,compress,no-compress-found-during-configure)
 AC_PATH_PROG(ac_cv_subst_path_gzip,gzip,no-gzip-found-during-configure)
@@ -119,7 +120,6 @@ dnl Automatic check for Mail is frequently wrong.  Use innmail to have
 dnl a single interface.
 dnl AC_ENSURE_PATH_PROG(ac_cv_subst_path_mail,Mail)
 AC_PATH_PROG(ac_cv_subst_path_pgp,pgp,no-pgp-found-during-configure)
-AC_ENSURE_PATH_PROG(ac_cv_subst_path_sh,sh)
 dnl Even though it is common to have sendmail in /usr/lib, we
 dnl have to trust the admin.
 dnl PATH=$PATH:/usr/lib

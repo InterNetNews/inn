@@ -1,4 +1,4 @@
-#! /bin/sh
+#!_PATH_SH
 ##  $Revision$
 ##  Send news via NNTP by running several innxmit processes in the background.
 ##  Usage:
@@ -17,8 +17,7 @@
 ##	host fqdn	send to host and qualified domain (def: nntpsend.ctl)
 ##  If no "host fqdn" pairs appear on the command line, then ${CTLFILE}
 ##  file is read.
-##  =()<. @<_PATH_SHELLVARS>@>()=
-. @CONFPATH@/innshellvars
+. _INNSHELLVARS_
 
 PROGNAME=`basename $0`
 LOCK=${LOCKS}/LOCK.${PROGNAME}
