@@ -26,16 +26,18 @@ Xstop)
     fi
 
     # wait for innd to exit (up to 60 sec)
+    printf "Stopping innd: " 
     i=12
     while [ $i -gt 0 ];
     do
-	if [ -f ${SERVERPID} ]; then
-	    sleep 5
-	    let i=i-1
-	else
-	    i=0
-	fi
+	pid=`cat ${SERVERPID} 2>/dev/null`
+	[ "$pid" = "" ] && break
+	kill -0 $pid 2>/dev/null || break
+	sleep 5
+	printf "."
+	i=`expr $i - 1`
     done
+    printf "\n"
 
     # Turn off ovdb support procs, and close the DB environment
     if [ "$OVMETHOD" = "ovdb" -a -n "$DB_HOME" ]; then
