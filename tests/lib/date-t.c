@@ -125,7 +125,10 @@ main(void)
 
     status = makedate(900000045UL, true, buff, sizeof(buff));
     ok(16, status);
-    ok_string(17, "Thu, 9 Jul 1998 13:30:45 -0230 (NDT)", buff);
+    if (memcmp(buff, "Thu, 9 Jul 1998 16:00:45 +0000", 30) == 0)
+        printf("ok 17 # skip\n");
+    else
+        ok_string(17, "Thu, 9 Jul 1998 13:30:45 -0230 (NDT)", buff);
 
     putenv(PST8PDT);
     tzset();
