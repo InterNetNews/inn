@@ -257,7 +257,7 @@ STATIC BOOL GROUPexpand(int mode);
 STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type);
 STATIC void *ovopensearch(char *group, int low, int high, BOOL needov);
 STATIC void ovclosesearch(void *handle, BOOL freeblock);
-STATIC OVBLOCK	*Gib;
+STATIC char	*Gib;
 STATIC char	*Gdb;
 
 #ifdef HPUX
@@ -1674,7 +1674,7 @@ STATIC BOOL ovgroupmmap(GROUPENTRY *ge, GROUPINDEXBLOCK **gibp, int low, int hig
   if (innconf->ovmmapthreshold >= 0 && ((high - low) > innconf->ovmmapthreshold)) {
     i = 0;
     count = ((high - low + 1) / OVINDEXMAX) + 2;
-    Gib = NEW(OVBLOCK, count);
+    Gib = NEW(char, count * OV_BLOCKSIZE);
   } else {
     Gib = NULL;
   }
@@ -1705,9 +1705,9 @@ STATIC BOOL ovgroupmmap(GROUPENTRY *ge, GROUPINDEXBLOCK **gibp, int low, int hig
       continue;
     }
     if (Gib != NULL) {
-      memcpy(&Gib[i], ovblock, OV_BLOCKSIZE);
+      memcpy(&Gib[i * OV_BLOCKSIZE], ovblock, OV_BLOCKSIZE);
       munmap(gib->addr, gib->len);
-      gib->ovblock = ovblock = &Gib[i];
+      gib->ovblock = ovblock = (OVBLOCK *)&Gib[i * OV_BLOCKSIZE];
       gib->base = ovblock->ovindexhead.base;
       gib->baseoffset = ovblock->ovindexhead.baseoffset;
       i++;
