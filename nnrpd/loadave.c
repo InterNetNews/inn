@@ -21,7 +21,7 @@
 **  Get the current load average as an integer.
 */
 int
-GetLoadAverage()
+GetLoadAverage(void)
 {
     struct sysinfo si;
 
@@ -44,7 +44,7 @@ static struct nlist NameList[] = {
 **  Get the current load average as an integer.
 */
 int
-GetLoadAverage()
+GetLoadAverage(void)
 {
     int		fd;
     int		oerrno;

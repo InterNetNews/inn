@@ -97,8 +97,7 @@ HEADER *EndOfTable = ENDOF(Table);
 **  headers into a single line.
 */
 static char *
-Join(text)
-    register char	*text;
+Join(register char	*text)
 {
     register char	*p;
 
@@ -112,21 +111,23 @@ Join(text)
 **  Return a short name that won't overrun our bufer or syslog's buffer.
 **  q should either be p, or point into p where the "interesting" part is.
 */
-char *
-MaxLength(p, q)
-    char		*p;
-    char		*q;
+static char *
+MaxLength(char *p, char *q)
 {
-    static char		buff[80];
-    register int	i;
+    static char			buff[80];
+    register unsigned int	i;
 
     /* Already short enough? */
     i = strlen(p);
     if (i < sizeof buff - 1)
 	return Join(p);
 
+    /* Don't want casts to unsigned to go horribly wrong. */
+    if (q < p || q > p + i)
+	q = p;
+
     /* Simple case of just want the begining? */
-    if (q - p < sizeof buff - 4) {
+    if ((size_t)(q - p) < sizeof buff - 4) {
 	(void)strncpy(buff, p, sizeof buff - 4);
 	(void)strcpy(&buff[sizeof buff - 4], "...");
     }
@@ -149,8 +150,7 @@ MaxLength(p, q)
 **  Trim trailing spaces, return pointer to first non-space char.
 */
 static char *
-TrimSpaces(p)
-    register char	*p;
+TrimSpaces(register char *p)
 {
     register char	*start;
 
@@ -167,8 +167,7 @@ TrimSpaces(p)
 **  to the start of the next one or NULL.  Handles continuations.
 */
 static char *
-NextHeader(p)
-    register char	*p;
+NextHeader(register char *p)
 {
     for ( ; (p = strchr(p, '\n')) != NULL; p++) {
 	if (ISWHITE(p[1]))
@@ -185,8 +184,7 @@ NextHeader(p)
 **  On error, return NULL and fill in Error.
 */
 static char *
-StripOffHeaders(article)
-    char		*article;
+StripOffHeaders(char *article)
 {
     register char	*p;
     register char	*q;
@@ -244,8 +242,7 @@ StripOffHeaders(article)
 **  error message if not.
 */
 static const char *
-CheckControl(ctrl)
-    char	*ctrl;
+CheckControl(char *ctrl)
 {
     register char	*p;
     register char	*q;
@@ -287,8 +284,7 @@ CheckControl(ctrl)
 **  Check the Distribution header, and exit on error.
 */
 static const char *
-CheckDistribution(p)
-    register char	*p;
+CheckDistribution(register char *p)
 {
     static char	SEPS[] = " \t,";
     const char * const *dp;
@@ -593,9 +589,7 @@ CheckIncludedText(const char *p, int lines)
 **  Try to mail an article to the moderator of the group.
 */
 static const char *
-MailArticle(group, article)
-    char		*group;
-    char		*article;
+MailArticle(char *group, char *article)
 {
     static char		CANTSEND[] = "Can't send text to mailer";
     register FILE	*F;
@@ -645,7 +639,7 @@ MailArticle(group, article)
     }
     (void)fprintf(F, "\n");
     i = strlen(article);
-    if (fwrite(article, 1, i, F) != i)
+    if (fwrite(article, 1, i, F) != (size_t)i)
 	return "Can't send article";
     if (FLUSH_ERROR(F)) {
 	(void)pclose(F);
@@ -770,9 +764,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
 **  Send a quit message to the server, eat its reply.
 */
 static void
-SendQuit(FromServer, ToServer)
-    FILE	*FromServer;
-    FILE	*ToServer;
+SendQuit(FILE *FromServer, FILE *ToServer)
 {
     char	buff[NNTP_STRLEN];
 
@@ -788,11 +780,7 @@ SendQuit(FromServer, ToServer)
 **  Offer the article to the server, return its reply.
 */
 static int
-OfferArticle(buff, buffsize, FromServer, ToServer)
-    char		*buff;
-    int			buffsize;
-    FILE		*FromServer;
-    FILE		*ToServer;
+OfferArticle(char *buff, int buffsize, FILE *FromServer, FILE *ToServer)
 {
     static char		CANTSEND[] = "Can't send %s to server, %s";
 
@@ -810,10 +798,7 @@ OfferArticle(buff, buffsize, FromServer, ToServer)
 **  Spool article to temp file.
 */
 static const char *
-SpoolitTo(article, Error, SpoolDir)
-    char 		*article;
-    char		*Error;
-    char                *SpoolDir;
+SpoolitTo(char *article, char *err, char *SpoolDir)
 {
     static char		CANTSPOOL[NNTP_STRLEN+2];
     register HEADER	*hp;
@@ -823,7 +808,7 @@ SpoolitTo(article, Error, SpoolDir)
     char		path[BUFSIZ];
 
     /* Initialize the returned error message */
-    sprintf(CANTSPOOL, "%s and can't write text to local spool file", Error);
+    sprintf(CANTSPOOL, "%s and can't write text to local spool file", err);
 
     /* Try to write it to the spool dir. */
     TempName(SpoolDir, temp);
@@ -855,7 +840,7 @@ SpoolitTo(article, Error, SpoolDir)
 
     /* Write the article body */
     i = strlen(article);
-    if (fwrite(article, 1, i, F) != i) {
+    if (fwrite(article, 1, i, F) != (size_t)i) {
         fclose(F);
         return CANTSPOOL;
     }
@@ -878,11 +863,9 @@ SpoolitTo(article, Error, SpoolDir)
 **  Spool article to temp file.
 */
 static const char *
-Spoolit(article, Error)
-    char 		*article;
-    char		*Error;
+Spoolit(char *article, char *err)
 {
-    return SpoolitTo(article, Error, innconf->pathincoming);
+    return SpoolitTo(article, err, innconf->pathincoming);
 }
  
 static char *Towire(char *p) {
@@ -1000,7 +983,7 @@ ARTpost(article, idbuff)
 	return error;
     }
     if ((PERMaccessconf->localmaxartsize > 0) &&
-		(strlen(article) > PERMaccessconf->localmaxartsize)) {
+		(strlen(article) > (unsigned)PERMaccessconf->localmaxartsize)) {
 	    (void)sprintf(Error,
 		"Article is bigger then local limit of %ld bytes\n",
 		PERMaccessconf->localmaxartsize);

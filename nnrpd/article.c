@@ -61,7 +61,7 @@ static SENDDATA		SENDhead = {
 static struct iovec	iov[IOV_MAX];
 static int		queued_iov = 0;
 
-bool PushIOvHelper(struct iovec* vec, int* countp) {
+static bool PushIOvHelper(struct iovec* vec, int* countp) {
     int result;
 #ifdef HAVE_SSL
     result = tls_conn
@@ -74,7 +74,7 @@ bool PushIOvHelper(struct iovec* vec, int* countp) {
     return (result <= 0 ? FALSE : TRUE);
 }
 
-bool PushIOvRateLimited(void) {
+static bool PushIOvRateLimited(void) {
     struct timeval      start, end;
     struct iovec        newiov[IOV_MAX];
     int                 newiov_len;
@@ -89,7 +89,7 @@ bool PushIOvRateLimited(void) {
     while (queued_iov) {
 	bytesfound = newiov_len = 0;
 	for (i = 0; (i < queued_iov) && (bytesfound < MaxBytesPerSecond); i++) {
-	    if (iov[i].iov_len + bytesfound > MaxBytesPerSecond) {
+	    if ((signed)iov[i].iov_len + bytesfound > MaxBytesPerSecond) {
 		chunkbittenoff = MaxBytesPerSecond - bytesfound;
 		newiov[newiov_len].iov_base = iov[i].iov_base;
 		newiov[newiov_len++].iov_len = chunkbittenoff;
@@ -133,14 +133,14 @@ bool PushIOvRateLimited(void) {
     return TRUE;
 }
 
-bool PushIOv(void) {
+static bool PushIOv(void) {
     fflush(stdout);
     if (MaxBytesPerSecond != 0)
 	return PushIOvRateLimited();
     return PushIOvHelper(iov, &queued_iov);
 }
 
-bool SendIOv(char *p, int len) {
+static bool SendIOv(const char *p, int len) {
     char                *q;
 
     if (queued_iov) {
@@ -150,7 +150,7 @@ bool SendIOv(char *p, int len) {
 	    return TRUE;
 	}
     }
-    iov[queued_iov].iov_base = p;
+    iov[queued_iov].iov_base = (char*)p;
     iov[queued_iov++].iov_len = len;
     if (queued_iov == IOV_MAX)
         return PushIOv();
@@ -160,7 +160,7 @@ bool SendIOv(char *p, int len) {
 static char		*_IO_buffer_ = NULL;
 static int		highwater = 0;
 
-bool PushIOb(void) {
+static bool PushIOb(void) {
     fflush(stdout);
 #ifdef HAVE_SSL
     if (tls_conn) {
@@ -184,7 +184,7 @@ bool PushIOb(void) {
     return TRUE;
 }
 
-bool SendIOb(char *p, int len) {
+static bool SendIOb(const char *p, int len) {
     int tocopy;
     
     if (_IO_buffer_ == NULL)
@@ -391,7 +391,8 @@ static bool ARTopenbyid(char *msg_id, ARTNUM *ap)
 */
 static void ARTsendmmap(SENDTYPE what)
 {
-    char		*p, *q, *r, *s, *path, *xref, *virtualpath;
+    char		*p, *q, *r, *virtualpath;
+    const char		*s, *path, *xref;
     long		bytecount;
     char		lastchar;
 
@@ -426,13 +427,13 @@ static void ARTsendmmap(SENDTYPE what)
     }
 
     if (VirtualPathlen > 0 && (what != STbody)) {
-	if ((path = (char *)HeaderFindMem(ARThandle->data, ARThandle->len, "path", sizeof("path") - 1)) == NULL) {
+	if ((path = HeaderFindMem(ARThandle->data, ARThandle->len, "path", sizeof("path") - 1)) == NULL) {
 	    SendIOv(".\r\n", 3);
 	    ARTgetsize += 3;
 	    PushIOv();
 	    ARTget++;
 	    return;
-	} else if ((xref = (char *)HeaderFindMem(ARThandle->data, ARThandle->len, "xref", sizeof("xref") - 1)) == NULL) {
+	} else if ((xref = HeaderFindMem(ARThandle->data, ARThandle->len, "xref", sizeof("xref") - 1)) == NULL) {
 	    SendIOv(".\r\n", 3);
 	    ARTgetsize += 3;
 	    PushIOv();
@@ -514,7 +515,7 @@ static void ARTsendmmap(SENDTYPE what)
 **  Return the header from the specified file, or NULL if not found.
 **  We can estimate the Lines header, if that's what's wanted.
 */
-char *GetHeader(char *header, bool IsLines)
+char *GetHeader(const char *header, bool IsLines)
 {
     static char		buff[40];
     char		*p, *q, *r, *s, *t, *virtualpath;
@@ -729,7 +730,7 @@ void CMDfetch(int ac, char *av[])
 /*
 **  Go to the next or last (really previous) article in the group.
 */
-void CMDnextlast(int ac, char *av[])
+void CMDnextlast(int ac UNUSED, char *av[])
 {
     char *msgid;
     int	save, delta, errcode;

@@ -26,12 +26,12 @@
 #include "paths.h"
 #include "post.h"
 
+#include "innperl.h"
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
 #include "ppport.h"
 
-extern bool PerlFilterActive;
 extern HEADER	Table[], *EndOfTable;
 extern char LogName[];
 extern char PERMuser[];
@@ -42,7 +42,6 @@ extern bool HeadersModified;
 static int HeaderLen;
 
 extern bool PerlLoaded;
-void loadPerl(void);
 
 /* #define DEBUG_MODIFY only if you want to see verbose outout */
 #ifdef DEBUG_MODIFY
@@ -203,21 +202,13 @@ void loadPerl(void) {
     PerlLoaded = TRUE;
 }
 
-char *itoa(int n) {
-  char *s = "";
-  char *tmp;
-
-  do {
-    tmp = calloc(2, sizeof(char));
-    tmp[0] = n % 10 + '0';
-    tmp[1] = '\0';
-    s = strcat(tmp, s);
-  } while ((n /= 10) > 0);
-
+static char *itoa(int n) {
+  static char s[32];  /* definitely more than log10(maxint) */
+  snprintf(s, sizeof(s), "%d", n);
   return s;
 }
 
-char **perlAccess(char *ClientHost, char *ClientIP, char *ServerHost, char *user) {
+char **perlAccess(char *clientHost, char *clientIpString, char *serverHost, char *user) {
   dSP;
   HV              *attribs;
   SV              *sv;
@@ -231,9 +222,9 @@ char **perlAccess(char *ClientHost, char *ClientIP, char *ServerHost, char *user
   SAVETMPS;
   
   attribs = perl_get_hv("attributes", TRUE);
-  hv_store(attribs, "hostname", 8, newSVpv(ClientHost, 0), 0);
-  hv_store(attribs, "ipaddress", 9, newSVpv(ClientIP, 0), 0);
-  hv_store(attribs, "interface", 9, newSVpv(ServerHost, 0), 0);
+  hv_store(attribs, "hostname", 8, newSVpv(clientHost, 0), 0);
+  hv_store(attribs, "ipaddress", 9, newSVpv(clientIpString, 0), 0);
+  hv_store(attribs, "interface", 9, newSVpv(serverHost, 0), 0);
   hv_store(attribs, "username", 8, newSVpv(user, 0), 0);
 
   PUSHMARK(SP);
@@ -323,7 +314,7 @@ int perlAuthInit(void) {
     
 }
 
-int perlAuthenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *user, char *passwd, char *accesslist, char *errorstring) {
+int perlAuthenticate(char *clientHost, char *clientIpString, char *serverHost, char *user, char *passwd, char *accesslist, char *errorstring) {
     dSP;
     HV              *attribs;
     int             rc;
@@ -336,9 +327,9 @@ int perlAuthenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *u
     ENTER;
     SAVETMPS;
     attribs = perl_get_hv("attributes", TRUE);
-    hv_store(attribs, "hostname", 8, newSVpv(ClientHost, 0), 0);
-    hv_store(attribs, "ipaddress", 9, newSVpv(ClientIP, 0), 0);
-    hv_store(attribs, "interface", 9, newSVpv(ServerHost, 0), 0);
+    hv_store(attribs, "hostname", 8, newSVpv(clientHost, 0), 0);
+    hv_store(attribs, "ipaddress", 9, newSVpv(clientIpString, 0), 0);
+    hv_store(attribs, "interface", 9, newSVpv(serverHost, 0), 0);
     hv_store(attribs, "username", 8, newSVpv(user, 0), 0);
     hv_store(attribs, "password", 8, newSVpv(passwd, 0), 0);
     

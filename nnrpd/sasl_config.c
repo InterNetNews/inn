@@ -143,23 +143,4 @@ sasl_config_read()
     fclose(infile);
 }
 
-/*
- * Call proc (expected to be todo_append in reconstruct.c) with
- * information on each configured partition
- */
-void
-sasl_config_scanpartition(proc)
-void (*proc)();
-{
-    int opt;
-    char *s;
-
-    for (opt = 0; opt < nconfiglist; opt++) {
-	if (!strncmp(configlist[opt].key, "partition-", 10)) {
-	    s = COPY(configlist[opt].value);
-	    (*proc)(COPY(""), s, configlist[opt].key+10);
-	}
-    }
-}
-
 #endif /* HAVE_SSL */

@@ -18,6 +18,7 @@
 */
 
 #include "config.h"
+#include "nnrpd.h"
 
 #ifdef HAVE_SSL
 
@@ -81,16 +82,10 @@ static const char hexcodes[] = "0123456789ABCDEF";
 static int verify_depth;
 static int verify_error = X509_V_OK;
 static int do_dump = 0;
-static SSL_CTX *ctx = NULL;
+static SSL_CTX *CTX = NULL;
 SSL *tls_conn = NULL;
 
 #define CCERT_BUFSIZ 256
-static char peer_subject[CCERT_BUFSIZ];
-static char peer_issuer[CCERT_BUFSIZ];
-static char peer_CN[CCERT_BUFSIZ];
-static char issuer_CN[CCERT_BUFSIZ];
-static unsigned char md[EVP_MAX_MD_SIZE];
-static char fingerprint[EVP_MAX_MD_SIZE * 3];
 
 int     tls_serverengine = 0;
 int     tls_serveractive = 0;	/* available or not */
@@ -102,7 +97,7 @@ int     tls_clientactive = 0;	/* available or not */
 char   *tls_peer_CN = NULL;
 char   *tls_issuer_CN = NULL;
 
-char   *tls_protocol = NULL;
+const char   *tls_protocol = NULL;
 const char   *tls_cipher_name = NULL;
 int	tls_cipher_usebits = 0;
 int	tls_cipher_algbits = 0;
@@ -117,8 +112,8 @@ int tls_loglevel = 0;
 
 static void apps_ssl_info_callback(SSL * s, int where, int ret)
 {
-    char   *str;
-    int     w;
+    const char  *str;
+    int         w;
 
     if (tls_loglevel==0) return;
 
@@ -154,7 +149,7 @@ static void apps_ssl_info_callback(SSL * s, int where, int ret)
 
 /* taken from OpenSSL apps/s_cb.c */
 
-static RSA *tmp_rsa_cb(SSL * s, int export, int keylength)
+static RSA *tmp_rsa_cb(SSL * s UNUSED, int export UNUSED, int keylength)
 {
     static RSA *rsa_tmp = NULL;
 
@@ -257,7 +252,7 @@ static int tls_dump(const char *s, int len)
 	    if (((i * DUMP_WIDTH) + j) >= len) {
 		strcpy(ss, "   ");
 	    } else {
-		ch = ((unsigned char) *((char *) (s) + i * DUMP_WIDTH + j))
+		ch = ((unsigned char) *((const char *)(s) + i * DUMP_WIDTH + j))
 		    & 0xff;
 		sprintf(ss, "%02x%c", ch, j == 7 ? '|' : ' ');
 		ss += 3;
@@ -268,7 +263,8 @@ static int tls_dump(const char *s, int len)
 	for (j = 0; j < DUMP_WIDTH; j++) {
 	    if (((i * DUMP_WIDTH) + j) >= len)
 		break;
-	    ch = ((unsigned char) *((char *) (s) + i * DUMP_WIDTH + j)) & 0xff;
+	    ch = ((unsigned char) *((const char *)(s) + i * DUMP_WIDTH + j))
+		& 0xff;
 	    *ss+= (((ch >= ' ') && (ch <= '~')) ? ch : '.');
 	    if (j == 7) *ss+= ' ';
 	}
@@ -361,15 +357,15 @@ int tls_init_serverengine(int verifydepth,
     SSL_load_error_strings();
     SSLeay_add_ssl_algorithms();
 
-    ctx = SSL_CTX_new(SSLv23_server_method());
-    if (ctx == NULL) {
+    CTX = SSL_CTX_new(SSLv23_server_method());
+    if (CTX == NULL) {
       return (-1);
     };
 
     off |= SSL_OP_ALL;		/* Work around all known bugs */
-    SSL_CTX_set_options(ctx, off);
-    SSL_CTX_set_info_callback(ctx, apps_ssl_info_callback);
-    SSL_CTX_sess_set_cache_size(ctx, 128);
+    SSL_CTX_set_options(CTX, off);
+    SSL_CTX_set_info_callback(CTX, apps_ssl_info_callback);
+    SSL_CTX_sess_set_cache_size(CTX, 128);
 
     if (strlen(tls_CAfile) == 0)
       CAfile = NULL;
@@ -380,8 +376,8 @@ int tls_init_serverengine(int verifydepth,
     else
       CApath = tls_CApath;
 
-    if ((!SSL_CTX_load_verify_locations(ctx, CAfile, CApath)) ||
-	(!SSL_CTX_set_default_verify_paths(ctx))) {
+    if ((!SSL_CTX_load_verify_locations(CTX, CAfile, CApath)) ||
+	(!SSL_CTX_set_default_verify_paths(CTX))) {
       if (tls_loglevel >= 2)
 	Printf("TLS engine: cannot load CA data\n");
       return (-1);
@@ -396,12 +392,12 @@ int tls_init_serverengine(int verifydepth,
     else
       s_key_file = tls_key_file;
     
-    if (!set_cert_stuff(ctx, s_cert_file, s_key_file)) {
+    if (!set_cert_stuff(CTX, s_cert_file, s_key_file)) {
       if (tls_loglevel >= 2)
 	Printf("TLS engine: cannot load cert/key data\n");
       return (-1);
     }
-    SSL_CTX_set_tmp_rsa_callback(ctx, tmp_rsa_cb);
+    SSL_CTX_set_tmp_rsa_callback(CTX, tmp_rsa_cb);
 
     verify_depth = verifydepth;
     if (askcert!=0)
@@ -409,9 +405,9 @@ int tls_init_serverengine(int verifydepth,
     if (requirecert)
 	verify_flags |= SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT
 	    | SSL_VERIFY_CLIENT_ONCE;
-    SSL_CTX_set_verify(ctx, verify_flags, verify_callback);
+    SSL_CTX_set_verify(CTX, verify_flags, verify_callback);
 
-    SSL_CTX_set_client_CA_list(ctx, SSL_load_client_CA_file(CAfile));
+    SSL_CTX_set_client_CA_list(CTX, SSL_load_client_CA_file(CAfile));
 
     tls_serverengine = 1;
     return (0);
@@ -421,7 +417,7 @@ int tls_init_serverengine(int verifydepth,
 /* taken from OpenSSL apps/s_cb.c */
 
 static long bio_dump_cb(BIO * bio, int cmd, const char *argp, int argi,
-			long argl, long ret)
+			long argl UNUSED, long ret)
 {
     if (!do_dump)
 	return (ret);
@@ -466,7 +462,7 @@ int tls_start_servertls(int readfd, int writefd)
 
     if (tls_conn == NULL)
     {
-	tls_conn = (SSL *) SSL_new(ctx);
+	tls_conn = (SSL *) SSL_new(CTX);
     }
     if (tls_conn == NULL)
     {
@@ -509,7 +505,7 @@ int tls_start_servertls(int readfd, int writefd)
 	session = SSL_get_session(tls_conn);
 
 	if (session) {
-	  SSL_CTX_remove_session(ctx, session);
+	  SSL_CTX_remove_session(CTX, session);
 	}
 	if (tls_conn)
 	  SSL_free(tls_conn);

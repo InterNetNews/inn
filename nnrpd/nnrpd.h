@@ -15,6 +15,7 @@
 #include <sys/stat.h>
 
 #include "inn/qio.h"
+#include "innperl.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
@@ -52,14 +53,14 @@ typedef struct _ACCESSGROUP {
     char *key;
     char *read;
     char *post;
-    char *users; 
+    char *users;
     char *rejectwith;
     int allownewnews;
     int locpost;
     int allowapproved;
     int used;
     int localtime;
-    int strippath;               
+    int strippath;
     int nnrpdperlfilter;
     int nnrpdpythonfilter;
     char *fromhost;
@@ -181,34 +182,40 @@ EXTERN long	POSTreceived;
 EXTERN long	POSTrejected;
 
 EXTERN bool     BACKOFFenabled;
-EXTERN long     ClientIpAddr;                                 
+EXTERN long     ClientIpAddr;
 EXTERN char	*VirtualPath;
 EXTERN int	VirtualPathlen;
 EXTERN struct history *History;
 
 
 #if	NNRP_LOADLIMIT > 0
-extern int		GetLoadAverage();
+extern int		GetLoadAverage(void);
 #endif	/* NNRP_LOADLIMIT > 0 */
-extern const char	*ARTpost();
-extern void		ARTclose();
-extern bool		ARTreadschema();
-extern char		*Glom();
-extern int		Argify();
+extern const char	*ARTpost(char *article, char *idbuff);
+extern void		ARTclose(void);
+extern bool		ARTreadschema(void);
+extern char		*Glom(char **av);
+extern int		Argify(char *line, char ***argvp);
+extern void		InitBackoffConstants(void);
+extern char		*PostRecFilename(unsigned long ip, char *user);
+extern int		LockPostRec(char *path);
+extern int		LockPostRec(char *path);
+extern void		UnlockPostRec(char *path);
+extern int		RateLimit(long *sleeptime, char *path);
 extern void		ExitWithStats(int x, bool readconf);
-extern bool		GetGroupList();
-extern char		*GetHeader(char *header, bool IsLines);
-extern void		GRPreport();
-extern long		LOCALtoGMT();
-extern bool		NGgetlist();
-extern long		NNTPtoGMT();
-extern bool		PERMartok();
-extern bool		PERMmatch();
-extern bool		ParseDistlist();
-extern READTYPE		READline();
+extern char		*GetHeader(const char *header, bool IsLines);
+extern void		GRPreport(void);
+extern bool		NGgetlist(char ***argvp, char *list);
+extern bool		PERMartok(void);
+extern void		PERMgetaccess(char *nnrpaccess);
+extern void		PERMgetpermissions(void);
+extern void		PERMlogin(char *uname, char *pass, char *errorstr);
+extern bool		PERMmatch(char **Pats, char **list);
+extern bool		ParseDistlist(char ***argvp, char *list);
+extern READTYPE		READline(char *start, int size, int timeout);
 extern char		*OVERGetHeader(char *p, int field);
-extern void SetDefaultAccess(ACCESSGROUP*);
-extern void             Reply(const char *fmt, ...);
+extern void 		SetDefaultAccess(ACCESSGROUP*);
+extern void		Reply(const char *fmt, ...);
 
 #ifdef HAVE_SSL
 extern void             Printf(const char *fmt, ...);
@@ -216,12 +223,40 @@ extern void             Printf(const char *fmt, ...);
 #define Printf printf
 #endif
 
-char *HandleHeaders(char *article);
-char **perlAccess(char *ClientHost, char *ClientIP, char *ServerHost, char *user);
-int perlAuthenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *user, char *passwd, char *accesslist, char *errorstring);
-bool ARTinstorebytoken(TOKEN token);
+extern void		CMDauthinfo  (int ac, char** av);
+extern void		CMDdate      (int ac, char** av);
+extern void		CMDfetch     (int ac, char** av);
+extern void		CMDgroup     (int ac, char** av);
+extern void		CMDhelp      (int ac, char** av);
+extern void		CMDlist      (int ac, char** av);
+extern void		CMDmode      (int ac, char** av);
+extern void		CMDnewgroups (int ac, char** av);
+extern void		CMDnewnews   (int ac, char** av);
+extern void		CMDnextlast  (int ac, char** av);
+extern void		CMDpost      (int ac, char** av);
+extern void		CMDxgtitle   (int ac, char** av);
+extern void		CMDxover     (int ac, char** av);
+extern void		CMDpat       (int ac, char** av);
+extern void		CMDxpath     (int ac, char** av);
+extern void		CMD_unimp    (int ac, char** av);
+#ifdef HAVE_SSL
+extern void		CMDstarttls  (int ac, char** av);
+#endif
+
+
+
+extern char *HandleHeaders(char *article);
+extern bool ARTinstorebytoken(TOKEN token);
+
+extern int TrackClient(char *client, char* user);
+
+#ifdef  DO_PERL
+extern char **perlAccess(char *clientHost, char *clientIpString, char *serverHost, char *user);
+extern int perlAuthenticate(char *clientHost, char *clientIpString, char *serverHost, char *user, char *passwd, char *accesslist, char *errorstring);
+extern int perlAuthInit(void);
+#endif /* DO_PERL */
 
 #ifdef	DO_PYTHON
-int PY_authenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *Username, char *Password, char *accesslist);
-int PY_authorize(char *ClientHost, char *ClientIP, char *ServerHost, char *Username, char *NewsGroup, int PostFlag, char **reply_message);
+int PY_authenticate(char *clientHost, char *clientIpString, char *serverHost, char *Username, char *Password, char *accesslist);
+int PY_authorize(char *clientHost, char *clientIpString, char *ServerHost, char *Username, char *NewsGroup, int PostFlag, char **reply_message);
 #endif	/* DO_PYTHON */

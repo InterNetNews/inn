@@ -34,6 +34,7 @@
 # include <openssl/bio.h>
 # include <openssl/pem.h>
 # include "tls.h"
+# include "sasl_config.h"
 extern SSL *tls_conn;
 int nnrpd_starttls_done = 0;
 #endif 
@@ -92,37 +93,16 @@ static sig_atomic_t	ChangeTrace;
 bool	DaemonMode = FALSE;
 bool	ForeGroundMode = FALSE;
 #if HAVE_GETSPNAM
-static char	*ShadowGroup;
+static const char	*ShadowGroup;
 #endif
-static char 	*HostErrorStr;
+static const char 	*HostErrorStr;
 bool GetHostByAddr = TRUE;      /* formerly DO_NNRP_GETHOSTBYADDR */
 
 #ifdef DO_PERL
 bool   PerlLoaded = FALSE;
-#endif DO_PERL
-
-extern void	CMDauthinfo();
-extern void	CMDdate();
-extern void	CMDfetch();
-extern void	CMDgroup();
-static void	CMDhelp();
-extern void	CMDlist();
-extern void	CMDmode();
-extern void	CMDnewgroups();
-extern void	CMDnewnews();
-extern void	CMDnextlast();
-extern void	CMDpost();
-extern void	CMDxgtitle();
-extern void	CMDxover();
-extern void	CMDpat();
-extern void	CMDxpath();
-extern void	CMD_unimp();
-#ifdef HAVE_SSL
-extern void	CMDstarttls();
-#endif
+#endif /* DO_PERL */
 
 bool LLOGenable;
-extern int TrackClient();
 
 static char	CMDfetchhelp[] = "[MessageID|Number]";
 
@@ -250,7 +230,7 @@ ExitWithStats(int x, bool readconf)
 
     HISclose(History);
 
-    if (LocalLogFileName != NULL);
+    if (LocalLogFileName != NULL)
 	DISPOSE(LocalLogFileName);
     exit(x);
 }
@@ -260,8 +240,8 @@ ExitWithStats(int x, bool readconf)
 **  The "help" command.
 */
 /* ARGSUSED0 */
-static void
-CMDhelp(int ac, char *av[])
+void
+CMDhelp(int ac UNUSED, char *av[] UNUSED)
 {
     CMDENT	*cp;
     char	*p, *q;
@@ -313,7 +293,7 @@ CMDhelp(int ac, char *av[])
 /* ARGSUSED0 */
 void
 CMD_unimp(ac, av)
-    int		ac;
+    int		ac UNUSED;
     char	*av[];
 {
     if (caseEQ(av[0], "ihave"))
@@ -331,8 +311,7 @@ CMD_unimp(ac, av)
 **  Overwrite the original argv so that ps will show what's going on.
 */
 static void
-TITLEset(what)
-    char		*what;
+TITLEset(const char* what)
 {
 #if defined(HAVE_SETPROCTITLE)
     setproctitle("%s %s", ClientHost, what);
@@ -386,7 +365,7 @@ Address2Name(INADDR *ap, char *hostname, int i)
 
     /* Get the official hostname, store it away. */
     if ((hp = gethostbyaddr((char *)ap, sizeof *ap, AF_INET)) == NULL) {
-	HostErrorStr = (char *)hstrerror(h_errno);
+	HostErrorStr = hstrerror(h_errno);
 	return FALSE;
     }
     (void)strncpy(hostname, hp->h_name, i);
@@ -394,7 +373,7 @@ Address2Name(INADDR *ap, char *hostname, int i)
 
     /* Get addresses for this host. */
     if ((hp = gethostbyname(hostname)) == NULL) {
-	HostErrorStr = (char *)hstrerror(h_errno);
+	HostErrorStr = hstrerror(h_errno);
 	return FALSE;
     }
 
@@ -532,7 +511,7 @@ Sock2String( struct sockaddr *sa, char *string, int len, bool lookup )
 /*
 **  Determine access rights of the client.
 */
-static void StartConnection()
+static void StartConnection(void)
 {
     struct sockaddr_storage	ssc, sss;
     socklen_t		length;
@@ -541,7 +520,7 @@ static void StartConnection()
     int                 code;
     static ACCESSGROUP	*authconf;
 #endif
-    char		*default_host_error = "unknown error";
+    const char		*default_host_error = "unknown error";
 
     ClientIpAddr = 0L;
     ClientHost[0] = '\0';
@@ -730,11 +709,16 @@ Printf(const char *fmt, ...)
 #endif /* HAVE_SSL */
 
 
+#ifdef HAVE_SIGACTION
+#define NO_SIGACTION_UNUSED UNUSED
+#else
+#define NO_SIGACTION_UNUSED
+#endif
 /*
 **  Got a signal; toggle tracing.
 */
 static RETSIGTYPE
-ToggleTrace(int s)
+ToggleTrace(int s NO_SIGACTION_UNUSED)
 {
     ChangeTrace = TRUE;
 #ifndef HAVE_SIGACTION
@@ -746,7 +730,7 @@ ToggleTrace(int s)
 ** Got a SIGPIPE; exit cleanly
 */
 static RETSIGTYPE
-CatchPipe(int s)
+CatchPipe(int s UNUSED)
 {
     ExitWithStats(0, FALSE);
 }
@@ -755,7 +739,7 @@ CatchPipe(int s)
 **  Got a signal; wait for children.
 */
 static RETSIGTYPE
-WaitChild(int s)
+WaitChild(int s NO_SIGACTION_UNUSED)
 {
     int pid;
 
@@ -764,7 +748,7 @@ WaitChild(int s)
        if (pid <= 0)
        	    break;
     }
-#if !HAVE_SIGACTION
+#ifndef HAVE_SIGACTION
     xsignal(s, WaitChild);
 #endif
 }
@@ -816,7 +800,7 @@ static void SetupDaemon(void) {
 **  Print a usage message and exit.
 */
 static void
-Usage()
+Usage(void)
 {
     (void)fprintf(stderr, "Usage error.\n");
     exit(1);
@@ -1253,7 +1237,7 @@ main(int argc, char *argv[])
     }
 
     /* Main dispatch loop. */
-    for (timeout = INITIAL_TIMEOUT, av = NULL; ;
+    for (timeout = INITIAL_TIMEOUT, av = NULL, ac = 0; ;
 			timeout = clienttimeout) {
 	(void)fflush(stdout);
 	if (ChangeTrace) {

@@ -49,7 +49,7 @@ extern char accesslist[];
 ** Return NNTP reply code as returned by Python method or -1 if method
 ** is not defined.
 */
-int PY_authenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *Username, char *Password, char *accesslist) {
+int PY_authenticate(char *clientHost, char *clientIpString, char *serverHost, char *Username, char *Password, char *accesslist) {
     PyObject    *result, *item;
     char        *type;
     int         authnum;
@@ -73,15 +73,15 @@ int PY_authenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *Us
     PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
 
     /* Client hostname */
-    PYauthitem[authnum] = PyBuffer_FromMemory(ClientHost, strlen(ClientHost));
+    PYauthitem[authnum] = PyBuffer_FromMemory(clientHost, strlen(clientHost));
     PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
 
     /* Client IP number */
-    PYauthitem[authnum] = PyBuffer_FromMemory(ClientIP, strlen(ClientIP));
+    PYauthitem[authnum] = PyBuffer_FromMemory(clientIpString, strlen(clientIpString));
     PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
 
     /* Server interface the connection comes to */
-    PYauthitem[authnum] = PyBuffer_FromMemory(ServerHost, strlen(ServerHost));
+    PYauthitem[authnum] = PyBuffer_FromMemory(serverHost, strlen(serverHost));
     PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
 
     /* Username if known */
@@ -202,7 +202,7 @@ int PY_authenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *Us
 ** and a reply_message pointer initialized with reply message.
 ** Return negative value if authorize method is not defined.
 */
-int PY_authorize(char *ClientHost, char *ClientIP, char *ServerHost, char *Username, char *NewsGroup, int PostFlag, char **reply_message) {
+int PY_authorize(char *clientHost, char *clientIpString, char *serverHost, char *Username, char *NewsGroup, int PostFlag, char **reply_message) {
     PyObject	*result, *item;
     char	*string;
     int		authnum;
@@ -220,15 +220,15 @@ int PY_authorize(char *ClientHost, char *ClientIP, char *ServerHost, char *Usern
     PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
 
     /* Client hostname */
-    PYauthitem[authnum] = PyBuffer_FromMemory(ClientHost, strlen(ClientHost));
+    PYauthitem[authnum] = PyBuffer_FromMemory(clientHost, strlen(clientHost));
     PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
 
     /* Client IP number */
-    PYauthitem[authnum] = PyBuffer_FromMemory(ClientIP, strlen(ClientIP));
+    PYauthitem[authnum] = PyBuffer_FromMemory(clientIpString, strlen(clientIpString));
     PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
 
     /* Server interface the connection comes to */
-    PYauthitem[authnum] = PyBuffer_FromMemory(ServerHost, strlen(ServerHost));
+    PYauthitem[authnum] = PyBuffer_FromMemory(serverHost, strlen(serverHost));
     PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
 
     /* Username */

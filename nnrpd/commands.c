@@ -80,10 +80,8 @@ static LISTINFO		INFOmotd = {
 
 static char *PERMauthstring;
 
-int
-PERMgeneric(av, accesslist)
-    char	*av[];
-    char	*accesslist;
+static int
+PERMgeneric(char *av[], char *accesslist)
 {
     char path[BIG_BUFFER], *fields[6], *p;
     int i, pan[2], status;
@@ -367,8 +365,8 @@ CMDauthinfo(ac, av)
 /* ARGSUSED0 */
 void
 CMDdate(ac, av)
-    int		ac;
-    char	*av[];
+    int		ac UNUSED;
+    char	*av[] UNUSED;
 {
     TIMEINFO	t;
     struct tm	*gmt;
@@ -553,7 +551,7 @@ CMDlist(int ac, char *av[])
 /* ARGSUSED */
 void
 CMDmode(ac, av)
-    int		ac;
+    int		ac UNUSED;
     char	*av[];
 {
     if (caseEQ(av[1], "reader"))
@@ -712,7 +710,7 @@ void CMDnewgroups(int ac, char *av[])
 */
 /* ARGSUSED */
 void
-CMDpost(int ac, char *av[])
+CMDpost(int ac UNUSED, char *av[] UNUSED)
 {
     static char	*article;
     static int	size;
@@ -887,8 +885,8 @@ CMDpost(int ac, char *av[])
 /* ARGSUSED */
 void
 CMDxpath(ac, av)
-    int		ac;
-    char	*av[];
+    int		ac UNUSED;
+    char	*av[] UNUSED;
 {
     Reply("%d Syntax error or bad command\r\n", NNTP_BAD_COMMAND_VAL);
 }

@@ -65,7 +65,7 @@ static void method_parse(METHOD*, CONFFILE*, CONFTOKEN*, int);
 
 static void add_authgroup(AUTHGROUP*);
 static void add_accessgroup(ACCESSGROUP*);
-static void strip_accessgroups();
+static void strip_accessgroups(void);
 
 static METHOD *copy_method(METHOD*);
 static void free_method(METHOD*);
@@ -81,7 +81,7 @@ static char *ResolveUser(AUTHGROUP*);
 static char *AuthenticateUser(AUTHGROUP*, char*, char*, char*);
 
 static void GrowArray(void***, void*);
-static void PERMarraytoaccess(ACCESSGROUP *access, char *name, char **array, int array_len);
+static void PERMarraytoaccess(ACCESSGROUP *acc, const char *name, char **array, int array_len);
 
 /* global variables */
 static AUTHGROUP **auth_realms;
@@ -427,7 +427,7 @@ static ACCESSGROUP *copy_accessgroup(ACCESSGROUP *orig)
     return(ret);
 }
 
-void SetDefaultAuth(AUTHGROUP *curauth)
+static void SetDefaultAuth(AUTHGROUP *curauth)
 {
 #ifdef HAVE_SSL
         curauth->require_ssl = FALSE;
@@ -553,7 +553,7 @@ static void free_accessgroup(ACCESSGROUP *del)
     DISPOSE(del);
 }
 
-static void ReportError(CONFFILE *f, char *err)
+static void ReportError(CONFFILE *f, const char *err)
 {
     syslog(L_ERROR, "%s syntax error in %s(%d), %s", ClientHost,
       f->filename, f->lineno, err);
@@ -737,8 +737,8 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	SET_CONFIG(PERMlocaladdress);
 	break;
       default:
-        p = strcat("Unexpected token: ", tok->name);
-	ReportError(f, p);
+	snprintf(buff, sizeof(buff), "Unexpected token: %s", tok->name);
+	ReportError(f, buff);
 	break;
     }
 }
@@ -747,7 +747,7 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 {
     int oldtype, boolval;
     bool bit;
-    char buff[SMBUF], *oldname, *p;
+    char buff[SMBUF], *oldname;
 
     oldtype = tok->type;
     oldname = tok->name;
@@ -980,13 +980,13 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	SET_CONFIG(oldtype);
 	break;
       default:
-        p = strcat("Unexpected token: ", tok->name);
-	ReportError(f, p);
+	snprintf(buff, sizeof(buff), "Unexpected token: %s", tok->name);
+	ReportError(f, buff);
 	break;
     }
 }
 
-static void PERMarraytoaccess(ACCESSGROUP *access, char *name, char **array, int array_len) {
+static void PERMarraytoaccess(ACCESSGROUP *acc, const char *name, char **array, int array_len) {
     CONFTOKEN	*tok	    = NULL;
     CONFFILE    *file;
     char        *str;
@@ -999,15 +999,15 @@ static void PERMarraytoaccess(ACCESSGROUP *access, char *name, char **array, int
  
     memset(ConfigBit, '\0', ConfigBitsize);
 
-    SetDefaultAccess(access);
+    SetDefaultAccess(acc);
     str = COPY(name);
-    access->name = str;
+    acc->name = str;
 
     for (i = 0; i <= array_len; i++) {
       tok = CONFgettoken(PERMtoks, file);
 
       if (tok != NULL) {
-        accessdecl_parse(access, file, tok);
+        accessdecl_parse(acc, file, tok);
       }
     }
     DISPOSE(file);
@@ -1027,7 +1027,7 @@ static void PERMreadfile(char *filename)
     int		oldtype;
     char	*str	    = NULL;
     char        *path       = NULL;
-    char        *p;
+    char buff[SMBUF];
 
     if(filename != NULL) {
 	syslog(L_TRACE, "Reading access from %s", 
@@ -1253,8 +1253,8 @@ static void PERMreadfile(char *filename)
 		accessdecl_parse(curgroup->access, cf->f, tok);
 		break;
 	      default:
-                p = strcat("Unexpected token: ", tok->name);
-                ReportError(cf->f, p);
+		snprintf(buff, sizeof(buff), "Unexpected token: %s", tok->name);
+		ReportError(cf->f, buff);
 		break;
 	    }
 	} else if (inwhat == 1) {
@@ -1679,7 +1679,7 @@ static bool MatchHost(char *hostlist, char *host, char *ip)
 	if (!ret && *ip) {
 	    ret = wildmat(ip, pat);
 	    if (!ret && (p = strchr(pat, '/')) != (char *)NULL) {
-		int bits, c;
+		unsigned int bits, c;
 		struct in_addr ia, net, tmp;
 		unsigned int mask;
 
@@ -1745,7 +1745,7 @@ static void add_accessgroup(ACCESSGROUP *group)
 
 /* clean out access groups that don't apply to any of our auth groups. */
 
-static void strip_accessgroups()
+static void strip_accessgroups(void)
 {
     int i, j;
 

@@ -490,11 +490,7 @@ UnlockPostRec(path)
  * Get the stored postrecord for that IP 
  */
 static int
-GetPostRecord(path, lastpost, lastsleep, lastn)
-     char                         *path;
-     long                *lastpost;
-     long                *lastsleep;
-     long                *lastn;
+GetPostRecord(char *path, long *lastpost, long *lastsleep, long *lastn)
 {
      static char                   buff[SMBUF];
      FILE                         *fp;
@@ -539,11 +535,7 @@ GetPostRecord(path, lastpost, lastsleep, lastn)
  * Store the postrecord for that IP 
  */
 static int
-StorePostRecord(path, lastpost, lastsleep, lastn)
-     char                         *path;
-     time_t                       lastpost;
-     long                         lastsleep;
-     long                         lastn;
+StorePostRecord(char *path, time_t lastpost, long lastsleep, long lastn)
 {
      FILE                         *fp;
 
@@ -573,7 +565,7 @@ RateLimit(sleeptime,path)
      if (GetTimeInfo(&Now) < 0) 
        return 0;
      
-     prevpost = 0L; prevsleep = 0L; prevn = 0L;
+     prevpost = 0L; prevsleep = 0L; prevn = 0L; n = 0L;
      if (!GetPostRecord(path,&prevpost,&prevsleep,&prevn)) {
        syslog(L_ERROR, "%s can't get post record: %s",
               ClientHost, strerror(errno));
@@ -639,8 +631,8 @@ RateLimit(sleeptime,path)
 
 void
 CMDstarttls(ac, av)
-    int		ac;
-    char	*av[];
+    int		ac UNUSED;
+    char	*av[] UNUSED;
 {
   int result;
 
