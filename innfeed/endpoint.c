@@ -74,6 +74,10 @@ static void use_rcsid (const char *rId) {   /* Never called */
 #include "host.h"
 #include "msgs.h"
 
+static const char *const timer_name[] = {
+  "idle", "blstats", "stsfile", "newart", "readart", "prepart", "read",
+  "write", "cb"
+};
 
 #if defined (__bsdi__) && (defined (_ANSI_SOURCE) || defined (_POSIX_SOURCE))
   /* why do I have to do this???? */
@@ -626,11 +630,13 @@ void Run (void)
   fd_set rSet ;
   fd_set wSet ;
   fd_set eSet ;
+  unsigned long last_summary ;
 
   keepSelecting = 1 ;
   xsignal (SIGPIPE, pipeHandler) ;
 
-  TMRinit();
+  if (innconf->timer)
+    TMRinit(TMR_MAX);
   while (keepSelecting)
     {
       struct timeval timeout ;
@@ -673,7 +679,15 @@ void Run (void)
       TMRstop(TMR_IDLE);
 
       timePasses () ;
-      TMRmainloophook();
+      if (innconf->timer)
+        {
+	  unsigned long now = TMRnow () ;
+	  if (now - last_summary > (innconf->timer * 1000))
+	    {
+	      TMRsummary (timer_name) ;
+	      last_summary = now;
+	    }
+	}
       
       if (sval == 0 && twait == NULL)
         die ("No fd's ready and no timeouts") ;

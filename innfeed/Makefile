@@ -8,7 +8,7 @@ ALL		= innfeed procbatch startinnfeed imapfeed
 
 SOURCES		= article.c buffer.c config_l.c config_y.c \
 		  endpoint.c host.c innlistener.c main.c misc.c \
-		  startinnfeed.c tape.c timer.c version.c
+		  startinnfeed.c tape.c version.c
 
 INCLUDES	= article.h buffer.h configfile.h config_y.h connection.h \
 		  endpoint.h host.h innfeed.h innlistener.h misc.h msgs.h \
@@ -17,7 +17,7 @@ INCLUDES	= article.h buffer.h configfile.h config_y.h connection.h \
 # The objects linked into innfeed.  All SOURCES except startinnfeed.
 OBJECTS		= article.o buffer.o config_l.o config_y.o \
 		  endpoint.o host.o innlistener.o main.o misc.o tape.o \
-		  timer.o version.o
+		  version.o
 
 INSTALLED	= $(D)$(PATHBIN)/innfeed \
 		  $(D)$(PATHBIN)/procbatch \
@@ -145,6 +145,4 @@ startinnfeed.o: startinnfeed.c ../include/config.h \
 tape.o: tape.c innfeed.h ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h article.h misc.h \
  configfile.h endpoint.h msgs.h tape.h
-timer.o: timer.c ../include/clibrary.h ../include/config.h \
- ../include/inn/defines.h innfeed.h
 version.o: version.c

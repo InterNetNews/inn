@@ -33,6 +33,8 @@
 #if ! defined ( innfeed_h__ )
 #define innfeed_h__
 
+#include "inn/timer.h"
+
 /**********************************************************************/
 /*                     Application specific defines                   */
 /**********************************************************************/
@@ -263,8 +265,9 @@ extern void syslog (int, const char *,...) __attribute__ ((__format__ (printf, 2
 
 /* some timer constants */
 
-typedef enum { TMR_IDLE, TMR_BACKLOGSTATS, TMR_STATUSFILE, TMR_NEWARTICLE,
-  TMR_READART, TMR_PREPART, TMR_READ, TMR_WRITE, TMR_CALLBACK, TMR_MAX
+typedef enum { TMR_IDLE = TMR_APPLICATION, TMR_BACKLOGSTATS,
+  TMR_STATUSFILE, TMR_NEWARTICLE, TMR_READART, TMR_PREPART, TMR_READ,
+  TMR_WRITE, TMR_CALLBACK, TMR_MAX
 } TMRTYPE;
 
 #endif /* innfeed_h__ */
