@@ -275,12 +275,10 @@ STATIC BOOL CNFSflushhead(CYCBUFF *cycbuff) {
       }
     } else {
       memcpy(cycbuff->bitfield, &rpx, sizeof(CYCBUFFEXTERN));
-#ifdef MMAP_NEEDS_MSYNC
-# ifdef HAVE_MSYNC_3_ARG
+#ifdef HAVE_MSYNC_3_ARG
       msync(cycbuff->bitfield, cycbuff->minartoffset, MS_ASYNC);
-# else
+#else
       msync(cycbuff->bitfield, cycbuff->minartoffset);
-# endif
 #endif
     }
     cycbuff->needflush = FALSE;
