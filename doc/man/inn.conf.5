@@ -122,6 +122,83 @@ If MIME headers are being added, this parameter specifies the value of
 the Content-Transfer-Encoding header.
 The default value is ``7bit.''
 .PP
+The following parameters are used only by 
+.I nnrpd
+to control high-volume posters via an exponential backoff algorithm.
+These parameters are read at 
+.I nnrpd
+run time.
+.PP
+Exponential posting backoff works as follows. News clients are 
+indexed by IP number (or username, see 
+.I backoff_auth 
+below). Each time that a specific IP number posts a message, the time of
+posting is stored (along with the previous sleep time, see below). 
+After a configurable number of posts in a configurable period of time,
+.I nnrpd 
+will activate posting backoff, and begin to sleep for increasing
+periods of time before actually posting anything. Posts will still get
+through, but at an increasingly reduced rate.
+.PP
+The new sleep time is computed based on the difference in time between
+the last posting and the current posting, assuming that backoff has
+been activated.
+.PP
+If this difference is less than 
+.I backoff_postfast
+, the new sleep time will be 1 + (previous sleep time * 
+.I backoff_k
+). 
+.PP
+If this difference is less than 
+.I backoff_postslow,
+but greater than 
+.I backoff_postfast,
+then the new sleep time will equal the previous sleep time.
+.PP
+If this difference is greater than 
+.I backoff_postslow
+then the new sleep time is zero and the number of postings for this IP
+number is reset to zero.
+.PP
+Here are the parameters that control exponential posting
+backoff:
+.TP
+.I backoff_k
+An integer value representing the amount to multiply the previous
+sleep time by. The default is 1. A value of 2 works to double the
+sleep time for each excessive post. 
+.TP
+.I backoff_postfast
+Postings from the same IP which arrive in less than this amount of
+time (in seconds) will trigger increasing sleeptime in the backoff
+algorithm. The default is 0. 
+.TP
+.I backoff_postslow
+Postings from the same IP which arrive in greater than this amount of
+time (in seconds) will reset the backoff algorithm. The default is 1.
+Another way to look at this constant is to compute 86400/
+.I backoff_postslow
+which will give you the maximum number of articles per day that you will allow
+users to post.
+.TP
+.I backoff_trigger
+This many postings are allowed before the backoff algorithm is
+triggered. The default is 10000. 
+.TP
+.I backoff_db
+Pathname to a directory (must be writable by news) that is to contain
+the backoff database. There is no default for this parameter, you must
+provide an existing and writable pathname value or users will not be
+able to post.
+.TP 
+.I backoff_auth
+This is a boolean value. If on, posting backoffs are indexed on a per
+user basis instead of a per IP basis. You must be using authentication
+in 
+.I nnrpd
+for the on value of this constant to have any meaning.
+.PP
 The following parameters are used only by
 .I innd.
 .TP

@@ -439,12 +439,9 @@ READline(start, size, timeout)
  * is computed based on these values.
  *
  * To compute the new sleep time, the previous sleep time is, for most
- * cases multiplied by a factor (backoff_k). backoff_k is computed based on the
- * difference between this time and the last posting time in seconds.
+ * cases multiplied by a factor (backoff_k). 
  *
- * If this difference is less than post_fast then backoff_k is K_INC. 
- *
- * If the difference is greater than post_slow then backoff_k is 0
+ * See inn.conf(5) for how this code works
  *
  *********************************************************************/
 

@@ -49,6 +49,11 @@ can accept multimedia postings that follow the MIME standard as long as
 such postings are also acceptible as SMTP messages.
 See the discussion of the MIME headers in
 .IR inn.conf (5).
+.PP
+.I Nnrpd
+can also prevent high-volume posters from abusing your resources. See the
+discussion of exponential backoff in 
+.IR inn.conf (5).
 .SH OPTIONS
 .TP
 .B \-r
@@ -201,7 +206,8 @@ and time on the server in the form YYYYMMDDhhmmss.
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 Overview support added by Rob Robertston <rob@violet.berkeley.edu> and
-Rich in January, 1993.
+Rich in January, 1993. Exponential backoff (for posting) added by
+Dave Hayes in Febuary 1998.
 .de R$
 This is revision \\$3, dated \\$4.
 ..
