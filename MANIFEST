@@ -224,7 +224,6 @@ doc/man/perl-nocem.8                  Manpage for perl-nocem
 doc/man/pgpverify.1                   Manpage for pgpverify
 doc/man/prunehistory.8                Manpage for prunehistory
 doc/man/pullnews.8                    Manpage for pullnews
-doc/man/putman.sh                     Install a manpage
 doc/man/qio.3                         Manpage for fast I/O file routines
 doc/man/radius.8                      Manpage for radius authenticator
 doc/man/radius.conf.5                 Manpage for radius.conf config file

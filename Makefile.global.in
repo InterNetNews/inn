@@ -285,12 +285,7 @@ CP_XPRI		= $(INSTALL) $(OWNER) -m 0550 -B .OLD
 CP_XPUB		= $(INSTALL) $(OWNER) -m 0555 -B .OLD
 
 CP_DATA		= $(INSTALL) $(OWNER) -m $(FILEMODE) -B .OLD
-
-##  How to install man pages.  Pick one of SOURCE, BSD4.4, NROFF-PACK, or
-##  NROFF-PACK-SCO.  Used by doc/man/putman.sh; read that script for more
-##  information on what it does.
-
-MANPAGESTYLE	= SOURCE
+CP_MAN		= $(INSTALL) $(OWNER) -m 0444 -B .OLD
 
 ##  Some additional definitions needed by some versions of make, to ensure a
 ##  consistant set of variables are available.
