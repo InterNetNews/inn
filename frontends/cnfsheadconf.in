@@ -304,14 +304,14 @@ sub print_cycbuff_head {
         chop $in;
         if ($in ne "") {
             $in = bint2hex($in);
-            $lena = sprintf("%0.17s\0", $in);
+            $lena = sprintf("%017.17s\0", $in);
         }
 	print "Free [$free ($freea)] => ";
 	$in = <>;
 	chop $in;
 	if ($in ne "") {
             $in = bint2hex($in);
-	    $freea = sprintf("%0.17s\0", $in);
+	    $freea = sprintf("%017.17s\0", $in);
 	}
 	print "Meta [$metaname] => ";
 	$in = <>;
