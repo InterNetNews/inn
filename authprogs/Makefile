@@ -51,6 +51,7 @@ install: $(INSTALLED)
 $(D)$(PATHAUTHPASSWD)/ckpasswd:		ckpasswd	; $(LI_XPUB) $? $@
 $(D)$(PATHAUTHPASSWD)/pwcheck:		pwcheck		; $(LI_XPUB) $? $@
 $(D)$(PATHAUTHPASSWD)/radius:		radius		; $(LI_XPUB) $? $@
+$(D)$(PATHAUTHPASSWD)/auth_smb:		auth_smb	; $(LI_XPUB) $? $@
 $(D)$(PATHAUTHRESOLV)/domain:		domain		; $(LI_XPUB) $? $@
 $(D)$(PATHAUTHRESOLV)/ident:		ident		; $(LI_XPUB) $? $@
 
