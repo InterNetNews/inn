@@ -623,6 +623,7 @@ void
 PYsetup(void)
 {
     const ARTHEADER *hp;
+    size_t hdrcount;
 
     setenv("PYTHONPATH", innconf->pathfilter, 1);
     Py_Initialize();
@@ -653,10 +654,13 @@ PYsetup(void)
 	syslog(L_NOTICE, "defined python methods");
     }
 
-    /* Grab space for these so we aren't forever recreating them. */
+    /* Grab space for these so we aren't forever recreating them.  We also
+       put the body and the line count into PYheaditem, so it needs to be
+       two elements longer than the total number of headers. */
     PYheaders = PyDict_New();
-    PYheaditem = xmalloc((ARRAY_END(ARTheaders) - ARTheaders) * sizeof(PyObject *));
-    PYheadkey = xmalloc((ARRAY_END(ARTheaders) - ARTheaders) * sizeof(PyObject *));
+    hdrcount = ARRAY_END(ARTheaders) - ARTheaders;
+    PYheaditem = xmalloc((hdrcount + 2) * sizeof(PyObject *));
+    PYheadkey = xmalloc(hdrcount * sizeof(PyObject *));
 
     /* Preallocate keys for the article dictionary */
     for (hp = ARTheaders; hp < ARRAY_END(ARTheaders); hp++)
