@@ -135,9 +135,10 @@ KEYgenerate(
     if (l > innconf->keylimit - (MAX_WORD_LENGTH+5))	/* mostly arbitrary cutoff: */
         l = innconf->keylimit - (MAX_WORD_LENGTH+5);	/* room for minimal word vec */
     hc->Value = xmalloc(innconf->keylimit+1);
-    if ((v != NULL) && (*v != '\0'))
-        strlcpy(hc->Value, v, l + 1);
-    else
+    if ((v != NULL) && (*v != '\0')) {
+        memcpy(hc->Value, v, l);
+        hc->Value[l] = '\0';
+    } else
         *hc->Value = '\0';
     l = hc->Length = strlen(hc->Value);
 

@@ -485,9 +485,11 @@ static void ovreadhead(OVBUFF *ovbuff) {
   char		buff[OVBUFFLASIZ+1];
 
   memcpy(&rpx, ovbuff->bitfield, sizeof(OVBUFFHEAD));
-  strlcpy(buff, rpx.useda, sizeof(buff));
+  strncpy(buff, rpx.useda, OVBUFFLASIZ);
+  buff[OVBUFFLASIZ] = '\0';
   ovbuff->usedblk = (unsigned int)hex2offt((char *)buff);
-  strlcpy(buff, rpx.freea, sizeof(buff));
+  strncpy(buff, rpx.freea, OVBUFFLASIZ);
+  buff[OVBUFFLASIZ] = '\0';
   ovbuff->freeblk = (unsigned int)hex2offt((char *)buff);
   return;
 }
@@ -556,7 +558,8 @@ static bool ovbuffinit_disks(void) {
 		   LocalLogName, rpx->path, ovbuff->path);
 	  ovbuff->needflush = true;
 	}
-	strlcpy(buf, rpx->indexa, OVBUFFLASIZ + 1);
+	strncpy(buf, rpx->indexa, OVBUFFLASIZ);
+        buf[OVBUFFLASIZ] = '\0';
 	i = hex2offt(buf);
 	if (i != ovbuff->index) {
 	    syslog(L_ERROR, "%s: Mismatch: index '%d' for buffindexed %s",
@@ -564,7 +567,8 @@ static bool ovbuffinit_disks(void) {
 	    ovlock(ovbuff, INN_LOCK_UNLOCK);
 	    return false;
 	}
-	strlcpy(buf, rpx->lena, OVBUFFLASIZ + 1);
+	strncpy(buf, rpx->lena, OVBUFFLASIZ);
+        buf[OVBUFFLASIZ] = '\0';
 	tmpo = hex2offt(buf);
 	if (tmpo != ovbuff->len) {
 	    syslog(L_ERROR, "%s: Mismatch: read 0x%s length for buffindexed %s",
@@ -572,11 +576,14 @@ static bool ovbuffinit_disks(void) {
 	    ovlock(ovbuff, INN_LOCK_UNLOCK);
 	    return false;
 	}
-	strlcpy(buf, rpx->totala, OVBUFFLASIZ + 1);
+	strncpy(buf, rpx->totala, OVBUFFLASIZ);
+        buf[OVBUFFLASIZ] = '\0';
 	ovbuff->totalblk = hex2offt(buf);
-	strlcpy(buf, rpx->useda, OVBUFFLASIZ + 1);
+	strncpy(buf, rpx->useda, OVBUFFLASIZ);
+        buf[OVBUFFLASIZ] = '\0';
 	ovbuff->usedblk = hex2offt(buf);
-	strlcpy(buf, rpx->freea, OVBUFFLASIZ + 1);
+	strncpy(buf, rpx->freea, OVBUFFLASIZ);
+        buf[OVBUFFLASIZ] = '\0';
 	ovbuff->freeblk = hex2offt(buf);
 	ovflushhead(ovbuff);
 	Needunlink = false;

@@ -645,7 +645,8 @@ OVERGetHeader(const char *p, int field)
         buff = xrealloc(buff, buffsize + 1);
     }
 
-    strlcpy(buff, p, i + 1);
+    strncpy(buff, p, i);
+    buff[i] = '\0';
     return buff;
 }
 

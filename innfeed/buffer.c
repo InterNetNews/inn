@@ -202,7 +202,8 @@ void printBufferInfo (Buffer buffer, FILE *fp, unsigned int indentAmt)
     }
 
   i = MIN(sizeof (bufferStart) - 1,buffer->dataSize) ;
-  strlcpy (bufferStart,buffer->mem,i + 1) ;
+  memcpy (bufferStart,buffer->mem,i) ;
+  bufferStart[i] = '\0';
   
   fprintf (fp,"%s    refcount : %d\n",indent,buffer->refCount) ;
   fprintf (fp,"%s    data-size : %ld\n",indent,(long) buffer->dataSize) ;

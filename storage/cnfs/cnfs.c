@@ -299,11 +299,14 @@ static void CNFSReadFreeAndCycle(CYCBUFF *cycbuff) {
 
     memcpy(&rpx, cycbuff->bitfield, sizeof(CYCBUFFEXTERN));
     /* Sanity checks are not needed since CNFSinit_disks() has already done. */
-    strlcpy(buf, rpx.freea, CNFSLASIZ + 1);
+    strncpy(buf, rpx.freea, CNFSLASIZ);
+    buf[CNFSLASIZ] = '\0';
     cycbuff->free = CNFShex2offt(buf);
-    strlcpy(buf, rpx.updateda, CNFSLASIZ + 1);
+    strncpy(buf, rpx.updateda, CNFSLASIZ);
+    buf[CNFSLASIZ] = '\0';
     cycbuff->updated = CNFShex2offt(buf);
-    strlcpy(buf, rpx.cyclenuma, CNFSLASIZ + 1);
+    strncpy(buf, rpx.cyclenuma, CNFSLASIZ);
+    buf[CNFSLASIZ] = '\0';
     cycbuff->cyclenum = CNFShex2offt(buf);
     return;
 }
@@ -582,18 +585,22 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
 	    syslog(L_ERROR, "%s: Path mismatch: read %s for cycbuff %s",
 		   LocalLogName, rpx->path, cycbuff->path);
 	} 
-	strlcpy(buf, rpx->lena, CNFSLASIZ + 1);
+	strncpy(buf, rpx->lena, CNFSLASIZ);
+        buf[CNFSLASIZ] = '\0';
 	tmpo = CNFShex2offt(buf);
 	if (tmpo != cycbuff->len) {
 	    syslog(L_ERROR, "%s: Mismatch: read 0x%s length for cycbuff %s",
 		   LocalLogName, CNFSofft2hex(tmpo, false), cycbuff->path);
 	    return false;
 	}
-	strlcpy(buf, rpx->freea, CNFSLASIZ + 1);
+	strncpy(buf, rpx->freea, CNFSLASIZ);
+        buf[CNFSLASIZ] = '\0';
 	cycbuff->free = CNFShex2offt(buf);
-	strlcpy(buf, rpx->updateda, CNFSLASIZ + 1);
+	strncpy(buf, rpx->updateda, CNFSLASIZ);
+        buf[CNFSLASIZ] = '\0';
 	cycbuff->updated = CNFShex2offt(buf);
-	strlcpy(buf, rpx->cyclenuma, CNFSLASIZ + 1);
+	strncpy(buf, rpx->cyclenuma, CNFSLASIZ);
+        buf[CNFSLASIZ] = '\0';
 	cycbuff->cyclenum = CNFShex2offt(buf);
 	strncpy(cycbuff->metaname, rpx->metaname, CNFSLASIZ);
 	strncpy(buf, rpx->orderinmeta, CNFSLASIZ);
