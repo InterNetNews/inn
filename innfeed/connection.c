@@ -1959,7 +1959,11 @@ static void commandWriteDone (EndPoint e, IoStatus i, Buffer *b, void *d)
           delConnection (cxn) ;
         }
       else
-        cxnSleep (cxn) ;
+        {
+          deferAllArticles (cxn) ;
+          cxnIdle (cxn) ;
+          cxnSleep (cxn) ;
+        }
     }
   else
     {
