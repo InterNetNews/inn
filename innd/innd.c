@@ -333,7 +333,7 @@ main(int ac, char *av[])
     ShouldFork = TRUE;
     ShouldRenumber = FALSE;
     ShouldSyntaxCheck = FALSE;
-    fd[0] = -1;
+    fd[0] = fd[1] = -1;
 
     /* Set some options from inn.conf that can be overridden with
        command-line options if they exist, so read inn.conf first. */
