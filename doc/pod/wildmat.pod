@@ -1,0 +1,160 @@
+=head1 NAME
+
+wildmat, wildmat_poison - Perform wildmat matching
+
+=head1 SYNOPSIS
+
+B<#include E<lt>libinn.hE<gt>>
+
+B<bool wildmat(const char *>I<text>B<, const char *>I<pattern>B<);>
+
+B<enum wildmat wildmat_poison(const char *>I<text>B<,
+const char *>I<pattern>B<);>
+
+=head1 DESCRIPTION
+
+B<wildmat> compares I<text> against the wildmat expression I<pattern>,
+returning true if and only if the expression matches the text.  C<@> has
+no special meaning in I<pattern> when passed to B<wildmat>.  Both I<text>
+and I<pattern> are assumed to be in the UTF-8 character encoding, although
+malformed UTF-8 sequences are treated in a way that attempts to be mostly
+compatible with single-octet character sets like ISO 8859-1.  (In other
+words, if you try to match ISO 8859-1 text with these routines everything
+should work as expected unless the ISO 8859-1 text contains valid UTF-8
+sequences, which thankfully is somewhat rare.)
+
+B<wildmat_poison> works similarly, except that C<@> as the first character
+of one of the patterns in the expression (see below) "poisons" the match
+if it matches.  B<wildmat_poison> returns B<WILDMAT_MATCH> if the
+expression matches the text, B<WILDMAT_FAIL> if it doesn't, and
+B<WILDMAT_POISON> if the expression doesn't match because a poisoned
+pattern matched the text.  These enumeration constants are defined in the
+B<libinn.h> header.
+
+=head1 WILDMAT EXPRESSIONS
+
+A wildmat expression follows rules similar to those of shell filename
+wildcards but with some additions and changes.  A wildmat I<expression> is
+composed of one or more wildmat I<patterns> separated by commas.  Each
+character in the wildmat pattern matches a literal occurance of that same
+character in the text, with the exception of the following metacharacters:
+
+=over 8
+
+=item B<?>
+
+Matches any single character (including a single UTF-8 multibyte
+character, so C<?> can match more than one byte).
+
+=item B<*>
+
+Matches any sequence of zero or more characters.
+
+=item B<\>
+
+Turns off any special meaning of the following character; the following
+character will match itself in the text.  C<\> will escape any character,
+including another backslash or a comma that otherwise would separate a
+pattern from the next pattern in an expression.  Note that C<\> is not
+special inside a character range (no metacharacters are).
+
+=item B<[...]>
+
+A character set, which matches any single character that falls within that
+set.  The presence of a character between the brackets adds that character
+to the set; for example, C<[amv]> specifies the set containing the
+characters C<a>, C<m>, and C<v>.  A range of characters may be specified
+using C<->; for example, C<[0-5abc]> is equivalent to C<[012345abc]>.  The
+order of characters is as defined in the UTF-8 character set, and if the
+start character of such a range falls after the ending character of the
+range in that ranking the results of attempting a match with that pattern
+are undefined.
+
+In order to include a literal C<]> character in the set, it must be the
+first character of the set (possibly following C<^>); for example, C<[]a]>
+matches either C<]> or C<a>.  To include a literal C<-> character in the
+set, it must be either the first or the last character of the set.
+Backslashes have no special meaning inside a character set, nor do any
+other of the wildmat metacharacters.
+
+=item B<[^...]>
+
+A negated character set.  Follows the same rules as a character set above,
+but matches any character B<not> contained in the set.  So, for example,
+C<[^]-]> matches any character except C<]> and C<->.
+
+=back
+
+In addition, C<!> (and possibly C<@>) have special meaning as the first
+character of a pattern; see below.
+
+When matching a wildmat expression against some text, each comma-separated
+pattern is matched in order from left to right.  In order to match, the
+pattern must match the whole text; in regular expression terminology, it's
+implicitly anchored at both the beginning and the end.  For example, the
+pattern C<a> matches only the text C<a>; it doesn't match C<ab> or C<ba>
+or even C<aa>.  If none of the patterns match, the whole expression
+doesn't match.  Otherwise, whether the expression matches is determined
+entirely by the rightmost matching pattern; the expression matches the
+text if and only if the rightmost matching pattern is not negated.
+
+For example, consider the text C<news.misc>.  The expression C<*> matches
+this text, of course, as does C<comp.*,news.*> (because the second pattern
+matches).  C<news.*,!news.misc> does not match this text because both
+patterns match, meaning that the rightmost takes precedence, and the
+rightmost matching pattern is negated.  C<news.*,!news.misc,*.misc> does
+match this text, since the rightmost matching pattern is not negated.
+
+Note that the expression C<!news.misc> can't match anything.  Either the
+pattern doesn't match, in which case no patterns match and the expression
+doesn't match, or the pattern does match, in which case because it's
+negated the expression doesn't match.  C<*,!news.misc>, on the other hand,
+is a useful pattern that matches anything except C<news.misc>.
+
+C<!> has significance only as the first character of a pattern; anywhere
+else in the pattern, it matches a literal C<!> in the text like any other
+non-metacharacter.
+
+If the B<wildmat_poison> interface is used, then C<@> behaves the same as
+C<!> except that if an expression fails to match because the rightmost
+matching pattern began with C<@>, B<WILDMAT_POISON> is returned instead of
+B<WILDMAT_FAIL>.
+
+=head1 BUGS
+
+Both B<wildmat> and B<wildmat_poison> internally convert the passed
+arguments to const unsigned char pointers.  The only reason why they take
+regular char pointers instead of unsigned char is for the convenience of
+INN and other callers that may not be using unsigned char everywhere they
+should.  In a future revision, the public interface should be changed to
+just take unsigned char pointers.
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> in 1986, and posted to Usenet
+several times since then, most notably in comp.sources.misc in
+March, 1991.
+
+Lars Mathiesen <thorinn@diku.dk> enhanced the multi-asterisk failure
+mode in early 1991.
+
+Rich and Lars increased the efficiency of star patterns and reposted it to
+comp.sources.misc in April, 1991.
+
+Robert Elz <kre@munnari.oz.au> added minus sign and close bracket handling
+in June, 1991.
+
+Russ Allbery <rra@stanford.edu> added support for comma-separated patterns
+and the C<!> and C<@> metacharacters to the core wildmat routines in July,
+2000.  He also added support for UTF-8 characters, changed the default
+behavior to assume that both the text and the pattern are in UTF-8, and
+largely rewrote this documentation to expand and clarify the description
+of how a wildmat expression matches.
+
+$Id$
+
+=head1 SEE ALSO
+
+grep(1), fnmatch(3), regex(3), regexp(3).
+
+=cut
