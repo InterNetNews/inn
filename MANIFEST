@@ -367,7 +367,6 @@ include/inn/wire.h                    Header file for wire-format functions
 include/inndcomm.h                    innd control channel commands
 include/innperl.h                     Header file for embedded Perl
 include/libinn.h                      INN library declarations
-include/macros.h                      Useful syntactic sugar
 include/nntp.h                        NNTP command and reply codes
 include/ov.h                          Header file for overview
 include/paths.h.in                    Paths to common programs and files
