@@ -59,6 +59,8 @@ ME\
 	::
 
 ## Create the links for cross posted articles
+## If you use this you MUST add -L option to FLAGS in rc.news.
+## see innd(8)
 #crosspost:*:Tc,Ap,WR:/usr/news/bin/crosspost
 
 # Feed all moderated source postings to an archiver
