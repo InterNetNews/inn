@@ -17,10 +17,6 @@
 #include "innd.h"
 #include "ov.h"
 
-/* Some systems, such as FreeBSD 3.4 RELEASE, require sys/time.h, included
-   by innd.h, to be included before sys/resource.h. */
-#include <sys/resource.h>
-
 
 #if defined(HAVE_SETBUFFER)
 # define SETBUFFER(F, buff, size)	setbuffer((F), (buff), (size))
@@ -385,7 +381,7 @@ ReopenLog(F)
 /*
 **  Function called when memory allocation fails.
 */
-static int
+static void
 AllocationFailure(const char *what, size_t size, const char *file, int line)
 {
     syslog(L_FATAL, "%s cant %s %lu bytes at line %d of %s: %m", LogName,
@@ -502,30 +498,6 @@ CleanupAndExit(x, why)
 	    LogName, KillerSignal);
     exit(x);
 }
-
-
-#if defined(HAVE_RLIMIT) && defined(RLIMIT_NOFILE)
-/*
-**  Set the limit on the number of open files we can have.  I don't
-**  like having to do this.
-*/
-STATIC void
-SetDescriptorLimit(i)
-    int			i;
-{
-    struct rlimit	rl;
-
-    if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
-	syslog(L_ERROR, "%s cant getrlimit(NOFILE) %m", LogName);
-	return;
-    }
-    rl.rlim_cur = i;
-    if (setrlimit(RLIMIT_NOFILE, &rl) < 0) {
-	syslog(L_ERROR, "%s cant setrlimit(NOFILE) %d %m", LogName, i);
-	return;
-    }
-}
-#endif /* HAVE_RLIMIT && RLIMIT_NOFILE */
 
 
 /*
@@ -838,18 +810,18 @@ int main(int ac, char *av[])
     }
 
     /* Set number of open channels. */
-#if defined(HAVE_RLIMIT) && defined(RLIMIT_NOFILE)
     if (AmRoot && innconf->rlimitnofile >= 0)
-	SetDescriptorLimit(innconf->rlimitnofile);
-#endif /* HAVE_RLIMIT && RLIMIT_NOFILE */
+        setfdlimit(innconf->rlimitnofile);
+
     /* Get number of open channels. */
-    if ((i = getfdcount()) < 0) {
-	syslog(L_FATAL, "%s cant getfdcount %m", LogName);
+    i = getfdlimit();
+    if (i < 0) {
+	syslog(L_FATAL, "%s cant get file descriptor limit: %m", LogName);
 	exit(1);
     }
     syslog(L_NOTICE, "%s descriptors %d", LogName, i);
     if (MaxOutgoing == 0) {
-	/* getfdcount() - (stdio + dbz + cc + lc + rc + art + Overfdcount + fudge) */
+	/* getfdlimit() - (stdio + dbz + cc + lc + rc + art + Overfdcount + fudge) */
 	MaxOutgoing = i - (  3   +  3  +  2 +  1 +  1 +  1  + Overfdcount +  2  );
 	syslog(L_NOTICE, "%s outgoing %d", LogName, MaxOutgoing);
     }
