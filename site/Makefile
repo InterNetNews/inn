@@ -54,10 +54,7 @@ PATH_NEWSGROUPS		= ${PATHDB}/newsgroups
 
 ##  Order:  innd, control, expire, inews, sending, misc
 MOST	= checkgroups default ihave newgroup \
-	rmgroup sendme sendsys senduuname version parsecontrol \
-	docheckgroups \
-	checkgroups.pl ihave.pl newgroup.pl rmgroup.pl \
-	sendme.pl sendsys.pl senduuname.pl version.pl
+	rmgroup sendme sendsys senduuname version parsecontrol
 
 ##  Scripts from above, plus site-specific config files.
 REST		= \
@@ -77,11 +74,7 @@ ALL		= $(MOST) $(REST)
 MOST_INSTALLED	= $D$(CTLBIN)/checkgroups \
 	$D$(CTLBIN)/default $D$(CTLBIN)/ihave $D$(CTLBIN)/newgroup \
 	$D$(CTLBIN)/rmgroup $D$(CTLBIN)/sendme $D$(CTLBIN)/sendsys \
-	$D$(CTLBIN)/senduuname $D$(CTLBIN)/version $D$(PATH_PARSECTL) \
-	$D$(PATHLIB)/docheckgroups \
-	$D$(CTLBIN)/checkgroups.pl $D$(CTLBIN)/ihave.pl \
-	$D$(CTLBIN)/newgroup.pl $D$(CTLBIN)/rmgroup.pl $D$(CTLBIN)/sendme.pl \
-	$D$(CTLBIN)/sendsys.pl $D$(CTLBIN)/senduuname.pl $D$(CTLBIN)/version.pl
+	$D$(CTLBIN)/senduuname $D$(CTLBIN)/version $D$(PATH_PARSECTL)
 
 REST_INSTALLED	= \
 	$D$(PATH_NEWSFEEDS) $D$(PATH_INNDHOSTS) \
@@ -178,26 +171,17 @@ $D$(PATH_RADIUS_CONF):	radius.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_NNRPDTRACK):	nnrpd.track	; $(COPY_RPRI) $? $@
 $D$(PATH_SCHEMA):	overview.fmt	; $(COPY_RPUB) $? $@
 $D$(CTLBIN)/checkgroups: checkgroups	; $(COPY_XPRI) $? $@
-$D$(CTLBIN)/checkgroups.pl: checkgroups.pl	; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/default:	default		; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/ihave:	ihave		; $(COPY_XPRI) $? $@
-$D$(CTLBIN)/ihave.pl:	ihave.pl		; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/newgroup:	newgroup	; $(COPY_XPRI) $? $@
-$D$(CTLBIN)/newgroup.pl:	newgroup.pl	; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/rmgroup:	rmgroup		; $(COPY_XPRI) $? $@
-$D$(CTLBIN)/rmgroup.pl:	rmgroup.pl		; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/sendme:	sendme		; $(COPY_XPRI) $? $@
-$D$(CTLBIN)/sendme.pl:	sendme.pl		; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/sendsys:	sendsys		; $(COPY_XPRI) $? $@
-$D$(CTLBIN)/sendsys.pl:	sendsys.pl		; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/senduuname:	senduuname	; $(COPY_XPRI) $? $@
-$D$(CTLBIN)/senduuname.pl:	senduuname.pl	; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/version:	version		; $(COPY_XPRI) $? $@
-$D$(CTLBIN)/version.pl:	version.pl		; $(COPY_XPRI) $? $@
 $D$(PATH_CONTROLCTL):	control.ctl	; $(COPY_RPRI) $? $@
 $D$(PATH_CTLWATCH):	innwatch.ctl	; $(COPY_RPRI) $? $@
 $D$(PATH_PARSECTL):	parsecontrol	; $(COPY_XPRI) $? $@
-$D$(PATHLIB)/docheckgroups: docheckgroups ; $(COPY_XPRI) $? $@
 $D$(PATH_EXPIRECTL):	expire.ctl	; $(COPY_RPRI) $? $@
 $D$(PATH_CONFIG):	inn.conf	; $(COPY_RPUB) $? $@
 $D$(PATH_MODERATORS):	moderators	; $(COPY_RPUB) $? $@
@@ -242,10 +226,8 @@ COPY	= $(SHELL) ./getsafe.sh
 actsync.cfg:	../samples/actsync.cfg		; $(COPY) $? $@
 actsync.ign:	../samples/actsync.ign		; $(COPY) $? $@
 checkgroups:	../samples/checkgroups		; $(COPY) $? $@
-checkgroups.pl:	../samples/checkgroups.pl	; $(COPY) $? $@
 control.ctl:	../samples/control.ctl		; $(COPY) $? $@
 default:	../samples/default		; $(COPY) $? $@
-docheckgroups:	../samples/docheckgroups	; $(COPY) $? $@
 expire.ctl:	../samples/expire.ctl		; $(COPY) $? $@
 filter.tcl:	../samples/filter.tcl		; $(COPY) $? $@
 nnrpd_auth.pl:  ../samples/nnrpd_auth.pl	; $(COPY) $? $@
@@ -256,7 +238,6 @@ filter_innd.py:	../samples/filter_innd.py	; $(COPY) $? $@
 INN.py:		../samples/INN.py		; $(COPY) $? $@
 incoming.conf:	../samples/incoming.conf	; $(COPY) $? $@
 ihave:		../samples/ihave		; $(COPY) $? $@
-ihave.pl:	../samples/ihave.pl		; $(COPY) $? $@
 inn.conf:	../samples/inn.conf		; $(COPY) $? $@
 innreport.conf:	../samples/innreport.conf	; $(COPY) $? $@
 storage.conf:	../samples/storage.conf		; $(COPY) $? $@
@@ -269,7 +250,6 @@ moderators:	../samples/moderators		; $(COPY) $? $@
 distrib.pats:	../samples/distrib.pats		; $(COPY) $? $@
 motd.news:	../samples/motd.news		; $(COPY) $? $@
 newgroup:	../samples/newgroup		; $(COPY) $? $@
-newgroup.pl:	../samples/newgroup.pl		; $(COPY) $? $@
 news2mail.cf:	../samples/news2mail.cf		; $(COPY) $? $@
 newsfeeds:	../samples/newsfeeds		; $(COPY) $? $@
 nnrpd.track:	../samples/nnrpd.track		; $(COPY) $? $@
@@ -280,18 +260,13 @@ passwd.nntp:	../samples/passwd.nntp		; $(COPY) $? $@
 readers.conf:	../samples/readers.conf		; $(COPY) $? $@
 radius.conf:	../samples/radius.conf		; $(COPY) $? $@
 rmgroup:	../samples/rmgroup		; $(COPY) $? $@
-rmgroup.pl:	../samples/rmgroup.pl		; $(COPY) $? $@
 sendme:		../samples/sendme		; $(COPY) $? $@
-sendme.pl:	../samples/sendme.pl		; $(COPY) $? $@
 sendsys:	../samples/sendsys		; $(COPY) $? $@
-sendsys.pl:	../samples/sendsys.pl		; $(COPY) $? $@
 senduuname:	../samples/senduuname		; $(COPY) $? $@
-senduuname.pl:	../samples/senduuname.pl	; $(COPY) $? $@
 startup.tcl:	../samples/startup.tcl		; $(COPY) $? $@
 startup_innd.pl: ../samples/startup_innd.pl	; $(COPY) $? $@
 subscriptions:	../samples/subscriptions	; $(COPY) $? $@
 version:	../samples/version		; $(COPY) $? $@
-version.pl:	../samples/version.pl		; $(COPY) $? $@
 sasl.conf:	../samples/sasl.conf		; $(COPY) $? $@
 active.minimal:	../samples/active.minimal	; $(COPY) $? $@
 newsgroups.minimal: ../samples/newsgroups.minimal ; $(COPY) $? $@
