@@ -206,6 +206,17 @@ esac
 
 case "$host" in
 
+dnl When building with largefile support on Linux, we need to compile with
+dnl _GNU_SOURCE to get the right definitions of pread and pwrite.  (Well,
+dnl _XOPEN_SOURCE would also work, but then stuff that we use disappears.)
+*linux*)
+    if test x"$inn_enable_largefiles" = xyes ; then
+        AC_DEFINE([_GNU_SOURCE], 1,
+            [Define if compiling with large file support on Linux to get the
+             correct prototypes for pread and pwrite.])
+    fi
+    ;;
+
 dnl HP-UX's native compiler needs a special flag to turn on ANSI, and needs
 dnl -g on link as well as compile for debugging to work.
 *hpux*)
