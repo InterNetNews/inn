@@ -18,8 +18,11 @@ README.perl_hook            1 Notes on Christophe Wolfhugel's perl hook.
 README.tcl_hook             1 Bob Halley's TCL hook notes.
 aclocal.m4                  1 M4 macro for libtool
 authprogs                   1 The authorization programs (Directory)
+authprogs/Makefile          1 Makefile for authprograms
 authprogs/README.auth_pass  1 The authprogs README
 authprogs/auth_pass.c       1 A sample prog for use with authinfo generic.
+authprogs/ckpasswd.c        1 Prog for checking password
+authprogs/ident.c           1 Prog for checking ident
 backends                    1 Outgoing feed programs (Directory)
 backends/Makefile           1 Makefile for outgoing feed programs
 backends/actmerge.sh.in     1 Merge two active files to stdout.
@@ -355,6 +358,7 @@ nnrpd/newnews.c             1 The "newnews" command
 nnrpd/nnrpd.c               1 Main and authentication routines
 nnrpd/nnrpd.h               1 Header file for nnrpd
 nnrpd/perl.c                1 Perl routines for nnrpd.
+nnrpd/perm.c                1 Reading readers.conf
 nnrpd/post.c                1 Article processing and posting
 nnrpd/post.h                1 Article data types
 nnrpd/protocol.h            1 Protocol header for actived

@@ -1,6 +1,9 @@
 
 Here are the changes for the latest version of INN.
 
+Current:
+	- New readers.conf file (replaces nnrp.access)
+
 Version 2.2:
 
 	- New storage.conf file (replaces storage.ctl).
