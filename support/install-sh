@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# configure needs to find this script here
+# we exit with error in case it is executed by
+# accident
+
+exit 1
