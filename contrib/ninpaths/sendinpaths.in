@@ -7,7 +7,7 @@
 # Assuming the ninpaths dump files are in ${MOST_LOGS}/path/inpaths.%d
 
 cd ${MOST_LOGS}/path
-ME=`innconfval pathhost`
+ME=`${NEWSBIN}/innconfval pathhost`
 report=30
 keep=14
 TMP=tmp$$
