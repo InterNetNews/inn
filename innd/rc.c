@@ -899,7 +899,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     rp = *list = NEW(REMOTEHOST, 1);
 
 #if	!defined(HAVE_UNIX_DOMAIN_SOCKETS)
-    inet_aton(LOOPBACK_HOST, &addr);
+    addr.s_addr = INADDR_LOOPBACK;
     make_sin( (struct sockaddr_in *)&rp->Address, &addr );
     rp->Name = COPY("localhost");
     rp->Label = COPY("localhost");
