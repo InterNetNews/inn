@@ -15,7 +15,7 @@
 #include <syslog.h>  
 
 void Usage(void) {
-    fprintf(stderr, "Usage sm [-q] [-r] [-d] [-R] token [token] [token] ...\n");
+    fprintf(stderr, "Usage sm [-q] [-r] [-d] [-R] [-i] token [token] [token] ...\n");
     exit(1);
 }
 
@@ -24,19 +24,21 @@ int main(int argc, char **argv) {
     BOOL                Quiet = FALSE;
     BOOL                Delete = FALSE;
     BOOL                Rawformat = FALSE;
+    BOOL                Artinfo = FALSE;
     BOOL		val;
     int                 i;
     char                *p;
     QIOSTATE            *qp;
     TOKEN		token;
     ARTHANDLE		*art;
-    
+    struct artngnum	ann;
+
     /* First thing, set up logging and our identity. */
     openlog("sm", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
 
     if (ReadInnConf() < 0) { exit(1); }
 
-    while ((c = getopt(argc, argv, "qrdoR")) != EOF) {
+    while ((c = getopt(argc, argv, "iqrdR")) != EOF) {
 	switch (c) {
 	case 'q':
 	    Quiet = TRUE;
@@ -47,6 +49,9 @@ int main(int argc, char **argv) {
 	    break;
 	case 'R':
 	    Rawformat = TRUE;
+	    break;
+	case 'i':
+	    Artinfo = TRUE;
 	    break;
 	default:
 	    Usage();
@@ -67,7 +72,21 @@ int main(int argc, char **argv) {
 	}
     
     for (i = optind; i < argc; i++) {
-	if (Delete) {
+	if (Artinfo) {
+	    if (!IsToken(argv[i])) {
+		if (!Quiet)
+		    fprintf(stderr, "%s is not a storage token\n", argv[i]);
+		continue;
+	    }
+	    token = TextToToken(argv[i]);
+	    if (!SMprobe(SMARTNGNUM, &token, (void *)&ann)) {
+		if (!Quiet)
+		    fprintf(stderr, "Could not get art info %s\n", argv[i]);
+	    } else {
+		fprintf(stdout, "%s: %d\n", ann.groupname, ann.artnum);
+		DISPOSE(ann.groupname);
+	    }
+	} else if (Delete) {
 	    if (!IsToken(argv[i])) {
 		if (!Quiet)
 		    fprintf(stderr, "%s is not a storage token\n", argv[i]);
