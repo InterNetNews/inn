@@ -184,7 +184,7 @@ to a different file system.
 =item B<--with-spool-dir>=PATH
 
 Sets the prefix for the news spool (when using any storage method other
-than CNFS) and the overview spool.  The default is F<PREFIX/pool>.  This
+than CNFS) and the overview spool.  The default is F<PREFIX/spool>.  This
 is another common portion of INN to move to a different file system (often
 F</news>).
 
