@@ -297,7 +297,7 @@ group_rebuild(const char *group, const char *path)
            convert it.  We only check the first line ending. */
         p = strchr(article, '\n');
         if (p != NULL && (p == article || p[-1] != '\r')) {
-            wireformat = ToWireFmt(article, size, &length);
+            wireformat = ToWireFmt(article, size, (size_t *)&length);
             free(article);
             article = wireformat;
             size = length;

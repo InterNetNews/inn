@@ -335,7 +335,7 @@ main(int ac, char *av[])
 		continue;
 	    }
 	    BytesInArt = -1;
-	    artdata = FromWireFmt(art->data, art->len, &BytesInArt);
+	    artdata = FromWireFmt(art->data, art->len, (size_t *)&BytesInArt);
 	    SMfreearticle(art);
 	} else {
             warn("%s skipping %.40s: not token", Host, p);

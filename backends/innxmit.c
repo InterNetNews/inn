@@ -949,7 +949,7 @@ article_open(const char *path, const char *id)
             return NULL;
         }
         if (p[-1] != '\r') {
-            p = ToWireFmt(data, article->len, &length);
+            p = ToWireFmt(data, article->len, (size_t *)&length);
             free(data);
             data = p;
             article->len = length;
