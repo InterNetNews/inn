@@ -30,6 +30,6 @@ depend:	Makefile $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 tradspool.o: tradspool.c ../../include/config.h \
- ../../include/clibrary.h ../../include/libinn.h \
- ../../include/macros.h ../../include/paths.h ../../include/qio.h \
- ../methods.h tradspool.h
+ ../../include/inn/defines.h ../../include/clibrary.h \
+ ../../include/inn/qio.h ../../include/libinn.h ../../include/macros.h \
+ ../../include/paths.h ../methods.h tradspool.h

@@ -70,43 +70,54 @@ depend:	$(SOURCES)
 	$(MAKEDEPEND) $(CFLAGS) $(PERLINC) $(PYTHONINC) $(TCLINC) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-article.o: article.c ../include/config.h ../include/clibrary.h nnrpd.h \
+article.o: article.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h nnrpd.h ../include/inn/qio.h \
  ../include/libinn.h ../include/macros.h ../include/nntp.h \
- ../include/paths.h ../include/qio.h ../include/ov.h
-group.o: group.c ../include/config.h ../include/clibrary.h nnrpd.h \
+ ../include/paths.h ../include/storage.h ../include/ov.h
+group.o: group.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h nnrpd.h ../include/inn/qio.h \
  ../include/libinn.h ../include/macros.h ../include/nntp.h \
- ../include/paths.h ../include/qio.h ../include/ov.h
-commands.o: commands.c ../include/config.h ../include/clibrary.h \
- nnrpd.h ../include/libinn.h ../include/macros.h ../include/nntp.h \
- ../include/paths.h ../include/qio.h ../include/ov.h
-misc.o: misc.c ../include/config.h ../include/clibrary.h nnrpd.h \
+ ../include/paths.h ../include/storage.h ../include/ov.h
+commands.o: commands.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h nnrpd.h ../include/inn/qio.h \
  ../include/libinn.h ../include/macros.h ../include/nntp.h \
- ../include/paths.h ../include/qio.h ../include/dbz.h
-newnews.o: newnews.c ../include/config.h ../include/clibrary.h nnrpd.h \
- ../include/libinn.h ../include/macros.h ../include/nntp.h \
- ../include/paths.h ../include/qio.h ../include/ov.h
-nnrpd.o: nnrpd.c ../include/config.h ../include/clibrary.h \
- ../include/libinn.h ../include/ov.h ../include/storage.h nnrpd.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/qio.h
-perl.o: perl.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/paths.h post.h ../include/macros.h \
- ../include/nntp.h nnrpd.h ../include/libinn.h ../include/qio.h \
- ../include/ppport.h
-perm.o: perm.c ../include/config.h ../include/clibrary.h \
- ../include/conffile.h nnrpd.h ../include/libinn.h ../include/macros.h \
- ../include/nntp.h ../include/paths.h ../include/qio.h
-post.o: post.c ../include/config.h ../include/clibrary.h nnrpd.h \
- ../include/libinn.h ../include/macros.h ../include/nntp.h \
- ../include/paths.h ../include/qio.h ../include/ov.h post.h
+ ../include/paths.h ../include/storage.h ../include/ov.h
 loadave.o: loadave.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h nnrpd.h ../include/libinn.h ../include/macros.h \
- ../include/nntp.h ../include/paths.h ../include/qio.h
-track.o: track.c ../include/config.h ../include/clibrary.h nnrpd.h \
+ ../include/inn/defines.h ../include/clibrary.h nnrpd.h \
+ ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
+misc.o: misc.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h nnrpd.h ../include/inn/qio.h \
  ../include/libinn.h ../include/macros.h ../include/nntp.h \
- ../include/paths.h ../include/qio.h
+ ../include/paths.h ../include/storage.h ../include/dbz.h
+newnews.o: newnews.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h nnrpd.h ../include/inn/qio.h \
+ ../include/libinn.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h ../include/storage.h ../include/ov.h
+nnrpd.o: nnrpd.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/ov.h \
+ ../include/storage.h nnrpd.h ../include/inn/qio.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h
+perl.o: perl.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/macros.h nnrpd.h \
+ ../include/inn/qio.h ../include/libinn.h ../include/nntp.h \
+ ../include/paths.h ../include/storage.h post.h ../include/ppport.h
+perm.o: perm.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/conffile.h nnrpd.h \
+ ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
+post.o: post.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h nnrpd.h ../include/inn/qio.h \
+ ../include/libinn.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h ../include/storage.h ../include/ov.h post.h
 python.o: python.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h nnrpd.h ../include/libinn.h ../include/macros.h \
- ../include/nntp.h ../include/paths.h ../include/qio.h
-tls.o: tls.c ../include/config.h
-sasl_config.o: sasl_config.c ../include/config.h
+ ../include/inn/defines.h ../include/clibrary.h nnrpd.h \
+ ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
+sasl_config.o: sasl_config.c ../include/config.h \
+ ../include/inn/defines.h
+tls.o: tls.c ../include/config.h ../include/inn/defines.h
+track.o: track.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h nnrpd.h ../include/inn/qio.h \
+ ../include/libinn.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h ../include/storage.h

@@ -123,27 +123,28 @@ depend:	Makefile $(SOURCES)
 	$(MAKEDEPEND) -DUSE_BERKELEY_DB $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-ctlinnd.o: ctlinnd.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/libinn.h ../include/inndcomm.h \
- ../include/paths.h ../include/macros.h
+ctlinnd.o: ctlinnd.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inndcomm.h ../include/libinn.h \
+ ../include/macros.h ../include/paths.h
 decode.o: decode.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h
+ ../include/inn/defines.h ../include/clibrary.h
 encode.o: encode.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h
-getlist.o: getlist.c ../include/config.h ../include/clibrary.h \
- ../include/macros.h ../include/libinn.h ../include/qio.h \
- ../include/paths.h
-inews.o: inews.c ../include/config.h ../include/clibrary.h \
- ../include/libinn.h ../include/macros.h ../include/nntp.h \
- ../include/paths.h
-innconfval.o: innconfval.c ../include/config.h ../include/clibrary.h \
- ../include/libinn.h ../include/macros.h ../include/paths.h
+ ../include/inn/defines.h ../include/clibrary.h
+getlist.o: getlist.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/qio.h ../include/macros.h \
+ ../include/libinn.h ../include/paths.h
+inews.o: inews.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h
+innconfval.o: innconfval.c ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
+ ../include/macros.h ../include/paths.h
 ovdb_recover.o: ovdb_recover.c ../include/config.h \
- ../include/clibrary.h ../include/libinn.h ../include/ov.h \
- ../include/storage.h ../storage/ovdb/ovdb.h
-rnews.o: rnews.c ../include/config.h ../include/clibrary.h \
- ../include/libinn.h ../include/macros.h ../include/nntp.h \
- ../include/paths.h
-sm.o: sm.c ../include/config.h ../include/clibrary.h \
- ../include/libinn.h ../include/macros.h ../include/paths.h \
- ../include/qio.h
+ ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
+ ../include/ov.h ../include/storage.h ../storage/ovdb/ovdb.h
+rnews.o: rnews.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h
+sm.o: sm.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h \
+ ../include/paths.h ../include/storage.h

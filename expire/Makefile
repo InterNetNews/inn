@@ -97,30 +97,35 @@ depend:	Makefile $(SOURCES)
 	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-convdate.o: convdate.c ../include/clibrary.h ../include/config.h \
- ../include/libinn.h ../include/macros.h
-expire.o: expire.c ../include/config.h ../include/clibrary.h \
- ../include/dbz.h ../include/libinn.h ../include/inndcomm.h \
- ../include/macros.h ../include/paths.h ../include/qio.h
-expireover.o: expireover.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/qio.h ../include/libinn.h \
- ../include/macros.h ../include/paths.h ../include/ov.h
-fastrm.o: fastrm.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/qio.h ../include/macros.h \
- ../include/libinn.h
-grephistory.o: grephistory.c ../include/clibrary.h ../include/config.h \
- ../include/dbz.h ../include/libinn.h ../include/macros.h \
+convdate.o: convdate.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h
+expire.o: expire.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/dbz.h ../include/libinn.h \
+ ../include/inndcomm.h ../include/inn/qio.h ../include/macros.h \
  ../include/paths.h ../include/storage.h
-makedbz.o: makedbz.c ../include/config.h ../include/clibrary.h \
- ../include/dbz.h ../include/libinn.h ../include/macros.h \
- ../include/paths.h ../include/qio.h
-makehistory.o: makehistory.c ../include/config.h ../include/clibrary.h \
- ../include/dbz.h ../include/libinn.h ../include/macros.h \
- ../include/ov.h ../include/storage.h ../include/paths.h \
- ../include/qio.h
-newsrequeue.o: newsrequeue.c ../include/config.h ../include/clibrary.h \
- ../include/dbz.h ../include/libinn.h ../include/macros.h \
- ../include/paths.h ../include/qio.h
+expireover.o: expireover.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/inn/qio.h \
+ ../include/libinn.h ../include/macros.h ../include/paths.h \
+ ../include/storage.h ../include/ov.h
+fastrm.o: fastrm.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/inn/qio.h \
+ ../include/macros.h ../include/libinn.h ../include/storage.h
+grephistory.o: grephistory.c ../include/clibrary.h ../include/config.h \
+ ../include/inn/defines.h ../include/dbz.h ../include/libinn.h \
+ ../include/macros.h ../include/paths.h ../include/storage.h
+makedbz.o: makedbz.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/dbz.h ../include/libinn.h \
+ ../include/inn/qio.h ../include/macros.h ../include/paths.h \
+ ../include/storage.h
+makehistory.o: makehistory.c ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/dbz.h \
+ ../include/libinn.h ../include/inn/qio.h ../include/macros.h \
+ ../include/ov.h ../include/storage.h ../include/paths.h
+newsrequeue.o: newsrequeue.c ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/dbz.h \
+ ../include/libinn.h ../include/inn/qio.h ../include/macros.h \
+ ../include/paths.h
 prunehistory.o: prunehistory.c ../include/configdata.h \
- ../include/config.h ../include/clibrary.h ../include/paths.h \
- ../include/libinn.h ../include/dbz.h ../include/macros.h
+ ../include/config.h ../include/inn/defines.h ../include/clibrary.h \
+ ../include/paths.h ../include/libinn.h ../include/dbz.h \
+ ../include/macros.h

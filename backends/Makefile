@@ -138,37 +138,43 @@ depend:	Makefile $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 actsync.o: actsync.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/libinn.h ../include/qio.h \
- ../include/paths.h ../include/macros.h
-archive.o: archive.c ../include/config.h ../include/clibrary.h \
- ../include/libinn.h ../include/macros.h ../include/paths.h \
- ../include/qio.h
-batcher.o: batcher.c ../include/config.h ../include/clibrary.h \
- ../include/libinn.h ../include/macros.h ../include/paths.h \
- ../include/qio.h
+ ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
+ ../include/inn/qio.h ../include/paths.h ../include/macros.h
+archive.o: archive.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h \
+ ../include/paths.h ../include/storage.h
+batcher.o: batcher.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h \
+ ../include/paths.h ../include/storage.h
 buffchan.o: buffchan.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/paths.h ../include/libinn.h \
- ../include/qio.h ../include/macros.h
-cvtbatch.o: cvtbatch.c ../include/config.h ../include/clibrary.h \
- ../include/libinn.h ../include/macros.h ../include/paths.h \
- ../include/qio.h
+ ../include/inn/defines.h ../include/clibrary.h ../include/paths.h \
+ ../include/libinn.h ../include/inn/qio.h ../include/macros.h
+cvtbatch.o: cvtbatch.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
+ ../include/macros.h ../include/paths.h ../include/storage.h
 filechan.o: filechan.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/paths.h ../include/libinn.h \
- ../include/macros.h
-inndf.o: inndf.c ../include/config.h ../include/configdata.h \
- ../include/clibrary.h ../include/libinn.h ../include/storage.h \
- ../include/paths.h ../include/qio.h ../include/ov.h
-innxbatch.o: innxbatch.c ../include/config.h ../include/clibrary.h \
- ../include/libinn.h ../include/macros.h ../include/nntp.h
-innxmit.o: innxmit.c ../include/config.h ../include/clibrary.h \
- ../include/dbz.h ../include/libinn.h ../include/macros.h \
- ../include/nntp.h ../include/paths.h ../include/qio.h
-nntpget.o: nntpget.c ../include/config.h ../include/clibrary.h \
- ../include/dbz.h ../include/libinn.h ../include/macros.h \
- ../include/nntp.h ../include/paths.h
-overchan.o: overchan.c ../include/config.h ../include/clibrary.h \
- ../include/libinn.h ../include/macros.h ../include/ov.h \
- ../include/storage.h ../include/paths.h ../include/qio.h
-shlock.o: shlock.c ../include/config.h ../include/clibrary.h
+ ../include/inn/defines.h ../include/clibrary.h ../include/paths.h \
+ ../include/libinn.h ../include/macros.h
+inndf.o: inndf.c ../include/config.h ../include/inn/defines.h \
+ ../include/configdata.h ../include/clibrary.h ../include/libinn.h \
+ ../include/storage.h ../include/paths.h ../include/inn/qio.h \
+ ../include/ov.h
+innxbatch.o: innxbatch.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h
+innxmit.o: innxmit.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/dbz.h ../include/libinn.h \
+ ../include/inn/qio.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h ../include/storage.h
+nntpget.o: nntpget.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/dbz.h ../include/libinn.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h
+overchan.o: overchan.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
+ ../include/macros.h ../include/ov.h ../include/storage.h \
+ ../include/paths.h
+shlock.o: shlock.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
 shrinkfile.o: shrinkfile.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/libinn.h ../include/macros.h
+ ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
+ ../include/macros.h
