@@ -84,9 +84,13 @@ TCLINC          = @TCL_INC@
 PYTHONLIB       = @PYTHON_LIB@
 PYTHONINC       = @PYTHON_INC@
 
-SSLLIB			= @SSL_LIB@
-SSLINC			= @SSL_INC@
-SSLBIN			= @SSL_BIN@
+##  OpenSSL support.  Additional flags and libraries used when compiling or
+##  linking code that contains OpenSSL support, and the path to the OpenSSL
+##  binaries.
+
+SSLLIB          = @SSL_LIB@
+SSLINC          = @SSL_INC@
+SSLBIN          = @SSL_BIN@
 
 ##  Missing functions.  If non-empty, configure detected that your system
 ##  was missing some standard functions, and INN will be providing its own

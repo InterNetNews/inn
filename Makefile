@@ -84,11 +84,11 @@ update:
 	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
 	done
 
-## for starttls
+##  Install a certificate for TLS/SSL support.
 cert:
 	$(SSLBIN)/openssl req -new -x509 -nodes \
-	-out $(PATHLIB)/cert.pem -days 366 \
-	-keyout $(PATHLIB)/cert.pem
+	    -out $(PATHLIB)/cert.pem -days 366 \
+	    -keyout $(PATHLIB)/cert.pem
 	chown news:news $(PATHLIB)/cert.pem
 	chmod 640 $(PATHLIB)/cert.pem
 
