@@ -35,15 +35,15 @@ does not make changes to any files \(em it just reports what it
 thinks may be wrong, and it is up to the operator to fix the problem.
 .PP
 The set of files checked may be restricted by using \fBfile\fP or
-\fBfile=value\fP arguments. For example, putting \fBhosts.nntp\fP causes
+\fBfile=value\fP arguments. For example, putting \fBincomig.conf\fP causes
 only the 
-.IR hosts.nntp (5)
-file to be checked. Using \fBhosts.nntp=/tmp/hosts.nntp\fP on the
+.IR incoming.conf (5)
+file to be checked. Using \fBincoming.conf=/tmp/incoming.conf\fP on the
 command line will cause 
 .I inncheck
-to only verify the hosts.nntp file, and it will perform the
+to only verify the incoming.conf file, and it will perform the
 checks on the file
-/tmp/hosts.nntp file instead of the default one.
+/tmp/incoming.conf file instead of the default one.
 .PP
 Valid values for 
 .I file
@@ -54,7 +54,7 @@ are:
     active
     control.ctl
     expire.ctl
-    hosts.nntp
+    incoming.conf
     inn.conf
     moderators
     newsfeeds
@@ -114,11 +114,11 @@ inncheck
 To have 
 .I inncheck
 check all files for permission problems and to verify the syntax of the
-active and hosts.nntp files do:
+active and incoming.conf files do:
 .PP
 .RS
 .nf
-inncheck -perm active hosts.nntp
+inncheck -perm active incoming.conf
 .fi
 .RE
 .PP
@@ -158,6 +158,6 @@ This is revision \\$3, dated \\$4.
 active(5),
 expire.ctl(5),
 history(5),
-hosts.nntp(5),
+incoming.conf(5),
 inn.conf(5),
 newsfeeds(5)

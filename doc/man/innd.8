@@ -82,7 +82,7 @@ It reads the
 .IR active (5),
 .IR newsfeeds (5),
 and
-.IR hosts.nntp (5)
+.IR incoming.conf (5)
 files into memory.
 It then opens the NNTP port to receive articles from remote sites (see 
 the ``\fB\-p\fP'' option),
@@ -133,7 +133,7 @@ to any files.
 .TP
 .B \-a
 By default, if a host if not mentioned in the
-.I hosts.nntp
+.I incoming.conf
 file, then the connection is handed off to
 .IR nnrpd .
 If the ``\fB\-a\fP'' flag is used, then any host can connect and transfer
@@ -557,7 +557,7 @@ ctlinnd(8),
 crosspost(8),
 dbz(3),
 history(5),
-hosts.nntp(5),
+incoming.conf(5),
 inn.conf(5),
 newsfeeds(5),
 nnrpd(8),
