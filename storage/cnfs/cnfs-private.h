@@ -10,12 +10,17 @@
 
 #define _PATH_CYCBUFFCONFIG	"cycbuff.conf"
 
-/* =()<typedef @<CYCBUFF_OFF_T>@	CYCBUFF_OFF_T;>()= */
-typedef off_t	CYCBUFF_OFF_T;
-/* =()<#define	CNFSseek		@<CNFSseekcall>@>()= */
-#define	CNFSseek		lseek
-/* =()<#define	CNFS_HDR_PAGESIZE	@<CNFS_HDR_PAGESIZE>@>()= */
-#define	CNFS_HDR_PAGESIZE	16384
+/* These values may have to be changed for 64-bit support on systems that
+   don't support compilation options that increase the size of off_t and the
+   size lseek() can handle (like Solaris does). */
+typedef off_t           CYCBUFF_OFF_T;
+#define	CNFSseek        lseek
+
+/* Page boundary on which to mmap() the CNFS article usage header.  Should
+   be a multiple of the pagesize for all the architectures you expect might
+   need access to your CNFS buffer.  If you don't expect to share your
+   buffer across several platforms, you can use 'pagesize' here. */
+#define	CNFS_HDR_PAGESIZE       16384
 
 #define	CNFS_MAGICV1	"Cycbuff"	/* CNFSMASIZ bytes */
 #define	CNFS_MAGICV2	"CBuf1"		/* CNFSMASIZ bytes */
