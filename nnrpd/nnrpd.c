@@ -203,8 +203,8 @@ ExitWithStats(int x, bool readconf)
     if (POSTreceived ||  POSTrejected)
 	syslog(L_NOTICE, "%s posts received %ld rejected %ld",
 	   ClientHost, POSTreceived, POSTrejected);
-    syslog(L_NOTICE, "%s times user %.3f system %.3f elapsed %.3f",
-	ClientHost, usertime, systime, STATfinish - STATstart);
+    syslog(L_NOTICE, "%s times user %.3f system %.3f idle %.3f elapsed %.3f",
+	ClientHost, usertime, systime, IDLEtime, STATfinish - STATstart);
     /* Tracking code - Make entries in the logfile(s) to show that we have
 	finished with this session */
     if (!readconf && PERMaccessconf &&  PERMaccessconf->readertrack) {
@@ -391,13 +391,13 @@ Address2Name(INADDR *ap, char *hostname, int i)
 #if	defined(h_addr)
     /* We have many addresses */
     for (pp = hp->h_addr_list; *pp; pp++)
-	if (memcmp(&ap->s_addr, *pp, hp->h_length) == 0)
+	if (EQn((const char *)&ap->s_addr, *pp, hp->h_length))
 	    break;
     if (*pp == NULL)
 	return FALSE;
 #else
     /* We have one address. */
-    if (memcmp(&ap->s_addr, hp->h_addr, hp->h_length) != 0)
+    if (!EQn(&ap->s_addr, hp->h_addr, hp->h_length))
 	return FALSE;
 #endif
 

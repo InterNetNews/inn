@@ -44,7 +44,6 @@
 
 #include "clibrary.h"
 #include "innd.h"
-#include "art.h"
 
 #include <EXTERN.h>
 #include <perl.h>
@@ -64,13 +63,14 @@ extern char             *filterPath;
 **  accept the article or a rejection message to reject it.
 */
 char *
-PLartfilter(char *artBody, int lines)
+PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
 {
     dSP;
     ARTHEADER * hp;
+    HDRCONTENT	*hc = data->HdrContent;
     HV *        hdr;
     CV *        filter;
-    int         rc;
+    int         i, rc;
     char *      p;
     char        save = '\0';
     static SV * body = NULL;
@@ -83,19 +83,11 @@ PLartfilter(char *artBody, int lines)
     /* Create %hdr and stash a copy of every known header.  Path has to be
        handled separately since it's been munged by article processing. */
     hdr = perl_get_hv("hdr", 1);
-    for (hp = ARTheaders; hp < ARTheadersENDOF; hp++) {
-        if (hp->Found && hp->Value && strcmp(hp->Name, "Path") != 0)
-            hv_store(hdr, (char *) hp->Name, strlen(hp->Name),
-                     newSVpv(hp->Value, 0), 0);
-    }
-    if (filterPath) {
-        p = strpbrk(filterPath, "\r\n");
-        if (p) {
-	    save = *p;
-	    *p = '\0';
+    for (i = 0 ; i < MAX_ARTHEADER ; i++) {
+	if (HDR_FOUND(i)) {
+	    hp = &ARTheaders[i];
+            hv_store(hdr, (char *) hp->Name, hp->Size, newSVpv(HDR(i), 0), 0);
 	}
-        hv_store(hdr, "Path", 4, newSVpv(filterPath, 0), 0);
-        if (p) *p = save;
     }
 
     /* Store the article body.  We don't want to make another copy of it,
@@ -110,7 +102,7 @@ PLartfilter(char *artBody, int lines)
             (void) SvUPGRADE(body, SVt_PV);
         }
         SvPVX(body) = artBody;
-        SvCUR_set(body, strlen(artBody));
+        SvCUR_set(body, artLen);
         SvLEN_set(body, 0);
         SvPOK_on(body);
         (void) SvREADONLY_on(body);

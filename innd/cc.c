@@ -141,8 +141,8 @@ static RETSIGTYPE CCresetup(int unused);
 void
 CCcopyargv(char *av[])
 {
-    register char	**v;
-    register int	i;
+    char	**v;
+    int		i;
 
     /* Get the vector size. */
     for (i = 0; av[i]; i++)
@@ -239,7 +239,7 @@ CCaddhist(char *av[])
 {
     static char		DIGITS[] = "0123456789";
     ARTDATA		Data;
-    const char *	p;
+    const char *	p, *msgid;
     bool		ok;
     HASH                hash;
     int			i;
@@ -255,16 +255,11 @@ CCaddhist(char *av[])
 	} 
 
         hash = TextToHash(&av[0][1]);
-	/* Put something bogus in here.  This should never be referred
-	   to unless someone tries to add a [msgidhash].... history
-	   entry to an innd set with 'storageapi' off, which isn't a
-	   very sensible thing to do. */
-	Data.MessageID = "<bogus@messsageid>";
     } else {
         /* Try to take what we were given as a <messageid> */
-        if ((p = CCgetid(av[0], &Data.MessageID)) != NULL)
+        if ((p = CCgetid(av[0], &msgid)) != NULL)
 	  return p;
-	hash = HashMessageID(Data.MessageID);
+	hash = HashMessageID(msgid);
     }
 
     /* If paused, don't try to use the history database since expire may be
@@ -400,7 +395,7 @@ CCbegin(char *av[])
 **  Common code to change a group's flags.
 */
 static const char *
-CCdochange(register NEWSGROUP *ngp, char *Rest)
+CCdochange(NEWSGROUP *ngp, char *Rest)
 {
     int			length;
     char		*p;
@@ -453,16 +448,16 @@ const char *
 CCcancel(char *av[])
 {
     ARTDATA	Data;
-    const char *	p;
+    const char *	p, *msgid;
 
     Data.Posted = Data.Arrived = Now.time;
     Data.Expires = 0;
     Data.Feedsite = "?";
-    if ((p = CCgetid(av[0], &Data.MessageID)) != NULL)
+    if ((p = CCgetid(av[0], &msgid)) != NULL)
 	return p;
 
     if (Mode == OMrunning)
-	ARTcancel(&Data, Data.MessageID, TRUE);
+	ARTcancel(&Data, msgid, TRUE);
     else {
 	/* If paused, don't try to use the history database since expire may be
 	   running */
@@ -472,11 +467,11 @@ CCcancel(char *av[])
 	    return "1 Server throttled";
 	/* Possible race condition, but documented in ctlinnd manpage. */
 	HISsetup();
-	ARTcancel(&Data, Data.MessageID, TRUE);
+	ARTcancel(&Data, msgid, TRUE);
 	HISclose();
     }
     if (innconf->logcancelcomm)
-	syslog(L_NOTICE, "%s cancelled %s", LogName, Data.MessageID);
+	syslog(L_NOTICE, "%s cancelled %s", LogName, msgid);
     return NULL;
 }
 
@@ -487,41 +482,55 @@ CCcancel(char *av[])
 const char *
 CCcheckfile(char *unused[])
 {
-    register char	**strings;
-    register char	*p;
-    register int	i;
-    register int	errors;
-    const char *		error;
-    SITE		fake;
+  char		**strings;
+  char		*p;
+  int		i;
+  int		errors;
+  const char *	error;
+  SITE		fake;
+  bool		needheaders, needoverview, needpath, needstoredgroup;
+  bool		needreplicdata;
 
-    unused = unused;		/* ARGSUSED */
-    /* Parse all site entries. */
-    strings = SITEreadfile(FALSE);
-    fake.Buffer.Size = 0;
-    fake.Buffer.Data = NULL;
-    for (errors = 0, i = 0; (p = strings[i]) != NULL; i++) {
-	if ((error = SITEparseone(p, &fake, (char *)NULL, (char *)NULL)) != NULL) {
-	    syslog(L_ERROR, "%s bad_newsfeeds %s", MaxLength(p, p), error);
-	    errors++;
-	}
-	SITEfree(&fake);
+  unused = unused;		/* ARGSUSED */
+  /* Parse all site entries. */
+  strings = SITEreadfile(FALSE);
+  fake.Buffer.Size = 0;
+  fake.Buffer.Data = NULL;
+  /* save global variables not to be changed */
+  needheaders = NeedHeaders;
+  needoverview = NeedOverview;
+  needpath = NeedPath;
+  needstoredgroup = NeedStoredGroup;
+  needreplicdata = NeedReplicdata;
+  for (errors = 0, i = 0; (p = strings[i]) != NULL; i++) {
+    if ((error = SITEparseone(p, &fake, (char *)NULL, (char *)NULL)) != NULL) {
+      syslog(L_ERROR, "%s bad_newsfeeds %s", MaxLength(p, p), error);
+      errors++;
     }
-    DISPOSE(strings);
+    SITEfree(&fake);
+  }
+  DISPOSE(strings);
+  /* restore global variables not to be changed */
+  NeedHeaders = needheaders;
+  NeedOverview = needoverview;
+  NeedPath = needpath;
+  NeedStoredGroup = needstoredgroup;
+  NeedReplicdata = needreplicdata;
 
-    if (errors == 0)
-	return NULL;
+  if (errors == 0)
+    return NULL;
 
-    if (CCreply.Data == NULL) {
-	/* If we got the "-s" flag, then CCsetup hasn't been called yet. */
-	CCreply.Size = SMBUF;
-	CCreply.Data = NEW(char, CCreply.Size);
-    } else if (CCreply.Size < SMBUF) {
-	CCreply.Size = SMBUF;
-	RENEW(CCreply.Data, char, CCreply.Size);
-    }
+  if (CCreply.Data == NULL) {
+    /* If we got the "-s" flag, then CCsetup hasn't been called yet. */
+    CCreply.Size = SMBUF;
+    CCreply.Data = NEW(char, CCreply.Size);
+  } else if (CCreply.Size < SMBUF) {
+    CCreply.Size = SMBUF;
+    RENEW(CCreply.Data, char, CCreply.Size);
+  }
 
-    (void)sprintf(CCreply.Data, "1 Found %d errors -- see syslog", errors);
-    return CCreply.Data;
+  (void)sprintf(CCreply.Data, "1 Found %d errors -- see syslog", errors);
+  return CCreply.Data;
 }
 
 
@@ -531,12 +540,12 @@ CCcheckfile(char *unused[])
 static const char *
 CCdrop(char *av[])
 {
-    SITE		*sp;
-    register NEWSGROUP	*ngp;
-    register int	*ip;
-    register int	idx;
-    register int	i;
-    register int	j;
+    SITE	*sp;
+    NEWSGROUP	*ngp;
+    int		*ip;
+    int		idx;
+    int		i;
+    int		j;
 
     if ((sp = SITEfind(av[0])) == NULL)
 	return CCnosite;
@@ -562,9 +571,9 @@ CCdrop(char *av[])
 static const char *
 CCfeedinfo(char *av[])
 {
-    register SITE	*sp;
-    register char	*p;
-    register int	i;
+    SITE	*sp;
+    char	*p;
+    int		i;
 
     BUFFset(&CCreply, "0 ", 2);
     p = av[0];
@@ -663,9 +672,9 @@ CCpython(char *av[])
 static const char *
 CCflush(char *av[])
 {
-    register SITE	*sp;
-    register int	i;
-    register char	*p;
+    SITE	*sp;
+    int		i;
+    char	*p;
 
     p = av[0];
     if (*p == '\0') {
@@ -761,10 +770,10 @@ CCgo(char *av[])
 static const char *
 CChangup(char *av[])
 {
-    register CHANNEL	*cp;
-    register int	fd;
-    register char	*p;
-    int			i;
+    CHANNEL	*cp;
+    int		fd;
+    char	*p;
+    int		i;
 
     /* Parse the argument, a channel number. */
     for (p = av[0], fd = 0; *p; p++) {
@@ -801,12 +810,12 @@ CChangup(char *av[])
 static const char *
 CCmode(char *unused[])
 {
-    register char	*p;
-    register int	i;
-    int			h;
-    char		buff[BUFSIZ];
+    char	*p;
+    int		i;
+    int		h;
+    char	buff[BUFSIZ];
 #if defined(DO_PERL)
-    extern int		PerlFilterActive;
+    extern int	PerlFilterActive;
 #endif /* defined(DO_PERL) */
 
     unused = unused;		/* ARGSUSED */
@@ -1008,8 +1017,8 @@ CCnewgroup(char *av[])
 {
     static char		*TIMES = NULL;
     static char		WHEN[] = "updating active.times";
-    register int	fd;
-    register char	*p;
+    int			fd;
+    char		*p;
     NEWSGROUP		*ngp;
     char		*Name;
     char		*Rest;
@@ -1541,10 +1550,10 @@ CCshutdown(char *av[])
 static const char *
 CCsignal(char *av[])
 {
-    register SITE	*sp;
-    register char	*p;
-    int			s;
-    int			oerrno;
+    SITE	*sp;
+    char	*p;
+    int		s;
+    int		oerrno;
 
     /* Parse the signal. */
     p = av[0];
@@ -1697,8 +1706,7 @@ CCtrace(char *av[])
 **  number of elements or -1 on error.
 */
 static int
-CCargsplit(register char *p, register char *end, register char **argv,
-	   register int size)
+CCargsplit(char *p, char *end, char **argv, int size)
 {
     char		**save;
 
@@ -1721,9 +1729,9 @@ static void
 CCreader(CHANNEL *cp)
 {
     static char		TOOLONG[] = "0 Reply too long for server to send";
-    register CCDISPATCH	*dp;
-    register const char *	p;
-    register char	*q;
+    CCDISPATCH		*dp;
+    const char *	p;
+    char		*q;
     ICC_MSGLENTYPE	bufflen;
     ICC_PROTOCOLTYPE	protocol ;
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)

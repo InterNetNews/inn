@@ -273,6 +273,8 @@ SetDefaults(void)
     innconf->wipexpire = 10;
     innconf->dontrejectfiltered = FALSE;
     innconf->keepmmappedthreshold = 1024;
+    innconf->maxcmdreadsize = BUFSIZ;
+    innconf->datamovethreshold = BIG_BUFFER;
 }
 
 void
@@ -409,6 +411,12 @@ CheckInnConf(void)
 	syslog(L_FATAL, "'ovmethod' must be defined in inn.conf if enableoverview is true");
 	(void)fprintf(stderr, "'ovmethod' must be defined in inn.conf if enableoverview is true\n");
 	return(-1);
+    }
+    if (innconf->datamovethreshold <= 0 ||
+	innconf->datamovethreshold > 1024 * 1024) {
+	/* datamovethreshold is 0 or exceeds 1MB, then maximum threshold is set
+	   to 1MB */
+	innconf->datamovethreshold = 1024 * 1024;
     }
 
     return(0);
@@ -1000,6 +1008,16 @@ ReadInnConf(void)
 		TEST_CONFIG(CONF_VAR_KEEPMMAPPEDTHRESHOLD, bit);
 		if (!bit) innconf->keepmmappedthreshold = atoi(p);
 		SET_CONFIG(CONF_VAR_KEEPMMAPPEDTHRESHOLD);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_MAXCMDREADSIZE)) {
+		TEST_CONFIG(CONF_VAR_MAXCMDREADSIZE, bit);
+		if (!bit) innconf->maxcmdreadsize = atoi(p);
+		SET_CONFIG(CONF_VAR_MAXCMDREADSIZE);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_DATAMOVETHRESHOLD)) {
+		TEST_CONFIG(CONF_VAR_DATAMOVETHRESHOLD, bit);
+		if (!bit) innconf->datamovethreshold = atoi(p);
+		SET_CONFIG(CONF_VAR_DATAMOVETHRESHOLD);
 	    }
 	}
 	(void)Fclose(F);

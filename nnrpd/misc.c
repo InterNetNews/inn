@@ -233,15 +233,15 @@ char *HISgetent(HASH *key, bool useoffset, off_t *off)
 	if (!dbzfetch(*key, &offset)) {
 	    if (PERMaccessconf->nnrpdoverstats) {
 		gettimeofday(&etv, NULL);
-		OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
-		OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
+		OVERdbz += (etv.tv_sec - stv.tv_sec) * 1000;
+		OVERdbz += (etv.tv_usec - stv.tv_usec) / 1000;
 	    }
 	    return NULL;
 	}
 	if (PERMaccessconf->nnrpdoverstats) {
 	    gettimeofday(&etv, NULL);
-	    OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
-	    OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
+	    OVERdbz += (etv.tv_sec - stv.tv_sec) * 1000;
+	    OVERdbz += (etv.tv_usec - stv.tv_usec) / 1000;
 	}
 	if (off != NULL) {
 	    *off = offset;
@@ -268,8 +268,8 @@ char *HISgetent(HASH *key, bool useoffset, off_t *off)
     /* Seek and read. */
     if (PERMaccessconf->nnrpdoverstats) {
 	gettimeofday(&etv, NULL);
-	OVERseek+=(etv.tv_sec - stv.tv_sec) * 1000;
-	OVERseek+=(etv.tv_usec - stv.tv_usec) / 1000;
+	OVERseek += (etv.tv_sec - stv.tv_sec) * 1000;
+	OVERseek += (etv.tv_usec - stv.tv_usec) / 1000;
     }
     stv = etv;
     if (pread(fileno(hfp), buff, entrysize, offset) < 0) {
@@ -283,8 +283,8 @@ char *HISgetent(HASH *key, bool useoffset, off_t *off)
     }
     if (PERMaccessconf->nnrpdoverstats) {
 	gettimeofday(&etv, NULL);
-	OVERget+=(etv.tv_sec - stv.tv_sec) * 1000;
-	OVERget+=(etv.tv_usec - stv.tv_usec) / 1000;
+	OVERget += (etv.tv_sec - stv.tv_sec) * 1000;
+	OVERget += (etv.tv_usec - stv.tv_usec) / 1000;
     }
     if ((p = strchr(buff, '\n')) != NULL)
 	*p = '\0';
@@ -386,11 +386,12 @@ READTYPE READline(char *start, int  size, int timeout)
     static char		*bp;
     register char	*p;
     register char	*end;
-    struct timeval	t;
+    struct timeval	t, stv, etv;
     fd_set		rmask;
     int			i;
     char		c;
     bool		toolong;
+    TIMEINFO		Start, End;
 
     toolong = FALSE;
 
@@ -402,7 +403,14 @@ READTYPE READline(char *start, int  size, int timeout)
 	    FD_SET(STDIN_FILENO, &rmask);
 	    t.tv_sec = timeout;
 	    t.tv_usec = 0;
+	    gettimeofday(&stv, NULL);
 	    i = select(STDIN_FILENO + 1, &rmask, NULL, NULL, &t);
+	    gettimeofday(&etv, NULL);
+	    Start.time = stv.tv_sec;
+	    Start.usec = stv.tv_usec;
+	    End.time = etv.tv_sec;
+	    End.usec = etv.tv_usec;
+	    IDLEtime += TIMEINFOasDOUBLE(End) - TIMEINFOasDOUBLE(Start);
 	    if (i < 0) {
 		if (errno == EINTR)
 		    goto Again;

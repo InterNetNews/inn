@@ -65,7 +65,7 @@ NGcompare(const void *p1, const void *p2)
 **  Convert a newsgroup name into a directory name.
 */
 static void
-NGdirname(register char *p)
+NGdirname(char *p)
 {
     for ( ; *p; p++)
 	if (*p == '.')
@@ -81,12 +81,12 @@ NGdirname(register char *p)
 static bool
 NGparseentry(NEWSGROUP *ngp, const char *p, char *end)
 {
-    register char		*q;
-    register unsigned int	j;
-    register NGHASH		*htp;
-    register NEWSGROUP		**ngpp;
-    register int		i;
-    ARTNUM			lo;
+    char		*q;
+    unsigned int	j;
+    NGHASH		*htp;
+    NEWSGROUP		**ngpp;
+    int			i;
+    ARTNUM		lo;
 
     if ((q = strchr(p, ' ')) == NULL)
 	return FALSE;
@@ -150,15 +150,15 @@ NGparseentry(NEWSGROUP *ngp, const char *p, char *end)
 void
 NGparsefile(void)
 {
-    register char	*p;
-    register char	*q;
-    register int	i;
-    register bool	SawMe;
-    register NEWSGROUP	*ngp;
-    register NGHASH	*htp;
-    char		**strings;
-    char		*active;
-    char		*end;
+    char	*p;
+    char	*q;
+    int		i;
+    bool	SawMe;
+    NEWSGROUP	*ngp;
+    NGHASH	*htp;
+    char	**strings;
+    char	*active;
+    char	*end;
 
     /* If re-reading, remove anything we might have had. */
     NGclose();
@@ -247,9 +247,9 @@ NGparsefile(void)
 void
 NGclose(void)
 {
-    register int	i;
-    register NEWSGROUP	*ngp;
-    register NGHASH	*htp;
+    int		i;
+    NEWSGROUP	*ngp;
+    NGHASH	*htp;
 
     if (Groups) {
 	for (i = nGroups, ngp = Groups; --i >= 0; ngp++) {
@@ -279,12 +279,12 @@ NGclose(void)
 NEWSGROUP *
 NGfind(const char *Name)
 {
-    register const char		*p;
-    register int		i;
-    register unsigned int	j;
-    register NEWSGROUP		**ngp;
-    char			c;
-    NGHASH			*htp;
+    const char		*p;
+    int			i;
+    unsigned int	j;
+    NEWSGROUP		**ngp;
+    char		c;
+    NGHASH		*htp;
 
     /* SUPPRESS 6 *//* Over/underflow from plus expression */
     NGH_HASH(Name, p, j);
@@ -297,45 +297,50 @@ NGfind(const char *Name)
 
 
 /*
-**  Split a newsgroups header line into the groups we get.  Return a
-**  point to static memory and clobber the argument along the way.
+**  Split a newsgroups header line into the groups we get.  Return the
+**  number of newsgroups.  ' ' and '\t' are dropped when copying.
 */
-char **
-NGsplit(p)
-    register char	*p;
+int
+NGsplit(char *p, int size, LISTBUFFER *list)
 {
-    static char		**groups;
-    static int		oldlength;
-    register char	**gp;
-    register int	i;
+  char		**gp, *q;
+  int		i;
 
-    /* Get an array of character pointers. */
-    i = strlen(p);
-    if (groups == NULL) {
-	groups = NEW(char*, i + 1);
-	oldlength = i;
-    }
-    else if (oldlength < i) {
-	RENEW(groups, char*, i + 1);
-	oldlength = i;
-    }
+  /* setup buffer */
+  SetupListBuffer(size, list);
 
-    /* Loop over text. */
-    for (gp = groups; *p; *p++ = '\0') {
-	/* Skip leading separators. */
-	for (; NG_ISSEP(*p); p++)
-	    continue;
-	if (*p == '\0')
-	    break;
+  /* loop over and copy */
+  for (i = 0, q = list->Data, gp = list->List ; *p ; p++, *q++ = '\0') {
+    /* skip leading separators and white spaces. */
+    for (; *p && (NG_ISSEP(*p) || ISWHITE(*p)) ; p++)
+      continue;
+    if (*p == '\0')
+      break;
 
-	/* Mark the start of the newsgroup, move to the end of it. */
-	for (*gp++ = p; *p && !NG_ISSEP(*p); p++)
-	    continue;
-	if (*p == '\0')
-	    break;
+    if (i == list->ListLength) {
+      list->ListLength += DEFAULTNGBOXSIZE;
+      RENEW(list->List, char *, list->ListLength); 
+      gp = &list->List[i];
     }
-    *gp = NULL;
-    return groups;
+    /* mark the start of the newsgroup, move to the end of it while copying */
+    for (*gp++ = q, i++ ; *p && !NG_ISSEP(*p) && !ISWHITE(*p) ;) {
+      if (*p == ':')
+	/* reject if ':' is included */
+	return 0;
+      *q++ = *p++;
+      continue;
+    }
+    if (*p == '\0')
+      break;
+  }
+  *q = '\0';
+  if (i == list->ListLength) {
+    list->ListLength += DEFAULTNGBOXSIZE;
+    RENEW(list->List, char *, list->ListLength); 
+    gp = &list->List[i];
+  }
+  *gp = NULL;
+  return i;
 }
 
 

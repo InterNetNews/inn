@@ -203,7 +203,7 @@ bool OVgroupdel(char *group) {
     return ((*ov.groupdel)(group));
 }
 
-bool OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
+OVADDRESULT OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
     char		*next, *nextcheck;
     static char		*xrefdata, *patcheck, *overdata;
     char		*xrefstart, *xrefend;
@@ -218,7 +218,7 @@ bool OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
 	(void)fprintf(stderr, "ovopen must be called first");
-	return FALSE;
+	return OVADDFAILED;
     }
 
     /*
@@ -237,12 +237,12 @@ bool OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
     }
 
     if (!found)
-        return FALSE;
+        return OVADDFAILED;
 
     next = xrefstart;
     for (i = 0; (i < 2) && (next < (data + len)); i++) {
         if ((next = memchr(next, ' ', len - (next - data))) == NULL)
-            return FALSE;
+            return OVADDFAILED;
         next++;
     }
     xreflen = len - (next - data);
@@ -282,15 +282,15 @@ bool OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
             while (isspace((int)*group))
                 group++;
             if ((nextcheck = memchr(group, ':', xreflen - (patcheck - group))) == NULL)
-                return FALSE;
+                return OVADDFAILED;
             *nextcheck++ = '\0';
             if (!OVgroupmatch(group)) {
                 if (!SMprobe(SELFEXPIRE, &token, NULL) && innconf->groupbaseexpiry)
                     /* this article will never be expired, since it does not
                        have self expiry function in stored method and
                        groupbaseexpiry is true */
-                    return FALSE;
-                return TRUE;
+                    return OVADDFAILED;
+                return OVADDGROUPNOMATCH;
             }
         }
     }
@@ -301,7 +301,7 @@ bool OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
         while (isspace((int)*group))
             group++;
         if ((next = memchr(group, ':', xreflen - (group - xrefdata))) == NULL)
-            return FALSE;
+            return OVADDFAILED;
         *next++ = '\0';
         artnum = atoi(next);
         if (artnum <= 0)
@@ -315,10 +315,10 @@ bool OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
         i += 2;
 
 	if(! (*ov.add)(group, artnum, token, overdata, i, arrived, expires))
-	    return FALSE;
+	    return OVADDFAILED;
     }
 
-    return TRUE;
+    return OVADDCOMPLETED;
 }
 
 bool OVcancel(TOKEN token) {

@@ -301,7 +301,9 @@ struct conf_vars {
     int pauseretrytime;         /* Seconds before seeing if pause is ended */
     int peertimeout;            /* How long peers can be inactive */
     int rlimitnofile;           /* File descriptor limit to set */
-    int keepmmappedthreshold;  /* threshold for keep mmapped for buffindexed */
+    int keepmmappedthreshold;   /* threshold for keep mmapped for buffindexed */
+    int maxcmdreadsize;         /* max NNTP command read size used by innd */
+    int datamovethreshold;      /* threshold no to extend buffer for ever */
 
     /* Paths */
     char *patharchive;          /* Archived news. */

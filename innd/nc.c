@@ -12,7 +12,6 @@
 #include "innd.h"
 
 #define BAD_COMMAND_COUNT	10
-#define SAVE_AMT		10
 #define ART_EOF(c, s)		\
     ((c) >= 5 && (s)[-5] == '\r' && (s)[-4] == '\n' && (s)[-3] == '.' \
      && (s)[-2] == '\r' && (s)[-1] == '\n')
@@ -187,60 +186,46 @@ NCbadid(CHANNEL *cp, char *p)
 static void
 NCpostit(CHANNEL *cp)
 {
-    const char *response;
-    char buff[SMBUF];
+  bool	postok;
+  const char	*response;
+  char	buff[SMBUF];
 
-    /* Note that some use break, some use return here. */
-    switch (Mode) {
-    default:
-	syslog(L_ERROR, "%s internal NCpostit mode %d", CHANname(cp), Mode);
-	return;
-    case OMpaused:
-	SCHANadd(cp, Now.time + innconf->pauseretrytime, &Mode, NCpostit,
-                 NULL);
-	return;
-    case OMrunning:
-	response = ARTpost(cp);
-	if (atoi(response) == NNTP_TOOKIT_VAL) {
-	    cp->Received++;
-	    if (cp->Sendid.Size > 3) { /* We be streaming */
-		cp->Takethis_Ok++;
-		(void)sprintf(buff, "%d", NNTP_OK_RECID_VAL);
-		cp->Sendid.Data[0] = buff[0];
-		cp->Sendid.Data[1] = buff[1];
-		cp->Sendid.Data[2] = buff[2];
-		response = cp->Sendid.Data;
-	    }
-	} else {
-            cp->Rejected++;
-	    if (cp->Sendid.Size) response = cp->Sendid.Data;
-        }
-	cp->Reported++;
-	if (cp->Reported >= innconf->nntpactsync) {
-	    sprintf(buff, "accepted size %.0f duplicate size %.0f", cp->Size, cp->DuplicateSize);
-	    syslog(L_NOTICE,
-	    "%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld %s",
-		CHANname(cp), (long)(Now.time - cp->Started),
-		cp->Received, cp->Refused, cp->Rejected,
-		cp->Duplicate, buff);
-	    cp->Reported = 0;
-	}
-	if (Mode == OMthrottled) {
-	    NCwriteshutdown(cp, ModeReason);
-	    break;
-	}
-	cp->State = CSgetcmd;
-	NCwritereply(cp, response);
-	break;
-
-    case OMthrottled:
-	NCwriteshutdown(cp, ModeReason);
-	cp->Rejected++;
-	break;
-    }
-
-    /* Clear the work-in-progress entry. */
-    NCclearwip(cp);
+  /* Note that some use break, some use return here. */
+  if (postok = ARTpost(cp)) {
+    cp->Received++;
+    if (cp->Sendid.Size > 3) { /* We be streaming */
+      cp->Takethis_Ok++;
+      (void)sprintf(buff, "%d", NNTP_OK_RECID_VAL);
+      cp->Sendid.Data[0] = buff[0];
+      cp->Sendid.Data[1] = buff[1];
+      cp->Sendid.Data[2] = buff[2];
+      response = cp->Sendid.Data;
+    } else
+      response = NNTP_TOOKIT;
+  } else {
+    cp->Rejected++;
+    if (cp->Sendid.Size)
+      response = cp->Sendid.Data;
+    else
+      response = cp->Error;
+  }
+  cp->Reported++;
+  if (cp->Reported >= innconf->nntpactsync) {
+    sprintf(buff, "accepted size %.0f duplicate size %.0f", cp->Size,
+      cp->DuplicateSize);
+    syslog(L_NOTICE,
+      "%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld %s",
+      CHANname(cp), (long)(Now.time - cp->Started),
+    cp->Received, cp->Refused, cp->Rejected,
+    cp->Duplicate, buff);
+    cp->Reported = 0;
+  }
+  if (Mode == OMthrottled) {
+    NCwriteshutdown(cp, ModeReason);
+    return;
+  }
+  cp->State = CSgetcmd;
+  NCwritereply(cp, response);
 }
 
 
@@ -265,7 +250,8 @@ NCwritedone(CHANNEL *cp)
 
     case CSgetcmd:
     case CSgetauth:
-    case CSgetarticle:
+    case CSgetheader:
+    case CSgetbody:
     case CSgetxbatch:
     case CScancel:
 	RCHANadd(cp);
@@ -286,8 +272,9 @@ NChead(CHANNEL *cp)
     ARTHANDLE		*art;
 
     /* Snip off the Message-ID. */
-    for (p = cp->In.Data + STRLEN("head"); ISWHITE(*p); p++)
+    for (p = cp->In.Data + cp->Start + STRLEN("head"); ISWHITE(*p); p++)
 	continue;
+    cp->Start = cp->Next;
     if (NCbadid(cp, p))
 	return;
 
@@ -324,8 +311,9 @@ NCstat(CHANNEL *cp)
     char		*buff;
 
     /* Snip off the Message-ID. */
-    for (p = cp->In.Data + STRLEN("stat"); ISWHITE(*p); p++)
+    for (p = cp->In.Data + cp->Start + STRLEN("stat"); ISWHITE(*p); p++)
 	continue;
+    cp->Start = cp->Next;
     if (NCbadid(cp, p))
 	return;
 
@@ -362,7 +350,8 @@ NCauthinfo(CHANNEL *cp)
     static char		USER[] = "user ";
     char		*p;
 
-    p = cp->In.Data;
+    p = cp->In.Data + cp->Start;
+    cp->Start = cp->Next;
 
     /* Allow the poor sucker to quit. */
     if (caseEQ(p, "quit")) {
@@ -397,8 +386,7 @@ NCauthinfo(CHANNEL *cp)
     if (!RCauthorized(cp, p)) {
 	cp->State = CSwritegoodbye;
 	NCwritereply(cp, NNTP_AUTH_BAD);
-    }
-    else {
+    } else {
 	cp->State = CSgetcmd;
 	NCwritereply(cp, NNTP_AUTH_OK);
     }
@@ -430,6 +418,7 @@ NChelp(CHANNEL *cp)
     WCHANappend(cp, LINE2, STRLEN(LINE2));
     WCHANappend(cp, NCterm, STRLEN(NCterm));
     NCwritereply(cp, NCdot) ;
+    cp->Start = cp->Next;
 }
 
 /*
@@ -447,8 +436,9 @@ NCihave(CHANNEL *cp)
 
     cp->Ihave++;
     /* Snip off the Message-ID. */
-    for (p = cp->In.Data + STRLEN("ihave"); ISWHITE(*p); p++)
+    for (p = cp->In.Data + cp->Start + STRLEN("ihave"); ISWHITE(*p); p++)
 	continue;
+    cp->Start = cp->Next;
     if (NCbadid(cp, p))
 	return;
 
@@ -522,10 +512,15 @@ NCihave(CHANNEL *cp)
 	}
     }
     else {
+	if (cp->Sendid.Size > 0) {
+            DISPOSE(cp->Sendid.Data);
+	    cp->Sendid.Size = 0;
+	}
 	cp->Ihave_SendIt++;
 	NCwritereply(cp, NNTP_SENDIT);
 	cp->ArtBeg = Now.time;
-	cp->State = CSgetarticle;
+	cp->State = CSgetheader;
+	ARTprepare(cp);
     }
 }
 
@@ -539,8 +534,9 @@ NCxbatch(CHANNEL *cp)
     char	*p;
 
     /* Snip off the batch size */
-    for (p = cp->In.Data + STRLEN("xbatch"); ISWHITE(*p); p++)
+    for (p = cp->In.Data + cp->Start + STRLEN("xbatch"); ISWHITE(*p); p++)
 	continue;
+    cp->Start = cp->Next;
 
     if (cp->XBatchSize) {
         syslog(L_FATAL, "NCxbatch(): oops, cp->XBatchSize already set to %d",
@@ -559,23 +555,9 @@ NCxbatch(CHANNEL *cp)
 	return;
     }
 
-#if 1
     /* we prefer not to touch the buffer, NCreader() does enough magic
      * with it
      */
-#else
-    /* We already know how much data will arrive, so we can allocate
-     * sufficient buffer space for the batch in advance. We allocate
-     * LOW_WATER + 1 more than needed, so that CHANreadtext() will never
-     * reallocate it.
-     */
-    if (cp->In.Size < cp->XBatchSize + LOW_WATER + 1) {
-        DISPOSE(cp->In.Data);
-	cp->In.Left = cp->In.Size = cp->XBatchSize + LOW_WATER + 1;
-	cp->In.Used = 0;
-	cp->In.Data = NEW(char, cp->In.Size);
-    }
-#endif
     cp->State = CSgetxbatch;
     NCwritereply(cp, NNTP_CONT_XBATCH);
 }
@@ -591,8 +573,13 @@ NClist(CHANNEL *cp)
     char		*trash;
     char		*end;
 
-    for (p = cp->In.Data + STRLEN("list"); ISWHITE(*p); p++)
+    if (cp->Nolist) {
+	NCwritereply(cp, NCbadcommand);
+	return;
+    }
+    for (p = cp->In.Data + cp->Start + STRLEN("list"); ISWHITE(*p); p++)
 	continue;
+    cp->Start = cp->Next;
     if (caseEQ(p, "newsgroups")) {
 	trash = p = ReadInFile(cpcatpath(innconf->pathdb, _PATH_NEWSGROUPS),
                                NULL);
@@ -643,8 +630,9 @@ NCmode(CHANNEL *cp)
     HANDOFF		h;
 
     /* Skip the first word, get the argument. */
-    for (p = cp->In.Data + STRLEN("mode"); ISWHITE(*p); p++)
+    for (p = cp->In.Data + cp->Start + STRLEN("mode"); ISWHITE(*p); p++)
 	continue;
+    cp->Start = cp->Next;
 
     if (caseEQ(p, "reader") && !innconf->noreader)
 	h = HOnnrpd;
@@ -703,15 +691,16 @@ NCxpath(CHANNEL *cp)
 static void
 NC_unimp(CHANNEL *cp)
 {
-    char		*p;
+    char		*p, *q;
     char		buff[SMBUF];
 
     /* Nip off the first word. */
-    for (p = cp->In.Data; *p && !ISWHITE(*p); p++)
+    for (p = q = cp->In.Data + cp->Start; *p && !ISWHITE(*p); p++)
 	continue;
+    cp->Start = cp->Next;
     *p = '\0';
     (void)sprintf(buff, "%d \"%s\" not implemented; try \"help\".",
-	    NNTP_BAD_COMMAND_VAL, MaxLength(cp->In.Data, cp->In.Data));
+	    NNTP_BAD_COMMAND_VAL, MaxLength(q, q));
     NCwritereply(cp, buff);
 }
 
@@ -724,460 +713,430 @@ NC_unimp(CHANNEL *cp)
 static void
 NCproc(CHANNEL *cp)
 {
-    char	        *p;
-    NCDISPATCH   	*dp;
-    BUFFER	        *bp;
-    char		buff[SMBUF];
-    int			i;
+  char	        *p, *q;
+  NCDISPATCH   	*dp;
+  BUFFER	*bp;
+  char		buff[SMBUF];
+  int		i, j;
+  bool		readmore, movedata;
+  HASH		hash;
+  ARTDATA	*data = &cp->Data;
+  HDRCONTENT    *hc = data->HdrContent;
 
-    if (Tracing || cp->Tracing)
-	syslog(L_TRACE, "%s NCproc Used=%d",
-	    CHANname(cp), cp->In.Used);
+  readmore = movedata = FALSE;
+  if (Tracing || cp->Tracing)
+    syslog(L_TRACE, "%s NCproc Used=%d", CHANname(cp), cp->In.Used);
 
-    bp = &cp->In;
-    if (bp->Used == 0)
-	return;
+  bp = &cp->In;
+  if (bp->Used == 0)
+    return;
 
-    p = &bp->Data[bp->Used];
-    for ( ; ; ) {
-	cp->Rest = 0;
-	cp->SaveUsed = bp->Used;
-	if (Tracing || cp->Tracing)
-	    if (bp->Used > 15)
-		syslog(L_TRACE, "%s NCproc state=%d next \"%.15s\"",
-		    CHANname(cp), cp->State, bp->Data);
-	switch (cp->State) {
-	default:
-	    syslog(L_ERROR, "%s internal NCproc state %d",
-		CHANname(cp), cp->State);
-	    break;
-
-	case CSgetcmd:
-	case CSgetauth:
-        case CScancel:
-	    /* Did we get the whole command, terminated with "\r\n"? */
-	    for (i = 0; (i < bp->Used) && (bp->Data[i] != '\n'); i++) ;
-	    if (i < bp->Used) cp->Rest = bp->Used = ++i;
-	    else {
-		cp->Rest = 0;
-		/* Check for too long command. */
-		if (bp->Used > NNTP_STRLEN) {
-		    /* Make some room, saving only the last few bytes. */
-		    for (p = bp->Data, i = 0; i < SAVE_AMT; p++, i++)
-			p[0] = p[bp->Used - SAVE_AMT];
-		    cp->LargeCmdSize += bp->Used - SAVE_AMT;
-		    bp->Used = cp->Lastch = SAVE_AMT;
-		    cp->State = CSeatcommand;
-		}
-		break;	/* come back later for rest of line */
-	    }
-	    if (cp->Rest < 2) break;
-	    p = &bp->Data[cp->Rest];
-	    if (p[-2] != '\r' || p[-1] != '\n') { /* probably in an article */
-		int j;
-		char *tmpstr;
-
-		tmpstr = NEW(char, bp->Used + 1);
-		memcpy(tmpstr, bp->Data, bp->Used);
-		tmpstr[bp->Used] = '\0';
-		
-		syslog(L_NOTICE, "%s bad_command %s",
-		    CHANname(cp), MaxLength(tmpstr, tmpstr));
-		DISPOSE(tmpstr);
-
-		if (++(cp->BadCommands) >= BAD_COMMAND_COUNT) {
-		    cp->State = CSwritegoodbye;
-		    NCwritereply(cp, NCbadcommand);
-		    cp->Rest = cp->SaveUsed;
-		    break;
-		} else
-		    NCwritereply(cp, NCbadcommand);
-		for (j = i + 1; j < cp->SaveUsed; j++)
-		    if (bp->Data[j] == '\n') {
-			if (bp->Data[j - 1] == '\r') break;
-			else cp->Rest = bp->Used = j + 1;
-		    }
-		break;
-	    }
-	    p[-2] = '\0';
-	    bp->Used -= 2;
-
-	    /* Ignore blank lines. */
-	    if (bp->Data[0] == '\0')
-		break;
-	    if (Tracing || cp->Tracing)
-		syslog(L_TRACE, "%s < %s", CHANname(cp), bp->Data);
-
-	    /* We got something -- stop sleeping (in case we were). */
-	    SCHANremove(cp);
-	    if (cp->Argument != NULL) {
-		DISPOSE(cp->Argument);
-		cp->Argument = NULL;
-	    }
-
-	    if (cp->State == CSgetauth) {
-		if (caseEQn(bp->Data, "mode", 4))
-		    NCmode(cp);
-		else
-		    NCauthinfo(cp);
-		break;
-           } else if (cp->State == CScancel) {
-                NCcancel(cp);
-                break;
-	    }
-
-	    /* Loop through the command table. */
-	    for (p = bp->Data, dp = NCcommands; dp < ENDOF(NCcommands); dp++)
-		if (caseEQn(p, dp->Name, dp->Size)) {
-                    /* ignore the streaming commands if necessary. */
-                    if (!StreamingOff || cp->Streaming ||
-                        (dp->Function != NCcheck && dp->Function != NCtakethis)) {
-                        (*dp->Function)(cp);
-                        cp->BadCommands = 0;
-                        break;
-                    }
-		}
-            
-	    if (dp == ENDOF(NCcommands)) {
-		if (++(cp->BadCommands) >= BAD_COMMAND_COUNT) {
-		    cp->State = CSwritegoodbye;
-		    NCwritereply(cp, NCbadcommand);
-		    cp->Rest = cp->SaveUsed;
-		} else
-		    NCwritereply(cp, NCbadcommand);
-
-                /* Channel could have been freed by above NCwritereply if 
-                   we're writing-goodbye */
-		if (cp->Type == CTfree) {
-                    return;
-                }
-                
-		for (i = 0; (p = NCquietlist[i]) != NULL; i++)
-		    if (caseEQ(p, bp->Data))
-			break;
-		if (p == NULL)
-		    syslog(L_NOTICE, "%s bad_command %s",
-			CHANname(cp), MaxLength(bp->Data, bp->Data));
-	    }
-	    break;
-
-	case CSgetarticle:
-	    /* Check for the null article. */
-	    if ((bp->Used >= 3) && (bp->Data[0] == '.')
-	     && (bp->Data[1] == '\r') && (bp->Data[2] == '\n')) {
-		cp->Rest = 3;	/* null article (canceled?) */
-		cp->Rejected++;
-		cp->State = CSgetcmd;
-		if (cp->Sendid.Size > 3) { /* We be streaming */
-		    cp->Takethis_Err++;
-		    (void)sprintf(buff, "%d", NNTP_ERR_FAILID_VAL);
-		    cp->Sendid.Data[0] = buff[0];
-		    cp->Sendid.Data[1] = buff[1];
-		    cp->Sendid.Data[2] = buff[2];
-		    NCwritereply(cp, cp->Sendid.Data);
-		}
-		else NCwritereply(cp, NNTP_REJECTIT_EMPTY);
-		bp->Used = 0;
-
-		/* Clear the work-in-progress entry. */
-		NCclearwip(cp);
-		break;
-	    }
-	    /* Reading an article; look for "\r\n.\r\n" terminator. */
-	    if (cp->Lastch > 5) i = cp->Lastch; /* only look at new data */
-	    else		i = 5;
-	    for ( ; i <= bp->Used; i++) {
-		if ((bp->Data[i - 5] == '\r')
-		 && (bp->Data[i - 4] == '\n')
-		 && (bp->Data[i - 3] == '.')
-		 && (bp->Data[i - 2] == '\r')
-		 && (bp->Data[i - 1] == '\n')) {
-		    cp->Rest = bp->Used = i;
-		    p = &bp->Data[i];
-		    break;
-		}
-	    }
-	    cp->Lastch = i;
-	    if (i > bp->Used) {	/* did not find terminator */
-		/* Check for big articles. */
-		if (innconf->maxartsize > SAVE_AMT && bp->Used > innconf->maxartsize) {
-		    /* Make some room, saving only the last few bytes. */
-		    for (p = bp->Data, i = 0; i < SAVE_AMT; p++, i++)
-			p[0] = p[bp->Used - SAVE_AMT];
-		    cp->LargeArtSize += bp->Used - SAVE_AMT;
-		    bp->Used = cp->Lastch = SAVE_AMT;
-		    cp->State = CSeatarticle;
-		}
-		cp->Rest = 0;
-		break;
-	    }
-	    if (Mode == OMpaused) { /* defer processing while paused */
-		cp->Rest = 0;
-		bp->Used = cp->SaveUsed;
-		RCHANremove(cp); /* don't bother trying to read more for now */
-		SCHANadd(cp, Now.time + innconf->pauseretrytime, &Mode,
-                         NCproc, NULL);
-		return;
-	    }
-
-	    /* Strip article terminator and post the article. */
-	    p[-3] = '\0';
-	    bp->Used -= 2;
-	    SCHANremove(cp);
-	    if (cp->Argument != NULL) {
-		DISPOSE(cp->Argument);
-		cp->Argument = NULL;
-	    }
-	    NCpostit(cp);
-	    if (cp->State == CSwritegoodbye)
-		break;
-	    cp->State = CSgetcmd;
-	    break;
-
-	case CSeatarticle:
-	    /* Eat the article and then complain that it was too large */
-	    /* Reading an article; look for "\r\n.\r\n" terminator. */
-	    if (cp->Lastch > 5) i = cp->Lastch; /* only look at new data */
-	    else		i = 5;
-	    for ( ; i <= bp->Used; i++) {
-		if ((bp->Data[i - 5] == '\r')
-		 && (bp->Data[i - 4] == '\n')
-		 && (bp->Data[i - 3] == '.')
-		 && (bp->Data[i - 2] == '\r')
-		 && (bp->Data[i - 1] == '\n')) {
-		    cp->Rest = bp->Used = i;
-		    p = &bp->Data[i];
-		    break;
-		}
-	    }
-	    if (i <= bp->Used) {	/* did find terminator */
-		/* Reached the end of the article. */
-		SCHANremove(cp);
-		if (cp->Argument != NULL) {
-		    DISPOSE(cp->Argument);
-		    cp->Argument = NULL;
-		}
-		i = cp->LargeArtSize + bp->Used;
-		syslog(L_NOTICE, "%s internal rejecting huge article (%d > %ld)",
-		    CHANname(cp), i, innconf->maxartsize);
-		cp->LargeArtSize = 0;
-		cp->State = CSgetcmd;
-		if (cp->Sendid.Size)
-		    NCwritereply(cp, cp->Sendid.Data);
-		else {
-		    (void)sprintf(buff, "%d Article exceeds local limit of %ld bytes",
-				NNTP_REJECTIT_VAL, innconf->maxartsize);
-		    NCwritereply(cp, buff);
-                }
-		cp->Rejected++;
-
-		/* Write a local cancel entry so nobody else gives it to us. */
-		    if (!HIShavearticle(cp->CurrentMessageIDHash))
-			if (!HISremember(cp->CurrentMessageIDHash)) 
-			    syslog(L_ERROR, "%s cant write %s", LogName, 
-			        HashToText(cp->CurrentMessageIDHash)); 
-
-		/* Clear the work-in-progress entry. */
-		NCclearwip(cp);
-
-		/*
-		 * only free and allocate the buffer back to
-		 * START_BUFF_SIZE if there's nothing in the buffer we
-		 * need to save (i.e., following commands.
-		 * if there is, then we're probably in streaming mode,
-		 * so probably not much point in trying to keep the
-		 * buffers minimal anyway...
-		 */
-		if (bp->Used == cp->SaveUsed) {
-		    /* Reset input buffer to the default size; don't let realloc
-		     * be lazy. */
-		    DISPOSE(bp->Data);
-		    bp->Size = START_BUFF_SIZE;
-		    bp->Used = 0;
-		    bp->Data = NEW(char, bp->Size);
-		    cp->SaveUsed = cp->Rest = cp->Lastch = 0;
-		}
-	    }
-	    else if (bp->Used > 8 * 1024) {
-		/* Make some room; save the last few bytes of the article */
-		for (p = bp->Data, i = 0; i < SAVE_AMT; p++, i++)
-		    p[0] = p[bp->Used - SAVE_AMT + 0];
-		cp->LargeArtSize += bp->Used - SAVE_AMT;
-		bp->Used = cp->Lastch = SAVE_AMT;
-		cp->Rest = 0;
-	    }
-	    break;
-	case CSeatcommand:
-	    /* Eat the command line and then complain that it was too large */
-	    /* Reading a line; look for "\r\n" terminator. */
-	    if (cp->Lastch > 5) i = cp->Lastch; /* only look at new data */
-	    else		i = 5;
-	    for ( ; i <= bp->Used; i++) {
-		if ((bp->Data[i - 2] == '\r') && (bp->Data[i - 1] == '\n')) {
-		    cp->Rest = bp->Used = i;
-		    p = &bp->Data[i];
-		    break;
-		}
-	    }
-	    if (i <= bp->Used) {	/* did find terminator */
-		/* Reached the end of the command line. */
-		SCHANremove(cp);
-		if (cp->Argument != NULL) {
-		    DISPOSE(cp->Argument);
-		    cp->Argument = NULL;
-		}
-		i = cp->LargeCmdSize + bp->Used;
-		syslog(L_NOTICE, "%s internal rejecting too long command line (%d > %d)",
-		    CHANname(cp), i, NNTP_STRLEN);
-		cp->LargeCmdSize = 0;
-		sprintf(buff, "%d command exceeds local limit of %d bytes",
-			NNTP_BAD_COMMAND_VAL, NNTP_STRLEN);
-		cp->State = CSgetcmd;
-		NCwritereply(cp, buff);
-
-		/*
-		 * only free and allocate the buffer back to
-		 * START_BUFF_SIZE if there's nothing in the buffer we
-		 * need to save (i.e., following commands.
-		 * if there is, then we're probably in streaming mode,
-		 * so probably not much point in trying to keep the
-		 * buffers minimal anyway...
-		 */
-		if (bp->Used == cp->SaveUsed) {
-		    /* Reset input buffer to the default size; don't let realloc
-		     * be lazy. */
-		    DISPOSE(bp->Data);
-		    bp->Size = START_BUFF_SIZE;
-		    bp->Used = 0;
-		    bp->Data = NEW(char, bp->Size);
-		    cp->SaveUsed = cp->Rest = cp->Lastch = 0;
-		}
-	    }
-	    else if (bp->Used > 8 * 1024) {
-		/* Make some room; save the last few bytes of the article */
-		for (p = bp->Data, i = 0; i < SAVE_AMT; p++, i++)
-		    p[0] = p[bp->Used - SAVE_AMT + 0];
-		cp->LargeCmdSize += bp->Used - SAVE_AMT;
-		bp->Used = cp->Lastch = SAVE_AMT;
-		cp->Rest = 0;
-	    }
-	    break;
-	case CSgetxbatch:
-	    /* if the batch is complete, write it out into the in.coming
-	    * directory with an unique timestamp, and start rnews on it.
-	    */
-	    if (Tracing || cp->Tracing)
-		syslog(L_TRACE, "%s CSgetxbatch: now %d of %d bytes",
-			CHANname(cp), bp->Used, cp->XBatchSize);
-
-	    if (bp->Used < cp->XBatchSize) {
-		cp->Rest = 0;
-		break;	/* give us more data */
-	    }
-	    cp->Rest = cp->XBatchSize;
-
-	    /* now do something with the batch */
-	    {
-		char buff2[SMBUF];
-		int fd, oerrno, failed;
-		long now;
-
-		now = time(NULL);
-		failed = 0;
-		/* time+channel file descriptor should make an unique file name */
-		sprintf(buff, "%s/%ld%d.tmp", innconf->pathincoming,
-						now, cp->fd);
-		fd = open(buff, O_WRONLY|O_CREAT|O_EXCL, ARTFILE_MODE);
-		if (fd < 0) {
-		    oerrno = errno;
-		    failed = 1;
-		    syslog(L_ERROR, "%s cannot open outfile %s for xbatch: %m",
-			    CHANname(cp), buff);
-		    sprintf(buff, "%s cant create file: %s",
-			    NNTP_RESENDIT_XBATCHERR, strerror(oerrno));
-		    NCwritereply(cp, buff);
-		} else {
-		    if (write(fd, cp->In.Data, cp->XBatchSize) != cp->XBatchSize) {
-			oerrno = errno;
-			syslog(L_ERROR, "%s cant write batch to file %s: %m",
-				CHANname(cp), buff);
-			sprintf(buff, "%s cant write batch to file: %s",
-				NNTP_RESENDIT_XBATCHERR, strerror(oerrno));
-			NCwritereply(cp, buff);
-			failed = 1;
-		    }
-		}
-		if (fd >= 0 && close(fd) != 0) {
-		    oerrno = errno;
-		    syslog(L_ERROR, "%s error closing batch file %s: %m",
-			    CHANname(cp), failed ? "" : buff);
-		    sprintf(buff, "%s error closing batch file: %s",
-			    NNTP_RESENDIT_XBATCHERR, strerror(oerrno));
-		    NCwritereply(cp, buff);
-		    failed = 1;
-		}
-		sprintf(buff2, "%s/%ld%d.x", innconf->pathincoming,
-						now, cp->fd);
-		if (rename(buff, buff2)) {
-		    oerrno = errno;
-		    syslog(L_ERROR, "%s cant rename %s to %s: %m",
-			    CHANname(cp), failed ? "" : buff, buff2);
-		    sprintf(buff, "%s cant rename batch to %s: %s",
-			    NNTP_RESENDIT_XBATCHERR, buff2, strerror(oerrno));
-		    NCwritereply(cp, buff);
-		    failed = 1;
-		}
-		cp->Reported++;
-		if (!failed) {
-		    NCwritereply(cp, NNTP_OK_XBATCHED);
-		    cp->Received++;
-		} else
-		    cp->Rejected++;
-	    }
-	    syslog(L_NOTICE, "%s accepted batch size %d",
-		   CHANname(cp), cp->XBatchSize);
-	    cp->State = CSgetcmd;
-	    
-	    /* Clear the work-in-progress entry. */
-	    NCclearwip(cp);
-
-#if 1
-	    /* leave the input buffer as it is, there is a fair chance
-		* that we will get another xbatch on this channel.
-		* The buffer will finally be disposed at connection shutdown.
-		*/
-#else
-	    /* Reset input buffer to the default size; don't let realloc 
-		* be lazy. */
-	    DISPOSE(bp->Data);
-	    bp->Size = START_BUFF_SIZE;
-	    bp->Used = 0;
-	    bp->Data = NEW(char, bp->Size);
-#endif
-	    cp->State = CSgetcmd;
-	    break;
-	}
-	if (cp->State == CSwritegoodbye)
-	    break;
-	if (Tracing || cp->Tracing)
-		syslog(L_TRACE, "%s NCproc Rest=%d Used=%d SaveUsed=%d",
-		    CHANname(cp), cp->Rest, bp->Used, cp->SaveUsed);
-
-	if (cp->Rest > 0) {
-	    if (cp->Rest < cp->SaveUsed) { /* more commands in buffer */
-		bp->Used = cp->SaveUsed = cp->SaveUsed - cp->Rest;
-		/* It would be nice to avoid this copy but that
-		** would require changes to the bp structure and
-		** the way it is used.
-		*/
-		memmove(bp->Data, &bp->Data[cp->Rest], bp->Used);
-		cp->Rest = cp->Lastch = 0;
-	    } else {
-		bp->Used = cp->Lastch = 0;
-		break;
-	    }
-	} else break;
+  for ( ; ; ) {
+    if (Tracing || cp->Tracing) {
+      syslog(L_TRACE, "%s cp->Start=%d cp->Next=%d bp->Used=%d", CHANname(cp),
+	cp->Start, cp->Next, bp->Used);
+      if (bp->Used > 15)
+	syslog(L_TRACE, "%s NCproc state=%d next \"%.15s\"", CHANname(cp),
+	  cp->State, &bp->Data[cp->Next]);
     }
+    switch (cp->State) {
+    default:
+      syslog(L_ERROR, "%s internal NCproc state %d", CHANname(cp), cp->State);
+      movedata = FALSE;
+      readmore = TRUE;
+      break;
+
+    case CSwritegoodbye:
+      movedata = FALSE;
+      readmore = TRUE;
+      break;
+
+    case CSgetcmd:
+    case CSgetauth:
+    case CScancel:
+      /* Did we get the whole command, terminated with "\r\n"? */
+      for (i = cp->Next; (i < bp->Used) && (bp->Data[i] != '\n'); i++) ;
+      if (i == bp->Used) {
+	/* Check for too long command. */
+	if ((j = bp->Used - cp->Start) > NNTP_STRLEN) {
+	  /* Make some room, saving only the last few bytes. */
+	  for (p = bp->Data, i = 0; i < SAVE_AMT; i++)
+	    p[i] = p[bp->Used - SAVE_AMT + i];
+	  cp->LargeCmdSize += j - SAVE_AMT;
+	  bp->Used = cp->Next = SAVE_AMT;
+	  bp->Left = bp->Size - SAVE_AMT;
+	  cp->Start = 0;
+	  cp->State = CSeatcommand;
+	  /* above means moving data already */
+	  movedata = FALSE;
+	} else {
+	  cp->Next = bp->Used;
+	  /* move data to the begining anyway */
+	  movedata = TRUE;
+	}
+	readmore = TRUE;
+	break;
+      }
+      /* i points where '\n" and go forward */
+      cp->Next = ++i;
+      /* never move data so long as "\r\n" is found, since subsequent
+	 data may also include command line */
+      movedata = FALSE;
+      readmore = FALSE;
+      if (i - cp->Start < 3) {
+	break;
+      }
+      p = &bp->Data[i];
+      if (p[-2] != '\r') { /* probably in an article */
+	char *tmpstr;
+
+	tmpstr = NEW(char, i + 1);
+	memcpy(tmpstr, bp->Data + cp->Start, i);
+	tmpstr[i] = '\0';
+	
+	syslog(L_NOTICE, "%s bad_command %s", CHANname(cp),
+	  MaxLength(tmpstr, tmpstr));
+	DISPOSE(tmpstr);
+
+	if (++(cp->BadCommands) >= BAD_COMMAND_COUNT) {
+	  cp->State = CSwritegoodbye;
+	  NCwritereply(cp, NCbadcommand);
+	  break;
+	}
+	NCwritereply(cp, NCbadcommand);
+	/* still some data left, go for it */
+	cp->Start = cp->Next;
+	break;
+      }
+
+      q = &bp->Data[cp->Start];
+      /* Ignore blank lines. */
+      if (*q == '\0' || i - cp->Start == 2) {
+	cp->Start = cp->Next;
+	break;
+      }
+      p[-2] = '\0';
+      if (Tracing || cp->Tracing)
+	syslog(L_TRACE, "%s < %s", CHANname(cp), q);
+
+      /* We got something -- stop sleeping (in case we were). */
+      SCHANremove(cp);
+      if (cp->Argument != NULL) {
+	DISPOSE(cp->Argument);
+	cp->Argument = NULL;
+      }
+
+      if (cp->State == CSgetauth) {
+	if (caseEQn(q, "mode", 4))
+	  NCmode(cp);
+	else
+	  NCauthinfo(cp);
+	break;
+      } else if (cp->State == CScancel) {
+	NCcancel(cp);
+	break;
+      }
+
+      /* Loop through the command table. */
+      for (p = q, dp = NCcommands; dp < ENDOF(NCcommands); dp++) {
+	if (caseEQn(p, dp->Name, dp->Size)) {
+	  /* ignore the streaming commands if necessary. */
+	  if (!StreamingOff || cp->Streaming ||
+	    (dp->Function != NCcheck && dp->Function != NCtakethis)) {
+	    (*dp->Function)(cp);
+	    cp->BadCommands = 0;
+	    break;
+	  }
+	}
+      }
+      if (dp == ENDOF(NCcommands)) {
+	if (++(cp->BadCommands) >= BAD_COMMAND_COUNT)
+	    cp->State = CSwritegoodbye;
+	NCwritereply(cp, NCbadcommand);
+	cp->Start = cp->Next;
+
+	/* Channel could have been freed by above NCwritereply if 
+	   we're writing-goodbye */
+	if (cp->Type == CTfree)
+	  return;
+	for (i = 0; (p = NCquietlist[i]) != NULL; i++)
+	  if (caseEQ(p, q))
+	    break;
+	if (p == NULL)
+	  syslog(L_NOTICE, "%s bad_command %s", CHANname(cp),
+	    MaxLength(q, q));
+      }
+      break;
+
+    case CSgetheader:
+    case CSgetbody:
+    case CSeatarticle:
+      TMRstart(TMR_ARTPARSE);
+      ARTparse(cp);
+      TMRstop(TMR_ARTPARSE);
+      if (cp->State == CSgetbody || cp->State == CSgetheader ||
+	      cp->State == CSeatarticle) {
+	if (cp->Next - cp->Start > innconf->datamovethreshold ||
+	  (innconf->maxartsize > 0 && cp->Size > innconf->maxartsize)) {
+	  /* avoid buffer extention for ever */
+	  movedata = TRUE;
+	} else {
+	  movedata = FALSE;
+	}
+	readmore = TRUE;
+	break;
+      }
+
+      if (*cp->Error != '\0') {
+	cp->Rejected++;
+	cp->State = CSgetcmd;
+	cp->Start = cp->Next;
+	NCclearwip(cp);
+	if (cp->Sendid.Size > 3)
+	  NCwritereply(cp, cp->Sendid.Data);
+	else
+	  NCwritereply(cp, cp->Error);
+	readmore = FALSE;
+	movedata = FALSE;
+	break;
+      }
+
+      if (cp->State == CSgotlargearticle) {
+	syslog(L_NOTICE, "%s internal rejecting huge article (%d > %ld)",
+	  CHANname(cp), cp->LargeArtSize, innconf->maxartsize);
+	if (cp->Sendid.Size)
+	  NCwritereply(cp, cp->Sendid.Data);
+	else {
+	  (void)sprintf(buff, "%d Article exceeds local limit of %ld bytes",
+	    NNTP_REJECTIT_VAL, innconf->maxartsize);
+	  NCwritereply(cp, buff);
+        }
+	cp->LargeArtSize = 0;
+	cp->State = CSgetcmd;
+	cp->Rejected++;
+	cp->Start = cp->Next;
+
+	/* Write a local cancel entry so nobody else gives it to us. */
+	hash = HashMessageID(HDR(_message_id));
+	if (!HIShavearticle(hash) && !HISremember(hash)) 
+	  syslog(L_ERROR, "%s cant write %s", LogName, HashToText(hash)); 
+	/* Clear the work-in-progress entry. */
+	NCclearwip(cp);
+	readmore = FALSE;
+	movedata = FALSE;
+	break;
+      }
+
+      if (cp->State == CSnoarticle) {
+	/* this should happen when parsing header */
+	cp->Rejected++;
+	cp->State = CSgetcmd;
+	cp->Start = cp->Next;
+	/* Clear the work-in-progress entry. */
+	NCclearwip(cp);
+	if (cp->Sendid.Size > 3) { /* We be streaming */
+	  cp->Takethis_Err++;
+	  (void)sprintf(buff, "%d", NNTP_ERR_FAILID_VAL);
+	  cp->Sendid.Data[0] = buff[0];
+	  cp->Sendid.Data[1] = buff[1];
+	  cp->Sendid.Data[2] = buff[2];
+	  NCwritereply(cp, cp->Sendid.Data);
+	} else
+	  NCwritereply(cp, NNTP_REJECTIT_EMPTY);
+	readmore = FALSE;
+	movedata = FALSE;
+	break;
+      }
+    case CSgotarticle: /* in case caming back from pause */
+      /* never move data so long as "\r\n.\r\n" is found, since subsequent data
+	 may also include command line */
+      readmore = FALSE;
+      movedata = FALSE;
+      if (Mode == OMpaused) { /* defer processing while paused */
+	RCHANremove(cp); /* don't bother trying to read more for now */
+	SCHANadd(cp, Now.time + innconf->pauseretrytime, &Mode, NCproc, NULL);
+	return;
+      } else if (Mode == OMthrottled) {
+	/* Clear the work-in-progress entry. */
+	NCclearwip(cp);
+	NCwriteshutdown(cp, ModeReason);
+	cp->Rejected++;
+	return;
+      }
+
+      SCHANremove(cp);
+      if (cp->Argument != NULL) {
+	DISPOSE(cp->Argument);
+	cp->Argument = NULL;
+      }
+      NCpostit(cp);
+      /* Clear the work-in-progress entry. */
+      NCclearwip(cp);
+      if (cp->State == CSwritegoodbye)
+	break;
+      cp->State = CSgetcmd;
+      cp->Start = cp->Next;
+      break;
+
+    case CSeatcommand:
+      /* Eat the command line and then complain that it was too large */
+      /* Reading a line; look for "\r\n" terminator. */
+      /* cp->Next should be SAVE_AMT(10) */
+      for (i = cp->Next ; i < bp->Used; i++) {
+	if ((bp->Data[i - 1] == '\r') && (bp->Data[i] == '\n')) {
+	  cp->Next = i + 1;
+	  break;
+	}
+      }
+      if (i < bp->Used) {	/* did find terminator */
+	/* Reached the end of the command line. */
+	SCHANremove(cp);
+	if (cp->Argument != NULL) {
+	  DISPOSE(cp->Argument);
+	  cp->Argument = NULL;
+	}
+	i += cp->LargeCmdSize;
+	syslog(L_NOTICE, "%s internal rejecting too long command line (%d > %d)",
+	  CHANname(cp), i, NNTP_STRLEN);
+	cp->LargeCmdSize = 0;
+	sprintf(buff, "%d command exceeds limit of %d bytes",
+	  NNTP_BAD_COMMAND_VAL, NNTP_STRLEN);
+	cp->State = CSgetcmd;
+	cp->Start = cp->Next;
+	NCwritereply(cp, buff);
+        readmore = FALSE;
+        movedata = FALSE;
+      } else {
+	cp->LargeCmdSize += bp->Used - cp->Next;
+	bp->Used = cp->Next = SAVE_AMT;
+	bp->Left = bp->Size - SAVE_AMT;
+	cp->Start = 0;
+        readmore = TRUE;
+        movedata = FALSE;
+      }
+      break;
+
+    case CSgetxbatch:
+      /* if the batch is complete, write it out into the in.coming
+       * directory with an unique timestamp, and start rnews on it.
+       */
+      if (Tracing || cp->Tracing)
+	syslog(L_TRACE, "%s CSgetxbatch: now %d of %d bytes", CHANname(cp),
+	  bp->Used, cp->XBatchSize);
+
+      if (cp->Next != 0) {
+	/* data must start from the begining of the buffer */
+        movedata = TRUE;
+	readmore = FALSE;
+	break;
+      }
+      if (bp->Used < cp->XBatchSize) {
+	movedata = FALSE;
+	readmore = TRUE;
+	break;	/* give us more data */
+      }
+      movedata = FALSE;
+      readmore = FALSE;
+
+      /* now do something with the batch */
+      {
+	char buff2[SMBUF];
+	int fd, oerrno, failed;
+	long now;
+
+	now = time(NULL);
+	failed = 0;
+	/* time+channel file descriptor should make an unique file name */
+	sprintf(buff, "%s/%ld%d.tmp", innconf->pathincoming,
+					now, cp->fd);
+	fd = open(buff, O_WRONLY|O_CREAT|O_EXCL, ARTFILE_MODE);
+	if (fd < 0) {
+	  oerrno = errno;
+	  failed = 1;
+	  syslog(L_ERROR, "%s cannot open outfile %s for xbatch: %m",
+	    CHANname(cp), buff);
+	  sprintf(buff, "%s cant create file: %s", NNTP_RESENDIT_XBATCHERR,
+	    strerror(oerrno));
+	  NCwritereply(cp, buff);
+	} else {
+	  if (write(fd, cp->In.Data, cp->XBatchSize) != cp->XBatchSize) {
+	    oerrno = errno;
+	    syslog(L_ERROR, "%s cant write batch to file %s: %m", CHANname(cp),
+	      buff);
+	    sprintf(buff, "%s cant write batch to file: %s",
+	      NNTP_RESENDIT_XBATCHERR, strerror(oerrno));
+	    NCwritereply(cp, buff);
+	    failed = 1;
+	  }
+	}
+	if (fd >= 0 && close(fd) != 0) {
+	  oerrno = errno;
+	  syslog(L_ERROR, "%s error closing batch file %s: %m", CHANname(cp),
+	    failed ? "" : buff);
+	  sprintf(buff, "%s error closing batch file: %s",
+	    NNTP_RESENDIT_XBATCHERR, strerror(oerrno));
+	  NCwritereply(cp, buff);
+	  failed = 1;
+	}
+	sprintf(buff2, "%s/%ld%d.x", innconf->pathincoming, now, cp->fd);
+	if (rename(buff, buff2)) {
+	  oerrno = errno;
+	  syslog(L_ERROR, "%s cant rename %s to %s: %m", CHANname(cp),
+	    failed ? "" : buff, buff2);
+	  sprintf(buff, "%s cant rename batch to %s: %s",
+	    NNTP_RESENDIT_XBATCHERR, buff2, strerror(oerrno));
+	  NCwritereply(cp, buff);
+	  failed = 1;
+	}
+	cp->Reported++;
+	if (!failed) {
+	  NCwritereply(cp, NNTP_OK_XBATCHED);
+	  cp->Received++;
+	} else
+	  cp->Rejected++;
+      }
+      syslog(L_NOTICE, "%s accepted batch size %d", CHANname(cp),
+	cp->XBatchSize);
+      cp->State = CSgetcmd;
+      cp->Start = cp->Next = cp->XBatchSize;
+      break;
+    }
+    if (cp->State == CSwritegoodbye || cp->Type == CTfree)
+      break;
+    if (Tracing || cp->Tracing)
+      syslog(L_TRACE, "%s NCproc state=%d Start=%d Next=%d Used=%d",
+	CHANname(cp), cp->State, cp->Start, cp->Next, bp->Used);
+
+    if (movedata) { /* move data rather than extend buffer */
+      TMRstart(TMR_DATAMOVE);
+      movedata = FALSE;
+      if (cp->Start > 0)
+	memmove(bp->Data, &bp->Data[cp->Start], bp->Used - cp->Start);
+      bp->Used -= cp->Start;
+      bp->Left += cp->Start;
+      cp->Next -= cp->Start;
+      if (cp->State == CSgetheader || cp->State == CSgetbody ||
+	cp->State == CSeatarticle) {
+	/* adjust offset only in CSgetheader, CSgetbody or CSeatarticle */
+	data->CurHeader -= cp->Start;
+	data->LastTerminator -= cp->Start;
+	data->LastCR -= cp->Start;
+	data->LastCRLF -= cp->Start;
+	data->Body -= cp->Start;
+	if (data->BytesHeader != NULL)
+	  data->BytesHeader -= cp->Start;
+	for (i = 0 ; i < MAX_ARTHEADER ; i++, hc++) {
+	  if (hc->Value != NULL)
+	    hc->Value -= cp->Start;
+	}
+      }
+      cp->Start = 0;
+      TMRstop(TMR_DATAMOVE);
+    }
+    if (readmore)
+      /* need to read more */
+      break;
+  }
 }
 
 
@@ -1337,8 +1296,9 @@ NCcheck(CHANNEL *cp)
 
     cp->Check++;
     /* Snip off the Message-ID. */
-    for (p = cp->In.Data; *p && !ISWHITE(*p); p++)
+    for (p = cp->In.Data + cp->Start; *p && !ISWHITE(*p); p++)
 	continue;
+    cp->Start = cp->Next;
     for ( ; ISWHITE(*p); p++)
 	continue;
     idlen = strlen(p);
@@ -1421,8 +1381,9 @@ NCtakethis(CHANNEL *cp)
 
     cp->Takethis++;
     /* Snip off the Message-ID. */
-    for (p = cp->In.Data + STRLEN("takethis"); ISWHITE(*p); p++)
+    for (p = cp->In.Data + cp->Start + STRLEN("takethis"); ISWHITE(*p); p++)
 	continue;
+    cp->Start = cp->Next;
     for ( ; ISWHITE(*p); p++)
 	continue;
     if (!ARTidok(p)) {
@@ -1439,7 +1400,8 @@ NCtakethis(CHANNEL *cp)
     (void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_FAILID_VAL, p);
 
     cp->ArtBeg = Now.time;
-    cp->State = CSgetarticle;
+    cp->State = CSgetheader;
+    ARTprepare(cp);
     /* set WIP for benefit of later code in NCreader */
     if ((wp = WIPbyid(p)) == (WIP *)NULL)
 	wp = WIPnew(p, cp);
@@ -1457,14 +1419,15 @@ NCcancel(CHANNEL *cp)
     const char *res;
 
     ++cp->Received;
-    av[0] = cp->In.Data;
+    av[0] = cp->In.Data + cp->Start;
+    cp->Start = cp->Next;
     res = CCcancel(av);
     if (res) {
-       char buff[SMBUF];
-       (void)sprintf(buff, "%d %s", NNTP_ERR_CANCEL_VAL, MaxLength(res, res));
+        char buff[SMBUF];
+        (void)sprintf(buff, "%d %s", NNTP_ERR_CANCEL_VAL, MaxLength(res, res));
         syslog(L_NOTICE, "%s cant_cancel %s", CHANname(cp),
                MaxLength(res, res));
-       NCwritereply(cp, buff);
+        NCwritereply(cp, buff);
     } else {
         NCwritereply(cp, NNTP_OK_CANCELLED);
     }

@@ -2093,6 +2093,23 @@ section nnrpd_dom_groups {
         };
 };
 
+section nnrpd_resource {
+        title   "NNRP total resource statistics:";
+        data    "%nnrpd_resource";
+        column {
+                name          "User";
+                format_name   "%10s";
+                format        "%10.3f";
+		value         "$key";
+        };
+        column {
+                name          "Time";
+                format_name   "%10s";
+                format        "%13s";
+		value         "time_ms($nnrpd_resource{$key})";
+        };
+};
+
 section nnrpd_curious {
         title   "Curious NNRP server explorers:";
 	data    "%nnrpd_curious";

@@ -126,6 +126,30 @@ CommaSplit(char *text)
 
 
 /*
+**  Set up LISTBUFFER so that data will be put into array
+**  it allocates buffer and array for data if needed, otherwise use already
+**  allocated one
+*/
+void
+SetupListBuffer(int size, LISTBUFFER *list)
+{
+  /* get space for data to be splitted */
+  if (list->Data == NULL) {
+    list->DataLength = size;
+    list->Data = NEW(char, list->DataLength + 1);
+  } else if (list->DataLength < size) {
+    list->DataLength = size;
+    RENEW(list->Data, char, list->DataLength + 1);
+  }
+  /* get an array of character pointers. */
+  if (list->List == NULL) {
+    list->ListLength = DEFAULTNGBOXSIZE;
+    list->List = NEW(char*, list->ListLength);
+  }
+}
+
+
+/*
 **  Do we need a shell for the command?  If not, av is filled in with
 **  the individual words of the command and the command is modified to
 **  have NUL's inserted.

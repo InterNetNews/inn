@@ -95,7 +95,7 @@ depend: Makefile $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 art.o: art.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h art.h ../include/dbz.h ../include/libinn.h \
+ ../include/clibrary.h ../include/dbz.h ../include/libinn.h \
  innd.h ../include/portable/time.h ../include/macros.h \
  ../include/nntp.h ../include/paths.h ../include/storage.h \
  ../include/ov.h
@@ -145,7 +145,7 @@ ng.o: ng.c ../include/config.h ../include/inn/defines.h \
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h innd.h ../include/portable/time.h \
  ../include/dbz.h ../include/libinn.h ../include/macros.h \
- ../include/nntp.h ../include/paths.h ../include/storage.h art.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h \
  ../include/ppport.h
 proc.o: proc.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/wait.h innd.h \
@@ -153,7 +153,7 @@ proc.o: proc.c ../include/config.h ../include/inn/defines.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \
  ../include/storage.h
 python.o: python.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h art.h innd.h ../include/portable/time.h \
+ ../include/clibrary.h innd.h ../include/portable/time.h \
  ../include/dbz.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h ../include/paths.h ../include/storage.h
 rc.o: rc.c ../include/config.h ../include/inn/defines.h \

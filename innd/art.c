@@ -8,7 +8,6 @@
 #include <netinet/in.h>
 #include <sys/uio.h>
 
-#include "art.h"
 #include "dbz.h"
 #include "innd.h"
 #include "ov.h"
@@ -16,7 +15,8 @@
 
 typedef struct iovec	IOVEC;
 
-extern bool DoLinks;
+#define	ARTIOVCNT	16
+
 extern bool DoCancels;
 
 #if	defined(S_IXUSR)
@@ -25,6 +25,15 @@ extern bool DoCancels;
 #define EXECUTE_BITS	0111
 #endif	/* defined(S_IXUSR) */
 
+/*
+**  used to sort Xref, Bytes and Path pointers
+*/
+typedef struct _HEADERP {
+  int   index;                          
+  char  *p;
+} HEADERP;
+  
+#define HPCOUNT		4
 
 /*
 **  For speed we build a binary tree of the headers, sorted by their
@@ -32,32 +41,31 @@ extern bool DoCancels;
 **  doing an extra indirection.
 */
 typedef struct _TREE {
-    const char *        Name;
-    ARTHEADER *         Header;
-    struct _TREE *      Before;
-    struct _TREE *      After;
+  const char	*Name;
+  ARTHEADER	*Header;
+  struct _TREE	*Before;
+  struct _TREE	*After;
 } TREE;
 
-static TREE		*ARTheadertree;
+static TREE	*ARTheadertree;
 
 /*
 **  For doing the overview database, we keep a list of the headers and
 **  a flag saying if they're written in brief or full format.
 */
 typedef struct _ARTOVERFIELD {
-    ARTHEADER		*Header;
-    bool		NeedHeader;
+  ARTHEADER	*Header;
+  bool		NeedHeader;
 } ARTOVERFIELD;
 
-static ARTOVERFIELD		*ARTfields;
-
+static ARTOVERFIELD	*ARTfields;
 
 /*
 **  General newsgroup we care about, and what we put in the Path line.
 */
-static char		ARTctl[] = "control";
-static char		ARTjnk[] = "junk";
-static char		*ARTpathme;
+static char	ARTctl[] = "control";
+static char	ARTjnk[] = "junk";
+static char	*ARTpathme;
 
 /*
 **  Different types of rejected articles.
@@ -76,80 +84,6 @@ static char		ARTcclass[256];
 #define ARTatomchar(c)	((ARTcclass[(unsigned char)(c)] & CC_MSGID_ATOM) != 0)
 #define ARThostchar(c)	((ARTcclass[(unsigned char)(c)] & CC_HOSTNAME) != 0)
 
-static int	CRwithoutLF;
-static int	LFwithoutCR;
-
-/*
-**  The header table.  Not necessarily sorted, but the first character
-**  must be uppercase.
-*/
-#define ARTHEADERINIT(name, type) \
-	{name, type, sizeof(name) - 1, (char *)0, 0, 0, FALSE}
-
-ARTHEADER	ARTheaders[] = {
-    /*		   Name			Type */
-    ARTHEADERINIT("Approved",		HTstd),
-#define _approved		 0
-    ARTHEADERINIT("Control",		HTstd),
-#define _control		 1
-    ARTHEADERINIT("Date",		HTreq),
-#define _date			 2
-    ARTHEADERINIT("Distribution",	HTstd),
-#define _distribution		 3
-    ARTHEADERINIT("Expires",		HTstd),
-#define _expires		 4
-    ARTHEADERINIT("From",		HTreq),
-#define _from			 5
-    ARTHEADERINIT("Lines",		HTstd),
-#define _lines			 6
-    ARTHEADERINIT("Message-ID",		HTreq),
-#define _message_id		 7
-    ARTHEADERINIT("Newsgroups",		HTreq),
-#define _newsgroups		 8
-    ARTHEADERINIT("Path",		HTreq),
-#define _path			 9
-    ARTHEADERINIT("Reply-To",		HTstd),
-#define _reply_to		10
-    ARTHEADERINIT("Sender",		HTstd),
-#define _sender			11
-    ARTHEADERINIT("Subject",		HTreq),
-#define _subject		12
-    ARTHEADERINIT("Supersedes",		HTstd),
-#define _supersedes		13
-    ARTHEADERINIT("Bytes",		HTstd),
-#define _bytes			14
-    ARTHEADERINIT("Also-Control",	HTstd),
-    ARTHEADERINIT("References",		HTstd),
-#define _references		16
-    ARTHEADERINIT("Xref",		HTsav),
-#define _xref			17
-    ARTHEADERINIT("Keywords",		HTstd),
-#define _keywords		18
-    ARTHEADERINIT("X-Trace",		HTstd),
-#define _xtrace			19
-    ARTHEADERINIT("Date-Received",	HTobs),
-    ARTHEADERINIT("Posted",		HTobs),
-    ARTHEADERINIT("Posting-Version",	HTobs),
-    ARTHEADERINIT("Received",		HTobs),
-    ARTHEADERINIT("Relay-Version",	HTobs),
-    ARTHEADERINIT("NNTP-Posting-Host",	HTstd),
-    ARTHEADERINIT("Followup-To",	HTstd),
-#define _followup_to		26
-    ARTHEADERINIT("Organization",	HTstd),
-    ARTHEADERINIT("Content-Type",	HTstd),
-    ARTHEADERINIT("Content-Base",	HTstd),
-    ARTHEADERINIT("Content-Disposition", HTstd),
-    ARTHEADERINIT("X-Newsreader",	HTstd),
-    ARTHEADERINIT("X-Mailer",		HTstd),
-    ARTHEADERINIT("X-Newsposter",	HTstd),
-    ARTHEADERINIT("X-Cancelled-By",	HTstd),
-    ARTHEADERINIT("X-Canceled-By",	HTstd),
-    ARTHEADERINIT("Cancel-Key",		HTstd)
-};
-#undef ARTHEADERINIT
-
-ARTHEADER	*ARTheadersENDOF = ENDOF(ARTheaders);
-
 #if defined(DO_PERL) || defined(DO_PYTHON)
 const char	*filterPath;
 #endif /* DO_PERL || DO_PYTHON */
@@ -161,16 +95,16 @@ const char	*filterPath;
 */
 void
 SITEmark(SITE *sp, NEWSGROUP *ngp) {
-    SITE	*funnel; 
+  SITE	*funnel;
 
-    sp->Sendit = TRUE; 
-    if (sp->ng == NULL) 
-	sp->ng = ngp; 
-    if (sp->Funnel != NOSITE) { 
-	funnel = &Sites[sp->Funnel]; 
-	if (funnel->ng == NULL) 
-	    funnel->ng = ngp; 
-    } 
+  sp->Sendit = TRUE;
+  if (sp->ng == NULL)
+    sp->ng = ngp;
+  if (sp->Funnel != NOSITE) {
+    funnel = &Sites[sp->Funnel];
+    if (funnel->ng == NULL)
+      funnel->ng = ngp;
+  }
 }
 
 /*
@@ -179,99 +113,99 @@ SITEmark(SITE *sp, NEWSGROUP *ngp) {
 bool
 ARTreadschema(void)
 {
-    static char			*SCHEMA = NULL;
-    FILE		        *F;
-    int		                i;
-    char	 	        *p;
-    ARTOVERFIELD	        *fp;
-    ARTHEADER		        *hp;
-    bool			ok;
-    char			buff[SMBUF];
-    bool			foundxref = FALSE;
-    bool			foundxreffull = FALSE;
+  static char	*SCHEMA = NULL;
+  FILE		*F;
+  int		i;
+  char		*p;
+  ARTOVERFIELD	*fp;
+  ARTHEADER	*hp;
+  bool		ok;
+  char		buff[SMBUF];
+  bool		foundxref = FALSE;
+  bool		foundxreffull = FALSE;
 
-    if (ARTfields != NULL) {
-	DISPOSE(ARTfields);
-	ARTfields = NULL;
+  if (ARTfields != NULL) {
+    DISPOSE(ARTfields);
+    ARTfields = NULL;
+  }
+
+  /* Open file, count lines. */
+  if (SCHEMA == NULL)
+    SCHEMA = COPY(cpcatpath(innconf->pathetc, _PATH_SCHEMA));
+  if ((F = Fopen(SCHEMA, "r", TEMPORARYOPEN)) == NULL)
+    return FALSE;
+  for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
+    continue;
+  fseeko(F, 0, SEEK_SET);
+  ARTfields = NEW(ARTOVERFIELD, i + 1);
+
+  /* Parse each field. */
+  for (ok = TRUE, fp = ARTfields ; fgets(buff, sizeof buff, F) != NULL ;) {
+    /* Ignore blank and comment lines. */
+    if ((p = strchr(buff, '\n')) != NULL)
+      *p = '\0';
+    if ((p = strchr(buff, COMMENT_CHAR)) != NULL)
+      *p = '\0';
+    if (buff[0] == '\0')
+      continue;
+    if ((p = strchr(buff, ':')) != NULL) {
+      *p++ = '\0';
+      fp->NeedHeader = EQ(p, "full");
+    } else
+      fp->NeedHeader = FALSE;
+    if (caseEQ(buff, "Xref")) {
+      foundxref = TRUE;
+      foundxreffull = fp->NeedHeader;
     }
-
-    /* Open file, count lines. */
-    if (SCHEMA == NULL)
-	SCHEMA = COPY(cpcatpath(innconf->pathetc, _PATH_SCHEMA));
-    if ((F = Fopen(SCHEMA, "r", TEMPORARYOPEN)) == NULL)
-	return FALSE;
-    for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
-	continue;
-    fseeko(F, 0, SEEK_SET);
-    ARTfields = NEW(ARTOVERFIELD, i + 1);
-
-    /* Parse each field. */
-    for (ok = TRUE, fp = ARTfields; fgets(buff, sizeof buff, F) != NULL; ) {
-	/* Ignore blank and comment lines. */
-	if ((p = strchr(buff, '\n')) != NULL)
-	    *p = '\0';
-	if ((p = strchr(buff, COMMENT_CHAR)) != NULL)
-	    *p = '\0';
-	if (buff[0] == '\0')
-	    continue;
-	if ((p = strchr(buff, ':')) != NULL) {
-	    *p++ = '\0';
-	    fp->NeedHeader = EQ(p, "full");
-	}
-	else
-	    fp->NeedHeader = FALSE;
-	if (caseEQ(buff, "Xref")) {
-	    foundxref = TRUE;
-	    foundxreffull = fp->NeedHeader;
-	}
-	for (hp = ARTheaders; hp < ENDOF(ARTheaders); hp++)
-	    if (caseEQ(buff, hp->Name)) {
-		fp->Header = hp;
-		break;
-	    }
-	if (hp == ENDOF(ARTheaders)) {
-	    syslog(L_ERROR, "%s bad_schema unknown header \"%s\"",
+    for (hp = ARTheaders; hp < ENDOF(ARTheaders); hp++) {
+      if (caseEQ(buff, hp->Name)) {
+	fp->Header = hp;
+	break;
+      }
+    }
+    if (hp == ENDOF(ARTheaders)) {
+      syslog(L_ERROR, "%s bad_schema unknown header \"%s\"",
 		LogName, buff);
-	    ok = FALSE;
-	    continue;
-	}
-	fp++;
+      ok = FALSE;
+      continue;
     }
-    fp->Header = NULL;
+    fp++;
+  }
+  fp->Header = NULL;
 
-    (void)Fclose(F);
-    if (!foundxref || !foundxreffull) {
-	syslog(L_FATAL, "%s 'Xref:full' must be included in %s", LogName, SCHEMA);
-	exit(1); 
-    }
-    return ok;
+  (void)Fclose(F);
+  if (!foundxref || !foundxreffull) {
+    syslog(L_FATAL, "%s 'Xref:full' must be included in %s", LogName, SCHEMA);
+    exit(1);
+  }
+  return ok;
 }
 
 
 /*
 **  Build a balanced tree for the headers in subscript range [lo..hi).
-**  This only gets called once, and the tree only has about 20 entries,
+**  This only gets called once, and the tree only has about 37 entries,
 **  so we don't bother to unroll the recursion.
 */
 static TREE *
 ARTbuildtree(ARTHEADER **Table, int lo, int hi)
 {
-    int		mid;
-    TREE	*tp;
+  int	mid;
+  TREE	*tp;
 
-    mid = lo + (hi - lo) / 2;
-    tp = NEW(TREE, 1);
-    tp->Header = Table[mid];
-    tp->Name = tp->Header->Name;
-    if (mid == lo)
-	tp->Before = NULL;
-    else
-	tp->Before = ARTbuildtree(Table, lo, mid);
-    if (mid == hi - 1)
-	tp->After = NULL;
-    else
-	tp->After = ARTbuildtree(Table, mid + 1, hi);
-    return tp;
+  mid = lo + (hi - lo) / 2;
+  tp = NEW(TREE, 1);
+  tp->Header = Table[mid];
+  tp->Name = tp->Header->Name;
+  if (mid == lo)
+    tp->Before = NULL;
+  else
+    tp->Before = ARTbuildtree(Table, lo, mid);
+  if (mid == hi - 1)
+    tp->After = NULL;
+  else
+    tp->After = ARTbuildtree(Table, mid + 1, hi);
+  return tp;
 }
 
 
@@ -281,8 +215,8 @@ ARTbuildtree(ARTHEADER **Table, int lo, int hi)
 static int
 ARTcompare(const void *p1, const void *p2)
 {
-    return strcasecmp(((const ARTHEADER **)p1)[0]->Name,
-		      ((const ARTHEADER **)p2)[0]->Name);
+  return strcasecmp(((const ARTHEADER **)p1)[0]->Name,
+    ((const ARTHEADER **)p2)[0]->Name);
 }
 
 
@@ -292,395 +226,406 @@ ARTcompare(const void *p1, const void *p2)
 void
 ARTsetup(void)
 {
-    const char *	p;
-    ARTHEADER *		hp;
-    ARTHEADER **	table;
-    unsigned int	i;
+  const char *	p;
+  ARTHEADER *	hp;
+  ARTHEADER **	table;
+  unsigned int	i;
 
-    /* Set up the character class tables.  These are written a
-     * little strangely to work around a GCC2.0 bug. */
-    memset(ARTcclass, 0, sizeof ARTcclass);
-    p = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    while ((i = *p++) != 0) {
-        ARTcclass[i] = CC_HOSTNAME | CC_MSGID_ATOM | CC_MSGID_NORM;
-    }
-    p = "!#$%&'*+-/=?^_`{|}~";
-    while ((i = *p++) != 0) {
-	ARTcclass[i] = CC_MSGID_ATOM | CC_MSGID_NORM;
-    }
-    p = "\"(),.:;<@[\\]";
-    while ((i = *p++) != 0) {
-	ARTcclass[i] = CC_MSGID_NORM;
-    }
+  /* Set up the character class tables.  These are written a
+   * little strangely to work around a GCC2.0 bug. */
+  memset(ARTcclass, 0, sizeof ARTcclass);
+  p = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  while ((i = *p++) != 0) {
+    ARTcclass[i] = CC_HOSTNAME | CC_MSGID_ATOM | CC_MSGID_NORM;
+  }
+  p = "!#$%&'*+-/=?^_`{|}~";
+  while ((i = *p++) != 0) {
+    ARTcclass[i] = CC_MSGID_ATOM | CC_MSGID_NORM;
+  }
+  p = "\"(),.:;<@[\\]";
+  while ((i = *p++) != 0) {
+    ARTcclass[i] = CC_MSGID_NORM;
+  }
 
-    /* The RFC's don't require it, but we add underscore to the list of valid
-     * hostname characters. */
-    ARTcclass['.'] |= CC_HOSTNAME;
-    ARTcclass['-'] |= CC_HOSTNAME;
-    ARTcclass['_'] |= CC_HOSTNAME;
+  /* The RFC's don't require it, but we add underscore to the list of valid
+   * hostname characters. */
+  ARTcclass['.'] |= CC_HOSTNAME;
+  ARTcclass['-'] |= CC_HOSTNAME;
+  ARTcclass['_'] |= CC_HOSTNAME;
 
-    /* Allocate space in the header table. */
-    for (hp = ARTheaders; hp < ENDOF(ARTheaders); hp++) {
-	hp->Allocated = hp->Value == NULL && hp->Type != HTobs
-			&& hp != &ARTheaders[_bytes];
-	if (hp->Allocated)
-	    hp->Value = NEW(char, MAXHEADERSIZE*2);
-    }
+  /* Build the header tree. */
+  table = NEW(ARTHEADER*, SIZEOF(ARTheaders));
+  for (i = 0; i < SIZEOF(ARTheaders); i++)
+    table[i] = &ARTheaders[i];
+  qsort(table, SIZEOF(ARTheaders), sizeof *table, ARTcompare);
+  ARTheadertree = ARTbuildtree(table, 0, SIZEOF(ARTheaders));
+  DISPOSE(table);
 
-    /* Build the header tree. */
-    table = NEW(ARTHEADER*, SIZEOF(ARTheaders));
-    for (i = 0; i < SIZEOF(ARTheaders); i++)
-	table[i] = &ARTheaders[i];
-    qsort(table, SIZEOF(ARTheaders), sizeof *table, ARTcompare);
-    ARTheadertree = ARTbuildtree(table, 0, SIZEOF(ARTheaders));
-    DISPOSE(table);
+  /* Get our Path name, kill trailing !. */
+  ARTpathme = COPY(Path.Data);
+  ARTpathme[Path.Used - 1] = '\0';
 
-    /* Get our Path name, kill trailing !. */
-    ARTpathme = COPY(Path.Data);
-    ARTpathme[Path.Used - 1] = '\0';
-
-    /* Set up database; ignore errors. */
-    (void)ARTreadschema();
+  /* Set up database; ignore errors. */
+  (void)ARTreadschema();
 }
 
 
 static void
 ARTfreetree(TREE *tp)
 {
-    TREE	*next;
+  TREE	*next;
 
-    for ( ; tp != NULL; tp = next) {
-	if (tp->Before)
-	    ARTfreetree(tp->Before);
-	next = tp->After;
-	DISPOSE(tp);
-    }
+  for ( ; tp != NULL; tp = next) {
+    if (tp->Before)
+      ARTfreetree(tp->Before);
+    next = tp->After;
+    DISPOSE(tp);
+  }
 }
 
 
 void
 ARTclose(void)
 {
-    ARTHEADER	*hp;
+  ARTHEADER	*hp;
 
-    /* Free space in the header table. */
-    for (hp = ARTheaders; hp < ENDOF(ARTheaders); hp++)
-	if (hp->Allocated)
-	    DISPOSE(hp->Value);
+  if (ARTfields != NULL) {
+    DISPOSE(ARTfields);
+    ARTfields = NULL;
+  }
+  ARTfreetree(ARTheadertree);
+}
 
-    if (ARTfields != NULL) {
-	DISPOSE(ARTfields);
-	ARTfields = NULL;
-    }
-    ARTfreetree(ARTheadertree);
+/*
+**  Start a log message about an article.
+*/
+static void
+ARTlog(const ARTDATA *data, char code, const char *text)
+{
+  HDRCONTENT	*hc = data->HdrContent;
+  int		i;
+  bool		Done;
+
+  TMRstart(TMR_ARTLOG);
+  /* We could be a bit faster by not dividing Now.usec by 1000,
+   * but who really wants to log at the Microsec level? */
+  Done = code == ART_ACCEPT || code == ART_JUNK;
+  if (text)
+    i = fprintf(Log, "%.15s.%03d %c %s %s %s%s",
+      ctime(&Now.time) + 4, (int)(Now.usec / 1000), code, data->Feedsite,
+      HDR_FOUND(_message_id) ? HDR(_message_id) : "(null)",
+      text, Done ? "" : "\n");
+  else
+    i = fprintf(Log, "%.15s.%03d %c %s %s%s",
+      ctime(&Now.time) + 4, (int)(Now.usec / 1000), code, data->Feedsite,
+      HDR_FOUND(_message_id) ? HDR(_message_id) : "(null)", Done ? "" : "\n");
+  if (i == EOF || (Done && !BufferedLogs && fflush(Log)) || ferror(Log)) {
+    i = errno;
+    syslog(L_ERROR, "%s cant write log_start %m", LogName);
+    IOError("logging article", i);
+    clearerr(Log);
+  }
+  TMRstop(TMR_ARTLOG);
 }
 
 /*
 **  Parse a Path line, splitting it up into NULL-terminated array of strings.
-**  The argument is modified!
 */
-static const char **
-ARTparsepath(char *p, int *countp)
+static int
+ARTparsepath(const char *p, int size, LISTBUFFER *list)
 {
-    static const char	*NULLPATH[1] = { NULL };
-    static int		oldlength;
-    static char		**hosts;
-    int	                i;
-    char	        **hp;
+  int	i;
+  char	*q, **hp;
 
-    /* We can be called with a non-existant or empty path. */
-    if (p == NULL || *p == '\0') {
-	*countp = 0;
-	return NULLPATH;
-    }
+  /* setup buffer */ 
+  SetupListBuffer(size, list);
 
-    /* Get an array of character pointers. */
-    i = strlen(p);
-    if (hosts == NULL) {
-	oldlength = i;
-	hosts = NEW(char*, oldlength + 1);
-    }
-    else if (oldlength <= i) {
-	oldlength = i;
-	RENEW(hosts, char*, oldlength + 1);
-    }
+  /* loop over text and copy */
+  for (i = 0, q = list->Data, hp = list->List ; *p ; p++, *q++ = '\0') { 
+    /* skip leading separators. */
+    for (; *p && !ARThostchar(*p) && ISWHITE(*p) ; p++)
+      continue;
+    if (*p == '\0')
+      break;
 
-    /* Loop over text. */
-    for (hp = hosts; *p; *p++ = '\0') {
-	/* Skip leading separators. */
-	for (; *p && !ARThostchar(*p); p++)
-	    continue;
-	if (*p == '\0')
-	    break;
-
-	/* Mark the start of the host, move to the end of it. */
-	for (*hp++ = p; *p && ARThostchar(*p); p++)
-	    continue;
-	if (*p == '\0')
-	    break;
+    if (list->ListLength <= i) {
+      list->ListLength += DEFAULTNGBOXSIZE;
+      RENEW(list->List, char*, list->ListLength);
+      hp = &list->List[i];
     }
-    *hp = NULL;
-    *countp = hp - hosts;
-    return (const char **)hosts;
+    /* mark the start of the host, move to the end of it while copying */  
+    for (*hp++ = q, i++ ; *p && ARThostchar(*p) && !ISWHITE(*p) ;)
+      *q++ = *p++;
+    if (*p == '\0')
+      break;
+  }
+  *q = '\0';
+  if (i == list->ListLength) {
+    list->ListLength += DEFAULTNGBOXSIZE;
+    RENEW(list->List, char *, list->ListLength);
+    hp = &list->List[i];
+  }
+  *hp = NULL;
+  return i;
+}
+
+/*
+**  Sorting pointer where header starts
+*/
+static int
+ARTheaderpcmp(const void *p1, const void *p2)
+{
+  return (((const HEADERP *)p1)->p - ((const HEADERP *)p2)->p);
 }
 
 /* Write an article using the storage api.  Put it together in memory and
    call out to the api. */
 static TOKEN
-ARTstore(BUFFER *Article, ARTDATA *Data) {
-    const char		*ppath;
-    char                *p;
-    char                *end;
-    unsigned long       size;
-    char                *artbuff;
-    ARTHANDLE           arth;
-    int                 i;
-    TOKEN               result;
-    char		bytesbuff[SMBUF];
-    static BUFFER	Headers;
+ARTstore(CHANNEL *cp) {
+  BUFFER	*Article = &cp->In;
+  ARTDATA	*data = &cp->Data;
+  HDRCONTENT	*hc = data->HdrContent;
+  const char	*p;
+  char		*end;
+  ARTHANDLE	arth;
+  int		i, j, iovcnt = 0;
+  long		headersize;
+  TOKEN		result;
+  BUFFER	*headers = &data->Headers;
+  struct iovec	iov[ARTIOVCNT];
+  HEADERP	hp[HPCOUNT];
 
-    result.type = TOKEN_EMPTY;
-
-    if (((ppath = HeaderFindMem(Article->Data, Article->Used, "Path", 4)) == NULL)
-	|| (ppath == Article->Data)) {
-	/* This should not happen */
-	syslog(L_ERROR, "%s internal %s no Path header",
-	       Data->MessageID, LogName);
-	return result;
-    }
-
-    size = Article->Used + 6 + ARTheaders[_xref].Length + 4 + 3 + Path.Used + Pathalias.Used + 64 + 1;
-    p = artbuff = NEW(char, size);
-    if ((Path.Used >= Article->Used - (int)(ppath - Article->Data)) || strncmp(Path.Data, ppath, Path.Used) != 0) {
-	Hassamepath = FALSE;
-	memcpy(p, Article->Data, ppath - Article->Data);
-	p += ppath - Article->Data;
-	memcpy(p, Path.Data, Path.Used);
-	p += Path.Used;
-	if (AddAlias) {
-	    memcpy(p, Pathalias.Data, Pathalias.Used);
-	    p += Pathalias.Used;
+  /* find Path, Bytes and Xref to be prepended/dropped/replaced */
+  arth.len = i = 0;
+  /* assumes Path header is required header */
+  hp[i].p = HDR(_path);
+  hp[i++].index = _path;
+  if (HDR_FOUND(_xref)) {
+    hp[i].p = HDR(_xref);
+    hp[i++].index = _xref;
+  }
+  if (HDR_FOUND(_bytes)) {
+    hp[i].p = HDR(_bytes);
+    hp[i++].index = _bytes;
+  }
+  /* get the order of header appearance */
+  qsort(hp, i, sizeof(HEADERP), ARTheaderpcmp);
+  /* p always points where the next data should be written from */
+  for (p = Article->Data + cp->Start, j = 0 ; j < i ; j++) {
+    switch (hp[j].index) {
+      case _path:
+	if (!Hassamepath || AddAlias) {
+	  /* write heading data */
+	  iov[iovcnt].iov_base = (caddr_t)p;
+	  iov[iovcnt++].iov_len = HDR(_path) - p;
+	  arth.len += HDR(_path) - p;
+	  /* now append new one */
+	  iov[iovcnt].iov_base = Path.Data;
+	  iov[iovcnt++].iov_len = Path.Used;
+	  arth.len += Path.Used;
+	  if (AddAlias) {
+	    iov[iovcnt].iov_base = Pathalias.Data;
+	    iov[iovcnt++].iov_len = Pathalias.Used;
+	    arth.len += Pathalias.Used;
+	  }
+	  /* next to write */
+	  p = HDR(_path);
 	}
-	memcpy(p, ppath, Data->Body - ppath - 1);
-	p += Data->Body - ppath - 1;
-    } else {
-	Hassamepath = TRUE;
-	if (AddAlias) {
-	    memcpy(p, Article->Data, ppath - Article->Data);
-	    p += ppath - Article->Data;
-	    memcpy(p, Path.Data, Path.Used);
-	    p += Path.Used;
-	    memcpy(p, Pathalias.Data, Pathalias.Used);
-	    p += Pathalias.Used;
-	    memcpy(p, ppath + Path.Used, Data->Body - ppath - Path.Used - 1);
-	    p += Data->Body - ppath - Path.Used - 1;
-	} else {
-	    memcpy(p, Article->Data, Data->Body - Article->Data - 1);
-	    p += Data->Body - Article->Data - 1;
+	break;
+      case _xref:
+	if (!innconf->xrefslave) {
+	  /* write heading data */
+	  iov[iovcnt].iov_base = (caddr_t)p;
+	  iov[iovcnt++].iov_len = HDR(_xref) - p;
+	  arth.len += HDR(_xref) - p;
+	  /* replace with new one */
+	  iov[iovcnt].iov_base = data->Xref;
+	  iov[iovcnt++].iov_len = data->XrefLength - 2;
+	  arth.len += data->XrefLength - 2;
+	  /* next to write */
+	  /* this points where trailing "\r\n" of orginal Xref header exists */
+	  p = HDR(_xref) + HDR_LEN(_xref);
 	}
-    }
-
-    if (NeedPath) {
-	Data->Path = ppath;
-	for (i = Data->Body - ppath; --i >= 0; ppath++)
-	    if (*ppath == '\r' || *ppath == '\n')
-		break;
-	Data->PathLength = ppath - Data->Path;
-    }
-
-    if (ARTheaders[_lines].Found == 0) {
-	sprintf(Data->Lines, "Lines: %d\r\n", Data->LinesValue);
-	i = strlen(Data->Lines);
-	memcpy(p, Data->Lines, i);
-	p += i;
-	/* Install in header table; STRLEN("Lines: ") == 7. */
-	strcpy(ARTheaders[_lines].Value, Data->Lines + 7);
-	ARTheaders[_lines].Length = i - 9;
-	ARTheaders[_lines].Found = 1;
-    }
-    
-    memcpy(p, "Xref: ", 6);
-    p += 6;
-    memcpy(p, HDR(_xref), ARTheaders[_xref].Length);
-    end = p += ARTheaders[_xref].Length;
-    end += 2; /* include trailing "\r\n" for Headers generation */
-    memcpy(p, "\r\n\r\n", 4);
-    p += 4;
-    ARTheaders[_xref].Found = 1;
-    memcpy(p, Data->Body, &Article->Data[Article->Used] - Data->Body);
-    p += &Article->Data[Article->Used] - Data->Body;
-    memcpy(p, ".\r\n", 3);
-    p += 3;
-
-    Data->SizeValue = p - artbuff;
-    sprintf(Data->Size, "%ld", Data->SizeValue);
-    Data->SizeLength = strlen(Data->Size);
-    HDR(_bytes) = Data->Size;
-    ARTheaders[_bytes].Length = Data->SizeLength;
-    ARTheaders[_bytes].Found = 1;
-
-    arth.data = artbuff;
-    arth.len = Data->SizeValue;
-    arth.arrived = (time_t)0;
-    arth.token = (TOKEN *)NULL;
-
-    SMerrno = SMERR_NOERROR;
-    result = SMstore(arth);
-    if (result.type == TOKEN_EMPTY) {
-	if (SMerrno == SMERR_NOMATCH)
-	    ThrottleNoMatchError();
-	else if (SMerrno != SMERR_NOERROR)
-	    IOError("SMstore", SMerrno);
-	DISPOSE(artbuff);
+	break;
+      case _bytes:
+	/* ditch whole Byte header */
+	/* write heading data */
+	iov[iovcnt].iov_base = (caddr_t)p;
+	iov[iovcnt++].iov_len = data->BytesHeader - p;
+	arth.len += data->BytesHeader - p;
+	/* next to write */
+	/* need to skip trailing "\r\n" of Bytes header */
+	p = HDR(_bytes) + HDR_LEN(_bytes) + 2;
+	break;
+      default:
+	result.type = TOKEN_EMPTY;
 	return result;
     }
+  }
+  /* in case Xref is not included in orignal article */
+  if (!HDR_FOUND(_xref)) {
+    /* write heading data */
+    iov[iovcnt].iov_base = (caddr_t)p;
+    iov[iovcnt++].iov_len = Article->Data + (data->Body - 2) - p;
+    arth.len += Article->Data + (data->Body - 2) - p;
+    /* Xref needs to be inserted */
+    iov[iovcnt].iov_base = "Xref: ";
+    iov[iovcnt++].iov_len = sizeof("Xref: ") - 1;
+    arth.len += sizeof("Xref: ") - 1;
+    iov[iovcnt].iov_base = data->Xref;
+    iov[iovcnt++].iov_len = data->XrefLength;
+    arth.len += data->XrefLength;
+    p = Article->Data + (data->Body - 2);
+  }
+  /* write rest of data */
+  iov[iovcnt].iov_base = (caddr_t)p;
+  iov[iovcnt++].iov_len = Article->Data + cp->Next - p;
+  arth.len += Article->Data + cp->Next - p;
 
-    if (!NeedHeaders) {
-	DISPOSE(artbuff);
-	return result;
-    }
+  /* revert trailing '\0\n' to '\r\n' of all system header */
+  for (i = 0 ; i < MAX_ARTHEADER ; i++) {
+    if (HDR_FOUND(i))
+      HDR_PARSE_END(i);
+  }
 
-        /* Figure out how much space we'll need and get it. */
-    (void)sprintf(bytesbuff, "Bytes: %ld\r\n", size);
+  arth.iov = iov;
+  arth.iovcnt = iovcnt;
+  arth.arrived = (time_t)0;
+  arth.token = (TOKEN *)NULL;
+  arth.expires = data->Expires;
+  if (innconf->storeonxref) {
+    arth.groups = data->Replic;
+    arth.groupslen = data->ReplicLength;
+  } else {
+    arth.groups = HDR(_newsgroups);
+    arth.groupslen = HDR_LEN(_newsgroups);
+  }
 
-    if (Headers.Data == NULL) {
-	Headers.Size = end - artbuff;
-	Headers.Data = NEW(char, Headers.Size + 1);
-    }
-    else if (Headers.Size <= (end - artbuff)) {
-	Headers.Size = end - artbuff;
-	RENEW(Headers.Data, char, Headers.Size + 1);
-    }
-
-    /* Add the data. */
-    BUFFset(&Headers, bytesbuff, strlen(bytesbuff));
-    BUFFappend(&Headers, artbuff, end - artbuff);
-    BUFFtrimcr(&Headers);
-    Data->Headers = &Headers;
-
-    DISPOSE(artbuff);
+  SMerrno = SMERR_NOERROR;
+  result = SMstore(arth);
+  if (result.type == TOKEN_EMPTY) {
+    if (SMerrno == SMERR_NOMATCH)
+      ThrottleNoMatchError();
+    else if (SMerrno != SMERR_NOERROR)
+      IOError("SMstore", SMerrno);
     return result;
+  }
+
+  /* calculate stored size */
+  for (data->BytesValue = i = 0 ; i < iovcnt ; i++) {
+    if (NeedHeaders && (i + 1 == iovcnt)) {
+      /* body begins at last iov */
+      headersize = data->BytesValue +
+	Article->Data + data->Body - iov[i].iov_base;
+      break;
+    }
+    data->BytesValue += iov[i].iov_len;
+  }
+  /* "\r\n" is counted as 1 byte.  trailing ".\r\n" and body delimitor are also
+     substituted */
+  data->BytesValue -= (data->HeaderLines + data->Lines + 4);
+  /* Figure out how much space we'll need and get it. */
+  (void)sprintf(data->Bytes, "Bytes: %ld\r\n", data->BytesValue);
+  /* does not include strlen("Bytes: \r\n") */
+  data->BytesLength = strlen(data->Bytes) - 9;
+
+  if (!NeedHeaders)
+    return result;
+
+  if (headers->Size == 0) {
+    headers->Size = headersize;
+    headers->Data = NEW(char, headers->Size + 1);
+  }
+
+  /* Add the data. */
+  BUFFset(headers, data->Bytes, strlen(data->Bytes));
+  for (i = 0 ; i < iovcnt ; i++) {
+    if (i + 1 == iovcnt)
+      BUFFappend(headers, iov[i].iov_base,
+	Article->Data+ data->Body - iov[i].iov_base);
+    else
+      BUFFappend(headers, iov[i].iov_base, iov[i].iov_len);
+  }
+  BUFFtrimcr(headers);
+
+  return result;
 }
 
 /*
-**  Parse a header that starts at in, copying it to out.  Return pointer to
-**  the start of the next header and fill in *deltap with what should
-**  get added to the output pointer.  (This nicely lets us clobber obsolete
-**  headers by setting it to zero.)
+**  Parse a header that starts at header.  size includes trailing "\r\n"
 */
-static char *
-ARTparseheader(char *in, char *out, int *deltap, const char **errorp)
+static void
+ARTparseheader(CHANNEL *cp, int size)
 {
-    static char		buff[SMBUF];
-    static char		COLONSPACE[] = "No colon-space in \"%s\" header";
-    char	        *start;
-    TREE	        *tp;
-    ARTHEADER	        *hp;
-    char	        c;
-    char	        *p;
-    int	                i;
-    char	        *colon;
+  ARTDATA	*data = &cp->Data;
+  char		*header = cp->In.Data + data->CurHeader;
+  HDRCONTENT	*hc = cp->Data.HdrContent;
+  char		*buff = cp->Error;
+  TREE		*tp;
+  ARTHEADER	*hp;
+  char		c, *p, *colon;
+  int		i;
 
-    /* Find a non-continuation line. */
-    for (colon = NULL, start = out; ; ) {
-	switch (*in) {
-	case '\0':
-	    *errorp = "EOF in headers";
-	    return NULL;
-	case ':':
-	    if (colon == NULL) {
-		colon = out;
-		if (start == colon) {
-		    *errorp = "Field without name in header";
-		    return NULL;
-		}
-	    }
-	    break;
-	}
-	if ((*out++ = *in++) == '\n' && !ISWHITE(*in))
-	    break;
+  /* Find first colon */
+  if ((colon = memchr(header, ':', size)) == NULL || !ISWHITE(colon[1])) {
+    if ((p = memchr(header, '\r', size)) != NULL)
+      *p = '\0';
+    (void)sprintf(buff, "No colon-space in \"%s\" header",
+      MaxLength(header, header));
+    if (p != NULL)
+      *p = '\r';
+    return;
+  }
+
+  /* See if this is a system header.  A fairly tightly-coded binary search. */
+  c = CTYPE(islower, *header) ? toupper(*header) : *header;
+  for (*colon = '\0', tp = ARTheadertree; tp; ) {
+    if ((i = c - tp->Name[0]) == 0 && (i = strcasecmp(header, tp->Name)) == 0)
+      break;
+    if (i < 0)
+      tp = tp->Before;
+    else
+      tp = tp->After;
+  }
+  *colon = ':';
+
+  if (tp == NULL) {
+    /* Not a system header, make sure we have <word><colon><space>. */
+    for (p = colon; --p > header; ) {
+      if (ISWHITE(*p)) {
+	c = *p;
+	*p = '\0';
+	(void)sprintf(buff, "Space before colon in \"%s\" header",
+	  MaxLength(header, header));
+	*p = c;
+	return;
+      }
     }
-    *deltap = out - start;
-    if (colon == NULL || !ISWHITE(colon[1])) {
-	if ((p = strchr(start, '\n')) != NULL)
-	    *p = '\0';
-	(void)sprintf(buff, COLONSPACE, MaxLength(start, start));
-	*errorp = buff;
-	return NULL;
+    return;
+  }
+  hp = tp->Header;
+  i = hp - ARTheaders;
+  /* remember to ditch if it's Bytes: */
+  if (i == _bytes)
+    cp->Data.BytesHeader = header;
+  hc = &hc[i];
+  if (hc->Length > 0) {
+    /* duplicated */
+    hc->Length = -1;
+  } else {
+    for (p = colon + 1 ; (p < header + size - 2) &&
+      (ISWHITE(*p) || *p == '\r' || *p == '\n'); p++);
+    if (p < header + size - 2) {
+      hc->Value = p;
+      /* HDR_LEN() does not include trailing "\r\n" */
+      hc->Length = header + size - 2 - p;
+    } else {
+      (void)sprintf(buff, "Body of header is all blanks in \"%s\" header",
+      MaxLength(hp->Name, hp->Name));
     }
-
-    /* See if this is a system header.  A fairly tightly-coded
-     * binary search. */
-    c = CTYPE(islower, *start) ? toupper(*start) : *start;
-    for (*colon = '\0', tp = ARTheadertree; tp; ) {
-	if ((i = c - tp->Name[0]) == 0
-	 && (i = strcasecmp(start, tp->Name)) == 0)
-	    break;
-	if (i < 0)
-	    tp = tp->Before;
-	else
-	    tp = tp->After;
-    }
-    *colon = ':';
-
-    if (tp == NULL) {
-	/* Not a system header, make sure we have <word><colon><space>. */
-	for (p = colon; --p > start; )
-	    if (ISWHITE(*p)) {
-		(void)sprintf(buff, "Space before colon in \"%s\" header",
-			MaxLength(start, start));
-		*errorp = buff;
-		return NULL;
-	    }
-	if (p < start)
-	    return NULL;
-	return in;
-    }
-
-    /* Found a known header; is it obsolete? */
-    hp = tp->Header;
-    if (hp->Type == HTobs) {
-	*deltap = 0;
-	return in;
-    }
-
-    /* Skip the Bytes header */
-    if (hp == &ARTheaders[_bytes])
-	return in;
-
-    if (hp->Type == HTsav) {
-	*deltap = 0;
-    }
-
-    /* If body of header is all blanks, drop the header. */
-    for (p = colon + 1; ISWHITE(*p); p++)
-	continue;
-    if (*p == '\0' || *p == '\n' || (p[0] == '\r' && p[1] == '\n')) {
-	*deltap = 0;
-	return in;
-    }
-
-    hp->Found++;
-
-    /* Zap in the canonical form of the header, undoing the \0 that
-     * strcpy put out (strncpy() spec isn't trustable, unfortunately). */
-    (void)strcpy(start, hp->Name);
-    start[hp->Size] = ':';
-
-    /* Copy the header if not too big. */
-    i = (out - 1 - 1) - p;
-    if (i >= MAXHEADERSIZE) {
-	(void)sprintf(buff, "\"%s\" header too long", hp->Name);
-	*errorp = buff;
-	return NULL;
-    }
-    hp->Length = i;
-    memcpy(hp->Value, p, i);
-    hp->Value[i] = '\0';
-
-    return in;
+  }
+  return;
 }
-
 
 /*
 **  Check Message-ID format based on RFC 822 grammar, except that (as per
@@ -692,288 +637,405 @@ ARTparseheader(char *in, char *out, int *deltap, const char **errorp)
 bool
 ARTidok(const char *MessageID)
 {
-    int	                c;
-    const char	        *p;
+  int		c;
+  const char	*p;
 
-    /* Check the length of the message ID. */
-    if (MessageID == NULL || strlen(MessageID) > NNTP_MSGID_MAXLEN)
-        return FALSE;
+  /* Check the length of the message ID. */
+  if (MessageID == NULL || strlen(MessageID) > NNTP_MSGID_MAXLEN)
+    return FALSE;
 
-    /* Scan local-part:  "< atom|quoted [ . atom|quoted]" */
-    p = MessageID;
-    if (*p++ != '<')
+  /* Scan local-part:  "< atom|quoted [ . atom|quoted]" */
+  p = MessageID;
+  if (*p++ != '<')
+    return FALSE;
+  for (; ; p++) {
+    if (ARTatomchar(*p))
+      while (ARTatomchar(*++p))
+	continue;
+    else {
+      if (*p++ != '"')
 	return FALSE;
-    for (; ; p++) {
-	if (ARTatomchar(*p))
-	    while (ARTatomchar(*++p))
-		continue;
-	else {
-	    if (*p++ != '"')
-		return FALSE;
-	    for ( ; ; ) {
-		switch (c = *p++) {
-		case '\\':
-		    c = *p++;
-		    /* FALLTHROUGH */
-		default:
-		    if (ARTnormchar(c))
-			continue;
-		    return FALSE;
-		case '"':
-		    break;
-		}
-		break;
-	    }
+      for ( ; ; ) {
+	switch (c = *p++) {
+	case '\\':
+	  c = *p++;
+	  /* FALLTHROUGH */
+	default:
+	  if (ARTnormchar(c))
+	    continue;
+	  return FALSE;
+	case '"':
+	  break;
 	}
-	if (*p != '.')
-	    break;
+	break;
+      }
     }
+    if (*p != '.')
+      break;
+  }
 
-    /* Scan domain part:  "@ atom|domain [ . atom|domain] > \0" */
-    if (*p++ != '@')
+  /* Scan domain part:  "@ atom|domain [ . atom|domain] > \0" */
+  if (*p++ != '@')
+    return FALSE;
+  for ( ; ; p++) {
+    if (ARTatomchar(*p))
+      while (ARTatomchar(*++p))
+	continue;
+    else {
+      if (*p++ != '[')
 	return FALSE;
-    for ( ; ; p++) {
-	if (ARTatomchar(*p))
-	    while (ARTatomchar(*++p))
-		continue;
-	else {
-	    if (*p++ != '[')
-		return FALSE;
-	    for ( ; ; ) {
-		switch (c = *p++) {
-		case '\\':
-		    c = *p++;
-		    /* FALLTHROUGH */
-		default:
-		    if (ARTnormchar(c))
-			continue;
-		    /* FALLTHROUGH */
-		case '[':
-		    return FALSE;
-		case ']':
-		    break;
-		}
-		break;
-	    }
+      for ( ; ; ) {
+	switch (c = *p++) {
+	case '\\':
+	  c = *p++;
+	  /* FALLTHROUGH */
+	default:
+	  if (ARTnormchar(c))
+	    continue;
+	  /* FALLTHROUGH */
+	case '[':
+	  return FALSE;
+	case ']':
+	  break;
 	}
-	if (*p != '.')
-	    break;
+	break;
+      }
     }
+    if (*p != '.')
+      break;
+  }
 
-    return *p == '>' && *++p == '\0';
+  return *p == '>' && *++p == '\0';
 }
 
+/*
+**  Clean up data field where article informations are stored.
+**  This must be called before article processing.
+*/
+void
+ARTprepare(CHANNEL *cp)
+{
+  ARTDATA	*data = &cp->Data;
+  HDRCONTENT	*hc = data->HdrContent;
+  int		i;
+
+  for (i = 0 ; i < MAX_ARTHEADER ; i++, hc++) {
+    hc->Value = NULL;
+    hc->Length = 0;
+  }
+  data->Lines = data->HeaderLines = data->CRwithoutLF = data->LFwithoutCR = 0;
+  data->CurHeader = data->LastTerminator = data->LastCR = cp->Start - 1;
+  data->LastCRLF = data->Body = cp->Start - 1;
+  data->BytesHeader = NULL;
+  *cp->Error = '\0';
+}
 
 /*
 **  Clean up an article.  This is mainly copying in-place, stripping bad
 **  headers.  Also fill in the article data block with what we can find.
 **  Return NULL if the article is okay, or a string describing the error.
+**  Parse headers and end of article
+**  This is called by NCproc().
 */
-static const char *
-ARTclean(BUFFER *Article, ARTDATA *Data)
-{
-    static char		buff[SMBUF];
-    ARTHEADER		*hp;
-    char	        *in;
-    char	        *out;
-    int	                i;
-    char	        *p;
-    const char          *error;
-    int			delta;
+void
+ARTparse(CHANNEL *cp) {
+  BUFFER	*bp = &cp->In;
+  ARTDATA	*data = &cp->Data;
+  int		i, j, limit;
+  char		*p;
+  HDRCONTENT	*hc = data->HdrContent;
 
-    TMRstart(TMR_ARTCLEAN);
-    /* Read through the headers one at a time. */
-    Data->Feedsite = "?";
-    Data->Size[0] = '0';
-    Data->Size[1] = '\0';
-    Data->Arrived = Now.time;
-    Data->Expires = 0;
-
-    for (hp = ARTheaders; hp < ENDOF(ARTheaders); hp++) {
-	if (hp->Value && hp->Type != HTobs)
-	    *hp->Value = '\0';
-	hp->Found = 0;
-    }
-    CRwithoutLF = LFwithoutCR = 0;
-    for (error = NULL, in = out = Article->Data; ; out += delta, in = p) {
-	if (*in == '\0') {
-	    error = "No body";
+  /* Read through the buffer to find header, body and end of article */
+  /* this routine is designed not to refer data so long as possible for
+     performance reason, so the code may look redundant at a glance */
+  limit = bp->Used;
+  i = cp->Next;
+  if (cp->State == CSgetheader) {
+    /* header processing */
+    for (; i < limit ;) {
+      if (data->LastCRLF + 1 == i) {
+	/* begining of the line */
+	switch (bp->Data[i]) {
+	  case '.':
+	    data->LastTerminator = i;
+	    data->NullHeader = FALSE;
+	    break;
+	  case '\r':
+	    data->LastCR = i;
+	    data->NullHeader = FALSE;
+	    break;
+	  case '\n':
+	    data->LFwithoutCR++;
+	    data->NullHeader = FALSE;
+	    break;
+	  case '\t':
+	  case ' ':
+	    /* header is folded.  NullHeader is untouched */
+	    break;
+	  case '\0':
+	    (void)sprintf(cp->Error, "%d Null Header", NNTP_REJECTIT_VAL);
+	    data->NullHeader = TRUE;
+	    break;
+	  default:
+	    if (data->CurHeader >= cp->Start) {
+	      /* parse previous header */
+	      if (!data->NullHeader && (*cp->Error == '\0'))
+		/* skip if already got an error */
+		ARTparseheader(cp, i - data->CurHeader);
+	    }
+	    data->CurHeader = i;
+	    data->NullHeader = FALSE;
 	    break;
 	}
-	if (in[0] == '\r' && in[1] != '\n')
-	    CRwithoutLF++;
-	if (in[0] == '\n' && in > Article->Data && in[-1] != '\r')
-	    LFwithoutCR++;
-	if (((*in == '\n' || (in[0] == '\r' && in[1] == '\n'))
-             && out > Article->Data && out[-1] == '\n'))
-	    /* Found the header separator; break out. */
-	    break;
-
-	/* Check the validity of this header. */
-	if ((p = ARTparseheader(in, out, &delta, &error)) == NULL)
-	    break;
-    }
-    Data->Body = out + 1;
-    in++;
-
-    /* Try to set this now, so we can report it in errors. */
-    Data->MessageID = NULL;
-    p = HDR(_message_id);
-    if (*p && ARTidok(p))
-	Data->MessageID = p;
-    Data->MessageIDLength = Data->MessageID ? strlen(Data->MessageID) : 0;
-    if (error == NULL && Data->MessageID == NULL)
-	error = "Bad \"Message-ID\" header";
-
-    if (error) {
-	TMRstop(TMR_ARTCLEAN);
-	return error;
-    }
-
-    /* Make sure all the headers we need are there, and no duplicates. */
-    for (hp = ARTheaders; hp < ENDOF(ARTheaders); hp++)
-	if (hp->Type == HTreq) {
-	    if (*hp->Value == '\0') {
-		(void)sprintf(buff, "Missing \"%s\" header", hp->Name);
-		TMRstop(TMR_ARTCLEAN);
-		return buff;
-	    }
-	    if (hp->Found > 1) {
-		(void)sprintf(buff, "Duplicate \"%s\" header", hp->Name);
-		TMRstop(TMR_ARTCLEAN);
-		return buff;
-	    }
-	}
-
-    /* Scan the body, counting lines. */
-    for (i = 0; *in; ) {
-	if (in[0] == '\r' && in[1] != '\n')
-	    CRwithoutLF++;
-	if (in[0] == '\n' && in[-1] != '\r')
-	    LFwithoutCR++;
-	if (*in == '\n')
-	    i++;
-	*out++ = *in++;
-    }
-    *out = '\0';
-    if (Article->Data + Article->Used != in + 1) {
 	i++;
-	(void)sprintf(buff, "Line %d includes null character", i);
-	TMRstop(TMR_ARTCLEAN);
-	return buff;
-    }
-    Article->Used = out - Article->Data;
-    Data->LinesValue = (i - 1 < 0) ? 0 : (i - 1);
-    
-    if (innconf->linecountfuzz) {
-	p = HDR(_lines);
-	if (*p && (delta = i - atoi(p)) != 0 && abs(delta) >
-						innconf->linecountfuzz) {
-	    if ((in = strchr(p, '\n')) != NULL)
-		*in = '\0';
-	    (void)sprintf(buff, "Linecount %s != %d +- %d",
-		MaxLength(p, p), i, innconf->linecountfuzz);
-	    TMRstop(TMR_ARTCLEAN);
-	    return buff;
-	}
-    }
-
-    /* Is article too old? */
-    p = HDR(_date);
-    if ((Data->Posted = parsedate(p, &Now)) == -1) {
-	(void)sprintf(buff, "Bad \"Date\" header -- \"%s\"", MaxLength(p, p));
-	TMRstop(TMR_ARTCLEAN);
-	return buff;
-    }
-    if (innconf->artcutoff && Data->Posted < Now.time - innconf->artcutoff) {
-	(void)sprintf(buff, "Too old -- \"%s\"", MaxLength(p, p));
-	TMRstop(TMR_ARTCLEAN);
-	return buff;
-    }
-    if (Data->Posted > Now.time + DATE_FUZZ) {
-	(void)sprintf(buff, "Article posted in the future -- \"%s\"",
-		MaxLength(p, p));
-	TMRstop(TMR_ARTCLEAN);
-	return buff;
-    }
-    p = HDR(_expires);
-    if (*p != '\0' && (Data->Expires = parsedate(p, &Now)) == -1) {
-#if	0
-	(void)sprintf(buff, "Bad \"Expires\" header -- \"%s\"",
-		MaxLength(p, p));
-	TMRstop(TMR_ARTCLEAN);
-	return buff;
-#endif
-    }
-
-    /* Colon or whitespace in the Newsgroups header? */
-    if (strchr(HDR(_newsgroups), ':') != NULL) {
-	TMRstop(TMR_ARTCLEAN);
-	return "Colon in \"Newsgroups\" header";
-    }
-
-    /* Whitespace - clean the header up instead of rejecting it.  Too many
-       servers are passing articles with whitespace along these days.  On
-       May 12th, 2000, I rejected 18468 of 578846 articles because of this
-       lack of adherence to standards. -rhooper@thetoybox.org 2000/05/12 */
-    for (p = HDR(_newsgroups); *p; p++)
-	if (ISWHITE(*p)) {
-	    /* Fix whitspace */
-	    char *wsp = HDR(_newsgroups);
-	    int x,y,s;
-
-	    for (s=x=y=0; y < ARTheaders[_newsgroups].Length; x++)
-	    {
-	    	while (ISWHITE(wsp[y]) && y < ARTheaders[_newsgroups].Length)
-	    	{
-	    	  y++;
-	    	  s++;
-	    	}
-	    	wsp[x]=wsp[y];
-	    	y++;
+      }
+      for (; i < limit ;) {
+	/* rest of the line */
+	switch (bp->Data[i]) {
+	  case '\0':
+	    (void)sprintf(cp->Error, "%d Null Header", NNTP_REJECTIT_VAL);
+	    data->NullHeader = TRUE;
+	    break;
+	  case '\r':
+	    if (data->LastCR >= cp->Start)
+	      data->CRwithoutLF++;
+	    data->LastCR = i;
+	    break;
+	  case '\n':
+	    if (data->LastCR + 1 == i) {
+	      /* found CRLF */
+	      data->LastCR = cp->Start - 1;
+	      if (data->LastTerminator + 2 == i) {
+		/* terminated still in header */
+		if (cp->Start + 3 == i) {
+		  (void)sprintf(cp->Error, "%d Empty article",
+		    NNTP_REJECTIT_VAL);
+		  cp->State = CSnoarticle;
+		} else {
+		  (void)sprintf(cp->Error, "%d No body", NNTP_REJECTIT_VAL);
+		  cp->State = CSgotarticle;
+		}
+		cp->Next = ++i;
+		goto sizecheck;
+	      }
+	      data->HeaderLines++;
+	      if (data->LastCRLF + MAXHEADERSIZE < i)
+		sprintf(cp->Error, "%d Too long line in header %d bytes",
+		  NNTP_REJECTIT_VAL, i - data->LastCRLF);
+	      else if (data->LastCRLF + 2 == i) {
+		/* header ends */
+		/* parse previous header */
+		if (data->CurHeader >= cp->Start) {
+		  if (!data->NullHeader && (*cp->Error == '\0'))
+		    /* skip if already got an error */
+		    ARTparseheader(cp, i - 1 - data->CurHeader);
+		} else {
+		  (void)sprintf(cp->Error, "%d No header", NNTP_REJECTIT_VAL);
+		}
+		data->LastCRLF = i++;
+		data->Body = i;
+		cp->State = CSgetbody;
+		goto bodyprocessing;
+	      }
+	      data->LastCRLF = i++;
+	      goto endofheaderline;
+	    } else {
+	      data->LFwithoutCR++;
 	    }
-	    wsp[x]='\0';
-	    ARTheaders[_newsgroups].Length-=s;
+	    break;
+	  default:
 	    break;
 	}
-
-    TMRstop(TMR_ARTCLEAN);
-    return NULL;
+	i++;
+      }
+endofheaderline:
+    }
+  } else {
+bodyprocessing:
+    /* body processing, or eating huge article */
+    for (; i < limit ;) {
+      if (data->LastCRLF + 1 == i) {
+        /* begining of the line */
+        switch (bp->Data[i]) {
+	  case '.':
+	    data->LastTerminator = i;
+	    break;
+	  case '\r':
+	    data->LastCR = i;
+	    break;
+	  case '\n':
+	    data->LFwithoutCR++;
+	    break;
+	  default:
+	    break;
+        }
+        i++;
+      }
+      for (; i < limit ;) {
+	/* rest of the line */
+	switch (bp->Data[i]) {
+	  case '\r':
+	    if (data->LastCR >= cp->Start)
+	      data->CRwithoutLF++;
+	    data->LastCR = i;
+	    break;
+	  case '\n':
+	    if (data->LastCR + 1 == i) {
+	      /* found CRLF */
+	      data->LastCR = cp->Start - 1;
+	      if (data->LastTerminator + 2 == i) {
+		/* found end of article */
+		if (cp->State == CSeatarticle) {
+		  cp->State = CSgotlargearticle;
+		  cp->Next = ++i;
+		  return;
+		} else
+		  cp->State = CSgotarticle;
+		i++;
+		if (*cp->Error != '\0' && HDR_FOUND(_message_id)) {
+		  HDR_PARSE_START(_message_id);
+		  ARTlog(data, ART_REJECT, cp->Error);
+		  HDR_PARSE_END(_message_id);
+		}
+		goto sizecheck;
+	      }
+#if 0 /* this may be examined in the future */
+	      if (data->LastCRLF + MAXHEADERSIZE < i)
+		(void)sprintf(cp->Error, "%d Too long line in body %d bytes",
+		  NNTP_REJECTIT_VAL, i);
+#endif
+	      data->Lines++;
+	      data->LastCRLF = i++;
+	      goto endofline;
+	    } else {
+	      data->LFwithoutCR++;
+	    }
+	    break;
+	  default:
+	    break;
+	}
+	i++;
+      }
+endofline:
+    }
+  }
+sizecheck:
+  if ((innconf->maxartsize > 0) &&
+    (limit - cp->Next + cp->LargeArtSize > innconf->maxartsize)) {
+    cp->LargeArtSize += limit - cp->Next;
+    cp->State = CSeatarticle;
+  }
+  cp->Next = i;
+  return;
 }
-
 
 /*
-**  Start a log message about an article.
+**  Clean up an article.  This is mainly copying in-place, stripping bad
+**  headers.  Also fill in the article data block with what we can find.
+**  Return TRUE if the article has no error, or FALSE which means the error.
 */
-static void
-ARTlog(const ARTDATA *Data, char code, const char *text)
+static bool
+ARTclean(ARTDATA *data, char *buff)
 {
-    int			i;
-    bool		Done;
+  HDRCONTENT	*hc = data->HdrContent;
+  ARTHEADER	*hp = ARTheaders;
+  char		*in;
+  char		*out;
+  int		i;
+  char		*p;
+  const char	*error;
+  int		delta;
 
-    /* We could be a bit faster by not dividing Now.usec by 1000,
-     * but who really wants to log at the Microsec level? */
-    Done = code == ART_ACCEPT || code == ART_JUNK;
-    if (text)
-	i = fprintf(Log, "%.15s.%03d %c %s %s %s%s",
-		ctime(&Now.time) + 4, (int)(Now.usec / 1000),
-		code, Data->Feedsite,
-		Data->MessageID == NULL ? "(null)" : Data->MessageID,
-		text, Done ? "" : "\n");
-    else
-	i = fprintf(Log, "%.15s.%03d %c %s %s%s",
-		ctime(&Now.time) + 4, (int)(Now.usec / 1000),
-		code, Data->Feedsite,
-		Data->MessageID == NULL ? "(null)" : Data->MessageID,
-		Done ? "" : "\n");
-    if (i == EOF || (Done && !BufferedLogs && fflush(Log)) || ferror(Log)) {
-	i = errno;
-	syslog(L_ERROR, "%s cant write log_start %m", LogName);
-	IOError("logging article", i);
-	clearerr(Log);
+  TMRstart(TMR_ARTCLEAN);
+  data->Feedsite = "?";
+  data->Arrived = Now.time;
+  data->Expires = 0;
+
+  /* replace trailing '\r\n' with '\0\n' of all system header to be handled
+     easily by str*() functions */
+  for (i = 0 ; i < MAX_ARTHEADER ; i++) {
+    if (HDR_FOUND(i))
+      HDR_PARSE_START(i);
+  }
+
+  /* Make sure all the headers we need are there */
+  for (i = 0; i < MAX_ARTHEADER ; i++) {
+    if (hp[i].Type == HTreq) {
+      if (!HDR_FOUND(i)) {
+	(void)sprintf(buff, "%d Missing \"%s\" header", NNTP_REJECTIT_VAL,
+	  hp[i].Name);
+	TMRstop(TMR_ARTCLEAN);
+	return FALSE;
+      }
     }
-}
+  }
 
+  /* assumes Message-ID header is required header */
+  if (!ARTidok(HDR(_message_id))) {
+    strcpy(buff, "Bad \"Message-ID\" header");
+    TMRstop(TMR_ARTCLEAN);
+    return FALSE;
+  }
+
+  if (innconf->linecountfuzz && HDR_FOUND(_lines)) {
+    p = HDR(_lines);
+    i = data->Lines;
+    if ((delta = i - atoi(p)) != 0 && abs(delta) > innconf->linecountfuzz) {
+      (void)sprintf(buff, "%d Linecount %s != %d +- %d", NNTP_REJECTIT_VAL,
+	MaxLength(p, p), i, innconf->linecountfuzz);
+      TMRstop(TMR_ARTCLEAN);
+      return FALSE;
+    }
+  }
+
+  /* Is article too old? */
+  /* assumes Date header is required header */
+  p = HDR(_date);
+  if ((data->Posted = parsedate(p, &Now)) == -1) {
+    (void)sprintf(buff, "%d Bad \"Date\" header -- \"%s\"", NNTP_REJECTIT_VAL,
+      MaxLength(p, p));
+    TMRstop(TMR_ARTCLEAN);
+    return FALSE;
+  }
+  if (innconf->artcutoff && data->Posted < Now.time - innconf->artcutoff) {
+    (void)sprintf(buff, "%d Too old -- \"%s\"", NNTP_REJECTIT_VAL,
+      MaxLength(p, p));
+    TMRstop(TMR_ARTCLEAN);
+    return FALSE;
+  }
+  if (data->Posted > Now.time + DATE_FUZZ) {
+    (void)sprintf(buff, "%d Article posted in the future -- \"%s\"",
+      NNTP_REJECTIT_VAL, MaxLength(p, p));
+    TMRstop(TMR_ARTCLEAN);
+    return FALSE;
+  }
+  if (HDR_FOUND(_expires)) {
+    p = HDR(_expires);
+    data->Expires = parsedate(p, &Now);
+  }
+
+  /* Colon or whitespace in the Newsgroups header? */
+  /* assumes Newsgroups header is required header */
+  if ((data->Groupcount = NGsplit(HDR(_newsgroups), HDR_LEN(_newsgroups),
+    &data->Newsgroups)) == 0) {
+    TMRstop(TMR_ARTCLEAN);
+    strcpy(buff, "Unwanted character in \"Newsgroups\" header");
+    return FALSE;
+  }
+
+  /* Fill in other Data fields. */
+  if (HDR_FOUND(_sender))
+    data->Poster = HDR(_sender);
+  else
+    data->Poster = HDR(_from);
+  if (HDR_FOUND(_reply_to))
+    data->Replyto = HDR(_reply_to);
+  else
+    data->Replyto = HDR(_from);
+
+  TMRstop(TMR_ARTCLEAN);
+  return TRUE;
+}
 
 /*
 **  We are going to reject an article, record the reason and
@@ -987,7 +1049,7 @@ ARTreject(Reject_type code, CHANNEL *cp, BUFFER *article)
   switch (code) {
     case REJECT_DUPLICATE:
       cp->Duplicate++;
-      cp->DuplicateSize += article->Used;
+      cp->DuplicateSize += cp->Next - cp->Start;
       break;
     case REJECT_SITE:
       cp->Unwanted_s++;
@@ -1016,120 +1078,116 @@ ARTreject(Reject_type code, CHANNEL *cp, BUFFER *article)
       /* error */
 }
 
-
 /*
 **  Verify if a cancel message is valid.  If the user posting the cancel
 **  matches the user who posted the article, return the list of filenames
 **  otherwise return NULL.
 */
 static TOKEN *
-ARTcancelverify(const ARTDATA *Data, const char *MessageID, const HASH hash)
+ARTcancelverify(const ARTDATA *data, const char *MessageID, const HASH hash)
 {
-    const char	        *p;
-    char	        *q, *q1;
-    const char	        *local;
-    char		buff[SMBUF];
-    ARTHANDLE		*art;
-    TOKEN		*token;
+  const char	*p;
+  char		*q, *q1;
+  const char	*local;
+  char		buff[SMBUF];
+  ARTHANDLE	*art;
+  TOKEN		*token;
 
-    if ((token = HISfilesfor(hash)) == NULL)
-	return NULL;
-    if ((art = SMretrieve(*token, RETR_HEAD)) == NULL)
-	return NULL;
-    if ((local = HeaderFindMem(art->data, art->len, "Sender", 6)) == NULL
-     && (local = HeaderFindMem(art->data, art->len, "From", 4)) == NULL) {
-	SMfreearticle(art);
-	return NULL;
-    }
-    for (p = local; p < art->data + art->len; p++) {
-	if (*p == '\r' || *p == '\n')
-	    break;
-    }
-    if (p == art->data + art->len) {
-	SMfreearticle(art);
-	return NULL;
-    }
-    q = NEW(char, p - local + 1);
-    memcpy(q, local, p - local);
+  if ((token = HISfilesfor(hash)) == NULL)
+    return NULL;
+  if ((art = SMretrieve(*token, RETR_HEAD)) == NULL)
+    return NULL;
+  if ((local = HeaderFindMem(art->data, art->len, "Sender", 6)) == NULL
+    && (local = HeaderFindMem(art->data, art->len, "From", 4)) == NULL) {
     SMfreearticle(art);
-    q[p - local] = '\0';
-    HeaderCleanFrom(q);
+    return NULL;
+  }
+  for (p = local; p < art->data + art->len; p++) {
+    if (*p == '\r' || *p == '\n')
+      break;
+  }
+  if (p == art->data + art->len) {
+    SMfreearticle(art);
+    return NULL;
+  }
+  q = NEW(char, p - local + 1);
+  memcpy(q, local, p - local);
+  SMfreearticle(art);
+  q[p - local] = '\0';
+  HeaderCleanFrom(q);
 
-    /* Compare canonical forms. */
-    q1 = COPY(Data->Poster);
-    HeaderCleanFrom(q1);
-    if (!EQ(q, q1)) {
-	token = NULL;
-	(void)sprintf(buff, "\"%.50s\" wants to cancel %s by \"%.50s\"",
-		      q1, MaxLength(MessageID, MessageID), q);
-	ARTlog(Data, ART_REJECT, buff);
-    }
-    DISPOSE(q1);
-    DISPOSE(q);
-    return token;
+  /* Compare canonical forms. */
+  q1 = COPY(data->Poster);
+  HeaderCleanFrom(q1);
+  if (!EQ(q, q1)) {
+    token = NULL;
+    (void)sprintf(buff, "\"%.50s\" wants to cancel %s by \"%.50s\"",
+      q1, MaxLength(MessageID, MessageID), q);
+    ARTlog(data, ART_REJECT, buff);
+  }
+  DISPOSE(q1);
+  DISPOSE(q);
+  return token;
 }
-
 
 /*
 **  Process a cancel message.
 */
 void
-ARTcancel(const ARTDATA *Data, const char *MessageID, const bool Trusted)
+ARTcancel(const ARTDATA *data, const char *MessageID, const bool Trusted)
 {
-    char		buff[SMBUF+16];
-    HASH                hash;
-    TOKEN		*token;
+  char	buff[SMBUF+16];
+  HASH	hash;
+  TOKEN	*token;
 
-    TMRstart(TMR_ARTCNCL);
-    if (!DoCancels && !Trusted) {
-	TMRstop(TMR_ARTCNCL);
-	return;
-    }
-
-    if (!ARTidok(MessageID)) {
-	syslog(L_NOTICE, "%s bad cancel Message-ID %s", Data->Feedsite,
-	       MaxLength(MessageID, MessageID));
-	TMRstop(TMR_ARTCNCL);
-        return;
-    }
-
-    hash = HashMessageID(MessageID);
-    
-    if (!HIShavearticle(hash)) {
-	/* Article hasn't arrived here, so write a fake entry using
-	 * most of the information from the cancel message. */
-	if (innconf->verifycancels && !Trusted) {
-	    TMRstop(TMR_ARTCNCL);
-	    return;
-	}
-	HISremember(hash);
-	(void)sprintf(buff, "Cancelling %s", MaxLength(MessageID, MessageID));
-	ARTlog(Data, ART_CANC, buff);
-	TMRstop(TMR_ARTCNCL);
-	return;
-    }
-    if (innconf->verifycancels) {
-	token = Trusted ? HISfilesfor(hash)
-	    : ARTcancelverify(Data, MessageID, hash);
-    } else {
-	token = HISfilesfor(hash);
-    }
-    if (token == NULL) {
-	TMRstop(TMR_ARTCNCL);
-	return;
-    }
-    
-    /* Get stored message and zap them. */
-    if (!SMcancel(*token) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
-	syslog(L_ERROR, "%s cant cancel %s", LogName, TokenToText(*token));
-    if (innconf->immediatecancel && !SMflushcacheddata(SM_CANCELEDART))
-	syslog(L_ERROR, "%s cant cancel cached %s", LogName, TokenToText(*token));
-    (void)sprintf(buff, "Cancelling %s", MaxLength(MessageID, MessageID));
-    ARTlog(Data, ART_CANC, buff);
+  TMRstart(TMR_ARTCNCL);
+  if (!DoCancels && !Trusted) {
     TMRstop(TMR_ARTCNCL);
+    return;
+  }
+
+  if (!ARTidok(MessageID)) {
+    syslog(L_NOTICE, "%s bad cancel Message-ID %s", data->Feedsite,
+      MaxLength(MessageID, MessageID));
+    TMRstop(TMR_ARTCNCL);
+    return;
+  }
+
+  hash = HashMessageID(MessageID);
+
+  if (!HIShavearticle(hash)) {
+    /* Article hasn't arrived here, so write a fake entry using
+     * most of the information from the cancel message. */
+    if (innconf->verifycancels && !Trusted) {
+      TMRstop(TMR_ARTCNCL);
+      return;
+    }
+    HISremember(hash);
+    (void)sprintf(buff, "Cancelling %s", MaxLength(MessageID, MessageID));
+    ARTlog(data, ART_CANC, buff);
+    TMRstop(TMR_ARTCNCL);
+    return;
+  }
+  if (innconf->verifycancels) {
+    token = Trusted ? HISfilesfor(hash)
+      : ARTcancelverify(data, MessageID, hash);
+  } else {
+    token = HISfilesfor(hash);
+  }
+  if (token == NULL) {
+    TMRstop(TMR_ARTCNCL);
+    return;
+  }
+
+  /* Get stored message and zap them. */
+  if (!SMcancel(*token) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
+    syslog(L_ERROR, "%s cant cancel %s", LogName, TokenToText(*token));
+  if (innconf->immediatecancel && !SMflushcacheddata(SM_CANCELEDART))
+    syslog(L_ERROR, "%s cant cancel cached %s", LogName, TokenToText(*token));
+  (void)sprintf(buff, "Cancelling %s", MaxLength(MessageID, MessageID));
+  ARTlog(data, ART_CANC, buff);
+  TMRstop(TMR_ARTCNCL);
 }
-
-
 
 /*
 **  Process a control message.  Cancels are handled here, but any others
@@ -1137,141 +1195,140 @@ ARTcancel(const ARTDATA *Data, const char *MessageID, const bool Trusted)
 **  has the same name as the first word of the control message.
 */
 static void
-ARTcontrol(ARTDATA *Data, char *Control, CHANNEL *cp)
+ARTcontrol(ARTDATA *data, char *Control, CHANNEL *cp)
 {
-    char	        *p;
-    char		buff[SMBUF];
-    char		*av[6];
-    struct stat		Sb;
-    char	        c;
-    const char		**hops;
-    int			hopcount;
+  HDRCONTENT	*hc = data->HdrContent;
+  char		*p, buff[SMBUF], ControlWord[16], *av[6], c;
+  struct stat	Sb;
+  const char	**hops;
+  int		hopcount;
 
-    /* See if it's a cancel message. */
-    c = *Control;
-    if (c == 'c' && EQn(Control, "cancel", 6)) {
-	for (p = &Control[6]; ISWHITE(*p); p++)
-	    continue;
-	if (*p && ARTidok(p))
-	    ARTcancel(Data, p, FALSE);
-	return;
+  /* See if it's a cancel message. */
+  c = *Control;
+  if (c == 'c' && EQn(Control, "cancel", 6)) {
+    for (p = &Control[6]; ISWHITE(*p); p++)
+      continue;
+    if (*p && ARTidok(p))
+      ARTcancel(data, p, FALSE);
+    return;
+  }
+
+  if (innconf->usecontrolchan)
+    return;
+
+  /* Nip off the first word into lowercase. */
+  strncpy(ControlWord, HDR(_control), sizeof ControlWord);
+  for (p = ControlWord; *p && !ISWHITE(*p); p++)
+    if (CTYPE(isupper, *p))
+      *p = tolower(*p);
+  if (*p)
+    *p++ = '\0';
+
+  /* Treat the control message as a place to send the article, if
+   * the name is "safe" -- no slashes in the pathname. */
+  if (p - ControlWord + STRLEN( _PATH_BADCONTROLPROG) >= SMBUF-4
+    || strchr(ControlWord, '/') != NULL)
+    FileGlue(buff, innconf->pathcontrol, '/', _PATH_BADCONTROLPROG);
+  else {
+    FileGlue(buff, innconf->pathcontrol, '/', ControlWord);
+    if (stat(buff, &Sb) < 0 || (Sb.st_mode & EXECUTE_BITS) == 0)
+      FileGlue(buff, innconf->pathcontrol, '/', _PATH_BADCONTROLPROG);
+  }
+
+  /* If it's an ihave or sendme, check the site named in the message. */
+  if ((c == 'i' && EQ(ControlWord, "ihave"))
+    || (c == 's' && EQ(ControlWord, "sendme"))) {
+    while (ISWHITE(*p))
+      p++;
+    if (*p == '\0') {
+      syslog(L_NOTICE, "%s malformed %s no site %s",
+	LogName, ControlWord, data->TokenText);
+      return;
     }
-
-    /* Nip off the first word into lowercase. */
-    for (p = Control; *p && !ISWHITE(*p); p++)
-	if (CTYPE(isupper, *p))
-	    *p = tolower(*p);
-    if (*p)
-	*p++ = '\0';
-
-    /* Treat the control message as a place to send the article, if
-     * the name is "safe" -- no slashes in the pathname. */
-    if (p - Control + STRLEN( _PATH_BADCONTROLPROG) >= SMBUF-4
-     || strchr(Control, '/') != NULL)
-	FileGlue(buff, innconf->pathcontrol, '/', _PATH_BADCONTROLPROG);
-    else {
-	FileGlue(buff, innconf->pathcontrol, '/', Control);
-	if (stat(buff, &Sb) < 0 || (Sb.st_mode & EXECUTE_BITS) == 0)
-	    FileGlue(buff, innconf->pathcontrol, '/', _PATH_BADCONTROLPROG);
+    if (EQ(p, ARTpathme)) {
+      /* Do nothing -- must have come from a replicant. */
+      syslog(L_NOTICE, "%s %s_from_me %s", data->Feedsite, ControlWord,
+	data->TokenText);
+      return;
     }
-
-    /* If it's an ihave or sendme, check the site named in the message. */
-    if ((c == 'i' && EQ(Control, "ihave"))
-     || (c == 's' && EQ(Control, "sendme"))) {
-	while (ISWHITE(*p))
-	    p++;
-	if (*p == '\0') {
-	    syslog(L_NOTICE, "%s malformed %s no site %s",
-		    LogName, Control, Data->Name);
-	    return;
-	}
-	if (EQ(p, ARTpathme)) {
-	    /* Do nothing -- must have come from a replicant. */
-	    syslog(L_NOTICE, "%s %s_from_me %s",
-		Data->Feedsite, Control, Data->Name);
-	    return;
-	}
-	if (!SITEfind(p)) {
-	    if (c == 'i')
-		syslog(L_ERROR, "%s bad_ihave in %s",
-		    Data->Feedsite, Data->Newsgroups);
-	    else
-		syslog(L_ERROR, "%s bad_sendme dont feed %s",
-		    Data->Feedsite, Data->Name);
-	    return;
-	}
+    if (!SITEfind(p)) {
+      if (c == 'i')
+	syslog(L_ERROR, "%s bad_ihave in %s", data->Feedsite,
+	  data->Newsgroups.Data);
+      else
+	syslog(L_ERROR, "%s bad_sendme dont feed %s",
+	  data->Feedsite, data->TokenText);
+      return;
     }
+  }
 
-    if (!(innconf->usecontrolchan)) {
-	/* Build the command vector and execute it. */
-	av[0] = buff;
-	av[1] = COPY(Data->Poster);
-	av[2] = COPY(Data->Replyto);
-	av[3] = Data->Name;
-	if (innconf->logipaddr) {
-	    hops = ARTparsepath(HDR(_path), &hopcount);
-	    av[4] = (char *)(hops && hops[0] ? hops[0] : CHANname(cp));
-	} else {
-	    av[4] = (char *)(Data->Feedsite);
-	}
-	av[5] = NULL;
-	HeaderCleanFrom(av[1]);
-	HeaderCleanFrom(av[2]);
-	if (Spawn(innconf->nicekids, STDIN_FILENO, fileno(Errlog),
-                  fileno(Errlog), (char * const *)av) < 0)
-	    /* We know the strrchr below can't fail. */
-	    syslog(L_ERROR, "%s cant spawn %s for %s %m",
-		LogName, MaxLength(av[0], strrchr(av[0], '/')), Data->Name);
-	DISPOSE(av[1]);
-	DISPOSE(av[2]);
-    }
+  /* Build the command vector and execute it. */
+  av[0] = buff;
+  av[1] = COPY(data->Poster);
+  av[2] = COPY(data->Replyto);
+  av[3] = data->TokenText;
+  p = NULL;
+  if (innconf->logipaddr) {
+    hops = (const char **)data->Path.List;
+    av[4] = (char *)(hops && hops[0] ? hops[0] : CHANname(cp));
+  } else {
+    av[4] = (char *)(data->Feedsite);
+  }
+  av[5] = NULL;
+  HeaderCleanFrom(av[1]);
+  HeaderCleanFrom(av[2]);
+  if (Spawn(innconf->nicekids, STDIN_FILENO, fileno(Errlog), fileno(Errlog),
+    (char * const *)av) < 0)
+    /* We know the strrchr below can't fail. */
+    syslog(L_ERROR, "%s cant spawn %s for %s %m", LogName, MaxLength(av[0],
+      strrchr(av[0], '/')), data->TokenText);
+  DISPOSE(av[1]);
+  DISPOSE(av[2]);
+  if (p != NULL)
+    DISPOSE(p);
 }
-
 
 /*
-**  Split a Distribution header, making a copy and skipping leading and
-**  trailing whitespace (which the RFC allows).
+**  Parse a Distribution line, splitting it up into NULL-terminated array of
+**  strings.
 */
 static void
-DISTparse(char **list, ARTDATA *Data)
+ARTparsedist(const char *p, int size, LISTBUFFER *list)
 {
-    static BUFFER	Dist;
-    char	        *p;
-    char	        *q;
-    int	                i;
-    int	                j;
+  int	i;
+  char	*q, **dp;
 
-    /* Get space to store the copy. */
-    for (i = 0, j = 0; (p = list[i]) != NULL; i++)
-	j += 1 + strlen(p);
-    if (Dist.Data == NULL) {
-	Dist.Size = j;
-	Dist.Data = NEW(char, Dist.Size + 1);
-    }
-    else if (Dist.Size <= j) {
-	Dist.Size = j + 16;
-	RENEW(Dist.Data, char, Dist.Size + 1);
-    }
+  /* setup buffer */ 
+  SetupListBuffer(size, list);
 
-    /* Loop over each element, skip and trim whitespace. */
-    for (q = Dist.Data, i = 0, j = 0; (p = list[i]) != NULL; i++) {
-	while (ISWHITE(*p))
-	    p++;
-	if (*p) {
-	    if (j)
-		*q++ = ',';
-	    for (list[j++] = p; *p && !ISWHITE(*p); )
-		*q++ = *p++;
-	    *p = '\0';
-	}
-    }
-    list[j] = NULL;
+  /* loop over text and copy */
+  for (i = 0, q = list->Data, dp = list->List ; *p ; p++, *q++ = '\0') { 
+    /* skip leading separators. */
+    for (; *p && (*p == ',') && ISWHITE(*p) ; p++)
+      continue;
+    if (*p == '\0')
+      break;
 
-    *q = '\0';
-    Data->Distribution = Dist.Data;
-    Data->DistributionLength = q - Dist.Data;
+    if (list->ListLength <= i) {
+      list->ListLength += DEFAULTNGBOXSIZE;
+      RENEW(list->List, char*, list->ListLength);
+      dp = &list->List[i];
+    }
+    /* mark the start of the host, move to the end of it while copying */  
+    for (*dp++ = q, i++ ; *p && (*p != ',') && !ISWHITE(*p) ;)
+      *q++ = *p++;
+    if (*p == '\0')
+      break;
+  }
+  *q = '\0';
+  if (i == list->ListLength) {
+    list->ListLength += DEFAULTNGBOXSIZE;
+    RENEW(list->List, char *, list->ListLength);
+    dp = &list->List[i];
+  }
+  *dp = NULL;
+  return;
 }
-
 
 /*
 **  A somewhat similar routine, except that this handles negated entries
@@ -1280,24 +1337,23 @@ DISTparse(char **list, ARTDATA *Data)
 static bool
 DISTwanted(char **list, char *p)
 {
-    char	        *q;
-    char	        c;
-    bool	        sawbang;
+  char	*q;
+  char	c;
+  bool	sawbang;
 
-    for (sawbang = FALSE, c = *p; (q = *list) != NULL; list++)
-	if (*q == '!') {
-	    sawbang = TRUE;
-	    if (c == *++q && EQ(p, q))
-		return FALSE;
-	}
-	else if (c == *q && EQ(p, q))
-	    return TRUE;
+  for (sawbang = FALSE, c = *p; (q = *list) != NULL; list++) {
+    if (*q == '!') {
+      sawbang = TRUE;
+      if (c == *++q && EQ(p, q))
+	return FALSE;
+    } else if (c == *q && EQ(p, q))
+      return TRUE;
+  }
 
-    /* If we saw any !foo's and didn't match, then assume they are all
-     * negated distributions and return TRUE, else return false. */
-    return sawbang;
+  /* If we saw any !foo's and didn't match, then assume they are all negated
+     distributions and return TRUE, else return false. */
+  return sawbang;
 }
-
 
 /*
 **  See if any of the distributions in the article are wanted by the site.
@@ -1305,12 +1361,11 @@ DISTwanted(char **list, char *p)
 static bool
 DISTwantany(char **site, char **article)
 {
-    for ( ; *article; article++)
-	if (DISTwanted(site, *article))
-	    return TRUE;
-    return FALSE;
+  for ( ; *article; article++)
+    if (DISTwanted(site, *article))
+      return TRUE;
+  return FALSE;
 }
-
 
 /*
 **  Send the current article to all sites that would get it if the
@@ -1319,16 +1374,16 @@ DISTwantany(char **site, char **article)
 static void
 ARTsendthegroup(char *name)
 {
-    SITE	        *sp;
-    int	                i;
-    NEWSGROUP		*ngp;
+  SITE		*sp;
+  int		i;
+  NEWSGROUP	*ngp;
 
-    for (ngp = NGfind(ARTctl), sp = Sites, i = nSites; --i >= 0; sp++)
-	if (sp->Name != NULL && SITEwantsgroup(sp, name)) {
-	    SITEmark(sp, ngp);
-	}
+  for (ngp = NGfind(ARTctl), sp = Sites, i = nSites; --i >= 0; sp++) {
+    if (sp->Name != NULL && SITEwantsgroup(sp, name)) {
+      SITEmark(sp, ngp);
+    }
+  }
 }
-
 
 /*
 **  Check if site doesn't want this group even if it's crossposted
@@ -1337,15 +1392,15 @@ ARTsendthegroup(char *name)
 static void
 ARTpoisongroup(char *name)
 {
-    SITE	        *sp;
-    int	                i;
+  SITE	*sp;
+  int	i;
 
-    for (sp = Sites, i = nSites; --i >= 0; sp++)
-	if (sp->Name != NULL && (sp->PoisonEntry || ME.PoisonEntry) &&
-            SITEpoisongroup(sp, name))
-	    sp->Poison = TRUE;
+  for (sp = Sites, i = nSites; --i >= 0; sp++) {
+    if (sp->Name != NULL && (sp->PoisonEntry || ME.PoisonEntry) &&
+      SITEpoisongroup(sp, name))
+      sp->Poison = TRUE;
+  }
 }
-
 
 /*
 ** Assign article numbers to the article and create the Xref line.
@@ -1353,113 +1408,134 @@ ARTpoisongroup(char *name)
 ** in the directory and active file.
 */
 static void
-ARTassignnumbers(void)
+ARTassignnumbers(ARTDATA *data)
 {
-    char	        *p;
-    int	                i;
-    NEWSGROUP	        *ngp;
+  char		*p, *q;
+  int		i, len, linelen, buflen;
+  NEWSGROUP	*ngp;
 
-    p = HDR(_xref);
-    strncpy(p, Path.Data, Path.Used - 1);
-    p += Path.Used - 1;
-    for (i = 0; (ngp = GroupPointers[i]) != NULL; i++) {
-	/* If already went to this group (i.e., multiple groups are aliased
-	 * into it), then skip it. */
-	if (ngp->PostCount > 0)
-	    continue;
+  if (data->XrefBufLength == 0) {
+    data->XrefBufLength = MAXHEADERSIZE * 2 + 1;
+    data->Xref = NEW(char, data->XrefBufLength);
+    strncpy(data->Xref, Path.Data, Path.Used - 1);
+  }
+  len = Path.Used - 1;
+  p = q = data->Xref + len;
+  for (linelen = i = 0; (ngp = GroupPointers[i]) != NULL; i++) {
+    /* If already went to this group (i.e., multiple groups are aliased
+     * into it), then skip it. */
+    if (ngp->PostCount > 0)
+      continue;
 
-	/* Bump the number. */
-	ngp->PostCount++;
-	ngp->Last++;
-	if (!FormatLong(ngp->LastString, (long)ngp->Last, ngp->Lastwidth)) {
-	    syslog(L_ERROR, "%s cant update_active %s", LogName, ngp->Name);
-	    continue;
-	}
-	ngp->Filenum = ngp->Last;
-	(void)sprintf(p, " %s:%lu", ngp->Name, ngp->Filenum);
-	p += strlen(p);
+    /* Bump the number. */
+    ngp->PostCount++;
+    ngp->Last++;
+    if (!FormatLong(ngp->LastString, (long)ngp->Last, ngp->Lastwidth)) {
+      syslog(L_ERROR, "%s cant update_active %s", LogName, ngp->Name);
+      continue;
     }
-    ARTheaders[_xref].Length=strlen(HDR(_xref));
+    ngp->Filenum = ngp->Last;
+    /*  len  ' ' "news_groupname"  ':' "#" "\r\n" */
+    if (len + 1 + ngp->NameLength + 1 + 10 + 2 > data->XrefBufLength) {
+      data->XrefBufLength += MAXHEADERSIZE;
+      RENEW(data->Xref, char, data->XrefBufLength);
+      p = data->Xref + len;
+    }
+    if (linelen + 1 + ngp->NameLength + 1 + 10 > MAXHEADERSIZE) {
+      /* line exceeded */
+      (void)sprintf(p, "\r\n %s:%lu", ngp->Name, ngp->Filenum);
+      buflen = strlen(p);
+      linelen = buflen - 2;
+    } else {
+      (void)sprintf(p, " %s:%lu", ngp->Name, ngp->Filenum);
+      buflen = strlen(p);
+      linelen += buflen;
+    }
+    len += buflen;
+    p += buflen;
+  }
+  /* p[0] is replaced with '\r' to be wireformatted when stored.  p[1] needs to
+     be '\n' */
+  p[0] = '\r';
+  p[1] = '\n';
+  /* data->XrefLength includes trailing "\r\n" */
+  data->XrefLength = len + 2;
+  data->Replic = q + 1;
+  data->ReplicLength = len - (q + 1 - data->Xref);
 }
-
 
 /*
 **  Parse the data from the xref header and assign the numbers.
 **  This involves replacing the GroupPointers entries.
 */
 static bool
-ARTxrefslave(void)
+ARTxrefslave(ARTDATA *data)
 {
-    char	*p;
-    char	*q;
-    char	*name;
-    char	*next;
-    NEWSGROUP	*ngp;
-    int	        i, len;
-    char        xrefbuf[MAXHEADERSIZE*2];
-    bool	nogroup = TRUE;
+  char		*p, *q, *name, *next, c;
+  NEWSGROUP	*ngp;
+  int	        i;
+  bool		nogroup = TRUE;
+  HDRCONTENT	*hc = data->HdrContent;
 
-    if (!ARTheaders[_xref].Found)
-    	return FALSE;
-    if ((q = name = strchr(HDR(_xref), ' ')) == NULL)
-    	return FALSE;
-    while ( *++name == ' ' );
-    if ( *name == '\0' )
-    	return FALSE;
-
-    p = xrefbuf;
-    strncpy(p, HDR(_xref), q - HDR(_xref));
-    p += q - HDR(_xref);
-    
-    for (i = 0; *name; name = next) {
-	/* Mark end of this entry and where next one starts. */
-	if ((next = strchr(name, ' ')) != NULL) {
-	    len = strlen(name);
-	    for (next++; name + len > next && *next == ' '; next++)
-		*next = '\0';
-	    if (name + len == next)
-		next = "";
-	} else
-	    next = "";
-
-	/* Split into news.group/# */
-	if ((q = strchr(name, ':')) == NULL) {
-	    syslog(L_ERROR, "%s bad_format %s", LogName, name);
-	    continue;
-	}
-	*q = '\0';
-	if ((ngp = NGfind(name)) == NULL) {
-	    syslog(L_ERROR, "%s bad_newsgroup %s", LogName, name);
-	    continue;
-	}
-	ngp->Filenum = atol(q + 1);
-
-	/* Update active file if we got a new high-water mark. */
-	if (ngp->Last < ngp->Filenum) {
-	    ngp->Last = ngp->Filenum;
-	    if (!FormatLong(ngp->LastString, (long)ngp->Last,
-		    ngp->Lastwidth)) {
-		syslog(L_ERROR, "%s cant update_active %s",
-		    LogName, ngp->Name);
-		continue;
-	    }
-	}
-
-	/* Mark that this group gets the article. */
-	ngp->PostCount++;
-	GroupPointers[i++] = ngp;
-
-	/* Turn news.group/# into news.group:#, append to Xref. */
-	sprintf(p, " %s:%ld", name, ngp->Filenum);
-	len = strlen(p);
-	p += len;
-	nogroup = FALSE;
+  if (!HDR_FOUND(_xref))
+    return FALSE;
+  /* skip server name */
+  if ((p = strpbrk(HDR(_xref), " \t\r\n")) == NULL)
+    return FALSE;
+  /* in case Xref is folded */
+  while (*++p == ' ' || *p == '\t' || *p == '\r' || *p == '\n');
+  if (*p == '\0')
+    return FALSE;
+  data->Replic = p;
+  data->ReplicLength = HDR_LEN(_xref) - (p - HDR(_xref));
+  for (i = 0; (*p != '\0') && (p < HDR(_xref) + HDR_LEN(_xref)) ; p = next) {
+    /* Mark end of this entry and where next one starts. */
+    name = p;
+    if ((q = next = strpbrk(p, " \t\r\n")) != NULL) {
+      c = *q;
+      *q = '\0';
+      while (*++next == ' ' || *next == '\t' || *next == '\r' || *next == '\n');
+    } else {
+      q = NULL;
+      next = "";
     }
-    if (nogroup)
-	return FALSE;
-    ARTheaders[_xref].Length = strlen(xrefbuf);
-    strcpy(HDR(_xref), xrefbuf);
-    return TRUE;
+
+    /* Split into news.group:# */
+    if ((p = strchr(p, ':')) == NULL) {
+      syslog(L_ERROR, "%s bad_format %s", LogName, name);
+      if (q != NULL)
+	*q = c;
+      continue;
+    }
+    *p = '\0';
+    if ((ngp = NGfind(name)) == NULL) {
+      syslog(L_ERROR, "%s bad_newsgroup %s", LogName, name);
+      *p = ':';
+      if (q != NULL)
+	*q = c;
+      continue;
+    }
+    *p = ':';
+    ngp->Filenum = atol(p + 1);
+    if (q != NULL)
+      *q = c;
+
+    /* Update active file if we got a new high-water mark. */
+    if (ngp->Last < ngp->Filenum) {
+      ngp->Last = ngp->Filenum;
+      if (!FormatLong(ngp->LastString, (long)ngp->Last, ngp->Lastwidth)) {
+	syslog(L_ERROR, "%s cant update_active %s", LogName, ngp->Name);
+	continue;
+      }
+    }
+    /* Mark that this group gets the article. */
+    ngp->PostCount++;
+    GroupPointers[i++] = ngp;
+    nogroup = FALSE;
+  }
+  if (nogroup)
+    return FALSE;
+  return TRUE;
 }
 
 /*
@@ -1469,154 +1545,143 @@ ARTxrefslave(void)
 static bool
 ListHas(const char **list, const char *p)
 {
-    const char	        *q;
-    char	        c;
+  const char	*q;
+  char		c;
 
-    for (c = *p; (q = *list) != NULL; list++)
-	if (caseEQ(p, q))
-	    return TRUE;
-    return FALSE;
+  for (c = *p; (q = *list) != NULL; list++)
+    if (caseEQ(p, q))
+      return TRUE;
+  return FALSE;
 }
-
 
 /*
 **  Propagate an article to the sites have "expressed an interest."
 */
 static void
-ARTpropagate(ARTDATA *Data, const char **hops, int hopcount, char **list,
-	     bool ControlStore, bool OverviewCreated)
+ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
+  bool ControlStore, bool OverviewCreated)
 {
-    SITE	        *sp;
-    int	                i;
-    int	                j;
-    int 	        Groupcount;
-    int			Followcount;
-    int			Crosscount;
-    char	        *p, *q;
-    SITE	        *funnel;
-    BUFFER	        *bp;
-    bool		sendit;
+  HDRCONTENT	*hc = data->HdrContent;
+  SITE		*sp, *funnel;
+  int		i, j, Groupcount, Followcount, Crosscount;
+  char	        *p, *q;
+  BUFFER	*bp;
+  bool		sendit;
 
-    /* Work out which sites should really get it. */
-    Groupcount = Data->Groupcount;
-    Followcount = Data->Followcount;
-    Crosscount = Groupcount + Followcount * Followcount;
-    for (sp = Sites, i = nSites; --i >= 0; sp++) {
-	if ((sp->IgnoreControl && ControlStore) ||
-	    (sp->NeedOverviewCreation && !OverviewCreated))
-	    sp->Sendit = FALSE;
-	if (sp->Seenit || !sp->Sendit)
-	    continue;
-	sp->Sendit = FALSE;
+  /* Work out which sites should really get it. */
+  Groupcount = data->Groupcount;
+  Followcount = data->Followcount;
+  Crosscount = Groupcount + Followcount * Followcount;
+  for (sp = Sites, i = nSites; --i >= 0; sp++) {
+    if ((sp->IgnoreControl && ControlStore) ||
+      (sp->NeedOverviewCreation && !OverviewCreated))
+      sp->Sendit = FALSE;
+    if (sp->Seenit || !sp->Sendit)
+      continue;
+    sp->Sendit = FALSE;
 	
-	if (sp->Originator) {
-	    if (!HDR(_xtrace)[0]) {
-		if (!sp->FeedwithoutOriginator)
-		    continue;
+    if (sp->Originator) {
+      if (!HDR_FOUND(_xtrace)) {
+	if (!sp->FeedwithoutOriginator)
+	  continue;
+      } else {
+	if ((p = strchr(HDR(_xtrace), ' ')) != NULL) {
+	  *p = '\0';
+	  for (j = 0, sendit = FALSE; (q = sp->Originator[j]) != NULL; j++) {
+	    if (*q == '@') {
+	      if (wildmat(HDR(_xtrace), &q[1])) {
+		*p = ' ';
+		sendit = FALSE;
+		break;
+	      }
 	    } else {
-		if ((p = strchr(HDR(_xtrace), ' ')) != NULL) {
-		    *p = '\0';
-		    for (j = 0, sendit = FALSE; (q = sp->Originator[j]) != NULL; j++) {
-		        if (*q == '@') {
-			    if (wildmat(HDR(_xtrace), &q[1])) {
-			        *p = ' ';
-			        sendit = FALSE;
-				break;
-			    }
-		        } else {
-			    if (wildmat(HDR(_xtrace), q))
-			        sendit = TRUE;
-		        }
-		    }
-		    *p = ' ';
-		    if (!sendit)
-			continue;
-		} else
-		    continue;
+	      if (wildmat(HDR(_xtrace), q))
+		sendit = TRUE;
 	    }
-	}
-
-	if (sp->Master != NOSITE && Sites[sp->Master].Seenit)
+	  }
+	  *p = ' ';
+	  if (!sendit)
 	    continue;
-
-	if (sp->MaxSize && Data->SizeValue > sp->MaxSize)
-	    /* Too big for the site. */
-	    continue;
-
-	if (sp->MinSize && Data->SizeValue < sp->MinSize)
-	    /* Too small for the site. */
-	    continue;
-
-	if ((sp->Hops && hopcount > sp->Hops)
-	 || (!sp->IgnorePath && ListHas(hops, sp->Name))
-	 || (sp->Groupcount && Groupcount > sp->Groupcount)
-	 || (sp->Followcount && Followcount > sp->Followcount)
-	 || (sp->Crosscount && Crosscount > sp->Crosscount))
-	    /* Site already saw the article; path too long; or too much
-	     * cross-posting. */
-	    continue;
-
-	if (list
-	 && sp->Distributions
-	 && !DISTwantany(sp->Distributions, list))
-	    /* Not in the site's desired list of distributions. */
-	    continue;
-	if (sp->DistRequired && list == NULL)
-	    /* Site requires Distribution header and there isn't one. */
-	    continue;
-
-	if (sp->Exclusions) {
-	    for (j = 0; (p = sp->Exclusions[j]) != NULL; j++)
-		if (ListHas(hops, p))
-		    break;
-	    if (p != NULL)
-		/* A host in the site's exclusion list was in the Path. */
-		continue;
-	}
-
-	/* Write that the site is getting it, and flag to send it. */
-        if (innconf->logsitename) {
-            if (fprintf(Log, " %s", sp->Name) == EOF || ferror(Log)) {
-                j = errno;
-                syslog(L_ERROR, "%s cant write log_site %m", LogName);
-                IOError("logging site", j);
-                clearerr(Log);
-            }
-        }
-	sp->Sendit = TRUE;
-	sp->Seenit = TRUE;
-	if (sp->Master != NOSITE)
-	    Sites[sp->Master].Seenit = TRUE;
+	} else
+	  continue;
+      }
     }
-    if (putc('\n', Log) == EOF
-     || (!BufferedLogs && fflush(Log))
-     || ferror(Log)) {
-	syslog(L_ERROR, "%s cant write log_end %m", LogName);
+
+    if (sp->Master != NOSITE && Sites[sp->Master].Seenit)
+      continue;
+
+    if (sp->MaxSize && data->BytesValue > sp->MaxSize)
+      /* Too big for the site. */
+      continue;
+
+    if (sp->MinSize && data->BytesValue < sp->MinSize)
+      /* Too small for the site. */
+      continue;
+
+    if ((sp->Hops && hopcount > sp->Hops)
+      || (!sp->IgnorePath && ListHas(hops, sp->Name))
+      || (sp->Groupcount && Groupcount > sp->Groupcount)
+      || (sp->Followcount && Followcount > sp->Followcount)
+      || (sp->Crosscount && Crosscount > sp->Crosscount))
+      /* Site already saw the article; path too long; or too much
+       * cross-posting. */
+      continue;
+
+    if (list && sp->Distributions && !DISTwantany(sp->Distributions, list))
+      /* Not in the site's desired list of distributions. */
+      continue;
+    if (sp->DistRequired && list == NULL)
+      /* Site requires Distribution header and there isn't one. */
+      continue;
+
+    if (sp->Exclusions) {
+      for (j = 0; (p = sp->Exclusions[j]) != NULL; j++)
+	if (ListHas(hops, p))
+	  break;
+      if (p != NULL)
+	/* A host in the site's exclusion list was in the Path. */
+	continue;
+    }
+
+    /* Write that the site is getting it, and flag to send it. */
+    if (innconf->logsitename) {
+      if (fprintf(Log, " %s", sp->Name) == EOF || ferror(Log)) {
+	j = errno;
+	syslog(L_ERROR, "%s cant write log_site %m", LogName);
+	IOError("logging site", j);
 	clearerr(Log);
+      }
     }
+    sp->Sendit = TRUE;
+    sp->Seenit = TRUE;
+    if (sp->Master != NOSITE)
+      Sites[sp->Master].Seenit = TRUE;
+  }
+  if (putc('\n', Log) == EOF
+    || (!BufferedLogs && fflush(Log))
+    || ferror(Log)) {
+    syslog(L_ERROR, "%s cant write log_end %m", LogName);
+    clearerr(Log);
+  }
 
-    /* Handle funnel sites. */
-    for (sp = Sites, i = nSites; --i >= 0; sp++)
-	if (sp->Sendit && sp->Funnel != NOSITE) {
-	    sp->Sendit = FALSE;
-	    funnel = &Sites[sp->Funnel];
-	    funnel->Sendit = TRUE;
-	    if (funnel->FNLwantsnames) {
-		bp = &funnel->FNLnames;
-		p = &bp->Data[bp->Used];
-		if (bp->Used) {
-		    *p++ = ' ';
-		    bp->Used++;
-		}
-		bp->Used += strlen(strcpy(p, sp->Name));
-	    }
+  /* Handle funnel sites. */
+  for (sp = Sites, i = nSites; --i >= 0; sp++) {
+    if (sp->Sendit && sp->Funnel != NOSITE) {
+      sp->Sendit = FALSE;
+      funnel = &Sites[sp->Funnel];
+      funnel->Sendit = TRUE;
+      if (funnel->FNLwantsnames) {
+	bp = &funnel->FNLnames;
+	p = &bp->Data[bp->Used];
+	if (bp->Used) {
+	  *p++ = ' ';
+	  bp->Used++;
 	}
+	bp->Used += strlen(strcpy(p, sp->Name));
+      }
+    }
+  }
 }
-
-
-
-
-
 
 #if	defined(DO_KEYWORDS)
 /*
@@ -1690,10 +1755,10 @@ ptr_strcmp(const void *p1, const void *p2)
 
 static void
 ARTmakekeys(
-    register ARTHEADER	*hp,		/* header data */
-    register char	*body,		/* article body */
-    register char	*v,		/* old kw value */
-    register int	l)		/* old kw length */
+    HDRCONTENT	*hc,	/* header data */
+    char	*body,	/* article body */
+    char	*v,	/* old kw value */
+    int	l)		/* old kw length */
 {
 
     int		word_count, word_length, bodylen, word_index, distinct_words;
@@ -1719,7 +1784,7 @@ ARTmakekeys(
 	    return;
 	}
     }
-    
+
     if (regex_lib_init == 0) {
 	regex_lib_init++;
 
@@ -1733,13 +1798,13 @@ ARTmakekeys(
     /* first re-init kw from original value. */
     if (l > innconf->keylimit - (MAX_WORD_LENGTH+5))	/* mostly arbitrary cutoff: */
         l = innconf->keylimit - (MAX_WORD_LENGTH+5);	/* room for minimal word vec */
-    hp->Value = malloc(innconf->keylimit+1);
+    hc->Value = malloc(innconf->keylimit+1);
     if ((v != NULL) && (*v != '\0')) {
-        strncpy(hp->Value, v, l);
-        hp->Value[l] = '\0';
+        strncpy(hc->Value, v, l);
+        hc->Value[l] = '\0';
     } else
-        *hp->Value = '\0';
-    l = hp->Length = strlen(hp->Value);
+        *hc->Value = '\0';
+    l = hc->Length = strlen(hc->Value);
 
     /*
      * now figure acceptable extents, and copy body to working string.
@@ -1748,12 +1813,11 @@ ARTmakekeys(
     bodylen = strlen(body);
     if ((bodylen < 100) || (bodylen > innconf->keyartlimit)) /* too small/big to bother */
 	return;
-    
+
     orig_text = text = xstrdup(body);	/* orig_text is for free() later on */
     if (text == (char *) NULL)  /* malloc failure? */
 	return;
 
-    
     text_end = text + bodylen;
 
     /* abusive punctuation stripping: turn it all into SPCs. */
@@ -1841,8 +1905,8 @@ ARTmakekeys(
 	      sizeof(struct word_entry), wvec_length_cmp);
 
     /* Scribble onto end of Keywords:. */
-    strcpy(hp->Value + l, ",\377");		/* magic separator, 'ÿ' */
-    for (chase = hp->Value + l + 2, word_index = 0;
+    strcpy(hc->Value + l, ",\377");		/* magic separator, 'ÿ' */
+    for (chase = hc->Value + l + 2, word_index = 0;
 	 word_index < distinct_words;
 	 word_index++) {
 	/* ---------------------------------------------------------------- */
@@ -1856,18 +1920,14 @@ ARTmakekeys(
 	strcpy(chase, word[word_vec[word_index].index]);
 	chase += word_vec[word_index].length;
 
-	if (chase - hp->Value > (innconf->keylimit - (MAX_WORD_LENGTH + 4)))
+	if (chase - hc->Value > (innconf->keylimit - (MAX_WORD_LENGTH + 4)))
 	    break;
     }
     /* note #words we didn't get to add. */
     /* This code can potentially lead to a buffer overflow if the number of
        ignored words is greater than 100, under some circumstances.  It's
        temporarily disabled until fixed. */
-#if 0
-    if (word_index < distinct_words - 1)
-	sprintf(chase, ",%d", (distinct_words - word_index) - 1);
-#endif
-    hp->Length = strlen(hp->Value);
+    hc->Length = strlen(hc->Value);
 
 out:
     /* We must dispose of the original strdup'd text area. */
@@ -1875,798 +1935,729 @@ out:
 }
 #endif	/* defined(DO_KEYWORDS) */
 
-
-
 /*
 **  Build up the overview data.
 */
 static void
-ARTmakeoverview(ARTDATA *Data)
+#if	defined(DO_KEYWORDS)
+ARTmakeoverview(CHANNEL *cp)
 {
-    static char			SEP[] = "\t";
-    static char			COLONSPACE[] = ": ";
-    static BUFFER		Overview;
-    ARTOVERFIELD	        *fp;
-    ARTHEADER		        *hp;
-    char		        *p;
-    int		                i;
+  ARTDATA	*data = &cp->Data;
+#else
+ARTmakeoverview(ARTDATA *data)
+{
+#endif	/* defined(DO_KEYWORDS) */
+  HDRCONTENT	*hc = data->HdrContent;
+  static char	SEP[] = "\t";
+  static char	COLONSPACE[] = ": ";
+  BUFFER	*overview = &data->Overview;
+  ARTOVERFIELD	*fp;
+  ARTHEADER	*hp;
+  char		*p, *q;
+  int		i, j, len;
 #if	defined(DO_KEYWORDS)
-    char			*key_old_value = NULL;
-    int				key_old_length = 0;
+  char		*key_old_value = NULL;
+  int		key_old_length = 0;
 #endif	/* defined(DO_KEYWORDS) */
 
 
-    if (ARTfields == NULL) {
-	/* User error. */
-	return;
+  if (ARTfields == NULL) {
+    /* User error. */
+    return;
+  }
+
+  /* Setup. */
+  if (overview->Size == 0) {
+    overview->Size = MAXHEADERSIZE;
+    overview->Data = NEW(char, overview->Size);
+  }
+
+  BUFFset(overview, "", 0);
+
+  /* Write the data, a field at a time. */
+  for (fp = ARTfields; fp->Header; fp++) {
+    if (fp != ARTfields)
+      BUFFappend(overview, SEP, STRLEN(SEP));
+    hp = fp->Header;
+    j = hp - ARTheaders;
+
+#if	defined(DO_KEYWORDS)
+    if (innconf->keywords) {
+      /* Ensure that there are Keywords: to shovel. */
+      if (hp == &ARTheaders[_keywords]) {
+	key_old_value  = HDR(_keywords);
+	key_old_length = HDR_LEN(_keywords);
+	ARTmakekeys(&hc[_keywords], cp->In.Data + data->Body, key_old_value,
+	  key_old_length);
+      }
     }
-    
-    /* Setup. */
-    if (Overview.Data == NULL)
-	Overview.Data = NEW(char, 1);
-    Data->Overview = &Overview;
-
-    BUFFset(&Overview, "", 0);
-
-    /* Write the data, a field at a time. */
-    for (fp = ARTfields; fp->Header; fp++) {
-	if (fp != ARTfields)
-	    BUFFappend(&Overview, SEP, STRLEN(SEP));
-	hp = fp->Header;
-
-#if	defined(DO_KEYWORDS)
-	if (innconf->keywords) {
-	    /* Ensure that there are Keywords: to shovel. */
-	    if (hp == &ARTheaders[_keywords]) {
-		key_old_value  = hp->Value;
-		key_old_length = hp->Length;
-		ARTmakekeys(hp, Data->Body, key_old_value, key_old_length);
-		hp->Found++;	/* now faked, whether present before or not. */
-	    }
-	}
 #endif	/* defined(DO_KEYWORDS) */
 
-	if (!hp->Found)
-	    continue;
-	if (fp->NeedHeader) {
-	    BUFFappend(&Overview, hp->Name, hp->Size);
-	    BUFFappend(&Overview, COLONSPACE, STRLEN(COLONSPACE));
-	}
-	i = Overview.Left;
-	if (caseEQ(hp->Name, "Newsgroups")) {
-	    /* HDR(_newsgroups) is separated by '\0', so use Data->Newsgroups
-	       instead */
-	    BUFFappend(&Overview, Data->Newsgroups, Data->NewsgroupsLength);
+    switch (j) {
+      case _bytes:
+	p = data->Bytes + 7; /* skip "Bytes: " */
+	len = data->BytesLength;
+	break;
+      case _xref:
+	if (innconf->xrefslave) {
+	  p = HDR(j);
+	  len = HDR_LEN(j);
 	} else {
-	    BUFFappend(&Overview, hp->Value, hp->Length);
+	  p = data->Xref;
+	  len = data->XrefLength - 2;
 	}
-	for (p = &Overview.Data[i]; i < Overview.Left; p++, i++)
-	    if (*p == '\t' || *p == '\n' || *p == '\r')
-		*p = ' ';
+	break;
+      default:
+	p = HDR(j);
+	len = HDR_LEN(j);
+	break;
+    }
+    if (len == 0)
+      continue;
+    if (fp->NeedHeader) {
+      BUFFappend(overview, hp->Name, hp->Size);
+      BUFFappend(overview, COLONSPACE, STRLEN(COLONSPACE));
+    }
+    if (overview->Used + overview->Left + len > overview->Size) {
+        /* Round size up to next 1K */
+        overview->Size += (len + 0x3FF) & ~0x3FF;
+        RENEW(overview->Data, char, overview->Size);
+    }
+    for (i = 0, q = &overview->Data[overview->Left] ; i < len ; p++, q++, i++) {
+      /* we can replace consecutive '\r', '\n' and '\r' with one ' ' here */
+      if (*p == '\t' || *p == '\n' || *p == '\r')
+	*q = ' ';
+      else
+	*q = *p;
+    }
+    overview->Left += len;
 
 #if	defined(DO_KEYWORDS)
-	if (innconf->keywords) {
-	    if (key_old_value) {
-		if (hp->Value)
-		    free(hp->Value);		/* malloc'd within */
-		hp->Value  = key_old_value;
-		hp->Length = key_old_length;
-		hp->Found--;
-		key_old_value = NULL;
-	    }
-	}
-#endif	/* defined(DO_KEYWORDS) */
+    if (innconf->keywords) {
+      if (key_old_value) {
+	if (hc->Value)
+	  free(hc->Value);		/* malloc'd within */
+	hc->Value  = key_old_value;
+	hc->Length = key_old_length;
+	key_old_value = NULL;
+      }
     }
+#endif	/* defined(DO_KEYWORDS) */
+  }
 }
-
 
 /*
 **  This routine is the heart of it all.  Take a full article, parse it,
 **  file or reject it, feed it to the other sites.  Return the NNTP
 **  message to send back.
 */
-const char *
+bool
 ARTpost(CHANNEL *cp)
 {
-    static BUFFER	Files;
-    static BUFFER	Header;
-    static char		buff[SPOOLNAMEBUFF];
-    char	        *p;
-    int	                i;
-    int	                j;
-    NEWSGROUP	        *ngp;
-    NEWSGROUP	        **ngptr;
-    int	                *isp;
-    SITE	        *sp;
-    ARTDATA		Data;
-    bool		Approved;
-    bool		Accepted;
-    bool		LikeNewgroup;
-    bool		ToGroup;
-    bool		GroupMissing;
-    bool		MadeOverview = FALSE;
-    bool		ControlStore = FALSE;
-    bool		NonExist = FALSE;
-    bool		OverviewCreated = FALSE;
-    bool                IsControl = FALSE;
-    BUFFER		*article;
-    HASH                hash;
-    char		**groups;
-    const char		**hops;
-    int			hopcount;
-    char		**distributions;
-    const char		*error;
-    char		ControlWord[SMBUF];
-    int			oerrno;
-    TOKEN               token;
-    int			canpost;
-    char		*groupbuff[2];
+  char		*buff = cp->Error;
+  char		*p, **groups, ControlWord[16], tmpbuff[32], **hops;
+  int		i, j, *isp, hopcount, oerrno, canpost;
+  NEWSGROUP	*ngp, **ngptr;
+  SITE		*sp;
+  ARTDATA	*data = &cp->Data;
+  HDRCONTENT	*hc = data->HdrContent;
+  bool		Approved, Accepted, LikeNewgroup, ToGroup, GroupMissing;
+  bool		NoHistoryUpdate, artclean;
+  bool		MadeOverview = FALSE;
+  bool		ControlStore = FALSE;
+  bool		NonExist = FALSE;
+  bool		OverviewCreated = FALSE;
+  bool		IsControl = FALSE;
+  bool		Filtered = FALSE;
+  BUFFER	*article;
+  HASH		hash;
+  TOKEN		token;
+  char		*groupbuff[2];
 #if defined(DO_PERL) || defined(DO_PYTHON)
-    char		*filterrc;
+  char		*filterrc;
 #endif /* defined(DO_PERL) || defined(DO_PYTHON) */
-    bool		NoHistoryUpdate;
-    bool		Filtered = FALSE;
+  OVADDRESULT	result;
 
-    /* Preliminary clean-ups. */
-    article = &cp->In;
-    error = ARTclean(article, &Data);
-    
-    /* Fill in other Data fields. */
-    Data.Poster = HDR(_sender);
-    if (*Data.Poster == '\0')
-	Data.Poster = HDR(_from);
-    Data.Replyto = HDR(_reply_to);
-    if (*Data.Replyto == '\0')
-	Data.Replyto = HDR(_from);
-    hops = ARTparsepath(HDR(_path), &hopcount);
-    if (error != NULL &&
-	(Data.MessageID == NULL || hops == 0 || hops[0]=='\0')) {
-	sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, error);
-	return buff;
-    }
+  /* Preliminary clean-ups. */
+  article = &cp->In;
+  artclean = ARTclean(data, cp->Error);
+  if (!artclean)
+    return FALSE;
+
+  hash = HashMessageID(HDR(_message_id));
+  data->Hash = &hash;
+  if (HIShavearticle(hash)) {
+    sprintf(buff, "%d Duplicate", NNTP_REJECTIT_VAL);
+    ARTlog(data, ART_REJECT, buff);
+    if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
+      syslog(L_ERROR, "%s cant write history %s %m", LogName, HDR(_message_id));
+    ARTreject(REJECT_DUPLICATE, cp, article);
+    return FALSE;
+  }
+
+  /* assumes Path header is required header */
+  data->HopCount = ARTparsepath(HDR(_path), HDR_LEN(_path), &data->Path);
+  if (data->HopCount == 0) {
+    sprintf(buff, "%d illgal path element", NNTP_REJECTIT_VAL);
+    ARTlog(data, ART_REJECT, buff);
+    if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
+      syslog(L_ERROR, "%s cant write history %s %m", LogName, HDR(_message_id));
+    ARTreject(REJECT_OTHER, cp, article);
+    return FALSE;
+  }
+  hops = data->Path.List;
+  if (strncmp(Path.Data, hops[0], Path.Used - 1) == 0)
+    Hassamepath = TRUE;
+  else
+    Hassamepath = FALSE;
+  if (Pathalias.Data != NULL &&
+    !ListHas((const char **)hops, (const char *)innconf->pathalias))
+    AddAlias = TRUE;
+  else
     AddAlias = FALSE;
-    if (Pathalias.Data != NULL && !ListHas(hops, innconf->pathalias))
-	AddAlias = TRUE;
-    if (innconf->logipaddr) {
-	Data.Feedsite = RChostname(cp);
-	if (Data.Feedsite == NULL)
-	    Data.Feedsite = CHANname(cp);
-	if (strcmp("0.0.0.0", Data.Feedsite) == 0)
-	    Data.Feedsite = hops && hops[0] ? hops[0] : CHANname(cp);
-    } else {
-	Data.Feedsite = hops && hops[0] ? hops[0] : CHANname(cp);
-    }
-    Data.FeedsiteLength = strlen(Data.Feedsite);
-    (void)sprintf(Data.TimeReceived, "%lu", Now.time);
-    Data.TimeReceivedLength = strlen(Data.TimeReceived);
+  if (innconf->logipaddr) {
+    data->Feedsite = RChostname(cp);
+    if (data->Feedsite == NULL)
+      data->Feedsite = CHANname(cp);
+    if (strcmp("0.0.0.0", data->Feedsite) == 0)
+      data->Feedsite = hops && hops[0] ? hops[0] : CHANname(cp);
+  } else {
+    data->Feedsite = hops && hops[0] ? hops[0] : CHANname(cp);
+  }
+  data->FeedsiteLength = strlen(data->Feedsite);
 
-    hash = HashMessageID(Data.MessageID);
-    Data.Hash = &hash;
-    if (HIShavearticle(hash)) {
-	sprintf(buff, "%d Duplicate", NNTP_REJECTIT_VAL);
-	ARTlog(&Data, ART_REJECT, buff);
-	ARTreject(REJECT_DUPLICATE, cp, article);
-	return buff;
+  /* And now check the path for unwanted sites -- Andy */
+  for(j = 0 ; ME.Exclusions && ME.Exclusions[j] ; j++) {
+    if (ListHas((const char **)hops, (const char *)ME.Exclusions[j])) {
+      (void)sprintf(buff, "%d Unwanted site %s in path",
+	NNTP_REJECTIT_VAL, MaxLength(ME.Exclusions[j], ME.Exclusions[j]));
+      ARTlog(data, ART_REJECT, buff);
+      if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
+	syslog(L_ERROR, "%s cant write history %s %m", LogName,
+	  HDR(_message_id));
+      ARTreject(REJECT_SITE, cp, article);
+      return FALSE;
     }
-
-    if (error != NULL) {
-	sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, error);
-	ARTlog(&Data, ART_REJECT, buff);
-	if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
-	    syslog(L_ERROR, "%s cant write history %s %m",
-		       LogName, Data.MessageID);
-	ARTreject(REJECT_OTHER, cp, article);
-	return buff;
-    }
-
-    /* And now check the path for unwanted sites -- Andy */
-    for( j = 0 ; ME.Exclusions && ME.Exclusions[j] ; j++ ) {
-        if( ListHas(hops, ME.Exclusions[j]) ) {
-	    (void)sprintf(buff, "%d Unwanted site %s in path",
-			NNTP_REJECTIT_VAL, ME.Exclusions[j]);
-	    ARTlog(&Data, ART_REJECT, buff);
-	    if (innconf->remembertrash && (Mode == OMrunning) &&
-			!HISremember(hash))
-		syslog(L_ERROR, "%s cant write history %s %m",
-		       LogName, Data.MessageID);
-	    ARTreject(REJECT_SITE, cp, article);
-	    return buff;
-        }
-    }
+  }
 
 #if defined(DO_PERL) || defined(DO_PYTHON)
-    filterPath = HeaderFindMem(article->Data, article->Used, "Path", 4) ;
+  filterPath = HDR(_path);
 #endif /* DO_PERL || DO_PYHTON */
 
 #if defined(DO_PYTHON)
-    TMRstart(TMR_PYTHON);
-    filterrc = PYartfilter(Data.Body,
-			   &article->Data[article->Used] - Data.Body,
-			   Data.LinesValue);
-    TMRstop(TMR_PYTHON);
-    if (filterrc != NULL) {
-        if (innconf->dontrejectfiltered) {
-            Filtered = TRUE;
-        } else {
-            (void)sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL, filterrc);
-            syslog(L_NOTICE, "rejecting[python] %s %s", Data.MessageID, buff);
-            ARTlog(&Data, ART_REJECT, buff);
-            if (innconf->remembertrash && (Mode == OMrunning) &&
-			!HISremember(hash))
-                syslog(L_ERROR, "%s cant write history %s %m",
-                   LogName, Data.MessageID);
-            ARTreject(REJECT_FILTER, cp, article);
-            return buff;
-        }
+  TMRstart(TMR_PYTHON);
+  filterrc = PYartfilter(data, article->Data + data->Body,
+    cp->Next - data->Body, data->Lines);
+  TMRstop(TMR_PYTHON);
+  if (filterrc != NULL) {
+    if (innconf->dontrejectfiltered) {
+      Filtered = TRUE;
+    } else {
+      (void)sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL, filterrc);
+      syslog(L_NOTICE, "rejecting[python] %s %s", HDR(_message_id), buff);
+      ARTlog(data, ART_REJECT, buff);
+      if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
+	syslog(L_ERROR, "%s cant write history %s %m", LogName,
+	  HDR(_message_id));
+      ARTreject(REJECT_FILTER, cp, article);
+      return FALSE;
     }
+  }
 #endif /* DO_PYTHON */
 
-    /* I suppose some masochist will run with Python and Perl in together */
+  /* I suppose some masochist will run with Python and Perl in together */
 
 #if defined(DO_PERL)
-    TMRstart(TMR_PERL);
-    filterrc = PLartfilter(Data.Body, Data.LinesValue);
-    TMRstop(TMR_PERL);
-    if (filterrc) {
-        if (innconf->dontrejectfiltered) {
-            Filtered = TRUE;
-        } else {
-            sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL, filterrc);
-            syslog(L_NOTICE, "rejecting[perl] %s %s", Data.MessageID, buff);
-            ARTlog(&Data, ART_REJECT, buff);
-            if (innconf->remembertrash && (Mode == OMrunning) &&
-			!HISremember(hash))
-                syslog(L_ERROR, "%s cant write history %s %m",
-                   LogName, Data.MessageID);
-            ARTreject(REJECT_FILTER, cp, article);
-            return buff;
-        }
+  TMRstart(TMR_PERL);
+  filterrc = PLartfilter(data, article->Data + data->Body,
+    cp->Next - data->Body, data->Lines);
+  TMRstop(TMR_PERL);
+  if (filterrc) {
+    if (innconf->dontrejectfiltered) {
+      Filtered = TRUE;
+    } else {
+      sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL, filterrc);
+      syslog(L_NOTICE, "rejecting[perl] %s %s", HDR(_message_id), buff);
+      ARTlog(data, ART_REJECT, buff);
+      if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
+	syslog(L_ERROR, "%s cant write history %s %m", LogName,
+	  HDR(_message_id));
+      ARTreject(REJECT_FILTER, cp, article);
+      return FALSE;
     }
+  }
 #endif /* DO_PERL */
 
-    /* I suppose some masochist will run with both TCL and Perl in together */
+  /* I suppose some masochist will run with both TCL and Perl in together */
 
 #if defined(DO_TCL)
-    if (TCLFilterActive) {
-	int code;
-	ARTHEADER *hp;
+  if (TCLFilterActive) {
+    int code;
+    ARTHEADER *hp;
 
-	/* make info available to Tcl */
+    /* make info available to Tcl */
 
-	TCLCurrArticle = article;
-	TCLCurrData = &Data;
-        (void)Tcl_UnsetVar(TCLInterpreter, "Body", TCL_GLOBAL_ONLY);
-        (void)Tcl_UnsetVar(TCLInterpreter, "Headers", TCL_GLOBAL_ONLY);
-	for (hp = ARTheaders; hp < ENDOF(ARTheaders); hp++) {
-	    if (hp->Found) {
-		Tcl_SetVar2(TCLInterpreter, "Headers", (char *) hp->Name,
-			    hp->Value, TCL_GLOBAL_ONLY);
-	    }
-	}
-#if 1
-        Tcl_SetVar(TCLInterpreter, "Body", Data.Body, TCL_GLOBAL_ONLY);
-#endif
-	/* call filter */
-
-        code = Tcl_Eval(TCLInterpreter, "filter_news");
-        (void)Tcl_UnsetVar(TCLInterpreter, "Body", TCL_GLOBAL_ONLY);
-        (void)Tcl_UnsetVar(TCLInterpreter, "Headers", TCL_GLOBAL_ONLY);
-        if (code == TCL_OK) {
-	    if (strcmp(TCLInterpreter->result, "accept") != 0) {
-        	if (innconf->dontrejectfiltered) {
-		    Filtered = TRUE;
-        	} else {
-	            (void)sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL, 
-			      TCLInterpreter->result);
-		    syslog(L_NOTICE, "rejecting[tcl] %s %s", Data.MessageID, buff);
-		    ARTlog(&Data, ART_REJECT, buff);
-                    if (innconf->remembertrash && (Mode == OMrunning) &&
-				!HISremember(hash))
-                        syslog(L_ERROR, "%s cant write history %s %m",
-                           LogName, Data.MessageID);
-		    ARTreject(REJECT_FILTER, cp, article);
-		    return buff;
-		}
-	    }
-	} else {
-	    /* the filter failed: complain and then turn off filtering */
-	    syslog(L_ERROR, "TCL proc filter_news failed: %s",
-		   TCLInterpreter->result);
-	    TCLfilter(FALSE);
-	}
+    TCLCurrArticle = article;
+    TCLCurrData = data;
+    (void)Tcl_UnsetVar(TCLInterpreter, "Body", TCL_GLOBAL_ONLY);
+    (void)Tcl_UnsetVar(TCLInterpreter, "Headers", TCL_GLOBAL_ONLY);
+    for (i = 0 ; i < MAX_ARTHEADER ; i++, hc++) {
+      if (HDR_FOUND(i)) {
+	hp = &ARTheaders[i];
+	Tcl_SetVar2(TCLInterpreter, "Headers", (char *) hp->Name, HDR(i),
+	  TCL_GLOBAL_ONLY);
+      }
     }
+    Tcl_SetVar(TCLInterpreter, "Body", article->Data + data->Body,
+      TCL_GLOBAL_ONLY);
+    /* call filter */
+
+    code = Tcl_Eval(TCLInterpreter, "filter_news");
+    (void)Tcl_UnsetVar(TCLInterpreter, "Body", TCL_GLOBAL_ONLY);
+    (void)Tcl_UnsetVar(TCLInterpreter, "Headers", TCL_GLOBAL_ONLY);
+    if (code == TCL_OK) {
+      if (strcmp(TCLInterpreter->result, "accept") != 0) {
+        if (innconf->dontrejectfiltered) {
+	  Filtered = TRUE;
+        } else {
+	  (void)sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL,
+	    TCLInterpreter->result);
+	  syslog(L_NOTICE, "rejecting[tcl] %s %s", HDR(_message_id), buff);
+	  ARTlog(data, ART_REJECT, buff);
+	  if (innconf->remembertrash && (Mode == OMrunning) &&
+	    !HISremember(hash))
+	    syslog(L_ERROR, "%s cant write history %s %m",
+	      LogName, HDR(_message_id));
+	  ARTreject(REJECT_FILTER, cp, article);
+	  return FALSE;
+	}
+      }
+    } else {
+      /* the filter failed: complain and then turn off filtering */
+      syslog(L_ERROR, "TCL proc filter_news failed: %s",
+	TCLInterpreter->result);
+      TCLfilter(FALSE);
+    }
+  }
 #endif /* defined(DO_TCL) */
 
-    /* Stash a copy of the Newsgroups header. */
-    p = HDR(_newsgroups);
-    i = strlen(p);
-    if (Header.Data == NULL) {
-	Header.Size = i;
-	Header.Data = NEW(char, Header.Size + 1);
-    }
-    else if (Header.Size <= i) {
-	Header.Size = i + 16;
-	RENEW(Header.Data, char, Header.Size + 1);
-    }
-    (void)strcpy(Header.Data, p);
-    Data.Newsgroups = Header.Data;
-    Data.NewsgroupsLength = i;
-
-    /* If we limit what distributions we get, see if we want this one. */
-    p = HDR(_distribution);
-    distributions = *p ? CommaSplit(p) : NULL;
-    if (distributions) {
-      if (*distributions[0] == '\0') {
-	(void)sprintf(buff, "%d bogus distribution \"%s\"",
-		NNTP_REJECTIT_VAL,
-		MaxLength(p, p));
-	ARTlog(&Data, ART_REJECT, buff);
-        if (innconf->remembertrash && Mode == OMrunning && !HISremember(hash))
-            syslog(L_ERROR, "%s cant write history %s %m",
-                   LogName, Data.MessageID);
-	DISPOSE(distributions);
+  /* If we limit what distributions we get, see if we want this one. */
+  if (HDR_FOUND(_distribution)) {
+    if (HDR(_distribution)[0] == ',') {
+      (void)sprintf(buff, "%d bogus distribution \"%s\"", NNTP_REJECTIT_VAL,
+	MaxLength(HDR(_distribution), HDR(_distribution)));
+      ARTlog(data, ART_REJECT, buff);
+      if (innconf->remembertrash && Mode == OMrunning && !HISremember(hash))
+        syslog(L_ERROR, "%s cant write history %s %m", LogName,
+	  HDR(_message_id));
+      ARTreject(REJECT_DISTRIB, cp, article);
+      return FALSE;
+    } else {
+      ARTparsedist(HDR(_distribution), HDR_LEN(_distribution),
+	&data->Distribution);
+      if (ME.Distributions &&
+	!DISTwantany(ME.Distributions, data->Distribution.List)) {
+	(void)sprintf(buff, "%d Unwanted distribution \"%s\"",
+	  NNTP_REJECTIT_VAL, MaxLength(data->Distribution.List[0],
+	  data->Distribution.List[0]));
+	ARTlog(data, ART_REJECT, buff);
+        if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
+	  syslog(L_ERROR, "%s cant write history %s %m",
+	    LogName, HDR(_message_id));
 	ARTreject(REJECT_DISTRIB, cp, article);
-	return buff;
+	return FALSE;
+      }
+    }
+  }
+
+  for (i = nSites, sp = Sites; --i >= 0; sp++) {
+    sp->Poison = FALSE;
+    sp->Sendit = FALSE;
+    sp->Seenit = FALSE;
+    sp->FNLnames.Used = 0;
+    sp->ng = NULL;
+  }
+
+  if (HDR_FOUND(_followupto)) {
+    for (i = 0, p = HDR(_followupto) ; (p = strchr(p, ',')) != NULL ; i++, p++)
+      continue;
+    data->Followcount = i;
+  }
+  if (data->Followcount == 0)
+    data->Followcount = data->Groupcount;
+
+  groups = data->Newsgroups.List;
+  /* Parse the Control header. */
+  LikeNewgroup = FALSE;
+  if (HDR_FOUND(_control)) {
+    IsControl = TRUE;
+
+    /* Nip off the first word into lowercase. */
+    strncpy(ControlWord, HDR(_control), sizeof ControlWord);
+    ControlWord[sizeof ControlWord - 1] = '\0';
+    for (p = ControlWord; *p && !ISWHITE(*p); p++)
+      if (CTYPE(isupper, *p))
+	*p = tolower(*p);
+    *p = '\0';
+    LikeNewgroup = EQ(ControlWord, "newgroup") || EQ(ControlWord, "rmgroup");
+
+    if (innconf->ignorenewsgroups && LikeNewgroup) {
+      for (p++; *p && ISWHITE(*p); p++);
+      groupbuff[0] = p;
+      for (p++; *p; p++) {
+	if (NG_ISSEP(*p)) {
+	  *p = '\0';
+	  break;
+	}
+      }
+      p = groupbuff[0];
+      for (p++; *p; p++) {
+	if (ISWHITE(*p)) {
+	  *p = '\0';
+	  break;
+	}
+      }
+      groupbuff[1] = NULL;
+      groups = groupbuff;
+      data->Groupcount = 2;
+      if (data->Followcount == 0)
+	data->Followcount = data->Groupcount;
+    }
+    /* Control messages to "foo.ctl" are treated as if they were
+     * posted to "foo".  I should probably apologize for all the
+     * side-effects in the if. */
+    for (i = 0; (p = groups[i++]) != NULL; )
+      if ((j = strlen(p) - 4) > 0 && *(p += j) == '.'
+	&& p[1] == 'c' && p[2] == 't' && p[3] == 'l')
+	  *p = '\0';
+  }
+
+  /* Loop over the newsgroups, see which ones we want, and get the
+   * total space needed for the Xref line.  At the end of this section
+   * of code, j will have the needed length, the appropriate site
+   * entries will have their Sendit and ng fields set, and GroupPointers
+   * will have pointers to the relevant newsgroups. */
+  ToGroup = NoHistoryUpdate = FALSE;
+  Approved = HDR_FOUND(_approved);
+  ngptr = GroupPointers;
+  for (GroupMissing = Accepted = FALSE; (p = *groups) != NULL; groups++) {
+    if ((ngp = NGfind(p)) == NULL) {
+      GroupMissing = TRUE;
+      if (LikeNewgroup && Approved) {
+	/* Newgroup/rmgroup being sent to a group that doesn't exist.  Assume
+	 * it is being sent to the group being created or removed, nd send the
+	 * group to all sites that would or would have had the group if it were
+	 * created. */
+	ARTsendthegroup(*groups);
+	Accepted = TRUE;
+      } else
+	NonExist = TRUE;
+      ARTpoisongroup(*groups);
+
+      if (innconf->mergetogroups) {
+	/* Try to collapse all "to" newsgroups. */
+	if (*p != 't' || *++p != 'o' || *++p != '.' || *++p == '\0')
+	  continue;
+	ngp = NGfind("to");
+	ToGroup = TRUE;
+	if ((sp = SITEfind(p)) != NULL) {
+	  SITEmark(sp, ngp);
+	}
       } else {
-	DISTparse(distributions, &Data);
-	if (ME.Distributions
-	 && !DISTwantany(ME.Distributions, distributions)) {
-	    (void)sprintf(buff, "%d Unwanted distribution \"%s\"",
-		    NNTP_REJECTIT_VAL,
-		    MaxLength(distributions[0], distributions[0]));
-	    ARTlog(&Data, ART_REJECT, buff);
-            if (innconf->remembertrash && (Mode == OMrunning) &&
-				!HISremember(hash))
-                syslog(L_ERROR, "%s cant write history %s %m",
-                       LogName, Data.MessageID);
-	    DISPOSE(distributions);
-	    ARTreject(REJECT_DISTRIB, cp, article);
-	    return buff;
+	continue;
+      }
+    }
+	
+    ngp->PostCount = 0;
+    /* Ignore this group? */
+    if (ngp->Rest[0] == NF_FLAG_IGNORE) {
+      /* See if any of this group's sites considers this group poison. */
+      for (isp = ngp->Poison, i = ngp->nPoison; --i >= 0; isp++)
+	if (*isp >= 0)
+	  Sites[*isp].Poison = TRUE;
+      continue;
+    }
+
+    /* Basic validity check. */
+    if (ngp->Rest[0] == NF_FLAG_MODERATED && !Approved) {
+      (void)sprintf(buff, "%d Unapproved for \"%s\"",
+	NNTP_REJECTIT_VAL, MaxLength(ngp->Name, ngp->Name));
+      ARTlog(data, ART_REJECT, buff);
+      if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
+	syslog(L_ERROR, "%s cant write history %s %m", LogName,
+	  HDR(_message_id));
+      ARTreject(REJECT_UNAPP, cp, article);
+      return FALSE;
+    }
+
+    /* See if any of this group's sites considers this group poison. */
+    for (isp = ngp->Poison, i = ngp->nPoison; --i >= 0; isp++)
+      if (*isp >= 0)
+	Sites[*isp].Poison = TRUE;
+
+    /* Check if we accept articles in this group from this peer, after
+       poisoning.  This means that articles that we accept from them will
+       be handled correctly if they're crossposted. */
+    canpost = RCcanpost(cp, p);
+    if (!canpost) {  /* At least one group cannot be fed by this peer.
+		        If we later reject the post as unwanted group,
+			don't remember it.  If we accept, do remember */
+      NoHistoryUpdate = TRUE;
+      continue;
+    } else if (canpost < 0) {
+      (void)sprintf(buff, "%d Won't accept posts in \"%s\"",
+	NNTP_REJECTIT_VAL, MaxLength(p, p));
+      ARTlog(data, ART_REJECT, buff);
+      ARTreject(REJECT_GROUP, cp, article);
+      return FALSE;
+    }
+
+    /* Valid group, feed it to that group's sites. */
+    Accepted = TRUE;
+    for (isp = ngp->Sites, i = ngp->nSites; --i >= 0; isp++) {
+      if (*isp >= 0) {
+	sp = &Sites[*isp];
+	if (!sp->Poison)
+	  SITEmark(sp, ngp);
+      }
+    }
+
+    /* If it's excluded, don't file it. */
+    if (ngp->Rest[0] == NF_FLAG_EXCLUDED)
+      continue;
+
+    /* Expand aliases, mark the article as getting filed in the group. */
+    if (ngp->Alias != NULL)
+      ngp = ngp->Alias;
+    *ngptr++ = ngp;
+    ngp->PostCount = 0;
+  }
+
+  /* Loop over sites to find Poisons/ControlOnly and undo Sendit flags. */
+  for (i = nSites, sp = Sites; --i >= 0; sp++) {
+    if (sp->Poison || (sp->ControlOnly && !IsControl)
+      || (sp->DontWantNonExist && NonExist))
+      sp->Sendit = FALSE;		
+  }
+
+  /* Control messages not filed in "to" get filed only in control.name
+   * or control. */
+  if (IsControl && Accepted && !ToGroup) {
+    ControlStore = TRUE;
+    FileGlue(tmpbuff, "control", '.', ControlWord);
+    if ((ngp = NGfind(tmpbuff)) == NULL)
+      ngp = NGfind(ARTctl);
+    ngp->PostCount = 0;
+    ngptr = GroupPointers;
+    *ngptr++ = ngp;
+    for (isp = ngp->Sites, i = ngp->nSites; --i >= 0; isp++) {
+      if (*isp >= 0) {
+	sp = &Sites[*isp];
+	SITEmark(sp, ngp);
+      }
+    }
+  }
+
+  /* If !Accepted, then none of the article's newgroups exist in our
+   * active file.  Proper action is to drop the article on the floor.
+   * If ngp == GroupPointers, then all the new articles newsgroups are
+   * "j" entries in the active file.  In that case, we have to file it
+   * under junk so that downstream feeds can get it. */
+  if (!Accepted || ngptr == GroupPointers) {
+    if (!Accepted) {
+      if (NoHistoryUpdate) {
+	(void)sprintf(buff, "%d Can't post to \"%s\"", NNTP_REJECTIT_VAL,
+	  MaxLength(data->Newsgroups.List[0], data->Newsgroups.List[0]));
+      } else {
+        (void)sprintf(buff, "%d Unwanted newsgroup \"%s\"", NNTP_REJECTIT_VAL,
+	  MaxLength(data->Newsgroups.List[0], data->Newsgroups.List[0]));
+      }
+      ARTlog(data, ART_REJECT, buff);
+      if (!innconf->wanttrash) {
+	if (innconf->remembertrash && (Mode == OMrunning) &&
+	  !NoHistoryUpdate && !HISremember(hash))
+	  syslog(L_ERROR, "%s cant write history %s %m",
+	    LogName, HDR(_message_id));
+	ARTreject(REJECT_GROUP, cp, article);
+	return FALSE;
+      } else {
+        /* if !GroupMissing, then all the groups the article was posted
+         * to have a flag of "x" in our active file, and therefore
+         * we should throw the article away:  if you have set
+         * innconf->remembertrash true, then you want all trash except that
+         * which you explicitly excluded in your active file. */
+  	if (!GroupMissing) {
+	  if (innconf->remembertrash && (Mode == OMrunning) &&
+	    !HISremember(hash))
+	    syslog(L_ERROR, "%s cant write history %s %m",
+	      LogName, HDR(_message_id));
+	  ARTreject(REJECT_GROUP, cp, article);
+	    return FALSE;
 	}
       }
     }
-    else {
-	Data.Distribution = "?";
-	Data.DistributionLength = 1;
+    ngp = NGfind(ARTjnk);
+    *ngptr++ = ngp;
+    ngp->PostCount = 0;
+
+    /* Junk can be fed to other sites. */
+    for (isp = ngp->Sites, i = ngp->nSites; --i >= 0; isp++) {
+      if (*isp >= 0) {
+	sp = &Sites[*isp];
+	if (!sp->Poison && !(sp->ControlOnly && !IsControl))
+	  SITEmark(sp, ngp);
+      }
     }
+  }
+  *ngptr = NULL;
 
-    for (i = nSites, sp = Sites; --i >= 0; sp++) {
-	sp->Poison = FALSE;
-	sp->Sendit = FALSE;
-	sp->Seenit = FALSE;
-	sp->FNLnames.Used = 0;
-	sp->ng = NULL;
+  if (innconf->xrefslave) {
+    if (ARTxrefslave(data) == FALSE) {
+      if (HDR_FOUND(_xref)) {
+	(void)sprintf(buff, "%d Invalid Xref header \"%s\"", NNTP_REJECTIT_VAL,
+	  MaxLength(HDR(_xref), HDR(_xref)));
+      } else {
+	(void)sprintf(buff, "%d No Xref header", NNTP_REJECTIT_VAL);
+      }
+      ARTlog(data, ART_REJECT, buff);
+      ARTreject(REJECT_OTHER, cp, article);
+      return FALSE;
     }
+  } else {
+    ARTassignnumbers(data);
+  }
 
-    groups = NGsplit(HDR(_followup_to));
-    for (i = 0; groups[i] != NULL; i++)
-	continue;
-    Data.Followcount = i;
-    groups = NGsplit(HDR(_newsgroups));
-    for (i = 0; groups[i] != NULL; i++)
-	continue;
-    Data.Groupcount = i;
-    if (Data.Followcount == 0)
-	Data.Followcount = Data.Groupcount;
+  /* Now we can file it. */
+  if (++ICDactivedirty >= innconf->icdsynccount) {
+    ICDwriteactive();
+    ICDactivedirty = 0;
+  }
+  TMRstart(TMR_ARTWRITE);
+  for (i = 0; (ngp = GroupPointers[i]) != NULL; i++)
+    ngp->PostCount = 0;
 
-    /* Parse the Control header. */
-    LikeNewgroup = FALSE;
-    if (HDR(_control)[0] != '\0') {
-        IsControl = TRUE;
-
-	/* Nip off the first word into lowercase. */
-	strncpy(ControlWord, HDR(_control), sizeof ControlWord);
-	ControlWord[sizeof ControlWord - 1] = '\0';
-	for (p = ControlWord; *p && !ISWHITE(*p); p++)
-	    if (CTYPE(isupper, *p))
-		*p = tolower(*p);
-	*p = '\0';
-	LikeNewgroup = EQ(ControlWord, "newgroup")
-		    || EQ(ControlWord, "rmgroup");
-
-	if (innconf->ignorenewsgroups && LikeNewgroup) {
-	    for (p++; *p && ISWHITE(*p); p++);
-	    groupbuff[0] = p;
-	    for (p++; *p; p++) {
-		if (NG_ISSEP(*p)) {
-		    *p = '\0';
-		    break;
-		}
-	    }
-	    p = groupbuff[0];
-	    for (p++; *p; p++) {
-		if (ISWHITE(*p)) {
-		    *p = '\0';
-		    break;
-		}
-	    }
-	    groupbuff[1] = NULL;
-	    groups = groupbuff;
-	    Data.Groupcount = 2;
-	    if (Data.Followcount == 0)
-		Data.Followcount = Data.Groupcount;
-	}
-	/* Control messages to "foo.ctl" are treated as if they were
-	 * posted to "foo".  I should probably apologize for all the
-	 * side-effects in the if. */
-	for (i = 0; (p = groups[i++]) != NULL; )
-	    if ((j = strlen(p) - 4) > 0
-	     && *(p += j) == '.'
-	     && p[1] == 'c' && p[2] == 't' && p[3] == 'l')
-		*p = '\0';
-    }
-
-    /* Loop over the newsgroups, see which ones we want, and get the
-     * total space needed for the Xref line.  At the end of this section
-     * of code, j will have the needed length, the appropriate site
-     * entries will have their Sendit and ng fields set, and GroupPointers
-     * will have pointers to the relevant newsgroups. */
-    ToGroup = NoHistoryUpdate = FALSE;
-    p = HDR(_approved);
-    Approved = *p != '\0';
-    ngptr = GroupPointers;
-    j = 0;
-    for (GroupMissing = Accepted = FALSE; (p = *groups) != NULL; groups++) {
-	if ((ngp = NGfind(p)) == NULL) {
-	    GroupMissing = TRUE;
-	    if (LikeNewgroup && Approved) {
-		/* Newgroup/rmgroup being sent to a group that doesn't
-		 * exist.  Assume it is being sent to the group being
-		 * created or removed, nd send the group to all sites that
-		 * would or would have had the group if it were created. */
-		ARTsendthegroup(*groups);
-		Accepted = TRUE;
-	    } else
-		NonExist = TRUE;
-	    ARTpoisongroup(*groups);
-
-	    if (innconf->mergetogroups) {
-		/* Try to collapse all "to" newsgroups. */
-		if (*p != 't' || *++p != 'o' || *++p != '.' || *++p == '\0')
-		    continue;
-		ngp = NGfind("to");
-		ToGroup = TRUE;
-		if ((sp = SITEfind(p)) != NULL) {
-		    SITEmark(sp, ngp);
-		}
-	    } else {
-		continue;
-	    }
-	}
-	
-	ngp->PostCount = 0;
-	/* Ignore this group? */
-	if (ngp->Rest[0] == NF_FLAG_IGNORE) {
-	    /* See if any of this group's sites considers this group poison. */
-	    for (isp = ngp->Poison, i = ngp->nPoison; --i >= 0; isp++)
-		if (*isp >= 0)
-		    Sites[*isp].Poison = TRUE;
-	    continue;
-	}
-
-	/* Basic validity check. */
-	if (ngp->Rest[0] == NF_FLAG_MODERATED && !Approved) {
-	    (void)sprintf(buff, "%d Unapproved for \"%s\"",
-		    NNTP_REJECTIT_VAL, ngp->Name);
-	    ARTlog(&Data, ART_REJECT, buff);
-            if (innconf->remembertrash && (Mode == OMrunning) &&
-				!HISremember(hash))
-                syslog(L_ERROR, "%s cant write history %s %m",
-                       LogName, Data.MessageID);
-	    if (distributions)
-		DISPOSE(distributions);
-	    ARTreject(REJECT_UNAPP, cp, article);
-	    return buff;
-	}
-
-	/* See if any of this group's sites considers this group poison. */
-	for (isp = ngp->Poison, i = ngp->nPoison; --i >= 0; isp++)
-	    if (*isp >= 0)
-		Sites[*isp].Poison = TRUE;
-
-	/* Check if we accept articles in this group from this peer, after
-	   poisoning.  This means that articles that we accept from them will
-	   be handled correctly if they're crossposted. */
-	canpost = RCcanpost(cp, p);
-	if (!canpost) {  /* At least one group cannot be fed by this peer.
-	 		    If we later reject the post as unwanted group,
-			    don't remember it.  If we accept, do remember */
-	    NoHistoryUpdate = TRUE;
-	    continue;
-	}
-	else if (canpost < 0) {
-	    (void)sprintf(buff, "%d Won't accept posts in \"%s\"",
-		NNTP_REJECTIT_VAL, MaxLength(p, p));
-	    ARTlog(&Data, ART_REJECT, buff);
-	    if (distributions)
-		DISPOSE(distributions);
-	    ARTreject(REJECT_GROUP, cp, article);
-	    return buff;
-	}
-
-	/* Valid group, feed it to that group's sites. */
-	Accepted = TRUE;
-	for (isp = ngp->Sites, i = ngp->nSites; --i >= 0; isp++)
-	    if (*isp >= 0) {
-		sp = &Sites[*isp];
-		if (!sp->Poison)
-		    SITEmark(sp, ngp);
-	    }
-
-	/* If it's excluded, don't file it. */
-	if (ngp->Rest[0] == NF_FLAG_EXCLUDED)
-	    continue;
-
-	/* Expand aliases, mark the article as getting filed in the group. */
-	if (ngp->Alias != NULL)
-	    ngp = ngp->Alias;
-	*ngptr++ = ngp;
-	ngp->PostCount = 0;
-	j += ngp->NameLength + 1 + MAXARTFNAME + 1;
-    }
-
-    /* Loop over sites to find Poisons/ControlOnly and undo Sendit flags. */
-    for (i = nSites, sp = Sites; --i >= 0; sp++)
-	if (sp->Poison
-            || (sp->ControlOnly && !IsControl)
-            || (sp->DontWantNonExist && NonExist))
-	    sp->Sendit = FALSE;		
-
-    /* Control messages not filed in "to" get filed only in control.name
-     * or control. */
-    if (IsControl && Accepted && !ToGroup) {
-	ControlStore = TRUE;
-	FileGlue(buff, "control", '.', ControlWord);
-	if ((ngp = NGfind(buff)) == NULL)
-	    ngp = NGfind(ARTctl);
-	ngp->PostCount = 0;
-	ngptr = GroupPointers;
-	*ngptr++ = ngp;
-	j = ngp->NameLength + 1 + MAXARTFNAME;
-	for (isp = ngp->Sites, i = ngp->nSites; --i >= 0; isp++)
-	    if (*isp >= 0) {
-		sp = &Sites[*isp];
-		SITEmark(sp, ngp);
-	    }
-    }
-
-    /* If !Accepted, then none of the article's newgroups exist in our
-     * active file.  Proper action is to drop the article on the floor.
-     * If ngp == GroupPointers, then all the new articles newsgroups are
-     * "j" entries in the active file.  In that case, we have to file it
-     * under junk so that downstream feeds can get it. */
-    if (!Accepted || ngptr == GroupPointers) {
-	if (!Accepted) {
-	    if (NoHistoryUpdate) {
-		(void)sprintf(buff, "%d Can't post to \"%s\"",
-		    NNTP_REJECTIT_VAL,
-		    MaxLength(Data.Newsgroups, Data.Newsgroups));
-	    } else {
-	    (void)sprintf(buff, "%d Unwanted newsgroup \"%s\"",
-		NNTP_REJECTIT_VAL,
-		MaxLength(Data.Newsgroups, Data.Newsgroups));
-	    }
-	    ARTlog(&Data, ART_REJECT, buff);
-	    if (!innconf->wanttrash) {
-		if (innconf->remembertrash && (Mode == OMrunning) &&
-			!NoHistoryUpdate && !HISremember(hash))
-		    syslog(L_ERROR, "%s cant write history %s %m",
-                       LogName, Data.MessageID);
-		if (distributions)
-		    DISPOSE(distributions);
-		ARTreject(REJECT_GROUP, cp, article);
-		return buff;
-	    } else {
-	    /* if !GroupMissing, then all the groups the article was posted
-	     * to have a flag of "x" in our active file, and therefore
-	     * we should throw the article away:  if you have set
-	     * innconf->remembertrash true, then you want all trash except that
-	     * which you explicitly excluded in your active file. */
-		if (!GroupMissing) {
-                    if (innconf->remembertrash && (Mode == OMrunning) &&
-				!HISremember(hash))
-			syslog(L_ERROR, "%s cant write history %s %m",
-					LogName, Data.MessageID);
-		    if (distributions)
-				DISPOSE(distributions);
-		    ARTreject(REJECT_GROUP, cp, article);
-		    return buff;
-		}
-	    }
-	}
-	ngp = NGfind(ARTjnk);
-	*ngptr++ = ngp;
-	ngp->PostCount = 0;
-	j = STRLEN(ARTjnk) + 1 + MAXARTFNAME;
-
-	/* Junk can be fed to other sites. */
-	for (isp = ngp->Sites, i = ngp->nSites; --i >= 0; isp++)
-	    if (*isp >= 0) {
-		sp = &Sites[*isp];
-		if (!sp->Poison && !(sp->ControlOnly && !IsControl))
-		    SITEmark(sp, ngp);
-	    }
-    }
-    *ngptr = NULL;
-    j++;
-
-    /* Allocate exactly enough space for the textual representation */
-    j = (sizeof(TOKEN) * 2) + 3;
-
-    /* Make sure the filename buffer has room. */
-    if (Files.Data == NULL) {
-	Files.Size = j;
-	Files.Data = NEW(char, Files.Size + 1);
-    }
-    else if (Files.Size <= j) {
-	Files.Size = j;
-	RENEW(Files.Data, char, Files.Size + 1);
-    }
-
-    if (innconf->xrefslave) {
-    	if (ARTxrefslave() == FALSE) {
-    	    if (HDR(_xref)) {
-                (void)sprintf(buff, "%d Invalid Xref header \"%s\"",
-		    NNTP_REJECTIT_VAL,
-		    MaxLength(HDR(_xref), HDR(_xref)));
-	    } else {
-                (void)sprintf(buff, "%d No Xref header",
-		    NNTP_REJECTIT_VAL);
-	    }
-            ARTlog(&Data, ART_REJECT, buff);
-	    if (distributions)
-	        DISPOSE(distributions);
-	    ARTreject(REJECT_OTHER, cp, article);
-	    return buff;
-    	}
-    } else {
-            ARTassignnumbers();
-    }
-
-    /* Now we can file it. */
-    if (++ICDactivedirty >= innconf->icdsynccount) {
-	ICDwriteactive();
-	ICDactivedirty = 0;
-    }
-    TMRstart(TMR_ARTWRITE);
-    for (i = 0; (ngp = GroupPointers[i]) != NULL; i++)
-	ngp->PostCount = 0;
-    
-    token = ARTstore(article, &Data);
-    if (token.type == TOKEN_EMPTY) {
-	syslog(L_ERROR, "%s cant store article: %s", LogName, SMerrorstr);
-	sprintf(buff, "%d cant store article", NNTP_RESENDIT_VAL);
-	ARTlog(&Data, ART_REJECT, buff);
-	if ((Mode == OMrunning) && !HISremember(hash))
-	    syslog(L_ERROR, "%s cant write history %s %m",
-		   LogName, Data.MessageID);
-	if (distributions)
-	    DISPOSE(distributions);
-	ARTreject(REJECT_OTHER, cp, article);
-	TMRstop(TMR_ARTWRITE);
-	return buff;
-    }
+  token = ARTstore(cp);
+  HDR_PARSE_START(_message_id);
+  if (token.type == TOKEN_EMPTY) {
+    syslog(L_ERROR, "%s cant store article: %s", LogName, SMerrorstr);
+    sprintf(buff, "%d cant store article", NNTP_RESENDIT_VAL);
+    ARTlog(data, ART_REJECT, buff);
+    if ((Mode == OMrunning) && !HISremember(hash))
+      syslog(L_ERROR, "%s cant write history %s %m", LogName, HDR(_message_id));
+    ARTreject(REJECT_OTHER, cp, article);
     TMRstop(TMR_ARTWRITE);
-    ARTmakeoverview(&Data);
+    return FALSE;
+  }
+  TMRstop(TMR_ARTWRITE);
+  if (innconf->enableoverview && !innconf->useoverchan || NeedOverview) {
+    TMRstart(TMR_OVERV);
+#if	defined(DO_KEYWORDS)
+    ARTmakeoverview(cp);
+#else
+    ARTmakeoverview(data);
+#endif	/* defined(DO_KEYWORDS) */
     MadeOverview = TRUE;
     if (innconf->enableoverview && !innconf->useoverchan) {
-	TMRstart(TMR_OVERV);
-	if (!OVadd(token, Data.Overview->Data, Data.Overview->Left, Data.Arrived, Data.Expires)) {
-	    if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE)
-		IOError("creating overview", ENOSPC);
-	    else
-		IOError("creating overview", 0);
-	    syslog(L_ERROR, "%s cant store overview for %s", LogName, TokenToText(token));
-	    OverviewCreated = FALSE;
-	} else {
-	    OverviewCreated = TRUE;
-	}
-	TMRstop(TMR_OVERV);
-    }
-    strcpy(Files.Data, TokenToText(token));
-    strcpy(Data.Name, Files.Data);
-    Data.NameLength = strlen(Data.Name);
-
-    /* Update history if we didn't get too many I/O errors above. */
-    if ((Mode != OMrunning) || !HISwrite(&Data, hash, Files.Data)) {
-	i = errno;
-	syslog(L_ERROR, "%s cant write history %s %m", LogName, Data.MessageID);
-	(void)sprintf(buff, "%d cant write history, %s",
-		NNTP_RESENDIT_VAL, strerror(errno));
-	ARTlog(&Data, ART_REJECT, buff);
-	if (distributions)
-	    DISPOSE(distributions);
-	ARTreject(REJECT_OTHER, cp, article);
-	return buff;
-    }
-
-    /* We wrote the history, so modify it and save it for output. */
-    if (innconf->xrefslave) {
-	if ((p = memchr(HDR(_xref), ' ', ARTheaders[_xref].Length)) == NULL) {
-	    Data.Replic = HDR(_xref);
-	    Data.ReplicLength = 0;
-	} else {
-	    Data.Replic = p + 1;
-	    Data.ReplicLength = ARTheaders[_xref].Length - (p + 1 - HDR(_xref));
-	}
-    } else {
-	Data.Replic = HDR(_xref) + Path.Used;
-	Data.ReplicLength = ARTheaders[_xref].Length - Path.Used;
-    }
-    Data.StoredGroup = Data.Replic;
-    if ((p = memchr(Data.Replic, ':', Data.ReplicLength)) == NULL) {
-	Data.StoredGroupLength = 0;
-    } else {
-	Data.StoredGroupLength = p - Data.StoredGroup;
-    }
-
-    /* Start logging, then propagate the article. */
-    if (CRwithoutLF > 0 || LFwithoutCR > 0) {
-	if (CRwithoutLF > 0 && LFwithoutCR == 0)
-	    (void)sprintf(buff, "%d article includes CR without LF(%d)", NNTP_REJECTIT_VAL, CRwithoutLF);
-	else if (CRwithoutLF == 0 && LFwithoutCR > 0)
-	    (void)sprintf(buff, "%d article includes LF without CR(%d)", NNTP_REJECTIT_VAL, LFwithoutCR);
+      if ((result = OVadd(token, data->Overview.Data, data->Overview.Left,
+	data->Arrived, data->Expires)) == OVADDFAILED) {
+	if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE)
+	  IOError("creating overview", ENOSPC);
 	else
-	    (void)sprintf(buff, "%d article includes CR without LF(%d) and LF withtout CR(%d)", NNTP_REJECTIT_VAL, CRwithoutLF, LFwithoutCR);
-	ARTlog(&Data, ART_STRSTR, buff);
+	  IOError("creating overview", 0);
+	syslog(L_ERROR, "%s cant store overview for %s", LogName,
+	  TokenToText(token));
+	OverviewCreated = FALSE;
+      } else {
+	if (result == OVADDCOMPLETED)
+	  OverviewCreated = TRUE;
+	else
+	  OverviewCreated = FALSE;
+      }
     }
-    ARTlog(&Data, Accepted ? ART_ACCEPT : ART_JUNK, (char *)NULL);
-    if ((innconf->nntplinklog) &&
-    	(fprintf(Log, " (%s)", Data.Name) == EOF || ferror(Log))) {
-	oerrno = errno;
-	syslog(L_ERROR, "%s cant write log_nntplink %m", LogName);
-	IOError("logging nntplink", oerrno);
-	clearerr(Log);
+    TMRstop(TMR_OVERV);
+  }
+  strcpy(data->TokenText, TokenToText(token));
+
+  /* Update history if we didn't get too many I/O errors above. */
+  if ((Mode != OMrunning) || !HISwrite(data, hash, data->TokenText)) {
+    i = errno;
+    syslog(L_ERROR, "%s cant write history %s %m", LogName, HDR(_message_id));
+    (void)sprintf(buff, "%d cant write history, %s", NNTP_RESENDIT_VAL,
+      strerror(errno));
+    ARTlog(data, ART_REJECT, buff);
+    ARTreject(REJECT_OTHER, cp, article);
+    return FALSE;
+  }
+
+  if (NeedStoredGroup)
+    data->StoredGroupLength = strlen(data->Newsgroups.List[0]);
+
+  /* Start logging, then propagate the article. */
+  if (data->CRwithoutLF > 0 || data->LFwithoutCR > 0) {
+    if (data->CRwithoutLF > 0 && data->LFwithoutCR == 0)
+      (void)sprintf(buff, "%d article includes CR without LF(%d)",
+	NNTP_REJECTIT_VAL, data->CRwithoutLF);
+    else if (data->CRwithoutLF == 0 && data->LFwithoutCR > 0)
+      (void)sprintf(buff, "%d article includes LF without CR(%d)",
+	NNTP_REJECTIT_VAL, data->LFwithoutCR);
+    else
+      (void)sprintf(buff,
+	"%d article includes CR without LF(%d) and LF withtout CR(%d)",
+	NNTP_REJECTIT_VAL, data->CRwithoutLF, data->LFwithoutCR);
+    ARTlog(data, ART_STRSTR, buff);
+  }
+  ARTlog(data, Accepted ? ART_ACCEPT : ART_JUNK, (char *)NULL);
+  if ((innconf->nntplinklog) &&
+    (fprintf(Log, " (%s)", data->TokenText) == EOF || ferror(Log))) {
+    oerrno = errno;
+    syslog(L_ERROR, "%s cant write log_nntplink %m", LogName);
+    IOError("logging nntplink", oerrno);
+    clearerr(Log);
+  }
+  /* Calculate Max Article Time */
+  i = Now.time - cp->ArtBeg;
+  if(i > cp->ArtMax)
+    cp->ArtMax = i;
+  cp->ArtBeg = 0;
+
+  cp->Size += data->BytesValue;
+  if (innconf->logartsize) {
+    if (fprintf(Log, " %ld", data->BytesValue) == EOF || ferror (Log)) {
+      oerrno = errno;
+      syslog(L_ERROR, "%s cant write artsize %m", LogName);
+      IOError("logging artsize", oerrno);
+      clearerr(Log);
     }
-    /* Calculate Max Article Time */
-    i = Now.time - cp->ArtBeg;
-    if(i > cp->ArtMax)
-	cp->ArtMax = i;
-    cp->ArtBeg = 0;
+  }
 
-    cp->Size += Data.SizeValue;
-    if (innconf->logartsize) {
-	if (fprintf(Log, " %ld",Data.SizeValue) == EOF || ferror (Log)) {
-            oerrno = errno;
-	    syslog(L_ERROR, "%s cant write artsize %m", LogName);
-	    IOError("logging artsize", oerrno);
-	    clearerr(Log);
-	}
+  ARTpropagate(data, (const char **)hops, hopcount, data->Distribution.List,
+    ControlStore, OverviewCreated);
+
+  /* Now that it's been written, process the control message.  This has
+   * a small window, if we get a new article before the newgroup message
+   * has been processed.  We could pause ourselves here, but it doesn't
+   * seem to be worth it. */
+  if (Accepted) {
+    if (IsControl) {
+      TMRstart(TMR_ARTCTRL);
+      ARTcontrol(data, HDR(_control), cp);
+      TMRstop(TMR_ARTCTRL);
     }
-    
-    ARTpropagate(&Data, hops, hopcount, distributions, ControlStore, OverviewCreated);
-    if (distributions)
-	DISPOSE(distributions);
-
-    /* Now that it's been written, process the control message.  This has
-     * a small window, if we get a new article before the newgroup message
-     * has been processed.  We could pause ourselves here, but it doesn't
-     * seem to be worth it. */
-    if (Accepted) {
-	if (IsControl) {
-	    TMRstart(TMR_ARTCTRL);
-	    ARTcontrol(&Data, HDR(_control), cp);
-	    TMRstop(TMR_ARTCTRL);
-	}
-	p = HDR(_supersedes);
-	if (*p && ARTidok(p)) {
-	    ARTcancel(&Data, p, FALSE);
-	}
+    if (HDR_FOUND(_supersedes) && ARTidok(HDR(_supersedes))) {
+      ARTcancel(data, p, FALSE);
     }
+  }
 
-    /* If we need the overview data, write it. */
-    if (NeedOverview && !MadeOverview)
-	ARTmakeoverview(&Data);
+  /* And finally, send to everyone who should get it */
+  for (sp = Sites, i = nSites; --i >= 0; sp++) {
+    if (sp->Sendit) {
+      if (!Filtered || !sp->DropFiltered) {
+	TMRstart(TMR_SITESEND);
+	SITEsend(sp, data);
+	TMRstop(TMR_SITESEND);
+      }
+    }
+  }
 
-    /* And finally, send to everyone who should get it */
-    for (sp = Sites, i = nSites; --i >= 0; sp++)
-	if (sp->Sendit) {
-	    if (!Filtered || !sp->DropFiltered) {
-		TMRstart(TMR_SITESEND);
-		SITEsend(sp, &Data);
-		TMRstop(TMR_SITESEND);
-	    }
-	}
-
-    return NNTP_TOOKIT;
+  return TRUE;
 }

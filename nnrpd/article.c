@@ -73,6 +73,7 @@ bool PushIOvRateLimited(void) {
     int                 chunkbittenoff;
     struct timeval      waittime;
     int                 targettime;
+    TIMEINFO		Start, End;
 
     while (queued_iov) {
 	bytesfound = newiov_len = 0;
@@ -106,9 +107,16 @@ bool PushIOvRateLimited(void) {
 	targettime = (float)1000000 * (float)bytesfound / (float)MaxBytesPerSecond;
 	if ((waittime.tv_sec < 1) && (waittime.tv_usec < targettime)) {
 	    waittime.tv_usec = targettime - waittime.tv_usec;
+	    gettimeofday(&start, NULL);
 	    if (select(0, NULL, NULL, NULL, &waittime) != 0)
 		syslog(L_ERROR, "%s: select in PushIOvRateLimit failed %m(%d)",
 		       ClientHost, errno);
+	    gettimeofday(&end, NULL);
+	    Start.time = start.tv_sec;
+	    Start.usec = start.tv_usec;
+	    End.time = end.tv_sec;
+	    End.usec = end.tv_usec;
+	    IDLEtime += TIMEINFOasDOUBLE(End) - TIMEINFOasDOUBLE(Start);
 	}
 	memmove(iov, &iov[sentiov], (queued_iov - sentiov) * sizeof(struct iovec));
 	queued_iov -= sentiov;
@@ -332,6 +340,7 @@ static bool ARTopen(int artnum)
 {
     static ARTNUM	save_artnum;
     TOKEN		token;
+    struct timeval	stv, etv;
 
     /* Re-use article if it's the same one. */
     if (save_artnum == artnum) {
@@ -343,8 +352,16 @@ static bool ARTopen(int artnum)
     if (!OVgetartinfo(GRPcur, artnum, NULL, NULL, &token))
 	return FALSE;
   
-    if ((ARThandle = SMretrieve(token, RETR_ALL)) == NULL)
+    gettimeofday(&stv, NULL);
+    if ((ARThandle = SMretrieve(token, RETR_ALL)) == NULL) {
+	gettimeofday(&etv, NULL);
+	ARTgettime += (etv.tv_sec - stv.tv_sec) * 1000;
+	ARTgettime += (etv.tv_usec - stv.tv_usec) / 1000;
 	return FALSE;
+    }
+    gettimeofday(&etv, NULL);
+    ARTgettime += (etv.tv_sec - stv.tv_sec) * 1000;
+    ARTgettime += (etv.tv_usec - stv.tv_usec) / 1000;
 
     save_artnum = artnum;
     return TRUE;
@@ -359,6 +376,7 @@ static bool ARTopenbyid(char *msg_id, ARTNUM *ap)
     char		*p;
     HASH		hash = HashMessageID(msg_id);
     TOKEN		token;
+    struct timeval	stv, etv;
 
     *ap = 0;
     if ((p = HISgetent(&hash, FALSE, NULL)) == NULL)
@@ -367,8 +385,16 @@ static bool ARTopenbyid(char *msg_id, ARTNUM *ap)
     token = TextToToken(p);
     if (token.type == TOKEN_EMPTY)
 	return FALSE;
-    if ((ARThandle = SMretrieve(token, RETR_ALL)) == NULL)
+    gettimeofday(&stv, NULL);
+    if ((ARThandle = SMretrieve(token, RETR_ALL)) == NULL) {
+	gettimeofday(&etv, NULL);
+	ARTgettime += (etv.tv_sec - stv.tv_sec) * 1000;
+	ARTgettime += (etv.tv_usec - stv.tv_usec) / 1000;
 	return FALSE;
+    }
+    gettimeofday(&etv, NULL);
+    ARTgettime += (etv.tv_sec - stv.tv_sec) * 1000;
+    ARTgettime += (etv.tv_usec - stv.tv_usec) / 1000;
 
     return TRUE;
 }
@@ -379,7 +405,6 @@ static bool ARTopenbyid(char *msg_id, ARTNUM *ap)
 static void ARTsendmmap(SENDTYPE what)
 {
     char		*p, *q, *r, *s, *path, *xref, *virtualpath;
-    struct timeval	stv, etv;
     long		bytecount;
     char		lastchar;
 
@@ -388,7 +413,6 @@ static void ARTsendmmap(SENDTYPE what)
     bytecount = 0;
     lastchar = -1;
 
-     gettimeofday(&stv, NULL);
     /* Get the headers and detect if wire format. */
     if (what == STarticle) {
 	q = ARThandle->data;
@@ -419,29 +443,20 @@ static void ARTsendmmap(SENDTYPE what)
 	    SendIOv(".\r\n", 3);
 	    ARTgetsize += 3;
 	    PushIOv();
-	    gettimeofday(&etv, NULL);
 	    ARTget++;
-	    ARTgettime+=(etv.tv_sec - stv.tv_sec) * 1000;
-	    ARTgettime+=(etv.tv_usec - stv.tv_usec) / 1000;
 	    return;
 	} else if ((xref = (char *)HeaderFindMem(ARThandle->data, ARThandle->len, "xref", sizeof("xref") - 1)) == NULL) {
 	    SendIOv(".\r\n", 3);
 	    ARTgetsize += 3;
 	    PushIOv();
-	    gettimeofday(&etv, NULL);
 	    ARTget++;
-	    ARTgettime+=(etv.tv_sec - stv.tv_sec) * 1000;
-	    ARTgettime+=(etv.tv_usec - stv.tv_usec) / 1000;
 	    return;
 	}
 	if ((r = memchr(xref, ' ', q - xref)) == NULL) {
 	    SendIOv(".\r\n", 3);
 	    ARTgetsize += 3;
 	    PushIOv();
-	    gettimeofday(&etv, NULL);
 	    ARTget++;
-	    ARTgettime+=(etv.tv_sec - stv.tv_sec) * 1000;
-	    ARTgettime+=(etv.tv_usec - stv.tv_usec) / 1000;
 	    return;
 	} else {
 	    for (; (r < q) && isspace((int)*r) ; r++);
@@ -449,10 +464,7 @@ static void ARTsendmmap(SENDTYPE what)
 		SendIOv(".\r\n", 3);
 		ARTgetsize += 3;
 		PushIOv();
-		gettimeofday(&etv, NULL);
 		ARTget++;
-		ARTgettime+=(etv.tv_sec - stv.tv_sec) * 1000;
-		ARTgettime+=(etv.tv_usec - stv.tv_usec) / 1000;
 		return;
 	    }
 	}
@@ -508,10 +520,7 @@ static void ARTsendmmap(SENDTYPE what)
     }
     PushIOv();
 
-    gettimeofday(&etv, NULL);
     ARTget++;
-    ARTgettime+=(etv.tv_sec - stv.tv_sec) * 1000;
-    ARTgettime+=(etv.tv_usec - stv.tv_usec) / 1000;
 }
 
 /*

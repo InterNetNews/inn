@@ -161,6 +161,7 @@ EXTERN long	OVERdbz;	/* number of ms spent reading dbz data	*/
 EXTERN long	OVERseek;	/* number of ms spent seeking history	*/
 EXTERN long	OVERget;	/* number of ms spent reading history	*/
 EXTERN long	OVERartcheck;	/* number of ms spent article check	*/
+EXTERN double	IDLEtime;
 EXTERN long	GRParticles;
 EXTERN long	GRPcount;
 EXTERN char	*GRPcur;

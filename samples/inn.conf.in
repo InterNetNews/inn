@@ -34,6 +34,7 @@ server:
 
 artcutoff:              10
 bindaddress:
+dontrejectfiltered:	false
 hiscachesize:           0
 ignorenewsgroups:       false
 immediatecancel:        false
@@ -51,7 +52,6 @@ verifycancels:          false
 wanttrash:              false
 wipcheck:               5
 wipexpire:              10
-dontrejectfiltered:	false
 
 # Article Storage
 
@@ -145,7 +145,10 @@ badiocount:             5
 blockbackoff:           120
 chaninacttime:          600
 chanretrytime:          300
+datamovethreshold:      8192
 icdsynccount:           10
+keepmmappedthreshold:   1024
+maxcmdreadsize:         1024
 maxforks:               10
 nicekids:               4
 nicenewnews:            0

@@ -1061,7 +1061,8 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
     CYCBUFF_OFF_T	artoffset, middle;
     uint32_t		artcyclenum;
     CNFSARTHEADER	cah;
-    struct iovec	iov[2];
+    static struct iovec	*iov;
+    static int		iovcnt;
     int			tonextblock;
     CNFSEXPIRERULES	*metaexprule;
 
@@ -1146,11 +1147,20 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	return token;
     }
+    if (iovcnt == 0) {
+	iov = NEW(struct iovec, article.iovcnt + 1);
+	iovcnt = article.iovcnt + 1;
+    } else if (iovcnt < article.iovcnt + 1) {
+	RENEW(iov, struct iovec, article.iovcnt + 1);
+	iovcnt = article.iovcnt + 1;
+    }
     iov[0].iov_base = (caddr_t) &cah;
     iov[0].iov_len = sizeof(cah);
-    iov[1].iov_base = article.data;
-    iov[1].iov_len = article.len;
-    if (xwritev(cycbuff->fd, iov, 2) < 0) {
+    for (i = 1 ; i <= article.iovcnt ; i++) {
+        iov[i].iov_base = article.iov[i-1].iov_base;
+        iov[i].iov_len = article.iov[i-1].iov_len;
+    }
+    if (xwritev(cycbuff->fd, iov, article.iovcnt + 1) < 0) {
 	SMseterror(SMERR_INTERNAL, "cnfs_store() xwritev() failed");
 	syslog(L_ERROR,
 	       "%s: cnfs_store xwritev failed for '%s' offset 0x%s: %m",

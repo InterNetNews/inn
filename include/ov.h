@@ -13,6 +13,7 @@ extern "C" {
 typedef enum {OVSPACE, OVSORT, OVCUTOFFLOW, OVGROUPBASEDEXPIRE, OVSTATICSEARCH, OVSTATALL, OVCACHEKEEP, OVCACHEFREE} OVCTLTYPE;
 #define OV_NOSPACE 100
 typedef enum {OVNEWSGROUP, OVARRIVED, OVNOSORT} OVSORTTYPE;
+typedef enum {OVADDCOMPLETED, OVADDFAILED, OVADDGROUPNOMATCH} OVADDRESULT;
 
 typedef struct _OVGE {
     bool	delayrm;	  /* append tokens to filename if true */
@@ -36,7 +37,7 @@ bool OVopen(int mode);
 bool OVgroupstats(char *group, int *lo, int *hi, int *count, int *flag);
 bool OVgroupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag);
 bool OVgroupdel(char *group);
-bool OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires);
+OVADDRESULT OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires);
 bool OVcancel(TOKEN token);
 void *OVopensearch(char *group, int low, int high);
 bool OVsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived);

@@ -33,9 +33,9 @@ static SITEVARIABLES  *SITEvariables = NULL;
 static char **
 SITEcopystrings(char **av)
 {
-    register char	**new;
-    register char	**pp;
-    char		**save;
+    char	**new;
+    char	**pp;
+    char	**save;
 
     for (pp = av; *pp; pp++)
 	continue;
@@ -275,10 +275,10 @@ SITEreadfile(const bool ReadOnly)
     static time_t	old_mtime;
     static ino_t	old_ino;
     static off_t	old_size;
-    register char	*p;
-    register char	*to;
-    register char	*site;
-    register int	i;
+    char		*p;
+    char		*to;
+    char		*site;
+    int			i;
     struct stat		Sb;
     char		*data;
 
@@ -351,13 +351,13 @@ SITEreadfile(const bool ReadOnly)
 static void
 SITEsetlist(char **patlist, char *subbed, char *poison, bool *poisonEntry)
 {
-    register char	*pat;
-    register char	*p;
-    register char	*u;
-    register char	subvalue;
-    register char	poisonvalue;
-    register NEWSGROUP	*ngp;
-    register int	i;
+    char	*pat;
+    char	*p;
+    char	*u;
+    char	subvalue;
+    char	poisonvalue;
+    NEWSGROUP	*ngp;
+    int		i;
 
     while ((pat = *patlist++) != NULL) {
 	subvalue = *pat != SUB_NEGATE && *pat != SUB_POISON;
@@ -401,10 +401,10 @@ SITEsetlist(char **patlist, char *subbed, char *poison, bool *poisonEntry)
 char **
 SlashSplit(char *text)
 {
-    register int	i;
-    register char	*p;
-    register char	**av;
-    char		**save;
+    int		i;
+    char	*p;
+    char	**av;
+    char	**save;
 
     /* How much space do we need? */
     for (i = 2, p = text; *p; p++)
@@ -646,11 +646,15 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 		case FEED_HASH:			/* Hash			*/
 		case FEED_HDR_DISTRIB:		/* Distribution header	*/
 		case FEED_STOREDGROUP:		/* stored newsgroup	*/
+		    NeedStoredGroup = TRUE;
+		    break;
 		case FEED_HDR_NEWSGROUP:	/* Newsgroup header	*/
 		case FEED_MESSAGEID:		/* Message-ID		*/
 		case FEED_NAME:			/* Filename		*/
 		case FEED_NEWSGROUP:		/* Newsgroup		*/
 		case FEED_REPLIC:		/* Replication data	*/
+		    NeedReplicdata = TRUE;
+		    break;
 		case FEED_SITE:			/* Site that gave it	*/
 		case FEED_TIMERECEIVED:		/* When received	*/
 		case FEED_TIMEPOSTED:		/* When posted		*/
@@ -778,11 +782,11 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 bool
 SITEfunnelpatch(void)
 {
-    register int	i;
-    register int	length;
-    register SITE	*sp;
-    SITE		*funnel;
-    bool		result;
+    int		i;
+    int		length;
+    SITE	*sp;
+    SITE	*funnel;
+    bool	result;
 
     /* Get worst-case length of all sitenames. */
     for (length = 0, i = nSites, sp = Sites; --i >= 0; sp++)
@@ -834,85 +838,87 @@ SITEfunnelpatch(void)
 void
 SITEparsefile(bool StartSite)
 {
-    int                 i;
-    char *              p;
-    char **             strings;
-    SITE *              sp;
-    char *              subbed;
-    char *              poison;
-    const char *	error;
-    int			errors;
-    int			setuperrors;
+  int		i;
+  char *	p;
+  char **	strings;
+  SITE *	sp;
+  char *	subbed;
+  char *	poison;
+  const char *	error;
+  int		errors;
+  int		setuperrors;
 
-    /* Free old sites info. */
-    if (Sites) {
-	for (i = nSites, sp = Sites; --i >= 0; sp++) {
-	    SITEflush(sp, FALSE);
-	    SITEfree(sp);
-	}
-	DISPOSE(Sites);
-	SITEfree(&ME);
+  /* Free old sites info. */
+  if (Sites) {
+    for (i = nSites, sp = Sites; --i >= 0; sp++) {
+      SITEflush(sp, FALSE);
+      SITEfree(sp);
     }
+    DISPOSE(Sites);
+    SITEfree(&ME);
+  }
 
-    /* Count the number of sites. */
-    for (strings = SITEreadfile(FALSE), nSites = 0; strings[nSites]; nSites++)
-	continue;
-    Sites = NEW(SITE, nSites);
-    memset(Sites, '\0', nSites * sizeof(SITE));
+  /* Count the number of sites. */
+  for (strings = SITEreadfile(FALSE), nSites = 0; strings[nSites]; nSites++)
+    continue;
+  Sites = NEW(SITE, nSites);
+  memset(Sites, '\0', nSites * sizeof(SITE));
 
-    /* Set up scratch subscription list. */
-    subbed = NEW(char, nGroups);
-    poison = NEW(char, nGroups);
+  /* Set up scratch subscription list. */
+  subbed = NEW(char, nGroups);
+  poison = NEW(char, nGroups);
+  /* reset global variables */
+  NeedHeaders = NeedOverview = NeedPath = NeedStoredGroup = NeedReplicdata
+    = FALSE;
 
-    ME.Prev = 0; /* Used as a flag to ensure exactly one ME entry */
-    for (sp = Sites, errors = 0, setuperrors = 0, i = 0; i < nSites; i++) {
-	p = strings[i];
-	if (p[0] == 'M' && p[1] == 'E' &&
-            ((p[2] == NF_FIELD_SEP) || (p[2] == NF_SUBFIELD_SEP))) {
-	    if (ME.Prev == NOSITE) {
-		syslog(L_FATAL, "bad_newsfeeds. Must have exactly one ME entry");
-		errors++;
-	    } else
-	    if ((error = SITEparseone(p, &ME, subbed, poison)) != NULL) {
-		syslog(L_FATAL, "%s bad_newsfeeds %s", MaxLength(p, p), error);
-		errors++;
-	    }
-	    continue;
-	}
-	if ((error = SITEparseone(p, sp, subbed, poison)) != NULL) {
-	    syslog(L_FATAL, "%s bad_newsfeeds %s", MaxLength(p, p), error);
-	    errors++;
-	    continue;
-	}
-	if (StartSite && !SITEsetup(sp)) {
-	    syslog(L_FATAL, "%s cant setup %m", sp->Name);
-	    setuperrors++;
-	    continue;
-	}
-	sp->Working = TRUE;
-	sp++;
-    }
-    if (ME.Prev != NOSITE) {
+  ME.Prev = 0; /* Used as a flag to ensure exactly one ME entry */
+  for (sp = Sites, errors = 0, setuperrors = 0, i = 0; i < nSites; i++) {
+    p = strings[i];
+    if (p[0] == 'M' && p[1] == 'E' &&
+      ((p[2] == NF_FIELD_SEP) || (p[2] == NF_SUBFIELD_SEP))) {
+      if (ME.Prev == NOSITE) {
 	syslog(L_FATAL, "bad_newsfeeds. Must have exactly one ME entry");
 	errors++;
+      } else if ((error = SITEparseone(p, &ME, subbed, poison)) != NULL) {
+	syslog(L_FATAL, "%s bad_newsfeeds %s", MaxLength(p, p), error);
+	errors++;
+      }
+      continue;
     }
+    if ((error = SITEparseone(p, sp, subbed, poison)) != NULL) {
+      syslog(L_FATAL, "%s bad_newsfeeds %s", MaxLength(p, p), error);
+      errors++;
+      continue;
+    }
+    if (StartSite && !SITEsetup(sp)) {
+      syslog(L_FATAL, "%s cant setup %m", sp->Name);
+      setuperrors++;
+      continue;
+    }
+    sp->Working = TRUE;
+    sp++;
+  }
+  if (ME.Prev != NOSITE) {
+    syslog(L_FATAL, "bad_newsfeeds. Must have exactly one ME entry");
+    errors++;
+  }
 
-    if (errors || setuperrors) {
-	if (errors)
-	    syslog(L_FATAL, "%s syntax_error %s", LogName, SITEfeedspath);
-	if (setuperrors)
-	    syslog(L_FATAL, "%s setup_error %s", LogName, SITEfeedspath);
-	JustCleanup();
-	exit(1);
-    }
+  if (errors || setuperrors) {
+    if (errors)
+      syslog(L_FATAL, "%s syntax_error %s", LogName, SITEfeedspath);
+    if (setuperrors)
+      syslog(L_FATAL, "%s setup_error %s", LogName, SITEfeedspath);
+    JustCleanup();
+    exit(1);
+  }
 
-    /* Free our scratch array, set up the funnel links. */
-    nSites = sp - Sites;
-    DISPOSE(subbed);
-    DISPOSE(poison);
-    DISPOSE(strings);
-    if (!SITEfunnelpatch()) {
-	JustCleanup();
-	exit(1);
-    }
+  /* Free our scratch array, set up the funnel links. */
+  nSites = sp - Sites;
+  DISPOSE(subbed);
+  DISPOSE(poison);
+  DISPOSE(strings);
+  if (!SITEfunnelpatch()) {
+    JustCleanup();
+    exit(1);
+  }
 }

@@ -80,7 +80,7 @@ static void ProcessIncoming(QIOSTATE *qp)
 	Data = p;
 	NumArts++;
 	starttime = gettime();
-	if (!OVadd(token, Data, strlen(Data), Time, Expires)) {
+	if (OVadd(token, Data, strlen(Data), Time, Expires) == OVADDFAILED) {
 	    fprintf(stderr, "overchan: Can't write overview \"%s\", %s\n", Data, strerror(errno));
 	}
 	endtime = gettime();

@@ -391,7 +391,7 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
     WritingFile.fd = fd;
     WritingFile.path = path;
     close_on_exec(fd, true);
-    if ((result = write(fd, article.data, article.len)) != article.len) {
+    if ((result = xwritev(fd, article.iov, article.iovcnt)) != article.len) {
 	SMseterror(SMERR_UNDEFINED, NULL);
 	syslog(L_ERROR, "timecaf error writing %s %m", path);
 	token.type = TOKEN_EMPTY;

@@ -37,15 +37,19 @@ my %timer_names = (idle     => 'idle',
                    hisgrep  => 'history grep',
                    hiswrite => 'history write',
                    hissync  => 'history sync',
+                   nntpread   => 'nntp read',
+                   artparse   => 'article parse',
                    artclean => 'article cleanup',
                    artwrite => 'article write',
-                   artlink  => 'article link',
                    artctrl  => 'article control',
                    artcncl  => 'article cancel',
+                   artlog   => 'article logging',
                    sitesend => 'site send',
                    overv    => 'overview write',
                    perl     => 'perl filter',
-                   python   => 'python filter');
+                   python   => 'python filter',
+                   datamove => 'data move'
+);
 
 my %innfeed_timer_names = (
                    'idle'    => 'idle',
@@ -1273,6 +1277,9 @@ sub collect {
       $cust = lc $cust unless $CASE_SENSITIVE;
       my $dom = &host2dom($cust);
       $nnrpd_times{$cust} += $elapsed;
+      $nnrpd_resource{'user'} += $user;
+      $nnrpd_resource{'sys'} += $system;
+      $nnrpd_resource{'elapsed'} += $elapsed;
       $nnrpd_dom_times{$dom} += $elapsed;
       return 1;
     }
@@ -1688,11 +1695,11 @@ sub adjust {
 	  $nnrpd_connect{$serv} -= $nnrpd_no_permission{$serv};
 	  $nnrpd_groups{$serv} -= $nnrpd_no_permission{$serv}
 	    if defined $nnrpd_groups{$serv};
-	  $nnrpd_times{$serv} -= $nnrpd_no_permission{$serv}
-	    if defined $nnrpd_times{$serv};
 	  delete $nnrpd_connect{$serv} unless $nnrpd_connect{$serv};
 	  delete $nnrpd_groups{$serv}  unless $nnrpd_groups{$serv};
 	  delete $nnrpd_times{$serv}   unless $nnrpd_times{$serv};
+	  delete $nnrpd_usr_times{$serv}   unless $nnrpd_usr_times{$serv};
+	  delete $nnrpd_sys_times{$serv}   unless $nnrpd_sys_times{$serv};
 	  delete $nnrpd_dom_connect{$dom} unless $nnrpd_dom_connect{$dom};
 	  delete $nnrpd_dom_groups{$dom}  unless $nnrpd_dom_groups{$dom};
 	  delete $nnrpd_dom_times{$dom}   unless $nnrpd_dom_times{$dom};

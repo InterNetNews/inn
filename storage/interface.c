@@ -648,25 +648,32 @@ static bool InitMethod(STORAGETYPE method) {
     return TRUE;
 }
 
-static bool MatchGroups(const char *g, int num, char **patterns, bool exactmatch) {
+static bool MatchGroups(const char *g, int len, int num, char **patterns, bool exactmatch) {
     char                *group;
     char                *groups;
     char		*groupsep, *q;
-    const char          *p;
-    int                 i;
+    int                 i, lastwhite;
     bool                matched, wanted = FALSE;
-
-    /* Find the end of the line */
-    for (p = g+1; (*p != '\n') && (*(p - 1) != '\r'); p++);
-
-    groups = NEW(char, p - g);
-    memcpy(groups, g, p - g - 1);
-    groups[p - g - 1] = '\0';
 
     if (innconf->storeonxref)
 	groupsep = " ";
     else
 	groupsep = ",";
+
+    q = groups = NEW(char, len + 1);
+    for (lastwhite = -1,  i = 0 ; i < len ; i++) {
+	/* trim white chars */
+	if (g[i] == '\r' || g[i] == '\n' || g[i] == ' ' || g[i] == '\t') {
+	    if (innconf->storeonxref) {
+		if (lastwhite + 1 != i)
+		    *q++ = ' ';
+		lastwhite = i;
+	    }
+	} else
+	    *q++ = g[i];
+    }
+    *q = '\0';
+
     for (group = strtok(groups, groupsep); group != NULL; group = strtok(NULL, groupsep)) {
 	if (innconf->storeonxref && ((q = strchr(group, ':')) != (char *)NULL))
 	    *q = '\0';
@@ -695,60 +702,22 @@ static bool MatchGroups(const char *g, int num, char **patterns, bool exactmatch
 
 STORAGE_SUB *SMgetsub(const ARTHANDLE article) {
     STORAGE_SUB         *sub;
-    char                *groups;
-    char		*expire;
-    time_t		expiretime;
 
-    if (!article.data || !article.len) {
+    if (article.len == 0) {
 	SMseterror(SMERR_BADHANDLE, NULL);
 	return NULL;
     }
 
-    if (innconf->storeonxref) {
-	if ((groups = (char *)HeaderFindMem(article.data, article.len, "Xref", 4)) == NULL) {
-	    errno = 0;
-	    SMseterror(SMERR_UNDEFINED, "Could not find Xref header");
-	    return NULL;
-	}
-	/* skip pathhost */
-	if ((groups = strchr(groups, ' ')) == NULL) {
-	    errno = 0;
-	    SMseterror(SMERR_UNDEFINED, "Could not find pathhost in Xref header");
-	    return NULL;
-	}
-	for (groups++; *groups == ' '; groups++);
-    } else {
-	if ((groups = (char *)HeaderFindMem(article.data, article.len, "Newsgroups", 10)) == NULL) {
-	    errno = 0;
-	    SMseterror(SMERR_UNDEFINED, "Could not find Newsgroups header");
-	    return NULL;
-	}
-    }
-
-    expiretime = 0;
-    if ((expire = (char *)HeaderFindMem(article.data, article.len, "Expires", 7))) {
-	/* optionally parse expire header */
-	char *x, *p;
-	for (p = expire+1; (*p != '\n') && (*(p - 1) != '\r'); p++);
-	x = NEW(char, p - expire);
-    	memcpy(x, expire, p - expire - 1);
-    	x[p - expire - 1] = '\0';
-	
-	expiretime = parsedate(x, NULL);
-	if (expiretime == -1)
-	    expiretime = 0;
-	else
-	    expiretime -= time(0);
-	DISPOSE(x);
-    }
+    if (article.groups == NULL)
+	return NULL;
 
     for (sub = subscriptions; sub != NULL; sub = sub->next) {
 	if (!(method_data[typetoindex[sub->type]].initialized == INIT_FAIL) &&
 	    (article.len >= sub->minsize) &&
 	    (!sub->maxsize || (article.len <= sub->maxsize)) &&
-	    (!sub->minexpire || expiretime >= sub->minexpire) &&
-	    (!sub->maxexpire || (expiretime <= sub->maxexpire)) &&
-	    MatchGroups(groups, sub->numpatterns, sub->patterns, sub->exactmatch)) {
+	    (!sub->minexpire || article.expires >= sub->minexpire) &&
+	    (!sub->maxexpire || (article.expires <= sub->maxexpire)) &&
+	    MatchGroups(article.groups, article.groupslen, sub->numpatterns, sub->patterns, sub->exactmatch)) {
 	    if (InitMethod(typetoindex[sub->type]))
 		return sub;
 	}

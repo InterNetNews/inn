@@ -444,6 +444,11 @@ tradspool_init(SMATTRIBUTE *attr) {
 	SMseterror(SMERR_INTERNAL, "attr is NULL");
 	return FALSE;
     }
+    if (!innconf->storeonxref) {
+	syslog(L_ERROR, "tradspool: storeonxref needs to be true");
+	SMseterror(SMERR_INTERNAL, "storeonxref needs to be true");
+	return FALSE;
+    }
     attr->selfexpire = FALSE;
     attr->expensivestat = TRUE;
     return InitNGTable();
@@ -520,13 +525,8 @@ CrackXref(char *xref, unsigned int *lenp) {
     xrefsize = 5;
     xrefs = NEW(char *, xrefsize);
 
-    /* skip pathhost */
-    if ((p = strchr(xref, ' ')) == NULL) {
-	SMseterror(SMERR_UNDEFINED, "Could not find pathhost in Xref header");
-	return NULL;
-    }
-    /* skip next spaces */
-    for (p++; *p == ' ' ; p++) ;
+    /* no path element should exist, nor heading white spaces exist */
+    p = xref;
     while (TRUE) {
 	/* check for EOL */
 	/* shouldn't ever hit null w/o hitting a \r\n first, but best to be paranoid */
@@ -561,21 +561,15 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
     char *xrefhdr;
     TOKEN token;
     unsigned int numxrefs;
-    char *ng, *p;
+    char *ng, *p, *onebuffer;
     unsigned long artnum;
     char *path, *linkpath, *dirname;
     int fd;
     int i;
     char *nonwfarticle; /* copy of article converted to non-wire format */
-    int nonwflen;
+    int nonwflen, used;
     
-    xrefhdr = (char *)HeaderFindMem(article.data, article.len, "Xref", 4);
-    if (xrefhdr == NULL) {
-	token.type = TOKEN_EMPTY;
-	SMseterror(SMERR_UNDEFINED, "cant find Xref: header");
-	return token;
-    }
-
+    xrefhdr = article.groups;
     if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
 	token.type = TOKEN_EMPTY;
 	SMseterror(SMERR_UNDEFINED, "bogus Xref: header");
@@ -627,7 +621,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	}
     }
     if (innconf->wireformat) {
-	if (write(fd, article.data, article.len) != article.len) {
+	if ((xwritev(fd, article.iov, article.iovcnt)) != article.len) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    syslog(L_ERROR, "tradspool error writing %s %m", path);
 	    close(fd);
@@ -639,7 +633,13 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	    return token;
 	}
     } else {
-	nonwfarticle = FromWireFmt(article.data, article.len, &nonwflen);
+	onebuffer = (char *)xmalloc(article.len);
+	for (used = i = 0 ; i < article.iovcnt ; i++) {
+	    memcpy(&onebuffer[used], article.iov[i].iov_base, article.iov[i].iov_len);
+	    used += article.iov[i].iov_len;
+	}
+	nonwfarticle = FromWireFmt(onebuffer, used, &nonwflen);
+	free(onebuffer);
 	if (write(fd, nonwfarticle, nonwflen) != nonwflen) {
 	    DISPOSE(nonwfarticle);
 	    SMseterror(SMERR_UNDEFINED, NULL);
@@ -1038,7 +1038,7 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
     static TOKEN token;
     unsigned char namelen;
     char **xrefs;
-    char *xrefhdr, *ng, *p;
+    char *xrefhdr, *ng, *p, *expires, *x;
     unsigned int numxrefs;
     STORAGE_SUB	*sub;
 
@@ -1112,6 +1112,9 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	art->data = NULL;
 	art->len = 0;
 	art->private = (void *)NEW(PRIV_TRADSPOOL, 1);
+	art->expires = 0;
+	art->groups = NULL;
+	art->groupslen = 0;
 	newpriv = (PRIV_TRADSPOOL *) art->private;
 	newpriv->artbase = NULL;
     } else {
@@ -1153,7 +1156,45 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	    }
 	    for (i = 0 ; i < numxrefs ; ++i) DISPOSE(xrefs[i]);
 	    DISPOSE(xrefs);
+	    if (innconf->storeonxref) {
+		/* skip path element */
+		if ((xrefhdr = strchr(xrefhdr, ' ')) == NULL) {
+		    art->groups = NULL;
+		} else {
+		    for (xrefhdr++; *xrefhdr == ' '; xrefhdr++);
+		    art->groups = xrefhdr;
+		}
+	    }
+	} else if (innconf->storeonxref) {
+	    art->groups = NULL;
+	    art->groupslen = 0;
 	}
+	if (!innconf->storeonxref) {
+	    if ((ng = (char *)HeaderFindMem(art->data, art->len, "Newsgroups", 10)) == NULL) {
+		art->groups = NULL;
+		art->groupslen = 0;
+	    } else {
+		art->groups = ng;
+		for (p = ng ; (*p != '\n') && (*p != '\r') ; p++);
+		art->groupslen = p - ng;
+	    }
+	}
+	if ((expires = (char *)HeaderFindMem(art->data, art->len, "Expires", 7)) == NULL) {
+	    art->expires = 0;
+	} else {
+            /* optionally parse expire header */
+            for (p = expires + 1; (*p != '\n') && (*(p - 1) != '\r'); p++);
+            x = NEW(char, p - expires);
+            memcpy(x, expires, p - expires - 1);
+            x[p - expires - 1] = '\0';
+
+            art->expires = parsedate(x, NULL);
+            if (art->expires == -1)
+                art->expires = 0;
+            else
+                art->expires -= time(0);
+            DISPOSE(x);
+        }
 	/* for backwards compatibility; assumes no Xref unless crossposted
 	   for 1.4 and 1.5: just fall through */
     }

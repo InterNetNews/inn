@@ -3,25 +3,25 @@
 **  Many of the data types used here have abbreviations, such as CT
 **  for CHANNELTYPE.  Here are a list of the conventions and meanings:
 **
-**	ART	A news article
-**	CHAN	An I/O channel
-**	CS	Channel state
-**	CT	Channel type
-**	FNL	Funnel, into which other feeds pour
-**	FT	Feed type -- how a site gets told about new articles
-**	ICD	In-core data (primarily the active and sys files)
-**	LC	Local NNTP connection-receiving channel
-**	CC	Control channel (used by ctlinnd)
-**	NC	NNTP client channel
-**	NG	Newsgroup
-**	NGH	Newgroup hashtable
-**	PROC	A process (used to feed a site)
-**	PS	Process state
-**	RC	Remote NNTP connection-receiving channel
-**	RCHAN	A channel in "read" state
-**	SITE	Something that gets told when we get an article
-**	WCHAN	A channel in "write" state
-**	WIP	Work-In-Progress, keeps track of articles before committed.
+**    ART   A news article
+**    CHAN  An I/O channel
+**    CS    Channel state
+**    CT    Channel type
+**    FNL   Funnel, into which other feeds pour
+**    FT    Feed type -- how a site gets told about new articles
+**    ICD   In-core data (primarily the active and sys files)
+**    LC    Local NNTP connection-receiving channel
+**    CC    Control channel (used by ctlinnd)
+**    NC    NNTP client channel
+**    NG    Newsgroup
+**    NGH   Newgroup hashtable
+**    PROC  A process (used to feed a site)
+**    PS    Process state
+**    RC    Remote NNTP connection-receiving channel
+**    RCHAN A channel in "read" state
+**    SITE  Something that gets told when we get an article
+**    WCHAN A channel in "write" state
+**    WIP   Work-In-Progress, keeps track of articles before committed.
 */
 
 #ifndef INND_H
@@ -60,9 +60,9 @@ typedef short	SITEIDX;
 **  Server's operating mode.
 */
 typedef enum _OPERATINGMODE {
-    OMrunning,
-    OMpaused,
-    OMthrottled
+  OMrunning,
+  OMpaused,
+  OMthrottled
 } OPERATINGMODE;
 
 
@@ -71,36 +71,183 @@ typedef enum _OPERATINGMODE {
 **  much space is left if reading or how much still needs to be written.
 */
 typedef struct _BUFFER {
-    int		Size;
-    int		Used;
-    int		Left;
-    char *	Data;
+  int	   Size;	/* total Data size		*/
+  int	   Used;	/* already used Data size	*/
+  int	   Left;	/* left Data size		*/
+  char  *  Data;	/* where Data begins		*/
 } BUFFER;
 
+typedef struct _LISTBUFFER {
+  char	*   Data;
+  int	    DataLength;
+  char  **  List;
+  int	    ListLength;
+} LISTBUFFER;
 
 /*
 **  What program to handoff a connection to.
 */
 typedef enum _HANDOFF {
-    HOnnrpd,
-    HOnntpd
+  HOnnrpd,
+  HOnntpd
 } HANDOFF;
 
+
+/*
+**  Header types.
+*/
+typedef enum _ARTHEADERTYPE {
+  HTreq,  /* Drop article if this is missing		  */
+  HTobs,  /* obsolete header but keep untouched		  */
+  HTstd,  /* Standard optional header			  */
+  HTsav	  /* Save header, but may be deleted from article */
+} ARTHEADERTYPE;
+
+
+/*
+**  Entry in the header table.
+*/
+typedef struct _ARTHEADER {
+  const char     *  Name;
+  ARTHEADERTYPE	    Type;
+  int		    Size;  /* Length of Name. */
+} ARTHEADER;
+
+
+/*
+**  Header content
+*/
+typedef struct _HDRCONTENT {
+  char  *  Value;   /* don't copy, shows where it begins */
+  int	   Length;  /* Length of Value(tailing CRLF is not
+			   included.  -1 if duplicated */
+} HDRCONTENT;
+
+
+/*
+**  A way to index into the header table.
+*/
+#define HDR_FOUND(_x)		(hc[(_x)].Length > 0)
+#define HDR_PARSE_START(_x)	hc[(_x)].Value[hc[_x].Length] = '\0'
+#define HDR(_x)			(hc[(_x)].Value)
+/* HDR_LEN does not includes trailing "\r\n" */
+#define HDR_LEN(_x)		(hc[(_x)].Length)
+#define HDR_PARSE_END(_x)	hc[(_x)].Value[hc[_x].Length] = '\r'
+
+
+#define _approved		0
+#define _control		1
+#define _date			2
+#define _distribution		3
+#define _expires		4
+#define _from			5
+#define _lines			6
+#define _message_id		7
+#define _newsgroups		8
+#define _path			9
+#define _reply_to		10
+#define _sender			11
+#define _subject		12
+#define _supersedes		13
+#define _bytes			14
+#define _alsocontrol		15
+#define _references		16
+#define _xref			17
+#define _keywords		18
+#define _xtrace			19
+#define _datereceived		20
+#define _posted			21
+#define _postintversion		22
+#define _received		23
+#define _relayversion		24
+#define _nntppostinghost	25
+#define _followupto		26
+#define _organization		27
+#define _contenttype		28
+#define _contentbase		29
+#define _contentdisposition	30
+#define _xnewsreader		31
+#define _xmailer		32
+#define _xnewsposter		33
+#define _xcancelledby		34
+#define _xcanceledby		35
+#define _cancelkey		36
+
+#define MAX_ARTHEADER		37
+
+/*
+**  Miscellaneous data we want to keep on an article.  All the fields
+**  are not always valid.
+*/
+typedef struct _ARTDATA {
+  int		  Body;			/* where body begins in article
+					   it indicates offset from bp->Data */
+  char	      *   Poster;		/* Sender otherwise From in article */
+  char	      *   Replyto;		/* Reply-To otherwise From in article */
+  time_t	  Posted;		/* when article posted */
+  time_t	  Arrived;		/* when article arrived */
+  time_t	  Expires;		/* when article should be expired */
+  int		  Lines;		/* number of body lines */
+  int		  HeaderLines;		/* number of header lines */
+  long		  BytesValue;		/* size of stored article, "\r\n" is
+					   counted as 1 byte */
+  char		  Bytes[16];		/* generated Bytes header */
+  int		  BytesLength;		/* generated Bytes header length */
+  char	      *   BytesHeader;		/* where Bytes header begins in
+					   received article */
+  char		  TokenText[(sizeof(TOKEN) * 2) + 3];
+					/* token of stored article */
+  LISTBUFFER	  Newsgroups;		/* newsgroup list */
+  int		  Groupcount;		/* number of newsgroups */
+  int		  Followcount;		/* number of folloup to newsgroups */
+  char	      *   Xref;			/* generated Xref header */
+  int		  XrefLength;		/* generated Xref header length */
+  int		  XrefBufLength;	/* buffer length of generated Xref
+					   header */
+  LISTBUFFER	  Distribution;		/* distribution list */
+  char	      *   Feedsite;		/* who gives me this article */
+  int		  FeedsiteLength;	/* length of Feedsite */
+  LISTBUFFER	  Path;			/* path name list */
+  int		  HopCount;		/* how many servers passed through */
+  int		  StoredGroupLength;	/* 1st newsgroup name in Xref */
+  char	      *   Replic;		/* replication data */
+  int		  ReplicLength;		/* length of Replic */
+  HASH	      *   Hash;			/* Message-ID hash */
+  BUFFER	  Headers;		/* buffer for headers which will be sent
+					   to site */
+  BUFFER	  Overview;		/* buffer for overview data */
+  int		  CRwithoutLF;		/* counter for '\r' without '\n' */
+  int		  LFwithoutCR;		/* counter for '\n' without '\r' */
+  int		  CurHeader;		/* where current header starts.
+					   this is used for folded header
+					   it indicates offset from bp->Data */
+  bool		  NullHeader;		/* contains NULL in current header    */
+  int		  LastTerminator;	/* where last '.' exists.  only set if
+					   it exists at the begining of line
+					   it indicates offset from bp->Data */
+  int		  LastCR;		/* where last CR exists
+					   it indicates offset from bp->Data */
+  int		  LastCRLF;		/* where last CRLF exists.
+					   indicates where last LF exists
+					   it indicates offset from bp->Data */
+  HDRCONTENT	  HdrContent[MAX_ARTHEADER];
+					/* includes system headers info */
+} ARTDATA;
 
 /*
 **  Set of channel types.
 */
 typedef enum _CHANNELTYPE {
-    CTany,
-    CTfree,
-    CTremconn,
-    CTreject,
-    CTnntp,
-    CTlocalconn,
-    CTcontrol,
-    CTfile,
-    CTexploder,
-    CTprocess
+  CTany,
+  CTfree,
+  CTremconn,
+  CTreject,
+  CTnntp,
+  CTlocalconn,
+  CTcontrol,
+  CTfile,
+  CTexploder,
+  CTprocess
 } CHANNELTYPE;
 
 
@@ -109,20 +256,25 @@ typedef enum _CHANNELTYPE {
 **  channel's type.  Used mostly by CTnntp channels.
 */
 typedef enum _CHANNELSTATE {
-    CSerror,
-    CSwaiting,
-    CSgetcmd,
-    CSgetauth,
-    CSwritegoodbye,
-    CSwriting,
-    CSpaused,
-    CSgetarticle,
-    CSeatarticle,
-    CSeatcommand,
-    CSgetxbatch,
-    CScancel
+  CSerror,
+  CSwaiting,
+  CSgetcmd,
+  CSgetauth,
+  CSwritegoodbye,
+  CSwriting,
+  CSpaused,
+  CSgetheader,
+  CSgetbody,
+  CSgotarticle,
+  CSgotlargearticle,
+  CSnoarticle,
+  CSeatarticle,
+  CSeatcommand,
+  CSgetxbatch,
+  CScancel
 } CHANNELSTATE;
 
+#define SAVE_AMT	10	/* used for eating article/command */
 
 /*
 **  I/O channel, the heart of the program.  A channel has input and output
@@ -130,78 +282,84 @@ typedef enum _CHANNELSTATE {
 **  all the output was been written.  Many callback functions take a
 **  pointer to a channel, so set up a typedef for that.
 */
+#define PRECOMMITCACHESIZE 128
 struct _CHANNEL;
 typedef void (*innd_callback_t)(struct _CHANNEL *);
 
 typedef struct _CHANNEL {
-    CHANNELTYPE			Type;
-    CHANNELSTATE	State;
-    int			fd;
-    bool		Skip;
-    bool		Streaming;
-    bool		NoResendId;
-    bool		privileged;
-    unsigned long	Duplicate;
-    unsigned long	Unwanted_s;
-    unsigned long	Unwanted_f;
-    unsigned long	Unwanted_d;
-    unsigned long	Unwanted_g;
-    unsigned long	Unwanted_u;
-    unsigned long	Unwanted_o;
-    float		Size;
-    float		DuplicateSize;
-    unsigned long	Check;
-    unsigned long	Check_send;
-    unsigned long	Check_deferred;
-    unsigned long	Check_got;
-    unsigned long	Check_cybercan;
-    unsigned long	Takethis;
-    unsigned long	Takethis_Ok;
-    unsigned long	Takethis_Err;
-    unsigned long	Ihave;
-    unsigned long	Ihave_Duplicate;
-    unsigned long	Ihave_Deferred;
-    unsigned long	Ihave_SendIt;
-    unsigned long	Ihave_Cybercan;
-    int			Reported;
-    long		Received;
-    long		Refused;
-    long		Rejected;
-    int			BadWrites;
-    int			BadReads;
-    int			BlockedWrites;
-    int			BadCommands;
-    time_t		LastActive;
-    time_t		NextLog;
-    struct in_addr	Address;
-    innd_callback_t	Reader;
-    innd_callback_t	WriteDone;
-    time_t		Waketime;
-    time_t		Started;
-    innd_callback_t	Waker;
-    void *		Argument;
-    void *		Event;
-    BUFFER		In;
-    BUFFER		Out;
-    bool		Tracing;
-    BUFFER		Sendid;
-    HASH		CurrentMessageIDHash;
-#define PRECOMMITCACHESIZE 128
-    struct _WIP *	PrecommitWIP[PRECOMMITCACHESIZE];
-    int			PrecommitiCachenext;
-    int			XBatchSize;
-    int			LargeArtSize;
-    int			LargeCmdSize;
-    int			Lastch;
-    int			Rest;
-    int			SaveUsed;
-    int			ActiveCnx;
-    int			MaxCnx;
-    int			HoldTime;
-    time_t		ArtBeg;
-    int			ArtMax;
+  CHANNELTYPE	       Type;
+  CHANNELSTATE	       State;
+  int		       fd;
+  bool		       Skip;
+  bool		       Streaming;
+  bool		       NoResendId;
+  bool		       privileged;
+  bool		       Nolist;
+  unsigned long	       Duplicate;
+  unsigned long	       Unwanted_s;
+  unsigned long	       Unwanted_f;
+  unsigned long	       Unwanted_d;
+  unsigned long	       Unwanted_g;
+  unsigned long	       Unwanted_u;
+  unsigned long	       Unwanted_o;
+  float		       Size;
+  float		       DuplicateSize;
+  unsigned long	       Check;
+  unsigned long	       Check_send;
+  unsigned long	       Check_deferred;
+  unsigned long	       Check_got;
+  unsigned long	       Check_cybercan;
+  unsigned long	       Takethis;
+  unsigned long	       Takethis_Ok;
+  unsigned long	       Takethis_Err;
+  unsigned long	       Ihave;
+  unsigned long	       Ihave_Duplicate;
+  unsigned long	       Ihave_Deferred;
+  unsigned long	       Ihave_SendIt;
+  unsigned long	       Ihave_Cybercan;
+  int		       Reported;
+  long		       Received;
+  long		       Refused;
+  long		       Rejected;
+  int		       BadWrites;
+  int		       BadReads;
+  int		       BlockedWrites;
+  int		       BadCommands;
+  time_t	       LastActive;
+  time_t	       NextLog;
+  struct in_addr       Address;
+  innd_callback_t      Reader;
+  innd_callback_t      WriteDone;
+  time_t	       Waketime;
+  time_t	       Started;
+  innd_callback_t      Waker;
+  void		    *  Argument;
+  void		    *  Event;
+  BUFFER	       In;
+  BUFFER	       Out;
+  bool		       Tracing;
+  BUFFER	       Sendid;
+  HASH		       CurrentMessageIDHash;
+  struct _WIP	    *  PrecommitWIP[PRECOMMITCACHESIZE];
+  int		       PrecommitiCachenext;
+  int		       XBatchSize;
+  int		       LargeArtSize;
+  int		       LargeCmdSize;
+  int		       ActiveCnx;
+  int		       MaxCnx;
+  int		       HoldTime;
+  time_t	       ArtBeg;
+  int		       ArtMax;
+  int		       Start;		/* where current cmd/article starts
+					   it indicates offset from bp->Data */
+  int		       Next;		/* next pointer to read
+					   it indicates offset from bp->Data */
+  char		       Error[SMBUF];	/* error buffer */
+  ARTDATA	       Data;		/* used for processing article */
+  struct _CHANNEL      *nextcp;		/* linked list for each incoming site */
 } CHANNEL;
 
+#define	DEFAULTNGBOXSIZE	64
 
 /*
 **  A newsgroup has a name in different formats, and a high-water count,
@@ -209,21 +367,21 @@ typedef struct _CHANNEL {
 **  get this group.
 */
 typedef struct _NEWSGROUP {
-    long		Start;		/* Offset into the active file  */
-    char *		Name;
-    char *		Dir;		/* The name, as a directory     */
-    int			NameLength;
-    ARTNUM		Last;
-    ARTNUM		Filenum;	/* File name to use             */
-    int			Lastwidth;
-    int			PostCount;	/* Have we already put it here? */
-    char *		LastString;
-    char *		Rest;		/* Flags, NOT NULL TERMINATED   */
-    SITEIDX		nSites;
-    int *		Sites;
-    SITEIDX		nPoison;
-    int *		Poison;
-    struct _NEWSGROUP * Alias;
+  long			Start;	     /* Offset into the active file  */
+  char		     *  Name;
+  char		     *  Dir;	     /* The name, as a directory     */
+  int			NameLength;
+  ARTNUM		Last;
+  ARTNUM		Filenum;     /* File name to use             */
+  int			Lastwidth;
+  int			PostCount;   /* Have we already put it here? */
+  char		     *  LastString;
+  char		     *  Rest;	     /* Flags, NOT NULL TERMINATED   */
+  SITEIDX		nSites;
+  int		     *  Sites;
+  SITEIDX		nPoison;
+  int		     *  Poison;
+  struct _NEWSGROUP  *  Alias;
 } NEWSGROUP;
 
 
@@ -231,13 +389,13 @@ typedef struct _NEWSGROUP {
 **  How a site is fed.
 */
 typedef enum _FEEDTYPE {
-    FTerror,
-    FTfile,
-    FTchannel,
-    FTexploder,
-    FTfunnel,
-    FTlogonly,
-    FTprogram
+  FTerror,
+  FTfile,
+  FTchannel,
+  FTexploder,
+  FTfunnel,
+  FTlogonly,
+  FTprogram
 } FEEDTYPE;
 
 
@@ -246,55 +404,55 @@ typedef enum _FEEDTYPE {
 **  too many hops, or a bad distribution.
 */
 typedef struct _SITE {
-    const char *	Name;
-    char *		Entry;
-    int			NameLength;
-    char **		Exclusions;
-    char **		Distributions;
-    char **		Patterns;
-    bool		Poison;
-    bool		PoisonEntry;
-    bool		Sendit;
-    bool		Seenit;
-    bool		IgnoreControl;
-    bool		DistRequired;
-    bool		IgnorePath;
-    bool		ControlOnly;
-    bool		DontWantNonExist;
-    bool		NeedOverviewCreation;
-    bool		FeedwithoutOriginator;
-    bool		DropFiltered;
-    int			Hops;
-    int			Groupcount;
-    int			Followcount;
-    int			Crosscount;
-    FEEDTYPE		Type;
-    NEWSGROUP *		ng;
-    bool		Spooling;
-    char *		SpoolName;
-    bool		Working;
-    long		StartWriting;
-    long		StopWriting;
-    long		StartSpooling;
-    char *		Param;
-    char		FileFlags[FEED_MAXFLAGS + 1];
-    long		MaxSize;
-    long		MinSize;
-    int			Nice;
-    CHANNEL *		Channel;
-    bool		IsMaster;
-    int			Master;
-    int			Funnel;
-    bool		FNLwantsnames;
-    BUFFER		FNLnames;
-    int			Process;
-    pid_t		pid;
-    long		Flushpoint;
-    BUFFER		Buffer;
-    bool		Buffered;
-    char **		Originator;
-    int			Next;
-    int			Prev;
+  const char  *   Name;
+  char	      *   Entry;
+  int		  NameLength;
+  char	      **  Exclusions;
+  char	      **  Distributions;
+  char	      **  Patterns;
+  bool		  Poison;
+  bool		  PoisonEntry;
+  bool		  Sendit;
+  bool		  Seenit;
+  bool		  IgnoreControl;
+  bool		  DistRequired;
+  bool		  IgnorePath;
+  bool		  ControlOnly;
+  bool		  DontWantNonExist;
+  bool		  NeedOverviewCreation;
+  bool		  FeedwithoutOriginator;
+  bool		  DropFiltered;
+  int		  Hops;
+  int		  Groupcount;
+  int		  Followcount;
+  int		  Crosscount;
+  FEEDTYPE	  Type;
+  NEWSGROUP   *   ng;
+  bool		  Spooling;
+  char	      *   SpoolName;
+  bool		  Working;
+  long		  StartWriting;
+  long		  StopWriting;
+  long		  StartSpooling;
+  char	      *   Param;
+  char		  FileFlags[FEED_MAXFLAGS + 1];
+  long		  MaxSize;
+  long		  MinSize;
+  int		  Nice;
+  CHANNEL     *   Channel;
+  bool		  IsMaster;
+  int		  Master;
+  int		  Funnel;
+  bool		  FNLwantsnames;
+  BUFFER	  FNLnames;
+  int		  Process;
+  pid_t		  pid;
+  long		  Flushpoint;
+  BUFFER	  Buffer;
+  bool		  Buffered;
+  char	      **  Originator;
+  int		  Next;
+  int		  Prev;
 } SITE;
 
 
@@ -302,9 +460,9 @@ typedef struct _SITE {
 **  A process is something we start up to send articles.
 */
 typedef enum _PROCSTATE {
-    PSfree,
-    PSrunning,
-    PSdead
+  PSfree,
+  PSrunning,
+  PSdead
 } PROCSTATE;
 
 
@@ -312,69 +470,27 @@ typedef enum _PROCSTATE {
 **  We track our children and collect them synchronously.
 */
 typedef struct _PROCESS {
-    PROCSTATE   State;
-    pid_t       Pid;
-    int         Status;
-    time_t      Started;
-    time_t      Collected;
-    int         Site;
+  PROCSTATE	State;
+  pid_t		Pid;
+  int		Status;
+  time_t	Started;
+  time_t	Collected;
+  int		Site;
 } PROCESS;
-
-
-/*
-**  Miscellaneous data we want to keep on an article.  All the fields
-**  are not always valid.
-*/
-typedef struct _ARTDATA {
-    char *      Poster;
-    char *      Replyto;
-    char *      Body;
-    time_t      Posted;
-    time_t      Arrived;
-    time_t      Expires;
-    int         Groupcount;
-    int         Followcount;
-    int         LinesValue;
-    char        Lines[SMBUF];
-    long        SizeValue;
-    char        Size[SMBUF];
-    int         SizeLength;
-    char        Name[SPOOLNAMEBUFF];
-    int         NameLength;
-    char        TimeReceived[33];
-    int         TimeReceivedLength;
-    const char *MessageID;
-    int		MessageIDLength;
-    char *      Newsgroups;
-    int         NewsgroupsLength;
-    const char *Distribution;
-    int         DistributionLength;
-    const char *Feedsite;
-    int         FeedsiteLength;
-    const char *Path;
-    int         PathLength;
-    char *      Replic;
-    int         ReplicLength;
-    char *      StoredGroup;
-    int         StoredGroupLength;
-    HASH *      Hash;
-    BUFFER *    Headers;
-    BUFFER *    Overview;
-} ARTDATA;
 
 /*
 **  A work in progress entry, an article that we've been offered but haven't
 **  received yet.
 */
 typedef struct _WIP {
-    HASH        MessageID;      /* Hash of the messageid.  Doing it like
-                                   this saves us from haveing to allocate
-                                   and deallocate memory a lot, and also
-                                   means lookups are faster. */ 
-    time_t      Timestamp;      /* Time we last looked at this MessageID */
-    CHANNEL *   Chan;           /* Channel that this message is associated
-                                   with */
-    struct _WIP * Next;         /* Next item in this bucket */
+  HASH		MessageID;	/* Hash of the messageid.  Doing it like
+				   this saves us from haveing to allocate
+				   and deallocate memory a lot, and also
+				   means lookups are faster. */ 
+  time_t	Timestamp;	/* Time we last looked at this MessageID */
+  CHANNEL	*Chan;		/* Channel that this message is associated
+				   with */
+  struct _WIP	*Next;		/* Next item in this bucket */
 } WIP;
 
 /*
@@ -382,20 +498,24 @@ typedef struct _WIP {
 **  the list of tags at the top of timer.c.
 */
 enum timer {
-    TMR_IDLE,                   /* Server is completely idle. */
-    TMR_HISHAVE,                /* Looking up ID in history (yes/no). */
-    TMR_HISGREP,                /* Looking up ID in history (data). */
-    TMR_HISWRITE,               /* Writing to history. */
-    TMR_HISSYNC,                /* Syncing history to disk. */
-    TMR_ARTCLEAN,               /* Analyzing an incoming article. */
-    TMR_ARTWRITE,               /* Writing an article. */
-    TMR_ARTCTRL,                /* Processing a control message. */
-    TMR_ARTCNCL,                /* Processing a cancel message. */
-    TMR_SITESEND,               /* Sending an article to feeds. */
-    TMR_OVERV,                  /* Generating overview information. */
-    TMR_PERL,                   /* Perl filter. */
-    TMR_PYTHON,                 /* Python filter. */
-    TMR_MAX
+  TMR_IDLE,	/* Server is completely idle.		*/
+  TMR_HISHAVE,	/* Looking up ID in history (yes/no).	*/
+  TMR_HISGREP,	/* Looking up ID in history (data).	*/
+  TMR_HISWRITE,	/* Writing to history.			*/
+  TMR_HISSYNC,	/* Syncing history to disk.		*/
+  TMR_ARTCLEAN,	/* Analyzing an incoming article.	*/
+  TMR_ARTWRITE,	/* Writing an article.			*/
+  TMR_ARTCTRL,	/* Processing a control message.	*/
+  TMR_ARTCNCL,	/* Processing a cancel message.		*/
+  TMR_SITESEND,	/* Sending an article to feeds.		*/
+  TMR_OVERV,	/* Generating overview information.	*/
+  TMR_PERL,	/* Perl filter.				*/
+  TMR_PYTHON,	/* Python filter.			*/
+  TMR_NNTPREAD,	/* reading nntp data			*/
+  TMR_ARTPARSE,	/* parsing article			*/
+  TMR_ARTLOG,	/* logging article 			*/
+  TMR_DATAMOVE,	/* moving data				*/
+  TMR_MAX
 };
 
 
@@ -411,12 +531,11 @@ enum timer {
 /*
 **  Mark that an I/O error occurred, and block if we got too many.
 */
-#define IOError(WHEN, e)                        \
-    do {                                        \
-        if (--ErrorCount <= 0 || (e) == ENOSPC) \
-            ThrottleIOError(WHEN);              \
-    } while (0)
-
+#define IOError(WHEN, e)                    \
+  do {                                      \
+    if (--ErrorCount <= 0 || (e) == ENOSPC) \
+      ThrottleIOError(WHEN);                \
+  } while (0)
 
 
 /*
@@ -431,6 +550,7 @@ enum timer {
 #else
 # define EXTERN		extern
 #endif
+extern ARTHEADER	ARTheaders[MAX_ARTHEADER];
 extern bool		BufferedLogs;
 EXTERN bool		AnyIncoming;
 extern bool		Debug;
@@ -438,6 +558,8 @@ EXTERN bool		ICDneedsetup;
 EXTERN bool		NeedHeaders;
 EXTERN bool		NeedOverview;
 EXTERN bool		NeedPath;
+EXTERN bool		NeedStoredGroup;
+EXTERN bool		NeedReplicdata;
 extern bool		NNRPTracing;
 extern bool		StreamingOff;
 extern bool		Tracing;
@@ -445,12 +567,12 @@ EXTERN int		Overfdcount;
 EXTERN int		SeqNum;
 EXTERN BUFFER		Path;
 EXTERN BUFFER		Pathalias;
-EXTERN char *		ModeReason;	/* NNTP reject message   */
-EXTERN char *		NNRPReason;	/* NNRP reject message   */
-EXTERN char *		Reservation;	/* Reserved lock message */
-EXTERN char *		RejectReason;	/* NNTP reject message   */
-EXTERN FILE *		Errlog;
-EXTERN FILE *		Log;
+EXTERN char	     *  ModeReason;	/* NNTP reject message   */
+EXTERN char	     *  NNRPReason;	/* NNRP reject message   */
+EXTERN char	     *  Reservation;	/* Reserved lock message */
+EXTERN char	     *  RejectReason;	/* NNTP reject message   */
+EXTERN FILE	     *  Errlog;
+EXTERN FILE	     *  Log;
 extern char		LogName[];
 EXTERN struct in_addr	MyAddress;
 extern int		ErrorCount;
@@ -462,18 +584,18 @@ EXTERN SITEIDX		nSites;
 EXTERN int		PROCneedscan;
 EXTERN int		Xrefbase;
 extern long		LargestArticle;
-EXTERN NEWSGROUP **	GroupPointers;
-EXTERN NEWSGROUP *	Groups;
+EXTERN NEWSGROUP    **	GroupPointers;
+EXTERN NEWSGROUP    *	Groups;
 extern OPERATINGMODE	Mode;
 EXTERN sig_atomic_t	GotTerminate;
-EXTERN SITE *		Sites;
+EXTERN SITE	    *	Sites;
 EXTERN SITE		ME;
 EXTERN struct timeval	TimeOut;
 EXTERN TIMEINFO		Now;		/* Reasonably accurate time     */
 EXTERN bool		ThrottledbyIOError;
 EXTERN bool		AddAlias;
 EXTERN bool		Hassamepath;
-EXTERN char *		NCgreeting;
+EXTERN char	    *   NCgreeting;
 
 /*
 ** Table size for limiting incoming connects.  Do not change the table
@@ -499,8 +621,9 @@ extern int		RemoteTotal;	/* Total limit. */
 */
 extern bool		FormatLong(char *p, unsigned long value, int width);
 extern bool		NeedShell(char *p, const char **av, const char **end);
-extern char **		CommaSplit(char *text);
-extern char *		MaxLength(const char *p, const char *q);
+extern char	    **	CommaSplit(char *text);
+extern void		SetupListBuffer(int size, LISTBUFFER *list);
+extern char         *	MaxLength(const char *p, const char *q);
 extern pid_t		Spawn(int niceval, int fd0, int fd1, int fd2,
 			      char * const av[]);
 extern void		CleanupAndExit(int x, const char *why);
@@ -513,13 +636,14 @@ extern void		xchown(char *p);
 
 extern bool		ARTidok(const char *MessageID);
 extern bool		ARTreadschema(void);
-extern const char *	ARTreadarticle(char *files);
-extern char *		ARTreadheader(char *files);
-extern const char *	ARTpost(CHANNEL *cp);
+extern const char   *	ARTreadarticle(char *files);
+extern char	    *   ARTreadheader(char *files);
+extern bool		ARTpost(CHANNEL *cp);
 extern void		ARTcancel(const ARTDATA *Data,
 				  const char *MessageID, bool Trusted);
 extern void		ARTclose(void);
 extern void		ARTsetup(void);
+extern void		ARTprepare(CHANNEL *cp);
 
 extern void		BUFFset(BUFFER *bp, const char *p, const int length);
 extern void		BUFFswap(BUFFER *b1, BUFFER *b2);
@@ -527,13 +651,13 @@ extern void		BUFFappend(BUFFER *bp, const char *p, const int len);
 extern void		BUFFtrimcr(BUFFER *bp);
 
 extern bool		CHANsleeping(CHANNEL *cp);
-extern CHANNEL *	CHANcreate(int fd, CHANNELTYPE Type,
+extern CHANNEL      *	CHANcreate(int fd, CHANNELTYPE Type,
 				   CHANNELSTATE State,
 				   innd_callback_t Reader,
 				   innd_callback_t WriteDone);
-extern CHANNEL *	CHANiter(int *cp, CHANNELTYPE Type);
-extern CHANNEL *	CHANfromdescriptor(int fd);
-extern char *		CHANname(const CHANNEL *cp);
+extern CHANNEL      *	CHANiter(int *cp, CHANNELTYPE Type);
+extern CHANNEL      *	CHANfromdescriptor(int fd);
+extern char	    *   CHANname(const CHANNEL *cp);
 extern int		CHANreadtext(CHANNEL *cp);
 extern void		CHANclose(CHANNEL *cp, const char *name);
 extern void		CHANreadloop(void);
@@ -556,22 +680,22 @@ extern void		WCHANremove(CHANNEL *cp);
 extern void		WCHANsetfrombuffer(CHANNEL *cp, BUFFER *bp);
 
 extern void		CCcopyargv(char *av[]);
-extern const char *	CCaddhist(char *av[]);
-extern const char *	CCblock(OPERATINGMODE NewMode, char *reason);
-extern const char *	CCcancel(char *av[]);
-extern const char *	CCcheckfile(char *av[]);
+extern const char   *	CCaddhist(char *av[]);
+extern const char   *	CCblock(OPERATINGMODE NewMode, char *reason);
+extern const char   *	CCcancel(char *av[]);
+extern const char   *	CCcheckfile(char *av[]);
 
 extern bool		HIShavearticle(const HASH MessageID);
 extern bool		HISwrite(const ARTDATA *Data, const HASH hash,
 				 char *paths);
 extern bool		HISremember(const HASH MessageID);
-extern TOKEN *		HISfilesfor(const HASH MessageID);
+extern TOKEN	    *   HISfilesfor(const HASH MessageID);
 extern void		HISclose(void);
 extern void		HISsetup(void);
 extern void		HISsync(void);
 
 extern bool		ICDnewgroup(char *Name, char *Rest);
-extern char *		ICDreadactive(char **endp);
+extern char	    *   ICDreadactive(char **endp);
 extern bool		ICDchangegroup(NEWSGROUP *ngp, char *Rest);
 extern void		ICDclose(void);
 extern bool		ICDrenumberactive(void);
@@ -586,10 +710,10 @@ extern void		CCsetup(void);
 extern void		LCclose(void);
 extern void		LCsetup(void);
 
-extern char **		NGsplit(char *p);
-extern NEWSGROUP *	NGfind(const char *Name);
+extern int		NGsplit(char *p, int size, LISTBUFFER *List);
+extern NEWSGROUP    *	NGfind(const char *Name);
 extern void		NGclose(void);
-extern CHANNEL *	NCcreate(int fd, bool MustAuthorize, bool IsLocal);
+extern CHANNEL	    *	NCcreate(int fd, bool MustAuthorize, bool IsLocal);
 extern void		NGparsefile(void);
 extern bool		NGrenumber(NEWSGROUP *ngp);
 extern bool		NGlowmark(NEWSGROUP *ngp, long lomark);
@@ -601,8 +725,8 @@ extern void		NCwritereply(CHANNEL *cp, const char *text);
 extern void		NCwriteshutdown(CHANNEL *cp, const char *text);
 
 /* perl.c */
-extern char *		PLartfilter(char *artBody, int lines);
-extern char *		PLmidfilter(char *messageID);
+extern char	    *	PLartfilter(const ARTDATA *Data, char *artBody, long artLen, int lines);
+extern char	    *   PLmidfilter(char *messageID);
 extern void		PLmode(OPERATINGMODE mode, OPERATINGMODE NewMode,
 			       char *reason);
 extern void		PLxsinit(void);
@@ -617,8 +741,8 @@ extern int		RClimit(CHANNEL *cp);
 extern bool		RCnolimit(CHANNEL *cp);
 extern bool		RCauthorized(CHANNEL *cp, char *pass);
 extern int		RCcanpost(CHANNEL *cp, char *group);
-extern char *		RChostname(const CHANNEL *cp);
-extern char *		RClabelname(CHANNEL *cp);
+extern char	    *	RChostname(const CHANNEL *cp);
+extern char	    *	RClabelname(CHANNEL *cp);
 extern void		RCclose(void);
 extern void		RChandoff(int fd, HANDOFF h);
 extern void		RCreadlist(void);
@@ -628,10 +752,10 @@ extern bool		SITEfunnelpatch(void);
 extern bool		SITEsetup(SITE *sp);
 extern bool		SITEwantsgroup(SITE *sp, char *name);
 extern bool		SITEpoisongroup(SITE *sp, char *name);
-extern char **		SITEreadfile(const bool ReadOnly);
-extern SITE *		SITEfind(const char *p);
-extern SITE *		SITEfindnext(const char *p, SITE *sp);
-extern const char *	SITEparseone(char *Entry, SITE *sp,
+extern char	    **	SITEreadfile(const bool ReadOnly);
+extern SITE	    *	SITEfind(const char *p);
+extern SITE	    *	SITEfindnext(const char *p, SITE *sp);
+extern const char   *	SITEparseone(char *Entry, SITE *sp,
 				     char *subbed, char *poison);
 extern void		SITEchanclose(CHANNEL *cp);
 extern void		SITEdrop(SITE *sp);
@@ -655,22 +779,22 @@ extern void		TMRstart(enum timer timer);
 extern void		TMRstop(enum timer timer);
 
 extern void		WIPsetup(void);
-extern WIP *		WIPnew(const char *messageid, CHANNEL *cp);
+extern WIP	    *	WIPnew(const char *messageid, CHANNEL *cp);
 extern void		WIPprecomfree(CHANNEL *cp);
 extern void		WIPfree(WIP *wp);
 extern bool		WIPinprogress(const char *msgid, CHANNEL *cp,
 				      bool Add);
-extern WIP *		WIPbyid(const char *mesageid);
-extern WIP *		WIPbyhash(const HASH hash);
+extern WIP	    *	WIPbyid(const char *mesageid);
+extern WIP	    *	WIPbyhash(const HASH hash);
 
 /*
 **  TCL globals and functions
 */
 #if DO_TCL
-extern Tcl_Interp *	TCLInterpreter;
+extern Tcl_Interp   *	TCLInterpreter;
 extern bool		TCLFilterActive;
-extern BUFFER *		TCLCurrArticle;
-extern ARTDATA *	TCLCurrData;
+extern BUFFER	    *	TCLCurrArticle;
+extern ARTDATA	    *	TCLCurrData;
 
 extern void		TCLfilter(bool value);
 extern void		TCLreadfilter(void);
@@ -684,10 +808,10 @@ extern void		TCLclose(void);
 #if DO_PYTHON
 extern bool		PythonFilterActive;
 
-extern const char *	PYcontrol(char **av);
+extern const char   *	PYcontrol(char **av);
 extern int		PYreadfilter(void);
-extern char *		PYartfilter(char *artBody, long artLen, int lines);
-extern char *		PYmidfilter(char *messageID, int msglen);
+extern char	    *	PYartfilter(const ARTDATA *Data, char *artBody, long artLen, int lines);
+extern char	    *	PYmidfilter(char *messageID, int msglen);
 extern void		PYmode(OPERATINGMODE Mode, OPERATINGMODE newmode,
 			       char *reason);
 extern void		PYsetup(void);

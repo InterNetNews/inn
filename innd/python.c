@@ -15,7 +15,6 @@
 #include "clibrary.h"
 #include <netinet/in.h>
 
-#include "art.h"
 #include "innd.h"
 
 
@@ -94,12 +93,10 @@ PYcontrol(char **av)
 **  Reject articles we don't like.
 */
 char *
-PYartfilter(artBody, artLen, lines)
-    char* artBody;
-    long artLen;
-    int lines;
+PYartfilter(const ARTDATA *Data, char *artBody, long artLen, int lines)
 {
     ARTHEADER	*hp;
+    HDRCONTENT	*hc = data->HdrContent;
     int		hdrnum;
     int		i;
     char	*p, save;
@@ -111,27 +108,14 @@ PYartfilter(artBody, artLen, lines)
 
     /* Add headers to the dictionary... */
     hdrnum = 0;
-    for (hp = ARTheaders; hp < ARTheadersENDOF; hp++) {
-	if (hp->Found && hp->Value && !EQ(hp->Name,"Path"))
-	    PYheaditem[hdrnum] = PyBuffer_FromMemory(hp->Value, hp->Length);
-	else
+    for (i = 0 ; i < MAX_ARTHEADER ; i++, hc++) {
+	if (HDR_FOUND(i)) {
+	    hp = &ARTheaders[i];
+	    PYheaditem[hdrnum] = PyBuffer_FromMemory(HDR(i), HDR_LEN(i));
+	} else
 	    PYheaditem[hdrnum] = Py_None;
 	PyDict_SetItem(PYheaders, PYheadkey[hdrnum], PYheaditem[hdrnum]);
 	hdrnum++;
-    }
-
-    /* ...then the path, done separately to get the info innd adds... */
-    if (filterPath != NULL) {
-	p = strpbrk(filterPath,"\r\n");
-	if (p) {
-	    save = *p;
-	    *p = '\0';
-	}
-	PYheaditem[hdrnum] = PyBuffer_FromMemory(filterPath,
-						 strlen(filterPath));
-	PyDict_SetItem(PYheaders, PYpathkey, PYheaditem[hdrnum++]);
-	if (p)
-	    *p = save;
     }
 
     /* ...then the body... */

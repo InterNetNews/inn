@@ -6,8 +6,7 @@ and a symlink pointing to the above file in
 	<patharticles>/rec/pets/wombats/mmmmmm
 where nnnnn and mmmmmm are the article numbers that article has in each of 
 those two newsgroups.  (Actually in the traditional spool form the link
-could be either a symlink or a regular link; the tradspool storage manager
-does not completely emulate this, doing only symlinks instead). 
+could be either a symlink or a regular link).
 
 The storage token data for a tradspool stored article is a 16-byte block.
 The storage token contains two ints; the first one is a number

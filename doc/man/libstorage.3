@@ -30,6 +30,8 @@ libstorage \- InterNetNews Storage API library routines
 
 .B "bool SMprobe(PROBETYPE type, TOKEN *token, void *value);"
 
+.B "void SMprintfiles(FILE *file, TOKEN token, char **xref, int ngroups)"
+
 .B "bool SMflushcacheddata(FLUSHTYPE type);"
 
 .B "void SMshutdown(void);"
@@ -49,7 +51,7 @@ libstorage \- InterNetNews Storage API library routines
 
 .B "bool OVgroupdel(char *group);"
 
-.B "bool OVadd(TOKEN token, char *data, int len, time_t arrived);"
+.B "OVADDRESULT OVadd(TOKEN token, char *data, int len, time_t arrived);"
 
 .B "bool OVcancel(TOKEN token);"
 
@@ -261,6 +263,10 @@ SMARTNGNUM	gets newsgroup name and article number
 .fi
 .in -0.5i
 .sp 1
+.PP
+.I SMprintfiles
+shows file name or token usable by
+.IR fastrm (8).
 .PP
 .I SMflushcacheddata
 flushes cached data on each storage method.

@@ -290,6 +290,7 @@ incoming_conf
 
     'artcutoff',                0,
     'bindaddress',              0,
+    'dontrejectfiltered',       0,
     'hiscachesize',             0,
     'ignorenewsgroups',         0,
     'immediatecancel',          0,
@@ -382,7 +383,10 @@ incoming_conf
     'blockbackoff',             0,
     'chaninacttime',            0,
     'chanretrytime',            0,
+    'datamovethreshold',        0,
     'icdsynccount',             0,
+    'keepmmappedthreshold',     0,
+    'maxcmdreadsize',           0,
     'maxforks',                 0,
     'nicekids',                 0,
     'nicenewnews',              0,

@@ -1761,10 +1761,11 @@ static void GetProgInput(EXECSTUFF *prog)
     fd_set rfds, tfds;
     int maxfd;
     int got;
-    struct timeval tmout;
+    struct timeval tmout, stv, etv;
     pid_t tmp;
     int status;
     char rdbuf[BIG_BUFFER], errbuf[BIG_BUFFER];
+    TIMEINFO		Start, End;
 
     FD_ZERO(&rfds);
     FD_SET(prog->rdfd, &rfds);
@@ -1774,7 +1775,15 @@ static void GetProgInput(EXECSTUFF *prog)
     tmout.tv_sec = 5;
     tmout.tv_usec = 0;
     rdbuf[0] = errbuf[0] = '\0';
+    gettimeofday(&stv, NULL);
     while ((got = select(maxfd+1, &tfds, 0, 0, &tmout)) >= 0) {
+	gettimeofday(&etv, NULL);
+	Start.time = stv.tv_sec;
+	Start.usec = stv.tv_usec;
+	End.time = etv.tv_sec;
+	End.usec = etv.tv_usec;
+	IDLEtime += TIMEINFOasDOUBLE(End) - TIMEINFOasDOUBLE(Start);
+	stv = etv;
 	tmout.tv_sec = 5;
 	tmout.tv_usec = 0;
 	if (got > 0) {
@@ -1797,6 +1806,12 @@ static void GetProgInput(EXECSTUFF *prog)
 	}
 	tfds = rfds;
     }
+    gettimeofday(&etv, NULL);
+    Start.time = stv.tv_sec;
+    Start.usec = stv.tv_usec;
+    End.time = etv.tv_sec;
+    End.usec = etv.tv_usec;
+    IDLEtime += TIMEINFOasDOUBLE(End) - TIMEINFOasDOUBLE(Start);
     /* wait for it if he's toast. */
     do {
 	tmp = waitpid(prog->pid, &status, 0);

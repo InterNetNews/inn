@@ -324,6 +324,7 @@ SITEwrite(SITE *sp, const char *text)
 static void
 SITEwritefromflags(SITE *sp, ARTDATA *Data)
 {
+    HDRCONTENT		*hc = Data->HdrContent;
     static char		ITEMSEP[] = " ";
     static char		NL[] = "\n";
     char		pbuff[12];
@@ -351,12 +352,13 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	case FEED_BYTESIZE:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, Data->Size, Data->SizeLength);
+	    BUFFappend(bp, Data->Bytes + sizeof("Bytes: "), Data->BytesLength);
 	    break;
 	case FEED_FULLNAME:
+	case FEED_NAME:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, Data->Name, Data->NameLength);
+	    BUFFappend(bp, Data->TokenText, sizeof(TOKEN) * 2 + 2);
 	    break;
 	case FEED_HASH:
 	    if (Dirty)
@@ -368,22 +370,22 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	case FEED_HDR_DISTRIB:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, Data->Distribution, Data->DistributionLength);
+	    BUFFappend(bp, HDR(_distribution), HDR_LEN(_distribution));
 	    break;
 	case FEED_HDR_NEWSGROUP:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, Data->Newsgroups, Data->NewsgroupsLength);
+	    BUFFappend(bp, HDR(_newsgroups), HDR_LEN(_newsgroups));
 	    break;
 	case FEED_HEADERS:
 	    if (Dirty)
 		BUFFappend(bp, NL, STRLEN(NL));
-	    BUFFappend(bp, Data->Headers->Data, Data->Headers->Left);
+	    BUFFappend(bp, Data->Headers.Data, Data->Headers.Left);
 	    break;
 	case FEED_OVERVIEW:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, Data->Overview->Data, Data->Overview->Left);
+	    BUFFappend(bp, Data->Overview.Data, Data->Overview.Left);
 	    break;
 	case FEED_PATH:
 	    if (Dirty)
@@ -392,7 +394,7 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 		BUFFappend(bp, Path.Data, Path.Used);
 	    if (AddAlias)
 		BUFFappend(bp, Pathalias.Data, Pathalias.Used);
-	    BUFFappend(bp, Data->Path, Data->PathLength);
+	    BUFFappend(bp, HDR(_path), HDR_LEN(_path));
 	    break;
 	case FEED_REPLIC:
 	    if (Dirty)
@@ -402,12 +404,13 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	case FEED_STOREDGROUP:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, Data->StoredGroup, Data->StoredGroupLength);
+	    BUFFappend(bp, Data->Newsgroups.List[0], Data->StoredGroupLength);
 	    break;
 	case FEED_TIMERECEIVED:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, Data->TimeReceived, Data->TimeReceivedLength);
+	    sprintf(pbuff, "%ld", Data->Arrived);
+	    BUFFappend(bp, pbuff, strlen(pbuff));
 	    break;
 	case FEED_TIMEPOSTED:
 	    if (Dirty)
@@ -424,7 +427,7 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	case FEED_MESSAGEID:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, Data->MessageID, Data->MessageIDLength);
+	    BUFFappend(bp, HDR(_message_id), HDR_LEN(_message_id));
 	    break;
 	case FEED_FNLNAMES:
 	    if (sp->FNLnames.Data) {
@@ -443,11 +446,6 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 			Dirty = TRUE;
 		    }
 	    }
-	    break;
-	case FEED_NAME:
-	    if (Dirty)
-		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, Data->Name, Data->NameLength);
 	    break;
 	case FEED_NEWSGROUP:
 	    if (Dirty)
@@ -483,7 +481,6 @@ SITEsend(SITE *sp, ARTDATA *Data)
     char		*temp;
     char		buff[BUFSIZ];
     char *		argv[MAX_BUILTIN_ARGV];
-    int			fd;
 
     switch (sp->Type) {
     default:
@@ -503,9 +500,9 @@ SITEsend(SITE *sp, ARTDATA *Data)
 	/* Set up the argument vector. */
 	if (sp->FNLwantsnames) {
 	    i = strlen(sp->Param) + sp->FNLnames.Used;
-	    if (i + strlen(Data->Name) >= sizeof buff) {
+	    if (i + (sizeof(TOKEN) * 2) + 3 >= sizeof buff) {
 		syslog(L_ERROR, "%s toolong need %d for %s",
-		    sp->Name, i + strlen(Data->Name), Data->Name);
+		    sp->Name, i + (sizeof(TOKEN) * 2) + 3, sp->Name);
 		break;
 	    }
 	    temp = NEW(char, i + 1);
@@ -515,11 +512,11 @@ SITEsend(SITE *sp, ARTDATA *Data)
 	    (void)strcat(temp, sp->FNLnames.Data);
 	    (void)strcat(temp, &p[1]);
 	    *p = '*';
-	    (void)sprintf(buff, temp, Data->Name);
+	    (void)sprintf(buff, temp, Data->TokenText);
 	    DISPOSE(temp);
 	}
 	else
-	    (void)sprintf(buff, sp->Param, Data->Name);
+	    (void)sprintf(buff, sp->Param, Data->TokenText);
 
 	if (NeedShell(buff, (const char **)argv, (const char **)ENDOF(argv))) {
 	    argv[0] = SITEshell;
@@ -528,24 +525,10 @@ SITEsend(SITE *sp, ARTDATA *Data)
 	    argv[3] = NULL;
 	}
 
-	/* Feed the article on standard input. */
-	if (IsToken(Data->Name))
-	    fd = 0;
-	else
-	    fd = open(Data->Name, O_RDONLY);
-	if (fd < 0) {
-	    /* Unlikely, but we could check if the article is cross-posted
-	     * and try it under other names... */
-	    syslog(L_ERROR, "%s cant open %s %m", sp->Name, Data->Name);
-	    fd = 0;
-	}
-
 	/* Start the process. */
-	i = Spawn(sp->Nice, fd, (int)fileno(Errlog), (int)fileno(Errlog), argv);
+	i = Spawn(sp->Nice, 0, (int)fileno(Errlog), (int)fileno(Errlog), argv);
 	if (i >= 0)
 	    (void)PROCwatch(i, -1);
-	if (fd != 0)
-	    (void)close(fd);
 	break;
     }
 }

@@ -61,6 +61,86 @@ static RETSIGTYPE       catch_terminate(int signal);
 static void             xmalloc_abort(const char *what, size_t size,
                                       const char *file, int line);
 
+/* header table initialization */
+#define ARTHEADERINIT(name, type) {name, type, sizeof(name) - 1}
+ARTHEADER ARTheaders[] = {
+  /*		 Name			Type */
+  ARTHEADERINIT("Approved",		HTstd),
+/* #define _approved				0 */
+  ARTHEADERINIT("Control",		HTstd),
+/* #define _control				1 */
+  ARTHEADERINIT("Date",			HTreq),
+/* #define _date				2 */
+  ARTHEADERINIT("Distribution",		HTstd),
+/* #define _distribution			3 */
+  ARTHEADERINIT("Expires",		HTstd),
+/* #define _expires				4 */
+  ARTHEADERINIT("From",			HTreq),
+/* #define _from				5 */
+  ARTHEADERINIT("Lines",		HTstd),
+/* #define _lines				6 */
+  ARTHEADERINIT("Message-ID",		HTreq),
+/* #define _message_id				7 */
+  ARTHEADERINIT("Newsgroups",		HTreq),
+/* #define _newsgroups				8 */
+  ARTHEADERINIT("Path",			HTreq),
+/* #define _path				9 */
+  ARTHEADERINIT("Reply-To",		HTstd),
+/* #define _reply_to				10 */
+  ARTHEADERINIT("Sender",		HTstd),
+/* #define _sender				11 */
+  ARTHEADERINIT("Subject",		HTreq),
+/* #define _subject				12 */
+  ARTHEADERINIT("Supersedes",		HTstd),
+/* #define _supersedes				13 */
+  ARTHEADERINIT("Bytes",		HTstd),
+/* #define _bytes				14 */
+  ARTHEADERINIT("Also-Control",		HTstd),
+/* #define _alsocontrol				15 */
+  ARTHEADERINIT("References",		HTstd),
+/* #define _references				16 */
+  ARTHEADERINIT("Xref",			HTsav),
+/* #define _xref				17 */
+  ARTHEADERINIT("Keywords",		HTstd),
+/* #define _keywords				18 */
+  ARTHEADERINIT("X-Trace",		HTstd),
+/* #define _xtrace				19 */
+  ARTHEADERINIT("Date-Received",	HTobs),
+/* #define _datereceived			20 */
+  ARTHEADERINIT("Posted",		HTobs),
+/* #define _posted				21 */
+  ARTHEADERINIT("Posting-Version",	HTobs),
+/* #define _postintversion			22 */
+  ARTHEADERINIT("Received",		HTobs),
+/* #define _received				23 */
+  ARTHEADERINIT("Relay-Version",	HTobs),
+/* #define _relayversion			24 */
+  ARTHEADERINIT("NNTP-Posting-Host",	HTstd),
+/* #define _nntppostinghost			25 */
+  ARTHEADERINIT("Followup-To",		HTstd),
+/* #define _followupto				26 */
+  ARTHEADERINIT("Organization",		HTstd),
+/* #define _organization			27 */
+  ARTHEADERINIT("Content-Type",		HTstd),
+/* #define _contenttype				28 */
+  ARTHEADERINIT("Content-Base",		HTstd),
+/* #define _contentbase				29 */
+  ARTHEADERINIT("Content-Disposition",	HTstd),
+/* #define _contentdisposition			30 */
+  ARTHEADERINIT("X-Newsreader",		HTstd),
+/* #define _xnewsreader				31 */
+  ARTHEADERINIT("X-Mailer",		HTstd),
+/* #define _xmailer				32 */
+  ARTHEADERINIT("X-Newsposter",		HTstd),
+/* #define _xnewsposter				33 */
+  ARTHEADERINIT("X-Cancelled-By",	HTstd),
+/* #define _xcancelledby			34 */
+  ARTHEADERINIT("X-Canceled-By",	HTstd),
+/* #define _xcanceledby				35 */
+  ARTHEADERINIT("Cancel-Key",		HTstd)
+/* #define _cancelkey				36 */
+};
+/* #define MAX_ARTHEADER			37 */
 
 
 /*

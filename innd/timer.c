@@ -43,7 +43,8 @@
 static const char * const timer_name[TMR_MAX] = {
     "idle", "hishave", "hisgrep", "hiswrite", "hissync",
     "artclean", "artwrite", "artctrl", "artcncl",
-    "sitesend", "overv", "perl", "python"
+    "sitesend", "overv", "perl", "python", "nntpread", "artparse",
+    "artlog", "datamove"
 };
 
 /* Timer values.  start stores the time (relative to the last summary) at

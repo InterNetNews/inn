@@ -220,16 +220,16 @@ CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
     cp->Out = out;
     cp->Tracing = Tracing;
     cp->Sendid.Size = 0;
-    cp->Rest=0;
-    cp->SaveUsed=0;
-    cp->Lastch=0;
+    cp->Next=0;
     cp->MaxCnx=0;
     cp->ActiveCnx=0;
     cp->ArtBeg = 0;
     cp->ArtMax = 0;
+    cp->Start = 0;
     HashClear(&cp->CurrentMessageIDHash);
     memset(cp->PrecommitWIP, '\0', sizeof(cp->PrecommitWIP));
     cp->PrecommitiCachenext=0;
+    ARTprepare(cp);
 
     close_on_exec(fd, true);
 
@@ -313,6 +313,30 @@ CHANclose(CHANNEL *cp, const char *name)
 		name, (long)(Now.time - cp->Started),
 		cp->Received, cp->Refused, cp->Rejected,
 		cp->Duplicate, buff);
+	    }
+	    if (cp->Data.Newsgroups.Data != NULL) {
+		DISPOSE(cp->Data.Newsgroups.Data);
+		cp->Data.Newsgroups.Data = NULL;
+	    }
+	    if (cp->Data.Newsgroups.List != NULL) {
+		DISPOSE(cp->Data.Newsgroups.List);
+		cp->Data.Newsgroups.List = NULL;
+	    }
+	    if (cp->Data.Distribution.Data != NULL) {
+		DISPOSE(cp->Data.Distribution.Data);
+		cp->Data.Distribution.Data = NULL;
+	    }
+	    if (cp->Data.Distribution.List != NULL) {
+		DISPOSE(cp->Data.Distribution.List);
+		cp->Data.Distribution.List = NULL;
+	    }
+	    if (cp->Data.Path.Data != NULL) {
+		DISPOSE(cp->Data.Path.Data);
+		cp->Data.Path.Data = NULL;
+	    }
+	    if (cp->Data.Path.List != NULL) {
+		DISPOSE(cp->Data.Path.List);
+		cp->Data.Path.List = NULL;
 	    }
 	} else if (cp->Type == CTreject)
 	    syslog(L_NOTICE, "%s %ld", name, cp->Rejected);
@@ -485,8 +509,9 @@ RCHANadd(CHANNEL *cp)
     if (cp->fd > CHANlastfd)
 	CHANlastfd = cp->fd;
 
-    /* Start reading at the beginning of the buffer. */
-    cp->In.Used = 0;
+    if (cp->Type != CTnntp)
+	/* Start reading at the beginning of the buffer. */
+	cp->In.Used = 0;
 }
 
 
@@ -634,11 +659,12 @@ WCHANsetfrombuffer(CHANNEL *cp, BUFFER *bp)
 int
 CHANreadtext(CHANNEL *cp)
 {
-    int	                i;
+    int	                i, j;
     BUFFER	        *bp;
     char		*p;
     int			oerrno;
     int			maxbyte;
+    HDRCONTENT		*hc = cp->Data.HdrContent;
 
     /* Grow buffer if we're getting close to current limit. */
     bp = &cp->In;
@@ -647,7 +673,24 @@ CHANreadtext(CHANNEL *cp)
 	i = GROW_AMOUNT(bp->Size);
 	bp->Size += i;
 	bp->Left += i;
+	p = bp->Data;
+	TMRstart(TMR_DATAMOVE);
 	RENEW(bp->Data, char, bp->Size);
+	/* do not move data, since RENEW did it already */
+	if ((i = p - bp->Data) != 0) {
+	    if (cp->State == CSgetheader || cp->State == CSgetbody ||
+		cp->State == CSeatarticle) {
+		/* adjust offset only in CSgetheader, CSgetbody or
+		   CSeatarticle */
+		if (cp->Data.BytesHeader != NULL)
+		  cp->Data.BytesHeader -= i;
+		for (j = 0 ; j < MAX_ARTHEADER ; j++, hc++) {
+		    if (hc->Value != NULL)
+			hc->Value -= i;
+		}
+	    }
+	}
+	TMRstop(TMR_DATAMOVE);
     }
 
     /* Read in whatever is there, up to some reasonable limit. */
@@ -663,14 +706,22 @@ CHANreadtext(CHANNEL *cp)
      * channel on each cycle of the main select() loop (otherwise we
      * might take too long before giving other channels a turn).  10
      * lines of CHECK commands suggests a limit of about 1 kilobyte of
-     * data, or less.  BUFSIZ is often about 1 kilobyte, and is
-     * attractive for other reasons, so let's use that as our size limit.
+     * data, or less.  innconf->maxcmdreadsize(BUFSIZ by default) is often
+     * about 1 kilobyte, and is attractive for other reasons, so let's
+     * use that as our size limit.
+     *
+     * there is no read size limit if innconf->maxcmdreadsize is 0
      */
     /*
      * Reduce the read size only if we are reading commands.
      */
-    maxbyte = (cp->State != CSgetcmd || bp->Left < BUFSIZ) ? bp->Left : BUFSIZ;
-    i = read(cp->fd, &bp->Data[bp->Used], maxbyte-1);
+    if (innconf->maxcmdreadsize > 0)
+	maxbyte = (cp->State != CSgetcmd || bp->Left < innconf->maxcmdreadsize) ? bp->Left : innconf->maxcmdreadsize;
+    else
+	maxbyte = bp->Left;
+    TMRstart(TMR_NNTPREAD);
+    i = read(cp->fd, &bp->Data[bp->Used], maxbyte);
+    TMRstop(TMR_NNTPREAD);
     if (i < 0) {
         /* Solaris (at least 2.4 through 2.6) will occasionally return
            EAGAIN in response to a read even if the file descriptor already
@@ -880,7 +931,7 @@ CHANreadloop(void)
 {
     static char		EXITING[] = "INND exiting because of signal\n";
     static int		fd;
-    int			i;
+    int			i, j;
     int			startpoint;
     int			count;
     int			lastfd;
@@ -893,6 +944,7 @@ CHANreadloop(void)
     long		silence;
     char		*p;
     time_t		LastUpdate;
+    HDRCONTENT		*hc;
 
     TMRinit();
     STATUSinit();
@@ -1020,12 +1072,49 @@ CHANreadloop(void)
 		if (cp->In.Used) {
 		    if ((cp->In.Size / cp->In.Used) > 10) {
 			cp->In.Size = (cp->In.Used * 2) > START_BUFF_SIZE ? (cp->In.Used * 2) :  START_BUFF_SIZE;
-			cp->In.Data = RENEW(cp->In.Data, char, cp->In.Size);
+			p = cp->In.Data;
+			TMRstart(TMR_DATAMOVE);
+			RENEW(cp->In.Data, char, cp->In.Size);
 			cp->In.Left = cp->In.Size - cp->In.Used;
+			/* do not move data, since RENEW did it already */
+			if ((i = p - cp->In.Data) != 0) {
+			    if (cp->State == CSgetheader ||
+				cp->State == CSgetbody ||
+				cp->State == CSeatarticle) {
+				/* adjust offset only in CSgetheader, CSgetbody
+				   or CSeatarticle */
+				if (cp->Data.BytesHeader != NULL)
+				  cp->Data.BytesHeader -= i;
+				hc = cp->Data.HdrContent;
+				for (j = 0 ; j < MAX_ARTHEADER ; j++, hc++) {
+				    if (hc->Value != NULL)
+					hc->Value -= i;
+				}
+			    }
+			}
+			TMRstop(TMR_DATAMOVE);
 		    }
 		} else {
-		    cp->In.Data = RENEW(cp->In.Data, char, START_BUFF_SIZE);
+		    p = cp->In.Data;
+		    TMRstart(TMR_DATAMOVE);
+		    RENEW(cp->In.Data, char, START_BUFF_SIZE);
 		    cp->In.Size = cp->In.Left = START_BUFF_SIZE;
+		    if ((i = p - cp->In.Data) != 0) {
+			if (cp->State == CSgetheader ||
+			    cp->State == CSgetbody ||
+			    cp->State == CSeatarticle) {
+			    /* adjust offset only in CSgetheader, CSgetbody
+			       or CSeatarticle */
+			    if (cp->Data.BytesHeader != NULL)
+			      cp->Data.BytesHeader -= i;
+			    hc = cp->Data.HdrContent;
+			    for (j = 0 ; j < MAX_ARTHEADER ; j++, hc++) {
+				if (hc->Value != NULL)
+				    hc->Value -= i;
+			    }
+			}
+		    }
+		    TMRstop(TMR_DATAMOVE);
 		}
 	    }
 	    /* Possibly recheck for dead children so we don't get SIGPIPE

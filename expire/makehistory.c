@@ -294,7 +294,7 @@ FlushOverTmpFile(void)
 	    expires = (time_t)atol(p);
 	}
 	token = TextToToken(q);
-	if (!OVadd(token, r, strlen(r), arrived, expires)) {
+	if (OVadd(token, r, strlen(r), arrived, expires) == OVADDFAILED) {
 	    if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE) {
 		fprintf(stderr, "makehistory: no space left for overview\n");
 		OVclose();
@@ -345,7 +345,7 @@ WriteOverLine(TOKEN *token, char *xrefs, int xrefslen,
 		exit(1);
 	    }
 	    fputc('\n', Overchan);
-	} else if (!OVadd(*token, overdata, overlen, arrived, expires)) {
+	} else if (OVadd(*token, overdata, overlen, arrived, expires) == OVADDFAILED) {
 	    if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE) {
 		fprintf(stderr, "makehistory: no space left for overview\n");
 		OVclose();

@@ -335,6 +335,12 @@ struct conf_rec conf_defaults[] = {
     { _CONF_DONTREJECTFILTERED,			"",     2, 1 },
 #define	_CONF_KEEPMMAPPEDTHRESHOLD		"keepmmappedthreshold"
 #define	CONF_VAR_KEEPMMAPPEDTHRESHOLD		105
-    { _CONF_KEEPMMAPPEDTHRESHOLD,		"",     2, 1 }
+    { _CONF_KEEPMMAPPEDTHRESHOLD,		"",     2, 1 },
+#define	_CONF_MAXCMDREADSIZE			"maxcmdreadsize"
+#define	CONF_VAR_MAXCMDREADSIZE			106
+    { _CONF_MAXCMDREADSIZE,			"",     2, 1 },
+#define	_CONF_DATAMOVETHRESHOLD			"datamovethreshold"
+#define	CONF_VAR_DATAMOVETHRESHOLD		107
+    { _CONF_DATAMOVETHRESHOLD,			"",     2, 1 }
 };
-#define MAX_CONF_VAR 106
+#define MAX_CONF_VAR 108

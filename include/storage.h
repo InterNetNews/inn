@@ -34,14 +34,19 @@ typedef struct {
 } TOKEN;
 
 typedef struct {
-    unsigned char       type;       /* Method that retrieved the article */
-    char                *data;      /* Where the requested data starts */
-    int                 len;        /* Length of the requested data */
-    unsigned char       nextmethod; /* Next method to try when iterating
-                                       over the spool */
-    void                *private;   /* A pointer to method specific data */
-    time_t              arrived;    /* The time when the article arrived */
-    TOKEN               *token;     /* A pointer to the article's TOKEN */
+  unsigned char  type;       /* Method that retrieved the article */
+  char           *data;      /* Where the requested data starts */
+  struct iovec   *iov;       /* writev() style vector */
+  int            iovcnt;     /* writev() style count */
+  int            len;        /* Length of the requested data */
+  unsigned char  nextmethod; /* Next method to try when iterating over the
+				spool */
+  void           *private;   /* A pointer to method specific data */
+  time_t         arrived;    /* The time when the article arrived */
+  time_t         expires;    /* The time when the article will be expired */
+  char           *groups;    /* Where Newsgroups header starts */
+  int            groupslen;  /* Length of Newsgroups header */
+  TOKEN          *token;     /* A pointer to the article's TOKEN */
 } ARTHANDLE;
 
 #define SMERR_NOERROR          0

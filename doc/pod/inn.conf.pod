@@ -922,10 +922,38 @@ default value is C<600>.
 How many seconds to wait before a channel restarts.  The default value is
 C<300>.
 
+=item I<datamovethreshold>
+
+The threshold whether moving already read data to the top of buffer or
+extending buffer.  The buffer described here is used for reading NNTP data.
+For those systems which do not have enough memory should not use higher value.
+The default value is 8192.  Acceptable value is between 0 and 1048576 and
+the value out of range is treated as 1048576.
+
 =item I<icdsynccount>
 
 How many article writes between updating the active and history files.
 The default value is C<10>.
+
+=item I<keepmmappedthreshold>
+
+When overview retrieval which means responding 'XOVER' or running
+expireover, buffindexed mmap's all overview data blocks which include
+requested overview data internally for newsgroup.  But for high volumed
+newsgroups like control.cancel, it will try to do too many mmapping at
+once, and this may lead to system resource problem.  To avoid this,
+buffindexed mmap's just one overview block(8KB), if it will try to mmap
+over "keepmmappedthreshold * 1024"(bytes).  This parameter is specific
+to buffindexed overview storage method.  The default value is C<1024>
+(1MB).
+
+=item I<maxcmdreadsize>
+
+Maximun buffer size for reading NNTP command.  It should not be large for
+system which is slow to process and store articles.  Otherwise innd(8) will
+stay for long time at one channel to process and have other channels keep
+waiting for long time.
+The default value is BUFSIZ defined in stdio.h(C<1024> in most environment).
 
 =item I<maxforks>
 
@@ -983,18 +1011,6 @@ other than Solaris.  Nearly all operating systems have some hard maximum
 limit beyond which this value cannot be raised, usually either 128, 256,
 or 1024.  The default value of this parameter is -1.  Setting it to 256 on
 Solaris systems is highly recommended.
-
-=item I<keepmmappedthreshold>
-
-When overview retrieval which means responding 'XOVER' or running
-expireover, buffindexed mmap's all overview data blocks which include
-requested overview data internally for newsgroup.  But for high volumed
-newsgroups like control.cancel, it will try to do too many mmapping at
-once, and this may lead to system resource problem.  To avoid this,
-buffindexed mmap's just one overview block(8KB), if it will try to mmap
-over "keepmmappedthreshold * 1024"(bytes).  This parameter is specific
-to buffindexed overview storage method.  The default value is C<1024>
-(1MB).
 
 =back
 
