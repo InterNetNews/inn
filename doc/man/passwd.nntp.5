@@ -146,19 +146,20 @@ colons:
 \&    host:name:password:style
 .Ve
 .PP
-The first field is the name of a host, and is matched in a case-insensitive
-manner.  (No detailed matching, such as comparing \s-1IP\s0 addresses, is done.)
+The first field is the name of a host, and is matched in a
+case-insensitive manner.  (No detailed matching, such as comparing \s-1IP\s0
+addresses, is done.)
 .PP
-The second field is a user name, and the third is a password.  If either the
-username or password is empty, then that portion of the authentication will
-not occur.  (For example, when connecting to a remote \s-1INN\s0 for peering, only
-the password is needed.)
+The second field is a user name, and the third is a password.  If either
+the username or password is empty, then that portion of the
+authentication will not occur.  (For example, when connecting to a
+remote \s-1INN\s0 for peering, only the password is needed.)
 .PP
 The optional fourth field specifies the type of authentication to use.
-At present, the only recognized \*(L"authentication style\*(R" is \f(CW\*(C`authinfo\*(C'\fR; this
-is also the default.  It means that \s-1NNTP\s0 \*(L"authinfo\*(R" commands are used to
-authenticate to the remote host.  (The \f(CW\*(C`authinfo\*(C'\fR command is a common
-extension to \s-1RFC\s0 977.)
+At present, the only recognized \*(L"authentication style\*(R" is \f(CW\*(C`authinfo\*(C'\fR;
+this is also the default.  It means that \s-1NNTP\s0 \*(L"authinfo\*(R" commands are
+used to authenticate to the remote host.  (The \f(CW\*(C`authinfo\*(C'\fR command is a
+common extension to \s-1RFC\s0 977.)
 .PP
 For example:
 .PP
@@ -172,7 +173,7 @@ This file should not be world\-readable.
 .SH "HISTORY"
 .IX Header "HISTORY"
 Written by Rich \f(CW$alz\fR <rsalz@uunet.uu.net> for InterNetNews.  This is
-revision \e\e$3, dated \e\e$4.
+revision \f(CW$Revision$, dated \f(CW$Date$.
 .PP
 $Id$
 .SH "SEE ALSO"
