@@ -1011,8 +1011,10 @@ set to a value lower than I<nicekids>.
 
 =item I<pauseretrytime>
 
-Wait for this many seconds before noticing inactive channels.  The default
-value is C<300>.
+Wait for this many seconds before noticing inactive channels.
+Wait for this many seconds before innd processes article when it's paused
+or the number of channel write failure exceeds I<badiocount>.  The
+default value is C<300>.
 
 =item I<peertimeout>
 
