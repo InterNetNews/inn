@@ -2,17 +2,19 @@
 **
 **  Storage manager module for traditional spool format.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <syslog.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
+#ifndef MAP_FAILED
+# define MAP_FAILED     (caddr_t) -1
 #endif
 
 /* Needed for htonl() and friends on AIX 4.1. */
@@ -33,7 +35,7 @@ typedef struct {
     char		*curdirname;
     DIR			*curdir;
     struct _ngtent	*ngtp;
-    BOOL 		mmapped;
+    bool 		mmapped;
 } PRIV_TRADSPOOL;
 
 /*
@@ -73,7 +75,7 @@ NGTENT *NGTable[NGT_SIZE];
 unsigned long MaxNgNumber = 0;
 NGTREENODE *NGTree;
 
-BOOL NGTableUpdated; /* set to TRUE if we've added any entries since reading 
+bool NGTableUpdated; /* set to TRUE if we've added any entries since reading 
 			in the database file */
 
 /* 
@@ -321,7 +323,7 @@ DumpDB(void) {
 ** of newsgroup number from there. 
 */
 
-BOOL
+bool
 ReadDBFile(void) {
     char *fname;
     QIOSTATE *qp;
@@ -353,7 +355,7 @@ ReadDBFile(void) {
     return TRUE;
 }
 
-BOOL
+bool
 ReadActiveFile(void) {
     char *fname;
     QIOSTATE *qp;
@@ -385,7 +387,7 @@ ReadActiveFile(void) {
     return TRUE;
 }
 
-BOOL
+bool
 InitNGTable(void) {
     if (!ReadDBFile()) return FALSE;
 
@@ -435,7 +437,7 @@ CheckNeedReloadDB(void) {
 
 /* Init routine, called by SMinit */
 
-BOOL
+bool
 tradspool_init(SMATTRIBUTE *attr) {
     if (attr == NULL) {
 	syslog(L_ERROR, "tradspool: attr is NULL");
@@ -755,7 +757,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
     art->private = (void *)private;
     private->artlen = sb.st_size;
     if (innconf->articlemmap) {
-	if ((private->artbase = mmap((MMAP_PTR)0, sb.st_size, PROT_READ, MAP__ARG, fd, 0)) == (MMAP_PTR)-1) {
+	if ((private->artbase = mmap(NULL, sb.st_size, PROT_READ, MAP__ARG, fd, 0)) == MAP_FAILED) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    syslog(L_ERROR, "tradspool: could not mmap article: %m");
 	    DISPOSE(art->private);
@@ -915,7 +917,7 @@ tradspool_freearticle(ARTHANDLE *article) {
     }
 }
 
-BOOL 
+bool 
 tradspool_cancel(TOKEN token) {
     char **xrefs;
     char *xrefhdr;
@@ -924,7 +926,7 @@ tradspool_cancel(TOKEN token) {
     char *ng, *p;
     char *path, *linkpath;
     int i;
-    BOOL result = TRUE;
+    bool result = TRUE;
     unsigned long artnum;
 
     if ((path = TokenToPath(token)) == NULL) {
@@ -993,7 +995,7 @@ static struct dirent *
 FindDir(DIR *dir, char *dirname) {
     struct dirent *de;
     int i;
-    BOOL flag;
+    bool flag;
     char *path;
     struct stat sb;
     unsigned char namelen;
@@ -1179,7 +1181,7 @@ FreeNGTree(void) {
     NGTree = NULL;
 }
 
-BOOL tradspool_ctl(PROBETYPE type, TOKEN *token, void *value) {
+bool tradspool_ctl(PROBETYPE type, TOKEN *token, void *value) {
     struct artngnum *ann;
     unsigned long ngnum;
     unsigned long artnum;
@@ -1204,7 +1206,7 @@ BOOL tradspool_ctl(PROBETYPE type, TOKEN *token, void *value) {
     }       
 }
 
-BOOL tradspool_flushcacheddata(FLUSHTYPE type) {
+bool tradspool_flushcacheddata(FLUSHTYPE type) {
     return TRUE;
 }
 
