@@ -1423,6 +1423,11 @@ void hostCxnDead (Host host, Connection cxn)
                 host->connectTime = 0 ;
               }
           }
+        else if (host->cxnSleeping [i]) /* cxnNuke can be called on sleepers  */
+          {
+            host->cxnSleeping [i] = false ;
+            host->sleepingCxns-- ;
+          }
 
         break ;
       }
@@ -1517,8 +1522,16 @@ bool hostCxnGone (Host host, Connection cxn)
         if (!amClosing (host))
           syslog (LOG_ERR,CONNECTION_DISAPPEARING,host->peerName,i) ;
         host->connections [i] = NULL ;
-        host->cxnActive [i] = false ;
-        host->activeCxns-- ;
+        if (host->cxnActive [i])
+          {
+            host->cxnActive [i] = false ;
+            host->activeCxns-- ;
+          }
+        else if (host->cxnSleeping [i])
+          {
+            host->cxnSleeping [i] = false ;
+            host->sleepingCxns-- ;
+          }
       }
     else if (host->connections [i] != NULL)
       oneThere = true ;
