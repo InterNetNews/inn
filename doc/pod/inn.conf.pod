@@ -29,6 +29,12 @@ variables.  Most parameters have default values if not specified in
 F<inn.conf>; those defaults are noted in the description of each
 parameter.
 
+For the time being, it is strongly recommended to include every parameter
+in F<inn.conf> even if it is set to the default value, since some shell
+scripts don't correctly handle missing keys that they care about.  This is
+a difficult-to-fix bug in the current parser that will be fixed in future
+versions of INN.
+
 Many parameters take a boolean value.  For all such parameters, the value
 may be specified as C<true>, C<yes>, or C<on> to turn it on and may be any
 of C<false>, C<no>, or C<off> to turn it off.  The case of these values is
@@ -38,7 +44,8 @@ This file is intended to be fairly static.  Any changes made to it will
 generally not affect any running programs until they restart.  Unlike
 nearly every other configuration file, F<inn.conf> cannot be reloaded
 dynamically using ctlinnd(8); innd(8) must be stopped and restarted for
-relevant changes to F<inn.conf> to take effect.
+relevant changes to F<inn.conf> to take effect (C<ctlinnd xexec innd> is
+the fastest way to do this.)
 
 This documentation is extremely long and organized as a reference manual
 rather than as a tutorial.  If this is your first exposure to INN and
