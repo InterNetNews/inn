@@ -26,6 +26,7 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
+#include "inn/timer.h"
 #include "inn/wire.h"
 #include "libinn.h"
 #include "nntp.h"
