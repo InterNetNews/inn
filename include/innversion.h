@@ -13,8 +13,8 @@
 **  Try to avoid changing these.
 */
 #define RELEASE "2"
-#define PATCHLEVEL "2.3pre"
-#define DATE "11-Jul-2000"
+#define PATCHLEVEL "2.3"
+#define DATE "18-Jul-2000"
 
 
 /*
