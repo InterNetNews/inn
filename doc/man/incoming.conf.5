@@ -144,8 +144,12 @@ to supply a password. (default=no password)
 .TP
 .BI identd:
 This key requires a string value. It is used if you wish to require a peer's
-user name retrieved through identd match the specified string. (default=no
-identd)
+user name retrieved through identd match the specified string. Note that
+currently
+.IR innd (8)
+does not implement any timeout in identd callbacks, so enabling this
+option may cause innd to hang if the remote peer does not respond to ident
+callbacks in a reasonable timeframe (default=no identd)
 .TP
 .BI patterns:
 This key requires a string value. It is a list of
