@@ -17,6 +17,43 @@
 
 
 /*
+**  Find the next line terminator in the QIO buffer, returning a pointer to
+**  the last character of the terminator if found or NULL if a line
+**  terminator can't be found and replacing the first character of the
+**  terminator with a nul.  If WireFormat is set to -1, guess its value by
+**  looking to see if there is a \r before the first \n.  Sets qp->Length to
+**  the length of the line found.
+*/
+static char *
+find_terminator(QIOSTATE *qp)
+{
+    char *      p;
+
+    /* If we could assume wire format, we'd just search forward for \r\n,
+       but to support both types of files as well as guessing this is less
+       convoluted.  Be careful about embedded newlines not preceded by \r
+       when reading wire format files. */
+    for (p = qp->Start; ; p++) {
+        p = memchr(p, '\n', qp->End - p);
+        if (p == NULL)
+            return NULL;
+        if (qp->WireFormat == -1)
+            qp->WireFormat = (*(p - 1) == '\r');
+        if (qp->WireFormat == 0 || *(p - 1) == '\r')
+            break;
+    }
+
+    if (qp->WireFormat) {
+        *(p - 1) = '\0';
+        qp->Length = p - qp->Start - 1;
+    } else {
+        *p = '\0';
+        qp->Length = p - qp->Start;
+    }
+    return p;
+}
+
+/*
 **  Open a quick file from a descriptor.
 */
 QIOSTATE *QIOfdopen(const int fd)
@@ -139,15 +176,8 @@ char *QIOread(QIOSTATE *qp)
         if (qp->End > qp->Start) {
 
             /* Find the newline. */
-            p = memchr((POINTER)qp->Start, '\n', (SIZE_T)(qp->End - qp->Start));
+            p = find_terminator(qp);
             if (p != NULL) {
-                if ((qp->WireFormat == 1) && (*(p-1) == '\r')) {
-                    *(p-1) = '\0';
-                    qp->Length = p - qp->Start - 1;
-                } else {
-                    *p = '\0';
-                    qp->Length = p - qp->Start;
-                }
                 save = qp->Start;
                 qp->Start = p + 1;
                 qp->flag = QIO_ok;
@@ -187,19 +217,8 @@ char *QIOread(QIOSTATE *qp)
         qp->End = &p[i];
 
         /* Now try to find it. */
-        p = memchr((POINTER)qp->Start, '\n', (SIZE_T)(qp->End - qp->Start));
+        p = find_terminator(qp);
         if (p != NULL) {
-            if ((qp->WireFormat == -1) && (p != qp->Start) && (*(p-1) == '\r'))
-                qp->WireFormat = 1;
-            else if (qp->WireFormat == -1)
-                qp->WireFormat = 0;
-            if ((qp->WireFormat == 1) && (*(p-1) == '\r')) {
-                *(p-1) = '\0';
-                qp->Length = p - qp->Start - 1;
-            } else {
-                *p = '\0';
-                qp->Length = p - qp->Start;
-            }
             save = qp->Start;
             qp->Start = p + 1;
             qp->flag = QIO_ok;
