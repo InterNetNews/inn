@@ -35,10 +35,8 @@
 
 #include <sys/types.h>
 
-#if defined (DO_NEED_BOOL)
-typedef enum { false = 0, true = 1 } bool ;
-#endif
-
+#define false 0
+#define true  1
 
 /* These typedefs are all here because C is too stupid to let me multiply
    define typedefs to the same things (as C++ will). Hence I can't redeclare
