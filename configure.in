@@ -992,7 +992,7 @@ fi
 
 dnl If we can't find any of the following, we have replacements for them.
 AC_REPLACE_FUNCS(getopt inet_aton inet_ntoa pread pwrite strcasecmp \
-                 strdup strerror strspn setenv)
+                 strdup strerror strspn setenv herror)
 
 MISSING_OBJ="$LIBOBJS"
 MISSING_SRC=`echo "$MISSING_OBJ" | sed 's/\.o/.c/g'`
