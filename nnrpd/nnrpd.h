@@ -94,7 +94,7 @@ typedef struct _ACCESSGROUP {
 } ACCESSGROUP;
 
 /*
-**  What READline returns.
+**  What line_read returns.
 */
 typedef enum _READTYPE {
     RTeof,
@@ -102,6 +102,17 @@ typedef enum _READTYPE {
     RTlong,
     RTtimeout
 } READTYPE;
+
+
+/*
+** Structure used by line_read to keep track of what's been read
+*/
+struct line {
+    char *start;
+    char *where;
+    size_t remaining;
+    size_t allocated;
+};
 
 /*
 **  Information about the schema of the news overview files.
@@ -195,7 +206,7 @@ EXTERN long     ClientIpAddr;
 EXTERN char	*VirtualPath;
 EXTERN int	VirtualPathlen;
 EXTERN struct history *History;
-
+EXTERN struct line NNTPline;
 
 #if	NNRP_LOADLIMIT > 0
 extern int		GetLoadAverage(void);
@@ -222,7 +233,6 @@ extern void		PERMgetpermissions(void);
 extern void		PERMlogin(char *uname, char *pass, char *errorstr);
 extern bool		PERMmatch(char **Pats, char **list);
 extern bool		ParseDistlist(char ***argvp, char *list);
-extern READTYPE		READline(char *start, int size, int timeout);
 extern char		*OVERGetHeader(char *p, int len, int field);
 extern void 		SetDefaultAccess(ACCESSGROUP*);
 extern void		Reply(const char *fmt, ...);
@@ -271,3 +281,7 @@ extern void perlAuthInit(void);
 int PY_authenticate(char *clientHost, char *clientIpString, char *serverHost, char *Username, char *Password, char *accesslist);
 int PY_authorize(char *clientHost, char *clientIpString, char *ServerHost, char *Username, char *NewsGroup, int PostFlag, char **reply_message);
 #endif	/* DO_PYTHON */
+
+void line_free(struct line *);
+void line_init(struct line *);
+READTYPE line_read(struct line *, int, const char **, size_t *);

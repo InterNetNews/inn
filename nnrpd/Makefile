@@ -7,9 +7,9 @@ CFLAGS		= $(GCFLAGS) $(SSLINC)
 
 ALL		= nnrpd
 
-SOURCES		= article.c group.c commands.c loadave.c misc.c newnews.c \
-		  nnrpd.c perl.c perm.c post.c python.c sasl_config.c \
-		  tls.c track.c
+SOURCES		= article.c group.c commands.c line.c loadave.c misc.c \
+		  newnews.c nnrpd.c perl.c perm.c post.c python.c \
+		  sasl_config.c tls.c track.c
 
 INCLUDES	= nnrpd.h post.h sasl_config.h tls.h
 

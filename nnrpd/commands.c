@@ -809,64 +809,71 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
     p = article;
     end = &article[size];
 
-    for (l = 0, longline = 0; ; l++) {
-	/* Need more room? */
-	if (end - p < ART_LINE_MALLOC) {
-	    i = p - article;
-	    size += ART_LINE_MALLOC;
-	    RENEW(article, char, size);
-	    end = &article[size];
-	    p = i + article;
-	}
+    longline = 0;
+    for (l = 1; ; l++) {
+	size_t len;
+	const char *line;
 
-	/* Read line, process bad cases. */
-	switch (r = READline(p, ART_LINE_LENGTH, DEFAULT_TIMEOUT)) {
+	r = line_read(&NNTPline, PERMaccessconf->clienttimeout, &line, &len);
+	switch (r) {
 	default:
-	    syslog(L_ERROR, "%s internal %d in post", ClientHost, r);
+	    warn("%s internal %d in post", ClientHost, r);
 	    /* FALLTHROUGH */
 	case RTtimeout:
-	    syslog(L_ERROR, "%s timeout in post", ClientHost);
+	    warn("%s timeout in post", ClientHost);
 	    Printf("%d timeout after %d seconds, closing connection\r\n",
-		   NNTP_TEMPERR_VAL, DEFAULT_TIMEOUT);
+		   NNTP_TEMPERR_VAL, PERMaccessconf->clienttimeout);
 	    ExitWithStats(1, FALSE);
 	    /* NOTREACHED */
 	case RTeof:
-	    syslog(L_ERROR, "%s eof in post", ClientHost);
+	    warn("%s eof in post", ClientHost);
 	    ExitWithStats(1, FALSE);
 	    /* NOTREACHED */
 	case RTlong:
 	    if (longline == 0)
-		longline = l + 1;
+		longline = l;
 	    continue;
 	case RTok:
 	    break;
 	}
 
-	/* Process normal text. */
-	if (*p != '.') {
-	    p += strlen(p);
-	    *p++ = '\n';
-	    *p = '\0';
-	    continue;
-	}
-
-	/* Got a leading period; see if it's the terminator. */
-	if (p[1] == '\0') {
-	    *p = '\0';
+	/* if its the terminator, break out */
+	if (strcmp(line, ".") == 0) {
 	    break;
 	}
 
-	/* "Arnold, please copy down over the period for me." */
-	while ((p[0] = p[1]) != '\0')
-	    p++;
+	/* if they broke our line length limit, there's little point
+	 * in processing any more of their input */
+	if (longline != 0) {
+	    continue;
+	}
+
+	/* +2 because of the \n\0 we append; note we don't add the 2
+	 * when increasing the size of the buffer as ART_LINE_MALLOC
+	 * will always be larger than 2 bytes */
+	if ((len + 2) > (end - p)) {
+	    i = p - article;
+	    size += len + ART_LINE_MALLOC;
+	    RENEW(article, char, size);
+	    end = &article[size];
+	    p = i + article;
+	}
+
+	/* reverse any byte-stuffing */
+	if (*line == '.') {
+	    ++line;
+	    --len;
+	}
+	memcpy(p, line, len);
+	p += len;
 	*p++ = '\n';
 	*p = '\0';
     }
 
     if (longline) {
-	syslog(L_NOTICE, "%s toolong in post", ClientHost);
-	/* ihave */
-	Printf("%d Line %d too long\r\n", NNTP_POSTFAIL_VAL, longline);
+	warn("%s toolong in post", ClientHost);
+	Printf("%d Line %d too long\r\n", 
+	       ihave ? NNTP_REJECTIT_VAL : NNTP_POSTFAIL_VAL, longline);
 	POSTrejected++;
 	return;
     }
@@ -874,7 +881,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
     /* Send the article to the server. */
     response = ARTpost(article, idbuff, ihave, &permanent);
     if (response == NULL) {
-	syslog(L_NOTICE, "%s post ok %s", ClientHost, idbuff);
+	notice("%s post ok %s", ClientHost, idbuff);
 	Reply("%s %s\r\n", ihave ? NNTP_TOOKIT : NNTP_POSTEDOK, idbuff);
 	POSTreceived++;
     }
@@ -883,7 +890,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 	    *p = '\0';
 	if ((p = strchr(response, '\n')) != NULL)
 	    *p = '\0';
-	syslog(L_NOTICE, "%s post failed %s", ClientHost, response);
+	notice("%s post failed %s", ClientHost, response);
 	if (!ihave || permanent) {
 	    /* for permanent errors reject the message */
 	    Reply("%d %s\r\n", ihave ? NNTP_REJECTIT_VAL : NNTP_POSTFAIL_VAL,

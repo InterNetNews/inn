@@ -160,6 +160,10 @@ static CMDENT	CMDtable[] = {
 };
 
 
+static const char *const timer_name[] = {
+    "idle",
+};
+
 /*
 **  Log a summary status message and exit.
 */
@@ -170,6 +174,7 @@ ExitWithStats(int x, bool readconf)
     double		usertime;
     double		systime;
 
+    line_free(&NNTPline);
     (void)fflush(stdout);
     (void)GetTimeInfo(&Now);
     STATfinish = TIMEINFOasDOUBLE(Now);
@@ -226,9 +231,13 @@ ExitWithStats(int x, bool readconf)
 
     HISclose(History);
 
+    TMRsummary("ME", timer_name);
+    TMRfree();
+
     if (LocalLogFileName != NULL)
 	DISPOSE(LocalLogFileName);
     closelog();
+    free((void *)message_program_name);
     exit(x);
 }
 
@@ -874,7 +883,7 @@ main(int argc, char *argv[])
 
     /* Set up the pathname, first thing, and teach our error handlers about
        the name of the program. */
-    name = COPY(argv[0]);
+    name = argv[0];
     if (name == NULL || *name == '\0')
 	name = "nnrpd";
     else {
@@ -884,13 +893,15 @@ main(int argc, char *argv[])
 	if (p != NULL)
 	    name = p + 1;
     }
-    message_program_name = name;
+    message_program_name = COPY(name);
     openlog(name, L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     message_handlers_die(1, message_log_syslog_crit);
     message_handlers_warn(1, message_log_syslog_warning);
     message_handlers_notice(1, message_log_syslog_notice);
 
-    if (ReadInnConf() < 0) exit(1);
+    if (ReadInnConf() < 0)
+	    exit(1);
+    TMRinit(TMR_MAX);
 
 #ifdef HAVE_SSL
     while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nNop:Rr:s:tS")) != EOF)
@@ -1113,9 +1124,11 @@ main(int argc, char *argv[])
 	/* Arrange to toggle tracing. */
 	(void)xsignal(SIGHUP, ToggleTrace);
  
+#if defined(DO_PERL)
 	if (!filter) {
 	    PerlFilter(false);
 	}
+#endif
 
 	TITLEset("nnrpd: accepting connections");
  	
@@ -1292,6 +1305,8 @@ main(int argc, char *argv[])
 	clienttimeout = innconf->clienttimeout;
     }
 
+    line_init(&NNTPline);
+
     /* Main dispatch loop. */
     for (timeout = INITIAL_TIMEOUT, av = NULL, ac = 0; ;
 			timeout = clienttimeout) {
@@ -1309,8 +1324,12 @@ main(int argc, char *argv[])
 	    ac = Argify(PushedBack, &av);
 	    r = RTok;
 	}
-	else
-	    switch (r = READline(buff, (int)sizeof buff, timeout)) {
+	else {
+	    size_t len;
+	    const char *p;
+
+	    r = line_read(&NNTPline, timeout, &p, &len);
+	    switch (r) {
 	    default:
 		syslog(L_ERROR, "%s internal %d in main", ClientHost, r);
 		/* FALLTHROUGH */
@@ -1323,22 +1342,27 @@ main(int argc, char *argv[])
 		       NNTP_TEMPERR_VAL, timeout);
 		ExitWithStats(1, FALSE);
 		break;
+	    case RTok:
+		if (len < sizeof(buff)) {
+		    /* line_read guarantees null termination */
+		    memcpy(buff, p, len + 1);
+		    /* Do some input processing, check for blank line. */
+		    if (Tracing)
+			syslog(L_TRACE, "%s < %s", ClientHost, buff);
+		    if (buff[0] == '\0')
+			continue;
+		    ac = Argify(buff, &av);
+		    break;
+		}
+		/* FALLTHROUGH */		
 	    case RTlong:
 		Reply("%d Line too long\r\n", NNTP_BAD_COMMAND_VAL);
 		continue;
-	    case RTok:
-		/* Do some input processing, check for blank line. */
-		if (Tracing)
-		    syslog(L_TRACE, "%s < %s", ClientHost, buff);
-		if (buff[0] == '\0')
-		    continue;
-		ac = Argify(buff, &av);
-		break;
 	    case RTeof:
 		/* Handled below. */
 		break;
 	    }
-
+	}
 	/* Client gone? */
 	if (r == RTeof)
 	    break;
