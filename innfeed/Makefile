@@ -73,7 +73,7 @@ ALL_GCC_WARNINGS = -pedantic -W -Waggregate-return -Wcast-align \
 
 MORE_WARN	= -Wconversion 
 
-VERSION		= 0.10.1
+VERSION		= 1.0
 COMPRESS	= gzip
 COMPRESS_EXT	= gz
 TARSRC		= $(SRC) $(INCS) Makefile README INSTALL innfeed.conf \

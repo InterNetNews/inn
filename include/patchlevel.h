@@ -14,7 +14,7 @@
 */
 #define RELEASE "2"
 #define PATCHLEVEL "2"
-#define DATE "23-Oct-1998"
+#define DATE "21-Jan-1999"
 #define RELEASE_C 2
 #define PATCHLEVEL_C 2
 #define SUB_PATCHLEVEL_C 0
