@@ -24,13 +24,13 @@
 #include "Python.h"
 
 
-BOOL		PythonFilterActive;
+bool		PythonFilterActive;
 char		*filterPath;	/* this gets set in art.c */
 PyObject	*PYFilterObject = NULL;
 PyObject	*PYFilterModule = NULL;
 
 /* article filter bits and pieces */
-ARTHEADER	ARTheaders[], *ARTheadersENDOF;
+extern ARTHEADER ARTheaders[], *ARTheadersENDOF;
 PyObject	*PYheaders = NULL;
 PyObject	**PYheaditem;
 PyObject	**PYheadkey;
@@ -50,7 +50,7 @@ PyObject	*close_method = NULL;
 */
 void
 PYfilter(value)
-    BOOL value;
+    bool value;
 {
     PythonFilterActive = value;
     syslog(L_NOTICE, "%s Python filtering %s", LogName,
@@ -62,12 +62,11 @@ PYfilter(value)
 /*
 **  Front end for PYfilter()
 */
-STRING
-PYcontrol(av)
-    char **av;
+const char *
+PYcontrol(char **av)
 {
     char        *p;
-    extern BOOL PythonFilterActive;
+    extern bool PythonFilterActive;
 
     switch (av[0][0]) {
     default:
