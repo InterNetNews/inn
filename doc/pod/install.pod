@@ -169,7 +169,10 @@ options are:
 Sets the installation prefix for INN.  The default is F</usr/local/news>.
 All of INN's programs and support files will be installed under this
 directory.  This should match the home directory of your news user (it
-will make installation and maintenance easier).
+will make installation and maintenance easier).  It is not recommended to
+set this to /usr; if you decide to do that anyway, make sure to point
+INN's temporary directory at a directory that isn't world-writeable (see
+B<--with-tmp-path> below).
 
 =item B<--with-db-dir>=PATH
 
@@ -191,6 +194,15 @@ F</news>).
 It's also possible to set the paths for most other sections of the INN
 installation independently; see C<./configure --help> and look for the
 B<--with-*-dir>=PATH options.
+
+=item B<--with-tmp-path>=PATH
+
+Sets the directory in which INN will create temporary files.  This should
+under no circumstances be the same as the system temporary directory or
+otherwise be set to a world-writeable directory, since INN doesn't take
+care to avoid symlink attacks and other security problems possible with a
+world-writeable directory.  This directory should be reserved for the
+exclusive use of INN and only writeable by the news user.
 
 =item B<--enable-tagged-hash>
 

@@ -64,8 +64,8 @@ Before You Begin
       distribution of Perl before compiling INN.  For instructions on
       obtaining and installing Perl, see <http://www.perl.com/latest/>.
 
-    * The INN Makefiles use the syntax `include FILE', rather than the
-      syntax expected by some BSDish systems of `.include <FILE>'.  If your
+    * The INN Makefiles use the syntax "include FILE", rather than the
+      syntax expected by some BSDish systems of ".include <FILE>".  If your
       system expects the latter syntax, the recommended solution is to
       install GNU make from <ftp://ftp.gnu.org/make/>.  You may have GNU
       make already installed as gmake, in which case using gmake rather than
@@ -120,8 +120,8 @@ Unpacking the Distribution
 Installing INN
 
     Before beginning installation, you should make sure that there is a user
-    on your system named `news', and that this user's primary group is set
-    to a group called `news'.  The home directory of this user should be set
+    on your system named "news", and that this user's primary group is set
+    to a group called "news".  The home directory of this user should be set
     to the directory under which you wish to install INN (/usr/local/news is
     the default and is a good choice).  INN will install itself as this user
     and group.  You can change these if you want but these are the defaults
@@ -157,7 +157,10 @@ Installing INN
         /usr/local/news.  All of INN's programs and support files will be
         installed under this directory.  This should match the home
         directory of your news user (it will make installation and
-        maintenance easier).
+        maintenance easier).  It is not recommended to set this to /usr; if
+        you decide to do that anyway, make sure to point INN's temporary
+        directory at a directory that isn't world-writeable (see
+        --with-tmp-path below).
 
     --with-db-dir=PATH
         Sets the prefix for INN database files.  The default is PREFIX/db,
@@ -175,8 +178,17 @@ Installing INN
         different file system (often /news).
 
         It's also possible to set the paths for most other sections of the
-        INN installation independently; see `./configure --help' and look
+        INN installation independently; see "./configure --help" and look
         for the --with-*-dir=PATH options.
+
+    --with-tmp-path=PATH
+        Sets the directory in which INN will create temporary files.  This
+        should under no circumstances be the same as the system temporary
+        directory or otherwise be set to a world-writeable directory, since
+        INN doesn't take care to avoid symlink attacks and other security
+        problems possible with a world-writeable directory.  This directory
+        should be reserved for the exclusive use of INN and only writeable
+        by the news user.
 
     --enable-tagged-hash
         Use tagged hash table for the history database.  The tagged hash
@@ -243,7 +255,7 @@ Installing INN
         can also choose to use libtool even when only building static
         libraries; a libtool build may be somewhat more portable on weird
         systems.  libtool builds aren't the default because they take
-        somewhat longer.  See `./configure --help' for the various available
+        somewhat longer.  See "./configure --help" for the various available
         options related to libtool builds.
 
     --enable-uucp-rnews
@@ -469,39 +481,39 @@ Configuring INN
 
     Before we begin, it is worth mentioning the wildmat pattern matching
     syntax used in many configuration files.  These are simple wildcard
-    matches using the asterisk (`*') as the wildcard character, much like
+    matches using the asterisk ("*") as the wildcard character, much like
     the simple wildcard expansion used by Unix shells.
 
     In many cases, wildmat patterns can be specified in a comma-separated
     list to indicate a list of newsgroups.  When used in this fashion, each
     pattern is checked in turn to see if it matches, and the last pattern in
     the line that matches the group name is used.  Patterns beginning with
-    `!' mean to exclude groups matching that pattern.  For example:
+    "!" mean to exclude groups matching that pattern.  For example:
 
         *, !comp.*, comp.os.*
 
-    In this case, we're saying we match everything (`*'), except that we
-    don't match anything under comp (`!comp.*'), unless it is actually under
-    the comp.os hierarchy (`comp.os.*').  This is because non-comp groups
+    In this case, we're saying we match everything ("*"), except that we
+    don't match anything under comp ("!comp.*"), unless it is actually under
+    the comp.os hierarchy ("comp.os.*").  This is because non-comp groups
     will match only the first pattern (so we want them), comp.os groups will
     match all three patterns (so we want them too, because the third pattern
     counts in this case), and all other comp groups will match the first and
     second patterns and will be excluded by the second pattern.
 
     Some uses of wildmat patterns also support "poison" patterns (patterns
-    starting with `@').  These patterns behave just like `!' patterns when
+    starting with "@").  These patterns behave just like "!" patterns when
     checked against a single newsgroup name.  Where they become special is
     for articles crossposted to multiple newsgroups; normally, such an
     article will be considered to match a pattern if any of the newsgroups
     it is posted to matches the pattern.  If any newsgroup the article is
-    posted to matches an expression beginning with `@', however, that
+    posted to matches an expression beginning with "@", however, that
     article will not match the pattern even if other newsgroups to which it
     was posted match other expressions.
 
     See wildmat(5) for full details on wildmat patterns.
 
     In all INN configuration files, blank lines and lines beginning with a
-    `#' symbol are considered comments and are ignored.
+    "#" symbol are considered comments and are ignored.
 
   inn.conf
 
@@ -509,9 +521,9 @@ Configuring INN
     as a series of parameter-value pairs, one per line.  The parameter is
     first, followed by a colon and one or more whitespace characters and the
     value itself.  For some parameters the value is a string or a number;
-    for others it is true or false.  (True values can be written as `yes',
-    `true', or `on', whichever you prefer.  Similarly, false values can be
-    written as `no', `false', or `off'.)
+    for others it is true or false.  (True values can be written as "yes",
+    "true", or "on", whichever you prefer.  Similarly, false values can be
+    written as "no", "false", or "off".)
 
     inn.conf contains dozens of changeable parameters (see inn.conf(5) for
     full details), but only a few really need to be edited during normal
@@ -526,7 +538,7 @@ Configuring INN
     complaints
         Used to set the value of the X-Complaints-To: header which is added
         to all articles posted locally.  The usual value would be something
-        like `abuse@example.com' or `postmaster@example.com'.  If not
+        like "abuse@example.com" or "postmaster@example.com".  If not
         specified, the newsmaster email address will be used.
 
     domain
@@ -614,7 +626,7 @@ Configuring INN
 
     newsfeeds is organized as a series of feed entries.  Each feed entry is
     composed of four fields separated by colons.  Entries may span multiple
-    lines by using a backslash (`\') to indicate that the next line is a
+    lines by using a backslash ("\") to indicate that the next line is a
     continuation of the current line.  (Note that comments don't interact
     with backslashes in the way you might expect.  A commented-out line
     ending in a backslash will still be considered continued on the next
@@ -637,24 +649,24 @@ Configuring INN
     lists, given as newsgroup-pattern/distribution-list.  The distribution
     list is not described here; newsfeeds(5) for information (it's not used
     that frequently in practice).  The newsgroup pattern is a wildmat-style
-    pattern list as described above (supporting `@').
+    pattern list as described above (supporting "@").
 
     The third field is a comma-separated list of flags that determine both
     the type of feed entry and sets certain parameters for the entry.  See
     newsfeeds(5) for information on the flag settings; you can do a
     surprising amount with them.  The three most common patterns, and the
-    ones mainly used for outgoing news feeds to other sites, are `Tf,Wnm'
+    ones mainly used for outgoing news feeds to other sites, are "Tf,Wnm"
     (to write out a batch file of articles to be sent, suitable for
-    processing by nntpsend and innxmit), `Tm' (to send the article to a
-    funnel feed, used with innfeed), and `Tc,Wnm*' (to collect a funnel feed
+    processing by nntpsend and innxmit), "Tm" (to send the article to a
+    funnel feed, used with innfeed), and "Tc,Wnm*" (to collect a funnel feed
     and send it via a channel feed to an external program, used to send
     articles to innfeed).
 
     The fourth field is a multi-purpose parameter whose meaning depends on
     the settings of the flags in the third field.  To get a feel for it
-    using the examples above, for file feeds (`Tf') it's the name of the
-    file to write, for funnel feeds (`Tm') it's the name of the feed entry
-    to funnel into, and for channel feeds (`Tc') it's the name of the
+    using the examples above, for file feeds ("Tf") it's the name of the
+    file to write, for funnel feeds ("Tm") it's the name of the feed entry
+    to funnel into, and for channel feeds ("Tc") it's the name of the
     program to run and feed references to articles.
 
     Now that you have a rough idea of the file layout, we'll begin to add
@@ -698,7 +710,7 @@ Configuring INN
     wants.  In this example, the actual name of the remote site is
     remote.example.com, but it puts news.example.com in the Path: header. 
     If the remote site puts its actual hostname in the Path: header, you
-    won't need the `/news.example.com' part.
+    won't need the "/news.example.com" part.
 
     This entry will cause innd to write out a file in ~news/spool/outgoing
     named remote.example.com and containing the message ID and storage token
@@ -726,9 +738,9 @@ Configuring INN
 
     (adjust the path to startinnfeed if you installed it elsewhere).  Note
     that we don't feed this entry any articles directly (its newsgroup
-    pattern is `!*').  Note also that the name of this entry ends in an
+    pattern is "!*").  Note also that the name of this entry ends in an
     exclamation point.  This is a standard convention for all special feeds;
-    since the delimiter for the Path: header is `!', no site name containing
+    since the delimiter for the Path: header is "!", no site name containing
     that character can match the name of a real site.
 
     Next, set up entries for each remote site to which you will be feeding
@@ -738,7 +750,7 @@ Configuring INN
             :<newsgroups>\
             :Tm:innfeed!
 
-    specifying that they funnel into the `innfeed!' feed.  As in the
+    specifying that they funnel into the "innfeed!" feed.  As in the
     previous example for batching, remote.example.com is the actual name of
     the remote peer, news.example.com is what they put in the Path: header
     (if different than the actual name of the server), and <newsgroups> is
@@ -896,7 +908,7 @@ Configuring INN
     lines must occur after all cycbuff lines in the file.
 
     If you want INN to fill each cycbuff before moving on to the next one
-    rather than writing to them round-robin, add `:SEQUENTIAL' to the end of
+    rather than writing to them round-robin, add ":SEQUENTIAL" to the end of
     the metacycbuff line.  This may give noticeably better performance when
     using multiple cycbuffs on the same spindle (such as partitions or
     slices of a larger disk), but will probably give worse performance if
@@ -984,12 +996,12 @@ Configuring INN
 
     INN will reject any articles more than a certain number of days old (the
     artcutoff parameter in inn.conf, defaulting to 10); the number on the
-    `/remember/' line should match that.
+    "/remember/" line should match that.
 
     CNFS makes no further use of expire.ctl, since articles stored in CNFS
     buffers expire automatically when the buffer runs out of free space. 
     For other storage methods, there are two different syntaxes of this
-    file, depending on whether `groupbaseexpiry' is set in inn.conf.  If it
+    file, depending on whether "groupbaseexpiry" is set in inn.conf.  If it
     is set to false, expire.ctl takes entries of the form:
 
         <storage_class>:<keep>:<default>:<purge>
@@ -1006,23 +1018,23 @@ Configuring INN
     class will be expired after <purge> days, even if their Expires: headers
     specify a longer life.
 
-    All three of these fields can also contain the special keyword `never'. 
-    If <default> is `never', only articles with explicit Expires: headers
-    will ever be expired.  If <keep> is `never', articles with explicit
-    Expires: headers will be kept forever.  Setting <purge> to `never' says
+    All three of these fields can also contain the special keyword "never". 
+    If <default> is "never", only articles with explicit Expires: headers
+    will ever be expired.  If <keep> is "never", articles with explicit
+    Expires: headers will be kept forever.  Setting <purge> to "never" says
     to honor Expires: headers even if they specify dates far into the
-    future.  (Note that if <keep> is set to `never', all articles with
+    future.  (Note that if <keep> is set to "never", all articles with
     Expires: headers are kept forever and the value of <purge> is not used.)
 
-    If the value of `groupbaseexpiry' is true, expire.ctl takes entries of
+    If the value of "groupbaseexpiry" is true, expire.ctl takes entries of
     the form:
 
         <wildmat>:<flag>:<keep>:<default>:<purge>
 
-    <wildmat> is a wildmat expression (`!' and `@' not permitted, and only a
+    <wildmat> is a wildmat expression ("!" and "@" not permitted, and only a
     single expression, not a comma-separated set of them.  Each expiration
-    line applies to groups matching the wildmat expression.  <flag> is `M'
-    for moderated groups, `U' for unmoderated groups, and `A' for groups
+    line applies to groups matching the wildmat expression.  <flag> is "M"
+    for moderated groups, "U" for unmoderated groups, and "A" for groups
     with any moderation status; the line only matches groups with a matching
     expiration status.  All of the other fields have the same meaning as
     above.
@@ -1060,7 +1072,7 @@ Configuring INN
     If you're running a server for one particular domain, want to allow all
     hosts within that domain to read and post to any group on the server,
     and want to deny access to anyone outside that domain, just use the
-    above and change `example.com' in the above to your domain and you're
+    above and change "example.com" in the above to your domain and you're
     all set.  Lots of examples of more complicated things are in the example
     file.
 
@@ -1130,12 +1142,12 @@ Creating the Database Files
     complete files.  If you plan to only carry a small set of groups, the
     default minimal active file installed by INN is a good place to start
     and you can create additional groups after the server is running by
-    using `ctlinnd newgroup'.
+    using "ctlinnd newgroup".
 
-    `control' and `junk' must exist as newsgroups in your active file for
+    "control" and "junk" must exist as newsgroups in your active file for
     INN to start, and creating pseudogroups for the major types of control
     messages is strongly encouraged for all servers that aren't standalone. 
-    `to' must also exist as a newsgroup if you have mergetogroups set in
+    "to" must also exist as a newsgroup if you have mergetogroups set in
     inn.conf.
 
     Next, you need to create an empty history database.  To do this, type:
@@ -1144,7 +1156,7 @@ Creating the Database Files
         touch history
         makedbz -i
 
-    When it finishes, rename the files it created to remove the `.n' in the
+    When it finishes, rename the files it created to remove the ".n" in the
     file names and then make sure the file permissions are correct on all
     the files you've just created:
 
@@ -1159,16 +1171,16 @@ Configuring syslog
     and summarize those syslog log files, but when you first install INN you
     need to set them up.
 
-    If your system understands the `news' syslog facility, INN will use it;
-    otherwise, it will log to `local1'.  Nearly every modern system has a
-    `news' syslog facility so you can safely assume that yours does, but if
-    in doubt take a look at the output from running `configure'.  You should
+    If your system understands the "news" syslog facility, INN will use it;
+    otherwise, it will log to "local1".  Nearly every modern system has a
+    "news" syslog facility so you can safely assume that yours does, but if
+    in doubt take a look at the output from running "configure".  You should
     see a line that looks like:
 
         checking log level for news... LOG_NEWS
 
     If that says LOG_LOCAL1 instead, change the below instructions to use
-    `local1' instead of `news'.
+    "local1" instead of "news".
 
     Edit /etc/syslog.conf on your system and add lines that look like the
     following:
@@ -1183,7 +1195,7 @@ Configuring syslog
     make sure you use a tab, or you'll get mysterious failures.  You'll also
     want to make sure that news log messages don't fill your other log files
     (INN generates a lot of log traffic); for every entry in
-    /etc/syslog.conf that starts with `*', add `;news.none' to the end of
+    /etc/syslog.conf that starts with "*", add ";news.none" to the end of
     the first column.  For example, if you have a line like:
 
         *.err               /dev/console
@@ -1194,8 +1206,8 @@ Configuring syslog
 
     (You can choose not to do this for the higher priority log messages, if
     you want to make sure they go to your normal high-priority log files as
-    well as INN's.  Don't bother with anything lower priority than `crit',
-    though.  `news.err' isn't interesting enough to want to see all the
+    well as INN's.  Don't bother with anything lower priority than "crit",
+    though.  "news.err" isn't interesting enough to want to see all the
     time.)  Now, make sure that the news log files exist; syslog generally
     won't create files automatically.  Enter the following commands:
 
@@ -1226,7 +1238,7 @@ Setting Up the Cron Jobs
 
         0 3 * * * su -c "/usr/local/news/bin/news.daily expireover lowmark" news
 
-    If you're using any non-CNFS storage methods, add `delayrm' to the above
+    If you're using any non-CNFS storage methods, add "delayrm" to the above
     option list for news.daily.
 
     If you use the batching method to send news, also set up a cron job to
@@ -1293,7 +1305,7 @@ Starting and Stopping the System
     in the system boot scripts.  If innd is stopped or killed, you can
     restart it by running rc.news by hand as the news user.
 
-    The rc.news script may also be used to shut down INN, with the `stop'
+    The rc.news script may also be used to shut down INN, with the "stop"
     option:
 
         su news -c '/usr/local/news/bin/rc.news stop'
