@@ -104,8 +104,10 @@ FILE *
 CAlistopen(FILE *FromServer, FILE *ToServer, const char *request)
 {
     /* Gotta talk to the server -- see if we can. */
-    if (FromServer == NULL || ToServer == NULL)
+    if (FromServer == NULL || ToServer == NULL) {
+	errno = EBADF;
 	return NULL;
+    }
 
     (void)sprintf(CApathname, "%.220s/%s", innconf->pathtmp, _PATH_TEMPACTIVE);
     (void)mktemp(CApathname);
