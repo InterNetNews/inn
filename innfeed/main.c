@@ -337,7 +337,7 @@ int main (int argc, char **argv)
       syslog(LOG_ERR, "cant setup the storage subsystem\n");
       exit(1);
   }
-  if (innconf->storageapi && !SMinit()) {
+  if (!SMinit()) {
       d_printf(0, "Storage manager initialization failed\n");
       syslog(LOG_ERR, "Storage manager initialization failed\n");
       exit(1);

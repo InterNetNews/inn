@@ -462,7 +462,6 @@ bool nntpPrepareBuffer (Buffer buffer)
   int msize, newDsize, dsize, extra ;
   char *base, p, *src, *dst ;
   bool needfinal = false ;
-  bool needdotfinal = false;
 
   ASSERT (buffer != NULL) ;
 
