@@ -337,6 +337,10 @@ Needed Bug Fixes:
   by checking the mtime of active before and after the server was
   throttled.
 
+* innreport silently discards news.notice entries about most of the errors
+  innfeed generates.  It should ideally generate some summary, or at least
+  note that some error has occurred and the logs should be examined.
+
 
 Requested New Features:
 
