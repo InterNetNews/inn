@@ -132,6 +132,7 @@ EXTERN BOOL	PERMspecified;
 EXTERN ACCESSGROUP	*PERMaccessconf;
 EXTERN BOOL	Tracing;
 EXTERN BOOL 	Offlinepost;
+EXTERN BOOL 	initialSSL;
 EXTERN char	**PERMreadlist;
 EXTERN char	**PERMpostlist;
 EXTERN char	ClientHost[SMBUF];

@@ -761,6 +761,10 @@ main(int argc, char *argv[])
     GID_T		shadowgid;
 #endif /* HAVE_GETSPNAM */
 
+#ifdef HAVE_SSL
+    int ssl_result;
+#endif /* HAVE_SSL */
+
 #if	!defined(_HPUX_SOURCE)
     /* Save start and extent of argv for TITLEset. */
     TITLEstart = argv[0];
@@ -779,7 +783,11 @@ main(int argc, char *argv[])
 
     if (ReadInnConf() < 0) exit(1);
 
+#ifdef HAVE_SSL
+    while ((i = getopt(argc, argv, "b:Di:g:op:Rr:s:t:S")) != EOF)
+#else
     while ((i = getopt(argc, argv, "b:Di:g:op:Rr:s:t")) != EOF)
+#endif /* HAVE_SSL */
 	switch (i) {
 	default:
 	    Usage();
@@ -818,6 +826,11 @@ main(int argc, char *argv[])
 	case 't':			/* Tracing */
 	    Tracing = TRUE;
 	    break;
+#ifdef HAVE_SSL
+	case 'S':			/* SSL negotiation as soon as connected */
+	    initialSSL = TRUE;
+	    break;
+#endif /* HAVE_SSL */
 	}
     argc -= optind;
     if (argc)
@@ -990,6 +1003,39 @@ main(int argc, char *argv[])
 	exit(1);
     }
     STATstart = TIMEINFOasDOUBLE(Now);
+
+#ifdef HAVE_SSL
+    if (initialSSL) {
+      sasl_config_read();
+      ssl_result=tls_init_serverengine(5,        /* depth to verify */
+				       1,        /* can client auth? */
+				       0,        /* required client to auth? */
+				       (char *)sasl_config_getstring("tls_ca_file", ""),
+				       (char *)sasl_config_getstring("tls_ca_path", ""),
+				       (char *)sasl_config_getstring("tls_cert_file", ""),
+				       (char *)sasl_config_getstring("tls_key_file", ""));
+      if (ssl_result == -1) {
+	Reply("%d Error initializing TLS\r\n", NNTP_STARTTLS_BAD_VAL);
+	
+	syslog(L_ERROR, "error initializing TLS: "
+	       "[CA_file: %s] [CA_path: %s] [cert_file: %s] [key_file: %s]",
+	       (char *) sasl_config_getstring("tls_ca_file", ""),
+	       (char *) sasl_config_getstring("tls_ca_path", ""),
+	       (char *) sasl_config_getstring("tls_cert_file", ""),
+	       (char *) sasl_config_getstring("tls_key_file", ""));
+	ExitWithStats(1, FALSE);
+      }
+
+      ssl_result=tls_start_servertls(0, /* read */
+				     1); /* write */
+      if (ssl_result==-1) {
+	Reply("%d Starttls failed\r\n", NNTP_STARTTLS_BAD_VAL);
+	ExitWithStats(1, FALSE);
+      }
+
+      nnrpd_starttls_done=1;
+    }
+#endif /* HAVE_SSL */
 
 #if	NNRP_LOADLIMIT > 0
     if ((load = GetLoadAverage()) > NNRP_LOADLIMIT) {
