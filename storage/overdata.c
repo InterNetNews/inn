@@ -28,6 +28,28 @@ static const char * const fields[] = {
 
 
 /*
+**  Return a vector of the standard overview fields. Note there is no
+**  way to free up the resulting data structure.
+*/
+const struct cvector *
+overview_fields(void)
+{
+    static struct cvector *list = NULL;
+
+    if (list == NULL) {
+	unsigned int field;
+
+	list = cvector_new();
+	cvector_resize(list, ARRAY_SIZE(fields));
+
+	for (field = 0; field < ARRAY_SIZE(fields); ++field) {
+	    cvector_add(list, fields[field]);
+	}
+    }
+    return list;
+}
+
+/*
 **  Parse the overview schema and return a vector of the additional fields
 **  over the standard ones.  Caller is responsible for freeing the vector.
 */
