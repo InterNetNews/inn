@@ -1004,7 +1004,7 @@ needed when you edit the F<expire.ctl> file a bit later.
 This file sets the expiration policy for articles stored on the server.
 Only one entry is required for all storage classes; it looks like:
 
-    /remember/:14
+    /remember/:10
 
 This entry says how long to keep the message IDs for articles that have
 already expired in the history file so that the server doesn't accept them
@@ -1014,7 +1014,7 @@ spool, you want to keep them around in your history file for a little
 while to ensure you don't get duplicates.
 
 INN will reject any articles more than a certain number of days old (the
-artcutoff parameter in F<inn.conf>, defaulting to 14); the number on the
+artcutoff parameter in F<inn.conf>, defaulting to 10); the number on the
 C</remember/> line should match that.
 
 CNFS makes no further use of F<expire.ctl>, since articles stored in CNFS
