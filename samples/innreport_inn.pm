@@ -1532,7 +1532,7 @@ sub collect {
     }
     # control_XXgroup, foo.bar [moderated] who who /x/y/12, peer, action, 1
     if ($left =~ m/^control_(\S+),    # type of msg
-	          \s\S+               # newsgroup name
+	          (?:\s\S+)?          # newsgroup name
 	          (\smoderated)?\s    # optional
                   (\S+)               # email
                   \s\S+               # email

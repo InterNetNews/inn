@@ -18,7 +18,7 @@ section default {
 	module		"innreport_inn";  # ${libpath}/${module}.pm
 	unwanted_log	"unwanted.log";   # ${logpath}/${unwanted_log}
 	text            true;
-	html            true;
+	html            false;
 	graph           true;        # need 'html'
 	archive		true;  # use false to keep only the latest HTML report.
 	index		"index.html"; # name of the HTML index file.
