@@ -741,7 +741,6 @@ dnl systems should have.
 if test x"$ac_cv_header_stdc" = xno ; then
     AC_CHECK_HEADERS(memory.h stdarg.h stdlib.h strings.h varargs.h)
     AC_CHECK_FUNCS(memcpy strchr)
-    AC_REPLACE_FUNCS(memchr memmove memset)
 fi
 
 dnl Special checks for header files.
@@ -1143,8 +1142,8 @@ if test x"$ac_cv_func_statvfs" = xno ; then
 fi
 
 dnl If we can't find any of the following, we have replacements for them.
-AC_REPLACE_FUNCS(fseeko ftello getopt hstrerror inet_aton pread pwrite \
-                 seteuid strcasecmp strerror strspn setenv)
+AC_REPLACE_FUNCS(fseeko ftello hstrerror inet_aton pread pwrite seteuid \
+                 strcasecmp strerror strspn setenv)
 
 dnl If replacing fseeko or ftello, see if we can use fsetpos/fgetpos.
 if test "$ac_cv_func_fseeko" = no || test "$ac_cv_func_ftello" = no ; then

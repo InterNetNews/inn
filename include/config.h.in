@@ -298,9 +298,6 @@
 /* Define if you have the gethostname function.  */
 #undef HAVE_GETHOSTNAME
 
-/* Define if you have the getopt function.  */
-#undef HAVE_GETOPT
-
 /* Define if you have the getpagesize function.  */
 #undef HAVE_GETPAGESIZE
 
@@ -328,17 +325,8 @@
 /* Define if you have the madvise function.  */
 #undef HAVE_MADVISE
 
-/* Define if you have the memchr function.  */
-#undef HAVE_MEMCHR
-
 /* Define if you have the memcpy function.  */
 #undef HAVE_MEMCPY
-
-/* Define if you have the memmove function.  */
-#undef HAVE_MEMMOVE
-
-/* Define if you have the memset function.  */
-#undef HAVE_MEMSET
 
 /* Define if you have the mkfifo function.  */
 #undef HAVE_MKFIFO
