@@ -249,7 +249,8 @@ value *findValue (scope *s, const char *name, int inherit)
 
       for (i = 0 ; i < s->value_idx ; i++)
         {
-          if (strncmp (s->values[i]->name,name,p - name) == 0)
+          if (strlen (s->values[i]->name) == p - name &&
+              strncmp (s->values[i]->name,name,p - name) == 0)
             {
               if (*p == '\0')     /* last segment of name */
                 return s->values[i] ;
