@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include <syslog.h> 
+#include "macros.h"
 #include "configdata.h"
 #include "clibrary.h"
 #include "libinn.h"
@@ -35,7 +36,7 @@ main(int ac, char **av, char **ep)
   struct passwd *pwd;
   struct rlimit rl;
   char *progname;
-  char innfeed[256];
+  char *innfeed;
 
   if ((progname = strrchr(av[0], '/')) != NULL)
 	progname++;
@@ -82,7 +83,8 @@ main(int ac, char **av, char **ep)
     {
       char **evp = NULL ;
 
-      snprintf(innfeed, sizeof(innfeed), "%s/%s", innconf->pathbin, INNFEED);
+      innfeed = NEW(char, (strlen(innconf->pathbin)+1+strlen(INNFEED)+1));
+      sprintf(innfeed, "%s/%s", innconf->pathbin, INNFEED);
       av[0] = (char *) innfeed;
 
 #if defined (USE_DMALLOC)
