@@ -53,11 +53,6 @@ static void use_rcsid (const char *rid) {   /* Never called */
 # include <unistd.h>
 #endif
 
-#ifdef HAVE_WAIT_H
-# include <wait.h>
-#else
-# include <sys/wait.h>
-#endif
 #include <signal.h>
 #include <stdio.h>
 #include <ctype.h>
