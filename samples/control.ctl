@@ -1090,7 +1090,7 @@ rmgroup:news@netscape.com:netscape.*:verify-netscape.public.admin
 # rmgroups:news@netscape.com:netscape.*:doit
 
 ## NETINS ( netINS, Inc )
-# Contact: Kevin Houle <kevin@netins.net>
+# Contact: news@netins.net
 # For local use only, contact the above address for information.
 newgroup:*@*:netins.*:mail
 rmgroup:*@*:netins.*:doit
