@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "MAILPOST 8"
-.TH MAILPOST 8 "2004-01-25" "INN 2.5.0" "InterNetNews Documentation"
+.TH MAILPOST 8 "2004-05-22" "INN 2.5.0" "InterNetNews Documentation"
 .SH "NAME"
 mailpost \- feed an email message into a news group
 .SH "SYNOPSIS"
@@ -175,7 +175,9 @@ The \fB\-c\fR flag indicates a length of time to sleep before posting.  If
 duplicate messages are received in this interval (by any instance of
 \&\fBmailpost\fR using the same database), the article is only posted once, but
 with Newsgroups: header modified to crosspost the article to all indicated
-groups.
+groups.  The units for \fIwait-time\fR are seconds; a reasonable value may be
+anywhere from tens to hundreds of seconds, or even higher, depending on how
+long mail can be delayed on its way to your system.
 .IP "\fB\-d\fR \fIdistribution\fR" 4
 .IX Item "-d distribution"
 If the \fB\-d\fR flag is used the value given is added to the article as a

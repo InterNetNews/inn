@@ -51,7 +51,9 @@ The B<-c> flag indicates a length of time to sleep before posting.  If
 duplicate messages are received in this interval (by any instance of
 B<mailpost> using the same database), the article is only posted once, but
 with Newsgroups: header modified to crosspost the article to all indicated
-groups.
+groups.  The units for I<wait-time> are seconds; a reasonable value may be
+anywhere from tens to hundreds of seconds, or even higher, depending on how
+long mail can be delayed on its way to your system.
 
 =item B<-d> I<distribution>
 
