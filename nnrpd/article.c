@@ -12,6 +12,10 @@
 #if defined(HAVE_UNISTD_H)
 # include <unistd.h>
 #endif
+#if	defined(DO_NEED_TIME)
+#include <time.h>
+#endif  /* defined(DO_NEED_TIME) */
+#include <sys/time.h>
 #include "clibrary.h"
 #include "nnrpd.h"
 
@@ -216,12 +220,53 @@ void ARTclose(void)
     }
 }
 
+STATIC BOOL ARTinstore(int i)
+{
+    TOKEN token;
+    char *tokentext;
+    OVERINDEX index;
+    ARTHANDLE *art;
+    struct timeval	stv, etv;
+
+    if (ARTnumbers[i].Tokenretrieved)
+	token = ARTnumbers[i].Token;
+    else {
+	if (!ARTnumbers[i].Index) {
+	   ARTnumbers[i].Token.cancelled = TRUE;
+	   return FALSE;
+	}
+	UnpackOverIndex(*(ARTnumbers[i].Index), &index);
+	ARTnumbers[i].Tokenretrieved = TRUE;
+	if ((tokentext = HISgetent(&index.hash, FALSE, NULL)) == (char *)NULL) {
+	   ARTnumbers[i].Token.cancelled = TRUE;
+	   return FALSE;
+	}
+	token = ARTnumbers[i].Token = TextToToken(tokentext);
+	if (   token.type == TOKEN_EMPTY
+	    || token.index == OVER_NONE
+	    || token.cancelled )
+	 return FALSE;
+    }
+    if (innconf->nnrpdoverstats)
+	gettimeofday(&stv, NULL);
+    art = SMretrieve(token, RETR_STAT);
+    if (innconf->nnrpdoverstats) {
+	gettimeofday(&etv, NULL);
+	OVERartcheck+=(etv.tv_sec - stv.tv_sec) * 1000;
+	OVERartcheck+=(etv.tv_usec - stv.tv_usec) / 1000;
+    }
+    if (art) {
+	SMfreearticle(art);
+	return TRUE;
+    } else return FALSE;
+}
+
 /*
 **  Find an article number in the article array via a binary search;
 **  return -1 if not found.  Cache last hit to make linear lookups
 **  faster.
 */
-STATIC int ARTfind(ARTNUM i)
+STATIC int ARTfind(ARTNUM i, BOOL needcheck)
 {
     ARTLIST		*bottom;
     ARTLIST		*middle;
@@ -233,6 +278,10 @@ STATIC int ARTfind(ARTNUM i)
     top = &ARTnumbers[ARTsize - 1];
     if (ARTcache && (++ARTcache <= top) && (ARTcache->ArtNum <= i)) {
 	if (ARTcache->ArtNum == i)
+	    if (needcheck) {
+		return ARTinstore(ARTcache - ARTnumbers)
+		    ? (ARTcache - ARTnumbers) : -1;
+	    }
 	    return ARTcache - ARTnumbers;
 	bottom = ARTcache;
     }
@@ -249,6 +298,10 @@ STATIC int ARTfind(ARTNUM i)
 	if (i == middle->ArtNum) {
 	    /* Found it; update cache. */
 	    ARTcache = middle;
+	    if (needcheck) {
+		return ARTinstore(middle - ARTnumbers)
+		    ? (middle - ARTnumbers) : -1;
+	    }
 	    return middle- ARTnumbers;
 	}
 
@@ -283,7 +336,7 @@ STATIC BOOL ARTopen(char *name)
     }
     ARTclose();
 
-    if ((i = ARTfind(artnum)) < 0)
+    if ((i = ARTfind(artnum, FALSE)) < 0)
 	return FALSE;
 
     if ((ARTnumbers[i].ArtNum == artnum) && innconf->storageapi) {
@@ -743,7 +796,7 @@ FUNCTYPE CMDfetch(int ac, char *av[])
 	        RARTtable[RARTcount++]=tart;
     }
     if (ac > 1)
-	ARTindex = ARTfind((ARTNUM)atol(buff));
+	ARTindex = ARTfind((ARTNUM)atol(buff), FALSE);
 }
 
 
@@ -813,7 +866,7 @@ FUNCTYPE CMDnextlast(int ac, char *av[])
 	   NNTP_NOTHING_FOLLOWS_VAL, buff, msgid);
 
     if (ac > 1)
-	ARTindex = ARTfind((ARTNUM)atol(buff));
+	ARTindex = ARTfind((ARTNUM)atol(buff), FALSE);
 }
 
 
@@ -841,7 +894,7 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp, BOOL *DidReply)
 	rp->High = rp->Low = ARTnumbers[ARTindex].ArtNum;
 	if (!innconf->storageapi)
 	    return TRUE;
-	if ((i = ARTfind(rp->High)) < 0)
+	if ((i = ARTfind(rp->High, FALSE)) < 0)
 	    return FALSE;
 	if (ARTnumbers[i].Token.cancelled)
 	    return FALSE;
@@ -874,7 +927,7 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp, BOOL *DidReply)
 	if (!innconf->storageapi) {
 	    return TRUE;
 	}
-	if ((i = ARTfind(rp->Low)) < 0)
+	if ((i = ARTfind(rp->Low, FALSE)) < 0)
 	    return FALSE;
 	if (ARTnumbers[i].Token.cancelled)
 	    return FALSE;
@@ -919,7 +972,7 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp, BOOL *DidReply)
     if (!innconf->storageapi)
 	return TRUE;
     for (artnum = rp->Low; artnum <= rp->High; artnum++) {
-	if ((i = ARTfind(artnum)) < 0)
+	if ((i = ARTfind(artnum, FALSE)) < 0)
 	    continue;
 	if (ARTnumbers[i].Token.cancelled)
 	    continue;
@@ -965,7 +1018,7 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp, BOOL *DidReply)
     if (innconf->extendeddbz)
 	return TRUE;
     for (artnum = rp->Low; artnum <= rp->High; artnum++) {
-	if ((i = ARTfind(artnum)) < 0)
+	if ((i = ARTfind(artnum, FALSE)) < 0)
 	    continue;
 	if (ARTnumbers[i].Token.cancelled)
 	    continue;
@@ -1130,7 +1183,7 @@ STATIC char *OVERfind(ARTNUM artnum, int *linelen)
     TOKEN		token;
 
     if (innconf->storageapi) {
-	if ((i = ARTfind(artnum)) < 0)
+	if ((i = ARTfind(artnum, FALSE)) < 0)
 	    return NULL;
 	if ((ARTnumbers[i].Tokenretrieved && (ARTnumbers[i].Token.type == TOKEN_EMPTY)) || ARTnumbers[i].Token.index == OVER_NONE || ARTnumbers[i].Token.cancelled)
 	    return NULL;
@@ -1141,7 +1194,7 @@ STATIC char *OVERfind(ARTNUM artnum, int *linelen)
 	if (!OVERmem && !OVERfp)
 	    return NULL;
 
-	i = ARTfind(artnum);
+	i = ARTfind(artnum, FALSE);
 	if (i < 0 || ARTnumbers[i].ArtNum != artnum)
 	    return NULL;
 	if (OVERmem) {
@@ -1424,7 +1477,7 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 
     Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
     for (i = range.Low; i <= range.High; i++) {
-	if (ARTfind(i) < 0)
+	if (ARTfind(i, innconf->nnrpdcheckart) < 0)
 	    continue;
 
 	/* Get it from the overview? */
@@ -1484,8 +1537,11 @@ FUNCTYPE CMDxover(int ac, char *av[])
     OVERcount++;
     Reply("%d data follows\r\n", NNTP_OVERVIEW_FOLLOWS_VAL);
     for (Opened = OVERopen(), i = range.Low; i <= range.High; i++) {
-	if (ARTfind(i) < 0)
+	if (ARTfind(i, innconf->nnrpdcheckart) < 0) {
+	    if (innconf->storageapi)
+		OVERmiss++;
 	    continue;
+	}
 
 	if (Opened && (p = OVERfind(i, &linelen)) != NULL) {
 	    OVERhit++;
@@ -1597,7 +1653,7 @@ FUNCTYPE CMDxpat(int ac, char *av[])
 
     Printf("%d %s matches follow.\r\n", NNTP_HEAD_FOLLOWS_VAL, header);
     for (pattern = Glom(&av[3]), i = range.Low; i <= range.High; i++) {
-	if (ARTfind(i) < 0)
+	if (ARTfind(i, innconf->nnrpdcheckart) < 0)
 	    continue;
 
 	/* Get it from the Overview? */

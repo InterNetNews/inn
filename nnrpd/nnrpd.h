@@ -141,6 +141,7 @@ EXTERN long	OVERsize;	/* number of bytes of XOVER data sent		*/
 EXTERN long	OVERdbz;	/* number of ms spent reading dbz data	*/
 EXTERN long	OVERseek;	/* number of ms spent seeking history	*/
 EXTERN long	OVERget;	/* number of ms spent reading history	*/
+EXTERN long	OVERartcheck;	/* number of ms spent article check	*/
 /* Pointer to memory containing overview index, may be read only */
 EXTERN char     (*OVERindex)[][OVERINDEXPACKSIZE];
 EXTERN int      OVERicount;      /* Number of OVERINDEX entries at OVERindex */

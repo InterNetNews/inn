@@ -187,8 +187,8 @@ ExitWithStats(x)
         syslog(L_NOTICE, "%s artstats get %d time %d size %d", ClientHost,
             ARTget, ARTgettime, ARTgetsize);
     if (innconf->nnrpdoverstats && OVERcount)
-        syslog(L_NOTICE, "%s overstats count %d hit %d miss %d time %d size %d read %d dbz %d seek %d get %d", ClientHost,
-            OVERcount, OVERhit, OVERmiss, OVERtime, OVERsize, OVERread, OVERdbz, OVERseek, OVERget);
+        syslog(L_NOTICE, "%s overstats count %d hit %d miss %d time %d size %d read %d dbz %d seek %d get %d artcheck %d", ClientHost,
+            OVERcount, OVERhit, OVERmiss, OVERtime, OVERsize, OVERread, OVERdbz, OVERseek, OVERget, OVERartcheck);
 
      if (DaemonMode) {
      	shutdown(STDIN, 2);
