@@ -489,7 +489,9 @@ if test x"$DO_PYTHON" = xdefine ; then
     py_libs=`grep '^LIBS=' $py_libdir/config/Makefile | sed -e 's/^.*=//'`
     py_libc=`grep '^LIBC=' $py_libdir/config/Makefile | sed -e 's/^.*=//'`
     py_libm=`grep '^LIBM=' $py_libdir/config/Makefile | sed -e 's/^.*=//'`
-    PYTHON_LIB="-L$py_libdir/config $py_libs $py_libc $py_libm -lpython$py_ver"
+    py_liblocalmod=`grep '^LOCALMODLIBS=' $py_libdir/config/Makefile | sed -e 's/^.*=//'`
+    py_libbasemod=`grep '^BASEMODLIBS=' $py_libdir/config/Makefile | sed -e 's/^.*=//'`
+    PYTHON_LIB="-L$py_libdir/config $py_libs $py_libc $py_libm -lpython$py_ver $py_liblocalmod $py_libbasemod"
     PYTHON_LIB=`echo $PYTHON_LIB | sed -e 's/[ \\t]*/ /g'`
     AC_MSG_RESULT($py_libdir)
 else
@@ -802,7 +804,7 @@ fi
 
 dnl If we can't find any of the following, we have replacements for them.
 AC_REPLACE_FUNCS(getopt inet_aton inet_ntoa pread pwrite strcasecmp \
-                 strdup strerror strspn)
+                 strdup strerror strspn setenv)
 
 MISSING_OBJ="$LIBOBJS"
 MISSING_SRC=`echo "$MISSING_OBJ" | sed 's/\.o/.c/g'`
