@@ -7,6 +7,7 @@
 #include "clibrary.h"
 #include <sys/uio.h>
 
+#include "inn/innconf.h"
 #include "innd.h"
 #include "ov.h"
 #include "storage.h"
@@ -1007,7 +1008,7 @@ ARTclean(ARTDATA *data, char *buff)
     p = HDR(HDR__LINES);
     i = data->Lines;
     if ((delta = i - atoi(p)) != 0 && abs(delta) > innconf->linecountfuzz) {
-      (void)sprintf(buff, "%d Linecount %s != %d +- %d", NNTP_REJECTIT_VAL,
+      (void)sprintf(buff, "%d Linecount %s != %d +- %ld", NNTP_REJECTIT_VAL,
 	MaxLength(p, p), i, innconf->linecountfuzz);
       TMRstop(TMR_ARTCLEAN);
       return FALSE;

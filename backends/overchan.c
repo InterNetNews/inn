@@ -10,6 +10,7 @@
 #include <syslog.h>
 #include <sys/stat.h>
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
@@ -96,20 +97,21 @@ int main(int ac, char *av[])
     QIOSTATE		*qp;
     unsigned int	now;
 
-    /* First thing, set up logging and our identity. */
-    openlog("overchan", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    /* First thing, set up our identity. */
     message_program_name = "overchan";
 
     /* Log warnings and fatal errors to syslog unless we were given command
        line arguments, since we're probably running under innd. */
     if (ac == 0) {
+        openlog("overchan", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
         message_handlers_warn(1, message_log_syslog_err);
         message_handlers_die(1, message_log_syslog_err);
         message_handlers_notice(1, message_log_syslog_notice);
     }
 	
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(1);
+    if (!innconf_read(NULL))
+        exit(1);
     (void)umask(NEWSUMASK);
     if (innconf->enableoverview && !innconf->useoverchan)
         warn("overchan is running while innd is creating overview data (you"

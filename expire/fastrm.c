@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include <syslog.h>
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
@@ -187,7 +188,7 @@ sm_initialize(void)
 {
     bool value;
 
-    if (ReadInnConf() < 0)
+    if (!innconf_read(NULL))
         exit(1);
     value = true;
     if (!SMsetup(SM_RDWR, &value) || !SMsetup(SM_PREOPEN, &value))

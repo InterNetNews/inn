@@ -78,10 +78,10 @@ Limited can't tag warnings once per dbzinit() by Sang-yong Suh (May, 1998)
 #include <sys/time.h>
 
 #include "dbz.h"
+#include "inn/innconf.h"
+#include "inn/mmap.h"
 #include "libinn.h"
 #include "macros.h"
-
-#include "inn/mmap.h"
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H

@@ -14,6 +14,7 @@
 #include <signal.h>
 #include <syslog.h>
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
@@ -61,7 +62,7 @@ main(int argc, char *argv[])
     struct history *history;
 
     /* First thing, set up logging and our identity. */
-    openlog("expireover", LOG_PID, LOG_INN_PROG);
+    openlog("expireover", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     message_program_name = "expireover";
 
     /* Set up some default options for group-based expiration, although none
@@ -118,7 +119,7 @@ main(int argc, char *argv[])
         die("-e and -k cannot be specified at the same time");
 
     /* Initialize innconf. */
-    if (ReadInnConf() < 0)
+    if (!innconf_read(NULL))
         exit(1);
 
     /* Initialize the lowmark file, if one was requested. */

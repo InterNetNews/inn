@@ -5,10 +5,8 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include <errno.h>
-#include <syslog.h>  
-#include <sys/stat.h>
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
@@ -30,11 +28,11 @@ main(int ac, char *av[]) {
     ARTHANDLE	*art;
     int		len;
 
-    /* First thing, set up logging and our identity. */
-    openlog("cvtbatch", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    /* First thing, set up our identity. */
     message_program_name = "cvtbatch";
+    if (!innconf_read(NULL))
+        exit(1);
 
-    if (ReadInnConf() < 0) exit(1);
     /* Parse JCL. */
     format = COPY("nm");
     while ((i = getopt(ac, av, "w:")) != EOF)

@@ -8,6 +8,7 @@
 #include "clibrary.h"
 #include <dirent.h>
 
+#include "inn/innconf.h"
 #include "innd.h"
 #include "ov.h"
 

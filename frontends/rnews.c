@@ -17,6 +17,7 @@
 #include <syslog.h>
 #include <sys/stat.h>
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
@@ -792,7 +793,8 @@ int main(int ac, char *av[])
     if (setuid(geteuid()) < 0)
         die("cannot setuid to %lu", (unsigned long) geteuid());
 
-     if (ReadInnConf() < 0) exit(1);
+    if (!innconf_read(NULL))
+        exit(1);
      UUCPHost = getenv(_ENV_UUCPHOST);
      PathBadNews = concatpath(innconf->pathincoming, _PATH_BADNEWS);
      port = innconf->nnrpdpostport;

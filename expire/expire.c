@@ -7,11 +7,12 @@
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
-#include <syslog.h>  
 #include <sys/stat.h>
+#include <syslog.h>
 #include <time.h>
 
 #include "inn/history.h"
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inndcomm.h"
 #include "libinn.h"
@@ -517,7 +518,8 @@ int main(int ac, char *av[])
     TimeWarp = 0;
     UnlinkFile = FALSE;
 
-    if (ReadInnConf() < 0) exit(1);
+    if (!innconf_read(NULL))
+        exit(1);
 
     HistoryText = concatpath(innconf->pathdb, _PATH_HISTORY);
 

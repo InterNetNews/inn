@@ -76,6 +76,7 @@ typedef struct direct DIRENTRY ;
 # endif
 #endif
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
 

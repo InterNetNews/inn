@@ -10,6 +10,7 @@
 #include <time.h>
 
 #include "conffile.h"
+#include "inn/innconf.h"
 #include "interface.h"
 #include "libinn.h"
 #include "macros.h"
@@ -360,7 +361,7 @@ static bool SMreadconfig(void) {
 
     /* if innconf isn't already read in, do so. */
     if (innconf == NULL) {
-	if (ReadInnConf() < 0) {
+        if (!innconf_read(NULL)) {
 	    SMseterror(SMERR_INTERNAL, "ReadInnConf() failed");
 	    return FALSE;
 	}

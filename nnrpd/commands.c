@@ -8,6 +8,7 @@
 
 #include "nnrpd.h"
 #include "ov.h"
+#include "inn/innconf.h"
 #include "inn/messages.h"
 
 typedef struct _LISTINFO {

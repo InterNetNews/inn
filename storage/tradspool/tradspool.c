@@ -17,6 +17,7 @@
 /* Needed for htonl() and friends on AIX 4.1. */
 #include <netinet/in.h>
     
+#include "inn/innconf.h"
 #include "inn/qio.h"
 #include "inn/wire.h"
 #include "libinn.h"

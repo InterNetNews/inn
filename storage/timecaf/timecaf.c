@@ -16,8 +16,9 @@
 #include <time.h>
 
 #include "caf.h"
-#include "libinn.h"
+#include "inn/innconf.h"
 #include "inn/wire.h"
+#include "libinn.h"
 #include "macros.h"
 #include "methods.h"
 #include "timecaf.h"

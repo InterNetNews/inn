@@ -6,14 +6,11 @@
 */
 
 #include "config.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "clibrary.h"
 #include <ctype.h>
 #include <syslog.h>
 
-#include "clibrary.h"
+#include "inn/innconf.h"
 #include "nnrpd.h"
 #include "paths.h"
 #include "sasl_config.h"

@@ -11,6 +11,7 @@
 #endif
 #include <sys/uio.h>
 
+#include "inn/innconf.h"
 #include "nnrpd.h"
 #include "ov.h"
 #include "tls.h"

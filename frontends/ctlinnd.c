@@ -8,8 +8,8 @@
 #include <ctype.h>
 #include <errno.h>
 #include <sys/stat.h>
-#include <syslog.h>  
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inndcomm.h"
 #include "libinn.h"
@@ -199,12 +199,12 @@ int main(int ac, char *av[])
     struct stat		Sb;
     char		buff[SMBUF];
 
-    /* First thing, set up logging and our identity. */
-    openlog("ctlinnd", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    /* First thing, set up our identity. */
     message_program_name = "ctlinnd";
 
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(1);
+    if (!innconf_read(NULL))
+        exit(1);
     Silent = FALSE;
     NeedHelp = FALSE;
     ICCsettimeout(CTLINND_TIMEOUT);

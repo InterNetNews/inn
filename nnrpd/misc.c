@@ -11,6 +11,7 @@
 # include <sys/select.h>
 #endif
 
+#include "inn/innconf.h"
 #include "nnrpd.h"
 #include "tls.h"
 #include "sasl_config.h"

@@ -9,6 +9,7 @@
 #include <syslog.h>
 
 #include "inn/history.h"
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
 #include "paths.h"
@@ -41,7 +42,8 @@ main(int ac, char *av[])
     message_program_name = "prunehistory";
 
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(1);
+    if (!innconf_read(NULL))
+        exit(1);
 
     History = concatpath(innconf->pathdb, _PATH_HISTORY);
     Passing = FALSE;

@@ -46,6 +46,7 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
@@ -231,7 +232,7 @@ main(int argc, char *argv[])
         case 'F':
             if (file != NULL)
                 die("inndf: Only one of -f or -F may be given");
-            if (ReadInnConf() < 0)
+            if (!innconf_read(NULL))
                 exit(1);
             file = concatpath(innconf->pathetc, INN_PATH_FILESYSTEMS);
             use_filesystems = true;
@@ -279,7 +280,7 @@ main(int argc, char *argv[])
        initialization stuff. */
     if (overview || ovcount) {
         if (!use_filesystems)
-            if (ReadInnConf() < 0)
+            if (!innconf_read(NULL))
                 exit(1);
         if (!OVopen(OV_READ))
             die("OVopen failed");

@@ -5,7 +5,10 @@
 
 #include "config.h"
 #include "clibrary.h"
+
+#include "inn/innconf.h"
 #include "libinn.h"
+
 #include "innd.h"
 
 /*

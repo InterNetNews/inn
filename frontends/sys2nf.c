@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 
+#include "inn/innconf.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
@@ -246,7 +247,8 @@ main(ac, av)
     char	*sys;
     int		i;
 
-    if (ReadInnConf() < 0) exit(1);
+    if (!innconf_read(NULL))
+        exit(1);
     /* Set defaults. */
     act = "/usr/local/lib/newslib/active";
     sys = "sys";

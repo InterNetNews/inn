@@ -11,7 +11,7 @@ TEXT	= ../../HACKING ../../INSTALL ../../NEWS ../../README ../hook-perl \
 	../hook-python ../checklist
 
 MAN1	= ../man/ckpasswd.1 ../man/convdate.1 ../man/fastrm.1 \
-	../man/innmail.1
+	../man/innconfval.1 ../man/innmail.1
 
 MAN3	= ../man/libinnhist.3 ../man/qio.3 ../man/uwildmat.3
 
@@ -37,6 +37,7 @@ all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 ../man/ckpasswd.1:	ckpasswd.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/convdate.1:	convdate.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/fastrm.1:	fastrm.pod		; $(POD2MAN) -s 1 $? > $@
+../man/innconfval.1:	innconfval.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/innmail.1:	innmail.pod		; $(POD2MAN) -s 1 $? > $@
 
 ../man/libinnhist.3:	libinnhist.pod		; $(POD2MAN) -s 3 $? > $@

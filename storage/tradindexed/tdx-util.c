@@ -16,6 +16,7 @@
 
 #include "inn/buffer.h"
 #include "inn/history.h"
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/vector.h"
 #include "libinn.h"
@@ -358,7 +359,7 @@ main(int argc, char *argv[])
 
     message_program_name = "tdx-util";
 
-    if (ReadInnConf() < 0)
+    if (!innconf_read(NULL))
         exit(1);
 
     /* Parse options. */

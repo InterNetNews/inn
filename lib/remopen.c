@@ -13,6 +13,7 @@
 # include <sys/un.h>
 #endif
 
+#include "inn/innconf.h"
 #include "libinn.h"
 #include "nntp.h"
 #include "paths.h"

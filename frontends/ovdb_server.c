@@ -21,6 +21,7 @@
 # include <sys/un.h>
 #endif
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
@@ -610,7 +611,7 @@ main(int argc, char *argv[])
     message_handlers_warn(1, message_log_syslog_err);
     message_handlers_die(1, message_log_syslog_err);
 
-    if(ReadInnConf() < 0)
+    if (!innconf_read(NULL))
 	exit(1);
 
     if(strcmp(innconf->ovmethod, "ovdb"))

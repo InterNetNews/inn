@@ -54,6 +54,7 @@
 # include <netdb.h>
 #endif
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
@@ -121,7 +122,7 @@ main(int argc, char *argv[])
         syswarn("can't setgroups (is inndstart setuid root?)");
     if (seteuid(news_uid) < 0)
         sysdie("can't seteuid to %lu", news_uid);
-    if (ReadInnConf() < 0)
+    if (!innconf_read(NULL))
         exit(1);
 
     /* Check for a bind address specified in inn.conf.  "any" or "all" will
@@ -203,7 +204,7 @@ main(int argc, char *argv[])
 
     /* innconf->rlimitnofile <= 0 says to leave it alone. */
     if (innconf->rlimitnofile > 0 && setfdlimit(innconf->rlimitnofile) < 0)
-        syswarn("can't set file descriptor limit to %d",
+        syswarn("can't set file descriptor limit to %ld",
                 innconf->rlimitnofile);
 
     /* Create a socket and name it. */

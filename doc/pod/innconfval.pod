@@ -1,0 +1,73 @@
+=head1 NAME
+
+innconfval - Get configuration parameters from inn.conf
+
+=head1 SYNOPSIS
+
+B<innconfval> [B<-pstv>] [B<-i> I<file>] [I<parameter> ...]
+
+=head1 DESCRIPTION
+
+B<innconfval> prints the values of the parameters specified on the command
+line.  By default, it just prints the parameter values, but if B<-p>,
+B<-s>, or B<-t> are given, it instead prints the parameter and value in
+the form of a variable assignment in Perl, Bourne shell, or Tcl
+respectively.  If no parameters are specifically requested, B<innconfval>
+prints out all parameter values (this isn't particularly useful unless one
+of B<-p>, B<-s>, or B<-t> were specified).
+
+All parameters are taken from F<inn.conf> except for I<version>, which is
+always the version string of INN.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-i> I<file>
+
+Use I<file> as the source configuration file rather than F<inn.conf>.
+I<file> must be a valid F<inn.conf> file and will be parsed the same as
+F<inn.conf> would be.
+
+=item B<-p>
+
+Print out parameters as Perl assignment statements.  The variable name
+will be the same as the F<inn.conf> parameter, and string values will be
+enclosed in single quotes with appropriate escaping.  Boolean values will
+be mapped to C<true> or C<false>, and string parameters that are set to
+NULL will be mapped to empty strings.
+
+=item B<-s>
+
+Print out parameters as Bourne shell assignment statements.  The variable
+name will be the F<inn.conf> parameter name in all capitals, and all
+variables will be exported.  String values will be enclosed in single
+quotes with appropriate escaping, and boolean values will be mapped to
+C<true> or C<false>.  String parameters that are set to NULL will be
+mapped to empty strings.
+
+=item B<-t>
+
+Print out parameters as Tcl assignment statements.  The variable name will
+be the same as the F<inn.conf> parameter name but with C<inn_> prepended,
+and string variables will be escaped appropriately.  Boolean values will
+be mapped to C<true> or C<false> and string parameters that are set to
+NULL will be mapped to empty strings.
+
+=item B<-v>
+
+Print INN's version.  This is equivalent to C<innconfval version>.
+
+=back
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
+
+$Id$
+
+=head1 SEE ALSO
+
+inn.conf(5)
+
+=cut

@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 
 #include "inn/history.h"
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/mmap.h"
 #include "libinn.h"

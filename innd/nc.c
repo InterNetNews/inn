@@ -7,6 +7,7 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include "inn/innconf.h"
 #include "innd.h"
 
 #define BAD_COMMAND_COUNT	10

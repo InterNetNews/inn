@@ -6,6 +6,7 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "innperl.h"
 
@@ -223,7 +224,8 @@ JustCleanup(void)
 #endif
 
     CHANshutdown();
-    ClearInnConf();
+    innconf_free(innconf);
+    innconf = NULL;
 
     sleep(1);
 
@@ -335,7 +337,7 @@ main(int ac, char *av[])
 
     /* Set some options from inn.conf that can be overridden with
        command-line options if they exist, so read inn.conf first. */
-    if (ReadInnConf() < 0)
+    if (!innconf_read(NULL))
         exit(1);
 
     /* Parse JCL. */

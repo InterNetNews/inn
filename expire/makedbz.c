@@ -9,6 +9,7 @@
 #include <syslog.h>  
 
 #include "dbz.h"
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
@@ -241,7 +242,8 @@ main(int argc, char **argv)
     message_program_name = "makedbz";
 	
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(1);
+    if (!innconf_read(NULL))
+        exit(1);
     TextFile = concatpath(innconf->pathdb, _PATH_HISTORY);
     HISTORY = concatpath(innconf->pathdb, _PATH_HISTORY);
     HistoryDir = innconf->pathdb;

@@ -8,6 +8,7 @@
 #include "portable/mmap.h"
 #include <sys/uio.h>
 
+#include "inn/innconf.h"
 #include "innd.h"
 #include "ov.h"
 

@@ -29,8 +29,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <syslog.h>
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
@@ -315,8 +315,7 @@ main(int ac, char *av[])
     off_t	size = 0;
     off_t	maxsize = 0;
 
-    /* First thing, set up logging and our identity. */
-    openlog("shrinkfile", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    /* First thing, set up our identity. */
     message_program_name = "shrinkfile";
 
     /* Set defaults. */
@@ -324,7 +323,8 @@ main(int ac, char *av[])
     no_op = FALSE;
     (void)umask(NEWSUMASK);
 
-    if (ReadInnConf() < 0) exit(1);
+    if (!innconf_read(NULL))
+        exit(1);
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "m:s:vn")) != EOF)

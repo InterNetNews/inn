@@ -10,10 +10,9 @@
 /* include foo needed by libinn/storage manager */
 #include "config.h"
 #include "clibrary.h"
-
 #include <errno.h>
-#include <syslog.h>
 
+#include "inn/innconf.h"
 #include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
@@ -76,11 +75,10 @@ main(int argc UNUSED, char *argv[])
     int 	one = 1;
     char	buff[SMBUF];
 
-    openlog(argv[0], L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
-
     ME = argv[0];
 
-    if (ReadInnConf() < 0) { exit(1); }
+    if (!innconf_read(NULL))
+        exit(1);
 
     if (!SMsetup(SM_PREOPEN, &one) || !SMsetup(SM_RDWR, (void *)&one)) {
 	fprintf(stderr, "can't init storage manager");

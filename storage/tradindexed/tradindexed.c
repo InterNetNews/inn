@@ -14,6 +14,7 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
 #include "ov.h"

@@ -89,6 +89,7 @@
 #include <time.h>
 
 #include "inn/hashtab.h"
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/mmap.h"
 #include "inn/qio.h"

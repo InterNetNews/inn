@@ -5,166 +5,92 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include <ctype.h>
-#include <syslog.h>
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
-#include "macros.h"
-#include "paths.h"
 
-/* Global and initialized; to work around SunOS -Bstatic bug, sigh. */
-static char	ConfigBuff[SMBUF] = "";
-int		format = 0;
-static bool	version = FALSE;
-
-static int isnum(const char *v)
-{
-    if (!*v) return(0);
-    for (; *v; v++)
-	if (!CTYPE(isdigit, *v)) return(0);
-    return(1);
-}
-
-static void upit(char *v)
-{
-    for ( ; *v; v++)
-        *v = toupper(*v);
-}
-
+/*
+**  Print the INN version string with appropriate quoting.
+*/
 static void
-printit(char *v, const char *val)
+print_version(FILE *file, enum innconf_quoting quoting)
 {
-    switch (format) {
-	case 0: printf("%s\n", val); break;
-	case 1:   /* sh */
-	    upit(v);
-	    if ((strchr(val, ' ') == NULL) && *val)
-	    	printf("%s=%s; export %s;\n", v, val, v);
-	    else
-	    	printf("%s=\"%s\"; export %s;\n", v, val, v);
-	    break;
-	case 2:   /* csh */
-	    if ((strchr(val, ' ') == NULL) && *val)
-	    	printf("set inn_%s = %s\n", v, val);
-	    else
-	    	printf("set inn_%s = \"%s\"\n", v, val);
-	    break;
-	case 3:   /* perl */
-	    if (isnum(val))
-	    	printf("$%s = %s;\n", v, val);
-	    else {
-	    	printf("$%s = '", v);
-		while (*val) {
-			if ((*val == '\'') || (*val == '\\')) printf("\\");
-			printf("%c", *val++);
-		    }
-	    	printf("';\n");
-	    }
-	    break;
-	case 4:   /* tcl */
-	    if (isnum(val))
-	    	printf("set inn_%s %s\n", v, val);
-	    else {
-                int i;
-                static const char* unsafe_chars = "$[]{}\"\\";
-
-                printf("set inn_%s \"", v);
-                for (i = 0; val[i] != '\0'; i++) {
-                    if (strchr (unsafe_chars, val[i]) != NULL)
-                        putchar('\\');
-                    putchar(val[i]);
-                }
-	    	printf("\"\n");
-            }
-	    break;
+    switch (quoting) {
+    case INNCONF_QUOTE_NONE:
+        fprintf(file, "%s\n", inn_version_string);
+        break;
+    case INNCONF_QUOTE_SHELL:
+        fprintf(file, "VERSION='%s'; export VERSION\n", inn_version_string);
+        break;
+    case INNCONF_QUOTE_PERL:
+        fprintf(file, "$version = '%s';\n", inn_version_string);
+        break;
+    case INNCONF_QUOTE_TCL:
+        fprintf(file, "set inn_version \"%s\"\n", inn_version_string);
+        break;
     }
 }
 
-static void
-wholeconfig(void)
-{
-    FILE	        *F;
-    char	        *p;
 
-    /* Read the config file. */
-    if ((F = fopen(innconffile, "r")) != NULL) {
-	while (fgets(ConfigBuff, sizeof ConfigBuff, F) != NULL) {
-	    if ((p = strchr(ConfigBuff, '\n')) != NULL)
-		*p = '\0';
-	    if (ConfigBuff[0] == '\0' || ConfigBuff[0] == COMMENT_CHAR)
-		continue;
-	    p = strchr(ConfigBuff, ':');
-	    if (p != NULL && *p == ':') {
-		*p++ = '\0';
-		for (; ISWHITE(*p); p++)
-		    continue;
-		printit(ConfigBuff, p);
-	    }
-	}
-	(void)fclose(F);
-    }
-    printit(COPY("version"), inn_version_string);
-    exit(0);
-}
-
+/*
+**  Main routine.  Most of the real work is done by the innconf library
+**  routines.
+*/
 int
-main(int ac, char **av)
+main(int argc, char *argv[])
 {
-    char	*p;
-    char	*val;
-    bool	File;
-    int	i;
+    int option, i;
+    char *file = NULL;
+    enum innconf_quoting quoting = INNCONF_QUOTE_NONE;
+    bool okay = true;
+    bool version = false;
 
-    /* First thing, set up logging and our identity. */
-    openlog("innconfval", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     message_program_name = "innconfval";
 
-    /* Parse JCL. */
-    File = FALSE;
-    while ((i = getopt(ac, av, "fcpsti:v")) != EOF)
-	switch (i) {
-	default:
+    while ((option = getopt(argc, argv, "i:pstv")) != EOF)
+        switch (option) {
+        default:
             die("usage error");
             break;
-	case 'f':
-	    File = TRUE;
-	    break;
-	case 's':
-	    format = 1;
-	    break;
-	case 'c':
-	    format = 2;
-	    break;
-	case 'p':
-	    format = 3;
-	    break;
-	case 't':
-	    format = 4;
-	    break;
-	case 'i':
-	    innconffile = optarg;
-	    break;
-	case 'v':
-	    version = TRUE;
-	    break;
-	}
-    ac -= optind;
-    av += optind;
+        case 'i':
+            file = optarg;
+            break;
+        case 'p':
+            quoting = INNCONF_QUOTE_PERL;
+            break;
+        case 's':
+            quoting = INNCONF_QUOTE_SHELL;
+            break;
+        case 't':
+            quoting = INNCONF_QUOTE_TCL;
+            break;
+        case 'v':
+            version = true;
+            break;
+        }
+    argc -= optind;
+    argv += optind;
 
     if (version) {
-	printit(COPY("version"), inn_version_string);
-	exit(0);
-    }
-    if (!*av) wholeconfig();   /* Doesn't return */
-
-    /* Loop over parameters, each a config value. */
-    while ((p = *av++) != NULL) {
-	val = File ? GetFileConfigValue(p) : GetConfigValue(p);
-	if (val != NULL)
-	    printit(p, val);
+        print_version(stdout, quoting);
+        exit(0);
     }
 
-    exit(0);
-    /* NOTREACHED */
+    /* Read in the inn.conf file specified. */
+    if (!innconf_read(file))
+        exit(1);
+
+    /* Perform the specified action. */
+    if (argv[0] == NULL) {
+        innconf_dump(stdout, quoting);
+        print_version(stdout, quoting);
+    } else {
+        for (i = 0; i < argc; i++)
+            if (strcmp(argv[i], "version") == 0)
+                print_version(stdout, quoting);
+            else if (!innconf_print_value(stdout, argv[i], quoting))
+                okay = false;
+    }
+    exit(okay ? 0 : 1);
 }

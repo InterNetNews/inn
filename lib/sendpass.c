@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <errno.h>
 
+#include "inn/innconf.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"

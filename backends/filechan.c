@@ -8,10 +8,9 @@
 #include "clibrary.h"
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/file.h>
 #include <sys/stat.h>
-#include <syslog.h>  
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
@@ -36,12 +35,12 @@ main(int ac, char *av[])
     gid_t		gid;
     uid_t		myuid;
 
-    /* First thing, set up logging and our identity. */
-    openlog("filechan", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    /* First thing, set up our identity. */
     message_program_name = "filechan";
 
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(1);
+    if (!innconf_read(NULL))
+        exit(1);
     Fields = 1;
     Directory = innconf->pathoutgoing;
     Map = FALSE;

@@ -7,7 +7,6 @@
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
-#include <syslog.h> 
 #include <sys/stat.h>
 #include <time.h>
 
@@ -15,6 +14,7 @@
 # include <sys/time.h>
 #endif
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
@@ -408,12 +408,12 @@ main(int ac, char *av[])
     char		*base = NULL;
     bool		doit;
 
-    /* First thing, set up logging and our identity. */
-    openlog("archive", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    /* First thing, set up our identity. */
     message_program_name = "archive";
 
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(1);
+    if (!innconf_read(NULL))
+        exit(1);
     Concat = FALSE;
     Flat = FALSE;
     Index = NULL;

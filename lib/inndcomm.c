@@ -22,6 +22,7 @@
 # include <sys/un.h>
 #endif
 
+#include "inn/innconf.h"
 #include "inndcomm.h"
 #include "libinn.h"
 #include "macros.h"
@@ -59,7 +60,7 @@ ICCopen(void)
     int		oerrno;
 
     if (innconf == NULL) {
-	if (ReadInnConf() < 0) {
+	if (!innconf_read(NULL)) {
 	    ICCfailure = "innconf";
 	    return -1;
 	}

@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <syslog.h>
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "macros.h"
@@ -44,11 +45,11 @@ main(int ac, char *av[])
     int		authinfo;
     int		i;
 
-    /* First thing, set up logging and our identity. */
-    openlog("getlist", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    /* First thing, set up our identity. */
     message_program_name = "getlist";
 
-    if (ReadInnConf() < 0) exit(1);
+    if (!innconf_read(NULL))
+        exit(1);
 
     /* Set defaults. */
     host = NULL;

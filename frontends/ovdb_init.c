@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <syslog.h>
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "ov.h"
 #include "../storage/ovdb/ovdb.h"
@@ -331,8 +332,8 @@ int main(int argc, char **argv)
     openlog("ovdb_init", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     message_program_name = "ovdb_init";
 
-    if (ReadInnConf() < 0)
-        die("cannot read inn.conf");
+    if (!innconf_read(NULL))
+        exit(1);
 
     if(strcmp(innconf->ovmethod, "ovdb"))
         die("ovmethod not set to ovdb in inn.conf");

@@ -6,6 +6,7 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include "inn/innconf.h"
 #include "nnrpd.h"
 
 #define MAX_LEN 180

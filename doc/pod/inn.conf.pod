@@ -22,13 +22,12 @@ other lines specify parameters, and should be of the following form:
 
     <name>: <value>
 
-(Any amount of whitespace can be put after the colon and is optional.)
-Everything after the colon and optional whitespace up to the end of the
-line is taken as the value.  Multi-word values should not be put in
-quotes; if they are, the quotes will be taken as part of the value, not as
-delimiters.  <name> is case-sensitive; C<server> is not the same as
-C<Server> or C<SERVER>.  (F<inn.conf> parameters are generally all in
-lowercase.)
+(Any amount of whitespace can be put after the colon and is optional.)  If
+the value contains embedded whitespace or any of the characers C<[]<>"\>,
+it must be enclosed in double quotes ("").  A backslash (C<\>) can be used
+to escape quotes and backslashes inside double quotes.  <name> is
+case-sensitive; C<server> is not the same as C<Server> or C<SERVER>.
+(F<inn.conf> parameters are generally all in lowercase.)
 
 If <name> occurs more than once in the file, the first value is used.
 Some parameters specified in the file may be overridden by environment
@@ -36,16 +35,10 @@ variables.  Most parameters have default values if not specified in
 F<inn.conf>; those defaults are noted in the description of each
 parameter.
 
-For the time being, it is strongly recommended to include every parameter
-in F<inn.conf> even if it is set to the default value, since some shell
-scripts don't correctly handle missing keys that they care about.  This is
-a difficult-to-fix bug in the current parser that will be fixed in future
-versions of INN.
-
 Many parameters take a boolean value.  For all such parameters, the value
 may be specified as C<true>, C<yes>, or C<on> to turn it on and may be any
 of C<false>, C<no>, or C<off> to turn it off.  The case of these values is
-not significant.
+significant.
 
 This documentation is extremely long and organized as a reference manual
 rather than as a tutorial.  If this is your first exposure to INN and

@@ -10,20 +10,21 @@
 #include "clibrary.h"
 #include "portable/setproctitle.h"
 #include "portable/wait.h"
-#include "inn/messages.h"
-
-#include "libinn.h"
-#include "ov.h"
-#define MAINLINE
-#include "nnrpd.h"
+#include <grp.h>
 #include <netdb.h>
 #include <pwd.h>
-#include <grp.h>
 #include <signal.h>
 
 #if HAVE_GETSPNAM
 # include <shadow.h>
 #endif
+
+#include "inn/innconf.h"
+#include "inn/messages.h"
+#include "libinn.h"
+#include "ov.h"
+#define MAINLINE
+#include "nnrpd.h"
 
 #include "tls.h"
 #include "sasl_config.h"
@@ -857,8 +858,8 @@ main(int argc, char *argv[])
     message_handlers_warn(1, message_log_syslog_warning);
     message_handlers_notice(1, message_log_syslog_notice);
 
-    if (ReadInnConf() < 0)
-	    exit(1);
+    if (!innconf_read(NULL))
+        exit(1);
 
 #ifdef HAVE_SSL
     while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nop:Rr:s:tS")) != EOF)

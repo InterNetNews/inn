@@ -245,6 +245,7 @@ doc/pod/hacking.pod                   Master file for HACKING
 doc/pod/hook-perl.pod                 Master file for doc/hook-perl
 doc/pod/hook-python.pod               Master file for doc/hook-python
 doc/pod/inn.conf.pod                  Master file for inn.conf.5
+doc/pod/innconfval.pod                Master file for innconfval.1
 doc/pod/innd.pod                      Master file for innd.8
 doc/pod/inndf.pod                     Master file for inndf.8
 doc/pod/inndstart.pod                 Master file for inndstart.8
@@ -325,13 +326,13 @@ include/inn/confparse.h               Header file for configuration parser
 include/inn/defines.h                 Portable defs for installed headers
 include/inn/hashtab.h                 Header file for generic hash table
 include/inn/history.h                 Header file for the history API
+include/inn/innconf.h                 Header file for the innconf struct
 include/inn/md5.h                     Header file for MD5 digests
 include/inn/messages.h                Header file for message functions
 include/inn/qio.h                     Header file for quick I/O package
 include/inn/sequence.h                Header file for sequence space arithmetic
 include/inn/timer.h                   Header file for generic timers
 include/inn/vector.h                  Header file for vectors of strings
-include/innconf.h                     Header file for inn.conf
 include/inndcomm.h                    innd control channel commands
 include/innperl.h                     Header file for embedded Perl
 include/libinn.h                      INN library declarations
@@ -419,7 +420,6 @@ lib/findheader.c                      Find a header in an article
 lib/fseeko.c                          fseeko replacement
 lib/ftello.c                          ftello replacement
 lib/genid.c                           Generate a message ID
-lib/getconfig.c                       Parse the inn.conf file
 lib/getfqdn.c                         Get FQDN of local host
 lib/getmodaddr.c                      Get a moderator's address
 lib/gettime.c                         Get time and timezone info
@@ -428,6 +428,7 @@ lib/hashtab.c                         Generic hash table
 lib/hstrerror.c                       Error reporting for resolver
 lib/inet_aton.c                       Extra source for inet_aton routine
 lib/inet_ntoa.c                       Convert inaddr to string (BSD)
+lib/innconf.c                         Parsing and manipulation of inn.conf
 lib/inndcomm.c                        Library routines to talk to innd
 lib/localopen.c                       Open a local NNTP connection
 lib/lockfile.c                        Try to lock a file descriptor
@@ -540,6 +541,7 @@ scripts/innshellvars.in               Config parameters for shell scripts
 scripts/innshellvars.pl.in            Config parameters for Perl scripts
 scripts/innshellvars.tcl.in           Config parameters for Tcl scripts
 scripts/innstat.in                    Display INN status snapshot
+scripts/innupgrade.in                 Upgrade INN configuration files
 scripts/innwatch.in                   Throttle innd based on load and space
 scripts/news.daily.in                 Front-end script to run expire, etc.
 scripts/rc.news.in                    News boot script

@@ -23,6 +23,7 @@
 # include <sys/resource.h>
 #endif
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
@@ -65,18 +66,20 @@ main(int argc, char *argv[])
 
     /* Exit if run by another user. */
     if (getuid() != news_uid)
-        die("ran by UID %d, who isn't %s (%d)", getuid(), NEWSUSER,
-            news_uid);
+        die("ran by UID %lu, who isn't %s (%lu)", (unsigned long) getuid(),
+            NEWSUSER, (unsigned long) news_uid);
 
     /* Drop privileges to read inn.conf. */
-    if (seteuid(news_uid) < 0) sysdie("can't seteuid(%d)", news_uid);
-    if (ReadInnConf() < 0) exit(1);
+    if (seteuid(news_uid) < 0)
+        sysdie("can't seteuid(%lu)", (unsigned long) news_uid);
+    if (!innconf_read(NULL))
+        exit(1);
 
     /* Regain privileges to increase system limits. */
     if (seteuid(0) < 0) sysdie("can't seteuid(0)");
     if (innconf->rlimitnofile >= 0)
         if (setfdlimit(innconf->rlimitnofile) < 0)
-            syswarn("can't set file descriptor limit to %d",
+            syswarn("can't set file descriptor limit to %ld",
                     innconf->rlimitnofile);
 
     /* These calls will fail on some systems, such as HP-UX 11.00.  On those
@@ -95,7 +98,7 @@ main(int argc, char *argv[])
 
     /* Permanently drop privileges. */
     if (setuid(news_uid) < 0 || getuid() != news_uid)
-        sysdie("can't setuid to %d", news_uid);
+        sysdie("can't setuid to %lu", (unsigned long) news_uid);
 
     /* Check for imapfeed -- continue to use "innfeed" in variable
        names for historical reasons regardless */

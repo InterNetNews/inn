@@ -8,11 +8,13 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/setproctitle.h"
 #include "portable/wait.h"
 #include <fcntl.h>
 #include <signal.h>
 #include <syslog.h>
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
 #include "ov.h"
@@ -285,7 +287,7 @@ int main(int argc, char **argv)
     message_handlers_warn(1, message_log_syslog_err);
     message_handlers_die(1, message_log_syslog_err);
 
-    if (ReadInnConf() < 0)
+    if (!innconf_read(NULL))
 	exit(1);
 
     if(strcmp(innconf->ovmethod, "ovdb"))

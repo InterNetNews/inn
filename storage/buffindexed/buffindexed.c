@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <time.h>
 
+#include "inn/innconf.h"
 #include "libinn.h"
 #include "macros.h"
 #include "ov.h"
@@ -2183,7 +2184,7 @@ main(int argc, char **argv) {
   }
   /* if innconf isn't already read in, do so. */
   if (innconf == NULL) {
-    if (ReadInnConf() < 0) {
+    if (!innconf_read(NULL)) {
       fprintf(stderr, "reading inn.conf failed\n");
       exit(1);
     }

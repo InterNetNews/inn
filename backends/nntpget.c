@@ -10,7 +10,6 @@
 #include "portable/socket.h"
 #include "portable/time.h"
 #include <errno.h>
-#include <syslog.h>  
 #include <sys/stat.h>
 #include <sys/uio.h>
 
@@ -20,6 +19,7 @@
 #endif
 
 #include "inn/history.h"
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
@@ -208,8 +208,7 @@ main(int ac, char *av[])
     char	*Update;
     char	*p;
 
-    /* First thing, set up logging and our identity. */
-    openlog("nntpget", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    /* First thing, set up our identity. */
     message_program_name = "nntpget";
 
     /* Set defaults. */
@@ -218,8 +217,8 @@ main(int ac, char *av[])
     Since = NULL;
     Offer = FALSE;
     Update = NULL;
-
-    if (ReadInnConf() < 0) exit(1);
+    if (!innconf_read(NULL))
+        exit(1);
 
     (void)umask(NEWSUMASK);
 

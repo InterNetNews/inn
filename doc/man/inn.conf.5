@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "INN.CONF 5"
-.TH INN.CONF 5 "2002-08-18" "INN 2.4.0" "InterNetNews Documentation"
+.TH INN.CONF 5 "2002-09-01" "INN 2.4.0" "InterNetNews Documentation"
 .SH "NAME"
 inn.conf \- Configuration data for InterNetNews programs
 .SH "DESCRIPTION"
@@ -154,13 +154,12 @@ other lines specify parameters, and should be of the following form:
 \&    <name>: <value>
 .Ve
 .PP
-(Any amount of whitespace can be put after the colon and is optional.)
-Everything after the colon and optional whitespace up to the end of the
-line is taken as the value.  Multi-word values should not be put in
-quotes; if they are, the quotes will be taken as part of the value, not as
-delimiters.  <name> is case\-sensitive; \f(CW\*(C`server\*(C'\fR is not the same as
-\&\f(CW\*(C`Server\*(C'\fR or \f(CW\*(C`SERVER\*(C'\fR.  (\fIinn.conf\fR parameters are generally all in
-lowercase.)
+(Any amount of whitespace can be put after the colon and is optional.)  If
+the value contains embedded whitespace or any of the characers \f(CW\*(C`[]<\*(C'\fR\*(L"\e>,
+it must be enclosed in double quotes (\*(R"").  A backslash (\f(CW\*(C`\e\*(C'\fR) can be used
+to escape quotes and backslashes inside double quotes.  <name> is
+case\-sensitive; \f(CW\*(C`server\*(C'\fR is not the same as \f(CW\*(C`Server\*(C'\fR or \f(CW\*(C`SERVER\*(C'\fR.
+(\fIinn.conf\fR parameters are generally all in lowercase.)
 .PP
 If <name> occurs more than once in the file, the first value is used.
 Some parameters specified in the file may be overridden by environment
@@ -168,16 +167,10 @@ variables.  Most parameters have default values if not specified in
 \&\fIinn.conf\fR; those defaults are noted in the description of each
 parameter.
 .PP
-For the time being, it is strongly recommended to include every parameter
-in \fIinn.conf\fR even if it is set to the default value, since some shell
-scripts don't correctly handle missing keys that they care about.  This is
-a difficult-to-fix bug in the current parser that will be fixed in future
-versions of \s-1INN\s0.
-.PP
 Many parameters take a boolean value.  For all such parameters, the value
 may be specified as \f(CW\*(C`true\*(C'\fR, \f(CW\*(C`yes\*(C'\fR, or \f(CW\*(C`on\*(C'\fR to turn it on and may be any
 of \f(CW\*(C`false\*(C'\fR, \f(CW\*(C`no\*(C'\fR, or \f(CW\*(C`off\*(C'\fR to turn it off.  The case of these values is
-not significant.
+significant.
 .PP
 This documentation is extremely long and organized as a reference manual
 rather than as a tutorial.  If this is your first exposure to \s-1INN\s0 and
@@ -631,6 +624,11 @@ the messages which tell enabling reader track and where posted article is
 tracked.  Which user and client, that is recorded, is determined by
 nnrpd.track.  See \fInnrpd.track\fR\|(5) for more information.  This is a boolean
 value and the default is false.
+.IP "\fInnrpdloadlimit\fR" 4
+.IX Item "nnrpdloadlimit"
+If set to a value other than \f(CW0\fR, connections to nnrpd will be refused
+if the system load average is higher than this value.  The default value
+is \f(CW16\fR.
 .PP
 \&\s-1INN\s0 has optional support for generating keyword information automatically
 from article body text and putting that information in overview for the

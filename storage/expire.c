@@ -13,6 +13,7 @@
 #include <ctype.h>
 #include <errno.h>
 
+#include "inn/innconf.h"
 #include "macros.h"
 #include "libinn.h"
 #include "ov.h"

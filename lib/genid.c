@@ -9,6 +9,7 @@
 # include <unistd.h>
 #endif
 
+#include "inn/innconf.h"
 #include "libinn.h"
 #include "macros.h"
 

@@ -11,6 +11,7 @@
 
 #include "inn/buffer.h"
 #include "inn/history.h"
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
@@ -724,7 +725,8 @@ main(int argc, char **argv)
     message_program_name = "makehistory";
 	
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(1);
+    if (!innconf_read(NULL))
+        exit(1);
     HistoryPath = concatpath(innconf->pathdb, _PATH_HISTORY);
     ActivePath = concatpath(innconf->pathdb, _PATH_ACTIVE);
     TmpDir = innconf->pathtmp;

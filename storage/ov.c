@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <syslog.h>
 
+#include "inn/innconf.h"
 #include "macros.h"
 #include "libinn.h"
 #include "ov.h"
@@ -54,11 +55,9 @@ OVopen(int mode)
 	return TRUE;
 
     /* if innconf isn't already read in, do so. */
-    if (innconf == NULL) {
-	if (ReadInnConf() < 0) {
-	    return FALSE;
-	}
-    }
+    if (innconf == NULL)
+        if (!innconf_read(NULL))
+            return FALSE;
     if (!innconf->enableoverview) {
 	syslog(L_FATAL, "enableoverview is not true");
 	(void)fprintf(stderr, "enableoverview is not true\n");

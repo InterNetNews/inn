@@ -11,13 +11,13 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <signal.h>
-#include <syslog.h>
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #if HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif
 
+#include "inn/innconf.h"
 #include "inn/md5.h"
 #include "inn/messages.h"
 #include "libinn.h"
@@ -505,12 +505,13 @@ int main(int argc, char *argv[])
     int retval;
     char *radius_config;
 
-    openlog("radius", LOG_CONS | LOG_PID, LOG_INN_PROG);
     message_program_name = "radius";
+
+    if (!innconf_read(NULL))
+        exit(1);
 
     memset(&radconfig, '\0', sizeof(rad_config_t));
     haveother = havefile = 0;
-    if (ReadInnConf() < 0) exit(1);
 
     while ((opt = getopt(argc, argv, "f:h")) != -1) {
 	switch (opt) {

@@ -15,8 +15,9 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#include "libinn.h"
+#include "inn/innconf.h"
 #include "inn/wire.h"
+#include "libinn.h"
 #include "macros.h"
 #include "methods.h"
 #include "paths.h"

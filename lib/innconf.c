@@ -19,6 +19,9 @@
 #include "macros.h"
 #include "paths.h"
 
+/* Instantiation of the global innconf variable. */
+struct innconf *innconf = NULL;
+
 /* Data types used to express the mappings from the configuration parse into
    the innconf struct. */
 
@@ -42,7 +45,7 @@ struct config {
 /* The following macros are helpers to make it easier to define the table that
    specifies how to convert the configuration file into a struct. */
 
-#define K(name)         (#name), offsetof(struct conf_vars, name)
+#define K(name)         (#name), offsetof(struct innconf, name)
 
 #define BOOL(def)       TYPE_BOOLEAN, { (def),     0,  NULL }
 #define NUMBER(def)     TYPE_NUMBER,  {     0, (def),  NULL }
@@ -106,6 +109,7 @@ const struct config config_table[] = {
     { K(patharchive),           STRING  (NULL) },
     { K(patharticles),          STRING  (NULL) },
     { K(pathbin),               STRING  (NULL) },
+    { K(pathcontrol),           STRING  (NULL) },
     { K(pathdb),                STRING  (NULL) },
     { K(pathetc),               STRING  (NULL) },
     { K(pathfilter),            STRING  (NULL) },
@@ -212,12 +216,9 @@ const struct config config_table[] = {
     /* The following settings are specific to the history subsystem. */
     { K(hismethod),             STRING  (NULL) },
 
-    /* These aren't in the current innconf struct, but are used by shell
-       scripts or other non-C clients. */
-#if 0
+    /* The following settings are specific to rc.news. */
     { K(docnfsstat),            BOOL    (false) },
     { K(innflags),              STRING  (NULL) },
-    { K(pathcontrol),           STRING  (NULL) },
     { K(pgpverify),             BOOL    (false) },
 
     /* The following settings are specific to innwatch. */
@@ -233,7 +234,6 @@ const struct config config_table[] = {
 
     /* The following settings are specific to scanlogs. */
     { K(logcycles),             NUMBER  (3) },
-#endif
 };
 
 
@@ -371,10 +371,11 @@ innconf_read(const char *path)
     long *long_ptr;
     const char *char_ptr;
     char **string;
+    char *tmpdir;
 
     if (innconf != NULL)
-        innconf_free();
-    innconf = xmalloc(sizeof(struct conf_vars));
+        innconf_free(innconf);
+    innconf = xmalloc(sizeof(struct innconf));
     if (path == NULL)
         path = getenv("INNCONF");
     group = config_parse_file(path == NULL ? _PATH_CONFIG : path);
@@ -405,8 +406,20 @@ innconf_read(const char *path)
         }
 
     config_free(group);
+    if (!innconf_validate())
+        return false;
     innconf_set_defaults();
-    return innconf_validate();
+
+    /* It's not clear that this belongs here, but it was done by the old
+       configuration parser, so this is a convenient place to do it. */
+    tmpdir = getenv("TMPDIR");
+    if (tmpdir == NULL || strcmp(tmpdir, innconf->pathtmp) != 0)
+        if (setenv("TMPDIR", innconf->pathtmp, true) != 0) {
+            warn("cannot set TMPDIR in the environment");
+            return false;
+        }
+
+    return true;
 } 
 
 
@@ -416,18 +429,18 @@ innconf_read(const char *path)
 **  any struct smashed down from a configuration file parse.
 */
 void
-innconf_free(void)
+innconf_free(struct innconf *config)
 {
     unsigned int i;
     char *p;
 
     for (i = 0; i < SIZEOF(config_table); i++)
         if (config_table[i].type == TYPE_STRING) {
-            p = *CONF_STRING(innconf, config_table[i].location);
+            p = *CONF_STRING(config, config_table[i].location);
             if (p != NULL)
                 free(p);
         }
-    free(innconf);
+    free(config);
 }
 
 
@@ -448,12 +461,12 @@ print_boolean(FILE *file, const char *key, bool value,
         upper = xstrdup(key);
         for (p = upper; *p != '\0'; p++)
             *p = toupper(*p);
-        fprintf(file, "%s=%s; export %s\n", upper, value ? "true" : "false",
+        fprintf(file, "%s=%s; export %s;\n", upper, value ? "true" : "false",
                 upper);
         free(upper);
         break;
     case INNCONF_QUOTE_PERL:
-        fprintf(file, "$%s = %d;\n", key, value);
+        fprintf(file, "$%s = '%s';\n", key, value ? "true" : "false");
         break;
     case INNCONF_QUOTE_TCL:
         fprintf(file, "set inn_%s \"%s\"\n", key, value ? "true" : "false");
@@ -479,7 +492,7 @@ print_number(FILE *file, const char *key, long value,
         upper = xstrdup(key);
         for (p = upper; *p != '\0'; p++)
             *p = toupper(*p);
-        fprintf(file, "%s=%ld; export %s\n", upper, value, upper);
+        fprintf(file, "%s=%ld; export %s;\n", upper, value, upper);
         free(upper);
         break;
     case INNCONF_QUOTE_PERL:
@@ -520,7 +533,7 @@ print_string(FILE *file, const char *key, const char *value,
             else
                 fputc(*letter, file);
         }
-        fprintf(file, "'; export %s\n", upper);
+        fprintf(file, "'; export %s;\n", upper);
         free(upper);
         break;
     case INNCONF_QUOTE_PERL:
@@ -614,7 +627,7 @@ innconf_dump(FILE *file, enum innconf_quoting quoting)
 **  library.
 */
 bool
-innconf_compare(struct conf_vars *conf1, struct conf_vars *conf2)
+innconf_compare(struct innconf *conf1, struct innconf *conf2)
 {
     unsigned int i;
     bool bool1, bool2;

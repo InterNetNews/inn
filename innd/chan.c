@@ -11,6 +11,7 @@
 # include <sys/select.h>
 #endif
 
+#include "inn/innconf.h"
 #include "innd.h"
 
 /* These errno values don't exist on all systems, but may be returned as an

@@ -17,7 +17,13 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 
+/* Needed on AIX 4.1 to get fd_set and friends. */
+#ifdef HAVE_SYS_SELECT_H
+# include <sys/select.h>
+#endif
+
 #include "inn/history.h"
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
@@ -25,11 +31,6 @@
 #include "nntp.h"
 #include "paths.h"
 #include "storage.h"
-
-/* Needed on AIX 4.1 to get fd_set and friends. */
-#ifdef HAVE_SYS_SELECT_H
-# include <sys/select.h>
-#endif
 
 #define OUTPUT_BUFFER_SIZE	(16 * 1024)
 
@@ -992,7 +993,8 @@ int main(int ac, char *av[]) {
     message_program_name = "innxmit";
 
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(1);
+    if (!innconf_read(NULL))
+        exit(1);
 
     ConnectTimeout = 0;
     TotalTimeout = 0;

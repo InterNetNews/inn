@@ -101,6 +101,7 @@ update:
 	    echo '' ; \
 	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
 	done
+	$(PATHBIN)/innupgrade $(PATHETC)
 
 ##  Install a certificate for TLS/SSL support.
 cert:

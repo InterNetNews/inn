@@ -12,6 +12,7 @@
 #include <syslog.h> 
 #include <sys/stat.h>
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
@@ -205,14 +206,10 @@ main(int ac, char *av[])
     char	*artdata;
 
     /* Set defaults. */
-    /* ReadInnConf does a syslog at LOG_DEBUG so need to
-       have opened a log first or get syslog mesgs with no identiy
-       "Reading ..." . Ctlinnd nnrpd will log these mesgs properly */
-    (void)openlog("batcher", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    openlog("batcher", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     message_program_name = "batcher";
-
-    /* Set defaults. */
-    if (ReadInnConf() < 0) exit(1);
+    if (!innconf_read(NULL))
+        exit(1);
     AltSpool = NULL;
     Redirect = TRUE;
     (void)umask(NEWSUMASK);

@@ -55,6 +55,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 # include <sys/un.h>
 #endif
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
 #include "storage.h"
@@ -162,7 +163,7 @@ int main (int argc, char **argv)
   gPrintInfo = gprintinfo ;
 
   openlog (message_program_name,(int)(L_OPENLOG_FLAGS|LOG_PID),LOG_INN_PROG) ;
-  if (ReadInnConf() < 0) {
+  if (!innconf_read(NULL)) {
       syslog(LOG_ERR, "cant read inn.conf\n");
       exit(1);
   }

@@ -7,10 +7,12 @@
 */
 #include "config.h"
 #include "clibrary.h"
-#include "innd.h"
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netdb.h>
+
+#include "inn/innconf.h"
+#include "innd.h"
 
 #define TEST_CONFIG(a, b) \
     { \

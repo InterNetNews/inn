@@ -11,6 +11,7 @@
 #include <ctype.h>
 
 #include "inn/buffer.h"
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "inn/vector.h"

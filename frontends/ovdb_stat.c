@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <syslog.h>
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
@@ -737,8 +738,8 @@ int main(int argc, char *argv[])
     openlog("ovdb_stat", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     message_program_name = "ovdb_stat";
 
-    if(ReadInnConf() < 0)
-	exit(1);
+    if (!innconf_read(NULL))
+        exit(1);
 
     if(!ovdb_check_user())
         die("command must be run as user " NEWSUSER);

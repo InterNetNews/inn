@@ -19,6 +19,7 @@
 # include <sys/un.h>
 #endif
 
+#include "inn/innconf.h"
 #include "inn/qio.h"
 #include "innd.h"
 #include "inndcomm.h"
@@ -839,7 +840,7 @@ CCmode(char *unused[] UNUSED)
     for (i = 0, h = 0; CHANiter(&h, CTnntp) != NULL; )
 	i++;
     *p++ = '\n';
-    (void)sprintf(p, "Parameters c %d i %d (%d) l %ld o %d t %ld H %d T %d X %d %s %s",
+    (void)sprintf(p, "Parameters c %ld i %ld (%ld) l %ld o %d t %ld H %d T %d X %d %s %s",
                   innconf->artcutoff, innconf->maxconnections, i,
                   innconf->maxartsize, MaxOutgoing, (long)TimeOut.tv_sec,
                   RemoteLimit, RemoteTotal, (int) RemoteTimer,
@@ -1336,6 +1337,7 @@ CCreload(char *av[])
 #endif /* defined(DO_PYTHON) */
     const char *p;
     char *path;
+    struct innconf *saved;
 
     p = av[0];
     if (*p == '\0' || EQ(p, "all")) {
@@ -1380,7 +1382,14 @@ CCreload(char *av[])
 #if 0 /* we should check almost all innconf parameter, but the code
          is still incomplete for innd, so just commented out */
     else if (EQ(p, "inn.conf")) {
-	ReadInnConf();
+        saved = innconf;
+        innconf = NULL;
+        if (innconf_read(NULL))
+            innconf_free(saved);
+        else {
+            innconf = saved;
+            return "1 Reload of inn.conf failed";
+        }
 	if (innconf->pathhost == NULL) {
 	    syslog(L_FATAL, "%s No pathhost set", LogName);
 	    exit(1);

@@ -65,11 +65,10 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <math.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
-#include <syslog.h>
 #include <signal.h>
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
@@ -335,13 +334,12 @@ main(argc, argv)
     char *host1;		/* host to change */
     char *host2;		/* comparison host */
 
-    /* First thing, set up logging and our identity. */
-    openlog("actsync", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    /* First thing, set up our identity. */
     message_program_name = "actsync";
 
-    /*read in default info from inn.conf*/
-    if(ReadInnConf() < 0)
-        die("cannot initialize inn.conf");
+    /* Read in default info from inn.conf. */
+    if (!innconf_read(NULL))
+        exit(1);
     process_args(argc, argv, &host1, &host2);
 
     /* obtain the active files */

@@ -20,6 +20,7 @@
 
 #include "clibrary.h"
 
+#include "inn/innconf.h"
 #include "macros.h"
 #include "nnrpd.h"
 #include "nntp.h"

@@ -3,9 +3,10 @@
 **  Periodic status reporting.
 */
 #include "clibrary.h"
-#include "innd.h"
 #include <arpa/inet.h>
 
+#include "inn/innconf.h"
+#include "innd.h"
 #include "innperl.h"
 
 #define MIN_REFRESH   60  /* 1 min */
@@ -126,7 +127,7 @@ STATUSsummary(void)
 #if defined(HTML_STATUS)
   /* HTML Header */
 
-  fprintf (F,"<HTML>\n<HEAD>\n<META HTTP-EQUIV=\"Refresh\" CONTENT=\"%d;\">\n",
+  fprintf (F,"<HTML>\n<HEAD>\n<META HTTP-EQUIV=\"Refresh\" CONTENT=\"%ld;\">\n",
 	   innconf->status < MIN_REFRESH ? MIN_REFRESH : innconf->status);
   fprintf (F, "<TITLE>%s: incoming feeds</TITLE>\n", innconf->pathhost);
   fprintf (F, "</HEAD>\n<BODY>\n<PRE>\n") ;
@@ -235,13 +236,13 @@ STATUSsummary(void)
   fprintf (F, "              Largest Article: %ld bytes\n", innconf->maxartsize);
   fprintf (F, "     Max Incoming connections: ");
   if (innconf->maxconnections)
-    fprintf (F, "%d\n", innconf->maxconnections);
+    fprintf (F, "%ld\n", innconf->maxconnections);
   else
     fprintf (F, "unlimited\n");
   fprintf (F, "      Max Outgoing file feeds: %d\n", MaxOutgoing);
   fprintf (F, "                       Cutoff: ");
   if (innconf->artcutoff)
-    fprintf (F, "%d days\n", innconf->artcutoff);
+    fprintf (F, "%ld days\n", innconf->artcutoff);
   else
     fprintf (F, "none\n");
   fprintf (F, "               Timeout period: %ld seconds\n",

@@ -72,9 +72,6 @@ libinn \- InterNetNews library routines
 .B "    LOCKTYPE	type;"
 .B "    bool	block;"
 
-.B "int"
-.B "ReadInnConf()"
-
 .B "char *"
 .B "GetFQDN(domain)"
 .B "    char    *domain;"
@@ -310,13 +307,6 @@ it will return FALSE if the file cannot be locked.
 .I type
 is one of: INN_LOCK_READ, INN_LOCK_WRITE, or INN_LOCK_UNLOCK.
 It returns FALSE on failure or TRUE on success.
-.PP
-.I ReadInnConf
-Reads the values of the
-.IR inn.conf (5)
-parameters into the innconf stucture for use as ``innconf\->varname''.
-The return value is less than zero if an error was encountere or zero on
-success.
 .PP
 .I GetFQDN
 returns the fully-qualified domain name of the local host.

@@ -11,6 +11,7 @@
 #include <signal.h>
 
 #include "conffile.h"
+#include "inn/innconf.h"
 #include "innperl.h"
 #include "nnrpd.h"
 

@@ -13,8 +13,8 @@
 #include <grp.h>
 #include <pwd.h>
 #include <sys/stat.h>
-#include <syslog.h>  
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
@@ -875,7 +875,6 @@ main(int ac, char *av[])
     uid_t               uid;
 
     /* First thing, set up logging and our identity. */
-    openlog("inews", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     message_program_name = "inews";
 
     /* Find out who we are. */
@@ -892,7 +891,8 @@ main(int ac, char *av[])
     AddOrg = TRUE;
     port = 0;
 
-    if (ReadInnConf() < 0) exit(1);
+    if (!innconf_read(NULL))
+        exit(1);
 
     (void)umask(NEWSUMASK);
 

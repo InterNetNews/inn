@@ -13,6 +13,7 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include "inn/innconf.h"
 #include "nnrpd.h"
 
 #if defined(DO_PYTHON)

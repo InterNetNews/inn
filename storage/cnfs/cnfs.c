@@ -18,6 +18,7 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 
+#include "inn/innconf.h"
 #include "interface.h"
 #include "libinn.h"
 #include "macros.h"
@@ -979,8 +980,8 @@ bool cnfs_init(SMATTRIBUTE *attr) {
     attr->selfexpire = TRUE;
     attr->expensivestat = FALSE;
     if (innconf == NULL) {
-	if ((ret = ReadInnConf()) < 0) {
-	    syslog(L_ERROR, "%s: ReadInnConf failed, returned %d", LocalLogName, ret);
+        if (!innconf_read(NULL)) {
+	    syslog(L_ERROR, "%s: innconf_read failed", LocalLogName);
 	    SMseterror(SMERR_INTERNAL, "ReadInnConf() failed");
 	    return FALSE;
 	}

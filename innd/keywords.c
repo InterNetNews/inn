@@ -19,6 +19,7 @@
 #include "libinn.h"
 #include "macros.h"
 
+#include "inn/innconf.h"
 #include "innd.h"
 
 /* If keyword support wasn't requested, stub out the main function provided by
