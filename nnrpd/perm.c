@@ -13,6 +13,7 @@
 #include <signal.h>
 
 #include "conffile.h"
+#include "innperl.h"
 #include "nnrpd.h"
 
 /* Needed on AIX 4.1 to get fd_set and friends. */

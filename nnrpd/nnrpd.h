@@ -15,7 +15,6 @@
 #include <sys/stat.h>
 
 #include "inn/qio.h"
-#include "innperl.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
