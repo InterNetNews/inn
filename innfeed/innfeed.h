@@ -261,10 +261,4 @@ extern void syslog (int, const char *,...) __attribute__ ((__format__ (printf, 2
 #define DONT_NEED_U_INT 1
 #endif
 
-/* define DONT_NEED_BOOL or DO_NEED_BOOL depending on if you have a `bool'
-   in your include path or not */
-#if ! defined (DO_NEED_BOOL) && ! defined (DONT_NEED_BOOL)
-#define DO_NEED_BOOL 1
-#endif
-
 #endif /* innfeed_h__ */
