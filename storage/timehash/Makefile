@@ -2,7 +2,6 @@
 include ../../Makefile.global
 
 CP	= $(UPLIBTOOL) cp
-
 CFLAGS	= $(GCFLAGS) -I../../include -I..
 
 SOURCES = timehash.c
@@ -19,9 +18,8 @@ moveobjs: $(OBJECTS)
 	$(CP) -p $(ROBJECTS) ../objs
 
 clobber clean:
-	rm -f *.o *.lo obj/*.o *~
-	rm -f profiled
-	rm -f all install 
+	rm -f *.o *.lo obj/*.o profiled
+	rm -rf .libs
 
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../../include/*.h ../*.h
@@ -31,6 +29,3 @@ depend:		Makefile $(SOURCES)
 	makedepend $(DEFS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-
-interface.o: methods.h interface.h
-methods.o: interface.h

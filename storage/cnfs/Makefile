@@ -5,8 +5,6 @@ CP	= $(UPLIBTOOL) cp
 
 CFLAGS	 = $(GCFLAGS) -I../../include -I.. 
 
-IFTRUE	= @$(SHELL) ../iftrue.sh
-
 SOURCES  = cnfs.c
 OBJECTS  = cnfs.o
 LOBJECTS = cnfs.lo
@@ -21,9 +19,10 @@ moveobjs: $(OBJECTS)
 	$(CP) -p $(ROBJECTS) ../objs
 
 clobber clean:
-	rm -f *.o *.lo obj/*.o *~
+	rm -f *.o *.lo obj/*.o
 	rm -f profiled
-	rm -f all install 
+	rm -f all install
+	rm -rf .libs
 
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../../include/*.h ../*.h

@@ -1,16 +1,15 @@
-##  $Revision$
+##  $Id$
+
 include ../../Makefile.global
 
-CP	= $(UPLIBTOOL) cp
-
-CFLAGS	= $(GCFLAGS) -I../../include -I..
+CP      = $(UPLIBTOOL) cp
+CFLAGS  = $(GCFLAGS) -I../../include -I..
 
 SOURCES = buffindexed.c
 OBJECTS = buffindexed.o
-LOBJECTS = buffindexed.lo
-ROBJECTS = buffindexed.$(EXTOBJ)
+ROBJECTS= buffindexed.$(EXTOBJ)
 
-all:			$(OBJECTS) moveobjs
+all: $(OBJECTS) moveobjs
 
 .c.o: $*.c
 	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
@@ -26,9 +25,10 @@ buffindexed:
 	$(CC) $(LDFLAGS) -o $@ ../*/*.o ../interface.o ../methods.o ../../lib/libinn.$(EXTLIB) $(LIBS)
 
 clobber clean:
-	rm -f *.o *.lo obj/*.o *~
+	rm -f *.o *.lo obj/*.o
 	rm -f profiled
 	rm -f all install lint lint.all
+	rm -rf .libs
 
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../../include/*.h ../*.h
