@@ -11,20 +11,19 @@ ALL           = convdate expire expireover expirerm fastrm grephistory \
 SOURCES       = convdate.c expire.c expireover.c fastrm.c grephistory.c \
 		makedbz.c makehistory.c prunehistory.c
 
-INSTALLED     = $(D)$(PATHBIN)/convdate		\
-		$(D)$(PATHBIN)/expire		\
-		$(D)$(PATHBIN)/expireover	\
-		$(D)$(PATHBIN)/expirerm		\
-		$(D)$(PATHBIN)/fastrm		\
-		$(D)$(PATHBIN)/grephistory	\
-		$(D)$(PATHBIN)/makedbz		\
-		$(D)$(PATHBIN)/makehistory	\
-		$(D)$(PATHBIN)/prunehistory
-
 all: $(ALL)
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
+
+install: all
+	for F in convdate fastrm grephistory ; do \
+	    $(LI_XPUB) $$F $D$(PATHBIN)/$$F ; \
+	done
+	for F in expire expireover makedbz makehistory prunehistory ; do \
+	    $(LI_XPRI) $$F $D$(PATHBIN)/$$F ; \
+	done
+	$(CP_XPRI) expirerm $D$(PATHBIN)/expirerm
 
 clean:
 	rm -f *.o $(ALL)
@@ -79,21 +78,6 @@ expirep:	expire.c
 	$(MAKEPROFILING) expire
 	mv expire expirep
 	rm -f expire.o
-
-
-##  Installation rules.  Installation commands set in Makefile.global.
-
-install: $(INSTALLED)
-
-$(D)$(PATHBIN)/convdate:            convdate            ; $(LI_XPUB) $? $@
-$(D)$(PATHBIN)/expire:              expire              ; $(LI_XPRI) $? $@
-$(D)$(PATHBIN)/expireover:          expireover          ; $(LI_XPRI) $? $@
-$(D)$(PATHBIN)/expirerm:            expirerm            ; $(CP_XPRI) $? $@
-$(D)$(PATHBIN)/fastrm:              fastrm              ; $(LI_XPUB) $? $@
-$(D)$(PATHBIN)/grephistory:         grephistory         ; $(LI_XPUB) $? $@
-$(D)$(PATHBIN)/makedbz:             makedbz             ; $(LI_XPRI) $? $@
-$(D)$(PATHBIN)/makehistory:         makehistory         ; $(LI_XPRI) $? $@
-$(D)$(PATHBIN)/prunehistory:        prunehistory        ; $(LI_XPRI) $? $@
 
 
 ##  Dependencies.  Default list, below, is probably good enough.

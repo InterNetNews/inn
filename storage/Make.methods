@@ -7,7 +7,6 @@ METHOD_SOURCES  = buffindexed/buffindexed.c cnfs/cnfs.c ovdb/ovdb.c \
                   tradspool/tradspool.c trash/trash.c
 EXTRA_SOURCES   = tradindexed/tdx-util.c
 PROGRAMS        = tradindexed/tdx-util
-INSTALLED       = $(D)$(PATHBIN)/tdx-util
 
 
 ##  Included from buffindexed/ovmethod.mk
@@ -30,6 +29,3 @@ tradindexed/tdx-util.o: tradindexed/tdx-util.c
 tradindexed/tdx-util: tradindexed/tdx-util.o libstorage.$(EXTLIB) $(LIBHIST)
 	$(LIBLD) $(LDFLAGS) -o $@ tradindexed/tdx-util.o \
 	    $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
-
-$(D)$(PATHBIN)/tdx-util: tradindexed/tdx-util
-	$(LI_XPRI) $? $@

@@ -3,4 +3,3 @@
 METHOD_SOURCES  = hisv6/hisv6.c
 EXTRA_SOURCES   =
 PROGRAMS        =
-INSTALLED       =

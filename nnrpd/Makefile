@@ -22,6 +22,9 @@ all: $(ALL)
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
+install: all
+	$(LI_XPUB) nnrpd $D$(PATHBIN)/nnrpd
+
 clean:
 	rm -f *.o $(ALL) nnrpdp profiled
 	rm -rf .libs
@@ -43,13 +46,6 @@ python.o:	python.c	; $(CC) $(CFLAGS) $(PYTHONINC) -c python.c
 
 nnrpd: $(OBJECTS) $(LIBHIST) $(LIBSTORAGE) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) $(NNRPDLIBS)
-
-
-##  Installation rules.  Installation commands set in Makefile.global.
-
-install: $(INSTALLED)
-
-$(D)$(PATHBIN)/nnrpd:	nnrpd	; $(LI_XPUB) $? $@
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))

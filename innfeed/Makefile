@@ -19,15 +19,30 @@ OBJECTS		= article.o buffer.o config_l.o config_y.o \
 		  endpoint.o host.o innlistener.o main.o misc.o tape.o \
 		  version.o
 
-INSTALLED	= $(D)$(PATHBIN)/innfeed \
-		  $(D)$(PATHBIN)/procbatch \
-		  $(D)$(PATHBIN)/startinnfeed \
-		  $(D)$(PATHBIN)/imapfeed
-
 all: $(ALL)
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
+
+install: all
+	$(LI_XPRI) innfeed $D$(PATHBIN)/innfeed
+	$(LI_XPRI) imapfeed $D$(PATHBIN)/imapfeed
+	$(CP_XPRI) procbatch $D$(PATHBIN)/procbatch
+	@ME=`$(WHOAMI)` ; \
+	if [ x"$$ME" = xroot ] ; then \
+	    echo $(LI_SPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
+	    $(LI_SPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
+	else \
+	    echo $(LI_XPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
+	    $(LI_XPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
+	    echo '' ; \
+	    echo '========================' ; \
+	    echo 'NOTE NOTE NOTE NOTE NOTE' ; \
+	    ls -l $@ ; \
+	    echo '$@ needs to be installed setuid root' ; \
+	    echo '' ; echo ; \
+	fi
+
 
 clean:
 	rm -f *.o $(ALL) version.c innfeed-convcfg
@@ -81,31 +96,6 @@ innfeed-convcfg: innfeed-convcfg.in $(FIXSCRIPT)
 
 tst: config_y.c config_l.c
 	gcc -DWANT_MAIN -o tst -g -Wall config_y.c config_l.c -ly -ll
-
-
-##  Installation rules.  Installation commands set in Makefile.global.
-
-install: $(INSTALLED)
-
-$(D)$(PATHBIN)/innfeed:		innfeed		; $(LI_XPRI) $? $@
-$(D)$(PATHBIN)/imapfeed:	imapfeed	; $(LI_XPRI) $? $@
-$(D)$(PATHBIN)/procbatch:	procbatch	; $(CP_XPRI) $? $@
-
-$(D)$(PATHBIN)/startinnfeed: startinnfeed
-	@ME=`$(WHOAMI)` ; \
-	if [ x"$$ME" = xroot ] ; then \
-	    echo $(LI_SPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
-	    $(LI_SPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
-	else \
-	    echo $(LI_XPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
-	    $(LI_XPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
-	    echo '' ; \
-	    echo '========================' ; \
-	    echo 'NOTE NOTE NOTE NOTE NOTE' ; \
-	    ls -l $@ ; \
-	    echo '$@ needs to be installed setuid root' ; \
-	    echo '' ; echo ; \
-	fi
 
 
 ##  Profiling.  These rules have not been checked for a while and may need
