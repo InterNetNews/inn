@@ -40,6 +40,7 @@ extern void	CAclose(void);
 /* Parameter retrieval. */
 
 struct conf_vars {
+#define	CONF_VAR_FROMHOST 0
 	char *fromhost;		/* Host for the From line */
 #if 0
 ||LABEL  fromhost
@@ -71,79 +72,153 @@ struct conf_vars {
 ||GETVALUE if (EQ(value,"fromhost")) { return innconf->fromhost; }
 #endif
 
+#define	CONF_VAR_SERVER 1
 	char *server;		/* NNTP server to post to */
+#define	CONF_VAR_PATHHOST 2
 	char *pathhost;		/* Host for the Path line */
+#define	CONF_VAR_PATHALIAS 3
 	char *pathalias;	/* Prepended Host for the Path line */
+#define	CONF_VAR_ORGANIZATION 4
 	char *organization;	/* Data for the Organization line */
+#define	CONF_VAR_MODERATORMAILER 5
 	char *moderatormailer;	/* Default host to mail moderated articles */
+#define	CONF_VAR_DOMAIN 6
 	char *domain;		/* Default domain of local host */
+#define	CONF_VAR_MIMEVERSION 7
 	char *mimeversion;	/* Default mime version */
+#define	CONF_VAR_MIMECONTENTTYPE 8
 	char *mimecontenttype;	/* Default Content-Type */
+#define	CONF_VAR_MIMEENCODING 9
 	char *mimeencoding;	/* Default encoding */
+#define	CONF_VAR_HISCACHESIZE 10
 	int hiscachesize;	/* Size of the history cache in kB */
+#define	CONF_VAR_WIREFORMAT 11
 	int wireformat;		/* Toggle for wireformat articles */
-	int xrefslave;		/* Toggle for Xref: slaving */
+#define	CONF_VAR_XREFSLAVE 12
+	char *xrefslave;	/* master server for slaving */
+#define	CONF_VAR_COMPLAINTS 13
 	char *complaints;	/* Addr for X-Complaints-To: header */
+#define	CONF_VAR_SPOOLFIRST 14
 	int spoolfirst;		/* Spool newly posted article or only on error*/
+#define	CONF_VAR_WRITELINKS 15
 	int writelinks;		/* Write crossposts to the history */
+#define	CONF_VAR_TIMER 16
 	int timer;		/* Performance monitoring interval */
+#define	CONF_VAR_STATUS 17
 	int status;		/* Status file update interval */
+#define	CONF_VAR_STORAGEAPI 18
 	int storageapi;		/* Use the storage api? */
+#define	CONF_VAR_ARTICLEMMAP 19
 	int articlemmap;	/* mmap articles? */
+#define	CONF_VAR_OVERVIEWMMAP 20
 	int overviewmmap;	/* mmap overviews and indices? */
+#define	CONF_VAR_MTA 21
 	char *mta;		/* Which MTA to mail moderated posts */
+#define	CONF_VAR_MAILCMD 22
 	char *mailcmd;		/* Which command for report/control type mail */
+#define	CONF_VAR_CHECKINCLUDEDTEXT 23
 	int checkincludedtext;	/* Reject if too much included text */
+#define	CONF_VAR_MAXFORKS 24
 	int maxforks;		/* Give up after fork failure */
+#define	CONF_VAR_MAXARTSIZE 25
 	long maxartsize;	/* Reject articles bigger than this */
+#define	CONF_VAR_NICEKIDS 26
 	int nicekids;		/* Kids get niced to this */
+#define	CONF_VAR_VERIFYCANCELS 27
 	int verifycancels;	/* Verify cancels against article author */
+#define	CONF_VAR_LOGCANCELCOMM 28
 	int logcancelcomm;	/* Log "ctlinnd cancel" commands to syslog? */
+#define	CONF_VAR_WANTTRASH 29
 	int wanttrash;		/* Put unwanted articles in 'junk' */
+#define	CONF_VAR_REMEMBERTRASH 30
 	int remembertrash;	/* Put unwanted article ID's into history */
+#define	CONF_VAR_LINECOUNTFUZZ 31
 	int linecountfuzz;	/* Check linecount and adjust of out by more */
+#define	CONF_VAR_PEERTIMEOUT 32
 	int peertimeout;	/* How long peers can be inactive */
+#define	CONF_VAR_CLIENTTIMEOUT 33
 	int clienttimeout;	/* How long nnrpd can be inactive */
+#define	CONF_VAR_ALLOWREADERS 34
 	int allowreaders;	/* Allow nnrpd when server is paused */
+#define	CONF_VAR_ALLOWNEWNEWS 35
 	int allownewnews;	/* Allow use of the 'NEWNEWS' command */
+#define	CONF_VAR_LOCALMAXARTSIZE 36
 	long localmaxartsize;	/* Max article size of local postings */
+#define	CONF_VAR_LOGARTSIZE 37
 	int logartsize;		/* Log article sizes */
+#define	CONF_VAR_LOGIPADDR 38
 	int logipaddr;		/* Log by host IP address */
+#define	CONF_VAR_CHANINACTTIME 39
 	int chaninacttime;	/* Wait time between noticing inact chans */
+#define	CONF_VAR_MAXCONNECTIONS 40
 	int maxconnections;	/* Max number of incoming NNTP connections */
+#define	CONF_VAR_CHANRETRYTIME 41
 	int chanretrytime;	/* Wait this many secs before chan restarts */
+#define	CONF_VAR_ARTCUTOFF 42
 	int artcutoff;		/* Max article age */
+#define	CONF_VAR_PAUSERETRYTIME 43
 	int pauseretrytime;	/* Secs before seeing if pause is ended */
+#define	CONF_VAR_NNTPLINKLOG 44
 	int nntplinklog;	/* Put nntplink info (filename) into the log */
+#define	CONF_VAR_NNTPACTSYNC 45
 	int nntpactsync;	/* Log NNTP activity after this many articles */
+#define	CONF_VAR_BADIOCOUNT 46
 	int badiocount;		/* Read/write failures until chan is put to sleep or closed? */
+#define	CONF_VAR_BLOCKBACKOFF 47
 	int blockbackoff;	/* Multiplier for sleep in EWOULDBLOCK writes */
+#define	CONF_VAR_ICDSYNCCOUNT 48
 	int icdsynccount;	/* How many article-writes between active and history updates */
+#define	CONF_VAR_BINDADDRESS 49
 	char *bindaddress;	/* Which interface IP to bind to */
+#define	CONF_VAR_PORT 50
 	int port;		/* Which port INND should listen on */
+#define	CONF_VAR_READERTRACK 51
 	int readertrack;	/* Enable/Disable the reader tracking system */
+#define	CONF_VAR_STRIPPOSTCC 52
 	int strippostcc;	/* Strip To:, Cc: and Bcc: lines from posts */
+#define	CONF_VAR_OVERVIEWNAME 53
 	char *overviewname;	/* Name of the file to store overview data */
 
+#define	CONF_VAR_KEYWORDS 54
         char keywords;		/* enable keyword generationg in overview */
+#define	CONF_VAR_KEYLIMIT 55
         int keylimit;		/* max allocated space for keywords. */
+#define	CONF_VAR_KEYARTLIMIT 56
         int keyartlimit;        /* Max size of an article for keyword generation */
+#define	CONF_VAR_KEYMAXWORDS 57
         int keymaxwords;	/* Max count of interesting workd */
 
+#define	CONF_VAR_PATHNEWS 58
 	char *pathnews;	
+#define	CONF_VAR_PATHBIN 59
 	char *pathbin;
+#define	CONF_VAR_PATHFILTER 60
 	char *pathfilter;
+#define	CONF_VAR_PATHCONTROL 61
 	char *pathcontrol;
+#define	CONF_VAR_PATHDB 62
 	char *pathdb;
+#define	CONF_VAR_PATHETC 63
 	char *pathetc;
+#define	CONF_VAR_PATHRUN 64
 	char *pathrun;
+#define	CONF_VAR_PATHLOG 65
 	char *pathlog;
+#define	CONF_VAR_PATHSPOOL 66
 	char *pathspool;
+#define	CONF_VAR_PATHARTICLES 67
 	char *patharticles;
+#define	CONF_VAR_PATHOVERVIEW 68
 	char *pathoverview;
+#define	CONF_VAR_PATHOUTGOING 69
 	char *pathoutgoing;
+#define	CONF_VAR_PATHINCOMING 70
 	char *pathincoming;
+#define	CONF_VAR_PATHARCHIVE 71
 	char *patharchive;
+#define	CONF_VAR_LOGSITENAME 72
+	int logsitename;	/* log site names? */
+#define	MAX_CONF_VAR 73
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;
