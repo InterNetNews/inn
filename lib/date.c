@@ -96,7 +96,7 @@ makedate(time_t clock, BOOL local, char *buff, size_t buflen)
     long tz_offset;
     int tz_hour_offset, tz_min_offset, tz_sign;
     size_t date_length;
-    char *tz_name;
+    const char *tz_name;
 
     /* Make sure the buffer is large enough. */
     if (buflen < DATE_LENGTH + 1) return FALSE;
