@@ -92,6 +92,11 @@ contrib/makeexpctl.in                 Create expire.ctl from read groups
 contrib/makestorconf.in               Create storage.conf from read groups
 contrib/mkbuf                         Create cycbuff for HP-UX
 contrib/newsresp.c                    Measure responsiveness of remote server
+contrib/ninpaths                      ninpaths Path survey software (Directory)
+contrib/ninpaths/Makefile             Makefile for ninpaths
+contrib/ninpaths/README               Documentation for ninpaths
+contrib/ninpaths/ninpaths.c           Statistics accumulation program
+contrib/ninpaths/sendinpaths.in       Script to submit accumulated data
 contrib/pathinfo.in                   Scan news headers for information
 contrib/pullart.c                     Recover articles from cyclic buffers
 contrib/reset-cnfs.c                  Reset the state parts of a CNFS buffer
