@@ -95,7 +95,7 @@ clobber realclean distclean:	clean
 	rm -f BUILD makedirs.sh config/config.data config/config.data.in
 	rm -f backends/actmerge.sh backends/actsyncd.sh
 	rm -f backends/sendxbatches.sh frontends/c7unbatch.sh
-	rm -f frontends/gunbatch.sh includes/autoconfig.h include/clibrary.h
+	rm -f frontends/gunbatch.sh include/autoconfig.h include/clibrary.h
 	rm -f include/config.h include/paths.h innfeed/innfeed-convcfg
 	rm -f innfeed/procbatch samples/actsync.cfg samples/checkgroups
 	rm -f samples/checkgroups.pl samples/cnfsheadconf samples/cnfsstat
@@ -180,25 +180,6 @@ tar:	tardir
 	find $(TARDIR) -type f -print | xargs touch -t `date +%m%d%H%M.%S`
 	tar cf $(TARFILE) $(TARDIR)
 	$(SQUASH) $(TARFILE)
-
-FAQ: FORCE
-	-cd FAQ && co -q RCS/*
-
-rcsclean: FORCE
-	-for i in . *;do\
-		if [ -d $$i -a -d $$i/RCS ]; then\
-			echo "RCS Cleaning $$i";\
-			(cd $$i && rcsclean -q -u);\
-		fi;\
-	done
-
-rcscoall: FORCE
-	-for i in . *;do\
-		if [ -d $$i -a -d $$i/RCS ]; then\
-			echo "Checking out in $$i";\
-			(cd $$i && co -q $(RCSCOFLAGS) RCS/*);\
-		fi;\
-	done
 
 CHANGES: FORCE
 	-for i in ChangeLog */ChangeLog;do\
