@@ -19,9 +19,13 @@ int xread(int fd, char *p, off_t i)
 {
     int	                count;
 
-    for ( ; i; p += count, i -= count)
-	if ((count = read(fd, p, i)) <= 0)
-	    return -1;
+    for ( ; i; p += count, i -= count) {
+        do {
+            count = read(fd, p, i);
+        } while (count == -1 && errno == EINTR);
+        if (count <= 0)
+            return -1;
+    }
     return 0;
 }
 
