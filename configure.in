@@ -174,10 +174,10 @@ AC_CHECK_LIB(util,   setproctitle)
 AC_CHECK_LIB(44bsd,  inet_addr)
 AC_CHECK_LIB(resolv, gethostbyname, ac_need_libresolv=1)
 AC_CHECK_LIB(resolv, inet_aton, ac_need_libresolv=1)
-if test x$ac_need_libresolv=x1
-then
-LIBS="$LIBS -lresolv"
-fi
+#if test x$ac_need_libresolv=x1
+#then
+#LIBS="$LIBS -lresolv"
+#fi
 AC_CHECK_LIB(bind, inet_aton)
 AC_CHECK_LIB(nsl, gethostbyname)
 AC_CHECK_LIB(socket, socket)
