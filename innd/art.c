@@ -11,6 +11,8 @@
 #include "art.h"
 #include <sys/uio.h>
 
+extern BOOL WireFormat;
+
 typedef struct iovec	IOVEC;
 
 extern BOOL DoLinks;
@@ -53,7 +55,6 @@ typedef struct _TREE {
 } TREE;
 
 STATIC TREE		*ARTheadertree;
-
 
 /*
 **  For doing the overview database, we keep a list of the headers and
@@ -127,7 +128,7 @@ ARTHEADER	ARTheaders[] = {
 #define _alsocontrol		15
     {	"References",		HTstd },
 #define _references		16
-    {	"Xref",			HTobs },
+    {	"Xref",			HTsav },
 #define _xref			17
     {	"Keywords",		HTstd },
 #define _keywords		18
@@ -292,7 +293,7 @@ ARTsetup()
 	hp->Allocated = hp->Value == NULL && hp->Type != HTobs
 			&& hp != &ARTheaders[_bytes];
 	if (hp->Allocated)
-	    hp->Value = NEW(char, MAXHEADERSIZE + 1);
+	    hp->Value = NEW(char, MAXHEADERSIZE*2);
     }
 
     /* Build the header tree. */
@@ -445,7 +446,7 @@ ARTreadheader(files)
 
     /* Find \n\n which means the end of the header. */
     for (p = head; (p = strchr(p, '\n')) != NULL; p++)
-	if (p[1] == '\n') {
+	if (p[1] == '\n' || ((p[1] == '\r') && (p[2] == '\n'))) {
 	    p[1] = '\0';
 	    return head;
 	}
@@ -527,13 +528,13 @@ ARTwrite(name, Article, Data)
     ARTDATA		*Data;
 {
     static char		WHEN[] = "article";
-    static char		NL[] = "\n";
     static BUFFER	Headers;
     register int	fd;
     register IOVEC	*vp;
     register long	size;
     register char	*p;
-    IOVEC		iov[7];
+    struct stat		sb;
+    IOVEC		iov[8];
     IOVEC		*end;
     char		bytesbuff[SMBUF];
     int			i;
@@ -563,37 +564,44 @@ ARTwrite(name, Article, Data)
     vp->iov_len  = Path.Used;
     size += (vp++)->iov_len;
     vp->iov_base = p;
-    vp->iov_len  = Data->Body - p;
+    vp->iov_len  = Data->Body - p - (WireFormat == 1);
     size += (vp++)->iov_len;
     if (ARTheaders[_lines].Found == 0) {
-	(void)sprintf(Data->Lines, "Lines: %d\n", Data->LinesValue);
+	(void)sprintf(Data->Lines, "Lines: %d%s\n", Data->LinesValue, WireFormat ? "\r" : "");
 	i = strlen(Data->Lines);
 	vp->iov_base = Data->Lines;
 	(vp++)->iov_len  = i;
 	size += i;
 	/* Install in header table; STRLEN("Lines: ") == 7. */
 	(void)strcpy(ARTheaders[_lines].Value, Data->Lines + 7);
-	ARTheaders[_lines].Length = i - 7;
+	ARTheaders[_lines].Length = i - 7 - (WireFormat ? 2 : 1);
 	ARTheaders[_lines].Found = 1;
     }
 
-	/* Install in header table; STRLEN("Xref: ") == 6. */
-	HDR(_xref) = Xref.Data + 6;
-	ARTheaders[_xref].Length = Xref.Used - 6;
-	ARTheaders[_xref].Found = 1;
+    /* Install in header table; STRLEN("Xref: ") == 6. */
+    vp->iov_base = "Xref: ";
+    vp->iov_len = 6;
+    vp++;
+    vp->iov_base = HDR(_xref);
+    vp->iov_len  = ARTheaders[_xref].Length;
+    size += (vp++)->iov_len;
 
-	vp->iov_base = Xref.Data;
-	vp->iov_len  = Xref.Used;
-	size += (vp++)->iov_len;
 
     end = vp;
-    vp->iov_base = NL;
-    vp->iov_len  = 1;
+    vp->iov_base = WireFormat ? "\r\n" : "\n";
+    vp->iov_len  = WireFormat ? 2 : 1;
     size += (vp++)->iov_len;
 
     vp->iov_base = Data->Body;
     vp->iov_len  = &Article->Data[Article->Used] - Data->Body;
     size += (vp++)->iov_len;
+    
+    if (WireFormat) {
+        vp->iov_base = ".\r\n";
+        vp->iov_len = 3;
+        size += (vp++)->iov_len;
+    }
+    
     Data->SizeValue = size;
     (void)sprintf(Data->Size, "%ld", Data->SizeValue);
     Data->SizeLength = strlen(Data->Size);
@@ -635,9 +643,11 @@ ARTwrite(name, Article, Data)
 	return 0;
 
     /* Figure out how much space we'll need and get it. */
-    (void)sprintf(bytesbuff, "Bytes: %ld\n", size);
+    (void)sprintf(bytesbuff, "Bytes: %ld%s\n", 
+        size, WireFormat ? "\r" : "");
     for (i = strlen(bytesbuff), vp = iov; vp < end; vp++)
       i += vp->iov_len;
+    i+= ARTheaders[_xref].Length;
 
     if (Headers.Data == NULL) {
 	Headers.Size = i;
@@ -689,8 +699,13 @@ ARTparseheader(in, out, deltap, errorp)
 	    *errorp = "EOF in headers";
 	    return NULL;
 	case ':':
-	    if (colon == NULL)
+	    if (colon == NULL) {
 		colon = out;
+		if (start == colon) {
+		    *errorp = "Field without name in header";
+		    return NULL;
+		}
+	    }
 	    break;
 	}
 	if ((*out++ = *in++) == '\n' && !ISWHITE(*in))
@@ -721,13 +736,15 @@ ARTparseheader(in, out, deltap, errorp)
 
     if (tp == NULL) {
 	/* Not a system header, make sure we have <word><colon><space>. */
-	for (p = colon; --p != start; )
+	for (p = colon; --p > start; )
 	    if (ISWHITE(*p)) {
 		(void)sprintf(buff, "Space before colon in \"%s\" header",
 			MaxLength(start, start));
 		*errorp = buff;
 		return NULL;
 	    }
+	if (p < start)
+	    return NULL;
 	return in;
     }
 
@@ -738,10 +755,14 @@ ARTparseheader(in, out, deltap, errorp)
 	return in;
     }
 
+    if (hp->Type == HTsav) {
+	*deltap = 0;
+    }
+
     /* If body of header is all blanks, drop the header. */
     for (p = colon + 1; ISWHITE(*p); p++)
 	continue;
-    if (*p == '\0' || *p == '\n') {
+    if (*p == '\0' || *p == '\n' || (p[0] == '\r' && p[1] == '\n')) {
 	*deltap = 0;
 	return in;
     }
@@ -754,7 +775,7 @@ ARTparseheader(in, out, deltap, errorp)
     start[hp->Size] = ':';
 
     /* Copy the header if not too big. */
-    i = (out - 1) - p;
+    i = (out - 1 - (WireFormat == TRUE)) - p;
     if (i >= MAXHEADERSIZE) {
 	(void)sprintf(buff, "\"%s\" header too long", hp->Name);
 	*errorp = buff;
@@ -887,15 +908,16 @@ ARTclean(Article, Data)
 	    error = "No body";
 	    break;
 	}
-	if (*in == '\n' && out > Article->Data && out[-1] == '\n')
-	    /* Found a \n after another \n; break out. */
+	if (((*in == '\n' || (in[0] == '\r' && in[1] == '\n'))
+             && out > Article->Data && out[-1] == '\n'))
+	    /* Found the header separator; break out. */
 	    break;
 
 	/* Check the validity of this header. */
 	if ((p = ARTparseheader(in, out, &delta, &error)) == NULL)
 	    break;
     }
-    Data->Body = out;
+    Data->Body = out + (WireFormat == TRUE);
     in++;
 
     /* Try to set this now, so we can report it in errors. */
@@ -1451,7 +1473,9 @@ ARTassignnumbers()
     register int	i;
     register NEWSGROUP	*ngp;
 
-    p = &Xref.Data[Xref.Used];
+    p = HDR(_xref);
+    strcpy(p,path);
+    p+=strlen(path);
     for (i = 0; (ngp = GroupPointers[i]) != NULL; i++) {
 	/* If already went to this group (i.e., multiple groups are aliased
 	 * into it), then skip it. */
@@ -1469,8 +1493,78 @@ ARTassignnumbers()
 	(void)sprintf(p, " %s:%lu", ngp->Name, ngp->Filenum);
 	p += strlen(p);
     }
-    Xref.Used = p - Xref.Data;
-    Xref.Data[Xref.Used++] = '\n';
+    sprintf(p, "%s\n", WireFormat ? "\r" : "");
+    ARTheaders[_xref].Length=strlen(HDR(_xref));
+}
+
+
+/*
+**  Parse the data from the xref header and assign the numbers.
+**  This involves replacing the GroupPointers entries.
+*/
+STATIC BOOL
+ARTxrefslave()
+{
+    char	*p;
+    char	*q;
+    char	*name;
+    char	*next;
+    NEWSGROUP	*ngp;
+    int	i;
+    char xrefbuf[MAXHEADERSIZE];
+
+    if (!ARTheaders[_xref].Found)
+    	return FALSE;
+    if ((name = strchr(HDR(_xref), ' ')) == NULL)
+    	return FALSE;
+    
+    p = HDR(_xref);
+    strcpy(p,path);
+    p+=strlen(path);
+    
+    name++;
+    for (i = 0; *name; name = next) {
+	/* Mark end of this entry and where next one starts. */
+	if ((next = strchr(name, ' ')) != NULL)
+	    *next++ = '\0';
+	else
+	    next = "";
+
+	/* Split into news.group/# */
+	if ((q = strchr(name, ':')) == NULL) {
+	    syslog(L_ERROR, "%s bad_format %s", LogName, name);
+	    continue;
+	}
+	*q = '\0';
+	if ((ngp = NGfind(name)) == NULL) {
+	    syslog(L_ERROR, "%s bad_newsgroup %s", LogName, name);
+	    continue;
+	}
+	ngp->Filenum = atol(q + 1);
+
+	/* Update active file if we got a new high-water mark. */
+	if (ngp->Last < ngp->Filenum) {
+	    ngp->Last = ngp->Filenum;
+	    if (!FormatLong(ngp->LastString, (long)ngp->Last,
+		    ngp->Lastwidth)) {
+		syslog(L_ERROR, "%s cant update_active %s",
+		    LogName, ngp->Name);
+		continue;
+	    }
+	}
+
+	/* Mark that this group gets the article. */
+	ngp->PostCount++;
+	GroupPointers[i++] = ngp;
+
+	/* Turn news.group/# into news.group:#, append to Xref. */
+	p+=sprintf(p, " %s:%d", name, ngp->Filenum);
+	
+    }
+    
+    sprintf(p, "%s\n", WireFormat ? "\r" : "");
+    ARTheaders[_xref].Length = strlen(HDR(_xref));
+    return TRUE;
 }
 
 
@@ -1489,7 +1583,10 @@ ARTreplic(Replic)
     register NEWSGROUP	*ngp;
     register int	i;
 
-    p = &Xref.Data[Xref.Used];
+    p = HDR(_xref);
+    strcpy(p,path);
+    p+=strlen(path);
+    
     for (i = 0, name = Replic->Data; *name; name = next) {
 	/* Mark end of this entry and where next one starts. */
 	if ((next = strchr(name, ',')) != NULL)
@@ -1530,8 +1627,9 @@ ARTreplic(Replic)
 	p += strlen(strcpy(p, name));
     }
 
-    Xref.Used = p - Xref.Data;
-    Xref.Data[Xref.Used++] = '\n';
+    sprintf(p, "%s\n", WireFormat ? "\r" : "");
+    ARTheaders[_xref].Length=strlen(HDR(_xref));
+    
 }
 
 
@@ -1590,8 +1688,8 @@ ARTpropagate(Data, hops, hopcount, list)
 	    /* Too small for the site. */
 	    continue;
 
-	if ((!sp->IgnorePath && ListHas(hops, sp->Name))
-	 || (sp->Hops && hopcount > sp->Hops)
+	if ((sp->Hops && hopcount > sp->Hops)
+	 || (!sp->IgnorePath && ListHas(hops, sp->Name))
 	 || (sp->Groupcount && Groupcount > sp->Groupcount))
 	    /* Site already saw the article; path too long; or too much
 	     * cross-posting. */
@@ -1672,11 +1770,14 @@ ARTmakeoverview(Data)
     if (Overview.Data == NULL)
 	Overview.Data = NEW(char, 1);
     Data->Overview = &Overview;
-    BUFFset(&Overview, Xref.Data + Xrefbase + 1, Xref.Used - (Xrefbase + 2));
+    if ((p = strchr(HDR(_xref),' ')) == NULL)
+    	return;
+    p++;
+    BUFFset(&Overview, p, ARTheaders[_xref].Length - (p-HDR(_xref))); 
     for (i = Overview.Left, p = Overview.Data; --i >= 0; p++)
 	if (*p == '.' || *p == ':')
 	    *p = '/';
-
+	    
     if (ARTfields == NULL) {
 	/* User error. */
 	return;
@@ -1715,6 +1816,7 @@ ARTpost(cp, Replic, ihave)
     static BUFFER	Files;
     static BUFFER	Header;
     static char		buff[SPOOLNAMEBUFF];
+    char		dirname[SPOOLNAMEBUFF];
     register char	*p;
     register int	i;
     register int	j;
@@ -1738,6 +1840,7 @@ ARTpost(cp, Replic, ihave)
     char		ControlWord[SMBUF];
     int			ControlHeader;
     int			oerrno;
+    int			adupe;
 #if defined(DO_PERL)
     char		*perlrc;
 #endif /* DO_PERL */
@@ -1746,7 +1849,7 @@ ARTpost(cp, Replic, ihave)
     article = &cp->In;
     Data.MessageID = ihave;
     error = ARTclean(article, &Data);
-
+    
     /* Fill in other Data fields. */
     Data.Poster = HDR(_sender);
     if (*Data.Poster == '\0')
@@ -1767,8 +1870,11 @@ ARTpost(cp, Replic, ihave)
     Data.TimeReceivedLength = strlen(Data.TimeReceived);
 
     /* A duplicate? */
-    if (error == NULL && HIShavearticle(Data.MessageID))
+    adupe = 0;
+    if (error == NULL && HIShavearticle(Data.MessageID)) {
 	error = "Duplicate article";
+	adupe = 1;
+    }
 
     /* And now check the path for unwanted sites -- Andy */
     for( j = 0 ; ME.Exclusions && ME.Exclusions[j] ; j++ ) {
@@ -1784,9 +1890,11 @@ ARTpost(cp, Replic, ihave)
 	(void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, error);
 	ARTlog(&Data, ART_REJECT, buff);
 #if	defined(DO_REMEMBER_TRASH)
-        if (Mode == OMrunning && !HISwrite(&Data, ""))
-            syslog(L_ERROR, "%s cant write history %s %m",
-                   LogName, Data.MessageID);
+	if (adupe == 0) {
+	    if (Data.MessageID && Mode == OMrunning && !HISwrite(&Data, ""))
+		syslog(L_ERROR, "%s cant write history %s %m",
+		       LogName, Data.MessageID);
+	}
 #endif	/* defined(DO_REMEMBER_TRASH) */
 	ARTreject(buff, article);
 	return buff;
@@ -1799,7 +1907,7 @@ ARTpost(cp, Replic, ihave)
         syslog(L_NOTICE, "rejecting[perl] %s %s", HDR(_message_id), buff);
         ARTlog(&Data, ART_REJECT, buff);
 #if	defined(DO_REMEMBER_TRASH)
-        if (Mode == OMrunning && !HISwrite(&Data, ""))
+        if (Data.MessageID && Mode == OMrunning && !HISwrite(&Data, ""))
             syslog(L_ERROR, "%s cant write history %s %m",
                    LogName, Data.MessageID);
 #endif	/* defined(DO_REMEMBER_TRASH) */
@@ -1843,7 +1951,7 @@ ARTpost(cp, Replic, ihave)
                        buff);
 		ARTlog(&Data, ART_REJECT, buff);
 #if	defined(DO_REMEMBER_TRASH)
-                if (Mode == OMrunning && !HISwrite(&Data, ""))
+                if (Data.MessageID && Mode == OMrunning && !HISwrite(&Data, ""))
                     syslog(L_ERROR, "%s cant write history %s %m",
                            LogName, Data.MessageID);
 #endif	/* defined(DO_REMEMBER_TRASH) */
@@ -1900,9 +2008,6 @@ ARTpost(cp, Replic, ihave)
 	Data.DistributionLength = 1;
     }
 
-    /* Clear all groups and sites -- assume nobody gets the article. */
-    for (i = nGroups, ngp = Groups; --i >= 0; ngp++)
-	ngp->PostCount = 0;
     for (i = nSites, sp = Sites; --i >= 0; sp++) {
 	sp->Poison = FALSE;
 	sp->Sendit = FALSE;
@@ -1984,7 +2089,8 @@ ARTpost(cp, Replic, ihave)
 	    continue;
 #endif	/* defined(DO_MERGE_TO_GROUPS) */
 	}
-
+	
+	ngp->PostCount = 0;
 	/* Ignore this group? */
 	if (ngp->Rest[0] == NF_FLAG_IGNORE)
 	    continue;
@@ -2111,13 +2217,6 @@ ARTpost(cp, Replic, ihave)
     if (Replic)
 	j = Replic->Used + 1;
 
-    /* Make sure the Xref buffer has room. */
-    Xref.Used = Xrefbase;
-    if (Xref.Size <= j + Xrefbase + 2) {
-	Xref.Size = j + Xrefbase + 2;
-	RENEW(Xref.Data, char, Xref.Size + 1);
-    }
-
     /* Make sure the filename buffer has room. */
     if (Files.Data == NULL) {
 	Files.Size = j;
@@ -2128,12 +2227,28 @@ ARTpost(cp, Replic, ihave)
 	RENEW(Files.Data, char, Files.Size + 1);
     }
 
-    /* Assign article numbers, fill in Xref buffer. */
-    if (Replic == NULL)
-	ARTassignnumbers();
-    else
-	ARTreplic(Replic);
-
+    if (XrefSlave == TRUE) {
+    	if (ARTxrefslave() == FALSE) {
+    	    if (HDR(_xref)) {
+                (void)sprintf(buff, "%d Invalid Xref header \"%s\"",
+		    NNTP_REJECTIT_VAL,
+		    MaxLength(HDR(_xref), HDR(_xref)));
+	    } else {
+                (void)sprintf(buff, "%d No Xref header",
+		    NNTP_REJECTIT_VAL);
+	    }
+            ARTlog(&Data, ART_REJECT, buff);
+	    if (distributions)
+	        DISPOSE(distributions);
+	    ARTreject(buff, article);
+	    return buff;
+    	}
+    } else {
+        if (Replic == NULL)
+            ARTassignnumbers();
+        else
+            ARTreplic(Replic);
+    }
     /* Optimize how we place the article on the disk. */
     ARTsortfordisk();
 

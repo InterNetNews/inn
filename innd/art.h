@@ -9,7 +9,8 @@
 typedef enum _ARTHEADERTYPE {
     HTreq,                      /* Drop article if this is missing      */
     HTobs,                      /* Delete this header if found          */
-    HTstd                       /* Standard optional header             */
+    HTstd,                      /* Standard optional header             */
+    HTsav			/* Save header, but delete from article */
 } ARTHEADERTYPE;
 
 /*

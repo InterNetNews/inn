@@ -587,8 +587,9 @@ main(ac, av)
     int			logflags;
     char		buff[SMBUF];
     char		*master;
-    STRING		path;
     char		*p;
+    char		*wireformat;
+    char		*xrefslave;
     FILE		*F;
     BOOL		ShouldFork;
     BOOL		ShouldRenumber;
@@ -757,6 +758,24 @@ main(ac, av)
 	syslog(L_FATAL, "%s cant chdir %s %m", LogName, SPOOL);
 	exit(1);
     }
+    
+    /* Get the setting for Wireformat */
+    if ((wireformat = GetConfigValue(_CONF_WIREFORMAT)) == NULL)
+	WireFormat = FALSE;
+
+    if (caseEQ(wireformat, "on") || caseEQ(wireformat, "true") || caseEQ(wireformat, "yes"))
+	WireFormat = TRUE;
+    else
+	WireFormat = FALSE;
+   
+    /* Get the setting for Xref slaving */
+    if ((xrefslave = GetConfigValue(_CONF_XREFSLAVE)) == NULL)
+	XrefSlave = FALSE;
+
+    if (caseEQ(xrefslave, "on") || caseEQ(xrefslave, "true") || caseEQ(xrefslave, "yes"))
+	XrefSlave = TRUE;
+    else
+	XrefSlave = FALSE;
 
     /* Get the Path entry. */
     if ((path = GetConfigValue(_CONF_PATHHOST)) == NULL) {
@@ -767,15 +786,6 @@ main(ac, av)
     Path.Used = strlen(path) + 1;
     Path.Data = NEW(char, Path.Used + 1);
     (void)sprintf(Path.Data, "%s!", path);
-
-    /* Get the Xref prefix. */
-    Xref.Size = STRLEN("Xref: ") + strlen(path) + 1;
-    Xref.Data = NEW(char, Xref.Size);
-    FileGlue(Xref.Data, "Xref:", ' ', path);
-    if ((p = strchr(Xref.Data, '!')) != NULL)
-	*p = '\0';
-    Xref.Used = strlen(Xref.Data);
-    Xrefbase = Xref.Used;
 
 #if	!defined(__CENTERLINE__)
     /* Set standard input to /dev/null. */

@@ -388,8 +388,10 @@ EXTERN BOOL		NNRPFollows;
 extern BOOL		NNRPTracing;
 extern BOOL		StreamingOff;
 extern BOOL		Tracing;
+EXTERN BOOL		XrefSlave;
+EXTERN BOOL		WireFormat;
+EXTERN STRING		path;
 EXTERN BUFFER		Path;
-EXTERN BUFFER		Xref;
 EXTERN char		*ModeReason;	/* NNTP reject message		*/
 EXTERN char		*NNRPReason;	/* NNRP reject message		*/
 EXTERN char		*Reservation;	/* Reserved lock message	*/

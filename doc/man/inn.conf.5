@@ -95,7 +95,7 @@ If MIME headers are being added, this parameter specifies the value of
 the Content-Transfer-Encoding header.
 The default value is ``7bit.''
 .PP
-One parameter is used only by
+The following three parameters are used only by
 .I innd.
 .TP
 .I hiscachesize
@@ -103,6 +103,17 @@ If this is set to a non-zero number then history file lookups are cached.
 This number is the amount of memory to dedicate to the lookup cache in 
 kilobytes.  It is generally useful to have memory allocated to history
 cache if dbz mmaping is turned on.
+.TP
+.I xrefslave
+If this is true and innd is in slave mode then innd will accept feeds from 
+peers that are not it's master and will use the information in the Xref:
+header for replication.  
+.TP
+.I wireformat
+If this is true then innd will write articles in wire format.  Wire format
+articles are stored with a \\r\\n at the end of each line and with periods
+at the beginning of lines doubled.  When used with applications that understand
+wire format, this can be considerably more efficent.
 
 .PP
 Note that this file can be identical on all machines in an organization.

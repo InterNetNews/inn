@@ -179,7 +179,10 @@
 #define _CONF_ENCODING		"mime-encoding"
     /* Size of the history cache in kilobytes */
 #define _CONF_HISCACHESIZE	"hiscachesize"
-
+    /* Toggle for wireformat articles */
+#define _CONF_WIREFORMAT        "wireformat"
+    /* Toggle for Xref: slaving */
+#define _CONF_XREFSLAVE         "xrefslave"
 
 /*
 **  13.  TCL Support
