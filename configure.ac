@@ -418,7 +418,7 @@ INN_FUNC_SNPRINTF
 dnl Check for various other functions.
 AC_CHECK_FUNCS(atexit getloadavg getrusage getspnam setbuffer sigaction \
                setgroups setrlimit setsid socketpair strncasecmp strtoul \
-               symlink sysconf)
+               sysconf)
 
 dnl Find a way to get the file descriptor limit.
 AC_CHECK_FUNCS([getrlimit getdtablesize ulimit], [break])
@@ -431,7 +431,7 @@ AC_CHECK_FUNCS([statvfs], ,
 dnl If we can't find any of the following, we have replacements for them.
 AC_REPLACE_FUNCS(getaddrinfo getpagesize hstrerror inet_aton mkstemp pread \
                  pwrite seteuid strcasecmp strerror strlcat strlcpy strspn \
-                 setenv)
+                 setenv symlink)
 
 dnl AC_REPLACE_FUNCS doesn't take the normal action arguments, so we have to
 dnl do this using AC_CHECK_FUNC.

@@ -509,6 +509,7 @@ lib/strlcat.c                         strlcat replacement
 lib/strlcpy.c                         strlcpy replacement
 lib/strspn.c                          Skip bytes in a string (BSD)
 lib/strtok.c                          Split a string into tokens (BSD)
+lib/symlink.c                         Dummy symlink replacement
 lib/timer.c                           Generic profile timer
 lib/tst.c                             Ternary search trie implementation
 lib/uwildmat.c                        Pattern match routine

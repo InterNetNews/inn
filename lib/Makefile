@@ -20,7 +20,7 @@ SOURCES       = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
 EXTRA_SOURCES = fseeko.c ftello.c getaddrinfo.c getpagesize.c hstrerror.c \
 		inet_aton.c inet_ntoa.c memcmp.c mkstemp.c pread.c pwrite.c \
 		setenv.c setproctitle.c strcasecmp.c strerror.c strlcat.c \
-		strlcpy.c strspn.c strtok.c
+		strlcpy.c strspn.c strtok.c symlink.c
 
 OBJECTS       = $(LIBOBJS) $(SOURCES:.c=.o)
 LOBJECTS      = $(OBJECTS:.o=.lo)
