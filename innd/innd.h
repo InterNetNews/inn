@@ -431,7 +431,6 @@ enum timer {
 #else
 # define EXTERN		extern
 #endif
-extern bool		AmRoot;
 extern bool		BufferedLogs;
 EXTERN bool		AnyIncoming;
 extern bool		Debug;
@@ -444,7 +443,6 @@ extern bool		StreamingOff;
 extern bool		Tracing;
 EXTERN int		Overfdcount;
 EXTERN int		SeqNum;
-EXTERN const char *	path;
 EXTERN BUFFER		Path;
 EXTERN BUFFER		Pathalias;
 EXTERN char *		ModeReason;	/* NNTP reject message   */
@@ -462,7 +460,6 @@ EXTERN int		MaxOutgoing;
 EXTERN int		nGroups;
 EXTERN SITEIDX		nSites;
 EXTERN int		PROCneedscan;
-extern int		SPOOLlen;
 EXTERN int		Xrefbase;
 extern long		LargestArticle;
 EXTERN NEWSGROUP **	GroupPointers;
