@@ -23,6 +23,11 @@
 #include "libinn.h"
 #include "macros.h"
 
+#include <EXTERN.h>
+#include <perl.h>
+#include <XSUB.h>
+#include "ppport.h"
+
 #include "innperl.h"
 
 /* Provided by DynaLoader but not declared in Perl's header files. */
@@ -48,37 +53,47 @@ void LogPerl(void)
    syslog(L_NOTICE, "SERVER perl filtering %s", PerlFilterActive ? "enabled" : "disabled");
 }
 
-void PerlFilter(bool value)
+
+/*
+**  Enable or disable the Perl filter.  Takes the desired state of the filter
+**  as an argument and returns success or failure.  Failure to enable
+**  indicates that the filter is not defined.
+*/
+bool
+PerlFilter(bool value)
 {
     dSP;
 
-    ENTER ;
-    SAVETMPS ;
-    
-    /* Execute an end function */
-    if (PerlFilterActive && !value) {
-        if (perl_get_cv("filter_end", FALSE) != NULL) {
-            perl_call_argv("filter_end", G_EVAL|G_DISCARD|G_NOARGS, NULL);
-            if (SvTRUE(ERRSV))     /* check $@ */ {
-                syslog (L_ERROR,"SERVER perl function filter_end died: %s",
-                        SvPV(ERRSV, PL_na)) ;
-                (void)POPs ;
+    if (value == PerlFilterActive)
+        return true;
+
+    if (!value) {
+        /* Execute an end function, if one is defined. */
+        if (perl_get_cv("filter_end", false) != NULL) {
+            ENTER;
+            SAVETMPS;
+            perl_call_argv("filter_end", G_EVAL | G_DISCARD | G_NOARGS, NULL);
+            if (SvTRUE(ERRSV)) {
+                syslog (L_ERROR, "SERVER perl function filter_end died: %s",
+                        SvPV(ERRSV, PL_na));
+                (void) POPs;
             }
-        } else {
-            PerlFilterActive = value ;
-            LogPerl () ;
+            FREETMPS;
+            LEAVE;
         }
-    } else if (!PerlFilterActive && value) { /* turning on */
+        PerlFilterActive = value;
+        LogPerl();
+        return true;
+    } else {
         if (perl_filter_cv == NULL) {
-            syslog (L_ERROR,"SERVER perl filter not defined") ;
+            syslog (L_ERROR, "SERVER perl filter not defined");
+            return false;
         } else {
-            PerlFilterActive = value ;
-            LogPerl () ;
+            PerlFilterActive = value;
+            LogPerl();
+            return true;
         }
     }
-    
-    FREETMPS ;
-    LEAVE ;
 }
 
 static void PerlParse (void)
@@ -301,15 +316,15 @@ void PerlUnSilence(void) {
 XS(XS_INN_syslog)
 {
     dXSARGS;
-    char *      loglevel;
-    char *      logmsg;
-    int         priority;
+    const char *loglevel;
+    const char *logmsg;
+    int priority;
 
     if (items != 2)
         croak("Usage: INN::syslog(level, message)");
 
-    loglevel = (char *) SvPV(ST(0), PL_na);
-    logmsg = (char *) SvPV(ST(1), PL_na);
+    loglevel = (const char *) SvPV(ST(0), PL_na);
+    logmsg = (const char *) SvPV(ST(1), PL_na);
 
     switch (*loglevel) {
         default:                priority = LOG_NOTICE;
