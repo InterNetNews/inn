@@ -124,6 +124,11 @@ version:*:*:log=version
 newgroup:*:*:mail
 rmgroup:*:*:mail
 
+## A.BSU (*DEFUNCT* -- Ball State University, USA)
+# This hierarchy is defunct.  Please remove it.
+newgroup:*:a.bsu.*:mail
+rmgroup:*:a.bsu.*:doit
+
 ## ACS & OSU (*LOCAL* -- Ohio State University, USA)
 # Contact: Albert J. School <school.1@osu.edu>
 # Contact: Harpal Chohan <chohan+@osu.edu>
