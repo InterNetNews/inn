@@ -226,46 +226,8 @@ is normally buffered.  This option changes the log to be unbuffered.
 =head1 CONTROL MESSAGES
 
 Arriving articles that have a Control header are called "control
-messages."  Except for cancel messages, these messages are implemented by
-an external program, either scripts in the I<pathcontrol> directory (as
-set in F<inn.conf>) or by controlchan(8) if I<usecontrolchan> is set to
-true in F<inn.conf>.  Use of controlchan(8) is highly recommended, since
-otherwise a flood of control messages can cause a denial of service
-attack.  Support for control message processing via means other than
-controlchan(8) should be considered obsolete and may be removed in future
-versions of INN.
-
-If I<usecontrolchan> is false, then when a control message arrives the
-first word of the control header is convered to lowercase and used as the
-name of the program to execute.  If the named program does not exist, then
-I<pathcontrol>/default is executed instead.  All control programs are
-invoked with four parameters:
-
-=over 4
-
-=item 1.
-
-The address of the person who posted the message.  This is taken from the
-Sender: header if present and the From: header if it is not.
-
-=item 2.
-
-The address to which to send replies, taken from the Reply-To: header.
-
-=item 3.
-
-The storage API token for the article.
-
-=item 4.
-
-The host that sent the article, as specified in the Path: header.
-
-=back
-
-This method of control message handling should be considered obsolete and
-not relied on.  Support for it may be removed in future versions of INN in
-favor of requiring all control message processing be done via
-controlchan(8), which is much safer and more reliable.
+messages."  Except for cancel messages, these messages are handled by
+controlchan(8) via a feed set up in newsfeeds(5).
 
 (Cancel messages update the history database, so they must be handled
 internally; the cost of syncing, locking, then unlocking would be too high
