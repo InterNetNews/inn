@@ -487,7 +487,7 @@ int main (int argc, char **argv)
   sleep (initialSleep) ;
 
 
-#if	defined(HAVE_RLIMIT)
+#if defined(HAVE_RLIMIT) && defined(RLIMIT_NOFILE)
   /* now lower maximum open file limit to match what select(2) can handle. */
   if (innconf->rlimitnofile >= 0) {
     if (getrlimit(RLIMIT_NOFILE,&rl) != 0)
@@ -510,7 +510,7 @@ int main (int argc, char **argv)
 	  }
       }
   }
-#endif	/* defined(HAVE_RLIMIT) */
+#endif /* HAVE_RLIMIT && RLIMIT_NOFILE */
       
   
   configHosts (talkToSelf) ;

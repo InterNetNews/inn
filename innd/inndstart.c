@@ -69,6 +69,12 @@
 # include <sys/resource.h>
 #endif
 
+/* AIX 4.1 has *rlimit() but not RLIMIT_NOFILE or any equivalent thereof, so
+   pretend it doesn't have *rlimit() at all. */
+#ifndef RLIMIT_NOFILE
+# undef HAVE_RLIMIT
+#endif
+
 /* To run innd under the debugger, uncomment this and fix the path. */
 /* #define DEBUGGER "/usr/ucb/dbx" */
 

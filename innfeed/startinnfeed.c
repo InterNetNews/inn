@@ -56,6 +56,7 @@ main(int ac, char **av, char **ep)
   if (setrlimit(RLIMIT_STACK, &rl) == -1)
     syslog(LOG_WARNING, "%s: setrlimit(RLIMIT_STACK, RLIM_INFINITY): %s",
             *av, strerror (errno));
+# ifdef RLIMIT_NOFILE
   if (innconf->rlimitnofile >= 0) {
     getrlimit(RLIMIT_NOFILE, &rl);
     if (rl.rlim_max < NOFILE_LIMIT) rl.rlim_max = NOFILE_LIMIT;
@@ -66,7 +67,8 @@ main(int ac, char **av, char **ep)
       syslog(LOG_WARNING, "%s: setrlimit(RLIMIT_NOFILE, %d): %s",
             *av, rl.rlim_cur, strerror (errno));
   }
-#endif
+# endif /* RLIMIT_NOFILE */
+#endif /* HAVE_RLIMIT */
 
   /* stop being root */
   pwd = getpwnam(NEWSUSER);
