@@ -34,6 +34,12 @@ archivegz
     plain text files.  May not work with the storage API without some
     changes to use sm.
 
+authmysql
+
+    An authenticator that checks a username and password against a MySQL
+    database.  Could also be easily modified to check against any other
+    type of database that Perl's DBI module can talk to.
+
 backupfeed
 
     Another version of suck or pullnews that downloads posts from a remote
