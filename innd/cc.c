@@ -23,6 +23,7 @@
 #include "inn/qio.h"
 #include "innd.h"
 #include "inndcomm.h"
+#include "innperl.h"
 
 /*
 **  An entry in the dispatch table.  The name, and implementing function,
@@ -614,10 +615,6 @@ CCfilter(char *av[])
 
 
 #if defined(DO_PERL)
-
-#include <EXTERN.h>
-#include <perl.h>
-#include "innperl.h"
 
 extern CV *perl_filter_cv;
 
@@ -1355,7 +1352,8 @@ CCreload(char *av[])
 #if defined(DO_PYTHON)
     static char BADPYRELOAD[] = "1 Failed to reload filter_innd.py" ;
 #endif /* defined(DO_PYTHON) */
-    const char *p, *path;
+    const char *p;
+    char *path;
 
     p = av[0];
     if (*p == '\0' || EQ(p, "all")) {
