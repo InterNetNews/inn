@@ -3,6 +3,9 @@
  * ovdb 2.00 beta1
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2000-10-05 : artnum member of struct datakey changed from ARTNUM to u_int32_t.
+ *              OS's where sizeof(long)==8 will have to rebuild their databases
+ *              after this update.
  * 2000-10-05 : from Dan Riley: struct datakey needs to be zero'd, for
  *              64-bit OSs where the struct has internal padding bytes.
  * 2000-09-29 : ovdb_expiregroup can now fix incorrect counts; use new
@@ -752,7 +755,7 @@ static int count_records(struct groupinfo *gi)
     DBC *cursor;
     DBT key, val;
     struct datakey dk;
-    ARTNUM artnum, newlow = 0;
+    u_int32_t artnum, newlow = 0;
 
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
@@ -1506,7 +1509,7 @@ BOOL ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
 	return FALSE;
     }
     dk.groupnum = gi.current_gid;
-    dk.artnum = htonl(artnum);
+    dk.artnum = htonl((u_int32_t)artnum);
 
     key.data = &dk;
     key.size = sizeof dk;
@@ -1560,8 +1563,8 @@ BOOL ovdb_cancel(TOKEN token)
 struct ovdbsearch {
     DBC *cursor;
     group_id_t gid;
-    ARTNUM firstart;
-    ARTNUM lastart;
+    u_int32_t firstart;
+    u_int32_t lastart;
     int state;
 };
 
@@ -1741,7 +1744,7 @@ BOOL ovdb_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *t
 
 	memset(&dk, 0, sizeof dk);
 	dk.groupnum = gi.current_gid;
-	dk.artnum = htonl(artnum);
+	dk.artnum = htonl((u_int32_t)artnum);
 
 	memset(&key, 0, sizeof key);
 	memset(&val, 0, sizeof val);
@@ -1812,7 +1815,7 @@ BOOL ovdb_expiregroup(char *group, int *lo)
     struct datakey dk, ndk;
     group_id_t old_gid;
     ARTHANDLE *ah;
-    ARTNUM artnum, currentart, lowest;
+    u_int32_t artnum, currentart, lowest;
     int i, compact, done, currentcount, newcount;
 
     if(eo_start == 0) {

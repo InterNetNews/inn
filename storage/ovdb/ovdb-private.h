@@ -64,7 +64,7 @@ struct groupinfo {
 
 struct datakey {
     group_id_t groupnum;	/* must be the first member of this struct */
-    ARTNUM artnum;
+    u_int32_t artnum;
 };
 
 struct ovdata {
