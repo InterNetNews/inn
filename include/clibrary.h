@@ -10,7 +10,6 @@
 **      #include <stddef.h>
 **      #include <stdint.h>
 **      #include <string.h>
-**      #include <limits.h>
 **      #include <unistd.h>
 **
 **  Missing functions are provided via #define or prototyped if we'll be
@@ -208,7 +207,7 @@ typedef pid_t           PID_T;
 /* Some functions like accept() and getsockopt() take a pointer to a size_t
    on some platforms and a pointer to an int on others.  Just always using
    size_t should work most everywhere. */
-#define	ARGTYPE         size_t
+#define	ARGTYPE         socklen_t
 
 /* These are in C9X, and autoconf makes sure they exist, so again occurances
    of the typedefs should be replaced by the standard type. */
@@ -237,9 +236,6 @@ typedef caddr_t         MMAP_PTR;
    getopt() functionality. */
 extern int              optind;
 extern char             *optarg;
-
-/* Use SUN_LEN instead of AF_UNIX_SOCKSIZE. */
-#define AF_UNIX_SOCKSIZE(sun) SUN_LEN(&(sun))
 
 #ifdef __cplusplus
 }
