@@ -1422,7 +1422,7 @@ STATIC BOOL setcurrent(GROUPINDEXBLOCK **curgib, int *cur, int low, int high) {
   if (curgib == NULL)
     return FALSE;
   if (*cur >= 0) {
-    if (++(*cur) == OVINDEXMAX - (*curgib)->baseoffset) {
+    if (++(*cur) == OVINDEXMAX) {
       if ((*curgib = (*curgib)->next) == NULL)
 	return FALSE;
       *cur = 0;
