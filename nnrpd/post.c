@@ -948,7 +948,7 @@ ARTpost(article, idbuff)
 		(strlen(article) > innconf->localmaxartsize)) {
 	    (void)sprintf(Error,
 		"Article is bigger then local limit of %ld bytes\n",
-		atoi(p));
+		innconf->localmaxartsize);
 	    if (modgroup)
 		DISPOSE(modgroup);
 	    return Error;
