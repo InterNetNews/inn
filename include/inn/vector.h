@@ -60,19 +60,20 @@ void vector_free(struct vector *);
 void cvector_free(struct cvector *);
 
 /* Split functions build a vector from a string.  vector_split splits on a
-   specified character, while vector_split_whitespace splits on any sequence
-   of whitespace.  The cvector versions destructively modify the provided
-   string in-place to insert nul characters between the strings.  If the
-   vector argument is NULL, a new vector is allocated; otherwise, the
+   specified character, while vector_split_space splits on any sequence of
+   spaces or tabs (not any sequence of whitespace, as just spaces or tabs is
+   more useful for INN).  The cvector versions destructively modify the
+   provided string in-place to insert nul characters between the strings.  If
+   the vector argument is NULL, a new vector is allocated; otherwise, the
    provided one is reused.
 
    Empty strings will yield zero-length vectors.  Adjacent delimiters are
    treated as a single delimiter (zero-length strings are not added to the
    vector). */
 struct vector *vector_split(const char *string, char sep, struct vector *);
-struct vector *vector_split_whitespace(const char *string, struct vector *);
+struct vector *vector_split_space(const char *string, struct vector *);
 struct cvector *cvector_split(char *string, char sep, struct cvector *);
-struct cvector *cvector_split_whitespace(char *string, struct cvector *);
+struct cvector *cvector_split_space(char *string, struct cvector *);
 
 /* Build a string from a vector by joining its components together with the
    specified string as separator.  Returns a newly allocated string; caller is

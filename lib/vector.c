@@ -280,7 +280,7 @@ cvector_split(char *string, char separator, struct cvector *vector)
 **  splitting on whitespace.
 */
 static size_t
-split_whitespace_count(const char *string)
+split_space_count(const char *string)
 {
     const char *p;
     size_t count;
@@ -288,7 +288,7 @@ split_whitespace_count(const char *string)
     if (*string == '\0')
         return 0;
     for (count = 1, p = string + 1; *p; p++)
-        if (CTYPE(isspace, *p) && !CTYPE(isspace, *(p - 1)))
+        if ((*p == ' ' || *p == '\t') && !(p[-1] == ' ' || p[-1] == '\t'))
             count++;
     return count;
 }
@@ -301,24 +301,22 @@ split_whitespace_count(const char *string)
 **  characters is considered a single separator.
 */
 struct vector *
-vector_split_whitespace(const char *string, struct vector *vector)
+vector_split_space(const char *string, struct vector *vector)
 {
     const char *p, *start;
     size_t i, count;
 
     vector = vector_reuse(vector);
 
-    count = split_whitespace_count(string);
+    count = split_space_count(string);
     if (vector->allocated < count)
         vector_resize(vector, count);
 
     for (start = string, p = string, i = 0; *p; p++)
-        if (CTYPE(isspace, *p)) {
+        if (*p == ' ' || *p == '\t') {
             if (start != p)
                 vector->strings[i++] = xstrndup(start, p - start);
-            for (++p; *p && CTYPE(isspace, *p); p++)
-                ;
-            start = p;
+            start = p + 1;
         }
     if (start != p)
         vector->strings[i++] = xstrndup(start, p - start);
@@ -336,26 +334,24 @@ vector_split_whitespace(const char *string, struct vector *vector)
 **  separator.
 */
 struct cvector *
-cvector_split_whitespace(char *string, struct cvector *vector)
+cvector_split_space(char *string, struct cvector *vector)
 {
     char *p, *start;
     size_t i, count;
 
     vector = cvector_reuse(vector);
 
-    count = split_whitespace_count(string);
+    count = split_space_count(string);
     if (vector->allocated < count)
         cvector_resize(vector, count);
 
     for (start = string, p = string, i = 0; *p; p++)
-        if (CTYPE(isspace, *p)) {
+        if (*p == ' ' || *p == '\t') {
             if (start != p) {
                 *p = '\0';
                 vector->strings[i++] = start;
             }
-            for (++p; *p && CTYPE(isspace, *p); p++)
-                ;
-            start = p;
+            start = p + 1;
         }
     if (start != p)
         vector->strings[i++] = start;
