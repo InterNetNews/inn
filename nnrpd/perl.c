@@ -314,7 +314,13 @@ int perlAuthenticate(char *clientHost, char *clientIpString, char *serverHost, c
     int             code;
     
     if (!PerlFilterActive)
-	return NNTP_ACCESS_VAL;
+        return NNTP_ACCESS_VAL;
+
+    if (perl_get_cv("authenticate", 0) == NULL) {
+        syslog(L_ERROR, "Perl function authenticate not defined");
+        Reply("%d Internal Error (3).  Goodbye\r\n", NNTP_ACCESS_VAL);
+        ExitWithStats(1, TRUE);
+    }
 
     ENTER;
     SAVETMPS;
