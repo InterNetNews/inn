@@ -98,6 +98,8 @@ int main()
 	store(p, i);
 	load_and_store(p, 1);
     }
+    /* simply here so the compiler can't optimise everything away */
+    memchr(byte, '\0', sizeof byte);
 
     /* if we got here, then we can mis-align longs */
     printf("#undef INN_MUST_ALIGN\n");
