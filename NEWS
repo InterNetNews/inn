@@ -8,18 +8,18 @@ Changes from 2.3.2 to 2.3.3
       use to verify signatures if you were previously using PGP.
 
     * An item that was noted in NEWS below but was inadvertently left out of
-      nnrpd: Users can no longer post articles containing Approved: headers
-      to moderated groups by default; they must be specifically given that
-      permission with the access: parameter in readers.conf.  See the man
-      page for more details.
+      nnrpd has actually been added this time:  users can no longer post
+      articles containing Approved: headers to moderated groups by default;
+      they must be specifically given that permission with the access:
+      parameter in readers.conf.  See the man page for more details.
 
     * Two bugs in repacking overview index files and a reliability bug with
       writing overview data were all fixed in the tradindexed overview
       method, hopefully making it somewhat more reliable, particularly for
       makehistory.
 
-    * If rc.news.local exists in the INN binary directory, run it whenever
-      rc.news is run, passing the start or stop argument to it.  This is
+    * If rc.news.local exists in the INN binary directory, it will be run
+      with the start or stop argument whenever rc.news is run.  This is
       available as a hook for local startup and shutdown code.
 
     * The default history table hash sizes were increased because a
