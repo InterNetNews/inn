@@ -105,6 +105,8 @@ int main(int ac, char *av[])
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
     (void)umask(NEWSUMASK);
+    if (innconf->enableoverview && !innconf->useoverchan)
+	syslog(L_ERROR, "overchan runs while innd creates overview data");
 
     ac -= 1;
     av += 1;
