@@ -101,6 +101,10 @@ concat.o: concat.c ../include/config.h ../include/inn/defines.h \
 conffile.o: conffile.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/conffile.h ../include/libinn.h \
  ../include/macros.h
+confparse.o: confparse.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/confparse.h \
+ ../include/inn/hashtab.h ../include/inn/vector.h ../include/libinn.h \
+ ../include/macros.h
 daemonize.o: daemonize.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
 date.o: date.c ../include/config.h ../include/inn/defines.h \
@@ -196,6 +200,8 @@ sendarticle.o: sendarticle.c ../include/config.h \
 sendpass.o: sendpass.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h ../include/paths.h
+sequence.o: sequence.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/sequence.h
 setenv.o: setenv.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 strcasecmp.o: strcasecmp.c ../include/config.h \
@@ -208,9 +214,12 @@ strtok.o: strtok.c ../include/config.h ../include/inn/defines.h \
 tempname.o: tempname.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 timer.o: timer.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h ../include/inn/timer.h
+ ../include/clibrary.h ../include/libinn.h ../include/inn/timer.h \
+ ../include/portable/time.h
 wildmat.o: wildmat.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
+vector.o: vector.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/vector.h ../include/libinn.h
 version.o: version.c ../include/config.h ../include/inn/defines.h \
  ../include/inn/version.h
 xfopena.o: xfopena.c ../include/config.h ../include/inn/defines.h \

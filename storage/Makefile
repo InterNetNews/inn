@@ -88,14 +88,15 @@ interface.o: interface.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/conffile.h interface.h \
  ../include/storage.h ../include/libinn.h ../include/macros.h \
  methods.h ../include/paths.h
-methods.o: methods.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h methods.h tradspool/tradspool.h \
- timecaf/timecaf.h trash/trash.h cnfs/cnfs.h timehash/timehash.h
-ovmethods.o: ovmethods.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ovinterface.h ../include/ov.h \
- ../include/storage.h ovdb/ovdb.h buffindexed/buffindexed.h \
- ov3/tradindexed.h
+methods.o: methods.c interface.h ../include/config.h \
+ ../include/inn/defines.h ../include/storage.h methods.h cnfs/cnfs.h \
+ timecaf/timecaf.h timehash/timehash.h tradspool/tradspool.h \
+ trash/trash.h
 ov.o: ov.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/dbz.h ../include/libinn.h \
- ../include/macros.h ../include/ov.h ../include/storage.h \
+ ../include/clibrary.h ../include/macros.h ../include/libinn.h \
+ ../include/ov.h ../include/storage.h ../include/inn/history.h \
  ovinterface.h ovmethods.h ../include/paths.h
+ovmethods.o: ovmethods.c ovinterface.h ../include/config.h \
+ ../include/inn/defines.h ../include/ov.h ../include/storage.h \
+ ../include/inn/history.h buffindexed/buffindexed.h ovdb/ovdb.h \
+ ov3/tradindexed.h

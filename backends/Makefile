@@ -129,8 +129,8 @@ depend:	Makefile $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 actsync.o: actsync.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
- ../include/macros.h ../include/paths.h
+ ../include/clibrary.h ../include/portable/wait.h ../include/inn/qio.h \
+ ../include/libinn.h ../include/macros.h ../include/paths.h
 archive.o: archive.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/paths.h ../include/storage.h
@@ -148,24 +148,26 @@ filechan.o: filechan.c ../include/config.h ../include/inn/defines.h \
  ../include/paths.h
 inndf.o: inndf.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
- ../include/ov.h ../include/storage.h ../include/paths.h
+ ../include/ov.h ../include/storage.h ../include/inn/history.h \
+ ../include/paths.h
 innxbatch.o: innxbatch.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h
 innxmit.o: innxmit.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/dbz.h ../include/libinn.h \
- ../include/inn/qio.h ../include/macros.h ../include/nntp.h \
- ../include/paths.h ../include/storage.h
+ ../include/clibrary.h ../include/portable/time.h ../include/inn/qio.h \
+ ../include/libinn.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h ../include/storage.h ../include/inn/history.h
 map.o: map.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/paths.h
 nntpget.o: nntpget.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/dbz.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h
+ ../include/clibrary.h ../include/portable/time.h ../include/libinn.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h \
+ ../include/inn/history.h
 overchan.o: overchan.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
- ../include/macros.h ../include/ov.h ../include/storage.h \
- ../include/paths.h
+ ../include/clibrary.h ../include/portable/time.h ../include/inn/qio.h \
+ ../include/libinn.h ../include/macros.h ../include/ov.h \
+ ../include/storage.h ../include/inn/history.h ../include/paths.h
 shlock.o: shlock.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 shrinkfile.o: shrinkfile.c ../include/config.h \
