@@ -185,6 +185,7 @@ while (<STDIN>) {
   
   if ($progname !~ /(^[a-z]+$)/) {
     logmsg ('notice', 'Naughty control in article %s', $msgid);
+    next;
   } else {
     $progname = $1;
   }
