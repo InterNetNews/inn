@@ -182,6 +182,7 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 		(void)unlink(temp);
 	    exit(1);
 	default:
+	    break;
 	}
     }
     if (QIOerror(qp)) {
