@@ -446,7 +446,7 @@ main(ac, av)
     Index = NULL;
     Redirect = TRUE;
     (void)umask(NEWSUMASK);
-    ERRLOG = COPY(cpcatpath(innconf->pathlog, _PATH_ERRLOG));
+    ERRLOG = concatpath(innconf->pathlog, _PATH_ERRLOG);
     Archive = innconf->patharchive;
     groups = NULL;
     numgroups = 0;

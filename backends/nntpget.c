@@ -211,6 +211,7 @@ main(ac, av)
     const char	*Groups;
     char	*distributions;
     char	*Since;
+    char        *path;
     int		i;
     struct tm	*gt;
     struct stat	Sb;
@@ -269,11 +270,13 @@ main(ac, av)
 	    break;
 	case 'o':
 	    /* Open the history file. */
-	    if (!dbzinit(cpcatpath(innconf->pathdb, _PATH_HISTORY))) {
+            path = concatpath(innconf->pathdb, _PATH_HISTORY);
+	    if (!dbzinit(path)) {
 		(void)fprintf(stderr, "Can't open history, %s\n",
 		    strerror(errno));
 		exit(1);
 	    }
+            free(path);
 	    Offer = TRUE;
 	    break;
 	case 't':

@@ -145,7 +145,7 @@ static FILE *HistorySeek(char *MessageID)
     /* Open the history file. */
     if (F == NULL) {
 	if (History == NULL)
-	    History = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
+	    History = concatpath(innconf->pathdb, _PATH_HISTORY);
 	if (!dbzinit(History)) {
 	    (void)fprintf(stderr, "Can't set up \"%s\" database, %s\n",
 		    History, strerror(errno));

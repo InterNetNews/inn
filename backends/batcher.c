@@ -236,7 +236,7 @@ main(ac, av)
     AltSpool = NULL;
     Redirect = TRUE;
     (void)umask(NEWSUMASK);
-    ERRLOG = COPY(cpcatpath(innconf->pathlog, _PATH_ERRLOG));
+    ERRLOG = concatpath(innconf->pathlog, _PATH_ERRLOG);
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "a:A:b:B:i:N:p:rs:S:v")) != EOF)
