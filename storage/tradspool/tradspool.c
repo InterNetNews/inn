@@ -1113,7 +1113,21 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	newpriv = (PRIV_TRADSPOOL *) art->private;
 	newpriv->artbase = NULL;
     } else {
-	/* skip linked (not symlinked) crossposted articles */
+	/* Skip linked (not symlinked) crossposted articles.
+
+           This algorithm is rather questionable; it only works if the first
+           group/number combination listed in the Xref header is the
+           canonical path.  This will always be true for spools created by
+           this implementation, but for traditional INN 1.x servers,
+           articles are expired indepedently from each group and may expire
+           out of the first listed newsgroup before other groups.  This
+           algorithm will orphan such articles, not adding them to history.
+
+           The bit of skipping articles by setting the length of the article
+           to zero is also rather suspect, and I'm not sure what
+           implications that might have for the callers of SMnext.
+
+           Basically, this whole area really needs to be rethought. */
 	xrefhdr = (char *)HeaderFindMem(art->data, art->len, "Xref", 4);
 	if (xrefhdr != NULL) {
 	    if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
@@ -1150,8 +1164,13 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
     if ((sub = SMgetsub(*art)) == NULL || sub->type != TOKEN_TRADSPOOL) {
 	/* maybe storage.conf is modified, after receiving article */
 	token = MakeToken(priv.ngtp->ngname, artnum, 0);
-	syslog(L_ERROR, "tradspool: can't determine class: %s: %s",
-	       TokenToText(token), SMerrorstr);
+
+        /* Only log an error if art->len is non-zero, since otherwise we get
+           all the ones skipped via the hard-link skipping algorithm
+           commented above. */
+        if (art->len > 0)
+            syslog(L_ERROR, "tradspool: can't determine class: %s: %s",
+                   TokenToText(token), SMerrorstr);
     } else {
 	token = MakeToken(priv.ngtp->ngname, artnum, sub->class);
     }
