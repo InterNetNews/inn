@@ -31,7 +31,10 @@ void CMDgroup(int ac, char *av[])
 #endif /* DO_PYTHON */
 
     if (!hookpresent && !PERMcanread) {
-	Reply("%s\r\n", NOACCESS);
+        if (PERMspecified)
+	    Reply("%d Permission denied\r\n", NNTP_ACCESS_VAL);
+        else
+            Reply("%d Authenticatino required\r\n", NNTP_AUTH_NEEDED_VAL);
 	return;
     }
 
@@ -72,18 +75,17 @@ void CMDgroup(int ac, char *av[])
     }
 #endif /* DO_PYTHON */
 
-    /* If permission is denied, pretend group doesn't exist. */
     if (!hookpresent) {
         if (PERMspecified) {
             grplist[0] = group;
             grplist[1] = NULL;
             if (!PERMmatch(PERMreadlist, grplist)) {
-	         Reply("%s %s\r\n", NOSUCHGROUP, group);
-                 free(group);
-                 return;
+                Reply("%d Permission denied\r\n", NNTP_ACCESS_VAL);
+                free(group);
+                return;
             }
         } else {
-            Reply("%s %s\r\n", NOSUCHGROUP, group);
+            Reply("%d Authentication required\r\n", NNTP_AUTH_NEEDED_VAL);
             free(group);
             return;
         }
