@@ -117,10 +117,6 @@ char *GetConfigValue(char *value)
     /* Some values have defaults if not in the file. */
     if (EQ(value, _CONF_FROMHOST) || EQ(value, _CONF_PATHHOST))
 	return GetFQDN();
-    if (EQ(value, _CONF_MIMECONTENTTYPE))
-	return "text/plain; charset=US-ASCII";
-    if (EQ(value, _CONF_MIMEENCODING))
-	return "7bit";
     return NULL;
 }
 
@@ -170,9 +166,6 @@ void SetDefaults()
     }
     innconf->moderatormailer = NULL;
     innconf->domain = NULL;
-    innconf->mimeversion = NULL;
-    innconf->mimecontenttype = NULL;
-    innconf->mimeencoding = NULL;
     innconf->hiscachesize = 0;
     innconf->xrefslave = FALSE;
     innconf->complaints = NULL;
@@ -218,7 +211,6 @@ void SetDefaults()
     innconf->port = NNTP_PORT;
     innconf->readertrack = FALSE;
     innconf->strippostcc = FALSE;
-    innconf->overviewname = NULL;
     innconf->keywords = FALSE;		
     innconf->keylimit = 512 ;		
     innconf->keyartlimit = 100000;
@@ -249,7 +241,6 @@ void SetDefaults()
     innconf->logsitename = TRUE;
     innconf->nnrpdoverstats = FALSE;
     innconf->storeonxref = TRUE;
-    innconf->decnetdomain = NULL;
     innconf->backoff_auth = FALSE;
     innconf->backoff_db = NULL;
     innconf->backoff_k = 1L;
@@ -258,7 +249,6 @@ void SetDefaults()
     innconf->backoff_trigger = 10000L;
     innconf->refusecybercancels = FALSE;
     innconf->nnrpdcheckart = TRUE;
-    innconf->storemsgid = TRUE;
     innconf->nicenewnews = 0;
     innconf->nicennrpd = 0;
     innconf->usecontrolchan = FALSE;
@@ -284,15 +274,11 @@ void ClearInnConf()
     if (innconf->organization != NULL) DISPOSE(innconf->organization);
     if (innconf->moderatormailer != NULL) DISPOSE(innconf->moderatormailer);
     if (innconf->domain != NULL) DISPOSE(innconf->domain);
-    if (innconf->mimeversion != NULL) DISPOSE(innconf->mimeversion);
-    if (innconf->mimecontenttype != NULL) DISPOSE(innconf->mimecontenttype);
-    if (innconf->mimeencoding != NULL) DISPOSE(innconf->mimeencoding);
     if (innconf->complaints != NULL) DISPOSE(innconf->complaints);
     if (innconf->mta != NULL) DISPOSE(innconf->mta);
     if (innconf->mailcmd != NULL) DISPOSE(innconf->mailcmd);
     if (innconf->bindaddress != NULL) DISPOSE(innconf->bindaddress);
     if (innconf->sourceaddress != NULL) DISPOSE(innconf->sourceaddress);
-    if (innconf->overviewname != NULL) DISPOSE(innconf->overviewname);
     if (innconf->nnrpdposthost != NULL) DISPOSE(innconf->nnrpdposthost);
 
     if (innconf->pathnews != NULL) DISPOSE(innconf->pathnews);
@@ -311,7 +297,6 @@ void ClearInnConf()
     if (innconf->pathincoming != NULL) DISPOSE(innconf->pathincoming);
     if (innconf->patharchive != NULL) DISPOSE(innconf->patharchive);
     if (innconf->pathtmp != NULL) DISPOSE(innconf->pathtmp);
-    if (innconf->decnetdomain != NULL) DISPOSE(innconf->decnetdomain);
     if (innconf->backoff_db != NULL) DISPOSE(innconf->backoff_db);
     if (innconf->ovmethod != NULL) DISPOSE(innconf->ovmethod);
     memset(ConfigBit, '\0', ConfigBitsize);
@@ -346,10 +331,6 @@ int CheckInnConf()
     }
     if (innconf->mailcmd == NULL)
 	innconf->mailcmd = innconf->mta;
-    if (innconf->overviewname == NULL) 
-	innconf->overviewname = COPY(".overview");
-
-
     if (innconf->pathnews == NULL) {
 	syslog(L_FATAL, "Must set 'pathnews' in inn.conf");
 	(void)fprintf(stderr, "Must set 'pathnews' in inn.conf");
@@ -498,21 +479,6 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_DOMAIN, bit);
 		if (!bit) innconf->domain = COPY(p);
 		SET_CONFIG(CONF_VAR_DOMAIN);
-	    } else
-	    if (EQ(ConfigBuff,_CONF_MIMEVERSION)) {
-		TEST_CONFIG(CONF_VAR_MIMEVERSION, bit);
-		if (!bit) innconf->mimeversion = COPY(p);
-		SET_CONFIG(CONF_VAR_MIMEVERSION);
-	    } else
-	    if (EQ(ConfigBuff,_CONF_MIMECONTENTTYPE)) {
-		TEST_CONFIG(CONF_VAR_MIMECONTENTTYPE, bit);
-		if (!bit) innconf->mimecontenttype = COPY(p);
-		SET_CONFIG(CONF_VAR_MIMECONTENTTYPE);
-	    } else
-	    if (EQ(ConfigBuff,_CONF_MIMEENCODING)) {
-		TEST_CONFIG(CONF_VAR_MIMEENCODING, bit);
-		if (!bit) innconf->mimeencoding = COPY(p);
-		SET_CONFIG(CONF_VAR_MIMEENCODING);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_HISCACHESIZE)) {
 		TEST_CONFIG(CONF_VAR_HISCACHESIZE, bit);
@@ -734,11 +700,6 @@ int ReadInnConf()
 		if (!bit && boolval != -1) innconf->strippostcc = boolval;
 		SET_CONFIG(CONF_VAR_STRIPPOSTCC);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_OVERVIEWNAME)) {
-		TEST_CONFIG(CONF_VAR_OVERVIEWNAME, bit);
-		if (!bit) innconf->overviewname = COPY(p);
-		SET_CONFIG(CONF_VAR_OVERVIEWNAME);
-	    } else
 	    if (EQ(ConfigBuff,_CONF_KEYWORDS)) {
 		TEST_CONFIG(CONF_VAR_KEYWORDS, bit);
 		if (!bit && boolval != -1) innconf->keywords = boolval;
@@ -864,11 +825,6 @@ int ReadInnConf()
 		if (!bit && boolval != -1) innconf->storeonxref = boolval;
 		SET_CONFIG(CONF_VAR_STOREONXREF);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_DECNETDOMAIN)) {
-		TEST_CONFIG(CONF_VAR_DECNETDOMAIN, bit);
-		if (!bit) innconf->decnetdomain = COPY(p);
-		SET_CONFIG(CONF_VAR_DECNETDOMAIN);
-	    } else
 	    if (EQ(ConfigBuff,_CONF_BACKOFFAUTH)) {
 		TEST_CONFIG(CONF_VAR_BACKOFFAUTH, bit);
 		if (!bit && boolval != -1) innconf->backoff_auth = boolval;
@@ -908,11 +864,6 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_NNRPDCHECKART, bit);
 		if (!bit && boolval != -1) innconf->nnrpdcheckart = boolval;
 		SET_CONFIG(CONF_VAR_NNRPDCHECKART);
-	    } else
-	    if (EQ(ConfigBuff,_CONF_STOREMSGID)) {
-		TEST_CONFIG(CONF_VAR_STOREMSGID, bit);
-		if (!bit && boolval != -1) innconf->storemsgid = boolval;
-		SET_CONFIG(CONF_VAR_STOREMSGID);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_NICENEWNEWS)) {
 		TEST_CONFIG(CONF_VAR_NICENEWNEWS, bit);
