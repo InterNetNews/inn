@@ -1111,50 +1111,16 @@ BOOL tradindexed_expiregroup(char *group, int *lo) {
     newge.base = newge.low = newge.count = 0;
     while (ov3search(handle, &artnum, &data, &len, &token, &arrived, &expires)) {
 	ah = NULL;
-	if (SMprobe(SELFEXPIRE, &token, NULL)) {
+	if (!SMprobe(EXPENSIVESTAT, &token, NULL) || OVstatall) {
 	    if ((ah = SMretrieve(token, RETR_STAT)) == NULL)
 		continue;
+	    SMfreearticle(ah);
 	} else {
-	    if (!innconf->groupbaseexpiry && !OVhisthasmsgid(data))
+	    if (!OVhisthasmsgid(data))
 		continue; 
 	}
-	if (ah)
-	    SMfreearticle(ah);
 	if (innconf->groupbaseexpiry && OVgroupbasedexpire(token, group, data, len, arrived, expires))
 	    continue;
-#if 0
-	if (p = strchr(data, '\t')) {
-	    for (p--; (p >= data) && isdigit((int) *p); p--);
-	    if (p >= data) {
-		printf("bad article %s:%d\n", group, artnum);
-		sprintf(overdata, "%d\t", artnum);
-		i = strlen(overdata);
-		p = overdata + i;
-		memcpy(p, data, len - newlen - 2);
-		p = overdata + len - 2;
-		memcpy(p, "\r\n", 2);
-		OV3addrec(&newge, newgh, artnum, token, overdata, len, arrived, expires);
-		continue;
-	    }
-	}
-	if (atoi(data) != artnum) {
-	    printf("misnumbered article %s:%d\n", group, artnum);
-	    if ((p = strstr(data, "Xref: ")) == NULL) {
-		syslog(L_ERROR, "tradindexed: could not find Xref header in %s:%d", group, artnum);
-		continue;
-	    }
-	    if ((p = strchr(p, ' ')) == NULL) {
-		syslog(L_ERROR, "tradindexed: could not find space after Xref header in %s:%d", group, artnum);
-		continue;
-	    }
-	    if ((p = strstr(p, group)) == NULL) {
-		syslog(L_ERROR, "tradindexed: could not find group name in Xref header in %s:%d", group, artnum);
-		continue;
-	    }
-	    p += strlen(group) + 1;
-	    artnum = atoi(p);
-	}
-#endif
 	OV3addrec(&newge, newgh, artnum, token, data, len, arrived, expires);
     }
     do {
