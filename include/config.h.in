@@ -90,7 +90,8 @@
 #define MAXLISTEN               25
 
 /* nnrpd refuses reader connections if the system load is higher than this.
-   Set it to -1 to disable that check. */
+   Set it to -1 to disable that check.  Only supported on systems with the
+   getloadavg() function. */
 #define NNRP_LOADLIMIT          16
 
 /* The standard NNTP port. */
@@ -197,6 +198,9 @@
 
 /* Define if you have the getdtablesize function.  */
 #undef HAVE_GETDTABLESIZE
+
+/* Define if you have the getloadavg function.  */
+#undef HAVE_GETLOADAVG
 
 /* Define if you have the getpagesize function.  */
 #undef HAVE_GETPAGESIZE
@@ -345,6 +349,9 @@
 /* Define if you have the <sys/filio.h> header file.  */
 #undef HAVE_SYS_FILIO_H
 
+/* Define if you have the <sys/loadavg.h> header file.  */
+#undef HAVE_SYS_LOADAVG_H
+
 /* Define if you have the <sys/mount.h> header file.  */
 #undef HAVE_SYS_MOUNT_H
 
@@ -368,9 +375,6 @@
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
-
-/* Define if you have the elf library (-lelf).  */
-#undef HAVE_LIBELF
 
 /* Define if you have the regex library (-lregex).  */
 #undef HAVE_LIBREGEX

@@ -40,6 +40,25 @@ int nnrpd_starttls_done = 0;
 extern int h_errno;
 #endif
 
+/* If we have getloadavg, include the appropriate header file.  Otherwise,
+   just assume that we always have a load of 0. */
+#if HAVE_GETLOADAVG
+# if HAVE_SYS_LOADAVG_H
+#  include <sys/loadavg.h>
+# endif
+#else
+static int
+getloadavg(double loadavg[], int nelem)
+{
+    int i;
+
+    for (i = 0; i < nelem && i < 3; i++)
+        loadavg[i] = 0;
+    return i;
+}
+#endif
+
+
 /*
 ** Here is some defensive code to protect the news server from hosts,
 ** mostly PC's, that sometimes make a connection and then never give
@@ -222,12 +241,9 @@ ExitWithStats(int x, bool readconf)
     SMshutdown();
 
 #ifdef DO_PYTHON
-    if (innconf->nnrppythonauth) {
-        if (PY_close() < 0) {
-	    syslog(L_NOTICE, "PY_close(): close method not invoked because it is not defined in Python authentication module.");
-	}
-    }
-#endif	/* DO_PYTHON */
+    if (innconf->nnrppythonauth)
+        PY_close();
+#endif
 
     HISclose(History);
 
@@ -824,9 +840,6 @@ int
 main(int argc, char *argv[])
 {
     const char *name;
-#if	NNRP_LOADLIMIT > 0
-    int			load;
-#endif	/* NNRP_LOADLIMIT > 0 */
     CMDENT		*cp;
     char		buff[NNTP_STRLEN];
     char		**av;
@@ -1187,10 +1200,10 @@ main(int argc, char *argv[])
 	
 	syslog(L_ERROR, "error initializing TLS: "
 	       "[CA_file: %s] [CA_path: %s] [cert_file: %s] [key_file: %s]",
-	       (char *) sasl_config_getstring("tls_ca_file", ""),
-	       (char *) sasl_config_getstring("tls_ca_path", ""),
-	       (char *) sasl_config_getstring("tls_cert_file", ""),
-	       (char *) sasl_config_getstring("tls_key_file", ""));
+	       sasl_config_getstring("tls_ca_file", ""),
+	       sasl_config_getstring("tls_ca_path", ""),
+	       sasl_config_getstring("tls_cert_file", ""),
+	       sasl_config_getstring("tls_key_file", ""));
 	ExitWithStats(1, FALSE);
       }
 
@@ -1206,13 +1219,21 @@ main(int argc, char *argv[])
     }
 #endif /* HAVE_SSL */
 
-#if	NNRP_LOADLIMIT > 0
-    if ((load = GetLoadAverage()) > NNRP_LOADLIMIT) {
-	syslog(L_NOTICE, "load %d > %d", load, NNRP_LOADLIMIT);
-	Reply("%d load at %d, try later\r\n", NNTP_GOODBYE_VAL, load);
-	ExitWithStats(1, TRUE);
+    /* If requested, check the load average. */
+    if (NNRP_LOADLIMIT > 0) {
+        double load[1];
+
+        if (getloadavg(load, 1) < 0)
+            warn("cannot obtain system load");
+        else {
+            if ((int)(load[0] + 0.5) > NNRP_LOADLIMIT) {
+                syslog(L_NOTICE, "load %.2f > %d", load[0], NNRP_LOADLIMIT);
+                Reply("%d load at %.2f, try later\r\n", NNTP_GOODBYE_VAL,
+                      load[0]);
+                ExitWithStats(1, TRUE);
+            }
+        }
     }
-#endif	/* NNRP_LOADLIMIT > 0 */
 
     strcpy (LogName, "?");
 

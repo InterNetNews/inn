@@ -471,7 +471,6 @@ nnrpd/Makefile                        Makefile for nnrpd
 nnrpd/article.c                       Article-related routines
 nnrpd/commands.c                      Assorted server commands
 nnrpd/group.c                         Group-related routines
-nnrpd/loadave.c                       Get load average
 nnrpd/misc.c                          Miscellaneous support routines
 nnrpd/newnews.c                       The NEWNEWS command
 nnrpd/nnrpd.c                         Main and some utility routines

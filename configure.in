@@ -721,9 +721,6 @@ dnl FIXME: These shouldn't go into the global LIBS variable.  getspnam() is
 dnl only used by the authentication programs.
 AC_CHECK_LIB(shadow, getspnam)
 
-dnl FIXME: This should be combined with AC_FUNC_GETLOADAVG.
-AC_CHECK_LIB(elf, nlist)
-
 dnl FIXME: This is only used by the keywords code in innd/art.c and
 dnl shouldn't be in the global LIBS variable.
 AC_CHECK_LIB(regex, regexec)
@@ -903,8 +900,8 @@ AC_HEADER_SYS_WAIT
 
 dnl Generic checks for header files.
 AC_CHECK_HEADERS(crypt.h inttypes.h limits.h ndbm.h stdbool.h stddef.h \
-                 stdint.h string.h sys/bitypes.h sys/filio.h sys/param.h \
-                 sys/select.h sys/sysinfo.h sys/time.h unistd.h)
+                 stdint.h string.h sys/bitypes.h sys/filio.h sys/loadavg.h \
+                 sys/param.h sys/select.h sys/sysinfo.h sys/time.h unistd.h)
 
 dnl Some Linux systems have db1/ndbm.h instead of ndbm.h.
 if test x"$ac_cv_header_ndbm_h" = xno ; then
@@ -1459,9 +1456,9 @@ fi])
 INN_FUNC_SNPRINTF
 
 dnl Check for various other functions.
-AC_CHECK_FUNCS(atexit getpagesize getrlimit getrusage getspnam setbuffer \
-               sigaction setrlimit setsid socketpair statvfs strncasecmp \
-               strtoul symlink sysconf)
+AC_CHECK_FUNCS(atexit getloadavg getpagesize getrlimit getrusage getspnam \
+               setbuffer sigaction setrlimit setsid socketpair statvfs \
+               strncasecmp strtoul symlink sysconf)
 
 dnl Find a way to get the file descriptor limit.
 if test x"$ac_cv_func_getrlimit" = xno ; then
