@@ -354,9 +354,6 @@
 /* Define if you have the seteuid function.  */
 #undef HAVE_SETEUID
 
-/* Define if you have the setreuid function.  */
-#undef HAVE_SETREUID
-
 /* Define if you have the setrlimit function.  */
 #undef HAVE_SETRLIMIT
 
@@ -507,6 +504,9 @@
 /* Define if you have the shadow library (-lshadow).  */
 #undef HAVE_LIBSHADOW
 
+/* Define if the compiler supports long long int. */
+#undef HAVE_LONG_LONG
+
 /* Define if your struct tm has a tm_gmtoff member. */
 #undef HAVE_TM_GMTOFF
 
@@ -522,11 +522,23 @@
 /* Define if your system has a working inet_ntoa function. */
 #undef HAVE_INET_NTOA
 
+/* Define if your system has a working snprintf function. */
+#undef HAVE_SNPRINTF
+
 /* Define if fpos_t is at least 64 bits and compatible with off_t. */
 #undef HAVE_LARGE_FPOS_T
 
 /* Define if <netdb.h> does not declare h_errno. */
 #undef NEED_HERRNO_DECLARATION
+
+/* Define if inet_ntoa isn't declared in the system headers. */
+#undef NEED_DECLARATION_INET_NTOA
+
+/* Define if snprintf isn't declared in the system headers. */
+#undef NEED_DECLARATION_SNPRINTF
+
+/* Define if vsnprintf isn't declared in the system headers. */
+#undef NEED_DECLARATION_VSNPRINTF
 
 
 
