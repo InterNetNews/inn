@@ -1138,11 +1138,10 @@ directory for \fIinnfeed\fR\|(8).  The default value is \fIpathnews\fR/spool.
 Where \s-1INN\s0 puts temporary files.  For security reasons, this is not the
 same as the system temporary files directory (\s-1INN\s0 creates a lot of
 temporary files with predictable names and does not go to particularly
-great lengths to protect against symlink attacks and the like; this is
-safe provided that normal users can't write into its temporary
-directory).  It must be on the same partition as \fIpathincoming\fR for
-\&\fIrnews\fR\|(1) to work correctly.  The default value is set at configure time
-and defaults to \fIpathnews\fR/tmp.
+great lengths to protect against symlink attacks and the like; this
+is safe provided that normal users can't write into its temporary
+directory).  The default value is set at configure time and defaults to
+\&\fIpathnews\fR/tmp.
 .SH "EXAMPLE"
 .IX Header "EXAMPLE"
 Here is a very minimalist example that only sets those parameters that are
