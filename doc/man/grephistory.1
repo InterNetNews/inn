@@ -11,6 +11,9 @@ grephistory \- display file names from Usenet history file
 .BI \-f " filename"
 ]
 [
+.B \-h
+]
+[
 .B \-i
 ]
 [
@@ -63,6 +66,10 @@ will only print the filename of the token of an existing article.
 .B \-f
 To specify a different value for the history file and database, use
 the ``\fB\-f\fP'' flag.
+.TP
+.B \-h
+If the ``\fB\-h\fP'' flag is used then the hash of the Message-ID
+will be printed regardless of its existense.
 .TP
 .B \-i
 If the ``\fB\-i\fP'' flag is used, then
