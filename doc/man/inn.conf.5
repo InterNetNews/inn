@@ -114,6 +114,13 @@ To specify which index is used for unified overview, you need to edit
 .IR <pathetc\ in\ inn.conf>/overview.ctl .
 If you run innd as a feeder only, you do not need overview.ctl.
 .TP
+.I rlimitnofile
+The maximum number of file descriptors that will be used by innd and innfeed.
+This number determines approximate number of incoming and outgoing feed for
+innd.  As for innfeed, this determines approximate number of outgoing feed.
+The number is not set(defined by OS), if this value is negative.
+The default value is -1.
+.TP
 .I maxforks
 How many times to attempt a
 .IR fork (2)
