@@ -684,8 +684,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
     if ((p = strtok(groups, NGSEPS)) == NULL)
 	return "Can't parse newsgroups line";
 
-    /* Don't mail article if just checking Followup-To line. */
-    approved = HDR(HDR__APPROVED) != NULL || modgroup == NULL;
+    approved = HDR(HDR__APPROVED) != NULL;
 
     Error[0] = '\0';
     FoundOne = false;
@@ -728,7 +727,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
 	    if (approved && !PERMaccessconf->allowapproved) {
 		snprintf(Error, sizeof(Error),
                          "You are not allowed to approve postings");
-	    } else if (!approved && !*modgroup) {
+	    } else if (!approved && modgroup != NULL && !*modgroup) {
 		*modgroup = xstrdup(p);
 	    }
 	    break;
