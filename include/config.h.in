@@ -591,18 +591,6 @@ typedef int             BOOL;
 # endif
 #endif
 
-/* Anything that uses this should instead duplicate the logic used here and
-   define what it really wants to define; the logic isn't that complex. */
-#if defined(STDC_HEADERS) || defined(HAVE_STDARG_H)
-# define VAR_STDARGS 1
-#else
-# ifdef HAVE_VARARGS_H
-#  define VAR_VARARGS 1
-# else
-#  define VAR_NONE 1
-# endif
-#endif
-
 /* Check TIME_WITH_SYS_TIME rather than DO_NEED_TIME, or even better rewrite
    the time includes to use the correct autoconf results depending on
    whether you just need struct tm or really need struct timeval or struct
