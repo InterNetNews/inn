@@ -3,8 +3,8 @@
 **  Authenticate a user against a remote radius server.
 */
 
-#include "libauth.h"
-
+#include "config.h"
+#include "clibrary.h"
 #include "portable/time.h"
 #include <ctype.h>
 #include <errno.h>
@@ -23,6 +23,8 @@
 #include "nntp.h"
 #include "paths.h"
 #include "conffile.h"
+
+#include "libauth.h"
 
 #define RADIUS_LOCAL_PORT       NNTP_PORT
 
@@ -234,26 +236,12 @@ static int read_config(char *authfile, rad_config_t *radconf)
 
 static void req_copyto (auth_req to, sending_t *from)
 {
-  to.code = from->req.code;
-  to.id = from->req.id;
-  to.length = from->req.length;
-  strncpy(to.vector, from->req.vector, sizeof(to.vector));
-  strncpy(to.data, from->req.data, sizeof(to.data));
-  to.datalen = from->req.datalen;
-
-  return;
+    to = from->req;
 }
 
 static void req_copyfrom (sending_t *to, auth_req from)
 {
-  to->req.code = from.code;
-  to->req.id = from.id;
-  to->req.length = from.length;
-  strncpy(to->req.vector, from.vector, sizeof(to->req.vector));
-  strncpy(to->req.data, from.data, sizeof(to->req.data));
-  to->req.datalen = from.datalen;
-
-  return;
+    to->req = from;
 }
 
 static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
@@ -352,7 +340,7 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
     /* build the visible part of the auth vector randomly */
     for (i = 0; i < AUTH_VECTOR_LEN; i++)
 	req.vector[i] = random() % 256;
-    strncpy(secbuf, config->secret, sizeof(secbuf));
+    strncpy((char *) secbuf, config->secret, sizeof(secbuf));
     memcpy(secbuf+strlen(config->secret), req.vector, AUTH_VECTOR_LEN);
     md5_hash(secbuf, strlen(config->secret)+AUTH_VECTOR_LEN, digest);
     /* fill in the auth_req data */
@@ -423,7 +411,7 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
 	    req.data[passstart+2+i+j] ^= digest[j];
 	if (jlen == sizeof(HASH)) {
 	    /* Recalculate the digest from the HASHed previous */
-	    strncpy(secbuf, config->secret, sizeof(secbuf));
+	    strncpy((char *) secbuf, config->secret, sizeof(secbuf));
 	    memcpy(secbuf+strlen(config->secret), &req.data[passstart+2+i],
                    sizeof(HASH));
             md5_hash(secbuf, strlen(config->secret)+sizeof(HASH), digest);
@@ -544,12 +532,12 @@ int main(int argc, char *argv[])
 {
     int opt;
     int havefile, haveother;
-    char uname[SMBUF], pass[SMBUF];
+    struct authinfo *authinfo;
     rad_config_t radconfig;
     int retval;
     char *radius_config;
 
-    bzero(&radconfig, sizeof(rad_config_t));
+    memset(&radconfig, '\0', sizeof(rad_config_t));
     haveother = havefile = 0;
     if (ReadInnConf() < 0) exit(1);
 
@@ -565,7 +553,7 @@ int main(int argc, char *argv[])
 	    if (!havefile) {
               /* override the standard config completely if the user
                * specifies an alternate config file */
-              bzero(&radconfig, sizeof(rad_config_t));
+              memset(&radconfig, '\0', sizeof(rad_config_t));
               havefile = 1;
 	    }
 	    read_config(optarg, &radconfig);
@@ -585,16 +573,18 @@ int main(int argc, char *argv[])
       free(radius_config);
     }
 
-    if (get_auth(uname,pass) != 0) {
-        fprintf(stderr, "radius: internal error.\n");
+    authinfo = get_auth();
+    if (authinfo->username[0] == '\0') {
+        fprintf(stderr, "radius: empty username.\n");
         exit(1);
     }
 
     /* got username and password, check that they're valid */
 
-    retval = rad_auth(&radconfig, uname, pass);
+    retval = rad_auth(&radconfig, authinfo->username, authinfo->password);
     if (retval == -1) {
-	fprintf(stderr, "radius: user %s password doesn't match.\n", uname);
+	fprintf(stderr, "radius: user %s password doesn't match.\n",
+                authinfo->username);
 	exit(1);
     } else if (retval == -2) {
 	/* couldn't talk to the radius server..  output logged above. */
@@ -604,6 +594,6 @@ int main(int argc, char *argv[])
 	exit(1);
     }
     /* radius password matches! */
-    printf("User:%s\n", uname);
+    printf("User:%s\n", authinfo->username);
     exit(0);
 }
