@@ -25,22 +25,22 @@ time in local time rather than UTC.  If no options are given, the -s\n\
 behavior is the default; if no dates are given, the current time is used.";
 
 /* Whether to format the output as a Date header. */
-static BOOL date_format = FALSE;
+static bool date_format = false;
 
 /* Whether to use local time instead of UTC. */
-static BOOL date_local = FALSE;
+static bool date_local = false;
 
 
 /*
 **  Return true if the given string is entirely digits.
 */
-static BOOL
+static bool
 isdigits(const char *p)
 {
     for (; *p; p++)
         if (!CTYPE(isdigit, (unsigned char) *p))
-            return FALSE;
-    return TRUE;
+            return false;
+    return true;
 }
 
 
@@ -50,7 +50,7 @@ isdigits(const char *p)
 **  instead.  If date_local is true, format in local time; otherwise, use
 **  UTC.  Returns success.
 */
-static BOOL
+static bool
 print_date(time_t date)
 {
     char date_buffer[128];
@@ -59,7 +59,7 @@ print_date(time_t date)
     if (date_format) {
         if (!makedate(date, date_local, date_buffer, 128)) {
             warn("can't format %ld", (long) date);
-            return FALSE;
+            return false;
         } else {
             printf("%s\n", date_buffer);
         }
@@ -67,11 +67,12 @@ print_date(time_t date)
         result = ctime(&date);
         if (result == NULL) {
             warn("can't format %ld", (long) date);
-            return FALSE;
+            return false;
         } else {
             printf("%s", result);
         }
     }
+    return true;
 }
 
 
@@ -82,7 +83,7 @@ print_date(time_t date)
 **  output.  date may be NULL, in which case the current date is used.
 **  Returns true if conversion was successful, false otherwise.
 */
-static BOOL
+static bool
 convdate(const char *date, char mode)
 {
     time_t seconds;
@@ -93,7 +94,7 @@ convdate(const char *date, char mode)
     } else if (mode == 'c') {
         if (!isdigits(date)) {
             warn("\"%s\" doesn't look like a number", date);
-            return FALSE;
+            return false;
         } else {
             seconds = (time_t) atol(date);
         }
@@ -101,14 +102,14 @@ convdate(const char *date, char mode)
         seconds = parsedate((char *) date, NULL);
         if (seconds == (time_t) -1) {
             warn("can't convert \"%s\"", date);
-            return FALSE;
+            return false;
         }
     }
 
     /* Output the resulting date. */
     if (mode == 'n') {
         printf("%ld\n", seconds);
-        return TRUE;
+        return true;
     } else {
         return print_date(seconds);
     }
@@ -132,10 +133,10 @@ main(int argc, char *argv[])
             exit(0);
             break;
         case 'd':
-            date_format = TRUE;
+            date_format = true;
             break;
         case 'l':
-            date_local = TRUE;
+            date_local = true;
             break;
         case 'c':
         case 'n':
