@@ -10,7 +10,7 @@ extern "C" {
 typedef struct {
     FILE *f;
     char *buf;
-    int sbuf;
+    unsigned int sbuf;
     int lineno;
     char *filename;
 } CONFFILE;
