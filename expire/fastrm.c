@@ -8,18 +8,18 @@
  * exit(1) in other cases - problems with stdin, no permission, ...
  * written by <kre@munnari.oz.au>
  */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
-#include "inn/qio.h"
 #include <ctype.h>
-#include <sys/stat.h>
-#include <errno.h>
 #include <dirent.h>
+#include <errno.h>
+#include <sys/stat.h>
 #include <syslog.h>  
-#include "macros.h"
+
+#include "inn/qio.h"
 #include "libinn.h"
+#include "macros.h"
 #include "storage.h"
 
 STATIC char	*MyName;
@@ -33,7 +33,7 @@ STATIC void err_exit(char *s)
 }
 
 
-static int
+static void
 err_alloc(const char *what, size_t size, const char *file, int line)
 {
     fprintf(stderr, "%s: Can't %s %lu bytes at line %d of %s: %s", MyName,
