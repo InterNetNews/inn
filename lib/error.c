@@ -37,17 +37,16 @@
 **  handler; with warn_set_handlers or die_set_handlers the handlers for
 **  warn and die can be changed.  These functions take a count of handlers
 **  and then that many function pointers, each one to a function that takes
-**  a message length (or 0 if unknown), a format, an argument list as a
-**  va_list, and the applicable errno value (if any).  They should return
-**  the number of octets that the format combined with the arguments
-**  produces when passed through printf (the message length) or 0 if
-**  unknown.
+**  a message length (the number of characters snprintf generates given the
+**  format and arguments), a format, an argument list as a va_list, and the
+**  applicable errno value (if any).
 */
 
 #include "config.h"
 #include "clibrary.h"
 #include <errno.h>
 #include <stdarg.h>
+#include <syslog.h>
 
 #include "libinn.h"
 
@@ -98,17 +97,47 @@ die_set_handlers(int count, ...)
 }
 
 
-int
-error_log_stderr(int length, const char *format, va_list args, int error)
+void
+error_log_stderr(int len, const char *fmt, va_list args, int err)
 {
     fflush(stdout);
     if (error_program_name != NULL)
         fprintf(stderr, "%s: ", error_program_name);
-    length = vfprintf(stderr, format, args);
-    if (error)
-        fprintf(stderr, ": %s", strerror(error));
+    vfprintf(stderr, fmt, args);
+    if (err)
+        fprintf(stderr, ": %s", strerror(err));
     fprintf(stderr, "\n");
-    return length;
+}
+
+
+static void
+error_log_syslog(int pri, int len, const char *fmt, va_list args, int err)
+{
+    char *buffer;
+
+    buffer = malloc(len + 1);
+    if (buffer == NULL) {
+        fprintf(stderr, "failed to malloc %lu bytes at %s line %d: %s",
+                len + 1, __FILE__, __LINE__, strerror(errno));
+        exit(1);
+    }
+    vsnprintf(buffer, len, fmt, args);
+    syslog(pri, err ? "%s: %m" : "%s", buffer);
+    free(buffer);
+}
+
+
+void
+error_log_syslog_warning(int len, const char *fmt, va_list args, int err)
+{
+    error_log_syslog(LOG_WARNING, len, fmt, args, err);
+}
+
+
+void
+error_log_syslog_err(int len, const char *fmt, va_list args, int err)
+{
+    error_log_syslog(LOG_ERR, len, fmt, args, err);
 }
 
 
@@ -117,11 +146,15 @@ warn(const char *format, ...)
 {
     va_list args;
     error_handler_t *log;
-    int length = 0;
+    int length;
 
+    va_start(args, format);
+    length = vsnprintf(NULL, 0, format, args);
+    va_end(args);
+    if (length < 0) return;
     for (log = warn_handlers; *log != NULL; log++) {
         va_start(args, format);
-        length = (**log)(length, format, args, 0);
+        (**log)(length, format, args, 0);
         va_end(args);
     }
 }
@@ -131,12 +164,16 @@ syswarn(const char *format, ...)
 {
     va_list args;
     error_handler_t *log;
-    int length = 0;
+    int length;
     int error = errno;
 
+    va_start(args, format);
+    length = vsnprintf(NULL, 0, format, args);
+    va_end(args);
+    if (length < 0) return;
     for (log = warn_handlers; *log != NULL; log++) {
         va_start(args, format);
-        length = (**log)(length, format, args, error);
+        (**log)(length, format, args, error);
         va_end(args);
     }
 }
@@ -146,13 +183,17 @@ die(const char *format, ...)
 {
     va_list args;
     error_handler_t *log;
-    int length = 0;
+    int length;
 
-    for (log = die_handlers; *log != NULL; log++) {
-        va_start(args, format);
-        length = (**log)(length, format, args, 0);
-        va_end(args);
-    }
+    va_start(args, format);
+    length = vsnprintf(NULL, 0, format, args);
+    va_end(args);
+    if (length >= 0)
+        for (log = die_handlers; *log != NULL; log++) {
+            va_start(args, format);
+            (**log)(length, format, args, 0);
+            va_end(args);
+        }
     exit(error_fatal_cleanup ? (*error_fatal_cleanup)() : 1);
 }
 
@@ -161,13 +202,17 @@ sysdie(const char *format, ...)
 {
     va_list args;
     error_handler_t *log;
-    int length = 0;
+    int length;
     int error = errno;
 
-    for (log = die_handlers; *log != NULL; log++) {
-        va_start(args, format);
-        length = (**log)(length, format, args, error);
-        va_end(args);
-    }
+    va_start(args, format);
+    length = vsnprintf(NULL, 0, format, args);
+    va_end(args);
+    if (length >= 0)
+        for (log = die_handlers; *log != NULL; log++) {
+            va_start(args, format);
+            (**log)(length, format, args, error);
+            va_end(args);
+        }
     exit(error_fatal_cleanup ? (*error_fatal_cleanup)() : 1);
 }
