@@ -206,6 +206,8 @@ newclient(int fd)
     }
     readertab[numreaders] = r;
     numreaders++;
+
+    handle_write(r);
 }
 
 static void
@@ -394,7 +396,7 @@ handle_read(struct reader *r)
     int n;
     r->lastactive = now;
 
-    if(!r->buflen) {
+    if(r->buf == NULL) {
     	r->state = STATE_READCMD;
     	r->buf = NEW(struct rs_cmd, 1);
 	r->buflen = sizeof(struct rs_cmd);
@@ -403,7 +405,7 @@ handle_read(struct reader *r)
 again:
     n = read(r->fd, (char *)(r->buf) + r->bufpos, r->buflen - r->bufpos);
     if(n <= 0) {
-	if(n < 0 && (errno == EAGAIN || errno == EINTR))
+	if(n < 0 && (errno == EAGAIN || errno == EINTR || errno == EWOULDBLOCK))
 	    return;
     	r->mode = MODE_CLOSED;
 	close(r->fd);
@@ -428,7 +430,7 @@ handle_write(struct reader *r)
 
     n = write(r->fd, (char *)(r->buf) + r->bufpos, r->buflen - r->bufpos);
     if(n <= 0) {
-	if(n < 0 && (errno == EAGAIN || errno == EINTR))
+	if(n < 0 && (errno == EAGAIN || errno == EINTR || errno == EWOULDBLOCK))
 	    return;
     	r->mode = MODE_CLOSED;
 	close(r->fd);
@@ -438,6 +440,7 @@ handle_write(struct reader *r)
     r->bufpos += n;
 
     if(r->bufpos >= r->buflen) {
+	DISPOSE(r->buf);
     	r->buf = NULL;
 	r->bufpos = r->buflen = 0;
 	r->mode = MODE_READ;
@@ -526,17 +529,6 @@ serverproc(void)
 
 	now = time(NULL);
 
-	if(FD_ISSET(listensock, &rdset)) {
-	    if(!ovdb_conf.maxrsconn || numreaders < ovdb_conf.maxrsconn) {
-		salen = sizeof(sa);
-	    	ret = accept(listensock, &sa, &salen);
-		if(ret >= 0) {
-		    newclient(ret);
-		    FD_SET(readertab[numreaders-1]->fd, &wrset);
-		}
-	    }
-	}
-
 	for(i = 0; i < numreaders; i++) {
 	    switch(readertab[i]->mode) {
 	    case MODE_READ:
@@ -556,12 +548,27 @@ serverproc(void)
 	    }
 	}
 
+	if(signalled)
+	    break;
+
 	for(i = 0; i < numreaders; i++) {
 	    if(readertab[i]->lastactive + CLIENT_TIMEOUT < now) {
 	    	delclient(i);
 		i--;
 	    }
 	}
+
+	if(FD_ISSET(listensock, &rdset)) {
+	    if(!ovdb_conf.maxrsconn || numreaders < ovdb_conf.maxrsconn) {
+		salen = sizeof(sa);
+	    	ret = accept(listensock, &sa, &salen);
+		if(ret >= 0)
+		    newclient(ret);
+	    }
+	}
+
+	if(signalled)
+	    break;
 
 	if(numreaders != lastnumreaders) {
 	    lastnumreaders = numreaders;
@@ -631,6 +638,7 @@ main(int argc, char *argv[])
 	if((children[i] = serverproc()) == -1) {
 	    for(i--; i >= 0; i--)
 		kill(children[i], SIGTERM);
+	    exit(1);
 	}
 	sleep(1);
     }
