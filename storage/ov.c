@@ -1,3 +1,13 @@
+/*  $Id$
+**
+**  The implementation of the overview API.
+**
+**  This code handles calls to the overview API by passing them along to the
+**  appropriate underlying overview method, as well as implementing those
+**  portions of the overview subsystem that are independent of storage
+**  method.
+*/
+
 #include "config.h"
 #include "clibrary.h"
 #include <assert.h>
@@ -845,15 +855,8 @@ static enum KRP EXPkeepit(char *Entry, time_t when, time_t expires)
     NEWSGROUP	        *ngp;
     enum KRP		retval = Remove;
 
-    if ((p = strchr(Entry, ':')) == NULL) {
-	(void)fflush(stdout);
-	(void)fprintf(stderr, "Bad entry, \"%s\"\n", Entry);
-	return Remove;
-    }
-    *p = '\0';
     if ((ngp = NGfind(Entry)) == NULL)
 	ngp = EXPnotfound(Entry);
-    /* '\0' is left to get newsgroup name later */
 
     /* Bad posting date? */
     if (when > OVrealnow + 86400) {
@@ -881,23 +884,23 @@ static enum KRP EXPkeepit(char *Entry, time_t when, time_t expires)
 
 /*
 **  An article can be removed.  Either print a note, or actually remove it.
-**  Also fill in the article size.
+**  Takes in the Xref information so that it can pass this to the storage
+**  API callback used to generate the list of files to remove.
 */
-void OVEXPremove(TOKEN token, bool deletedgroups)
+void OVEXPremove(TOKEN token, bool deletedgroups, char **xref, int ngroups)
 {
     EXPunlinked++;
     if (deletedgroups) {
 	EXPprocessed++;
 	EXPoverindexdrop++;
     }
-    if (EXPunlinkfile) {
-	(void)fprintf(EXPunlinkfile, "%s\n", TokenToText(token));
+    if (EXPunlinkfile && xref != NULL) {
+        SMprintfiles(EXPunlinkfile, token, xref, ngroups);
 	if (!ferror(EXPunlinkfile))
 	    return;
-	(void)fprintf(stderr, "Can't write to -z file, %s\n",
-	    strerror(errno));
-	(void)fprintf(stderr, "(Will ignore it for rest of run.)\n");
-	(void)fclose(EXPunlinkfile);
+	fprintf(stderr, "Can't write to -z file, %s\n", strerror(errno));
+	fprintf(stderr, "(Will ignore it for rest of run.)\n");
+	fclose(EXPunlinkfile);
 	EXPunlinkfile = NULL;
     }
     if (!SMcancel(token) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
@@ -1069,6 +1072,7 @@ bool OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t ar
     bool                poisoned;
     bool		keeper;
     bool		remove;
+    bool                purge;
     ARTHANDLE		*article;
     char		*Xref;
 
@@ -1106,39 +1110,66 @@ bool OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t ar
 	    EXPoverindexdrop++;
 	    return TRUE;
 	}
-	for (Xref++; *Xref == ' '; Xref++);
+	for (Xref++; *Xref == ' '; Xref++)
+            ;
     }
     if ((count = EXPsplit(Xref, ' ', arts, nGroups)) == -1) {
 	EXPoverindexdrop++;
 	return TRUE;
     }
+
+    /* arts is now an array of strings, each of which is a group name, a
+       colon, and an article number.  EXPkeepit wants just pure group names,
+       so replace the colons with nuls (deleting the overview entry if it
+       isn't in the expected form). */
+    for (i = 0; i < count; i++) {
+        p = strchr(arts[i], ':');
+        if (p == NULL) {
+            fflush(stdout);
+            fprintf(stderr, "Bad entry, \"%s\"\n", arts[i]);
+            EXPoverindexdrop++;
+            return TRUE;
+        }
+        *p = '\0';
+    }
+
     /* First check all postings */
     poisoned = FALSE;
     keeper = FALSE;
     remove = FALSE;
+    purge = TRUE;
     for (i = 0; i < count; ++i) {
 	if ((krps[i] = EXPkeepit(arts[i], when, expires)) == Poison)
 	    poisoned = TRUE;
 	if (OVkeep && (krps[i] == Keep))
 	    keeper = TRUE;
-	if ((krps[i] == Remove))
+	if ((krps[i] == Remove) && EQ(group, arts[i]))
 	    remove = TRUE;
+        if ((krps[i] == Keep))
+            purge = FALSE;
     }
     EXPprocessed++;
 
     if (OVearliest) {
 	if (remove || poisoned || token.type == TOKEN_EMPTY) {
-	    if (strcmp(group, arts[0]) == 0)
-		/* delete article if this is first entry */
-		OVEXPremove(token, FALSE);
+            /* delete article if this is first entry */
+	    if (EQ(group, arts[0])) {
+                for (i = 0; i < count; i++)
+                    arts[i][strlen(arts[i])] = ':';
+		OVEXPremove(token, FALSE, arts, count);
+            }
 	    EXPoverindexdrop++;
 	    return TRUE;
 	}
     } else { /* not earliest mode */
-	if (!keeper || token.type == TOKEN_EMPTY) {
-	    if (strcmp(group, arts[0]) == 0)
-		/* delete article if this is first entry */
-		OVEXPremove(token, FALSE);
+	if ((!keeper && remove) || token.type == TOKEN_EMPTY) {
+            /* delete article if purge is set, indicating that it has
+               expired out of every group to which it was posted */
+	    if (purge) {
+                for (i = 0; i < count; i++)
+                    arts[i][strlen(arts[i])] = ':';
+		OVEXPremove(token, FALSE, arts, count);
+            }
 	    EXPoverindexdrop++;
 	    return TRUE;
 	}
