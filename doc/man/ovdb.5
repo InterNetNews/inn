@@ -2,6 +2,9 @@
 ''' $RCSfile$$Revision$$Date$
 '''
 ''' $Log$
+''' Revision 1.9  2000/11/14 21:35:25  hkehoe
+''' change default value of nocompact
+'''
 ''' Revision 1.8  2000/11/14 03:00:11  hkehoe
 ''' ovdb doc updates
 '''
@@ -299,7 +302,7 @@ by rewriting them.
 If this parameter is set to 0, expireover will compact all newsgroups;
 if set to 1, expireover will not compact any newsgroups; and if set to
 a value greater than one, expireover will only compact groups that
-have less than that number of articles.  Default is 10000.
+have less than that number of articles.  Default is 1000.
 .Ip "readserver" 4
 Normally, each nnrpd process directly accesses the BerkeleyDB environment.
 The process of attaching to the database (and detaching when finished) is
