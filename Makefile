@@ -151,7 +151,7 @@ release: ChangeLog
 	rm -rf $(TARDIR)
 	rm -f inn*.tar.gz
 	mkdir $(TARDIR)
-	for d in `sed $(DISTDIRS) MANIFEST` ; do mkdir $$d ; done
+	for d in `sed $(DISTDIRS) MANIFEST` ; do mkdir -p $$d ; done
 	for f in `sed $(DISTFILES) MANIFEST` ; do \
 	    cp $$f $(TARDIR)/$$f || exit 1 ; \
 	done
