@@ -1,7 +1,7 @@
 dnl zlib.m4 -- Find the path to the zlib library.
 dnl $Id$
 dnl
-dnl This file provides INN_LIB_Z, which defines the --with-zlib
+dnl This file provides INN_LIB_ZLIB, which defines the --with-zlib
 dnl command-line option and probes for the location of zlib if that
 dnl option is used without an optional path.  It looks by default in $prefix,
 dnl /usr/local, and /usr.  It exports ZLIB_LDFLAGS, ZLIB_CPPFLAGS, and ZLIB_LIBS.

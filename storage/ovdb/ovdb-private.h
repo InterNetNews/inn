@@ -46,6 +46,7 @@ struct ovdb_conf {
     int  txn_nosync;	/* whether to pass DB_TXN_NOSYNC to db_appinit */
     int  numdbfiles;
     size_t cachesize;
+    int ncache;
     size_t pagesize;
     int minkey;
     int maxlocks;

@@ -183,6 +183,7 @@ static DB *groupaliases = NULL;
 #define OVDBuseshm	11
 #define OVDBshmkey	12
 #define OVDBcompress	13
+#define OVDBncache	14
 
 static CONFTOKEN toks[] = {
     { OVDBtxn_nosync,   (char *) "txn_nosync"   },
@@ -198,6 +199,7 @@ static CONFTOKEN toks[] = {
     { OVDBuseshm,       (char *) "useshm"       },
     { OVDBshmkey,       (char *) "shmkey"       },
     { OVDBcompress,     (char *) "compress"     },
+    { OVDBncache,       (char *) "ncache"       },
     { 0,                NULL                    }
 };
 
@@ -410,6 +412,7 @@ void read_ovdb_conf(void)
     ovdb_conf.numdbfiles = 32;
     ovdb_conf.pagesize = 8192;
     ovdb_conf.cachesize = 8000 * 1024;
+    ovdb_conf.ncache = 1;
     ovdb_conf.minkey = 0;
     ovdb_conf.maxlocks = 4000;
     ovdb_conf.nocompact = 1;
@@ -465,6 +468,16 @@ void read_ovdb_conf(void)
 		}
 		if(conf_long_val(tok->name, &l) && l > 0) {
 		    ovdb_conf.cachesize = l * 1024;
+		}
+		break;
+	    case OVDBncache:
+		tok = CONFgettoken(0, f);
+		if(!tok) {
+		    done = 1;
+		    continue;
+		}
+		if(conf_long_val(tok->name, &l) && l > 0) {
+		    ovdb_conf.ncache = l;
 		}
 		break;
 	    case OVDBminkey:
@@ -579,7 +592,11 @@ void read_ovdb_conf(void)
 }
 
 /* Function that db will use to report errors */
+#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 3)
+static void OVDBerror(const DB_ENV *dbenv UNUSED, const char *db_errpfx UNUSED, const char *buffer)
+#else
 static void OVDBerror(const char *db_errpfx UNUSED, char *buffer)
+#endif
 {
     warn("OVDB: %s", buffer);
 }
@@ -1560,7 +1577,7 @@ int ovdb_open_berkeleydb(int mode, int flags)
     }
 
     OVDBenv->set_errcall(OVDBenv, OVDBerror);
-    OVDBenv->set_cachesize(OVDBenv, 0, ovdb_conf.cachesize, 1);
+    OVDBenv->set_cachesize(OVDBenv, 0, ovdb_conf.cachesize, ovdb_conf.ncache);
     OVDBenv->set_lk_max(OVDBenv, ovdb_conf.maxlocks);
 
 #if DB_VERSION_MAJOR >= 4 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 2)
