@@ -20,7 +20,7 @@ typedef struct _QIOSTATE {
     char	*Buffer;
     char	*End;
     char	*Start;
-    long	Count;          /* Number of bytes read so far */
+    OFFSET_T	Count;          /* Number of bytes read so far */
     int         WireFormat;
     ARTHANDLE   *handle;        /* Storage API handle for the open article */
 } QIOSTATE;
