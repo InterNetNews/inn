@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "RADIUS.CONF 5"
-.TH RADIUS.CONF 5 "2004-04-06" "INN 2.4.2" "InterNetNews Documentation"
+.TH RADIUS.CONF 5 "2004-05-16" "INN 2.4.2" "InterNetNews Documentation"
 .SH "NAME"
 radius.conf \- Configuration for nnrpd RADIUS authenticator
 .SH "DESCRIPTION"
@@ -173,9 +173,9 @@ defaults to 119.  This doesn't need to be set unless readers are
 connecting to a non-standard port.
 .IP "\fIsecret\fR" 4
 .IX Item "secret"
-The shared secret with the \s-1RADIUS\s0 server.  Be careful not to include a
-\&\f(CW\*(C`#\*(C'\fR in your secret, since this will be taken to be the beginning of a
-comment rather than part of the secret.  This parameter must be set.
+The shared secret with the \s-1RADIUS\s0 server.  If your secret includes spaces,
+tabs, or \f(CW\*(C`#\*(C'\fR, be sure to include it in double quotes.  This parameter
+must be set.
 .IP "\fIprefix\fR" 4
 .IX Item "prefix"
 Prepend the value of this parameter to all usernames before passing them
