@@ -29,15 +29,15 @@ OBJECTS = $(MISSING_OBJ) \
 	checkart.o cleanfrom.o clientactive.o clientlib.o closeonexec.o \
 	dbz.o defdist.o findheader.o genid.o getconfig.o getdtab.o \
 	getfqdn.o getmodaddr.o gettime.o hash.o inndcomm.o innvers.o localopen.o \
-	lockfile.o makedir.o md5.o over.o nonblocking.o parsedate.o perl.o radix32.o\
+	lockfile.o makedir.o md5.o over.o nonblocking.o parsedate.o radix32.o\
 	readin.o remopen.o reservedfd.o resource.o sendarticle.o sendpass.o tempname.o \
 	waitnb.o wildmat.o xfopena.o xmalloc.o xmemerr.o xrealloc.o xwrite.o \
 	xwritev.o
 LOBJECTS	= $(OBJECTS:.o=.lo)
 
-all:			libinn.la ../include/autoconfig.h
+all:			libinn.la perl.o ../include/autoconfig.h
 
-install:		$(D)$(PATHLIB)/libinn.la
+install:		all $(D)$(PATHLIB)/libinn.la
 
 clobber clean:
 	rm -f *.o *.lo libinn.la
