@@ -208,7 +208,8 @@ StripOffHeaders(char *article)
 
 	/* Get start of next header; if it's a blank line, we hit the end. */
 	if ((p = NextHeader(p)) == NULL) {
-	    strcpy(Error, "Article has no body -- just headers");
+	    strlcpy(Error, "Article has no body -- just headers",
+                    sizeof(Error));
 	    return NULL;
 	}
 	if (*p == '\n')
@@ -467,7 +468,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     /* Set Organization */
     if (!ihave && HDR(HDR__ORGANIZATION) == NULL
      && (p = PERMaccessconf->organization) != NULL) {
-	strcpy(orgbuff, p);
+	strlcpy(orgbuff, p, sizeof(orgbuff));
 	HDR_SET(HDR__ORGANIZATION, orgbuff);
     }
 
@@ -760,7 +761,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
 
     p = DDend(h);
     if (HDR(HDR__DISTRIBUTION) == NULL && *p) {
-	strcpy(distbuff, p);
+	strlcpy(distbuff, p, sizeof(distbuff));
 	HDR_SET(HDR__DISTRIBUTION, distbuff);
     }
     free(p);
@@ -1000,7 +1001,7 @@ ARTpost(char *article,
     HeaderCleanFrom(frombuf);
     p = strchr(frombuf, '@');
     if (p) {
-	strcpy(frombuf, p+1);
+	strlcpy(frombuf, p+1, sizeof(frombuf));
 	p = strrchr(frombuf, '.');
 	if (!p) {
 	    if (modgroup)
@@ -1036,8 +1037,7 @@ ARTpost(char *article,
     if (p != NULL) {
 	if (idbuff) {
 	    if (modgroup)
-		snprintf(idbuff, sizeof(idbuff),
-                         "(mailed to moderator for %s)", modgroup);
+		sprintf(idbuff, "(mailed to moderator for %s)", modgroup);
 	    else
 		strlcpy(idbuff, HDR(HDR__MESSAGEID), SMBUF);
 	}
@@ -1049,14 +1049,16 @@ ARTpost(char *article,
 	}
 	else if (strncmp(p, "SPOOL", 5) == 0) {
 	    syslog(L_NOTICE, "%s post %s", ClientHost, p);
-	    strcpy(SDir, innconf->pathincoming);
-	    if (modgroup)
-	    {
+	    strlcpy(SDir, innconf->pathincoming, sizeof(SDir));
+	    if (modgroup) {
 		free(modgroup);
-		return SpoolitTo(article, p, strcat(SDir,"/spam/mod"));
+                strlcat(SDir, "/spam/mod", sizeof(SDir));
+		return SpoolitTo(article, p, SDir);
 	    }
-	    else
-		return SpoolitTo(article, p, strcat(SDir,"/spam"));
+	    else {
+                strlcat(SDir, "/spam", sizeof(SDir));
+		return SpoolitTo(article, p, SDir);
+            }
 	}
 	else
 	{
@@ -1102,7 +1104,7 @@ ARTpost(char *article,
      * attempt to recover from this by spooling it locally */
     if (i < 0) {
 	if (buff[0])
-	    strcpy(Error, buff);
+	    strlcpy(Error, buff, sizeof(Error));
 	else
 	    snprintf(Error, sizeof(Error), CANTSEND, "connect request",
                      strerror(errno));
@@ -1128,7 +1130,7 @@ ARTpost(char *article,
         i = OfferArticle(buff, (int)sizeof buff, FromServer, ToServer);
     }
     if (i != NNTP_SENDIT_VAL) {
-        strcpy(Error, buff);
+        strlcpy(Error, buff, sizeof(Error));
         SendQuit(FromServer, ToServer);
 	if (i != NNTP_HAVEIT_VAL)
 	    return Spoolit(article, Error);
@@ -1191,7 +1193,7 @@ ARTpost(char *article,
 
     /* Did the server want the article? */
     if ((i = atoi(buff)) != NNTP_TOOKIT_VAL) {
-	strcpy(Error, buff);
+	strlcpy(Error, buff, sizeof(Error));
 	SendQuit(FromServer, ToServer);
 	syslog(L_TRACE, "%s server rejects %s from %s", ClientHost, HDR(HDR__MESSAGEID), HDR(HDR__PATH));
 	if (i != NNTP_REJECTIT_VAL && i != NNTP_HAVEIT_VAL)
