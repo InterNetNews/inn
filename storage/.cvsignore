@@ -1,0 +1,8 @@
+.libs
+buildconfig
+methods.c
+methods.h
+ovmethods.c
+ovmethods.h
+*.la
+*.lo

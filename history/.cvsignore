@@ -1,0 +1,6 @@
+.libs
+hisbuildconfig
+hismethods.c
+hismethods.h
+*.la
+*.lo

@@ -1,0 +1,6 @@
+LIST.*
+Makefile.global
+config.cache
+config.log
+config.status
+libtool
