@@ -68,7 +68,6 @@ backends/overchan.c                   Update news overview database
 backends/send-ihave.in                Script to post ihave messages
 backends/send-nntp.in                 Shell script to call innxmit
 backends/send-uucp.in                 Script to call batcher
-backends/sendbatch.in                 B News-like script to send UUCP batches
 backends/sendinpaths.in               Send accumulated Path statistics
 backends/sendxbatches.in              Shell wrapper around innxbatch
 backends/shlock.c                     Program to make lockfiles in scripts

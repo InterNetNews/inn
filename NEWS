@@ -31,7 +31,8 @@ Upgrading from 2.3 to 2.4
 
     If you use send-uucp, it has been completely rewritten and now takes a
     configuration file to specify its behavior.  See its man page for more
-    information.
+    information.  If you use sendbatch, it is no longer included in INN
+    since the new send-uucp can handle all of the same functionality.
 
     The wildmat API has been renamed (to uwildmat and friends; see
     uwildmat(3) for the interfaces) to distinguish it from Rich $alz's
@@ -122,7 +123,9 @@ Changes from 2.3 to 2.4
     * send-uucp has been replaced by a completely rewritten version from
       Marco d'Itri, Edvard Tuinder, and Miquel van Smoorenburg, which uses a
       configuration file that specifies batch sizes, compression methods,
-      and hours during which batches should be generated.
+      and hours during which batches should be generated.  The old sendbatch
+      script has been retired, since send-uucp can now handle everything
+      that it did.
 
     * Two configure options have changed names:  --with-tmp-path is now
       --with-tmp-dir, and --with-largefiles is now --enable-largefiles, to

@@ -8,8 +8,8 @@ CFLAGS        = $(GCFLAGS)
 ALL           = actmerge actsync actsyncd archive batcher buffchan \
 		cvtbatch filechan inndf innxmit innxbatch mod-active \
 		news2mail ninpaths nntpget nntpsend overchan send-ihave \
-		send-nntp send-uucp sendbatch sendinpaths sendxbatches \
-		shlock shrinkfile
+		send-nntp send-uucp sendinpaths sendxbatches shlock \
+		shrinkfile
 
 MAN	      = ../doc/man/send-uucp.8
 
@@ -37,7 +37,6 @@ INSTALLED     = $(D)$(PATHBIN)/actmerge		\
 		$(D)$(PATHBIN)/send-ihave	\
 		$(D)$(PATHBIN)/send-nntp	\
 		$(D)$(PATHBIN)/send-uucp	\
-		$(D)$(PATHBIN)/sendbatch	\
 		$(D)$(PATHBIN)/sendinpaths	\
 		$(D)$(PATHBIN)/sendxbatches	\
 		$(D)$(PATHBIN)/shlock		\
@@ -98,7 +97,6 @@ nntpsend:	nntpsend.in      $(FIX)	; $(FIX) nntpsend.in
 send-ihave:	send-ihave.in    $(FIX)	; $(FIX) send-ihave.in
 send-nntp:	send-nntp.in     $(FIX)	; $(FIX) send-nntp.in
 send-uucp:	send-uucp.in     $(FIX)	; $(FIX) send-uucp.in
-sendbatch:	sendbatch.in     $(FIX)	; $(FIX) sendbatch.in
 sendinpaths:	sendinpaths.in   $(FIX) ; $(FIX) sendinpaths.in
 sendxbatches:	sendxbatches.in  $(FIX)	; $(FIX) sendxbatches.in
 
@@ -134,7 +132,6 @@ $(D)$(PATHBIN)/overchan:            overchan            ; $(LI_XPRI) $? $@
 $(D)$(PATHBIN)/send-ihave:          send-ihave          ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/send-nntp:           send-nntp           ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/send-uucp:           send-uucp           ; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/sendbatch:           sendbatch           ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/sendinpaths:         sendinpaths		; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/sendxbatches:        sendxbatches        ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/shlock:              shlock              ; $(LI_XPUB) $? $@

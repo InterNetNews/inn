@@ -31,7 +31,8 @@ nnrpd"> in F<doc/hook-python> for details.
 
 If you use B<send-uucp>, it has been completely rewritten and now takes a
 configuration file to specify its behavior.  See its man page for more
-information.
+information.  If you use B<sendbatch>, it is no longer included in INN
+since the new B<send-uucp> can handle all of the same functionality.
 
 The wildmat API has been renamed (to uwildmat and friends; see uwildmat(3)
 for the interfaces) to distinguish it from Rich $alz's original version,
@@ -145,7 +146,9 @@ an existing F<inn.conf> file for you.
 B<send-uucp> has been replaced by a completely rewritten version from
 Marco d'Itri, Edvard Tuinder, and Miquel van Smoorenburg, which uses a
 configuration file that specifies batch sizes, compression methods, and
-hours during which batches should be generated.
+hours during which batches should be generated.  The old B<sendbatch>
+script has been retired, since B<send-uucp> can now handle everything
+that it did.
 
 =item *
 
