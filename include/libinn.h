@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Here be declarations of functions in the InterNetNews library.
 */
@@ -19,6 +19,18 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/*
+**  VERSION INFORMATION
+*/
+extern const int        inn_version[3];
+extern const char       inn_version_extra[];
+extern const char       inn_version_string[];
+
+/* This function is deprecated.  Nothing in INN should use it, and it may
+   eventually go away entirely. */
+extern const char *     INNVersion(void);
+
 
 /*
 **  MEMORY MANAGEMENT
@@ -260,7 +272,6 @@ extern int	GetResourceUsage(double *usertime, double *systime);
 extern int	SetNonBlocking(int fd, BOOL flag);
 extern void	CloseOnExec(int fd, int flag);
 extern void	Radix32(unsigned long, char *buff);
-extern char	*INNVersion(void);
 extern char	*ReadInDescriptor(int fd, struct stat *Sbp);
 extern char	*ReadInFile(const char *name, struct stat *Sbp);
 extern void	TempName(char *dir, char *buff);
