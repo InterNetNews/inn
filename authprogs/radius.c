@@ -4,11 +4,11 @@
 */
 #include "config.h"
 #include "clibrary.h"
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <errno.h>
 #include <netdb.h>
-#include <netinet/in.h>
 #include <signal.h>
 #include <sys/socket.h>
 
@@ -241,13 +241,13 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     req.data[2] = '\0';
     if (config->prefix) {
 	req.data[1] += strlen(config->prefix);
-	strcat(&req.data[2], config->prefix);
+	strcat((char *)&req.data[2], config->prefix);
     }
     req.data[1] += strlen(uname);
-    strcat(&req.data[2], uname);
+    strcat((char *)&req.data[2], uname);
     if (config->suffix) {
 	req.data[1] += strlen(config->suffix);
-	strcat(&req.data[2], config->suffix);
+	strcat((char *)&req.data[2], config->suffix);
     }
     req.datalen = req.data[1];
 
@@ -258,7 +258,7 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     passlen = (strlen(pass) + 15) / 16;
     passlen *= 16;
     req.data[req.datalen+1] = passlen+2;
-    strcpy(&req.data[req.datalen+2], pass);
+    strcpy((char *)&req.data[req.datalen+2], pass);
     passlen -= strlen(pass);
     while (passlen--)
 	req.data[req.datalen+passlen+2+strlen(pass)] = '\0';
