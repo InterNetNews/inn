@@ -5,6 +5,8 @@ include ../Makefile.global
 ALL	      = controlbatch controlchan docheckgroups gpgverify perl-nocem \
 		pgpverify signcontrol
 
+MAN	      = ../doc/man/perl-nocem.8
+
 INSTALLED     = $(D)$(PATHBIN)/controlbatch	\
 		$(D)$(PATHBIN)/controlchan	\
 		$(D)$(PATHBIN)/docheckgroups	\
@@ -14,6 +16,8 @@ INSTALLED     = $(D)$(PATHBIN)/controlbatch	\
 		$(D)$(PATHBIN)/signcontrol
 
 all: $(ALL)
+
+man: $(MAN)
 
 clean clobber distclean:
 	rm -f $(ALL)
@@ -30,6 +34,9 @@ gpgverify:	gpgverify.in     $(FIX) ; $(FIX) gpgverify.in
 perl-nocem:	perl-nocem.in    $(FIX) ; $(FIX) perl-nocem.in
 pgpverify:	pgpverify.in     $(FIX) ; $(FIX) pgpverify.in
 signcontrol:	signcontrol.in   $(FIX) ; $(FIX) -i signcontrol.in
+
+../doc/man/perl-nocem.8: perl-nocem
+	$(POD2MAN) -s 8 $? > $@
 
 
 ##  Installation rules.  Installation commands set in Makefile.global.
