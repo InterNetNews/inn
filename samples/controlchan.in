@@ -76,11 +76,7 @@ my (@headers, %hdrcount, %hdrval, $msgid, $token, $progname,
 # If we have $newsbin/sm, this must be an INN 2.x installation.
 # Otherwise, we'll fake it on older servers.
 if (-e "$inn::newsbin/sm") {
-  if ($inn::storageapi =~ /true|yes|on/i) {
-    $SM = "$inn::newsbin/sm -q";
-  } else {
-    $SM = "cat";
-  }
+  $SM = "$inn::newsbin/sm -q";
 } else {
   $SM = "cat";
 }

@@ -10,12 +10,9 @@ MAIL="${MAILCMD} -s 'Problem removing expired files' ${NEWSMASTER}"
 RMPROC="fastrm -e -u -s ${SPOOL}"
 
 if [ -z "$1" ] ; then
-    SAPI=`innconfval storageapi 2>/dev/null | tr ${AZ} ${az}`
-    if [ X${SAPI} != X"true" -a X${SAPI} != X"yes" -a X${SAPI} != X"on" ]; then
-	echo "Expire called with zero list of files on `hostname`" \
-      | eval ${MAIL}
-	exit 0
-    fi
+    echo "Expire called with zero list of files on `hostname`" \
+  | eval ${MAIL}
+    exit 0
 fi
 if [ ! -f $1 ] ; then
     echo "Expire called with no files to expire on `hostname`" \

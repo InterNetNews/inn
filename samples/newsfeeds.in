@@ -61,17 +61,12 @@ ME\
 ## Create the links for cross posted articles
 ## If you use this you MUST add -L option to innflags in inn.conf.
 ## see innd(8)
+## XXX - this doesn't work with inn2.3experimental at the moment.
 #crosspost:*:Tc,Ap,WR:@prefix@/bin/crosspost
 
 # Feed all moderated source postings to an archiver
 #source-archive!:!*,*sources*,!*wanted*,!*.d\
 #	:Tc,Wn:@prefix@/bin/archive -f -i @prefix@/spool/archive/INDEX
-
-##  News overview
-# use this flag if storage api is used
-#overview!:*:Tc,Ao,WhR,S30000:@prefix@/bin/overchan
-# else
-#overview!:*:Tc,WO,S30000:@prefix@/bin/overchan
 
 # Feed all local non-internal postings to nearnet; sent off-line via
 # nntpsend or send-nntp.
@@ -80,8 +75,9 @@ ME\
 #	:Tf,Wnm:nic.near.net
 
 # A real-time nntplink feed
-# If you turn on storageapi, you cannot to use nntplink since it cannot handle
-# token.
+# Warning: nntplink doesn't work with INN 2.3, since it doesn't know
+# about the new storageapi. Someone needs to fix nntplink and release
+# a new version first!
 #uunet\
 #	:/!foo\
 #	:Tc,Wnm:@prefix@/bin/nntplink -i stdin news.uu.net

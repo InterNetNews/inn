@@ -116,20 +116,11 @@ sub mailto {
 		die "bad $sendmail";
 		}
 
-	if ($inn::storageapi eq "true") {
-	    $smgr = "$sm -q $t |";
+	$smgr = "$sm -q $t |";
 
-	    unless ($smgrpid = (open SMGR, $smgr)) {
-		syslog('notice', '%s failed!', $smgr);
-		die "bad $smgr";
-	    }
-	} else {
-	    my $path = $inn::patharticles . "/" . $t ;
-	    unless (open SMGR, "<$path") {
-		syslog('notice', "no such path: $path");
-		return ;
-	    }
-		
+	unless ($smgrpid = (open SMGR, $smgr)) {
+	    syslog('notice', '%s failed!', $smgr);
+	    die "bad $smgr";
 	}
 
 	# header
