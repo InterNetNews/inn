@@ -768,7 +768,7 @@ ARTparse(CHANNEL *cp)
 {
   struct buffer	*bp = &cp->In;
   ARTDATA	*data = &cp->Data;
-  size_t        i, limit;
+  size_t        i, limit, fudge, size;
   int		hopcount;
   char		**hops;
   HDRCONTENT	*hc = data->HdrContent;
@@ -984,13 +984,13 @@ endofline:
     }
   }
 sizecheck:
-  if ((innconf->maxartsize > 0) &&
-    (i - cp->Start - (data->HeaderLines + data->Lines + 4) >
-     (unsigned long) innconf->maxartsize)) {
-    /* data->HeaderLines + data->Lines + 4 means that "\r\n" is counted as 1
-       byte and trailing ".\r\n" and body delimitor is excluded */
-    cp->State = CSeatarticle;
-  }
+  /* data->HeaderLines + data->Lines + 4 means that "\r\n" is counted as 1
+     byte and trailing ".\r\n" and body delimitor is excluded. */
+  size = i - cp->Start;
+  fudge = data->HeaderLines + data->Lines + 4;
+  if (innconf->maxartsize > 0)
+    if (size > fudge && size - fudge > (size_t) innconf->maxartsize)
+        cp->State = CSeatarticle;
   cp->Next = i;
   return;
 }
