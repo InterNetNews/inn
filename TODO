@@ -41,8 +41,13 @@ High Priority Projects:
   formats and automatically select the right one for an existing history
   file based on stored metainformation.  [Russ is working on this.]
 
-* Better documentation of UUCP feeds.  [Russ has some saved articles on
-  this that could form the basis of documentation.]
+* Better documentation of and support for UUCP feeds.  Ideally, this would
+  include taking the sendbatches program from /isc/inn/unoff-contrib on
+  ftp.isc.org, cleaning it up for inclusion into INN, and replacing both
+  send-uucp and sendbatch with it.  This program is a C News style
+  configurable batch generator with size, compression, and sending methods
+  all as parameters in a configuration file.  [Russ has some saved
+  articles on this that could form the basis of documentation.]
 
 * INN shouldn't flush all feeds (particularly all program feeds) on
   newgroup or rmgroup.  Currently it reloads newsfeeds to reparse all of
@@ -217,14 +222,6 @@ Future Projects:
 * Add documentation for slave servers.  [Russ has articles from
   inn-workers that can be used as a beginning.]
 
-* sendbatch and send-uucp do the same thing.  So do send-nntp and
-  nntpsend, mostly.  Might be a good idea to unify them into single
-  programs (and easier to maintain).  It would be nice to have a C News
-  style configurable batch generator where you could configure the size,
-  compression, and sending method for each peer in a file and generate all
-  batches with a single command.  There's something in the unoff-contrib
-  area that may be a good start on this.
-
 * More details as to *why* a message ID is bad would be useful to return
   to the user, particularly for rnews, inews, etc.  rnews also reportedly
   rejects message IDs with trailing spaces, which can be hard to check.
@@ -337,6 +334,10 @@ Future Projects:
   storage.conf should really be extended to allow method-specific
   configuration for things like this (and to allow the cycbuff.conf file
   to be merged into storage.conf).
+
+* send-nntp and nntpsend basically do the same thing; send-nntp could
+  probably be removed (possibly with some extra support in nntpsend for
+  doing simpler things).
 
 
 Long-Term Projects:
