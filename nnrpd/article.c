@@ -911,7 +911,7 @@ FUNCTYPE CMDxover(int ac, char *av[])
     ARTNUM		artnum;
     void		*handle;
     char		*data;
-    int			len;
+    int			len, useIOb = 0;
     TOKEN		token;
 
     if (!PERMcanread) {
@@ -956,6 +956,12 @@ FUNCTYPE CMDxover(int ac, char *av[])
     (void)fflush(stdout);
     if (PERMaccessconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
+
+    /* If OVSTATICSEARCH is true, then the data returned by OVsearch is only
+       valid until the next call to OVsearch.  In this case, we must use
+       SendIOb because it copies the data. */
+    OVctl(OVSTATICSEARCH, &useIOb);
+
     while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
 	if (PERMaccessconf->nnrpdoverstats) {
 	    gettimeofday(&etv, NULL);
@@ -973,7 +979,10 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	    OVERhit++;
 	    OVERsize += len;
 	}
-	SendIOv(data, len);
+	if(useIOb)
+	    SendIOb(data, len);
+	else
+	    SendIOv(data, len);
 	if (PERMaccessconf->nnrpdoverstats)
 	    gettimeofday(&stv, NULL);
     }
@@ -982,8 +991,13 @@ FUNCTYPE CMDxover(int ac, char *av[])
         OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
         OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;
     }
-    SendIOv(".\r\n", 3);
-    PushIOv();
+    if(useIOb) {
+	SendIOb(".\r\n", 3);
+	PushIOb();
+    } else {
+	SendIOv(".\r\n", 3);
+	PushIOv();
+    }
     if (PERMaccessconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
     OVclosesearch(handle);
