@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.189 
+# From configure.in Revision: 1.191 
 ## libtool.m4 - Configure libtool for the target system. -*-Shell-script-*-
 ## Copyright (C) 1996-1999 Free Software Foundation, Inc.
 ## Originally by Gordon Matzigkeit <gord@gnu.ai.mit.edu>, 1996
@@ -6907,21 +6907,12 @@ done
 ac_given_srcdir=$srcdir
 
 trap 'rm -fr `echo "Makefile.global
-        backends/controlchan
-        backends/pgpverify
         include/paths.h
-        samples/actsync.cfg
-        samples/checkgroups
         samples/inn.conf
         samples/innreport.conf
-        samples/innwatch.ctl
         samples/newsfeeds
-        samples/nnrpd_auth.pl
-        samples/nnrpd_auth.py
-        samples/startup.tcl
         samples/sasl.conf
         scripts/inncheck
-        scripts/innreport
         scripts/innshellvars
         scripts/innshellvars.pl
         scripts/innshellvars.tcl
@@ -7085,21 +7076,12 @@ EOF
 cat >> $CONFIG_STATUS <<EOF
 
 CONFIG_FILES=\${CONFIG_FILES-"Makefile.global
-        backends/controlchan
-        backends/pgpverify
         include/paths.h
-        samples/actsync.cfg
-        samples/checkgroups
         samples/inn.conf
         samples/innreport.conf
-        samples/innwatch.ctl
         samples/newsfeeds
-        samples/nnrpd_auth.pl
-        samples/nnrpd_auth.py
-        samples/startup.tcl
         samples/sasl.conf
         scripts/inncheck
-        scripts/innreport
         scripts/innshellvars
         scripts/innshellvars.pl
         scripts/innshellvars.tcl

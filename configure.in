@@ -1472,21 +1472,12 @@ LIBS=`echo "$LIBS" | sed 's/^  *//' | sed 's/   */ /g' | sed 's/  *$//'`
 AC_CONFIG_HEADER(include/config.h)
 AC_OUTPUT(
         Makefile.global
-        backends/controlchan
-        backends/pgpverify
         include/paths.h
-        samples/actsync.cfg
-        samples/checkgroups
         samples/inn.conf
         samples/innreport.conf
-        samples/innwatch.ctl
         samples/newsfeeds
-        samples/nnrpd_auth.pl
-        samples/nnrpd_auth.py
-        samples/startup.tcl
         samples/sasl.conf
         scripts/inncheck
-        scripts/innreport
         scripts/innshellvars
         scripts/innshellvars.pl
         scripts/innshellvars.tcl
