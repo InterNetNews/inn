@@ -345,7 +345,8 @@ hisv6_reopen(struct hisv6 *h)
 #ifdef	DO_TAGGED_HASH
 	    opt.pag_incore = INCORE_MMAP;
 #else
-	    opt.pag_incore = INCORE_NO;
+	    /*opt.pag_incore = INCORE_NO;*/
+	    opt.pag_incore = (h->flags & HIS_MMAP) ? INCORE_MMAP : INCORE_NO;
 	    opt.exists_incore = (h->flags & HIS_MMAP) ? INCORE_MMAP : INCORE_NO;
 #endif
 	}
@@ -757,7 +758,7 @@ hisv6_writedbz(struct hisv6 *h, const HASH *hash, off_t offset)
 */
 static bool
 hisv6_writeline(struct hisv6 *h, const HASH *hash, time_t arrived,
-		 time_t posted, time_t expires, const TOKEN *token)
+		time_t posted, time_t expires, const TOKEN *token)
 {
     int i;
     bool r;
@@ -957,7 +958,9 @@ hisv6_traverse(struct hisv6 *h, struct hisv6_walkstate *cookie,
 	    hisv6_errloc(location, line, (off_t)-1);
 	    hisv6_seterror(h, concat(error, " ", h->histpath, location,
 				      NULL));
-	    r = false;
+	    /* if we're not ignoring errors set the status */
+	    if (!cookie->ignore)
+		r = false;
 	}
 	if (r == false)
 	    goto fail;
@@ -969,15 +972,19 @@ hisv6_traverse(struct hisv6 *h, struct hisv6_walkstate *cookie,
 	if (QIOerror(qp) || QIOtoolong(qp)) {
 	    hisv6_errloc(location, line, (off_t)-1);
 	    if (QIOtoolong(qp)) {
-		    hisv6_seterror(h, concat("line too long ",
-					     h->histpath, location, NULL));
+		hisv6_seterror(h, concat("line too long ",
+					 h->histpath, location, NULL));
+		/* if we're not ignoring errors set the status */
+		if (!cookie->ignore)
+		    r = false;
 	    } else {
-		    hisv6_seterror(h, concat("can't read line ",
-					     h->histpath, location, " ",
-					     strerror(errno), NULL));
+		hisv6_seterror(h, concat("can't read line ",
+					 h->histpath, location, " ",
+					 strerror(errno), NULL));
+		r = false;
 	    }
-	    r = false;
-	    goto fail;
+	    if (r == false)
+		goto fail;
 	}
 
 	/* must have been EOF, pause the server & clean up any
@@ -1032,8 +1039,11 @@ hisv6_walk(void *history, const char *reason, void *cookie,
        wrapper */
     hiscookie.cb.walk = callback;
     hiscookie.cookie = cookie;
+    hiscookie.new = NULL;
+    hiscookie.paused = false;
+    hiscookie.ignore = false;
 
-    r = hisv6_traverse(h, &hiscookie, NULL, hisv6_traversecb);
+    r = hisv6_traverse(h, &hiscookie, reason, hisv6_traversecb);
 
     return r;
 }
@@ -1180,6 +1190,10 @@ hisv6_expire(void *history, const char *path, const char *reason,
     /* this flag is always tested in the fail clause, so initialise it
        now */
     hiscookie.paused = false;
+
+    /* during expire we ignore errors whilst reading the history file
+     * so any errors in it get fixed automagically */
+    hiscookie.ignore = true;
 
     if (writing && (h->flags & HIS_RDWR)) {
 	hisv6_seterror(h, concat("can't expire from read/write history ",
