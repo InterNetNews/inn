@@ -768,7 +768,7 @@ static bool OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, 
     ie.expires = expires;
     ie.token = token;
     
-    if (pwrite(gh->indexfd, &ie, sizeof(ie), (artnum - base) * sizeof(ie)) != sizeof(ie)) {
+    if (xpwrite(gh->indexfd, &ie, sizeof(ie), (artnum - base) * sizeof(ie)) != sizeof(ie)) {
 	syslog(L_ERROR, "tradindexed: could not write index record for %s:%d", gh->group, artnum);
 	return FALSE;
     }
@@ -993,9 +993,7 @@ static bool OV3packgroup(char *group, int delta) {
     char                bakidx[BIG_BUFFER], oldidx[BIG_BUFFER], newidx[BIG_BUFFER];
     struct stat         sb;
     int			fd;
-    int			numentries;
     GROUPHANDLE		*gh;
-    off_t		nbytes;
 
     if (delta <= 0) return FALSE;
 
@@ -1039,30 +1037,7 @@ static bool OV3packgroup(char *group, int delta) {
 	return FALSE;
     }
 
-    /* stat old index file so we know its actual size. */
-    if (fstat(gh->indexfd, &sb) < 0) {
-	syslog(L_ERROR, "tradindexed: could not stat %s: %m", newidx);
-	close(fd);
-	OV3closegroup(gh, FALSE);
-	GROUPlock(gloc, INN_LOCK_UNLOCK);
-	return FALSE;
-    }
-	
-
-    /* write old index records to new file */
-    numentries = ge->high - ge->low + 1;
-    nbytes = numentries * sizeof(INDEXENTRY);
-
-    /*
-    ** check to see if the actual file length is less than nbytes (since the 
-    ** article numbers may be sparse) and if so, only read/write that amount. 
-    */
-    if (nbytes > sb.st_size) {
-	nbytes = sb.st_size;
-    }
-
-    if (pwrite(fd, &gh->indexmem[ge->low - ge->base] , nbytes,
-	       sizeof(INDEXENTRY)*(ge->low - ge->base + delta)) != nbytes) {
+    if (xpwrite(fd, gh->indexmem, gh->indexlen, sizeof(INDEXENTRY) * delta) < 0) {
 	syslog(L_ERROR, "tradindexed: packgroup cant write to %s: %m", newidx);
 	close(fd);
 	OV3closegroup(gh, FALSE);
