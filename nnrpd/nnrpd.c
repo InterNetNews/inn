@@ -800,7 +800,7 @@ main(int argc, char *argv[], char *env[])
 	fclose(pidfile);
 
 	/* Set signal handle to care for dead children */
-	(void)signal(SIGCHLD, SIG_IGN);
+	(void)signal(SIGCHLD, WaitChild);
 	SetupDaemon();
  
 	TITLEset("nnrpd: accepting connections");
