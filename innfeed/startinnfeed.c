@@ -15,16 +15,16 @@
 #include <grp.h>
 #include <pwd.h>
 
-#include "libinn.h"
-#include "macros.h"
-
-/* Some odd systems need sys/time.h included before sys/resource.h. */
-#ifdef HAVE_RLIMIT
-# ifdef HAVE_SYS_TIME_H
+/* FreeBSD 3.4 RELEASE needs <sys/time.h> before <sys/resource.h>. */
+#if HAVE_SETRLIMIT
+# if HAVE_SYS_TIME_H
 #  include <sys/time.h>
 # endif
 # include <sys/resource.h>
 #endif
+
+#include "libinn.h"
+#include "macros.h"
 
 /* Options for debugging malloc. */
 #ifdef USE_DMALLOC
@@ -71,9 +71,12 @@ main(int argc, char *argv[])
     struct group *      grp;
     uid_t               news_uid;
     gid_t               news_gid;
-    struct rlimit       rl;
     char **             innfeed_argv;
     int                 i;
+
+#if HAVE_SETRLIMIT
+    struct rlimit       rl;
+#endif
 
     openlog("innfeed", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
@@ -105,37 +108,22 @@ main(int argc, char *argv[])
     if (ReadInnConf() < 0) exit(1);
 
     /* Regain privileges to increase system limits. */
-#ifdef HAVE_RLIMIT
     set_user(0, news_uid);
+    if (innconf->rlimitnofile >= 0)
+        if (setfdlimit(innconf->rlimitnofile) < 0)
+            syslog(LOG_WARNING, "can't set file descriptor limit to %d: %m",
+                   innconf->rlimitnofile);
+
+#if HAVE_SETRLIMIT
     rl.rlim_cur = RLIM_INFINITY;
     rl.rlim_max = RLIM_INFINITY;
-
 # ifdef RLIMIT_DATA
-    if (setrlimit(RLIMIT_DATA, &rl) == -1)
-        syslog(LOG_WARNING, "can't setrlimit(DATA, INFINITY): %m");
+    setrlimit(RLIMIT_DATA, &rl);
 # endif
-
 # ifdef RLIMIT_STACK
-    if (setrlimit(RLIMIT_STACK, &rl) == -1)
-        syslog(LOG_WARNING, "can't setrlimit(STACK, INFINITY): %m");
+    setrlimit(RLIMIT_STACK, &rl);
 # endif
-
-# ifdef RLIMIT_NOFILE
-    if (innconf->rlimitnofile >= 0) {
-        if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
-            syslog(LOG_WARNING, "can't getrlimit(NOFILE): %m");
-        } else {
-            if (innconf->rlimitnofile < rl.rlim_max)
-                rl.rlim_max = innconf->rlimitnofile;
-            if (innconf->rlimitnofile < rl.rlim_cur)
-                rl.rlim_cur = innconf->rlimitnofile;
-            if (setrlimit(RLIMIT_NOFILE, &rl) == -1)
-                syslog(LOG_WARNING, "can't setrlimit(NOFILE, %d): %m",
-                       rl.rlim_cur);
-        }
-    }
-# endif /* RLIMIT_NOFILE */
-#endif /* HAVE_RLIMIT */
+#endif /* HAVE_SETRLIMIT */
 
     /* Permanently drop privileges. */
     if (setuid(news_uid) < 0 || getuid() != news_uid) {
