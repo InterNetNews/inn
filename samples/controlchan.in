@@ -327,11 +327,11 @@ sub ctlperm {
     }
 
     if ($action =~ /^verify-(.+)/) {
-        if (not $inn::pgpverify or $inn::pgpverify ne "false") {
+	$keyowner = $1;
+        if (not $inn::pgpverify or $inn::pgpverify !~ /true|on|yes/i) {
             $action = "mail";
         } else {
             #print "PGP\n";
-	    $keyowner = $1;
 	    $keyowner =~ s/=.+//;
 	    open(PGPCHECK, "$SM $token|$inn::newsbin/pgpverify|");
 	    $pgpresult = <PGPCHECK>;
