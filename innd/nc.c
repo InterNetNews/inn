@@ -441,10 +441,10 @@ STATIC FUNCTYPE
 NCihave(CHANNEL *cp)
 {
     char	*p;
-#if defined(DO_PERL)
+#if defined(DO_PERL) || defined(DO_PYTHON)
     char	*perlrc;
     int		msglen;
-#endif /* DO_PERL */
+#endif /*defined(DO_PERL) || defined(DO_PYTHON) */
 
     cp->Ihave++;
     /* Snip off the Message-ID. */
@@ -463,6 +463,23 @@ NCihave(CHANNEL *cp)
 #if defined(DO_PERL)
     /*  invoke a perl message filter on the message id */
     if ((perlrc = (char *)HandleMessageID(p)) != NULL) {
+	cp->Refused++;
+	msglen = strlen(p) + 5; /* 3 digits + space + id + null */
+	if (cp->Sendid.Size < msglen) {
+	    if (cp->Sendid.Size > 0) DISPOSE(cp->Sendid.Data);
+	    if (msglen > MAXHEADERSIZE) cp->Sendid.Size = msglen;
+	    else cp->Sendid.Size = MAXHEADERSIZE;
+	    cp->Sendid.Data = NEW(char, cp->Sendid.Size);
+	}
+	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_HAVEIT_VAL, perlrc);
+	NCwritereply(cp, cp->Sendid.Data);
+	return;
+    }
+#endif
+
+#if defined(DO_PYTHON)
+    /*  invoke a Python message filter on the message id */
+    if ((perlrc = (char *)PYHandleMessageID(p)) != NULL) {
 	cp->Refused++;
 	msglen = strlen(p) + 5; /* 3 digits + space + id + null */
 	if (cp->Sendid.Size < msglen) {
@@ -1283,9 +1300,9 @@ NCcheck(CHANNEL *cp)
 {
     char		*p;
     int			msglen;
-#if defined(DO_PERL)
+#if defined(DO_PERL) || defined(DO_PYTHON)
     char		*perlrc;
-#endif /* DO_PERL */
+#endif /* DO_PERL || DO_PYTHON */
 
     cp->Check++;
     /* Snip off the Message-ID. */
@@ -1323,7 +1340,17 @@ NCcheck(CHANNEL *cp)
 	NCwritereply(cp, cp->Sendid.Data);
 	return;
     }
-#endif
+#endif /* defined(DO_PERL) */
+
+#if defined(DO_PYTHON)
+    /*  invoke a perl message filter on the message id */
+    if ((perlrc = (char *)PYHandleMessageID(p)) != NULL) {
+	cp->Refused++;
+	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
+	NCwritereply(cp, cp->Sendid.Data);
+	return;
+    }
+#endif /* defined(DO_PYTHON) */
 
     if (HIShavearticle(HashMessageID(p))) {
 	cp->Refused++;

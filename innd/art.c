@@ -144,7 +144,13 @@ ARTHEADER	ARTheaders[] = {
 
 ARTHEADER	*ARTheadersENDOF = ENDOF(ARTheaders);
 
-const char *pathForPerl ;
+#if defined(DO_PERL)
+const char	*pathForPerl;
+#endif /* DO_PERL */
+#if defined(DO_PYTHON)
+const char	*pathForPython;
+#endif /* DO_PYTHON */
+
 
 
 /*
@@ -2142,6 +2148,9 @@ STRING ARTpost(CHANNEL *cp)
 #if defined(DO_PERL)
     char		*perlrc;
 #endif /* DO_PERL */
+#if defined(DO_PYTHON)
+    char		*pythonrc;
+#endif /* DO_PYTHON */
 
     /* Preliminary clean-ups. */
     article = &cp->In;
@@ -2209,7 +2218,27 @@ STRING ARTpost(CHANNEL *cp)
 	    return buff;
         }
     }
-    
+
+#if defined(DO_PYTHON)
+    pathForPython = HeaderFindMem(article->Data, article->Used, "Path", 4) ;
+    /* TMRstart(TMR_PYTHON); */
+    pythonrc = (char *)PYHandleArticle(Data.Body, Data.LinesValue);
+    /* TMRstop(TMR_PYTHON); */
+    if (pythonrc != NULL) {
+        (void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, pythonrc);
+        syslog(L_NOTICE, "rejecting[python] %s %s", Data.MessageID, buff);
+        ARTlog(&Data, ART_REJECT, buff);
+        if (innconf->remembertrash && (Mode == OMrunning) &&
+			!HISremember(hash))
+            syslog(L_ERROR, "%s cant write history %s %m",
+                   LogName, Data.MessageID);
+        ARTreject(REJECT_FILTER, cp, buff, article);
+        return buff;
+    }
+#endif /* DO_PYTHON */
+
+    /* I suppose some masochist will run with Python and Perl in together */
+
 #if defined(DO_PERL)
     pathForPerl = HeaderFindMem(article->Data, article->Used, "Path", 4) ;
     TMRstart(TMR_PERL);

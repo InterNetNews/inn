@@ -46,6 +46,9 @@
 	         when we define it later */
 #endif  /* defined(DO_TCL) */
 
+#if defined(DO_PYTHON)
+#include "Python.h"
+#endif /* DO_PYTHON */
 
 typedef short  SITEIDX;
 
@@ -517,6 +520,7 @@ extern void		CCcopyargv();
 extern STRING		CCblock();
 extern STRING		CCcancel();
 extern STRING		CCcheckfile();
+extern STRING		CCaddhist(char *av[]);
 
 extern BOOL		HIShavearticle(const HASH MessageID);
 extern BOOL		HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token);
@@ -628,3 +632,20 @@ extern void            TCLreadfilter();
 extern void            TCLsetup();
 extern void            TCLclose();
 #endif /* defined(DO_TCL) */
+
+
+/* Python globals */
+#if defined(DO_PYTHON)
+extern PyObject		*PYFilterObject;
+extern PyObject		*PYFilterModule;
+extern BOOL		PythonFilterActive;
+
+/* Python functions */
+extern void		PYfilter(BOOL value);
+extern int		PYReadFilter(void);
+extern char		*PYHandleArticle(char *artBody, int lines);
+extern char		*PYHandleMessageID(char *messageID);
+extern void		PythonMode(OPERATINGMODE Mode, OPERATINGMODE newmode, char *reason);
+extern void		PYSetup(void);
+extern void		PYclose(void);
+# endif /* defined(DO_PYTHON) */

@@ -448,6 +448,9 @@ JustCleanup()
     PerlFilter (FALSE) ;
     PerlClose();
 #endif /* defined(DO_PERL) */
+#if defined(DO_PYTHON)
+    PYclose();
+#endif /* defined(DO_TCL) */
 
     (void)sleep(1);
     /* PROCclose(TRUE); */
@@ -929,6 +932,10 @@ int main(int ac, char *av[])
     PerlFilter (TRUE) ;
     DISPOSE(p);
 #endif /* defined(DO_PERL) */
+
+#if defined(DO_PYTHON)
+    PYSetup();
+#endif /* (DO_PYTHON) */
  
     /* And away we go... */
     if (ShouldRenumber) {

@@ -33,7 +33,7 @@ typedef struct _CCDISPATCH {
 } CCDISPATCH;
 
 
-STATIC STRING	CCaddhist();
+/*STATIC STRING	CCaddhist();*/
 STATIC STRING	CCallow();
 STATIC STRING	CCbegin();
 STATIC STRING	CCchgroup();
@@ -70,6 +70,9 @@ STATIC STRING	CCfilter();
 #if defined(DO_PERL)
 STATIC STRING	CCperl();
 #endif /* defined(DO_PERL) */
+#if defined(DO_PYTHON)
+STATIC STRING	CCpython();
+#endif /* defined(DO_PYTHON) */
 STATIC STRING	CClowmark();
 
 
@@ -83,7 +86,9 @@ STATIC char		CCnoreason[] = "1 Empty reason";
 STATIC char		CCbigreason[] = "1 Reason too long";
 STATIC char		CCnotrunning[] = "1 Must be running";
 STATIC BUFFER		CCreply;
+#if defined(DO_PERL)
 STATIC BUFFER		CCperlbuff;
+#endif /* defined(DO_PERL) */
 STATIC CHANNEL		*CCchan;
 STATIC int		CCwriter;
 STATIC CCDISPATCH	CCcommands[] = {
@@ -101,6 +106,9 @@ STATIC CCDISPATCH	CCcommands[] = {
 #if defined(DO_PERL)
     {	SC_PERL,	1, CCperl       },
 #endif /* defined(DO_PERL) */
+#if defined(DO_PYTHON)
+    {	SC_PYTHON,	1, CCpython     },
+#endif /* defined(DO_PYTHON) */
     {	SC_FLUSH,	1, CCflush	},
     {	SC_FLUSHLOGS,	0, CCflushlogs	},
     {	SC_GO,		1, CCgo		},
@@ -232,7 +240,7 @@ CCxabort(av)
 /*
 **  Do the work needed to add a history entry.
 */
-STATIC STRING
+STRING
 CCaddhist(av)
     char		*av[];
 {
@@ -663,6 +671,38 @@ CCperl(av)
 #endif /* defined(DO_PERL) */
 
 
+#if defined(DO_PYTHON)
+
+#include "Python.h"
+
+STATIC STRING
+CCpython(av)
+    char	*av[];
+{
+    char	*p;
+    extern int	PythonFilterActive;
+
+    switch (av[0][0]) {
+    default:
+	return "1 Bad flag";
+    case 'y':
+	if (PythonFilterActive)
+	    return "1 Python filter already enabled";
+        else if (PYFilterObject == NULL)
+            return "1 Python filter not defined" ;
+	PYfilter(TRUE);
+	break;
+    case 'n':
+	if (!PythonFilterActive)
+	    return "1 Python filter already disabled";
+	PYfilter(FALSE);
+	break;
+    }
+    return NULL;
+}
+#endif /* defined(DO_PYTHON) */
+
+
 /*
 **  Flush all sites or one site.
 */
@@ -738,6 +778,9 @@ CCgo(av)
 #if defined(DO_PERL)
     PerlMode(Mode, OMrunning, p);
 #endif /* defined(DO_PERL) */
+#if defined(DO_PYTHON)
+    PythonMode(Mode, OMrunning, p);
+#endif /* defined(DO_PYTHON) */
     
     DISPOSE(ModeReason);
     ModeReason = NULL;
@@ -831,6 +874,9 @@ CCmode(av)
 #if defined(DO_PERL)
     extern int		PerlFilterActive;
 #endif /* defined(DO_PERL) */
+#if defined(DO_PYTHON)
+    extern int		PythonFilterActive;
+#endif /* defined(DO_PYTHON) */
 
     /* nb: We assume here that BUFSIZ is >= 512, and that none of
      * ModeReason RejectReason Reservation or NNRPReason is longer than
@@ -921,6 +967,14 @@ CCmode(av)
     else
         p += strlen(strcpy(p, "disabled"));
 #endif /* defined(DO_PERL) */
+#if defined(DO_PYTHON)
+    *p++ = '\n';
+    p += strlen(strcpy(p, "Python filtering "));
+    if (PythonFilterActive)
+        p += strlen(strcpy(p, "enabled"));
+    else
+        p += strlen(strcpy(p, "disabled"));
+#endif /* defined(DO_PYTHON) */
 
      i = strlen(buff);
     if (CCreply.Size <= i) {
@@ -1197,6 +1251,9 @@ CCblock(NewMode, reason)
 #if defined(DO_PERL)
     PerlMode(Mode, NewMode, reason);
 #endif /* defined(DO_PERL) */
+#if defined(DO_PYTHON)
+    PythonMode(Mode, NewMode, reason);
+#endif /* defined(DO_PYTHON) */
 
     ICDwrite();
     HISclose();
@@ -1335,6 +1392,9 @@ CCreload(av)
 #if defined(DO_PERL)
     static char BADPERLRELOAD[] = "1 Failed to define filter_art" ;
 #endif /* defined(DO_PERL) */
+#if defined(DO_PYTHON)
+    static char BADPYRELOAD[] = "1 Failed to reload filter_innd.py" ;
+#endif /* defined(DO_PYTHON) */
     STRING	p;
 
     p = av[0];
@@ -1370,6 +1430,11 @@ CCreload(av)
 #if defined(DO_PERL)
         PERLreadfilter (cpcatpath(innconf->pathfilter,_PATH_PERL_FILTER_INND),"filter_art") ;
 #endif /* defined(DO_PERL) */
+#if defined(DO_PYTHON)
+	syslog(L_NOTICE, "reloading pyfilter");
+	(void) PYreadfilter();
+	syslog(L_NOTICE, "reloaded pyfilter OK");
+#endif /* DO_PYTHON */
 	p = "all";
     }
     else if (EQ(p, "active") || EQ(p, "newsfeeds")) {
@@ -1440,6 +1505,12 @@ CCreload(av)
             return BADPERLRELOAD ;
     }
 #endif /* defined(DO_PERL) */
+#if defined(DO_PYTHON)
+    else if (EQ(p, "filter.python")) {
+	if (!PYreadfilter())
+	    return BADPYRELOAD;
+    }
+#endif /* defined(DO_PYTHON) */
     else
 	return "1 Unknown reload type";
 

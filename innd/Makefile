@@ -1,15 +1,15 @@
 ##  $Revision$
 include ../Makefile.global
 
-CFLAGS = $(GCFLAGS) $(PERLINC) $(TCLINC)
+CFLAGS = $(GCFLAGS) $(PERLINC) $(TCLINC) $(PYTHONINC)
 
 SOURCES	= \
 	art.c cc.c chan.c his.c icd.c innd.c lc.c nc.c newsfeeds.c ng.c \
-	perl.c proc.c rc.c site.c status.c tcl.c timer.c wip.c
+	perl.c proc.c python.c rc.c site.c status.c tcl.c timer.c wip.c
 
 OBJECTS	= \
 	art.o cc.o chan.o his.o icd.o innd.o lc.o nc.o newsfeeds.o ng.o \
-	perl.o proc.o rc.o site.o status.o tcl.o timer.o wip.o
+	perl.o proc.o python.o rc.o site.o status.o tcl.o timer.o wip.o
 
 ALL	= innd inndstart
 
@@ -44,7 +44,7 @@ tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../lib/*.c innd.h ../include/*.h
 
 innd:		$(P) $(OBJECTS) $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBNEWS) $(TCLLIB) $(PERLLIB) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBNEWS) $(TCLLIB) $(PERLLIB) $(PYTHONLIB) $(LIBS)
 
 inndstart:	$(P) inndstart.o $(LIBNEWS)
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ inndstart.o $(LIBNEWS) $(LIBS)
