@@ -72,6 +72,7 @@ overview_extra_fields(void)
                 warn("field %d is %s, should be %s", field, line,
                      fields[field]);
         }
+        field++;
     }
     if (QIOerror(qp)) {
         if (QIOtoolong(qp)) {
@@ -108,9 +109,6 @@ build_header(const char *article, size_t length, const char *header,
     data = HeaderFindMem(article, length, header, strlen(header));
     if (data == NULL)
         return;
-    data += strlen(header) + 1;
-    if (ISWHITE(*header))
-        header++;
     end = strchr(data, '\n');
     while (end != NULL && ISWHITE(end[1]))
         end = strchr(end + 1, '\n');
@@ -162,11 +160,13 @@ overview_build(ARTNUM number, const char *article, size_t length,
             build_header(article, length, fields[field], overview);
     }
     for (field = 0; field < extra->count; field++) {
+        buffer_append(overview, "\t", 1);
         buffer_append(overview, extra->strings[field],
                       strlen(extra->strings[field]));
         buffer_append(overview, ": ", 2);
         build_header(article, length, extra->strings[field], overview);
     }
+    buffer_append(overview, "\r\n", 2);
     return overview;
 }
 
