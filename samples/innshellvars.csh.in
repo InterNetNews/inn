@@ -114,7 +114,6 @@ set inn_spooltemp = @TMPDIR@
 
 setenv NEWSLBIN ${inn_newshome}/local
 
-##  =()<umask @<NEWSUMASK>@>()=
 umask 02
 
 set inn_path = ( ${NEWSLBIN} ${inn_newsbin} $path /bin /usr/bin /usr/ucb )

@@ -112,31 +112,44 @@ typedef char * const    CSTRING;
 #define NEWSUSER	"@NEWSUSER@"
 #define NEWSGRP		"@NEWSGRP@"
 #define NEWSGID		"@NEWSGRP@"
+#define PATHMASTER	"not-for-mail"
 
-
-    /* Facility innd should log under. */
+/* Syslog Related Settings */
+/* Facility innd should log under. */
 #define LOG_INN_SERVER		@LOGNEWS@
 
-    /* Facility all other programs should log under. */
+/* Facility all other programs should log under. */
 #define LOG_INN_PROG		@LOGNEWS@
 
-    /* Flags to use in opening the logs; some programs add LOG_PID. */
+/* Flags to use in opening the logs; some programs add LOG_PID. */
 #define L_OPENLOG_FLAGS		(LOG_CONS | LOG_NDELAY)
 
-    /* Fatal error, program is about to exit. */
-#define L_FATAL		LOG_CRIT
+/* Fatal error, program is about to exit. */
+#define L_FATAL			LOG_CRIT
 
-    /* Log an error that might mean one or more articles get lost. */
-#define L_ERROR		LOG_ERR
+/* Log an error that might mean one or more articles get lost. */
+#define L_ERROR			LOG_ERR
 
-    /* Informational notice, usually not worth caring about. */
+/* Informational notice, usually not worth caring about. */
 #define L_NOTICE		LOG_WARNING
 
-    /* A protocol trace. */
-#define L_TRACE		LOG_DEBUG
+/* A protocol trace. */
+#define L_TRACE			LOG_DEBUG
 
-    /* All incoming control commands (ctlinnd, etc). */
+/* All incoming control commands (ctlinnd, etc). */
 #define L_CC_CMD		LOG_INFO
+
+/* Default File Permissions */
+/* Umask to set...if value here changed, be sure to check the value set
+ * in samples/innshellvars.* 
+ */
+#define NEWSUMASK       02      
+/* Mode that incoming articles are created under. */
+#define ARTFILE_MODE    0664
+/* Mode that batch files are created under. */
+#define BATCHFILE_MODE  0664
+/* Mode that directories are created under. */
+#define GROUPDIR_MODE   0775
 
 
 #endif /* __CONFIG_H__ */

@@ -113,7 +113,6 @@ $tmpdir = $ENV{'TMPDIR'} ;
 
 $spooltemp = "@TMPPATH@" ;
 
-##  =()<$umask = @<NEWSUMASK>@ ;>()=
 $umask = 02 ;
 
 $ENV{'PATH'} = "${newslbin}:${newsbin}:$ENV{'PATH'}:/bin:/usr/bin:/usr/ucb" ;
