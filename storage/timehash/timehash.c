@@ -293,7 +293,7 @@ void timehash_freearticle(ARTHANDLE *article) {
     if (article->private) {
 	private = (PRIV_TIMEHASH *)article->private;
 	if (innconf->articlemmap) {
-#if defined(MADV_DONTNEED) && !defined(_nec_ews)
+#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
 	    madvise(private->base, private->len, MADV_DONTNEED);
 #endif
 	    munmap(private->base, private->len);
@@ -384,7 +384,7 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
 	DISPOSE(article->private);
 	DISPOSE(article);
 	if (innconf->articlemmap) {
-#if defined(MADV_DONTNEED) && !defined(_nec_ews)
+#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
 	    madvise(priv.base, priv.len, MADV_DONTNEED);
 #endif
 	    munmap(priv.base, priv.len);
