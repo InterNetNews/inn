@@ -68,6 +68,7 @@ sub docheckgroups {
     my $st = system("$inn::pathbin/docheckgroups", $newsgrouppats);
     logdie('Cannot run docheckgroups: ' . $!) if $st == -1;
     logdie('docheckgroups returned status ' . ($st & 255)) if $st > 0;
+    close(STDOUT);
     open(STDIN, '<&OLDIN') or die $!;
     open(STDOUT, '>&OLDOUT') or die $!;
 
