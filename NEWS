@@ -98,6 +98,10 @@ Changes from 2.2 to 2.3
       with `cmesg ' is no longer sufficient for a message to be considered a
       control message, and the Also-Control header is no longer supported.
 
+    * inews is not installed setgid news and rnews is not installed setuid
+      root by default any more.  If you need the old permissions, you have
+      to give a flag to configure.  See INSTALL for more details.
+
     * The INN build system no longer uses subst.  This should be mostly
       transparent to users, apart from the old annoyance of modifications to
       include files being overridden again by subst when building INN being
@@ -111,6 +115,9 @@ Changes from 2.2 to 2.3
       (including shared library support) should be better than previous
       releases.
 
+    * All of the applicable bug fixes from INN 2.2.1 and 2.2.2 are also
+      included in INN 2.3.
+
 Changes from 2.1 to 2.2
 
     * New storage.conf file (replaces storage.ctl).
@@ -120,11 +127,11 @@ Changes from 2.1 to 2.2
       control message storms.
 
     * Support for actsyncd to fetch active file with ftp; configured by
-      default to get the one at ftp://ftp.isc.org/pub/usenet/CONFIG/active.Z
-      if you run actsyncd.  Be sure to read the manual page for actsync to
+      default to use <ftp://ftp.isc.org/pub/usenet/CONFIG/active.Z> if you
+      run actsyncd.  Be sure to read the manual page for actsync to
       configure an actsync.ign file for your site, and test simpleftp if you
       do not configure with wget or ncftp.  Also see
-      ftp://ftp.isc.org/pub/usenet/CONFIG/README.
+      <ftp://ftp.isc.org/pub/usenet/CONFIG/README>.
 
     * Some options to configure are now moved to inn.conf (merge-to-groups
       and pgp-verify).
@@ -133,9 +140,8 @@ Changes from 2.1 to 2.2
 
     * New cnfsstat program to show stats of cnfs buffers.
 
-    * news2mail program for gateway'ing news into email is provided.
-
-    * mailpost program for gateway'ing email to news is provided.
+    * news2mail and mailpost programs for gatewaying news to mail and mail
+      to news are supplied.
 
     * pullnews program for doing a sucking feed is provided (not meant for
       large feeds).

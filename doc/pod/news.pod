@@ -114,6 +114,12 @@ message, and the Also-Control header is no longer supported.
 
 =item *
 
+inews is not installed setgid news and rnews is not installed setuid root
+by default any more.  If you need the old permissions, you have to give a
+flag to configure.  See F<INSTALL> for more details.
+
+=item *
+
 The INN build system no longer uses subst.  This should be mostly
 transparent to users, apart from the old annoyance of modifications to
 include files being overridden again by subst when building INN being a
@@ -127,6 +133,11 @@ better support for parallel builds (with make -j), there is less needless
 make recursion, and far more of the system-dependent configuration is
 handled directly by autoconf.  libtool build support (including shared
 library support) should be better than previous releases.
+
+=item *
+
+All of the applicable bug fixes from INN 2.2.1 and 2.2.2 are also included
+in INN 2.3.
 
 =back
 
@@ -147,10 +158,10 @@ storms.
 =item *
 
 Support for actsyncd to fetch active file with ftp; configured by default
-to get the one at ftp://ftp.isc.org/pub/usenet/CONFIG/active.Z if you run
-actsyncd.  Be sure to read the manual page for actsync to configure an
-actsync.ign file for your site, and test simpleftp if you do not configure
-with wget or ncftp.  Also see ftp://ftp.isc.org/pub/usenet/CONFIG/README.
+to use <ftp://ftp.isc.org/pub/usenet/CONFIG/active.Z> if you run actsyncd.
+Be sure to read the manual page for actsync to configure an actsync.ign
+file for your site, and test simpleftp if you do not configure with wget
+or ncftp.  Also see <ftp://ftp.isc.org/pub/usenet/CONFIG/README>.
 
 =item *
 
@@ -167,11 +178,8 @@ New cnfsstat program to show stats of cnfs buffers.
 
 =item *
 
-news2mail program for gateway'ing news into email is provided.
-
-=item *
-
-mailpost program for gateway'ing email to news is provided.
+news2mail and mailpost programs for gatewaying news to mail and mail to
+news are supplied.
 
 =item *
 
