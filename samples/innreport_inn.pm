@@ -1940,7 +1940,7 @@ sub report_unwanted_ng
     }
     close (FILE);
     chmod(0660, "$file");
-  }
+  };
   unlink ("${file}.old");
 }
 
