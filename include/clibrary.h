@@ -15,8 +15,7 @@
 **  Missing functions are provided via #define or prototyped if we'll be
 **  adding them to INN's library.  vfork.h is included if it exists.  If
 **  the system doesn't define a SUN_LEN macro, one will be provided.  Also
-**  provides some standard #defines and typedefs (TRUE, FALSE, STDIN,
-**  STDOUT, STDERR, PIPE_READ, PIPE_WRITE).
+**  provides some standard #defines and typedefs.
 **
 **  This file also does some additional things that it shouldn't be doing
 **  any more; those are all below the LEGACY comment.  Those will eventually
@@ -24,92 +23,92 @@
 */
 
 #ifndef CLIBRARY_H
-#define CLIBRARY_H
+#define CLIBRARY_H 1
 
 /* Make sure we have our configuration information. */
 #include "config.h"
 
-/* Any system that doesn't have these loses. */
-#include <sys/types.h>
+/* This is the same method used by autoconf as of 2000-07-29 for including
+   the basic system headers with the addition of handling of strchr,
+   strrchr, and memcpy.  Note that we don't attempt to declare any of the
+   functions; the number of systems left without ANSI-compatible function
+   prototypes isn't high enough to be worth the trouble.  */
 #include <stdio.h>
-#include <stdlib.h>
-
-/* Tell C++ not to mangle prototypes. */
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* The autoconf manual advises, if STDC_HEADERS isn't set, don't even try to
-   include the right bizarre combination of headers to get the right
-   prototypes, just prototype the stuff you have to (anything returning
-   something other than an int).  Don't bother trying to get rid of compiler
-   warnings on non-ANSI systems; it's not worth the trouble. */
-#ifdef STDC_HEADERS
-# include <string.h>
+#include <sys/types.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
 #else
-# ifndef HAVE_STRCHR
+# if HAVE_STDLIB_H
+#  include <stdlib.h>
+# endif
+# if !HAVE_STRCHR
 #  define strchr index
 #  define strrchr rindex
 # endif
-extern char *strcat();
-extern char *strncat();
-extern char *strchr();
-extern char *strrchr();
-extern char *strcpy();
-extern char *strncpy();
-# ifndef HAVE_MEMCPY
+# if !HAVE_MEMCPY
 #  define memcpy(d, s, n)  bcopy((s), (d), (n))
 # endif
-extern void *memchr();
-extern void *memmove();
-extern void *memset();
-#endif /* !STDC_HEADERS */
-
-#ifdef HAVE_STDDEF_H
-# include <stddef.h>
+#endif
+#if HAVE_STRING_H
+# if !STDC_HEADERS && HAVE_MEMORY_H
+#  include <memory.h>
+# endif
+# include <string.h>
+#else
+# if HAVE_STRINGS_H
+#  include <strings.h>
+# endif
 #endif
 
-#ifdef HAVE_STDINT_H
+#if HAVE_INTTYPES_H
+# include <inttypes.h>
+#endif
+#if HAVE_STDINT_H
 # include <stdint.h>
 #endif
-
-/* SCO OpenServer gets int32_t from here. */
-#ifdef HAVE_SYS_BITYPES_H
-# include <sys/bitypes.h>
-#endif
-
-#ifdef HAVE_UNISTD_H
+#if HAVE_UNISTD_H
 # include <unistd.h>
 #endif
-
-#ifdef HAVE_VFORK_H
+#if HAVE_VFORK_H
 # include <vfork.h>
 #endif
 
-/* Provide prototypes for functions we're replacing that return something
-   other than an int (or that are very commonly replaced).  Don't bother
-   with prototypes for the uncommonly replaced functions that return ints;
-   they aren't necessary and just add clutter. */
-#ifndef HAVE_PREAD
-extern ssize_t pread(int fd, void *buf, size_t nbyte, OFFSET_T offset);
+/* SCO OpenServer gets int32_t from here. */
+#if HAVE_SYS_BITYPES_H
+# include <sys/bitypes.h>
 #endif
-#ifndef HAVE_PWRITE
-extern ssize_t pwrite(int fd, void *buf, size_t nbyte, OFFSET_T offset);
+
+BEGIN_DECLS
+
+/* Provide prototypes for functions we could be providing because the target
+   platform is missing them.  Don't provide prototypes for inet_ntoa or
+   memcmp, since they're more often present but not working (eventually,
+   configure should check to see if they're declared in the system headers
+   and we can declare them if they're not). */
+#if !HAVE_HSTRERROR
+extern const char *     hstrerror(int);
 #endif
-#ifndef HAVE_INET_NTOA
-extern char *inet_ntoa();
+#if !HAVE_FSEEKO
+extern int              fseeko(FILE *, off_t, int);
 #endif
-#ifndef HAVE_STRDUP
-extern char *strdup();
+#if !HAVE_FTELLO
+extern off_t            ftello(FILE *);
 #endif
-#ifndef HAVE_STRERROR
-extern char *strerror();
+#if !HAVE_INET_ATON
+extern int              inet_aton(const char *, struct in_addr *);
 #endif
-#ifndef HAVE_STRNCASECMP
-extern int strncasecmp();
+#if !HAVE_PREAD
+extern ssize_t          pread(int, void *, size_t, off_t);
 #endif
-#ifndef HAVE_STRSPN
-extern size_t strspn();
+#if !HAVE_PWRITE
+extern ssize_t          pwrite(int, const void *, size_t, off_t);
+#endif
+#if !HAVE_STRERROR
+extern const char *     strerror(int);
+#endif
+#if !HAVE_SETENV
+extern int              setenv(const char *, const char *, int);
 #endif
 
 /* "Good enough" replacements for standard functions. */
@@ -120,14 +119,6 @@ extern size_t strspn();
 # define strtoul(a, b, c) strtol((a), (b), (c))
 #endif
 
-/* Large file support.  Use the off_t versions, if available. */
-#ifdef HAVE_FTELLO
-# define ftell ftello
-#endif
-#ifdef HAVE_FSEEKO
-# define fseek fseeko
-#endif
-
 /* mmap() flags.  This really doesn't belong in this header file; it should
    be moved to a header file specifically for mmap-related things. */
 #ifdef MAP_FILE
@@ -136,11 +127,12 @@ extern size_t strspn();
 # define MAP__ARG (MAP_SHARED)
 #endif
 
-/* This almost certainly isn't necessary, but it's not hurting anything. */
+/* This almost certainly isn't necessary, but it's not hurting anything.
+   gcc assumes that if SEEK_SET isn't defined none of the rest are either,
+   so we certainly can as well. */
 #ifndef SEEK_SET
 # define SEEK_SET 0
-#endif
-#ifndef SEEK_END
+# define SEEK_CUR 1
 # define SEEK_END 2
 #endif
 
@@ -149,7 +141,7 @@ extern size_t strspn();
    into play when applying <ctype.h> macros to eight-bit data.  autoconf
    checks for this with as part of AC_HEADER_STDC, so if autoconf doesn't
    think our headers are standard, check isascii() first. */
-#ifdef STDC_HEADERS
+#if STDC_HEADERS
 # define CTYPE(isXXXXX, c) (isXXXXX((c)))
 #else
 # define CTYPE(isXXXXX, c) (isascii((c)) && isXXXXX((c)))
@@ -160,21 +152,10 @@ extern size_t strspn();
    everywhere yet.  If autoconf couldn't find it, define our own.  This
    definition is from 4.4BSD by way of Stevens, Unix Network Programming
    (2nd edition), vol. 1, pg. 917. */
-#ifndef HAVE_SUN_LEN
+#if !HAVE_SUN_LEN
 # define SUN_LEN(sun) \
     (sizeof(*(sun)) - sizeof((sun)->sun_path) + strlen((sun)->sun_path))
 #endif
-
-/* Self-documenting names for pretty much universal constants. */
-#ifndef TRUE
-# define TRUE                   1
-#endif
-#ifndef FALSE
-# define FALSE                  0
-#endif
-#define STDIN                   0
-#define STDOUT                  1
-#define STDERR                  2
 
 /* Used to name the elements of the array passed to pipe(). */
 #define PIPE_READ               0
@@ -190,14 +171,6 @@ extern size_t strspn();
 **  uses any of this, please consider fixing it.
 */
 
-/* bool really isn't portable, and we can't just use autoconf magic to fix
-   it up because that doesn't give the false and true constants which
-   similarly aren't portable.  No good solution for this except to go back
-   to using 0 and 1 or using lots of magic to #define false and true. */
-#if ! defined (DO_NEED_BOOL) && ! defined (DONT_NEED_BOOL)
-#define DO_NEED_BOOL 1
-#endif
-
 /* All occurrances of these typedefs anywhere should be replaced by their
    ANSI/ISO/standard C definitions given in these typedefs.  autoconf magic
    will make sure that everything except void works fine, and void we're
@@ -210,8 +183,8 @@ typedef gid_t           GID_T;
 typedef pid_t           PID_T;
 
 /* Some functions like accept() and getsockopt() take a pointer to a size_t
-   on some platforms and a pointer to an int on others.  Just always using
-   size_t should work most everywhere. */
+   on some platforms and a pointer to an int on others (and socklen_t on
+   others).  Just always use socklen_t and let autoconf take care of it. */
 #define	ARGTYPE         socklen_t
 
 /* These are in C9X, and autoconf makes sure they exist, so again occurances
@@ -233,17 +206,17 @@ typedef caddr_t         MMAP_PTR;
    probably now empty, so see if this breaks anyone. */
 #define FDSET           fd_set
 
-/* #define instead of typedef for old broken compilers.  We just assume void
-   exists now.  Replace FREEVAL with void where you see it. */
-#define FREEVAL         void
-
 /* This needs to be moved into libinn.h, since we don't guarantee to provide
    getopt() functionality. */
 extern int              optind;
 extern char             *optarg;
 
-#ifdef __cplusplus
-}
-#endif
+/* POSIX requires STDIN_FILENO, STDOUT_FILENO, and STDERR_FILENO; we should
+   be using those instead. */
+#define STDIN                   0
+#define STDOUT                  1
+#define STDERR                  2
+
+END_DECLS
 
 #endif /* !CLIBRARY_H */
