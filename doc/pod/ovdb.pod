@@ -7,7 +7,10 @@ ovdb - Overview storage method for INN
 Ovdb is a storage method that uses the BerkeleyDB library to store overview
 data.  It requires version 2.6.x or later of the BerkeleyDB library; it is
 known to work well with version 2.7.7.  There is also a 3.0.55, but it is
-not very stable (though ovdb will compile correctly with it).
+not very stable (though ovdb will compile correctly with it).  Check the
+web page http://www.avalon.net/~hakehoe/inn/ for the latest on BerkeleyDB
+compatibility.
+
 Ovdb makes use of the full transaction/logging/locking functionality of the
 BerkeleyDB environment.  BerkeleyDB may be downloaded from
 http://www.sleepycat.com .
