@@ -7,6 +7,7 @@
 #define INN_HISTORY_H
 
 #include <inn/defines.h>
+#include <sys/types.h>
 
 BEGIN_DECLS
 
