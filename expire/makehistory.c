@@ -1361,7 +1361,7 @@ main(int ac, char *av[])
     if (ReadInnConf() < 0) exit(1);
     HISTORY = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
     ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
-    SCHEMA = COPY(cpcatpath(innconf->pathdb, _PATH_SCHEMA));
+    SCHEMA = COPY(cpcatpath(innconf->pathetc, _PATH_SCHEMA));
     TextFile = HISTORY;
     DoRebuild = TRUE;
     JustRebuild = FALSE;

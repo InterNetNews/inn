@@ -786,7 +786,7 @@ main(ac, av)
 
     Active = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
     History = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
-    Newsfeeds = COPY(cpcatpath(innconf->pathdb, _PATH_NEWSFEEDS));
+    Newsfeeds = COPY(cpcatpath(innconf->pathetc, _PATH_NEWSFEEDS));
     Logfile = FALSE;
     nntplinklog = innconf->nntplinklog;
 
