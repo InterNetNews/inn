@@ -269,6 +269,16 @@ outgoing local posts via POST.  It's intended primarily for personal or
 small-organization news servers who get their news via an ISP and are too
 small to warrant setting up a regular news feed.
 
+=item newsx
+
+URL: <http://www.kvaleberg.com/newsx.html>
+
+Serving the same purpose as suck, newsx is a separate package for
+downloading a news feed via a reading connectino and sending outgoing
+local posts via POST.  Some people find suck easier to configure and use,
+and some people find newsx easier.  If you have problems with one, try the
+other.
+
 =back
 
 =head1 Supporting the INN Effort
