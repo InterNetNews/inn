@@ -1320,13 +1320,6 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	break;
     }
     if (middle != limit) {
-	char buf1[24], buf2[24], buf3[24];
-	strcpy(buf1, CNFSofft2hex(cycbuff->free, FALSE));
-	strcpy(buf2, CNFSofft2hex(middle, FALSE));
-	strcpy(buf3, CNFSofft2hex(limit, FALSE));
-	SMseterror(SMERR_UNDEFINED, "size overflows bitmaps");
-	syslog(L_ERROR, "%s: size overflows bitmaps %s %s:0x%s:0x%s:0x%s: %ld",
-	LocalLogName, TokenToText(token), cycbuffname, buf1, buf2, buf3, ntohl(cah.size));
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	DISPOSE(art);
 	return NULL;
