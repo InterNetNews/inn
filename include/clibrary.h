@@ -263,15 +263,6 @@ typedef caddr_t         MMAP_PTR;
 extern int              optind;
 extern char             *optarg;
 
-/* We shouldn't be using HAVE_UNION_WAIT; until we get rid of it, make sure
-   to turn it off for HP-UX since it breaks things. */
-#if (defined(__hpux) || defined(__hpux__)) && ! defined(HPUX)
-# define HPUX
-#endif
-#if defined(HPUX) && defined(HAVE_UNION_WAIT)
-# undef HAVE_UNION_WAIT
-#endif
-
 /* Use SUN_LEN instead of AF_UNIX_SOCKSIZE. */
 #define AF_UNIX_SOCKSIZE(sun) SUN_LEN(&(sun))
 
