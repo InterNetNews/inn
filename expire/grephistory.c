@@ -52,20 +52,13 @@ GetName(F, buff, Againp)
 /*
 **  Given a DBZ value, seek to the right spot.
 */
-STATIC BOOL
-HistorySeek(F, p)
-    register FILE	*F;
-    register char	*p;
+STATIC BOOL HistorySeek(FILE *F, OFFSET_T offset)
 {
-    register char	*dest;
-    OFFSET_T		l;
     register int	c;
     register int	i;
 
-    for (dest = (char *)&l, i = sizeof l; --i >= 0; )
-	*dest++ = *p++;
-    if (fseek(F, l, SEEK_SET) == -1) {
-	(void)fprintf(stderr, "Can't seek to %ld, %s\n", l, strerror(errno));
+    if (fseek(F, offset, SEEK_SET) == -1) {
+	(void)fprintf(stderr, "Can't seek to %ld, %s\n", offset, strerror(errno));
 	return FALSE;
     }
 
@@ -196,7 +189,6 @@ main(ac, av)
     char		*av[];
 {
     register int	i;
-    register char	*p;
     register FILE	*F;
     STRING		History;
     char                *keystr;
