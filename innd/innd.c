@@ -606,6 +606,7 @@ int main(int ac, char *av[])
     _res.options &= ~(RES_DEFNAMES | RES_DNSRCH);
 #endif	/* defined(DO_FAST_RESOLV) */
 
+    openlog(path, logflags, LOG_INN_SERVER);
   /* Set some options from inn.conf(5) that can be overridden with
      command-line options if they exist */
     if (ReadInnConf() < 0) exit(1);
@@ -717,8 +718,6 @@ int main(int ac, char *av[])
 	Usage();
     if (ModeReason && innconf->readerswhenstopped)
 	NNRPReason = COPY(ModeReason);
-
-    openlog(path, logflags, LOG_INN_SERVER);
 
     if (ShouldSyntaxCheck) {
 	if ((p = (char *) CCcheckfile((char **)NULL)) == NULL)
