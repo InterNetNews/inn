@@ -82,7 +82,7 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
 	    }
 	    ((struct sockaddr_in6 *)&client)->sin6_family = AF_INET6;
 #ifdef HAVE_SOCKADDR_LEN
-	    ((struct sockaddr_in *)&client)->sin6_len = sizeof( struct sockaddr_in6 );
+	    ((struct sockaddr_in6 *)&client)->sin6_len = sizeof( struct sockaddr_in6 );
 #endif
 	}
 	if (client.ss_family != 0) {
