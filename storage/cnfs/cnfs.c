@@ -43,6 +43,7 @@ STATIC METACYCBUFF 	*metacycbufftab = (METACYCBUFF *)NULL;
 STATIC CNFSEXPIRERULES	*metaexprulestab = (CNFSEXPIRERULES *)NULL;
 STATIC long		pagesize = 0;
 STATIC int		metabuff_update = METACYCBUFF_UPDATE;
+STATIC int		refresh_interval = REFRESH_INTERVAL;
 
 STATIC TOKEN CNFSMakeToken(char *cycbuffname, CYCBUFF_OFF_T offset,
 		       U_INT32_T cycnum, STORAGECLASS class, TOKEN *oldtoken) {
@@ -610,7 +611,8 @@ STATIC BOOL CNFSread_config(void) {
     int		ctab_i;
     BOOL	metacycbufffound = FALSE;
     BOOL	cycbuffupdatefound = FALSE;
-    int		update;
+    BOOL	refreshintervalfound = FALSE;
+    int		update, refresh;
 
     if ((config = ReadInFile(cpcatpath(innconf->pathetc, _PATH_CYCBUFFCONFIG),
 				(struct stat *)NULL)) == NULL) {
@@ -694,6 +696,25 @@ STATIC BOOL CNFSread_config(void) {
 		metabuff_update = METACYCBUFF_UPDATE;
 	    else
 		metabuff_update = update;
+	} else if (strncmp(ctab[ctab_i], "refreshinterval:", 16) == 0) {
+	    if (refreshintervalfound) {
+		syslog(L_ERROR, "%s: duplicate refreshinterval entries", LocalLogName);
+		DISPOSE(config);
+		DISPOSE(ctab);
+		return FALSE;
+	    }
+	    refreshintervalfound = TRUE;
+	    refresh = atoi(ctab[ctab_i] + 16);
+	    if (refresh < 0) {
+		syslog(L_ERROR, "%s: invalid refreshinterval", LocalLogName);
+		DISPOSE(config);
+		DISPOSE(ctab);
+		return FALSE;
+	    }
+	    if (refresh == 0)
+		refresh_interval = REFRESH_INTERVAL;
+	    else
+		refresh_interval = refresh;
 	} else {
 	    syslog(L_ERROR, "%s: Bogus metacycbuff config line '%s' ignored",
 		   LocalLogName, ctab[ctab_i]);
@@ -815,8 +836,8 @@ STATIC int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, U_INT32_T cy
     STATIC time_t       lastupdate = 0;
     CYCBUFF	        *tmp;
 
-    if (SMpreopen) {
-	if ((time(NULL) - lastupdate) > 30) {	/* XXX Changed to refresh every 30sec - cmo*/
+    if (SMpreopen && !SMopenmode) {
+	if ((time(NULL) - lastupdate) > refresh_interval) {	/* XXX Changed to refresh every 30sec - cmo*/
 	    for (tmp = cycbufftab; tmp != (CYCBUFF *)NULL; tmp = tmp->next) {
 		CNFSReadFreeAndCycle(tmp);
 	    }
