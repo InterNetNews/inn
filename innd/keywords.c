@@ -237,8 +237,8 @@ KEYgenerate(
 	qsort(&word_vec[last], word_index - last,
 	      sizeof(struct word_entry), wvec_length_cmp);
 
-    /* Scribble onto end of Keywords:. */
-    strcpy(hc->Value + l, ",\377");		/* magic separator, 'ÿ' */
+    /* Scribble onto end of Keywords: after a magic separator. */
+    strlcpy(hc->Value + l, ",\377", innconf->keylimit + 1 - l);
     for (chase = hc->Value + l + 2, word_index = 0;
 	 word_index < distinct_words;
 	 word_index++) {
@@ -250,7 +250,8 @@ KEYgenerate(
 
 	/* add to list. */
 	*chase++ = ',';
-	strcpy(chase, word[word_vec[word_index].index]);
+	strlcpy(chase, word[word_vec[word_index].index],
+                innconf->keylimit + 1 - (chase - hc->Value));
 	chase += word_vec[word_index].length;
 
 	if (chase - hc->Value > (innconf->keylimit - (MAX_WORD_LENGTH + 4)))
