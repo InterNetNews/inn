@@ -216,7 +216,7 @@ AC_SUBST(pgpverify)
 dnl Look for a program that takes an ftp URL as a command line argument
 dnl and retrieves the file to the current directory.
 dnl Shame we can't also use lynx -source; it only writes to stdout
-AC_PATH_PROGS(GETFTP,ncftp wget,\$NEWSBIN/simpleftp)
+AC_PATH_PROGS(GETFTP,ncftp wget,$prefix/bin/simpleftp)
 
 if test "x$DO_LFS" = "xDO"
 then
