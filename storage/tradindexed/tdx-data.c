@@ -238,6 +238,9 @@ map_file(int fd, size_t length, const char *base, const char *suffix)
 {
     char *data;
 
+    if (length == 0)
+        return NULL;
+
     if (NFSREADER) {
         ssize_t status;
 
@@ -273,7 +276,7 @@ map_index(struct group_data *data)
     }
     data->indexlen = st.st_size;
     data->index = map_file(data->indexfd, data->indexlen, data->path, "IDX");
-    return (data->index == NULL) ? false : true;
+    return (data->index == NULL && data->indexlen > 0) ? false : true;
 }
 
 
@@ -291,7 +294,7 @@ map_data(struct group_data *data)
     }
     data->datalen = st.st_size;
     data->data = map_file(data->datafd, data->datalen, data->path, "DAT");
-    return (data->data == NULL) ? false : true;
+    return (data->data == NULL && data->indexlen > 0) ? false : true;
 }
 
 
@@ -823,13 +826,6 @@ tdx_data_index_dump(struct group_data *data, FILE *output)
     }
 }
 
-static bool
-overview_check(const char *data UNUSED, size_t length UNUSED,
-               ARTNUM article UNUSED)
-{
-    return true;
-}
-
 
 /*
 **  Audit a specific index entry for a particular article.  If there's
@@ -888,9 +884,9 @@ tdx_data_audit(const char *group, struct group_entry *index, bool fix)
     if (!tdx_data_open_files(data))
         return;
     if (!map_index(data))
-        return;
+        goto end;
     if (!map_data(data))
-        return;
+        goto end;
 
     /* Check the inode of the index. */
     if (data->indexinode != index->indexinode) {
@@ -914,7 +910,7 @@ tdx_data_audit(const char *group, struct group_entry *index, bool fix)
             if (ftruncate(data->indexfd, expected) < 0)
                 syswarn("tradindexed: cannot truncate %s.IDX", data->path);
             if (!map_index(data))
-                return;
+                goto end;
         }
     }
 
@@ -924,6 +920,8 @@ tdx_data_audit(const char *group, struct group_entry *index, bool fix)
        correct. */
     for (current = 0, count = 0; current < entries; current++) {
         entry = &data->index[current];
+        if (entry->length == 0)
+            continue;
         entry_audit(data, entry, group, index->base + current, fix);
         if (entry->length != 0) {
             if (low == 0)
@@ -931,7 +929,7 @@ tdx_data_audit(const char *group, struct group_entry *index, bool fix)
             count++;
         }
     }
-    if (index->low != low) {
+    if (index->low != low && entries != 0) {
         warn("tradindexed: low water mark incorrect for %s: %lu != %lu",
              group, low, index->low);
         if (fix) {
@@ -952,5 +950,7 @@ tdx_data_audit(const char *group, struct group_entry *index, bool fix)
        necessary. */
     if (changed)
         msync(index, sizeof(*index), MS_ASYNC);
+
+ end:
     tdx_data_close(data);
 }
