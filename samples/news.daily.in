@@ -175,16 +175,6 @@ ${DOEXPIRE} || {
     LOWMARKFILE=
 }
 
-#
-#	When expireindex gets called we need to run expire first
-#	_and_ we need to create an index.rm file.
-#
-if ${DOEXPIREOVER} && [ "$DOEXPIRE" = "false" ]
-then
-    echo "news.daily: cannot do ${EXPIREOVER} without expire">&2
-    exit 1
-fi
-
 test -n "${EXPDIR}" && {
 	test -z "${REASON}" && REASON="Expiring $$ on ${EXPDIR}"
 	EXPIREFLAGS="${EXPIREFLAGS} '-d${EXPDIR}' '-r${REASON}'"
