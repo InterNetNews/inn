@@ -160,6 +160,7 @@ NNTPtoGMT(av1, av2)
 	0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30
     };
     register char	*p;
+    int			century;
     int			year;
     int			month;
     int			day;
@@ -170,12 +171,17 @@ NNTPtoGMT(av1, av2)
     register int	i;
     long		seconds;
     char		buff[8 + 6 + 1];
+    TIMEINFO		t;
+    struct tm		*current;
 
-    /* Y2K: accept YYMMDD, YYYMMDD or YYYYMMDD.
-            First is strict NNTP spec,
-	    Second is broken clients that do "printf %02d tm_year",
-	    Third is people trying to do the right date thing
-	          despite the spec. */
+    /*
+     * Y2K: accept YYMMDD, YYYMMDD or YYYYMMDD.
+     *    First is strict RFC 977 NNTP spec.
+     *    Second is broken clients that do "printf %02d tm_year".
+     *    Third is people trying to do the right date thing
+     *      despite the old NNTP spec --- or in anticipation of the
+     *	    not yet ratified new NNTP spec.
+     */
     datelen = strlen(av1);
     if ((datelen < 6 || datelen > 8) || strlen(av2) != 6)
 	return -1;
@@ -194,10 +200,49 @@ NNTPtoGMT(av1, av2)
     secs  = CHARStoINT(p[10], p[11]);
 
     if (datelen == 6) {		/* YYMMDD */
-	if (year > 70)
-	    year += 1900;
+	/*
+	 * RFC 977 says this:
+	 *     "The closest century is assumed as part of the year
+	 *      (i.e., 86 specifies 1986, 30 specifies 2030,
+	 *	    99 is 1999, 00 is 2000)."
+	 *   I interpret this to mean that if the difference between
+	 *   the current year and the given year is:
+	 *	* negative and < 50, the year is in this century's future.
+	 *	* positive and < 50, the year is in this century's past.
+	 *	* negative and > 50, the year is in the last century.
+	 *	* positive and > 50, the year is in the next century.
+	 *	(with the less and greater comparisons being of the
+	 *	absolute value, of course.)
+	 *   If it is either positive or negative 50, presumably the
+	 *   rest of the date and time strings have to be parsed for
+	 *   the "right" answer.  How gory.
+	 *
+	 * draft-ietf-nntpext-base-08.txt simplifies things:
+	 * 	"If the first two digits of the year are not specified,
+	 *	 the year is to be taken from the current century if YY
+	 *	 is smaller than or equal to the current year, otherwise
+	 *	 the year is from the previous century."
+	 *   For one thing, this just makes a whole lot more sense.
+	 *   why would NEWGROUPS or NEWNEWS care about dates in the
+	 *   future?  On the other hand, it does mean that now this
+	 *   routine has to know what year it is.
+	 */
+
+	if (GetTimeInfo(&t) < 0 || (current = gmtime(&t.time)) == NULL)
+		return -1;
+
+	/* Century is the number of centuries since 1900. */
+	century = current->tm_year / 100;
+
+	/* Convert current year to two digits if necessary. */
+	if (current->tm_year > 100)
+		current->tm_year -= century * 100;
+
+	if (year <= current->tm_year)
+		year += (century + 19) * 100;
 	else
-	    year += 2000;
+		year += (century + 18) * 100;
+
     } else {
         year += ASCtoNUM(*--p) * 100;
 	if (datelen == 7)	/* YYYMMDD */
