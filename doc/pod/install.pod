@@ -258,7 +258,8 @@ platforms that support it, because it changes the format of INN's on-disk
 databases (making it difficult to upgrade an earlier INN installation) and
 can significantly increase the size of some of the history database files.
 Large file support is not necessary unless your history database is so
-large that it exceeds 2GB or you want to use CNFS buffers larger than 2GB.
+large that it exceeds 2 GB or you want to use CNFS buffers larger than 2
+GB.
 
 The history, tradindexed and buffindexed overview, CNFS, and timecaf
 databases written by an INN built with this option are incompatible with
@@ -1014,6 +1015,10 @@ use regular files.  If in doubt, keep your cycbuffs smaller than 2 GB.
 Also, when laying out your cycbuffs, you will want to try to arrange them
 across as many physical disks as possible (or use a striped disk array and
 put them all on that).
+
+In order to use any cycbuff larger than 2 GB, you need to build INN with
+the B<--enable-largefiles> option.  See L<Installing INN> for more
+information and some caveats.
 
 For each cycbuff you will be creating, add a line to F<cycbuff.conf> like
 the following:
