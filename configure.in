@@ -665,7 +665,9 @@ fi
 dnl Some of the authentication programs want to be able to open dbm files.
 inn_save_LIBS=$LIBS
 LIBS=
-AC_SEARCH_LIBS(dbm_open, ndbm dbm, DBM_LIB=$LIBS)
+AC_SEARCH_LIBS(dbm_open, ndbm dbm,
+               [DBM_LIB=$LIBS
+	        AC_DEFINE(HAVE_DBM, 1, [Define if you have a dbm library.])])
 LIBS=$inn_save_LIBS
 AC_SUBST(DBM_LIB)
 
@@ -793,11 +795,8 @@ AC_HEADER_STDC
 dnl Only if that wasn't set do we need to go hunting for other headers to
 dnl include on non-ANSI systems and check for functions that all ANSI C
 dnl systems should have.
-dnl
-dnl FIXME: INN should assume stdargs everywhere and doesn't need to check
-dnl for varargs at all.
 if test x"$ac_cv_header_stdc" = xno ; then
-    AC_CHECK_HEADERS(memory.h stdarg.h stdlib.h strings.h varargs.h)
+    AC_CHECK_HEADERS(memory.h stdlib.h strings.h)
     AC_CHECK_FUNCS(memcpy strchr)
 fi
 

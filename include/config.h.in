@@ -315,9 +315,6 @@
 /* Define if you have the <ndir.h> header file.  */
 #undef HAVE_NDIR_H
 
-/* Define if you have the <stdarg.h> header file.  */
-#undef HAVE_STDARG_H
-
 /* Define if you have the <stdbool.h> header file.  */
 #undef HAVE_STDBOOL_H
 
@@ -368,9 +365,6 @@
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
-
-/* Define if you have the <varargs.h> header file.  */
-#undef HAVE_VARARGS_H
 
 /* Define if you have the elf library (-lelf).  */
 #undef HAVE_LIBELF
@@ -428,6 +422,9 @@
 
 /* Define to compile in support for automatic keyword generation */
 #undef DO_KEYWORDS
+
+/* Define if you have a dbm library. */
+#undef HAVE_DBM
 
 /* Define if <netdb.h> does not declare h_errno. */
 #undef NEED_HERRNO_DECLARATION
