@@ -1626,16 +1626,19 @@ void PERMgetpermissions()
 static void CompressList(char *list)
 {
     char *cpto;
+    bool inword = FALSE;
 
-    /* XXX
-     * I should make it check for preceding ',' characters before stripping a
-     * space.
-     */
     for (cpto = list; *list; ) {
-	if ((*list == '\n') || (*list == ' ') || (*list == '\t'))
+	if (strchr("\n \t,", *list) != NULL) {
 	    list++;
-	else
+	    if(inword) {
+		*cpto++ = ',';
+		inword = FALSE;
+	    }
+	} else {
 	    *cpto++ = *list++;
+	    inword = TRUE;
+	}
     }
     *cpto = '\0';
 }
