@@ -338,33 +338,18 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
 	paths = NOPATHS;
 
     offset = ftell(HISwritefp);
-    if (innconf->storageapi) {
-	if (Data->Expires > 0)
-	    i = fprintf(HISwritefp, "[%s]%c%lu%c%lu%c%lu%c%s\n",
-			HashToText(hash), HIS_FIELDSEP,
-			(unsigned long)Data->Arrived, HIS_SUBFIELDSEP,
-			(unsigned long)Data->Expires, HIS_SUBFIELDSEP,
-			(unsigned long)Data->Posted, HIS_FIELDSEP, paths);
-	else
-	    i = fprintf(HISwritefp, "[%s]%c%lu%c%s%c%lu%c%s\n",
-		        HashToText(hash), HIS_FIELDSEP,
-			(unsigned long)Data->Arrived, HIS_SUBFIELDSEP,
-			HIS_NOEXP, HIS_SUBFIELDSEP,
-			(unsigned long)Data->Posted, HIS_FIELDSEP, paths);
-    } else {
-	if (Data->Expires > 0)
-	    i = fprintf(HISwritefp, "%s%c%lu%c%lu%c%lu%c%s\n",
-			Data->MessageID, HIS_FIELDSEP,
-			(unsigned long)Data->Arrived, HIS_SUBFIELDSEP,
-			(unsigned long)Data->Expires, HIS_SUBFIELDSEP,
-			(unsigned long)Data->Posted, HIS_FIELDSEP, paths);
-	else
-	    i = fprintf(HISwritefp, "%s%c%lu%c%s%c%lu%c%s\n",
-			Data->MessageID, HIS_FIELDSEP,
-			(unsigned long)Data->Arrived, HIS_SUBFIELDSEP,
-			HIS_NOEXP, HIS_SUBFIELDSEP,
-			(unsigned long)Data->Posted, HIS_FIELDSEP, paths);
-    }
+    if (Data->Expires > 0)
+	i = fprintf(HISwritefp, "[%s]%c%lu%c%lu%c%lu%c%s\n",
+	    HashToText(hash), HIS_FIELDSEP,
+	    (unsigned long)Data->Arrived, HIS_SUBFIELDSEP,
+	    (unsigned long)Data->Expires, HIS_SUBFIELDSEP,
+	    (unsigned long)Data->Posted, HIS_FIELDSEP, paths);
+    else
+	i = fprintf(HISwritefp, "[%s]%c%lu%c%s%c%lu%c%s\n",
+	    HashToText(hash), HIS_FIELDSEP,
+	    (unsigned long)Data->Arrived, HIS_SUBFIELDSEP,
+	    HIS_NOEXP, HIS_SUBFIELDSEP,
+	    (unsigned long)Data->Posted, HIS_FIELDSEP, paths);
     if (i == EOF || fflush(HISwritefp) == EOF) {
 	/* The history line is now an orphan... */
 	i = errno;
