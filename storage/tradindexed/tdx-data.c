@@ -22,7 +22,10 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
+#include "inn/history.h"
 #include "libinn.h"
+#include "ov.h"
+#include "ovinterface.h"
 #include "storage.h"
 #include "tdx-private.h"
 #include "tdx-structure.h"
@@ -43,8 +46,8 @@ struct search {
 static char *group_path(const char *group);
 static int file_open(const char *base, const char *suffix, bool writable,
                      bool append);
-static bool file_open_index(struct group_data *);
-static bool file_open_data(struct group_data *);
+static bool file_open_index(struct group_data *, const char *suffix);
+static bool file_open_data(struct group_data *, const char *suffix);
 static void *map_file(int fd, size_t length, const char *base,
                       const char *suffix);
 static bool map_index(struct group_data *data);
@@ -129,20 +132,23 @@ file_open(const char *base, const char *suffix, bool writable, bool append)
 
 
 /*
-**  Open the index file for a group.
+**  Open the index file for a group.  Takes an optional suffix to use instead
+**  of IDX (used primarily for expiring).
 */
 static bool
-file_open_index(struct group_data *data)
+file_open_index(struct group_data *data, const char *suffix)
 {
     struct stat st;
 
+    if (suffix == NULL)
+        suffix = "IDX";
     if (data->indexfd >= 0)
         close(data->indexfd);
-    data->indexfd = file_open(data->path, "IDX", data->writable, false);
+    data->indexfd = file_open(data->path, suffix, data->writable, false);
     if (data->indexfd < 0)
         return false;
     if (fstat(data->indexfd, &st) < 0) {
-        syswarn("tradindexed: cannot stat %s.IDX", data->path);
+        syswarn("tradindexed: cannot stat %s.%s", data->path, suffix);
         close(data->indexfd);
         return false;
     }
@@ -153,14 +159,17 @@ file_open_index(struct group_data *data)
 
 
 /*
-**  Open the data file for a group.
+**  Open the data file for a group.  Takes an optional suffix to use instead
+**  of DAT (used primarily for expiring).
 */
 static bool
-file_open_data(struct group_data *data)
+file_open_data(struct group_data *data, const char *suffix)
 {
+    if (suffix == NULL)
+        suffix = "DAT";
     if (data->datafd >= 0)
         close(data->datafd);
-    data->datafd = file_open(data->path, "DAT", data->writable, true);
+    data->datafd = file_open(data->path, suffix, data->writable, true);
     if (data->datafd < 0)
         return false;
     close_on_exec(data->datafd, true);
@@ -199,9 +208,9 @@ tdx_data_new(const char *group, bool writable)
 bool
 tdx_data_open_files(struct group_data *data)
 {
-    if (!file_open_index(data))
+    if (!file_open_index(data, NULL))
         goto fail;
-    if (!file_open_data(data))
+    if (!file_open_data(data, NULL))
         goto fail;
     return true;
 
@@ -598,10 +607,136 @@ tdx_data_pack_finish(struct group_data *data)
     } else {
         free(newidx);
         free(idx);
-        if (!file_open_index(data))
+        if (!file_open_index(data, NULL))
             return false;
         return true;
     }
+}
+
+
+/*
+**  Do the main work of expiring a group.  Step through each article in the
+**  group, only writing the unexpired entries out to the new group.  There's
+**  probably some room for optimization here for newsgroups that don't expire
+**  so that the files don't have to be rewritten, or newsgroups where all the
+**  data at the end of the file is still good and just needs to be moved
+**  as-is.
+*/
+bool
+tdx_data_expire_start(const char *group, struct group_data *data,
+                      struct group_entry *index, struct history *history)
+{
+    struct group_data *new_data;
+    struct search *search;
+    struct article article;
+    ARTNUM high;
+
+    new_data = tdx_data_new(group, true);
+    tdx_data_delete(group, "-NEW");
+    if (!file_open_index(data, "IDX-NEW"))
+        goto fail;
+    if (!file_open_data(data, "DAT-NEW"))
+        goto fail;
+    index->indexinode = new_data->indexinode;
+
+    /* Try to make sure that the search range is okay for even an empty group
+       so that we can treat all errors on opening a search as errors. */
+    high = index->high > 0 ? index->high : data->base;
+    new_data->high = high;
+    search = tdx_search_open(data, data->base, high, high);
+    if (search == NULL)
+        return false;
+
+    /* Loop through all of the articles in the group, adding the ones that are
+       still valid to the new index. */
+    while (tdx_search(search, &article)) {
+        ARTHANDLE *ah;
+
+        if (!SMprobe(EXPENSIVESTAT, &article.token, NULL) || OVstatall) {
+            ah = SMretrieve(article.token, RETR_STAT);
+            if (ah == NULL)
+                continue;
+            SMfreearticle(ah);
+        } else {
+            if (!OVhisthasmsgid(history, (char *) article.overview))
+                continue;
+        }
+        if (innconf->groupbaseexpiry)
+            if (OVgroupbasedexpire(article.token, group,
+                                   (char *) article.overview,
+                                   article.overlen, article.arrived,
+                                   article.expires))
+                continue;
+        if (!tdx_data_store(new_data, &article))
+            goto fail;
+        if (index->base == 0) {
+            index->base = data->base;
+            index->low = article.number;
+        }
+        if (article.number > index->high)
+            index->high = article.number;
+        index->count++;
+    }
+
+    /* Done; the rest happens in tdx_data_expire_finish. */
+    tdx_data_close(new_data);
+    return true;
+
+ fail:
+    tdx_data_close(new_data);
+    tdx_data_delete(group, "-NEW");
+    return false;
+}
+
+
+/*
+**  Finish expire by renaming the new index and data files to their permanent
+**  names.  Just takes the group that we're finishing expire for.
+*/
+bool
+tdx_data_expire_finish(const char *group)
+{
+    char *base, *newidx, *bakidx, *idx, *newdat, *dat;
+    bool saved = false;
+
+    base = group_path(group);
+    idx = concat(base, ".IDX", (char *) 0);
+    newidx = concat(base, ".IDX-NEW", (char *) 0);
+    bakidx = concat(base, ".IDX-BAK", (char *) 0);
+    dat = concat(base, ".DAT", (char *) 0);
+    newdat = concat(base, ".DAT-NEW", (char *) 0);
+    if (rename(idx, bakidx) < 0) {
+        syswarn("tradindexed: cannot rename %s to %s", idx, bakidx);
+        goto fail;
+    } else {
+        saved = true;
+    }
+    if (rename(newidx, idx) < 0) {
+        syswarn("tradindexed: cannot rename %s to %s", newidx, idx);
+        goto fail;
+    }
+    if (rename(newdat, dat) < 0) {
+        syswarn("tradindexed: cannot rename %s to %s", newdat, dat);
+        goto fail;
+    }
+    if (unlink(bakidx) < 0)
+        syswarn("tradindexed: cannot remove backup %s", bakidx);
+    free(idx);
+    free(newidx);
+    free(bakidx);
+    free(dat);
+    free(newdat);
+    return true;
+
+ fail:
+    if (saved && rename(bakidx, idx) < 0)
+        syswarn("tradindexed: cannot restore old index %s", bakidx);
+    free(idx);
+    free(newidx);
+    free(bakidx);
+    free(dat);
+    free(newdat);
+    return false;
 }
 
 
@@ -624,16 +759,18 @@ tdx_data_close(struct group_data *data)
 
 /*
 **  Delete the data files for a particular group, called when that group is
-**  deleted from the server.
+**  deleted from the server.  Takes an optional suffix, which if present is
+**  appended to the ends of the file names (used by expire to delete the -NEW
+**  versions of the files).
 */
 void
-tdx_data_delete(const char *group)
+tdx_data_delete(const char *group, const char *suffix)
 {
     char *path, *idx, *dat;
 
     path = group_path(group);
-    idx = concat(path, ".IDX", (char *) 0);
-    dat = concat(path, ".DAT", (char *) 0);
+    idx = concat(path, ".IDX", suffix, (char *) 0);
+    dat = concat(path, ".DAT", suffix, (char *) 0);
     if (unlink(idx) < 0 && errno != ENOENT)
         syswarn("tradindexed: cannot unlink %s", idx);
     if (unlink(dat) < 0 && errno != ENOENT)

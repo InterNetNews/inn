@@ -87,10 +87,12 @@ tradindexed_open(int mode)
         return false;
     }
     tradindexed = xmalloc(sizeof(struct tradindexed));
-    tradindexed->index = tdx_index_open(mode);
+    tradindexed->index = tdx_index_open((mode & OV_WRITE) ? true : false);
     tradindexed->cutoff = false;
 
-    /* Use a cache size of two for read-only connections. */
+    /* Use a cache size of two for read-only connections.  We may want to
+       rethink the limitation of the cache for reading later based on
+       real-world experience. */
     cache_size = (mode & OV_WRITE) ? innconf->overcachesize : 1;
     fdlimit = getfdlimit();
     if (fdlimit > 0 && fdlimit < cache_size * 2) {
@@ -316,13 +318,18 @@ tradindexed_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
 
 
 /*
-**  Expire a single newsgroup.  Not yet implemented.
+**  Expire a single newsgroup.
 */
 bool
-tradindexed_expiregroup(char *group UNUSED, int *low UNUSED,
-                        struct history *history UNUSED)
+tradindexed_expiregroup(char *group, int *low, struct history *history)
 {
-    return false;
+    ARTNUM new_low;
+    bool status;
+
+    status = tdx_expire(group, &new_low, history);
+    if (status && low != NULL)
+        *low = (int) new_low;
+    return status;
 }
 
 

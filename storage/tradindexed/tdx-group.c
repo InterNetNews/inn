@@ -91,7 +91,6 @@
 #include "inn/hashtab.h"
 #include "inn/qio.h"
 #include "libinn.h"
-#include "ov.h"
 #include "paths.h"
 #include "tdx-private.h"
 #include "tdx-structure.h"
@@ -332,11 +331,11 @@ index_expand(struct group_index *index)
 
 /*
 **  Open the group.index file and allocate a new struct for it, returning a
-**  pointer to that struct.  Takes the overview open mode, which is some
-**  combination of OV_READ and OV_WRITE.
+**  pointer to that struct.  Takes a bool saying whether or not the overview
+**  should be opened for write.
 */
 struct group_index *
-tdx_index_open(int mode)
+tdx_index_open(bool writable)
 {
     struct group_index *index;
     int open_mode;
@@ -344,7 +343,7 @@ tdx_index_open(int mode)
 
     index = xmalloc(sizeof(struct group_index));
     index->path = concatpath(innconf->pathoverview, "group.index");
-    index->writable = (mode & OV_WRITE);
+    index->writable = writable;
     index->header = NULL;
     open_mode = index->writable ? O_RDWR | O_CREAT : O_RDONLY;
     index->fd = open(index->path, open_mode, ARTFILE_MODE);
@@ -579,7 +578,7 @@ tdx_index_delete(struct group_index *index, const char *group)
     msync(entry, sizeof(*entry), MS_ASYNC);
 
     /* Delete the group data files for this group. */
-    tdx_data_delete(group);
+    tdx_data_delete(group, NULL);
 
     return true;
 }
@@ -616,8 +615,11 @@ tdx_data_open(struct group_index *index, const char *group,
     struct group_data *data;
     ARTNUM high, base;
 
-    if (entry == NULL)
+    if (entry == NULL) {
         entry = tdx_index_entry(index, group);
+        if (entry == NULL)
+            return NULL;
+    }
     loc = index_offset_to_loc(entry - index->entries);
 
     data = tdx_data_new(group, index->writable);
@@ -669,6 +671,7 @@ tdx_data_add(struct group_index *index, struct group_entry *entry,
 {
     long loc;
     ARTNUM old_base;
+    ino_t old_inode;
 
     if (!index->writable)
         return false;
@@ -681,14 +684,17 @@ tdx_data_add(struct group_index *index, struct group_entry *entry,
     if (entry->base > article->number) {
         if (!tdx_data_pack_start(data, article->number))
             goto fail;
+        old_inode = entry->indexinode;
         old_base = entry->base;
+        entry->indexinode = data->indexinode;
         entry->base = data->base;
         msync(entry, sizeof(*entry), MS_ASYNC);
         if (!tdx_data_pack_finish(data)) {
             entry->base = old_base;
+            entry->indexinode = old_inode;
+            msync(entry, sizeof(*entry), MS_ASYNC);
             goto fail;
         }
-        entry->indexinode = data->indexinode;
     }
 
     /* Store the data. */
@@ -707,6 +713,85 @@ tdx_data_add(struct group_index *index, struct group_entry *entry,
 
  fail:
     index_lock_group(index->fd, loc, INN_LOCK_UNLOCK);
+    return false;
+}
+
+
+/*
+**  Expire a single newsgroup.  Most of the work is done by tdx_data_expire*,
+**  but this routine has the responsibility to do locking (the same as would
+**  be done for repacking, since the group base may change) and updating the
+**  group entry.
+*/
+bool
+tdx_expire(const char *group, ARTNUM *low, struct history *history)
+{
+    struct group_index *index;
+    struct group_entry *entry;
+    struct group_entry new_entry;
+    struct group_data *data = NULL;
+    long loc;
+    ARTNUM old_base;
+    ino_t old_inode;
+
+    index = tdx_index_open(true);
+    if (index == NULL)
+        return false;
+    entry = tdx_index_entry(index, group);
+    if (entry == NULL) {
+        tdx_index_close(index);
+        return false;
+    }
+    loc = index_offset_to_loc(entry - index->entries);
+    index_lock_group(index->fd, loc, INN_LOCK_WRITE);
+
+    /* tdx_data_expire_start builds the new IDX and DAT files and fills in the
+       struct group_entry that was passed to it.  tdx_data_expire_finish does
+       the renaming of the new files to the final file names. */
+    new_entry = *entry;
+    new_entry.low = 0;
+    new_entry.count = 0;
+    new_entry.base = 0;
+    data = tdx_data_open(index, group, entry);
+    if (data == NULL)
+        goto fail;
+    if (!tdx_data_expire_start(group, data, &new_entry, history))
+        goto fail;
+    old_inode = entry->indexinode;
+    old_base = entry->base;
+    entry->indexinode = new_entry.indexinode;
+    entry->base = new_entry.base;
+    msync(entry, sizeof(*entry), MS_ASYNC);
+    if (!tdx_data_expire_finish(group)) {
+        entry->base = old_base;
+        entry->indexinode = old_inode;
+        msync(entry, sizeof(*entry), MS_ASYNC);
+        goto fail;
+    }
+
+    /* Almost done.  Update the group index. */
+    if (new_entry.low == 0)
+        new_entry.low = new_entry.high;
+    *entry = new_entry;
+    msync(entry, sizeof(*entry), MS_ASYNC);
+    index_lock_group(index->fd, loc, INN_LOCK_UNLOCK);
+
+    /* Return the lowmark to our caller.  If there are no articles in the
+       group, this should be one more than the high water mark. */
+    if (low != NULL) {
+        if (entry->count == 0)
+            *low = entry->high + 1;
+        else
+            *low = entry->low;
+    }
+    tdx_index_close(index);
+    return true;
+
+ fail:
+    index_lock_group(index->fd, loc, INN_LOCK_UNLOCK);
+    if (data != NULL)
+        tdx_data_close(data);
+    tdx_index_close(index);
     return false;
 }
 

@@ -12,6 +12,9 @@
 #include "libinn.h"
 #include "storage.h"
 
+/* Forward declarations to avoid unnecessary includes. */
+struct history;
+
 /* Opaque data structure used by the cache. */
 struct cache;
 
@@ -73,8 +76,8 @@ void tdx_cache_free(struct cache *);
 /* tdx-group.c */
 
 /* Open the group index and return an opaque data structure to use for further
-   queries.  The mode should be a combination of OV_READ and OV_WRITE. */ 
-struct group_index *tdx_index_open(int mode);
+   queries. */
+struct group_index *tdx_index_open(bool writable);
 
 /* Return the stored information about a single newsgroup. */
 struct group_entry *tdx_index_entry(struct group_index *, const char *group);
@@ -103,6 +106,8 @@ struct group_data *tdx_data_open(struct group_index *, const char *group,
 bool tdx_data_add(struct group_index *, struct group_entry *,
                   struct group_data *, const struct article *);
 
+/* Expire a single group. */
+bool tdx_expire(const char *group, ARTNUM *low, struct history *);
 
 /* tdx-data.c */
 
@@ -131,6 +136,14 @@ bool tdx_data_pack_start(struct group_data *, ARTNUM);
 /* Complete a repack of the files for a newsgroup. */
 bool tdx_data_pack_finish(struct group_data *);
 
+/* Start the expiration of a newsgroup and do most of the work, filling out
+   the provided group_entry struct. */
+bool tdx_data_expire_start(const char *group, struct group_data *,
+                           struct group_entry *, struct history *);
+
+/* Complete the expiration of a newsgroup. */
+bool tdx_data_expire_finish(const char *group);
+
 /* Dump the contents of the index file for a group. */
 void tdx_data_index_dump(struct group_data *data);
 
@@ -138,7 +151,7 @@ void tdx_data_index_dump(struct group_data *data);
 void tdx_data_close(struct group_data *);
 
 /* Delete the data files for a group. */
-void tdx_data_delete(const char *group);
+void tdx_data_delete(const char *group, const char *suffix);
 
 END_DECLS
 
