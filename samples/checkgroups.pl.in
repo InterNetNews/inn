@@ -38,7 +38,7 @@ sub control_checkgroups {
         print TEMPFILE ("\nIf you want to process it, feed the body\n");
 	print TEMPFILE ("of the message to docheckgroups while logged\n");
         print TEMPFILE ("in as user ID \"$newsuser\":\n\n");
-        print TEMPFILE ("$inn::pathnews/lib/docheckgroups '$newsgrouppats' <<zRbJ\n");
+        print TEMPFILE ("@LIBDIR@/docheckgroups '$newsgrouppats' <<zRbJ\n");
 	while(<ARTICLE>) {
 	    s/^~/~~/;
             print TEMPFILE ($_)   if (! /^\s+$/);
@@ -70,7 +70,7 @@ sub control_checkgroups {
         while (<ARTICLE>) { print TEMPFILE ($_)    if (! /^\s+$/) }
         close(TEMPFILE);
         close(ARTICLE);
-        system("$inn::pathnews/lib/docheckgroups '$newsgrouppats' < $tempfile | " .
+        system("@LIBDIR@/docheckgroups '$newsgrouppats' < $tempfile | " .
                "$inn::newsbin/writelog $logging \"checkgroups by $sender\"");
         unlink($tempfile);
     }
