@@ -549,3 +549,8 @@ References
         but a good full audit of the code to check them should really be
         done and there are occasional problems.
 
+    <http://v6web.litech.org/ipv6primer/>
+        A primer on IPv6 with pointers to the appropriate places for more
+        technical details as needed, useful when working on IPv6 support in
+        INN.
+
