@@ -4,10 +4,6 @@ include ../Makefile.global
 ##  =()<P	= @<P>@>()=
 P	= 
 
-##  =()<PERLLIB = @<PERL_LIB>@>()=
-PERLLIB = 
-##  =()<PERLINC = @<PERL_INC>@>()=
-PERLINC = 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
 LINTFLAGS	= -b -h -z  -I../include $(DEFS)
 ##  =()<LINTFILTER	= @<LINTFILTER>@>()=
