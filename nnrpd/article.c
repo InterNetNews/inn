@@ -254,10 +254,12 @@ BOOL ARTreadschema(void)
 	if (caseEQ(buff, "Xref")) {
 	    foundxref = TRUE;
 	    foundxreffull = fp->NeedsHeader;
+	    fp++;
 	    ARTxreffield = fp - ARTfields - 1;
 	    fp->HasHeader = FALSE;
 	    fp->Header = COPY("Newsgroups");
 	    fp->Length = strlen("Newsgroups");
+	    continue;
 	}
 	fp++;
     }
