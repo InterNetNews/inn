@@ -297,13 +297,6 @@ case "${SERVERMODE}" in
     ;;
 esac
 
-##  Show the status of the news system after expiration.
-${DOSTAT} && {
-    echo 'Post expiration status:' ; echo ''
-    ${INNSTAT}
-    echo ''
-}
-
 ##  Release the lock now, everything below this must be able to withstand
 ##  simultaneous news.daily's running.   We do this so innwatch can start
 ##  monitoring again asap after the expire is done -- removing the
@@ -338,6 +331,13 @@ if ${DORENUMBER} ; then
 	done <${ACTIVE}
     fi
 fi
+
+##  Show the status of the news system after expiration.
+${DOSTAT} && {
+    echo 'Post expiration status:' ; echo ''
+    ${INNSTAT}
+    echo ''
+}
 
 ##  Mail the report.
 if ${DOMAIL} ; then
