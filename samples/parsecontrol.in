@@ -3,7 +3,7 @@
 ##  Initial parsing of control messages.
 
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /var/news/etc/innshellvars
+. /news/etc/innshellvars
 WRITELOG=${NEWSBIN}/writelog
 
 PGPVERIFY=false
@@ -69,7 +69,7 @@ ${EGREP} "^(${PROG}|all):" <${CTLFILE} >${TEMP}
 
 ##  Get any arguments.
 if grep "^Control:[ 	]*${PROG}" <${ARTICLE} >/dev/null 2>&1 ; then
-    set X `${SED} -n -e "s/^Control:[ 	]*${PROG}//p" -e '/^$/q' <${ARTICLE} |tr -d '\r'`
+    set X `${SED} -n -e "s/^Control:[ 	]*${PROG}//p" -e '/^$/q' <${ARTICLE} |tr -d '\015'`
     shift
 else
     if grep "^Subject:[ 	]*cmsg[ 	]*${PROG}" \
