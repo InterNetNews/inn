@@ -87,7 +87,7 @@ The innd Perl Filter
             Supersedes, Bytes, Also-Control, References, Keywords, X-Trace,
             NNTP-Posting-Host, Followup-To, Organization, Content-Type,
             Content-Base, Content-Disposition, X-Newsreader, X-Mailer,
-            X-Cancelled-By, X-Canceled-By, Cancel-Key, Injector-Info
+            X-Cancelled-By, X-Canceled-By, Cancel-Key
 
     (so, for example, the Newsgroups header of the article is accessible
     inside the Perl filter as `$hdr{Newsgroups}').  In addition,
