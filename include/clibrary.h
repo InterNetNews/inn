@@ -182,4 +182,14 @@ END_DECLS
 #define ARRAY_SIZE(array)       (sizeof(array) / sizeof((array)[0]))
 #define ARRAY_END(array)        (&(array)[ARRAY_SIZE(array)])
 
+/* C99 requires va_copy.  Older versions of GCC provide __va_copy.  Per the
+   Autoconf manual, memcpy is a generally portable fallback. */
+#ifndef va_copy
+# ifdef __va_copy
+#  define va_copy(d, s)         __va_copy((d), (s))
+# else
+#  define va_copy(d, s)         memcpy(&(d), &(s), sizeof(va_list))
+# endif
+#endif
+
 #endif /* !CLIBRARY_H */
