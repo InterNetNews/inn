@@ -84,7 +84,7 @@ wholeconfig()
 	    if (ConfigBuff[0] == '\0' || ConfigBuff[0] == COMMENT_CHAR)
 		continue;
 	    p = strchr(ConfigBuff, ':');
-	    if (*p == ':') {
+	    if (p != NULL && *p == ':') {
 		*p++ = '\0';
 		for (; ISWHITE(*p); p++)
 		    continue;
