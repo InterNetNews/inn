@@ -672,7 +672,7 @@ WaitChild(int s)
     int pid;
 
     for (;;) {
-       pid = waitpid(-1, &status, WNOHANG);
+       pid = waitpid(-1, NULL, WNOHANG);
        if (pid <= 0)
        	    break;
     }
