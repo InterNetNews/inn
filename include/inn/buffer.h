@@ -17,6 +17,8 @@
 #ifndef INN_BUFFER_H
 #define INN_BUFFER_H 1
 
+#include <inn/defines.h>
+
 struct buffer {
     size_t size;                /* Total allocated length. */
     size_t used;                /* Data already used. */
