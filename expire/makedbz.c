@@ -74,7 +74,7 @@ STATIC void Rebuild(OFFSET_T size, BOOL IgnoreOld, BOOL Overwrite)
 #endif
 
     if (chdir(HistoryDir) < 0) {
-	fprintf(stderr, "makehistory: can't cd to %s\n", HistoryDir);
+	fprintf(stderr, "makedbz: can't cd to %s\n", HistoryDir);
 	exit(1);
     }
 
@@ -266,7 +266,7 @@ main(int argc, char **argv)
     }
 
     if (chdir(HistoryDir) < 0) {
-	fprintf(stderr, "makehistory: can't cd to %s\n", HistoryDir);
+	fprintf(stderr, "makedbz: can't cd to %s\n", HistoryDir);
 	exit(1);
     }
 
@@ -349,7 +349,7 @@ STATIC void Rebuild(OFFSET_T size, BOOL IgnoreOld, BOOL Overwrite)
 #endif
 
     if (chdir(HistoryDir) < 0) {
-	fprintf(stderr, "makehistory: can't cd to %s\n", HistoryDir);
+	fprintf(stderr, "makedbz: can't cd to %s\n", HistoryDir);
 	exit(1);
     }
 
@@ -541,7 +541,7 @@ main(int argc, char **argv)
     }
 
     if (chdir(HistoryDir) < 0) {
-	fprintf(stderr, "makehistory: can't cd to %s\n", HistoryDir);
+	fprintf(stderr, "makedbz: can't cd to %s\n", HistoryDir);
 	exit(1);
     }
 
@@ -624,7 +624,7 @@ STATIC void Rebuild(OFFSET_T size, BOOL IgnoreOld, BOOL Overwrite)
 #endif
 
     if (chdir(HistoryDir) < 0) {
-	fprintf(stderr, "makehistory: can't cd to %s\n", HistoryDir);
+	fprintf(stderr, "makedbz: can't cd to %s\n", HistoryDir);
 	exit(1);
     }
 
@@ -816,7 +816,7 @@ main(int argc, char **argv)
     }
 
     if (chdir(HistoryDir) < 0) {
-	fprintf(stderr, "makehistory: can't cd to %s\n", HistoryDir);
+	fprintf(stderr, "makedbz: can't cd to %s\n", HistoryDir);
 	exit(1);
     }
 
