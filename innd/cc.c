@@ -2056,8 +2056,10 @@ CClowmark(char *av[])
 	    break;
 	}
     }
-    if (ret == NULL && QIOerror(qp))
+    if (ret == NULL && QIOerror(qp)) {
+	syslog(L_ERROR, "%s cant read %s %m", LogName, av[0]);
 	ret = "1 Error reading input file";
+    }
     QIOclose(qp);
     ICDwrite();
     return ret;
