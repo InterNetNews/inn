@@ -67,7 +67,7 @@ int main(int ac, char *av[])
     char		*p;
     char		pflag[SMBUF];
     char		buff[BUFSIZ];
-    STRING		env[8];
+    char *		env[8];
     struct stat		Sb;
     char		*inndpath;
     struct passwd	*pwd;
@@ -201,31 +201,38 @@ int main(int ac, char *av[])
     if (getuid() != NewsUID)
 	syslog(L_ERROR, "inndstart cant setuid to %d %m", NewsUID);
 
-    /* Set up the environment. */
-    (void)sprintf(buff, "PATH=%s:%s:/bin:/usr/bin:/usr/ucb",
-	    innconf->pathbin, innconf->pathetc);
-    env[0] = COPY(buff);
-    (void)sprintf(buff, "TMPDIR=%s", innconf->pathtmp);
-    env[1] = COPY(buff);
-    (void)sprintf(buff, "SHELL=%s", _PATH_SH);
-    env[2] = COPY(buff);
-    (void)sprintf(buff, "LOGNAME=%s", NEWSMASTER);
-    env[3] = COPY(buff);
-    (void)sprintf(buff, "USER=%s", NEWSMASTER);
-    env[4] = COPY(buff);
-    (void)sprintf(buff, "HOME=%s", innconf->pathnews);
-    env[5] = COPY(buff);
+    /* Set up the environment.  Note that we're trusting BIND_INADDR and TZ;
+       everything else is either from inn.conf or from configure.  These
+       should be sanity-checked before being propagated, but that requires
+       knowledge of the range of possible values.  Just limiting their
+       length doesn't necessarily do anything to prevent exploits and may
+       stop things from working that should.  */
+    env[0] = NEW(char, (5 + strlen(innconf->pathbin) + 1
+                        + strlen(innconf->pathetc) + 23 + 1));
+    sprintf(env[0], "PATH=%s:%s:/bin:/usr/bin:/usr/ucb",
+            innconf->pathbin, innconf->pathetc);
+    env[1] = NEW(char, 7 + strlen(innconf->pathtmp) + 1);
+    sprintf(env[1], "TMPDIR=%s", innconf->pathtmp);
+    env[2] = NEW(char, 6 + strlen(_PATH_SH) + 1);
+    sprintf(env[2], "SHELL=%s", _PATH_SH);
+    env[3] = NEW(char, 8 + strlen(NEWSMASTER) + 1);
+    sprintf(env[3], "LOGNAME=%s", NEWSMASTER);
+    env[4] = NEW(char, 5 + strlen(NEWSMASTER) + 1);
+    sprintf(env[4], "USER=%s", NEWSMASTER);
+    env[5] = NEW(char, 5 + strlen(innconf->pathnews) + 1);
+    sprintf(env[5], "HOME=%s", innconf->pathnews);
     i = 6;
-    /* linux uglyness */
     if ((p = getenv("BIND_INADDR")) != NULL) {
-		(void)sprintf(buff, "BIND_INADDR=%s", p);
-		env[i++] = COPY(buff);
+        env[i] = NEW(char, 12 + strlen(p) + 1);
+        sprintf(env[i], "BIND_INADDR=%s", p);
+        i++;
     }
     if ((p = getenv("TZ")) != NULL) {
-	(void)sprintf(buff, "TZ=%s", p);
-	env[i++] = COPY(buff);
+        env[i] = NEW(char, 3 + strlen(p) + 1);
+        sprintf(env[i], "TZ=%s", p);
+        i++;
     }
-    env[i++] = NULL;
+    env[i] = NULL;
 
     /* Go exec innd. */
     (void)execve(argv[0], (CSTRING *)argv, (CSTRING *)env);
