@@ -1076,6 +1076,7 @@ DoArticle(QIOSTATE *qp, struct stat *Sbp, char *name, FILE *out, BOOL RemoveBad,
     time_t		Expires;
     time_t		Posted;
     int			i;
+    HASH		key;
 
     /* Read the file for Message-ID and Expires header. */
     Arrived = Sbp->st_mtime;
@@ -1143,9 +1144,10 @@ DoArticle(QIOSTATE *qp, struct stat *Sbp, char *name, FILE *out, BOOL RemoveBad,
 	return;
     }
 
+    key = HashMessageID(MessageID);
     if (Update) {
 	/* Server already know about this one? */
-	if (dbzexists(HashMessageID(MessageID)))
+	if (dbzexists(key))
 	    return;
     }
 
@@ -1153,15 +1155,15 @@ DoArticle(QIOSTATE *qp, struct stat *Sbp, char *name, FILE *out, BOOL RemoveBad,
     if (Posted == 0)
 	Posted = Arrived;
     if (Expires > 0)
-	i = fprintf(out, "%s%c%lu%c%lu%c%lu%c%s\n",
-                    MessageID, HIS_FIELDSEP,
+	i = fprintf(out, "[%s]%c%lu%c%lu%c%lu%c%s\n",
+		    HashToText(key), HIS_FIELDSEP,
                     (unsigned long)Arrived, HIS_SUBFIELDSEP,
                     (unsigned long)Expires,
 		    HIS_SUBFIELDSEP, (unsigned long)Posted, HIS_FIELDSEP,
                     name);
     else
-	i = fprintf(out, "%s%c%lu%c%s%c%lu%c%s\n",
-                    MessageID, HIS_FIELDSEP,
+	i = fprintf(out, "[%s]%c%lu%c%s%c%lu%c%s\n",
+		    HashToText(key), HIS_FIELDSEP,
                     (unsigned long)Arrived, HIS_SUBFIELDSEP, HIS_NOEXP,
 		    HIS_SUBFIELDSEP, (unsigned long)Posted, HIS_FIELDSEP,
                     name);
