@@ -37,6 +37,8 @@ typedef struct _ARTOVERFIELD {
     BOOL	HasHeader;
 } ARTOVERFIELD;
 
+#define DEFAULT_SEGSIZE	100000;
+
 BOOL NukeBadArts;
 char *SchemaPath = NULL;
 char *ActivePath = NULL;
@@ -321,7 +323,7 @@ WriteOverLine(TOKEN *token, char *xrefs, int xrefslen,
     fprintf(OverTmpFile, "\n");
     OverTmpSegCount++;
 
-    if (OverTmpSegCount >= OverTmpSegSize) {
+    if (OverTmpSegSize != 0 && OverTmpSegCount >= OverTmpSegSize) {
 	FlushOverTmpFile();
     }
 }
@@ -700,7 +702,7 @@ main(int argc, char **argv)
     TmpDir = innconf->pathtmp;
     SchemaPath = COPY(cpcatpath(innconf->pathetc, _PATH_SCHEMA));
 
-    OverTmpSegSize = 100000;
+    OverTmpSegSize = DEFAULT_SEGSIZE;
     OverTmpSegCount = 0;
     NukeBadArts = FALSE;
     DoOverview = FALSE;

@@ -74,7 +74,6 @@ typedef struct _BADGROUP {
     BOOL		HasDirectory;
 } BADGROUP;
 
-STATIC BOOL		EXPquiet;
 STATIC BOOL		EXPtracing;
 STATIC BOOL		EXPusepost;
 STATIC BOOL		Ignoreselfexpire = FALSE;
@@ -847,7 +846,7 @@ int main(int ac, char *av[])
     }
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "f:h:d:eg:iNnpqr:tv:w:xz:")) != EOF)
+    while ((i = getopt(ac, av, "f:h:d:g:iNnpr:tv:w:xz:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -875,9 +874,6 @@ int main(int ac, char *av[])
 	    break;
 	case 'p':
 	    EXPusepost = TRUE;
-	    break;
-	case 'q':
-	    EXPquiet = TRUE;
 	    break;
 	case 'r':
 	    EXPreason = optarg;
