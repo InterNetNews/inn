@@ -1476,7 +1476,9 @@ bool cnfs_cancel(TOKEN token) {
     return true;
 }
 
-ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
+ARTHANDLE *
+cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
+{
     ARTHANDLE           *art;
     CYCBUFF		*cycbuff;
     PRIV_CNFS		priv, *private;
@@ -1490,15 +1492,15 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
     char		*p;
     int			plusoffset = 0;
 
-    if (article == (ARTHANDLE *)NULL) {
-	if ((cycbuff = cycbufftab) == (CYCBUFF *)NULL)
-	    return (ARTHANDLE *)NULL;
+    if (article == NULL) {
+	if ((cycbuff = cycbufftab) == NULL)
+	    return NULL;
 	priv.offset = 0;
 	priv.rollover = false;
     } else {        
 	priv = *(PRIV_CNFS *)article->private;
 	free(article->private);
-	free((void *)article);
+	free(article);
 	if (innconf->articlemmap)
 	    munmap(priv.base, priv.len);
 	else {

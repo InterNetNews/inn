@@ -712,8 +712,9 @@ FindNextArt(const CAFHEADER *head, CAFTOCENT *toc, ARTNUM *artp)
 }
 
 
-
-ARTHANDLE *timecaf_next(const ARTHANDLE *article, const RETRTYPE amount) {
+ARTHANDLE *
+timecaf_next(ARTHANDLE *article, const RETRTYPE amount)
+{
     PRIV_TIMECAF	priv, *newpriv;
     char                *path;
     ARTHANDLE           *art;
@@ -732,7 +733,7 @@ ARTHANDLE *timecaf_next(const ARTHANDLE *article, const RETRTYPE amount) {
     } else {
 	priv = *(PRIV_TIMECAF *)article->private;
 	free(article->private);
-	free((void *)article);
+	free(article);
 	if (innconf->articlemmap)
 	    munmap(priv.mmapbase, priv.mmaplen);
 	else

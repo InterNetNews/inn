@@ -1035,7 +1035,9 @@ FindDir(DIR *dir, char *dirname) {
     return NULL;
 }
 
-ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
+ARTHANDLE *
+tradspool_next(ARTHANDLE *article, const RETRTYPE amount)
+{
     PRIV_TRADSPOOL priv;
     PRIV_TRADSPOOL *newpriv;
     char *path, *linkpath;
@@ -1058,7 +1060,7 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
     } else {
 	priv = *(PRIV_TRADSPOOL *) article->private;
 	free(article->private);
-	free((void*)article);
+	free(article);
 	if (priv.artbase != NULL) {
 	    if (priv.mmapped)
 		munmap(priv.artbase, priv.artlen);

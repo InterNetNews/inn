@@ -21,7 +21,7 @@ typedef struct {
     bool                (*init)(SMATTRIBUTE *attr);
     TOKEN               (*store)(const ARTHANDLE article, const STORAGECLASS storageclass);
     ARTHANDLE           *(*retrieve)(const TOKEN token, const RETRTYPE amount);
-    ARTHANDLE           *(*next)(const ARTHANDLE *article, const RETRTYPE amount);
+    ARTHANDLE           *(*next)(ARTHANDLE *article, const RETRTYPE amount);
     void                (*freearticle)(ARTHANDLE *article);
     bool                (*cancel)(TOKEN token);
     bool                (*ctl)(PROBETYPE type, TOKEN *token, void *value);

@@ -12,7 +12,7 @@
 bool tradspool_init(SMATTRIBUTE *attr);
 TOKEN tradspool_store(const ARTHANDLE article, const STORAGECLASS class);
 ARTHANDLE *tradspool_retrieve(const TOKEN token, const RETRTYPE amount);
-ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount);
+ARTHANDLE *tradspool_next(ARTHANDLE *article, const RETRTYPE amount);
 void tradspool_freearticle(ARTHANDLE *article);
 bool tradspool_cancel(TOKEN token);
 bool tradspool_ctl(PROBETYPE type, TOKEN *token, void *value);

@@ -84,7 +84,7 @@ bool        SMsetup(SMSETUP type, void *value);
 bool        SMinit(void);
 TOKEN       SMstore(const ARTHANDLE article);
 ARTHANDLE * SMretrieve(const TOKEN token, const RETRTYPE amount);
-ARTHANDLE * SMnext(const ARTHANDLE *article, const RETRTYPE amount);
+ARTHANDLE * SMnext(ARTHANDLE *article, const RETRTYPE amount);
 void        SMfreearticle(ARTHANDLE *article);
 bool        SMcancel(TOKEN token);
 bool        SMprobe(PROBETYPE type, TOKEN *token, void *value);

@@ -14,7 +14,7 @@
 bool timecaf_init(SMATTRIBUTE *attr);
 TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class);
 ARTHANDLE *timecaf_retrieve(const TOKEN token, const RETRTYPE amount);
-ARTHANDLE *timecaf_next(const ARTHANDLE *article, const RETRTYPE amount);
+ARTHANDLE *timecaf_next(ARTHANDLE *article, const RETRTYPE amount);
 void timecaf_freearticle(ARTHANDLE *article);
 bool timecaf_cancel(TOKEN token);
 bool timecaf_ctl(PROBETYPE type, TOKEN *token, void *value);

@@ -381,7 +381,9 @@ static struct dirent *FindDir(DIR *dir, FINDTYPE type) {
     return NULL;
 }
 
-ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
+ARTHANDLE *
+timehash_next(ARTHANDLE *article, const RETRTYPE amount)
+{
     PRIV_TIMEHASH       priv;
     PRIV_TIMEHASH       *newpriv;
     char                *path;
@@ -403,7 +405,7 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
     } else {
 	priv = *(PRIV_TIMEHASH *)article->private;
 	free(article->private);
-	free((void *)article);
+	free(article);
 	if (priv.base != NULL) {
 	    if (innconf->articlemmap)
 		munmap(priv.base, priv.len);

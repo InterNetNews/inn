@@ -740,7 +740,9 @@ ARTHANDLE *SMretrieve(const TOKEN token, const RETRTYPE amount) {
 
 }
 
-ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount) {
+ARTHANDLE *
+SMnext(ARTHANDLE *article, const RETRTYPE amount)
+{
     unsigned char       i;
     int                 start;
     ARTHANDLE           *newart;

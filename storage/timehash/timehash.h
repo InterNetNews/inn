@@ -12,7 +12,7 @@
 bool timehash_init(SMATTRIBUTE *attr);
 TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class);
 ARTHANDLE *timehash_retrieve(const TOKEN token, const RETRTYPE amount);
-ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount);
+ARTHANDLE *timehash_next(ARTHANDLE *article, const RETRTYPE amount);
 void timehash_freearticle(ARTHANDLE *article);
 bool timehash_cancel(TOKEN token);
 bool timehash_ctl(PROBETYPE type, TOKEN *token, void *value);
