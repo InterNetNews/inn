@@ -1171,7 +1171,11 @@ static void PERMreadfile(char *filename)
 	    if (tok->type == PERMrbrace) {
 		inwhat = 0;
 
-		if (curauth->name && MatchHost(curauth->hosts, ClientHost, ClientIp)) {
+		if (curauth->name
+#ifdef HAVE_SSL
+		    && ((curauth->require_ssl == FALSE) || (ClientSSL == TRUE))
+#endif
+		    && MatchHost(curauth->hosts, ClientHost, ClientIp)) {
 		    if (!MatchHost(curauth->localaddress, ServerHost, ServerIp)) {
 			syslog(L_TRACE, "Auth strategy '%s' does not match localhost.  Removing.",
 			   curauth->name == NULL ? "(NULL)" : curauth->name);
@@ -1501,12 +1505,6 @@ static bool MatchHost(char *hostlist, char *host, char *ip)
     int	    iter;
     char    *pat, 
 	    *p;
-
-#ifdef HAVE_SSL
-    if ((group->require_ssl == TRUE) && (ClientSSL == FALSE)) {
-        return(0);
-    }
-#endif
 
     /*	If no hostlist are specified, by default they match.   */
 
