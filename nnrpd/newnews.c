@@ -96,7 +96,7 @@ static char **GetGroups(char *p) {
       RENEW(list, char *, size + 1);
     }
     for (list[i] = p; *p && *p != '\n' && !ISWHITE(*p); p++) {
-      if (*p == '/' || *p == ':')
+      if (*p == ':')
 	*p = '\0';
     }
     if (*p) *p++ = '\0';
@@ -123,7 +123,7 @@ static bool HaveSeen(bool AllGroups, char *group, char **groups, char **xrefs) {
 
 static char **groups;
 
-void
+static void
 process_newnews(char *group, bool AllGroups, time_t date)
 {
     char **xrefs;
