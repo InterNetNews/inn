@@ -5,6 +5,8 @@ echo "# configure did not complete successfully.  Resolve problems and re-run." 
 echo "# or obtain a known good config.data for your O/S" >>config/config.data
 
 AC_PREFIX_DEFAULT(/usr/local/news)
+chmod +x config.sub config.guess libtool
+AM_PROG_LIBTOOL
 
 dnl Fix the paths
 test "x$prefix" = xNONE && prefix=$ac_default_prefix
@@ -52,6 +54,12 @@ AC_ARG_WITH(etc-dir,
 	ETCDIR=$with_etc_dir, 
 	ETCDIR=$prefix/etc)
 AC_SUBST(ETCDIR)
+
+AC_ARG_WITH(lib-dir,
+	[  --with-lib-dir=PATH   News lib files [PREFIX/lib]], 
+	LIBDIR=$with_lib_dir, 
+	LIBDIR=$prefix/lib)
+AC_SUBST(LIBDIR)
 
 AC_ARG_WITH(spool-dir,
 	[  --with-spool-dir=PATH   News storage [PREFIX/spool]], 

@@ -29,15 +29,9 @@ WHAT_TO_MAKE	= all
 SEDCOMMANDS = -e 1,2d -e '/(Directory)/d' -e 's/ .*//'
 SEDDIRCMDS = -e '1,2d' -e '/(Directory)/!d' -e 's/ .*//' -e 's;^;$(TARDIR)/;'
 
-##  Major target -- install library, build everything else.
+##  Major target -- build everything.
 all:
-	@for D in $(DIRS) ; do \
-	    TARGET=$(WHAT_TO_MAKE); \
-	    case $$D in lib|storage) TARGET=install ;; esac ; \
-	    echo "" ; \
-	    echo "cd $$D ; $(MAKE) $(FLAGS) $$TARGET ; cd .." ; \
-	    cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) $$TARGET || exit 1 ; cd .. ; \
-	done
+	$(MAKE) $(FLAGS) WHAT_TO_MAKE=all DESTDIR=$(DESTDIR) common
 
 ##  Install everything.
 install:	directories
@@ -61,7 +55,7 @@ etags:
 
 clean:
 	@$(MAKE) $(FLAGS) WHAT_TO_MAKE=$@ common
-	rm -f *~ libstorage.a libinn.a libinn_p.a llib-linn.ln FILELIST
+	rm -f *~ libinn_p.a llib-linn.ln FILELIST libtool config.log
 
 ##  Common target.
 common:
@@ -131,7 +125,7 @@ syslogfix:
 ##  Configure and compile
 world:		Install.ms
 	cd config ; $(MAKE) $(FLAGS) subst quiet ; cd ..
-	cd lib ; $(MAKE) $(FLAGS) install ; cd ..
+	cd lib ; $(MAKE) $(FLAGS) ; cd ..
 
 ##  Make a distribution.
 #shar:

@@ -19,10 +19,13 @@ NNTPLIB 	=
 # need to look before here .. you can though, if you really want
 
 CC	= @CC@
+LIBTOOL	= ../libtool
+LIBCC	= $(LIBTOOL) @CC@
+OUTPUT_OPTION	=
 GCFLAGS	= -I../include @CPPFLAGS@ @CFLAGS@
 LDFLAGS	= @LDFLAGS@
 LIBS	= @LIBS@
-PERLLIB	= @PERL_LIB@
+PERLLIB	= ../lib/perl.o @PERL_LIB@
 PERLINC	= @PERL_INC@
 EXTRA_SRC = @EXTRA_SRC@
 
@@ -33,6 +36,7 @@ NEWSGROUP	= @NEWSGRP@
 PATHNEWS = @prefix@
 PATHBIN = @prefix@/bin
 PATHETC = @ETCDIR@
+PATHLIB = @LIBDIR@
 PATHCONTROL = $(PATHBIN)/control
 PATHFILTER = $(PATHBIN)/filter
 PATHRUN = @RUNDIR@
@@ -59,7 +63,7 @@ AWK	= @_PATH_AWK@
 
 SHELL	= /bin/sh
 @SET_MAKE@
-LIBNEWS	= ../libstorage.a ../libinn.a
+LIBNEWS = ../storage/libstorage.la ../lib/libinn.la
 
 DESTDIR =
 D	= $(DESTDIR)

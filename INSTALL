@@ -169,6 +169,10 @@ Installing INN
                           If you choose to enable this then you will need to
                           have a suitable TCL distribution installed.
 
+  --disable-shared        Do not create shared libraries
+
+  --disable-static        Do not create static libraries
+
   A suggested set of options, provided you have the necessary software
   installed, is "./configure --with-perl --enable-pgp-verify".
 
@@ -480,7 +484,7 @@ Configuring INN
   of the cycbuffs that should be used to build this metacycbuff. Each cycbuff
   should only appear in -one- metacycbuff line.
 
-  6. storage.ctl (Required only if using the CNFS or timehash storage methods)
+  5. storage.ctl (Required only if using the CNFS or timehash storage methods)
 
   The storage.ctl file maps newsgroups into storage classes, which determine
   where and how the article is stored. This file has a very simple format;
@@ -527,7 +531,7 @@ Configuring INN
   you assign as they will be needed when you edit the expire.ctl file a bit
   later.
 
-  5. overview.ctl (Required only if using the CNFS or timehash storage methods)
+  6. overview.ctl (Required only if using the CNFS or timehash storage methods)
 
   The overview.ctl file determines where article overview information will be
   stored for each newsgroup. Overview is stored in one more more storage files
@@ -545,7 +549,7 @@ Configuring INN
   at which time the overview data will be re-arranged for you during the
   expiration process.
 
-  6. expire.ctl (REQUIRED)
+  7. expire.ctl (REQUIRED)
 
   The expire.ctl file is the configuration for the expiration policy. See
   the expire.ctl man page for more details.
