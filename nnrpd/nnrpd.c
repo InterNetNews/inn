@@ -920,7 +920,7 @@ main(argc, argv, env)
 	}
 
 	/* Detach */
-	if ((pid = FORK()) < 0) {
+	if ((pid = fork()) < 0) {
 	    fprintf(stderr, "%s: can't fork (%s)\n", argv[0], strerror(errno));
 	    syslog(L_FATAL, "can't fork (%m)");
 	    exit(1);
@@ -951,7 +951,7 @@ listen_loop:
 	if (fd < 0)
 		goto listen_loop;
     
-	for (i = 0; (pid = FORK()) < 0; i++) {
+	for (i = 0; (pid = fork()) < 0; i++) {
 	    if (i == MAX_FORKS) {
 		syslog(L_FATAL, "cant fork %m -- giving up");
 		exit(1);
