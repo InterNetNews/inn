@@ -30,6 +30,7 @@ PATH_MODERATORS		= ${NEWSLIB}/moderators
 PATH_DISTPATS		= ${NEWSLIB}/distrib.pats
 PATH_NEWSFEEDS		= ${NEWSLIB}/newsfeeds
 PATH_NNRPACCESS		= ${NEWSLIB}/nnrp.access
+PATH_NNRPDTRACK		= ${NEWSLIB}/nnrpd.track
 PATH_SCHEMA		= ${NEWSLIB}/overview.fmt
 PATH_PERL_SHELLVARS	= ${NEWSLIB}/innshellvars.pl
 PATH_TCL_SHELLVARS	= ${NEWSLIB}/innshellvars.tcl
@@ -72,7 +73,7 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(PATH_SCHEMA) $D$(CTLBIN)/checkgroups \
 
 ##  Scripts from above, plus site-specific config files.
 REST		= \
-	newsfeeds nnrp.access passwd.nntp \
+	newsfeeds nnrp.access nnrpd.track passwd.nntp \
 	inn.conf moderators innreport.conf innreport_inn.pm \
 	control.ctl expire.ctl nntpsend.ctl \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
@@ -153,6 +154,7 @@ COPY_XPUB	= $(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD
 $D$(PATH_INNDHOSTS):	incoming.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_NEWSFEEDS):	newsfeeds	; $(COPY_RPUB) $? $@
 $D$(PATH_NNRPACCESS):	nnrp.access	; $(COPY_RPRI) $? $@
+$D$(PATH_NNRPDTRACK):	nnrpd.track	; $(COPY_RPRI) $? $@
 $D$(PATH_NEWSBOOT):	rc.news		; $(COPY_XPRI) $? $@
 $D$(PATH_SCHEMA):	overview.fmt	; $(COPY_RPUB) $? $@
 $D$(CTLBIN)/checkgroups: checkgroups	; $(COPY_XPRI) $? $@
@@ -257,6 +259,7 @@ newgroup:	../samples/newgroup		; $(COPY) $? $@
 news.daily:	../samples/news.daily		; $(COPY) $? $@
 newsfeeds:	../samples/newsfeeds		; $(COPY) $? $@
 nnrp.access:	../samples/nnrp.access		; $(COPY) $? $@
+nnrpd.track:	../samples/nnrpd.track		; $(COPY) $? $@
 nntpsend.ctl:	../samples/nntpsend.ctl		; $(COPY) $? $@
 nntpsend:	../samples/nntpsend		; $(COPY) $? $@
 overview.fmt:	../samples/overview.fmt		; $(COPY) $? $@
