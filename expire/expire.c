@@ -435,7 +435,6 @@ STATIC enum KR EXPkeepit(TOKEN token, time_t when, time_t Expires)
             if (!class.ReportedMissing) {
                 fprintf(stderr, "Class definition %d is missing from control file, assuming never expiration\n",
                         token.class);
-            } else {
                 EXPclasses[token.class].ReportedMissing = TRUE;
             }
             return Keep;
