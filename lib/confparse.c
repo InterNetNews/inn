@@ -50,9 +50,9 @@
 **
 **  The config_param_* functions are used to retrieve the values of
 **  parameters; each use a convert_* function to convert the raw parameter
-**  value to the type specified by the user.  group_parameter_get and
-**  parameter_get can therefore be the same for all parameter types, with all
-**  of the variations encapsulated in the convert_* functions.
+**  value to the type specified by the user.  group_parameter_get can
+**  therefore be the same for all parameter types, with all of the variations
+**  encapsulated in the convert_* functions.
 */
 
 #include "config.h"
@@ -84,12 +84,6 @@ enum token_type {
     TOKEN_ERROR
 };
 
-/* This is wrapped in a struct for simplicity of processing of strings. */
-struct token {
-    enum token_type type;
-    char *string;
-};
-
 /* The parse status of a file.  Variables marked internal are only used by
    file_* functions; other functions don't need to look at them.  Other
    variables are marked by what functions are responsible for maintaining
@@ -109,7 +103,10 @@ struct config_file_s {
     /* Normally set by token_*, but file_read and file_read_more may set token
        to TOKEN_ERROR or TOKEN_EOF when those conditions are encountered.  In
        that situation, they also return false. */
-    struct token token;
+    struct {
+        enum token_type type;
+        char *string;
+    } token;
 };
 typedef struct config_file_s *config_file;
 
