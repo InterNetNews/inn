@@ -191,7 +191,7 @@ STATIC BOOL WriteUnifiedData(HASH *Hash, char *Dir, char *Art)
 */
 STATIC void ProcessIncoming(QIOSTATE *qp)
 {
-    char	        *Xref;
+    char	        *Xref = NULL;
     char                *Data;
     char                *Dir;
     char	        *Art;
