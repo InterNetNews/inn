@@ -674,6 +674,9 @@ sub collect
     {
       my ($server, $seconds, $offered, $accepted, $refused, $rejected,
 	  $missing) = ($1, $2, $3, $4, $5, $6, $7);
+      if ($server eq "ME") {
+        return 1;
+      }
       $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
       $innfeed_seconds{$server} += $seconds;
       $innfeed_offered{$server} += $offered;
