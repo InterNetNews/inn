@@ -192,7 +192,7 @@ CATCHinterrupt(s)
 {
     GotInterrupt = TRUE;
     /* Let two interrupts kill us. */
-    (void)signal(s, SIG_DFL);
+    (void)xsignal(s, SIG_DFL);
 }
 
 
@@ -322,10 +322,10 @@ main(ac, av)
     ArtsInCB = 0;
     Cookie = -1;
     GotInterrupt = FALSE;
-    (void)signal(SIGHUP, CATCHinterrupt);
-    (void)signal(SIGINT, CATCHinterrupt);
-    (void)signal(SIGTERM, CATCHinterrupt);
-    /* (void)signal(SIGPIPE, CATCHinterrupt); */
+    (void)xsignal(SIGHUP, CATCHinterrupt);
+    (void)xsignal(SIGINT, CATCHinterrupt);
+    (void)xsignal(SIGTERM, CATCHinterrupt);
+    /* (void)xsignal(SIGPIPE, CATCHinterrupt); */
     (void)GetTimeInfo(&Now);
     STATbegin = TIMEINFOasDOUBLE(Now);
 

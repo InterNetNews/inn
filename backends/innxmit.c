@@ -935,7 +935,7 @@ CATCHinterrupt(s)
 {
     GotInterrupt = TRUE;
     /* Let two interrupts kill us. */
-    (void)signal(s, SIG_DFL);
+    (void)xsignal(s, SIG_DFL);
 }
 
 
@@ -1295,8 +1295,7 @@ int main(int ac, char *av[])
 	/* Open a connection to the remote server. */
 	if (ConnectTimeout) {
 	    GotAlarm = FALSE;
-	    old = signal(SIGALRM, CATCHalarm);
-	    (void)alarm(ConnectTimeout);
+	    old = xsignal(SIGALRM, CATCHalarm);
 	    JMPyes = TRUE;
 	    if (setjmp(JMPwhere)) {
 		(void)fprintf(stderr, "Can't connect to %s, timed out\n",
@@ -1304,6 +1303,7 @@ int main(int ac, char *av[])
 		SMshutdown();
 		exit(1);
 	    }
+	    (void)alarm(ConnectTimeout);
 	}
 	if (NNTPconnect(REMhost, port, &From, &To, buff) < 0 || GotAlarm) {
 	    i = errno;
@@ -1331,7 +1331,7 @@ int main(int ac, char *av[])
 	}
 	if (ConnectTimeout) {
 	    (void)alarm(0);
-	    (void)signal(SIGALRM, old);
+	    (void)xsignal(SIGALRM, old);
 	    JMPyes = FALSE;
 	}
 
@@ -1384,13 +1384,13 @@ int main(int ac, char *av[])
     }
 
     /* Set up signal handlers. */
-    (void)signal(SIGHUP, CATCHinterrupt);
-    (void)signal(SIGINT, CATCHinterrupt);
-    (void)signal(SIGTERM, CATCHinterrupt);
-    (void)signal(SIGPIPE, SIG_IGN);
+    (void)xsignal(SIGHUP, CATCHinterrupt);
+    (void)xsignal(SIGINT, CATCHinterrupt);
+    (void)xsignal(SIGTERM, CATCHinterrupt);
+    (void)xsignal(SIGPIPE, SIG_IGN);
     if (TotalTimeout) {
+	(void)xsignal(SIGALRM, CATCHalarm);
 	(void)alarm(TotalTimeout);
-	(void)signal(SIGALRM, CATCHalarm);
     }
 
     /* Main processing loop. */

@@ -307,7 +307,7 @@ CATCHinterrupt(s)
 {
     GotInterrupt = TRUE;
     /* Let two interrupts kill us. */
-    (void)signal(s, SIG_DFL);
+    (void)xsignal(s, SIG_DFL);
 }
 
 
@@ -408,14 +408,14 @@ char *av[];
   /* Open a connection to the remote server. */
   if (ConnectTimeout) {
     GotAlarm = FALSE;
-    old = signal(SIGALRM, CATCHalarm);
-    (void)alarm(ConnectTimeout);
+    old = xsignal(SIGALRM, CATCHalarm);
     JMPyes = TRUE;
     if (setjmp(JMPwhere)) {
       (void)fprintf(stderr, "Can't connect to %s, timed out\n",
 		    REMhost);
       exit(1);
     }
+    (void)alarm(ConnectTimeout);
   }
   if (NNTPconnect(REMhost, NNTP_PORT, &From, &To, buff) < 0 || GotAlarm) {
     i = errno;
@@ -442,7 +442,7 @@ char *av[];
   }
   if (ConnectTimeout) {
     (void)alarm(0);
-    (void)signal(SIGALRM, old);
+    (void)xsignal(SIGALRM, old);
     JMPyes = FALSE;
   }
   
@@ -458,18 +458,18 @@ char *av[];
     (void)perror("cant setsockopt(RCVBUF)");
 #endif	/* defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF) */
 
-  /* Set up signal handlers. */
-  (void)signal(SIGHUP, CATCHinterrupt);
-  (void)signal(SIGINT, CATCHinterrupt);
-  (void)signal(SIGTERM, CATCHinterrupt);
-  (void)signal(SIGPIPE, SIG_IGN);
-  if (TotalTimeout) {
-    (void)alarm(TotalTimeout);
-    (void)signal(SIGALRM, CATCHalarm);
-  }
-
   GotInterrupt = FALSE;
   GotAlarm = FALSE;
+
+  /* Set up signal handlers. */
+  (void)xsignal(SIGHUP, CATCHinterrupt);
+  (void)xsignal(SIGINT, CATCHinterrupt);
+  (void)xsignal(SIGTERM, CATCHinterrupt);
+  (void)xsignal(SIGPIPE, SIG_IGN);
+  if (TotalTimeout) {
+    (void)xsignal(SIGALRM, CATCHalarm);
+    (void)alarm(TotalTimeout);
+  }
 
   /* Start timing. */
   if (GetTimeInfo(&Now) < 0) {

@@ -366,7 +366,7 @@ CATCHinterrupt(s)
     int		s;
 {
     GotInterrupt = TRUE;
-    (void)signal(s, SIG_DFL);
+    (void)xsignal(s, SIG_DFL);
 }
 
 
@@ -399,12 +399,12 @@ main(ac, av)
     GotInterrupt = FALSE;
     (void)umask(NEWSUMASK);
 
-    (void)signal(SIGHUP, CATCHinterrupt);
-    (void)signal(SIGINT, CATCHinterrupt);
-    (void)signal(SIGQUIT, CATCHinterrupt);
-    (void)signal(SIGPIPE, CATCHinterrupt);
-    (void)signal(SIGTERM, CATCHinterrupt);
-    (void)signal(SIGALRM, CATCHinterrupt);
+    (void)xsignal(SIGHUP, CATCHinterrupt);
+    (void)xsignal(SIGINT, CATCHinterrupt);
+    (void)xsignal(SIGQUIT, CATCHinterrupt);
+    (void)xsignal(SIGPIPE, CATCHinterrupt);
+    (void)xsignal(SIGTERM, CATCHinterrupt);
+    (void)xsignal(SIGALRM, CATCHinterrupt);
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "bc:C:d:f:l:L:m:p:rs:u")) != EOF)
