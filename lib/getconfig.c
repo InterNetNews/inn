@@ -256,6 +256,7 @@ void SetDefaults()
     innconf->backoff_postslow = 1L;
     innconf->backoff_trigger = 10000L;
     innconf->refusecybercancels = FALSE;
+    innconf->nnrpdcheckart = TRUE;
 }
 
 void ClearInnConf()
@@ -892,6 +893,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_REFUSECYBERCANCELS, bit);
 		if (!bit && boolval != -1) innconf->refusecybercancels = boolval;
 		SET_CONFIG(CONF_VAR_REFUSECYBERCANCELS);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_NNRPDCHECKART)) {
+		TEST_CONFIG(CONF_VAR_NNRPDCHECKART, bit);
+		if (!bit && boolval != -1) innconf->nnrpdcheckart = boolval;
+		SET_CONFIG(CONF_VAR_NNRPDCHECKART);
 	    }
 	}
 	(void)Fclose(F);
