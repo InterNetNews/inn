@@ -999,6 +999,26 @@ section innd_no_permission {
 	};
 };
 
+section innd_max_conn {
+        title   "Too many incoming connections (innd):";
+	data    "%innd_max_conn";
+	sort    "$innd_max_conn{$b} <=> $innd_max_conn{$a}";
+        column {
+                name          "Server";
+                format        "%-70.70s";
+		value         "$key";
+		format_total  "TOTAL: %-63.63s";
+		total         "$num";
+        };
+        column {
+                name          "Conn";
+		format_name   "%8s";
+                format        "%8d";
+		value         "$innd_max_conn{$key}";
+		total         "total(%innd_max_conn)";
+        };
+};
+
 section innd_too_many_connects_per_minute {
 	title	"INND too many connects per minute:";
 	data	"%innd_too_many_connects_per_minute";
