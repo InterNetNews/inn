@@ -729,6 +729,8 @@ setuid_news(void)
 {
     struct passwd *pwd;
 
+    if (getenv("INN_TESTSUITE") != NULL)
+        return;
     pwd = getpwnam(NEWSUSER);
     if (pwd == NULL)
         die("can't resolve %s to a UID (account doesn't exist?)", NEWSUSER);
