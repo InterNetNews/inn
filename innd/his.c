@@ -81,10 +81,10 @@ void HISsetup(void)
 	    syslog(L_FATAL, "%s cant fopen %s %m", LogName, HIShistpath);
 	    exit(1);
 	}
-	/* lseek to the end of file because on some OS's the first call to
-	   ftell() (before any writes are done) always returns 0
-	   because of a bug in freopen() when used with "a" (append)
-	   (freopen() is used in Fopen()) */
+	/* fseek to the end of file because the result of ftell() is undefined
+	   for files freopen()-ed in append mode according to POSIX 1003.1.
+	   ftell() is used later on to determine a new article's offset
+	   in the history file. Fopen() uses freopen() internally. */
 	if (fseek(HISwritefp, 0L, SEEK_END) == -1) {
 	    syslog(L_FATAL, "cant fseek to end of %s %m", HIShistpath);
 	    exit(1);
