@@ -924,14 +924,16 @@ Configuring INN
 
     There are two ways to create your cycbuffs:
 
-    1.  Use a raw disk partition (best).  This will give you the most speed,
-        but it requires your OS support mmap(2) on a block device.  Solaris
+    1.  Use a block device directly.  This will probably give you the most
+        speed since it avoids the file system overhead of large files, but
+        it requires your OS support mmap(2) on a block device.  Solaris
         supports this, as do late Linux 2.4 kernels.  FreeBSD does not at
         last report.  Also on many PC-based Unixes it is difficult to create
         more than eight partitions, which may limit your options.
 
-    2.  Use a real file on a filesystem.  This will be a bit slower than
-        using a raw disk partition, but it should work on any Unix system.
+    2.  Use a real file on a filesystem.  This will probably be a bit slower
+        than using a block device directly, but it should work on any Unix
+        system.
 
     If you're having doubts, use option #2; it's easier to set up and should
     work regardless of your operating system.
@@ -950,15 +952,15 @@ Configuring INN
     make up the metacycbuff, the size of those cycbuffs, and where they will
     be stored.  Some OSes do not support files larger than 2 GB, which will
     limit the size you can make a single cycbuff, but you can still combine
-    many cycbuffs into each metacycbuff.  Some versions of Linux are known
+    many cycbuffs into each metacycbuff.  Older versions of Linux are known
     to have this limitation; FreeBSD does not.  Some OSes that support large
-    files don't support block access to large raw partitions (Solaris prior
-    to Solaris 7, or not running in 64-bit mode, is in this category); on
-    those OSes, if you want cycbuffs over 2 GB, you'll have to use regular
-    files.  If in doubt, keep your cycbuffs smaller than 2 GB.  Also, when
-    laying out your cycbuffs, you will want to try to arrange them across as
-    many physical disks as possible (or use a striped disk array and put
-    them all on that).
+    files don't support direct access to block devices for large partitions
+    (Solaris prior to Solaris 7, or not running in 64-bit mode, is in this
+    category); on those OSes, if you want cycbuffs over 2 GB, you'll have to
+    use regular files.  If in doubt, keep your cycbuffs smaller than 2 GB. 
+    Also, when laying out your cycbuffs, you will want to try to arrange
+    them across as many physical disks as possible (or use a striped disk
+    array and put them all on that).
 
     For each cycbuff you will be creating, add a line to cycbuff.conf like
     the following:
@@ -1186,13 +1188,13 @@ Creating the Article Spool (CNFS only)
         '/^cy/ { printf "dd if=/dev/zero of=%s bs=1k count=%s\n", $3, $4 }' \
         ~news/etc/cycbuff.conf
 
-    If you are using raw devices, you don't technically have to do anything
-    at all (since INN is capable of using the devices in /dev), but you
-    probably want to create special device files for those devices somewhere
-    for INN's private use.  It s more convenient to keep all of INN's stuff
-    together, but more importantly, the device files used by INN really
-    should be owned by the news user and group, and you may not want to do
-    that with the files in /dev.
+    If you are using block devices, you don't technically have to do
+    anything at all (since INN is capable of using the devices in /dev), but
+    you probably want to create special device files for those devices
+    somewhere for INN's private use.  It s more convenient to keep all of
+    INN's stuff together, but more importantly, the device files used by INN
+    really should be owned by the news user and group, and you may not want
+    to do that with the files in /dev.
 
     To create the device files for INN, use mknod(8) with a type of "b",
     getting the major and minor device numbers from the existing devices in
@@ -1200,9 +1202,9 @@ Creating the Article Spool (CNFS only)
     with this.  Make sure to create the device files in the location INN
     expects them (specified in cycbuff.conf).
 
-    Solaris users please note:  on Solaris, do not use raw devices that
+    Solaris users please note:  on Solaris, do not use block devices that
     include the first cylinder of the disk.  Solaris doesn't protect the
-    superblock from being overwritten by an application writing to raw
+    superblock from being overwritten by an application writing to block
     devices and includes it in the first cylinder of the disk, so unless you
     use a slice that starts with cylinder 1 instead of 0, INN will
     invalidate the partition table when it tries to initialize the cycbuff
