@@ -71,8 +71,8 @@ Tagged hash + offset fuzzy technique merged by Sang-yong Suh (Nov, 1997)
 #include <errno.h>
 #include <netinet/in.h>
 #include <sys/mman.h>
-#include <md5.h>
 #include <clibrary.h>
+#include <md5.h>
 #include <configdata.h>
 #include <libinn.h>
 #include <macros.h>
