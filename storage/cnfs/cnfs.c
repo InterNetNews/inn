@@ -6,18 +6,17 @@
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
 #include <netinet/in.h>
 #include <syslog.h> 
 #include <sys/mman.h>
 #include <sys/stat.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
-
-#ifdef HAVE_LIMITS_H
-# include <limits.h>
-#endif
+#include <sys/uio.h>
 
 #ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>
@@ -34,10 +33,10 @@
 #include "libinn.h"
 #include "macros.h"
 #include "methods.h"
+#include "paths.h"
 
 #include "cnfs.h"
 #include "cnfs-private.h"
-#include "paths.h"
 
 typedef struct {
     /**** Stuff to be cleaned up when we're done with the article */
