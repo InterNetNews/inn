@@ -516,6 +516,11 @@ newgroup:coadmin@boyznoyz.com:co.*:doit
 rmgroup:coadmin@boyznoyz.com:co.*:doit
 checkgroups:coadmin@boyznoyz.com:co.*:doit
 
+## CODEWARRIOR (CodeWarrior discussion)
+checkgroups:news@supernews.net:codewarrior.*:doit
+newgroup:news@supernews.net:codewarrior.*:doit
+rmgroup:news@supernews.net:codewarrior.*:doit
+
 ## COMPUTER42 (Computer 42, Germany)
 # Contact: Dirk Schmitt <news@computer42.org>
 newgroup:news@computer42.org:computer42.*:doit
@@ -663,7 +668,10 @@ rmgroup:mod-ena@ennui.org:esp.*:verify-esp.news.administracion
 newgroup:news@noc.eu.net:eunet.*:doit
 rmgroup:news@noc.eu.net:eunet.*:doit
 
-## EUROPA ( Europe )
+## EUROPA (Europe)
+# URL: http://www.europa.usenet.eu.org/
+# Key fingerprint = 3A 05 A8 49 FB 16 29 25  75 E3 DE BB 69 E0 1D B4
+# *PGP*   See comment at top of file.
 newgroup:group-admin@usenet.eu.org:europa.*:verify-group-admin@usenet.eu.org
 rmgroup:group-admin@usenet.eu.org:europa.*:verify-group-admin@usenet.eu.org
 checkgroups:group-admin@usenet.eu.org:europa.*:verify-group-admin@usenet.eu.org
@@ -968,7 +976,6 @@ checkgroups:usenet@karlsruhe.org:ka.*:verify-usenet@karlsruhe.org
 newgroup:usenet@karlsruhe.org:ka.*:verify-usenet@karlsruhe.org
 rmgroup:usenet@karlsruhe.org:ka.*:verify-usenet@karlsruhe.org
 
-
 ## KANTO
 # *PGP*   See comment at top of file.
 rmgroup:*:kanto.*:drop
@@ -1031,7 +1038,8 @@ rmgroup:*@*:local.*:drop
 
 ## MALTA ( Nation of Malta )
 # Contact: cmeli@cis.um.edu.mt
-# URL: http://www.cis.um.edu.mt/news-malta/malta-news-new-site-faq.html
+# URL: http://www.malta.news-admin.org/
+# Key fingerprint = 20 17 01 5C F0 D0 1A 42  E4 13 30 58 0B 14 48 A6
 # *PGP*   See comment at top of file. 
 newgroup:*:malta.*:drop
 rmgroup:*:malta.*:drop
@@ -1843,13 +1851,15 @@ newgroup:kohe-t@*wakayama-u.ac.jp:wadai.*:doit
 rmgroup:kohe-t@*wakayama-u.ac.jp:wadai.*:doit
 
 ## WALES (Wales)
-# Contact: control@A470.demon.co.uk
+# Contact: committee@wales-usenet.org
+# URL: http://www.wales-usenet.org/
+# Key fingerprint = 2D 9E DE DF 12 DA 34 5C  49 E1 EE 28 E3 AB 0D AD
 # *PGP*   See comment at top of file.
 newgroup:*:wales.*:drop
 rmgroup:*:wales.*:drop
-checkgroups:control@*470.demon.co.uk:wales.*:verify-wales-usenet
-newgroup:control@*470.demon.co.uk:wales.*:verify-wales-usenet
-rmgroup:control@*470.demon.co.uk:wales.*:verify-wales-usenet
+newgroup:control@wales-usenet.org:wales.*:verify-wales-usenet
+rmgroup:control@wales-usenet.org:wales.*:verify-wales-usenet
+checkgroups:control@wales-usenet.org:wales.*:verify-wales-usenet
 
 ## WASH (Washington State, USA)
 newgroup:graham@ee.washington.edu:wash.*:doit
