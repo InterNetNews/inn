@@ -639,7 +639,7 @@ sub Rotate
                         $SEPARATOR       # Separator : ":"
                         \d\d             # Second : 29
                         $suffix          # Suffix : ".html"
-                        $/xo);
+                        $/x);
     $files{$file}++;
   }
   closedir (DIR);
