@@ -750,7 +750,7 @@ openbasefile(const char *name)
  * functions permit this, since many people consult it if dbzinit() fails.
  * return TRUE for success, FALSE for failure
  */
-int
+bool
 dbzinit(const char *name)
 {
     char *fname;
@@ -846,7 +846,7 @@ dbzclose(void)
 	return FALSE;
     }
 
-    if (dbzsync() < 0)
+    if (!dbzsync())
 	ret = FALSE;
 
 #ifdef	DO_TAGGED_HASH
