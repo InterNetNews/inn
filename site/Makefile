@@ -28,7 +28,6 @@ PATH_INNDHOSTS		= ${PATHETC}/incoming.conf
 PATH_MODERATORS		= ${PATHETC}/moderators
 PATH_DISTPATS		= ${PATHETC}/distrib.pats
 PATH_NEWSFEEDS		= ${PATHETC}/newsfeeds
-PATH_NNRPACCESS		= ${PATHETC}/nnrp.access
 PATH_READERSCONF	= ${PATHETC}/readers.conf
 PATH_NNRPDTRACK		= ${PATHETC}/nnrpd.track
 PATH_SCHEMA		= ${PATHETC}/overview.fmt
@@ -89,7 +88,7 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(CTLBIN)/checkgroups \
 
 REST_INSTALLED	= \
 	$D$(PATH_NEWSFEEDS) $D$(PATH_INNDHOSTS) \
-	$D$(PATH_NNRPACCESS) $D$(PATH_NNRPDTRACK) $D$(PATH_NNTPPASS) \
+	$D$(PATH_NNRPDTRACK) $D$(PATH_NNTPPASS) \
 	$D$(PATH_CONFIG) $D$(PATH_MODERATORS) \
 	$D$(PATH_CONTROLCTL) $D$(PATH_EXPIRECTL) $D$(PATHETC)/nntpsend.ctl \
 	$D$(PATHETC)/innreport.conf $D$(PATHLIB)/innreport_inn.pm \
@@ -163,7 +162,6 @@ COPY_XPUB	= $(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD
 ##  Order:  innd, control, expire, inews, sending, misc
 $D$(PATH_INNDHOSTS):	incoming.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_NEWSFEEDS):	newsfeeds	; $(COPY_RPUB) $? $@
-$D$(PATH_NNRPACCESS):	nnrp.access	; $(COPY_RPRI) $? $@
 $D$(PATH_READERSCONF):	readers.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_NNRPDTRACK):	nnrpd.track	; $(COPY_RPRI) $? $@
 $D$(PATH_NEWSBOOT):	rc.news		; $(COPY_XPRI) $? $@
