@@ -68,7 +68,8 @@ ok(int n, int success)
 int
 main(void)
 {
-    int n, i, j, count;
+    int n, i, count;
+    unsigned int j;
     long lcount;
     char buf[32];
 

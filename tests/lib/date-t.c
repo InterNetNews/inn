@@ -46,7 +46,7 @@ ok_bool(int n, bool wanted, bool seen)
     if (wanted == seen)
         printf("ok %d\n", n);
     else
-        printf("not ok %d\n  wanted %d seen %d\n", wanted, seen);
+        printf("not ok %d\n  wanted %d seen %d\n", n, wanted, seen);
 }
 
 static void
@@ -69,27 +69,27 @@ ok(int n, int success)
     printf("%sok %d\n", success ? "" : "not ", n);
 }
 
-static int
-check_nntp(int *n, time_t clock)
+static void
+check_nntp(int *n, time_t timestamp)
 {
     char date[9], hour[7];
     struct tm *tmp_tm, tm;
 
-    tmp_tm = localtime(&clock);
+    tmp_tm = localtime(&timestamp);
     tm = *tmp_tm;
     sprintf(date, "%02d%02d%02d", tm.tm_year % 100, tm.tm_mon + 1,
             tm.tm_mday);
     sprintf(hour, "%02d%02d%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
-    ok_time((*n)++, clock, date, hour, true);
+    ok_time((*n)++, timestamp, date, hour, true);
     sprintf(date, "%04d%02d%02d", tm.tm_year + 1900, tm.tm_mon + 1,
             tm.tm_mday);
-    ok_time((*n)++, clock, date, hour, true);
-    tmp_tm = gmtime(&clock);
+    ok_time((*n)++, timestamp, date, hour, true);
+    tmp_tm = gmtime(&timestamp);
     tm = *tmp_tm;
     sprintf(date, "%04d%02d%02d", tm.tm_year + 1900, tm.tm_mon + 1,
             tm.tm_mday);
     sprintf(hour, "%02d%02d%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
-    ok_time((*n)++, clock, date, hour, false);
+    ok_time((*n)++, timestamp, date, hour, false);
 }
 
 int
@@ -99,7 +99,8 @@ main(void)
     bool status;
     time_t now, result;
     double diff;
-    int n, i;
+    int n;
+    unsigned int i;
 
     printf("%d\n", 33 + ARRAY_SIZE(test_times) * 3 + 3);
 

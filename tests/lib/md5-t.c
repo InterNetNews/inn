@@ -6,33 +6,39 @@
 #include "inn/md5.h"
 #include "libinn.h"
 
+/* Used to initialize strings of unsigned characters. */
+#define U       (const unsigned char *)
+
+/* An unsigned char version of strlen. */
+#define ustrlen(s)      strlen((const char *) s)
+
 /* Used for converting digests to hex to make them easier to deal with. */
 static const char hex[] = "0123456789abcdef";
 
 /* A set of data strings and resulting digests to check.  It's not easy to
    get nulls into this data structure, so data containing nulls should be
    checked separately. */
-static const char * const testdata[] = {
+static const unsigned char * const testdata[] = {
     /* First five tests of the MD5 test suite from RFC 1321. */
-    "",
-    "a",
-    "abc",
-    "message digest",
-    "abcdefghijklmnopqrstuvwxyz",
+    U"",
+    U"a",
+    U"abc",
+    U"message digest",
+    U"abcdefghijklmnopqrstuvwxyz",
 
     /* Three real message IDs to ensure compatibility with old INN versions;
        the corresponding MD5 hashes were taken directly out of the history
        file of a server running INN 2.3. */
-    "<J3Ds5.931$Vg6.7556@news01.chello.no>",
-    "<sr5v7ooea6e17@corp.supernews.com>",
-    "<cancel.Y2Ds5.26391$oH5.540535@news-east.usenetserver.com>",
+    U"<J3Ds5.931$Vg6.7556@news01.chello.no>",
+    U"<sr5v7ooea6e17@corp.supernews.com>",
+    U"<cancel.Y2Ds5.26391$oH5.540535@news-east.usenetserver.com>",
 
     /* Other random stuff, including high-bit characters. */
-    "example.test",
-    "||",
-    "|||",
-    "\375\277\277\277\277\276",
-    "\377\277\277\277\277\277"
+    U"example.test",
+    U"||",
+    U"|||",
+    U"\375\277\277\277\277\276",
+    U"\377\277\277\277\277\277"
 };
 
 /* The hashes corresonding to the above data. */
@@ -57,7 +63,7 @@ static const char * const testhash[] = {
 void
 digest2hex(const unsigned char *digest, char *result)
 {
-    const char *p;
+    const unsigned char *p;
     unsigned int i;
 
     for (p = digest, i = 0; i < 32; i += 2, p++) {
@@ -68,8 +74,7 @@ digest2hex(const unsigned char *digest, char *result)
 }
 
 static void
-ok(int n, const unsigned char *expected, const unsigned char *data,
-   size_t length)
+ok(int n, const char *expected, const unsigned char *data, size_t length)
 {
     unsigned char digest[16];
     char hexdigest[33];
@@ -93,15 +98,16 @@ ok_bool(int n, int success)
 int
 main(void)
 {
-    int i, j, n;
-    char *data;
+    unsigned int i;
+    int j, n;
+    unsigned char *data;
     struct md5_context context;
     char hexdigest[33];
 
     printf("%d\n", 12 + ARRAY_SIZE(testdata));
 
-    ok(1, "93b885adfe0da089cdf634904fd59f71", "\0", 1);
-    ok(2, "e94a053c3fbfcfb22b4debaa11af7718", "\0ab\n", 4);
+    ok(1, "93b885adfe0da089cdf634904fd59f71", U"\0", 1);
+    ok(2, "e94a053c3fbfcfb22b4debaa11af7718", U"\0ab\n", 4);
 
     data = xmalloc(64 * 1024);
     memset(data, 0, 64 * 1024);
@@ -140,7 +146,7 @@ main(void)
 
     n = 13;
     for (i = 0; i < ARRAY_SIZE(testdata); i++)
-        ok(n++, testhash[i], testdata[i], strlen(testdata[i]));
+        ok(n++, testhash[i], testdata[i], ustrlen(testdata[i]));
 
     return 0;
 }

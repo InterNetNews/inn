@@ -58,7 +58,6 @@ string_traverse(void *entry, void *data)
 int
 main(void)
 {
-    struct stat st;
     struct hash *hash;
     FILE *words;
     int reported, i;

@@ -30,7 +30,6 @@ main(void)
     unsigned char c;
     char *result;
     int i, count, fd;
-    ssize_t status;
     size_t size = 8192;
     QIOSTATE *qio;
     bool success;
@@ -93,7 +92,7 @@ main(void)
     for (success = true, i = 0; i < count; i++) {
         result = QIOread(qio);
         success = (success && !QIOerror(qio) && (QIOlength(qio) == 255)
-                   && !strcmp(result, out));
+                   && !strcmp(result, (char *) out));
     }
     ok(2, success);
     ok(3, QIOtell(qio) == size);
@@ -125,7 +124,7 @@ main(void)
     for (success = true, i = 0; i < count; i++) {
         result = QIOread(qio);
         success = (success && !QIOerror(qio) && (QIOlength(qio) == 255)
-                   && !strcmp(result, out));
+                   && !strcmp(result, (char *) out));
     }
     ok(10, success);
     ok(11, QIOtell(qio) == 4 * size + 129);
@@ -135,7 +134,7 @@ main(void)
     ok(14, QIOtell(qio) == 0);
     result = QIOread(qio);
     ok(15, (!QIOerror(qio) && QIOlength(qio) == 255 && strlen(result) == 255
-            && !strcmp(result, out)));
+            && !strcmp(result, (char *) out)));
     ok(16, QIOtell(qio) == 256);
     fd = QIOfileno(qio);
     QIOclose(qio);
