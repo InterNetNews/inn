@@ -33,7 +33,7 @@
 /* We offered, and the index back from the server. We allow for a user      */
 /* supplied list, and assume that it is a subset of our list                */
 
-int SMB_Figure_Protocol(char *dialects[], int prot_index)
+int SMB_Figure_Protocol(const char *dialects[], int prot_index)
 
 { int i;
 
@@ -67,7 +67,7 @@ int SMB_Figure_Protocol(char *dialects[], int prot_index)
 /* we return the index of the accepted protocol in NegProt, -1 indicates  */
 /* none acceptible, and our return value is 0 if ok, <0 if problems       */
 
-int SMB_Negotiate(SMB_Handle_Type Con_Handle, char *Prots[])
+int SMB_Negotiate(SMB_Handle_Type Con_Handle, const char *Prots[])
 
 { struct SMB_Neg_Prot_Def *prot_pkt;
   struct SMB_Neg_Prot_Resp_Def *resp_pkt;

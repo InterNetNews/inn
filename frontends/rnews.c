@@ -107,7 +107,7 @@ StartChild(int fd, const char *path, const char *argv[])
 	    (void)close(pan[PIPE_WRITE]);
 	}
 
-	(void)execv(path, argv);
+	(void)execv(path, (char * const *)argv);
         syswarn("cannot execv %s", path);
 	_exit(1);
     }

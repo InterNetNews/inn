@@ -23,6 +23,7 @@
 #include "portable/mmap.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <fcntl.h>
 #if HAVE_LIMITS_H
 # include <limits.h>
@@ -53,7 +54,7 @@ struct article_s
     char *msgid ;               /* the msgid of the article (INN tells us) */
     Buffer contents ;           /* the buffer of the actual on disk stuff */
     Buffer *nntpBuffers ;       /* list of buffers for transmisson */
-    void *mMapping ;            /* base of memory mapping, or NULL if none */
+    const void *mMapping ;      /* base of memory mapping, or NULL if none */
     bool loggedMissing ;        /* true if article is missing and we logged */
     bool articleOk ;            /* true until we know otherwise. */
     bool inWireFormat ;         /* true if ->contents is \r\n/dot-escaped */
@@ -594,9 +595,11 @@ static bool fillContents (Article article)
 	if (article->mMapping == MAP_FAILED) {
 	    /* dunno, but revert to plain reading */
 	    article->mMapping = NULL ;
-            syswarn ("ME mmap failure %s", article->fname) ;
+            syswarn ("ME mmap failure %s (%s)",
+                     article->fname,
+                     strerror(errno)) ;
 	} else {
-	    article->contents = newBufferByCharP((char *)article->mMapping,
+	    article->contents = newBufferByCharP(article->mMapping,
 						 articlesize,
 						 articlesize);
 	    buffer = bufferBase (article->contents) ;

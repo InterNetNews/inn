@@ -24,6 +24,7 @@ main(int ac, char *av[]) {
     const char	*text;
     char	*format;
     char	*p, *q;
+    const char	*r;
     bool	Dirty;
     TOKEN	token;
     ARTHANDLE	*art;
@@ -81,18 +82,18 @@ main(int ac, char *av[]) {
 	    continue;
 	}
 	len = art->len;
-	for (p = text; p < art->data + art->len; p++) {
-	    if (*p == '\r' || *p == '\n')
+	for (r = text; r < art->data + art->len; r++) {
+	    if (*r == '\r' || *r == '\n')
 		break;
 	}
-	if (p == art->data + art->len) {
+	if (r == art->data + art->len) {
 	    SMfreearticle(art);
 	    continue;
 	}
-	q = NEW(char, p - text + 1);
-	memcpy(q, text, p - text);
+	q = NEW(char, r - text + 1);
+	memcpy(q, text, r - text);
 	SMfreearticle(art);
-	q[p - text] = '\0';
+	q[r - text] = '\0';
 
 	/* Write the desired info. */
 	for (Dirty = FALSE, p = format; *p; p++) {

@@ -550,7 +550,7 @@ Interrupted(char *Article, char *MessageID) {
 */
 static int
 HeadersLen(ARTHANDLE *art, int *iscmsg) {
-    char	*p;
+    const char	*p;
     char	lastchar = -1;
 
     /* from nnrpd/article.c ARTsendmmap() */
@@ -587,14 +587,14 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 	int iscmsg = 0;
 	int len = HeadersLen(art, &iscmsg);
 
-	vec[0].iov_base = art->data;
+	vec[0].iov_base = (char *) art->data;
 	vec[0].iov_len = len;
 	/* Add 14 bytes, which maybe will be the length of the Bytes header */
 	snprintf(buf, sizeof(buf), "Bytes: %d\r\n", art->len + 14);
 	vec[1].iov_base = buf;
 	vec[1].iov_len = strlen(buf);
 	if (iscmsg) {
-	    vec[2].iov_base = art->data + len;
+	    vec[2].iov_base = (char *) art->data + len;
 	    vec[2].iov_len = art->len - len;
 	} else {
 	    vec[2].iov_base = (char *) ".\r\n";
@@ -918,6 +918,7 @@ article_open(const char *path, const char *id)
         }
         return article;
     } else {
+        char *data;
         fd = open(path, O_RDONLY);
         if (fd < 0)
             return NULL;
@@ -929,30 +930,31 @@ article_open(const char *path, const char *id)
         article = NEW(ARTHANDLE, 1);
         article->type = TOKEN_EMPTY;
         article->len = st.st_size;
-        article->data = NEW(char, article->len);
-        if (xread(fd, article->data, article->len) < 0) {
+        data = NEW(char, article->len);
+        if (xread(fd, data, article->len) < 0) {
             syswarn("requeue %s", path);
-            free(article->data);
+            free(data);
             free(article);
             close(fd);
             Requeue(path, id);
             return NULL;
         }
         close(fd);
-        p = memchr(article->data, '\n', article->len);
-        if (p == NULL || p == article->data) {
+        p = memchr(data, '\n', article->len);
+        if (p == NULL || p == data) {
             warn("requeue %s: cannot find headers", path);
-            free(article->data);
+            free(data);
             free(article);
             Requeue(path, id);
             return NULL;
         }
         if (p[-1] != '\r') {
-            p = ToWireFmt(article->data, article->len, &length);
-            free(article->data);
-            article->data = p;
+            p = ToWireFmt(data, article->len, &length);
+            free(data);
+            data = p;
             article->len = length;
         }
+        article->data = data;
         return article;
     }
 }
@@ -966,7 +968,7 @@ static void
 article_free(ARTHANDLE *article)
 {
     if (article->type == TOKEN_EMPTY) {
-        free(article->data);
+        free((char *)article->data);
         free(article);
     } else
         SMfreearticle(article);
