@@ -19,14 +19,14 @@ mail)
 	echo 'message into docheckgroups while running as the'
 	echo "\"${NEWSUSER}\" userid:"
 	echo ''
-	echo "@LIBDIR@/docheckgroups '${NEWSGROUPPATS}' <<\-EOF-"
+	echo "@LIBDIR@/docheckgroups '${NEWSGROUPPATS}' <<-EOF-"
 	${SM} ${ARTICLE} | ${SED} -e '1,/^$/d' 
 	echo '-EOF-'
     ) | sed -e 's/^~/~~/' | ${MAILCMD} -s "checkgroups by ${FROM}" ${NEWSMASTER}
     ;;
 doit)
     ${SM} ${ARTICLE} | ${SED} -e '1,/^$/d' \
-	| @LIBDIR@/docheckgroups '${NEWSGROUPPATS}' \
+	| @LIBDIR@/docheckgroups ${NEWSGROUPPATS} \
 	| ${WRITELOG} ${LOGFILE} "checkgroups by ${FROM}"
     ;;
 esac
