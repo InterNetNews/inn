@@ -32,14 +32,14 @@ static char	*InitialString;
 static char	*Input;
 static char	*Processor;
 static int	ArtsInBatch;
-static int	ArtsWritten;
+static size_t	ArtsWritten;
 static int	BATCHcount;
 static int	MaxBatches;
 static int	BATCHstatus;
-static long	BytesInBatch = 60 * 1024;
-static long	BytesWritten;
-static long	MaxArts;
-static long	MaxBytes;
+static size_t	BytesInBatch = 60 * 1024;
+static size_t	BytesWritten;
+static size_t	MaxArts;
+static size_t	MaxBytes;
 static sig_atomic_t	GotInterrupt;
 static const char *Separator = "#! rnews %ld";
 static char	*ERRLOG;
@@ -191,8 +191,8 @@ main(int ac, char *av[])
     char	*data;
     char	line[BIG_BUFFER];
     char	buff[BIG_BUFFER];
-    int		BytesInArt;
-    long	BytesInCB;
+    size_t	BytesInArt;
+    size_t	BytesInCB;
     off_t	Cookie;
     size_t	datasize;
     int		i;
@@ -201,6 +201,7 @@ main(int ac, char *av[])
     TOKEN	token;
     ARTHANDLE	*art;
     char	*artdata;
+    size_t      written;
 
     /* Set defaults. */
     openlog("batcher", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
@@ -298,7 +299,8 @@ main(int ac, char *av[])
 	length = strlen(line);
 	Cookie = ftello(stdin) - length;
 
-	/* Get lines like "name size" */
+	/* Get lines like "name size".  Note that we ignore size but accept
+           it for backwards compatibility. */
 	if ((p = strchr(line, '\n')) == NULL) {
             warn("%s skipping %.40s: too long", Host, line);
 	    continue;
@@ -306,13 +308,9 @@ main(int ac, char *av[])
 	*p = '\0';
 	if (line[0] == '\0' || line[0] == '#')
 	    continue;
-	if ((p = strchr(line, ' ')) != NULL) {
-	    *p++ = '\0';
-	    /* Try to be forgiving of bad input. */
-	    BytesInArt = CTYPE(isdigit, (int)*p) ? atol(p) : -1;
-	}
-	else
-	    BytesInArt = -1;
+        p = strchr(line, ' ');
+        if (p != NULL)
+            *p = '\0';
 
 	/* Strip of leading spool pathname. */
 	if (line[0] == '/'
@@ -330,8 +328,7 @@ main(int ac, char *av[])
                     warn("%s skipping %.40s: %s", Host, p, SMerrorstr);
 		continue;
 	    }
-	    BytesInArt = -1;
-	    artdata = FromWireFmt(art->data, art->len, (size_t *)&BytesInArt);
+	    artdata = FromWireFmt(art->data, art->len, &BytesInArt);
 	    SMfreearticle(art);
 	} else {
             warn("%s skipping %.40s: not token", Host, p);
@@ -404,7 +401,8 @@ main(int ac, char *av[])
 
         /* Write the article.  In case of interrupts, retry the read but not
            the fwrite because we can't check that reliably and portably. */
-	if ((fwrite(artdata, 1, BytesInArt, F) != BytesInArt) || ferror(F))
+        written = fwrite(artdata, 1, BytesInArt, F);
+	if (written != BytesInArt || ferror(F))
 	    break;
 
 	/* Update the counts. */
