@@ -216,6 +216,16 @@ Print a command summary for all commands, or just
 .I command
 if specified.
 .TP
+.BI kill " signal site"
+Signal
+.I signal
+is sent to the specified
+.IR site ,
+which must be a channel or exploder feed.
+.I Signal
+can be a numeric signal number or the word ``hup,'' ``int,'' or ``term'';
+case is not significant.
+.TP
 .BI lowmark " file"
 Reset the lowmarks in the
 .I active
@@ -519,16 +529,6 @@ If
 .I <\-\-with\-python is specified at configure>
 and a Python method named ``filter_close'' exists,
 it will be called just before innd exits.
-.TP
-.BI signal " sig site"
-Signal
-.I sig
-is sent to the specified
-.IR site ,
-which must be a channel or exploder feed.
-.I Sig
-can be a numeric signal number or the word ``hup,'' ``int,'' or ``term'';
-case is not significant.
 .TP
 .BI tcl " flag"
 Enable or disable Tcl news filtering, if
