@@ -1031,7 +1031,7 @@ BOOL buffindexed_groupdel(char *group) {
     ovclosesearch(handle, TRUE);
   ge->count = 0;
   ge->deleted = time(NULL);
-  HashClear(ge->hash);
+  HashClear(&ge->hash);
   GROUPlock(gloc, LOCK_UNLOCK);
   return TRUE;
 }
