@@ -2,8 +2,8 @@
 
 ##########################################################################
 #
-#   innreport.pl: Perl script to summarize news log files
-#                 (with optional HTML output and graphs).
+#   innreport: Perl script to summarize news log files
+#              (with optional HTML output and graphs).
 #
 # version: 2.1.9_7
 #
@@ -11,7 +11,7 @@
 #
 ##########################################################################
 #
-# Usage: innreport.pl -f config_file [-[no]options] logfile [logfile2 [...]]
+# Usage: innreport -f config_file [-[no]options] logfile [logfile2 [...]]
 #   where options are:
 #     -h (or -help)      : this help page
 #     -html              : HTML output
@@ -61,12 +61,12 @@
 #            'default')
 #          - copy the configuration file into ${NEWSLIB}/innreport.conf
 #          - copy the INN module into ${NEWSLIB}/innreport_inn.pm
-#          - copy this script into ${NEWSLIB}/innreport.pl
+#          - copy this script into ${NEWSLIB}/innreport
 #          - be sure that the news user can run it (chmod 755 or 750)
 #          - in "scanlog", comment the line containing innlog and add:
-#            ${NEWSLIB}/innreport.pl -f ${NEWSLIB}/innreport.conf ${OLD_SYSLOG}
+#            ${NEWSLIB}/innreport -f ${NEWSLIB}/innreport.conf ${OLD_SYSLOG}
 #            or, if you want to change some options:
-#    ${NEWSLIB}/innreport.pl -f ${NEWSLIB}/innreport.conf options ${OLD_SYSLOG}
+#    ${NEWSLIB}/innreport -f ${NEWSLIB}/innreport.conf options ${OLD_SYSLOG}
 #
 # Report: please report bugs (preferably) to the innreport mailing list
 #         (see below) or directly to the author (do not forget to

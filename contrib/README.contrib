@@ -17,13 +17,5 @@ newsbot:	instantly grep and trigger actions on news articles
 
 		for the latest version.
 
-innreport:	innlog-like perl script that generates HTML output.
-
-		Go to
-
-			ftp://anais.eerie.fr/pub/usenet/innreport/innreport.pl
-
-		for the latest version.
-
 findmissing.pl:	a perl script for locating articles in your spool that are
 		not in your history file.

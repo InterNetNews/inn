@@ -310,7 +310,7 @@ samples/hosts.nntp.nolimit  1 Sample hosts.nntp(5) file
 samples/ihave               1 Ihave control message handler
 samples/inn.conf            1 Sample inn.conf(5) file
 samples/inncheck            1 Perl script to syntax-check INN config files
-samples/innreport.pl        1 Log report muncher
+samples/innreport           1 Log report muncher
 samples/innreport.conf      1 Config file for innreport
 samples/innreport_inn.pm    1 module for innreport
 samples/innshellvars        1 Script to set config parameters
