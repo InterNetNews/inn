@@ -12,8 +12,8 @@ extern "C" {
    by a 2 byte messages length*/
 #define HEADER_SIZE (sizeof (ICC_PROTOCOLTYPE) + sizeof (ICC_MSGLENTYPE))
 
-typedef short ICC_MSGLENTYPE;	/* Length code to prefix commands to
-				** the server. */
+typedef unsigned short ICC_MSGLENTYPE;	/* Length code to prefix commands to
+					** the server. */
 typedef char ICC_PROTOCOLTYPE ;
 
 /* Values for the protocol version field of the message. 8 bits wide. */
