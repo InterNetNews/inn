@@ -4,7 +4,7 @@ The inn.conf parser has changed between INN 2.3 and 2.4.  Due to that
 change, options in F<inn.conf> that contain whitespace or a few other
 special characters must be quoted with double quotes, and empty parameters
 (parameters with no value) are not allowed.  INN 2.4 comes with a script,
-innupgrade(8), run automatically during C<make update>, that will attempt
+B<innupgrade>, run automatically during C<make update>, that will attempt
 to fix any problems that it finds with your F<inn.conf> file, saving the
 original as F<inn.conf.OLD>.
 
@@ -18,7 +18,7 @@ F<inn.conf>.  Adding:
     hismethod: hisv6
 
 will tell INN to use the same history backend as was used in previous
-versions.
+versions.  B<innupgrade> should take care of this for you.
 
 If you use Perl authentication for nnrpd (if I<nnrpdperlauth> in
 F<inn.conf> is true), there have been major changes.  See L<"Changes to

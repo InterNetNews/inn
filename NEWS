@@ -4,9 +4,9 @@ Upgrading from 2.3 to 2.4
     change, options in inn.conf that contain whitespace or a few other
     special characters must be quoted with double quotes, and empty
     parameters (parameters with no value) are not allowed.  INN 2.4 comes
-    with a script, innupgrade(8), run automatically during "make update",
-    that will attempt to fix any problems that it finds with your inn.conf
-    file, saving the original as inn.conf.OLD.
+    with a script, innupgrade, run automatically during "make update", that
+    will attempt to fix any problems that it finds with your inn.conf file,
+    saving the original as inn.conf.OLD.
 
     This change is the beginning of standardization of parsing and syntax
     across all of INN's configuration files.
@@ -18,7 +18,7 @@ Upgrading from 2.3 to 2.4
         hismethod: hisv6
 
     will tell INN to use the same history backend as was used in previous
-    versions.
+    versions.  innupgrade should take care of this for you.
 
     If you use Perl authentication for nnrpd (if *nnrpdperlauth* in inn.conf
     is true), there have been major changes.  See "Changes to Perl
