@@ -6,9 +6,9 @@
 #include "clibrary.h"
 #include <ctype.h>
 
+#include "inn/md5.h"
 #include "libinn.h"
 #include "macros.h"
-#include "md5.h"
 
 STATIC HASH empty= { { 0, 0, 0, 0, 0, 0, 0, 0,
 		       0, 0, 0, 0, 0, 0, 0, 0 }};
@@ -41,13 +41,12 @@ STATIC char *cipoint(char *s, size_t size) {
 }
 
 HASH Hash(const void *value, const size_t len) {
-    MD5_CTX context;
+    struct md5_context context;
     HASH hash;
 
-    MD5Init(&context);
-    MD5Update(&context, value, len);
-    MD5COUNT(&context, len);
-    MD5Final(&context);
+    md5_init(&context);
+    md5_update(&context, value, len);
+    md5_final(&context);
     memcpy(&hash,
 	   &context.digest,
 	   (sizeof(hash) < sizeof(context.digest)) ? sizeof(hash) : sizeof(context.digest));
