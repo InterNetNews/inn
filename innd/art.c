@@ -1010,7 +1010,10 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
     }
     *out = '\0';
     Article->Used = out - Article->Data;
-    Data->LinesValue = i;
+    if (innconf->storageapi)
+	Data->LinesValue = (i - 1 < 0) ? 0 : (i - 1);
+    else
+	Data->LinesValue = i;
 
     if (innconf->linecountfuzz) {
 	p = HDR(_lines);
@@ -2396,8 +2399,13 @@ STRING ARTpost(CHANNEL *cp)
 	
 	ngp->PostCount = 0;
 	/* Ignore this group? */
-	if (ngp->Rest[0] == NF_FLAG_IGNORE)
+	if (ngp->Rest[0] == NF_FLAG_IGNORE) {
+	    /* See if any of this group's sites considers this group poison. */
+	    for (isp = ngp->Poison, i = ngp->nPoison; --i >= 0; isp++)
+		if (*isp >= 0)
+		    Sites[*isp].Poison = TRUE;
 	    continue;
+	}
 
 	/* Basic validity check. */
 	if (ngp->Rest[0] == NF_FLAG_MODERATED && !Approved) {

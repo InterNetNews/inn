@@ -134,6 +134,8 @@ SITEsetlist(patlist, subbed, poison, poisonEntry)
 	    pat++;
 	if (!*pat)
 	    continue;
+	if (!*poisonEntry && poisonvalue)
+	    *poisonEntry = TRUE;
 
 	/* See if pattern is a simple newsgroup name.  If so, set the
 	 * right subbed element for that one group (if found); if not,
