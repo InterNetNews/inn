@@ -111,6 +111,17 @@ into the right place.  The easiest way to do this is to generate, on your
 old server, a list of all of your existing article files and then feed
 that list to innxmit.
 
+If you are using a version of Cleanfeed that still has a line in it like:
+
+    $lines = $hdr{'__BODY__'} =~ tr/\n/\n/;
+
+you will need to change this line to:
+
+    $lines = $hdr{'__LINES__'};
+
+to work with INN 2.3 or later.  This is due to an internal optimization of
+the interface to embedded filters that's new in INN 2.3.
+
 =head1 Changes from 2.2 to 2.3
 
 =over 2
