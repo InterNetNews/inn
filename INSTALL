@@ -235,6 +235,19 @@ Installing INN
         INN installation independently; see "./configure --help" and look
         for the --with-*-dir=PATH options.
 
+    --enable-largefiles
+        Enables large file support.  This is not enabled by default, even on
+        platforms that support it, because it changes the format of INN's
+        on-disk databases (making it difficult to upgrade an earlier INN
+        installation) and can significantly increase the size of some of the
+        history database files.  Large file support is not necessary unless
+        your history database is so large that it exceeds 2GB or you want to
+        use CNFS buffers larger than 2GB.
+
+        The history, tradindexed and buffindexed overview, CNFS, and timecaf
+        databases written by an INN built with this option are incompatible
+        with those written by an INN without this option.
+
     --enable-tagged-hash
         Use tagged hash table for the history database.  The tagged hash
         format uses much less memory but is somewhat slower.  This option is
