@@ -36,7 +36,7 @@ my (%authcodes)    = ("allowed" => 281, "denied" => 502);
 
 sub loadnnrp {
   my($file) = shift(@_);
-  my($perm, $user, $pass, %tmp);
+  my($block, $perm, $user, $pass, %tmp);
   
   open(F, $file) || die "Could not open $file: $!\n";
   
@@ -45,11 +45,24 @@ sub loadnnrp {
     
     chomp;	
     s/\#.*//g;
-    ($tmp{block}, $perm, $user, $pass, $tmp{groups}) = split(/:/);
+    ($block, $perm, $user, $pass, $tmp{groups}) = split(/:/);
     if (!defined($tmp{groups})) {
       undef %tmp;
       next;
     }
+    #   Change the glob-type pattern to a regexp
+    if ( ! ($block =~ /(\d+\.\d+\.\d+\.\d+)\/(\d+)/))
+    {
+      #   turn a glob type pattern into a regexp
+      #       escape dots
+      $block =~ s/\./\./g;
+      #       turn ? into .
+      $block =~ s/\?/./g;
+      #       turn * into .*
+      $block =~ s/\*/.*/g;
+    }
+    $tmp{block} = $block;
+
     $tmp{canread} = 1 if ($perm =~ /r/i);
     $tmp{canpost} = 1 if ($perm =~ /p/i);
     unshift(@readerconfig, \%tmp);
