@@ -89,9 +89,9 @@ The ``\-b'' parameter instructs
 to bind to the specified
 .I IP address
 when started as a standalone daemon using the ``\-D'' flag. 
-This has to be a valid Internet
-address in dotted-quad format belonging to an interface of the local
-host.
+This has to be a valid IPv4 or IPv6 address belonging to an interface of
+the local host.  It can also be ::0 (although the default is 0.0.0.0 if 
+unspecified).
 .TP
 .B \-c
 By default, 
