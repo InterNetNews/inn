@@ -95,8 +95,6 @@ int main(int argc, char *argv[]) {
 	fprintf(stderr, "expireover: -e and -k cannot be specified at the same time\n");
 	exit(1);
     }
-    if (!ovge.earliest && !ovge.keep)
-	ovge.earliest = TRUE;
 
     if (ReadInnConf() < 0) exit(1);
 
