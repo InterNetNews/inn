@@ -24,6 +24,7 @@
 STATIC int	OVnumpatterns;
 STATIC char	**OVpatterns;
 time_t		OVrealnow;
+BOOL		OVstatall;
 
 STATIC BOOL	OVdelayrm;
 STATIC BOOL	OVusepost;
@@ -382,7 +383,8 @@ BOOL OVctl(OVCTLTYPE type, void *val) {
 	(void)fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
-    if (type == OVGROUPBASEDEXPIRE) {
+    switch (type) {
+    case OVGROUPBASEDEXPIRE:
 	if (!innconf->groupbaseexpiry) {
 	    syslog(L_ERROR, "OVGROUPBASEDEXPIRE is not allowed if groupbaseexpiry if false");
 	    (void)fprintf(stderr, "OVGROUPBASEDEXPIRE is not allowed if groupbaseexpiry if false");
@@ -410,8 +412,12 @@ BOOL OVctl(OVCTLTYPE type, void *val) {
 	OVearliest = ((OVGE *)val)->earliest;
 	OVignoreselfexpire = ((OVGE *)val)->ignoreselfexpire;
 	return TRUE;
+    case OVSTATALL:
+	OVstatall = *(BOOL *)val;
+	return TRUE;
+    default:
+	return ((*ov.ctl)(type, val));
     }
-    return ((*ov.ctl)(type, val));
 }
 
 void OVclose(void) {
@@ -1152,6 +1158,9 @@ BOOL OVhisthasmsgid(char *data) {
     static STRING	History;
     HASH		key;
     OFFSET_T		offset;
+    static FILE		*F;
+    int			i, c;
+    char		buff[(sizeof(TOKEN) * 2) + 3];
 
     if (!ReadOverviewfmt) {
 	OVfindheaderindex();
@@ -1162,11 +1171,31 @@ BOOL OVhisthasmsgid(char *data) {
 	    syslog(L_ERROR, "OVhisthasmsgid: dbzinit failed '%s'", History);
 	    return FALSE;
 	}
+	if ((F = fopen(History, "r")) == NULL) {
+	    syslog(L_ERROR, "OVhisthasmsgid: fopen failed '%s', %m", History);
+	    return FALSE;
+	}
     }
     if ((p = OVERGetHeader(data, Messageidindex)) == NULL)
 	return FALSE;
     key = HashMessageID(p);
-    if (dbzfetch(key, &offset))
+    if (!dbzfetch(key, &offset))
+	return FALSE;
+    if (fseek(F, offset, SEEK_SET) == -1) {
+	syslog(L_ERROR, "OVhisthasmsgid: fseek failed to %ld '%s', %m", offset, History);
+	return FALSE;
+    }
+    for (i = 2; (c = getc(F)) != EOF && c != '\n'; )
+	if (c == HIS_FIELDSEP && --i == 0)
+	    break;
+    if (c != HIS_FIELDSEP)
+	return FALSE;
+    i = 0;
+    while ((c = getc(F)) != EOF && c != ' ' && c != '\n' && i < (sizeof(TOKEN) * 2) + 2) {
+	buff[i++] = (char)c;
+    }
+    buff[i] = '\0';
+    if (IsToken(buff))
 	return TRUE;
     return FALSE;
 }
