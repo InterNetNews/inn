@@ -566,8 +566,8 @@ ARTparseheader(CHANNEL *cp, int size)
   if ((colon = memchr(header, ':', size)) == NULL || !ISWHITE(colon[1])) {
     if ((p = memchr(header, '\r', size)) != NULL)
       *p = '\0';
-    (void)sprintf(buff, "No colon-space in \"%s\" header",
-      MaxLength(header, header));
+    (void)sprintf(buff, "%d No colon-space in \"%s\" header",
+      NNTP_REJECTIT_VAL, MaxLength(header, header));
     if (p != NULL)
       *p = '\r';
     return;
@@ -591,8 +591,8 @@ ARTparseheader(CHANNEL *cp, int size)
       if (ISWHITE(*p)) {
 	c = *p;
 	*p = '\0';
-	(void)sprintf(buff, "Space before colon in \"%s\" header",
-	  MaxLength(header, header));
+	(void)sprintf(buff, "%d Space before colon in \"%s\" header",
+	  NNTP_REJECTIT_VAL, MaxLength(header, header));
 	*p = c;
 	return;
       }
@@ -616,8 +616,8 @@ ARTparseheader(CHANNEL *cp, int size)
       /* HDR_LEN() does not include trailing "\r\n" */
       hc->Length = header + size - 2 - p;
     } else {
-      (void)sprintf(buff, "Body of header is all blanks in \"%s\" header",
-      MaxLength(hp->Name, hp->Name));
+      (void)sprintf(buff, "%d Body of header is all blanks in \"%s\" header",
+      NNTP_REJECTIT_VAL, MaxLength(hp->Name, hp->Name));
     }
   }
   return;
@@ -989,7 +989,7 @@ ARTclean(ARTDATA *data, char *buff)
 
   /* assumes Message-ID header is required header */
   if (!ARTidok(HDR(HDR__MESSAGE_ID))) {
-    strcpy(buff, "Bad \"Message-ID\" header");
+    (void)sprintf(buff, "%d Bad \"Message-ID\" header", NNTP_REJECTIT_VAL);
     TMRstop(TMR_ARTCLEAN);
     return FALSE;
   }
@@ -1037,7 +1037,8 @@ ARTclean(ARTDATA *data, char *buff)
     NGsplit(HDR(HDR__NEWSGROUPS), HDR_LEN(HDR__NEWSGROUPS),
     &data->Newsgroups)) == 0) {
     TMRstop(TMR_ARTCLEAN);
-    strcpy(buff, "Unwanted character in \"Newsgroups\" header");
+    (void)sprintf(buff, "%d Unwanted character in \"Newsgroups\" header",
+      NNTP_REJECTIT_VAL);
     return FALSE;
   }
 
