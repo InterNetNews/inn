@@ -97,10 +97,12 @@ main(int argc, char *argv[])
        getgrnam() don't set errno normally, so don't print strerror() on
        failure; it probably contains garbage.*/
     pwd = getpwnam(NEWSUSER);
-    if (!pwd) die("getpwnam(%s) failed", NEWSUSER);
+    if (!pwd)
+        die("getpwnam(%s) failed", NEWSUSER);
     news_uid = pwd->pw_uid;
     grp = getgrnam(NEWSGRP);
-    if (!grp) die("getgrnam(%s) failed", NEWSGRP);
+    if (!grp)
+        die("getgrnam(%s) failed", NEWSGRP);
     news_gid = grp->gr_gid;
 
     /* Exit if run by any other user or group. */
@@ -110,9 +112,12 @@ main(int argc, char *argv[])
             real_uid);
 
     /* Drop all supplemental groups and drop privileges to read inn.conf. */
-    if (setgroups(1, &news_gid) < 0) syswarn("can't setgroups");
-    if (seteuid(news_uid) < 0) sysdie("can't seteuid(%d)", news_uid);
-    if (ReadInnConf() < 0) exit(1);
+    if (setgroups(1, &news_gid) < 0)
+        syswarn("can't setgroups");
+    if (seteuid(news_uid) < 0)
+        sysdie("can't seteuid(%d)", news_uid);
+    if (ReadInnConf() < 0)
+        exit(1);
 
     /* Ensure that pathrun exists and that it has the right ownership. */
     if (stat(innconf->pathrun, &Sb) < 0)
@@ -147,7 +152,8 @@ main(int argc, char *argv[])
                 port = atoi(&argv[i][2]);
             } else {
                 i++;
-                if (argv[i] == NULL) die("missing port after -P");
+                if (argv[i] == NULL)
+                    die("missing port after -P");
                 port = atoi(argv[i]);
             }
             if (port == 0)
@@ -157,10 +163,12 @@ main(int argc, char *argv[])
                 p = &argv[i][2];
             } else {
                 i++;
-                if (argv[i] == NULL) die("missing address after -I");
+                if (argv[i] == NULL)
+                    die("missing address after -I");
                 p = argv[i];
             }
-            if (!inet_aton(p, &address)) die("invalid address %s", p);
+            if (!inet_aton(p, &address))
+                die("invalid address %s", p);
         }
     }
             
@@ -174,18 +182,19 @@ main(int argc, char *argv[])
 
     /* Now, regain privileges so that we can change system limits and bind
        to our desired port. */
-    if (seteuid(0) < 0) sysdie("can't seteuid(0)");
+    if (seteuid(0) < 0)
+        sysdie("can't seteuid(0)");
 
     /* innconf->rlimitnofile <= 0 says to leave it alone. */
-    if (innconf->rlimitnofile > 0)
-        if (setfdlimit(innconf->rlimitnofile) < 0)
-            sysdie("can't set file descriptor limit to %d",
-                innconf->rlimitnofile);
+    if (innconf->rlimitnofile > 0 && setfdlimit(innconf->rlimitnofile) < 0)
+        sysdie("can't set file descriptor limit to %d",
+               innconf->rlimitnofile);
 
     /* Create a socket and name it.  innconf->bindaddress controls what
        address we bind as, defaulting to INADDR_ANY. */
     s = socket(AF_INET, SOCK_STREAM, 0);
-    if (s < 0) sysdie("can't open socket");
+    if (s < 0)
+        sysdie("can't open socket");
 #ifdef SO_REUSEADDR
     i = 1;
     if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *) &i, sizeof i) < 0)
@@ -215,7 +224,7 @@ main(int argc, char *argv[])
     printf("When starting innd, use -dp%d\n", s);
 #else /* DEBUGGER */
     sprintf(pflag, "-p%d", s);
-    innd_argv[i++] = (char *)cpcatpath(innconf->pathbin, "innd");
+    innd_argv[i++] = concatpath(innconf->pathbin, "innd");
     innd_argv[i++] = pflag;
 
     /* Don't pass along -p, -P, or -I.  Check the length of the argument
@@ -224,7 +233,8 @@ main(int argc, char *argv[])
        between the argument and the value. */
     for (j = 1; j < argc; j++) {
         if (argv[j][0] == '-' && strchr("pPI", argv[j][1])) {
-            if (strlen(argv[j]) == 2) j++;
+            if (strlen(argv[j]) == 2)
+                j++;
             continue;
         } else {
             innd_argv[i++] = argv[j];
@@ -248,9 +258,11 @@ main(int argc, char *argv[])
     innd_env[5] = concat(   "HOME=", innconf->pathnews, (char *) 0);
     i = 6;
     p = getenv("BIND_INADDR");
-    if (p != NULL) innd_env[i++] = concat("BIND_INADDR=", p, (char *) 0);
+    if (p != NULL)
+        innd_env[i++] = concat("BIND_INADDR=", p, (char *) 0);
     p = getenv("TZ");
-    if (p != NULL) innd_env[i++] = concat("TZ=", p, (char *) 0);
+    if (p != NULL)
+        innd_env[i++] = concat("TZ=", p, (char *) 0);
     innd_env[i] = 0;
 
     /* Go exec innd. */
