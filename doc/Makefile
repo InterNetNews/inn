@@ -31,7 +31,8 @@ MANFLAGS = $(OWNER) -m 0444
 SEC1	= convdate.1 getlist.1 grephistory.1 inews.1 innconfval.1 installit.1 \
 	nntpget.1 rnews.1 shlock.1 shrinkfile.1 subst.1 innfeed.1
 SEC3	= $(MISSING_MAN) \
-	clientlib.3 dbz.3 inndcomm.3 libinn.3 parsedate.3 qio.3 wildmat.3
+	clientlib.3 dbz.3 inndcomm.3 libinn.3 libstorage.3 parsedate.3 qio.3 \
+	wildmat.3
 SEC5	= active.5 control.ctl.5 distrib.pats.5 expire.ctl.5 history.5 \
 	inn.conf.5 innwatch.ctl.5 moderators.5 newsfeeds.5 \
 	newslog.5 nnrp.access.5 nntpsend.ctl.5 overview.fmt.5 passwd.nntp.5 \
@@ -53,6 +54,7 @@ INSTALLED_SEC1 =	$D$(MAN1)/convdate.1 $D$(MAN1)/getlist.1 \
 
 INSTALLED_SEC3 =	$D$(MAN3)/clientlib.3 $D$(MAN3)/dbz.3 \
 			$D$(MAN3)/inndcomm.3 $D$(MAN3)/libinn.3 \
+			$D$(MAN3)/libstorage.3 \
 			$D$(MAN3)/parsedate.3 $D$(MAN3)/qio.3 \
 			$D$(MAN3)/wildmat.3
 
@@ -139,6 +141,7 @@ $D$(MAN3)/clientlib.3:		clientlib.3	   ; $(COPY) $? $@
 $D$(MAN3)/dbz.3:		dbz.3		   ; $(COPY) $? $@
 $D$(MAN3)/inndcomm.3:		inndcomm.3	   ; $(COPY) $? $@
 $D$(MAN3)/libinn.3:		libinn.3	   ; $(COPY) $? $@
+$D$(MAN3)/libstorage.3:		libstorage.3	   ; $(COPY) $? $@
 $D$(MAN3)/parsedate.3:		parsedate.3	   ; $(COPY) $? $@
 $D$(MAN3)/qio.3:		qio.3		   ; $(COPY) $? $@
 $D$(MAN3)/wildmat.3:		wildmat.3	   ; $(COPY) $? $@

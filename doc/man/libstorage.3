@@ -1,0 +1,300 @@
+.\" $Revision$
+.TH LIBSTORAGE 3
+.SH NAME
+libstorage \- InterNetNews Storage API library routines
+.SH SYNOPSIS
+.nf
+.ta \w'    unsigned long    'u
+.B
+#include "storage.h"
+
+.B "BOOL IsToken(const char *text);"
+
+.B "char *TokenToText(const TOKEN token);"
+
+.B "TOKEN TextToToken(const char *text);"
+
+.B "char *SMFindBody(char *article, int len);"
+
+.B "BOOL SMinit(void);"
+
+.B "TOKEN SMstore(const ARTHANDLE article);"
+
+.B "ARTHANDLE *SMretrieve(const TOKEN token, const RETRTYPE amount);"
+
+.B "ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount);"
+
+.B "void SMfreearticle(ARTHANDLE *article);"
+
+.B "BOOL SMcancel(TOKEN token);"
+
+.B "void SMshutdown(void);"
+
+.B "int SMerrno;"
+.B "char *SMerrorstr;"
+
+.B "BOOL OVERsetup(OVERSETUP type, void *value);"
+
+.B "BOOL OVERinit(void);"
+
+.B "BOOL OVERnewinit(void);"
+
+.B "BOOL OVERreinit(void);"
+
+.B "BOOL OVERreplace(void);"
+
+.B "int OVERgetnum(void);"
+
+.B "BOOL OVERstore(TOKEN *token, char *overdata, int overlen);"
+
+.B "char *OVERretrieve(TOKEN *token, int *overlen);"
+
+.B "BOOL OVERcancel(TOKEN *token);"
+
+.B "void OVERshutdown(void);"
+
+.fi
+.SH DESCRIPTION
+.I Libstorage
+is a library of common utility (the storage manager) routines for accessing
+Usenet articles and related data independent of particular storage method,
+and this is called storage api.
+The storage manager's function is to isolate the applications from the
+individual methods and make the policy decisions as to which storage method
+should be called to store an article.
+.PP
+One of the core concepts in the storage api is that articles are not
+manipulated using the message-id or article number, but rather a token that
+uniquely identifies the article to the method that stored it.  This may seem
+to be redundant since the message-id already is a unique identifier for the
+article, however, since the storage method generates the token, it can
+encode all the information it needs to locate the article in the token.
+.PP
+Unified overview is a new method to access overview database. With this
+method, all overview database are stored in a pre-configured overview
+database files.  It is different from traditional overview database
+storage with which overview database is stored in each newsgroup directory.
+Instead, overview index which indicates article number and Message\-ID
+hash is stored in each newsgroup directory.
+If storage api is used, you should set up unified overview which is configured
+by
+.IR overview.ctl (5)
+if the server runs
+.IR nnrpd (8).
+.PP
+All articles passed through storage api are assumed to be wire formatted.
+Wire formatted means that ``\\CR\\LF'' at the end of lines, ``.'' at the
+beginnig of lines and ``.\\CR\\LF'' at the end of article on nntp stream are not
+stripped.  This has performance win when transferring articles.
+.PP
+.I IsToken
+checks to see if the text is fomatted as a text token string.
+It returns TRUE if formatted correctly or returns FALSE if not.
+.PP
+.I TokenToText
+converts token into text token string.
+.PP
+.I TextToToken
+converts text into token.
+.PP
+.I SMFindBody
+returns the pointer of the body.
+.PP
+.I SMinit
+calls the setup function for all of the configured methods.
+This function should be called prior to all other storage api functions which
+begin with ``SM'' except for
+.IR SMFindBody .
+It returns TRUE if initialization is successful or returns FALSE if not.
+.PP
+.I SMstore
+stores an article specified with
+.IR article .
+If
+.I arrived
+is specified,
+.I SMstore
+use its value as article's arrival time or
+.I SMstore
+use current time for it.
+.I SMstore
+returns token type as
+.IR type ,
+or returns
+.I TOKEN_EMPTY
+if article is not stored whichever error occures or simply does not match
+.IR wildmat (3)
+in
+.IR storage.ctl (5).
+.PP
+.I SMretrieve
+retrieves an article specified with
+.IR token .
+.I Amount
+is the one of following which specifies retrieving type.
+.sp 1
+.in +0.5i
+.nf
+RETR_ALL	retrieve whole article
+RETR_HEAD	retrieve headers of article
+RETR_BODY	retrieve body of article
+RETR_STAT	just check to see if article exists
+.fi
+.in -0.5i
+.sp 1
+.PP
+The data area indicated by
+.I ARTHANDLE
+should not be modified.
+.PP
+.I SMnext
+is similar in function to
+.I SMretrieve
+except that it is intended for traversing the method's article store
+sequentially.
+To start a query,
+.I SMnext
+should be called with a NULL pointer
+.IR ARTHANDLE .
+Then
+.I SMnext
+returns
+.I ARTHANDLE
+which should be used for the next query.
+If NULL pointer
+.I ARTHANDLE
+is returned, no article is left to be queried.
+The data area indicated by
+.I ARTHANDLE
+should not be modified.
+.PP
+.I SMfreearticle
+frees all allocated memory used by
+.I SMretrieve
+and
+.IR SMnext .
+If
+.I SMnext
+will be called with previouly returned
+.IR ARTHANDLE ,
+.I SMfreearticle
+should not be called as
+.I SMnext
+frees allocated memory in itself.
+.PP
+.I SMcancel
+removes an article specified with
+.IR token .
+It returns TRUE if cancellation is successful or returns FALSE if not.
+.PP
+.I SMshutdown
+calls the shutdown for each configured storage method and
+then free any resources it has allocated for itself.
+.PP
+.I SMerrno
+and
+.I SMerrorstr
+indicates the reason of the last error concerning storage manager.
+.PP
+.I OVERsetup
+configures some parameters before calling
+.IR OVERinit .
+.I Type
+is one of following.
+.sp 1
+.in +0.5i
+.nf
+OVER_CTL	specify overview.ctl file name
+OVER_DIR	specify unified overview directory
+OVER_NEWDIR	specify new unified overview directory
+OVER_MODE	specify unified overview open mode
+OVER_NEWMODE	specify new unified overview open mode
+OVER_MMAP	mmap unified overview
+.fi
+.in -0.5i
+.sp 1
+The
+.I value
+is the pointer which tells each type's value. Open mode is equivalent value to
+.IR fopen (3)'s
+mode.
+It returns TRUE if setup is successful or returns FALSE if not.
+.PP
+.I OVERinit
+calls the setup function and opens configured overview file based on
+.IR OVERsetup .
+This function should be called prior to all other unified overview
+functions which begin with ``OVER'' except
+.IR OVERsetup .
+It returns TRUE if initialization is successful or returns FALSE if not.
+.PP
+.I OVERnewinit
+calls the setup function and opens configured new overview file based on
+.IR OVERsetup .
+If
+.I OVERnewinit
+is called, then
+.I OVERstore
+stores overview database into new overview file not into current overview
+file which is opened by
+.IR OVERinit .
+This function is intended to be used unified overview expiry together with
+.I OVERreinit
+and
+.IR OVERreplace .
+It returns TRUE if initialization is successful or returns FALSE if not.
+.PP
+.I OVERreinit
+reinitialize current overview file.  This is intended to read rest of
+overview file when
+.IR expire (8)
+reaches end of history and pauses
+.IR innd (8).
+It returns TRUE if reinitialization is successful or returns FALSE if not.
+.PP
+.I OVERreplace
+replaces current overview file with new one.
+It returns TRUE if replace is successful or returns FALSE if not.
+.PP
+.I OVERgetnum
+tells the number of file descriptor which is opened as unified overview
+file.  It just tells current overview file, and does not include new overview
+file.
+It returns the number if initialization is done or returns ``\-1'' if not.
+.PP
+.I OVERstore
+stores overview data into configured unified overview file.
+.I Index
+and
+.I offset
+is written into
+.IR token .
+It returns TRUE if the store is successful or returns FALSE if not.
+.PP
+.I OVERretrieve
+retrieves overview data which is indicated by
+.IR token.
+It returns the pointer if the retrieval is successful and
+.I overlen
+is set or returns NULL if not.
+.PP
+.I OVERcancel
+marks
+.IR token 's
+overview data is canceled.
+It returns TRUE if cancellation is successful or returns FALSE if not.
+.PP
+.I OVERshutdown
+calls the shutdown for each configured unified overview
+then free any resources it has allocated for itself.
+.SH HISTORY
+Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+.SH "SEE ALSO"
+expire(8),
+inn.conf(5),
+overview.ctl(5),
+storage.ctl(5).
