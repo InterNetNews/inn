@@ -1,7 +1,8 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Requeue outgoing news based on news logs.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
@@ -40,7 +41,7 @@ typedef struct _SITE {
     char		*Patterns;
     char		**Distributions;
     char		*Flags;
-    BOOL		Sent;
+    bool		Sent;
 } SITE;
 
 /*
@@ -58,18 +59,18 @@ typedef struct _NEWSGROUP {
 **  Bit array, indexed by character (8bit chars only).  If ARTpathbits['x']
 **  is non-zero, then 'x' is a valid character for a host name.
 */
-STATIC char		ARTpathbits[256];
+static char		ARTpathbits[256];
 #define ARThostchar(c)	(ARTpathbits[(int) c] != '\0')
 
 
 /*
 **  Global variables.
 */
-STATIC SITE		*Sites;
-STATIC int		nSites;
-STATIC NEWSGROUP	*Groups;
-STATIC int		nGroups;
-STATIC NGHASH		NGHtable[NGH_SIZE];
+static SITE		*Sites;
+static int		nSites;
+static NEWSGROUP	*Groups;
+static int		nGroups;
+static NGHASH		NGHtable[NGH_SIZE];
 
 
 
@@ -77,18 +78,17 @@ STATIC NGHASH		NGHtable[NGH_SIZE];
 **  Read the active file and fill in the Groups array.  Note that
 **  NEWSGROUP.Sites is filled in later.
 */
-STATIC void
-ParseActive(name)
-    STRING		name;
+static void
+ParseActive(const char *name)
 {
-    char		*active;
-    register char	*p;
-    register char	*q;
-    register int	i;
-    register unsigned	j;
-    register NGHASH	*htp;
-    register NEWSGROUP	*ngp;
-    int			NGHbuckets;
+    char	*active;
+    char	*p;
+    char	*q;
+    int         i;
+    unsigned	j;
+    NGHASH	*htp;
+    NEWSGROUP	*ngp;
+    int		NGHbuckets;
 
     /* Read the file, count the number of groups. */
     if ((active = ReadInFile(name, (struct stat *)NULL)) == NULL) {
@@ -151,7 +151,7 @@ ParseActive(name)
 /*
 **  Split text into comma-separated fields.
 */
-STATIC char **
+static char **
 CommaSplit(text)
     char		*text;
 {
@@ -181,15 +181,14 @@ CommaSplit(text)
 **  Read the newsfeeds file and fill in the Sites array.  Finish off the
 **  Groups array.
 */
-STATIC void
-ParseNewsfeeds(name)
-    STRING		name;
+static void
+ParseNewsfeeds(const char *name)
 {
-    register char	*p;
-    register char	*to;
-    register int	i;
-    register NEWSGROUP	*ngp;
-    register SITE	*sp;
+    char                *p;
+    char                *to;
+    int                 i;
+    NEWSGROUP           *ngp;
+    SITE                *sp;
     char		**strings;
     char		*save;
     char		*newsfeeds;
@@ -281,7 +280,7 @@ ParseNewsfeeds(name)
 /*
 **  Build the subscription list for a site.
 */
-STATIC void
+static void
 BuildSubList(sp, subbed)
     register SITE	*sp;
     char		*subbed;
@@ -292,14 +291,14 @@ BuildSubList(sp, subbed)
     register char	*p;
     register NEWSGROUP	*ngp;
     register int	i;
-    BOOL		JustModerated;
-    BOOL		JustUnmoderated;
+    bool		JustModerated;
+    bool		JustUnmoderated;
 
     if (EQ(sp->Name, "ME"))
 	return;
 
     /* Fill in the subbed array with the mask of groups. */
-    (void)memset((POINTER)subbed, SUB_DEFAULT, (SIZE_T)nGroups);
+    memset(subbed, SUB_DEFAULT, nGroups);
     if ((pat = strtok(sp->Patterns, SEPS)) != NULL)
 	do {
 	    subvalue = *pat != SUB_NEGATE;
@@ -361,10 +360,10 @@ BuildSubList(sp, subbed)
 /*
 **  Print a usage message and exit.
 */
-STATIC NORETURN
-Usage()
+static void
+Usage(void)
 {
-    (void)fprintf(stderr, "Usage error.\n");
+    fprintf(stderr, "Usage error.\n");
     exit(1);
 }
 
@@ -382,9 +381,9 @@ main(ac, av)
     char		*s;
     char		*line;
     FILE		*F;
-    STRING		Active;
-    STRING		History;
-    STRING		Newsfeeds;
+    const char		*Active;
+    const char		*History;
+    const char		*Newsfeeds;
     char		save;
     int			nntplinklog;
 

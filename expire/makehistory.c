@@ -2,8 +2,10 @@
 **
 **  Rebuild history/overview databases.
 */
+
 #include "config.h"
 #include "clibrary.h"
+#include "portable/wait.h"
 #include <errno.h>
 #include <syslog.h>  
 
@@ -15,20 +17,6 @@
 #include "paths.h"
 #include "storage.h"
 
-#ifdef HAVE_SYS_WAIT_H
-#include <sys/wait.h>
-#endif
-#ifndef WEXITSTATUS
-# define WEXITSTATUS(status)    ((((unsigned)(status)) >> 8) & 0xFF)
-#endif
-#ifndef WIFEXITED
-# define WIFEXITED(status)      ((((unsigned)(status)) & 0xFF) == 0)
-#endif
-#ifndef WIFSIGNALED
-# define WIFSIGNALED(status)    ((((unsigned)(status)) & 0xFF) > 0 \
-                                 && (((unsigned)(status)) & 0xFF00) == 0)
-#endif
-
 
 /*
 **  Information about the schema of the news overview files.
@@ -36,48 +24,48 @@
 typedef struct _ARTOVERFIELD {
     char	*Headername;
     int		HeadernameLength;
-    BOOL	NeedHeadername;
+    bool	NeedHeadername;
     char	*Header;
     int		HeaderLength;
-    BOOL	HasHeader;
+    bool	HasHeader;
 } ARTOVERFIELD;
 
 #define DEFAULT_SEGSIZE	10000;
 
-BOOL NukeBadArts;
+bool NukeBadArts;
 char *SchemaPath = NULL;
 char *ActivePath = NULL;
 char *HistoryPath = NULL;
 FILE *HistFile;
 FILE *Overchan;
-BOOL DoOverview;
-BOOL Fork;
-BOOL Cutofflow = FALSE;
+bool DoOverview;
+bool Fork;
+bool Cutofflow = FALSE;
 char *TmpDir;
 int OverTmpSegSize, OverTmpSegCount;
 FILE *OverTmpFile;
 char *OverTmpPath = NULL;
-BOOL NoHistory;
+bool NoHistory;
 OVSORTTYPE sorttype;
 int RetrMode;
 
 TIMEINFO Now;
 
 /* Misc variables needed for the overview creation code. */
-STATIC char		MESSAGEID[] = "Message-ID:";
-STATIC char		EXPIRES[] = "Expires:";
-STATIC char		DATE[] = "Date:";
-STATIC char		XREF[] = "Xref:";
-STATIC ARTOVERFIELD	*ARTfields; /* overview fields listed in overview.fmt */
-STATIC int		ARTfieldsize;
-STATIC ARTOVERFIELD	*Datep = (ARTOVERFIELD *)NULL;
-STATIC ARTOVERFIELD	*Msgidp = (ARTOVERFIELD *)NULL;
-STATIC ARTOVERFIELD	*Expp = (ARTOVERFIELD *)NULL;
-STATIC ARTOVERFIELD	*Xrefp = (ARTOVERFIELD *)NULL;
-STATIC ARTOVERFIELD	*Missfields; /* header fields not listed in 
+static char		MESSAGEID[] = "Message-ID:";
+static char		EXPIRES[] = "Expires:";
+static char		DATE[] = "Date:";
+static char		XREF[] = "Xref:";
+static ARTOVERFIELD	*ARTfields; /* overview fields listed in overview.fmt */
+static int		ARTfieldsize;
+static ARTOVERFIELD	*Datep = (ARTOVERFIELD *)NULL;
+static ARTOVERFIELD	*Msgidp = (ARTOVERFIELD *)NULL;
+static ARTOVERFIELD	*Expp = (ARTOVERFIELD *)NULL;
+static ARTOVERFIELD	*Xrefp = (ARTOVERFIELD *)NULL;
+static ARTOVERFIELD	*Missfields; /* header fields not listed in 
 					overview.fmt, but ones that we need
 					(e.g. message-id */
-STATIC int		Missfieldsize = 0;
+static int		Missfieldsize = 0;
 
 typedef struct _BUFFER {
     long	Size;
@@ -102,7 +90,7 @@ void BUFFset(BUFFER *bp, const char *p, const int length)
 	}
 
 	/* Try to test for non-overlapping copies. */
-	memmove((POINTER)bp->Data, (POINTER)p, (SIZE_T)length);
+	memmove(bp->Data, p, length);
     }
     bp->Used = 0;
 }
@@ -120,7 +108,7 @@ void BUFFappend(BUFFER *bp, const char *p, const int len) {
 	RENEW(bp->Data, char, bp->Size);
     }
     bp->Left += len;
-    memcpy((POINTER)&bp->Data[i], (POINTER)p, len);
+    memcpy(&bp->Data[i], p, len);
 }
 
 /*
@@ -164,7 +152,7 @@ GetMessageID(char *p)
 	B.Size = length;
 	RENEW(B.Data, char, B.Size + 1);
     }
-    (void)memcpy((POINTER)B.Data, (POINTER)p, (SIZE_T)length + 1);
+    memcpy(B.Data, p, length + 1);
 
     for (p = B.Data; *p; p++)
 	if (*p == HIS_FIELDSEP)
@@ -352,7 +340,7 @@ WriteOverLine(TOKEN *token, char *xrefs, int xrefslen,
     if (sorttype == OVNOSORT) {
 	if (Fork) {
 	    (void)fprintf(Overchan, "%s %d %d ", TokenToText(*token), arrived, expires);
-	    if (fwrite((POINTER)overdata, (SIZE_T)1, (SIZE_T)overlen, Overchan) != overlen) {
+	    if (fwrite(overdata, 1, overlen, Overchan) != overlen) {
 		fprintf(stderr, "makehistory: writing overview failed\n");
 		exit(1);
 	    }
@@ -428,14 +416,14 @@ WriteOverLine(TOKEN *token, char *xrefs, int xrefslen,
 /*
 **  Read the overview schema.
 */
-static void ARTreadschema(BOOL Overview)
+static void ARTreadschema(bool Overview)
 {
     FILE                        *F;
     char                        *p;
     ARTOVERFIELD                *fp;
     int                         i;
     char                        buff[SMBUF];
-    BOOL                        foundxreffull = FALSE;
+    bool                        foundxreffull = FALSE;
 
     if (Overview) {
 	/* Open file, count lines. */
@@ -808,7 +796,7 @@ int
 main(int argc, char **argv)
 {
     ARTHANDLE *art = NULL;
-    BOOL AppendMode;
+    bool AppendMode;
     int i, val;
     char *HistoryDir;
     char *p;

@@ -2,6 +2,7 @@
 **
 **  Get data from history database.
 */
+
 #include "clibrary.h"
 #include <errno.h>
 #include <syslog.h>  
@@ -17,7 +18,7 @@
 /*
 **  Get the next filename from the history file.
 */
-STATIC BOOL GetName(FILE *F, char *buff, BOOL *Againp)
+static bool GetName(FILE *F, char *buff, bool *Againp)
 {
     int	                c;
     char	        *p;
@@ -45,7 +46,7 @@ STATIC BOOL GetName(FILE *F, char *buff, BOOL *Againp)
 /*
 **  Given a DBZ value, seek to the right spot.
 */
-STATIC BOOL HistorySeek(FILE *F, OFFSET_T offset)
+static bool HistorySeek(FILE *F, off_t offset)
 {
     int	c;
     int	i;
@@ -73,7 +74,7 @@ STATIC BOOL HistorySeek(FILE *F, OFFSET_T offset)
 /*
 **  Print the full line from the history file.
 */
-STATIC void FullLine(FILE *F, OFFSET_T offset)
+static void FullLine(FILE *F, off_t offset)
 {
     int	                c;
 
@@ -92,16 +93,16 @@ STATIC void FullLine(FILE *F, OFFSET_T offset)
 **  Read stdin for list of Message-ID's, output list of ones we
 **  don't have.  Or, output list of files for ones we DO have.
 */
-STATIC void
-IhaveSendme(STRING History, char What)
+static void
+IhaveSendme(const char *History, char What)
 {
     FILE		*F;
     char		*p;
     char		*q;
     HASH		key;
-    OFFSET_T            offset;
+    off_t               offset;
     struct stat		Sb;
-    BOOL		More;
+    bool		More;
     char		buff[BUFSIZ];
     char		Name[SPOOLNAMEBUFF];
 
@@ -162,10 +163,10 @@ IhaveSendme(STRING History, char What)
 /*
 **  Print a usage message and exit.
 */
-STATIC NORETURN
+static void
 Usage(void)
 {
-    (void)fprintf(stderr, "Usage: grephistory [flags] MessageID\n");
+    fprintf(stderr, "Usage: grephistory [flags] MessageID\n");
     exit(1);
 }
 
@@ -175,12 +176,12 @@ main(int ac, char *av[])
 {
     int			i;
     FILE		*F;
-    STRING		History;
+    const char		*History;
     char                *keystr;
     HASH		key;
-    OFFSET_T		offset;
+    off_t		offset;
     struct stat		Sb;
-    BOOL		More;
+    bool		More;
     char		What;
     char		Name[SPOOLNAMEBUFF];
 

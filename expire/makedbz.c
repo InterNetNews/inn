@@ -2,6 +2,7 @@
 **
 **  Rebuild dbz file for history db.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <errno.h>
@@ -17,10 +18,11 @@
 char *TextFile = NULL;
 char *HistoryDir = NULL;
 char *HISTORY = NULL;
+
 /*
 **  Remove the DBZ files for the specified base text file.
 */
-STATIC void
+static void
 RemoveDBZFiles(char *p)
 {
     static char	NOCANDO[] = "Can't remove \"%s\", %s\n";
@@ -46,13 +48,14 @@ RemoveDBZFiles(char *p)
 /*
 **  Rebuild the DBZ file from the text file.
 */
-STATIC void Rebuild(OFFSET_T size, BOOL IgnoreOld, BOOL Overwrite)
+static void
+Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
 {
     QIOSTATE	        *qp;
     char	        *p;
     char	        *save;
-    OFFSET_T	        count;
-    OFFSET_T		where;
+    off_t	        count;
+    off_t		where;
     HASH		key;
     char		temp[SMBUF];
     dbzoptions          opt;
@@ -139,7 +142,7 @@ STATIC void Rebuild(OFFSET_T size, BOOL IgnoreOld, BOOL Overwrite)
 	    fprintf(stderr, "Invalid message-id \"%s\" in history text\n", p);
 	    continue;
 	}
-	switch (dbzstore(key, (OFFSET_T)where)) {
+	switch (dbzstore(key, where)) {
 	case DBZSTORE_EXISTS:
             fprintf(stderr, "Duplicate message-id \"%s\" in history text\n", p);
 	    break;
@@ -190,9 +193,9 @@ Usage()
 int
 main(int argc, char **argv)
 {
-    BOOL	Overwrite;
-    BOOL	IgnoreOld;
-    OFFSET_T	size = 0;
+    bool	Overwrite;
+    bool	IgnoreOld;
+    off_t	size = 0;
     int		i;
     char	*p;
 

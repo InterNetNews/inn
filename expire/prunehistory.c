@@ -28,7 +28,7 @@ typedef struct _BUFFER {
 /*
 **  Convert a pathname into a history-like entry.
 */
-STATIC void
+static void
 Splice(name, Line)
     register char	*name;
     BUFFER		*Line;
@@ -72,10 +72,10 @@ Splice(name, Line)
 /*
 **  Print usage message and exit.
 */
-STATIC NORETURN
-Usage()
+static void
+Usage(void)
 {
-    (void)fprintf(stderr, "Usage:  prunehistory [-f file] [input]\n");
+    fprintf(stderr, "Usage:  prunehistory [-f file] [input]\n");
     exit(1);
 }
 
@@ -86,18 +86,18 @@ main(ac, av)
     char		*av[];
 {
     static char		SEPS[] = " \t";
-    register char	*p;
-    register FILE	*rfp;
-    register int	wfd;
-    register int	c;
-    register int	i;
-    OFFSET_T		where;
+    char                *p;
+    FILE                *rfp;
+    int                 wfd;
+    int                 c;
+    int                 i;
+    off_t		where;
     char		buff[BUFSIZ];
     char		*files;
     HASH		key;
-    STRING		History;
+    const char		*History;
     BUFFER		Line;
-    BOOL		Passing;
+    bool		Passing;
 
     /* First thing, set up logging and our identity. */
     openlog("prunehistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);      
@@ -212,12 +212,12 @@ main(ac, av)
 	Line.Used = i;
 
 	/* No newline; get another chunk and try again. */
-	while ((p = memchr((POINTER)Line.Data, '\n', (SIZE_T)Line.Used)) == NULL) {
+	while ((p = memchr(Line.Data, '\n', Line.Used)) == NULL) {
 	    if (Line.Used + BUFSIZ >= Line.Size) {
 		Line.Size += BUFSIZ;
 		RENEW(Line.Data, char, Line.Size);
 	    }
-	    i = fread((POINTER)&Line.Data[Line.Used], (SIZE_T)1, BUFSIZ, rfp);
+	    i = fread(&Line.Data[Line.Used], 1, BUFSIZ, rfp);
 	    if (i <= 0)
 		break;
 	    Line.Used += i;
@@ -242,7 +242,7 @@ main(ac, av)
 
 	/* If Message-ID was only thing on line, zap the text line. */
 	if (*files == '\0') {
-	    (void)memset((POINTER)Line.Data, ' ', (SIZE_T)Line.Used);
+	    memset(Line.Data, ' ', Line.Used);
 	    if (xwrite(wfd, Line.Data, Line.Used) < 0)
 		(void)fprintf(stderr, "Can't blank \"%s\", %s\n",
 			buff, strerror(errno));

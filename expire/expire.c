@@ -2,6 +2,7 @@
 **
 **  Expire news articles.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
@@ -50,8 +51,8 @@ typedef struct _EXPIRECLASS {
     time_t              Keep;
     time_t              Default;
     time_t              Purge;
-    BOOL                Missing;
-    BOOL                ReportedMissing;
+    bool                Missing;
+    bool                ReportedMissing;
 } EXPIRECLASS;
 
 typedef struct _NGHASH {
@@ -68,40 +69,40 @@ typedef struct _NGHASH {
 typedef struct _BADGROUP {
     struct _BADGROUP	*Next;
     char		*Name;
-    BOOL		HasDirectory;
+    bool		HasDirectory;
 } BADGROUP;
 
-STATIC BOOL		EXPtracing;
-STATIC BOOL		EXPusepost;
-STATIC BOOL		Ignoreselfexpire = FALSE;
-STATIC char		*ACTIVE;
-STATIC char		*SPOOL = NULL;
-STATIC int		nGroups;
-STATIC FILE		*EXPunlinkfile;
-STATIC NEWSGROUP	*Groups;
-STATIC NEWSGROUP	EXPdefault;
-STATIC EXPIRECLASS      EXPclasses[NUM_STORAGE_CLASSES+1];
-STATIC STRING		EXPreason;
-STATIC time_t		EXPremember;
-STATIC time_t		Now;
-STATIC time_t		RealNow;
+static bool		EXPtracing;
+static bool		EXPusepost;
+static bool		Ignoreselfexpire = FALSE;
+static char		*ACTIVE;
+static char		*SPOOL = NULL;
+static int		nGroups;
+static FILE		*EXPunlinkfile;
+static NEWSGROUP	*Groups;
+static NEWSGROUP	EXPdefault;
+static EXPIRECLASS      EXPclasses[NUM_STORAGE_CLASSES+1];
+static const char	*EXPreason;
+static time_t		EXPremember;
+static time_t		Now;
+static time_t		RealNow;
 
 /* Statistics; for -v flag. */
-STATIC char		*EXPgraph;
-STATIC int		EXPverbose;
-STATIC long		EXPprocessed;
-STATIC long		EXPunlinked;
-STATIC long		EXPhistdrop;
-STATIC long		EXPhistremember;
-STATIC long		EXPallgone;
-STATIC long		EXPstillhere;
+static char		*EXPgraph;
+static int		EXPverbose;
+static long		EXPprocessed;
+static long		EXPunlinked;
+static long		EXPhistdrop;
+static long		EXPhistremember;
+static long		EXPallgone;
+static long		EXPstillhere;
 
-STATIC NORETURN CleanupAndExit(BOOL Server, BOOL Paused, int x);
+static void CleanupAndExit(bool Server, bool Paused, int x);
 #if ! defined (atof)            /* NEXT defines aotf as a macro */
 extern double		atof();
 #endif
 
-STATIC int EXPsplit(char *p, char sep, char **argv, int count);
+static int EXPsplit(char *p, char sep, char **argv, int count);
 
 enum KR {Keep, Remove};
 
@@ -110,9 +111,11 @@ enum KR {Keep, Remove};
 /*
 **  Open a file or give up.
 */
-STATIC FILE *EXPfopen(BOOL Remove, STRING Name, char *Mode, BOOL Needclean, BOOL Server, BOOL Paused)
+static FILE *
+EXPfopen(bool Remove, const char *Name, char *Mode, bool Needclean,
+         bool Server, bool Paused)
 {
-    FILE	*F;
+    FILE *F;
 
     if (Remove && unlink(Name) < 0 && errno != ENOENT)
 	(void)fprintf(stderr, "Warning, can't remove %s, %s\n",
@@ -133,7 +136,7 @@ STATIC FILE *EXPfopen(BOOL Remove, STRING Name, char *Mode, BOOL Needclean, BOOL
 **  Split a line at a specified field separator into a vector and return
 **  the number of fields found, or -1 on error.
 */
-STATIC int EXPsplit(char *p, char sep, char **argv, int count)
+static int EXPsplit(char *p, char sep, char **argv, int count)
 {
     int	                i;
 
@@ -176,10 +179,10 @@ STATIC int EXPsplit(char *p, char sep, char **argv, int count)
 **  just about everything you expect.  Print a message and return FALSE
 **  on error.
 */
-STATIC BOOL EXPgetnum(int line, char *word, time_t *v, char *name)
+static bool EXPgetnum(int line, char *word, time_t *v, char *name)
 {
     char	        *p;
-    BOOL	        SawDot;
+    bool	        SawDot;
     double		d;
 
     if (caseEQ(word, "never")) {
@@ -217,11 +220,11 @@ STATIC BOOL EXPgetnum(int line, char *word, time_t *v, char *name)
 /*
 **  Set the expiration fields for all groups that match this pattern.
 */
-STATIC void EXPmatch(char *p, NEWSGROUP *v, char mod)
+static void EXPmatch(char *p, NEWSGROUP *v, char mod)
 {
     NEWSGROUP	        *ngp;
     int	                i;
-    BOOL	        negate;
+    bool	        negate;
 
     negate = *p == '!';
     if (negate)
@@ -248,7 +251,7 @@ STATIC void EXPmatch(char *p, NEWSGROUP *v, char mod)
 /*
 **  Parse the expiration control file.  Return TRUE if okay.
 */
-STATIC BOOL EXPreadfile(FILE *F)
+static bool EXPreadfile(FILE *F)
 {
     char	        *p;
     int	                i;
@@ -256,7 +259,7 @@ STATIC BOOL EXPreadfile(FILE *F)
     int	                k;
     char	        mod;
     NEWSGROUP		v;
-    BOOL		SawDefault;
+    bool		SawDefault;
     char		buff[BUFSIZ];
     char		*fields[7];
     char		**patterns;
@@ -362,7 +365,7 @@ STATIC BOOL EXPreadfile(FILE *F)
 /*
 **  Should we keep the specified article?
 */
-STATIC enum KR EXPkeepit(TOKEN token, time_t when, time_t Expires)
+static enum KR EXPkeepit(TOKEN token, time_t when, time_t Expires)
 {
     EXPIRECLASS         class;
 
@@ -423,7 +426,8 @@ STATIC enum KR EXPkeepit(TOKEN token, time_t when, time_t Expires)
 **  An article can be removed.  Either print a note, or actually remove it.
 **  Also fill in the article size.
 */
-STATIC void EXPremove(TOKEN token, OFFSET_T *size, BOOL index)
+static void
+EXPremove(TOKEN token, off_t *size, bool index)
 {
     /* Turn into a filename and get the size if we need it. */
     if (EXPverbose > 1)
@@ -453,10 +457,10 @@ STATIC void EXPremove(TOKEN token, OFFSET_T *size, BOOL index)
 /*
 **  Do the work of expiring one line.
 */
-STATIC BOOL EXPdoline(FILE *out, char *line, int length)
+static bool EXPdoline(FILE *out, char *line, int length)
 {
     static char		IGNORING[] = "Ignoring bad line, \"%.20s...\"\n";
-    static OFFSET_T	Offset;
+    static off_t	Offset;
     char	        *p;
     char	        *q;
     int	                i;
@@ -465,12 +469,12 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length)
     time_t		Expires;
     time_t		Posted;
     time_t		when;
-    OFFSET_T		where;
-    OFFSET_T		size;
+    off_t		where;
+    off_t		size;
     HASH		key;
     char		date[20];
-    BOOL		HasSelfexpire = FALSE;
-    BOOL		Selfexpired = FALSE;
+    bool		HasSelfexpire = FALSE;
+    bool		Selfexpired = FALSE;
     ARTHANDLE		*article;
     TOKEN		token;
     char		*tokentext;
@@ -660,7 +664,8 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length)
 /*
 **  Clean up link with the server and exit.
 */
-STATIC NORETURN CleanupAndExit(BOOL Server, BOOL Paused, int x)
+static void
+CleanupAndExit(bool Server, bool Paused, int x)
 {
     FILE	*F;
 
@@ -709,9 +714,10 @@ STATIC NORETURN CleanupAndExit(BOOL Server, BOOL Paused, int x)
 /*
 **  Print a usage message and exit.
 */
-STATIC NORETURN Usage(void)
+static void
+Usage(void)
 {
-    (void)fprintf(stderr, "Usage: expire [flags] [expire.ctl]\n");
+    fprintf(stderr, "Usage: expire [flags] [expire.ctl]\n");
     exit(1);
 }
 
@@ -725,10 +731,10 @@ int main(int ac, char *av[])
     QIOSTATE 	        *qp;
     FILE		*F;
     char		*active;
-    STRING		History;
-    STRING		HistoryText;
-    STRING		HistoryPath;
-    STRING		HistoryDB;
+    const char		*History;
+    const char		*HistoryText;
+    const char		*HistoryPath;
+    const char		*HistoryDB;
     char		*Historydir;
     char		*NHistory;
     char		*NHistorydir;
@@ -744,14 +750,14 @@ int main(int ac, char *av[])
     char		*EXPhistdir;
     char		buff[SMBUF];
     FILE	        *out;
-    BOOL		Server;
-    BOOL		Paused;
-    BOOL		Bad;
-    BOOL		IgnoreOld;
-    BOOL		Writing;
-    BOOL		UnlinkFile;
-    BOOL		LowmarkFile;
-    BOOL		val;
+    bool		Server;
+    bool		Paused;
+    bool		Bad;
+    bool		IgnoreOld;
+    bool		Writing;
+    bool		UnlinkFile;
+    bool		LowmarkFile;
+    bool		val;
     time_t		TimeWarp;
     dbzoptions          opt;
 

@@ -22,10 +22,10 @@
 #include "macros.h"
 #include "storage.h"
 
-STATIC char	*MyName;
+static char	*MyName;
 
 
-STATIC void err_exit(char *s)
+static void err_exit(char *s)
 {
     (void)fprintf(stderr, "%s: %s\n", MyName, s);
     SMshutdown();
@@ -47,7 +47,7 @@ int main(int ac, char *av[])
 {
     int		i;
     char	*p, *line;
-    BOOL	empty_error, val;
+    bool	empty_error, val;
     QIOSTATE	*qp;
     TOKEN	token;
 

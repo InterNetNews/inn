@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
     char	*p;
     int		lo;
     FILE	*F;
-    BOOL	val, Nonull, statart, LowmarkFile = FALSE;
+    bool	val, Nonull, statart, LowmarkFile = FALSE;
     char	*lofile;
     OVGE	ovge;
 
