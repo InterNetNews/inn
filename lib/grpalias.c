@@ -35,7 +35,7 @@ void AliasAdd(const char *alias, const char *group) {
     AliasTable[i] = newentry;
 }
 
-BOOL LoadGroupAliases(void) {
+bool LoadGroupAliases(void) {
     QIOSTATE            *qp;
     char                *line;
     char                linebuf[1024];

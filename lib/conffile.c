@@ -1,7 +1,8 @@
-/* $Revision$
+/*  $Id$
 **
-** Routines for reading in incoming.conf-style config files.
+**  Routines for reading in incoming.conf-style config files.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include "conffile.h"
@@ -14,7 +15,7 @@ static char *CONFgetword(CONFFILE *F)
   register char *s;
   register char *t;
   char          *word;
-  register BOOL flag;
+  register bool flag;
 
   if (!F) return (NULL);	/* No conf file */
   if (!F->buf || !F->buf[0]) {

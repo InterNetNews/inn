@@ -12,9 +12,9 @@
 **  Send a string of one or more lines down a stdio FILE using RFC977
 **  conventions.  Return -1 on error.
 */
-int NNTPsendarticle(char *p, FILE *F, BOOL Terminate)
+int NNTPsendarticle(char *p, FILE *F, bool Terminate)
 {
-    char	        *next;
+    char *next;
 
     for (; p && *p; next[-1] = '\n', p = next) {
 	/* Get pointer to next line.  Truncate long lines. */
