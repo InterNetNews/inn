@@ -31,7 +31,7 @@ extern time_t	OVrealnow;
 bool OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t arrived, time_t expires);
 bool OVgroupmatch(char *group);
 bool OVhisthasmsgid(char *data);
-void OVEXPremove(TOKEN token, bool deletedgroups);
+void OVEXPremove(TOKEN token, bool deletedgroups, char **xref, int ngroups);
 
 #define DEFAULT_MAX_XREF_LEN 8192
 
