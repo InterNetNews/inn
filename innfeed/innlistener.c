@@ -684,7 +684,10 @@ static void giveArticleToPeer (InnListener lis,
               dropArticle (peerName,article) ;
             }
           else
-	    syslog (LOG_NOTICE,DYNAMIC_PEER,peerName) ;
+	    {
+	      d_printf (1,"Giving article to peer: %s\n", peerName) ;
+	      hostSendArticle (newHostObj,artTakeRef (article)) ;
+	    }
         }
       else
         {
