@@ -522,12 +522,12 @@ ProcessHeaders(linecount)
     if ((p = innconf->complaints) != NULL)
       sprintf (complaintsbuff, "%s",p) ;
     else {
-      if ((p = innconf->fromhost) != NULL) 
-	sprintf (complaintsbuff, "%s@%s",
-                NEWSMASTER, p);
+      if ((p = innconf->fromhost) != NULL && strchr(NEWSMASTER, '@') == NULL)
+	sprintf (complaintsbuff, "%s@%s", NEWSMASTER, p);
+      else
+	sprintf (complaintsbuff, "%s", NEWSMASTER);
     }
-    if (p != NULL)  /* Only show it if we can create it */
-	HDR(_xcomplaintsto) = complaintsbuff ;
+    HDR(_xcomplaintsto) = complaintsbuff ;
 
     /* Clear out some headers that should not be here */
     if (innconf->strippostcc) {
