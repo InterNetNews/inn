@@ -300,6 +300,7 @@ static void processResponse435 (Connection cxn, char *response) ;
 static void processResponse436 (Connection cxn, char *response) ;
 static void processResponse437 (Connection cxn, char *response) ;
 static void processResponse480 (Connection cxn, char *response) ;
+static void processResponse503 (Connection cxn, char *response) ;
 
 
 /* Misc functions */
@@ -1859,6 +1860,9 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
             processResponse480  (cxn,response) ;
             break ;
             
+          case 503:             /* remote timeout. */
+            processResponse503  (cxn,response) ;
+            break ;
 
           default:
             syslog (LOG_ERR, UNKNOWN_RESPONSE, peerName, cxn->ident,
@@ -3204,6 +3208,56 @@ static void processResponse480 (Connection cxn, char *response)
     cxnDead (cxn) ;
   else
     cxnSleep (cxn) ;
+}
+
+
+
+
+
+/*
+ * Handle the response 503, which means the timeout of nnrpd.
+ */
+static void processResponse503 (Connection cxn, char *response)
+{
+  bool immedRecon ;
+
+  VALIDATE_CONNECTION (cxn) ;
+
+  (void) response ;             /* keep lint happy */
+
+  if (!(cxn->state == cxnFeedingS ||
+	cxn->state == cxnIdleS ||
+	cxn->state == cxnFlushingS ||
+	cxn->state == cxnClosingS))
+    {
+      syslog (LOG_ERR,CXN_BAD_STATE,hostPeerName (cxn->myHost),
+	      cxn->ident,stateToString (cxn->state)) ;
+      cxnSleepOrDie (cxn) ;
+      return ;
+    }
+
+  if (cxn->articleQTotal != 0) {
+    syslog (LOG_NOTICE,CXN_REOPEN_FAILED,hostPeerName (cxn->myHost),cxn->ident) ;
+  }
+
+  cxnLogStats (cxn,true) ;
+
+  immedRecon = cxn->immedRecon ;
+
+  hostCxnDead (cxn->myHost,cxn) ;
+
+  if (cxn->state == cxnFlushingS && immedRecon)
+    {
+      abortConnection (cxn) ;
+      if (!cxnConnect (cxn))
+	syslog (LOG_NOTICE,CXN_REOPEN_FAILED,hostPeerName (cxn->myHost),
+		cxn->ident) ;
+    }
+  else if (cxn->state == cxnFlushingS)
+    cxnWait (cxn) ;
+  else
+    cxnDead (cxn) ;
+
 }
 
 
