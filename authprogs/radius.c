@@ -1,7 +1,5 @@
 /* $Revision$
  *
- * $Id$
- *
  * radius.c - Authenticate a user against a remote radius server.
  */
 #include <sys/types.h>
@@ -9,6 +7,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <unistd.h>
 #include <signal.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -143,18 +142,12 @@ int read_config(FILE *f, rad_config_t *radconfig)
 #define PW_AUTH_UDP_PORT 1645
 
 #define PW_AUTHENTICATION_REQUEST 1
+#define		PW_USER_NAME 1
+#define		PW_PASSWORD 2
+#define		PW_SERVICE_TYPE 6
+#define			PW_SERVICE_AUTH_ONLY 8
 #define PW_AUTHENTICATION_ACK 2
 #define PW_AUTHENTICATION_REJECT 3
-
-#define PW_USER_NAME 1
-#define PW_PASSWORD 2
-
-int alarmhit;
-
-SIGHANDLER alarmfunc(int dummy)
-{
-    alarmhit = 1;
-}
 
 int rad_auth(rad_config_t *config, char *uname, char *pass)
 {
@@ -171,6 +164,11 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     int done;
     int ret;
     int reqlen;
+    int passlen;
+    time_t now, end;
+    struct timeval tmout;
+    int got;
+    fd_set rdfds;
 
     /* seed the random number generator for the auth vector */
     gettimeofday(&seed, 0);
@@ -189,16 +187,42 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     req.code = PW_AUTHENTICATION_REQUEST;
     req.id = 0;
 
+    /* bracket the username in the configured prefix/suffix */
     req.data[0] = PW_USER_NAME;
-    req.data[1] = strlen(uname)+2;
-    strcpy(&req.data[2], uname);
+    req.data[1] = 2;
+    req.data[2] = '\0';
+    if (config->prefix) {
+	req.data[1] += strlen(config->prefix);
+	strcat(&req.data[2], config->prefix);
+    }
+    req.data[1] += strlen(uname);
+    strcat(&req.data[2], uname);
+    if (config->suffix) {
+	req.data[1] += strlen(config->suffix);
+	strcat(&req.data[2], config->suffix);
+    }
     req.datalen = req.data[1];
+
+    /* set the password */
     passstart = req.datalen;
     req.data[req.datalen] = PW_PASSWORD;
-    /* Append a '\0' character to the password, to work around a really dumb
-     * bug in Livingston's radius implementation. */
-    req.data[req.datalen+1] = strlen(pass)+2+1;
+    /* Null pad the password */
+    passlen = (strlen(pass) + 15) / 16;
+    passlen *= 16;
+    req.data[req.datalen+1] = passlen+2;
     strcpy(&req.data[req.datalen+2], pass);
+    passlen -= strlen(pass);
+    while (passlen--)
+	req.data[req.datalen+passlen+2+strlen(pass)] = '\0';
+    req.datalen += req.data[req.datalen+1];
+
+    /* we're only doing authentication */
+    req.data[req.datalen] = PW_SERVICE_TYPE;
+    req.data[req.datalen+1] = 6;
+    req.data[req.datalen+2] = (PW_SERVICE_AUTH_ONLY >> 24) & 0x000000ff;
+    req.data[req.datalen+3] = (PW_SERVICE_AUTH_ONLY >> 16) & 0x000000ff;
+    req.data[req.datalen+4] = (PW_SERVICE_AUTH_ONLY >> 8) & 0x000000ff;
+    req.data[req.datalen+5] = PW_SERVICE_AUTH_ONLY & 0x000000ff;
     req.datalen += req.data[req.datalen+1];
 
     /* filled in the data, now we know what the actual length is. */
@@ -254,8 +278,6 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 	sinr.sin_port = htons(config->radport);
     else
 	sinr.sin_port = htons(PW_AUTH_UDP_PORT);
-    fprintf(stderr, "Talking to remote host %s:%d\n", inet_ntoa(sinr.sin_addr),
-      ntohs(sinr.sin_port));
 
     /* now, build the sockets */
     if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -278,21 +300,38 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 	return(-1);
     }
     /* wait 5 seconds maximum for a radius reply. */
-    alarmhit = 0;
-    signal(SIGALRM, alarmfunc);
-    alarm(5);
+    now = time(0);
+    end = now+5;
+    tmout.tv_sec = 6;
+    tmout.tv_usec = 0;
     done = 0;
+    FD_ZERO(&rdfds);
     /* store the old vector to verify next checksum */
     memcpy(secbuf+sizeof(req.vector), req.vector, sizeof(req.vector));
-    while (!done && !alarmhit) {
+    ret = -2;
+    while (!done && end >= now) {
+	FD_SET(sock, &rdfds);
+	got = select(sock+1, &rdfds, 0, 0, &tmout);
+	if (got < 0) {
+	    fprintf(stderr, "radius: couldn't select: %s\n", strerror(errno));
+	    break;
+	} else if (got == 0) {
+	    /* timer ran out */
+	    now = time(0);
+	    tmout.tv_sec = end - now + 1;
+	    tmout.tv_usec = 0;
+	    continue;
+	}
 	jlen = sizeof(sinl);
 	if ((jlen = recvfrom(sock, (char *)&req, sizeof(req)-sizeof(int), 0, 
 	                     (struct sockaddr*) &sinl, &jlen)) < 0) {
 	    fprintf(stderr, "radius: couldnt recvfrom: %s\n", strerror(errno));
 	    break;
 	}
-	if (memcmp(&sinl, &sinr, sizeof(sinl)) != 0) {
-	    fprintf(stderr, "radius: received unexpected UDP packet.\n");
+	if (sinl.sin_addr.s_addr != sinr.sin_addr.s_addr ||
+	  (sinl.sin_port != sinr.sin_port)) {
+	    fprintf(stderr, "radius: received unexpected UDP packet from %s:%d.\n",
+	      inet_ntoa(sinl.sin_addr), ntohs(sinl.sin_port));
 	    continue;
 	}
 	reqlen = ntohs(req.length);
@@ -316,8 +355,10 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 	ret = (req.code == PW_AUTHENTICATION_ACK) ? 0 : -1;
 	done = 1;
     }
-    alarm(0);
-    signal(SIGALRM, SIG_DFL);
+    if (!done) {
+	fprintf(stderr, "radius: couldn't talk to remote radius server %s:%d\n",
+	  inet_ntoa(sinr.sin_addr), ntohs(sinr.sin_port));
+    }
     close(sock);
     return(ret);
 }
@@ -339,6 +380,7 @@ int main(int argc, char *argv[])
     char *rpass;
     FILE *f;
     rad_config_t radconfig;
+    int retval;
 
     bzero(&radconfig, sizeof(rad_config_t));
     haveother = havefile = 0;
@@ -448,8 +490,15 @@ int main(int argc, char *argv[])
 	exit(3);
 
     /* got username and password, check that they're valid */
-    if (rad_auth(&radconfig, uname, pass)) {
+    retval = rad_auth(&radconfig, uname, pass);
+    if (retval == -1) {
 	fprintf(stderr, "radius: user %s password doesn't match.\n", uname);
+	exit(1);
+    } else if (retval == -2) {
+	/* couldn't talk to the radius server..  output logged above. */
+	exit(1);
+    } else if (retval != 0) {
+	fprintf(stderr, "radius: got unexpected return from authentication function: %d\n", retval);
 	exit(1);
     }
     /* radius password matches! */
