@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <syslog.h>
+#include <sys/stat.h>
 #include <sys/uio.h>
 
 /* taken from lib/parsedate.c */
@@ -291,6 +292,8 @@ static int tls_dump(const char *s, int len)
 
 static int set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
 {
+	struct stat buf;
+
     if (cert_file != NULL) {
 	if (SSL_CTX_use_certificate_file(ctx, cert_file,
 					 SSL_FILETYPE_PEM) <= 0) {
@@ -299,6 +302,19 @@ static int set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
 	}
 	if (key_file == NULL)
 	    key_file = cert_file;
+
+	/* check ownership and permissions of key file */
+	if (lstat(key_file, &buf) == -1) {
+	    syslog(L_ERROR, "unable to stat private key '%s'", cert_file);
+	    return (0);
+	}
+	if (!S_ISREG(buf.st_mode) || (buf.st_mode & 0077) != 0 ||
+	    buf.st_uid != getuid()) {
+	    syslog(L_ERROR, "bad ownership or permissions on private key '%s'", 
+		  cert_file);
+	    return (0);
+	}
+
 	if (SSL_CTX_use_PrivateKey_file(ctx, key_file,
 					SSL_FILETYPE_PEM) <= 0) {
 	    syslog(L_ERROR, "unable to get private key from '%s'", key_file);
