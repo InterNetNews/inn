@@ -346,6 +346,7 @@ innfeed/startinnfeed.c                Start innfeed
 innfeed/tape.c                        Implementation of the Tape class
 innfeed/tape.h                        Public interface to the Tape class
 innfeed/testListener.pl               Script to hand articles to innfeed
+innfeed/timer.c                       Timer routines for innfeed
 lib                                   INN library routines (Directory)
 lib/Makefile                          Makefile for library
 lib/argparse.c                        Parsing used for OV3
