@@ -265,7 +265,6 @@ HISclose(void)
 	HIScache = NULL;
 	HIScachesize = 0;
     }
-    TMRstop(TMR_HISSYNC);
     HISlogger("HISclose end", S_HISclose);
 }
 
@@ -315,8 +314,11 @@ HISfilesfor(const HASH MessageID)
     for (Files.Used = 0; ; ) {
 	i = read(HISreadfd,
 		&Files.Data[Files.Used], Files.Size - Files.Used - 1);
-	if (i <= 0)
+	if (i <= 0) {
+            TMRstop(TMR_HISGREP);
+            HISlogger("HISfilesfor end", S_HISfilesfor);
 	    return NULL;
+	}
 	Files.Used += i;
 	Files.Data[Files.Used] = '\0';
 	if ((p = strchr(Files.Data, '\n')) != NULL) {
