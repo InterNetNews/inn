@@ -242,7 +242,7 @@ RemoveLines(group, Deletes)
 
     /* Open file, lock it. */
     (void)sprintf(file, "%s/%s", group, _PATH_OVERVIEW);
-    for ( ; ; ) {
+    for (i = 0; i < 15; i++) {
 	if ((fd = open(file, O_RDWR)) < 0) {
 	    (void)fprintf(stderr, "Can't open %s, %s\n", file, strerror(errno));
 	    UnlockGroup(lfd, lockfile);
@@ -254,6 +254,12 @@ RemoveLines(group, Deletes)
 	/* Wait for lock; close file -- might be unlinked -- and try again. */
 	(void)LockFile(fd, TRUE);
 	(void)close(fd);
+	sleep(i);
+    }
+    if (i >= 15) {
+	fprintf(stderr, "Can't open/lock %s, %s\n", file strerror(errno));
+	close(fd);
+	return;
     }
     (void)sprintf(ifile, "%s/%s.index", group, _PATH_OVERVIEW);
 
