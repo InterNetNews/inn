@@ -40,10 +40,10 @@ openlog $usage, "pid", $inn::syslog_facility ;
 
 $usage .= "[ -r addr ][ -f addr ][ -a approved ][ -d distribution ]" .
     " [ -m mailing-list ][ -b database ][ -o output-path ] [ -c wait-time ]" .
-    " [ -x header [:header...] ] newsgroups" ;
+    " [ -x header [:header...] ] [ -p port ] newsgroups" ;
 
-use vars qw($opt_r $opt_f $opt_a $opt_d $opt_m $opt_b $opt_n $opt_o $opt_h $opt_c $opt_x ) ;
-getopts("hr:f:a:d:m:b:no:c:x:") || die "usage: $usage\n" ;
+use vars qw($opt_r $opt_f $opt_a $opt_d $opt_m $opt_b $opt_n $opt_o $opt_h $opt_c $opt_x $opt_p ) ;
+getopts("hr:f:a:d:m:b:no:c:x:p:") || die "usage: $usage\n" ;
 die "usage: $usage\n" if $opt_h ;
 
 #
@@ -52,7 +52,7 @@ die "usage: $usage\n" if $opt_h ;
 #
 
 my $Sendmail = $inn::mta ;
-my $Submit = $inn::inews . " -S -h";
+my $Submit = $inn::inews . " -S -h" . ($opt_p ? " -p $opt_p" : '');
 my $Database = ($opt_b || $inn::pathtmp) . "/mailpost-msgid" ;
 my $Maintainer = $inn::newsmaster || "usenet" ; 
 my $WhereTo = $opt_o || $Submit ;
