@@ -97,11 +97,11 @@ ME\
 #	:Tf,Wnb,B4096/1024:
 
 # Innfeed funnel master; individual peers feed into the funnel.
-# We run innfeed with "-y" so that you don't have to setup all
-# peers seperately in innfeed.conf.
+# Note that innfeed with "-y" and no peer in innfeed.conf
+# would cause a problem that innfeed drops the first article.
 #innfeed!:\
 #	!*,\
-#	:Tc,Wnm*,S16384:/usr/local/news/bin/startinnfeed -y
+#	:Tc,Wnm*,S16384:/usr/local/news/bin/startinnfeed
 
 # A real-time feed through innfeed.
 #news.uu.net/uunet\
