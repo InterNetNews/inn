@@ -1,9 +1,30 @@
 Changes from 2.3.3 to 2.3.4
-[ in progress ]
 
-    * Two bugs in pgpverify were fixed when using GnuPG; it no
-      correctly checks for gpgv (rather than pgp) when using it and
-      expects the keyring to be pubring.gpg (not pubring.pgp)
+    * LIST ACTIVE no longer returns data when given a single group argument
+      if the client is not authorized to read that group.
+
+    * XHDR and XPAT weren't correctly parsing article headers, resulting in
+      searches for the header "newsgroup" matching the header "newsgroups".
+
+    * Made CNFS more robust against crashes by actually syncing the cycbuff
+      headers to disk as was originally intended.  Fixed a memory leak in
+      the tradspool code.
+
+    * Two bugs in pgpverify when using GnuPG were fixed: it now correctly
+      checks for gpgv (rather than pgp) when told to use GnuPG and expects
+      the keyring to be pubring.gpg (not pubring.pgp).
+
+    * Substantial updates to the sample provided control.ctl file.
+
+    * Compilation fixes with Perl 5.8.0, BerkeleyDB 4.x, current versions of
+      Linux (including with large file support), and Tru64.  inndf fixes for
+      ReiserFS.
+
+    * Various bugs in the header handling in nnrpd have been fixed,
+      including hangs when using virtual domains and improper processing of
+      folded headers under certain circumstances.
+
+    * Other minor bug fixes and documentation improvements.
 
 Changes from 2.3.2 to 2.3.3
 
