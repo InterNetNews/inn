@@ -45,19 +45,43 @@
 #endif
 #include <syslog.h>
 
-#include "config.h"
+#include "configdata.h"
 
 #define STATEDIR	"/var"
 
 extern int errno;
 
-int main(int argc, char *argv[])
+int main()
 {
-    if(argc == 2) {
-        return(login_plaintext(argv[0], argv[1]));
-    } else {
-        return(1);
+
+    char uname[SMBUF], pass[SMBUF], buff[SMBUF];
+
+    uname[0] = '\0';
+    pass[0] = '\0';
+    /* get the username and password from stdin */
+    while (fgets(buff, sizeof(buff), stdin) != (char*) 0) {
+        /* strip '\r\n' */
+        buff[strlen(buff)-1] = '\0';
+        if (strlen(buff) && (buff[strlen(buff)-1] == '\r'))
+            buff[strlen(buff)-1] = '\0';
+
+#define NAMESTR "ClientAuthname: "
+#define PASSSTR "ClientPassword: "
+        if (!strncmp(buff, NAMESTR, strlen(NAMESTR)))
+            strcpy(uname, buff+sizeof(NAMESTR)-1);
+        if (!strncmp(buff, PASSSTR, strlen(PASSSTR)))
+            strcpy(pass, buff+sizeof(PASSSTR)-1);
     }
+
+    if (!uname[0] || !pass[0])
+        exit(3);
+
+    if(login_plaintext(uname, pass)) {
+      fprintf(stderr, "valid passwd\n");
+      printf("User:%s\n", uname);
+      exit(0);
+    }
+    exit(1);
 }
 
 /*
@@ -85,7 +109,8 @@ const char *pass;
     strcat(srvaddr.sun_path, "/pwcheck/pwcheck");
     r = connect(s, (struct sockaddr *)&srvaddr, sizeof(srvaddr));
     if (r == -1) {
-	syslog(L_NOTICE, "connect failed to pwcheck daemon - check permissions");
+	syslog(L_NOTICE, 
+            "connect failed to pwcheck daemon - check permissions");
 	return 1;
     }
 
