@@ -199,7 +199,6 @@ rmgroup:*:arc.*:doit
 
 ## ARKANE (Arkane Systems, UK)
 # Contact: newsbastard@arkane.demon.co.uk
-# URL: http://www.arkane.demon.co.uk/Newsgroups.html
 checkgroups:newsbastard@arkane.demon.co.uk:arkane.*:doit
 newgroup:newsbastard@arkane.demon.co.uk:arkane.*:doit
 rmgroup:newsbastard@arkane.demon.co.uk:arkane.*:doit
@@ -213,6 +212,7 @@ rmgroup:control@usenet.backbone.at:at.*:doit
 ## AUS (Australia)
 # Contact: ausadmin@aus.news-admin.org
 # URL: http://aus.news-admin.org/
+# Admin group: aus.net.news
 # Key URL: http://aus.news-admin.org/ausadmin.asc
 # *PGP*   See comment at top of file.
 newgroup:*:aus.*:drop
@@ -431,7 +431,6 @@ rmgroup:lisbon@*interaccess.com:chi.*:doit
 
 ## CHILE (Chile and Chilean affairs)
 # Contact: mod-cga@webhost.cl
-# URL: http://www.webhost.cl/~mod-cga
 checkgroups:mod-cga@*webhost.cl:chile.*:doit
 newgroup:mod-cga@*webhost.cl:chile.*:doit
 rmgroup:mod-cga@*webhost.cl:chile.*:doit
@@ -446,15 +445,16 @@ checkgroups:news@fdma.com:christnet.*:doit
 newgroup:news@fdma.com:christnet.*:doit
 rmgroup:news@fdma.com:christnet.*:doit
 
-## CITYSCAPE & DEMON (Cityscape Internet Services & Demon Internet, UK)
+## CITYSCP & DEMON (Cityscape Internet Services & Demon Internet, UK)
 # Contact: Dave Williams <newsmaster@demon.net>
-# URL: ftp://ftp.demon.co.uk/pub/news/doc/demon.news.txt
+# Admin group: demon.news
+# Key URL: ftp://ftp.demon.co.uk/pub/news/doc/demon.news.txt
 # *PGP*   See comment at top of file.
-newgroup:*:cityscp.*:drop
-rmgroup:*:cityscp.*:drop
-checkgroups:newsmaster@demon.net:cityscp.*:verify-demon.news
-newgroup:newsmaster@demon.net:cityscp.*:verify-demon.news
-rmgroup:newsmaster@demon.net:cityscp.*:verify-demon.news
+newgroup:*:cityscp.*|demon.*:drop
+rmgroup:*:cityscp.*|demon.*:drop
+checkgroups:newsmaster@demon.net:cityscp.*|demon.*:verify-demon.news
+newgroup:newsmaster@demon.net:cityscp.*|demon.*:verify-demon.news
+rmgroup:newsmaster@demon.net:cityscp.*|demon.*:verify-demon.news
 
 ## CL (*PRIVATE* -- CL-Netz, German)
 # Contact: koordination@cl-netz.de
@@ -591,7 +591,10 @@ newgroup:news@mattress.atww.org:dc.*:doit
 rmgroup:news@mattress.atww.org:dc.*:doit
 
 ## DE (German language)
+# Contact: moderator@dana.de
+# URL: http://www.dana.de/mod/
 # Admin group: de.admin.news.announce
+# Key URL: http://www.dana.de/mod/pgp/dana.asc
 # *PGP*   See comment at top of file.
 newgroup:*:de.*:drop
 rmgroup:*:de.*:drop
@@ -611,7 +614,7 @@ rmgroup:eric@*cirr.com:dfw.*:doit
 
 ## DK (Denmark)
 # URL: http://www.usenet.dk/dk-admin/
-# Key URL: http://www.usenet.dk/grupper/control_pubkey.html
+# Key URL: http://www.usenet.dk/dk-admin/pubkey.html
 # Key fingerprint = 7C B2 C7 50 F3 7D 5D 73  8C EE 2E 3F 55 80 72 FF
 # *PGP*   See comment at top of file.
 newgroup:*:dk.*:drop
@@ -691,6 +694,7 @@ rmgroup:moderador@news.rediris.es:es.*:verify-es.news
 ## ESP (Spanish-language newsgroups)
 # Contact: <mod-ena@ennui.org>
 # URL: http://ennui.org/esp/
+# Key URL: http://ennui.org/esp/mod-ena.asc
 # *PGP*   See comment at top of file.
 newgroup:*:esp.*:drop
 rmgroup:*:esp.*:drop
@@ -706,6 +710,7 @@ rmgroup:news@noc.eu.net:eunet.*:doit
 ## EUROPA (Europe)
 # URL: http://www.europa.usenet.eu.org/
 # Admin group: europa.usenet.admin
+# Key URL: http://www.europa.usenet.eu.org/pgp/index.html
 # Key fingerprint = 3A 05 A8 49 FB 16 29 25  75 E3 DE BB 69 E0 1D B4
 # *PGP*   See comment at top of file.
 newgroup:*:europa.*:drop
@@ -799,7 +804,9 @@ newgroup:news@flora.ottawa.on.ca:flora.*:verify-flora-news
 rmgroup:news@flora.ottawa.on.ca:flora.*:verify-flora-news
 
 ## FR (French Language)
+# URL: http://www.usenet-fr.news.eu.org/
 # Admin group: fr.usenet.forums.annonces
+# Key URL: http://www.usenet-fr.news.eu.org/fur/usenet/presentation-fr.html
 # *PGP*   See comment at top of file.
 newgroup:*:fr.*:drop
 rmgroup:*:fr.*:drop
@@ -900,7 +907,6 @@ rmgroup:news@lava.net:hawaii.*:doit
 # Contact: news@hivnet.org
 # Admin group: hiv.config
 # Key fingerprint = 5D D6 0E DC 1E 2D EA 0B  B0 56 4D D6 52 53 D7 A4
-# Syncable server: news.hivnet.org
 # *PGP*   See comment at top of file.
 newgroup:*:hiv.*:drop
 rmgroup:*:hiv.*:drop
@@ -935,6 +941,7 @@ newgroup:news-admin@humanityquest.com:humanityquest.*:verify-humanityquest.admin
 rmgroup:news-admin@humanityquest.com:humanityquest.*:verify-humanityquest.admin.config
 
 ## HUN (Hungary)
+# URL: http://www.sztaki.hu/~kissg/news/hiteles.html
 # Admin group: hun.admin.news
 # Key URL: http://gatling.ikk.sztaki.hu/~kissg/news/hun.admin.news.asc
 # *PGP*   See comment at top of file.
@@ -969,6 +976,7 @@ rmgroup:support@idoctra.com:idoctra.*:doit
 
 ## IE (Ireland)
 # Contact: control@usenet.ie
+# URL: http://www.usenet.ie/
 # Admin group: ie.news.group
 # *PGP*   See comment at top of file.
 newgroup:*:ie.*:drop
@@ -1061,7 +1069,8 @@ rmgroup:braultr@*csmanoirs.qc.ca:k12.*:doit
 ## KA (*PRIVATE* -- Karlsruhe, Germany)
 # Contact: usenet@karlsruhe.org
 # URL: http://www.karlsruhe.org/
-# Key fingerprint =  DE 19 BB 25 76 19 81 17  F0 67 D2 23 E8 C8 7C 90
+# Key URL: http://www.karlsruhe.org/pubkey-news.karlsruhe.org.asc
+# Key fingerprint = DE 19 BB 25 76 19 81 17  F0 67 D2 23 E8 C8 7C 90
 # For private use only, contact the above address for information.
 # *PGP*   See comment at top of file.
 newgroup:*:ka.*:drop
@@ -1219,7 +1228,6 @@ rmgroup:*:metropolis.*:doit
 
 ## MI (Michigan, USA)
 # Contact: Steve Simmons <scs@lokkur.dexter.mi.us>
-# URL: http://www.inland-sea.com/mi-news.html
 checkgroups:scs@lokkur.dexter.mi.us:mi.*:doit
 newgroup:scs@lokkur.dexter.mi.us:mi.*:doit
 rmgroup:scs@lokkur.dexter.mi.us:mi.*:doit
@@ -1335,6 +1343,7 @@ rmgroup:*:netins.*:doit
 # Contact: news@netscape.com
 # URL: http://www.mozilla.org/community.html
 # Admin group: netscape.public.admin
+# Key URL: http://www.mozilla.org/newsfeeds.html
 # Key fingerprint = B7 80 55 12 1F 9C 17 0B  86 66 AD 3B DB 68 35 EC
 # *PGP*   See comment at top of file.
 newgroup:*:netscape.*:drop
@@ -1367,6 +1376,7 @@ rmgroup:ktomita@jade.dti.ne.jp:nihon.*:doit
 # Contact: nl-admin@nic.surfnet.nl
 # URL: http://www.kinkhorst.com/usenet/nladmin.en.html (English)
 # Admin group: nl.newsgroups
+# Key URL: http://pgp.mit.edu:11371/pks/lookup?op=get&search=0x23E9B3A9
 # Key fingerprint = 45 20 0B D5 A1 21 EA 7C  EF B2 95 6C 25 75 4D 27
 # *PGP*   See comment at top of file.
 newgroup:*:nl.*:drop
@@ -1376,11 +1386,8 @@ newgroup:nl-admin@nic.surfnet.nl:nl.*:verify-nl.newsgroups
 rmgroup:nl-admin@nic.surfnet.nl:nl.*:verify-nl.newsgroups
 
 ## NL-ALT (Alternative Netherlands groups)
-# URL: http://www.xs4all.nl/~onno/nl-alt/
-# Several options are given in the FAQ for creating and removing groups.
 # Key fingerprint = 6B 62 EB 53 4D 5D 2F 96  35 D9 C8 9C B0 65 0E 4C
 # *PGP*   See comment at top of file.
-rmgroup:*:nl-alt.*:drop
 checkgroups:nl-alt-janitor@surfer.xs4all.nl:nl-alt.*:verify-nl-alt.config.admin
 newgroup:*:nl-alt.*:doit
 rmgroup:nl-alt-janitor@surfer.xs4all.nl:nl-alt.*:verify-nl-alt.config.admin
@@ -1393,6 +1400,7 @@ rmgroup:beheer@nl.net:nlnet.*:doit
 
 ## NLO (Open Source / Free Software, hosted by nl.linux.org)
 # URL: http://news.nl.linux.org/doc/nlo.html
+# Key URL: http://news.nl.linux.org/doc/nlo-3.html#ss3.1
 # Key fingerprint = 63 DC B2 51 0A F3 DD 72  C2 BD C6 FD C1 C5 44 CF
 # *PGP*   See comment at top of file.
 newgroup:*:nlo.*:drop
@@ -1500,7 +1508,6 @@ rmgroup:pkern@gpu.utcc.utoronto.ca:ont.*:doit
 
 ## OPERA (Opera Software, Oslo, Norway)
 # Contact: usenet@opera.com
-# URL: http://news.opera.com/
 # *PGP*   See comment at top of file.
 newgroup:*:opera.*:drop
 rmgroup:*:opera.*:drop
@@ -1573,7 +1580,7 @@ rmgroup:news+@pitt.edu:pitt.*:doit
 rmgroup:news@toads.pgh.pa.us:pitt.*:doit
 
 ## PL (Poland and Polish language)
-# URL: http://www.ict.pwr.wroc.pl/doc/news-pl-new-site-faq.html
+# URL: http://www.usenet.pl/doc/news-pl-new-site-faq.html
 # Admin group: pl.news.admin
 # Key URL: http://www.usenet.pl/doc/news-pl-new-site-faq.html#pgp
 # *PGP*   See comment at top of file.
@@ -1605,6 +1612,7 @@ newgroup:*:psu.*:mail
 rmgroup:*:psu.*:doit
 
 ## PT (Portugal and Portuguese language)
+# URL: http://www.usenet-pt.org/
 # Admin group: pt.internet.usenet
 # Key URL: http://www.usenet-pt.org/control@usenet-pt.org.asc
 # *PGP*   See comment at top of file.
@@ -1656,6 +1664,7 @@ rmgroup:root@lusatia.de:sachsnet.*:doit
 # Contact: satgroup@endicor.com
 # URL: http://www.endicor.com/~satgroup/
 # Admin group: sat.usenet.config
+# Key URL: http://www.endicor.com/~satgroup/pubkey.asc
 # *PGP*   See comment at top of file.
 newgroup:*:sat.*:drop
 rmgroup:*:sat.*:drop
@@ -1775,7 +1784,8 @@ newgroup:news@stardivision.de:staroffice.*:verify-staroffice.admin
 rmgroup:news@stardivision.de:staroffice.*:verify-staroffice.admin
 
 ## STGT (Stuttgart, Germany)
-# URL: http://news.uni-stuttgart.de/hierarchie/stgt/stgt-control.txt
+# URL: http://news.uni-stuttgart.de/hierarchie/stgt/
+# Key URL: http://news.uni-stuttgart.de/hierarchie/stgt/stgt-control.txt
 # *PGP*   See comment at top of file.
 newgroup:*:stgt.*:drop
 rmgroup:*:stgt.*:drop
@@ -1940,7 +1950,9 @@ newgroup:*:uiuc.*:mail
 rmgroup:*:uiuc.*:doit
 
 ## UK (United Kingdom of Great Britain and Northern Ireland)
+# URL: http://www.usenet.org.uk/
 # Admin group: uk.net.news.announce
+# Key URL: http://www.usenet.org.uk/newsadmins.html
 # *PGP*   See comment at top of file.
 newgroup:*:uk.*:drop
 rmgroup:*:uk.*:drop
@@ -1970,7 +1982,6 @@ rmgroup:edh@*.tc.umn.edu:umn.*:doit
 rmgroup:Michael.E.Hedman-1@umn.edu:umn.*:doit
 
 ## UN (The United Nations)
-# URL: http://www.itu.int/Conferences/un/
 # Admin group: un.public.usenet.admin
 # *PGP*   See comment at top of file.
 newgroup:*:un.*:drop
@@ -2070,6 +2081,7 @@ rmgroup:kohe-t@*wakayama-u.ac.jp:wadai.*:doit
 # Contact: committee@wales-usenet.org
 # URL: http://www.wales-usenet.org/
 # Admin group: wales.usenet.config
+# Key URL: http://www.wales-usenet.org/english/newsadmin.txt
 # Key fingerprint = 2D 9E DE DF 12 DA 34 5C  49 E1 EE 28 E3 AB 0D AD
 # *PGP*   See comment at top of file.
 newgroup:*:wales.*:drop
