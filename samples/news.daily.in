@@ -329,10 +329,10 @@ if ${DOEXPIRE} ; then
 	mv -f ${EXPDIR}/history.n ${HISTORY}
 	mv -f ${EXPDIR}/history.n.dir ${HISTORY}.dir
 	if [ X${TAGGEDHASH} = XDO ] ; then
+	    mv -f ${EXPDIR}/history.n.pag ${HISTORY}.pag
+	else
 	    mv -f ${EXPDIR}/history.n.index ${HISTORY}.index
 	    mv -f ${EXPDIR}/history.n.hash ${HISTORY}.hash
-	else
-	    mv -f ${EXPDIR}/history.n.pag ${HISTORY}.pag
 	fi
 	rm -f ${EXPDIR}/history.n.done
 	case "${EXPIREFLAGS}" in
