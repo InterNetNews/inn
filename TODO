@@ -382,6 +382,9 @@ Needed Bug Fixes
   group.  It should probably return the appropriate 2xx status code in
   that case instead.
 
+* SIGPIPE handling in nnrpd calls all sorts of functions that shouldn't be
+  called from inside a signal handler.
+
 * Someone should go through the BUGS sections of all of the manpages and
   fix those for which the current behavior is unacceptable.
 
