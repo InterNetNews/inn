@@ -16,13 +16,17 @@
 ##  word "never."  Times are based on when received unless -p is used;
 ##  see expire.8
 
-##  If article expires before 14 days, we still remember it for 14 days in
+##  If article expires before 10 days, we still remember it for 10 days in
 ##  case we get offered it again.  Depending on what you use for the innd
 ##  -c flag and how paranoid you are about old news, you might want to
-##  make this 28, 30, etc.
-/remember/:14
+##  make this 28, 30, etc, but it's probably safe to reduce it to 7 in most
+##  cases if you want to keep your history file smaller.
+/remember/:10
 
-##  Keep for 1-10 days, allow Expires headers to work(groupbaseexpiry is false).
-0:1:10:never
-##  Keep for 1-10 days, allow Expires headers to work(groupbaseexpiry is true).
-#*:A:1:10:never
+##  Keep for 1-10 days, allow Expires headers to work.  This entry uses
+##  the syntax appropriate when groupbaseexpiry is true in inn.conf.
+*:A:1:10:never
+
+##  Keep for 1-10 days, allow Expires headers to work.  This is an entry
+##  based on storage class, used when groupbaseexpiry is false.
+#0:1:10:never
