@@ -191,6 +191,7 @@ doc/pod/hook-perl.pod                 Master file for README.perl_hook
 doc/pod/inn.conf.pod                  Master file for inn.conf.5
 doc/pod/inndstart.pod                 Master file for inndstart.8
 doc/pod/install.pod                   Master file for INSTALL
+doc/pod/makehistory.pod               Master file for makehistory.8
 doc/pod/news.pod                      Master file for NEWS
 doc/pod/ovdb.pod                      Master file for ovdb.5
 doc/pod/ovdb_recover.pod              Master file for ovdb_recover.8
