@@ -11,7 +11,8 @@ TEXT	= ../../HACKING ../../INSTALL ../../NEWS ../../README ../hook-perl \
 	../hook-python ../external-auth ../checklist
 
 MAN1	= ../man/convdate.1 ../man/fastrm.1 ../man/grephistory.1 \
-	../man/innconfval.1 ../man/innmail.1 ../man/simpleftp.1 ../man/sm.1
+	../man/inews.1 ../man/innconfval.1 ../man/innmail.1 \
+	../man/simpleftp.1 ../man/sm.1
 
 MAN3	= ../man/libauth.3 ../man/libinnhist.3 ../man/list.3 ../man/qio.3 \
 	../man/tst.3 ../man/uwildmat.3
@@ -51,6 +52,7 @@ clean:
 ../man/convdate.1:	convdate.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/fastrm.1:	fastrm.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/grephistory.1:	grephistory.pod		; $(POD2MAN) -s 1 $? > $@
+../man/inews.1:		inews.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/innconfval.1:	innconfval.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/innmail.1:	innmail.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/simpleftp.1:	simpleftp.pod		; $(POD2MAN) -s 1 $? > $@
