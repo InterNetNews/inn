@@ -1,6 +1,12 @@
-#!_PATH_PERL -w
+#!_PATH_PERL -ws
 # written April 1996, tale@isc.org (David C Lawrence)
-# Version 1.6
+# Version 1.7
+#
+# Changes from 1.6 -> 1.7
+# -- parse PGP 5.0 'good signature' lines.
+# -- allow -test swtich; prints pgp input and output
+# -- look for pgp in INN's innshellvars.pl
+# -- changed regexp delimiters for stripping $0 to be compatible with old perl
 #
 # Changes from 1.5 -> 1.6
 # -- handle articles encoded in NNTP format ('.' starting line is doubled,
@@ -20,7 +26,9 @@
 # -- checks to ensure that the temporary file is really a file, and
 #    not a link or some other weirdness
 
+# Path to pgp binary; for PGP 5.0, set the path to the pgpv binary.
 $pgp = '/usr/local/bin/pgp';
+
 # if you keep your keyring somewhere that is not the default used by pgp,
 # uncomment the next line and set appropriately.
 # $ENV{'PGPPATH'} = '/path/to/your/pgp/config';
@@ -36,7 +44,14 @@ $tmp = "/tmp/pgp$$";
 
 die "Usage: $0 < message\n" if @ARGV != 0;
 
-$0 =~ s(^.*/)();                # trim /path/to/prog to prog
+$0 =~ s%^.*/%%;                 # trim /path/to/prog to prog
+
+do "_INNSHELLVARS_.pl";
+$pgp = $inn'pgp if $inn'pgp && $inn'pgp ne "no-pgp-found-during-configure";
+
+if (! -x $pgp) {
+  die "$0: $pgp: ", (-e _ ? "cannot execute" : "no such file"), "\n";
+}
 
 # this is, by design, case-sensitive with regards to the headers it checks.
 # it's also insistent about the colon-space rule.
@@ -120,25 +135,36 @@ close(TMP) || warn "$0: close > $tmp: $!\n";
 &fail("$0: write error for message to check\n")
   if -s $tmp != length($message);
 
+print $message if $test;
+
 $ok = 2;                        # unknown signature result is default
 open(PGP,"$pgp -f +language=en < $tmp 2>&1 >/dev/null |") ||
   &fail("$0: failed to execute pgp: $!\n");
 
-$/ = "\n";
-while (<PGP>) {
-  # MIT PGP 2.6.2:
-  #   Good signature from user "Robert Braver <rbraver@ohww.norman.ok.us>".
-  # ViaCrypt PGP 4.0:
-  #   Good signature from user:  Robert Braver <rbraver@ohww.norman.ok.us>
-  if (/^Good signature from user(:  (.*)| "(.*)"\.)$/) {
-    $ok = 0;
-    $signer = $+;
-  } elsif (/^Bad signature /) {
-    $ok = 3;
-  } elsif (/Keyring file '(.*)' does not exist/) {
-    &fail("$0: couldn't access $1.  Bad \$HOME or \$PGPPATH?\n");
-  }
+undef $/;
+$_ = <PGP>;
+
+print if $test;
+
+# MIT PGP 2.6.2:
+#   Good signature from user "Robert Braver <rbraver@ohww.norman.ok.us>".
+# ViaCrypt PGP 4.0:
+#   Good signature from user:  Robert Braver <rbraver@ohww.norman.ok.us>
+# PGP 5.0i:
+#   Good signature made 1997-07-09 21:57 GMT by key:
+#     1024 bits, Key ID B88DA9C1, Created 1996-04-10
+#      "news.announce.newgroups"
+
+if (/Good signature from user(:  (.*)| "(.*)"\.)/ ||
+    /Good signature made .* by key:\n.+\n +"(.*)"/) {
+  $ok = 0;
+  $signer = $+;
+} elsif (/^Bad signature /) {
+  $ok = 3;
+} elsif (/Keyring file '(.*)' does not exist/) {
+  &fail("$0: couldn't access $1.  Bad \$HOME or \$PGPPATH?\n");
 }
+
 close(PGP) || warn "$0: closing pgp pipe returned status $?\n";
 unlink("$tmp") || warn "$0: unlink $tmp: $!\n";
 
