@@ -124,6 +124,7 @@ extern int CAFOpenArtRead PROTO((char *cfpath, ARTNUM art, SIZE_T *len));
 extern int CAFOpenArtWrite PROTO((char *cfpath, ARTNUM *art, int WaitLock, SIZE_T size));
 extern int CAFStartWriteFd PROTO((int fd, ARTNUM *art, SIZE_T size));
 extern int CAFFinishWriteFd PROTO((int fd));
+extern int CAFFinishArtWrite PROTO((int fd));
 extern int CAFCreateCAFFile PROTO((char *cfpath, ARTNUM lowart, ARTNUM tocsize, SIZE_T cfsize, int nolink, char *temppath));
 extern char *CAFErrorStr PROTO((void));
 extern CAFTOCENT *CAFReadTOC PROTO((char *cfpath, CAFHEADER *ch));
