@@ -92,31 +92,33 @@ clobber realclean distclean:	clean
 	rm -f CHANGES *~
 	rm -fr $(TARDIR)
 	rm -f config.cache config.log config.status libtool
-	rm -f BUILD makedirs.sh config/config.data backends/actmerge.sh
-	rm -f backends/actsyncd.sh backends/sendxbatches.sh
-	rm -f frontends/c7unbatch.sh frontends/gunbatch.sh
-	rm -f includes/autoconfig.h include/clibrary.h include/config.h
-	rm -f include/paths.h innfeed/innfeed-convcfg innfeed/procbatch
-	rm -f samples/actsync.cfg samples/checkgroups samples/checkgroups.pl
-	rm -f samples/cnfsstat samples/controlbatch samples/controlchan
-	rm -f samples/default samples/docheckgroups samples/expirerm
-	rm -f samples/ihave samples/ihave.pl samples/inn.conf samples/inncheck
+	rm -f BUILD makedirs.sh config/config.data config/config.data.in
+	rm -f backends/actmerge.sh backends/actsyncd.sh
+	rm -f backends/sendxbatches.sh frontends/c7unbatch.sh
+	rm -f frontends/gunbatch.sh includes/autoconfig.h include/clibrary.h
+	rm -f include/config.h include/paths.h innfeed/innfeed-convcfg
+	rm -f innfeed/procbatch samples/actsync.cfg samples/checkgroups
+	rm -f samples/checkgroups.pl samples/cnfsheadconf samples/cnfsstat
+	rm -f samples/controlbatch samples/controlchan samples/default
+	rm -f samples/docheckgroups samples/expirerm samples/ihave
+	rm -f samples/ihave.pl samples/inn.conf samples/inncheck
 	rm -f samples/innmail samples/innreport samples/innreport.conf
 	rm -f samples/innshellvars samples/innshellvars.csh
 	rm -f samples/innshellvars.pl samples/innshellvars.tcl
 	rm -f samples/innstat samples/innwatch samples/innwatch.ctl
 	rm -f samples/mailpost samples/mod-active samples/news.daily
 	rm -f samples/news2mail samples/newgroup samples/newgroup.pl
-	rm -f samples/nnrpd_auth.pl samples/nntpsend samples/parsecontrol
-	rm -f samples/pgpverify samples/pullnews samples/rc.news
-	rm -f samples/rmgroup samples/rmgroup.pl samples/scanlogs
-	rm -f samples/scanspool samples/send-ihave samples/send-nntp
-	rm -f samples/send-uucp samples/sendbatch samples/sendme
-	rm -f samples/sendme.pl samples/sendsys samples/sendsys.pl
-	rm -f samples/senduuname samples/senduuname.pl samples/signcontrol
-	rm -f samples/simpleftp samples/startup.tcl samples/tally.control
-	rm -f samples/version samples/version.pl samples/writelog
-	rm -f site/config storage/buildconfig syslog/syslog.conf
+	rm -f samples/newsfeeds samples/nnrpd_auth.pl samples/nntpsend
+	rm -f samples/parsecontrol samples/pgpverify samples/pullnews
+	rm -f samples/rc.news samples/rmgroup samples/rmgroup.pl
+	rm -f samples/scanlogs samples/scanspool samples/send-ihave
+	rm -f samples/send-nntp samples/send-uucp samples/sendbatch
+	rm -f samples/sendme samples/sendme.pl samples/sendsys
+	rm -f samples/sendsys.pl samples/senduuname samples/senduuname.pl
+	rm -f samples/signcontrol samples/simpleftp samples/startup.tcl
+	rm -f samples/tally.control samples/version samples/version.pl
+	rm -f samples/writelog site/config storage/buildconfig
+	rm -f syslog/syslog.conf
 	@echo ""
 	cd site ; make clobber ; cd ..
 	rm -f Makefile.global 
