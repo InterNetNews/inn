@@ -375,7 +375,7 @@ innconf_parse(struct config_group *group)
             *string = (char_ptr == NULL) ? NULL : xstrdup(char_ptr);
             break;
         default:
-            die("internal error: invalid type in row %d of config table", i);
+            die("internal error: invalid type in row %u of config table", i);
             break;
         }
     return config;
