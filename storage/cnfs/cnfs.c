@@ -1124,8 +1124,6 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	  cycbuff->currentbuff = false;
 	  CNFSflushhead(cycbuff);		/* Flush, just for giggles */
 	  if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
-	  syslog(L_NOTICE, "%s: metacycbuff %s cycbuff is moved to %s remain calm",
-	       LocalLogName, metacycbuff->name, cycbuff->name);
 	  metacycbuff->memb_next = (metacycbuff->memb_next + 1) % metacycbuff->count;
 	  cycbuff = metacycbuff->members[metacycbuff->memb_next];  
 	  if (!SMpreopen && !CNFSinit_disks(cycbuff)) {
@@ -1134,6 +1132,8 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	      token.type = TOKEN_EMPTY;
 	      return token;
 	  }
+	  syslog(L_NOTICE, "%s: metacycbuff %s cycbuff is moved to %s remain calm",
+	       LocalLogName, metacycbuff->name, cycbuff->name);
 	  cycbuff->currentbuff = true;
 	  cycbuff->needflush = true;
 	  CNFSflushhead(cycbuff);		/* Flush, just for giggles */
