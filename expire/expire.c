@@ -263,10 +263,7 @@ STATIC BOOL EXPreadfile(FILE *F)
     /* Scan all lines. */
     EXPremember = -1;
     SawDefault = FALSE;
-#if 0
-    /* XXX disabled until we find a way to re-enable ng-based expire. */
-    patterns = NEW(char*, nGroups);
-#endif
+
     for (i = 0; i <= NUM_STORAGE_CLASSES; i++) {
 	EXPclasses[i].ReportedMissing = FALSE;
         EXPclasses[i].Missing = TRUE;
@@ -351,68 +348,12 @@ STATIC BOOL EXPreadfile(FILE *F)
 	}
 
 	/* Regular expiration line -- right number of fields? */
-#if 0
 	if (j != 5) {
-#endif
 	    (void)fprintf(stderr, "Line %d bad format\n", i);
 	    return FALSE;
-#if 0
 	}
-
-	/* Parse the fields. */
-	if (strchr(fields[1], 'M') != NULL)
-	    mod = 'm';
-	else if (strchr(fields[1], 'U') != NULL)
-	    mod = 'u';
-	else if (strchr(fields[1], 'A') != NULL)
-	    mod = 'a';
-	else {
-	    (void)fprintf(stderr, "Line %d bad modflag\n", i);
-	    return FALSE;
-	}
-	if (!EXPgetnum(i, fields[2], &v.Keep,    "keep")
-	 || !EXPgetnum(i, fields[3], &v.Default, "default")
-	 || !EXPgetnum(i, fields[4], &v.Purge,   "purge"))
-	    return FALSE;
-	/* These were turned into offsets, so the test is the opposite
-	 * of what you think it should be.  If Purge isn't forever,
-	 * make sure it's greater then the other two fields. */
-	if (v.Purge) {
-	    /* Some value not forever; make sure other values are in range. */
-	    if (v.Keep && v.Keep < v.Purge) {
-		(void)fprintf(stderr, "Line %d keep>purge\n", i);
-		return FALSE;
-	    }
-	    if (v.Default && v.Default < v.Purge) {
-		(void)fprintf(stderr, "Line %d default>purge\n", i);
-		return FALSE;
-	    }
-	}
-
-	/* Is this the default line? */
-	if (fields[0][0] == '*' && fields[0][1] == '\0' && mod == 'a') {
-	    if (SawDefault) {
-		(void)fprintf(stderr, "Line %d duplicate default\n", i);
-                return FALSE;
-	    }
-	    EXPdefault.Keep    = v.Keep;
-	    EXPdefault.Default = v.Default;
-	    EXPdefault.Purge   = v.Purge;
-	    SawDefault = TRUE;
-	}
-
-	/* Assign to all groups that match the pattern and flags. */
-	if ((j = EXPsplit(fields[0], ',', patterns, nGroups)) == -1) {
-	    (void)fprintf(stderr, "Line %d too many patterns\n", i);
-	    return FALSE;
-	}
-	for (k = 0; k < j; k++)
-	    EXPmatch(patterns[k], &v, mod);
-#endif
+	continue; /* don't process this line--per-group expiry is done by expireover */
     }
-#if 0
-    DISPOSE(patterns);
-#endif
 
     return TRUE;
 }
@@ -911,7 +852,7 @@ int main(int ac, char *av[])
 	F = EQ(av[0], "-") ? stdin : EXPfopen(FALSE, av[0], "r", FALSE, FALSE, FALSE);
     else
 	F = EXPfopen(FALSE, cpcatpath(innconf->pathetc, _PATH_EXPIRECTL), "r", FALSE, FALSE, FALSE);
-    if (!innconf->groupbaseexpiry && !EXPreadfile(F)) {
+    if (!EXPreadfile(F)) {
 	(void)fclose(F);
 	(void)fprintf(stderr, "Format error in expire.ctl\n");
 	exit(1);
