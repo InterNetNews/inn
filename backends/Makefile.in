@@ -41,9 +41,9 @@ ALL	=	archive batcher buffchan cvtbatch filechan \
 all:		$(ALL)
 
 install:	
-.for i in ${ALL}
+	.for i in ${ALL}
 	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD ${i} ${BINDIR}/${i}
-.endfor
+	.endfor
 
 clobber clean:
 	rm -f *.o $(ALL)
