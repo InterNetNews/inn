@@ -240,12 +240,12 @@ include/config.h.in                   Template configuration data
 include/dbz.h                         Header file for DBZ
 include/inn                           Additional header files (Directory)
 include/inn/defines.h                 Portable defs for installed headers
+include/inn/md5.h                     Header file for MD5 digests
 include/inn/qio.h                     Header file for quick I/O package
 include/innconf.h                     Header file for inn.conf
 include/inndcomm.h                    innd control channel commands
 include/libinn.h                      INN library declarations
 include/macros.h                      Useful syntactic sugar
-include/md5.h                         Header file for processing MD5
 include/nntp.h                        NNTP command and reply codes
 include/ov.h                          Header file for overview
 include/paths.h.in                    Paths to common programs and files
@@ -321,7 +321,6 @@ lib/conffile.c                        Routines for reading *.conf files
 lib/date.c                            Date parsing and conversion routines
 lib/dbz.c                             DBZ database library
 lib/defdist.c                         Determine default Distribution header
-lib/endian.c                          Determine system's endianness
 lib/error.c                           Error reporting
 lib/fdlimit.c                         File descriptor limits
 lib/findheader.c                      Find a header in an article
@@ -552,6 +551,7 @@ tests/lib/fakewrite.c                 Helper functions for xwrite tests
 tests/lib/hstrerror-t.c               Tests for lib/hstrerror.c
 tests/lib/inet_aton-t.c               Tests for lib/inet_aton.c
 tests/lib/inet_ntoa-t.c               Tests for lib/inet_ntoa.c
+tests/lib/md5-t.c                     Tests for lib/md5.c
 tests/lib/memcmp-t.c                  Tests for lib/memcmp.c
 tests/lib/pread-t.c                   Tests for lib/pread.c
 tests/lib/pwrite-t.c                  Tests for lib/pwrite.c
