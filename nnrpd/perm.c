@@ -1458,6 +1458,7 @@ static int MatchUser(char *pat, char *user)
     userlist[1] = 0;
     ret = PERMmatch(list, userlist);
     DISPOSE(cp);
+    DISPOSE(list[0]);
     DISPOSE(list);
     return(ret);
 }
@@ -1545,12 +1546,14 @@ void PERMgetpermissions()
             syslog(L_TRACE, "%s match_user %s %s", ClientHost,
                    PERMuser, access_realms[i]->users);
             DISPOSE(cp);
+            DISPOSE(list[0]);
             DISPOSE(list);
             break;
           } else
             syslog(L_TRACE, "%s no_match_user %s %s", ClientHost,
                    PERMuser, access_realms[i]->users);
           DISPOSE(cp);
+	  DISPOSE(list[0]);
           DISPOSE(list);
 	}
       }
@@ -1567,6 +1570,7 @@ void PERMgetpermissions()
 	if (access_realms[i]->read) {
 	    cp = COPY(access_realms[i]->read);
 	    PERMspecified = NGgetlist(&PERMreadlist, cp);
+	    DISPOSE(cp);
 	    PERMcanread = TRUE;
 	} else {
 	    syslog(L_TRACE, "%s no_read %s", ClientHost, access_realms[i]->name);
@@ -1575,6 +1579,7 @@ void PERMgetpermissions()
 	if (access_realms[i]->post) {
 	    cp = COPY(access_realms[i]->post);
 	    NGgetlist(&PERMpostlist, cp);
+	    DISPOSE(cp);
 	    PERMcanpost = TRUE;
 	} else {
 	    syslog(L_TRACE, "%s no_post %s", ClientHost, access_realms[i]->name);
@@ -1728,6 +1733,7 @@ static bool MatchHost(char *hostlist, char *host, char *ip)
     }
     if (ret && list[iter][0] == '!')
 	ret = FALSE;
+    DISPOSE(list[0]);
     DISPOSE(list);
     DISPOSE(cp);
     return(ret);
