@@ -62,7 +62,6 @@ contrib                     1 External contributions (Directory)
 contrib/README.contrib      1 README file for the contrib contents.
 contrib/expirectl           1 Generate expire.ctl from template
 contrib/findmissing.pl      1 locate articles not in history.
-contrib/innreport           1 innlog-like perl script that generates HTML
 contrib/newsbot             1 Grep articles and trigger actions
 dbz                         1 DBZ from C News (Directory)
 dbz/dbz.3z                  1 Manpage for DBZ
@@ -277,6 +276,7 @@ nnrpd/post.h                1 Article data types.
 obsolete                    1 Depreciated programs area (Directory)
 obsolete/README.obsolete    1 README file for obsolete programs
 obsolete/innlog.awk         1 Summarize syslog log files
+obsolete/innlog.pl           1 Perl version of the syslog summary.
 sample-configs              1 Sample config files (Directory)
 sample-configs/README       1 Sample configs README file.
 sample-configs/config.data-DU4.0 1 Sample config file for DEC Unix 4.0
@@ -310,7 +310,9 @@ samples/hosts.nntp.nolimit  1 Sample hosts.nntp(5) file
 samples/ihave               1 Ihave control message handler
 samples/inn.conf            1 Sample inn.conf(5) file
 samples/inncheck            1 Perl script to syntax-check INN config files
-samples/innlog.pl           1 Perl version of the syslog summary.
+samples/innreport.pl        1 Log report muncher
+samples/innreport.conf      1 Config file for innreport
+samples/innreport_inn.pm    1 module for innreport
 samples/innshellvars        1 Script to set config parameters
 samples/innshellvars.csh    1 Csh script to set config parameters.
 samples/innshellvars.pl     1 Perl Script to set config parameters
