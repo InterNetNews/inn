@@ -147,7 +147,7 @@ extern int      nonblocking(int fd, bool flag);
 extern int      setfdlimit(int limit);
 extern void     (*xsignal(int signum, void (*sigfunc)(int)))(int);
 extern ssize_t  xwrite(int fd, const void *buffer, size_t size);
-extern ssize_t  xwritev(int fd, const struct iovec iov[], int iovcnt);
+extern ssize_t  xwritev(int fd, const struct iovec *iov, int iovcnt);
 
 
 /* Headers. */
