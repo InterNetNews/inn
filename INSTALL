@@ -15,13 +15,13 @@ Supported Systems
 
     INN has been confirmed to work on the following operating systems:
 
+      AIX 4.3
       FreeBSD 2.2.x
       FreeBSD 3.x
       HP-UX 10.20
       Linux 2.x (tested with libc 5.4 or libc 6.0)
       SCO 5.0.4 (tested with gcc 2.8.1)
-      Solaris 2.5.x
-      Solaris 2.6.x
+      Solaris 2.5.x and up
       UX/4800 R11 and up
 
     So far as possible, INN is written in portable C and should work on any
@@ -368,8 +368,20 @@ Choosing an Article Storage Format
     special hierarchies like local hierarchies and hierarchies that should
     never expire in tradspool.
 
-    FIXME: Some discussion of different overview methods should also be
-    added here.
+    If your news server will be supporting readers, you'll also need to
+    choose an overview storage mechanism (by setting ovmethod in inn.conf). 
+    There are two overview mechanisms to choose from, tradindexed and
+    buffindexed.  tradindexed very fast for readers, but it has to update
+    two files for every incoming article and can be quite slow to write. 
+    buffindexed can keep up with a large feed more easily, since it uses
+    large buffers to store all overview information in, but it's somewhat
+    slower for readers (although not as slow as the unified overview in INN
+    2.2).
+
+    If buffindexed is chosen, you will need to create the buffers for it to
+    use (very similar to creating CNFS buffers) and list the available
+    buffers in buffindexed.conf.  See buffindexed.conf(5) for more
+    information.
 
 Configuring INN
 
