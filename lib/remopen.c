@@ -74,11 +74,12 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
 	return -1;
 
     /* Set up the socket address. */
-    (void)memset((POINTER)&server, 0, sizeof server);
+    memset(&server, 0, sizeof server);
     server.sin_family = hp->h_addrtype;
     server.sin_port = htons(port);
+
     /* Source IP address to which we bind. */
-    (void)memset((POINTER)&client, 0, sizeof client);
+    memset(&client, 0, sizeof client);
     client.sin_family = AF_INET;
     if (innconf->sourceaddress) {
 	client.sin_addr.s_addr = inet_addr(innconf->sourceaddress);
@@ -100,8 +101,7 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
 	    continue;
 	}
 	/* Copy the address via inline memcpy:
-	 *	(void)memcpy((POINTER)&server.sin_addr, (POINTER)*ap,
-			(int)hp->h_length); */
+	 *	memcpy(&server.sin_addr, *ap, hp->h_length); */
 	p = (char *)*ap;
 	for (dest = (char *)&server.sin_addr, j = hp->h_length; --j >= 0; )
 	    *dest++ = *p++;

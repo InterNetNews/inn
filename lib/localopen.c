@@ -21,7 +21,8 @@
 **  Open a connection to the local InterNetNews NNTP server and optionally
 **  create stdio FILE's for talking to it.  Return -1 on error.
 */
-int NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff)
+int
+NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff)
 {
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     int			i;
@@ -40,11 +41,11 @@ int NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff)
 	return -1;
 
     /* Connect to the server. */
-    (void)memset((POINTER)&server, 0, sizeof server);
+    memset(&server, 0, sizeof server);
     server.sun_family = AF_UNIX;
-    (void)strcpy(server.sun_path, innconf->pathrun);
-    (void)strcat(server.sun_path, "/");
-    (void)strcat(server.sun_path, _PATH_NNTPCONNECT);
+    strcpy(server.sun_path, innconf->pathrun);
+    strcat(server.sun_path, "/");
+    strcat(server.sun_path, _PATH_NNTPCONNECT);
     if (connect(i, (struct sockaddr *)&server, SUN_LEN(&server)) < 0) {
 	oerrno = errno;
 	(void)close(i);
