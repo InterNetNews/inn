@@ -343,6 +343,8 @@ Configuring INN
 
                           # cd /usr/include
                           # h2ph *
+                          # cd /usr/include/sys
+                          # h2ph *
 
   2. newsfeeds (REQUIRED)
 

@@ -363,6 +363,7 @@ samples/actsync.ign         1 Ignore file for actsync
 samples/checkgroups.in      1 Checkgroups control message handler
 samples/checkgroups.pl.in   1 Checkgroups control message handler for controlchan
 samples/control.ctl         1 Access control for control messages
+samples/controlbatch.in     1 Batch program for controlchan
 samples/controlchan.in      1 Channel program for control messages
 samples/cycbuff.conf        1 Sample cycbuff.conf(5) file
 samples/default.in          1 Default control message handler

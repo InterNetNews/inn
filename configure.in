@@ -993,6 +993,7 @@ AC_OUTPUT(
 	samples/actsync.cfg 
 	samples/checkgroups
 	samples/checkgroups.pl
+	samples/controlbatch
 	samples/controlchan
 	samples/default
 	samples/docheckgroups

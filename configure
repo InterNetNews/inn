@@ -6046,6 +6046,7 @@ trap 'rm -fr `echo "Makefile.global
 	samples/actsync.cfg 
 	samples/checkgroups
 	samples/checkgroups.pl
+	samples/controlbatch
 	samples/controlchan
 	samples/default
 	samples/docheckgroups
@@ -6264,6 +6265,7 @@ CONFIG_FILES=\${CONFIG_FILES-"Makefile.global
 	samples/actsync.cfg 
 	samples/checkgroups
 	samples/checkgroups.pl
+	samples/controlbatch
 	samples/controlchan
 	samples/default
 	samples/docheckgroups
