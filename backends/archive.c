@@ -5,42 +5,29 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include <ctype.h>
 #include <errno.h>
 #include <sys/stat.h>
 #include <time.h>
 
-#ifdef TM_IN_SYS_TIME
-# include <sys/time.h>
-#endif
-
+#include "inn/buffer.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/qio.h"
+#include "inn/vector.h"
 #include "inn/wire.h"
 #include "libinn.h"
 #include "paths.h"
 #include "storage.h"
 
 
-static char	*Archive = NULL;
-static char	*ERRLOG = NULL;
-
-/*
-**  Return a YYYYMM string that represents the current year/month
-*/
-static char *
-DateString(void)
-{
-    static char		ds[10];
-    time_t		now;
-    struct tm		*x;
-
-    time(&now);
-    x = localtime(&now);
-    snprintf(ds, sizeof(ds), "%d%d", x->tm_year + 1900, x->tm_mon + 1);
-
-    return ds;
-}
+/* Holds various configuration options and command-line parameters. */
+struct config {
+    const char *root;           /* Root of the archive. */
+    const char *pattern;        /* Wildmat pattern of groups to process. */
+    FILE *index;                /* Where to put the index entries. */
+    bool concat;                /* Concatenate articles together. */
+    bool flat;                  /* Use a flat directory structure. */
+};
 
 
 /*
@@ -49,10 +36,10 @@ DateString(void)
 static bool
 MakeDir(char *Name)
 {
-    struct stat		Sb;
+    struct stat         Sb;
 
     if (mkdir(Name, GROUPDIR_MODE) >= 0)
-	return true;
+        return true;
 
     /* See if it failed because it already exists. */
     return stat(Name, &Sb) >= 0 && S_ISDIR(Sb.st_mode);
@@ -64,341 +51,313 @@ MakeDir(char *Name)
 **  parent directories needed.  Return false on error.
 */
 static bool
-MakeArchiveDirectory(char *Name)
+mkpath(const char *file)
 {
-    char	*p;
-    char	*save;
-    bool		made;
+    char *path, *delim;
+    bool status;
 
-    if ((save = strrchr(Name, '/')) != NULL)
-	*save = '\0';
+    path = xstrdup(file);
+    delim = strrchr(path, '/');
+    if (delim == NULL) {
+        free(path);
+        return false;
+    }
+    *delim = '\0';
 
     /* Optimize common case -- parent almost always exists. */
-    if (MakeDir(Name)) {
-	if (save)
-	    *save = '/';
-	return true;
+    if (MakeDir(path)) {
+        free(path);
+        return true;
     }
 
     /* Try to make each of comp and comp/foo in turn. */
-    for (p = Name; *p; p++)
-	if (*p == '/' && p != Name) {
-	    *p = '\0';
-	    made = MakeDir(Name);
-	    *p = '/';
-	    if (!made) {
-		if (save)
-		    *save = '/';
-		return false;
-	    }
-	}
-
-    made = MakeDir(Name);
-    if (save)
-	*save = '/';
-    return made;
+    for (delim = path; *delim != '\0'; delim++)
+        if (*delim == '/' && delim != path) {
+            *delim = '\0';
+            if (!MakeDir(path)) {
+                free(path);
+                return false;
+            }
+            *delim = '/';
+        }
+    status = MakeDir(path);
+    free(path);
+    return status;
 }
 
 
 /*
-**  Copy a file.  Return false if error.
+**  Write an article from memory into a file on disk.  Takes the handle of the
+**  article, the file name into which to write it, and a flag saying whether
+**  to concatenate the message to the end of an existing file if any.
 */
 static bool
-Copy(char *src, char *dest)
+write_article(ARTHANDLE *article, const char *file, bool concat)
 {
-    FILE	*in;
-    FILE	*out;
-    size_t	i;
-    char	*p;
-    char	buff[BUFSIZ];
+    FILE *out;
+    char *text = NULL;
+    size_t length = 0;
 
     /* Open the output file. */
-    if ((out = fopen(dest, "w")) == NULL) {
-	/* Failed; make any missing directories and try again. */
-	if ((p = strrchr(dest, '/')) != NULL) {
-	    if (!MakeArchiveDirectory(dest)) {
-                syswarn("cannot mkdir for %s", dest);
-		return false;
-	    }
-	    out = fopen(dest, "w");
-	}
-	if (p == NULL || out == NULL) {
-            syswarn("cannot open %s for writing", dest);
-	    return false;
-	}
+    out = fopen(file, concat ? "a" : "w");
+    if (out == NULL && errno == ENOENT) {
+        if (!mkpath(file)) {
+            syswarn("cannot mkdir for %s", file);
+            return false;
+        }
+        out = fopen(file, concat ? "a" : "w");
+    }
+    if (out == NULL) {
+        syswarn("cannot open %s for writing", file);
+        return false;
     }
 
-    /* Opening the input file is easier. */
-    if ((in = fopen(src, "r")) == NULL) {
-        syswarn("cannot open %s for reading", src);
-	fclose(out);
-	unlink(dest);
-	return false;
+    /* Get the data in wire format and write it out to the file. */
+    text = FromWireFmt(article->data, article->len, &length);
+    if (concat)
+        fprintf(out, "-----------\n");
+    if (fwrite(text, length, 1, out) != 1) {
+        syswarn("cannot write to %s", file);
+        fclose(out);
+        if (!concat)
+            unlink(file);
+        free(text);
+        return false;
     }
-
-    /* Write the data. */
-    while ((i = fread(buff, 1, sizeof buff, in)) != 0)
-	if (fwrite(buff, 1, i, out) != i) {
-            syswarn("cannot write to %s", dest);
-	    fclose(in);
-	    fclose(out);
-	    unlink(dest);
-	    return false;
-	}
-    fclose(in);
+    free(text);
 
     /* Flush and close the output. */
     if (ferror(out) || fflush(out) == EOF) {
-        syswarn("cannot flush %s", dest);
-	unlink(dest);
-	fclose(out);
-	return false;
+        syswarn("cannot flush %s", file);
+        fclose(out);
+        if (!concat)
+            unlink(file);
+        return false;
     }
     if (fclose(out) == EOF) {
-        syswarn("cannot close %s", dest);
-	unlink(dest);
-	return false;
+        syswarn("cannot close %s", file);
+        if (!concat)
+            unlink(file);
+        return false;
     }
-
     return true;
 }
 
 
 /*
-**  Copy an article from memory into a file.
+**  Link an article.  First try a hard link, then a soft link, and if both
+**  fail, write the article out again to the new path.
 */
 static bool
-CopyArt(ARTHANDLE *art, char *dest, bool Concat)
+link_article(const char *oldpath, const char *newpath, ARTHANDLE *art)
 {
-    FILE	*out;
-    const char		*p;
-    char		*q, *article;
-    size_t		i;
-    const char		*mode = "w";
-
-    if (Concat) mode = "a";
-
-    /* Open the output file. */
-    if ((out = fopen(dest, mode)) == NULL) {
-	/* Failed; make any missing directories and try again. */
-	if ((p = strrchr(dest, '/')) != NULL) {
-	    if (!MakeArchiveDirectory(dest)) {
-                syswarn("cannot mkdir for %s", dest);
-		return false;
-	    }
-	    out = fopen(dest, mode);
-	}
-	if (p == NULL || out == NULL) {
-            syswarn("cannot open %s for writing", dest);
-	    return false;
-	}
+    if (link(oldpath, newpath) < 0) {
+        if (!mkpath(newpath)) {
+            syswarn("cannot mkdir for %s", newpath);
+            return false;
+        }
+        if (link(oldpath, newpath) < 0)
+            if (symlink(oldpath, newpath) < 0)
+                if (!write_article(art, newpath, false))
+                    return false;
     }
-
-    /* Copy the data. */
-    article = xmalloc(art->len);
-    for (i=0, q=article, p=art->data; p<art->data+art->len;) {
-	if (&p[1] < art->data + art->len && p[0] == '\r' && p[1] == '\n') {
-	    p += 2;
-	    *q++ = '\n';
-	    i++;
-	    if (&p[1] < art->data + art->len && p[0] == '.' && p[1] == '.') {
-		p += 2;
-		*q++ = '.';
-		i++;
-	    }
-	    if (&p[2] < art->data + art->len && p[0] == '.' && p[1] == '\r' && p[2] == '\n') {
-		break;
-	    }
-	} else {
-	    *q++ = *p++;
-	    i++;
-	}
-    }
-    *q++ = '\0';
-
-    /* Write the data. */
-    if (Concat) {
-	/* Write a separator... */
-	fprintf(out, "-----------\n");
-    }
-    if (fwrite(article, i, 1, out) != 1) {
-        syswarn("cannot write to %s", dest);
-	fclose(out);
-	if (!Concat) unlink(dest);
-	free(article);
-	return false;
-    }
-    free(article);
-
-    /* Flush and close the output. */
-    if (ferror(out) || fflush(out) == EOF) {
-        syswarn("cannot flush %s", dest);
-	if (!Concat) unlink(dest);
-	fclose(out);
-	return false;
-    }
-    if (fclose(out) == EOF) {
-        syswarn("cannot close %s", dest);
-	if (!Concat) unlink(dest);
-	return false;
-    }
-
     return true;
 }
 
 
 /*
-**  Write an index entry.  Ignore I/O errors; our caller checks for them.
+**  Write out a single header to stdout, applying the standard overview
+**  transformation to it.  This code is partly stolen from overdata.c; it
+**  would be nice to find a way to only write this in one place.
 */
 static void
-WriteArtIndex(ARTHANDLE *art, char *ShortName)
+write_index_header(FILE *index, ARTHANDLE *art, const char *header)
 {
-    const char	*p;
-    int	i;
-    char		Subject[BUFSIZ];
-    char		MessageID[BUFSIZ];
+    const char *start, *end, *p;
 
-    Subject[0] = '\0';		/* default to null string */
-    p = wire_findheader(art->data, art->len, "Subject");
-    if (p != NULL) {
-	for (i=0; *p != '\r' && *p != '\n' && *p != '\0'; i++) {
-	    Subject[i] = *p++;
-	}
-	Subject[i] = '\0';
+    start = wire_findheader(art->data, art->len, header);
+    if (start == NULL) {
+        fprintf(index, "<none>");
+        return;
     }
-
-    MessageID[0] = '\0';	/* default to null string */
-    p = wire_findheader(art->data, art->len, "Message-ID");
-    if (p != NULL) {
-	for (i=0; *p != '\r' && *p != '\n' && *p != '\0'; i++) {
-	    MessageID[i] = *p++;
-	}
-	MessageID[i] = '\0';
+    end = wire_endheader(start, art->data + art->len - 1);
+    if (end == NULL) {
+        fprintf(index, "<none>");
+        return;
     }
-
-    printf("%s %s %s\n",
-	    ShortName,
-	    MessageID[0] ? MessageID : "<none>",
-	    Subject[0] ? Subject : "<none>");
-}
-
-
-/*
-** Crack an Xref line apart into separate strings, each of the form "ng:artnum".
-** Return in "lenp" the number of newsgroups found.
-** 
-** This routine blatantly stolen from tradspool.c
-*/
-static char **
-CrackXref(const char *xref, unsigned int *lenp) {
-    char *p;
-    char **xrefs;
-    char *q;
-    unsigned int len, xrefsize;
-
-    len = 0;
-    xrefsize = 5;
-    xrefs = xmalloc(xrefsize * sizeof(char *));
-
-    /* skip pathhost */
-    if ((p = strchr(xref, ' ')) == NULL) {
-        warn("cannot find pathhost in Xref header");
-	return NULL;
-    }
-    /* skip next spaces */
-    for (p++; *p == ' ' ; p++) ;
-    while (true) {
-	/* check for EOL */
-	/* shouldn't ever hit null w/o hitting a \r\n first, but best to be paranoid */
-	if (*p == '\n' || *p == '\r' || *p == 0) {
-	    /* hit EOL, return. */
-	    *lenp = len;
-	    return xrefs;
-	}
-	/* skip to next space or EOL */
-	for (q=p; *q && *q != ' ' && *q != '\n' && *q != '\r' ; ++q) ;
-
-        xrefs[len] = xstrndup(p, q - p);
-
-	if (++len == xrefsize) {
-	    /* grow xrefs if needed. */
-	    xrefsize *= 2;
-            xrefs = xrealloc(xrefs, xrefsize * sizeof(char *));
-	}
-
- 	p = q;
-	/* skip spaces */
-	for ( ; *p == ' ' ; p++) ;
+    for (p = start; p <= end; p++) {
+        if (*p == '\r' && p[1] == '\n') {
+            p++;
+            continue;
+        }
+        if (*p == '\n')
+            continue;
+        else if (*p == '\0' || *p == '\t' || *p == '\r')
+            putc(' ', index);
+        else
+            putc(*p, index);
     }
 }
 
 
 /*
-** Crack an groups pattern parameter apart into separate strings
-** Return in "lenp" the number of patterns found.
+**  Write an index entry to standard output.  This is the path (without the
+**  archive root), the message ID of the article, and the subject.
 */
-static char **
-CrackGroups(char *group, unsigned int *lenp) {
+static void
+write_index(FILE *index, ARTHANDLE *art, const char *file)
+{
+    fprintf(index, "%s ", file);
+    write_index_header(index, art, "Subject");
+    putc(' ', index);
+    write_index_header(index, art, "Message-ID");
+    fprintf(index, "\n");
+    if (ferror(index) || fflush(index) == EOF)
+        syswarn("cannot write index for %s", file);
+}
+
+
+/*
+**  Build the archive path for a particular article.  Takes a pointer to the
+**  (nul-terminated) group name and a pointer to the article number as a
+**  string, as well as the config struct.  Also takes a buffer to use to build
+**  the path, which may be NULL to allocate a new buffer.  Returns the path to
+**  which to write the article as a buffer (but still nul-terminated).
+*/
+static struct buffer *
+build_path(const char *group, const char *number, struct config *config,
+           struct buffer *path)
+{
     char *p;
-    char **groups;
-    char *q;
-    unsigned int len, grpsize;
 
-    len = 0;
-    grpsize = 5;
-    groups = xmalloc(grpsize * sizeof(char *));
+    /* Initialize the path buffer to config-root followed by /.  */
+    if (path == NULL)
+        path = buffer_new();
+    buffer_set(path, config->root, strlen(config->root));
+    buffer_append(path, "/", 1);
 
-    /* skip leading spaces */
-    for (p=group; *p == ' ' ; p++) ;
-    while (true) {
-	/* check for EOL */
-	/* shouldn't ever hit null w/o hitting a \r\n first, but best to be paranoid */
-	if (*p == '\n' || *p == '\r' || *p == 0) {
-	    /* hit EOL, return. */
-	    *lenp = len;
-	    return groups;
-	}
-	/* skip to next comma, space, or EOL */
-	for (q=p; *q && *q != ',' && *q != ' ' && *q != '\n' && *q != '\r' ; ++q) ;
+    /* Append the group name, replacing dots with slashes unless we're using a
+       flat structure. */
+    p = path->data + path->left;
+    buffer_append(path, group, strlen(group));
+    if (!config->flat)
+        for (; (size_t) (p - path->data) < path->left; p++)
+            if (*p == '.')
+                *p = '/';
 
-        groups[len] = xstrndup(p, q - p);
+    /* If we're saving by date, append the date now.  Otherwise, append the
+       group number. */
+    if (config->concat) {
+        struct tm *tm;
+        time_t now;
+        int year, month;
 
-	if (++len == grpsize) {
-	    /* grow groups if needed. */
-	    grpsize *= 2;
-            groups = xrealloc(groups, grpsize * sizeof(char *));
-	}
-
- 	p = q;
-	/* skip commas and spaces */
-	for ( ; *p == ' ' || *p == ',' ; p++) ;
+        now = time(NULL);
+        tm = localtime(&now);
+        year = tm->tm_year + 1900;
+        month = tm->tm_mon + 1;
+        buffer_sprintf(path, true, "/%04d%02d", year, month);
+    } else {
+        buffer_append(path, "/", 1);
+        buffer_append(path, number, strlen(number));
     }
+    buffer_append(path, "", 1);
+    return path;
+}
+
+
+/*
+**  Process a single article, saving it to the appropriate file or files (if
+**  crossposted).
+*/
+static void
+process_article(ARTHANDLE *art, const char *token, struct config *config)
+{
+    char *start, *end, *xref, *delim, *p, *first;
+    const char *group;
+    size_t i;
+    struct cvector *groups;
+    struct buffer *path = NULL;
+
+    /* Determine the groups from the Xref header.  In groups will be the split
+       Xref header; from the second string on should be a group, a colon, and
+       an article number. */
+    start = wire_findheader(art->data, art->len, "Xref");
+    if (start == NULL) {
+        warn("cannot find Xref header in %s", token);
+        return;
+    }
+    end = wire_endheader(start, art->data + art->len);
+    xref = xstrndup(start, end - start);
+    for (p = xref; *p != '\0'; p++)
+        if (*p == '\r' || *p == '\n')
+            *p = ' ';
+    groups = cvector_split_space(xref, NULL);
+    if (groups->count < 2) {
+        warn("bogus Xref header in %s", token);
+        return;
+    }
+
+    /* Walk through each newsgroup, saving the article in the appropriate
+       location. */
+    first = NULL;
+    for (i = 1; i < groups->count; i++) {
+        group = groups->strings[i];
+        delim = strchr(group, ':');
+        if (delim == NULL) {
+            warn("bogus Xref entry %s in %s", group, token);
+            continue;
+        }
+        *delim = '\0';
+
+        /* Skip newsgroups that don't match our pattern, if provided. */
+        if (config->pattern != NULL) {
+            if (uwildmat_poison(group, config->pattern) != UWILDMAT_MATCH)
+                continue;
+        }
+
+        /* Get the path to which to write the article. */
+        path = build_path(group, delim + 1, config, path);
+
+        /* If this isn't the first group, and we're not saving by date, try to
+           just link or symlink between the archive directories rather than
+           writing out multiple copies. */
+        if (first == NULL || config->concat) {
+            if (!write_article(art, path->data, config->concat))
+                continue;
+            if (groups->count > 2)
+                first = xstrdup(path->data);
+        } else {
+            if (!link_article(first, path->data, art))
+                continue;
+        }
+
+        /* Write out the index if desired. */
+        if (config->index)
+            write_index(config->index, art,
+                        path->data + strlen(config->root) + 1);
+    }
+    free(xref);
+    cvector_free(groups);
+    if (path != NULL)
+        buffer_free(path);
+    if (first != NULL)
+        free(first);
 }
 
 
 int
-main(int ac, char *av[])
+main(int argc, char *argv[])
 {
-    char	*Name;
-    char	*p;
-    FILE	*F;
-    int	i;
-    bool		Flat;
-    bool		Redirect;
-    bool		Concat;
-    char		*Index;
-    char		buff[BUFSIZ];
-    char		*spool;
-    char		dest[BUFSIZ];
-    char		**groups, *q, *ng;
-    char		**xrefs;
-    const char		*xrefhdr;
-    ARTHANDLE		*art;
-    TOKEN		token;
-    unsigned int	numgroups, numxrefs;
-    int			j;
-    char		*base = NULL;
-    bool		doit;
+    struct config config = { NULL, NULL, NULL, 0, 0 };
+    int option, status;
+    bool redirect = true;
+    QIOSTATE *qp;
+    char *line, *file;
+    TOKEN token;
+    ARTHANDLE *art;
+    FILE *spool;
+    char buffer[BUFSIZ];
 
     /* First thing, set up our identity. */
     message_program_name = "archive";
@@ -406,248 +365,124 @@ main(int ac, char *av[])
     /* Set defaults. */
     if (!innconf_read(NULL))
         exit(1);
-    Concat = false;
-    Flat = false;
-    Index = NULL;
-    Redirect = true;
+    config.root = innconf->patharchive;
     umask(NEWSUMASK);
-    ERRLOG = concatpath(innconf->pathlog, _PATH_ERRLOG);
-    Archive = innconf->patharchive;
-    groups = NULL;
-    numgroups = 0;
 
-    /* Parse JCL. */
-    while ((i = getopt(ac, av, "a:cfi:p:r")) != EOF)
-	switch (i) {
-	default:
+    /* Parse options. */
+    while ((option = getopt(argc, argv, "a:cfi:p:r")) != EOF)
+        switch (option) {
+        default:
             die("usage error");
             break;
-	case 'a':
-	    Archive = optarg;
-	    break;
-	case 'c':
-	    Flat = true;
-	    Concat = true;
-	    break;
-	case 'f':
-	    Flat = true;
-	    break;
-	case 'i':
-	    Index = optarg;
-	    break;
-	case 'p':
-	    groups = CrackGroups(optarg, &numgroups);
-	    break;
-	case 'r':
-	    Redirect = false;
-	    break;
-	}
+        case 'a':
+            config.root = optarg;
+            break;
+        case 'c':
+            config.flat = true;
+            config.concat = true;
+            break;
+        case 'f':
+            config.flat = true;
+            break;
+        case 'i':
+            config.index = fopen(optarg, "a");
+            if (config.index == NULL)
+                sysdie("cannot open index %s for output", optarg);
+            break;
+        case 'p':
+            config.pattern = optarg;
+            break;
+        case 'r':
+            redirect = false;
+            break;
+        }
 
-    /* Parse arguments -- at most one, the batchfile. */
-    ac -= optind;
-    av += optind;
-    if (ac > 2)
+    /* Parse arguments, which should just be the batch file. */
+    argc -= optind;
+    argv += optind;
+    if (argc > 1)
         die("usage error");
+    if (redirect) {
+        file = concatpath(innconf->pathlog, _PATH_ERRLOG);
+        freopen(file, "a", stderr);
+    }
+    if (argc == 1)
+        if (freopen(argv[0], "r", stdin) == NULL)
+            sysdie("cannot open %s for input", argv[0]);
 
-    /* Do file redirections. */
-    if (Redirect)
-	freopen(ERRLOG, "a", stderr);
-    if (ac == 1 && freopen(av[0], "r", stdin) == NULL)
-        sysdie("cannot open %s for input", av[0]);
-    if (Index && freopen(Index, "a", stdout) == NULL)
-        sysdie("cannot open %s for output", Index);
-
-    /* Go to where the action is. */
-    if (chdir(innconf->patharticles) < 0)
-        sysdie("cannot chdir to %s", innconf->patharticles);
-
-    /* Set up the destination. */
-    strcpy(dest, Archive);
-    Name = dest + strlen(dest);
-    *Name++ = '/';
-
+    /* Initialize the storage manager. */
     if (!SMinit())
         die("cannot initialize storage manager: %s", SMerrorstr);
 
     /* Read input. */
-    while (fgets(buff, sizeof buff, stdin) != NULL) {
-	if ((p = strchr(buff, '\n')) == NULL) {
-            warn("skipping %.40s: too long", buff);
-	    continue;
-	}
-	*p = '\0';
-	if (buff[0] == '\0' || buff[0] == '#')
-	    continue;
+    qp = QIOfdopen(fileno(stdin));
+    if (qp == NULL)
+        sysdie("cannot reopen input");
+    while ((line = QIOread(qp)) != NULL) {
+        if (*line == '\0' || *line == '#')
+            continue;
 
-	/* Check to see if this is a token... */
-	if (IsToken(buff)) {
-	    /* Get a copy of the article. */
-	    token = TextToToken(buff);
-	    if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
-                warn("cannot retrieve %s", buff);
-		continue;
-	    }
-
-	    /* Determine groups from the Xref header */
-    	    xrefhdr = wire_findheader(art->data, art->len, "Xref");
-	    if (xrefhdr == NULL) {
-                warn("cannot find Xref header");
-		SMfreearticle(art);
-		continue;
-	    }
-
-	    if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
-                warn("bogus Xref header");
-		SMfreearticle(art);
-		continue;
-	    }
-
-	    /* Process each newsgroup... */
-	    if (base) {
-		free(base);
-		base = NULL;
-	    }
-	    for (i=0; (unsigned)i<numxrefs; i++) {
-		/* Check for group limits... -p flag */
-		if ((p=strchr(xrefs[i], ':')) == NULL) {
-                    warn("bogus Xref entry %s", xrefs[i]);
-		    continue;	/* Skip to next xref */
-		}
-		if (numgroups > 0) {
-		    *p = '\0';
-		    ng = xrefs[i];
-		    doit = false;
-		    for (j=0; (unsigned)j<numgroups && !doit; j++) {
-			if (uwildmat(ng, groups[j]) != 0) doit=true;
-		    }
-		}
-		else {
-		    doit = true;
-		}
-		*p = '/';
-		if (doit) {
-		    p = Name;
-		    q = xrefs[i];
-		    while(*q) {
-		        *p++ = *q++;
-		    }
-		    *p='\0';
-
-		    if (!Flat) {
-		        for (p=Name; *p; p++) {
-			    if (*p == '.') {
-			        *p = '/';
-			    }
-		        }
-		    }
-
-		    if (Concat) {
-			p = strrchr(Name, '/');
-			q = DateString();
-			p++;
-			while (*q) {
-			    *p++ = *q++;
-			}
-			*p = '\0';
-		    }
-			
-		    if (base && !Concat) {
-			/* Try to link the file into the archive. */
-			if (link(base, dest) < 0) {
-
-			    /* Make the archive directory. */
-			    if (!MakeArchiveDirectory(dest)) {
-                                syswarn("cannot mkdir for %s", dest);
-				continue;
-			    }
-
-			    /* Try to link again; if that fails, make a copy. */
-			    if (link(base, dest) < 0) {
-#if	defined(HAVE_SYMLINK)
-				if (symlink(base, dest) < 0)
-                                    syswarn("cannot symlink %s to %s",
-                                            dest, base);
-				else
-#endif	/* defined(HAVE_SYMLINK) */
-				if (!Copy(base, dest))
-				    continue;
-				continue;
-			    }
-			}
-		    } else {
-			if (!CopyArt(art, dest, Concat))
-                            syswarn("copying %s to %s failed", buff, dest);
-			base = xstrdup(dest);
-		    }
-
-	            /* Write index. */
-	            if (Index) {
-	                WriteArtIndex(art, Name);
-	                if (ferror(stdout) || fflush(stdout) == EOF)
-                            syswarn("cannot write index for %s", Name);
-	            }
-		}
-	    }
-
-	    /* Free up the article storage space */
-	    SMfreearticle(art);
-	    art = NULL;
-	    /* Free up the xrefs storage space */
-	    for ( i=0; (unsigned)i<numxrefs; i++) free(xrefs[i]);
-	    free(xrefs);
-	    numxrefs = 0;
-	    xrefs = NULL;
-	} else {
-            warn("%s is not a token", buff);
-	    continue;
-	}
+        /* Currently, we only handle tokens.  It would be good to handle
+           regular files as well, if for no other reason than for testing, but
+           we need a good way of faking an ARTHANDLE from a file. */
+        if (IsToken(line)) {
+            token = TextToToken(line);
+            art = SMretrieve(token, RETR_ALL);
+            if (art == NULL) {
+                warn("cannot retrieve %s", line);
+                continue;
+            }
+            process_article(art, line, &config);
+            SMfreearticle(art);
+        } else {
+            warn("%s is not a token", line);
+        }
     }
 
-    /* close down the storage manager api */
+    /* Close down the storage manager API. */
     SMshutdown();
 
     /* If we read all our input, try to remove the file, and we're done. */
-    if (feof(stdin)) {
-	fclose(stdin);
-	if (av[0])
-	    unlink(av[0]);
-	exit(0);
+    if (!QIOerror(qp)) {
+        fclose(stdin);
+        if (argv[0])
+            unlink(argv[0]);
+        exit(0);
     }
 
-    /* Make an appropriate spool file. */
-    p = av[0];
-    if (p == NULL)
-        spool = concatpath(innconf->pathoutgoing, "archive");
-    else if (*p == '/')
-        spool = concat(p, ".bch", (char *) 0);
+    /* Otherwise, make an appropriate spool file. */
+    if (argv[0] == NULL)
+        file = concatpath(innconf->pathoutgoing, "archive");
+    else if (argv[0][0] == '/')
+        file = concat(argv[0], ".bch", (char *) 0);
     else
-        spool = concat(innconf->pathoutgoing, "/", p, ".bch", (char *) 0);
-    if ((F = xfopena(spool)) == NULL)
-        sysdie("cannot spool to %s", spool);
+        file = concat(innconf->pathoutgoing, "/", argv[0], ".bch", (char *) 0);
+    spool = fopen(file, "a");
+    if (spool == NULL)
+        sysdie("cannot spool to %s", file);
 
     /* Write the rest of stdin to the spool file. */
-    i = 0;
-    if (fprintf(F, "%s\n", buff) == EOF) {
+    status = 0;
+    if (fprintf(spool, "%s\n", line) == EOF) {
         syswarn("cannot start spool");
-	i = 1;
+        status = 1;
     }
-    while (fgets(buff, sizeof buff, stdin) != NULL) 
-	if (fputs(buff, F) == EOF) {
+    while (fgets(buffer, sizeof(buffer), stdin) != NULL) 
+        if (fputs(buffer, spool) == EOF) {
             syswarn("cannot write to spool");
-	    i = 1;
-	    break;
-	}
-    if (fclose(F) == EOF) {
+            status = 1;
+            break;
+        }
+    if (fclose(spool) == EOF) {
         syswarn("cannot close spool");
-	i = 1;
+        status = 1;
     }
 
     /* If we had a named input file, try to rename the spool. */
-    if (p != NULL && rename(spool, av[0]) < 0) {
+    if (argv[0] != NULL && rename(file, argv[0]) < 0) {
         syswarn("cannot rename spool");
-	i = 1;
+        status = 1;
     }
 
-    exit(i);
-    /* NOTREACHED */
+    exit(status);
 }
