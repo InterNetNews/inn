@@ -2,7 +2,8 @@
 
 include ../../Makefile.global
 
-CFLAGS	= $(GCFLAGS) -I../../include -I.. $(BERKELEY_DB_CFLAGS)
+top	= ../..
+CFLAGS	= $(GCFLAGS) -I.. $(BERKELEY_DB_CFLAGS)
 
 SOURCES = ovdb.c
 OBJECTS = ovdb.o
@@ -17,7 +18,7 @@ warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
 .c.o .c.lo:
-	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
+	$(LIBCC) $(CFLAGS) -c $*.c -o $@
 
 clobber clean:
 	rm -f *.o *.lo obj/*.o *~
@@ -31,10 +32,13 @@ tags ctags:	$(SOURCES)
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend:	Makefile $(SOURCES)
-	$(UPMAKEDEPEND) $(CFLAGS) $(SOURCES)
+	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-ovdb.o: ovdb.c ../../include/config.h ../../include/clibrary.h \
- ../../include/macros.h ../../include/conffile.h \
- ../../include/libinn.h ../../include/paths.h ../../include/storage.h \
- ../../include/ov.h ../ovinterface.h ovdb.h ovdb-private.h
+ovdb.o: ovdb.c ../../include/config.h ../../include/inn/defines.h \
+ ../../include/clibrary.h ../../include/macros.h \
+ ../../include/conffile.h ../../include/libinn.h ../../include/paths.h \
+ ../../include/storage.h ../../include/ov.h \
+ ../../include/inn/history.h ../ovinterface.h ovdb.h \
+ ../../include/inn/version.h ../../include/portable/time.h \
+ ovdb-private.h

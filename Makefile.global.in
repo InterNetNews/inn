@@ -42,7 +42,7 @@ builddir	= @builddir@
 
 CC              = @CC@
 COPT            = @CFLAGS@
-GCFLAGS         = $(COPT) -I../include @CPPFLAGS@ $(LFS_CFLAGS)
+GCFLAGS         = $(COPT) -I$(top)/include @CPPFLAGS@ $(LFS_CFLAGS)
 
 BERKELEY_DB_CFLAGS = @BERKELEY_DB_CFLAGS@
 
@@ -82,22 +82,16 @@ WARNINGS        = -g -O -pedantic -Wall -W -Wshadow -Wpointer-arith \
 
 ##  libtool support.  Note that INN does not use Automake (and that
 ##  retrofitting Automake is likely more work than it's worth), so
-##  libtool-aware rules have to be written by hand.  The UP* variants add
-##  ../.. instead of just .. and are for use in Makefiles in source
-##  directories two levels deep.
+##  libtool-aware rules have to be written by hand.
 
 LIBTOOL         = @LIBTOOL@
 LIBTOOLCC       = @LIBTOOLCC@
-UPLIBTOOLCC     = @UPLIBTOOLCC@
 LIBTOOLLD       = @LIBTOOLLD@
-UPLIBTOOLLD     = @UPLIBTOOLLD@
 EXTOBJ          = @EXTOBJ@
 EXTLIB          = @EXTLIB@
 
 LIBCC           = $(LIBTOOLCC) $(CC)
 LIBLD           = $(LIBTOOLLD) $(CC)
-UPLIBCC         = $(UPLIBTOOLCC) $(CC)
-UPLIBLD         = $(UPLIBTOOLLD) $(CC)
 
 ##  INN libraries.  Nearly all INN programs are linked with libinn, and any
 ##  INN program that reads from or writes to article storage or overview is
@@ -155,8 +149,7 @@ RANLIB          = @RANLIB@
 YACC            = @YACC@
 UNCOMPRESS      = @UNCOMPRESS@
 
-FIXSCRIPT       = ../support/fixscript
-UPFIXSCRIPT     = ../../support/fixscript
+FIXSCRIPT       = $(top)/support/fixscript
 
 PERLWHOAMI      = $(PERL) -e 'print scalar getpwuid($$>), "\n"'
 WHOAMI          = (whoami || /usr/ucb/whoami || $(PERLWHOAMI)) 2> /dev/null
@@ -164,8 +157,7 @@ WHOAMI          = (whoami || /usr/ucb/whoami || $(PERLWHOAMI)) 2> /dev/null
 ##  Paths and command lines for programs used only by the maintainers to
 ##  regenerate dependencies, documentation, and the like.
 
-MAKEDEPEND      = ../support/makedepend
-UPMAKEDEPEND    = ../../support/makedepend
+MAKEDEPEND      = $(top)/support/makedepend
 
 POD2MAN         = pod2man -c 'InterNetNews Documentation' -r 'INN $(VERSION)'
 POD2TEXT        = pod2text -s -l
@@ -222,8 +214,7 @@ RNEWSMODE       = @RNEWSMODE@
 OWNER           = -o $(NEWSUSER) -g $(NEWSGROUP)
 ROWNER          = -o $(NEWSUSER) -g @RNEWSGRP@
 
-INSTALL         = ../support/install-sh -c
-UPINSTALL       = ../../support/install-sh -c
+INSTALL         = $(top)/support/install-sh -c
 
 ##  Installation commands.  These commands are used by the installation
 ##  rules of each separate subdirectory.  The naming scheme is as follows:

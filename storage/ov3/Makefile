@@ -2,7 +2,8 @@
 
 include ../../Makefile.global
 
-CFLAGS	= $(GCFLAGS) -I../../include -I..
+top	= ../..
+CFLAGS	= $(GCFLAGS) -I..
 
 SOURCES = ov3.c
 OBJECTS = ov3.o
@@ -17,7 +18,7 @@ warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
 .c.o .c.lo:
-	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
+	$(LIBCC) $(CFLAGS) -c $*.c -o $@
 
 clobber clean:
 	rm -f *.o *.lo obj/*.o $(ALL)
@@ -29,7 +30,7 @@ tags ctags:	$(SOURCES)
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend:	Makefile $(SOURCES)
-	$(UPMAKEDEPEND) $(CFLAGS) $(SOURCES)
+	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 ov3.o: ov3.c ../../include/config.h ../../include/inn/defines.h \

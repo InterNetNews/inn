@@ -2,7 +2,8 @@
 
 include ../../Makefile.global
 
-CFLAGS	 = $(GCFLAGS) -I../../include -I.. 
+top	 = ../..
+CFLAGS	 = $(GCFLAGS) -I.. 
 
 SOURCES  = cnfs.c
 OBJECTS  = cnfs.o
@@ -17,7 +18,7 @@ warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
 .c.o .c.lo:
-	$(UPLIBCC) $(CFLAGS) -c $*.c
+	$(LIBCC) $(CFLAGS) -c $*.c
 
 clobber clean:
 	rm -f *.o *.lo obj/*.o
@@ -31,9 +32,11 @@ tags ctags:	$(SOURCES)
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend:	Makefile $(SOURCES)
-	$(UPMAKEDEPEND) $(CFLAGS) $(SOURCES)
+	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-cnfs.o: cnfs.c ../../include/config.h ../../include/clibrary.h \
- ../interface.h ../../include/libinn.h ../../include/macros.h \
- ../methods.h cnfs.h cnfs-private.h ../../include/paths.h
+cnfs.o: cnfs.c ../../include/config.h ../../include/inn/defines.h \
+ ../../include/clibrary.h ../../include/portable/mmap.h \
+ ../../include/portable/time.h ../interface.h ../../include/storage.h \
+ ../../include/libinn.h ../../include/macros.h ../methods.h \
+ ../../include/paths.h cnfs.h cnfs-private.h

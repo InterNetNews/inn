@@ -2,7 +2,8 @@
 
 include ../../Makefile.global
 
-CFLAGS  = $(GCFLAGS) -I../../include -I..
+top     = ../..
+CFLAGS  = $(GCFLAGS) -I..
 
 SOURCES = buffindexed.c
 OBJECTS = buffindexed.o
@@ -16,14 +17,14 @@ warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
 .c.o .c.lo:
-	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
+	$(LIBCC) $(CFLAGS) -c $*.c -o $@
 
 debug:	buffindexed
 
 buffindexed:
 	rm -f buffindexed.o ../objs/*.o
 	$(CC) $(CFLAGS) -DDEBUG -c buffindexed.c
-	$(CC) $(LDFLAGS) -o $@ ../*/*.o ../interface.o ../methods.o ../ov.o ../ovmethods.o ../../lib/libinn.$(EXTLIB) $(LIBS)
+	$(LIBLD) $(LDFLAGS) -o $@ ../*/*.o ../interface.o ../methods.o ../ov.o ../ovmethods.o $(LIBINN) $(LIBS)
 
 clobber clean:
 	rm -f *.o *.lo obj/*.o
@@ -37,11 +38,12 @@ tags ctags:	$(SOURCES)
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend:	$(SOURCES)
-	$(UPMAKEDEPEND) $(CFLAGS) $(SOURCES)
+	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 buffindexed.o: buffindexed.c ../../include/config.h \
  ../../include/inn/defines.h ../../include/clibrary.h \
- ../../include/libinn.h ../../include/macros.h ../../include/ov.h \
- ../../include/storage.h ../../include/paths.h ../ovinterface.h \
+ ../../include/portable/mmap.h ../../include/libinn.h \
+ ../../include/macros.h ../../include/ov.h ../../include/storage.h \
+ ../../include/inn/history.h ../../include/paths.h ../ovinterface.h \
  buffindexed.h
