@@ -8,6 +8,11 @@
 */
 
 #include <stdlib.h>
+#include <sys/types.h>
+#include <ctype.h>
+#include "configdata.h"
+#include "clibrary.h"
+#include "libinn.h"
 #include "macros.h"
 
 /*

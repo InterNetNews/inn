@@ -54,7 +54,7 @@ libinn.a:       $(OBJECTS)
 	ar r $@ $(OBJECTS)
 	$(RANLIB) libinn.a
 
-.c.o: $*.c
+.c.o:
 	$(LIBCC) $(CFLAGS) -c $*.c
 
 endian: endian.c
