@@ -11,6 +11,8 @@ ALL           = actmerge actsync actsyncd archive batcher buffchan \
 		send-nntp send-uucp sendbatch sendinpaths sendxbatches \
 		shlock shrinkfile
 
+MAN	      = ../doc/man/send-uucp.8
+
 SOURCES       = actsync.c archive.c batcher.c buffchan.c cvtbatch.c \
 		filechan.c inndf.c innxbatch.c innxmit.c map.c ninpaths.c \
 		nntpget.c overchan.c shlock.c shrinkfile.c
@@ -103,6 +105,9 @@ sendxbatches:	sendxbatches.in  $(FIX)	; $(FIX) sendxbatches.in
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
 $(LIBHIST):	; (cd ../history ; $(MAKE))
+
+../doc/man/send-uucp.8: send-uucp
+	$(POD2MAN) -s 8 $? > $@
 
 
 ##  Installation rules.  Installation commands set in Makefile.global.

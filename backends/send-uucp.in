@@ -1,128 +1,319 @@
-#! /bin/sh
+#!/usr/bin/perl -w
 # fixscript will replace this line with code to load innshellvars
 
-##  $Revision$
-##  SH script to send UUCP batches out.
+##############################################################################
+# send-uucp.pl	create news batches from the outgoing files
+#
+# Author:	Edvard Tuinder <ed@elm.net>
+#
+# Copyright (C) 1994 Edvard Tuinder - ELM Consultancy B.V.
+# Copyright (C) 1995-1997 Miquel van Smoorenburg - Cistron Internet Services
+#
+# Copyright (C) 2003 Marco d'Itri <md@linux.it>
+#   Nearly rewritten. Added syslog support, real errors checking and more.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 of the License, or (at your option)
+# any later version.
+##############################################################################
 
-PROGNAME=`basename $0`
-LOG=${MOST_LOGS}/${PROGNAME}.log
+use strict;
+use Sys::Syslog;
 
-MAXJOBS=200
-UUXFLAGS="- -r -gd"
+# for compatibility with INN 1.x
+$inn::pathetc ||= '/etc/news';
+$inn::syslog_facility ||= 'news';
 
-##  Go to where the action is, start logging
-cd $BATCH
-umask 002
-DEBUG=""
-if [ "X$1" = X-d ] ; then
-    DEBUG="-d"
-    shift
-else
-    test ! -f ${LOG} && touch ${LOG}
-    chmod 0660 ${LOG}
-    exec >>${LOG} 2>&1
-fi
+# some default values
+my $MAXSIZE = 500000;
+my $MAXJOBS = 200;
 
-echo "${PROGNAME}: [$$] begin `date`"
+my %UNBATCHER = (
+    compress    => 'cunbatch',
+    bzip2       => 'bunbatch',
+    gzip        => 'gunbatch',
+);
 
-##  List of sitename:hostname pairs to send to
-if [ -n "$1" ] ; then
-    LIST="$*"
-else
-    echo "${PROGNAME}: [$$] no sites specified" >&2
-    exit 1
-fi
+my $UUX_FLAGS = '- -z -r -gd';
+my $BATCHER_FLAGS = '';
 
-case ${HAVE_UUSTAT} in
-DONT)
-    TEMP=${TMPDIR}/uuq$$
-    uuq -h |tr -d : >${TEMP}
-    ;;
-esac
+##############################################################################
+my $config_file = $inn::pathetc . '/send-uucp.cf';
+my $lockfile = $inn::locks . '/LOCK.send-uucp';
 
-##  Do the work...
-for SITE in ${LIST}; do
-    case $SITE in
-    *:*)
-	HOST=`expr $SITE : '.*:\(.*\)'`
-	SITE=`expr $SITE : '\(.*\):.*'`
-        ;;
-    *)
-        HOST=$SITE
-        ;;
-    esac
-    BATCHFILE=${SITE}.uucp
-    LOCK=${LOCKS}/LOCK.${SITE}
-    trap 'rm -f ${LOCK} ; exit 1' 1 2 3 15
-    shlock -p $$ -f ${LOCK} || {
-	echo "${PROGNAME}: [$$] ${SITE} locked by `cat ${LOCK}`"
-	continue
+openlog('send-uucp', 'pid', $inn::syslog_facility);
+
+my @sitelist;
+if (@ARGV) {
+    foreach my $site (@ARGV) {
+        my @cfg = read_cf($config_file, $site);
+        if (not @cfg) {
+            logmsg("site $site not found in the configuration", 'err');
+            next;
+        }
+        push @sitelist, @cfg;
+    }
+} else {
+    @sitelist = read_cf($config_file, undef);
+}
+
+if (not @sitelist) {
+    logmsg('nothing to do', 'debug');
+    exit 0;
+}
+
+chdir $inn::batch or logdie("Can't access $inn::batch: $!", 'crit');
+
+shlock($lockfile);
+
+run_site($_) foreach @sitelist;
+unlink $lockfile;
+exit 0;
+
+# lint food
+$inn::compress.$inn::locks.$inn::syslog_facility.$inn::have_uustat = 0 if 0;
+
+##############################################################################
+sub read_cf {
+    my ($conf_file, $site_wanted) = @_;
+
+    my $hour = (localtime time)[2];
+
+    my @sites;
+    open(CF, $conf_file) or logdie("cannot open $conf_file: $!", 'crit');
+    while (<CF>) {
+        chop;
+        s/\s*\#.*$//;
+        next if /^$/;
+
+        my ($site, $compress, $size, $time) = split(/\s+/);
+        next if not $site;
+
+        $compress =~ s/_/ /g if $compress;
+
+        if ($site_wanted) {
+            if ($site eq $site_wanted) {
+                push @sites, [$site, $compress, $size];
+                last;
+            }
+            next;
+        }
+
+        if ($time) {
+            foreach my $time (split(/,/, $time)) {
+                next if $time != $hour;
+                push @sites, [$site, $compress, $size];
+            }
+        } else {
+            push @sites, [$site, $compress, $size];
+        }
+    }
+    close CF;
+    return @sites;
+}
+
+##############################################################################
+# count number of jobs in the UUCP queue for a given site
+sub count_jobs {
+    my ($site) = @_;
+
+    return 0 if not $inn::have_uustat;
+    open(JOBS, "uustat -s $site 2> /dev/null |") or logdie("cannot fork: $!");
+    my $count = grep(/ Executing rnews /, <JOBS>);
+    close JOBS;                    # ignore errors, uustat may fail
+    return $count;
+}
+
+# select the rnews label appropriate for the compressor program used
+sub unbatcher {
+    my ($compressor) = @_;
+
+    $compressor =~ s%.*/%%;
+    return $UNBATCHER{$compressor} || 'cunbatch';
+}
+
+##############################################################################
+# batch articles for one site
+sub run_site {
+    my ($cfg) = @_;
+    my ($site, $compress, $size) = @$cfg;
+
+    logmsg("checking site $site", 'debug');
+    my $maxjobs = '';
+    if ($MAXJOBS) {
+        my $jobs = count_jobs($site);
+        if ($jobs >= $MAXJOBS) {
+            logmsg("too many jobs queued for $site");
+            return;
+        }
+        $maxjobs = '-N ' . ($MAXJOBS - $jobs);
     }
 
-    ##  See if any data is ready for host.
-    if [ -f ${SITE}.work ] ; then
-	cat ${SITE}.work >>${BATCHFILE}
-	rm -f ${SITE}.work
-    fi
-    if [ ! -f ${SITE} -o ! -s ${SITE} ] ; then
-	if [ ! -f ${BATCHFILE} -o ! -s ${BATCHFILE} ] ; then
-	    rm -f ${LOCK}
-	    continue
-	fi
-    fi
-    mv ${SITE} ${SITE}.work
-    ctlinnd -s -t30 flush ${SITE} || continue
-    cat ${SITE}.work >>${BATCHFILE}
-    rm -f ${SITE}.work
-    if [ ! -s ${BATCHFILE} ] ; then
-	echo "${PROGNAME}: [$$] no articles for ${SITE}"
-	rm -f ${BATCHFILE}
-	continue
-    fi
+    $compress ||= $inn::compress;
+    $size ||= $MAXSIZE;
 
-    ##  Get number of jobs for the current site.
-    case ${HAVE_UUSTAT} in
-    DONT)
-	JOBS=`${AWK} \
-	    'BEGIN{X=0}  {if ($1 == "'$HOST'") X=$2}  END{print X}' <${TEMP}`
-	;;
-    DO)
-	JOBS=`uustat -s${HOST} | grep rnews | wc -l`
-	;;
-    *)
-	JOBS=0
-	;;
-    esac
-    if [ ${JOBS} -ge ${MAXJOBS} ] ; then
-	echo "${PROGNAME}: [$$] ${JOBS} files already queued for ${SITE}"
-	continue
-    fi
-    QUEUEJOBS=`expr ${MAXJOBS} - ${JOBS}`
+    # if exists a .work temp file left by a previous invocation, append
+    # it to the current batch file
+    if (-f "$site.work") {
+        my $err = '';
+        open(OUT, ">>$site") or logdie("cannot open $site: $!");
+        open(IN, "$site.work") or logdie("cannot open $site.work: $!");
+        print OUT while <IN>;
+        close IN;
+        close OUT or logdie("cannot close $site: $!");;
+    }
 
-    ##  Get the compression flags.
-    echo "${PROGNAME}: [$$] begin ${SITE}"
-    case "${SITE}" in
-#    esca)
-#	COMPRESS="compress -b12"
-#	;;
-    *)
-	# The default is set in innshelvars
-	# COMPRESS="compress"
-	;;
-    esac
+    if (not -f $site) {
+        logmsg("no batch file for site $site", 'err');
+        return;
+    }
 
-    time batcher -N ${QUEUEJOBS} \
-	-p"(echo '#! cunbatch' ; exec ${COMPRESS} ) | uux ${UUXFLAGS} %s!rnews" \
-	${HOST} ${BATCHFILE}
+    rename($site, "$site.work") or logdie("cannot rename $site: $!", 'crit');
+    ctlinnd('-t120', 'flush', $site);
+    if (not -s "$site.work") {
+        logmsg("no articles for $site", 'debug');
+        unlink "$site.work" or logmsg("cannot delete $site.work: $!", 'err');
+    } else {
+        if ($compress eq 'none') {
+            system "batcher -b $size $maxjobs $BATCHER_FLAGS "
+                . "-p\"uux $UUX_FLAGS %s!rnews\" $site $site.work";
+        } else {
+            system "batcher -b $size $maxjobs $BATCHER_FLAGS "
+                . "-p\"{ echo '#! " . unbatcher($compress)
+                . "' ; exec $compress; } | "
+                . "uux $UUX_FLAGS %s!rnews\" $site $site.work";
+        }
+        logmsg("batched articles for $site", 'debug');
+    }
+}
 
-    echo "${PROGNAME}: [$$] end ${SITE}"
-    rm -f ${LOCK}
-done
+##############################################################################
+sub logmsg {
+    my ($msg, $lvl) = @_;
 
-case ${HAVE_UUSTAT} in
-DONT)
-    rm -f ${TEMP}
-    ;;
-esac
+    syslog($lvl || 'notice', '%s', $msg);
+}
 
-echo "${PROGNAME}: [$$] end `date`"
+sub logdie {
+    my ($msg, $lvl) = @_;
+
+    logmsg($msg, $lvl || 'err');
+    unlink $lockfile;
+    exit 1;
+}
+
+# FIXME to be copied from controlchan
+sub ctlinnd { print '=> ctlinnd '.(shift).join(' ', '', @_)."\n" }
+sub shlock { }
+
+__END__
+
+=head1 NAME
+
+send-uucp - Send Usenet articles via UUCP
+
+=head1 SYNOPSIS
+
+B<send-uucp> [I<SITE> ...]
+
+=head1 DESCRIPTION
+
+The B<send-uucp> program processes batch files written by innd(8) to send
+Usenet articles to UUCP sites.  It reads a configuration file to control how
+it behaves with various sites.  Normally, it's run periodically out of cron
+to put together batches and send them to remote UUCP sites.
+
+=head1 OPTIONS
+
+Any arguments provided to the program are interpreted as a list of sites
+specfied in F<send-uucp.cf> for which batches should be generated.  If no
+arguments are supplied then batches will be generated for all sites listed
+in that configuration file.
+
+=head1 CONFIGURATION
+
+The sites to which articles are to be sent must be configured in the
+configuration file F<send-uucp.cf>.  Each site is specified with a line of
+the form:
+
+    site [compressor [maxsize [batchtime]]]
+
+=over 4
+
+=item I<site>
+
+The UUCP site name being configured.  The same site name must be the
+same in both the UUCP configuration and the INN newsfeeds(5).
+
+=item I<compressor>
+
+The compression method to use for batches.  This should be one of compress,
+gzip or none.  Arguments for the compression command may be specified by
+using C<_> instead of spaces. For example, C<gzip_-9>.  The default value is
+C<compress>.
+
+=item I<maxsize>
+
+The maximum size of a single batch before compression.  The default value is
+500,000 bytes.
+
+=item I<batchtime>
+
+A comma separated list of hours during which batches should be generated for
+a given site.  When B<send-uucp> runs, a site will only be processed if the
+current hour matches one of the hours in I<batchtime>.  The default is no
+limitation on when to generate batches.
+
+=back
+
+Fields are seperated by spaces and only the site name needs to be specified,
+with defaults being used for unspecified values.  If the first character on
+a line is a C<#> then the rest of the line is ignored.
+
+=head1 EXAMPLE
+
+Here is an example send-uucp.cf configuration file:
+
+    zoetermeer      gzip            1048576         5,18,22
+    hoofddorp       gzip            1048576         5,18,22
+    pa3ebv          gzip            1048576         5,18,22
+    drinkel         gzip            1048576         5,6,18,20,22,0,2
+    manhole         compress        1048576         5,18,22
+    owl             compress        1048576
+    able
+
+This defines seven UUCP sites.  The first four use gzip compression and the
+last three use compress.  The first six use a batch size of 1MB, and the
+last site (able) uses the default of 500,000 bytes.  The zoetermeer,
+hoofddorp, pa3ebv, and manhole sites will only have batches generated for
+them during the hours of 05:00, 18:00, and 22:00, and the drinkel site will
+only have batches generated during those hours and 20:00, 00:00, and 02:00.
+There are no restrictions on when batches will be generated for owl or able.
+
+=head1 FILES
+
+=over 4
+
+=item I<pathetc>/send-uucp.cf
+
+Configuration file specifying a list of sites to be processed.  
+
+=back
+
+=head1 NOTES
+
+The usual flags used for a UUCP feed in the I<newsfeeds> file are C<Tf,Wfb>.
+
+=head1 SEE ALSO
+
+innd(8), newsfeeds(5), uucp(8)
+
+=head1 AUTHOR
+
+This program was originally written by Edvard Tuinder <ed@elm.net> and then
+maintained and extended by Miquel van Smoorenburg <miquels@cistron.nl>.
+Marco d'Itri <md@linux.it> cleaned up the code for inclusion in INN.  This
+manual page was written by Mark Brown <broonie@sirena.org.uk>.
+
+=cut

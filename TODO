@@ -204,15 +204,9 @@ Documentation Projects
   as libinn_<section>.3 seems to make the most sense (so, for example,
   error handling routines would be documented in libinn_error.3).
 
-* Better documentation of and support for UUCP feeds.  Ideally, this would
-  include taking the sendbatches program from /isc/inn/unoff-contrib on
-  ftp.isc.org, cleaning it up for inclusion into INN, and replacing both
-  send-uucp and sendbatch with it.  (Note that the current license is
-  unsuitable and someone would need to check with the author to see if
-  they would be willing to relicense.)  This program is a C News style
-  configurable batch generator with size, compression, and sending methods
-  all as parameters in a configuration file.  [Russ has some saved
-  articles on this that could form the basis of documentation.]
+* Better documentation of and support for UUCP feeds.  send-uucp is now
+  easier to use, but there's still a paucity of documentation covering the
+  whole theory and mechanisms of UUCP feeding.
 
 * Everything installed by INN should have a man page.  Currently, there
   are several binaries and configuration files that don't have man pages.

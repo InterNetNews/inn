@@ -41,8 +41,9 @@ more permissive ones.  Those licenses, if present, will be noted
 prominantly at the top of those source files.  Specifically (but possibly
 not comprehensively):
 
-   authprogs/smbval/* and control/perl-nocem.in are under the GNU General
-   Public License.  See doc/GPL for a copy of this license.
+   authprogs/smbval/*, backends/send-uucp.in, and control/perl-nocem.in
+   are under the GNU General Public License.  See doc/GPL for a copy of
+   this license.
 
    backends/shrinkfile.c, frontends/scanspool.in, lib/concat.c,
    lib/hstrerror.c, lib/inet_aton.c, lib/inet_ntoa.c, lib/memcmp.c,
@@ -70,8 +71,8 @@ not comprehensively):
    similar to the new BSD license but with Thus plc as the copyright
    holder.  See those files for details.
 
-   lib/tst.c, include/inn/tst.h and doc/pod/tst.pod are derived from
-   from http://www.octavian.org/cs/tst1.3.tar.gz and are under the BSD
+   lib/tst.c, include/inn/tst.h and doc/pod/tst.pod are derived from from
+   <http://www.octavian.org/cs/tst1.3.tar.gz> and are under the BSD
    license, but with Peter A. Friend as the copyright holder.
 
    tests/runtests.c is covered under a license very similar to the MIT/X

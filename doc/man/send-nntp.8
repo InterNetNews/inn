@@ -1,0 +1,79 @@
+.TH SEND-UUCP 8
+.SH NAME
+send-uucp, send-nntp, send-ihave \- send Usenet articles to remote site
+.SH SYNOPSIS
+{
+.B send-nntp
+|
+.B send-ihave
+}
+[
+.B \-d
+]
+.B sitename:hostname | sitename
+[
+.B sitename:hostname | sitename ..
+]
+.SH DESCRIPTION
+The send-* utilities are scripts that process the batch files written
+by
+.IR innd (8)
+to send Usenet articles to a remote NNTP site.
+.PP
+The sites to be fed may be specified by giving
+.I sitename
+.I hostname
+pairs on the command line.
+.PP
+The
+.I sitename
+is the label the site has in the
+.I newsfeeds
+file, the
+.I hostname
+is the real hostname of the remote site, a FQDN (Fully Qualified Domain Name).
+Normally, the
+.I sitename
+and the
+.I hostname
+are the same, and as such don't have to be specified as sitename:hostname
+pairs but just as a sitename.
+.PP
+.I send-nntp
+starts an innxmit to send the articles to the remote site.
+.PP
+.I send-ihave
+encapsulates the articles in an
+.I ihave
+control message and uses
+.I inews
+to send the articles to a
+.I to.sitename
+pseudo-group. Using
+.I send-ihave
+is discouraged, nobody uses it anymore and even the author of this manpage
+is unsure as to how it actually works or used to work.
+.PP
+.I send-*
+expect that the batchfile for a site is named
+.IR <pathoutgoing\ in\ inn.conf>/sitename .
+To prevent batchfile corruption,
+.IR shlock (1)
+is used to ``lock'' these files.
+.SH OPTIONS
+.TP
+.B "\-d"
+The ``\-d'' flag causes
+.I nntpsend
+to send output to stdout rather than the log file
+.IR <pathlog\ in\ inn.conf>/<program-name>.log .
+.SH NOTES
+You should probably not use send-nntp, but
+.IR innfeed ,
+or if that is not possible,
+.IR nntpsend .
+.PP
+The usual flags for a batch file for send-nntp are ``\fBTf,Wfm\fP''.
+.SH "SEE ALSO"
+newsfeeds(5),
+nntpsend(8)
