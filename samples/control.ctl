@@ -1092,8 +1092,10 @@ rmgroup:braultr@*csmanoirs.qc.ca:k12.*:doit
 # *PGP*   See comment at top of file.
 newgroup:*:ka.*:drop
 rmgroup:*:ka.*:drop
-newgroup:usenet@karlsruhe.org:ka.*:mail
-rmgroup:usenet@karlsruhe.org:ka.*:verify-usenet@karlsruhe.org
+# The following three lines are only for authorized ka.* sites.
+#checkgroups:usenet@karlsruhe.org:ka.*:verify-usenet@karlsruhe.org
+#newgroup:usenet@karlsruhe.org:ka.*:verify-usenet@karlsruhe.org
+#rmgroup:usenet@karlsruhe.org:ka.*:verify-usenet@karlsruhe.org
 
 ## KANTO (?)
 # *PGP*   See comment at top of file.
