@@ -1,5 +1,6 @@
 .libs
 archivegz
+backlogstat
 backupfeed
 cleannewsgroups
 delayer
@@ -9,6 +10,7 @@ makestorconf
 mlockfile
 newsresp
 pullart
+reset-cnfs
 respool
 showtoken
 stathist
