@@ -1279,9 +1279,19 @@ newgroup:*@*:nl-alt.*:doit
 rmgroup:nl-alt-janitor@surfer.xs4all.nl:nl-alt.*:verify-nl-alt.config.admin
 rmgroup:news@kink.xs4all.nl:nl-alt.*:verify-nl-alt.config.admin
 
-## NLNET newsgroups (Netherlands ISP)
+## NLNET (Netherlands ISP)
 newgroup:beheer@nl.net:nlnet.*:doit
 rmgroup:beheer@nl.net:nlnet.*:doit
+
+## NLO (Open Source / Free Software, hosted by nl.linux.org)
+# URL: http://news.nl.linux.org/doc/nlo.html
+# Key fingerprint = 63 DC B2 51 0A F3 DD 72  C2 BD C6 FD C1 C5 44 CF
+# *PGP*  See comment at top of file.
+newgroup:*:nlo.*:drop
+rmgroup:*:nlo.*:drop
+checkgroups:news@nl.linux.org:nlo.*:verify-nlo.newsgroups
+newgroup:news@nl.linux.org:nlo.*:verify-nlo.newsgroups
+rmgroup:news@nl.linux.org:nlo.*:verify-nlo.newsgroups
 
 ## NM (New Mexico, USA)
 newgroup:news@tesuque.cs.sandia.gov:nm.*:doit
