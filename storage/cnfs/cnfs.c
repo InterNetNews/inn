@@ -1084,6 +1084,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
     struct iovec	iov[2];
     int			tonextblock;
     CNFSEXPIRERULES	*metaexprule;
+    off_t		left;
 
     for (metaexprule = metaexprulestab; metaexprule != (CNFSEXPIRERULES *)NULL; metaexprule = metaexprule->next) {
 	if (metaexprule->class == class)
@@ -1111,7 +1112,11 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	return token;
     }
     /* Article too big? */
-    if (article.len > cycbuff->len - cycbuff->free - CNFS_BLOCKSIZE - 1) {
+    if (cycbuff->len - cycbuff->free < CNFS_BLOCKSIZE + 1)
+        left = 0;
+    else
+        left = cycbuff->len - cycbuff->free - CNFS_BLOCKSIZE - 1;
+    if (article.len > left) {
 	for (middle = cycbuff->free ;middle < cycbuff->len - CNFS_BLOCKSIZE - 1;
 	    middle += CNFS_BLOCKSIZE) {
 	    CNFSUsedBlock(cycbuff, middle, TRUE, FALSE);
