@@ -55,11 +55,11 @@ if [ ! -s ${ACTIVE} ] ; then
     fi
     RFLAG="-r"
     # You might want to rebuild the DBZ database, too:
-    #cd ${PATHETC} \
+    #cd ${PATHDB} \
     #		&& makehistory -r \
     #		&& mv history.n.dir history.dir \
-    #		&& mv history.n.index history.index
-    #           && mv history.n.hash history.hash
+    #		&& mv history.n.index history.index \
+    #		&& mv history.n.hash history.hash
 fi
 
 ##  Remove temporary batchfiles and lock files.
