@@ -73,6 +73,10 @@ STATIC COMMAND	Commands[] = {
     {	"perl",			"flag\t\t\tEnable or disable Perl filtering",
 	1,	SC_PERL,	FALSE	},
 #endif /* defined(DO_PERL) */
+#if defined(DO_PYTHON)
+    {	"python",		"flag\t\t\tEnable or disable Python filtering",
+	1,	SC_PYTHON,	FALSE	},
+#endif /* (DO_PYTHON) */
     {	"readers",	"flag text...\t\tEnable or disable newsreading",
 	2,	SC_READERS,	TRUE	},
     {	"reject",	"reason...\t\t\tReject remote connections",
