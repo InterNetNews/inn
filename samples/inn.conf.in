@@ -63,7 +63,7 @@ groupbaseexpiry:        true
 mergetogroups:          false
 overcachesize:          15
 #ovgrouppat:
-storeonxref:            false
+storeonxref:            true
 useoverchan:            false
 wireformat:             false
 xrefslave:              false
