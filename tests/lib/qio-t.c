@@ -59,7 +59,7 @@ main(void)
        Then a line equal in size to the buffer, then a short line and
        another line equal in size to the buffer, then a half line and lines
        repeated to fill another buffer, then a line that's one character too
-       long. */
+       long.  Finally, put out another short line. */
     count = size / 256;
     for (i = 0; i < count; i++)
         output(fd, line, 256);
@@ -77,9 +77,10 @@ main(void)
     for (i = 0; i < count; i++)
         output(fd, data, 256);
     output(fd, "\n", 1);
+    output(fd, line, 256);
     close(fd);
 
-    puts("30");
+    puts("36");
 
     /* Now make sure we can read all that back correctly. */
     qio = QIOopen(".testout");
@@ -135,18 +136,26 @@ main(void)
     ok(19, !result);
     ok(20, QIOerror(qio));
     ok(21, QIOtoolong(qio));
-    ok(22, QIOrewind(qio) == 0);
-    ok(23, QIOtell(qio) == 0);
     result = QIOread(qio);
-    ok(24, !QIOerror(qio));
-    ok(25, QIOlength(qio) == 255);
-    ok(26, strlen(result) == 255);
-    ok(27, !strcmp(result, (char *) out));
-    ok(28, QIOtell(qio) == 256);
+    ok(22, !QIOerror(qio));
+    ok(23, QIOlength(qio) == 255);
+    ok(24, strlen(result) == 255);
+    ok(25, !memcmp(result, line, 255));
+    result = QIOread(qio);
+    ok(26, !result);
+    ok(27, !QIOerror(qio));
+    ok(28, QIOrewind(qio) == 0);
+    ok(29, QIOtell(qio) == 0);
+    result = QIOread(qio);
+    ok(30, !QIOerror(qio));
+    ok(31, QIOlength(qio) == 255);
+    ok(32, strlen(result) == 255);
+    ok(33, !strcmp(result, (char *) out));
+    ok(34, QIOtell(qio) == 256);
     fd = QIOfileno(qio);
     QIOclose(qio);
-    ok(29, close(fd) < 0);
-    ok(30, errno == EBADF);
+    ok(35, close(fd) < 0);
+    ok(36, errno == EBADF);
 
     return 0;
 }
