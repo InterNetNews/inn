@@ -49,10 +49,10 @@ typedef struct _CYCBUFF {
   caddr_t	bitfield;	/* Bitfield for article in use */
   CYCBUFF_OFF_T	minartoffset;	/* The minimum offset allowed for article
 				   storage */
-  BOOL		needflush;	/* true if CYCBUFFEXTERN is needed to be
+  bool		needflush;	/* true if CYCBUFFEXTERN is needed to be
 				   flushed */
   struct _CYCBUFF	*next;
-  BOOL		currentbuff;	/* true if this cycbuff is currently used */
+  bool		currentbuff;	/* true if this cycbuff is currently used */
   char		metaname[CNFSNASIZ];/* Symbolic name of meta */
   int		order;		/* Order in meta, start from 1 not 0 */
 } CYCBUFF;

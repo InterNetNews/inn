@@ -31,14 +31,14 @@
 #include <XSUB.h>
 #include "ppport.h"
 
-extern BOOL PerlFilterActive;
+extern bool PerlFilterActive;
 extern HEADER	Table[], *EndOfTable;
 extern char LogName[];
 extern char PERMuser[];
 
 extern char **OtherHeaders;
 extern int OtherCount;
-extern BOOL HeadersModified;
+extern bool HeadersModified;
 static int HeaderLen;
 
 /* #define DEBUG_MODIFY only if you want to see verbose outout */
