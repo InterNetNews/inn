@@ -228,6 +228,8 @@ Documentation Projects
 * Audit readers.conf.5 against perm.c for missing options ("include" at
   least is missing from the documentation).
 
+* The distributions file is undocumented.
+
 
 Code Cleanup Projects
 
@@ -318,6 +320,10 @@ Needed Bug Fixes
   innfeed generates.  It should ideally generate some summary, or at least
   note that some error has occurred and the logs should be examined.
 
+* INN's message ID parser should be more forgiving about surrounding
+  whitespace.  Right now, it will reject messages with a trailing space in
+  the Message-ID header.
+
 * nnrpd doesn't check the message ID of a posted article for syntactic
   validity before remailing it to the moderator, since normally it relies
   on innd to check the message ID.  The message ID checking code from
@@ -329,6 +335,55 @@ Needed Bug Fixes
   to throttle.  This isn't the best behavior; the server should either
   optionally create the missing newsgroup or just ignore that crossposted
   group (and modify Xref accordingly?).
+
+* Handling of compressed batches needs to be thoroughly reviewed by
+  someone who understands how they're supposed to work.  It's not clear
+  that _PATH_GZIP is being used correctly at the moment and that
+  compressed batch handling will work right now on systems that don't have
+  gzip installed (but that do have uncompress).
+
+* innfeed's statistics don't add up properly all the time.  All of the
+  article dispositions don't add up to the offered count like they should.
+  Some article handling must not be recorded properly.
+
+* innd's counting of article size doesn't always work properly, and it can
+  accept articles that are larger than its configured limit.  It's not
+  clear exactly where this is happening.
+
+* If a channel feed exits immediately, innd respawns it immediately,
+  causing thrashing of the system and a huge spew of errors in syslog.  It
+  should mark the channel as dormant for some period of time before
+  respawning it, perhaps only if it's already died multiple times in a
+  short interval.
+
+* ctlinnd begin <site-name> was causing innd to core dump.
+
+* Handling of innfeed's dropped batches needs looking at.  There are three
+  places where articles can fall between the cracks:  an innfeed.togo file
+  written by innd when the feed can't be spawned, a batch file named after
+  the feed name which can be created under similar circumstances, and the
+  dropped files written by innfeed itself.  procbatch can clean these up,
+  but has to be run by hand.
+
+* When using tradspool, groups are not immediately added to tradspool.map
+  when created, making innfeed unable to find the articles until after
+  some period of time.  Part of the problem here is that tradspool only
+  updates tradspool.map on a lazy basis, when it sees an article in that
+  group, since there is no storage hook for creation of a new group.
+
+* nntpget doesn't handle long lines in messages.
+
+* WP feeds break if there are spaces in the Path header, and the inn.conf
+  parser doesn't check for this case and will allow people to configure
+  their server that way.  (It's not clear that the latter is actually a
+  bug, given the new USEFOR attempt to allow folding of Path headers, but
+  the space needs to be removed for WP feeds.)
+
+* Error handling in the history backend needs to be reviewed, since it
+  currently is always printing out errno regardless of whether it's
+  meaningful.  The error handling needs to record errno if it's useful and
+  the reporting function should only print it out if it's useful for that
+  error.
 
 * Someone should go through the BUGS sections of all of the manpages and
   fix those for which the current behavior is unacceptable.
@@ -386,6 +441,14 @@ Requested New Features
   support, namely to move the logs aside and then tell innd to reopen its
   log files.  Ideally, that behavior would be triggered with a SIGHUP.
   scanlogs would have to be modified to handle this.
+
+  The best way to support this seems to be to leave scanlogs as is by
+  default, but also add two additional modes.  One would flush all the
+  logs and prepare for the syslog logs to be rotated, and the other would
+  do all the work needed after the logs have been rotated.  That way, if
+  someone wanted to plug in a separate log rotation handler, they could do
+  so and just call scanlogs on either side of it.  The reporting portions
+  of scanlogs should be in a separate program.
 
 * Several people have Perl interfaces to pieces of INN that should ideally
   be part of the INN source tree in some fashion.  Greg Andruk has a bunch
