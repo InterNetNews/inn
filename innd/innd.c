@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Variable definitions, miscellany, and main().
 */

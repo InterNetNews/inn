@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Routines to read and write the active file.
 */

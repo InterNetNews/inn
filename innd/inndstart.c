@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Open the privileged port, then exec innd.
 */

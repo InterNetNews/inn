@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Routines for the local connect channel.  Create a Unix-domain stream
 **  socket that processes on the local server connect to.  Once the

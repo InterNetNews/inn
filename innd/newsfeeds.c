@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Routines for the in-core data structures for the newsfeeds file.
 */

@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Routines for the remote connect channel.  Create an Internet stream socket
 **  that processes connect to.  If the incoming site is not one of our feeds,
