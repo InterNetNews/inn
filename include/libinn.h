@@ -104,7 +104,7 @@ struct conf_vars {
 	int linecountfuzz;	/* Check linecount and adjust of out by more */
 	int peertimeout;	/* How long peers can be inactive */
 	int clienttimeout;	/* How long nnrpd can be inactive */
-	int allowreaders;	/* Allow nnrpd when server is paused */
+	int readerswhenstopped;	/* Allow nnrpd when server is paused */
 	int allownewnews;	/* Allow use of the 'NEWNEWS' command */
 	long localmaxartsize;	/* Max article size of local postings */
 	int logartsize;		/* Log article sizes */
@@ -167,6 +167,7 @@ struct conf_vars {
 	int nicenewnews;	/* If NEWNEWS command is used, set nice */
 	int usecontrolchan;
 	int mergetogroups;
+	int noreader;
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;

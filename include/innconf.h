@@ -123,9 +123,9 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_CLIENTTIMEOUT			"clienttimeout"
 #define CONF_VAR_CLIENTTIMEOUT			33
     { _CONF_CLIENTTIMEOUT,			"",	2, 1 },
-#define _CONF_ALLOWREADERS			"allowreaders"
-#define CONF_VAR_ALLOWREADERS			34
-    { _CONF_ALLOWREADERS,			"",	2, 1 },
+#define _CONF_READERSWHENSTOPPED		"readerswhenstopped"
+#define CONF_VAR_READERSWHENSTOPPED		34
+    { _CONF_READERSWHENSTOPPED,			"",	2, 1 },
 #define _CONF_ALLOWNEWNEWS			"allownewnews"
 #define CONF_VAR_ALLOWNEWNEWS			35
     { _CONF_ALLOWNEWNEWS,			"",	2, 1 },
@@ -304,11 +304,14 @@ struct conf_rec conf_defaults[] = {
 #define CONF_VAR_NICENEWNEWS			93
     { _CONF_NICENEWNEWS,			"",	2, 1 },
 #define _CONF_USECONTROLCHAN			"usecontrolchan"
-#define CONF_USECONTROLCHAN			94
+#define CONF_VAR_USECONTROLCHAN			94
     { _CONF_USECONTROLCHAN,			"",	2, 1 },
 #define _CONF_MERGETOGROUPS			"mergetogroups"
-#define CONF_MERGETOGROUPS			95
-    { _CONF_MERGETOGROUPS,			"",	2, 1 }
+#define CONF_VAR_MERGETOGROUPS			95
+    { _CONF_MERGETOGROUPS,			"",	2, 1 },
+#define _CONF_NOREADER				"noreader"
+#define CONF_VAR_NOREADER				96
+    { _CONF_NOREADER,				"",	2, 1 }
 };
-#define MAX_CONF_VAR 96
+#define MAX_CONF_VAR 97
 
