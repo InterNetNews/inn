@@ -519,7 +519,6 @@ RCreadfile(list, count, filename)
 	    rp->Name = COPY(hp->h_name);
 	    rp->Password = COPY(pass);
 	    rp->Patterns = (pats && *pats) ? CommaSplit(COPY(pats)) : NULL;
-            rp->Streaming = (*list + j)->Streaming ;
 	    rp++;
 	    continue;
 	}
