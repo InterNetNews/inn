@@ -5,25 +5,25 @@ include ../Makefile.global
 CFLAGS  = $(GCFLAGS)
 
 SOURCES = argparse.c cleanfrom.c clientactive.c clientlib.c concat.c \
-	conffile.c daemonize.c date.c dbz.c defdist.c error.c fdflags.c \
-	fdlimit.c findheader.c fseeko.c ftello.c genid.c getconfig.c \
-	getfqdn.c getmodaddr.c gettime.c grpalias.c hash.c hashtab.c \
-	hstrerror.c inet_aton.c inet_ntoa.c inndcomm.c localopen.c \
+	conffile.c confparse.c daemonize.c date.c dbz.c defdist.c error.c \
+	fdflags.c fdlimit.c findheader.c fseeko.c ftello.c genid.c \
+	getconfig.c getfqdn.c getmodaddr.c gettime.c grpalias.c hash.c \
+	hashtab.c hstrerror.c inet_aton.c inet_ntoa.c inndcomm.c localopen.c \
 	lockfile.c makedir.c md5.c memcmp.c parsedate.c perl.c pread.c \
 	pwrite.c qio.c radix32.c readin.c remopen.c reservedfd.c \
 	resource.c rwlock.c sendarticle.c sendpass.c setenv.c strcasecmp.c \
-	strerror.c strspn.c strtok.c tempname.c timer.c wildmat.c \
+	strerror.c strspn.c strtok.c tempname.c timer.c wildmat.c vector.c \
 	version.c xfopena.c xmalloc.c xsignal.c xwrite.c
 
 OBJECTS = $(LIBOBJS) \
 	argparse.o cleanfrom.o clientactive.o clientlib.o concat.o \
-	conffile.o daemonize.o date.o dbz.o defdist.o error.o fdflags.o \
-	fdlimit.o findheader.o genid.o getconfig.o getfqdn.o getmodaddr.o \
-	gettime.o grpalias.o hash.o hashtab.o inndcomm.o localopen.o \
-	lockfile.o makedir.o md5.o parsedate.o qio.o radix32.o readin.o \
-	remopen.o reservedfd.o resource.o rwlock.o sendarticle.o sendpass.o \
-	tempname.o timer.o wildmat.o version.o xfopena.o xmalloc.o \
-	xsignal.o xwrite.o
+	conffile.o confparse.o daemonize.o date.o dbz.o defdist.o error.o \
+	fdflags.o fdlimit.o findheader.o genid.o getconfig.o getfqdn.o \
+	getmodaddr.o gettime.o grpalias.o hash.o hashtab.o inndcomm.o \
+	localopen.o lockfile.o makedir.o md5.o parsedate.o qio.o radix32.o \
+	readin.o remopen.o reservedfd.o resource.o rwlock.o sendarticle.o \
+	sendpass.o tempname.o timer.o wildmat.o vector.o version.o xfopena.o \
+	xmalloc.o xsignal.o xwrite.o
 
 LOBJECTS= $(OBJECTS:.o=.lo)
 
