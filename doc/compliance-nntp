@@ -540,30 +540,6 @@ hand.
 
 ------------------------------
 
-  Summary: nnrpd rejects articles with lines over 998 octets
- Standard: draft-ietf-nntpext-base-13.txt, section 9.3.1
-  Version: 1.0 to CURRENT 2001-07-04
-Reference: nnrpd/commands.c CMDpost()
- Severity: Lack of robustness
-
-nnrpd rejects articles with lines over 998 octets.  This isn't a violation
-of the standard, as news servers are permitted to reject anything they
-wish due to local policies or the like, but there is no line length limit
-in the protocol and nnrpd should be able to handle lines of arbitrary
-length.
-
-Impact:  Articles with very long lines can't be posted.  This primarily
-affects such things as HTML posts.
-
-Suggested fix:  The READline() code should be redesigned to permit lines
-of arbitrary length in articles.
-
-Impact of fix:  Administrators who want to limit the length of lines in
-locally posted articles will need to add this to their local filters
-instead.
-
-------------------------------
-
   Summary: nnrpd doesn't handle zero-argument LISTGROUP
  Standard: draft-ietf-nntpext-base-13.txt, section 9.5.1.1
   Version: 2.3 to CURRENT 2001-07-04
