@@ -363,7 +363,7 @@ static bool CNFSparse_part_line(char *l) {
   cycbuff->fd = -1;
   cycbuff->next = (CYCBUFF *)NULL;
   cycbuff->needflush = FALSE;
-  cycbuff->bitfield = (caddr_t)NULL;
+  cycbuff->bitfield = NULL;
   /*
   ** The minimum article offset will be the size of the bitfield itself,
   ** len / (blocksize * 8), plus however many additional blocks the CYCBUFF
@@ -556,7 +556,7 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
 	}
     }
     errno = 0;
-    cycbuff->bitfield = mmap((caddr_t) 0, cycbuff->minartoffset,
+    cycbuff->bitfield = mmap(NULL, cycbuff->minartoffset,
 			     SMopenmode ? (PROT_READ | PROT_WRITE) : PROT_READ,
 			     MAP_SHARED, fd, (off_t) 0);
     if (cycbuff->bitfield == MAP_FAILED || errno != 0) {
@@ -1107,7 +1107,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	RENEW(iov, struct iovec, article.iovcnt + 1);
 	iovcnt = article.iovcnt + 1;
     }
-    iov[0].iov_base = (caddr_t) &cah;
+    iov[0].iov_base = (char *) &cah;
     iov[0].iov_len = sizeof(cah);
     for (i = 1 ; i <= article.iovcnt ; i++) {
         iov[i].iov_base = article.iov[i-1].iov_base;

@@ -46,7 +46,7 @@ typedef struct _CYCBUFF {
   int		fd;		/* file descriptor for this cycbuff */
   uint32_t	cyclenum;	/* Number of current cycle, 0 = invalid */
   int		magicver;	/* Magic version number */
-  caddr_t	bitfield;	/* Bitfield for article in use */
+  void *	bitfield;	/* Bitfield for article in use */
   CYCBUFF_OFF_T	minartoffset;	/* The minimum offset allowed for article
 				   storage */
   bool		needflush;	/* true if CYCBUFFEXTERN is needed to be
