@@ -163,6 +163,7 @@ BOOL OV3open(int cachesize, int mode) {
     if (fstat(GROUPfd, &sb) < 0) {
 	syslog(L_FATAL, "Could not fstat %s: %m", groupfn);
 	DISPOSE(groupfn);
+	close(GROUPfd);
 	return FALSE;
     }
     if (sb.st_size > sizeof(GROUPHEADER)) {
@@ -180,14 +181,19 @@ BOOL OV3open(int cachesize, int mode) {
 					       MAP_SHARED, GROUPfd, 0)) == (GROUPHEADER *) -1) {
 	    syslog(L_FATAL, "Could not mmap %s in OV3open: %m", groupfn);
 	    DISPOSE(groupfn);
+	    close(GROUPfd);
 	    return FALSE;
 	}
 	GROUPentries = (GROUPENTRY *)((char *)GROUPheader + sizeof(GROUPHEADER));
     } else {
 	GROUPcount = 0;
-	if (!GROUPexpand(mode))
+	if (!GROUPexpand(mode)) {
+	    DISPOSE(groupfn);
+	    close(GROUPfd);
 	    return FALSE;
+	}
     }
+    CloseOnExec(GROUPfd, 1);
     OV3readschema();
     
     DISPOSE(groupfn);
@@ -477,10 +483,14 @@ STATIC GROUPHANDLE *OV3opengroupfiles(char *group) {
 	return NULL;
     }
     if (fstat(gh->indexfd, &sb) < 0) {
+	close(gh->datafd);
+	close(gh->indexfd);
 	DISPOSE(gh);
 	syslog(L_ERROR, "OV3 could not fstat %s: %m", IDXpath);
-	return FALSE;
+	return NULL;
     }
+    CloseOnExec(gh->datafd, 1);
+    CloseOnExec(gh->indexfd, 1);
     gh->indexinode = sb.st_ino;
     gh->indexlen = gh->datalen = -1;
     gh->indexmem = NULL;
