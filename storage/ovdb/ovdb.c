@@ -1,8 +1,12 @@
 /*
  * ovdb.c
- * ovdb 2.00 beta4
- * Overview storage using BerkeleyDB 2.x/3.x
+ * ovdb 2.00
+ * Overview storage using BerkeleyDB 2.x/3.x/4.x
  *
+ * 2004-02-17 : Need to track search cursors, since it's possible that
+ *              ovdb_closesearch does not get called.  We now close
+ *              any cursors still open in ovdb_close, or they'd be in
+ *              the database indefinitely causing deadlocks.
  * 2002-08-13 : Change BOOL to bool, remove portability to < 2.4.
  * 2002-08-11 : Cleaned up use of sprintf and fixed a bunch of warnings.
  * 2002-02-28 : Update getartinfo for the overview API change in 2.4.  This
@@ -212,6 +216,7 @@ static int csend(void *data, int n)
 	    if(r < 0 && errno == EINTR)
 		continue;
 	    syslog(LOG_ERR, "OVDB: rc: cant write: %m");
+	    clientfd = -1;
 	    exit(1);
 	}
 	p+= r;
@@ -232,6 +237,7 @@ static int crecv(void *data, int n)
 	    if(r < 0 && errno == EINTR)
 		continue;
 	    syslog(LOG_ERR, "OVDB: rc: cant read: %m");
+	    clientfd = -1;
 	    exit(1);
 	}
 	p+= r;
@@ -337,6 +343,7 @@ static void client_disconnect(void)
 
 	csend(&rs, sizeof rs);
     }
+    clientfd = -1;
 }
 
 
@@ -1998,6 +2005,13 @@ struct ovdbsearch {
     int state;
 };
 
+/* Even though nnrpd only does one search at a time, a read server process could
+   do many concurrent searches; hence we must keep track of an arbitrary number of
+   open searches */
+static struct ovdbsearch **searches = NULL;
+static int nsearches = 0;
+static int maxsearches = 0;
+
 void *ovdb_opensearch(char *group, int low, int high)
 {
     DB *db;
@@ -2054,6 +2068,18 @@ void *ovdb_opensearch(char *group, int low, int high)
     s->firstart = low;
     s->lastart = high;
     s->state = 0;
+
+    if(searches == NULL) {
+	nsearches = 0;
+	maxsearches = 50;
+	searches = xmalloc(sizeof(struct ovdbsearch *) * maxsearches);
+    }
+    if(nsearches == maxsearches) {
+	maxsearches += 50;
+	searches = xrealloc(searches, sizeof(struct ovdbsearch *) * maxsearches);
+    }
+    searches[nsearches] = s;
+    nsearches++;
 
     return (void *)s;
 }
@@ -2203,6 +2229,7 @@ bool ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
 
 void ovdb_closesearch(void *handle)
 {
+    int i;
     if(clientmode) {
 	struct rs_cmd rs;
 
@@ -2215,6 +2242,16 @@ void ovdb_closesearch(void *handle)
 
 	if(s->cursor)
 	    s->cursor->c_close(s->cursor);
+
+	for(i = 0; i < nsearches; i++) {
+	    if(s == searches[i]) {
+		break;
+	    }
+	}
+	nsearches--;
+	for( ; i < nsearches; i++) {
+	    searches[i] = searches[i+1];
+	}
 
 	free(handle);
     }
@@ -2811,6 +2848,14 @@ void ovdb_close(void)
     if(clientmode) {
 	client_disconnect();
 	return;
+    }
+
+    while(searches != NULL && nsearches) {
+	ovdb_closesearch(searches[0]);
+    }
+    if(searches != NULL) {
+	free(searches);
+	searches = NULL;
     }
 
     if(dbs) {
