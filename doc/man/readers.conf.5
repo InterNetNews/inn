@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "READERS.CONF 5"
-.TH READERS.CONF 5 "2003-02-03" "INN 2.4.0" "InterNetNews Documentation"
+.TH READERS.CONF 5 "2003-09-07" "INN 2.4.1" "InterNetNews Documentation"
 .SH "NAME"
 readers.conf \- Access control and configuration for nnrpd
 .SH "DESCRIPTION"
@@ -137,8 +137,10 @@ readers.conf \- Access control and configuration for nnrpd
 \&\fIreaders.conf\fR in \fIpathetc\fR specifies access control for \fInnrpd\fR\|(8).  It
 controls who is allowed to connect as a news reader and what they're
 allowed to do after they connect.  nnrpd reads this file when it starts
-up.  (The location \fIpathetc\fR/readers.conf is only the default; the same
-format applies to any file specified with \f(CW\*(C`nnrpd \-c\*(C'\fR.)
+up.  This generally means that any changes take effect immediately on all
+subsequent connections, but \fBnnrpd\fR may have to be restarted if you use
+the \fB\-D\fR option.  (The location \fIpathetc\fR/readers.conf is only the
+default; the same format applies to any file specified with \f(CW\*(C`nnrpd \-c\*(C'\fR.)
 .PP
 There are two types of entries in \fIreaders.conf\fR:  parameter/value pairs
 and configuration groups.  Blank lines and anything after a number sign
@@ -221,7 +223,7 @@ address in a netblock; for example, \*(L"10.10.10.0/24\*(R" will match any \s-1I
 address between 10.10.10.0 and 10.10.10.255 inclusive.
 .PP
 If compiled against the \s-1SSL\s0 libraries, an auth group with the
-ssl_required: parameter set to true only applies if the incoming
+require_ssl: parameter set to true only applies if the incoming
 connection is using \s-1SSL\s0.
 .PP
 For any connection from a host that matches that wildmat expression or
@@ -452,15 +454,15 @@ support (\fB\-\-with\-python\fR passed to configure).  More information may be
 found in the file \fIdoc/hook\-python\fR.
 .IP "\fBpython_dynamic:\fR" 4
 .IX Item "python_dynamic:"
-A python script for applying access control dynamically on a per
-newsgroup basis.  If an auth group matches successfully and contains a
+A python script for applying access control dynamically on a per newsgroup
+basis.  If an auth group matches successfully and contains a
 python_dynamic parameter, then the argument script will be used to
 determine the clients rights each time the user attempts to view a
 newsgroup, or read or post an article.  Access rights as determined by
 python_dynamic override the values of access group parameters such as
 newsgroups, read, and post.  This parameter is only valid if \s-1INN\s0 is
-compiled with Python support (\fB\-\-with\-python\fR passed to configure).
-More information may be found in the file \fIdoc/hook\-python\fR.
+compiled with Python support (\fB\-\-with\-python\fR passed to configure).  More
+information may be found in the file \fIdoc/hook\-python\fR.
 .SH "ACCESS GROUP PARAMETERS"
 .IX Header "ACCESS GROUP PARAMETERS"
 .IP "\fBusers:\fR" 4
@@ -581,15 +583,17 @@ filter even if it is otherwise enabled.  This is a boolean value and the
 default is true.
 .IP "\fBvirtualhost:\fR" 4
 .IX Item "virtualhost:"
-If set to true, \fInnrpd\fR\|(8) will behave as if it's running on a server with a
-different name.  This may affect Path:, Message\-ID:, and X\-Trace: headers
-of posted articles, as well as the apparent Path: and Xref: headers of all
-articles read by the client.  Either pathhost: or domain: must be present
-in the same access group if this parameter is set to true.  \fInnrpd\fR\|(8) will
-act as if the server name is the value of pathhost:, or domain: if
-pathhost: isn't set or is set to the same value as in \fIinn.conf\fR.  One of
-these parameters must be set to something different than that set in
-\&\fIinn.conf\fR.
+Set this parameter to make \fBnnrpd\fR behave as if it's running on a server
+with a different name than it actually is.  If you set this parameter, you
+must also set either pathhost: or domain: to something different than is
+set in \fIinn.conf\fR.  All articles displayed to clients will then have
+their Path: and Xref: headers altered to appear to be from the server
+named in pathhost: or domain: (whichever is set), and posted articles will
+use that server name in the Path:, Message\-ID;, and X\-Trace: headers.
+.Sp
+Note that setting this parameter requires the server modify all posts
+before presenting them to the client and therefore may decrease
+performance slightly.
 .PP
 In addition, all of the following parameters are valid in access groups
 and override the global setting in \fIinn.conf\fR.  See \fIinn.conf\fR\|(5) for the
@@ -604,7 +608,7 @@ pathhost, readertrack, spoolfirst, and strippostcc.
 Here's a basic summary of what happens when a client connects:
 .IP "\(bu" 2
 All auth groups are scanned and the ones that don't match the client
-(due to hosts:, localaddress:, ssl_required:, etc) are eliminated.
+(due to hosts:, localaddress:, require_ssl:, etc) are eliminated.
 .IP "\(bu" 2
 The remaining auth groups are scanned from the last to the first, and an
 attempt is made to apply it to the current connection.  This means running
@@ -731,15 +735,15 @@ both cases.  The order of the access groups in this case does matter,
 provided the newsgroups: lines differ; the access group with no users:
 line needs to be first, with the \*(L"users: <\s-1LOCAL\s0>\*(R" group after.
 .PP
-Finally, here's a very complicated example.  This is for an organization
-that has an internal hierarchy \*(L"example.*\*(R" only available to local shell
-users, who are on machines where identd can be trusted.  Dialup users must
-provide a username and password, which is then checked against \s-1RADIUS\s0.
-Remote users have to use a username and password that's checked against a
-database on the news server.  Finally, the admin staff (users \*(L"joe\*(R" and
-\&\*(L"jane\*(R") can post anywhere (including the \*(L"example.admin.*\*(R" groups that are
-read-only for everyone else), and are exempted from the Perl filter.  For
-an additional twist, posts from dialup users have their Sender: header
+Here's a very complicated example.  This is for an organization that has
+an internal hierarchy \*(L"example.*\*(R" only available to local shell users, who
+are on machines where identd can be trusted.  Dialup users must provide a
+username and password, which is then checked against \s-1RADIUS\s0.  Remote users
+have to use a username and password that's checked against a database on
+the news server.  Finally, the admin staff (users \*(L"joe\*(R" and \*(L"jane\*(R") can
+post anywhere (including the \*(L"example.admin.*\*(R" groups that are read-only
+for everyone else), and are exempted from the Perl filter.  For an
+additional twist, posts from dialup users have their Sender: header
 replaced by their authenticated identity.
 .PP
 Since this organization has some internal moderated newsgroups, the admin
@@ -835,6 +839,33 @@ Also note that if the users joe and jane are using their own accounts,
 they get their special privileges regardless of how they connect, whether
 the dialups, the shell machines, or even externally with a username and
 password.
+.PP
+Finally, here's a very simple example of a configuration for a public
+server for a particular hierarchy.
+.PP
+.Vb 4
+\&    auth default {
+\&        hosts: *
+\&        default: <PUBLIC>
+\&    }
+.Ve
+.PP
+.Vb 4
+\&    access default {
+\&        users: <PUBLIC>
+\&        newsgroups: example.*
+\&    }
+.Ve
+.PP
+Notice that clients aren't allowed to read any other groups; this keeps
+them from getting access to administrative groups or reading control
+messages, just as a precaution.  When running a public server like this,
+be aware that many public hierarchies will later be pulled down and
+reinjected into the main Usenet, so it's highly recommended that you also
+run a Perl or Python filter to reject any messages crossposted out of your
+local hierarchy and any messages containing a Supersedes: header.  This
+will keep messages posted to your public hierarchy from hurting any of the
+rest of Usenet if they leak out.
 .SH "SECURITY CONSIDERATIONS"
 .IX Header "SECURITY CONSIDERATIONS"
 In general, separate passwords should be used for \s-1NNTP\s0 wherever
@@ -853,7 +884,7 @@ permits certain auth groups to be applied in certain cases.  Here are
 some ideas:
 .IP "\(bu" 4
 To restrict connections on the standard nntp port (119) to use \s-1SSL\s0 for
-some (or all) of the auth groups to match, use the ssl_required:
+some (or all) of the auth groups to match, use the require_ssl:
 parameter.
 .IP "\(bu" 4
 If you consider your local network (but not the internet) secure, have
@@ -862,7 +893,7 @@ above, with ones having global applicability below.
 .IP "\(bu" 4
 Consider running a \f(CW\*(C`nnrpd \-S\*(C'\fR (with \f(CW\*(C`\-D\*(C'\fR, or out of \*(L"super\-server\*(R"
 like inetd) on the nntps port (563) for clients that support \s-1SSL\s0.  You
-can use the ssl_required: parameter, or \f(CW\*(C`\-c\*(C'\fR to specify an alternate
+can use the require_ssl: parameter, or \f(CW\*(C`\-c\*(C'\fR to specify an alternate
 \&\fIreaders.conf\fR if you want a substantially different configuration for
 this case.
 .IP "\(bu" 4

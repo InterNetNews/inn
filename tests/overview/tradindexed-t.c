@@ -444,7 +444,7 @@ main(void)
     struct hash *groups;
     bool status;
 
-    puts("17");
+    puts("21");
 
     if (!overview_init())
         die("Opening the overview database failed, cannot continue");
@@ -490,6 +490,18 @@ main(void)
     tradindexed_close();
     system("/bin/rm -r tdx-tmp");
     ok(17, true);
+
+    if (!overview_init())
+        die("Opening the overview database failed, cannot continue");
+    ok(18, true);
+
+    groups = overview_load("data/bogus");
+    ok(19, true);
+    ok(20, overview_verify_data("data/bogus"));
+    hash_free(groups);
+    tradindexed_close();
+    system("/bin/rm -r tdx-tmp");
+    ok(21, true);
 
     return 0;
 }

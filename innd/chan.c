@@ -229,7 +229,7 @@ CHANtracing(CHANNEL *cp, bool Flag)
 	    p, cp->BadWrites, cp->BlockedWrites, cp->BadReads);
 	syslog(L_NOTICE, "%s trace address %s lastactive %ld nextlog %ld",
 	    p, sprint_sockaddr((struct sockaddr *)&cp->Address),
-	    cp->LastActive, cp->NextLog);
+	    (long) cp->LastActive, (long) cp->NextLog);
 	if (FD_ISSET(cp->fd, &SCHANmask))
 	    syslog(L_NOTICE, "%s trace sleeping %ld 0x%p",
 		p, (long)cp->Waketime, (void *)cp->Waker);

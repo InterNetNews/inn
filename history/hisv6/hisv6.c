@@ -955,7 +955,7 @@ hisv6_traverse(struct hisv6 *h, struct hisv6_walkstate *cookie,
 				time_t, time_t, time_t,
 				const TOKEN *))
 {
-    bool r;
+    bool r = false;
     QIOSTATE *qp;
     void *p;
     size_t line;

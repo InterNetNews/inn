@@ -1456,7 +1456,7 @@ ARTassignnumbers(ARTDATA *data)
 static bool
 ARTxrefslave(ARTDATA *data)
 {
-  char		*p, *q, *name, *next, c;
+  char		*p, *q, *name, *next, c = 0;
   NEWSGROUP	*ngp;
   int	        i;
   bool		nogroup = true;
@@ -1773,7 +1773,7 @@ ARTmakeoverview(CHANNEL *cp)
 bool
 ARTpost(CHANNEL *cp)
 {
-  char		*p, **groups, ControlWord[SMBUF], tmpbuff[32], **hops;
+  char		*p, **groups, ControlWord[SMBUF], **hops, *controlgroup;
   int		i, j, *isp, hopcount, oerrno, canpost;
   NEWSGROUP	*ngp, **ngptr;
   SITE		*sp;
@@ -1799,11 +1799,10 @@ ARTpost(CHANNEL *cp)
   article = &cp->In;
   artclean = ARTclean(data, cp->Error);
 
-  /* assumes Path header is required header */
-  hopcount = ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH), &data->Path);
-  if (!artclean && (!HDR_FOUND(HDR__MESSAGE_ID) || hopcount == 0)) {
+  /* If we don't have Path or Message-ID, we can't continue. */
+  if (!artclean && (!HDR_FOUND(HDR__PATH) || !HDR_FOUND(HDR__MESSAGE_ID)))
     return false;
-  }
+  hopcount = ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH), &data->Path);
   if (hopcount == 0) {
     snprintf(cp->Error, sizeof(cp->Error), "%d illegal path element",
             NNTP_REJECTIT_VAL);
@@ -2185,9 +2184,10 @@ ARTpost(CHANNEL *cp)
    * or control. */
   if (IsControl && Accepted && !ToGroup) {
     ControlStore = true;
-    FileGlue(tmpbuff, "control", '.', ControlWord);
-    if ((ngp = NGfind(tmpbuff)) == NULL)
+    controlgroup = concat("control.", ControlWord, (char *) 0);
+    if ((ngp = NGfind(controlgroup)) == NULL)
       ngp = NGfind(ARTctl);
+    free(controlgroup);
     ngp->PostCount = 0;
     ngptr = GroupPointers;
     *ngptr++ = ngp;

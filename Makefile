@@ -10,7 +10,7 @@ INSTDIRS      = $(PATHNEWS) $(PATHBIN) $(PATHAUTH) $(PATHAUTHRESOLV) \
 		$(PATHMAN) $(MAN1) $(MAN3) $(MAN5) $(MAN8) $(PATHSPOOL) \
 		$(PATHTMP) $(PATHARCHIVE) $(PATHARTICLES) $(PATHINCOMING) \
 		$(PATHINBAD) $(PATHTAPE) $(PATHOVERVIEW) $(PATHOUTGOING) \
-		$(PATHLOG) $(PATHLOG)/OLD
+		$(PATHLOG) $(PATHLOG)/OLD $(PATHINCLUDE)
 
 ##  LIBDIRS are built before PROGDIRS, make update runs in all UPDATEDIRS,
 ##  and make install runs in all ALLDIRS.  Nothing runs in test except the
@@ -110,7 +110,7 @@ cert:
 	    -keyout $(PATHLIB)/cert.pem
 	chown $(NEWSUSER) $(PATHLIB)/cert.pem
 	chgrp $(NEWSGROUP) $(PATHLIB)/cert.pem
-	chmod 640 $(PATHLIB)/cert.pem
+	chmod 600 $(PATHLIB)/cert.pem
 
 
 ##  Cleanup targets.  clean deletes all compilation results but leaves the

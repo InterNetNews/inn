@@ -415,13 +415,14 @@ static int set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
 
 	/* check ownership and permissions of key file */
 	if (lstat(key_file, &buf) == -1) {
-	    syslog(L_ERROR, "unable to stat private key '%s'", cert_file);
+	    syslog(L_ERROR, "unable to stat private key '%s'", key_file);
 	    return (0);
 	}
 	if (!S_ISREG(buf.st_mode) || (buf.st_mode & 0077) != 0 ||
 	    buf.st_uid != getuid()) {
-	    syslog(L_ERROR, "bad ownership or permissions on private key '%s'", 
-		  cert_file);
+	    syslog(L_ERROR, "bad ownership or permissions on private key"
+                   " '%s': private key must be mode 600 and owned by "
+                   NEWSUSER, cert_file);
 	    return (0);
 	}
 

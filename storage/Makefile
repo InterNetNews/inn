@@ -139,9 +139,10 @@ cnfs/cnfs.o: cnfs/cnfs.c ../include/config.h ../include/inn/defines.h \
 ovdb/ovdb.o: ovdb/ovdb.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/socket.h \
  ../include/portable/time.h ../include/conffile.h \
- ../include/inn/innconf.h ../include/libinn.h ../include/paths.h \
- ../include/storage.h ../include/ov.h ../include/inn/history.h \
- ovinterface.h ovdb/ovdb.h ovdb/ovdb-private.h
+ ../include/inn/innconf.h ../include/inn/messages.h \
+ ../include/libinn.h ../include/paths.h ../include/storage.h \
+ ../include/ov.h ../include/inn/history.h ovinterface.h ovdb/ovdb.h \
+ ovdb/ovdb-private.h
 timecaf/caf.o: timecaf/caf.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h timecaf/caf.h
 timecaf/timecaf.o: timecaf/timecaf.c ../include/config.h \

@@ -392,7 +392,7 @@ int main (int argc, char **argv)
           close (2) ;
           dup2 (fds[1],1) ;
           dup2 (fds[1],2) ;
-          execlp ("sh","sh", "-c", subProgram, NULL) ;
+          execlp ("sh", "sh", "-c", subProgram, (char *) 0) ;
           perror ("execlp") ;
           exit (1) ;
         }

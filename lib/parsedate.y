@@ -48,6 +48,7 @@
 
 static int date_lex(void);
 
+int yyparse(void);
 
     /* See the LeapYears table in Convert. */
 #define EPOCH		1970

@@ -391,7 +391,5 @@ overview_getheader(const struct cvector *vector, int element,
 	len = vector->strings[element + 1] - vector->strings[element] - 1;
     }
     field = xstrndup(p, len);
-
- fail:
     return field;
 }

@@ -10,6 +10,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 
@@ -170,7 +171,9 @@ QIOread(QIOSTATE *qp)
 
         /* Read in some more data, and then let the loop try to find the
            newline again or discover that the line is too long. */
-        nread = read(qp->_fd, qp->_end, qp->_size - nleft);
+        do {
+            nread = read(qp->_fd, qp->_end, qp->_size - nleft);
+        } while (nread == -1 && errno == EINTR);
         if (nread <= 0) {
             qp->_flag = (nread < 0) ? QIO_error : QIO_ok;
             return NULL;

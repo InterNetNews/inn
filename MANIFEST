@@ -520,6 +520,7 @@ nnrpd/cache.h                         MessageID cache interfaces
 nnrpd/commands.c                      Assorted server commands
 nnrpd/group.c                         Group-related routines
 nnrpd/line.c                          Long line-by-line reading routines
+nnrpd/list.c                          The LIST commands
 nnrpd/misc.c                          Miscellaneous support routines
 nnrpd/newnews.c                       The NEWNEWS command
 nnrpd/nnrpd.c                         Main and some utility routines
@@ -729,6 +730,7 @@ tests/libtest.h                       Interface to libtest
 tests/overview                        Test suite for overview (Directory)
 tests/overview/data                   Test overview data (Directory)
 tests/overview/data/basic             Basic set of overview test data
+tests/overview/data/bogus             Bad newsgroup name test data
 tests/overview/data/high-numbered     High-numbered article test data
 tests/overview/data/reversed          Same as basic, but in reverse order
 tests/overview/munge-data             Support script to generate test data

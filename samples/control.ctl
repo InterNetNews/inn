@@ -361,6 +361,17 @@ checkgroups:news@*fu-berlin.de:bln.*:doit
 newgroup:news@*fu-berlin.de:bln.*:doit
 rmgroup:news@*fu-berlin.de:bln.*:doit
 
+## BNE (Brisbane, Australia)
+# Contact: ausadmin@aus.news-admin.org
+# URL: http://bne.news-admin.org/
+# Key URL: http://aus.news-admin.org/ausadmin.asc
+# *PGP*   See comment at top of file.
+newgroup:*:bne.*:drop
+rmgroup:*:bne.*:drop
+checkgroups:ausadmin@aus.news-admin.org:bne.*:verify-ausadmin@aus.news-admin.org
+newgroup:ausadmin@aus.news-admin.org:bne.*:verify-ausadmin@aus.news-admin.org
+rmgroup:ausadmin@aus.news-admin.org:bne.*:verify-ausadmin@aus.news-admin.org
+
 ## BOFH (*PRIVATE* -- Bastard Operator From Hell)
 # Contact: myname@myhost.mydomain.com
 # For private use only, contact the above address for information.
@@ -384,6 +395,17 @@ rmgroup:*:cais.*:doit
 checkgroups:*@*calstate.edu:calstate.*:doit
 newgroup:*@*calstate.edu:calstate.*:doit
 rmgroup:*@*calstate.edu:calstate.*:doit
+
+## CANB (Canberra, Australia)
+# Contact: ausadmin@aus.news-admin.org
+# URL: http://canb.news-admin.org/
+# Key URL: http://aus.news-admin.org/ausadmin.asc
+# *PGP*   See comment at top of file.
+newgroup:*:canb.*:drop
+rmgroup:*:canb.*:drop
+checkgroups:ausadmin@aus.news-admin.org:canb.*:verify-ausadmin@aus.news-admin.org
+newgroup:ausadmin@aus.news-admin.org:canb.*:verify-ausadmin@aus.news-admin.org
+rmgroup:ausadmin@aus.news-admin.org:canb.*:verify-ausadmin@aus.news-admin.org
 
 ## CAPDIST (Albany, The Capital District, New York, USA)
 checkgroups:danorton@albany.net:capdist.*:doit
@@ -544,7 +566,7 @@ newgroup:group-admin@isc.org:*:drop
 newgroup:tale@*uu.net:*:drop
 rmgroup:group-admin@isc.org:*:drop
 rmgroup:tale@*uu.net:*:drop
-checkgroups:group-admin@isc.org:*:verify-news.announce.newgroups
+checkgroups:group-admin@isc.org:comp.*|humanities.*|misc.*|news.*|rec.*|sci.*|soc.*|talk.*:verify-news.announce.newgroups
 newgroup:group-admin@isc.org:comp.*|misc.*:verify-news.announce.newgroups
 newgroup:group-admin@isc.org:humanities.*:verify-news.announce.newgroups
 newgroup:group-admin@isc.org:news.*|rec.*|sci.*:verify-news.announce.newgroups
@@ -828,6 +850,16 @@ checkgroups:control@usenet-fr.news.eu.org:fr.*:verify-control@usenet-fr.news.eu.
 newgroup:control@usenet-fr.news.eu.org:fr.*:verify-control@usenet-fr.news.eu.org
 rmgroup:control@usenet-fr.news.eu.org:fr.*:verify-control@usenet-fr.news.eu.org
 
+## FRANCE (France)
+# Contact: control@usenet-france.news.eu.org
+# Admin group: france.admin.evolutions
+# *PGP*   See comment at top of file.
+newgroup:*:france.*:drop
+rmgroup:*:france.*:drop
+checkgroups:control@usenet-france.news.eu.org:france.*:verify-control@usenet-france.news.eu.org
+newgroup:control@usenet-france.news.eu.org:france.*:verify-control@usenet-france.news.eu.org
+rmgroup:control@usenet-france.news.eu.org:france.*:verify-control@usenet-france.news.eu.org
+
 ## FREE (Open Hierarchy where anyone can create a group)
 newgroup:*:free.*:doit
 newgroup:group-admin@isc.org:free.*:drop
@@ -1045,6 +1077,19 @@ checkgroups:gcn@news.nic.it:it.*:verify-gcn@news.nic.it
 newgroup:gcn@news.nic.it:it.*:verify-gcn@news.nic.it
 rmgroup:gcn@news.nic.it:it.*:verify-gcn@news.nic.it
 
+## IT-ALT (Alternate Italian)
+# Contact: it-alt@x-privat.org
+# URL: http://www.x-privat.org/it-alt/
+# Admin group: it-alt.config
+# Key URL: http://www.x-privat.org/it-alt/pgp.txt
+# Key fingerprint = 01 AE 93 F7 CE 3B C1 F4  E0 35 8E 23 C4 04 A2 30
+# *PGP*   See comment at top of file.
+newgroup:*:it-alt.*:drop
+rmgroup:*:it-alt.*:drop
+checkgroups:it-alt@x-privat.org:it-alt.*:verify-it-alt@x-privat.org
+newgroup:it-alt@x-privat.org:it-alt.*:verify-it-alt@x-privat.org
+rmgroup:it-alt@x-privat.org:it-alt.*:verify-it-alt@x-privat.org
+
 ## ITALIA (Italy)
 # Contact: news@news.cineca.it
 # URL: http://news.cineca.it/italia/
@@ -1145,7 +1190,7 @@ rmgroup:*@*.kentlaw.edu:law.*:doit
 rmgroup:*@*.law.vill.edu:law.*:doit
 
 ## LINUX (Gated Linux mailing lists)
-# Contact: Marco d'Itri <md@toglimi.linux.it>
+# Contact: Marco d'Itri <md@linux.it>
 # Admin group: linux.admin.news
 # Key fingerprint = 81 B3 27 99 4F CE 32 D1  1B C9 01 0D BB B3 2E 41
 # *PGP*   See comment at top of file.
@@ -1216,17 +1261,20 @@ newgroup:neil@new*.medlux.ru:medlux.*:doit
 rmgroup:neil@new*.medlux.ru:medlux.*:doit
 
 ## MELB (Melbourne, Australia)
-checkgroups:kre@*mu*au:melb.*:doit
-checkgroups:revdoc@*uow.edu.au:melb.*:doit
-newgroup:kre@*mu*au:melb.*:doit
-newgroup:revdoc@*uow.edu.au:melb.*:doit
-rmgroup:kre@*mu*au:melb.*:doit
-rmgroup:revdoc@*uow.edu.au:melb.*:doit
+# Contact: ausadmin@aus.news-admin.org
+# URL: http://melb.news-admin.org/
+# Key URL: http://aus.news-admin.org/ausadmin.asc
+# *PGP*   See comment at top of file.
+newgroup:*:melb.*:drop
+rmgroup:*:melb.*:drop
+checkgroups:ausadmin@aus.news-admin.org:melb.*:verify-ausadmin@aus.news-admin.org
+newgroup:ausadmin@aus.news-admin.org:melb.*:verify-ausadmin@aus.news-admin.org
+rmgroup:ausadmin@aus.news-admin.org:melb.*:verify-ausadmin@aus.news-admin.org
 
 ## MENSA (The Mensa Organisation)
 # Contact: usenet@newsgate.mensa.org
 # Admin group: mensa.config
-# Key fingerprint = A7 57 24 49 C0 D4 47 33  84 A0 52 6E F1 A4 00 5B
+# Key fingerprint = 52B9 3963 85D9 0806 8E19  7344 973C 5005 DC7D B7A7
 # *PGP*   See comment at top of file.
 newgroup:*:mensa.*:drop
 rmgroup:*:mensa.*:drop
@@ -1251,18 +1299,24 @@ checkgroups:scs@lokkur.dexter.mi.us:mi.*:doit
 newgroup:scs@lokkur.dexter.mi.us:mi.*:doit
 rmgroup:scs@lokkur.dexter.mi.us:mi.*:doit
 
-## MICROSOFT (Microsoft, Inc.)
-#
-# Broken control messages for the Microsoft groups are sent from the
-# address pssolops@microsoft.com, but they aren't signed and don't contain
-# valid newsgroup file entries.  It is therefore recommended to use
-# actsync rather than control message processing to maintain one's local
-# list of microsoft.* groups if you carry this hierarchy.
-#
-# newgroup:pssolops@microsoft.com:microsoft.*:doit
-# rmgroup:pssolops@microsoft.com:microsoft.*:doit
+## MICROSOFT (Microsoft Corporation, USA)
+# Contact: usenet@microsoft.com
+# URL: http://www.microsoft.com/usenetadmin
+# Key URL: http://www.microsoft.com/usenetadmin/pgpkey.txt
+# Key fingerprint = 1C 3B EB AF 7C 5C 8A B0  CD 5F 5C B0 AB 74 4F B1
+# *PGP*   See comment at top of file.
 newgroup:*:microsoft.*:drop
 rmgroup:*:microsoft.*:drop
+checkgroups:usenet@microsoft.com:microsoft.*:verify-usenet@microsoft.com
+newgroup:usenet@microsoft.com:microsoft.*:verify-usenet@microsoft.com
+rmgroup:usenet@microsoft.com:microsoft.*:verify-usenet@microsoft.com
+
+## MICROSOFT.PRIVATE (*PRIVATE* -- Microsoft Corporation, USA)
+# Contact: usenet@microsoft.com
+# URL: http://www.microsoft.com/usenetadmin
+# For private use only, contact the above address for information.
+newgroup:usenet@microsoft.com:microsoft.private.*:mail
+rmgroup:usenet@microsoft.com:microsoft.private.*:doit
 
 ## MILW (Milwaukee, Wisconsin, USA)
 # Contact: milw@usenet.mil.wi.us
@@ -1654,9 +1708,9 @@ rmgroup:*:pubnet.*:doit
 # *PGP*   See comment at top of file.
 newgroup:*:relcom.*:drop
 rmgroup:*:relcom.*:drop
-checkgroups:coord@new*.relcom.ru:relcom.*:verify-relcom.newsgroups
-newgroup:coord@new*.relcom.ru:relcom.*:verify-relcom.newsgroups
-rmgroup:coord@new*.relcom.ru:relcom.*:verify-relcom.newsgroups
+checkgroups:coord@*.relcom.ru:relcom.*:verify-relcom.newsgroups
+newgroup:coord@*.relcom.ru:relcom.*:verify-relcom.newsgroups
+rmgroup:coord@*.relcom.ru:relcom.*:verify-relcom.newsgroups
 
 ## RPI (*LOCAL* -- Rensselaer Polytechnic Institute, Troy, NY, USA)
 # Contact: sofkam@rpi.edu
@@ -1838,6 +1892,17 @@ rmgroup:news@info.nic.surfnet.nl:surfnet.*:doit
 checkgroups:ber@sunic.sunet.se:swnet.*:doit
 newgroup:ber@sunic.sunet.se:swnet.*:doit
 rmgroup:ber@sunic.sunet.se:swnet.*:doit
+
+## SYD (Sydney, Australia)
+# Contact: ausadmin@aus.news-admin.org
+# URL: http://syd.news-admin.org/
+# Key URL: http://aus.news-admin.org/ausadmin.asc
+# *PGP*   See comment at top of file.
+newgroup:*:syd.*:drop
+rmgroup:*:syd.*:drop
+checkgroups:ausadmin@aus.news-admin.org:syd.*:verify-ausadmin@aus.news-admin.org
+newgroup:ausadmin@aus.news-admin.org:syd.*:verify-ausadmin@aus.news-admin.org
+rmgroup:ausadmin@aus.news-admin.org:syd.*:verify-ausadmin@aus.news-admin.org
 
 ## T-NETZ (*DEFUNCT* -- Germany)
 # This hierarchy is defunct.  Please remove it.
@@ -2144,6 +2209,19 @@ rmgroup:aej@*.wpi.edu:wpi.*:doit
 checkgroups:*@*.wustl.edu:wu.*:doit
 newgroup:*@*.wustl.edu:wu.*:doit
 rmgroup:*@*.wustl.edu:wu.*:doit
+
+## X-PRIVAT (Italian)
+# Contact: dmitry@x-privat.org
+# URL: http://www.x-privat.org/
+# Admin group: x-privat.newsgroup
+# Key URL: http://www.x-privat.org/dmitry.asc
+# Key fingerprint = 9B 0A 7E 68 27 80 C7 96  47 6B 03 90 51 05 68 43
+# *PGP*   See comment at top of file.
+newgroup:*:x-privat.*:drop
+rmgroup:*:x-privat.*:drop
+checkgroups:dmitry@x-privat.org:x-privat.*:verify-dmitry@x-privat.org
+newgroup:dmitry@x-privat.org:x-privat.*:verify-dmitry@x-privat.org
+rmgroup:dmitry@x-privat.org:x-privat.*:verify-dmitry@x-privat.org
 
 ## XS4ALL (XS4ALL, Netherlands)
 # Contact: Cor Bosman <news@xs4all.nl>

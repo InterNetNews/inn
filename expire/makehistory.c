@@ -495,7 +495,7 @@ static void
 DoArt(ARTHANDLE *art)
 {
     ARTOVERFIELD		*fp;
-    const char                  *p, *p1;
+    const char                  *p;
     char                        *q;
     static struct buffer        buffer = { 0, 0, 0, NULL };
     static char			SEP[] = "\t";
@@ -855,7 +855,7 @@ main(int argc, char **argv)
 
     /* Initialise the history manager */
     if (!NoHistory) {
-	int flags = HIS_RDWR | HIS_CREAT | HIS_INCORE;
+	int flags = HIS_RDWR | HIS_INCORE;
 
 	if (!AppendMode)
 	    flags |= HIS_CREAT;

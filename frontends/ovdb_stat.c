@@ -74,7 +74,7 @@ static void getval(int i, void *p, struct datatab *tab, char *val, char *sufx)
     int mode = 0;
     u_int32_t a = 0, b = 0, c = 0, bytes = 0, mbytes = 0, gbytes = 0;
     char *cp = p;
-    char **tmp = NULL;
+    char *tmp = NULL;
     time_t tm = 0;
     size_t sz = 0;
     DB_LSN *dl = NULL;

@@ -759,6 +759,7 @@ sub Make_Index {
     if defined $output{'default'}{'html_body'};
   $body =~ s/\\\"/\"/go;
   my $result = sprintf <<EOF;
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <HTML><HEAD>
 <TITLE>$Title: index</TITLE>
 </HEAD><BODY $body>
@@ -821,7 +822,7 @@ EOF
 	       \%in, \%out, \%dates, $label_in, $label_out,
 	       $color_in, $color_out, $unit);
       $result .= "<IMG WIDTH=\"$xmax\" HEIGHT=\"$ymax\" ";
-      $result .= "SRC=\"$IMG_pth$filename\">\n";
+      $result .= "SRC=\"$IMG_pth$filename\" ALT=\"Graph\">\n";
       $i++;
     }
     $result .= "<P>\n";
@@ -1749,7 +1750,8 @@ sub Write_all_results {
     $body =~ s/\\\"/\"/go;
     open (HTML, "> $HTML_output") || die "Error: cant open $HTML_output\n";
 
-    print HTML "<HTML>\n<HEAD>\n<TITLE>$Title: $first_date</TITLE>\n" .
+    print HTML "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n" .
+      "<HTML>\n<HEAD>\n<TITLE>$Title: $first_date</TITLE>\n" .
       "<!-- innreport $version -->\n</HEAD>\n<BODY $body>\n" .
       "$HTML_header\n<CENTER><H1>$title</H1>\n" .
       "<H3>$first_date -- $last_date</H3>\n</CENTER>\n<P><HR><P>\n";
@@ -1937,7 +1939,7 @@ sub Write_Results {
   print "$s\n" if $TEXT;
   $s = '';
   if ($HTML) {
-    print HTML "<TR>$html</TR>\n<TR></TR>\n";
+    print HTML "<TR>$html</TR>\n<TR><TD></TD></TR>\n";
     $html = '';
   }
   my $num = 0;
@@ -2054,7 +2056,7 @@ sub Write_Results {
       }
     }
     print "\n" if $TEXT;
-    print HTML "<TR></TR>\n" if $HTML;
+    print HTML "<TR><TD></TD></TR>\n" if $HTML;
     $first = 0;
     $num = $num_d;
     $s = '';
@@ -2140,7 +2142,7 @@ sub Write_Results {
       }
     }
     print "\n" if $TEXT;
-    print HTML "<TR></TR>\n" if $HTML;
+    print HTML "<TR><TD></TD></TR>\n" if $HTML;
     $first = 0;
     foreach $i (@{$output{$report}{'column'}}) {
       my $wtext = defined $$i{'text'} ? $$i{'text'} : 1;

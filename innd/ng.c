@@ -365,7 +365,7 @@ NGrenumber(NEWSGROUP *ngp)
 	himark = high;
     }
     l = atol(f2);
-    if (himark != l) {
+    if (himark > l) {
 	syslog(L_NOTICE, RENUMBER, LogName, ngp->Name, "hi", l, himark);
 	if (!FormatLong(f2, himark, f3 - f2 - 1)) {
 	    syslog(L_ERROR, NORENUMBER, LogName, ngp->Name, "hi");
@@ -373,6 +373,9 @@ NGrenumber(NEWSGROUP *ngp)
 	}
 	ngp->Last = himark;
 	ICDactivedirty++;
+    } else if (himark < l) {
+        syslog(L_NOTICE, "%s renumber %s hi not decreasing %ld to %ld",
+               LogName, ngp->Name, l, himark);
     }
     l = atol(f3);
     if (lomark != l) {

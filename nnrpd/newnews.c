@@ -50,7 +50,6 @@ static bool FindHeader(ARTHANDLE *art, const char **pp, const char **qp,
 */
 static char *GetXref(ARTHANDLE *art) {
   const char	*p, *q;
-  static char	buff[BIG_BUFFER];
 
   if (!FindHeader(art, &p, &q, "xref", sizeof("xref")))
     return NULL;
@@ -134,7 +133,7 @@ process_newnews(char *group, bool AllGroups, time_t date)
     ARTHANDLE *art = NULL;
     TOKEN token;
     char *data;
-    int i, len;
+    int len;
     char *grplist[2];
     time_t now;
 

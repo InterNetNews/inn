@@ -7,8 +7,10 @@ readers.conf - Access control and configuration for nnrpd
 F<readers.conf> in I<pathetc> specifies access control for nnrpd(8).  It
 controls who is allowed to connect as a news reader and what they're
 allowed to do after they connect.  nnrpd reads this file when it starts
-up.  (The location I<pathetc>/readers.conf is only the default; the same
-format applies to any file specified with C<nnrpd -c>.)
+up.  This generally means that any changes take effect immediately on all
+subsequent connections, but B<nnrpd> may have to be restarted if you use
+the B<-D> option.  (The location I<pathetc>/readers.conf is only the
+default; the same format applies to any file specified with C<nnrpd -c>.)
 
 There are two types of entries in F<readers.conf>:  parameter/value pairs
 and configuration groups.  Blank lines and anything after a number sign
@@ -83,7 +85,7 @@ address in a netblock; for example, "10.10.10.0/24" will match any IP
 address between 10.10.10.0 and 10.10.10.255 inclusive.
 
 If compiled against the SSL libraries, an auth group with the
-ssl_required: parameter set to true only applies if the incoming
+require_ssl: parameter set to true only applies if the incoming
 connection is using SSL.
 
 For any connection from a host that matches that wildmat expression or
@@ -321,15 +323,15 @@ found in the file F<doc/hook-python>.
 
 =item B<python_dynamic:>
 
-A python script for applying access control dynamically on a per
-newsgroup basis.  If an auth group matches successfully and contains a
+A python script for applying access control dynamically on a per newsgroup
+basis.  If an auth group matches successfully and contains a
 python_dynamic parameter, then the argument script will be used to
 determine the clients rights each time the user attempts to view a
 newsgroup, or read or post an article.  Access rights as determined by
 python_dynamic override the values of access group parameters such as
 newsgroups, read, and post.  This parameter is only valid if INN is
-compiled with Python support (B<--with-python> passed to configure).
-More information may be found in the file F<doc/hook-python>.
+compiled with Python support (B<--with-python> passed to configure).  More
+information may be found in the file F<doc/hook-python>.
 
 =back
 
@@ -474,15 +476,17 @@ default is true.
 
 =item B<virtualhost:>
 
-If set to true, nnrpd(8) will behave as if it's running on a server with a
-different name.  This may affect Path:, Message-ID:, and X-Trace: headers
-of posted articles, as well as the apparent Path: and Xref: headers of all
-articles read by the client.  Either pathhost: or domain: must be present
-in the same access group if this parameter is set to true.  nnrpd(8) will
-act as if the server name is the value of pathhost:, or domain: if
-pathhost: isn't set or is set to the same value as in F<inn.conf>.  One of
-these parameters must be set to something different than that set in
-F<inn.conf>.
+Set this parameter to make B<nnrpd> behave as if it's running on a server
+with a different name than it actually is.  If you set this parameter, you
+must also set either pathhost: or domain: to something different than is
+set in F<inn.conf>.  All articles displayed to clients will then have
+their Path: and Xref: headers altered to appear to be from the server
+named in pathhost: or domain: (whichever is set), and posted articles will
+use that server name in the Path:, Message-ID;, and X-Trace: headers.
+
+Note that setting this parameter requires the server modify all posts
+before presenting them to the client and therefore may decrease
+performance slightly.
 
 =back
 
@@ -504,7 +508,7 @@ Here's a basic summary of what happens when a client connects:
 =item *
 
 All auth groups are scanned and the ones that don't match the client
-(due to hosts:, localaddress:, ssl_required:, etc) are eliminated.
+(due to hosts:, localaddress:, require_ssl:, etc) are eliminated.
 
 =item *
 
@@ -632,15 +636,15 @@ both cases.  The order of the access groups in this case does matter,
 provided the newsgroups: lines differ; the access group with no users:
 line needs to be first, with the "users: <LOCAL>" group after.
 
-Finally, here's a very complicated example.  This is for an organization
-that has an internal hierarchy "example.*" only available to local shell
-users, who are on machines where identd can be trusted.  Dialup users must
-provide a username and password, which is then checked against RADIUS.
-Remote users have to use a username and password that's checked against a
-database on the news server.  Finally, the admin staff (users "joe" and
-"jane") can post anywhere (including the "example.admin.*" groups that are
-read-only for everyone else), and are exempted from the Perl filter.  For
-an additional twist, posts from dialup users have their Sender: header
+Here's a very complicated example.  This is for an organization that has
+an internal hierarchy "example.*" only available to local shell users, who
+are on machines where identd can be trusted.  Dialup users must provide a
+username and password, which is then checked against RADIUS.  Remote users
+have to use a username and password that's checked against a database on
+the news server.  Finally, the admin staff (users "joe" and "jane") can
+post anywhere (including the "example.admin.*" groups that are read-only
+for everyone else), and are exempted from the Perl filter.  For an
+additional twist, posts from dialup users have their Sender: header
 replaced by their authenticated identity.
 
 Since this organization has some internal moderated newsgroups, the admin
@@ -721,6 +725,29 @@ they get their special privileges regardless of how they connect, whether
 the dialups, the shell machines, or even externally with a username and
 password.
 
+Finally, here's a very simple example of a configuration for a public
+server for a particular hierarchy.
+
+    auth default {
+        hosts: *
+        default: <PUBLIC>
+    }
+
+    access default {
+        users: <PUBLIC>
+        newsgroups: example.*
+    }
+
+Notice that clients aren't allowed to read any other groups; this keeps
+them from getting access to administrative groups or reading control
+messages, just as a precaution.  When running a public server like this,
+be aware that many public hierarchies will later be pulled down and
+reinjected into the main Usenet, so it's highly recommended that you also
+run a Perl or Python filter to reject any messages crossposted out of your
+local hierarchy and any messages containing a Supersedes: header.  This
+will keep messages posted to your public hierarchy from hurting any of the
+rest of Usenet if they leak out.
+
 =head1 SECURITY CONSIDERATIONS
 
 In general, separate passwords should be used for NNTP wherever
@@ -743,7 +770,7 @@ some ideas:
 =item *
 
 To restrict connections on the standard nntp port (119) to use SSL for
-some (or all) of the auth groups to match, use the ssl_required:
+some (or all) of the auth groups to match, use the require_ssl:
 parameter.
 
 =item *
@@ -756,7 +783,7 @@ above, with ones having global applicability below.
 
 Consider running a C<nnrpd -S> (with C<-D>, or out of "super-server"
 like inetd) on the nntps port (563) for clients that support SSL.  You
-can use the ssl_required: parameter, or C<-c> to specify an alternate
+can use the require_ssl: parameter, or C<-c> to specify an alternate
 F<readers.conf> if you want a substantially different configuration for
 this case.
 

@@ -47,6 +47,7 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/timer.h"
 #include "libinn.h"
 #include "nntp.h"
 
@@ -330,7 +331,7 @@ main(int ac, char *av[])
   FILE			*From;
   FILE			*To;
   char			buff[NNTP_STRLEN];
-  RETSIGTYPE		(*old)(int);
+  RETSIGTYPE		(*old)(int) = NULL;
   unsigned int		ConnectTimeout;
   unsigned int		TotalTimeout;
   struct stat		statbuf;

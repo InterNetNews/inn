@@ -410,19 +410,19 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	case FEED_TIMERECEIVED:
 	    if (Dirty)
 		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    snprintf(pbuff, sizeof(pbuff), "%ld", Data->Arrived);
+	    snprintf(pbuff, sizeof(pbuff), "%ld", (long) Data->Arrived);
 	    buffer_append(bp, pbuff, strlen(pbuff));
 	    break;
 	case FEED_TIMEPOSTED:
 	    if (Dirty)
 		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    snprintf(pbuff, sizeof(pbuff), "%ld", Data->Posted);
+	    snprintf(pbuff, sizeof(pbuff), "%ld", (long) Data->Posted);
 	    buffer_append(bp, pbuff, strlen(pbuff));
 	    break;
 	case FEED_TIMEEXPIRED:
 	    if (Dirty)
 		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    snprintf(pbuff, sizeof(pbuff), "%ld", Data->Expires);
+	    snprintf(pbuff, sizeof(pbuff), "%ld", (long) Data->Expires);
 	    buffer_append(bp, pbuff, strlen(pbuff));
 	    break;
 	case FEED_MESSAGEID:
@@ -732,7 +732,7 @@ SITEprocdied(SITE *sp, int process, PROCESS *pp)
 {
     syslog(pp->Status ? L_ERROR : L_NOTICE, "%s exit %d elapsed %ld pid %ld",
 	sp->Name ? sp->Name : "?", pp->Status,
-	pp->Collected - pp->Started, (long)pp->Pid);
+	(long) (pp->Collected - pp->Started), (long) pp->Pid);
     if (sp->Process != process || sp->Name == NULL)
 	/* We already started a new process for this channel
 	 * or this site has been dropped. */

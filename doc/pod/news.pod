@@ -1,3 +1,64 @@
+=head1 Changes from 2.4.0 to 2.4.1
+
+=over 2
+
+=item *
+
+SECURITY: Handle the special filing of control messages into per-type
+newsgroups more robust.  This closes a potentially exploitable buffer
+overflow.  Thanks to Dan Riley for his excellent bug report.
+
+=item *
+
+Fixed article handling in innd so that articles without a Path header
+(arising from peers sending malformatted articles or injecting
+malformatted articles through rnews) would not cause innd to crash.  (This
+was not exploitable.)
+
+=item *
+
+Fixed a serious bug in XPAT handling, thanks to Tommy van Leeuwen.
+
+=item *
+
+configure now looks for sendmail only in /usr/sbin and /usr/lib, not on
+the user's path.  This should reduce the need for --with-sendmail if your
+preferred sendmail is in a standard location.
+
+=item *
+
+The robustness of the tradindexed overview method has been further
+increased, handling more edge cases arising from corrupted databases and
+oddly-named newsgroups.
+
+=item *
+
+innd now never decreases the high water mark of a newsgroup when
+renumbering, which should help ameliorate overview and active file
+synchronization problems.
+
+=item *
+
+Do not close and reopen the history file on ctlinnd reload when the server
+is paused or throttled.  This was breaking ctlinnd reload all during a
+server pause.
+
+=item *
+
+Various minor portability and compilation issues fixed.  Substantial
+numbers of compiler warnings have been cleaned up, thanks largely to work
+by Ilya Kovalenko.
+
+=item *
+
+Multiple other more minor bugs have been fixed.
+
+=item *
+
+Documentation and man pages have been clarified and updated.
+
+=back
+
 =head1 Upgrading from 2.3 to 2.4
 
 The inn.conf parser has changed between INN 2.3 and 2.4.  Due to that
@@ -66,12 +127,12 @@ The tradindexed overview method has been completely rewritten and should
 be considerably more robust in the face of system crashes.  A new utility,
 B<tdx-util>, is provided to examine the contents of the overview database,
 repair inconsistencies, and rebuild the overview for particular groups
-from a tradspool news spool.
+from a tradspool news spool.  See tdx-util(8) for more details.
 
 =item *
 
 The Perl and Python authentication hooks for readers have been extensively
-overhauled and integrated better with F<readers.conf>.  See the changes
+overhauled and integrated better with F<readers.conf>.  See the Changes
 sections in F<doc/hook-perl> and F<doc/hook-python> for more details.
 
 =item *
@@ -243,7 +304,16 @@ Simply doing a make update is not sufficient to upgrade; the history and
 overview information will also have to be regenerated, since the formats
 of both files have changed between 2.2 and 2.3.  Regardless of whether you
 were using the storage API or traditional spool under 2.2, you'll need to
-rebuild your overview and history files.
+rebuild your overview and history files.  You will also need to add a
+storage.conf file, if you weren't using the storage API under INN 2.2.  A
+good default storage.conf file for 2.2 users would be:
+
+    method tradspool {
+        newsgroups: *
+        class: 0
+    }
+
+Create this storage.conf file before rebuilding history or overview.
 
 If you want to allow readers, or if you want to expire based on newsgroup
 name, you need to tell INN to generate overview data and pick an overview

@@ -22,6 +22,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include <ctype.h>
 
 #include "smblib-priv.h"
 
@@ -51,7 +52,7 @@ void strupper(char *s)
   while (*s)
   {
     {
-      if (islower(*s))
+      if (CTYPE(islower, *s))
         *s = toupper(*s);
       s++;
     }

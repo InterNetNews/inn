@@ -185,33 +185,8 @@ typedef unsigned char UCHAR;
 /* The following two arrays need to be in step!              */
 /* We must make it possible for callers to specify these ... */
 
-static const char *SMB_Prots[] = {"PC NETWORK PROGRAM 1.0", 
-                                  "MICROSOFT NETWORKS 1.03",
-                                  "MICROSOFT NETWORKS 3.0",
-                                  "DOS LANMAN1.0",
-                                  "LANMAN1.0",
-                                  "DOS LM1.2X002",
-                                  "LM1.2X002",
-                                  "DOS LANMAN2.1",
-                                  "LANMAN2.1",
-                                  "Samba",
-                                  "NT LM 0.12",
-                                  "NT LANMAN 1.0",
-                                  NULL};
-
-static int SMB_Types[] = {SMB_P_Core,
-                          SMB_P_CorePlus,
-			  SMB_P_DOSLanMan1,
-			  SMB_P_DOSLanMan1,
-	                  SMB_P_LanMan1,
-			  SMB_P_DOSLanMan2,
-		          SMB_P_LanMan2,
-	 	          SMB_P_LanMan2_1,
-		          SMB_P_LanMan2_1,
-		          SMB_P_NT1,
-		          SMB_P_NT1,
-		          SMB_P_NT1,
-		          -1};
+extern const char *SMB_Prots[];
+extern int SMB_Types[];
 
 typedef struct SMB_Connect_Def * SMB_Handle_Type;
 
@@ -262,3 +237,13 @@ struct SMB_Connect_Def {
 extern int SMBlib_errno;
 extern int SMBlib_SMB_Error;          /* last Error             */
 #endif
+
+/* From smbdes.c. */
+void E_P16(unsigned char *, unsigned char *);
+void E_P24(unsigned char *, unsigned char *, unsigned char *);
+
+/* From smblib-util.c. */
+void SMB_Get_My_Name(char *name, int len);
+
+/* From smbencrypt.c. */
+void SMBencrypt(unsigned char *passwd, unsigned char *, unsigned char *);
