@@ -3445,18 +3445,6 @@ static bool issueIHAVE (Connection cxn)
   ASSERT (msgid != NULL) ;
   ASSERT (article != NULL) ;
   
-#if 0
-  if ( !artFileIsValid (article) )
-    {
-      cxn->checkHead = NULL ;
-      cxn->articleQTotal-- ;
-
-      hostArticleIsMissing (cxn->myHost, cxn, article) ;
-      delArtHolder (artH) ;
-    }
-  else
-#endif
-    {
       if ((tmp = (strlen (msgid) + 10)) > bufLen)
         bufLen = tmp ;
 
@@ -3488,7 +3476,6 @@ static bool issueIHAVE (Connection cxn)
       hostArticleOffered (cxn->myHost, cxn) ;
 
       rval = true ;
-    }
 
   return rval ;
 }

@@ -392,47 +392,6 @@ void printArticleInfo (Article art, FILE *fp, u_int indentAmt)
   
 }
 
-  /* return true if the file this article is in still exists. (actually
-     return true if we have the contents of the article in memory or if the
-     file is still OK). */
-bool artFileIsValid (Article article)
-{
-  bool                  rval = false ;
-  ARTHANDLE             *art;
-
-    /* we may already know it's not valid */
-  if (article->articleOk) {
-      if (IsToken(article->fname)) {
-	  if ((art = SMretrieve(TextToToken(article->fname), RETR_STAT)) == NULL) {
-	      rval = false;
-	  } else {
-	      rval = true;
-	      SMfreearticle(art);
-	  }
-      } else {
-	  if (article->contents != NULL)
-	      rval = true ;
-	  else if (fileExistsP (article->fname))
-	      rval = true ;
-      }
-
-      if (!rval)
-        {
-          article->articleOk = false ;
-          missingArticleCount++ ;
-          if (logMissingArticles && !article->loggedMissing)
-            {
-              syslog (LOG_NOTICE,NO_ARTICLE,article->msgid,article->fname) ;
-              article->loggedMissing = true ;
-            }
-        }
-    }
-  
-  
-  return rval ;
-}
-
-
   /* return true if we have or are able to get the contents off the disk */
 bool artContentsOk (Article article)
 {
