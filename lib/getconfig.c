@@ -318,7 +318,7 @@ int CheckInnConf()
 	innconf->pathbin = COPY(cpcatpath(innconf->pathnews, "bin"));
     }
     if (innconf->pathfilter == NULL) {
-	innconf->pathfilter = COPY(cpcatpath(innconf->pathnews, "filter"));
+	innconf->pathfilter = COPY(cpcatpath(innconf->pathbin, "filter"));
     }
     if (innconf->pathcontrol == NULL) {
 	innconf->pathcontrol = COPY(cpcatpath(innconf->pathnews, "control"));
