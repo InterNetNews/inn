@@ -143,6 +143,13 @@ error_log_syslog_err(int len, const char *fmt, va_list args, int err)
 
 
 void
+error_log_syslog_crit(int len, const char *fmt, va_list args, int err)
+{
+    error_log_syslog(LOG_CRIT, len, fmt, args, err);
+}
+
+
+void
 warn(const char *format, ...)
 {
     va_list args;
