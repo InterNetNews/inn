@@ -503,7 +503,7 @@ SITEsend(sp, Data)
 	}
 
 	/* Start the process. */
-	i = Spawn(fd, (int)fileno(Errlog), (int)fileno(Errlog), argv);
+	i = Spawn(sp->Nice, fd, (int)fileno(Errlog), (int)fileno(Errlog), argv);
 	if (i >= 0)
 	    (void)PROCwatch(i, -1);
 	if (fd != 0)
@@ -569,7 +569,7 @@ SITEstartprocess(sp)
     }
 
     /* Fork a child. */
-    i = Spawn(pan[PIPE_READ], (int)fileno(Errlog), (int)fileno(Errlog), argv);
+    i = Spawn(sp->Nice, pan[PIPE_READ], (int)fileno(Errlog), (int)fileno(Errlog), argv);
     if (i > 0) {
 	sp->pid = i;
 	sp->Spooling = FALSE;

@@ -230,6 +230,7 @@ typedef struct _SITE {
     char		FileFlags[FEED_MAXFLAGS + 1];
     long		MaxSize;
     long		MinSize;
+    int			Nice;
     CHANNEL		*Channel;
     BOOL		IsMaster;
     int			Master;

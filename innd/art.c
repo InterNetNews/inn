@@ -1301,7 +1301,7 @@ ARTcontrol(Data, Control)
     av[5] = NULL;
     HeaderCleanFrom(av[1]);
     HeaderCleanFrom(av[2]);
-    if (Spawn(STDIN, (int)fileno(Errlog), (int)fileno(Errlog), av) < 0)
+    if (Spawn(INND_NICE_VALUE, STDIN, (int)fileno(Errlog), (int)fileno(Errlog), av) < 0)
 	/* We know the strrchr below can't fail. */
 	syslog(L_ERROR, "%s cant spawn %s for %s %m",
 	    LogName, MaxLength(av[0], strrchr(av[0], '/')), Data->Name);

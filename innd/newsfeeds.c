@@ -196,6 +196,7 @@ SITEparseone(Entry, sp, subbed, poison)
     sp->Entry = Entry;
     sp->FileFlags[0] = FEED_NAME;
     sp->FileFlags[1] = '\0';
+    sp->Nice = INND_NICE_VALUE;
 
     /* Nip off the first field, the site name. */
     if ((f2 = strchr(Entry, NF_FIELD_SEP)) == NULL)
@@ -306,6 +307,10 @@ SITEparseone(Entry, sp, subbed, poison)
 		case 'u': JustUnmoderated = TRUE;	break;
 		}
 	    break;
+        case 'P':
+            if (*++p && CTYPE(isdigit, *p))
+                sp->Nice = atoi(p);
+            break;
 	case 'S':
 	    if (*++p && CTYPE(isdigit, *p))
 		sp->StartSpooling = atol(p);

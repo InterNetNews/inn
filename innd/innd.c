@@ -245,7 +245,8 @@ NeedShell(p, av, end)
 **  (and a syslog'd message) on error.
 */
 PID_T
-Spawn(fd0, fd1, fd2, av)
+Spawn(niceval, fd0, fd1, fd2, av)
+    int		niceval;
     int		fd0;
     int		fd1;
     int		fd2;
@@ -298,18 +299,13 @@ Spawn(fd0, fd1, fd2, av)
 
     /* Try to set our permissions. */
 #if	defined(DO_INND_NICE_KIDS)
-    (void)nice(INND_NICE_VALUE);
+    if (nice(niceval) == -1) 
+	syslog(L_ERROR, "Could not nice child to %d: %m", niceval);
 #endif	/* defined(DO_INND_NICE_KIDS) */
     if (setgid(NewsGID) == -1)
 	syslog(L_ERROR, "%s cant setgid in %s %m", LogName, av[0]);
     if (setuid(NewsUID) == -1)
 	syslog(L_ERROR, "%s cant setuid in %s %m", LogName, av[0]);
-
-    /* Close the DBZ database without doing any writing. */
-    /* Not needed with the patched DBZ; can't be used with vfork.
-     * (void)dbzcancel();
-     * (void)dbmclose();
-     */
 
     /* Start the desired process (finally!). */
     (void)execv(av[0], av);

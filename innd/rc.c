@@ -203,7 +203,7 @@ RChandoff(fd, h)
 
     /* Call NNRP; don't send back a QUIT message if Spawn fails since  
      * that's a major error we want to find out about quickly. */
-    (void)Spawn(fd, fd, fd, argv);
+    (void)Spawn(INND_NICE_VALUE, fd, fd, fd, argv);
 }
 
 
