@@ -279,221 +279,43 @@ incoming_conf
 ##
 ##  inn.conf
 ##
-%inn_conf'fields = (
-    'domain',                   0,
-    'innflags',                 0,
-    'mailcmd',                  0,
-    'mta',                      0,
-    'pathhost',                 0,
-    'server',                   0,
-
-    'artcutoff',                0,
-    'bindaddress',              0,
-    'bindaddress6',             0,
-    'dontrejectfiltered',       0,
-    'hiscachesize',             0,
-    'ignorenewsgroups',         0,
-    'immediatecancel',          0,
-    'linecountfuzz',            0,
-    'maxartsize',               0,
-    'maxconnections',           0,
-    'pathalias',                0,
-    'pgpverify',                0,
-    'port',                     0,
-    'refusecybercancels',       0,
-    'remembertrash',            0,
-    'sourceaddress',            0,
-    'sourceaddress6',           0,
-    'verifycancels',            0,
-    'wipcheck',                 0,
-    'wipexpire',                0,
-
-    'hismethod',                0,
-
-    'cnfscheckfudgesize',       0,
-    'enableoverview',           0,
-    'groupbaseexpiry',          0,
-    'mergetogroups',            0,
-    'overcachesize',            0,
-    'ovgrouppat',               0,
-    'ovmethod',                 0,
-    'storeonxref',              0,
-    'useoverchan',              0,
-    'wanttrash',                0,
-    'wireformat',               0,
-    'xrefslave',                0,
-    'nfswriter',                0,
-
-    'allownewnews',             0,
-    'articlemmap',              0,
-    'clienttimeout',            0,
-    'nnrpdcheckart',            0,
-    'nnrpperlauth',             0,
-    'nnrppythonauth',           0,
-    'noreader',                 0,
-    'readerswhenstopped',       0,
-    'readertrack',              0,
-    'nfsreader',                0,
-    'tradindexedmmap',          0,
-    'nnrpdloadlimit',           0,
-
-    'keywords',                 0,
-    'keyartlimit',              0,
-    'keylimit',                 0,
-    'keymaxwords',              0,
-
-    'addnntppostinghost',       0,
-    'addnntppostingdate',       0,
-    'checkincludedtext',        0,
-    'complaints',               0,
-    'fromhost',                 0,
-    'localmaxartsize',          0,
-    'moderatormailer',          0,
-    'nnrpdauthsender',          0,
-    'nnrpdposthost',            0,
-    'nnrpdpostport',            0,
-    'organization',             0,
-    'spoolfirst',               0,
-    'strippostcc',              0,
-
-    'backoffauth',              0,
-    'backoffdb',                0,
-    'backoffk',                 0,
-    'backoffpostfast',          0,
-    'backoffpostslow',          0,
-    'backofftrigger',           0,
-
-    'doinnwatch',               0,
-    'innwatchbatchspace',       0,
-    'innwatchhiload',           0,
-    'innwatchlibspace',         0,
-    'innwatchloload',           0,
-    'innwatchpauseload',        0,
-    'innwatchsleeptime',        0,
-    'innwatchspoolnodes',       0,
-    'innwatchspoolspace',       0,
-
-    'docnfsstat',               0,
-    'logartsize',               0,
-    'logcancelcomm',            0,
-    'logcycles',                0,
-    'logipaddr',                0,
-    'logsitename',              0,
-    'nnrpdoverstats',           0,
-    'nntpactsync',              0,
-    'nntplinklog',              0,
-    'status',                   0,
-    'timer',                    0,
-
-    'badiocount',               0,
-    'blockbackoff',             0,
-    'chaninacttime',            0,
-    'chanretrytime',            0,
-    'datamovethreshold',        0,
-    'icdsynccount',             0,
-    'keepmmappedthreshold',     0,
-    'maxcmdreadsize',           0,
-    'maxforks',                 0,
-    'nicekids',                 0,
-    'nicenewnews',              0,
-    'nicennrpd',                0,
-    'pauseretrytime',           0,
-    'peertimeout',              0,
-    'rlimitnofile',             0,
-
-    'patharchive',              0,
-    'patharticles',             0,
-    'pathbin',                  0,
-    'pathcontrol',              0,
-    'pathdb',                   0,
-    'pathetc',                  0,
-    'pathfilter',               0,
-    'pathhttp',                 0,
-    'pathincoming',             0,
-    'pathlog',                  0,
-    'pathnews',                 0,
-    'pathoutgoing',             0,
-    'pathoverview',             0,
-    'pathrun',                  0,
-    'pathspool',                0,
-    'pathtmp',                  0
-);
-
-# FIXME: This currently doesn't work, so pedantic also is unlikely to be
-# very useful at present.  There are also far more optional settings than
-# required ones, so the logic here should probably be reversed.
-%inn_conf'optionals = (
-);
-
 sub
 inn_conf
 {
-    local ($k, $v, $hostname, $fqdn);
+    system ("$inn::pathbin/innconfval", '-c');
 
-    chop($hostname = `hostname`);
-    $fqdn = (gethostbyname($hostname))[0];
-    foreach $key ( keys %inn_conf'fields ) {
-	$inn_conf'fields{$key} = 0;
-    }
+#    if ( $k eq "domain" ) {
+#        print "$file:$line: domain (`$v') isn't local domain\n"
+#            if $fqdn =~ /[^\.]+\(\..*\)/ && $v ne $1;
+#        print "$file:$line: domain should not have a leading period\n"
+#            if $v =~ /^\./;
+#    } elsif ( $k eq "fromhost" ) {
+#        print "$file:$line: fromhost isn't a valid FQDN\n"
+#            if $v !~ /[\w\-]+\.[\w\-]+/;
+#    } elsif ( $k eq "moderatormailer" ) {
+#        # FIXME: shouldn't warn about blank lines if the
+#        # moderators file exists
+#        print "$file:$line: moderatormailer has bad address\n"
+#            if $v !~ /[\w\-]+\.[\w\-]+/ && $v ne "%s";
+#    } elsif ( $k eq "organization" ) {
+#        print "$file:$line: org is blank\n"
+#            if $v eq "";
+#    } elsif ( $k eq "pathhost" ) {
+#        print "$file:$line: pathhost has a ! in it\n"
+#            if $v =~ /!/;
+#    } elsif ( $k eq "pathalias" ) {
+#        print "$file:$line: pathalias has a ! in it\n"
+#            if $v =~ /!/;
+#    } elsif ( $k eq "server" ) {
+#        print "$file:$line: server (`$v') isn't local hostname\n"
+#            if $pedantic && $fqdn !~ /^$v/;
+#    }
+#
+#    if ( $key eq "moderatormailer" ) {
+#        printf "$file:$line: missing $key and no moderators file.\n"
+#            if ! -f $paths{"moderators"};
+#    }
 
-    input: while ( <IN> ) {
-	next input if &spacious($file, ++$line);
-
-	unless ( ($k, $v) = /^([^:]*):\s*(.*)$/ ) {
-	    print "$file:$line: malformed line.\n";
-	    next input;
-	}
-	if ( !defined $inn_conf'fields{$k} ) {
-	    if ( !defined $inn_conf'optionals{$k} ) {
-		print "$file:$line: Invalid field `$k'\n";
-		next input;
-	    }	
-	}
-	if ( ++$inn_conf'fields{$k} > 1 ) {
-	    print "$file:$line: Duplicate field `$k'\n";
-	    next input;
-	}
-	if ( $k eq "domain" ) {
-	    print "$file:$line: domain (`$v') isn't local domain\n"
-		if $fqdn =~ /[^\.]+\(\..*\)/ && $v ne $1;
-	    print "$file:$line: domain should not have a leading period\n"
-		if $v =~ /^\./;
-	} elsif ( $k eq "fromhost" ) {
-	    print "$file:$line: fromhost isn't a valid FQDN\n"
-		if $v !~ /[\w\-]+\.[\w\-]+/;
-	} elsif ( $k eq "moderatormailer" ) {
-	    # FIXME: shouldn't warn about blank lines if the
-	    # moderators file exists
-	    print "$file:$line: moderatormailer has bad address\n"
-		if $v !~ /[\w\-]+\.[\w\-]+/ && $v ne "%s";
-	} elsif ( $k eq "organization" ) {
-	    print "$file:$line: org is blank\n"
-		if $v eq "";
-	} elsif ( $k eq "pathhost" ) {
-	    print "$file:$line: pathhost has a ! in it\n"
-		if $v =~ /!/;
-	} elsif ( $k eq "pathalias" ) {
-	    print "$file:$line: pathalias has a ! in it\n"
-		if $v =~ /!/;
-	} elsif ( $k eq "server" ) {
-	    print "$file:$line: server (`$v') isn't local hostname\n"
-		if $pedantic && $fqdn !~ /^$v/;
-	}
-	else {
-#	    print "$file:$line: semi-known field\n";
-	}
-    }
-
-    key: foreach $key ( keys %inn_conf'fields ) {
-	next key if defined $inn_conf'fields{$key};
-	next key if defined $inn_conf'optionals{$key};
-	if ( $key eq "moderatormailer" ) {
-	    printf "$file:$line: missing $key and no moderators file.\n"
-		if ! -f $paths{"moderators"};
-	} elsif ( $pedantic ) {
-	    printf "$file:$line: missing $key\n";
-	}
-    }
     1;
 }
 
