@@ -181,7 +181,7 @@ then
 	echo "news.daily: cannot do expireover (expireindex) without expire">&2
 	exit 1
     fi
-    if {$DOEXPIREOVER} && [ -z "$RMFILE" ]
+    if ${DOEXPIREOVER} && [ -z "$RMFILE" ]
     then
 	echo "news.daily: cannot do expireover (expireindex) without delayrm">&2
 	exit 1
