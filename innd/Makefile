@@ -1,7 +1,8 @@
-##  $Revision$
+##  $Id$
+
 include ../Makefile.global
 
-CFLAGS = $(GCFLAGS)
+CFLAGS  = $(GCFLAGS)
 
 SOURCES	= \
 	art.c cc.c chan.c his.c icd.c innd.c lc.c nc.c newsfeeds.c ng.c \
@@ -30,24 +31,26 @@ python.o: python.c
 tcl.o: tcl.c
 	$(CC) $(CFLAGS) $(TCLINC) -c tcl.c -o $@
 
-install: $D${PATHBIN}/innd $D${PATHBIN}/inndstart
+install: $(D)$(PATHBIN)/innd $(D)$(PATHBIN)/inndstart
 
-$D${PATHBIN}/innd: innd
-	$(LIBTOOL) ../installit.sh $(OWNER) -m 0550 -b .OLD innd $D${PATHBIN}/innd
+$(D)${PATHBIN}/innd: innd
+	$(LI_XPRI) innd $(D)$(PATHBIN)/innd
 
-$D${PATHBIN}/inndstart: inndstart
-	-$(LIBTOOL) ../installit.sh -O root -G $(NEWSGROUP) -m 4550 -b .OLD inndstart $D${PATHBIN}/inndstart
-	@ME=`(whoami || /usr/ucb/whoami) 2> /dev/null` ;\
-	if [ "X$$ME" = Xroot ]; then \
-		echo $@ has been installed setuid root. ;\
-	else\
-		echo "" ; echo "===============================" ;\
-		echo  "NOTE NOTE NOTE NOTE NOTE" ;\
-		ls -l $@ ;\
-		echo $@ needs to be installed setuid root ;\
-		echo "" ; echo "" ;\
+$(D)$(PATHBIN)/inndstart: inndstart
+	@ME=`$(WHOAMI)` ; \
+	if [ x"$$ME" = xroot ] ; then \
+	    echo $(LI_SPRI) inndstart $(D)$(PATHBIN)/inndstart ; \
+	    $(LI_SPRI) inndstart $(D)$(PATHBIN)/inndstart ; \
+	else \
+	    echo $(LI_XPRI) inndstart $(D)$(PATHBIN)/inndstart ; \
+	    $(LI_XPRI) inndstart $(D)$(PATHBIN)/inndstart ; \
+	    echo '' ; \
+	    echo '========================' ; \
+	    echo 'NOTE NOTE NOTE NOTE NOTE' ; \
+	    ls -l $@ ; \
+	    echo '$@ needs to be installed setuid root' ; \
+	    echo '' ; echo ; \
 	fi
-
 
 clobber clean:
 	rm -f *.o $(ALL)
@@ -64,11 +67,10 @@ innd:		$(P) $(OBJECTS) $(LIBNEWS)
 inndstart:	$(P) inndstart.o $(LIBNEWS)
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ inndstart.o $(LIBNEWS) $(LIBS)
 
-../include/dbz.h:
-	(cd ../lib ; $(MAKE) ../include/dbz.h)
-
-$(LIBNEWS):
-	(cd ../lib ; $(MAKE) )
+$(LIBINN):
+	(cd ../lib ; $(MAKE))
+$(LIBSTORAGE):
+	(cd ../storage ; $(MAKE))
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
 profiled:	inndp
@@ -79,10 +81,6 @@ inndp:		$(SOURCES)
 	$(MAKE) innd CFLAGS="$(CFLAGS) $(PROF)" LIBNEWS=../libinn_p.a
 	mv innd inndp
 	rm -f $(OBJECTS)
-
-##
-ccenter:	$(SOURCES)
-	#load $(CFLAGS) $(SOURCES) $(LIBNEWS)
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES) ../include/dbz.h
