@@ -75,7 +75,6 @@ allownewnews:           true
 articlemmap:            false
 clienttimeout:          600
 nnrpdcheckart:          true
-nnrpperlauth:           false
 nnrppythonauth:         false
 noreader:               false
 readerswhenstopped:     false
