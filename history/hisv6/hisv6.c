@@ -96,7 +96,8 @@ hisv6_splitline(const char *line, const char **error, HASH *hash,
 		 time_t *arrived, time_t *posted, time_t *expires,
 		 TOKEN *token)
 {
-    char *p = (char *)line;
+    const char *p = line;
+    char *end;
     unsigned long l;
     int r = 0;
 
@@ -121,7 +122,8 @@ hisv6_splitline(const char *line, const char **error, HASH *hash,
     }
 
     /* parse the arrived field */
-    l = strtoul(p + 1, &p, 10);
+    l = strtoul(p + 1, &end, 10);
+    p = end;
     if (l == ULONG_MAX) {
 	*error = "arrived timestamp out of range";
 	return -1;
@@ -143,7 +145,8 @@ hisv6_splitline(const char *line, const char **error, HASH *hash,
 	    if (expires)
 		*expires = 0;
 	} else {
-	    l = strtoul(p, &p, 10);
+	    l = strtoul(p, &end, 10);
+            p = end;
 	    if (l == ULONG_MAX) {
 		*error = "expires timestamp out of range";
 		return -1;
@@ -159,7 +162,8 @@ hisv6_splitline(const char *line, const char **error, HASH *hash,
 		*posted = 0;
 	} else {
 	    ++p;
-	    l = strtoul(p, &p, 10);
+	    l = strtoul(p, &end, 10);
+            p = end;
 	    if (l == ULONG_MAX) {
 		*error = "posted timestamp out of range";
 		return -1;
@@ -925,7 +929,7 @@ hisv6_replace(void *history, const char *key, time_t arrived,
 		do {
 		    n = pwrite(fileno(h->writefp), new, oldlen, offset);
 		} while (n == -1 && errno == EINTR);
-		if (n != oldlen) {
+		if ((size_t) n != oldlen) {
 		    char location[HISV6_MAX_LOCATION];
 
 		    hisv6_errloc(location, (size_t)-1, offset);
@@ -1215,7 +1219,7 @@ hisv6_expire(void *history, const char *path, const char *reason,
 	     bool (*exists)(void *, time_t, time_t, time_t, TOKEN *))
 {
     struct hisv6 *h = history, *hnew = NULL;
-    const char *nhistory = NULL;
+    char *nhistory = NULL;
     dbzoptions opt;
     bool r;
     struct hisv6_walkstate hiscookie;
@@ -1337,7 +1341,7 @@ hisv6_expire(void *history, const char *path, const char *reason,
     if (hnew && !hisv6_dispose(hnew))
 	r = false;
     if (nhistory && nhistory != path)
-	free((char *)nhistory);
+	free(nhistory);
     if (r == false && hiscookie.paused)
 	ICCgo(reason);
     return r;
