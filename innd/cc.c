@@ -594,6 +594,10 @@ CCfilter(av)
 
 #if defined(DO_PERL)
 
+#if defined (DO_NEED_BOOL)
+typedef enum { false = 0, true = 1 } bool;
+#endif
+
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>

@@ -1405,13 +1405,24 @@ sub Chrono {
     $t = $$in{$key} / ($$dates{$key} - $key);
     $y_max_in = $t if $y_max_in < $t;
   }
-  $y_max = 1 + sprintf "%d", $y_max_out > $y_max_in ? $y_max_out : $y_max_in;
-  $y_max += (4 - ($y_max % 4)) % 4;
+  $y_max = $y_max_out > $y_max_in ? $y_max_out : $y_max_in;
   my $factor = 1;
-  if ($y_max_out <= 1) {
+  if ($y_max < 1) {
     $factor = 60;
-    $y_max = 4 / 60;
+    if ($y_max < 4 / 60) {
+      $y_max = 4 / 60;
+    }
+    else {
+      $y_max = int ($y_max * $factor) + 1;
+      $y_max += (4 - ($y_max % 4)) % 4;
+      $y_max /= $factor;
+    }
   }
+  else {
+    $y_max = int ($y_max) + 1;
+    $y_max += (4 - ($y_max % 4)) % 4;
+  }
+  
   $unit .= "/" . ($factor == 60 ? "min" : "sec");
 
   # min range is 4 weeks.

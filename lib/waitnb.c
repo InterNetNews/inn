@@ -8,7 +8,7 @@
 #include <sys/wait.h>
 
 
-#if	defined(DO_USE_UNION_WAIT)
+#if	defined(USE_UNION_WAIT)
 typedef union wait	WAITER;
 #if	defined(WEXITSTATUS)
 #define WAITVAL(x)	(WEXITSTATUS(x))
@@ -18,7 +18,7 @@ typedef union wait	WAITER;
 #else
 typedef int		WAITER;
 #define WAITVAL(x)	(((x) >> 8) & 0xFF)
-#endif	/* defined(DO_USE_UNION_WAIT) */
+#endif	/* defined(USE_UNION_WAIT) */
 
 PID_T waitnb(int *statusp)
 {

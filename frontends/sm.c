@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include <sys/types.h>
 #include "configdata.h"
 #include "clibrary.h"
 #include "libinn.h"

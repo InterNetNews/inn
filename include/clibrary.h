@@ -12,6 +12,10 @@
 # include <vfork.h>
 #endif	/* defined(HAVE_VFORK_H) */
 
+#if ! defined (DO_NEED_BOOL) && ! defined (DONT_NEED_BOOL)
+#define DO_NEED_BOOL 1
+#endif
+
 #include <sys/time.h>
 
     /* Generic pointer, used by memcpy, malloc, etc. */

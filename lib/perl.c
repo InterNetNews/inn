@@ -26,6 +26,10 @@ static void use_rcsid (const char *rid) {   /* Never called */
 
 #if defined(DO_PERL)
 
+#if defined (DO_NEED_BOOL)
+typedef enum { false = 0, true = 1 } bool;
+#endif
+
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>

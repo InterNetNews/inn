@@ -2033,7 +2033,7 @@ if test x${DO_PERL} = xDO ; then
 	echo $ac_n "checking for Perl configuration""... $ac_c" 1>&6
 echo "configure:2035: checking for Perl configuration" >&5
 	perl_core_path=`$_PATH_PERL -e 'use Config; print $Config{archlib}'`
-	perl_core_libs=`$_PATH_PERL -e 'use Config; print $Config{libs}'`
+	perl_core_libs=`$_PATH_PERL -MExtUtils::Embed -e ldopts`
 	PERL_LIB="-L${perl_core_path}/CORE ${perl_core_libs}"
 	PERL_INC="-I${perl_core_path}/CORE"
 	echo "$ac_t""$perl_core_path" 1>&6
