@@ -2,6 +2,10 @@
 ''' $RCSfile$$Revision$$Date$
 '''
 ''' $Log$
+''' Revision 1.84  2000/01/20 23:01:30  kondou
+''' doc/man/inn.conf.5:
+''' 	- groupbaseexpiry is true by default
+'''
 ''' Revision 1.83  2000/01/15 17:04:40  kondou
 ''' doc/man/inn.conf.5:
 ''' 	- typo fixed
@@ -492,7 +496,7 @@ This is a boolean value and the default is true.
 Whether to enable newsgroup base expiry.  If set to false, expiry is
 done based on class of storing method.  If set to true and overview
 data is created, expiry is done based on newsgroup name.
-This is a boolean value and the default is false.
+This is a boolean value and the default is true.
 .Ip "\fImergetogroups\fR" 4
 Whether to file all postings to \f(CWto.*\fR groups in the pseudonewsgroup
 \f(CWto\fR.  If this is set to true, the newsgroup \f(CWto\fR must exist in the
