@@ -181,6 +181,7 @@ static CMDENT	CMDtable[] = {
 
 static const char *const timer_name[] = {
     "idle",
+    "newnews",
 };
 
 /*

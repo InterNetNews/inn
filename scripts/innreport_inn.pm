@@ -64,6 +64,7 @@ my %innfeed_timer_names = (
 
 my %nnrpd_timer_names = (
                    'idle'    => 'idle',
+                   'newnews' => 'newnews',
 );
 
 # init innd timer

@@ -125,10 +125,11 @@ typedef struct _ARTOVERFIELD {
 
 /*
 **  Supported timers.  If you add new timers to this list, also add them to
-**  the list of tags in chan.c.
+**  the list of tags in nnrpd.c.
 */
 enum timer {
     TMR_IDLE = TMR_APPLICATION, /* Server is completely idle. */
+    TMR_NEWNEWS,                /* Executing NEWNEWS command */
     TMR_MAX
 };
 

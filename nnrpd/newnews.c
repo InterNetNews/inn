@@ -187,10 +187,12 @@ void CMDnewnews(int ac, char *av[]) {
     (ac >= 5 && *av[ac - 1] == '<') ? av[ac - 1] : "none");
   syslog(L_NOTICE, "%s newnews %s", ClientHost, line);
 
+  TMRstart(TMR_NEWNEWS);
   /* Optimization in case client asks for !* (no groups) */
   if (EQ(av[1], "!*")) {
     Reply("%s\r\n", NNTP_NEWNEWSOK);
     Printf(".\r\n");
+    TMRstop(TMR_NEWNEWS);
     return;
   }
 
@@ -198,6 +200,7 @@ void CMDnewnews(int ac, char *av[]) {
   AllGroups = EQ(av[1], "*");
   if (!AllGroups && !NGgetlist(&groups, av[1])) {
     Reply("%d Bad newsgroup specifier %s\r\n", NNTP_SYNTAX_VAL, av[1]);
+    TMRstop(TMR_NEWNEWS);
     return;
   }
 
@@ -206,6 +209,7 @@ void CMDnewnews(int ac, char *av[]) {
   date = parsedate_nntp(av[2], av[3], local);
   if (date == (time_t) -1) {
     Reply("%d Bad date\r\n", NNTP_SYNTAX_VAL);
+    TMRstop(TMR_NEWNEWS);
     return;
   }
 
@@ -219,6 +223,7 @@ void CMDnewnews(int ac, char *av[]) {
       Reply("%d Can't open active\r\n", NNTP_TEMPERR_VAL);
     }
     free(path);
+    TMRstop(TMR_NEWNEWS);
     return;
   }
   free(path);
@@ -299,6 +304,9 @@ void CMDnewnews(int ac, char *av[]) {
 	  }
 	  SMfreearticle(art);
 	}
+	if (innconf->nfsreader &&
+	    !HISlookup(History, p, NULL, NULL, NULL, NULL))
+	  continue;
 	Printf("%s\r\n", p);
       }
       OVclosesearch(handle);
@@ -307,4 +315,5 @@ void CMDnewnews(int ac, char *av[]) {
   }
   (void)QIOclose(qp);
   Printf(".\r\n");
+  TMRstop(TMR_NEWNEWS);
 }
