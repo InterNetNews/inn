@@ -48,7 +48,7 @@ void HISlogto(char *s) {
    int i;
 
    HISlogclose();
-   if ((HISfdlog = Fopen(s, "a")) == NULL)
+   if ((HISfdlog = Fopen(s, "a", INND_HISLOG)) == NULL)
        syslog(L_FATAL, "%s cant open %s %m", LogName, s);
    /* initialize our counters */
    for (i = 0; i < S_HIS_MAX; i++) {
