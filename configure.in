@@ -527,6 +527,7 @@ main()
 ac_cv_func_mmap_shared=no)])
 if test $ac_cv_func_mmap_shared = yes; then
   AC_DEFINE(HAVE_MMAP)
+  AC_CHECK_FUNCS(madvise, AC_DEFINE(HAVE_MADVISE))
 fi
 
 AC_CACHE_CHECK(whether msync is needed, ac_cv_func_need_msync,
