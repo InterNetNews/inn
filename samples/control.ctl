@@ -796,11 +796,11 @@ newgroup:committee@fj-news.org:fj.*:verify-fj.news.announce
 rmgroup:committee@fj-news.org:fj.*:verify-fj.news.announce
 
 ## FL (Florida, USA)
-checkgroups:hgoldste@mpcs.com:fl.*:doit
+checkgroups:hgoldste@news1.mpcs.com:fl.*:doit
 checkgroups:scheidell@fdma.fdma.com:fl.*:doit
-newgroup:hgoldste@mpcs.com:fl.*:doit
+newgroup:hgoldste@news1.mpcs.com:fl.*:doit
 newgroup:scheidell@fdma.fdma.com:fl.*:doit
-rmgroup:hgoldste@mpcs.com:fl.*:doit
+rmgroup:hgoldste@news1.mpcs.com:fl.*:doit
 rmgroup:scheidell@fdma.fdma.com:fl.*:doit
 
 ## FLORA (FLORA Community WEB, Canada)
