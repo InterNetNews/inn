@@ -38,7 +38,7 @@ logartsize:		true
 logipaddr:		true
 logsitename:		true
 maxconnections:		50
-artcutoff:		1209600
+artcutoff:		14
 icdsynccount:		10
 hiscachesize:		0
 readertrack:		false
