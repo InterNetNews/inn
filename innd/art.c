@@ -2,6 +2,7 @@
 **
 **  Article-processing.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <netinet/in.h>
@@ -1565,12 +1566,14 @@ STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list, 
 	}
 
 	/* Write that the site is getting it, and flag to send it. */
-	if (innconf->logsitename && fprintf(Log, " %s", sp->Name) == EOF || ferror(Log)) {
-	    j = errno;
-	    syslog(L_ERROR, "%s cant write log_site %m", LogName);
-	    IOError("logging site", j);
-	    clearerr(Log);
-	}
+        if (innconf->logsitename) {
+            if (fprintf(Log, " %s", sp->Name) == EOF || ferror(Log)) {
+                j = errno;
+                syslog(L_ERROR, "%s cant write log_site %m", LogName);
+                IOError("logging site", j);
+                clearerr(Log);
+            }
+        }
 	sp->Sendit = TRUE;
 	sp->Seenit = TRUE;
 	if (sp->Master != NOSITE)
@@ -1681,7 +1684,8 @@ ptr_strcmp(p1, p2)
 
     s1 = (char **) p1;
     s2 = (char **) p2;
-    if (cdiff = (**s1)-(**s2))
+    cdiff = (**s1) - (**s2);
+    if (cdiff)
 	return cdiff;
     return strcmp((*s1)+1, (*s2)+1);
 }
@@ -1965,7 +1969,8 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
 **  file or reject it, feed it to the other sites.  Return the NNTP
 **  message to send back.
 */
-STRING ARTpost(CHANNEL *cp)
+const char *
+ARTpost(CHANNEL *cp)
 {
     static BUFFER	Files;
     static BUFFER	Header;
