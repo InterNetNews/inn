@@ -2098,8 +2098,8 @@ ARTpost(CHANNEL *cp)
   }
 
   /* assumes Path header is required header */
-  data->HopCount = ARTparsepath(HDR(_path), HDR_LEN(_path), &data->Path);
-  if (data->HopCount == 0) {
+  hopcount = ARTparsepath(HDR(_path), HDR_LEN(_path), &data->Path);
+  if (hopcount == 0) {
     sprintf(buff, "%d illgal path element", NNTP_REJECTIT_VAL);
     ARTlog(data, ART_REJECT, buff);
     if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))

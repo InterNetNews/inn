@@ -208,7 +208,6 @@ typedef struct _ARTDATA {
   char	      *   Feedsite;		/* who gives me this article */
   int		  FeedsiteLength;	/* length of Feedsite */
   LISTBUFFER	  Path;			/* path name list */
-  int		  HopCount;		/* how many servers passed through */
   int		  StoredGroupLength;	/* 1st newsgroup name in Xref */
   char	      *   Replic;		/* replication data */
   int		  ReplicLength;		/* length of Replic */
