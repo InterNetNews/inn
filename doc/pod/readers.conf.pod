@@ -257,7 +257,7 @@ parameter.
 =item B<post:>
 
 Like the newsgroups: parameter, but the client is only given permission to
-post to the matching newsgroups.  This parameter is often used with post:
+post to the matching newsgroups.  This parameter is often used with read:
 (above) to define the patterns for reading and posting separately (usually
 to give the user permission to read more newsgroups than they're permitted
 to post to).  It cannot be used in the same access group with a
