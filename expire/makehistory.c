@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <syslog.h>  
 
+#include "inn/buffer.h"
 #include "inn/history.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
@@ -73,7 +74,7 @@ static char		EXPIRES[] = "Expires:";
 static char		DATE[] = "Date:";
 static char		XREF[] = "Xref:";
 static ARTOVERFIELD	*ARTfields; /* overview fields listed in overview.fmt */
-static int		ARTfieldsize;
+static size_t		ARTfieldsize;
 static ARTOVERFIELD	*Datep = (ARTOVERFIELD *)NULL;
 static ARTOVERFIELD	*Msgidp = (ARTOVERFIELD *)NULL;
 static ARTOVERFIELD	*Expp = (ARTOVERFIELD *)NULL;
@@ -81,54 +82,9 @@ static ARTOVERFIELD	*Xrefp = (ARTOVERFIELD *)NULL;
 static ARTOVERFIELD	*Missfields; /* header fields not listed in 
 					overview.fmt, but ones that we need
 					(e.g. message-id */
-static int		Missfieldsize = 0;
-
-typedef struct _BUFFER {
-    long	Size;
-    long	Used;
-    long	Left;
-    char	*Data;
-} BUFFER;
+static size_t		Missfieldsize = 0;
 
 static void OverAddAllNewsgroups(void);
-
-/*
- * Misc routines needed by DoArt...
- */
-
-static void
-BUFFset(BUFFER *bp, const char *p, const int length)
-{
-    if ((bp->Left = length) != 0) {
-	/* Need more space? */
-	if (bp->Size < length) {
-	    bp->Size = length;
-	    RENEW(bp->Data, char, bp->Size);
-	}
-
-	/* Try to test for non-overlapping copies. */
-	memmove(bp->Data, p, length);
-    }
-    bp->Used = 0;
-}
-
-static void
-BUFFappend(BUFFER *bp, const char *p, const int len)
-{
-    int i;
-
-    if (len == 0)
-	return;
-    /* Note end of buffer, grow it if we need more room */
-    i = bp->Used + bp->Left;
-    if (i + len > bp->Size) {
-	/* Round size up to next 1K */
-	bp-> Size += (len + 0x3FF) & ~0x3FF;
-	RENEW(bp->Data, char, bp->Size);
-    }
-    bp->Left += len;
-    memcpy(&bp->Data[i], p, len);
-}
 
 /*
 **  Check and parse an date header line.  Return the new value or
@@ -149,31 +105,19 @@ GetaDate(char *p)
 /*
 **  Check and parse a Message-ID header line.  Return private space.
 */
-static char *
+static const char *
 GetMessageID(char *p)
 {
-    static BUFFER	B;
-    int			length;
-    static char		NIL[] = "";
+    static struct buffer buffer = { 0, 0, 0, NULL };
 
     while (ISWHITE(*p))
 	p++;
     if (p[0] != '<' || p[strlen(p) - 1] != '>')
-	return NIL;
+	return "";
 
     /* Copy into re-used memory space. */
-    length = strlen(p);
-    if (B.Size == 0) {
-	B.Size = length;
-	B.Data = NEW(char, B.Size + 1);
-    }
-    else if (B.Size < length) {
-	B.Size = length;
-	RENEW(B.Data, char, B.Size + 1);
-    }
-    memcpy(B.Data, p, length + 1);
-
-    return B.Data;
+    buffer_set(&buffer, p, strlen(p));
+    return buffer.data;
 }
 
 /*
@@ -549,12 +493,12 @@ DoArt(ARTHANDLE *art)
     ARTOVERFIELD		*fp;
     const char                  *p, *p1;
     char                        *q;
-    static BUFFER 		Buff;
+    static struct buffer        buffer = { 0, 0, 0, NULL };
     static char			SEP[] = "\t";
     static char			NUL[] = "\0";
     static char			COLONSPACE[] = ": ";
-    int				i, j, len;
-    char			*MessageID;
+    size_t			i, j, len;
+    const char			*MessageID;
     time_t			Arrived;
     time_t			Expires;
     time_t			Posted;
@@ -563,7 +507,7 @@ DoArt(ARTHANDLE *art)
     struct artngnum		ann;
 
     /* Set up place to store headers. */
-    for (fp = ARTfields, i = ARTfieldsize; --i >= 0; fp++) {
+    for (fp = ARTfields, i = 0; i < ARTfieldsize; i++, fp++) {
 	if (fp->HeaderLength) {
 	    fp->Header = 0;
 	}
@@ -571,7 +515,7 @@ DoArt(ARTHANDLE *art)
 	fp->HasHeader = FALSE;
     }
     if (Missfieldsize > 0) {
-	for (fp = Missfields, i = Missfieldsize; --i >= 0; fp++) {
+	for (fp = Missfields, i = 0; i < Missfieldsize; i++, fp++) {
 	    if (fp->HeaderLength) {
 		fp->Header = 0;
 	    }
@@ -579,7 +523,7 @@ DoArt(ARTHANDLE *art)
 	    fp->HasHeader = FALSE;
 	}
     }
-    for (i = ARTfieldsize, fp = ARTfields; --i >= 0;fp++) {
+    for (fp = ARTfields, i = 0; i < ARTfieldsize; i++, fp++) {
 	if ((fp->Header = HeaderFindMem(art->data, art->len, fp->Headername, fp->HeadernameLength)) != (char *)NULL) {
 	    fp->HasHeader = TRUE;
 	    for (p = fp->Header, p1 = (char *)NULL; p < art->data + art->len; p++) {
@@ -602,7 +546,7 @@ DoArt(ARTHANDLE *art)
 	}
     }
     if (Missfieldsize > 0) {
-	for (i = Missfieldsize, fp = Missfields; --i >= 0;fp++) {
+	for (fp = Missfields, i = 0; i < Missfieldsize; i++, fp++) {
 	    if ((fp->Header = HeaderFindMem(art->data, art->len, fp->Headername, fp->HeadernameLength)) != (char *)NULL) {
 		fp->HasHeader = TRUE;
 		for (p = fp->Header, p1 = (char *)NULL; p < art->data + art->len; p++) {
@@ -651,14 +595,12 @@ DoArt(ARTHANDLE *art)
 	return;
     }
 
-    if (Buff.Data == NULL)
-	Buff.Data = NEW(char, 1);
-    BUFFset(&Buff, Msgidp->Header, Msgidp->HeaderLength);
-    BUFFappend(&Buff, NUL, STRLEN(NUL));
-    for (i = 0, q = Buff.Data; i < Buff.Left; q++, i++)
+    buffer_set(&buffer, Msgidp->Header, Msgidp->HeaderLength);
+    buffer_append(&buffer, NUL, STRLEN(NUL));
+    for (i = 0, q = buffer.data; i < buffer.left; q++, i++)
 	if (*q == '\t' || *q == '\n' || *q == '\r')
 	    *q = ' ';
-    MessageID = GetMessageID(Buff.Data);
+    MessageID = GetMessageID(buffer.data);
     if (*MessageID == '\0') {
         warn("no Message-ID header in %s", TokenToText(*art->token));
 	if (NukeBadArts)
@@ -674,42 +616,42 @@ DoArt(ARTHANDLE *art)
     if (!Datep->HasHeader) {
 	Posted = Arrived;
     } else {
-	BUFFset(&Buff, Datep->Header, Datep->HeaderLength);
-	BUFFappend(&Buff, NUL, STRLEN(NUL));
-	for (i = 0, q = Buff.Data; i < Buff.Left; q++, i++)
+        buffer_set(&buffer, Datep->Header, Datep->HeaderLength);
+        buffer_append(&buffer, NUL, STRLEN(NUL));
+	for (i = 0, q = buffer.data; i < buffer.left; q++, i++)
 	    if (*q == '\t' || *q == '\n' || *q == '\r')
 		*q = ' ';
-	if ((Posted = GetaDate(Buff.Data)) == 0)
+	if ((Posted = GetaDate(buffer.data)) == 0)
 	    Posted = Arrived;
     }
 
     if (Expp->HasHeader) {
-	BUFFset(&Buff, Expp->Header, Expp->HeaderLength);
-	BUFFappend(&Buff, NUL, STRLEN(NUL));
-	for (i = 0, q = Buff.Data; i < Buff.Left; q++, i++)
+        buffer_set(&buffer, Expp->Header, Expp->HeaderLength);
+        buffer_append(&buffer, NUL, STRLEN(NUL));
+	for (i = 0, q = buffer.data; i < buffer.left; q++, i++)
 	    if (*q == '\t' || *q == '\n' || *q == '\r')
 		*q = ' ';
-	Expires = GetaDate(Buff.Data);
+	Expires = GetaDate(buffer.data);
     }
 
     if (DoOverview && Xrefp->HeaderLength > 0) {
-	for (j = ARTfieldsize, fp = ARTfields; --j >= 0;fp++) {
+	for (fp = ARTfields, j = 0; j < ARTfieldsize; j++, fp++) {
 	    if (fp == ARTfields)
-		BUFFset(&Buff, "", 0);
+                buffer_set(&buffer, "", 0);
 	    else
-		BUFFappend(&Buff, SEP, STRLEN(SEP));
+                buffer_append(&buffer, SEP, STRLEN(SEP));
 	    if (fp->NeedHeadername) {
-		BUFFappend(&Buff, fp->Headername, fp->HeadernameLength);
-		BUFFappend(&Buff, COLONSPACE, STRLEN(COLONSPACE));
+                buffer_append(&buffer, fp->Headername, fp->HeadernameLength);
+                buffer_append(&buffer, COLONSPACE, STRLEN(COLONSPACE));
 	    }
-	    i = Buff.Left;
-	    BUFFappend(&Buff, fp->Header, fp->HeaderLength);
-	    for (q = &Buff.Data[i]; i < Buff.Left; q++, i++)
+	    i = buffer.left;
+            buffer_append(&buffer, fp->Header, fp->HeaderLength);
+	    for (q = &buffer.data[i]; i < buffer.left; q++, i++)
 		if (*q == '\t' || *q == '\n' || *q == '\r')
 		    *q = ' ';
 	}
 	WriteOverLine(art->token, Xrefp->Header, Xrefp->HeaderLength,
-		      Buff.Data, Buff.Left, Arrived, Expires);
+		      buffer.data, buffer.left, Arrived, Expires);
     }
 
     if (!NoHistory) {
