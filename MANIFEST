@@ -13,7 +13,6 @@ TODO                                  The list of pending INN projects
 aclocal.m4                            M4 macro for libtool
 authprogs                             The authentication programs (Directory)
 authprogs/Makefile                    Makefile for auth programs
-authprogs/README.readers.conf         Developer docs for readers.conf
 authprogs/auth_krb5.c                 Authenticator against Kerberos v5
 authprogs/auth_smb.c                  Authenticator against Samba servers
 authprogs/ckpasswd.c                  Check password
@@ -138,10 +137,12 @@ doc/hook-tcl                          Bob Halley's TCL hook notes
 doc/man                               nroff documentation (Directory)
 doc/man/Makefile                      Makefile for nroff documentation
 doc/man/active.5                      Manpage for active database
+doc/man/active.times.5                Manpage for active.times file
 doc/man/actsync.8                     Manpage for active file synch program
 doc/man/actsyncd.8                    Manpage for active synch daemon
 doc/man/archive.8                     Manpage for archive backend
 doc/man/auth_krb5.8                   Manpage for auth_krb5 authenticator
+doc/man/auth_smb.8                    Manpage for auth_smb authenticator
 doc/man/batcher.8                     Manpage for batcher
 doc/man/buffchan.8                    Manpage for buffchan backend
 doc/man/buffindexed.conf.5            Manpage for buffindexed.conf config file
@@ -157,6 +158,7 @@ doc/man/cvtbatch.8                    Manpage for cvtbatch utility
 doc/man/cycbuff.conf.5                Manpage for cycbuff.conf config file
 doc/man/dbz.3                         Manpage for DBZ database interface
 doc/man/distrib.pats.5                Manpage for distrib.pats config file
+doc/man/domain.8                      Manpage for domain resolver
 doc/man/expire.8                      Manpage for expire
 doc/man/expire.ctl.5                  Manpage for expire.ctl config file
 doc/man/expireover.8                  Manpage for expireover
@@ -166,6 +168,7 @@ doc/man/filechan.8                    Manpage for filechan backend
 doc/man/getlist.1                     Manpage for getlist frontend
 doc/man/grephistory.1                 Manpage for grephistory
 doc/man/history.5                     Manpage for history database
+doc/man/ident.8                       Manpage for ident resolver
 doc/man/incoming.conf.5               Manpage for incoming.conf config file
 doc/man/inews.1                       Manpage for inews frontend
 doc/man/inn.conf.5                    Manpage for inn.conf config file
@@ -185,6 +188,7 @@ doc/man/innwatch.8                    Manpage for innwatch
 doc/man/innwatch.ctl.5                Manpage for innwatch.ctl config file
 doc/man/innxbatch.8                   Manpage for innxbatch
 doc/man/innxmit.8                     Manpage for innxmit
+doc/man/libauth.3                     Manpage for authprogs utilty routines
 doc/man/libinn.3                      Manpage for INN library routines
 doc/man/libinnhist.3                  Manpage for history API library routines
 doc/man/libstorage.3                  Manpage for storage API library routines
@@ -222,7 +226,7 @@ doc/man/putman.sh                     Install a manpage
 doc/man/qio.3                         Manpage for fast I/O file routines
 doc/man/radius.8                      Manpage for radius authenticator
 doc/man/radius.conf.5                 Manpage for radius.conf config file
-doc/man/rc.news.8                     Manpage for rc.news 
+doc/man/rc.news.8                     Manpage for rc.news
 doc/man/readers.conf.5                Manpage for readers.conf config file
 doc/man/rnews.1                       Manpage for rnews frontend
 doc/man/sasl.conf.5                   Manpage for sasl.conf config file
@@ -243,28 +247,34 @@ doc/man/writelog.8                    Manpage for writelog
 doc/pod                               POD documentation (Directory)
 doc/pod/Makefile                      Maintainer rules for derived files
 doc/pod/auth_krb5.pod                 Master file for auth_krb5.8
+doc/pod/auth_smb.pod                  Master file for auth_smb.8
 doc/pod/checklist.pod                 Master file for doc/checklist
 doc/pod/ckpasswd.pod                  Master file for ckpasswd.8
 doc/pod/control.ctl.pod               Master file for control.ctl.5
 doc/pod/convdate.pod                  Master file for convdate.1
+doc/pod/domain.pod                    Master file for domain.8
 doc/pod/expireover.pod                Master file for expireover.8
 doc/pod/external-auth.pod             Master file for doc/external-auth
 doc/pod/fastrm.pod                    Master file for fastrm.1
 doc/pod/hacking.pod                   Master file for HACKING
 doc/pod/hook-perl.pod                 Master file for doc/hook-perl
 doc/pod/hook-python.pod               Master file for doc/hook-python
+doc/pod/ident.pod                     Master file for ident.8
 doc/pod/inn.conf.pod                  Master file for inn.conf.5
 doc/pod/innconfval.pod                Master file for innconfval.1
 doc/pod/innd.pod                      Master file for innd.8
 doc/pod/inndf.pod                     Master file for inndf.8
 doc/pod/inndstart.pod                 Master file for inndstart.8
 doc/pod/innmail.pod                   Master file for innmail.1
+doc/pod/innupgrade.pod                Master file for innupgrade.8
 doc/pod/install.pod                   Master file for INSTALL
+doc/pod/libauth.pod                   Master file for libauth.3
 doc/pod/libinnhist.pod                Master file for libinnhist.3
 doc/pod/makehistory.pod               Master file for makehistory.8
 doc/pod/news.pod                      Master file for NEWS
 doc/pod/newsfeeds.pod                 Master file for newsfeeds.5
 doc/pod/ninpaths.pod                  Master file for ninpaths.8
+doc/pod/nnrpd.pod                     Master file for nnrpd.8
 doc/pod/ovdb.pod                      Master file for ovdb.5
 doc/pod/ovdb_init.pod                 Master file for ovdb_init.8
 doc/pod/ovdb_monitor.pod              Master file for ovdb_monitor.8
@@ -344,10 +354,12 @@ include/inn/history.h                 Header file for the history API
 include/inn/innconf.h                 Header file for the innconf struct
 include/inn/md5.h                     Header file for MD5 digests
 include/inn/messages.h                Header file for message functions
+include/inn/mmap.h                    Header file for mmap() functions
 include/inn/qio.h                     Header file for quick I/O package
 include/inn/sequence.h                Header file for sequence space arithmetic
 include/inn/timer.h                   Header file for generic timers
 include/inn/vector.h                  Header file for vectors of strings
+include/inn/wire.h                    Header file for wire-format functions
 include/inndcomm.h                    innd control channel commands
 include/innperl.h                     Header file for embedded Perl
 include/libinn.h                      INN library declarations
@@ -363,6 +375,7 @@ include/portable/time.h               Wrapper for <time.h> and <sys/time.h>
 include/portable/wait.h               Wrapper for <sys/wait.h>
 include/ppport.h                      Header file for Perl support
 include/storage.h                     Header file for storage API
+include/tst.h                         Header file for ternary search trees
 innd                                  Server (Directory)
 innd/Makefile                         Makefile for server
 innd/art.c                            Process a received article
@@ -372,6 +385,7 @@ innd/icd.c                            Read and write the active file
 innd/innd.c                           Main and utility routines
 innd/innd.h                           Header file for server
 innd/inndstart.c                      Open the NNTP port, then exec innd
+innd/keywords.c                       Generate article keywords
 innd/lc.c                             Local NNTP channel routines
 innd/nc.c                             NNTP channel routines
 innd/newsfeeds.c                      Routines to parse the newsfeeds file
@@ -410,7 +424,6 @@ innfeed/innlistener.h                 Public interface of InnListener class
 innfeed/main.c                        Main routines for the innfeed program
 innfeed/misc.c                        Miscelloneous routines for innfeed
 innfeed/misc.h                        Header file for misc.c
-innfeed/msgs.h                        Log message definition
 innfeed/procbatch.in                  Script to process dropped articles
 innfeed/startinnfeed.c                Start innfeed
 innfeed/tape.c                        Implementation of the Tape class
@@ -437,6 +450,7 @@ lib/ftello.c                          ftello replacement
 lib/genid.c                           Generate a message ID
 lib/getfqdn.c                         Get FQDN of local host
 lib/getmodaddr.c                      Get a moderator's address
+lib/getpagesize.c                     getpagesize replacement
 lib/gettime.c                         Get time and timezone info
 lib/hash.c                            Create hash from message ID
 lib/hashtab.c                         Generic hash table
@@ -452,6 +466,7 @@ lib/md5.c                             MD5 checksum calculation
 lib/memcmp.c                          memcmp replacement
 lib/messages.c                        Error reporting and debug output
 lib/mkstemp.c                         mkstemp replacement
+lib/mmap.c                            mmap manipulation routines
 lib/parsedate.y                       Date parsing
 lib/perl.c                            Perl hook support for nnrpd and innd
 lib/pread.c                           pread replacement
@@ -477,9 +492,16 @@ lib/strlcpy.c                         strlcpy replacement
 lib/strspn.c                          Skip bytes in a string (BSD)
 lib/strtok.c                          Split a string into tokens (BSD)
 lib/timer.c                           Generic profile timer
+lib/tst_cleanup.c                     Ternary search tree implementation
+lib/tst_delete.c                      Ternary search tree implementation
+lib/tst_grow_node_free_list.c         Ternary search tree implementation
+lib/tst_init.c                        Ternary search tree implementation
+lib/tst_insert.c                      Ternary search tree implementation
+lib/tst_search.c                      Ternary search tree implementation
+lib/uwildmat.c                        Pattern match routine
 lib/vector.c                          Manipulate vectors of strings
 lib/version.c                         INN version constants
-lib/uwildmat.c                        Pattern match routine
+lib/wire.c                            Manipulate wire-format articles
 lib/xfopena.c                         Open a FILE in append mode
 lib/xmalloc.c                         Failsafe memory allocation wrapper
 lib/xsignal.c                         signal() wrapper using sigaction
@@ -489,6 +511,7 @@ nnrpd/Makefile                        Makefile for nnrpd
 nnrpd/article.c                       Article-related routines
 nnrpd/commands.c                      Assorted server commands
 nnrpd/group.c                         Group-related routines
+nnrpd/line.c                          Long line-by-line reading routines
 nnrpd/misc.c                          Miscellaneous support routines
 nnrpd/newnews.c                       The NEWNEWS command
 nnrpd/nnrpd.c                         Main and some utility routines
@@ -665,6 +688,7 @@ tests/lib/config/warnings             Various config files with warnings
 tests/lib/confparse-t.c               Tests for lib/confparse.c
 tests/lib/date-t.c                    Tests for lib/date.c
 tests/lib/fakewrite.c                 Helper functions for xwrite tests
+tests/lib/hash-t.c                    Tests for lib/hash.c
 tests/lib/hashtab-t.c                 Tests for lib/hashtab.c
 tests/lib/hstrerror-t.c               Tests for lib/hstrerror.c
 tests/lib/inet_aton-t.c               Tests for lib/inet_aton.c
@@ -683,8 +707,9 @@ tests/lib/snprintf-t.c                Tests for lib/snprintf.c
 tests/lib/strerror-t.c                Tests for lib/strerror.c
 tests/lib/strlcat-t.c                 Tests for lib/strlcat.c
 tests/lib/strlcpy-t.c                 Tests for lib/strlcpy.c
-tests/lib/vector-t.c                  Tests for lib/vector.c
 tests/lib/uwildmat-t.c                Tests for lib/uwildmat.c
+tests/lib/vector-t.c                  Tests for lib/vector.c
+tests/lib/wire-t.c                    Tests for lib/wire.c
 tests/lib/xmalloc.c                   Helper program for xmalloc tests
 tests/lib/xmalloc.t                   Tests for lib/xmalloc.c
 tests/lib/xwrite-t.c                  Tests for lib/xwrite.c
