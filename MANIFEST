@@ -509,6 +509,8 @@ lib/xwrite.c                          write that handles partial transfers
 nnrpd                                 Reader server (Directory)
 nnrpd/Makefile                        Makefile for nnrpd
 nnrpd/article.c                       Article-related routines
+nnrpd/cache.c                         MessageID cache routines
+nnrpd/cache.h                         MessageID cache interfaces
 nnrpd/commands.c                      Assorted server commands
 nnrpd/group.c                         Group-related routines
 nnrpd/line.c                          Long line-by-line reading routines
