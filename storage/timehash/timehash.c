@@ -389,13 +389,15 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	priv = *(PRIV_TIMEHASH *)article->private;
 	DISPOSE(article->private);
 	DISPOSE(article);
-	if (innconf->articlemmap) {
+	if (priv.base != NULL) {
+	    if (innconf->articlemmap) {
 #if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-	    madvise(priv.base, priv.len, MADV_DONTNEED);
+		madvise(priv.base, priv.len, MADV_DONTNEED);
 #endif
-	    munmap(priv.base, priv.len);
-	} else {
-	    DISPOSE(priv.base);
+		munmap(priv.base, priv.len);
+	    } else {
+		DISPOSE(priv.base);
+	    }
 	}
     }
 
@@ -458,6 +460,8 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	art->data = NULL;
 	art->len = 0;
 	art->private = (void *)NEW(PRIV_TIMEHASH, 1);
+	newpriv = (PRIV_TIMEHASH *)art->private;
+	newpriv->base = NULL;
     }
     newpriv = (PRIV_TIMEHASH *)art->private;
     newpriv->top = priv.top;
