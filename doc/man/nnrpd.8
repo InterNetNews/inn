@@ -5,7 +5,19 @@ nnrpd \- NNTP server for on-campus hosts
 .SH SYNOPSIS
 .B nnrpd
 [
+.BI \-b " address"
+]
+[
+.BI \-D
+]
+[
 .BI \-l
+]
+[
+.BI \-o
+]
+[
+.BI \-p " port"
 ]
 [
 .BI \-r " reason"
@@ -28,7 +40,9 @@ is an NNTP server for newsreaders.
 It accepts commands on its standard input and responds on its standard output.
 It is normally invoked by
 .IR innd (8)
-with those descriptors attached to a remote client connection.
+with those descriptors attached to a remote client connection. 
+.I Nnrpd 
+also supports running as a standalone daemon.
 .PP
 Unlike
 .IR innd ,
@@ -81,7 +95,7 @@ This flag is used by
 when it is paused or throttled.
 .TP
 .B \-R
-This options forces
+This option forces
 .I nnrpd
 to be ``read-only'' and overrides any ``P'' options in
 .IR nnrp.access (5).
@@ -116,6 +130,48 @@ which should be the master NNTP server.
 This flag is set by
 .I innd
 if it is started with the ``\-S'' flag.
+.TP
+.B \-o
+The ``\-o'' flag causes all articles to be spooled instead of sending
+them to
+.IR innd .
+.I Rnews
+-U should be invoked from cron on a regularer basis to take care of these
+articles. This option is useful if
+.I innd
+in accepting articles and
+.I nnrpd
+is started standalone or using 
+.IR inetd .
+.TP
+.B \-D
+If specified, this parameter causes 
+.I nnrpd
+to operatore as a daemon. That is, it detaches itself and runs in the
+background, forking a daemon for every connection. By default
+.I nnrpd
+listens on the NNTP port (119), so either
+.I innd
+has to be started on another port or
+.I nnrpd
+is invoked with the ``\-p'' parameter.
+.TP
+.B \-p
+The ``\-p'' parameter instructs
+.I nnrpd
+to listen on
+.IR port 
+when started as a standalone daemon using the ``\-D'' flag.
+.TP
+.B \-b
+The ``\-b'' paramater instructs
+.I nnrpd
+to bind to the specified
+.I IP address
+when started as a standalone daemon usiging the ``\-D'' flag. 
+This has to be a valid Internet
+address in dotted-quad format belonging to an interface of the local
+host.
 .SH "PROTOCOL DIFFERENCES"
 .I Nnrpd
 implements the NNTP commands defined in RFC 977, with the following
