@@ -455,23 +455,21 @@ ARTreadschema()
 **  Read an article and create an overview line without the trailing
 **  newline.  Returns pointer to static space or NULL on error.
 */
-STATIC char *
-OVERgen(name)
-    char			*name;
+STATIC char *OVERgen(char *name)
 {
     static ARTOVERFIELD		*Headers;
     static BUFFER		B;
-    register ARTOVERFIELD	*fp;
-    register ARTOVERFIELD	*hp;
-    register ARTOVERFIELD	*lasthp = 0;
-    register QIOSTATE		*qp;
-    register char		*colon;
-    register char		*line;
-    register char		*p;
-    register int		i;
-    register int		size;
-    register int		ov_size;
-    register long		lines;
+    ARTOVERFIELD	        *fp;
+    ARTOVERFIELD	 	*hp;
+    ARTOVERFIELD		*lasthp = 0;
+    QIOSTATE			*qp;
+    char			*colon;
+    char			*line;
+    char			*p;
+    int		        	i;
+    int		        	size;
+    int		        	ov_size;
+    long			lines;
     struct stat			Sb;
     long			t;
     char			value[10];
@@ -494,7 +492,7 @@ OVERgen(name)
 	   caller's use.  mibsoft 8/22/97
 	 */
 	for (hp = Headers, i = ARTfieldsize; --i >= 0; hp++) {
-	    if (hp->Header) {
+	    if (hp->Length) {
 		DISPOSE(hp->Header);
 		hp->Header = 0;
 	    }
@@ -537,6 +535,12 @@ OVERgen(name)
 		for (p = colon; *++p && ISWHITE(*p); )
 		    continue;
 	    size = strlen(p);
+	    if (!size) { /* Ignore empty headers 11/5/97 due to pmb1@york.ac.uk */
+	        i = -1; /* Abort */
+	        lasthp = 0;
+	        break;
+	    }
+	     
             hp->Length = size;
             hp->Header = NEW(char, hp->Length + 1);
 	    (void)strcpy(hp->Header, p);
