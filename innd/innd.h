@@ -557,6 +557,13 @@ extern void		NCclearwip(CHANNEL *cp);
 extern void		NCclose();
 extern void		NCsetup();
 
+/* perl.c */
+extern char *           PLartfilter(char *artBody, int lines);
+extern char *           PLmidfilter(char *messageID);
+extern void             PLmode(OPERATINGMODE Mode, OPERATINGMODE NewMode,
+                               char *reason);
+extern void             PLxsinit();
+
 extern int		PROCwatch();
 extern void		PROCunwatch();
 /* extern void		PROCclose(); */

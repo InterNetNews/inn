@@ -442,7 +442,7 @@ NCihave(CHANNEL *cp)
 {
     char	*p;
 #if defined(DO_PERL) || defined(DO_PYTHON)
-    char	*perlrc;
+    char	*filterrc;
     int		msglen;
 #endif /*defined(DO_PERL) || defined(DO_PYTHON) */
 
@@ -461,27 +461,30 @@ NCihave(CHANNEL *cp)
     }
 
 #if defined(DO_PERL)
-    /*  invoke a perl message filter on the message id */
-    if ((perlrc = (char *)HandleMessageID(p)) != NULL) {
-	cp->Refused++;
-	msglen = strlen(p) + 5; /* 3 digits + space + id + null */
-	if (cp->Sendid.Size < msglen) {
-	    if (cp->Sendid.Size > 0) DISPOSE(cp->Sendid.Data);
-	    if (msglen > MAXHEADERSIZE) cp->Sendid.Size = msglen;
-	    else cp->Sendid.Size = MAXHEADERSIZE;
-	    cp->Sendid.Data = NEW(char, cp->Sendid.Size);
-	}
-	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_HAVEIT_VAL, perlrc);
-	NCwritereply(cp, cp->Sendid.Data);
-	DISPOSE(cp->Sendid.Data);
-	cp->Sendid.Size = 0;
-	return;
+    /*  Invoke a perl message filter on the message ID. */
+    filterrc = PLmidfilter(p);
+    if (filterrc) {
+        cp->Refused++;
+        msglen = strlen(p) + 5; /* 3 digits + space + id + null */
+        if (cp->Sendid.Size < msglen) {
+            if (cp->Sendid.Size > 0) DISPOSE(cp->Sendid.Data);
+            if (msglen > MAXHEADERSIZE)
+                cp->Sendid.Size = msglen;
+            else
+                cp->Sendid.Size = MAXHEADERSIZE;
+            cp->Sendid.Data = NEW(char, cp->Sendid.Size);
+        }
+        sprintf(cp->Sendid.Data, "%d %s", NNTP_HAVEIT_VAL, filterrc);
+        NCwritereply(cp, cp->Sendid.Data);
+        DISPOSE(cp->Sendid.Data);
+        cp->Sendid.Size = 0;
+        return;
     }
 #endif
 
 #if defined(DO_PYTHON)
     /*  invoke a Python message filter on the message id */
-    if ((perlrc = (char *)PYHandleMessageID(p)) != NULL) {
+    if ((filterrc = (char *)PYHandleMessageID(p)) != NULL) {
 	cp->Refused++;
 	msglen = strlen(p) + 5; /* 3 digits + space + id + null */
 	if (cp->Sendid.Size < msglen) {
@@ -490,7 +493,7 @@ NCihave(CHANNEL *cp)
 	    else cp->Sendid.Size = MAXHEADERSIZE;
 	    cp->Sendid.Data = NEW(char, cp->Sendid.Size);
 	}
-	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_HAVEIT_VAL, perlrc);
+	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_HAVEIT_VAL, filterrc);
 	NCwritereply(cp, cp->Sendid.Data);
 	DISPOSE(cp->Sendid.Data);
 	cp->Sendid.Size = 0;
@@ -1276,7 +1279,7 @@ NCcheck(CHANNEL *cp)
     char		*p;
     int			msglen;
 #if defined(DO_PERL) || defined(DO_PYTHON)
-    char		*perlrc;
+    char		*filterrc;
 #endif /* DO_PERL || DO_PYTHON */
 
     cp->Check++;
@@ -1308,10 +1311,11 @@ NCcheck(CHANNEL *cp)
     }
 
 #if defined(DO_PERL)
-    /*  invoke a perl message filter on the message id */
-    if ((perlrc = (char *)HandleMessageID(p)) != NULL) {
+    /*  Invoke a perl message filter on the message ID. */
+    filterrc = PLmidfilter(p);
+    if (filterrc) {
 	cp->Refused++;
-	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
+	sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
 	NCwritereply(cp, cp->Sendid.Data);
 	return;
     }

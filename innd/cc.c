@@ -775,7 +775,7 @@ CCgo(av)
 	return "1 Wrong reason";
 
 #if defined(DO_PERL)
-    PerlMode(Mode, OMrunning, p);
+    PLmode(Mode, OMrunning, p);
 #endif /* defined(DO_PERL) */
 #if defined(DO_PYTHON)
     PythonMode(Mode, OMrunning, p);
@@ -1225,7 +1225,7 @@ CCblock(NewMode, reason)
     }
 
 #if defined(DO_PERL)
-    PerlMode(Mode, NewMode, reason);
+    PLmode(Mode, NewMode, reason);
 #endif /* defined(DO_PERL) */
 #if defined(DO_PYTHON)
     PythonMode(Mode, NewMode, reason);
@@ -2053,161 +2053,18 @@ CCresetup(s)
  * -- Ed Mooring (mooring@acm.org) May 14, 1998
  */
 
+/*
+ * Mostly moved into inn/perl.c, remaining functions to be moved into
+ * lib/perl.c.
+ * -- Russ Allbery (rra@stanford.edu) June 19, 1999
+ */
+
 #if defined(DO_PERL)
 
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
 
-
-XS(XS_INN_havehist)
-{
-    dXSARGS;
-    char*	msgid;
-
-    if (items != 1)
-        croak("Usage: INN::havehist(msgid)");
-
-    msgid = (char *)SvPV(ST(0),na);
-    if (HIShavearticle(HashMessageID(msgid)))
-	XSRETURN_YES;
-    else
-	XSRETURN_NO;
-}
-
-XS(XS_INN_cancel)
-{
-    dXSARGS;
-    char*	msgid;
-    char*	parambuf[2];
-
-    if (items != 1)
-        croak("Usage: INN::cancel(msgid)");
-
-    msgid = (char *)SvPV(ST(0),na);
-    parambuf[0]=msgid;
-    parambuf[1]= 0;
-    /* CCcancel returns NULL on success, hence reversed return codes */
-    if (CCcancel(parambuf))
-	XSRETURN_NO;
-    else
-	XSRETURN_YES;
-}
-
-XS(XS_INN_addhist)
-{
-    dXSARGS;
-    char*	msgid;
-    char*	arrivaltime;
-    char*	articletime;
-    char*	expiretime;
-    char*	articlepaths = "";
-    char	tbuff[12];
-    char*	parambuf[6];
-
-    if (items < 1 || items > 5)
-	croak("Usage INN::addhist(msgid,[arrivaltime,articletime,expiretime,paths])");
-
-
-    /* we will always have a message id */
-    msgid = (char *)SvPV(ST(0),na);
-
-    /* set up sensible defaults for the time values */
-    sprintf(tbuff, "%d",time((long *)0));
-    arrivaltime = articletime = expiretime = tbuff;
-
-    switch (items) {
-    case 2:
-	arrivaltime = (char *)SvPV(ST(1),na);
-	articletime = expiretime = arrivaltime;
-	break;
-    case 3: 
-	arrivaltime = (char *)SvPV(ST(1),na);
-	articletime = (char *)SvPV(ST(2),na);
-	expiretime = arrivaltime;
-	break;
-    case 4:
-	arrivaltime = (char *)SvPV(ST(1),na);
-	articletime = (char *)SvPV(ST(2),na);
-	expiretime =  (char *)SvPV(ST(3),na);
-	break;
-    case 5:
-	arrivaltime = (char *)SvPV(ST(1),na);
-	articletime = (char *)SvPV(ST(2),na);
-	expiretime =  (char *)SvPV(ST(3),na);
-	articlepaths =  (char *)SvPV(ST(4),na);
-	break;
-    }
-    parambuf[0] = msgid;
-    parambuf[1] = arrivaltime;
-    parambuf[2] = articletime;
-    parambuf[3] = expiretime;
-    parambuf[4] = articlepaths;
-    parambuf[5] = 0;
-
-    /* CCaddhist returns NULL on success, hence reversed return codes */
-    if (CCaddhist(parambuf))
-	XSRETURN_NO;
-    else
-	XSRETURN_YES;
-}
-
-XS(XS_INN_newsgroup)
-{
-    dXSARGS;
-    char*	newsgroup;
-    NEWSGROUP*  ngp;
-    char*	end;
-    int		size;
-
-    if (items != 1)
-        croak("Usage: INN::newsgroup(msgid)");
-    newsgroup = (char *)SvPV(ST(0),na);
-
-    if ((ngp = NGfind(newsgroup)) == NULL)
-	XSRETURN_UNDEF;
-    else {
-	/* ngp->Rest is newline-terminated; find the end. */
-	end = strchr(ngp->Rest, '\n');
-	if (end == NULL) {
-	    size = strlen(ngp->Rest);
-	} else {
-	    size = end - ngp->Rest;
-	}
-
-	if (CCperlbuff.Data == NULL) {
-	    CCperlbuff.Size = SITE_BUFFER_SIZE;
-	    CCperlbuff.Data = NEW(char, CCperlbuff.Size);
-	}
-
-	/* SITE_BUFFER_SIZE should be *huge* for this, but be paranoid. */
-	if (size > SITE_BUFFER_SIZE + 1)
-	    size = SITE_BUFFER_SIZE;
-
-	strncpy(CCperlbuff.Data, ngp->Rest, size);
-	CCperlbuff.Data[size] = '\0';
-	XSRETURN_PV(CCperlbuff.Data);
-    }
-}
-
-XS(XS_INN_filesfor)
-{
-    dXSARGS;
-    char*	msgid;
-    char*	files;
-
-    if (items != 1)
-        croak("Usage: INN::filesfor(msgid)");
-
-    msgid = (char *)SvPV(ST(0),na);
-    files = HISfilesfor(HashMessageID(msgid));
-    if (files) {
-        XSRETURN_PV(files);
-    }
-    else {
-        XSRETURN_UNDEF;
-    }
-}
 
 XS(XS_INN_head)
 {
@@ -2326,14 +2183,10 @@ XS(XS_INN_syslog)
 void
 PERLinndAPIinit()
 {
-    newXS("INN::havehist", XS_INN_havehist, "cc.c");
-    newXS("INN::cancel", XS_INN_cancel, "cc.c");
-    newXS("INN::addhist", XS_INN_addhist, "cc.c");
-    newXS("INN::newsgroup", XS_INN_newsgroup, "cc.c");
-    newXS("INN::filesfor", XS_INN_filesfor, "cc.c");
     newXS("INN::head", XS_INN_head, "cc.c");
     newXS("INN::article", XS_INN_article, "cc.c");
     newXS("INN::syslog", XS_INN_syslog, "cc.c");
+    PLxsinit();
 }
 #endif
 

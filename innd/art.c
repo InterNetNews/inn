@@ -146,7 +146,7 @@ ARTHEADER	ARTheaders[] = {
 ARTHEADER	*ARTheadersENDOF = ENDOF(ARTheaders);
 
 #if defined(DO_PERL)
-const char	*pathForPerl;
+const char	*filterPath;
 #endif /* DO_PERL */
 #if defined(DO_PYTHON)
 const char	*pathForPython;
@@ -1947,12 +1947,9 @@ STRING ARTpost(CHANNEL *cp)
     TOKEN               token;
     int			canpost;
     char		*groupbuff[2];
-#if defined(DO_PERL)
-    char		*perlrc;
-#endif /* DO_PERL */
-#if defined(DO_PYTHON)
-    char		*pythonrc;
-#endif /* DO_PYTHON */
+#if defined(DO_PERL) || defined(DO_PYTHON)
+    char		*filterrc;
+#endif /* defined(DO_PERL) || defined(DO_PYTHON) */
 
     /* Preliminary clean-ups. */
     article = &cp->In;
@@ -2024,10 +2021,10 @@ STRING ARTpost(CHANNEL *cp)
 #if defined(DO_PYTHON)
     pathForPython = HeaderFindMem(article->Data, article->Used, "Path", 4) ;
     /* TMRstart(TMR_PYTHON); */
-    pythonrc = (char *)PYHandleArticle(Data.Body, Data.LinesValue);
+    filterrc = (char *)PYHandleArticle(Data.Body, Data.LinesValue);
     /* TMRstop(TMR_PYTHON); */
-    if (pythonrc != NULL) {
-        (void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, pythonrc);
+    if (filterrc != NULL) {
+        (void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, filterrc);
         syslog(L_NOTICE, "rejecting[python] %s %s", Data.MessageID, buff);
         ARTlog(&Data, ART_REJECT, buff);
         if (innconf->remembertrash && (Mode == OMrunning) &&
@@ -2042,12 +2039,12 @@ STRING ARTpost(CHANNEL *cp)
     /* I suppose some masochist will run with Python and Perl in together */
 
 #if defined(DO_PERL)
-    pathForPerl = HeaderFindMem(article->Data, article->Used, "Path", 4) ;
+    filterPath = HeaderFindMem(article->Data, article->Used, "Path", 4) ;
     TMRstart(TMR_PERL);
-    perlrc = (char *)HandleArticle(Data.Body, Data.LinesValue);
+    filterrc = PLartfilter(Data.Body, Data.LinesValue);
     TMRstop(TMR_PERL);
-    if (perlrc != NULL) {
-        (void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, perlrc);
+    if (filterrc) {
+        sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, filterrc);
         syslog(L_NOTICE, "rejecting[perl] %s %s", Data.MessageID, buff);
         ARTlog(&Data, ART_REJECT, buff);
         if (innconf->remembertrash && (Mode == OMrunning) &&
@@ -2059,7 +2056,7 @@ STRING ARTpost(CHANNEL *cp)
     }
 #endif /* DO_PERL */
 
-    /* I suppose some masochist will run with both TCL and PERL in together */
+    /* I suppose some masochist will run with both TCL and Perl in together */
 
 #if defined(DO_TCL)
     if (TCLFilterActive) {
