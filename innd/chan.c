@@ -37,6 +37,7 @@ STATIC CHANNEL	*CHANrc;
 */
 void BUFFappend(BUFFER *bp, char *p, int len) {
     int i;
+    
     if (len == 0)
 	return;
     /* Note end of buffer, grow it if we need more room */
@@ -46,7 +47,7 @@ void BUFFappend(BUFFER *bp, char *p, int len) {
 	bp-> Size += (len + 0x3FF) & ~0x3FF;
 	RENEW(bp->Data, char, bp->Size);
     }
-    memcpy((POINTER)&bp->Data[i], (POINTER), p, len);
+    memcpy((POINTER)&bp->Data[i], (POINTER)p, len);
 }
 
 /*

@@ -26,23 +26,6 @@ extern BOOL DoCancels;
 
 
 /*
-**  Mark that the site gets this article.
-*/
-#define SITEmark(sp_, ngp_) \
-    do { \
-	SITE	*funnel; \
-    \
-	sp_->Sendit = TRUE; \
-	if (sp_->ng == NULL) \
-	    sp_->ng = ngp_; \
-	if (sp_->Funnel != NOSITE) { \
-	    funnel = &Sites[sp_->Funnel]; \
-	    if (funnel->ng == NULL) \
-		funnel->ng = ngp_; \
-	} \
-    } while (JUSTONCE)
-
-/*
 **  For speed we build a binary tree of the headers, sorted by their
 **  name.  We also store the header's Name fields in the tree to avoid
 **  doing an extra indirection.
@@ -144,6 +127,22 @@ ARTHEADER	*ARTheadersENDOF = ENDOF(ARTheaders);
 const char *pathForPerl ;
 
 
+/*
+**  Mark that the site gets this article.
+*/
+void SITEmark(SITE *sp, NEWSGROUP *ngp) {
+    SITE	*funnel; 
+
+    sp->Sendit = TRUE; 
+    if (sp->ng == NULL) 
+	sp->ng = ngp; 
+    if (sp->Funnel != NOSITE) { 
+	funnel = &Sites[sp->Funnel]; 
+	if (funnel->ng == NULL) 
+	    funnel->ng = ngp; 
+    } 
+}
+
 /*
 **
 */
