@@ -3,10 +3,10 @@
 Please read this document thoroughly before trying to install INN.  You'll
 be glad you did.
 
-If you are upgrading from a previous release of INN, it is recommended
-that you make copies of your old configuration files and use them as
-guides for doing a clean installation and configuration of 2.3.  Many
-config files have changed, some have been added, and some have been
+If you are upgrading from a previous major release of INN, it is
+recommended that you make copies of your old configuration files and use
+them as guides for doing a clean installation and configuration of 2.3.
+Many config files have changed, some have been added, and some have been
 removed.  You'll find it much easier to start with a fresh install than to
 try to update your old installation.  This is particularly true if you're
 upgrading from a version of INN prior to 2.0.
@@ -44,8 +44,8 @@ functional (or in some cases, to work at all):
 In order to build INN, you will need a C compiler that understands ANSI C.
 If you are trying to install INN on an operating system that doesn't have
 an ANSI C compiler (such as SunOS), installing gcc is recommended.  You
-can get it from ftp://ftp.gnu.org/gcc/ or its mirrors.  INN is tested with
-gcc more thoroughly than with any other compiler, so even if you have
+can get it from <ftp://ftp.gnu.org/gcc/> or its mirrors.  INN is tested
+with gcc more thoroughly than with any other compiler, so even if you have
 another compiler available, you may wish to use gcc instead (note that gcc
 has some known problems compiling calls to inet_ntoa() on IRIX platforms).
 
@@ -56,14 +56,14 @@ requires 5.004 for embedded Perl filters to work.  All versions of Perl
 previous to 5.004 are buggy (including security problems) and INN is
 tested primarily under Perl 5.005 and 5.004, so it's highly recommended
 that you install the latest Perl before compiling INN.  For instructions
-on obtaining and installing Perl, see http://www.perl.com/latest/.
+on obtaining and installing Perl, see <http://www.perl.com/latest/>.
 
 =item *
 
 The INN Makefiles use the syntax C<include FILE>, rather than the syntax
 expected by some BSDish systems of C<.include E<lt>FILEE<gt>>.  If your
 system expects the latter syntax, the recommended solution is to install
-GNU make (ftp://ftp.gnu.org/make/).  You may have GNU make already
+GNU make from <ftp://ftp.gnu.org/make/>.  You may have GNU make already
 installed as gmake, in which case using gmake rather than make to build
 INN should be sufficient.
 
@@ -76,10 +76,10 @@ unclear; it's possible that if you are installing INN for a company in the
 U.S., even if the news server is not part of the business of that company,
 you would need to purchase a commercial license for PGP.  For an
 educational or non-profit organization, this shouldn't be a problem.  See
-http://www.pgp.com/ for more information about PGP, including the
+<http://www.pgp.com/> for more information about PGP, including the
 licensing restrictions.
 
-You may also want to look at GnuPG (http://www.gnupg.org/), a free
+You may also want to look at GnuPG from <http://www.gnupg.org/>, a free
 software OpenPGP implementation.  Unfortunately, most control message
 signatures are currently PGP 2.6.2-compatible signatures, which cannot be
 handled by stock GnuPG for patent reasons.  However, there are add-on
@@ -188,7 +188,7 @@ following formula:
 If you don't have at least that much RAM, try rebuilding INN with tagged
 hash enabled.
 
-NOTE: --with-largefiles can not be used with --enable-tagged-hash
+NOTE: B<--with-largefiles> can not be used with B<--enable-tagged-hash>.
 
 =item B<--with-perl>
 
@@ -268,9 +268,11 @@ default prior to INN 2.3.
 
 =item B<--with-openssl=PATH>
 
-Enables SSL for news reading, which means get SSL or TLS encrypted NNRP
-between your server and newsreaders. Sets the path of the installed
-directory of OpenSSL. You must make a certificate and private key.
+Enables support for SSL for news reading, which means it is possible to
+have SSL or TLS encrypted NNTP connections between your server and
+newsreaders.  This option requires OpenSSL.  If a path is given, it sets
+the installed directory of OpenSSL.  You must then make a certificate and
+private key.
 
 =back
 
@@ -304,11 +306,11 @@ install INN under the install directory (F</usr/local/news>, unless you
 specified something else to the configure script.)
 
 If you use SSL support for nnrp, you must make a certificate and private
-key at least once. Type:
+key at least once.  Type:
 
     make cert
 
-You will need to run this command as root.
+as root in order to do this.
 
 You are now ready for the really fun part: configuring your copy of INN!
 
@@ -410,14 +412,15 @@ hierarchies and hierarchies that should never expire in tradspool.
 
 If your news server will be supporting readers, you'll also need to choose
 an overview storage mechanism (by setting ovmethod in F<inn.conf>).  There
-are three overview mechanisms to choose from, tradindexed, buffindexed,
+are three overview mechanisms to choose from:  tradindexed, buffindexed,
 and ovdb.  tradindexed is very fast for readers, but it has to update two
-files for every incoming article and can be quite slow to write.  buffindexed
-can keep up with a large feed more easily, since it uses large buffers to
-store all overview information in, but it's somewhat slower for readers
-(although not as slow as the unified overview in INN 2.2).  ovdb stores
-overview data into a BerkeleyDB database.  It is fast and very robust, but
-requires more disk space.  See the ovdb(5) man page for more information.
+files for every incoming article and can be quite slow to write.
+buffindexed can keep up with a large feed more easily, since it uses large
+buffers to store all overview information in, but it's somewhat slower for
+readers (although not as slow as the unified overview in INN 2.2).  ovdb
+stores overview data in a Berkeley DB database; it's fast and very robust,
+but requires more disk space.  See the ovdb(5) man page for more
+information on it.
 
 If buffindexed is chosen, you will need to create the buffers for it to
 use (very similar to creating CNFS buffers) and list the available buffers
@@ -587,9 +590,9 @@ default is that it requires you to set up a special feed in F<newsfeeds>
     # cd /usr/include
     # h2ph * sys/*
 
-so that the Sys::Syslog Perl module works correctly.  (Otherwise,
-controlchan will log messages to errlog, which probably isn't what you
-want.)
+if you're using a version of Perl prior to 5.6.0 so that the Sys::Syslog
+Perl module works correctly.  (Otherwise, controlchan will log messages to
+F<errlog>, which probably isn't what you want.)
 
 =back
 
@@ -1061,33 +1064,33 @@ Make sure to create the device files in the location INN expects them
 
 =head1 Creating the Database Files
 
-At this point, you need to set up the news database directory (~news/db).
-This directory will hold the active file (the list of newsgroups you
-carry), the active.times file (the creator and creation time of newsgroups
-created since the server was initialized), the newsgroups file
-(descriptions for all the newsgroups you carry), and the history file (a
-record of every article the server currently has or has seen in the past
-few days, used to decide whether to accept or refuse new incoming
-messages).
+At this point, you need to set up the news database directory
+(F<~news/db>).  This directory will hold the active file (the list of
+newsgroups you carry), the active.times file (the creator and creation
+time of newsgroups created since the server was initialized), the
+newsgroups file (descriptions for all the newsgroups you carry), and the
+history file (a record of every article the server currently has or has
+seen in the past few days, used to decide whether to accept or refuse new
+incoming messages).
 
 Before starting to work on this, make sure you're logged on as the news
 user, since all of these files need to be owned by that user.  This is a
 good policy to always follow; if you are doing any maintenance work on
 your news server, log on as the news user.  Don't do maintenance work as
-root.  Also make sure that ~news/bin is in the default path of the news
-user (and while you're at it, make sure ~news/man is in the default
+root.  Also make sure that F<~news/bin> is in the default path of the news
+user (and while you're at it, make sure F<~news/man> is in the default
 MANPATH) so that you can run INN maintenance commands without having to
 type the full path.
 
 If you already have a server set up (if you're upgrading, or setting up a
 new server based on an existing server), copy F<active> and F<newsgroups>
-from that server into ~news/db.  Otherwise, you'll need to figure out what
-newsgroups you want to carry and create new active and newsgroups files
-for them.  If you plan to carry a full feed, or something close to that,
-go to ftp://ftp.isc.org/pub/usenet/CONFIG/ and download F<active> and
-F<newsgroups> from there; that will start you off with reasonably complete
-files.  If you plan to only carry a small set of groups, create F<active>
-containing only the following lines:
+from that server into F<~news/db>.  Otherwise, you'll need to figure out
+what newsgroups you want to carry and create new active and newsgroups
+files for them.  If you plan to carry a full feed, or something close to
+that, go to <ftp://ftp.isc.org/pub/usenet/CONFIG/> and download F<active>
+and F<newsgroups> from there; that will start you off with reasonably
+complete files.  If you plan to only carry a small set of groups, create
+F<active> containing only the following lines:
 
     control 0000000000 0000000000 y
     control.cancel 0000000000 0000000000 y
