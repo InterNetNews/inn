@@ -1331,7 +1331,6 @@ CCreload(char *av[])
 #endif /* defined(DO_PYTHON) */
     const char *p;
     char *path;
-    struct innconf *saved;
 
     p = av[0];
     if (*p == '\0' || EQ(p, "all")) {
@@ -1376,6 +1375,8 @@ CCreload(char *av[])
 #if 0 /* we should check almost all innconf parameter, but the code
          is still incomplete for innd, so just commented out */
     else if (EQ(p, "inn.conf")) {
+        struct innconf *saved;
+
         saved = innconf;
         innconf = NULL;
         if (innconf_read(NULL))
