@@ -580,7 +580,7 @@ TOKEN SMstore(const ARTHANDLE article) {
 	if (!(method_data[typetoindex[sub->type]].initialized == INIT_FAIL) &&
 	    (article.len >= sub->minsize) &&
 	    (!sub->maxsize || (article.len <= sub->maxsize)) &&
-	    (expiretime >= sub->minexpire) &&
+	    (!sub->minexpire || expiretime >= sub->minexpire) &&
 	    (!sub->maxexpire || (expiretime <= sub->maxexpire)) &&
 	    MatchGroups(groups, sub->numpatterns, sub->patterns)) {
 	    if (InitMethod(typetoindex[sub->type]))
