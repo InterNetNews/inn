@@ -11,8 +11,13 @@
 **  needs a larger comment is included here.
 */
 
-#ifndef __CONFIG_H__
-#define __CONFIG_H__
+#ifndef CONFIG_H
+#define CONFIG_H 1
+
+/* Portable defines that don't rely on autoconf results come from here. */
+#ifndef INN_DEFINES_H
+# include "inn/defines.h"
+#endif
 
 /*
 **  GENERAL SETTINGS
@@ -174,9 +179,6 @@
 /* Define if <sys/un.h> defines the SUN_LEN macro.  */
 #undef HAVE_SUN_LEN
 
-/* Define if your `struct tm' has a `tm_gmtoff' member.  */
-#undef HAVE_TM_GMTOFF
-
 /* Define if you have unix domain sockets.  */
 #undef HAVE_UNIX_DOMAIN_SOCKETS
 
@@ -290,7 +292,7 @@ typedef char * const    CSTRING;
 
 /* Programming convenience.  Since we need bool anyway for Perl, we should
    use the lowercase version everywhere. */
-typedef int             BOOL;
+typedef bool            BOOL;
 
 /* Currently unconditionally an off_t.  This may not be the right choice on
    some systems for large file support, so keeping the typedef may be the
@@ -444,4 +446,4 @@ typedef int             BOOL;
 /* All incoming control commands (ctlinnd, etc). */
 #define L_CC_CMD                LOG_INFO
 
-#endif /* !__CONFIG_H__ */
+#endif /* !CONFIG_H */
