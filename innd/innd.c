@@ -306,6 +306,7 @@ main(int ac, char *av[])
     openlog(name, LOG_CONS | LOG_NDELAY, LOG_INN_SERVER);
     message_handlers_die(2, message_log_stderr, message_log_syslog_crit);
     message_handlers_warn(2, message_log_stderr, message_log_syslog_err);
+    message_handlers_notice(1, message_log_syslog_notice);
 
     /* Make sure innd is not running as root.  innd must be either started
        via inndstart or use a non-privileged port. */

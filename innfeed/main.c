@@ -175,6 +175,7 @@ int main (int argc, char **argv)
 
   message_handlers_die (2, error_log_stderr_date, message_log_syslog_err) ;
   message_handlers_warn (2, error_log_stderr_date, message_log_syslog_warning);
+  message_handlers_notice (1, message_log_syslog_notice) ;
 
 #define OPT_STRING "a:b:c:Cd:e:hl:mMo:p:S:s:vxyz"
 
