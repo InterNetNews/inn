@@ -15,16 +15,6 @@ B<    int misses;>
 B<    int dne;>
 B<};>
 
-B<struct histopts {>
-B<    size_t npairs;>
-B<    size_t synccount;>
-B<    union {>
-B<	struct {>
-B<	    time_t statinterval;>
-B<	} hisv6;>
-B<    } u;>
-B<};>
-
 B<#define HIS_RDONLY ...>
 B<#define HIS_RDWR ...>
 B<#define HIS_CREAT ...>
@@ -32,7 +22,16 @@ B<#define HIS_ONDISK ...>
 B<#define HIS_INCORE ...>
 B<#define HIS_MMAP ...>
 
-B<struct history *HISopen(const char *>I<path>B<, const char *>I<method>B<, int >I<flags>B<, struct histopts *>I<opts>B<);>
+B<enum {>
+B<    HISCTLG_PATH,>
+B<    HISCTLS_PATH,>
+B<    HISCTLS_SYNCCOUNT,>
+B<    HISCTLS_NPAIRS,>
+B<    HISCTLS_IGNOREOLD,>
+B<    HISCTLS_STATINTERVAL>
+B<};>
+
+B<struct history *HISopen(const char *>I<path>B<, const char *>I<method>B<, int >I<flags>B<);>
 
 B<bool HISclose(struct history *>I<history>B<);>
 
@@ -48,13 +47,15 @@ B<bool HISwrite(struct history *>I<history>B<, const char *>I<key>B<, time_t >I<
 
 B<bool HISreplace(struct history *>I<history>B<, const char *>I<key>B<, time_t >I<arrived>B<, time_t >I<posted>B<, time_t >I<expires>B<, const TOKEN *>I<token>B<);>
 
-B<bool HISexpire(struct history *>I<history>B<, const char *>I<path>B<, const char *>I<reason>B<, void *>I<cookie>B<, time_t >I<threshold>B<, bool (*>I<exists>B<)(void *cookie, time_t arrived, time_t posted, time_t expires, const TOKEN *token));>
+B<bool HISexpire(struct history *>I<history>B<, const char *>I<path>B<, const char *>I<reason>B<, bool >I<writing>B<, void *>I<cookie>B<, time_t >I<threshold>B<, bool (*>I<exists>B<)(void *cookie, time_t arrived, time_t posted, time_t expires, const TOKEN *token));>
 
-B<bool HISwalk(struct history *>I<history>B<, void *>I<cookie>B<, bool (*>I<callback>B<)(void *cookie, time_t arrived, time_t posted, time_t expires, const TOKEN *token));>
+B<bool HISwalk(struct history *>I<history>B<, const char *>I<reason>B<, void *>I<cookie>B<, bool (*>I<callback>B<)(void *cookie, time_t arrived, time_t posted, time_t expires, const TOKEN *token));>
 
 B<struct histstats HISstats(struct history *>I<history>B<);>
 
 B<const char *HISerror(struct history *>I<history>B<);>
+
+B<bool HISctl(struct history *>I<history>B<, int >I<request>B<, void *>I<val>B<);>
 
 =head1 DESCRIPTION
 
@@ -84,20 +85,11 @@ the underlying history manager may assume that the caller will call
 B<HISsync>() to sync the data files to disk.
 
 The B<HIS_CREAT> flag indicates that the history database should be
-initialised as new, using any options specified in I<opts>.
-
-History options, I<opts>, may be passed to B<HISopen>(). If not
-B<NULL> they control parameters of the underlying history manager;
-note that almost all are advisory. I<opts.npairs> is used when
-B<HIS_CREAT> is set and is a hint to the underlying history manager as
-to how many entries there are expected to be in the history
-database. I<opts.synccount> specifies an upper bound on how many
-history operations may be pending in core before being synced to
-permanent storage; B<0> indicates
-unlimited. I<opts.u.hisv6.statinterval> is a history v6 manager
-specific option and sets the interval, in seconds, between stat(2)s of
-the history files checking for replaced files (as happens during
-expire); this option is typically used by nnrpd(8) like applications.
+initialised as new; if any options which affect creation of the
+database need to be set an anonymous history handle should be created
+by calling B<HISopen> with I<path> set to B<NULL>, any options set
+using B<HISctl>, then the database opened by calling B<HISctl> with
+B<HISCTLS_PATH>.
 
 The B<HISclose> function closes the handle I<history> and deallocates
 any resources associated with it. It returns B<false> on failure or
@@ -147,10 +139,13 @@ B<HISexpire> expires the history database associated with I<history>,
 creating a new, replacement, database in the same location if I<path>
 is B<NULL>, or in I<path> if not B<NULL>; if I<path> is not B<NULL>
 then the replacement of the old history database with the new one is
-assumed to be performed out of band by the caller.
+assumed to be performed out of band by the caller. The I<writing> flag
+is normall passed as B<true>, if you wish to inhibit writing of the
+new database (and so merely see the callbacks), I<writing> may be set
+B<false>.
 
 If the underlying history mechanism needs to reserve or pause the
-server the B<reason> string is used as an an argument to the `ctlinnd
+server the I<reason> string is used as an an argument to the `ctlinnd
 (reserve|pause|go)' commands; if the caller wishes to inhibit
 reservation or pausing of the server, passing B<NULL> will achieve
 this.
@@ -190,6 +185,12 @@ addition to the token associated with the entry. If the I<callback>()
 returns B<false> the iteration is aborted and B<HISwalk> returns
 B<false> to the caller.
 
+To process the entire database in the presence of a running server,
+I<reason> may be passed; if this argument is not B<NULL> it is used as
+an an argument to the `ctlinnd (reserve|pause|go)' commands. If
+I<reason> is not passed and the server is running the behaviour of
+B<HISwalk> is undefined.
+
 If the callback function attempts to access the underlying database
 during the callback the behaviour is unspecified.
 
@@ -228,7 +229,54 @@ cleared.
 B<HISerror> returns a string describing the most recent error
 associated with I<history>; the format and content of these strings is
 history manager dependent. Note that most history managers will, on
-setting an error, call libinn's warn function.
+setting an error, call libinn's B<warn> function.
+
+B<HISctl> provides a control interface to the underlying history
+manager. The I<request> argument determines the type of the request
+and the meaning of the I<val> argument. The values for I<request> are:
+
+=over 4
+
+=item C<HISCTLG_PATH> (const char **)
+
+Get the base file path which the history handle represents. I<val>
+should be a pointer to a value of type B<const char *>.
+
+=item C<HISCTLS_PATH> (const char *)
+
+Set the base file path which this history handle should use; typically
+this is used after an anonymous handle has been created using
+B<HISopen(NULL, ...)>. I<val> should be a value of type B<const char
+*>.
+
+=item C<HISCTLS_SYNCCOUNT> (size_t *)
+
+Set an upper bound on how many history operations may be pending in
+core before being synced to permanent storage; B<0> indicates
+unlimited. I<val> should be a pointer to a value of type B<size_t>.
+
+=item C<HISCTLS_NPAIRS> (size_t *)
+
+Set a hint to the to the underlying history manager as to how many
+entries there are expected to be in the history database; B<0>
+indicates that an automatic or default sizing should be made. I<val>
+should be a pointer to a value of type B<size_t>.
+
+=item C<HISCTLS_IGNOREOLD> (bool *)
+
+Instruct the underlying history manager to ignore existing database
+when creating new ones; typically this option may be set to B<true> if
+the administrator believes that the existing history database is
+corrupt and that ignoring it may help. I<val> should be a pointer to a
+value of type B<bool>.
+
+=item C<HISCTLS_STATINTERVAL> (time_t *)
+
+For the history v6 and tagged hash managers, set the interval, in
+seconds, between stat(2)s of the history files checking for replaced
+files (as happens during expire); this option is typically used by
+nnrpd(8) like applications. I<val> should be a pointer to a value of
+type B<time_t>.
 
 =head1 HISTORY
 
