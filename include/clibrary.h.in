@@ -212,6 +212,12 @@ extern void	setproctitle();
 
 #endif
 
+#if (defined(__hpux) || defined(hpux)) && defined(HAVE_UNION_WAIT)
+/* Even though hpux defines a union wait, it's better to not use it.
+ */
+#undef HAVE_UNION_WAIT
+#endif
+
 #if ! defined(INADDR_NONE) && ! defined(_AIX41)
 #define		INADDR_NONE 	(unsigned long)0xffffffff
 #endif
