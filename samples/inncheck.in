@@ -36,7 +36,7 @@ $newsgroup = '@NEWSGRP@';
     'newsfeeds',	"$inn::pathetc/newsfeeds",
     'overview.fmt',	"$inn::pathetc/overview.fmt",
     'newsetc',		"$inn::pathetc",
-    'newslib',		"$inn::pathlib",
+    'newslib',		"@LIBDIR@",
     'nnrp.access',	"$inn::pathetc/nnrp.access",
     'nnrpd',		"$inn::pathbin/nnrpd",
     'nntpsend.ctl',	"$inn::pathetc/nntpsend.ctl",
@@ -867,13 +867,13 @@ intersect
 );
 @newsbin_private = (
     'ctlinnd', 'expirerm', 'inncheck', 'innstat', 'innwatch',
-    'makegroup', 'news.daily', 'nntpsend', 'scanlogs', 'sendbatch',
-    'tally.control', 'tally.unwanted', 'updatemods', 'writelog',
+    'news.daily', 'nntpsend', 'scanlogs', 'sendbatch',
+    'tally.control', 'tally.unwanted', 'writelog',
     'send-ihave', 'send-nntp', 'send-uucp'
 );
-@newslib_private_read = (
-    'innlog.pl'
-);
+#@newslib_private_read = (
+#    'innlog.pl'
+#);
 
 ## The modes for the various programs.
 %prog_modes = (
@@ -910,9 +910,9 @@ check_all_perms
     &checkperm($paths{'history'} . ".dir", 0644);
     &checkperm($paths{'history'} . ".index", 0644);
     &checkperm($paths{'history'} . ".hash", 0644);
-    foreach ( @newslib_private_read ) {
-	&checkperm("$newslib/$_", 0440);
-    }
+    #foreach ( @newslib_private_read ) {
+    #   &checkperm("$newslib/$_", 0440);
+    #}
     foreach ( @newsbin_private ) {
 	&checkperm("$newsbin/$_", 0550);
     }
