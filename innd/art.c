@@ -2295,6 +2295,8 @@ ARTpost(CHANNEL *cp)
 	return FALSE;
       }
     }
+  } else {
+    data->Distribution.List[0] = NULL;
   }
 
   for (i = nSites, sp = Sites; --i >= 0; sp++) {
@@ -2674,7 +2676,7 @@ ARTpost(CHANNEL *cp)
       ARTcontrol(data, HDR(HDR__CONTROL), cp);
       TMRstop(TMR_ARTCTRL);
     }
-    if (HDR_FOUND(HDR__SUPERSEDES)) {
+    if (DoCancels && HDR_FOUND(HDR__SUPERSEDES)) {
       HDR_PARSE_START(HDR__SUPERSEDES);
       if (ARTidok(HDR(HDR__SUPERSEDES)))
 	ARTcancel(data, HDR(HDR__SUPERSEDES), FALSE);
