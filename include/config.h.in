@@ -104,6 +104,21 @@
 /* Define if you have getpagesize() */
 #undef HAVE_GETPAGESIZE
 
+/* Define if you have statvfs() */
+#undef HAVE_STATVFS
+
+/* Define if you have statfs() */
+#undef HAVE_STATFS
+
+/* Define if you have sys/vfs.h */
+#undef HAVE_SYS_VFS_H
+
+/* Define if you have sys/param.h */
+#undef HAVE_SYS_PARAM_H
+
+/* Define if you have sys/mount.h */
+#undef HAVE_SYS_MOUNT_H
+
 /* if I understand how configure does this, if 'const' isn't valid, 
  * it will remove the 'const' declarations from the typedef's below 
  * <scrappy@hub.org 
