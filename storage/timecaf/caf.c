@@ -550,6 +550,7 @@ CAFOpenArtRead(const char *path, ARTNUM art, size_t *len)
     CAFHEADER head;
     int fd;
     CAFTOCENT tocent;
+    struct stat st;
 
     if ( (fd = open(path, O_RDONLY)) < 0) {
 	/* 
@@ -594,6 +595,16 @@ CAFOpenArtRead(const char *path, ARTNUM art, size_t *len)
 	close(fd);
 	return -1;
     }
+
+    /* I'm not sure if this fstat is worth the speed hit, but unless we check
+       here, we may simply segfault when we try to access mmap'd space beyond
+       the end of the file.  I think robustness wins. */
+    if (fstat(fd, &st) == 0)
+        if (tocent.Size > st.st_size - tocent.Offset) {
+            CAFError(CAF_ERR_IO);
+            close(fd);
+            return -1;
+        }
 
     *len = tocent.Size;
     return fd;
