@@ -85,6 +85,7 @@ void            SMfreearticle(ARTHANDLE *article);
 BOOL            SMcancel(TOKEN token);
 BOOL            SMprobe(PROBETYPE type, TOKEN *token, void *value);
 BOOL            SMflushcacheddata(FLUSHTYPE type);
+void		SMprintfiles(FILE *, TOKEN, char **xref, int ngroups);
 void            SMshutdown(void);
 
 #ifdef __cplusplus
