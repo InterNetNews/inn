@@ -1012,12 +1012,14 @@ ARTpost(article, idbuff)
 
     /* Open a local connection to the server. */
     if (innconf->nnrpdposthost != NULL)
-	i = NNTPconnect(innconf->nnrpdposthost, NNTP_PORT, &FromServer, &ToServer, buff);
+	i = NNTPconnect(innconf->nnrpdposthost, innconf->nnrpdpostport,
+					&FromServer, &ToServer, buff);
     else {
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
 	i = NNTPlocalopen(&FromServer, &ToServer, buff);
 #else
-	i = NNTPremoteopen(NNTP_PORT, &FromServer, &ToServer, buff);
+	i = NNTPremoteopen(innconf->nnrpdpostport, &FromServer,
+					&ToServer, buff);
 #endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
     }
 
