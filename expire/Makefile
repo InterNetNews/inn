@@ -5,10 +5,10 @@ include ../Makefile.global
 CFLAGS        = $(GCFLAGS)
 
 ALL           = convdate expire expireover expirerm fastrm grephistory \
-		makedbz makehistory newsrequeue prunehistory
+		makedbz makehistory prunehistory
 
 SOURCES       = convdate.c expire.c expireover.c fastrm.c grephistory.c \
-		makedbz.c makehistory.c newsrequeue.c prunehistory.c
+		makedbz.c makehistory.c prunehistory.c
 
 INSTALLED     = $(D)$(PATHBIN)/convdate		\
 		$(D)$(PATHBIN)/expire		\
@@ -18,7 +18,6 @@ INSTALLED     = $(D)$(PATHBIN)/convdate		\
 		$(D)$(PATHBIN)/grephistory	\
 		$(D)$(PATHBIN)/makedbz		\
 		$(D)$(PATHBIN)/makehistory	\
-		$(D)$(PATHBIN)/newsrequeue	\
 		$(D)$(PATHBIN)/prunehistory
 
 all: $(ALL)
@@ -51,7 +50,6 @@ fastrm:		fastrm.o       $(BOTH)   ; $(LINK) fastrm.o       $(STORELIBS)
 grephistory:	grephistory.o  $(BOTH)   ; $(LINK) grephistory.o  $(STORELIBS)
 makedbz:	makedbz.o      $(LIBINN) ; $(LINK) makedbz.o      $(INNLIBS)
 makehistory:	makehistory.o  $(BOTH)   ; $(LINK) makehistory.o  $(STORELIBS)
-newsrequeue:	newsrequeue.o  $(LIBINN) ; $(LINK) newsrequeue.o  $(INNLIBS)
 prunehistory:	prunehistory.o $(BOTH)   ; $(LINK) prunehistory.o $(STORELIBS)
 
 expirerm:	expirerm.in    $(FIX)    ; $(FIX) expirerm.in
@@ -87,7 +85,6 @@ $(D)$(PATHBIN)/fastrm:              fastrm              ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/grephistory:         grephistory         ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/makedbz:             makedbz             ; $(LI_XPRI) $? $@
 $(D)$(PATHBIN)/makehistory:         makehistory         ; $(LI_XPRI) $? $@
-$(D)$(PATHBIN)/newsrequeue:         newsrequeue         ; $(LI_XPRI) $? $@
 $(D)$(PATHBIN)/prunehistory:        prunehistory        ; $(LI_XPRI) $? $@
 
 
@@ -100,31 +97,27 @@ depend:	Makefile $(SOURCES)
 convdate.o: convdate.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
 expire.o: expire.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/dbz.h ../include/libinn.h \
- ../include/inndcomm.h ../include/inn/qio.h ../include/macros.h \
- ../include/paths.h ../include/storage.h
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h \
+ ../include/paths.h ../include/storage.h ../include/inn/history.h
 expireover.o: expireover.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/inn/qio.h \
  ../include/libinn.h ../include/macros.h ../include/ov.h \
- ../include/storage.h ../include/paths.h
+ ../include/storage.h ../include/inn/history.h ../include/paths.h
 fastrm.o: fastrm.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
  ../include/macros.h ../include/storage.h
 grephistory.o: grephistory.c ../include/clibrary.h ../include/config.h \
- ../include/inn/defines.h ../include/dbz.h ../include/libinn.h \
- ../include/macros.h ../include/paths.h ../include/storage.h
+ ../include/inn/defines.h ../include/libinn.h ../include/macros.h \
+ ../include/paths.h ../include/storage.h ../include/inn/history.h
 makedbz.o: makedbz.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/dbz.h ../include/libinn.h \
  ../include/inn/qio.h ../include/macros.h ../include/paths.h \
  ../include/storage.h
 makehistory.o: makehistory.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h ../include/dbz.h \
- ../include/libinn.h ../include/inn/qio.h ../include/macros.h \
- ../include/ov.h ../include/storage.h ../include/paths.h
-newsrequeue.o: newsrequeue.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h ../include/dbz.h \
- ../include/libinn.h ../include/inn/qio.h ../include/macros.h \
- ../include/paths.h
+ ../include/inn/defines.h ../include/clibrary.h \
+ ../include/portable/wait.h ../include/inn/qio.h ../include/libinn.h \
+ ../include/macros.h ../include/ov.h ../include/storage.h \
+ ../include/inn/history.h ../include/paths.h
 prunehistory.o: prunehistory.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h ../include/dbz.h \
- ../include/libinn.h ../include/macros.h ../include/paths.h
+ ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
+ ../include/paths.h ../include/inn/history.h

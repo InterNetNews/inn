@@ -193,7 +193,6 @@ doc/man/news.daily.8                  Manpage for news.daily
 doc/man/news2mail.8                   Manpage for news2mail
 doc/man/newsfeeds.5                   Manpage for newsfeeds config file
 doc/man/newslog.5                     Manpage for log files
-doc/man/newsrequeue.8                 Manpage for newsrequeue
 doc/man/nnrpd.8                       Manpage for nnrpd daemon
 doc/man/nnrpd.track.5                 Manpage for nnrpd.track config file
 doc/man/nntpget.1                     Manpage for nntpget frontend
@@ -268,7 +267,6 @@ expire/fastrm.c                       Remove list of files
 expire/grephistory.c                  Find entries in history database
 expire/makedbz.c                      Recover dbz
 expire/makehistory.c                  Recover the history database
-expire/newsrequeue.c                  Write filechan input from history file
 expire/prunehistory.c                 Prune file names from history file
 frontends                             inews, rnews, ctlinnd (Directory)
 frontends/Makefile                    Makefile for frontends
