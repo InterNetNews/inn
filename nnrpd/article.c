@@ -5,13 +5,11 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include <netinet/in.h>
-#include <sys/mman.h>
-#include <sys/uio.h>
-
-#ifdef HAVE_LIMITS_H
+#if HAVE_LIMITS_H
 # include <limits.h>
 #endif
+#include <netinet/in.h>
+#include <sys/uio.h>
 
 #include "nnrpd.h"
 #include "ov.h"
@@ -221,7 +219,7 @@ bool ARTreadschema(void)
 
     /* Open file, count lines. */
     if (SCHEMA == NULL)
-	SCHEMA = COPY(cpcatpath(innconf->pathetc, _PATH_SCHEMA));
+	SCHEMA = concatpath(innconf->pathetc, _PATH_SCHEMA);
     if ((F = fopen(SCHEMA, "r")) == NULL) {
 	syslog(L_ERROR, "%s Can't open %s, %s", ClientHost, SCHEMA, strerror(errno));
 	return FALSE;
