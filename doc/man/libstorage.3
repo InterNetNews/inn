@@ -28,7 +28,9 @@ libstorage \- InterNetNews Storage API library routines
 
 .B "BOOL SMcancel(TOKEN token);"
 
-.B "BOOL SMprobe(PROBETYPE type, TOKEN *token, void *value);
+.B "BOOL SMprobe(PROBETYPE type, TOKEN *token, void *value);"
+
+.B "BOOL SMflushcacheddata(FLUSHTYPE type);"
 
 .B "void SMshutdown(void);"
 
@@ -235,16 +237,32 @@ is not set to true with
 .I SMprobe
 checks the token on
 .IR PROBETYPE .
-Currently,
-.I SELFEXPIRE
-and
-.I SMARTNGNUM
-are supported.
-.I SELFEXPIRE
-can be used to see if the method of the token
-has self expire functionality.
-.I SMARTNGNUM
-is used to get newsgroup name and article number of the token.
+.I Type
+is one of following.
+.sp 1
+.in +0.5i
+.nf
+SELFEXPIRE	checks to see if the method of the token
+	has self expire functionality
+SMARTNGNUM	gets newsgroup name and article number
+	of the token.
+.fi
+.in -0.5i
+.sp 1
+.PP
+.I SMflushcacheddata
+flushes cached data on each storage method.
+.I Type
+is one of following.
+.sp 1
+.in +0.5i
+.nf
+SM_HEAD	flushes cached header
+SM_CANCELEDART	flushes articles which should be canceled
+SM_ALL	flushes all cached data
+.fi
+.in -0.5i
+.sp 1
 .PP
 .I SMshutdown
 calls the shutdown for each configured storage method and

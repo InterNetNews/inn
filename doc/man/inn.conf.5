@@ -2,6 +2,12 @@
 ''' $RCSfile$$Revision$$Date$
 '''
 ''' $Log$
+''' Revision 1.78  1999/09/13 05:48:38  kondou
+''' doc/man/inn.conf.5:
+''' 	- immediatecancel is added
+''' doc/man/libstorage.3:
+''' 	- SMflushcacheddata is added
+'''
 ''' Revision 1.77  1999/07/16 06:22:03  rra
 ''' Added documentation for ovmethod, enableoverview, overcache,
 ''' addnntppostingdate, and addnntppostinghost.  Clarified why one would want
@@ -99,7 +105,7 @@
 .nr % 0
 .rr F
 .\}
-.TH INN.CONF 1 "INN 2.3" "15/Jul/99" "InterNetNews Documentation"
+.TH INN.CONF 5 "INN 2.3" "13/Sep/99" "InterNetNews Documentation"
 .UC
 .if n .hy 0
 .if n .na
@@ -397,6 +403,12 @@ cancel arrives before the article does, and is extremely easy to spoof.
 While this check may once have served a purpose, it's now essentially
 security via obscurity, commonly avoided by abusers, and probably not
 useful.  This is a boolean value, and the default is false.
+.Ip "\fIimmediatecancel\fR" 4
+Set this to true to cancel article immediately.  Canceled artilces, which
+is stored through timecaf method, is not really canceled within it; that
+is they are cached to be canceld.  This parameter is effective only if
+timecaf method is used within innd.  This is a boolean value, and the
+default is false.
 .Ip "\fIwanttrash\fR" 4
 Set this to true if you want to file articles posted to unknown newsgroups
 (newsgroups not in the \fIactive\fR file) into the \f(CWjunk\fR newsgroup rather
@@ -953,7 +965,7 @@ Nearly every program in INN uses this file to one degree or another.  The
 above are just the major and most frequently mentioned ones.
 
 .rn }` ''
-.IX Title "INN.CONF 1"
+.IX Title "INN.CONF 5"
 .IX Name "inn.conf - Configuration data for InterNetNews programs"
 
 .IX Header "NAME"
@@ -1007,6 +1019,8 @@ above are just the major and most frequently mentioned ones.
 .IX Item "\fIusecontrolchan\fR"
 
 .IX Item "\fIverifycancels\fR"
+
+.IX Item "\fIimmediatecancel\fR"
 
 .IX Item "\fIwanttrash\fR"
 
