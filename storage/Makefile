@@ -1,7 +1,6 @@
 ##  $Revision$
 include ../Makefile.global
 
-CC	= $(LIBCC)
 CP	= $(LIBTOOL) cp
 
 CFLAGS	= $(GCFLAGS) -I.
@@ -33,7 +32,7 @@ clobber clean:
 	rm -f methods.c methods.h
 	rm -f ovmethods.c ovmethods.h
 	rm -f profiled libstorage_p.a
-	rm -f all install 
+	rm -f buildconfig ovbuildconfig
 	@for D in $(SUBDIR) $(OVSUBDIR); do \
 		cd $$D; $(MAKE) clean; cd .. ;\
 	done
@@ -42,21 +41,30 @@ tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h
 
 libstorage.la:	$(P) $(OBJECTS) $(LOBJECTS)
-	$(CC) $(LDFLAGS) -o libstorage.la $(LOBJECTS) objs/*.lo \
+	$(LIBCC) $(LDFLAGS) -o libstorage.la $(LOBJECTS) objs/*.lo \
 		-rpath $(PATHLIB) -version-info 2:0:0
 
 libstorage.a:         $(P) $(OBJECTS)
 	ar r $@ $(OBJECTS) objs/*
 	$(RANLIB) libstorage.a
 
+.c.o: $*.c
+	$(LIBCC) $(CFLAGS) -c $*.c -o $@
+
 ovtest: ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
 	$(PURE) $(CC) $(CFLAGS) -I/shared/include -D_TEST_ -o ovtest ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB) -L/shared/lib -ldb -lnsl -lsocket
 
 methods.h: autoconfig
 
-autoconfig:
+autoconfig: buildconfig ovbuildconfig
 	@./buildconfig `find . -name method.config -print`
 	@./ovbuildconfig `find . -name ovmethod.config -print`
+
+buildconfig: buildconfig.in $(FIXSCRIPT)
+	$(FIXSCRIPT) -i buildconfig.in
+
+ovbuildconfig: ovbuildconfig.in $(FIXSCRIPT)
+	$(FIXSCRIPT) -i ovbuildconfig.in
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
 profiled:		../libstorage_p.a

@@ -1,4 +1,4 @@
-#!@_PATH_PERL@
+#! /usr/bin/perl
 
 require 5.003;
 
