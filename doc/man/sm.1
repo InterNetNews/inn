@@ -151,10 +151,17 @@ subsystem.
 \&    @0502000005A4000000010000000000000000@
 .Ve
 .PP
-Any number of tokens can be given on the command line.  If none are, \fBsm\fR
-reads tokens from standard input, one per line.  The default operation is
-to retrieve and write to standard output the corresponding article for
-each token given.
+Any number of tokens can be given on the command line for any function
+other than \fB\-s\fR.  If none are, \fBsm\fR normally reads tokens from standard
+input, one per line.  The default operation is to retrieve and write to
+standard output the corresponding article for each token given.
+.PP
+If \fB\-s\fR is given, \fBsm\fR instead stores the article given on standard
+input (in native format, not wire format) using the standard rules of the
+storage subsystem.  If the article is stored successfully, the token of
+the article is printed to standard output.  Please note that this does not
+make any attempt to write a history entry or any overview data, and is
+therefore only useful under very specific circumstances.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
 .IP "\fB\-d\fR, \fB\-r\fR" 4
@@ -189,6 +196,12 @@ files.  Multiple articles can be written in this format, and the resulting
 output can be fed to rnews (on another system, for example) to inject
 those articles into \s-1INN\s0.  This option cannot be used with \fB\-d\fR, \fB\-r\fR,
 \&\fB\-H\fR, \fB\-i\fR, or \fB\-R\fR.
+.IP "\fB\-s\fR" 4
+.IX Item "-s"
+Store the article given on standard input using the normal storage rules
+for articles as configured in \fIstorage.conf\fR\|(5).  Print the new token for
+the message to standard output if it is stored successfully.  If this
+option is given, no other options except possibly \fB\-q\fR should be given.
 .SH "EXIT STATUS"
 .IX Header "EXIT STATUS"
 If all operations were successful, \fBsm\fR exits with status 0.  If an
