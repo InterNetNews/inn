@@ -2,34 +2,46 @@
 **
 **  Here be declarations of functions in the InterNetNews library.
 */
-#ifndef __LIBINN_H__
-#define __LIBINN_H__
+#ifndef LIBINN_H
+#define LIBINN_H 1
 
-/* We've probably already included this; only include it if we need it. */
-#ifndef __CONFIG_H__
+#ifndef INN_DEFINES_H
+# include "inn/defines.h"
+#endif
+
+/* Eventually, we don't want to install this, since this is an installed
+   header and we don't want to install config.h. */
+#ifndef CONFIG_H
 # include "config.h"
 #endif
 
+/* We need FILE, size_t, and various other types only found here. */
 #include <stdio.h>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/uio.h>
 
-/* Tell C++ not to mangle prototypes. */
-#ifdef __cplusplus
-extern "C" {
-#endif
+/* Forward declarations to avoid unnecessary includes. */
+struct stat;
+struct iovec;
+
+BEGIN_DECLS
 
 /*
-**  VERSION INFORMATION
+**  ERROR HANDLING AND LOGGING
 */
-extern const int        inn_version[3];
-extern const char       inn_version_extra[];
-extern const char       inn_version_string[];
+extern void warn(const char *, ...)
+    __attribute__((__format__(printf, 1, 2)));
+extern void syswarn(const char *, ...)
+    __attribute__((__format__(printf, 1, 2)));
+extern void die(const char *, ...)
+    __attribute__((__noreturn__, __format__(printf, 1, 2)));
+extern void sysdie(const char *, ...)
+    __attribute__((__noreturn__, __format__(printf, 1, 2)));
 
-/* This function is deprecated.  Nothing in INN should use it, and it may
-   eventually go away entirely. */
-extern const char *     INNVersion(void);
+/* If non-NULL, called before exit and its return value passed to exit. */
+extern int (*error_fatal_cleanup)(void);
+
+/* If non-NULL, prepended (followed by ": ") to all error messages. */
+extern const char *error_program_name;
 
 
 /*
@@ -41,6 +53,32 @@ extern char *   xstrdup(const char *s, const char *file, int line);
 
 /* This function is called whenever a memory allocation fails. */
 extern int (*xmemfailure)(const char *, size_t, const char *, int);
+
+
+/*
+**  TIME AND DATE PARSING, GENERATION, AND HANDLING
+*/
+typedef struct _TIMEINFO {
+    time_t      time;
+    long        usec;
+    long        tzone;
+} TIMEINFO;
+
+extern int      GetTimeInfo(TIMEINFO *Now);
+extern bool     makedate(time_t, bool local, char *buff, size_t buflen);
+extern time_t   parsedate(char *p, TIMEINFO *now);
+
+
+/*
+**  VERSION INFORMATION
+*/
+extern const int        inn_version[3];
+extern const char       inn_version_extra[];
+extern const char       inn_version_string[];
+
+/* This function is deprecated.  Nothing in INN should use it, and it may
+   eventually go away entirely. */
+extern const char *     INNVersion(void);
 
 
 /* String handling. */
@@ -230,15 +268,6 @@ extern char *cpcatpath(char *p, char *f);
 #define	DBZ_DIR		2
 #define	DBZ_BASE	3
 
-/* Time functions. */
-typedef struct _TIMEINFO {
-    time_t	time;
-    long	usec;
-    long	tzone;
-} TIMEINFO;
-extern time_t	parsedate(char *p, TIMEINFO *now);
-extern int	GetTimeInfo(TIMEINFO *Now);
-
 /* Hash functions */
 typedef struct {
     char        hash[16];
@@ -283,8 +312,6 @@ BOOL LoadGroupAliases(void);
 extern int      argify(char *line, char ***argvp);
 extern void     freeargify(char ***argvp);
 
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
+END_DECLS
 
 #endif /* LIBINN_H */
