@@ -27,6 +27,11 @@ delete or zero out the existing database before you start for the best
 results.  Otherwise, you may end up with problems like out-of-order
 overview entries, excessively large overview buffers, and the like.
 
+If you are using ovdb as your overview method, you will want to have the
+ovdb processes running while rebuilding overview; otherwise, the Berkeley
+DB transaction logs will be extremely large by the time makehistory
+finishes.  You can start them with dbprocs(8).
+
 =head1 OPTIONS
 
 =over 4
@@ -175,7 +180,7 @@ $Id$
 
 =head1 SEE ALSO
 
-dbz(3), active(5), history(5), inn.conf(5), ctlinnd(8), innd(8),
-makedbz(8).
+dbz(3), active(5), history(5), inn.conf(5), dbprocs(8), ctlinnd(8),
+innd(8), makedbz(8).
 
 =cut
