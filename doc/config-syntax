@@ -156,9 +156,13 @@ The syntax is per RFC 2234.
 
 First the basic syntax elements and possible parameter values:
 
-    comment             = *WSP "#" *(WSP / VCHAR / 0x8A-FF) LF
+    newline             = %d13 / %d10 / %d13.10
+                                ; Any of CR, LF, or CRLF are interpreted
+                                ; as a newline.
 
-    WHITE               = WSP / CR / LF [comment]
+    comment             = *WSP "#" *(WSP / VCHAR / %x8A-FF) newline
+
+    WHITE               = WSP / newline [comment]
 
     boolean             = "yes" / "on" / "true" / "no" / "off" / "false"
 
@@ -166,11 +170,11 @@ First the basic syntax elements and possible parameter values:
 
     real-number         = ["-"] 1*DIGIT "." 1*DIGIT [ "e" ["-"] 1*DIGIT ]
 
-    non-special         = 0x21 / 0x23-39 / 0x3D / 0x3F-5A / 0x5E-7A
-                               / 0x7C / 0x7E / 0x8A-FF
+    non-special         = %x21 / %x23-39 / %x3D / %x3F-5A / %x5E-7A
+                               / %x7C / %x7E / %x8A-FF
                                 ; All VCHAR except "\:;<>[]{}
 
-    quoted-string       = DQUOTE 1*(WSP / VCHAR / 0x8A-FF) DQUOTE
+    quoted-string       = DQUOTE 1*(WSP / VCHAR / %x8A-FF) DQUOTE
                                 ; DQUOTE within the quoted string must be
                                 ; written as 0x5C.22 (\"), and backslash
                                 ; sequences are interpreted as in C
@@ -190,11 +194,11 @@ Now the general structure:
 
     parameter           = parameter-name ":" 1*WSP parameter-value
 
-    parameter-list      = parameter [ *WHITE (";" / CRLF) *WHITE parameter ]
+    parameter-list      = parameter [ *WHITE (";" / newline) *WHITE parameter ]
 
     group-list          = group *( *WHITE group )
 
-    group-body          = parameter-list [ *WHITE CRLF *WHITE group-list ]
+    group-body          = parameter-list [ *WHITE newline *WHITE group-list ]
                         / group-list
 
     group-file          = string
