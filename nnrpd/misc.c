@@ -282,7 +282,7 @@ BOOL OVERgetent(HASH *key, TOKEN *token)
 	    OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
 	    OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
 	}
-	OVERmaketoken(token, iextvalue.offset[OVEROFFSET], iextvalue.overindex);
+	OVERmaketoken(token, iextvalue.offset[OVEROFFSET], iextvalue.overindex, iextvalue.overlen);
     } else {
 	return FALSE;
     }

@@ -1041,7 +1041,7 @@ STATIC BOOL OVERopen(void)
 
     if (innconf->storageapi) {
 	if (!OVERinit()) {
-	    syslog(L_ERROR, "%s cant initialize unified overview %m", ClientHost);
+	    syslog(L_ERROR, "%s cant initialize unified overview", ClientHost);
 	    return FALSE;
 	}
     } else {

@@ -836,7 +836,7 @@ listen_loop:
     else
 	val = FALSE;
     if (!OVERsetup(OVER_MMAP, &val) || !OVERsetup(OVER_MODE, "r")) {
-	syslog(L_FATAL, "cant setup unified overview %m");
+	syslog(L_FATAL, "cant setup unified overview");
 	ExitWithStats(1);
     }
 
