@@ -678,7 +678,7 @@ CCpython(av)
     char	*av[];
 {
     char	*p;
-    extern int	PythonFilterActive;
+    extern BOOL	PythonFilterActive;
 
     switch (av[0][0]) {
     default:
@@ -777,7 +777,7 @@ CCgo(av)
     PLmode(Mode, OMrunning, p);
 #endif /* defined(DO_PERL) */
 #if defined(DO_PYTHON)
-    PythonMode(Mode, OMrunning, p);
+    PYmode(Mode, OMrunning, p);
 #endif /* defined(DO_PYTHON) */
     
     DISPOSE(ModeReason);
@@ -858,7 +858,7 @@ CCmode(av)
     extern int		PerlFilterActive;
 #endif /* defined(DO_PERL) */
 #if defined(DO_PYTHON)
-    extern int		PythonFilterActive;
+    extern BOOL		PythonFilterActive;
 #endif /* defined(DO_PYTHON) */
 
     /* nb: We assume here that BUFSIZ is >= 512, and that none of
@@ -1259,7 +1259,7 @@ CCblock(NewMode, reason)
     PLmode(Mode, NewMode, reason);
 #endif /* defined(DO_PERL) */
 #if defined(DO_PYTHON)
-    PythonMode(Mode, NewMode, reason);
+    PYmode(Mode, NewMode, reason);
 #endif /* defined(DO_PYTHON) */
 
     ICDwrite();

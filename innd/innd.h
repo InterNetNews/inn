@@ -370,7 +370,8 @@ typedef struct _WIP {
 
 typedef enum {TMR_IDLE, TMR_ARTWRITE, TMR_ARTLINK, TMR_HISWRITE,
 	      TMR_HISSYNC, TMR_SITESEND, TMR_ARTCTRL, TMR_ARTCNCL,
-	      TMR_HISHAVE, TMR_HISGREP, TMR_PERL, TMR_OVERV, TMR_MAX} TMRTYPE;
+	      TMR_HISHAVE, TMR_HISGREP, TMR_PERL, TMR_OVERV,
+	      TMR_PYTHON, TMR_MAX} TMRTYPE;
 
 
 
@@ -660,10 +661,11 @@ extern BOOL		PythonFilterActive;
 
 /* Python functions */
 extern void		PYfilter(BOOL value);
-extern int		PYReadFilter(void);
-extern char		*PYHandleArticle(char *artBody, int lines);
-extern char		*PYHandleMessageID(char *messageID);
-extern void		PythonMode(OPERATINGMODE Mode, OPERATINGMODE newmode, char *reason);
-extern void		PYSetup(void);
+extern int		PYreadfilter(void);
+extern char		*PYartfilter(char *artBody, long artLen, int lines);
+extern char		*PYmidfilter(char *messageID, int msglen);
+extern void		PYmode(OPERATINGMODE Mode, OPERATINGMODE newmode,
+			       char *reason);
+extern void		PYsetup(void);
 extern void		PYclose(void);
 # endif /* defined(DO_PYTHON) */

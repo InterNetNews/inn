@@ -145,12 +145,9 @@ ARTHEADER	ARTheaders[] = {
 
 ARTHEADER	*ARTheadersENDOF = ENDOF(ARTheaders);
 
-#if defined(DO_PERL)
+#if defined(DO_PERL) || defined(DO_PYTHON)
 const char	*filterPath;
-#endif /* DO_PERL */
-#if defined(DO_PYTHON)
-const char	*pathForPython;
-#endif /* DO_PYTHON */
+#endif /* DO_PERL || DO_PYTHON */
 
 
 
@@ -2006,11 +2003,16 @@ STRING ARTpost(CHANNEL *cp)
         }
     }
 
+#if defined(DO_PERL) || defined(DO_PYTHON)
+    filterPath = HeaderFindMem(article->Data, article->Used, "Path", 4) ;
+#endif /* DO_PERL || DO_PYHTON */
+
 #if defined(DO_PYTHON)
-    pathForPython = HeaderFindMem(article->Data, article->Used, "Path", 4) ;
-    /* TMRstart(TMR_PYTHON); */
-    filterrc = (char *)PYHandleArticle(Data.Body, Data.LinesValue);
-    /* TMRstop(TMR_PYTHON); */
+    TMRstart(TMR_PYTHON);
+    filterrc = PYartfilter(Data.Body,
+			   &article->Data[article->Used] - Data.Body,
+			   Data.LinesValue);
+    TMRstop(TMR_PYTHON);
     if (filterrc != NULL) {
         (void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, filterrc);
         syslog(L_NOTICE, "rejecting[python] %s %s", Data.MessageID, buff);
@@ -2027,7 +2029,6 @@ STRING ARTpost(CHANNEL *cp)
     /* I suppose some masochist will run with Python and Perl in together */
 
 #if defined(DO_PERL)
-    filterPath = HeaderFindMem(article->Data, article->Used, "Path", 4) ;
     TMRstart(TMR_PERL);
     filterrc = PLartfilter(Data.Body, Data.LinesValue);
     TMRstop(TMR_PERL);

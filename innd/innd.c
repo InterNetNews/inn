@@ -925,7 +925,7 @@ int main(int ac, char *av[])
 #endif /* defined(DO_PERL) */
 
 #if defined(DO_PYTHON)
-    PYSetup();
+    PYsetup();
 #endif /* (DO_PYTHON) */
  
     /* And away we go... */

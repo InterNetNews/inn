@@ -484,16 +484,23 @@ NCihave(CHANNEL *cp)
 
 #if defined(DO_PYTHON)
     /*  invoke a Python message filter on the message id */
-    if ((filterrc = (char *)PYHandleMessageID(p)) != NULL) {
+    msglen = strlen(p);
+    TMRstart(TMR_PYTHON);
+    filterrc = PYmidfilter(p, msglen);
+    TMRstop(TMR_PYTHON);
+    if (filterrc) {
 	cp->Refused++;
-	msglen = strlen(p) + 5; /* 3 digits + space + id + null */
+	msglen += 5; /* 3 digits + space + id + null */
 	if (cp->Sendid.Size < msglen) {
-	    if (cp->Sendid.Size > 0) DISPOSE(cp->Sendid.Data);
-	    if (msglen > MAXHEADERSIZE) cp->Sendid.Size = msglen;
-	    else cp->Sendid.Size = MAXHEADERSIZE;
+	    if (cp->Sendid.Size > 0)
+		DISPOSE(cp->Sendid.Data);
+	    if (msglen > MAXHEADERSIZE)
+		cp->Sendid.Size = msglen;
+	    else
+		cp->Sendid.Size = MAXHEADERSIZE;
 	    cp->Sendid.Data = NEW(char, cp->Sendid.Size);
 	}
-	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_HAVEIT_VAL, filterrc);
+	sprintf(cp->Sendid.Data, "%d %s", NNTP_HAVEIT_VAL, filterrc);
 	NCwritereply(cp, cp->Sendid.Data);
 	DISPOSE(cp->Sendid.Data);
 	cp->Sendid.Size = 0;
@@ -1276,7 +1283,7 @@ STATIC FUNCTYPE
 NCcheck(CHANNEL *cp)
 {
     char		*p;
-    int			msglen;
+    int			idlen, msglen;
 #if defined(DO_PERL) || defined(DO_PYTHON)
     char		*filterrc;
 #endif /* DO_PERL || DO_PYTHON */
@@ -1287,7 +1294,8 @@ NCcheck(CHANNEL *cp)
 	continue;
     for ( ; ISWHITE(*p); p++)
 	continue;
-    msglen = strlen(p) + 5; /* 3 digits + space + id + null */
+    idlen = strlen(p);
+    msglen = idlen + 5; /* 3 digits + space + id + null */
     if (cp->Sendid.Size < msglen) {
 	if (cp->Sendid.Size > 0) DISPOSE(cp->Sendid.Data);
 	if (msglen > MAXHEADERSIZE) cp->Sendid.Size = msglen;
@@ -1321,10 +1329,11 @@ NCcheck(CHANNEL *cp)
 #endif /* defined(DO_PERL) */
 
 #if defined(DO_PYTHON)
-    /*  invoke a perl message filter on the message id */
-    if ((filterrc = (char *)PYHandleMessageID(p)) != NULL) {
+    /*  invoke a python message filter on the message id */
+    filterrc = PYmidfilter(p, idlen);
+    if (filterrc) {
 	cp->Refused++;
-	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
+	sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
 	NCwritereply(cp, cp->Sendid.Data);
 	return;
     }

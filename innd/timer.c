@@ -105,6 +105,7 @@ static void dosummary(unsigned secs)
 	case TMR_HISGREP:	str = "hisgrep";  break;
 	case TMR_OVERV:		str = "overv";  break;
 	case TMR_PERL:		str = "perl";  break;
+	case TMR_PYTHON:	str = "python";  break;
 	}
 	sprintf(buf, "%s %d(%d) ", str, cumulative[i], count[i]);
 	cumulative[i] = count[i] = 0;
