@@ -16,13 +16,10 @@ rifkin@uconn.edu
 (4) print subsequent bytes until \r\n.\r\n found
 */
 
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define BOOL int
-#define TRUE 1
-#define FALSE 0
 
 #define INFILE     1
 #define FILEPREFIX 2
@@ -67,7 +64,7 @@ int main (int argc, char *argv[])
 	{
 	FILE *Infile;
 	int   NumTailCharFound;
-	BOOL  ReadingArticle = FALSE;
+	bool  ReadingArticle = false;
 	char  buffer[32];
 	char *obuffer = NULL;
 	char *header  = NULL;
@@ -130,7 +127,7 @@ printf ("string <%s>\n", string);
 	i = fseek (Infile, 0x38000L, SEEK_SET);
 
 	/*  Read following 16 byte buffers  */
-	ReadingArticle = FALSE;
+	ReadingArticle = false;
 	NumTailCharFound = 0;
 	nchar=0;
 	artno=0;
@@ -142,7 +139,7 @@ printf ("string <%s>\n", string);
 		/*  Found start of article, start writing to obuffer  */
 		if (0==memcmp(buffer+9, ArtHead, 7))
 			{
-			ReadingArticle = TRUE;
+			ReadingArticle = true;
 			memcpy (obuffer, "Path", 4);
 			opos = 4;
 			continue;
@@ -161,7 +158,7 @@ printf ("string <%s>\n", string);
 						("article number %i bigger than buffer size %i.\n", 
 						artno+1, osize);
 					artno++;
-					ReadingArticle=FALSE;
+					ReadingArticle=false;
 					break;
 					}
 
@@ -180,7 +177,7 @@ printf ("string <%s>\n", string);
 				/*  End found, write article, reset for next  */
 				if (NumTailCharFound==LenTail)
 					{
-					ReadingArticle = FALSE;
+					ReadingArticle = false;
 					NumTailCharFound = 0;
 
 					/*  Add trailing \0 to buffer  */

@@ -163,7 +163,7 @@ EXTERN int	ClientPort;
 EXTERN int	ServerPort;
 EXTERN char	LogName[256] ;
 #ifdef HAVE_SSL
-EXTERN BOOL	ClientSSL;
+EXTERN bool	ClientSSL;
 #endif
 extern char	*ACTIVETIMES;
 extern char	*HISTORY;

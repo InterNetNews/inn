@@ -103,10 +103,10 @@ int ovdb_getgroupinfo(char *group, struct groupinfo *gi, int ignoredeleted, DB_T
 #define OVDB_LOCK_ADMIN 1
 #define OVDB_LOCK_EXCLUSIVE 2
 
-BOOL ovdb_getlock(int mode);
-BOOL ovdb_releaselock(void);
-BOOL ovdb_check_pidfile(char *file);
-BOOL ovdb_check_user(void);
+bool ovdb_getlock(int mode);
+bool ovdb_releaselock(void);
+bool ovdb_check_pidfile(char *file);
+bool ovdb_check_user(void);
 
 #define OVDB_LOCKFN "ovdb.sem"
 #define OVDB_MONITOR_PIDFILE "ovdb_monitor.pid"

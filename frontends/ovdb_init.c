@@ -327,7 +327,7 @@ static int check_upgrade(int do_upgrade)
 int main(int argc, char **argv)
 {
     int ret, c, do_upgrade = 0, recover_only = 0, err = 0;
-    BOOL locked;
+    bool locked;
 
     openlog("ovdb_init", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 

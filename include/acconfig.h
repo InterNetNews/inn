@@ -188,10 +188,6 @@ typedef unsigned long           ARTNUM;
 **  following the comments before each item and fixing it.
 */
 
-/* Programming convenience.  Since we need bool anyway for Perl, we should
-   use the lowercase version everywhere. */
-typedef bool            BOOL;
-
 /* Only used in innd/art.c, should be moved there. */
 #define ART_ACCEPT              '+'
 #define ART_CANC                'c'

@@ -314,7 +314,7 @@ RCfix_options(int fd, struct sockaddr_storage *remote)
     return 0;
 }
 
-static BOOL
+static bool
 RCaddressmatch(const struct sockaddr_storage *cp, const struct sockaddr_storage *rp)
 {
 #ifdef HAVE_INET6
