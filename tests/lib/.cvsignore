@@ -9,6 +9,7 @@ hashtab.t
 hstrerror.t
 inet_aton.t
 inet_ntoa.t
+innconf.t
 md5.t
 memcmp.t
 messages.t

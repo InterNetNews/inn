@@ -8,6 +8,7 @@ lib/hash
 lib/hashtab
 lib/inet_aton
 lib/inet_ntoa
+lib/innconf
 lib/md5
 lib/memcmp
 lib/messages

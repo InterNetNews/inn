@@ -12,10 +12,10 @@ CFLAGS	= $(GCFLAGS) -I.
 
 TESTS	= lib/buffer.t lib/concat.t lib/confparse.t lib/date.t lib/hash.t \
 	lib/hashtab.t lib/hstrerror.t lib/inet_aton.t lib/inet_ntoa.t \
-	lib/md5.t lib/memcmp.t lib/messages.t lib/mkstemp.t lib/pread.t \
-	lib/pwrite.t lib/qio.t lib/snprintf.t lib/strerror.t lib/strlcat.t \
-	lib/strlcpy.t lib/uwildmat.t lib/vector.t lib/wire.t lib/xwrite.t \
-	overview/tradindexed.t
+	lib/innconf.t lib/md5.t lib/memcmp.t lib/messages.t lib/mkstemp.t \
+	lib/pread.t lib/pwrite.t lib/qio.t lib/snprintf.t lib/strerror.t \
+	lib/strlcat.t lib/strlcpy.t lib/uwildmat.t lib/vector.t lib/wire.t \
+	lib/xwrite.t overview/tradindexed.t
 
 ##  Extra stuff that needs to be built before tests can be run.
 
@@ -78,6 +78,9 @@ lib/inet_ntoa.o: ../lib/inet_ntoa.c
 
 lib/inet_ntoa.t: lib/inet_ntoa.o lib/inet_ntoa-t.o libtest.o
 	$(LINK) lib/inet_ntoa.o lib/inet_ntoa-t.o libtest.o
+
+lib/innconf.t: lib/innconf-t.o libtest.o $(LIBINN)
+	$(LINK) lib/innconf-t.o libtest.o $(LIBINN)
 
 lib/md5.t: lib/md5-t.o libtest.o $(LIBINN)
 	$(LINK) lib/md5-t.o libtest.o $(LIBINN)
