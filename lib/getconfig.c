@@ -270,6 +270,7 @@ void SetDefaults()
     innconf->mergetogroups = FALSE;
     innconf->noreader = FALSE;
     innconf->nnrpdauthsender = FALSE;
+    innconf->cnfscheckfudgesize = 0L;
 }
 
 void ClearInnConf()
@@ -979,6 +980,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_NNRPDAUTHSENDER, bit);
 		if (!bit && boolval != -1) innconf->nnrpdauthsender = boolval;
 		SET_CONFIG(CONF_VAR_NNRPDAUTHSENDER);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_CNFSCHECKFUDGESIZE)) {
+		TEST_CONFIG(CONF_VAR_CNFSCHECKFUDGESIZE, bit);
+		if (!bit) innconf->cnfscheckfudgesize = atol(p);
+		SET_CONFIG(CONF_VAR_CNFSCHECKFUDGESIZE);
 	    }
 	}
 	(void)Fclose(F);
