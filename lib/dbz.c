@@ -859,15 +859,13 @@ dbzsync(void)
     if (!dirty)
 	return true;;
 
-    if (!options.writethrough) {
 #ifdef	DO_TAGGED_HASH
-	if (!putcore(&pagtab)) {
+    if (!putcore(&pagtab)) {
 #else
-	if (!putcore(&idxtab) || !putcore(&etab)) {
+    if (!putcore(&idxtab) || !putcore(&etab)) {
 #endif
-	    warn("dbzsync: putcore failed");
-	    ret = false;;
-	}
+	warn("dbzsync: putcore failed");
+	ret = false;;
     }
 
     if (putconf(dirf, &conf) < 0)
@@ -1308,6 +1306,8 @@ putcore(hash_table *tab)
     int size;
     
     if (tab->incore == INCORE_MEM) {
+	if(options.writethrough)
+	    return true;
 	nonblocking(tab->fd, false);
 	size = tab->reclen * conf.tsize;
 	if (pwrite(tab->fd, tab->core, size, 0) != size) {
@@ -1316,6 +1316,11 @@ putcore(hash_table *tab)
 	}
 	nonblocking(tab->fd, options.nonblock);
     }
+#ifdef HAVE_MMAP
+    if(tab->incore == INCORE_MMAP) {
+	msync(tab->core, (int)conf.tsize * tab->reclen, MS_ASYNC);
+    }
+#endif
     return true;
 }
 
