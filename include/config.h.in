@@ -16,25 +16,107 @@
 #define __CONFIG_H__
 
 /*
-**  SITE SETTINGS
+**  GENERAL SETTINGS
 **
 **  Look over these settings and make sure they're correct for your site.
 **  These values don't come from configure and therefore may need manual
-**  editing.
+**  editing.  The defaults normally should be fine.
+**
+**  For boolean #defines, uncomment and change #undef to #define to enable,
+**  do the reverse to disable.
 */
 
-/* What to use for a Path tail for local posts.  (FIXME: This should be
-   configurable in inn.conf.) */
-#define PATHMASTER	"not-for-mail"
+/* A null-terminated list of wildmat(5) patterns matching illegal
+   distributions.  inews and nnrpd will reject posts with a distribution
+   matching one of these patterns. */
+#define BAD_DISTRIBS            "*.*", NULL
+
+/* Default timeout period for ctlinnd, overridden by the -t flag.  If set to
+   zero, ctlinnd will never time out, but will check every two minutes to
+   see if the server is still running so it won't hang forever on a dead
+   server. */
+#define CTLINND_TIMEOUT         0
+
+/* Reject articles posted more than this many seconds in the future. */
+#define DATE_FUZZ               (24L * 60L * 60L)
+
+/* innd will flush the history and active file after this many seconds.
+   nnrpd will drop a connection during POST if it goes this long without
+   further I/O from the client. */
+#define DEFAULT_TIMEOUT         300
+
+/* Define to try to make name resolution a little bit faster by disabling
+   appending the default domain and searching the domain tree.  Only use
+   this if you're always going to use FQDNs.  The minor speed improvement
+   probably isn't worth the bother. */
+/* #undef DO_FAST_RESOLV */
+
+/* Define if inews should put hostnames into the Path header itself. */
+#define DO_INEWS_PATH
+
+/* Define if inews should munge the GECOS entry of the passwd file when
+   attempting to determine a poster's real name.  Use this if your GECOS
+   entries have other stuff after trailing commas or before dashes, things
+   in parentheses that aren't part of the name, etc.  See frontends/inews.c
+   for the full algorithm. */
+#define DO_MUNGE_GECOS
+
+/* Define if nnrpd should resolve client IP addresses to names.  If you only
+   use IP-based restrictions in readers.conf and can handle IP addresses in
+   your logs, not defining this may result in some additional speed. */
+#define DO_NNRP_GETHOSTBYADDR
+
+/* Define if rnews should try to connect to the local host. */
+#define DO_RNEWSLOCALCONNECT
+
+/* Define if rnews should syslog articles rejected as duplicates. */
+/* #undef DO_RNEWS_LOG_DUPS */
+
+/* Define if rnews should look in _PATH_RNEWSPROGS for batch unpackers. */
+#define DO_RNEWSPROGS
+
+/* Define if rnews should save articles rejected by the server. */
+/* #undef DO_RNEWS_SAVE_BAD */
+
+/* Value to pass to dbzincore() inside innd.  Under some bizarre low memory
+   circumstance you may want this not to be 1, but normally you always want
+   to load the full history indexes into innd's memory.  Has no effect if
+   using tagged hash (which is always in core). */
+#define INND_DBZINCORE          1
+
+/* A null-terminated list of unknown commands that, when seen by innd,
+   shouldn't be logged to syslog.  Normally innd logs all unknown commands,
+   but sometimes some are so frequent that it's not worth it. */
+#define INND_QUIET_BADLIST      NULL
+
+/* innd will throttle itself after this many I/O errors.  The count is reset
+   on a ctlinnd go.  (ENOSPC is special and will always cause an immediate
+   throttle.) */
+#define IO_ERROR_COUNT          50
+
+/* Length of listen queue for innd. */
+#define MAXLISTEN               25
+
+/* nnrpd refuses reader connections if the system load is higher than this.
+   Set it to -1 to disable that check. */
+#define NNRP_LOADLIMIT          16
+
+/* The standard NNTP port. */
+#define NNTP_PORT               119
+
+/* What to use for a Path tail for local posts. */
+#define PATHMASTER              "not-for-mail"
 
 
 /*
 **  CONFIGURE RESULTS
 **
-**  From this point down are only legacy settings and the results of
-**  configure.  None of this should require manual editing; if anything
-**  here is wrong, see if you should be passing a flag to configure to set
-**  it correctly for your system.
+**  Things determined automatically by autoconf.  Nothing below this point
+**  should require manual editing; if anything here is wrong, see if you
+**  should be passing a flag to configure to set it correctly for your
+**  system.  Fodder for autoheader is provided in sort -df order
+**  (alphabetical, case-insensitive, ignoring punctuation) to make it easier
+**  to check whether a given entry is in the file.
 */
 
 /* Define if on AIX 3.
@@ -116,8 +198,20 @@
 #undef CLX_FCNTL
 #undef CLX_IOCTL
 
+/* Define to compile in support for automatic keyword generation.  */
+#undef DO_KEYWORDS
+
+/* Define to compile in Perl filter support. */
+#undef DO_PERL
+
 /* Define to compile in Python filter support.  */
 #undef DO_PYTHON
+
+/* Define to use tagged hash for the history file.  */
+#undef DO_TAGGED_HASH
+
+/* Define to compile in TCL filter support. */
+#undef DO_TCL
 
 /* Mode that directories are created with.  */
 #undef GROUPDIR_MODE
@@ -136,6 +230,9 @@
 
 /* Define if you have the statvfs function.  */
 #undef HAVE_STATVFS
+
+/* Define if <sys/un.h> defines the SUN_LEN macro.  */
+#undef HAVE_SUN_LEN
 
 /* Define if your `struct tm' has a `tm_gmtoff' member.  */
 #undef HAVE_TM_GMTOFF
@@ -161,6 +258,9 @@
 
 /* Define if you need to msync() after writes.  */
 #undef MMAP_MISSES_WRITES
+
+/* Define if you need to msync() for read() to see changes.  */
+#undef MMAP_NEEDS_MSYNC
 
 /* Define one of the following for the non-blocking I/O style to use.  */
 #undef NBIO_FCNTL
@@ -202,6 +302,9 @@
 
 /* Define if you have the ftello function.  */
 #undef HAVE_FTELLO
+
+/* Define if you have the getdtablesize function.  */
+#undef HAVE_GETDTABLESIZE
 
 /* Define if you have the gethostname function.  */
 #undef HAVE_GETHOSTNAME
@@ -398,20 +501,81 @@
 /* Define if you have the shadow library (-lshadow).  */
 #undef HAVE_LIBSHADOW
 
+
+/*
+**  BUFFER SIZES AND DATA LENGTHS
+**
+**  You shouldn't need to change any of the following, and changing some of
+**  them may cause other things to break.  Some standard buffer sizes and
+**  lengths of data types for various different things.
+*/
+
+/* The data type to use for article numbers.  This probably can't be
+   increased without a lot of work due to assumptions about the active file
+   format, etc. */
+typedef unsigned long           ARTNUM;
+
+/* Input buffers start at START_BUFF_SIZE.  While reading input, if we have
+   less than LOW_WATER bytes left free in the buffer, use the current
+   buffersize as input to GROW_AMOUNT to determine how much to realloc.
+   Growth must be at least NNTP_STRLEN bytes!  The default settings provide
+   aggressive, exponential buffer growth. */
+#define START_BUFF_SIZE         (4 * 1024)
+#define LOW_WATER               (1 * 1024)
+#define GROW_AMOUNT(x)          ((x) < 128 * 1024 ? (x) : 128 * 1024)
+
+/* The size of a large buffer.  Free dynamically allocated buffers larger
+   than this when we're done with them. */
+#define BIG_BUFFER              (2 * START_BUFF_SIZE)
+
+/* The maximum length of a single header, used as a good guess at a buffer
+   size for some header parsing code.  This is currently also used by innd
+   to determine whether to reject a message for an excessively long header;
+   this behavior should be fixed. */
+#define MAXHEADERSIZE           1024
+
+/* Default buffer size for outgoing feeds from innd. */
+#define SITE_BUFFER_SIZE        (16 * 1024)
+
+/* The size of a small buffer. */
+#define SMBUF                   256
+
+/* Maximum size of a pathname in the spool directory. */
+#define SPOOLNAMEBUFF           512
+
+
 /*
 **  LEGACY
 **
 **  Everything below this point is here so that parts of INN that haven't
 **  been tweaked to use more standard constructs don't break.  Don't count
-**  on any of this staying around, and if you're knee-deep in a file that
-**  uses any of this, please consider fixing it.
+**  on any of this staying in this file.  If you have a chance, consider
+**  following the comments before each item and fixing it.
 */
 
 /* All occurrances of these typedefs anywhere should be replaced by their
-   ANSI/ISO/standard C definitions given in these typedefs. */
+   ANSI/ISO/standard C definitions given in these typedefs and #defines. */
+#define STATIC          static
+#define FUNCTYPE        void
+
+typedef FUNCTYPE        (*FUNCPTR)();
+
+typedef void *          ALIGNPTR;
 typedef char const *    STRING;
 typedef char * const    CSTRING;
-typedef void *          ALIGNPTR;
+
+/* How to tell the compiler that a function won't return.  The level of
+   optimization gained by this probably isn't worth it.  __dead is 4.4BSD,
+   volatile void is GCC. */
+#ifdef __dead
+# define NORETURN       __dead void
+#else
+# ifdef __GNUC__
+#  define NORETURN      volatile void
+# else
+#  define NORETURN      void
+# endif
+#endif
 
 /* Anything that uses this should instead duplicate the logic used here and
    define what it really wants to define; the logic isn't that complex. */
@@ -425,8 +589,130 @@ typedef void *          ALIGNPTR;
 # endif
 #endif
 
+/* Check TIME_WITH_SYS_TIME rather than DO_NEED_TIME, or even better rewrite
+   the time includes to use the correct autoconf results depending on
+   whether you just need struct tm or really need struct timeval or struct
+   timezone. */
+#ifdef TIME_WITH_SYS_TIME
+# define DO_NEED_TIME
+#endif
+
+/* Use HAVE_MMAP instead of ACT_MMAP. */
+#ifdef HAVE_MMAP
+# define ACT_MMAP
+#endif
+
+/* Use MMAP_NEEDS_MSYNC instead of DO_MMAP_SYNC. */
+#ifdef MMAP_NEEDS_MSYNC
+# define DO_MMAP_SYNC
+#endif
+
+/* Only used in innd/art.c, should be moved there. */
+#define ART_ACCEPT              '+'
+#define ART_CANC                'c'
+#define ART_STRSTR              '?'
+#define ART_JUNK                'j'
+#define ART_REJECT              '-'
+
+/* Making this a #define is just confusing; it's never going to change. */
+#define COMMENT_CHAR            '#'
+
+/* Used to send commands to exploders.  Should be moved into a more specific
+   header file; used by innd/site.c and backends/buffchan.c. */
+#define EXP_CONTROL             '!'
+
+/* Only used internal to innd, should be moved to innd/innd.h. */
+#define FEED_BYTESIZE           'b'
+#define FEED_FULLNAME           'f'
+#define FEED_HASH               'h'
+#define FEED_HDR_DISTRIB        'D'
+#define FEED_HDR_NEWSGROUP      'N'
+#define FEED_MESSAGEID          'm'
+#define FEED_FNLNAMES           '*'
+#define FEED_HEADERS            'H'
+#define FEED_NAME               'n'
+#define FEED_STOREDGROUP        'G'
+#define FEED_NEWSGROUP          'g'
+#define FEED_OVERVIEW           'O'
+#define FEED_PATH               'P'
+#define FEED_REPLIC             'R'
+#define FEED_SITE               's'
+#define FEED_TIMERECEIVED       't'
+#define FEED_TIMEPOSTED         'p'
+
+/* Maximum number of flags for a feed in newsfeeds.  Only used in innd,
+   should be moved there (or made dynamic). */
+#define FEED_MAXFLAGS           20
+
 /* Just use vfork() directly rather than FORK(). */
 #define FORK() vfork()
+
+/* Used by lots of stuff that parses history file entries.  Should be moved
+   into a header specifically for history parsing. */
+#define HIS_BADCHAR             '_'
+#define HIS_FIELDSEP            '\t'
+#define HIS_NOEXP               "-"
+#define HIS_SUBFIELDSEP         '~'
+
+/* Only used in innd/rc.c and lib/localopen.c; the former should be using
+   INADDR_LOOPBACK anyway to avoid a useless call to inet_ntoa() and this
+   should be moved to the latter. */
+#define LOOPBACK_HOST		"127.0.0.1"
+
+/* Maximum length of a single article name.  Obsoleted by the advent of
+   tokens.  This is only referred to in innd/art.c and is used to determine
+   a value that's never used. */
+#define MAXARTFNAME             10
+
+/* Moved to inn.conf, but nnrpd is still using this value and the inn.conf
+   code is using it as a default.  Maximum number of times to try forking
+   before giving up. */
+#define MAX_FORKS               10
+
+/* Maximum length of argv vectors used in innd/site.c.  This should be moved
+   out of here into that file, or even better hard-coded rather than
+   defined; this value isn't affected by user data and the right value can
+   be determined by looking at the code and seeing how big of an argv it
+   will attempt to construct. */
+#define MAX_BUILTIN_ARGV        20
+
+/* Special characters for newsfeeds entries.  Should be moved to a more
+   specific header file. */
+#define NF_FIELD_SEP            ':'
+#define NF_SUBFIELD_SEP         '/'
+
+/* active file flags.  Should be moved to a more specific header file. */
+#define NF_FLAG_ALIAS		'='
+#define NF_FLAG_EXCLUDED	'j'
+#define NF_FLAG_MODERATED	'm'
+#define NF_FLAG_OK		'y'
+#define NF_FLAG_NOLOCAL		'n'
+#define NF_FLAG_IGNORE		'x'
+
+/* Used for parsing the Newsgroups header.  Should be rolled into a library
+   for parsing headers, combining all the code that's currently scattered
+   all over INN for doing that. */
+#define NG_SEPARATOR            ","
+#define NG_ISSEP(c)             ((c) == ',')
+
+/* Always use our NNTP server-open routine, not the one from the NNTP client
+   library implementation.  We could probably go clean out the old NNTP
+   client code at some point. */
+#define REM_INND
+
+/* Only used by rnews.  Should be moved there. */
+#define RNEWS_MAGIC1            '#'
+#define RNEWS_MAGIC2            '!'
+
+/* Only used by inews.  Should be moved there. */
+#define SIG_MAXLINES		4
+#define SIG_SEPARATOR		"-- \n"
+
+/* Used internally by innd for storing group subscriptions for feeds.
+   Should be moved into innd-specific headers. */
+#define SUB_DEFAULT		FALSE
+#define SUB_NEGATE		'!'
+#define SUB_POISON		'@'
 
 /* There's no reason to make all of these #defines except possibly for
    L_CC_CMD and even that's a stretch.  Since we're logging to our own

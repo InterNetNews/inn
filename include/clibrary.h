@@ -14,11 +14,14 @@
 **      #include <unistd.h>
 **
 **  Missing functions are provided via #define or prototyped if we'll be
-**  adding them to INN's library.  vfork.h is included if it exists.
+**  adding them to INN's library.  vfork.h is included if it exists.  If
+**  the system doesn't define a SUN_LEN macro, one will be provided.  Also
+**  provides some standard #defines and typedefs (TRUE, FALSE, STDIN,
+**  STDOUT, STDERR, BOOL, PIPE_READ, PIPE_WRITE).
 **
-**  It also does some additional things that it shouldn't be doing any more
-**  that are all below the LEGACY comment.  Those will eventually be
-**  removed; don't depend on them continuing to remain in this file.
+**  This file also does some additional things that it shouldn't be doing
+**  any more; those are all below the LEGACY comment.  Those will eventually
+**  be removed; don't depend on them continuing to remain in this file.
 */
 
 #ifndef CLIBRARY_H
@@ -156,6 +159,45 @@ extern size_t strspn();
 # define SEEK_END 2
 #endif
 
+/* On some systems, the macros defined by <ctype.h> are only vaild on ASCII
+   characters (those characters that isascii() says are ASCII).  This comes
+   into play when applying <ctype.h> macros to eight-bit data.  autoconf
+   checks for this with as part of AC_HEADER_STDC, so if autoconf doesn't
+   think our headers are standard, check isascii() first. */
+#ifdef STDC_HEADERS
+# define CTYPE(isXXXXX, c) (isXXXXX((c)))
+#else
+# define CTYPE(isXXXXX, c) (isascii((c)) && isXXXXX((c)))
+#endif
+
+/* POSIX.1g requires <sys/un.h> to define a SUN_LEN macro for determining
+   the real length of a struct sockaddr_un, but it's not available
+   everywhere yet.  If autoconf couldn't find it, define our own.  This
+   definition is from 4.4BSD by way of Stevens, Unix Network Programming
+   (2nd edition), vol. 1, pg. 917. */
+#ifndef HAVE_SUN_LEN
+# define SUN_LEN(sun) \
+    (sizeof(*(sun)) - sizeof((sun)->sun_path) + strlen((sun)->sun_path))
+#endif
+
+/* Self-documenting names for pretty much universal constants. */
+#ifndef TRUE
+# define TRUE                   1
+#endif
+#ifndef FALSE
+# define FALSE                  0
+#endif
+#define STDIN                   0
+#define STDOUT                  1
+#define STDERR                  2
+
+/* Used to name the elements of the array passed to pipe(). */
+#define PIPE_READ               0
+#define PIPE_WRITE              1
+
+/* Programming convenience. */
+typedef int                     BOOL;
+
 
 /*
 **  LEGACY
@@ -238,6 +280,9 @@ extern char             *optarg;
 #ifdef HAVE_SIGACTION
 # define USE_SIGACTION
 #endif
+
+/* Use SUN_LEN instead of AF_UNIX_SOCKSIZE. */
+#define AF_UNIX_SOCKSIZE(sun) SUN_LEN(&(sun))
 
 #ifdef __cplusplus
 }

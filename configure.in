@@ -13,11 +13,6 @@ dnl A file that should always be in the root directory of the source tree,
 dnl to make sure our source file was set correctly.
 AC_INIT(Makefile.global.in)
 
-dnl Replace the existing config.data with a message in case we abort.
-echo > config/config.data <<EOF
-# configure did not complete successfully.  Resolve problems and re-run.
-EOF
-
 dnl Just to be sure.
 chmod +x config.sub config.guess
 
@@ -165,7 +160,8 @@ AC_ARG_WITH(innd-port,
 
 AC_ARG_ENABLE(tagged-hash,
     [  --enable-tagged-hash    Use tagged hash table for history],
-    DO_DBZ_TAGGED_HASH=DO,
+    DO_DBZ_TAGGED_HASH=DO
+    AC_DEFINE(DO_TAGGED_HASH),
     DO_DBZ_TAGGED_HASH=DONT)
 AC_SUBST(DO_DBZ_TAGGED_HASH)
 
@@ -190,9 +186,8 @@ AC_SUBST(RNEWSMODE)
 
 AC_ARG_WITH(perl,
     [  --with-perl             Embedded Perl script support],
-    DO_PERL=DO,
-    DO_PERL=DONT)
-AC_SUBST(DO_PERL)
+    DO_PERL=DO
+    AC_DEFINE(DO_PERL))
 
 AC_ARG_WITH(python,
     [  --with-python           Embedded Python module support],
@@ -201,9 +196,9 @@ AC_ARG_WITH(python,
 
 AC_ARG_WITH(tcl,
     [  --with-tcl              Embedded TCL script support],
-    DO_TCL=DO TCL_LIB="-ltcl -lm" TCL_INC="-I/usr/local/include",
+    DO_TCL=DO TCL_LIB="-ltcl -lm" TCL_INC="-I/usr/local/include"
+    AC_DEFINE(DO_TCL),
     DO_TCL=DONT TCL_LIB="" TCL_INC="")
-AC_SUBST(DO_TCL)
 AC_SUBST(TCL_LIB)
 AC_SUBST(TCL_INC)
 
@@ -529,7 +524,7 @@ fi
 
 dnl Special checks for header files.
 AC_HEADER_DIRENT
-AC_HEADER_TIME          dnl NOTUSED
+AC_HEADER_TIME
 AC_HEADER_SYS_WAIT      dnl NOTUSED
 
 dnl Generic checks for header files.
@@ -539,9 +534,9 @@ dnl FIXME: The checks for sys/filio.h and sys/ioctl.h should be included
 dnl in the check for what type of close-on-exec method to use, and that
 dnl should preferrably be in source code rather than configure hackage.
 
-AC_CHECK_HEADERS(fcntl.h getopt.h limits.h sgtty.h stddef.h stdint.h)
-AC_CHECK_HEADERS(sys/file.h sys/filio.h sys/ioctl.h sys/select.h)
-AC_CHECK_HEADERS(sys/sysinfo.h sys/time.h unistd.h wait.h)
+AC_CHECK_HEADERS(fcntl.h getopt.h limits.h sgtty.h stddef.h stdint.h \
+                 sys/file.h sys/filio.h sys/ioctl.h sys/select.h \
+                 sys/sysinfo.h sys/time.h unistd.h wait.h)
 
 dnl Some Linux systems have db1/ndbm.h instead of ndbm.h.
 AC_CHECK_HEADER(ndbm.h, AC_DEFINE(HAVE_NDBM_H),
@@ -594,7 +589,7 @@ AC_DEFUN(INN_CHECK_DEFINE, [
 changequote(<<, >>)dnl
 define(<<AC_VAR_NAME>>, translit($1, [A-Z], [a-z]))dnl
 changequote([, ])dnl
-    AC_CACHE_VAL(ac_cv_[]AC_VAR_NAME, [AC_EGREP_CPP(yes, [
+    AC_CACHE_VAL(inn_cv_[]AC_VAR_NAME, [AC_EGREP_CPP(yes, [
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -604,15 +599,38 @@ changequote([, ])dnl
 yes
 #endif
 ],
-        ac_cv_[]AC_VAR_NAME=yes,
-        ac_cv_[]AC_VAR_NAME=no
+        inn_cv_[]AC_VAR_NAME=yes,
+        inn_cv_[]AC_VAR_NAME=no
     )])dnl
-    AC_MSG_RESULT($ac_cv_[]AC_VAR_NAME)
-    if test x"$ac_cv_[]AC_VAR_NAME" = xno ; then
+    AC_MSG_RESULT($inn_cv_[]AC_VAR_NAME)
+    if test x"$inn_cv_[]AC_VAR_NAME" = xno ; then
         AC_DEFINE($1, $2)
     fi
 ])
 INN_CHECK_DEFINE(INADDR_NONE, [(unsigned long) -1])
+
+dnl Check for SUN_LEN.
+AC_DEFUN(INN_MACRO_SUN_LEN, [
+    AC_MSG_CHECKING(for SUN_LEN)
+    AC_CACHE_VAL(inn_cv_macro_sun_len, AC_TRY_LINK([
+#include <sys/types.h>
+#include <sys/un.h>
+    ], [
+int main() {
+    struct sockaddr_un sun;
+    int i;
+
+    i = SUN_LEN(sun);
+}
+    ],
+    inn_cv_macro_sun_len=yes,
+    inn_cv_macro_sun_len=no))
+    AC_MSG_RESULT($inn_cv_macro_sun_len)
+    if test x"$inn_cv_macro_sun_len" = xyes ; then
+        AC_DEFINE(HAVE_SUN_LEN)
+    fi
+])
+INN_MACRO_SUN_LEN
 
 dnl FIXME: The external variable timezone is available on some platforms and
 dnl accomplishes the same purpose (but is more standard).
@@ -709,9 +727,6 @@ dnl Check for various other functions.
 dnl
 dnl NOTUSED: gethostname mkfifo strcspn strstr
 dnl
-dnl FIXME: Some of these are only used internally and shouldn't export stuff
-dnl into config.h.
-dnl
 dnl FIXME: fchmod and gettimeofday are checked some of the places they're
 dnl used, but not all of them.
 dnl
@@ -719,16 +734,24 @@ dnl FIXME: pwrite and pread should be in REPLACE_FUNCS instead.
 
 AC_CHECK_FUNC(syslog, , AC_MSG_ERROR(syslog not found, required by INN))
 
-AC_CHECK_FUNCS(atexit fchmod gethostname getpagesize getrusage getspnam)
-AC_CHECK_FUNCS(gettimeofday mkfifo pread pwrite setbuffer sigaction setsid)
-AC_CHECK_FUNCS(socketpair strcspn strncasecmp strstr strtoul symlink)
-AC_CHECK_FUNCS(sysconf ulimit waitpid)
+AC_CHECK_FUNCS(atexit fchmod gethostname getpagesize getrusage getspnam \
+               gettimeofday mkfifo pread pwrite setbuffer sigaction \
+               setsid socketpair strcspn strncasecmp strstr strtoul \
+               symlink waitpid)
+
+dnl We need both *rlimit functions.
+AC_CHECK_FUNC(getrlimit, AC_CHECK_FUNC(setrlimit, AC_DEFINE(HAVE_RLIMIT)))
+
+dnl Check for sysconf, getdtablesize, and then ulimit in that order; we'll
+dnl use them to figure out our current file descriptor limit.
+AC_CHECK_FUNCS(sysconf getdtablesize ulimit, break)
 
 dnl Locking style.
 AC_CHECK_FUNCS(flock lockf fcntl)
 
-AC_REPLACE_FUNCS(getopt memchr memcpy memmove memset strcasecmp strchr)
-AC_REPLACE_FUNCS(strerror strrchr strspn)
+dnl If we can't find any of the following, we have replacements for them.
+AC_REPLACE_FUNCS(getopt memchr memcpy memmove memset strcasecmp strchr \
+                 strerror strrchr strspn)
 
 MISSING_OBJ="$LIBOBJS"
 MISSING_SRC=`echo "$MISSING_OBJ" | sed 's/\.o/.c/g'`
@@ -791,9 +814,6 @@ AC_MSG_RESULT("$result")
 if test "$result" = "no"; then
     AC_DEFINE(MMAP_MISSES_WRITES)
 fi
-
-dnl We need both *rlimit functions.
-AC_CHECK_FUNC(getrlimit, AC_CHECK_FUNC(setrlimit, AC_DEFINE(HAVE_RLIMIT)))
 
 dnl This portion is similar to what AC_FUNC_MMAP does, only it tests shared,
 dnl non-fixed mmaps.
@@ -1019,17 +1039,18 @@ main()
     ac_cv_func_need_msync=no,
     ac_cv_func_need_msync=no)
 ])
+if test x"$ac_cv_func_need_msync" = xyes ; then
+    AC_DEFINE(MMAP_NEEDS_MSYNC)
+fi
 
 dnl Turn on keyword support if we have the regex library.
 dnl
-dnl FIXME: This code makes no sense to me at all.  What is it supposed to
-dnl be doing?  ac_cv_lib_regex_regexec isn't set by anything previous to
-dnl this, and it seems like we're setting DO_KEYWORDS only if regexec exists
-dnl in libc but *not* in libregex?
+dnl FIXME: This is completely broken and makes no sense whatsoever.  It
+dnl needs to be moved up to a --with-keywords flag and an error printed
+dnl if --with-keywords is given and regexec() can't be found.
 if test $ac_cv_lib_regex_regexec = no; then
-    AC_CHECK_FUNC(regexec, DO_KEYWORDS=DO, DO_KEYWORDS=DONT)
+    AC_CHECK_FUNC(regexec, AC_DEFINE(DO_KEYWORDS))
 fi
-AC_SUBST(DO_KEYWORDS)
 
 dnl FIXME: I think we only need this if we need msync().
 AC_CACHE_CHECK(for three argument msync, inn_cv_func_msync_3_args,
@@ -1258,66 +1279,13 @@ AC_DEFINE_UNQUOTED(LOG_INN_SERVER, $SYSLOG_FACILITY)
 AC_DEFINE_UNQUOTED(LOG_INN_PROG, $SYSLOG_FACILITY)
 AC_SUBST(SYSLOG_FACILITY)
 
-dnl Convert a yes no value to a ac_cv_subst value which is not already
-dnl overridden by config.cache.
-dnl
-dnl FIXME: Old subst linkage.
-AC_DEFUN(YN_to_cv_subst, [
-    if test -z "${$2}" ; then
-        if test x"${$1}" = xno ; then
-            echo setting $2...$4
-            $2=$4
-        else
-            if test x"${$1}" = xyes ; then
-                echo setting $2...$3
-                $2=$3
-            else
-                AC_MSG_ERROR($1 = ${$1}. Must be yes or no)
-            fi
-       fi
-    else
-        echo "setting $2... (cached) ${$2}"
-    fi
-    AC_SUBST($2)
-])
-
-
-dnl fjc mibsoftware.com Removed getrlimit.  Prefer SYSCONF
-dnl FIXME: Old subst linkage.
-dnl
-dnl FIXME: This belongs in the code; it's only used in lib/getdtab.c.
-if test "$ac_cv_func_getdtab" = no ; then
-    if test "$ac_cv_func_sysconf" = no ; then
-        if test $"ac_cv_func_ulimit" = no ; then
-            ac_cv_subst_fdcount_style=CONSTANT
-        else
-            ac_cv_subst_fdcount_style=ULIMIT
-        fi
-    else
-        ac_cv_subst_fdcount_style=SYSCONF
-    fi
-else
-    ac_cv_subst_fdcount_style=GETDTAB
-fi
-AC_SUBST(ac_cv_subst_fdcount_style)
-
-dnl Convert ac_cv_ yes or no values into subst values for config.data (but
-dnl only if the cv_subst value is not already defined.  This is to permit
-dnl overriding in config.cache.
-YN_to_cv_subst(ac_cv_func_getrusage, ac_cv_subst_res_style, RUSAGE, TIMES)
-YN_to_cv_subst(ac_cv_header_time, ac_cv_subst_need_time, DO, DONT)
-YN_to_cv_subst(ac_cv_func_mmap_shared, ac_cv_subst_act_style, MMAP, READ)
-YN_to_cv_subst(ac_cv_func_need_msync, ac_cv_subst_mmap_sync, DO, DONT)
-
 dnl Clean up our LIBS, just for grins.
 LIBS=`echo "$LIBS" | sed 's/^  *//' | sed 's/   */ /g'`
 
-grep "^  ||" config/config.scoreboard | sed 's/  ||//g' > config/config.data.in
 AC_CONFIG_HEADER(include/config.h)
 AC_OUTPUT(
 	Makefile.global
 	makedirs.sh
-	config/config.data
 	backends/actmerge.sh
 	backends/actsyncd.sh
 	backends/sendxbatches.sh
