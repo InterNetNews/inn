@@ -38,7 +38,7 @@ main(int argc, char *argv[])
     server = argv[1];
     backup = (argc > 3) ? argv[2] : argv[1];
     domain = (argc > 3) ? argv[3] : argv[2];
-    result = Valid_User(authinfo->username, authinfo->password, argv[1],
+    result = Valid_User(authinfo->username, authinfo->password, server,
                         backup, domain);
 
     /* Analyze the result. */
