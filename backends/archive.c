@@ -456,8 +456,8 @@ main(ac, av)
 		groups++;
 	    }
 
-	    /* Process each newsgroup... */
-	    while (*groups!='\r' && *groups!='\n' && *groups!='\0') {
+	    /* Process newsgroup... */
+	    if (*groups!='\r' && *groups!='\n' && *groups!='\0') {
 		p = Name;
 		while(*groups!=' ' && *groups!='\r' && *groups!='\n') {
 		    *p++ = *groups++; 
@@ -465,6 +465,7 @@ main(ac, av)
 		*p='\0';
 		if ((p=strchr(Name, ':')) == NULL) {
 		    fprintf(stderr, "archive: bogus xref '%s'\n", Name);
+		    SMfreearticle(art);
 		    continue;
 		}
 		*p='/';
