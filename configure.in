@@ -999,6 +999,7 @@ AC_OUTPUT(
 	innfeed/procbatch
 	samples/actsync.cfg 
 	samples/checkgroups
+	samples/controlchan
 	samples/default
 	samples/docheckgroups
 	samples/expirerm
@@ -1017,11 +1018,14 @@ AC_OUTPUT(
 	samples/innwatch.ctl 
 	samples/news.daily
 	samples/newgroup
+	samples/newgroup.pl
+	samples/newsfeeds
 	samples/nntpsend
 	samples/parsecontrol
 	samples/pgpverify
 	samples/rc.news
 	samples/rmgroup
+	samples/rmgroup.pl
 	samples/scanlogs
 	samples/scanspool
 	samples/send-ihave

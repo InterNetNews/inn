@@ -6068,6 +6068,7 @@ trap 'rm -fr `echo "Makefile.global
 	innfeed/procbatch
 	samples/actsync.cfg 
 	samples/checkgroups
+	samples/controlchan
 	samples/default
 	samples/docheckgroups
 	samples/expirerm
@@ -6086,11 +6087,14 @@ trap 'rm -fr `echo "Makefile.global
 	samples/innwatch.ctl 
 	samples/news.daily
 	samples/newgroup
+	samples/newgroup.pl
+	samples/newsfeeds
 	samples/nntpsend
 	samples/parsecontrol
 	samples/pgpverify
 	samples/rc.news
 	samples/rmgroup
+	samples/rmgroup.pl
 	samples/scanlogs
 	samples/scanspool
 	samples/send-ihave
@@ -6277,6 +6281,7 @@ CONFIG_FILES=\${CONFIG_FILES-"Makefile.global
 	innfeed/procbatch
 	samples/actsync.cfg 
 	samples/checkgroups
+	samples/controlchan
 	samples/default
 	samples/docheckgroups
 	samples/expirerm
@@ -6295,11 +6300,14 @@ CONFIG_FILES=\${CONFIG_FILES-"Makefile.global
 	samples/innwatch.ctl 
 	samples/news.daily
 	samples/newgroup
+	samples/newgroup.pl
+	samples/newsfeeds
 	samples/nntpsend
 	samples/parsecontrol
 	samples/pgpverify
 	samples/rc.news
 	samples/rmgroup
+	samples/rmgroup.pl
 	samples/scanlogs
 	samples/scanspool
 	samples/send-ihave
