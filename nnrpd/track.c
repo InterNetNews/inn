@@ -31,7 +31,6 @@ int TrackClient(char *client, char *user)
 	char dbfile[MAX_LEN];
 	FILE *fd;
 	char line[MAX_LEN],*p,*pp,*lp;
-	flock_t hostlock;
 
 	strcpy(dbfile, _PATH_NEWSLIB);
 	strcat(dbfile, "/nnrpd.track");
