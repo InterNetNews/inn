@@ -24,7 +24,7 @@ warnings:
 tdx-util: tdx-util.o $(OBJECTS)
 	$(LIBLD) $(LDFLAGS) -o $@ tdx-util.o $(OBJECTS) $(STORELIBS)
 
-clobber clean:
+clobber clean distclean:
 	rm -f *.o *.lo obj/*.o $(ALL)
 	rm -rf .libs
 

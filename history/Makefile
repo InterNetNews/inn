@@ -25,7 +25,7 @@ methods:
 
 install:		all $(D)$(PATHLIB)/libinnhist.$(EXTLIB) 
 
-clobber clean:
+clobber clean distclean:
 	rm -f *.o *.lo libinnhist.la libinnhist.a
 	rm -rf .libs
 	rm -f hismethods.c hismethods.h

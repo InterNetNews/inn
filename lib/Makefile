@@ -37,7 +37,7 @@ warnings:
 
 install:	all $(D)$(PATHLIB)/libinn.$(EXTLIB)
 
-clobber clean:
+clobber clean distclean:
 	rm -f *.o *.lo libinn.la libinn.a parsedate.c parsedate
 	rm -f profiled libinn_p.a
 	rm -rf .libs

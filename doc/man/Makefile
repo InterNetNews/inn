@@ -34,7 +34,7 @@ SEC8	= actsync.8 actsyncd.8 archive.8 batcher.8 buffchan.8 \
 COPY	= $(SHELL) ./putman.sh $(MANPAGESTYLE) "$(MANFLAGS)"
 
 all:
-clobber clean:
+clobber clean distclean:
 tags ctags:
 profiled:
 

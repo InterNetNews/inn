@@ -20,7 +20,7 @@ warnings:
 .c.o .c.lo:
 	$(LIBCC) $(CFLAGS) -c $*.c -o $@
 
-clobber clean:
+clobber clean distclean:
 	rm -f *.o *.lo obj/*.o profiled
 	rm -rf .libs
 

@@ -16,7 +16,7 @@ DOCS	= GPL compliance-nntp config-design config-semantics config-syntax \
 DIRS = man
 
 all:
-clobber clean:
+clobber clean distclean:
 tags ctags:
 profiled:
 depend:

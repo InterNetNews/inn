@@ -18,7 +18,7 @@ warnings:
 .c.o:
 	$(LIBCC) $(CFLAGS) -c $*.c -o $@
 
-clobber clean:
+clobber clean distclean:
 	rm -f *.o *.lo obj/*.o *~
 	rm -f profiled
 	rm -f all install lint lint.all

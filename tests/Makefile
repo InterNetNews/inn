@@ -26,7 +26,7 @@ all check test: $(TESTS) $(EXTRA)
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
-clean clobber:
+clean clobber distclean:
 	rm -f *.o *.lo */*.o */*.lo $(TESTS) $(EXTRA)
 	rm -rf .libs */.libs
 

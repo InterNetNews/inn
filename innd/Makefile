@@ -28,7 +28,7 @@ clean:
 	rm -f *.o $(ALL) inndp profiled
 	rm -rf .libs
 
-clobber: clean
+clobber distclean: clean
 	rm -f tags
 
 tags ctags: $(SOURCES)

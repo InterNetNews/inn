@@ -139,7 +139,7 @@ clean:
 	    cmp -s $$I ../samples/$$I && echo rm -f $$I && rm -f $$I ; \
 	done
 
-clobber:
+clobber distclean:
 	rm -f $(ALL) tags profiled config update
 
 tags ctags:

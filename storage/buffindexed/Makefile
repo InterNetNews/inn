@@ -26,7 +26,7 @@ buffindexed:
 	$(CC) $(CFLAGS) -DDEBUG -c buffindexed.c
 	$(LIBLD) $(LDFLAGS) -o $@ ../*/*.o ../interface.o ../methods.o ../ov.o ../ovmethods.o $(LIBINN) $(LIBS)
 
-clobber clean:
+clobber clean distclean:
 	rm -f *.o *.lo obj/*.o
 	rm -f profiled
 	rm -f all install lint lint.all

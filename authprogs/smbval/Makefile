@@ -21,7 +21,7 @@ smbvalid.a: $(OBJECTS)
 	ar rc $@ $(OBJECTS)
 	$(RANLIB) $@
 
-clobber clean:
+clobber clean distclean:
 	rm -f *.o smbvalid.a
 
 depend: Makefile $(SOURCES)

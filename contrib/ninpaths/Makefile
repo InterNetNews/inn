@@ -17,5 +17,5 @@ ninpaths.o: ninpaths.c
 sendinpaths: sendinpaths.in
 	$(FIXSCRIPT) sendinpaths.in
 
-clean:
+clobber clean distclean:
 	rm -f ninpaths sendinpaths *.o *.out core

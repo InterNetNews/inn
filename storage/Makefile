@@ -24,7 +24,7 @@ methods: methods.c buildconfig
 	    cd $$D && $(MAKE) all || exit 1 ; cd .. ; \
 	done
 
-clobber clean:
+clobber clean distclean:
 	rm -f *.o *.lo libstorage.la libstorage.a
 	rm -f buildconfig methods.c methods.h ovmethods.c ovmethods.h
 	rm -f profiled libstorage_p.a

@@ -26,7 +26,7 @@ all: $(LIBSMB) $(LIBAUTH) $(ALL)
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
-clobber clean:
+clobber clean distclean:
 	rm -f *.o $(ALL)
 	rm -rf .libs
 	cd smbval && $(MAKE) clean

@@ -11,7 +11,8 @@ ALL	      = c7unbatch cnfsheadconf cnfsstat ctlinnd decode encode \
 		scanspool sm
 
 SOURCES	      = ctlinnd.c decode.c encode.c getlist.c inews.c innconfval.c \
-		ovdb_init.c ovdb_monitor.c ovdb_server.c ovdb_stat.c rnews.c sm.c
+		ovdb_init.c ovdb_monitor.c ovdb_server.c ovdb_stat.c rnews.c \
+		sm.c
 
 PATHRNEWS     = $(PATHBIN)/rnews.libexec
 
@@ -44,7 +45,7 @@ clean:
 	rm -f *.o $(ALL)
 	rm -rf .libs
 
-clobber: clean
+clobber distclean: clean
 	rm -f tags
 
 tags ctags: $(SOURCES)

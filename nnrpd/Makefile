@@ -26,7 +26,7 @@ clean:
 	rm -f *.o $(ALL) nnrpdp profiled
 	rm -rf .libs
 
-clobber: clean
+clobber distclean: clean
 	rm -f tags
 
 tags ctags: $(SOURCES) $(INCLUDES)

@@ -34,7 +34,7 @@ clean:
 	rm -f *.o $(ALL) version.c innfeed-convcfg
 	rm -rf .libs
 
-clobber: clean 
+clobber distclean: clean 
 	rm -f tags y.tab.c y.tab.h lex.yy.c config_y.c config_y.h
 
 tags: $(SOURCES) $(INCLUDES)

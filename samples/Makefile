@@ -20,7 +20,7 @@ all: $(ALL)
 clean:
 	rm -f $(ALL)
 
-clobber: clean
+clobber distclean: clean
 	rm -f $(EXTRA)
 
 install:
