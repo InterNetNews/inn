@@ -861,7 +861,6 @@ main(int argc, char *argv[])
     struct group	*grp;
     gid_t		shadowgid;
 #endif /* HAVE_GETSPNAM */
-    bool		filter = true;
 
 #ifdef HAVE_SSL
     int ssl_result;
@@ -904,9 +903,9 @@ main(int argc, char *argv[])
     TMRinit(TMR_MAX);
 
 #ifdef HAVE_SSL
-    while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nNop:Rr:s:tS")) != EOF)
+    while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nop:Rr:s:tS")) != EOF)
 #else
-    while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nNop:Rr:s:t")) != EOF)
+    while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nop:Rr:s:t")) != EOF)
 #endif /* HAVE_SSL */
 	switch (i) {
 	default:
@@ -938,9 +937,6 @@ main(int argc, char *argv[])
 	    break;
 	case 'n':			/* No DNS lookups */
 	    GetHostByAddr = FALSE;
-	    break;
-	case 'N':			/* Disable filters */
-	    filter = false;
 	    break;
 	case 'o':
 	    Offlinepost = TRUE;		/* Offline posting only */
@@ -1124,12 +1120,6 @@ main(int argc, char *argv[])
 	/* Arrange to toggle tracing. */
 	(void)xsignal(SIGHUP, ToggleTrace);
  
-#if defined(DO_PERL)
-	if (!filter) {
-	    PerlFilter(false);
-	}
-#endif
-
 	TITLEset("nnrpd: accepting connections");
  	
 	listen(lfd, 128);	
