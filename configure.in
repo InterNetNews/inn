@@ -35,12 +35,6 @@ AC_ARG_WITH(perl,
 	DO_PERL=DONT)
 AC_SUBST(DO_PERL)
 
-AC_ARG_WITH(keywords,
-	[  --with-keywords         Overview keyword support],
-	DO_KEYWORDS=DO,
-	DO_KEYWORDS=DONT)
-AC_SUBST(DO_KEYWORDS)
-
 AC_ARG_WITH(db-dir,
 	[  --with-db-dir=PATH   News database files [PREFIX/db]], 
 	DBDIR=$with_db_dir, 
@@ -390,12 +384,9 @@ AC_CHECK_FUNCS(waitpid)
 
 dnl
 if test $ac_cv_lib_regex_regexec = no; then
-	AC_CHECK_FUNC(regexec,[true],[
-if test "${with_keywords+set}" = set; then
-	AC_MSG_ERROR(``--with-keywords'' option used but can't find library with regexec(3) function)
+	AC_CHECK_FUNC(regexec,[DO_KEYWORDS=DO],[DO_KEYWORDS=DONT])
 fi
-])
-fi
+AC_SUBST(DO_KEYWORDS)
 
 AC_MSG_CHECKING(for msync args)
 AC_TRY_LINK([#include <sys/types.h>
