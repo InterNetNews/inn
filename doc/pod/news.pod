@@ -4,6 +4,24 @@
 
 =item *
 
+innxmit can again handle regular filenames as input as well as storage API
+tokens (allowing it to be used to import an old traditional spool).
+
+=item *
+
+Several problems with tagged-hash history files have been fixed thanks to
+the debugging efforts of Andrew Gierth and Sang-yong Suh.
+
+=item *
+
+A very long-standing (since INN 1.0!) NNTP protocol bug in nnrpd was
+fixed.  The response to an ARTICLE command retrieving a message by message
+ID should have the message ID as the third word of the response, not the
+fourth.  Fixing this is reported to *possibly* cause problems with some
+Netscape versions, but other news servers correctly follow the protocol.
+
+=item *
+
 Some serious performance problems with expiration of tradspool should now
 be at least somewhat alleviated.  tradspool and timehash now know how to
 output file names for removal rather than tokens, and fastrm's ability to
