@@ -303,7 +303,6 @@ innfeed/innlistener.c                 Implementation of the InnListener class
 innfeed/innlistener.h                 Public interface of InnListener class
 innfeed/main.c                        Main routines for the innfeed program
 innfeed/makedepend.sh                 A replacement for 'gcc -MM'
-innfeed/malloc.c                      A debugging malloc package
 innfeed/misc.c                        Miscelloneous routines for innfeed
 innfeed/misc.h                        Header file for misc.c
 innfeed/msgs.h                        Log message definition
@@ -315,7 +314,6 @@ innfeed/testListener.pl               Script to hand articles to innfeed
 lib                                   INN library routines (Directory)
 lib/Makefile                          Makefile for library
 lib/argparse.c                        Parsing used for OV3
-lib/checkart.c                        See if lines are too long for NNTP
 lib/cleanfrom.c                       Clean out a From line
 lib/clientactive.c                    Client access to the active file
 lib/clientlib.c                       Replacement for C News library routine
@@ -328,6 +326,8 @@ lib/defdist.c                         Determine default Distribution header
 lib/endian.c                          Determine system's endianness
 lib/error.c                           Error reporting
 lib/findheader.c                      Find a header in an article
+lib/fseeko.c                          fseeko replacement
+lib/ftello.c                          ftello replacement
 lib/genid.c                           Generate a message ID
 lib/getconfig.c                       Parse the inn.conf file
 lib/getdtab.c                         Get number of allowable open files
@@ -369,7 +369,6 @@ lib/sendarticle.c                     Send an article, NNTP style
 lib/sendpass.c                        Send NNTP authentication
 lib/setenv.c                          setenv replacement
 lib/strcasecmp.c                      Case-insenstive string comparison (BSD)
-lib/strdup.c                          strdup replacement
 lib/strerror.c                        String representation of errno
 lib/strspn.c                          Skip bytes in a string (BSD)
 lib/strtok.c                          Split a string into tokens (BSD)
