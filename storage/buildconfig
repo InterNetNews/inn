@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+require 5.003;
+
 if (scalar(@ARGV) <= 0) {
     printf STDERR "No storage methods are available\n";
     exit(1);
