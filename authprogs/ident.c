@@ -1,6 +1,6 @@
 /*  $Id$
 **
-**  ident authenticator.
+**  Ident authenticator.
 */
 
 #include "config.h"
@@ -9,12 +9,14 @@
 #include <netdb.h>
 #include <signal.h>
 #include <syslog.h>
-#include <sys/signal.h>
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
 
 #include "libauth.h"
+
+#define IDENT_PORT 113
 
 static void out(int sig UNUSED) {
     exit(1);
@@ -33,11 +35,12 @@ int main(int argc, char *argv[])
     unsigned int got;
     int lport, cport, identport;
     char *endstr;
+    socklen_t length;
 
-    signal(SIGALRM,out);
+    message_program_name = "ident";
+
+    xsignal_norestart(SIGALRM,out);
     alarm(15);
-
-#define IDENT_PORT 113
 
     s = getservbyname("ident", "tcp");
     if (!s)
@@ -53,10 +56,9 @@ int main(int argc, char *argv[])
 		    break;
 	    if (*iter) {
 		/* not entirely numeric */
-		if ((s = getservbyname(optarg, "tcp")) == (struct servent *) 0) {
-		    fprintf(stderr, "ident: can't getservbyname(%s/tcp)\n", optarg);
-		    exit(1);
-		}
+                s = getservbyname(optarg, "tcp");
+                if (s == NULL)
+                    die("cannot getsrvbyname(%s, tcp)", optarg);
 		identport = s->s_port;
 	    } else
 		identport = atoi(optarg);
@@ -71,10 +73,9 @@ int main(int argc, char *argv[])
     memset(&loc, '\0', sizeof(loc));
 
     /* read the connection info from stdin */
-    if (get_res((struct sockaddr *)&loc,(struct sockaddr *)&cli) != (char) GOT_ALL) {
-	fprintf(stderr, "ident: didn't get ident parameter\n");
-	exit(1);
-    }
+    if (get_res((struct sockaddr *)&loc,(struct sockaddr *)&cli) != GOT_ALL)
+        die("did not get client information from nnrpd");
+
 #ifdef HAVE_INET6
     if( loc.ss_family == AF_INET6 )
     {
@@ -92,41 +93,32 @@ int main(int argc, char *argv[])
 	((struct sockaddr_in *)&cli)->sin_port = htons( identport );
 	sock = socket(PF_INET, SOCK_STREAM, 0);
     }
-    if ( sock < 0 ) {
-	fprintf(stderr, "ident: couldn't create socket: %s\n", strerror(errno));
-	exit(1);
-    }
-    if (bind(sock, (struct sockaddr*) &loc, SA_LEN((struct sockaddr *)&loc)) < 0) {
-	fprintf(stderr, "ident: couldn't bind socket: %s\n", strerror(errno));
-	exit(1);
-    }
-    if (connect(sock, (struct sockaddr*) &cli, SA_LEN((struct sockaddr *)&cli)) < 0) {
-      if (errno != ECONNREFUSED) {
-	fprintf(stderr, "ident: couldn't connect to ident server: %s\n", strerror(errno));
-      }
-      exit(1);
+    if ( sock < 0 )
+        sysdie("cannot create socket");
+    length = SA_LEN((struct sockaddr *) &loc);
+    if (bind(sock, (struct sockaddr*) &loc, length) < 0)
+        sysdie("cannot bind socket");
+    if (connect(sock, (struct sockaddr*) &cli, length) < 0) {
+        if (errno != ECONNREFUSED)
+            sysdie("cannot connect to ident server");
+        else
+            sysdie("client host does not accept ident connections");
     }
 
     /* send the request out */
     snprintf(buf, sizeof(buf), "%d , %d\r\n", cport, lport);
-    got = 0;
-    while (got != strlen(buf)) {
-	opt = write(sock, buf+got, strlen(buf)-got);
-	if (opt < 0)
-	    exit(1);
-	else if (!opt)
-	    exit(1);
-	got += opt;
-    }
+    opt = xwrite(sock, buf, strlen(buf));
+    if (opt < 0)
+        sysdie("cannot write to ident server");
 
     /* get the answer back */
     got = 0;
     do {
 	opt = read(sock, buf+got, sizeof(buf)-got);
 	if (opt < 0)
-	    exit(1);
+            sysdie("cannot read from ident server");
 	else if (!opt)
-	    exit(1);
+	    die("end of file from ident server before response");
 	while (opt--)
 	    if (buf[got] != '\n')
 		got++;
@@ -138,7 +130,7 @@ int main(int argc, char *argv[])
     /* buf now contains the entire ident response. */
     if (!(iter = strchr(buf, ':')))
 	/* malformed response */
-	exit(1);
+        die("malformed response \"%s\" from ident server", buf);
     iter++;
 
     while (*iter && ISWHITE(*iter))
@@ -148,7 +140,7 @@ int main(int argc, char *argv[])
 	endstr++;
     if (!*endstr)
 	/* malformed response */
-	exit(1);
+        die("malformed response \"%s\" from ident server", buf);
     if (*endstr != ':') {
 	*endstr++ = '\0';
 	while (*endstr != ':')
@@ -157,11 +149,10 @@ int main(int argc, char *argv[])
 
     *endstr = '\0';
 
-    if (!strcmp(iter, "ERROR"))
-	exit(1);
+    if (strcmp(iter, "ERROR") == 0)
+        die("ident server reported an error");
     else if (strcmp(iter, "USERID") != 0)
-	/* malformed response */
-	exit(1);
+        die("ident server returned \"%s\", not USERID", iter);
 
     /* skip the operating system */
     if (!(iter = strchr(endstr+1, ':')))
@@ -173,7 +164,7 @@ int main(int argc, char *argv[])
 	iter++;
     if (!*iter || *iter == '[')
 	/* null, or encrypted response */
-	exit(1);
+        die("ident response is null or encrypted");
     if ((truncate_domain == 1) && ((p = strchr(iter, '@')) != NULL))
 	*p = '\0';
     printf("User:%s\n", iter);
