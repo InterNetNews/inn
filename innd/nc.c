@@ -568,10 +568,7 @@ NCxbatch(CHANNEL *cp)
 static void
 NClist(CHANNEL *cp)
 {
-    char		*p;
-    char		*q;
-    char		*trash;
-    char		*end;
+    char *p, *q, *trash, *end, *path;
 
     for (p = cp->In.Data + cp->Start + STRLEN("list"); ISWHITE(*p); p++)
 	continue;
@@ -581,8 +578,9 @@ NClist(CHANNEL *cp)
 	return;
     }
     if (caseEQ(p, "newsgroups")) {
-	trash = p = ReadInFile(cpcatpath(innconf->pathdb, _PATH_NEWSGROUPS),
-                               NULL);
+        path = concatpath(innconf->pathdb, _PATH_NEWSGROUPS);
+	trash = p = ReadInFile(path, NULL);
+        free(path);
 	if (p == NULL) {
 	    NCwritereply(cp, NCdot);
 	    return;
@@ -590,8 +588,9 @@ NClist(CHANNEL *cp)
 	end = p + strlen(p);
     }
     else if (caseEQ(p, "active.times")) {
-	trash = p = ReadInFile(cpcatpath(innconf->pathdb, _PATH_ACTIVETIMES),
-                               NULL);
+        path = concatpath(innconf->pathdb, _PATH_ACTIVETIMES);
+	trash = p = ReadInFile(path, NULL);
+        free(path);
 	if (p == NULL) {
 	    NCwritereply(cp, NCdot);
 	    return;

@@ -205,7 +205,7 @@ main(int argc, char *argv[])
     i = 0;
 #ifdef DEBUGGER
     innd_argv[i++] = DEBUGGER;
-    innd_argv[i++] = cpcatpath(innconf->pathbin, "innd");
+    innd_argv[i++] = concatpath(innconf->pathbin, "innd");
     innd_argv[i] = 0;
     printf("When starting innd, use -dp%d\n", s);
 #else /* DEBUGGER */

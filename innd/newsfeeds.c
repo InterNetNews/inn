@@ -283,7 +283,7 @@ SITEreadfile(const bool ReadOnly)
     char		*data;
 
     if (SITEfeedspath == NULL)
-	SITEfeedspath = COPY(cpcatpath(innconf->pathetc, _PATH_NEWSFEEDS));
+	SITEfeedspath = concatpath(innconf->pathetc, _PATH_NEWSFEEDS);
     if (old_strings != NULL) {
 	/* If the file hasn't changed, return a copy of the old data. */
 	if (stat(SITEfeedspath, &Sb) >= 0

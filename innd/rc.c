@@ -369,9 +369,9 @@ RChandoff(int fd, HANDOFF h)
     int i;
 
     if (RCnnrpd == NULL)
-	RCnnrpd = COPY(cpcatpath(innconf->pathbin, "nnrpd"));
+	RCnnrpd = concatpath(innconf->pathbin, "nnrpd");
     if (RCnntpd == NULL)
-	RCnntpd = COPY(cpcatpath(innconf->pathbin, "nnrpd"));
+	RCnntpd = concatpath(innconf->pathbin, "nnrpd");
 #if	defined(SOL_SOCKET) && defined(SO_KEEPALIVE)
     /* Set KEEPALIVE to catch broken socket connections. */
     i = 1;
@@ -1535,7 +1535,7 @@ RCwritelist(char *filename)
     /* Write a standard header.. */
 
     /* Find the filename */
-    p = COPY(cpcatpath(innconf->pathetc, _PATH_INNDHOSTS));
+    p = concatpath(innconf->pathetc, _PATH_INNDHOSTS);
     for (r = q = p; *p; p++)
         if (*p == '/')
 	   q = p + 1;
@@ -1655,7 +1655,7 @@ RCreadlist(void)
     static char	*INNDHOSTS = NULL;
 
     if (INNDHOSTS == NULL)
-	INNDHOSTS = COPY(cpcatpath(innconf->pathetc, _PATH_INNDHOSTS));
+	INNDHOSTS = concatpath(innconf->pathetc, _PATH_INNDHOSTS);
     StreamingOff = FALSE;
     RCreadfile(&RCpeerlistfile, &RCpeerlist, &RCnpeerlist, INNDHOSTS);
     /* RCwritelist("/tmp/incoming.conf.new"); */

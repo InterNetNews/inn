@@ -132,7 +132,7 @@ ARTreadschema(void)
 
   /* Open file, count lines. */
   if (SCHEMA == NULL)
-    SCHEMA = COPY(cpcatpath(innconf->pathetc, _PATH_SCHEMA));
+    SCHEMA = concatpath(innconf->pathetc, _PATH_SCHEMA);
   if ((F = Fopen(SCHEMA, "r", TEMPORARYOPEN)) == NULL)
     return FALSE;
   for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)

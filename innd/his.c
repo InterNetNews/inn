@@ -155,7 +155,7 @@ HISsetup(void)
     HISlogger("HISsetup begin", S_HISsetup);
     if (HISwritefp == NULL) {
 	if (HIShistpath == NULL)
-	    HIShistpath = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
+	    HIShistpath = concatpath(innconf->pathdb, _PATH_HISTORY);
 	/* Open the history file for appending formatted I/O. */
 	if ((HISwritefp = Fopen(HIShistpath, "a", INND_HISTORY)) == NULL) {
 	    syslog(L_FATAL, "%s cant fopen %s %m", LogName, HIShistpath);

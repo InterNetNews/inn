@@ -1053,7 +1053,7 @@ CCnewgroup(char *av[])
     int			oerrno;
 
     if (TIMES == NULL)
-	TIMES = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVETIMES));
+	TIMES = concatpath(innconf->pathdb, _PATH_ACTIVETIMES);
 
     Name = av[0];
     if (Name[0] == '.' || strspn(Name, "0123456789") == strlen(Name))
@@ -1322,7 +1322,7 @@ CCxexec(char *av[])
     if (CCargv == NULL)
 	return "1 no argv!";
     
-    inndstart = COPY(cpcatpath(innconf->pathbin, "inndstart"));
+    inndstart = concatpath(innconf->pathbin, "inndstart");
     /* Get the pathname. */
     p = av[0];
     if (*p == '\0' || EQ(p, "innd") || EQ(p, "inndstart"))
@@ -1372,7 +1372,7 @@ CCreload(char *av[])
 #if defined(DO_PYTHON)
     static char BADPYRELOAD[] = "1 Failed to reload filter_innd.py" ;
 #endif /* defined(DO_PYTHON) */
-    const char *	p;
+    const char *p, *path;
 
     p = av[0];
     if (*p == '\0' || EQ(p, "all")) {
@@ -1388,7 +1388,9 @@ CCreload(char *av[])
 	TCLreadfilter();
 #endif /* defined(DO_TCL) */
 #if defined(DO_PERL)
-        PERLreadfilter ((char *)cpcatpath(innconf->pathfilter,_PATH_PERL_FILTER_INND),"filter_art") ;
+        path = concatpath(innconf->pathfilter, _PATH_PERL_FILTER_INND);
+        PERLreadfilter(path, "filter_art") ;
+        free(path);
 #endif /* defined(DO_PERL) */
 #if defined(DO_PYTHON)
 	syslog(L_NOTICE, "reloading pyfilter");
@@ -1443,8 +1445,9 @@ CCreload(char *av[])
 #endif /* defined(DO_TCL) */
 #if defined(DO_PERL)
     else if (EQ(p, "filter.perl")) {
-        if (!PERLreadfilter ((char *)cpcatpath(innconf->pathfilter,_PATH_PERL_FILTER_INND),"filter_art"))
-            return BADPERLRELOAD ;
+        path = concatpath(innconf->pathfilter, _PATH_PERL_FILTER_INND);
+        if (!PERLreadfilter(path, "filter_art"))
+            return BADPERLRELOAD;
     }
 #endif /* defined(DO_PERL) */
 #if defined(DO_PYTHON)
@@ -1967,7 +1970,7 @@ CCsetup(void)
 #endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 
     if (CCpath == NULL)
-	CCpath = COPY(cpcatpath(innconf->pathrun, _PATH_NEWSCONTROL));
+	CCpath = concatpath(innconf->pathrun, _PATH_NEWSCONTROL);
     /* Remove old detritus. */
     if (unlink(CCpath) < 0 && errno != ENOENT) {
 	syslog(L_FATAL, "%s cant unlink %s %m", LogName, CCpath);

@@ -49,7 +49,7 @@ TCLreadfilter(void)
 
     /* read the filter file */
     if (TCLFILTER == NULL)
-	TCLFILTER = COPY(cpcatpath(innconf->pathfilter, _PATH_TCL_FILTER));
+	TCLFILTER = concatpath(innconf->pathfilter, _PATH_TCL_FILTER);
     code = Tcl_EvalFile(TCLInterpreter, TCLFILTER);
     if (code != TCL_OK) {
 	syslog(L_ERROR, "%s cant evaluate Tcl filter file: %s", LogName,
@@ -172,7 +172,7 @@ TCLsetup(void)
     
     TCLInterpreter = Tcl_CreateInterp();
     if (TCLSTARTUP == NULL)
-	TCLSTARTUP = cpcatpath(innconf->pathfilter, _PATH_TCL_STARTUP);
+	TCLSTARTUP = concatpath(innconf->pathfilter, _PATH_TCL_STARTUP);
     code = Tcl_EvalFile(TCLInterpreter, TCLSTARTUP);
     if (code != TCL_OK) {
 	syslog(L_FATAL, "%s cant read Tcl startup file: %s", LogName,
