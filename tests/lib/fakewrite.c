@@ -90,7 +90,7 @@ fake_writev(int fd UNUSED, const struct iovec *iov, int iovcnt)
         left = 32;
     total = 0;
     for (i = 0; i < iovcnt && left != 0; i++) {
-        n = ((size_t) iov[i].iov_len < left) ? iov[i].iov_len : left;
+        n = ((size_t) iov[i].iov_len < left) ? (size_t) iov[i].iov_len : left;
         memcpy(write_buffer + write_offset, iov[i].iov_base, n);
         write_offset += n;
         total += n;
