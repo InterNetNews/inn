@@ -1,0 +1,134 @@
+#
+# $Id$
+#
+# Sample authentication code for nnrpd hook.
+#
+
+#
+# This file is loaded when nnrpd starts up. If it defines a sub named
+# `authenticate', then that function will be called during processing of a
+# connect, auth request or disconnect.  Attributes about the connection are 
+# passed to the program in the %attributes global variable.  It should return 
+# an array with 4 elements:
+#
+# 1) NNTP response code.  Should be one of the codes from %connectcodes or %authcodes
+# 2) Reading Allowed. Should be a boolean value.
+# 3) Posting Allowed. Should be a boolean value.
+# 4) Wildmat expression that says what groups to provide access to.
+#
+# All four of these are required.  If there is a problem with them then nnrpd
+# will die and syslog the exact reason.
+
+#
+# Sample Auth program
+#
+
+use vars qw(@readerconfig);
+use CDB_File;
+
+$authfile = "@DBDIR@/users.cdb";
+$defaultgroups = "*";
+
+require "@LIBDIR@/innshellvars.pl";
+
+my (%connectcodes) = ("read/post" => 200, "read" => 201, "authneeded" => 480, "permdenied" => 502);
+my (%authcodes)    = ("allowed" => 281, "denied" => 502);
+
+sub loadnnrp {
+  my($file) = shift(@_);
+  my($perm, $user, $pass, %tmp);
+  
+  open(F, $file) || die "Could not open $file: $!\n";
+  
+  while (<F>) {
+    my (%tmp);
+    
+    chomp;	
+    s/\#.*//g;
+    ($tmp{block}, $perm, $user, $pass, $tmp{groups}) = split(/:/);
+    if (!defined($tmp{groups})) {
+      undef %tmp;
+      next;
+    }
+    $tmp{canread} = 1 if ($perm =~ /r/i);
+    $tmp{canpost} = 1 if ($perm =~ /p/i);
+    unshift(@readerconfig, \%tmp);
+  }
+  close(F);    
+}
+
+# This is called by nnrpd when it first starts up.
+sub auth_init {
+  &loadnnrp($inn::newsetc . "/nnrp.access");
+  tie(%users, 'CDB_File', $authfile) || warn "Could not open CDB file for users: $!\n";
+}
+
+# This is called when a user connects or authenticates
+sub authenticate {
+  my $key;
+  foreach $key (keys %attributes) {
+  }
+  if ($attributes{type} eq "connect") {
+    my (@results) = checkhost();
+    return @results;
+  } elsif ($attributes{type} eq "authenticate") {
+    return checkuser();
+  } elsif ($attributes{type} eq "disconnect") {
+  }
+  return 502;
+}
+
+sub checkuser {
+  my $user = $attributes{'username'};
+  my $pass = $attributes{'password'};
+
+  if (!defined($users{$user})) {
+    return ($authcodes{'denied'}, undef, undef, undef);
+  }
+  my ($password, $news_post, $maxcon, $subscription) = split(/\t/, $users{$user});
+  my ($salt) = substr($password, 0, 2);
+  if (crypt($pass, $salt) ne $password) {
+    return ($authcodes{'denied'}, undef, undef, undef);
+  }
+  $news_post = lc($news_post);
+  $news_post = ($news_post eq 'y') ? 1 : 0;
+  if (!defined($subscription)) {
+    $subscription = $defaultgroups;
+  }
+  return ($authcodes{'allowed'}, 1, $news_post , $subscription);
+}
+
+sub permtocode {
+  my ($read, $post) = @_;
+
+  return $connectcodes{'read/post'} if ($post);
+  return $connectcodes{'read'} if ($read);
+  return $connectcodes{'authneeded'};
+}
+
+sub checkhost {
+  my ($key, $block, $mask, $ip);
+
+  foreach $key (@readerconfig) {
+    # Process CIDR style entries first
+    my ($read, $post) = ($key->{canread}, $key->{canpost});
+
+    if ($key->{block} =~ /(\d+\.\d+\.\d+\.\d+)\/(\d+)/) {
+      $block = unpack('N', pack('C4', split(/\./, $1)));
+      $mask = (0xffffffff << (32 - $2)) & 0xffffffff;
+      $block = $block & $mask;
+      $ip = unpack('N', pack('C4', split(/\./, $attributes{ipaddress})));
+      if (($ip & $mask) == $block) {
+        return (permtocode($read, $post) , $read, $post, $key->{groups});
+      }
+    }
+    if ($attributes{ipaddress} =~ /$key->{block}/) {
+      return (permtocode($read, $post), $read, $post, $key->{groups});
+    }
+    if ($attributes{hostname} =~ /$key->{block}/) {
+      return (permtocode($read, $post), $read, $post, $key->{groups});
+    }
+  }
+  return ($connectcodes{'permdenied'}, undef, undef, undef);
+}
+

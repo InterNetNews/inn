@@ -43,30 +43,13 @@ typedef struct {
 #define PACKED __attribute__ ((packed))
 #else
 #if !defined(PACKED)
-#define PACKED /* THIS IS STUPID */
+#define PACKED
 #endif
 #endif
 
-#if defined(__SUNPRO_C) || defined(_nec_ews) || defined(sgi) || defined(sun) || defined(_HPUX_SOURCE)
-#if !defined(lint) && defined(__SUNPRO_C)
+#if !defined(lint) && (defined(__SUNPRO_C) || defined(_nec_ews))
 #pragma pack(1)
-#endif /* nor lint, nor sgi, nor _nec_ews */
-typedef struct {
-    char		hash[DBZ_INTERNAL_HASH_SIZE];
-} erec;
-typedef struct {
-    OFFSET_T		offset;
-} idxrec;
-typedef struct {
-    OFFSET_T		offset[2];
-    unsigned char	overindex;
-    unsigned char	reserved;
-    unsigned short	overlen;
-} idxrecext;
-#if !defined(lint) && defined(__SUNPRO_C)
-#pragma pack()
-#endif /* nor lint, nor sgi, nor _nec_ews */
-#else
+#endif /* nor lint, nor __SUNPRO_C, nor sgi, nor _nec_ews */
 typedef struct {
     char		hash[DBZ_INTERNAL_HASH_SIZE];
 } PACKED erec;
@@ -79,14 +62,16 @@ typedef struct {
     unsigned char	reserved;
     unsigned short	overlen;
 } PACKED idxrecext;
-#endif
+#if !defined(lint) && (defined(__SUNPRO_C) || defined(_nec_ews))
+#pragma pack()
+#endif /* nor lint, nor__SUNPRO_C, nor _nec_ews */
 
 /* standard dbm functions */
 extern BOOL dbzinit(const char *name);
 extern BOOL dbzclose(void);
 
 /* new stuff for dbz */
-extern BOOL dbzfresh(const char *name, const long size, const int fillpercent);
+extern BOOL dbzfresh(const char *name, const OFFSET_T size, const int fillpercent);
 extern BOOL dbzagain(const char *name, const char *oldname);
 extern BOOL dbzexists(const HASH key);
 #ifdef	DO_TAGGED_HASH
@@ -97,7 +82,7 @@ extern BOOL dbzfetch(const HASH key, void *ivalue);
 extern DBZSTORE_RESULT dbzstore(const HASH key, void *ivalue);
 #endif
 extern BOOL dbzsync(void);
-extern long dbzsize(const long contents);
+extern long dbzsize(const OFFSET_T contents);
 extern BOOL dbzdebug(const int value);
 extern void dbzsetoptions(const dbzoptions options);
 extern void dbzgetoptions(dbzoptions *options);

@@ -36,15 +36,6 @@ typedef struct _SENDDATA {
     STRING	Item;
 } SENDDATA;
 
-typedef struct _OVERDATA {
-    int		index;
-    char	*addr;
-    long	size;
-    FILE	*fp;
-    int		offset;
-} OVERDATA;
-
-
 /*
 **  Information about the schema of the news overview files.
 */
@@ -628,7 +619,7 @@ STATIC void ARTsendmmap(SENDTYPE what)
         if (*p == '\n') {
             if (FirstLine)
                 FirstLine = 0;
-            if ((lastchar == '\n') && !InBody)
+            if ((lastchar == '\n') && !InBody) {
                 if (what == SThead) {
                     if (*(p-1) == '\r')
                         p--;
@@ -646,6 +637,7 @@ STATIC void ARTsendmmap(SENDTYPE what)
                         }
                     }
                 }
+	    }
             if (((what == STarticle) || 
                     ((what == SThead) && !InBody) || 
                     ((what == STbody) && InBody)) && 
@@ -1004,10 +996,7 @@ FUNCTYPE CMDnextlast(int ac, char *av[])
 
 STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp, BOOL *DidReply)
 {
-    char		*p, *tokentext;
-    OVERINDEX		index;
-    int			i;
-    ARTNUM		artnum;
+    char		*p;
 
     *DidReply = FALSE;
     if (GRPcount == 0) {
@@ -1171,7 +1160,6 @@ STATIC BOOL OVERopen(void)
 */
 void OVERclose(void)
 {
-    int	i;
     if (innconf->storageapi) {
 	(void)OVERshutdown();
     } else {
@@ -1197,11 +1185,8 @@ void OVERclose(void)
 STATIC char *OVERfind(ARTNUM artnum, int *linelen)
 {
     int		        i;
-    char   	        *q;
-    OVERINDEX           index;
     STATIC char         *OVERline = NULL;
-    char		*tokentext, *nextline;
-    TOKEN		token;
+    char		*nextline;
 
     if (innconf->storageapi) {
 	if ((i = ARTfind(artnum, FALSE)) < 0)

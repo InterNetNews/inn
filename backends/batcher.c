@@ -349,7 +349,7 @@ main(ac, av)
 	if ((p = strchr(line, ' ')) != NULL) {
 	    *p++ = '\0';
 	    /* Try to be forgiving of bad input. */
-	    BytesInArt = CTYPE(isdigit, *p) ? atol(p) : -1;
+	    BytesInArt = CTYPE(isdigit, (int)*p) ? atol(p) : -1;
 	}
 	else
 	    BytesInArt = -1;
@@ -551,4 +551,5 @@ main(ac, av)
 	BATCHstatus = BATCHclose(F);
     RequeueAndExit(Cookie, (char *)NULL, 0L);
     /* NOTREACHED */
+    return 0;
 }

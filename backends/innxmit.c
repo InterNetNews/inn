@@ -271,7 +271,7 @@ stidhash(MessageID)
     hash = 0;
     for (p = MessageID + 1; *p && (*p != '>'); p++) {
 	hash <<= 1;
-	if (isascii(*p) && isupper(*p)) {
+	if (isascii((int)*p) && isupper((int)*p)) {
 	    hash += tolower(*p);
 	} else {
 	    hash += *p;
@@ -1544,13 +1544,14 @@ int main(int ac, char *av[])
 		continue;
 	    }
 	    if (ContentEncoding 
-	     && (caseEQ(ContentEncoding, "binary")
-	      || caseEQ(ContentEncoding, "8bit")))
+		&& (caseEQ(ContentEncoding, "binary")
+		 || caseEQ(ContentEncoding, "8bit"))) {
 		if (ContentType == NULL || caseEQ(ContentType, "text"))
 		    MimeArticle = MTquotedprintable;
-		else
+		} else {
 		    /* Shouldbe MTbase64, but not implemented yet. */
 		    MimeArticle = MTnotmime;
+		}
 	}
 	if (GotInterrupt)
 	    Interrupted(Article, MessageID);
@@ -1697,4 +1698,5 @@ int main(int ac, char *av[])
 		BATCHtemp, strerror(errno));
     ExitWithStats(0);
     /* NOTREACHED */
+    return 0;
 }

@@ -238,7 +238,7 @@ HiLowWater(name, hi, low, oldhi, oldlow)
 	     * ignore if it it does not begin with [1-9]
 	     */
 	    p = ep->d_name;
-	    if (!CTYPE(isdigit, *p) || *p == '0') {
+	    if (!CTYPE(isdigit, (int)*p) || *p == '0') {
 		/* first char is not [1-9], ignore */
 		continue;
 	    }
@@ -247,7 +247,7 @@ HiLowWater(name, hi, low, oldhi, oldlow)
 	     * ignore if contains a non-digit elsewhere in the name
 	     */
 	    for (++p; *p; ++p) {
-		if (!CTYPE(isdigit, *p)) {
+		if (!CTYPE(isdigit, (int)*p)) {
 		    break;
 		}
 	    }
@@ -1350,7 +1350,7 @@ get_active(host, hostid, len, grp, errs)
 	/* 
 	 * check for bad chars in the hi water mark 
 	 */
-	for (p=cur->hi, i=0; *p && isascii(*p) && isdigit(*p); ++p, ++i) {
+	for (p=cur->hi, i=0; *p && isascii(*p) && isdigit((int)*p); ++p, ++i) {
 	}
 	if (*p) {
 	    if (!QUIET(hostid)) {
@@ -1392,7 +1392,7 @@ get_active(host, hostid, len, grp, errs)
 	/* 
 	 * check for bad chars in the low water mark 
 	 */
-	for (p=cur->low, i=0; *p && isascii(*p) && isdigit(*p); ++p, ++i) {
+	for (p=cur->low, i=0; *p && isascii(*p) && isdigit((int)*p); ++p, ++i) {
 	}
 	if (*p) {
 	    if (!QUIET(hostid)) {
@@ -1585,9 +1585,9 @@ bad_grpname(name, num_chk)
 	return 1;
     }
     /* set non_num as needed */
-    if (isalpha(name[0])) {
+    if (isalpha((int)name[0])) {
 	non_num = TRUE;
-    } else if (isdigit(name[0])) {
+    } else if ((int)isdigit((int)name[0])) {
 	non_num = FALSE;
     } else {
 	return 1;
@@ -1603,13 +1603,13 @@ bad_grpname(name, num_chk)
 	}
 
 	/* alpha chars are ok */
-	if (isalpha(*p)) {
+	if (isalpha((int)*p)) {
 	    non_num = TRUE;
 	    continue;
 	}
 
 	/* numeric chars are ok */
-	if (isdigit(*p)) {
+	if (isdigit((int)*p)) {
 	    continue;
 	}
 
@@ -1639,9 +1639,9 @@ bad_grpname(name, num_chk)
 	     * last '.', or before the beginning if no previous '.'
 	     * has been seen.
 	     */
-	    if ((!num_chk || non_num) && isascii(*(p+1)) && isalnum(*(p+1))) {
+	    if ((!num_chk || non_num) && isascii(*(p+1)) && isalnum((int)*(p+1))) {
 		++p;		/* '.' is ok, and so is the next char */
-		if (isdigit(*p)) {	/* reset non_num as needed */
+		if (isdigit((int)*p)) {	/* reset non_num as needed */
 		    non_num = FALSE;
 		} else {
 		    non_num = TRUE;

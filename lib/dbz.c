@@ -201,7 +201,7 @@ static int canttag_warned;		/* flag to control can't tag warning */
 typedef struct {
     long tsize;		        /* table size */
     long used[NUSEDS];          /* entries used today, yesterday, ... */
-    long vused[NUSEDS];		/* ditto for text size */
+    long vused[NUSEDS];	        /* ditto for text size */
     int valuesize;		/* size of table values, == sizeof(dbzrec) */
     int fillpercent;            /* fillpercent/100 is the percent full we'll
 				   try to keep the .pag file */
@@ -271,7 +271,7 @@ static int debug;			/* controlled by dbzdebug() */
 /* Structure for hash tables */
 typedef struct {
     int fd;                     /* Non-blocking descriptor for writes */
-    int pos;                    /* Current offset into the table */
+    OFFSET_T pos;               /* Current offset into the table */
     int reclen;                 /* Length of records in the table */
     dbz_incore_val incore;      /* What we're using core for */
     void *core;                 /* Pointer to in-core table */
@@ -397,7 +397,7 @@ static BOOL create_truncate(const char *name, const char *pag) {
  * size - table size (0 means default)
  * fillpercent - target percentage full ***** inactive
  */
-BOOL dbzfresh(const char *name, const long size, const int fillpercent)
+BOOL dbzfresh(const char *name, const OFFSET_T size, const int fillpercent)
 {
     char *fn;
     dbzconfig c;
@@ -513,8 +513,8 @@ static BOOL isprime(long x) {
  * dbzsize  - what's a good table size to hold this many entries?
  * contents - size of table (0 means return the default)
  */
-long dbzsize(const long contents) {
-    long n;
+long dbzsize(const OFFSET_T contents) {
+    OFFSET_T            n;
 
     if (contents <= 0) {	/* foulup or default inquiry */
 	DEBUG(("dbzsize: preposterous input (%ld)\n", contents));
@@ -524,7 +524,7 @@ long dbzsize(const long contents) {
     if ((conf.fillpercent > 0) && (conf.fillpercent < 100))
 	n = (contents / conf.fillpercent) * 100;
     else 
-	n = contents * 2;	/* try to keep table at most half full */
+	n = (contents * 3) / 2;	/* try to keep table at most 2/3's full */
 
     /* Make sure that we get at least 2 bytes of implicit hash */
     if (n < (64 * 1024))

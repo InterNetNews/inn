@@ -239,7 +239,7 @@ typedef int		BOOL;
 */
 
     /* =()<#define @<PERL_SUPPORT>@_PERL>()= */
-#define DONT_PERL
+#define DO_PERL
 
 
 /*
@@ -247,6 +247,6 @@ typedef int		BOOL;
 */
 
     /* =()<#define @<KEYWORDS>@_KEYWORDS>()= */
-#define DONT_KEYWORDS
+#define DO_KEYWORDS
 
 #endif /* ! defined (__configdata_h__) */

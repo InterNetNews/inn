@@ -23,16 +23,6 @@
 
 
 /*
-**   Information about a line in the overview file.
-*/
-typedef struct _LINE {
-    ARTNUM	Article;
-    char	*Start;
-    int		Length;
-    int		Offset;
-} LINE;
-
-/*
 **  A list of articles; re-uses space.
 */
 typedef struct _LIST {

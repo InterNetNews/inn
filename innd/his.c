@@ -320,7 +320,7 @@ STATIC void HISslashify(char *p)
 BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
 {
     static char		NOPATHS[] = "";
-    long		offset;
+    OFFSET_T		offset;
     int			i;
 #ifndef DO_TAGGED_HASH
     void		*ivalue;
@@ -428,7 +428,7 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
 */
 BOOL HISremember(const HASH hash)
 {
-    long		offset;
+    OFFSET_T		offset;
     int			i;
 #ifndef DO_TAGGED_HASH
     void		*ivalue;
