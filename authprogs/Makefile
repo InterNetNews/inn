@@ -4,9 +4,9 @@ include ../Makefile.global
 
 CFLAGS	= $(GCFLAGS)
 
-SOURCES	=	ckpasswd.c ident.c
+SOURCES	=	ckpasswd.c ident.c pwcheck.c
 
-ALLPASS	=	ckpasswd
+ALLPASS	=	ckpasswd pwcheck
 ALLRES	=	ident
 ALL	=	$(ALLPASS) $(ALLRES)
 
@@ -29,6 +29,9 @@ clobber clean:
 
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../lib/*.c ../include/*.h
+
+pwcheck:	$(P) pwcheck.o
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ pwcheck.o $(LIBS)
 
 ckpasswd:	$(P) ckpasswd.o
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ ckpasswd.o $(LIBS)
