@@ -2,6 +2,11 @@
 ''' $RCSfile$$Revision$$Date$
 '''
 ''' $Log$
+''' Revision 1.82  1999/12/17 17:00:00  kondou
+''' doc/man/inn.conf.5:
+''' 	- From: Ilya Etingof <ilya@glas.net>
+''' 	- Python authentication and authorization hooks into nnrpd
+'''
 ''' Revision 1.81  1999/11/26 16:47:18  kondou
 ''' doc/man/Makefile:
 ''' doc/man/putman.sh:
@@ -143,7 +148,7 @@
 .nr % 0
 .rr F
 .\}
-.TH INN.CONF 5 "INN 2.3" "22/Nov/99" "InterNetNews Documentation"
+.TH INN.CONF 5 "INN 2.3" "18/Dec/99" "InterNetNews Documentation"
 .UC
 .if n .hy 0
 .if n .na
@@ -593,6 +598,11 @@ boolean value and the default is true.
 Whether to use the Perl hook in \fInnrpd\fR\|(8) to authenticate readers.  If this
 is enabled, normal readers.\fIconf\fR\|(5) authentication will not be used, and
 instead the Perl hook will be called to authenticate connections.  This is
+a boolean value and the default is false.
+.Ip "\fInnrppythonauth\fR" 4
+Whether to use the Python hook in \fInnrpd\fR\|(8) to authenticate readers.  If this
+is enabled, normal readers.\fIconf\fR\|(5) authentication will not be used, and
+instead the ython hook will be called to authenticate connections.  This is
 a boolean value and the default is false.
 .Ip "\fInoreader\fR" 4
 Normally, \fIinnd\fR\|(8) will fork a copy of \fInnrpd\fR\|(8) for all incoming
@@ -1142,6 +1152,8 @@ above are just the major and most frequently mentioned ones.
 .IX Item "\fInnrpdcheckart\fR"
 
 .IX Item "\fInnrpperlauth\fR"
+
+.IX Item "\fInnrppythonauth\fR"
 
 .IX Item "\fInoreader\fR"
 
