@@ -158,7 +158,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
     
     art->private = (void *)private = NEW(PRIV_TIMEHASH, 1);
     private->len = sb.st_size;
-    if ((private->base = mmap((MMAP_PTR)0, sb.st_size, PROT_READ, MAP__ARG, fd, 0)) < 0) {
+    if ((private->base = mmap((MMAP_PTR)0, sb.st_size, PROT_READ, MAP__ARG, fd, 0)) == (MMAP_PTR)-1) {
 	syslog(L_ERROR, "timehash: could not mmap article: %m");
 	DISPOSE(art->private);
 	DISPOSE(art);
