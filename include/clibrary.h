@@ -114,7 +114,8 @@ extern ssize_t          pwrite(int, const void *, size_t, off_t);
 extern int              seteuid(uid_t);
 #endif
 #if NEED_DECLARATION_SNPRINTF
-extern int              snprintf(char *, size_t, const char *, ...);
+extern int              snprintf(char *, size_t, const char *, ...)
+    __attribute__((__format__(3, 4)));
 #endif
 #if !HAVE_STRERROR
 extern const char *     strerror(int);
