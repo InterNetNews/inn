@@ -352,7 +352,7 @@ overview_getheader(const struct cvector *vector, int element,
     size_t len;
     const char *p;
 
-    if (element >= vector->count ||
+    if ((element + 1) >= vector->count ||
 	(element >= SIZEOF(fields) &&
 	 (element - SIZEOF(fields)) >= extra->count)) {
 	warn("request for invalid overview field %d", element);
