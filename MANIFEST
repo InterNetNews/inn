@@ -358,6 +358,7 @@ include/inn/mmap.h                    Header file for mmap() functions
 include/inn/qio.h                     Header file for quick I/O package
 include/inn/sequence.h                Header file for sequence space arithmetic
 include/inn/timer.h                   Header file for generic timers
+include/inn/tst.h                     Header file for ternary search tries
 include/inn/vector.h                  Header file for vectors of strings
 include/inn/wire.h                    Header file for wire-format functions
 include/inndcomm.h                    innd control channel commands
@@ -375,7 +376,6 @@ include/portable/time.h               Wrapper for <time.h> and <sys/time.h>
 include/portable/wait.h               Wrapper for <sys/wait.h>
 include/ppport.h                      Header file for Perl support
 include/storage.h                     Header file for storage API
-include/tst.h                         Header file for ternary search trees
 innd                                  Server (Directory)
 innd/Makefile                         Makefile for server
 innd/art.c                            Process a received article
@@ -492,12 +492,7 @@ lib/strlcpy.c                         strlcpy replacement
 lib/strspn.c                          Skip bytes in a string (BSD)
 lib/strtok.c                          Split a string into tokens (BSD)
 lib/timer.c                           Generic profile timer
-lib/tst_cleanup.c                     Ternary search tree implementation
-lib/tst_delete.c                      Ternary search tree implementation
-lib/tst_grow_node_free_list.c         Ternary search tree implementation
-lib/tst_init.c                        Ternary search tree implementation
-lib/tst_insert.c                      Ternary search tree implementation
-lib/tst_search.c                      Ternary search tree implementation
+lib/tst.c                             Ternary search trie implementation
 lib/uwildmat.c                        Pattern match routine
 lib/vector.c                          Manipulate vectors of strings
 lib/version.c                         INN version constants
@@ -707,6 +702,7 @@ tests/lib/snprintf-t.c                Tests for lib/snprintf.c
 tests/lib/strerror-t.c                Tests for lib/strerror.c
 tests/lib/strlcat-t.c                 Tests for lib/strlcat.c
 tests/lib/strlcpy-t.c                 Tests for lib/strlcpy.c
+tests/lib/tst-t.c                     Tests for lib/tst.c
 tests/lib/uwildmat-t.c                Tests for lib/uwildmat.c
 tests/lib/vector-t.c                  Tests for lib/vector.c
 tests/lib/wire-t.c                    Tests for lib/wire.c
