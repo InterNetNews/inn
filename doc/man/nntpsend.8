@@ -10,10 +10,16 @@ nntpsend \- send Usenet articles to remote site
 .B \-c
 ]
 [
+.B \-D
+]
+[
 .B \-d
 ]
 [
-.B \-D
+.B \-n
+]
+[
+.BI \-P " portnum"
 ]
 [
 .B \-p
@@ -25,19 +31,13 @@ nntpsend \- send Usenet articles to remote site
 .B \-S
 ]
 [
-.B \-n
-]
-[
 .BI \-s " size"
-]
-[
-.BI \-t " timeout"
 ]
 [
 .BI \-T " timelimit"
 ]
 [
-.BI \-P " portnum"
+.BI \-t " timeout"
 ]
 [
 .I sitename
@@ -117,15 +117,22 @@ invocations which in turn causes
 .I innxmit
 to go into debug mode.
 .TP
+.B -n
+If the ``\-n'' flag is used, then
+.I nntpsend
+does not use
+.IR shlock (1)
+and does not lock batch files.
+.TP
 .B \-s
 If the ``\-s'' flag is used, then
 .IR shrinkfile (1)
 will be invoked to perform a head truncation on the batchfile and the flag
 will be passed to it.
 .TP
-.B "\-a \-p \-r \-S \-t \-T \-c \-P"
-The ``\fB\-a\fP'', ``\fB\-c\fP'', ``\fB\-p\fP'', ``\fB\-P\fP'', ``\fB\-r\fP'',
-\``\fB\-S\fP'', ``\fB\-t\fP'', ``\fB\-T\fP'', ``\fB\-c\fP'', and ``\fB\-P\fP''
+.B "\-a \-c \-P \-p \-r \-S \-T \-t"
+The ``\fB\-a\fP'', ``\fB\-c\fP'', ``\fB\-P\fP'', ``\fB\-p\fP'', ``\fB\-r\fP'',
+\``\fB\-S\fP'', ``\fB\-T\fP'' and ``\fB\-t\fP''
 flags are passed on to the
 child
 .I innxmit
@@ -139,13 +146,6 @@ It is useful to have
 invoke
 .I nntpsend
 with this flag in case a site cannot be reached for an extended period of time.
-.TP
-.B -n
-If the ``\-n'' flag is used, then
-.I nntpsend
-does not use
-.IR shlock (1)
-and does not lock batch files.
 .SH EXAMPLES
 With the following control file:
 .PP

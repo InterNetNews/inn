@@ -8,31 +8,34 @@ nnrpd \- NNTP server for on-campus hosts
 .BI \-b " address"
 ]
 [
-.BI \-D
+.B \-D
 ]
 [
 .BI \-g " shadowgroup"
 ]
 [
-.BI \-o
+.B \-i
+]
+[
+.B \-o
 ]
 [
 .BI \-p " port"
 ]
 [
+.B \-R
+]
+[
 .BI \-r " reason"
 ]
 [
-.BI \-R
+.B \-S
 ]
 [
 .BI \-s " title padding"
 ]
 [
 .B \-t
-]
-[
-.B \-S
 ]
 .SH DESCRIPTION
 .I Nnrpd
@@ -54,11 +57,10 @@ uses the
 .IR readers.conf (5)
 file to control who is authorized to access the Usenet database.
 When
-.I <NNRP_LOADLIMIT in config.data>
+.I <NNRP_LOADLIMIT in include/config.h>
 is not 0, It will also reject connections if the load average is greater than
 that value
 (typically
-.\" =()<.IR @<typNNRP_LOADLIMIT>@ .) >()=
 .IR 16 .) 
 .PP
 On exit,
@@ -72,6 +74,72 @@ discussion of exponential backoff in
 .IR inn.conf (5).
 .SH OPTIONS
 .TP
+.B \-b
+The ``\-b'' parameter instructs
+.I nnrpd
+to bind to the specified
+.I IP address
+when started as a standalone daemon using the ``\-D'' flag. 
+This has to be a valid Internet
+address in dotted-quad format belonging to an interface of the local
+host.
+.TP
+.B \-D
+If specified, this parameter causes 
+.I nnrpd
+to operate as a daemon. That is, it detaches itself and runs in the
+background, forking a process for every connection. By default
+.I nnrpd
+listens on the NNTP port (119), so either
+.I innd
+has to be started on another port or
+.I nnrpd
+is invoked with the ``\-p'' parameter.
+.TP
+.B \-g
+On systems that have a shadow password file,
+.I nnrpd
+tries to add the group ``shadow'' as a supplementary group if it is
+running in standalone mode. On many systems, members of that group have
+read permission for the shadow password file.
+The ``\-g'' parameter instructs
+.I nnrpd
+to try to add the named group as a supplementary group on shadow systems
+instead of ``shadow''.
+This only works if
+.I <HAVE_GETSPNAM inn include/config.h>
+is defined and
+.I nnrpd
+is running in standalone mode since this call only works when
+.I nnrpd
+is started as root.
+.TP
+.B \-o
+The ``\-o'' flag causes all articles to be spooled instead of sending
+them to
+.IR innd .
+.I Rnews
+with ``-U'' flag should be invoked from cron on a regular basis to take care of
+these articles. This flag is useful if
+.I innd
+in accepting articles and
+.I nnrpd
+is started standalone or using 
+.IR inetd .
+.TP
+.B \-p
+The ``\-p'' parameter instructs
+.I nnrpd
+to listen on
+.IR port 
+when started as a standalone daemon using the ``\-D'' flag.
+.TP
+.B \-R
+This option forces
+.I nnrpd
+to be ``read-only''.
+The startup banner will indicate ``no posting''.
+.TP
 .B \-r
 If the ``\-r'' flag is used, then
 .I nnrpd
@@ -82,11 +150,13 @@ This flag is used by
 .I innd
 when it is paused or throttled.
 .TP
-.B \-R
-This option forces
+.B \-S
+If specified, 
 .I nnrpd
-to be ``read-only''.
-The startup banner will indicate ``no posting''.
+start a negotiation for SSL session as soon as connected.
+To use this flag,
+.I <--with-openssl at configure>
+must be specified.
 .TP
 .B \-s
 As each command is received,
@@ -108,66 +178,6 @@ under the control of the
 .IR ctlinnd (8)
 \&``trace'' command, and is toggled upon receipt of a SIGHUP; see
 .IR signal (2).
-.TP
-.B \-o
-The ``\-o'' flag causes all articles to be spooled instead of sending
-them to
-.IR innd .
-.I Rnews
--U should be invoked from cron on a regular basis to take care of these
-articles. This option is useful if
-.I innd
-in accepting articles and
-.I nnrpd
-is started standalone or using 
-.IR inetd .
-.TP
-.B \-D
-If specified, this parameter causes 
-.I nnrpd
-to operate as a daemon. That is, it detaches itself and runs in the
-background, forking a daemon for every connection. By default
-.I nnrpd
-listens on the NNTP port (119), so either
-.I innd
-has to be started on another port or
-.I nnrpd
-is invoked with the ``\-p'' parameter.
-.TP
-.B \-p
-The ``\-p'' parameter instructs
-.I nnrpd
-to listen on
-.IR port 
-when started as a standalone daemon using the ``\-D'' flag.
-.TP
-.B \-g
-The ``\-g'' parameter instructs
-.I nnrpd
-to try to add the named group as a supplementary group on shadow systems.
-This only works when
-.I nnrpd
-is running in standalone mode since this call only works when
-.I nnrpd
-is started as root.
-.TP
-.B \-b
-The ``\-b'' parameter instructs
-.I nnrpd
-to bind to the specified
-.I IP address
-when started as a standalone daemon using the ``\-D'' flag. 
-This has to be a valid Internet
-address in dotted-quad format belonging to an interface of the local
-host.
-.TP
-.B \-S
-If specified, 
-.I nnrpd
-start a negotiation for SSL session as soon as connected.
-To use this option,
-.I nnrpd
-must be built with OpenSSL at compile time.
 .SH "PROTOCOL DIFFERENCES"
 .I Nnrpd
 implements the NNTP commands defined in RFC 977, with the following
@@ -216,7 +226,7 @@ and
 .I "``authinfo pass''"
 commands are implemented.
 These are based on the reference Unix implementation. See
-ftp://ds.internic.net/internet-drafts/draft-barber-nntp-imp-07.txt
+ftp://ftp.ietf.org/internet-drafts/draft-ietf-nntpext-imp-04.txt
 .IP 5.
 A new command,
 .IR "``xpat header range|MessageID pat [morepat...]''" ,
@@ -271,18 +281,12 @@ command is provided; see
 .IP 10.
 The
 .I "``date''"
-command is provided; this is based on the draft NNTP protocol revision.
+command is provided; this is based on the draft NNTP protocol revision(
+draft-ietf-nntpext-imp-04.txt).
 It returns a one-line response code of
 .I 111
 followed by the GMT date
 and time on the server in the form YYYYMMDDhhmmss.
-.SH SHADOW PASSWORD SYSTEMS
-On systems that have a shadow password file,
-.I nnrpd
-tries to add the group ``shadow'' as a supplementary group if it is
-running in standalone mode. On many systems, members of that group have
-read permission for the shadow password file. The ``-g'' option can
-be used to change the group that nnrpd tries to become a member of.
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 Overview support added by Rob Robertston <rob@violet.berkeley.edu> and

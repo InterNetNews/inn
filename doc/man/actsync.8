@@ -106,7 +106,9 @@ protocol to obtain a copy of the the specified system's active file.
 If the host argument contains a 
 .B ``:'' ,
 the right side will be considerd the port to connect to on the remote system.
-If no port number ist specified, actsync will connect to port 119.
+If no port number ist specified,
+.IR actsync (8)
+will connect to port 119.
 .PP
 Regardless how the active file information is obtained,
 the actions of
@@ -179,7 +181,7 @@ and are ignored.
 All other lines may produce undefined results.
 .sp 1
 The \fBhost\fP config file line refers to the \fIhost2\fP value to sync off of.
-the \fBftppath\fP directive causes the machine named in the \fBhost\fP
+The \fBftppath\fP directive causes the machine named in the \fBhost\fP
 line to accessed as an ftp server, retrieving the file named.  If
 the filename ends in \fB.gz\fP or \fB.Z\fP, then it will automatically
 be uncompressed after retrieval.
@@ -930,7 +932,9 @@ flags=\-o x \-v 2 \-q 2
 .fi
 .in -0.5i
 .PP
-and then by running actsyncd with the path to the config
+and then by running
+.IR actsyncd (8)
+with the path to the config
 file.
 .PP
 .in +0.5i
@@ -1060,16 +1064,6 @@ Careless use of this tool may result in the addition
 change or removal of newsgroups that you don't want.
 You should avoid using the \fRx\fP output format until
 you are sure it will do what you want.
-.PP
-Be aware that
-.IR innd (8)
-servers older than version 1.5 may corrupt the active file when
-multiple rmgroups are performed if the server is paused or throttled.
-This is not a
-.IR actsync (8)
-bug, it is a server bug.
-Using the pause, actsync, reload and go method
-noted above avoids this problem of older servers.
 .SH BUGS
 If a newsgroup appears multiple times,
 .IR actsync (8)

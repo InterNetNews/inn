@@ -18,10 +18,12 @@ file:
 .I <pathdb in inn.conf>/group.index
 which includes the information of the newsgroup; the pointer to the index
 block for the group, high mark, low mark, flag of the group, the number of
-the articles and etc.  If all buffers are filled up, innd(8) throttles itself.
-Note that the buffers are never rolled over and overwritten the way CNFS does.
-You need to append another buffer in the case.  You can see the buffer usage
-with
+the articles and etc.  This file is created automatically when all buffers
+are initialized and must not be edited manually.  If all buffers are filled up,
+.IR innd (8)
+throttles itself.  Note that the buffer files are never rolled over and
+overwritten the way CNFS does.  You need to append another buffer file in the
+case.  You can see the buffer usage with
 .IR inndf (8)
 with ``-o'' option.
 .PP
@@ -42,9 +44,10 @@ index:file_name:buffer_size
 The length of this path should be within 63 letters.
 \&``Buffer_size'' is the length of buffer file in kilobytes
 in decimal (1KB = 1024 bytes).  If the ``file_name'' is not a special
-device, the file must be buffer_size * 1024 bytes.
-You can NOT use buffers over 2GB even if you specify --with-largefiles
-at configure time.  Or buffers will be broken.  It'll be fixed in the future.
+device, actucal file size must be buffer_size * 1024 bytes.
+You can NOT use buffers over 2GB even if you specify
+.IR <\-\-with\-largefiles\ at\ configure> .
+Or buffers will be broken.  It'll be fixed in the future.
 .PP
 To create new overview buffer, there are two different methods for creating
 the files.
@@ -62,33 +65,35 @@ recommended method.  Partition the disks to make each partition
 slightly larger (a few MB larger) than the intended size of each overview buffer.
 It is not recommend to use the block device files already located in ``/dev.''
 Instead, use "mknod" to create a new set of block device files.
-In order to do this, do an "ls -l" of the /dev/dsk partition and then a
-subsequent "ls -l" of the destination of the symbolic link under /devices.
+In order to do this, do an "ls -Ll" of the /dev/dsk partition.
 The major and minor device numbers are in the fifth and sixth columns (right
 before the date) respectively.  This information should be fed to "mknod"
 to make a "block-type special file" (b).
-Here is a short script that accomplishes this when fed the /dev/dsk/
+Here is a short script that accomplishes this when fed the ``/dev/dsk/''
 partition name:
 .sp 1
 .nf
 .in +0.5i
 #!/bin/sh
 disk=$1
-link=`ls -l /dev/dsk/$disk | awk '{print $11}'`
-major=`ls -l /dev/dsk/$link | awk '{print $5}' | tr -d ,`
-minor=`ls -l /dev/dsk/$link | awk '{print $6}`
+major=`ls -l /dev/dsk/$disk | awk '{print $5}' | tr -d ,`
+minor=`ls -l /dev/dsk/$disk | awk '{print $6}`
 mkdir /ovbuff
 mknod /ovbuff/$disk b $major $minor
 .in -0.5i
 .fi
 The created device files themselves consume very little space.
 .PP
-In either case, make certain that each overview buffer file is owned by your
-news user, news group, and has rw modes for the owner and group (mode
-0664 or 0660).
+In either case, make certain that each overview buffer file is owned by
+.IR <USER\ specified\ with\ \-\-with\-news\-user\ at\ configure> ,
+.IR <GROUP\ specified\ with\ \-\-with\-news\-group\ at\ configure> ,
+and has read/write modes for the owner and group (mode ``0664'' or ``0660'').
 .PP
-When you first start innd and everything is configured properly, you
-should see messages in news.notice which look like:
+When you first start
+.IR innd (8)
+and everything is configured properly, you should see messages in
+.I <pathlog in inn.conf>/news.notice
+which look like:
 .sp 1   
 .nf
 .in +0.5i

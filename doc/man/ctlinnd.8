@@ -54,9 +54,8 @@ When waiting for a reply,
 will try every two minutes to see if the server is still running, so it
 is unlikely that ``\fB\-t0\fP'' will hang.
 The default is set as 
-.I <CTLINND_TIMEOUT in config.data> 
+.I <CTLINND_TIMEOUT in include/config.h> 
 (typically 
-.\"=()<.IR @<typCTLINND_TIMEOUT>@ .)>()=
 .IR 0 .)
 .TP
 .B \-h
@@ -69,7 +68,7 @@ will be given.
 If a large number of groups are going to be created or deleted at once,
 it may be more efficient to ``pause'' or ``throttle'' the server
 and edit the
-.I active
+.IR active (5)
 file directly.
 .PP
 The complete list of commands follows.
@@ -218,7 +217,9 @@ Print a command summary for all commands, or just
 if specified.
 .TP
 .BI lowmark " file"
-Reset the lowmarks in the active file based on the contents of the given
+Reset the lowmarks in the
+.I active
+file based on the contents of the given
 file. Each line in the file must be of the form:
 .IP
 .RS
@@ -232,45 +233,6 @@ for example
 .RS
 .nf
     comp.lang.c++    243
-.fi
-.RE
-.IP
-A useful perl script for this is (called ``findlow''):
-.IP
-.RS
-.nf
-    #!/usr/bin/perl
-    require 5.001 ;
-    require "/var/news/etc/innshellvars.pl" ;
-    chdir $inn::spool or die "cd ($inn::spool): $!\n" ;
-    open(A,"<$inn::active") or die "open ($inn::active): $!\n";
-    while (<A>) {
-		($g,$HI,$LO,$f) = split;
-		$lo = $HI+1;
-		$d = $g; $d =~ y/./\//;
-		opendir(D, $d) or next;
-		while ($f = readdir(D)) {
-			next unless $f =~ /^\d+$/;
-			$l = int($f);
-			if ($l < $lo) { $lo = $l; }
-		}
-		closedir(D);
-		print "$g $lo\n" if $lo != $LO;
-    }
-    close(A);
-.fi
-.RE
-.IP
-Note: the output only mentions groups who's lowmark doesn't match the active
-file value. And a driver shell script is:
-.IP
-.RS
-.nf
-    T=/tmp/lowmark.$$
-    if /usr/news/local/findlow > $T && [ -s $T ]; then
-	ctlinnd -s lowmark $T
-    fi
-    rm $T
 .fi
 .RE
 .TP
@@ -330,7 +292,7 @@ shown unless the channel is paused.  Or ``paused'' is shown.
 \&``Paused'' status happens, if the number of remote connection
 for that label in
 .IR incoming.conf (5)
-is beyond ``max-connections'' for ``hold-time'' seconds.
+is beyond ``max-connections'' within ``hold-time'' seconds since connected.
 .TP
 .BI newgroup " group rest creator"
 Create the specified newsgroup.
@@ -449,10 +411,7 @@ and
 .I newsfeeds
 files are reloaded; if it is the word ``overview.fmt'' then the
 .IR overview.fmt (5)
-file is reloaded; if it is the word ``overview.ctl'' then the
-.IR overview.ctl (5)
 file is reloaded.
-
 If
 .I <\-\-with\-perl is specified at configure>
 and it is the word ``filter.perl'' then the
@@ -465,15 +424,14 @@ after
 .IR filter_innd.pl .
 has been reloaded.  Reloading the Perl filter does not enable filtering if
 it is disabled; use
-.IR perl\ y
+.I perl y
 to do this. The
-.IR startup_innd.pl
+.I startup_innd.pl
 file cannot be reloaded.
-
 If
 .I <\-\-with\-python is specified at configure>
 and it is the word ``filter.python'' then the
-.IR filter_innd.py
+.I filter_innd.py
 file is reloaded.  If a Python method named ``filter_before_reload'' exists,
 it will be called prior to rereading
 .IR filter_innd.py .
@@ -482,23 +440,25 @@ after
 .IR filter_innd.py .
 has been reloaded.  Reloading the Python filter does not enable filtering if
 it is disabled; use
-.IR python\ y
+.I python y
 to do this.
-
 If
 .I <\-\-with\-tcl is specified at configure>
 and it is the word ``filter.tcl'' then the
-.IR filter.tcl
+.I filter.tcl
 file is reloaded.  If a TCL procedure named ``filter_before_reload'' exists,
 it will be called prior to rereading
 .IR filter.tcl.
 If a TCL procedure named ``filter_after_reload'' exists, it will be called
 after
-.IR filter.tcl
+.I filter.tcl
 has been reloaded.  Reloading the Tcl filter does not enable filtering if
 it is disabled; use
 .IR filter
 to do this.
+The
+.I startup.tcl
+file cannot be reloaded.
 The
 .I reason
 is reported to
@@ -506,9 +466,6 @@ is reported to
 There is no way to reload the data
 .IR inn.conf (5)
 file.
-The
-.IR startup.tcl
-file cannot be reloaded.
 .TP
 .BI renumber " group"
 Scan overview database for the specified newsgroup and update the
@@ -595,7 +552,7 @@ does a ``readers'' command with ``no'' as the flag and
 as the text.
 .TP
 .BI timer " off|interval"
-Performance monitoring is turned off if 'off' or '0' is specified,
+Performance monitoring is turned off if ``off'' or ``0'' is specified,
 otherwise, statistics will be reported every
 .I interval
 seconds to syslog.  See 

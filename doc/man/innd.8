@@ -107,9 +107,8 @@ and non-blocking I/O.
 If no data is available, then it will flush its in-core data structures.
 The default number of seconds to timeout before flushing is
 set as
-.I <DEFAULT_TIMEOUT in config.data>
+.I <DEFAULT_TIMEOUT in include/config.h>
 (typically
-.\" =()<.IR @<typDEFAULT_TIMEOUT>@ ) >()=
 .IR 300 ) 
 seconds.
 .PP

@@ -17,9 +17,6 @@ archive \- Usenet article archiver
 .BI \-i " index"
 ]
 [
-.B \-m
-]
-[
 .BI \-p " newsgroups\ list"
 ]
 [
@@ -43,27 +40,18 @@ reads the named
 file, or standard input if no file is given.
 The input is taken as a set of lines.
 Blank lines and lines starting with a number sign (``#'') are ignored.
-All other lines should specify the name of a file 
-or the token of an article
-to archive.
-If a filename is not an absolute pathname, it is taken to be relative to
-.IR <patharticles\ in\ inn.conf> .
-
-If the input is a list of tokens, the specified articles are retrieved
-from the storage manager api
-and the Xref: header is used to determine the target file(s) in the
+All other lines should specify the token of an article to archive.
+Every article is retrieved from a token
+and the Xref: header is used to determine the target file in the
 archive directory.
 You can limit the targets taken from the Xref: header with the ``\-p'' option.
-
 .PP
 Files are copied to a directory within the archive directory,
 .IR <patharchive\ in\ inn.conf> .
-
 The default is to create a hierarchy that mimics the input files;
 intermediate directories will be created as needed.
-For example, the input file
-.I comp/sources/unix/2211
-(article 2211 in the newsgroup comp.sources.unix) will be copied to
+For example, if the input token represents article 2211 in the newsgroup
+comp.sources.unix, it will be copied to
 .IR <patharchive\ in\ inn.conf>/comp/sources/unix/2211 .)
 .SH OPTIONS
 .TP
@@ -74,19 +62,19 @@ archive in instead of the default.
 .B \-c
 If the ``\-c'' flag is used, then all directory names will be flattened
 out, replacing the slashes with periods; and all posts will be concatenated
-into a single file with the final component name being YYYYMM.
+into a single file with the final component name being YYYYMM which means
+the local execution time of
+.IR archive (8).
 In this case, on December 14, 1998, the file would be copied to
-.IR <patharchive\ in\ inn.conf>/comp.sources.unix/199812 .)
-
+.IR <patharchive\ in\ inn.conf>/comp.sources.unix/199812 .
 .B Note:
-The ``\-c'' flag implies the ``\-f'' flag 
-and prevents the ``\-m'' flag from being honored.
+The ``\-c'' flag implies the ``\-f'' flag.
 .TP
 .B \-f
 If the ``\-f'' flag is used, then all directory names will be
 flattened out, replacing the slashes with periods.
 In this case, the file would be copied to
-.IR <patharchive\ in\ inn.conf>/comp.sources.unix/2211 .)
+.IR <patharchive\ in\ inn.conf>/comp.sources.unix/2211 .
 .TP
 .B \-i
 If the ``\-i'' flag is used, then
@@ -96,21 +84,6 @@ will append one line to the specified
 file for each article that it copies.
 This line will contain the destination name and the Message-ID and
 Subject headers.
-.TP
-.B \-m
-Files are copied by making a link.
-If that fails a new file is created.
-If
-.I <$ac_cv_func_symlink in config.cache>
-is ``yes'', and the ``\-m'' flag is used, then the file will be copied to the
-destination, and the input file will be replaced with a symbolic
-link pointing to the new file.
-If
-.I <$ac_cv_func_symlink in config.cache>
-is ``no'',
-the input is a token,
-or the ``\-c'' flag is specified,
-the ``\-m'' flag is ignored.
 .TP 
 .B \-p
 Limits the targets taken from the Xref: header to the groups specified in the
@@ -119,7 +92,6 @@ The
 .I newsgroups\ list
 is a comma separated wildmat(3) list of newsgroups you wish to have archive
 handle.
-If the input is not a token, the ``\-p'' flag is ignored.
 .TP 
 .B \-r
 By default,

@@ -23,16 +23,10 @@ grephistory \- display file names from Usenet history file
 .B \-n
 ]
 [
-.B \-o
-]
-[
 .B \-q
 ]
 [
 .B \-s
-]
-[
-.B \-T
 ]
 [
 .B \-t
@@ -92,15 +86,6 @@ expired but its history is still retained.
 This is default behavior, which can be obtained by using 
 the ``\fB\-n\fP'' flag.
 .TP
-.B \-o
-If the ``\fB\-o\fP'' flag is used, then the overview data for that article
-will be displayed.
-This flag is available, if
-.I <DBZ_TAGGED_HASH in config.data>
-is ``DONT'' and
-.I extendeddbz
-in inn.conf is turned on.
-.TP
 .B \-q
 If the ``\fB\-q\fP'' flag is used, then no message is displayed.
 The program will still exit with the appropriate exit status.
@@ -112,15 +97,6 @@ will read a similar list from its standard input.
 It will print on standard output a list of filenames for each article
 that is still available.
 This flag is used in processing ``sendme'' control messages.
-.TP
-.B \-T
-If the ``\fB\-T\fP'' flag is used, then only the offset into the overview data
-for that article will be displayed.
-This flag is available, if
-.I <DBZ_TAGGED_HASH in config.data>
-is ``DONT'' and
-.I extendeddbz
-in inn.conf is turned on.
 .TP
 .B \-t
 If the ``\fB\-t\fP'' flag is used, then only the offset into the history text

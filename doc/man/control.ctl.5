@@ -16,7 +16,6 @@ script, which can be invoked as channel program by
 When
 .I control.ctl
 is modified,
-.I
 .I controlchan
 notices this automatically and reload it.
 If
@@ -137,7 +136,9 @@ which is interpreted as described above.
 A mail message is sent to the news administrator.
 .PP
 Processing of a ``checkgroups'' message will never actually change
-the active file.
+the
+.IR active (5)
+file.
 The difference between an action of
 .B doit
 (or
@@ -204,9 +205,9 @@ This is revision \\$3, dated \\$4.
 ..
 .R$ $Id$
 .SH "SEE ALSO"
+controlchan(8),
 inn.conf(5),
 innd(8),
 newsfeeds(5),
-controlchan(8),
 pgpverify(8),
 scanlogs(8).
