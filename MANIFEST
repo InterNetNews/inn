@@ -524,7 +524,7 @@ storage/trash/Makefile                Makefile for trash storage method
 storage/trash/method.config           buildconfig definition
 storage/trash/trash.c                 Trash storage routines
 storage/trash/trash.h                 Header file for trash storage
-support                               Tools for building INN
+support                               Tools for building INN (Directory)
 support/config.guess                  Determine system type for libtool
 support/config.sub                    Canonicalize system type for libtool
 support/fixscript.in                  Interpreter path fixup script
