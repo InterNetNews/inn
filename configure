@@ -5240,8 +5240,7 @@ done
 
 ac_given_srcdir=$srcdir
 
-trap 'rm -fr `echo "BUILD
-	Makefile.global 
+trap 'rm -fr `echo "Makefile.global 
 	makedirs.sh 
 	config/config.data 
 	backends/actmerge.sh
@@ -5433,8 +5432,7 @@ EOF
 
 cat >> $CONFIG_STATUS <<EOF
 
-CONFIG_FILES=\${CONFIG_FILES-"BUILD
-	Makefile.global 
+CONFIG_FILES=\${CONFIG_FILES-"Makefile.global 
 	makedirs.sh 
 	config/config.data 
 	backends/actmerge.sh

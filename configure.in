@@ -719,7 +719,6 @@ AC_SUBST(EXTRA_SRC)
 grep "^  ||" config/config.scoreboard | sed 's/  ||//g' >config/config.data.in
 AC_CONFIG_HEADER(include/config.h:include/config.h)
 AC_OUTPUT(
-	BUILD
 	Makefile.global 
 	makedirs.sh 
 	config/config.data 
