@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "INN.CONF 5"
-.TH INN.CONF 5 "2002-12-08" "INN 2.4.0" "InterNetNews Documentation"
+.TH INN.CONF 5 "2002-12-16" "INN 2.4.0" "InterNetNews Documentation"
 .SH "NAME"
 inn.conf \- Configuration data for InterNetNews programs
 .SH "DESCRIPTION"
@@ -561,6 +561,21 @@ overviews to be read directly from the \s-1NFS\s0 spool rather than from
 cached copies.  You should only set this parameter if you are
 attempting to use a shared \s-1NFS\s0 spool on a machine acting a reader a
 cluster.  This is a boolean value and the default is false.
+.IP "\fInfsreaderdelay\fR" 4
+.IX Item "nfsreaderdelay"
+For servers reading articles, determine whether the article spool is
+on \s-1NFS\s0 storage.  If \fInfsreader\fR is set, \s-1INN\s0 will use the value of
+\&\fInfsreaderdelay\fR to delay the apparent arrival time of articles to
+clients by this amount; this value should be tuned based on the \s-1NFS\s0
+cache timeouts locally.  This default is 60 (1 minute).
+.IP "\fImsgidcachesize\fR" 4
+.IX Item "msgidcachesize"
+How many cache slots to reserve for Message \s-1ID\s0 to storage token
+translations.  When serving overview data to clients (\s-1NEWNEWS\s0, \s-1XOVER\s0
+etc.), \fInnrpd\fR\|(8) can cache the storage token associated with a Message
+\&\s-1ID\s0 and save the cost of looking it up in the history file; for some
+configurations setting this parameter can save more than 90% of the
+wall clock time for a session.  The default value is 10000.
 .IP "\fItradindexedmmap\fR" 4
 .IX Item "tradindexedmmap"
 Whether to attempt to \fImmap()\fR tradindexed overviews articles.  Setting

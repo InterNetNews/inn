@@ -75,12 +75,14 @@ allownewnews:           true
 articlemmap:            false
 clienttimeout:          600
 initialtimeout:         10
+msgidcachesize:         10000
 nnrpdcheckart:          true
 nnrppythonauth:         false
 noreader:               false
 readerswhenstopped:     false
 readertrack:            false
 nfsreader:              false
+nfsreaderdelay:         60
 tradindexedmmap:        true
 nnrpdloadlimit:         16
 

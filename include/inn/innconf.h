@@ -72,7 +72,9 @@ struct innconf {
     bool articlemmap;           /* Use mmap to read articles? */
     long clienttimeout;         /* How long nnrpd can be inactive */
     long initialtimeout;        /* How long nnrpd waits for first command */
+    long msgidcachesize;        /* Number of entries in the message ID cache */
     bool nfsreader;             /* Use NFS reader functionality */
+    long nfsreaderdelay;        /* Delay applied to article arrival */
     bool nnrpdcheckart;         /* Check article existence before returning? */
     long nnrpdloadlimit;	/* Maximum getloadvg() we allow */
     bool nnrpperlauth;          /* Use Perl for nnrpd authentication */

@@ -484,6 +484,23 @@ cached copies.  You should only set this parameter if you are
 attempting to use a shared NFS spool on a machine acting a reader a
 cluster.  This is a boolean value and the default is false.
 
+=item I<nfsreaderdelay>
+
+For servers reading articles, determine whether the article spool is
+on NFS storage.  If I<nfsreader> is set, INN will use the value of
+I<nfsreaderdelay> to delay the apparent arrival time of articles to
+clients by this amount; this value should be tuned based on the NFS
+cache timeouts locally.  This default is 60 (1 minute).
+
+=item I<msgidcachesize>
+
+How many cache slots to reserve for Message ID to storage token
+translations.  When serving overview data to clients (NEWNEWS, XOVER
+etc.), nnrpd(8) can cache the storage token associated with a Message
+ID and save the cost of looking it up in the history file; for some
+configurations setting this parameter can save more than 90% of the
+wall clock time for a session.  The default value is 10000.
+
 =item I<tradindexedmmap>
 
 Whether to attempt to mmap() tradindexed overviews articles.  Setting
