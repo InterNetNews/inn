@@ -8,6 +8,9 @@ archive \- Usenet article archiver
 .BI \-a " archive"
 ]
 [
+.B \-c
+]
+[
 .B \-f
 ]
 [
@@ -15,6 +18,9 @@ archive \- Usenet article archiver
 ]
 [
 .B \-m
+]
+[
+.BI \-p " newsgroups\ list"
 ]
 [
 .B \-r
@@ -37,9 +43,17 @@ reads the named
 file, or standard input if no file is given.
 The input is taken as a set of lines.
 Blank lines and lines starting with a number sign (``#'') are ignored.
-All other lines should specify the name of a file to archive.
+All other lines should specify the name of a file 
+or the token of an article
+to archive.
 If a filename is not an absolute pathname, it is taken to be relative to
 .IR <patharticles\ in\ inn.conf> .
+
+If the input is a list of tokens, the specified articles are retrieved
+from the storage manager api
+and the Xref: header is used to determine the target file(s) in the
+archive directory.
+You can limit the targets taken from the Xref: header with the ``\-p'' option.
 
 .PP
 Files are copied to a directory within the archive directory,
@@ -57,11 +71,23 @@ For example, the input file
 If the ``\-a'' flag is used then its argument specifies the directory to
 archive in instead of the default.
 .TP
+.B \-c
+If the ``\-c'' flag is used, then all directory names will be flattened
+out, replacing the slashes with periods; and all posts will be concatenated
+into a single file with the final component name being YYYYMM.
+In this case, on December 14, 1998, the file would be copied to
+.IR <patharchive\ in\ inn.conf>/comp.sources.unix/199812 .)
+
+.B Note:
+The ``\-c'' flag implies the ``\-f'' flag 
+and prevents the ``\-m'' flag from being honored.
+.TP
 .B \-f
 If the ``\-f'' flag is used, then all directory names will be
 flattened out, replacing the slashes with periods.
 In this case, the file would be copied to
 .IR <patharchive\ in\ inn.conf>/comp.sources.unix/2211 .)
+.TP
 .B \-i
 If the ``\-i'' flag is used, then
 .I archive
@@ -81,8 +107,19 @@ destination, and the input file will be replaced with a symbolic
 link pointing to the new file.
 If
 .I <$ac_cv_func_symlink in config.cache>
-is ``no'', 
-The ``\-m'' flag is ignored.
+is ``no'',
+the input is a token,
+or the ``\-c'' flag is specified,
+the ``\-m'' flag is ignored.
+.TP 
+.B \-p
+Limits the targets taken from the Xref: header to the groups specified in the
+.I newsgroups\ list.
+The
+.I newsgroups\ list
+is a comma separated wildmat(3) list of newsgroups you wish to have archive
+handle.
+If the input is not a token, the ``\-p'' flag is ignored.
 .TP 
 .B \-r
 By default,
