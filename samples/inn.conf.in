@@ -21,6 +21,7 @@ complaints:
 mta:			@SENDMAIL@ -oi %s
 mailcmd:		@prefix@/bin/innmail
 checkincludedtext:	false
+rlimitnofile:		-1
 maxforks:		10
 maxartsize:		1000000
 nicekids:		4
