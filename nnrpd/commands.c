@@ -50,6 +50,11 @@ STATIC LISTINFO		INFOschema = {
     _PATH_SCHEMA, TRUE, "overview format",
     "Order of fields in overview database"
 };
+STATIC LISTINFO		INFOmotd = {
+    _PATH_MOTD, FALSE, "motd",
+    "Message of the day text."
+};
+
 
 
 /* returns:
@@ -340,6 +345,8 @@ CMDlist(ac, av)
 	lp = &INFOdistribpats;
     else if (caseEQ(p, "moderators"))
 	lp = &INFOmoderators;
+    else if (caseEQ(p,"motd"))
+	lp = &INFOmotd;
     else if (caseEQ(p, "newsgroups")) {
 	if (ac == 3)
 	    wildarg = av[2];
@@ -382,7 +389,8 @@ CMDlist(ac, av)
     /* Read lines, ignore long ones. */
     while ((p = QIOread(qp)) != NULL) {
 	if (lp == &INFOdistribs || lp == &INFOdistribpats ||
-            lp == &INFOsubs || lp == &INFOmoderators) {
+            lp == &INFOsubs || lp == &INFOmoderators ||
+	    lp == &INFOmotd) {
 	    Printf("%s\r\n", p);
 	    continue;
 	}
