@@ -13,12 +13,6 @@ Things that will break if you compile with --enable-ipv6:
       over IPv4
   
 
-Things that should be fixed but doesn't seem urgent:
-
-    * CHANrcfd and CHANrc need to be arrays to match the fd array
-
-
-
 
 Some comments as of the completion of the original patch:
 

@@ -31,8 +31,8 @@ Scheduled for INN 2.4:
   (mostly adding quotes around parameter values containing whitespace or
   special characters).  [Russ is working on this.]
 
-* There are some outstanding issues with the IPv6 that should be examined,
-  see doc/IPv6-info.  Whatever is not fixed should be documented.
+* There are some outstanding issues with the IPv6 that probably need not
+  be fixed, but should be documented, see doc/IPv6-info.
 
 * Replace the current innshellvars.pl file with a real INN Perl module for
   Perl programs, and include the necessary glue so that other Perl modules
