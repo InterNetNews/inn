@@ -93,10 +93,13 @@ sasl_config_read()
     int alloced = 0;
     char buf[4096];
     char *p, *key;
+    static char *SASL_CONFIG = NULL;
 
-    infile = fopen(_PATH_SASL_CONFIG, "r");
+    if (!SASL_CONFIG)
+	SASL_CONFIG = COPY(cpcatpath(innconf->pathetc, _PATH_SASL_CONFIG));
+    infile = fopen(SASL_CONFIG, "r");
     if (!infile) {
-      fprintf(stderr, "can't open configuration file %s\n", _PATH_SASL_CONFIG);
+      fprintf(stderr, "can't open configuration file %s\n", SASL_CONFIG);
       exit(1);
     }
     
