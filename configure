@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.163.2.19 
+# From configure.in Revision: 1.163.2.20 
 
 
 ## libtool.m4 - Configure libtool for the target system. -*-Shell-script-*-
@@ -3965,7 +3965,7 @@ echo "configure:3951: checking for largefile linkage" >&5
         LFS_LDFLAGS=""
         LFS_LIBS=""
         ;;
-    *-linux*|*-irix*)
+    *-irix*)
         echo "$ac_t""no" 1>&6
         { echo "configure: error: Large files not supported on this platform" 1>&2; exit 1; }
         ;;
