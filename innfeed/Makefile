@@ -30,16 +30,16 @@ install: all
 	$(CP_XPRI) procbatch $D$(PATHBIN)/procbatch
 	@ME=`$(WHOAMI)` ; \
 	if [ x"$$ME" = xroot ] ; then \
-	    echo $(LI_SPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
-	    $(LI_SPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
+	    echo $(LI_SPRI) startinnfeed $D$(PATHBIN)/startinnfeed ; \
+	    $(LI_SPRI) startinnfeed $D$(PATHBIN)/startinnfeed ; \
 	else \
-	    echo $(LI_XPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
-	    $(LI_XPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
+	    echo $(LI_XPRI) startinnfeed $D$(PATHBIN)/startinnfeed ; \
+	    $(LI_XPRI) startinnfeed $D$(PATHBIN)/startinnfeed ; \
 	    echo '' ; \
 	    echo '========================' ; \
 	    echo 'NOTE NOTE NOTE NOTE NOTE' ; \
-	    ls -l $@ ; \
-	    echo '$@ needs to be installed setuid root' ; \
+	    ls -l $D$(PATHBIN)/startinnfeed ; \
+	    echo '$D$(PATHBIN)/startinnfeed needs to be installed setuid root' ; \
 	    echo '' ; echo ; \
 	fi
 

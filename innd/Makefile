@@ -25,16 +25,16 @@ install: all
 	$(LI_XPRI) innd $D$(PATHBIN)/innd
 	@ME=`$(WHOAMI)` ; \
 	if [ x"$$ME" = xroot ] ; then \
-	    echo $(LI_SPRI) inndstart $(D)$(PATHBIN)/inndstart ; \
-	    $(LI_SPRI) inndstart $(D)$(PATHBIN)/inndstart ; \
+	    echo $(LI_SPRI) inndstart $D$(PATHBIN)/inndstart ; \
+	    $(LI_SPRI) inndstart $D$(PATHBIN)/inndstart ; \
 	else \
-	    echo $(LI_XPRI) inndstart $(D)$(PATHBIN)/inndstart ; \
-	    $(LI_XPRI) inndstart $(D)$(PATHBIN)/inndstart ; \
+	    echo $(LI_XPRI) inndstart $D$(PATHBIN)/inndstart ; \
+	    $(LI_XPRI) inndstart $D$(PATHBIN)/inndstart ; \
 	    echo '' ; \
 	    echo '========================' ; \
 	    echo 'NOTE NOTE NOTE NOTE NOTE' ; \
-	    ls -l $@ ; \
-	    echo '$@ needs to be installed setuid root' ; \
+	    ls -l $D$(PATHBIN)/inndstart ; \
+	    echo '$D$(PATHBIN)/inndstart needs to be installed setuid root' ; \
 	    echo '' ; echo ; \
 	fi
 
