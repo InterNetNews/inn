@@ -17,31 +17,31 @@
 #include "paths.h"
 #include "storage.h"
 
-STATIC int	OVnumpatterns;
-STATIC char	**OVpatterns;
+static int	OVnumpatterns;
+static char	**OVpatterns;
 time_t		OVrealnow;
-BOOL		OVstatall;
+bool		OVstatall;
 
-STATIC BOOL	OVdelayrm;
-STATIC BOOL	OVusepost;
-STATIC BOOL	OVquiet;
-STATIC BOOL	OVkeep;
-STATIC BOOL	OVearliest;
-STATIC BOOL	OVignoreselfexpire;
-STATIC time_t	OVnow;
-STATIC OV_METHOD	ov;
-STATIC FILE		*EXPunlinkfile;
-STATIC char		*ACTIVE;
-STATIC ARTOVERFIELD	*ARTfields;
-STATIC int		ARTfieldsize;
-STATIC BOOL		ReadOverviewfmt = FALSE;
-STATIC char		**arts;
-STATIC enum KRP		*krps;
+static bool	OVdelayrm;
+static bool	OVusepost;
+static bool	OVquiet;
+static bool	OVkeep;
+static bool	OVearliest;
+static bool	OVignoreselfexpire;
+static time_t	OVnow;
+static OV_METHOD	ov;
+static FILE		*EXPunlinkfile;
+static char		*ACTIVE;
+static ARTOVERFIELD	*ARTfields;
+static int		ARTfieldsize;
+static bool		ReadOverviewfmt = FALSE;
+static char		**arts;
+static enum KRP		*krps;
 
 /* Statistics */
-STATIC long		EXPprocessed;
-STATIC long		EXPunlinked;
-STATIC long		EXPoverindexdrop;
+static long		EXPprocessed;
+static long		EXPunlinked;
+static long		EXPoverindexdrop;
 
 /*
 **  Stuff that is used for group based expire
@@ -55,9 +55,9 @@ STATIC long		EXPoverindexdrop;
 #define OVFMT_NODATE	-1
 #define OVFMT_NOXREF	-1
 
-STATIC int		Dateindex = OVFMT_UNINIT; 
-STATIC int		Xrefindex = OVFMT_UNINIT;
-STATIC int		Messageidindex = OVFMT_UNINIT;
+static int		Dateindex = OVFMT_UNINIT; 
+static int		Xrefindex = OVFMT_UNINIT;
+static int		Messageidindex = OVFMT_UNINIT;
 
 typedef struct _BUFFER {
     int		Size;
@@ -76,7 +76,7 @@ typedef struct _NEWSGROUP {
     time_t		Default;
     time_t		Purge;
     /* X flag => remove entire article when it expires in this group */
-    BOOL                Poison;
+    bool                Poison;
 } NEWSGROUP;
 
 typedef struct _NGHASH {
@@ -95,11 +95,11 @@ typedef struct _BADGROUP {
     char		*Name;
 } BADGROUP;
 
-STATIC BADGROUP		*EXPbadgroups;
-STATIC int		nGroups;
-STATIC NEWSGROUP	*Groups;
-STATIC NEWSGROUP	EXPdefault;
-STATIC NGHASH		NGHtable[NGH_SIZE];
+static BADGROUP		*EXPbadgroups;
+static int		nGroups;
+static NEWSGROUP	*Groups;
+static NEWSGROUP	EXPdefault;
+static NGHASH		NGHtable[NGH_SIZE];
 
 #if ! defined (atof)            /* NEXT defines aotf as a macro */
 extern double		atof();
@@ -107,9 +107,9 @@ extern double		atof();
 
 enum KRP {Keep, Remove, Poison};
 
-BOOL OVopen(int mode) {
+bool OVopen(int mode) {
     int	i;
-    BOOL val;
+    bool val;
     char *p;
 
     if (ov.open)
@@ -162,7 +162,7 @@ BOOL OVopen(int mode) {
     return val;
 }
 
-BOOL OVgroupstats(char *group, int *lo, int *hi, int *count, int *flag) {
+bool OVgroupstats(char *group, int *lo, int *hi, int *count, int *flag) {
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
@@ -172,7 +172,7 @@ BOOL OVgroupstats(char *group, int *lo, int *hi, int *count, int *flag) {
     return ((*ov.groupstats)(group, lo, hi, count, flag));
 }
 
-BOOL OVgroupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
+bool OVgroupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
     /* lomark should never be changed in each ovmethod if lo is 0 */
     if (!ov.open) {
 	/* must be opened */
@@ -183,7 +183,7 @@ BOOL OVgroupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
     return ((*ov.groupadd)(group, lo, hi, flag));
 }
 
-BOOL OVgroupdel(char *group) {
+bool OVgroupdel(char *group) {
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
@@ -193,12 +193,12 @@ BOOL OVgroupdel(char *group) {
     return ((*ov.groupdel)(group));
 }
 
-BOOL OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
+bool OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
     char		*next, *nextcheck;
     static char		*xrefdata, *patcheck, *overdata;
     char		*xrefstart, *xrefend;
     static int		xrefdatalen = 0, overdatalen = 0;
-    BOOL		found = FALSE;
+    bool		found = FALSE;
     int			xreflen;
     int			i;
     char		*group;
@@ -311,7 +311,7 @@ BOOL OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
     return TRUE;
 }
 
-BOOL OVcancel(TOKEN token) {
+bool OVcancel(TOKEN token) {
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
@@ -331,7 +331,7 @@ void *OVopensearch(char *group, int low, int high) {
     return ((*ov.opensearch)(group, low, high));
 }
 
-BOOL OVsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived) {
+bool OVsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived) {
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
@@ -352,7 +352,7 @@ void OVclosesearch(void *handle) {
     return;
 }
 
-BOOL OVgetartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token) {
+bool OVgetartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token) {
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
@@ -362,7 +362,7 @@ BOOL OVgetartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *toke
     return ((*ov.getartinfo)(group, artnum, data, len, token));
 }
 
-BOOL OVexpiregroup(char *group, int *lo) {
+bool OVexpiregroup(char *group, int *lo) {
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
@@ -372,7 +372,7 @@ BOOL OVexpiregroup(char *group, int *lo) {
     return ((*ov.expiregroup)(group, lo));
 }
 
-BOOL OVctl(OVCTLTYPE type, void *val) {
+bool OVctl(OVCTLTYPE type, void *val) {
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
@@ -409,7 +409,7 @@ BOOL OVctl(OVCTLTYPE type, void *val) {
 	OVignoreselfexpire = ((OVGE *)val)->ignoreselfexpire;
 	return TRUE;
     case OVSTATALL:
-	OVstatall = *(BOOL *)val;
+	OVstatall = *(bool *)val;
 	return TRUE;
     default:
 	return ((*ov.ctl)(type, val));
@@ -468,7 +468,7 @@ void OVclose(void) {
 /*
 **  Hash a newsgroup and see if we get it.
 */
-STATIC NEWSGROUP *NGfind(char *Name)
+static NEWSGROUP *NGfind(char *Name)
 {
     char		*p;
     int			i;
@@ -489,10 +489,10 @@ STATIC NEWSGROUP *NGfind(char *Name)
 /*
 **  Sorting predicate to put newsgroups in rough order of their activity.
 */
-STATIC int NGcompare(CPOINTER p1, CPOINTER p2)
+static int NGcompare(const void *p1, const void *p2)
 {
-    NEWSGROUP	**ng1;
-    NEWSGROUP	**ng2;
+    NEWSGROUP **ng1;
+    NEWSGROUP **ng2;
 
     ng1 = (NEWSGROUP **)p1;
     ng2 = (NEWSGROUP **)p2;
@@ -503,7 +503,7 @@ STATIC int NGcompare(CPOINTER p1, CPOINTER p2)
 **  Split a line at a specified field separator into a vector and return
 **  the number of fields found, or -1 on error.
 */
-STATIC int EXPsplit(char *p, char sep, char **argv, int count)
+static int EXPsplit(char *p, char sep, char **argv, int count)
 {
     int	                i;
 
@@ -542,7 +542,7 @@ STATIC int EXPsplit(char *p, char sep, char **argv, int count)
 /*
 **  Build the newsgroup structures from the active file.
 */
-STATIC void BuildGroups(char *active)
+static void BuildGroups(char *active)
 {
     NGHASH	        *htp;
     NEWSGROUP	        *ngp;
@@ -601,8 +601,7 @@ STATIC void BuildGroups(char *active)
     /* Sort each hash bucket. */
     for (i = NGH_SIZE, htp = NGHtable; --i >= 0; htp++)
     if (htp->Used > 1)
-	qsort((POINTER)htp->Groups, (SIZE_T)htp->Used, sizeof htp->Groups[0],
-		NGcompare);
+	qsort(htp->Groups, htp->Used, sizeof htp->Groups[0], NGcompare);
 
     /* Ok, now change our use of the Last field.  Set them all to maxint. */
     for (i = NGH_SIZE, htp = NGHtable; --i >= 0; htp++) {
@@ -622,10 +621,10 @@ STATIC void BuildGroups(char *active)
 **  just about everything you expect.  Print a message and return FALSE
 **  on error.
 */
-STATIC BOOL EXPgetnum(int line, char *word, time_t *v, char *name)
+static bool EXPgetnum(int line, char *word, time_t *v, char *name)
 {
     char	        *p;
-    BOOL	        SawDot;
+    bool	        SawDot;
     double		d;
 
     if (caseEQ(word, "never")) {
@@ -662,11 +661,11 @@ STATIC BOOL EXPgetnum(int line, char *word, time_t *v, char *name)
 /*
 **  Set the expiration fields for all groups that match this pattern.
 */
-STATIC void EXPmatch(char *p, NEWSGROUP *v, char mod)
+static void EXPmatch(char *p, NEWSGROUP *v, char mod)
 {
     NEWSGROUP	        *ngp;
     int	                i;
-    BOOL	        negate;
+    bool	        negate;
 
     negate = *p == '!';
     if (negate)
@@ -686,7 +685,7 @@ STATIC void EXPmatch(char *p, NEWSGROUP *v, char mod)
 /*
 **  Parse the expiration control file.  Return TRUE if okay.
 */
-STATIC BOOL EXPreadfile(FILE *F)
+static bool EXPreadfile(FILE *F)
 {
     char	        *p;
     int	                i;
@@ -694,7 +693,7 @@ STATIC BOOL EXPreadfile(FILE *F)
     int	                k;
     char	        mod;
     NEWSGROUP		v;
-    BOOL		SawDefault;
+    bool		SawDefault;
     char		buff[BUFSIZ];
     char		*fields[7];
     char		**patterns;
@@ -808,7 +807,7 @@ STATIC BOOL EXPreadfile(FILE *F)
 /*
 **  Handle a newsgroup that isn't in the active file.
 */
-STATIC NEWSGROUP *EXPnotfound(char *Entry)
+static NEWSGROUP *EXPnotfound(char *Entry)
 {
     static NEWSGROUP	Removeit;
     BADGROUP	        *bg;
@@ -840,7 +839,7 @@ STATIC NEWSGROUP *EXPnotfound(char *Entry)
 /*
 **  Should we keep the specified article?
 */
-STATIC enum KRP EXPkeepit(char *Entry, time_t when, time_t expires)
+static enum KRP EXPkeepit(char *Entry, time_t when, time_t expires)
 {
     char	        *p;
     NEWSGROUP	        *ngp;
@@ -884,7 +883,7 @@ STATIC enum KRP EXPkeepit(char *Entry, time_t when, time_t expires)
 **  An article can be removed.  Either print a note, or actually remove it.
 **  Also fill in the article size.
 */
-void OVEXPremove(TOKEN token, BOOL deletedgroups)
+void OVEXPremove(TOKEN token, bool deletedgroups)
 {
     EXPunlinked++;
     if (deletedgroups) {
@@ -908,15 +907,15 @@ void OVEXPremove(TOKEN token, BOOL deletedgroups)
 /*
 **  Read the overview schema.
 */
-STATIC void ARTreadschema(void)
+static void ARTreadschema(void)
 {
     FILE			*F;
     char			*p;
     ARTOVERFIELD		*fp;
     int				i;
     char			buff[SMBUF];
-    BOOL			foundxref = FALSE;
-    BOOL			foundxreffull = FALSE;
+    bool			foundxref = FALSE;
+    bool			foundxreffull = FALSE;
 
     /* Open file, count lines. */
     if ((F = fopen(cpcatpath(innconf->pathetc, _PATH_SCHEMA), "r")) == NULL)
@@ -962,7 +961,7 @@ STATIC void ARTreadschema(void)
 **  Return a field from the overview line or NULL on error.  Return a copy
 **  since we might be re-using the line later.
 */
-STATIC char *OVERGetHeader(char *p, int field)
+static char *OVERGetHeader(char *p, int field)
 {
     static char		*buff;
     static int		buffsize;
@@ -1014,7 +1013,7 @@ STATIC char *OVERGetHeader(char *p, int field)
 /*
 **  Read overview.fmt and find index for headers
 */
-STATIC OVfindheaderindex() {
+static OVfindheaderindex() {
     FILE	*F;
     char	*active;
     int		i;
@@ -1059,7 +1058,7 @@ STATIC OVfindheaderindex() {
 **  Do the work of expiring one line.  Assumes article still exists in the
 **  spool.  Returns TRUE if article should be purged, or return FALSE.
 */
-BOOL OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t arrived, time_t expires)
+bool OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t arrived, time_t expires)
 {
     static char		*Group = NULL;
     char	        *p;
@@ -1067,9 +1066,9 @@ BOOL OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t ar
     int			count;
     time_t		posted;
     time_t		when;
-    BOOL                poisoned;
-    BOOL		keeper;
-    BOOL		remove;
+    bool                poisoned;
+    bool		keeper;
+    bool		remove;
     ARTHANDLE		*article;
     char		*Xref;
 
@@ -1149,11 +1148,11 @@ BOOL OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t ar
     return FALSE;
 }
 
-BOOL OVhisthasmsgid(char *data) {
+bool OVhisthasmsgid(char *data) {
     char		*p;
-    static STRING	History;
+    static const char   *History;
     HASH		key;
-    OFFSET_T		offset;
+    off_t		offset;
     static FILE		*F;
     int			i, c;
     char		buff[(sizeof(TOKEN) * 2) + 3];
@@ -1196,9 +1195,9 @@ BOOL OVhisthasmsgid(char *data) {
     return FALSE;
 }
 
-BOOL OVgroupmatch(char *group) {
+bool OVgroupmatch(char *group) {
     int		i;
-    BOOL	wanted = FALSE;
+    bool	wanted = FALSE;
 
     if (OVnumpatterns == 0 || group == NULL)
 	return TRUE;
