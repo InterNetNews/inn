@@ -1705,6 +1705,21 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
     return art;
 }
 
+BOOL cnfs_ctl(PROBETYPE type, TOKEN *token, void *value) {
+    struct artngnum *ann;
+
+    switch (type) {
+    case SMARTNGNUM:    
+	if ((ann = (struct artngnum *)value) == NULL)
+	    return FALSE;
+	/* make SMprobe() call cnfs_retrieve() */
+	ann->artnum = 0;
+	return TRUE; 
+    default:
+	return FALSE; 
+    }   
+}
+
 void cnfs_shutdown(void) {
     CNFSflushallheads();
     CNFSmunmapbitfields();
