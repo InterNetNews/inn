@@ -10,9 +10,14 @@
 #include <netdb.h>
 #include <syslog.h>
 #include <sys/socket.h>
+#include <sys/signal.h>
 
 #include "libinn.h"
 #include "macros.h"
+
+void out() {
+    exit(1);
+}
 
 int main(int argc, char *argv[])
 {
@@ -29,6 +34,8 @@ int main(int argc, char *argv[])
     char *endstr;
     char result = 0;
 
+    signal(SIGALRM,out);
+    alarm(15);
     memset(&sin, '\0', sizeof(sin));
     sin.sin_family = AF_INET;
 
