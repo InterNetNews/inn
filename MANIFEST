@@ -238,7 +238,7 @@ include/clibrary.h                    C library portability
 include/conffile.h                    Header file for reading *.conf files
 include/config.h.in                   Template configuration data 
 include/dbz.h                         Header file for DBZ
-include/inn                           Additional header files (Directory)
+include/inn                           Installed header files (Directory)
 include/inn/defines.h                 Portable defs for installed headers
 include/inn/md5.h                     Header file for MD5 digests
 include/inn/qio.h                     Header file for quick I/O package
@@ -249,6 +249,9 @@ include/macros.h                      Useful syntactic sugar
 include/nntp.h                        NNTP command and reply codes
 include/ov.h                          Header file for overview
 include/paths.h.in                    Paths to common programs and files
+include/portable                      Portability wrappers (Directory)
+include/portable/time.h               Wrapper for <time.h> and <sys/time.h>
+include/portable/wait.h               Wrapper for <sys/wait.h>
 include/ppport.h                      Header file for Perl support
 include/rwlock.h                      Header file for rwlock
 include/storage.h                     Header file for storage API
@@ -367,7 +370,6 @@ lib/strspn.c                          Skip bytes in a string (BSD)
 lib/strtok.c                          Split a string into tokens (BSD)
 lib/tempname.c                        Temporary filename generator
 lib/version.c                         INN version constants
-lib/waitnb.c                          Non-blocking wait wrapper
 lib/wildmat.c                         Pattern match routine
 lib/xfopena.c                         Open a FILE in append mode
 lib/xmalloc.c                         Failsafe memory allocation wrapper
