@@ -48,7 +48,7 @@ extern void sysdie(const char *, ...)
    anything. */
 #if !defined(DEBUG) && (INN_HAVE_C99_VAMACROS || INN_HAVE_GNU_VAMACROS)
 # if INN_HAVE_C99_VAMACROS
-#  define debug(format, __VA_ARGS__)    /* empty */
+#  define debug(format, ...)            /* empty */
 # elif INN_HAVE_GNU_VAMACROS
 #  define debug(format, args...)        /* empty */
 # endif
