@@ -11,7 +11,6 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#include "dbz.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
@@ -496,23 +495,20 @@ int main(int ac, char *av[])
     char		buff[SMBUF];
     bool		Server;
     bool		Bad;
-#ifdef CANT_DO_THIS
     bool		IgnoreOld;
     bool		Writing;
-#endif
     bool		UnlinkFile;
     bool		val;
     time_t		TimeWarp;
+    size_t              Size = 0;
 
     /* First thing, set up logging and our identity. */
     openlog("expire", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
 
     /* Set defaults. */
     Server = TRUE;
-#if CANT_DO_THIS
     IgnoreOld = FALSE;
     Writing = TRUE;
-#endif
     TimeWarp = 0;
     UnlinkFile = FALSE;
 
@@ -530,7 +526,7 @@ int main(int ac, char *av[])
     }
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "f:h:d:g:iNnpr:tv:w:xz:")) != EOF)
+    while ((i = getopt(ac, av, "f:h:d:g:iNnpr:s:tv:w:xz:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -547,11 +543,9 @@ int main(int ac, char *av[])
 	case 'h':
 	    HistoryText = optarg;
 	    break;
-#ifdef CANT_DO_THIS
 	case 'i':
 	    IgnoreOld = TRUE;
 	    break;
-#endif
 	case 'N':
 	    Ignoreselfexpire = TRUE;
 	    break;
@@ -564,6 +558,9 @@ int main(int ac, char *av[])
 	case 'r':
 	    EXPreason = COPY(optarg);
 	    break;
+	case 's':
+	    Size = atoi(optarg);
+	    break;
 	case 't':
 	    EXPtracing = TRUE;
 	    break;
@@ -573,11 +570,9 @@ int main(int ac, char *av[])
 	case 'w':
 	    TimeWarp = (time_t)(atof(optarg) * 86400.);
 	    break;
-#ifdef CANT_DO_THIS
 	case 'x':
 	    Writing = FALSE;
 	    break;
-#endif
 	case 'z':
 	    EXPunlinkfile = EXPfopen(TRUE, optarg, "a", FALSE);
 	    UnlinkFile = TRUE;
@@ -623,15 +618,27 @@ int main(int ac, char *av[])
     (void)fclose(F);
 
     /* Set up the link, reserve the lock. */
-    if (EXPreason == NULL) {
-	(void)sprintf(buff, "Expiring process %ld", (long)getpid());
-	EXPreason = COPY(buff);
+    if (Server) {
+	if (EXPreason == NULL) {
+	    (void)sprintf(buff, "Expiring process %ld", (long)getpid());
+	    EXPreason = COPY(buff);
+	}
+    }
+    else {
+	EXPreason = NULL;
     }
 
-    History = HISopen(HistoryText, innconf->hismethod, HIS_RDONLY, NULL);
+    History = HISopen(HistoryText, innconf->hismethod, HIS_RDONLY);
     if (!History) {
 	fprintf(stderr, "Can't setup history manager\n");
 	CleanupAndExit(1);
+    }
+
+    /* Ignore failure on the HISctl()s, if the underlying history
+     * manager doesn't implement them its not a disaster */
+    HISctl(History, HISCTLS_IGNOREOLD, &IgnoreOld);
+    if (Size != 0) {
+	HISctl(History, HISCTLS_NPAIRS, &Size);
     }
 
     val = TRUE;
@@ -652,7 +659,7 @@ int main(int ac, char *av[])
 	EXPreason = NULL;
     }
 
-    Bad = HISexpire(History, NHistory, EXPreason, NULL,
+    Bad = HISexpire(History, NHistory, EXPreason, Writing, NULL,
 		    EXPremember, EXPdoline) == false;
 
     if (UnlinkFile && EXPunlinkfile == NULL)
