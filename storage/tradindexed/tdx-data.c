@@ -529,10 +529,10 @@ tdx_data_store(struct group_data *data, const struct article *article)
 **  Start the process of packing a group (rewriting its index file so that it
 **  uses a different article base).  Takes the article number of an article
 **  that needs to be written to the index file and is below the current base.
-**  Returns true on success and false on failure, and sets data->base to the
-**  new article base.  At the conclusion of this routine, the new index file
-**  has been created, but it has not yet been moved into place; that is done
-**  by tdx_data_pack_finish.
+**  Returns the true success and false on failure, and sets data->base to the
+**  new article base and data->indexinode to the new inode number.  At the
+**  conclusion of this routine, the new index file has been created, but it
+**  has not yet been moved into place; that is done by tdx_data_pack_finish.
 */
 bool
 tdx_data_pack_start(struct group_data *data, ARTNUM artnum)
@@ -541,6 +541,7 @@ tdx_data_pack_start(struct group_data *data, ARTNUM artnum)
     unsigned long delta;
     int fd;
     char *idxfile;
+    struct stat st;
 
     if (!data->writable)
         return false;
@@ -555,6 +556,10 @@ tdx_data_pack_start(struct group_data *data, ARTNUM artnum)
     fd = file_open(data->path, "IDX-NEW", true, false);
     if (fd < 0)
         return false;
+    if (fstat(fd, &st) < 0) {
+        warn("tradindexed: cannot stat %s.IDX-NEW", data->path);
+        goto fail;
+    }
 
     /* For convenience, memory map the old index file. */
     unmap_file(data->index, data->indexlen, data->path, "IDX");
@@ -575,6 +580,7 @@ tdx_data_pack_start(struct group_data *data, ARTNUM artnum)
         goto fail;
     }
     data->base = base;
+    data->indexinode = st.st_ino;
     return true;
 
  fail:
@@ -815,4 +821,136 @@ tdx_data_index_dump(struct group_data *data, FILE *output)
                 (unsigned long) entry->expires, TokenToText(entry->token));
         current++;
     }
+}
+
+static bool
+overview_check(const char *data UNUSED, size_t length UNUSED,
+               ARTNUM article UNUSED)
+{
+    return true;
+}
+
+
+/*
+**  Audit a specific index entry for a particular article.  If there's
+**  anything wrong with it, we delete it; to repair a particular group, it's
+**  best to just regenerate it from scratch.
+*/
+static void
+entry_audit(struct group_data *data, struct index_entry *entry,
+            const char *group, ARTNUM article, bool fix)
+{
+    if (entry->length < 0) {
+        warn("tradindexed: negative length %d in %s:%lu", entry->length,
+             group, article);
+        if (fix)
+            goto clear;
+    }
+    if (entry->offset + entry->length > data->datalen) {
+        warn("tradindexed: offset %lu plus length %lu out of bounds for"
+             " %s:%lu", (unsigned long) entry->offset,
+             (unsigned long) entry->length, group, article);
+        if (fix)
+            goto clear;
+    }
+    if (!overview_check(data->data + entry->offset, entry->length, article)) {
+        warn("tradindexed: malformed overview data for %s:%lu", group,
+             article);
+        if (fix)
+            goto clear;
+    }
+    return;
+
+ clear:
+    entry->offset = 0;
+    entry->length = 0;
+    msync(entry, sizeof(*entry), MS_ASYNC);
+}
+
+
+/*
+**  Audit the data for a particular group.  Takes the index entry from the
+**  group.index file and optionally corrects any problems with the data or the
+**  index entry based on the contents of the data.
+*/
+void
+tdx_data_audit(const char *group, struct group_entry *index, bool fix)
+{
+    struct group_data *data;
+    struct index_entry *entry;
+    long count;
+    off_t expected;
+    unsigned long entries, current;
+    ARTNUM low = 0;
+    bool changed = false;
+
+    data = tdx_data_new(group, true);
+    if (!tdx_data_open_files(data))
+        return;
+    if (!map_index(data))
+        return;
+    if (!map_data(data))
+        return;
+
+    /* Check the inode of the index. */
+    if (data->indexinode != index->indexinode) {
+        warn("tradindexed: index inode mismatch for %s: %lu != %lu", group,
+             (unsigned long) data->indexinode,
+             (unsigned long) index->indexinode);
+        if (fix) {
+            index->indexinode = data->indexinode;
+            changed = true;
+        }
+    }
+
+    /* Check the index size. */
+    entries = data->indexlen / sizeof(struct index_entry);
+    expected = entries * sizeof(struct index_entry);
+    if (data->indexlen != expected) {
+        warn("tradindexed: %lu bytes of trailing trash in %s.IDX",
+             data->indexlen - expected, data->path);
+        if (fix) {
+            unmap_file(data->index, data->indexlen, data->path, "IDX");
+            if (ftruncate(data->indexfd, expected) < 0)
+                syswarn("tradindexed: cannot truncate %s.IDX", data->path);
+            if (!map_index(data))
+                return;
+        }
+    }
+
+    /* Now iterate through all of the index entries.  In addition to checking
+       each one individually, also count the number of valid entries to check
+       the count in the index and verify that the low water mark is
+       correct. */
+    for (current = 0, count = 0; current < entries; current++) {
+        entry = &data->index[current];
+        entry_audit(data, entry, group, index->base + current, fix);
+        if (entry->length != 0) {
+            if (low == 0)
+                low = index->base + current;
+            count++;
+        }
+    }
+    if (index->low != low) {
+        warn("tradindexed: low water mark incorrect for %s: %lu != %lu",
+             group, low, index->low);
+        if (fix) {
+            index->low = low;
+            changed = true;
+        }
+    }
+    if (index->count != count) {
+        warn("tradindexed: count incorrect for %s: %lu != %lu", group,
+             (unsigned long) count, (unsigned long) index->count);
+        if (fix) {
+            index->count = count;
+            changed = true;
+        }
+    }
+
+    /* All done.  Close things down and flush the data we changed, if
+       necessary. */
+    if (changed)
+        msync(index, sizeof(*index), MS_ASYNC);
+    tdx_data_close(data);
 }
