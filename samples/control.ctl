@@ -1563,9 +1563,11 @@ newgroup:news@stardivision.de:staroffice.*:verify-staroffice.admin
 rmgroup:news@stardivision.de:staroffice.*:verify-staroffice.admin
 
 ## STGT (Stuttgart, Germany)
-checkgroups:news@news.uni-stuttgart.de:stgt.*:mail
-newgroup:news@news.uni-stuttgart.de:stgt.*:doit
-rmgroup:news@news.uni-stuttgart.de:stgt.*:doit
+newgroup:*:stgt.*:drop
+rmgroup:*:stgt.*:drop
+checkgroups:stgt-control@news.uni-stuttgart.de:stgt.*:verify-stgt-control
+newgroup:stgt-control@news.uni-stuttgart.de:stgt.*:verify-stgt-control
+rmgroup:stgt-control@news.uni-stuttgart.de:stgt.*:verify-stgt-control
 
 ## STL (Saint Louis, Missouri, USA)
 newgroup:news@icon-stl.net:stl.*:doit
