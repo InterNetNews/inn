@@ -444,7 +444,8 @@ Requested New Features:
   streams, limit on KB/second download (preliminary support for this is
   already in), and a limit on maximum posted articles per day (tied in
   with the backoff stuff?).  These should be per-IP or per-user, but
-  possibly also per-access group.
+  possibly also per-access group.  (Consider pulling the -H, -T, -X, and 
+  -i code out from innd and using it here.)
 
 * timecaf should have more configurable parameters (at the least, how
   frequently to switch to a new CAF file should be an option).
@@ -492,7 +493,12 @@ Requested New Features:
   stuff out of incoming.conf much easier.
 
 * nnrpd could use sendfile(2), if available, to send articles directly
-  to the socket.
+  to the socket (for those storage methods where to-wire conversion is
+  not needed).  This would need to be added to the storage API.
+
+* Somebody should look at keeping the "newsgroups" file more accurate
+  (e.g. newgroups for existing groups should change description, better
+  checkgroups handling, checking for duplicates)
 
 
 General Projects:
