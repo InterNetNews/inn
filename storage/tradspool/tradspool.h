@@ -15,6 +15,7 @@ ARTHANDLE *tradspool_retrieve(const TOKEN token, const RETRTYPE amount);
 ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount);
 void tradspool_freearticle(ARTHANDLE *article);
 BOOL tradspool_cancel(TOKEN token);
+BOOL tradspool_ctl(PROBETYPE type, TOKEN *token, void *value);
 void tradspool_shutdown(void);
 
 #endif

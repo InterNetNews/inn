@@ -1133,7 +1133,6 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
     char *xrefhdr, *ng, *p;
     unsigned int numxrefs;
     STORAGE_SUB	*sub;
-    STORAGECLASS class;
 
     if (article == NULL) {
 	priv.ngtp = NULL;
@@ -1247,7 +1246,7 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	token = MakeToken(priv.ngtp->ngname, artnum, 0);
 	syslog(L_ERROR, "tradspool: can't determine class: %s", TokenToText(token));
     } else {
-	token = MakeToken(priv.ngtp->ngname, artnum, class);
+	token = MakeToken(priv.ngtp->ngname, artnum, sub->class);
     }
     art->token = &token;
     DISPOSE(path);
@@ -1271,6 +1270,33 @@ FreeNGTree(void) {
     }
     MaxNgNumber = 0;
     NGTree = NULL;
+}
+
+BOOL tradspool_ctl(PROBETYPE type, TOKEN *token, void *value) {
+    struct artngnum *ann;
+    unsigned long ngnum;
+    unsigned long artnum;
+    char *ng;
+    int namelen;
+
+    switch (type) { 
+    case SMARTNGNUM:
+	if ((ann = (struct artngnum *)value) == NULL)
+	    return FALSE;
+	CheckNeedReloadDB();
+	memcpy(&ngnum, &token->token[0], sizeof(ngnum));
+	memcpy(&artnum, &token->token[sizeof(ngnum)], sizeof(artnum));
+	artnum = ntohl(artnum);
+	ngnum = ntohl(ngnum);
+	ng = FindNGByNum(ngnum);
+	if (ng == NULL) return NULL;
+	namelen = strlen(ng) + 1;
+	ann->groupname = NEW(char, namelen);
+	ann->artnum = (ARTNUM)ntohl(artnum);
+	return TRUE;
+    default:
+	return FALSE;
+    }       
 }
 
 void
