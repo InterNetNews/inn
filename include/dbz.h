@@ -1,6 +1,10 @@
 #ifndef __DBZ_H__
 #define __DBZ_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* This is the number of bytes of the md5 to actually store in
  * the .pag file.  This number directly effects the collision
  * rate and memory usage.  You can probably set this number as
@@ -56,12 +60,6 @@ typedef struct {
 typedef struct {
     OFFSET_T		offset;
 } PACKED idxrec;
-typedef struct {
-    OFFSET_T		offset[2];
-    unsigned char	overindex;
-    unsigned char	reserved;
-    unsigned short	overlen;
-} PACKED idxrecext;
 #if !defined(lint) && (defined(__SUNPRO_C) || defined(_nec_ews))
 #pragma pack()
 #endif /* nor lint, nor__SUNPRO_C, nor _nec_ews */
@@ -78,13 +76,17 @@ extern BOOL dbzexists(const HASH key);
 extern OFFSET_T dbzfetch(const HASH key);
 extern DBZSTORE_RESULT dbzstore(const HASH key, const OFFSET_T data);
 #else
-extern BOOL dbzfetch(const HASH key, void *ivalue);
-extern DBZSTORE_RESULT dbzstore(const HASH key, void *ivalue);
+extern BOOL dbzfetch(const HASH key, idxrec *ivalue);
+extern DBZSTORE_RESULT dbzstore(const HASH key, idxrec *ivalue);
 #endif
 extern BOOL dbzsync(void);
 extern long dbzsize(const OFFSET_T contents);
 extern BOOL dbzdebug(const int value);
 extern void dbzsetoptions(const dbzoptions options);
 extern void dbzgetoptions(dbzoptions *options);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __DBZ_H__ */

@@ -2,12 +2,15 @@
 #define __STORAGE_H__
 #include <sys/time.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #define STORAGE_TOKEN_LENGTH 16
 
 /* This is the type of an empty token.  Tokens with this type will be
    returned when errors occur */
 #define TOKEN_EMPTY     255
-#define OVER_NONE       255
 
 typedef enum {RETR_ALL, RETR_HEAD, RETR_BODY, RETR_STAT} RETRTYPE;
 typedef enum {SM_RDWR, SM_PREOPEN} SMSETUP;
@@ -15,16 +18,11 @@ typedef enum {SM_RDWR, SM_PREOPEN} SMSETUP;
 #define NUM_STORAGE_CLASSES 256
 typedef unsigned char STORAGECLASS;
 typedef unsigned char STORAGETYPE;
-typedef unsigned char OVERDATAINDEX;
 
 typedef struct {
     STORAGETYPE         type;
     STORAGECLASS        class;
     char                token[STORAGE_TOKEN_LENGTH];
-    OVERDATAINDEX	index;
-    OFFSET_T		offset;
-    unsigned short	overlen;    /* overlen does not include '\n' at EOL */
-    short		cancelled;
 } TOKEN;
 
 typedef struct {
@@ -68,4 +66,9 @@ void      SMfreearticle(ARTHANDLE *article);
 BOOL      SMcancel(TOKEN token);
 BOOL      SMprobe(PROBETYPE type, TOKEN *token);
 void      SMshutdown(void);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+    
 #endif

@@ -3,6 +3,10 @@
 **  Data structures, functions and cetera used for config file parsing.
 */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
     FILE *f;
     char *buf;
@@ -23,3 +27,7 @@ extern CONFFILE *CONFfopen(char*);
 extern void CONFfclose(CONFFILE*);
 
 extern CONFTOKEN *CONFgettoken(CONFTOKEN*, CONFFILE*);
+
+#ifdef __cplusplus
+}
+#endif

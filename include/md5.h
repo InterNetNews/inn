@@ -44,6 +44,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /*
  * determine if we are checked in
  */
@@ -195,5 +199,9 @@ extern int dot_zero;
 #endif /* MD5_IO */
 extern int debug;
 extern char *program;
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* MD5_H */

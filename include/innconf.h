@@ -54,9 +54,9 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_HISCACHESIZE			"hiscachesize"
 #define CONF_VAR_HISCACHESIZE			10
     { _CONF_HISCACHESIZE,			"",	2, 1 },
-#define _CONF_WIREFORMAT			"wireformat"
-#define CONF_VAR_WIREFORMAT			11
-    { _CONF_WIREFORMAT,				"",	2, 1 },
+#define _CONF_NNRPDAUTHSENDER			"nnrpdauthsender"
+#define CONF_VAR_NNRPDAUTHSENDER		11
+    { _CONF_NNRPDAUTHSENDER,			"",	2, 1 },
 #define _CONF_XREFSLAVE				"xrefslave"
 #define CONF_VAR_XREFSLAVE			12
     { _CONF_XREFSLAVE,				"",	2, 1 },
@@ -75,15 +75,15 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_STATUS				"status"
 #define CONF_VAR_STATUS				17
     { _CONF_STATUS,				"",	2, 1 },
-#define _CONF_STORAGEAPI			"storageapi"
-#define CONF_VAR_STORAGEAPI			18
-    { _CONF_STORAGEAPI,				"",	2, 1 },
+#define _CONF_RLIMITNOFILE			"rlimitnofile"
+#define CONF_VAR_RLIMITNOFILE			18
+    { _CONF_RLIMITNOFILE,			"",     2, 1 },
 #define _CONF_ARTICLEMMAP			"articlemmap"
 #define CONF_VAR_ARTICLEMMAP			19
     { _CONF_ARTICLEMMAP,			"",	2, 1 },
-#define _CONF_OVERVIEWMMAP			"overviewmmap"
-#define CONF_VAR_OVERVIEWMMAP			20
-    { _CONF_OVERVIEWMMAP,			"",	2, 1 },
+#define _CONF_IGNORENEWSGROUPS			"ignorenewsgroups"
+#define CONF_VAR_IGNORENEWSGROUPS		20
+    { _CONF_IGNORENEWSGROUPS,			"",     2, 1 },
 #define _CONF_MTA				"mta"
 #define CONF_VAR_MTA				21
     { _CONF_MTA,				"",	1, 1 },
@@ -246,9 +246,9 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_NNRPDPOSTHOST			"nnrpdposthost"
 #define CONF_VAR_NNRPDPOSTHOST			74
     { _CONF_NNRPDPOSTHOST,			"",	1, 1 },
-#define _CONF_EXTENDEDDBZ			"extendeddbz"
-#define CONF_VAR_EXTENDEDDBZ			75
-    { _CONF_EXTENDEDDBZ,			"",	2, 1 },
+#define _CONF_CNFSCHECKFUDGESIZE		"cnfscheckfudgesize"
+#define CONF_VAR_CNFSCHECKFUDGESIZE		75
+    { _CONF_CNFSCHECKFUDGESIZE,			"",	3, 1 },
 #define _CONF_NNRPDOVERSTATS			"nnrpdoverstats"
 #define CONF_VAR_NNRPDOVERSTATS			76
     { _CONF_NNRPDOVERSTATS,			"",	2, 1 },
@@ -288,15 +288,15 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_NNRPDCHECKART			"nnrpdcheckart"
 #define CONF_VAR_NNRPDCHECKART			88
     { _CONF_NNRPDCHECKART,			"",	2, 1 },
-#define _CONF_ACTIVEDENABLE			"activedenable"
-#define CONF_VAR_ACTIVEDENABLE			89
-    { _CONF_ACTIVEDENABLE,			"",	2, 1 },
-#define _CONF_ACTIVEDUPDATE			"activedupdate"
-#define CONF_VAR_ACTIVEDUPDATE			90
-    { _CONF_ACTIVEDUPDATE,			"",	3, 1 },
-#define _CONF_ACTIVEDPORT			"activedport"
-#define CONF_VAR_ACTIVEDPORT			91
-    { _CONF_ACTIVEDPORT,			"",	2, 1 },
+#define _CONF_ADDNNTPPOSTINGHOST                       "addnntppostinghost"
+#define CONF_VAR_ADDNNTPPOSTINGHOST            89
+    { _CONF_ADDNNTPPOSTINGHOST,                        "",     2, 1 },
+#define _CONF_ADDNNTPPOSTINGDATE               "addnntppostingdate"
+#define CONF_VAR_ADDNNTPPOSTINGDATE            90
+    { _CONF_ADDNNTPPOSTINGDATE,                        "",     2, 1 },
+#define _CONF_NICENNRPD				"nicennrpd"
+#define CONF_VAR_NICENNRPD			91
+    { _CONF_NICENNRPD,				"",     2, 1 },
 #define _CONF_STOREMSGID			"storemsgid"
 #define CONF_VAR_STOREMSGID			92
     { _CONF_STOREMSGID,				"",	2, 1 },
@@ -321,21 +321,12 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_NNRPDPOSTPORT			"nnrpdpostport"
 #define CONF_VAR_NNRPDPOSTPORT			99
     { _CONF_NNRPDPOSTPORT,			"",	2, 1 },
-#define _CONF_NNRPDAUTHSENDER			"nnrpdauthsender"
-#define CONF_VAR_NNRPDAUTHSENDER		100
-    { _CONF_NNRPDAUTHSENDER,			"",	2, 1 },
-#define _CONF_CNFSCHECKFUDGESIZE		"cnfscheckfudgesize"
-#define CONF_VAR_CNFSCHECKFUDGESIZE		101
-    { _CONF_CNFSCHECKFUDGESIZE,			"",	3, 1 },
-#define _CONF_NICENNRPD				"nicennrpd"
-#define CONF_VAR_NICENNRPD			102
-    { _CONF_NICENNRPD,				"",     2, 1 },
-#define _CONF_RLIMITNOFILE			"rlimitnofile"
-#define CONF_VAR_RLIMITNOFILE			103
-    { _CONF_RLIMITNOFILE,			"",     2, 1 },
-#define _CONF_IGNORENEWSGROUPS			"ignorenewsgroups"
-#define CONF_VAR_IGNORENEWSGROUPS		104
-    { _CONF_IGNORENEWSGROUPS,			"",     2, 1 }
+#define _CONF_OVERCACHESIZE			"overcachesize"
+#define CONF_VAR_OVERCACHESIZE			100
+    { _CONF_OVERCACHESIZE,			"",	2, 1 },
+#define _CONF_ENABLEOVERVIEW			"enableoverview"
+#define CONF_VAR_ENABLEOVERVIEW			101
+    { _CONF_ENABLEOVERVIEW,			"",	2, 1 }
 };
-#define MAX_CONF_VAR 105
+#define MAX_CONF_VAR 102
 

@@ -20,6 +20,10 @@
 #define DO_NEED_BOOL 1
 #endif
 
+#ifdef __FreeBSD__
+#include <osreldate.h>
+#endif
+
 #include <sys/time.h>
 
     /* Generic pointer, used by memcpy, malloc, etc. */
@@ -97,6 +101,10 @@ typedef struct _FDSET {
 #define FD_ZERO(p)	(void)memset((POINTER)(p), 0, sizeof *(p))
 #endif	/* defined(FD_SETSIZE) */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #if	!defined(SEEK_SET)
 #define SEEK_SET	0
@@ -104,6 +112,12 @@ typedef struct _FDSET {
 #if	!defined(SEEK_END)
 #define SEEK_END	2
 #endif	/* !defined(SEEK_END) */
+#ifdef HAVE_FTELLO
+#define ftell ftello
+#endif
+#ifdef HAVE_FSEEKO
+#define fseek fseeko
+#endif
 
 /*
 **  We must use #define to set FREEVAL, since "typedef void FREEVAL;" doesn't
@@ -167,10 +181,6 @@ extern void	_exit();
 extern void	setproctitle();
 #endif	/* defined(HAVE_SETPROCTITLE) */
 
-#ifdef __FreeBSD__
-#include <osreldate.h>
-#endif
-
 #if defined (sun) && ! defined (__SVR4)
 #define atexit(arg) on_exit (arg,0)
 #define strtoul(a,b,c) strtol (a,b,c)
@@ -226,4 +236,8 @@ extern void	setproctitle();
 #define		ARGTYPE size_t
 #else
 #define		ARGTYPE int
+#endif
+
+#ifdef __cplusplus
+}
 #endif

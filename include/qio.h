@@ -5,6 +5,9 @@
 
 #include <storage.h>
 
+#ifdef __cplusplus
+extern "C" {   
+#endif /* __cplusplus */
 
 /*
 **  State for a quick open file.
@@ -41,3 +44,7 @@ extern QIOSTATE	*QIOfdopen(const int fd);
 extern char	*QIOread(QIOSTATE *qp);
 extern void	QIOclose(QIOSTATE *qp);
 extern int	QIOrewind(QIOSTATE *qp);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */

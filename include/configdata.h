@@ -9,6 +9,10 @@
 
 #include "config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 **  1.  MAKE CONFIG PARAMETERS
 */
@@ -246,4 +250,10 @@ typedef int		BOOL;
     /* =()<#define @<KEYWORDS>@_KEYWORDS>()= */
 #define DO_KEYWORDS
 
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* ! defined (__configdata_h__) */
+
+    

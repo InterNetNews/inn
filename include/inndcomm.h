@@ -4,6 +4,10 @@
 **  running.
 */
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /* The header for the ICC protocol is a one-byte protocol version followed
    by a 4 byte messages length*/
 #define HEADER_SIZE (sizeof (ICC_PROTOCOLTYPE) + sizeof (ICC_MSGLENTYPE))
@@ -74,3 +78,7 @@ extern int	ICCpause();
 extern int	ICCreserve();
 
 extern char	*ICCfailure;
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */

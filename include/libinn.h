@@ -2,10 +2,16 @@
 **
 **  Here be declarations of functions in the InterNetNews library.
 */
+#ifndef LIBINN_H
+#define LIBINN_H
 
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <storage.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 /* Memory allocation. */
     /* Worst-case alignment, in order to shut lint up. */
@@ -81,16 +87,13 @@ struct conf_vars {
 	char *mimecontenttype;	/* Default Content-Type */
 	char *mimeencoding;	/* Default encoding */
 	int hiscachesize;	/* Size of the history cache in kB */
-	int wireformat;		/* Toggle for wireformat articles */
 	int xrefslave;		/* master server for slaving */
 	char *complaints;	/* Addr for X-Complaints-To: header */
 	int spoolfirst;		/* Spool newly posted article or only on error*/
 	int writelinks;		/* Write crossposts to the history */
 	int timer;		/* Performance monitoring interval */
 	int status;		/* Status file update interval */
-	int storageapi;		/* Use the storage api? */
 	int articlemmap;	/* mmap articles? */
-	int overviewmmap;	/* mmap overviews and indices? */
 	char *mta;		/* Which MTA to mail moderated posts */
 	char *mailcmd;		/* Which command for report/control type mail */
 	int checkincludedtext;	/* Reject if too much included text */
@@ -130,6 +133,8 @@ struct conf_vars {
         int keyartlimit;        /* Max size of an article for keyword generation */
         int keymaxwords;	/* Max count of interesting workd */
         int nnrpperlauth;       /* Use perl for nnrpd authentication */
+        int addnntppostinghost; /* Add NNTP-Posting-Host: header to posts */
+        int addnntppostingdate; /* Add NNTP-Posting-DATE: header to posts */
 
 	char *pathnews;	
 	char *pathbin;
@@ -151,7 +156,6 @@ struct conf_vars {
 	char *pathhttp;
 	char *nnrpdposthost;
 	int nnrpdpostport;
-	int extendeddbz;
 	int nnrpdoverstats;
 	int storeonxref;	/* Should SMstore() see Xref to detemine class */
 	char *decnetdomain;
@@ -163,9 +167,6 @@ struct conf_vars {
 	long backoff_trigger;
 	int refusecybercancels;
 	int nnrpdcheckart;
-	int activedenable;
-	long activedupdate;
-	int activedport;
 	int storemsgid;
 	int nicenewnews;	/* If NEWNEWS command is used, set nice */
 	int nicennrpd;
@@ -176,6 +177,8 @@ struct conf_vars {
 	long cnfscheckfudgesize;
 	int rlimitnofile;
 	int ignorenewsgroups;
+	int overcachesize;
+	int enableoverview;
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;
@@ -214,32 +217,6 @@ char *HashToText(const HASH hash);
 HASH TextToHash(const char *text);
 int HashCompare(const HASH *h1, const HASH *h2);
 
-/* Overview handling */
-typedef enum {OVER_CTL, OVER_DIR, OVER_NEWDIR, OVER_MODE, OVER_NEWMODE, OVER_MMAP, OVER_BUFFERED, OVER_PREOPEN} OVERSETUP;
-#define MAXOVERLINE	0x10000
-
-#define OVERINDEXPACKSIZE      (sizeof(U_INT32_T) + sizeof(HASH))
-typedef struct _OVERINDEX {
-    unsigned long       artnum;
-    HASH                hash;
-} OVERINDEX;
-
-extern void OVERsetoffset(TOKEN *token, OFFSET_T *offset, unsigned char *overindex, unsigned short *len);
-extern void OVERmaketoken(TOKEN *token, OFFSET_T offset, unsigned char overindex, unsigned short len);
-extern BOOL OVERsetup(OVERSETUP type, void *value);
-extern BOOL OVERinit(void);
-extern BOOL OVERnewinit(void);
-extern BOOL OVERreinit(void);
-extern BOOL OVERreplace(void);
-extern int OVERgetnum(void);
-extern BOOL OVERstore(TOKEN *token, char *Overdata, int Overlen);
-extern char *OVERretrieve(TOKEN *token, int *Overlen);
-extern BOOL OVERcancel(TOKEN *token);
-extern void OVERshutdown(void);
-
-void PackOverIndex(OVERINDEX *index, char *packedindex);
-void UnpackOverIndex(char *packedindex, OVERINDEX *index);
-
 /* Miscellaneous. */
 extern int	dbzneedfilecount(void);
 extern BOOL     MakeDirectory(char *Name, BOOL Recurse);
@@ -249,7 +226,15 @@ extern PID_T	waitnb(int *statusp);
 extern int	xread(int fd, char *p, OFFSET_T i);
 extern int	xwrite(int fd, char *p, int i);
 extern int	xwritev(int fd, struct iovec *vp, int vpcount);
+#ifndef HAVE_PREAD
+extern OFFSET_T pread(int fd, void *buf, OFFSET_T nbyte, OFFSET_T offset);
+#endif /* HAVE_PREAD */
+#ifndef HAVE_PWRITE
+extern OFFSET_T pwrite(int fd, void *buf, OFFSET_T nbyte, OFFSET_T offset);
+#endif /* HAVE_PWRITE */
+typedef enum {LOCK_READ, LOCK_WRITE, LOCK_UNLOCK } LOCKTYPE;
 extern int	LockFile(int fd, BOOL Block);
+extern BOOL     LockRange(int fd, LOCKTYPE type, BOOL Block, OFFSET_T offset, OFFSET_T size);
 extern int	GetResourceUsage(double *usertime, double *systime);
 extern int	SetNonBlocking(int fd, BOOL flag);
 extern void	CloseOnExec(int fd, int flag);
@@ -262,3 +247,15 @@ extern FILE	*xfopena(const char *p);
 extern BOOL	fdreserve(int fdnum);
 extern FILE	*Fopen(const char *p, char *type, int index);
 extern int	Fclose(FILE *fp);
+
+const char  *Aliasgetnamebyhash(const HASH hash);
+HASH Aliasgethashbyhash(const HASH hash);
+HASH Aliasgethashbygroup(const char *group);
+const char  *Aliasgetnamebygroup(const char *group);
+BOOL LoadGroupAliases(void);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* LIBINN_H */

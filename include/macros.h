@@ -3,6 +3,9 @@
 **  Here be some useful macros.
 */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
 **  Memory allocation.  Wrappers around wrapper functions.
@@ -111,3 +114,7 @@ extern int (*xmemfailure)();
 #else
 #define RECVorREAD(fd, p, s)	read((fd), (p), (s))
 #endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */

@@ -7,6 +7,10 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__ 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Change to fork() if your vfork() is broken */
 #define FORK() vfork()
 
@@ -131,6 +135,18 @@
 /* Define if you have getspnam() */
 #undef HAVE_GETSPNAM
 
+/* Define if you have pwrite() */
+#undef HAVE_PWRITE
+
+/* Define if you have pread() */
+#undef HAVE_PREAD
+
+/* Define if you have fseeko() */
+#undef HAVE_FSEEKO
+
+/* Define if you have ftello() */
+#undef HAVE_FTELLO
+
 /* Define if you have sys/sysinfo.h */
 #undef HAVE_SYS_SYSINFO_H
 
@@ -200,6 +216,9 @@ typedef char * const    CSTRING;
 /* All incoming control commands (ctlinnd, etc). */
 #define L_CC_CMD		LOG_INFO
 
+#ifdef __cplusplus
+}
+#endif
 /* Default File Permissions */
 /* Umask to set...if value here changed, be sure to check the value set
  * in samples/innshellvars.* 
