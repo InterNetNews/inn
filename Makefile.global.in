@@ -71,25 +71,24 @@ CCOUTPUT	= @CCOUTPUT@
 ##  particular, the following warnings are *not* included:
 ##
 ##    -ansi             Requires messing with feature test macros.
+##    -pedantic         Too much noise from embedded Perl.
+##    -Wtraditional     We assume ANSI C, so these aren't interesting.
+##    -Wshadow          Names like log or index are too convenient.
+##    -Wcast-qual       Used for a while, but some casts are unavoidable.
 ##    -Wconversion      Too much unsigned to signed noise.
 ##    -Wredundant-decls Too much noise from system headers.
-##    -Wtraditional     We assume ANSI C, so these aren't interesting.
-##    -Wundef           Too much noise from system macros.
 ##
 ##  Some may be worth looking at again once a released version of gcc doesn't
 ##  warn on system headers.  The warnings below are in the same order as
-##  they're listed in the gcc manual.  We suppress warnings for long long
-##  because of lib/snprintf.c; all uses of long long should be hidden behind
-##  #ifdef HAVE_LONG_LONG.
+##  they're listed in the gcc manual.
 ##
 ##  Add -g because when building with warnings one generally also wants the
 ##  debugging information, and add -O because gcc won't find some warnings
 ##  without optimization turned on.
 
-WARNINGS        = -g -O -pedantic -Wall -W -Wshadow -Wpointer-arith \
-                  -Wbad-function-cast -Wcast-qual -Wcast-align \
-                  -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes \
-                  -Wnested-externs -Wno-long-long
+WARNINGS        = -g -O -Wall -W -Wendif-labels -Wpointer-arith \
+                  -Wbad-function-cast -Wcast-align -Wwrite-strings \
+                  -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs
 
 ##  libtool support.  Note that INN does not use Automake (and that
 ##  retrofitting Automake is likely more work than it's worth), so
