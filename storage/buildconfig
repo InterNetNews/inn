@@ -65,7 +65,7 @@ foreach $method (keys %methods) {
 
 print DEF " }\n};\n\n";
 close(DEF);
-`cmp methods.c methods.c.new`;
+`cmp -s methods.c methods.c.new`;
 if ($? == 0) { unlink("methods.c.new"); }
 else { unlink("methods.c"); rename("methods.c.new","methods.c"); }
 
@@ -94,6 +94,6 @@ foreach $method (keys %methods) {
 }
 print LIST "\n";
 close(LIST);
-`cmp methods.h methods.h.new`;
+`cmp -s methods.h methods.h.new`;
 if ($? == 0) { unlink("methods.h.new"); }
 else { unlink("methods.h"); rename("methods.h.new","methods.h"); }

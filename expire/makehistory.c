@@ -72,6 +72,7 @@ STATIC int		Missfieldsize = 0;
 STATIC char		*IndexFile;
 STATIC BOOL		OVERmmap;
 STATIC char		*CRLF = "\r\n";
+#define CRLFSIZE	2
 
 /*
 **  Read the overview schema.
@@ -421,15 +422,14 @@ ReadInMem(char *art, ARTHANDLE *arth, char *Tradspooldir)
 	pathhostlen = (int)strlen(pathhost);
     }
     if (path == (char *)NULL) {
-	path = NEW(char, sizeof(XREF) + 1 + pathhostlen + 1 + SPOOLNAMEBUFF + sizeof(CRLF) * 2 + 1);
+	path = NEW(char, STRLEN(XREF) + 1 + pathhostlen + 1 + SPOOLNAMEBUFF + CRLFSIZE * 2 + 1);
     }
     strcpy(path, art);
     for (p = path; *p; p++)
 	if (*p == '.')
 	    *p = '/';
     sprintf(buff, "%s/%s", Tradspooldir, path);
-    if ((qp = QIOopen(p)) == NULL) {
-	(void)fprintf(stderr, "Can't open %s, %s\n", buff, strerror(errno));
+    if ((qp = QIOopen(buff)) == NULL) {
 	return FALSE;
     }
     if (artbuff.Left == 0) {
@@ -438,27 +438,29 @@ ReadInMem(char *art, ARTHANDLE *arth, char *Tradspooldir)
     }
     artbuff.Used = 0;
     while ((p = QIOread(qp)) != NULL && *p != '\0') {
-	if (caseEQn(p, XREF, sizeof(XREF)))
+	if (caseEQn(p, XREF, STRLEN(XREF)))
 	    FoundXref = TRUE;
-	if (artbuff.Left - artbuff.Used < QIOlength(qp) + sizeof(CRLF) * 2 + 1) {
-	    artbuff.Data = RENEW(artbuff.Data, char, artbuff.Left * 2 + QIOlength(qp) - artbuff.Left + artbuff.Used + sizeof(CRLF) * 2 + 1);
-	    artbuff.Left = artbuff.Left * 2 + QIOlength(qp) - artbuff.Left + artbuff.Used + sizeof(CRLF) * 2 + 1;
+	if (artbuff.Left - artbuff.Used < QIOlength(qp) + CRLFSIZE * 2 + 1) {
+	    artbuff.Data = RENEW(artbuff.Data, char, artbuff.Left * 2 + QIOlength(qp) - artbuff.Left + artbuff.Used + CRLFSIZE * 2 + 1);
+	    artbuff.Left = artbuff.Left * 2 + QIOlength(qp) - artbuff.Left + artbuff.Used + CRLFSIZE * 2 + 1;
 	}
 	if (*p == '.') {
 	    artbuff.Data[artbuff.Used++] = '.';
 	}
 	memcpy(artbuff.Data + artbuff.Used, p, QIOlength(qp));
 	artbuff.Used += QIOlength(qp);
-	memcpy(artbuff.Data + artbuff.Used, CRLF, sizeof(CRLF));
-	artbuff.Used += sizeof(CRLF);
+	memcpy(artbuff.Data + artbuff.Used, CRLF, CRLFSIZE);
+	artbuff.Used += CRLFSIZE;
     }
     if (!FoundXref) {
 	/* assumes not crossposted */
 	sprintf(path, "%s %s %s\r\n\r\n", XREF, pathhost, art);
 	if ((p = strrchr(path, '/')) != (char *)NULL)
 	    *p = ':';
-	else
+	else {
 	    return FALSE;
+	    QIOclose(qp);
+	}
 	len = strlen(path);
 	if (artbuff.Left - artbuff.Used < len) {
 	    artbuff.Data = RENEW(artbuff.Data, char, artbuff.Left * 2 + len - artbuff.Left + artbuff.Used + 1);
@@ -467,30 +469,33 @@ ReadInMem(char *art, ARTHANDLE *arth, char *Tradspooldir)
 	memcpy(artbuff.Data + artbuff.Used, path, len);
 	artbuff.Used += len;
     } else {
-	memcpy(artbuff.Data + artbuff.Used, CRLF, sizeof(CRLF));
-	artbuff.Used += sizeof(CRLF);
+	memcpy(artbuff.Data + artbuff.Used, CRLF, CRLFSIZE);
+	artbuff.Used += CRLFSIZE;
     }
     while ((p = QIOread(qp)) != NULL) {
-	if (artbuff.Left - artbuff.Used < QIOlength(qp) + sizeof(CRLF) * 2 + 1) {
-	    artbuff.Data = RENEW(artbuff.Data, char, artbuff.Left * 2 + QIOlength(qp) - artbuff.Left + artbuff.Used + sizeof(CRLF) * 2 + 1);
-	    artbuff.Left = artbuff.Left * 2 + QIOlength(qp) - artbuff.Left + artbuff.Used + sizeof(CRLF) * 2 + 1;
+	if (artbuff.Left - artbuff.Used < QIOlength(qp) + CRLFSIZE * 2 + 1) {
+	    artbuff.Data = RENEW(artbuff.Data, char, artbuff.Left * 2 + QIOlength(qp) - artbuff.Left + artbuff.Used + CRLFSIZE * 2 + 1);
+	    artbuff.Left = artbuff.Left * 2 + QIOlength(qp) - artbuff.Left + artbuff.Used + CRLFSIZE * 2 + 1;
 	}
 	if (*p == '.') {
 	    artbuff.Data[artbuff.Used++] = '.';
 	}
 	memcpy(artbuff.Data + artbuff.Used, p, QIOlength(qp));
 	artbuff.Used += QIOlength(qp);
-	memcpy(artbuff.Data + artbuff.Used, CRLF, sizeof(CRLF));
-	artbuff.Used += sizeof(CRLF);
+	memcpy(artbuff.Data + artbuff.Used, CRLF, CRLFSIZE);
+	artbuff.Used += CRLFSIZE;
     }
     artbuff.Data[artbuff.Used++] = '.';
-    memcpy(artbuff.Data + artbuff.Used, CRLF, sizeof(CRLF));
-    artbuff.Used += sizeof(CRLF);
+    memcpy(artbuff.Data + artbuff.Used, CRLF, CRLFSIZE);
+    artbuff.Used += CRLFSIZE;
     if (arth->arrived == 0) {
-	if (fstat(QIOfileno(qp), &sb) < 0)
+	if (fstat(QIOfileno(qp), &sb) < 0) {
+	    QIOclose(qp);
 	    return FALSE;
+	}
 	arth->arrived = sb.st_mtime;
     }
+    QIOclose(qp);
     arth->data = artbuff.Data;
     arth->len = artbuff.Used;
     return TRUE;
@@ -712,25 +717,25 @@ DoMemArt(ARTHANDLE *art, BOOL Overview, BOOL Update, FILE *out, FILE *index, BOO
 	    (void)fprintf(stderr, "Can't write overview data, %s\n", strerror(errno));
 	    exit(1);
 	}
-	if (index != (FILE *)NULL && Xrefp->HasHeader) {
-	    BUFFset(&Buff, Xrefp->Header, Xrefp->HeaderLength);
-	    BUFFappend(&Buff, NUL, STRLEN(NUL));
-	    for (i = 0, p = Buff.Data; i < Buff.Left; p++, i++)
-		if (*p == '\t' || *p == '\n' || *p == '\r')
-		    *p = ' ';
-	    if ((p = strchr(Buff.Data, ' ')) == NULL) {
-		(void)fprintf(stderr, "Can't find Xref content, %s\n", Buff.Data);
-		/* we do not exit */
-	    } else {
-		i = fprintf(index, "[%s] %s\n", hash, ++p);
-		if (i == EOF || ferror(index)) {
-		    (void)fprintf(stderr, "Can't write index line, %s\n", strerror(errno));
-		    exit(1);
-		}
-	    }
-	}
     } else {
 	art->token->index = OVER_NONE;
+    }
+    if (index != (FILE *)NULL && Xrefp->HasHeader) {
+	BUFFset(&Buff, Xrefp->Header, Xrefp->HeaderLength);
+	BUFFappend(&Buff, NUL, STRLEN(NUL));
+	for (i = 0, p = Buff.Data; i < Buff.Left; p++, i++)
+	if (*p == '\t' || *p == '\n' || *p == '\r')
+	    *p = ' ';
+	if ((p = strchr(Buff.Data, ' ')) == NULL) {
+	    (void)fprintf(stderr, "Can't find Xref content, %s\n", Buff.Data);
+	    /* we do not exit */
+	} else {
+	    i = fprintf(index, "[%s] %s\n", hash, ++p);
+	    if (i == EOF || ferror(index)) {
+		(void)fprintf(stderr, "Can't write index line, %s\n", strerror(errno));
+		exit(1);
+	    }
+	}
     }
     if (Expires > 0)
 	i = fprintf(out, "[%s]%c%lu%c%lu%c%lu%c%s\n",
@@ -755,11 +760,10 @@ DoMemArt(ARTHANDLE *art, BOOL Overview, BOOL Update, FILE *out, FILE *index, BOO
 ** read articles from history and store them thru storage api
 */
 STATIC BOOL
-TranslateFromHistory(char *OldHistory, char *Tradspooldir, BOOL UnlinkCrosspost, BOOL RemoveOld, BOOL Overview, FILE *index)
+TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL UnlinkCrosspost, BOOL RemoveOld, BOOL Overview, FILE *index)
 {
     static char		IGNORING[] = "Ignoring bad line, \"%.20s...\"\n";
     QIOSTATE		*qp;
-    FILE		*out;
     int			line;
     int			linelen;
     char		*p;
@@ -807,12 +811,6 @@ TranslateFromHistory(char *OldHistory, char *Tradspooldir, BOOL UnlinkCrosspost,
 	    strerror(errno));
 	return FALSE;
     }
-    if ((out = fopen(TextFile, "w")) == NULL) {
-	(void)fprintf(stderr, "Can't open history file, %s\n",
-	    strerror(errno));
-	QIOclose(qp);
-	return FALSE;
-    }
     for (line = 1; ; line++) {
 	if ((p = QIOread(qp)) != NULL) {
 	    i = split(p, HIS_FIELDSEP, fields, SIZEOF(fields));
@@ -834,6 +832,7 @@ TranslateFromHistory(char *OldHistory, char *Tradspooldir, BOOL UnlinkCrosspost,
 		    }
 		    break;
 		} else if (!RemoveOld) {
+		    /* just make index */
 		    if (!IsToken(fields[2])) {
 			fprintf(stderr, "Invalid token %s, skipping\n", fields[2]);   
 			break;
@@ -858,24 +857,24 @@ TranslateFromHistory(char *OldHistory, char *Tradspooldir, BOOL UnlinkCrosspost,
 			    } else {
 				OVERline = p;
 			    }
-			    if (index != (FILE *)NULL) {
-				if ((Xref = strstr(OVERline, "\tXref:")) == NULL) {
-				    break;
-				}
-				if (((Xref = strchr(Xref, ' ')) == NULL) || ((Xref = strchr(Xref + 1, ' ')) == NULL)) {
-				    break;
-				}
-				if (!Xrefbuf)
-				    Xrefbuf = NEW(char, MAXOVERLINE);
-				Xref++;
-				memcpy(Xrefbuf, Xref, linelen - (OVERline - Xref));
-				Xrefbuf[linelen - (OVERline - Xref)] = '\0';
-				i = fprintf(index, "[%s] %s\n", fields[0], Xrefbuf);
-				if (i == EOF || ferror(index)) {
-				    (void)fprintf(stderr, "Can't write index line, %s\n", strerror(errno));
-				    exit(1);
-				}
-			    }
+			}
+		    }
+		    if (index != (FILE *)NULL) {
+			if ((Xref = strstr(OVERline, "\tXref:")) == NULL) {
+			    break;
+			}
+			if (((Xref = strchr(Xref, ' ')) == NULL) || ((Xref = strchr(Xref + 1, ' ')) == NULL)) {
+			    break;
+			}
+			if (!Xrefbuf)
+			    Xrefbuf = NEW(char, MAXOVERLINE);
+			Xref++;
+			memcpy(Xrefbuf, Xref, linelen - (OVERline - Xref));
+			Xrefbuf[linelen - (OVERline - Xref)] = '\0';
+			i = fprintf(index, "[%s] %s\n", fields[0], Xrefbuf);
+			if (i == EOF || ferror(index)) {
+			    (void)fprintf(stderr, "Can't write index line, %s\n", strerror(errno));
+			    exit(1);
 			}
 		    }
 		    break;
@@ -925,11 +924,17 @@ TranslateFromHistory(char *OldHistory, char *Tradspooldir, BOOL UnlinkCrosspost,
 		else {
 		    *p = '\0';
 		    Arrived = atol(fields[1]);
+		    *p = HIS_SUBFIELDSEP;
 		}
 		arth.arrived = Arrived;
 		crossnum = split(fields[2], ' ', arts, count);
 		if (!ReadInMem(arts[0], &arth, Tradspooldir)) {
-		    fprintf(stderr, "Cannot read in memory %s, skipping\n", fields[0]);
+		    /* maybe article is cancelled, just recored the hash */
+		    i = fprintf(out, "[%s]%c%s\n", HashToText(HashMessageID(fields[0])), HIS_FIELDSEP, fields[1]);
+		    if (i == EOF || ferror(out)) {
+			(void)fprintf(stderr, "Can't write history line, %s\n", strerror(errno));     
+			exit(1);
+		    }
 		    break;
 		}
 		if (RemoveOld)
@@ -957,7 +962,8 @@ TranslateFromHistory(char *OldHistory, char *Tradspooldir, BOOL UnlinkCrosspost,
 		fprintf(stderr, "Invalid message-id \"%s\" in history text\n", fields[0]);
 		break;
 	    }
-	}
+	} else
+	    break;
     }
     return TRUE;
 }
@@ -1164,10 +1170,10 @@ DoNewsgroup(char *group, FILE *out, BOOL RemoveBad, BOOL Update, TRANS Translate
 	    arth.arrived = Sb.st_mtime;
 	    sprintf(artbuff, "%s/%s", group, p);
 	    if (!ReadInMem(artbuff, &arth, Tradspooldir)) {
-		fprintf(stderr, "Cannot read in memory %s, skipping\n", artbuff);
 		break;
 	    }
-	    (void)unlink(p);
+	    if (RemoveOld)
+		(void)unlink(p);
 	    token = SMstore(arth);
 	    if (token.type == TOKEN_EMPTY) {
 		fprintf(stderr, "Cannot store %s, skipping\n", artbuff);
@@ -1428,7 +1434,7 @@ main(int ac, char *av[])
     ac -= optind;
     av += optind;
     if (ac || (Overwrite && Update) || (Verbose && !Update) ||
-	(Update && Translate == FROM_HIST))
+	(Update && Translate != NO_TRANS))
 	Usage();
     if ((p = strrchr(TextFile, '/')) == NULL) {
 	/* find the default history file directory */
@@ -1498,7 +1504,7 @@ main(int ac, char *av[])
 	else
 	    val = FALSE;
 	if (!OVERsetup(OVER_MMAP, (void *)&val)) {
-	    (void)fprintf(stderr, "Can't setup unified overview mmap %m\n",
+	    (void)fprintf(stderr, "Can't setup unified overview mmap %s\n",
 		strerror(errno));
 	}
 	if (!OVERsetup(OVER_MODE, (void *)mode)) {
@@ -1511,7 +1517,7 @@ main(int ac, char *av[])
 		exit(1);
 	    }
 	if (!OVERinit()) {
-	    (void)fprintf(stderr, "Can't initialize unified overview %m\n",
+	    (void)fprintf(stderr, "Can't initialize unified overview %s\n",
 		strerror(errno));
 	}
 	if (IndexFile && (index = fopen(IndexFile, "w")) == (FILE *)NULL) {
@@ -1519,6 +1525,10 @@ main(int ac, char *av[])
 		strerror(errno));
 	    exit(1);
 	}
+    }
+    if (!SMinit()) {
+	fprintf(stderr, "Can't initialize storage manager: %s\n", SMerrorstr);
+	exit(1);
     }
 
     if (Translate == NO_TRANS || Translate == FROM_SPOOL) {
@@ -1548,18 +1558,25 @@ main(int ac, char *av[])
 	    }
 	    QIOclose(qp);
 	}
-	/* Start scanning articles stored by storage api */
 	/* we'll not tranlate from spool thru storage api */
-	while ((art = SMnext(art, RETR_HEAD)) != NULL)
-	    DoMemArt(art, Overview, Update, out, index, RemoveBad);
-	if (fflush(out) == EOF || ferror(out) || fclose(out) == EOF) {
-	    (void)fprintf(stderr, "Can't close history file, %s\n",
-	    strerror(errno));
-	    ErrorExit(Update, DoRebuild);
-        }
+	if (Translate == NO_TRANS)
+	    /* Start scanning articles stored by storage api */
+	    while ((art = SMnext(art, RETR_HEAD)) != NULL)
+		DoMemArt(art, Overview, Update, out, index, RemoveBad);
     } else if (Translate == FROM_HIST) {
-	if (!TranslateFromHistory(OldHistory, Tradspooldir, UnlinkCrosspost, RemoveOld, Overview, index))
+	if (!TranslateFromHistory(out, OldHistory, Tradspooldir, UnlinkCrosspost, RemoveOld, Overview, index))
 	    ErrorExit(Update, DoRebuild);
+    }
+    if (fflush(out) == EOF || ferror(out) || fclose(out) == EOF) {
+	(void)fprintf(stderr, "Can't close history file, %s\n",
+	strerror(errno));
+	ErrorExit(Update, DoRebuild);
+    }
+    if (index != (FILE *)NULL &&
+	(fflush(index) == EOF || ferror(index) || fclose(index) == EOF)) {
+	(void)fprintf(stderr, "Can't close index file, %s\n",
+	strerror(errno));
+	ErrorExit(Update, DoRebuild);
     }
 
     /* Move. */
@@ -1631,20 +1648,22 @@ main(int ac, char *av[])
 	}
 	*q = '\0';
 	if (EQ(p, line)) {
-	    /* Same Message-ID as last time -- get filename */
-	    if ((q = strchr(q + 1, HIS_FIELDSEP)) == NULL) {
-		(void)fprintf(stderr, "Work file line %ld missing filename\n",
-			count);
-		ErrorExit(Update, DoRebuild);
+	    if (*p != '[') {
+		/* Same Message-ID as last time -- get filename */
+		if ((q = strchr(q + 1, HIS_FIELDSEP)) == NULL) {
+		    (void)fprintf(stderr, "Work file line %ld missing filename\n",
+			    count);
+		    ErrorExit(Update, DoRebuild);
+		}
+		i = strlen(q);
+		if (B.Size < B.Used + i + 3) {
+		    B.Size = B.Used + i + 3;
+		    RENEW(B.Data, char, B.Size);
+		}
+		*q = ' ';
+		(void)strcpy(&B.Data[B.Used], q);
+		B.Used += i;
 	    }
-	    i = strlen(q);
-	    if (B.Size < B.Used + i + 3) {
-		B.Size = B.Used + i + 3;
-		RENEW(B.Data, char, B.Size);
-	    }
-	    *q = ' ';
-	    (void)strcpy(&B.Data[B.Used], q);
-	    B.Used += i;
 	}
 	else {
 	    /* Different Message-ID; end old line, start new one. */

@@ -94,7 +94,7 @@ The program reads each file found and writes a history line for it.
 .I Makehistory
 also restores articles stored by traditional method through storage api.
 If this is done, unified overview database and its index can be created
-together.
+together.  The translation into traditional method is not supported.
 .PP
 After the text file is written,
 .I makehistory
@@ -201,6 +201,9 @@ history files are overwritten.
 If the old database exists,
 .I makehistory
 will use it to determine the size of the new database.
+.PP
+Note if ``\fB\-t\fP'' with ``H'' or ``h'' is specified together, ``\fB\-o\fP''
+will break old history and the operation is failed.
 .TP
 .B \-n
 To scan the spool directory without rebuilding the
@@ -284,12 +287,28 @@ s       same as S
 Retrieving from history translates articles stored by both traditional method
 and storage api.  Retrieving from spool will only translates articles stored by
 traditional method.
+Normally, translation from spool takes longer time, since
+.I makehistory
+reads every directory for each newsgroup in
+.IR active (5)
+even if no article exists.
+.sp 1
+If translating from spool,
+.I makehistory
+adds ``Xref'' header with pathname, if the article has no ``Xref'' header.
+If
+.I makehistory
+does this, the artilcle is assumed not to be crossposted.
+.sp 1
+\&``\fB\-t\fP'' flag and ``\fB\-u\fP'' cannot be used together.
 .TP
 .B \-U
 If the ``\fB\-U\fP'' flag is used, then any crossposted (linked) articles
 are removed if translation is done.  This is used for translating traditional
 stored articles into new storing method through storage api.
 This flag is valid if ``\fB\-t\fP'' flag is used.
+If ``\fB\-U\fP'' flag is not used even if ``\fB\-t\fP'' flag is used,
+there still remain all crossposted (linked) articles, and 
 .TP
 .B \-u
 If the ``\fB\-u\fP'' flag is given, then

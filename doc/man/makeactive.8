@@ -22,6 +22,10 @@ It discards directories named
 as well as those that have a period in them.
 It scans all other directories for all-numeric filenames and determines
 the highest and lowest number.
+If you have turned on the storage manager with the 'storageapi' in
+.IR inn.conf (5),
+.I makeactive
+reads .overview.index to determine the highest and lowest number.
 The program's output is a set of
 .IR active (5)
 file lines.
@@ -105,6 +109,7 @@ ctlinnd(8),
 dbz(3),
 filechan(8),
 history(5),
+inn.conf(5),
 innd(8),
 newsfeeds(5),
 makehistory(8),

@@ -733,6 +733,7 @@ int main(int ac, char *av[])
     WriteLinks = GetBooleanConfigValue(_CONF_WRITELINKS, TRUE);
 
     StorageAPI = GetBooleanConfigValue(_CONF_STORAGEAPI, FALSE);
+    OVERmmap = GetBooleanConfigValue(_CONF_OVERMMAP, TRUE);
     val = FALSE;
     if (!OVERsetup(OVER_MMAP, &val)) {
 	syslog(L_FATAL, "%s cant setup for the unified overview %m");

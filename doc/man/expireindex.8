@@ -5,10 +5,19 @@ expireindex \- Expire entries from the news overview index
 .SH SYNOPSIS
 .B expireindex
 [
+.B \-a
+]
+[
 .BI \-D " overviewdir"
 ]
 [
+.B \-l
+]
+[
 .B \-n
+]
+[
+.B \-o
 ]
 [
 .B \-q
@@ -38,23 +47,79 @@ Each line should consist of 2 fields specified by a colon:
 .RE
 .PP
 The first field is the name of the newsgroup.  A period ``.'' in the
-newsgroup name should be a slash ``/''.
+newsgroup name in this format should be substituted by a slash ``/''.
 The second field is an article number to be expired.
 It then removes any mention of those articles from the appropriate overview
 database index.
 .PP
 If you have turned off the storage manager with the 'storageapi' in
-inn.conf (5), you need to use expireover (8) to expire overveiw.
+.IR inn.conf (5),
+you need to use
+.IR expireover (8)
+to expire overview.
+.IR News.daily (8)
+checks to see if this is true, and uses apporpriate one.
 .SH OPTIONS
 .TP
+.B \-a
+If the ``\fB\-D\fP'' flag is used, then
+.I expireindex
+appends overview index which is read from the input file.
+The difference from
+.IR overchan (8)
+is that
+.I expireindex
+reads input file and writes overview index at once.
+For this reason, the input file should be sorted.
+Each line should consist of 2 fields specified by a space:
+.sp 1
+.in +0.5i
+.nf
+        token newsgroupname:aritclenumber
+.fi
+.in -0.5i
+.sp 1
+The first field is the toke of the article.
+The second field should consist of 2 sub-fields specified by a colon.
+The first sub-field is the name of the newsgroup.
+The second sub-field is an article number to be added.
+The input file can be created by
+.IR makehistory (8)
+with ``\fB\-t\fP'' option.
+.TP
 .B \-D
-The ``\-D'' flag can be used to specify where the databases are stored.
+The ``\fB\-D\fP'' flag can be used to specify where the databases are stored.
 The default directory is
 .\" =()<.IR @<_PATH_OVERVIEWDIR>@ .>()=
 .IR /var/news/spool/over.view .
 .TP
+.B \-l
+If the ``\fB\-l\fP'' flag is used, then
+.I expireindex
+removes all old indexes lower than specified article number which
+is read from the input file.
+Each line should consist of 2 fields specified by a space:
+.sp 1
+.in +0.5i
+.nf
+        newsgroupname aritclenumber
+.fi
+.in -0.5i
+.sp 1
+The first field is the name of the newsgroup.
+The second field is an article number which is the lowest retained
+article number. The input file can be created by
+.IR expire (8)
+with ``\fB\-Z\fP'' option.
+.TP
 .B \-n
 To perform no real updates, use the ``\fB\-n\fP'' flag.
+.TP
+.B \-o
+If the ``\fB\-o\fP'' flag is used, then
+.I expireindex
+ignores all old verview index if it appends new index.
+This flag is valid if ``\fB\-a\fP'' is used.
 .TP
 .B \-q
 Not to tell lock file open failure, use the ``\fB\-q\fP'' flag.
@@ -68,7 +133,8 @@ flag.
 If the ``\fB\-z\fP'' flag is used, then the input is assumed to be sorted such
 that all entries for a newsgroup appear together so that it can be purged
 at once.
-This flag can be useful when used with the sorted output of
+This flag can be useful when used with ``\fB\-a\fP'' flag or with
+the sorted output of
 .IR expire (8)'s
 \&``\fB\-z\fP'' flag.
 .SH HISTORY
@@ -81,3 +147,7 @@ This is revision \\$3, dated \\$4.
 .SH "SEE ALSO"
 expire(8),
 expireover(8),
+inn.conf(5),
+makehistory(8),
+news.daily(8),
+overchan(8).

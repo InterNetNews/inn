@@ -1556,8 +1556,12 @@ int main(int ac, char *av[])
 	    exit(1);
 	}
     if (StorageAPI)
-	if (!OVERinit() || !OVERnewinit()) {
+	if (!OVERinit()) {
 	    fprintf(stderr, "Can't initialize unified overview: %s\n", strerror(errno));
+	    exit(1);
+	}
+	if (Writing && !OVERnewinit()) {
+	    fprintf(stderr, "Can't initialize new unified overview: %s\n", strerror(errno));
 	    exit(1);
 	}
     arts = NEW(char*, nGroups);
@@ -1650,7 +1654,7 @@ int main(int ac, char *av[])
 	    if (HistoryPath != NULL) {
 		(void)sprintf(buff, "%s.done", NHistory);
 		(void)fclose(EXPfopen(FALSE, buff, "w"));
-		if (StorageAPI) {
+		if (StorageAPI && Writing) {
 		    if (OverPath) {
 			(void)sprintf(buff, "%s/overview.done", OverPath);
 			(void)fclose(EXPfopen(FALSE, buff, "w"));
@@ -1674,7 +1678,7 @@ int main(int ac, char *av[])
 		/* Yes -- leave the server paused. */
 		CleanupAndExit(Server, FALSE, 1);
 	    }
-	    if (StorageAPI) {
+	    if (StorageAPI && Writing) {
 		if (OverPath) {
 		    (void)sprintf(buff, "%s/overview.done", OverPath);
 		    (void)fclose(EXPfopen(FALSE, buff, "w"));

@@ -38,6 +38,7 @@ typedef struct _LIST {
     int		Used;
     int		Size;
     ARTNUM	*Articles;
+    char	(*Index)[OVERINDEXPACKSIZE];
 } LIST;
 
 
@@ -66,19 +67,6 @@ typedef struct _ARTOVERFIELD {
 
     
 /*
-**  Append an article to an LIST.
-*/
-#define LISTappend(L, a)	\
-	if ((L).Size == (L).Used) {			\
-	    (L).Size *= 2;				\
-	    RENEW((L).Articles, ARTNUM, (L).Size);	\
-	    (L).Articles[(L).Used++] = (a);		\
-	}						\
-	else						\
-	    (L).Articles[(L).Used++] = (a)
-
-
-/*
 **  Global variables.
 */
 STATIC char		SPOOL[] = _PATH_SPOOL;
@@ -86,6 +74,9 @@ STATIC BOOL		InSpoolDir;
 STATIC BOOL		Verbose;
 STATIC BOOL		Quiet;
 STATIC BOOL		DoNothing;
+STATIC BOOL		Append;
+STATIC BOOL		Lowmark;
+STATIC BOOL		Overwrite;
 STATIC ARTOVERFIELD	*ARTfields;
 STATIC int		ARTfieldsize;
 STATIC BOOL		OVERmmap;
@@ -95,6 +86,37 @@ STATIC int		ARTsize;
 STATIC ARTLIST		*ARTnumbers;
 STATIC char		(*OVERindexnew)[][OVERINDEXPACKSIZE];
 
+
+/*
+**  Append an article to an LIST.
+*/
+STATIC void LISTappend(LIST *Refresh, long Artnum, HASH *Hash)
+{
+    OVERINDEX		index;
+    char		*p;
+
+    if (Refresh->Size == Refresh->Used) {
+        Refresh->Size *= 2;
+        RENEW(Refresh->Articles, ARTNUM, Refresh->Size);
+        if (Append) {
+	    p = (char *)Refresh->Index;
+	    RENEW(p, char, Refresh->Used * OVERINDEXPACKSIZE);
+	    Refresh->Index = &((char (*)[][OVERINDEXPACKSIZE])p)[0][0];
+	    index.artnum = Artnum;
+	    index.hash = *Hash;
+	    PackOverIndex(&index, &Refresh->Index[Refresh->Used][0]);
+        }
+	Refresh->Articles[Refresh->Used++] = Artnum;
+    } else {
+	if (Append) {
+	    index.artnum = Artnum;
+	    index.hash = *Hash;
+	    PackOverIndex(&index, &Refresh->Index[Refresh->Used][0]);
+	}
+	Refresh->Articles[Refresh->Used++] = Artnum;
+    }
+}
+
 
 /*
 **  Sorting predicate for qsort to put articles in numeric order.
@@ -167,9 +189,9 @@ STATIC void WriteIndex(int fd)
 
 /*
 **  Take in a sorted list of count article numbers in group, and delete
-**  them from the overview file.
+**  or add them from or into the overview index file.
 */
-STATIC void RemoveLines(char *group, LIST *Deletes)
+STATIC void RefreshLines(char *group, LIST *Refresh)
 {
     static int			LineSize;
     ARTLIST		        *an;
@@ -189,7 +211,7 @@ STATIC void RemoveLines(char *group, LIST *Deletes)
     ARTsize = 0;
 
     if (Verbose) {
-	for (ap = Deletes->Articles, i = Deletes->Used; --i >= 0; ap++)
+	for (ap = Refresh->Articles, i = Refresh->Used; --i >= 0; ap++)
 	    (void)printf("- %s/%ld\n", group, *ap);
 	if (DoNothing)
 	    return;
@@ -236,7 +258,10 @@ STATIC void RemoveLines(char *group, LIST *Deletes)
 	return;
     }
 
-    icount = Sb.st_size / OVERINDEXPACKSIZE;
+    if (Overwrite)
+	icount = 0;
+    else
+	icount = Sb.st_size / OVERINDEXPACKSIZE;
     if (OVERmmap) {
 	if ((tmp = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, icount * OVERINDEXPACKSIZE,
 	    PROT_READ, MAP__ARG, ifd, 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
@@ -263,21 +288,30 @@ STATIC void RemoveLines(char *group, LIST *Deletes)
 	}
     }
     OVERindex = tmp;
-    OVERicount = icount;
+    if (Append)
+	OVERicount = icount + Refresh->Used;
+    else
+	OVERicount = icount;
     if (ARTarraysize == 0) {
 	ARTnumbers = NEW(ARTLIST, OVERicount);
 	OVERindexnew = (char (*)[][OVERINDEXPACKSIZE])NEW(char, OVERicount * OVERINDEXPACKSIZE);
     } else if (ARTarraysize < OVERicount) {
-	ARTnumbers = RENEW(ARTnumbers, ARTLIST, OVERicount);
+	RENEW(ARTnumbers, ARTLIST, OVERicount);
 	p = (char *)OVERindexnew;
-	p = RENEW(p, char, OVERicount * OVERINDEXPACKSIZE);
+	RENEW(p, char, OVERicount * OVERINDEXPACKSIZE);
 	OVERindexnew = (char (*)[][OVERINDEXPACKSIZE])p;
 	ARTarraysize = OVERicount;
     }
-    for (i = 0; i < OVERicount; i++) {
+    for (i = 0; i < icount; i++) {
 	UnpackOverIndex((*OVERindex)[i], &index);
 	ARTnumbers[ARTsize].ArtNum = index.artnum;
 	ARTnumbers[ARTsize++].Index = &(*OVERindex)[i];
+    }
+    if (Append) {
+	for (i = 0; i < Refresh->Used; i++) {
+	    ARTnumbers[ARTsize].ArtNum = Refresh->Articles[i];
+	    ARTnumbers[ARTsize++].Index = &(Refresh->Index)[i];
+	}
     }
     qsort((POINTER)ARTnumbers, (SIZE_T)ARTsize, sizeof(ARTLIST), ARTcompare);
 
@@ -286,27 +320,35 @@ STATIC void RemoveLines(char *group, LIST *Deletes)
 	if (ARTnumbers[i].ArtNum == ARTnumbers[i-1].ArtNum)
 	    ARTnumbers[i].ArtNum = 0;
 
-    /* Scan through lines, collecting clumps and skipping holes. */
-    ap = Deletes->Articles;
-    count = Deletes->Used;
-    for (i = 0, an = ARTnumbers; i < OVERicount; an++, i++) {
-	/* An already-removed article, or one that should be? */
-	if (an->ArtNum == 0)
-	    continue;
+    if (!Append) {
+        /* Scan through lines, collecting clumps and skipping holes. */
+        ap = Refresh->Articles;
+        count = Refresh->Used;
+        for (i = 0, an = ARTnumbers; i < OVERicount; an++, i++) {
+	    /* An already-removed article, or one that should be? */
+	    if (an->ArtNum == 0)
+	        continue;
 
-	/* Skip delete items before the current one. */
-	while (*ap < an->ArtNum && count > 0) {
-	    ap++;
-	    count--;
-	}
-
-	if (count > 0 && an->ArtNum == *ap) {
-	    while (*ap == an->ArtNum && count > 0) {
-		ap++;
-		count--;
-		an->ArtNum = 0;
+	    if (Lowmark) {
+		if (an->ArtNum < *ap) {
+		    an->ArtNum = 0;
+		}
+	        continue;
 	    }
-	    continue;
+	    /* Skip delete items before the current one. */
+	    while (*ap < an->ArtNum && count > 0) {
+	        ap++;
+	        count--;
+	    }
+
+	    if (count > 0 && an->ArtNum == *ap) {
+	        while (*ap == an->ArtNum && count > 0) {
+		    ap++;
+		    count--;
+		    an->ArtNum = 0;
+	        }
+	        continue;
+	    }
 	}
     }
 
@@ -333,12 +375,17 @@ STATIC void Expire(BOOL SortedInput, QIOSTATE *qp)
 {
     static LIST		List;
     char	        *line;
-    char	        *p;
+    char	        *p, *q, *r;
     char		group[SPOOLNAMEBUFF];
+    HASH		hash;
 
     if (List.Articles == NULL) {
 	List.Size = START_LIST_SIZE;
 	List.Articles = NEW(ARTNUM, List.Size);
+	if (Append) {
+	    p = NEW(char, START_LIST_SIZE * OVERINDEXPACKSIZE);
+	    List.Index = &((char (*)[][OVERINDEXPACKSIZE])p)[0][0];
+	}
     }
     List.Used = 0;
 
@@ -354,30 +401,59 @@ STATIC void Expire(BOOL SortedInput, QIOSTATE *qp)
 		    continue;
 		break;
 	    }
-	    if ((p = strrchr(line, ':')) == NULL)
-		continue;
-	    *p++ = '\0';
-	    if (List.Used == 0) {
-		(void)strcpy(group, line);
-		List.Used = 0;
+	    if (Append) {
+		if ((p = strrchr(line, ' ')) == NULL)
+		    continue;
+		if (!(*line == '[' && (p - line == sizeof(HASH) * 2 + 2) && *(p-1) == ']'))
+		    continue;
+		*p++ = '\0';
+		if ((q = strrchr(p, ':')) == NULL)
+		    continue;
+		*q++ = '\0';
+		if (List.Used == 0) {
+		    (void)strcpy(group, p);
+		    List.Used = 0;
+		}
+		else if (!EQ(p, group)) {
+		    LISTsort(&List);
+		    for (r = group;*r;r++)
+			if (*r == '.')
+			    *r = '/';
+		    RefreshLines(group, &List);
+		    (void)strcpy(group, p);
+		    List.Used = 0;
+		}
+		hash = TextToHash(line);
+		LISTappend(&List, atol(q), &hash);
+	    } else {
+		if ((p = strrchr(line, ':')) == NULL)
+		    continue;
+		*p++ = '\0';
+		if (List.Used == 0) {
+		    (void)strcpy(group, line);
+		    List.Used = 0;
+		}
+		else if (!EQ(line, group)) {
+		    LISTsort(&List);
+		    RefreshLines(group, &List);
+		    (void)strcpy(group, line);
+		    List.Used = 0;
+		}
+		LISTappend(&List, atol(p), (HASH *)NULL);
 	    }
-	    else if (!EQ(line, group)) {
-		LISTsort(&List);
-		RemoveLines(group, &List);
-		(void)strcpy(group, line);
-		List.Used = 0;
-	    }
-	    LISTappend(List, atol(p));
 	}
 
 	/* Do the last group. */
 	if (List.Used) {
+	    if (Append)
+		for (r = group;*r;r++)
+		    if (*r == '.')
+			*r = '/';
 	    LISTsort(&List);
-	    RemoveLines(group, &List);
+	    RefreshLines(group, &List);
 	}
-    }
-    else {
-	for (List.Used = 1; ; ) {
+    } else if (Lowmark) {
+	for ( ; ; ) {
 	    if ((line = QIOread(qp)) == NULL) {
 		if (QIOerror(qp)) {
 		    (void)fprintf(stderr, "Can't read input %s\n",
@@ -388,11 +464,57 @@ STATIC void Expire(BOOL SortedInput, QIOSTATE *qp)
 		    continue;
 		break;
 	    }
-	    if ((p = strrchr(line, '/')) == NULL)
+	    if ((q = strrchr(line, ' ')) == NULL)
 		continue;
-	    *p++ = '\0';
-	    List.Articles[0] = atol(p);
-	    RemoveLines(line, &List);
+	    *q++ = '\0';
+	    for (p = line;*p;p++) {
+		if (*p == '.')
+		    *p = '/';
+		if (*p == ' ') {
+		    *p = '\0';
+		    break;
+		}
+	    }
+	    List.Articles[0] = atol(q);
+	    List.Used = 1;
+	    RefreshLines(line, &List);
+	}
+    } else {
+	for ( ; ; ) {
+	    if ((line = QIOread(qp)) == NULL) {
+		if (QIOerror(qp)) {
+		    (void)fprintf(stderr, "Can't read input %s\n",
+			    strerror(errno));
+		    break;
+		}
+		if (QIOtoolong(qp))
+		    continue;
+		break;
+	    }
+	    if (Append) {
+		if ((p = strrchr(line, ' ')) == NULL)
+		    continue;
+		if (!(*line == '[' && (p - line == sizeof(HASH) * 2 + 2) && *(p-1) == ']'))
+		    continue;
+		*p++ = '\0';
+		if ((q = strrchr(p, ':')) == NULL)
+		    continue;
+		*q++ = '\0';
+		for (r = p;*r;r++)
+		    if (*r == '.')
+			*r = '/';
+		List.Used = 0;
+		hash = TextToHash(line);
+		LISTappend(&List, atol(q), &hash);
+		RefreshLines(p, &List);
+	    } else {
+		if ((p = strrchr(line, ':')) == NULL)
+		    continue;
+		*p++ = '\0';
+		List.Articles[0] = atol(p);
+		List.Used = 1;
+		RefreshLines(line, &List);
+	    }
 	}
     }
 
@@ -420,19 +542,32 @@ int main(int ac, char *av[])
     /* Set defaults. */
     Dir = _PATH_OVERVIEWDIR;
     SortedInput = FALSE;
+    Append = FALSE;
+    Lowmark = FALSE;
+    Overwrite = FALSE;
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "D:nqvz")) != EOF)
+    while ((i = getopt(ac, av, "aD:lnoqvz")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
 	    /* NOTREACHED */
+	case 'a':
+	    Append = TRUE;
+	    break;
 	case 'D':
 	    Dir = optarg;
 	    break;
+	case 'l':
+	    Lowmark = TRUE;
+	    break;
 	case 'n':
 	    DoNothing = TRUE;
+	    break;
+	case 'o':
+	    Overwrite = TRUE;
+	    Append = TRUE;
 	    break;
 	case 'q':
 	    Quiet = TRUE;
@@ -446,6 +581,8 @@ int main(int ac, char *av[])
 	}
     ac -= optind;
     av += optind;
+    if (Append && Lowmark || Lowmark && SortedInput)
+	Usage();
 
     /* Setup. */
     if (chdir(Dir) < 0) {

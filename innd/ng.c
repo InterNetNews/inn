@@ -8,6 +8,7 @@
 #include "configdata.h"
 #include "clibrary.h"
 #include "innd.h"
+#include <sys/mman.h>
 #include "mydir.h"
 
 
@@ -344,6 +345,10 @@ BOOL NGrenumber(NEWSGROUP *ngp)
     FILE                *fi;
     OVERINDEX           index;
     char                packed[OVERINDEXPACKSIZE];
+    struct stat		sb;
+    char		(*mapped)[][OVERINDEXPACKSIZE];
+    int			count;
+    int			i;
     /* Get a valid offset into the active file. */
     if (ICDneedsetup) {
 	syslog(L_ERROR, "%s unsynched must reload before renumber", LogName);
@@ -370,14 +375,41 @@ BOOL NGrenumber(NEWSGROUP *ngp)
 	    return TRUE;
 	}
 	DISPOSE(p);
-	while (fread(&packed, OVERINDEXPACKSIZE, 1, fi) == 1) {
-	    UnpackOverIndex(packed, &index);
-	    if (index.artnum < lomark)
-		lomark = index.artnum;
-	    if (index.artnum > himark)
-		himark = index.artnum;
+	if (OVERmmap) {
+	    if (fstat(fileno(fi), &sb) < 0) {
+		fclose(fi);
+		return TRUE;
+	    }
+	    count = sb.st_size / OVERINDEXPACKSIZE;
+	    if (count == 0) {
+		fclose(fi);
+		return TRUE;
+	    }
+	    if ((mapped = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, count * OVERINDEXPACKSIZE,
+		PROT_READ, MAP__ARG, fileno(fi), 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
+		fclose(fi);
+		return TRUE;
+	    }
+	    fclose(fi);
+	    for (i = 0; i < count; i++) {
+		UnpackOverIndex((*mapped)[i], &index);
+		if (index.artnum < lomark)
+		    lomark = index.artnum;
+		if (index.artnum > himark)
+		    himark = index.artnum;
+	    }
+	    if ((munmap((MMAP_PTR)mapped, count * OVERINDEXPACKSIZE)) < 0)
+		return TRUE;
+	} else {
+	    while (fread(&packed, OVERINDEXPACKSIZE, 1, fi) == 1) {
+		UnpackOverIndex(packed, &index);
+		if (index.artnum < lomark)
+		    lomark = index.artnum;
+		if (index.artnum > himark)
+		    himark = index.artnum;
+	    }
+	    fclose(fi);
 	}
-	fclose(fi);
     } else {
         /* Scan the directory. */
 	if ((dp = opendir(ngp->Dir)) != NULL) {

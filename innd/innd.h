@@ -402,6 +402,7 @@ EXTERN BOOL		WireFormat;
 EXTERN BOOL		TimeSpool;
 EXTERN BOOL             WriteLinks;
 EXTERN BOOL             StorageAPI;
+EXTERN BOOL		OVERmmap;
 EXTERN int              Overfdcount;
 EXTERN int		SeqNum;
 EXTERN int		StatusInterval;

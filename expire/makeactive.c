@@ -9,6 +9,7 @@
 #include "clibrary.h"
 #include <ctype.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
 #include <errno.h>
 #include "paths.h"
 #include "libinn.h"
@@ -17,25 +18,85 @@
 
 
 STATIC char	ACTIVE[] = _PATH_ACTIVE;
+STATIC BOOL	StorageAPI;
+STATIC BOOL	OVERmmap;
 
+/*
+**  read from overview index
+*/
+STATIC void
+ReadOverviewIndex(char *name, long *lomark, long *himark)
+{
+    char	*p;
+    FILE	*fi;
+    struct stat	sb;
+    char	(*mapped)[][OVERINDEXPACKSIZE];
+    int		count;
+    int		i;
+    OVERINDEX	index;
+    char	packed[OVERINDEXPACKSIZE];
+
+    p = NEW(char, strlen(_PATH_OVERVIEWDIR) + strlen(name) + strlen(_PATH_OVERVIEW) + 32);
+    sprintf(p, "%s/%s/%s.index", _PATH_OVERVIEWDIR, name, _PATH_OVERVIEW);
+    if ((fi = fopen(p, "r")) == NULL) {
+	return;
+    }
+    DISPOSE(p);
+    if (OVERmmap) {
+	if (fstat(fileno(fi), &sb) < 0) {
+	    fclose(fi);
+	    return;
+	}
+	count = sb.st_size / OVERINDEXPACKSIZE;
+	if (count == 0) {
+	    fclose(fi);
+	    return;
+	}
+	if ((mapped = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, count * OVERINDEXPACKSIZE, 
+	    PROT_READ, MAP__ARG, fileno(fi), 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
+	    fclose(fi);
+	    return;
+	}
+	fclose(fi);
+	for (i = 0; i < count; i++) {
+	    UnpackOverIndex((*mapped)[i], &index);
+	    if (index.artnum < *lomark)
+		*lomark = index.artnum;
+	    if (index.artnum > *himark)
+		*himark = index.artnum;
+	}
+	(void)munmap((MMAP_PTR)mapped, count * OVERINDEXPACKSIZE);
+    } else {
+	while (fread(&packed, OVERINDEXPACKSIZE, 1, fi) == 1) {
+	    UnpackOverIndex(packed, &index);
+	    if (index.artnum < *lomark)
+		*lomark = index.artnum;
+	    if (index.artnum > *himark)
+		*himark = index.artnum;
+	}
+	fclose(fi);
+    }
+}
 
 /*
 **  Given an newsgroup name, write the active file entry.
 */
 STATIC BOOL
-MakeEntry(name, rest, oldhimark, oldlomark, ComputeMarks)
-    char		*name;
-    char		*rest;
-    long		oldhimark;
-    long		oldlomark;
-    BOOL		ComputeMarks;
+MakeEntry(char *name, char *rest, long oldhimark, long oldlomark, BOOL ComputeMarks)
 {
-    register long	himark;
-    register long	lomark;
-    register DIR	*dp;
-    register DIRENTRY	*ep;
-    register long	j;
-    register char	*p;
+    long	himark;
+    long	lomark;
+    DIR		*dp;
+    DIRENTRY	*ep;
+    long	j;
+    char	*p;
+    FILE	*fi;
+    struct stat	sb;
+    char	(*mapped)[][OVERINDEXPACKSIZE];
+    int		count;
+    int		i;
+    OVERINDEX	index;
+    char	packed[OVERINDEXPACKSIZE];
 
     /* Turn group name into directory name. */
     for (p = name; *p; p++)
@@ -52,19 +113,23 @@ MakeEntry(name, rest, oldhimark, oldlomark, ComputeMarks)
 	lomark = oldlomark;
     }
 
-    if ((dp = opendir(name)) != NULL) {
-	/* Scan through all entries in the directory. */
-	while ((ep = readdir(dp)) != NULL) {
-	    p = ep->d_name;
-	    if (!CTYPE(isdigit, p[0]) || strspn(p, "0123456789") != strlen(p)
-	     || (j = atol(p)) == 0)
-		continue;
-	    if (lomark == 0 || j < lomark)
-		lomark = j;
-	    if (j > himark)
-		himark = j;
+    if (StorageAPI) {
+	ReadOverviewIndex(name, &lomark, &himark);
+    } else {
+        if ((dp = opendir(name)) != NULL) {
+	    /* Scan through all entries in the directory. */
+	    while ((ep = readdir(dp)) != NULL) {
+	        p = ep->d_name;
+	        if (!CTYPE(isdigit, p[0]) || strspn(p, "0123456789") != strlen(p)
+	         || (j = atol(p)) == 0)
+		    continue;
+	        if (lomark == 0 || j < lomark)
+		    lomark = j;
+	        if (j > himark)
+		    himark = j;
+	    }
+	    (void)closedir(dp);
 	}
-	(void)closedir(dp);
     }
     if (lomark == 0 || lomark - 1 > himark)
 	lomark = himark + 1;
@@ -94,11 +159,9 @@ MakeEntry(name, rest, oldhimark, oldlomark, ComputeMarks)
 **  See if a line is too long to be a newsgroup name, return TRUE if so.
 */
 STATIC BOOL
-TooLong(buff, i)
-    char		*buff;
-    int			i;
+TooLong(char *buff, int i)
 {
-    register char	*p;
+    char	*p;
 
     if ((p = strchr(buff, '\n')) == NULL) {
 	(void)fprintf(stderr, "Line %d is too long:  \"%.40s\"...\n",
@@ -119,19 +182,18 @@ TooLong(buff, i)
 **  Renumber the active file based on the old active file.
 */
 STATIC BOOL
-RebuildFromOld(ComputeMarks)
-    BOOL		ComputeMarks;
+RebuildFromOld(BOOL ComputeMarks)
 {
-    register FILE	*F;
-    register char	*p;
-    register int	i;
-    register BOOL	Ok;
-    char		buff[BUFSIZ];
-    STRING		rest;
-    long		lomark;
-    long		himark;
-    char		*save1;
-    char		*save2;
+    FILE	*F;
+    char	*p;
+    int		i;
+    BOOL	Ok;
+    char	buff[BUFSIZ];
+    STRING	rest;
+    long	lomark;
+    long	himark;
+    char	*save1;
+    char	*save2;
 
     /* Open the file. */
     if ((F = fopen(ACTIVE, "r")) == NULL) {
@@ -168,7 +230,7 @@ RebuildFromOld(ComputeMarks)
 	    }
 	}
 
-	if (!MakeEntry(buff, rest, himark, lomark, ComputeMarks)) {
+	if (!MakeEntry(buff, (char *)rest, himark, lomark, ComputeMarks)) {
 	    Ok = FALSE;
 	    break;
 	}
@@ -180,12 +242,12 @@ RebuildFromOld(ComputeMarks)
 
 
 STATIC BOOL
-RebuildFromFind()
+RebuildFromFind(void)
 {
-    register int	i;
-    register char	*p;
-    register FILE	*F;
-    register BOOL	Ok;
+    int	i;
+    char	*p;
+    FILE	*F;
+    BOOL	Ok;
     char		buff[BUFSIZ];
 
     /* Start getting a list of the directories. */
@@ -230,7 +292,7 @@ RebuildFromFind()
 **  Print a usage message and exit.
 */
 STATIC NORETURN
-Usage()
+Usage(void)
 {
     (void)fprintf(stderr, "Usage: makeactive [-o [-m] ] >output\n");
     exit(1);
@@ -239,12 +301,10 @@ Usage()
 
 
 int
-main(ac, av)
-    int			ac;
-    char		*av[];
+main(int ac, char *av[])
 {
     BOOL		Ok;
-    register int	i;
+    int	i;
     BOOL		OldFile;
     BOOL		ComputeMarks;
 
@@ -271,8 +331,10 @@ main(ac, av)
     if (ac || (ComputeMarks && !OldFile))
 	Usage();
 
+    StorageAPI = GetBooleanConfigValue(_CONF_STORAGEAPI, FALSE);
+    OVERmmap = GetBooleanConfigValue(_CONF_OVERMMAP, TRUE);
     /* Go to where the articles are. */
-    if (chdir(_PATH_SPOOL) < 0) {
+    if (chdir(StorageAPI ? _PATH_OVERVIEWDIR : _PATH_SPOOL) < 0) {
 	(void)fprintf(stderr, "Can't change to spool directory, %s\n",
 		strerror(errno));
 	exit(1);
