@@ -2512,11 +2512,11 @@ STRING ARTpost(CHANNEL *cp)
     /* Start logging, then propagate the article. */
     if (CRwithoutLF > 0 || LFwithoutCR > 0) {
 	if (CRwithoutLF > 0 && LFwithoutCR == 0)
-	    (void)sprintf(buff, "%d article includes CR withtout LF(%d)", NNTP_REJECTIT_VAL, CRwithoutLF);
+	    (void)sprintf(buff, "%d article includes CR without LF(%d)", NNTP_REJECTIT_VAL, CRwithoutLF);
 	else if (CRwithoutLF == 0 && LFwithoutCR > 0)
-	    (void)sprintf(buff, "%d article includes LF withtout CR(%d)", NNTP_REJECTIT_VAL, LFwithoutCR);
+	    (void)sprintf(buff, "%d article includes LF without CR(%d)", NNTP_REJECTIT_VAL, LFwithoutCR);
 	else
-	    (void)sprintf(buff, "%d article includes CR withtout LF(%d) and LF withtout CR(%d)", NNTP_REJECTIT_VAL, CRwithoutLF, LFwithoutCR);
+	    (void)sprintf(buff, "%d article includes CR without LF(%d) and LF withtout CR(%d)", NNTP_REJECTIT_VAL, CRwithoutLF, LFwithoutCR);
 	ARTlog(&Data, ART_STRSTR, buff);
     }
     ARTlog(&Data, Accepted ? ART_ACCEPT : ART_JUNK, (char *)NULL);
