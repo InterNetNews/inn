@@ -39,11 +39,11 @@ echo 7
 # Run our tests.  These are all from the man page, but with time zones
 # added.
 TZ=EST5EDT; export TZ
-compare "`$convdate 'feb 10, 1991 10am EST'`" 'Sun Feb 10 10:00:00 1991'
-compare "`$convdate '12pm EST 12/13/91' '12am EDT 5/4/90'`" \
+compare "`$convdate '10 Feb 1991 10:00:00 -0500'`" 'Sun Feb 10 10:00:00 1991'
+compare "`$convdate '13 Dec 91 12:00 EST' '04 May 1990 0:0:0'`" \
     'Fri Dec 13 12:00:00 1991
 Fri May  4 00:00:00 1990'
-compare "`$convdate -n 'feb 10, 1991 10am-0500' '12am-0400 5/5/90'`" \
+compare "`$convdate -n '10 FEB 1991 10:00-0500' '5 may 90 00:00-0400'`" \
     '666198000
 641880000'
 compare "`$convdate -c 666198000`" 'Sun Feb 10 10:00:00 1991'
