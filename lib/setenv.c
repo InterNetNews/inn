@@ -1,51 +1,67 @@
-/*  $Revision$
+/*  $Id$
 **
-**  This is a plug-in replacement for setenv() libc function which is
-**  native to BSD 4.3 so it may not be supported on SysV systems.
+**  Replacement for a missing setenv.
 **
-**  Written by Ilya Etingof <ilya@glas.net>, 1999.
+**  Written by Russ Allbery <rra@stanford.edu>
+**  This work is hereby placed in the public domain by its author.
 **
+**  Provides the same functionality as the standard library routine setenv
+**  for those platforms that don't have it.
 */
 
+#include "config.h"
+
+#include <errno.h>
+#if STDC_HEADERS
+# include <string.h>
+#endif
+
+/* Solaris at least wants _XOPEN_SOURCE defined and _XOPEN_VERSION set to at
+   least 4 in order to make putenv available when compiling in a strictly
+   standards-conforming environment (e.g. gcc -ansi). */
+#ifndef _XOPEN_SOURCE
+# define _XOPEN_SOURCE
+# undef _XOPEN_VERSION
+# define _XOPEN_VERSION 4
+#endif
 #include <stdlib.h>
-#include <sys/types.h>
-#include <ctype.h>
-#include "configdata.h"
-#include "clibrary.h"
-#include "libinn.h"
-#include "macros.h"
 
-/*
-** Set environment variable either overriding existing value
-** or leaving the old one depending of the overwrite flag.
-*/
-int setenv(const char *name, const char *value, int overwrite)
+/* If we're running the test suite, rename setenv to avoid conflicts with
+   the system version. */
+#if TESTING
+# define setenv test_setenv
+#endif
+
+int
+setenv(const char *name, const char *value, int overwrite)
 {
-	char	*arg;
-	int	result;
+    char *envstring;
 
-	/* Check variable existance */
-	if (!overwrite && getenv(name) != NULL)
-	{
-		/* Won't override */
-		return 0;
-	}
+    if (!overwrite && getenv(name) != NULL)
+        return 0;
 
-	/* Allocate memory for argument buffer */
-	if ((arg = NEW(char, strlen(name)+strlen(value)+2)) == NULL)
-	{
-		return -1;
-	}
+    /* Allocate memory for the environment string.  We intentionally don't
+       use concat here, or the xmalloc family of allocation routines, since
+       the intention is to provide a replacement for the standard library
+       function which sets errno and returns in the event of a memory
+       allocation failure. */
+    envstring = malloc(strlen(name) + 1 + strlen(value) + 1);
+    if (envstring == NULL) {
+        errno = ENOMEM;
+        return -1;
+    }
 
-	/* Format putenv() argument */
-	strcpy(arg, name); strcat(arg, "="); strcat(arg, value);
+    /* Build the environment string and add it to the environment using
+       putenv.  Systems without putenv lose, but XPG4 requires it. */
+    strcpy(envstring, name);
+    strcat(envstring, "=");
+    strcat(envstring, value);
+    return putenv(envstring);
 
-	/*
-	 * Put variable into environment. This leaves memory used by previous
-	 * variable=value pair unfreed. :(
-	 */
-	result = putenv(arg);
-
-	/* Return result */
-	return result;
+    /* Note that the memory allocated is not freed.  This is intentional;
+       many implementations of putenv assume that the string passed to
+       putenv will never be freed and don't make a copy of it.  Repeated use
+       of this function will therefore leak memory, since most
+       implementations of putenv also don't free strings removed from the
+       environment (due to being overwritten). */
 }
