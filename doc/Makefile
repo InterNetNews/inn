@@ -1,40 +1,16 @@
-##  $Revision$
+##  $Id$
+##
+##  The only target that this Makefile need support is install.  Everything
+##  else is a null target (and the top level Makefile shouldn't even attempt
+##  them in this directory).
+
 include ../Makefile.global
 
-CFLAGS	= $(GCFLAGS)
-SHELL	= /bin/sh
-MAKE	= make
-DESTDIR	=
-D	= $(DESTDIR)
+DIRS = man
 
-DIRS    = man sgml
+all depend tags ctags etags clean clobber profiled:
 
-ALL	= 
-
-all:		
-	$(MAKE) $(FLAGS) WHAT_TO_MAKE=all DESTDIR=$(DESTDIR) common
-
-##  Install everything.
-install:	
-	$(MAKE) $(FLAGS) WHAT_TO_MAKE=install DESTDIR=$(DESTDIR) common
-##  Other generic targets.
-depend tags ctags profiled:
-	@$(MAKE) $(FLAGS) WHAT_TO_MAKE=$@ common
-
-etags:
-	etags */*.c */*.h
-
-clean:
-	@$(MAKE) $(FLAGS) WHAT_TO_MAKE=$@ common
-
-clobber: clean
-
-##  Common target.
-common:
+install:
 	@for D in $(DIRS) ; do \
-	    echo "" ; \
-	    echo "cd $$D ; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) $(WHAT_TO_MAKE) ; cd .." ; \
-	    cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) $(WHAT_TO_MAKE) || exit 1 ; cd .. ; \
+	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
 	done
-
-# DO NOT DELETE THIS LINE -- make depend depends on it.
