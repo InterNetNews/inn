@@ -15,6 +15,7 @@
 #include <sys/mman.h>
 #include <dirent.h>
 #include <ctype.h>
+#include <configdata.h>
 #include <clibrary.h>
 #include <syslog.h>
 #include <macros.h>
