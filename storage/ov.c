@@ -124,13 +124,23 @@ BOOL OVopen(int mode) {
 	    return FALSE;
 	}
     }
+    if (!innconf->enableoverview) {
+	syslog(L_FATAL, "enableoverview is not true");
+	(void)fprintf(stderr, "enableoverview is not true\n");
+	return FALSE;
+    }
+    if (innconf->ovmethod == NULL) {
+	syslog(L_FATAL, "ovmethod is not defined");
+	(void)fprintf(stderr, "ovmethod is not defined\n");
+	return FALSE;
+    }
     for (i=0;i<NUM_OV_METHODS;i++) {
 	if (!strcmp(innconf->ovmethod, ov_methods[i].name))
 	    break;
     }
     if (i == NUM_OV_METHODS) {
 	syslog(L_FATAL, "%s is not found for ovmethod", innconf->ovmethod);
-	(void)fprintf(stderr, "%s is not found for ovmethod", innconf->ovmethod);
+	(void)fprintf(stderr, "%s is not found for ovmethod\n", innconf->ovmethod);
 	return FALSE;
     }
     ov = ov_methods[i];
