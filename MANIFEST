@@ -592,10 +592,11 @@ storage/timehash/timehash.c           timehash storage routines
 storage/timehash/timehash.h           Header for timehash
 storage/tradindexed                   tradindexed overview method (Directory)
 storage/tradindexed/Makefile          Makefile for tradindexed overview method
-storage/tradindexed/group.c           Group index handling for tradindexed
+storage/tradindexed/tdx-data.c        Data file handling for tradindexed
+storage/tradindexed/tdx-group.c       Group index handling for tradindexed
 storage/tradindexed/tdx-private.h     Private header file for tradindexed
 storage/tradindexed/tdx-structure.h   On disk layout of tradindexed files
-storage/tradindexed/tdx-util.c        Utility functions for tradindexed
+storage/tradindexed/tdx-util.c        Utility program for tradindexed
 storage/tradspool                     tradspool storage method (Directory)
 storage/tradspool/Makefile            Makefile for tradspool storage method
 storage/tradspool/README.tradspool    Docs for tradspool storage method
