@@ -23,7 +23,7 @@ SOURCES = $(MISSING_SRC) \
 	dbz.c defdist.c findheader.c genid.c getconfig.c getdtab.c \
 	getfqdn.c getmodaddr.c gettime.c hash.c inndcomm.c innvers.c localopen.c \
 	lockfile.c makedir.c md5.c nonblocking.c over.c parsedate.c perl.c radix32.c\
-	readin.c remopen.c resource.c sendarticle.c sendpass.c tempname.c \
+	readin.c remopen.c reservedfd.c resource.c sendarticle.c sendpass.c tempname.c \
 	waitnb.c wildmat.c xfopena.c xmalloc.c xmemerr.c xrealloc.c xwrite.c \
 	xwritev.c
 OBJECTS = $(MISSING_OBJ) \
@@ -31,7 +31,7 @@ OBJECTS = $(MISSING_OBJ) \
 	dbz.o defdist.o findheader.o genid.o getconfig.o getdtab.o \
 	getfqdn.o getmodaddr.o gettime.o hash.o inndcomm.o innvers.o localopen.o \
 	lockfile.o makedir.o md5.o over.o nonblocking.o parsedate.o perl.o radix32.o\
-	readin.o remopen.o resource.o sendarticle.o sendpass.o tempname.o \
+	readin.o remopen.o reservedfd.o resource.o sendarticle.o sendpass.o tempname.o \
 	waitnb.o wildmat.o xfopena.o xmalloc.o xmemerr.o xrealloc.o xwrite.o \
 	xwritev.o
 
@@ -160,6 +160,7 @@ sendpass.o:	../include/nntp.h
 sendpass.o:	../include/paths.h
 xmalloc.o:	../include/macros.h
 xrealloc.o:	../include/macros.h
+reservedfd.o:	../include/macros.h
 
 $(OBJECTS):	../include/configdata.h \
 		../include/clibrary.h \

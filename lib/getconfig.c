@@ -68,7 +68,7 @@ char *GetFileConfigValue(char *value)
     char	        c;
 
     /* Read the config file. */
-    if ((F = fopen(innconffile, "r")) != NULL) {
+    if ((F = Fopen(innconffile, "r", TEMPORARYOPEN)) != NULL) {
 	c = *value;
 	i = strlen(value);
 	while (fgets(ConfigBuff, sizeof ConfigBuff, F) != NULL) {
@@ -79,13 +79,13 @@ char *GetFileConfigValue(char *value)
 	    if (ConfigBuff[0] == c
 	     && ConfigBuff[i] == ':'
 	     && EQn(ConfigBuff, value, i)) {
-		(void)fclose(F);
+		(void)Fclose(F);
 		for (p = &ConfigBuff[i + 1]; ISWHITE(*p); p++)
 		    continue;
 		return p;
 	    }
 	}
-	(void)fclose(F);
+	(void)Fclose(F);
     }
     return NULL;
 }
@@ -366,7 +366,7 @@ int ReadInnConf()
     }
     SetDefaults();
     /* Read the config file. */
-    if ((F = fopen(innconffile, "r")) != NULL) {
+    if ((F = Fopen(innconffile, "r", TEMPORARYOPEN)) != NULL) {
 	while (fgets(ConfigBuff, sizeof ConfigBuff, F) != NULL) {
 	    if ((p = strchr(ConfigBuff, '\n')) != NULL)
 		*p = '\0';
@@ -790,7 +790,7 @@ int ReadInnConf()
 	    }
 	}
 	if (innconf->storageapi != TRUE) innconf->extendeddbz = FALSE;
-	(void)fclose(F);
+	(void)Fclose(F);
     } else {
 	syslog(L_FATAL, "Cannot open %s", _PATH_CONFIG);
 	(void)fprintf(stderr, "Cannot open %s\n", _PATH_CONFIG);

@@ -259,7 +259,6 @@ static int debug;			/* controlled by dbzdebug() */
 
 /* Structure for hash tables */
 typedef struct {
-    FILE *f;                    /* FILE with a small buffer for hash reads */
     int fd;                     /* Non-blocking descriptor for writes */
     int pos;                    /* Current offset into the table */
     int reclen;                 /* Length of records in the table */
@@ -306,6 +305,14 @@ static char pag[] = ".pag";
 static char idx[] = ".index";
 static char exists[] = ".hash";
 #endif
+
+int dbzneedfilecount(void) {
+#ifdef	DO_TAGGED_HASH
+    return 2; /* basef and dirf are fopen()'ed and kept */
+#else
+    return 1; /* dirf is fopen()'ed and kept */
+#endif
+}
 
 #ifdef	DO_TAGGED_HASH
 /*
@@ -363,13 +370,13 @@ static BOOL create_truncate(const char *name, const char *pag) {
 
     if ((fn = enstring(name, pag)) == NULL)
 	return FALSE;
-    f = fopen(fn, "w");
+    f = Fopen(fn, "w", TEMPORARYOPEN);
     DISPOSE(fn);
     if (f == NULL) {
 	DEBUG(("dbz.c create_truncate: unable to create/truncate %s\n", pag));
 	return FALSE;
     } else
-        fclose(f);
+        Fclose(f);
     return TRUE;
 }
 
@@ -430,17 +437,17 @@ BOOL dbzfresh(const char *name, const long size, const int fillpercent)
     /* write it out */
     if ((fn = enstring(name, dir)) == NULL)
 	return FALSE;
-    f = fopen(fn, "w");
+    f = Fopen(fn, "w", TEMPORARYOPEN);
     DISPOSE(fn);
     if (f == NULL) {
 	DEBUG(("dbzfresh: unable to write config\n"));
 	return FALSE;
     }
     if (putconf(f, &c) < 0) {
-	fclose(f);
+	Fclose(f);
 	return FALSE;
     }
-    if (fclose(f) == EOF) {
+    if (Fclose(f) == EOF) {
 	DEBUG(("dbzfresh: fclose failure\n"));
 	return FALSE;
     }
@@ -552,14 +559,14 @@ BOOL dbzagain(const char *name, const char *oldname)
     /* pick up the old configuration */
     if ((fn = enstring(oldname, dir))== NULL)
 	return FALSE;
-    f = fopen(fn, "r");
+    f = Fopen(fn, "r", TEMPORARYOPEN);
     DISPOSE(fn);
     if (f == NULL) {
 	DEBUG(("dbzagain: cannot open old .dir file\n"));
 	return FALSE;
     }
     result = getconf(f, &c);
-    fclose(f);
+    Fclose(f);
     if (!result) {
 	DEBUG(("dbzagain: getconf failed\n"));
 	return FALSE;
@@ -612,14 +619,14 @@ BOOL dbzagain(const char *name, const char *oldname)
     fn = enstring(name, dir);
     if (fn == NULL)
 	return FALSE;
-    f = fopen(fn, "w");
+    f = Fopen(fn, "w", TEMPORARYOPEN);
     DISPOSE(fn);
     if (f == NULL) {
 	DEBUG(("dbzagain: unable to write new .dir\n"));
 	return FALSE;
     }
     i = putconf(f, &c);
-    fclose(f);
+    Fclose(f);
     if (i < 0) {
 	DEBUG(("dbzagain: putconf failed\n"));
 	return FALSE;
@@ -647,21 +654,8 @@ static BOOL openhashtable(const char *base, const char *ext, hash_table *tab,
     if ((name = enstring(base, ext)) == NULL)
 	return FALSE;
 
-    if ((tab->f = fopen(name, "rb+")) == NULL) {
-	tab->f = fopen(name, "rb");
-	if (tab->f == NULL) {
-	    DEBUG(("openhashtable: open failed\n"));
-	    DISPOSE(name);
-	    return FALSE;
-	}
-	readonly = TRUE;
-    } else if (readonly) {
-	readonly =TRUE;
-    } else 
-
     if ((tab->fd = open(name, readonly ? O_RDONLY : O_RDWR)) < 0) {
 	DEBUG(("openhashtable: could not open raw\n"));
-	fclose(tab->f);
 	DISPOSE(name);
 	errno = EDOM;
 	return FALSE;
@@ -669,7 +663,6 @@ static BOOL openhashtable(const char *base, const char *ext, hash_table *tab,
     DISPOSE(name);
 
     tab->reclen = reclen;
-    CloseOnExec(fileno(tab->f), 1);
     CloseOnExec(tab->fd, 1);
     tab->pos = -1;
 
@@ -678,7 +671,6 @@ static BOOL openhashtable(const char *base, const char *ext, hash_table *tab,
     if (tab->incore != INCORE_NO) {
 	if (!getcore(tab)) {
 	    DEBUG(("openhashtable: getcore failure\n"));
-	    fclose(tab->f);
 	    close(tab->fd);
 	    errno = EDOM;
 	    return FALSE;
@@ -687,7 +679,6 @@ static BOOL openhashtable(const char *base, const char *ext, hash_table *tab,
 
     if (options.nonblock && (SetNonBlocking(tab->fd, TRUE) < 0)) {
 	DEBUG(("fcntl: could not set nonblock\n"));
-	fclose(tab->f);
 	close(tab->fd);
 	errno = EDOM;
 	return FALSE;
@@ -696,7 +687,6 @@ static BOOL openhashtable(const char *base, const char *ext, hash_table *tab,
 }
 
 static void closehashtable(hash_table *tab) {
-    fclose(tab->f);
     close(tab->fd);
     if (tab->incore == INCORE_MEM)
 	DISPOSE(tab->core);
@@ -709,14 +699,12 @@ static void closehashtable(hash_table *tab) {
 
 #ifdef	DO_TAGGED_HASH
 static BOOL openbasefile(const char *name) {
-    basef = fopen(name, "r");
+    basef = Fopen(name, "r", DBZ_BASE);
     if (basef == NULL) {
 	DEBUG(("dbzinit: basefile open failed\n"));
 	basefname = enstring(name, "");
 	if (basefname == NULL) {
-	    (void) fclose(pagtab.f);
-	    (void) fclose(dirf);
-	    pagtab.f = NULL;
+	    (void) Fclose(dirf);
 	    return FALSE;
 	}
     } else
@@ -750,8 +738,8 @@ int dbzinit(const char *name) {
     /* open the .dir file */
     if ((fname = enstring(name, dir)) == NULL)
 	return FALSE;
-    if ((dirf = fopen(fname, "r+")) == NULL) {
-	dirf = fopen(fname, "r");
+    if ((dirf = Fopen(fname, "r+", DBZ_DIR)) == NULL) {
+	dirf = Fopen(fname, "r", DBZ_DIR);
 	readonly = TRUE;
     } else
 	readonly = FALSE;
@@ -765,7 +753,7 @@ int dbzinit(const char *name) {
     /* pick up configuration */
     if (!getconf(dirf, &conf)) {
 	DEBUG(("dbzinit: getconf failure\n"));
-	fclose(dirf);
+	Fclose(dirf);
 	errno = EDOM;	/* kind of a kludge, but very portable */
 	return FALSE;
     }
@@ -773,13 +761,12 @@ int dbzinit(const char *name) {
     /* open pag or idx/exists file */
 #ifdef	DO_TAGGED_HASH
     if (!openhashtable(name, pag, &pagtab, SOF, options.pag_incore)) {
-	fclose(dirf);
+	Fclose(dirf);
 	return FALSE;
     }
     if (!openbasefile(name)) {
-	fclose(pagtab.f);
 	close(pagtab.fd);
-	fclose(dirf);
+	Fclose(dirf);
 	return FALSE;
     }
     tagbits = conf.tagmask << conf.tagshift;
@@ -787,17 +774,17 @@ int dbzinit(const char *name) {
     tagboth = tagbits | taghere;
 #else
     if ((innconf == NULL) && (ReadInnConf() < 0)) {
-	fclose(dirf);
+	Fclose(dirf);
 	return FALSE;
     }
     if (!openhashtable(name, idx, &idxtab, (innconf->extendeddbz ?
 		sizeof(idxrecext) : sizeof(idxrec)), options.idx_incore)) {
-	fclose(dirf);
+	Fclose(dirf);
 	return FALSE;
     }
     if (!openhashtable(name, exists, &etab, sizeof(erec),
 		options.exists_incore)) {
-	fclose(dirf);
+	Fclose(dirf);
 	return FALSE;
     }
 #endif
@@ -840,19 +827,19 @@ BOOL dbzclose(void)
 
 #ifdef	DO_TAGGED_HASH
     closehashtable(&pagtab);
-    if (fclose(basef) == EOF) {
+    if (Fclose(basef) == EOF) {
 	fprintf(stderr, "dbzclose: fclose(basef) failed\n");
 	ret = FALSE;
     }
     if (basefname != NULL)
-	free((POINTER)basefname);
+	DISPOSE(basefname);
     basef = NULL;
 #else
     closehashtable(&idxtab);
     closehashtable(&etab);
 #endif
 
-    if (fclose(dirf) == EOF) {
+    if (Fclose(dirf) == EOF) {
 	DEBUG(("dbzclose: fclose(dirf) failed\n"));
 	ret = FALSE;
     }
@@ -1446,7 +1433,7 @@ search(searcher *sp)
 	    /* seek, if necessary */
 	    dest = sp->place * SOF;
 	    if (pagtab.pos != dest) {
-		if (lseek(fileno(pagtab.f), dest, SEEK_SET) == -1) {
+		if (lseek(pagtab.fd, dest, SEEK_SET) == -1) {
 		    DEBUG(("search: seek failed\n"));
 		    pagtab.pos = -1;
 		    sp->aborted = 1;
@@ -1457,7 +1444,7 @@ search(searcher *sp)
 
 	    /* read it */
 	    errno = 0;
-	    if (read(fileno(pagtab.f), (POINTER)&value, sizeof(value)) != sizeof(value)) {
+	    if (read(pagtab.fd, (POINTER)&value, sizeof(value)) != sizeof(value)) {
 		if (errno != 0) {
 		    DEBUG(("search: read failed\n"));
 		    pagtab.pos = -1;
@@ -1526,7 +1513,7 @@ static BOOL search(searcher *sp) {
 	    /* seek, if necessary */
 	    dest = sp->place * sizeof(erec);
 	    if (etab.pos != dest) {
-		if (lseek(fileno(etab.f), dest, SEEK_SET) == -1) {
+		if (lseek(etab.fd, dest, SEEK_SET) == -1) {
 		    DEBUG(("search: seek failed\n"));
 		    etab.pos = -1;
 		    sp->aborted = 1;
@@ -1537,7 +1524,7 @@ static BOOL search(searcher *sp) {
 
 	    /* read it */
 	    errno = 0;
-	    if (read(fileno(etab.f), (POINTER)&value, sizeof(erec)) != sizeof(erec)) {
+	    if (read(etab.fd, (POINTER)&value, sizeof(erec)) != sizeof(erec)) {
 		if (errno != 0) {
 		    DEBUG(("search: read failed\n"));
 		    etab.pos = -1;
