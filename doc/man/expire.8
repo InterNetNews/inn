@@ -87,16 +87,16 @@ If you have turned on the storage manager with the 'storageapi' in
 .IR inn.conf (5)
 and set up
 .IR overview.ctl (5),
-it also purges old overview data.
+it also purges old unified overview data.
 And if the article is stored by storage api and the storage method
-has self expire functionality,
+has self expire functionality, the
 control file is ignored for that article by default.
 In this case,
 .I expire
 probes the article to see if it still exists.
 If it does not exist,
 .I expire
-purges relevant entries (history and overview).
+purges the relevant entries (history and unified overview).
 To disable this, use the ``\fI\-N\fP'' flag.
 .SH OPTIONS
 .TP
@@ -105,21 +105,21 @@ If articles are stored by storage api, articles are normally expired by storage
 class base.
 If the ``\fI\-c\fP'' flag is used, articles are expired by normal way (newsgroup
 base).
-Note that if overview of an article is not stored, the article is expired
+Note that if the unified overview entry of an article is not stored, the article is expired
 by storage class base.
 .TP
 .B \-D
-If the ``\fI\-D\fP'' flag is used, then the new overview files are
+If the ``\fI\-D\fP'' flag is used, then the new unified overview files are
 created in the specified directory,
 .IR dir .
 This is useful when the filesystem does not have sufficient space to
-hold both the old and new overview files.
+hold both the old and new unified overview files.
 When this flag is used,
 .I expire
 leaves the server paused and creates a zero-length file named after the
-new overview file, with an extension of ``.done'' to indicate that
+new unified overview file, with an extension of ``.done'' to indicate that
 it has successfully completed the expiration.
-The calling script should install the new overview file and un-pause the server.
+The calling script should install the new unified overview files and un-pause the server.
 .TP
 .B \-d
 If the ``\fI\-d\fP'' flag is used, then the new history file and database is
@@ -192,11 +192,11 @@ If ``\fB\-e\fP'' flag is used together, ``\fB\-l\fP'' flag is ignored.
 .TP
 .B \-N
 If the article is stored by storage api and the storage method
-has self expire functionality, control file is ignored for that
+has self expire functionality, then the control file is ignored for that
 article by default.
 If the ``\fB\-N\fP'' flag is used,
 .I expire
-still uses control file in this case.
+still uses the control file in this case.
 .TP
 .B \-n
 If
@@ -263,7 +263,7 @@ name specified with that flag will be used instead of
 .IR history .
 .TP
 .B \-u
-If the ``\fB\-u\fP'' flag is used, then expired articles names are appended
+If the ``\fB\-u\fP'' flag is used, then expired article's names are appended
 to the specified
 .IR file .
 This files can be used as a input for
