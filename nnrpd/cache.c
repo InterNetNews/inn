@@ -40,9 +40,9 @@ static int msgcachecount;
 void
 cache_add(const HASH h, const TOKEN t)
 {
-    if (msgcachecount < 10000) {
+    if (msgcachecount < innconf->msgidcachesize) {
 	if (!msgidcache) {
-	    msgidcache = tst_init(1000);
+	    msgidcache = tst_init(innconf->msgidcachesize / 10);
 	}
 	if (msgidcache) {
 	    TOKEN *token = malloc(sizeof *token);
