@@ -11,8 +11,8 @@
 
 BOOL timehash_init(BOOL *selfexpire);
 TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class);
-ARTHANDLE *timehash_retrieve(const TOKEN token, RETRTYPE amount);
-ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount);
+ARTHANDLE *timehash_retrieve(const TOKEN token, const RETRTYPE amount);
+ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount);
 void timehash_freearticle(ARTHANDLE *article);
 BOOL timehash_cancel(TOKEN token);
 void timehash_shutdown(void);

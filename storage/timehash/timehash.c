@@ -104,7 +104,7 @@ BOOL timehash_init(BOOL *selfexpire) {
     return TRUE;
 }
 
-TOKEN timehash_store(const ARTHANDLE article, STORAGECLASS class) {
+TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class) {
     char                *path;
     char                *p;
     time_t              now;
@@ -262,7 +262,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
     return NULL;
 }
 
-ARTHANDLE *timehash_retrieve(const TOKEN token, RETRTYPE amount) {
+ARTHANDLE *timehash_retrieve(const TOKEN token, const RETRTYPE amount) {
     int                 time;
     int                 seqnum;
     char                *path;
@@ -363,7 +363,7 @@ static struct dirent *FindDir(DIR *dir, FINDTYPE type) {
     return NULL;
 }
 
-ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
+ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
     PRIV_TIMEHASH       priv;
     PRIV_TIMEHASH       *newpriv;
     char                *path, *p;
