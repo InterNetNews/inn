@@ -95,13 +95,24 @@ clobber realclean:	clean
 	rm -f tags */tags core */core a.out */a.out foo */foo
 	rm -f CHANGES *~
 	rm -fr $(TARDIR)
-	rm -f config.cache config.log include/config.h
-	rm -f makedirs.sh config/config.data 
-	rm -f include/paths.h samples/actsync.cfg samples/inncheck 
-	rm -f samples/innshellvars samples/innshellvars.csh 
-	rm -f samples/innshellvars.pl samples/innshellvars.tcl 
-	rm -f samples/innreport.conf samples/innwatch.ctl samples/startup.tcl 
-	rm -f site/subst.pl storage/buildconfig syslog/syslog.conf
+	rm -f config.cache config.log 
+	rm -f BUILD makedirs.sh config/config.data backends/actmerge.sh
+	rm -f backends/actsyncd.sh backends/sendxbatches.sh include/clibrary.h
+	rm -f include/config.h include/paths.h samples/actsync.cfg
+	rm -f samples/checkgroups samples/default samples/docheckgroups
+	rm -f samples/expirerm samples/ihave samples/inn.conf samples/inncheck
+	rm -f samples/innmail  samples/innreport samples/innreport.conf
+	rm -f samples/innshellvars samples/innshellvars.csh
+	rm -f samples/innshellvars.pl samples/innshellvars.tcl
+	rm -f samples/innstat samples/innwatch samples/innwatch.ctl
+	rm -f samples/news.daily samples/newgroup samples/nntpsend
+	rm -f samples/parsecontrol samples/pgpverify samples/rc.news
+	rm -f samples/rmgroup samples/scanlogs samples/scanspool
+	rm -f samples/send-ihave samples/send-nntp samples/send-uucp
+	rm -f samples/sendbatch samples/sendme samples/sendsys
+	rm -f samples/senduuname samples/signcontrol samples/startup.tcl
+	rm -f samples/tally.control samples/version samples/writelog
+	rm -f storage/buildconfig syslog/syslog.conf
 	@echo ""
 	cd site ; make clobber ; cd ..
 	rm -f Makefile.global 
