@@ -16,6 +16,10 @@
 # include <fcntl.h>
 #endif
 
+#ifdef HAVE_LIMITS_H
+# include <limits.h>
+#endif
+
 #include "libinn.h"
 #include "macros.h"
 #include "ov.h"
