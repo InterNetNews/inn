@@ -164,6 +164,7 @@ typedef struct _CHANNEL {
     int			Rest;
     int			SaveUsed;
     int                 ActiveConnects; /* Used by Per-Host Restrictions */
+    int			MaxIncoming;
 } CHANNEL;
 
 

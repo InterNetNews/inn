@@ -8,8 +8,6 @@
 #include "clibrary.h"
 #include "innd.h"
 
-/* enable limit on # of connections per host */
-#define ENABLE_HOST_CONNECT_LIMIT       0  
 #define MAX_CONNECT_PER_SITE            3
 /* Minutes - basically, keep the connection open but idle */
 #define PAUSE_BEFORE_DROP               5  
@@ -741,12 +739,10 @@ void CHANreadloop(void)
     long		silence;
     char		*p;
     time_t		LastUpdate;
-#if ENABLE_HOST_CONNECT_LIMIT
     CHANNEL             *tempchan;
     int                 tfd;
     int                 found;
     char                *tempname;
-#endif             
 
     TMRinit();
     
@@ -833,35 +829,33 @@ void CHANreadloop(void)
 	do {
 	    cp = &CHANtable[fd];
 
-#if ENABLE_HOST_CONNECT_LIMIT
-            /* if its a new NNTP connection, check for MAX_CONNECT_PER_SITE */
-            if((cp->fd > 0) && 
-               (cp->Type == CTnntp) && 
-               (cp->ActiveConnects == 0)) {
-                found=1;
-                for(tfd = 0; tfd < CHANlastfd; tfd++) {
-                   tempchan = &CHANtable[tfd];
-                   if(cp->Address.s_addr == tempchan->Address.s_addr) {
-                      if(tempchan->ActiveConnects == found)
-                        found++;
-                   }
+            if(cp->MaxIncoming > 0) {
+                if((cp->fd > 0) && 
+                   (cp->Type == CTnntp) && 
+                   (cp->ActiveConnects == 0)) {
+                    found=1;
+                    for(tfd = 0; tfd < CHANlastfd; tfd++) {
+                       tempchan = &CHANtable[tfd];
+                       if(cp->Address.s_addr == tempchan->Address.s_addr) {
+                          if(tempchan->ActiveConnects == found)
+                            found++;
+                       }
+                    }
+                    cp->ActiveConnects = found;
                 }
-                cp->ActiveConnects = found;
-            }
             
-            if((cp->ActiveConnects > MAX_CONNECT_PER_SITE) && (cp->fd > 0)) {
-                if(cp->Started + (PAUSE_BEFORE_DROP * 60) < Now.time) {
-                    CHANclose(cp, CHANname(cp));
-                } else {
-                    if (fd >= lastfd)
-                        fd = 0;
-                    else
-                        fd++; 
+                if((cp->ActiveConnects > cp->MaxIncoming) && (cp->fd > 0)) {
+                    if(cp->Started + (PAUSE_BEFORE_DROP * 60) < Now.time) {
+                        CHANclose(cp, CHANname(cp));
+                    } else {
+                        if (fd >= lastfd)
+                            fd = 0;
+                        else
+                            fd++; 
+                    }
+                    continue;
                 }
-                continue;
             }
-#endif  
-
 
 	    /* Anything to read? */
 	    if (FD_ISSET(fd, &RCHANmask) && FD_ISSET(fd, &MyRead)) {

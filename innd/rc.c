@@ -402,6 +402,7 @@ RCreader(cp)
     if (i >= 0) {
 	new = NCcreate(fd, rp->Password[0] != '\0', FALSE);
         new->Streaming = rp->Streaming ;
+        new->MaxIncoming = rp->MaxIncoming ;
     } else if (AnyIncoming) {
 	new = NCcreate(fd, FALSE, FALSE);
     } else {
@@ -413,9 +414,10 @@ RCreader(cp)
 
     /* SUPPRESS 112 *//* Retrieving long where char is stored */
     new->Address.s_addr = remote.sin_addr.s_addr;
-    syslog(L_NOTICE, "%s connected %d streaming %s",
+    syslog(L_NOTICE, "%s connected %d streaming %s MaxIncoming %d",
            name ? name : inet_ntoa(new->Address), new->fd,
-           (!StreamingOff || new->Streaming) ? "allowed" : "not allowed");
+           (!StreamingOff || new->Streaming) ? "allowed" : "not allowed",
+           new->MaxIncoming);
 }
 
 
