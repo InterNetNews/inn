@@ -246,6 +246,10 @@ TMRstart(unsigned int timer)
 void
 TMRstop(unsigned int timer)
 {
+    if (timer_count == 0) {
+        /* this should happen if innconf->timer == 0 */
+        return;
+    }
     if (timer_current == NULL)
         warn("timer %u stopped when no timer was running", timer);
     else if (timer != timer_current->id)
