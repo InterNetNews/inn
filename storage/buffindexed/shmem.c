@@ -190,7 +190,7 @@ smcd_t* smcGetShmemBuffer(const char *name, int size)
     this->semap = semap;
 
     /* This makes news log file huge if enabled */
-    debug("got shmid %d semap %d addr %p size %lu", shmid, semap,
+    debug("got shmid %d semap %d addr %p size %d", shmid, semap,
           (void *) addr, size);
 
     return this;
