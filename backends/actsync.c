@@ -506,7 +506,16 @@ main(argc, argv)
     char *host1;		/* host to change */
     char *host2;		/* comparison host */
 
+    /*read in default info from inn.conf*/
+    if(ReadInnConf() < 0) {
+fprintf(stderr, "Couldn't init inn.conf\n");
+        return(1);
+    }
     /* process args */
+    if(ReadInnConf() < 0) {
+fprintf(stderr, "Couldn't init inn.conf\n");
+        return(1);
+    }
     process_args(argc, argv, &host1, &host2);
 
     /* obtain the active files */
