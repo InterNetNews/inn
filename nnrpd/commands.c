@@ -223,6 +223,7 @@ CMDauthinfo(ac, av)
     static char	User[30];
     static char	Password[30];
     char	accesslist[BIG_BUFFER];
+    char        errorstr[BIG_BUFFER];
     int         code;
 
     if (caseEQ(av[1], "generic")) {
@@ -285,32 +286,6 @@ CMDauthinfo(ac, av)
 	    Password[sizeof Password - 1] = 0;
 	}
 
-#ifdef DO_PERL
-	if (innconf->nnrpperlauth) {
-	    code = perlAuthenticate(ClientHost, ClientIp, ServerHost, User, Password, accesslist);
-	    if (code == NNTP_AUTH_OK_VAL) {
-		PERMspecified = NGgetlist(&PERMreadlist, accesslist);
-		PERMpostlist = PERMreadlist;
-		syslog(L_NOTICE, "%s user %s", ClientHost, User);
-		if (LLOGenable) {
-			fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, User);
-			fflush(locallog);
-		}
-		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
-		/* save these values in case you need them later */
-		strcpy(PERMuser, User);
-		strcpy(PERMpass, Password);
-		PERMneedauth = FALSE;
-		PERMauthorized = TRUE;
-		return;
-	    } else {
-		syslog(L_NOTICE, "%s bad_auth", ClientHost);
-		Reply("%d Authentication error\r\n", NNTP_ACCESS_VAL);
-		ExitWithStats(1, FALSE);
-	    }
-	} else {
-#endif /* DO_PERL */
-
 #ifdef DO_PYTHON
 	    if (innconf->nnrppythonauth) {
 	        if ((code = PY_authenticate(ClientHost, ClientIp, ServerHost, User, Password, accesslist)) < 0) {
@@ -351,7 +326,10 @@ CMDauthinfo(ac, av)
 		PERMauthorized = TRUE;
 		return;
 	    }
-	    PERMlogin(User, Password);
+
+            errorstr[0] = '\0';
+
+            PERMlogin(User, Password, errorstr);
 	    PERMgetpermissions();
 	    if (!PERMneedauth) {
 		syslog(L_NOTICE, "%s user %s", ClientHost, User);
@@ -367,12 +345,14 @@ CMDauthinfo(ac, av)
 #ifdef	DO_PYTHON
 	}
 #endif	/* DO_PYTHON */
-#ifdef DO_PERL
-	}
-#endif /* DO_PERL */
 
 	syslog(L_NOTICE, "%s bad_auth", ClientHost);
-	Reply("%d Authentication error\r\n", NNTP_ACCESS_VAL);
+        if (errorstr[0] != '\0') {
+            syslog(L_NOTICE, "%s perl error str: %s", ClientHost, errorstr);
+            Reply("%d %s\r\n", NNTP_ACCESS_VAL, errorstr);
+        } else {
+            Reply("%d Authentication error\r\n", NNTP_ACCESS_VAL);
+        }
 	ExitWithStats(1, FALSE);
     }
 

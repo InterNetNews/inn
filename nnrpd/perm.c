@@ -29,6 +29,7 @@ typedef struct _CONFCHAIN {
 typedef struct _METHOD {
     char *name;
     char *program;
+    int  type;          /* for seperating perl_auth from auth */
     char *users;	/* only used for auth_methods, not for res_methods. */
     char **extra_headers;
     char **extra_logs;
@@ -46,6 +47,7 @@ typedef struct _AUTHGROUP {
     char *default_user;
     char *default_domain;
     char *localaddress;
+    char *perl_access;
 } AUTHGROUP;
 
 typedef struct _GROUP {
@@ -58,7 +60,7 @@ typedef struct _GROUP {
 /* function declarations */
 static void PERMreadfile(char *filename);
 static void authdecl_parse(AUTHGROUP*, CONFFILE*, CONFTOKEN*);
-static void accessdecl_parse(ACCESSGROUP*, CONFFILE*, CONFTOKEN*);
+static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok);
 static void method_parse(METHOD*, CONFFILE*, CONFTOKEN*, int);
 
 static void add_authgroup(AUTHGROUP*);
@@ -76,9 +78,10 @@ static void CompressList(char*);
 static bool MatchHost(char*, char*, char*);
 static int MatchUser(char*, char*);
 static char *ResolveUser(AUTHGROUP*);
-static char *AuthenticateUser(AUTHGROUP*, char*, char*);
+static char *AuthenticateUser(AUTHGROUP*, char*, char*, char*);
 
 static void GrowArray(void***, void*);
+static void PERMarraytoaccess(ACCESSGROUP *access, char *name, char **array, int array_len);
 
 /* global variables */
 static AUTHGROUP **auth_realms;
@@ -87,6 +90,9 @@ static ACCESSGROUP **access_realms;
 
 static char	*ConfigBit;
 static int	ConfigBitsize;
+
+extern int LLOGenable;
+extern bool PerlLoaded;
 
 #define PERMlbrace		1
 #define PERMrbrace		2
@@ -143,11 +149,13 @@ static int	ConfigBitsize;
 #define PERMlocaladdress	53
 #define PERMrejectwith		54
 #define PERMmaxbytespersecond	55
+#define PERMperl_auth           56
+#define PERMperl_access         57
 #ifdef HAVE_SSL
-#define PERMrequire_ssl		56
-#define PERMMAX			57
+#define PERMrequire_ssl		58
+#define PERMMAX			59
 #else
-#define PERMMAX			56
+#define PERMMAX			58
 #endif
 
 #define TEST_CONFIG(a, b) \
@@ -228,6 +236,8 @@ static CONFTOKEN PERMtoks[] = {
   { PERMlocaladdress, "localaddress:" },
   { PERMrejectwith, "reject_with:" },
   { PERMmaxbytespersecond, "max_rate:" },
+  { PERMperl_auth, "perl_auth:" },
+  { PERMperl_access, "perl_access:" },
 #ifdef HAVE_SSL
   { PERMrequire_ssl, "require_ssl:" },
 #endif
@@ -279,6 +289,8 @@ static METHOD *copy_method(METHOD *orig)
 	    GrowArray((void***) &ret->extra_logs,
 	      (void*) COPY(orig->extra_logs[i]));
     }
+
+    ret->type = orig->type;
 
     return(ret);
 }
@@ -362,6 +374,11 @@ static AUTHGROUP *copy_authgroup(AUTHGROUP *orig)
 	ret->localaddress = COPY(orig->localaddress);
     else
 	ret->localaddress = 0;
+
+    if (orig->perl_access)
+        ret->perl_access = COPY(orig->perl_access);
+    else
+        ret->perl_access = 0;
 
     return(ret);
 }
@@ -496,6 +513,8 @@ static void free_authgroup(AUTHGROUP *del)
 	DISPOSE(del->default_domain);
     if (del->localaddress)
 	DISPOSE(del->localaddress);
+    if (del->perl_access)
+        DISPOSE(del->perl_access);
     DISPOSE(del);
 }
 
@@ -669,14 +688,23 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	}
 	break;
       case PERMauth:
+      case PERMperl_auth:
       case PERMauthprog:
 	m = NEW(METHOD, 1);
 	memset(m, 0, sizeof(METHOD));
 	memset(ConfigBit, '\0', ConfigBitsize);
 	GrowArray((void***) &curauth->auth_methods, (void*) m);
-	if (oldtype == PERMauthprog)
+	if (oldtype == PERMauthprog) {
+            m->type = PERMauthprog;
 	    m->program = COPY(tok->name);
-	else {
+	} else if (oldtype == PERMperl_auth) {
+#ifdef DO_PERL
+            m->type = PERMperl_auth;
+	    m->program = COPY(tok->name);
+#else
+            ReportError(f, "perl_auth can not be used in readers.conf: inn not compiled with perl support enabled.");
+#endif
+        } else {
 	    m->name = COPY(tok->name);
 	    tok = CONFgettoken(PERMtoks, f);
 
@@ -695,15 +723,22 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 		ReportError(f, "Unexpected EOF.");
 	    }
 	}
-
 	break;
+      case PERMperl_access:
+#ifdef DO_PERL
+        curauth->perl_access = COPY(tok->name);
+#else
+        ReportError(f, "perl_access can not be used in readers.conf: inn not compiled with perl support enabled.");
+#endif
+        break;
       case PERMlocaladdress:
 	curauth->localaddress = COPY(tok->name);
 	CompressList(curauth->localaddress);
 	SET_CONFIG(PERMlocaladdress);
 	break;
       default:
-	ReportError(f, "Unexpected token.");
+        p = strcat("Unexpected token: ", tok->name);
+	ReportError(f, p);
 	break;
     }
 }
@@ -712,7 +747,7 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 {
     int oldtype, boolval;
     bool bit;
-    char buff[SMBUF], *oldname;
+    char buff[SMBUF], *oldname, *p;
 
     oldtype = tok->type;
     oldname = tok->name;
@@ -945,9 +980,38 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	SET_CONFIG(oldtype);
 	break;
       default:
-	ReportError(f, "Unexpected token.");
+        p = strcat("Unexpected token: ", tok->name);
+	ReportError(f, p);
 	break;
     }
+}
+
+static void PERMarraytoaccess(ACCESSGROUP *access, char *name, char **array, int array_len) {
+    CONFTOKEN	*tok	    = NULL;
+    CONFFILE    *file;
+    char        *str;
+    int i;
+
+    file	= NEW(CONFFILE, 1);
+    memset(file, 0, sizeof(CONFFILE));
+    file->array = array;
+    file->array_len = array_len;
+ 
+    memset(ConfigBit, '\0', ConfigBitsize);
+
+    SetDefaultAccess(access);
+    str = COPY(name);
+    access->name = str;
+
+    for (i = 0; i <= array_len; i++) {
+      tok = CONFgettoken(PERMtoks, file);
+
+      if (tok != NULL) {
+        accessdecl_parse(access, file, tok);
+      }
+    }
+    DISPOSE(file);
+    return;       
 }
 
 static void PERMreadfile(char *filename)
@@ -963,6 +1027,7 @@ static void PERMreadfile(char *filename)
     int		oldtype;
     char	*str	    = NULL;
     char        *path       = NULL;
+    char        *p;
 
     if(filename != NULL) {
 	syslog(L_TRACE, "Reading access from %s", 
@@ -1188,7 +1253,8 @@ static void PERMreadfile(char *filename)
 		accessdecl_parse(curgroup->access, cf->f, tok);
 		break;
 	      default:
-		ReportError(cf->f, "Unexpected token.");
+                p = strcat("Unexpected token: ", tok->name);
+                ReportError(cf->f, p);
 		break;
 	    }
 	} else if (inwhat == 1) {
@@ -1334,7 +1400,7 @@ void PERMgetaccess(char *nnrpaccess)
     }
 }
 
-void PERMlogin(char *uname, char *pass)
+void PERMlogin(char *uname, char *pass, char *errorstr)
 {
     int i   = 0;
     char *runame;
@@ -1361,7 +1427,7 @@ void PERMlogin(char *uname, char *pass)
     runame  = NULL;
 
     while (runame == NULL && i--)
-	runame = AuthenticateUser(auth_realms[i], uname, pass);
+	runame = AuthenticateUser(auth_realms[i], uname, pass, errorstr);
     if (runame) {
 	strcpy(PERMuser, runame);
 	uname = strchr(PERMuser, '@');
@@ -1403,6 +1469,11 @@ void PERMgetpermissions()
     char *cp, **list;
     char *user[2];
     static ACCESSGROUP *noaccessconf;
+    char **access_array;
+    char *p, *uname;
+    char *cpp, *perl_path;
+    char **args;
+    int array_len = 0;
 
     if (ConfigBit == NULL) {
 	if (PERMMAX % 8 == 0)
@@ -1420,34 +1491,72 @@ void PERMgetpermissions()
 	PERMaccessconf = noaccessconf;
 	SetDefaultAccess(PERMaccessconf);
 	return;
-    }
-    for (i = 0; access_realms[i]; i++)
-	;
-    user[0] = PERMuser;
-    user[1] = 0;
-    while (i--) {
-	if ((!success_auth->key && !access_realms[i]->key) ||
-	  (access_realms[i]->key && success_auth->key &&
-	   strcmp(access_realms[i]->key, success_auth->key) == 0)) {
-	    if (!access_realms[i]->users)
-		break;
-	    else if (!*PERMuser)
-		continue;
-	    cp = COPY(access_realms[i]->users);
-	    list = 0;
-	    NGgetlist(&list, cp);
-	    if (PERMmatch(list, user)) {
-		syslog(L_TRACE, "%s match_user %s %s", ClientHost,
-		  PERMuser, access_realms[i]->users);
-		DISPOSE(cp);
-		DISPOSE(list);
-		break;
-	    } else
-		syslog(L_TRACE, "%s no_match_user %s %s", ClientHost,
-		  PERMuser, access_realms[i]->users);
-	    DISPOSE(cp);
-	    DISPOSE(list);
+#ifdef DO_PERL
+    } else if (success_auth->perl_access != NULL) {
+      i = 0;
+      cpp = COPY(success_auth->perl_access);
+      args = 0;
+      Argify(cpp, &args);
+      perl_path = concat(args[0], (char *) 0);
+      if ((perl_path != NULL) && (strlen(perl_path) > 0)) {
+        if(!PerlLoaded) {
+          loadPerl();
+        }
+        PERLsetup(NULL, perl_path, "access");
+        free(perl_path);
+
+        uname = COPY(PERMuser);
+        DISPOSE(args);        
+        
+        args = perlAccess(ClientHost, ClientIp, ServerHost, uname);
+        p = args[0];
+        array_len = atoi(p);
+        access_array = args;
+        access_array++;
+
+        DISPOSE(uname);
+
+        access_realms[0] = NEW(ACCESSGROUP, 1);
+        memset(access_realms[0], 0, sizeof(ACCESSGROUP));
+
+        PERMarraytoaccess(access_realms[0], "perl-dyanmic", access_array, array_len);
+      } else {
+        syslog(L_ERROR, "No script specified in auth method.\n");
+        Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+        ExitWithStats(1, TRUE);
+      }
+      DISPOSE(cpp);
+      DISPOSE(args);
+#endif /* DO_PERL */
+    } else {
+      for (i = 0; access_realms[i]; i++)
+        ;
+      user[0] = PERMuser;
+      user[1] = 0;
+      while (i--) {
+        if ((!success_auth->key && !access_realms[i]->key) ||
+            (access_realms[i]->key && success_auth->key &&
+             strcmp(access_realms[i]->key, success_auth->key) == 0)) {
+          if (!access_realms[i]->users)
+            break;
+          else if (!*PERMuser)
+            continue;
+          cp = COPY(access_realms[i]->users);
+          list = 0;
+          NGgetlist(&list, cp);
+          if (PERMmatch(list, user)) {
+            syslog(L_TRACE, "%s match_user %s %s", ClientHost,
+                   PERMuser, access_realms[i]->users);
+            DISPOSE(cp);
+            DISPOSE(list);
+            break;
+          } else
+            syslog(L_TRACE, "%s no_match_user %s %s", ClientHost,
+                   PERMuser, access_realms[i]->users);
+          DISPOSE(cp);
+          DISPOSE(list);
 	}
+      }
     }
     if (i >= 0) {
 	/* found the right access group */
@@ -1920,8 +2029,11 @@ static char *ResolveUser(AUTHGROUP *auth)
     char *arg0;
     char *resdir;
     char *tmp;
+    char *perl_path;
     EXECSTUFF *foo;
     int done	    = 0;
+    int code;
+    char accesslist[BIG_BUFFER];
     char buf[BIG_BUFFER];
 
     if (!auth->res_methods)
@@ -1976,7 +2088,7 @@ static char *ResolveUser(AUTHGROUP *auth)
 }
 
 /* execute a series of authenticators to get the remote username */
-static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password)
+static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, char *errorstr)
 {
     int i, j;
     char *cp;
@@ -1984,8 +2096,11 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password)
     char *arg0;
     char *resdir;
     char *tmp;
+    char *perl_path;
     EXECSTUFF *foo;
     int done	    = 0;
+    int code;
+    char accesslist[BIG_BUFFER];
     char buf[BIG_BUFFER];
 
     if (!auth->auth_methods)
@@ -1997,6 +2112,39 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password)
 
     ubuf[0] = '\0';
     for (i = 0; auth->auth_methods[i]; i++) {
+#ifdef DO_PERL
+      if (auth->auth_methods[i]->type == PERMperl_auth) {
+            cp = COPY(auth->auth_methods[i]->program);
+            args = 0;
+            Argify(cp, &args);
+            perl_path = concat(args[0], (char *) 0);
+            if ((perl_path != NULL) && (strlen(perl_path) > 0)) {
+                if(!PerlLoaded) {
+                    loadPerl();
+                }
+                PERLsetup(NULL, perl_path, "authenticate");
+                free(perl_path);
+                perlAuthInit();
+          
+                code = perlAuthenticate(ClientHost, ClientIp, ServerHost, username, password, accesslist, errorstr);
+                if (code == NNTP_AUTH_OK_VAL) {
+                    syslog(L_NOTICE, "%s user %s", ClientHost, username);
+                    if (LLOGenable) {
+                        fprintf(locallog, "%s user %s\n", ClientHost, username);
+                        fflush(locallog);
+                    }
+              
+                    /* save these values in case you need them later */
+                    strcpy(ubuf, username);
+                    break;
+                } else {
+                    syslog(L_NOTICE, "%s bad_auth", ClientHost);
+                }            
+            } else {
+              syslog(L_ERROR, "No script specified in auth method.\n");
+            }
+      } else if (auth->auth_methods[i]->type == PERMauthprog) {
+#endif	/* DO_PERL */    
 	if (auth->auth_methods[i]->users &&
 	  !MatchUser(auth->auth_methods[i]->users, username))
 	    continue;
@@ -2038,6 +2186,9 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password)
 	if (done)
 	    /* this authenticator succeeded */
 	    break;
+#ifdef DO_PERL
+      }
+#endif /* DO_PERL */
     }
     DISPOSE(resdir);
     if (ubuf[0])

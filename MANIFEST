@@ -238,7 +238,7 @@ doc/pod/convdate.pod                  Master file for convdate.1
 doc/pod/expireover.pod                Master file for expireover.8
 doc/pod/fastrm.pod                    Master file for fastrm.1
 doc/pod/hacking.pod                   Master file for HACKING
-doc/pod/hook-perl.pod                 Master file for README.perl_hook
+doc/pod/hook-perl.pod                 Master file for doc/hook-perl
 doc/pod/inn.conf.pod                  Master file for inn.conf.5
 doc/pod/innd.pod                      Master file for innd.8
 doc/pod/inndf.pod                     Master file for inndf.8
@@ -509,6 +509,7 @@ samples/news2mail.cf                  news2mail config file
 samples/newsfeeds.in                  innd feed configuration
 samples/nnrpd.py                      Python hooks for nnrpd
 samples/nnrpd.track                   Reader tracking configuration
+samples/nnrpd_access.pl.in            Sample nnrpd Perl access hooks
 samples/nnrpd_auth.pl.in              Sample nnrpd Perl authorization hooks
 samples/nnrpd_auth.py.in              Sample nnrpd Python authorization hooks
 samples/nntpsend.ctl                  Outgoing nntpsend feed configuration

@@ -59,7 +59,8 @@ REST		= \
 	motd.news storage.conf cycbuff.conf buffindexed.conf \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
 	filter_innd.py INN.py \
-	startup.tcl filter.tcl nnrpd_auth.pl news2mail.cf readers.conf \
+	startup.tcl filter.tcl nnrpd_auth.pl nnrpd_access.pl \
+        news2mail.cf readers.conf \
 	radius.conf nnrpd_auth.py ovdb.conf sasl.conf active.minimal \
 	newsgroups.minimal subscriptions
 
@@ -181,6 +182,7 @@ $D$(PATH_PYTHON_INN_MODULE): INN.py ;	$(COPY_RPRI) $? $@
 $D$(PATH_TCL_STARTUP): startup.tcl	; $(COPY_RPRI) $? $@
 $D$(PATH_TCL_FILTER): filter.tcl	; $(COPY_RPRI) $? $@
 $D$(PATH_NNRPAUTH): nnrpd_auth.pl       ; $(COPY_RPRI) $? $@
+$D$(PATH_NNRPACCESS): nnrpd_access.pl     ; $(COPY_RPRI) $? $@
 $D$(PATH_NNRPYAUTH): nnrpd_auth.py      ; $(COPY_RPRI) $? $@
 $D$(PATH_ACTSYNC_CFG): actsync.cfg	; $(COPY_RPRI) $? $@
 $D$(PATH_ACTSYNC_IGN): actsync.ign	; $(COPY_RPRI) $? $@
@@ -208,6 +210,7 @@ control.ctl:	../samples/control.ctl		; $(COPY) $? $@
 expire.ctl:	../samples/expire.ctl		; $(COPY) $? $@
 filter.tcl:	../samples/filter.tcl		; $(COPY) $? $@
 nnrpd_auth.pl:  ../samples/nnrpd_auth.pl	; $(COPY) $? $@
+nnrpd_access.pl:  ../samples/nnrpd_access.pl	; $(COPY) $? $@
 nnrpd_auth.py:  ../samples/nnrpd_auth.py	; $(COPY) $? $@
 filter_innd.pl:	../samples/filter_innd.pl	; $(COPY) $? $@
 filter_nnrpd.pl: ../samples/filter_nnrpd.pl	; $(COPY) $? $@

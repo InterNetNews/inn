@@ -199,6 +199,10 @@ Jeffrey M. Vinocur:
         and wrote various other fixes and feature improvements,
         particularly to nnrpd.
 
+Erik Klavon:
+        Significantly reworked nnrpd perl hooks to be more useful in
+        combination with the readers.conf mechanism.
+
 Also:
 
 Dave Barr:

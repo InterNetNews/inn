@@ -9,6 +9,28 @@
 #include "libinn.h"
 #include "macros.h"
 
+int getline(CONFFILE *F, char *buffer, int length) {
+  if (F->f) {
+    fgets(buffer, length, F->f);
+  } else if (F->array) {
+    strncpy(buffer, F->array[F->lineno], length);
+  }
+  F->lineno++;
+  if (strlen (F->buf) == F->sbuf) {
+    return 1; /* Line too long */
+  } else {
+    return 0;
+  }
+}
+
+int cfeof(CONFFILE *F) {
+  if (F->f) {
+    return feof(F->f);
+  } else if (F->array) {
+    return (F->lineno == F->array_len);
+  }
+}
+
 static char *CONFgetword(CONFFILE *F)
 {
   register char *p;
@@ -19,14 +41,12 @@ static char *CONFgetword(CONFFILE *F)
 
   if (!F) return (NULL);	/* No conf file */
   if (!F->buf || !F->buf[0]) {
-    if (feof (F->f)) return (NULL);
+    if (cfeof (F)) return (NULL);
     if (!F->buf) {
       F->sbuf = BIG_BUFFER;
       F->buf = NEW(char, F->sbuf);
     }
-    fgets(F->buf, F->sbuf, F->f);
-    F->lineno++;
-    if (strlen (F->buf) == F->sbuf)
+    if (getline(F, F->buf, F->sbuf) != 0)
       return (NULL); /* Line too long */
   }
   do {
@@ -39,16 +59,14 @@ static char *CONFgetword(CONFFILE *F)
      }
      for (p = F->buf; *p == ' ' || *p == '\t' ; p++);
      flag = TRUE;
-     if (*p == '\0' && !feof (F->f)) {
+     if (*p == '\0' && !cfeof(F)) {
        flag = FALSE;
-       fgets(F->buf, F->sbuf, F->f);
-       F->lineno++;
-       if (strlen (F->buf) == F->sbuf)
+       if (getline(F, F->buf, F->sbuf))
          return (NULL); /* Line too long */
        continue;
      }
      break;
-  } while (!feof (F->f) || !flag);
+  } while (!cfeof(F) || !flag);
 
   if (*p == '"') { /* double quoted string ? */
     p++;
@@ -57,16 +75,14 @@ static char *CONFgetword(CONFFILE *F)
              *t != '\0'; t++);
       if (*t == '\0') {
         *t++ = '\n';
-        fgets(t, F->sbuf - strlen (F->buf), F->f);
-	F->lineno++;
-        if (strlen (F->buf) == F->sbuf)
+        if (getline(F, t, F->sbuf - strlen(F->buf)))
           return (NULL); /* Line too long */
         if ((s = strchr(t, '\n')) != NULL)
           *s = '\0';
       }
       else 
         break;
-    } while (!feof (F->f));
+    } while (!cfeof(F));
     *t++ = '\0';
   }
   else {
@@ -74,7 +90,7 @@ static char *CONFgetword(CONFFILE *F)
     if (*t != '\0')
       *t++ = '\0';
   }
-  if (*p == '\0' && feof (F->f)) return (NULL);
+  if (*p == '\0' && cfeof(F)) return (NULL);
   word = COPY (p);
   for (p = F->buf; *t != '\0'; t++)
     *p++ = *t;
@@ -101,6 +117,7 @@ CONFFILE *CONFfopen(char *filename)
   ret->sbuf = 0;
   ret->lineno = 0;
   ret->f = f;
+  ret->array = NULL;
   return(ret);
 }
 

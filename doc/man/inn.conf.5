@@ -566,12 +566,6 @@ data available.  Checking the existence of articles before returning
 overview information slows down the overview commands, but reduces the
 number of \*(L"article is missing\*(R" errors seen by the client.  This is a
 boolean value and the default is true.
-.IP "\fInnrpperlauth\fR" 4
-.IX Item "nnrpperlauth"
-Whether to use the Perl hook in \fInnrpd\fR\|(8) to authenticate readers.  If this
-is enabled, normal \fIreaders.conf\fR\|(5) authentication will not be used, and
-instead the Perl hook will be called to authenticate connections.  This is
-a boolean value and the default is false.
 .IP "\fInnrppythonauth\fR" 4
 .IX Item "nnrppythonauth"
 Whether to use the Python hook in \fInnrpd\fR\|(8) to authenticate readers.  If

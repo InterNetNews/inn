@@ -97,6 +97,10 @@ static char	*ShadowGroup;
 static char 	*HostErrorStr;
 bool GetHostByAddr = TRUE;      /* formerly DO_NNRP_GETHOSTBYADDR */
 
+#ifdef DO_PERL
+bool   PerlLoaded = FALSE;
+#endif DO_PERL
+
 extern void	CMDauthinfo();
 extern void	CMDdate();
 extern void	CMDfetch();
@@ -504,23 +508,6 @@ static void StartConnection()
     LogName[sizeof(LogName) - 1] = '\0';
 
     syslog(L_NOTICE, "%s connect", ClientHost);
-#ifdef DO_PERL
-    if (innconf->nnrpperlauth) {
-	if ((code = perlConnect(ClientHost, ClientIp, ServerHost, accesslist)) == 502) {
-	    syslog(L_NOTICE, "%s no_access", ClientHost);
-	    Printf("%d You are not in my access file. Goodbye.\r\n",
-		   NNTP_ACCESS_VAL);
-	    ExitWithStats(1, TRUE);
-	}
-	PERMspecified = NGgetlist(&PERMreadlist, accesslist);
-	PERMpostlist = PERMreadlist;
-	if (!authconf)
-	    authconf = NEW(ACCESSGROUP, 1);
-	PERMaccessconf = authconf;
-	SetDefaultAccess(PERMaccessconf);
-    } else {
-#endif	/* DO_PERL */
-
 #ifdef DO_PYTHON
     if (innconf->nnrppythonauth) {
         if ((code = PY_authenticate(ClientHost, ClientIp, ServerHost, NULL, NULL, accesslist)) < 0) {
@@ -546,9 +533,6 @@ static void StartConnection()
 #ifdef DO_PYTHON
     }
 #endif /* DO_PYTHON */
-#ifdef DO_PERL
-    }
-#endif /* DO_PERL */
 }
 
 
@@ -658,24 +642,7 @@ WaitChild(int s)
 
 static void SetupDaemon(void) {
     bool                val;
-    char *path;
     time_t statinterval;
-
-#if defined(DO_PERL)
-    /* Load the Perl code */
-    path = concatpath(innconf->pathfilter, _PATH_PERL_FILTER_NNRPD);
-    PERLsetup(NULL, path, "filter_post");
-    free(path);
-    if (innconf->nnrpperlauth) {
-        path = concatpath(innconf->pathfilter, _PATH_PERL_AUTH);
-	PERLsetup(NULL, path, "authenticate");
-        free(path);
-	PerlFilter(TRUE);
-	perlAuthInit();
-    } else {
-	PerlFilter(TRUE);
-    }
-#endif /* defined(DO_PERL) */
 
 #ifdef	DO_PYTHON
     /* Load the Python code */

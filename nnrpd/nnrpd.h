@@ -210,8 +210,8 @@ extern void             Printf(const char *fmt, ...);
 #endif
 
 char *HandleHeaders(char *article);
-int perlConnect(char *ClientHost, char *ClientIP, char *ServerHost, char *accesslist);
-int perlAuthenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *user, char *passwd, char *accesslist);
+char **perlAccess(char *ClientHost, char *ClientIP, char *ServerHost, char *user);
+int perlAuthenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *user, char *passwd, char *accesslist, char *errorstring);
 bool ARTinstorebytoken(TOKEN token);
 
 #ifdef	DO_PYTHON

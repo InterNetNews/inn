@@ -228,10 +228,10 @@ the domain.
 .PP
 If the user later authenticates via the \s-1AUTHINFO\s0 \s-1USER/PASS\s0 commands, the
 provided username and password is passed to <auth\-program>, the value of
-the auth: parameter (if present).  If this succeeds and returns a
-different identity than the one assigned at the time of the connection, it
-is matched against the available access groups again and the actions the
-user is authorized to do may change.
+the auth: or perl_auth: parameter (if present).  If this succeeds and
+returns a different identity than the one assigned at the time of the
+connection, it is matched against the available access groups again
+and the actions the user is authorized to do may change.
 .PP
 When matching auth groups, the last auth group in the file that matches a
 given connection or username/password combination is used.
@@ -266,7 +266,12 @@ also set several other things in the access group as well as override
 various \fIinn.conf\fR\|(5) parameters for just that group of users.
 .PP
 Just like with auth groups, when matching access groups the last matching
-one in the file is used to determine the user's permissions.
+one in the file is used to determine the user's permissions. There is
+an exception to this rule: if the auth group which matched the client
+contains the perl_access: parameter then the perl script given as
+argument is used to dynamically generate an access group. This new
+access group is then used to determine the access rights of the
+client.
 .PP
 There is one additional special case to be aware of.  When forming
 particularly complex authentication and authorization rules, it is
@@ -357,6 +362,19 @@ handle a user-supplied username and password, via a mechanism such as
 \&\s-1AUTHINFO\s0 \s-1USER/PASS\s0.  Like with res:, one auth group can have multiple
 auth: parameters; they will be tried in order and the results of the first
 successful one will be used.
+.IP "\fBperl_auth:\fR" 4
+.IX Item "perl_auth:"
+A path to a perl script for authentication. perl_auth: works exactly
+like auth:, the only difference is that it calls the script given as
+argument using the perl hook rather then an external
+program. Multiple/mixed use of auth: and perl_auth: is permitted
+within any auth group. Each method is tried in order as they appear in
+the auth group. perl_auth: has some advantages over auth: in that it
+provides the authentication program with additional information about
+the client and the ability to return an error string. This parameter
+is only valid if \s-1INN\s0 is compiled with Perl support (\fB\-\-with\-perl\fR
+passed to configure). More information may be found in the file
+\&\fIdoc/hook\-perl\fR.
 .IP "\fBdefault:\fR" 4
 .IX Item "default:"
 The default username for connections matching this auth group.  This is
@@ -383,6 +401,18 @@ key parameter.
 If set to true, an incoming connection only matches this auth group if
 it is encrypted using \s-1SSL\s0.  This parameter is only valid if \s-1INN\s0 is
 compiled with \s-1SSL\s0 support (\fB\-\-with\-openssl\fR passed to configure).
+.IP "\fBperl_access:\fR" 4
+.IX Item "perl_access:"
+A path to a perl script for dynamically generating an access group. If
+an auth group is successful and contains a perl_access parameter, then
+the argument perl script will be used to create an access group. This
+group will then be used to determine the access rights of the client,
+overriding any access groups in readers.conf. If and only if a sucessful
+auth group contains the perl_access parameter, then readers.conf
+access groups are ignored and the client's rights are instead determined
+dynamically. This parameter is only valid if \s-1INN\s0 is compiled with Perl
+support (\fB\-\-with\-perl\fR passed to configure). More information may be
+found in the file \fIdoc/hook\-perl\fR.
 .SH "ACCESS GROUP PARAMETERS"
 .IX Header "ACCESS GROUP PARAMETERS"
 .IP "\fBusers:\fR" 4
@@ -532,13 +562,15 @@ permissions), the connection is considered to have no valid auth group
 connection isn't closed.  Instead, 480 is returned for everything until
 the user authenticates.
 .IP "\(bu" 2
-When the user authenticates, all auth groups with auth: lines are then
-checked from the bottom up and the first one that returns a valid user is
-kept as the default auth group.
+When the user authenticates, all auth groups with auth: or perl_auth:
+lines are then checked from the bottom up and the first one that
+returns a valid user is kept as the default auth group.
 .IP "\(bu" 2
 Regardless of how an auth group is established, as soon as one is, the
 user permissions are granted by scanning the access groups from bottom up
-and finding the first match.
+and finding the first match. Unless the established auth group
+contains the perl_access: parameter, in which case the dyanmically
+generated access group returned by the perl script is used.
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
 Here is probably the simplest useful example of a complete readers.conf.

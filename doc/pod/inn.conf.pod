@@ -494,13 +494,6 @@ overview information slows down the overview commands, but reduces the
 number of "article is missing" errors seen by the client.  This is a
 boolean value and the default is true.
 
-=item I<nnrpperlauth>
-
-Whether to use the Perl hook in nnrpd(8) to authenticate readers.  If this
-is enabled, normal readers.conf(5) authentication will not be used, and
-instead the Perl hook will be called to authenticate connections.  This is
-a boolean value and the default is false.
-
 =item I<nnrppythonauth>
 
 Whether to use the Python hook in nnrpd(8) to authenticate readers.  If

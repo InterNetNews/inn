@@ -1,0 +1,121 @@
+#! /usr/bin/perl
+# fixscript will replace this line with require innshellvars.pl
+
+##
+##  Sample code for the nnrpd Perl access hooks.
+
+##  This file is loaded when a perl_access: parameter is reached in
+##  readers.conf.  If it defines a sub named access, which will be
+##  called during processing of a perl_access: parameter. Attributes
+##  about the connection are passed to the program in the %attributes
+##  global variable.  It should return a hash containing
+##  parameter-value pairs for the access group. If there is a problem,
+##  nnrpd will die and syslog the exact error.
+
+##  The default behavior of the following code is to look for nnrp.access
+##  in INN's configuration file directory and to attempt to implement about
+##  the same host-based access control as the previous nnrp.access code in
+##  earlier versions of INN.  This may be useful for backward compatibility.
+
+##  This file cannot be run as a standalone script, although it would be
+##  worthwhile to add some code so that it could so that one could test the
+##  results of various authentication and connection queries from the
+##  command line.  The #! line at the top is just so that fixscript will
+##  work.
+
+# This function is called when perl_access: is reached in readers.conf.
+# For details on all the information passed to it, see
+# ~news/doc/hook-perl.
+sub access {
+   &loadnnrp($inn::newsetc . '/nnrp.access');
+   return &checkhost($attributes{hostname}, $attributes{ipaddress});
+}
+
+# Called at startup, this loads the nnrp.access file and converts it into a
+# convenient internal format for later queries.
+sub loadnnrp {
+    my $file = shift;
+    my ($block, $perm, $user, $pass);
+
+    open (ACCESS, $file) or die "Could not open $file: $!\n";
+    local $_;
+    while (<ACCESS>) {
+        my %tmp;
+
+        chomp;
+        s/\#.*//;
+        ($block, $perm, $user, $pass, $tmp{groups}) = split /:/;
+        next unless (defined $tmp{groups});
+
+        # We don't support username/password entries, so be safe.
+        next if ($user || $pass);
+
+        # Change the wildmat pattern to a regex (this isn't thorough, as
+        # some ranges won't be converted properly, but it should be good
+        # enough for this purpose).
+        if ($block !~ m%^(?:\d+\.){3}\d+/\d+$%) {
+            $block =~ s/\./\\./g;
+            $block =~ s/\?/./g;
+            $block =~ s/\*/.*/g;
+        }
+        $tmp{block} = $block;
+
+        $tmp{canread} = ($perm =~ /r/i);
+        $tmp{canpost} = ($perm =~ /p/i);
+
+        unshift(@hosts, { %tmp });
+    }
+    close ACCESS;
+}
+
+# Given the hostname and IP address of a connecting host, use our @hosts
+# array constructed from nnrp.access and see what permissions that host has.
+sub checkhost {
+    my ($host, $ip) = @_;
+    my %return_hash;
+    my $key;
+    for $key (@hosts) {
+        my ($read, $post) = ($key->{canread}, $key->{canpost});
+
+        # First check for CIDR-style blocks.
+        if ($key->{block} =~ m%^(\d+\.\d+\.\d+\.\d+)/(\d+)$%) {
+            my $block = unpack('N', pack('C4', split(/\./, $1)));
+            my $mask = (0xffffffff << (32 - $2)) & 0xffffffff;
+            $block = $block & $mask;
+            my $packedip = unpack('N', pack('C4', split(/\./, $ip)));
+            if (($packedip & $mask) == $block) {
+                if ($read) {
+                    $return_hash{"read"} = $key->{groups};
+                }
+                if ($post) {
+                    $return_hash{"post"} = $key->{groups};
+                }
+                return %return_hash;
+            }
+        }
+
+        if ($ip =~ /^$key->{block}$/) {
+            if ($read) {
+                $return_hash{"read"} = $key->{groups};
+            }
+            if ($post) {
+                $return_hash{"post"} = $key->{groups};
+            }
+            return %return_hash;
+        }
+
+        if ($host =~ /^$key->{block}$/) {
+            if ($read) {
+                $return_hash{"read"} = $key->{groups};
+            }
+            if ($post) {
+                $return_hash{"post"} = $key->{groups};
+            }
+            return %return_hash;
+        }
+    }
+
+    # If we fell through to here, nothing matched, so we should deny
+    # permissions.
+    return %return_hash;
+}

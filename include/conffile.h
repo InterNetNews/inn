@@ -12,6 +12,8 @@ typedef struct {
     char *buf;
     unsigned int sbuf;
     int lineno;
+    int array_len;
+    char **array;
     char *filename;
 } CONFFILE;
 

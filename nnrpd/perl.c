@@ -41,6 +41,9 @@ extern int OtherCount;
 extern bool HeadersModified;
 static int HeaderLen;
 
+extern bool PerlLoaded;
+void loadPerl(void);
+
 /* #define DEBUG_MODIFY only if you want to see verbose outout */
 #ifdef DEBUG_MODIFY
 static FILE *flog;
@@ -61,6 +64,10 @@ char *HandleHeaders(char *article)
    HE            *scan;
    SV            *modswitch;
    int            OtherSize;
+
+   if(!PerlLoaded) {
+       loadPerl();
+   }
 
    if (!PerlFilterActive)
        return NULL; /* not really necessary */
@@ -186,63 +193,101 @@ char *HandleHeaders(char *article)
    return NULL;
 }
 
-int perlConnect(char *ClientHost, char *ClientIP, char *ServerHost, char *accesslist) {
-    dSP;
-    HV              *attribs;
-    int             rc;
-    SV              *sv;
-    char            *p;
-    int             code;
-    
-    if (!PerlFilterActive)
-	return NNTP_ACCESS_VAL;
+void loadPerl(void) {
+    char *path;
 
-    ENTER;
-    SAVETMPS;
-    attribs = perl_get_hv("attributes", TRUE);
-    hv_store(attribs, "type", 4, newSVpv("connect", 0), 0);
-    hv_store(attribs, "hostname", 8, newSVpv(ClientHost, 0), 0);
-    hv_store(attribs, "interface", 9, newSVpv(ServerHost, 0), 0);
-    hv_store(attribs, "ipaddress", 9, newSVpv(ClientIP, 0), 0);
-    
-    PUSHMARK(SP);
-    rc = perl_call_pv("authenticate", G_EVAL|G_ARRAY);
+    path = concatpath(innconf->pathfilter, _PATH_PERL_FILTER_NNRPD);
+    PERLsetup(NULL, path, "filter_post");
+    free(path);
+    PerlFilter(TRUE);
+    PerlLoaded = TRUE;
+}
 
-    SPAGAIN;
+char *itoa(int n) {
+  int i = 0;
+  char *s = "";
+  char *tmp;
 
-    if (rc == 0 ) { /* Error occured, same as checking $@ */
-	syslog(L_ERROR, "Perl function authenticate died: %s",
-	       SvPV(ERRSV, PL_na));
-	Reply("%d Internal Error (1).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1, TRUE);
-    }
+  do {
+    tmp = calloc(2, sizeof(char));
+    tmp[0] = n % 10 + '0';
+    tmp[1] = '\0';
+    s = strcat(tmp, s);
+  } while ((n /= 10) > 0);
 
-    if (rc != 5) {
-	syslog(L_ERROR, "Perl function authenticate returned wrong number of results: %d", rc);
-	Reply("%d Internal Error (2).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1, TRUE);
-    }
+  return s;
+}
 
-    MaxBytesPerSecond = POPi;
-    p = POPp;
-    strcpy(accesslist, p); 
-    sv = POPs; PERMcanpost = SvTRUE(sv);
-    sv = POPs; PERMcanread = SvTRUE(sv); 
-    code = POPi;
+char **perlAccess(char *ClientHost, char *ClientIP, char *ServerHost, char *user) {
+  dSP;
+  HV              *attribs;
+  SV              *sv;
+  int             rc, code, i;
+  char            *p, *key, *val, **access_array;
 
-    if ((code == NNTP_POSTOK_VAL) || (code == NNTP_NOPOSTOK_VAL))
-	code = PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL;
+  if (!PerlFilterActive)
+       return 0;
 
-    if (code == NNTP_AUTH_NEEDED_VAL) 
-	PERMneedauth = TRUE;
+  ENTER;
+  SAVETMPS;
+  
+  attribs = perl_get_hv("attributes", TRUE);
+  hv_store(attribs, "hostname", 8, newSVpv(ClientHost, 0), 0);
+  hv_store(attribs, "ipaddress", 9, newSVpv(ClientIP, 0), 0);
+  hv_store(attribs, "interface", 9, newSVpv(ServerHost, 0), 0);
+  hv_store(attribs, "username", 8, newSVpv(user, 0), 0);
 
-    hv_undef(attribs);
+  PUSHMARK(SP);
 
-    PUTBACK;
-    FREETMPS;
-    LEAVE;
-    
-    return code;
+  if (perl_get_cv("access", 0) != NULL)
+       rc = perl_call_pv("access", G_EVAL|G_ARRAY);
+
+  SPAGAIN;
+
+  if (rc == 0 ) { /* Error occured, same as checking $@ */
+      syslog(L_ERROR, "Perl function access died: %s",
+             SvPV(ERRSV, PL_na));
+      Reply("%d Internal Error (1).  Goodbye\r\n", NNTP_ACCESS_VAL);
+      ExitWithStats(1, TRUE);
+  }
+
+  if ((rc % 2) != 0) {
+    syslog(L_ERROR, "Perl function access returned an odd number of arguments: %i", rc);
+    Reply("%d Internal Error (2).  Goodbye\r\n", NNTP_ACCESS_VAL);
+    ExitWithStats(1, TRUE);
+  }
+  
+  i = (rc / 2) + 1;
+  access_array = calloc(i, sizeof(char *));
+  i--;
+  p = itoa(i);
+  access_array[0] = COPY(p);
+  free(p);
+  
+  i = 0;
+  
+  for (i = (rc / 2); i >= 1; i--) {
+    sv = POPs;
+    p = SvPV_nolen(sv);
+    val = COPY(p);
+    sv = POPs;
+    p = SvPV_nolen(sv);
+    key = COPY(p);
+  
+    key = strcat(key, ": \"");
+    key = strcat(key, val);
+    key = strcat(key, "\"\n");
+    access_array[i] = COPY(key);
+        
+    free(key);
+    free(val);
+  }
+
+  PUTBACK;
+  FREETMPS;
+  LEAVE;
+
+  return access_array;
 }
 
 int perlAuthInit(void) {
@@ -279,7 +324,7 @@ int perlAuthInit(void) {
     
 }
 
-int perlAuthenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *user, char *passwd, char *accesslist) {
+int perlAuthenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *user, char *passwd, char *accesslist, char *errorstring) {
     dSP;
     HV              *attribs;
     int             rc;
@@ -293,7 +338,6 @@ int perlAuthenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *u
     ENTER;
     SAVETMPS;
     attribs = perl_get_hv("attributes", TRUE);
-    hv_store(attribs, "type", 4, newSVpv("authenticate", 0), 0);
     hv_store(attribs, "hostname", 8, newSVpv(ClientHost, 0), 0);
     hv_store(attribs, "ipaddress", 9, newSVpv(ClientIP, 0), 0);
     hv_store(attribs, "interface", 9, newSVpv(ServerHost, 0), 0);
@@ -312,17 +356,14 @@ int perlAuthenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *u
 	ExitWithStats(1, FALSE);
     }
 
-    if (rc != 5) {
+    if (rc != 2) {
 	syslog(L_ERROR, "Perl function authenticate returned wrong number of results: %d", rc);
 	Reply("%d Internal Error (2).  Goodbye\r\n", NNTP_ACCESS_VAL);
 	ExitWithStats(1, FALSE);
     }
 
-    MaxBytesPerSecond = POPi;
     p = POPp;
-    strcpy(accesslist, p); 
-    sv = POPs; PERMcanpost = SvTRUE(sv);
-    sv = POPs; PERMcanread = SvTRUE(sv); 
+    strcpy(errorstring, p);
     code = POPi;
 
     if ((code == NNTP_POSTOK_VAL) || (code == NNTP_NOPOSTOK_VAL))

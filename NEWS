@@ -1,9 +1,17 @@
 Upgrading from 2.3 to 2.4
 
     Currently, there are no incompatible differences between INN 2.3 and
-    2.4, so a simple "make update" should be sufficient.  If you are
-    upgrading from a version prior to INN 2.3, see "Upgrading from 2.2 to
-    2.3".
+    2.4, unless you use nnrpd's Perl authentication hooks.  A simple "make
+    update" should be sufficient (you probably need to add
+
+            hismethod:              hisv6
+
+    to inn.conf).  If you are upgrading from a version prior to INN 2.3, see
+    "Upgrading from 2.2 to 2.3".
+
+    * If you use Perl authentication for nnrpd (if nnrpdperlauth in inn.conf
+      is true), however, there have been major changes.  See "Changes to
+      Perl Authentication Support for nnrpd" in doc/hook-perl for details.
 
 Changes from 2.3 to 2.4
 
