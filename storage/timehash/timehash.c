@@ -220,20 +220,23 @@ ARTHANDLE *timehash_retrieve(const TOKEN token, RETRTYPE amount) {
 void timehash_freearticle(ARTHANDLE *article) {
     PRIV_TIMEHASH       *private;
 
+    if (!article)
+	return;
+    
     if (article->private) {
 	private = (PRIV_TIMEHASH *)article->private;
 #ifdef MADV_DONTNEED
 	madvise(private->base, private->len, MADV_DONTNEED);
 #endif
 	munmap(private->base, private->len);
+	if (private->top)
+	    closedir(private->top);
+	if (private->sec)
+	    closedir(private->sec);
+	if (private->artdir)
+	    closedir(private->artdir);
+	DISPOSE(private);
     }
-    if (private->top)
-	closedir(private->top);
-    if (private->sec)
-	closedir(private->sec);
-    if (private->artdir)
-	closedir(private->artdir);
-    DISPOSE(private);
     DISPOSE(article);
 }
 
