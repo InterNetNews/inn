@@ -37,6 +37,7 @@ typedef struct _REMOTEHOST {
     char	*Password;      /* Optionnnal password */
     BOOL	Streaming;      /* Streaming allowed ? */
     BOOL	Skip;	        /* Skip this peer ? */
+    BOOL	NoResendId;	/* Don't send RESEND responses ? */
     int		MaxCnx;		/* Max connections (per peer) */
     char	**Patterns;	/* List of groups allowed */
     char	*Pattern;       /* List of groups allowed (string) */
@@ -73,10 +74,11 @@ STATIC int		RCnpeerlist;
 #define EMAIL	        "email:"
 #define COMMENT	        "comment:"
 #define SKIP		"skip:"
+#define NORESENDID	"noresendid:"
 
 typedef enum {K_END, K_BEGIN_PEER, K_BEGIN_GROUP, K_END_PEER, K_END_GROUP,
 	      K_STREAM, K_HOSTNAME, K_MAX_CONN, K_PASSWORD, K_EMAIL,
-	      K_PATTERNS, K_COMMENT, K_SKIP} _Keywords;
+	      K_PATTERNS, K_COMMENT, K_SKIP, K_NORESENDID} _Keywords;
 
 typedef enum {T_STRING, T_BOOLEAN, T_INTEGER} _Types;
 
@@ -472,6 +474,7 @@ RCreader(CHANNEL *cp)
 	new = NCcreate(fd, rp->Password[0] != '\0', FALSE);
         new->Streaming = rp->Streaming;
         new->Skip = rp->Skip;
+        new->NoResendId = rp->NoResendId;
         new->MaxCnx = rp->MaxCnx;
     } else if (AnyIncoming && !rp->Skip) {
 	new = NCcreate(fd, FALSE, FALSE);
@@ -674,6 +677,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     rp->MaxCnx = 0;
     rp->Streaming = TRUE;
     rp->Skip = FALSE;
+    rp->NoResendId = FALSE;
     rp++;
     (*count)++;
 #endif	/* !defined(HAVE_UNIX_DOMAIN_SOCKETS) */
@@ -684,6 +688,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     peer_params.Label = NULL;
     default_params.Streaming = TRUE;
     default_params.Skip = FALSE;
+    default_params.NoResendId = FALSE;
     default_params.MaxCnx = 0;
     default_params.Password = COPY(NOPASS);
     default_params.Email = COPY(NOEMAIL);
@@ -716,6 +721,8 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  groups[groupcount - 2].Skip : default_params.Skip;
 	group_params->Streaming = groupcount > 1 ?
 	  groups[groupcount - 2].Streaming : default_params.Streaming;
+	group_params->NoResendId = groupcount > 1 ?
+	  groups[groupcount - 2].NoResendId : default_params.NoResendId;
 	group_params->Email = groupcount > 1 ?
 	  groups[groupcount - 2].Email : default_params.Email;
 	group_params->Comment = groupcount > 1 ?
@@ -761,6 +768,8 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  group_params->Skip : default_params.Skip;
 	peer_params.Streaming = groupcount > 0 ?
 	  group_params->Streaming : default_params.Streaming;
+	peer_params.NoResendId = groupcount > 0 ?
+	  group_params->NoResendId : default_params.NoResendId;
 	peer_params.Email = groupcount > 0 ?
 	  group_params->Email : default_params.Email;
 	peer_params.Comment = groupcount > 0 ?
@@ -813,6 +822,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	      rp->Password = COPY(peer_params.Password);
 	      rp->Skip = peer_params.Skip;
 	      rp->Streaming = peer_params.Streaming;
+	      rp->NoResendId = peer_params.NoResendId;
 	      rp->Email = COPY(peer_params.Email);
 	      rp->Comment = COPY(peer_params.Comment);
 	      rp->Patterns = peer_params.Pattern != NULL ?
@@ -856,6 +866,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 		rp->Comment = COPY(peer_params.Comment);
 		rp->Streaming = peer_params.Streaming;
 		rp->Skip = peer_params.Skip;
+		rp->NoResendId = peer_params.NoResendId;
 		rp->Password = COPY(peer_params.Password);
 		rp->Patterns = peer_params.Pattern != NULL ?
 		  RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
@@ -872,6 +883,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 		rp->Comment = COPY(peer_params.Comment);
 		rp->Streaming = peer_params.Streaming;
 		rp->Skip = peer_params.Skip;
+		rp->NoResendId = peer_params.NoResendId;
 		rp->Password = COPY(peer_params.Password);
 		rp->Patterns = peer_params.Pattern != NULL ?
 		  RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
@@ -895,6 +907,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	      rp->Comment = COPY(peer_params.Comment);
 	      rp->Streaming = peer_params.Streaming;
 	      rp->Skip = peer_params.Skip;
+	      rp->NoResendId = peer_params.NoResendId;
 	      rp->Password = COPY(peer_params.Password);
 	      rp->Patterns = peer_params.Pattern != NULL ?
 		RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
@@ -910,6 +923,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    rp->Comment = COPY(peer_params.Comment);
 	    rp->Streaming = peer_params.Streaming;
 	    rp->Skip = peer_params.Skip;
+	    rp->NoResendId = peer_params.NoResendId;
 	    rp->Password = COPY(peer_params.Password);
 	    rp->Patterns = peer_params.Pattern != NULL ?
 	      RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
@@ -985,6 +999,31 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    group_params->Skip = bool;
 	  else
 	    default_params.Skip = bool;
+	continue;
+      }
+
+      if (!strncmp (word, NORESENDID, sizeof NORESENDID)) {
+	DISPOSE(word);
+	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	  break;
+	}
+	if (!strcmp (word, "true"))
+	  bool = TRUE;
+	else
+	  if (!strcmp (word, "false"))
+	    bool = FALSE;
+	  else {
+	    syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
+	    break;
+	  }
+	RCadddata(data, &infocount, K_NORESENDID, T_STRING, word);
+	if (peer_params.Label != NULL)
+	  peer_params.NoResendId = bool;
+	else
+	  if (groupcount > 0 && group_params->Label != NULL)
+	    group_params->NoResendId = bool;
+	  else
+	    default_params.NoResendId = bool;
 	continue;
       }
 
@@ -1205,6 +1244,12 @@ RCwritelist(char *filename)
 	  case K_SKIP:
 	    RCwritelistindent (F, inc);
 	    fprintf(F, "%s\t", SKIP);
+	    RCwritelistvalue (F, RCpeerlistfile[i].value);
+	    fputc ('\n', F);
+	    break;
+	  case K_NORESENDID:
+	    RCwritelistindent (F, inc);
+	    fprintf(F, "%s\t", NORESENDID);
 	    RCwritelistvalue (F, RCpeerlistfile[i].value);
 	    fputc ('\n', F);
 	    break;
