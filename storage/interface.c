@@ -274,6 +274,8 @@ static BOOL InitMethod(STORAGETYPE method) {
 	    Initialized = FALSE;
 	    return FALSE;
 	}
+    Initialized = TRUE;
+    
     if (method_data[method].initialized)
 	return TRUE;
 
@@ -281,6 +283,7 @@ static BOOL InitMethod(STORAGETYPE method) {
 	SMseterror(SMERR_UNDEFINED, "Could not initialize storage method late.");
 	return FALSE;
     }
+    method_data[method].initialized = TRUE;
     return TRUE;
 }
 

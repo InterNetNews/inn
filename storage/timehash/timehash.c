@@ -146,6 +146,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 	art->data = NULL;
 	art->len = 0;
 	art->private = NULL;
+	close(fd);
 	return art;
     }
 
