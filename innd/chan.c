@@ -252,6 +252,8 @@ void CHANtracing(CHANNEL *cp, BOOL Flag)
 */
 void CHANclose(CHANNEL *cp, char *name)
 {
+    char	*label, *tmplabel;
+
     if (cp->Type == CTfree)
 	syslog(L_ERROR, "%s internal closing free channel %d", name, cp->fd);
     else {
@@ -282,14 +284,16 @@ void CHANclose(CHANNEL *cp, char *name)
 	    CHANNEL *tempchan;
 
 	    cp->fd = -1;
-	    for(tfd = 0; tfd < CHANlastfd; tfd++) {
-		tempchan = &CHANtable[tfd];
-		if(tempchan->fd > 0 &&
-		    cp->Address.s_addr == tempchan->Address.s_addr) {
-		    if(tempchan->ActiveCnx == 0) {
-			tempchan->ActiveCnx = cp->ActiveCnx;
-			RCHANadd(tempchan);
-		        break;
+	    if ((label = RClabelname(cp)) != NULL) {
+		for(tfd = 0; tfd <= CHANlastfd; tfd++) {
+		    tempchan = &CHANtable[tfd];
+		    if(tempchan->fd > 0 &&
+			((tmplabel = RClabelname(tempchan)) != NULL) &&
+			strcmp(label, tmplabel) == 0 &&
+			tempchan->ActiveCnx == 0) {
+			    tempchan->ActiveCnx = cp->ActiveCnx;
+			    RCHANadd(tempchan);
+			    break;
 		    }
 		}
 	    }
@@ -301,6 +305,7 @@ void CHANclose(CHANNEL *cp, char *name)
     cp->State = CSerror;
     cp->fd = -1;
     cp->Argument = NULL;
+    cp->ActiveCnx = 0;
 
     /* Free the buffers if they got big. */
     if (cp->In.Size > BIG_BUFFER) {
@@ -767,6 +772,29 @@ CHANdiagnose(void)
 }
 #endif	/* defined(INND_FIND_BAD_FDS) */
 
+void CHANsetActiveCnx(CHANNEL *cp) {
+    int		found;  
+    CHANNEL	*tempchan;
+    char	*label, *tmplabel;
+    int		tfd;
+    
+    if((cp->fd > 0) && (cp->Type == CTnntp) && (cp->ActiveCnx == 0)) {
+	found = 1;      
+	if ((label = RClabelname(cp)) != NULL) {
+	    for(tfd = 0; tfd <= CHANlastfd; tfd++) {
+		tempchan = &CHANtable[tfd];
+		if ((tmplabel = RClabelname(tempchan)) == NULL) {
+		    continue;
+		}
+		if(strcmp(label, tmplabel) == 0) {
+		    if(tempchan->ActiveCnx != 0)
+			found++;
+		}
+	    }
+	} 
+	cp->ActiveCnx = found;
+    }   
+}
 
 /*
 **  Main I/O loop.  Wait for data, call the channel's handler when there is
@@ -795,7 +823,6 @@ void CHANreadloop(void)
     time_t		LastUpdate;
     CHANNEL             *tempchan;
     int                 found;
-    int                 tfd;
     char		*label, *tmplabel;
 
     TMRinit();
@@ -886,24 +913,7 @@ void CHANreadloop(void)
 	    cp = &CHANtable[fd];
 
             if (cp->MaxCnx > 0) {
-                if((cp->fd > 0) &&
-                   (cp->Type == CTnntp) &&
-                   (cp->ActiveCnx == 0)) {
-                    found = 1;
-		    if ((label = RClabelname(cp)) != NULL) {
-                        for(tfd = 0; tfd < CHANlastfd; tfd++) {
-                           tempchan = &CHANtable[tfd];
-		           if ((tmplabel = RClabelname(tempchan)) == NULL)
-			        continue;
-                           if(strcmp(label, tmplabel) == 0) {
-                              if(tempchan->ActiveCnx != 0)
-                                found++;
-                           }
-                        }
-                    }
-                    cp->ActiveCnx = found;
-		}
-
+		CHANsetActiveCnx(cp);
                 if((cp->ActiveCnx > cp->MaxCnx) && (cp->fd > 0)) {
 		    if(cp->Started + (PAUSE_BEFORE_DROP * 60) < Now.time) {
                         CHANclose(cp, CHANname(cp));
