@@ -896,6 +896,8 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 			    Xrefbuf = NEW(char, MAXOVERLINE);
 			memcpy(Xrefbuf, Xref, linelen - (OVERline - Xref));
 			Xrefbuf[linelen - (OVERline - Xref)] = '\0';
+			if ((p = strchr(Xrefbuf, '\t')) != NULL)
+			    *p = '\0';
 			p = q = Xrefbuf;
 			while ((p = strchr(p, ' ')) != NULL) {
 			    *p = '\0';

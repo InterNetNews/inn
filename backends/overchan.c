@@ -244,9 +244,14 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
 	Xref = COPY(Xref);
 	OrigXref = Xref; /* save pointer so we can do free() later */
 
-	for (p = Xref; *p; p++)
+	for (p = Xref; *p; p++) {
 	    if (*p == '.')
 		*p = '/';
+	    if (*p == '\t') {
+		*p = '\0';
+		break;
+	    }
+	}
 
 
 	/* Process all fields in the first part. */

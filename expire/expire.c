@@ -905,7 +905,7 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 		    /* the article is still alive */
 		    SMfreearticle(article);
 	    }
-	    if ((!HasSelfexpire || (HasSelfexpire && !Selfexpired)) && token.index < OVER_NONE) {
+	    if (token.index < OVER_NONE) {
 		Hasover = TRUE;
 		if ((p = OVERretrieve(&token, &linelen)) == (char *)NULL)
 		    return TRUE;
@@ -932,6 +932,8 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 		    Xrefbuf = NEW(char, MAXOVERLINE);
 		memcpy(Xrefbuf, Xref, linelen - (OVERline - Xref));
 		Xrefbuf[linelen - (OVERline - Xref)] = '\0';
+		if ((p = strchr(Xrefbuf, '\t')) != NULL)
+		    *p = '\0';
 		count = EXPsplit(Xrefbuf, ' ', arts, nGroups);
 	    } else {
 		Hasover = FALSE;

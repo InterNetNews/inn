@@ -9,14 +9,12 @@ qio \- quick I/O part of InterNetNews library
 #include "qio.h"
 
 .B "QIOSTATE *"
-.B "QIOopen(name, size)"
+.B "QIOopen(name)"
 .B "    char	*name;"
-.B "    int	size;"
 
 .B "QIOSTATE *"
-.B "QIOfdopen(fd, size)"
+.B "QIOfdopen(fd)"
 .B "    int	fd;"
-.B "    int	size;"
 
 .B "void"
 .B "QIOclose(qp)"
@@ -50,10 +48,11 @@ qio \- quick I/O part of InterNetNews library
 .B "QIOfileno(qp)"
 .B "    QIOSTATE	*qp;"
 .SH DESCRIPTION
-The routines described in this manual page are part of the InterNetNews
-library,
-.IR libinn (3).
-They are used to provide quick read access to files.
+The routines described in this manual page are part of
+.IR libstorage (3).
+They are used to provide quick read access to files or articles specified
+with tokens.
+All routines are not available for token.
 The letters ``QIO'' stand for
 .IR Q uick
 .IR I/O .
@@ -67,14 +66,7 @@ is the token of an article,
 .I QIOopen
 calls
 .IR SMretrieve .
-It uses a buffer of
-.I size
-bytes, which must also be larger then the longest expected line.
-The header file defines the constant QIO_BUFFER as a reasonable default.
-If
-.I size
-is zero, then
-if 
+If 
 .I <HAVE_ST_BLKSIZE in config.data>
 is ``DO'',
 .I QIOopen

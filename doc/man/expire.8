@@ -88,10 +88,16 @@ If you have turned on the storage manager with the 'storageapi' in
 and set up
 .IR overview.ctl (5),
 it also purges old overview data.
-And if the storage methods have self expire functionality and stored
-article has already been purged,
+And if the article is stored by storage api and the storage method
+has self expire functionality,
+control file is ignored for that article by default.
+In this case,
 .I expire
-treats the article as expired regardless of control file by default.
+probes the article to see if it still exists.
+If it does not exist,
+.I expire
+purges relevant entries (history and overview).
+To disable this, use the ``\fP\-N\fP'' flag.
 .SH OPTIONS
 .TP
 .B \-c
@@ -176,13 +182,12 @@ cross-posts of the article remain.
 If ``\fB\-e\fP'' flag is used together, ``\fB\-l\fP'' flag is ignored.
 .TP
 .B \-N
-If the storage methods have self expire functionality and stored
-article has already been purged,
+If the article is stored by storage api and the storage method
+has self expire functionality, control file is ignored for that
+article by default.
+If the ``\fB\-N\fP'' flag is used,
 .I expire
-treats the article as expired regardless of control file by default.
-If ``\fB\-N\fP'' flag is used,
-.I expire
-ignores self expire functionality even if it exists.
+still uses control file in this case.
 .TP
 .B \-n
 If

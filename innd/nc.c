@@ -903,6 +903,8 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 	    if (!innconf->wireformat)
   	        NCclean(bp);
 	    NCpostit(cp);
+	    if (cp->State == CSwritegoodbye)
+		break;
 	    cp->State = CSgetcmd;
 	    break;
 
@@ -1073,6 +1075,8 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 	    cp->State = CSgetcmd;
 	    break;
 	}
+	if (cp->State == CSwritegoodbye)
+	    break;
 	if (Tracing || cp->Tracing)
 		syslog(L_TRACE, "%s NCproc Rest=%d Used=%d SaveUsed=%d",
 		    CHANname(cp), cp->Rest, bp->Used, cp->SaveUsed);
