@@ -197,9 +197,9 @@ typedef struct {
 #ifndef DEFSIZE
 
 #ifdef	DO_TAGGED_HASH
-#define DEFSIZE		5000011		/* I need a prime number */
+#define DEFSIZE		500009		/* I need a prime number */
 #else
-#define	DEFSIZE		7500000
+#define	DEFSIZE		750000
 #endif
 
 #endif	/* DEFSIZE */
