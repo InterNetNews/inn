@@ -80,6 +80,12 @@
 # include <sys/bitypes.h>
 #endif
 
+/* If we have to declare either inet_aton or inet_ntoa, we have to include
+   <netinet/in.h>.  Bleh. */
+#if !HAVE_INET_ATON || NEED_DECLARATION_INET_NTOA
+# include <netinet/in.h>
+#endif
+
 BEGIN_DECLS
 
 /* Provide prototypes for functions not declared in system headers.  Use the
