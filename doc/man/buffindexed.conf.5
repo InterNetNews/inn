@@ -6,8 +6,24 @@ buffindexed.conf \- configuration file for buffindexed ovmethod
 The file
 .I <pathetc in inn.conf>/buffindexed.conf
 is required if buffindexed ovmethod is used.
+.PP
 Buffindexed is one of ovmethod which is specified in
 .IR inn.conf (5).
+It uses preconfigured buffer files which are used to store overview data
+and index, and never needs more disk space other than those files.
+The files are devided 8KB block internally and the block is allocated
+for each purpose; overview index and overview data.  The block is never
+shared by each newsgroup, so owned by one newsgroup.  There is a database
+file:
+.I <pathdb in inn.conf>/group.index
+which includes the information of the newsgroup; the pointer to the index
+block for the group, high mark, low mark, flag of the group, the number of
+the articles and etc.  If all buffers are filled up, innd(8) throttles itself.
+Note that the buffers are never rolled over and overwritten the way CNFS does.
+You need to append another buffer in the case.  You can see the buffer usage
+with
+.IR inndf (8)
+with ``-o'' option.
 .PP
 The file consists of a series of lines;
 blank lines and lines beginning with a number sign (``#'') are ignored.
@@ -77,6 +93,9 @@ should see messages in news.notice which look like:
 Aug 27 00:00:00 kevlar innd: buffindexed: No magic cookie found for buffindexed 0, initializing
 .in -0.5i
 .fi
+.PP
+You MUST recreate whole overview, if you remove or relpace buffers.
+You need not recreate, if you just append new buffers.
 .SH HISTORY
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
 .de R$

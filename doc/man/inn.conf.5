@@ -2,6 +2,13 @@
 ''' $RCSfile$$Revision$$Date$
 '''
 ''' $Log$
+''' Revision 1.79  1999/10/03 07:02:27  kondou
+''' doc/man/buffindexed.conf.5:
+''' 	- add precise info on buffindexed
+''' doc/man/inn.conf.5:
+''' 	- useoverchan was dropped
+''' 	- add info on buffindexed to ovmethod
+'''
 ''' Revision 1.78  1999/09/13 05:48:38  kondou
 ''' doc/man/inn.conf.5:
 ''' 	- immediatecancel is added
@@ -105,7 +112,7 @@
 .nr % 0
 .rr F
 .\}
-.TH INN.CONF 5 "INN 2.3" "13/Sep/99" "InterNetNews Documentation"
+.TH INN.CONF 5 "INN 2.3" "3/Oct/99" "InterNetNews Documentation"
 .UC
 .if n .hy 0
 .if n .na
@@ -325,6 +332,12 @@ This is useful for routing control messages to peers when they are posted
 to irrelevant newsgroups that shouldn't be matched against the peer's
 desired newsgroups in \fInewsfeeds\fR.  This is a boolean value and the
 default is false.
+.Ip "\fIimmediatecancel\fR" 4
+Set this to true to cancel article immediately.  Canceled artilces, which
+is stored through timecaf method, is not really canceled within it; that
+is they are cached to be canceld.  This parameter is effective only if
+timecaf method is used and within innd.  This is a boolean value, and the
+default is false.
 .Ip "\fIlinecountfuzz\fR" 4
 If set to something other than \f(CW0\fR, the line count of the article is
 checked against the Lines: header of the article (if present) and the
@@ -403,12 +416,6 @@ cancel arrives before the article does, and is extremely easy to spoof.
 While this check may once have served a purpose, it's now essentially
 security via obscurity, commonly avoided by abusers, and probably not
 useful.  This is a boolean value, and the default is false.
-.Ip "\fIimmediatecancel\fR" 4
-Set this to true to cancel article immediately.  Canceled artilces, which
-is stored through timecaf method, is not really canceled within it; that
-is they are cached to be canceld.  This parameter is effective only if
-timecaf method is used within innd.  This is a boolean value, and the
-default is false.
 .Ip "\fIwanttrash\fR" 4
 Set this to true if you want to file articles posted to unknown newsgroups
 (newsgroups not in the \fIactive\fR file) into the \f(CWjunk\fR newsgroup rather
@@ -426,8 +433,9 @@ have changed \fImaxartsize\fR recently.  The default value is \f(CW0\fR.
 .Ip "\fIenableoverview\fR" 4
 Whether to write out overview data for articles.  If set to false, \s-1INN\s0
 will run much faster, but reading news from the system will be slow or
-impossible since there will be no overview files for readers.  This is a
-boolean value and the default is true.
+impossible since there will be no overview files for readers.
+\fIovmethod\fR needs to be set, if \fIenableoverview\fR is set to true.
+This is a boolean value and the default is true.
 .Ip "\fImergetogroups\fR" 4
 Whether to file all postings to \f(CWto.*\fR groups in the pseudonewsgroup
 \f(CWto\fR.  If this is set to true, the newsgroup \f(CWto\fR must exist in the
@@ -435,7 +443,8 @@ Whether to file all postings to \f(CWto.*\fR groups in the pseudonewsgroup
 default is false.
 .Ip "\fIovercachesize\fR" 4
 How many cache slots to reserve for open overview files.  If \s-1INN\s0 is
-writing overview files (see \fIenableoverview\fR) and this is set to a value
+writing overview files (see \fIenableoverview\fR), \f(CWtradindexed\fR is
+set for \fIovmethod\fR and this is set to a value
 other than \f(CW0\fR, \s-1INN\s0 will keep around and open that many recently
 written-to overview files in case more articles come in for those
 newsgroups.  Every overview cache slot consumes two file descriptors, so
@@ -447,11 +456,17 @@ open file descriptors it may throttle and stop accepting new news.  The
 default value is \f(CW15\fR (which is probably way too low if you have a large
 number of file descriptors available).
 .Ip "\fIovmethod\fR" 4
-What overview storage method to use.  The only currently supported value
-is \f(CWtradindexed\fR, which stores two files per newsgroup, one containing
-the overview data and one containing the index.  There is no default
-value; this parameter must be set if \fIenableoverview\fR is true (the
-default).
+What overview storage method to use.  Currently supported values
+are \f(CWtradindexed\fR and \f(CWbuffindexed\fR.
+There is no default value; this parameter must be set if
+\fIenableoverview\fR is true (the default).
+.Ip "\f(CW   \fR \f(CWtradindexed\fR" 8
+stores two files per newsgroup, one containing the overview data and one
+containing the index.
+.Ip "\f(CW   \fR \f(CWbuffindexed\fR" 8
+stores data and its index into buffers which are preconfigured files
+defined in \fIbuffinedexed.conf\fR.  \f(CWbuffindexed\fR never consumes disk
+space other than those files for overview data and index.
 .Ip "\fIstoreonxref\fR" 4
 If set to true, articles will be stored based on the newsgroup names in
 the Xref: header rather than in the Newsgroups: header.  This affects what
@@ -460,6 +475,13 @@ of setting this to true is to file all control messages according to what
 storage class the control pseudogroups are filed in rather than according
 to the newsgroups the control messages are posted to.  This is a boolean
 value and the default is false.
+.Ip "\fIuseoverchan\fR" 4
+Whether to create overview data \fIinnd\fR\|(8) internally through \fIlibstorage\fR\|(3).
+If set to false, innd create overview data by itself.  If set to true,
+innd does not create.  In the case, you need to run \fIoverchan\fR\|(8) by
+creating entry in \fInewsfeeds\fR\|(5).  Setting to true may be useful, if innd
+can not keep up with incoming feed and the bottle neck is creating overview
+data within innd.  This is a boolean value and the default is false.
 .Ip "\fIwireformat\fR" 4
 Only used with the tradspool storage method, this says whether to write
 articles in wire format.  Wire format means storing articles with \er\en at
@@ -998,6 +1020,8 @@ above are just the major and most frequently mentioned ones.
 
 .IX Item "\fIignorenewsgroups\fR"
 
+.IX Item "\fIimmediatecancel\fR"
+
 .IX Item "\fIlinecountfuzz\fR"
 
 .IX Item "\fImaxartsize\fR"
@@ -1020,8 +1044,6 @@ above are just the major and most frequently mentioned ones.
 
 .IX Item "\fIverifycancels\fR"
 
-.IX Item "\fIimmediatecancel\fR"
-
 .IX Item "\fIwanttrash\fR"
 
 .IX Subsection "Article Storage"
@@ -1036,7 +1058,13 @@ above are just the major and most frequently mentioned ones.
 
 .IX Item "\fIovmethod\fR"
 
+.IX Item "\f(CW   \fR \f(CWtradindexed\fR"
+
+.IX Item "\f(CW   \fR \f(CWbuffindexed\fR"
+
 .IX Item "\fIstoreonxref\fR"
+
+.IX Item "\fIuseoverchan\fR"
 
 .IX Item "\fIwireformat\fR"
 
