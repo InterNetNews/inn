@@ -630,11 +630,13 @@ void tapeTakeArticle (Tape tape, Article article)
   QueueElem elem ;
 #endif
   int amt ;
+  const char *fname, *msgid ;
 
   ASSERT (tape != NULL) ;
 
-  amt = fprintf (tape->outFp,"%s %s\n",artFileName (article),
-                 artMsgId (article)) ;
+  fname = artFileName (article) ;
+  msgid = artMsgId (article) ;
+  amt = fprintf (tape->outFp,"%s %s\n", fname, msgid) ;
 
   /* I'd rather know where I am each time, and I don't trust all
     fprintf's to give me character counts. */
@@ -643,9 +645,15 @@ void tapeTakeArticle (Tape tape, Article article)
   tape->outputSize += amt ;
 
 #else
-  
+#if defined (NO_TRUST_STRLEN)
+
   tape->outputSize = ftell (tape->outFp) ;
 
+#else
+
+  tape->outputSize += strlen(fname) + strlen(msgid) + 2 ; /* " " + "\n" */
+
+#endif
 #endif
   
   delArticle (article) ;
