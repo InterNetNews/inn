@@ -348,6 +348,10 @@ Configuring INN
                           # cd /usr/include/sys
                           # h2ph *
 
+  logipaddr            Set false, if controlchan is used and ihave/sendme setup
+                       is required.  Or ihave and sendme cannot get correct
+	               name, then the messages are incorrect.
+
   2. newsfeeds (REQUIRED)
 
   The newsfeeds file determines how incoming articles are redistributed to
