@@ -460,6 +460,13 @@ drop the article and don't try to re-send it. This is useful for some
 peers that keep on deferring articles for a long time to prevent innfeed
 from trying to offer the same article over and over again.
 .TP
+.B min-queue-connection
+This key requires a boolean value. By default it is set to false. When
+set to true, innfeed will attempt to use a connection with the least queue
+size (or the first empty connection).  If this key is set to true, it is
+recommended that \fBdynamic-method\fP be set to 0. This allows for article
+propagation with the least delay.
+.TP
 .B no-backlog
 This key requires a boolean value. It specifies whether spooling should
 be enabled (false, the default) or disabled (true). Note that when no-backlog
