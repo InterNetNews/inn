@@ -280,15 +280,16 @@ sub print_cycbuff_head {
 	($name) = split(/\s/, $name);
 	$name =~ s/\0//g;
 	syslog ('notice', '%s Buffer %s, len: %d  Mbytes, used: %.2f Mbytes (%4.1f%%) %3d cycles',
-		$logline, $name, $len / (1024 * 1024), $free / (1024 * 1024),
-		100 * $free/$len, $cyclenum);
+		$logline, $name, $len / (1024 * 1024),
+		Math::BigFloat->new ($free) / (1024 * 1024),
+		100 * Math::BigFloat->new ($free) / $len, $cyclenum);
 	return 0;
     }
 
     $name =~ s/\0//g;
     print " Buffer $name, size: ", &human_readable($len, 4);
     print ", position: ", &human_readable($free, 4);
-    printf("  %.2f cycles\n", $cyclenum + $free/$len);
+    printf("  %.2f cycles\n", $cyclenum + Math::BigFloat->new ($free) / $len);
     my ($when, $ago) = &make_time($update);
     print "  Newest: $when, $ago ago\n";
 
