@@ -157,7 +157,7 @@ void logOrPrint (int level, FILE *fp, const char *fmt, ...)
     {
       char buffer [512] ;
 
-      vsnprintf (buffer,sizeof (buffer),fmt,ap) ;
+      vsprintf (buffer,fmt,ap) ;
       syslog (level,buffer) ;
     }
   va_end (ap) ;
