@@ -130,6 +130,7 @@ doc/compliance-nntp                   INN compliance with the NNTP standard
 doc/config-design                     Configuration parser design principles
 doc/config-semantics                  Configuration file semantics
 doc/config-syntax                     Configuration file syntax
+doc/external-auth                     readers.conf external interface notes
 doc/history                           Messages of historical significance
 doc/hook-perl                         Christophe Wolfhugel's Perl hook notes
 doc/hook-python                       Python hook notes
@@ -221,6 +222,7 @@ doc/man/putman.sh                     Install a manpage
 doc/man/qio.3                         Manpage for fast I/O file routines
 doc/man/radius.8                      Manpage for radius authenticator
 doc/man/radius.conf.5                 Manpage for radius.conf config file
+doc/man/rc.news.8                     Manpage for rc.news 
 doc/man/readers.conf.5                Manpage for readers.conf config file
 doc/man/rnews.1                       Manpage for rnews frontend
 doc/man/sasl.conf.5                   Manpage for sasl.conf config file
@@ -246,6 +248,7 @@ doc/pod/ckpasswd.pod                  Master file for ckpasswd.8
 doc/pod/control.ctl.pod               Master file for control.ctl.5
 doc/pod/convdate.pod                  Master file for convdate.1
 doc/pod/expireover.pod                Master file for expireover.8
+doc/pod/external-auth.pod             Master file for doc/external-auth
 doc/pod/fastrm.pod                    Master file for fastrm.1
 doc/pod/hacking.pod                   Master file for HACKING
 doc/pod/hook-perl.pod                 Master file for doc/hook-perl
@@ -271,6 +274,7 @@ doc/pod/passwd.nntp.pod               Master file for passwd.nntp.5
 doc/pod/qio.pod                       Master file for qio.3
 doc/pod/radius.conf.pod               Master file for radius.conf.5
 doc/pod/radius.pod                    Master file for radius.8
+doc/pod/rc.news.pod                   Master file for rc.news.8
 doc/pod/readers.conf.pod              Master file for readers.conf.5
 doc/pod/readme.pod                    Master file for README
 doc/pod/sasl.conf.pod                 Master file for sasl.conf.5
