@@ -2410,7 +2410,7 @@ STRING ARTpost(CHANNEL *cp)
 		NNTP_REJECTIT_VAL,
 		MaxLength(HDR(_newsgroups), HDR(_newsgroups)));
 	    ARTlog(&Data, ART_REJECT, buff);
-	    if (innconf->wanttrash) {
+	    if (!innconf->wanttrash) {
 		if (innconf->remembertrash && Data.MessageID &&
 			(Mode == OMrunning) && !HISremember(hash))
 		    syslog(L_ERROR, "%s cant write history %s %m",

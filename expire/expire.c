@@ -85,6 +85,7 @@ STATIC BOOL		EXPkeep;
 STATIC BOOL		EXPearliest;
 STATIC BOOL		ClassicExpire = FALSE;
 STATIC BOOL		Ignoreselfexpire = FALSE;
+STATIC BOOL		StorageAPI;
 STATIC char		*ACTIVE;
 STATIC char		*SPOOL = NULL;
 STATIC int		nGroups;
@@ -106,6 +107,7 @@ STATIC char		*EXPgraph;
 STATIC int		EXPverbose;
 STATIC long		EXPprocessed;
 STATIC long		EXPunlinked;
+STATIC long		EXPoverindexdrop;
 STATIC long		EXPhistdrop;
 STATIC long		EXPhistremember;
 STATIC long		EXPallgone;
@@ -746,6 +748,7 @@ STATIC void EXPremove(char *p, long *size, BOOL index)
 	if (EXPunlinkindex) {
 	    (void)fprintf(EXPunlinkindex, "%s\n", p);
 	}
+	EXPoverindexdrop++;
 	return;
     }
     EXPunlinked++;
@@ -796,6 +799,7 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
     char		date[20];
     BOOL		Hastoken;
     BOOL		Hasover;
+    BOOL		HasSelfexpire = FALSE;
     BOOL		Selfexpired = FALSE;
     ARTHANDLE		*article;
     TOKEN		token;
@@ -889,7 +893,17 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 		return TRUE;
 	    }
 	    token = TextToToken(fields[2]);
-	    if (token.index < OVER_NONE) {
+	    if (!Ignoreselfexpire && SMprobe(SELFEXPIRE, &token)) {
+		HasSelfexpire = TRUE;
+		if ((article = SMretrieve(token, RETR_STAT)) == (ARTHANDLE *)NULL)
+		    /* the article is cancelled or has been expired by the
+		       method's functionality */
+		    Selfexpired = TRUE;
+		else
+		    /* the article is still alive */
+		    SMfreearticle(article);
+	    }
+	    if ((!HasSelfexpire || (HasSelfexpire && !Selfexpired)) && token.index < OVER_NONE) {
 		Hasover = TRUE;
 		if ((p = OVERretrieve(&token, &linelen)) == (char *)NULL)
 		    return TRUE;
@@ -920,20 +934,11 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 	    } else {
 		Hasover = FALSE;
 	    }
-	    if (!Ignoreselfexpire && SMprobe(SELFEXPIRE, &token)) {
-		if ((article = SMretrieve(token, RETR_STAT)) == (ARTHANDLE *)NULL)
-		    /* the article is cancelled or has been expired by the
-		       method's functionality */
-		    Selfexpired = TRUE;
-		else
-		    /* the article is still alive */
-		    SMfreearticle(article);
-	    }
 	} else {
 	    Hasover = FALSE;
 	}
 	when = EXPusepost ? Posted : Arrived;
-	if (!Selfexpired) {
+	if (!HasSelfexpire) {
 	    if (!ClassicExpire || !Hastoken || !Hasover) {
 		count = EXPsplit(fields[2], ' ', arts, nGroups);
 	    }
@@ -956,31 +961,48 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 	}
 	EXPprocessed++;
 
-	if (Selfexpired) {
-	    if (Hasover) {
-		for (i = 0; i < count; i++) {
-		    p = arts[i];
-		    if (*p == '\0')
-			/* Shouldn't happen. */
-			continue;
-		    EXPremove(p, &size, TRUE);
+	if (HasSelfexpire) {
+	    if (Selfexpired || token.type == TOKEN_EMPTY || token.cancelled) {
+		if (Hasover) {
+		    for (i = 0; i < count; i++) {
+			p = arts[i];
+			if (*p == '\0')
+			    /* Shouldn't happen. */
+			    continue;
+			EXPremove(p, &size, TRUE);
+		    }
 		}
-	    }
-	    if (EXPremember > 0 && out != NULL) {
-		where = Offset;
-		if (Arrived > RealNow)
-		    Arrived = RealNow;
-		(void)sprintf(date, "%lu", (unsigned long)Arrived);
-		(void)fprintf(out, "%s%c%s%c%s\n",
-			fields[0], HIS_FIELDSEP,
-			date, HIS_SUBFIELDSEP, HIS_NOEXP);
-		Offset += strlen(fields[0]) + 1
-			+ strlen(date) + 1 + STRLEN(HIS_NOEXP) + 1;
-		if (EXPverbose > 3)
-		    (void)printf("remember history: %s%c%s%c%s\n",
+		if (EXPremember > 0 && out != NULL) {
+		    where = Offset;
+		    if (Arrived > RealNow)
+			Arrived = RealNow;
+		    (void)sprintf(date, "%lu", (unsigned long)Arrived);
+		    (void)fprintf(out, "%s%c%s%c%s\n",
 			    fields[0], HIS_FIELDSEP,
 			    date, HIS_SUBFIELDSEP, HIS_NOEXP);
-		EXPallgone++;
+		    Offset += strlen(fields[0]) + 1
+			    + strlen(date) + 1 + STRLEN(HIS_NOEXP) + 1;
+		    if (EXPverbose > 3)
+			(void)printf("remember history: %s%c%s%c%s\n",
+				fields[0], HIS_FIELDSEP,
+				date, HIS_SUBFIELDSEP, HIS_NOEXP);
+		    EXPallgone++;
+		}
+	    } else if (out != NULL) {
+		if (Hasover && !OVERstore(&token, OVERline, linelen))
+		    return TRUE;
+		tokentext = TokenToText(token);
+		where = Offset;
+		(void)fprintf(out, "%s%c%s%c%s\n",
+			fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
+			tokentext);
+		Offset += strlen(fields[0]) + 1 + strlen(fields[1]) + 1
+			+ strlen(tokentext) + 1;
+		if (EXPverbose > 3)
+		    (void)printf("remember article: %s%c%s%c%s\n",
+			    fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
+			    tokentext);
+		EXPstillhere++;
 	    }
 	} else if (ClassicExpire && Hastoken && Hasover) {
 	    if (EXPearliest) {
@@ -1194,20 +1216,21 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 				    fields[0], HIS_FIELDSEP,
 				    date, HIS_SUBFIELDSEP, HIS_NOEXP);
 			EXPallgone++;
-		    }
-		    if (!OVERstore(&token, OVERline, linelen))
-			return TRUE;
-		    tokentext = TokenToText(token);
-		    where = Offset;
-		    (void)fprintf(out, "%s%c%s%c%s\n",
-			    fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
-			    tokentext);
-		    Offset += strlen(fields[0]) + 1 + strlen(fields[1]) + 1
-			    + strlen(tokentext) + 1;
-		    if (EXPverbose > 3)
-			(void)printf("remember article: %s%c%s%c%s\n",
+		    } else {
+			if (!OVERstore(&token, OVERline, linelen))
+			    return TRUE;
+			tokentext = TokenToText(token);
+			where = Offset;
+			(void)fprintf(out, "%s%c%s%c%s\n",
 				fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
 				tokentext);
+			Offset += strlen(fields[0]) + 1 + strlen(fields[1]) + 1
+				+ strlen(tokentext) + 1;
+			if (EXPverbose > 3)
+			    (void)printf("remember article: %s%c%s%c%s\n",
+				    fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
+				    tokentext);
+		    }
 		} else {
 		    where = Offset;
 		    (void)fprintf(out, "%s%c%s%c%s\n",
@@ -1308,7 +1331,12 @@ STATIC NORETURN CleanupAndExit(BOOL Server,BOOL Paused, int x)
 	(void)printf("Article lines processed %8ld\n", EXPprocessed);
 	(void)printf("Articles retained       %8ld\n", EXPstillhere);
 	(void)printf("Entries expired         %8ld\n", EXPallgone);
-	(void)printf("Files unlinked          %8ld\n", EXPunlinked);
+	if (StorageAPI) {
+	    (void)printf("Articles dropped        %8ld\n", EXPunlinked);
+	    (void)printf("Overview index dropped  %8ld\n", EXPoverindexdrop);
+	} else {
+	    (void)printf("Files unlinked          %8ld\n", EXPunlinked);
+	}
 	(void)printf("Old entries dropped     %8ld\n", EXPhistdrop);
 	(void)printf("Old entries retained    %8ld\n", EXPhistremember);
     }
@@ -1316,9 +1344,15 @@ STATIC NORETURN CleanupAndExit(BOOL Server,BOOL Paused, int x)
     /* Append statistics to a summary file */
     if (EXPgraph) {
 	F = EXPfopen(FALSE, EXPgraph, "a");
-	(void)fprintf(F, "%ld %ld %ld %ld %ld %ld %ld\n",
+	if (StorageAPI) {
+	    (void)fprintf(F, "%ld %ld %ld %ld %ld %ld %ld %ld\n",
+		(long)Now, EXPprocessed, EXPstillhere, EXPallgone,
+		EXPunlinked, EXPoverindexdrop, EXPhistdrop, EXPhistremember);
+	} else {
+	    (void)fprintf(F, "%ld %ld %ld %ld %ld %ld %ld\n",
 		(long)Now, EXPprocessed, EXPstillhere, EXPallgone,
 		EXPunlinked, EXPhistdrop, EXPhistremember);
+	}
 	(void)fclose(F);
     }
 
@@ -1374,7 +1408,6 @@ int main(int ac, char *av[])
     BOOL		IgnoreOld;
     BOOL		Writing;
     BOOL		UnlinkFile;
-    BOOL		StorageAPI;
     BOOL		LowmarkFile;
     BOOL		val;
     time_t		TimeWarp;

@@ -307,7 +307,6 @@ int main(int ac, char *av[])
 	p = cpcatpath(innconf->pathrun, _PATH_SERVERPID);
 	if (stat(p, &Sb) < 0)
 	    (void)fprintf(stderr, "No innd.pid file; did server die?\n");
-	if (strchr(_PATH_SERVERPID, '/') == NULL) DISPOSE(p);
 	(void)sprintf(buff, "send \"%s\" command", cp->Command);
 	errno = i;
 	Failed(buff);

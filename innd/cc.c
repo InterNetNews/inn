@@ -1364,11 +1364,30 @@ CCreload(av)
 	    }   
 	}
     }
+#if 0 /* we should check almost all innconf parameter, but the code
+         is still incomplete for innd, so just commented out */
     else if (EQ(p, "inn.conf")) {
 	ReadInnConf();
-	Pathalias.Data = innconf->pathalias;
-	Pathalias.Used = strlen(innconf->pathalias) + 1;
+	if (innconf->pathhost == NULL) {
+	    syslog(L_FATAL, "%s No pathhost set", LogName);
+	    exit(1);
+	}   
+	DISPOSE(Path.Data);
+	Path.Used = strlen(innconf->pathhost) + 1;
+	Path.Data = NEW(char, Path.Used + 1);
+	(void)sprintf(Path.Data, "%s!", innconf->pathhost);
+	if (Pathalias.Used > 0)
+	    DISPOSE(Pathalias.Data);
+	if (innconf->pathalias == NULL) {
+	    Pathalias.Used = 0;
+	    Pathalias.Data = NULL;
+	} else {
+	    Pathalias.Used = strlen(innconf->pathalias) + 1;
+	    Pathalias.Data = NEW(char, Pathalias.Used + 1);
+	    (void)sprintf(Pathalias.Data, "%s!", innconf->pathalias);
+	}
     }
+#endif
 #if defined(DO_TCL)
     else if (EQ(p, "filter.tcl")) {
 	TCLreadfilter();

@@ -735,7 +735,8 @@ int main(int ac, char *av[])
 	Pathalias.Data = NULL;
     } else {
 	Pathalias.Used = strlen(innconf->pathalias) + 1;
-	Pathalias.Data = innconf->pathalias;
+	Pathalias.Data = NEW(char, Pathalias.Used + 1);
+	(void)sprintf(Pathalias.Data, "%s!", innconf->pathalias);
     }
 
 #if	!defined(__CENTERLINE__)
