@@ -844,7 +844,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 #if     !defined( HAVE_INET6)
     struct hostent	*hp;
 #endif
-#if	!defined(HAVE_UNIX_DOMAIN_SOCKETS)
+#if	!defined(HAVE_UNIX_DOMAIN_SOCKETS) || !defined(HAVE_INET6)
     struct in_addr      addr;
 #endif
     int                 i;
