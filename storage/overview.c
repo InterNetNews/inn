@@ -415,7 +415,7 @@ static BOOL MatchGroups(const char *g, int num, char **patterns) {
     /* Find the end of the line */
     for (p = g; *p != '\0'; p++);
 
-    groups = NEW(char, p - g);
+    groups = NEW(char, p - g + 1);
     memcpy(groups, g, p - g);
     groups[p - g] = '\0';
 
