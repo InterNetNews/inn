@@ -1390,8 +1390,11 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
     }
 
     /* Range specified. */
-    if (!CMDgetrange(ac - 1, av + 1, &range))
+    if (!CMDgetrange(ac - 1, av + 1, &range)) {
+	Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
+	Printf(".\r\n");
 	return;
+    }
 
     /* Is this a header in our overview? */
     for (Overview = 0, i = 0; i < ARTfieldsize; i++)
@@ -1451,8 +1454,11 @@ FUNCTYPE CMDxover(int ac, char *av[])
 
     /* Parse range. */
     gettimeofday(&stv, NULL);
-    if (!CMDgetrange(ac, av, &range))
+    if (!CMDgetrange(ac, av, &range)) {
+	Reply("%d %s fields follow\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, av[1]);
+	Printf(".\r\n");
 	return;
+    }
 
     OVERcount++;
     Reply("%d data follows\r\n", NNTP_OVERVIEW_FOLLOWS_VAL);
@@ -1550,8 +1556,11 @@ FUNCTYPE CMDxpat(int ac, char *av[])
     }
 
     /* Range specified. */
-    if (!CMDgetrange(ac - 1, av + 1, &range))
+    if (!CMDgetrange(ac - 1, av + 1, &range)) {
+	Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
+	Printf(".\r\n");
 	return;
+    }
 
     /* In overview? */
     for (Overview = 0, i = 0; i < ARTfieldsize; i++)
