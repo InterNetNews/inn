@@ -264,7 +264,6 @@ innfeed/endpoint.c          1 Implementation of the EndPoint object class
 innfeed/endpoint.h          1 Public interface to the EndPoint class
 innfeed/host.c              1 Implementation of the Host class
 innfeed/host.h              1 Public interface to the Host class
-innfeed/inet_addr.c         1 Extra source for inet_aton() routine
 innfeed/innfeed-convcfg.in  1 Script to convert old innfeed.conf
 innfeed/innlistener.c       1 Implementation of the InnListener class
 innfeed/innlistener.h       1 Public interface of the things that listens to
@@ -276,7 +275,6 @@ innfeed/misc.h              1 Header file for misc.c
 innfeed/msgs.h              1 Log message definition
 innfeed/procbatch.in        1 Script to process dropped articles
 innfeed/startinnfeed.c      1 Start innfeed and pass it all the arguments given
-innfeed/strerror.c          1 Strerror() routine
 innfeed/sysconfig.h         1 Header file for system dependent definition
 innfeed/tape.c              1 Implementation of the Tape class
 innfeed/tape.h              1 Public interface to the Tape class
@@ -304,6 +302,7 @@ lib/getmodaddr.c            1 Get a moderator's address
 lib/getopt.c                1 Help parse command line
 lib/gettime.c               1 Get time and timezone info
 lib/hash.c                  1 Create hash from msgid
+lib/inet_addr.c             1 Extra source for inet_aton() routine
 lib/inet_ntoa.c             1 Convert in_addr to string (BSD)
 lib/inndcomm.c              1 Library routines to talk to innd
 lib/innvers.c               1 Return InterNetNews version string

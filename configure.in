@@ -297,7 +297,9 @@ fi
 dnl parse arguments
 
 dnl Checks for libraries.
-EXTRA_SRC=""
+MISSING_MAN=""
+MISSING_SRC=""
+MISSING_OBJ=""
 AC_CHECK_LIB(crypt,  crypt)
 AC_CHECK_LIB(util,   setproctitle)
 AC_CHECK_LIB(44bsd,  inet_addr)
@@ -316,7 +318,8 @@ then
 		AC_CHECK_LIB(bind, __inet_aton, ac_need_extra__inet_aton=1)
 		if test x$ac_need_extra__inet_aton = x
 		then
-			EXTRA_SRC="inet_addr.c"
+			MISSING_SRC="inet_addr.c "
+			MISSING_OBJ="inet_addr.o "
 		fi
 	fi
 fi
@@ -924,14 +927,11 @@ YN_to_cv_subst(ac_cv_func_mmap_shared, ac_cv_subst_act_style, MMAP, READ)
 YN_to_cv_subst(ac_cv_func_need_msync, ac_cv_subst_mmap_sync, DO, DONT)
 
 dnl Missing sources
-MISSING_MAN=""
-MISSING_SRC=""
-MISSING_OBJ=""
 if test ${ac_cv_func_strcasecmp} = "no"
 then
-	MISSING_MAN="strcasecmp.3 "
-	MISSING_SRC="strcasecmp.c "
-	MISSING_OBJ="strcasecmp.o "
+	MISSING_MAN="${MISSING_MAN}strcasecmp.3 "
+	MISSING_SRC="${MISSING_SRC}ustrcasecmp.c "
+	MISSING_OBJ="${MISSING_OBJ}strcasecmp.o "
 fi
 if test ${ac_cv_func_syslog} = "no"
 then
@@ -943,7 +943,6 @@ if test ${ac_cv_func_strerror} = "no"
 then
 	MISSING_SRC="${MISSING_SRC}strerror.c "
 	MISSING_OBJ="${MISSING_OBJ}strerror.o "
-	EXTRA_SRC="${EXTRA_SRC} strerror.c"
 fi
 dnl *******************************************************
 dnl fjc mibsoftware.com getdtab is a fixed part of INN now.
@@ -995,7 +994,6 @@ fi
 AC_SUBST(MISSING_MAN)
 AC_SUBST(MISSING_SRC)
 AC_SUBST(MISSING_OBJ)
-AC_SUBST(EXTRA_SRC)
 
 grep "^  ||" config/config.scoreboard | sed 's/  ||//g' >config/config.data.in
 AC_CONFIG_HEADER(include/config.h:include/config.h)
