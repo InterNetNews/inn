@@ -5,24 +5,24 @@ include ../Makefile.global
 CFLAGS  = $(GCFLAGS)
 
 SOURCES = argparse.c cleanfrom.c clientactive.c clientlib.c concat.c \
-	conffile.c date.c dbz.c defdist.c error.c fdflags.c fdlimit.c \
-	findheader.c fseeko.c ftello.c genid.c getconfig.c getfqdn.c \
-	getmodaddr.c gettime.c grpalias.c hash.c hstrerror.c inet_aton.c \
-	inet_ntoa.c inndcomm.c localopen.c lockfile.c makedir.c md5.c \
-	memcmp.c parsedate.c perl.c pread.c pwrite.c qio.c radix32.c \
-	readin.c remopen.c reservedfd.c resource.c rwlock.c sendarticle.c \
-	sendpass.c setenv.c strcasecmp.c strerror.c strspn.c strtok.c \
-	tempname.c wildmat.c version.c xfopena.c xmalloc.c xsignal.c \
-	xwrite.c
+	conffile.c daemonize.c date.c dbz.c defdist.c error.c fdflags.c \
+	fdlimit.c findheader.c fseeko.c ftello.c genid.c getconfig.c \
+	getfqdn.c getmodaddr.c gettime.c grpalias.c hash.c hstrerror.c \
+	inet_aton.c inet_ntoa.c inndcomm.c localopen.c lockfile.c \
+	makedir.c md5.c memcmp.c parsedate.c perl.c pread.c pwrite.c qio.c \
+	radix32.c readin.c remopen.c reservedfd.c resource.c rwlock.c \
+	sendarticle.c sendpass.c setenv.c strcasecmp.c strerror.c strspn.c \
+	strtok.c tempname.c wildmat.c version.c xfopena.c xmalloc.c \
+	xsignal.c xwrite.c
 
 OBJECTS = $(LIBOBJS) \
 	argparse.o cleanfrom.o clientactive.o clientlib.o concat.o \
-	conffile.o date.o dbz.o defdist.o error.o fdflags.o fdlimit.o \
-	findheader.o genid.o getconfig.o getfqdn.o getmodaddr.o gettime.o \
-	grpalias.o hash.o inndcomm.o localopen.o lockfile.o makedir.o md5.o \
-	parsedate.o qio.o radix32.o readin.o remopen.o reservedfd.o \
-	resource.o rwlock.o sendarticle.o sendpass.o tempname.o wildmat.o \
-	version.o xfopena.o xmalloc.o xsignal.o xwrite.o
+	conffile.o daemonize.o date.o dbz.o defdist.o error.o fdflags.o \
+	fdlimit.o findheader.o genid.o getconfig.o getfqdn.o getmodaddr.o \
+	gettime.o grpalias.o hash.o inndcomm.o localopen.o lockfile.o \
+	makedir.o md5.o parsedate.o qio.o radix32.o readin.o remopen.o \
+	reservedfd.o resource.o rwlock.o sendarticle.o sendpass.o \
+	tempname.o wildmat.o version.o xfopena.o xmalloc.o xsignal.o xwrite.o
 
 LOBJECTS= $(OBJECTS:.o=.lo)
 
@@ -93,13 +93,13 @@ clientactive.o: clientactive.c ../include/config.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h
 clientlib.o: clientlib.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/nntp.h
-closeonexec.o: closeonexec.c ../include/config.h \
- ../include/inn/defines.h ../include/libinn.h
 concat.o: concat.c ../include/config.h ../include/inn/defines.h \
  ../include/libinn.h
 conffile.o: conffile.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/conffile.h ../include/libinn.h \
  ../include/macros.h
+daemonize.o: daemonize.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h
 date.o: date.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
 dbz.o: dbz.c ../include/config.h ../include/inn/defines.h \
@@ -109,6 +109,8 @@ defdist.o: defdist.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/paths.h
 error.o: error.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h
+fdflags.o: fdflags.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
 fdlimit.o: fdlimit.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
@@ -144,8 +146,9 @@ inet_aton.o: inet_aton.c ../include/config.h ../include/inn/defines.h \
 inet_ntoa.o: inet_ntoa.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 inndcomm.o: inndcomm.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inndcomm.h ../include/libinn.h \
- ../include/macros.h ../include/paths.h
+ ../include/clibrary.h ../include/portable/time.h \
+ ../include/inndcomm.h ../include/libinn.h ../include/macros.h \
+ ../include/paths.h
 localopen.o: localopen.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h ../include/paths.h
@@ -156,8 +159,6 @@ makedir.o: makedir.c ../include/config.h ../include/inn/defines.h \
 md5.o: md5.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/md5.h
 memcmp.o: memcmp.c ../include/config.h ../include/inn/defines.h
-nonblocking.o: nonblocking.c ../include/config.h \
- ../include/inn/defines.h
 parsedate.o: parsedate.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
