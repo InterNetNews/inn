@@ -29,6 +29,7 @@ PATH_MODERATORS		= ${PATHETC}/moderators
 PATH_DISTPATS		= ${PATHETC}/distrib.pats
 PATH_NEWSFEEDS		= ${PATHETC}/newsfeeds
 PATH_NNRPACCESS		= ${PATHETC}/nnrp.access
+PATH_READERSCONF	= ${PATHETC}/readers.conf
 PATH_NNRPDTRACK		= ${PATHETC}/nnrpd.track
 PATH_SCHEMA		= ${PATHETC}/overview.fmt
 PATH_PERL_SHELLVARS	= ${PATHLIB}/innshellvars.pl
@@ -63,7 +64,7 @@ REST		= \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
 	motd.news storage.conf overview.ctl cycbuff.conf \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
-	startup.tcl filter.tcl nnrpd_auth.pl news2mail.cf
+	startup.tcl filter.tcl nnrpd_auth.pl news2mail.cf readers.conf
 
 ALL		= $(MOST) $(REST)
 
@@ -99,7 +100,7 @@ REST_INSTALLED	= \
 	$D$(PATH_INNFEEDCTL) $D$(PATH_PERL_STARTUP_INND) \
 	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
 	$D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER) \
-	$D$(PATH_NNRPAUTH) $D$(PATHETC)/news2mail.cf
+	$D$(PATH_NNRPAUTH) $D$(PATHETC)/news2mail.cf $D$(PATH_READERSCONF)
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
 
@@ -163,6 +164,7 @@ COPY_XPUB	= $(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD
 $D$(PATH_INNDHOSTS):	incoming.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_NEWSFEEDS):	newsfeeds	; $(COPY_RPUB) $? $@
 $D$(PATH_NNRPACCESS):	nnrp.access	; $(COPY_RPRI) $? $@
+$D$(PATH_READERSCONF):	readers.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_NNRPDTRACK):	nnrpd.track	; $(COPY_RPRI) $? $@
 $D$(PATH_NEWSBOOT):	rc.news		; $(COPY_XPRI) $? $@
 $D$(PATH_SCHEMA):	overview.fmt	; $(COPY_RPUB) $? $@
@@ -307,6 +309,7 @@ writelog:	../samples/writelog		; $(COPY) $? $@
 passwd.nntp:	../samples/passwd.nntp		; $(COPY) $? $@
 pgpverify:	../samples/pgpverify		; $(COPY) $? $@
 rc.news:	../samples/rc.news		; $(COPY) $? $@
+readers.conf:	../samples/readers.conf		; $(COPY) $? $@
 rmgroup:	../samples/rmgroup		; $(COPY) $? $@
 rmgroup.pl:	../samples/rmgroup.pl		; $(COPY) $? $@
 scanlogs:	../samples/scanlogs		; $(COPY) $? $@
