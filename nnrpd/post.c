@@ -951,6 +951,9 @@ ARTpost(article, idbuff)
     if (GetBooleanConfigValue(_CONF_NNRP_SPOOLFIRST, FALSE))
 	return Spoolit(article, Error);
 
+    if (Offlinepost)
+         return Spoolit(article,Error);
+
     /* Open a local connection to the server. */
     if (RemoteMaster)
 	i = NNTPconnect(RemoteMaster, NNTP_PORT, &FromServer, &ToServer, buff);

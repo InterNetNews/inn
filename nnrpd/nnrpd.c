@@ -6,6 +6,7 @@
 */
 #include <stdio.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include "configdata.h"
 #include "clibrary.h"
 #define MAINLINE
@@ -60,6 +61,8 @@ STATIC char	*TITLEstart;
 STATIC char	*TITLEend;
 #endif	/* !defined(HPUX) */
 STATIC SIGVAR	ChangeTrace;
+BOOL	DaemonMode = FALSE;
+
 
 extern FUNCTYPE	CMDauthinfo();
 extern FUNCTYPE	CMDdate();
@@ -180,6 +183,16 @@ ExitWithStats(x)
     if (OVERcount)
         syslog(L_NOTICE, "%s overstats count %d hit %d miss %d time %d size %d read %d", ClientHost,
             OVERcount, OVERhit, OVERmiss, OVERtime, OVERsize, OVERread);
+
+     if (DaemonMode) {
+     	shutdown(STDIN, 2);
+     	shutdown(STDOUT, 2);
+     	shutdown(STDERR, 2);
+ 	close(STDIN);    	
+ 	close(STDOUT);
+ 	close(STDERR);    	
+     }
+            
     exit(x);
 }
 
@@ -576,6 +589,23 @@ CatchPipe(s)
     ExitWithStats(0);
 }
 
+/*
+**  Got a signal; wait for children.
+*/
+STATIC SIGHANDLER
+WaitChild(s)
+    int		s;
+{
+    int status;
+    int pid;
+
+    for (;;) {
+       pid = wait3(&status, WNOHANG, (struct rusage *) 0);
+       if (pid <= 0)
+       	    break;
+    }
+}
+
 
 /*
 **  Print a usage message and exit.
@@ -614,6 +644,14 @@ main(argc, argv, env)
     int 		pid=-1;
     int 		count=123456789;
     struct		timeval tv;
+    unsigned short	ListenPort = NNTP_PORT;
+    unsigned long	ListenAddr = htonl(INADDR_ANY);
+    int			lfd, fd, clen;
+    struct sockaddr_in	ssa, csa;
+    struct sigaction	siga;
+    sigset_t		blockmask;
+    PID_T		pid;
+   
 
 #if	!defined(HPUX)
     /* Save start and extent of argv for TITLEset. */
@@ -626,13 +664,37 @@ main(argc, argv, env)
     Reject = NULL;
     RARTenable=FALSE;
     LLOGenable=FALSE;
-    while ((i = getopt(argc, argv, "Rr:s:S:t:l")) != EOF)
+    while ((i = getopt(argc, argv, "b:Di:lop:Rr:S:s:t")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
 	    /* NOTREACHED */
+ 	case 'b':			/* bind to a certain address in
+ 	        			   daemon mode */
+ 	    ListenAddr = inet_addr(optarg);
+ 	    if (ListenAddr == -1)
+ 	    	ListenAddr = htonl(INADDR_ANY);
+ 	    break;
+ 	case 'D':			/* standalone daemon mode */
+ 	    DaemonMode = TRUE;
+ 	    break;
 	case 'i':			/* Initial command */
 	    PushedBack = COPY(optarg);
+	    break;
+	case 'l':			/* Tracking */
+	    RARTenable=TRUE;
+	    break;
+	case 'o':
+	    Offlinepost = TRUE;		/* Offline posting only */
+	    break;
+ 	case 'p':			/* tcp port for daemon mode */
+ 	    ListenPort = atoi(optarg);
+ 	    break;
+	case 'R':			/* Ignore 'P' option in access file */
+	    ForceReadOnly = TRUE;
+	    break;
+	case 'r':			/* Reject connection message */
+	    Reject = COPY(optarg);
 	    break;
 	case 'S':			/* We're a slave to NNTP master */
 	    RemoteMaster = COPY(optarg);
@@ -642,22 +704,81 @@ main(argc, argv, env)
 	case 't':			/* Tracing */
 	    Tracing = TRUE;
 	    break;
-	case 'r':			/* Reject connection message */
-	    Reject = COPY(optarg);
-	    break;
-	case 'R':			/* Ignore 'P' option in access file */
-	    ForceReadOnly = TRUE;
-	    break;
-	case 'l':			/* Tracking */
-	    RARTenable=TRUE;
-	    break;
 	}
     argc -= optind;
     if (argc)
 	Usage();
 
-    /* Setup. */
     openlog("nnrpd", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+
+    if (DaemonMode) {
+	if ((lfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+	    syslog(L_FATAL, "can't open socket (%m)");
+	    exit(1);
+	}
+	    
+	ssa.sin_family = AF_INET;
+	ssa.sin_addr.s_addr = ListenAddr;
+	ssa.sin_port = htons(ListenPort);
+	
+	if (bind(lfd, (struct sockaddr *) &ssa, sizeof(ssa)) < 0) {
+	    fprintf(stderr, "%s: can't bind (%s)\n", argv[0], strerror(errno));
+	    syslog(L_FATAL, "can't bind local address (%m)");
+	    exit(1);
+	}
+
+	/* Detach */
+	if ((pid = FORK()) < 0) {
+	    fprintf(stderr, "%s: can't ford (%s)\n", argv[0], strerror(errno));
+	    syslog(L_FATAL, "can't fork (%m)");
+	    exit(1);
+	} else if (pid != 0) 
+	    exit(0);
+
+	setsid();
+ 
+	/* Set signal handle to care for dead children */
+	sigemptyset(&blockmask);
+	sigaddset(&blockmask, SIGCHLD);
+	siga.sa_handler = WaitChild;
+	siga.sa_mask = blockmask;
+	siga.sa_flags = 0;
+	siga.sa_restorer = NULL;
+	(void)sigaction(SIGCHLD, &siga, NULL);
+ 
+	TITLEset("nnrpd: accepting connections");
+ 	
+	listen(lfd, 5);	
+
+listen_loop:
+	clen = sizeof(csa);
+	fd = accept(lfd, (struct sockaddr *) &csa, &clen);
+	if (fd < 0)
+		goto listen_loop;
+    
+	for (i = 0; (pid = FORK()) < 0; i++) {
+	    if (i == MAX_FORKS) {
+		syslog(L_FATAL, "cant fork %m -- giving up");
+		exit(1);
+	    }
+	    syslog(L_NOTICE, "cant fork %m -- waiting");
+	    (void)sleep(1);
+	}
+
+	if (pid != 0)
+		goto listen_loop;
+
+	/* child process starts here */
+	TITLEset("nnrpd: connected");
+	close(lfd);
+	dup2(fd, 0);
+	close(fd);
+	dup2(0, 1);
+	dup2(0, 2);
+ 
+    }  /* DaemonMode */
+
+    /* Setup. */
     if (GetTimeInfo(&Now) < 0) {
 	syslog(L_FATAL, "cant gettimeinfo %m");
 	exit(1);

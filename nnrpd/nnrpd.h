@@ -105,6 +105,7 @@ EXTERN BOOL	PERMspecified;
 EXTERN BOOL	PERMnewnews;
 EXTERN BOOL	PERMlocpost;
 EXTERN BOOL	Tracing;
+EXTERN BOOL 	Offlinepost;
 EXTERN char	**PERMlist;
 EXTERN STRING	MyHostName;
 extern char	ACTIVE[];
