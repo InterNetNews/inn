@@ -42,6 +42,7 @@ PATH_STORAGECONF	= ${PATHETC}/storage.conf
 PATH_CYCBUFFCONFIG	= ${PATHETC}/cycbuff.conf
 PATH_INNFEEDCTL		= ${PATHETC}/innfeed.conf
 PATH_BUFFINDEXED	= ${PATHETC}/buffindexed.conf
+PATH_RADIUS_CONF	= ${PATHETC}/radius.conf
 
 ##  Order:  innd, control, expire, inews, sending, misc
 MOST	= checkgroups default ihave newgroup \
@@ -59,7 +60,8 @@ REST		= \
 	motd.news storage.conf cycbuff.conf buffindexed.conf \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
 	filter_innd.py INN.py \
-	startup.tcl filter.tcl nnrpd_auth.pl news2mail.cf readers.conf
+	startup.tcl filter.tcl nnrpd_auth.pl news2mail.cf readers.conf \
+	radius.conf
 
 ALL		= $(MOST) $(REST)
 
@@ -86,7 +88,8 @@ REST_INSTALLED	= \
 	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
 	$D$(PATH_PYTHON_FILTER_INND) $D$(PATH_PYTHON_INN_MODULE) \
 	$D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER) \
-	$D$(PATH_NNRPAUTH) $D$(PATHETC)/news2mail.cf $D$(PATH_READERSCONF)
+	$D$(PATH_NNRPAUTH) $D$(PATHETC)/news2mail.cf $D$(PATH_READERSCONF) \
+	$D$(PATH_RADIUS_CONF) 
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
 
@@ -139,15 +142,16 @@ profiled:
 	cp /dev/null profiled
 
 ##  Commands to make private or public, read or executable files.
-COPY_RPRI	= $(SHELL) ../installit.sh $(OWNER) -m 0640 -b .OLD
-COPY_RPUB	= $(SHELL) ../installit.sh $(OWNER) -m 0644 -b .OLD
-COPY_XPRI	= $(SHELL) ../installit.sh $(OWNER) -m 0550 -b .OLD
-COPY_XPUB	= $(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD
+COPY_RPRI	= $(CP_RPRI)
+COPY_RPUB	= $(CP_RPUB)
+COPY_XPRI	= $(CP_XPRI)
+COPY_XPUB	= $(CP_XPUB)
 
 ##  Order:  innd, control, expire, inews, sending, misc
 $D$(PATH_INNDHOSTS):	incoming.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_NEWSFEEDS):	newsfeeds	; $(COPY_RPUB) $? $@
 $D$(PATH_READERSCONF):	readers.conf	; $(COPY_RPRI) $? $@
+$D$(PATH_RADIUS_CONF):	radius.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_NNRPDTRACK):	nnrpd.track	; $(COPY_RPRI) $? $@
 $D$(PATH_SCHEMA):	overview.fmt	; $(COPY_RPUB) $? $@
 $D$(CTLBIN)/checkgroups: checkgroups	; $(COPY_XPRI) $? $@
@@ -245,6 +249,7 @@ overview.fmt:	../samples/overview.fmt		; $(COPY) $? $@
 parsecontrol:	../samples/parsecontrol		; $(COPY) $? $@
 passwd.nntp:	../samples/passwd.nntp		; $(COPY) $? $@
 readers.conf:	../samples/readers.conf		; $(COPY) $? $@
+radius.conf:	../samples/radius.conf		; $(COPY) $? $@
 rmgroup:	../samples/rmgroup		; $(COPY) $? $@
 rmgroup.pl:	../samples/rmgroup.pl		; $(COPY) $? $@
 sendme:		../samples/sendme		; $(COPY) $? $@
