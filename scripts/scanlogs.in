@@ -199,8 +199,9 @@ if ${ROTATE} ; then
 		rm -f ${OLD}/${BASE} ${F}.new
 		touch ${F}.new
 		chmod 0660 ${F}.new
-		ln ${F} ${OLD}/${BASE}
+		ln ${F} ${F}.old
 		mv ${F}.new ${F}
+		mv ${F}.old ${OLD}/${BASE}
 	    fi
 	    ;;
 	esac
