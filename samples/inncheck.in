@@ -317,6 +317,7 @@ incoming_conf
     'overviewmmap',		0,
     'allowreaders',		0,
     'extendeddbz',		0,
+    'nnrpdoverstats',		0,
     'bindaddress',		0,
     'port',			0,
     'keywords',			0,
