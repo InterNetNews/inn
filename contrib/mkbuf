@@ -1,0 +1,29 @@
+#!/usr/bin/perl
+
+sub usage {
+	print STDERR "Usage: $0 <size in KB> <filename>\n";
+	exit 1;
+}
+
+usage if(@ARGV != 2);
+
+$buf1k = "\0"x1024;
+$buf1m = "$buf1k"x1024;
+
+$kb = $ARGV[0] * 1;
+&usage if($kb == 0);
+
+if($ARGV[1] eq '-') {
+	open(FILE, "|cat") or die;
+} else {
+	open(FILE, ">$ARGV[1]") or die;
+}
+
+for($i = 0; $i+1024 <= $kb; $i+=1024) {
+	print FILE $buf1m or die;
+}
+if($i < $kb) {
+	print FILE "$buf1k"x($kb-$i) or die;
+}
+
+close FILE;
