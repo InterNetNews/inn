@@ -347,10 +347,15 @@ int main (int argc, char **argv)
   if (checkConfig)
     {
       if (!rval)
-        fprintf (stderr,"config loading failed.\n") ;
+        {
+          fprintf (stderr,"config loading failed.\n") ;
+          exit (1) ;
+        }
       else
-        fprintf (stderr,"config loading succeeded.\n") ;
-      exit (1) ;
+        {
+          fprintf (stderr,"config loading succeeded.\n") ;
+          exit (0) ;
+        }
     }
   else if (!rval)
     exit (1) ;
