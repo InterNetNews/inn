@@ -44,7 +44,8 @@ server_init(char *host, int port)
         if (!innconf_read(NULL))
             return -1;
 
-    if (NNTPconnect(host, port, &ser_rd_fp, &ser_wr_fp, ser_line) < 0) {
+    if (NNTPconnect(host, port, &ser_rd_fp, &ser_wr_fp, ser_line,
+                    sizeof(ser_line)) < 0) {
 	if (ser_line[0] == '\0')
 	    /* I/O problem. */
 	    return -1;

@@ -963,7 +963,7 @@ main(int ac, char *av[])
         port = NNTP_PORT;
 
     /* Try to open a connection to the server. */
-    if (NNTPremoteopen(port, &FromServer, &ToServer, buff) < 0) {
+    if (NNTPremoteopen(port, &FromServer, &ToServer, buff, sizeof(buff)) < 0) {
 	Spooling = true;
 	if ((p = strchr(buff, '\n')) != NULL)
 	    *p = '\0';

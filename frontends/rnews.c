@@ -773,15 +773,15 @@ Spool(int fd, int mode)
 **  Try to read the password file and open a connection to a remote
 **  NNTP server.
 */
-static bool OpenRemote(char *server, int port, char *buff)
+static bool OpenRemote(char *server, int port, char *buff, size_t len)
 {
     int		i;
 
     /* Open the remote connection. */
     if (server)
-	i = NNTPconnect(server, port, &FromServer, &ToServer, buff);
+	i = NNTPconnect(server, port, &FromServer, &ToServer, buff, len);
     else
-	i = NNTPremoteopen(port, &FromServer, &ToServer, buff);
+	i = NNTPremoteopen(port, &FromServer, &ToServer, buff, len);
     if (i < 0)
 	return false;
 
@@ -890,26 +890,27 @@ int main(int ac, char *av[])
 
     /* Open the link to the server. */
     if (remoteServer != NULL) {
-	if (!OpenRemote(remoteServer,port,buff))
+	if (!OpenRemote(remoteServer,port,buff,sizeof(buff)))
 		CantConnect(buff,mode,fd);
     } else if (innconf->nnrpdposthost != NULL) {
 	if (!OpenRemote(innconf->nnrpdposthost,
-	    (port != NNTP_PORT) ? port : innconf->nnrpdpostport, buff))
+                        (port != NNTP_PORT) ? port : innconf->nnrpdpostport,
+                        buff, sizeof(buff)))
 		CantConnect(buff, mode, fd);
     }
     else {
 #if	defined(DO_RNEWSLOCALCONNECT)
-	if (NNTPlocalopen(&FromServer, &ToServer, buff) < 0) {
+	if (NNTPlocalopen(&FromServer, &ToServer, buff, sizeof(buff)) < 0) {
 	    /* If server rejected us, no point in continuing. */
 	    if (buff[0])
 		CantConnect(buff, mode, fd);
-	    if (!OpenRemote((char *)NULL,
-	    	(port != NNTP_PORT) ? port : innconf->port, buff))
+	    if (!OpenRemote(NULL, (port != NNTP_PORT) ? port : innconf->port,
+                            buff, sizeof(buff)))
 			CantConnect(buff, mode, fd);
 	}
 #else
-	if (!OpenRemote((char *)NULL, 
-	    (port != NNTP_PORT) ? port : innconf->port, buff))
+	if (!OpenRemote(NULL,  (port != NNTP_PORT) ? port : innconf->port,
+                        buff, sizeof(buff)))
 		CantConnect(buff, mode, fd);
 #endif	/* defined(DO_RNEWSLOCALCONNECT) */
     }

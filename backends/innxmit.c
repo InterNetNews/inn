@@ -1114,7 +1114,8 @@ int main(int ac, char *av[]) {
 	    JMPyes = true;
 	    alarm(ConnectTimeout);
 	}
-	if (NNTPconnect(REMhost, port, &From, &To, buff) < 0 || GotAlarm) {
+	if (NNTPconnect(REMhost, port, &From, &To, buff, sizeof(buff)) < 0
+            || GotAlarm) {
 	    i = errno;
             warn("cannot connect to %s: %s", REMhost,
                  buff[0] ? REMclean(buff) : strerror(errno));

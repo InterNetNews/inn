@@ -143,11 +143,11 @@ extern char *             DDend(struct _DDHANDLE *h);
 
 /* NNTP functions. */
 extern int      NNTPlocalopen(FILE **FromServerp, FILE **ToServerp,
-                              char *errbuff);
+                              char *errbuff, size_t len);
 extern int      NNTPremoteopen(int port, FILE **FromServerp,
-                               FILE **ToServerp, char *errbuff);
+                               FILE **ToServerp, char *errbuff, size_t len);
 extern int      NNTPconnect(const char *host, int port, FILE **FromServerp,
-                            FILE **ToServerp, char *errbuff);
+                            FILE **ToServerp, char *errbuff, size_t len);
 extern int      NNTPsendarticle(char *, FILE *F, bool Terminate);
 extern int      NNTPsendpassword(char *server, FILE *FromServer,
                                  FILE *ToServer);

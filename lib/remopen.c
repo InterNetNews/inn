@@ -20,7 +20,7 @@
 */
 int
 NNTPconnect(const char *host, int port, FILE **FromServerp, FILE **ToServerp,
-            char *errbuff)
+            char *errbuff, size_t len)
 {
     char mybuff[NNTP_STRLEN + 2];
     char *buff;
@@ -29,7 +29,12 @@ NNTPconnect(const char *host, int port, FILE **FromServerp, FILE **ToServerp,
     struct addrinfo hints, *ai;
     char portbuf[16];
 
-    buff = errbuff ? errbuff : mybuff;
+    if (errbuff)
+        buff = errbuff;
+    else {
+        buff = mybuff;
+        len = sizeof(mybuff);
+    }
     *buff = '\0';
 
     memset(&hints, 0, sizeof(hints));
@@ -50,7 +55,7 @@ NNTPconnect(const char *host, int port, FILE **FromServerp, FILE **ToServerp,
     F = fdopen(fd, "r");
     if (F == NULL)
         goto fail;
-    if (fgets(buff, sizeof mybuff, F) == NULL)
+    if (fgets(buff, len, F) == NULL)
         goto fail;
     code = atoi(buff);
     if (code != NNTP_POSTOK_VAL && code != NNTP_NOPOSTOK_VAL) {
@@ -75,14 +80,15 @@ NNTPconnect(const char *host, int port, FILE **FromServerp, FILE **ToServerp,
 
 
 int
-NNTPremoteopen(int port, FILE **FromServerp, FILE **ToServerp, char *errbuff)
+NNTPremoteopen(int port, FILE **FromServerp, FILE **ToServerp, char *errbuff,
+               size_t len)
 {
     char		*p;
 
     if ((p = innconf->server) == NULL) {
 	if (errbuff)
-	    strcpy(errbuff, "What server?");
+	    strlcpy(errbuff, "What server?", len);
 	return -1;
     }
-    return NNTPconnect(p, port, FromServerp, ToServerp, errbuff);
+    return NNTPconnect(p, port, FromServerp, ToServerp, errbuff, len);
 }

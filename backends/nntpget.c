@@ -129,12 +129,12 @@ SITEconnect(char *host)
 
     /* Connect and identify ourselves. */
     if (host)
-	i = NNTPconnect(host, NNTP_PORT, &From, &To, (char *)NULL);
+	i = NNTPconnect(host, NNTP_PORT, &From, &To, NULL, 0);
     else {
 	host = innconf->server;
         if (host == NULL)
             die("no server specified and server not set in inn.conf");
-	i = NNTPlocalopen(&From, &To, (char *)NULL);
+	i = NNTPlocalopen(&From, &To, NULL, 0);
     }
     if (i < 0)
         sysdie("cannot connect to %s", host);

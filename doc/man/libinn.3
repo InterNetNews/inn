@@ -93,25 +93,28 @@ libinn \- InterNetNews library routines
 .B "    TIMEINFO	*now;"
 
 .B "int"
-.B "NNTPlocalopen(FromServerp, ToServerp, errbuff)"
+.B "NNTPlocalopen(FromServerp, ToServerp, errbuff, len)"
 .B "    FILE	**FromServerp;"
 .B "    FILE	**ToServerp;"
 .B "    char	*errbuff;"
+.B "    size_t  len;"
 
 .B "int"
-.B "NNTPremoteopen(port, FromServerp, ToServerp, errbuff)"
+.B "NNTPremoteopen(port, FromServerp, ToServerp, errbuff, len)"
 .B "    int	port;"
 .B "    FILE	**FromServerp;"
 .B "    FILE	**ToServerp;"
 .B "    char	*errbuff;"
+.B "    size_t  len;"
 
 .B "int"
-.B "NNTPconnect(host, port, FromServerp, ToServerp, errbuff)"
+.B "NNTPconnect(host, port, FromServerp, ToServerp, errbuff, len)"
 .B "    char	*host;"
 .B "    int	port;"
 .B "    FILE	**FromServerp;"
 .B "    FILE	**ToServerp;"
 .B "    char	*errbuff;"
+.B "    size_t  len;"
 
 .B "int"
 .B "NNTPsendarticle(text, ToServer, Terminate)"
@@ -395,6 +398,8 @@ with the server.
 can either be NULL or a pointer to a buffer at least 512 bytes long.
 If not NULL, and the server refuses the connection, then it will be
 filled in with the text of the server's reply.
+.I Len
+should be the length of the buffer.
 This routine is not for general use.
 If
 .I <HAVE_UNIX_DOMAIN_SOCKETS in include/config.h>

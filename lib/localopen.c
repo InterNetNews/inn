@@ -22,7 +22,7 @@
 **  create stdio FILE's for talking to it.  Return -1 on error.
 */
 int
-NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff)
+NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff, size_t len)
 {
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     int			i;
@@ -33,7 +33,12 @@ NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff)
     char		mybuff[NNTP_STRLEN + 2];
     char		*buff;
 
-    buff = errbuff ? errbuff : mybuff;
+    if (errbuff)
+        buff = errbuff;
+    else {
+        buff = mybuff;
+        len = sizeof(mybuff);
+    }
     *buff = '\0';
 
     /* Create a socket. */
@@ -60,7 +65,7 @@ NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff)
 	errno = oerrno;
 	return -1;
     }
-    if (fgets(buff, sizeof mybuff, F) == NULL) {
+    if (fgets(buff, len, F) == NULL) {
 	oerrno = errno;
 	fclose(F);
 	errno = oerrno;
@@ -84,6 +89,6 @@ NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff)
     return 0;
 #else
     return NNTPconnect("127.0.0.1", innconf->port, FromServerp, ToServerp,
-                       errbuff);
+                       errbuff, len);
 #endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 }

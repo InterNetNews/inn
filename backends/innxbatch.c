@@ -398,7 +398,8 @@ main(int ac, char *av[])
       die("cannot connect to %s: timed out", REMhost);
     alarm(ConnectTimeout);
   }
-  if (NNTPconnect(REMhost, NNTP_PORT, &From, &To, buff) < 0 || GotAlarm) {
+  if (NNTPconnect(REMhost, NNTP_PORT, &From, &To, buff, sizeof(buff)) < 0
+      || GotAlarm) {
     i = errno;
     warn("cannot connect to %s: %s", REMhost,
          buff[0] ? REMclean(buff): strerror(errno));

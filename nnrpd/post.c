@@ -1099,14 +1099,15 @@ ARTpost(char *article,
 
     /* Open a local connection to the server. */
     if (PERMaccessconf->nnrpdposthost != NULL)
-	i = NNTPconnect(PERMaccessconf->nnrpdposthost, PERMaccessconf->nnrpdpostport,
-					&FromServer, &ToServer, buff);
+	i = NNTPconnect(PERMaccessconf->nnrpdposthost,
+                        PERMaccessconf->nnrpdpostport, &FromServer,
+                        &ToServer, buff, sizeof(buff));
     else {
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
-	i = NNTPlocalopen(&FromServer, &ToServer, buff);
+	i = NNTPlocalopen(&FromServer, &ToServer, buff, sizeof(buff));
 #else
-	i = NNTPremoteopen(innconf->port, &FromServer,
-					&ToServer, buff);
+	i = NNTPremoteopen(innconf->port, &FromServer, &ToServer, buff,
+                           sizeof(buff));
 #endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
     }
 

@@ -769,7 +769,8 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 
 	/* open a connection to the server */
 	buff[0] = '\0';
-	if (NNTPconnect(rhost, rport, &FromServer, &ToServer, buff) < 0)
+	if (NNTPconnect(rhost, rport, &FromServer, &ToServer, buff,
+                        sizeof(buff)) < 0)
             die("cannot connect to server: %s",
                 buff[0] ? buff : strerror(errno));
 
