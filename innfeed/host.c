@@ -1144,7 +1144,7 @@ struct in_addr *hostIpAddr (Host host)
 	{
 	  if ((hostEnt = gethostbyname (host->params->ipName)) == NULL)
 	    {
-	      herror (msgstr) ;
+	      herror ((char *) msgstr) ;
 	      syslog (LOG_ERR, HOST_RESOLV_ERROR, host->params->peerName,
 		    host->params->ipName, msgstr) ;
 	    }
