@@ -199,6 +199,7 @@ OWNER           = -o $(NEWSUSER) -g $(NEWSGROUP)
 ROWNER          = -o $(NEWSUSER) -g @RNEWSGRP@
 
 INSTALL         = ../support/install-sh -c
+UPINSTALL       = ../../support/install-sh -c
 
 ##  Installation commands.  These commands are used by the installation
 ##  rules of each separate subdirectory.  The naming scheme is as follows:
