@@ -68,6 +68,20 @@ static char *MakePath(int time, int seqnum, const STORAGECLASS class) {
     return path;
 }
 
+static TOKEN *PathToToken(char *path) {
+    int			n;
+    unsigned int	t1, t2, t3, seqnum, class;
+    time_t		time;
+    static TOKEN	token;
+
+    n = sscanf(path, "%02x/%02x/%04x-%04x-%02x", &t1, &t2, &seqnum, &t3, &class);
+    if (n != 5)
+	return (TOKEN *)NULL;
+    time = ((t1 << 16) & 0xff0000) | ((t2 << 8) & 0xff00) | ((t3 << 16) & 0xff000000) | (t3 & 0xff);
+    token = MakeToken(time, seqnum, class);
+    return &token;
+}
+
 BOOL timehash_init(void) {
     if (STORAGE_TOKEN_LENGTH < 6) {
 	syslog(L_FATAL, "timehash: token length is less than 6 bytes");
@@ -156,6 +170,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 	DISPOSE(art);
 	return NULL;
     }
+    art->arrived = sb.st_mtime;
     
     private = NEW(PRIV_TIMEHASH, 1);
     art->private = (void *)private;
@@ -183,6 +198,8 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
     
     if ((p = SMFindBody(private->base, private->len)) == NULL) {
 	SMseterror(SMERR_NOBODY, NULL);
+	DISPOSE(art->private);
+	DISPOSE(art);
 	return NULL;
     }
 
@@ -197,6 +214,8 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 	art->len = art->len - (private->base - p - 4);
     }
     SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
+    DISPOSE(art->private);
+    DISPOSE(art);
     return NULL;
 }
 
@@ -226,7 +245,7 @@ void timehash_freearticle(ARTHANDLE *article) {
     
     if (article->private) {
 	private = (PRIV_TIMEHASH *)article->private;
-#ifdef MADV_DONTNEED
+#if defined(MADV_DONTNEED) && !defined(_nec_ews)
 	madvise(private->base, private->len, MADV_DONTNEED);
 #endif
 	munmap(private->base, private->len);
@@ -266,10 +285,19 @@ static struct dirent *FindDir(DIR *dir, FINDTYPE type) {
 	    if ((strlen(de->d_name) == 2) && isxdigit(de->d_name[0]) && isxdigit(de->d_name[1]))
 		return de;
 	if (type == FIND_ART)
-	    if ((strlen(de->d_name) == 9) &&
+	    if ((strlen(de->d_name) == 12) &&
 		isxdigit(de->d_name[0]) &&
+		isxdigit(de->d_name[1]) &&
+		isxdigit(de->d_name[2]) &&
+		isxdigit(de->d_name[3]) &&
+		isxdigit(de->d_name[5]) &&
+		isxdigit(de->d_name[6]) &&
+		isxdigit(de->d_name[7]) &&
 		isxdigit(de->d_name[8]) &&
-		(de->d_name[4] == '-'))
+		isxdigit(de->d_name[10]) &&
+		isxdigit(de->d_name[11]) &&
+		(de->d_name[4] == '-') &&
+		(de->d_name[9] == '-'))
 		return de;
 	}
 
@@ -279,7 +307,7 @@ static struct dirent *FindDir(DIR *dir, FINDTYPE type) {
 ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
     PRIV_TIMEHASH       priv;
     PRIV_TIMEHASH       *newpriv;
-    char                *path;
+    char                *path, *p;
     struct dirent       *de;
     ARTHANDLE           *art;
 
@@ -292,6 +320,12 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
 	priv.secde = NULL;
     } else {
 	priv = *(PRIV_TIMEHASH *)article->private;
+	DISPOSE(article->private);
+	DISPOSE(article);
+#if defined(MADV_DONTNEED) && !defined(_nec_ews)
+	madvise(priv.base, priv.len, MADV_DONTNEED);
+#endif
+	munmap(priv.base, priv.len);
     }
 
     while (!priv.artdir || ((de = FindDir(priv.artdir, FIND_ART)) == NULL)) {
@@ -304,7 +338,14 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
 		closedir(priv.sec);
 		priv.sec = NULL;
 	    }
-	    if (priv.top && ((priv.topde = FindDir(priv.top, FIND_DIR)) != NULL)) {
+	    if (!priv.top || ((priv.topde = FindDir(priv.top, FIND_DIR)) == NULL)) {
+		if (priv.top) {
+		    /* end of search */
+		    closedir(priv.top);
+		    priv.top = NULL;
+		    DISPOSE(path);
+		    return NULL;
+		}
 		sprintf(path, "%s/time", _PATH_SPOOL);
 		if ((priv.top = opendir(path)) == NULL) {
 		    SMseterror(SMERR_UNDEFINED, NULL);
@@ -326,6 +367,9 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
 	if ((priv.artdir = opendir(path)) == NULL)
 	    continue;
     }
+    if (de == NULL)
+	return NULL;
+    sprintf(path, "%s/time/%s/%s/%s", _PATH_SPOOL, priv.topde->d_name, priv.secde->d_name, de->d_name);
 
     art = OpenArticle(path, amount);
     if (art) {
@@ -335,6 +379,8 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
 	newpriv->artdir = priv.artdir;
 	newpriv->topde = priv.topde;
 	newpriv->secde = priv.secde;
+	sprintf(path, "%s/%s/%s", priv.topde->d_name, priv.secde->d_name, de->d_name);
+	art->token = PathToToken(path);
     }
     DISPOSE(path);
     return art;
