@@ -421,6 +421,8 @@ int ReadInnConf()
 	return(-1);
     }
     SetDefaults();
+    if (!(innconffile = getenv("INNCONF")))
+	innconffile = _PATH_CONFIG;
     syslog(L_TRACE, "Reading config from %s", innconffile); 
     /* Read the config file. */
     if ((F = Fopen(innconffile, "r", TEMPORARYOPEN)) != NULL) {
