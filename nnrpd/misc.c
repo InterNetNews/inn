@@ -43,9 +43,7 @@ Argify(line, argvp)
     /*  Copy the line, which we will split up. */
     while (ISWHITE(*line))
 	line++;
-    i = strlen(line);
-    p = xmalloc(i + 1);
-    strcpy(p, line);
+    p = xstrdup(line);
 
     /* Allocate worst-case amount of space. */
     for (*argvp = argv = xmalloc((i + 2) * sizeof(char *)); *p; ) {
@@ -80,11 +78,13 @@ Glom(av)
     /* Get space. */
     for (i = 0, v = av; *v; v++)
 	i += strlen(*v) + 1;
+    i++;
 
-    for (save = p = xmalloc(i + 1), v = av; *v; v++) {
-	if (p > save)
-	    *p++ = ' ';
-	p += strlen(strcpy(p, *v));
+    save = xmalloc(i);
+    for (v = av; *v; v++) {
+	if (v > av)
+            strlcat(save, " ", i);
+        strlcat(save, *v, i);
     }
 
     return save;
