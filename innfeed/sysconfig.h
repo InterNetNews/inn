@@ -161,6 +161,11 @@ extern int h_errno ;
 #define MAX_WRITEV_VEC 16
 #define DO_NEED_STREAM 1
 #define NO_SBRK 1
+#if ! defined(__GNUC__)
+#define yy_yyv _yy_yyv
+#define yyval _yyval
+#define yylval _yylval
+#endif
 #endif
 
 

@@ -11,8 +11,8 @@ CFLAGS	= $(GCFLAGS)
 
 CPP.c		= $(CC) $(CFLAGS) -E -I.
 COMPILE.c	= $(CC) $(CFLAGS) -c -I.
-LINK.o		= $(CC) $(LDFLAGS) ($LIBS)
-LINK.c		= $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
+LINK.o		= $(LIBTOOL) $(CC) $(LDFLAGS) ($LIBS)
+LINK.c		= $(LIBTOOL) $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
 OUTPUT_OPTION	= -o $@
 
 
@@ -89,7 +89,7 @@ RM		= rm -f
 MV		= mv
 TAG		= etags
 CHMOD		= chmod
-INSTALL		= install -c 
+INSTALL		= $(LIBTOOL) install -c 
 
 MAKEDEPEND	= ./makedepend
 DEPENDFLAGS	= -s -c '$(CC) -E'
@@ -111,19 +111,19 @@ innfeed: $(OBJS) version.o $(MALLOC) $(LIBNEWS)
 	$(LINK.c) -o $@ $(OBJS) version.o $(LIBNEWS) $(LIBNEWS)
 
 $D$(PATHBIN)/innfeed: innfeed
-	$(SHELL) ../installit.sh $(OWNER) -m 550 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 550 -b .OLD $? $@
 
 $D$(PATHBIN)/procbatch: procbatch
-	$(SHELL) ../installit.sh $(OWNER) -m 550 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 550 -b .OLD $? $@
 
 
 $D$(PATHBIN)/innfeed-convcfg: innfeed-convcfg
-	$(SHELL) ../installit.sh $(OWNER) -m 550 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 550 -b .OLD $? $@
 	$(SAVEOLD)
 	$(COPYFILE)
 
 $D$(PATHBIN)/startinnfeed: startinnfeed
-	-$(SHELL) ../installit.sh -O root -G $(NEWSGROUP) -m 4550 -b .OLD $? $@
+	-$(LIBTOOL) ../installit.sh -O root -G $(NEWSGROUP) -m 4550 -b .OLD $? $@
 	@ME=`(whoami || /usr/ucb/whoami) 2> /dev/null` ;\
 	if [ "X$$ME" = Xroot ]; then \
 		echo $@ has been installed setuid root. ;\

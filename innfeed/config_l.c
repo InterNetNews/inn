@@ -424,6 +424,7 @@ char *yytext;
 #include <syslog.h>
   
 #include "configfile.h"
+#include "sysconfig.h"
 #include "config_y.h"
 #include "config.h"
 

@@ -23,6 +23,7 @@
 #include "configfile.h"
 #include "msgs.h"
 #include "misc.h"
+#include "sysconfig.h"
 
 #define UNKNOWN_SCOPE_TYPE "line %d: unknown scope type: %s"
 #define SYNTAX_ERROR "line %d: syntax error"
