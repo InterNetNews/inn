@@ -97,8 +97,8 @@ sub upgrade_file {
         }
         print "Updating $file, old version saved as $file.OLD\n";
         my ($user, $group) = (stat $file)[4,5];
-        open (OUTPUT, "> .$file.new.$$")
-            or die "$file: cannot create .$file.new.$$: $!\n";
+        open (OUTPUT, "> $file.new.$$")
+            or die "$file: cannot create $file.new.$$: $!\n";
         print OUTPUT @output;
         close OUTPUT or die "$file: cannot flush new file: $!\n";
         unless (link ($file, "$file.OLD")) {
@@ -107,14 +107,14 @@ sub upgrade_file {
         }
         if ($> == 0) {
             if (defined ($user) && defined ($group)) {
-                chown ($user, $group, ".$file.new.$$")
-                    or warn "$file: cannot chown .$file.new.$$: $!\n";
+                chown ($user, $group, "$file.new.$$")
+                    or warn "$file: cannot chown $file.new.$$: $!\n";
             } else {
                 warn "$file: cannot find owner and group of $file\n";
             }
         }
-        rename (".$file.new.$$", $file)
-            or die "$file: cannot replace with .$file.new.$$: $!\n";
+        rename ("$file.new.$$", $file)
+            or die "$file: cannot replace with $file.new.$$: $!\n";
     }
 }
 
