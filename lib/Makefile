@@ -51,7 +51,7 @@ tags ctags:	$(SOURCES)
 
 libinn.la:		$(P) $(OBJECTS) $(LOBJECTS)
 	$(CC) $(LDFLAGS) -o $@ $(LOBJECTS) \
-		-rpath /usr/lib -version-info 2:0:0
+		-rpath $(PATHLIB) -version-info 2:0:0
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
 profiled:		../libinn_p.a
