@@ -384,10 +384,10 @@ MISSING_SRC		@MISSING_SRC@
 ##[autoconf]
 #### =()<MISSING_OBJ		@<MISSING_OBJ>@>()=
 MISSING_OBJ		@MISSING_OBJ@
-# do we have inet_aton?  If not, use supplied version
+## Do we need an inet_aton(). Leave blank or add 'inet_addr.c'
 ##[autoconf]
-#### =()<MISSING_INET_ATON	@<MISSING_INET_ATON>@>()=
-MISSING_INET_ATON	@MISSING_INET_ATON@
+#### =()<MISSING_INET_ATON		@<MISSING_INET_ATON>@>()=
+MISSING_INET_ATON		@MISSING_INET_ATON@
 
 
 ##
@@ -928,12 +928,12 @@ _PATH_SCHEMA		@CONFPATH@/overview.fmt
 _PATH_MOTD		@CONFPATH@/motd.news
 ## Location of the storage control file.
 ##[autoconf]
-#### =()<_PATH_STORAGECTL	@<_PATH_STORAGECTL>@>()=
-_PATH_STORAGECTL	@CONFPATH@/storage.ctl
+#### =()<_PATH_STORAGECTL		@<_PATH_STORAGECTL>@>()=
+_PATH_STORAGECTL		@CONFPATH@/storage.ctl
 ## Location of the unified overview file.
 ##[autoconf]
-#### =()<_PATH_OVERVIEWCTL	@<_PATH_OVERVIEWCTL>@>()=
-_PATH_OVERVIEWCTL	@CONFPATH@/overview.ctl
+#### =()<_PATH_OVERVIEWCTL		@<_PATH_OVERVIEWCTL>@>()=
+_PATH_OVERVIEWCTL		@CONFPATH@/overview.ctl
 
 
 ##
