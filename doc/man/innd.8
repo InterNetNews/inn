@@ -123,6 +123,12 @@ file, an article file, or the history database, it will send itself
 a ``throttle'' command.
 This will also happen if it gets too many I/O errors while writing
 to any files.
+.PP
+Some parameters in
+.IR inn.conf (5)
+can also be set innd's option.  In this case, parameters in
+.IR inn.conf (5)
+are overridden by those options.
 .SH OPTIONS
 .TP
 .B \-a
@@ -196,16 +202,16 @@ is changed with this value.
 This option allows you to bind innd to a specific interface IP address.
 The IP address must be in dotted quad (nnn.nnn.nnn.nnn) format. See also
 the ``bindaddress'' option in
-.IR inn.conf (5)
+.IR inn.conf (5).
 .TP
 .B \-l
 To limit the size of an article, use the ``\fB\-l\fP'' flag.
 If this flag is used, then any article bigger than
 .I size
-bytes will be rejected.
-The default is 1000000L bytes.
-Checking can be disabled by using a value
-of zero.
+bytes will be rejected.  The default is 1000000L bytes.  Checking can be
+disabled by using a value of zero.  See also the ``maxartsize'' and
+\&``localmaxartsize'' option in
+.IR inn.conf (5).
 .TP
 .B \-m
 To start the server in a paused or throttled state (see
@@ -226,7 +232,7 @@ of ``\fBn\fP'' will
 allow newsreading even when the server is not running.
 The default is to allow reading, but can also be changed with the
 ``readerswhenstopped'' option in
-.IR inn.conf (5)
+.IR inn.conf (5).
 .TP
 .B \-o
 To limit the number of files that will be kept open for outgoing file
