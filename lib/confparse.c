@@ -88,7 +88,7 @@ enum token_type {
    file_* functions; other functions don't need to look at them.  Other
    variables are marked by what functions are responsible for maintaining
    them. */
-struct config_file_s {
+struct config_file {
     int fd;                     /* Internal */
     char *buffer;               /* Internal */
     size_t bufsize;             /* Internal */
@@ -108,7 +108,6 @@ struct config_file_s {
         char *string;
     } token;
 };
-typedef struct config_file_s *config_file;
 
 /* The types of parameters, used to distinguish the values of the union in the
    config_parameter_s struct. */
@@ -124,11 +123,11 @@ enum value_type {
 
 /* Each setting is represented by one of these structs, stored in the params
    hash of a config group.  Since all of a config_group must be in the same
-   file (either group->file for regular groups or group->includes for groups
+   file (either group->file for regular groups or group->included for groups
    whose definition is in an included file), we don't have to stash a file
    name here for error reporting but can instead get that from the enclosing
    group. */
-struct config_parameter_s {
+struct config_parameter {
     char *key;
     char *raw_value;
     unsigned int line;          /* For error reporting. */
@@ -141,28 +140,26 @@ struct config_parameter_s {
         struct vector *list;
     } value;
 };
-typedef struct config_parameter_s *parameter;
 
 /* The type of a function that converts a raw parameter value to some other
    data type, storing the result in its second argument and returning true on
    success or false on failure. */
-typedef bool (*convert_func)(parameter, const char *, void *);
+typedef bool (*convert_func)(struct config_parameter *, const char *, void *);
 
 /* The basic element of configuration data, a group of parameters.  This is
-   the only struct that is exposed to callers, and then only as a transparent
-   data structure.  inn/confparse.h typedefs config_group to be a pointer to
-   one of these. */
-struct config_group_s {
+   the only struct that is exposed to callers, and then only as an opaque
+   data structure. */
+struct config_group {
     char *type;
     char *tag;
     char *file;                 /* File in which the group starts. */
     unsigned int line;          /* Line number where the group starts. */
-    char *includes;             /* For group <file>, the included file. */
+    char *included;             /* For group <file>, the included file. */
     struct hash *params;
 
-    struct config_group_s *parent;
-    struct config_group_s *child;
-    struct config_group_s *next;
+    struct config_group *parent;
+    struct config_group *child;
+    struct config_group *next;
 };
 
 
@@ -172,45 +169,48 @@ static bool parameter_equal(const void *k, const void *p);
 static void parameter_free(void *p);
 
 /* Group handling. */
-static config_group group_new(const char *file, unsigned int line,
-                              const char *type, const char *tag);
-static void group_free(config_group);
-static bool group_parameter_get(config_group group, const char *key,
+static struct config_group *group_new(const char *file, unsigned int line,
+                                      const char *type, const char *tag);
+static void group_free(struct config_group *);
+static bool group_parameter_get(struct config_group *group, const char *key,
                                 void *result, convert_func convert);
 
-/* Parameter type conversion functions. */
-static bool convert_boolean(parameter, const char *file, void *result);
-static bool convert_integer(parameter, const char *file, void *result);
-static bool convert_string(parameter, const char *file, void *result);
+/* Parameter type conversion functions.  All take the parameter, the file, and
+   a pointer to where the result can be placed. */
+static bool convert_boolean(struct config_parameter *, const char *, void *);
+static bool convert_integer(struct config_parameter *, const char *, void *);
+static bool convert_string(struct config_parameter *, const char *, void *);
 
 /* File I/O.  Many other functions also manipulate config_file structs; see
    the struct definition for notes on who's responsible for what. */
-static config_file file_open(const char *filename);
-static bool file_read(config_file);
-static bool file_read_more(config_file, ptrdiff_t offset);
-static void file_close(config_file);
+static struct config_file *file_open(const char *filename);
+static bool file_read(struct config_file *);
+static bool file_read_more(struct config_file *, ptrdiff_t offset);
+static void file_close(struct config_file *);
 
 /* The basic lexer function.  The token is stashed in file; the return value
    is just for convenience and duplicates that information. */
-static enum token_type token_next(config_file);
+static enum token_type token_next(struct config_file *);
 
 /* Handler functions for specific types of tokens.  These should only be
    called by token_next. */
-static void token_simple(config_file, enum token_type type);
-static void token_newline(config_file);
-static void token_string(config_file);
-static void token_quoted_string(config_file);
+static void token_simple(struct config_file *, enum token_type type);
+static void token_newline(struct config_file *);
+static void token_string(struct config_file *);
+static void token_quoted_string(struct config_file *);
 
 /* Handles whitespace for the rest of the lexer. */
-static bool token_skip_whitespace(config_file);
+static bool token_skip_whitespace(struct config_file *);
 
 /* Parser functions to parse the named syntactic element. */
-static bool parse_group_contents(config_group, config_file);
-static enum token_type parse_parameter(config_group, config_file, char *key);
+static bool parse_group_contents(struct config_group *, struct config_file *);
+static enum token_type parse_parameter(struct config_group *,
+                                       struct config_file *, char *key);
 
 /* Error reporting functions. */
-static void error_bad_unquoted_char(config_file, char bad);
-static void error_unexpected_token(config_file, const char *expecting);
+static void error_bad_unquoted_char(struct config_file *, char bad);
+static void error_unexpected_token(struct config_file *,
+                                   const char *expecting);
 
 
 /*
@@ -219,7 +219,7 @@ static void error_unexpected_token(config_file, const char *expecting);
 static const void *
 parameter_key(const void *p)
 {
-    const struct config_parameter_s *param = p;
+    const struct config_parameter *param = p;
 
     return param->key;
 }
@@ -233,7 +233,7 @@ static bool
 parameter_equal(const void *k, const void *p)
 {
     const char *key = k;
-    const struct config_parameter_s *param = p;
+    const struct config_parameter *param = p;
 
     return EQ(key, param->key);
 }
@@ -245,7 +245,7 @@ parameter_equal(const void *k, const void *p)
 static void
 parameter_free(void *p)
 {
-    parameter param = p;
+    struct config_parameter *param = p;
 
     free(param->key);
     free(param->raw_value);
@@ -263,7 +263,7 @@ parameter_free(void *p)
 **  current token type to TOKEN_ERROR.
 */
 static void
-error_bad_unquoted_char(config_file file, char bad)
+error_bad_unquoted_char(struct config_file *file, char bad)
 {
     warn("%s:%u: invalid character '%c' in unquoted string", file->filename,
          file->line, bad);
@@ -279,7 +279,7 @@ error_bad_unquoted_char(config_file file, char bad)
 **  current token type is TOKEN_STRING, TOKEN_QSTRING, or TOKEN_PARAM.
 */
 static void
-error_unexpected_token(config_file file, const char *expecting)
+error_unexpected_token(struct config_file *file, const char *expecting)
 {
     const char *name;
     bool string = false;
@@ -319,7 +319,7 @@ error_unexpected_token(config_file file, const char *expecting)
 **  pointer past it and setting file->token as appropriate.
 */
 static void
-token_simple(config_file file, enum token_type type)
+token_simple(struct config_file *file, enum token_type type)
 {
     file->current++;
     file->token.type = type;
@@ -333,7 +333,7 @@ token_simple(config_file file, enum token_type type)
 **  file->line as needed.
 */
 static void
-token_newline(config_file file)
+token_newline(struct config_file *file)
 {
     if (*file->current == '\n') {
         file->current++;
@@ -365,7 +365,7 @@ token_newline(config_file file)
 **  TOKEN_STRING; the former ends in a colon, unlike the latter.
 */
 static void
-token_string(config_file file)
+token_string(struct config_file *file)
 {
     int i;
     bool status;
@@ -423,21 +423,25 @@ token_string(config_file file)
 **  of a parameter.
 */
 static void
-token_quoted_string(config_file file)
+token_quoted_string(struct config_file *file)
 {
-    char *p;
+    int i;
     ptrdiff_t offset;
     bool status;
     bool done = false;
 
-    for (p = file->current + 1; !done; p++) {
-        switch (*p) {
+    /* Use an offset from file->current rather than a pointer that moves
+       through the buffer, since the base of file->current can change during a
+       file_read_more() call and we don't want to have to readjust a
+       pointer. */
+    for (i = 1; !done; i++) {
+        switch (file->current[i]) {
         case '"':
             done = true;
             break;
         case '\\':
-            p++;
-            if (*p == '\n')
+            i++;
+            if (file->current[i] == '\n')
                 file->line++;
             break;
         case '\n':
@@ -449,7 +453,6 @@ token_quoted_string(config_file file)
         case '\0':
             offset = file->current - file->buffer;
             status = file_read_more(file, offset);
-            p -= offset;
             if (!status) {
                 warn("%s:%u: end of file encountered while parsing quoted"
                      " string", file->filename, file->line);
@@ -463,8 +466,8 @@ token_quoted_string(config_file file)
         }
     }
     file->token.type = TOKEN_QSTRING;
-    file->token.string = xstrndup(file->current, p - file->current);
-    file->current = p;
+    file->token.string = xstrndup(file->current, i);
+    file->current += i;
 }
 
 
@@ -475,7 +478,7 @@ token_quoted_string(config_file file)
 **  true if non-whitespace is found and false on end of file or a read error.
 */
 static bool
-token_skip_whitespace(config_file file)
+token_skip_whitespace(struct config_file *file)
 {
     char *p = file->current;
 
@@ -499,7 +502,7 @@ token_skip_whitespace(config_file file)
 **  token to TOKEN_ERROR.
 */
 static enum token_type
-token_next(config_file file)
+token_next(struct config_file *file)
 {
     /* If file->current is NULL, we've never read from the file.  There is
        special handling for a comment at the very beginning of a file, since
@@ -551,10 +554,10 @@ token_next(config_file file)
 **  it's generally reasonably chosen with respect to disk block sizes, memory
 **  consumption, and the like.
 */
-static config_file
+static struct config_file *
 file_open(const char *filename)
 {
-    config_file file;
+    struct config_file *file;
 
     file = xmalloc(sizeof(*file));
     file->filename = filename;
@@ -579,7 +582,7 @@ file_open(const char *filename)
 **  or a read error.
 */
 static bool
-file_read(config_file file)
+file_read(struct config_file *file)
 {
     ssize_t status;
 
@@ -613,7 +616,7 @@ file_read(config_file file)
 **  false on EOF or a read error, true otherwise.
 */
 static bool
-file_read_more(config_file file, ptrdiff_t offset)
+file_read_more(struct config_file *file, ptrdiff_t offset)
 {
     char *start;
     size_t amount;
@@ -639,7 +642,7 @@ file_read_more(config_file file, ptrdiff_t offset)
         syswarn("%s: read error", file->filename);
     if (status <= 0)
         return false;
-    start[amount] = '\0';
+    start[status] = '\0';
 
     /* Reject nuls, since otherwise they would cause strange problems. */
     if (strlen(start) != (size_t) status) {
@@ -654,7 +657,7 @@ file_read_more(config_file file, ptrdiff_t offset)
 **  Close a file and free the resources associated with it.
 */
 static void
-file_close(config_file file)
+file_close(struct config_file *file)
 {
     close(file->fd);
     free(file->buffer);
@@ -670,7 +673,7 @@ file_close(config_file file)
 **  indicates the group should be discarded.
 */
 static bool
-parse_group_contents(config_group group, config_file file)
+parse_group_contents(struct config_group *group, struct config_file *file)
 {
     enum token_type token;
 
@@ -703,13 +706,14 @@ parse_group_contents(config_group group, config_file file)
 **  something legal (end of line, end of file, or a semicolon).
 */
 static enum token_type
-parse_parameter(config_group group, config_file file, char *key)
+parse_parameter(struct config_group *group, struct config_file *file,
+                char *key)
 {
     enum token_type token;
 
     token = token_next(file);
     if (token == TOKEN_STRING || token == TOKEN_QSTRING) {
-        parameter param;
+        struct config_parameter *param;
         unsigned int line;
         char *value;
 
@@ -757,17 +761,17 @@ parse_parameter(config_group group, config_file file, char *key)
 **  Allocate a new config_group and set the initial values of all of the
 **  struct members.
 */
-static config_group
+static struct config_group *
 group_new(const char *file, unsigned int line, const char *type,
           const char *tag)
 {
-    config_group group;
+    struct config_group *group;
 
     group = xmalloc(sizeof(*group));
     group->type = xstrdup(type);
     group->tag = (tag == NULL) ? NULL : xstrdup(tag);
     group->file = xstrdup(file);
-    group->includes = NULL;
+    group->included = NULL;
     group->line = line;
     group->params = hash_create(4, hash_string, parameter_key,
                                 parameter_equal, parameter_free);
@@ -782,14 +786,14 @@ group_new(const char *file, unsigned int line, const char *type,
 **  Free a config_group and all associated storage.
 */
 static void
-group_free(config_group group)
+group_free(struct config_group *group)
 {
     free(group->type);
     if (group->tag != NULL)
         free(group->tag);
     free(group->file);
-    if (group->includes != NULL)
-        free(group->includes);
+    if (group->included != NULL)
+        free(group->included);
     hash_free(group->params);
     free(group);
 }
@@ -799,7 +803,7 @@ group_free(config_group group)
 **  Accessor function for the group type.
 */
 const char *
-config_group_type(config_group group)
+config_group_type(struct config_group *group)
 {
     return group->type;
 }
@@ -809,7 +813,7 @@ config_group_type(config_group group)
 **  Accessor function for the group tag.
 */
 const char *
-config_group_tag(config_group group)
+config_group_tag(struct config_group *group)
 {
     return group->tag;
 }
@@ -820,11 +824,11 @@ config_group_tag(config_group group)
 **  the tree represented by that file (and any other files that it includes).
 **  Returns NULL on a parse failure.
 */
-config_group
+struct config_group *
 config_parse_file(const char *filename, ...)
 {
-    config_group group;
-    config_file file;
+    struct config_group *group;
+    struct config_file *file;
     bool success;
 
     file = file_open(filename);
@@ -844,7 +848,7 @@ config_parse_file(const char *filename, ...)
 **  recursively free the entire structure.
 */
 void
-config_free(config_group group)
+config_free(struct config_group *group)
 {
     group_free(group);
 }
@@ -855,7 +859,8 @@ config_free(config_group group)
 **  and false otherwise.
 */
 static bool
-convert_boolean(parameter param, const char *file, void *result)
+convert_boolean(struct config_parameter *param, const char *file,
+                void *result)
 {
     static const char *const truevals[] = { "yes", "on", "true", NULL };
     static const char *const falsevals[] = { "no", "off", "false", NULL };
@@ -893,7 +898,8 @@ convert_boolean(parameter param, const char *file, void *result)
 **  successful and false otherwise.
 */
 static bool
-convert_integer(parameter param, const char *file, void *result)
+convert_integer(struct config_parameter *param, const char *file,
+                void *result)
 {
     long *value = result;
     char *p;
@@ -939,7 +945,8 @@ convert_integer(parameter param, const char *file, void *result)
 **  initial type checking, since convert_string should have already done that.
 */
 static bool
-convert_string_quoted(parameter param, const char *file, void *result)
+convert_string_quoted(struct config_parameter *param, const char *file,
+                      void *result)
 {
     const char **value = result;
     size_t length;
@@ -1017,7 +1024,7 @@ convert_string_quoted(parameter param, const char *file, void *result)
 **  and false otherwise.
 */
 static bool
-convert_string(parameter param, const char *file, void *result)
+convert_string(struct config_parameter *param, const char *file, void *result)
 {
     const char **value = result;
 
@@ -1050,13 +1057,13 @@ convert_string(parameter param, const char *file, void *result)
 **  the parameter not being found or for it being the wrong type).
 */
 static bool
-group_parameter_get(config_group group, const char *key, void *result,
+group_parameter_get(struct config_group *group, const char *key, void *result,
                     convert_func convert)
 {
-    config_group current = group;
+    struct config_group *current = group;
 
     while (current != NULL) {
-        parameter param;
+        struct config_parameter *param;
 
         param = hash_lookup(group->params, key);
         if (param != NULL) {
@@ -1080,19 +1087,22 @@ group_parameter_get(config_group group, const char *key, void *result,
 **  error), and report errors via warn.
 */
 bool
-config_param_boolean(config_group group, const char *key, bool *result)
+config_param_boolean(struct config_group *group, const char *key,
+                     bool *result)
 {
     return group_parameter_get(group, key, result, convert_boolean);
 }
 
 bool
-config_param_integer(config_group group, const char *key, long *result)
+config_param_integer(struct config_group *group, const char *key,
+                     long *result)
 {
     return group_parameter_get(group, key, result, convert_integer);
 }
 
 bool
-config_param_string(config_group group, const char *key, const char **result)
+config_param_string(struct config_group *group, const char *key,
+                    const char **result)
 {
     return group_parameter_get(group, key, result, convert_string);
 }
@@ -1101,45 +1111,46 @@ config_param_string(config_group group, const char *key, const char **result)
 /*
 **  Stubs for functions not yet implemented.
 */
-config_group
-config_find_group(config_group group UNUSED, const char *type UNUSED)
+struct config_group *
+config_find_group(struct config_group *group UNUSED, const char *type UNUSED)
 {
     return NULL;
 }
 
-config_group
-config_next_group(config_group group UNUSED)
+struct config_group *
+config_next_group(struct config_group *group UNUSED)
 {
     return NULL;
 }
 
 bool
-config_param_real(config_group group UNUSED, const char *key UNUSED,
+config_param_real(struct config_group *group UNUSED, const char *key UNUSED,
                   double *result UNUSED)
 {
     return false;
 }
 
 bool
-config_param_list(config_group group UNUSED, const char *key UNUSED,
+config_param_list(struct config_group *group UNUSED, const char *key UNUSED,
                   struct vector *result UNUSED)
 {
     return false;
 }
 
 struct vector *
-config_params(config_group group UNUSED)
+config_params(struct config_group *group UNUSED)
 {
     return NULL;
 }
 
 void
-config_error_group(config_group group UNUSED, const char *fmt UNUSED, ...)
+config_error_group(struct config_group *group UNUSED, const char *fmt UNUSED,
+                   ...)
 {
 }
 
 void
-config_error_param(config_group group UNUSED, const char *key UNUSED,
+config_error_param(struct config_group *group UNUSED, const char *key UNUSED,
                    const char *fmt UNUSED, ...)
 {
 }
