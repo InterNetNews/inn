@@ -76,10 +76,19 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Can't initialize unified overview mode: %s\n", strerror(errno));
 	    exit(1);
 	}
-    } else if (!SMinit()) {
-	if (!Quiet)
-	    fprintf(stderr, "Could not initialize the storage manager: %s", SMerrorstr);
-	exit(1);
+    } else {
+	if (Delete) {
+	    val = TRUE;
+	    if (!SMsetup(SM_RDWR, (void *)&val)) {
+		fprintf(stderr, "Can't setup storage manager\n");
+		exit(1);
+	    }
+	}
+	if (!SMinit()) {
+	    if (!Quiet)
+		fprintf(stderr, "Could not initialize the storage manager: %s", SMerrorstr);
+	    exit(1);
+	}
     }
     
     for (i = optind; i < argc; i++) {
