@@ -119,9 +119,9 @@
 **  system.
 **
 **  Be aware that success of some tests will cause other tests to be skipped
-**  since their results aren't then needed.  For example, if you have fcntl,
-**  INN won't bother looking for flock and HAVE_FLOCK will be false whether
-**  you have it or not.  This is normal.
+**  since their results aren't then needed.  For example, if you have
+**  standard C headers, INN won't bother looking for stdlib.h, and
+**  HAVE_STDLIB_H will be false whether you have it or not.  This is normal.
 **
 **  Fodder for autoheader is provided in sort -df order (alphabetical,
 **  case-insensitive, ignoring punctuation) to make it easier to check
@@ -129,79 +129,11 @@
 */
 @TOP@
 
-/* Mode that incoming articles are created with.  */
-#undef ARTFILE_MODE
-
-/* Mode that batch files are created with.  */
-#undef BATCHFILE_MODE
-
 /* Define to `char *' if <sys/types.h> doesn't define.  */
 #undef caddr_t
 
-/* Define to compile in support for automatic keyword generation.  */
-#undef DO_KEYWORDS
-
-/* Define to compile in Perl filter support. */
-#undef DO_PERL
-
-/* Define to compile in Python filter support.  */
-#undef DO_PYTHON
-
-/* Define to use tagged hash for the history file.  */
-#undef DO_TAGGED_HASH
-
-/* Define to compile in TCL filter support. */
-#undef DO_TCL
-
-/* The syslog facility to use.  */
-#undef FACILITY_NEWS
-
-/* Mode that directories are created with.  */
-#undef GROUPDIR_MODE
-
-/* Define if your msync() takes three arguments.  */
-#undef HAVE_MSYNC_3_ARG
-
-/* Define if you have the setproctitle function.  */
-#undef HAVE_SETPROCTITLE
-
-/* Define if you have OpenSSL available. */
-#undef HAVE_SSL
-
-/* Define if <sys/un.h> defines the SUN_LEN macro.  */
-#undef HAVE_SUN_LEN
-
-/* Define if you have unix domain sockets.  */
-#undef HAVE_UNIX_DOMAIN_SOCKETS
-
-/* Additional valid low-numbered port for inndstart.  */
-#undef INND_PORT
-
 /* Define to a suitable 32-bit type if standard headers don't define.  */
 #undef int32_t
-
-/* Define to the max vectors in an iovec.  */
-#undef IOV_MAX
-
-/* The log facility to use for INN logging.  Server is for innd itself.  */
-#undef LOG_INN_PROG
-#undef LOG_INN_SERVER
-
-/* Define if you need to call msync after writes.  */
-#undef MMAP_MISSES_WRITES
-
-/* Define if you need to call msync for calls to read to see changes.  */
-#undef MMAP_NEEDS_MSYNC
-
-/* The user who gets all INN-related e-mail. */
-#undef NEWSMASTER
-
-/* The umask used by all INN programs. */
-#undef NEWSUMASK
-
-/* The username and group name that INN should run under. */
-#undef NEWSUSER
-#undef NEWSGRP
 
 /* Define to `int' if <signal.h> doesn't define.  */
 #undef sig_atomic_t
@@ -214,9 +146,6 @@
 
 /* Define to a suitable 32-bit type if standard headers don't define.  */
 #undef uint32_t
-
-/* Define if we're going to use BerkeleyDB */
-#undef USE_BERKELEY_DB
 
 @BOTTOM@
 
