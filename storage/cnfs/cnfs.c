@@ -86,7 +86,7 @@ STATIC BOOL CNFSBreakToken(TOKEN token, char *cycbuffname,
     memcpy(cycbuffname, token.token, CNFSMAXCYCBUFFNAME);
     *(cycbuffname + CNFSMAXCYCBUFFNAME) = '\0';	/* Just to be paranoid */
     memcpy(&int32, &token.token[8], sizeof(int32));
-    *offset = ntohl(int32) * CNFS_BLOCKSIZE;
+    *offset = (CYCBUFF_OFF_T)ntohl(int32) * (CYCBUFF_OFF_T)CNFS_BLOCKSIZE;
     memcpy(&int32, &token.token[12], sizeof(int32));
     *cycnum = ntohl(int32);
     return TRUE;
