@@ -8,21 +8,6 @@
 #if ! defined ( configfile_h__ )
 #define configfile_h__
 
-/* Avoid conflicts with parsedate.y's generated yacc code. */
-#define yy_yyv	innfeed_yy_yyv
-#define yyact	innfeed_yyact
-#define yychk	innfeed_yychk
-#define yydef	innfeed_yydef
-#define yyexca	innfeed_yyexca
-#define yylval	innfeed_yylval
-#define yypact	innfeed_yypact
-#define yypgo	innfeed_yypgo
-#define yyr1	innfeed_yyr1
-#define yyr2	innfeed_yyr2
-#define yys	innfeed_yys
-#define yyv	innfeed_yyv
-#define yyval	innfeed_yyval
-
 /* pointer to function taking void-star param and returning int. */
 typedef int (*PFIVP)(void *) ;
 

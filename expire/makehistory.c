@@ -91,22 +91,6 @@ static size_t		Missfieldsize = 0;
 static void OverAddAllNewsgroups(void);
 
 /*
-**  Check and parse an date header line.  Return the new value or
-**  zero on error.
-*/
-static long
-GetaDate(char *p)
-{
-    time_t		t;
-
-    while (ISWHITE(*p))
-	p++;
-    if ((t = parsedate(p, &Now)) == -1)
-	return 0L;
-    return (long)t;
-}
-
-/*
 **  Check and parse a Message-ID header line.  Return private space.
 */
 static const char *
@@ -638,20 +622,17 @@ DoArt(ARTHANDLE *art)
     } else {
         buffer_set(&buffer, Datep->Header, Datep->HeaderLength);
         buffer_append(&buffer, NUL, 1);
-	for (i = 0, q = buffer.data; i < buffer.left; q++, i++)
-	    if (*q == '\t' || *q == '\n' || *q == '\r')
-		*q = ' ';
-	if ((Posted = GetaDate(buffer.data)) == 0)
+        Posted = parsedate_rfc2822_lax(buffer.data);
+        if (Posted == (time_t) -1)
 	    Posted = Arrived;
     }
 
     if (Expp->HasHeader) {
         buffer_set(&buffer, Expp->Header, Expp->HeaderLength);
         buffer_append(&buffer, NUL, 1);
-	for (i = 0, q = buffer.data; i < buffer.left; q++, i++)
-	    if (*q == '\t' || *q == '\n' || *q == '\r')
-		*q = ' ';
-	Expires = GetaDate(buffer.data);
+        Expires = parsedate_rfc2822_lax(buffer.data);
+        if (Expires == (time_t) -1)
+            Expires = 0;
     }
 
     if (DoOverview && Xrefp->HeaderLength > 0) {

@@ -427,9 +427,6 @@ Requested New Features
   be part of the INN source tree in some fashion.  Greg Andruk has a bunch
   of stuff that Russ has copies of, for example.
 
-* Investigate using the new, stricter date parsing code in libinn for
-  nnrpd rather than the extremely lenient parsedate routine.
-
 * There are various available patches for Cancel-Lock and an Internet
   draft; support should be added to INN for both generation and
   verification (definitely optional and not on by default at this point).

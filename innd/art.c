@@ -1036,7 +1036,8 @@ ARTclean(ARTDATA *data, char *buff)
   /* Is article too old? */
   /* assumes Date header is required header */
   p = HDR(HDR__DATE);
-  if ((data->Posted = parsedate(p, &Now)) == -1) {
+  data->Posted = parsedate_rfc2822_lax(p);
+  if (data->Posted == (time_t) -1) {
     sprintf(buff, "%d Bad \"Date\" header -- \"%s\"", NNTP_REJECTIT_VAL,
       MaxLength(p, p));
     TMRstop(TMR_ARTCLEAN);
@@ -1060,7 +1061,9 @@ ARTclean(ARTDATA *data, char *buff)
   }
   if (HDR_FOUND(HDR__EXPIRES)) {
     p = HDR(HDR__EXPIRES);
-    data->Expires = parsedate(p, &Now);
+    data->Expires = parsedate_rfc2822_lax(p);
+    if (data->Expires == (time_t) -1)
+      data->Expires = 0;
   }
 
   /* Colon or whitespace in the Newsgroups header? */

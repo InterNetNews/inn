@@ -733,7 +733,8 @@ OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
             EXPoverindexdrop++;
             return true;
         }
-        if ((when = parsedate(p, NULL)) == -1) {
+        when = parsedate_rfc2822_lax(p);
+        if (when == (time_t) -1) {
             EXPoverindexdrop++;
             return true;
         }

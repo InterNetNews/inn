@@ -94,6 +94,4 @@ Allbery <rra@stanford.edu> for the B<-d> and B<-l> flags.
 
 $Id$
 
-=head1 SEE ALSO
-
-parsedate(3).
+=cut

@@ -11,10 +11,10 @@ SOURCES       = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
 		dispatch.c fdflags.c fdlimit.c genid.c getfqdn.c \
 		getmodaddr.c gettime.c hash.c hashtab.c innconf.c inndcomm.c \
 		list.c localopen.c lockfile.c makedir.c md5.c messages.c \
-		mmap.c network.c nntp.c parsedate.c qio.c radix32.c readin.c \
-		remopen.c reservedfd.c resource.c sendarticle.c sendpass.c \
-		sequence.c sockaddr.c timer.c tst.c uwildmat.c vector.c \
-		version.c wire.c xfopena.c xmalloc.c xsignal.c xwrite.c
+		mmap.c network.c nntp.c qio.c radix32.c readin.c remopen.c \
+		reservedfd.c resource.c sendarticle.c sendpass.c sequence.c \
+		sockaddr.c timer.c tst.c uwildmat.c vector.c version.c \
+		wire.c xfopena.c xmalloc.c xsignal.c xwrite.c
 
 # Sources for additional functions only built to replace missing system ones.
 EXTRA_SOURCES = alloca.c fseeko.c ftello.c getaddrinfo.c getpagesize.c \
@@ -36,7 +36,7 @@ install: all
 	$(LI_XPUB) libinn.$(EXTLIB) $D$(PATHLIB)/libinn.$(EXTLIB)
 
 clobber clean distclean:
-	rm -f *.o *.lo libinn.la libinn.a parsedate.c parsedate
+	rm -f *.o *.lo libinn.la libinn.a
 	rm -f profiled perl$(PROFSUFFIX).o libinn$(PROFSUFFIX).a
 	rm -f libinn_pure_*.a .pure
 	rm -rf .libs
@@ -60,14 +60,6 @@ perl.o: perl.c
 
 ../include/inn/system.h:
 	(cd ../include && $(MAKE))
-
-parsedate.c: parsedate.y
-	@echo Expect 6 shift/reduce conflicts
-	$(YACC) parsedate.y
-	@mv y.tab.c parsedate.c
-
-parsedate: parsedate.c gettime.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ -DTEST -DYYDEBUG parsedate.c gettime.o
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
 profiled: libinn$(PROFSUFFIX).a perl$(PROFSUFFIX).o
@@ -187,8 +179,6 @@ nntp.o: nntp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/buffer.h ../include/inn/innconf.h \
   ../include/inn/network.h ../include/inn/nntp.h ../include/inn/vector.h \
   ../include/libinn.h
-parsedate.o: parsedate.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/clibrary.h ../include/libinn.h
 qio.o: qio.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h ../include/inn/qio.h \
   ../include/libinn.h

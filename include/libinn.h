@@ -71,7 +71,6 @@ typedef struct _TIMEINFO {
 
 extern int      GetTimeInfo(TIMEINFO *Now);
 extern bool     makedate(time_t, bool local, char *buff, size_t buflen);
-extern time_t   parsedate(char *p, TIMEINFO *now);
 extern time_t   parsedate_nntp(const char *, const char *, bool local);
 extern time_t   parsedate_rfc2822(const char *);
 extern time_t   parsedate_rfc2822_lax(const char *);

@@ -72,6 +72,7 @@ store_article(int fd)
     handle.iovcnt = 1;
     handle.len = size;
     handle.arrived = 0;
+    handle.expires = 0;
     buffer_free(article);
 
     /* Find the expiration time, if any. */
@@ -83,8 +84,10 @@ store_article(int fd)
         if (end == NULL)
             die("cannot find end of Expires header");
         expires = xstrndup(start, end - start);
-        handle.expires = parsedate(expires, NULL);
+        handle.expires = parsedate_rfc2822_lax(expires);
         free(expires);
+        if (handle.expires == (time_t) -1)
+            handle.expires = 0;
     }
 
     /* Find the appropriate newsgroups header. */

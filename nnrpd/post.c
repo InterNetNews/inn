@@ -308,19 +308,14 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     static char		*newpath = NULL;
     HEADER		*hp;
     char		*p;
-    time_t		t;
+    time_t		t, now;
     struct tm		*gmt;
-    TIMEINFO		Now;
     const char          *error;
     pid_t               pid;
     bool		addvirtual = false;
 
-    /* Various things need Now to be set. */
-    if (GetTimeInfo(&Now) < 0) {
-        snprintf(Error, sizeof(Error), "Can't get the time, %s",
-                 strerror(errno));
-        return Error;
-    }
+    /* Get the current time, used for creating and checking dates. */
+    now = time(NULL);
 
     /* Do some preliminary fix-ups. */
     for (hp = Table; hp < ARRAY_END(Table); hp++) {
@@ -373,9 +368,10 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	    HDR_SET(HDR__DATE, datebuff);
 	}
     } else {
-	if ((t = parsedate(HDR(HDR__DATE), &Now)) == -1)
+        t = parsedate_rfc2822_lax(HDR(HDR__DATE));
+	if (t == (time_t) -1)
 	    return "Can't parse \"Date\" header";
-	if (t > Now.time + DATE_FUZZ)
+	if (t > now + DATE_FUZZ)
 	    return "Article posted in the future";
     }
 
@@ -448,7 +444,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     /* Sender; set above. */
 
     /* Check Expires. */
-    if (HDR(HDR__EXPIRES) && parsedate(HDR(HDR__EXPIRES), &Now) == -1)
+    if (HDR(HDR__EXPIRES) && parsedate_rfc2822_lax(HDR(HDR__EXPIRES)) == -1)
 	return "Can't parse \"Expires\" header";
 
     /* References; left alone. */
@@ -490,9 +486,8 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     HDR_SET(HDR__NNTPPOSTINGDATE, datebuff);
 
     /* X-Trace; set */
-    t = time((time_t *)NULL) ;
     pid = (long) getpid() ;
-    if ((gmt = gmtime(&Now.time)) == NULL)
+    if ((gmt = gmtime(&now)) == NULL)
 	return "Can't get the time";
     if (VirtualPathlen > 0)
 	p = PERMaccessconf->domain;
@@ -501,7 +496,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	    p = (char *) "unknown";
     snprintf(tracebuff, sizeof(tracebuff),
              "%s %ld %ld %s (%d %3.3s %d %02d:%02d:%02d GMT)",
-             p, (long) t, (long) pid, ClientIpString,
+             p, (long) now, (long) pid, ClientIpString,
              gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
              gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
     HDR_SET(HDR__XTRACE, tracebuff);

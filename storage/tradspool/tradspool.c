@@ -1180,16 +1180,17 @@ tradspool_next(ARTHANDLE *article, const RETRTYPE amount)
 	    art->expires = 0;
 	} else {
             /* optionally parse expire header */
-            for (p = expires + 1; (*p != '\n') && (*(p - 1) != '\r'); p++);
+            for (p = expires + 1; (*p != '\n') && (*(p - 1) != '\r'); p++)
+                ;
             x = xmalloc(p - expires);
             memcpy(x, expires, p - expires - 1);
             x[p - expires - 1] = '\0';
 
-            art->expires = parsedate(x, NULL);
-            if (art->expires == -1)
+            art->expires = parsedate_rfc2822_lax(x);
+            if (art->expires == (time_t) -1)
                 art->expires = 0;
             else
-                art->expires -= time(0);
+                art->expires -= time(NULL);
             free(x);
         }
 	/* for backwards compatibility; assumes no Xref unless crossposted

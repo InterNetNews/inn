@@ -218,7 +218,6 @@ doc/man/ovdb_server.8                 Manpage for ovdb_server
 doc/man/ovdb_stat.8                   Manpage for ovdb_stat
 doc/man/overchan.8                    Manpage for overchan backend
 doc/man/overview.fmt.5                Manpage for overview.fmt config file
-doc/man/parsedate.3                   Manpage for parsedate library routine
 doc/man/passwd.nntp.5                 Manpage for passwd.nntp config file
 doc/man/perl-nocem.8                  Manpage for perl-nocem
 doc/man/pgpverify.1                   Manpage for pgpverify
@@ -491,7 +490,6 @@ lib/mkstemp.c                         mkstemp replacement
 lib/mmap.c                            mmap manipulation routines
 lib/network.c                         Network utility functions
 lib/nntp.c                            NNTP utility library
-lib/parsedate.y                       Date parsing
 lib/perl.c                            Perl hook support for nnrpd and innd
 lib/pread.c                           pread replacement
 lib/pwrite.c                          pwrite replacement
