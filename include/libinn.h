@@ -9,7 +9,7 @@
 # include "inn/defines.h"
 #endif
 
-/* Eventually, we don't want to install this, since this is an installed
+/* Eventually we don't want to install this, since this is an installed
    header and we don't want to install config.h. */
 #ifndef CONFIG_H
 # include "config.h"
@@ -38,11 +38,16 @@ extern void sysdie(const char *, ...)
     __attribute__((__noreturn__, __format__(printf, 1, 2)));
 extern void warn_set_handlers(int count, ...);
 extern void die_set_handlers(int count, ...);
-extern int error_log_stderr(int length, const char *, va_list, int error);
+
+/* Handlers intended to be passed to *_set_handlers.  error_log_stderr is
+   the only handler enabled by default. */
+extern void error_log_stderr(int, const char *, va_list, int);
+extern void error_log_syslog_err(int, const char *, va_list, int);
+extern void error_log_syslog_warning(int, const char *, va_list, int);
 
 /* Log handling functions take the length of the resulting message, the
    format, the arguments, and the errno if any. */
-typedef int (*error_handler_t)(int, const char *, va_list, int);
+typedef void (*error_handler_t)(int, const char *, va_list, int);
 
 /* If non-NULL, called before exit and its return value passed to exit. */
 extern int (*error_fatal_cleanup)(void);
