@@ -152,7 +152,16 @@ Printspace(char *path, BOOL inode, BOOL needpadding)
 				(STATTYPES) KILOBYTES);
 #endif
 		} else {
-			value = buf.STATINODE;	  /* simple! */
+			value = buf.STATINODE;
+
+                        /* This value is compared using the shell by innwatch,
+                           and some shells can't cope with anything larger
+                           than the maximum value of a signed long.  ReiserFS
+                           returns 2^32 - 1, however, since it has no concept
+                           of inodes.  So cap the returned value at the max
+                           value of a signed long. */
+                        if (value > (1UL << 31) - 1)
+                            value = (1UL << 31) - 1;
 		}
 	}
 
