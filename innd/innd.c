@@ -579,15 +579,17 @@ main(int ac, char *av[])
     xsignal(SIGHUP, catch_terminate);
     xsignal(SIGTERM, catch_terminate);
 
-    /* Set up the various parts of the system.  Channel feeds start
-       processes so call PROCsetup before ICDsetup.  NNTP needs to know if
-       it's a slave, so call RCsetup before NCsetup. */
+    /* Set up the various parts of the system.  Channel feeds start processes
+       so call PROCsetup before ICDsetup.  NNTP needs to know if it's a slave,
+       so call RCsetup before NCsetup.  RCsetup calls innbind and waits for
+       it, so call PROCsetup after RCsetup to not interpose a signal
+       handler. */
     CHANsetup(i);
-    PROCsetup(10);
     InndHisOpen();
     CCsetup();
     LCsetup();
     RCsetup();
+    PROCsetup(10);
     WIPsetup();
     NCsetup();
     ARTsetup();
