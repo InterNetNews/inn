@@ -770,13 +770,14 @@
   ||##  Some versions of Solaris should set to DONT (pre 2.4 it seems)
   ||#### =()<SET_SOCKOPT		@<SET_SOCKOPT>@>()=
   ||SET_SOCKOPT		DO
+[IN1.7=NO][WDF=fixed][WOR=yes][P=moderate]
   ||##  How your DBZ be compiled?  Use tagged hash or splitted tables.
   ||##  Tagged hashing uses single .pag file using offset-fuzzy technique.
   ||##  Splitted table method uses two DB files, and may use more memory.
   ||##  If you are short in RAM, say DO, else DONT.
-  ||#### =()<DBZ_TAGGED_HASH  @<DBZ_TAGGED_HASH>@>()=
+  ||#### =()<DBZ_TAGGED_HASH	@<DBZ_TAGGED_HASH>@>()=
   ||DBZ_TAGGED_HASH	DONT
-[IN1.7=@6][WDF=autoconf][WOR=no][P=high]
+[IN1.7=NO][WDF=autoconf][WOR=yes][P=high]
   ||##  Do you have shadow file?  Pick DO or DONT
   ||#### =()<HAVE_SHADOW		@<HAVE_SHADOW>@>()=
   ||HAVE_SHADOW		DO
