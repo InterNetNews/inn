@@ -35,7 +35,8 @@ C<./configure --with-berkeleydb=/usr/local/BerkeleyDB.3.x  [... other options]>
 
 =item 4
 
-Shut down INN (e.g., with C<rc.news stop>)
+Shut down INN (e.g., with C<rc.news stop>).  Be sure to kill all nnrpds as
+well.
 
 =item 5
 
