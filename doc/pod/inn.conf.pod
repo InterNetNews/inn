@@ -256,18 +256,6 @@ innxmit(8) among other programs).  This must be in dotted-quad format
 choose the source IP address for outgoing connections.  The default value
 is unset.
 
-=item I<usecontrolchan>
-
-Whether to handle control messages (other than cancel) in an external
-program rather than internally in innd(8).  Enabling this is highly
-recommended, as INN's internal control message handling can cause
-performance problems and behaves very poorly under heavy load.  If you
-want to enable this, you also must set up a channel feed to controlchan(8)
-in newsfeeds(5) and ensure that the group C<control.cancel> exists on your
-server.  You may also have to do a few additional things to allow
-controlchan to work correctly; see controlchan(8) for the details.  This
-is a boolean value and the default is false.
-
 =item I<verifycancels>
 
 Set this to true to enable a simplistic check on all cancel messages,
@@ -1039,13 +1027,10 @@ The path to the news binaries.  The default value is I<pathnews>/bin.
 
 =item I<pathcontrol>
 
-The path to the files that handle control messages.  If you are using
-controlchan(8) (I<usecontrolchan> is set), the code for handling each
-separate type of control message is located here.  If you are using INN's
-built-in control message handling, each executable file in this directory
-represents a handler for the Control: message with the same name as that
-file.  Be very careful what you put in this directory executable, as it
-can potentially be a severe security risk.  The default value is
+The path to the files that handle control messages.  The code for handling
+each separate type of control message is located here.  Be very careful
+what you put in this directory with a name ending in C<.pl>, as it can
+potentially be a severe security risk.  The default value is
 I<pathbin>/control.
 
 =item I<pathdb>
