@@ -658,6 +658,12 @@ Setting up the news.daily cron job
 
         0 3 * * * su -c "/usr/local/news/bin/news.daily expireover lowmark" news
 
+  Also, a cron job should be set up to transmit to your upstream site any
+  articles that have have been posted locally and queued for transmission,
+  for example:
+
+        1,11,21,31,41,51 * * * * /usr/local/news/bin/nntpsend
+
   The pathnames and user ID used above are the installation defaults; change
   them to match your installation if you used something other than the
   defaults.

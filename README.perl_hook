@@ -90,9 +90,11 @@ rejected.
 from within INN:
 
 INN::havehist(messageid)  # returns true if messageid is in the history db
+
 INN::newsgroup(newsgroup) # returns the status of the news group (the last
 			  # field of the active file, or false if the
 			  # isn't in your active file
+
 INN::cancel(messageid)    # cancels messageid on your server
  
 INN::addhist(messageid, arrivaltime,articletime,expiretime,paths)
