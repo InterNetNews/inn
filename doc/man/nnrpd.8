@@ -20,6 +20,9 @@ nnrpd \- NNTP server for on-campus hosts
 .B \-i
 ]
 [
+.B \-n
+]
+[
 .B \-o
 ]
 [
@@ -135,6 +138,11 @@ is defined and
 is running in standalone mode since this call only works when
 .I nnrpd
 is started as root.
+.TP
+.B \-n
+The ``\-n'' flag turns off resolution of IP addresses to names.  If you only
+use IP-based restrictions in readers.conf and can handle IP addresses in your
+logs, using this flag may result in some additional speed.
 .TP
 .B \-o
 The ``\-o'' flag causes all articles to be spooled instead of sending

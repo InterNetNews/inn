@@ -90,9 +90,8 @@ bool	DaemonMode = FALSE;
 #if HAVE_GETSPNAM
 static char	*ShadowGroup;
 #endif
-#if	defined(DO_NNRP_GETHOSTBYADDR)
 static char 	*HostErrorStr;
-#endif	/* defined(DO_NNRP_GETHOSTBYADDR) */
+bool GetHostByAddr = TRUE;      /* formerly DO_NNRP_GETHOSTBYADDR */
 
 extern void	CMDauthinfo();
 extern void	CMDdate();
@@ -356,7 +355,6 @@ TITLEset(what)
 }
 
 
-#if	defined(DO_NNRP_GETHOSTBYADDR)
 #ifndef	INADDR_LOOPBACK
 #define	INADDR_LOOPBACK	0x7f000001
 #endif	/* INADDR_LOOPBACK */
@@ -414,7 +412,6 @@ Address2Name(INADDR *ap, char *hostname, int i)
 	    *p = tolower(*p);
     return TRUE;
 }
-#endif	/* defined(DO_NNRP_GETHOSTBYADDR) */
 
 
 /*
@@ -453,29 +450,28 @@ static void StartConnection()
 	}
 
 	/* Get client's name. */
-#if	defined(DO_NNRP_GETHOSTBYADDR)
-	HostErrorStr = NULL;
-	if (!Address2Name(&sin.sin_addr, ClientHost, (int)sizeof ClientHost)) {
-	    (void)strcpy(ClientHost, inet_ntoa(sin.sin_addr));
-	    if (HostErrorStr == NULL) {
-		syslog(L_NOTICE,
-		    "? cant gethostbyaddr %s %m -- using IP address for access",
-		    ClientHost);
-	    } else {
-		syslog(L_NOTICE,
-		    "? cant gethostbyaddr %s %s -- using IP address for access",
-		    ClientHost, HostErrorStr);
-	    }
+        if (GetHostByAddr) {
+            HostErrorStr = NULL;
+            if (!Address2Name(&sin.sin_addr, ClientHost, (int)sizeof ClientHost)) {
+                (void)strcpy(ClientHost, inet_ntoa(sin.sin_addr));
+                if (HostErrorStr == NULL) {
+                    syslog(L_NOTICE,
+                           "? cant gethostbyaddr %s %m -- using IP address for access",
+                           ClientHost);
+                } else {
+                    syslog(L_NOTICE,
+                           "? cant gethostbyaddr %s %s -- using IP address for access",
+                           ClientHost, HostErrorStr);
+                }
+                inet_aton(ClientHost, &client_addr);
+            } else {
+                (void)strcpy(buff, inet_ntoa(sin.sin_addr));
+                inet_aton(buff, &client_addr);
+            }
+        } else {
+            (void)strcpy(ClientHost, inet_ntoa(sin.sin_addr));
             inet_aton(ClientHost, &client_addr);
-	}
-	else {
-	    (void)strcpy(buff, inet_ntoa(sin.sin_addr));
-            inet_aton(buff, &client_addr);
-	}
-#else
-	(void)strcpy(ClientHost, inet_ntoa(sin.sin_addr));
-        inet_aton(ClientHost, &client_addr);
-#endif /* defined(DO_NNRP_GETHOSTBYADDR) */
+        }
         ClientIP = client_addr.s_addr;
 	(void)strncpy(ClientIp, inet_ntoa(sin.sin_addr), sizeof(ClientIp));
 	length = sizeof sin;
@@ -484,15 +480,15 @@ static void StartConnection()
 	    Printf("%d Can't figure out where you connected to.  Goodbye\r\n", NNTP_ACCESS_VAL);
 	    ExitWithStats(1, TRUE);
 	}
-#ifdef DO_NNRP_GETHOSTBYADDR
-	HostErrorStr = NULL;
-	if (!Address2Name(&sin.sin_addr, ServerHost, sizeof(ServerHost))) {
-	    strcpy(ServerHost, inet_ntoa(sin.sin_addr));
-	    /* suppress error reason */
-	}
-#else
-        strcpy(ServerHost, inet_ntoa(sin.sin_addr));
-#endif /* DO_NNRP_GETHOSTBYADDR */
+        if (GetHostByAddr) {
+            HostErrorStr = NULL;
+            if (!Address2Name(&sin.sin_addr, ServerHost, sizeof(ServerHost))) {
+                strcpy(ServerHost, inet_ntoa(sin.sin_addr));
+                /* suppress error reason */
+            }
+        } else {
+            strcpy(ServerHost, inet_ntoa(sin.sin_addr));
+        }
 	(void)strncpy(ServerIp, inet_ntoa(sin.sin_addr), sizeof(ServerIp));
     }
 
@@ -813,6 +809,9 @@ main(int argc, char *argv[])
 #endif /* HAVE_GETSPNAM */
 	case 'i':			/* Initial command */
 	    PushedBack = COPY(optarg);
+	    break;
+	case 'n':			/* No DNS lookups */
+	    GetHostByAddr = FALSE;
 	    break;
 	case 'o':
 	    Offlinepost = TRUE;		/* Offline posting only */
