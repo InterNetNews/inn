@@ -1,7 +1,7 @@
 ##  $Revision$
 
 RELEASE=1
-PATCHLEVEL=5.1
+PATCHLEVEL=8-current
 VERSION=$(RELEASE).$(PATCHLEVEL)
 
 #TARDIR=inn
