@@ -527,11 +527,14 @@ If this is not specified, nothing is prepended before pathhost.
 The default value is unset.
 .TP
 .I hiscachesize
-If this is set to a non-zero number then history file lookups are cached.
-This number is the amount of memory to dedicate to the lookup cache in 
+If this is set to a non-zero number then a hash of recently received
+Message-ID's is kept in this memory to save on history lookups.
+The cache is only used for incoming newsfeeds, so a high value isn't
+necessarily useful unless you have incoming feeds that are badly delayed.
+The value is the amount of memory to dedicate to the lookup cache in 
 kilobytes.  It is generally useful to have memory allocated to history
-cache if dbz mmaping is turned on.
-The default value is ``0''.
+cache if dbz mmaping is turned on. A useful value is around '256', assuming
+you have more than one incoming newsfeed. The default value is ``0''.
 .TP
 .I xrefslave
 If this is true, innd will use the information in the Xref:
