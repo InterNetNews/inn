@@ -3,9 +3,11 @@
 #
 # Sample file tested with INN 1.8current and 1.5.1
 #
-# (c) 1997-1998 by Fabien Tassin <tassin@eerie.fr>
-# version 2.1.9_6
+# (c) 1997-1998 by Fabien Tassin <fta@oleane.net>
+# version 2.1.9_7
 ##########################################################
+
+# TODO: add the map file.
 
 package innreport_inn;
 
@@ -341,18 +343,18 @@ sub collect
     # or
     # ME time X idle X(X) artwrite X(X) artlink X(X) hiswrite X(X) hissync
     # X(X) sitesend X(X) artctrl X(X) artcncl X(X) hishave X(X)
-    if ($left =~ m/^\S+\s+                       # ME
-	           time\ (\d+)\s+                # time
-	           idle\ (\d+)\((\d+)\)\s+       # idle
-                   artwrite\ (\d+)\((\d+)\)\s+   # artwrite
-                   artlink\ (\d+)\((\d+)\)\s+    # artlink
-                   hiswrite\ (\d+)\((\d+)\)\s+   # hiswrite
-                   hissync\ (\d+)\((\d+)\)\s+    # hissync
-                   sitesend\ (\d+)\((\d+)\)\s+   # sitesend
-                   artctrl\ (\d+)\((\d+)\)\s+    # artctrl
-                   artcncl\ (\d+)\((\d+)\)\s+    # artcncl
-                   hishave\ (\d+)\((\d+)\)       # hishave
-                   (?:\s+hisgrep\ (\d+)\((\d+)\))?  # hisgrep (optionnal)
+    if ($left =~ m/^\S+\s+                         # ME
+	           time\ (\d+)\s+                  # time
+	           idle\ (\d+)\((\d+)\)\s+         # idle
+                   artwrite\ (\d+)\((\d+)\)\s+     # artwrite
+                   artlink\ (\d+)\((\d+)\)\s+      # artlink
+                   hiswrite\ (\d+)\((\d+)\)\s+     # hiswrite
+                   hissync\ (\d+)\((\d+)\)\s+      # hissync
+                   (?:sitesend\ (\d+)\((\d+)\)\s+  # sitesend
+                   artctrl\ (\d+)\((\d+)\)\s+      # artctrl
+                   artcncl\ (\d+)\((\d+)\)\s+      # artcncl
+                   hishave\ (\d+)\((\d+)\)         # hishave
+                   (?:\s+hisgrep\ (\d+)\((\d+)\))?)?  # hisgrep (optionnal)
 	           \s*$/ox)
     {
       $innd_time_times += $1;
@@ -1382,7 +1384,10 @@ sub collect
   if ($prog eq "inndstart")
   {
     # cant bind Address already in use
-    return 1 if $left =~ /cant bind Address already in use/;
+    # cant bind Permission denied
+    return 1 if $left =~ /cant bind /o;
+    # cant setgroups Operation not permitted
+    return 1 if $left =~ /cant setgroups /o;
   }
   ########
   ## batcher

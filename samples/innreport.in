@@ -2,12 +2,12 @@
 
 ##########################################################################
 #
-#   innreport.pl: Perl script to summarize INN (& Diablo) log files
+#   innreport.pl: Perl script to summarize news log files
 #                 (with optional HTML output and graphs).
 #
-# version: 2.1.9_6
+# version: 2.1.9_7
 #
-# Copyright (c) 1996-1998, Fabien Tassin (tassin@eerie.fr).
+# Copyright (c) 1996-1998, Fabien Tassin (fta@oleane.net).
 #
 ##########################################################################
 #
@@ -133,8 +133,8 @@ my $CASE_SENSITIVE = "DO";
 ## THERE'S NOTHING TO CHANGE AFTER THIS LINE ##
 ###############################################
 
-my $version = "2.1.9_6";
-my %output;  # the content of the configuration file.
+my $version = "2.1.9_7";
+local %output; # content of the configuration file.
 my $DEBUG = 0; # set to 1 to verify the structure/content of the conf file.
 my $start_time = time;
 
@@ -216,11 +216,11 @@ $ARCHIVE = &GetValue ($output{'default'}{'archive'})
 $ARCHIVE = ($ARCHIVE eq 'true');
 $ARCHIVE = 0 if (defined ($ref{'a'}) || defined ($ref{'archive'}));
 $ARCHIVE = 1 if ((($ref{'a'}) || ($ref{'archive'})) && ($HTML));
-$ARCHIVE = 0 unless ($HTML);
+$ARCHIVE = 0 unless $HTML;
 
 $CYCLE = &GetValue ($output{'default'}{'cycle'})
-  if defined ($output{'default'}{'cycle'});
-$CYCLE = 0 if ($CYCLE eq 'none');
+  if defined $output{'default'}{'cycle'};
+$CYCLE = 0 if $CYCLE eq 'none';
 $CYCLE = $ref{'c'} if defined ($ref{'c'});
 $CYCLE = $ref{'cycle'} if defined ($ref{'cycle'});
 
@@ -234,11 +234,11 @@ if (defined ($output{'default'}{'unknown'}))
   $WANT_UNKNOWN = &GetValue ($output{'default'}{'unknown'});
   $WANT_UNKNOWN = ($WANT_UNKNOWN eq 'true' ? 1 : 0);
 }
-$WANT_UNKNOWN = 0 if defined ($ref{'unknown'});
-$WANT_UNKNOWN = 1 if ($ref{'unknown'});
+$WANT_UNKNOWN = 0 if defined $ref{'unknown'};
+$WANT_UNKNOWN = 1 if $ref{'unknown'};
 
 $MAX_UNRECOGNIZED = &GetValue ($output{'default'}{'max_unknown'})
-  if defined ($output{'default'}{'max_unknown'});
+  if defined $output{'default'}{'max_unknown'};
 $MAX_UNRECOGNIZED = $ref{'maxunrec'} if defined ($ref{'maxunrec'});
 
 $CASE_SENSITIVE = &GetValue ($output{'default'}{'casesensitive'})
@@ -252,39 +252,33 @@ my $LIBPATH = &GetValue ($output{'default'}{'libpath'});
 
 umask (022);
 
-BEGIN
-{
+BEGIN {
   eval "use GD;";
   $::HAVE_GD = ($@ eq "");
 };
 
 undef $GRAPH unless $HTML;
  
-if ($GRAPH && !$::HAVE_GD)
-{
+if ($GRAPH && !$::HAVE_GD) {
   print "WARNING: can't make graphs as required.\n";
   print "         Install GD.pm or disable this option.\n\n";
   undef $GRAPH;
 }
 
-if ($HTML)
-{
-  if ($GRAPH)
-  {
+if ($HTML) {
+  if ($GRAPH) {
     $IMG_dir = "." if (defined ($IMG_dir) && ($IMG_dir eq ""));
     $IMG_pth .= "/" if ($IMG_pth);
     $IMG_pth =~ s|/+|/|g;
     $IMG_dir =~ s|/+|/|g;
-    unless (-w $IMG_dir)
-    {
+    unless (-w $IMG_dir) {
       print "WARNING: can't write in \"$IMG_dir\" as required by -g switch.\n";
       print "         Option -g removed. Please see the -p switch.\n\n";
       undef $GRAPH;
     }
   }
   $HTML_dir = "." if (defined ($HTML_dir) && ($HTML_dir eq ""));
-  unless (-w $HTML_dir)
-  {
+  unless (-w $HTML_dir) {
     print "WARNING: can't write in \"$HTML_dir\" as required by -html switch.\n";
     print "         Option -html and -a removed. Please see the -d switch.\n";
     print "\n";
@@ -294,7 +288,7 @@ if ($HTML)
 }
 
 # Now, we are sure that HTML and graphs can be made if options are active.
-&Summary if defined ($ref{'config'});
+&Summary if defined $ref{'config'};
 
 my $unrecognize_max = 0;
 my @unrecognize;
@@ -309,7 +303,7 @@ my $MIN = 1E10;
 my $MAX = -1;
 
 my $xmax = &GetValue ($output{'default'}{'graph_width'})   # Graph size..
-  if defined ($output{'default'}{'graph_width'});
+  if defined $output{'default'}{'graph_width'};
 $xmax = 550 unless $xmax;
 
 my $transparent = &GetValue ($output{'default'}{'transparent'})
@@ -329,29 +323,24 @@ die "Can't find/load $CLASS.pm : $@\n" if $@;
 
 my $save_line = <>;
 $_ = $save_line;
-LINE: while (!eof ())
-{
+LINE: while (!eof ()) {
   local $^W = 0 if $] < 5.004; # to avoid a warning for each '+=' first use.
   $total_line++;
   my $size = length;
   $total_size += $size;
 
   # Syslog optimization
-  if ($repeated)                
-  {
+  if ($repeated) {
     $repeated--;
     $_ = $save_line;
   }
-  else
-  {
+  else {
     $_ = <>;
-    if ($_ =~ /last message repeated (\d+) times$/o)
-    {
+    if ($_ =~ /last message repeated (\d+) times?$/o) {
        ($repeated) = $1;
        $_ = $save_line;
     }
-    else
-    {
+    else {
        $save_line = $_;
     }
   }
@@ -363,27 +352,21 @@ LINE: while (!eof ())
   my ($day, $hour, $prog, $left) =
     $_ =~ /^(\S+\s+\S+) (\S+) \S+ (\S+): (.*)$/o;
 
-  unless ($day)
-  {
+  unless ($day) {
     ($day, $hour, $res, $left) = $_ =~ /^(\S+\s+\S+) (\S+)\.\d+ (\S+) (.*)$/o;
-    if ($day)
-    {
-      my $cvtdate = &convdate ("$day $hour");
-      if ($cvtdate < $first_date_cvt)
-      {
+    if ($day) {
+      my $cvtdate = &ConvDate ("$day $hour");
+      if ($cvtdate < $first_date_cvt) {
 	$first_date_cvt = $cvtdate;
 	$first_date = "$day $hour";
       }
-      elsif ($cvtdate > $last_date_cvt)
-      {
+      elsif ($cvtdate > $last_date_cvt) {
 	$last_date_cvt = $cvtdate;
 	$last_date = "$day $hour";
       }
-
       $prog = "inn";
     }
-    else
-    {
+    else {
       next if $_ =~ /^$/;
       # Unrecognize line... skip
       $unrecognize[$unrecognize_max] = $_
@@ -394,14 +377,12 @@ LINE: while (!eof ())
     }
   }
 
-  my $cvtdate = &convdate ("$day $hour");
-  if ($cvtdate < $first_date_cvt)
-  {
+  my $cvtdate = &ConvDate ("$day $hour");
+  if ($cvtdate < $first_date_cvt) {
     $first_date_cvt = $cvtdate;
     $first_date = "$day $hour";
   }
-  elsif ($cvtdate > $last_date_cvt)
-  {
+  elsif ($cvtdate > $last_date_cvt) {
     $last_date_cvt = $cvtdate;
     $last_date = "$day $hour";
   }
@@ -441,9 +422,8 @@ $| = 1;
 
 die "no data. Abort.\n" unless $total_line;
 
-my $sec_glob = &convdate ("$last_date") - &convdate ("$first_date");
-unless ($sec_glob)
-{
+my $sec_glob = &ConvDate ("$last_date") - &ConvDate ("$first_date");
+unless ($sec_glob) {
   print "WARNING: bad date (\"$last_date\" or \"$first_date\")\n";
   print "         Please, contact the author of innreport.\n";
   $sec_glob = 24 * 60 * 60; # one day
@@ -451,21 +431,18 @@ unless ($sec_glob)
 
 $HTML_output = "";
 
-if ($HTML)
-{
+if ($HTML) {
   # Create a new filename (unique and _sortable_)
-  if ($ARCHIVE)
-  {
+  if ($ARCHIVE) {
     # The filename will contain the first date of the log or the current time.
     my ($ts, $tm, $th, $dd, $dm, $dy) = localtime;
     my ($m, $d, $h, $mn, $s) =
       $first_date =~ /^(\S+)\s+(\d+)\s+(\d+):(\d+):(\d+)$/;
-    if ($m)
-    {
+    if ($m) {
       my $ddm = (index ("JanFebMarAprMayJunJulAugSepOctNovDec", $m)) / 3;
       # Adjust the year because syslog doesn't record it. We assume that
       # it's the current year unless the last date if in the future.
-      $dy-- if (&convdate ("$last_date") > $ts + 60 * ($tm + 60 * ($th + 24 *
+      $dy-- if (&ConvDate ("$last_date") > $ts + 60 * ($tm + 60 * ($th + 24 *
          ($dd + substr("000031059090120151181212243273304334", $dm * 3, 3)))));
       ($dm, $dd, $th, $tm, $ts) = ($ddm, $d, $h, $mn, $s);
     }
@@ -475,14 +452,12 @@ if ($HTML)
     $suffix = sprintf ".%02d.%02d.%02d-%02d$SEPARATOR%02d$SEPARATOR%02d",
 		       $dy, $dm, $dd, $th, $tm, $ts;
   }
-  else
-  {
+  else {
     $suffix = "";
   }
   $HTML_output = "$HTML_dir" . "/news-notice" . "$suffix" . ".html";
   $HTML_output =~ s|/+|/|g;
-  if (defined $output{'default'}{'html_header_file'})
-  {
+  if (defined $output{'default'}{'html_header_file'}) {
     my $file = &GetValue ($output{'default'}{'html_header_file'});
     $file = $HTML_dir . "/" . $file;
     open (F, $file) && do {
@@ -490,10 +465,8 @@ if ($HTML)
       $HTML_header = <F>;
       close (F);
     };
-    print ">>>>> $HTML_header <<<\n";
   }
-  if (defined $output{'default'}{'html_footer_file'})
-  {
+  if (defined $output{'default'}{'html_footer_file'}) {
     my $file = &GetValue ($output{'default'}{'html_footer_file'});
     $file = $HTML_dir . "/" . $file;
     open (F, $file) && do {
@@ -502,33 +475,29 @@ if ($HTML)
       close (F);
     }
   }
-  
 }
 
 &Write_all_results ($HTML_output, \%output);
 
-&make_index ($HTML_dir, $index, "news-notice$suffix.html", \%output)
+&Make_Index ($HTML_dir, $index, "news-notice$suffix.html", \%output)
   if ($HTML && $index);
 
 #====================================================================
 
-if ($ARCHIVE)
-{
+if ($ARCHIVE) {
   # rotate html files
-  &rotate ($CYCLE, $HTML_dir, "news-notice", ".html");
+  &Rotate ($CYCLE, $HTML_dir, "news-notice", ".html");
 
   # rotate pictures
   my $report;
-  foreach $report (@{$output{'_order_'}})
-  {
+  foreach $report (@{$output{'_order_'}}) {
     next if $report =~ m/^(default|index)$/;
     next unless defined $output{$report}{'graph'};
     
     my $i = 0;
-    while ($GRAPH && defined ${${$output{$report}{'graph'}}[$i]}{'type'})
-    {
+    while ($GRAPH && defined ${${$output{$report}{'graph'}}[$i]}{'type'}) {
       my $name = $report . ($i ? $i : "");
-      &rotate ($CYCLE, $IMG_dir, $name, ".gif");
+      &Rotate ($CYCLE, $IMG_dir, $name, ".gif");
       $i++;
     }
   }
@@ -565,12 +534,10 @@ sub DateCompare
   my($date2) = substr($b, 4, 2) * 24;
   $date1 += index("JanFebMarAprMayJunJulAugSepOctNovDec",substr($a,0,3)) * 288;
   $date2 += index("JanFebMarAprMayJunJulAugSepOctNovDec",substr($b,0,3)) * 288;
-  if ($date1 - $date2 > 300 * 24)
-  {
+  if ($date1 - $date2 > 300 * 24) {
     $date2 += 288 * 3 * 12;
   }
-  elsif ($date2 - $date1 > 300 * 24)
-  {
+  elsif ($date2 - $date1 > 300 * 24) {
     $date1 += 288 * 3 * 12;
   }
   $date1 += substr($a, 7, 2);
@@ -620,9 +587,9 @@ sub ms2time
 }
 
 # Rotate the archive files..
-sub rotate 
+sub Rotate 
 {
-  # Usage: &rotate ($max_files, "$directory", "prefix", "suffix");
+  # Usage: &Rotate ($max_files, "$directory", "prefix", "suffix");
   my ($max, $rep, $prefix, $suffix) = @_;
   my ($file, $num, %files);
   local ($a, $b);
@@ -630,8 +597,7 @@ sub rotate
   return 1 unless ($max);
   opendir (DIR, "$rep") || die "Error: Cant open directory \"$rep\"\n";
   
-  FILE : while (defined ($file = readdir (DIR)))
-  {
+  FILE : while (defined ($file = readdir (DIR))) {
     next FILE 
       unless ($file =~ /^           # e.g. news-notice.1997.05.14-01:34:29.html
                         $prefix          # Prefix : news-notice
@@ -653,26 +619,20 @@ sub rotate
   }
   closedir (DIR);
   $num = 0;
-  foreach $file (sort {$b cmp $a} (keys (%files)))
-  {
+  foreach $file (sort {$b cmp $a} (keys (%files))) {
     unlink ("$rep/$file") if (($num++ >= $max) && (-f "$rep/$file"));
   }
   return 1;
 }
 
 # convert a date to a number of seconds
-sub convdate
+sub ConvDate
 {
-  # usage: $num = &convdate ($date);
+  # usage: $num = &ConvDate ($date);
   # date format is Aug 22 01:49:40
   my ($T) = @_;
   my ($m, $d, $h, $mn, $s) = $T =~ /^(\S+)\s+(\d+)\s+(\d+):(\d+):(\d+)$/;
-  my $out = $s + 60 * $mn + 3600 * $h + 86400 * $d;
-
-  ## this will works from now to July 97.. then you will have to
-  ## find something better or delete all the previous files.
-  # $out += 86400 * 365
-  #   if (index ("JanFebMarAprMayJunJulAugSepOctNovDec", $m) < 21);
+  my $out = $s + 60 * $mn + 3600 * $h + 86400 * ($d - 1);
 
   $m = substr("000031059090120151181212243273304334", 
 	      index ("JanFebMarAprMayJunJulAugSepOctNovDec", $m), 3);
@@ -705,8 +665,7 @@ sub ComputeTotal
   my $h = shift;
   my $total = 0;
   my $key;
-  foreach $key (keys (%$h))
-  {
+  foreach $key (keys (%$h)) {
     $total += $$h{$key};
   }
   return $total;
@@ -717,10 +676,8 @@ sub ComputeTotalDouble
   my $h = shift;
   my $total = 0;
   my ($key1, $key2);
-  foreach $key1 (keys (%$h))
-  {
-    foreach $key2 (keys (%{$$h{$key1}}))
-    {
+  foreach $key1 (keys (%$h)) {
+    foreach $key2 (keys (%{$$h{$key1}})) {
       $total += ${$$h{$key1}}{$key2};
     }
   }
@@ -728,7 +685,7 @@ sub ComputeTotalDouble
 }
 
 # make an index for archive pages
-sub make_index
+sub Make_Index
 {
   my ($rep, $index, $filename, $data) = @_;
   my %output = %$data;
@@ -739,14 +696,12 @@ sub make_index
   open (DATA, ">> $rep/innreport.db") || die "can't open $rep/innreport.db\n";
   my $i = 0;
   my $res = "$filename";
-  while (defined ${${$output{'index'}{'column'}}[$i]}{'value'})
-  {
-    my ($data) = ${${$output{'index'}{'column'}}[$i]}{'value'}
-      =~ m/^\"\s*(.*?)\s*\"$/o;
+  while (defined ${${$output{'index'}{'column'}}[$i]}{'value'}) {
+    my $data = &GetValue (${${$output{'index'}{'column'}}[$i]}{'value'});
+    $data =~ s/\n//sog;
     my @list = split /\|/, $data;
     my $val;
-    foreach $val (@list)
-    {
+    foreach $val (@list) {
       $res .= ($val eq 'date' ? "|$first_date -- $last_date"
 	                      : "|" . &EvalExpr($val));
     }
@@ -758,30 +713,28 @@ sub make_index
   # sort the database (reverse order), remove duplicates.
   open (DATA, "$rep/innreport.db") || die "can't open $rep/innreport.db\n";
   my %data;
-  while (<DATA>)
-  {
+  while (<DATA>) {
     m/^([^\|]+)\|(.*)$/o;
     $data{$1} = $2;
   }
   close (DATA);
   open (DATA, "> $rep/innreport.db") || die "can't open $rep/innreport.db\n";
   $i = 0;
-  foreach (sort {$b cmp $a} (keys %data))
-  {
+  foreach (sort {$b cmp $a} (keys %data)) {
     print DATA "$_|$data{$_}\n" if (($CYCLE == 0) || ($i < $CYCLE));
     $i++;
   }
   close (DATA);
 
-  my $title = defined $output{'default'}{'title'} ?
-                   $output{'default'}{'title'} : "Daily Usenet report";
-  $title =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+  my $title = "Daily Usenet report";
+  $title = &GetValue ($output{'default'}{'title'})
+    if defined $output{'default'}{'title'};
   $title =~ s/\\\"/\"/g;
   my $Title = $title;
   $Title =~ s/<.*?>//g;
-  my $body = defined $output{'default'}{'html_body'} ?
-                   $output{'default'}{'html_body'} : "";
-  $body =~ s/^\"\s*(.*?)\s*\"$/ $1/o;
+  my $body = "";
+  $body = &GetValue ($output{'default'}{'html_body'})
+    if defined $output{'default'}{'html_body'};
   $body =~ s/\\\"/\"/go;
   my $result = sprintf <<EOF;
 <HTML><HEAD>
@@ -797,43 +750,94 @@ $HTML_header
 <CENTER>
 EOF
 
-  $i = 0;
+  if ($GRAPH) {
+    my $i = 0;
+    while (defined ${${$output{'index'}{'graph'}}[$i]}{'title'}) {
+      my $title =  &GetValue (${${$output{'index'}{'graph'}}[$i]}{'title'});
+      my $filename = "index$i.gif";
+      my $color_bg = &GetValue (${${$output{'index'}{'graph'}}[$i]}{'color'});
+      my $unit     = &GetValue (${${$output{'index'}{'graph'}}[$i]}{'unit'});
+      my $date_idx = &GetValue (${${$output{'index'}{'graph'}}[$i]}{'value'});
+      $date_idx =~ s/^val(\d+)$/$1/o;
+      my @c = @{${${$output{'index'}{'graph'}}[$i]}{'data'}};
+      my $label_in  = &GetValue (${$c[0]}{'name'});
+      my $color_in  = &GetValue (${$c[0]}{'color'});
+      my $value_in  = &GetValue (${$c[0]}{'value'});
+      my $type_in   = 0;
+      $type_in = $value_in =~ s/^byte\((.*?)\)$/$1/o;
+      $value_in =~ s/^val(\d+)$/$1/o;
+      my $label_out = &GetValue (${$c[1]}{'name'});
+      my $color_out = &GetValue (${$c[1]}{'color'});
+      my $value_out = &GetValue (${$c[1]}{'value'});
+      my $type_out   = 0;
+      $type_out = $value_out =~ s/^byte\((.*?)\)$/$1/o;
+      $value_out =~ s/^val(\d+)$/$1/o;
+      my (%in, %out, %dates, $k);
+      foreach $k (keys (%data)) {
+	my @res = split /\|/, $data{$k};
+	my ($year) = $k =~ m/^news-notice\.(\d+)\.\d+\.\d+-\d+.\d+.\d+\.html/;
+	next unless $year; # bad filename.. strange.
+	my ($start, $end) =
+	  $res[$date_idx - 1] =~ m/^(\w+\s+\d+ \S+) -- (\w+\s+\d+ \S+)$/o;
+	next unless $start; # bad date
+	$start = &ConvDate ($start);
+	$end = &ConvDate ($end);
+	# 31/12 - 1/1 ?
+	my $inc = $end < $start ? 1 : 0;
+	$start += (($year - 1970) * 365 +
+		   int (($year - 1968) / 4)) * 3600 * 24;
+	$year += $inc;
+	$end += (($year - 1970) * 365 + int (($year - 1968) / 4)) * 3600 * 24;
+	$in{$start} = $type_in ? &kb2i($res[$value_in - 1])
+	                       : $res[$value_in - 1];
+	$out{$start} = $type_out ? &kb2i($res[$value_out - 1])
+	                         : $res[$value_out - 1];
+	$dates{$start} = $end;
+      }
+      my ($xmax, $ymax) = (500, 170);
+      &Chrono ("$IMG_dir/$filename", $title, $color_bg, $xmax, $ymax,
+	       \%in, \%out, \%dates, $label_in, $label_out,
+	       $color_in, $color_out, $unit);
+      $result .= "<IMG WIDTH=\"$xmax\" HEIGHT=\"$ymax\" ";
+      $result .= "SRC=\"$IMG_pth$filename\">\n";
+      $i++;
+    }
+    $result .= "<P>\n";
+  }
+  my $i = 0;
   $result .= "<TABLE BORDER=\"1\"><TR>";
   my $temp = "";
-  while (defined ${${$output{'index'}{'column'}}[$i]}{'title'})
-  {
-    my ($title) = ${${$output{'index'}{'column'}}[$i]}{'title'}
-       =~ m/^\"\s*(.*?)\s*\"$/o;
-    my $name = defined ${${$output{'index'}{'column'}}[$i]}{'name'} ?
-       ${${$output{'index'}{'column'}}[$i]}{'name'} : "";
-    $name =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+  while (defined ${${$output{'index'}{'column'}}[$i]}{'title'}) {
+    my $title = &GetValue (${${$output{'index'}{'column'}}[$i]}{'title'});
+    my $name = "";
+    $name = &GetValue (${${$output{'index'}{'column'}}[$i]}{'name'})
+      if defined ${${$output{'index'}{'column'}}[$i]}{'name'};
     my @list = split /\|/, $name;
-    if ($name)
-    {
+    if ($name) {
       $result .= sprintf "<TH COLSPAN=%d>$title</TH>", $#list + 1;
     }
-    else
-    {
+    else {
       $result .= "<TH ROWSPAN=\"2\">$title</TH>";
     }
-    foreach (@list)
-    {
+    foreach (@list) {
       $temp .= "<TH>$_</TH>";
     }
     $i++;
   }
   $result .= "</TR>\n<TR>$temp</TR>\n";
 
-  foreach (sort {$b cmp $a} (keys %data))
-  {
+  foreach (sort {$b cmp $a} (keys %data)) {
     my @list = split /\|/, $data{$_};
-    my $str = "<TR><TD ALIGN=LEFT><A HREF=\"$_\">" . shift @list;
-    $str .= "</A></TD>";
-    while (@list)
-    {
+    my $str = "<TR><TD ALIGN=LEFT>";
+    $str .= "<A HREF=\"$_\">" if -e "$rep/$_";
+    $str .= shift @list;
+    $str .= "</A>" if -e "$rep/$_";;
+    $str .= "</TD>";
+    while (@list) {
       $str .= "<TD ALIGN=RIGHT>";
-      $str .= shift @list;
-      $str .= "</TD>";
+      my $t = shift @list;
+      $t =~ s/^\0+//o; # remove garbage, if any.
+      $str .= "$t</TD>";
     }
     $str .= "</TR>\n";
     $result .= "$str";
@@ -841,18 +845,16 @@ EOF
   $result .= "</TABLE>\n</CENTER>\n<P><HR>";
   $result .= "<A HREF=\"ftp://ftp.eerie.fr/pub/usenet/innreport/\">innreport";
   $result .= "</A> $version (c) 1996-1998 ";
-  $result .= "by Fabien Tassin &lt;<A HREF=\"mailto:tassin\@eerie.fr\">";
-  $result .= "tassin\@eerie.fr</A>&gt;.\n";
-  if (defined ($output{'default'}{'footer'}))
-  {
+  $result .= "by Fabien Tassin &lt;<A HREF=\"mailto:fta\@oleane.net\">";
+  $result .= "fta\@oleane.net</A>&gt;.\n";
+  if (defined ($output{'default'}{'footer'})) {
     my ($t) = $output{'default'}{'footer'} =~ m/^\"\s*(.*?)\s*\"$/o;
     $t =~ s/\\\"/\"/go;
     $result .= "<BR>" . $t;
   }
   $result .= "$HTML_footer\n</BODY>\n</HTML>\n";
   my $name = $rep . "/" . $index;
-  while ($name =~ m/\/\.\.\//o)
-  {
+  while ($name =~ m/\/\.\.\//o) {
     $name =~ s|^\./||o;                 # ^./xxx        =>      ^xxx
     $name =~ s|/\./|/|go;               # xxx/./yyy     =>      xxx/yyy
     $name =~ s|/+|/|go;                 # xxx//yyy      =>      xxx/yyy
@@ -998,7 +1000,7 @@ sub Graph3d
   # Title
   $image->string (gdMediumBoldFont, ($xmax - gdMediumBoldFont->width *
 		  (length "$title")) / 2, $ymax - gdMediumBoldFont->height - 7,
-                      "$title", $black);
+		  "$title", $black);
 
   my $e = $mt - $h + $d;
   my $r = ($xmax - $ml - $mr - $rx) / $max;
@@ -1134,8 +1136,10 @@ sub Histo
     if (defined $$val1{$kk})
     {
       $nb++;
+      # Arg... the following MUST be removed !!!!!!!!!
       $$val1{$kk} = $$val1{$kk} / $innreport_inn::inn_flow_time{$kk} * 3600
-	if $innreport_inn::inn_flow_time{$kk} != 3600;
+	if ($innreport_inn::inn_flow_time{$kk} != 3600) &&
+	   ($innreport_inn::inn_flow_time{$kk} != 0);
       push @a, $$val1{$kk};
       $max = $$val1{$kk} if $$val1{$kk} > $max;
       push @b, $$labels1{$kk};
@@ -1366,6 +1370,334 @@ sub Histo
   1;
 }
 
+sub Chrono {
+  my $filename = shift;           # filename (for the GIF file)
+  my $title = shift;              # title
+  my $color_bg = shift;           # background color
+  my $xmax = shift;               # width
+  my $ymax = shift;               # height
+  
+  my $in = shift;
+  my $out = shift;
+  my $dates = shift;
+
+  my $legend_in = shift;
+  my $legend_out = shift;
+
+  my $color_in = shift;
+  my $color_out = shift;
+
+  my $unit = shift;
+
+  my $key;
+  my $x_min = 1E30;
+  my $x_max = 0;
+  my $y_min = 0;
+  my $y_max;
+  my $y_max_in = 0;
+  my $y_max_out = 0;
+
+  foreach $key (sort (keys %$dates)) {
+    $x_min = $key if $x_min > $key;
+    $x_max = $$dates{$key} if $x_max < $$dates{$key};
+    my $t = $$out{$key} / ($$dates{$key} - $key);
+    $y_max_out = $t if $y_max_out < $t;
+    $t = $$in{$key} / ($$dates{$key} - $key);
+    $y_max_in = $t if $y_max_in < $t;
+  }
+  $y_max = 1 + sprintf "%d", $y_max_out > $y_max_in ? $y_max_out : $y_max_in;
+  $y_max += (4 - ($y_max % 4)) % 4;
+  my $factor = 1;
+  if ($y_max_out <= 1) {
+    $factor = 60;
+    $y_max = 4 / 60;
+  }
+  $unit .= "/" . ($factor == 60 ? "min" : "sec");
+
+  # min range is 4 weeks.
+  my $delta = $x_max - $x_min;
+  $x_min = $x_max - 3024000 if $delta < 3024000;
+  # between 4 weeks and one year, range is a year.
+  $x_min = $x_max - 31536000 if ($delta < 31536000 && $delta > 3024000);
+  # max range is 13 months
+  $x_min = $x_max - 34128000 if $delta > 34128000;
+  my $image = new GD::Image ($xmax, $ymax);
+  my ($white, $black);
+  if (defined $output{'default'}{'graph_fg'}) {
+    my $t = $output{'default'}{'graph_fg'};
+    $t =~ s/^\"\s*\#(.*?)\s*\"$/$1/o;
+    $t =~ m/^[\da-fA-F]{6}$/o ||
+      die "Error in section 'default' section 'graph_fg'. Bad color.\n";
+    my @c = map { hex ($_) } ($t =~ m/^(..)(..)(..)$/);
+    $black = $image->colorAllocate (@c);
+  }
+  else {
+    $black = $image->colorAllocate (  0,   0,   0);
+  } 
+  if (defined $output{'default'}{'graph_bg'}) {
+    my $t = $output{'default'}{'graph_bg'};
+    $t =~ s/^\"\s*\#(.*?)\s*\"$/$1/o;
+    $t =~ m/^[\da-fA-F]{6}$/o ||
+      die "Error in section 'default' section 'graph_bg'. Bad color.\n";
+    my @c = map { hex ($_) } ($t =~ m/^(..)(..)(..)$/);
+    $white = $image->colorAllocate (@c);
+  }
+  else {
+    $white = $image->colorAllocate (255, 255, 255);
+  }
+  my $bg;
+  if (defined $color_bg) {
+    $color_bg =~ m/^\#[\da-fA-F]{6}$/o ||
+      die "Error in section 'index'. Bad color $color_bg.\n";
+    my @c = map { hex ($_) } ($color_bg =~ m/^\#(..)(..)(..)$/);
+    $bg = $image->colorAllocate (@c);
+  }
+  else {
+    $bg = $image->colorAllocate (255, 255, 206);
+  }
+  my $col_in;
+  if (defined $color_in) {
+    $color_in =~ m/^\#[\da-fA-F]{6}$/o ||
+      die "Error in section 'index'. Bad color $color_in.\n";
+    my @c = map { hex ($_) } ($color_in =~ m/^\#(..)(..)(..)$/);
+    $col_in = $image->colorAllocate (@c);
+  }
+  else {
+    $col_in = $image->colorAllocate ( 80, 159, 207);
+  }
+  my $col_out;
+  my @col_out = (  0,   0, 255);
+  if (defined $color_out) {
+    $color_out =~ m/^\#[\da-fA-F]{6}$/o ||
+      die "Error in section 'index'. Bad color $color_out.\n";
+    my @c = map { hex ($_) } ($color_out =~ m/^\#(..)(..)(..)$/);
+    $col_out = $image->colorAllocate (@c);
+    @col_out = @c;
+  }
+  else {
+    $col_out = $image->colorAllocate (@col_out);
+  }
+
+  my $white2  = $image->colorAllocate (255, 255, 255);
+  my $gray    = $image->colorAllocate (192, 192, 192);
+  my $red     = $image->colorAllocate (255,   0,   0);
+  my $coltxt  = $black;
+
+  my $size    = 22; # legend
+  # legend statistics
+  my ($max_in, $max_out) = (0, 0);         # min
+  my ($min_in, $min_out) = (1E10, 1E10);   # max
+  my ($t_in, $t_out) = (0, 0);             # time
+  my ($s_in, $s_out) = (0, 0);             # sum
+  
+  $image->filledRectangle (0, 0, $xmax, $ymax, $gray);
+  $image->transparent ($gray) if $transparent;
+  
+  my $FontWidth = gdSmallFont->width;
+  my $FontHeight = gdSmallFont->height;
+  $image->setStyle ($black, gdTransparent, gdTransparent);
+
+  my $marginl = 13 + $FontWidth * length (sprintf "%d", $y_max * $factor);
+  my $marginr = 15 + 4 * $FontWidth; # "100%"
+  my $margint = 2 * $FontHeight + gdMediumBoldFont->height;
+  my $marginb = 2 * $FontHeight + $size;
+  my $xratio = ($xmax - $marginl - $marginr) / ($x_max - $x_min);
+  my $yratio = ($ymax - $margint - $marginb) / ($y_max - $y_min);
+
+  my $frame = new GD::Polygon;
+  $frame->addPt(2, $margint - $FontHeight -3);
+  $frame->addPt($xmax - 2, $margint - $FontHeight -3);
+  $frame->addPt($xmax - 2, $ymax - 3);
+  $frame->addPt(2, $ymax - 3);
+  $image->filledPolygon($frame, $white2);
+  $image->polygon($frame, $black);
+
+  $image->filledRectangle ($marginl, $margint,
+			   $xmax - $marginr, $ymax - $marginb, $bg);
+  my $brush = new GD::Image(1, 2);
+  my $b_col = $brush->colorAllocate(@col_out);
+  $brush->line(0, 0, 0, 1, $b_col);
+  $image->setBrush($brush);
+  my ($old_x, $old_y_in, $old_y_out);
+  foreach $key (sort (keys %$dates)) {
+    next if $key < $x_min;
+    my $delta = $$dates{$key} - $key;
+    $min_in  = $$in{$key} / $delta  if $min_in  > $$in{$key} / $delta;
+    $max_in  = $$in{$key} / $delta  if $max_in  < $$in{$key} / $delta;
+    $min_out = $$out{$key} / $delta if $min_out > $$out{$key} / $delta;
+    $max_out = $$out{$key} / $delta if $max_out < $$out{$key} / $delta;
+    $t_in   += $delta;
+    $s_in   += $$in{$key};
+    $s_out  += $$out{$key};
+
+    my $tt_in  = $$in{$key} / ($$dates{$key} - $key) * $yratio;
+    my $tt_out = $$out{$key} / ($$dates{$key} - $key) * $yratio;
+    my $new_x = $marginl + ($key - $x_min) * $xratio;
+    $image->filledRectangle ($marginl + ($key - $x_min) * $xratio,
+		       $ymax - $marginb - $tt_in,
+		       $marginl + ($$dates{$key} - $x_min) * $xratio,
+		       $ymax - $marginb, $col_in);
+    if (defined $old_x) {
+      $old_x = $new_x if $old_x > $new_x;
+      my $poly = new GD::Polygon;
+      $poly->addPt($old_x, $old_y_in);
+      $poly->addPt($new_x, $ymax - $marginb - $tt_in);
+      $poly->addPt($new_x, $ymax - $marginb);
+      $poly->addPt($old_x, $ymax - $marginb);
+      $image->filledPolygon($poly, $col_in);
+    }
+    $image->line ($marginl + ($key - $x_min) * $xratio,
+		       $ymax - $marginb - $tt_out,
+		       $marginl + ($$dates{$key} - $x_min) * $xratio,
+		       $ymax - $marginb - $tt_out, gdBrushed);
+    $image->line ($old_x, $old_y_out, $new_x,
+		  $ymax - $marginb - $tt_out, $col_out) if defined $old_x;
+    $old_x = $marginl + ($$dates{$key} - $x_min) * $xratio;
+    $old_y_in  = $ymax - $marginb - $tt_in;
+    $old_y_out = $ymax - $marginb - $tt_out;
+  }
+  $t_out = $t_in;
+
+  # main frame
+  $image->rectangle ($marginl, $margint,
+		     $xmax - $marginr, $ymax - $marginb, $black);
+  # graduations
+  my $i;
+  foreach $i (0, 25, 50, 75, 100) {
+    my $t = $ymax - $margint - $marginb;
+    $image->line ($marginl, $ymax - $marginb - $i / 100 * $t,
+		  $xmax - $marginr, $ymax - $marginb - $i / 100 * $t,
+		  gdStyled);
+    $image->line ($xmax - $marginr, $ymax - $marginb - $i / 100 * $t,
+		  $xmax - $marginr + 3, $ymax - $marginb - $i / 100 * $t,
+		  $black);
+    $image->line ($marginl - 3, $ymax - $marginb - $i / 100 * $t,
+		  $marginl, $ymax - $marginb - $i / 100 * $t,
+		  $black);
+    $image->string (gdSmallFont, $xmax - $marginr + 8, - $FontHeight / 2 +
+		    $ymax - $marginb - $i / 100 * $t, "$i%", $black);
+    my $s = sprintf "%d", $y_max * $i / 100 * $factor;
+    $image->string (gdSmallFont, $marginl - 5 - $FontWidth * length $s,
+		    - $FontHeight / 2 +
+		    $ymax - $marginb - $i / 100 * $t, $s, $black);
+  }
+  ##
+  my $w = 604800;      # number of seconds in a week
+  my $y = 31536000;    # number of seconds in a 365 days year
+  my $mm = 2592000;    # number of seconds in a 30 days month
+  if ($x_max - $x_min <= 3024000) { # less than five weeks
+    # unit is a week
+    # 1/1/1990 is a monday. Use this as a basis.
+    my $d = 631152000; # number of seconds between 1/1/1970 and 1/1/1990
+    my $n = int ($x_min / $y);
+    my $t = $x_min - $n * $y - int (($n - 2) / 4) * 24 * 3600;
+    my $f = int ($t / $w);
+    $n = $d + int (($x_min - $d) / $w) * $w;
+    while ($n < $x_max) {
+      $t = $marginl + ($n - $x_min) * $xratio;
+      if ($n > $x_min) {
+	$image->line ($t, $margint, $t, $ymax - $marginb, gdStyled);
+	$image->line ($t, $ymax - $marginb, $t, $ymax - $marginb + 2, $black);
+      }
+      $image->string (gdSmallFont, $FontWidth * 7 / 2 + $t,
+		      $ymax - $marginb + 4, (sprintf "Week %02d", $f), $black)
+	if ($n + $w / 2 > $x_min) && ($n + $w / 2 < $x_max);
+      $f++;
+      $n += $w;
+      $t = int ($n / $y);
+      $f = 0
+	if ($n - $y * $t - int (($t - 2) / 4) * 24 * 3600 < $w && $f > 50);
+    }
+    $d = 86400;    # 1 day
+    $n = int ($x_min / $y);
+    $t = $n * $y + int (($n - 2) / 4) * 24 * 3600;
+    $i = 0;
+    my $x;
+    while ($t < $x_max) {
+      $x = $marginl + ($t - $x_min) * $xratio;
+      $image->line ($x, $margint, $x, $ymax - $marginb + 2, $red)
+	if $t > $x_min;
+      $t += $mm;
+      $t += $d if ($i == 0 || $i == 2 || $i == 4 ||
+		   $i == 6 || $i == 7 || $i == 9 || $i == 11); # 31 days months
+      if ($i == 1) {  # february ?
+	$t -= 2 * $d;
+	$t += $d unless (1970 + int ($t / $y)) % 4;
+      }
+      $i++;
+      $i = 0 if $i == 12; # Happy New Year !!
+    }
+  }
+  else {
+    # unit is a month
+    my $n = int ($x_min / $y);
+    my $t = $n * $y + int (($n - 2) / 4) * 24 * 3600;
+    my @m = ("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+	     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+    my $d = 86400;    # 1 day
+    my $i = 0;
+    my $x;
+    while ($t < $x_max) {
+      $x = $marginl + ($t - $x_min) * $xratio;
+      if ($t > $x_min) {
+	$image->line ($x, $margint, $x, $ymax - $marginb, gdStyled);
+	$image->line ($x, $ymax - $marginb, $x,
+		      $ymax - $marginb + 2, $black);
+	$image->line ($x, $margint, $x, $ymax - $marginb, $red) unless $i;
+      }
+      $image->string (gdSmallFont, $mm * $xratio / 2 - $FontWidth * 3 / 2 +
+		      $x, $ymax - $marginb + 4, (sprintf "%s", $m[$i]),
+		      $black)
+	if ($t + 2 * $w > $x_min) && ($x_max > 2 * $w + $t);
+      $t += $mm;
+      $t += $d if ($i == 0 || $i == 2 || $i == 4 ||
+		   $i == 6 || $i == 7 || $i == 9 || $i == 11); # 31 days months
+      if ($i == 1) {  # february ?
+	$t -= 2 * $d;
+	$t += $d unless (1970 + int ($t / $y)) % 4;
+      }
+      $i++;
+      $i = 0 if $i == 12; # Happy New Year !!
+    }
+  }
+
+  # Add the little red arrow
+  my $poly = new GD::Polygon;
+  $poly->addPt($xmax - $marginr - 2, $ymax - $marginb - 3);
+  $poly->addPt($xmax - $marginr + 4, $ymax - $marginb);
+  $poly->addPt($xmax - $marginr - 2, $ymax - $marginb + 3);
+  $image->filledPolygon($poly, $red);
+  
+  # Title
+  $image->string (gdMediumBoldFont,
+		  $xmax / 2 - $FontWidth * length ($title) / 2, 4,
+		  $title, $black);
+
+  # Legend
+  my $y_in = $ymax - $size - $FontHeight + 5;
+  $image->string (gdSmallFont, $marginl, $y_in, $legend_in, $col_in);
+  $image->string (gdSmallFont, $xmax / 4, $y_in,
+		  (sprintf "Min: %5.1f $unit", $min_in * $factor), $black);
+  $image->string (gdSmallFont, $xmax / 2, $y_in,
+		(sprintf "Avg: %5.1f $unit", $s_in / $t_in * $factor), $black);
+  $image->string (gdSmallFont, 3 * $xmax / 4, $y_in,
+		  (sprintf "Max: %5.1f $unit", $max_in * $factor), $black);
+
+  my $y_out = $ymax - $size + 5;
+  $image->string (gdSmallFont, $marginl, $y_out, $legend_out, $col_out);
+  $image->string (gdSmallFont, $xmax / 4, $y_out,
+		  (sprintf "Min: %5.1f $unit", $min_out * $factor), $black);
+  $image->string (gdSmallFont, $xmax / 2, $y_out,
+	      (sprintf "Avg: %5.1f $unit", $s_out / $t_out * $factor), $black);
+  $image->string (gdSmallFont, 3 * $xmax / 4, $y_out,
+		  (sprintf "Max: %5.1f $unit", $max_out * $factor), $black);
+
+  open (IMG, "> $filename") || die "Error: Can't open \"$filename\": $!\n";
+  print IMG $image->gif;
+  close (IMG);
+  return $ymax;
+}
+
 sub Write_all_results
 {
   my $HTML_output = shift;
@@ -1469,7 +1801,7 @@ sub Write_all_results
     print HTML <<EOT;
 <A HREF="ftp://ftp.eerie.fr/pub/usenet/innreport/">innreport</A> 
 $version (c) 1996-1998 by Fabien Tassin 
-&lt;<A HREF="mailto:tassin\@eerie.fr">tassin\@eerie.fr</A>&gt;.
+&lt;<A HREF="mailto:fta\@oleane.net">fta\@oleane.net</A>&gt;.
 EOT
     if (defined ($$h{'default'}{'footer'}))
     {
@@ -1531,11 +1863,12 @@ sub Write_Results
   {
     my $t = defined ($output{$report}{'sort'}) ? $output{$report}{'sort'} :
       "\$a cmp \$b";
+    $t =~ s/\n/ /smog;
     $t =~ s/^\"\s*(.*?)\s*\"$/$1/o;
-    $t =~ s/([\$\%\@])/$1${CLASS}\:\:/og;
-    $t =~ s/([\$\%\@])${CLASS}\:\:(prog_(?:size|type)|key|num)/$1$2/og;
-    $t =~ s/\{\$${CLASS}\:\:(a|b)\}/\{\$$1\}/og;
-    $t =~ s/\$${CLASS}\:\:(a|b)/\$$1/og;
+    $t =~ s/([\$\%\@])/$1${CLASS}\:\:/go;
+    $t =~ s/([\$\%\@])${CLASS}\:\:(prog_(?:size|type)|key|num)/$1$2/go;
+    $t =~ s/\{\$${CLASS}\:\:(a|b)\}/\{\$$1\}/go;
+    $t =~ s/\$${CLASS}\:\:(a|b)/\$$1/go;
     $h = $t;
   }
 
@@ -1561,6 +1894,9 @@ sub Write_Results
     $t =~ s/(:?)$/ [Top $TOP_TEXT]$1/o if $TOP_TEXT > 0;
     print "$t\n" if $TEXT;
   }
+  my $numbering = 0;
+  $numbering = 1 if defined $output{$report}{'numbering'} &&
+                    $output{$report}{'numbering'} =~ m/^true$/o;
   my $i;
   my $s = "";
   my $html = "";
@@ -1577,9 +1913,10 @@ sub Write_Results
     $s .= sprintf $v1 . " ", $v2 unless ($DOUBLE && ($first == 1));
     if ($HTML)
     {
-      my $v1 = $v1; # local, abomination !!
+      my $v1 = $v1;
       $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?(\w)/\%$1/g;
       my $temp = $first ? "CENTER" : "LEFT";
+      $temp .= "\" COLSPAN=\"2" if $numbering && !$first;
       $html .= sprintf "<TH ALIGN=\"$temp\">$v1</TH>", $v2;
     }
     $first++;
@@ -1595,19 +1932,21 @@ sub Write_Results
   }
   my $num = 0;
   my $done;
-  if ($DOUBLE)
-  {
-    foreach $key1 (sort (keys (%d)))
-    {
+  if ($DOUBLE) {
+    my $num_d = 0;
+    foreach $key1 (sort (keys (%d))) {
       $done = 0;
+      $num = 0;
+      $num_d++;
+      $s = "";
+      $html = "";
+      my @res;
       foreach $key2 (sort {$d{$key1}{$b} <=> $d{$key1}{$a}}
-		     (keys (%{$d{$key1}})))
-      {
+		     (keys (%{$d{$key1}}))) {
 	my $first = 0;
-	foreach $i (@{$output{$report}{'column'}})
-	{
+	$num++;
+	foreach $i (@{$output{$report}{'column'}}) {
 	  my ($v1, $v2, $p);
-
 	  # is it the primary key ?
 	  $p = 0;
 	  $p = 1 if defined ($$i{'primary'}) && ($$i{'primary'} =~ m/true/);
@@ -1620,36 +1959,32 @@ sub Write_Results
 	  $v2 = $$i{'value'};
 	  $v2 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
 	  my $r ='';
-	  if ($v2)
-	  {
+	  if ($v2) {
 	    $r = &EvalExpr ($v2, $key2, $num, $key1);
 	    die "Error in section $report column $$i{'name'}. " .
 	      "Invalid 'value' value.\n" unless defined $r;
 	  }
-	  if ($p)
-	  {
+	  $res[$first] += $r if $v1 =~ m/\%-?(?:\d+(?:\.\d+)?)?d/o;
+	  if ($p) {
 	    $s .= sprintf $v1. "\n", $r unless $done;
-	    if ($HTML)
-	    {
-	      if ($done)
-	      {
+	    if ($HTML) {
+	      if ($done) {
 		$html .= "<TD></TD>";
 	      }
-	      else
-	      {
+	      else {
 		$v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
-
+		$html .= $numbering ? "<TH ALIGN=\"CENTER\">$num_d</TH>" : ""
+		; #  unless $first;
 		$html .= sprintf "<TD ALIGN=\"LEFT\">$v1</TD></TR>\n", $r;
 		$html .= "<TR><TD></TD>";
 	      }
 	    }
 	  }
-	  else
-	  {
+	  else {
 	    $s .= "  " if $first == 1;
 	    $s .= sprintf $v1 . " ", $r;
-	    if ($HTML)
-	    {
+	    if ($HTML) {
+	      $html .= $numbering ? "<TD></TD>" : "" if $first == 1;
 	      $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
 	      my $temp = $first > 1 ? "RIGHT" : "LEFT";
 	      $html .= sprintf "<TD ALIGN=\"$temp\">$v1</TD>", $r;
@@ -1660,21 +1995,53 @@ sub Write_Results
 	}
 	$s =~ s/\s*$//;
 	$s =~ s/\\n/\n/g;
-	print "$s\n" if $TEXT;
-	$s = "";
-	if ($HTML)
-	{
+	print "$s\n" if ($TEXT && ($num <= $TOP_TEXT || $TOP_TEXT == -1));
+	if ($HTML && ($num <= $TOP_HTML || $TOP_HTML == -1)) {
 	  $html =~ s/\\n//g;
 	  print HTML "<TR>$html</TR>\n";
-	  $html = "";
 	}
+	$s = "";
+	$html = "";
+      }
+      $first = 0;
+      $s = "";
+      $html = "";
+      if ($TOP_TEXT != -1 && $TOP_HTML != -1) {
+	foreach $i (@{$output{$report}{'column'}}) {
+	  if (defined ($$i{'primary'}) && $$i{'primary'} =~ m/true/o) {
+	    $first++;
+	    $s .= "  ";
+	    $html .= "<TD></TD>" if $HTML;
+	    $html .= "<TD></TD>" if $HTML && $numbering;
+	    next;
+	  }
+	  my ($v1, $v2);
+	  $v1 = defined ($$i{'format_total'}) ? $$i{'format_total'} :
+	    (defined ($$i{'format'}) ? $$i{'format'} : "%s");
+	  $v1 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+	  $r = $first == 1 ? $num : $res[$first];
+	  $s .= sprintf $v1 . " ", $r;
+	  if ($HTML) {
+	    my $temp = $first > 1 ? "RIGHT" : "LEFT";
+	    $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
+	    $v1 =~ s|(.*)|<STRONG>$1</STRONG>|o unless $first > 1;
+	    $html .= sprintf "<TD ALIGN=\"$temp\">$v1</TD>", $r;
+	  }
+	  $first++;
+	}
+	$s =~ s/\s*$//;
+	$s =~ s/\\n//g;
+	print "$s\n" if $TEXT;
+	print HTML "<TR>$html</TR>\n" if ($HTML);
       }
     }
     print "\n" if $TEXT;
     print HTML "<TR></TR>\n" if $HTML;
     $first = 0;
-    foreach $i (@{$output{$report}{'column'}})
-    {
+    $num = $num_d;
+    $s = "";
+    $html = "";
+    foreach $i (@{$output{$report}{'column'}}) {
       my ($v1, $v2);
       $v1 = defined ($$i{'format_total'}) ? $$i{'format_total'} :
 	(defined ($$i{'format'}) ? $$i{'format'} : "%s");
@@ -1684,33 +2051,31 @@ sub Write_Results
 	  "Need a 'total' field.\n";
       $v2 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
       my $r = '';
-      if ($v2)
-      {
+      if ($v2) {
 	$r = &EvalExpr ($v2, $key2, $num, 1);
 	die "Error in section $report column $$i{'name'}. " .
 	  "Invalid 'total' value.\n" unless defined $r;
       }
       $s .= sprintf $v1 . " ", $r unless ($first == 1);
-      if ($HTML)
-      {
+      if ($HTML) {
 	my $temp = $first ? "RIGHT" : "LEFT";
+	$temp .= "\" COLSPAN=\"2" if $numbering && !$first;
 	$v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
 	$v1 =~ s|(.*)|<STRONG>$1</STRONG>|o unless $first;
-	$html .= sprintf "<TD ALIGN=\"$temp\">$v1</TD>", $r;
+	$html .= $first == 1 ? "<TD></TD>" : 
+	         sprintf "<TD ALIGN=\"$temp\">$v1</TD>", $r;
       }
       $first++;
     }
     $s =~ s/\s*$//;
     $s =~ s/\\n//g;
     print "$s\n" if $TEXT;
-    if ($HTML)
-    {
+    if ($HTML) {
       print HTML "<TR>$html</TR>\n";
       print HTML "</TABLE>\n</CENTER>\n<P>\n<HR>\n";
     }
   }
-  else
-  {
+  else {
     # foreach $key (sort { local $^W = 0; no strict; eval $h } (keys (%d)))
     foreach $key ((eval "sort { local \$^W = 0; no strict; $h } (keys (%d))"))
     {
@@ -1739,6 +2104,7 @@ sub Write_Results
 	if ($HTML && (($num <= $TOP_HTML) || ($TOP_HTML == -1)))
 	{
 	  $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
+	  $html .= "<TH ALIGN=\"CENTER\">$num</TH>" if $numbering && !$first;
 	  my $temp = $first ? "RIGHT" : "LEFT";
 	  $html .= sprintf "<TD ALIGN=\"$temp\">$v1</TD>", $r;
 	}
@@ -1756,8 +2122,7 @@ sub Write_Results
     print "\n" if $TEXT;
     print HTML "<TR></TR>\n" if $HTML;
     $first = 0;
-    foreach $i (@{$output{$report}{'column'}})
-    {
+    foreach $i (@{$output{$report}{'column'}}) {
       my ($v1, $v2);
       $v1 = defined ($$i{'format_total'}) ? $$i{'format_total'} :
 	(defined ($$i{'format'}) ? $$i{'format'} : "%s");
@@ -1767,17 +2132,16 @@ sub Write_Results
 	  "Need a 'total' field.\n";
       $v2 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
       my $r = '';
-      if ($v2)
-      {
+      if ($v2) {
 	$r = &EvalExpr ($v2, $key, $num);
 	die "Error in section $report column $$i{'name'}. " .
 	  "Invalid 'total' value.\n" unless defined $r;
       }
       $s .= sprintf $v1 . " ", $r;
-      if ($HTML)
-      {
+      if ($HTML) {
 	$v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
 	my $temp = $first ? "RIGHT" : "LEFT";
+	$temp .= "\" COLSPAN=\"2" if $numbering && !$first;
 	$v1 =~ s|(.*)|<STRONG>$1</STRONG>|o unless $first;
 	$html .= sprintf "<TD ALIGN=\"$temp\">$v1</TD>", $r;
       }
@@ -1785,24 +2149,20 @@ sub Write_Results
     }
     $s =~ s/\s*$//;
     print "$s\n" if $TEXT;
-    if ($HTML)
-    {
+    if ($HTML) {
       print HTML "<TR>$html</TR>\n";
       print HTML "</TABLE>\n</CENTER><P>\n";
 
       my $i = 0;
-      while ($GRAPH && defined ${${$output{$report}{'graph'}}[$i]}{'type'})
-      {
+      while ($GRAPH && defined ${${$output{$report}{'graph'}}[$i]}{'type'}) {
 	my $type = ${${$output{$report}{'graph'}}[$i]}{'type'};
         my ($title) = ${${$output{$report}{'graph'}}[$i]}{'title'} =~
 	               m/^\"\s*(.*?)\s*\"$/o;
-        if ($type eq 'histo3d')
-        {
+        if ($type eq 'histo3d') {
 	  my (@values, @colors, @labels);
 	  my $num = 0;
 	  my $j;
-	  foreach $j (@{${${$output{$report}{'graph'}}[$i]}{'data'}})
-          {
+	  foreach $j (@{${${$output{$report}{'graph'}}[$i]}{'data'}}) {
 	    $num++;
 	    my ($h) = $$j{'value'} =~ m/^\"\s*(.*?)\s*\"$/o;
 	    my %hh;
@@ -1832,20 +2192,22 @@ sub Write_Results
 	  print HTML "WIDTH=\"$xmax\" HEIGHT=\"$y\" ";
 	  print HTML "SRC=\"$IMG_pth$report$s.gif\"></CENTER>\n";
 	}
-        elsif ($type eq 'histo')
-        {
+        elsif ($type eq 'histo') {
 	  my (%values, %labels);
-	  my $factor = ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[1]}{'factor'}
+	  my $factor = 
+	    ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[1]}{'factor'}
              || die "Error in section $report section 'graph'. " .
 	       "No factor specified for 'value' " .
 	       ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[1]}{'name'} .
 	       ".\n";
 	  $factor =~ s/^\"\s*(.*?)\s*\"$/$1/o;
-	  my $labelx = ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[0]}{'name'}
+	  my $labelx =
+	    ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[0]}{'name'}
 	     || die "Error in section $report section 'graph'. " .
 	       "No name specified for value.\n";
 	  $labelx =~ s/^\"\s*(.*?)\s*\"$/$1/o;
-	  my $labely = ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[1]}{'name'}
+	  my $labely = 
+	    ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[1]}{'name'}
 	     || die "Error in section $report section 'graph'. " .
 	       "No name specified for value.\n";
 	  $labely =~ s/^\"\s*(.*?)\s*\"$/$1/o;
@@ -1878,12 +2240,10 @@ sub Write_Results
 		 if $r;
 	  }
 	}
-        elsif ($type eq 'piechart')
-        {
+        elsif ($type eq 'piechart') {
 	  print "Sorry, graph type 'piechart' not supported yet..\n";
 	}
-        else
-        {
+        else {
 	  die "Error in section $report section 'graph'. " .
 	    "Invalid 'type' value.\n"
 	}
@@ -1902,49 +2262,57 @@ sub EvalExpr
   my ($key, $num, $key1) = @_;
   my $key2;
 
-  if ($key1)
-  {
+  $v =~ s/\n/ /smog;
+  $v =~ s/^\"(.*?)\"$/$1/o;
+  if ($key1) {
     $key2 = $key;
     $v =~ s/([^a-zA-Z_\-]?)total\s*\(\s*%/$1&ComputeTotalDouble\(\\%/og;
   }
-  else
-  {
+  else {
     $v =~ s/([^a-zA-Z_\-]?)total\s*\(\s*%/$1&ComputeTotal\(\\%/og;
+    # $v =~ s/([^a-zA-Z_\-]?)total\s*\(\s*%([^\)]*)\)/$1&ComputeTotal\("$2"\)/og;
   }
   $v =~ s/([^a-zA-Z_\-]?)bytes\s*\(\s*/$1&NiceByte\(/og;
   $v =~ s/([^a-zA-Z_\-]?)time\s*\(\s*/$1&second2time\(/og;
   $v =~ s/([^a-zA-Z_\-]?)time_ms\s*\(\s*/$1&ms2time\(/og;
-  $v =~ s/([\$\%\@])/$1${CLASS}\:\:/og;
-  $v =~ s/([\$\%\@])${CLASS}\:\:(prog_(?:size|type)|key|num)/$1$2/og;
+  # $v =~ s/([\$\%\@])/$1${CLASS}\:\:/og;
+  $v =~ s/([\$\%\@])([^{\s\d])/$1${CLASS}\:\:$2/og;
+  $v =~ s/([\$\%\@])${CLASS}\:\:(prog_(?:size|type)|key|sec_glob|num)/$1$2/og;
   my $r;
-  eval { local $^W = 0; no strict; ($r) = eval $v; };
+  # eval { local $^W = 0; no strict; ($r) = eval $v; };
+  eval " local \$^W = 0; no strict; (\$r) = $v; ";
   $r = 0 unless defined $r;
   return $r;
 }
 
-sub NiceByte
-{
+sub NiceByte {
   my $size = shift;
   my $t;
 
-  $size = 0 unless defined ($size);
+  $size = 0 unless defined $size;
   $t = $size / 1024 / 1024 / 1024 > 1 ?
     sprintf "%.1f Gb", $size / 1024 / 1024 / 1024 :
-      ( $size / 1024 / 1024 > 1 ? sprintf "%.1f Mb", $size / 1024 / 1024 :
-	sprintf "%.1f kb", $size / 1024 );
+      ($size / 1024 / 1024 > 1 ? sprintf "%.1f Mb", $size / 1024 / 1024 :
+	sprintf "%.1f kb", $size / 1024);
   return $t;
 }
 
-sub Decode_Config_File
-{
+sub kb2i {
+  my $s = shift;
+  my ($i, $u) = $s =~ m/^(\S+) (\S+)$/;
+  $i *= 1024 if $u =~ m/Mb/o;
+  $i *= 1024 * 1024 if $u =~ m/Gb/o;
+  return $i;
+}
+
+sub Decode_Config_File {
   my $file = shift;
   my ($line, $section);
   my $linenum = 0;
   my $info;
   my @list;
   open (FILE, "$file") || die "Can\'t open config file \"$file\". Abort.\n";
-  while (defined ($line = <FILE>))
-  {
+  while (defined ($line = <FILE>)) {
     $linenum++;
     last if eof (FILE);
     ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
@@ -1960,14 +2328,12 @@ sub Decode_Config_File
       unless ($info eq '{');
     ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
     push @list, $section;
-    while ($info ne '}')
-    { # it is a block
+    while ($info ne '}') { # it is a block
       last if eof (FILE);
       my $keyword = $info;
       ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
       my $value = $info;
-      if ($info eq '{')
-      { # it is a sub-block
+      if ($info eq '{') { # it is a sub-block
 	my @a;
 	$output{$section}{$keyword} = \@a unless $output{$section}{$keyword};
 	my %hash;
@@ -1975,32 +2341,27 @@ sub Decode_Config_File
 	($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
 	my @sublist; # to store the "data" blocks
 
-	while ($info ne '}')
-	{ 
+	while ($info ne '}') { 
 	  last if eof (FILE);
 	  my $subkeyword = $info;
 	  ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
 	  my $subvalue = $info;
-	  if ($info eq '{')
-	  {
+	  if ($info eq '{') {
 	    # it is a sub-sub-block
 	    my %subhash;
 	    print "\t\t$subkeyword {\n" if $DEBUG;
 	    my @b;
 	    $hash{$subkeyword} = \@b unless ${hash}{$subkeyword};
 	    ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
-	    while ($info ne '}')
-	    { 
+	    while ($info ne '}') { 
 	      last if eof (FILE);
 	      my $subsubkeyword = $info;
 	      ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
 	      my $subsubvalue = $info;
-	      if ($info eq '{')
-	      {
+	      if ($info eq '{') {
 		die "Error in $file line $linenum: too many blocks.\n";
 	      }
-	      else
-	      {
+	      else {
 		($info, $linenum, $line) =
 		  &read_conf ($linenum, $line, \*FILE);
 		die "Error in $file line $linenum: must be a ';' instead of '$info'\n"
@@ -2019,8 +2380,7 @@ sub Decode_Config_File
             ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
 	    print "\t\t};\n" if $DEBUG; 
 	  }
-	  else
-	  {
+	  else {
 	    ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
 	    die "Error in $file line $linenum: must be a ';' instead of '$info'\n"
 	      unless ($info eq ';');
@@ -2036,8 +2396,7 @@ sub Decode_Config_File
 	($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
 	print "\t};\n" if $DEBUG; 
       }
-      else
-      {
+      else {
 	($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
         die "Error in $file line $linenum: must be a ';' instead of '$info'\n"
 	  unless ($info eq ';');
@@ -2062,37 +2421,38 @@ sub read_conf
   my ($linenum, $line, $file) = @_;
   *FILE = *$file;
 
-  chomp $line;
-  $line =~ s/^\s+//o;           # remove useless blanks
-  $line =~ s,^(\#|//).*$,,o;    # remove comments (at the beginning)
-  while (($line eq '') && !(eof (FILE)))
-  {
-    $line = <FILE>;             # read one line
-    chomp $line;
+  $line =~ s,^\s+,,o;            # remove useless blanks
+  $line =~ s,^(\#|//).*$,,o;     # remove comments (at the beginning)
+  while (($line =~ m/^$/o || $line =~ m/^\"[^\"]*$/o) && !(eof (FILE))) {
+    $line .= <FILE>;             # read one line
     $linenum++;
-    $line =~ s/^\s*//o;         # remove useless blanks
-    $line =~ s,^(\#|//).*$,,o;  # remove comments (at the beginning)
+    $line =~ s,^\s*,,om;         # remove useless blanks
+    $line =~ s,^(\#|//).*$,,om;  # remove comments (at the beginning)
   }
-  $line =~ s/^(                 # at the beginning
-	       [{};]            # match '{', '}', or ';'
-	      |                 # OR
-	       \"               # a double quoted string
+  $line =~ s/^(                  # at the beginning
+	       [{};]             # match '{', '}', or ';'
+	      |                  # OR
+	       \"                # a double quoted string
                 (?:\\.|[^\"\\])*
                \"
-	      |                 # OR
-               [^{};\"\s]+      # a word
-             )\s*//xo;
+	      |                  # OR
+               [^{};\"\s]+       # a word
+             )\s*//mox;
   my $info = $1;
-  warn "Syntax error in conf file line $linenum. No data !?\n"
-    if $info eq '';
+  if (defined $info && $info) {
+    chomp $info;
+  }
+  else {
+    warn "Syntax error in conf file line $linenum.\n";
+  }
   return ($info, $linenum, $line);
 }
 
 sub GetValue
 {
   my $v = shift;
-  $v =~ m/^(?:\"\s*)?(.*?)(?:\s*\")?$/o;
-  return $1;
+  my ($r) = $v =~ m/^(?:\"\s*)?(.*?)(?:\s*\")?$/so;
+  return $r;
 }
 
 sub Usage
@@ -2161,7 +2521,7 @@ sub Usage
 sub Version
 {
   print "\nThis is INNreport version $version\n\n";
-  print "Copyright 1996-1998, Fabien Tassin <tassin\@eerie.fr>\n";
+  print "Copyright 1996-1998, Fabien Tassin <fta\@oleane.net>\n";
   exit (0);
 }
 
