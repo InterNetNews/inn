@@ -128,7 +128,7 @@ bool PERMmatch(char **Pats, char **list)
 **  Newsgroups line.
 */
 bool
-PERMartok()
+PERMartok(void)
 {
     static char		**grplist;
     char		*p, **grp;
@@ -136,9 +136,9 @@ PERMartok()
     if (!PERMspecified)
 	return FALSE;
 
-    if ((p = GetHeader("Xref", FALSE)) == NULL) {
+    if ((p = GetHeader("Xref")) == NULL) {
 	/* in case article does not include Xref */
-	if ((p = GetHeader("Newsgroups", FALSE)) != NULL) {
+	if ((p = GetHeader("Newsgroups")) != NULL) {
 	    if (!NGgetlist(&grplist, p))
 		/* No newgroups or null entry. */
 		return TRUE;

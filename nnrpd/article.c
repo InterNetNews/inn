@@ -491,11 +491,9 @@ static void ARTsendmmap(SENDTYPE what)
 
 /*
 **  Return the header from the specified file, or NULL if not found.
-**  We can estimate the Lines header, if that's what's wanted.
 */
-char *GetHeader(const char *header, bool IsLines)
+char *GetHeader(const char *header)
 {
-    static char		buff[40];
     char		*p, *q, *r, *s, *t, prevchar;
     /* Bogus value here to make sure that it isn't initialized to \n */
     char		lastchar = ' ';
@@ -506,7 +504,7 @@ char *GetHeader(const char *header, bool IsLines)
     bool		pathheader = FALSE;
     bool		xrefheader = FALSE;
 
-    limit = ARThandle->data + ARThandle->len - strlen(header);
+    limit = ARThandle->data + ARThandle->len - strlen(header) - 1;
     for (p = ARThandle->data; p < limit; p++) {
 	if (*p == '\r')
 	    continue;
@@ -515,7 +513,7 @@ char *GetHeader(const char *header, bool IsLines)
 	}
 	if ((lastchar == '\n') || (p == ARThandle->data)) {
 	    headerlen = strlen(header);
-	    if (caseEQn(p, header, headerlen)) {
+	    if (caseEQn(p, header, headerlen) && p[headerlen] == ':') {
 		for (; (p < limit) && !isspace((int)*p) ; p++);
 		for (; (p < limit) && isspace((int)*p) ; p++);
 		for (q = p; q < limit; q++) 
@@ -598,15 +596,6 @@ char *GetHeader(const char *header, bool IsLines)
 	    }
 	}
 	lastchar = *p;
-    }
-
-    if (IsLines) {
-	/* Lines estimation taken from Tor Lillqvist <tml@tik.vtt.fi>'s
-	 * posting <TML.92Jul10031233@hemuli.tik.vtt.fi> in
-	 * news.sysadmin. */
-	snprintf(buff, sizeof(buff), "%d",
-                 (int)(6.4e-8 * ARThandle->len * ARThandle->len + 0.023 * ARThandle->len - 12));
-	return buff;
     }
     return NULL;
 }
@@ -702,7 +691,7 @@ void CMDfetch(int ac, char *av[])
     }
     if (ac > 1)
 	ARTnumber = tart;
-    if ((msgid = GetHeader("Message-ID", FALSE)) == NULL) {
+    if ((msgid = GetHeader("Message-ID")) == NULL) {
         Reply("%s\r\n", ARTnoartingroup);
 	return;
     }
@@ -766,7 +755,7 @@ void CMDnextlast(int ac UNUSED, char *av[])
 	}
     }
 
-    if ((msgid = GetHeader("Message-ID", FALSE)) == NULL) {
+    if ((msgid = GetHeader("Message-ID")) == NULL) {
         Reply("%s\r\n", ARTnoartingroup);
         return;
     }
@@ -1110,7 +1099,7 @@ void CMDpat(int ac, char *av[])
 	    }
 	    Printf("%d %s matches follow (ID)\r\n", NNTP_HEAD_FOLLOWS_VAL,
 		   header);
-	    if ((text = GetHeader(header, FALSE)) != NULL
+	    if ((text = GetHeader(header)) != NULL
 		&& (!pattern || uwildmat_simple(text, pattern)))
 		Printf("%s %s\r\n", p, text);
 
@@ -1148,7 +1137,7 @@ void CMDpat(int ac, char *av[])
 	    for (i = range.Low; i <= range.High && range.High > 0; i++) {
 		if (!ARTopen(i))
 		    continue;
-		p = GetHeader(header, FALSE);
+		p = GetHeader(header);
 		if (p && (!pattern || uwildmat_simple(p, pattern))) {
 		    snprintf(buff, sizeof(buff), "%u ", i);
 		    SendIOb(buff, strlen(buff));
