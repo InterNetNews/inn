@@ -83,7 +83,7 @@ $uncompress = "@UNCOMPRESS@" ;
 $log_compress = "@LOG_COMPRESS@" ;
 $z = "@LOG_COMPRESSEXT@" ;
 
-if($ovmethod eq "ovdb") {
+if ($ovmethod && $ovmethod eq "ovdb") {
     $ENV{'DB_HOME'} = $pathoverview;
 }
 
