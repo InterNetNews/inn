@@ -661,33 +661,11 @@ CCperl(av)
 
 
 #if defined(DO_PYTHON)
-
-#include "Python.h"
-
 STATIC STRING
 CCpython(av)
     char	*av[];
 {
-    char	*p;
-    extern BOOL	PythonFilterActive;
-
-    switch (av[0][0]) {
-    default:
-	return "1 Bad flag";
-    case 'y':
-	if (PythonFilterActive)
-	    return "1 Python filter already enabled";
-        else if (PYFilterObject == NULL)
-            return "1 Python filter not defined" ;
-	PYfilter(TRUE);
-	break;
-    case 'n':
-	if (!PythonFilterActive)
-	    return "1 Python filter already disabled";
-	PYfilter(FALSE);
-	break;
-    }
-    return NULL;
+    return PYcontrol(av);
 }
 #endif /* defined(DO_PYTHON) */
 
@@ -848,9 +826,6 @@ CCmode(av)
 #if defined(DO_PERL)
     extern int		PerlFilterActive;
 #endif /* defined(DO_PERL) */
-#if defined(DO_PYTHON)
-    extern BOOL		PythonFilterActive;
-#endif /* defined(DO_PYTHON) */
 
     /* nb: We assume here that BUFSIZ is >= 512, and that none of
      * ModeReason RejectReason Reservation or NNRPReason is longer than

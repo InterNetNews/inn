@@ -63,6 +63,38 @@ PYfilter(value)
 
 
 /*
+**  Front end for PYfilter()
+*/
+STRING
+PYcontrol(av)
+    char **av;
+{
+    char        *p;
+    extern BOOL PythonFilterActive;
+
+    switch (av[0][0]) {
+    default:
+        return "1 Bad flag";
+    case 'y':
+        if (PythonFilterActive)
+            return "1 Python filter already enabled";
+        else if (PYFilterObject == NULL)
+            return "1 Python filter not defined" ;
+        PYfilter(TRUE);
+        break;
+    case 'n':
+        if (!PythonFilterActive)
+            return "1 Python filter already disabled";
+        PYfilter(FALSE);
+        break;
+    }
+    return NULL;
+}
+
+
+
+
+/*
 **  Reject articles we don't like.
 */
 char *
