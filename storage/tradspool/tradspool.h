@@ -17,6 +17,7 @@ void tradspool_freearticle(ARTHANDLE *article);
 bool tradspool_cancel(TOKEN token);
 bool tradspool_ctl(PROBETYPE type, TOKEN *token, void *value);
 bool tradspool_flushcacheddata(FLUSHTYPE type);
+void tradspool_printfiles(FILE *file, TOKEN token, char **xref, int ngroups);
 void tradspool_shutdown(void);
 
 #endif

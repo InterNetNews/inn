@@ -1210,6 +1210,20 @@ bool tradspool_flushcacheddata(FLUSHTYPE type) {
     return TRUE;
 }
 
+void tradspool_printfiles(FILE *file, TOKEN token, char **xref, int ngroups) {
+    int i;
+    char *path, *p;
+
+    for (i = 0; i < ngroups; i++) {
+        path = xstrdup(xref[i]);
+        for (p = path; *p != '\0'; p++)
+            if (*p == '.' || *p == ':')
+                *p = '/';
+        fprintf(file, "%s\n", path);
+        free(path);
+    }
+}
+
 void
 tradspool_shutdown(void) {
     DumpDB();
