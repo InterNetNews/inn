@@ -33,7 +33,6 @@ BOOL		BufferedLogs = TRUE;
 BOOL		NNRPTracing = FALSE;
 BOOL		StreamingOff = FALSE ; /* default is we can stream */
 BOOL		Tracing = FALSE;
-BOOL		DoLinks = TRUE;
 BOOL		DoCancels = TRUE;
 char		LogName[] = "SERVER";
 int		ErrorCount = IO_ERROR_COUNT;
@@ -590,7 +589,7 @@ int main(int ac, char *av[])
 
     /* Parse JCL. */
     CCcopyargv(av);
-    while ((i = getopt(ac, av, "ac:Cdfi:l:Lm:o:n:p:P:rst:uH:T:X:")) != EOF)
+    while ((i = getopt(ac, av, "ac:Cdfi:l:m:o:n:p:P:rst:uH:T:X:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -678,9 +677,6 @@ int main(int ac, char *av[])
 	case 'u':
 	    BufferedLogs = FALSE;
 	    break;
- 	case 'L':
- 	    DoLinks = FALSE;	/* don't do links for cross posts */
- 	    break;
  	case 'C':
  	    DoCancels = FALSE;
   	    break;
