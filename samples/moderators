@@ -25,6 +25,7 @@ fido7.*:%s@fido7.ru
 medlux.*:%s@news.medlux.ru
 nl.*:%s@nl.net
 relcom.*:%s@moderators.relcom.ru
+ukr.*:%s@sita.kiev.ua
 
 ## Direct all other public hierarchies to the master moderator database.
 *:%s@moderators.isc.org
