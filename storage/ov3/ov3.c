@@ -792,8 +792,20 @@ BOOL tradindexed_add(TOKEN token, char *data, int len) {
 	if (artnum <= 0)
 	    continue;
 
-	if ((gh = OV3opengroup(group, TRUE)) == NULL)
-	    return FALSE;	
+	if ((gh = OV3opengroup(group, TRUE)) == NULL) {
+	    /*
+	    ** check to see if group is in group.index, and if not, just 
+	    ** continue (presumably the group was rmgrouped earlier, but we
+	    ** still have articles referring to it in spool).
+	    */
+	    gloc = GROUPfind(group);
+	    if (GROUPLOCempty(gloc))
+		continue;
+	    /*
+	    ** group was there, but open failed for some reason, return err.
+	    */
+	    return FALSE;
+	}	
 	sprintf(overdata, "%d\t", artnum);
 	i = strlen(overdata);
 	memcpy(overdata + i, data, len);
