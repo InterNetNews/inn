@@ -401,7 +401,7 @@ int cxnConfigLoadCbk (void *data UNUSED)
 	}
       else
         {
-	  bind_addr6 = (struct sockaddr_in6 *) MALLOC( res->ai_addrlen );
+	  bind_addr6 = (struct sockaddr_in6 *) xmalloc (res->ai_addrlen);
 	  memcpy( bind_addr6, res->ai_addr, res->ai_addrlen );
         }
     }
@@ -419,7 +419,7 @@ int cxnConfigLoadCbk (void *data UNUSED)
       else
         {
 	  bind_addr = (struct sockaddr_in *) 
-		      MALLOC( sizeof(struct sockaddr_in) );
+		      xmalloc (sizeof(struct sockaddr_in));
 	  make_sin( (struct sockaddr_in *)bind_addr, &addr );
         }
     }
@@ -464,8 +464,7 @@ Connection newConnection (Host host,
   if (croak)
     return NULL ;
 
-  cxn = CALLOC (struct connection_s, 1) ;
-  ASSERT (cxn != NULL) ;
+  cxn = xcalloc (1, sizeof(struct connection_s));
 
   cxn->myHost = host ;
   cxn->myEp = NULL ;
@@ -2548,7 +2547,7 @@ static void processResponse238 (Connection cxn, char *response)
     }
 
   if (msgid != NULL)
-    FREE (msgid) ;
+    free (msgid) ;
 }
 
 
@@ -2605,7 +2604,7 @@ static void processResponse431 (Connection cxn, char *response)
     }
 
   if (msgid != NULL)
-    FREE (msgid) ;
+    free (msgid) ;
 }
 
 
@@ -2664,7 +2663,7 @@ static void processResponse438 (Connection cxn, char *response)
     }
 
   if (msgid != NULL)
-    FREE (msgid) ;
+    free (msgid) ;
 }
 
 
@@ -2723,7 +2722,7 @@ static void processResponse239 (Connection cxn, char *response)
     }
 
   if (msgid != NULL)
-    FREE (msgid) ;
+    free (msgid) ;
 }
 
 
@@ -2833,7 +2832,7 @@ static void processResponse439 (Connection cxn, char *response)
     }
 
   if (msgid != NULL)
-    FREE (msgid) ;
+    free (msgid) ;
 }
 
 
@@ -3920,8 +3919,8 @@ static Buffer *buildTakethisBuffers (Connection cxn, Buffer checkBuffer)
             lenArray += (1 + artNntpBufferCount (p->article)) ;
 
       /* now allocate the array for the buffers and put them all in it */
-      rval = ALLOC (Buffer, lenArray + 1) ; /* 1 for the terminator */
-      ASSERT (rval != NULL) ;
+      /* 1 for the terminator */
+      rval = xmalloc (sizeof(Buffer) * (lenArray + 1)) ;
 
       if (checkBuffer != NULL)
         rval [writeIdx++] = checkBuffer ;
@@ -4005,7 +4004,7 @@ static Buffer *buildTakethisBuffers (Connection cxn, Buffer checkBuffer)
         rval [writeIdx] = NULL ;
       else
         {                       /* all articles were missing and no CHECKS */
-          FREE (rval) ;
+          free (rval) ;
           rval = NULL ;
         }
     }
@@ -4160,14 +4159,14 @@ static void delConnection (Connection cxn)
   cxn->ident = 0 ;
   cxn->timeCon = 0 ;
 
-  FREE (cxn->ipName) ;
+  free (cxn->ipName) ;
 
   clearTimer (cxn->artReceiptTimerId) ;
   clearTimer (cxn->readBlockedTimerId) ;
   clearTimer (cxn->writeBlockedTimerId) ;
   clearTimer (cxn->flushTimerId) ;
 
-  FREE (cxn) ;
+  free (cxn) ;
 
   if (shutDown)
     {
@@ -4181,8 +4180,8 @@ static void delConnection (Connection cxn)
 
       /* finish out all outstanding memory */
       while (*p) 
-	FREE (*p++) ;
-      FREE (PointersFreedOnExit) ;
+	free (*p++) ;
+      free (PointersFreedOnExit) ;
       freeTimeoutQueue () ;
 
       strcpy (dateString,ctime (&now)) ;
@@ -4436,8 +4435,7 @@ static const char *stateToString (CxnState state)
 
 static ArtHolder newArtHolder (Article article)
 {
-  ArtHolder a = ALLOC (struct art_holder_s, 1) ;
-  ASSERT (a != NULL) ;
+  ArtHolder a = xmalloc (sizeof(struct art_holder_s)) ;
 
   a->article = article ;
   a->next = NULL ;
@@ -4455,7 +4453,7 @@ static ArtHolder newArtHolder (Article article)
 static void delArtHolder (ArtHolder artH)
 {
   if (artH != NULL)
-    FREE (artH) ;
+    free (artH) ;
 }
 
 

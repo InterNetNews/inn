@@ -424,7 +424,7 @@ int hostConfigLoadCbk (void *data)
   if (getString (topScope,"status-file",&p,NO_INHERIT))
     {
       hostSetStatusFile (p) ;
-      FREE (p) ;
+      free (p) ;
     }
   else
     hostSetStatusFile (INNFEED_STATUS) ;
@@ -494,8 +494,7 @@ HostParams newHostParams(HostParams p)
 {
   HostParams params;
 
-  params = ALLOC (struct host_param_s,1) ;
-  ASSERT (params != NULL);
+  params = xmalloc (sizeof(struct host_param_s)) ;
 
   if (p != NULL)
     {
@@ -543,10 +542,10 @@ void freeHostParams(HostParams params)
 {
   ASSERT(params != NULL);
   if (params->peerName)
-    FREE (params->peerName) ;
+    free (params->peerName) ;
   if (params->ipName)
-    FREE (params->ipName) ;
-  FREE (params) ;
+    free (params->ipName) ;
+  free (params) ;
 }  
 
 static void hostReconfigure(Host h, HostParams params)
@@ -556,7 +555,7 @@ static void hostReconfigure(Host h, HostParams params)
   
   if (strcmp(h->params->ipName, params->ipName) != 0)
     {
-      FREE (h->params->ipName) ;
+      free (h->params->ipName) ;
       h->params->ipName = xstrdup (params->ipName) ;
       h->nextIpLookup = theTime () ;
     }
@@ -615,7 +614,7 @@ void configHosts (bool talkSelf)
     {
       freeHostParams(hh->params);
       hi = hh->next ;
-      FREE (hh) ;
+      free (hh) ;
     }
   blockedHosts = NULL ;
 
@@ -758,16 +757,13 @@ void hostAlterMaxConnections(Host host,
 	{
 	  /* not yet allocated */
 	  
-	  host->connections = CALLOC (Connection, lAbsMaxCxns + 1) ;
-	  ASSERT (host->connections != NULL) ;
+	  host->connections = xcalloc (lAbsMaxCxns + 1, sizeof(Connection)) ;
 	  
 	  ASSERT (host->cxnActive == NULL);
-	  host->cxnActive = CALLOC (bool, lAbsMaxCxns) ;
-	  ASSERT (host->cxnActive != NULL) ;
+	  host->cxnActive = xcalloc (lAbsMaxCxns, sizeof(bool)) ;
 	  
 	  ASSERT (host->cxnSleeping == NULL) ;
-	  host->cxnSleeping = CALLOC (bool, lAbsMaxCxns) ;
-	  ASSERT (host->cxnSleeping != NULL) ;
+	  host->cxnSleeping = xcalloc (lAbsMaxCxns, sizeof(bool)) ;
 	  
 	  for (i = 0 ; i < lAbsMaxCxns ; i++)
 	    {
@@ -780,12 +776,12 @@ void hostAlterMaxConnections(Host host,
       else
 	{
 	  host->connections =
-	    REALLOC (host->connections, Connection, lAbsMaxCxns + 1);
-	  ASSERT (host->connections != NULL) ;
-	  host->cxnActive = REALLOC (host->cxnActive, bool, lAbsMaxCxns) ;
-	  ASSERT (host->cxnActive != NULL) ;
-	  host->cxnSleeping = REALLOC (host->cxnSleeping, bool, lAbsMaxCxns) ;
-	  ASSERT (host->cxnSleeping != NULL) ;
+            xrealloc (host->connections,
+                      sizeof(Connection) * (lAbsMaxCxns + 1));
+	  host->cxnActive = xrealloc (host->cxnActive,
+                                      sizeof(bool) * lAbsMaxCxns) ;
+	  host->cxnSleeping = xrealloc (host->cxnSleeping,
+                                        sizeof(bool) * lAbsMaxCxns) ;
 
 	  if (lAbsMaxCxns > MAXCONLIMIT(host->params->absMaxConnections))
 	    {
@@ -856,7 +852,7 @@ static void addBlockedHost(HostParams params)
 {
   HostHolder hh;
 
-  hh = ALLOC (struct host_holder_s,1) ;
+  hh = xmalloc (sizeof(struct host_holder_s)) ;
   /* Use this set of params */
 	  
   hh->params = params;
@@ -881,7 +877,7 @@ static void tryBlockedHosts(TimeoutId tid UNUSED , void *data UNUSED )
     {
       params = hh->params;
       hi= hh->next;
-      FREE(hh);
+      free(hh);
       hh = hi;
 
       if (params && params->peerName)
@@ -988,8 +984,7 @@ Host newHost (InnListener listener, HostParams p)
     tryBlockedHostsId = prepareSleep(tryBlockedHosts,
 				     TRYBLOCKEDHOSTPERIOD, NULL);
 
-  nh =  CALLOC (struct host_s, 1) ;
-  ASSERT (nh != NULL) ;
+  nh =  xcalloc (1, sizeof(struct host_s)) ;
 
   nh->params = p;
   nh->listener = listener;
@@ -1021,11 +1016,11 @@ Host newHost (InnListener listener, HostParams p)
 			listenerIsDummy (nh->listener)) ;
   if (nh->myTape == NULL)
     {                           /* tape couldn't be locked, probably */
-      FREE (nh->connections) ;
-      FREE (nh->cxnActive) ;
-      FREE (nh->cxnSleeping) ;
+      free (nh->connections) ;
+      free (nh->cxnActive) ;
+      free (nh->cxnSleeping) ;
       
-      FREE (nh) ;
+      free (nh) ;
       return NULL ; /* note we don't free up p */
     }
 
@@ -1157,12 +1152,10 @@ struct sockaddr *hostIpAddr (Host host)
 	  for ( p = res ; p ; p = p->ai_next ) ++i;
 
 	  newIpAddrPtrs = (struct sockaddr **)
-	    MALLOC ( (i + 1) * sizeof(struct sockaddr *) );
-	  ASSERT (newIpAddrPtrs != NULL) ;
+	    xmalloc ( (i + 1) * sizeof(struct sockaddr *) );
 
 	  newIpAddrs = (struct sockaddr_storage *)
-	    MALLOC ( i * sizeof(struct sockaddr_storage) );
-	  ASSERT (newIpAddrs != NULL) ;
+	    xmalloc ( i * sizeof(struct sockaddr_storage) );
 
 	  i = 0;
 	  /* copy the addresses from the getaddrinfo linked list */
@@ -1194,12 +1187,10 @@ struct sockaddr *hostIpAddr (Host host)
 		;
 
 	      newIpAddrPtrs = (struct sockaddr **)
-		MALLOC ( (i + 1) * sizeof(struct sockaddr *) );
-	      ASSERT (newIpAddrPtrs != NULL) ;
+		xmalloc ( (i + 1) * sizeof(struct sockaddr *) );
 
 	      newIpAddrs = (struct sockaddr_storage *)
-		MALLOC ( i * sizeof( struct sockaddr_storage ) );
-	      ASSERT (newIpAddrs != NULL) ;
+		xmalloc ( i * sizeof( struct sockaddr_storage ) );
 
 	      /* copy the addresses from gethostbyname() static space */
 	      i = 0;
@@ -1215,11 +1206,9 @@ struct sockaddr *hostIpAddr (Host host)
       else
 	{
 	  newIpAddrPtrs = (struct sockaddr **)
-		  MALLOC( 2 * sizeof( struct sockaddr * ) );
-	  ASSERT (newIpAddrPtrs != NULL) ;
+		  xmalloc ( 2 * sizeof( struct sockaddr * ) );
 	  newIpAddrs = (struct sockaddr_storage *)
-		  MALLOC( sizeof( struct sockaddr_storage ) );
-	  ASSERT (newIpAddrs != NULL) ;
+		  xmalloc ( sizeof( struct sockaddr_storage ) );
 
 	  make_sin( (struct sockaddr_in *)newIpAddrs, &ipAddr );
 	  newIpAddrPtrs[0] = (struct sockaddr *)newIpAddrs;
@@ -1232,8 +1221,8 @@ struct sockaddr *hostIpAddr (Host host)
 	  if (host->ipAddrs)
 	  {
 	    if(host->ipAddrs[0])
-	      FREE (host->ipAddrs[0]);
-	    FREE (host->ipAddrs) ;
+	      free (host->ipAddrs[0]);
+	    free (host->ipAddrs) ;
 	  }
 	  host->ipAddrs = newIpAddrPtrs ;
 	  host->nextIpAddr = 0 ;
@@ -1876,7 +1865,7 @@ void hostRemoteStreams (Host host, Connection cxn, bool doesStreaming)
 
   host->blockedCxn = NULL ;
   if (host->blockedReason != NULL)
-    FREE (host->blockedReason) ;
+    free (host->blockedReason) ;
   host->blockedReason = NULL ;
   
   /* we may have told the connection to quit while it was in the middle
@@ -2511,7 +2500,7 @@ void hostSetStatusFile (const char *filename)
     {
       syslog (LOG_ERR,"Status file is not a valid pathname: %s",
               statusFile) ;
-      FREE (statusFile) ;
+      free (statusFile) ;
       statusFile = NULL ;
     }
   else
@@ -2740,20 +2729,20 @@ void delHost (Host host)
         
   delTape (host->myTape) ;
   
-  FREE (host->connections) ;
-  FREE (host->cxnActive) ;
-  FREE (host->cxnSleeping) ;
-  FREE (host->params->peerName) ;
-  FREE (host->params->ipName) ;
+  free (host->connections) ;
+  free (host->cxnActive) ;
+  free (host->cxnSleeping) ;
+  free (host->params->peerName) ;
+  free (host->params->ipName) ;
 
   if (host->ipAddrs)
   {
     if(host->ipAddrs[0])
-      FREE (host->ipAddrs[0]);
-    FREE (host->ipAddrs) ;
+      free (host->ipAddrs[0]);
+    free (host->ipAddrs) ;
   }
 
-  FREE (host) ;
+  free (host) ;
   gHostCount-- ;
 }
 
@@ -3539,8 +3528,8 @@ static void queueArticle (Article article, ProcQElem *head, ProcQElem *tail,
     {
       unsigned int i ;
 
-      queueElemPool = ALLOC (struct proc_q_elem, QUEUE_ELEM_POOL_SIZE) ;
-      ASSERT (queueElemPool != NULL) ;
+      queueElemPool =
+        xmalloc (sizeof(struct proc_q_elem) * QUEUE_ELEM_POOL_SIZE) ;
 
       for (i = 0; i < QUEUE_ELEM_POOL_SIZE - 1; i++)
         queueElemPool[i] . next = &(queueElemPool [i + 1]) ;
@@ -3784,6 +3773,7 @@ void gCalcHostBlStat (void)
 static void hostCleanup (void)
 {
   if (statusFile != NULL)
-    FREE (statusFile) ;
+    free (statusFile) ;
+  statusFile = NULL ;
 }
 

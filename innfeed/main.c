@@ -815,7 +815,7 @@ static int mainConfigLoadCbk (void *data)
   if (getString (topScope,"log-file",&p,NO_INHERIT))
     {
       logFile = buildFilename (innconf->pathlog,p) ;
-      FREE (p) ;
+      free (p) ;
     }
 
    /* For imap/lmtp delivering */
@@ -875,7 +875,7 @@ static int mainOptionsProcess (void *data)
     {
       if ((v = findValue (topScope,"backlog-directory",NO_INHERIT)) != NULL) 
         {
-          FREE (v->v.charp_val) ;
+          free (v->v.charp_val) ;
           v->v.charp_val = xstrdup (bopt) ;
         }
       else
@@ -886,7 +886,7 @@ static int mainOptionsProcess (void *data)
     {
       if ((v = findValue (topScope,"news-spool",NO_INHERIT)) != NULL)
         {
-          FREE (v->v.charp_val) ;
+          free (v->v.charp_val) ;
           v->v.charp_val = xstrdup (aopt) ;
         }
       else
@@ -897,7 +897,7 @@ static int mainOptionsProcess (void *data)
     {
       if ((v = findValue (topScope,"status-file",NO_INHERIT)) != NULL)
         {
-          FREE (v->v.charp_val) ;
+          free (v->v.charp_val) ;
           v->v.charp_val = xstrdup (sopt) ;
         }
       else
@@ -939,7 +939,7 @@ static int mainOptionsProcess (void *data)
     {
       if ((v = findValue (topScope,"pid-file",NO_INHERIT)) != NULL)
         {
-          FREE (v->v.charp_val) ;
+          free (v->v.charp_val) ;
           v->v.charp_val = xstrdup (popt) ;
         }
       else
@@ -958,7 +958,7 @@ static int mainOptionsProcess (void *data)
     {
       if ((v = findValue (topScope,"log-file",NO_INHERIT)) != NULL)
         {
-          FREE (v->v.charp_val) ;
+          free (v->v.charp_val) ;
           v->v.charp_val = xstrdup (lopt) ;
         }
       else
@@ -969,7 +969,7 @@ static int mainOptionsProcess (void *data)
     {
       if ((v = findValue (topScope,"input-file",NO_INHERIT)) != NULL)
         {
-          FREE (v->v.charp_val) ;
+          free (v->v.charp_val) ;
           v->v.charp_val = xstrdup (InputFile) ;
         }
       else
@@ -983,10 +983,14 @@ static int mainOptionsProcess (void *data)
 
 static void mainCleanup (void)
 {
-  FREE (configFile) ;
-  FREE (pidFile) ;
-  FREE (logFile) ;
-  FREE (newsspool) ;
+  free (configFile) ;
+  free (pidFile) ;
+  free (logFile) ;
+  free (newsspool) ;
+  configFile = NULL ;
+  pidFile = NULL ;
+  logFile = NULL ;
+  newsspool = NULL ;
 }
 
 

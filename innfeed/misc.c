@@ -276,8 +276,7 @@ char *getMsgId (const char *p)
   while ( *q && !CTYPE (isspace, *q) )
     q++ ;
   
-  rval = MALLOC ((size_t) (q - p + 1)) ;
-  assert (rval != NULL) ;
+  rval = xmalloc (q - p + 1) ;
 
   strncpy (rval,p,(size_t) (q - p)) ;
   rval [q - p] = '\0' ;
@@ -607,7 +606,7 @@ bool isOlder (const char *file1, const char *file2)
 
 void freeCharP (char *charp)
 {
-  FREE (charp) ;
+  free (charp) ;
 }
 
 
@@ -640,12 +639,10 @@ void addPointerFreedOnExit (char *pointerToFree)
 
       totalPointers += 16 ;
       if (PointersFreedOnExit == NULL)
-	PointersFreedOnExit = ALLOC (char *, totalPointers) ;
+	PointersFreedOnExit = xmalloc (sizeof(char *) * totalPointers) ;
       else
 	PointersFreedOnExit =
-	  REALLOC (PointersFreedOnExit, char *, totalPointers) ;
-
-      ASSERT (PointersFreedOnExit != NULL) ;
+	  xrealloc (PointersFreedOnExit, sizeof(char *) * totalPointers) ;
 
       for (i = nextPointer; i < totalPointers; i++)
 	PointersFreedOnExit [i] = NULL;
@@ -710,14 +707,14 @@ bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
   if (fd < 0)
     {
       syslog (LOG_ERR,SHRINK_TEMP_CREATE,name) ;
-      FREE (tmpname) ;
+      free (tmpname) ;
       return false ;
     }
 
   if ((tmpFp = fdopen (fd,"w")) == NULL)
     {
       syslog (LOG_ERR,SHRINK_TEMP_OPEN,tmpname) ;
-      FREE (tmpname) ;
+      free (tmpname) ;
       return false ;
     }
 
@@ -725,7 +722,7 @@ bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
     {
       fclose (tmpFp) ;
       syslog (LOG_ERR,SHRINK_SEEK,currlen - size,name) ;
-      FREE(tmpname) ;
+      free (tmpname) ;
       return false ;
     }
 
@@ -736,7 +733,7 @@ bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
         syslog (LOG_WARNING,SHRINK_NONL,name) ;
         fclose (tmpFp) ;
         fseeko (fp,currlen,SEEK_SET) ;
-        FREE(tmpname) ;
+        free (tmpname) ;
         return false ;
     }
 
@@ -748,7 +745,7 @@ bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
           fclose (tmpFp) ;
           syslog (LOG_ERR,SHRINK_WRITETMP,tmpname) ;
           fseeko (fp,currlen, SEEK_SET) ;
-          FREE(tmpname) ;
+          free (tmpname) ;
           return false ;
         }
     }
@@ -773,7 +770,7 @@ bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
   
   syslog (LOG_WARNING,FILE_SHRUNK,name,currlen,size) ;
 
-  FREE(tmpname) ;
+  free (tmpname) ;
   
   return true ;
 }

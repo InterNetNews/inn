@@ -1000,16 +1000,13 @@ static conn_ret addCancelItem(connection_t *cxn,
     for (i = 0; i < msgidlen; i++) ASSERT(!isspace((int) msgid[i]));
 
     /* create the object */
-    item = CALLOC (control_item_t, 1);
-    ASSERT (item != NULL) ;
+    item = xcalloc (1, sizeof(control_item_t));
 
-    item->folder = CALLOC(char, folderlen+1);
-    ASSERT (item->folder != NULL);
+    item->folder = xcalloc(folderlen+1, 1);
     memcpy(item->folder, folder, folderlen);
     item->folder[folderlen] = '\0';
     
-    item->msgid  = calloc (msgidlen+1, 1);
-    ASSERT (item->msgid != NULL);
+    item->msgid = xcalloc (msgidlen+1, 1);
     memcpy(item->msgid, msgid, msgidlen);
     item->msgid[msgidlen] = '\0';
 
@@ -1112,11 +1109,9 @@ static conn_ret AddControlMsg(connection_t *cxn,
 
 	folderlen = control_header_end - control_header;
 
-	item = CALLOC(control_item_t, 1);
-	ASSERT (item != NULL);
+	item = xcalloc(1, sizeof(control_item_t));
 
-	item->folder = CALLOC(char, folderlen + 1);
-	ASSERT (item->folder != NULL);
+	item->folder = xcalloc(folderlen + 1, 1);
 	memcpy(item->folder, control_header, folderlen);
 	item->folder[folderlen] = '\0';
 
@@ -2091,8 +2086,7 @@ static conn_ret lmtp_getcapabilities(connection_t *cxn)
 	cxn->lmtp_capabilities = NULL;
     }
 
-    cxn->lmtp_capabilities = CALLOC (lmtp_capabilities_t, 1);
-    ASSERT (cxn->lmtp_capabilities != NULL) ;
+    cxn->lmtp_capabilities = xcalloc (1, sizeof(lmtp_capabilities_t));
     cxn->lmtp_capabilities->saslmechs = NULL;
 
 #ifdef SMTPMODE
@@ -4029,7 +4023,8 @@ static void lmtp_sendmessage(connection_t *cxn, Article justadded)
 	to_list = BuildToHeader(to_list, to_list_end);
 
 	len = bufferArrayLen(cxn->current_bufs);
-	cxn->current_bufs = REALLOC(cxn->current_bufs, Buffer, len+2);
+	cxn->current_bufs = xrealloc(cxn->current_bufs,
+                                     sizeof(Buffer) * (len+2));
 	cxn->current_bufs[len+1] = NULL;
 
 	for (i = len; i > 0; i--) {
@@ -4159,7 +4154,7 @@ static void delConnection (Connection cxn)
   cxn->ident = 0 ;
   cxn->timeCon = 0 ;
 
-  FREE (cxn->ServerName) ;
+  free (cxn->ServerName) ;
 
   clearTimer (cxn->imap_readBlockedTimerId) ;
   clearTimer (cxn->imap_writeBlockedTimerId) ;
@@ -4173,10 +4168,10 @@ static void delConnection (Connection cxn)
 
   clearTimer (cxn->dosomethingTimerId);
 
-  FREE(cxn->imap_respBuffer);
-  FREE(cxn->lmtp_respBuffer);
+  free (cxn->imap_respBuffer);
+  free (cxn->lmtp_respBuffer);
 
-  FREE (cxn) ;
+  free (cxn) ;
 
   if (shutDown)
     {
@@ -4234,8 +4229,7 @@ Connection newConnection (Host host,
     /* check arguments */
 
     /* allocate connection structure */
-    cxn = CALLOC (connection_t, 1) ;
-    ASSERT (cxn != NULL) ;
+    cxn = xcalloc (1, sizeof(connection_t)) ;
 
     cxn->ident = ident ;
 

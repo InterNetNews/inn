@@ -223,14 +223,14 @@ int tapeConfigLoadCbk (void *data)
       if (tapeDirectory != NULL && strcmp (tapeDirectory,dir) != 0)
         {
           syslog (LOG_ERR,NO_CHANGE_BACKLOG) ;
-          FREE (dir) ;
+          free (dir) ;
           dir = xstrdup (tapeDirectory) ;
         }
 
       if (!isDirectory (dir) && isDirectory (dflTapeDir))
         {
           logOrPrint (LOG_ERR,fp,BAD_TAPEDIR_CHANGE,dir,dflTapeDir) ;
-          FREE (dir) ;
+          free (dir) ;
           dir = xstrdup (dflTapeDir) ;
         }
       else if (!isDirectory (dir))
@@ -245,7 +245,7 @@ int tapeConfigLoadCbk (void *data)
     dir = xstrdup (dflTapeDir) ;
   
   if (tapeDirectory != NULL)
-    FREE (tapeDirectory) ;
+    free (tapeDirectory) ;
   tapeDirectory = dir ;
 
 
@@ -329,7 +329,7 @@ int tapeConfigLoadCbk (void *data)
 static bool inited = false ;
 Tape newTape (const char *peerName, bool dontRotate)
 {
-  Tape nt = ALLOC (struct tape_s, 1) ;
+  Tape nt = xmalloc (sizeof(struct tape_s)) ;
   size_t pLen = strlen (peerName) ;
   size_t dLen = strlen (tapeDirectory) ;
 
@@ -352,31 +352,27 @@ Tape newTape (const char *peerName, bool dontRotate)
 
   nt->peerName = xstrdup (peerName) ;
   
-  nt->handFilename = MALLOC (pLen + dLen + 2) ;
-  ASSERT (nt->handFilename != NULL) ;
+  nt->handFilename = xmalloc (pLen + dLen + 2) ;
   sprintf (nt->handFilename,"%s/%s",tapeDirectory,peerName) ;
 
-  nt->lockFilename = MALLOC (pLen + dLen + strlen(LOCK_TAIL) + 2) ;
-  ASSERT (nt->lockFilename != NULL) ;
+  nt->lockFilename = xmalloc (pLen + dLen + strlen(LOCK_TAIL) + 2) ;
   sprintf (nt->lockFilename,"%s/%s%s",tapeDirectory,peerName,LOCK_TAIL) ;
 
-  nt->inputFilename = MALLOC (pLen + dLen + strlen(INPUT_TAIL) + 2) ;
-  ASSERT (nt->inputFilename != NULL) ;
+  nt->inputFilename = xmalloc (pLen + dLen + strlen(INPUT_TAIL) + 2) ;
   sprintf (nt->inputFilename,"%s/%s%s",tapeDirectory,peerName,INPUT_TAIL) ;
 
-  nt->outputFilename = MALLOC (pLen + dLen + strlen(OUTPUT_TAIL) + 2) ;
-  ASSERT (nt->outputFilename != NULL) ;
+  nt->outputFilename = xmalloc (pLen + dLen + strlen(OUTPUT_TAIL) + 2) ;
   sprintf (nt->outputFilename,"%s/%s%s",tapeDirectory,peerName,OUTPUT_TAIL) ;
 
   if ( !lockFile (nt->lockFilename) )
     {
       syslog (LOG_ERR,NO_LOCK_TAPE,nt->lockFilename) ;
       
-      FREE (nt->handFilename) ;
-      FREE (nt->lockFilename) ;
-      FREE (nt->inputFilename) ;
-      FREE (nt->outputFilename) ;
-      FREE (nt) ;
+      free (nt->handFilename) ;
+      free (nt->lockFilename) ;
+      free (nt->inputFilename) ;
+      free (nt->outputFilename) ;
+      free (nt) ;
 
       return NULL ;
     }
@@ -648,7 +644,7 @@ void delTape (Tape tape)
              
   removeTapeGlobally (tape) ;
   
-  FREE (tape) ;
+  free (tape) ;
 }
 
 
@@ -935,11 +931,9 @@ static void addTapeGlobally (Tape tape)
       
       activeTapeSize += 10 ;
       if (activeTapes != NULL)
-        activeTapes = REALLOC (activeTapes, Tape, activeTapeSize) ;
+        activeTapes = xrealloc (activeTapes, sizeof(Tape) * activeTapeSize) ;
       else
-        activeTapes = ALLOC (Tape, activeTapeSize) ;
-
-      ASSERT (activeTapes != NULL) ;
+        activeTapes = xmalloc (sizeof(Tape) * activeTapeSize) ;
 
       for (i = activeTapeIdx ; i < activeTapeSize ; i++)
         activeTapes [i] = NULL ;
@@ -971,7 +965,7 @@ static void removeTapeGlobally (Tape tape)
 
   if (activeTapeIdx == 0)
     {
-      FREE (activeTapes) ;
+      free (activeTapes) ;
       activeTapes = NULL ;
     }
 }
@@ -1273,7 +1267,7 @@ static void flushTape (Tape tape)
       
       delArticle (elem->article) ;
       
-      FREE (elem) ;
+      free (elem) ;
       elem = tape->head ;
     }
   tape->tail = NULL ;
@@ -1313,5 +1307,6 @@ static void flushTape (Tape tape)
 
 static void tapeCleanup (void)
 {
-  FREE (tapeDirectory) ;
+  free (tapeDirectory) ;
+  tapeDirectory = NULL ;
 }

@@ -216,8 +216,7 @@ Article newArticle (const char *filename, const char *msgid)
       int i ;
       
       ASSERT ((TABLE_SIZE & HASH_MASK) == 0) ;
-      hashTable = ALLOC (HashEntry, TABLE_SIZE) ;
-      ASSERT (hashTable != NULL) ;
+      hashTable = xmalloc (sizeof(HashEntry) * TABLE_SIZE) ;
       
       addPointerFreedOnExit ((char *)hashTable) ;
 
@@ -232,16 +231,10 @@ Article newArticle (const char *filename, const char *msgid)
        ok */
   if ((newArt = hashFindArticle (msgid)) == NULL)
     {
-      newArt = CALLOC (struct article_s, 1) ;
-      ASSERT (newArt != NULL) ;
-      
-      newArt->fname = MALLOC (strlen (filename) + 1) ;
-      ASSERT (newArt->fname != NULL) ;
-      strcpy (newArt->fname,filename) ;
-      
-      newArt->msgid = MALLOC (strlen (msgid) + 1) ;
-      ASSERT (newArt->msgid != NULL) ;
-      strcpy (newArt->msgid,msgid) ;
+      newArt = xcalloc (1, sizeof(struct article_s)) ;
+
+      newArt->fname = xstrdup (filename) ;
+      newArt->msgid = xstrdup (msgid) ;
       
       newArt->contents = NULL ;
       newArt->mMapping = NULL ;
@@ -302,10 +295,10 @@ void delArticle (Article article)
         }
 
       articlesInUse-- ;
-      
-      FREE (article->fname) ;
-      FREE (article->msgid) ;
-      FREE (article) ;
+
+      free (article->fname) ;
+      free (article->msgid) ;
+      free (article) ;
     }
 
   VALIDATE_HASH_TABLE () ;
@@ -771,8 +764,7 @@ static void appendBuffer (Buffer b, Buffer **buffs, int *newSpot, int *curLen)
   if (*newSpot == *curLen)
     {
       *curLen += 10 ;
-      *buffs = REALLOC (*buffs, Buffer, *curLen) ;
-      ASSERT (*buffs != NULL) ;
+      *buffs = xrealloc (*buffs, sizeof(Buffer) * *curLen) ;
     }
   (*buffs) [(*newSpot)++] = b ;
 }
@@ -842,9 +834,8 @@ static bool prepareArticleForNNTP (Article article)
     }
   else
     {
-        /* we already fixed the contents up when we read in the article */
-      nntpBuffs = ALLOC (Buffer, 3) ;
-      ASSERT (nntpBuffs != NULL) ;
+      /* we already fixed the contents up when we read in the article */
+      nntpBuffs = xmalloc (sizeof(Buffer) * 3) ;
       nntpBuffs [0] = newBufferByCharP (bufferBase (contents),
                                         bufferDataSize (contents),
                                         bufferDataSize (contents)) ;
@@ -940,8 +931,7 @@ static void hashAddArticle (Article article)
 
   h = hashTable [TABLE_ENTRY(hash)] ;
 
-  ne = ALLOC (struct hash_entry_s, 1) ;
-  ASSERT (ne != NULL) ;
+  ne = xmalloc (sizeof(struct hash_entry_s));
 
   ne->article = article ;
   ne->hash = hash ;
@@ -1002,8 +992,8 @@ static bool hashRemoveArticle (Article article)
       if (h->nextTime != NULL)
         h->nextTime->prevTime = h->prevTime ;
     }
-  
-  FREE (h) ;
+
+  free (h) ;
   
   return true ;
 }

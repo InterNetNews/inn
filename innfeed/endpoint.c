@@ -252,13 +252,14 @@ EndPoint newEndPoint (int fd)
       maxEndPoints = (((fd + 256) / 256) * 256); /* round up to nearest 256 */ 
       if (endPoints == NULL)
         {
-          endPoints = ALLOC (EndPoint,maxEndPoints) ;
-          priorityList = ALLOC (EndPoint,maxEndPoints) ;
+          endPoints = xmalloc (sizeof(EndPoint) * maxEndPoints) ;
+          priorityList = xmalloc (sizeof(EndPoint) * maxEndPoints) ;
         }
       else
         {
-          endPoints = REALLOC (endPoints,EndPoint,maxEndPoints) ;
-          priorityList = REALLOC (priorityList,EndPoint,maxEndPoints) ;
+          endPoints = xrealloc (endPoints,sizeof(EndPoint) * maxEndPoints) ;
+          priorityList = xrealloc (priorityList,
+                                   sizeof(EndPoint) * maxEndPoints) ;
         }
 
       for ( ; i < maxEndPoints ; i++)
@@ -291,8 +292,7 @@ EndPoint newEndPoint (int fd)
       absHighestFd = fd ;
     }
       
-  ep = CALLOC (struct endpoint_s, 1) ;
-  ASSERT (ep != NULL) ;
+  ep = xcalloc (1, sizeof(struct endpoint_s)) ;
 
   ep->inBuffer = NULL ;
   ep->inBufferIdx = 0 ;
@@ -376,7 +376,7 @@ void delEndPoint (EndPoint ep)
 
   endPointCount-- ;
 
-  FREE (ep) ;
+  free (ep) ;
 }
 
 int endPointFd (EndPoint endp)
@@ -1002,8 +1002,7 @@ static IoStatus doRead (EndPoint endp)
       char *bbase ;
       size_t bds, bs ;
 
-      vp = CALLOC (struct iovec, bCount) ;
-      ASSERT (vp != NULL) ;
+      vp = xcalloc (bCount, sizeof(struct iovec)) ;
 
       bbase = bufferBase (buffers[currIdx]) ;
       bds = bufferDataSize (buffers[currIdx]) ;
@@ -1093,7 +1092,7 @@ static IoStatus doRead (EndPoint endp)
       else                   /* i < 0 && errno == EAGAIN */
         rval = IoIncomplete ;
       
-      FREE (vp) ;
+      free (vp) ;
     }
   else
     rval = IoDone ;
@@ -1123,9 +1122,7 @@ static IoStatus doWrite (EndPoint endp)
   
   if (bCount > 0)
     {
-      vp = CALLOC (struct iovec, bCount) ;
-      ASSERT (vp != NULL) ;
-
+      vp = xcalloc (bCount, sizeof(struct iovec)) ;
 
       vp[0].iov_base = bufferBase (buffers [currIdx]) ;
       vp[0].iov_base = (char *) vp[0].iov_base + endp->outIndex ;
@@ -1201,7 +1198,7 @@ static IoStatus doWrite (EndPoint endp)
       else
         d_printf (1,"Wrote 0 bytes in doWrite()?\n") ;
 
-      FREE (vp) ;
+      free (vp) ;
     }
   else
     rval = IoDone ;
@@ -1324,8 +1321,7 @@ static TimerElem newTimerElem (TimeoutId i, time_t w, EndpTCB f, void *d)
     {
       unsigned int j ;
 
-      timeoutPool = ALLOC (TimerElemStruct, TIMEOUT_POOL_SIZE) ;
-      ASSERT (timeoutPool != NULL) ;
+      timeoutPool = xmalloc (sizeof(TimerElemStruct) * TIMEOUT_POOL_SIZE) ;
 
       for (j = 0; j < TIMEOUT_POOL_SIZE - 1; j++)
         timeoutPool[j] . next = &(timeoutPool [j + 1]) ;
@@ -1690,8 +1686,8 @@ void setSigHandler (int signum, void (*ptr)(int))
 
   if (sigHandlers == NULL)
     {
-      sigHandlers = ALLOC (sigfn,NSIG) ;
-      sigFlags = ALLOC (int,NSIG) ;
+      sigHandlers = xmalloc (sizeof(sigfn) * NSIG) ;
+      sigFlags = xmalloc (sizeof(int) * NSIG) ;
       for (i = 0 ; i < NSIG ; i++)
         {
           sigHandlers [i] = NULL ;
@@ -1838,7 +1834,10 @@ static int ff_free (fd_set *set, unsigned int start)
 
 static void endpointCleanup (void)
 {
-  FREE (endPoints) ;
-  FREE (priorityList) ;
-  FREE (sigHandlers) ;
+  free (endPoints) ;
+  free (priorityList) ;
+  free (sigHandlers) ;
+  endPoints = NULL ;
+  priorityList = NULL ;
+  sigHandlers = NULL ;
 }

@@ -116,7 +116,7 @@ void listenerLogStatus (FILE *fp)
 
 InnListener newListener (EndPoint endp, bool isDummy, bool dynamicPeers)
 {
-  InnListener l = CALLOC (struct innlistener_s, 1) ;
+  InnListener l = xcalloc (1, sizeof(struct innlistener_s)) ;
   Buffer *readArray ;
 
   if (!inited)
@@ -125,13 +125,10 @@ InnListener newListener (EndPoint endp, bool isDummy, bool dynamicPeers)
       atexit (listenerCleanup) ;
     }
   
-  ASSERT (l != NULL) ;
-
   l->myep = endp ;
 
   l->hostLen = MAX_HOSTS ;
-  l->myHosts = CALLOC (Host, l->hostLen) ;
-  ASSERT (l->myHosts != NULL) ;
+  l->myHosts = xcalloc (l->hostLen, sizeof(Host)) ;
 
   l->inputBuffer = newBuffer (LISTENER_INPUT_BUFFER) ;
   l->dummyListener = isDummy ;
@@ -748,7 +745,7 @@ void openDroppedArticleFile (void)
   size_t len;
 
   if (dropArtFile != NULL)
-    FREE (dropArtFile) ;
+    free (dropArtFile) ;
 
   len = pathMax(tapeDir) + 1;
   dropArtFile = xmalloc(len);
@@ -759,7 +756,7 @@ void openDroppedArticleFile (void)
     {
       syslog (LOG_ERR,NO_DROPPED_FILE,dropArtFile) ;
 
-      FREE (dropArtFile) ;
+      free (dropArtFile) ;
       dropArtFile = NULL ;
       
       if ((droppedFp = fopen ("/dev/null","w")) == NULL)
@@ -814,5 +811,6 @@ static void dropArticle (const char *peerName, Article article)
 
 static void listenerCleanup (void)
 {
-  FREE (dropArtFile) ;
+  free (dropArtFile) ;
+  dropArtFile = NULL ;
 }

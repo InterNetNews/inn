@@ -71,8 +71,7 @@ static void fillBufferPool (void)
 {
   unsigned int i ;
 
-  bufferPool = ALLOC (struct buffer_s, BUFFER_POOL_SIZE) ;
-  ASSERT (bufferPool != NULL) ;
+  bufferPool = xmalloc (sizeof(struct buffer_s) * BUFFER_POOL_SIZE) ;
 
   for (i = 0; i < BUFFER_POOL_SIZE - 1; i++)
     bufferPool[i] . next = &(bufferPool [i + 1]) ;
@@ -93,8 +92,7 @@ Buffer newBuffer (size_t size)
 
   nb->refCount = 1 ;
 
-  nb->mem = MALLOC (size + 1) ;
-  ASSERT (nb->mem != NULL) ;
+  nb->mem = xmalloc (size + 1) ;
   
   nb->mem [size] = '\0' ;
   nb->memSize = size ;
@@ -163,7 +161,7 @@ void delBuffer (Buffer buff)
       if (buff->deletable)
         {
           bufferByteCount -= (buff->memSize + 1) ;
-          FREE (buff->mem) ;
+          free (buff->mem) ;
           buff->mem = NULL ;
         }
 
@@ -293,7 +291,7 @@ void freeBufferArray (Buffer *buffs)
     }
 
   if (buffs)
-    FREE (buffs) ;
+    free (buffs) ;
 }
 
 
@@ -305,8 +303,7 @@ Buffer *makeBufferArray (Buffer buff, ...)
   size_t cLen = 10, idx = 0 ;
   Buffer *ptr, p ;
 
-  ptr = CALLOC (Buffer, cLen) ;
-  ASSERT (ptr != NULL) ;
+  ptr = xcalloc (cLen, sizeof(Buffer)) ;
 
   ptr [idx++] = buff ;
 
@@ -317,8 +314,7 @@ Buffer *makeBufferArray (Buffer buff, ...)
       if (idx == cLen)
         {
           cLen += 10 ;
-          ptr = REALLOC (ptr,Buffer,cLen) ;
-          ASSERT (ptr != NULL) ;
+          ptr = xrealloc (ptr, sizeof(Buffer) * cLen) ;
         }
       ptr [idx++] = p ;
     }
@@ -345,8 +341,7 @@ Buffer *dupBufferArray (Buffer *array)
   while (array && array [count] != NULL)
     count++ ;
 
-  newArr = ALLOC (Buffer, count + 1) ;
-  ASSERT (newArr != NULL) ;
+  newArr = xmalloc (sizeof(Buffer) * (count + 1)) ;
 
   for (count = 0 ; array [count] != NULL ; count++)
     newArr [count] = bufferTakeRef (array [count]) ;
@@ -414,8 +409,7 @@ bool concatBuffer (Buffer dest, Buffer src)
       
   if ((dest->dataSize + src->dataSize) > dest->memSize)
     {
-      char *newMem = MALLOC (dest->dataSize + src->dataSize + 1) ;
-      ASSERT (newMem != NULL) ;
+      char *newMem = xmalloc (dest->dataSize + src->dataSize + 1) ;
 
       bufferByteCount += ((dest->dataSize + src->dataSize) - dest->memSize) ;
       
@@ -423,7 +417,7 @@ bool concatBuffer (Buffer dest, Buffer src)
       memcpy (newMem, dest->mem, dest->dataSize) ;
 
       ASSERT (dest->mem != NULL) ;
-      FREE (dest->mem) ;
+      free (dest->mem) ;
 
       dest->mem = newMem ;
       dest->memSize = dest->dataSize + src->dataSize ; /* yep. 1 less */
@@ -448,8 +442,7 @@ bool expandBuffer (Buffer buff, size_t amt)
   bufferByteCount += amt ;
   buff->memSize += amt ;
 
-  buff->mem = REMALLOC (buff->mem, buff->memSize + 1) ;
-  ASSERT (buff->mem != NULL) ;
+  buff->mem = xrealloc (buff->mem, buff->memSize + 1) ;
 
   return true ;
 }

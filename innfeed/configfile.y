@@ -877,10 +877,12 @@ int buildPeerTable (FILE *fp, scope *s)
                 {
                   peerTableCount += 10 ;
                   if (peerTable == NULL)
-                    peerTable = ALLOC(struct peer_table_s,peerTableCount) ;
+                    peerTable = xmalloc (sizeof(struct peer_table_s)
+                                         * peerTableCount) ;
                   else
-                    peerTable = REALLOC (peerTable,struct peer_table_s,
-                                         peerTableCount) ;
+                    peerTable = xrealloc (peerTable,
+                                          sizeof(struct peer_table_s)
+                                          * peerTableCount) ;
                 }
   
               peerTable[peerTableIdx].peerName = xstrdup (s->values[i]->name);
