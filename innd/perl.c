@@ -55,7 +55,7 @@ extern bool             PerlFilterActive;
 extern void             PerlFilter(bool value);
 
 /* From art.c.  Ew.  Need header parsing that doesn't use globals. */
-extern ARTHEADER        ARTheaders[], *ARTheadersENDOF;
+extern ARTHEADER        ARTheaders[];
 extern char             *filterPath;
 
 /*
