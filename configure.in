@@ -700,6 +700,49 @@ AC_CHECK_FUNCS(statvfs, AC_DEFINE(HAVE_STATVFS), [
     AC_CHECK_HEADERS(sys/vfs.h sys/param.h sys/mount.h)
 ])
 
+dnl See if mmap sees writes
+dnl ========================================================
+dnl For cross compiling, just define it as no, which is a safe default
+AC_MSG_CHECKING(if mmap() sees write()s)
+AC_TRY_RUN(
+    #include <stdlib.h>
+    #include <unistd.h>
+    #include <sys/mman.h>
+    #include <sys/types.h>
+    #include <sys/stat.h>
+    #include <fcntl.h>
+
+    char fname[[]] = "conftest.file";
+    char zbuff[[1024]]; /* Fractional page is probably worst case */
+
+    int main() {
+       char *map;
+       int fd;
+       int i;
+       unlink(fname);
+       fd = open(fname, O_RDWR | O_CREAT, 0660);
+       if(fd<0) exit(1);
+       unlink(fname);
+       write(fd, zbuff, sizeof(zbuff));
+       lseek(fd, 0, SEEK_SET);
+       map = (char*)mmap(0, sizeof(zbuff), PROT_READ, MAP_SHARED, fd, 0);
+       if(map==(char*)-1) exit(2);
+       for(i=0; fname[[i]]; i++) {
+           int rc = write(fd, &fname[[i]], 1);
+           if(map[[i]]!=fname[[i]]) exit(4);
+       }
+       exit(0);
+    }
+    , [ result="yes"],
+    [result="no"],
+    [result="yes"] )
+
+AC_MSG_RESULT("$result")
+
+if test "$result" = "no"; then
+    AC_DEFINE(MMAP_MISSES_WRITES)
+fi
+
 dnl We need both *rlimit functions.
 AC_CHECK_FUNC(getrlimit, AC_CHECK_FUNC(setrlimit, AC_DEFINE(HAVE_RLIMIT)))
 
