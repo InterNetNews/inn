@@ -293,12 +293,14 @@ STATIC int EXPsplit(char *p, char sep, char **argv, int count)
 
     for (i = 1, *argv++ = p; *p; )
 	if (*p++ == sep) {
+	    p[-1] = '\0';
+	    for (; *p == sep; p++);
+	    if (!*p)
+		return i;
 	    if (++i == count)
 		/* Overflow. */
 		return -1;
-	    p[-1] = '\0';
-	    for (*argv++ = p; *p == sep; p++)
-		continue;
+	    *argv++ = p;
 	}
     return i;
 }
