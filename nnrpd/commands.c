@@ -220,8 +220,8 @@ CMDauthinfo(ac, av)
     int		ac;
     char	*av[];
 {
-    static char	User[30];
-    static char	Password[30];
+    static char	User[SMBUF];
+    static char	Password[SMBUF];
     char	accesslist[BIG_BUFFER];
     char        errorstr[BIG_BUFFER];
 #ifdef DO_PYTHON
