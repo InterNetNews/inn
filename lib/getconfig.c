@@ -319,7 +319,8 @@ void ClearInnConf()
 */
 int CheckInnConf()
 {
-    char *tmpdir;
+    static char *tmpdir = NULL;
+    static int dirlen = 0;
 
     if (GetFQDN() == NULL) {
 	syslog(L_FATAL, "Must set 'domain' in inn.conf");
@@ -401,10 +402,12 @@ int CheckInnConf()
 	innconf->pathuniover = COPY(cpcatpath(innconf->pathspool, "uniover"));
     }
     /* Set the TMPDIR variable unconditionally and globally */
-    tmpdir = NEW(char, 8 + strlen(innconf->pathtmp));
+    if (8 + strlen(innconf->pathtmp) > dirlen)
+	dirlen = 8 + strlen(innconf->pathtmp);
+    RENEW(tmpdir, char, dirlen);
     sprintf(tmpdir, "TMPDIR=%s", innconf->pathtmp);
     putenv(tmpdir);
-    DISPOSE(tmpdir);
+    /* tmpdir should not be freed for some OS */
 
     return(0);
 }
