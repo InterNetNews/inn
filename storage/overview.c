@@ -276,8 +276,8 @@ STATIC void OVERclose(UNIOVER *config, BOOL New)
 	    (void)close(config->newfd);
 	    config->newfd = -1;
 	}
-	config->size = 0;
-	config->offset = 0;
+	config->newsize = 0;
+	config->newoffset = 0;
     } else {
 	if (config->base != (char *)-1) {
 	    munmap(config->base, config->len);
@@ -291,8 +291,8 @@ STATIC void OVERclose(UNIOVER *config, BOOL New)
 	    (void)close(config->fd);
 	    config->fd = -1;
 	}
-	config->newsize = 0;
-	config->newoffset = 0;
+	config->size = 0;
+	config->offset = 0;
     }
     return;
 }
@@ -418,11 +418,11 @@ BOOL OVERsetup(OVERSETUP type, void *value) {
 	break;
     case OVER_DIR:
 	DISPOSE(OVERdir);
-	OVERdir = COPY((char *)(value ? value : innconf->pathoverview));
+	OVERdir = COPY((char *)(value ? value : innconf->pathuniover));
 	break;
     case OVER_NEWDIR:
 	DISPOSE(OVERnewdir);
-	OVERnewdir = COPY((char *)(value ? value : innconf->pathoverview));
+	OVERnewdir = COPY((char *)(value ? value : innconf->pathuniover));
 	break;
     case OVER_MODE:
 	DISPOSE(OVERmode);
@@ -468,10 +468,10 @@ BOOL OVERinit(void) {
 	OVERctl = COPY(cpcatpath(innconf->pathetc, _PATH_OVERVIEWCTL));
     }
     if (OVERdir == (char *)NULL) {
-	OVERdir = COPY(innconf->pathoverview);
+	OVERdir = COPY(innconf->pathuniover);
     }
     if (OVERnewdir == (char *)NULL) {
-	OVERnewdir = COPY(innconf->pathoverview);
+	OVERnewdir = COPY(innconf->pathuniover);
     }
     if (OVERmode == (char *)NULL) {
 	OVERmode = COPY(DEFAULTMODE);
