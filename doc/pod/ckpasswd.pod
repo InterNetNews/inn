@@ -70,7 +70,7 @@ libraries.
 =item B<-f> I<filename>
 
 Read passwords from the given file rather than using getpwnam(3).  The
-file is expected to be formatted like a system password file, at leat
+file is expected to be formatted like a system password file, at least
 vaguely.  That means each line should look something like:
 
     username:pdIh9NCNslkq6
