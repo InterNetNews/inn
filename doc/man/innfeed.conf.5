@@ -174,13 +174,13 @@ stored. This corresponds to the ``\fI\-p\fP'' command-line option.
 .B debug-level
 This key defines the debug level for the process. A non-zero number
 generates a lot of messages to stderr, or to the config-defined ``log-file''.
-This corresponsds to the ``\fI\-d\fP'' command-line option.
+This corresponds to the ``\fI\-d\fP'' command-line option.
 .TP
 .B use-mmap
-This key requires a boolean value. It specifies whether mmap'ing should be
+This key requires a boolean value. It specifies whether mmaping should be
 used if innfeed has been built with mmap support. If article data on disk
 is not in NNTP-ready format (CR/LF at the end of each line), then after
-mmap'ing the article is read into memory and fixed up, so mmap'ing has no
+mmaping the article is read into memory and fixed up, so mmaping has no
 positive effect (and possibly some negative effect depending on your
 system), and so in such a case this value should be \fIfalse\fP. This
 corresponds to the ``\fI\-M\fP'' command-line option.
@@ -193,7 +193,7 @@ the ``\fI\-l\fP'' command-line option. A relative pathname is relative to
 the ``\fBbacklog-directory\fP'' value.
 .\" .TP
 .\" .B initial-sleep
-.\" This key requires a postive integer value. It specifies how many seconds
+.\" This key requires a positive integer value. It specifies how many seconds
 .\" innfeed should sleep at startup before attempting to take out its locks. On
 .\" fast machines and with innfeed handling many connections, it can take too
 .\" long for innfeed to recognise that its input has been closed, and that it
@@ -254,7 +254,7 @@ logs its own statistics. This corresponds to the ``\fI\-z\fP''
 command-line option.
 .TP
 .B host-queue-highwater
-This key requires a postive integer value. It defines how many articles
+This key requires a positive integer value. It defines how many articles
 will be held internally for a peer before new arrivals cause article
 information to be spooled to the backlog file.
 .TP
@@ -271,7 +271,7 @@ processing scripts.
 .\"..................................................
 .TP
 .B initial-reconnect-time
-This key requires a postive integer value. It defines how many seconds to
+This key requires a positive integer value. It defines how many seconds to
 first wait before retrying to reconnect after a connection failure. If the
 next attempt fails too, then the reconnect time is approximately doubled
 until the connection succeeds, or \fBmax-reconnection-time\fP is reached.
@@ -284,7 +284,7 @@ it is doubled after each failure, up to this value.
 .TP
 .B stdio-fdmax
 This key requires a non-negative integer value. If the value is greater
-than zero, then whenever a network socket file dcescriptor is created and
+than zero, then whenever a network socket file descriptor is created and
 it has a value \fIless than\fP this, the file descriptor will be dup'ed to
 bring the value up greater than this. This is to leave lower numbered file
 descriptors free for stdio. Certain systems, Sun's in particular, require
@@ -417,7 +417,7 @@ attempts an optimization called ``no-CHECK'' mode. This involves \fInot\fP
 asking the peer if it wants the article, but just sending it. This
 optimization occurs when the percentage of the articles the peer has
 accepted gets larger than this number. If this value is set to 100.0, then
-this effectivly turns off no-CHECK mode, as the percentage can never get
+this effectively turns off no-CHECK mode, as the percentage can never get
 above 100.0. If this value is too small, then the number of articles the
 peer rejects will get bigger (and your bandwidth will be wasted). A value
 of 95.0 is usually pretty good. NOTE: In innfeed 0.9.3 and earlier this
@@ -446,7 +446,7 @@ percentages of articles accepted; a lower number will result in a faster
 response.
 .TP
 .B port-number
-This key requires a postive integer value. It defines the tcp/ip port
+This key requires a positive integer value. It defines the tcp/ip port
 number to use when connecting to the remote.
 .TP
 .B no-backlog
@@ -472,7 +472,7 @@ example if \fBbacklog-limit\fP has a value of 1000000, and
 \fBbacklog-factor\fP has a value of 2.0, then when the backlogfile gets to
 be larger than 2000000 bytes in size, it will be truncated to 1000000 bytes.
 The front
-portion of the file is removed, and the triming happens on line boundaries,
+portion of the file is removed, and the trimming happens on line boundaries,
 so the final size may be a bit less than this number. If
 \fBbacklog-limit-highwater\fP is defined too, then \fBbacklog-factor\fP
 takes precedence.
@@ -480,7 +480,7 @@ takes precedence.
 .B backlog-limit-highwater
 This key requires a positive integer value that must be larger than the
 value for \fBbacklog-limit\fP. If the size of the backlog file gets larger
-than this value (in bytes), then the backlog file will be dhrunk down to
+than this value (in bytes), then the backlog file will be shrunk down to
 the size of \fBbacklog-limit\fP. If both \fBbacklog-factor\fP and
 \fBbacklog-limit-highwater\fP are defined, then the value of
 \fBbacklog-factor\fP is used.
@@ -595,7 +595,7 @@ peer bb.home.vix.com {
 
 
 
-# Blank lines are ignored. Exerything after a '#'
+# Blank lines are ignored. Everything after a '#'
 # is ignored too.
 #
 # Format is:
