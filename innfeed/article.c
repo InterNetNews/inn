@@ -63,6 +63,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "configdata.h"
 #include "clibrary.h"
 #include "libinn.h"
+#include "storage.h"
 #include "article.h"
 #include "buffer.h"
 #include "endpoint.h"

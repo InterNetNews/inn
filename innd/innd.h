@@ -39,6 +39,7 @@
 #include "libinn.h"
 #include "macros.h"
 #include "dbz.h"
+#include "storage.h"
 
 #if     defined(DO_TCL)
 #include <tcl.h>
