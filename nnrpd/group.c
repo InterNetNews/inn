@@ -58,7 +58,7 @@ void CMDgroup(int ac, char *av[])
         char    *reply;
 
 	/* Authorize user using Python module method dynamic*/
-	if (PY_dynamic(ClientHost, ClientIpString, ServerHost, PERMuser, group, false, &reply) < 0) {
+	if (PY_dynamic(PERMuser, group, false, &reply) < 0) {
 	    syslog(L_NOTICE, "PY_dynamic(): authorization skipped due to no Python dynamic method defined.");
 	} else {
 	    if (reply != NULL) {

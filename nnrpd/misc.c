@@ -165,7 +165,7 @@ PERMartok(void)
         char    *reply;
 
 	/* Authorize user at a Python authorization module */
-	if (PY_dynamic(ClientHost, ClientIpString, ServerHost, PERMuser, p, false, &reply) < 0) {
+	if (PY_dynamic(PERMuser, p, false, &reply) < 0) {
 	    syslog(L_NOTICE, "PY_dynamic(): authorization skipped due to no Python dynamic method defined.");
 	} else {
 	    if (reply != NULL) {

@@ -1589,7 +1589,7 @@ void PERMgetpermissions()
             uname = xstrdup(PERMuser);
             access_vec = vector_new();
 
-            PY_access(script_path, access_vec, ClientHost, ClientIpString, ServerHost, uname);
+            PY_access(script_path, access_vec, uname);
             free(script_path);
             free(uname);
             free(args);
@@ -2277,7 +2277,7 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
 	Argify(cp, &args);
 	script_path = concat(args[0], (char *) 0);
 	if ((script_path != NULL) && (strlen(script_path) > 0)) {
-	  code = PY_authenticate(script_path, ClientHost, ClientIpString, ServerHost, username, password, errorstr, newUser);
+	  code = PY_authenticate(script_path, username, password, errorstr, newUser);
 	  free(script_path);
 	  if (code < 0) {
 	    syslog(L_NOTICE, "PY_authenticate(): authentication skipped due to no Python authentication method defined.");

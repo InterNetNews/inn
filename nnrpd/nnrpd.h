@@ -276,9 +276,9 @@ extern void perlAuthInit(void);
 #ifdef	DO_PYTHON
 extern bool PY_use_dynamic;
 
-int PY_authenticate(char *path, char *clientHost, char *clientIpString, char *serverHost, char *Username, char *Password, char *errorstring, char *newUser);
-void PY_access(char* path, struct vector *access_vec, char *clientHost, char *clientIpString, char *serverHost, char *Username);
-int PY_dynamic(char *clientHost, char *clientIpString, char *ServerHost, char *Username, char *NewsGroup, int PostFlag, char **reply_message);
+int PY_authenticate(char *path, char *Username, char *Password, char *errorstring, char *newUser);
+void PY_access(char* path, struct vector *access_vec, char *Username);
+int PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message);
 void PY_dynamic_init (char* file);
 #endif	/* DO_PYTHON */
 
