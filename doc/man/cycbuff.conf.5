@@ -87,7 +87,7 @@ the cyclic buffer files.
 .BR 1. " Create a big file on top of a standard filesystem."
 The use "dd" to create the ``cycbuff''
 files, such as "dd if=/dev/zero of=/path/to/cycbuff bs=32k count=N"
-where N is the final size of the RAWPART divided by 32768.
+where N is the buffer_size divided by 32.
 .TP
 .BR 2. " Use block disk devices directly."
 If your operating system will allow you to
