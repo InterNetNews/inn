@@ -331,7 +331,7 @@ dnl -g on link as well as compile for debugging to work.
 dnl INN doesn't use alloca(), but Boyd Gerber <gerberb@zenez.com> included
 dnl this fix in his patch to get INN compiling on UnixWare 7.1.  Left in
 dnl just in case bison needs it or INN uses alloca() down the road.
-*UnixWare*|*unixware*)
+*UnixWare*|*unixware*|*-sco3*)
     if test x"$GCC" != xyes ; then
         CFLAGS="$CFLAGS -Kalloca"
     fi
@@ -664,8 +664,8 @@ AC_HEADER_SYS_WAIT
 dnl Generic checks for header files.
 dnl NOTUSED: sys/file.h sys/ioctl.h
 AC_CHECK_HEADERS(crypt.h fcntl.h limits.h ndbm.h stddef.h stdint.h \
-                 sys/file.h sys/filio.h sys/ioctl.h sys/select.h \
-                 sys/sysinfo.h sys/time.h unistd.h)
+                 sys/bitypes.h sys/file.h sys/filio.h sys/ioctl.h \
+                 sys/select.h sys/sysinfo.h sys/time.h unistd.h)
 
 dnl Some Linux systems have db1/ndbm.h instead of ndbm.h.
 if test x"$ac_cv_header_ndbm_h" = xno ; then
@@ -724,6 +724,7 @@ AC_DEFUN(INN_MACRO_IOV_MAX, [
     AC_CACHE_VAL(inn_cv_macro_iov_max, [AC_TRY_RUN(dnl
 changequote(<<, >>)dnl
 <<
+#include <sys/types.h>
 #include <stdio.h>
 #include <sys/uio.h>
 #include <errno.h>
@@ -858,12 +859,18 @@ INN_CHECK_TYPE(int32_t, $INN_INT32,
 [#ifdef HAVE_STDINT_H
 # include <stdint.h>
 #endif
+#ifdef HAVE_SYS_BITYPES_H
+# include <sys/bitypes.h>
+#endif
 ])
 
 dnl Figure out the unsigned version.
 INN_CHECK_TYPE(uint32_t, unsigned $INN_INT32,
 [#ifdef HAVE_STDINT_H
 # include <stdint.h>
+#endif
+#ifdef HAVE_SYS_BITYPES_H
+# include <sys/bitypes.h>
 #endif
 ])
 
