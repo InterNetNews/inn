@@ -239,8 +239,8 @@ smcd_t* smcCreateShmemBuffer(const char *name, int size)
     this->shmid = shmid;
     this->semap = semap;
 
-    notice("created shmid %d semap %d addr %p size %d", shmid, semap,
-           (void *) addr, size);
+    debug("created shmid %d semap %d addr %p size %d", shmid, semap,
+          (void *) addr, size);
 
     return this;
 }
@@ -263,7 +263,7 @@ void smcClose( smcd_t *this )
         if (shmctl(this->shmid, IPC_RMID, 0) < 0)
             syswarn("cant delete shmid %d", this->shmid);
         else
-            notice("shmid %d deleted", this->shmid);
+            debug("shmid %d deleted", this->shmid);
     }
     free( this );
 }
