@@ -1443,8 +1443,7 @@ main(int ac, char *av[])
     size = 0;
     oldtemp = NULL;
     OverPath = NULL;
-    if ((tmpdir = getenv("TMPDIR")) == NULL)
-	tmpdir = _PATH_TMP;
+    tmpdir = innconf->pathtmp;
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
