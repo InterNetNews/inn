@@ -82,12 +82,27 @@ block disk devices (Solaris does, FreeBSD does not), this is the
 recommended method.  Partition the disks to make each partition
 slightly larger (a few MB larger) than the intended size of each cycbuff.
 It is not recommend to use the block device files already located in ``/dev.''
-Instead, use "mknod" to create a new set of block device files based
-on what you see with "ls -l" in /dev.  Use the exact same major and
-minor device numbers when running "mknod", but specify the path to be
-something like "/cycbuff/c0t3s4" for SCSI controller 0 target 3
-slice/partition 4.  The device files themselves consume very little
-space.
+Instead, use "mknod" to create a new set of block device files.
+In order to do this, do an "ls -l" of the /dev/dsk partition and then a
+subsequent "ls -l" of the destination of the symbolic link under /devices.
+The major and minor device numbers are in the fifth and sixth columns (right
+before the date) respectively.  This information should be fed to "mknod"
+to make a "block-type special file" (b).
+Here is a short script that accomplishes this when fed the /dev/dsk/
+partition name:
+.sp 1
+.nf
+.in +0.5i
+#!/bin/sh
+disk=$1
+link=`ls -l /dev/dsk/$disk | awk '{print $11}'`
+major=`ls -l /dev/dsk/$link | awk '{print $5}' | tr -d ,`
+minor=`ls -l /dev/dsk/$link | awk '{print $6}`
+mkdir /cycbuff
+mknod /cycbuff/$disk b $major $minor
+.in -0.5i
+.fi
+The created device files themselves consume very little space.
 .PP
 In either case, make certain that each cycbuff file is owned by your
 news user, news group, and has rw modes for the owner and group (mode
