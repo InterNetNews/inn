@@ -204,8 +204,8 @@ main(int argc, char **argv)
 	
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
-    TextFile = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
-    HISTORY = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
+    TextFile = concatpath(innconf->pathdb, _PATH_HISTORY);
+    HISTORY = concatpath(innconf->pathdb, _PATH_HISTORY);
     HistoryDir = innconf->pathdb;
     IgnoreOld = FALSE;
     Overwrite = FALSE;

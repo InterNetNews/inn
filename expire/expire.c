@@ -766,8 +766,8 @@ int main(int ac, char *av[])
 
     if (ReadInnConf() < 0) exit(1);
 
-    HistoryText = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
-    ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
+    HistoryText = concatpath(innconf->pathdb, _PATH_HISTORY);
+    ACTIVE = concatpath(innconf->pathdb, _PATH_ACTIVE);
     SPOOL = innconf->patharticles;
 
     (void)umask(NEWSUMASK);
@@ -847,8 +847,13 @@ int main(int ac, char *av[])
     /* Parse the control file. */
     if (av[0])
 	F = EQ(av[0], "-") ? stdin : EXPfopen(FALSE, av[0], "r", FALSE, FALSE, FALSE);
-    else
-	F = EXPfopen(FALSE, cpcatpath(innconf->pathetc, _PATH_EXPIRECTL), "r", FALSE, FALSE, FALSE);
+    else {
+        char *path;
+
+        path = concatpath(innconf->pathetc, _PATH_EXPIRECTL);
+	F = EXPfopen(FALSE, path, "r", FALSE, FALSE, FALSE);
+        free(path);
+    }
     if (!EXPreadfile(F)) {
 	(void)fclose(F);
 	(void)fprintf(stderr, "Format error in expire.ctl\n");

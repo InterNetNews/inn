@@ -191,7 +191,7 @@ main(int ac, char *av[])
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
 
-    History = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
+    History = concatpath(innconf->pathdb, _PATH_HISTORY);
 
     What = '?';
 

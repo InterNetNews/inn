@@ -105,7 +105,7 @@ main(ac, av)
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
 
-    History = cpcatpath(innconf->pathdb, _PATH_HISTORY);
+    History = concatpath(innconf->pathdb, _PATH_HISTORY);
     Line.Size = BUFSIZ;
     Line.Data = NEW(char, Line.Size);
     Line.Used = 0;

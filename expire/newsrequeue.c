@@ -393,9 +393,9 @@ main(ac, av)
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
 
-    Active = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
-    History = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
-    Newsfeeds = COPY(cpcatpath(innconf->pathetc, _PATH_NEWSFEEDS));
+    Active = concatpath(innconf->pathdb, _PATH_ACTIVE);
+    History = concatpath(innconf->pathdb, _PATH_HISTORY);
+    Newsfeeds = concatpath(innconf->pathetc, _PATH_NEWSFEEDS);
     nntplinklog = innconf->nntplinklog;
 
     /* Parse JCL. */
