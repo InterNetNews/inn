@@ -1,34 +1,31 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Get a file list from an NNTP server.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
 #include <errno.h>
+#include <syslog.h>
+
+#include "macros.h"
 #include "libinn.h"
 #include "qio.h"
 #include "paths.h"
-#include "macros.h"
-#include <syslog.h>  
 
 
 /*
 **  Print usage message and exit.
 */
-STATIC NORETURN
+static NORETURN
 Usage()
 {
-    (void)fprintf(stderr, "Usage: getlist [-p port] [-h host] [type [pat [groups]]\n");
+    fprintf(stderr, "Usage: getlist [-p port] [-h host] [type [pat [groups]]\n");
     exit(1);
 }
 
 
 int
-main(ac, av)
-    int		ac;
-    char	*av[];
+main(int ac, char *av[])
 {
     FILE	*active;
     FILE	*FromServer;
@@ -96,7 +93,10 @@ main(ac, av)
 	list = "active";
     else {
 	list = av[0];
-	if (!EQ(list, "active") && pattern != NULL)
+        if (!EQ(list, "active") && types != NULL)
+            Usage();
+	if (!EQ(list, "active") && !EQ(list, "newsgroups")
+         && pattern != NULL)
 	    Usage();
     }
 
