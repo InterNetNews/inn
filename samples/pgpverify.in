@@ -1,6 +1,10 @@
-#!@_PATH_PERL -ws
+#!_PATH_PERL -ws
 # written April 1996, tale@isc.org (David C Lawrence)
-# Version 1.8
+# Version 1.9
+#
+# Changes from 1.8 -> 1.9
+# -- match 'Bad signature' pgp output to return exit status 3 by removing
+#    '^' in regexp matched on multiline string.
 #
 # Changes from 1.7 -> 1.8
 # -- ignore final dot-CRLF if article is in NNTP format
@@ -167,7 +171,7 @@ if (/Good signature from user(:  (.*)| "(.*)"\.)/ ||
     /Good signature made .* by key:\n.+\n +"(.*)"/) {
   $ok = 0;
   $signer = $+;
-} elsif (/^Bad signature /) {
+} elsif (/Bad signature /) {
   $ok = 3;
 } elsif (/Keyring file '(.*)' does not exist/) {
   &fail("$0: couldn't access $1.  Bad \$HOME or \$PGPPATH?\n");
