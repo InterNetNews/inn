@@ -379,6 +379,30 @@ sub mrtg_buffer {
         1;
 }
 
+sub bigsysseek {
+    my($handle, $offset) = @_;
+
+    # $offset may be a bigint; and have a value that doesn't fit in a signed long.
+    # Even with largefiles enabled, perl will still truncate the argument to lseek64
+    # to 32 bits.  So we seek multiple times, <2G at a time.
+
+    if($offset > 2147483647) {
+	# Since perl truncates the return value of lseek64 to 32 bits, it might
+	# see a successful return value as negative, and return FALSE (undef).
+	# So we must ignore the return value of sysseek and assume that it worked.
+
+	seek($handle, 0, 0);
+	while($offset > 2000000000) {
+	    sysseek($handle, 2000000000, 1);
+	    $offset -= 2000000000;
+	}
+	sysseek($handle, $offset, 1);
+	return 1;
+    } else {
+	return sysseek($handle, $offset, 0);
+    }
+}
+
 sub get_cycbuff_info {
     my($buffpath) = $_[0];
     
@@ -431,7 +455,7 @@ sub get_cycbuff_info {
 	my $sentinel = $cyclenum == 0 ? $free : $len;
 	my $offset = $cyclenum == 0 ? $minartoffset : $free + $pagesize;
 
-	seek (BUFF, $offset, 0) || die "seek: $!\n";
+	bigsysseek (BUFF, $offset) || die "sysseek: $!\n";
 	sysread (BUFF, $buff, $pagesize)
 		|| die "read: $!\n";
 	do {
