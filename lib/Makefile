@@ -95,7 +95,7 @@ depend: Makefile $(SOURCES) ../include/inn/version.h
 argparse.o: argparse.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
 cleanfrom.o: cleanfrom.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/macros.h
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h
 clientactive.o: clientactive.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h
@@ -108,10 +108,10 @@ conffile.o: conffile.c ../include/config.h ../include/inn/defines.h \
  ../include/macros.h
 confparse.o: confparse.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/confparse.h \
- ../include/inn/hashtab.h ../include/inn/vector.h ../include/libinn.h \
- ../include/macros.h
+ ../include/inn/hashtab.h ../include/inn/messages.h \
+ ../include/inn/vector.h ../include/libinn.h ../include/macros.h
 daemonize.o: daemonize.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h
+ ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h
 date.o: date.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
 dbz.o: dbz.c ../include/config.h ../include/inn/defines.h \
@@ -120,8 +120,6 @@ dbz.o: dbz.c ../include/config.h ../include/inn/defines.h \
 defdist.o: defdist.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/paths.h
-error.o: error.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h
 fdflags.o: fdflags.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
 fdlimit.o: fdlimit.c ../include/config.h ../include/inn/defines.h \
@@ -174,6 +172,8 @@ makedir.o: makedir.c ../include/config.h ../include/inn/defines.h \
 md5.o: md5.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/md5.h
 memcmp.o: memcmp.c ../include/config.h ../include/inn/defines.h
+messages.o: messages.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h
 mkstemp.o: mkstemp.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/time.h
 parsedate.o: parsedate.c ../include/config.h ../include/inn/defines.h \
@@ -199,7 +199,7 @@ reservedfd.o: reservedfd.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
  ../include/macros.h
 resource.o: resource.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/macros.h
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h
 rwlock.o: rwlock.c ../include/rwlock.h
 sendarticle.o: sendarticle.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
@@ -212,7 +212,8 @@ sequence.o: sequence.c ../include/config.h ../include/inn/defines.h \
 setenv.o: setenv.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 sockaddr.o: sockaddr.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/socket.h
+ ../include/clibrary.h ../include/portable/socket.h \
+ ../include/libinn.h
 strcasecmp.o: strcasecmp.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h
 strerror.o: strerror.c ../include/config.h ../include/inn/defines.h
@@ -221,8 +222,8 @@ strspn.o: strspn.c ../include/config.h ../include/inn/defines.h \
 strtok.o: strtok.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 timer.o: timer.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h ../include/inn/timer.h \
- ../include/portable/time.h
+ ../include/clibrary.h ../include/portable/time.h \
+ ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h
 wildmat.o: wildmat.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
 vector.o: vector.c ../include/config.h ../include/inn/defines.h \
@@ -230,9 +231,9 @@ vector.o: vector.c ../include/config.h ../include/inn/defines.h \
 version.o: version.c ../include/config.h ../include/inn/defines.h \
  ../include/inn/version.h
 xfopena.o: xfopena.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
+ ../include/clibrary.h ../include/libinn.h
 xmalloc.o: xmalloc.c ../include/config.h ../include/inn/defines.h \
- ../include/libinn.h
+ ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h
 xsignal.o: xsignal.c ../include/config.h ../include/inn/defines.h \
  ../include/libinn.h
 xwrite.o: xwrite.c ../include/config.h ../include/inn/defines.h \

@@ -152,9 +152,9 @@ filechan.o: filechan.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/paths.h map.h
 inndf.o: inndf.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
- ../include/ov.h ../include/storage.h ../include/inn/history.h \
- ../include/paths.h
+ ../include/clibrary.h ../include/inn/messages.h ../include/inn/qio.h \
+ ../include/libinn.h ../include/ov.h ../include/storage.h \
+ ../include/inn/history.h ../include/paths.h
 innxbatch.o: innxbatch.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/socket.h \
  ../include/portable/time.h ../include/libinn.h ../include/macros.h \

@@ -43,14 +43,14 @@ tdx-cache.o: tdx-cache.c ../../include/config.h \
  ../../include/storage.h tdx-private.h
 tdx-data.o: tdx-data.c ../../include/config.h \
  ../../include/inn/defines.h ../../include/clibrary.h \
- ../../include/portable/mmap.h ../../include/libinn.h \
- ../../include/storage.h tdx-private.h tdx-structure.h
+ ../../include/portable/mmap.h ../../include/inn/history.h \
+ ../../include/libinn.h ../../include/ov.h ../../include/storage.h \
+ ../ovinterface.h tdx-private.h tdx-structure.h
 tdx-group.o: tdx-group.c ../../include/config.h \
  ../../include/inn/defines.h ../../include/clibrary.h \
  ../../include/portable/mmap.h ../../include/inn/hashtab.h \
- ../../include/inn/qio.h ../../include/libinn.h ../../include/ov.h \
- ../../include/storage.h ../../include/inn/history.h \
- ../../include/paths.h tdx-private.h tdx-structure.h
+ ../../include/inn/qio.h ../../include/libinn.h ../../include/paths.h \
+ tdx-private.h ../../include/storage.h tdx-structure.h
 tdx-util.o: tdx-util.c ../../include/config.h \
  ../../include/inn/defines.h ../../include/clibrary.h \
  ../../include/libinn.h ../../include/ov.h ../../include/storage.h \

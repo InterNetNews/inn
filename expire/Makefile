@@ -100,18 +100,19 @@ depend:	Makefile $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 convdate.o: convdate.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h
+ ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h
 expire.o: expire.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inndcomm.h ../include/libinn.h \
  ../include/macros.h ../include/paths.h ../include/storage.h \
  ../include/inn/history.h
 expireover.o: expireover.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h ../include/inn/qio.h \
- ../include/libinn.h ../include/macros.h ../include/ov.h \
- ../include/storage.h ../include/inn/history.h ../include/paths.h
+ ../include/inn/defines.h ../include/clibrary.h \
+ ../include/inn/messages.h ../include/inn/qio.h ../include/libinn.h \
+ ../include/macros.h ../include/ov.h ../include/storage.h \
+ ../include/inn/history.h ../include/paths.h
 fastrm.o: fastrm.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
- ../include/macros.h ../include/storage.h
+ ../include/clibrary.h ../include/inn/messages.h ../include/inn/qio.h \
+ ../include/libinn.h ../include/macros.h ../include/storage.h
 grephistory.o: grephistory.c ../include/clibrary.h ../include/config.h \
  ../include/inn/defines.h ../include/libinn.h ../include/macros.h \
  ../include/paths.h ../include/storage.h ../include/inn/history.h
