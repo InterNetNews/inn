@@ -311,11 +311,6 @@ Needed Bug Fixes:
   things (such as incoming connections or tradindexed overview cache).
   It should use write() instead.
 
-* If backoffdb is set in inn.conf and that directory doesn't exist, nnrpd
-  refuses to start.  Either the directory should be created by the install
-  process or nnrpd should just create it if it can.  [A patch for this has
-  been submitted.]
-
 * LIST NEWSGROUPS should probably only list newsgroups that are marked in
   the active file as valid groups.
 
