@@ -1772,7 +1772,7 @@ ARTmakeoverview(CHANNEL *cp)
 bool
 ARTpost(CHANNEL *cp)
 {
-  char		*p, **groups, ControlWord[16], tmpbuff[32], **hops;
+  char		*p, **groups, ControlWord[SMBUF], tmpbuff[32], **hops;
   int		i, j, *isp, hopcount, oerrno, canpost;
   NEWSGROUP	*ngp, **ngptr;
   SITE		*sp;
