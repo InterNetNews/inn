@@ -144,6 +144,7 @@ CHANNEL *CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
     cp->State = State;
     cp->Streaming = FALSE;
     cp->Skip = FALSE;
+    cp->NoResendId = FALSE;
     cp->Ihave = cp->Ihave_Duplicate = cp->Ihave_Deferred = cp->Ihave_SendIt = cp->Ihave_Cybercan = 0;
     cp->Check = cp->Check_send = cp->Check_deferred = cp->Check_got = cp->Check_cybercan = 0;
     cp->Takethis = cp->Takethis_Ok = cp->Takethis_Err = 0;
