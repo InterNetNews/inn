@@ -40,4 +40,5 @@ storage/makehistory
 storage/sm
 util/convdate
 util/innbind
+util/inndf
 util/innupgrade

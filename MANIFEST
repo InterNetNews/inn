@@ -766,6 +766,8 @@ tests/data/db                         Skeleton database for testing (Directory)
 tests/data/db/active                  Skeleton active file for testing
 tests/data/etc                        Configuration for testing (Directory)
 tests/data/etc/buffindexed.conf       buffindexed configuration for testing
+tests/data/etc/inn-bfx.conf           inn.conf file for buffindexed overview
+tests/data/etc/inn-tdx.conf           inn.conf file for tradindexed overview
 tests/data/etc/inn.conf               Basic inn.conf file for testing
 tests/data/etc/overview.fmt           Overview configuration for testing
 tests/data/etc/passwd                 Password data for ckpasswd tests
