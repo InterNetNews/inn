@@ -312,9 +312,8 @@ main(int argc, char *argv[])
             p = strchr(group, ' ');
             if (p != NULL)
                 *p = '\0';
-            if (!OVgroupstats(group, NULL, NULL, &count, NULL))
-                continue;
-            total += count;
+            if (OVgroupstats(group, NULL, NULL, &count, NULL))
+		total += count;
             group = QIOread(qp);
         }
         QIOclose(qp);
