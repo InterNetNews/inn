@@ -283,7 +283,7 @@ STATIC BOOL ARTinstorebyartnum(int artnum)
     
     if (innconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
-    if (!OV3getartinfo(GRPcur, 0, NULL, NULL, &token))
+    if (!OV3getartinfo(GRPcur, artnum, NULL, NULL, &token))
 	return FALSE;
   
     art = SMretrieve(token, RETR_STAT);
@@ -808,8 +808,8 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 	    Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL,
 		av[1] ? av[1] : "\"\"");
 	    Printf(".\r\n");
+	    return;
 	}
-	return;
     }
 
     /* Is this a header in our overview? */
@@ -827,7 +827,7 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
     if ((handle = OV3opensearch(GRPcur, range.Low, range.High)) == NULL) {
 	Reply("%d %s fields follow\r\n.\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
 	return;
-	}
+    }
 
     Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
     while (OV3search(handle, &artnum, &data, &len, &token)) {
@@ -876,15 +876,15 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	if (!DidReply) {
 	    Reply("%d data follows\r\n", NNTP_OVERVIEW_FOLLOWS_VAL);
 	    Printf(".\r\n");
+	    return;
 	}
-	return;
     }
 
     OVERcount++;
     if ((handle = OV3opensearch(GRPcur, range.Low, range.High)) == NULL) {
 	Reply("%d %s fields follow\r\n.\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
 	return;
-	}
+    }
 
     Reply("%d %s fields follow\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, av[1]);
     while (OV3search(handle, &artnum, &data, &len, &token)) {
@@ -958,8 +958,8 @@ FUNCTYPE CMDxpat(int ac, char *av[])
 	    Reply("%d %s matches follow\r\n", NNTP_HEAD_FOLLOWS_VAL,
 		av[1] ? av[1] : "\"\"");
 	    Printf(".\r\n");
+	    return;
 	}
-	return;
     }
 
     /* In overview? */
@@ -972,7 +972,7 @@ FUNCTYPE CMDxpat(int ac, char *av[])
     if (Overview < 0) {
 	Reply("%d Header not in index\r\n", NNTP_SYNTAX_VAL);
 	return;
-	}
+    }
 
     if ((handle = OV3opensearch(GRPcur, range.Low, range.High)) == NULL) {
 	Reply("%d %s fields follow\r\n.\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
