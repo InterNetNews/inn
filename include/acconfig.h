@@ -15,9 +15,7 @@
 #define CONFIG_H 1
 
 /* Portable defines that don't rely on autoconf results come from here. */
-#ifndef INN_DEFINES_H
-# include "inn/defines.h"
-#endif
+#include "inn/defines.h"
 
 /*
 **  GENERAL SETTINGS
