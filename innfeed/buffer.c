@@ -462,6 +462,7 @@ bool nntpPrepareBuffer (Buffer buffer)
   int msize, newDsize, dsize, extra ;
   char *base, p, *src, *dst ;
   bool needfinal = false ;
+  bool needdotfinal = false;
 
   ASSERT (buffer != NULL) ;
 
@@ -469,7 +470,7 @@ bool nntpPrepareBuffer (Buffer buffer)
   msize = buffer->memSize - 1 ;
   base = buffer->mem ;
 
-  extra = 0 ;
+  extra = 3 ;
   p = '\0' ;
   for (src = base + dsize - 1 ; src > base ; )
     {
@@ -493,7 +494,7 @@ bool nntpPrepareBuffer (Buffer buffer)
       needfinal = true ;
       extra += 2 ;
     }
-
+    
   newDsize = dsize + extra ;
   
   if (msize - dsize < extra)
@@ -513,6 +514,12 @@ bool nntpPrepareBuffer (Buffer buffer)
     }
 
   base [newDsize] = '\0' ;
+  base [newDsize - 1] = '\n' ;
+  base [newDsize - 2] = '\r' ;
+  base [newDsize - 3] = '.' ;
+  newDsize -= 3 ;
+  extra -= 3 ;
+  
   if (needfinal)
     {
       base [newDsize - 1] = '\n' ;
@@ -549,6 +556,7 @@ bool nntpPrepareBuffer (Buffer buffer)
       ASSERT(dst >= base && src >= base) ; 
     }
 
+  newDsize += 3;
   if (needfinal)
     newDsize += 2 ;
   
