@@ -35,10 +35,12 @@ require 5.002;
 
 use FileHandle;
 use Sys::Syslog;
+use strict;
 
 my $cfFile = $inn::pathetc . "/news2mail.cf" ;
 my $sendmail = $inn::mta ;
 my $sm = $inn::pathbin . "/sm" ;
+my %maddr = ();
 
 #
 # the syslog calls are here but don't work on my system
@@ -56,9 +58,9 @@ unless (open CF, "< $cfFile") {
 		die "bad CF";
 		}
 
-while ( $line = <CF> ) {
-	next if ($line =~ /^#|^\s+/);
-	( $ln, $ma ) = split /\s+/, $line;
+while ( <CF> ) {
+	next if /^#|^\s+$/;
+	my ( $ln, $ma ) = split /\s+/;
 	$maddr{ $ln } = $ma;
 	}
 close CF;
@@ -71,24 +73,21 @@ while ( <STDIN> ) {
 
 	syslog('info', $_);
 
-	($token, $lnames) = split /\s+/, $_, 2;
+	my ($token, $lnames) = split /\s+/, $_, 2;
+	my @addrs = split /\s+/, $lnames;
 
-	$addrs = "";
-	$cnt = 0;
+	my @good = grep {  defined $maddr{$_} } @addrs;
+	my @bad  = grep { !defined $maddr{$_} } @addrs;
 
-	for $ln ( split /\s+/, $lnames ) {
-		if ( $maddr{ $ln } ) {
-			$cnt++;
-			}
-		$addrs = join ' ', $addrs, $maddr{ $ln };
+	if (! @addrs) {
+		syslog('notice', "unknown listname $_");
+		next;
 		}
 
-	if ($cnt > 0) {
-		mailto($token, $lnames, $addrs);
+	if (@bad) {
+		syslog('info', 'skipping unknown lists: ', join(' ', @bad));
 		}
-	else {
-		syslog('notice', 'unknown listname %s', $_);
-		}
+	mailto($token, $lnames, @maddr{@addrs});
 	}
 
 syslog ("info", "end") ;
@@ -98,65 +97,60 @@ exit 0;
 use strict;
 
 sub mailto {
-	my($t, $l, $a) = @_ ;
+	my($t, $l, @a) = @_ ;
 
-	my ($smgrpid, $smgr);
-	my ($smid, $smpid, $d, $ih, $line, $reply, $sendmail);
-
-
-	$sendmail = "|" . $inn::mta ;
+	my $sendmail = $inn::mta ;
 	$sendmail =~ s!%s!! ;
-	$sendmail .= " -ee '-f<news>' -odq " . $a;
-#	$sendmail = "|/usr/local/bin/debug -oi -ee '-f<news>' -odq " . $a;
+	$sendmail =~ s/\s//g;
+	my @command = ($sendmail, '-ee', '-f<news>', -odq, @a);
+#	@command[0] = '/usr/local/bin/debug';
 
-	syslog('info', $sendmail);
+	syslog('info', join(' ', @command));
 
-	unless ($smpid = (open SM, $sendmail)) {
-		syslog('notice', '%s failed!', $sendmail);
+	unless (open(SM, '|-', @command)) {
+		syslog('notice', join(' ', '|', @command), 'failed!');
 		die "bad $sendmail";
 		}
 
-	$smgr = "$sm -q $t |";
+	my $smgr = "$sm -q $t |";
 
-	unless ($smgrpid = (open SMGR, $smgr)) {
-	    syslog('notice', '%s failed!', $smgr);
+	unless (open(SMGR, $smgr)) {
+	    syslog('notice', "$smgr failed!");
 	    die "bad $smgr";
 	}
 
 	# header
-	$ih = 1;
-	while ( $ih == 1 && defined($line = <SMGR>) ) {
-		chop $line;
+	while ( <SMGR> ) {
+		chomp;
 
 		# empty line signals end of header
-		if ($line eq "") {
+		if ( /^$/ ) {
 			print SM "To: $l\n\n";
-			$ih = 0;
-			next;	
+			last;	
 			}
 
 		#
 		# skip unnecessary headers
 		#
-		next if ($line =~ /^NNTP-Posting-Date:/i);
-		next if ($line =~ /^NNTP-Posting-Host:/i);
-		next if ($line =~ /^X-Trace:/i);
-		next if ($line =~ /^Xref:/i);
-		next if ($line =~ /^Path:/i);
+		next if /^NNTP-Posting-Date:/i;
+		next if /^NNTP-Posting-Host:/i;
+		next if /^X-Trace:/i;
+		next if /^Xref:/i;
+		next if /^Path:/i;
 
 		#
 		# convert Newsgroups header into X-Newsgroups
 		#
-		$line =~ s/^Newsgroups:/X-Newsgroups:/i;
-		print SM "$line\n";
+		s/^Newsgroups:/X-Newsgroups:/i;
+
+		print SM "$_\n";
 		}
 
 	# body
-	while ( $line = <SMGR> ) {
-		print SM $line;
+	while ( <SMGR> ) {
+		print SM $_;
 	}
 
-out:
 	close(SMGR);
 	close(SM);
 	}
