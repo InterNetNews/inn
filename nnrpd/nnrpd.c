@@ -1133,6 +1133,7 @@ main(int argc, char *argv[])
 	    if (Tracing)
 		syslog(L_TRACE, "%s < %s", ClientHost, PushedBack);
 	    ac = Argify(PushedBack, &av);
+	    r = RTok;
 	}
 	else
 	    switch (r = READline(buff, (int)sizeof buff, timeout)) {
@@ -1199,6 +1200,8 @@ main(int argc, char *argv[])
 	}
 	TITLEset(av[0]);
 	(*cp->Function)(ac, av);
+	if (PushedBack)
+	    break;
     }
 
     Reply("%s\r\n", NNTP_GOODBYE_ACK);
