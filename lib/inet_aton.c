@@ -18,6 +18,7 @@
    the system version. */
 #if TESTING
 # define inet_aton test_inet_aton
+int test_inet_aton(const char *, struct in_addr *);
 #endif
 
 int

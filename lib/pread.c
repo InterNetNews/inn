@@ -22,6 +22,7 @@
 #if TESTING
 # undef pread
 # define pread test_pread
+ssize_t test_pread(int, void *, size_t, off_t);
 #endif
 
 ssize_t

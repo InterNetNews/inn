@@ -20,6 +20,7 @@
    the system version. */
 #if TESTING
 # define inet_ntoa test_inet_ntoa
+const char *test_inet_ntoa(const struct in_addr);
 #endif
 
 const char *

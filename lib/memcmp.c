@@ -17,6 +17,7 @@
    the system version. */
 #if TESTING
 # define memcmp test_memcmp
+int test_memcmp(const void *, const void *, size_t);
 #endif
 
 int

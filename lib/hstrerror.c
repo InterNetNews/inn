@@ -27,6 +27,7 @@ static int nerrors = (sizeof errors / sizeof errors[0]);
    the system version. */
 #if TESTING
 # define hstrerror test_hstrerror
+const char *test_hstrerror(int);
 #endif
 
 const char *

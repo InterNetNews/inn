@@ -22,6 +22,7 @@
 #if TESTING
 # undef pwrite
 # define pwrite test_pwrite
+ssize_t test_pwrite(int, const void *, size_t, off_t);
 #endif
 
 ssize_t

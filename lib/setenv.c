@@ -17,6 +17,7 @@
    the system version. */
 #if TESTING
 # define setenv test_setenv
+int test_setenv(const char *, const char *, int);
 #endif
 
 int
