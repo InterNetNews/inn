@@ -86,7 +86,7 @@ sub filter_art {
 ##
 ##	if ($hdr{"Subject"} =~ /\$*make.*money.*\$*/i ) {
 ##		$rval = "no money requests here"
-##	} elsif ( @_ = split(",",$hdr{'Newsgroups'}) > $maxgroups ) {
+##	} elsif ( ( @_ = split(",",$hdr{'Newsgroups'}) ) > $maxgroups ) {
 ##		$rval = "too many groups" ;
 ###	Kill article with "Re: " but no References:
 ##	} elsif ($hdr{'Subject'} =~ /^Re: /o and $hdr{'References'} eq "") {
