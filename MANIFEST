@@ -366,6 +366,8 @@ lib/rwlock.c                          Read/write locking routines
 lib/sendarticle.c                     Send an article, NNTP style
 lib/sendpass.c                        Send NNTP authentication
 lib/setenv.c                          setenv replacement
+lib/seteuid.c                         seteuid replacement
+lib/snprintf.c                        snprintf and vsnprintf replacement
 lib/strcasecmp.c                      Case-insenstive string comparison (BSD)
 lib/strerror.c                        String representation of errno
 lib/strspn.c                          Skip bytes in a string (BSD)
@@ -558,6 +560,7 @@ tests/lib/pwrite-t.c                  Tests for lib/pwrite.c
 tests/lib/qio-t.c                     Tests for lib/qio.c
 tests/lib/setenv-t.c                  Tests for lib/setenv.c
 tests/lib/setenv.t                    Wrapper for setenv tests
+tests/lib/snprintf-t.c                Tests for lib/snprintf.c
 tests/lib/strerror-t.c                Tests for lib/strerror.c
 tests/lib/wildmat-t.c                 Tests for lib/wildmat.c
 tests/lib/xmalloc.c                   Helper program for xmalloc tests
