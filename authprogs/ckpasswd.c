@@ -79,6 +79,7 @@ char *GetFilePass(char *name, char *file)
     return(pass);
 }
 
+#if defined(HAVE_NDBM_H) || defined(HAVE_DB1_NDBM_H)
 char *GetDBPass(char *name, char *file)
 {
     datum key;
@@ -101,6 +102,7 @@ char *GetDBPass(char *name, char *file)
     dbm_close(D);
     return(pass);
 }
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -116,9 +118,17 @@ int main(int argc, char *argv[])
     do_shadow = do_file = do_db = 0;
     fname = 0;
 #if HAVE_GETSPNAM
+#if defined(HAVE_NDBM_H) || defined(HAVE_DB1_NDBM_H)
     while ((opt = getopt(argc, argv, "sf:d:")) != -1) {
 #else
+    while ((opt = getopt(argc, argv, "sf:")) != -1) {
+#endif
+#else
+#if defined(HAVE_NDBM_H) || defined(HAVE_DB1_NDBM_H)
     while ((opt = getopt(argc, argv, "f:d:")) != -1) {
+#else
+    while ((opt = getopt(argc, argv, "f:")) != -1) {
+#endif
 #endif
 	/* only allow one of the three possibilities */
 	if (do_shadow || do_file || do_db)
@@ -131,10 +141,12 @@ int main(int argc, char *argv[])
 	    fname = optarg;
 	    do_file = 1;
 	    break;
+#if defined(HAVE_NDBM_H) || defined(HAVE_DB1_NDBM_H)
 	  case 'd':
 	    fname = optarg;
 	    do_db = 1;
 	    break;
+#endif
 	}
     }
     if (argc != optind)
@@ -170,9 +182,11 @@ int main(int argc, char *argv[])
     if (do_file)
 	rpass = GetFilePass(uname, fname);
     else
+#if defined(HAVE_NDBM_H) || defined(HAVE_DB1_NDBM_H)
     if (do_db)
 	rpass = GetDBPass(uname, fname);
     else
+#endif
 	rpass = GetPass(uname);
 
     if (!rpass) {
