@@ -588,8 +588,8 @@ ARTwrite(name, Article, Data)
 
 
     end = vp;
-    vp->iov_base = WireFormat ? "\r\n" : "\n";
-    vp->iov_len  = WireFormat ? 2 : 1;
+    vp->iov_base = WireFormat ? "\r\n\r\n" : "\n\n";
+    vp->iov_len  = WireFormat ? 4 : 2;
     size += (vp++)->iov_len;
 
     vp->iov_base = Data->Body;
@@ -1493,7 +1493,6 @@ ARTassignnumbers()
 	(void)sprintf(p, " %s:%lu", ngp->Name, ngp->Filenum);
 	p += strlen(p);
     }
-    sprintf(p, "%s\n", WireFormat ? "\r" : "");
     ARTheaders[_xref].Length=strlen(HDR(_xref));
 }
 
@@ -1510,17 +1509,17 @@ ARTxrefslave()
     char	*name;
     char	*next;
     NEWSGROUP	*ngp;
-    int	i;
-    char xrefbuf[MAXHEADERSIZE];
+    int	        i;
+    char        xrefbuf[MAXHEADERSIZE*2];
 
     if (!ARTheaders[_xref].Found)
     	return FALSE;
     if ((name = strchr(HDR(_xref), ' ')) == NULL)
     	return FALSE;
     
-    p = HDR(_xref);
-    strcpy(p,path);
-    p+=strlen(path);
+    p = xrefbuf;
+    strcpy(p, path);
+    p += strlen(path);
     
     name++;
     for (i = 0; *name; name = next) {
@@ -1562,8 +1561,8 @@ ARTxrefslave()
 	
     }
     
-    sprintf(p, "%s\n", WireFormat ? "\r" : "");
-    ARTheaders[_xref].Length = strlen(HDR(_xref));
+    ARTheaders[_xref].Length = strlen(xrefbuf);
+    strcpy(HDR(_xref), xrefbuf);
     return TRUE;
 }
 
@@ -1627,7 +1626,6 @@ ARTreplic(Replic)
 	p += strlen(strcpy(p, name));
     }
 
-    sprintf(p, "%s\n", WireFormat ? "\r" : "");
     ARTheaders[_xref].Length=strlen(HDR(_xref));
     
 }
