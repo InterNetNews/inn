@@ -1460,9 +1460,11 @@ static void ovgroupunmap(void) {
   if (!Cache && (Gib != NULL)) {
     DISPOSE(Gib);
     Gib = NULL;
-    DISPOSE(Cachesearch->group);
-    DISPOSE(Cachesearch);
-    Cachesearch = NULL;
+    if (Cachesearch != NULL) {
+      DISPOSE(Cachesearch->group);
+      DISPOSE(Cachesearch);
+      Cachesearch = NULL;
+    }
   }
 }
 
