@@ -17,6 +17,13 @@
 #include "innd.h"
 #include "ov.h"
 
+/* From lib/perl.c. */
+#if DO_PERL
+extern void PerlFilter(bool value);
+extern void PerlClose(void);
+extern void PERLsetup (char *startupfile, char *filterfile, char *function);
+#endif
+
 
 #if defined(HAVE_SETBUFFER)
 # define SETBUFFER(F, buff, size)	setbuffer((F), (buff), (size))
@@ -69,11 +76,8 @@ STATIC GID_T	NewsGID;
 **  if it fit.  Used for updating high-water marks in the active file
 **  in-place.
 */
-BOOL
-FormatLong(p, value, width)
-    register char	*p;
-    register u_long	value;
-    register int	width;
+bool
+FormatLong(char *p, unsigned long value, int width)
 {
     for (p += width - 1; width-- > 0; ) {
 	*p-- = (int)(value % 10) + '0';
@@ -424,7 +428,6 @@ ThrottleNoMatchError(void)
 {
     char	buff[SMBUF];
     STRING	p;
-    int		oerrno;
 
     if (Mode == OMrunning) {
 	if (Reservation) {
@@ -465,7 +468,7 @@ JustCleanup()
     TCLclose();
 #endif /* defined(DO_TCL) */
 #if defined(DO_PERL)
-    PerlFilter (FALSE) ;
+    PerlFilter(FALSE);
     PerlClose();
 #endif /* defined(DO_PERL) */
 #if defined(DO_PYTHON)
