@@ -806,7 +806,7 @@ int main(int ac, char *av[])
     int		mode;
     char	buff[SMBUF];
     char	*Slave;
-    int         port;
+    int         port = NNTP_PORT;
 
     /* First thing, set up logging and our identity. */
     openlog("rnews", L_OPENLOG_FLAGS, LOG_INN_PROG);
