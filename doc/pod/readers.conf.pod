@@ -1,0 +1,475 @@
+=head1 NAME
+
+readers.conf - Access control and configuration for nnrpd
+
+=head1 DESCRIPTION
+
+F<readers.conf> in I<pathetc> specifies access control for nnrpd(8).  It
+controls who is allowed to connect as a news reader and what they're
+allowed to do after they connect.  nnrpd reads this file when it starts
+up.
+
+There are two types of entries in F<readers.conf>:  parameter/value pairs
+and configuration groups.  Blank lines and anything after a number sign
+(C<#>) is ignored, unless the character C<#> is escaped with C<\>.  The
+maximum number of characters on each line is 8191.
+
+Parameter/value pairs consist of a keyword immediately followed by a
+colon, at least whitespace character, and a value.  The case of the
+parameter is significant (parameter should generally be in all lowercase),
+and a parameter may contain any characters except colon, C<#>, and
+whitespace.  An example:
+
+    hosts: *.example.com
+
+Values that contain whitespace should be quoted with double quotes, as in:
+
+    hosts: "*.example.com, *.example.net"
+
+Many parameters take a boolean value.  For all such parameters, the value
+may be specified as C<true>, C<yes>, or C<on> to turn it on and may be any
+of C<false>, C<no>, or C<off> to turn it off.  The case of these values is
+not significant.
+
+There are two basic types of configuration groups, auth and access.  The
+auth group provides mechanisms to establish the identity of the user, who
+they are.  The access group determines, given the user's identity, what
+they're permitted to do.  Writing a F<readers.conf> file for your setup is
+a two-step process, first assigning an identity to each incoming
+connection using auth groups, and then giving each identity appropriate
+privileges with access group.
+
+A user identity, as established by an auth group, looks like an e-mail
+address; in other words, it's in the form "<username>@<domain>" (or
+sometimes just "<username>" if no domain is specified.
+
+An auth group definition looks like:
+
+    auth <name> {
+        hosts: <host-wildmat>
+        auth: <auth-program>
+        res: <res-program>
+        default: <defuser>
+        default-domain: <defdomain>
+        # ...possibly other settings
+    }
+
+The <name> is used as a label for the group and is only for documentation
+purposes.
+
+A given auth group applies only to hosts whose name or IP address matches
+the wildmat expression given with the hosts: parameter (comma-separated
+wildmat expressions allowed, but C<@> is not supported).  Rather than
+wildmat expressions, you may also use CIDR notation to match any IP
+address in a netblock; for example, "10.10.10.0/24" will match any IP
+address between 10.10.10.0 and 10.10.10.255 inclusive.
+
+For any connection from a host that matches that wildmat expression or
+netblock, <res-program> (the program given with the res: parameter, if
+present) is run to determine the identity of the user just from the
+connection information.  If it fails, or if the res: parameter isn't
+present, the user is assigned an identity of "<defuser>@<defdomain>"; in
+other words, the values of the default: and default-domain: parameters are
+used.  If <res-program> only returns a username, <defdomain> is used as
+the domain.
+
+If the user later authenticates via the AUTHINFO USER/PASS commands, the
+provided username and password is passed to <auth-program>, the value of
+the auth: parameter (if present).  If this succeeds and returns a
+different identity than the one assigned at the time of the connection, it
+is matched against the available access groups again and the actions the
+user is authorized to do may change.
+
+When matching auth groups, the last auth group in the file that matches a
+given connection or username/password combination is used.
+
+An access group definition usually looks like:
+
+    access <name> {
+        users: <identity-wildmat>
+        newsgroups: <group-wildmat>
+    }
+
+Again, <name> is just for documentation purposes.  This says that all
+users whose identity matches <identity-wildmat> can read and post to all
+newsgroups matching <group-wildmat> (as before, comma-separated wildmat
+expressions are allowed, but C<@> is not supported).  Alternately, you can
+use the form:
+
+    access <name> {
+        users: <identity-wildmat>
+        read: <read-wildmat>
+        post: <post-wildmat>
+    }
+
+and matching users will be able to read any group that matches
+<read-wildmat> and post to any group that matches <post-wildmat>.  You can
+also set several other things in the access group as well as override
+various inn.conf(5) parameters for just that group of users.
+
+Just like with auth groups, when matching access groups the last matching
+one in the file is used to determine the user's permissions.
+
+There is one additional special case to be aware of.  First, when forming
+particularly complex authentication and authorization rules, it is
+sometimes useful for the identities provided by a given auth group to only
+apply to particular access groups; in other words, rather than checking
+the identity against the users: parameter of every access group, it's
+checked against the users: parameter of only some specific access groups.
+This is done with the key: parameter.  For example:
+
+    auth example {
+        key: special
+        hosts: *.example.com
+        default: <SPECIAL>
+    }
+
+    access example {
+        key: special
+        users: <SPECIAL>
+        newsgroups: *
+    }
+
+In this case, the two key: parameters bind this auth group with this
+access group.  For any incoming connection matching "*.example.com"
+(assuming there isn't any later auth group that also matches such hosts),
+no access group that doesn't have "key: special" will even be checked.
+Similarly, the above access group will only be checked if the user was
+authenticated with an auth group containing "key: special".  This
+mechanism normally isn't useful.
+
+Also note in the above that there's no default-domain: parameter, which
+means that no domain is appended to the default username and the identity
+for such connections is just "<SPECIAL>".
+
+Below is the full list of allowable parameters for auth groups and access
+groups, and after that are some examples that may make this somewhat
+clearer.
+
+=head1 AUTH GROUP PARAMETERS
+
+=over 4
+
+=item B<hosts:>
+
+A comma-separated list of remote hosts, wildmat patterns matching either
+hostnames or IP addresses, or IP netblocks specified in CIDR notation.  If
+a user connects from a host that doesn't match this parameter, this auth
+group will not match the connection and is ignored.
+
+=item B<res:>
+
+A command line for a user resolver.  The program executed must be located
+in I<pathbin>/auth/resolv.  A resolver is an authentication program which
+attempts to figure out the identity of the connecting user using nothing
+but the connection information (in other words, a username and password
+aren't used).  Examples of resolvers would be a program that gets the
+username from an ident callback or a program that obtains the user's
+identity by querying a RADIUS server.
+
+One auth group can have multiple res: parameters, and they will be tried
+in the order they're listed in and the results of the first successful one
+will be used.
+
+=item B<auth:>
+
+A command line for a user authenticator.  The program executed must be
+located in I<pathbin>/auth/passwd.  An authenticator is a program used to
+handle a user-supplied username and password, via a mechanism such as
+AUTHINFO USER/PASS.  Like with res:, one auth group can have multiple
+auth: parameters; they will be tried in order and the results of the first
+successful one will be used.
+
+=item B<default:>
+
+The default username for connections matching this auth group.  This is
+the username assigned to the user at connection time if all resolvers fail
+or if there are no res: parameters.  Note that it can be either a bare
+username, in which case default-domain: is appended after an C<@> if set,
+or a full identity string containing an C<@>, in which case it will be
+used verbatim.
+
+=item B<default-domain:>
+
+The default domain string for this auth group.  If a user resolver or
+authenticator doesn't provide a domain, or if the default username is used
+and it doesn't contain a C<@>, this domain is used to form the user
+identity.  (Note that for a lot of setups, it's not really necessary for
+user identities to be qualified with a domain name, in which case there's
+no need to use this parameter.)
+
+=item B<key:>
+
+If this parameter is present, any connection matching this auth group will
+have its privileges determined only by access groups containing a matching
+key parameter.
+
+=back
+
+=head1 ACCESS GROUP PARAMETERS
+
+=over 4
+
+=item B<users:>
+
+The privileges given by this access group apply to any user identity which
+matches this comma-separated list of wildmat patterns.  If this parameter
+isn't given, the access group applies to all users (in other words, it
+defaults to a value of "*").
+
+=item B<newsgroups:>
+
+Users that match this access group are allowed to read and post to all
+newsgroups matching this comma-separated list of wildmat patterns.
+
+=item B<read:>
+
+Like the newsgroups: parameter, but the client is only given permission to
+read the matching newsgroups.  This parameter is often used with post:
+(below) and cannot be used in the same access group with a newsgroups:
+parameter.
+
+=item B<post:>
+
+Like the newsgroups: parameter, but the client is only given permission to
+post to the matching newsgroups.  This parameter is often used with post:
+(above) to define the patterns for reading and posting separately (usually
+to give the user permission to read more newsgroups than they're permitted
+to post to).  It cannot be used in the same access group with a
+newsgroups: parameter.
+
+=item B<access:>
+
+A set of letters specifying the permissions granted to the client.  The
+letters are chosen from the following set:
+
+=over 3
+
+=item R
+
+The client may read articles.
+
+=item P
+
+The client may post articles.
+
+=item N
+
+The client may use the NEWNEWS command, overriding the global setting.
+
+=item L
+
+The client may post to newsgroups that are set to disallow local posting
+(mode C<n> in the active(5) file).
+
+=back
+
+Note that if this parameter is given and C<R> isn't present in the access
+string, the client cannot read regardless of newsgroups: or read:
+parameters.  Similarly, if this parameter is given and C<P> isn't present,
+the client cannot post.  This use of access: is deprecated and confusing;
+it's strongly recommended that if the access: parameter is used, C<R> and
+C<P> always be included in the access string and newsgroups:, read:, and
+post: be used to control access.  (To grant read access but no posting
+access, one can have just a read: parameter and no post: parameter.)
+
+=item B<key:>
+
+If this parameter is present, this access group is only considered when
+finding privileges for users matching auth groups with this same key:
+parameter.
+
+=item B<localtime:>
+
+If a Date: header is not included in a posted article, nnrpd(8) normally
+adds a new Date: header in UTC.  If this is set to true, the Date: header
+will be formatted in local time instead.  This is a boolean value and the
+default is false.
+
+=item B<strippath:>
+
+If set to true, any Path: header provided by a user in a post is stripped
+rather than used as the beginning of the Path: header of the article.
+This is a boolean value and the default is false.
+
+=item B<perlfilter:>
+
+If set to false, posts made by these users do not pass through the Perl
+filter even if it is otherwise enabled.  This is a boolean value and the
+default is true.
+
+=item B<pythonfilter:>
+
+If set to false, posts made by these users do not pass through the Python
+filter even if it is otherwise enabled.  This is a boolean value and the
+default is true.
+
+=back
+
+In addition, all of the following parameters are valid in access groups
+and override the global setting in inn.conf(5).  See inn.conf(5) for the
+descriptions of these parameters:  addnntppostingdate, addnntppostinghost,
+backoff_auth, backoff_db, backoff_k, backoff_postfast, backoff_postslow,
+backoff_trigger, checkincludedtext, clienttimeout, complaints, domain,
+fromhost, localmaxartsize, moderatormailer, nnrpdauthsender,
+nnrpdcheckart, nnrpdoverstats, nnrpdposthost, nnrpdpostport, organization,
+pathhost, readertrack, spoolfirst, and strippostcc.
+
+=head1 EXAMPLES
+
+Here is probably the simplest useful example of a complete readers.conf.
+This gives permissions to read and post to all groups to any connections
+from the example.com domain, and no privileges for anyone connecting from
+anywhere else:
+
+    auth example.com {
+        hosts: *example.com
+        default: <LOCAL>
+    }
+
+    access full {
+        newsgroups: *
+    }
+
+Note that the access realm has no users: key and therefore applies to any
+user identity.  The only available auth realm only matches hosts in the
+example.com domain, though, so any connections from other hosts will be
+rejected immediately.
+
+Here's a similar example for a news server that accepts connections from
+anywhere but requires the user to specify a username and password.  The
+username and password is first checked against an external database of
+usernames and passwords, and then against the system shadow password file:
+
+    auth all {
+        auth: "ckpasswd -d /usr/local/news/db/newsusers"
+        auth: "ckpasswd -s"
+        default: <FAIL>
+    }
+
+    access full {
+        users: "*,!<FAIL>"
+        newsgroups: *
+    }
+
+    access fail {
+        users: <FAIL>
+        newsgroups: !*
+    }
+
+Note the use of two separate access groups.  When the user first connects,
+there are no res: keys, so they get the identity of "<FAIL>".  This only
+matches the last access group, so they don't get permissions on any
+newsgroups.  If they then later authenticate, the username and password
+are checked first by running B<ckpasswd> with the B<-d> option for an
+external dbm file of encrypted passwords, and then with the B<-s> option
+to check the shadow password database (note that ckpasswd may have to be
+setgid to a shadow group to use this option).  If both of those fail, the
+user will keep the default identity of "<FAIL>"; otherwise, they will
+acquire some other identity string (whatever username they specified,
+since the password was valid) and the first access group will match,
+giving them full access.
+
+It's worth noting that if they authenticate as a user named "<FAIL>",
+they'll still have no permissions, since both access groups are checked
+and the last matching one will take effect.  So the valid user names
+should be chosen so that the second group doesn't match.
+
+One could fix this by switching the order of the access groups, but that's
+somewhat risky.  If the "!<FAIL>" weren't in the users: key, and the
+"full" access group were last, anyone from everywhere could read and post
+to all groups, obviously not what was intended.  For this reason, it's
+often best to put the failing groups last and make sure they match all
+identity strings that shouldn't receive access.
+
+Finally, here's a very complicated example.  This is for an organization
+that has an internal hierarchy example.* only available to local shell
+users, who are on machines where identd can be trusted.  Dialup users are
+authenticated with RADIUS, and remote users have to use a username and
+password.  Finally, the admin staff (users "joe" and "jane") can post
+anywhere, including the example.admin.* groups that are read-only for
+everyone else, and are exempted from the Perl filter.  For an additional
+twist, posts from dialup users have their Sender header replaced by their
+authenticated identity.
+
+    auth default {
+        auth: "ckpasswd -f /usr/local/news/db/newsusers"
+        default: <FAIL>
+        default-domain: example.com
+    }
+
+    auth shell {
+        hosts: *.shell.example.com
+        res: ident
+        auth: "ckpasswd -s"
+        default: <FAIL>
+        default-domain: shell.example.com
+    }
+
+    auth dialup {
+        hosts: *.dialup.example.com
+        res: radius
+        default: <FAIL>
+        default-domain: dialup.example.com
+    }
+
+    access shell {
+        users: *@shell.example.com
+        read: *
+        post: "*, !example.admin.*"
+    }
+
+    access dialup {
+        users: *@dialup.example.com
+        newsgroups: *,!example.*
+        nnrpdauthsender: true
+    }
+
+    access other {
+        users: "*@example.com, !<FAIL>@example.com"
+        newsgroups: *,!example.*
+    }
+
+    access fail {
+        users: "<FAIL>@*"
+        newsgroups: !*
+    }
+
+    access admin {
+        users: "joe@*,jane@*"
+        newsgroups: *
+        perlfilter: false
+    }
+
+Note the use of different domains to separate dialup from shell users
+easily.  Another way to do that would be with key: parameters, but this
+provides slightly more intuitive identity strings.  Note also that the
+fail access group catches not only failing connections from external users
+but also failed authentication of shell and dialup users.  The identity
+string given for, say, dialup users where RADIUS authentication fails
+matches both the dialup access group and the fail access group, since it's
+<FAIL>@dialup.example.com, but the fail group is last so it takes
+precedence.
+
+The shell auth group has an auth: parameter so that users joe and jane
+can, if they choose, use username and password authentication to gain
+their special privileges even if they're logged on as a different user on
+the shell machines (or if ident isn't working).  When they first connect,
+they'd have the default access for that user, but they could then send
+AUTHINFO USER and AUTHINFO PASS and get their extended access.
+
+Also note that if the users joe and jane are using their own accounts,
+they get their special privileges regardless of how they connect, whether
+the dialups, the shell machines, or even externally with a username and
+password.
+
+=head1 HISTORY
+
+Written by Aidan Cully <aidan@panix.com> for InterNetNews.  Substantially
+expanded by Russ Allbery <rra@stanford.edu>.
+
+$Id$
+
+=head1 SEE ALSO
+
+inn.conf(5), innd(8), newsfeeds(5), nnrpd(8), wildmat(3).
