@@ -566,22 +566,24 @@ static bool fillContents (Article article)
 	
 	opened = ((fd = open (article->fname,O_RDONLY,0)) >= 0);
 	article->arthandle = NULL;
-	if (fstat (fd, &sb) < 0) {
-	    article->articleOk = false ;
-	    syslog (LOG_ERR,FSTAT_FAILURE,article->fname) ;
-	    return false;
+	if (opened) {
+	    if (fstat (fd, &sb) < 0) {
+		article->articleOk = false ;
+		syslog (LOG_ERR,FSTAT_FAILURE,article->fname) ;
+		return false;
+	    }
+	    if (!S_ISREG (sb.st_mode)) {
+		article->articleOk = false ;
+		syslog (LOG_ERR,REGFILE_FAILURE,article->fname) ;
+		return false;
+	    }
+	    if (sb.st_size == 0) {
+		article->articleOk = false ;
+		syslog (LOG_ERR,EMPTY_ARTICLE,article->fname) ;
+		return false;
+	    }
+	    articlesize = sb.st_size;
 	}
-	if (!S_ISREG (sb.st_mode)) {
-	    article->articleOk = false ;
-	    syslog (LOG_ERR,REGFILE_FAILURE,article->fname) ;
-	    return false;
-	}
-	if (sb.st_size == 0) {
-	    article->articleOk = false ;
-	    syslog (LOG_ERR,EMPTY_ARTICLE,article->fname) ;
-	    return false;
-	}
-	articlesize = sb.st_size;
     }
     
     if (!opened) {
