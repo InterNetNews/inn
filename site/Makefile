@@ -54,7 +54,7 @@ MOST	= rc.news checkgroups default ihave newgroup \
 	innshellvars innshellvars.pl innshellvars.csh innshellvars.tcl \
 	scanspool innmail checkgroups.pl ihave.pl newgroup.pl rmgroup.pl \
 	sendme.pl sendsys.pl senduuname.pl version.pl cnfsstat \
-	mod-active simpleftp
+	mod-active simpleftp mailpost news2mail pullnews
 
 ##  Scripts from above, plus site-specific config files.
 REST		= \
@@ -64,7 +64,7 @@ REST		= \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
 	motd.news storage.conf overview.ctl cycbuff.conf \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
-	startup.tcl filter.tcl nnrpd_auth.pl
+	startup.tcl filter.tcl nnrpd_auth.pl news2mail.cf
 
 ALL		= $(MOST) $(REST)
 
@@ -83,6 +83,7 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(CTLBIN)/checkgroups \
 	$D$(PATH_CSH_SHELLVARS) $D$(PATHBIN)/scanspool $D$(PATHBIN)/cnfsstat \
 	$D$(PATHBIN)/mod-active $D$(PATHBIN)/simpleftp \
 	$D$(CTLBIN)/checkgroups.pl $D$(CTLBIN)/ihave.pl \
+	$D$(PATHBIN)/mailpost $D$(PATHBIN)/news2mail $D$(PATHBIN)/pullnews \
 	$D$(CTLBIN)/newgroup.pl $D$(CTLBIN)/rmgroup.pl $D$(CTLBIN)/sendme.pl \
 	$D$(CTLBIN)/sendsys.pl $D$(CTLBIN)/senduuname.pl $D$(CTLBIN)/version.pl
 
@@ -99,7 +100,7 @@ REST_INSTALLED	= \
 	$D$(PATH_INNFEEDCTL) $D$(PATH_PERL_STARTUP_INND) \
 	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
 	$D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER) \
-	$D$(PATH_NNRPAUTH)
+	$D$(PATH_NNRPAUTH) $D$(PATHETC)/news2mail.cf
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
 
@@ -213,10 +214,14 @@ $D$(PATHBIN)/cnfsstat:	cnfsstat	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/innwatch:	innwatch	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/mod-active: mod-active	; $(COPY_XPUB) $? $@
 $D$(PATHBIN)/simpleftp:	simpleftp	; $(COPY_XPUB) $? $@
-$D$(PATH_SHELLVARS):	innshellvars	; $(COPY_RPRI) $? $@
-$D$(PATH_PERL_SHELLVARS): innshellvars.pl ; $(COPY_RPRI) $? $@
-$D$(PATH_TCL_SHELLVARS): innshellvars.tcl ; $(COPY_RPRI) $? $@
-$D$(PATH_CSH_SHELLVARS): innshellvars.csh ; $(COPY_RPRI) $? $@
+$D$(PATHBIN)/mailpost:	mailpost	; $(COPY_XPUB) $? $@
+$D$(PATHBIN)/pullnews: pullnews		; $(COPY_XPUB) $? $@
+$D$(PATHBIN)/news2mail: news2mail	; $(COPY_XPUB) $? $@
+$D$(PATHETC)/news2mail.cf: news2mail.cf	; $(COPY_RPRI) $? $@
+$D$(PATH_SHELLVARS):	innshellvars	; $(COPY_RPUB) $? $@
+$D$(PATH_PERL_SHELLVARS): innshellvars.pl ; $(COPY_RPUB) $? $@
+$D$(PATH_TCL_SHELLVARS): innshellvars.tcl ; $(COPY_RPUB) $? $@
+$D$(PATH_CSH_SHELLVARS): innshellvars.csh ; $(COPY_RPUB) $? $@
 $D$(PATHBIN)/innreport: innreport	; $(COPY_XPRI) $? $@
 $D$(PATHLIB)/innreport_inn.pm: innreport_inn.pm	; $(COPY_RPRI) $? $@
 $D$(PATHETC)/innreport.conf: innreport.conf	; $(COPY_RPRI) $? $@
@@ -283,6 +288,7 @@ innshellvars:	../samples/innshellvars		; $(COPY) $? $@
 innshellvars.pl: ../samples/innshellvars.pl	; $(COPY) $? $@
 innshellvars.tcl: ../samples/innshellvars.tcl	; $(COPY) $? $@
 innshellvars.csh: ../samples/innshellvars.csh	; $(COPY) $? $@
+mailpost:	../samples/mailpost		; $(COPY) $? $@
 mod-active:	../samples/mod-active		; $(COPY) $? $@
 moderators:	../samples/moderators		; $(COPY) $? $@
 distrib.pats:	../samples/distrib.pats		; $(COPY) $? $@
@@ -290,6 +296,8 @@ motd.news:	../samples/motd.news		; $(COPY) $? $@
 newgroup:	../samples/newgroup		; $(COPY) $? $@
 newgroup.pl:	../samples/newgroup.pl		; $(COPY) $? $@
 news.daily:	../samples/news.daily		; $(COPY) $? $@
+news2mail:	../samples/news2mail		; $(COPY) $? $@
+news2mail.cf:	../samples/news2mail.cf		; $(COPY) $? $@
 newsfeeds:	../samples/newsfeeds		; $(COPY) $? $@
 nnrp.access:	../samples/nnrp.access		; $(COPY) $? $@
 nnrpd.track:	../samples/nnrpd.track		; $(COPY) $? $@
@@ -297,6 +305,7 @@ nntpsend.ctl:	../samples/nntpsend.ctl		; $(COPY) $? $@
 nntpsend:	../samples/nntpsend		; $(COPY) $? $@
 overview.fmt:	../samples/overview.fmt		; $(COPY) $? $@
 parsecontrol:	../samples/parsecontrol		; $(COPY) $? $@
+pullnews:	../samples/pullnews		; $(COPY) $? $@
 writelog:	../samples/writelog		; $(COPY) $? $@
 passwd.nntp:	../samples/passwd.nntp		; $(COPY) $? $@
 pgpverify:	../samples/pgpverify		; $(COPY) $? $@
