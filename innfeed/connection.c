@@ -602,7 +602,11 @@ bool cxnConnect (Connection cxn)
   else
 #endif
   /* bind to a specified IPv4 address */
+#ifdef HAVE_INET6
+  if ( (cxnAddr.ss_family == AF_INET) && bind_addr )
+#else
   if (bind_addr)
+#endif
     {
       memcpy( &cxnSelf, bind_addr, sizeof(struct sockaddr_in) );
       if (bind (fd, (struct sockaddr *) &cxnSelf,
