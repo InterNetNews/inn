@@ -14,6 +14,8 @@ libstorage \- InterNetNews Storage API library routines
 
 .B "TOKEN TextToToken(const char *text);"
 
+.B "BOOL SMsetup(SMSETUP type, void *value);"
+
 .B "BOOL SMinit(void);"
 
 .B "TOKEN SMstore(const ARTHANDLE article);"
@@ -97,10 +99,31 @@ converts token into text token string.
 .I TextToToken
 converts text into token.
 .PP
+.I SMsetup
+configures some parameters for use by storage manager.
+.I Type
+is one of following.
+.sp 1
+.in +0.5i
+.nf
+SM_RDWR	allow read/write open for storage
+	files(default is FALSE)
+SM_PREOPEN	open all storage files at startup
+	time and keep them(default is FALSE)
+.fi
+.in -0.5i
+.sp 1
+The
+.I value
+is the pointer which tells each type's value.
+It returns TRUE if setup is successful or returns FALSE if not.
+.PP
 .I SMinit
-calls the setup function for all of the configured methods.
+calls the setup function for all of the configured methods based on
+.IR SMsetup .
 This function should be called prior to all other storage api functions which
-begin with ``SM''.
+begin with ``SM'' except
+.IR SMsetup .
 It returns TRUE if initialization is successful or returns FALSE if not.
 .I SMinit
 returns TRUE, unless all storage methods fail initialization.
@@ -124,6 +147,11 @@ if article is not stored whichever error occures or simply does not match
 .IR wildmat (3)
 in
 .IR storage.ctl (5).
+.I SMstore
+fails if
+.I SM_RDWR
+is not set to true with
+.IR SMsetup .
 .PP
 .I SMretrieve
 retrieves an article specified with
@@ -194,6 +222,11 @@ frees allocated memory in itself.
 removes an article specified with
 .IR token .
 It returns TRUE if cancellation is successful or returns FALSE if not.
+.I SMcancel
+fails if
+.I SM_RDWR
+is not set to true with
+.IR SMsetup .
 .PP
 .I SMprobe
 checks the token on
