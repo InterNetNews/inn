@@ -41,7 +41,10 @@ innd, inndstart \- InterNetNews daemon
 .BI \-o " count"
 ]
 [
-.BI \-p " port"
+.BI \-p "fd_desc"
+]
+[
+.BI \-P "port"
 ]
 [
 .B \-r
@@ -82,7 +85,7 @@ and
 .IR hosts.nntp (5)
 files into memory.
 It then opens the NNTP port to receive articles from remote sites (see 
-the ``\fB\-p\fP'' option),
+the ``\fB\-P\fP'' option),
 .\" =()<.ie '@<HAVE_UNIX_DOMAIN>@'DO' \{\>()=
 .ie 'DO'DO' \{\
 a Unix-domain stream socket to receive articles from local processes
@@ -249,6 +252,13 @@ open on the specified descriptor.
 assumes it is running with the proper permissions and it will not call
 .IR chown (2)
 on any files or directories it creates.)
+.TP
+.B \-P
+If the ``\fB\-P\fP'' flag is used, then the port specified is used for
+listening for connections. 
+.I innd
+will need to have been executed with enough permissions to open the
+specified port.
 .TP
 .B \-r
 If the ``\fB\-r\fP'' flag is used, the server will renumber the

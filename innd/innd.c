@@ -530,6 +530,7 @@ int main(int ac, char *av[])
     static char		WHEN[] = "PID file";
     int			i;
     int			port;
+    int			fd;
     int			logflags;
     char		buff[SMBUF];
     char		*master;
@@ -571,7 +572,8 @@ int main(int ac, char *av[])
     ShouldRenumber = FALSE;
     ShouldSyntaxCheck = FALSE;
     logflags = L_OPENLOG_FLAGS | LOG_NOWAIT;
-    port = -1;
+    port = NNTP_PORT;
+    fd = -1;
     master = NULL;
 #if	defined(DONT_ALLOW_READERS)
     NNRPFollows = TRUE;
@@ -584,7 +586,7 @@ int main(int ac, char *av[])
 
     /* Parse JCL. */
     CCcopyargv(av);
-    while ((i = getopt(ac, av, "ac:Cdfi:l:Lm:o:n:p:rsS:t:uH:T:X:")) != EOF)
+    while ((i = getopt(ac, av, "ac:Cdfi:l:Lm:o:n:p:P:rsS:t:uH:T:X:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -645,10 +647,13 @@ int main(int ac, char *av[])
 	case 'p':
 	    /* Silently ignore multiple -p flags, in case ctlinnd xexec
 	     * called inndstart. */
-	    if (port == -1) {
-		port = atoi(optarg);
+	    if (fd == -1) {
+		fd = atoi(optarg);
 		AmRoot = FALSE;
 	    }
+	    break;
+	case 'P':
+	    port = atoi(optarg);
 	    break;
 	case 'r':
 	    ShouldRenumber = TRUE;
@@ -772,7 +777,7 @@ int main(int ac, char *av[])
 	syslog(L_FATAL, "%s internal cant stat control directory %m", LogName);
 	exit(1);
     }
-    if (port != -1 && setgid(NewsGID) < 0)
+    if (fd != -1 && setgid(NewsGID) < 0)
 	syslog(L_ERROR, "%s cant setgid running as %d not %d %m",
 	    LogName, (int)getgid(), (int)NewsGID);
 
@@ -873,7 +878,7 @@ int main(int ac, char *av[])
     HISsetup();
     CCsetup();
     LCsetup();
-    RCsetup(port, master);
+    RCsetup(port, fd, master);
     WIPsetup();
     NCsetup(i);
     ARTsetup();
