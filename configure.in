@@ -685,7 +685,7 @@ dnl Generic checks for header files.
 dnl NOTUSED: sys/file.h sys/ioctl.h
 AC_CHECK_HEADERS(crypt.h fcntl.h limits.h ndbm.h stddef.h stdint.h \
                  sys/bitypes.h sys/file.h sys/filio.h sys/ioctl.h \
-                 sys/select.h sys/sysinfo.h sys/time.h unistd.h)
+                 sys/param.h sys/select.h sys/sysinfo.h sys/time.h unistd.h)
 
 dnl Some Linux systems have db1/ndbm.h instead of ndbm.h.
 if test x"$ac_cv_header_ndbm_h" = xno ; then
@@ -987,7 +987,7 @@ fi
 dnl If we don't have statvfs, gather some more information for inndf.
 if test x"$ac_cv_func_statvfs" = xno ; then
     AC_CHECK_FUNCS(statfs)
-    AC_CHECK_HEADERS(sys/vfs.h sys/param.h sys/mount.h)
+    AC_CHECK_HEADERS(sys/vfs.h sys/mount.h)
 fi
 
 dnl If we can't find any of the following, we have replacements for them.
