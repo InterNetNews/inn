@@ -30,7 +30,7 @@ typedef struct {
 extern time_t	OVrealnow;
 BOOL OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t arrived, time_t expires);
 BOOL OVgroupmatch(char *group);
-void OVEXPremove(TOKEN token);
+void OVEXPremove(TOKEN token, BOOL deletedgroups);
 
 #define DEFAULT_MAX_XREF_LEN 8192
 

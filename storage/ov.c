@@ -753,9 +753,13 @@ STATIC enum KRP EXPkeepit(char *Entry, time_t when, time_t expires)
 **  An article can be removed.  Either print a note, or actually remove it.
 **  Also fill in the article size.
 */
-void OVEXPremove(TOKEN token)
+void OVEXPremove(TOKEN token, BOOL deletedgroups)
 {
     EXPunlinked++;
+    if (deletedgroups) {
+	EXPprocessed++;
+	EXPoverindexdrop++;
+    }
     if (EXPunlinkfile) {
 	(void)fprintf(EXPunlinkfile, "%s\n", TokenToText(token));
 	if (!ferror(EXPunlinkfile))
@@ -981,7 +985,7 @@ BOOL OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t ar
 	if (remove || poisoned || token.type == TOKEN_EMPTY) {
 	    if (strcmp(group, arts[0]) == 0)
 		/* delete article if this is first entry */
-		OVEXPremove(token);
+		OVEXPremove(token, FALSE);
 	    EXPoverindexdrop++;
 	    return TRUE;
 	}
@@ -989,7 +993,7 @@ BOOL OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t ar
 	if (!keeper || token.type == TOKEN_EMPTY) {
 	    if (strcmp(group, arts[0]) == 0)
 		/* delete article if this is first entry */
-		OVEXPremove(token);
+		OVEXPremove(token, FALSE);
 	    EXPoverindexdrop++;
 	    return TRUE;
 	}
