@@ -1216,7 +1216,7 @@ RCwritelist(char *filename)
     /* Write a standard header.. */
 
     /* Find the filename */
-    p = cpcatpath(innconf->pathetc, _PATH_INNDHOSTS);
+    p = COPY(cpcatpath(innconf->pathetc, _PATH_INNDHOSTS));
     for (r = q = p; *p; p++)
         if (*p == '/')
 	   q = p + 1;
