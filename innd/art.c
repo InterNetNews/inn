@@ -849,6 +849,7 @@ ARTparse(CHANNEL *cp) {
 	i++;
       }
 endofheaderline:
+      ;
     }
   } else {
 bodyprocessing:
@@ -917,6 +918,7 @@ bodyprocessing:
 	i++;
       }
 endofline:
+      ;
     }
   }
 sizecheck:
