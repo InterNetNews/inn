@@ -1902,8 +1902,7 @@ RCsetup(register int i)
 	}
 #if	defined(SO_REUSEADDR)
 	on = 1;
-	if (setsockopt(i, SOL_SOCKET, SO_REUSEADDR,
-		(caddr_t)&on, sizeof on) < 0)
+	if (setsockopt(i, SOL_SOCKET, SO_REUSEADDR, &on, sizeof on) < 0)
 	    syslog(L_ERROR, "%s cant setsockopt RCreader %m", LogName);
 #endif	/* defined(SO_REUSEADDR) */
 	memset(&server, 0, sizeof server);
