@@ -17,6 +17,7 @@
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 
+#include "inn/messages.h"
 #include "libinn.h"
 
 void

@@ -9,7 +9,7 @@
 #include "libinn.h"
 #include "macros.h"
 
-int getconfline(CONFFILE *F, char *buffer, int length) {
+static int getconfline(CONFFILE *F, char *buffer, int length) {
   if (F->f) {
     fgets(buffer, length, F->f);
   } else if (F->array) {
@@ -23,11 +23,13 @@ int getconfline(CONFFILE *F, char *buffer, int length) {
   }
 }
 
-int cfeof(CONFFILE *F) {
+static int cfeof(CONFFILE *F) {
   if (F->f) {
     return feof(F->f);
   } else if (F->array) {
     return (F->lineno == F->array_len);
+  } else {
+    return 1;
   }
 }
 

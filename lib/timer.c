@@ -41,10 +41,12 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include "libinn.h"
-#include "inn/timer.h"
 #include "portable/time.h"
 #include <syslog.h>
+
+#include "inn/messages.h"
+#include "inn/timer.h"
+#include "libinn.h"
 
 /* Timer values are stored in a series of trees.  This allows use to use
    nested timers.  Each nested timer node is linked to three of its

@@ -25,7 +25,7 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
 {
     char		mybuff[NNTP_STRLEN + 2];
     char		*buff;
-    int	                i;
+    int	                i = -1;
     int 	        j;
     int			oerrno;
     FILE		*F;

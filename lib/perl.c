@@ -48,7 +48,7 @@ CV *perl_filter_cv;
 static PerlInterpreter *PerlCode;
 
 
-void LogPerl(void)
+static void LogPerl(void)
 {
    syslog(L_NOTICE, "SERVER perl filtering %s", PerlFilterActive ? "enabled" : "disabled");
 }
@@ -98,10 +98,10 @@ PerlFilter(bool value)
 
 static void PerlParse (void)
 {
-    char *argv[] = { "innd",
-                     "-e", "sub _load_ { do $_[0] }",
-                     "-e", "sub _eval_ { eval $_[0] }",
-                     NULL } ;
+    const char *argv[] = { "innd",
+                           "-e", "sub _load_ { do $_[0] }",
+                           "-e", "sub _eval_ { eval $_[0] }",
+                           NULL } ;
 
     /* We can't call 'eval' and 'do' directly for some reason, so we define
        some wrapper functions to give us access. */

@@ -125,7 +125,7 @@ GetBooleanConfigValue(char *key, bool defaultvalue)
     return defaultvalue;
 }
 
-void
+static void
 SetDefaults(void)
 {
     char *p;	/* Temporary working variable */
@@ -312,7 +312,7 @@ ClearInnConf(void)
    Make sure some compulsory inn.conf values are set and set them
    to defaults if possible 
 */
-int
+static int
 CheckInnConf(void)
 {
     char *tmpdir;

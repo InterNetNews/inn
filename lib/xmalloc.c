@@ -48,16 +48,10 @@
 */
 
 #include "config.h"
+#include "clibrary.h"
+
+#include "inn/messages.h"
 #include "libinn.h"
-
-#include <stdlib.h>
-#include <sys/types.h>
-
-#if STDC_HEADERS
-# include <string.h>
-#elif !HAVE_MEMCPY
-# define memcpy(d, s, n)        bcopy((s), (d), (n))
-#endif
 
 /* The default error handler. */
 void

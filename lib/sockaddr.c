@@ -8,11 +8,13 @@
 #include "portable/socket.h"
 #include <netdb.h>
 
+#include "libinn.h"
+
 char *sprint_sockaddr(const struct sockaddr *sa)
 {
 #ifdef HAVE_INET6
     static char buff[256];
-    struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)sa;
+    const struct sockaddr_in6 *sin6 = (const struct sockaddr_in6 *) sa;
 
     *buff = '\0';
     if (sa->sa_family == AF_INET6 && IN6_IS_ADDR_V4MAPPED(&sin6->sin6_addr)) {
@@ -30,7 +32,7 @@ char *sprint_sockaddr(const struct sockaddr *sa)
 
     return buff;
 #else
-    return inet_ntoa(((struct sockaddr_in *)sa)->sin_addr);
+    return inet_ntoa(((const struct sockaddr_in *)sa)->sin_addr);
 #endif
 }
 

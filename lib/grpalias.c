@@ -20,7 +20,7 @@ typedef struct _AE {
 
 ALIASENTRY              *AliasTable[1024];
 
-void AliasAdd(const char *alias, const char *group) {
+static void AliasAdd(const char *alias, const char *group) {
     ALIASENTRY          *newentry;
     unsigned int        i;
 

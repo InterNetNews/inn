@@ -6,6 +6,7 @@
 #include "clibrary.h"
 #include <fcntl.h>
 
+#include "libinn.h"
 
 /*
 **  Open a file in append mode.  Since not all fopen's set the O_APPEND

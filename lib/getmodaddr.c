@@ -19,7 +19,7 @@ static FILE	*GMAfp = NULL;
 /*
 **  Close the file opened by GMAlistopen.
 */
-void
+static void
 GMAclose(void)
 {
     if (GMAfp) {
@@ -31,6 +31,7 @@ GMAclose(void)
 	GMApathname[0] = '\0';
     }
 }
+
 /*
 **  Internal library routine.
 */
