@@ -6,10 +6,10 @@ CFLAGS        = $(GCFLAGS)
 
 ALL	      = c7unbatch cnfsheadconf cnfsstat ctlinnd decode encode \
 		getlist gunbatch inews innconfval mailpost pullnews \
-		ovdb_recover rnews scanspool signcontrol sm
+		ovdb_init ovdb_monitor ovdb_stat rnews scanspool signcontrol sm
 
 SOURCES	      = ctlinnd.c decode.c encode.c getlist.c inews.c innconfval.c \
-		ovdb_recover.c rnews.c sm.c
+		ovdb_init.c ovdb_monitor.c ovdb_stat.c rnews.c sm.c
 
 PATHRNEWS     = $(PATHBIN)/rnews.libexec
 
@@ -20,8 +20,9 @@ INSTALLED     = $(D)$(PATHBIN)/cnfsheadconf	\
 		$(D)$(PATHBIN)/inews		\
 		$(D)$(PATHBIN)/innconfval	\
 		$(D)$(PATHBIN)/mailpost		\
-		$(D)$(PATHBIN)/ovdb_recover	\
-		$(D)$(PATHBIN)/ovdb_upgrade	\
+		$(D)$(PATHBIN)/ovdb_init	\
+		$(D)$(PATHBIN)/ovdb_monitor	\
+		$(D)$(PATHBIN)/ovdb_stat	\
 		$(D)$(PATHBIN)/pullnews		\
 		$(D)$(PATHBIN)/rnews		\
 		$(D)$(PATHBIN)/scanspool	\
@@ -61,11 +62,19 @@ encode:		encode.o                 ; $(LINK) encode.o
 getlist:	getlist.o      $(LIBINN) ; $(LINK) getlist.o      $(INNLIBS)
 inews:		inews.o        $(LIBINN) ; $(LINK) inews.o        $(INNLIBS)
 innconfval:	innconfval.o   $(LIBINN) ; $(LINK) innconfval.o   $(INNLIBS)
-ovdb_recover:	ovdb_recover.o $(BOTH)   ; $(LINK) ovdb_recover.o $(STORELIBS)
+ovdb_init:	ovdb_init.o    $(BOTH)   ; $(LINK) ovdb_init.o    $(STORELIBS)
+ovdb_monitor:	ovdb_monitor.o $(BOTH)   ; $(LINK) ovdb_monitor.o $(STORELIBS)
+ovdb_stat:	ovdb_stat.o    $(BOTH)   ; $(LINK) ovdb_stat.o    $(STORELIBS)
 rnews:		rnews.o        $(LIBINN) ; $(LINK) rnews.o        $(INNLIBS)
 sm:		sm.o           $(BOTH)   ; $(LINK) sm.o           $(STORELIBS)
 
-ovdb_recover.o: ovdb_recover.c
+ovdb_init.o: ovdb_init.c
+	$(CC) $(CFLAGS) $(BERKELEY_DB_CFLAGS) -c $<
+
+ovdb_monitor.o: ovdb_monitor.c
+	$(CC) $(CFLAGS) $(BERKELEY_DB_CFLAGS) -c $<
+
+ovdb_stat.o: ovdb_stat.c
 	$(CC) $(CFLAGS) $(BERKELEY_DB_CFLAGS) -c $<
 
 cnfsheadconf:	cnfsheadconf.in  $(FIX)	; $(FIX) cnfsheadconf.in
@@ -102,7 +111,9 @@ $(D)$(PATHBIN)/ctlinnd:             ctlinnd             ; $(LI_XPRI) $? $@
 $(D)$(PATHBIN)/getlist:             getlist             ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/innconfval:          innconfval          ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/mailpost:            mailpost            ; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/ovdb_recover:        ovdb_recover	; $(LI_XPRI) $? $@
+$(D)$(PATHBIN)/ovdb_init:           ovdb_init		; $(LI_XPRI) $? $@
+$(D)$(PATHBIN)/ovdb_monitor:        ovdb_monitor	; $(LI_XPRI) $? $@
+$(D)$(PATHBIN)/ovdb_stat:           ovdb_stat		; $(LI_XPRI) $? $@
 $(D)$(PATHBIN)/pullnews:            pullnews            ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/scanspool:           scanspool           ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/signcontrol:         signcontrol         ; $(CP_XPUB) $? $@
@@ -111,10 +122,6 @@ $(D)$(PATHRNEWS)/c7unbatch:         c7unbatch           ; $(CP_XPUB) $? $@
 $(D)$(PATHRNEWS)/decode:            decode              ; $(LI_XPUB) $? $@
 $(D)$(PATHRNEWS)/encode:            encode              ; $(LI_XPUB) $? $@
 $(D)$(PATHRNEWS)/gunbatch:          gunbatch            ; $(CP_XPUB) $? $@
-
-$(D)$(PATHBIN)/ovdb_upgrade: Makefile
-	rm -f $@
-	ln -s ovdb_recover $@
 
 
 ##  Dependencies.  Default list, below, is probably good enough.
@@ -139,9 +146,18 @@ inews.o: inews.c ../include/config.h ../include/inn/defines.h \
 innconfval.o: innconfval.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
  ../include/macros.h ../include/paths.h
-ovdb_recover.o: ovdb_recover.c ../include/config.h \
+ovdb_init.o: ovdb_init.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
- ../include/ov.h ../include/storage.h ../storage/ovdb/ovdb.h
+ ../include/ov.h ../include/storage.h ../storage/ovdb/ovdb.h \
+ ../storage/ovdb/ovdb-private.h
+ovdb_monitor.o: ovdb_monitor.c ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
+ ../include/ov.h ../include/storage.h ../storage/ovdb/ovdb.h \
+ ../storage/ovdb/ovdb-private.h
+ovdb_stat.o: ovdb_stat.c ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
+ ../include/ov.h ../include/storage.h ../storage/ovdb/ovdb.h \
+ ../storage/ovdb/ovdb-private.h
 rnews.o: rnews.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h ../include/paths.h

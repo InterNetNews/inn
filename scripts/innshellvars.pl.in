@@ -82,9 +82,7 @@ $uncompress = "@UNCOMPRESS@" ;
 $log_compress = "@LOG_COMPRESS@" ;
 $z = "@LOG_COMPRESSEXT@" ;
 
-$berkeley_db_bindir = "@BERKELEY_DB_BINDIR@" ;
-if($berkeley_db_bindir ne "" && $ovmethod eq "ovdb") {
-    $ENV{'PATH'} = "${berkeley_db_bindir}:$ENV{'PATH'}";
+if($ovmethod eq "ovdb") {
     $ENV{'DB_HOME'} = $pathoverview;
 }
 

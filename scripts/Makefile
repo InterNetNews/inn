@@ -8,14 +8,13 @@
 
 include ../Makefile.global
 
-ALL           = dbprocs innmail innstat innwatch rc.news scanlogs simpleftp \
+ALL           = innmail innstat innwatch rc.news scanlogs simpleftp \
 		tally.control writelog
 
 EXTRA         = inncheck innreport innshellvars innshellvars.pl \
 		innshellvars.tcl news.daily
 
-INSTALLED     = $(D)$(PATHBIN)/dbprocs		\
-		$(D)$(PATHBIN)/inncheck		\
+INSTALLED     = $(D)$(PATHBIN)/inncheck		\
 		$(D)$(PATHBIN)/innmail		\
 		$(D)$(PATHBIN)/innreport	\
 		$(D)$(PATHBIN)/innstat		\
@@ -44,7 +43,6 @@ clobber: clean
 
 FIX             = $(FIXSCRIPT)
 
-dbprocs:	dbprocs.in       $(FIX) ; $(FIX) dbprocs.in
 innmail:	innmail.in       $(FIX)	; $(FIX) innmail.in
 innstat:	innstat.in       $(FIX)	; $(FIX) innstat.in
 innwatch:	innwatch.in      $(FIX)	; $(FIX) innwatch.in
@@ -59,7 +57,6 @@ writelog:	writelog.in      $(FIX)	; $(FIX) writelog.in
 
 install: $(INSTALLED)
 
-$(D)$(PATHBIN)/dbprocs:             dbprocs             ; $(CP_XPRI) $? $@
 $(D)$(PATHBIN)/inncheck:            inncheck            ; $(CP_XPRI) $? $@
 $(D)$(PATHBIN)/innmail:             innmail             ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/innreport:           innreport           ; $(CP_XPRI) $? $@

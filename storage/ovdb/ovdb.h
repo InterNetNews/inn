@@ -19,13 +19,6 @@ BOOL ovdb_expiregroup(char *group, int *lo);
 BOOL ovdb_ctl(OVCTLTYPE type, void *val);
 void ovdb_close(void);
 
-/* these functions are used by ovdb_recover.c */
-int ovdb_open_berkeleydb(int mode, int flags);
-void ovdb_close_berkeleydb(void);
-
-#define OVDB_RECOVER	1
-#define OVDB_DBUPGRADE	(1<<1)
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -14,12 +14,6 @@ all:			$(OBJECTS)
 .c.o:
 	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
 
-ovdb:	ovdb.c
-	rm -f ovdb.o
-	$(CC) $(CFLAGS) -DTEST_BDB -c ovdb.c
-	$(CC) $(LDFLAGS) -o $@ ../*/*.o ../interface.o ../ov.o ../methods.o ../ovmethods.o ../../lib/libinn.$(EXTLIB) $(EXTSTORAGELIBS) $(LIBS)
-	rm -f ovdb.o
-
 clobber clean:
 	rm -f *.o *.lo obj/*.o *~
 	rm -f profiled
@@ -38,4 +32,4 @@ depend:	Makefile $(SOURCES)
 ovdb.o: ovdb.c ../../include/config.h ../../include/clibrary.h \
  ../../include/macros.h ../../include/conffile.h \
  ../../include/libinn.h ../../include/paths.h ../../include/storage.h \
- ../../include/ov.h ../ovinterface.h ovdb.h
+ ../../include/ov.h ../ovinterface.h ovdb.h ovdb-private.h

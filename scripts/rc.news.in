@@ -9,10 +9,21 @@
 ##  Or to stop INN:
 ##     su news -c '/path/to/rc.news stop'
 
+waitforpid()
+{
+    i=12
+    while [ $i -gt 0 ];
+    do
+        kill -0 $1 2>/dev/null || break
+	sleep 5
+	printf "."
+	i=`expr $i - 1`
+    done
+    printf "\n"
+}
+
 case X"$1" in
 Xstop)
-    ${PATHBIN}/ctlinnd shutdown 'rc.news stop'
-
     # Stop cnfsstat (if running)
     if [ -f ${PATHRUN}/cnfsstat.pid ]; then
 	kill `cat ${PATHRUN}/cnfsstat.pid`
@@ -25,23 +36,23 @@ Xstop)
 	rm -f $WATCHPID
     fi
 
+    printf "Stopping innd: "
+    ${PATHBIN}/ctlinnd shutdown 'rc.news stop'
+
     # wait for innd to exit (up to 60 sec)
-    printf "Stopping innd: " 
-    i=12
-    while [ $i -gt 0 ];
-    do
-	pid=`cat ${SERVERPID} 2>/dev/null`
-	[ "$pid" = "" ] && break
-	kill -0 $pid 2>/dev/null || break
-	sleep 5
-	printf "."
-	i=`expr $i - 1`
-    done
-    printf "\n"
+    pid=`cat ${SERVERPID} 2>/dev/null`
+    if [ "$pid" != "" ]; then
+	waitforpid $pid
+    fi
 
     # Turn off ovdb support procs, and close the DB environment
-    if [ "$OVMETHOD" = "ovdb" -a -n "$DB_HOME" ]; then
-	${PATHBIN}/dbprocs stop
+    if [ "$OVMETHOD" = "ovdb" -a -f ${PATHRUN}/ovdb_monitor.pid ]; then
+	pid=`cat ${PATHRUN}/ovdb_monitor.pid 2>/dev/null`
+	if [ "$pid" != "" ]; then
+	    printf "Stopping ovdb: "
+	    kill $pid
+	    waitforpid $pid
+	fi
     fi
 
     exit 0
@@ -80,7 +91,6 @@ MAIL="${MAILCMD} -s 'Boot-time Usenet warning on `hostname`' ${NEWSMASTER}"
 
 ##  RFLAG is set below; set INNFLAGS in inn.conf(5)
 RFLAG=""
-OVDBFLAG=""
 
 ##  Clean shutdown or already running?
 if [ -f ${SERVERPID} ] ; then
@@ -90,7 +100,6 @@ if [ -f ${SERVERPID} ] ; then
     fi
     echo 'INND:  PID file exists -- unclean shutdown!'
     RFLAG="-r"
-    OVDBFLAG="-f"
 fi
 
 if [ ! -f ${PATHDB}/.news.daily ] ; then
@@ -138,13 +147,14 @@ fi
 ( cd ${TEMPSOCKDIR} && rm -f ${TEMPSOCK} )
 rm -f ${NEWSCONTROL} ${NNTPCONNECT} ${SERVERPID}
 
-## In case the ovdb database was not properly shutdown, this will
-## fix it.  Must be done before starting innd.
-if [ "$OVMETHOD" = "ovdb" -a -n "$DB_HOME" ]; then
-    ovdb_recover ${OVDBFLAG} || {
-	echo "Can't recover ov database (check news.err for OVDB messages)"
+## Initialize ovdb.  Must be done before starting innd.
+if [ "$OVMETHOD" = "ovdb" ]; then
+    echo 'Starting ovdb.'
+    ovdb_init || {
+	echo "Can't initialize ovdb (check news.err for OVDB messages)"
 	exit 1
     }
+    sleep 1
 fi
 
 ##  Start the show.
@@ -161,13 +171,6 @@ ${DOCNFSSTAT} && {
     echo "Scheduled start of cnfsstat."
     ( sleep 60 ; ${PATHBIN}/cnfsstat -s -l -P ) &
 }
-
-## Stuff to support ovdb.  Must be started after innd has initialized
-## overview.
-if [ "$OVMETHOD" = "ovdb" -a -s "$DB_HOME" ]; then
-    echo "Scheduled start of dbprocs."
-    ( sleep 60 ; ${PATHBIN}/dbprocs start ) &
-fi
 
 RMFILE=${MOST_LOGS}/expire.rm
 for F in ${RMFILE} ${RMFILE}.*; do
