@@ -98,7 +98,7 @@ struct group_entry {
     ARTNUM      base;           /* Article number of the first entry in the
                                    .IDX index file for the group. */
     int         count;          /* Number of articles in group. */
-    int         flag;           /* Posting/moderation status (not used). */
+    int         flag;           /* Posting/moderation status. */
     time_t      deleted;        /* When this group was deleted, or 0 if the
                                    group is still valid. */    
     ino_t       indexinode;     /* Intended to be the inode of the index file
