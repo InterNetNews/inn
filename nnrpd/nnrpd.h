@@ -191,7 +191,7 @@ extern char		*Glom();
 extern int		Argify();
 extern NORETURN		ExitWithStats(int x, BOOL readconf);
 extern BOOL		GetGroupList();
-extern char		*GetHeader(char *header, bool IsLineS);
+extern char		*GetHeader(char *header, BOOL IsLineS);
 extern void		GRPreport();
 extern void		HIScheck();
 extern char		*HISgetent();
