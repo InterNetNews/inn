@@ -830,10 +830,11 @@ int main(int ac, char *av[])
     message_handlers_warn(1, message_log_syslog_err);
     message_handlers_die(1, message_log_syslog_err);
 
-    /* rnews may be setuid root, group uucp so that the UUCP subsystem can run
-       it.  If that's the case, we want to setuid to the news user.  If it's
-       not, just don't do anything and continue; if we can't access the Unix
-       domain socket, that will become apparent later. */
+    /* Make sure that we switch to the news user if we're running as root,
+       since we may spool files and don't want those files owned by root.
+       Don't require that we be running as the news user, though; there are
+       other setups where rnews might be setuid news or be run by other
+       processes in the news group. */
     if (getuid() == 0 || geteuid() == 0) {
         struct passwd *pwd;
 
