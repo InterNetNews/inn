@@ -1028,11 +1028,11 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
     }
     private = NEW(PRIV_CNFS, 1);
     art->private = (void *)private;
-    art->arrived = cah.arrived;
+    art->arrived = ntohl(cah.arrived);
     offset += sizeof(cah);
     pagefudge = offset % pagesize;
     mmapoffset = offset - pagefudge;
-    private->len = pagefudge + cah.size;
+    private->len = pagefudge + ntohl(cah.size);
     if ((private->base = mmap((MMAP_PTR)0, private->len, PROT_READ, MAP__ARG,
 			      cycbuff->fdrd, mmapoffset)) == (MMAP_PTR) -1) {
         SMseterror(SMERR_UNDEFINED, "mmap failed");
@@ -1046,7 +1046,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
     art->token = &ret_token;
     if (amount == RETR_ALL) {
 	art->data = private->base + pagefudge;
-	art->len = cah.size;
+	art->len = ntohl(cah.size);
 	return art;
     }
     if ((p = SMFindBody(private->base + pagefudge, art->len)) == NULL) {
@@ -1203,16 +1203,16 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, RETRTYPE amount) {
     private = NEW(PRIV_CNFS, 1);
     art->private = (void *)private;
     art->type = TOKEN_CNFS;
-    priv.offset += (CYCBUFF_OFF_T) cah.size + sizeof(cah);
+    priv.offset += (CYCBUFF_OFF_T) ntohl(cah.size) + sizeof(cah);
     tonextblock = CNFS_BLOCKSIZE - (priv.offset & (CNFS_BLOCKSIZE - 1));
     priv.offset += (CYCBUFF_OFF_T) tonextblock;
-    art->arrived = cah.arrived;
-    token = CNFSMakeToken(cycbuff->name, offset, cycbuff->cyclenum, cah.class, (TOKEN *)NULL);
+    art->arrived = ntohl(cah.arrived);
+    token = CNFSMakeToken(cycbuff->name, offset, cycbuff->cyclenum, ntohl(cah.class), (TOKEN *)NULL);
     art->token = &token;
     offset += sizeof(cah);
     pagefudge = offset % pagesize;
     mmapoffset = offset - pagefudge;
-    private->len = pagefudge + cah.size;
+    private->len = pagefudge + ntohl(cah.size);
     if ((private->base = mmap((MMAP_PTR)0, private->len, PROT_READ, MAP__ARG,
 	cycbuff->fdrd, mmapoffset)) == (MMAP_PTR) -1) {
 	art->data = NULL;
@@ -1221,7 +1221,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, RETRTYPE amount) {
     }
     if (amount == RETR_ALL) {
 	art->data = private->base + pagefudge;
-	art->len = cah.size;
+	art->len = ntohl(cah.size);
 	return art;
     }
     if ((p = SMFindBody(private->base + pagefudge, art->len)) == NULL) {
