@@ -49,21 +49,17 @@ void HeaderCleanFrom(char *from)
 	*end = '\0';
 
     /* Do pretty much the equivalent of sed's "s/(.*)//g"; */
-    while (p = strchr(from, LPAREN)) {
-	if (end = strchr(p, RPAREN)) {
-	    while (*++end)
-		*p++ = *end;
-	    *p = '\0';
-	}
+    while ((p = strchr(from, LPAREN)) && (end = strchr(p, RPAREN))) {
+	while (*++end)
+	    *p++ = *end;
+	*p = '\0';
     }
 
     /* Do pretty much the equivalent of sed's "s/\".*\"//g"; */
-    while (p = strchr(from, '"')) {
-	if (end = strchr(p, '"')) {
-	    while (*++end)
-		*p++ = *end;
-	    *p = '\0';
-	}
+    while ((p = strchr(from, '"')) && (end = strchr(p, '"'))) {
+	while (*++end)
+	    *p++ = *end;
+	*p = '\0';
     }
 
     /* Do the equivalent of sed's "s/.*<\(.*\)>/\1/" */
