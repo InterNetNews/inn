@@ -67,7 +67,8 @@ Scheduled for INN 2.4:
   [Russ plans on doing this.]
 
 * Switch at least nnrpd over to using the new wildmat routines rather than
-  breaking apart strings on commas and matching each expression separately.
+  breaking apart strings on commas and matching each expression
+  separately.
 
 
 Scheduled for INN 2.5:
@@ -636,6 +637,20 @@ Long-Term Projects:
   propagate such feeds from dedicated spam filters or the like, there must
   also be some mechanism of negotiating policy in order to decide what
   cancels the server wants to be fed.
+
+* The "possibly signed" char data type is one of the inherent flaws of C.
+  Some other projects have successfully gotten completely away from this
+  by declaring all of their strings to be unsigned char, defining a macro
+  like U that casts strings to unsigned char for use with literal strings,
+  and always using unsigned char everywhere.  Unfortunately, this also
+  requires wrappering all of the standard libc string functions, since
+  they're prototyped as taking char rather than unsigned char.  The
+  benefits include cleaner and consistent handling of characters over 127,
+  better warnings from the compiler, consistent behavior across platforms
+  with different notions about the signedness of char, and the elimination
+  of warnings from the <ctype.h> macros on platforms like Solaris where
+  those macros can't handle signed characters.  We should look at doing
+  this for INN.
 
 
 Complete Code Reorganization
