@@ -230,15 +230,17 @@ FlushOverTmpFile(void)
 	/* init the overview setup. */
 	if (!OVopen(OV_WRITE)) {
 	    fprintf(stderr, "makehistory: OVopen failed\n");
-	    exit(1);
+	    _exit(1);
 	}
 	if (!OVctl(OVSORT, (void *)&sorttype)) {
 	    fprintf(stderr, "makehistory: OVctl(OVSORT) failed\n");
-	    exit(1);
+	    OVclose();
+	    _exit(1);
 	}
 	if (!OVctl(OVCUTOFFLOW, (void *)&Cutofflow)) {
 	    fprintf(stderr, "makehistory: OVctl(OVCUTOFFLOW) failed\n");
-	    exit(1);
+	    OVclose();
+	    _exit(1);
 	}
 
 	if(first)
@@ -257,7 +259,8 @@ FlushOverTmpFile(void)
 	fprintf(stderr,
                 "makehistory: Can't sort OverTmp file (%s exit %d), %s\n",
 		_PATH_SORT, i, strerror(errno));
-	exit(1);
+	OVclose();
+	Fork ? _exit(1) : exit(1);
     }
 
     /* don't need old path anymore. */
@@ -269,7 +272,8 @@ FlushOverTmpFile(void)
     if ((qp = QIOopen(SortedTmpPath)) == NULL) {
 	fprintf(stderr, "makehistory: Can't open sorted over file %s, %s\n",
 		SortedTmpPath, strerror(errno));
-	exit(1);
+	OVclose();
+	Fork ? _exit(1) : exit(1);
     }
 
     for (count = 1; (line = QIOread(qp)) != NULL ; ++count) {
@@ -278,7 +282,8 @@ FlushOverTmpFile(void)
 	    || (r = strchr(q+1, '\t')) == NULL) {
 	    fprintf(stderr, "makehistory: sorted over %s has bad line %d\n",
 		    SortedTmpPath, count);
-	    exit(1);
+	    OVclose();
+	    Fork ? _exit(1) : exit(1);
 	}
 	/* p+1 now points to start of token, q+1 points to start of overline. */
 	if (sorttype == OVNEWSGROUP) {
@@ -291,7 +296,8 @@ FlushOverTmpFile(void)
 	    if ((r = strchr(r, '\t')) == NULL) {
 	        fprintf(stderr, "makehistory: sorted over %s has bad line %d\n",
 		    SortedTmpPath, count);
-	        exit(1);
+		OVclose();
+		Fork ? _exit(1) : exit(1);
 	    }
 	    *r++ = '\0';
 	} else {
@@ -305,7 +311,8 @@ FlushOverTmpFile(void)
 	if (!OVadd(token, r, strlen(r), arrived, expires)) {
 	    if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE) {
 		fprintf(stderr, "makehistory: no space left for overview\n");
-		exit(1);
+		OVclose();
+		Fork ? _exit(1) : exit(1);
 	    }
 	    fprintf(stderr, "makehistory: Can't write overview data \"%s\"\n", q);
 	}
@@ -313,12 +320,14 @@ FlushOverTmpFile(void)
     /* Check for errors and close. */
     if (QIOtoolong(qp)) {
 	fprintf(stderr, "makehistory: Line %d is too long\n", count);
-	exit(1);
+	OVclose();
+	Fork ? _exit(1) : exit(1);
     }
     if (QIOerror(qp)) {
 	(void)fprintf(stderr, "makehistory: Can't read sorted tmp file %s, %s\n", 
 		      SortedTmpPath, strerror(errno));
-	exit(1);
+	OVclose();
+	Fork ? _exit(1) : exit(1);
     }
     QIOclose(qp);
     /* unlink sorted tmp file */
@@ -326,7 +335,7 @@ FlushOverTmpFile(void)
     DISPOSE(SortedTmpPath);
     if(Fork) {
 	OVclose();
-	exit(0);
+	_exit(0);
     }
 }
 	    
