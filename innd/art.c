@@ -24,6 +24,10 @@ extern BOOL DoCancels;
 #define EXECUTE_BITS	0111
 #endif	/* defined(S_IXUSR) */
 
+#if	!defined(S_ISDIR)
+#define S_ISDIR(mode)	(((mode) & 0xF000) == 0x4000)
+#endif
+
 
 /*
 **  For speed we build a binary tree of the headers, sorted by their
@@ -1137,7 +1141,8 @@ STATIC void ARTcontrol(ARTDATA *Data, HASH hash, char *Control, CHANNEL *cp)
 	FileGlue(buff, innconf->pathcontrol, '/', _PATH_BADCONTROLPROG);
     else {
 	FileGlue(buff, innconf->pathcontrol, '/', Control);
-	if (stat(buff, &Sb) < 0 || (Sb.st_mode & EXECUTE_BITS) == 0)
+	if (stat(buff, &Sb) < 0 || (Sb.st_mode & EXECUTE_BITS) == 0
+         || S_ISDIR(Sb.st_mode))
 	    FileGlue(buff, innconf->pathcontrol, '/', _PATH_BADCONTROLPROG);
     }
 
