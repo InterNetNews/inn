@@ -13,12 +13,6 @@
 #include "config.h"
 #include <sys/mman.h>
 
-/* Some platforms (which ones?) apparently don't have MAP_FILE but assume
-   MAP_FILE as the default mode. */
-#ifndef MAP_FILE
-# define MAP_FILE 0
-#endif
-
 /* Make sure that the symbolic constant for the error return from mmap is
    defined (some platforms don't define it). */
 #ifndef MAP_FAILED
