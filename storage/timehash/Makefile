@@ -27,6 +27,7 @@ depend:	Makefile $(SOURCES)
 	$(UPMAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-timehash.o: timehash.c ../../include/config.h ../../include/clibrary.h \
+timehash.o: timehash.c ../../include/config.h \
+ ../../include/inn/defines.h ../../include/clibrary.h \
  ../../include/libinn.h ../../include/macros.h ../methods.h \
  ../../include/paths.h timehash.h

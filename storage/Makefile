@@ -85,15 +85,16 @@ depend:	$(SOURCES)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 interface.o: interface.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/conffile.h interface.h \
- ../include/libinn.h ../include/macros.h methods.h ../include/paths.h
-methods.o: methods.c ../include/configdata.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h methods.h \
- tradspool/tradspool.h timecaf/timecaf.h trash/trash.h cnfs/cnfs.h \
- timehash/timehash.h
-ovmethods.o: ovmethods.c ../include/configdata.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h ovinterface.h \
- ovdb/ovdb.h buffindexed/buffindexed.h ov3/tradindexed.h
-ov.o: ov.c ../include/dbz.h ../include/libinn.h \
- ../include/inn/defines.h ../include/config.h ../include/configdata.h \
- ../include/macros.h ../include/clibrary.h ../include/paths.h \
- ../include/storage.h ../include/ov.h ovmethods.h
+ ../include/storage.h ../include/libinn.h ../include/macros.h \
+ methods.h ../include/paths.h
+methods.o: methods.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h methods.h tradspool/tradspool.h \
+ timecaf/timecaf.h trash/trash.h cnfs/cnfs.h timehash/timehash.h
+ovmethods.o: ovmethods.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ovinterface.h ../include/ov.h \
+ ../include/storage.h ovdb/ovdb.h buffindexed/buffindexed.h \
+ ov3/tradindexed.h
+ov.o: ov.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/dbz.h ../include/libinn.h \
+ ../include/macros.h ../include/ov.h ../include/storage.h \
+ ovinterface.h ovmethods.h ../include/paths.h

@@ -27,5 +27,5 @@ depend:	Makefile $(SOURCES)
 	$(UPMAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-trash.o: trash.c ../../include/config.h ../../include/clibrary.h \
- ../../include/libinn.h ../methods.h
+trash.o: trash.c ../../include/config.h ../../include/inn/defines.h \
+ ../../include/clibrary.h ../../include/libinn.h ../methods.h

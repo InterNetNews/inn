@@ -82,10 +82,10 @@ commands.o: commands.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h nnrpd.h ../include/inn/qio.h \
  ../include/libinn.h ../include/macros.h ../include/nntp.h \
  ../include/paths.h ../include/storage.h ../include/ov.h
-loadave.o: loadave.c ../include/configdata.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h nnrpd.h \
- ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
- ../include/nntp.h ../include/paths.h ../include/storage.h
+loadave.o: loadave.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h nnrpd.h ../include/inn/qio.h \
+ ../include/libinn.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h ../include/storage.h
 misc.o: misc.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h nnrpd.h ../include/inn/qio.h \
  ../include/libinn.h ../include/macros.h ../include/nntp.h \
@@ -110,10 +110,10 @@ post.o: post.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h nnrpd.h ../include/inn/qio.h \
  ../include/libinn.h ../include/macros.h ../include/nntp.h \
  ../include/paths.h ../include/storage.h ../include/ov.h post.h
-python.o: python.c ../include/configdata.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h nnrpd.h \
- ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
- ../include/nntp.h ../include/paths.h ../include/storage.h
+python.o: python.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h nnrpd.h ../include/inn/qio.h \
+ ../include/libinn.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h ../include/storage.h
 sasl_config.o: sasl_config.c ../include/config.h \
  ../include/inn/defines.h
 tls.o: tls.c ../include/config.h ../include/inn/defines.h

@@ -103,13 +103,13 @@ expire.o: expire.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/dbz.h ../include/libinn.h \
  ../include/inndcomm.h ../include/inn/qio.h ../include/macros.h \
  ../include/paths.h ../include/storage.h
-expireover.o: expireover.c ../include/configdata.h ../include/config.h \
+expireover.o: expireover.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/inn/qio.h \
- ../include/libinn.h ../include/macros.h ../include/paths.h \
- ../include/storage.h ../include/ov.h
-fastrm.o: fastrm.c ../include/configdata.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h ../include/inn/qio.h \
- ../include/macros.h ../include/libinn.h ../include/storage.h
+ ../include/libinn.h ../include/macros.h ../include/ov.h \
+ ../include/storage.h ../include/paths.h
+fastrm.o: fastrm.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
+ ../include/macros.h ../include/storage.h
 grephistory.o: grephistory.c ../include/clibrary.h ../include/config.h \
  ../include/inn/defines.h ../include/dbz.h ../include/libinn.h \
  ../include/macros.h ../include/paths.h ../include/storage.h
@@ -125,7 +125,6 @@ newsrequeue.o: newsrequeue.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/dbz.h \
  ../include/libinn.h ../include/inn/qio.h ../include/macros.h \
  ../include/paths.h
-prunehistory.o: prunehistory.c ../include/configdata.h \
- ../include/config.h ../include/inn/defines.h ../include/clibrary.h \
- ../include/paths.h ../include/libinn.h ../include/dbz.h \
- ../include/macros.h
+prunehistory.o: prunehistory.c ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/dbz.h \
+ ../include/libinn.h ../include/macros.h ../include/paths.h
