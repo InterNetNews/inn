@@ -42,8 +42,10 @@ my (@headers, %hdrcount, %hdrval, $msgid, $token, $progname, @progparams,
 # If we have $newsbin/sm, this must be an INN 2.x installation.
 # Otherwise, we'll fake it on older
 # servers.
-if (-e "$inn::newsbin/sm") { $SM = "$inn::newsbin/sm -q" }
-else { $SM = "cat" }
+if (-e "$inn::newsbin/sm") {
+    if ($inn::storageapi =~ /true|yes|on/i) { $SM = "$inn::newsbin/sm -q" }
+    else { $SM = "cat" }
+} else { $SM = "cat" }
 
 # Scan the control directory and load *.pl.  This will bring in the
 # new-style control scripts.  For controlchan to use a perl control
@@ -406,7 +408,7 @@ sub open_article {
       $fail = 1 if (!open(ART,"<$token"));
     }
     else {
-      $fail = 1 if (!open(ART, "$method $token|"));
+      $fail = 1 if (!open(ART, "$SM $token|"));
     }
     if ($fail) {
       print scalar localtime,
