@@ -1,0 +1,16 @@
+.libs
+archivegz
+backupfeed
+cleannewsgroups
+delayer
+findreadgroups
+makeexpctl
+makestorconf
+mlockfile
+newsresp
+pathinfo
+pullart
+showtoken
+stathist
+thdexpire
+tunefeed
