@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <signal.h>
+#include <syslog.h>
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #if HAVE_SYS_SELECT_H
@@ -18,6 +19,7 @@
 #endif
 
 #include "inn/md5.h"
+#include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
@@ -91,11 +93,7 @@ static rad_config_t *get_radconf(void)
 {
   rad_config_t *new;
 
-  new = malloc(sizeof(rad_config_t));
-  if (new == NULL){
-    fprintf(stderr, "radius: unable to malloc\n");
-    exit (1);
-  }
+  new = xmalloc(sizeof(rad_config_t));
   new->next = NULL;
 
   return new;
@@ -111,30 +109,20 @@ static int read_config(char *authfile, rad_config_t *radconf)
     int type;
     char *iter;
 
-    if ((file = CONFfopen(authfile)) == NULL){
-      fprintf(stderr, "radius: couldn't open config file %s: %s\n", authfile, 
-	      strerror(errno));
-      exit (1);
-    }
+    if ((file = CONFfopen(authfile)) == NULL)
+      sysdie("cannot open config file %s", authfile);
 
     inbrace = 0;
     while ((token = CONFgettoken(radtoks, file)) != NULL) {
       if (!inbrace) {
-	if (token->type != RADserver) {
-	  fprintf(stderr, "Expected 'server' keyword, line %d\n", 
-		  file->lineno); 
-	  exit (1);
-	}
-	if ((token = CONFgettoken(0, file)) == NULL) {
-	  fprintf(stderr, "Expected server name, line %d\n", file->lineno);
-	  exit (1);
-	}
+	if (token->type != RADserver)
+          die("expected server keyword on line %d", file->lineno);
+	if ((token = CONFgettoken(0, file)) == NULL)
+          die("expected server name on line %d", file->lineno);
 	server = COPY(token->name);
 	if ((token = CONFgettoken(radtoks, file)) == NULL 
-	    || token->type != RADlbrace) {
-	  fprintf(stderr, "Expected '{', line %d\n", file->lineno);
-	  exit (1);
-	}
+	    || token->type != RADlbrace)
+          die("expected { on line %d", file->lineno);
 	inbrace = 1;
 
 	if (radconfig == NULL)
@@ -149,10 +137,8 @@ static int read_config(char *authfile, rad_config_t *radconf)
 	if (type == RADrbrace)
 	  inbrace = 0;
 	else {
-	  if ((token = CONFgettoken(0, file)) == NULL) {
-	    fprintf(stderr, "Keyword with no value, line %d\n", file->lineno);
-	    exit (1);
-	  }
+	  if ((token = CONFgettoken(0, file)) == NULL)
+            die("keyword with no value on line %d", file->lineno);
 	  iter = token->name;
 
 	  /* what are we setting? */
@@ -190,17 +176,12 @@ static int read_config(char *authfile, rad_config_t *radconf)
 		radconfig->ignore_source = 1;
 	    else if (!strcasecmp(iter, "false"))
 		radconfig->ignore_source = 0;
-	    else {
-		fprintf(stderr, "Expected \"true\" or \"false\" after "
-			"ignore-source in rad_config, line %d\n", 
-			file->lineno);
-		exit(1);
-  	    }
+	    else
+                die("expected true or false after ignore-source on line %d",
+                    file->lineno);
 	    break;
 	  default:
-	    fprintf(stderr, "unknown keyword in rad_config, line %d\n",
-		    file->lineno);
-	    exit(1);
+            die("unknown keyword on line %d", file->lineno);
 	  }
 	}
       }
@@ -208,13 +189,10 @@ static int read_config(char *authfile, rad_config_t *radconf)
 
     CONFfclose(file);
 
-    if (!radconf->radhost) {
-	fprintf(stderr, "No radius host to authenticate against.\n");
-	exit(1);
-    } else if (!radconf->secret) {
-	fprintf(stderr, "No shared secret with radius host.\n");
-	exit(1);
-    }
+    if (!radconf->radhost)
+        die("no radius host specified");
+    else if (!radconf->secret)
+        die("no shared secret with radius host specified");
 
     return(0);
 }
@@ -270,9 +248,9 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
     /* set up the linked list */
     config = radconfig;
 
-    if (config == NULL){
-      fprintf(stderr, "radius: no configs\n");
-      return (-2);
+    if (config == NULL) {
+      warn("no configuration file");
+      return(-2);
     } else {
       /* setting sreq to NULL guarantees reqtop will be properly set later */
       sreq = NULL;
@@ -280,11 +258,7 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
     }
 
     while (config != NULL){
-      new = malloc(sizeof(sending_t));
-      if (new == NULL){
-	fprintf(stderr, "radius: can't malloc sending_t struct\n");
-	return (-2);
-      }
+      new = xmalloc(sizeof(sending_t));
       new->next = NULL;
 
       if (sreq == NULL){
@@ -302,108 +276,106 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
       sinl.sin_family = AF_INET;
       sreq->sinr.sin_family = AF_INET;
       if (config->lochost == NULL) {
-  	if (gethostname(hostname, sizeof(hostname)) != 0) {
-  	    fprintf(stderr, "radius: cant get localhostname\n");
-	    return (-2);
-	}
+        if (gethostname(hostname, sizeof(hostname)) != 0) {
+          syswarn("cannot get local hostname");
+          return(-2);
+        }
 	config->lochost = COPY(hostname);
-    }
-    if (config->lochost) {
+      }
+      if (config->lochost) {
 	if (inet_aton(config->lochost, &sinl.sin_addr) != 1) {
-	    if ((hent = gethostbyname(config->lochost)) == NULL) {
-		fprintf(stderr, "radius: cant gethostbyname lochost %s\n",
-		        config->lochost);
-		return (-2);
-	    }
-	    memcpy(&sinl.sin_addr.s_addr, hent->h_addr,
-                   sizeof(struct in_addr));
+          if ((hent = gethostbyname(config->lochost)) == NULL) {
+            warn("cannot gethostbyname lochost %s", config->lochost);
+            return(-2);
+          }
+          memcpy(&sinl.sin_addr.s_addr, hent->h_addr,
+                 sizeof(struct in_addr));
 	}
-    }
-    if (inet_aton(config->radhost, &sreq->sinr.sin_addr) != 1) {
-	if ((hent = gethostbyname(config->radhost)) == NULL) {
-	    fprintf(stderr, "radius: cant gethostbyname radhost %s\n",
-	            config->radhost);
-	    return (-2);
-	}
+      }
+      if (inet_aton(config->radhost, &sreq->sinr.sin_addr) != 1) {
+        if ((hent = gethostbyname(config->radhost)) == NULL) {
+          warn("cannot gethostbyname radhost %s", config->radhost);
+          return(-2);
+        }
 	memcpy(&sreq->sinr.sin_addr.s_addr, hent->h_addr_list[0],
                sizeof(struct in_addr));
-    }
+      }
 
-    if (config->radport)
-	sreq->sinr.sin_port = htons(config->radport);
-    else
+      if (config->radport)
+        sreq->sinr.sin_port = htons(config->radport);
+      else
 	sreq->sinr.sin_port = htons(PW_AUTH_UDP_PORT);
 
-    /* seed the random number generator for the auth vector */
-    gettimeofday(&seed, 0);
-    srandom((unsigned) seed.tv_sec+seed.tv_usec);
-    /* build the visible part of the auth vector randomly */
-    for (i = 0; i < AUTH_VECTOR_LEN; i++)
+      /* seed the random number generator for the auth vector */
+      gettimeofday(&seed, 0);
+      srandom((unsigned) seed.tv_sec+seed.tv_usec);
+      /* build the visible part of the auth vector randomly */
+      for (i = 0; i < AUTH_VECTOR_LEN; i++)
 	req.vector[i] = random() % 256;
-    strncpy((char *) secbuf, config->secret, sizeof(secbuf));
-    memcpy(secbuf+strlen(config->secret), req.vector, AUTH_VECTOR_LEN);
-    md5_hash(secbuf, strlen(config->secret)+AUTH_VECTOR_LEN, digest);
-    /* fill in the auth_req data */
-    req.code = PW_AUTHENTICATION_REQUEST;
-    req.id = 0;
+      strncpy((char *) secbuf, config->secret, sizeof(secbuf));
+      memcpy(secbuf+strlen(config->secret), req.vector, AUTH_VECTOR_LEN);
+      md5_hash(secbuf, strlen(config->secret)+AUTH_VECTOR_LEN, digest);
+      /* fill in the auth_req data */
+      req.code = PW_AUTHENTICATION_REQUEST;
+      req.id = 0;
 
-    /* bracket the username in the configured prefix/suffix */
-    req.data[0] = PW_USER_NAME;
-    req.data[1] = 2;
-    req.data[2] = '\0';
-    if (config->prefix) {
+      /* bracket the username in the configured prefix/suffix */
+      req.data[0] = PW_USER_NAME;
+      req.data[1] = 2;
+      req.data[2] = '\0';
+      if (config->prefix) {
 	req.data[1] += strlen(config->prefix);
 	strcat((char *)&req.data[2], config->prefix);
-    }
-    req.data[1] += strlen(uname);
-    strcat((char *)&req.data[2], uname);
-    if (!strchr(uname, '@') && config->suffix) {
+      }
+      req.data[1] += strlen(uname);
+      strcat((char *)&req.data[2], uname);
+      if (!strchr(uname, '@') && config->suffix) {
 	req.data[1] += strlen(config->suffix);
 	strcat((char *)&req.data[2], config->suffix);
-    }
-    req.datalen = req.data[1];
+      }
+      req.datalen = req.data[1];
 
-    /* set the password */
-    passstart = req.datalen;
-    req.data[req.datalen] = PW_PASSWORD;
-    /* Null pad the password */
-    passlen = (strlen(pass) + 15) / 16;
-    passlen *= 16;
-    req.data[req.datalen+1] = passlen+2;
-    strcpy((char *)&req.data[req.datalen+2], pass);
-    passlen -= strlen(pass);
-    while (passlen--)
+      /* set the password */
+      passstart = req.datalen;
+      req.data[req.datalen] = PW_PASSWORD;
+      /* Null pad the password */
+      passlen = (strlen(pass) + 15) / 16;
+      passlen *= 16;
+      req.data[req.datalen+1] = passlen+2;
+      strcpy((char *)&req.data[req.datalen+2], pass);
+      passlen -= strlen(pass);
+      while (passlen--)
 	req.data[req.datalen+passlen+2+strlen(pass)] = '\0';
-    req.datalen += req.data[req.datalen+1];
+      req.datalen += req.data[req.datalen+1];
 
-    /* Add NAS_PORT and NAS_IP_ADDRESS into request */
-   if ((nvalue = config->locport) == 0)
+      /* Add NAS_PORT and NAS_IP_ADDRESS into request */
+      if ((nvalue = config->locport) == 0)
         nvalue = RADIUS_LOCAL_PORT;
-    req.data[req.datalen++] = RAD_NAS_PORT;
-    req.data[req.datalen++] = sizeof(nvalue) + 2;
-    nvalue = htonl(nvalue);
-    memcpy(req.data + req.datalen, &nvalue, sizeof(nvalue));
-    req.datalen += sizeof(nvalue);
-    req.data[req.datalen++] = RAD_NAS_IP_ADDRESS;
-    req.data[req.datalen++] = sizeof(struct in_addr) + 2;
-    memcpy(req.data + req.datalen, &sinl.sin_addr.s_addr,
+      req.data[req.datalen++] = RAD_NAS_PORT;
+      req.data[req.datalen++] = sizeof(nvalue) + 2;
+      nvalue = htonl(nvalue);
+      memcpy(req.data + req.datalen, &nvalue, sizeof(nvalue));
+      req.datalen += sizeof(nvalue);
+      req.data[req.datalen++] = RAD_NAS_IP_ADDRESS;
+      req.data[req.datalen++] = sizeof(struct in_addr) + 2;
+      memcpy(req.data + req.datalen, &sinl.sin_addr.s_addr,
            sizeof(struct in_addr));
-    req.datalen += sizeof(struct in_addr);
+      req.datalen += sizeof(struct in_addr);
 
-    /* we're only doing authentication */
-    req.data[req.datalen] = PW_SERVICE_TYPE;
-    req.data[req.datalen+1] = 6;
-    req.data[req.datalen+2] = (PW_SERVICE_AUTH_ONLY >> 24) & 0x000000ff;
-    req.data[req.datalen+3] = (PW_SERVICE_AUTH_ONLY >> 16) & 0x000000ff;
-    req.data[req.datalen+4] = (PW_SERVICE_AUTH_ONLY >> 8) & 0x000000ff;
-    req.data[req.datalen+5] = PW_SERVICE_AUTH_ONLY & 0x000000ff;
-    req.datalen += req.data[req.datalen+1];
+      /* we're only doing authentication */
+      req.data[req.datalen] = PW_SERVICE_TYPE;
+      req.data[req.datalen+1] = 6;
+      req.data[req.datalen+2] = (PW_SERVICE_AUTH_ONLY >> 24) & 0x000000ff;
+      req.data[req.datalen+3] = (PW_SERVICE_AUTH_ONLY >> 16) & 0x000000ff;
+      req.data[req.datalen+4] = (PW_SERVICE_AUTH_ONLY >> 8) & 0x000000ff;
+      req.data[req.datalen+5] = PW_SERVICE_AUTH_ONLY & 0x000000ff;
+      req.datalen += req.data[req.datalen+1];
 
-    /* filled in the data, now we know what the actual length is. */
-    req.length = 4+AUTH_VECTOR_LEN+req.datalen;
+      /* filled in the data, now we know what the actual length is. */
+      req.length = 4+AUTH_VECTOR_LEN+req.datalen;
 
-    /* "encrypt" the password */
-    for (i = 0; i < req.data[passstart+1]-2; i += sizeof(HASH)) {
+      /* "encrypt" the password */
+      for (i = 0; i < req.data[passstart+1]-2; i += sizeof(HASH)) {
 	jlen = sizeof(HASH);
 	if (req.data[passstart+1]-(unsigned)i-2 < sizeof(HASH))
 	    jlen = req.data[passstart+1]-i-2;
@@ -431,15 +403,13 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
 
     /* now, build the sockets */
     if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-	fprintf(stderr, "radius: cant build reply socket: %s\n",
-	        strerror(errno));
-	return(-1);
+      syswarn("cannot build reply socket");
+      return(-1);
     }
     if (bind(sock, (struct sockaddr*) &sinl, sizeof(sinl)) < 0) {
-	fprintf(stderr, "radius: cant bind reply socket: %s\n",
-	        strerror(errno));
-	close(sock);
-	return(-1);
+      syswarn("cannot bind reply socket");
+      close(sock);
+      return(-1);
     }
 
     for(done = 0; authtries > 0 && !done; authtries--) {
@@ -451,7 +421,7 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
 	if (sendto(sock, (char *)&req, sreq->reqlen, 0, 
 		   (struct sockaddr*) &sreq->sinr, 
 		   sizeof (struct sockaddr_in)) < 0) {
-	  fprintf(stderr, "radius: cant send auth_req: %s\n", strerror(errno));
+          syswarn("cannot send auth_reg");
 	  close(sock);
 	  return(-1);
 	}
@@ -467,7 +437,7 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
 	FD_SET(sock, &rdfds);
 	got = select(sock+1, &rdfds, 0, 0, &tmout);
 	if (got < 0) {
-	    fprintf(stderr, "radius: couldn't select: %s\n", strerror(errno));
+            syswarn("cannot not select");
 	    break;
 	} else if (got == 0) {
 	    /* timer ran out */
@@ -479,20 +449,20 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
 	slen = sizeof(sinl);
 	if ((jlen = recvfrom(sock, (char *)&req, sizeof(req)-sizeof(int), 0, 
 	                     (struct sockaddr*) &sinl, &slen)) < 0) {
-	    fprintf(stderr, "radius: couldnt recvfrom: %s\n", strerror(errno));
+            syswarn("cannot recvfrom");
 	    break;
 	}
 	if (!config->ignore_source) {
 	    if (sinl.sin_addr.s_addr != sreq->sinr.sin_addr.s_addr ||
 	      (sinl.sin_port != sreq->sinr.sin_port)) {
-		fprintf(stderr, "radius: received unexpected UDP packet from %s:%d.\n",
-		  inet_ntoa(sinl.sin_addr), ntohs(sinl.sin_port));
+                warn("received unexpected UDP packet from %s:%d",
+                     inet_ntoa(sinl.sin_addr), ntohs(sinl.sin_port));
 		continue;
 	    }
 	}
 	sreq->reqlen = ntohs(req.length);
 	if (jlen < 4+AUTH_VECTOR_LEN || jlen != sreq->reqlen) {
-	    fprintf(stderr, "radius: received badly-sized packet.\n");
+            warn("received badly-sized packet");
 	    continue;
 	}
 	/* verify the checksum */
@@ -502,7 +472,7 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
         md5_hash((unsigned char *)&req, strlen(config->secret)+sreq->reqlen,
 	    digest);
 	if (memcmp(digest, secbuf, sizeof(HASH)) != 0) {
-	    fprintf(stderr, "radius: checksum didn't match.\n");
+            warn("checksum didn't match");
 	    continue;
 	}
 	/* FINALLY!  Got back a known-good packet.  See if we're in. */
@@ -513,11 +483,9 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
 	break;
       }
     }
-    if (authtries == 0) {
-	fprintf(stderr,
-		"radius: couldn't talk to remote radius server %s:%d\n",
-		inet_ntoa(sreq->sinr.sin_addr), ntohs(sreq->sinr.sin_port));
-    }
+    if (authtries == 0)
+        warn("cannot talk to remote radius server %s:%d",
+             inet_ntoa(sreq->sinr.sin_addr), ntohs(sreq->sinr.sin_port));
     return(-2);
 }
 
@@ -537,6 +505,9 @@ int main(int argc, char *argv[])
     int retval;
     char *radius_config;
 
+    openlog("radius", LOG_CONS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "radius";
+
     memset(&radconfig, '\0', sizeof(rad_config_t));
     haveother = havefile = 0;
     if (ReadInnConf() < 0) exit(1);
@@ -544,12 +515,8 @@ int main(int argc, char *argv[])
     while ((opt = getopt(argc, argv, "f:h")) != -1) {
 	switch (opt) {
 	  case 'f':
-	    if (haveother) {
-		/* don't allow user to specify config file after more
-		 * specific options */
-		fprintf(stderr, "-f flag after another, non -f flag.\n");
-		exit(1);
-	    }
+	    if (haveother)
+                die("-f flag after another flag");
 	    if (!havefile) {
               /* override the standard config completely if the user
                * specifies an alternate config file */
@@ -560,8 +527,7 @@ int main(int argc, char *argv[])
 	    break;
 	case 'h':
 	  printf("Usage: radius [-f config]\n");
-	  return 0;
-	  break;
+          exit(0);
 	}
     }
     if (argc != optind)
@@ -574,25 +540,21 @@ int main(int argc, char *argv[])
     }
 
     authinfo = get_auth();
-    if (authinfo->username[0] == '\0') {
-        fprintf(stderr, "radius: empty username.\n");
-        exit(1);
-    }
+    if (authinfo->username[0] == '\0')
+        die("empty username");
 
     /* got username and password, check that they're valid */
 
     retval = rad_auth(&radconfig, authinfo->username, authinfo->password);
-    if (retval == -1) {
-	fprintf(stderr, "radius: user %s password doesn't match.\n",
-                authinfo->username);
-	exit(1);
-    } else if (retval == -2) {
+    if (retval == -1)
+        die("user %s password doesn't match", authinfo->username);
+    else if (retval == -2)
 	/* couldn't talk to the radius server..  output logged above. */
 	exit(1);
-    } else if (retval != 0) {
-	fprintf(stderr, "radius: got unexpected return from authentication function: %d\n", retval);
-	exit(1);
-    }
+    else if (retval != 0)
+        die("unexpected return code from authentication function: %d",
+            retval);
+
     /* radius password matches! */
     printf("User:%s\n", authinfo->username);
     exit(0);
