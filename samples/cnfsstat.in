@@ -276,9 +276,11 @@ sub print_cycbuff_head {
     
     if ($use_syslog) {
 	($name) = split(/\b/, $name);
+	$name =~ s/\0//g;
 	syslog ('notice', '%s Buffer %s, len: %d  Mbytes, used: %.2f Mbytes (%4.1f%%) %3d cycles', $logline, $name, $len / (1024 * 1024), $free / (1024 * 1024), 100 * $free/$len, $cyclenum);
 	return 0;
     } else {
+        $name =~ s/\0//g;
 	print " Buffer $name, len: ";
 	print $len / (1024 * 1024);
 	print " Mbytes, used: ";
