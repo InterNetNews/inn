@@ -158,16 +158,6 @@ Installing INN
                           tablesize:   value in 3rd field on the 1st line in
                                        history.dir
 
-  --enable-pgp-verify     This enable support for PGP (Pretty Good Privacy)
-                          signature checking on control messages. This makes
-                          it nearly impossible for malicious individuals to
-                          post forged newsgroup creation or deletion messages
-                          for the major hierarchies (comp.*, rec.*, etc.)
-                          You will need to have PGP installed on your system
-                          for this to work, and there are issues with using
-                          PGP on commercial systems, so this option is off by
-                          default.
-
   --with-perl             Enables support for Perl, allowing you to install
                           filter scripts written in Perl. Highly recommended,
                           because many of the really good spam filters are
@@ -186,7 +176,7 @@ Installing INN
   --disable-static        Do not create static libraries
 
   A suggested set of options, provided you have the necessary software
-  installed, is "./configure --with-perl --enable-pgp-verify".
+  installed, is "./configure --with-perl".
 
   If the configure program runs successfully, then you are ready to build the
   distribution. From the root of the INN source tree, type:
