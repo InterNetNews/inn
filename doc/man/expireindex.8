@@ -1,0 +1,75 @@
+.\" $Revision$
+.TH EXPIREINDEX 8
+.SH NAME
+expireindex \- Expire entries from the news overview index
+.SH SYNOPSIS
+.B expireindex
+[
+.BI \-D " overviewdir"
+]
+[
+.B \-n
+]
+[
+.B \-q
+]
+[
+.B \-v
+]
+[
+.B \-z
+]
+[
+.I file...
+]
+.SH DESCRIPTION
+.I Expireindex
+expires entries from the news overview database index.
+It reads a list of pathnames (relative to the spool directory,
+.\" =()<.IR @<_PATH_SPOOL>@ ),>()=
+.IR /var/news/spool/articles ),
+from the specified
+.I files
+or standard input if none are specified.
+(A file name of ``\-'' may be used to specify the standard input.)
+It then removes any mention of those articles from the appropriate overview
+database index.
+.PP
+If you have turned off the storage manager with the 'storageapi' in
+inn.conf (5), you need to use expireover (8) to expire overveiw.
+.SH OPTIONS
+.TP
+.B \-D
+The ``\-D'' flag can be used to specify where the databases are stored.
+The default directory is
+.\" =()<.IR @<_PATH_OVERVIEWDIR>@ .>()=
+.IR /var/news/spool/over.view .
+.TP
+.B \-n
+To perform no real updates, use the ``\fB\-n\fP'' flag.
+.TP
+.B \-q
+Not to tell lock file open failure, use the ``\fB\-q\fP'' flag.
+.TP
+.B \-v
+To see a list of the entries that would be added or deleted, use 
+the ``\fB\-v\fP''
+flag.
+.TP
+.B \-z
+If the ``\fB\-z\fP'' flag is used, then the input is assumed to be sorted such
+that all entries for a newsgroup appear together so that it can be purged
+at once.
+This flag can be useful when used with the sorted output of
+.IR expire (8)'s
+\&``\fB\-z\fP'' flag.
+.SH HISTORY
+Written by Katsuhiro Kondou <kondou@nec.co.jp>
+for InterNetNews.
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+.SH "SEE ALSO"
+expire(8),
+expireover(8),
