@@ -1,7 +1,7 @@
 ## rone's unified control.ctl
 ## $Id$
 ##
-## control.ctl - access control for control messages
+## control.ctl - Access control for control messages.
 ##
 ## The canonical version of this file can be found in the latest INN release
 ## and at <ftp://ftp.isc.org/pub/usenet/CONFIG/control.ctl>; these two files
@@ -74,7 +74,6 @@ all:*:*:mail
 ##	CHECKGROUPS MESSAGES
 ## -------------------------------------------------------------------------
 
-## Any newsgroup
 checkgroups:*:*:mail
 
 ## -------------------------------------------------------------------------
@@ -183,27 +182,29 @@ newgroup:*@*:alive.*:mail
 rmgroup:*@*:alive.*:doit
 
 ## ALT
-##
-## Accept all newgroup's as well as rmgroup's from trusted sources and
-## process them silently.  Only the rmgroup messages from unknown sources
-## will be e-mailed to the administrator. Please note that the people 
-## listed here are trusted in my opinion only, you opinion my differ.
-##
-## Other options and comments on alt.* groups can be found on Bill 
-## Hazelrig's WWW pages at http://www.tezcat.com/~haz1/alt/faqindex.html
-##
+#
+# Accept all newgroups (except ones forged from Big 8 newgroup issuers,
+# who never issue alt.* control messages) and silently ignore all
+# rmgroups.  This file used to attempt to track and recommend trusted
+# rmgroup issuers; it no longer does because they change too frequently.
+# What policy to use for alt.* groups varies widely from site to site.
+# For a small site, it is strongly recommended that this policy be changed
+# to drop all newgroups for alt.* as well as rmgroups and that the news
+# admin only add new alt.* groups on request, as tons of alt.* newgroups
+# are sent out regularly with the intent more to create nonsense entries
+# in active files than to actually create a useable newsgroup.
+#
+# Other options and comments on alt.* groups can be found at
+# <http://www.alt-config.org/>, one of the many alt.* FAQ sites.  Be aware
+# that there is no official, generally accepted alt.* policy and all
+# information about alt.* groups available is essentially someone's
+# opinion, including these comments.  There are nearly as many different
+# policies with regard to alt.* groups as there are Usenet sites.
+#
 newgroup:*:alt.*:doit
 newgroup:group-admin@isc.org:alt.*:drop
 newgroup:tale@*uu.net:alt.*:drop
 rmgroup:*:alt.*:drop
-#rmgroup:haz1@*nwu.edu:alt.*:doit
-#rmgroup:grobe@*netins.net:alt.*:doit
-#rmgroup:smj@*.oro.net:alt.*:doit
-#rmgroup:news@gymnet.com:alt.*:doit
-#rmgroup:sjkiii@crl.com:alt.*:doit
-#rmgroup:zot@ampersand.com:alt.*:doit
-#rmgroup:david@home.net.nz:alt.*:doit
-#rmgroup:*@*:alt.config:drop
 
 ## AR (Argentina)
 newgroup:jorge_f@nodens.fisica.unlp.edu.ar:ar.*:doit
@@ -1135,6 +1136,16 @@ rmgroup:*@*:metropolis.*:doit
 checkgroups:scs@lokkur.dexter.mi.us:mi.*:mail
 newgroup:scs@lokkur.dexter.mi.us:mi.*:doit
 rmgroup:scs@lokkur.dexter.mi.us:mi.*:doit
+
+## MILW (Milwaukee, Wisconsin, USA)
+# Contact: milw@usenet.mil.wi.us
+# URL: http://usenet.mil.wi.us
+# Key fingerprint = 6E 9B 9F 70 98 AB 9C E5  C3 C0 05 82 21 5B F4 9E
+# Key URL: http://usenet.mil.wi.us/pgpkey
+# *PGP*   See comment at top of file.
+checkgroups:milw@usenet.mil.wi.us:milw.*:verify-milw.config
+newgroup:milw@usenet.mil.wi.us:milw.*:verify-milw.config
+rmgroup:milw@usenet.mil.wi.us:milw.*:verify-milw.config
 
 ## MOD (Original top level moderated hierarchy)
 # Removed in the "Great Renaming" of 1988.
