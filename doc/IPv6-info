@@ -9,8 +9,6 @@ Notes about IPv6 support in INN:
 Things that will break if you compile with --enable-ipv6:
 
     * innd can only be started via inndstart
-    * nnrpd posting backoff is disabled until somebody extends the
-      routines in nnrpd/misc.c to handle IPv6 addresses
     * IP_OPTIONS are not cleared for any incoming connections to innd even
       over IPv4
   
@@ -18,12 +16,6 @@ Things that will break if you compile with --enable-ipv6:
 Things that should be fixed but doesn't seem urgent:
 
     * CHANrcfd and CHANrc need to be arrays to match the fd array
-
-
-Outstanding issues:
-
-  * nnrpd -D doesn't listen on an IPv6 socket.  Does this get used?  It
-    will need lots of extra code a la inndstart to listen on two sockets.
 
 
 
