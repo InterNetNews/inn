@@ -1,0 +1,71 @@
+#!@_PATH_PERL@
+# checkgroups.pl - The checkgroups control message.
+# Version 0.1, 19-AUG-1998
+#  Parameters: params sender reply-to token site action[=log] approved
+sub control_checkgroups {
+    my $SM;
+    if (-e "$inn::newsbin/sm") { $SM = "$inn::newsbin/sm -q" }
+    else { $SM = "cat" }
+
+    my @params = split(/\s+/,shift);
+    my $sender = shift;
+    my $replyto = shift;
+    my $token = shift;
+    my $site = shift;
+    my ($action, $logging) = split(/=/, shift);
+    my $approved = shift;
+
+    my $groupname = $params[0];
+
+    my $pid = $$;
+    my $tempfile = "$inn::tmpdir/checkgroups.$pid";
+
+    my ($errmsg, $status, $nc, @component, @oldgroup, $locktry,
+	$ngname, $ngdesc, $modcmd);
+
+    if ($action eq "mail") {
+        open(TEMPFILE, ">$tempfile");
+        print TEMPFILE ("$sender posted the following ",
+                        "checkgroups message:\n");
+        open(ARTICLE, "$SM $token|");
+        CGHEAD:
+	while(<ARTICLE>) {
+	    last CGHEAD if /^$/;
+	    s/^~/~~/;
+	    print TEMPFILE $_;
+	}
+        print TEMPFILE ("\nIf you want to process it, feed the body\n");
+	print TEMPFILE ("of the message to docheckgroups while logged\n");
+        print TEMPFILE ("in as user ID \"$newsuser\":\n\n");
+        print TEMPFILE ("$inn::pathnews/lib/docheckgroups <<zRbJ\n");
+	while(<ARTICLE>) {
+	    s/^~/~~/;
+            print TEMPFILE ($_)   if (! /^\s+$/);
+	}
+        print TEMPFILE ("zRbJ\n");
+        close(ARTICLE);
+        close(TEMPFILE);
+        logger($tempfile, "mail",
+               "checkgroups by $sender\n");
+        unlink($tempfile);
+    }
+    elsif ($action eq "log") {
+        if (!$logging) {
+            print "checkgroups by $sender\n";
+        }
+        else {
+            logger($token, $logging, "checkgroups by $sender");
+        }
+    }
+    elsif ($action eq "doit") {
+        # Do checkgroups.  Meow!
+        open(TEMPFILE,">$tempfile");
+        open(ARTICLE, "$SM $token|");
+        CGHEAD2: while (<ARTICLE>) { last CGHEAD2 if /^$/ }
+        while (<ARTICLE>) { print TEMPFILE ($_)    if (! /^\s+$/) }
+        close(TEMPFILE);
+        close(ARTICLE);
+        system("$inn::pathnews/lib/docheckgroups < $tempfile | " .
+               "$inn::newsbin/writelog $logging \"checkgroups by $sender\"");
+    }
+}

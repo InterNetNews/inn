@@ -1,0 +1,63 @@
+#!@_PATH_PERL@
+# sendme.pl - The sendme control message.
+# Version 0.1, 19-AUG-1998
+#  Parameters: params sender reply-to token site action[=log] approved
+sub control_sendme {
+    my $SM;
+    if (-e "$inn::newsbin/sm") { $SM = "$inn::newsbin/sm -q" }
+    else { $SM = "cat" }
+
+    my @params = split(/\s+/,shift);
+    my $sender = shift;
+    my $replyto = shift;
+    my $token = shift;
+    my $site = shift;
+    my ($action, $logging) = split(/=/, shift);
+    my $approved = shift;
+
+    my $pid = $$;
+    my $tempfile = "$inn::tmpdir/sendme.$pid";
+
+    my ($errmsg, $status, $nc, @component, @oldgroup, $locktry,
+	$ngname, $ngdesc, $modcmd);
+
+    if ($action eq "mail") {
+        open(TEMPFILE, ">$tempfile");
+        open(ARTICLE, "$SM $token|");
+        SMHEAD: while(<ARTICLE>) { last SMHEAD if /^$/ }
+        while (<ARTICLE>) {
+            s/^~/~~/;
+            print TEMPFILE $_;
+        }
+        close(ARTICLE);
+        close(TEMPFILE);
+        system("$inn::newsbin/innmail ".
+               "-s \"sendme by $sender\" $inn::newsmaster < $tempfile");
+        unlink($tempfile);
+    }
+    elsif ($action eq "log") {
+        if (!$logging) {
+            print "sendme $sender\n";
+        }
+        else {
+            logger($token, $logging, "sendme $sender");
+        }
+    }
+    elsif ($action eq "doit") {
+        open(GREPHIST, "|grephistory -s > $tempfile");
+        open(ARTICLE, "$SM $token|");
+        SMHEAD2: while(<ARTICLE>) { last SMHEAD2 if /^$/ }
+        while (<ARTICLE>) { print GREPHIST $_ }
+        close(ARTICLE);
+        close(GREPHIST);
+        ## xxx Need to lock the work file?
+        if (-s $tempfile) {
+            open(TEMPFILE, "<$tempfile");
+            open(BATCH, ">>$inn::batch/$site.work");
+            while (<TEMPFILE>) { print BATCH $_ }
+            close(BATCH);
+            close(TEMPFILE);
+        }
+        unlink($tempfile);
+    }
+}

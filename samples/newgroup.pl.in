@@ -3,6 +3,10 @@
 # Version 0.1, 8-AUG-1998
 #  Parameters: params sender reply-to token site action[=log] approved
 sub control_newgroup {
+    my $SM;
+    if (-e "$inn::newsbin/sm") { $SM = "$inn::newsbin/sm -q" }
+    else { $SM = "cat" }
+
     my @params = split(/\s+/,shift);
     my $sender = shift;
     my $replyto = shift;
@@ -100,7 +104,7 @@ sub control_newgroup {
         open ACTIVE, $inn::active;
         @oldgroup = grep(/^$groupname\s/, <ACTIVE>);
         @oldgroup = split(/\s+/, $oldgroup[0]);
-        print "MEOW: $oldgroup[0] $oldgroup[1] $oldgroup[2] $oldgroup[3] $modflag\n";
+        #print "newgroup: $oldgroup[0] $oldgroup[1] $oldgroup[2] $oldgroup[3] $modflag\n";
         close ACTIVE;
         if (scalar @oldgroup) {
             if (($oldgroup[3] eq "m") && ($modflag ne "moderated")) {
@@ -128,7 +132,7 @@ sub control_newgroup {
             print TEMPFILE ("  $inn::newsbin/ctlinnd newgroup ",
                             "$groupname $modcmd $sender\n\n");
             print TEMPFILE ("The control message follows:\n\n");
-            open(ARTICLE, "$inn::newsbin/sm $token|");
+            open(ARTICLE, "$SM $token|");
             while (<ARTICLE>) { print TEMPFILE $_ }
             close(ARTICLE);
             close(TEMPFILE);
@@ -220,12 +224,7 @@ sub control_newgroup {
                 }
                 $errmsg .=  $status . " ";
                 $errmsg .= $sender;
-                if ($logging eq "mail") {
-                    logger($token, "mail", $errmsg);
-                }
-                else {
-                    logger($token, "newgroup", $errmsg);
-                }
+                logger($token, $logging, $errmsg);
             }
         }
     }

@@ -1,0 +1,65 @@
+#!@_PATH_PERL@
+# senduuname.pl - The senduuname control message.
+# Version 0.1, 19-AUG-1998
+#  Parameters: params sender reply-to token site action[=log] approved
+sub control_senduuname {
+    my $SM;
+    if (-e "$inn::newsbin/sm") { $SM = "$inn::newsbin/sm -q" }
+    else { $SM = "cat" }
+
+    my @params = split(/\s+/,shift);
+    my $sender = shift;
+    my $replyto = shift;
+    my $token = shift;
+    my $site = shift;
+    my ($action, $logging) = split(/=/, shift);
+    my $approved = shift;
+
+    my $groupname = $params[0];
+
+    my $pid = $$;
+    my $tempfile = "$inn::tmpdir/senduuname.$pid";
+
+    my ($errmsg, $status, $nc, @component, @oldgroup, $locktry,
+	$ngname, $ngdesc, $modcmd);
+
+    if ($action eq "mail") {
+        open(TEMPFILE, ">$tempfile");
+        print TEMPFILE ("$sender has requested information about your\n");
+        print TEMPFILE ("UUCP name.\n\n");
+        print TEMPFILE ("If this is acceptable, type:\n");
+        print TEMPFILE ("  uuname | ",
+                        "$inn::newsbin/innmail -s \"senduuname reply from ",
+                        "$inn::pathhost\" $replyto\n\n");
+        print TEMPFILE ("The control message follows:\n\n");
+        open(ARTICLE, "$SM $token|");
+        while (<ARTICLE>) { print TEMPFILE $_ }
+        close(ARTICLE);
+        close(TEMPFILE);
+        logger($tempfile, "mail",
+               "senduuname $sender\n");
+        unlink($tempfile);
+    }
+    elsif ($action eq "log") {
+        if (!$logging) {
+            print "senduuname $sender\n";
+        }
+        else {
+            logger($token, $logging, "senduuname $sender");
+        }
+    }
+    elsif ($action =~ /^(doit|doifarg)$/) {
+        if (($action eq "doifarg") && ($params[0] ne $inn::pathhost)) {
+            print "skipped senduuname $sender\n";
+        }
+        else {
+            system("uuname | " .
+                   "$inn::newsbin/innmail -s \"senduuname reply from " .
+                   "$inn::pathhost\" $replyto\n\n");
+            if ($logging) {
+                $errmsg = "senduuname $sender to $replyto";
+                logger($token, $logging, $errmsg);
+            }
+        }
+    }
+}

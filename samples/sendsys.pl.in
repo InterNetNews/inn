@@ -1,0 +1,63 @@
+#!@_PATH_PERL@
+# sendsys.pl - The sendsys control message.
+# Version 0.1, 18-AUG-1998
+#  Parameters: params sender reply-to token site action[=log] approved
+sub control_sendsys {
+    my $SM;
+    if (-e "$inn::newsbin/sm") { $SM = "$inn::newsbin/sm -q" }
+    else { $SM = "cat" }
+
+    my @params = split(/\s+/,shift);
+    my $sender = shift;
+    my $replyto = shift;
+    my $token = shift;
+    my $site = shift;
+    my ($action, $logging) = split(/=/, shift);
+    my $approved = shift;
+
+    my $pid = $$;
+    my $tempfile = "$inn::tmpdir/sendsys.$pid";
+
+    my ($errmsg, $status, $nc, @component, @oldgroup, $locktry,
+	$ngname, $ngdesc, $modcmd);
+
+    if ($action eq "mail") {
+        open(TEMPFILE, ">$tempfile");
+        print TEMPFILE ("$sender has requested that you send a copy\n");
+        print TEMPFILE ("of your newsgroups file.\n\n");
+        print TEMPFILE ("If this is acceptable, type:\n");
+        print TEMPFILE ("  $inn::newsbin/innmail -s \"sendsys reply from ",
+                        "$inn::pathhost\" $replyto < $inn::newsfeeds\n\n");
+        print TEMPFILE ("The control message follows:\n\n");
+        open(ARTICLE, "$SM $token|");
+        while (<ARTICLE>) { print TEMPFILE $_ }
+        close(ARTICLE);
+        close(TEMPFILE);
+        logger($tempfile, "mail",
+               "sendsys $sender\n");
+        unlink($tempfile);
+    }
+    elsif ($action eq "log") {
+        if (!$logging) {
+            print "sendsys $sender\n";
+        }
+        else {
+            logger($token, $logging, "sendsys $sender");
+        }
+    }
+    elsif ($action =~ /^(doit|doifarg)$/) {
+        if (($action eq "doifarg") && ($params[0] ne $inn::pathhost)) {
+            print "skipped sendsys $sender\n";
+	}
+	else {
+            # Send the file.
+            system("$inn::newsbin/innmail -s \"sendsys reply from " .
+                    "$inn::pathhost\" $replyto < $inn::newsfeeds\n\n");
+            # Now, log what we did.
+            if ($logging) {
+                $errmsg = "sendsys $sender to $replyto";
+                logger($token, $logging, $errmsg);
+            }
+        }
+    }
+}

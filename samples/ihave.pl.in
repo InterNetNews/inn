@@ -1,0 +1,65 @@
+#!@_PATH_PERL@
+# ihave.pl - The ihave control message.
+# Version 0.1, 19-AUG-1998
+#  Parameters: params sender reply-to token site action[=log] approved
+sub control_ihave {
+    my $SM;
+    if (-e "$inn::newsbin/sm") { $SM = "$inn::newsbin/sm -q" }
+    else { $SM = "cat" }
+
+    my @params = split(/\s+/,shift);
+    my $sender = shift;
+    my $replyto = shift;
+    my $token = shift;
+    my $site = shift;
+    my ($action, $logging) = split(/=/, shift);
+    my $approved = shift;
+
+    my $pid = $$;
+    my $tempfile = "$inn::tmpdir/ihave.$pid";
+
+    my ($errmsg, $status, $nc, @component, @oldgroup, $locktry,
+	$ngname, $ngdesc, $modcmd);
+
+    if ($action eq "mail") {
+        open(TEMPFILE, ">$tempfile");
+        open(ARTICLE, "$SM $token|");
+        SMHEAD: while(<ARTICLE>) { last SMHEAD if /^$/ }
+        while (<ARTICLE>) {
+            s/^~/~~/;
+            print TEMPFILE $_;
+        }
+        close(ARTICLE);
+        close(TEMPFILE);
+        system("$inn::newsbin/innmail ".
+               "-s \"ihave by $sender\" $inn::newsmaster < $tempfile");
+        unlink($tempfile);
+    }
+    elsif ($action eq "log") {
+        if (!$logging) {
+            print "ihave $sender\n";
+        }
+        else {
+            logger($token, $logging, "ihave $sender");
+        }
+    }
+    elsif ($action eq "doit") {
+        open(GREPHIST, "|grephistory -s > $tempfile");
+        open(ARTICLE, "$SM $token|");
+        SMHEAD2: while(<ARTICLE>) { last SMHEAD2 if /^$/ }
+        while (<ARTICLE>) { print GREPHIST $_ }
+        close(ARTICLE);
+        close(GREPHIST);
+        if (-s $tempfile) {
+            open(TEMPFILE, "<$tempfile");
+            open(INEWS, "|$inn::inews -h");
+            print INEWS "Newsgroups: to.$site\n";
+            print INEWS "Subject: cmsg sendme $pathhost\n";
+            print INEWS "Control: sendme $pathhost\n\n";
+            while (<TEMPFILE>) { print INEWS $_ }
+            close(TEMPFILE);
+            close(INEWS);
+        }
+        unlink($tempfile);
+    }
+}

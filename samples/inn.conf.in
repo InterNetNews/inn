@@ -51,6 +51,8 @@ nnrpdoverstats:		false
 storeonxref:		true
 nnrpdcheckart:		true
 storemsgid:		true
+usecontrolchan:		false
+mergetogroups:		false
 backoffauth:		false
 backoffdb:		@DBDIR@/backoff
 backoffpostfast:	0L

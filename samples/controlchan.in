@@ -3,7 +3,7 @@
 # controlchan - read a feed, sniff out control messages, and send them to
 # the appropriate script, meow a bit as needed.
 #
-# Version 0.2.2, 18-AUG-1998
+# Version 0.2.3, 19-AUG-1998
 #
 # Give this program its own newsfeed.  Make sure that you've created the
 # newsgroup control.cancel so that you don't have to scan through cancels,
@@ -13,7 +13,7 @@
 #
 # controlchan\
 #    :!*,control,control.*,!control.cancel\
-#    :Tc,Wnm\
+#    :Tc,Wnsm\
 #    :@prefix@/bin/controlchan
 #
 # And don't forget to comment out the dispatch stuff in art.c!
@@ -24,38 +24,34 @@ require 5.004;
 ## *** Change this to be correct for your site. *** ##
 require "@LIBDIR@/innshellvars.pl" ;
 
-
 my $lastctl = 0;
-my $newctldir = "$inn::newsbin/control";
 
 my (@headers, %hdrcount, %hdrval, $msgid, $token, $progname, @progparams,
     $pathhost, @ctllist, $action, $logname, $act_log, $errmsg, @ctlprogs,
     $subfind, $SM);
 
-
 # If we have $newsbin/sm, this must be an INN 2.x installation.
-# Otherwise, we'll plop in the cat commanjd to fake it on older
+# Otherwise, we'll plop in the cat command to fake it on older
 # servers.  Sure it would be more efficient to open the article
 # directly when it's possible, but I'm lazy.
 if (-e "$inn::newsbin/sm") {
-    $SM = "$inn::newsbin/sm";
+    $SM = "$inn::newsbin/sm -q";
 }
 else {
     $SM = "cat";
 }
 
-
-# Scan the newcontrol directory and load *.pl.  This will bring in the
+# Scan the control directory and load *.pl.  This will bring in the
 # new-style control scripts.  For controlchan to use a perl control
 # instead of falling back to the old shell system, it must be declared
 # as a sub in the form control_xxx.  For example, if control_newgroup()
 # exists, we will use that when encountering a newgroup control.  If
 # control_newgroup() is undefined, we'll use the old shell version.
-opendir(CTLDIR, $newctldir);
+opendir(CTLDIR, $inn::controlprogs);
 @ctlprogs = grep(/\.pl$/, readdir(CTLDIR));
 closedir(CTLDIR);
 for (@ctlprogs) {
-    s/^/$newctldir\//;
+    s/^/$inn::controlprogs\//;
     do($_);
 }
 
@@ -66,12 +62,12 @@ while (<STDIN>) {
     undef(%hdrval);
 
     chomp;
-    ($token, $msgid) = split(/\s+/, $_);
-    if (not ($token =~ /^\@.+\@$/ or /^\//)) {
+    ($token, $sitepath, $msgid) = split(/\s+/, $_);
+    if (! ($token =~ /^\@.+\@$/ || /^\//)) {
         $token = $inn::spool . '/' . $token;
     }
 
-    open(ARTICLE, "$SM -q $token|");
+    open(ARTICLE, "$SM $token|");
 
     # suck in headers, normalize the strange ones.
     GETHEADERS:
@@ -89,14 +85,13 @@ while (<STDIN>) {
 
     # warn on failed header retrieval?
 if (1) {
-    if (not @headers) {
-        logger($token, "controlchan",
-               "No headers in article $msgid\n");
+    if (! @headers) {
+        print(scalar localtime, ": No headers in article $msgid\n");
         next CHANITEM;
     }
 } # (0/1)
 
-    if (not exists $hdrcount{approved}) {
+    if (! exists $hdrcount{approved}) {
         $hdrcount{approved} = 0;
     }
 
@@ -108,56 +103,34 @@ if (1) {
         next CHANITEM;
     }
 
-    # Dig out Sender, From, Reply-to, Control, Path.  If duplicates,
-    # use the first found.  Innd should have weeded out some of this
-    # but the paranoia can't hurt.
+    # Dig out useful headers.  If duplicates, use the first found.
+    # Innd should have weeded out some of this but the paranoia can't hurt.
     for (@headers) {
-        if ((/^Sender:/i) && (not defined($hdrval{Sender}))) {
-            $hdrval{Sender} = $_;
-            $hdrval{Sender} =~ s/^[^:]*:\s+//;
-        }
-        elsif ((/^From:/i) && (not defined($hdrval{From}))) {
-            $hdrval{From} = $_;
-            $hdrval{From} =~ s/^[^:]*:\s+//;
-        }
-        elsif ((/^Reply-To:/i) && (not defined($hdrval{'Reply-To'}))) {
-            $hdrval{'Reply-To'} = $_;
-            $hdrval{'Reply-To'} =~ s/^[^:]*:\s+//;
-        }
-        elsif ((/^Control:/i) && (not defined($hdrval{Control}))) {
-            $hdrval{Control} = $_;
-            $hdrval{Control} =~ s/^[^:]+:\s+//;
-        }
-        elsif ((/^Path:/i) && (not defined($hdrval{Path}))) {
-            $hdrval{Path} = $_;
-            $hdrval{Path} =~ s/^[^:]*:\s+//;
-        }
-        elsif ((/^Subject:/i) && (not defined($hdrval{Subject}))) {
-            $hdrval{Subject} = $_;
-            $hdrval{Subject} =~ s/^[^:]*:\s+//;
+	my $hdr = $_;
+	for ("Sender", "From", "Reply-To", "Control", "Subject") {
+            if (($hdr =~ /^$_:/i) && (! defined($hdrval{$_}))) {
+                $hdrval{$_} = $hdr;
+                $hdrval{$_} =~ s/^[^:]*:\s+//;
+            }
         }
     }
 
-
-    if ((not defined $hdrval{Control}) && ($hdrval{Subject} =~ /^cmsg\s(.+)/)) {
+    if ((!defined $hdrval{Control}) && ($hdrval{Subject} =~ /^cmsg\s+(.+)/)) {
         $hdrval{Control} = $1;
         $hdrcount{control} = 1;
     }
 
-    next CHANITEM if (not exists $hdrcount{control});
+    next CHANITEM if (! exists $hdrcount{control});
 
-    if (not defined($hdrval{Sender})) {
+    if (! defined($hdrval{Sender})) {
         $hdrval{Sender} = $hdrval{From};
     }
     $hdrval{Sender} = CleanAddy($hdrval{Sender});
 
-    if (not defined($hdrval{'Reply-To'})) {
+    if (! defined($hdrval{'Reply-To'})) {
         $hdrval{'Reply-To'} = $hdrval{From};
     }
     $hdrval{'Reply-To'} = CleanAddy($hdrval{'Reply-To'});
-
-    $hdrval{Path} =~ s/^[^!]+!//;
-    $hdrval{Path} =~ s/[^\w\d\.\-\_].+//;
 
     $hdrval{Control} =~ s/\s+/ /g;
 
@@ -169,7 +142,7 @@ if (1) {
         $progname = lc($hdrval{Control});
     }
 
-    next CHANITEM if ($progname =~ /^(cancel|sendsys|version)$/);
+    next CHANITEM if ($progname =~ /^(cancel)$/);
 
     if ($progname =~ /[^\w\d-]/) {
                 logger($token, "controlchan",
@@ -183,7 +156,8 @@ if (1) {
     $act_log = $action;
     if ($logname) { $act_log .= "=" . $logname }
 
-    #print"$progname:$hdrval{Sender}:@progparams:$action=$logname\n";
+    #print(scalar localtime,
+    #       ": $progname:$hdrval{Sender}:@progparams:$action=$logname\n");
 
     if ($action eq "drop") {
 	next CHANITEM;
@@ -214,21 +188,21 @@ if (1) {
 
     $subfind = "control_$progname";
     if (defined (&$subfind)) {	# It's a new-style control message.
-	print "$subfind ", join(" ", @progparams),
-              " $hdrval{Sender} $hdrval{'Reply-To'}, $token, ",
-              "$hdrval{Path}, $act_log, $hdrcount{approved}\n";
+	print "$subfind, ", join(" ", @progparams),
+              ", $hdrval{Sender}, $hdrval{'Reply-To'}, $token, ",
+              "$sitepath, $act_log, $hdrcount{approved}\n";
 
         &$subfind (join(" ", @progparams), $hdrval{Sender},
-	           $hdrval{'Reply-To'}, $token, $hdrval{Path},
+	           $hdrval{'Reply-To'}, $token, $sitepath,
 	           $act_log, $hdrcount{approved});
     }
     else {                      # old style
         $progname = $inn::controlprogs . '/' . $progname ;
     	if (-e $progname) {
             system("'$progname' '$hdrval{Sender}' " .
-                   "'$hdrval{'Reply-To'}' '$token' '$hdrval{Path}'");
+                   "'$hdrval{'Reply-To'}' '$token' '$sitepath'");
         }
-        else {
+        else {                  # This replaces the 'default' script.
             if ($logname eq "mail") {
                 logger($token, "mail",
                        "Unknown control message by $hdrval{Sender}");
@@ -239,7 +213,8 @@ if (1) {
             }
             else {
             	$progname =~ s/.*\///;
-                print("Unknown [$progname] control by $hdrval{Sender}\n");
+                print(scalar localtime,
+                      ": Unknown \"$progname\" control by $hdrval{Sender}\n");
             }
         }
     }
@@ -263,19 +238,18 @@ sub readctlfile {
     return if ($lastctl == $ctlstat[9]); # mtime hasn't changed.
 
     undef(@ctllist);
-    open(CTLFILE, "<$inn::ctlfile") or die;
+    open(CTLFILE, "<$inn::ctlfile") || die;
     while (<CTLFILE>) {
         chomp;
         # Not a comment or blank? Convert wildmat to regex
-        if (/^(\s+)?[^#]/ and not (/^$/)) {
-            s/\./\\\./g;
-            s/\@/\\\@/g;
-            s/\*/\.\*/g;
-            s/\$/\\\$/g;
-            s/\?/\./g;
-            s/(.*)/\^$1\$/;
-            s/:/\$:\^/g;
+        if (/^(\s+)?[^#]/ && ! (/^$/)) {
+            s/([\@\$\+\.])/\\$1/g;
+            s/\*/.*/g;
+            s/\?/./g;
+            s/(.*)/^$1\$/;
+            s/:/\$:^/g;
             push(@ctllist, $_);
+            #print $_,"\n";
         }
     }
     close(CTLFILE);
@@ -300,16 +274,17 @@ sub ctlperm {
 
     for (@ctllist) {
         @ctlline = split(/:/);
-        if ((($controltype =~ /$ctlline[0]/) and ($sender =~ /$ctlline[1]/))
-                and
-                (($newsgroup eq '') or ($newsgroup =~ $ctlline[2])) ) {
+        if ((($controltype =~ /$ctlline[0]/) && ($sender =~ /$ctlline[1]/)) &&
+               (($controltype !~ /^(newgroup|rmgroup)$/) ||
+                   ($newsgroup =~ $ctlline[2]))) {
             $action = $ctlline[3];
             $action =~ s/.(.+)./$1/;
-        $action =~ s/\\//g;
+            $action =~ s/\\//g;
         }
     }
 
     if ($action =~ /^verify-/) {
+        #print "PGP\n";
         $command = "$SM $token | $inn::newsbin/pgpverify >/dev/null";
         $result = system ($command) / 256;
 
@@ -348,14 +323,14 @@ sub logger {
     if ($logfile eq "mail") {
         open(LOGFILE,
 	     "|$inn::newsbin/innmail -s '$message' $inn::newsmaster");
-        open(ARTICLE, "$SM -q $token|");
+        open(ARTICLE, "$SM $token|");
         for (<ARTICLE>) { print LOGFILE ("    ", $_) }
         close (ARTICLE);
         close (LOGFILE);
         return;
     }
 
-    my $shlock = "$inn::newsbin" . "/shlock";
+    my $shlock = "$inn::newsbin/shlock";
 
     $inn::locks = $inn::locks;
     $lockfile = $logfile;
@@ -363,7 +338,7 @@ sub logger {
     $lockfile = "$inn::locks/LOCK." . $lockfile;
 
     # We want to make sure the log is ours.  Use shlock so as not
-    # to confluse other, older programs.
+    # to confuse other programs.
     $locktry = 0;
     GETLOGLOCK:
     while ($locktry < 60) {
@@ -379,7 +354,7 @@ sub logger {
     if ($locktry < 0) {        # we got the lock
         open(LOGFILE, ">>$logfile");
         print LOGFILE $message,"\n";
-        open(ARTICLE, "$SM -q $token|");
+        open(ARTICLE, "$SM $token|");
         for (<ARTICLE>) { print LOGFILE ("    ", $_) }
 	print LOGFILE "\n";
         close (ARTICLE);

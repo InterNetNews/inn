@@ -109,7 +109,7 @@ ME\
 #	:Tm:innfeed!
 
 # Use an external program to handle control messages, except cancel
-#controlchan\
+#controlchan!\
 #	:!*,control,control.*,!control.cancel\
-#	:Tc,Wnm:@prefix@/bin/controlchan
+#	:Tc,Wnsm:@prefix@/bin/controlchan
 
