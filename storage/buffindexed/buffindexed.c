@@ -857,16 +857,12 @@ bool buffindexed_open(int mode) {
   }
   ovbuffmode = mode;
   if (pagesize == 0) {
-#if	defined(HAVE_GETPAGESIZE)
     pagesize = getpagesize();
-#elif	defined(_SC_PAGESIZE)
-    if ((pagesize = sysconf(_SC_PAGESIZE)) < 0) {
-      syslog(L_ERROR, "%s: sysconf(_SC_PAGESIZE) failed: %m", LocalLogName);
+    if (pagesize == -1) {
+      syslog(L_ERROR, "%s: getpagesize failed: %m", LocalLogName);
+      pagesize = 0;
       return FALSE;
     }
-#else
-    pagesize = 16384;
-#endif
     if ((pagesize > OV_HDR_PAGESIZE) || (OV_HDR_PAGESIZE % pagesize)) {
       syslog(L_ERROR, "%s: OV_HDR_PAGESIZE (%d) is not a multiple of pagesize (%d)", LocalLogName, OV_HDR_PAGESIZE, pagesize);
       return FALSE;

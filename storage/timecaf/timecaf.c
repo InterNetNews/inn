@@ -419,17 +419,14 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
     static long		pagesize = 0;
 
     if (pagesize == 0) {
-#if     defined(HAVE_GETPAGESIZE)
-	pagesize = getpagesize();
-#elif   defined(_SC_PAGESIZE)
-	if ((pagesize = sysconf(_SC_PAGESIZE)) < 0) {
-	    syslog(L_ERROR, "timecaf sysconf(_SC_PAGESIZE) failed: %m");
+        pagesize = getpagesize();
+        if (pagesize < 0) {
+	    syslog(L_ERROR, "timecaf getpagesize failed: %m");
+            pagesize = 0;
 	    return NULL;
-	}
-#else
-	pagesize = 16384;
-#endif
-   }
+        }
+    }
+
 /* XXX need to figure some way to cache open fds or something? */
     if ((fd = CAFOpenArtRead((char *)path, artnum, &len)) < 0) {
         if (caf_error == CAF_ERR_ARTNOTHERE) {

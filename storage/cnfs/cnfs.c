@@ -986,17 +986,13 @@ bool cnfs_init(SMATTRIBUTE *attr) {
 	}
     }
     if (pagesize == 0) {
-#if	defined(HAVE_GETPAGESIZE)
-	pagesize = getpagesize();
-#elif	defined(_SC_PAGESIZE)
-	if ((pagesize = sysconf(_SC_PAGESIZE)) < 0) {
-	    syslog(L_ERROR, "%s: sysconf(_SC_PAGESIZE) failed: %m", LocalLogName);
-	    SMseterror(SMERR_INTERNAL, "sysconf(_SC_PAGESIZE) failed");
-	    return FALSE;
-	}
-#else
-	pagesize = 16384;
-#endif
+        pagesize = getpagesize();
+        if (pagesize == -1) {
+            syslog(L_ERROR, "%s: getpagesize failed: %m", LocalLogName);
+            SMseterror(SMERR_INTERNAL, "getpagesize failed");
+            pagesize = 0;
+            return FALSE;
+        }
 	if ((pagesize > CNFS_HDR_PAGESIZE) || (CNFS_HDR_PAGESIZE % pagesize)) {
 	    syslog(L_ERROR, "%s: CNFS_HDR_PAGESIZE (%d) is not a multiple of pagesize (%d)", LocalLogName, CNFS_HDR_PAGESIZE, pagesize);
 	    SMseterror(SMERR_INTERNAL, "CNFS_HDR_PAGESIZE not multiple of pagesize");
