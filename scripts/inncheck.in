@@ -884,7 +884,8 @@ intersect
 
 @directories = (
     'archive', 'badnews', 'batchdir', 'ctlprogs', 'most_logs', 'newsbin',
-    'newsetc', 'newslib', 'oldlogs', 'rnewsprogs', 'spooltemp', 'spool', 'spoolnews'
+    'newsetc', 'newslib', 'oldlogs', 'rnewsprogs', 'spooltemp', 'spool',
+    'spoolnews'
 );
 @control_scripts = (
     'checkgroups', 'default', 'ihave', 'newgroup', 'rmgroup',
@@ -894,20 +895,16 @@ intersect
     'c7unbatch', 'decode', 'encode', 'gunbatch'
 );
 @newsbin_public = (
-    'archive', 'batcher', 'buffchan', 'convdate', 'cvtbatch', 'expire',
-    'filechan', 'getlist', 'grephistory', 'innconfval', 'innxmit',
-    'makehistory', 'newsrequeue', 'nntpget', 'overchan',
-    'prunehistory', 'shlock', 'shrinkfile'
+    'archive', 'batcher', 'buffchan', 'convdate', 'cvtbatch', 'filechan',
+    'getlist', 'grephistory', 'innconfval', 'innxmit', 'nntpget',
+    'nntpsend', 'sendbatch',  'send-ihave', 'send-nntp', 'send-uucp',
+    'shlock', 'shrinkfile'
 );
 @newsbin_private = (
-    'ctlinnd', 'expirerm', 'inncheck', 'innstat', 'innwatch',
-    'news.daily', 'nntpsend', 'scanlogs', 'sendbatch',
-    'tally.control', 'writelog',
-    'send-ihave', 'send-nntp', 'send-uucp'
+    'ctlinnd', 'expire', 'expirerm', 'inncheck', 'innstat', 'innwatch',
+    'makehistory', 'news.daily', 'newsrequeue', 'overchan',
+    'prunehistory', 'scanlogs', 'tally.control', 'writelog',
 );
-#@newslib_private_read = (
-#    'innlog.pl'
-#);
 
 ## The modes for the various programs.
 %prog_modes = (
