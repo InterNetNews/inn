@@ -94,7 +94,7 @@
 #define STREAMING_MODE_UNDO     "%s mode no-CHECK exited [%.2f,%.2f,%.2f]"
 
 #define REALLY_FINAL_STATS	"%s global seconds %ld offered %d accepted %d refused %d rejected %d missing %d accsize %.0f rejsize %.0f spooled %d unspooled %d"
-#define PROCESS_FINAL_STATS	"ME global seconds %ld offered %ld accepted %ld refused %ld rejected %ld missing %ld accsize %.0f rejsize %.0f spooled %d unspooled %d"
+#define PROCESS_FINAL_STATS	"ME global seconds %ld offered %ld accepted %ld refused %ld rejected %ld missing %ld accsize %.0f rejsize %.0f spooled %ld unspooled %ld"
 		/* key word in next two is "checkpoint" or "final" */
 #define HOST_STATS_MSG		"%s %s seconds %ld offered %d accepted %d refused %d rejected %d missing %d accsize %.0f rejsize %.0f spooled %d on_close %d unspooled %d deferred %d/%.1f requeued %d queue %.1f/%d:%.0f,%.0f,%.0f,%.0f,%.0f,%.0f"
 #define HOST_SPOOL_STATS        "%s %s seconds %ld spooled %d on_close %d sleeping %d"

@@ -130,8 +130,8 @@ main(int argc, char *argv[])
             if (innconf->rlimitnofile < rl.rlim_cur)
                 rl.rlim_cur = innconf->rlimitnofile;
             if (setrlimit(RLIMIT_NOFILE, &rl) == -1)
-                syslog(LOG_WARNING, "can't setrlimit(NOFILE, %d): %m",
-                       rl.rlim_cur);
+                syslog(LOG_WARNING, "can't setrlimit(NOFILE, %lu): %m",
+                       (unsigned long) rl.rlim_cur);
         }
     }
 # endif /* RLIMIT_NOFILE */
