@@ -1,7 +1,7 @@
 ##  $Revision$
 include ../Makefile.global
 
-CFLAGS = $(GCFLAGS) $(PERLINC)
+CFLAGS = $(GCFLAGS)
 
 NNRPD	= ${PATHBIN}/nnrpd
 
@@ -16,6 +16,9 @@ OBJECTS	= \
 ALL	= nnrpd
 
 all:		$(ALL)
+
+perl.o: perl.c
+	$(CC) $(PERLINC) $(CFLAGS) -c perl.c
 
 install:	$D$(NNRPD)
 
