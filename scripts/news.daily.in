@@ -80,9 +80,12 @@ DOGROUPBASEEXPIRY=false
 
 GROUPBASEEXPIRY=`echo X${GROUPBASEEXPIRY} | tr ${AZ} ${az}`
 if [ ${GROUPBASEEXPIRY} = x"true" -o ${GROUPBASEEXPIRY} = x"yes" -o ${GROUPBASEEXPIRY} = x"on" ]; then
-    DOEXPIREOVER=true
-    RMFILE=${MOST_LOGS}/expire.rm
-    DOGROUPBASEEXPIRY=true
+    if [ ${ENABLEOVERVIEW} = x"true" -o ${ENABLEOVERVIEW} = x"yes" -o ${ENABLEOVERVIEW} = x"on" ]; then
+	DOGROUPBASEEXPIRY=true
+    else
+	DOEXPIREOVER=false
+	RMFILE=
+    fi
 fi
 
 ##  Parse JCL.
