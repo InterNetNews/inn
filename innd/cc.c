@@ -1,14 +1,17 @@
 /*  $Id$
 **
-**  Routines for the control channel.  Create a Unix-domain datagram socket
-**  that processes on the local server send messages to.  The control
-**  channel is used only by ctlinnd to tell the server to perform
-**  special functions.  We use datagrams so that we don't need to do an
-**  accept() and tie up another descriptor.  Recvfrom seems to be broken on
-**  several systems, so the client passes in the socket name.
+**  Routines for the control channel.
+**
+**  Create a Unix-domain datagram socket that processes on the local server
+**  send messages to.  The control channel is used only by ctlinnd to tell
+**  the server to perform special functions.  We use datagrams so that we
+**  don't need to do an accept() and tie up another descriptor.  recvfrom
+**  seems to be broken on several systems, so the client passes in the
+**  socket name.
 **
 **  This module completely rips away all pretense of software layering.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <netinet/in.h>
@@ -26,68 +29,67 @@
 **  of every command we support.
 */
 typedef struct _CCDISPATCH {
-    char	Name;
-    int		argc;
-    STRING	(*Function)();
+    char Name;
+    int	argc;
+    const char * (*Function)();
 } CCDISPATCH;
 
 
-/*STATIC STRING	CCaddhist();*/
-STATIC STRING	CCallow();
-STATIC STRING	CCbegin();
-STATIC STRING	CCchgroup();
-STATIC STRING	CCdrop();
-STATIC STRING	CCfeedinfo();
-STATIC STRING	CCflush();
-STATIC STRING	CCflushlogs();
-STATIC STRING	CCgo();
-STATIC STRING	CChangup();
-STATIC STRING	CCreserve();
-STATIC STRING	CClogmode();
-STATIC STRING	CCmode();
-STATIC STRING	CCname();
-STATIC STRING	CCnewgroup();
-STATIC STRING	CCparam();
-STATIC STRING	CCpause();
-STATIC STRING	CCreaders();
-STATIC STRING	CCreject();
-STATIC STRING	CCreload();
-STATIC STRING	CCrenumber();
-STATIC STRING	CCrmgroup();
-STATIC STRING	CCsend();
-STATIC STRING	CCshutdown();
-STATIC STRING	CCsignal();
-STATIC STRING	CCstatus();
-STATIC STRING	CCthrottle();
-STATIC STRING	CCtimer();
-STATIC STRING	CCtrace();
-STATIC STRING	CCxabort();
-STATIC STRING	CCxexec();
+static const char *	CCallow();
+static const char *	CCbegin();
+static const char *	CCchgroup();
+static const char *	CCdrop();
+static const char *	CCfeedinfo();
+static const char *	CCflush();
+static const char *	CCflushlogs();
+static const char *	CCgo();
+static const char *	CChangup();
+static const char *	CCreserve();
+static const char *	CClogmode();
+static const char *	CCmode();
+static const char *	CCname();
+static const char *	CCnewgroup();
+static const char *	CCparam();
+static const char *	CCpause();
+static const char *	CCreaders();
+static const char *	CCreject();
+static const char *	CCreload();
+static const char *	CCrenumber();
+static const char *	CCrmgroup();
+static const char *	CCsend();
+static const char *	CCshutdown();
+static const char *	CCsignal();
+static const char *	CCstatus();
+static const char *	CCthrottle();
+static const char *	CCtimer();
+static const char *	CCtrace();
+static const char *	CCxabort();
+static const char *	CCxexec();
 #if defined(DO_TCL)
-STATIC STRING	CCfilter();
+static const char *	CCfilter();
 #endif /* defined(DO_TCL) */
 #if defined(DO_PERL)
-STATIC STRING	CCperl();
+static const char *	CCperl();
 #endif /* defined(DO_PERL) */
 #if defined(DO_PYTHON)
-STATIC STRING	CCpython();
+static const char *	CCpython();
 #endif /* defined(DO_PYTHON) */
-STATIC STRING	CClowmark();
+static const char *	CClowmark();
 
 
-STATIC char		*CCpath = NULL;
-STATIC char		**CCargv;
-STATIC char		CCnosite[] = "1 No such site";
-STATIC char		CCwrongtype[] = "1 Wrong site type";
-STATIC char		CCnogroup[] = "1 No such group";
-STATIC char		CCnochannel[] = "1 No such channel";
-STATIC char		CCnoreason[] = "1 Empty reason";
-STATIC char		CCbigreason[] = "1 Reason too long";
-STATIC char		CCnotrunning[] = "1 Must be running";
-STATIC BUFFER		CCreply;
-STATIC CHANNEL		*CCchan;
-STATIC int		CCwriter;
-STATIC CCDISPATCH	CCcommands[] = {
+static char		*CCpath = NULL;
+static char		**CCargv;
+static char		CCnosite[] = "1 No such site";
+static char		CCwrongtype[] = "1 Wrong site type";
+static char		CCnogroup[] = "1 No such group";
+static char		CCnochannel[] = "1 No such channel";
+static char		CCnoreason[] = "1 Empty reason";
+static char		CCbigreason[] = "1 Reason too long";
+static char		CCnotrunning[] = "1 Must be running";
+static BUFFER		CCreply;
+static CHANNEL		*CCchan;
+static int		CCwriter;
+static CCDISPATCH	CCcommands[] = {
     {	SC_ADDHIST,	5, CCaddhist	},
     {	SC_ALLOW,	1, CCallow	},
     {	SC_BEGIN,	1, CCbegin	},
@@ -133,7 +135,7 @@ STATIC CCDISPATCH	CCcommands[] = {
     {	SC_XEXEC,	1, CCxexec	}
 };
 
-STATIC SIGHANDLER	CCresetup();
+static SIGHANDLER	CCresetup();
 
 
 void
@@ -161,7 +163,7 @@ CCcopyargv(av)
 /*
 **  Return a string representing our operating mode.
 */
-STATIC STRING
+static const char *
 CCcurrmode()
 {
     static char		buff[32];
@@ -184,7 +186,7 @@ CCcurrmode()
 /*
 **  Add <> around Message-ID if needed.
 */
-STATIC STRING
+static const char *
 CCgetid(p, store)
     char		*p;
     char		**store;
@@ -221,7 +223,7 @@ CCgetid(p, store)
 /*
 **  Abort and dump core.
 */
-STATIC STRING
+static const char *
 CCxabort(av)
     char		*av[];
 {
@@ -236,13 +238,13 @@ CCxabort(av)
 /*
 **  Do the work needed to add a history entry.
 */
-STRING
+const char *
 CCaddhist(av)
     char		*av[];
 {
     static char		DIGITS[] = "0123456789";
     ARTDATA		Data;
-    STRING		p;
+    const char *		p;
     BOOL		ok;
     HASH                hash;
     int			i;
@@ -315,7 +317,7 @@ CCaddhist(av)
 /*
 **  Do the work to allow foreign connectiosn.
 */
-STATIC STRING
+static const char *
 CCallow(av)
     char	*av[];
 {
@@ -335,16 +337,16 @@ CCallow(av)
 /*
 **  Do the work needed to start feeding a (new) site.
 */
-STATIC STRING
+static const char *
 CCbegin(char *av[])
 {
     SITE	*sp;
     int		i;
     int		length;
-    STRING	p;
+    const char *	p;
     char	**strings;
     NEWSGROUP	*ngp;
-    STRING	error;
+    const char *	error;
     char	*subbed;
     char	*poison;
 
@@ -405,7 +407,7 @@ CCbegin(char *av[])
 /*
 **  Common code to change a group's flags.
 */
-STATIC STRING
+static const char *
 CCdochange(ngp, Rest)
     register NEWSGROUP	*ngp;
     char		*Rest;
@@ -436,7 +438,7 @@ CCdochange(ngp, Rest)
 /*
 **  Change the mode of a newsgroup.
 */
-STATIC STRING
+static const char *
 CCchgroup(av)
     char	*av[];
 {
@@ -458,12 +460,12 @@ CCchgroup(av)
 /*
 **  Cancel a message.
 */
-STRING
+const char *
 CCcancel(av)
     char	*av[];
 {
     ARTDATA	Data;
-    STRING	p;
+    const char *	p;
 
     Data.Posted = Data.Arrived = Now.time;
     Data.Expires = 0;
@@ -495,7 +497,7 @@ CCcancel(av)
 **  Syntax-check the newsfeeds file.
 */
 /* ARGSUSED */
-STRING
+const char *
 CCcheckfile(av)
     char		*av[];
 {
@@ -503,7 +505,7 @@ CCcheckfile(av)
     register char	*p;
     register int	i;
     register int	errors;
-    STRING		error;
+    const char *		error;
     SITE		fake;
 
     /* Parse all site entries. */
@@ -539,7 +541,7 @@ CCcheckfile(av)
 /*
 **  Drop a site.
 */
-STATIC STRING
+static const char *
 CCdrop(av)
     char		*av[];
 {
@@ -571,7 +573,7 @@ CCdrop(av)
 /*
 **  Return info on the feeds for one, or all, sites
 */
-STATIC STRING
+static const char *
 CCfeedinfo(av)
     char		*av[];
 {
@@ -600,7 +602,7 @@ CCfeedinfo(av)
 
 
 #if defined(DO_TCL)
-STATIC STRING
+static const char *
 CCfilter(av)
     char	*av[];
 {
@@ -630,9 +632,13 @@ CCfilter(av)
 #include <EXTERN.h>
 #include <perl.h>
 
-extern CV *perl_filter_cv ;
+extern CV *perl_filter_cv;
 
-STATIC STRING
+/* From lib/perl.c. */
+extern void PerlFilter(bool value);
+extern int  PERLreadfilter(char *filterfile, char *function);
+
+static const char *
 CCperl(av)
     char	*av[];
 {
@@ -660,7 +666,7 @@ CCperl(av)
 
 
 #if defined(DO_PYTHON)
-STATIC STRING
+static const char *
 CCpython(av)
     char	*av[];
 {
@@ -672,7 +678,7 @@ CCpython(av)
 /*
 **  Flush all sites or one site.
 */
-STATIC STRING
+static const char *
 CCflush(av)
     char		*av[];
 {
@@ -701,7 +707,7 @@ CCflush(av)
 **  Flush the log files.
 */
 /* ARGSUSED0 */
-STATIC STRING
+static const char *
 CCflushlogs(av)
     char	*av[];
 {
@@ -719,7 +725,7 @@ CCflushlogs(av)
 /*
 **  Leave paused or throttled mode.
 */
-STATIC STRING
+static const char *
 CCgo(av)
     char	*av[];
 {
@@ -772,7 +778,7 @@ CCgo(av)
 /*
 **  Hangup a channel.
 */
-STATIC STRING
+static const char *
 CChangup(av)
     char		*av[];
 {
@@ -814,7 +820,7 @@ CChangup(av)
 **  Return our operating mode.
 */
 /* ARGSUSED */
-STATIC STRING
+static const char *
 CCmode(av)
     char		*av[];
 {
@@ -938,7 +944,7 @@ CCmode(av)
 **  Log our operating mode (via syslog).
 */
 /* ARGSUSED */
-STATIC STRING
+static const char *
 CClogmode(av)
     char		*av[];
 {
@@ -950,7 +956,7 @@ CClogmode(av)
 /*
 **  Name the channels.  ("Name the bats -- simple names.")
 */
-STATIC STRING
+static const char *
 CCname(char *av[])
 {
     static char		NL[] = "\n";
@@ -984,9 +990,9 @@ CCname(char *av[])
 	    sprintf(buff, ":reject::");
 	    break;
 	case CTnntp:
-           sprintf(buff, ":%s:%d:%s",
+           sprintf(buff, ":%s:%ld:%s",
                     cp->State == CScancel ? "cancel" : "nntp",
-                    Now.time - cp->LastActive,
+                    (long) Now.time - cp->LastActive,
                     (cp->MaxCnx > 0 && cp->ActiveCnx == 0) ? "paused" : "");
 	    break;
 	case CTlocalconn:
@@ -1019,7 +1025,7 @@ CCname(char *av[])
 /*
 **  Create a newsgroup.
 */
-STATIC STRING
+static const char *
 CCnewgroup(av)
     char		*av[];
 {
@@ -1030,7 +1036,7 @@ CCnewgroup(av)
     NEWSGROUP		*ngp;
     char		*Name;
     char		*Rest;
-    STRING		who;
+    const char *		who;
     char		*buff;
     int			oerrno;
 
@@ -1108,7 +1114,7 @@ CCnewgroup(av)
 /*
 **  Parse and set a boolean flag.
 */
-STATIC BOOL
+static BOOL
 CCparsebool(name, bp, value)
     char	name;
     BOOL	*bp;
@@ -1132,7 +1138,7 @@ CCparsebool(name, bp, value)
 /*
 **  Change a running parameter.
 */
-STATIC STRING
+static const char *
 CCparam(av)
     char	*av[];
 {
@@ -1199,13 +1205,13 @@ CCparam(av)
 /*
 **  Common code to implement a pause or throttle.
 */
-STRING
+const char *
 CCblock(NewMode, reason)
     OPERATINGMODE	NewMode;
     char		*reason;
 {
     static char		NO[] = "n";
-    STRING		av[2];
+    const char *		av[2];
 
     if (*reason == '\0')
 	return CCnoreason;
@@ -1249,7 +1255,7 @@ CCblock(NewMode, reason)
 /*
 **  Enter paused mode.
 */
-STATIC STRING
+static const char *
 CCpause(av)
     char	*av[];
 {
@@ -1268,7 +1274,7 @@ CCpause(av)
 /*
 **  Allow or disallow newsreaders.
 */
-STATIC STRING
+static const char *
 CCreaders(av)
     char	*av[];
 {
@@ -1304,7 +1310,7 @@ CCreaders(av)
 /*
 **  Re-exec ourselves.
 */
-STATIC STRING
+static const char *
 CCxexec(av)
     char	*av[];
 {
@@ -1340,7 +1346,7 @@ CCxexec(av)
 /*
 **  Reject remote readers.
 */
-STATIC STRING
+static const char *
 CCreject(av)
     char	*av[];
 {
@@ -1356,7 +1362,7 @@ CCreject(av)
 /*
 **  Re-read all in-core data.
 */
-STATIC STRING
+static const char *
 CCreload(av)
     char	*av[];
 {
@@ -1367,7 +1373,7 @@ CCreload(av)
 #if defined(DO_PYTHON)
     static char BADPYRELOAD[] = "1 Failed to reload filter_innd.py" ;
 #endif /* defined(DO_PYTHON) */
-    STRING	p;
+    const char *	p;
 
     p = av[0];
     if (*p == '\0' || EQ(p, "all")) {
@@ -1459,7 +1465,7 @@ CCreload(av)
 /*
 **  Renumber the active file.
 */
-STATIC STRING
+static const char *
 CCrenumber(av)
     char	*av[];
 {
@@ -1487,7 +1493,7 @@ CCrenumber(av)
 /*
 **  Reserve a lock.
 */
-STATIC STRING
+static const char *
 CCreserve(av)
     char	*av[];
 {
@@ -1518,7 +1524,7 @@ CCreserve(av)
 /*
 **  Remove a newsgroup.
 */
-STATIC STRING
+static const char *
 CCrmgroup(av)
     char	*av[];
 {
@@ -1541,7 +1547,7 @@ CCrmgroup(av)
 /*
 **  Send a command line to an exploder.
 */
-STATIC STRING
+static const char *
 CCsend(av)
     char		*av[];
 {
@@ -1559,7 +1565,7 @@ CCsend(av)
 /*
 **  Shut down the system.
 */
-STATIC STRING
+static const char *
 CCshutdown(av)
     char	*av[];
 {
@@ -1573,7 +1579,7 @@ CCshutdown(av)
 /*
 **  Send a signal to a site's feed.
 */
-STATIC STRING
+static const char *
 CCsignal(av)
     char	*av[];
 {
@@ -1621,7 +1627,7 @@ CCsignal(av)
 /*
 **  Enter throttled mode.
 */
-STATIC STRING
+static const char *
 CCthrottle(av)
     char	*av[];
 {
@@ -1644,7 +1650,7 @@ CCthrottle(av)
 /*
 **  Turn on or off performance monitoring
 */
-STATIC STRING CCtimer(char *av[]) {
+static const char * CCtimer(char *av[]) {
     int                 value;
     char                *p;
     
@@ -1664,7 +1670,7 @@ STATIC STRING CCtimer(char *av[]) {
 /*
 **  Turn innd status creation on or off
 */
-STATIC STRING CCstatus(char *av[]) {
+static const char * CCstatus(char *av[]) {
     int                 value;
     char                *p;
     
@@ -1684,13 +1690,13 @@ STATIC STRING CCstatus(char *av[]) {
 /*
 **  Add or remove tracing.
 */
-STATIC STRING
+static const char *
 CCtrace(av)
     char	*av[];
 {
     char	*p;
     BOOL	Flag;
-    STRING	word;
+    const char *	word;
     CHANNEL	*cp;
 
     /* Parse the flag. */
@@ -1730,7 +1736,7 @@ CCtrace(av)
 **  Split up the text into fields and stuff them in argv.  Return the
 **  number of elements or -1 on error.
 */
-STATIC int
+static int
 CCargsplit(p, end, argv, size)
     register char	*p;
     register char	*end;
@@ -1754,13 +1760,13 @@ CCargsplit(p, end, argv, size)
 /*
 **  Read function.  Read and process the message.
 */
-STATIC FUNCTYPE
+static FUNCTYPE
 CCreader(cp)
     CHANNEL		*cp;
 {
     static char		TOOLONG[] = "0 Reply too long for server to send";
     register CCDISPATCH	*dp;
-    register STRING	p;
+    register const char *	p;
     register char	*q;
     ICC_MSGLENTYPE	bufflen;
     ICC_PROTOCOLTYPE	protocol ;
@@ -1938,7 +1944,7 @@ CCreader(cp)
 /*
 **  Called when a write-in-progress is done on the channel.  Shouldn't happen.
 */
-STATIC FUNCTYPE
+static FUNCTYPE
 CCwritedone()
 {
     syslog(L_ERROR, "%s internal CCwritedone", LogName);
@@ -2038,7 +2044,7 @@ CCclose()
 /*
 **  Restablish the control channel.
 */
-STATIC SIGHANDLER
+static SIGHANDLER
 CCresetup(s)
     int         s;
 {
@@ -2054,7 +2060,7 @@ CCresetup(s)
  * Read a file containing lines of the form "newsgroup lowmark",
  * and reset the low article number for the specified groups.
  */
-STATIC STRING CClowmark(char *av[])
+static const char * CClowmark(char *av[])
 {
     long lo;
     char *line, *cp, *ret = NULL;
