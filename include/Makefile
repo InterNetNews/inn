@@ -6,6 +6,8 @@
 
 include ../Makefile.global
 
+top	      = ..
+
 ALL	      = inn/system.h inn/version.h
 
 EXTRA	      = config.h paths.h
@@ -23,11 +25,11 @@ depend tags ctags profiled:
 
 ##  Build rules.
 
-inn/system.h: config.h ../support/mksystem
-	../support/mksystem config.h > $@
+inn/system.h: config.h $(top)/support/mksystem
+	$(top)/support/mksystem config.h > $@
 
-inn/version.h: ../support/mkversion ../Makefile.global
-	../support/mkversion '$(VERSION)' '$(VERSION_EXTRA)' > $@
+inn/version.h: $(top)/support/mkversion $(top)/Makefile.global
+	$(top)/support/mkversion '$(VERSION)' '$(VERSION_EXTRA)' > $@
 
 
 ##  Installation rules.  Don't install anything yet.
