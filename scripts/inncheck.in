@@ -896,7 +896,7 @@ intersect
 @newsbin_public = (
     'archive', 'batcher', 'buffchan', 'convdate', 'cvtbatch', 'expire',
     'filechan', 'getlist', 'grephistory', 'innconfval', 'innxmit',
-    'makeactive', 'makehistory', 'newsrequeue', 'nntpget', 'overchan',
+    'makehistory', 'newsrequeue', 'nntpget', 'overchan',
     'prunehistory', 'shlock', 'shrinkfile'
 );
 @newsbin_private = (

@@ -43,8 +43,6 @@ set inn_oldactive "${inn_pathdb}/active.old"
 set inn_localgroups "${inn_newsetc}/localgroups"
 set inn_expirectl "${inn_newsetc}/expire.ctl"
 set inn_path_motd "${inn_newsetc}/motd.news"
-set inn_path_storagectl "${inn_newsetc}/storage.ctl"
-set inn_path_overviewctl "${inn_newsetc}/overview.ctl"
 
 set inn_daily "${inn_locks}/locks/LOCK.news.daily"
 

@@ -40,8 +40,6 @@ NEWSFEEDS=${NEWSETC}/newsfeeds
 NEWSGROUPS=${PATHDB}/newsgroups
 OLDACTIVE=${PATHDB}/active.old
 PATH_MOTD=${NEWSETC}/motd.news
-PATH_STORAGECTL=${NEWSETC}/storage.ctl
-PATH_OVERVIEWCTL=${NEWSETC}/overview.ctl
 EXPIRECTL=${NEWSETC}/expire.ctl
 LOCALGROUPS=${NEWSETC}/localgroups
 
