@@ -876,7 +876,7 @@ intersect
     'sendme', 'sendsys', 'senduuname', 'version'
 );
 @rnews_programs = (
-    'c7unbatch', 'decode', 'encode'
+    'c7unbatch', 'decode', 'encode', 'gunbatch'
 );
 @newsbin_public = (
     'archive', 'batcher', 'buffchan', 'convdate', 'cvtbatch', 'expire',
@@ -887,7 +887,7 @@ intersect
 @newsbin_private = (
     'ctlinnd', 'expirerm', 'inncheck', 'innstat', 'innwatch',
     'news.daily', 'nntpsend', 'scanlogs', 'sendbatch',
-    'tally.control', 'tally.unwanted', 'writelog',
+    'tally.control', 'writelog',
     'send-ihave', 'send-nntp', 'send-uucp'
 );
 #@newslib_private_read = (
@@ -896,12 +896,12 @@ intersect
 
 ## The modes for the various programs.
 %prog_modes = (
-    'inews',		02555,
+    'inews',		 @INEWSMODE@,
     'innd',		 0550,
     'newsboot',		 0550,
     'nnrpd',		 0555,
     'parsectl',		 0550,
-    'rnews',		02555
+    'rnews',		 @RNEWSMODE@,
 );
 
 ##  Check the permissions of nearly every file in an INN installation.
@@ -914,9 +914,9 @@ check_all_perms
     local ($newslib) = $paths{'newslib'};
 
     foreach ( @directories ) {
-	&checkperm($paths{$_}, 0775);
+	&checkperm($paths{$_}, 0755);
     }
-    &checkperm($paths{'innddir'}, 0770);
+    &checkperm($paths{'innddir'}, 0750);
     foreach ( keys %prog_modes ) {
 	&checkperm($paths{$_}, $prog_modes{$_});
     }
@@ -926,9 +926,10 @@ check_all_perms
 	    if defined $modes{$_};
     }
     &checkperm($paths{'history'}, 0644);
-    &checkperm($paths{'history'} . ".dir", 0644);
-    &checkperm($paths{'history'} . ".index", 0644);
-    &checkperm($paths{'history'} . ".hash", 0644);
+    # Commented out for now since it depends on the history type.
+    #&checkperm($paths{'history'} . ".dir", 0644);
+    #&checkperm($paths{'history'} . ".index", 0644);
+    #&checkperm($paths{'history'} . ".hash", 0644);
     #foreach ( @newslib_private_read ) {
     #   &checkperm("$newslib/$_", 0440);
     #}
