@@ -15,9 +15,10 @@ followed by a colon.
 A trailing set of lines can have the word ``full'' appear after the
 colon; this indicates that the header should appear as well as its value.
 .PP
-If this file is changed, it is usually necessary to rebuild the
-existing overview database using
-.IR expireover (8)
+If this file is changed, new overview records will be constructed with
+the modified format.  If it is desired to update existing records, it is
+necessary to rebuild the existing overview database using
+.IR makehistory (8)
 after removing all existing overview files.
 .PP
 \&``Xref:full'' must be included, or
@@ -38,6 +39,11 @@ Lines:
 Xref:full
 .fi
 .RE
+.PP
+Usually the only modifications which should be made to the default file
+are additions of new fields to the end of the file; all such fields
+should have ``full'' after the colon.  The first eight fields should
+remain in the same order as above.
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 Intended to be compatible with the
