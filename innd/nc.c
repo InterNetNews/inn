@@ -610,7 +610,7 @@ NCmode(CHANNEL *cp)
     for (p = cp->In.Data + STRLEN("mode"); ISWHITE(*p); p++)
 	continue;
 
-    if (caseEQ(p, "reader"))
+    if (caseEQ(p, "reader") && !innconf->noreader)
 	h = HOnnrpd;
     else if (caseEQ(p, "stream") &&
              (!StreamingOff && cp->Streaming)) {
