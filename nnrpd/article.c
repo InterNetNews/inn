@@ -88,7 +88,7 @@ BOOL PushIOv(void) {
     return TRUE;
 }
 
-BOOL SendIOv(void *p, int len) {
+BOOL SendIOv(char *p, int len) {
     iov[queued_iov].iov_base = p;
     iov[queued_iov++].iov_len = len;
     if (queued_iov == IOV_MAX)
@@ -109,7 +109,7 @@ BOOL PushIOb(void) {
     return TRUE;
 }
 
-BOOL SendIOb(void *p, int len) {
+BOOL SendIOb(char *p, int len) {
     int tocopy;
     
     if (_IO_buffer_ == NULL)
@@ -633,7 +633,7 @@ FUNCTYPE CMDfetch(int ac, char *av[])
 	    Reply("%s\r\n", NOACCESS);
 	    return;
 	}
-	Reply("%d %ld %s %s\r\n", what->ReplyCode, art, av[1], what->Item);
+	Reply("%d %ld %s %s\r\n", what->ReplyCode, art, what->Item, av[1]);
 	if (what->Type != STstat)
 	    if (ARTmem) 
 		ARTsendmmap(what->Type);
