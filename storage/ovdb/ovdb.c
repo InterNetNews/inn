@@ -577,6 +577,7 @@ static int open_db_file(int which)
 {
     int ret;
     char name[10];
+    DB_TXN *tid;
 
     if(dbs[which] != NULL)
 	return 0;
@@ -600,8 +601,11 @@ static int open_db_file(int which)
 	(dbs[which])->set_pagesize(dbs[which], ovdb_conf.pagesize);
 
 #if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
+    TXN_START(t_open_db_file, tid);
     ret = (dbs[which])->open(dbs[which], NULL, name, NULL, DB_BTREE, _db_flags,
                              0666);
+    if (ret == 0)
+	TXN_COMMIT(t_open_db_file, tid);
 #else
     ret = (dbs[which])->open(dbs[which], name, NULL, DB_BTREE, _db_flags,
                              0666);
@@ -1185,6 +1189,7 @@ static int check_version(void)
     DB *vdb;
     DBT key, val;
     u_int32_t dv;
+    DB_TXN *tid;
 
 #if DB_VERSION_MAJOR == 2
     DB_INFO dbinfo;
@@ -1204,7 +1209,10 @@ static int check_version(void)
 	return ret;
     }
 #if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
+    TXN_START(t_open_version, tid);
     ret = vdb->open(vdb, NULL, "version", NULL, DB_BTREE, _db_flags, 0666);
+    if (ret == 0)
+	TXN_COMMIT(t_open_version, tid);
 #else
     ret = vdb->open(vdb, "version", NULL, DB_BTREE, _db_flags, 0666);
 #endif
@@ -1371,7 +1379,7 @@ int ovdb_open_berkeleydb(int mode, int flags)
 bool ovdb_open(int mode)
 {
     int i, ret;
-
+    DB_TXN *tid;
 #if DB_VERSION_MAJOR == 2
     DB_INFO dbinfo;
 #endif
@@ -1455,8 +1463,11 @@ bool ovdb_open(int mode)
 	return false;
     }
 #if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
+    TXN_START(t_open_groupinfo, tid);
     ret = groupinfo->open(groupinfo, NULL, "groupinfo", NULL, DB_BTREE,
                           _db_flags, 0666);
+    if (ret == 0)
+	TXN_COMMIT(t_open_groupinfo, tid);
 #else
     ret = groupinfo->open(groupinfo, "groupinfo", NULL, DB_BTREE,
                           _db_flags, 0666);
