@@ -63,60 +63,6 @@
 /* To run innd under the debugger, uncomment this and fix the path. */
 /* #define DEBUGGER "/usr/ucb/dbx" */
 
-/* Error handling.  We unfortunately can't just define a syslog error
-   handler and use the standard error handling routines since an attacker
-   can manufacture a situation where the wrong size buffer would be
-   allocated for the syslog message.  Instead, use a macro so that the
-   arguments can be passed to syslog directly.  These functions must be
-   called with *two* sets of parentheses:  DIE((LOG_ERR, "Error message")).
-   DIE logs and exits; WARN just logs. */
-#define DIE(args)       do { syslog args; eprintf args; exit(1); } while (0)
-#define WARN(args)      do { syslog args; eprintf args; } while (0)
-
-
-/*
-**  This function is needed by the above macros; it takes syslog-style
-**  arguments (including an initial priority) and ignores the priority,
-**  using vfprintf to print the rest to stderr.
-*/
-static void
-eprintf(int priority UNUSED, const char *format, ...)
-{
-    va_list args;
-
-    fprintf(stderr, "inndstart: ");
-    va_start(args, format);
-    vfprintf(stderr, format, args);
-    va_end(args);
-    fprintf(stderr, "\n");
-}
-
-
-/*
-**  Drop or regain privileges.  On systems with POSIX saved UIDs, we can
-**  simply set the effective UID directly, since the saved UID preserves our
-**  ability to get back root access.  Otherwise, we have to swap the real
-**  and effective UIDs (which doesn't work correctly on AIX).  Assume any
-**  system with seteuid() has POSIX saved UIDs.  First argument is the new
-**  effective UID, second argument is the UID to preserve (not used if the
-**  system has saved UIDs).
-*/
-static void
-set_user(uid_t euid, uid_t ruid)
-{
-#if HAVE_SETEUID
-    if (seteuid(euid) < 0)
-        DIE((LOG_ERR, "seteuid(%d) failed: %s", euid, strerror(errno)));
-#elif HAVE_SETREUID
-# ifdef _POSIX_SAVED_IDS
-    ruid = -1;
-# endif
-    if (setreuid(ruid, euid) < 0)
-        DIE((LOG_ERR, "setreuid(%d, %d) failed: %s", ruid, euid,
-             strerror(errno)));
-#endif /* HAVE_SETREUID */
-}
-
 
 int
 main(int argc, char *argv[])
@@ -126,7 +72,6 @@ main(int argc, char *argv[])
     uid_t               news_uid;
     gid_t               news_gid;
     uid_t               real_uid;
-    gid_t               real_gid;
     struct stat         Sb;
     int                 port;
     struct in_addr      address;
@@ -141,40 +86,45 @@ main(int argc, char *argv[])
 
     openlog("inndstart", L_OPENLOG_FLAGS, LOG_INN_PROG);
 
+    /* Set up the error handlers.  Always print to stderr, and for warnings
+       also syslog with a priority of LOG_WARNING.  For fatal errors, also
+       syslog with a priority of LOG_ERR. */
+    warn_set_handlers(2, error_log_stderr, error_log_syslog_warning);
+    die_set_handlers(2, error_log_stderr, error_log_syslog_err);
+    error_program_name = "inndstart";
+
     /* Convert NEWSUSER and NEWSGRP to a UID and GID.  getpwnam() and
        getgrnam() don't set errno normally, so don't print strerror() on
        failure; it probably contains garbage.*/
     pwd = getpwnam(NEWSUSER);
-    if (!pwd) DIE((LOG_ERR, "getpwnam(%s) failed", NEWSUSER));
+    if (!pwd) die("getpwnam(%s) failed", NEWSUSER);
     news_uid = pwd->pw_uid;
     grp = getgrnam(NEWSGRP);
-    if (!grp) DIE((LOG_ERR, "getgrnam(%s) failed", NEWSGRP));
+    if (!grp) die("getgrnam(%s) failed", NEWSGRP);
     news_gid = grp->gr_gid;
 
     /* Exit if run by any other user or group. */
     real_uid = getuid();
     if (real_uid != news_uid)
-        DIE((LOG_ERR, "must be run by user %s (%d), not %d", NEWSUSER,
-             news_uid, real_uid));
+        die("must be run by user %s (%d), not %d", NEWSUSER, news_uid,
+            real_uid);
 
     /* Drop all supplemental groups and drop privileges to read inn.conf. */
-    if (setgroups(1, &news_gid) < 0)
-        WARN((LOG_WARNING, "can't setgroups: %s", strerror(errno)));
-    set_user(news_uid, 0);
+    if (setgroups(1, &news_gid) < 0) syswarn("can't setgroups");
+    if (seteuid(news_uid) < 0) sysdie("can't seteuid(%d)", news_uid);
     if (ReadInnConf() < 0) exit(1);
 
     /* Ensure that pathrun exists and that it has the right ownership. */
     if (stat(innconf->pathrun, &Sb) < 0)
-        DIE((LOG_ERR, "can't stat pathrun(%s): %s", innconf->pathrun,
-             strerror(errno)));
+        sysdie("can't stat pathrun (%s)", innconf->pathrun);
     if (!S_ISDIR(Sb.st_mode))
-        DIE((LOG_ERR, "pathrun (%s) is not a directory", innconf->pathrun));
+        die("pathrun (%s) is not a directory", innconf->pathrun);
     if (Sb.st_uid != news_uid)
-        DIE((LOG_ERR, "pathrun (%s) owned by user %d, not %s (%d)",
-             innconf->pathrun, Sb.st_uid, NEWSUSER, news_uid));
+        die("pathrun (%s) owned by user %d, not %s (%d)", innconf->pathrun,
+            Sb.st_uid, NEWSUSER, news_uid);
     if (Sb.st_gid != news_gid)
-        DIE((LOG_ERR, "pathrun (%s) owned by group %d, not %s (%d)",
-             innconf->pathrun, Sb.st_gid, NEWSGRP, news_gid));
+        die("pathrun (%s) owned by group %d, not %s (%d)", innconf->pathrun,
+            Sb.st_gid, NEWSGRP, news_gid);
 
     /* Check for a bind address specified in inn.conf.  "any" or "all" will
        cause inndstart to bind to INADDR_ANY. */
@@ -182,7 +132,7 @@ main(int argc, char *argv[])
     p = innconf->bindaddress;
     if (p && !EQ(p, "all") && !EQ(p, "any")) {
         if (!inet_aton(p, &address))
-            DIE((LOG_ERR, "invalid bindaddress in inn.conf (%s)", p));
+            die("invalid bindaddress in inn.conf (%s)", p);
     }
 
     /* Parse our command-line options.  The only options we take are -P,
@@ -197,24 +147,20 @@ main(int argc, char *argv[])
                 port = atoi(&argv[i][2]);
             } else {
                 i++;
-                if (argv[i] == NULL)
-                    DIE((LOG_ERR, "missing port after -P"));
+                if (argv[i] == NULL) die("missing port after -P");
                 port = atoi(argv[i]);
             }
             if (port == 0)
-                DIE((LOG_ERR, "invalid port %s (must be a number)",
-                     argv[i]));
+                die("invalid port %s (must be a number)", argv[i]);
         } else if (EQn("-I", argv[i], 2)) {
             if (strlen(argv[i]) > 2) {
                 p = &argv[i][2];
             } else {
                 i++;
-                if (argv[i] == NULL)
-                    DIE((LOG_ERR, "missing address after -I"));
+                if (argv[i] == NULL) die("missing address after -I");
                 p = argv[i];
             }
-            if (!inet_aton(p, &address))
-                DIE((LOG_ERR, "invalid address %s", p));
+            if (!inet_aton(p, &address)) die("invalid address %s", p);
         }
     }
             
@@ -224,43 +170,43 @@ main(int argc, char *argv[])
         && port != INND_PORT
 #endif
         && port != 433)
-        DIE((LOG_ERR, "can't bind to restricted port %d", port));
+        die("can't bind to restricted port %d", port);
 
     /* Now, regain privileges so that we can change system limits and bind
        to our desired port. */
-    set_user(0, news_uid);
+    if (seteuid(0) < 0) sysdie("can't seteuid(0)");
 
     /* innconf->rlimitnofile <= 0 says to leave it alone. */
     if (innconf->rlimitnofile > 0)
         if (setfdlimit(innconf->rlimitnofile) < 0)
-            DIE((LOG_ERR, "can't set file descriptor limit to %d: %s",
-                 innconf->rlimitnofile, strerror(errno)));
+            sysdie("can't set file descriptor limit to %d",
+                innconf->rlimitnofile);
 
     /* Create a socket and name it.  innconf->bindaddress controls what
        address we bind as, defaulting to INADDR_ANY. */
     s = socket(AF_INET, SOCK_STREAM, 0);
-    if (s < 0) DIE((LOG_ERR, "can't open socket: %s", strerror(errno)));
+    if (s < 0) sysdie("can't open socket");
 #ifdef SO_REUSEADDR
     i = 1;
     if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *) &i, sizeof i) < 0)
-        WARN((LOG_WARNING, "can't set SO_REUSEADDR: %s", strerror(errno)));
+        syswarn("can't set SO_REUSEADDR");
 #endif
     memset(&server, 0, sizeof server);
     server.sin_port = htons(port);
     server.sin_family = AF_INET;
     server.sin_addr = address;
     if (bind(s, (struct sockaddr *) &server, sizeof server) < 0)
-        DIE((LOG_ERR, "can't bind: %s", strerror(errno)));
+        sysdie("can't bind");
 
     /* Now, permanently drop privileges. */
     if (setgid(news_gid) < 0 || getgid() != news_gid)
-        DIE((LOG_ERR, "can't setgid to %d: %s", news_gid, strerror(errno)));
+        sysdie("can't setgid to %d: %s", news_gid);
     if (setuid(news_uid) < 0 || getuid() != news_uid)
-        DIE((LOG_ERR, "can't setuid to %d: %s", news_uid, strerror(errno)));
+        sysdie("can't setuid to %d: %s", news_uid);
 
     /* Build the argument vector for innd.  Pass -p<port> to innd to tell it
        what port we just created and bound to for it. */
-    innd_argv = NEW(char *, 1 + argc + 1);
+    innd_argv = xmalloc((1 + argc + 1) * sizeof(char *));
     i = 0;
 #ifdef DEBUGGER
     innd_argv[i++] = DEBUGGER;
@@ -309,11 +255,8 @@ main(int argc, char *argv[])
 
     /* Go exec innd. */
     execve(innd_argv[0], innd_argv, innd_env);
-    syslog(LOG_ERR, "can't exec %s: %m", innd_argv[0]);
-    fprintf(stderr, "inndstart: can't exec %s: %s", innd_argv[0],
-            strerror(errno));
-    _exit(1);
+    sysdie("can't exec %s", innd_argv[0]);
 
-    /* NOTREACHED */
+    /* Not reached. */
     return 1;
 }
