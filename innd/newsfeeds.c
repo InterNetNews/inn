@@ -198,7 +198,8 @@ SlashSplit(text)
 **  If subbed is NULL, we don't update the SITE array, since we're just
 **  doing syntax checking.
 */
-STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
+const char *
+SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 {
     int	                i;
     int	                j;
