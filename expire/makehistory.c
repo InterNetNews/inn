@@ -1,11 +1,8 @@
-/*
- * $Revision$
- * Rebuild history/overview databases.
- */
-
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+/*  $Id$
+**
+**  Rebuild history/overview databases.
+*/
+#include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
 #include <sys/stat.h>
@@ -199,13 +196,14 @@ FlushOverTmpFile(void)
     mktemp(temp);
     SortedTmpPath = COPY(temp);
 
-    sprintf(temp, "exec %s -T %s -t'%c' -o %s %s", SORT_PGM,
+    sprintf(temp, "exec %s -T %s -t'%c' -o %s %s", _PATH_SORT,
 	    TmpDir, '\t', SortedTmpPath, OverTmpPath);
     
     i = system(temp) >> 8;
     if (i != 0) {
-	fprintf(stderr, "makehistory: Can't sort OverTmp file (%s exit %d), %s\n",
-		SORT_PGM, i, strerror(errno));
+	fprintf(stderr,
+                "makehistory: Can't sort OverTmp file (%s exit %d), %s\n",
+		_PATH_SORT, i, strerror(errno));
 	exit(1);
     }
 
