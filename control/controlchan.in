@@ -1,25 +1,33 @@
-#!/usr/bin/perl -w
+#! /usr/bin/perl -w
 require "/usr/local/news/lib/innshellvars.pl";
 
-###########################################################################
-# $Id$
-# Copyright 2001 by Marco d'Itri <md@linux.it>
-###########################################################################
-# controlchan - read a feed, sniff out control messages, and send them
-# to the appropriate script.
-#
-# Give this program its own newsfeed.  Make sure that you've created
-# the newsgroup control.cancel so that you don't have to scan through
-# cancels, which this program won't process anyway.
-#
-# Make a newsfeeds entry like this:
-#
-# controlchan!\
-#    :!*,control,control.*,!control.cancel\
-#    :Tc,Wnsm\
-#    :@prefix@/bin/controlchan
-#
-###########################################################################
+##  $Id$
+##
+##  Channel feed program to route control messages to an appropriate handler.
+##
+##  Copyright 2001 by Marco d'Itri <md@linux.it>
+##
+##  Redistribution and use in source and binary forms, with or without
+##  modification, are permitted provided that the following conditions
+##  are met:
+##
+##   1. Redistributions of source code must retain the above copyright
+##      notice, this list of conditions and the following disclaimer.
+##
+##   2. Redistributions in binary form must reproduce the above copyright
+##      notice, this list of conditions and the following disclaimer in the
+##      documentation and/or other materials provided with the distribution.
+##
+##  Give this program its own newsfeed.  Make sure that you've created
+##  the newsgroup control.cancel so that you don't have to scan through
+##  cancels, which this program won't process anyway.
+##
+##  Make a newsfeeds entry like this:
+##
+##  controlchan!\
+##     :!*,control,control.*,!control.cancel\
+##     :Tc,Wnsm\
+##     :@prefix@/bin/controlchan
 
 require 5.004_03;
 use strict;
