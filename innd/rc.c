@@ -642,7 +642,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     register REMOTEHOST		*group_params = NULL;
     register REMOTEHOST		peer_params;
     register REMOTEHOST		default_params;
-    BOOL			bool;
+    BOOL			flag;
 
 
     if (*list) {
@@ -971,22 +971,22 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  break;
 	}
 	if (!strcmp (word, "true"))
-	  bool = TRUE;
+	  flag = TRUE;
 	else
 	  if (!strcmp (word, "false"))
-	    bool = FALSE;
+	    flag = FALSE;
 	  else {
 	    syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
 	    break;
 	  }
 	RCadddata(data, &infocount, K_STREAM, T_STRING, word);
 	if (peer_params.Label != NULL)
-	  peer_params.Streaming = bool;
+	  peer_params.Streaming = flag;
 	else
 	  if (groupcount > 0 && group_params->Label != NULL)
-	    group_params->Streaming = bool;
+	    group_params->Streaming = flag;
 	  else
-	    default_params.Streaming = bool;
+	    default_params.Streaming = flag;
 	continue;
       }
 
@@ -997,22 +997,22 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  break;
 	}
 	if (!strcmp (word, "true"))
-	  bool = TRUE;
+	  flag = TRUE;
 	else
 	  if (!strcmp (word, "false"))
-	    bool = FALSE;
+	    flag = FALSE;
 	  else {
 	    syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
 	    break;
 	  }
 	RCadddata(data, &infocount, K_SKIP, T_STRING, word);
 	if (peer_params.Label != NULL)
-	  peer_params.Skip = bool;
+	  peer_params.Skip = flag;
 	else
 	  if (groupcount > 0 && group_params->Label != NULL)
-	    group_params->Skip = bool;
+	    group_params->Skip = flag;
 	  else
-	    default_params.Skip = bool;
+	    default_params.Skip = flag;
 	continue;
       }
 
@@ -1022,22 +1022,22 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  break;
 	}
 	if (!strcmp (word, "true"))
-	  bool = TRUE;
+	  flag = TRUE;
 	else
 	  if (!strcmp (word, "false"))
-	    bool = FALSE;
+	    flag = FALSE;
 	  else {
 	    syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
 	    break;
 	  }
 	RCadddata(data, &infocount, K_NORESENDID, T_STRING, word);
 	if (peer_params.Label != NULL)
-	  peer_params.NoResendId = bool;
+	  peer_params.NoResendId = flag;
 	else
 	  if (groupcount > 0 && group_params->Label != NULL)
-	    group_params->NoResendId = bool;
+	    group_params->NoResendId = flag;
 	  else
-	    default_params.NoResendId = bool;
+	    default_params.NoResendId = flag;
 	continue;
       }
 
