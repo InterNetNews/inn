@@ -47,6 +47,6 @@ typedef struct _HEADER {
 #define HDR__XTRACE          21
 #define HDR__XCOMPLAINTSTO   22
 #define HDR__NNTPPOSTINGDATE 23
-#define HDR__CC		     32
-#define HDR__BCC	     33
-#define HDR__TO		     34
+#define HDR__CC		     33
+#define HDR__BCC	     34
+#define HDR__TO		     35
