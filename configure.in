@@ -634,6 +634,11 @@ dnl -g on link as well as compile for debugging to work.
     fi
     ;;
 
+dnl OSX needs '-multiply_defined suppress' 
+*darwin*)
+    LDFLAGS="$LDFLAGS -multiply_defined suppress"
+    ;;
+
 dnl From Boyd Gerber <gerberb@zenez.com>, needed in some cases to compile
 dnl the bison-generated parser for innfeed.conf.
 *UnixWare*|*unixware*|*-sco3*)
@@ -838,6 +843,13 @@ INN_SEARCH_AUX_LIBS(krb5_parse_name, krb5, KRB5_LIB,
      KRB5_LIB="$KRB5_LIB -lk5crypto -lcom_err"
      AC_SUBST(KRB5_AUTH)
      AC_SUBST(KRB5_INC)], , [$LIBS -lk5crypto -lcom_err])
+
+dnl Check for necessity of krb5_init_ets
+dnl OSX does not require this function
+inn_save_LIBS=$LIBS
+LIBS=$KRB5_LIB
+AC_CHECK_FUNCS(krb5_init_ets)
+LIBS=$inn_save_LIBS
 
 dnl Libraries and flags for embedded Perl.  Some distributions of Linux have
 dnl Perl linked with gdbm but don't normally have gdbm installed, so on that
