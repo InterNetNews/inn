@@ -15,7 +15,8 @@ libinn \- InterNetNews library routines
 .B "} TIMEINFO;"
 
 .B "char *"
-.B "GenerateMessageID()"
+.B "GenerateMessageID(domain)"
+.B "    char    *domain;"
 
 .B "void"
 .B "HeaderCleanFrom(from)"
@@ -74,13 +75,15 @@ libinn \- InterNetNews library routines
 .B "ReadInnConf()"
 
 .B "char *"
-.B "GetFQDN()"
+.B "GetFQDN(domain)"
+.B "    char    *domain;"
 
 .B "char *"
-.B "GetModeratorAddress(FromServer, ToServer, group)"
+.B "GetModeratorAddress(FromServer, ToServer, group, moderatormailer)"
 .B "    FILE	*FromServer;"
 .B "    FILE	*ToServer;"
 .B "    char	*group;"
+.B "    char	*moderatormailer;"
 
 .B "int"
 .B "GetResourceUsage(usertime, systime)"
@@ -155,8 +158,9 @@ if it is not available, it is only necessary to properly declare the
 datatype, as given above.
 .PP
 .I GenerateMessageID
-uses the current time, process-ID, and fully-qualified domain name of the
-local host to create a Message-ID header that is highly likely to be unique.
+uses the current time, process-ID, and fully-qualified domain name, which is
+passed as an argument and used if local host can not be resolved, to create a
+Message-ID header that is highly likely to be unique.
 The returned value points to static space that is reused on subsequent calls.
 .PP
 .I HeaderCleanFrom
@@ -311,6 +315,8 @@ The return value is less than zero if an error was encountered.
 .PP
 .I GetFQDN
 returns the fully-qualified domain name of the local host.
+.I Domain
+is used if local host can not be resolved.
 The returned value points to static space that is reused on subsequent calls,
 or NULL on error.
 .PP
@@ -318,6 +324,8 @@ or NULL on error.
 returns the mailing address of the moderator for specified
 .I group
 or NULL on error.
+.I Moderatormailer
+is used as its address, if there is no matched moderator.
 See
 .IR moderators (5)
 for details on how the address is determined.

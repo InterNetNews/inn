@@ -18,12 +18,15 @@ of the line.
 Blank lines and comments are ignored.
 If that character (``#'') is used in the raw, it should be
 escaped with ``\\''.
-The maximum number of character in each line is 255.
+The maximum number of character in each line is 8191.
 There are two types of entries in the readers.conf file: key/value entries,
 and configuration 'group' entries.
 .PP
 Key/value entries are a keyword immediately followed by a colon, at least
-one blank and a value. For example:
+one blank and a value. Some keys take a boolean value.  For all such
+keys, the value may be specified as true, yes, or on to turn it on and may
+be any of false, no, or off to turn it off.  The case of these values is
+not significant.  For example:
 .PP
 .RS
 .nf
@@ -176,11 +179,89 @@ should be chosen from the following set (case is significant):
 .nf
 R	The client can retrieve articles
 P	The client can post articles
-N	The client can use the NEWNEWS command, overriding the global setting
-L	The client can post to groups with local-posting prohibited
+N	The client can use the NEWNEWS command, overriding
+	the global setting
+L	The client can post to groups with local-posting
+	prohibited
 .fi
-.RE
 This field can override the values of ``read:'' and ``post:'' defined above.
+.RE
+.TP
+.BI localtime:
+Wheather to use local time, if Date header is not included in posted article.
+If this is set to true, the Date header is formatted as local time.
+This is a boolean value, and the default is false.
+.TP
+.BI strippath:
+Wheather to strip prepended elements from Path header, if it is included in
+posted article.  If this is set to true, prepended elements in Path header
+is stripped.  This is a boolean value, and the default is false.
+.TP
+.BI perlfilter:
+Wheather to enable perl filter.  Perl filter is enabled by default, if
+\-\-with\-perl is specified at configure.  If this is set to false, perl
+filter is disabled.  This is a boolean value, and the default is true.
+.TP
+.BI pythonfilter:
+Wheather to enable python filter.  Python filter is enabled by default, if
+\-\-with\-python is specified at configure.  If this is set to false, python
+filter is disabled.  This is a boolean value, and the default is true.
+.PP
+Following keys override options in
+.IR inn.conf (5).
+See
+.IR inn.conf (5)
+for those keys.
+.TP
+.BI fromhost:
+.RE
+.BI pathhost:
+.RE
+.BI organization:
+.RE
+.BI moderatormailer:
+.RE
+.BI domain:
+.RE
+.BI complaints:
+.RE
+.BI spoolfirst:
+.RE
+.BI checkincludedtext:
+.RE
+.BI clienttimeout:
+.RE
+.BI localmaxartsize:
+.RE
+.BI readertrack:
+.RE
+.BI strippostcc:
+.RE
+.BI addnntppostinghost:
+.RE
+.BI addnntppostingdate:
+.RE
+.BI nnrpdposthost:
+.RE
+.BI nnrpdpostport:
+.RE
+.BI nnrpdoverstats:
+.RE
+.BI backoff_auth:
+.RE
+.BI backoff_db:
+.RE
+.BI backoff_k:
+.RE
+.BI backoff_postfast:
+.RE
+.BI backoff_postslow:
+.RE
+.BI backoff_trigger:
+.RE
+.BI nnrpdcheckart:
+.RE
+.BI nnrpdauthsender:
 .SH HISTORY
 Written by Aidan Cully <aidan@panix.com>, for InterNetNews.
 .de R$
