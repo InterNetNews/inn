@@ -165,11 +165,15 @@ Rebuild(size, IgnoreOld, Overwrite)
 	key.dptr = p;
 	key.dsize = save - p + 1;
 	if (!dbzstore(key, value)) {
-	    (void)fprintf(stderr, "Can't store \"%s\", %s\n",
-		    p, strerror(errno));
-	    if (temp[0])
-		(void)unlink(temp);
-	    exit(1);
+	    if (dbzexists(key)) {
+	        fprintf(stderr, "Duplicate message-id \"%s\" in history text\n", p);
+	    } else {
+	        fprintf(stderr, "Can't store \"%s\", %s\n",
+		        p, strerror(errno));
+	        if (temp[0])
+		    (void)unlink(temp);
+	        exit(1);
+	    }
 	}
     }
     if (QIOerror(qp)) {

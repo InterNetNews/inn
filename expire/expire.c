@@ -886,8 +886,12 @@ EXPdoline(out, line, length, arts, krps)
     if (EXPverbose > 4)
 	(void)printf("\tdbz %s@%ld\n", key.dptr, where);
     if (!dbzstore(key, value)) {
-	(void)fprintf(stderr, "Can't store key, %s\n", strerror(errno));
-	return FALSE;
+        if (dbzexists(key)) {
+            fprintf(stderr, "Duplicate message-id \"%s\" in history\n", fields[0]);
+        } else {
+	    fprintf(stderr, "Can't store key, \"%s\"\n", strerror(errno));
+	    return FALSE;
+	}
     }
     return TRUE;
 }
