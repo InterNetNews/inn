@@ -1,0 +1,238 @@
+$Id$
+
+This file documents the standardized syntax for INN configuration files.
+This is the syntax that the parsing code in libinn will understand and the
+syntax towards which all configuration files should move.
+
+The basic structure of a configuration file is a tree of groups.  Each
+group has a type and an optional tag, and may contain zero or more
+parameter settings, an association of a name with a value.  All parameter
+names and group types are simple case-sensitive strings composed of
+printable ASCII characters and not containing whitespace or any of the
+characters "\:;{}[]<>" or the double-quote.  A group may contain another
+group (and in fact the top level of the file can be thought of as a
+top-level group that isn't allowed to contain parameter settings).
+
+Supported parameter values are booleans, integers, real numbers, strings,
+and lists of strings.
+
+The basic syntax looks like:
+
+    group-type tag {
+        parameter: value
+        parameter: [ string string ... ]
+        # ...
+
+        group-type tag {
+            # ...
+        }
+    }
+
+Tags are strings, with the same syntax as a string value for a parameter;
+they are optional and may be omitted.  A tag can be thought of as the name
+of a particular group, whereas the <group-type> says what that group is
+intended to specify and there may be many groups with the same type.
+
+The second parameter example above has as its value a list.  The square
+brackets are part of the syntax of the configuration file; lists are
+enclosed in square brackets and the elements are space-separated.
+
+As seen above, groups may be nested.
+
+Multiple occurances of the same parameter in the parameter section of a
+group is an error.  In practice, the second parameter will take precedent,
+but an error will be reported when such a configuration file is parsed.
+
+Parameter values inherit.  In other words, the structure:
+
+    first {
+        first-parameter: 1
+        second {
+            second-parameter: 1
+            third { third-parameter: 1 }
+        }
+
+        another "tag" { }
+    }
+
+is parsed into a tree that looks like:
+
+    +-------+   +--------+   +-------+
+    | first |-+-| second |---| third |
+    +-------+ | +--------+   +-------+
+              |
+              | +---------+
+              +-| another |
+                +---------+
+
+where each box is a group.  The type of the group is given in the box;
+none of these groups have tags except for the only group of type
+"another", which has the tag "tag".  The group of type "third" has three
+parameters set, namely "third-parameter" (set in the group itself),
+"second-parameter" (inherited from the group of type "second"), and
+"first-parameter" (inherited from "first" by "second" and then from
+"second" by "third").
+
+The practical meaning of this is that enclosing groups can be used to set
+default values for a set of subgroups.  For example, consider the
+following configuration that defines three peers of a news server and
+newsgroups they're allowed to send:
+
+    peer news1.example.com { newsgroups: * }
+    peer news2.example.com { newsgroups: * }
+    peer news3.example.com { newsgroups: * }
+
+This could instead be written as:
+
+    group {
+        newsgroups: *
+
+        peer news1.example.com { }
+        peer news2.example.com { }
+        peer news3.example.com { }
+    }
+
+or as:
+
+    peer news1.example.com {
+        newsgroups: *
+
+        peer news2.example.com { }
+        peer news3.example.com { }
+    }
+
+and for a client program that only cares about the defined list of peers,
+these three structures would be entirely equivalent; all questions about
+what parameters are defined in the peer groups would have identical
+answers either way this configuration was written.
+
+Note that the second form above is preferred as a matter of style to the
+third, since otherwise it's tempting to derive some significance from the
+nesting structure of the peer groups.  Also note that in the second
+example above, the enclosing group *must* have a type other than "peer";
+to see why, consider the program that asks the configuration parser for a
+list of all defined peer groups and uses the resulting list to build some
+internal data structures.  If the enclosing group in the second example
+above had been of type peer, there would be four peer groups instead of
+three and one of them wouldn't have a tag, probably provoking an error
+message.
+
+Boolean values may be given as yes, true, or on, or as no, false, or off.
+Integers must be between -2,147,483,647 and +2,147,483,647 inclusive (the
+same as a C99 signed long).  Floating point numbers must be between 0 and
+1e37 in absolute magnitude (the same as a C99 double) and can safely
+expect eight digits of precision.
+
+Strings are optionally enclosed in double quotes, and must be quoted if
+they contain any whitespace, double-quote, or any characters in the set
+"\:;[]{}<>".  Escape sequences in strings (sequences beginning with \) are
+parsed the same as they are in C.  Strings can be continued on multiple
+lines by ending each line in a backslash, and the newline is not
+considered part of such a continued string (to embed a literal newline in
+a string, use \n).
+
+Lists of strings are delimited by [] and consist of whitespace-separated
+strings, which must follow the same quoting rules as all other strings.
+Group tags are also strings and follow the same quoting rules.
+
+There are two more bits of syntax.  Normally, parameters must be separated
+by newlines, but for convenience it's possible to put multiple parameters
+on the same line separated by semicolons:
+
+    parameter: value; parameter: value
+
+Finally, the body of a group may be defined in a separate file.  To do
+this, rather than writing the body of the group enclosed in {}, instead
+give the file name in <>:
+
+    group tag <filename>
+
+(The filename is also a string and may be double-quoted if necessary, but
+since file names rarely contain any of the excluded characters it's rarely
+necessary.)
+
+Here is the (almost) complete ABNF for the configuration file syntax.
+The syntax is per RFC 2234.
+
+First the basic syntax elements and possible parameter values:
+
+    comment             = *WSP "#" *(WSP / VCHAR / 0x8A-FF) LF
+
+    WHITE               = WSP / CR / LF [comment]
+
+    boolean             = "yes" / "on" / "true" / "no" / "off" / "false"
+
+    integer             = ["-"] 1*DIGIT
+
+    real-number         = ["-"] 1*DIGIT "." 1*DIGIT [ "e" ["-"] 1*DIGIT ]
+
+    non-special         = 0x21 / 0x23-39 / 0x3D / 0x3F-5A / 0x5E-7A
+                               / 0x7C / 0x7E / 0x8A-FF
+                                ; All VCHAR except "\:;<>[]{}
+
+    quoted-string       = DQUOTE 1*(WSP / VCHAR / 0x8A-FF) DQUOTE
+                                ; DQUOTE within the quoted string must be
+                                ; written as 0x5C.22 (\"), and backslash
+                                ; sequences are interpreted as in C
+                                ; strings.
+
+    string              = 1*non-special / quoted-string
+
+    list-body           = string *( 1*WHITE string )
+
+    list                = "[" *WHITE [ list-body ] *WHITE "]"
+
+Now the general structure:
+
+    parameter-name      = 1*non-special
+
+    parameter-value     = boolean / integer / real-number / string / list
+
+    parameter           = parameter-name ":" 1*WSP parameter-value
+
+    parameter-list      = parameter [ *WHITE (";" / CRLF) *WHITE parameter ]
+
+    group-list          = group *( *WHITE group )
+
+    group-body          = parameter-list [ *WHITE CRLF *WHITE group-list ]
+                        / group-list
+
+    group-file          = string
+
+    group-contents      = "{" *WHITE [ group-body ] *WHITE "}"
+                        / "<" group-file ">"
+
+    group-type          = 1*non-special
+
+    group-tag           = string
+
+    group-name          = group-type [ 1*WHITE group-tag ]
+
+    group               = group-name 1*WHITE group-contents
+
+    file                = *WHITE *( group *WHITE )
+
+One implication of this grammar is that any line outside a quoted string
+that begins with "#", optionally preceded by whitespace, is regarded as a
+comment and discarded.  The line must begin with "#" (and optional
+whitespace); comments at the end of lines aren't permitted.  "#" has no
+special significance in quoted strings, even if it's at the beginning of a
+line.  Note that comments cannot be continued to the next line in any way;
+each comment line must begin with "#".
+
+It's unclear the best thing to do with high-bit characters (both literal
+characters with value > 0x7F in a configuration file and characters with
+such values created in quoted strings with \<octal>, \x, \u, or \U).  In
+the long term, INN should move towards assuming UTF-8 everywhere, as this
+is the direction that all of the news standards are heading, but in the
+interim various non-Unicode character sets are in widespread use and there
+must be some way of encoding those values in INN configuration files (so
+that things like the default Organization header value can be set
+appropriately).
+
+As a compromise, the configuration parser will pass unaltered any literal
+characters with value > 0x7F to the calling application, and \<octal> and
+\x escapes will generate eight-bit characters in the strings (and
+therefore cannot be used to generate UTF-8 strings containing code points
+greater than U+007F).  \u and \U, in contrast, will generate characters
+encoded in UTF-8.

@@ -1,0 +1,79 @@
+$Id$
+
+Groups in a configuration file have a well-defined order, namely the order
+in which the groups would be encountered in a depth-first traversal of the
+parse tree.
+
+The supported operations on a configuration file parse tree for reading
+are:
+
+ * Search.  Find the first group of a given type in a given tree.  This is
+   done via depth-first search.
+
+ * Next.  Find the next group of a given type, starting from some group.
+   This is done via depth-first search.
+
+ * Query.  Look up the value of a given parameter in a given group (with
+   inheritance).  Note that the expected type of the parameter value must
+   be provided by the caller; the parsing library doesn't know the types
+   of parameters.
+
+ * Prune.  Limit one's view of the configuration file to only a given set
+   of group types and everything underneath them; any other group types
+   encountered won't be parsed (and therefore everything under them, even
+   groups of the wanted type, won't be seen).
+
+Therefore, the *only* significance of nested group structure is parameter
+inheritence and pruning.  In the absence of pruning, it would always be
+possible, by duplicating parameter settings that were inherited and laying
+out the groups in depth-first traversal order, to transform any
+configuration file into an entirely equivalent one that contains no nested
+groups.  This isn't true in the presence of pruning, but pruning is
+intended to be used primarily for performance (ignoring the parts of the
+configuration that don't apply to a given parsing library client).
+
+The expected way for clients to use the parsing library is to follow one
+of these two access patterns:
+
+ * Search for a particular configuration group and then query it for a set
+   of parameters (either one by one as they're used, or all at once to
+   collapse the parameters into a struct for faster access later).  This
+   is expected to be the common pattern for finding and looking up
+   settings for a particular program.  There will generally only be a
+   single group per group type for groups of this sort; it doesn't make
+   sense to have multiple groups setting general configuration options for
+   a program and have to iterate through them and merge them in some
+   fashion.
+
+ * Iterate through all groups of a given type, building a list of them (or
+   of the data they contain).  This is the model used by, for example,
+   storage classes; each storage class has a set of parameters, and the
+   storage subsystem needs to know about the full list of classes.
+
+Note that neither of these operations directly reveal the tree structure;
+the tree structure is intended for the convenience of the user in setting
+defaults for various parameters so that they don't have to be repeated in
+each group, and to allow some top-level pruning.  It's not intended to be
+semantically significant other than that.
+
+Here are some suggested general conventions:
+
+ * General options for a particular program should be separated out into a
+   their own group.  For example, a group innwatch in inn.conf to set the
+   various options only used by innwatch.  Note that pruning is inclusive
+   rather than exclusive, so programs should ideally only need to care
+   about a short list of groups.
+
+ * Groups used only for grouping and setting default parameters, ones that
+   won't be searched for explicitly by any program, should use the type
+   "group".  This can be used uniformly in all configuration files so that
+   whenever a user sees a group of type "group", they know that it's just
+   syntactic convenience to avoid having to repeat a bunch of parameter
+   settings and isn't otherwise significant.
+
+ * Groups that are searched for or iterated through shouldn't be nested;
+   for example, if a configuration file defines a list of access groups,
+   nesting one access group inside another is discouraged (in favor of
+   putting both groups inside an enclosing group of type "group" that sets
+   the parameters they have in common).  This is to cut down on user
+   confusion, since otherwise the nesting appears to be significant.

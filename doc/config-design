@@ -1,0 +1,111 @@
+$Id$
+
+This file is documentation of the design principles that went into INN's
+configuration file syntax, and some rationale for why those principles
+were chosen.
+
+ 1.  All configuration files used by INN should have the same syntax.
+     This was the root reason why the project was taken on in the first
+     place; INN developed a proliferation of configuration files, all of
+     which had a slightly (or greatly) different syntax, forcing the
+     administrator to learn several different syntaxes and resulting in a
+     proliferation of parsers, all with their own little quirks.
+
+ 2.  Adding a new configuration file or a new set of configuration options
+     should not require writing a single line of code for syntax parsing.
+     Code that analyzes the semantics of the configuration will of course
+     be necessary, but absolutely no additional code to read files, parse
+     files, build configuration trees, or the like should be required.
+     Ideally, INN should have a single configuration parser that
+     everything uses.
+
+ 3.  The syntax should look basically like the syntax of readers.conf,
+     incoming.conf, and innfeed.conf in INN 2.3.  After extensive
+     discussion on the inn-workers mailing list, this seemed to be the
+     most generally popular syntax of the ones already used in INN, and
+     inventing a completely new syntax didn't appear likely to have gains
+     outweighing the effort involved.  This syntax seemed sufficiently
+     general to represent all of the configuration information that INN
+     needed.
+
+ 4.  The parsing layer should *not* attempt to do semantic analysis of the
+     configuration; it should concern itself solely with syntax (or very
+     low-level semantics that are standard across all conceivable INN
+     configuration files).  In particular, the parsing layer should not
+     know what parameters are valid, what groups are permitted, what types
+     the values for parameters should have, or what default values
+     parameters have.
+
+     This principle requires some additional explanation, since it is very
+     tempting to not do things this way.  However, the more semantic
+     information the parser is aware of, the less general the parser is,
+     and it's very easy to paint oneself into a corner.  In particular,
+     it's *not* a valid assumption that all clients of the parsing code
+     will want to reduce the configuration to a bunch of structs; this
+     happens to be true for most clients of inn.conf, for example, but
+     inndstart doesn't want the code needed to reduce everything to a
+     struct and set default values to necessarily be executed in a
+     security-critical context.
+
+     Additionally, making the parser know more semantic information either
+     complicates (significantly) the parser interface or means that the
+     parser has to be modified when the semantics change.  The latter is
+     not acceptable, and the parser interface should be as straightforward
+     as possible (to encourage all parts of INN to use it).
+
+ 5.  The result of a parse of the configuration file may be represented as
+     a tree of dictionaries, where each dictionary corresponds to a group
+     and each key corresponds to a parameter setting.  (Note that this does
+     not assume that the underlying data structure is a hash table, just
+     that it has dictionary semantics, namely a collection of key/value
+     pairs with the keys presumed unique.)
+
+ 6.  Parameter values inherit via group nesting.  In other words, if a
+     group is nested inside another group, all parameters defined in the
+     enclosing group are inherited by the nested group unless they're
+     explicitly overriden within the nested group.  (This point and point
+     5 are to some degree just corollaries of point 3.)
+
+ 7.  The parsing library must permit writing as well as reading.  It must
+     be possible for a program to read in a configuration file, modify
+     parameters, add and delete groups, and otherwise change the
+     configuration, and then write back out to disk a configuration file
+     that preserves those changes and still remains as faithful to the
+     original (possibly human-written) configuration file as possible.
+     (Ideally, this would extend to preserving comments, but that may be
+     too difficult to do and therefore isn't required.)
+
+ 8.  The parser must not limit the configuration arbitrarily.  In
+     particular, unlimited length strings (within available memory) must
+     be supported for string values, and if allowable line length is
+     limited, line continuation must be supported everywhere that there's
+     any reasonable expectation that it might be necessary.  One common
+     configuration parameter is a list of hosts or host wildmats that can
+     be almost arbitrarily long, and the syntax and parser must support
+     that.
+
+ 9.  The parser should be reasonably efficient, enough so as to not cause
+     an annoying wait for command-line tools like sm and grephistory to
+     start.  In general, though, efficiency in either time or memory is
+     not as high of a priority as readable, straightforward code; it's
+     safe to assume that configuration parsing is only done on startup and
+     at rare intervals and is not on any critical speed paths.
+
+10.  Error reporting is a must.  It must be possible to clearly report
+     errors in the configuration files, including at minimum the file name
+     and line number where the error occurred.
+
+11.  The configuration parser should not trust its input, syntax-wise.  It
+     must not segfault, infinitely loop, or otherwise explode on malformed
+     or broken input.  And, as a related point, it's better to be
+     aggressively picky about syntax than to be lax and attempt to accept
+     minor violations.  The intended configuration syntax is simple and
+     unambiguous, so it should be unnecessary to accept violations.
+
+12.  It must be possible to do comprehensive semantic checks of a
+     configuration file, including verifying that all provided parameters
+     are known ones, all parameter values have the correct type, group
+     types that are not expected to be repeated are not, and only expected
+     group types are used.  This must *not* be done by the parser, but the
+     parser must provide sufficient hooks that the client program can do
+     this if it chooses.
