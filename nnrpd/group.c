@@ -355,6 +355,7 @@ GPALIAS(GROUPENTRY *gp)
     if (p) {
         if ((p = strchr(p + 1, ' ')) != NULL) {
             if ((p = strchr(p + 1, ' ')) != NULL) {
+		p++;
                 if (p[0] == NF_FLAG_ALIAS &&
                     p[1] != '\n' &&
                     strlen(p + 1) < sizeof(GPBuf) - 1
