@@ -330,6 +330,7 @@ sub human_readable {
     }
     my $predigits = length (int($scaled));
     my $postdigits = $digits - $predigits - 1;
+    $postdigits = 0 if $postdigits < 0;
     ++$digits;
 
     return sprintf ("%${digits}.${postdigits}f %s", $scaled, $name[$unit]);
