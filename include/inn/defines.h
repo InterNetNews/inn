@@ -49,46 +49,20 @@
    in a lot of places, so make them available as well. */
 #if INN_HAVE_STDBOOL_H
 # include <stdbool.h>
-# undef TRUE
-# undef FALSE
-# define TRUE   true
-# define FALSE  false
-
 #else
-
-/* We don't have stdbool.h and therefore need to hack something up
-   ourselves.  These methods are taken from Perl with some modifications. */
-
 # undef true
 # undef false
 # define true   (1)
 # define false  (0)
+# ifndef __cplusplus
+#  define bool int
+# endif
+#endif /* INN_HAVE_STDBOOL_H */
 
 /* Lots of INN still uses TRUE and FALSE. */
-# undef TRUE
-# undef FALSE
-# define TRUE   true
-# define FALSE  false
-
-/* C++ has a native bool type, and our true and false will work with it. */
-# ifdef __cplusplus
-#  define HAS_BOOL 1
-# endif
-
-/* The NeXT dynamic loader headers will not build with the bool macro, so
-   use an enum instead (which appears to work). */
-# if !defined(HAS_BOOL) && (defined(NeXT) || defined(__NeXT__))
-#  undef FALSE
-#  undef TRUE
-typedef enum bool { FALSE = 0, TRUE = 1 } bool;
-#  define HAS_BOOL 1
-# endif /* NeXT || __NeXT__ */
-
-# if !HAS_BOOL
-#  define bool int
-#  define HAS_BOOL 1
-# endif
-
-#endif /* __STDC_VERSION__ < 199901L */
+#undef TRUE
+#undef FALSE
+#define TRUE   true
+#define FALSE  false
 
 #endif /* !INN_DEFINES_H */
