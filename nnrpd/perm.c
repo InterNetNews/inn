@@ -1018,11 +1018,11 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password)
 	    close(foo->wrfd);
 
 	    GetProgInput(foo);
+	    done = (ubuf[0] != '\0');
 	    if (done)
 		syslog(L_TRACE, "%s auth authenticator succesful, user %s", ClientHost, ubuf);
 	    else
 		syslog(L_TRACE, "%s auth authenticator failed", ClientHost);
-	    done = (ubuf[0] != '\0');
 	    DISPOSE(foo);
 	} else
 	    syslog(L_ERROR, "%s auth couldnt start authenticator: %m", ClientHost);
