@@ -76,7 +76,7 @@ scanspool:	scanspool.in     $(FIX)	; $(FIX) scanspool.in
 signcontrol:	signcontrol.in   $(FIX)	; $(FIX) -i signcontrol.in
 
 c7unbatch: Makefile ../Makefile.global
-	( echo '#! $(SHELL)' ; echo 'decode | $(COMPRESS) -d' ) > $@
+	( echo '#! $(SHELL)' ; echo 'decode | $(UNCOMPRESS)' ) > $@
 
 gunbatch: Makefile ../Makefile.global
 	( echo '#! $(SHELL)' ; echo 'exec $(GZIP) -d -c' ) > $@
