@@ -2463,6 +2463,7 @@ void hostSetStatusFile (const char *filename)
 void gHostStats (void)
 {
   Host h ;
+  time_t now = theTime() ;
 
   for (h = gHostList ; h != NULL ; h = h->next)
       if (h->firstConnectTime > 0)
