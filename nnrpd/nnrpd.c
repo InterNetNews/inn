@@ -607,10 +607,11 @@ write_buffer(const char *buff, ssize_t len)
     while (len > 0) {
 	const char *out;
 	unsigned outlen;
-	int r;
 
 #ifdef HAVE_SASL
 	if (sasl_conn && sasl_ssf) {
+            int r;
+
 	    /* can only encode as much as the client can handle at one time */
 	    n = (len > sasl_maxout) ? sasl_maxout : len;
 	    if ((r = sasl_encode(sasl_conn, p, n, &out, &outlen)) != SASL_OK) {
