@@ -96,6 +96,9 @@ static void use_rcsid (const char *rid) {   /* Never called */
 
 extern char *configFile ;
 extern mainLogStatus (FILE *fp) ;
+#if defined(hpux) || defined(__hpux) || defined(_SCO_DS)
+extern int h_errno;
+#endif
 
 /* the host keeps a couple lists of these */
 typedef struct proc_q_elem 
@@ -1144,9 +1147,8 @@ struct in_addr *hostIpAddr (Host host)
 	{
 	  if ((hostEnt = gethostbyname (host->params->ipName)) == NULL)
 	    {
-	      herror ((char *) msgstr) ;
 	      syslog (LOG_ERR, HOST_RESOLV_ERROR, host->params->peerName,
-		    host->params->ipName, msgstr) ;
+		    host->params->ipName, hstrerror(h_errno)) ;
 	    }
 	  else
 	    {
