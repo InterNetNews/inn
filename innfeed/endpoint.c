@@ -629,7 +629,7 @@ void Run (void)
   fd_set rSet ;
   fd_set wSet ;
   fd_set eSet ;
-  unsigned long last_summary ;
+  unsigned long last_summary = 0 ;
 
   keepSelecting = 1 ;
   xsignal (SIGPIPE, pipeHandler) ;
@@ -679,7 +679,8 @@ void Run (void)
       if (innconf->timer)
         {
 	  unsigned long now = TMRnow () ;
-	  if (now - last_summary > (innconf->timer * 1000))
+	  if (last_summary == 0 
+	      || now - last_summary > (innconf->timer * 1000))
 	    {
 	      TMRsummary ("ME", timer_name) ;
 	      last_summary = now;
@@ -1285,7 +1286,7 @@ static int hitCompare (const void *v1, const void *v2)
    active endpoints. */
 static void reorderPriorityList (void)
 {
-  int i, j ;
+  unsigned int i, j ;
   static int thisTime = 4;
 
   /* only sort every 4th time since it's so expensive */
@@ -1320,13 +1321,13 @@ static TimerElem newTimerElem (TimeoutId i, time_t w, EndpTCB f, void *d)
 
   if (timeoutPool == NULL)
     {
-      int i ;
+      unsigned int j ;
 
       timeoutPool = ALLOC (TimerElemStruct, TIMEOUT_POOL_SIZE) ;
       ASSERT (timeoutPool != NULL) ;
 
-      for (i = 0; i < TIMEOUT_POOL_SIZE - 1; i++)
-        timeoutPool[i] . next = &(timeoutPool [i + 1]) ;
+      for (j = 0; j < TIMEOUT_POOL_SIZE - 1; j++)
+        timeoutPool[j] . next = &(timeoutPool [j + 1]) ;
       timeoutPool [TIMEOUT_POOL_SIZE-1] . next = NULL ;
     }
 

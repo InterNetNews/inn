@@ -94,7 +94,6 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #define TRYBLOCKEDHOSTPERIOD 120
 
 extern char *configFile ;
-extern void mainLogStatus (FILE *fp) ;
 #if defined(hpux) || defined(__hpux) || defined(_SCO_DS)
 extern int h_errno;
 #endif
@@ -550,7 +549,7 @@ void freeHostParams(HostParams params)
   FREE (params) ;
 }  
 
-void hostReconfigure(Host h, HostParams params)
+static void hostReconfigure(Host h, HostParams params)
 {
   u_int i, absMaxCxns ;
   double oldBacklogFilter ;
@@ -870,7 +869,7 @@ static void addBlockedHost(HostParams params)
  * We iterate through the blocked host list and try and reconnect ones
  * where we couldn't get a lock
  */
-static void tryBlockedHosts(TimeoutId tid /*unused*/ , void *data /*unused*/ )
+static void tryBlockedHosts(TimeoutId tid UNUSED , void *data UNUSED )
 {
   HostHolder hh,hi;
   HostParams params;
@@ -1562,7 +1561,7 @@ void hostClose (Host host)
 /*
  * check if host should get more connections opened, or some closed...
  */
-void hostChkCxns(TimeoutId tid /*unused*/, void *data) {
+void hostChkCxns(TimeoutId tid UNUSED, void *data) {
   Host host = (Host) data;
   u_int currArticles, currSentArticles, currTotalArticles, newMaxCxns ;
   double lastAPS, currAPS, percentTaken, ratio ;
@@ -2148,7 +2147,7 @@ void hostArticleAccepted (Host host, Connection cxn, Article article)
 {
   const char *filename = artFileName (article) ;
   const char *msgid = artMsgId (article) ;
-  double len = (double) artSize (article);
+  double len = artSize (article);
 
   d_printf (5,"Article %s (%s) was transferred\n", msgid, filename) ;
   
@@ -2211,7 +2210,7 @@ void hostArticleRejected (Host host, Connection cxn, Article article)
 {
   const char *filename = artFileName (article) ;
   const char *msgid = artMsgId (article) ;
-  double len = (double) artSize (article);
+  double len = artSize (article);
 
   d_printf (5,"Article %s (%s) was rejected\n", msgid, filename) ;
   
@@ -3525,7 +3524,7 @@ static void queueArticle (Article article, ProcQElem *head, ProcQElem *tail,
 
   if (queueElemPool == NULL)
     {
-      int i ;
+      unsigned int i ;
 
       queueElemPool = ALLOC (struct proc_q_elem, QUEUE_ELEM_POOL_SIZE) ;
       ASSERT (queueElemPool != NULL) ;

@@ -236,7 +236,10 @@ int tapeConfigLoadCbk (void *data)
         logAndExit (1,NO_TAPE_DIR) ;
     }
   else if (!isDirectory (dflTapeDir))
+  {
     logAndExit (1,NO_TAPE_DIR) ;
+    return -1; /* not reached */
+  }
   else
     dir = xstrdup (dflTapeDir) ;
   

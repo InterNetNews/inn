@@ -27,8 +27,11 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "libinn.h"
+#include "macros.h"
 #include "portable/socket.h"
 
+#include <ctype.h>
 #include <errno.h>
 #include <netdb.h>
 #include <netdb.h>
@@ -75,9 +78,11 @@ extern char *deliver_realm;
 
 
 char hostname[MAXHOSTNAMELEN];
-char *mailfrom_name = ""; /* default to no return path */
+char *mailfrom_name = NULL; /* default to no return path */
 
+#ifdef HAVE_SASL
 static int initialized_sasl = 0; /* weather sasl_client_init() has been called */
+#endif
 
 /* states the imap connection may be in */
 typedef enum {
@@ -396,9 +401,9 @@ static conn_ret WriteToWire_lmtpstr(connection_t *cxn, char *str, int slen);
 static conn_ret WriteToWire(connection_t *cxn, EndpRWCB callback, 
 			    EndPoint endp, Buffer *array);
 static void lmtp_sendmessage(connection_t *cxn, Article justadded);
-static conn_ret imap_ProcessQueue(connection_t *cxn);
+static void imap_ProcessQueue(connection_t *cxn);
 
-static conn_ret FindHeader(Buffer *bufs, char *header, char **start, char **end);
+static conn_ret FindHeader(Buffer *bufs, const char *header, char **start, char **end);
 static conn_ret PopFromQueue(Q_t *q, article_queue_t **item);
 
 enum failure_type {
@@ -424,7 +429,7 @@ static void lmtp_writeTimeoutCbk (TimeoutId id, void *data);
 
 /******************** PRIVATE FUNCTIONS ***************************/
 
-static char *imap_stateToString(int state)
+static const char *imap_stateToString(int state)
 {
     switch (state)
 	{
@@ -458,7 +463,7 @@ static char *imap_stateToString(int state)
 	}
 }
 
-static char *lmtp_stateToString(int state)
+static const char *lmtp_stateToString(int state)
 {
     switch(state)
 	{
@@ -563,8 +568,6 @@ static conn_ret AddToQueue(Q_t *q, void *item,
 
 static conn_ret PopFromQueue(Q_t *q, article_queue_t **item)
 {
-    article_queue_t *todel;
-    
     /* if queue empty return error */
     if ( q->head == NULL)
     {
@@ -770,7 +773,8 @@ static char *GotoNextLine(char *str)
  * Finds the given header in the message
  *  Returns NULL if not found
  */
-static conn_ret FindHeader(Buffer *bufs, char *header, char **start, char **end)
+static conn_ret FindHeader(Buffer *bufs, const char *header, char **start,
+	char **end)
 {
     Buffer b;
     int size;
@@ -881,11 +885,9 @@ static conn_ret WriteToWire(connection_t *cxn, EndpRWCB callback,
 static conn_ret WriteToWire_str(connection_t *cxn, EndpRWCB callback,
 				EndPoint endp, char *str, int slen)
 {
-    bool res;
     conn_ret result;
     Buffer buff;
     Buffer *writeArr;
-    char *p;
 
     if (slen==-1) slen = strlen(str);
 
@@ -1041,13 +1043,11 @@ static conn_ret AddControlMsg(connection_t *cxn,
 {
     char *rcpt_list = NULL, *rcpt_list_end;
     control_item_t *item;
-    int res = RET_OK;
-    conn_ret result;
+    conn_ret res = RET_OK;
     int t;
 
     /* make sure contents ok; this also should load it into memory */
-    res = artContentsOk (art);
-    if (res==false) {
+    if (!artContentsOk (art)) {
 	d_printf(0, "%s:%d AddControlMsg(): "
 		 "artContentsOk() said article was bad\n",
 		 hostPeerName (cxn->myHost), cxn->ident);
@@ -1071,7 +1071,7 @@ static conn_ret AddControlMsg(connection_t *cxn,
 	/* unrecognized type */
 	char tmp[100];
 	char *endstr;
-	int clen;
+	size_t clen;
 
 	endstr = strchr(control_header,'\n');
 	clen = endstr - control_header;
@@ -1083,11 +1083,7 @@ static conn_ret AddControlMsg(connection_t *cxn,
 	
 	d_printf(0,"%s:%d Don't understand control header [%s]\n",
 		 hostPeerName (cxn->myHost), cxn->ident,tmp);
-	res = RET_FAIL;
-    }
-
-    if (res != RET_OK) {
-	return res;
+	return RET_FAIL;
     }
 
     switch (t) {
@@ -1111,8 +1107,7 @@ static conn_ret AddControlMsg(connection_t *cxn,
 	    d_printf(0,"%s:%d addControlMsg(): "
 		     "newgroup/rmgroup header has no group specified\n",
 		     hostPeerName (cxn->myHost), cxn->ident);
-	    res = RET_FAIL;
-	    goto cleanup;
+	    return RET_FAIL;
 	}
 
 	folderlen = control_header_end - control_header;
@@ -1127,16 +1122,14 @@ static conn_ret AddControlMsg(connection_t *cxn,
 
 	item->article = art;
 
-	result = AddToQueue(&(cxn->imap_controlMsg_q), item, t, 1, must);
-	if (result != RET_OK) {
+	if (AddToQueue(&(cxn->imap_controlMsg_q), item, t, 1, must) != RET_OK) {
 	    d_printf(1,"%s:%d addCancelItem(): "
 		     "I thought we had in space in [imap] queue"
 		     " but apparently not\n",
 		     hostPeerName (cxn->myHost), cxn->ident);
 	    free(item->folder);
 	    free(item);
-	    res = RET_FAIL;
-	    goto cleanup;
+	    return RET_FAIL;
 	}
 
 	break;
@@ -1145,7 +1138,6 @@ static conn_ret AddControlMsg(connection_t *cxn,
     case CANCEL_MSG:
     {
 	char *str, *laststart;
-	int tmplen;
 
 	while (((*control_header) == ' ') && 
 	       (control_header != control_header_end))
@@ -1158,17 +1150,14 @@ static conn_ret AddControlMsg(connection_t *cxn,
 	    d_printf(0, "%s:%d Control header contains cancel "
 		        "with no msgid specified\n",
 		     hostPeerName (cxn->myHost), cxn->ident);
-	    res = RET_FAIL;
-	    goto cleanup;
+	    return RET_FAIL;
 	}
 
-	result = FindHeader(bufs, "Newsgroups", &rcpt_list, &rcpt_list_end);
-	if (result!=RET_OK)
+	if (FindHeader(bufs, "Newsgroups", &rcpt_list, &rcpt_list_end)!=RET_OK)
 	{
 	    d_printf(0,"%s:%d Cancel msg contains no newsgroups header\n",
 		     hostPeerName (cxn->myHost), cxn->ident);
-	    res = RET_FAIL;
-	    goto cleanup;
+	    return RET_FAIL;
 	}
 
 	str = rcpt_list;
@@ -1188,7 +1177,7 @@ static conn_ret AddControlMsg(connection_t *cxn,
 				    control_header, 
 				    control_header_end - control_header,
 				    NULL, must);
-		if (res!=RET_OK) goto cleanup;
+		if (res!=RET_OK) return res;
 		
 		laststart = str+1;
 	    }
@@ -1203,7 +1192,7 @@ static conn_ret AddControlMsg(connection_t *cxn,
 				control_header,
 				control_header_end - control_header, 
 				art, must);
-	    if (res!=RET_OK) goto cleanup;
+	    if (res!=RET_OK) return res;
 	}
 	break;
     }
@@ -1211,19 +1200,15 @@ static conn_ret AddControlMsg(connection_t *cxn,
 	/* huh?!? */
 	d_printf(0, "%s:%d internal error in addControlMsg()\n",
 		     hostPeerName (cxn->myHost), cxn->ident);
-	res = RET_FAIL;
-	break;
     }
-
- cleanup:
-    return res;
+    return RET_FAIL;
 }
 
 /*
  * Show msg handling statistics
  */
 
-void show_stats(connection_t *cxn)
+static void show_stats(connection_t *cxn)
 {   
     d_printf(0, "%s:%d\n",hostPeerName (cxn->myHost), cxn->ident);
     d_printf(0, "  imap queue = %d lmtp queue = %d\n",
@@ -1384,7 +1369,9 @@ static conn_ret SetSASLProperties(sasl_conn_t *conn, int sock, int minssf, int m
 
 static conn_ret Initialize(connection_t *cxn, int respTimeout)
 {
+#ifdef HAVE_SASL
     conn_ret saslresult;
+#endif /* HAVE_SASL */
 
     d_printf(1,"%s:%d initializing....\n",
 	     hostPeerName (cxn->myHost), cxn->ident);
@@ -1490,7 +1477,9 @@ static conn_ret SetupLMTPConnection(connection_t *cxn,
 				    char *serverName,
 				    int port)
 {
+#ifdef HAVE_SASL
     int saslresult;
+#endif /* HAVE_SASL */
     conn_ret result;
 
     cxn->lmtp_port = port;
@@ -1578,7 +1567,9 @@ static conn_ret SetupIMAPConnection(connection_t *cxn,
 				    char *serverName,
 				    int port)
 {
+#ifdef HAVE_SASL
     int saslresult;
+#endif /* HAVE_SASL */
     conn_ret result;
 
     cxn->imap_port = port;
@@ -1710,7 +1701,6 @@ static int ask_keepgoing(char *str)
 
 static conn_ret lmtp_listenintro(connection_t *cxn)
 {
-    char *str;
     Buffer *readBuffers;
 
     /* set up to receive */
@@ -1747,7 +1737,7 @@ static conn_ret imap_Connect(connection_t *cxn)
  * This is called when the data write timeout for the remote
  * goes off. We tear down the connection and notify our host.
  */
-static void imap_writeTimeoutCbk (TimeoutId id, void *data)
+static void imap_writeTimeoutCbk (TimeoutId id UNUSED, void *data)
 {
   connection_t *cxn = (Connection) data ;
   const char *peerName ;
@@ -1798,7 +1788,7 @@ static void imap_readTimeoutCbk (TimeoutId id, void *data)
 /*
  * Called by the EndPoint class when the timer goes off
  */
-void imap_reopenTimeoutCbk (TimeoutId id, void *data)
+static void imap_reopenTimeoutCbk (TimeoutId id, void *data)
 {
   Connection cxn = (Connection) data ;
 
@@ -1899,7 +1889,7 @@ static void lmtp_Disconnect(connection_t *cxn)
 /*
  * Called by the EndPoint class when the timer goes off
  */
-void lmtp_reopenTimeoutCbk (TimeoutId id, void *data)
+static void lmtp_reopenTimeoutCbk (TimeoutId id, void *data)
 {
   Connection cxn = (Connection) data ;
 
@@ -1998,7 +1988,7 @@ static void lmtp_readTimeoutCbk (TimeoutId id, void *data)
  * This is called when the data write timeout for the remote
  * goes off. We tear down the connection and notify our host.
  */
-static void lmtp_writeTimeoutCbk (TimeoutId id, void *data)
+static void lmtp_writeTimeoutCbk (TimeoutId id UNUSED, void *data)
 {
     connection_t *cxn = (Connection) data ;
     const char *peerName ;
@@ -2193,7 +2183,8 @@ static imt_stat lmtp_getauthline(char *str, char **line, int *linelen)
 }
 #endif /* HAVE_SASL */
 
-static void lmtp_writeCB (EndPoint e, IoStatus i, Buffer *b, void *d)
+static void lmtp_writeCB (EndPoint e UNUSED, IoStatus i UNUSED, Buffer *b,
+	void *d)
 {
     connection_t *cxn = (connection_t *) d;
     Buffer *readBuffers;
@@ -2269,7 +2260,8 @@ static void lmtp_writeCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 /************************** IMAP sending functions ************************/
 
 
-static void imap_writeCB (EndPoint e, IoStatus i, Buffer *b, void *d)
+static void imap_writeCB (EndPoint e UNUSED, IoStatus i UNUSED, Buffer *b,
+	void *d)
 {
     connection_t *cxn = (connection_t *) d;
     Buffer *readBuffers;
@@ -2424,21 +2416,20 @@ static conn_ret imap_sendAuthStep(connection_t *cxn, char *str)
 
 static conn_ret imap_sendAuthenticate(connection_t *cxn)
 {
-    int saslresult;
-    
     const char *mechusing;
+    int result;
+
+    char *p;
+
+#ifdef HAVE_SASL
     char *out;
     unsigned int outlen;
     char *in;
     unsigned int inlen;
     char *inbase64;
     int inbase64len;
-    int status;
-    int result;
+    int saslresult;
 
-    char *p;
-
-#ifdef HAVE_SASL
     sasl_interact_t *client_interact=NULL;
 
     saslresult=sasl_client_start(cxn->imap_saslconn, 
@@ -2637,7 +2628,7 @@ static conn_ret imap_sendKill(connection_t *cxn, unsigned uid)
     return RET_OK;
 }
 
-static conn_ret imap_sendSimple(connection_t *cxn, char *atom, int st)
+static conn_ret imap_sendSimple(connection_t *cxn, const char *atom, int st)
 {
     char *tosend;
     conn_ret result;
@@ -2696,7 +2687,6 @@ static conn_ret imap_sendCapability(connection_t *cxn)
 
 static conn_ret imap_listenintro(connection_t *cxn)
 {
-    char *str;
     Buffer *readBuffers;
 
     /* set up to receive */
@@ -2769,7 +2759,7 @@ static conn_ret imap_ParseCapability(char *string, imap_capabilities_t **caps)
 static void imap_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 {
     connection_t *cxn = (connection_t *) d;
-    Buffer *modeCmdBuffers, *readBuffers ;
+    Buffer *readBuffers ;
 
     int okno;
     char *str;
@@ -2777,10 +2767,6 @@ static void imap_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
     char *linestart;
     conn_ret ret;
     char *p;
-    int result;
-
-    int oldsize;
-    char *old;
 
     p = bufferBase(b[0]);
 
@@ -2876,12 +2862,12 @@ static void imap_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 		
 		cxn->current_control->data.control->uid = atoi(str);
 		
-		d_printf(1,"%s:%d:IMAP i think the UID = %d\n",
+		d_printf(1,"%s:%d:IMAP i think the UID = %ld\n",
 			 hostPeerName (cxn->myHost), cxn->ident,
 			 cxn->current_control->data.control->uid);
 	    } else {
 		/* it's probably a blank uid (i.e. message doesn't exist) */
-		cxn->current_control->data.control->uid = -1;
+		cxn->current_control->data.control->uid = (unsigned long)-1;
 	    }
 
 	    
@@ -3073,7 +3059,8 @@ static void imap_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 
 	    case IMAP_READING_SEARCH:
 		/* if no message let's forget about it */
-		if (cxn->current_control->data.control->uid == -1) {
+		if (cxn->current_control->data.control->uid
+			== (unsigned long)-1) {
 		    d_printf(2, "%s:%d:IMAP Search didn't find the message\n",
 			     hostPeerName (cxn->myHost), cxn->ident);
 		    QueueForgetAbout(cxn, cxn->current_control, 
@@ -3192,16 +3179,16 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
     Buffer *readBuffers;
     int result;
     int response_code;
+    conn_ret ret;
+#ifdef HAVE_SASL
     int inlen;
     char *in;
     int outlen;
     char *out;
     char *inbase64;
     int inbase64len;
-    int saslresult;
     imt_stat status;
-    conn_ret ret;
-#ifdef HAVE_SASL
+    int saslresult;
     sasl_interact_t *client_interact=NULL;
 #endif /* HAVE_SASL */
 
@@ -3665,7 +3652,6 @@ static char *ConvertRcptList(char *in, char *in_end, int *num)
     char *ret = malloc(retalloc);
     char *str = in;
     char *laststart = in;
-    int len;
 
     (*num) = 0;
 
@@ -3711,12 +3697,10 @@ static char *ConvertRcptList(char *in, char *in_end, int *num)
  *  cxn       - connection object
  */
 
-static conn_ret imap_ProcessQueue(connection_t *cxn)
+static void imap_ProcessQueue(connection_t *cxn)
 {
     article_queue_t *item;
     int result;
-    bool res;
-    char *control_header;
 
  retry:
 
@@ -3747,7 +3731,7 @@ static conn_ret imap_ProcessQueue(connection_t *cxn)
 		goto retry;
 	}
 
-	return RET_OK;
+	return;
     }
 
     cxn->current_control = item;
@@ -3769,7 +3753,7 @@ static conn_ret imap_ProcessQueue(connection_t *cxn)
 	    break;
 	}
 
-    return RET_OK;
+    return;
 }
 
 
@@ -3790,8 +3774,6 @@ static void lmtp_sendmessage(connection_t *cxn, Article justadded)
 {
     bool res;
     conn_ret result;
-    FILE *stream;
-    char *str;
     char *p;
     Buffer *bufs;
     char *control_header = NULL;
@@ -3919,6 +3901,8 @@ static void lmtp_sendmessage(connection_t *cxn, Article justadded)
 				&cxn->current_rcpts_issued);
     cxn->current_rcpts_okayed = 0;
     
+    if(mailfrom_name == NULL)
+	mailfrom_name = COPY("");
     p = (char *) malloc (strlen(rcpt_list)+strlen(mailfrom_name)+50);
     sprintf (p, 
 	     "RSET\r\n"
@@ -4118,16 +4102,16 @@ static void delConnection (Connection cxn)
 Connection newConnection (Host host,
                           u_int ident,
                           const char *ipname,
-                          u_int artTout,
-                          u_int portNum,
+                          u_int artTout UNUSED,
+                          u_int portNum UNUSED,
                           u_int respTimeout,
-                          u_int closePeriod,
-                          double lowPassLow,
-                          double lowPassHigh,
-			  double lowPassFilter)
+                          u_int closePeriod UNUSED,
+                          double lowPassLow UNUSED,
+                          double lowPassHigh UNUSED,
+			  double lowPassFilter UNUSED)
 {
     Connection cxn;
-    /* check arguements */
+    /* check arguments */
 
     /* allocate connection structure */
     cxn = CALLOC (connection_t, 1) ;
@@ -4166,8 +4150,6 @@ Connection newConnection (Host host,
 /* Causes the Connection to build the network connection. */
 bool cxnConnect (Connection cxn)
 {
-    conn_ret result;
-
     /* make the lmtp connection */
     if (lmtp_Connect(cxn) != RET_OK) return false;
 
@@ -4177,7 +4159,7 @@ bool cxnConnect (Connection cxn)
 }
 
 
-void QuitIfIdle(Connection cxn)
+static void QuitIfIdle(Connection cxn)
 {
     if ((cxn->lmtp_state == LMTP_AUTHED_IDLE) && 
 	(QueueItems(&(cxn->lmtp_todeliver_q))<=0)) {
@@ -4305,7 +4287,7 @@ void cxnNuke (Connection cxn)
  *
  */
 
-bool ProcessArticle(Connection cxn, Article art, bool must)
+static bool ProcessArticle(Connection cxn, Article art, bool must)
 {
     conn_ret result;
 
@@ -4443,8 +4425,9 @@ size_t cxnQueueSpace (Connection cxn)
 
   /* adjust the mode no-CHECK filter values */
 void cxnSetCheckThresholds (Connection cxn,
-			    double lowFilter, double highFilter,
-			    double lowPassFilter)
+			    double lowFilter UNUSED,
+			    double highFilter UNUSED,
+			    double lowPassFilter UNUSED)
 {
     d_printf(1,"%s:%d Threshold change. This means nothing to me\n",
 	     hostPeerName (cxn->myHost), cxn->ident);
@@ -4541,7 +4524,6 @@ void printCxnInfo (Connection cxn, FILE *fp, u_int indentAmt)
 int cxnConfigLoadCbk (void *data)
 {
   long iv ;
-  char *sv ;
   int rval = 1 ;
   FILE *fp = (FILE *) data ;
 

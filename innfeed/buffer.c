@@ -37,6 +37,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 }
 #endif
 
+#include "libinn.h"
 #include "innfeed.h"
 
 #include <assert.h>
@@ -68,7 +69,7 @@ struct buffer_s
 
 static void fillBufferPool (void)
 {
-  int i ;
+  unsigned int i ;
 
   bufferPool = ALLOC (struct buffer_s, BUFFER_POOL_SIZE) ;
   ASSERT (bufferPool != NULL) ;

@@ -44,6 +44,11 @@
 
 #include "misc.h"
 
+/*
+ * Functions from elsewhere used by host.c
+ */
+
+extern void mainLogStatus (FILE *fp) ;
 
 
 /*

@@ -80,7 +80,7 @@ void (*gCleanUp) (void) = 0 ;
 /* Log a message to stderr, called from warn or die.  Mostly the same as the
    standard error_log_stderr, but prepends the date to each line. */
 void
-error_log_stderr_date(int len, const char *fmt, va_list args, int err)
+error_log_stderr_date(int len UNUSED, const char *fmt, va_list args, int err)
 {
     char timebuff[30];
     time_t now;
@@ -129,7 +129,6 @@ void
 logAndExit(int status, const char *format, ...)
 {
     va_list args;
-    error_handler_t *log;
     int length;
 
     va_start(args, format);

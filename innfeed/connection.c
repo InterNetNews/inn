@@ -101,13 +101,13 @@ static void use_rcsid (const char *rid) {   /* Never called */
 # include <sys/ioctl.h>
 #endif
 
+#include "libinn.h"
 #include "article.h"
 #include "buffer.h"
 #include "configfile.h"
 #include "connection.h"
 #include "endpoint.h"
 #include "host.h"
-#include "libinn.h"
 #include "msgs.h"
 
 #if defined (NDEBUG)
@@ -2121,7 +2121,8 @@ static void modeCmdIssued (EndPoint e, IoStatus i, Buffer *b, void *d)
  * Called whenever some amount of data has been written to the pipe but
  * more data remains to be written
  */
-static void writeProgress (EndPoint e, IoStatus i, Buffer *b, void *d)
+static void writeProgress (EndPoint e UNUSED, IoStatus i, Buffer *b UNUSED,
+                           void *d)
 {
   Connection cxn = (Connection) d ;
 
@@ -2671,7 +2672,7 @@ static void processResponse239 (Connection cxn, char *response)
   else
     {
       cxn->takesOkayed++ ;
-      cxn->takesSizeOkayed += (double) artSize(artHolder->article);
+      cxn->takesSizeOkayed += artSize(artHolder->article);
 
       remArtHolder (artHolder, &cxn->takeRespHead, &cxn->articleQTotal) ;
       if (cxn->articleQTotal == 0)
@@ -2779,7 +2780,7 @@ static void processResponse439 (Connection cxn, char *response)
   else
     {
       cxn->takesRejected++ ;
-      cxn->takesSizeRejected += (double) artSize(artHolder->article);
+      cxn->takesSizeRejected += artSize(artHolder->article);
 
       remArtHolder (artHolder, &cxn->takeRespHead, &cxn->articleQTotal) ;
       /* Some(?) hosts return the 439 response even before we're done
@@ -2845,7 +2846,7 @@ static void processResponse235 (Connection cxn, char *response)
       cxn->takeRespHead = NULL ;
       cxn->articleQTotal = 0 ;
       cxn->takesOkayed++ ;
-      cxn->takesSizeOkayed += (double) artSize(artHolder->article);
+      cxn->takesSizeOkayed += artSize(artHolder->article);
       
       if (cxn->articleQTotal == 0)
         cxnIdle (cxn) ;
@@ -3120,7 +3121,7 @@ static void processResponse437 (Connection cxn, char *response)
 
   artHolder = cxn->takeRespHead ;
   cxn->takeRespHead = NULL ;
-  cxn->takesSizeRejected += (double) artSize(artHolder->article);
+  cxn->takesSizeRejected += artSize(artHolder->article);
 
   /* Some servers return the 437 response before we're done sending. */
   if (cxn->articleQTotal == 0 && !writeIsPending (cxn->myEp))
