@@ -32,7 +32,7 @@ main(void)
     char Strange[] = "Strange";
     char change[] = "çhange";
 
-    puts("36");
+    puts("38");
 
     tst = tst_init(2);
     ok(1, tst != NULL);
@@ -68,14 +68,16 @@ main(void)
     ok_string(31, "foo", tst_search(U"test", tst));
     ok_string(32, "çhange", tst_delete(U"çhange", tst));
     ok_string(33, "foo", tst_delete(U"test", tst));
+    ok(34, tst_search(NULL, tst) == NULL);
+    ok(35, tst_delete(NULL, tst) == NULL);
     tst_cleanup(tst);
-    ok(34, true);
+    ok(36, true);
 
     words = fopen("/usr/dict/words", "r");
     if (words == NULL)
         words = fopen("/usr/share/dict/words", "r");
     if (words == NULL) {
-        puts("ok 35 # skip\nok 36 # skip");
+        puts("ok 37 # skip\nok 38 # skip");
         exit(0);
     }
 
@@ -94,7 +96,7 @@ main(void)
             }
         }
     }
-    puts("ok 35");
+    puts("ok 37");
 
     if (fseek(words, 0, SEEK_SET) < 0)
         sysdie("Unable to rewind words file");
@@ -120,7 +122,7 @@ main(void)
         }
     }
     tst_cleanup(tst);
-    puts("ok 36");
+    puts("ok 38");
 
     return 0;
 }
