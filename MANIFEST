@@ -25,6 +25,7 @@ authprogs/libauth.h                   Interface for libauth
 authprogs/pam.conf.example            Example pam.conf file for ckpasswd
 authprogs/pwcheck.c                   Check password through a socket
 authprogs/radius.c                    Get username from RADIUS server
+authprogs/smbval                      The smb auth libraries (Directory)
 authprogs/smbval/Makefile             Libraries for smb auth
 authprogs/smbval/byteorder.h          Libraries for smb auth
 authprogs/smbval/md4.c                Libraries for smb auth
@@ -56,6 +57,7 @@ backends/actsyncd.in                  Daemon to run actsync periodically
 backends/archive.c                    Simple article archiver
 backends/batcher.c                    Make news batches
 backends/buffchan.c                   Buffered funnel to file splitter
+backends/crosspost.c                  Create links for crossposts (obselete)
 backends/cvtbatch.c                   Add fields to simple batchfile
 backends/filechan.c                   Split a funnel into separate files
 backends/inndf.c                      df used for innwatch
@@ -91,6 +93,7 @@ contrib/innconfcheck                  Merge inn.conf with its man page
 contrib/makeexpctl.in                 Create expire.ctl from read groups
 contrib/makestorconf.in               Create storage.conf from read groups
 contrib/mkbuf                         Create cycbuff for HP-UX
+contrib/mlockfile.c                   Lock files into memory using mlock
 contrib/newsresp.c                    Measure responsiveness of remote server
 contrib/ninpaths                      ninpaths Path survey software (Directory)
 contrib/ninpaths/Makefile             Makefile for ninpaths
@@ -239,6 +242,7 @@ doc/pod/expireover.pod                Master file for expireover.8
 doc/pod/fastrm.pod                    Master file for fastrm.1
 doc/pod/hacking.pod                   Master file for HACKING
 doc/pod/hook-perl.pod                 Master file for doc/hook-perl
+doc/pod/hook-python.pod               Master file for doc/hook-python
 doc/pod/inn.conf.pod                  Master file for inn.conf.5
 doc/pod/innd.pod                      Master file for innd.8
 doc/pod/inndf.pod                     Master file for inndf.8
@@ -255,6 +259,7 @@ doc/pod/ovdb_init.pod                 Master file for ovdb_init.8
 doc/pod/ovdb_monitor.pod              Master file for ovdb_monitor.8
 doc/pod/ovdb_server.pod               Master file for ovdb_server.8
 doc/pod/ovdb_stat.pod                 Master file for ovdb_stat.8
+doc/pod/passwd.nntp.pod               Master file for passwd.nntp.5
 doc/pod/readers.conf.pod              Master file for readers.conf.5
 doc/pod/readme.pod                    Master file for README
 doc/pod/sasl.conf.pod                 Master file for sasl.conf.5
@@ -299,6 +304,7 @@ history/Makefile                      Makefile for history library
 history/his.c                         History API glue implementation
 history/hisbuildconfig.in             Construct history interface
 history/hisinterface.h                History API interface
+history/hisv6                         History v6 method (Directory)
 history/hisv6/Makefile                Makefile for v6 history
 history/hisv6/hismethod.config        hisbuildconfig definition
 history/hisv6/hisv6-private.h         Private header file for hisv6
@@ -329,6 +335,7 @@ include/nntp.h                        NNTP command and reply codes
 include/ov.h                          Header file for overview
 include/paths.h.in                    Paths to common programs and files
 include/portable                      Portability wrappers (Directory)
+include/portable/mmap.h               Wrapper for <sys/mman.h>
 include/portable/time.h               Wrapper for <time.h> and <sys/time.h>
 include/portable/wait.h               Wrapper for <sys/wait.h>
 include/ppport.h                      Header file for Perl support
@@ -337,7 +344,6 @@ include/storage.h                     Header file for storage API
 innd                                  Server (Directory)
 innd/Makefile                         Makefile for server
 innd/art.c                            Process a received article
-innd/art.h                            Article data types
 innd/cc.c                             Control channel routines
 innd/chan.c                           I/O channel routines
 innd/icd.c                            Read and write the active file
@@ -396,7 +402,6 @@ lib/argparse.c                        Parsing used for OV3
 lib/cleanfrom.c                       Clean out a From line
 lib/clientactive.c                    Client access to the active file
 lib/clientlib.c                       Replacement for C News library routine
-lib/closeonexec.c                     Make a descriptor close-on-exec
 lib/concat.c                          Concatenate strings with dynamic memory
 lib/conffile.c                        Routines for reading *.conf files
 lib/confparse.c                       Generic configuration file parser
@@ -405,6 +410,7 @@ lib/date.c                            Date parsing and conversion routines
 lib/dbz.c                             DBZ database library
 lib/defdist.c                         Determine default Distribution header
 lib/error.c                           Error reporting
+lib/fdflags.c                         Set or clear file descriptor flags
 lib/fdlimit.c                         File descriptor limits
 lib/findheader.c                      Find a header in an article
 lib/fseeko.c                          fseeko replacement
@@ -427,7 +433,6 @@ lib/makedir.c                         Make directory recursively
 lib/malloc.c                          A debugging malloc package
 lib/md5.c                             MD5 checksum calculation
 lib/memcmp.c                          memcmp replacement
-lib/nonblocking.c                     Set or clear non-blocking I/O
 lib/parsedate.y                       Date parsing
 lib/perl.c                            Perl hook support for nnrpd and innd
 lib/pread.c                           pread replacement
@@ -551,7 +556,6 @@ site/Makefile                         Makefile for site-local files
 site/getsafe.sh                       Safely get config file from samples
 storage                               Storage library (Directory)
 storage/Make.methods                  Makefile for storage methods
-storage/Make.ovmethods                Makefile for overview methods
 storage/Makefile                      Makefile for storage library
 storage/buffindexed                   buffindexed overview method (Directory)
 storage/buffindexed/Makefile          Makefile for buffindexed overview
@@ -573,7 +577,6 @@ storage/ov3/Makefile                  Makefile for tradindexed overview
 storage/ov3/ov3.c                     tradindexed overview routines
 storage/ov3/ovmethod.config           ovbuildconfig definition
 storage/ov3/tradindexed.h             Header file for tradindexed overview
-storage/ovbuildconfig.in              Construct overview interface
 storage/ovdb                          ovdb overview method (Directory)
 storage/ovdb/Makefile                 Makefile for ovdb overview method
 storage/ovdb/ovdb.c                   ovdb (Berkeley DB) overview method
