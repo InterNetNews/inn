@@ -11,45 +11,36 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "ov.h"
 #include "tdx-private.h"
 #include "tdx-structure.h"
 
 /*
-**  Dump the main index file.
+**  Dump the main index data, either all of it or that for a particular group
+**  if the group argument is non-NULL.
 */
 static void
-dump_index(void)
+dump_index(const char *group)
 {
     struct group_index *index;
 
     index = tdx_index_open(OV_READ);
     if (index == NULL)
         return;
-    tdx_index_dump(index);
-    tdx_index_close(index);
-}
+    if (group == NULL)
+        tdx_index_dump(index, stdout);
+    else {
+        const struct group_entry *entry;
 
-
-/*
-**  Dump the main index data for a particular group.
-*/
-static void
-dump_group(const char *group)
-{
-    struct group_index *index;
-    const struct group_entry *entry;
-
-    index = tdx_index_open(OV_READ);
-    if (index == NULL)
-        return;
-    entry = tdx_index_entry(index, group);
-    if (entry == NULL) {
-        warn("cannot find group %s", group);
-        return;
+        entry = tdx_index_entry(index, group);
+        if (entry == NULL) {
+            warn("cannot find group %s", group);
+            return;
+        }
+        tdx_index_print(group, entry, stdout);
     }
-    tdx_index_print(group, entry);
     tdx_index_close(index);
 }
 
@@ -77,7 +68,7 @@ dump_group_index(const char *group)
         warn("cannot open group %s", group);
         return;
     }
-    tdx_data_index_dump(data);
+    tdx_data_index_dump(data, stdout);
     tdx_data_close(data);
     tdx_index_close(index);
 }
@@ -155,45 +146,40 @@ main(int argc, char *argv[])
     const char *newsgroup = NULL;
     ARTNUM article = 0;
 
-    error_program_name = "tdx-util";
+    message_program_name = "tdx-util";
 
     if (ReadInnConf() < 0)
         exit(1);
 
     /* Parse options. */
     opterr = 0;
-    while ((option = getopt(argc, argv, "dg:i:n:o:p:")) != EOF) {
+    while ((option = getopt(argc, argv, "a:n:p:gio")) != EOF) {
         switch (option) {
-        case 'd':
-            if (mode != '\0')
-                die("only one mode option allowed");
-            mode = 'd';
+        case 'a':
+            article = strtoul(optarg, NULL, 10);
+            if (article == 0)
+                die("invalid article number %s", optarg);
+            break;
+        case 'n':
+            newsgroup = optarg;
+            break;
+        case 'p':
+            innconf->pathoverview = xstrdup(optarg);
             break;
         case 'g':
             if (mode != '\0')
                 die("only one mode option allowed");
             mode = 'g';
-            newsgroup = optarg;
             break;
         case 'i':
             if (mode != '\0')
                 die("only one mode option allowed");
             mode = 'i';
-            newsgroup = optarg;
-            break;
-        case 'n':
-            article = strtoul(optarg, NULL, 10);
-            if (article == 0)
-                die("invalid article number %s", optarg);
             break;
         case 'o':
             if (mode != '\0')
                 die("only one mode option allowed");
             mode = 'o';
-            newsgroup = optarg;
-            break;
-        case 'p':
-            innconf->pathoverview = xstrdup(optarg);
             break;
         default:
             die("invalid option %c", optopt);
@@ -201,16 +187,17 @@ main(int argc, char *argv[])
         }
     }
 
+    /* Modes g and o require a group be specified. */
+    if ((mode == 'g' || mode == 'o') && newsgroup == NULL)
+        die("group must be specified for -%c", mode);
+
     /* Run the specified function. */
     switch (mode) {
-    case 'd':
-        dump_index();
+    case 'i':
+        dump_index(newsgroup);
         break;
     case 'g':
         dump_group_index(newsgroup);
-        break;
-    case 'i':
-        dump_group(newsgroup);
         break;
     case 'o':
         dump_overview(newsgroup, article);
