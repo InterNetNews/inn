@@ -41,3 +41,7 @@ parameter:value
 ===
 config/tmp:1: invalid character ':' in unquoted string
 ===
+parameter: value # this is a comment
+===
+config/tmp:1: parse error: saw string, expecting semicolon or newline
+===

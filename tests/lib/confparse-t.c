@@ -255,7 +255,7 @@ main(void)
     int n;
     FILE *tmpconfig;
 
-    puts("100");
+    puts("102");
 
     if (access("config/valid", F_OK) < 0)
         if (access("lib/config/valid", F_OK) == 0)
