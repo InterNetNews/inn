@@ -460,8 +460,11 @@ sub get_cycbuff_info {
 	# written a little past free.
 	
 	$offset = 0;
+	$minartoffset = int($len / (512 * 8)) + 512;
+	$tonextblock = 16384 - ($minartoffset & (16384 - 1));
+	$minartoffset += $tonextblock;
   do_seek:
-	while (1) {
+	while (!($cyclenum == 0 && $free == $minartoffset)) {
 	    $offset += 16384;
 	    seek (BUFF, $cyclenum ? $free + $offset : 0, 0);
 
