@@ -19,11 +19,6 @@
 #include "nntp.h"
 #include "paths.h"
 
-/* Error returns from inet_addr. */
-#ifndef INADDR_NONE
-# define INADDR_NONE 0xffffffff
-#endif
-
 /*
 **  Open a connection to an NNTP server and create stdio FILE's for talking
 **  to it.  Return -1 on error.
@@ -47,8 +42,7 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
 
     buff = errbuff ? errbuff : mybuff;
     *buff = '\0';
-    quadaddr.s_addr = inet_addr(host);
-    if (quadaddr.s_addr != (unsigned int) -1) {
+    if (inet_aton(host, &quadaddr)) {
 	/* Host was specified as a dotted-quad internet address.  Fill in
 	 * the parts of the hostent struct that we need. */
 	fakehp.h_length = sizeof quadaddr;
@@ -82,8 +76,7 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
     memset(&client, 0, sizeof client);
     client.sin_family = AF_INET;
     if (innconf->sourceaddress) {
-	client.sin_addr.s_addr = inet_addr(innconf->sourceaddress);
-	if (server.sin_addr.s_addr == INADDR_NONE)
+        if (!inet_aton(innconf->sourceaddress, &client.sin_addr))
 	    return -1;
     } else
 	client.sin_addr.s_addr = htonl(INADDR_ANY);

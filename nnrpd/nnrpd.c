@@ -428,6 +428,7 @@ static void StartConnection()
     char		accesslist[BIG_BUFFER];
     int                 code;
     static ACCESSGROUP	*authconf;
+    struct in_addr      client_addr;
 
     /* Get the peer's name. */
     length = sizeof sin;
@@ -465,16 +466,17 @@ static void StartConnection()
 		    "? cant gethostbyaddr %s %s -- using IP address for access",
 		    ClientHost, HostErrorStr);
 	    }
-            ClientIP = inet_addr(ClientHost);
+            inet_aton(ClientHost, &client_addr);
 	}
 	else {
 	    (void)strcpy(buff, inet_ntoa(sin.sin_addr));
-            ClientIP = inet_addr(buff);
+            inet_aton(buff, &client_addr);
 	}
 #else
 	(void)strcpy(ClientHost, inet_ntoa(sin.sin_addr));
-        ClientIP = inet_addr(ClientHost);
+        inet_aton(ClientHost, &client_addr);
 #endif /* defined(DO_NNRP_GETHOSTBYADDR) */
+        ClientIP = client_addr.s_addr;
 	(void)strncpy(ClientIp, inet_ntoa(sin.sin_addr), sizeof(ClientIp));
 	length = sizeof sin;
 	if (getsockname(STDIN_FILENO, (struct sockaddr *)&sin, &length) < 0) {
@@ -804,8 +806,9 @@ main(int argc, char *argv[])
 	    break;
  	case 'b':			/* bind to a certain address in
  	        			   daemon mode */
- 	    ListenAddr = inet_addr(optarg);
- 	    if (ListenAddr == -1)
+            if (inet_aton(optarg, &ssa.sin_addr))
+                ListenAddr = ssa.sin_addr.s_addr;
+            else
  	    	ListenAddr = htonl(INADDR_ANY);
  	    break;
  	case 'D':			/* standalone daemon mode */
