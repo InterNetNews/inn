@@ -1,0 +1,126 @@
+=head1 NAME
+
+rnews - Inject individual articles and UUCP batches into INN
+
+=head1 SYNOPSIS
+
+B<rnews> [B<-NUv>] [B<-h> I<host>] [B<-P> I<port>] [B<-rS> I<server>]
+[I<file>]
+
+=head1 DESCRIPTION
+
+B<rnews> injects either individual articles or UUCP-style article batches
+into an INN server.  It submits articles via IHAVE and is suitable for
+injecting articles received from other sources; local postings should
+generally use inews(1) instead.  It is also used to process spooled
+messages created by, for example, B<nnrpd> while B<innd> is not available.
+
+The message is read from I<file> if given, or standard input if no file is
+given.  Articles are sent to the server given in the B<-r> or B<-S>
+command line options if given, otherwise to the server set via
+I<nnrpdposthost> in F<inn.conf>, otherwise to the local server.
+
+When sent over UUCP, Usenet articles are typically collected in a single
+batch to reduce the UUCP overhead.  Batches can also be compressed to
+reduce communication time.  If the input to B<rnews> does not begin with
+the characters C<#!>, it is taken to be a single news article; otherwise,
+the first line of the input is interpreted as a batch command.
+
+If the batch command is:
+
+    #! rnews <number>
+
+then the next <number> bytes (starting with the next line) are read as a
+news article.  After that article is processed, the next line is again
+treated as a batch command.
+
+If the command is:
+
+    #! cunbatch
+
+then the rest of the input is fed to C<gzip -d> to uncompress it, and then
+the resulting uncompressed output is re-read as if it were the original
+input to B<rnews>.  A compressed batch should therefore start with this
+line and contain a batch of articles separated by C<S<#! rnews>> lines and
+then compressed with compress(1).  (Batches compressed with gzip(1) should
+instead use C<gunbatch> as the batch command; INN just uses B<gzip> rather
+than B<compress> because it can handle B<compress>-style compression but
+is more widely available, due to old patent issues, than B<compress>.)
+
+Otherwise, if the command is any other word, then B<rnews> will try to
+execute a program with that name, looking for it in the directory
+I<pathbin>/bin/rnews.libexec.  The rest of the batch will be fed to that
+program's standard input, and the standard output from the program will be
+treated as if it were the original input to B<rnews>.  INN comes with two
+such standard batch processors:  B<c7unbatch>, which undoes an ASCII
+encoding to recover the original binary compressed stream and then
+decompresses it as above, and B<gunbatch>, which also invokes B<gzip> and
+should be used for batches compressed with B<gzip>.
+
+By default, B<rnews> will log and discard any articles that are rejected
+by the server or cannot be parsed by B<rnews> for some reason (such as a
+missing header).  This default can be changed when compiling INN by
+setting DO_RNEWS_SAVE_BAD in F<include/inn/options.h>.  There is no way to
+change it at runtime, unfortunately.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-h> I<host>
+
+If B<-h> is given, B<rnews> will log the message ID and I<host> via syslog
+for each article that it offers to the server.  This is used in
+conjunction with a UUCP feed to get a log of the messages received via
+that feed.  This will also be done if the environment variable UU_MACHINE
+is set, but will only be done if I<host> is not an empty string.  (You can
+therefore turn off logging even if UU_MACHINE will be set by passing the
+flag C<-h ''> to B<rnews>.)
+
+=item B<-N>
+
+Normally, if unpacking the input batch fails, it is re-spooled to
+I<pathincoming> for another attempt later.  If the B<-N> flag is given, no
+such re-spooling is done and B<rnews> will instead exit with status 9 if
+unpacking fails.
+
+=item B<-P> I<port>
+
+Use I<port> as the server port to connect to rather than I<nnrpdpostport>
+(as set in F<inn.conf>).  Note that this value is only used if B<rnews>
+does not connect to the local server (in other words, when B<-r> or B<-S>
+is given or I<nnrpdposthost> is set).
+
+=item B<-r> I<server>, B<-S> I<server>
+
+B<-r> and B<-S> are synonymous.  If either is given, articles will be sent
+to I<server> rather than using the local server, overriding also the
+setting of I<nnrpdposthost> in F<inn.conf>.
+
+=item B<-U>
+
+If the server is not available, both B<rnews> and B<nnrpd> will spool
+posts to new files in the I<pathincoming> directory (as specified in
+F<inn.conf>).  When B<rnews> is invoked with the B<-U> option, it scans
+that directory and processes all spooled messages found there whose
+filenames do not begin with C<.>, attempting to send them to the server
+again.  It's a good idea to run this periodically out of cron to pick up
+any articles spooled due to temporary server unavailability.
+
+=back
+
+=head1 BUGS
+
+B<rnews> cannot process articles that have embedded nul characters in
+them.  (Neither can the rest of INN at present.)
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Rewritten in
+POD by Russ Allbery <rra@stanford.edu>.
+
+=head1 SEE ALSO
+
+compress(1), gzip(1), inn.conf(5), innd(8), nnrpd(8)
+
+=cut

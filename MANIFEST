@@ -304,6 +304,7 @@ doc/pod/radius.pod                    Master file for radius.8
 doc/pod/rc.news.pod                   Master file for rc.news.8
 doc/pod/readers.conf.pod              Master file for readers.conf.5
 doc/pod/readme.pod                    Master file for README
+doc/pod/rnews.pod                     Master file for rnews.1
 doc/pod/sendinpaths.pod               Master file for sendinpaths.8
 doc/pod/simpleftp.pod                 Master file for simpleftp.1
 doc/pod/sm.pod                        Master file for sm.1
