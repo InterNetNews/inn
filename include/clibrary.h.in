@@ -214,3 +214,9 @@ extern void	setproctitle();
 #if ! defined(INADDR_NONE) && ! defined(_AIX41)
 #define		INADDR_NONE 	(unsigned long)0xffffffff
 #endif
+
+#if defined(_AIX41)
+#define		ARGTYPE size_t
+#else
+#define		ARGTYPE int
+#endif
