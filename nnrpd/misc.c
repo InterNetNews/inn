@@ -240,7 +240,7 @@ NNTPtoGMT(av1, av2)
 	century = current->tm_year / 100;
 
 	/* Convert current year to two digits if necessary. */
-	if (current->tm_year > 100)
+	if (current->tm_year >= 100)
 		current->tm_year -= century * 100;
 
 	if (year <= current->tm_year)
