@@ -1626,7 +1626,7 @@ main(int ac, char *av[])
 	fprintf(stderr, "Can't setup storage manager\n");
 	exit(1);
     }
-    if (!SMinit()) {
+    if (innconf->storageapi && !SMinit()) {
 	fprintf(stderr, "Can't initialize storage manager: %s\n", SMerrorstr);
 	exit(1);
     }
