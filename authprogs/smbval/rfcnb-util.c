@@ -134,7 +134,7 @@ int RFCNB_Name_To_IP(char *host, struct in_addr *Dest_IP)
 
         /* Use inet_addr to try to convert the address */
 
-  if ((addr = inet_addr(host)) == INADDR_NONE) { /* Oh well, a good try :-) */
+  if ((addr = inet_addr(host)) == (unsigned int) INADDR_NONE) { /* Oh well, a good try :-) */
 
         /* Now try a name look up with gethostbyname */
 
