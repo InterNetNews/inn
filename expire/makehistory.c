@@ -408,6 +408,7 @@ static void ARTreadschema(BOOL Overview)
     ARTOVERFIELD                *fp;
     int                         i;
     char                        buff[SMBUF];
+    BOOL                        foundxreffull = FALSE;
 
     if (Overview) {
 	/* Open file, count lines. */
@@ -446,8 +447,10 @@ static void ARTreadschema(BOOL Overview)
 		Msgidp = fp;
 	    if (caseEQn(buff, EXPIRES, STRLEN(EXPIRES)-1))
 		Expp = fp;
-	    if (caseEQn(buff, XREF, STRLEN(XREF)-1))
+	    if (caseEQn(buff, XREF, STRLEN(XREF)-1)) {
 		Xrefp = fp;
+		foundxreffull = fp->NeedHeadername;
+            }
 	    fp++;
 	}
 	ARTfieldsize = fp - ARTfields;
@@ -459,8 +462,10 @@ static void ARTreadschema(BOOL Overview)
 	Missfieldsize++;
     if (Expp == (ARTOVERFIELD *)NULL)
 	Missfieldsize++;
-    if (Xrefp == (ARTOVERFIELD *)NULL)
-	Missfieldsize++;
+    if (Xrefp == (ARTOVERFIELD *)NULL || !foundxreffull) {
+	(void)fprintf(stderr, "'Xref:full' must be included in %s\n", SchemaPath);
+	exit(1);
+    }
     if (Missfieldsize > 0) {
 	Missfields = NEW(ARTOVERFIELD, Missfieldsize);
         fp = Missfields;
@@ -490,15 +495,6 @@ static void ARTreadschema(BOOL Overview)
 	    fp->HasHeader = FALSE;
 	    fp->HeaderLength = 0;
 	    Expp = fp++;
-	}
-	if (Xrefp == (ARTOVERFIELD *)NULL) {
-	    fp->NeedHeadername = FALSE;
-	    fp->Headername = COPY(XREF);
-	    fp->HeadernameLength = strlen(XREF)-1;
-	    fp->Header = (char *)NULL;
-	    fp->HasHeader = FALSE;
-	    fp->HeaderLength = 0;
-	    Xrefp = fp++;
 	}
     }
 }
