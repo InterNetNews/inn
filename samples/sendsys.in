@@ -5,7 +5,7 @@
 
 PROG=sendsys
 ##  Some shells don't pass in $* unless we explicitly pass it in here.
-. ${NEWSLIB}/parsecontrol "$@"
+. ${NEWSBIN}/parsecontrol "$@"
 
 ##  See if the poster should have given an argument.
 case "${ACTION}-$1" in

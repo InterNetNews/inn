@@ -38,7 +38,7 @@ $newsgroup = '@NEWSGRP@';
     'nnrpd',		'@prefix@/bin/nnrpd',
     'nntpsend.ctl',	'@prefix@/etc/nntpsend.ctl',
     'oldlogs',		'@LOGDIR@/OLD',
-    'parsectl',		'@prefix@/etc/parsecontrol',
+    'parsectl',		'@prefix@/bin/parsecontrol',
     'passwd.nntp',	'@prefix@/etc/passwd.nntp',
     'rnews',		'@prefix@/bin/rnews',
     'rnewsprogs',	'@prefix@/bin/rnews.libexec',

@@ -389,7 +389,7 @@ typ_PATH_NNTPPASS 		/var/news/etc/passwd.nntp
 =()<typ_PATH_EXPIRECTL 			@<_PATH_EXPIRECTL>@>()=
 typ_PATH_EXPIRECTL 		/var/news/etc/expire.ctl
 =()<typ_PATH_PARSECTL 			@<_PATH_PARSECTL>@>()=
-typ_PATH_PARSECTL 		/var/news/etc/parsecontrol
+typ_PATH_PARSECTL 		/var/news/bin/parsecontrol
 =()<typ_PATH_CTLWATCH 			@<_PATH_CTLWATCH>@>()=
 typ_PATH_CTLWATCH 		/var/news/etc/innwatch.ctl
 =()<typ_PATH_WATCHPID 			@<_PATH_WATCHPID>@>()=
