@@ -494,7 +494,7 @@ BOOL OVERstore(TOKEN *token, char *Overdata, int Overlen) {
     for (config=OVERconfig;config!=NULL;config=config->next) {
 	if (MatchGroups(Xref, config->numpatterns, config->patterns)) {
 	    offset = ftell(Newfp ? config->newfp : config->fp);
-	    if (fprintf(Newfp ? config->newfp : config->fp, "%s\n", Overbuff) == EOF || fflush(config->fp) == EOF) {
+	    if (fprintf(Newfp ? config->newfp : config->fp, "%s\n", Overbuff) == EOF || fflush(Newfp ? config->newfp : config->fp) == EOF) {
 		syslog(L_ERROR, "OVER cant flush overview file, index %d: %m", config->index);
 		return FALSE;
 	    }
