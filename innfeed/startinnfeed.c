@@ -41,6 +41,7 @@ main(int argc, char *argv[])
     uid_t               news_uid;
     gid_t               news_gid;
     char **             innfeed_argv;
+    char *              spawn_path;
     int                 i;
 
 #if HAVE_SETRLIMIT
@@ -95,9 +96,21 @@ main(int argc, char *argv[])
     if (setuid(news_uid) < 0 || getuid() != news_uid)
         sysdie("can't setuid to %d", news_uid);
 
+    /* Check for imapfeed -- continue to use "innfeed" in variable
+       names for historical reasons regardless */
+    if ((argc > 0) && (strcmp(argv[1],"imapfeed") == 0))
+    {
+        argc--;
+	argv++;
+        spawn_path = concat(innconf->pathbin, "/imapfeed", (char *) 0);
+    }
+    else
+        spawn_path = concat(innconf->pathbin, "/innfeed",  (char *) 0);
+
+
     /* Build the argument vector for innfeed. */
     innfeed_argv = xmalloc((argc + 1) * sizeof(char *));
-    innfeed_argv[0] = concat(innconf->pathbin, "/innfeed", (char *) 0);
+    innfeed_argv[0] = spawn_path;
     for (i = 1; i <= argc; i++)
         innfeed_argv[i] = argv[i];
     innfeed_argv[argc] = NULL;

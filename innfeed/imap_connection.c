@@ -3,7 +3,7 @@
 
    Instead of feeding articles via nntp to another host this feeds the
    messages via lmtp to a host and the control messages (cancel's
-   etc..) it preforms via IMAP. This means it has 2 active connections
+   etc..) it performs via IMAP. This means it has 2 active connections
    at any given time and 2 queues.
 
    When an article comes in it is immediatly placed in the lmtp
