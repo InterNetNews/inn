@@ -38,6 +38,57 @@ from 2.2 to 2.3">.
 
 =item *
 
+Preliminary IPv6 support has been added, it is off by default.  Build with
+--enable-ipv6 to try it.  Hopefully, nobody will notice any problems with
+the default configuration, although some changes have been made to data
+structures even when IPv6 is disabled.  Further information is available
+in F<doc/IPv6-info>.
+
+=item *
+
+nnrpd now optionally supports article injection via IHAVE.  Any articles
+injected this way must have Date, From, Message-ID, Newsgroups, Path, and
+Subject headers.  X-Trace and X-Complaints-To headers will be added if the
+appropriate options are set in F<readers.conf>, but other headers will not
+be modified/inserted (e.g. NNTP-Posting-Host, NNTP-Posting-Date,
+Organization, Lines, Cc, Bcc and To headers).
+
+=item *
+
+nnrpd now handles arbitrarily long lines in POST and IHAVE; administrators
+who want to limit the length of lines in locally posted articles will need
+to add this to their local filters instead.
+
+=item *
+
+nnrpd no longer handles the poorly-specified RFC 977 optional fourth
+argument to the NEWGROUPS command specifying the "distributions" that the
+command was supposed to apply to.
+
+Clients that use that argument will break.  There are not believed to be
+any such clients, and it's easy enough to just filter the returned list of
+newsgroups (which is generally fairly short) to achieve the same results.
+
+=item *
+
+nnrpd no longer accepts UTC as a synonym for GMT for NEWGROUPS or NEWNEWS.
+This usage was never portable, and was rejected by the NNTP working group.
+It is being removed now in the hope that it will be caught before anyone
+starts to rely on it.
+
+=item *
+
+Several other, more minor protocol issues have been fixed:  Connections
+rejected due to the connection rate limiting in innd receive 400 replies
+instead of 504 or 505, and ARTICLE without an argument will always either
+retrieve the current article or return a 423 error, never advance the
+current article number to the next valid article.
+
+See F<doc/compliance-nntp> for all of the known issues with INN's
+compliance with the current NNTP draft.
+
+=item *
+
 All accesses to the history file for all parts of INN now go through a
 generic API like the storage and overview subsystems do.  This will
 eventually allow new history implementations to be dropped in without
@@ -57,6 +108,12 @@ parts of INN.
 
 =item *
 
+Two configure options have changed names:  --with-tmp-path is now
+--with-tmp-dir, and --with-largefiles is now --enable-largefiles to
+improve consistency and better match the autoconf option guidelines.
+
+=item *
+
 Variables can now be used in the F<newsfeeds> file to make it easier to
 specify many similar feeds or feed patterns.  See the newsfeeds(5) man
 page for more details.
@@ -66,6 +123,24 @@ page for more details.
 Local connections to INN support a new special mode, MODE CANCEL, that
 allows efficient batch cancellation of messages.  This is intended to be
 the preferred interface for external spam and abuse filters like NoCeM.
+
+=item *
+
+Two new options, I<nfsreader> and I<nfswriter>, have been added to
+F<inn.conf> to aid in building NFS based shared reader/writer platforms.
+On the writer server configure nfswriter to true and on all of the readers
+configure nfsreader to true; these options add calls to force data out to
+the NFS server and force it to be read directly from the NFS server at the
+appropriate moments.  Note that it has only been tested on Solaris 8,
+using CNFS as the storage mechanism and tradindexed as the overview
+method.
+
+=item *
+
+A new option, I<tradindexedmmap>, has been added to F<inn.conf>.  If set
+to true (the default), then the tradindexed overview method will use
+mmap() to access its overview data (in 2.3 you couldn't control this; it
+always used mmap).
 
 =item *
 
@@ -98,70 +173,6 @@ INN now checks to ensure that the configured temporary directory is not
 world-writeable.  Additionally, most (if not all) of the temporary file
 creation in INN now uses functions that create temporary files properly
 and safely.
-
-=item *
-
-Two configure options have changed names:  --with-tmp-path is now
---with-tmp-dir, and --with-largefiles is now --enable-largefiles to
-improve consistency and better match the autoconf option guidelines.
-
-=item *
-
-Preliminary IPv6 support has been added, it is off by default.  Build with
---enable-ipv6 to try it.  Hopefully, nobody will notice any problems with
-the default configuration, although some changes have been made to data
-structures even when IPv6 is disabled.  Further information is available
-in F<doc/IPv6-info>.
-
-=item *
-
-A new option, I<tradindexedmmap>, has been added to F<inn.conf>.  If set
-to true (the default), then the tradindexed overview method will use
-mmap() to access its overview data (in 2.3 you couldn't control this; it
-always used mmap).
-
-=item *
-
-Two new options, I<nfsreader> and I<nfswriter>, have been added to
-F<inn.conf> to aid in building NFS based shared reader/writer platforms.
-On the writer server configure nfswriter to true and on all of the readers
-configure nfsreader to true; these options add calls to force data out to
-the NFS server and force it to be read directly from the NFS server at the
-appropriate moments.  Note that it has only been tested on Solaris 8,
-using CNFS as the storage mechanism and tradindexed as the overview
-method.
-
-=item *
-
-nnrpd now supports article injection via IHAVE.  Any articles injected
-this way must have Date, From, Message-ID, Newsgroups, Path, and Subject
-headers.  X-Trace and X-Complaints-To headers will be added if the
-appropriate options are set in F<readers.conf>, but other headers will not
-be modified/inserted (e.g. NNTP-Posting-Host, NNTP-Posting-Date,
-Organization, Lines, Cc, Bcc and To headers).
-
-=item *
-
-nnrpd now handles arbitrarily long lines in POST and IHAVE; administrators
-who want to limit the length of lines in locally posted articles will need
-to add this to their local filters instead.
-
-=item *
-
-nnrpd no longer handles the poorly-specified RFC 977 optional fourth
-argument to the NEWGROUPS command specifying the "distributions" that the
-command was supposed to apply to.
-
-Clients that use that argument will break.  There are not believed to be
-any such clients, and it's easy enough to just filter the returned list of
-newsgroups (which is generally fairly short) to achieve the same results.
-
-=item *
-
-nnrpd no longer accepts UTC as a synonym for GMT for NEWGROUPS or NEWNEWS.
-This usage was never portable, and was rejected by the NNTP working group.
-It is being removed now in the hope that it will be caught before anyone
-starts to rely on it.
 
 =item *
 
