@@ -316,7 +316,7 @@ This is a boolean value and the default is true.
 Whether to enable newsgroup base expiry.  If set to false, expiry is
 done based on class of storing method.  If set to true and overview
 data is created, expiry is done based on newsgroup name.
-This is a boolean value and the default is false.
+This is a boolean value and the default is true.
 
 =item I<mergetogroups>
 
