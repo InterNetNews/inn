@@ -86,9 +86,6 @@ STATIC char		CCnoreason[] = "1 Empty reason";
 STATIC char		CCbigreason[] = "1 Reason too long";
 STATIC char		CCnotrunning[] = "1 Must be running";
 STATIC BUFFER		CCreply;
-#if defined(DO_PERL)
-STATIC BUFFER		CCperlbuff;
-#endif /* defined(DO_PERL) */
 STATIC CHANNEL		*CCchan;
 STATIC int		CCwriter;
 STATIC CCDISPATCH	CCcommands[] = {
@@ -631,14 +628,8 @@ CCfilter(av)
 
 #if defined(DO_PERL)
 
-#if defined (DO_NEED_BOOL)
-typedef enum { false = 0, true = 1 } bool;
-#endif
-
 #include <EXTERN.h>
 #include <perl.h>
-#include <XSUB.h>
-#include "ppport.h"
 
 extern CV *perl_filter_cv ;
 
@@ -2082,121 +2073,6 @@ CCresetup(s)
     CCsetup();
 }
 
-/*
- * The beginnings of a perl interface to the INN command set.
- * I chose to put it in this file to avoid having to rewrite any code,
- * and to avoid having to change the visibility of any of the functions
- * in this module.
- * -- Ed Mooring (mooring@acm.org) May 14, 1998
- */
-
-/*
- * Mostly moved into inn/perl.c, remaining functions to be moved into
- * lib/perl.c.
- * -- Russ Allbery (rra@stanford.edu) June 19, 1999
- */
-
-#if defined(DO_PERL)
-
-XS(XS_INN_head)
-{
-    dXSARGS;
-    char*		msgid;
-    char*		p;
-    TOKEN*		token;
-    ARTHANDLE		*art;
-    int			len;
-
-    if (items != 1)
-        croak("Usage: INN::head(msgid)");
-
-    msgid = (char *)SvPV(ST(0),PL_na);
-
-    /* Get the article filenames; open the first file */
-    if ((token = HISfilesfor(HashMessageID(msgid))) == NULL) {
-	XSRETURN_UNDEF;
-    }
-    if ((art = SMretrieve(*token, RETR_HEAD)) == NULL) {
-	XSRETURN_UNDEF;
-    }
-    p = FromWireFmt(art->data, art->len, &len);
-    SMfreearticle(art);
-    if (CCperlbuff.Data != NULL) {
-	DISPOSE(CCperlbuff.Data);
-    }
-    CCperlbuff.Size = len;
-    CCperlbuff.Data = p;
-    XSRETURN_PV(CCperlbuff.Data);
-}
-
-XS(XS_INN_article)
-{
-    dXSARGS;
-    char*		msgid;
-    char*		p;
-    TOKEN*		token;
-    ARTHANDLE		*art;
-    int			len;
-
-    if (items != 1)
-	croak("Usage: INN::article(msgid)");
-
-    msgid = (char *)SvPV(ST(0),PL_na);
-
-    /* Get the article filenames; open the first file */
-    if ((token = HISfilesfor(HashMessageID(msgid))) == NULL) {
-	XSRETURN_UNDEF;
-    }
-    if ((art = SMretrieve(*token, RETR_ALL)) == NULL) {
-	XSRETURN_UNDEF;
-    }
-    p = FromWireFmt(art->data, art->len, &len);
-    SMfreearticle(art);
-    if (CCperlbuff.Data != NULL) {
-	DISPOSE(CCperlbuff.Data);
-    }
-    CCperlbuff.Size = len;
-    CCperlbuff.Data = p;
-    XSRETURN_PV(CCperlbuff.Data);
-}
-
-XS(XS_INN_syslog)
-{
-    dXSARGS;
-    char*	loglevel;
-    char*	logmsg;
-    int		priority;
-
-    if (items != 2)
-        croak("Usage: INN::syslog(level, message)");
-
-    loglevel = (char *)SvPV(ST(0),PL_na);
-    logmsg = (char *)SvPV(ST(1),PL_na);
-
-    switch (*loglevel) {
-	default:		priority = LOG_NOTICE ;
-	case 'a': case 'A':	priority = LOG_ALERT ;		break;
-	case 'c': case 'C':	priority = LOG_CRIT ;		break;
-	case 'e': case 'E':	priority = LOG_ERR ;		break;
-	case 'w': case 'W':	priority = LOG_WARNING ;	break;
-	case 'n': case 'N':	priority = LOG_NOTICE ;		break;
-	case 'i': case 'I':	priority = LOG_INFO ;		break;
-	case 'd': case 'D':	priority = LOG_DEBUG ;		break;
-    }
-    syslog(priority, "filter: %s", logmsg);
-    XSRETURN_UNDEF;
-}
-
-
-void
-PERLinndAPIinit()
-{
-    newXS("INN::head", XS_INN_head, "cc.c");
-    newXS("INN::article", XS_INN_article, "cc.c");
-    newXS("INN::syslog", XS_INN_syslog, "cc.c");
-    PLxsinit();
-}
-#endif
 
 /*
  * Read a file containing lines of the form "newsgroup lowmark",
