@@ -288,7 +288,6 @@ STATIC void
 strel(int i) {
 	if (stbuf[i].art) {
 	    SMfreearticle(stbuf[i].art);
-	    DISPOSE(stbuf[i].art);
 	    stbuf[i].art = NULL;
 	}
 	if (stbuf[i].st_id) stbuf[i].st_id[0] = '\0';
@@ -842,7 +841,6 @@ takethis(int i) {
 	return TRUE;
     stbuf[i].st_size = stbuf[i].art->len;
     SMfreearticle(stbuf[i].art);	/* should not need file again */
-    DISPOSE(stbuf[i].art);		/* so close to free descriptor */
     stbuf[i].art = 0;		/* so close to free descriptor */
     stbuf[i].st_age = 0;
     /* That all.  Response is checked later by strlisten() */
