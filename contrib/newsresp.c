@@ -103,8 +103,6 @@ char *argv[];
     fprintf(stderr,"Usage: %s [-n articles] host ...\n",argv[0]);
     exit(1);
   }
-  close(fileno(stderr));
-  fileno(stderr) = dup(fileno(stdout));
 
   if ( (tcp_proto = getprotobyname("tcp")) == 0 )
     fatal("getprotobyname");
