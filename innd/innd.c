@@ -481,7 +481,7 @@ CleanupAndExit(x, why)
 }
 
 
-#if	defined(HAVE_RLIMIT)
+#if defined(HAVE_RLIMIT) && defined(RLIMIT_NOFILE)
 /*
 **  Set the limit on the number of open files we can have.  I don't
 **  like having to do this.
@@ -502,7 +502,7 @@ SetDescriptorLimit(i)
 	return;
     }
 }
-#endif	/* defined(HAVE_RLIMIT) */
+#endif /* HAVE_RLIMIT && RLIMIT_NOFILE */
 
 
 /*
@@ -817,10 +817,10 @@ int main(int ac, char *av[])
     }
 
     /* Set number of open channels. */
-#if	defined(HAVE_RLIMIT)
+#if defined(HAVE_RLIMIT) && defined(RLIMIT_NOFILE)
     if (AmRoot && innconf->rlimitnofile >= 0)
 	SetDescriptorLimit(innconf->rlimitnofile);
-#endif	/* defined(HAVE_RLIMIT) */
+#endif /* HAVE_RLIMIT && RLIMIT_NOFILE */
     /* Get number of open channels. */
     if ((i = getfdcount()) < 0) {
 	syslog(L_FATAL, "%s cant getfdcount %m", LogName);
