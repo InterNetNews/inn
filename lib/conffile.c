@@ -107,6 +107,7 @@ CONFFILE *CONFfopen(char *filename)
 
 void CONFfclose(CONFFILE *f)
 {
+  if (!f) return;		/* No conf file */
   fclose(f->f);
   if (f->buf)
     DISPOSE(f->buf);
