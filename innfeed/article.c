@@ -594,7 +594,7 @@ static bool fillContents (Article article)
   if (IsToken(article->fname)) {
       opened = ((arthandle = SMretrieve(TextToToken(article->fname), RETR_ALL)) != NULL);
   } else {
-      opened = ((fd = open (article->fname,O_RDONLY,0)) < 0);
+      opened = ((fd = open (article->fname,O_RDONLY,0)) >= 0);
       arthandle = NULL;
   }
   article->arthandle = arthandle;
