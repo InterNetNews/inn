@@ -588,7 +588,7 @@ else
         echo 'No sendmail in path.  Looking in likely places....'
         echo ''
         AC_PATH_PROG(SENDMAIL, sendmail, ,
-            $PATH:/usr/lib:/usr/sbin:/usr/ucblib)
+            $PATH:/usr/sbin:/usr/lib:/usr/ucblib)
         echo ''
         if test -n "$SENDMAIL" ; then
             echo "sendmail was found at $SENDMAIL.  If this is correct, re-run"
