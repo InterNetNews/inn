@@ -94,7 +94,9 @@ the space is (300 * val) bytes.
 .B \-O
 If the ``\fB\-O\fP'' flag is used, then overview database is also created.
 Overview data is needed to provide reader service.  Overview data is not
-needed for feed only system.
+needed for feed only system.  For ``buffindexed'' ovmethod, all buffers
+need to be cleaned before
+.IR makehistory (8).
 .TP
 .B \-T
 .I Makehistory

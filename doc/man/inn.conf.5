@@ -2,6 +2,14 @@
 ''' $RCSfile$$Revision$$Date$
 '''
 ''' $Log$
+''' Revision 1.80  1999/10/16 10:34:38  kondou
+''' doc/man/buffindexed.conf.5:
+''' 	- explain the necessity of clearing buffer when rebuild
+''' doc/man/inn.conf.5:
+''' 	- add ovmmapthreshold not to use mmap in buffindexed
+''' doc/man/makehistory.8:
+''' 	- explain the necessity of clearing buffer when rebuild
+'''
 ''' Revision 1.79  1999/10/03 07:02:27  kondou
 ''' doc/man/buffindexed.conf.5:
 ''' 	- add precise info on buffindexed
@@ -112,7 +120,7 @@
 .nr % 0
 .rr F
 .\}
-.TH INN.CONF 5 "INN 2.3" "3/Oct/99" "InterNetNews Documentation"
+.TH INN.CONF 5 "INN 2.3" "15/Oct/99" "InterNetNews Documentation"
 .UC
 .if n .hy 0
 .if n .na
@@ -467,6 +475,13 @@ containing the index.
 stores data and its index into buffers which are preconfigured files
 defined in \fIbuffinedexed.conf\fR.  \f(CWbuffindexed\fR never consumes disk
 space other than those files for overview data and index.
+.Ip "\fIovmmapthreshold\fR" 4
+Threshold not to use mmap when retrieving overview data for \f(CWbuffindexed\fR.
+If the number of retrieving overview data is beyond this value,
+\f(CWbuffindexed\fR does not hold mmapped area and allocates memory for it.
+If set to a negative value or if the number of retrieving overview data is
+under this value, \f(CWbuffindexed\fR holds mmapped area.  The default value is
+\f(CW10000\fR.
 .Ip "\fIstoreonxref\fR" 4
 If set to true, articles will be stored based on the newsgroup names in
 the Xref: header rather than in the Newsgroups: header.  This affects what
@@ -1061,6 +1076,8 @@ above are just the major and most frequently mentioned ones.
 .IX Item "\f(CW   \fR \f(CWtradindexed\fR"
 
 .IX Item "\f(CW   \fR \f(CWbuffindexed\fR"
+
+.IX Item "\fIovmmapthreshold\fR"
 
 .IX Item "\fIstoreonxref\fR"
 
