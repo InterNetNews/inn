@@ -1250,7 +1250,7 @@ int main(int ac, char *av[]) {
     }
 
     path = concatpath(innconf->pathdb, _PATH_HISTORY);
-    History = HISopen(path, innconf->hismethod, HIS_RDONLY, NULL);
+    History = HISopen(path, innconf->hismethod, HIS_RDONLY);
     free(path);
 
     /* Main processing loop. */

@@ -113,7 +113,7 @@ main(int ac, char *av[])
     ac -= optind;
     av += optind;
 
-    history = HISopen(History, innconf->hismethod, HIS_RDONLY, NULL);
+    history = HISopen(History, innconf->hismethod, HIS_RDONLY);
     if (history == NULL) {
 	(void)fprintf(stderr, "Can't open history\n");
 	exit(1);

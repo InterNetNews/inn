@@ -653,9 +653,9 @@ WaitChild(int s)
 
 static void SetupDaemon(void) {
     bool                val;
-    struct histopts	opts;
     char *path;
-    
+    time_t statinterval;
+
 #if defined(DO_PERL)
     /* Load the Perl code */
     path = concatpath(innconf->pathfilter, _PATH_PERL_FILTER_NNRPD);
@@ -679,13 +679,15 @@ static void SetupDaemon(void) {
     }
 #endif /* defined(DO_PYTHON) */
 
-    opts.u.hisv6.statinterval = 30;
-    History = HISopen(HISTORY, innconf->hismethod, HIS_RDONLY, &opts);
+    History = HISopen(HISTORY, innconf->hismethod, HIS_RDONLY);
     if (!History) {
 	syslog(L_NOTICE, "cant initialize history");
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
 	ExitWithStats(1, TRUE);
     }
+    statinterval = 30;
+    HISctl(History, HISCTLS_STATINTERVAL, &statinterval);
+
     val = TRUE;
     if (SMsetup(SM_PREOPEN, (void *)&val) && !SMinit()) {
 	syslog(L_NOTICE, "cant initialize storage method, %s", SMerrorstr);

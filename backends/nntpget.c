@@ -272,7 +272,7 @@ main(ac, av)
 	case 'o':
 	    /* Open the history file. */
             path = concatpath(innconf->pathdb, _PATH_HISTORY);
-	    History = HISopen(path, innconf->hismethod, HIS_RDONLY, NULL);
+	    History = HISopen(path, innconf->hismethod, HIS_RDONLY);
 	    if (!History) {
 		(void)fprintf(stderr, "Can't open history, %s\n",
 		    strerror(errno));

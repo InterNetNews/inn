@@ -148,7 +148,7 @@ main(int argc, char *argv[])
 
     /* open up the history manager */
     path = concatpath(innconf->pathdb, _PATH_HISTORY);
-    history = HISopen(path, innconf->hismethod, HIS_RDONLY, NULL);
+    history = HISopen(path, innconf->hismethod, HIS_RDONLY);
     free(path);
 
     /* Initialize the storage manager.  We only need to initialize it in

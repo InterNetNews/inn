@@ -308,7 +308,7 @@ InndHisOpen(void)
 {
     char *histpath;
     int flags;
-    struct histopts opts = {0};
+    size_t synccount;
 
     histpath = concatpath(innconf->pathdb, _PATH_HISTORY);
     if (innconf->hismethod == NULL) {
@@ -316,17 +316,16 @@ InndHisOpen(void)
 	/*NOTREACHED*/
     }
 
-    opts.npairs = 0;
-    opts.synccount = innconf->icdsynccount;
-    opts.u.hisv6.statinterval = 0;
     flags = HIS_RDWR | (INND_DBZINCORE ? HIS_MMAP : HIS_ONDISK);
-    History = HISopen(histpath, innconf->hismethod, flags, &opts);
+    History = HISopen(histpath, innconf->hismethod, flags);
     if (!History) {
 	sysdie("SERVER can't open history %s", histpath);
 	/*NOTREACHED*/
     }
     free(histpath);
     HISsetcache(History, 1024 * innconf->hiscachesize);
+    synccount = &innconf->icdsynccount;
+    HISctl(History, HISCTLS_SYNCCOUNT, &synccount);
 }
 
 void

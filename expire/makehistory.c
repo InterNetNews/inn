@@ -9,7 +9,6 @@
 #include <errno.h>
 #include <syslog.h>  
 
-#include "dbz.h"
 #include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
@@ -791,7 +790,7 @@ main(int argc, char **argv)
     char *HistoryDir;
     char *p;
     char *buff;
-    struct histopts histopts = {0};
+    size_t npairs;
 
     /* First thing, set up logging and our identity. */
     openlog("makehistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
@@ -845,7 +844,7 @@ main(int argc, char **argv)
 	    RetrMode = RETR_ALL;
 	    break;
 	case 's':
-	    histopts.npairs = atoi(optarg);
+	    npairs = atoi(optarg);
 	    break;
 	    
 	default:
@@ -923,8 +922,13 @@ main(int argc, char **argv)
 
 	if (!AppendMode)
 	    flags |= HIS_CREAT;
-	History = HISopen(HistoryPath, innconf->hismethod, flags, &histopts);
+	History = HISopen(NULL, innconf->hismethod, flags);
 	if (History == NULL) {
+	    fprintf(stderr, "makehistory: can't create history handle: %s\n", strerror(errno));
+	    exit(1);
+	}
+	HISctl(History, HISCTLS_NPAIRS, &npairs);
+	if (!HISctl(History, HISCTLS_PATH, HistoryPath)) {
 	    fprintf(stderr, "makehistory: can't open %s: %s\n", HistoryPath, strerror(errno));
 	    exit(1);
 	}

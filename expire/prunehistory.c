@@ -64,7 +64,7 @@ main(int ac, char *av[])
 	goto fail;
     }
 
-    history = HISopen(History, innconf->hismethod, HIS_RDWR, NULL);
+    history = HISopen(History, innconf->hismethod, HIS_RDWR);
     if (history == NULL) {
 	fprintf(stderr, "Can't set up \"%s\" database, %s\n",
 		History, strerror(errno));
