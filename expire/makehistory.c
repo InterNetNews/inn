@@ -790,7 +790,7 @@ main(int argc, char **argv)
     char *HistoryDir;
     char *p;
     char *buff;
-    size_t npairs;
+    size_t npairs = 0;
 
     /* First thing, set up logging and our identity. */
     openlog("makehistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
