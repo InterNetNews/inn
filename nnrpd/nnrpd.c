@@ -335,6 +335,7 @@ PERMinfile(hp, ip, user, pass, accesslist, accessfile)
 
     PERMcanread = FALSE;
     PERMcanpost = FALSE;
+    PERMlocpost = FALSE;
     found = FALSE;
     accesslist[0] = '\0';
     filename[0] = '\0';
@@ -386,6 +387,8 @@ PERMinfile(hp, ip, user, pass, accesslist, accessfile)
 
 	PERMcanread = strchr(fields[1], 'R') != NULL;
 	PERMcanpost = strchr(fields[1], 'P') != NULL;
+	PERMlocpost = strchr(fields[1], 'L') != NULL;
+	if (strchr(fields[1], 'N') != NULL) PERMnewnews = TRUE;
 	if (ForceReadOnly) PERMcanpost=FALSE;
 	(void)strcpy(PERMuser, user ? user : fields[2]);
 	(void)strcpy(PERMpass, pass ? pass : fields[3]);

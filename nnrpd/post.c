@@ -686,8 +686,9 @@ ValidNewsgroups(hdr, article)
 	    break;
 	case NF_FLAG_IGNORE:
 	case NF_FLAG_NOLOCAL:
-	    (void)sprintf(Error, "Postings to \"%s\" are not allowed here.",
-		    GPNAME(gp));
+	    if (!PERMlocpost)
+		(void)sprintf(Error, "Postings to \"%s\" are not allowed here.",
+				GPNAME(gp));
 	    break;
 	case NF_FLAG_EXCLUDED:
 	    /* Do NOT return an error. */
