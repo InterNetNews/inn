@@ -69,6 +69,7 @@ Here's the relevant portion of my innwatch.ctl:
 #include <sys/types.h>
 #include "config.h"
 #include "configdata.h"
+#include "clibrary.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
