@@ -169,6 +169,9 @@ static const void *parameter_key(const void *p);
 static bool parameter_equal(const void *k, const void *p);
 static void parameter_free(void *p);
 
+/* Hash traversal function to collect parameters into a vector. */
+static void parameter_collect(void *, void *);
+
 /* Group handling. */
 static struct config_group *group_new(const char *file, unsigned int line,
                                       const char *type, const char *tag);
@@ -1194,6 +1197,76 @@ config_param_string(struct config_group *group, const char *key,
 
 
 /*
+**  A hash traversal function to add all parameter keys to the vector provided
+**  as the second argument.
+*/
+static void
+parameter_collect(void *element, void *cookie)
+{
+    struct config_parameter *param = element;
+    struct vector *params = cookie;
+
+    vector_add(params, param->key);
+}
+
+
+/*
+**  Returns a newly allocated vector of all of the config parameters in a
+**  group, including the inherited ones (not implemented yet).
+*/
+struct vector *
+config_params(struct config_group *group)
+{
+    struct vector *params;
+    size_t size;
+
+    /* Size the vector, which we can do accurately for now. */
+    params = vector_new();
+    size = hash_count(group->params);
+    vector_resize(params, size);
+
+    /* Now, walk the hash to build the vector of params. */
+    hash_traverse(group->params, parameter_collect, params);
+    return params;
+}
+
+
+/*
+**  Report an error in a given parameter.  Used so that the file and line
+**  number can be included in the error message.
+*/
+void
+config_error_param(struct config_group *group, const char *key,
+                   const char *fmt, ...)
+{
+    va_list args;
+    ssize_t length;
+    char *message, *file;
+    struct config_parameter *param;
+
+    va_start(args, fmt);
+    length = vsnprintf(NULL, 0, fmt, args);
+    va_end(args);
+    if (length < 0)
+        return;
+    message = xmalloc(length + 1);
+    va_start(args, fmt);
+    snprintf(message, length + 1, fmt, args);
+    va_end(args);
+
+    param = hash_lookup(group->params, key);
+    if (param == NULL)
+        warn("%s", message);
+    else {
+        file = (group->included != NULL ? group->included : group->file);
+        warn("%s:%u: %s", file, param->line, message);
+    }
+
+    free(message);
+}
+
+
+/*
 **  Stubs for functions not yet implemented.
 */
 struct config_group *
@@ -1222,20 +1295,8 @@ config_param_list(struct config_group *group UNUSED, const char *key UNUSED,
     return false;
 }
 
-struct vector *
-config_params(struct config_group *group UNUSED)
-{
-    return NULL;
-}
-
 void
 config_error_group(struct config_group *group UNUSED, const char *fmt UNUSED,
                    ...)
-{
-}
-
-void
-config_error_param(struct config_group *group UNUSED, const char *key UNUSED,
-                   const char *fmt UNUSED, ...)
 {
 }

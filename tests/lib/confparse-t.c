@@ -7,6 +7,7 @@
 
 #include "inn/confparse.h"
 #include "inn/messages.h"
+#include "inn/vector.h"
 #include "libinn.h"
 #include "libtest.h"
 
@@ -250,12 +251,13 @@ main(void)
     bool b_value = false;
     long l_value = 1;
     const char *s_value;
+    struct vector *v_value;
     char *long_param, *long_value;
     size_t length;
     int n;
     FILE *tmpconfig;
 
-    puts("121");
+    puts("125");
 
     if (access("config/valid", F_OK) < 0)
         if (access("lib/config/valid", F_OK) == 0)
@@ -405,13 +407,31 @@ main(void)
     ok(63, l_value == 0);
     ok(64, config_param_integer(group, "int2", &l_value));
     ok(65, l_value == -3);
+    config_free(group);
+
+    /* Listing parameters. */
+    group = config_parse_file("config/simple");
+    ok(66, group != NULL);
+    if (group == NULL)
+        exit(1);
+    v_value = config_params(group);
+    ok_int(67, 2, v_value->count);
+    ok_int(68, 2, v_value->allocated);
+    if (strcmp(v_value->strings[0], "foo") == 0)
+        ok_string(69, "bar", v_value->strings[1]);
+    else if (strcmp(v_value->strings[0], "bar") == 0)
+        ok_string(69, "foo", v_value->strings[1]);
+    else
+        ok(69, false);
+    vector_free(v_value);
+    config_free(group);
 
     /* Errors. */
     group = parse_error_config("config/null");
-    ok(66, group == NULL);
-    ok_string(67, "config/null: invalid NUL character found in file\n",
+    ok(70, group == NULL);
+    ok_string(71, "config/null: invalid NUL character found in file\n",
               errors);
-    n = test_errors(68);
+    n = test_errors(72);
     n = test_warnings(n);
     n = test_warnings_bool(n);
     n = test_warnings_int(n);
