@@ -872,7 +872,7 @@ intersect
     'newsetc', 'newslib', 'oldlogs', 'rnewsprogs', 'spooltemp', 'spool', 'spoolnews'
 );
 @control_scripts = (
-    'checkgroups', 'default', 'docheckgroups', 'ihave', 'newgroup', 'rmgroup',
+    'checkgroups', 'default', 'ihave', 'newgroup', 'rmgroup',
     'sendme', 'sendsys', 'senduuname', 'version'
 );
 @rnews_programs = (
