@@ -400,13 +400,6 @@ Requested New Features
   log files.  Ideally, that behavior would be triggered with a SIGHUP.
   scanlogs would have to be modified to handle this.
 
-* innfeed does odd things to Xref slaving if it ever goes to a backlog,
-  since it then starts sending articles out of order and this can confuse
-  reading clients.  There should be a configuration option that would
-  cause it to spool any new articles if there's a backlog and always
-  process the backlog in order.  [Sven Paulus had a preliminary patch for
-  this, which Russ has.]
-
 * Several people have Perl interfaces to pieces of INN that should ideally
   be part of the INN source tree in some fashion.  Greg Andruk has a bunch
   of stuff that Russ has copies of, for example.
