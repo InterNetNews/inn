@@ -1,11 +1,9 @@
-##  $Revision$
+##  $Id$
+
 include ../Makefile.global
 
 CP	= $(LIBTOOL) cp
-
 CFLAGS	= $(GCFLAGS) -I.
-
-IFTRUE	= @$(SHELL) ../iftrue.sh
 
 all:			autoconfig
 	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) methods
@@ -91,6 +89,3 @@ depend:		Makefile $(SOURCES)
 interface.o: methods.h interface.h
 methods.o: interface.h
 ov.c: ../include/ov.h ovmethods.h ovinterface.h
-
-
-
