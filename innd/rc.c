@@ -1342,6 +1342,19 @@ RChostname(cp)
     return buff;
 }
 
+/*
+**  Find the label name of a remote host we've connected to.
+*/
+char *
+RClabelname(CHANNEL *cp) {
+    REMOTEHOST	*rp;
+    int		i;
+
+    for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
+	if (cp->Address.s_addr == rp->Address.s_addr)
+	    return rp->Label;
+    return NULL;
+}
 
 /*
 **  Is the remote site allowed to post to this group?
