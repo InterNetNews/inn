@@ -309,14 +309,18 @@ equivalent to C<users: *>).
 =item B<newsgroups:>
 
 Users that match this access group are allowed to read and post to all
-newsgroups matching this comma-separated list of wildmat patterns.
+newsgroups matching this comma-separated list of wildmat patterns.  The
+empty string is equivalent to C<newsgroups: *>; if this parameter is
+missing, the connection will be rejected (unless read: and/or post: are
+used instead, see below).
 
 =item B<read:>
 
 Like the newsgroups: parameter, but the client is only given permission to
 read the matching newsgroups.  This parameter is often used with post:
 (below) to specify some read-only groups; it cannot be used in the same
-access group with a newsgroups: parameter.
+access group with a newsgroups: parameter.  (If read: is used and post:
+is missing, the client will have only read-only access.)
 
 =item B<post:>
 

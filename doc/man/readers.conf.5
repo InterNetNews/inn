@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "READERS.CONF 5"
-.TH READERS.CONF 5 "2002-12-08" "INN 2.4.0" "InterNetNews Documentation"
+.TH READERS.CONF 5 "2003-01-05" "INN 2.4.0" "InterNetNews Documentation"
 .SH "NAME"
 readers.conf \- Access control and configuration for nnrpd
 .SH "DESCRIPTION"
@@ -437,13 +437,17 @@ equivalent to \f(CW\*(C`users: *\*(C'\fR).
 .IP "\fBnewsgroups:\fR" 4
 .IX Item "newsgroups:"
 Users that match this access group are allowed to read and post to all
-newsgroups matching this comma-separated list of wildmat patterns.
+newsgroups matching this comma-separated list of wildmat patterns.  The
+empty string is equivalent to \f(CW\*(C`newsgroups: *\*(C'\fR; if this parameter is
+missing, the connection will be rejected (unless read: and/or post: are
+used instead, see below).
 .IP "\fBread:\fR" 4
 .IX Item "read:"
 Like the newsgroups: parameter, but the client is only given permission to
 read the matching newsgroups.  This parameter is often used with post:
 (below) to specify some read-only groups; it cannot be used in the same
-access group with a newsgroups: parameter.
+access group with a newsgroups: parameter.  (If read: is used and post:
+is missing, the client will have only read-only access.)
 .IP "\fBpost:\fR" 4
 .IX Item "post:"
 Like the newsgroups: parameter, but the client is only given permission to
