@@ -27,4 +27,5 @@ all: smbvalid.a
 	$(UPLIBCC) $(CFLAGS) -c $*.c
 
 clean:
-	rm -f *.o smbvalid.a
+	rm -f *.o *.lo smbvalid.a
+	rm -rf .libs
