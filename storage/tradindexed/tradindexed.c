@@ -166,7 +166,8 @@ tradindexed_groupdel(char *group)
 
 /*
 **  Add data about a single article.  Convert between the multiple argument
-**  API and the structure API used internally.
+**  API and the structure API used internally, and also implement low article
+**  cutoff if that was requested.
 */
 bool
 tradindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data,
@@ -180,6 +181,16 @@ tradindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data,
         warn("tradindexed: overview method not initialized");
         return false;
     }
+
+    /* Get the group index entry and don't do any work if cutoff is set and
+       the article number is lower than the low water mark for the group. */
+    entry = tdx_index_entry(tradindexed->index, group);
+    if (entry == NULL)
+        return false;
+    if (tradindexed->cutoff && entry->low > artnum)
+        return true;
+
+    /* Fill out the article data structure. */
     article.number = artnum;
     article.overview = data;
     article.overlen = length;
@@ -188,9 +199,6 @@ tradindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data,
     article.expires = expires;
 
     /* Open the appropriate data structures, using the cache. */
-    entry = tdx_index_entry(tradindexed->index, group);
-    if (entry == NULL)
-        return false;
     group_data = data_cache_open(tradindexed, group, entry);
     if (group_data == NULL)
         return false;
