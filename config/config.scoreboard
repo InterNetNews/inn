@@ -1,7 +1,7 @@
 [IN1.7=@4][WDF=autoconf][WOR=no][P=high]
-  ||##  What is a file offset?  MUST BE LONG FOR NOW.
+  ||##  What is a file offset?  
   ||#### =()<OFFSET_T		@<OFFSET_T>@>()=
-  ||OFFSET_T	long
+  ||OFFSET_T	off_t
 [IN1.7=@4][WDF=autoconf][WOR=no]
   ||##  Generic pointer, used by memcpy, malloc, etc.  Usually char or void.
   ||##[autoconf]

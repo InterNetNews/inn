@@ -15,6 +15,4 @@
 ../samples/innshellvars
 ../samples/innshellvars.pl
 ../samples/innshellvars.tcl
-../syslog/syslog.conf
-../syslog/syslogd.c  
 ../storage/cnfs/cnfs-private.h
