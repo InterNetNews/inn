@@ -257,6 +257,9 @@ void SetDefaults()
     innconf->backoff_trigger = 10000L;
     innconf->refusecybercancels = FALSE;
     innconf->nnrpdcheckart = TRUE;
+    innconf->activedenable = FALSE;
+    innconf->activedupdate = 30L;
+    innconf->activedport = 1119;
 }
 
 void ClearInnConf()
@@ -898,6 +901,21 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_NNRPDCHECKART, bit);
 		if (!bit && boolval != -1) innconf->nnrpdcheckart = boolval;
 		SET_CONFIG(CONF_VAR_NNRPDCHECKART);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_ACTIVEDENABLE)) {
+		TEST_CONFIG(CONF_VAR_ACTIVEDENABLE, bit);
+		if (!bit && boolval != -1) innconf->activedenable = boolval;
+		SET_CONFIG(CONF_VAR_ACTIVEDENABLE);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_ACTIVEDUPDATE)) {
+		TEST_CONFIG(CONF_VAR_ACTIVEDUPDATE, bit);
+		if (!bit) innconf->activedupdate = atol(p);
+		SET_CONFIG(CONF_VAR_ACTIVEDUPDATE);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_ACTIVEDPORT)) {
+		TEST_CONFIG(CONF_VAR_ACTIVEDPORT, bit);
+		if (!bit) innconf->activedport = atoi(p);
+		SET_CONFIG(CONF_VAR_ACTIVEDPORT);
 	    }
 	}
 	(void)Fclose(F);

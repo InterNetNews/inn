@@ -168,6 +168,7 @@ extern BOOL		GetGroupList();
 extern char		*GetHeader();
 extern void		GRPreport();
 extern GROUPENTRY	*GRPfind();
+extern GROUPENTRY	*GRPlocalfind();
 extern void		HIScheck();
 extern BOOL		OVERgetent();
 extern char		*HISgetent();

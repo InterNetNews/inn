@@ -58,6 +58,7 @@ int main(int ac, char *av[])
     struct sockaddr_in	server;
     register int	i;
     register int	j;
+    register int	sock;
 #if	defined(SO_REUSEADDR)
     int			on;
 #endif	/* defined(SO_REUSEADDR) */
@@ -88,11 +89,30 @@ int main(int ac, char *av[])
     SetDescriptorLimit(NOFILE_LIMIT);
 #endif	/* NOFILE_LIMIT > 0 */
 
+	/* Start actived if required */
+    if (innconf->activedenable && (fork() == 0)) {
+	/* Set our user and group id. */
+	(void)setgid(NewsGID);
+	if (getgid() != NewsGID)
+	    syslog(L_ERROR, "inndstart cant setgid to %d %m", NewsGID);
+	(void)setuid(NewsUID);
+	if (getuid() != NewsUID)
+	    syslog(L_ERROR, "inndstart cant setuid to %d %m", NewsUID);
+	argv = NEW(STRING, 3);
+	argv[0] = cpcatpath(innconf->pathbin, "actived");
+	argv[1] = NULL;
+	(void)execve(argv[0], (CSTRING *)argv, (CSTRING *)env);
+	syslog(L_FATAL, "inndstart cant exec %s %m", argv[0]);
+	_exit(0);
+	/* NOTREACHED */
+    }
+
     /* Create a socket and name it. */
     if ((i = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 	syslog(L_FATAL, "inndstart cant socket %m");
 	exit(1);
     }
+    sock = i;
 #if	defined(SO_REUSEADDR)
     on = 1;
     if (setsockopt(i, SOL_SOCKET, SO_REUSEADDR, (caddr_t)&on, sizeof on) < 0)

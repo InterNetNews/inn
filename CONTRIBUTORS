@@ -74,7 +74,8 @@ Dave Hayes:
 	nnrpd and the patches to the perl hooks to make the headers modifiable.
 
 Joe Greco:
-	Wrote the code for measuring the timing of various parts of innd.
+	Wrote the code for measuring the timing of various parts of innd
+	and the original actived code.
 
 Sang-yong Suh:
 	Provided the fuzzy offset technique to dbz.

@@ -267,6 +267,21 @@ if perl filtering is turned on, in which case this option can be
 set to ``false''.
 This is boolean value and the default is ``false''.
 .TP
+.I activedenable
+If set to ``yes'' then
+.I nnrpd
+processes access the active file through a separate process, using
+UDP requests. The actived process will be started automatically on
+innd startup. This saves a significant amount of memory and processing
+time for news readers, particularly on startup. Default is ``off''.
+.TP
+.I activedupdate
+This is the interval (in seconds) that actived updates its in-memory
+copy of the active file.
+.TP
+.I activedport
+The UDP port on which to send actived requests and responses.
+.TP
 .I pathnews
 The news user home directory and sometimes the root of the news
 hierarchy.

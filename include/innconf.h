@@ -288,6 +288,15 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_NNRPDCHECKART			"nnrpdcheckart"
 #define CONF_VAR_NNRPDCHECKART			88
     { _CONF_NNRPDCHECKART,			"",	2, 1 },
+#define _CONF_ACTIVEDENABLE			"activedenable"
+#define CONF_VAR_ACTIVEDENABLE			89
+    { _CONF_ACTIVEDENABLE,			"",	2, 1 },
+#define _CONF_ACTIVEDUPDATE			"activedupdate"
+#define CONF_VAR_ACTIVEDUPDATE			90
+    { _CONF_ACTIVEDUPDATE,			"",	3, 1 },
+#define _CONF_ACTIVEDPORT			"activedport"
+#define CONF_VAR_ACTIVEDPORT			91
+    { _CONF_ACTIVEDPORT,			"",	2, 1 },
 };
-#define MAX_CONF_VAR 89
+#define MAX_CONF_VAR 92
 

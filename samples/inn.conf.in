@@ -58,6 +58,9 @@ mimeversion:
 mimecontenttype:
 mimeencoding:
 refusecybercancels:	false
+activedenable:		false
+activedupdate:		30
+activedport:		1119
 #
 # 
 # These options are unlikely to need changing in most situations

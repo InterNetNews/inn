@@ -5,12 +5,14 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <sys/mman.h>
+#include <sys/time.h>
+#include <unistd.h>
 #include "configdata.h"
 #include "clibrary.h"
 #include "nnrpd.h"
 #include "mydir.h"
-#include <sys/mman.h>
-
+#include "protocol.h"
 
 /*
 **  Newsgroup hashing stuff.  See comments in innd/ng.c.
@@ -35,16 +37,34 @@ STATIC GRPHASH		GRPtable[GRP_SIZE];
 STATIC GROUPENTRY	*GRPentries;
 STATIC int		GRPbuckets;
 STATIC int		GRPsize;
+STATIC int		GRPactived = -1;
+STATIC int		GRPuselocalhash = 0;
+STATIC int		NRequestID;
 
 unsigned int	RARTtable[ART_MAX];
 int		RARTcount=0;
 int		RARTenable=FALSE;
 int 		LLOGenable=FALSE;
 
+void
+NNewRequestID()
+{
+    static int pid = -1;
+    static int count = 123456789;
+    struct timeval tv;
+
+    if (pid < 0) {
+	pid = getpid();
+    }
+    gettimeofday(&tv, NULL);
+    count += pid;
+    NRequestID = tv.tv_sec ^ tv.tv_usec ^ pid ^ count;
+}
+
 /*
-**  See if a given newsgroup exists.
+**  See if a given newsgroup exists using local file access
 */
-GROUPENTRY *GRPfind(char *group)
+GROUPENTRY *GRPlocalfind(char *group)
 {
     char		*p;
     unsigned int	j;
@@ -62,6 +82,124 @@ GROUPENTRY *GRPfind(char *group)
     return NULL;
 }
 
+/* Lookup newsgroup details from actived */
+GROUPENTRY *
+GRPactivedfind(group)
+    register char	*group;
+{
+    int		now = time(NULL);
+    int		expireat = now + ACTIVED_TIMEOUT;
+    int		last = now - 2;
+    static struct wireprotocol buffer;
+    fd_set	fdset;
+    struct	timeval timeout;
+    static char data[4096];
+    static GROUPENTRY gp;
+
+    /* Okay.  Let's ask the server for the data. */
+    NNewRequestID();
+    while (now < expireat) {
+	now = time(NULL);
+	if (last < now - 1) {
+	    last = now;
+	    buffer.RequestID = NRequestID;
+	    buffer.RequestType = REQ_FIND;
+	    strncpy(buffer.Name, group, sizeof(buffer.Name) - 1);
+	    buffer.Name[sizeof(buffer.Name) - 1] = '\0';
+
+	    if (write_udp(GRPactived, (char *)&buffer,
+				sizeof(buffer)) != sizeof(buffer)) {
+		syslog(L_ERROR, "%s actived socket couldnt be written FIND %m",
+				ClientHost);
+		sleep(1);
+		continue;
+	    }
+	}
+	FD_ZERO(&fdset);
+	FD_SET(GRPactived, &fdset);
+	timeout.tv_sec = 1;
+	timeout.tv_usec = 0;
+	if (select(GRPactived + 1, &fdset, NULL, NULL, &timeout) < 0) {
+	    syslog(L_ERROR, "%s actived socket failed select %m",
+			ClientHost);
+	    sleep(1);
+	    continue;
+	}
+	if (FD_ISSET(GRPactived, &fdset)) {
+	    if (read_udp(GRPactived, (char *)&buffer,
+				sizeof(buffer)) != sizeof(buffer)) {
+		syslog(L_ERROR, "%s actived socket couldnt be read FINDRESP %m",
+			ClientHost);
+		sleep(1);
+		continue;
+	    }
+	    if (buffer.RequestID != NRequestID) {
+	    syslog(L_ERROR, "%s actived socket returned a different request-ID %d/%d",
+			ClientHost, buffer.RequestID, NRequestID);
+		sleep(1);
+		continue;
+	    }
+	    if (buffer.RequestType != REQ_FINDRESP) {
+		syslog(L_ERROR, "%s actived socket returned a non-FINDRESP %d",
+			ClientHost, buffer.RequestType);
+		sleep(1);
+		continue;
+	    }
+
+	    /* Was the request successful?  Did we find the group? */
+	    if (! buffer.Success) {
+		return(NULL);
+	    }
+
+	    /* Looks good! Copy all the data to the static "data" struct */
+	    if (buffer.NameNull) buffer.Name[0] = 0;
+	    if (buffer.AliasNull) buffer.Alias[0] = 0;
+	    sprintf(data, buffer.Name);
+	    sprintf(data,"%s %-10ld %-10ld %c %s", buffer.Name, buffer.High,
+				buffer.Low, buffer.Flag, buffer.Alias);
+	    gp.Ptr = (char *)&data;
+	    gp.Next = NULL;
+	    return(&gp);
+	}
+    }
+
+    /* Something is very wrong.  Fall back to local access and whine like
+       hell.  GRPuselocalhash is explicitly checked by GRPfind, and will
+       handle initializing the database for us. */
+
+    GRPuselocalhash++;
+    return(NULL);
+}
+
+/*
+**  See if a given newsgroup exists.
+*/
+GROUPENTRY *
+GRPfind(group)
+    register char             *group;
+{
+    GROUPENTRY *rval;
+
+    /*
+     * If we are not flagged to use local hash, call NGRPfind.
+     * That could potentially fail (server no answer, etc) in which
+     * case we fall back to standard INN and scream bloody murder.
+     * GRPactivedfind will toggle GRPuselocalhash to TRUE if it has problems.
+     */
+
+    if (innconf->activedenable && ! GRPuselocalhash) {
+	rval = GRPactivedfind(group);
+	if (! GRPuselocalhash) {
+		return(rval);
+	}
+
+	/* Ow!  We are falling back to local access since NGRPfind failed! */
+	syslog(L_ERROR, "%s NOT using actived", ClientHost);
+	GetLocalGroupList();
+    }
+
+    return(GRPlocalfind(group));
+}
 
 STATIC void
 GRPhash()
@@ -235,7 +373,7 @@ GPALIAS(GROUPENTRY *gp)
 **  newsgroups read in.  Return TRUE if okay, FALSE on error.
 */
 BOOL
-GetGroupList()
+GetLocalGroupList()
 {
     static char			*active;
     register char		*p;
@@ -317,6 +455,106 @@ GetGroupList()
     return TRUE;
 }
 
+BOOL
+GetActivedGroupList()
+{
+    int now = time(NULL);
+    int expireat = now + ACTIVED_TIMEOUT;
+    int last = now - 2;
+    int s;
+    struct wireprotocol buffer;
+    fd_set fdset;
+    struct timeval timeout;
+
+    if (GRPactived < 0) {
+	if ((s = create_udp_socket(0)) < 0) {
+	    syslog(L_ERROR, "%s actived socket couldnt be created %m",
+				ClientHost);
+	    return(FALSE);
+	}
+	if (connect_udp_socket(s, "localhost", innconf->activedport) < 0) {
+	    syslog(L_ERROR, "%s actived socket couldnt be connected %m",
+				ClientHost);
+	    return(FALSE);
+	}
+	if (fcntl(s, F_SETFL, O_NDELAY) < 0) {
+	    syslog(L_ERROR, "%s actived socket couldnt be fcntl O_NDELAY %m",
+				ClientHost);
+	    return(FALSE);
+	}
+	GRPactived = s;
+    }
+
+    /* Okay.  Let's ask the server if it's there. */
+    NNewRequestID();
+    while (now < expireat) {
+	now = time(NULL);
+	if (last < now - 1) {
+	    last = now;
+	    buffer.RequestID = NRequestID;
+	    buffer.RequestType = REQ_AYT;
+
+	    if (write_udp(GRPactived, (char *)&buffer,
+				sizeof(buffer)) != sizeof(buffer)) {
+		syslog(L_ERROR, "%s actived socket couldnt be written AYT %m",
+				ClientHost);
+		sleep(1);
+		continue;
+	    }
+	}
+	FD_ZERO(&fdset);
+	FD_SET(GRPactived, &fdset);
+	timeout.tv_sec = 1;
+	timeout.tv_usec = 0;
+	if (select(GRPactived + 1, &fdset, NULL, NULL, &timeout) < 0) {
+	    syslog(L_ERROR, "%s actived socket failed select %m",
+				ClientHost);
+	    sleep(1);
+	    return(FALSE);
+	}
+	if (FD_ISSET(GRPactived, &fdset)) {
+	    if (read_udp(GRPactived, (char *)&buffer,
+				sizeof(buffer)) != sizeof(buffer)) {
+		syslog(L_ERROR, "%s actived socket couldnt be read AYTACK %m",
+				ClientHost);
+		sleep(1);
+		continue;
+	    }
+	    if (buffer.RequestID != NRequestID) {
+		syslog(L_ERROR, "%s actived socket returned a different request-ID %d/%d",
+				ClientHost, buffer.RequestID, NRequestID);
+		sleep(1);
+		continue;
+	    }
+	    if (buffer.RequestType != REQ_AYTACK) {
+		syslog(L_ERROR, "%s actived socket returned a non-AYTACK %d",
+				ClientHost, buffer.RequestType);
+		sleep(1);
+		continue;
+	    }
+	    /* Looks good! */
+	    return(TRUE);
+	}
+    }
+    return(FALSE);
+}
+
+BOOL
+GetGroupList()
+{
+    /*
+     * If we are not flagged to use local hash, call NGetGroupList.
+     * That could potentially fail (server no answer, etc) in which
+     * case we fall back to standard INN and scream bloody murder.
+     */
+    if (innconf->activedenable) {
+	if (! GRPuselocalhash && (GetActivedGroupList() == TRUE)) 
+	    return(TRUE);
+	syslog(L_ERROR, "%s NOT using actived", ClientHost);
+    }
+    GRPuselocalhash = 1;
+    return(GetLocalGroupList());
+}
 
 /*
 **  Sorting predicate to put newsgroup names into numeric order.

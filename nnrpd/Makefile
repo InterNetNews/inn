@@ -4,36 +4,45 @@ include ../Makefile.global
 CFLAGS = $(GCFLAGS) $(PERLINC)
 
 NNRPD	= ${PATHBIN}/nnrpd
+ACTIVED	= ${PATHBIN}/actived
 
 SOURCES	= \
 	article.c group.c commands.c misc.c newnews.c nnrpd.c \
-	perl.c post.c loadave.c track.c
+	perl.c post.c loadave.c track.c udp.c
 
 OBJECTS	= \
-	article.o group.o commands.o misc.o newnews.o nnrpd.o \
-	perl.o post.o loadave.o track.o
+	article.o group.o commands.o misc.o newnews.o \
+	perl.o post.o loadave.o track.o udp.o
 
-ALL	= nnrpd
+ALL	= nnrpd actived
 
 all:		$(ALL)
 
-install:	$D$(NNRPD)
+install:	$D$(NNRPD) $D$(ACTIVED)
 
 ##  Low-level install actions.
 $D$(NNRPD):	nnrpd
 	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
 
+##  Low-level install actions.
+$D$(ACTIVED):	actived
+	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
+
 clobber clean:
 	rm -f *.o $(ALL)
-	rm -f nnrpd nnrpdp profiled
+	rm -f nnrpd nnrpdp actived profiled
 	rm -f all install 
 
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../lib/*.c nnrpd.h ../include/*.h
 
-nnrpd:		$(P) $(OBJECTS) $(LIBNEWS)
+nnrpd:		$(P) nnrpd.o $(OBJECTS) $(LIBNEWS)
 	@rm -f $@
-	$(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBNEWS) $(LIBS) $(PERLLIB)
+	$(CC) $(LDFLAGS) -o $@ $@.o $(OBJECTS) $(LIBNEWS) $(LIBS) $(PERLLIB)
+
+actived:	$(P) actived.o activedstats.o $(OBJECTS) $(LIBNEWS)
+	@rm -f $@
+	$(CC) $(LDFLAGS) -o $@ $@.o activedstats.o $(OBJECTS) $(LIBNEWS) $(LIBS) $(PERLLIB)
 
 ../include/dbz.h:
 	(cd ../lib ; $(MAKE) ../include/dbz.h)
@@ -58,7 +67,7 @@ depend:		Makefile $(SOURCES)
 	makedepend $(DEFS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-$(OBJECTS):	nnrpd.h \
+$(OBJECTS):	nnrpd.h protocol.h \
 		../include/clibrary.h ../include/configdata.h \
 		../include/libinn.h \
 		../include/macros.h ../include/nntp.h \

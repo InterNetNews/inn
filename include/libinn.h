@@ -160,6 +160,9 @@ struct conf_vars {
 	long backoff_trigger;
 	int refusecybercancels;
 	int nnrpdcheckart;
+	int activedenable;
+	long activedupdate;
+	int activedport;
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;
