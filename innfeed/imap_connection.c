@@ -21,10 +21,6 @@
    untagged IMAP messages
 */
 
-#ifdef HAVE_SASL
-# include <sasl.h>
-#endif
-
 #include "config.h"
 #include "clibrary.h"
 #include "portable/socket.h"
@@ -48,6 +44,10 @@
 #include "msgs.h"
 #include "configfile.h"
 
+#ifdef HAVE_SASL
+# include <sasl/sasl.h>
+#endif
+
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 1024
 #endif
@@ -59,9 +59,6 @@
 #else
 # define LMTP_PORT 2003
 #endif
-
-/* The name to prepend to deliver directly to newsgroup bboards */
-#define NEWS_USERNAME "bb"
 
 #define IMAP_TAGLENGTH 6
 
@@ -76,6 +73,8 @@ extern char *deliver_username;
 extern char *deliver_authname;
 extern char *deliver_password;
 extern char *deliver_realm;
+extern char *deliver_rcpt_to;
+extern char *deliver_to_header;
 
 
 char hostname[MAXHOSTNAMELEN];
@@ -1331,11 +1330,39 @@ static sasl_security_properties_t *make_secprops(int min,int max)
   return ret;
 }
 
+#ifndef NI_WITHSCOPEID
+#define NI_WITHSCOPEID	0
+#endif
+#ifndef NI_MAXHOST
+#define NI_MAXHOST	1025
+#endif
+#ifndef NI_MAXSERV
+#define NI_MAXSERV	32
+#endif
+
+static int iptostring(const struct sockaddr *addr, socklen_t addrlen,
+		     char *out, unsigned outlen) {
+    char hbuf[NI_MAXHOST], pbuf[NI_MAXSERV];
+    
+    if(!addr || !out) return SASL_BADPARAM;
+
+    getnameinfo(addr, addrlen, hbuf, sizeof(hbuf), pbuf, sizeof(pbuf),
+		NI_NUMERICHOST | NI_WITHSCOPEID | NI_NUMERICSERV);
+
+    if(outlen < strlen(hbuf) + strlen(pbuf) + 2)
+	return SASL_BUFOVER;
+
+    snprintf(out, outlen, "%s;%s", hbuf, pbuf);
+
+    return SASL_OK;
+}
+
 static conn_ret SetSASLProperties(sasl_conn_t *conn, int sock, int minssf, int maxssf)
 {
   int saslresult;
   sasl_security_properties_t *secprops=NULL;
   int addrsize=sizeof(struct sockaddr_in);
+  char localip[60], remoteip[60];
   struct sockaddr_in saddr_l;
   struct sockaddr_in saddr_r;
 
@@ -1350,16 +1377,24 @@ static conn_ret SetSASLProperties(sasl_conn_t *conn, int sock, int minssf, int m
   if (getpeername(sock,(struct sockaddr *)&saddr_r,&addrsize)!=0)
     return RET_FAIL;
 
-  if (sasl_setprop(conn, SASL_IP_REMOTE, &saddr_r)!=SASL_OK)
+  if (iptostring((struct sockaddr *)&saddr_r, sizeof(struct sockaddr_in),
+		remoteip, sizeof(remoteip)))
+    return RET_FAIL;
+
+  if (sasl_setprop(conn, SASL_IPREMOTEPORT, remoteip)!=SASL_OK)
     return RET_FAIL;
   
   addrsize=sizeof(struct sockaddr_in);
   if (getsockname(sock,(struct sockaddr *) &saddr_l,&addrsize)!=0)
     return RET_FAIL;
 
-  if (sasl_setprop(conn, SASL_IP_LOCAL, &saddr_l)!=SASL_OK)
+  if (iptostring((struct sockaddr *)&saddr_l, sizeof(struct sockaddr_in),
+		 localip, sizeof(localip)))
     return RET_FAIL;
-
+    
+  if (sasl_setprop(conn, SASL_IPLOCALPORT, localip)!=SASL_OK)
+    return RET_FAIL;
+  
   return RET_OK;
 }
 #endif /* HAVE_SASL */
@@ -1503,6 +1538,8 @@ static conn_ret SetupLMTPConnection(connection_t *cxn,
     saslresult=sasl_client_new("lmtp",
 			       serverName,
 			       NULL,
+			       NULL,
+			       NULL,
 			       0,
 			       &cxn->saslconn_lmtp);
 
@@ -1592,6 +1629,8 @@ static conn_ret SetupIMAPConnection(connection_t *cxn,
     /* Start SASL */
     saslresult=sasl_client_new("imap",
 			       serverName,
+			       NULL,
+			       NULL,
 			       NULL,
 			       0,
 			       &cxn->imap_saslconn);
@@ -2083,10 +2122,8 @@ static conn_ret lmtp_authenticate(connection_t *cxn)
     int saslresult;
     
     const char *mechusing;
-    char *out;
+    const char *out;
     unsigned int outlen;
-    char *in;
-    unsigned int inlen;
     char *inbase64;
     int inbase64len;
     int status;
@@ -2099,7 +2136,7 @@ static conn_ret lmtp_authenticate(connection_t *cxn)
 
     saslresult=sasl_client_start(cxn->saslconn_lmtp, 
 				 cxn->lmtp_capabilities->saslmechs,
-				 NULL, &client_interact,
+				 &client_interact,
 				 &out, &outlen,
 				 &mechusing);
 
@@ -2119,10 +2156,15 @@ static conn_ret lmtp_authenticate(connection_t *cxn)
 
     p = (char *) malloc(strlen(mechusing)+(outlen*2+10)+30);
 
-    if (out!=NULL)
+    if (!out)
     {
-
-	/* convert to base64 */
+	/* no initial client response */
+	sprintf (p, "AUTH %s\r\n",mechusing);
+    } else if (!outlen) {
+	/* empty initial client response */
+	sprintf (p, "AUTH %s =\r\n",mechusing);
+    } else {
+	/* initial client response - convert to base64 */
 	inbase64 = (char *) malloc(outlen*2+10);
 
 	saslresult = sasl_encode64(out, outlen,
@@ -2130,8 +2172,6 @@ static conn_ret lmtp_authenticate(connection_t *cxn)
 	if (saslresult != SASL_OK) return RET_FAIL;
 
 	sprintf (p, "AUTH %s %s\r\n",mechusing,inbase64);
-    } else {
-	sprintf (p, "AUTH %s\r\n",mechusing);
     }
 
     result = WriteToWire_lmtpstr(cxn, p, strlen(p));
@@ -2174,7 +2214,7 @@ static imt_stat lmtp_getauthline(char *str, char **line, int *linelen)
 
   /* decode this line */      
   saslresult = sasl_decode64(str, strlen(str), 
-			     *line, (unsigned *) linelen);
+			     *line, strlen(str)+1, (unsigned *) linelen);
   if (saslresult != SASL_OK) {
       d_printf(0,"?:?:LMTP base64 decoding error\n");
       return STAT_NO;
@@ -2360,7 +2400,7 @@ static conn_ret imap_sendAuthStep(connection_t *cxn, char *str)
     int saslresult;
     char in[4096];
     unsigned int inlen;
-    char *out;
+    const char *out;
     unsigned int outlen;
     char *inbase64;
     unsigned int inbase64len;
@@ -2368,7 +2408,7 @@ static conn_ret imap_sendAuthStep(connection_t *cxn, char *str)
     /* base64 decode it */
 
     saslresult = sasl_decode64(str, strlen(str), 
-			       in, &inlen);
+			       in, strlen(str)+1, &inlen);
     if (saslresult != SASL_OK) {
 	d_printf(0,"%s:%d:IMAP base64 decoding error\n",
 		 hostPeerName (cxn->myHost), cxn->ident) ;
@@ -2404,8 +2444,6 @@ static conn_ret imap_sendAuthStep(connection_t *cxn, char *str)
     strcpy(inbase64 + inbase64len, "\r\n");
     inbase64len+=2;
     
-    if (out!=NULL) free(out);
-		    
     /* send to server */
     result = WriteToWire_imapstr(cxn,inbase64, inbase64len);
     
@@ -2423,21 +2461,19 @@ static conn_ret imap_sendAuthenticate(connection_t *cxn)
     char *p;
 
 #ifdef HAVE_SASL
-    char *out;
-    unsigned int outlen;
-    char *in;
-    unsigned int inlen;
     char *inbase64;
     int inbase64len;
-    int saslresult;
+    int saslresult=SASL_NOMECH;
 
     sasl_interact_t *client_interact=NULL;
 
-    saslresult=sasl_client_start(cxn->imap_saslconn, 
-				 cxn->imap_capabilities->saslmechs,
-				 NULL, &client_interact,
-				 &out, &outlen,
-				 &mechusing);
+    if (cxn->imap_capabilities->saslmechs) {
+	saslresult=sasl_client_start(cxn->imap_saslconn, 
+				     cxn->imap_capabilities->saslmechs,
+				     &client_interact,
+				     NULL, NULL,
+				     &mechusing);
+    }
 
 
 
@@ -2750,8 +2786,10 @@ static conn_ret imap_ParseCapability(char *string, imap_capabilities_t **caps)
           
     }
 
-    d_printf(1,"?:?:IMAP parsed capabilities: saslmechs = %s\n",
-	     (*caps)->saslmechs);
+    if ((*caps)->saslmechs) {
+	d_printf(1,"?:?:IMAP parsed capabilities: saslmechs = %s\n",
+		 (*caps)->saslmechs);
+    }
 
     return RET_OK;
 }
@@ -3185,7 +3223,7 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
     int inlen;
     char *in;
     int outlen;
-    char *out;
+    const char *out;
     char *inbase64;
     int inbase64len;
     imt_stat status;
@@ -3406,7 +3444,6 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 		    saslresult = sasl_encode64(out, outlen,
 					       inbase64, outlen*2+10, 
 					       (unsigned *) &inbase64len);
-		    free(out);
 		    
 		    if (saslresult != SASL_OK)
 		    {
@@ -3616,7 +3653,8 @@ static void addrcpt(char *newrcpt, int newrcptlen, char **out, int *outalloc)
 {
     int size = strlen(*out);
     int fsize = size;
-    int newsize = size + 9+strlen(NEWS_USERNAME)+1+newrcptlen+3;
+    int newsize = size + 9+strlen(deliver_rcpt_to)+newrcptlen+3;
+    char c;
 
     /* see if we need to grow the string */
     if (newsize > *outalloc)
@@ -3626,11 +3664,13 @@ static void addrcpt(char *newrcpt, int newrcptlen, char **out, int *outalloc)
 	ASSERT(*out);
     }
 
-    sprintf((*out)+size,"RCPT TO:<%s+",NEWS_USERNAME);
-    size+=9+strlen(NEWS_USERNAME)+1;
-    
-    memcpy((*out)+size, newrcpt, newrcptlen);
-    size+=newrcptlen;
+    strcpy((*out)+size,"RCPT TO:<");
+    size+=9;
+
+    c=newrcpt[newrcptlen];
+    newrcpt[newrcptlen]='\0';
+    size+=sprintf((*out)+size,deliver_rcpt_to,newrcpt);
+    newrcpt[newrcptlen]=c;
 
     strcpy((*out)+size,">\r\n");    
 
@@ -3685,6 +3725,80 @@ static char *ConvertRcptList(char *in, char *in_end, int *num)
 	(*num)++;
     }
 
+    return ret;
+}
+
+static void addto(char *newrcpt, int newrcptlen, char *sep,
+		  char **out, int *outalloc)
+{
+    int size = strlen(*out);
+    int fsize = size;
+    int newsize = size + strlen(sep)+1+strlen(deliver_to_header)+newrcptlen+1;
+    char c;
+
+    /* see if we need to grow the string */
+    if (newsize > *outalloc)
+    {
+	(*outalloc)+=200;
+	(*out) = realloc(*out, *outalloc);
+	ASSERT(*out);
+    }
+
+    size+=sprintf((*out)+size,"%s<",sep);
+
+    c = newrcpt[newrcptlen];
+    newrcpt[newrcptlen]='\0';
+    size+=sprintf((*out)+size,deliver_to_header,newrcpt);
+    newrcpt[newrcptlen]=c;
+
+    strcpy((*out)+size,">");    
+}
+
+/*
+ * Takes the newsgroups header value and makes it into a To: header
+ *
+ *  in     - newsgroups header start
+ *  in_end - end of newsgroups header
+ */
+
+static char *BuildToHeader(char *in, char *in_end)
+{
+    int retalloc = 400;
+    char *ret = malloc(retalloc);
+    char *str = in;
+    char *laststart = in;
+    char *sep = "";
+
+    /* start it off with the header name */     
+    strcpy(ret,"To: ");
+    
+    while ( str !=  in_end)
+    {
+	if ((*str) == ',')
+	{
+	    /* eliminate leading whitespace */
+	    while (((*laststart) ==' ') || ((*laststart)=='\t'))
+	    {
+		laststart++;
+	    }
+
+	    addto(laststart, str - laststart, sep, &ret, &retalloc);
+	    laststart = str+1;
+
+	    /* separate multiple addresses with a comma */
+	    sep = ", ";
+	}
+
+	str++;
+    }
+
+    if (laststart<str)
+    {
+	addto(laststart, str - laststart, sep, &ret, &retalloc);
+    }
+
+    /* terminate the header */
+    strcat(ret, "\n\r");
     return ret;
 }
 
@@ -3882,7 +3996,7 @@ static void lmtp_sendmessage(connection_t *cxn, Article justadded)
        send:
          rset
          mail from
-	 rctp to
+	 rcpt to
 	 data
     */
 
@@ -3919,6 +4033,34 @@ static void lmtp_sendmessage(connection_t *cxn, Article justadded)
 		 hostPeerName (cxn->myHost),cxn->ident) ;
 	lmtp_Disconnect(cxn);
 	return;
+    }
+
+    /* prepend To: header to article */
+    if (deliver_to_header) {
+	char *to_list, *to_list_end;
+	int i, len;
+
+	result = FindHeader(cxn->current_bufs, "Followup-To", 
+			    &to_list, &to_list_end);
+
+	if ((result != RET_OK) || (to_list == NULL)) {
+	    result = FindHeader(cxn->current_bufs, "Newsgroups", 
+				&to_list, &to_list_end);
+	}
+
+	/* free's original to_list */
+	to_list = BuildToHeader(to_list, to_list_end);
+
+	len = bufferArrayLen(cxn->current_bufs);
+	cxn->current_bufs = REALLOC(cxn->current_bufs, Buffer, len+2);
+	cxn->current_bufs[len+1] = NULL;
+
+	for (i = len; i > 0; i--) {
+	    cxn->current_bufs[i] = cxn->current_bufs[i-1];
+	}
+
+	cxn->current_bufs[0] = newBufferByCharP(to_list, strlen(to_list+1),
+						strlen(to_list));
     }
 
     hostArticleOffered (cxn->myHost, cxn);

@@ -408,6 +408,9 @@
 /* Define if BerkeleyDB is available. */
 #undef USE_BERKELEY_DB
 
+/* Define if SASL is available. */
+#undef HAVE_SASL
+
 /* Define if OpenSSL is available. */
 #undef HAVE_SSL
 

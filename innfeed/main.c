@@ -85,10 +85,12 @@ bool useMMap = false ;
 void (*gPrintInfo) (void) ;
 char *dflTapeDir;
 /* these are used by imapfeed */
-char *deliver_username = NULL;
-char *deliver_authname = NULL;
-char *deliver_password = NULL;
-char *deliver_realm    = NULL;
+char *deliver_username  = NULL;
+char *deliver_authname  = NULL;
+char *deliver_password  = NULL;
+char *deliver_realm     = NULL;
+char *deliver_rcpt_to   = "+%s";
+char *deliver_to_header = NULL;
 
 /* imports */
 extern char *versionInfo ;
@@ -837,6 +839,18 @@ static int mainConfigLoadCbk (void *data)
   if (getString (topScope,"deliver-realm",&p, NO_INHERIT))
     {
       deliver_realm = p;
+      /* don't need to free */
+    }
+
+  if (getString (topScope,"deliver-rcpt-to",&p, NO_INHERIT))
+    {
+      deliver_rcpt_to = p;
+      /* don't need to free */
+    }
+
+  if (getString (topScope,"deliver-to-header",&p, NO_INHERIT))
+    {
+      deliver_to_header = p;
       /* don't need to free */
     }
 

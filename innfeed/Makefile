@@ -3,7 +3,7 @@
 include ../Makefile.global
 
 top	        = ..
-CFLAGS		= $(GCFLAGS)
+CFLAGS		= $(GCFLAGS) $(SASLINC)
 
 ALL		= innfeed procbatch startinnfeed imapfeed
 
@@ -43,7 +43,8 @@ tags: $(SOURCES) $(INCLUDES)
 
 ##  Compilation rules.
 
-INNFEEDLIBS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
+INNFEEDLIBS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) \
+		  $(SASLLIB) $(LIBS)
 
 config_y.c config_y.h: configfile.y
 	$(YACC) -d $?

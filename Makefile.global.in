@@ -127,6 +127,12 @@ SSLLIB          = @SSL_LIB@
 SSLINC          = @SSL_INC@
 SSLBIN          = @SSL_BIN@
 
+##  SASL support.  Additional flags and libraries used when compiling or
+##  linking code that contains SASL support.
+
+SASLLIB         = @SASL_LIB@
+SASLINC         = @SASL_INC@
+
 ##  Missing functions.  If non-empty, configure detected that your system
 ##  was missing some standard functions, and INN will be providing its own
 ##  replacements from the lib directory.

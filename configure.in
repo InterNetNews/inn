@@ -413,6 +413,49 @@ AC_SUBST(SSL_INC)
 AC_SUBST(SSL_LIB)])
 INN_LIB_OPENSSL
 
+dnl Check for whether the user wants to compile with SASL, and if so what
+dnl the path to the various components of it is.
+AC_DEFUN([INN_LIB_SASL],
+[AC_ARG_WITH(sasl,
+    [  --with-sasl=PATH     Enable SASL (for imapfeed and NNTP AUTH support)],
+    SASL_DIR=$with_sasl,
+    SASL_DIR=no)
+AC_MSG_CHECKING(if SASL is desired)
+if test x"$SASL_DIR" = xno ; then
+    AC_MSG_RESULT(no)
+    SASL_INC=
+    SASL_LIB=
+else
+    AC_MSG_RESULT(yes)
+    AC_MSG_CHECKING(for SASL location)
+    if test x"$SASL_DIR" = xyes ; then
+        for dir in $prefix /usr/local/sasl /usr/lib/sasl /usr/sasl /usr/pkg \
+                   /usr/local /usr ; do
+            if test -f "$dir/include/sasl/sasl.h" ; then
+                SASL_DIR=$dir
+                break
+            fi
+        done
+    fi
+    if test x"$SASL_DIR" = xyes ; then
+        AC_MSG_ERROR(Can not find SASL)
+    else
+        AC_MSG_RESULT($SASL_DIR)
+	SASL_INC="-I${SASL_DIR}/include"
+
+        inn_save_LIBS=$LIBS
+        LIBS="$LIBS -L${SASL_DIR}/lib"
+	AC_CHECK_LIB(sasl, sasl_getprop,
+                     [SASL_LIB="-L${SASL_DIR}/lib -lsasl2"],
+                     [AC_MSG_ERROR(Can not find SASL)],)
+        LIBS=$inn_save_LIBS
+        AC_DEFINE(HAVE_SASL, 1, [Define if SASL is available.])
+    fi
+fi
+AC_SUBST(SASL_INC)
+AC_SUBST(SASL_LIB)])
+INN_LIB_SASL
+
 dnl Checks for embedded interpretors.
 dnl
 dnl FIXME: These should ideally be combined with the later logic to

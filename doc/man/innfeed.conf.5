@@ -518,11 +518,25 @@ The authname is who you want to authenticate as.
 This is the appropriate password for authname.
 .TP
 .B deliver-username
-The username is who you want to "act" as, that is, who is actually going to be using the server.
+The username is who you want to "act" as, that is, who is actually
+going to be using the server.
 .TP
 .B deliver-realm
-In this case, the "realm" is the realm in which the specified authname is valid.  Currently this is only needed by the DIGEST-MD5 SASL
+In this case, the "realm" is the realm in which the specified authname
+is valid.  Currently this is only needed by the DIGEST-MD5 SASL
 mechanism.
+.TP
+.B deliver-rcpt-to
+A printf-style format string for creating the envelope recipient address.
+The pattern MUST include a single string specifier which will be
+replaced with the newgroup (e.g "bb+%s").  The default is "+%s".
+.TP
+.B deliver-to-header
+An optional printf-style format string for creating a To: header to be
+prepended to the article.  The pattern MUST include a single string
+specifier which will be replaced with the newgroup (e.g
+"post+%s@domain").  If not specified, the To: header will not be
+prepended.
 .RE
 .\"..................................................
 .SH "PEER VALUES"
