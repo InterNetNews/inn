@@ -35,12 +35,10 @@ static void use_rcsid (const char *rid) {   /* Never called */
 }
 #endif
 
-
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
 #include <errno.h>
+#include <time.h>
 
 
 /*
