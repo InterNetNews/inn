@@ -1,4 +1,4 @@
-/*  $Revision$
+C/*  $Revision$
 **
 **  Expire news articles.
 */
@@ -991,6 +991,8 @@ STATIC NORETURN CleanupAndExit(BOOL Server,BOOL Paused, int x)
 	(void)fclose(F);
     }
 
+    SMshutdown();
+
     exit(x);
 }
 
@@ -1219,6 +1221,11 @@ int main(int ac, char *av[])
 
     if (chdir(SPOOL) < 0) {
 	(void)fprintf(stderr, CANTCD, SPOOL, strerror(errno));
+	exit(1);
+    }
+
+    if (!SMinit()) {
+	fprintf(stderr, "Can't initialize storage manager: %s\n", SMerrorstr);
 	exit(1);
     }
 
