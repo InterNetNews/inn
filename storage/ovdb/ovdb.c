@@ -84,6 +84,7 @@
 #define INN_VERSION_MAJOR 2
 #define INN_VERSION_MINOR 3
 #define INN_VERSION_PATCH 0
+#define close_on_exec(fd, flag) CloseOnExec((fd), (flag))
 #endif
 
 #ifndef USE_BERKELEY_DB
@@ -833,7 +834,7 @@ BOOL ovdb_getlock(int mode)
 		syslog(L_FATAL, "OVDB: can not open database unless ovdb_monitor is running.");
 	    return FALSE;
 	}
-	CloseOnExec(lockfd, TRUE);
+	close_on_exec(lockfd, TRUE);
 	DISPOSE(lockfn);
     } else
 	return TRUE;
