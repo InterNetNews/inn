@@ -750,7 +750,7 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 	    fprintf(stderr, "Invalid length for hash %s, skipping\n", fields[0]);
 	    return TRUE;
 	}
-	key = TextToHash(fields[0]);
+	key = TextToHash(&fields[0][1]);
 	break;
     case '<':
 	key = HashMessageID(fields[0]);

@@ -162,7 +162,7 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 		fprintf(stderr, "Invalid length for hash %s, skipping\n", p);
 		continue;
 	    }
-	    key = TextToHash(p);
+	    key = TextToHash(p+1);
 	    break;
 	case '<':
 	    key = HashMessageID(p);
