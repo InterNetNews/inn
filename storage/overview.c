@@ -459,13 +459,23 @@ BOOL OVERstore(TOKEN *token, char *Overdata, int Overlen) {
     }
     memcpy(Overbuff, Overdata, Overlen);
     Overbuff[Overlen] = '\0';
-    if ((Xref = strstr(Overbuff, "\tXref:")) == NULL ||
-	((Xref = strchr(Xref, ' ')) == NULL) ||
-	((Xref = strchr(Xref + 1, ' ')) == NULL)) { 
+    if ((Xref = strstr(Overbuff, "\tXref:")) == NULL) {
 	token->index = OVER_NONE;
 	token->cancelled = FALSE;
 	return TRUE;
     }
+    if ((Xref = strchr(Xref, ' ')) == NULL) {
+	token->index = OVER_NONE;
+	token->cancelled = FALSE;
+	return TRUE;
+    }
+    for (Xref++; *Xref == ' '; Xref++);
+    if ((Xref = strchr(Xref, ' ')) == NULL) { 
+	token->index = OVER_NONE;
+	token->cancelled = FALSE;
+	return TRUE;
+    }
+    for (Xref++; *Xref == ' '; Xref++);
     for (config=OVERconfig;config!=NULL;config=config->next) {
 	if (MatchGroups(Xref, config->numpatterns, config->patterns)) {
 	    offset = ftell(Newfp ? config->newfp : config->fp);

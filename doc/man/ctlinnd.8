@@ -552,18 +552,12 @@ routine.
 .TP
 .BI xexec " path"
 The server gets ready to shut itself down, but instead of exiting it
-execs the specified
-.I path
-with all of its original arguments.
-If
-.I path
-is ``innd'' then
-.\" =()<.I @<_PATH_INND>@>()=
-.I /usr/news/bin/innd
-is invoked; if it is ``inndstart'' then
+execs
 .\" =()<.I @<_PATH_INNDSTART>@>()=
 .I /usr/news/bin/inndstart
-is invoked; if it is an empty string, it will invoke the appropriate program.
+with all of its original arguments except for ``\fB\-r\fP''.
+.I Path
+can be any of ``innd'', ``inndstart'' or an empty string.
 Any other value is an error.
 .PP
 In addition to being acted upon within the server, certain commands can

@@ -140,8 +140,12 @@ CCcopyargv(av)
 	continue;
 
     /* Get the vector, copy each element. */
-    for (v = CCargv = NEW(char*, i + 1); *av; av++)
+    for (v = CCargv = NEW(char*, i + 1); *av; av++) {
+	/* not to renumber */
+	if (strncmp(av[i], "-r", 2) == 0)
+	    continue;
 	*v++ = COPY(*av);
+    }
     *v = NULL;
 }
 
@@ -1225,11 +1229,7 @@ CCxexec(av)
     
     /* Get the pathname. */
     p = av[0];
-    if (*p == '\0')
-	CCargv[0] = AmRoot ? INND : INNDSTART;
-    else if (EQ(p, "innd"))
-	CCargv[0] = INND;
-    else if (EQ(p, "inndstart"))
+    if (*p == '\0' || EQ(p, "innd") || EQ(p, "inndstart"))
 	CCargv[0] = INNDSTART;
     else
 	return "1 Bad value";

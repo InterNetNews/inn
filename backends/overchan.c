@@ -218,6 +218,7 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
 		continue;
 	    }
 	    Hash = TextToHash(&Data[1]);
+	    for (p++; p == ' '; p++);
 	    Xref = p;
 	    Unifiedover = TRUE;
 	}  else {
@@ -226,10 +227,16 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
 		fprintf(stderr, "overchan missing xref header\n");
 		continue;
 	    }
-	    if (((Xref = strchr(Xref, ' ')) == NULL) || ((Xref = strchr(Xref + 1, ' ')) == NULL)) {
+	    if ((Xref = strchr(Xref, ' ')) == NULL) {
 		fprintf(stderr, "overchan malformed xref header\n");
 		continue;
 	    }
+	    for (Xref++; *Xref == ' '; Xref++);
+	    if ((Xref = strchr(Xref, ' ')) == NULL) {
+		fprintf(stderr, "overchan malformed xref header\n");
+		continue;
+	    }
+	    for (Xref++; *Xref == ' '; Xref++);
 	    Unifiedover = FALSE;
 	}
 	Xref = COPY(Xref + 1);

@@ -1,4 +1,4 @@
-/*
+/*  $Revision$
 **  Expire overview index.
 */
 #include <stdio.h>
@@ -101,17 +101,17 @@ STATIC void LISTappend(LIST *Refresh, long Artnum, HASH *Hash)
         if (Append) {
 	    p = (char *)Refresh->Index;
 	    RENEW(p, char, Refresh->Used * OVERINDEXPACKSIZE);
-	    Refresh->Index = &((char (*)[][OVERINDEXPACKSIZE])p)[0][0];
+	    Refresh->Index = (char (*)[OVERINDEXPACKSIZE])p;
 	    index.artnum = Artnum;
 	    index.hash = *Hash;
-	    PackOverIndex(&index, &Refresh->Index[Refresh->Used][0]);
+	    PackOverIndex(&index, Refresh->Index[Refresh->Used]);
         }
 	Refresh->Articles[Refresh->Used++] = Artnum;
     } else {
 	if (Append) {
 	    index.artnum = Artnum;
 	    index.hash = *Hash;
-	    PackOverIndex(&index, &Refresh->Index[Refresh->Used][0]);
+	    PackOverIndex(&index, Refresh->Index[Refresh->Used]);
 	}
 	Refresh->Articles[Refresh->Used++] = Artnum;
     }
@@ -384,7 +384,7 @@ STATIC void Expire(BOOL SortedInput, QIOSTATE *qp)
 	List.Articles = NEW(ARTNUM, List.Size);
 	if (Append) {
 	    p = NEW(char, START_LIST_SIZE * OVERINDEXPACKSIZE);
-	    List.Index = &((char (*)[][OVERINDEXPACKSIZE])p)[0][0];
+	    List.Index = (char (*)[OVERINDEXPACKSIZE])p;
 	}
     }
     List.Used = 0;

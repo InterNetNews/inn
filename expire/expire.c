@@ -899,9 +899,12 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 		if ((Xref = strstr(OVERline, "\tXref:")) == NULL) {
 		    return TRUE;
 		}
-		if (((Xref = strchr(Xref, ' ')) == NULL) || ((Xref = strchr(Xref + 1, ' ')) == NULL)) {
+		if ((Xref = strchr(Xref, ' ')) == NULL)
 		    return TRUE;
-		}
+		for (Xref++; *Xref == ' '; Xref++);
+		if ((Xref = strchr(Xref, ' ')) == NULL)
+		    return TRUE;
+		for (Xref++; *Xref == ' '; Xref++);
 		if (!Xrefbuf)
 		    Xrefbuf = NEW(char, MAXOVERLINE);
 		memcpy(Xrefbuf, Xref, linelen - (OVERline - Xref));

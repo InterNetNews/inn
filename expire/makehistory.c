@@ -724,13 +724,24 @@ DoMemArt(ARTHANDLE *art, BOOL Overview, BOOL Update, FILE *out, FILE *index, BOO
 	BUFFset(&Buff, Xrefp->Header, Xrefp->HeaderLength);
 	BUFFappend(&Buff, NUL, STRLEN(NUL));
 	for (i = 0, p = Buff.Data; i < Buff.Left; p++, i++)
-	if (*p == '\t' || *p == '\n' || *p == '\r')
-	    *p = ' ';
-	if ((p = strchr(Buff.Data, ' ')) == NULL) {
+	    if (*p == '\t' || *p == '\n' || *p == '\r')
+		*p = ' ';
+	if ((p = strchr(Buff.Data, ' ')) == NULL)
 	    (void)fprintf(stderr, "Can't find Xref content, %s\n", Buff.Data);
-	    /* we do not exit */
-	} else {
-	    i = fprintf(index, "[%s] %s\n", hash, ++p);
+	else {
+	    for (p++; *p == ' '; p++);
+	    q = p;
+	    while ((p = strchr(p, ' ')) != NULL) {
+	        p = '\0';
+	        i = fprintf(index, "[%s] %s\n", hash, q);
+	        if (i == EOF || ferror(index)) {
+		    (void)fprintf(stderr, "Can't write index line, %s\n", strerror(errno));
+		    exit(1);
+	        }
+		for (p++; *p == ' '; p++);
+	        q = p;
+	    }
+	    i = fprintf(index, "[%s] %s\n", hash, q);
 	    if (i == EOF || ferror(index)) {
 		(void)fprintf(stderr, "Can't write index line, %s\n", strerror(errno));
 		exit(1);
@@ -766,7 +777,7 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
     QIOSTATE		*qp;
     int			line;
     int			linelen;
-    char		*p;
+    char		*p, *q;
     char		*fields[4];
     int			i;
     TOKEN		token;
@@ -863,15 +874,28 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 			if ((Xref = strstr(OVERline, "\tXref:")) == NULL) {
 			    break;
 			}
-			if (((Xref = strchr(Xref, ' ')) == NULL) || ((Xref = strchr(Xref + 1, ' ')) == NULL)) {
+			if ((Xref = strchr(Xref, ' ')) == NULL)
 			    break;
-			}
+			for (Xref++; *Xref == ' '; Xref++);
+			if ((Xref = strchr(Xref, ' ')) == NULL)
+			    break;
+			for (Xref++; *Xref == ' '; Xref++);
 			if (!Xrefbuf)
 			    Xrefbuf = NEW(char, MAXOVERLINE);
-			Xref++;
 			memcpy(Xrefbuf, Xref, linelen - (OVERline - Xref));
 			Xrefbuf[linelen - (OVERline - Xref)] = '\0';
-			i = fprintf(index, "[%s] %s\n", fields[0], Xrefbuf);
+			p = q = Xrefbuf;
+			while ((p = strchr(p, ' ')) != NULL) {
+			    p = '\0';
+			    i = fprintf(index, "[%s] %s\n", fields[0], q);
+			    if (i == EOF || ferror(index)) {
+				(void)fprintf(stderr, "Can't write index line, %s\n", strerror(errno));
+				exit(1);
+			    }
+			    for (p++; *p == ' '; p++);
+			    q = p;
+			}
+			i = fprintf(index, "[%s] %s\n", fields[0], q);
 			if (i == EOF || ferror(index)) {
 			    (void)fprintf(stderr, "Can't write index line, %s\n", strerror(errno));
 			    exit(1);

@@ -170,16 +170,16 @@ This flag is valid if ``\fB\-t\fP'' flag is used.
 .B \-I
 If the ``\fB\-I\fP'' flag is used, then the index of article overview are
 appended to the specified
-.I file .
+.IR file .
 This file is created if translating traditional stored articles are stored
 into new storing method through storage api.  Whih this
-.I file ,
+.IR file ,
 you can make new overview index file.  To do this,
 .PP
 .RS
 .nf
-.\" =()<sort index.file \&| @<_PATH_NEWSBIN>@/overchan>()=
-sort index.file \&| /usr/news/bin/overchan
+.\" =()<sort index.file \&| @<_PATH_NEWSBIN>@/expireindex -a -o>()=
+sort index.file \&| /usr/news/bin/expireindex -a -o
 .fi
 .PP
 This flag is valid if ``\fB\-t\fP'' flag is used.

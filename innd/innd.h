@@ -247,6 +247,7 @@ typedef struct _SITE {
     BOOL		PoisonEntry;
     BOOL		Sendit;
     BOOL		Seenit;
+    BOOL		IgnoreControl;
     BOOL		DistRequired;
     BOOL		IgnorePath;
     int			Hops;

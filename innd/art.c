@@ -1725,6 +1725,7 @@ STRING ARTpost(CHANNEL *cp)
     BOOL		ToGroup;
     BOOL		GroupMissing;
     BOOL		MadeOverview = FALSE;
+    BOOL		ControlStore = FALSE;
     BUFFER		*article;
     HASH                hash;
     char		linkname[SPOOLNAMEBUFF];
@@ -2050,6 +2051,7 @@ STRING ARTpost(CHANNEL *cp)
     /* Control messages not filed in "to" get filed only in control.name
      * or control. */
     if (ControlHeader >= 0 && Accepted && !ToGroup) {
+	ControlStore = TRUE;
 	FileGlue(buff, "control", '.', ControlWord);
 	if ((ngp = NGfind(buff)) == NULL)
 	    ngp = NGfind(ARTctl);
@@ -2344,7 +2346,7 @@ STRING ARTpost(CHANNEL *cp)
 
     /* And finally, send to everyone who should get it */
     for (sp = Sites, i = nSites; --i >= 0; sp++)
-	if (sp->Sendit) {
+	if (sp->Sendit && (!ControlStore || (ControlStore && !sp->IgnoreControl))) {
     	    TMRstart(TMR_SITESEND);
 	    SITEsend(sp, &Data);
     	    TMRstop(TMR_SITESEND);

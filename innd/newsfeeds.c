@@ -257,6 +257,7 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 		switch (*p) {
 		default:
 		    return "unknown A param in field 3";
+		case 'c': sp->IgnoreControl = TRUE;	break;
 		case 'd': sp->DistRequired = TRUE;	break;
 		case 'p': sp->IgnorePath = TRUE;	break;
 		}
@@ -557,11 +558,7 @@ SITEparsefile(StartSite)
     for (strings = SITEreadfile(FALSE), nSites = 0; strings[nSites]; nSites++)
 	continue;
     Sites = NEW(SITE, nSites);
-    for (sp = Sites, i = 0; i < nSites; i++, sp++) {
-	sp->Name = NULL;
-	sp->Buffer.Data = NULL;
-        sp->Buffer.Size = sp->Buffer.Used = sp->Buffer.Left = 0 ;
-    }
+    (void)memset((POINTER)Sites, '\0', (SIZE_T)(nSites * sizeof(SITE)));
 
     /* Set up scratch subscription list. */
     subbed = NEW(char, nGroups);
