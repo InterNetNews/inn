@@ -55,14 +55,7 @@ typedef int bool;
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
-
-/* Perl 5.004 didn't define ERRSV and PL_na was called na. */
-#ifndef ERRSV
-# define ERRSV GvSV(errgv)
-#endif
-#ifndef PL_na
-# define PL_na na
-#endif
+#include "ppport.h"
 
 /* From lib/perl.c. */
 extern BOOL		PerlFilterActive;
