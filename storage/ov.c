@@ -991,20 +991,24 @@ STATIC OVfindheaderindex() {
 
     if (ReadOverviewfmt)
 	return;
-    ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
-    if ((active = ReadInFile(ACTIVE, (struct stat *)NULL)) == NULL) {
-	(void)fprintf(stderr, "Can't read %s, %s\n",
-	ACTIVE, strerror(errno));
-	exit(1);
-    }
-    BuildGroups(active);
-    F = fopen(cpcatpath(innconf->pathetc, _PATH_EXPIRECTL), "r");
-    if (!EXPreadfile(F)) {
+    if (innconf->groupbaseexpiry) {
+	ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
+	if ((active = ReadInFile(ACTIVE, (struct stat *)NULL)) == NULL) {
+	    (void)fprintf(stderr, "Can't read %s, %s\n",
+	    ACTIVE, strerror(errno));
+	    exit(1);
+	}
+	BuildGroups(active);
+	arts = NEW(char *, nGroups);
+	krps = NEW(enum KRP, nGroups);
+	F = fopen(cpcatpath(innconf->pathetc, _PATH_EXPIRECTL), "r");
+	if (!EXPreadfile(F)) {
+	    (void)fclose(F);
+	    (void)fprintf(stderr, "Format error in expire.ctl\n");
+	    exit(1);
+	}
 	(void)fclose(F);
-	(void)fprintf(stderr, "Format error in expire.ctl\n");
-	exit(1);
     }
-    (void)fclose(F);
     ARTreadschema();
     if (Dateindex == OVFMT_UNINIT) {
 	for (Dateindex = OVFMT_NODATE, i = 0; i < ARTfieldsize; i++) {
@@ -1017,8 +1021,6 @@ STATIC OVfindheaderindex() {
 	    }
 	}
     }
-    arts = NEW(char *, nGroups);
-    krps = NEW(enum KRP, nGroups);
     ReadOverviewfmt = TRUE;
     return;
 }
