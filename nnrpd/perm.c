@@ -1150,7 +1150,8 @@ void PERMgetaccess(void)
 	    canauthenticate = 1;
     uname = 0;
     while (!uname && i--) {
-	uname = ResolveUser(auth_realms[i]);
+	if ((uname = ResolveUser(auth_realms[i])) != NULL)
+	    PERMauthorized = TRUE;
 	if (!uname && auth_realms[i]->default_user)
 	    uname = auth_realms[i]->default_user;
     }
@@ -1226,6 +1227,7 @@ void PERMlogin(char *uname, char *pass)
 	    strcat(PERMuser, auth_realms[i]->default_domain);
 	}
 	PERMneedauth = FALSE;
+	PERMauthorized = TRUE;
 	success_auth = auth_realms[i];
     }
 }
