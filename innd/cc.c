@@ -16,6 +16,7 @@
 #include "clibrary.h"
 #include "innd.h"
 #include "inndcomm.h"
+#include "qio.h"
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
 #include <sys/un.h>
 #endif	
@@ -71,6 +72,7 @@ STATIC STRING	CCperl();
 #endif /* defined(DO_PERL) */
 STATIC STRING	CClowmark();
 
+
 STATIC char		*CCpath = NULL;
 STATIC char		**CCargv;
 STATIC char		CCnosite[] = "1 No such site";
@@ -81,6 +83,7 @@ STATIC char		CCnoreason[] = "1 Empty reason";
 STATIC char		CCbigreason[] = "1 Reason too long";
 STATIC char		CCnotrunning[] = "1 Must be running";
 STATIC BUFFER		CCreply;
+STATIC BUFFER		CCperlbuff;
 STATIC CHANNEL		*CCchan;
 STATIC int		CCwriter;
 STATIC CCDISPATCH	CCcommands[] = {
@@ -2154,6 +2157,141 @@ XS(XS_INN_newsgroup)
 	XSRETURN_PV(ngp->Rest);
 }
 
+XS(XS_INN_filesfor)
+{
+    dXSARGS;
+    char*	msgid;
+    char*	files;
+
+    if (items != 1)
+        croak("Usage: INN::filesfor(msgid)");
+
+    msgid = (char *)SvPV(ST(0),na);
+    files = HISfilesfor(HashMessageID(msgid));
+    if (files) {
+        XSRETURN_PV(files);
+    }
+    else {
+        XSRETURN_UNDEF;
+    }
+}
+
+XS(XS_INN_head)
+{
+    dXSARGS;
+    char*		msgid;
+    char*		p;
+    char*		q;
+    char*		bufptr;
+    QIOSTATE*		qp;
+
+    if (items != 1)
+        croak("Usage: INN::head(msgid)");
+
+    msgid = (char *)SvPV(ST(0),na);
+
+    /* Get the article filenames; open the first file */
+    if ((q = HISfilesfor(HashMessageID(msgid))) == NULL) {
+	XSRETURN_UNDEF;
+    }
+    if ((p = strchr(q, ' ')))
+	*p = '\0';
+
+    if ((qp = QIOopen(q)) == NULL) {
+	XSRETURN_UNDEF;
+    }
+
+    if (CCperlbuff.Data == NULL) {
+	CCperlbuff.Size = SITE_BUFFER_SIZE;
+	CCperlbuff.Data = NEW(char, CCperlbuff.Size);
+    }
+                                        
+    strcpy(CCperlbuff.Data, "");
+
+    for (p = QIOread(qp); (p != NULL) && (*p != '\0'); p = QIOread(qp)) {
+	if (CCperlbuff.Size < (qp->Count + 3)) {
+	    CCperlbuff.Size += SITE_BUFFER_SIZE;
+	    RENEW(CCperlbuff.Data, char, CCperlbuff.Size);
+        }
+	strncat(CCperlbuff.Data, p, QIOlength(qp));
+	strncat(CCperlbuff.Data, "\n", 1);
+    }
+    QIOclose(qp);
+    XSRETURN_PV(CCperlbuff.Data);
+}
+
+XS(XS_INN_article)
+{
+    dXSARGS;
+    char*		msgid;
+    char*		p;
+    char*		q;
+    char*		bufptr;
+    QIOSTATE*		qp;
+
+    if (items != 1)
+	croak("Usage: INN::article(msgid)");
+
+    msgid = (char *)SvPV(ST(0),na);
+
+    /* Get the article filenames; open the first file */
+    if ((q = HISfilesfor(HashMessageID(msgid))) == NULL) {
+	XSRETURN_UNDEF;
+    }
+    if ((p = strchr(q, ' ')))
+	*p = '\0';
+
+    if ((qp = QIOopen(q)) == NULL) {
+	XSRETURN_UNDEF;
+    }
+
+    if (CCperlbuff.Data == NULL) {
+	CCperlbuff.Size = SITE_BUFFER_SIZE;
+	CCperlbuff.Data = NEW(char, CCperlbuff.Size);
+    }
+                                        
+    strcpy(CCperlbuff.Data, "");
+
+    for (p = QIOread(qp); (p != NULL); p = QIOread(qp)) {
+	if (CCperlbuff.Size < (qp->Count + 3)) {
+	    CCperlbuff.Size += SITE_BUFFER_SIZE;
+	    RENEW(CCperlbuff.Data, char, CCperlbuff.Size);
+	}
+	strncat(CCperlbuff.Data, p, QIOlength(qp));
+	strcat(CCperlbuff.Data, "\n");
+    }
+    QIOclose(qp);
+    XSRETURN_PV(CCperlbuff.Data);
+}
+
+XS(XS_INN_syslog)
+{
+    dXSARGS;
+    char*	loglevel;
+    char*	logmsg;
+    int		priority;
+
+    if (items != 2)
+        croak("Usage: INN::syslog(level, message)");
+
+    loglevel = (char *)SvPV(ST(0),na);
+    logmsg = (char *)SvPV(ST(1),na);
+
+    switch (*loglevel) {
+	default:		priority = LOG_NOTICE ;
+	case 'a': case 'A':	priority = LOG_ALERT ;		break;
+	case 'c': case 'C':	priority = LOG_CRIT ;		break;
+	case 'e': case 'E':	priority = LOG_ERR ;		break;
+	case 'w': case 'W':	priority = LOG_WARNING ;	break;
+	case 'n': case 'N':	priority = LOG_NOTICE ;		break;
+	case 'i': case 'I':	priority = LOG_INFO ;		break;
+	case 'd': case 'D':	priority = LOG_DEBUG ;		break;
+    }
+    syslog(priority, "filter: %s", logmsg);
+    XSRETURN_UNDEF;
+}
+
+
 void
 PERLinndAPIinit()
 {
@@ -2161,10 +2299,13 @@ PERLinndAPIinit()
     newXS("INN::cancel", XS_INN_cancel, "cc.c");
     newXS("INN::addhist", XS_INN_addhist, "cc.c");
     newXS("INN::newsgroup", XS_INN_newsgroup, "cc.c");
+    newXS("INN::filesfor", XS_INN_filesfor, "cc.c");
+    newXS("INN::head", XS_INN_head, "cc.c");
+    newXS("INN::article", XS_INN_article, "cc.c");
+    newXS("INN::syslog", XS_INN_syslog, "cc.c");
 }
 #endif
 
-# include "qio.h"
 /*
  * Read a file containing lines of the form "newsgroup lowmark",
  * and reset the low article number for the specified groups.
