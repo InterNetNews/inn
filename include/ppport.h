@@ -141,7 +141,7 @@ __DATA__
 
 #ifndef PERL_PATCHLEVEL
 #	ifndef __PATCHLEVEL_H_INCLUDED__
-#		include "patchlevel.h"
+#		include <patchlevel.h>
 #	endif
 #endif
 #ifndef PERL_PATCHLEVEL
