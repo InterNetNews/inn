@@ -339,7 +339,9 @@ overview_verify_search(const char *data)
     search = tradindexed_opensearch(group, start, end);
     if (search == NULL) {
         warn("Unable to open search for %s:%lu", buffer, artnum);
-        status = false;
+        free(group);
+        vector_free(expected);
+        return false;
     }
     i = 0;
     while (tradindexed_search(search, &overnum, &line, &length, &token,
@@ -387,6 +389,7 @@ main(void)
     ok(3, status);
     ok(4, overview_verify_data("data/basic"));
     ok(5, overview_verify_search("data/basic"));
+    hash_free(groups);
     tradindexed_close();
     system("/bin/rm -r tdx-tmp");
     ok(6, true);
@@ -402,6 +405,7 @@ main(void)
     ok(9, status);
     ok(10, overview_verify_data("data/basic"));
     ok(11, overview_verify_search("data/basic"));
+    hash_free(groups);
     tradindexed_close();
     system("/bin/rm -r tdx-tmp");
     ok(12, true);
