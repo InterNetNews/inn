@@ -1825,7 +1825,7 @@ static EXECSTUFF *ExecProg(char *arg0, char **args)
     pipe(rdfd);
     pipe(errfd);
     pipe(wrfd);
-    switch (pid = vfork()) {
+    switch (pid = fork()) {
       case -1:
 	close(rdfd[0]);
 	close(rdfd[1]);

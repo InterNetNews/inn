@@ -205,7 +205,7 @@ Spawn(int niceval, int fd0, int fd1, int fd2, char * const av[])
 
     /* Fork; on error, give up.  If not using the patched dbz, make
      * this call fork! */
-    i = vfork();
+    i = fork();
     if (i == -1) {
         syslog(L_ERROR, "%s cant fork %s %m", LogName, av[0]);
         return -1;

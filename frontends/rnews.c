@@ -92,7 +92,7 @@ StartChild(fd, path, argv)
     }
 
     /* Get a child. */
-    for (i = 0; (pid = vfork()) < 0; i++) {
+    for (i = 0; (pid = fork()) < 0; i++) {
 	if (i == innconf->maxforks) {
 	    syslog(L_ERROR, "cant fork %s %m -- spooling", path);
 	    return -1;
