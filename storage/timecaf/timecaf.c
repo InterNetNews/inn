@@ -3,18 +3,20 @@
 **  Like the timehash storage method (and heavily inspired by it), but uses
 **  the CAF library to store multiple articles in a single file.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <syslog.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <time.h>
 
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
+#ifndef MAP_FAILED
+# define MAP_FAILED     (caddr_t) -1
 #endif
 
 #include "caf.h"
@@ -160,7 +162,7 @@ static TOKEN *PathNumToToken(char *path, ARTNUM artnum) {
 }
 
 
-BOOL timecaf_init(SMATTRIBUTE *attr) {
+bool timecaf_init(SMATTRIBUTE *attr) {
     if (attr == NULL) {
 	syslog(L_ERROR, "timecaf: attr is NULL");
 	SMseterror(SMERR_INTERNAL, "attr is NULL");
@@ -388,7 +390,7 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
     }
     WritingFile.fd = fd;
     WritingFile.path = path;
-    CloseOnExec(fd, TRUE);
+    close_on_exec(fd, true);
     if ((result = write(fd, article.data, article.len)) != article.len) {
 	SMseterror(SMERR_UNDEFINED, NULL);
 	syslog(L_ERROR, "timecaf error writing %s %m", path);
@@ -412,7 +414,7 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
     int                 fd;
     PRIV_TIMECAF        *private;
     char                *p;
-    SIZE_T		len;
+    size_t		len;
     ARTHANDLE           *art;
     static long		pagesize = 0;
 
@@ -460,7 +462,7 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
 	delta = curoff % pagesize;
 	tmpoff = curoff - delta;
 	private->mmaplen = len + delta;
-	if ((private->mmapbase = mmap((MMAP_PTR)0, private->mmaplen, PROT_READ, MAP__ARG, fd, tmpoff)) == (MMAP_PTR)-1) {
+	if ((private->mmapbase = mmap(NULL, private->mmaplen, PROT_READ, MAP__ARG, fd, tmpoff)) == MAP_FAILED) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    syslog(L_ERROR, "timecaf: could not mmap article: %m");
 	    DISPOSE(art->private);
@@ -644,7 +646,7 @@ DoCancels(void) {
     }
 }
 	    
-BOOL timecaf_cancel(TOKEN token) {
+bool timecaf_cancel(TOKEN token) {
     int                 time;
     int                 seqnum;
     char                *path;
@@ -833,7 +835,7 @@ ARTHANDLE *timecaf_next(const ARTHANDLE *article, const RETRTYPE amount) {
     return art;
 }
 
-BOOL timecaf_ctl(PROBETYPE type, TOKEN *token, void *value) {
+bool timecaf_ctl(PROBETYPE type, TOKEN *token, void *value) {
     struct artngnum *ann;
 
     switch (type) {
@@ -848,7 +850,7 @@ BOOL timecaf_ctl(PROBETYPE type, TOKEN *token, void *value) {
     }
 }
 
-BOOL timecaf_flushcacheddata(FLUSHTYPE type) {
+bool timecaf_flushcacheddata(FLUSHTYPE type) {
     if (type == SM_ALL || type == SM_CANCELEDART)
 	DoCancels();
     return TRUE;
