@@ -361,13 +361,16 @@ INN_ENSURE_PATH_PROG(_PATH_SH,sh)
 INN_ENSURE_PATH_PROG(_PATH_SED,sed)
 INN_ENSURE_PATH_PROG(_PATH_SORT,sort)
 
-dnl Check for a required version of Perl.  We have to use English to get
-dnl around the fact Perl's version variable is $], a variable that m4 simply
-dnl cannot cope with (even with changequote).
+dnl Check for a required version of Perl.  The separate shell variable and
+dnl the changequotes are necessary for autoconf 2.13; autoconf 2.15 will
+dnl provide a different interface that will allow this to work correctly.
+changequote(<<,>>)dnl
+inn_perl_command='print $]'
+changequote([,])dnl
 AC_DEFUN(INN_PERL_VERSION,
     AC_CACHE_CHECK(for Perl version, inn_cv_perl_version, [
     if $_PATH_PERL -e 'require $1;' > /dev/null 2>&1 ; then
-        inn_cv_perl_version=`$_PATH_PERL -MEnglish -e 'print $PERL_VERSION'`
+        inn_cv_perl_version=`$_PATH_PERL -e "$inn_perl_command"`
     else
         AC_MSG_ERROR(Perl $1 or greater is required)
     fi
