@@ -18,10 +18,13 @@
 #include "nnrpd.h"
 #include <netdb.h>
 #include <pwd.h>
+#include <grp.h>
 #if	defined(HPUX)
 #include <sys/pstat.h>
 #endif	/* defined(HPUX) */
-
+#if HAVE_GETSPNAM
+#  include <shadow.h>
+#endif /* HAVE_GETSPNAM */
 
 /*
 ** Here is some defensive code to protect the news server from hosts,
@@ -70,7 +73,9 @@ STATIC char	*TITLEend;
 #endif	/* !defined(HPUX) */
 STATIC SIGVAR	ChangeTrace;
 BOOL	DaemonMode = FALSE;
-
+#if HAVE_GETSPNAM
+STATIC char	*ShadowGroup;
+#endif
 
 extern FUNCTYPE	CMDauthinfo();
 extern FUNCTYPE	CMDdate();
@@ -370,6 +375,9 @@ PERMinfile(hp, ip, user, pass, accesslist, accessfile)
     char		*definelist[MAXPATTERNDEFINE];
     char		filename[SMBUF];
     char		*fields[5];
+#if HAVE_GETSPNAM
+    struct spwd		*spwd;
+#endif
 
     if ((F = fopen(accessfile, "r")) == NULL) {
 	syslog(L_ERROR, "%s cant fopen %s %m", ClientHost, accessfile);
@@ -466,18 +474,21 @@ PERMinfile(hp, ip, user, pass, accesslist, accessfile)
 	} else
 	    filename[0] = '\0';
 
-#ifdef DONT_HAVE_SHADOW
 	/* See if we should lookup a specific user in the passwd file */
 	if (user && pass && EQ(fields[2], "+")) {
 	    if ((pwd = getpwnam(user)) == NULL)
 		continue;
+#if HAVE_GETSPNAM
+	    if ((spwd = getspnam(user)) != NULL)
+		pwd->pw_passwd = spwd->sp_pwdp;
+#endif
 	    if (!EQ(pwd->pw_passwd, crypt(pass, pwd->pw_passwd)))
 		continue;
-	} else
-#endif
-	/* Matching for a specific user or just the host? */
-	if (user && (!EQ(user, fields[2]) || !EQ(pass, fields[3])))
-	    continue;
+	} else {
+	    /* Matching for a specific user or just the host? */
+	    if (user && (!EQ(user, fields[2]) || !EQ(pass, fields[3])))
+		continue;
+	}
 
 	PERMcanread = strchr(fields[1], 'R') != NULL;
 	PERMcanpost = strchr(fields[1], 'P') != NULL;
@@ -736,6 +747,10 @@ main(argc, argv, env)
     UID_T               NewsUID;
     int                 one = 1;
     FILE                *pidfile;
+#if HAVE_GETSPNAM
+    struct group	*grp;
+    GID_T		shadowgid;
+#endif /* HAVE_GETSPNAM */
 
 #if	!defined(HPUX)
     /* Save start and extent of argv for TITLEset. */
@@ -753,7 +768,7 @@ main(argc, argv, env)
 
     if (ReadInnConf() < 0) exit(1);
 
-    while ((i = getopt(argc, argv, "b:Di:lop:Rr:s:t")) != EOF)
+    while ((i = getopt(argc, argv, "b:Di:g:lop:Rr:s:t")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -767,6 +782,11 @@ main(argc, argv, env)
  	case 'D':			/* standalone daemon mode */
  	    DaemonMode = TRUE;
  	    break;
+#if HAVE_GETSPNAM
+	case 'g':
+	    ShadowGroup = optarg;
+	    break;
+#endif /* HAVE_GETSPNAM */
 	case 'i':			/* Initial command */
 	    PushedBack = COPY(optarg);
 	    break;
@@ -829,6 +849,32 @@ main(argc, argv, env)
 		syslog(L_FATAL, "nnrpd cant stat %s %m", innconf->pathrun);
 		exit(1);
 	    }
+
+#if HAVE_GETSPNAM
+	    shadowgid = -1;
+	    /* Find shadowgroup gid if needed */
+	    if (ShadowGroup != NULL) {
+		if ((grp = getgrnam(ShadowGroup)) == NULL)
+		    syslog(L_ERROR, "nnrpd cannot find group %s",
+				ShadowGroup);
+		else
+		    shadowgid = grp->gr_gid;
+	    } else if ((grp = getgrnam("shadow")) != NULL) {
+		/* found default group "shadow" */
+		shadowgid = grp->gr_gid;
+		ShadowGroup = "shadow";
+	    }
+	    /* If we have a shadowgid, try to set it as an extra group. */
+	    if (shadowgid >= 0) {
+		if (setgroups(1, &shadowgid) < 0)
+		   syslog(L_ERROR, "nnrpd cannot set supplementary group %s %m",
+			ShadowGroup);
+		else
+		   syslog(L_NOTICE, "nnrpd added supplementary group %s",
+			ShadowGroup);
+	    }
+#endif /* HAVE_GETSPNAM */
+
 	    NewsUID = Sb.st_uid;
 	    NewsGID = Sb.st_gid;
 	    (void)setgid(NewsGID);
