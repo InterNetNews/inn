@@ -265,7 +265,7 @@ parameter_free(void *p)
 static void
 error_bad_unquoted_char(config_file file, char bad)
 {
-    warn("%s:%u: illegal character '%c' in unquoted string", file->filename,
+    warn("%s:%u: invalid character '%c' in unquoted string", file->filename,
          file->line, bad);
     file->token.type = TOKEN_ERROR;
     file->error = true;
@@ -394,14 +394,12 @@ token_string(config_file file)
             offset = file->current - file->buffer;
             status = file_read_more(file, offset);
             p -= offset;
-            if (!status) {
+            if (!status)
                 done = true;
-                break;
-            }
             break;
         default:
             if (colon) {
-                error_bad_unquoted_char(file, *p);
+                error_bad_unquoted_char(file, ':');
                 return;
             }
         }
@@ -451,7 +449,7 @@ token_quoted_string(config_file file)
             p -= offset;
             if (!status) {
                 warn("%s:%u: end of file encountered while parsing quoted"
-                     "string", file->filename, file->line);
+                     " string", file->filename, file->line);
                 file->token.type = TOKEN_ERROR;
                 file->error = true;
                 return;
@@ -623,10 +621,11 @@ file_read_more(config_file file, ptrdiff_t offset)
 
         left = file->bufsize - offset - 1;
         memmove(file->buffer, file->buffer + offset, left);
-        start = file->current + left;
+        file->current -= offset;
+        start = file->buffer + left;
         amount = offset;
     } else {
-        start = file->current + file->bufsize - 1;
+        start = file->buffer + file->bufsize - 1;
         file->bufsize += BUFSIZ;
         file->buffer = xrealloc(file->buffer, file->bufsize);
         amount = BUFSIZ;
@@ -637,7 +636,6 @@ file_read_more(config_file file, ptrdiff_t offset)
     if (status <= 0)
         return false;
     start[amount] = '\0';
-    file->current = file->buffer;
 
     /* Reject nuls, since otherwise they would cause strange problems. */
     if (strlen(start) != (size_t) status) {
@@ -732,8 +730,8 @@ parse_parameter(config_group group, config_file file, char *key)
             param->type = VALUE_UNKNOWN;
             param->line = line;
             if (!hash_insert(group->params, key, param)) {
-                warn("%s:%u: duplicate parameter %s", file->filename,
-                     file->line, key);
+                warn("%s:%u: duplicate parameter %s", file->filename, line,
+                     key);
                 free(param->raw_value);
                 free(param->key);
                 free(param);
