@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Here be configuration data used by various InterNetNews programs.  This
 **  file is used as source for the autoheader script, which from it and
@@ -158,9 +158,6 @@
 
 /* Mode that directories are created with.  */
 #undef GROUPDIR_MODE
-
-/* Define if you have the flock function.  */
-#undef HAVE_FLOCK
 
 /* Define if your msync() takes three arguments.  */
 #undef HAVE_MSYNC_3_ARG

@@ -749,10 +749,9 @@ AC_HEADER_TIME
 AC_HEADER_SYS_WAIT
 
 dnl Generic checks for header files.
-dnl NOTUSED: sys/file.h sys/ioctl.h
-AC_CHECK_HEADERS(crypt.h fcntl.h inttypes.h limits.h ndbm.h stddef.h stdint.h \
-                 string.h sys/bitypes.h sys/file.h sys/filio.h sys/ioctl.h \
-                 sys/param.h sys/select.h sys/sysinfo.h sys/time.h unistd.h)
+AC_CHECK_HEADERS(crypt.h fcntl.h inttypes.h limits.h ndbm.h stddef.h \
+                 stdint.h string.h sys/bitypes.h sys/filio.h sys/param.h \
+                 sys/select.h sys/sysinfo.h sys/time.h unistd.h)
 
 dnl Some Linux systems have db1/ndbm.h instead of ndbm.h.
 if test x"$ac_cv_header_ndbm_h" = xno ; then
@@ -1111,28 +1110,13 @@ fi])
 INN_FUNC_SNPRINTF
 
 dnl Check for various other functions.
-dnl
-dnl NOTUSED: gethostname mkfifo strcspn strstr
-dnl
-dnl FIXME: fchmod and gettimeofday are checked some of the places they're
-dnl used, but not all of them.
-AC_CHECK_FUNCS(atexit fchmod fcntl gethostname getpagesize getrlimit \
-               getrusage getspnam gettimeofday mkfifo setbuffer sigaction \
-               setrlimit setsid socketpair statvfs strcspn strncasecmp \
-               strstr strtoul symlink sysconf waitpid)
+AC_CHECK_FUNCS(atexit getpagesize getrlimit getrusage getspnam setbuffer \
+               sigaction setrlimit setsid socketpair statvfs strncasecmp \
+               strtoul symlink sysconf)
 
 dnl Find a way to get the file descriptor limit.
 if test x"$ac_cv_func_getrlimit" = xno ; then
     AC_CHECK_FUNCS(getdtablesize ulimit, break)
-fi
-
-dnl If we don't have fcntl, try to find another locking function.
-if test x"$ac_cv_func_fcntl" = xno ; then
-    AC_CHECK_FUNC(flock, AC_DEFINE(HAVE_FLOCK),
-        AC_CHECK_LIB(bsd, flock, 
-                     AC_DEFINE(HAVE_FLOCK)
-                     LIBS="-lbsd $LIBS",
-                     [AC_CHECK_FUNCS(lockf)]))
 fi
 
 dnl If we don't have statvfs, gather some more information for inndf.
