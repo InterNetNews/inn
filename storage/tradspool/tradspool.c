@@ -29,11 +29,11 @@
 typedef struct {
     char		*artbase; /* start of the article data -- may be mmaped */
     unsigned int	artlen; /* art length. */
-    int 	nextindex;
+    int		nextindex;
     char		*curdirname;
     DIR			*curdir;
     struct _ngtent	*ngtp;
-    BOOL 		mmapped;
+    BOOL		mmapped;
 } PRIV_TRADSPOOL;
 
 /*
@@ -552,7 +552,7 @@ CrackXref(char *xref, unsigned int *lenp) {
 	    RENEW(xrefs, char *, xrefsize);
 	}
 
- 	p = q;
+	p = q;
 	/* skip spaces */
 	for ( ; *p == ' ' ; p++) ;
     }
@@ -979,11 +979,16 @@ tradspool_cancel(TOKEN token) {
 
 	linkpath = NEW(char, strlen(innconf->patharticles) + strlen(ng) + 32);
 	sprintf(linkpath, "%s/%s/%lu", innconf->patharticles, ng, artnum);
-	/* hmm, do we want to abort this if one of the symlink unlinks fails? */
-	if (unlink(linkpath) < 0) result = FALSE;
+	/* repeated unlinkings of a crossposted article may fail on account
+	   of the file no longer existing without it truly being an error */
+	if (unlink(linkpath) < 0)
+	    if (errno != ENOENT || i == 1)
+		result = FALSE;
 	DISPOSE(linkpath);
     }
-    if (unlink(path) < 0) result = FALSE;
+    if (unlink(path) < 0)
+	if (errno != ENOENT || numxrefs == 1)
+	    result = FALSE;
     DISPOSE(path);
     for (i = 0 ; i < numxrefs ; ++i) DISPOSE(xrefs[i]);
     DISPOSE(xrefs);
