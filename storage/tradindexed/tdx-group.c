@@ -111,6 +111,9 @@ struct group_index {
     int count;
 };
 
+/* Forward declaration. */
+struct hashmap;
+
 /* Internal prototypes. */
 static int index_entry_count(size_t size);
 static size_t index_file_size(int count);
@@ -120,9 +123,7 @@ static bool index_map(struct group_index *);
 static bool index_maybe_remap(struct group_index *, long loc);
 static void index_unmap(struct group_index *);
 static bool index_expand(struct group_index *);
-static unsigned int index_bucket(HASH hash);
 static long index_find(struct group_index *, const char *group);
-static long index_splice(struct group_index *, const char *group);
 
 
 /*
@@ -367,6 +368,8 @@ tdx_index_open(bool writable)
     } else {
         index->count = 0;
         if (index->writable) {
+            if (st.st_size > 0)
+                warn("tradindexed: recreating truncated %s", index->path);
             if (!index_expand(index))
                 goto fail;
         } else {
@@ -387,13 +390,52 @@ tdx_index_open(bool writable)
 **  Given a group name hash, return an index into the hash table in the
 **  group.index header.
 */
-static unsigned int
+static long
 index_bucket(HASH hash)
 {
     unsigned int bucket;
 
     memcpy(&bucket, &hash, sizeof(bucket));
     return bucket % TDX_HASH_SIZE;
+}
+
+
+/*
+**  Given a pointer to a group entry, return its location number.
+*/
+static long
+entry_loc(const struct group_index *index, const struct group_entry *entry)
+{
+    return entry - index->entries;
+}
+
+
+/*
+**  Splice out a particular group entry.  Takes the entry and a pointer to the
+**  location where a pointer to it is stored.
+*/
+static void
+entry_splice(struct group_entry *entry, int *parent)
+{
+    *parent = entry->next.recno;
+    entry->next.recno = -1;
+    msync(parent, sizeof(*parent), MS_ASYNC);
+}
+
+
+/*
+**  Add a new entry to the appropriate hash chain.
+*/
+static void
+index_add(struct group_index *index, struct group_entry *entry)
+{
+    long bucket;
+
+    bucket = index_bucket(entry->hash);
+    entry->next.recno = index->header->hash[bucket].recno;
+    index->header->hash[bucket].recno = entry_loc(index, entry);
+    msync(&index->header->hash[bucket], sizeof(struct loc), MS_ASYNC);
+    msync(entry, sizeof(*entry), MS_ASYNC);
 }
 
 
@@ -428,42 +470,63 @@ index_find(struct group_index *index, const char *group)
 
 
 /*
-**  Like index_find, but also splices that entry out of whatever chain it
-**  might belong to.  This function is called by tdx_index_delete.  No locking
-**  is at present done.
+**  Add a given entry to the free list.
+*/
+static void
+freelist_add(struct group_index *index, struct group_entry *entry)
+{
+    entry->next.recno = index->header->freelist.recno;
+    index->header->freelist.recno = entry_loc(index, entry);
+    msync(&index->header->freelist, sizeof(struct loc), MS_ASYNC);
+    msync(entry, sizeof(*entry), MS_ASYNC);
+}
+
+
+/*
+**  Find an entry by hash value (rather than group name) and splice it out of
+**  whatever chain it might belong to.  This function is called by both
+**  index_unlink and index_audit_group.  Locking must be done by the caller.
+**  Returns the group location of the spliced group.
 */
 static long
-index_splice(struct group_index *index, const char *group)
+index_unlink_hash(struct group_index *index, HASH hash)
 {
-    HASH hash;
-    struct loc *parent;
-    long loc;
+    int *parent;
+    long current;
 
-    if (!index->writable)
-        return -1;
-    if (index->header == NULL || index->entries == NULL)
-        return -1;
-    hash = Hash(group, strlen(group));
-    parent = &index->header->hash[index_bucket(hash)];
-    loc = parent->recno;
+    parent = &index->header->hash[index_bucket(hash)].recno;
+    current = *parent;
 
-    while (loc >= 0) {
+    while (current >= 0) {
         struct group_entry *entry;
 
-        if (loc > index->count && !index_maybe_remap(index, loc))
+        if (current > index->count && !index_maybe_remap(index, current))
             return -1;
-        entry = index->entries + loc;
+        entry = &index->entries[current];
         if (entry->deleted == 0)
             if (memcmp(&hash, &entry->hash, sizeof(hash)) == 0) {
-                *parent = entry->next;
-                entry->next.recno = -1;
-                msync(parent, sizeof(*parent), MS_ASYNC);
-                return loc;
+                entry_splice(entry, parent);
+                return current;
             }
-        parent = &entry->next;
-        loc = entry->next.recno;
+        parent = &entry->next.recno;
+        current = *parent;
     }
     return -1;
+}
+
+
+/*
+**  Like index_find, but also removes that entry out of whatever chain it
+**  might belong to.  This function is called by tdx_index_delete.  Locking
+**  must be done by the caller.
+*/
+static long
+index_unlink(struct group_index *index, const char *group)
+{
+    HASH hash;
+
+    hash = Hash(group, strlen(group));
+    return index_unlink_hash(index, hash);
 }
 
 
@@ -493,7 +556,6 @@ tdx_index_add(struct group_index *index, const char *group, ARTNUM low,
               ARTNUM high, const char *flag)
 {
     HASH hash;
-    unsigned int bucket;
     long loc;
     struct group_entry *entry;
     struct group_data *data;
@@ -522,33 +584,27 @@ tdx_index_add(struct group_index *index, const char *group, ARTNUM low,
             return false;
         }
     loc = index->header->freelist.recno;
-    index->header->freelist = index->entries[loc].next;
+    index->header->freelist.recno = index->entries[loc].next.recno;
+    msync(&index->header->freelist, sizeof(struct loc), MS_ASYNC);
 
     /* Initialize the entry. */
     entry = &index->entries[loc];
     hash = Hash(group, strlen(group));
     entry->hash = hash;
-    entry->low = low;
+    entry->low = (low == 0 && high != 0) ? high + 1 : low;
     entry->high = high;
     entry->deleted = 0;
     entry->base = 0;
     entry->count = 0;
     entry->flag = *flag;
-    bucket = index_bucket(hash);
-    entry->next = index->header->hash[bucket];
-    index->header->hash[bucket].recno = loc;
-
-    /* Create the data files and initialize the index inode. */
     data = tdx_data_new(group, index->writable);
     if (!tdx_data_open_files(data))
         warn("tradindexed: unable to create data files for %s", group);
     entry->indexinode = data->indexinode;
     tdx_data_close(data);
+    index_add(index, entry);
 
     index_lock(index->fd, INN_LOCK_UNLOCK);
-    msync(index->header, sizeof(struct group_header), MS_ASYNC);
-    msync(entry, sizeof(*entry), MS_ASYNC);
-
     return true;
 }
 
@@ -565,21 +621,23 @@ tdx_index_delete(struct group_index *index, const char *group)
     if (!index->writable)
         return false;
 
-    loc = index_splice(index, group);
-    if (loc == -1)
-        return false;
+    /* Lock the header for the entire operation, mostly as prevention against
+       interfering with ongoing audits (which lock while they're running). */
+    index_lock(index->fd, INN_LOCK_WRITE);
 
+    /* Splice out the entry and mark it as deleted. */
+    loc = index_unlink(index, group);
+    if (loc == -1) {
+        index_lock(index->fd, INN_LOCK_UNLOCK);
+        return false;
+    }
     entry = &index->entries[loc];
     entry->deleted = time(NULL);
     HashClear(&entry->hash);
 
-    /* The only thing we have to lock is the modification of the free list. */
-    index_lock(index->fd, INN_LOCK_WRITE);
-    entry->next = index->header->freelist;
-    index->header->freelist.recno = loc;
+    /* Add the entry to the free list. */
+    freelist_add(index, entry);
     index_lock(index->fd, INN_LOCK_UNLOCK);
-    msync(index->header, sizeof(struct group_header), MS_ASYNC);
-    msync(entry, sizeof(*entry), MS_ASYNC);
 
     /* Delete the group data files for this group. */
     tdx_data_delete(group, NULL);
@@ -960,6 +1018,253 @@ tdx_index_dump(struct group_index *index, FILE *output)
             tdx_index_print(name, entry, output);
             current = entry->next.recno;
         }
+    }
+    if (hashmap != NULL)
+        hash_free(hashmap);
+}
+
+
+/*
+**  Audit a particular group entry location to ensure that it points to a
+**  valid entry within the group index file.  Takes a pointer to the location,
+**  the number of the location, a pointer to the group entry if any (if not,
+**  the location is assumed to be part of the header hash table), and a flag
+**  saying whether to fix problems that are found.
+*/
+static void
+index_audit_loc(struct group_index *index, int *loc, long number,
+                struct group_entry *entry, bool fix)
+{
+    bool error = false;
+
+    if (*loc >= index->count) {
+        warn("tradindexed: out of range index %d in %s %ld",
+             *loc, (entry == NULL ? "bucket" : "entry"), number);
+        error = true;
+    }
+    if (*loc < 0 && *loc != -1) {
+        warn("tradindexed: invalid negative index %d in %s %ld",
+             *loc, (entry == NULL ? "bucket" : "entry"), number);
+        error = true;
+    }
+
+    if (fix && error) {
+        *loc = -1;
+        msync(loc, sizeof(*loc), MS_ASYNC);
+    }
+}
+
+
+/*
+**  Check an entry to see if it was actually deleted.  Make sure that all the
+**  information is consistent with a deleted group if it's not and the fix
+**  flag is set.
+*/
+static void
+index_audit_deleted(struct group_entry *entry, long number, bool fix)
+{
+    bool error = false;
+
+    if (HashEmpty(entry->hash) && entry->deleted == 0) {
+        warn("tradindexed: entry %ld has zero hash but no delete time",
+             number);
+        error = true;
+        if (fix)
+            entry->deleted = time(NULL);
+    }
+    if (entry->deleted != 0 && !HashEmpty(entry->hash)) {
+        warn("tradindexed: entry %ld has a delete time but a non-zero hash",
+             number);
+        error = true;
+        if (fix)
+            HashClear(&entry->hash);
+    }
+    if (fix && error)
+        msync(entry, sizeof(*entry), MS_ASYNC);
+}
+
+
+/*
+**  Audit the group header for any inconsistencies.  This checks the
+**  reachability of all of the group entries, makes sure that deleted entries
+**  are on the free list, and otherwise checks the linked structure of the
+**  whole file.  The data in individual entries is not examined.  If the
+**  second argument is true, also attempt to fix inconsistencies.
+*/
+static void
+index_audit_header(struct group_index *index, bool fix)
+{
+    long bucket, current;
+    struct group_entry *entry;
+    int *parent;
+    bool *reachable;
+
+    /* First, walk all of the regular hash buckets, making sure that all of
+       the group location pointers are valid and sane, that all groups that
+       have been deleted are correctly marked as such, and that all groups are
+       in their correct hash chain.  Build reachability information as we go,
+       used later to ensure that all group entries are reachable. */
+    reachable = xcalloc(index->count, sizeof(bool));
+    for (bucket = 0; bucket < TDX_HASH_SIZE; bucket++) {
+        parent = &index->header->hash[bucket].recno;
+        index_audit_loc(index, parent, bucket, NULL, fix);
+        current = *parent;
+        while (current != -1) {
+            entry = &index->entries[current];
+            if (bucket != index_bucket(entry->hash)) {
+                warn("tradindexed: entry %ld is in bucket %ld instead of its"
+                     " correct bucket %ld", current, bucket,
+                     index_bucket(entry->hash));
+                if (fix)
+                    entry_splice(entry, parent);
+            } else {
+                if (reachable[current])
+                    warn("tradindexed: entry %ld is reachable from multiple"
+                         " paths", current);
+                reachable[current] = true;
+            }
+            index_audit_deleted(entry, current, fix);
+            if (entry->deleted != 0) {
+                warn("tradindexed: entry %ld is deleted but not in the free"
+                     " list", current);
+                if (fix) {
+                    entry_splice(entry, parent);
+                    reachable[current] = false;
+                }
+            }
+            index_audit_loc(index, &entry->next.recno, current, entry, fix);
+            parent = &entry->next.recno;
+            current = *parent;
+        }
+    }
+
+    /* Now, walk the free list.  Make sure that each group in the free list is
+       actually deleted, and update the reachability information. */
+    index_audit_loc(index, &index->header->freelist.recno, 0, NULL, fix);
+    parent = &index->header->freelist.recno;
+    current = *parent;
+    while (current != -1) {
+        entry = &index->entries[current];
+        index_audit_deleted(entry, current, fix);
+        reachable[current] = true;
+        if (entry->deleted == 0) {
+            warn("tradindexed: undeleted entry %ld in free list", current);
+            if (fix) {
+                entry_splice(entry, parent);
+                reachable[current] = false;
+            }
+        }
+        index_audit_loc(index, &entry->next.recno, current, entry, fix);
+        parent = &entry->next.recno;
+        current = *parent;
+    }
+
+    /* Finally, check all of the unreachable entries and if fix is true, try
+       to reattach them in the appropriate location. */
+    for (current = 0; current < index->count; current++)
+        if (!reachable[current]) {
+            warn("tradindexed: unreachable entry %ld", current);
+            if (fix) {
+                entry = &index->entries[current];
+                if (entry->deleted == 0)
+                    index_add(index, entry);
+                else
+                    freelist_add(index, entry);
+            }
+        }
+
+    /* All done. */
+    free(reachable);
+}
+
+
+/*
+**  Audit a particular group entry for any inconsistencies.  This doesn't
+**  check any of the structure, or whether the group is deleted, just the data
+**  as stored in the group data files (mostly by calling tdx_data_audit to do
+**  the real work).  Note that while the low water mark may be updated, the
+**  high water mark is left unchanged.
+*/
+static void
+index_audit_group(struct group_index *index, struct group_entry *entry,
+                  struct hash *hashmap, bool fix)
+{
+    struct hashmap *group;
+    ptrdiff_t offset;
+
+    offset = entry - index->entries;
+    index_lock_group(index->fd, offset, INN_LOCK_WRITE);
+    group = hash_lookup(hashmap, &entry->hash);
+    if (group == NULL) {
+        warn("tradindexed: group %ld not found in active file",
+             entry_loc(index, entry));
+        if (fix) {
+            index_unlink_hash(index, entry->hash);
+            HashClear(&entry->hash);
+            entry->deleted = time(NULL);
+            freelist_add(index, entry);
+        }
+    } else {
+        tdx_data_audit(group->name, entry, fix);
+    }
+    index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
+}
+
+
+/*
+**  Audit the group index for any inconsistencies.  If the argument is true,
+**  also attempt to fix those inconsistencies.
+*/
+void
+tdx_index_audit(bool fix)
+{
+    struct group_index *index;
+    struct stat st;
+    off_t expected;
+    int count;
+    struct hash *hashmap;
+    long bucket;
+    struct group_entry *entry;
+
+    index = tdx_index_open(true);
+    if (index == NULL)
+        return;
+
+    /* Keep a lock on the header through the whole audit process.  This will
+       stall any newgroups or rmgroups, but not normal article reception.  We
+       don't want the structure of the group entries changing out from under
+       us, although we don't mind if the data does until we're validating that
+       particular group. */
+    index_lock(index->fd, INN_LOCK_WRITE);
+
+    /* Make sure the size looks sensible. */
+    if (fstat(index->fd, &st) < 0) {
+        syswarn("tradindexed: cannot fstat %s", index->path);
+        return;
+    }
+    count = index_entry_count(st.st_size);
+    expected = index_file_size(count);
+    if (expected != st.st_size) {
+        syswarn("tradindexed: %ld bytes of trailing trash in %s",
+                (unsigned long) (st.st_size - expected), index->path);
+        if (fix)
+            if (ftruncate(index->fd, expected) < 0)
+                syswarn("tradindexed: cannot truncate %s", index->path);
+    }
+    index_maybe_remap(index, count);
+
+    /* Okay everything is now mapped and happy.  Validate the header. */
+    index_audit_header(index, fix);
+
+    /* Walk all the group entries and check them individually.  To do this, we
+       need to map hashes to group names, so load a hash of the active file to
+       do that resolution. */
+    hashmap = hashmap_load();
+    for (bucket = 0; bucket < index->count; bucket++) {
+        entry = &index->entries[bucket];
+        if (entry->deleted != 0)
+            continue;
+        index_audit_group(index, entry, hashmap, fix);
     }
     if (hashmap != NULL)
         hash_free(hashmap);
