@@ -43,9 +43,9 @@ main(void)
 
     /* We're run by a shell script wrapper that sets resource limits such
        that we can allocate one string of this size but not two. */
-    value = xmalloc(30 * 1024);
-    memset(value, 'A', 30 * 1024 - 1);
-    value[30 * 1024 - 1] = 0;
+    value = xmalloc(50 * 1024);
+    memset(value, 'A', 50 * 1024 - 1);
+    value[50 * 1024 - 1] = 0;
     status = test_setenv(test_var, value, 0);
     ok(5, (status == 0) && !strcmp(getenv(test_var), ""));
     status = test_setenv(test_var, value, 1);
