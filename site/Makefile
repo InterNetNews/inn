@@ -65,11 +65,9 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(CTLBIN)/checkgroups \
 	$D$(PATHBIN)/nntpsend $D$(PATHBIN)/send-ihave $D$(PATHBIN)/send-nntp \
 	$D$(PATHBIN)/send-uucp $D$(PATHBIN)/sendbatch $D$(PATHBIN)/inncheck \
 	$D$(PATHBIN)/innstat $D$(PATHBIN)/pgpverify $D$(PATHBIN)/innwatch \
-	$D$(PATHBIN)/innreport $D$(PATH_SHELLVARS) \
-	$D$(PATH_PERL_SHELLVARS) $D$(PATH_PERL_STARTUP_INND) \
-	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
-	$D$(PATH_TCL_SHELLVARS) $D$(PATH_TCL_STARTUP) $D$(PATH_CSH_SHELLVARS) \
-	$D$(PATH_TCL_FILTER) $D$(PATHBIN)/scanspool $D$(PATH_MOTD)
+	$D$(PATHBIN)/innreport $D$(PATH_SHELLVARS) $D$(PATH_PERL_SHELLVARS) \
+	$D$(PATH_TCL_SHELLVARS) $D$(PATH_CSH_SHELLVARS) $D$(PATHBIN)/scanspool \
+	$D$(PATH_MOTD)
 
 ##  Scripts from above, plus site-specific config files.
 REST		= \
@@ -78,13 +76,14 @@ REST		= \
 	control.ctl expire.ctl nntpsend.ctl \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
 	motd.news storage.ctl overview.ctl cycbuff.conf \
-	innfeed.conf
+	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
+	startup.tcl filter.tcl
 
 ALL		= $(MOST) $(REST)
 
 REST_INSTALLED	= \
 	$D$(PATH_NEWSFEEDS) $D$(PATH_INNDHOSTS) \
-	$D$(PATH_NNRPACCESS) $D$(PATH_NNTPPASS) \
+	$D$(PATH_NNRPACCESS) $D$(PATH_NNRPDTRACK) $D$(PATH_NNTPPASS) \
 	$D$(PATH_CONFIG) $D$(PATH_MODERATORS) \
 	$D$(PATH_CONTROLCTL) $D$(PATH_EXPIRECTL) $D$(PATHETC)/nntpsend.ctl \
 	$D$(PATHETC)/innreport.conf $D$(PATHLIB)/innreport_inn.pm \
