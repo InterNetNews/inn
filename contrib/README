@@ -23,6 +23,11 @@ to work with INN.
 
                         -------------------------
 
+analyze-traffic.pl
+
+    Analyzes which newsgroups are receiving the most traffic and which
+    peer is most responsible for each high-traffic group.
+
 archivegz
 
     A compressing version of archive, writing out .gz files instead of
