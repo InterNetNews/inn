@@ -112,7 +112,7 @@ then
   DECUNIX=yes # If later tests want to check for DECUNIX
 else
   AC_MSG_RESULT(no)
-  ISC=
+  DECUNIX=
 fi
 ])
 

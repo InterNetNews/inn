@@ -1697,7 +1697,7 @@ then
   DECUNIX=yes # If later tests want to check for DECUNIX
 else
   echo "$ac_t""no" 1>&6
-  ISC=
+  DECUNIX=
 fi
 
 
