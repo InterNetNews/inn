@@ -385,6 +385,10 @@ Needed Bug Fixes
   the reporting function should only print it out if it's useful for that
   error.
 
+* innd returns 437 for articles that were accepted but filed in the junk
+  group.  It should probably return the appropriate 2xx status code in
+  that case instead.
+
 * Someone should go through the BUGS sections of all of the manpages and
   fix those for which the current behavior is unacceptable.
 
