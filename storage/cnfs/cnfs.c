@@ -619,6 +619,7 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
 	cycbuff->currentbuff = TRUE;
 	cycbuff->order = 0;	/* to indicate this is newly added cycbuff */
 	cycbuff->needflush = TRUE;
+	memset(cycbuff->metaname, '\0', CNFSLASIZ);
 	if (!CNFSflushhead(cycbuff))
 	    return FALSE;
     }
