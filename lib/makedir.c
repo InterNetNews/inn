@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>
 #include "configdata.h"
 #include "clibrary.h"
 #include "libinn.h"
@@ -17,7 +18,11 @@ STATIC BOOL MakeDir(char *Name)
     }
 
     /* See if it failed because it already exists. */
-    return stat(Name, &Sb) >= 0 && S_ISDIR(Sb.st_mode);
+    if (stat(Name, &Sb) >= 0 && S_ISDIR(Sb.st_mode)) {
+	errno = 0;
+	return TRUE;
+    }
+    return FALSE;
 }
 
 
