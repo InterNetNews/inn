@@ -190,31 +190,28 @@ tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
     while (perform_loop) {
         if (key[key_index] == current_node->value) {
             if (key[key_index] == '\0') {
+                if (exist_ptr != NULL)
+                    *exist_ptr = current_node->middle;
                 if (option == TST_REPLACE) {
-                    if (exist_ptr != NULL)
-                        *exist_ptr = current_node->middle;
                     current_node->middle = data;
                     return TST_OK;
-                } else {
-                    if (exist_ptr != NULL)
-                        *exist_ptr = current_node->middle;
+                } else
                     return TST_DUPLICATE_KEY;
-                }
+            }
+
+            if (current_node->middle == NULL) {
+                if (tst->free_list == NULL)
+                    tst_grow_node_free_list(tst);
+                current_node->middle = tst->free_list;
+                tst->free_list = tst->free_list->middle;
+                new_node_tree_begin = current_node;
+                current_node = current_node->middle;
+                current_node->value = key[key_index];
+                break;
             } else {
-                if (current_node->middle == NULL) {
-                    if (tst->free_list == NULL)
-                        tst_grow_node_free_list(tst);
-                    current_node->middle = tst->free_list;
-                    tst->free_list = tst->free_list->middle;
-                    new_node_tree_begin = current_node;
-                    current_node = current_node->middle;
-                    current_node->value = key[key_index];
-                    break;
-                } else {
-                    current_node = current_node->middle;
-                    key_index++;
-                    continue;
-                }
+                current_node = current_node->middle;
+                key_index++;
+                continue;
             }
         }
 
@@ -295,13 +292,10 @@ tst_search(const unsigned char *key, struct tst *tst)
                 key_index++;
                 continue;
             }
-        } else if (LEFTP(current_node, key[key_index])) {
+        } else if (LEFTP(current_node, key[key_index]))
             current_node = current_node->left;
-            continue;
-        } else {
+        else
             current_node = current_node->right;
-            continue;
-        }
     }
     return NULL;
 }
@@ -346,20 +340,17 @@ tst_delete(const unsigned char *key, struct tst *tst)
                 current_node_parent = current_node;
                 current_node = current_node->middle;
                 key_index++;
-                continue;
             }
         } else if (LEFTP(current_node, key[key_index])) {
             last_branch_parent = current_node;
             current_node_parent = current_node;
             current_node = current_node->left;
             last_branch = current_node;
-            continue;
         } else {
             last_branch_parent = current_node;
             current_node_parent = current_node;
             current_node = current_node->right;
             last_branch = current_node;
-            continue;
         }
     }
     if (current_node == NULL)
