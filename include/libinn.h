@@ -339,8 +339,9 @@ extern const char *cpcatpath(const char *p, const char *f);
 
 #define TEMPORARYOPEN   0
 #define INND_HISTORY    1
-#define DBZ_DIR         2
-#define DBZ_BASE        3
+#define INND_HISLOG     2
+#define DBZ_DIR         3
+#define DBZ_BASE        4
 
 /* Hash functions */
 typedef struct {
