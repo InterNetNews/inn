@@ -1098,7 +1098,7 @@ bool OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t ar
 	if (Group != NULL) {
 	    DISPOSE(Group);
 	}
-	Group = NEW(char, strlen(group) + 1);
+	Group = NEW(char, strlen(group) + 2);
 	strcpy(Group, group);
 	strcat(Group, ":");
 	Xref = Group;
