@@ -1029,9 +1029,9 @@ BOOL buffindexed_groupdel(char *group) {
   ge = &GROUPentries[gloc.recno];
   if (ge->count != 0 && (handle = ovopensearch(group, ge->low, ge->high, TRUE)) != NULL)
     ovclosesearch(handle, TRUE);
-
-  GROUPentries[gloc.recno].deleted = time(NULL);
-  HashClear(&GROUPentries[gloc.recno].hash);
+  ge->count = 0;
+  ge->deleted = time(NULL);
+  HashClear(ge->hash);
   GROUPlock(gloc, LOCK_UNLOCK);
   return TRUE;
 }
