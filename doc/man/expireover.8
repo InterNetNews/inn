@@ -23,6 +23,9 @@ expireover \- Expire entries from the news overview database
 .B \-q
 ]
 [
+.B \-s
+]
+[
 .BI \-w " number"
 ]
 [
@@ -88,6 +91,14 @@ To use the article's posting date, use the ``\fB\-p\fP'' flag.
 .I Expireover
 normally prints statistics at the end of process.
 To suppress this action, use the ``\fB\-q\fP'' flag.
+.TP
+.B \-s 
+.I Expireover
+normally checks the existense of articles only if ``EXPENSIVESTAT'' of
+its storage method is set to ``FALSE''.  To do stat all articles regardless
+of ``EXPENSIVESTAT'', use the ``\fB\-s\fP'' flag.  See
+.IR storage.conf (5)
+for ``EXPENSIVESTAT''.
 .TP
 .B \-w
 Use the ``\fB\-w\fP'' flag to ``warp'' time so that
