@@ -26,6 +26,20 @@ ok(int n, int success)
 
 
 /*
+**  Takes an expected integer and a seen integer and assumes the test passes
+**  if those two numbers match.
+*/
+void
+ok_int(int n, int wanted, int seen)
+{
+    if (wanted == seen)
+        printf("ok %d\n", n);
+    else
+        printf("not ok %d\n  wanted: %d\n    seen: %d\n", n, wanted, seen);
+}
+
+
+/*
 **  Takes a string and what the string should be, and assumes the test
 **  passes if those strings match (using strcmp).
 */
