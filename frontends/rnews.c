@@ -333,7 +333,7 @@ ReadRemainder(register int fd, char first, char second)
     bool		ok;
 
     /* Turn the descriptor into a stream. */
-    if ((F = fdopen(fd, "r")) == NULL)
+    if ((i = dup(fd)) < 0 || (F = fdopen(i, "r")) == NULL)
         sysdie("cannot fdopen %d", fd);
 
     /* Get an initial allocation, leaving space for the \0. */
@@ -595,7 +595,7 @@ Unspool(void)
     char		hostname[10];
     int			fd;
     size_t		i;
-    char                *badname;
+    char                *badname, *uuhost;
 
     message_handlers_die(2, message_log_stderr, message_log_syslog_err);
     message_handlers_warn(2, message_log_stderr, message_log_syslog_err);
@@ -624,21 +624,31 @@ Unspool(void)
                 syswarn("cannot open %s", InputFile);
 	    continue;
 	}
+
+	/* Make sure multiple Unspools don't stomp on eachother */
+	if (!inn_lock_file(fd, INN_LOCK_READ, 0)) {
+	    close(fd);
+	    continue;
+	}
+
 	/* Get UUCP host from spool file, deleting the mktemp XXXXXX suffix. */
-	if ((i = strlen(InputFile)) > 6)
+	uuhost = UUCPHost;
+	hostname[0] = 0;
+	if ((i = strlen(InputFile)) > 6) {
 	    i -= 6;
-	if (i > sizeof hostname - 1)
-	    /* Just in case someone wrote their own spooled file. */
-	    i = sizeof hostname - 1;
-	(void)strncpy(hostname, InputFile, i);
-	hostname[i] = '\0';
-	UUCPHost = hostname;
+	    if (i > sizeof hostname - 1)
+		/* Just in case someone wrote their own spooled file. */
+		i = sizeof hostname - 1;
+	    (void)strncpy(hostname, InputFile, i);
+	    hostname[i] = '\0';
+	    UUCPHost = hostname;
+	}
 	ok = UnpackOne(&fd, &i);
-	(void)close(fd);
 	WaitForChildren(i);
+	UUCPHost = uuhost;
 
 	if (!ok) {
-            badname = concat(PathBadNews, "/XXXXXX", (char *) 0);
+            badname = concat(PathBadNews, "/", hostname, "XXXXXX", (char *) 0);
             fd = mkstemp(badname);
             if (fd < 0)
                 sysdie("cannot create temporary file");
@@ -646,11 +656,13 @@ Unspool(void)
             warn("cant unspool saving to %s", badname);
 	    if (rename(InputFile, badname) < 0)
                 sysdie("cannot rename %s to %s", InputFile, badname);
+	    (void)close(fd);
 	    continue;
 	}
 
 	if (unlink(InputFile) < 0)
             syswarn("cannot remove %s", InputFile);
+	(void)close(fd);
     }
     (void)closedir(dp);
 
@@ -678,7 +690,8 @@ Spool(int fd, int mode)
 
     if (mode == 'N')
 	exit(9);
-    tmpspool = concatpath(innconf->pathincoming, ".XXXXXX");
+    tmpspool = concat(innconf->pathincoming, "/.",
+		UUCPHost ? UUCPHost : "", "XXXXXX", (char *)0);
     spfd = mkstemp(tmpspool);
     if (spfd < 0)
         sysdie("cannot create temporary batch file %s", tmpspool);
@@ -709,7 +722,8 @@ Spool(int fd, int mode)
     }
 
     /* Move temp file into the spool area, and exit appropriately. */
-    spoolfile = concatpath(innconf->pathincoming, "XXXXXX");
+    spoolfile = concat(innconf->pathincoming, "/",
+		UUCPHost ? UUCPHost : "", "XXXXXX", (char *)0);
     spfd = mkstemp(spoolfile);
     if (spfd < 0) {
         syswarn("cannot create spool file %s", spoolfile);
@@ -879,8 +893,11 @@ int main(int ac, char *av[])
     if (mode == 'U')
 	Unspool();
     else {
-	if (!UnpackOne(&fd, &count))
+	if (!UnpackOne(&fd, &count)) {
+	    lseek(fd, 0, 0);
 	    Spool(fd, mode);
+	}
+	close(fd);
 	WaitForChildren(count);
     }
 
