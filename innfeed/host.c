@@ -51,6 +51,10 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <syslog.h>
 #include <sys/param.h>
 
+#ifdef HAVE_LIMITS_H
+# include <limits.h>
+#endif
+
 #include "libinn.h"
 
 #include "article.h"
