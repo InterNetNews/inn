@@ -204,7 +204,7 @@ struct sockaddr_storage {
 
 #ifndef HAVE_SA_LEN_MACRO
 # if defined HAVE_SOCKADDR_LEN
-#  define SA_LEN(s)      (s->sa_len)
+#  define SA_LEN(s)      ((s)->sa_len)
 # else
 /* Use ugly hack from USAGI project */
 #  if defined HAVE_INET6
