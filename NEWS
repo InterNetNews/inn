@@ -20,6 +20,12 @@ Upgrading from 2.3 to 2.4
     will tell INN to use the same history backend as was used in previous
     versions.  innupgrade should take care of this for you.
 
+    ovdb is known to have some locking and timing issues related to how
+    nnrpd shuts down (or fails to shut down) the overview databases.  If you
+    have stability problems with ovdb, try setting readserver to true in
+    ovdb.conf.  This will funnel all ovdb reads through a single process
+    with a cleaner interface to the underlying BerkeleyDB database.
+
     If you use Perl authentication for nnrpd (if *nnrpdperlauth* in inn.conf
     is true), there have been major changes.  See "Changes to Perl
     Authentication Support for nnrpd" in doc/hook-perl for details.

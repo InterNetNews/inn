@@ -20,6 +20,12 @@ F<inn.conf>.  Adding:
 will tell INN to use the same history backend as was used in previous
 versions.  B<innupgrade> should take care of this for you.
 
+ovdb is known to have some locking and timing issues related to how nnrpd
+shuts down (or fails to shut down) the overview databases.  If you have
+stability problems with ovdb, try setting readserver to true in
+F<ovdb.conf>.  This will funnel all ovdb reads through a single process
+with a cleaner interface to the underlying BerkeleyDB database.
+
 If you use Perl authentication for nnrpd (if I<nnrpdperlauth> in
 F<inn.conf> is true), there have been major changes.  See L<"Changes to
 Perl Authentication Support for nnrpd"> in F<doc/hook-perl> for details.
