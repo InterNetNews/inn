@@ -1173,7 +1173,7 @@ NCsetup(int i)
 	/* Worked in main, now it fails?  Curious. */
 	p = Path.Data;
     (void)sprintf(buff, "%d %s InterNetNews server %s ready",
-	    NNTP_POSTOK_VAL, p, Version);
+	    NNTP_POSTOK_VAL, p, inn_version_string);
     NCgreeting = COPY(buff);
 
     /* Get the length of every command. */

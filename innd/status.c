@@ -128,7 +128,7 @@ static void STATUSsummary(void)
   fprintf (F, "</HEAD>\n<BODY>\n<PRE>\n") ;
 #endif /* defined(HTML_STATUS) */
 
-  fprintf (F, "%s\n", Version);
+  fprintf (F, "%s\n", inn_version_string);
   fprintf (F, "pid %d started %s\n", (int) getpid(), start_time);
 
   tmp = head = NULL;
