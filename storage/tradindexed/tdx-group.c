@@ -872,7 +872,7 @@ tdx_expire(const char *group, ARTNUM *low, struct history *history)
     tdx_index_rebuild_start(index, entry);
 
     /* tdx_data_expire_start builds the new IDX and DAT files and fills in the
-       struct group_entry that was passed to it.  tdx_data_expire_finish does
+       struct group_entry that was passed to it.  tdx_data_rebuild_finish does
        the renaming of the new files to the final file names. */
     new_entry = *entry;
     new_entry.low = 0;
@@ -888,6 +888,7 @@ tdx_expire(const char *group, ARTNUM *low, struct history *history)
     entry->indexinode = new_entry.indexinode;
     entry->base = new_entry.base;
     mapcntl(entry, sizeof(*entry), MS_ASYNC);
+    tdx_data_close(data);
     if (!tdx_data_rebuild_finish(group)) {
         entry->base = old_base;
         entry->indexinode = old_inode;
