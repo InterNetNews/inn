@@ -186,5 +186,5 @@ ChangeLog:
 ##  building a list with find and running diff between the lists.
 check-manifest:
 	sed -e 1,2d -e 's/ .*//' MANIFEST > LIST.manifest
-	find . -print | sed -e 's/^\.\///' -e /CVS/d | sort > LIST.real
+	support/mkmanifest > LIST.real
 	diff -u LIST.manifest LIST.real

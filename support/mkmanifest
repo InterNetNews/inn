@@ -1,0 +1,71 @@
+#! /usr/local/bin/perl
+
+##  $Id$
+##
+##  Generate a filename-only manifest from an INN tree.
+##
+##  This script generates a filename-only manifest from an INN tree, excluding
+##  certain files according to .cvsignore files and several built-in rules.
+##  It is intended to be used to support make check-manifest from the top
+##  level of the INN tree.
+
+require 5.005;
+
+use strict;
+use vars qw(%CVSIGNORE @FILES @IGNORE);
+
+use File::Find qw(find);
+
+# The following regex patterns match files to be ignored wherever they are
+# in the tree.  This is intended to handle files that CVS ignores by default
+# or files that are present in the tree and in CVS but which are not included
+# in releases.
+@IGNORE = (qr%(\A|/)\.cvsignore\Z%, qr/\.[ao]\Z/, qr%(\A|/)CVS(/|\Z)%,
+           qr%(\A|/)\.?\#%, qr/\.(old|bak|orig|rej)$/, qr%(\A|/)core\Z%,
+           qr%(\A|/)\.libs(/|\Z)%);
+
+# Build a list of all the files ignored by rules in .cvsignore files.  Meant
+# to be run as the wanted sub of a call to File::Find.  Stuff in .cvsignore
+# that contains wildcards needs to be lifted into the list of @IGNORE regexes.
+sub find_cvsignore {
+    return unless $_ eq '.cvsignore';
+    return unless -f;
+    my $file = $_;
+    $file =~ s%^\./%%;
+    my @ignored;
+    my $dir = $File::Find::dir;
+    $dir =~ s%^\./?%%;
+    if ($dir) {
+        $dir .= '/';
+    }
+    open (CVSIGNORE, $_) or die "Cannot open $File::Find::name: $!\n";
+    @ignored = map { $dir . $_ } map { split (' ', $_) } <CVSIGNORE>;
+    close CVSIGNORE;
+    for (@ignored) {
+        if (/\*/) {
+            my $pattern = $_;
+            $pattern =~ s/\./\\./g;
+            $pattern =~ s/\*/.*/g;
+            push (@IGNORE, qr/\A$pattern\Z/);
+        } else {
+            $CVSIGNORE{$_}++;
+        }
+    }
+}
+
+# Build a list of all files in the tree that aren't ignored by .cvsignore
+# files or listed in ignore regexes.
+sub find_files {
+    return if $_ eq '.';
+    my $name = $File::Find::name;
+    $name =~ s%^./%%;
+    return if $CVSIGNORE{$name};
+    for my $pattern (@IGNORE) {
+        return if $name =~ /$pattern/;
+    }
+    push (@FILES, $name);
+}
+
+find (\&find_cvsignore, '.');
+find (\&find_files, '.');
+print join ("\n", (sort @FILES), '');
