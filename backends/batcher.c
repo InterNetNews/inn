@@ -308,7 +308,7 @@ main(int ac, char *av[])
 	    continue;
 	}
 	*p = '\0';
-	if (line[0] == '\0' || line[0] == COMMENT_CHAR)
+	if (line[0] == '\0' || line[0] == '#')
 	    continue;
 	if ((p = strchr(line, ' ')) != NULL) {
 	    *p++ = '\0';

@@ -139,7 +139,7 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
 	    /* Skip blank and comment lines. */
 	    if ((p = strchr(buff, '\n')) != NULL)
 		*p = '\0';
-	    if (buff[0] == '\0' || buff[0] == COMMENT_CHAR)
+	    if (buff[0] == '\0' || buff[0] == '#')
 		continue;
 
 	    /* Snip off the first word. */

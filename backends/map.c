@@ -70,7 +70,7 @@ MAPread(const char *name)
 	if ((p = strchr(buff, '\n')) != NULL)
 	    *p = '\0';
 	if (buff[0] == '\0'
-	 || buff[0] == COMMENT_CHAR
+         || buff[0] == '#'
 	 || (p = strchr(buff, ':')) == NULL)
 	    continue;
 	*p++ = '\0';

@@ -90,7 +90,7 @@ main(int ac, char *av[])
 	*p = '\0';
 
 	/* Ignore blank and comment lines. */
-	if (buff[0] == '\0' || buff[0] == COMMENT_CHAR) {
+	if (buff[0] == '\0' || buff[0] == '#') {
 	    if (Passing)
 		printf("%s\n", buff);
 	    continue;

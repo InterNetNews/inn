@@ -45,7 +45,7 @@ int NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer)
     while (fgets(buff, sizeof buff, F) != NULL) {
 	if ((p = strchr(buff, '\n')) != NULL)
 	    *p = '\0';
-	if (buff[0] == '\0' || buff[0] == COMMENT_CHAR)
+	if (buff[0] == '\0' || buff[0] == '#')
 	    continue;
 
 	/* Parse the line. */

@@ -484,7 +484,7 @@ main(int ac, char *av[])
 	    continue;
 	}
 	*p = '\0';
-	if (buff[0] == '\0' || buff[0] == COMMENT_CHAR)
+	if (buff[0] == '\0' || buff[0] == '#')
 	    continue;
 
 	/* Check to see if this is a token... */

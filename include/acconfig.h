@@ -42,9 +42,7 @@
 /* Reject articles posted more than this many seconds in the future. */
 #define DATE_FUZZ               (24L * 60L * 60L)
 
-/* innd will flush the history and active file after this many seconds.
-   nnrpd will drop a connection during POST if it goes this long without
-   further I/O from the client. */
+/* innd will flush the history and active file after this many seconds. */
 #define DEFAULT_TIMEOUT         300
 
 /* Define if inews should put hostnames into the Path header itself. */
@@ -189,9 +187,6 @@ typedef unsigned long           ARTNUM;
 #define ART_STRSTR              '?'
 #define ART_JUNK                'j'
 #define ART_REJECT              '-'
-
-/* Making this a #define is just confusing; it's never going to change. */
-#define COMMENT_CHAR            '#'
 
 /* Used to send commands to exploders.  Should be moved into a more specific
    header file; used by innd/site.c and backends/buffchan.c. */

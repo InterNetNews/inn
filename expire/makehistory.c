@@ -406,7 +406,7 @@ ARTreadschema(bool Overview)
 	    /* Ignore blank and comment lines. */
 	    if ((p = strchr(buff, '\n')) != NULL)
 		*p = '\0';
-	    if ((p = strchr(buff, COMMENT_CHAR)) != NULL)
+	    if ((p = strchr(buff, '#')) != NULL)
 		*p = '\0';
 	    if (buff[0] == '\0')
 		continue;

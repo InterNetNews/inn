@@ -759,7 +759,7 @@ RCreaddata(int *num, FILE *F, bool *toolong)
      /* Ignore blank and comment lines. */
      if ((p = strchr(RCbuff, '\n')) != NULL)
        *p = '\0';
-     if ((p = strchr(RCbuff, COMMENT_CHAR)) != NULL) {
+     if ((p = strchr(RCbuff, '#')) != NULL) {
        if (p == RCbuff || (p > RCbuff && *(p - 1) != '\\'))
 	   *p = '\0';
      }

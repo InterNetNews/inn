@@ -58,7 +58,7 @@ static char *CONFgetword(CONFFILE *F)
      /* Ignore blank and comment lines. */
      if ((p = strchr(F->buf, '\n')) != NULL)
        *p = '\0';
-     if ((p = strchr(F->buf, COMMENT_CHAR)) != NULL) {
+     if ((p = strchr(F->buf, '#')) != NULL) {
        if (p == F->buf || (p > F->buf && *(p - 1) != '\\'))
            *p = '\0';
      }

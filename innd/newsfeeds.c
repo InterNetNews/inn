@@ -327,7 +327,7 @@ SITEreadfile(const bool ReadOnly)
 		*to++ = *p++;
 	}
 	*to++ = '\0';
-	if (*site == COMMENT_CHAR || *site == '\0')
+	if (*site == '#' || *site == '\0')
             continue ;
         if (*site == VARIABLE_CHAR && SITEaddvariable(site))
 	    continue ;        
