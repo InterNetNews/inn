@@ -16,7 +16,7 @@ extern size_t write_offset;
 extern int write_interrupt;
 extern int write_fail;
 
-void
+static void
 ok(int n, int status, int total)
 {
     int success;

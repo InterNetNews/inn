@@ -6,7 +6,7 @@
 
 #include "libinn.h"
 
-void
+static void
 ok_string(int n, bool status, const char *wanted, const char *seen)
 {
     if (strcmp(wanted, seen) != 0)
@@ -17,7 +17,7 @@ ok_string(int n, bool status, const char *wanted, const char *seen)
         printf("ok %d\n", n);
 }
 
-void
+static void
 ok_bool(int n, bool wanted, bool seen)
 {
     if (wanted == seen)
@@ -26,7 +26,7 @@ ok_bool(int n, bool wanted, bool seen)
         printf("not ok %d\n  wanted %d seen %d\n", wanted, seen);
 }
 
-void
+static void
 ok(int n, int success)
 {
     printf("%sok %d\n", success ? "" : "not ", n);

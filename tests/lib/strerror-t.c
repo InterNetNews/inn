@@ -11,7 +11,7 @@
 
 const char *test_strerror(int);
 
-void
+static void
 ok(int n, int success)
 {
     printf("%sok %d\n", success ? "" : "not ", n);

@@ -8,7 +8,7 @@
 
 #define END     (char *) 0
 
-void
+static void
 ok(int n, int success)
 {
     printf("%sok %d\n", success ? "" : "not ", n);
