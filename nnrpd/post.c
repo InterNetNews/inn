@@ -13,8 +13,6 @@
 #define FLUSH_ERROR(F)		(fflush((F)) == EOF || ferror((F)))
 #define HEADER_DELTA		20
 
-extern int LLOGenable;
-
 static char     *tmpPtr ;
 static char	Error[SMBUF];
 static char	NGSEPS[] = NG_SEPARATOR;

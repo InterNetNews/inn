@@ -105,8 +105,6 @@ bool   PerlLoaded = false;
 bool PY_use_dynamic = false;
 #endif /* DO_PYTHON */
 
-bool LLOGenable;
-
 static char	CMDfetchhelp[] = "[MessageID|Number]";
 
 static CMDENT	CMDtable[] = {
