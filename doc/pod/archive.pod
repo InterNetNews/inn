@@ -1,0 +1,132 @@
+=head1 NAME
+
+archive - Usenet article archiver
+
+=head1 SYNOPSIS
+
+B<archive> [B<-cfr>] [B<-a> I<archive>] [B<-i> I<index>] [B<-p> I<pattern>]
+[I<input>]
+
+=head1 DESCRIPTION
+
+B<archive> makes copies of files specified on its standard input.  It is
+normally run either as a channel feed under B<innd> or or by a script
+before B<news.daily> is run.
+
+B<archive> reads the named I<input> file, or standard input if no file is
+given.  The input is taken as a sequence of lines; blank lines and lines
+starting with a number sign (C<#>) are ignored.  All other lines should
+specify the token of an article to archive.  Every article is retrieved
+from a token, and the Xref: header is used to determine the target file in
+the archive directory.  You can limit the targets taken from the Xref:
+header with the B<-p> option.
+
+Files are copied to a directory within the archive directory,
+I<patharchive> in F<inn.conf> (or some other directory given with B<-a>).
+The default is to create a hierarchy that mimics a traditional news spool
+storage of the given articles; intermediate directories will be created as
+needed.  For example, if the input token represents article 2211 in the
+newsgroup comp.sources.unix, B<archive> will by default store the article
+as:
+
+    comp/sources/unix/2211
+
+in the archive area.  This can be modified with the B<-c> and B<-f>
+options.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-a> I<archive>
+
+If the B<-a> flag is given, its argument specifies the root of the archive
+area, instead of I<patharchive> in F<inn.conf>.
+
+=item B<-c>
+
+If the B<-c> flag is given, directory names will be flattened as described
+under the B<-f> option.  Then, additionally, all posts will be
+concatenated into a single file, appending to that file if it already
+exists.  The file name will be YYYYMM, formed from the current time when
+B<archive> is run.  In other words, if given an article in
+comp.sources.unix on December 14, 1998, the article would be appended to
+the file:
+
+    comp.sources.unix/199812
+
+in the archive area.
+
+Articles will be separated by a line containing only C<----------->.
+
+=item B<-f>
+
+If the B<-f> flag is used, directory names will be flattened, replacing
+the slashes with the periods.  In other words, article 2211 in
+comp.sources.unix will be written to:
+
+    comp.sources.unix/2211
+
+in the archive area.
+
+=item B<-i> I<index>
+
+If the B<-i> flag is used, B<archive> will append one line to the file
+I<index> for each article that it archives.  This line will contain the
+destination file name, the message ID header, and the Subject header of
+the message, separated by spaces.  If either header is missing (normally
+not possible if the article was accepted by B<innd>), it will be replaced
+by C<< <none> >>.  The headers will be transformed using the same rules as
+are used to generate overview data (unfolded and then with tabs, CR, and
+LF replaced by spaces).
+
+=item B<-p> I<pattern>
+
+Limits the targets taken from the Xref: header to the groups specified in
+I<pattern>.  I<pattern> is a uwildmat(3) pattern matching newsgroups that
+you wish to have B<archive> handle.
+
+=item B<-r>
+
+By default, B<archive> sets its standard error to I<pathlog>/errlog.  To
+suppress this redirection, use the B<-r> flag.
+
+=back
+
+=head1 RETURN VALUE
+
+If the input is exhausted, B<archive> will exit with a zero status.  If an
+I/O error occures, it will try to spool its input, copying it to a file.
+If there was no input filename, the standard input will be copied to
+I<pathoutgoing>/archive and the program will exit.  If an input filename
+was given, a temporary file named I<input>.bch (if I<input> is an absolute
+pathname) or I<pathoutgoing>/I<input>.bch (if the filename does not begin
+with a slash) is created.  Once the input is copied, B<archive> will try
+to rename this temporary file to be the name of the input file, and then
+exit.
+
+=head1 EXAMPLES
+
+A typical newsfeeds(5) entry to archive most source newsgroups is as
+follows:
+
+    source-archive\
+        :!*,*sources*,!*wanted*,!*.d\
+        :Tc,Wn\
+        :<pathbin>/archive -f -i <patharchive>/INDEX
+
+Replace <pathbin> and <patharchive> with the appropriate paths.
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Converted to
+POD by Russ Allbery <rra@stanford.edu>.
+
+$Id$
+
+=head1 SEE ALSO
+
+inn.conf(5),
+newsfeeds(5).
+
+=cut

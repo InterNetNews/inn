@@ -22,8 +22,8 @@ MAN5	= ../man/active.5 ../man/active.times.5 ../man/control.ctl.5 \
 	../man/passwd.nntp.5 ../man/radius.conf.5 ../man/readers.conf.5 \
 	../man/sasl.conf.5 ../man/subscriptions.5
 
-MAN8	= ../man/actsync.8 ../man/auth_krb5.8 ../man/auth_smb.8 \
-	../man/batcher.8 ../man/ckpasswd.8 ../man/domain.8 \
+MAN8	= ../man/actsync.8 ../man/archive.8 ../man/auth_krb5.8 \
+	../man/auth_smb.8 ../man/batcher.8 ../man/ckpasswd.8 ../man/domain.8 \
 	../man/expireover.8 ../man/ident.8 ../man/innd.8 ../man/inndf.8 \
 	../man/nnrpd.8 ../man/innbind.8 ../man/innupgrade.8 \
 	../man/mailpost.8 ../man/makehistory.8 ../man/ninpaths.8 \
@@ -78,6 +78,7 @@ clean:
 ../man/subscriptions.5:	subscriptions.pod	; $(POD2MAN) -s 5 $? > $@
 
 ../man/actsync.8:	actsync.pod		; $(POD2MAN) -s 8 $? > $@
+../man/archive.8:	archive.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/auth_krb5.8:	auth_krb5.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/auth_smb.8:	auth_smb.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/batcher.8:	batcher.pod		; $(POD2MAN) -s 8 $? > $@

@@ -251,6 +251,7 @@ doc/pod/Makefile                      Maintainer rules for derived files
 doc/pod/active.pod                    Master file for active.5
 doc/pod/active.times.pod              Master file for active.times.5
 doc/pod/actsync.pod                   Master file for actsync.8
+doc/pod/archive.pod                   Master file for archive.8
 doc/pod/auth_krb5.pod                 Master file for auth_krb5.8
 doc/pod/auth_smb.pod                  Master file for auth_smb.8
 doc/pod/batcher.pod                   Master file for batcher.8
