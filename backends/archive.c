@@ -172,8 +172,8 @@ static bool
 CopyArt(ARTHANDLE *art, char *dest, bool Concat)
 {
     register FILE	*out;
-    char		*p,*q,*last;
-    ARTHANDLE		article;
+    const char		*p;
+    char		*q, *article;
     size_t		i;
     const char		*mode = "w";
 
@@ -196,8 +196,8 @@ CopyArt(ARTHANDLE *art, char *dest, bool Concat)
     }
 
     /* Copy the data. */
-    article.data = NEW(char, art->len);
-    for (i=0, last=NULL, q=article.data, p=art->data; p<art->data+art->len;) {
+    article = NEW(char, art->len);
+    for (i=0, q=article, p=art->data; p<art->data+art->len;) {
 	if (&p[1] < art->data + art->len && p[0] == '\r' && p[1] == '\n') {
 	    p += 2;
 	    *q++ = '\n';
@@ -222,14 +222,14 @@ CopyArt(ARTHANDLE *art, char *dest, bool Concat)
 	/* Write a separator... */
 	fprintf(out, "-----------\n");
     }
-    if (fwrite(article.data, i, 1, out) != 1) {
+    if (fwrite(article, i, 1, out) != 1) {
         syswarn("cannot write to %s", dest);
 	(void)fclose(out);
 	if (!Concat) (void)unlink(dest);
-	DISPOSE(article.data);
+	DISPOSE(article);
 	return FALSE;
     }
-    DISPOSE(article.data);
+    DISPOSE(article);
 
     /* Flush and close the output. */
     if (ferror(out) || fflush(out) == EOF) {
