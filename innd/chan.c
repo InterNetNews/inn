@@ -884,7 +884,7 @@ void CHANreadloop(void)
 	    if (cp->In.Size > (BIG_BUFFER)) {
 		if (cp->In.Used) {
 		    if ((cp->In.Size / cp->In.Used) > 10) {
-			cp->In.Size = (cp->In.Used * 2) < START_BUFF_SIZE ? (cp->In.Used * 2) :  START_BUFF_SIZE;
+			cp->In.Size = (cp->In.Used * 2) > START_BUFF_SIZE ? (cp->In.Used * 2) :  START_BUFF_SIZE;
 			cp->In.Data = RENEW(cp->In.Data, char, cp->In.Size);
 			cp->In.Left = cp->In.Size - cp->In.Used;
 		    }
