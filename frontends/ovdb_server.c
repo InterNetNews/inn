@@ -21,6 +21,7 @@
 # include <sys/un.h>
 #endif
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
@@ -35,8 +36,7 @@
 int
 main(int argc UNUSED, char **argv UNUSED)
 {
-    fprintf(stderr, "Error: BerkeleyDB not compiled in.\n");
-    exit(1);
+    die("BerkeleyDB support not compiled");
 }
 
 #else /* USE_BERKELEY_DB */
@@ -169,12 +169,12 @@ static int putpid(const char *path)
     char buf[30];
     int fd = open(path, O_WRONLY|O_TRUNC|O_CREAT, 0664);
     if(!fd) {
-        syslog(L_FATAL, "can't open %s: %m", path);
+        syswarn("cannot open %s", path);
         return -1;
     }
     snprintf(buf, sizeof(buf), "%d\n", getpid());
     if(write(fd, buf, strlen(buf)) < 0) {
-        syslog(L_FATAL, "can't write to %s: %m", path);
+        syswarn("cannot write to %s", path);
         close(fd);
         return -1;
     }
@@ -468,10 +468,8 @@ serverproc(int me)
     if (pid != 0)
 	return pid;
 
-    if (!ovdb_open(OV_READ|OVDB_SERVER)) {
-	syslog(L_FATAL, "ovdb_server: cant open overview");
-	exit(1);
-    }
+    if (!ovdb_open(OV_READ|OVDB_SERVER))
+        die("cannot open overview");
     xsignal_norestart(SIGINT, sigfunc);
     xsignal_norestart(SIGTERM, sigfunc);
     xsignal_norestart(SIGHUP, sigfunc);
@@ -647,25 +645,25 @@ main(int argc, char *argv[])
     struct timeval tv;
     fd_set rdset;
 
-    if(argc != 2 || strcmp(argv[1], SPACES)) {
-        fprintf(stderr, "Use ovdb_init to start me\n");
-        exit(1);
-    }
+    openlog("ovdb_server", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "ovdb_server";
+
+    if(argc != 2 || strcmp(argv[1], SPACES))
+        die("should be started by ovdb_init");
+    message_handlers_warn(1, message_log_syslog_err);
+    message_handlers_die(1, message_log_syslog_err);
+
 #if     !defined(_HPUX_SOURCE) && !defined(HAVE_SETPROCTITLE)
     /* Save start and extent of argv for TITLEset. */
     TITLEstart = argv[0];
     TITLEend = argv[argc - 1] + strlen(argv[argc - 1]) - 1;
 #endif
 
-    openlog("ovdb_server", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
-
     if(ReadInnConf() < 0)
 	exit(1);
 
-    if(strcmp(innconf->ovmethod, "ovdb")) {
-        syslog(L_FATAL, "ovmethod not set to ovdb");
-        exit(1);
-    }
+    if(strcmp(innconf->ovmethod, "ovdb"))
+        die("ovmethod not set to ovdb in inn.conf");
 
     read_ovdb_conf();
 
@@ -674,10 +672,8 @@ main(int argc, char *argv[])
 #else
     listensock = socket(AF_INET, SOCK_STREAM, 0);
 #endif
-    if(listensock < 0) {
-	fprintf(stderr, "ovdb_server: socket: %s\n", strerror(errno));
-	exit(1);
-    }
+    if(listensock < 0)
+        sysdie("cannot create socket");
 
     nonblocking(listensock, 1);
 
@@ -703,15 +699,10 @@ main(int argc, char *argv[])
     }
 #endif
 
-    if(ret != 0) {
-	fprintf(stderr, "ovdb_server: bind: %s\n", strerror(errno));
-	exit(1);
-    }
-
-    if(listen(listensock, MAXLISTEN) < 0) {
-	fprintf(stderr, "ovdb_server: cant listen: %s\n", strerror(errno));
-	exit(1);
-    }
+    if(ret != 0)
+        sysdie("cannot bind socket");
+    if(listen(listensock, MAXLISTEN) < 0)
+        sysdie("cannot listen on socket");
 
     pidfile = concatpath(innconf->pathrun, OVDB_SERVER_PIDFILE);
     if(putpid(path))
@@ -727,10 +718,8 @@ main(int argc, char *argv[])
 
     children = sharemem(sizeof(struct child) * (ovdb_conf.numrsprocs+1));
 
-    if(children == NULL) {
-	fprintf(stderr, "ovdb_server: mmap: %s\n", strerror(errno));
-	exit(1);
-    }
+    if(children == NULL)
+        sysdie("cannot mmap shared memory");
     for(i = 0; i < ovdb_conf.numrsprocs+1; i++) {
 	children[i].pid = -1;
 	children[i].num = 0;

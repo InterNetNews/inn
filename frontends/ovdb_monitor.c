@@ -13,9 +13,10 @@
 #include <signal.h>
 #include <syslog.h>
 
+#include "inn/messages.h"
 #include "libinn.h"
-
 #include "ov.h"
+
 #include "../storage/ovdb/ovdb.h"
 #include "../storage/ovdb/ovdb-private.h"
 
@@ -89,12 +90,12 @@ static int putpid(const char *path)
     char buf[30];
     int fd = open(path, O_WRONLY|O_TRUNC|O_CREAT, 0664);
     if(!fd) {
-	syslog(L_FATAL, "can't open %s: %m", path);
+        syswarn("cannot open %s", path);
 	return -1;
     }
     snprintf(buf, sizeof(buf), "%d\n", getpid());
     if(write(fd, buf, strlen(buf)) < 0) {
-	syslog(L_FATAL, "can't write to %s: %m", path);
+        syswarn("cannot write to %s", path);
 	close(fd);
 	return -1;
     }
@@ -121,7 +122,7 @@ static void deadlock(void)
 	ret = OVDBenv->lock_detect(OVDBenv, 0, atype, NULL);
 #endif
 	if(ret != 0) {
-	    syslog(L_ERROR, "OVDB: lock_detect: %s", db_strerror(ret));
+            warn("OVDB: lock_detect: %s", db_strerror(ret));
 	    status = 1;
 	    break;
 	}
@@ -150,21 +151,21 @@ static void checkpoint(void)
 
 #if DB_VERSION_MAJOR == 2
     memset(&dbinfo, 0, sizeof dbinfo);
-    if(ret = db_open("version", DB_BTREE, DB_CREATE, 0666, OVDBenv,
-                    &dbinfo, &db)) {
-        syslog(L_ERROR, "OVDB: checkpoint: db_open failed: %s\n", db_strerror(ret));
+    ret = db_open("version", DB_BTREE, DB_CREATE, 0666, OVDBenv, &dbinfo, &db);
+    if (ret != 0) {
+        warn("OVDB: checkpoint: db_open failed: %s", db_strerror(ret));
         _exit(1);
     }
 #else
     ret = db_create(&db, OVDBenv, 0);
     if (ret != 0) {
-        syslog(L_ERROR, "OVDB: checkpoint: db_create: %s\n", db_strerror(ret));
+        warn("OVDB: checkpoint: db_create: %s", db_strerror(ret));
         _exit(1);
     }
     ret = db->open(db, "version", NULL, DB_BTREE, DB_CREATE, 0666);
     if (ret != 0) {
         db->close(db, 0);
-        syslog(L_ERROR, "OVDB: checkpoint: version open: %s\n", db_strerror(ret));
+        warn("OVDB: checkpoint: version open: %s", db_strerror(ret));
         _exit(1);
     }
 #endif
@@ -182,7 +183,7 @@ static void checkpoint(void)
 	ret = OVDBenv->txn_checkpoint(OVDBenv, 2048, 1, 0);
 #endif
 	if(ret != 0 && ret != DB_INCOMPLETE) {
-	    syslog(L_ERROR, "OVDB: txn_checkpoint: %s", db_strerror(ret));
+            warn("OVDB: txn_checkpoint: %s", db_strerror(ret));
 	    status = 1;
 	    break;
 	}
@@ -217,7 +218,7 @@ static void logremover(void)
 	ret = OVDBenv->log_archive(OVDBenv, &listp, DB_ARCH_ABS);
 #endif
 	if(ret != 0) {
-	    syslog(L_ERROR, "OVDB: log_archive: %s", db_strerror(ret));
+            warn("OVDB: log_archive: %s", db_strerror(ret));
 	    status = 1;
 	    break;
 	}
@@ -242,7 +243,7 @@ static int start_process(pid_t *pid, void (*func)(void))
 	(*func)();
 	_exit(0);
     case -1:
-	syslog(L_FATAL, "can't fork: %m");
+        syswarn("cannot fork");
 	return -1;
     default:
 	*pid = child;
@@ -319,33 +320,29 @@ int main(int argc, char **argv)
 {
     char *pidfile;
 
-    if(argc != 2 || strcmp(argv[1], SPACES)) {
-	fprintf(stderr, "Use ovdb_init to start me\n");
-	exit(1);
-    }
+    openlog("ovdb_monitor", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "ovdb_monitor";
+
+    if(argc != 2 || strcmp(argv[1], SPACES))
+        die("should be started by ovdb_init");
+    message_handlers_warn(1, message_log_syslog_err);
+    message_handlers_die(1, message_log_syslog_err);
+
 #if     !defined(_HPUX_SOURCE) && !defined(HAVE_SETPROCTITLE)
     /* Save start and extent of argv for TITLEset. */
     TITLEstart = argv[0];
     TITLEend = argv[argc - 1] + strlen(argv[argc - 1]) - 1;
 #endif
 
-    openlog("ovdb_monitor", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
-
     if (ReadInnConf() < 0)
 	exit(1);
 
-    if(strcmp(innconf->ovmethod, "ovdb")) {
-	syslog(L_FATAL, "ovmethod not set to ovdb");
-        exit(1);
-    }
-    if(!ovdb_check_user()) {
-	syslog(L_FATAL, "Error: Only run this command as user " NEWSUSER "\n");
-	exit(1);
-    }
-    if(!ovdb_getlock(OVDB_LOCK_ADMIN)) {
-	syslog(L_FATAL, "can't lock database");
-	exit(1);
-    }
+    if(strcmp(innconf->ovmethod, "ovdb"))
+        die("ovmethod not set to ovdb in inn.conf");
+    if(!ovdb_check_user())
+        die("command must be run as user " NEWSUSER);
+    if(!ovdb_getlock(OVDB_LOCK_ADMIN))
+        die("cannot lock database");
 
     xsignal(SIGINT, sigfunc);
     xsignal(SIGTERM, sigfunc);

@@ -9,12 +9,13 @@
 #include <signal.h>
 #include <syslog.h>
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
+#include "ov.h"
 #include "paths.h"
 #include "storage.h"
 
-#include "ov.h"
 #include "../storage/ovdb/ovdb.h"
 #include "../storage/ovdb/ovdb-private.h"
 
@@ -23,8 +24,7 @@
 
 int main(int argc UNUSED, char **argv UNUSED)
 {
-    fprintf(stderr, "Error: BerkeleyDB not compiled in.\n");
-    exit(1);
+    die("BerkeleyDB support not compiled");
 }
 
 #else /* USE_BERKELEY_DB */
@@ -622,10 +622,11 @@ static struct datatab HASH_tab[] = {
 };
 #endif
 
-static int display_hash(DB *db)
+static int display_hash(DB *db UNUSED)
 {
 #if DB_VERSION_MAJOR == 2
     printf("Hash statistics not available.\n");
+    return 0;
 #else
     DB_HASH_STAT *sp;
 
@@ -734,22 +735,17 @@ int main(int argc, char *argv[])
     int needng=0, o;
 
     openlog("ovdb_stat", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "ovdb_stat";
 
     if(ReadInnConf() < 0)
 	exit(1);
 
-    if(!ovdb_check_user()) {
-	fprintf(stderr, "Error: Only run this command as user " NEWSUSER "\n");
-	exit(1);
-    }
-    if(!ovdb_getlock(OVDB_LOCK_ADMIN)) {
-	fprintf(stderr, "Can't lock database: %s\n", strerror(errno));
-	exit(1);
-    }
-    if(!ovdb_open(OV_READ|OVDB_SERVER)) {
-	fprintf(stderr, "Can't open overview; check syslog for OVDB messages\n");
-	exit(1);
-    }
+    if(!ovdb_check_user())
+        die("command must be run as user " NEWSUSER);
+    if(!ovdb_getlock(OVDB_LOCK_ADMIN))
+        sysdie("cannot lock database");
+    if(!ovdb_open(OV_READ|OVDB_SERVER))
+        sysdie("cannot open overview; check syslog for OVDB messages");
 
     xsignal(SIGINT, sigfunc);
     xsignal(SIGTERM, sigfunc);
@@ -811,11 +807,11 @@ int main(int argc, char *argv[])
 	    gotone++;
 	    break;
 	case ':':
-	    fprintf(stderr, "Option -%c requires an argument\n", optopt);
+            warn("option -%c requires an argument", optopt);
 	    err++;
 	    break;
 	case '?':
-	    fprintf(stderr, "Unrecognized option: -%c\n", optopt);
+            warn("unrecognized option -%c", optopt);
 	    err++;
 	    break;
 	}
@@ -823,7 +819,7 @@ int main(int argc, char *argv[])
     if(!gotone) {
 	err++;
     } else if(optind == argc && needng) {
-	fprintf(stderr, "Missing newsgroup argument(s)\n");
+        warn("missing newsgroup argument(s)");
 	err++;
     }
     if(err) {
@@ -923,7 +919,8 @@ Usage:\n\
 
                 ret = ovdb_getgroupinfo(argv[o], &gi, FALSE, NULL, 0);
 		if (ret != 0) {
-		    fprintf(stderr, "%s: ovdb_getgroupinfo error: %s\n", argv[o], db_strerror(ret));
+                    warn("%s: ovdb_getgroupinfo error: %s", argv[o],
+                         db_strerror(ret));
 		    continue;
 		}
 		if(html) {

@@ -8,6 +8,7 @@
 #include <ctype.h>
 #include <syslog.h>
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
@@ -116,16 +117,16 @@ main(int ac, char **av)
     int	i;
 
     /* First thing, set up logging and our identity. */
-    openlog("innconfval", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
+    openlog("innconfval", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "innconfval";
 
     /* Parse JCL. */
     File = FALSE;
     while ((i = getopt(ac, av, "fcpsti:v")) != EOF)
 	switch (i) {
 	default:
-	    (void)fprintf(stderr, "Usage error.\n");
-	    exit(1);
-	    /* NOTREACHED */
+            die("usage error");
+            break;
 	case 'f':
 	    File = TRUE;
 	    break;

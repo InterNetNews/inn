@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <syslog.h>
 
+#include "inn/messages.h"
 #include "inn/qio.h"
 #include "macros.h"
 #include "libinn.h"
@@ -44,7 +45,8 @@ main(int ac, char *av[])
     int		i;
 
     /* First thing, set up logging and our identity. */
-    openlog("getlist", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
+    openlog("getlist", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "getlist";
 
     if (ReadInnConf() < 0) exit(1);
 
@@ -69,10 +71,8 @@ main(int ac, char *av[])
 	    break;
 	case 'p':
 	    port = atoi(optarg);
-	    if (port <= 0) {
-	       (void)fprintf(stderr, "Illegal value for -p option\n");
-	       	exit(1);
-	    }
+	    if (port <= 0)
+                die("illegal value for -p option");
 	    break;
 	}
     ac -= optind;
@@ -106,38 +106,22 @@ main(int ac, char *av[])
     }
 
     /* Open a connection to the server. */
-    if (host == NULL
-     && (host = innconf->server) == NULL) {
-	(void)fprintf(stderr, "Can't get server name, %s\n", strerror(errno));
-	exit(1);
-    }
+    if (host == NULL && (host = innconf->server) == NULL)
+        sysdie("cannot get server name");
     buff[0] = '\0';
-    if (NNTPconnect(host, port, &FromServer, &ToServer, buff) < 0) {
-	(void)fprintf(stderr, "Can't connect to server, %s\n",
-		buff[0] ? buff : strerror(errno));
-	exit(1);
-    }
-    if(authinfo && NNTPsendpassword(host, FromServer, ToServer) < 0) {
-        (void)fprintf(stderr, "Can't authenticate to server\n");
-        exit(1);
-    }
+    if (NNTPconnect(host, port, &FromServer, &ToServer, buff) < 0)
+        die("cannot connect to server: %s", buff[0] ? buff : strerror(errno));
+    if (authinfo && NNTPsendpassword(host, FromServer, ToServer) < 0)
+        die("cannot authenticate to server");
 
     /* Get the data from the server. */
     active = CAlistopen(FromServer, ToServer, EQ(list, "active") ? NULL : list);
-    if (active == NULL) {
-	(void)fprintf(stderr, "Can't retrieve data, %s\n", strerror(errno));
-	(void)fclose(FromServer);
-	(void)fclose(ToServer);
-	exit(1);
-    }
+    if (active == NULL)
+        sysdie("cannot retrieve data");
 
     /* Set up to read it quickly. */
-    if ((qp = QIOfdopen((int)fileno(active))) == NULL) {
-	(void)fprintf(stderr, "Can't read temp file, %s\n", strerror(errno));
-	(void)fclose(FromServer);
-	(void)fclose(ToServer);
-	exit(1);
-    }
+    if ((qp = QIOfdopen((int)fileno(active))) == NULL)
+        sysdie("cannot read temporary file");
 
     /* Scan server's output, displaying appropriate lines. */
     i = 1;
@@ -152,7 +136,7 @@ main(int ac, char *av[])
 
 	/* Get the group name, see if it's one we want. */
 	if ((p = strchr(line, ' ')) == NULL) {
-	    (void)fprintf(stderr, "Line %d is malformed\n", i);
+            warn("line %d is malformed", i);
 	    continue;
 	}
 	*p = '\0';
@@ -168,16 +152,16 @@ main(int ac, char *av[])
 
 	/* Find the fourth field. */
 	if ((p = strchr(p + 1, ' ')) == NULL) {
-	    (void)fprintf(stderr, "Line %d (field 2) is malformed.\n", i);
+            warn("line %d (field 2) is malformed", i);
 	    continue;
 	}
 	if ((p = strchr(p + 1, ' ')) == NULL) {
-	    (void)fprintf(stderr, "Line %d (field 3) is malformed.\n", i);
+            warn("line %d (field 3) is malformed", i);
 	    continue;
 	}
 	field4 = p + 1;
 	if ((p = strchr(field4, ' ')) != NULL) {
-	    (void)fprintf(stderr, "Line %d has more than 4 fields\n", i);
+            warn("line %d has more than 4 fields", i);
 	    continue;
 	}
 
@@ -188,12 +172,11 @@ main(int ac, char *av[])
 
     /* Determine why we stopped */
     if (QIOerror(qp)) {
-	(void)fprintf(stderr, "Can't read temp file at line %d, %s\n",
-	    i, strerror(errno));
+        syswarn("cannot read temporary file at line %d", i);
 	i = 1;
     }
     else if (QIOtoolong(qp)) {
-	(void)fprintf(stderr, "Line %d is too long\n", i);
+        warn("line %d is too long", i);
 	i = i;
     }
     else

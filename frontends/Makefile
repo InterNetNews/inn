@@ -63,7 +63,7 @@ STORELIBS	= $(BOTH) $(EXTSTORAGELIBS) $(LIBS)
 FIX		= $(FIXSCRIPT)
 
 ctlinnd:	ctlinnd.o      $(LIBINN) ; $(LINK) ctlinnd.o      $(INNLIBS)
-decode:		decode.o                 ; $(LINK) decode.o
+decode:		decode.o       $(LIBINN) ; $(LINK) decode.o       $(INNLIBS)
 encode:		encode.o                 ; $(LINK) encode.o
 getlist:	getlist.o      $(LIBINN) ; $(LINK) getlist.o      $(INNLIBS)
 inews:		inews.o        $(LIBINN) ; $(LINK) inews.o        $(INNLIBS)

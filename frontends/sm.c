@@ -8,18 +8,18 @@
 #include <errno.h>
 #include <syslog.h>  
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
 #include "storage.h"
 
-bool	Quiet = FALSE;
 bool	Delete = FALSE;
 bool	Rawformat = FALSE;
 bool	Artinfo = FALSE;
 
 static void Usage(void) {
-    fprintf(stderr, "Usage sm [-q] [-r] [-d] [-R] [-i] [token] [token] ...\n");
+    fprintf(stderr, "Usage sm [-qrdRi] [token] [token] ...\n");
     exit(1);
 }
 
@@ -31,43 +31,32 @@ static void getinfo(const char *p) {
     char		*q;
 
     if (!IsToken(p)) {
-	if (!Quiet)
-	    fprintf(stderr, "%s is not a storage token\n", p);
+        warn("%s is not a storage token", p);
 	return;
     }
     token = TextToToken(p);
     if (Artinfo) {
 	if (!SMprobe(SMARTNGNUM, &token, (void *)&ann)) {
-	    if (!Quiet)
-		fprintf(stderr, "Could not get art info %s\n", p);
+            warn("could not get article information for %s", p);
 	} else {
-	    fprintf(stdout, "%s: %lu\n", ann.groupname, ann.artnum);
+	    printf("%s: %lu\n", ann.groupname, ann.artnum);
 	    DISPOSE(ann.groupname);
 	}
     } else if (Delete) {
-	if (!SMcancel(token)) {
-	    if (!Quiet)
-		fprintf(stderr, "Could not remove %s: %s\n", p, SMerrorstr);
-	}
+	if (!SMcancel(token))
+            warn("could not remove %s: %s", p, SMerrorstr);
     } else {
 	if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
-	    if (!Quiet)
-		fprintf(stderr, "Could not retrieve %s\n", p);
+            warn("could not retrieve %s", p);
 	    return;
 	}
 	if (Rawformat) {
-	    if (fwrite(art->data, art->len, 1, stdout) != 1) {
-		if (!Quiet)
-		    fprintf(stderr, "Output failed\n");
-		exit(1);
-	    }
+	    if (fwrite(art->data, art->len, 1, stdout) != 1)
+                die("output failed");
 	} else {
 	    q = FromWireFmt(art->data, art->len, &len);
-	    if (fwrite(q, len, 1, stdout) != 1) {
-		if (!Quiet)
-		    fprintf(stderr, "Output failed\n");
-		exit(1);
-	    }
+	    if (fwrite(q, len, 1, stdout) != 1)
+                die("output failed");
 	    DISPOSE(q);
 	}
 	SMfreearticle(art);
@@ -81,14 +70,16 @@ int main(int argc, char **argv) {
     char	*p, buff[BUFSIZ];
 
     /* First thing, set up logging and our identity. */
-    openlog("sm", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
+    openlog("sm", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "sm";
 
     if (ReadInnConf() < 0) { exit(1); }
 
     while ((c = getopt(argc, argv, "iqrdR")) != EOF) {
 	switch (c) {
 	case 'q':
-	    Quiet = TRUE;
+            message_handlers_warn(0);
+            message_handlers_die(0);
 	    break;
 	case 'r':
 	case 'd':
@@ -107,16 +98,11 @@ int main(int argc, char **argv) {
 
     if (Delete) {
 	val = TRUE;
-	if (!SMsetup(SM_RDWR, (void *)&val)) {
-	    fprintf(stderr, "Can't setup storage manager\n");
-	    exit(1);
-	}
+	if (!SMsetup(SM_RDWR, (void *)&val))
+            die("cannot set up storage manager");
     }
-    if (!SMinit()) {
-	if (!Quiet)
-	    fprintf(stderr, "Could not initialize the storage manager: %s", SMerrorstr);
-	exit(1);
-    }
+    if (!SMinit())
+        die("cannot initialize storage manager: %s", SMerrorstr);
 
     if (optind == argc) {
 	while (fgets(buff, sizeof buff, stdin) != NULL) {

@@ -17,6 +17,7 @@
 #include <syslog.h>
 #include <sys/stat.h>
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
@@ -57,20 +58,6 @@ static HEADER	RequiredHeaders[] = {
 
 
 /*
-**  Do perror, making sure errno is preserved.
-*/
-static void
-xperror(const char *p)
-{
-    int		oerrno;
-
-    oerrno = errno;
-    perror(p);
-    errno = oerrno;
-}
-
-
-/*
 **  Open up a pipe to a process with fd tied to its stdin.  Return a
 **  descriptor tied to its stdout or -1 on error.
 */
@@ -82,18 +69,16 @@ StartChild(int fd, const char *path, const char *argv[])
     pid_t	pid;
 
     /* Create a pipe. */
-    if (pipe(pan) < 0) {
-	syslog(L_FATAL, "cant pipe for %s %m", path);
-	exit(1);
-    }
+    if (pipe(pan) < 0)
+        sysdie("cannot pipe for %s", path);
 
     /* Get a child. */
     for (i = 0; (pid = fork()) < 0; i++) {
 	if (i == innconf->maxforks) {
-	    syslog(L_ERROR, "cant fork %s %m -- spooling", path);
+            syswarn("cannot fork %s, spooling", path);
 	    return -1;
 	}
-	syslog(L_NOTICE, "cant fork %s -- waiting", path);
+        notice("cannot fork %s, waiting", path);
 	(void)sleep(60);
     }
 
@@ -104,7 +89,7 @@ StartChild(int fd, const char *path, const char *argv[])
 	/* Stdin comes from our old input. */
 	if (fd != STDIN_FILENO) {
 	    if ((i = dup2(fd, STDIN_FILENO)) != STDIN_FILENO) {
-		syslog(L_FATAL, "cant dup2 %d to 0 got %d %m", fd, i);
+                syswarn("cannot dup2 %d to 0, got %d", fd, i);
 		_exit(1);
 	    }
 	    (void)close(fd);
@@ -113,15 +98,14 @@ StartChild(int fd, const char *path, const char *argv[])
 	/* Stdout goes down the pipe. */
 	if (pan[PIPE_WRITE] != STDOUT_FILENO) {
 	    if ((i = dup2(pan[PIPE_WRITE], STDOUT_FILENO)) != STDOUT_FILENO) {
-		syslog(L_FATAL, "cant dup2 %d to 1 got %d %m",
-		    pan[PIPE_WRITE], i);
+                syswarn("cannot dup2 %d to 1, got %d", pan[PIPE_WRITE], i);
 		_exit(1);
 	    }
 	    (void)close(pan[PIPE_WRITE]);
 	}
 
 	(void)execv(path, argv);
-	syslog(L_FATAL, "cant execv %s %m", path);
+        syswarn("cannot execv %s", path);
 	_exit(1);
     }
 
@@ -143,7 +127,7 @@ WaitForChildren(int n)
         pid = waitpid(-1, NULL, WNOHANG);
         if (pid == (pid_t) -1 && errno != EINTR) {
             if (errno != ECHILD)
-                syslog(L_ERROR, "cant wait %m");
+                syswarn("cannot wait");
             break;
         }
     }
@@ -181,7 +165,7 @@ static void Reject(const char *article, const char *reason, const char *arg)
     size_t length;
 #endif	/* defined(DO_RNEWS_SAVE_BAD) */
 
-    syslog(L_NOTICE, reason, arg);
+    notice(reason, arg);
     if (Verbose) {
 	(void)fprintf(stderr, "%s: ", InputFile);
 	(void)fprintf(stderr, reason, arg);
@@ -192,19 +176,19 @@ static void Reject(const char *article, const char *reason, const char *arg)
     filename = concat(PathBadNews, "/XXXXXX", (char *) 0);
     fd = mkstemp(filename);
     if (fd < 0) {
-        syslog(L_ERROR, "cant create temporary file %m");
+        warn("cannot create temporary file");
         return;
     }
     F = fdopen(fd, "w");
     if (F == NULL) {
-	syslog(L_ERROR, "cant fdopen %s %m", filename);
+        warn("cannot fdopen %s", filename);
 	return;
     }
     length = strlen(article);
     if (fwrite(article, 1, length, F) != length)
-	syslog(L_ERROR, "cant fwrite %s %m", filename);
+        warn("cannot fwrite to %s", filename);
     if (fclose(F) == EOF)
-	syslog(L_ERROR, "cant close %s %m", filename);
+        warn("cannot close %s", filename);
     free(filename);
 #endif	/* defined(DO_RNEWS_SAVE_BAD) */
 }
@@ -263,17 +247,17 @@ static bool Process(char *article)
     fprintf(ToServer, "ihave %s\r\n", msgid);
     fflush(ToServer);
     if (UUCPHost)
-	syslog(L_NOTICE, "offered %s %s", msgid, UUCPHost);
+        notice("offered %s %s", msgid, UUCPHost);
     free(msgid);
 
     /* Get a reply, see if they want the article. */
     if (fgets(buff, sizeof buff, FromServer) == NULL) {
-	syslog(L_ERROR, "cant fgets after ihave %m");
+        syswarn("cannot fgets after ihave");
 	return FALSE;
     }
     (void)REMclean(buff);
     if (!CTYPE(isdigit, buff[0])) {
-	syslog(L_NOTICE, "bad_reply after ihave %s", buff);
+        notice("bad_reply after ihave %s", buff);
 	return FALSE;
     }
     switch (atoi(buff)) {
@@ -287,7 +271,7 @@ static bool Process(char *article)
     case NNTP_HAVEIT_VAL:
 #if	defined(SYSLOG_RNEWS_LOG_DUPS)
 	*p = '\0';
-	syslog(L_NOTICE, "duplicate %s %s", id, path);
+        notice("duplicate %s %s", id, path);
 #endif	/* defined(SYSLOG_RNEWS_LOG_DUPS) */
 #if	defined(FILE_RNEWS_LOG_DUPS)
 	if ((F = fopen(_PATH_RNEWS_DUP_LOG, "a")) != NULL) {
@@ -301,23 +285,23 @@ static bool Process(char *article)
 
     /* Send all the lines in the article, escaping periods. */
     if (NNTPsendarticle(article, ToServer, TRUE) < 0) {
-	syslog(L_NOTICE, "cant sendarticle %m");
+        sysnotice("cant sendarticle");
 	return FALSE;
     }
 
     /* Process server reply code. */
     if (fgets(buff, sizeof buff, FromServer) == NULL) {
-	syslog(L_ERROR, "cant fgets after article %m");
+        syswarn("cannot fgets after article");
 	return FALSE;
     }
     (void)REMclean(buff);
     if (!CTYPE(isdigit, buff[0])) {
-	syslog(L_NOTICE, "bad_reply after article %s", buff);
+        notice("bad_reply after article %s", buff);
 	return FALSE;
     }
     switch (atoi(buff)) {
     default:
-	syslog(L_NOTICE, "unknown_reply after article %s", buff);
+        notice("unknown_reply after article %s", buff);
 	/* FALLTHROUGH */
     case NNTP_RESENDIT_VAL:
 	return FALSE;
@@ -348,10 +332,8 @@ ReadRemainder(register int fd, char first, char second)
     bool		ok;
 
     /* Turn the descriptor into a stream. */
-    if ((F = fdopen(fd, "r")) == NULL) {
-	syslog(L_FATAL, "can't fdopen %d %m", fd);
-	exit(1);
-    }
+    if ((F = fdopen(fd, "r")) == NULL)
+        sysdie("cannot fdopen %d", fd);
 
     /* Get an initial allocation, leaving space for the \0. */
     size = BUFSIZ + 1;
@@ -379,10 +361,8 @@ ReadRemainder(register int fd, char first, char second)
         }
         p = fgets(article + used, left, F);
     }
-    if (!feof(F)) {
-        syslog(L_FATAL, "cant fgets after %d bytes %m", used);
-        exit(1);
-    }
+    if (!feof(F))
+        sysdie("cannot fgets after %d bytes", used);
 
     if (article[used - 1] != '\n')
 	article[used++] = '\n';
@@ -422,8 +402,7 @@ ReadBytecount(register int fd, int artsize)
     for (p = article, left = artsize; left; p += i, left -= i)
 	if ((i = read(fd, p, left)) <= 0) {
 	    i = errno;
-	    syslog(L_ERROR, "cant read wanted %d got %d %m",
-		artsize, artsize - left);
+            warn("cannot read, wanted %d got %d", artsize, artsize - left);
 #if	0
 	    /* Don't do this -- if the article gets re-processed we
 	     * will end up accepting the truncated version. */
@@ -454,8 +433,7 @@ ReadLine(char *p, int size, int fd)
     for (save = p; size > 0; p++, size--) {
 	if (read(fd, p, 1) != 1) {
 	    *p = '\0';
-	    syslog(L_FATAL, "cant read first line got %s %m", save);
-	    exit(1);
+            sysdie("cannot read first line, got %s", save);
 	}
 	if (*p == '\n') {
 	    *p = '\0';
@@ -463,7 +441,7 @@ ReadLine(char *p, int size, int fd)
 	}
     }
     *p = '\0';
-    syslog(L_FATAL, "bad_line too long %s", save);
+    warn("bad_line too long %s", save);
     return FALSE;
 }
 
@@ -491,7 +469,7 @@ UnpackOne(int *fdp, size_t *countp)
     for (SawCunbatch = FALSE, HadCount = FALSE; ; ) {
 	/* Get the first character. */
 	if ((i = read(*fdp, &buff[0], 1)) < 0) {
-	    syslog(L_ERROR, "cant read first character %m");
+            syswarn("cannot read first character");
 	    return FALSE;
 	}
 	if (i == 0)
@@ -506,7 +484,7 @@ UnpackOne(int *fdp, size_t *countp)
 
 	/* Get the second character. */
 	if ((i = read(*fdp, &buff[1], 1)) < 0) {
-	    syslog(L_ERROR, "cant read second character %m");
+            syswarn("cannot read second character");
 	    return FALSE;
 	}
 	if (i == 0)
@@ -537,7 +515,7 @@ UnpackOne(int *fdp, size_t *countp)
 	if (strncmp(buff, "#! rnews ", 9) == 0) {
 	    artsize = atoi(&buff[9]);
 	    if (artsize <= 0) {
-		syslog(L_ERROR, "bad_line bad count %s", buff);
+                syswarn("bad_line bad count %s", buff);
 		return FALSE;
 	    }
 	    HadCount = TRUE;
@@ -552,7 +530,7 @@ UnpackOne(int *fdp, size_t *countp)
 
 	if (strcmp(buff, "#! cunbatch") == 0) {
 	    if (SawCunbatch) {
-		syslog(L_ERROR, "nested_cunbatch");
+                syswarn("nested_cunbatch");
 		return FALSE;
 	    }
 	    cargv[0] = UNPACK;
@@ -593,7 +571,7 @@ UnpackOne(int *fdp, size_t *countp)
 	(*countp)++;
 	continue;
 #else
-	syslog(L_ERROR, "bad_format unknown command %s", buff);
+        warn("bad_format unknown command %s", buff);
 	return FALSE;
 #endif	/* defined(DO_RNEWSPROGS) */
     }
@@ -618,17 +596,14 @@ Unspool(void)
     size_t		i;
     char                *badname;
 
+    message_handlers_die(2, message_log_stderr, message_log_syslog_err);
+    message_handlers_warn(2, message_log_stderr, message_log_syslog_err);
+
     /* Go to the spool directory, get ready to scan it. */
-    if (chdir(innconf->pathincoming) < 0) {
-	xperror(innconf->pathincoming);
-	syslog(L_FATAL, "cant cd %s %m", innconf->pathincoming);
-	exit(1);
-    }
-    if ((dp = opendir(".")) == NULL) {
-	xperror("Can't open spool directory");
-	syslog(L_FATAL, "cant opendir . %m");
-	exit(1);
-    }
+    if (chdir(innconf->pathincoming) < 0)
+        sysdie("cannot chdir to %s", innconf->pathincoming);
+    if ((dp = opendir(".")) == NULL)
+        sysdie("cannot open spool directory");
 
     /* Loop over all files, and parse them. */
     while ((ep = readdir(dp)) != NULL) {
@@ -636,8 +611,7 @@ Unspool(void)
 	if (InputFile[0] == '.')
 	    continue;
 	if (stat(InputFile, &Sb) < 0 && errno != ENOENT) {
-	    xperror(InputFile);
-	    syslog(L_ERROR, "cant stat %s %m", InputFile);
+            syswarn("cannot stat %s", InputFile);
 	    continue;
 	}
 
@@ -645,10 +619,8 @@ Unspool(void)
 	    continue;
 
 	if ((fd = open(InputFile, O_RDONLY)) < 0) {
-	    if (errno != ENOENT) {
-		xperror(InputFile);
-		syslog(L_ERROR, "cant open %s %m", InputFile);
-	    }
+	    if (errno != ENOENT)
+                syswarn("cannot open %s", InputFile);
 	    continue;
 	}
 	/* Get UUCP host from spool file, deleting the mktemp XXXXXX suffix. */
@@ -667,26 +639,22 @@ Unspool(void)
 	if (!ok) {
             badname = concat(PathBadNews, "/XXXXXX", (char *) 0);
             fd = mkstemp(badname);
-            if (fd < 0) {
-                xperror("Can't create temporary file");
-                syslog(L_FATAL, "cant create temporary file %m");
-                exit(1);
-            }
+            if (fd < 0)
+                sysdie("cannot create temporary file");
             close(fd);
-	    fprintf(stderr, "Unspooling failed saving to %s\n", badname);
-	    syslog(L_ERROR, "cant unspool saving to %s", badname);
-	    if (rename(InputFile, badname) < 0) {
-		xperror(badname);
-		syslog(L_FATAL, "cant rename %s to %s %m", InputFile, badname);
-		exit(1);
-	    }
+            warn("cant unspool saving to %s", badname);
+	    if (rename(InputFile, badname) < 0)
+                sysdie("cannot rename %s to %s", InputFile, badname);
 	    continue;
 	}
 
 	if (unlink(InputFile) < 0)
-	    syslog(L_ERROR, "cant remove %s %m", InputFile);
+            syswarn("cannot remove %s", InputFile);
     }
     (void)closedir(dp);
+
+    message_handlers_die(1, message_log_syslog_err);
+    message_handlers_warn(1, message_log_syslog_err);
 }
 
 
@@ -711,27 +679,23 @@ Spool(int fd, int mode)
 	exit(9);
     tmpspool = concatpath(innconf->pathincoming, ".XXXXXX");
     spfd = mkstemp(tmpspool);
-    if (spfd < 0) {
-        syslog(L_FATAL, "cant create temporary batch file %m");
-        exit(1);
-    }
-    if (fchmod(spfd, BATCHFILE_MODE) < 0) {
-        syslog(L_FATAL, "cant chmod temporary batch file %s %m", tmpspool);
-        exit(1);
-    }
+    if (spfd < 0)
+        sysdie("cannot create temporary batch file %s", tmpspool);
+    if (fchmod(spfd, BATCHFILE_MODE) < 0)
+        sysdie("cannot chmod temporary batch file %s", tmpspool);
 
     /* Read until we there is nothing left. */
     for (status = 0, count = 0; (i = read(fd, buff, sizeof buff)) != 0; ) {
 	/* Break out on error. */
 	if (i < 0) {
-	    syslog(L_FATAL, "cant read after %d %m", count);
+            syswarn("cannot read after %d", count);
 	    status++;
 	    break;
 	}
 	/* Write out what we read. */
 	for (count += i, p = buff; i; p += j, i -= j)
 	    if ((j = write(spfd, p, i)) <= 0) {
-		syslog(L_FATAL, "cant write around %d %m", count);
+                syswarn("cannot write around %d", count);
 		status++;
 		break;
 	    }
@@ -739,7 +703,7 @@ Spool(int fd, int mode)
 
     /* Close the file. */
     if (close(spfd) < 0) {
-	syslog(L_FATAL, "cant close spooled article %s %m", tmpspool);
+        syswarn("cannot close spooled article %s", tmpspool);
 	status++;
     }
 
@@ -747,12 +711,12 @@ Spool(int fd, int mode)
     spoolfile = concatpath(innconf->pathincoming, "XXXXXX");
     spfd = mkstemp(spoolfile);
     if (spfd < 0) {
-        syslog(L_FATAL, "cant create spool file %m");
+        syswarn("cannot create spool file %s", spoolfile);
         status++;
     } else {
         close(spfd);
         if (rename(tmpspool, spoolfile) < 0) {
-            syslog(L_FATAL, "cant rename %s to %s %m", tmpspool, spoolfile);
+            syswarn("cannot rename %s to %s", tmpspool, spoolfile);
             status++;
         }
     }
@@ -798,22 +762,11 @@ static void
 CantConnect(char *buff, int mode, int fd)
 {
     if (buff[0])
-	syslog(L_NOTICE, "rejected connection %s", REMclean(buff));
+        notice("rejected connection %s", REMclean(buff));
     else
-	syslog(L_FATAL, "cant open_remote %m");
+        syswarn("cant open_remote");
     if (mode != 'U')
 	Spool(fd, mode);
-    exit(1);
-}
-
-
-/*
-**  Log an incorrect usage.
-*/
-static void
-Usage(void)
-{
-    syslog(L_FATAL, "usage error");
     exit(1);
 }
 
@@ -829,15 +782,16 @@ int main(int ac, char *av[])
 
     /* First thing, set up logging and our identity. */
     openlog("rnews", L_OPENLOG_FLAGS, LOG_INN_PROG);
+    message_program_name = "rnews";
+    message_handlers_notice(1, message_log_syslog_notice);
+    message_handlers_warn(1, message_log_syslog_err);
+    message_handlers_die(1, message_log_syslog_err);
+
 #if !defined(__FreeBSD__) && !defined(__bsdi__) && !defined (__NetBSD__)
-    if (setgid(getegid()) < 0) {
-	syslog(L_FATAL, "cant setgid to %d %m", getegid());
-	exit(1);
-    }
-    if (setuid(geteuid()) < 0) {
-	syslog(L_FATAL, "cant setuid to %d %m", geteuid());
-	exit(1);
-    }
+    if (setgid(getegid()) < 0)
+        die("cannot setgid to %lu", (unsigned long) getegid());
+    if (setuid(geteuid()) < 0)
+        die("cannot setuid to %lu", (unsigned long) geteuid());
 #endif
      if (ReadInnConf() < 0) exit(1);
      UUCPHost = getenv(_ENV_UUCPHOST);
@@ -852,7 +806,7 @@ int main(int ac, char *av[])
     while ((i = getopt(ac, av, "h:P:NUvr:S:")) != EOF)
 	switch (i) {
 	default:
-	    Usage();
+	    die("usage error");
 	    /* NOTRTEACHED */
 	case 'h':
 	    UUCPHost = *optarg ? optarg : NULL;
@@ -878,17 +832,15 @@ int main(int ac, char *av[])
     /* Parse arguments.  At most one, the input file. */
     switch (ac) {
     default:
-	Usage();
+        die("usage error");
 	/* NOTREACHED */
     case 0:
 	break;
     case 1:
 	if (mode == 'U')
-	    Usage();
-	if (freopen(av[0], "r", stdin) == NULL) {
-	    syslog(L_FATAL, "cant freopen %s %m", av[0]);
-	    exit(1);
-	}
+            die("usage error");
+	if (freopen(av[0], "r", stdin) == NULL)
+            sysdie("cannot freopen %s", av[0]);
 	fd = fileno(stdin);
 	InputFile = av[0];
 	break;

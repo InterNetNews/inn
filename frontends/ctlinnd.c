@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <syslog.h>  
 
+#include "inn/messages.h"
 #include "inndcomm.h"
 #include "libinn.h"
 #include "macros.h"
@@ -163,10 +164,9 @@ static void
 Failed(const char *p)
 {
     if (ICCfailure)
-	(void)fprintf(stderr, "Can't %s (%s failure) %s.\n",
-		p, ICCfailure, strerror(errno));
+        syswarn("cannot %s (%s failure)", p, ICCfailure);
     else
-	(void)fprintf(stderr, "Can't %s, %s.\n", p, strerror(errno));
+        syswarn("cannot %s", p);
     (void)ICCclose();
     exit(1);
 }
@@ -200,7 +200,8 @@ int main(int ac, char *av[])
     char		buff[SMBUF];
 
     /* First thing, set up logging and our identity. */
-    openlog("ctlinnd", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);        
+    openlog("ctlinnd", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "ctlinnd";
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
@@ -302,11 +303,8 @@ int main(int ac, char *av[])
 
     /* Make sure there are no separators in the parameters. */
     for (i = 0; (p = av[i++]) != NULL; )
-	if (strchr(p, SC_SEP) != NULL) {
-	    (void)fprintf(stderr, "Illegal character '\\%03o' in \"%s\"\n",
-		    SC_SEP, p);
-	    exit(1);
-	}
+	if (strchr(p, SC_SEP) != NULL)
+            die("illegal character \\%03o in %s", SC_SEP, p);
 
     /* Do the real work. */
     if (ICCopen() < 0)
@@ -316,7 +314,7 @@ int main(int ac, char *av[])
 	i = errno;
 	p = concatpath(innconf->pathrun, _PATH_SERVERPID);
 	if (stat(p, &Sb) < 0)
-	    (void)fprintf(stderr, "No innd.pid file; did server die?\n");
+            warn("no innd.pid file; did server die?");
         free(p);
 	snprintf(buff, sizeof(buff), "send \"%s\" command", cp->Command);
 	errno = i;
@@ -330,7 +328,7 @@ int main(int ac, char *av[])
 	while (*p && ISWHITE(*p))
 	    p++;
 	if (i != 0)
-	    (void)fprintf(stderr, "%s\n", p);
+            warn("%s", p);
 	else if (!Silent)
 	    (void)printf("%s\n", p);
     }

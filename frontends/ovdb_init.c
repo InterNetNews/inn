@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <syslog.h>
 
+#include "inn/messages.h"
 #include "ov.h"
 #include "../storage/ovdb/ovdb.h"
 #include "../storage/ovdb/ovdb-private.h"
@@ -19,8 +20,7 @@
 
 int main(int argc UNUSED, char **argv UNUSED)
 {
-    fprintf(stderr, "Error: BerkeleyDB not compiled in.\n");
-    exit(1);
+    die("BerkeleyDB support not compiled");
 }
 
 #else /* USE_BERKELEY_DB */
@@ -32,21 +32,21 @@ static int open_db(DB **db, const char *name, int type)
     DB_INFO dbinfo;
     memset(&dbinfo, 0, sizeof dbinfo);
 
-    ret = db_open(name, type, DB_CREATE, 0666, OVDBenv, &dbinfo, db)
+    ret = db_open(name, type, DB_CREATE, 0666, OVDBenv, &dbinfo, db);
     if (ret != 0) {
-	fprintf(stderr, "ovdb_init: db_open failed: %s\n", db_strerror(ret));
+	warn("db_open failed: %s", db_strerror(ret));
 	return ret;
     }
 #else
     ret = db_create(db, OVDBenv, 0);
     if (ret != 0) {
-	fprintf(stderr, "ovdb_init: db_create: %s\n", db_strerror(ret));
+	warn("db_create failed: %s\n", db_strerror(ret));
 	return ret;
     }
     ret = (*db)->open(*db, name, NULL, type, DB_CREATE, 0666);
     if (ret != 0) {
 	(*db)->close(*db, 0);
-	fprintf(stderr, "ovdb_init: %s->open: %s\n", name, db_strerror(ret));
+        warn("%s->open failed: %s", name, db_strerror(ret));
 	return ret;
     }
 #endif
@@ -54,7 +54,7 @@ static int open_db(DB **db, const char *name, int type)
 }
 
 /* Upgrade BerkeleyDB version */
-static int upgrade_database(const char *name)
+static int upgrade_database(const char *name UNUSED)
 {
 #if DB_VERSION_MAJOR == 2
     return 0;
@@ -66,10 +66,10 @@ static int upgrade_database(const char *name)
     if (ret != 0)
 	return ret;
 
-    printf("ovdb_init: upgrading %s...\n", name);
+    notice("upgrading %s...", name);
     ret = db->upgrade(db, name, 0);
     if (ret != 0)
-	fprintf(stderr, "ovdb_init: db->upgrade(%s): %s\n", name, db_strerror(ret));
+        warn("db->upgrade(%s) failed: %s", name, db_strerror(ret));
 
     db->close(db, 0);
     return ret;
@@ -110,7 +110,7 @@ static int upgrade_v1_to_v2(void)
     int ret;
     char *p;
 
-    printf("ovdb_init: Upgrading data to version 2\n");
+    notice("upgrading data to version 2");
     ret = open_db(&groupstats, "groupstats", DB_BTREE);
     if (ret != 0)
 	return ret;
@@ -169,14 +169,14 @@ static int upgrade_v1_to_v2(void)
 	val.size = sizeof(gi);
         ret = groupinfo->put(groupinfo, NULL, &key, &val, 0);
 	if (ret != 0) {
-	    fprintf(stderr, "ovdb_init: groupinfo->put failed: %s\n", db_strerror(ret));
+            warn("groupinfo->put failed: %s", db_strerror(ret));
 	    cursor->c_close(cursor);
 	    return ret;
 	}
     }
     cursor->c_close(cursor);
     if(ret != DB_NOTFOUND) {
-	fprintf(stderr, "ovdb_init: cursor->get failed: %s\n", db_strerror(ret));
+        warn("cursor->get failed: %s", db_strerror(ret));
 	return ret;
     }
 
@@ -191,7 +191,7 @@ static int upgrade_v1_to_v2(void)
 
     ret = groupinfo->put(groupinfo, NULL, &key, &val, 0);
     if (ret != 0) {
-	fprintf(stderr, "ovdb_init: groupinfo->put failed: %s\n", db_strerror(ret));
+        warn("groupinfo->put failed: %s", db_strerror(ret));
 	return ret;
     }
 
@@ -206,7 +206,7 @@ static int upgrade_v1_to_v2(void)
 
     ret = vdb->put(vdb, NULL, &key, &val, 0);
     if (ret != 0) {
-	fprintf(stderr, "ovdb_init: version->put failed: %s\n", db_strerror(ret));
+        warn("version->put failed: %s", db_strerror(ret));
 	return ret;
     }
 
@@ -259,7 +259,7 @@ static int check_upgrade(int do_upgrade)
     ret = db->get(db, NULL, &key, &val, 0);
     if (ret != 0) {
 	if(ret != DB_NOTFOUND) {
-	    fprintf(stderr, "ovdb_init: can't retrieve version: %s\n", db_strerror(ret));
+            warn("cannot retrieve version: %s", db_strerror(ret));
 	    db->close(db, 0);
 	    return ret;
 	}
@@ -271,7 +271,7 @@ static int check_upgrade(int do_upgrade)
 	val.size = sizeof dv;
         ret = db->put(db, NULL, &key, &val, 0);
 	if (ret != 0) {
-	    fprintf(stderr, "ovdb_init: can't store version: %s\n", db_strerror(ret));
+            warn("cannot store version: %s", db_strerror(ret));
 	    db->close(db, 0);
 	    return ret;
 	}
@@ -310,14 +310,14 @@ static int check_upgrade(int do_upgrade)
     }
 
     if(dv > DATA_VERSION) {
-	fprintf(stderr, "ovdb_init: can't open database: unknown version %d\n", dv);
+        warn("cannot open database: unknown version %d", dv);
 	return EINVAL;
     }
     if(dv < DATA_VERSION) {
 	if(do_upgrade)
 	    return upgrade_v1_to_v2();
 
-	fprintf(stderr, "ovdb_init: Database needs to be upgraded.\n");
+        warn("database needs to be upgraded");
 	return EINVAL;
     }
     return 0;
@@ -329,21 +329,16 @@ int main(int argc, char **argv)
     bool locked;
 
     openlog("ovdb_init", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "ovdb_init";
 
-    if (ReadInnConf() < 0) {
-	fprintf(stderr, "Error: Can't read inn.conf\n");
-	exit(1);
-    }
+    if (ReadInnConf() < 0)
+        die("cannot read inn.conf");
 
-    if(strcmp(innconf->ovmethod, "ovdb")) {
-	fprintf(stderr, "Error: ovmethod not set to ovdb\n");
-	exit(1);
-    }
+    if(strcmp(innconf->ovmethod, "ovdb"))
+        die("ovmethod not set to ovdb in inn.conf");
 
-    if(!ovdb_check_user()) {
-	fprintf(stderr, "Error: Only run this command as user " NEWSUSER "\n");
-	exit(1);
-    }
+    if(!ovdb_check_user())
+        die("command must be run as user " NEWSUSER);
 
     chdir(innconf->pathtmp);
     ovdb_errmode = OVDB_ERR_STDERR;
@@ -357,13 +352,13 @@ int main(int argc, char **argv)
 	    do_upgrade = 1;
 	    break;
 	case '?':
-	    fprintf(stderr, "Unrecognized option: -%c\n", optopt);
+            warn("unrecognized option -%c", optopt);
 	    err++;
 	    break;
 	}
     }
     if(recover_only && do_upgrade) {
-	fprintf(stderr, "Can't have both -r and -u at once.\n");
+        warn("cannot use both -r and -u at the same time");
 	err++;
     }
     if(err) {
@@ -374,35 +369,32 @@ int main(int argc, char **argv)
     locked = ovdb_getlock(OVDB_LOCK_EXCLUSIVE);
     if(locked) {
 	if(do_upgrade)
-	    fprintf(stderr, "ovdb_init: Database is quiescent.  Upgrading...\n");
+            notice("database is quiescent, upgrading");
 	else
-	    fprintf(stderr, "ovdb_init: Database is quiescent.  Running normal recovery.\n");
+            notice("database is quiescent, running normal recovery");
     } else {
-	fprintf(stderr, "ovdb_init: Database is active.");
+        warn("database is active");
 	if(do_upgrade) {
-	    fprintf(stderr, "  Upgrade will not be attempted.");
+            warn("upgrade will not be attempted");
 	    do_upgrade = 0;
 	}
-	if(recover_only) {
-	    fprintf(stderr, "  Recovery will not be attempted.\n");
-	    exit(1);
-	}
-	fprintf(stderr, "\n");
+	if(recover_only)
+            die("recovery will not be attempted");
 	ovdb_getlock(OVDB_LOCK_ADMIN);
     }
 
     ret = ovdb_open_berkeleydb(OV_WRITE, (locked && !do_upgrade) ? OVDB_RECOVER : 0);
     if(ret == DB_RUNRECOVERY) {
 	if(locked)
-	    fprintf(stderr, "ovdb_init: Database could not be recovered.\n");
-	else
-	    fprintf(stderr, "ovdb_init: Database needs recovery, but recovery can not be performed until the\nother processes accessing the database are killed.\n");
-	exit(1);
+            die("database could not be recovered");
+	else {
+            warn("database needs recovery but cannot be locked");
+            die("other processes accessing the database must exit to start"
+                " recovery");
+        }
     }
-    if(ret != 0) {
-	fprintf(stderr, "ovdb_init: Could not open BerkeleyDB: %s\n", db_strerror(ret));
-	exit(1);
-    }
+    if(ret != 0)
+        die("cannot open BerkeleyDB: %s", db_strerror(ret));
 
     if(recover_only)
 	exit(0);
@@ -416,38 +408,36 @@ int main(int argc, char **argv)
     ovdb_releaselock();
 
     if(ovdb_check_pidfile(OVDB_MONITOR_PIDFILE) == FALSE) {
-	fprintf(stderr, "ovdb_init: Starting ovdb monitor\n");
+        notice("starting ovdb monitor");
 	switch(fork()) {
 	case -1:
-	    fprintf(stderr, "can't fork: %s\n", strerror(errno));
-	    exit(1);
+            sysdie("cannot fork");
 	case 0:
 	    setsid();
 	    execl(concatpath(innconf->pathbin, "ovdb_monitor"),
 		"ovdb_monitor", SPACES, NULL);
-	    fprintf(stderr, "Can't exec ovdb_monitor: %s\n", strerror(errno));
+            syswarn("cannot exec ovdb_monitor");
 	    _exit(1);
 	}
 	sleep(2);	/* give the monitor a chance to start */
     } else
-	fprintf(stderr, "ovdb_init: ovdb monitor is running\n");
+        warn("ovdb_monitor already running");
 
     if(ovdb_conf.readserver) {
 	if(ovdb_check_pidfile(OVDB_SERVER_PIDFILE) == FALSE) {
-	    fprintf(stderr, "ovdb_init: Starting ovdb server\n");
+            notice("starting ovdb server");
 	    switch(fork()) {
 	    case -1:
-		fprintf(stderr, "can't fork: %s\n", strerror(errno));
-		exit(1);
+                sysdie("cannot fork");
 	    case 0:
 		setsid();
 		execl(concatpath(innconf->pathbin, "ovdb_server"),
 		    "ovdb_server", SPACES, NULL);
-		fprintf(stderr, "Can't exec ovdb_server: %s\n", strerror(errno));
+                syswarn("cannot exec ovdb_server");
 		_exit(1);
 	    }
 	} else
-	    fprintf(stderr, "ovdb_init: ovdb server is running\n");
+            warn("ovdb_server already running");
     }
 
     exit(0);

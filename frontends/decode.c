@@ -15,6 +15,8 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include "inn/messages.h"
+
 
 /*
 **  These characters can't appear in normal output, so we use them to
@@ -40,7 +42,7 @@ pack6(register int n, int last)
     i = 3;
     if (last && (i = Buffer[n - 1]) >= 3) {
 	/* Do the best we can. */
-	(void)fprintf(stderr, "Badly-terminated file.\n");
+        warn("badly-terminated file");
 	i = 3;
     }
 
@@ -115,12 +117,12 @@ main(void)
     char		b12[12];
     char		c12[12];
 
+    message_program_name = "decode";
+
     base = p = b12;
     for (i = 12, cnt = 0, first = 1; (c = getchar()) != EOF; ) {
-	if (c < ' ' || c >= ' ' + 91) {
-	    (void)fprintf(stderr, "decode: Bad data\n");
-	    exit(1);
-	}
+	if (c < ' ' || c >= ' ' + 91)
+            die("bad data");
 	if (i == 10 && p[-1] == ENDMARK1 && p[-2] == ENDMARK2) {
 	    cnt = c - ' ';
 	    i = 12;

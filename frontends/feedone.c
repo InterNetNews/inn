@@ -7,6 +7,7 @@
 #include "clibrary.h"
 #include <errno.h>
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
@@ -15,18 +16,6 @@
 static FILE	*FromServer;
 static FILE	*ToServer;
 static int	Tracing;
-
-
-/*
-**  Print and error message (with errno) and exit with an error code.
-*/
-static void
-PerrorExit(s)
-    char	*s;
-{
-    (void)fprintf(stderr, "%s, %s.\n", s, strerror(errno));
-    exit(1);
-}
 
 
 /*
@@ -39,7 +28,7 @@ GetFromServer(buff, size, text)
     char	*text;
 {
     if (fgets(buff, size, FromServer) == NULL)
-	PerrorExit(text);
+        sysdie("s", text);
     if (Tracing)
 	printf("S: %s", buff);
 }
@@ -53,7 +42,7 @@ SafeFlush(F)
     FILE	*F;
 {
     if (fflush(F) == EOF || ferror(F))
-	PerrorExit("Can't send text to server");
+        sysdie("cannot send text to server");
 }
 
 
@@ -67,7 +56,7 @@ SendQuit(x)
     (void)fprintf(ToServer, "quit\r\n");
     SafeFlush(ToServer);
     (void)fclose(ToServer);
-    GetFromServer(buff, sizeof buff, "Can't get reply to quit");
+    GetFromServer(buff, sizeof buff, "cannot get reply to quit");
     exit(x);
 }
 
@@ -75,8 +64,7 @@ SendQuit(x)
 static void
 Usage()
 {
-    (void)fprintf(stderr,
-	    "Usage: feedone [-r|-m msgid] [-p] [-t] articlefile\n");
+    fprintf(stderr, "Usage: feedone [-r|-m msgid] [-p] [-t] articlefile\n");
     exit(1);
 }
 
@@ -99,6 +87,7 @@ main(ac, av)
     /* Set defaults. */
     mesgid[0] = '\0';
     PostMode = FALSE;
+    message_program_name = "feedone";
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "m:prt")) != EOF)
@@ -133,25 +122,21 @@ main(ac, av)
     if (ac != 1)
 	Usage();
     if ((F = fopen(av[0], "r")) == NULL)
-	PerrorExit("Can't open input");
+        sysdie("cannot open input");
 
     /* Scan for the message-id. */
     if (mesgid == NULL) {
 	while (fgets(buff, sizeof buff, F) != NULL)
 	    if (caseEQn(buff, MESGIDHDR, STRLEN(MESGIDHDR))) {
 		if ((p = strchr(buff, '<')) == NULL
-		 || (q = strchr(p, '>')) == NULL) {
-		    (void)fprintf(stderr, "Bad mesgid line.\n");
-		    exit(1);
-		}
+                 || (q = strchr(p, '>')) == NULL)
+                    die("bad message ID line");
 		q[1] = '\0';
                 mesgid = xstrdup(p);
 		break;
 	    }
-	if (mesgid == NULL) {
-	    (void)fprintf(stderr, "No Message-ID.\n");
-	    exit(1);
-	}
+	if (mesgid == NULL)
+            die("no message ID");
     }
 
     /* Connect to the server. */
@@ -159,8 +144,8 @@ main(ac, av)
      || FromServer == NULL
      || ToServer == NULL) {
 	if (buff[0])
-	    (void)fprintf(stderr, "Server says: %s\n", buff);
-	PerrorExit("Can't connect to server");
+            warn("server says: %s", buff);
+        sysdie("cannot connect to server");
     }
 
     /* Does the server want this article? */
@@ -173,10 +158,9 @@ main(ac, av)
 	i = NNTP_SENDIT_VAL;
     }
     SafeFlush(ToServer);
-    GetFromServer(buff, sizeof buff, "Can't offer article to server");
+    GetFromServer(buff, sizeof buff, "cannot offer article to server");
     if (atoi(buff) != i) {
-	(void)fprintf(stderr, "Server doesn't want the article:\n\t%s\n",
-		buff);
+        warn("server doesn't want the article: %s", buff);
 	SendQuit(1);
     }
 
@@ -199,13 +183,10 @@ main(ac, av)
 
     /* How did the server respond? */
     GetFromServer(buff, sizeof buff,
-	"No reply from server after sending the article");
+	"no reply from server after sending the article");
     i = PostMode ? NNTP_POSTEDOK_VAL : NNTP_TOOKIT_VAL;
-    if (atoi(buff) != i) {
-	(void)fprintf(stderr, "Can't send article to the server:\n\t%s\n",
-		buff);
-	exit(1);
-    }
+    if (atoi(buff) != i)
+        sysdie("cannot send article to the server: %s", buff);
 
     SendQuit(0);
     /* NOTREACHED */
