@@ -66,10 +66,6 @@ extern void *memmove();
 extern void *memset();
 #endif /* !STDC_HEADERS */
 
-#ifdef HAVE_LIMITS_H
-# include <limits.h>
-#endif
-
 #ifdef HAVE_STDDEF_H
 # include <stddef.h>
 #endif
@@ -86,7 +82,10 @@ extern void *memset();
 # include <vfork.h>
 #endif
 
-/* Provide prototypes for functions we're replacing. */
+/* Provide prototypes for functions we're replacing that return something
+   other than an int (or that are very commonly replaced).  Don't bother
+   with prototypes for the uncommonly replaced functions that return ints;
+   they aren't necessary and just add clutter. */
 #ifndef HAVE_PREAD
 extern ssize_t pread(int fd, void *buf, size_t nbyte, OFFSET_T offset);
 #endif
@@ -95,6 +94,9 @@ extern ssize_t pwrite(int fd, void *buf, size_t nbyte, OFFSET_T offset);
 #endif
 #ifndef HAVE_INET_NTOA
 extern char *inet_ntoa();
+#endif
+#ifndef HAVE_STRDUP
+extern char *strdup();
 #endif
 #ifndef HAVE_STRERROR
 extern char *strerror();
