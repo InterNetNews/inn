@@ -20,9 +20,7 @@ LOBJECTS = interface.lo methods.lo qio.lo overview.lo
 
 
 methods: 
-	@if [ ! -d objs ] ; then \
-		mkdir objs; \
-	fi ;
+	@[ -d objs ] || mkdir objs
 	@for D in $(SUBDIR); do \
 	cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) || exit 1; cd ..; \
 	done
