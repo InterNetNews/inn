@@ -44,6 +44,9 @@
 **  be tagged as deleted if that article has been deleted or expired.
 */
 
+#ifndef INN_TDX_STRUCTURE_H
+#define INN_TDX_STRUCTURE_H 1
+
 /* A location in group.index (this many records past the end of the header of
    the file).  There's no reason for this to be a struct, but that can't be
    changed until the format of the group.index file is changed to be
@@ -122,3 +125,5 @@ struct index_entry {
 typedef struct group_header GROUPHEADER;
 typedef struct group_entry  GROUPENTRY;
 typedef struct index_entry  INDEXENTRY;
+
+#endif /* INN_TDX_STRUCTURE_H */
