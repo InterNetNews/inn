@@ -1,4 +1,4 @@
-#! /usr/bin/perl -T
+#! /usr/bin/perl
 # fixscript will replace this line with require innshellvars.pl
 
 # simpleftp
