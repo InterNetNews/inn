@@ -108,11 +108,6 @@ $(D)$(PATHBIN)/startinnfeed: startinnfeed
 depend: Makefile $(SOURCES)
 	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
 
-# This version of makedepend isn't actually used currently.
-makedepend: makedepend.sh
-	cp makedepend.sh makedepend
-	chmod 755 makedepend
-
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 article.o: article.c innfeed.h ../include/inn/timer.h \
  ../include/config.h ../include/clibrary.h ../include/portable/mmap.h \
