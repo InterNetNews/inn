@@ -55,6 +55,15 @@
 #endif
 
 /*
+** SCO ODT 5.0.4
+*/
+#if defined (_SCO_DS)
+#define MAX_WRITEV_VEC 512
+#define MAXPATHLEN 1024
+extern int h_errno ;
+#endif
+
+/*
 ** FreeBSD
 */
 
