@@ -1598,6 +1598,7 @@ STATIC BOOL ovgroupmmap(GROUPENTRY *ge, int low, int high, BOOL needov) {
   while (ov.index != NULLINDEX) {
     ovbuff = getovbuff(ov);
     if (ovbuff == NULL) {
+      syslog(L_ERROR, "%s: ovgroupmmap ovbuff is null(ovindex is %d, ovblock is %d", LocalLogName, ov.index, ov.blocknum);
       ovgroupunmap();
       return FALSE;
     }
@@ -2091,6 +2092,37 @@ main(int argc, char **argv) {
   }
   fprintf(stdout, "GROUPheader->freelist.recno is %d(0x%08x)\n", GROUPheader->freelist.recno, GROUPheader->freelist.recno);
   group = argv[1];
+  if (isdigit(*group)) {
+    gloc.recno = atoi(group);
+    ge = &GROUPentries[gloc.recno];
+    fprintf(stdout, "left articles are %d for %d, last expiry is %d\n", ge->count, gloc.recno, ge->expired);
+    if (ge->count == 0) {
+      GROUPlock(gloc, LOCK_UNLOCK);
+      exit(0);
+    }
+    if (!ovgroupmmap(ge, ge->low, ge->high, TRUE)) {
+      fprintf(stderr, "ovgroupmmap failed\n");
+      GROUPlock(gloc, LOCK_UNLOCK);
+    }
+    for (giblist = Giblist, i = 0 ; giblist != NULL ; giblist = giblist->next, i++);
+    fprintf(stdout, "%d index block(s)\n", i);
+    fprintf(stdout, "%d data block(s)\n", countgdb());
+    for (giblist = Giblist ; giblist != NULL ; giblist = giblist->next) {
+      fprintf(stdout, "  % 8d(% 5d)\n", giblist->ov.blocknum, giblist->ov.index);
+    }
+    for (i = 0 ; i < Gibcount ; i++) {
+      if (Gib[i].artnum == 0)
+	continue;
+      if (Gib[i].index == NULLINDEX)
+	fprintf(stdout, "    %d empty\n");
+      else {
+	fprintf(stdout, "    %d %d\n", Gib[i].offset, Gib[i].len);
+      }
+    }
+    ovgroupunmap();
+    GROUPlock(gloc, LOCK_UNLOCK);
+    exit(0);
+  }
   gloc = GROUPfind(group, FALSE);
   if (GROUPLOCempty(gloc)) {
     fprintf(stderr, "gloc is null\n");
