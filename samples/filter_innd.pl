@@ -104,10 +104,10 @@ sub filter_art {
 
 sub filter_mode {
 	if ($mode{'NewMode'} eq "throttled" || $mode{'NewMode'} eq "paused") {
-#		print "Calling unknown function\n" ; # won't kill server.
+#		print "Closing spam database\n" ; # won't kill server.
 #		&close_spam_database ;
 	} else {
-#		print "Calling unknown function\n" ; # won't kill server
+#		print "Opening spam database\n" ; # won't kill server
 #		&open_spam_database ;
 	}
 }
