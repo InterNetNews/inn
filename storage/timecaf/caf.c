@@ -601,7 +601,7 @@ CAFOpenArtRead(const char *path, ARTNUM art, size_t *len)
        here, we may simply segfault when we try to access mmap'd space beyond
        the end of the file.  I think robustness wins. */
     if (fstat(fd, &st) == 0)
-        if (tocent.Size > st.st_size - tocent.Offset) {
+        if (tocent.Size + tocent.Offset > (size_t) st.st_size) {
             CAFError(CAF_ERR_IO);
             close(fd);
             return -1;
