@@ -390,9 +390,9 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	case FEED_PATH:
 	    if (Dirty)
 		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    if (!Hassamepath)
+	    if (!Data->Hassamepath)
 		buffer_append(bp, Path.data, Path.used);
-	    if (AddAlias)
+	    if (Data->AddAlias)
 		buffer_append(bp, Pathalias.data, Pathalias.used);
 	    buffer_append(bp, HDR(HDR__PATH), HDR_LEN(HDR__PATH));
 	    break;

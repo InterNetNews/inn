@@ -549,8 +549,8 @@ main(int ac, char *av[])
     }
     syslog(L_NOTICE, "%s descriptors %d", LogName, i);
     if (MaxOutgoing == 0) {
-	/* getfdlimit() - (stdio + dbz + cc + lc + rc + art + Overfdcount + fudge) */
-	MaxOutgoing = i - (  3   +  3  +  2 +  1 +  1 +  1  + Overfdcount +  2  );
+	/* getfdlimit() - (stdio + dbz + cc + lc + rc + art + fudge) */
+	MaxOutgoing = i - (  3   +  3  +  2 +  1 +  1 +  1  +  2  );
 	syslog(L_NOTICE, "%s outgoing %d", LogName, MaxOutgoing);
     }
 

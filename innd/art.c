@@ -439,7 +439,7 @@ ARTstore(CHANNEL *cp)
   for (p = Article->data + cp->Start, j = 0 ; j < i ; j++) {
     switch (hp[j].index) {
       case HDR__PATH:
-	if (!Hassamepath || AddAlias) {
+	if (!data->Hassamepath || data->AddAlias) {
 	  /* write heading data */
 	  iov[iovcnt].iov_base = (char *) p;
 	  iov[iovcnt++].iov_len = HDR(HDR__PATH) - p;
@@ -448,7 +448,7 @@ ARTstore(CHANNEL *cp)
 	  iov[iovcnt].iov_base = Path.data;
 	  iov[iovcnt++].iov_len = Path.used;
 	  arth.len += Path.used;
-	  if (AddAlias) {
+	  if (data->AddAlias) {
 	    iov[iovcnt].iov_base = Pathalias.data;
 	    iov[iovcnt++].iov_len = Pathalias.used;
 	    arth.len += Pathalias.used;
@@ -1836,14 +1836,14 @@ ARTpost(CHANNEL *cp)
   }
 
   if (strncmp(Path.data, hops[0], Path.used - 1) == 0)
-    Hassamepath = true;
+    data->Hassamepath = true;
   else
-    Hassamepath = false;
+    data->Hassamepath = false;
   if (Pathalias.data != NULL &&
     !ListHas((const char **)hops, (const char *)innconf->pathalias))
-    AddAlias = true;
+    data->AddAlias = true;
   else
-    AddAlias = false;
+    data->AddAlias = false;
 
   /* And now check the path for unwanted sites -- Andy */
   for(j = 0 ; ME.Exclusions && ME.Exclusions[j] ; j++) {

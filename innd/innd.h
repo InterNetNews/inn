@@ -237,6 +237,9 @@ typedef struct _ARTDATA {
 					   it indicates offset from bp->Data */
   HDRCONTENT	  HdrContent[MAX_ARTHEADER];
 					/* includes system headers info */
+  bool            AddAlias;             /* Whether Pathalias should be added
+                                           to this article */
+  bool            Hassamepath;          /* Whether this article matches Path */
 } ARTDATA;
 
 /*
@@ -562,7 +565,6 @@ EXTERN bool		NeedReplicdata;
 extern bool		NNRPTracing;
 extern bool		StreamingOff;
 extern bool		Tracing;
-EXTERN int		Overfdcount;
 EXTERN struct buffer	Path;
 EXTERN struct buffer	Pathalias;
 EXTERN char	     *  ModeReason;	/* NNTP reject message   */
@@ -587,8 +589,6 @@ EXTERN SITE		ME;
 EXTERN struct timeval	TimeOut;
 EXTERN TIMEINFO		Now;		/* Reasonably accurate time     */
 EXTERN bool		ThrottledbyIOError;
-EXTERN bool		AddAlias;
-EXTERN bool		Hassamepath;
 EXTERN char	    *   NCgreeting;
 EXTERN struct history   *History;
 
