@@ -343,7 +343,7 @@ AC_CHECK_HEADERS(sys/select.h sys/signal.h sys/time.h syslog.h unistd.h)
 AC_CHECK_HEADERS(varargs.h dirent.h wait.h)
 
 # Digital Unix malloc.h looks pretty broken (no function declarations).
-if test x${DECUNIX} = Xyes
+if test X${DECUNIX} = Xyes
 then
 AC_MSG_WARN(not checking for malloc.h as this is Digital Unix)
 else

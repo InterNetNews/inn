@@ -3305,7 +3305,7 @@ done
 
 
 # Digital Unix malloc.h looks pretty broken (no function declarations).
-if test x${DECUNIX} = Xyes
+if test X${DECUNIX} = Xyes
 then
 echo "configure: warning: not checking for malloc.h as this is Digital Unix" 1>&2
 else
