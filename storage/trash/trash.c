@@ -60,6 +60,9 @@ bool trash_flushcacheddata(FLUSHTYPE type) {
     return TRUE;
 }
 
+void trash_printfiles(FILE *file, TOKEN token, char **xref, int ngroups) {
+}
+
 ARTHANDLE *trash_next(const ARTHANDLE *article, const RETRTYPE amount) {
     return (ARTHANDLE *)NULL;
 }
