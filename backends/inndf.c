@@ -86,7 +86,7 @@
 # else
 #  define df_stat(p, s) (statfs((p), (s)) == 0)
 #  define df_declare(s) struct statfs s
-#  define df_avail(s)   ((s).f_avail)
+#  define df_avail(s)   ((s).f_bavail)
 #  define df_bsize(s)   ((s).f_bsize)
 #  define df_inodes(s)  ((s).f_ffree)
 # endif
