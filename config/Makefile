@@ -49,6 +49,7 @@ substitutions:		$(CHECKOUT) subst files.list $(CONF)
 interpreters:
 	@echo "Fixing interpreter paths."
 	perl fixinterps.pl -v -d ../samples $(INTERPLIST)
+	perl fixinterps.pl -v -d ../storage buildconfig
 
 RCS-checkout:
 	co -l $(LIST)

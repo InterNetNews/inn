@@ -21,6 +21,7 @@ typedef struct __S_SUB__ {
     int                 minsize;     /* Minimum size to send to this method */
     int                 maxsize;     /* Maximum size to send to this method */
     int                 numpatterns; /* Number of patterns in patterns */
+    int                 class;       /* Number of the storage class for this subscription */
     char                **patterns;  /* Array of patterns to check against
 					the groups to determine if the article
 					should go to this method */
@@ -134,6 +135,7 @@ static BOOL SMreadconfig(void) {
     char                *patterns;
     int                 minsize;
     int                 maxsize;
+    int                 class;
     STORAGE_SUB         *sub = NULL;
     STORAGE_SUB         *prev = NULL;
 
@@ -152,11 +154,12 @@ static BOOL SMreadconfig(void) {
 	for (p = q = line; *p != '\0'; p++)
 	    if (!isspace(*p))
 		*q++ = *p;
+
+	*q = '\0';
 	
 	if (!line[0])
 	    continue;
 	
-	*q = '\0';
 	if ((p = strchr(line, ':')) == NULL) {
 	    syslog(L_ERROR, "SM could not find end of first field, line %d", linenum);
 	    return FALSE;
@@ -164,14 +167,18 @@ static BOOL SMreadconfig(void) {
 	method = line;
 	*p = '\0';
 	patterns = ++p;
+	class = minsize = maxsize = 0;
 	if ((p = strchr(p, ':')) != NULL) {
 	    *p = '\0';
 	    p++;
 	}
 	if (p && *p) {
-	    minsize = atoi(p);
+	    class = atoi(p);
 	    if ((p = strchr(++p, ':')) != NULL) {
-		maxsize = atoi(p);
+		minsize = atoi(p);
+		if (p && *p && ((p = strchr(++p, ':')) != NULL)) {
+		    maxsize = atoi(p);
+		}
 	    }
 	}
 	sub = NEW(STORAGE_SUB, 1);
@@ -189,6 +196,7 @@ static BOOL SMreadconfig(void) {
 	}
 	sub->minsize = minsize;
 	sub->maxsize = maxsize;
+	sub->class = class;
 	
 	/* Count the number of patterns and allocate space*/
 	for (i = 1, p = patterns; *p && (p = strchr(p+1, ',')); i++);
@@ -239,7 +247,7 @@ BOOL SMinit(void) {
     return FALSE;
 }
 
-static BOOL MatchGroups(const char *g, int num, const char **patterns) {
+static BOOL MatchGroups(const char *g, int num, char **patterns) {
     char                *group;
     char                *groups;
     const char          *p;
@@ -291,7 +299,7 @@ TOKEN SMstore(const ARTHANDLE article) {
 	if ((article.len >= sub->minsize) &&
 	    (!sub->maxsize || (article.len <= sub->maxsize)) &&
 	    MatchGroups(groups, sub->numpatterns, sub->patterns)) {
-	    return storage_methods[typetoindex[sub->type]].store(article);
+	    return storage_methods[typetoindex[sub->type]].store(article, sub->class);
 	}
     }
 
