@@ -245,7 +245,7 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     }
     req.data[1] += strlen(uname);
     strcat((char *)&req.data[2], uname);
-    if (config->suffix) {
+    if (!strchr(uname, '@') && config->suffix) {
 	req.data[1] += strlen(config->suffix);
 	strcat((char *)&req.data[2], config->suffix);
     }
