@@ -42,7 +42,7 @@ DistMatches(ARTHANDLE *art, char **distribs, char **files)
 	if (p >= art->data + art->len)
 	    return FALSE;
 	for (dp = distribs; *dp; dp++)
-	    if (caseEQn(p, *dp, p2 - q))
+	    if (caseEQn(q, *dp, p2 - q))
 		return TRUE;
 	return FALSE;
     } else {
