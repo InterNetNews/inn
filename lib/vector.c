@@ -10,10 +10,16 @@
 **  this saves on memory allocations once the array of char *'s reaches a
 **  stable size.
 **
-**  Vectors may be shallow, in which case the char *'s are pointers into
-**  another string, or deep, in which case each char * points to separately
-**  allocated memory.  The depth of a vector is set at creation, and affects
-**  operations later performed on it.
+**  There are two types of vectors.  Standard vectors copy strings when
+**  they're inserted into the vector, whereas cvectors just accept pointers
+**  to external strings to store.  There are therefore two entry points for
+**  every vector function, one for vectors and one for cvectors.
+**
+**  There's a whole bunch of code duplication here.  This would be a lot
+**  cleaner with C++ features (either inheritance or templates would
+**  probably help).  One could probably in some places just cast a cvector
+**  to a vector and perform the same operations, but I'm leery of doing that
+**  as I'm not sure if it's a violation of the C type aliasing rules.
 */
 
 #include "config.h"
@@ -27,7 +33,7 @@
 **  Allocate a new, empty vector.
 */
 struct vector *
-vector_new(bool shallow)
+vector_new(void)
 {
     struct vector *vector;
 
@@ -35,7 +41,18 @@ vector_new(bool shallow)
     vector->count = 0;
     vector->allocated = 0;
     vector->strings = NULL;
-    vector->shallow = shallow;
+    return vector;
+}
+
+struct cvector *
+cvector_new(void)
+{
+    struct cvector *vector;
+
+    vector = xmalloc(sizeof(struct cvector));
+    vector->count = 0;
+    vector->allocated = 0;
+    vector->strings = NULL;
     return vector;
 }
 
@@ -49,15 +66,31 @@ vector_resize(struct vector *vector, size_t size)
     size_t i;
 
     if (vector->count > size) {
-        if (!vector->shallow)
-            for (i = vector->count - 1; i < size; i++)
-                free(vector->strings[i]);
+        for (i = vector->count - 1; i < size; i++)
+            free(vector->strings[i]);
         vector->count = size;
     }
-    if (size == 0)
+    if (size == 0) {
+        free(vector->strings);
         vector->strings = NULL;
-    else
+    } else {
         vector->strings = xrealloc(vector->strings, size * sizeof(char *));
+    }
+    vector->allocated = size;
+}
+
+void
+cvector_resize(struct cvector *vector, size_t size)
+{
+    if (vector->count > size)
+        vector->count = size;
+    if (size == 0) {
+        free(vector->strings);
+        vector->strings = NULL;
+    } else {
+        vector->strings =
+            xrealloc(vector->strings, size * sizeof(const char *));
+    }
     vector->allocated = size;
 }
 
@@ -68,28 +101,44 @@ vector_resize(struct vector *vector, size_t size)
 **  vector_resize should be called explicitly with a more suitable size.
 */
 void
-vector_add(struct vector *vector, char *string)
+vector_add(struct vector *vector, const char *string)
 {
     size_t next = vector->count;
 
     if (vector->count == vector->allocated)
         vector_resize(vector, vector->allocated + 1);
-    vector->strings[next] = vector->shallow ? string : xstrdup(string);
+    vector->strings[next] = xstrdup(string);
+    vector->count++;
+}
+
+void
+cvector_add(struct cvector *vector, const char *string)
+{
+    size_t next = vector->count;
+
+    if (vector->count == vector->allocated)
+        cvector_resize(vector, vector->allocated + 1);
+    vector->strings[next] = string;
     vector->count++;
 }
 
 
 /*
-**  Empty a vector but keep the allocated memory for the char * table.
+**  Empty a vector but keep the allocated memory for the pointer table.
 */
 void
 vector_clear(struct vector *vector)
 {
     size_t i;
 
-    if (!vector->shallow)
-        for (i = 0; i < vector->count; i++)
-            free(vector->strings[i]);
+    for (i = 0; i < vector->count; i++)
+        free(vector->strings[i]);
+    vector->count = 0;
+}
+
+void
+cvector_clear(struct cvector *vector)
+{
     vector->count = 0;
 }
 
@@ -105,84 +154,86 @@ vector_free(struct vector *vector)
     free(vector);
 }
 
+void
+cvector_free(struct cvector *vector)
+{
+    cvector_clear(vector);
+    free(vector->strings);
+    free(vector);
+}
+
 
 /*
-**  Given a vector that we may be reusing and whether or not it should be
-**  shallow, clear it out and initialize the shallow flag.  If the first
+**  Given a vector that we may be reusing, clear it out.  If the first
 **  argument is NULL, allocate a new vector.  Used by vector_split*.
 */
 static struct vector *
-vector_reuse(struct vector *vector, bool shallow)
+vector_reuse(struct vector *vector)
 {
     if (vector == NULL)
-        return vector_new(shallow);
+        return vector_new();
     else {
         vector_clear(vector);
-        vector->shallow = shallow;
+        return vector;
+    }
+}
+
+static struct cvector *
+cvector_reuse(struct cvector *vector)
+{
+    if (vector == NULL)
+        return cvector_new();
+    else {
+        cvector_clear(vector);
         return vector;
     }
 }
 
 
 /*
-**  Given a string (specified by a starting address and a length), either copy
-**  it into the vector if the vector is deep or otherwise add the pointer to
-**  the vector.  If the vector is shallow, destructively modify the string by
-**  nul-terminated it at the specified length.  Takes the vector, the index
-**  location, the starting address of the string, and the string length.  Used
-**  by vector_split*.
+**  Given a string and a separator character, count the number of strings
+**  that it will split into.
 */
-static void
-vector_insert(struct vector *vector, size_t i, char *string, ptrdiff_t length)
+static size_t
+split_count(const char *string, char separator)
 {
-    if (vector->shallow) {
-        *(string + length) = '\0';
-        vector->strings[i] = string;
-    } else {
-        vector->strings[i] = xmalloc(length + 1);
-        strncpy(vector->strings[i], string, length);
-        vector->strings[i][length] = '\0';
-    }
-}
-
-
-/*
-**  Given a string and a separator character, form a vector, deep if the third
-**  argument is true and shallow otherwise.  Do a first pass to size the
-**  vector, and if the fourth argument isn't NULL, reuse it.  Otherwise,
-**  allocate a new one.
-*/
-struct vector *
-vector_split(char *string, char separator, bool copy, struct vector *vector)
-{
-    char *p, *start;
-    size_t i, count;
-
-    vector = vector_reuse(vector, !copy);
+    const char *p;
+    size_t count;
 
     if (*string == '\0')
-        return vector;
-
+        return 0;
     for (count = 1, p = string + 1; *p; p++)
         if (*p == separator && *(p - 1) != separator)
             count++;
+    return count;
+}
+
+
+/*
+**  Given a string and a separator character, form a vector by splitting the
+**  string at those separators.  Do a first pass to size the vector, and if
+**  the third argument isn't NULL, reuse it.  Otherwise, allocate a new one.
+*/
+struct vector *
+vector_split(const char *string, char separator, struct vector *vector)
+{
+    const char *p, *start;
+    size_t i, count;
+
+    vector = vector_reuse(vector);
+
+    count = split_count(string, separator);
     if (vector->allocated < count)
         vector_resize(vector, count);
 
     for (start = string, p = string, i = 0; *p; p++)
         if (*p == separator) {
-            if (p == start) {
-                start++;
-            } else {
-                vector_insert(vector, i, start, p - start);
-                i++;
-                start = p + 1;
-            }
+            if (start != p)
+                vector->strings[i++] = xstrndup(start, p - start);
+            start = p + 1;
         }
-    if (start != p) {
-        vector_insert(vector, i, start, p - start);
-        i++;
-    }
+    if (start != p)
+        vector->strings[i++] = xstrndup(start, p - start);
     vector->count = i;
 
     return vector;
@@ -190,44 +241,124 @@ vector_split(char *string, char separator, bool copy, struct vector *vector)
 
 
 /*
-**  Given a string, split it at whitespace to form a vector, deep if the third
-**  argument is true and shallow otherwise.  If the fourth argument isn't
-**  NULL, reuse that vector; otherwise, allocate a new one.  Any number of
-**  consecutive whitespace characters is considered a single separator.
+**  Given a modifiable string and a separator character, form a cvector by
+**  modifying the string in-place to add nuls at the separators and then
+**  building a vector of pointers into the string.  Do a first pass to size
+**  the vector, and if the third argument isn't NULL, reuse it.  Otherwise,
+**  allocate a new one.
 */
-struct vector *
-vector_split_whitespace(char *string, bool copy, struct vector *vector)
+struct cvector *
+cvector_split(char *string, char separator, struct cvector *vector)
 {
     char *p, *start;
     size_t i, count;
 
-    vector = vector_reuse(vector, !copy);
+    vector = cvector_reuse(vector);
+
+    count = split_count(string, separator);
+    if (vector->allocated < count)
+        cvector_resize(vector, count);
+
+    for (start = string, p = string, i = 0; *p; p++)
+        if (*p == separator) {
+            if (start != p) {
+                *p = '\0';
+                vector->strings[i++] = start;
+            }
+            start = p + 1;
+        }
+    if (start != p)
+        vector->strings[i++] = start;
+    vector->count = i;
+
+    return vector;
+}
+
+
+/*
+**  Given a string, count the number of strings that it will split into when
+**  splitting on whitespace.
+*/
+static size_t
+split_whitespace_count(const char *string)
+{
+    const char *p;
+    size_t count;
 
     if (*string == '\0')
-        return vector;
-
+        return 0;
     for (count = 1, p = string + 1; *p; p++)
         if (CTYPE(isspace, *p) && !CTYPE(isspace, *(p - 1)))
             count++;
+    return count;
+}
+
+
+/*
+**  Given a string, split it at whitespace to form a vector, copying each
+**  string segment.  If the fourth argument isn't NULL, reuse that vector;
+**  otherwise, allocate a new one.  Any number of consecutive whitespace
+**  characters is considered a single separator.
+*/
+struct vector *
+vector_split_whitespace(const char *string, struct vector *vector)
+{
+    const char *p, *start;
+    size_t i, count;
+
+    vector = vector_reuse(vector);
+
+    count = split_whitespace_count(string);
     if (vector->allocated < count)
         vector_resize(vector, count);
 
     for (start = string, p = string, i = 0; *p; p++)
         if (CTYPE(isspace, *p)) {
-            if (p == start) {
-                start++;
-            } else {
-                vector_insert(vector, i, start, p - start);
-                i++;
-                for (++p; *p && CTYPE(isspace, *p); p++)
-                    ;
-                start = p;
-            }
+            if (start != p)
+                vector->strings[i++] = xstrndup(start, p - start);
+            for (++p; *p && CTYPE(isspace, *p); p++)
+                ;
+            start = p;
         }
-    if (start != p) {
-        vector_insert(vector, i, start, p - start);
-        i++;
-    }
+    if (start != p)
+        vector->strings[i++] = xstrndup(start, p - start);
+    vector->count = i;
+
+    return vector;
+}
+
+
+/*
+**  Given a string, split it at whitespace to form a vector, destructively
+**  modifying the string to nul-terminate each segment.  If the fourth
+**  argument isn't NULL, reuse that vector; otherwise, allocate a new one.
+**  Any number of consecutive whitespace characters is considered a single
+**  separator.
+*/
+struct cvector *
+cvector_split_whitespace(char *string, struct cvector *vector)
+{
+    char *p, *start;
+    size_t i, count;
+
+    vector = cvector_reuse(vector);
+
+    count = split_whitespace_count(string);
+    if (vector->allocated < count)
+        cvector_resize(vector, count);
+
+    for (start = string, p = string, i = 0; *p; p++)
+        if (CTYPE(isspace, *p)) {
+            if (start != p) {
+                *p = '\0';
+                vector->strings[i++] = start;
+            }
+            for (++p; *p && CTYPE(isspace, *p); p++)
+                ;
+            start = p;
+        }
+    if (start != p)
+        vector->strings[i++] = start;
     vector->count = i;
 
     return vector;
@@ -240,7 +371,28 @@ vector_split_whitespace(char *string, bool copy, struct vector *vector)
 **  seperator string.  Caller is responsible for freeing.
 */
 char *
-vector_join(struct vector *vector, const char *seperator)
+vector_join(const struct vector *vector, const char *seperator)
+{
+    char *string;
+    size_t i, size, seplen;
+
+    seplen = strlen(seperator);
+    for (size = 0, i = 0; i < vector->count; i++)
+        size += strlen(vector->strings[i]);
+    size += (vector->count - 1) * seplen;
+
+    string = xmalloc(size + 1);
+    strcpy(string, vector->strings[0]);
+    for (i = 1; i < vector->count; i++) {
+        strcat(string, seperator);
+        strcat(string, vector->strings[i]);
+    }
+
+    return string;
+}
+
+char *
+cvector_join(const struct cvector *vector, const char *seperator)
 {
     char *string;
     size_t i, size, seplen;
