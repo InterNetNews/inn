@@ -56,12 +56,14 @@ depend: Makefile $(SOURCES)
 	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-ckpasswd.o: ckpasswd.c ../include/config.h ../include/clibrary.h
-domain.o: domain.c ../include/config.h ../include/clibrary.h \
- ../include/libinn.h ../include/macros.h
-ident.o: ident.c ../include/config.h ../include/clibrary.h \
- ../include/libinn.h ../include/macros.h
-pwcheck.o: pwcheck.c ../include/config.h ../include/clibrary.h
-radius.o: radius.c ../include/config.h ../include/clibrary.h \
- ../include/macros.h ../include/md5.h ../include/libinn.h \
- ../include/nntp.h ../include/paths.h
+ckpasswd.o: ckpasswd.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+domain.o: domain.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h
+ident.o: ident.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h
+pwcheck.o: pwcheck.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+radius.o: radius.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/md5.h ../include/macros.h \
+ ../include/libinn.h ../include/nntp.h ../include/paths.h
