@@ -27,13 +27,13 @@
 !load!+! uptime | tr -d ,. | awk '{ print $(NF - 2) }' ! gt ! 1500 ! pause ! loadav
 
 ##  If load is OK, check space (and inodes) on various filesystems
-##  =()<!!! @<INNWATCH_DF>@ . | awk 'NR == 2 { print $@<INNWATCH_BLOCKS>@ }' ! lt ! @<INNWATCH_SPOOLSPACE>@ ! throttle ! No space (spool)>()=
+##  =()<!!! @_PATH_DF@ . | awk 'NR == 2 { print $@<INNWATCH_BLOCKS>@ }' ! lt ! @<INNWATCH_SPOOLSPACE>@ ! throttle ! No space (spool)>()=
 !!! @_PATH_DF@ . | awk 'NR == 2 { print $4 }' ! lt ! 8000 ! throttle ! No space (spool)
-##  =()<!!! @<INNWATCH_DF>@ @SPOOLDIR@/out.going | awk 'NR == 2 { print $@<INNWATCH_BLOCKS>@ }' ! lt ! @<INNWATCH_BATCHSPACE>@ ! throttle ! No space (newsq)>()=
+##  =()<!!! @_PATH_DF@ @SPOOLDIR@/out.going | awk 'NR == 2 { print $@<INNWATCH_BLOCKS>@ }' ! lt ! @<INNWATCH_BATCHSPACE>@ ! throttle ! No space (newsq)>()=
 !!! @_PATH_DF@ @SPOOLDIR@/out.going | awk 'NR == 2 { print $4 }' ! lt ! 800 ! throttle ! No space (newsq)
-##  =()<!!! @<INNWATCH_DF>@ @ETCDIR@ | awk 'NR == 2 { print $@<INNWATCH_BLOCKS>@ }' ! lt ! @<INNWATCH_LIBSPACE>@ ! throttle ! No space (newslib)>()=
+##  =()<!!! @_PATH_DF@ @ETCDIR@ | awk 'NR == 2 { print $@<INNWATCH_BLOCKS>@ }' ! lt ! @<INNWATCH_LIBSPACE>@ ! throttle ! No space (newslib)>()=
 !!! @_PATH_DF@ @ETCDIR@ | awk 'NR == 2 { print $4 }' ! lt ! 25000 ! throttle ! No space (newslib)
-##  =()<!!! @<INNWATCH_DF>@ -i . | awk 'NR == 2 { print $@<INNWATCH_INODES>@ }' ! lt ! @<INNWATCH_SPOOLNODES>@ ! throttle ! No space (spool inodes)>()=
+##  =()<!!! @_PATH_DF@ -i . | awk 'NR == 2 { print $@<INNWATCH_INODES>@ }' ! lt ! @<INNWATCH_SPOOLNODES>@ ! throttle ! No space (spool inodes)>()=
 !!! @_PATH_DF@ -i . | awk 'NR == 2 { print $7 }' ! lt ! 200 ! throttle ! No space (spool inodes)
-##  =()<!!! @<INNWATCH_DF>@ @SPOOLDIR@/over.view | awk 'NR == 2 { print $@<INNWATCH_BLOCKS>@ }' ! lt ! @<INNWATCH_SPOOLSPACE>@ ! throttle ! No space (overview)>()=
+##  =()<!!! @_PATH_DF@ @SPOOLDIR@/over.view | awk 'NR == 2 { print $@<INNWATCH_BLOCKS>@ }' ! lt ! @<INNWATCH_SPOOLSPACE>@ ! throttle ! No space (overview)>()=
 !!! @_PATH_DF@ @SPOOLDIR@/over.view | awk 'NR == 2 { print $4 }' ! lt ! 8000 ! throttle ! No space (overview)

@@ -2,9 +2,6 @@
 
 include ../Makefile.global
 
-##  =()<NNTPLIB	= @<NNTPLIB>@>()=
-NNTPLIB	= 
-
 SOURCES	=	archive.c batcher.c buffchan.c cvtbatch.c filechan.c \
 		innxmit.c innxbatch.c nntpget.c overchan.c shlock.c \
 		shrinkfile.c crosspost.c actsync.c

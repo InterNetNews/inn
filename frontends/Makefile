@@ -3,9 +3,6 @@ include ../Makefile.global
 
 RNEWSPROGS	= ${PATHBIN}/rnews.libexec
 
-##  =()<NNTPLIB	= @<NNTPLIB>@>()=
-NNTPLIB	= 
-
 SOURCES	= ctlinnd.c inews.c rnews.c sm.c
 
 ALL	= inews rnews ctlinnd getlist innconfval decode encode sm

@@ -26,7 +26,7 @@ $D$(NNRPD):	nnrpd
 clobber clean:
 	rm -f *.o $(ALL)
 	rm -f nnrpd nnrpdp profiled
-	rm -f all install lint
+	rm -f all install 
 
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../lib/*.c nnrpd.h ../include/*.h

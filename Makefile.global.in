@@ -4,13 +4,16 @@
 ## and that all other Makefiles include
 
 ##  If you have a parallel make, set this to "&"
-#P	= &
+P	= # &
 
 ##  What flags to use if profiling; -p or -pg, e.g.
-#PROF	= -pg
+PROF	= #-pg
 
 ##  Ctags command.  Use echo if you don't have ctags.
 CTAGS		= /usr/bin/ctags -t -w
+
+##  If you use the standard NNTP way of connecting, where is the library?
+NNTPLIB 	=
 
 # Values below this point are generally set by configure ... you shouldn't
 # need to look before here .. you can though, if you really want

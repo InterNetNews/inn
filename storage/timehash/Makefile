@@ -16,7 +16,7 @@ moveobjs: $(OBJECTS)
 clobber clean:
 	rm -f *.o obj/*.o *~
 	rm -f profiled
-	rm -f all install lint lint.all
+	rm -f all install 
 
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../../include/*.h ../*.h

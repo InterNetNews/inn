@@ -484,12 +484,6 @@
   ||##  How long to sleep between innwatch iterations.
   ||#### =()<INNWATCH_SLEEPTIME	@<INNWATCH_SLEEPTIME>@>()=
   ||INNWATCH_SLEEPTIME	600
-[IN1.7=@12][WDF=autoconf][WOR=yes]
-  ||##  How inn (not just innwatch anymore) gets disk space usage
-  ||##  (SVR4 machine would probably use /usr/ucb/df)
-  ||##[autoconf]
-  ||#### =()<INNWATCH_DF		@<INNWATCH_DF>@>()=
-  ||INNWATCH_DF		@ac_cv_subst_innwatch_df@
 [IN1.7=@12][WDF=autoconf][WOR=yes][P=moderate]
   ||##  Field number of INNWATCH_DF (with -i) output that gives free
   ||##  inodes (starting at 1).
@@ -536,21 +530,6 @@
   ||##[autoconf]
   ||#### =()<WANT_PGPVERIFY		@<WANT_PGPVERIFY>@>()=
   ||WANT_PGPVERIFY		@DO_PGP@
-[IN1.7=@16][comments]
-  ||
-  ||
-  ||##
-  ||## 16. Actsync Configuration.
-  ||##
-  ||
-[IN1.7=@16][WDF=confparam][WOR=yes][P=low]
-  ||##  Host to synchoronize active file with (see actsync and actsyncd manpages).
-  ||#### =()<ACTSYNC_HOST		@<ACTSYNC_HOST>@>()=
-  ||ACTSYNC_HOST		news.foo.bar.com
-[IN1.7=@16][WDF=confparam][WOR=yes][P=low]
-  ||##  Flags actsyncd is to pass to actsync.
-  ||#### =()<ACTSYNC_FLAGS		@<ACTSYNC_FLAGS>@>()=
-  ||ACTSYNC_FLAGS		-v 2 -q 2 -b 0 -d 0 -g 7 -s 79 -t 2
 [IN1.7=@17][comments]
   ||
   ||
@@ -599,4 +578,3 @@
   ||##  Should INN fabricate Keywords: data for overviews?  Pick DO or DONT.
   ||#### =()<KEYWORDS	@<KEYWORDS>@>()=
   ||KEYWORDS		@DO_KEYWORDS@
- 

@@ -5,9 +5,6 @@ CFLAGS +=	-I.
 
 IFTRUE	= @$(SHELL) ../iftrue.sh
 
-##  =()<PERLINC = @<PERL_INC>@>()=
-PERLINC = 
-
 all:			autoconfig
 	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) methods
 	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) libstorage.a
@@ -32,7 +29,7 @@ clobber clean:
 	rm -f *.o objs/* libstorage.a *~
 	rm -f methods.c methods.h qiotest
 	rm -f profiled libstorage_p.a
-	rm -f all install lint lint.all
+	rm -f all install 
 	@for D in $(SUBDIR); do \
 		cd $$D; $(MAKE) clean; cd .. ;\
 	done

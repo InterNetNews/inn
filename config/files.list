@@ -2,14 +2,7 @@
 ;;  List of InterNetNews files that are fed to subst.
 ;;  Lines beginning with a semi-colon are comment lines.
 ;; Files which are no longer config.data subst victims
-../backends/Makefile
-../backends/actsync.c
-../backends/actmerge.sh
-../backends/actsyncd.sh
-../backends/sendxbatches.sh
 ../doc/Makefile
-../expire/Makefile
-../frontends/Makefile
 ../include/clibrary.h
 ../include/configdata.h
 ../include/libinn.h
@@ -17,28 +10,13 @@
 ../include/macros.h
 ../include/paths.h
 ../innd/Makefile
-../innfeed/Makefile
 ../lib/Makefile
-../makedirs.sh
-../nnrpd/Makefile
-../samples/actsync.cfg
 ../samples/innreport.conf
 ../samples/innwatch.ctl
 ../samples/innshellvars
 ../samples/innshellvars.csh
 ../samples/innshellvars.pl
 ../samples/innshellvars.tcl
-../samples/startup.tcl
-../samples/tally.control
-../samples/version
-../samples/writelog
-../site/Makefile
-../storage/Makefile
-../storage/timehash/Makefile
-../syslog/syslog.c
 ../syslog/syslog.conf
-../syslog/syslogd.c
-../storage/cnfs/Makefile
-../storage/cnfs/cnfs.h
+../syslog/syslogd.c  
 ../storage/cnfs/cnfs-private.h
-../storage/cnfs/cnfs.c

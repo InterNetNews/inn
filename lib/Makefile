@@ -3,9 +3,6 @@ include ../Makefile.global
 
 IFTRUE	= @$(SHELL) ../iftrue.sh
 
-##  =()<PERLINC = @<PERL_INC>@>()=
-PERLINC = 
-
 CFLAGS += $(PERLINC)
 
 
