@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.241 
+# From configure.in Revision: 1.243 
 # libtool.m4 - Configure libtool for the host system. -*-Shell-script-*-
 ## Copyright 1996, 1997, 1998, 1999, 2000, 2001
 ## Free Software Foundation, Inc.
@@ -5672,7 +5672,7 @@ INEWSMODE=0550
 if test "${enable_setgid_inews+set}" = set; then
   enableval="$enable_setgid_inews"
   if test "x$enableval" = xyes ; then
-        INEWSMODE=2555
+        INEWSMODE=02555
     fi
 fi
 
@@ -5685,7 +5685,7 @@ if test "${enable_uucp_rnews+set}" = set; then
   enableval="$enable_uucp_rnews"
   if test "x$enableval" = xyes ; then
         RNEWSGRP=uucp
-        RNEWSMODE=4550
+        RNEWSMODE=04550
     fi
 fi
 
