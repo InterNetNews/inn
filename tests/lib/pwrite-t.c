@@ -2,31 +2,15 @@
 /* pwrite test suite. */
 
 #include "config.h"
-#include "libinn.h"
-
+#include "clibrary.h"
 #include <errno.h>
 #include <fcntl.h>
-#include <stdio.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#if HAVE_UNISTD_H
-# include <unistd.h>
-#endif
 
-#ifndef SEEK_SET
-# define SEEK_SET 0
-#endif
-#ifndef SEEK_CUR
-# define SEEK_CUR 1
-#endif
+#include "libinn.h"
+#include "libtest.h"
 
 ssize_t test_pwrite(int fd, const void *buf, size_t nbyte, off_t offset);
-
-static void
-ok(int n, int success)
-{
-    printf("%sok %d\n", success ? "" : "not ", n);
-}
 
 int
 main(void)
