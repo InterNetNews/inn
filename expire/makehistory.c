@@ -803,22 +803,24 @@ DoMemArt(ARTHANDLE *art, BOOL Overview, BOOL Update, FILE *out, FILE *index, BOO
 	    }
 	}
     }
-    if (Expires > 0)
-	i = fprintf(out, "[%s]%c%lu%c%lu%c%lu%c%s\n",
-	    hash, HIS_FIELDSEP,
-	    (unsigned long)Arrived, HIS_SUBFIELDSEP,
-	    (unsigned long)Expires,
-	    HIS_SUBFIELDSEP, (unsigned long)Posted, HIS_FIELDSEP,
-	    TokenToText(*art->token));
-    else
-	i = fprintf(out, "[%s]%c%lu%c%s%c%lu%c%s\n",
-                    hash, HIS_FIELDSEP,
-                    (unsigned long)Arrived, HIS_SUBFIELDSEP, HIS_NOEXP,
-                    HIS_SUBFIELDSEP, (unsigned long)Posted, HIS_FIELDSEP,
-                    TokenToText(*art->token));
-    if (i == EOF || ferror(out)) {
-	(void)fprintf(stderr, "Can't write history line, %s\n", strerror(errno));
-	exit(1);
+    if (out != NULL) {
+	if (Expires > 0)
+	    i = fprintf(out, "[%s]%c%lu%c%lu%c%lu%c%s\n",
+		hash, HIS_FIELDSEP,
+		(unsigned long)Arrived, HIS_SUBFIELDSEP,
+		(unsigned long)Expires,
+		HIS_SUBFIELDSEP, (unsigned long)Posted, HIS_FIELDSEP,
+		TokenToText(*art->token));
+	else
+	    i = fprintf(out, "[%s]%c%lu%c%s%c%lu%c%s\n",
+			hash, HIS_FIELDSEP,
+			(unsigned long)Arrived, HIS_SUBFIELDSEP, HIS_NOEXP,
+			HIS_SUBFIELDSEP, (unsigned long)Posted, HIS_FIELDSEP,
+			TokenToText(*art->token));
+	if (i == EOF || ferror(out)) {
+	    (void)fprintf(stderr, "Can't write history line, %s\n", strerror(errno));
+	    exit(1);
+	}
     }
 }
 
@@ -891,10 +893,12 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 		    break;
 		}
 		if (i == 2) {
-		    i = fprintf(out, "%s%c%s\n", fields[0], HIS_FIELDSEP, fields[1]);
-		    if (i == EOF || ferror(out)) {
-			(void)fprintf(stderr, "Can't write history line, %s\n", strerror(errno));     
-			exit(1);
+		    if (out != NULL) {
+			i = fprintf(out, "%s%c%s\n", fields[0], HIS_FIELDSEP, fields[1]);
+			if (i == EOF || ferror(out)) {
+			    (void)fprintf(stderr, "Can't write history line, %s\n", strerror(errno));     
+			    exit(1);
+			}
 		    }
 		    break;
 		} else if (!RemoveOld) {
@@ -903,10 +907,12 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 			fprintf(stderr, "Invalid token %s, skipping\n", fields[2]);   
 			break;
 		    }
-		    i = fprintf(out, "%s%c%s%c%s\n", fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP, fields[2]);
-		    if (i == EOF || ferror(out)) {
-			(void)fprintf(stderr, "Can't write history line, %s\n", strerror(errno));     
-			exit(1);
+		    if (out != NULL) {
+			i = fprintf(out, "%s%c%s%c%s\n", fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP, fields[2]);
+			if (i == EOF || ferror(out)) {
+			    (void)fprintf(stderr, "Can't write history line, %s\n", strerror(errno));     
+			    exit(1);
+			}
 		    }
 		    if (Overview) {
 			token = TextToToken(fields[2]);
@@ -923,39 +929,39 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 			    } else {
 				OVERline = p;
 			    }
-			}
-		    }
-		    if (index != (FILE *)NULL) {
-			if ((Xref = strstr(OVERline, "\tXref:")) == NULL) {
-			    break;
-			}
-			if ((Xref = strchr(Xref, ' ')) == NULL)
-			    break;
-			for (Xref++; *Xref == ' '; Xref++);
-			if ((Xref = strchr(Xref, ' ')) == NULL)
-			    break;
-			for (Xref++; *Xref == ' '; Xref++);
-			if (!Xrefbuf)
-			    Xrefbuf = NEW(char, MAXOVERLINE);
-			memcpy(Xrefbuf, Xref, linelen - (OVERline - Xref));
-			Xrefbuf[linelen - (OVERline - Xref)] = '\0';
-			if ((p = strchr(Xrefbuf, '\t')) != NULL)
-			    *p = '\0';
-			p = q = Xrefbuf;
-			while ((p = strchr(p, ' ')) != NULL) {
-			    *p = '\0';
-			    i = fprintf(index, "[%s] %s\n", fields[0], q);
-			    if (i == EOF || ferror(index)) {
-				(void)fprintf(stderr, "Can't write index line, %s\n", strerror(errno));
-				exit(1);
+			    if (index != (FILE *)NULL) {
+			        if ((Xref = strstr(OVERline, "\tXref:")) == NULL) {
+				    break;
+			        }
+			        if ((Xref = strchr(Xref, ' ')) == NULL)
+				    break;
+			        for (Xref++; *Xref == ' '; Xref++);
+			        if ((Xref = strchr(Xref, ' ')) == NULL)
+				    break;
+			        for (Xref++; *Xref == ' '; Xref++);
+			        if (!Xrefbuf)
+				    Xrefbuf = NEW(char, MAXOVERLINE);
+			        memcpy(Xrefbuf, Xref, linelen - (Xref - OVERline));
+			        Xrefbuf[linelen - (Xref - OVERline)] = '\0';
+			        if ((p = strchr(Xrefbuf, '\t')) != NULL)
+				    *p = '\0';
+			        p = q = Xrefbuf;
+			        while ((p = strchr(p, ' ')) != NULL) {
+				    *p = '\0';
+				    i = fprintf(index, "%s %s\n", fields[0], q);
+				    if (i == EOF || ferror(index)) {
+				        (void)fprintf(stderr, "Can't write index line, %s\n", strerror(errno));
+				        exit(1);
+				    }
+				    for (p++; *p == ' '; p++);
+				    q = p;
+			        }
+			        i = fprintf(index, "%s %s\n", fields[0], q);
+			        if (i == EOF || ferror(index)) {
+				    (void)fprintf(stderr, "Can't write index line, %s\n", strerror(errno));
+				    exit(1);
+			        }
 			    }
-			    for (p++; *p == ' '; p++);
-			    q = p;
-			}
-			i = fprintf(index, "[%s] %s\n", fields[0], q);
-			if (i == EOF || ferror(index)) {
-			    (void)fprintf(stderr, "Can't write index line, %s\n", strerror(errno));
-			    exit(1);
 			}
 		    }
 		    break;
@@ -994,10 +1000,12 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 		break;
 	    case '<':
 		if (i == 2) {
-		    i = fprintf(out, "[%s]%c%s\n", HashToText(HashMessageID(fields[0])), HIS_FIELDSEP, fields[1]);
-		    if (i == EOF || ferror(out)) {
-			(void)fprintf(stderr, "Can't write history line, %s\n", strerror(errno));     
-			exit(1);
+		    if (out != NULL) {
+			i = fprintf(out, "[%s]%c%s\n", HashToText(HashMessageID(fields[0])), HIS_FIELDSEP, fields[1]);
+			if (i == EOF || ferror(out)) {
+			    (void)fprintf(stderr, "Can't write history line, %s\n", strerror(errno));     
+			    exit(1);
+			}
 		    }
 		    break;
 		}
@@ -1013,10 +1021,12 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 		crossnum = split(fields[2], ' ', arts, count);
 		if (!ReadInMem(arts[0], &arth, Tradspooldir)) {
 		    /* maybe article is cancelled, just recored the hash */
-		    i = fprintf(out, "[%s]%c%s\n", HashToText(HashMessageID(fields[0])), HIS_FIELDSEP, fields[1]);
-		    if (i == EOF || ferror(out)) {
-			(void)fprintf(stderr, "Can't write history line, %s\n", strerror(errno));     
-			exit(1);
+		    if (out != NULL) {
+			i = fprintf(out, "[%s]%c%s\n", HashToText(HashMessageID(fields[0])), HIS_FIELDSEP, fields[1]);
+			if (i == EOF || ferror(out)) {
+			    (void)fprintf(stderr, "Can't write history line, %s\n", strerror(errno));     
+			    exit(1);
+			}
 		    }
 		    break;
 		}
@@ -1387,6 +1397,7 @@ main(int ac, char *av[])
     BOOL		Notraditional;
     BOOL		RemoveOld;
     BOOL		UnlinkCrosspost;
+    BOOL		Nowrite;
     BOOL		val;
     TRANS		Translate;
     char		temp[SMBUF];
@@ -1423,6 +1434,7 @@ main(int ac, char *av[])
     Notraditional = FALSE;
     RemoveOld = FALSE;
     UnlinkCrosspost = FALSE;
+    Nowrite = FALSE;
     Translate = NO_TRANS;
     Tradspooldir = innconf->patharticles;
     OldHistory = HISTORY;
@@ -1436,7 +1448,7 @@ main(int ac, char *av[])
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "A:a:bD:d:f:h:I:inOoRrs:ST:t:uUv")) != EOF)
+    while ((i = getopt(ac, av, "A:a:bD:d:f:h:I:inOoRrs:ST:t:uUvx")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -1523,11 +1535,17 @@ main(int ac, char *av[])
 	case 'v':
 	    Verbose = TRUE;
 	    break;
+	case 'x':
+	    Nowrite = TRUE;
+	    out = NULL;
+	    break;
 	}
     ac -= optind;
     av += optind;
     if (ac || (Overwrite && Update) || (Verbose && !Update) ||
-	(Update && Translate != NO_TRANS) || (Translate == FROM_HIST && !OverPath))
+	(Update && Translate != NO_TRANS) ||
+	(Nowrite && !(Translate == FROM_HIST && Overview && !RemoveOld)) ||
+	(!Nowrite && Translate == FROM_HIST && !OverPath))
 	Usage();
     if ((p = strrchr(TextFile, '/')) == NULL) {
 	/* find the default history file directory */
@@ -1584,7 +1602,7 @@ main(int ac, char *av[])
 	}
     }
 
-    if ((out = fopen(TempTextFile ? TempTextFile : TextFile, mode)) == NULL) {
+    if (!Nowrite && (out = fopen(TempTextFile ? TempTextFile : TextFile, mode)) == NULL) {
 	(void)fprintf(stderr, "Can't write to history file, %s\n",
 		strerror(errno));
 	exit(1);
@@ -1608,6 +1626,8 @@ main(int ac, char *av[])
 	    fprintf(stderr, "Can't setup unified overview preopen\n");
 	    exit(1);
 	}
+	if (Nowrite)
+	    mode = "r";
 	if (!OVERsetup(OVER_MODE, (void *)mode)) {
 	    fprintf(stderr, "Can't setup unified overview mode\n");
 	    exit(1);
@@ -1677,6 +1697,8 @@ main(int ac, char *av[])
     } else if (Translate == FROM_HIST) {
 	if (!TranslateFromHistory(out, OldHistory, Tradspooldir, UnlinkCrosspost, RemoveOld, Overview, index))
 	    ErrorExit(Update, DoRebuild);
+	if (Nowrite)
+	    exit(0);
     }
     if (fflush(out) == EOF || ferror(out) || fclose(out) == EOF) {
 	(void)fprintf(stderr, "Can't close history file, %s\n",
