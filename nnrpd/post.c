@@ -385,7 +385,7 @@ ProcessHeaders(linecount, idbuff)
 	        &WEEKS[3 * local->tm_wday],
 	        local->tm_mday, &MONTHS[3 * local->tm_mon], 1900 + local->tm_year,
 	        local->tm_hour, local->tm_min, local->tm_sec,
-#ifdef HAVE_TM_GMTOF
+#ifdef HAVE_TM_GMTOFF
 	        local->tm_gmtoff/36, tzname[0]);
 #else
 	        -timezone/36, tzname[0]);
