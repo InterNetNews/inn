@@ -136,7 +136,7 @@ static CMDENT	CMDtable[] = {
 	"reader" },
     {	"newgroups",	CMDnewgroups,	TRUE,	3,	5,
 	"[YY]yymmdd hhmmss [\"GMT\"]" },
-    {	"newnews",	CMDnewnews,	TRUE,	4,	6,
+    {	"newnews",	CMDnewnews,	TRUE,	4,	5,
 	"newsgroups [YY]yymmdd hhmmss [\"GMT\"]" },
     {	"next",		CMDnextlast,	TRUE,	1,	1,
 	NULL },
@@ -164,6 +164,10 @@ static CMDENT	CMDtable[] = {
 static const char *const timer_name[] = {
     "idle",
     "newnews",
+    "readart",
+    "checkart",
+    "nntpread",
+    "nntpwrite",
 };
 
 /*
@@ -177,7 +181,7 @@ ExitWithStats(int x, bool readconf)
     double		systime;
 
     line_free(&NNTPline);
-    (void)fflush(stdout);
+    fflush(stdout);
     (void)GetTimeInfo(&Now);
     STATfinish = TIMEINFOasDOUBLE(Now);
     if (GetResourceUsage(&usertime, &systime) < 0) {
@@ -228,7 +232,8 @@ ExitWithStats(int x, bool readconf)
         PY_close();
 #endif
 
-    HISclose(History);
+    if (History)
+	HISclose(History);
 
     TMRsummary(ClientHost, timer_name);
     TMRfree();
@@ -620,15 +625,21 @@ Reply(const char *fmt, ...)
       va_start(args, fmt);
       vsnprintf(buff, sizeof(buff), fmt, args);
       va_end(args);
+      TMRstart(TMR_NNTPWRITE);
       SSL_write(tls_conn, buff, strlen(buff));
+      TMRstop(TMR_NNTPWRITE);
     } else {
       va_start(args, fmt);
+      TMRstart(TMR_NNTPWRITE);
       vprintf(fmt, args);
+      TMRstop(TMR_NNTPWRITE);
       va_end(args);
     }
 #else
       va_start(args, fmt);
+      TMRstart(TMR_NNTPWRITE);
       vprintf(fmt, args);
+      TMRstop(TMR_NNTPWRITE);
       va_end(args);
 #endif
     if (Tracing) {
@@ -648,25 +659,31 @@ Reply(const char *fmt, ...)
     }
 }
 
-#ifdef HAVE_SSL
 void
 Printf(const char *fmt, ...)
 {
     va_list     args;
     char        buff[2048];
 
+#ifdef HAVE_SSL
     if (tls_conn) {
       va_start(args, fmt);
       vsnprintf(buff, sizeof(buff), fmt, args);
       va_end(args);
+      TMRstart(TMR_NNTPWRITE);
       SSL_write(tls_conn, buff, strlen(buff));
+      TMRstop(TMR_NNTPWRITE);
     } else {
-      va_start(args, fmt);
-      vprintf(fmt, args);
-      va_end(args);
-    }
-}
 #endif /* HAVE_SSL */
+      va_start(args, fmt);
+      TMRstart(TMR_NNTPWRITE);
+      vprintf(fmt, args);
+      TMRstop(TMR_NNTPWRITE);
+      va_end(args);
+#ifdef HAVE_SSL
+    }
+#endif /* HAVE_SSL */
+}
 
 
 #ifdef HAVE_SIGACTION
@@ -724,25 +741,20 @@ static void SetupDaemon(void) {
     }
 #endif /* defined(DO_PYTHON) */
 
-    History = HISopen(HISTORY, innconf->hismethod, HIS_RDONLY);
-    if (!History) {
-	syslog(L_NOTICE, "cant initialize history");
-	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
-	ExitWithStats(1, TRUE);
-    }
-    statinterval = 30;
-    HISctl(History, HISCTLS_STATINTERVAL, &statinterval);
-
     val = TRUE;
     if (SMsetup(SM_PREOPEN, (void *)&val) && !SMinit()) {
 	syslog(L_NOTICE, "cant initialize storage method, %s", SMerrorstr);
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
 	ExitWithStats(1, TRUE);
     }
-    if (!ARTreadschema()) {
+    OVextra = overview_extra_fields();
+    if (OVextra == NULL) {
+	/* overview_extra_fields should already have logged something
+	 * useful */
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
 	ExitWithStats(1, TRUE);
     }
+    overhdr_xref = overview_index("Xref", OVextra);
     if (!OVopen(OV_READ)) {
 	/* This shouldn't really happen. */
 	syslog(L_NOTICE, "cant open overview %m");
@@ -817,6 +829,7 @@ main(int argc, char *argv[])
 #ifdef HAVE_SSL
     int ssl_result;
 #endif /* HAVE_SSL */
+    int respawn = 0;
 
     setproctitle_init(argc, argv);
 
@@ -850,9 +863,9 @@ main(int argc, char *argv[])
         exit(1);
 
 #ifdef HAVE_SSL
-    while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nop:Rr:s:tS")) != EOF)
+    while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nop:P:Rr:s:tS")) != EOF)
 #else
-    while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nop:Rr:s:t")) != EOF)
+    while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nop:P:Rr:s:t")) != EOF)
 #endif /* HAVE_SSL */
 	switch (i) {
 	default:
@@ -868,6 +881,9 @@ main(int argc, char *argv[])
  	case 'D':			/* standalone daemon mode */
  	    DaemonMode = TRUE;
  	    break;
+       case 'P':                       /* prespawn count in daemon mode */
+	    respawn = atoi(optarg);
+	    break;
  	case 'f':			/* Don't fork on daemon mode */
  	    ForeGroundMode = TRUE;
  	    break;
@@ -1047,7 +1063,8 @@ main(int argc, char *argv[])
 	fclose(pidfile);
 
 	/* Set signal handle to care for dead children */
-	(void)xsignal(SIGCHLD, WaitChild);
+	if (!respawn)
+	    xsignal(SIGCHLD, WaitChild);
 
 	/* Arrange to toggle tracing. */
 	(void)xsignal(SIGHUP, ToggleTrace);
@@ -1056,28 +1073,55 @@ main(int argc, char *argv[])
  	
 	listen(lfd, 128);	
 
-	do {
-	    clen = sizeof(csa);
-	    fd = accept(lfd, (struct sockaddr *) &csa, &clen);
-	    if (fd < 0)
-		continue;
-	    
-	    for (i = 0; i <= innconf->maxforks && (pid = fork()) < 0; i++) {
-		if (i == innconf->maxforks) {
-		    syslog(L_FATAL, "cant fork (dropping connection): %m");
-		    continue;
+	if (respawn) {
+	    /* pre-forked mode */
+	    for (;;) {
+		if (respawn > 0) {
+		    --respawn;
+		    pid = fork();
+		    if (pid == 0) {
+			do {
+			    clen = sizeof(csa);
+			    fd = accept(lfd, (struct sockaddr *) &csa, &clen);
+			} while (fd < 0);
+			break;
+		    }
 		}
-		syslog(L_NOTICE, "cant fork (waiting): %m");
-		sleep(1);
+		for (;;) {
+		    if (respawn == 0)
+			pid = wait(NULL);
+		    else
+			pid = waitpid(-1, NULL, WNOHANG);
+		    if (pid <= 0)
+			break;
+		    ++respawn;
+		}
 	    }
-	    if (ChangeTrace) {
-		Tracing = Tracing ? FALSE : TRUE;
-		syslog(L_TRACE, "trace %sabled", Tracing ? "en" : "dis");
-		ChangeTrace = FALSE;
-	    }
-	    if (pid != 0)
-		close(fd);
-	} while (pid != 0);
+	} else {
+	    /* fork on demand */
+	    do {
+		clen = sizeof(csa);
+		fd = accept(lfd, (struct sockaddr *) &csa, &clen);
+		if (fd < 0)
+		    continue;
+	    
+		for (i = 0; i <= innconf->maxforks && (pid = fork()) < 0; i++) {
+		    if (i == innconf->maxforks) {
+			syslog(L_FATAL, "cant fork (dropping connection): %m");
+			continue;
+		    }
+		    syslog(L_NOTICE, "cant fork (waiting): %m");
+		    sleep(1);
+		}
+		if (ChangeTrace) {
+		    Tracing = Tracing ? FALSE : TRUE;
+		    syslog(L_TRACE, "trace %sabled", Tracing ? "en" : "dis");
+		    ChangeTrace = FALSE;
+		}
+		if (pid != 0)
+		    close(fd);
+	    } while (pid != 0);
+	}
 
 	/* child process starts here */
 	setproctitle("connected");
@@ -1240,7 +1284,9 @@ main(int argc, char *argv[])
     /* Main dispatch loop. */
     for (timeout = innconf->initialtimeout, av = NULL, ac = 0; ;
 			timeout = clienttimeout) {
-	(void)fflush(stdout);
+	TMRstart(TMR_NNTPWRITE);
+	fflush(stdout);
+	TMRstop(TMR_NNTPWRITE);
 	if (ChangeTrace) {
 	    Tracing = Tracing ? FALSE : TRUE;
 	    syslog(L_TRACE, "trace %sabled", Tracing ? "en" : "dis");
