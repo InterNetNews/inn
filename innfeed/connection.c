@@ -92,16 +92,11 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <arpa/inet.h>
 #include <assert.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <netdb.h>
 #include <signal.h>
-#include <sys/file.h>
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <syslog.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 
 #ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>

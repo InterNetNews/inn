@@ -22,21 +22,19 @@
 */
 
 #ifdef HAVE_SASL
-#include <sasl.h>
-#endif /* HAVE_SASL */
+# include <sasl.h>
+#endif
 
+#include "config.h"
 #include "clibrary.h"
 
+#include <errno.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/socket.h>
-#include <sys/file.h>
-#include <netinet/in.h>
 #include <netdb.h>
 #include <time.h>
 #include <sys/syslog.h>
-
-#include <errno.h>
 
 #include "buffer.h"
 #include "connection.h"
@@ -54,10 +52,10 @@
 #define IMAP_PORT 143
 
 #ifdef SMTPMODE
-#define LMTP_PORT 25
+# define LMTP_PORT 25
 #else
-#define LMTP_PORT 2003
-#endif /* SMTPMODE */
+# define LMTP_PORT 2003
+#endif
 
 /* The name to prepend to deliver directly to newsgroup bboards */
 #define NEWS_USERNAME "bb"
