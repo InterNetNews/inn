@@ -4,21 +4,19 @@ include ../Makefile.global
 
 CFLAGS  = $(GCFLAGS)
 
-##  MISSING_SRC and MISSING_OBJ fill in standard library functions the
-##  system doesn't have, as detected by configure and recorded in
-##  Makefile.global.
-
-SOURCES = $(MISSING_SRC) \
-	argparse.c checkart.c cleanfrom.c clientactive.c clientlib.c \
-	closeonexec.c concat.c conffile.c date.c dbz.c defdist.c error.c \
-	findheader.c genid.c getconfig.c getdtab.c getfqdn.c getmodaddr.c \
-	gettime.c grpalias.c hash.c inndcomm.c localopen.c lockfile.c \
-	makedir.c md5.c nonblocking.c parsedate.c perl.c qio.c radix32.c \
+SOURCES = argparse.c checkart.c cleanfrom.c clientactive.c clientlib.c \
+	closeonexec.c concat.c conffile.c date.c dbz.c defdist.c endian.c \
+	error.c findheader.c genid.c getconfig.c getdtab.c getfqdn.c \
+	getmodaddr.c getopt.c gettime.c grpalias.c hash.c hstrerror.c \
+	inet_aton.c inet_ntoa.c inndcomm.c localopen.c lockfile.c \
+	makedir.c md5.c memchr.c memcmp.c memmove.c memset.c mkfifo.c \
+	nonblocking.c parsedate.c perl.c pread.c pwrite.c qio.c radix32.c \
 	readin.c remopen.c reservedfd.c resource.c rwlock.c sendarticle.c \
-	sendpass.c tempname.c waitnb.c wildmat.c version.c xfopena.c \
+	sendpass.c setenv.c strcasecmp.c strdup.c strerror.c strspn.c \
+	strtok.c tempname.c waitnb.c wildmat.c version.c xfopena.c \
 	xmalloc.c xsignal.c xwrite.c
 
-OBJECTS = $(MISSING_OBJ) \
+OBJECTS = $(LIBOBJS) \
 	argparse.o checkart.o cleanfrom.o clientactive.o clientlib.o \
 	closeonexec.o concat.o conffile.o date.o dbz.o defdist.o error.o \
 	findheader.o genid.o getconfig.o getdtab.o getfqdn.o getmodaddr.o \
