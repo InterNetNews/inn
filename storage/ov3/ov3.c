@@ -148,9 +148,10 @@ STATIC BOOL GROUPlock(GROUPLOC gloc, LOCKTYPE type);
 STATIC BOOL GROUPfilesize(int count);
 STATIC BOOL GROUPexpand(int mode);
 STATIC BOOL OV3packgroup(char *group, int delta);
+STATIC GROUPHANDLE *OV3opengroup(char *group, BOOL needcache);
 STATIC void OV3cleancache(void);
 STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, char *data, int len);
-STATIC BOOL OV3closegroup(GROUPHANDLE *gh);
+STATIC BOOL OV3closegroup(GROUPHANDLE *gh, BOOL needcache);
 STATIC void OV3getdirpath(char *group, char *path);
 STATIC void OV3getIDXfilename(char *group, char *path);
 STATIC void OV3getDATfilename(char *group, char *path);
@@ -169,11 +170,11 @@ BOOL tradindexed_open(int mode) {
 	CACHEmaxentries = innconf->overcachesize;
     if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
         syslog(L_FATAL, "tradindexed: cant getrlimit(NOFILE) %m");
-        return;
+        return FALSE;
     }
     if (rl.rlim_cur < CACHEmaxentries * 2) {
         syslog(L_FATAL, "tradindexed: overcachesize is too large or maximum fd number is too small");
-        return;
+        return FALSE;
     }
     memset(&CACHEdata, '\0', sizeof(CACHEdata));
     
@@ -576,7 +577,7 @@ STATIC void OV3cleancache(void) {
 }
 
 
-STATIC GROUPHANDLE *OV3opengroup(char *group) {
+STATIC GROUPHANDLE *OV3opengroup(char *group, BOOL needcache) {
     unsigned int        hashbucket;
     GROUPHANDLE         *gh;
     HASH                hash;
@@ -590,11 +591,12 @@ STATIC GROUPHANDLE *OV3opengroup(char *group) {
 	return NULL;
 
     ge = &GROUPentries[gloc.recno];
-    Now = time(NULL);
-    hash = Hash(group, strlen(group));
-    memcpy(&hashbucket, &hash, sizeof(hashbucket));
-    hashbucket %= CACHETABLESIZE;
-    for (prev = NULL, ce = CACHEdata[hashbucket]; ce != NULL; prev = ce, ce = ce->next) {
+    if (needcache) {
+      Now = time(NULL);
+      hash = Hash(group, strlen(group));
+      memcpy(&hashbucket, &hash, sizeof(hashbucket));
+      hashbucket %= CACHETABLESIZE;
+      for (prev = NULL, ce = CACHEdata[hashbucket]; ce != NULL; prev = ce, ce = ce->next) {
 	if (memcmp(&ce->gh->hash, &hash, sizeof(hash)) == 0) {
 	    if (((Now - ce->lastused) > MAXCACHETIME) ||
 		(GROUPentries[gloc.recno].indexinode != ce->gh->indexinode)) {
@@ -612,9 +614,10 @@ STATIC GROUPHANDLE *OV3opengroup(char *group) {
 	    ce->refcount++;
 	    return ce->gh;
 	}
+      }
+      OV3cleancache();
+      CACHEmiss++;
     }
-    OV3cleancache();
-    CACHEmiss++;
     if ((gh = OV3opengroupfiles(group)) == NULL)
 	return NULL;
     gh->hash = hash;
@@ -626,41 +629,36 @@ STATIC GROUPHANDLE *OV3opengroup(char *group) {
 	 */
 	ge->indexinode = gh->indexinode;
     }
-    ce = NEW(CACHEENTRY, 1);
-    memset(ce, '\0', sizeof(*ce));
-    ce->gh = gh;
-    ce->refcount++;
-    ce->lastused = Now;
+    if (needcache) {
+      ce = NEW(CACHEENTRY, 1);
+      memset(ce, '\0', sizeof(*ce));
+      ce->gh = gh;
+      ce->refcount++;
+      ce->lastused = Now;
     
-    /* Insert into the list */
-    ce->next = CACHEdata[hashbucket];
-    CACHEdata[hashbucket] = ce;
-    CACHEentries++;
+      /* Insert into the list */
+      ce->next = CACHEdata[hashbucket];
+      CACHEdata[hashbucket] = ce;
+      CACHEentries++;
+    }
     return gh;
 }
 
-STATIC BOOL OV3closegroup(GROUPHANDLE *gh) {
+STATIC BOOL OV3closegroup(GROUPHANDLE *gh, BOOL needcache) {
     unsigned int        i;
     CACHEENTRY          *ce;
-    CACHEENTRY          *sprev = NULL;
 
-    memcpy(&i, &gh->hash, sizeof(i));
-    i %= CACHETABLESIZE;
-    for (ce = CACHEdata[i]; ce != NULL; ce = ce->next) {
+    if (needcache) {
+      memcpy(&i, &gh->hash, sizeof(i));
+      i %= CACHETABLESIZE;
+      for (ce = CACHEdata[i]; ce != NULL; ce = ce->next) {
 	if (memcmp(&ce->gh->hash, &gh->hash, sizeof(HASH)) == 0) {
-	    if (--ce->refcount == 0) {
-		OV3closegroupfiles(ce->gh);
-		if (sprev) {
-		    sprev->next = ce->next;
-		} else {
-		    CACHEdata[i] = ce->next;
-		}
-		DISPOSE(ce);
-	    }
+	    ce->refcount--;
 	    break;
 	}
-	sprev = ce;
-    }
+      }
+    } else
+      OV3closegroupfiles(gh);
     return TRUE;
 }
 
@@ -763,7 +761,7 @@ BOOL tradindexed_add(TOKEN token, char *data, int len) {
 	if (artnum <= 0)
 	    continue;
 
-	if ((gh = OV3opengroup(group)) == NULL)
+	if ((gh = OV3opengroup(group, TRUE)) == NULL)
 	    return FALSE;	
 	sprintf(overdata, "%d\t", artnum);
 	i = strlen(overdata);
@@ -776,18 +774,18 @@ BOOL tradindexed_add(TOKEN token, char *data, int len) {
 	ge = &GROUPentries[gh->gloc.recno];
 	if (ge->base > artnum) {
 	    if (!OV3packgroup(group, OV3padamount + ge->base - artnum)) {
-		OV3closegroup(gh);
+		OV3closegroup(gh, TRUE);
 		return FALSE;
 	    }
 	    /* sigh. need to close and reopen group after packing. */
-	    OV3closegroup(gh);
-	    if ((gh = OV3opengroup(group)) == NULL)
+	    OV3closegroup(gh, TRUE);
+	    if ((gh = OV3opengroup(group, TRUE)) == NULL)
 		return FALSE;
 	}
 	GROUPlock(gh->gloc, LOCK_WRITE);
 	OV3addrec(ge, gh, artnum, token, overdata, i);
 	GROUPlock(gh->gloc, LOCK_UNLOCK);
-	OV3closegroup(gh);
+	OV3closegroup(gh, TRUE);
     }        
     return TRUE;
 }
@@ -802,7 +800,7 @@ void *tradindexed_opensearch(char *group, int low, int high) {
     int                 base;
     OV3SEARCH           *search;
     
-    if ((gh = OV3opengroup(group)) == NULL)
+    if ((gh = OV3opengroup(group, FALSE)) == NULL)
 	return NULL;
 
     ge = &GROUPentries[gh->gloc.recno];
@@ -819,7 +817,7 @@ void *tradindexed_opensearch(char *group, int low, int high) {
     } while (ge->indexinode != oldinode);
 
     if (!OV3mmapgroup(gh)) {
-	OV3closegroup(gh);
+	OV3closegroup(gh, FALSE);
 	return NULL;
     }
     
@@ -868,7 +866,7 @@ BOOL tradindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOK
 void tradindexed_closesearch(void *handle) {
     OV3SEARCH           *search = (OV3SEARCH *)handle;
 
-    OV3closegroup(search->gh);
+    OV3closegroup(search->gh, FALSE);
     DISPOSE(search->group);
     DISPOSE(search);
 }
@@ -963,19 +961,19 @@ STATIC BOOL OV3packgroup(char *group, int delta) {
     unlink(newidx);
 
     /* open and mmap old group index */
-    if ((gh = OV3opengroup(group)) == NULL) {
+    if ((gh = OV3opengroup(group, FALSE)) == NULL) {
 	GROUPlock(gloc, LOCK_UNLOCK);
 	return FALSE;
     }
     if (!OV3mmapgroup(gh)) {
-	OV3closegroup(gh);
+	OV3closegroup(gh, FALSE);
 	GROUPlock(gloc, LOCK_UNLOCK);
 	return FALSE;
     }
 
     if ((fd = open(newidx, O_RDWR | O_CREAT, 0660)) < 0) {
 	syslog(L_ERROR, "tradindexed: could not open %s: %m", newidx);
-	OV3closegroup(gh);
+	OV3closegroup(gh, FALSE);
 	GROUPlock(gloc, LOCK_UNLOCK);
 	return FALSE;
     }
@@ -987,13 +985,13 @@ STATIC BOOL OV3packgroup(char *group, int delta) {
 	       sizeof(INDEXENTRY)*(ge->low - ge->base + delta)) != nbytes) {
 	syslog(L_ERROR, "tradindexed: packgroup cant write to %s: %m", newidx);
 	close(fd);
-	OV3closegroup(gh);
+	OV3closegroup(gh, FALSE);
 	GROUPlock(gloc, LOCK_UNLOCK);
 	return FALSE;
     }	
     if (close(fd) < 0) {
 	syslog(L_ERROR, "tradindexed: packgroup cant close %s: %m", newidx);
-	OV3closegroup(gh);
+	OV3closegroup(gh, FALSE);
 	GROUPlock(gloc, LOCK_UNLOCK);
 	return FALSE;
     }
@@ -1019,7 +1017,7 @@ STATIC BOOL OV3packgroup(char *group, int delta) {
     ge->indexinode = sb.st_ino;
     ge->base -= delta;
     GROUPlock(gloc, LOCK_UNLOCK);
-    OV3closegroup(gh);
+    OV3closegroup(gh, FALSE);
     return TRUE;
 }
 
