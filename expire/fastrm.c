@@ -19,6 +19,7 @@
 #include <syslog.h>  
 #include "macros.h"
 #include "libinn.h"
+#include "storage.h"
 
 #define MAX_LINE_SIZE	1024
 #define SHORT_NAME	16
@@ -57,11 +58,13 @@ STATIC void err_exit(char *s)
 }
 
 
-STATIC int myexit(void)
+static int
+err_alloc(const char *what, size_t size)
 {
-    err_exit("Could not allocate memory");
-    /* NOTREACHED */
-    return 1;
+    fprintf(stderr, "%s: Can't %s %lu bytes: %s", MyName, what, size,
+            strerror(errno));
+    SMshutdown();
+    exit(1);
 }
 
 
@@ -617,7 +620,7 @@ int main(int ac, char *av[])
     MyName = av[0];
     if ((p = strrchr(MyName, '/')) != NULL)
 	MyName = p + 1;
-    ONALLOCFAIL(myexit);
+    ONALLOCFAIL(err_alloc);
     AmRoot = geteuid() == 0;
     empty_error = FALSE;
 
