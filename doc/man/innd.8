@@ -312,7 +312,9 @@ starts with the five characters \&``cmsg\ '' are called
 Except for the cancel message, these messages are implemented by
 external programs in the
 .I <pathcontrol in inn.conf>
-directory.
+directory, if 
+.I <usecontrolchan in inn.conf>
+is ``false''.
 (Cancel messages update the history database, so they must be handled
 internally; the cost of syncing, locking, then unlocking would be too
 high given the number of cancel messages that are received.)
@@ -334,6 +336,15 @@ The third parameter will be a name under which the article is filed, relative
 to the news spool directory.
 The fourth parameter is the host that sent the article, as specified
 on the Path line.
+.PP
+If
+.I <usecontrolchan in inn.conf> 
+is ``true'', all control messages except for the cancel are processed by
+.I controlchan 
+script which is invoked as channel program by innd.
+Processing by
+.I controlchan
+can reduce excessive load if many control messages arrive in a short time.
 .PP
 The distribution of control message is also different from those of standard
 articles.

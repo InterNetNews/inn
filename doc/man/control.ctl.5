@@ -7,7 +7,30 @@ The file
 .I <pathetc in inn.conf>/control.ctl
 is used to determine what action is taken when a control message
 is received.
-It is read by the
+If
+.I <usecontrolchan in inn.conf>
+is ``true'', it is read by the
+.I controlchan
+script, which is invoked as channel program by
+.IR innd (8).
+When
+.I control.ctl
+is modified,
+.I
+.I controlchan
+must be reinvoked to reload it.  Following line will do this.
+(controlchan! is a site name defined in
+.IR newsfeeds (8).)
+.sp 1
+.in +0.5i
+.nf
+<pathbin in inn.conf>/ctlinnd flush controlchan!
+.fi
+.in -0.5i
+.sp 1
+If
+.I <usecontrolchan in inn.conf>
+is ``false'', it is read by the
 .I parsecontrol
 script, which is called by all the control scripts.
 (For an explanation of how the control scripts are invoked, see
@@ -130,6 +153,7 @@ This is revision \\$3, dated \\$4.
 ..
 .R$ $Id$
 .SH "SEE ALSO"
+ctlinnd(8),
 inn.conf(5),
 innd(8),
 newsfeeds(5),
