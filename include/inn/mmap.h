@@ -14,10 +14,6 @@
 
 BEGIN_DECLS
 
-/* Return the system pagesize
- */
-ssize_t syspagesize(void);
-
 /* Figure out what page an address is in and flush those pages
  */
 void mapcntl(void *, size_t, int);
