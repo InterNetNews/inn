@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
     char	*p;
     int		lo;
     FILE	*F;
-    BOOL	Nonull, LowmarkFile = FALSE;
+    BOOL	val, Nonull, LowmarkFile = FALSE;
     char	*lofile;
     OVGE	ovge;
 
@@ -51,6 +51,7 @@ int main(int argc, char *argv[]) {
     ovge.timewarp = 0;
     ovge.filename = NULL;
     ovge.delayrm = FALSE;
+    val = TRUE;
     while ((i = getopt(argc, argv, "ef:kNpqw:z:Z:")) != EOF) {
 	switch (i) {
 	case 'e':
@@ -106,11 +107,15 @@ int main(int argc, char *argv[]) {
 	}
     }
 
+    if (!ovge.delayrm && SMsetup(SM_RDWR, (void *)&val)) {
+	fprintf(stderr, "expireover: cant setup storage method");
+	exit(1);
+    }
     i = 1;
     if (SMsetup(SM_PREOPEN, (void *)&i) && !SMinit()) {
 	fprintf(stderr, "expireover: cant initialize storage method, %s",SMerrorstr);
 	exit(1);
-	}
+    }
 
     xsignal(SIGTERM, sigfunc);
     xsignal(SIGINT, sigfunc);
