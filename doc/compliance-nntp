@@ -594,3 +594,29 @@ can get access to a file descriptor and throw it into the select loop.
 Either way, this requires keeping a DNS file descriptor in the main select
 loop and updating knowledge of DNS periodically, which is a substantial
 amount of additional complexity.
+
+------------------------------
+
+  Summary: innd doesn't diagnose repeated AUTHINFO USER commands
+ Standard: RFC 2980, section 3.1.1
+  Version: 1.0 to CURRENT 2002-12-02
+Reference: innd/nc.c NCauthinfo()
+ Severity: Violates a protocol description
+
+RFC 2980 says:
+
+    The 482 code will also be returned when the AUTHINFO commands are not
+    entered in the correct sequence (like two AUTHINFO USERs in a row, or
+    AUTHINFO PASS preceding AUTHINFO USER).
+
+innd ignores AUTHINFO USER and just always returns a 381 response, however,
+since it doesn't care about the username.
+
+Impact:  Probably none.
+
+Suggested fix:  A long-term solution would be to add real authentication
+to innd, in which case it would start caring about the authenticated
+identity (and perhaps use that identity to map to an incoming.conf entry).
+It's unclear if this would be worthwhile.  Failing that, innd would need
+to keep internal state to know whether AUTHINFO USER had already been
+sent.
