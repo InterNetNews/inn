@@ -15,6 +15,9 @@
 #define _PATH_NNRPD		"nnrpd"
 #define _PATH_NNTPD		"nnrpd"
 #define _PATH_AUTHDIR		"auth"
+#define _PATH_AUTHDIR_GENERIC	"generic"
+#define _PATH_AUTHDIR_NOPASS	"resolv"
+#define _PATH_AUTHDIR_PASSWD	"passwd"
 #define _PATH_CTLINND		"ctlinnd"
 #define _PATH_RNEWSPROGS	"rnews.libexec"
 /* Prefix path is pathfilter */
@@ -50,7 +53,7 @@
 #define _PATH_MODERATORS	"moderators"
 #define _PATH_SERVER		"server"
 #define _PATH_NNTPPASS		"passwd.nntp"
-#define _PATH_NNRPACCESS	"nnrp.access"
+#define _PATH_NNRPACCESS	"readers.conf"
 #define _PATH_EXPIRECTL		"expire.ctl"
 #define _PATH_SCHEMA		"overview.fmt"
 #define _PATH_MOTD		"motd.news"
