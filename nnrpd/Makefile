@@ -38,13 +38,15 @@ clobber clean:
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../lib/*.c nnrpd.h ../include/*.h
 
-nnrpd:		$(P) nnrpd.o $(OBJECTS) $(LIBNEWS)
-	@rm -f $@
-#	$(LIBTOOL) ./quantify $(CC) $(LDFLAGS) -o $@ $@.o $(OBJECTS) $(LIBNEWS) $(PERLLIB) $(PYTHONLIB) $(LIBS) 
-#	$(LIBTOOL) purify $(CC) $(LDFLAGS) -o $@ $@.o $(OBJECTS) $(LIBNEWS) $(PERLLIB) $(PYTHONLIB) $(LIBS) 
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $@.o $(OBJECTS) $(LIBNEWS) $(PERLLIB) $(PYTHONLIB) $(LIBS) 
+BIGLIST = $(OBJECTS) $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(PERLLIB) $(PYTHONLIB) $(LIBS)
 
-$(LIBNEWS):
+nnrpd:		$(P) nnrpd.o $(OBJECTS) $(LIBSTORAGE) $(LIBINN)
+	@rm -f $@
+#	$(LIBTOOL) ./quantify $(CC) $(LDFLAGS) -o $@ $@.o $(BIGLIST)
+#	$(LIBTOOL) purify $(CC) $(LDFLAGS) -o $@ $@.o $(BIGLIST)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $@.o $(BIGLIST)
+
+$(LIBINN):
 	(cd ../lib ; $(MAKE) )
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
@@ -53,12 +55,12 @@ profiled:	nnrpdp
 
 nnrpdp:		$(SOURCES)
 	rm -f $(OBJECTS)
-	$(MAKE) nnrpd CFLAGS="$(CFLAGS) $(PROF)" LIBNEWS="../libinn_p.a ../storage/libstorage.a ../libinn_p.a ../storage/libstorage.a"
+	$(MAKE) nnrpd CFLAGS="$(CFLAGS) $(PROF)" LIBINN="../libinn_p.a"
 	mv nnrpd nnrpdp
 	rm -f $(OBJECTS)
 
 ccenter:	$(SOURCES)
-	#load $(CFLAGS) $(SOURCES) $(LIBNEWS)
+	#load $(CFLAGS) $(SOURCES) $(LIBINN)
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES)
