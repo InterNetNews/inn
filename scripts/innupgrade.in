@@ -106,8 +106,8 @@ sub upgrade_directory {
 # doing.
 my ($file, $type);
 Getopt::Long::config ('bundling');
-GetOptions ('file|f=s' => $file,
-            'type|t=s' => $type) or exit 1;
+GetOptions ('file|f=s' => \$file,
+            'type|t=s' => \$type) or exit 1;
 if ($file) {
     my $basename = $file;
     $basename =~ s%.*/%%;
