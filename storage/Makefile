@@ -1,70 +1,70 @@
 ##  $Id$
 
 include ../Makefile.global
-
-CFLAGS	= $(GCFLAGS) -I.
-
-all:			autoconfig
-	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) methods
-	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) libstorage.$(EXTLIB)
-
 include Make.methods
-include Make.ovmethods
 
-SOURCES = interface.c methods.c ovmethods.c ov.c
-OBJECTS = interface.o methods.o ovmethods.o ov.o
-LOBJECTS = interface.lo methods.lo ovmethods.lo ov.lo
+CFLAGS	      = $(GCFLAGS) -I.
 
-methods: 
-	@for D in $(SUBDIR) $(OVSUBDIR); do \
-	cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) || exit 1; cd ..; \
+SOURCES	      = interface.c methods.c ov.c ovmethods.c
+OBJECTS	      = $(SOURCES:.c=.o) $(METHOD_OBJECTS)
+LOBJECTS      = $(OBJECTS:.o=.lo)
+
+.SUFFIXES: .lo
+
+all:		methods libstorage.$(EXTLIB)
+
+install:	all $(D)$(PATHLIB)/libstorage.$(EXTLIB) 
+
+methods:
+	@for D in $(SUBDIRS) ; do \
+	    cd $$D && $(MAKE) all || exit 1 ; cd .. ; \
 	done
-
-install:		all $(D)$(PATHLIB)/libstorage.$(EXTLIB) 
 
 clobber clean:
 	rm -f *.o *.lo libstorage.la libstorage.a
-	rm -rf .libs
-	rm -f methods.c methods.h
-	rm -f ovmethods.c ovmethods.h
+	rm -f buildconfig methods.c methods.h ovmethods.c ovmethods.h
 	rm -f profiled libstorage_p.a
-	rm -f buildconfig ovbuildconfig
-	@for D in $(SUBDIR) $(OVSUBDIR); do \
-		cd $$D; $(MAKE) clean; cd .. ;\
+	rm -rf .libs
+	@for D in $(SUBDIRS) ; do \
+	    cd $$D && $(MAKE) clean || exit 1 ; cd .. ; \
 	done
 
 tags ctags:	$(SOURCES)
-	$(CTAGS) $(SOURCES) ../include/*.h
+	$(CTAGS) $(SOURCES) ../include/*.h ../include/inn/*.h
 
-libstorage.la:	$(P) $(OBJECTS) $(LOBJECTS) $(LSM_OBJECTS) $(LOV_OBJECTS)
-	$(LIBLD) $(LDFLAGS) -o libstorage.la $(LOBJECTS) $(LSM_OBJECTS) $(LOV_OBJECTS) \
-		-rpath $(PATHLIB) -version-info 2:0:0
+libstorage.la:	$(OBJECTS) $(LOBJECTS)
+	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) \
+	    -rpath $(PATHLIB) -version-info 2:0:0
 
-libstorage.a:         $(P) $(OBJECTS) $(SM_OBJECTS) $(OV_OBJECTS)
-	ar r $@ $(OBJECTS) $(SM_OBJECTS) $(OV_OBJECTS)
+libstorage.a:	$(OBJECTS)
+	ar r $@ $(OBJECTS)
 	$(RANLIB) libstorage.a
 
-.c.o:
-	$(LIBCC) $(CFLAGS) -c $*.c -o $@
-
-ovtest: ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
-	$(PURE) $(CC) $(CFLAGS) -I/shared/include -D_TEST_ -o ovtest ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB) $(EXTSTORAGELIBS) -L/shared/lib -ldb -lnsl -lsocket
-
-methods.h: autoconfig
-methods.c: autoconfig
-
-autoconfig: buildconfig ovbuildconfig
-	@./buildconfig `find . -name method.config -print`
-	@./ovbuildconfig `find . -name ovmethod.config -print`
+# Try to set up these rules so that buildconfig is only run once.
+# Make.methods is included in the distribution tarball since some non-GNU
+# makes can't deal with including a non-existent file, so don't depend on
+# it.  The dependencies aren't entirely accurate; you really want to re-run
+# buildconfig each time a new subdirectory is added to the directory.  But
+# adding a dependency on . is a bit too non-portable for my taste and causes
+# too many rebuilds.
+Make.methods methods.h ovmethods.c ovmethods.h: methods.c buildconfig
+methods.c: buildconfig
+	./buildconfig
 
 buildconfig: buildconfig.in $(FIXSCRIPT)
 	$(FIXSCRIPT) -i buildconfig.in
 
-ovbuildconfig: ovbuildconfig.in $(FIXSCRIPT)
-	$(FIXSCRIPT) -i ovbuildconfig.in
+.c.o .c.lo:
+	$(LIBCC) $(CFLAGS) -c $*.c -o $@
+
+ovtest:		ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
+	$(CC) $(CFLAGS) -D_TEST_ -o ovtest ov.c \
+	    libstorage.$(EXTLIB) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
+
+$(LIBINN):      ; (cd ../lib ; $(MAKE))
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
-profiled:		../libstorage_p.a
+profiled:	../libstorage_p.a
 	date >$@
 
 ../libstorage_p.a:	$(SOURCES)
@@ -76,10 +76,11 @@ profiled:		../libstorage_p.a
 
 ##  Low-level install actions.
 $(D)$(PATHLIB)/libstorage.$(EXTLIB): libstorage.$(EXTLIB)
-	$(LI_XPUB) $? $@
+	$(LI_XPUB) libstorage.$(EXTLIB) $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
-depend:	$(SOURCES)
+
+depend:	Makefile $(SOURCES)
 	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
