@@ -25,7 +25,7 @@ chomp $cvs2cl;
 unless (-x $cvs2cl) { die "$cvs2cl not found\n" }
 
 print "\nRunning cvs log recursively....\n";
-system ("cvs log '-d>$date' | support/fixlog > CHANGES") == 0
+system ("cvs log '-d>$date' | perl support/fixlog > CHANGES") == 0
     or die "cvs log exited with status " . ($? >> 8) . "\n";
 
 print "\nRunning cvs2cl....\n";
