@@ -92,7 +92,6 @@ doc/control-messages                  tal's description of control messages
 doc/man                               nroff documentation (Directory)
 doc/man/Makefile                      Makefile for nroff documentation
 doc/man/active.5                      Manpage for active database
-doc/man/actived.8                     Manpage for active daemon
 doc/man/actsync.8                     Manpage for active file synch program
 doc/man/actsyncd.8                    Manpage for active synch daemon
 doc/man/archive.8                     Manpage for archive backend
@@ -153,7 +152,6 @@ doc/man/news2mail.8                   Manpage for news2mail
 doc/man/newsfeeds.5                   Manpage for newsfeeds config file
 doc/man/newslog.5                     Manpage for log files
 doc/man/newsrequeue.8                 Manpage for newsrequeue
-doc/man/nnrp.access.5                 Manpage for nnrp.access config file
 doc/man/nnrpd.8                       Manpage for nnrpd daemon
 doc/man/nnrpd.track.5                 Manpage for nnrpd.track config file
 doc/man/nntpget.1                     Manpage for nntpget frontend
@@ -163,7 +161,6 @@ doc/man/ovdb.5                        Manpage for the ovdb storage module
 doc/man/ovdb_recover.8                Manpage for ovdb_recover utility
 doc/man/ovdb_upgrade.8                Manpage for ovdb_upgrade
 doc/man/overchan.8                    Manpage for overchan backend
-doc/man/overview.ctl.5                Manpage for overview.ctl config file
 doc/man/overview.fmt.5                Manpage for overview.fmt config file
 doc/man/parsedate.3                   Manpage for parsedate library routine
 doc/man/passwd.nntp.5                 Manpage for passwd.nntp config file
@@ -183,13 +180,12 @@ doc/man/simpleftp.1                   Manpage for simpleftp utility
 doc/man/sm.8                          Manpage for sm
 doc/man/startinnfeed.1                Manpage for startinnfeed
 doc/man/storage.conf.5                Manpage for storage.conf config file
-doc/man/storage.ctl.5                 Manpage for storage.ctl config file
-doc/man/strcasecmp.3                  Manpage for strcasecmp (from BSD)
 doc/man/subst.1                       Manpage for subst
 doc/man/tally.control.8               Manpage for tally.control
 doc/man/wildmat.3                     Manpage for wildmat library routine
 doc/man/writelog.8                    Manpage for writelog
 doc/pod                               POD documentation (Directory)
+doc/pod/Makefile                      Maintainer rules for derived files
 doc/pod/convdate.pod                  Master file for convdate.1
 doc/pod/dbprocs.pod                   Master file for dbprocs.8
 doc/pod/hacking.pod                   Master file for HACKING
@@ -300,7 +296,7 @@ innfeed/endpoint.c                    Implementation of the EndPoint class
 innfeed/endpoint.h                    Public interface to the EndPoint class
 innfeed/host.c                        Implementation of the Host class
 innfeed/host.h                        Public interface to the Host class
-innfeed/imap_connection.c             Implementation of the IMAP Connection class
+innfeed/imap_connection.c             Implementation of IMAP Connection class
 innfeed/innfeed-convcfg.in            Script to convert old innfeed.conf
 innfeed/innfeed.h                     Application configuration values
 innfeed/innlistener.c                 Implementation of the InnListener class
@@ -541,11 +537,13 @@ storage/trash/trash.h                 Header file for trash storage
 support                               Tools for building INN (Directory)
 support/config.guess                  Determine system type for libtool
 support/config.sub                    Canonicalize system type for libtool
+support/fixlog                        Clean up CVS log messages for cvs2cl
 support/fixscript.in                  Interpreter path fixup script
 support/install-sh                    Installation utility
 support/ltconfig                      Configure libtool
 support/ltmain.sh                     Source for libtool utility
 support/makedepend                    Generate dependencies for C files
+support/mkchangelog                   Generate ChangeLog from CVS
 tests                                 Test suite for INN (Directory)
 tests/Makefile                        Makefile for test suite
 tests/TESTS                           List of tests to run
@@ -554,6 +552,13 @@ tests/lib/concat-t.c                  Tests for lib/concat.c
 tests/lib/date-t.c                    Tests for lib/date.c
 tests/lib/error-t.c                   Tests for lib/error.c
 tests/lib/fakewrite.c                 Helper functions for xwrite tests
+tests/lib/inet_aton-t.c               Tests for lib/inet_aton.c
+tests/lib/inet_ntoa-t.c               Tests for lib/inet_ntoa.c
+tests/lib/memcmp-t.c                  Tests for lib/memcmp.c
+tests/lib/pread-t.c                   Tests for lib/pread.c
+tests/lib/pwrite-t.c                  Tests for lib/pwrite.c
+tests/lib/setenv-t.c                  Tests for lib/setenv.c
+tests/lib/setenv.t                    Wrapper for setenv tests
 tests/lib/strerror-t.c                Tests for lib/strerror.c
 tests/lib/xmalloc.c                   Helper program for xmalloc tests
 tests/lib/xmalloc.t                   Tests for lib/xmalloc.c
