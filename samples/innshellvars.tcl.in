@@ -59,6 +59,8 @@ set inn_controlprogs "${inn_pathcontrol}/control"
 set inn_perl_startup_innd "${inn_pathfilter}/startup_innd.pl"
 set inn_perl_filter_innd "${inn_pathfilter}/filter_innd.pl"
 set inn_perl_filter_nnrpd "${inn_pathfilter}/filter_nnrpd.pl"
+set inn_python_filter_innd "${pathfilter}/filter_innd.py"
+set inn_path_python_inn_module "${pathfilter}/INN.py"
 set inn_path_tcl_startup "${inn_pathfilter}/startup.tcl"
 set inn_path_tcl_filter "${inn_pathfilter}/filter.tcl"
 

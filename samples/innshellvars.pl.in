@@ -58,6 +58,8 @@ $rnews = "${newsbin}/rnews" ;
 $perl_startup_innd = "$pathfilter/startup_innd.pl" ;
 $perl_filter_innd = "$pathfilter/filter_innd.pl" ;
 $perl_filter_nnrpd = "$pathfilter/filter_nnrpd.pl" ;
+$python_filter_innd = "$pathfilter/filter_innd.py" ;
+$path_python_inn_module ="$pathfilter/INN.py" ;
 $path_tcl_startup = "$pathfilter/startup.tcl" ;
 $path_tcl_filter = "$pathfilter/filter.tcl" ;
 
