@@ -12,7 +12,7 @@
 #include "inn/history.h"
 
 typedef struct {
-    char	*name;
+    const char	*name;
     bool	(*open)(int mode);
     bool	(*groupstats)(char *group, int *lo, int *hi, int *count, int *flag);
     bool	(*groupadd)(char *group, ARTNUM lo, ARTNUM hi, char *flag);
@@ -29,9 +29,10 @@ typedef struct {
 } OV_METHOD;
 
 extern time_t	OVrealnow;
-bool OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t arrived, time_t expires);
-bool OVgroupmatch(char *group);
-bool OVhisthasmsgid(struct history *, char *data);
+bool OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
+                        int len, time_t arrived, time_t expires);
+bool OVgroupmatch(const char *group);
+bool OVhisthasmsgid(struct history *, const char *data);
 void OVEXPremove(TOKEN token, bool deletedgroups, char **xref, int ngroups);
 
 #define DEFAULT_MAX_XREF_LEN 8192
