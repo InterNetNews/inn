@@ -7,13 +7,12 @@ CFLAGS  = $(GCFLAGS)
 SOURCES = argparse.c cleanfrom.c clientactive.c clientlib.c closeonexec.c \
 	concat.c conffile.c date.c dbz.c defdist.c error.c fdlimit.c \
 	findheader.c fseeko.c ftello.c genid.c getconfig.c getfqdn.c \
-	getmodaddr.c getopt.c gettime.c grpalias.c hash.c hstrerror.c \
-	inet_aton.c inet_ntoa.c inndcomm.c localopen.c lockfile.c \
-	makedir.c md5.c memchr.c memcmp.c memmove.c memset.c nonblocking.c \
-	parsedate.c perl.c pread.c pwrite.c qio.c radix32.c readin.c \
-	remopen.c reservedfd.c resource.c rwlock.c sendarticle.c \
-	sendpass.c setenv.c strcasecmp.c strerror.c strspn.c strtok.c \
-	tempname.c waitnb.c wildmat.c version.c xfopena.c xmalloc.c \
+	getmodaddr.c gettime.c grpalias.c hash.c hstrerror.c inet_aton.c \
+	inet_ntoa.c inndcomm.c localopen.c lockfile.c makedir.c md5.c \
+	memcmp.c nonblocking.c parsedate.c perl.c pread.c pwrite.c qio.c \
+	radix32.c readin.c remopen.c reservedfd.c resource.c rwlock.c \
+	sendarticle.c sendpass.c setenv.c strcasecmp.c strerror.c strspn.c \
+	strtok.c tempname.c waitnb.c wildmat.c version.c xfopena.c xmalloc.c \
 	xsignal.c xwrite.c
 
 OBJECTS = $(LIBOBJS) \
