@@ -311,10 +311,12 @@ void CHANclose(CHANNEL *cp, char *name)
     if (cp->In.Size > BIG_BUFFER) {
 	cp->In.Size = 0;
 	DISPOSE(cp->In.Data);
+	cp->In.Data = NULL; /* avoid spurious free()s of already freed data in CHANshutdown */
     }
     if (cp->Out.Size > BIG_BUFFER) {
 	cp->Out.Size = 0;
 	DISPOSE(cp->Out.Data);
+	cp->Out.Data = NULL; /* ditto */
     }
     if (cp->Sendid.Size) {
 	cp->Sendid.Size = 0;
