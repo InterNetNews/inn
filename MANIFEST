@@ -366,7 +366,6 @@ innd/tcl.c                            Bob Halley's Tcl hook
 innd/util.c                           Utility functions for innd
 innd/wip.c                            Work-in-progress routines for innd
 innfeed                               innfeed (Directory)
-innfeed/ChangeLog                     Old history of changes
 innfeed/Makefile                      Makefile for innfeed
 innfeed/README                        Assorted notes
 innfeed/article.c                     Implementation of the Article class
