@@ -96,80 +96,91 @@ depend: Makefile $(SOURCES)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 art.o: art.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h art.h ../include/dbz.h ../include/libinn.h \
- innd.h ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h ../include/ov.h
+ innd.h ../include/portable/time.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h \
+ ../include/ov.h
 cc.o: cc.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/qio.h innd.h ../include/dbz.h \
- ../include/libinn.h ../include/macros.h ../include/nntp.h \
- ../include/paths.h ../include/storage.h ../include/inndcomm.h
-chan.o: chan.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
+ ../include/clibrary.h ../include/inn/qio.h innd.h \
+ ../include/portable/time.h ../include/dbz.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h
+ ../include/storage.h ../include/inndcomm.h
+chan.o: chan.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h innd.h ../include/portable/time.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
 his.o: his.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/dbz.h ../include/libinn.h innd.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h
+ ../include/portable/time.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h ../include/storage.h
 icd.o: icd.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h ../include/ov.h
+ ../include/clibrary.h innd.h ../include/portable/time.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h \
+ ../include/ov.h
 innd.o: innd.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h ../include/ov.h
+ ../include/clibrary.h innd.h ../include/portable/time.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h \
+ ../include/ov.h
 inndstart.o: inndstart.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/paths.h ../include/libinn.h \
  ../include/macros.h
 lc.o: lc.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h
+ ../include/clibrary.h innd.h ../include/portable/time.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
 nc.o: nc.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/dbz.h ../include/libinn.h innd.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h
+ ../include/portable/time.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h ../include/storage.h
 newsfeeds.o: newsfeeds.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h
+ ../include/clibrary.h innd.h ../include/portable/time.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
 ng.o: ng.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h ../include/ov.h
+ ../include/clibrary.h innd.h ../include/portable/time.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h \
+ ../include/ov.h
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h art.h ../include/ppport.h
+ ../include/clibrary.h innd.h ../include/portable/time.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h art.h \
+ ../include/ppport.h
 proc.o: proc.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
+ ../include/clibrary.h ../include/portable/wait.h innd.h \
+ ../include/portable/time.h ../include/dbz.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \
  ../include/storage.h
 python.o: python.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h art.h innd.h ../include/dbz.h \
- ../include/libinn.h ../include/macros.h ../include/nntp.h \
- ../include/paths.h ../include/storage.h
+ ../include/clibrary.h art.h innd.h ../include/portable/time.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
 rc.o: rc.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h
+ ../include/clibrary.h innd.h ../include/portable/time.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
 site.o: site.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h
+ ../include/clibrary.h innd.h ../include/portable/time.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
 status.o: status.c ../include/clibrary.h ../include/config.h \
- ../include/inn/defines.h innd.h ../include/dbz.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h
+ ../include/inn/defines.h innd.h ../include/portable/time.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
 tcl.o: tcl.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h
+ ../include/clibrary.h innd.h ../include/portable/time.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
 timer.o: timer.c ../include/clibrary.h ../include/config.h \
- ../include/inn/defines.h innd.h ../include/dbz.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h
+ ../include/inn/defines.h innd.h ../include/portable/time.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
+util.o: util.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h innd.h \
+ ../include/portable/time.h ../include/dbz.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
 wip.o: wip.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/dbz.h ../include/libinn.h innd.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h
+ ../include/portable/time.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h ../include/storage.h
