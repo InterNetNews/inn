@@ -2,21 +2,21 @@
 **
 **  Variable definitions, miscellany, and main().
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
+#include <netinet/in.h>
+#include <sys/ioctl.h>
+#include <sys/resource.h>
+#include <sys/uio.h>
+
+#ifdef DO_FAST_RESOLV
+# include <arpa/nameser.h>
+# include <resolv.h>
+#endif
+
 #define DEFINE_DATA
 #include "innd.h"
 #include "ov.h"
-#include <sys/ioctl.h>
-#include <sys/uio.h>
-#include <sys/resource.h>
-#if	defined(DO_FAST_RESOLV)
-#include <arpa/nameser.h>
-#include <resolv.h>
-#endif	/* defined(DO_FAST_RESOLV) */
 
 
 #if defined(HAVE_SETBUFFER)
@@ -387,7 +387,7 @@ AllocationFailure(const char *what, size_t size, const char *file, int line)
 {
     syslog(L_FATAL, "%s cant %s %lu bytes at line %d of %s: %m", LogName,
            what, size, line, file);
-    exit(1);
+    abort();
 }
 
 
@@ -569,6 +569,7 @@ int main(int ac, char *av[])
 
     /* Set defaults. */
     TimeOut.tv_sec = DEFAULT_TIMEOUT;
+    TimeOut.tv_usec = 0;
     ShouldFork = TRUE;
     ShouldRenumber = FALSE;
     ShouldSyntaxCheck = FALSE;
