@@ -77,6 +77,7 @@ set inn_egrep	= @_PATH_EGREP@
 set inn_perl	= @_PATH_PERL@
 set inn_pgp	= @_PATH_PGP@
 set inn_sort	= @_PATH_SORT@
+set inn_getftp	= @GETFTP@
 set inn_compress = @COMPRESS@
 set inn_log_compress = @LOG_COMPRESS@
 set inn_z = @LOG_COMPRESSEXT@
