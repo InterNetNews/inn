@@ -98,7 +98,7 @@ STATIC struct iovec	iov[IOV_MAX];
 STATIC int		queued_iov = 0;
 
 /* Prototypes */
-STATIC BOOL IsCancelled(int artnum);
+STATIC BOOL IsCancelled(int artnum, BOOL checkart);
 STATIC BOOL IsCancelledByIndex(int i, int artnum);
 
 BOOL PushIOv(void) {
@@ -530,14 +530,14 @@ STATIC BOOL ARTopenbyid(char *msg_id, ARTNUM *ap)
  * IsCancelled uses the article number proper.
  * IsCancelledByIndex uses an index into ARTnumbers.
  */
-STATIC BOOL IsCancelled(int artnum)
+STATIC BOOL IsCancelled(int artnum, BOOL checkart)
 {
     int i;
     
     if (!innconf->storageapi)
         return FALSE;
 
-    if ((i = ARTfind(artnum, FALSE)) < 0)
+    if ((i = ARTfind(artnum, checkart)) < 0)
         return TRUE;
 
     
@@ -1024,13 +1024,13 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp, BOOL *DidReply)
 	    return FALSE;
 	}
 	rp->High = rp->Low = ARTnumbers[ARTindex].ArtNum;
-        return !IsCancelled(rp->High);
+        return !IsCancelled(rp->High, TRUE);
     }
 
     /* Got just a single number? */
     if ((p = strchr(av[1], '-')) == NULL) {
 	rp->Low = rp->High = atol(av[1]);
-        return !IsCancelled(rp->Low);
+        return !IsCancelled(rp->Low, TRUE);
     }
 
     /* Parse range. */
@@ -1503,7 +1503,7 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 	    continue;
 
 	/* Get it from the overview? */
-	if (Overview && !IsCancelled(i) && (p = OVERfind(i, &linelen)) != NULL) {
+	if (Overview && !IsCancelled(i, FALSE) && (p = OVERfind(i, &linelen)) != NULL) {
 	    p = OVERGetHeader(p, Overview);
 	    Printf("%ld %s\r\n", i, p && *p ? p : "(none)");
 	    continue;
@@ -1559,7 +1559,7 @@ FUNCTYPE CMDxover(int ac, char *av[])
     OVERcount++;
     Reply("%d data follows\r\n", NNTP_OVERVIEW_FOLLOWS_VAL);
     for (Opened = OVERopen(), i = range.Low; i <= range.High && range.High > 0; i++) {
-	if (IsCancelled(i)) {
+	if (IsCancelled(i, TRUE)) {
 	    if (innconf->storageapi)
 		OVERmiss++;
 	    continue;
@@ -1685,7 +1685,7 @@ FUNCTYPE CMDxpat(int ac, char *av[])
 
 	/* Get it from the Overview? */
 	if (Overview
-         && !IsCancelled(i)
+         && !IsCancelled(i, FALSE)
 	 && (p = OVERfind(i, &linelen)) != NULL
 	 && (p = OVERGetHeader(p, Overview)) != NULL) {
 	    if (wildmat(p, pattern))
