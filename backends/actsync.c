@@ -64,6 +64,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
 #ifdef HAVE_WAIT_H
 # include <wait.h>
 #else
@@ -119,6 +120,12 @@ HiLowWater(name, hi, low, oldhi, oldlow)
     struct stat	statbuf;	/* stat of the file in the directory */
     char	*p;
     char	*q;
+    FILE	*fi;
+    struct stat sb;
+    int		count;
+    char	(*mapped)[][OVERINDEXPACKSIZE];
+    char	packed[OVERINDEXPACKSIZE];
+    OVERINDEX	index;
 
     /*
      * firewall
@@ -168,97 +175,141 @@ HiLowWater(name, hi, low, oldhi, oldlow)
     }
     *q = '\0';
 
-    /*
-     * attempt to open the directory
-     */
-    dp = opendir(dir);
-    if (dp == NULL) {
-	/* cannot scan the directory, assume not found or non-accessable */
-	return FALSE;
-    }
-
-    /*
-     * scan the directory for all numeric non-leading zero entries
-     * looking for the lowest and highest values
-     */
-    found_art = FALSE;
-    while ((ep = readdir(dp)) != NULL) {
-
-	/*
-	 * ignore if it it does not begin with [1-9]
-	 */
-	p = ep->d_name;
-	if (!CTYPE(isdigit, *p) || *p == '0') {
-	    /* first char is not [1-9], ignore */
-	    continue;
-	}
-
-	/*
-	 * ignore if contains a non-digit elsewhere in the name
-	 */
-	for (++p; *p; ++p) {
-	    if (!CTYPE(isdigit, *p)) {
-		break;
+    if (innconf->storageapi) {
+	sprintf(q, "/%s.index", innconf->overviewname);
+	if ((fi = fopen(dir, "r")) == NULL) {
+	    /* cannot open overview.index, assume not found or non-accessable */
+	    return FALSE;
+	}           
+	if (innconf->overviewmmap) {
+	    if (fstat(fileno(fi), &sb) < 0) {
+		fclose(fi);
+		return FALSE;
 	    }
+	    count = sb.st_size / OVERINDEXPACKSIZE;
+	    if (count == 0) {
+		fclose(fi);
+		return FALSE;
+	    }
+	    if ((mapped = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, count * OVERINDEXPACKSIZE,
+		PROT_READ, MAP__ARG, fileno(fi), 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
+		fclose(fi);
+		return FALSE;
+	    }
+	    fclose(fi);
+	    /* assumes .overview.index is sorted */
+	    UnpackOverIndex((*mapped)[0], &index);
+	    if (index.artnum < lowmark)
+		lowmark = index.artnum;
+	    UnpackOverIndex((*mapped)[count-1], &index);
+	    if (index.artnum > himark)
+		himark = index.artnum;
+	    if ((munmap((MMAP_PTR)mapped, count * OVERINDEXPACKSIZE)) < 0)
+		return FALSE;
+	} else {
+	    while (fread(&packed, OVERINDEXPACKSIZE, 1, fi) == 1) {
+		UnpackOverIndex(packed, &index);
+		if (index.artnum < lowmark)
+		    lowmark = index.artnum;
+		if (index.artnum > himark)
+		    himark = index.artnum;
+	    }
+	    fclose(fi);
 	}
-	if (*p) {
-	    /* found a non-digit, ignore this entry */
-	    continue;
+    } else {
+	/*
+	 * attempt to open the directory
+	 */
+	dp = opendir(dir);
+	if (dp == NULL) {
+	    /* cannot scan the directory, assume not found or non-accessable */
+	    return FALSE;
 	}
 
 	/*
-	 * convert numeric file name to a digit
+	 * scan the directory for all numeric non-leading zero entries
+	 * looking for the lowest and highest values
 	 */
-	num = atol(ep->d_name);
-
-	/*
-	 * look for a new low water mark
-	 *
-	 * Ignore this entry if it is not a file.
-	 */
-	if (num < lowmark) {
+	found_art = FALSE;
+	while ((ep = readdir(dp)) != NULL) {
 
 	    /*
-	     * ignore if this entry is not a file
-	     *
-	     * If the numeric name is too long, assume we have a file
+	     * ignore if it it does not begin with [1-9]
 	     */
-	    file_len = strlen(ep->d_name);
-	    if (dir_len+1+file_len < BUFSIZ+SMBUF) {
+	    p = ep->d_name;
+	    if (!CTYPE(isdigit, *p) || *p == '0') {
+		/* first char is not [1-9], ignore */
+		continue;
+	    }
 
-		/* 
-		 * form the filename 
-		 */
-		strncpy(path, dir, dir_len);
-		path[dir_len] = '/';
-		strncpy(path+dir_len+1, ep->d_name, file_len);
-		path[dir_len+1+file_len] = '\0';
-
-		/* 
-		 * skip if fie is not found or if it is not a regular file
-		 */
-		if (stat(path, &statbuf) < 0 || !S_ISREG(statbuf.st_mode)) {
-		    continue;
+	    /*
+	     * ignore if contains a non-digit elsewhere in the name
+	     */
+	    for (++p; *p; ++p) {
+		if (!CTYPE(isdigit, *p)) {
+		    break;
 		}
 	    }
+	    if (*p) {
+		/* found a non-digit, ignore this entry */
+		continue;
+	    }
 
 	    /*
-	     * we have a new low water mark
+	     * convert numeric file name to a digit
 	     */
-	    lowmark = num;
-	}
+	    num = atol(ep->d_name);
 
-	/*
-	 * note that we saw a numeric non-learing 0 file
-	 */
-	found_art = TRUE;
+	    /*
+	     * look for a new low water mark
+	     *
+	     * Ignore this entry if it is not a file.
+	     */
+	    if (num < lowmark) {
 
-	/*
-	 * look for a new hi water mark
-	 */
-	if (num > himark) {
-	    himark = num;
+		/*
+		 * ignore if this entry is not a file
+		 *
+		 * If the numeric name is too long, assume we have a file
+		 */
+		file_len = strlen(ep->d_name);
+		if (dir_len+1+file_len < BUFSIZ+SMBUF) {
+
+		    /* 
+		     * form the filename 
+		     */
+		    strncpy(path, dir, dir_len);
+		    path[dir_len] = '/';
+		    strncpy(path+dir_len+1, ep->d_name, file_len);
+		    path[dir_len+1+file_len] = '\0';
+
+		    /* 
+		     * skip if fie is not found or if it is not a regular file
+		     */
+		    if (stat(path, &statbuf) < 0 || !S_ISREG(statbuf.st_mode)) {
+			continue;
+		    }
+		}
+
+		/*
+		 * we have a new low water mark
+		 */
+		lowmark = num;
+	    }
+
+	    /*
+	     * note that we saw a numeric non-learing 0 file
+	     */
+	    found_art = TRUE;
+
+	    /*
+	     * look for a new hi water mark
+	     */
+	    if (num > himark) {
+		himark = num;
+	    }
 	}
+	(void)closedir(dp);
     }
 
     /* 
