@@ -35,15 +35,11 @@
 **  released version unless you have a good test data base to try it out
 **  on.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
+#include "libinn.h"
 
-
-#define TRUE			1
-#define FALSE			0
-#define ABORT			-1
+#define ABORT   -1
 
 
     /* What character marks an inverted character class? */
