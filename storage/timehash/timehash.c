@@ -7,14 +7,15 @@
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <syslog.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <time.h>
 
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
+#ifndef MAP_FAILED
+# define MAP_FAILED     (caddr_t) -1
 #endif
 
 #include "libinn.h"
@@ -94,7 +95,7 @@ static TOKEN *PathToToken(char *path) {
     return &token;
 }
 
-BOOL timehash_init(SMATTRIBUTE *attr) {
+bool timehash_init(SMATTRIBUTE *attr) {
     if (attr == NULL) {
 	syslog(L_ERROR, "timehash: attr is NULL");
 	SMseterror(SMERR_INTERNAL, "attr is NULL");
@@ -215,7 +216,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
     art->private = (void *)private;
     private->len = sb.st_size;
     if (innconf->articlemmap) {
-	if ((private->base = mmap((MMAP_PTR)0, sb.st_size, PROT_READ, MAP__ARG, fd, 0)) == (MMAP_PTR)-1) {
+	if ((private->base = mmap(NULL, sb.st_size, PROT_READ, MAP__ARG, fd, 0)) == MAP_FAILED) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    syslog(L_ERROR, "timehash: could not mmap article: %m");
 	    DISPOSE(art->private);
@@ -341,7 +342,7 @@ void timehash_freearticle(ARTHANDLE *article) {
     DISPOSE(article);
 }
 
-BOOL timehash_cancel(TOKEN token) {
+bool timehash_cancel(TOKEN token) {
     int                 time;
     int                 seqnum;
     char                *path;
@@ -500,7 +501,7 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
     return art;
 }
 
-BOOL timehash_ctl(PROBETYPE type, TOKEN *token, void *value) {
+bool timehash_ctl(PROBETYPE type, TOKEN *token, void *value) {
     struct artngnum *ann;
 
     switch (type) {
@@ -515,7 +516,7 @@ BOOL timehash_ctl(PROBETYPE type, TOKEN *token, void *value) {
     }
 }
 
-BOOL timehash_flushcacheddata(FLUSHTYPE type) {
+bool timehash_flushcacheddata(FLUSHTYPE type) {
     return TRUE;
 }
 
