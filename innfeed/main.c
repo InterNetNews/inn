@@ -38,6 +38,8 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "innfeed.h"
 #include "config.h"
 #include "clibrary.h"
+#include "portable/socket.h"
+#include "portable/time.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -45,17 +47,9 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <fcntl.h>
 #include <math.h>
 #include <netdb.h>
-#include <netinet/in.h>
 #include <signal.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
 #include <syslog.h>
-
-#ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
-#else
-# include <time.h>
-#endif
 
 #if defined(HAVE_UNIX_DOMAIN_SOCKETS)
 # include <sys/un.h>

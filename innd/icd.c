@@ -6,7 +6,6 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/mmap.h"
-#include <netinet/in.h>
 #include <sys/uio.h>
 
 #include "innd.h"

@@ -6,10 +6,7 @@
 
 #include "config.h"
 #include "clibrary.h"
-
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include "portable/socket.h"
 
 
 /*********************** Authenticators ************************/

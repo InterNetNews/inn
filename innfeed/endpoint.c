@@ -47,13 +47,13 @@ static void use_rcsid (const char *rId) {   /* Never called */
 #include "innfeed.h"
 #include "config.h"
 #include "clibrary.h"
+#include "portable/socket.h"
 #include "portable/time.h"
 
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <syslog.h>
@@ -1442,11 +1442,6 @@ static void doTimeout (void)
 
 #if defined (WANT_MAIN)
 
-
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <string.h>
 
 #define BUFF_SIZE 100
 

@@ -7,7 +7,6 @@
 #include "config.h"
 #include "clibrary.h"
 #include <dirent.h>
-#include <netinet/in.h>
 
 #include "innd.h"
 #include "ov.h"

@@ -30,18 +30,15 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/socket.h"
+#include "portable/time.h"
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <syslog.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
-
-#ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
-#endif
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H

@@ -13,7 +13,6 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include <netinet/in.h>
 
 #include "innd.h"
 

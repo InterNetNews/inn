@@ -34,18 +34,14 @@
  *
  */
 #include "libauth.h"
+
 #include <errno.h>
-#include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/uio.h>
 #include <syslog.h>
 
 #ifdef HAVE_LIMITS_H
 # include <limits.h>
-#endif
-
-#ifdef HAVE_UNISTD_H
-# include <unistd.h>
 #endif
 
 #define STATEDIR	"/var"

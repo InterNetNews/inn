@@ -3,13 +3,10 @@
 **  Routines for manipulating sockaddr structs
 */
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
 #include "config.h"
 #include "clibrary.h"
+#include "portable/socket.h"
+#include <netdb.h>
 
 char *sprint_sockaddr(const struct sockaddr *sa)
 {

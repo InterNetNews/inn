@@ -5,7 +5,6 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include <netinet/in.h>
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H

@@ -4,17 +4,13 @@
 */
 
 #include "libauth.h"
-#include <netinet/in.h>
-#include <arpa/inet.h>
+
+#include "portable/time.h"
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <signal.h>
-#include <sys/socket.h>
-#if HAVE_SYS_TIME_H
-# include <sys/time.h>
-#endif
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #if HAVE_SYS_SELECT_H

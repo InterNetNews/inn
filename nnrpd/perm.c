@@ -7,8 +7,6 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/wait.h"
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <netdb.h>
 #include <signal.h>
 

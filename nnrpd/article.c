@@ -8,7 +8,6 @@
 #if HAVE_LIMITS_H
 # include <limits.h>
 #endif
-#include <netinet/in.h>
 #include <sys/uio.h>
 
 #include "nnrpd.h"

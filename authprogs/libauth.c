@@ -5,9 +5,9 @@
 */
 
 #include "libauth.h"
-#include <sys/socket.h>
+
 #ifdef HAVE_INET6
-#include <netdb.h>
+# include <netdb.h>
 #endif
 
 

@@ -29,13 +29,12 @@
 
 #include "config.h"
 #include "portable/time.h"
+#include "portable/socket.h"
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <netinet/in.h>
 #include <signal.h>
 #include <syslog.h> 
-#include <sys/socket.h>
 #include <sys/stat.h>
 
 #include "inn/timer.h"

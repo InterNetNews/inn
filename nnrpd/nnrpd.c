@@ -9,9 +9,7 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/wait.h"
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netinet/tcp.h>
+
 #include "libinn.h"
 #include "ov.h"
 #define MAINLINE
@@ -20,10 +18,11 @@
 #include <pwd.h>
 #include <grp.h>
 #include <signal.h>
-#include <stdarg.h>
+
 #if defined(_HPUX_SOURCE)
 # include <sys/pstat.h>
 #endif
+
 #if HAVE_GETSPNAM
 # include <shadow.h>
 #endif

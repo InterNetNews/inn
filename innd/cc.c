@@ -14,7 +14,6 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include <netinet/in.h>
 
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
 # include <sys/un.h>

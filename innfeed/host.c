@@ -39,9 +39,8 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "innfeed.h"
 #include "config.h"
 #include "clibrary.h"
+#include "portable/socket.h"
 
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
@@ -50,7 +49,6 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <netdb.h>
 #include <syslog.h>
 #include <sys/param.h>
-#include <sys/socket.h>
 
 #ifdef HAVE_LIMITS_H
 # include <limits.h>

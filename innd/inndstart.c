@@ -43,20 +43,14 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/socket.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <grp.h>
 #include <pwd.h>
-#include <sys/socket.h>
 #include <syslog.h>
 
-/* BSDI needs <netinet/in.h> before <arpa/inet.h>. */
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
 #ifdef HAVE_INET6
-# include <sys/types.h>
-# include <sys/socket.h>
 # include <netdb.h>
 #endif
 

@@ -87,27 +87,15 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "innfeed.h"
 #include "config.h"
 #include "clibrary.h"
+#include "portable/socket.h"
+#include "portable/time.h"
 
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <signal.h>
-#include <sys/socket.h>
 #include <syslog.h>
-
-#ifdef TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# ifdef HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
-#endif
 
 #if defined (__FreeBSD__)
 # include <sys/ioctl.h>

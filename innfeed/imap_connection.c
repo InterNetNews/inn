@@ -27,11 +27,10 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/socket.h"
 
 #include <errno.h>
-#include <netinet/in.h>
 #include <netdb.h>
-#include <sys/socket.h>
 #include <netdb.h>
 #include <time.h>
 #include <syslog.h>

@@ -6,10 +6,10 @@
 */
 #include "config.h"
 #include "clibrary.h"
+#include "portable/socket.h"
 #include "portable/time.h"
 #include <errno.h>
 #include <syslog.h>  
-#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
 

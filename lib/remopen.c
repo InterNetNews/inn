@@ -2,14 +2,12 @@
 **
 **  Open a connection to a remote NNTP server.
 */
+
 #include "config.h"
 #include "clibrary.h"
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include "portable/socket.h"
 #include <errno.h>
 #include <netdb.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
 
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
 # include <sys/un.h>
