@@ -80,7 +80,6 @@ STATIC char		*NCquietlist[] = {
 STATIC char		NCterm[] = "\r\n";
 STATIC char 		NCdot[] = "." ;
 STATIC char		NCbadcommand[] = NNTP_BAD_COMMAND;
-STATIC STRING		NCgreeting;
 
 /*
 ** Clear the WIP entry for the given channel
@@ -103,7 +102,7 @@ void NCclearwip(CHANNEL *cp) {
 **  state change, then cp->State must be set to its new value
 **  *before* NCwritereply is called.
 */
-STATIC void
+void
 NCwritereply(CHANNEL *cp, char *text)
 {
     BUFFER	*bp;
@@ -141,7 +140,7 @@ NCwritereply(CHANNEL *cp, char *text)
 /*
 **  Tell the NNTP channel to go away.
 */
-STATIC void
+void
 NCwriteshutdown(CHANNEL *cp, char *text)
 {
     cp->State = CSwritegoodbye;
@@ -1254,12 +1253,11 @@ NCcreate(int fd, BOOL MustAuthorize, BOOL IsLocal)
 	    NCcount++;
 	if (NCcount >= innconf->maxconnections) {
 	    NCwriteshutdown(cp, "Too many connections");
-	    return cp;
+	    return NULL;
 	}
     }
     cp->BadReads = 0;
     cp->BadCommands = 0;
-    NCwritereply(cp, (char *)NCgreeting);
     return cp;
 }
 

@@ -44,6 +44,7 @@ typedef struct _REMOTEHOST {
     char	*Pattern;       /* List of groups allowed (string) */
     char        *Email;         /* Email(s) of contact */
     char	*Comment;	/* Commentary [max size = MAXBUFF] */
+    int		HoldTime;	/* Hold time before disconnect over MaxCnx */
 } REMOTEHOST;
 
 typedef struct _REMOTEHOST_DATA {
@@ -76,10 +77,12 @@ STATIC int		RCnpeerlist;
 #define COMMENT	        "comment:"
 #define SKIP		"skip:"
 #define NORESENDID	"noresendid:"
+#define HOLD_TIME	"hold-time:"
 
 typedef enum {K_END, K_BEGIN_PEER, K_BEGIN_GROUP, K_END_PEER, K_END_GROUP,
 	      K_STREAM, K_HOSTNAME, K_MAX_CONN, K_PASSWORD, K_EMAIL,
-	      K_PATTERNS, K_COMMENT, K_SKIP, K_NORESENDID} _Keywords;
+	      K_PATTERNS, K_COMMENT, K_SKIP, K_NORESENDID, K_HOLD_TIME
+	     } _Keywords;
 
 typedef enum {T_STRING, T_BOOLEAN, T_INTEGER} _Types;
 
@@ -350,6 +353,7 @@ RCreader(CHANNEL *cp)
     int			found;
     time_t		now;
     CHANNEL		tempchan;
+    char		buff[SMBUF];
 
     if (cp != RCchan) {
 	syslog(L_ERROR, "%s internal RCreader wrong channel 0x%x not 0x%x",
@@ -474,13 +478,30 @@ RCreader(CHANNEL *cp)
     /* If not a server, and not allowing anyone, hand him off unless
        not spawning nnrpd in which case we return an error. */
     if ((i >= 0) && !rp->Skip) {
-	new = NCcreate(fd, rp->Password[0] != '\0', FALSE);
-        new->Streaming = rp->Streaming;
-        new->Skip = rp->Skip;
-        new->NoResendId = rp->NoResendId;
-        new->MaxCnx = rp->MaxCnx;
+	if ((new = NCcreate(fd, rp->Password[0] != '\0', FALSE)) != NULL) {
+            new->Streaming = rp->Streaming;
+            new->Skip = rp->Skip;
+            new->NoResendId = rp->NoResendId;
+            new->MaxCnx = rp->MaxCnx;
+            new->HoldTime = rp->HoldTime;
+	    new->Address.s_addr = remote.sin_addr.s_addr;
+	    if (new->MaxCnx > 0 && new->HoldTime == 0) {
+		CHANsetActiveCnx(new);
+		if((new->ActiveCnx > new->MaxCnx) && (new->fd > 0)) {
+		    sprintf(buff, "You are limited to %d connection%s", new->MaxCnx, (new->MaxCnx != 1) ? "s" : "");
+		    NCwriteshutdown(new, buff);
+		    syslog(L_NOTICE, "too many connections from %s", rp->Label);
+		} else {
+		    NCwritereply(new, (char *)NCgreeting);
+		}
+	    } else {
+		NCwritereply(new, (char *)NCgreeting);
+	    }
+	}
     } else if (AnyIncoming && !rp->Skip) {
-	new = NCcreate(fd, FALSE, FALSE);
+	if ((new = NCcreate(fd, FALSE, FALSE)) != NULL) {
+	    NCwritereply(new, (char *)NCgreeting);
+	}
     } else if (!innconf->noreader) {
 	RChandoff(fd, HOnntpd);
 	if (close(fd) < 0)
@@ -500,10 +521,12 @@ RCreader(CHANNEL *cp)
         return;
     }
 
-    new->Address.s_addr = remote.sin_addr.s_addr;
-    syslog(L_NOTICE, "%s connected %d streaming %s",
+    if (new != NULL) {
+	new->Address.s_addr = remote.sin_addr.s_addr;
+	syslog(L_NOTICE, "%s connected %d streaming %s",
            name ? name : inet_ntoa(new->Address), new->fd,
            (!StreamingOff && new->Streaming) ? "allowed" : "not allowed");
+    }
 }
 
 
@@ -693,6 +716,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     rp->Streaming = TRUE;
     rp->Skip = FALSE;
     rp->NoResendId = FALSE;
+    rp->HoldTime = 0;
     rp++;
     (*count)++;
 #endif	/* !defined(HAVE_UNIX_DOMAIN_SOCKETS) */
@@ -705,6 +729,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     default_params.Skip = FALSE;
     default_params.NoResendId = FALSE;
     default_params.MaxCnx = 0;
+    default_params.HoldTime = 0;
     default_params.Password = COPY(NOPASS);
     default_params.Email = COPY(NOEMAIL);
     default_params.Comment = COPY(NOCOMMENT);
@@ -842,6 +867,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	      rp->Patterns = peer_params.Pattern != NULL ?
 		    RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
 	      rp->MaxCnx = peer_params.MaxCnx;
+	      rp->HoldTime = peer_params.HoldTime;
 	      rp++;
 	      continue;
 	    }
@@ -887,6 +913,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 		rp->Patterns = peer_params.Pattern != NULL ?
 		  RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
 		rp->MaxCnx = peer_params.MaxCnx;
+		rp->HoldTime = peer_params.HoldTime;
 		rp++;
 		t++;
 	      }
@@ -904,6 +931,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 		rp->Patterns = peer_params.Pattern != NULL ?
 		  RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
 		rp->MaxCnx = peer_params.MaxCnx;
+		rp->HoldTime = peer_params.HoldTime;
 		rp++;
 		continue;
 	      }
@@ -928,6 +956,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	      rp->Patterns = peer_params.Pattern != NULL ?
 		RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
 	      rp->MaxCnx = peer_params.MaxCnx;
+	      rp->HoldTime = peer_params.HoldTime;
 	      rp++;
 	    }
 #else
@@ -944,6 +973,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    rp->Patterns = peer_params.Pattern != NULL ?
 	      RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
 	    rp->MaxCnx = peer_params.MaxCnx;
+	    rp->HoldTime = peer_params.HoldTime;
 	    rp++;
 #endif	    /* defined(h_addr) */
 	  }
@@ -1060,6 +1090,22 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  break;
 	}
 	peer_params.MaxCnx = atoi(word);
+	continue;
+      }
+
+      /* hold-time */
+      if (!strncmp (word, HOLD_TIME, sizeof HOLD_TIME)) {
+	DISPOSE(word);
+	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	  break;
+	}
+	RCadddata(data, &infocount, K_HOLD_TIME, T_STRING, word);
+	for (p = word; isdigit(*p) && *p != '\0'; p++);
+	if (*p != '\0') {
+	  syslog(L_ERROR, MUST_BE_INT, LogName, filename, linecount);
+	  break;
+	}
+	peer_params.HoldTime = atoi(word);
 	continue;
       }
 
@@ -1352,9 +1398,10 @@ RClabelname(CHANNEL *cp) {
     REMOTEHOST	*rp;
     int		i;
 
-    for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
+    for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++) {
 	if (cp->Address.s_addr == rp->Address.s_addr)
 	    return rp->Label;
+    }
     return NULL;
 }
 

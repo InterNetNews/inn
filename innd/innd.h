@@ -197,6 +197,7 @@ typedef struct _CHANNEL {
     int			SaveUsed;
     int			ActiveCnx;
     int			MaxCnx;
+    int			HoldTime;
 } CHANNEL;
 
 
@@ -443,6 +444,7 @@ EXTERN TIMEINFO		Now;		/* Reasonably accurate time	*/
 EXTERN BOOL		ThrottledbyIOError;
 EXTERN BOOL		AddAlias;
 EXTERN BOOL		Hassamepath;
+EXTERN STRING		NCgreeting;
 
 /*
 ** Table size for limiting incoming connects.  Do not change the table
@@ -504,6 +506,7 @@ extern void		CHANreadloop(void);
 extern void		CHANsetup(int i);
 extern void		CHANshutdown();
 extern void		CHANtracing(CHANNEL *cp, BOOL Flag);
+extern void		CHANsetActiveCnx(CHANNEL *cp);
 
 extern void		RCHANadd(CHANNEL *cp);
 extern void		RCHANremove(CHANNEL *cp);
@@ -550,7 +553,7 @@ extern void		LCsetup();
 extern char		**NGsplit();
 extern NEWSGROUP	*NGfind();
 extern void		NGclose();
-extern CHANNEL		*NCcreate();
+extern CHANNEL		*NCcreate(int fd, BOOL MustAuthorize, BOOL IsLocal);
 extern void		NGparsefile();
 extern BOOL		NGrenumber();
 extern BOOL		NGlowmark(NEWSGROUP *ngp, long lomark);
@@ -558,6 +561,8 @@ extern BOOL		NGlowmark(NEWSGROUP *ngp, long lomark);
 extern void		NCclearwip(CHANNEL *cp);
 extern void		NCclose();
 extern void		NCsetup();
+extern void		NCwritereply(CHANNEL *cp, char *text);
+extern void		NCwriteshutdown(CHANNEL *cp, char *text);
 
 /* perl.c */
 extern char *           PLartfilter(char *artBody, int lines);

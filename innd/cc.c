@@ -986,14 +986,15 @@ CClogmode(av)
 **  Name the channels.  ("Name the bats -- simple names.")
 */
 STATIC STRING
-CCname(av)
-    char		*av[];
+CCname(char *av[])
 {
     static char		NL[] = "\n";
     static char		NIL[] = "\0";
-    register CHANNEL	*cp;
-    register char	*p;
-    register int	count;
+    static char		colon[] = ":";
+    char		buff[SMBUF];
+    CHANNEL		*cp;
+    char		*p;
+    int			count;
     int			i;
 
     p = av[0];
@@ -1010,6 +1011,37 @@ CCname(av)
 	if (++count > 1)
 	    BUFFappend(&CCreply, NL, 1);
 	p = CHANname(cp);
+	BUFFappend(&CCreply, p, strlen(p));
+	switch (cp->Type) {
+	case CTremconn:
+	    sprintf(buff, ":remconn::");
+	    break;
+	case CTreject:
+	    sprintf(buff, ":reject::");
+	    break;
+	case CTnntp:
+	    sprintf(buff, ":nntp:%d:%s", Now.time - cp->LastActive, (cp->MaxCnx > 0 && cp->ActiveCnx == 0) ? "paused" : "");
+	    break;
+	case CTlocalconn:
+	    sprintf(buff, ":localconn::");
+	    break;
+	case CTcontrol:
+	    sprintf(buff, ":control::");
+	    break;
+	case CTfile:
+	    sprintf(buff, "::");
+	    break;
+	case CTexploder:
+	    sprintf(buff, ":exploder::");
+	    break;
+	case CTprocess:
+	    sprintf(buff, ":");
+	    break;
+	default:
+	    sprintf(buff, ":unknown::");
+	    break;
+	}
+	p = buff;
 	BUFFappend(&CCreply, p, strlen(p));
     }
     BUFFappend(&CCreply, NIL, 1);
