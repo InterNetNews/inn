@@ -95,6 +95,22 @@ section index {
 			  value   "val6";       # Outgoing feeds: Accepted
 		};
 	};
+	graph {
+		title		"Bandwidth";
+		value		val1;
+		color		"#FFFFCE";
+		unit		"Kb";
+		data {
+			name	"Incoming";
+			color	"#50A0D0";
+			value	"byte(val4)";	# Incoming feeds: Volume
+		};
+		data {
+			name	"Outgoing";
+			color	"#0000FF";
+			value	"byte(val7)";	# Outgoing feeds: Volume
+		};
+	};
 };
 
 ###########################################################################

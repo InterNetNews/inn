@@ -2325,8 +2325,8 @@ sub NiceByte {
 sub kb2i {
   my $s = shift;
   my ($i, $u) = $s =~ m/^(\S+) (\S+)$/;
-  $i *= 1024 if $u =~ m/MB/o;
-  $i *= 1024 * 1024 if $u =~ m/GB/o;
+  $i *= 1024 * 8 if $u =~ m/MB/o;
+  $i *= 1024 * 1024 * 8 if $u =~ m/GB/o;
   return $i;
 }
 
