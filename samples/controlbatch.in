@@ -1,0 +1,92 @@
+#!/bin/sh
+########################################################################
+# controlbatch - Run controlchan against a batch file.
+#
+# Command usage:  controlbatch [feedsite batchfile]
+# Defaults are feedsite: controlchan!, batchfile: ${BATCH}/controlchan!
+########################################################################
+#
+# This script will run controlchan against a batch file.  You can use
+# it to clear occasional backlogs while running controls from a
+# channel, or even skip the channel and run control messages as a file
+# feed.
+#
+########################################################################
+#
+# If you're doing the channel thing, you might want to put something
+# like this in your crontab to do a cleanup in the wee hours:
+#
+#	00 04 * * *	/news/bin/controlbatch
+#
+########################################################################
+#
+# If you would rather skip the channel and just process controls each
+# hour in a batch, use this newsfeeds entry instead of the "stock"
+# version:
+#
+# controlchan!\
+#	:!*,control,control.*,!control.cancel\
+#	:Tf,Wnsm:
+#
+# And, a crontab entry something like this:
+#
+#	30 * * * *     /news/bin/controlbatch
+#
+########################################################################
+
+## Change this to point at *your* innshellvars ##
+. @LIBDIR@/innshellvars
+
+
+batchlock="${LOCKS}/LOCK.controlbatch"
+mypid=$$
+
+# A concession to INN 1.x
+if [ me${PATHBIN}ow == meow ] ; then
+	PATHBIN=${NEWSBIN}
+	export PATHBIN
+fi
+
+# See if we have no arguments and should use the defaults. If there are
+# arguments, make sure we have enough to attempt something useful.
+if [ me${1}ow != meow ] ; then
+	if [ me${2}ow == meow ] ; then
+		echo "Usage: ${0} [feedsite batchfile]" >&2
+		exit 0
+	else
+		feedsite=${1}
+		batchfile=${2}
+	fi
+else
+	feedsite=controlchan\!
+	batchfile=controlchan\!
+fi
+
+# Check if any other copies of controlbatch are running.  If we are not
+# alone, give up here and now.
+${PATHBIN}/shlock -p $mypid -f ${batchlock} || exit 0
+
+cd ${BATCH}
+
+if [ -s ${batchfile}.work ] ; then
+	cat ${batchfile}.work >>${batchfile}.doit
+	rm -f ${batchfile}.work
+fi
+
+if [ -s ${batchfile} ] ; then
+	mv ${batchfile} ${batchfile}.work
+	if ${PATHBIN}/ctlinnd -s -t30 flush ${feedsite} ; then
+		cat ${batchfile}.work >>${batchfile}.doit
+		rm -f ${batchfile}.work
+	fi
+fi
+
+if [ -s ${batchfile}.doit ] ; then
+	${PATHBIN}/controlchan \
+		< ${batchfile}.doit >> ${MOST_LOGS}/controlbatch.log 2>&1
+	# if you want extra assurance that nothing gets lost...
+	# cat ${batchfile}.doit >> ${batchfile}.done
+	rm -f ${batchfile}.doit
+fi
+
+rm -f ${batchlock}

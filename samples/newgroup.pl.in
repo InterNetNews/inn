@@ -3,9 +3,7 @@
 # Version 0.2, 31-AUG-1998
 #  Parameters: params sender reply-to token site action[=log] approved
 sub control_newgroup {
-    my $SM;
-    if (-e "$inn::newsbin/sm") { $SM = "$inn::newsbin/sm -q" }
-    else { $SM = "cat" }
+    my ($artfh, $qgroup);
 
     my @params = split(/\s+/,shift);
     my $sender = shift;
@@ -104,7 +102,8 @@ sub control_newgroup {
     if (! $errmsg) {
         # Scan active to see what sort of change we are making.
         open ACTIVE, $inn::active;
-        @oldgroup = grep(/^$groupname\s/, <ACTIVE>);
+        $qgroup = quotemeta ($groupname);
+        @oldgroup = grep(/^$qgroup\s/, <ACTIVE>);
         @oldgroup = split(/\s+/, $oldgroup[0]);
         #print "newgroup: $oldgroup[0] $oldgroup[1] $oldgroup[2] $oldgroup[3] $modflag\n";
         close ACTIVE;
@@ -134,7 +133,11 @@ sub control_newgroup {
             print TEMPFILE ("  $inn::newsbin/ctlinnd newgroup ",
                             "$groupname $modcmd $sender\n\n");
             print TEMPFILE ("The control message follows:\n\n");
-            open(ARTICLE, "$SM $token|");
+
+            $artfh = open_article($token);
+            next if (!defined($artfh));
+            *ARTICLE = $artfh;
+
             while (<ARTICLE>) { print TEMPFILE $_ }
             close(ARTICLE);
             close(TEMPFILE);
@@ -159,7 +162,11 @@ sub control_newgroup {
                    "-s newgroup $groupname $modcmd $sender");
 
             # If there's a tag line, update newsgroups too.
-            open(ARTICLE, "$SM $token|");
+
+            $artfh = open_article($token);
+            next if (!defined($artfh));
+            *ARTICLE = $artfh;
+
             NEWSGROUPS:
             while (<ARTICLE>) {
                 chomp;
@@ -197,7 +204,7 @@ sub control_newgroup {
                     open(NEWSGROUPS, "<$newsgroups");
                     open(TEMPFILE, ">$tempfile");
                     while (<NEWSGROUPS>) {
-                        if (! /$groupname\s/) { print TEMPFILE $_ }
+                        if (! /$qgroup\s/) { print TEMPFILE $_ }
                     }
                     print TEMPFILE ($ngname, "\t", $ngdesc, "\n");
 

@@ -37,12 +37,11 @@ my $lastctl = 0;
 
 my (@headers, %hdrcount, %hdrval, $msgid, $token, $progname, @progparams,
     $pathhost, @ctllist, $action, $logname, $act_log, $errmsg, @ctlprogs,
-    $subfind, $SM, $keyowner, $pgpresult);
+    $subfind, $SM, $keyowner, $pgpresult, $artfh);
 
 # If we have $newsbin/sm, this must be an INN 2.x installation.
-# Otherwise, we'll plop in the cat command to fake it on older
-# servers.  Sure it would be more efficient to open the article
-# directly when it's possible, but I'm lazy.
+# Otherwise, we'll fake it on older
+# servers.
 if (-e "$inn::newsbin/sm") { $SM = "$inn::newsbin/sm -q" }
 else { $SM = "cat" }
 
@@ -73,7 +72,9 @@ while (<STDIN>) {
         $token = $inn::spool . '/' . $token;
     }
 
-    open(ARTICLE, "$SM $token|");
+    $artfh = open_article($token);
+    next if (!defined($artfh));
+    *ARTICLE = $artfh;
 
     # suck in headers, normalize the strange ones.
     GETHEADERS:
@@ -331,7 +332,11 @@ sub logger {
     if ($logfile eq "mail") {
         open(LOGFILE,
 	     "|$inn::mailcmd -s '$message' $inn::newsmaster");
-        open(ARTICLE, "$SM $token|");
+
+        $artfh = open_article($token);
+        next if (!defined($artfh));
+        *ARTICLE = $artfh;
+
         for (<ARTICLE>) { print LOGFILE ("    ", $_) }
         close (ARTICLE);
         close (LOGFILE);
@@ -363,7 +368,11 @@ sub logger {
     if ($locktry < 0) {        # we got the lock
         open(LOGFILE, ">>$logfile");
         print LOGFILE $message,"\n";
-        open(ARTICLE, "$SM $token|");
+
+        $artfh = open_article($token);
+        next if (!defined($artfh));
+        *ARTICLE = $artfh;
+
         for (<ARTICLE>) { print LOGFILE ("    ", $_) }
 	print LOGFILE "\n";
         close (ARTICLE);
@@ -380,4 +389,25 @@ sub logger {
 	}
 	else { print "Cannot get lock $lockfile, held by: $lockpid\n" }
     }
+}
+
+
+# Open an article appropriately to our storage method (or lack thereof).
+sub open_article {
+    my $token = shift;
+    local(*ART);
+
+    my $fail = 0;
+    if ($SM eq "cat") {
+      $fail = 1 if (!open(ART,"<$token"));
+    }
+    else {
+      $fail = 1 if (!open(ART, "$method $token|"));
+    }
+    if ($fail) {
+      print scalar localtime,
+            ": Cannot open article '$token' using method'$SM': $!\n";
+      return undef;
+    }
+    return(*ART);
 }

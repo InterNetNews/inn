@@ -3,9 +3,7 @@
 # Version 0.1, 19-AUG-1998
 #  Parameters: params sender reply-to token site action[=log] approved
 sub control_ihave {
-    my $SM;
-    if (-e "$inn::newsbin/sm") { $SM = "$inn::newsbin/sm -q" }
-    else { $SM = "cat" }
+    my $artfh;
 
     my @params = split(/\s+/,shift);
     my $sender = shift;
@@ -23,8 +21,12 @@ sub control_ihave {
 
     if ($action eq "mail") {
         open(TEMPFILE, ">$tempfile");
-        open(ARTICLE, "$SM $token|");
-        SMHEAD: while(<ARTICLE>) { last SMHEAD if /^$/ }
+
+        $artfh = open_article($token);
+        next if (!defined($artfh));
+        *ARTICLE = $artfh;
+
+        IHHEAD: while(<ARTICLE>) { last IHHEAD if /^$/ }
         while (<ARTICLE>) {
             s/^~/~~/;
             print TEMPFILE $_;
@@ -45,8 +47,12 @@ sub control_ihave {
     }
     elsif ($action eq "doit") {
         open(GREPHIST, "|grephistory -i > $tempfile");
-        open(ARTICLE, "$SM $token|");
-        SMHEAD2: while(<ARTICLE>) { last SMHEAD2 if /^$/ }
+
+        $artfh = open_article($token);
+        next if (!defined($artfh));
+        *ARTICLE = $artfh;
+
+        IHHEAD2: while(<ARTICLE>) { last IHHEAD2 if /^$/ }
         while (<ARTICLE>) { print GREPHIST $_ }
         close(ARTICLE);
         close(GREPHIST);

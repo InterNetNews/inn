@@ -3,9 +3,7 @@
 # Version 0.1, 19-AUG-1998
 #  Parameters: params sender reply-to token site action[=log] approved
 sub control_senduuname {
-    my $SM;
-    if (-e "$inn::newsbin/sm") { $SM = "$inn::newsbin/sm -q" }
-    else { $SM = "cat" }
+    my $artfh;
 
     my @params = split(/\s+/,shift);
     my $sender = shift;
@@ -32,7 +30,11 @@ sub control_senduuname {
                         "$inn::mailcmd -s \"senduuname reply from ",
                         "$inn::pathhost\" $replyto\n\n");
         print TEMPFILE ("The control message follows:\n\n");
-        open(ARTICLE, "$SM $token|");
+
+        $artfh = open_article($token);
+        next if (!defined($artfh));
+        *ARTICLE = $artfh;
+
         while (<ARTICLE>) { print TEMPFILE $_ }
         close(ARTICLE);
         close(TEMPFILE);

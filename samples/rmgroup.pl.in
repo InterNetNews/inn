@@ -3,9 +3,7 @@
 # Version 0.1, 8-AUG-1998
 #  Parameters: params sender reply-to token site action[=log] approved
 sub control_rmgroup {
-    my $SM;
-    if (-e "$inn::newsbin/sm") { $SM = "$inn::newsbin/sm -q" }
-    else { $SM = "cat" }
+    my $artfh;
 
     my @params = split(/\s+/,shift);
     my $sender = shift;
@@ -21,11 +19,12 @@ sub control_rmgroup {
     my $tempfile = "$inn::tmpdir/rmgroup.$pid";
 
     my ($errmsg, $status, $nc, @component, @oldgroup, $locktry,
-	$ngname, $ngdesc, $modcmd);
+	$ngname, $ngdesc, $modcmd, $qgroup);
 
     # Scan active to see what sort of change we are making.
     open ACTIVE, $inn::active;
-    @oldgroup = grep(/^$groupname\s/, <ACTIVE>);
+    $qgroup = quotemeta ($groupname);
+    @oldgroup = grep(/^$qgroup\s/, <ACTIVE>);
     @oldgroup = split(/\s+/, $oldgroup[0]);
     #print "rmgroup: $oldgroup[0] $oldgroup[1] $oldgroup[2] $oldgroup[3] $modflag\n";
     close ACTIVE;
@@ -47,7 +46,11 @@ sub control_rmgroup {
         print TEMPFILE ("  $inn::newsbin/ctlinnd rmgroup ",
                         "$groupname\n\n");
         print TEMPFILE ("The control message follows:\n\n");
-        open(ARTICLE, "$SM $token|");
+
+        $artfh = open_article($token);
+        next if (!defined($artfh));
+        *ARTICLE = $artfh;
+
         while (<ARTICLE>) { print TEMPFILE $_ }
         close(ARTICLE);
         close(TEMPFILE);
@@ -94,7 +97,7 @@ sub control_rmgroup {
             open(NEWSGROUPS, "<$newsgroups");
             open(TEMPFILE, ">$tempfile");
             while (<NEWSGROUPS>) {
-                if (! /$groupname\s/) {
+                if (! /$qgroup\s/) {
                     print TEMPFILE $_;
                 }
             }

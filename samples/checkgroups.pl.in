@@ -3,10 +3,7 @@
 # Version 0.1, 19-AUG-1998
 #  Parameters: params sender reply-to token site action[=log] approved
 sub control_checkgroups {
-    my $SM;
-    if (-e "$inn::newsbin/sm") { $SM = "$inn::newsbin/sm -q" }
-    else { $SM = "cat" }
-
+    my $artfh;
     my @params = split(/\s+/,shift);
     my $sender = shift;
     my $replyto = shift;
@@ -27,7 +24,11 @@ sub control_checkgroups {
         open(TEMPFILE, ">$tempfile");
         print TEMPFILE ("$sender posted the following ",
                         "checkgroups message:\n");
-        open(ARTICLE, "$SM $token|");
+
+        $artfh = open_article($token);
+        next if (!defined($artfh));
+        *ARTICLE = $artfh;
+
         CGHEAD:
 	while(<ARTICLE>) {
 	    last CGHEAD if /^$/;
@@ -60,7 +61,11 @@ sub control_checkgroups {
     elsif ($action eq "doit") {
         # Do checkgroups.  Meow!
         open(TEMPFILE,">$tempfile");
-        open(ARTICLE, "$SM $token|");
+
+        $artfh = open_article($token);
+        next if (!defined($artfh));
+        *ARTICLE = $artfh;
+
         CGHEAD2: while (<ARTICLE>) { last CGHEAD2 if /^$/ }
         while (<ARTICLE>) { print TEMPFILE ($_)    if (! /^\s+$/) }
         close(TEMPFILE);

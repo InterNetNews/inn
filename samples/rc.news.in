@@ -34,7 +34,13 @@ if [ -f ${SERVERPID} ] ; then
 fi
 
 if [ ! -f ${PATHDB}/.news.daily ] ; then
-    echo 'No .news.daily file; need to run news.daily?' | eval ${MAIL}
+    case `find ${PATHBIN}/innd -mtime +1 -print 2>/dev/null` in
+    "")
+	;;
+    *)
+	echo 'No .news.daily file; need to run news.daily?' | eval ${MAIL}
+	;;
+    esac
 else
     case `find ${PATHDB}/.news.daily -mtime +1 -print 2>/dev/null` in
     "")
