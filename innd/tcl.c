@@ -81,16 +81,15 @@ TCLreadfilter()
  * comparing with what is found in packets.
  */
 
-static
-U_INT32_T
+static uint32_t
 makechecksum(sumbuf, buflen)
      u_char *sumbuf;
      int buflen;
 {
     register u_char *buf = (u_char *)sumbuf;
-    register INT32_T len = buflen;
-    register INT32_T sum;
-    U_INT32_T bwordl,bwordr,bword,suml,sumr;
+    register int32_t len = buflen;
+    register int32_t sum;
+    uint32_t bwordl,bwordr,bword,suml,sumr;
     int rmdr;
     u_char tbuf[4];
     u_char *ptbuf;
