@@ -232,6 +232,9 @@
 /* Define if you have the pread function.  */
 #undef HAVE_PREAD
 
+/* Define if you have the pstat function.  */
+#undef HAVE_PSTAT
+
 /* Define if you have the pwrite function.  */
 #undef HAVE_PWRITE
 

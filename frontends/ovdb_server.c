@@ -41,48 +41,6 @@ main(int argc UNUSED, char **argv UNUSED)
 
 #else /* USE_BERKELEY_DB */
 
-#ifdef _HPUX_SOURCE
-#include <sys/pstat.h>
-#else
-#if !defined(HAVE_SETPROCTITLE)
-static char     *TITLEstart;
-static char     *TITLEend;
-#endif
-#endif
-
-static void TITLEset(const char *what)
-{
-#if defined(HAVE_SETPROCTITLE)
-    setproctitle("%s", what);
-#else
-#if defined(_HPUX_SOURCE)
-    char                buff[BUFSIZ];
-    union pstun un;
-
-    un.pst_command = what;
-    (void)pstat(PSTAT_SETCMD, un, strlen(buff), 0, 0);
-
-#else	/* defined(_HPUX_SOURCE) */
-    register char       *p;
-    register int        i;
-    char                buff[BUFSIZ];
-
-    p = TITLEstart;
-
-    strncpy(buff, what, sizeof(buff));
-    buff[sizeof(buff) - 1] = '\0';
-    i = strlen(buff);
-    if (i > TITLEend - p - 2) {
-        i = TITLEend - p - 2;
-        buff[i] = '\0';
-    }
-    (void)strcpy(p, buff);
-    for (p += i; p < TITLEend; )
-        *p++ = ' ';
-
-#endif	/* defined(_HPUX_SOURCE) */
-#endif  /* defined(HAVE_SETPROCTITLE) */
-}
 
 #define SELECT_TIMEOUT 15
 
@@ -461,7 +419,6 @@ serverproc(int me)
     socklen_t salen;
     struct sockaddr_in sa;
     struct timeval tv;
-    char string[50];
     pid_t pid;
 
     pid = fork();
@@ -487,7 +444,7 @@ serverproc(int me)
 	readertab[i].buf = NULL;
     }
 
-    TITLEset("ovdb_server: 0 clients");
+    setproctitle("0 clients");
 
     /* main loop */
     while(!signalled) {
@@ -498,9 +455,8 @@ serverproc(int me)
 	    if(!ovdb_conf.maxrsconn || numreaders < ovdb_conf.maxrsconn) {
 		FD_SET(listensock, &rdset);
 		lastfd = listensock;
-		snprintf(string, sizeof(string), "ovdb_server: %d client%s *",
-                        numreaders, numreaders == 1 ? "" : "s");
-		TITLEset(string);
+                setproctitle("%d client%s *", numreaders,
+                             numreaders == 1 ? "" : "s");
 	    } else {
 		wholistens = -1;
 		kill(parent, SIGUSR1);
@@ -572,9 +528,8 @@ serverproc(int me)
         }
 	if(numreaders != lastnumreaders) {
 	    lastnumreaders = numreaders;
-	    snprintf(string, sizeof(string), "ovdb_server: %d client%s",
-                     numreaders, numreaders == 1 ? "" : "s");
-	    TITLEset(string);
+            setproctitle("%d client%s", numreaders,
+                         numreaders == 1 ? "" : "s");
 	}
     }
 
@@ -645,6 +600,8 @@ main(int argc, char *argv[])
     struct timeval tv;
     fd_set rdset;
 
+    setproctitle_init(argc, argv);
+
     openlog("ovdb_server", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     message_program_name = "ovdb_server";
 
@@ -652,12 +609,6 @@ main(int argc, char *argv[])
         die("should be started by ovdb_init");
     message_handlers_warn(1, message_log_syslog_err);
     message_handlers_die(1, message_log_syslog_err);
-
-#if     !defined(_HPUX_SOURCE) && !defined(HAVE_SETPROCTITLE)
-    /* Save start and extent of argv for TITLEset. */
-    TITLEstart = argv[0];
-    TITLEend = argv[argc - 1] + strlen(argv[argc - 1]) - 1;
-#endif
 
     if(ReadInnConf() < 0)
 	exit(1);

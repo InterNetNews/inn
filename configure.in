@@ -717,9 +717,13 @@ dnl than using default actions so as not to clutter config.h with defines
 dnl we never use.
 
 dnl Check for setproctitle in libc first, then libutil if not found there.
+dnl We have a replacement function if we can't find it, and then we also need
+dnl to check for pstat.
 AC_SEARCH_LIBS(setproctitle, util,
-    AC_DEFINE(HAVE_SETPROCTITLE, 1,
-        [Define if you have the setproctitle function.]))
+    [AC_DEFINE(HAVE_SETPROCTITLE, 1,
+        [Define if you have the setproctitle function.])],
+    [LIBOBJS="$LIBOBJS setproctitle.o"
+     AC_CHECK_FUNCS(pstat)])
 
 dnl The rat's nest of networking libraries.  The common cases are not to
 dnl need any extra libraries, or to need -lsocket -lnsl.  We need to avoid

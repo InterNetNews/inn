@@ -20,10 +20,6 @@
 #include <grp.h>
 #include <signal.h>
 
-#if defined(_HPUX_SOURCE)
-# include <sys/pstat.h>
-#endif
-
 #if HAVE_GETSPNAM
 # include <shadow.h>
 #endif
@@ -101,10 +97,6 @@ struct history *History;
 static double	STATstart;
 static double	STATfinish;
 static char	*PushedBack;
-#if	!defined(_HPUX_SOURCE)
-static char	*TITLEstart;
-static char	*TITLEend;
-#endif	/* !defined(_HPUX_SOURCE) */
 static sig_atomic_t	ChangeTrace;
 bool	DaemonMode = FALSE;
 bool	ForeGroundMode = FALSE;
@@ -325,45 +317,6 @@ CMD_unimp(ac, av)
     else
 	Reply("%d %s not implemented; try help\r\n",
 	    NNTP_BAD_COMMAND_VAL, av[0]);
-}
-
-
-/*
-**  Overwrite the original argv so that ps will show what's going on.
-*/
-static void
-TITLEset(const char* what)
-{
-#if defined(HAVE_SETPROCTITLE)
-    setproctitle("%s %s", ClientHost, what);
-#else
-#if	!defined(_HPUX_SOURCE)
-    register char	*p;
-    register int	i;
-    char		buff[BUFSIZ];
-
-    /* Make ps think we're swapped out so we get "(nnrpd)" in the output. */
-    p = TITLEstart;
-    *p++ = '-';
-
-    snprintf(buff, sizeof(buff), "%s %s", ClientHost, what);
-    i = strlen(buff);
-    if (i > TITLEend - p - 2) {
-	i = TITLEend - p - 2;
-	buff[i] = '\0';
-    }
-    (void)strcpy(p, buff);
-    for (p += i; p < TITLEend; )
-	*p++ = ' ';
-#else
-    char		buff[BUFSIZ];
-    union pstun un;
-    
-    snprintf(buff, sizeof(buff), "(nnrpd) %s %s", ClientHost, what);
-    un.pst_command = buff;
-    (void)pstat(PSTAT_SETCMD, un, strlen(buff), 0, 0);
-#endif	/* !defined(_HPUX_SOURCE) */
-#endif	/* defined(HAVE_SETPROCTITLE) */
 }
 
 
@@ -875,14 +828,10 @@ main(int argc, char *argv[])
     int ssl_result;
 #endif /* HAVE_SSL */
 
-#if	!defined(_HPUX_SOURCE)
-    /* Save start and extent of argv for TITLEset. */
-    TITLEstart = argv[0];
-    TITLEend = argv[argc - 1] + strlen(argv[argc - 1]) - 1;
-#endif	/* !defined(_HPUX_SOURCE) */
+    setproctitle_init(argc, argv);
 
-    /* Parse arguments.   Must COPY() optarg if used because the
-     * TITLEset() routine would clobber it! */
+    /* Parse arguments.   Must COPY() optarg if used because setproctitle may
+       clobber it! */
     Reject = NULL;
     LLOGenable = FALSE;
     GRPcur = NULL;
@@ -1113,7 +1062,7 @@ main(int argc, char *argv[])
 	/* Arrange to toggle tracing. */
 	(void)xsignal(SIGHUP, ToggleTrace);
  
-	TITLEset("nnrpd: accepting connections");
+	setproctitle("accepting connections");
  	
 	listen(lfd, 128);	
 
@@ -1141,7 +1090,7 @@ main(int argc, char *argv[])
 	} while (pid != 0);
 
 	/* child process starts here */
-	TITLEset("nnrpd: connected");
+	setproctitle("connected");
 	close(lfd);
 	dup2(fd, 0);
 	close(fd);
@@ -1239,7 +1188,7 @@ main(int argc, char *argv[])
     }
 
     /* Proceed with initialization. */
-    TITLEset("connect");
+    setproctitle("connect");
 
     /* Were we told to reject connections? */
     if (Reject) {
@@ -1387,7 +1336,7 @@ main(int argc, char *argv[])
 		NNTP_AUTH_NEEDED_VAL);
 	    continue;
 	}
-	TITLEset(av[0]);
+	setproctitle("%s", av[0]);
 	(*cp->Function)(ac, av);
 	if (PushedBack)
 	    break;

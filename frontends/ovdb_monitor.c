@@ -29,51 +29,6 @@ int main(int argc UNUSED, char **argv UNUSED)
 
 #else /* USE_BERKELEY_DB */
 
-
-#ifdef _HPUX_SOURCE
-#include <sys/pstat.h>
-#else
-#if !defined(HAVE_SETPROCTITLE)
-static char     *TITLEstart;
-static char     *TITLEend;
-#endif
-#endif
-
-static void TITLEset(const char *what)
-{
-#if defined(HAVE_SETPROCTITLE)
-    setproctitle("%s", what);
-#else
-#if defined(_HPUX_SOURCE)
-    char                buff[BUFSIZ];
-    union pstun un;
-
-    un.pst_command = what;
-    (void)pstat(PSTAT_SETCMD, un, strlen(buff), 0, 0);
-
-#else   /* defined(_HPUX_SOURCE) */
-    register char       *p;
-    register int        i;
-    char                buff[BUFSIZ];
-
-    p = TITLEstart;
-
-    strncpy(buff, what, sizeof(buff));
-    buff[sizeof(buff) - 1] = '\0';
-    i = strlen(buff);
-    if (i > TITLEend - p - 2) {
-        i = TITLEend - p - 2;
-        buff[i] = '\0';
-    }
-    (void)strcpy(p, buff);
-    for (p += i; p < TITLEend; )
-        *p++ = ' ';
-
-#endif  /* defined(_HPUX_SOURCE) */
-#endif  /* defined(HAVE_SETPROCTITLE) */
-}
-
-
 static int signalled = 0;
 static void sigfunc(int sig UNUSED)
 {
@@ -111,7 +66,7 @@ static void deadlock(void)
     if(ovdb_open_berkeleydb(OV_WRITE, 0))
 	_exit(1);
 
-    TITLEset("ovdb_monitor: deadlock");
+    setproctitle("deadlock");
 
     while(!signalled) {
 #if DB_VERSION_MAJOR == 2
@@ -144,7 +99,7 @@ static void checkpoint(void)
     if(ovdb_open_berkeleydb(OV_WRITE, 0))
 	_exit(1);
 
-    TITLEset("ovdb_monitor: checkpoint");
+    setproctitle("checkpoint");
 
     /* Open a database and close it.  This is so a necessary initialization
        gets performed (by the db->open function).  */
@@ -205,7 +160,7 @@ static void logremover(void)
     if(ovdb_open_berkeleydb(OV_WRITE, 0))
 	_exit(1);
 
-    TITLEset("ovdb_monitor: logremover");
+    setproctitle("logremover");
 
     while(!signalled) {
 #if DB_VERSION_MAJOR == 2
@@ -320,6 +275,8 @@ int main(int argc, char **argv)
 {
     char *pidfile;
 
+    setproctitle_init(argc, argv);
+
     openlog("ovdb_monitor", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     message_program_name = "ovdb_monitor";
 
@@ -327,12 +284,6 @@ int main(int argc, char **argv)
         die("should be started by ovdb_init");
     message_handlers_warn(1, message_log_syslog_err);
     message_handlers_die(1, message_log_syslog_err);
-
-#if     !defined(_HPUX_SOURCE) && !defined(HAVE_SETPROCTITLE)
-    /* Save start and extent of argv for TITLEset. */
-    TITLEstart = argv[0];
-    TITLEend = argv[argc - 1] + strlen(argv[argc - 1]) - 1;
-#endif
 
     if (ReadInnConf() < 0)
 	exit(1);

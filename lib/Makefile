@@ -13,9 +13,9 @@ SOURCES = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
 	lockfile.c makedir.c md5.c memcmp.c messages.c mkstemp.c mmap.c \
 	parsedate.c perl.c pread.c pwrite.c qio.c radix32.c readin.c \
 	remopen.c reservedfd.c resource.c sendarticle.c sendpass.c \
-	sequence.c setenv.c sockaddr.c strcasecmp.c strerror.c strlcat.c \
-	strlcpy.c strspn.c strtok.c timer.c uwildmat.c vector.c version.c \
-	wire.c xfopena.c xmalloc.c xsignal.c xwrite.c
+	sequence.c setenv.c setproctitle.c sockaddr.c strcasecmp.c \
+	strerror.c strlcat.c strlcpy.c strspn.c strtok.c timer.c uwildmat.c \
+	vector.c version.c wire.c xfopena.c xmalloc.c xsignal.c xwrite.c
 
 OBJECTS = $(LIBOBJS) \
 	buffer.o cleanfrom.o clientactive.o clientlib.o concat.o conffile.o \
@@ -183,9 +183,7 @@ mmap.o: mmap.c ../include/config.h ../include/inn/defines.h \
  ../include/inn/messages.h ../include/inn/mmap.h
 parsedate.o: parsedate.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
-perl.o: perl.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h ../include/macros.h \
- ../include/ppport.h ../include/innperl.h
+perl.o: perl.c ../include/config.h ../include/inn/defines.h
 pread.o: pread.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 pwrite.o: pwrite.c ../include/config.h ../include/inn/defines.h \
@@ -194,7 +192,7 @@ qio.o: qio.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
  ../include/macros.h
 radix32.o: radix32.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
+ ../include/clibrary.h ../include/libinn.h
 readin.o: readin.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
 remopen.o: remopen.c ../include/config.h ../include/inn/defines.h \
@@ -215,6 +213,9 @@ sequence.o: sequence.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/sequence.h
 setenv.o: setenv.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
+setproctitle.o: setproctitle.c ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h \
+ ../include/portable/setproctitle.h ../include/inn/messages.h
 sockaddr.o: sockaddr.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/socket.h \
  ../include/libinn.h

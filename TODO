@@ -269,9 +269,6 @@ Code Cleanup Projects:
   with cnfsstat).  pullart.c may also stand to be merged into the same
   utility (cnfsadmin might not be a bad name).
 
-* The code to set process titles should be pulled out into libinn from
-  nnrpd and the ovdb helper processes.
-
 * Use vectors or cvectors everywhere that argify and friends are currently
   used and eliminate the separate implementation in nnrpd/misc.c.
 
