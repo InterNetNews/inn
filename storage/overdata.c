@@ -179,12 +179,14 @@ overview_build(ARTNUM number, const char *article, size_t length,
         } else
             build_header(article, length, fields[field], overview);
     }
-    for (field = 0; field < extra->count; field++) {
-        buffer_append(overview, "\t", 1);
-        buffer_append(overview, extra->strings[field],
-                      strlen(extra->strings[field]));
-        buffer_append(overview, ": ", 2);
-        build_header(article, length, extra->strings[field], overview);
+    if (extra != NULL) {
+        for (field = 0; field < extra->count; field++) {
+            buffer_append(overview, "\t", 1);
+            buffer_append(overview, extra->strings[field],
+                          strlen(extra->strings[field]));
+            buffer_append(overview, ": ", 2);
+            build_header(article, length, extra->strings[field], overview);
+        }
     }
     buffer_append(overview, "\r\n", 2);
     return overview;
