@@ -59,3 +59,24 @@ const char *HeaderFindMem(const char *Article, const int ArtLen, const char *Hea
 	    return NULL;
     }
 }
+
+/* 
+ * Find end of current header
+ * just consider '\n', not '\r\n' for the non-wireformatted case
+ * if found but it's equal to EndOfData, return NULL, since it's impossible
+ * to see the next data
+ */
+char *FindEndOfHeader(const char *Body, const char *EndOfData)
+{
+  char *p, *q;
+
+  for (p = (char *)Body ; p < EndOfData ; p = ++q) {
+    if ((q = memchr(p, '\n', EndOfData - p)) == NULL) {
+      return NULL;
+    }
+    if ((q < EndOfData) && (!ISWHITE(*(q + 1)))) {
+      return(q);
+    }
+  }
+  return NULL;
+}

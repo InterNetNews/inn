@@ -377,7 +377,7 @@ STATIC BOOL ARTopenbyid(char *msg_id, ARTNUM *ap)
 */
 STATIC void ARTsendmmap(SENDTYPE what)
 {
-    char		*p, *q, *r, *s, *path, *xref, *virtualpath;
+    char		*p, *q, *r, *s, *path, *xref, *endofpath;
     struct timeval	stv, etv;
     long		bytecount;
     char		lastchar;
@@ -392,7 +392,7 @@ STATIC void ARTsendmmap(SENDTYPE what)
     if (what == STarticle) {
 	q = ARThandle->data;
 	p = ARThandle->data + ARThandle->len;
-     } else {
+    } else {
 	for (q = p = ARThandle->data; p < (ARThandle->data + ARThandle->len); p++) {
 	    if (*p == '\r')
 		continue;
@@ -433,7 +433,17 @@ STATIC void ARTsendmmap(SENDTYPE what)
 	    ARTgettime+=(etv.tv_usec - stv.tv_usec) / 1000;
 	    return;
 	}
-	if ((r = memchr(xref, ' ', q - xref)) == NULL) {
+	if ((endofpath = (char *)FindEndOfHeader(path, ARThandle->data + ARThandle->len)) == NULL) {
+	    SendIOv(".\r\n", 3);
+	    ARTgetsize += 3;
+	    PushIOv();
+	    gettimeofday(&etv, NULL);
+	    ARTget++;
+	    ARTgettime+=(etv.tv_sec - stv.tv_sec) * 1000;
+	    ARTgettime+=(etv.tv_usec - stv.tv_usec) / 1000;
+	    return;
+	}
+	if ((r = memchr(xref, ' ', p - xref)) == NULL) {
 	    SendIOv(".\r\n", 3);
 	    ARTgetsize += 3;
 	    PushIOv();
@@ -455,24 +465,28 @@ STATIC void ARTsendmmap(SENDTYPE what)
 		return;
 	    }
 	}
-	virtualpath = NEW(char, VirtualPathlen + 2);
-	sprintf(virtualpath, "!%s", VirtualPath);
-	for (s = path ; s + VirtualPathlen + 1 < ARThandle->data + ARThandle->len ; s++) {
-	    if (*s != *virtualpath || !EQn(s, virtualpath, VirtualPathlen + 1))
+	for (s = path, lastchar = '\0';
+	    s + VirtualPathlen + 1 < endofpath;
+	    lastchar = *s++) {
+	    if ((lastchar != '\0' && lastchar != '!') || *s != *VirtualPath ||
+		!EQn(s, VirtualPath, VirtualPathlen - 1))
+		continue;
+	    if (*(s + VirtualPathlen - 1) != '\0' &&
+		*(s + VirtualPathlen - 1) != '!')
 		continue;
 	    break;
 	}
-	if (s + VirtualPathlen + 1 < ARThandle->data + ARThandle->len) {
+	if (s + VirtualPathlen + 1 < endofpath) {
 	    if (xref > path) {
 	        SendIOv(q, path - q);
-	        SendIOv(s + 1, xref - (s + 1));
+	        SendIOv(s, xref - s);
 	        SendIOv(VirtualPath, VirtualPathlen - 1);
 	        SendIOv(r, p - r);
 	    } else {
 	        SendIOv(q, xref - q);
 	        SendIOv(VirtualPath, VirtualPathlen - 1);
 	        SendIOv(xref, path - xref);
-	        SendIOv(s + VirtualPathlen, p - (s + VirtualPathlen));
+	        SendIOv(s, p - s);
 	    }
 	} else {
 	    if (xref > path) {
@@ -489,7 +503,6 @@ STATIC void ARTsendmmap(SENDTYPE what)
 	        SendIOv(path, p - path);
 	    }
 	}
-	DISPOSE(virtualpath);
     } else
 	SendIOv(q, p - q);
     ARTgetsize += p - q;
@@ -520,7 +533,7 @@ STATIC void ARTsendmmap(SENDTYPE what)
 char *GetHeader(char *header, BOOL IsLines)
 {
     static char		buff[40];
-    char		*p, *q, *r, *s, *t, *virtualpath;
+    char		*p, *q, *r, *s, *t, prevchar;
     /* Bogus value here to make sure that it isn't initialized to \n */
     char		lastchar = ' ';
     char		*limit;
@@ -578,21 +591,26 @@ char *GetHeader(char *header, BOOL IsLines)
 		    }
 		}
 		if (pathheader && (VirtualPathlen > 0)) {
-		    virtualpath = NEW(char, VirtualPathlen + 1);
-		    sprintf(virtualpath, "!%s", VirtualPath);
-		    for (s = p ; s + VirtualPathlen + 1 < ARThandle->data + ARThandle->len ; s++) {
-			if (*s != *virtualpath || !EQn(s, virtualpath, VirtualPathlen + 1))
+		    for (s = p, prevchar = '\0';
+			s + VirtualPathlen + 1 < ARThandle->data + ARThandle->len;
+			prevchar = *s++) {
+			if ((prevchar != '\0' && prevchar != '!') ||
+			    *s != *VirtualPath ||
+			    !EQn(s, VirtualPath, VirtualPathlen - 1))
+			    continue;
+			if (*(s + VirtualPathlen - 1) != '\0' &&
+			    *(s + VirtualPathlen - 1) != '!')
 			    continue;
 			break;
 		    }
 		    if (s + VirtualPathlen + 1 < ARThandle->data + ARThandle->len) {
-			memcpy(retval, s + 1, q - (s + 1));
+			memcpy(retval, s, q - s);
+			*(retval + (int)(q - s)) = '\0';
 		    } else {
 			memcpy(retval, VirtualPath, VirtualPathlen);
 			memcpy(retval + VirtualPathlen, p, q - p);
 			*(retval + (int)(q - p) + VirtualPathlen) = '\0';
 		    }
-		    DISPOSE(virtualpath);
 		} else if (xrefheader && (VirtualPathlen > 0)) {
 		    if ((r = memchr(p, ' ', q - p)) == NULL)
 			return NULL;
