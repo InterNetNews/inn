@@ -72,5 +72,6 @@ sub control_checkgroups {
         close(ARTICLE);
         system("$inn::pathnews/lib/docheckgroups '$newsgrouppats' < $tempfile | " .
                "$inn::newsbin/writelog $logging \"checkgroups by $sender\"");
+        unlink($tempfile);
     }
 }

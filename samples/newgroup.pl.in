@@ -214,6 +214,7 @@ sub control_newgroup {
                     close TEMPFILE;
                     close NEWSGROUPS;
                     unlink "$inn::locks/LOCK.newsgroups";
+                    unlink($tempfile);
                 }
             } # update newsgroups
 

@@ -65,6 +65,7 @@ for (@ctlprogs) {
 CHANITEM:
 while (<STDIN>) {
     undef(@headers);
+    undef(@progparams);
     undef(%hdrcount);
     undef(%hdrval);
 
