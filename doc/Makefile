@@ -25,7 +25,8 @@ SEC5	= active.5 control.ctl.5 distrib.pats.5 expire.ctl.5 history.5 \
 	newslog.5 nnrp.access.5 nntpsend.ctl.5 overview.fmt.5 passwd.nntp.5 \
 	innfeed.conf.5 motd.news.5 overview.ctl.5 storage.ctl.5 storage.conf.5 \
 	cycbuff.conf.5 incoming.conf.5
-SEC8	= actsync.8 archive.8 batcher.8 buffchan.8 crosspost.8 ctlinnd.8 \
+SEC8	= actsync.8 actsyncd.8 archive.8 \
+	batcher.8 buffchan.8 crosspost.8 ctlinnd.8 \
 	cvtbatch.8 expire.8 expireover.8 expirerm.8 fastrm.8 filechan.8 \
 	inncheck.8 innd.8 innreport.8 innstat.8 innwatch.8 innxbatch.8 \
 	innxmit.8 makeactive.8 makehistory.8 news-recovery.8 news.daily.8 \
@@ -61,7 +62,8 @@ INSTALLED_SEC5 =	$D$(MAN5)/active.5 $D$(MAN5)/control.ctl.5 \
 			$D$(MAN5)/storage.ctl.5 $D$(MAN5)/storage.conf.5 \
 			$D$(MAN5)/cycbuff.conf.5 $D$(MAN5)/incoming.conf.5
 
-INSTALLED_SEC8 =	$D$(MAN8)/actsync.8 $D$(MAN8)/archive.8 \
+INSTALLED_SEC8 =	$D$(MAN8)/actsync.8 $D$(MAN8)/actsyncd.8 \
+			$D$(MAN8)/archive.8 \
 			$D$(MAN8)/batcher.8 $D$(MAN8)/buffchan.8 \
 			$D$(MAN8)/crosspost.8 $D$(MAN8)/ctlinnd.8 \
 			$D$(MAN8)/cvtbatch.8 $D$(MAN8)/expire.8 \
@@ -158,6 +160,7 @@ $D$(MAN5)/storage.conf.5:	storage.conf.5     ; $(COPY) $? $@
 $D$(MAN5)/cycbuff.conf.5:	cycbuff.conf.5     ; $(COPY) $? $@
 $D$(MAN5)/incoming.conf.5:	incoming.conf.5    ; $(COPY) $? $@
 $D$(MAN8)/actsync.8:		actsync.8	   ; $(COPY) $? $@
+$D$(MAN8)/actsyncd.8:		actsyncd.8	   ; $(COPY) $? $@
 $D$(MAN8)/archive.8:		archive.8          ; $(COPY) $? $@
 $D$(MAN8)/batcher.8:		batcher.8          ; $(COPY) $? $@
 $D$(MAN8)/buffchan.8:		buffchan.8         ; $(COPY) $? $@
