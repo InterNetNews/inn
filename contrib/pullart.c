@@ -283,7 +283,7 @@ WriteArticle
 	/*  No header specified  */
 
 	/*  Open file, write buffer, close file  */
-	sprintf (filename, "%s.%06i", fileprefix, fileno);
+	snprintf (filename, sizeof(filename), "%s.%06i", fileprefix, fileno);
 
 	outfile = fopen (filename, "wt");
 	if (outfile==NULL) {

@@ -235,7 +235,7 @@ int numart;
   }
 
   do {
-    sprintf(ihave,"ihave <%u@a>\r\n",start+numart);
+    snprintf(ihave,sizeof(ihave),"ihave <%u@a>\r\n",start+numart);
     ptime();
     printf(">>> %s",ihave);
     if ( write(sock,ihave,strlen(ihave)) != strlen(ihave) ) {

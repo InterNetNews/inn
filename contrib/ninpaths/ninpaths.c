@@ -438,7 +438,7 @@ report(const char *hostname, int verbose)
 	    if (verbose > 1 || (100*list->sentto > total)) {
 		if (list->id[0] != 0 && list->rlink != NULL) {
 		    columns = 3+strlen(list->id);
-		    sprintf(hostString,"%s H ",list->id);
+		    snprintf(hostString,sizeof(hostString),"%s H ",list->id);
 		    needHost = 1;
 		    rlist = list->rlink;
 		    while (rlist != NULL) {
