@@ -67,24 +67,52 @@ group_path(const char *group)
     size_t length;
     const char *gp;
 
+    /* The path of the data files for news.groups is dir/n/g/news.groups.  In
+       other words, the first letter of each component becomes a directory.
+       The length of the path is therefore the length of the base overview
+       directory path, one character for the slash, two characters for the
+       first letter and initial slash, two characters for each hierarchical
+       level of the group, and then the length of the group name.
+
+       For robustness, we want to handle leading or multiple consecutive
+       periods.  We only recognize a new hierarchical level after a string of
+       periods (which doesn't end the group name). */
     length = strlen(innconf->pathoverview);
     for (gp = group; *gp != '\0'; gp++)
-        if (*gp == '.')
+        if (*gp == '.') {
+            if (gp[1] == '.' || gp[0] == '\0')
+                continue;
             length += 2;
-    length += 2 + 1 + strlen(group) + 1;
+        }
+    length += 1 + 2 + strlen(group) + 1;
     path = xmalloc(length);
     strlcpy(path, innconf->pathoverview, length);
     p = path + strlen(innconf->pathoverview);
-    for (gp = group; gp != NULL; gp = strchr(gp, '.')) {
-        if (gp != group)
-            gp++;
-        if (*gp != '\0') {
+
+    /* Generate the hierarchical directories. */
+    if (*group != '.' && *group != '\0') {
+        *p++ = '/';
+        *p++ = *group;
+    }
+    for (gp = strchr(group, '.'); gp != NULL; gp = strchr(gp, '.')) {
+        gp++;
+        if (gp == group + 1)
+            continue;
+        if (*gp != '\0' && *gp != '.' && *gp != '/') {
             *p++ = '/';
             *p++ = *gp;
         }
     }
     *p++ = '/';
+
+    /* Finally, append the group name to the generated path and then replace
+       all slashes with commas.  Commas have the advantage of being clearly
+       illegal in newsgroup names because of the syntax of the Newsgroups
+       header, but aren't shell metacharacters. */
     strlcpy(p, group, length - (p - path));
+    for (; *p != '\0'; p++)
+        if (*p == '/')
+            *p = ',';
     return path;
 }
 
@@ -1055,7 +1083,7 @@ tdx_data_audit(const char *group, struct group_entry *index, bool fix)
     /* All done.  Close things down and flush the data we changed, if
        necessary. */
     if (changed)
-        mapcntl(index, sizeof(*index), MS_ASYNC);
+        msync_page(index, sizeof(*index), MS_ASYNC);
 
  end:
     tdx_data_close(data);
