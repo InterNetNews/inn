@@ -249,7 +249,7 @@ InitBackoffConstants()
     return;
 
   /* Need this database for backing off */
-  strncpy(postrec_dir,PERMaccessconf->backoff_db,SMBUF);
+  strlcpy(postrec_dir, PERMaccessconf->backoff_db, sizeof(postrec_dir));
   if (stat(postrec_dir, &st) < 0) {
     if (ENOENT == errno) {
       if (!MakeDirectory(postrec_dir, true)) {

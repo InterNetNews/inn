@@ -180,10 +180,8 @@ char *HandleHeaders(char *article)
        PerlFilter (false) ;
    } else if (rc == 1) {
        p = POPp;
-       if (p != NULL && *p != '\0') {
-           strncpy(buf, p, sizeof(buf) - 1);
-           buf[sizeof(buf) - 1] = '\0';
-       }
+       if (p != NULL && *p != '\0')
+           strlcpy(buf, p, sizeof(buf));
    }
 
    FREETMPS ;

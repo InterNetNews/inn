@@ -310,14 +310,10 @@ CheckCancel(char *msgid, bool JustReturn)
 	    *p = '\0';
 	if (buff[0] == '.' && buff[1] == '\0')
 	    break;
-        if (strncmp(buff, "Sender:", 7) == 0) {
-            strncpy(remotefrom, TrimSpaces(&buff[7]), SMBUF);
-            remotefrom[SMBUF - 1] = '\0';
-        }
-        else if (remotefrom[0] == '\0' && strncmp(buff, "From:", 5) == 0) {
-            strncpy(remotefrom, TrimSpaces(&buff[5]), SMBUF);
-            remotefrom[SMBUF - 1] = '\0';
-        }
+        if (strncmp(buff, "Sender:", 7) == 0)
+            strlcpy(remotefrom, TrimSpaces(&buff[7]), SMBUF);
+        else if (remotefrom[0] == '\0' && strncmp(buff, "From:", 5) == 0)
+            strlcpy(remotefrom, TrimSpaces(&buff[5]), SMBUF);
     }
     if (remotefrom[0] == '\0') {
 	if (JustReturn)
@@ -327,8 +323,7 @@ CheckCancel(char *msgid, bool JustReturn)
     HeaderCleanFrom(remotefrom);
 
     /* Get the local user. */
-    strncpy(localfrom, HDR(_sender) ? HDR(_sender) : HDR(_from), SMBUF);
-    localfrom[SMBUF - 1] = '\0';
+    strlcpy(localfrom, HDR(_sender) ? HDR(_sender) : HDR(_from), SMBUF);
     HeaderCleanFrom(localfrom);
 
     /* Is the right person cancelling? */
@@ -409,8 +404,7 @@ CheckControl(char *ctrl, struct passwd *pwp)
 	  || strcmp(ctrl, "sendsys")     == 0
 	  || strcmp(ctrl, "senduuname")  == 0
 	  || strcmp(ctrl, "version")     == 0) {
-	strncpy(name, pwp->pw_name, SMBUF);
-        name[SMBUF - 1] = '\0';
+	strlcpy(name, pwp->pw_name, SMBUF);
 	if (!AnAdministrator(name, pwp->pw_gid))
             die("ask your news administrator to do the %s for you", ctrl);
     }
@@ -442,17 +436,14 @@ FormatUserName(struct passwd *pwp, char *node)
 
 #if	!defined(DONT_MUNGE_GETENV)
     memset(outbuff, 0, SMBUF);
-    if ((p = getenv("NAME")) != NULL) {
-	strncpy(outbuff, p, SMBUF);
-	outbuff[SMBUF - 1] = '\0';	/* paranoia */
-    }
+    if ((p = getenv("NAME")) != NULL)
+	strlcpy(outbuff, p, SMBUF);
     if (strlen(outbuff) == 0) {
 #endif	/* !defined(DONT_MUNGE_GETENV) */
 
 
 #ifndef DO_MUNGE_GECOS
-    strncpy(outbuff, pwp->pw_gecos, SMBUF);
-    outbuff[SMBUF - 1] = '\0';
+    strlcpy(outbuff, pwp->pw_gecos, SMBUF);
 #else
     /* Be very careful here.  If we're not, we can potentially overflow our
      * buffer.  Remember that on some Unix systems, the content of the GECOS
@@ -551,8 +542,7 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
       if (strlen(pwp->pw_name) + strlen(p) + 2 > sizeof(buff))
           die("username and host are too long");
       sprintf(buff, "%s@%s", pwp->pw_name, p);
-      strncpy(from, HDR(_from), SMBUF);
-      from[SMBUF - 1] = '\0';
+      strlcpy(from, HDR(_from), SMBUF);
       HeaderCleanFrom(from);
       if (strcmp(from, buff) != 0)
         HDR(_sender) = xstrdup(buff);

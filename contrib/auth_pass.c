@@ -81,13 +81,13 @@ main(int argc, char** argv)
         fprintf(stdout, "Username: "); fflush(stdout);
         fgets(username, sizeof(username), stdin);
     } else {
-        strncpy(username, argv[1], sizeof(username)-1);
+        strlcpy(username, argv[1], sizeof(username));
     }
     if (argc<3) {
         fprintf(stdout, "Password: "); fflush(stdout);
         fgets(password, sizeof(password), stdin);
     } else {
-        strncpy(password, argv[2], sizeof(password)-1);
+        strlcpy(password, argv[2], sizeof(password));
     }
     
     /*
@@ -117,9 +117,9 @@ main(int argc, char** argv)
                 (long)sin.sin_family, username);
         exit(1);
     } else if ((hp = gethostbyaddr((char *)&sin.sin_addr, sizeof(sin.sin_addr), AF_INET)) == NULL) {
-        strcpy(peername, inet_ntoa(sin.sin_addr));
+        strlcpy(peername, inet_ntoa(sin.sin_addr), sizeof(peername));
     } else {
-        strncpy(peername, hp->h_name, sizeof(peername));
+        strlcpy(peername, hp->h_name, sizeof(peername));
     }
    
     /*

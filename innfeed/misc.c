@@ -245,12 +245,9 @@ char *getMsgId (const char *p)
   q = p ;
   while ( *q && !CTYPE (isspace, *q) )
     q++ ;
-  
-  rval = xmalloc (q - p + 1) ;
 
-  strncpy (rval,p,(size_t) (q - p)) ;
-  rval [q - p] = '\0' ;
-  
+  rval = xstrndup (p, q - p) ;
+
   return rval ;
 }
 

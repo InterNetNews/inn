@@ -234,9 +234,8 @@ WriteArticle
 	if (headerin!=NULL)
 		{
 		/*  Find \nHEADER  */
-		header[0] = '\0';
-		strcat (header, "\n");
-		strncat (header, headerin, NBUFF-3);
+                strlcpy(header, "\n", sizeof(header));
+                strlcat(header, headerin, sizeof(header));
 
 		begptr = strstr (buff, header);
 		

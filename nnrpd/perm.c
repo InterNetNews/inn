@@ -1378,8 +1378,7 @@ void PERMgetaccess(char *nnrpaccess)
 	    uname = auth_realms[i]->default_user;
     }
     if (uname) {
-	strncpy(PERMuser, uname, sizeof(PERMuser) - 1);
-        PERMuser[sizeof(PERMuser) - 1] = '\0';
+	strlcpy(PERMuser, uname, sizeof(PERMuser));
 	uname = strchr(PERMuser, '@');
 	if (!uname && auth_realms[i]->default_domain) {
 	    /* append the default domain to the username */
@@ -1442,8 +1441,7 @@ void PERMlogin(char *uname, char *pass, char *errorstr)
     while (runame == NULL && i--)
 	runame = AuthenticateUser(auth_realms[i], uname, pass, errorstr);
     if (runame) {
-	strncpy(PERMuser, runame, sizeof(PERMuser) - 1);
-        PERMuser[sizeof(PERMuser) - 1] = '\0';
+	strlcpy(PERMuser, runame, sizeof(PERMuser));
 	uname = strchr(PERMuser, '@');
 	if (!uname && auth_realms[i]->default_domain) {
 	    /* append the default domain to the username */
@@ -1944,10 +1942,8 @@ typedef void (*LineFunc)(char*);
 /* messages from a program's stdout */
 static void HandleProgLine(char *ln)
 {
-    if (strncasecmp(ln, "User:", strlen("User:")) == 0) {
-	strncpy(ubuf, ln+strlen("User:"), sizeof(ubuf) - 1);
-        ubuf[sizeof(ubuf) - 1] = '\0';
-    }
+    if (strncasecmp(ln, "User:", strlen("User:")) == 0)
+	strlcpy(ubuf, ln + strlen("User:"), sizeof(ubuf));
 }
 
 /* messages from a programs stderr */

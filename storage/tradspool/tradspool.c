@@ -530,7 +530,6 @@ CrackXref(char *xref, unsigned int *lenp) {
     char **xrefs;
     char *q;
     unsigned int len, xrefsize;
-    unsigned int slen;
 
     len = 0;
     xrefsize = 5;
@@ -549,10 +548,7 @@ CrackXref(char *xref, unsigned int *lenp) {
 	/* skip to next space or EOL */
 	for (q=p; *q && *q != ' ' && *q != '\n' && *q != '\r' ; ++q) ;
 
-	slen = q-p;
-	xrefs[len] = xmalloc(slen + 1);
-	strncpy(xrefs[len], p, slen);
-	xrefs[len][slen] = '\0';
+        xrefs[len] = xstrndup(p, q - p);
 
 	if (++len == xrefsize) {
 	    /* grow xrefs if needed. */
@@ -1009,6 +1005,7 @@ FindDir(DIR *dir, char *dirname) {
     bool flag;
     char *path;
     struct stat sb;
+    size_t length;
     unsigned char namelen;
 
     while ((de = readdir(dir)) != NULL) {
@@ -1021,11 +1018,11 @@ FindDir(DIR *dir, char *dirname) {
 	}
 	if (!flag) continue; /* if not all digits, skip this entry. */
 
-	path = xmalloc(strlen(dirname) + namelen + 2);
-	strcpy(path, dirname);
-	strcat(path, "/");
-	strncpy(&path[strlen(dirname)+1], de->d_name, namelen);
-	path[strlen(dirname)+namelen+1] = '\0';
+        length = strlen(dirname) + namelen + 2;
+	path = xmalloc(length);
+        strlcpy(path, dirname, length);
+        strlcat(path, "/", length);
+        strlcat(path, de->d_name, length);
 
 	if (lstat(path, &sb) < 0) {
 	    free(path);

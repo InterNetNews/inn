@@ -295,7 +295,6 @@ CrackXref(const char *xref, unsigned int *lenp) {
     char **xrefs;
     char *q;
     unsigned int len, xrefsize;
-    unsigned int slen;
 
     len = 0;
     xrefsize = 5;
@@ -319,10 +318,7 @@ CrackXref(const char *xref, unsigned int *lenp) {
 	/* skip to next space or EOL */
 	for (q=p; *q && *q != ' ' && *q != '\n' && *q != '\r' ; ++q) ;
 
-	slen = q-p;
-	xrefs[len] = xmalloc(slen + 1);
-	strncpy(xrefs[len], p, slen);
-	xrefs[len][slen] = '\0';
+        xrefs[len] = xstrndup(p, q - p);
 
 	if (++len == xrefsize) {
 	    /* grow xrefs if needed. */
@@ -347,7 +343,6 @@ CrackGroups(char *group, unsigned int *lenp) {
     char **groups;
     char *q;
     unsigned int len, grpsize;
-    unsigned int slen;
 
     len = 0;
     grpsize = 5;
@@ -366,10 +361,7 @@ CrackGroups(char *group, unsigned int *lenp) {
 	/* skip to next comma, space, or EOL */
 	for (q=p; *q && *q != ',' && *q != ' ' && *q != '\n' && *q != '\r' ; ++q) ;
 
-	slen = q-p;
-	groups[len] = xmalloc(slen + 1);
-	strncpy(groups[len], p, slen);
-	groups[len][slen] = '\0';
+        groups[len] = xstrndup(p, q - p);
 
 	if (++len == grpsize) {
 	    /* grow groups if needed. */

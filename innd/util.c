@@ -71,27 +71,27 @@ MaxLength(const char *p, const char *q)
     /* Already short enough? */
     i = strlen(p);
     if (i < sizeof buff - 1) {
-        strcpy(buff, p);
+        strlcpy(buff, p, sizeof(buff));
         return Join(buff);
     }
 
     /* Simple case of just want the begining? */
     if ((unsigned)(q - p) < sizeof buff - 4) {
-        strncpy(buff, p, sizeof buff - 4);
-        strcpy(&buff[sizeof buff - 4], "...");
+        strlcpy(buff, p, sizeof(buff) - 3);
+        strlcat(buff, "...", sizeof(buff));
     }
     /* Is getting last 10 characters good enough? */
     else if ((p + i) - q < 10) {
-        strncpy(buff, p, sizeof buff - 14);
-        strcpy(&buff[sizeof buff - 14], "...");
-        strcpy(&buff[sizeof buff - 11], &p[i - 10]);
+        strlcpy(buff, p, sizeof(buff) - 13);
+        strlcat(buff, "...", sizeof(buff) - 10);
+        strlcat(buff, &p[i - 10], sizeof(buff));
     }
     else {
         /* Not in last 10 bytes, so use double elipses. */
-        strncpy(buff, p, sizeof buff - 17);
-        strcpy(&buff[sizeof buff - 17], "...");
-        strncpy(&buff[sizeof buff - 14], &q[-5], 10);
-        strcpy(&buff[sizeof buff - 4], "...");
+        strlcpy(buff, p, sizeof(buff) - 16);
+        strlcat(buff, "...", sizeof(buff) - 13);
+        strlcat(buff, &q[-5], sizeof(buff) - 3);
+        strlcat(buff, "...", sizeof(buff));
     }
     return Join(buff);
 }

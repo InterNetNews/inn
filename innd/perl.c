@@ -127,10 +127,8 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
         PerlFilter(false);
     } else if (rc == 1) {
         p = POPp;
-        if (p && *p) {
-            strncpy(buf, p, sizeof(buf) - 1);
-            buf[sizeof(buf) - 1] = '\0';
-        }
+        if (p && *p)
+            strlcpy(buf, p, sizeof(buf));
     }
 
     PUTBACK;
@@ -175,10 +173,8 @@ PLmidfilter(char *messageID)
         PerlFilter(false);
     } else if (rc == 1) {
         p = POPp;
-        if (p && *p) {
-            strncpy(buf, p, sizeof(buf) - 1);
-            buf[sizeof(buf) - 1] = '\0';
-        }
+        if (p && *p)
+            strlcpy(buf, p, sizeof(buf));
     }
     
     PUTBACK;

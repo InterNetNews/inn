@@ -6,6 +6,7 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/wait.h"
+#include <assert.h>
 #include <errno.h>
 #include <pwd.h>
 #include <syslog.h>  
@@ -359,8 +360,8 @@ WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen,
 	    return;
 	}
 	/* q points to start of ng name, r points to its end. */
-	strncpy(temp, q, r-q);
-	temp[r-q] = '\0';
+        assert(sizeof(temp) > r - q);
+	strlcpy(temp, q, r - q + 1);
 	fprintf(OverTmpFile, "%s\t%10lu\t%lu\t%s\t", temp,
                 (unsigned long) arrived, (unsigned long) expires,
                 TokenToText(*token));

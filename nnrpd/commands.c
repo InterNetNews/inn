@@ -204,8 +204,7 @@ PERMgeneric(char *av[], char *accesslist)
     PERMaccessconf->allowihave = strchr(fields[1], 'I') != NULL;
     if (strchr(fields[1], 'N') != NULL) PERMaccessconf->allownewnews = true;
     snprintf(PERMuser, sizeof(PERMuser), "%s@%s", fields[2], fields[0]);
-    strncpy(PERMpass, fields[3], sizeof(PERMpass) - 1);
-    PERMpass[sizeof(PERMpass) - 1] = '\0';
+    strlcpy(PERMpass, fields[3], sizeof(PERMpass));
     strcpy(accesslist, fields[4]);
     /*strcpy(writeaccess, fields[5]); future work? */
 
@@ -232,8 +231,7 @@ CMDauthinfo(ac, av)
     if (strcasecmp(av[1], "generic") == 0) {
 	char *logrec = Glom(av);
 
-	strncpy(PERMuser, "<none>", sizeof(PERMuser) - 1);
-        PERMuser[sizeof(PERMuser) - 1] = '\0';
+	strlcpy(PERMuser, "<none>", sizeof(PERMuser));
 
 	switch (PERMgeneric(av, accesslist)) {
 	    case 1:
@@ -264,15 +262,11 @@ CMDauthinfo(ac, av)
 		Reply("%d AUTHINFO SIMPLE <USER> <PASS>\r\n", NNTP_BAD_COMMAND_VAL);
 		return;
 	    }
-	    strncpy(User, av[2], sizeof User - 1);
-	    User[sizeof User - 1] = 0;
-
-	    strncpy(Password, av[3], sizeof Password - 1);
-	    Password[sizeof Password - 1] = 0;
+	    strlcpy(User, av[2], sizeof(User));
+	    strlcpy(Password, av[3], sizeof(Password));
 	} else {
 	    if (strcasecmp(av[1], "user") == 0) {
-		strncpy(User, av[2], sizeof User - 1);
-		User[sizeof User - 1] = 0;
+		strlcpy(User, av[2], sizeof(User));
 		Reply("%d PASS required\r\n", NNTP_AUTH_NEXT_VAL);
 		return;
 	    }
@@ -286,8 +280,7 @@ CMDauthinfo(ac, av)
 		return;
 	    }
 
-	    strncpy(Password, av[2], sizeof Password - 1);
-	    Password[sizeof Password - 1] = 0;
+	    strlcpy(Password, av[2], sizeof(Password));
 	}
 
 #ifdef DO_PYTHON
@@ -305,10 +298,8 @@ CMDauthinfo(ac, av)
 			}
 			Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
 			/* save these values in case you need them later */
-			strncpy(PERMuser, User, sizeof(PERMuser) - 1);
-                        PERMuser[sizeof(PERMuser) - 1] = '\0';
-			strncpy(PERMpass, Password, sizeof(PERMpass) - 1);
-                        PERMpass[sizeof(PERMpass) - 1] = '\0';
+			strlcpy(PERMuser, User, sizeof(PERMuser));
+			strlcpy(PERMpass, Password, sizeof(PERMpass));
 			PERMneedauth = false;
 			PERMauthorized = true;
 			return;
@@ -798,8 +789,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
                              NNRPinstance, PERMaccessconf->domain);
 		}
 	    } else {
-		strncpy(idbuff, p, sizeof(idbuff) - 1);
-                idbuff[sizeof(idbuff) - 1] = '\0';
+		strlcpy(idbuff, p, sizeof(idbuff));
 	    }
 	}
 	Reply("%d Ok, recommended ID %s\r\n", NNTP_START_POST_VAL, idbuff);

@@ -200,15 +200,12 @@ GoodIdent(int fd, char *identd)
     {
 	buf2++;
 	while(*buf2 == ' ') buf2++;
-	strncpy(IDENTuser,buf2,strlen(buf2)+1);
-	IDENTuser[79]='\0';
+	strlcpy(IDENTuser, buf2, sizeof(IDENTuser));
 	buf2=strchr(IDENTuser,'\r');
 	if (!buf2) buf2=strchr(IDENTuser,'\n');
 	if (buf2) *buf2='\0';
-    } else { 
-	strncpy(IDENTuser,"UNKNOWN",10);
-	IDENTuser[10]='\0';
-    }
+    } else
+        strlcpy(IDENTuser, "UNKNOWN", sizeof(IDENTuser));
     close(ident_fd);
 
     return strcmp(identd, IDENTuser) == 0;

@@ -45,9 +45,8 @@ char *GetFQDN(char *domain)
      * turn it on, but don't complain to me. */
     if (strchr(hp->h_name, '.') == NULL) {
 	/* Try to force DNS lookup if NIS/whatever gets in the way. */
-	strncpy(temp, buff, sizeof(temp) - 1);
-	temp[sizeof(temp) - 1] = '\0';
-	strncat(temp, ".", sizeof(temp) - strlen(temp) - 1);
+        strlcpy(temp, buff, sizeof(temp));
+        strlcat(temp, ".", sizeof(temp));
 	hp = gethostbyname(temp);
     }
 #endif	/* 0 */

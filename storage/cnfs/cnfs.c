@@ -299,14 +299,11 @@ static void CNFSReadFreeAndCycle(CYCBUFF *cycbuff) {
 
     memcpy(&rpx, cycbuff->bitfield, sizeof(CYCBUFFEXTERN));
     /* Sanity checks are not needed since CNFSinit_disks() has already done. */
-    buf[CNFSLASIZ] = '\0';
-    strncpy(buf, rpx.freea, CNFSLASIZ);
+    strlcpy(buf, rpx.freea, CNFSLASIZ + 1);
     cycbuff->free = CNFShex2offt(buf);
-    buf[CNFSLASIZ] = '\0';
-    strncpy(buf, rpx.updateda, CNFSLASIZ);
+    strlcpy(buf, rpx.updateda, CNFSLASIZ + 1);
     cycbuff->updated = CNFShex2offt(buf);
-    buf[CNFSLASIZ] = '\0';
-    strncpy(buf, rpx.cyclenuma, CNFSLASIZ);
+    strlcpy(buf, rpx.cyclenuma, CNFSLASIZ + 1);
     cycbuff->cyclenum = CNFShex2offt(buf);
     return;
 }
@@ -331,8 +328,7 @@ static bool CNFSparse_part_line(char *l) {
   }
   cycbuff = xmalloc(sizeof(CYCBUFF));
   memset(cycbuff->name, '\0', CNFSNASIZ);
-  strncpy(cycbuff->name, l, CNFSNASIZ - 1);
-  cycbuff->name[CNFSNASIZ - 1] = '\0';
+  strlcpy(cycbuff->name, l, CNFSNASIZ);
   l = ++p;
 
   /* Path to cnfs partition */
@@ -343,8 +339,7 @@ static bool CNFSparse_part_line(char *l) {
   }
   *p = '\0';
   memset(cycbuff->path, '\0', CNFSPASIZ);
-  strncpy(cycbuff->path, l, CNFSPASIZ - 1);
-  cycbuff->path[CNFSPASIZ - 1] = '\0';
+  strlcpy(cycbuff->path, l, CNFSPASIZ);
   if (stat(cycbuff->path, &sb) < 0) {
     syslog(L_ERROR, "%s: file '%s' : %m, ignoring '%s' cycbuff",
 	   LocalLogName, cycbuff->path, cycbuff->name);
@@ -587,22 +582,18 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
 	    syslog(L_ERROR, "%s: Path mismatch: read %s for cycbuff %s",
 		   LocalLogName, rpx->path, cycbuff->path);
 	} 
-	strncpy(buf, rpx->lena, CNFSLASIZ);
-	buf[CNFSLASIZ] = '\0';
+	strlcpy(buf, rpx->lena, CNFSLASIZ + 1);
 	tmpo = CNFShex2offt(buf);
 	if (tmpo != cycbuff->len) {
 	    syslog(L_ERROR, "%s: Mismatch: read 0x%s length for cycbuff %s",
 		   LocalLogName, CNFSofft2hex(tmpo, false), cycbuff->path);
 	    return false;
 	}
-	buf[CNFSLASIZ] = '\0';
-	strncpy(buf, rpx->freea, CNFSLASIZ);
+	strlcpy(buf, rpx->freea, CNFSLASIZ + 1);
 	cycbuff->free = CNFShex2offt(buf);
-	buf[CNFSLASIZ] = '\0';
-	strncpy(buf, rpx->updateda, CNFSLASIZ);
+	strlcpy(buf, rpx->updateda, CNFSLASIZ + 1);
 	cycbuff->updated = CNFShex2offt(buf);
-	buf[CNFSLASIZ] = '\0';
-	strncpy(buf, rpx->cyclenuma, CNFSLASIZ);
+	strlcpy(buf, rpx->cyclenuma, CNFSLASIZ + 1);
 	cycbuff->cyclenum = CNFShex2offt(buf);
 	strncpy(cycbuff->metaname, rpx->metaname, CNFSLASIZ);
 	strncpy(buf, rpx->orderinmeta, CNFSLASIZ);

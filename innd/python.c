@@ -132,7 +132,7 @@ PYartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     /* Now see if the filter likes it. */
     result = PyObject_CallFunction(art_method, "O", PYheaders);
     if ((result != NULL) && PyObject_IsTrue(result))
-	strncpy(buf, PyString_AS_STRING(result), sizeof(buf) - 1);
+	strlcpy(buf, PyString_AS_STRING(result), sizeof(buf));
     else
 	*buf = '\0';
     Py_XDECREF(result);
@@ -166,7 +166,7 @@ PYmidfilter(messageID, msglen)
 
     result = PyObject_CallFunction(msgid_method, "s#", messageID, msglen);
     if ((result != NULL) && PyObject_IsTrue(result))
-	strncpy(buf,  PyString_AS_STRING(result), sizeof(buf) - 1);
+	strlcpy(buf, PyString_AS_STRING(result), sizeof(buf));
     else
 	*buf = '\0';
     Py_XDECREF(result);

@@ -311,7 +311,7 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
       /* build the visible part of the auth vector randomly */
       for (i = 0; i < AUTH_VECTOR_LEN; i++)
 	req.vector[i] = random() % 256;
-      strncpy((char *) secbuf, config->secret, sizeof(secbuf));
+      strlcpy((char *) secbuf, config->secret, sizeof(secbuf));
       memcpy(secbuf+strlen(config->secret), req.vector, AUTH_VECTOR_LEN);
       md5_hash(secbuf, strlen(config->secret)+AUTH_VECTOR_LEN, digest);
       /* fill in the auth_req data */
@@ -382,7 +382,7 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
 	    req.data[passstart+2+i+j] ^= digest[j];
 	if (jlen == sizeof(HASH)) {
 	    /* Recalculate the digest from the HASHed previous */
-	    strncpy((char *) secbuf, config->secret, sizeof(secbuf));
+	    strlcpy((char *) secbuf, config->secret, sizeof(secbuf));
 	    memcpy(secbuf+strlen(config->secret), &req.data[passstart+2+i],
                    sizeof(HASH));
             md5_hash(secbuf, strlen(config->secret)+sizeof(HASH), digest);

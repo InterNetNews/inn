@@ -388,8 +388,7 @@ static bool
 chdir_checked(const char *path, int filecount)
 {
     if (filecount < chdir_threshold) {
-        strncpy(prefix_dir, path, sizeof(prefix_dir));
-        prefix_dir[sizeof(prefix_dir) - 1] = '\0';
+        strlcpy(prefix_dir, path, sizeof(prefix_dir));
         prefix_len = strlen(path);
     } else {
         prefix_len = 0;
@@ -466,10 +465,8 @@ setup_dir(char *dir, int filecount)
         p++;
         if (!chdir_checked(p, filecount))
             return false;
-        if (prefix_len == 0) {
-            strncpy(current_dir, absolute, sizeof(current_dir));
-            current_dir[sizeof(current_dir) - 1] = '\0';
-        }
+        if (prefix_len == 0)
+            strlcpy(current_dir, absolute, sizeof(current_dir));
         return true;
     }
 
@@ -490,10 +487,8 @@ setup_dir(char *dir, int filecount)
             while (p > absolute && *--p != '/')
                 ;
             p++;
-            strncpy(prefix_dir, dotdots + 9 - depth * 3, sizeof(prefix_dir));
-            strncpy(prefix_dir + (depth + 1) * 3, p,
-                    sizeof(prefix_dir) - (depth + 1) * 3);
-            prefix_dir[sizeof(prefix_dir) - 1] = '\0';
+            strlcpy(prefix_dir, dotdots + 9 - depth * 3, sizeof(prefix_dir));
+            strlcat(prefix_dir, p, sizeof(prefix_dir));
             if (!chdir_checked(prefix_dir, filecount))
                 return false;
 
@@ -515,10 +510,8 @@ setup_dir(char *dir, int filecount)
        we don't bother. */
     if (!chdir_checked(absolute, filecount))
         return false;
-    if (prefix_len == 0) {
-        strncpy(current_dir, absolute, sizeof(current_dir));
-        current_dir[sizeof(current_dir) - 1] = '\0';
-    }
+    if (prefix_len == 0)
+        strlcpy(current_dir, absolute, sizeof(current_dir));
     return true;
 }
 

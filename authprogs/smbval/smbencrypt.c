@@ -27,7 +27,6 @@
 
 typedef unsigned char uchar;
 
-char *StrnCpy(char *dest,char *src,int n);
 void strupper(char *s);
 
 /*
@@ -40,27 +39,11 @@ void SMBencrypt(uchar *passwd, uchar *c8, uchar *p24)
 
   memset(p21,'\0',21);
   memset(p14,'\0',14);
-  StrnCpy((char *)p14,(char *)passwd,14);
+  strlcpy((char *) p14, (char *) passwd, sizeof(p14));
 
   strupper((char *)p14);
   E_P16(p14, p21); 
   E_P24(p21, c8, p24);
-}
-
-/****************************************************************************
-line strncpy but always null terminates. Make sure there is room!
-****************************************************************************/
-char *StrnCpy(char *dest,char *src,int n)
-{
-  char *d = dest;
-  if (!dest) return(NULL);
-  if (!src) {
-    *dest = 0;
-    return(dest);
-  }
-  while (n-- && (*d++ = *src++)) ;
-  *d = 0;
-  return(dest);
 }
 
 void strupper(char *s)

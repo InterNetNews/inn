@@ -652,7 +652,7 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize,
     off_t offset;
     char nulls[1];
 
-    strncpy(finalpath, cfpath, SPOOLNAMEBUFF);
+    strlcpy(finalpath, cfpath, sizeof(finalpath));
     snprintf(path, sizeof(path), "%s.%d", cfpath, getpid());/* create path with PID attached */
     /* 
     ** Shouldn't be anyone else with our pid trying to write to the temp.

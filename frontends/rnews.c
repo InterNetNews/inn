@@ -238,8 +238,7 @@ static bool Process(char *article)
 	}
 #if	!defined(DONT_RNEWS_LOG_DUPS)
 	if (IS_PATH(hp)) {
-	    strncpy(path, p, sizeof path);
-	    path[sizeof path - 1] = '\0';
+	    strlcpy(path, p, sizeof(path));
 	    if ((q = strchr(path, '\r')) != NULL)
 		*q = '\0';
 	}
@@ -666,8 +665,7 @@ Unspool(void)
 	    if (i > sizeof hostname - 1)
 		/* Just in case someone wrote their own spooled file. */
 		i = sizeof hostname - 1;
-	    strncpy(hostname, InputFile, i);
-	    hostname[i] = '\0';
+	    strlcpy(hostname, InputFile, i + 1);
 	    UUCPHost = hostname;
 	}
 	ok = UnpackOne(&fd, &i);

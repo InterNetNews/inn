@@ -284,9 +284,7 @@ CMDhelp(int ac UNUSED, char *av[] UNUSED)
 		Printf("Report problems to <%s@%s>\r\n",
 		    newsmaster, PERMaccessconf->domain);
 	    else {
-		q = xmalloc(p - newsmaster + 1);
-		strncpy(q, newsmaster, p - newsmaster);
-		q[p - newsmaster] = '\0';
+                q = xstrndup(newsmaster, p - newsmaster);
 		Printf("Report problems to <%s@%s>\r\n",
 		    q, PERMaccessconf->domain);
 		free(q);
@@ -342,8 +340,7 @@ Address2Name(INADDR *ap, char *hostname, int i)
 	HostErrorStr = hstrerror(h_errno);
 	return false;
     }
-    strncpy(hostname, hp->h_name, i);
-    hostname[i - 1] = '\0';
+    strlcpy(hostname, hp->h_name, i);
 
     /* Get addresses for this host. */
     if ((hp = gethostbyname(hostname)) == NULL) {
@@ -452,7 +449,7 @@ Sock2String( struct sockaddr *sa, char *string, int len, bool lookup )
 	    {
 		return Address2Name6(sa, string, len);
 	    } else {
-		strncpy( string, sprint_sockaddr( sa ), len );
+		strlcpy( string, sprint_sockaddr( sa ), len );
 		return true;
 	    }
 	} else {
@@ -467,7 +464,7 @@ Sock2String( struct sockaddr *sa, char *string, int len, bool lookup )
     if( lookup ) {
 	return Address2Name(&sin4->sin_addr, string, len);
     } else {
-	strncpy( string, inet_ntoa(sin4->sin_addr), len );
+	strlcpy( string, inet_ntoa(sin4->sin_addr), len );
 	return true;
     }
 }
@@ -539,12 +536,10 @@ static void StartConnection(void)
                 syslog(L_NOTICE,
                        "? reverse lookup for %s failed: %s -- using IP address for access",
                        ClientIpString, HostErrorStr);
-	        strncpy( ClientHost, ClientIpString, sizeof(ClientHost) - 1 );
-                ClientHost[sizeof(ClientHost) - 1] = '\0';
+	        strlcpy(ClientHost, ClientIpString, sizeof(ClientHost));
 	    }
 	} else {
-            strncpy( ClientHost, ClientIpString, sizeof(ClientHost) - 1 );
-            ClientHost[sizeof(ClientHost) - 1] = '\0';
+            strlcpy(ClientHost, ClientIpString, sizeof(ClientHost));
         }
 
 	/* figure out server's IP address/hostname */
@@ -561,12 +556,10 @@ static void StartConnection(void)
                 syslog(L_NOTICE,
                        "? reverse lookup for %s failed: %s -- using IP address for access",
                        ServerIpString, HostErrorStr);
-	        strncpy( ServerHost, ServerIpString, sizeof(ServerHost) -1 );
-                ServerHost[sizeof(ServerHost) - 1] = '\0';
+	        strlcpy(ServerHost, ServerIpString, sizeof(ServerHost));
 	    }
 	} else {
-            strncpy( ServerHost, ServerIpString, sizeof(ServerHost) - 1 );
-            ServerHost[sizeof(ServerHost) - 1] = '\0';
+            strlcpy(ServerHost, ServerIpString, sizeof(ServerHost));
         }
 
 	/* get port numbers */
@@ -584,8 +577,7 @@ static void StartConnection(void)
 	}
     }
 
-    strncpy (LogName,ClientHost,sizeof(LogName) - 1) ;
-    LogName[sizeof(LogName) - 1] = '\0';
+    strlcpy(LogName, ClientHost, sizeof(LogName));
 
     syslog(L_NOTICE, "%s (%s) connect", ClientHost, ClientIpString);
 #ifdef DO_PYTHON
@@ -919,7 +911,7 @@ main(int argc, char *argv[])
 	    break;
  	case 'b':			/* bind to a certain address in
  	        			   daemon mode */
-	    strncpy( ListenAddr, optarg, sizeof(ListenAddr) );
+	    strlcpy(ListenAddr, optarg, sizeof(ListenAddr));
  	    break;
  	case 'D':			/* standalone daemon mode */
  	    DaemonMode = true;

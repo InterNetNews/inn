@@ -304,8 +304,7 @@ static bool ovparse_part_line(char *l) {
   }
   *p = '\0';
   memset(ovbuff->path, '\0', OVBUFFPASIZ);
-  strncpy(ovbuff->path, l, OVBUFFPASIZ - 1);
-  ovbuff->path[OVBUFFPASIZ - 1] = '\0';
+  strlcpy(ovbuff->path, l, OVBUFFPASIZ);
   if (stat(ovbuff->path, &sb) < 0) {
     syslog(L_ERROR, "%s: file '%s' does not exist, ignoring '%d'",
            LocalLogName, ovbuff->path, ovbuff->index);
@@ -486,11 +485,9 @@ static void ovreadhead(OVBUFF *ovbuff) {
   char		buff[OVBUFFLASIZ+1];
 
   memcpy(&rpx, ovbuff->bitfield, sizeof(OVBUFFHEAD));
-  strncpy((char *)buff, rpx.useda, OVBUFFLASIZ);
-  buff[OVBUFFLASIZ] = '\0';
+  strlcpy(buff, rpx.useda, sizeof(buff));
   ovbuff->usedblk = (unsigned int)hex2offt((char *)buff);
-  strncpy((char *)buff, rpx.freea, OVBUFFLASIZ);
-  buff[OVBUFFLASIZ] = '\0';
+  strlcpy(buff, rpx.freea, sizeof(buff));
   ovbuff->freeblk = (unsigned int)hex2offt((char *)buff);
   return;
 }
@@ -559,8 +556,7 @@ static bool ovbuffinit_disks(void) {
 		   LocalLogName, rpx->path, ovbuff->path);
 	  ovbuff->needflush = true;
 	}
-	strncpy(buf, rpx->indexa, OVBUFFLASIZ);
-	buf[OVBUFFLASIZ] = '\0';
+	strlcpy(buf, rpx->indexa, OVBUFFLASIZ + 1);
 	i = hex2offt(buf);
 	if (i != ovbuff->index) {
 	    syslog(L_ERROR, "%s: Mismatch: index '%d' for buffindexed %s",
@@ -568,8 +564,7 @@ static bool ovbuffinit_disks(void) {
 	    ovlock(ovbuff, INN_LOCK_UNLOCK);
 	    return false;
 	}
-	strncpy(buf, rpx->lena, OVBUFFLASIZ);
-	buf[OVBUFFLASIZ] = '\0';
+	strlcpy(buf, rpx->lena, OVBUFFLASIZ + 1);
 	tmpo = hex2offt(buf);
 	if (tmpo != ovbuff->len) {
 	    syslog(L_ERROR, "%s: Mismatch: read 0x%s length for buffindexed %s",
@@ -577,14 +572,11 @@ static bool ovbuffinit_disks(void) {
 	    ovlock(ovbuff, INN_LOCK_UNLOCK);
 	    return false;
 	}
-	strncpy(buf, rpx->totala, OVBUFFLASIZ);
-	buf[OVBUFFLASIZ] = '\0';
+	strlcpy(buf, rpx->totala, OVBUFFLASIZ + 1);
 	ovbuff->totalblk = hex2offt(buf);
-	strncpy(buf, rpx->useda, OVBUFFLASIZ);
-	buf[OVBUFFLASIZ] = '\0';
+	strlcpy(buf, rpx->useda, OVBUFFLASIZ + 1);
 	ovbuff->usedblk = hex2offt(buf);
-	strncpy(buf, rpx->freea, OVBUFFLASIZ);
-	buf[OVBUFFLASIZ] = '\0';
+	strlcpy(buf, rpx->freea, OVBUFFLASIZ + 1);
 	ovbuff->freeblk = hex2offt(buf);
 	ovflushhead(ovbuff);
 	Needunlink = false;

@@ -1572,8 +1572,7 @@ bool ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
 	int s, c = 0;
 	char g[MAXHEADERSIZE];
 
-	strncpy(g, group, sizeof(g) - 1);
-        g[sizeof(g) - 1] = '\0';
+	strlcpy(g, group, sizeof(g));
 	s = strlen(g) + 1;
 	key.data = g;
 	key.size = s + sizeof(int);

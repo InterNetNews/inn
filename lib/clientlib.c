@@ -20,13 +20,11 @@ char	ser_line[NNTP_STRLEN + 2];
 **  our own configuration stuff.  Return pointer to static data.
 */
 char *
-getserverbyfile(char *file)
+getserverbyfile(char *file UNUSED)
 {
     static char	buff[256];
 
-    file = file;		/* ARGSUSED0 */
-    strncpy(buff, innconf->server, sizeof(buff)-1);
-    buff[255] = '\0';
+    strlcpy(buff, innconf->server, sizeof(buff));
     return buff;
 }
 

@@ -106,20 +106,20 @@ MaxLength(char *p, char *q)
 	q = p;
 
     /* Simple case of just want the begining? */
-    if ((size_t)(q - p) < sizeof buff - 4) {
-	strncpy(buff, p, sizeof buff - 4);
-	strcpy(&buff[sizeof buff - 4], "...");
+    if ((size_t)(q - p) < sizeof(buff) - 4) {
+	strlcpy(buff, p, sizeof(buff) - 3);
+        strlcat(buff, "...", sizeof(buff));
     } else if ((p + i) - q < 10) {
 	/* Is getting last 10 characters good enough? */
-	strncpy(buff, p, sizeof buff - 14);
-	strcpy(&buff[sizeof buff - 14], "...");
-	strcpy(&buff[sizeof buff - 11], &p[i - 10]);
+	strlcpy(buff, p, sizeof(buff) - 13);
+        strlcat(buff, "...", sizeof(buff) - 10);
+        strlcat(buff, &p[i - 10], sizeof(buff));
     } else {
 	/* Not in last 10 bytes, so use double elipses. */
-	strncpy(buff, p, sizeof buff - 17);
-	strcpy(&buff[sizeof buff - 17], "...");
-	strncpy(&buff[sizeof buff - 14], &q[-5], 10);
-	strcpy(&buff[sizeof buff - 4], "...");
+        strlcpy(buff, p, sizeof(buff) - 16);
+        strlcat(buff, "...", sizeof(buff) - 13);
+        strlcat(buff, &q[-5], sizeof(buff) - 3);
+        strlcat(buff, "...", sizeof(buff));
     }
     return Join(buff);
 }
@@ -837,9 +837,7 @@ SpoolitTo(char *article, char *err, char *SpoolDir)
     /* Write the headers and a blank line. */
     for (hp = Table; hp < ARRAY_END(Table); hp++)
 	if (hp->Value) {
-	    q = xmalloc(hp->Body - hp->Value + hp->Len + 1);
-            strncpy(q, hp->Value, hp->Body - hp->Value + hp->Len);
-	    *(q + (int)(hp->Body - hp->Value) + hp->Len) = '\0';
+            q = xstrndup(hp->Value, hp->Body - hp->Value + hp->Len);
 	    if (*hp->Value == ' ' || *hp->Value == '\t')
 		fprintf(F, "%s:%s\n", hp->Name, q);
 	    else
@@ -993,8 +991,7 @@ ARTpost(char *article,
     if ((error = ValidNewsgroups(HDR(HDR__NEWSGROUPS), &modgroup)) != NULL)
 	return error;
     
-    strncpy(frombuf, HDR(HDR__FROM), sizeof(frombuf) - 1);
-    frombuf[sizeof(frombuf) - 1] = '\0';
+    strlcpy(frombuf, HDR(HDR__FROM), sizeof(frombuf));
     for (i = 0, p = frombuf;p < frombuf + sizeof(frombuf);)
 	if ((p = strchr(p, '\n')) == NULL)
 	    break;
@@ -1042,8 +1039,7 @@ ARTpost(char *article,
 		snprintf(idbuff, sizeof(idbuff),
                          "(mailed to moderator for %s)", modgroup);
 	    else
-		strncpy(idbuff, HDR(HDR__MESSAGEID), SMBUF - 1);
-	    idbuff[SMBUF - 1] = '\0';
+		strlcpy(idbuff, HDR(HDR__MESSAGEID), SMBUF);
 	}
 	if (strncmp(p, "DROP", 4) == 0) {
 	    syslog(L_NOTICE, "%s post %s", ClientHost, p);
@@ -1147,9 +1143,7 @@ ARTpost(char *article,
     /* Write the headers and a blank line. */
     for (hp = Table; hp < ARRAY_END(Table); hp++)
 	if (hp->Value) {
-	    q = xmalloc(hp->Body - hp->Value + hp->Len + 1);
-            strncpy(q, hp->Value, hp->Body - hp->Value + hp->Len);
-	    *(q + (int)(hp->Body - hp->Value) + hp->Len) = '\0';
+            q = xstrndup(hp->Value, hp->Body - hp->Value + hp->Len);
 	    if (strchr(q, '\n') != NULL) {
 		if ((p = Towire(q)) != NULL) {
 		    /* there is no white space, if hp->Value and hp->Body is the same */
@@ -1210,10 +1204,8 @@ ARTpost(char *article,
 
     /* Send a quit and close down */
     SendQuit(FromServer, ToServer);
-    if (idbuff) {
-	strncpy(idbuff, HDR(HDR__MESSAGEID), SMBUF - 1);
-	idbuff[SMBUF - 1] = '\0';
-    }
+    if (idbuff)
+	strlcpy(idbuff, HDR(HDR__MESSAGEID), SMBUF);
 
     /* Tracking */
     if (PERMaccessconf->readertrack) {
@@ -1232,9 +1224,7 @@ ARTpost(char *article,
 	}
 	for (hp = Table; hp < ARRAY_END(Table); hp++)
 	    if (hp->Value) {
-		q = xmalloc(hp->Body - hp->Value + hp->Len + 1);
-                strncpy(q, hp->Value, hp->Body - hp->Value + hp->Len);
-		*(q + (int)(hp->Body - hp->Value) + hp->Len) = '\0';
+                q = xstrndup(hp->Value, hp->Body - hp->Value + hp->Len);
 		if (strchr(q, '\n') != NULL) {
 		    if ((p = Towire(q)) != NULL) {
 			/* there is no white space, if hp->Value and hp->Body is the same */
