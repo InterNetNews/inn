@@ -1400,10 +1400,8 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 	return FALSE;
     }
     gno = groupnum(group);
-    if(!gno) {
-	syslog(L_ERROR, "OVDB: groupnum(%s) failed (errno=%m)", group);
+    if(!gno)
 	return FALSE;
-    }
 
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
