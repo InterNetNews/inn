@@ -1364,7 +1364,7 @@ CCreload(av)
 	TCLreadfilter();
 #endif /* defined(DO_TCL) */
 #if defined(DO_PERL)
-        PERLreadfilter (_PATH_PERL_FILTER_INND,"filter_art") ;
+        PERLreadfilter (cpcatpath(innconf->pathfilter,_PATH_PERL_FILTER_INND),"filter_art") ;
 #endif /* defined(DO_PERL) */
 	p = "all";
     }
@@ -1432,7 +1432,7 @@ CCreload(av)
 #endif /* defined(DO_TCL) */
 #if defined(DO_PERL)
     else if (EQ(p, "filter.perl")) {
-        if (!PERLreadfilter (_PATH_PERL_FILTER_INND,"filter_art"))
+        if (!PERLreadfilter (cpcatpath(innconf->pathfilter,_PATH_PERL_FILTER_INND),"filter_art"))
             return BADPERLRELOAD ;
     }
 #endif /* defined(DO_PERL) */
