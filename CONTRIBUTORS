@@ -60,12 +60,11 @@ Forrest J. Cavalier III:
 	Provided a lot of bug fixes to 1.5.2. He extended the autoconf
 	setup a lot to work with version 2.0
 
-Marc Fournier:
-	Provided various bug fixes and did a lot of work integrating other
-	peoples patches and looking after the CVS pool.
-
 Scott Fritchie:
 	Wrote the CNFS storage back end.
+
+Fabien Tassin:
+	Wrote the innreport package.
 
 Dave Hayes:
 	Along with some bugfixes, Dave wrote the posting-backoff code for 
@@ -78,6 +77,17 @@ Sang-yong Suh:
 	Provided the fuzzy offset technique to dbz.
 
 
+Also:
+
+Davs Barr:
+	Kept INN alive after Rich Salz didn't have the time anymore but 
+	before the ISC took over. He released 4 unofficial versions that 
+	provided a good boost to what the ISC started with.
+
+Marc Fournier:
+	Provided various bug fixes and did a lot of work integrating other
+	peoples patches and looking after the CVS pool. 
+
 
 The following people helped above and beyond the call of duty with
 testing (provided patches, bug reports, suggestions etc):
@@ -85,7 +95,7 @@ testing (provided patches, bug reports, suggestions etc):
 Paul Vixie, Robert Elz, Evan Champion, Robert Keller, Barry Bouwsma,
 markd@mira.net.au, Ollivier Robert, Kevin Jameson, Heiko W. Rupp, Fletcher
 Mattox, Matus Uhlar, Gabor Kiss, Joe Greco, Matthias Scheler, Richard
-Michael Todd, Fabien Tassin, Trevor Riley, Katsuhiro Kondou, Alex Bligh,
+Michael Todd, Trevor Riley, Katsuhiro Kondou, Alex Bligh,
 J. Porter Clark, Alan Brown, Bert Hyman, Petter Nilsen, Gary E. Miller, Kim
 Culhan, Marc Baudoin, Neal Becker, Bjorn Knutsson, Stephen Marquard,
 Frederick Korz, Benedict Lofstedt, Dan Ellis, Joe Ramey, Odd Einar Aurbakken,
