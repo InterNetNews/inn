@@ -203,7 +203,8 @@ Path: header.  The default value is unset.
 =item I<pgpverify>
 
 Whether to enable PGP verification of control messages other than cancel.
-This is a boolean value and the default is false.
+This is a boolean value and the default is based on whether configure found
+pgp or pgpv.
 
 =item I<port>
 
