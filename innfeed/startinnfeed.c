@@ -52,10 +52,10 @@ main(int ac, char **av, char **ep)
     (void)fprintf(stderr, "%s: getpwnam(%s): %s\n", *av, USER,
                   strerror (errno));
   else if (setgid(pwd->pw_gid) == -1)
-    (void)fprintf(stderr, "%s: setgid(%ld): %s\n", *av, pwd->pw_gid,
+    (void)fprintf(stderr, "%s: setgid(%d): %s\n", *av, pwd->pw_gid,
                   strerror (errno));
   else if (setuid(pwd->pw_uid) == -1)
-    (void)fprintf(stderr, "%s: setuid(%ld): %s\n", *av, pwd->pw_uid,
+    (void)fprintf(stderr, "%s: setuid(%d): %s\n", *av, pwd->pw_uid,
                   strerror (errno));
   else 
     {

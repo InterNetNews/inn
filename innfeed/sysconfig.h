@@ -83,7 +83,10 @@
 /* Note: If you are running version 5.4.3 or better of libc, then 16 is the
    number to use. Lower than that, and you should use 1. */
 #define MAX_WRITEV_VEC 1
-#define DO_NEED_SYS_SELECT 1
+#undef DO_NEED_SYS_SELECT 
+#define HAVE_MMAP 1
+#define NBIO_FCNTL 1
+#define USE_SIGACTION
 #endif
 
 

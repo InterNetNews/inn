@@ -83,6 +83,7 @@ static void use_rcsid (const char *rId) {   /* Never called */
 #include "endpoint.h"
 #include "buffer.h"
 #include "msgs.h"
+#include "host.h"
 
 
 #if defined (__bsdi__) && (defined (_ANSI_SOURCE) || defined (_POSIX_SOURCE))

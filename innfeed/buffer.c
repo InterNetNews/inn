@@ -66,7 +66,7 @@ struct buffer_s
 
 #define BUFFER_POOL_SIZE ((4096 - 2 * (sizeof (void *))) / (sizeof (struct buffer_s)))
 
-static Buffer fillBufferPool (void)
+static void fillBufferPool (void)
 {
   int i ;
 
@@ -153,8 +153,6 @@ void delBuffer (Buffer buff)
 {
   if (buff != NULL && --(buff->refCount) == 0)
     {
-      Buffer p, q ;
-  
 #if 0
       dprintf (1,"Freeing a %s buffer (%p)\n",
                (buff->deletable ? "DELETABLE" : "NON-DELETABLE"), buff) ;

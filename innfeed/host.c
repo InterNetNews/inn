@@ -1146,7 +1146,7 @@ void printHostInfo (Host host, FILE *fp, u_int indentAmt)
            100.0 * host->blQuartile[3] / cnt) ;
   fprintf (fp,"%s      percentage of the time full : %.1f\n", indent,
            100.0 * host->blFull / cnt) ;
-  fprintf (fp,"%s      number of samples : %.1f\n", indent, host->blCount) ;
+  fprintf (fp,"%s      number of samples : %u\n", indent, host->blCount) ;
 
   fprintf (fp,"%s    firstConnectTime : %s",indent,
            ctime (&host->firstConnectTime));
@@ -2079,7 +2079,7 @@ void hostSetStatusFile (const char *filename)
   
   if (filename == NULL)
     die ("Can't set status file name with a NULL filename\n") ;
-  else if (*filename == NULL)
+  else if (*filename == '\0')
     die ("Can't set status file name with a empty string\n") ;
 
   if (*filename == '/')
