@@ -288,7 +288,10 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
     }
 
     if (QIOerror(qp))
-	(void)fprintf(stderr, "overchan cant read %s\n", strerror(errno));
+#if HAVE_SOCKETPAIR
+	if (errno != ECONNABORTED)
+#endif
+	    (void)fprintf(stderr, "overchan cant read %s\n", strerror(errno));
     QIOclose(qp);
 }
 
