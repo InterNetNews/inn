@@ -450,6 +450,12 @@
 /* Define if vsnprintf isn't declared in the system headers. */
 #undef NEED_DECLARATION_VSNPRINTF
 
+/* Define if the compiler supports C99 variadic macros. */
+#undef HAVE_C99_VAMACROS
+
+/* Define if the compiler supports GNU-style variadic macros. */
+#undef HAVE_GNU_VAMACROS
+
 /* Define if the compiler supports long long int. */
 #undef HAVE_LONG_LONG
 
