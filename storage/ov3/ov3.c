@@ -59,7 +59,7 @@ typedef struct {
 } GROUPENTRY;
 
 typedef struct {
-    OFFSET_T           offset;
+    off_t              offset;
     int                length;
     time_t             arrived;
     time_t             expires;
@@ -106,39 +106,39 @@ typedef struct _BUFFER {
 #define CACHETABLESIZE 128
 #define MAXCACHETIME (60*5)
 
-STATIC int              GROUPfd;
-STATIC GROUPHEADER      *GROUPheader = NULL;
-STATIC GROUPENTRY       *GROUPentries = NULL;
-STATIC int              GROUPcount = 0;
-STATIC GROUPLOC         GROUPemptyloc = { -1 };
+static int              GROUPfd;
+static GROUPHEADER      *GROUPheader = NULL;
+static GROUPENTRY       *GROUPentries = NULL;
+static int              GROUPcount = 0;
+static GROUPLOC         GROUPemptyloc = { -1 };
 
-STATIC CACHEENTRY *CACHEdata[CACHETABLESIZE];
-STATIC int OV3mode;
-STATIC int OV3padamount = 128;
-STATIC int CACHEentries = 0;
-STATIC int CACHEhit = 0;
-STATIC int CACHEmiss = 0;
-STATIC int CACHEmaxentries = 128;
-STATIC BOOL Cutofflow;
+static CACHEENTRY *CACHEdata[CACHETABLESIZE];
+static int OV3mode;
+static int OV3padamount = 128;
+static int CACHEentries = 0;
+static int CACHEhit = 0;
+static int CACHEmiss = 0;
+static int CACHEmaxentries = 128;
+static bool Cutofflow;
 
-STATIC GROUPLOC GROUPnewnode(void);
-STATIC BOOL GROUPremapifneeded(GROUPLOC loc);
-STATIC void GROUPLOCclear(GROUPLOC *loc);
-STATIC BOOL GROUPLOCempty(GROUPLOC loc);
-STATIC BOOL GROUPlockhash(enum locktype type);
-STATIC BOOL GROUPlock(GROUPLOC gloc, enum locktype type);
-STATIC BOOL GROUPfilesize(int count);
-STATIC BOOL GROUPexpand(int mode);
-STATIC BOOL OV3packgroup(char *group, int delta);
-STATIC GROUPHANDLE *OV3opengroup(char *group, BOOL needcache);
-STATIC void OV3cleancache(void);
-STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires);
-STATIC BOOL OV3closegroup(GROUPHANDLE *gh, BOOL needcache);
-STATIC void OV3getdirpath(char *group, char *path);
-STATIC void OV3getIDXfilename(char *group, char *path);
-STATIC void OV3getDATfilename(char *group, char *path);
+static GROUPLOC GROUPnewnode(void);
+static bool GROUPremapifneeded(GROUPLOC loc);
+static void GROUPLOCclear(GROUPLOC *loc);
+static bool GROUPLOCempty(GROUPLOC loc);
+static bool GROUPlockhash(enum locktype type);
+static bool GROUPlock(GROUPLOC gloc, enum locktype type);
+static bool GROUPfilesize(int count);
+static bool GROUPexpand(int mode);
+static bool OV3packgroup(char *group, int delta);
+static GROUPHANDLE *OV3opengroup(char *group, bool needcache);
+static void OV3cleancache(void);
+static bool OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires);
+static bool OV3closegroup(GROUPHANDLE *gh, bool needcache);
+static void OV3getdirpath(char *group, char *path);
+static void OV3getIDXfilename(char *group, char *path);
+static void OV3getDATfilename(char *group, char *path);
 
-BOOL tradindexed_open(int mode) {
+bool tradindexed_open(int mode) {
     char                dirname[1024];
     char                *groupfn;
     struct stat         sb;
@@ -203,7 +203,7 @@ BOOL tradindexed_open(int mode) {
 	    return FALSE;
 	}
     }
-    CloseOnExec(GROUPfd, 1);
+    close_on_exec(GROUPfd, true);
     
     DISPOSE(groupfn);
     Cutofflow = FALSE;
@@ -211,7 +211,7 @@ BOOL tradindexed_open(int mode) {
     return TRUE;
 }
 
-STATIC GROUPLOC GROUPfind(char *group) {
+static GROUPLOC GROUPfind(char *group) {
     HASH                grouphash;
     unsigned int        i;
     GROUPLOC            loc;
@@ -233,7 +233,7 @@ STATIC GROUPLOC GROUPfind(char *group) {
     return GROUPemptyloc;
 } 
 
-BOOL tradindexed_groupstats(char *group, int *lo, int *hi, int *count, int *flag) {
+bool tradindexed_groupstats(char *group, int *lo, int *hi, int *count, int *flag) {
     GROUPLOC            gloc;
 
     gloc = GROUPfind(group);
@@ -251,7 +251,7 @@ BOOL tradindexed_groupstats(char *group, int *lo, int *hi, int *count, int *flag
     return TRUE;
 }
 
-BOOL tradindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
+bool tradindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
     unsigned int        i;
     HASH                grouphash;
     GROUPLOC            loc;
@@ -280,14 +280,14 @@ BOOL tradindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
     return TRUE;
 }
 
-STATIC BOOL GROUPfilesize(int count) {
+static bool GROUPfilesize(int count) {
     return (count * sizeof(GROUPENTRY)) + sizeof(GROUPHEADER);
 }
 
 /* Check if the given GROUPLOC refers to GROUPENTRY that we don't have mmap'ed,
 ** if so then see if the file has been grown by another writer and remmap
 */
-STATIC BOOL GROUPremapifneeded(GROUPLOC loc) {
+static bool GROUPremapifneeded(GROUPLOC loc) {
     struct stat         sb;
     
     if (loc.recno < GROUPcount)
@@ -318,7 +318,7 @@ STATIC BOOL GROUPremapifneeded(GROUPLOC loc) {
 }
 
 /* This function does not need to lock because it's callers are expected to do so */
-STATIC BOOL GROUPexpand(int mode) {
+static bool GROUPexpand(int mode) {
     int                 i;
     int                 flag = 0;
     
@@ -363,7 +363,7 @@ STATIC BOOL GROUPexpand(int mode) {
     return TRUE;
 }
 
-STATIC GROUPLOC GROUPnewnode(void) {
+static GROUPLOC GROUPnewnode(void) {
     GROUPLOC            loc;
     
     /* If we didn't find any free space, then make some */
@@ -378,7 +378,7 @@ STATIC GROUPLOC GROUPnewnode(void) {
     return loc;
 }
 
-BOOL tradindexed_groupdel(char *group) {
+bool tradindexed_groupdel(char *group) {
     GROUPLOC            gloc;
     char                *sepgroup;
     char                *p;
@@ -419,19 +419,19 @@ BOOL tradindexed_groupdel(char *group) {
     return TRUE;
 }
 
-STATIC void GROUPLOCclear(GROUPLOC *loc) {
+static void GROUPLOCclear(GROUPLOC *loc) {
     loc->recno = -1;
 }
 
-STATIC BOOL GROUPLOCempty(GROUPLOC loc) {
+static bool GROUPLOCempty(GROUPLOC loc) {
     return (loc.recno < 0);
 }
 
-STATIC BOOL GROUPlockhash(enum locktype type) {
+static bool GROUPlockhash(enum locktype type) {
     return lock_range(GROUPfd, type, true, 0, sizeof(GROUPHEADER));
 }
 
-STATIC BOOL GROUPlock(GROUPLOC gloc, enum locktype type) {
+static bool GROUPlock(GROUPLOC gloc, enum locktype type) {
     return lock_range(GROUPfd,
                       type,
                       true,
@@ -439,7 +439,7 @@ STATIC BOOL GROUPlock(GROUPLOC gloc, enum locktype type) {
                       sizeof(GROUPENTRY));
 }
 
-STATIC BOOL OV3mmapgroup(GROUPHANDLE *gh) {
+static bool OV3mmapgroup(GROUPHANDLE *gh) {
     struct stat         sb;
     
     if (fstat(gh->datafd, &sb) < 0) {
@@ -475,7 +475,7 @@ STATIC BOOL OV3mmapgroup(GROUPHANDLE *gh) {
     return TRUE;
 }
 
-STATIC GROUPHANDLE *OV3opengroupfiles(char *group) {
+static GROUPHANDLE *OV3opengroupfiles(char *group) {
     char                *sepgroup;
     char                *p;
     char                IDXpath[BIG_BUFFER];
@@ -536,8 +536,8 @@ STATIC GROUPHANDLE *OV3opengroupfiles(char *group) {
 	syslog(L_ERROR, "tradindexed: could not fstat %s: %m", IDXpath);
 	return NULL;
     }
-    CloseOnExec(gh->datafd, 1);
-    CloseOnExec(gh->indexfd, 1);
+    close_on_exec(gh->datafd, true);
+    close_on_exec(gh->indexfd, true);
     gh->indexinode = sb.st_ino;
     gh->indexlen = gh->datalen = -1;
     gh->indexmem = NULL;
@@ -546,7 +546,7 @@ STATIC GROUPHANDLE *OV3opengroupfiles(char *group) {
     return gh;
 }
 
-STATIC void OV3closegroupfiles(GROUPHANDLE *gh) {
+static void OV3closegroupfiles(GROUPHANDLE *gh) {
     close(gh->indexfd);
     close(gh->datafd);
     if (gh->indexmem)
@@ -559,7 +559,7 @@ STATIC void OV3closegroupfiles(GROUPHANDLE *gh) {
 }
 
 
-STATIC void OV3cleancache(void) {
+static void OV3cleancache(void) {
     int                 i;
     CACHEENTRY          *ce, *prev;
     CACHEENTRY          *saved = NULL;
@@ -596,7 +596,7 @@ STATIC void OV3cleancache(void) {
 }
 
 
-STATIC GROUPHANDLE *OV3opengroup(char *group, BOOL needcache) {
+static GROUPHANDLE *OV3opengroup(char *group, bool needcache) {
     unsigned int        hashbucket;
     GROUPHANDLE         *gh;
     HASH                hash;
@@ -663,7 +663,7 @@ STATIC GROUPHANDLE *OV3opengroup(char *group, BOOL needcache) {
     return gh;
 }
 
-STATIC BOOL OV3closegroup(GROUPHANDLE *gh, BOOL needcache) {
+static bool OV3closegroup(GROUPHANDLE *gh, bool needcache) {
     unsigned int        i;
     CACHEENTRY          *ce;
 
@@ -681,7 +681,7 @@ STATIC BOOL OV3closegroup(GROUPHANDLE *gh, BOOL needcache) {
     return TRUE;
 }
 
-STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires) {
+static bool OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires) {
     INDEXENTRY          ie;
     int                 base;
     
@@ -722,7 +722,7 @@ STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, 
     return TRUE;
 }
 
-BOOL tradindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires) {
+bool tradindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires) {
     GROUPHANDLE         *gh;
     GROUPENTRY		*ge;
     GROUPLOC            gloc;
@@ -766,7 +766,7 @@ BOOL tradindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data, int le
     return TRUE;
 }
 
-BOOL tradindexed_cancel(TOKEN token) {
+bool tradindexed_cancel(TOKEN token) {
     return TRUE;
 }
 
@@ -812,7 +812,7 @@ void *tradindexed_opensearch(char *group, int low, int high) {
     return (void *)search;
 }
 
-BOOL ov3search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived, time_t *expires) {
+bool ov3search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived, time_t *expires) {
     OV3SEARCH           *search = (OV3SEARCH *)handle;
     INDEXENTRY           *ie;
 
@@ -856,7 +856,7 @@ BOOL ov3search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token
     return TRUE;
 }
 
-BOOL tradindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived) {
+bool tradindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived) {
   return(ov3search(handle, artnum, data, len, token, arrived, NULL));
 }
 
@@ -868,9 +868,9 @@ void tradindexed_closesearch(void *handle) {
     DISPOSE(search);
 }
 
-BOOL tradindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token) {
+bool tradindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token) {
     void                *handle;
-    BOOL                retval;
+    bool                retval;
     if (!(handle = tradindexed_opensearch(group, artnum, artnum)))
 	return FALSE;
     retval = tradindexed_search(handle, NULL, data, len, token, NULL);
@@ -878,7 +878,7 @@ BOOL tradindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, T
     return retval;
 }
 
-STATIC void OV3getdirpath(char *group, char *path) {
+static void OV3getdirpath(char *group, char *path) {
     char                *sepgroup;
     char                *p;
     char                **groupparts = NULL;
@@ -901,7 +901,7 @@ STATIC void OV3getdirpath(char *group, char *path) {
     freeargify(&groupparts);
 }
 
-STATIC void OV3getIDXfilename(char *group, char *path) {
+static void OV3getIDXfilename(char *group, char *path) {
     char                *p;
 
     OV3getdirpath(group, path);
@@ -909,7 +909,7 @@ STATIC void OV3getIDXfilename(char *group, char *path) {
     sprintf(p, "%s.IDX", group);
 }
 
-STATIC void OV3getDATfilename(char *group, char *path) {
+static void OV3getDATfilename(char *group, char *path) {
     char                *p;
 
     OV3getdirpath(group, path);
@@ -921,7 +921,7 @@ STATIC void OV3getDATfilename(char *group, char *path) {
  * Shift group index file so it has lower value of base.
  */
 
-STATIC BOOL OV3packgroup(char *group, int delta) {
+static bool OV3packgroup(char *group, int delta) {
     char                newgroup[BIG_BUFFER];
     char                bakgroup[BIG_BUFFER];
     GROUPENTRY		*ge;
@@ -931,7 +931,7 @@ STATIC BOOL OV3packgroup(char *group, int delta) {
     int			fd;
     int			numentries;
     GROUPHANDLE		*gh;
-    OFFSET_T		nbytes;
+    off_t		nbytes;
 
     if (delta <= 0) return FALSE;
 
@@ -1037,7 +1037,7 @@ STATIC BOOL OV3packgroup(char *group, int delta) {
     return TRUE;
 }
 
-BOOL tradindexed_expiregroup(char *group, int *lo) {
+bool tradindexed_expiregroup(char *group, int *lo) {
     char                newgroup[BIG_BUFFER];
     char                bakgroup[BIG_BUFFER];
     void                *handle;
@@ -1159,7 +1159,7 @@ BOOL tradindexed_expiregroup(char *group, int *lo) {
     return TRUE;
 }
 
-BOOL tradindexed_ctl(OVCTLTYPE type, void *val) {
+bool tradindexed_ctl(OVCTLTYPE type, void *val) {
     int *i;
     OVSORTTYPE *sorttype;
     switch (type) {
@@ -1172,7 +1172,7 @@ BOOL tradindexed_ctl(OVCTLTYPE type, void *val) {
 	*sorttype = OVNEWSGROUP;
 	return TRUE;
       case OVCUTOFFLOW:
-	Cutofflow = *(BOOL *)val;
+	Cutofflow = *(bool *)val;
 	return TRUE;
     case OVSTATICSEARCH:
 	i = (int *)val;
