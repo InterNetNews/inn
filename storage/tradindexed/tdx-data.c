@@ -104,13 +104,15 @@ file_open(const char *base, const char *suffix, bool writable)
         *p = '\0';
         if (!MakeDirectory(file, true)) {
             syswarn("tradindexed: cannot create directory %s", file);
+            free(file);
             return -1;
         }
         *p = '/';
         fd = open(file, flags, ARTFILE_MODE);
     }
+    free(file);
     if (fd < 0) {
-        if (errno == ENOENT)
+        if (errno != ENOENT)
             syswarn("tradindexed: cannot open %s", file);
         return -1;
     }
@@ -130,6 +132,8 @@ tdx_data_new(const char *group, bool writable)
     data = xmalloc(sizeof(struct group_data));
     data->path = group_path(group);
     data->writable = writable;
+    data->indexfd = -1;
+    data->datafd = -1;
     data->index = NULL;
     data->data = NULL;
 
@@ -229,7 +233,7 @@ map_index(struct group_data *data)
 static bool
 map_data(struct group_data *data)
 {
-    data->data = map_file(data->datafd, data->datalen, data->path, "IDX");
+    data->data = map_file(data->datafd, data->datalen, data->path, "DAT");
     return (data->data == NULL) ? false : true;
 }
 
