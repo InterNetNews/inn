@@ -67,10 +67,10 @@ f\&i
 .RE
 .SH BUGS
 .I shlock
-does not assumed to be used under a number of lock/unlock environment in a
-short time.  Namely,
+assumes that it will not be used in an environment with multiple
+locks/unlocks in a short time (due to a race condition).  That is,
 .I shlock
-should be used for an environment like daily or hourly based job.
+is intended for daily or hourly jobs.
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> after a description of HDB UUCP
 locking given by Peter Honeyman.
