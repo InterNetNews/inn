@@ -51,7 +51,7 @@ printit(char *v, char *val)
 	    if (isnum(val))
 	    	printf("$%s = %s;\n", v, val);
 	    else
-	    	printf("$%s = \"%s\";\n", v, val);
+	    	printf("$%s = \'%s\';\n", v, val);
 	    break;
 	case 4:   /* tcl */
 	    if (isnum(val))
