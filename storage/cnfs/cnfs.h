@@ -13,6 +13,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount);
 void cnfs_freearticle(ARTHANDLE *article);
 BOOL cnfs_cancel(TOKEN token);
 BOOL cnfs_ctl(PROBETYPE type, TOKEN *token, void *value);
+BOOL cnfs_flushcacheddata(FLUSHTYPE type);
 void cnfs_shutdown(void);
 
 #endif
