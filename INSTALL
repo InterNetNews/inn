@@ -145,6 +145,18 @@ Installing INN
                           The tagged hash format uses much less memory but is
                           somewhat slower. This option is recommended if you
                           have less than 256 MB of RAM on your news server.
+                          If your server disables tagged hash and expire takes
+                          many hours, you should check the amount of RAM to
+                          satisfy the following formula.  If it doesn't
+                          satisfy, you should enable tagged hash and rebuild
+                          dbz files.
+
+                          n > (6 + extendeddbz ? 12 : 4) * tablesize
+
+                          n:           amount of RAM
+                          extendeddbz: extendeddbz in inn.conf
+                          tablesize:   value in 3rd field on the 1st line in
+                                       history.dir
 
   --enable-pgp-verify     This enable support for PGP (Pretty Good Privacy)
                           signature checking on control messages. This makes
@@ -300,7 +312,8 @@ Configuring INN
                        times larger, but should increase performance for news
                        readers when they retrieve article overview information.
                        If you don't mind using 200-300 MB of extra space for
-                       your history database then you should set this to "yes".
+                       your history database and memory then you should set
+                       this to "yes".
 
   nntpdoverstats       If set to "yes" then nnrpd will log statistics about
                        how much time was spent during the various stages of
