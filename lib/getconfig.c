@@ -404,7 +404,10 @@ int CheckInnConf()
     /* Set the TMPDIR variable unconditionally and globally */
     if (8 + strlen(innconf->pathtmp) > dirlen)
 	dirlen = 8 + strlen(innconf->pathtmp);
-    RENEW(tmpdir, char, dirlen);
+    if (tmpdir == NULL)
+	tmpdir = NEW(char, dirlen);
+    else
+	RENEW(tmpdir, char, dirlen);
     sprintf(tmpdir, "TMPDIR=%s", innconf->pathtmp);
     putenv(tmpdir);
     /* tmpdir should not be freed for some OS */
