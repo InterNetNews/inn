@@ -439,9 +439,15 @@ entry_splice(struct group_entry *entry, int *parent)
 static void
 index_add(struct group_index *index, struct group_entry *entry)
 {
-    long bucket;
+    long bucket, loc;
 
     bucket = index_bucket(entry->hash);
+    loc = entry_loc(index, entry);
+    if (loc == index->header->hash[bucket].recno) {
+        warn("tradindexed: refusing to add a loop for %ld in bucket %ld",
+             loc, bucket);
+        return;
+    }
     entry->next.recno = index->header->hash[bucket].recno;
     index->header->hash[bucket].recno = entry_loc(index, entry);
     mapcntl(&index->header->hash[bucket], sizeof(struct loc), MS_ASYNC);
@@ -1061,6 +1067,10 @@ tdx_index_dump(struct group_index *index, FILE *output)
             if (name == NULL)
                 name = HashToText(entry->hash);
             tdx_index_print(name, entry, output);
+            if (current == entry->next.recno) {
+                warn("tradindexed: index loop for entry %ld", current);
+                return;
+            }
             current = entry->next.recno;
         }
     }
@@ -1135,7 +1145,7 @@ index_audit_header(struct group_index *index, bool fix)
 {
     long bucket, current;
     struct group_entry *entry;
-    int *parent;
+    int *parent, *next;
     bool *reachable;
 
     /* First, walk all of the regular hash buckets, making sure that all of
@@ -1150,12 +1160,15 @@ index_audit_header(struct group_index *index, bool fix)
         current = *parent;
         while (current != -1) {
             entry = &index->entries[current];
+            next = &entry->next.recno;
             if (entry->deleted == 0 && bucket != index_bucket(entry->hash)) {
                 warn("tradindexed: entry %ld is in bucket %ld instead of its"
                      " correct bucket %ld", current, bucket,
                      index_bucket(entry->hash));
-                if (fix)
+                if (fix) {
                     entry_splice(entry, parent);
+                    next = parent;
+                }
             } else {
                 if (reachable[current])
                     warn("tradindexed: entry %ld is reachable from multiple"
@@ -1163,16 +1176,17 @@ index_audit_header(struct group_index *index, bool fix)
                 reachable[current] = true;
             }
             index_audit_deleted(entry, current, fix);
+            index_audit_loc(index, &entry->next.recno, current, entry, fix);
             if (entry->deleted != 0) {
                 warn("tradindexed: entry %ld is deleted but not in the free"
                      " list", current);
                 if (fix) {
                     entry_splice(entry, parent);
+                    next = parent;
                     reachable[current] = false;
                 }
             }
-            index_audit_loc(index, &entry->next.recno, current, entry, fix);
-            parent = &entry->next.recno;
+            parent = next;
             current = *parent;
         }
     }
@@ -1205,7 +1219,7 @@ index_audit_header(struct group_index *index, bool fix)
             warn("tradindexed: unreachable entry %ld", current);
             if (fix) {
                 entry = &index->entries[current];
-                if (entry->deleted == 0)
+                if (!HashEmpty(entry->hash) && entry->deleted == 0)
                     index_add(index, entry);
                 else
                     freelist_add(index, entry);
@@ -1305,6 +1319,7 @@ tdx_index_audit(bool fix)
             continue;
         index_audit_group(index, entry, hashmap, fix);
     }
+    index_lock(index->fd, INN_LOCK_UNLOCK);
     if (hashmap != NULL)
         hash_free(hashmap);
 }
