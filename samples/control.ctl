@@ -53,17 +53,12 @@ sendme:*:*:drop
 
 
 ##
-## We honor sendsys, senduuuname and version from *@uunet.uu.net and 
-## inn@isc.org
+## We honor sendsys, senduuname and version from inn-control@isc.org
 ##
 
-sendsys:*@uunet.uu.net:*:doit=miscctl
-senduuname:*@uunet.uu.net:*:doit=miscctl
-version:*@uunet.uu.net:*:doit=miscctl
-
-sendsys:inn@isc.org:*:doit=miscctl
-senduuname:inn@isc.org:*:doit=miscctl
-version:inn@isc.org:*:doit=miscctl
+sendsys:inn-control@isc.org:*:doit=miscctl
+senduuname:inn-control@isc.org:*:doit=miscctl
+version:inn-control@isc.org:*:doit=miscctl
 
 
 ###########################################################################
@@ -77,19 +72,19 @@ version:inn@isc.org:*:doit=miscctl
 ##
 
 # *PGP*   See comment at top of file.
-checkgroups:tale@uunet.uu.net:*:verify-news.announce.newgroups=miscctl
-newgroup:tale@uunet.uu.net:comp.*|misc.*|news.*:verify-news.announce.newgroups
-newgroup:tale@uunet.uu.net:rec.*|sci.*|soc.*:verify-news.announce.newgroups
-newgroup:tale@uunet.uu.net:talk.*|humanities.*:verify-news.announce.newgroups
-rmgroup:tale@uunet.uu.net:comp.*|misc.*|news.*:verify-news.announce.newgroups
-rmgroup:tale@uunet.uu.net:rec.*|sci.*|soc.*:verify-news.announce.newgroups
-rmgroup:tale@uunet.uu.net:talk.*|humanities.*:verify-news.announce.newgroups
+checkgroups:group-admin@isc.org:*:verify-news.announce.newgroups=miscctl
+newgroup:group-admin@isc.org:comp.*|misc.*|news.*:verify-news.announce.newgroups
+newgroup:group-admin@isc.org:rec.*|sci.*|soc.*:verify-news.announce.newgroups
+newgroup:group-admin@isc.org:talk.*|humanities.*:verify-news.announce.newgroups
+rmgroup:group-admin@isc.org:comp.*|misc.*|news.*:verify-news.announce.newgroups
+rmgroup:group-admin@isc.org:rec.*|sci.*|soc.*:verify-news.announce.newgroups
+rmgroup:group-admin@isc.org:talk.*|humanities.*:verify-news.announce.newgroups
 
-# checkgroups:tale@uunet.uu.net:*:doit=checkgroups
-# newgroup:tale@*.uu.net:comp.*|misc.*|news.*|rec.*|sci.*:doit=newgroup
-# newgroup:tale@*.uu.net:soc.*|talk.*|humanities.*:doit=newgroup
-# rmgroup:tale@*.uu.net:comp.*|misc.*|news.*|rec.*|sci.*:doit=newgroup
-# rmgroup:tale@*.uu.net:soc.*|talk.*|humanities.*:doit=newgroup
+# checkgroups:group-admin@isc.org:*:doit=checkgroups
+# newgroup:group-admin@isc.org:comp.*|misc.*|news.*|rec.*|sci.*:doit=newgroup
+# newgroup:group-admin@isc.org:soc.*|talk.*|humanities.*:doit=newgroup
+# rmgroup:group-admin@isc.org:comp.*|misc.*|news.*|rec.*|sci.*:doit=newgroup
+# rmgroup:group-admin@isc.org:soc.*|talk.*|humanities.*:doit=newgroup
 
 
 ##
@@ -104,11 +99,10 @@ rmgroup:tale@uunet.uu.net:talk.*|humanities.*:verify-news.announce.newgroups
 ## Other options and comments on alt.* groups can be found on Bill 
 ## Hazelrig's WWW pages at http://www.tezcat.com/~haz1/alt/faqindex.html
 ##
-newgroup:*:alt.*:doit=newgroup
+newgroup:*:alt.*:mail
 rmgroup:*:alt.*:mail
 rmgroup:haz1@*nwu.edu:alt.*:doit=rmgroup
 rmgroup:grobe@*netins.net:alt.*:doit=rmgroup
-rmgroup:barr@*.psu.edu:alt.*:doit=rmgroup
 rmgroup:smj@*.oro.net:alt.*:doit=rmgroup
 rmgroup:davidg@*.netcom.com:alt.*:doit=rmgroup
 rmgroup:news@gymnet.com:alt.*:doit=rmgroup
