@@ -1415,6 +1415,17 @@ void printHostInfo (Host host, FILE *fp, u_int indentAmt)
     }
 
   fprintf (fp,"%s    }\n",indent) ;
+  fprintf (fp,"%s    DEFERRED articles {\n",indent) ;
+  for (qe = host->deferred ; qe != NULL ; qe = qe->next)
+    {
+#if 0
+      printArticleInfo (qe->article,fp,indentAmt + INDENT_INCR) ;
+#else
+      fprintf (fp,"%s    %p\n",indent,qe->article) ;
+#endif
+    }
+  
+  fprintf (fp,"%s    }\n",indent) ;
 
   
   
@@ -3344,6 +3355,16 @@ static void queuesToTape (Host host)
   while ((art = remHead (&host->queued,&host->queuedTail)) != NULL)
     {
       host->backlog-- ;
+      host->artsHostClose++ ;
+      host->gArtsHostClose++ ;
+      host->artsToTape++ ;
+      host->gArtsToTape++ ;
+      tapeTakeArticle (host->myTape,art) ;
+    }
+
+  while ((art = remHead (&host->deferred,&host->deferredTail)) != NULL)
+    {
+      host->deferLen-- ;
       host->artsHostClose++ ;
       host->gArtsHostClose++ ;
       host->artsToTape++ ;
