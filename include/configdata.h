@@ -12,25 +12,6 @@
 /*
 **  1.  MAKE CONFIG PARAMETERS
 */
-    /* =()<#define @<USE_CHAR_CONST>@_USE_CHAR_CONST>()= */
-#define DO_USE_CHAR_CONST
-#if	defined(DO_USE_CHAR_CONST)
-typedef char const	*STRING;
-typedef char * const	CSTRING;
-#endif	/* defined(DO_USE_CHAR_CONST) */
-#if	defined(DONT_USE_CHAR_CONST)
-typedef char		*STRING;
-typedef char		*CSTRING;
-#endif	/* defined(DONT_USE_CHAR_CONST) */
-#if	defined(DUNNO_USE_CHAR_CONST)
-#if	defined(__STDC__)
-typedef char const	*STRING;
-typedef char * const	CSTRING;
-#else
-typedef char		*STRING;
-typedef char		*CSTRING;
-#endif	/* defined(__STDC__) */
-#endif	/* defined(DUNNO_USE_CHAR_CONST) */
 
 /*
 **  Declare a function that doesn't return.
@@ -48,35 +29,12 @@ typedef char		*CSTRING;
 #endif	/* defined(__GNUC__) */
 #endif	/* defined(__dead) */
 
-
-/*
-**  3.  OWNERSHIPS AND FILE MODES
-*/
-    /* =()<#define PATHMASTER		"@<PATHMASTER>@">()= */
-#define PATHMASTER		"not-for-mail"
-    /* Umask to set. */
-    /* =()<#define NEWSUMASK		@<NEWSUMASK>@>()= */
-#define NEWSUMASK		02
-    /* Mode that incoming articles are created under. */
-    /* =()<#define ARTFILE_MODE	@<ARTFILE_MODE>@>()= */
-#define ARTFILE_MODE	0664
-    /* Mode that batch files are created under. */
-    /* =()<#define BATCHFILE_MODE	@<BATCHFILE_MODE>@>()= */
-#define BATCHFILE_MODE	0664
-    /* Mode that directories are created under. */
-    /* =()<#define GROUPDIR_MODE	@<GROUPDIR_MODE>@>()= */
-#define GROUPDIR_MODE	0775
-
-
 /*
 **  4.  C LIBRARY DIFFERENCES
 */
     /* Does your AF_UNIX bind use sizeof for the socket size? */
     /* =()<#define @<BIND_USE_SIZEOF>@_BIND_USE_SIZEOF>()= */
 #define DO_BIND_USE_SIZEOF
-    /* Do you have Unix-domain sockets? */
-    /* =()<#define @<HAVE_UNIX_DOMAIN>@_HAVE_UNIX_DOMAIN>()= */
-#define DO_HAVE_UNIX_DOMAIN
     /* How should resource-totalling be done? */
     /* =()<#define RES_@<RES_STYLE>@>()= */
 #define RES_RUSAGE
