@@ -1064,14 +1064,11 @@ STATIC LIST *GetOverviewIndex(char *group, int *numentries)
 /*
 **  Read the overview file, return sorted list of all articles in it.
 */
-STATIC LIST *
-GetOverviewList(group, numentries)
-    char		*group;
-    int			*numentries;
+STATIC LIST *GetOverviewList(char *group, int *numentries)
 {
     static LIST		List;
-    register QIOSTATE	*qp;
-    register char	*p;
+    QIOSTATE	        *qp;
+    char	        *p;
     char		file[SPOOLNAMEBUFF];
 
     *numentries = 0;
@@ -1116,14 +1113,12 @@ GetOverviewList(group, numentries)
 /*
 **  Read spool directory and return sorted list of articles or NULL on error.
 */
-STATIC LIST *
-GetSpoolList(group)
-    char		*group;
+STATIC LIST *GetSpoolList(char *group)
 {
     static LIST		List;
-    register DIR	*dp;
-    register DIRENTRY	*ep;
-    register char	*p;
+    DIR	                *dp;
+    DIRENTRY	        *ep;
+    char	        *p;
     char		buff[SPOOLNAMEBUFF];
 
     /* Open directory. */
@@ -1162,16 +1157,13 @@ GetSpoolList(group)
 **  the Spool list.  Both lists are sorted.  See SpoolUpdate for an
 **  explanation of the names.
 */
-STATIC LIST *
-GetNotIn(Over, Spool)
-    register LIST	*Over;
-    register LIST	*Spool;
+STATIC LIST *GetNotIn(LIST *Over, LIST *Spool)
 {
     static LIST		List;
-    register ARTNUM	*oEnd;
-    register ARTNUM	*sEnd;
-    register ARTNUM	*o;
-    register ARTNUM	*s;
+    ARTNUM	        *oEnd;
+    ARTNUM	        *sEnd;
+    ARTNUM	        *o;
+    ARTNUM	        *s;
 
     /* Setup the list. */
     if (List.Articles == NULL) {
@@ -1208,9 +1200,7 @@ GetNotIn(Over, Spool)
 /*
 **  Try to make one directory.  Return FALSE on error.
 */
-STATIC BOOL
-MakeDir(Name)
-    char	*Name;
+STATIC BOOL MakeDir(char *Name)
 {
     struct stat	Sb;
 
@@ -1226,11 +1216,9 @@ MakeDir(Name)
 **  Given a directory, comp/foo/bar, create that directory and all
 **  intermediate directories needed.  Return FALSE on error.
 */
-static BOOL
-MakeOverDir(Name)
-    register char	*Name;
+static BOOL MakeOverDir(char *Name)
 {
-    register char	*p;
+    char	        *p;
     BOOL		made;
 
     /* Optimize common case -- parent almost always exists. */
@@ -1254,10 +1242,7 @@ MakeOverDir(Name)
 /*
 **  Update using the News Spool.  Either add or delete entries.
 */
-STATIC void
-SpoolUpdate(AddEntries, Name)
-    BOOL		AddEntries;
-    char		*Name;
+STATIC void SpoolUpdate(BOOL AddEntries, char *Name)
 {
     QIOSTATE 		*qp;
     char		*line;
@@ -1364,20 +1349,16 @@ SpoolUpdate(AddEntries, Name)
 /*
 **  Print usage message and exit.
 */
-STATIC NORETURN
-Usage()
+STATIC NORETURN Usage(void)
 {
     (void)fprintf(stderr, "Usage:  expireover [flags] [file...]\n");
     exit(1);
 }
 
 
-int
-main(ac, av)
-    int			ac;
-    char		*av[];
+int main(int ac, char *av[])
 {
-    register int	i;
+    int	                i;
     QIOSTATE		*qp;
     BOOL		AddEntries;
     BOOL		ReadSpool;
