@@ -45,6 +45,9 @@ extern "C" {
 #undef NBIO_FCNTL
 #undef NBIO_IOCTL
 
+/* Define if you need to memory copy instead of write */
+#undef MMAP_MISSES_WRITES
+
 /* Define if you have msync() with 3 args */
 #undef HAVE_MSYNC_3_ARG
 

@@ -42,15 +42,15 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_DOMAIN				"domain"
 #define CONF_VAR_DOMAIN				6
     { _CONF_DOMAIN,				"",	1, 0 },
-#define _CONF_MIMEVERSION			"mimeversion"
-#define CONF_VAR_MIMEVERSION			7
-    { _CONF_MIMEVERSION,			"",	1, 0 },
-#define _CONF_MIMECONTENTTYPE			"mimecontenttype"
-#define CONF_VAR_MIMECONTENTTYPE		8
-    { _CONF_MIMECONTENTTYPE,			"",	1, 0 },
-#define _CONF_MIMEENCODING			"mimeencoding"
-#define CONF_VAR_MIMEENCODING			9
-    { _CONF_MIMEENCODING,			"",	1, 0 },
+#define _CONF_ENABLEOVERVIEW			"enableoverview"
+#define CONF_VAR_ENABLEOVERVIEW			7
+    { _CONF_ENABLEOVERVIEW,			"",	2, 1 },
+#define _CONF_WIREFORMAT			"wireformat"
+#define CONF_VAR_WIREFORMAT			8
+    { _CONF_WIREFORMAT,				"",	2, 1 },
+#define _CONF_OVMETHOD				"ovmethod"
+#define CONF_VAR_OVMETHOD			9
+    { _CONF_OVMETHOD,				"",	1, 1 },
 #define _CONF_HISCACHESIZE			"hiscachesize"
 #define CONF_VAR_HISCACHESIZE			10
     { _CONF_HISCACHESIZE,			"",	2, 1 },
@@ -180,9 +180,9 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_STRIPPOSTCC			"strippostcc"
 #define CONF_VAR_STRIPPOSTCC			52
     { _CONF_STRIPPOSTCC,			"",	2, 1 },
-#define _CONF_OVERVIEWNAME			"overviewname"
-#define CONF_VAR_OVERVIEWNAME			53
-    { _CONF_OVERVIEWNAME,			"",	1, 1 },
+#define _CONF_OVERCACHESIZE			"overcachesize"
+#define CONF_VAR_OVERCACHESIZE			53
+    { _CONF_OVERCACHESIZE,			"",	2, 1 },
 #define _CONF_KEYWORDS				"keywords"
 #define CONF_VAR_KEYWORDS			54
     { _CONF_KEYWORDS,				"",	1, 1 },
@@ -252,9 +252,9 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_NNRPDOVERSTATS			"nnrpdoverstats"
 #define CONF_VAR_NNRPDOVERSTATS			76
     { _CONF_NNRPDOVERSTATS,			"",	2, 1 },
-#define _CONF_DECNETDOMAIN			"decnetdomain"
-#define CONF_VAR_DECNETDOMAIN			77
-    { _CONF_DECNETDOMAIN,			"",	2, 1 },
+#define _CONF_NNRPDPOSTPORT			"nnrpdpostport"
+#define CONF_VAR_NNRPDPOSTPORT			77
+    { _CONF_NNRPDPOSTPORT,			"",	2, 1 },
 #define _CONF_BACKOFFAUTH			"backoffauth"
 #define CONF_VAR_BACKOFFAUTH			78
     { _CONF_BACKOFFAUTH,			"",	2, 1 },
@@ -288,18 +288,18 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_NNRPDCHECKART			"nnrpdcheckart"
 #define CONF_VAR_NNRPDCHECKART			88
     { _CONF_NNRPDCHECKART,			"",	2, 1 },
-#define _CONF_ADDNNTPPOSTINGHOST                       "addnntppostinghost"
-#define CONF_VAR_ADDNNTPPOSTINGHOST            89
-    { _CONF_ADDNNTPPOSTINGHOST,                        "",     2, 1 },
-#define _CONF_ADDNNTPPOSTINGDATE               "addnntppostingdate"
-#define CONF_VAR_ADDNNTPPOSTINGDATE            90
-    { _CONF_ADDNNTPPOSTINGDATE,                        "",     2, 1 },
+#define _CONF_ADDNNTPPOSTINGHOST		"addnntppostinghost"
+#define CONF_VAR_ADDNNTPPOSTINGHOST		89
+    { _CONF_ADDNNTPPOSTINGHOST,			"",     2, 1 },
+#define _CONF_ADDNNTPPOSTINGDATE		"addnntppostingdate"
+#define CONF_VAR_ADDNNTPPOSTINGDATE		90
+    { _CONF_ADDNNTPPOSTINGDATE,			"",     2, 1 },
 #define _CONF_NICENNRPD				"nicennrpd"
 #define CONF_VAR_NICENNRPD			91
     { _CONF_NICENNRPD,				"",     2, 1 },
-#define _CONF_STOREMSGID			"storemsgid"
-#define CONF_VAR_STOREMSGID			92
-    { _CONF_STOREMSGID,				"",	2, 1 },
+#define _CONF_NNRPPERLAUTH			"nnrpperlauth"
+#define CONF_VAR_NNRPPERLAUTH			92
+    { _CONF_NNRPPERLAUTH,			"",	2, 1 },
 #define _CONF_NICENEWNEWS			"nicenewnews"
 #define CONF_VAR_NICENEWNEWS			93
     { _CONF_NICENEWNEWS,			"",	2, 1 },
@@ -314,25 +314,7 @@ struct conf_rec conf_defaults[] = {
     { _CONF_NOREADER,				"",	2, 1 },
 #define _CONF_SOURCEADDRESS			"sourceaddress"
 #define CONF_VAR_SOURCEADDRESS			97
-    { _CONF_SOURCEADDRESS,			"",	1, 1 },
-#define _CONF_NNRPPERLAUTH			"nnrpperlauth"
-#define CONF_VAR_NNRPPERLAUTH			98
-    { _CONF_NNRPPERLAUTH,			"",	2, 1 },
-#define _CONF_NNRPDPOSTPORT			"nnrpdpostport"
-#define CONF_VAR_NNRPDPOSTPORT			99
-    { _CONF_NNRPDPOSTPORT,			"",	2, 1 },
-#define _CONF_OVERCACHESIZE			"overcachesize"
-#define CONF_VAR_OVERCACHESIZE			100
-    { _CONF_OVERCACHESIZE,			"",	2, 1 },
-#define _CONF_ENABLEOVERVIEW			"enableoverview"
-#define CONF_VAR_ENABLEOVERVIEW			101
-    { _CONF_ENABLEOVERVIEW,			"",	2, 1 },
-#define _CONF_WIREFORMAT			"wireformat"
-#define CONF_VAR_WIREFORMAT			102
-    { _CONF_WIREFORMAT,				"",	2, 1 },
-#define _CONF_OVMETHOD				"ovmethod"
-#define CONF_VAR_OVMETHOD			103
-    { _CONF_OVMETHOD,				"",	1, 1 }
+    { _CONF_SOURCEADDRESS,			"",	1, 1 }
 };
-#define MAX_CONF_VAR 104
+#define MAX_CONF_VAR 98
 

@@ -91,9 +91,6 @@ struct conf_vars {
 	char *organization;	/* Data for the Organization line */
 	char *moderatormailer;	/* Default host to mail moderated articles */
 	char *domain;		/* Default domain of local host */
-	char *mimeversion;	/* Default mime version */
-	char *mimecontenttype;	/* Default Content-Type */
-	char *mimeencoding;	/* Default encoding */
 	int hiscachesize;	/* Size of the history cache in kB */
 	int xrefslave;		/* master server for slaving */
 	char *complaints;	/* Addr for X-Complaints-To: header */
@@ -134,7 +131,6 @@ struct conf_vars {
 	int port;		/* Which port INND should listen on */
 	int readertrack;	/* Enable/Disable the reader tracking system */
 	int strippostcc;	/* Strip To:, Cc: and Bcc: lines from posts */
-	char *overviewname;	/* Name of the file to store overview data */
         char keywords;		/* enable keyword generationg in overview */
         int keylimit;		/* max allocated space for keywords. */
         int keyartlimit;        /* Max size of an article for keyword generation */
@@ -165,7 +161,6 @@ struct conf_vars {
 	int nnrpdpostport;
 	int nnrpdoverstats;
 	int storeonxref;	/* Should SMstore() see Xref to detemine class */
-	char *decnetdomain;
 	int backoff_auth;
 	char *backoff_db;
 	long backoff_k;
@@ -174,7 +169,6 @@ struct conf_vars {
 	long backoff_trigger;
 	int refusecybercancels;
 	int nnrpdcheckart;
-	int storemsgid;
 	int nicenewnews;	/* If NEWNEWS command is used, set nice */
 	int nicennrpd;
 	int usecontrolchan;
