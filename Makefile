@@ -46,11 +46,12 @@ all-libraries:	all-lib all-storage all-history
 
 all-include:			; cd include   && $(MAKE) all
 all-lib:	all-include	; cd lib       && $(MAKE) all
-all-storage:	all-lib		; cd storage   && $(MAKE) all
+all-storage:	all-lib		; cd storage   && $(MAKE) objects
 all-history:	all-storage	; cd history   && $(MAKE) all
 
 all-programs:	all-innd all-nnrpd all-innfeed all-control all-expire \
-		all-frontends all-backends all-authprogs all-scripts
+		all-frontends all-backends all-authprogs all-scripts \
+		all-store-util
 
 all-authprogs:	all-lib		; cd authprogs && $(MAKE) all
 all-backends:	all-libraries	; cd backends  && $(MAKE) all
@@ -61,6 +62,7 @@ all-innd:	all-libraries	; cd innd      && $(MAKE) all
 all-innfeed:	all-libraries	; cd innfeed   && $(MAKE) all
 all-nnrpd:	all-libraries	; cd nnrpd     && $(MAKE) all
 all-scripts:			; cd scripts   && $(MAKE) all
+all-store-util:	all-libraries	; cd storage   && $(MAKE) programs
 
 
 ##  If someone tries to run make before running configure, tell them to run
