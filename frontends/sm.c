@@ -119,6 +119,7 @@ int main(int argc, char **argv) {
 	    if ((p = OVERretrieve(&token, &linelen)) == (char *)NULL) {
 		if (!Quiet)
 		    fprintf(stderr, "Could not retrieve %s\n", argv[i]);
+		continue;
 	    }
 	    if (fwrite(p, linelen, 1, stdout) != 1) {
 		if (!Quiet)
