@@ -4,6 +4,7 @@ include ../Makefile.global
 ##  If you want to do ctlinnd pause/reload/go, uncomment these lines.
 #PAUSE		= pause
 #RELOAD_AND_GO	= reload go
+DIFF="diff"
 
 # Added a default rule for ".csh" because Digital UNIX has a builtin
 # rule which would overwite the innshellvars file.
@@ -115,11 +116,11 @@ most:		$(MOST)
 
 ##  Show changes between files here and ones in samples.
 diff:
-	@$(MAKE) COPY=-diff all
+	@$(MAKE) COPY=-${DIFF} all
 
 ##  Show changes between files here and installed versions.
 diff-installed:
-	@$(MAKE) COPY_RPRI=-diff COPY_RPUB=-diff COPY_XPRI=-diff COPY_XPUB=-diff $(ALL_INSTALLED)
+	@$(MAKE) COPY_RPRI=-${DIFF} COPY_RPUB=-${DIFF} COPY_XPRI=-${DIFF} COPY_XPUB=-${DIFF} $(ALL_INSTALLED)
 
 ##  Show what would be copied from samples directory.
 what:
