@@ -58,7 +58,7 @@ ME:!*/!local,!collabra-internal::
 
 # innfeed funnel master.
 #innfeed!\
-#	:!*,\
+#	:!*\
 #	:Tc,Wnm*:@prefix@/bin/startinnfeed
 
 ##  Uncomment if usecontrolchan is set to true in inn.conf.  See INSTALL
