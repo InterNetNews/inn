@@ -1661,6 +1661,7 @@ static EXECSTUFF *ExecProg(char *arg0, char **args)
 	dup2(wrfd[0], 0);
 	execv(arg0, args);
 	/* if we got here, there was an error */
+	syslog(L_ERROR, "%s perm could not exec %s: %m", ClientHost, arg0);
 	exit(1);
     }
     close(rdfd[1]);
