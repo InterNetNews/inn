@@ -251,6 +251,7 @@ typedef struct _SITE {
     BOOL		DistRequired;
     BOOL		IgnorePath;
     BOOL		ControlOnly;
+    BOOL		DontWantNonExist;
     int			Hops;
     int			Groupcount;
     FEEDTYPE		Type;
@@ -388,7 +389,6 @@ typedef enum {TMR_IDLE, TMR_ARTWRITE, TMR_ARTLINK, TMR_HISWRITE,
 #endif	/* defined(DEFINE_DATA) */
 extern BOOL		AmRoot;
 extern BOOL		BufferedLogs;
-EXTERN BOOL		AmSlave;
 EXTERN BOOL		AnyIncoming;
 extern BOOL		Debug;
 EXTERN BOOL		ICDneedsetup;
@@ -553,7 +553,6 @@ extern BOOL		RCnolimit();
 extern BOOL		RCauthorized();
 extern BOOL		RCcanpost();
 extern char		*RChostname();
-extern int		RCismaster();
 extern void		RCclose();
 extern void		RChandoff();
 extern void		RCreadlist();

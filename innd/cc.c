@@ -847,7 +847,7 @@ CCmode(av)
 	    innconf->maxconnections, i,
 	    innconf->maxartsize, MaxOutgoing, (long)TimeOut.tv_sec,
 	    RemoteLimit, RemoteTotal, (int) RemoteTimer,
-	    AmSlave ? "slave" : "normal",
+	    innconf->xrefslave != NULL ? "slave" : "normal",
 	    AnyIncoming ? "any" : "specified");
     p += strlen(p);
 

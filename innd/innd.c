@@ -529,7 +529,6 @@ int main(int ac, char *av[])
     int			fd;
     int			logflags;
     char		buff[SMBUF];
-    char		*master;
     char		*p;
     FILE		*F;
     BOOL		ShouldFork;
@@ -569,7 +568,6 @@ int main(int ac, char *av[])
     ShouldSyntaxCheck = FALSE;
     logflags = L_OPENLOG_FLAGS | LOG_NOWAIT;
     fd = -1;
-    master = NULL;
 
 #if	defined(DO_FAST_RESOLV)
     /* We only use FQDN's in the hosts.nntp file. */
@@ -584,7 +582,7 @@ int main(int ac, char *av[])
 
     /* Parse JCL. */
     CCcopyargv(av);
-    while ((i = getopt(ac, av, "ac:Cdfi:l:Lm:o:n:p:P:rsS:t:uH:T:X:")) != EOF)
+    while ((i = getopt(ac, av, "ac:Cdfi:l:Lm:o:n:p:P:rst:uH:T:X:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -662,11 +660,6 @@ int main(int ac, char *av[])
 	    break;
 	case 's':
 	    ShouldSyntaxCheck = TRUE;
-	    break;
-	case 'S':
-	    if (strlen(optarg) >= SMBUF - 4)
-		Usage();
-	    master = optarg;
 	    break;
 	case 't':
 	    TimeOut.tv_sec = atol(optarg);
@@ -860,7 +853,7 @@ int main(int ac, char *av[])
     HISsetup();
     CCsetup();
     LCsetup();
-    RCsetup(fd, master);
+    RCsetup(fd);
     WIPsetup();
     NCsetup(i);
     ARTsetup();

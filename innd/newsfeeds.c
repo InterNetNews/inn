@@ -198,6 +198,7 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
     sp->FileFlags[1] = '\0';
     sp->Nice = innconf->nicekids;
     sp->ControlOnly = FALSE;
+    sp->DontWantNonExist = FALSE;
 
     /* Nip off the first field, the site name. */
     if ((f2 = strchr(Entry, NF_FIELD_SEP)) == NULL)
@@ -267,6 +268,7 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 			  sp->IgnoreControl = FALSE;
 			  break;
 		case 'd': sp->DistRequired = TRUE;	break;
+		case 'e': sp->DontWantNonExist = TRUE;	break;
 		case 'p': sp->IgnorePath = TRUE;	break;
 		}
 	    break;
@@ -278,9 +280,6 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 		 && CTYPE(isdigit, *p))
 		    sp->StopWriting = atoi(p);
 	    }
-	    break;
-	case 'C':
-	    sp->ControlOnly = TRUE;
 	    break;
 	case 'F':
 	    if (*++p == '\0')

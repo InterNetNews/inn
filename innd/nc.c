@@ -450,11 +450,6 @@ NCihave(cp)
     register char	*p;
 
     cp->Ihave++;
-    if (AmSlave && !innconf->xrefslave) {
-	NCwritereply(cp, NCbadcommand);
-	return;
-    }
-
     /* Snip off the Message-ID. */
     for (p = cp->In.Data + STRLEN("ihave"); ISWHITE(*p); p++)
 	continue;
@@ -486,11 +481,6 @@ NCxbatch(cp)
     CHANNEL		*cp;
 {
     register char	*p;
-
-    if (AmSlave) {
-	NCwritereply(cp, NCbadcommand);
-	return;
-    }
 
     /* Snip off the batch size */
     for (p = cp->In.Data + STRLEN("xbatch"); ISWHITE(*p); p++)
@@ -1263,11 +1253,6 @@ NCcheck(cp)
     int			msglen;
 
     cp->Check++;
-    if (AmSlave && !innconf->xrefslave) {
-	NCwritereply(cp, NCbadcommand);
-	return;
-    }
-
     /* Snip off the Message-ID. */
     for (p = cp->In.Data; !ISWHITE(*p); p++)
 	continue;

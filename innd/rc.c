@@ -55,8 +55,6 @@ typedef struct _REMOTETABLE {
     time_t	Expires;
 } REMOTETABLE;
 
-STATIC INADDR		*RCmaster;
-STATIC int		RCnmaster;
 STATIC char		*RCslaveflag;
 STATIC char		*RCnnrpd = NULL;
 STATIC char		*RCnntpd = NULL;
@@ -248,23 +246,6 @@ RClimit(register CHANNEL *cp)
 	    return (rp->MaxCnx);
     /* Not found in our table; this can't happen. */
     return RemoteLimit;
-}
-
-
-/*
-**  Is this an address of the master?
-*/
-BOOL
-RCismaster(INADDR addr)
-{
-    register INADDR	*ip;
-    register int	i;
-
-    if (AmSlave)
-	for (i = RCnmaster, ip = RCmaster; --i >= 0; ip++)
-	    if (addr.s_addr == ip->s_addr)
-		return TRUE;
-    return FALSE;
 }
 
 
@@ -1336,9 +1317,8 @@ BOOL RCcanpost(CHANNEL *cp, char *group)
 **  Create the channel.
 */
 void
-RCsetup(i, master)
+RCsetup(i)
     register int	i;
-    char		*master;
 {
     struct sockaddr_in	server;
     struct hostent	*hp;
@@ -1390,45 +1370,6 @@ RCsetup(i, master)
 
     /* Get the list of hosts we handle. */
     RCreadlist();
-
-    /* If we have a master, get all his addresses. */
-    AmSlave = master != NULL;
-    if (AmSlave) {
-	/* Dotted quad? */
-	if ((a.s_addr = inet_addr(master)) != (unsigned int) -1) {
-	    RCnmaster = 1;
-	    RCmaster = NEW(INADDR, 1);
-	    COPYADDR(&RCmaster[0], &a);
-	}
-	else {
-	    /* Must be a text name. */
-	    if ((hp = gethostbyname(master)) == NULL) {
-		syslog(L_FATAL, "%s cant gethostbyname %s %m", LogName, master);
-		exit(1);
-	    }
-#if	defined(h_addr)
-	    /* Count the addresses. */
-	    for (i = 0; hp->h_addr_list[i]; i++)
-		continue;
-	    if (i == 0) {
-		syslog(L_FATAL, "%s no_address %s %m", LogName, master);
-		exit(1);
-	    }
-	    RCnmaster = i;
-	    RCmaster = NEW(INADDR, RCnmaster);
-	    for (i = 0; hp->h_addr_list[i]; i++)
-		COPYADDR(&RCmaster[i], hp->h_addr_list[i]);
-#else
-	    RCnmaster = 1;
-	    RCmaster = NEW(INADDR, 1)
-	    COPYADDR(&RCmaster[0], &a);
-#endif	/* defined(h_addr) */
-	}
-
-	/* Set flag for nnrp. */
-	(void)sprintf(buff, "-S%s", master);
-	RCslaveflag = COPY(buff);
-    }
 }
 
 
@@ -1466,11 +1407,5 @@ RCclose()
 	   DISPOSE(RCpeerlistfile[i].value);
 	DISPOSE(RCpeerlistfile);
 	RCpeerlistfile = NULL;
-    }
-
-    if (RCmaster) {
-	DISPOSE(RCmaster);
-	RCmaster = NULL;
-	RCnmaster = 0;
     }
 }

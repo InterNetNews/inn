@@ -134,7 +134,6 @@ ARTHEADER	ARTheaders[] = {
     {	"Content-Type",		HTstd },
     {	"Content-Base",		HTstd },
     {	"Content-Disposition",	HTstd },
-    {	"X-Trace",		HTstd },
     {	"X-Newsreader",		HTstd },
     {	"X-Mailer",		HTstd },
     {	"X-Newsposter",		HTstd },
@@ -1527,7 +1526,11 @@ ARTxrefslave()
     	return FALSE;
     if ((name = strchr(HDR(_xref), ' ')) == NULL)
     	return FALSE;
-    
+    len = strlen(name);
+    for (name++; HDR(_xref) + len > name && *name == ' '; name++);
+    if (HDR(_xref) + len == name)
+    	return FALSE;
+
     p = xrefbuf;
     strncpy(p, Path.Data, Path.Used - 1);
     p += Path.Used - 1;
@@ -1535,9 +1538,13 @@ ARTxrefslave()
     name++;
     for (i = 0; *name; name = next) {
 	/* Mark end of this entry and where next one starts. */
-	if ((next = strchr(name, ' ')) != NULL)
-	    *next++ = '\0';
-	else
+	if ((next = strchr(name, ' ')) != NULL) {
+	    len = strlen(name);
+	    for (next++; name + len > next && *next == ' '; next++)
+		next = '\0';
+	    if (name + len == next)
+		next = "";
+	} else
 	    next = "";
 
 	/* Split into news.group/# */
@@ -1666,12 +1673,12 @@ STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list)
 	}
 
 	/* Write that the site is getting it, and flag to send it. */
-/*	if (fprintf(Log, " %s", sp->Name) == EOF || ferror(Log)) {
+	if (innconf->logsitename && fprintf(Log, " %s", sp->Name) == EOF || ferror(Log)) {
 	    j = errno;
 	    syslog(L_ERROR, "%s cant write log_site %m", LogName);
 	    IOError("logging site", j);
 	    clearerr(Log);
-	} */
+	}
 	sp->Sendit = TRUE;
 	sp->Seenit = TRUE;
 	if (sp->Master != NOSITE)
@@ -2063,6 +2070,7 @@ STRING ARTpost(CHANNEL *cp)
     BOOL		GroupMissing;
     BOOL		MadeOverview = FALSE;
     BOOL		ControlStore = FALSE;
+    BOOL		NonExist = FALSE;
     BUFFER		*article;
     HASH                hash;
     char		linkname[SPOOLNAMEBUFF];
@@ -2308,7 +2316,8 @@ STRING ARTpost(CHANNEL *cp)
 		 * would or would have had the group if it were created. */
 		ARTsendthegroup(*groups);
 		Accepted = TRUE;
-	    }
+	    } else
+		NonExist = TRUE;
 	    ARTpoisongroup(*groups);
 
 #if	defined(DO_MERGE_TO_GROUPS)
@@ -2379,7 +2388,7 @@ STRING ARTpost(CHANNEL *cp)
 
     /* Loop over sites to find Poisons/ControlOnly and undo Sendit flags. */
     for (i = nSites, sp = Sites; --i >= 0; sp++)
-	if (sp->Poison || (sp->ControlOnly && (ControlHeader < 0)))
+	if (sp->Poison || (sp->ControlOnly && (ControlHeader < 0)) || (sp->DontWantNonExist && NonExist))
 	    sp->Sendit = FALSE;		
 
     /* Control messages not filed in "to" get filed only in control.name
@@ -2468,7 +2477,7 @@ STRING ARTpost(CHANNEL *cp)
 	RENEW(Files.Data, char, Files.Size + 1);
     }
 
-    if (innconf->xrefslave == TRUE) {
+    if (innconf->xrefslave != NULL) {
     	if (ARTxrefslave() == FALSE) {
     	    if (HDR(_xref)) {
                 (void)sprintf(buff, "%d Invalid Xref header \"%s\"",
