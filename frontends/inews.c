@@ -129,12 +129,12 @@ QuitServer(x)
 	(void)fprintf(stderr, "(Article not posted.)\n");
     (void)fprintf(ToServer, "quit\r\n");
     if (FLUSH_ERROR(ToServer)) {
-	(void)fprintf(stderr, "Can't send quit to server, %s",
+	(void)fprintf(stderr, "Can't send quit to server, %s\n",
 		strerror(errno));
 	exit(1);
     }
     if (fgets(buff, sizeof buff, FromServer) == NULL) {
-	(void)fprintf(stderr, "Warning -- server did not reply to quit, %s",
+	(void)fprintf(stderr, "Warning -- server did not reply to quit, %s\n",
 		strerror(errno));
 	exit(1);
     }
