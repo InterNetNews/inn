@@ -3396,7 +3396,7 @@ static void processResponse435 (Connection cxn, char *response UNUSED)
   artHolder = cxn->checkRespHead ;
   cxn->checkRespHead = NULL ;
 
-  if (cxn->articleQTotal == 0)
+  if (cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
     cxnIdle (cxn) ;
 
   hostArticleNotWanted (cxn->myHost, cxn, artHolder->article) ;
