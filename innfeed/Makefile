@@ -219,7 +219,7 @@ lint:	$(OBJECTS)
 	-lint -u $(LINTFLAGS) $(SRC) > lint.log
 
 config_y.c config_y.h: configfile.y
-	$(YACC) $?
+	$(YACC) -d $?
 	mv y.tab.h config_y.h
 	mv y.tab.c config_y.c
 
