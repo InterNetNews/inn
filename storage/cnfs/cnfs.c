@@ -35,6 +35,14 @@
 # define MS_ASYNC 0
 #endif
 
+/* We can give a more descriptive error below about not having largefile
+   support if the platform has EOVERFLOW; on other platforms some other
+   errno will be used and so we won't know when to give the descriptive
+   error.  Oh well. */
+#ifndef EOVERFLOW
+# define EOVERFLOW 0
+#endif
+
 typedef struct {
     /**** Stuff to be cleaned up when we're done with the article */
     char		*base;		/* Base of mmap()ed art */
