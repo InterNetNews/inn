@@ -64,8 +64,6 @@
  *   0.1   0.0  <<< 205 . 
  */
 
-#define FD_SETSIZE 32
-
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/time.h>
