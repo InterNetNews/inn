@@ -1,0 +1,237 @@
+=head1 NAME
+
+his - routines for managing INN history
+
+=head1 SYNOPSIS
+
+B<#include E<lt>inn/history.hE<gt>>
+
+B<struct history;>
+
+B<struct histstats {>
+B<    int hitpos;>
+B<    int hitneg;>
+B<    int misses;>
+B<    int dne;>
+B<};>
+
+B<struct histopts {>
+B<    size_t npairs;>
+B<    size_t synccount;>
+B<    union {>
+B<	struct {>
+B<	    time_t statinterval;>
+B<	} hisv6;>
+B<    } u;>
+B<};>
+
+B<#define HIS_RDONLY ...>
+B<#define HIS_RDWR ...>
+B<#define HIS_CREAT ...>
+B<#define HIS_ONDISK ...>
+B<#define HIS_INCORE ...>
+B<#define HIS_MMAP ...>
+
+B<struct history *HISopen(const char *>I<path>B<, const char *>I<method>B<, int >I<flags>B<, struct histopts *>I<opts>B<);>
+
+B<bool HISclose(struct history *>I<history>B<);>
+
+B<bool HISsync(struct history *>I<history>B<);>
+
+B<void HISsetcache(struct history *>I<history>B<, size_t >I<size>B<);>
+
+B<bool HISlookup(struct history *>I<history>B<, const char *>I<key>B<, time_t *>I<arrived>B<, time_t *>I<posted>B<, time_t *>I<expires>B<, TOKEN *>I<token>B<);>
+
+B<bool HIScheck(struct history *>I<history>B<, const char *>I<key>B<);>
+
+B<bool HISwrite(struct history *>I<history>B<, const char *>I<key>B<, time_t >I<arrived>B<, time_t >I<posted>B<, time_t >I<expires>B<, const TOKEN *>I<token>B<);>
+
+B<bool HISreplace(struct history *>I<history>B<, const char *>I<key>B<, time_t >I<arrived>B<, time_t >I<posted>B<, time_t >I<expires>B<, const TOKEN *>I<token>B<);>
+
+B<bool HISexpire(struct history *>I<history>B<, const char *>I<path>B<, const char *>I<reason>B<, void *>I<cookie>B<, time_t >I<threshold>B<, bool (*>I<exists>B<)(void *cookie, time_t arrived, time_t posted, time_t expires, const TOKEN *token));>
+
+B<bool HISwalk(struct history *>I<history>B<, void *>I<cookie>B<, bool (*>I<callback>B<)(void *cookie, time_t arrived, time_t posted, time_t expires, const TOKEN *token));>
+
+B<struct histstats HISstats(struct history *>I<history>B<);>
+
+B<const char *HISerror(struct history *>I<history>B<);>
+
+=head1 DESCRIPTION
+
+These functions provide provide access to the INN history
+database. They maintain key/value pairs in an opaque database whilst
+providing for expiry of outdated information.
+
+The history structure is an opaque handle returned from HISopen.
+
+The B<HISopen> function opens the history file designated by I<path>
+using the mode I<flags> using the specified I<method>. I<flags> may be
+B<HIS_RDONLY> to indicate that read only access to the history
+database is desired, or B<HIS_RDWR> for read/write access. History
+methods are defined at build time; the current history method
+available is "hisv6". On success a newly initialised history handle is
+returned, or B<NULL> on failure.
+
+B<HIS_ONDISK>, B<HIS_INCORE> and B<HIS_MMAP> may be logically ORed
+into I<flags> to provide a hint to the underlying history manager as
+to how it should handle its data files; B<HIS_ONDISK> indicates that
+the caller would like as much of the data to be kept on disk (and out
+of memory), B<HIS_INCORE> indicates that the data files should be kept
+in main memory where possible and B<HIS_MMAP> that the files should
+mmap()ed into the processes address space. B<HIS_INCORE> is typically
+used where a mass rebuild of the history database is being performed;
+the underlying history manager may assume that the caller will call
+B<HISsync>() to sync the data files to disk.
+
+The B<HIS_CREAT> flag indicates that the history database should be
+initialised as new, using any options specified in I<opts>.
+
+History options, I<opts>, may be passed to B<HISopen>(). If not
+B<NULL> they control parameters of the underlying history manager;
+note that almost all are advisory. I<opts.npairs> is used when
+B<HIS_CREAT> is set and is a hint to the underlying history manager as
+to how many entries there are expected to be in the history
+database. I<opts.synccount> specifies an upper bound on how many
+history operations may be pending in core before being synced to
+permanent storage; B<0> indicates
+unlimited. I<opts.u.hisv6.statinterval> is a history v6 manager
+specific option and sets the interval, in seconds, between stat(2)s of
+the history files checking for replaced files (as happens during
+expire); this option is typically used by nnrpd(8) like applications.
+
+The B<HISclose> function closes the handle I<history> and deallocates
+any resources associated with it. It returns B<false> on failure or
+B<true> on success.
+
+The B<HISsync> function synchronises any outstanding transactions
+associated with I<history> to disk.
+
+B<HISsetcache> associates a cache used for speeding up HIScheck with
+I<history>. The cache will occuy approximately I<size> bytes.
+
+B<HISlookup> retrieves a token from I<history> based on the passed
+I<key> (normally the Message-ID). If no entry with an associated token
+can be found, B<HISlookup> will return B<false>. If a token is found
+I<arrived>, I<expires> and I<posted> are filled in with the message
+arrival, expiry and posting times respectively (or zero if the time
+component is not available), in addition to I<token> being set to the
+retrieved token and a function return value of true. Any of arrived,
+expires, posted or token may be B<NULL> in which case that component is
+not returned to the caller, without affecting the return value.
+
+B<HIScheck> checks the database I<history> for I<key> (normally the
+Message-ID); if I<key> has previously been set via B<HISwrite>,
+B<HIScheck> returns true, else B<false>.
+
+B<HISwrite> writes a new entry to the database I<history> to be
+associated with I<key>. I<arrived>, I<posted>, I<expired> specify the
+arrival, posting and expiry time respectively; I<posted> and
+I<expired> may be specifed as <= 0 in which case that component shall
+be treated as absent in the database. I<token> is associated with the
+specified I<key>; if B<NULL> then the history database merely remembers
+that this I<key> has been seen, together with its arrival
+time. B<HISwrite> returns true on success, or B<false> on failure. The
+behaviour when I<key> is not unique with respect to the existing
+entries in I<history> is unspecified.
+
+B<HISreplace> replaces an existing entry in the database I<history>,
+associated with I<key>. I<arrived>, I<posted>, I<expired> specify the
+arrival, posting and expiry time respectively; I<posted> and
+I<expired> may be specifed as <= 0 in which case that component shall
+be treated as absent in the database. I<token> is associated with the
+specified I<key>; if B<NULL> then the history database merely
+remembers that this I<key> has been seen, together with its arrival
+time. B<HISreplace> returns true on success, or B<false> on failure.
+
+B<HISexpire> expires the history database associated with I<history>,
+creating a new, replacement, database in the same location if I<path>
+is B<NULL>, or in I<path> if not B<NULL>; if I<path> is not B<NULL>
+then the replacement of the old history database with the new one is
+assumed to be performed out of band by the caller.
+
+If the underlying history mechanism needs to reserve or pause the
+server the B<reason> string is used as an an argument to the `ctlinnd
+(reserve|pause|go)' commands; if the caller wishes to inhibit
+reservation or pausing of the server, passing B<NULL> will achieve
+this.
+
+The history database if scanned and entries with an associated storage
+token are passed to the discrimination function I<exists>.
+
+If I<exists>() returns B<false> it indicates that stored entity
+associated with token is no longer available (or no longer required),
+but the history entry should be kept until it meets the I<threshold>
+constraint. If I<exists>() returns true the entry is kept as is in the
+newly expired history database.
+
+The I<exists> function is passed the arrival, posting and expiry
+times, in addition to the token associated with the entry. Note that
+posting and/or expiry may be zero, but that token will never be
+B<NULL> (such entries are handled solely via the threshold
+mechanism). A non-const pointer to the token is passed so that the
+discrimination function may update the token if required (for example
+as might be needed by a hierachical storage management
+implementation).
+
+Entries in the database with an arrival time less than I<threshold>
+with no token associated with them are deleted from the database.
+
+The parameter I<cookie> is passed to the discrimination function and
+may be used for any purpose required by the caller.
+
+If the discrimination function attempts to access the underlying
+database (for read or write) during the callback the behaviour is
+unspecified.
+
+B<HISwalk> provides an iteration function for the specified I<history>
+database. For every entry in the history database I<callback> is
+invoked passing the I<cookie>, arrival, posting and expiry times, in
+addition to the token associated with the entry. If the I<callback>()
+returns B<false> the iteration is aborted and B<HISwalk> returns
+B<false> to the caller.
+
+If the callback function attempts to access the underlying database
+during the callback the behaviour is unspecified.
+
+B<HISstats> returns statistics on the history cache mechanism; given a
+handle I<history> a struct histstats is returned detailing:
+
+=over 4
+
+=item C<hitpos>
+
+The number of times an item was found directly in the cache and known
+to exist in the underlying history manager.
+
+=item C<hitneg>
+
+The number of times an item was found directly in the cache and known
+not to exist in the underlying history manager.
+
+=item C<misses>
+
+The number of times an item was not found directly in the cache, but
+on retrieval from the underlying history manager was found to exist.
+
+=item C<dne>
+
+The number of times an item was not found directly in the cache, but
+on retrieval from the underlying history manager was found not to exist.
+
+=back
+
+Note that the history cache is only used by B<HIScheck> and only
+affected by B<HISwrite> and B<HISremember>. Following a call to
+B<HISstats> the history statistics associated with I<history> are
+cleared.
+
+B<HISerror> returns a string describing the most recent error
+associated with I<history>; the format and content of these strings is
+history manager dependent. Note that most history managers will, on
+setting an error, call libinn's warn function.
+
+=head1 HISTORY
+
+Written by Alex Kiernan <alexk@demon.net> for InterNetNews 2.4.0.
+
+$Id$
