@@ -8,6 +8,7 @@
 #include <string.h>
 #include <syslog.h>
 #include "config.h"
+#include "macros.h"
 
 int create_udp_socket(int port, int portexclude)
 {
@@ -42,7 +43,7 @@ int make_udp_sockaddr(struct sockaddr_in *addr, char *ascii)
         struct hostent *host;
         int dots = 0;
         int numeric = 0;
-        char *str = strdup(ascii);
+        char *str = COPY(ascii);
         char *colon = strrchr(str, ':');
         char *lastdot = strrchr(str, '.');
         char *ptr;
@@ -77,17 +78,17 @@ int make_udp_sockaddr(struct sockaddr_in *addr, char *ascii)
         /* Now do we have a numeric address */
         if (numeric) {
                 addr->sin_addr.s_addr = inet_addr(str);
-                free(str);
+                DISPOSE(str);
                 return(0);
         }
         /* Or a name */
         if (! (host = gethostbyname(str))) {
-                free(str);
+                DISPOSE(str);
                 syslog(L_ERROR, "make_udp_sockaddr: gethostbyname %s", str);
 		return(-1);
         }
         mybcopy(host->h_addr_list[0], (char *)&addr->sin_addr.s_addr, sizeof(addr->sin_addr.s_addr));
-        free(str);
+        DISPOSE(str);
         return(0);
 }
 
