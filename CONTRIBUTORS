@@ -90,7 +90,8 @@ Katsuhiro Kondou:
 	traditional expire policy for articles stored through storage API
 	and expireindex, as well has hundreds of fixes to clean up defects
 	as changes were made.  Did a large amount of man page documentation
-	and clean up.
+	and clean up. Has also been a major force in the CVS pool
+	maintenance.
 
 Russell Vincent
 	Expanded inn.conf to make many of the old compile time options
@@ -109,6 +110,11 @@ Adian Cully
 	Added the storage method selection to also be based
 	on Expires header. Also added the '@' article exclusion code to
 	incoming.conf.
+
+Russ Allbery:
+	Has done large amounts of clean-up on various pieces of the system
+	(especially the documentation), and has helped with the CVS pool
+	maintenance.
 
 Also:
 
