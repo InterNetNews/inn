@@ -45,7 +45,7 @@ retrieve () {
 # article.
 info () {
     real=`grep ^Xref $2 | sed -e 's/.*\.example\.com //' -e 's/ .*//'`
-    real=`echo "$real" | sed -e 's%\.%/%g' -e 's/:/: /'`
+    real=`echo "$real" | sed -e 's/:/: /'`
     info=`$sm -i $1`
     if [ $? = 0 ] && [ "$info" = "$real" ] ; then
         printcount "ok"
