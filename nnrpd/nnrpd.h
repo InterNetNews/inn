@@ -202,16 +202,7 @@ extern bool		ParseDistlist();
 extern READTYPE		READline();
 extern char		*OVERGetHeader(char *p, int field);
 extern void SetDefaultAccess(ACCESSGROUP*);
-
-#if defined(STDC_HEADERS) || defined(HAVE_STDARG_H)
 extern void             Reply(const char *fmt, ...);
-#else
-# ifdef HAVE_VARARGS_H
-extern void             Reply();
-# else
-#  define Reply printf
-# endif
-#endif
 
 #ifdef HAVE_SSL
 extern void             Printf(const char *fmt, ...);
