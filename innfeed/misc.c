@@ -431,11 +431,12 @@ bool lockFile (const char *fileName)
   if ((p = strrchr (realName, '/')) != NULL)
     {
       *p = '\0' ;
-      sprintf (tmpName, "%s/lockf%ld", realName, (long) pid) ;
+      snprintf (tmpName, sizeof(tmpName), "%s/lockf%ld", realName,
+                (long) pid) ;
       *p = '/' ;
     }
   else
-    sprintf (tmpName, "lockf%ld", (long) pid) ;
+    snprintf (tmpName, sizeof(tmpName), "lockf%ld", (long) pid) ;
   
   /* Create the temporary name for the lock file. */
   while ((fd = open (tmpName, O_RDWR | O_CREAT | O_EXCL, 0644)) < 0)
@@ -458,7 +459,7 @@ bool lockFile (const char *fileName)
     }
 
   /* stick our pid in the temp file. */
-  sprintf (buff,"%ld\n",(long) pid) ;
+  snprintf (buff,sizeof(buff),"%ld\n",(long) pid) ;
   if (write (fd,buff,(size_t) strlen (buff)) != (int) strlen (buff))
     {
       syslog (LOG_ERR,NO_WRITE_LOCK_PID) ;

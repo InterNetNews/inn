@@ -2054,9 +2054,7 @@ static conn_ret lmtp_noop(connection_t *cxn)
     int result;
     char *p;
 
-    p = (char *) malloc(20);
-    strcpy(p, "NOOP\r\n");
-
+    p = xstrdup("NOOP\r\n");
     result = WriteToWire_lmtpstr(cxn, p, strlen(p));
     if (result!=RET_OK) return result;
 
@@ -2070,9 +2068,7 @@ static conn_ret lmtp_IssueQuit(connection_t *cxn)
     int result;
     char *p;
 
-    p = (char *) malloc(20);
-    strcpy(p, "QUIT\r\n");
-
+    p = xstrdup("QUIT\r\n");
     result = WriteToWire_lmtpstr(cxn, p, strlen(p));
     if (result!=RET_OK) return result;
 
@@ -2099,16 +2095,14 @@ static conn_ret lmtp_getcapabilities(connection_t *cxn)
     ASSERT (cxn->lmtp_capabilities != NULL) ;
     cxn->lmtp_capabilities->saslmechs = NULL;
 
-    /* say hello */
-    p = (char *) malloc(20+strlen(hostname));
-
 #ifdef SMTPMODE
-    sprintf (p, "EHLO %s\r\n", hostname); /* our domain name */
+    p = concat("EHLO ", hostname, "\r\n", (char *) 0);
 #else
-    sprintf (p, "LHLO %s\r\n", hostname); /* our domain name */
+    p = concat("LHLO ", hostname, "\r\n", (char *) 0);
 #endif /* SMTPMODE */
 
     result = WriteToWire_lmtpstr(cxn, p, strlen(p));
+    free(p);
     if (result!=RET_OK) return result;
 
     cxn->lmtp_state = LMTP_WRITING_LHLO;
@@ -2154,27 +2148,27 @@ static conn_ret lmtp_authenticate(connection_t *cxn)
     d_printf(1,"%s:%d:LMTP Decided to try to authenticate with SASL mechanism=%s\n",           
 	     hostPeerName (cxn->myHost), cxn->ident,mechusing);
 
-    p = (char *) malloc(strlen(mechusing)+(outlen*2+10)+30);
-
     if (!out)
     {
 	/* no initial client response */
-	sprintf (p, "AUTH %s\r\n",mechusing);
+        p = concat("AUTH ", mechusing, "\r\n", (char *) 0);
     } else if (!outlen) {
 	/* empty initial client response */
-	sprintf (p, "AUTH %s =\r\n",mechusing);
+        p = concat("AUTH ", mechusing, " =\r\n", (char *) 0);
     } else {
 	/* initial client response - convert to base64 */
 	inbase64 = (char *) malloc(outlen*2+10);
 
 	saslresult = sasl_encode64(out, outlen,
-				   inbase64, outlen*2+10, (unsigned *) &inbase64len);
+				   inbase64, outlen*2+10,
+                                   (unsigned *) &inbase64len);
 	if (saslresult != SASL_OK) return RET_FAIL;
-
-	sprintf (p, "AUTH %s %s\r\n",mechusing,inbase64);
+        p = concat("AUTH ", mechusing, " ", inbase64, "\r\n", (char *) 0);
+        free(inbase64);
     }
 
     result = WriteToWire_lmtpstr(cxn, p, strlen(p));
+    free(p);
 
     cxn->lmtp_state = LMTP_WRITING_STARTAUTH;
 
@@ -2510,13 +2504,10 @@ static conn_ret imap_sendAuthenticate(connection_t *cxn)
 	    return RET_FAIL;
 	}
 
-	p = (char *) malloc(strlen(cxn->imap_currentTag)+strlen(deliver_authname)+
-			    strlen(deliver_password)+30); 
-
 	imap_GetTag(cxn);
-       
-	sprintf (p, "%s LOGIN %s \"%s\"\r\n",cxn->imap_currentTag, 
-		 deliver_authname, deliver_password);
+
+        p = concat(cxn->imap_currentTag, " LOGIN ", deliver_authname, " \"",
+                   deliver_password, "\"\r\n", (char *) 0);
 	
 	result = WriteToWire_imapstr(cxn, p, strlen(p));
 	
@@ -2540,12 +2531,10 @@ static conn_ret imap_sendAuthenticate(connection_t *cxn)
 	     hostPeerName (cxn->myHost), cxn->ident,
 	     mechusing);
 
-    p = (char *) malloc(strlen(cxn->imap_currentTag)+strlen(mechusing)+40); 
-
     imap_GetTag(cxn);
 
-    sprintf (p, "%s AUTHENTICATE %s\r\n",cxn->imap_currentTag, mechusing);
-
+    p = concat(cxn->imap_currentTag, " AUTHENTICATE ", mechusing, "\r\n",
+               (char *) 0);
     result = WriteToWire_imapstr(cxn, p, strlen(p));
 
     cxn->imap_state = IMAP_WRITING_STARTAUTH;
@@ -2557,7 +2546,6 @@ static conn_ret imap_CreateGroup(connection_t *cxn, char *bboard)
 {
     conn_ret result;
     char *tosend;
-    int newlen=strlen(bboard);
 
     d_printf(1,"%s:%d:IMAP Ok creating group [%s]\n",
 	     hostPeerName (cxn->myHost), cxn->ident,
@@ -2565,9 +2553,8 @@ static conn_ret imap_CreateGroup(connection_t *cxn, char *bboard)
 
     imap_GetTag(cxn);
 
-    tosend = (char *) malloc(30+newlen);
-
-    sprintf(tosend,"%s CREATE %s\r\n",cxn->imap_currentTag,bboard);
+    tosend = concat(cxn->imap_currentTag, " CREATE ", bboard, "\r\n",
+                    (char *) 0);
 
     result = WriteToWire_imapstr(cxn, tosend, -1);
     if (result!=RET_OK) return result;
@@ -2581,17 +2568,14 @@ static conn_ret imap_DeleteGroup(connection_t *cxn, char *bboard)
 {
     conn_ret result;
     char *tosend;
-    int newlen=strlen(bboard);
 
     d_printf(1,"%s:%d:IMAP Ok removing bboard [%s]\n",
 		 hostPeerName (cxn->myHost), cxn->ident, bboard);
 
     imap_GetTag(cxn);
 
-    tosend = (char *) malloc(30+newlen);
-
-    sprintf(tosend,"%s DELETE %s\r\n",cxn->imap_currentTag,bboard);
-
+    tosend = concat(cxn->imap_currentTag, " DELETE ", bboard, "\r\n",
+                    (char *) 0);
     result = WriteToWire_imapstr(cxn, tosend, -1);
     if (result!=RET_OK) return result;
 
@@ -2607,13 +2591,11 @@ static conn_ret imap_CancelMsg(connection_t *cxn, char *newsgroup)
 
     ASSERT(newsgroup);
 
-    tosend = (char *) malloc(7+10+strlen(newsgroup)+100);
-
     imap_GetTag(cxn);
 
     /* select mbox */
-    sprintf(tosend,"%s SELECT %s\r\n",cxn->imap_currentTag, newsgroup);
-
+    tosend = concat(cxn->imap_currentTag, " SELECT ", newsgroup, "\r\n",
+                    (char *) 0);
     result = WriteToWire_imapstr(cxn, tosend, -1);
     if (result != RET_OK) return result;
 
@@ -2631,13 +2613,12 @@ static conn_ret imap_sendSearch(connection_t *cxn, char *msgid)
 
     ASSERT(msgid);
 
-    tosend = (char *) malloc(7+40+strlen(msgid));
-
     imap_GetTag(cxn);
 
     /* preform search */
-    sprintf(tosend,"%s UID SEARCH header \"Message-ID\" \"%s\"\r\n",cxn->imap_currentTag, msgid);
-
+    tosend = concat(cxn->imap_currentTag,
+                    " UID SEARCH header \"Message-ID\" \"", msgid, "\"\r\n",
+                    (char *) 0);
     result = WriteToWire_imapstr(cxn, tosend, -1);
     if (result != RET_OK) return result;
 
@@ -2650,12 +2631,14 @@ static conn_ret imap_sendKill(connection_t *cxn, unsigned uid)
 {
     conn_ret result;
     char *tosend;
-
-    tosend = (char *) malloc(7+50+20);
+    size_t length;
 
     imap_GetTag(cxn);
-       
-    sprintf(tosend,"%s UID STORE %d +FLAGS.SILENT (\\Deleted)\r\n",cxn->imap_currentTag, uid);
+
+    length = 7 + 50 + 20;
+    tosend = xmalloc(length);
+    snprintf(tosend,length,"%s UID STORE %d +FLAGS.SILENT (\\Deleted)\r\n",
+             cxn->imap_currentTag, uid);
 
     result = WriteToWire_imapstr(cxn, tosend, -1);
     if (result != RET_OK) return result;
@@ -2670,9 +2653,8 @@ static conn_ret imap_sendSimple(connection_t *cxn, const char *atom, int st)
     char *tosend;
     conn_ret result;
 
-    tosend = (char *) malloc(64);
-
-    imap_GetTag(cxn);       
+    imap_GetTag(cxn);
+    tosend = concat(cxn->imap_currentTag, " ", atom, "\r\n", (char *) 0);
     sprintf(tosend,"%s %s\r\n", cxn->imap_currentTag, atom);
 
     result = WriteToWire_imapstr(cxn, tosend, -1);
@@ -2706,9 +2688,7 @@ static conn_ret imap_sendCapability(connection_t *cxn)
 
     imap_GetTag(cxn);
 
-    tosend = (char *) malloc(5+13+5);
-
-    sprintf(tosend,"%s CAPABILITY\r\n",cxn->imap_currentTag);
+    tosend = concat(cxn->imap_currentTag, " CAPABILITY\r\n");
 
     result = WriteToWire_imapstr(cxn, tosend, -1);
     if (result != RET_OK) return result;
@@ -3728,7 +3708,7 @@ static char *ConvertRcptList(char *in, char *in_end, int *num)
     return ret;
 }
 
-static void addto(char *newrcpt, int newrcptlen, char *sep,
+static void addto(char *newrcpt, int newrcptlen, const char *sep,
 		  char **out, int *outalloc)
 {
     int size = strlen(*out);
@@ -3766,7 +3746,7 @@ static char *BuildToHeader(char *in, char *in_end)
     char *ret = malloc(retalloc);
     char *str = in;
     char *laststart = in;
-    char *sep = "";
+    const char *sep = "";
 
     /* start it off with the header name */     
     strcpy(ret,"To: ");
@@ -4017,12 +3997,10 @@ static void lmtp_sendmessage(connection_t *cxn, Article justadded)
     
     if(mailfrom_name == NULL)
 	mailfrom_name = COPY("");
-    p = (char *) malloc (strlen(rcpt_list)+strlen(mailfrom_name)+50);
-    sprintf (p, 
-	     "RSET\r\n"
-	     "MAIL FROM:<%s>\r\n"
-	     "%s"
-	     "DATA\r\n", mailfrom_name,rcpt_list);
+    p = concat("RSET\r\n"
+               "MAIL FROM:<", mailfrom_name, ">\r\n",
+               rcpt_list,
+               "DATA\r\n", (char *) 0);
 
     cxn->lmtp_state = LMTP_WRITING_UPTODATA;
     result = WriteToWire_lmtpstr(cxn, p, strlen(p));
@@ -4273,10 +4251,8 @@ Connection newConnection (Host host,
 	return NULL;
     }
 
-    mailfrom_name = (char *) malloc (20+strlen(hostname));
-    ASSERT (mailfrom_name != NULL);
-   
-    sprintf(mailfrom_name,"news@%s",hostname);
+
+    mailfrom_name = concat("news@", hostname, (char *) 0);
 
     cxn->next = gCxnList ;
     gCxnList = cxn ;

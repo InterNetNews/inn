@@ -2085,7 +2085,8 @@ bool hostCxnGone (Host host, Connection cxn)
       u_int hostsLeft ;
 
       if (host->firstConnectTime > 0) {
-        sprintf(msgstr, "accsize %.0f rejsize %.0f", host->gArtsSizeAccepted, host->gArtsSizeRejected);
+        snprintf(msgstr, sizeof(msgstr), "accsize %.0f rejsize %.0f",
+                 host->gArtsSizeAccepted, host->gArtsSizeRejected);
         syslog (LOG_NOTICE,REALLY_FINAL_STATS,
                 host->params->peerName,
                 (long) (now - host->firstConnectTime),
@@ -2099,7 +2100,8 @@ bool hostCxnGone (Host host, Connection cxn)
       delHost (host) ;
 
       if (hostsLeft == 0) {
-        sprintf(msgstr, "accsize %.0f rejsize %.0f", procArtsSizeAccepted, procArtsSizeRejected);
+        snprintf(msgstr, sizeof(msgstr), "accsize %.0f rejsize %.0f",
+                 procArtsSizeAccepted, procArtsSizeRejected);
         syslog (LOG_NOTICE,PROCESS_FINAL_STATS,
                 (long) (now - start),
                 procArtsOffered, procArtsAccepted,
@@ -2503,12 +2505,7 @@ void hostSetStatusFile (const char *filename)
   if (*filename == '/')
     statusFile = xstrdup (filename) ;
   else
-    {
-      const char *logDir = innconf->pathlog;
-      
-      statusFile = malloc (strlen (logDir) + strlen (filename) + 2) ;
-      sprintf (statusFile,"%s/%s",logDir,filename) ;
-    }
+    statusFile = concatpath (innconf->pathlog,filename) ;
 
   if ((fp = fopen (statusFile,"w")) == NULL)
     {
@@ -2529,7 +2526,8 @@ void gHostStats (void)
 
   for (h = gHostList ; h != NULL ; h = h->next)
       if (h->firstConnectTime > 0) {
-        sprintf(msgstr, "accsize %.0f rejsize %.0f", h->gArtsSizeAccepted, h->gArtsSizeRejected);
+        snprintf(msgstr, sizeof(msgstr), "accsize %.0f rejsize %.0f",
+                 h->gArtsSizeAccepted, h->gArtsSizeRejected);
         syslog (LOG_NOTICE,REALLY_FINAL_STATS,
                 h->params->peerName,
                 (long) (now - h->firstConnectTime),
@@ -2878,7 +2876,8 @@ static void hostLogStats (Host host, bool final)
             (long) (now - host->spoolTime), host->artsToTape,
             host->artsHostClose, host->artsHostSleep) ;
   else {
-    sprintf(msgstr, "accsize %.0f rejsize %.0f", host->artsSizeAccepted, host->artsSizeRejected);
+    snprintf(msgstr, sizeof(msgstr), "accsize %.0f rejsize %.0f",
+             host->artsSizeAccepted, host->artsSizeRejected);
     syslog (LOG_NOTICE, HOST_STATS_MSG, host->params->peerName, 
             (final ? "final" : "checkpoint"),
             (long) (now - host->connectTime),
@@ -3300,12 +3299,12 @@ static void hostPrintStatus (Host host, FILE *fp)
 	   (double) host->gCxnQueue / (host->gArtsOffered ? host->gArtsOffered :1) ,
 	   100.0 * host->blFull / cnt) ;
   size=convsize(host->gArtsSizeAccepted, &tsize);
-  sprintf(buf,"%.3g %s", size, tsize);
+  snprintf(buf,sizeof(buf),"%.3g %s", size, tsize);
   fprintf (fp, "accpt size: %-8s drop-deferred: %-5s   defer length: %-3.1f\n",
 	   buf, host->params->dropDeferred ? "true " : "false",
            (double)host->dlAccum / cnt) ;
   size=convsize(host->gArtsSizeRejected, &tsize);
-  sprintf(buf,"%.3g %s", size, tsize);
+  snprintf(buf,sizeof(buf),"%.3g %s", size, tsize);
   fprintf (fp, "rejct size: %-8s min-queue-cxn: %s\n",
 	   buf, host->params->minQueueCxn ? "true " : "false");
 

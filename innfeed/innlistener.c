@@ -562,7 +562,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
               
               /* See if this is a valid peername */
               for(s = peer; *s; s++)
-                if (!isalnum(*s) && *s != '.' && *s != '-' && *s != '_')
+                if (!CTYPE(isalnum, *s) && *s != '.' && *s != '-' && *s != '_')
                   break;
               if (*s != 0) {
                   syslog(LOG_ERR,INVALID_PEER,peer);
@@ -714,7 +714,7 @@ static void writeCheckPoint (int offsetAdjust)
     syslog (LOG_ERR, "ME tell(mainFd): %m") ;
   else
     {
-      (void) sprintf (offsetString, "%ld\n",
+      snprintf (offsetString, sizeof(offsetString), "%ld\n",
 		      (long)(offset - offsetAdjust) ) ;
       if ( lseek (mainFd, 0, SEEK_SET) != 0 )
 	syslog (LOG_ERR, "ME seek(mainFd, 0, 0): %m") ;
@@ -745,14 +745,15 @@ void openDroppedArticleFile (void)
 {
   pid_t myPid = getpid () ;
   const char *tapeDir = getTapeDirectory() ;
+  size_t len;
 
   if (dropArtFile != NULL)
     FREE (dropArtFile) ;
-  
-  dropArtFile = malloc (pathMax(tapeDir) + 1) ;
-  
-  sprintf (dropArtFile,"%s/innfeed-dropped.%c%06d",
-           tapeDir, droppedFileCount + 'A', (int) myPid) ;
+
+  len = pathMax(tapeDir) + 1;
+  dropArtFile = xmalloc(len);
+  snprintf (dropArtFile,len,"%s/innfeed-dropped.%c%06d",
+            tapeDir, droppedFileCount + 'A', (int) myPid) ;
 
   if ((droppedFp = fopen (dropArtFile,"w")) == NULL)
     {
