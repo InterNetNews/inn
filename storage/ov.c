@@ -833,9 +833,6 @@ static NEWSGROUP *EXPnotfound(char *Entry)
 	bg->Name = COPY(Entry);
 	bg->Next = EXPbadgroups;
 	EXPbadgroups = bg;
-	(void)fflush(stdout);
-	(void)fprintf(stderr, "Group not matched (removed?) %s -- %s\n",
-	    Entry, "Purging all articles");
     }
     /* remove it all now. */
     if (Removeit.Keep == 0) {
