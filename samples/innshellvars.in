@@ -1,4 +1,4 @@
-#!_PATH_SH
+#!@_PATH_SH@
 ##  $Revision$
 ##  Set up any and all shell variables that an INN shell script
 ##  might need.  Also sets umask.
