@@ -17,13 +17,13 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 
-#include "dbz.h"
 #include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
 #include "paths.h"
 #include "storage.h"
+#include "inn/history.h"
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
@@ -110,6 +110,7 @@ static double		STATend;
 static FILE		*BATCHfp;
 static int		FromServer;
 static int		ToServer;
+static struct history	*History;
 static QIOSTATE		*BATCHqp;
 static sig_atomic_t	GotAlarm;
 static sig_atomic_t	GotInterrupt;
@@ -133,70 +134,11 @@ static void article_free(ARTHANDLE *);
 
 
 /*
-**  Find the history file entry for the Message-ID and return a file
-**  positioned at the third field.
-*/
-static FILE *HistorySeek(char *MessageID)
-{
-    static char		*History = NULL;
-    static FILE		*F;
-    off_t		offset;
-
-    /* Open the history file. */
-    if (F == NULL) {
-	if (History == NULL)
-	    History = concatpath(innconf->pathdb, _PATH_HISTORY);
-	if (!dbzinit(History)) {
-	    (void)fprintf(stderr, "Can't set up \"%s\" database, %s\n",
-		    History, strerror(errno));
-	    SMshutdown();
-	    exit(1);
-	}
-	if ((F = fopen(History, "r")) == NULL) {
-	    (void)fprintf(stderr, "Can't open \"%s\" for reading, %s\n",
-		    History, strerror(errno));
-	    SMshutdown();
-	    exit(1);
-	}
-    }
-
-    /* Do the lookup. */
-    if (!dbzfetch(HashMessageID(MessageID), &offset))
-	return NULL;
-
-    /* Get the seek offset, and seek. */
-    if (fseeko(F, offset, SEEK_SET) == -1)
-	return NULL;
-    return F;
-}
-
-
-/*
 **  Return TRUE if the history file has the article expired.
 */
 static bool
 Expired(char *MessageID) {
-    int		c;
-    int		i;
-    FILE	*F;
-
-    if ((F = HistorySeek(MessageID)) == NULL)
-	/* Assume the worst. */
-	return TRUE;
-
-    /* Move to the filename fields. */
-    for (i = 2; (c = getc(F)) != EOF && c != '\n'; )
-	if (c == HIS_FIELDSEP && --i == 0)
-	    break;
-    if (c != HIS_FIELDSEP)
-	return TRUE;
-
-    /* See if we get any filename before the end of the line. */
-    while ((c = getc(F)) != EOF && c != '\n')
-	if (!ISWHITE(c))
-	    /* Found non-whitespace; assume it's a filename. */
-	    return FALSE;
-    return TRUE;
+    return !HISlookup(History, MessageID, NULL, NULL, NULL, NULL);
 }
 
 
@@ -374,6 +316,7 @@ ExitWithStats(int x)
 		BATCHtemp, strerror(errno));
     (void)sleep(1);
     SMshutdown();
+    HISclose(History);
     exit(x);
     /* NOTREACHED */
 }
@@ -1052,6 +995,7 @@ int main(int ac, char *av[]) {
     unsigned int	TotalTimeout;
     int                 port = NNTP_PORT;
     bool		val;
+    char                *path;
 
     (void)openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     /* Set defaults. */
@@ -1304,6 +1248,10 @@ int main(int ac, char *av[]) {
 	(void)xsignal(SIGALRM, CATCHalarm);
 	(void)alarm(TotalTimeout);
     }
+
+    path = concatpath(innconf->pathdb, _PATH_HISTORY);
+    History = HISopen(path, innconf->hismethod, HIS_RDONLY, NULL);
+    free(path);
 
     /* Main processing loop. */
     GotInterrupt = FALSE;

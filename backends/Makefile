@@ -52,7 +52,7 @@ tags ctags: $(SOURCES)
 
 ##  Compilation rules.
 
-BOTH		= $(LIBSTORAGE) $(LIBINN)
+BOTH		= $(LIBSTORAGE) $(LIBHIST) $(LIBSTORAGE) $(LIBINN)
 
 LINK 		= $(LIBLD) $(LDFLAGS) -o $@
 INNLIBS		= $(LIBINN) $(LIBS)
@@ -67,7 +67,7 @@ cvtbatch:	cvtbatch.o   $(BOTH)	; $(LINK) cvtbatch.o   $(STORELIBS)
 inndf:		inndf.o      $(BOTH)	; $(LINK) inndf.o      $(STORELIBS)
 innxbatch:	innxbatch.o  $(LIBINN)	; $(LINK) innxbatch.o  $(INNLIBS)
 innxmit:	innxmit.o    $(BOTH)	; $(LINK) innxmit.o    $(STORELIBS)
-nntpget:	nntpget.o    $(LIBINN)	; $(LINK) nntpget.o    $(INNLIBS)
+nntpget:	nntpget.o    $(BOTH)	; $(LINK) nntpget.o    $(STORELIBS)
 overchan:	overchan.o   $(BOTH)	; $(LINK) overchan.o   $(STORELIBS)
 shlock:		shlock.o		; $(LINK) shlock.o
 shrinkfile:	shrinkfile.o $(LIBINN)	; $(LINK) shrinkfile.o $(INNLIBS)

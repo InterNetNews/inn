@@ -18,11 +18,11 @@
 # include <sys/select.h>
 #endif
 
-#include "dbz.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
 #include "paths.h"
+#include "inn/history.h"
 
 /*
 **  All information about a site we are connected to.
@@ -47,6 +47,7 @@ static unsigned long	STATgot;
 static unsigned long	STAToffered;
 static unsigned long	STATsent;
 static unsigned long	STATrejected;
+static struct history	*History;
 
 
 
@@ -185,7 +186,7 @@ static bool
 HIShaveit(mesgid)
     char		*mesgid;
 {
-    return dbzexists(HashMessageID(mesgid));
+    return HIScheck(History, mesgid);
 }
 
 
@@ -271,7 +272,8 @@ main(ac, av)
 	case 'o':
 	    /* Open the history file. */
             path = concatpath(innconf->pathdb, _PATH_HISTORY);
-	    if (!dbzinit(path)) {
+	    History = HISopen(path, innconf->hismethod, HIS_RDONLY, NULL);
+	    if (!History) {
 		(void)fprintf(stderr, "Can't open history, %s\n",
 		    strerror(errno));
 		exit(1);
