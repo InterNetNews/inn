@@ -6,7 +6,6 @@
 #include "clibrary.h"
 #include <netinet/in.h>
 #include <sys/ioctl.h>
-#include <sys/resource.h>
 #include <sys/uio.h>
 
 #ifdef DO_FAST_RESOLV
@@ -17,6 +16,10 @@
 #define DEFINE_DATA
 #include "innd.h"
 #include "ov.h"
+
+/* Some systems, such as FreeBSD 3.4 RELEASE, require sys/time.h, included
+   by innd.h, to be included before sys/resource.h. */
+#include <sys/resource.h>
 
 
 #if defined(HAVE_SETBUFFER)
