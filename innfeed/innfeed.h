@@ -176,34 +176,6 @@
 #define SELECT_RATIO 3
 
 
-#if ! defined (USE_DMALLOC)
-
-#undef ALLOC
-#define ALLOC(TYPE, COUNT) (TYPE *) malloc(sizeof(TYPE) * (COUNT))
-
-#undef MALLOC
-#define MALLOC(SIZE) (char *) malloc(SIZE)
-
-#undef CALLOC
-#define CALLOC(TYPE, COUNT) (TYPE *) calloc((COUNT), sizeof(TYPE))
-
-#undef REALLOC
-#define REALLOC(ptr, TYPE, COUNT) \
-                  (TYPE *) realloc((char *)(ptr), (sizeof(TYPE) * (COUNT)))
-
-#undef REMALLOC
-#define REMALLOC(ptr, SIZE) (char *) realloc((char *)(ptr),(SIZE))
-
-#undef FREE
-#define FREE(ptr) ((void) (ptr != NULL && (free((char *)(ptr)), ptr = NULL)))
-
-#else
-
-#include <dmalloc.h>
-
-#endif /* !defined (USE_DMALLOC) */
-
-
 #if defined (DBTIMES)
 
   /* some small values for testing things. */
@@ -221,15 +193,6 @@
 #define CLOSE_PERIOD (3 * 60)   /* 5 minutes */
 
 #endif /* DBTIMES */
-
-#if ! defined (__GNUC__)
-#define __attribute__(x)
-#endif
-  
-#if defined (CHECK_FORMATS)
-extern void syslog (int, const char *,...) __attribute__ ((__format__ (printf, 2, 3)));
-#endif
-
 
 
 /* Additional OS-specific defines.  These should really be moved into
