@@ -56,6 +56,7 @@ backends/buffchan.c                   Buffered funnel to file splitter
 backends/controlbatch.in              Batch program for controlchan
 backends/controlchan.in               Channel program for control messages
 backends/cvtbatch.c                   Add fields to simple batchfile
+backends/gpgverify.in                 Verify control messages with GnuPG
 backends/filechan.c                   Split a funnel into separate files
 backends/inndf.c                      df used for innwatch
 backends/innxbatch.c                  Send batches using XBATCH to remote
@@ -66,7 +67,7 @@ backends/news2mail.in                 News to mail gateway
 backends/nntpget.c                    Get articles from remote site
 backends/nntpsend.in                  Invoke all innxmit's at once
 backends/overchan.c                   Update news overview database
-backends/pgpverify.in                 Sample pgpverify program
+backends/pgpverify.in                 Verify control messages with PGP
 backends/send-ihave.in                Script to post ihave messages
 backends/send-nntp.in                 Shell script to call innxmit
 backends/send-uucp.in                 Script to call batcher
