@@ -8,6 +8,9 @@
 #include <string.h>
 #include <sys/mman.h>
 #include "configdata.h"
+#if defined(HAVE_UNISTD_H)
+# include <unistd.h>
+#endif
 #include "clibrary.h"
 #include "nnrpd.h"
 

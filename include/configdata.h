@@ -7,6 +7,8 @@
 #if ! defined (__configdata_h__)
 #define __configdata_h__ 1
 
+#include "config.h"
+
 /*
 **  1.  MAKE CONFIG PARAMETERS
 */
