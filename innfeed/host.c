@@ -1343,9 +1343,6 @@ void hostChkCxns(TimeoutId tid, void *data) {
  
         u_int ii = host->maxConnections;
 
-        syslog(LOG_NOTICE, "%s: cxnNuke(%d)",
-               host->peerName,
-               host->maxConnections - 1);
         if (host->connections[ii - 1] != NULL)
           cxnNuke (host->connections[ii - 1]) ;
         host->maxConnections--;
