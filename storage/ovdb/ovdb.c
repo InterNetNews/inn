@@ -2,6 +2,7 @@
  * ovdb.c
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2000-07-11 : fix possible alignment problem; add test code
  * 2000-07-07 : bugfix: timestamp handling
  * 2000-06-10 : Modified groupnum() interface; fix ovdb_add() to return FALSE
  *              for certain groupnum() errors
@@ -1449,7 +1450,8 @@ BOOL ovdb_expiregroup(char *group, int *lo)
     dk.groupnum = gno;
     dk.artnum = 0;    
     key.data = &dk;
-    key.size = sizeof dk;
+    key.size = key.ulen = sizeof dk;
+    key.flags = DB_DBT_USERMEM;
 
     switch(ret = cursor->c_get(cursor, &key, &val, DB_SET_RANGE)) {
     case 0:
@@ -1462,14 +1464,15 @@ BOOL ovdb_expiregroup(char *group, int *lo)
     }
 
     while(1) {
+	artnum = ntohl(dk.artnum);
 
 	/* stop if: there are no more keys, an unknown key is reached,
 	   reach a different group, or past the old himark */
 
 	if(ret == DB_NOTFOUND
 		|| key.size != sizeof dk
-		|| memcmp(key.data, &(dk.groupnum), sizeof(dk.groupnum))
-		|| ntohl(((struct datakey *)key.data)->artnum) > oldhi) {
+		|| dk.groupnum != gno
+		|| artnum > oldhi) {
 
 	    cursor->c_close(cursor);
 retry:
@@ -1479,9 +1482,10 @@ retry:
 	    }
 
 	    /* retrieve groupstats */
+	    memset(&key, 0, sizeof key);
+	    memset(&val, 0, sizeof val);
 	    key.data = &gno;
 	    key.size = sizeof gno;
-	    memset(&val, 0, sizeof val);
 	    val.data = &gs;
 	    val.ulen = sizeof gs;
 	    val.flags = DB_DBT_USERMEM;
@@ -1532,9 +1536,6 @@ retry:
 	    my_txn_commit(tid);
 	    return TRUE;
 	}
-
-	memcpy(&dk, key.data, sizeof dk);
-	artnum = ntohl(dk.artnum);
 
 	delete = 0;
 	if(val.size < sizeof ovd) {
@@ -1669,71 +1670,141 @@ void ovdb_close(void)
 
 #ifdef TEST_BDB
 
-/* gather sizes of overview records, to get a distribution of
-   record sizes */
-static void ovdb_statistics()
+static int signalled = 0;
+int sigfunc()
 {
-    int ret;
-    DB *db = get_db_bynum(0);
-    DBC *cursor;
-    DBT key, val;
-    unsigned long count = 0;
-    unsigned long size = 0;
-    char *datafile = "/tmp/data";
-    FILE *fp;    
-
-    memset(&key, 0, sizeof key);
-    memset(&val, 0, sizeof val);
-
-    if(ret = db->cursor(db, NULL, &cursor, 0)) {
-	fprintf(stderr, "OVDB: ovdb_statistics: db->cursor: %s\n", db_strerror(ret));
-	return;
-    }
-
-    fp = fopen(datafile, "w");
-    if(!fp) {
-	fprintf(stderr, "can't open %s: %s\n", datafile, strerror(errno));
-	return;
-    }
-
-    while((ret = cursor->c_get(cursor, &key, &val, DB_NEXT)) == 0) {
- 	fprintf(fp, "%d\n", val.size);
-	count++;
-	size+=val.size;
-    }
-    printf("ret = %s\n", db_strerror(ret));
-    cursor->c_close(cursor);
-    fclose(fp);
-
-    printf("Count: %d\nTotal Size: %d\nMean: %.2f\n", count, size, (double)size / count);
+    signalled = 1;
 }
 
 int main(int argc, char *argv[])
 {
     void *s;
-    ARTNUM a;
+    ARTNUM a, start=0, stop=0;
     char *data;
-    int len;
+    int len, c, low, high, count, flag, from=0, to=0, single=0;
+    int getgs=0, getcount=0, getwhich=0, err=0, gotone=0;
 
-/*
-    if(argc != 2)
-	exit(1);
-*/
     ReadInnConf();
     if(!ovdb_open(OV_READ))
 	exit(1);
-/*
-    s = ovdb_opensearch(argv[1], 1, 0x7fffffff);
-    if(!s)
-	exit(1);
-    while(ovdb_search(s, &a, &data, &len, NULL, NULL)) {
-	fwrite(data, len, 1, stdout);
+
+    xsignal(SIGINT, sigfunc);
+    xsignal(SIGTERM, sigfunc);
+    xsignal(SIGHUP, sigfunc);
+
+    while((c = getopt(argc, argv, ":gcwr:f:t:")) != -1) {
+	switch(c) {
+	case 'g':
+	    getgs = 1;
+	    gotone++;
+	    break;
+	case 'c':
+	    getcount = 1;
+	    gotone++;
+	    break;
+	case 'w':
+	    getwhich = 1;
+	    gotone++;
+	    break;
+	case 'r':
+	    single = atoi(optarg);
+	    gotone++;
+	    break;
+	case 'f':
+	    from = atoi(optarg);
+	    gotone++;
+	    break;
+	case 't':
+	    to = atoi(optarg);
+	    gotone++;
+	    break;
+	case ':':
+	    fprintf(stderr, "Option -%c requires an argument\n", optopt);
+	    err = 1;
+	    break;
+	case '?':
+	    fprintf(stderr, "Unrecognized option: -%c\n", optopt);
+	    err = 1;
+	    break;
+	}
     }
-    ovdb_closesearch(s);
-*/
-    ovdb_statistics();
+    if(!gotone)
+	getgs++;
+    if(optind == argc) {
+	fprintf(stderr, "Missing newsgroup argument(s)\n");
+	err = 1;
+    }
+    if(err) {
+	fprintf(stderr, "Usage: ovdb [-g|-c|-w] [-r artnum] newsgroup [newsgroup ...]\n");
+	fprintf(stderr, "      -g        : show groupstats info\n");
+	fprintf(stderr, "      -c        : show groupstats info by counting actual records\n");
+	fprintf(stderr, "      -w        : display DB file group is stored in\n");
+	fprintf(stderr, "      -r artnum : retrieve single OV record for article number\n");
+	fprintf(stderr, "      -f artnum : retrieve OV records starting at article number\n");
+	fprintf(stderr, "      -t artnum : retrieve OV records ending at article number\n");
+	goto out;
+    }
+    if(single) {
+	start = single;
+	stop = single;
+    }
+    if(from || to) {
+	if(from)
+	    start = from;
+	else
+	    start = 0;
+	if(to)
+	    stop = to;
+	else
+	    stop = 0xffffffff;
+    }
+    for( ; optind < argc; optind++) {
+	if(getgs) {
+	    if(ovdb_groupstats(argv[optind], &low, &high, &count, &flag)) {
+		printf("%s: groupstats: low: %d, high: %d, count: %d, flag: %c\n",
+			argv[optind], low, high, count, flag);
+	    }
+	}
+	if(getcount) {
+	    low = high = count = 0;
+	    if(s = ovdb_opensearch(argv[optind], 1, 0xffffffff)) {
+		while(ovdb_search(s, &a, NULL, NULL, NULL, NULL)) {
+		    if(low == 0 || a < low)
+			low = a;
+		    if(a > high)
+			high = a;
+		    count++;
+		    if(signalled)
+			break;
+		}
+		ovdb_closesearch(s);
+		if(signalled)
+		    goto out;
+		printf("%s:    counted: low: %d, high: %d, count: %d\n",
+			argv[optind], low, high, count);
+	    }
+	}
+	if(getwhich) {
+	    c = which_db(argv[optind]);
+	    printf("%s: stored in ov%05d\n", argv[optind], c);
+	}
+	if(start || stop) {
+	    if(s = ovdb_opensearch(argv[optind], start, stop)) {
+		while(ovdb_search(s, &a, &data, &len, NULL, NULL)) {
+		    fwrite(data, len, 1, stdout);
+		    if(signalled)
+			break;
+		}
+		ovdb_closesearch(s);
+		if(signalled)
+		    goto out;
+	    }
+	}
+	if(signalled)
+	    goto out;
+    }
+out:
     ovdb_close();
-    exit(0);
 }
 #endif /* TEST_BDB */
 
