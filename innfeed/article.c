@@ -842,9 +842,6 @@ static bool prepareArticleForNNTP (Article article)
       dotBuffer = newBufferByCharP (".\r\n",3,3) ;
       dotFirstBuffer = newBufferByCharP ("\r\n.",3,3) ;
       crlfBuffer = newBufferByCharP ("\r\n",2,2) ;
-      addPointerFreedOnExit ((char *)dotBuffer) ;
-      addPointerFreedOnExit ((char *)dotFirstBuffer) ;
-      addPointerFreedOnExit ((char *)crlfBuffer) ;
     }
 
   /* overlay a set of buffers on top of the articles contents buffer. This

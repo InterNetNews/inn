@@ -142,7 +142,6 @@ InnListener newListener (EndPoint endp, bool isDummy, bool dynamicPeers)
   l->dynamicPeers = dynamicPeers ;
 
   addPointerFreedOnExit ((char *)bufferBase(l->inputBuffer)) ;
-  addPointerFreedOnExit ((char *)l->inputBuffer) ;
   addPointerFreedOnExit ((char *)l->myHosts) ;
   addPointerFreedOnExit ((char *)l) ;
 

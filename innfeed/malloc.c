@@ -407,4 +407,17 @@ mstats(s)
 	    totused, totfree);
 }
 #endif
+
+POINTER
+calloc(num, size)
+	SIZE_T num;
+	register SIZE_T size;
+{
+	register void *p;
+
+	size *= num;
+	if (p = malloc(size))
+		memset(p, 0, size);
+	return(p);
+}
 #endif /* lint */
