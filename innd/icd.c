@@ -99,7 +99,7 @@ ICDsetup(StartSites)
 void
 ICDwrite(void)
 {
-    HISsync();
+    HISsync(History);
     SMflushcacheddata(SM_ALL);
 
     if (ICDactivedirty) {

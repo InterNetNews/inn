@@ -8,7 +8,6 @@
 #include "clibrary.h"
 #include <netinet/in.h>
 
-#include "dbz.h"
 #include "innd.h"
 
 #define BAD_COMMAND_COUNT	10
@@ -268,7 +267,7 @@ static void
 NChead(CHANNEL *cp)
 {
     char	        *p;
-    TOKEN		*token;
+    TOKEN		token;
     ARTHANDLE		*art;
 
     /* Snip off the Message-ID. */
@@ -279,11 +278,11 @@ NChead(CHANNEL *cp)
 	return;
 
     /* Get the article filenames; open the first file */
-    if ((token = HISfilesfor(HashMessageID(p))) == NULL) {
+    if (!HISlookup(History, p, NULL, NULL, NULL, &token)) {
 	NCwritereply(cp, NNTP_DONTHAVEIT);
 	return;
     }
-    if ((art = SMretrieve(*token, RETR_HEAD)) == NULL) {
+    if ((art = SMretrieve(token, RETR_HEAD)) == NULL) {
 	NCwritereply(cp, NNTP_DONTHAVEIT);
 	return;
     }
@@ -306,7 +305,7 @@ static void
 NCstat(CHANNEL *cp)
 {
     char	        *p;
-    TOKEN		*token;
+    TOKEN		token;
     ARTHANDLE		*art;
     char		*buff;
 
@@ -319,18 +318,18 @@ NCstat(CHANNEL *cp)
 
     /* Get the article filenames; open the first file (to make sure
      * the article is still here). */
-    if ((token = HISfilesfor(HashMessageID(p))) == NULL) {
+    if (!HISlookup(History, p, NULL, NULL, NULL, &token)) {
 	NCwritereply(cp, NNTP_DONTHAVEIT);
 	return;
     }
-    if ((art = SMretrieve(*token, RETR_STAT)) == NULL) {
+    if ((art = SMretrieve(token, RETR_STAT)) == NULL) {
 	NCwritereply(cp, NNTP_DONTHAVEIT);
 	return;
     }
     SMfreearticle(art);
 
     /* Write the message. */
-    p = TokenToText(*token);
+    p = TokenToText(token);
     buff = NEW(char, strlen(p) + 16);
     (void)sprintf(buff, "%d 0 %s", NNTP_NOTHING_FOLLOWS_VAL, p);
     NCwritereply(cp, buff);
@@ -497,7 +496,7 @@ NCihave(CHANNEL *cp)
     }
 #endif
 
-    if (HIShavearticle(HashMessageID(p))) {
+    if (HIScheck(History, p)) {
 	cp->Refused++;
 	cp->Ihave_Duplicate++;
 	NCwritereply(cp, NNTP_HAVEIT);
@@ -719,7 +718,6 @@ NCproc(CHANNEL *cp)
   char		buff[SMBUF];
   int		i, j;
   bool		readmore, movedata;
-  HASH		hash;
   ARTDATA	*data = &cp->Data;
   HDRCONTENT    *hc = data->HdrContent;
 
@@ -919,9 +917,9 @@ NCproc(CHANNEL *cp)
 	/* Write a local cancel entry so nobody else gives it to us. */
 	if (HDR_FOUND(HDR__MESSAGE_ID)) {
 	  HDR_PARSE_START(HDR__MESSAGE_ID);
-	  hash = HashMessageID(HDR(HDR__MESSAGE_ID));
-	  if (!HIShavearticle(hash) && !HISremember(hash)) 
-	    syslog(L_ERROR, "%s cant write %s", LogName, HashToText(hash)); 
+	  if (!HIScheck(History, HDR(HDR__MESSAGE_ID)) &&
+	      !InndHisRemember(HDR(HDR__MESSAGE_ID)))
+	    syslog(L_ERROR, "%s cant write %s", LogName, HDR(HDR__MESSAGE_ID)); 
 	}
 	/* Clear the work-in-progress entry. */
 	NCclearwip(cp);
@@ -1349,7 +1347,7 @@ NCcheck(CHANNEL *cp)
     }
 #endif /* defined(DO_PYTHON) */
 
-    if (HIShavearticle(HashMessageID(p))) {
+    if (HIScheck(History, p)) {
 	cp->Refused++;
 	cp->Check_got++;
 	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);

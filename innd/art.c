@@ -8,7 +8,6 @@
 #include <netinet/in.h>
 #include <sys/uio.h>
 
-#include "dbz.h"
 #include "innd.h"
 #include "ov.h"
 #include "storage.h"
@@ -1110,24 +1109,24 @@ ARTreject(Reject_type code, CHANNEL *cp, BUFFER *article)
 **  matches the user who posted the article, return the list of filenames
 **  otherwise return NULL.
 */
-static TOKEN *
-ARTcancelverify(const ARTDATA *data, const char *MessageID, const HASH hash)
+static bool
+ARTcancelverify(const ARTDATA *data, const char *MessageID, TOKEN *token)
 {
   const char	*p;
   char		*q, *q1;
   const char	*local;
   char		buff[SMBUF];
   ARTHANDLE	*art;
-  TOKEN		*token;
+  bool		r;
 
-  if ((token = HISfilesfor(hash)) == NULL)
-    return NULL;
+  if (!HISlookup(History, MessageID, NULL, NULL, NULL, token))
+    return false;
   if ((art = SMretrieve(*token, RETR_HEAD)) == NULL)
-    return NULL;
+    return false;
   if ((local = HeaderFindMem(art->data, art->len, "Sender", 6)) == NULL
     && (local = HeaderFindMem(art->data, art->len, "From", 4)) == NULL) {
     SMfreearticle(art);
-    return NULL;
+    return false;
   }
   for (p = local; p < art->data + art->len; p++) {
     if (*p == '\r' || *p == '\n')
@@ -1135,7 +1134,7 @@ ARTcancelverify(const ARTDATA *data, const char *MessageID, const HASH hash)
   }
   if (p == art->data + art->len) {
     SMfreearticle(art);
-    return NULL;
+    return false;
   }
   q = NEW(char, p - local + 1);
   memcpy(q, local, p - local);
@@ -1147,14 +1146,17 @@ ARTcancelverify(const ARTDATA *data, const char *MessageID, const HASH hash)
   q1 = COPY(data->Poster);
   HeaderCleanFrom(q1);
   if (!EQ(q, q1)) {
-    token = NULL;
+    r = false;
     (void)sprintf(buff, "\"%.50s\" wants to cancel %s by \"%.50s\"",
       q1, MaxLength(MessageID, MessageID), q);
     ARTlog(data, ART_REJECT, buff);
   }
+  else {
+    r = true;
+  }
   DISPOSE(q1);
   DISPOSE(q);
-  return token;
+  return r;
 }
 
 /*
@@ -1164,8 +1166,8 @@ void
 ARTcancel(const ARTDATA *data, const char *MessageID, const bool Trusted)
 {
   char	buff[SMBUF+16];
-  HASH	hash;
-  TOKEN	*token;
+  TOKEN	token;
+  bool	r;
 
   TMRstart(TMR_ARTCNCL);
   if (!DoCancels && !Trusted) {
@@ -1180,37 +1182,33 @@ ARTcancel(const ARTDATA *data, const char *MessageID, const bool Trusted)
     return;
   }
 
-  hash = HashMessageID(MessageID);
-
-  if (!HIShavearticle(hash)) {
+  if (!HIScheck(History, MessageID)) {
     /* Article hasn't arrived here, so write a fake entry using
      * most of the information from the cancel message. */
     if (innconf->verifycancels && !Trusted) {
       TMRstop(TMR_ARTCNCL);
       return;
     }
-    HISremember(hash);
+    InndHisRemember(MessageID);
     (void)sprintf(buff, "Cancelling %s", MaxLength(MessageID, MessageID));
     ARTlog(data, ART_CANC, buff);
     TMRstop(TMR_ARTCNCL);
     return;
   }
-  if (innconf->verifycancels) {
-    token = Trusted ? HISfilesfor(hash)
-      : ARTcancelverify(data, MessageID, hash);
-  } else {
-    token = HISfilesfor(hash);
-  }
-  if (token == NULL) {
+  if (Trusted || !innconf->verifycancels)
+      r = HISlookup(History, MessageID, NULL, NULL, NULL, &token);
+  else
+      r = ARTcancelverify(data, MessageID, &token);
+  if (r == false) {
     TMRstop(TMR_ARTCNCL);
     return;
   }
 
   /* Get stored message and zap them. */
-  if (!SMcancel(*token) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
-    syslog(L_ERROR, "%s cant cancel %s", LogName, TokenToText(*token));
+  if (!SMcancel(token) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
+    syslog(L_ERROR, "%s cant cancel %s", LogName, TokenToText(token));
   if (innconf->immediatecancel && !SMflushcacheddata(SM_CANCELEDART))
-    syslog(L_ERROR, "%s cant cancel cached %s", LogName, TokenToText(*token));
+    syslog(L_ERROR, "%s cant cancel cached %s", LogName, TokenToText(token));
   (void)sprintf(buff, "Cancelling %s", MaxLength(MessageID, MessageID));
   ARTlog(data, ART_CANC, buff);
   TMRstop(TMR_ARTCNCL);
@@ -2037,9 +2035,10 @@ ARTpost(CHANNEL *cp)
   /* assumes Path header is required header */
   hopcount = ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH), &data->Path);
   if (hopcount == 0) {
-    sprintf(buff, "%d illgal path element", NNTP_REJECTIT_VAL);
+    sprintf(buff, "%d illegal path element", NNTP_REJECTIT_VAL);
     ARTlog(data, ART_REJECT, buff);
-    if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
+    if (innconf->remembertrash && (Mode == OMrunning) &&
+	!InndHisRemember(HDR(HDR__MESSAGE_ID)))
       syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	HDR(HDR__MESSAGE_ID));
     ARTreject(REJECT_OTHER, cp, article);
@@ -2060,7 +2059,7 @@ ARTpost(CHANNEL *cp)
 
   hash = HashMessageID(HDR(HDR__MESSAGE_ID));
   data->Hash = &hash;
-  if (HIShavearticle(hash)) {
+  if (HIScheck(History, HDR(HDR__MESSAGE_ID))) {
     sprintf(buff, "%d Duplicate", NNTP_REJECTIT_VAL);
     ARTlog(data, ART_REJECT, buff);
     ARTreject(REJECT_DUPLICATE, cp, article);
@@ -2083,7 +2082,8 @@ ARTpost(CHANNEL *cp)
       (void)sprintf(buff, "%d Unwanted site %s in path",
 	NNTP_REJECTIT_VAL, MaxLength(ME.Exclusions[j], ME.Exclusions[j]));
       ARTlog(data, ART_REJECT, buff);
-      if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
+      if (innconf->remembertrash && (Mode == OMrunning) &&
+	  !InndHisRemember(HDR(HDR__MESSAGE_ID)))
 	syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	  HDR(HDR__MESSAGE_ID));
       ARTreject(REJECT_SITE, cp, article);
@@ -2107,7 +2107,8 @@ ARTpost(CHANNEL *cp)
       (void)sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL, filterrc);
       syslog(L_NOTICE, "rejecting[python] %s %s", HDR(HDR__MESSAGE_ID), buff);
       ARTlog(data, ART_REJECT, buff);
-      if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
+      if (innconf->remembertrash && (Mode == OMrunning) &&
+	  !InndHisRemember(HDR(HDR__MESSAGE_ID)))
 	syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	  HDR(HDR__MESSAGE_ID));
       ARTreject(REJECT_FILTER, cp, article);
@@ -2130,7 +2131,8 @@ ARTpost(CHANNEL *cp)
       sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL, filterrc);
       syslog(L_NOTICE, "rejecting[perl] %s %s", HDR(HDR__MESSAGE_ID), buff);
       ARTlog(data, ART_REJECT, buff);
-      if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
+      if (innconf->remembertrash && (Mode == OMrunning) &&
+	  !InndHisRemember(HDR(HDR__MESSAGE_ID)))
 	syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	  HDR(HDR__MESSAGE_ID));
       ARTreject(REJECT_FILTER, cp, article);
@@ -2176,7 +2178,7 @@ ARTpost(CHANNEL *cp)
 	  syslog(L_NOTICE, "rejecting[tcl] %s %s", HDR(HDR__MESSAGE_ID), buff);
 	  ARTlog(data, ART_REJECT, buff);
 	  if (innconf->remembertrash && (Mode == OMrunning) &&
-	    !HISremember(hash))
+	      !InndHisRemember(HDR(HDR__MESSAGE_ID)))
 	    syslog(L_ERROR, "%s cant write history %s %m",
 	      LogName, HDR(HDR__MESSAGE_ID));
 	  ARTreject(REJECT_FILTER, cp, article);
@@ -2198,7 +2200,8 @@ ARTpost(CHANNEL *cp)
       (void)sprintf(buff, "%d bogus distribution \"%s\"", NNTP_REJECTIT_VAL,
 	MaxLength(HDR(HDR__DISTRIBUTION), HDR(HDR__DISTRIBUTION)));
       ARTlog(data, ART_REJECT, buff);
-      if (innconf->remembertrash && Mode == OMrunning && !HISremember(hash))
+      if (innconf->remembertrash && Mode == OMrunning &&
+	  !InndHisRemember(HDR(HDR__MESSAGE_ID)))
         syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	  HDR(HDR__MESSAGE_ID));
       ARTreject(REJECT_DISTRIB, cp, article);
@@ -2212,7 +2215,8 @@ ARTpost(CHANNEL *cp)
 	  NNTP_REJECTIT_VAL, MaxLength(data->Distribution.List[0],
 	  data->Distribution.List[0]));
 	ARTlog(data, ART_REJECT, buff);
-        if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
+        if (innconf->remembertrash && (Mode == OMrunning) &&
+	    !InndHisRemember(HDR(HDR__MESSAGE_ID)))
 	  syslog(L_ERROR, "%s cant write history %s %m",
 	    LogName, HDR(HDR__MESSAGE_ID));
 	ARTreject(REJECT_DISTRIB, cp, article);
@@ -2337,7 +2341,8 @@ ARTpost(CHANNEL *cp)
       (void)sprintf(buff, "%d Unapproved for \"%s\"",
 	NNTP_REJECTIT_VAL, MaxLength(ngp->Name, ngp->Name));
       ARTlog(data, ART_REJECT, buff);
-      if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
+      if (innconf->remembertrash && (Mode == OMrunning) &&
+	  !InndHisRemember(HDR(HDR__MESSAGE_ID)))
 	syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	  HDR(HDR__MESSAGE_ID));
       ARTreject(REJECT_UNAPP, cp, article);
@@ -2429,7 +2434,7 @@ ARTpost(CHANNEL *cp)
       ARTlog(data, ART_REJECT, buff);
       if (!innconf->wanttrash) {
 	if (innconf->remembertrash && (Mode == OMrunning) &&
-	  !NoHistoryUpdate && !HISremember(hash))
+	  !NoHistoryUpdate && !InndHisRemember(HDR(HDR__MESSAGE_ID)))
 	  syslog(L_ERROR, "%s cant write history %s %m",
 	    LogName, HDR(HDR__MESSAGE_ID));
 	ARTreject(REJECT_GROUP, cp, article);
@@ -2442,7 +2447,7 @@ ARTpost(CHANNEL *cp)
          * which you explicitly excluded in your active file. */
   	if (!GroupMissing) {
 	  if (innconf->remembertrash && (Mode == OMrunning) &&
-	    !NoHistoryUpdate && !HISremember(hash))
+	      !NoHistoryUpdate && !InndHisRemember(HDR(HDR__MESSAGE_ID)))
 	    syslog(L_ERROR, "%s cant write history %s %m",
 	      LogName, HDR(HDR__MESSAGE_ID));
 	  ARTreject(REJECT_GROUP, cp, article);
@@ -2500,7 +2505,7 @@ ARTpost(CHANNEL *cp)
     syslog(L_ERROR, "%s cant store article: %s", LogName, SMerrorstr);
     sprintf(buff, "%d cant store article", NNTP_RESENDIT_VAL);
     ARTlog(data, ART_REJECT, buff);
-    if ((Mode == OMrunning) && !HISremember(hash))
+    if ((Mode == OMrunning) && !InndHisRemember(HDR(HDR__MESSAGE_ID)))
       syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	HDR(HDR__MESSAGE_ID));
     ARTreject(REJECT_OTHER, cp, article);
@@ -2538,7 +2543,9 @@ ARTpost(CHANNEL *cp)
   strcpy(data->TokenText, TokenToText(token));
 
   /* Update history if we didn't get too many I/O errors above. */
-  if ((Mode != OMrunning) || !HISwrite(data, hash, data->TokenText)) {
+  if ((Mode != OMrunning) ||
+      !InndHisWrite(HDR(HDR__MESSAGE_ID), data->Arrived, data->Posted,
+		    data->Expires, &token)) {
     i = errno;
     syslog(L_ERROR, "%s cant write history %s %m", LogName,
       HDR(HDR__MESSAGE_ID));

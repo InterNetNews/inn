@@ -296,7 +296,7 @@ XS(XS_INN_article)
 {
     dXSARGS;
     char *      msgid;
-    TOKEN *     token;
+    TOKEN       token;
     ARTHANDLE * art;
     char *      p;
     int         len;
@@ -306,11 +306,10 @@ XS(XS_INN_article)
 
     /* Get the article token from the message ID and the history file. */
     msgid = (char *) SvPV(ST(0), PL_na);
-    token = HISfilesfor(HashMessageID(msgid));
-    if (token == NULL) XSRETURN_UNDEF;
+    if (!HISlookup(History, msgid, NULL, NULL, NULL, &token)) XSRETURN_UNDEF;
 
     /* Retrieve the article and convert it from wire format. */
-    art = SMretrieve(*token, RETR_ALL);
+    art = SMretrieve(token, RETR_ALL);
     if (art == NULL) XSRETURN_UNDEF;
     p = FromWireFmt(art->data, art->len, &len);
     SMfreearticle(art);
@@ -357,15 +356,14 @@ XS(XS_INN_filesfor)
 {
     dXSARGS;
     char        *msgid;
-    TOKEN       *token;
+    TOKEN       token;
 
     if (items != 1)
         croak("Usage: INN::filesfor(msgid)");
 
     msgid = (char *) SvPV(ST(0), PL_na);
-    token = HISfilesfor(HashMessageID(msgid));
-    if (token) {
-        XSRETURN_PV(TokenToText(*token));
+    if (HISlookup(History, msgid, NULL, NULL, NULL, &token)) {
+        XSRETURN_PV(TokenToText(token));
     } else {
         XSRETURN_UNDEF;
     }
@@ -384,7 +382,7 @@ XS(XS_INN_havehist)
         croak("Usage: INN::havehist(msgid)");
 
     msgid = (char *) SvPV(ST(0), PL_na);
-    if (HIShavearticle(HashMessageID(msgid)))
+    if (HIScheck(History, msgid))
         XSRETURN_YES;
     else
         XSRETURN_NO;
@@ -410,8 +408,7 @@ XS(XS_INN_head)
 
     /* Get the article token from the message ID and the history file. */
     msgid = (char *) SvPV(ST(0), PL_na);
-    token = HISfilesfor(HashMessageID(msgid));
-    if (token == NULL) XSRETURN_UNDEF;
+    if (!HISlookup(History, msgid, NULL, NULL, NULL, &token)) XSRETURN_UNDEF;
 
     /* Retrieve the article header and convert it from wire format. */
     art = SMretrieve(*token, RETR_HEAD);

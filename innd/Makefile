@@ -6,12 +6,12 @@ CFLAGS		= $(GCFLAGS)
 
 ALL		= innd inndstart
 
-SOURCES		= art.c cc.c chan.c his.c icd.c innd.c inndstart.c lc.c \
+SOURCES		= art.c cc.c chan.c icd.c innd.c inndstart.c lc.c \
 		  nc.c newsfeeds.c ng.c perl.c proc.c python.c rc.c site.c \
 		  status.c tcl.c util.c wip.c
 
 # The objects that are linked into innd.  All SOURCES except inndstart.
-OBJECTS		= art.o cc.o chan.o his.o icd.o innd.o lc.o nc.o \
+OBJECTS		= art.o cc.o chan.o icd.o innd.o lc.o nc.o \
 		  newsfeeds.o ng.o perl.o proc.o python.o rc.o site.o \
 		  status.o tcl.o util.o wip.o
 
@@ -33,8 +33,8 @@ tags ctags: $(SOURCES)
 
 ##  Compilation rules.
 
-INNDLIBS 	= $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(TCLLIB) \
-		  $(PERLLIB) $(PYTHONLIB) $(LIBS)
+INNDLIBS 	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) \
+		  $(TCLLIB) $(PERLLIB) $(PYTHONLIB) $(LIBS)
 
 art.o:		art.c		; $(CC) $(CFLAGS) $(TCLINC) -c art.c
 cc.o:		cc.c		; $(CC) $(CFLAGS) $(PERLINC) -c cc.c
@@ -42,7 +42,7 @@ perl.o:		perl.c		; $(CC) $(CFLAGS) $(PERLINC) -c perl.c
 python.o:	python.c	; $(CC) $(CFLAGS) $(PYTHONINC) -c python.c
 tcl.o:		tcl.c		; $(CC) $(CFLAGS) $(TCLINC) -c tcl.c
 
-innd: $(OBJECTS) $(LIBSTORAGE) $(LIBINN)
+innd: $(OBJECTS) $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) $(INNDLIBS)
 
 inndstart: inndstart.o $(LIBINN)
@@ -108,10 +108,6 @@ chan.o: chan.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h innd.h ../include/portable/time.h \
  ../include/dbz.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h ../include/paths.h ../include/storage.h
-his.o: his.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/dbz.h ../include/libinn.h innd.h \
- ../include/portable/time.h ../include/macros.h ../include/nntp.h \
- ../include/paths.h ../include/storage.h
 icd.o: icd.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h innd.h ../include/portable/time.h \
  ../include/dbz.h ../include/libinn.h ../include/macros.h \

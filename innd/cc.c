@@ -245,24 +245,12 @@ CCaddhist(char *av[])
     bool		ok;
     HASH                hash;
     int			i;
+    TOKEN		token;
 
-    /* Check to see if we were passed a hash first. */
-    i = strlen(av[0]);
-    if (av[0][0]=='[' && av[0][i-1] == ']') {
-	if (i != ((sizeof(HASH) * 2) + 2))
-	    return "1 Bad Hash";
-	if (av[4] != NULL && *av[4] != '\0') {
-	    if (!IsToken(av[4]))
-		return "1 Bad Token";
-	} 
-
-        hash = TextToHash(&av[0][1]);
-    } else {
-        /* Try to take what we were given as a <messageid> */
-        if ((p = CCgetid(av[0], &msgid)) != NULL)
-	  return p;
-	hash = HashMessageID(msgid);
-    }
+    /* You must pass a <message-id> ID, the history API will hash it as it
+     * wants */
+    if ((p = CCgetid(av[0], &msgid)) != NULL)
+	return p;
 
     /* If paused, don't try to use the history database since expire may be
        running */
@@ -273,14 +261,14 @@ CCaddhist(char *av[])
     if (Mode != OMrunning) {
 	if (ThrottledbyIOError)
 	    return "1 Server throttled";
-	HISsetup();
+	InndHisOpen();
     }
 
-    if (HIShavearticle(hash)) {
-	if (Mode != OMrunning) HISclose();
+    if (HIScheck(History, msgid)) {
+	if (Mode != OMrunning) InndHisClose();
 	return "1 Duplicate";
     }
-    if (Mode != OMrunning) HISclose();
+    if (Mode != OMrunning) InndHisClose();
     if (strspn(av[1], DIGITS) != strlen(av[1]))
 	return "1 Bad arrival date";
     Data.Arrived = atol(av[1]);
@@ -291,13 +279,16 @@ CCaddhist(char *av[])
 	return "1 Bad posted date";
     Data.Posted = atol(av[3]);
 
+    token = TextToToken(av[4]);
     if (Mode == OMrunning)
-	ok = HISwrite(&Data, hash, av[4]);
+	ok = InndHisWrite(msgid, Data.Arrived, Data.Posted,
+			  Data.Expires, &token);
     else {
 	/* Possible race condition, but documented in ctlinnd manpage. */
-	HISsetup();
-	ok = HISwrite(&Data, hash, av[4]);
-	HISclose();
+	InndHisOpen();
+	ok = InndHisWrite(msgid, Data.Arrived, Data.Posted,
+			  Data.Expires, &token);
+	InndHisClose();
     }
     return ok ? NULL : "1 Write failed";
 }
@@ -470,9 +461,9 @@ CCcancel(char *av[])
 	if (ThrottledbyIOError)
 	    return "1 Server throttled";
 	/* Possible race condition, but documented in ctlinnd manpage. */
-	HISsetup();
+	InndHisOpen();
 	ARTcancel(&Data, msgid, TRUE);
-	HISclose();
+	InndHisClose();
     }
     if (innconf->logcancelcomm)
 	syslog(L_NOTICE, "%s cancelled %s", LogName, msgid);
@@ -759,7 +750,7 @@ CCgo(char *av[])
     }
     if (ErrorCount < 0)
 	ErrorCount = IO_ERROR_COUNT;
-    HISsetup();
+    InndHisOpen();
     syslog(L_NOTICE, "%s running", LogName);
     if (ICDneedsetup)
 	ICDsetup(TRUE);
@@ -1240,7 +1231,7 @@ CCblock(OPERATINGMODE NewMode, char *reason)
 #endif /* defined(DO_PYTHON) */
 
     ICDwrite();
-    HISclose();
+    InndHisClose();
     Mode = NewMode;
     if (ModeReason)
 	DISPOSE(ModeReason);
@@ -1377,9 +1368,9 @@ CCreload(char *av[])
     p = av[0];
     if (*p == '\0' || EQ(p, "all")) {
 	SITEflushall(FALSE);
-	HISclose();
+	InndHisClose();
 	RCreadlist();
-	HISsetup();
+	InndHisOpen();
 	ICDwrite();
 	ICDsetup(TRUE);
 	if (!ARTreadschema())
@@ -1405,8 +1396,8 @@ CCreload(char *av[])
 	ICDsetup(TRUE);
     }
     else if (EQ(p, "history")) {
-	HISclose();
-	HISsetup();
+	InndHisClose();
+	InndHisOpen();
     }
     else if (EQ(p, "incoming.conf"))
 	RCreadlist();
@@ -1661,6 +1652,10 @@ CCtimer(char *av[])
 	value = atoi(av[0]);
     }
     innconf->timer = value;
+    if (innconf->timer)
+        TMRinit(TMR_MAX);
+    else
+	TMRinit(0);
     return NULL;
 }
 

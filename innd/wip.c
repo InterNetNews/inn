@@ -10,7 +10,6 @@
 #include "clibrary.h"
 #include <netinet/in.h>
 
-#include "dbz.h"
 #include "innd.h"
 
 #define WIPTABLESIZE        1024

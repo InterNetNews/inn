@@ -977,6 +977,7 @@ CHANreadloop(void)
 
 	    if (now >= innconf->timer * 1000) {
 		TMRsummary(timer_name);
+		InndHisLogStats();
 		MyTime.tv_sec = innconf->timer;
 	    }
 	    else {
@@ -1006,7 +1007,7 @@ CHANreadloop(void)
 	if (GetTimeInfo(&Now) < 0)
 	    syslog(L_ERROR, "%s cant gettimeinfo %m", LogName);
 	if (Now.time > LastUpdate + TimeOut.tv_sec) {
-	    HISsync();
+	    HISsync(History);
 	    if (ICDactivedirty) {
 		ICDwriteactive();
 		ICDactivedirty = 0;
