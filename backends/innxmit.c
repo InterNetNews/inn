@@ -975,7 +975,7 @@ article_open(const char *path, const char *id)
             Requeue(path, id);
             return NULL;
         }
-        if (p[-1] == '\r') {
+        if (p[-1] != '\r') {
             p = ToWireFmt(article->data, article->len, &length);
             free(article->data);
             article->data = p;
