@@ -21,6 +21,7 @@ lib/snprintf
 lib/strerror
 lib/strlcat
 lib/strlcpy
+lib/tst
 lib/uwildmat
 lib/vector
 lib/wire

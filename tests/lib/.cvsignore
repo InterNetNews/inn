@@ -22,6 +22,7 @@ snprintf.t
 strerror.t
 strlcat.t
 strlcpy.t
+tst.t
 uwildmat.t
 vector.t
 wire.t
