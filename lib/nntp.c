@@ -9,6 +9,7 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/socket.h"
+#include "portable/time.h"
 #include <ctype.h>
 #include <errno.h>
 
