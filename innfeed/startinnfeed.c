@@ -79,7 +79,7 @@ main(int argc, char *argv[])
 
     /* These calls will fail on some systems, such as HP-UX 11.00.  On those
        systems, we just blindly assume that the stack and data limits are
-       high enough (they generally are).
+       high enough (they generally are). */
 #if HAVE_SETRLIMIT
     rl.rlim_cur = RLIM_INFINITY;
     rl.rlim_max = RLIM_INFINITY;
