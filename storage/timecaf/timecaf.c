@@ -856,6 +856,10 @@ bool timecaf_flushcacheddata(FLUSHTYPE type) {
     return TRUE;
 }
 
+void timecaf_printfiles(FILE *file, TOKEN token, char **xref, int ngroups) {
+    fprintf(file, "%s\n", TokenToText(token));
+}
+
 void timecaf_shutdown(void) {
     CloseOpenFile(&WritingFile);
     DoCancels();

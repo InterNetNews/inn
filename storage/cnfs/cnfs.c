@@ -1749,6 +1749,10 @@ bool cnfs_flushcacheddata(FLUSHTYPE type) {
     return TRUE; 
 }
 
+void cnfs_printfiles(FILE *file, TOKEN token, char **xref, int ngroups) {
+    fprintf(file, "%s\n", TokenToText(token));
+}
+
 void cnfs_shutdown(void) {
     CNFSflushallheads();
     CNFSmunmapbitfields();

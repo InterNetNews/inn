@@ -19,6 +19,7 @@ void timecaf_freearticle(ARTHANDLE *article);
 bool timecaf_cancel(TOKEN token);
 bool timecaf_ctl(PROBETYPE type, TOKEN *token, void *value);
 bool timecaf_flushcacheddata(FLUSHTYPE type);
+void timecaf_printfiles(FILE *file, TOKEN token, char **xref, int ngroups);
 void timecaf_shutdown(void);
 
 #endif
