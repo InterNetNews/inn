@@ -286,8 +286,6 @@ Code Cleanup Projects:
 * Eliminate all of the needless casts to void that are scattered around to
   silent old versions of lint.
 
-* Convert nnrpd to use daemonize rather than its own daemon code.
-
 * Split out the keyword generation code in innd/art.c into its own source
   file and fix the broken way that keyword generation is now configured or
   unconfigured in INN.

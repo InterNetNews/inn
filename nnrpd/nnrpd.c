@@ -134,9 +134,9 @@ static CMDENT	CMDtable[] = {
     {	"mode",		CMDmode,	FALSE,	2,	2,
 	"reader" },
     {	"newgroups",	CMDnewgroups,	TRUE,	3,	5,
-	"[YY]yymmdd hhmmss [\"GMT\"|\"UTC\"] [<distributions>]" },
+	"[YY]yymmdd hhmmss [\"GMT\"|\"UTC\"]" },
     {	"newnews",	CMDnewnews,	TRUE,	4,	6,
-	"newsgroups [YY]yymmdd hhmmss [\"GMT\"|\"UTC\"] [<distributions>]" },
+	"newsgroups [YY]yymmdd hhmmss [\"GMT\"|\"UTC\"]" },
     {	"next",		CMDnextlast,	TRUE,	1,	1,
 	NULL },
     {	"post",		CMDpost,	TRUE,	1,	1,
@@ -231,7 +231,7 @@ ExitWithStats(int x, bool readconf)
 
     HISclose(History);
 
-    TMRsummary("ME", timer_name);
+    TMRsummary(ClientHost, timer_name);
     TMRfree();
 
     if (LocalLogFileName != NULL)
@@ -900,7 +900,6 @@ main(int argc, char *argv[])
 
     if (ReadInnConf() < 0)
 	    exit(1);
-    TMRinit(TMR_MAX);
 
 #ifdef HAVE_SSL
     while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nop:Rr:s:tS")) != EOF)
@@ -1082,22 +1081,7 @@ main(int argc, char *argv[])
 
 	/* Detach */
 	if (!ForeGroundMode) {
-	    if ((pid = fork()) < 0) {
-		fprintf(stderr, "%s: can't fork: %s\n", argv[0],
-			strerror(errno));
-		syslog(L_FATAL, "cant fork: %m");
-		exit(1);
-	    } else if (pid != 0) 
-		exit(0);
-	    setsid();
-	    chdir("/");
-	    if ((fd = open("/dev/null", O_RDWR, 0)) != -1) {
-		dup2(fd, STDIN_FILENO);
-		dup2(fd, STDOUT_FILENO);
-		dup2(fd, STDERR_FILENO);
-		if (fd > 2)
-		    close(fd);
-	    }
+	    daemonize("/");
 	}
 
 	if (ListenPort == NNTP_PORT)
@@ -1172,6 +1156,7 @@ main(int argc, char *argv[])
     }/* DaemonMode */
 
     /* Setup. */
+    TMRinit(TMR_MAX);
     if (GetTimeInfo(&Now) < 0) {
 	syslog(L_FATAL, "cant gettimeinfo %m");
 	OVclose();
