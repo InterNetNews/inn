@@ -296,9 +296,9 @@ vendors, companies who make extensive use of the software, and generally
 kind-hearted folk such as yourself.
 
 The Internet Systems Consortium has also commissioned a DHCP server
-implementation, handles the official support/release of BIND, and supports
-the Kerberos Version 5 effort at MIT.  You can learn more about the ISC's
-goals and accomplishments from the web page at <http://www.isc.org/>.
+implementation and handles the official support/release of BIND.  You can
+learn more about the ISC's goals and accomplishments from the web page at
+<http://www.isc.org/>.
 
                                         Russ Allbery
                                         Katsuhiro Kondou
