@@ -635,8 +635,6 @@ void Run (void)
   keepSelecting = 1 ;
   xsignal (SIGPIPE, pipeHandler) ;
 
-  if (innconf->timer)
-    TMRinit(TMR_MAX);
   while (keepSelecting)
     {
       struct timeval timeout ;

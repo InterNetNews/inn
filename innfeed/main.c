@@ -481,7 +481,10 @@ int main (int argc, char **argv)
   if (innconf->rlimitnofile >= 0)
     if (setfdlimit (innconf->rlimitnofile) < 0)
       syslog (LOG_ERR,SETRLIM_FAILED,innconf->rlimitnofile);
-  
+
+  if (innconf->timer > 0)
+    TMRinit (TMR_MAX) ;
+
   configHosts (talkToSelf) ;
 
   if (InputFile && *InputFile) {
