@@ -78,6 +78,29 @@ test_strdup(size_t size)
     return (match == 0);
 }
 
+/* Generate a string of the size indicated plus some, call xstrndup on it, and
+   then ensure the result matches.  Returns true on success, false on any
+   failure. */
+static int
+test_strndup(size_t size)
+{
+    char *string, *copy;
+    int match, toomuch;
+
+    string = xmalloc(size + 1);
+    if (!string) return 0;
+    memset(string, 1, size - 1);
+    string[size - 1] = 2;
+    string[size] = '\0';
+    copy = xstrndup(string, size - 1);
+    if (!copy) return 0;
+    match = strncmp(string, copy, size - 1);
+    toomuch = strcmp(string, copy);
+    free(string);
+    free(copy);
+    return (match == 0 && toomuch != 0);
+}
+
 /* Allocate the amount of memory given and check that it's all zeroed,
    returning true if that succeeded and false on any sort of detectable
    error. */
@@ -121,18 +144,11 @@ main(int argc, char *argv[])
     }
 
     switch (code) {
-    case 'c':
-        exit(test_calloc(size) ? 0 : 1);
-        break;
-    case 'm':
-        exit(test_malloc(size) ? 0 : 1);
-        break;
-    case 'r':
-        exit(test_realloc(size) ? 0 : 1);
-        break;
-    case 's':
-        exit(test_strdup(size) ? 0 : 1);
-        break;
+    case 'c': exit(test_calloc(size) ? 0 : 1);
+    case 'm': exit(test_malloc(size) ? 0 : 1);
+    case 'r': exit(test_realloc(size) ? 0 : 1);
+    case 's': exit(test_strdup(size) ? 0 : 1);
+    case 'n': exit(test_strndup(size) ? 0 : 1);
     default:
         die("Unknown mode %c", argv[1][0]);
         break;

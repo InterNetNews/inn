@@ -45,11 +45,9 @@ for file in ./xmalloc lib/xmalloc ../xmalloc ; do
 done
 
 # Total tests.
-echo 21
+echo 26
 
 # First run the tests expected to succeed.
-runsuccess "c" "24"
-runsuccess "c" "128000"
 runsuccess "m" "21"
 runsuccess "m" "128000"
 runsuccess "m" "0"
@@ -57,6 +55,10 @@ runsuccess "r" "21"
 runsuccess "r" "128000"
 runsuccess "s" "21"
 runsuccess "s" "128000"
+runsuccess "n" "21"
+runsuccess "n" "128000"
+runsuccess "c" "24"
+runsuccess "c" "128000"
 
 # Now limit our memory to 96KB and then try the large ones again, all of
 # which should fail.
@@ -67,17 +69,21 @@ runfailure "r" "128000" \
     "failed to realloc 128000 bytes at lib/xmalloc.c line 49"
 runfailure "s" "64000" \
     "failed to strdup 64000 bytes at lib/xmalloc.c line 73"
+runfailure "n" "64000" \
+    "failed to strndup 64000 bytes at lib/xmalloc.c line 95"
 runfailure "c" "128000" \
-    "failed to calloc 128000 bytes at lib/xmalloc.c line 93"
+    "failed to calloc 128000 bytes at lib/xmalloc.c line 116"
 
 # Check our custom error handler.
 runfailure "M" "128000" "malloc 128000 lib/xmalloc.c 28"
 runfailure "R" "128000" "realloc 128000 lib/xmalloc.c 49"
 runfailure "S" "64000" "strdup 64000 lib/xmalloc.c 73"
-runfailure "C" "128000" "calloc 128000 lib/xmalloc.c 93"
+runfailure "N" "64000" "strndup 64000 lib/xmalloc.c 95"
+runfailure "C" "128000" "calloc 128000 lib/xmalloc.c 116"
 
 # Check the smaller ones again just for grins.
-runsuccess "c" "24"
 runsuccess "m" "21"
 runsuccess "r" "32"
 runsuccess "s" "64"
+runsuccess "n" "20"
+runsuccess "c" "24"
