@@ -335,6 +335,7 @@ typedef int             BOOL;
 #define FEED_PATH               'P'
 #define FEED_REPLIC             'R'
 #define FEED_SITE               's'
+#define FEED_TIMEEXPIRED        'e'
 #define FEED_TIMERECEIVED       't'
 #define FEED_TIMEPOSTED         'p'
 
