@@ -433,12 +433,12 @@ STATIC enum KR EXPkeepit(TOKEN token, time_t when, time_t Expires)
         if (EXPclasses[NUM_STORAGE_CLASSES].Missing) {
             /* no default */
             if (!class.ReportedMissing) {
-                fprintf(stderr, "Class definition %d is missing from control file, assuming zero expiration\n",
+                fprintf(stderr, "Class definition %d is missing from control file, assuming never expiration\n",
                         token.class);
             } else {
                 EXPclasses[token.class].ReportedMissing = TRUE;
             }
-            return Remove;
+            return Keep;
         } else {
             /* use the default */
             class = EXPclasses[NUM_STORAGE_CLASSES];
