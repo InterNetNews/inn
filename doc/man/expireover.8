@@ -38,7 +38,9 @@ expireover \- Expire entries from the news overview database
 .I Expireover
 expires entries from the news overview database.
 It reads a list of pathnames (relative to the spool directory,
-.\" =()<.IR @<_PATH_SPOOL>@ ),>()=
+.I <_PATH_SPOOL in config.data> ,
+typically
+.\" =()<.IR @<typ_PATH_SPOOL>@ ),>()=
 .IR /var/news/spool/articles ),
 from the specified
 .I files
@@ -66,8 +68,10 @@ to add only a subset of the newsgroups.
 .B \-D
 The ``\-D'' flag can be used to specify where the databases are stored.
 The default directory is
-.\" =()<.IR @<_PATH_OVERVIEWDIR>@ .>()=
-.IR /var/news/spool/over.view .
+.I <_PATH_OVERVIEWDIR in config.data> 
+(typically
+.\" =()<.IR @<typ_PATH_OVERVIEWDIR>@ .)>()=
+.IR /var/news/spool/over.view .)
 .TP
 .B \-f
 When the ``\fB\-\fPs'' flag is used, then

@@ -18,8 +18,10 @@ the news administrator.
 If there were no problems, then
 .I file
 is renamed to
-.\" =()<.I @<_PATH_MOST_LOGS>@/expire.list>()=
-.I /var/log/news/expire.list
+.I <_PATH_MOST_LOGS in config.data>/expire.list
+(typically
+.\" =()<.I @<typ_PATH_MOST_LOGS>@/expire.list)>()=
+.I /var/log/news/expire.list)
 where it is kept (for safety) until the next time expiration is done.
 .SH HISTORY
 Written by Landon Curt Noll <chongo@toad.com> and

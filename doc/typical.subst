@@ -452,4 +452,6 @@ typDEFAULT_CONNECTIONS 		50
 typ_PATH_CONTROLPROGS 		/usr/news/bin/control
 =()<typ_PATH_BADCONTROLPROG 			@<_PATH_BADCONTROLPROG>@>()=
 typ_PATH_BADCONTROLPROG 		default
+=()<typ_PATH_OVERVIEWDIR 		@<_PATH_OVERVIEWDIR>@>()=
+typ_PATH_OVERVIEWDIR 		/var/news/spool/over.view
 
