@@ -76,9 +76,9 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "connection.h"
 #include "configfile.h"
 
-#if defined(DO_HAVE_UNIX_DOMAIN)
+#if defined(HAVE_UNIX_DOMAIN_SOCKETS)
 #include <sys/un.h>
-#endif  /* defined(DO_HAVE_UNIX_DOMAIN) */
+#endif  /* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 
 #include "endpoint.h"
 #include "host.h"

@@ -662,7 +662,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     dt = *data = NEW(REMOTEHOST_DATA, 1);
     rp = *list = NEW(REMOTEHOST, 1);
 
-#if	!defined(DO_HAVE_UNIX_DOMAIN)
+#if	!defined(HAVE_UNIX_DOMAIN_SOCKETS)
     rp->Address.s_addr = inet_addr(LOOPBACK_HOST);
     rp->Name = COPY("localhost");
     rp->Label = COPY("localhost");
@@ -675,7 +675,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     rp->Skip = FALSE;
     rp++;
     (*count)++;
-#endif	/* !defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	/* !defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 
     linecount = 0;
     infocount = 0;

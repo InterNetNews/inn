@@ -16,9 +16,9 @@
 #include "clibrary.h"
 #include "innd.h"
 #include "inndcomm.h"
-#if	defined(DO_HAVE_UNIX_DOMAIN)
+#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
 #include <sys/un.h>
-#endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	
 
 
 /*
@@ -1752,11 +1752,11 @@ CCreader(cp)
     register char	*q;
     ICC_MSGLENTYPE	bufflen;
     ICC_PROTOCOLTYPE	protocol ;
-#if	defined(DO_HAVE_UNIX_DOMAIN)
+#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     struct sockaddr_un	client;
 #else
     int			written;
-#endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
     int			i;
     char                buff[BIG_BUFFER + 2];
     char                copy[BIG_BUFFER + 2];
@@ -1771,7 +1771,7 @@ CCreader(cp)
 	return;
     }
 
-#if defined (DO_HAVE_UNIX_DOMAIN)
+#if defined (HAVE_UNIX_DOMAIN_SOCKETS)
     
     i = RECVorREAD(CCchan->fd, buff, BIG_BUFFER) ;
     if (i < 0) {
@@ -1803,7 +1803,7 @@ CCreader(cp)
         return ;
     }
 
-#else  /* defined (DO_HAVE_UNIX_DOMAIN) */
+#else  /* defined (HAVE_UNIX_DOMAIN_SOCKETS) */
 
     i = RECVorREAD(CCchan->fd, buff, HEADER_SIZE) ;
     if (i < 0) {
@@ -1841,7 +1841,7 @@ CCreader(cp)
         return ;
     }
 
-#endif /* defined (DO_HAVE_UNIX_DOMAIN) */
+#endif /* defined (HAVE_UNIX_DOMAIN_SOCKETS) */
     
     /* Copy to a printable buffer, and log. */
     (void)strcpy(copy, buff);
@@ -1893,7 +1893,7 @@ CCreader(cp)
     strcpy (tbuff,p) ;
     tbuff -= HEADER_SIZE ;
 
-#if	defined(DO_HAVE_UNIX_DOMAIN)
+#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     (void)memset((POINTER)&client, 0, sizeof client);
     client.sun_family = AF_UNIX;
     (void)strcpy(client.sun_path, argv[0]);
@@ -1918,7 +1918,7 @@ CCreader(cp)
 	if (close(i) < 0)
 	    syslog(L_ERROR, "%s cant close %s %m", LogName, argv[0]);
     }
-#endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
     DISPOSE (tbuff) ;
 }
 
@@ -1940,9 +1940,9 @@ void
 CCsetup()
 {
     int			i;
-#if	defined(DO_HAVE_UNIX_DOMAIN)
+#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     struct sockaddr_un	server;
-#endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 
     if (CCpath == NULL)
 	CCpath = COPY(cpcatpath(innconf->pathrun, _PATH_NEWSCONTROL));
@@ -1952,7 +1952,7 @@ CCsetup()
 	exit(1);
     }
 
-#if	defined(DO_HAVE_UNIX_DOMAIN)
+#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     /* Create a socket and name it. */
     if ((i = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0) {
 	syslog(L_FATAL, "%s cant socket %s %m", LogName, CCpath);
@@ -1981,7 +1981,7 @@ CCsetup()
 	syslog(L_FATAL, "%s cant open %s %m", LogName, CCpath);
 	exit(1);
     }
-#endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 
     CCchan = CHANcreate(i, CTcontrol, CSwaiting, CCreader, CCwritedone);
     syslog(L_NOTICE, "%s ccsetup %s", LogName, CHANname(CCchan));
@@ -2012,10 +2012,10 @@ CCclose()
     CCchan = NULL;
     if (unlink(CCpath) < 0)
 	syslog(L_ERROR, "%s cant unlink %s %m", LogName, CCpath);
-#if	defined(DO_HAVE_UNIX_DOMAIN)
+#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     if (close(CCwriter) < 0)
 	syslog(L_ERROR, "%s cant close unbound %m", LogName);
-#endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 }
 
 

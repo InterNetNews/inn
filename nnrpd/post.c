@@ -957,11 +957,11 @@ ARTpost(article, idbuff)
     if (innconf->nnrpdposthost != NULL)
 	i = NNTPconnect(innconf->nnrpdposthost, NNTP_PORT, &FromServer, &ToServer, buff);
     else {
-#if	defined(DO_HAVE_UNIX_DOMAIN)
+#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
 	i = NNTPlocalopen(&FromServer, &ToServer, buff);
 #else
 	i = NNTPremoteopen(NNTP_PORT, &FromServer, &ToServer, buff);
-#endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
     }
 
     /* If we cannot open the connection, initialize the error message and

@@ -10,9 +10,9 @@
 #include "paths.h"
 #include "nntp.h"
 #include "macros.h"
-#if	defined(DO_HAVE_UNIX_DOMAIN)
+#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
 #include <sys/un.h>
-#endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 #include "libinn.h"
 
 
@@ -22,7 +22,7 @@
 */
 int NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff)
 {
-#if	defined(DO_HAVE_UNIX_DOMAIN)
+#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     int			i;
     int			j;
     int			oerrno;
@@ -82,5 +82,5 @@ int NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff)
     return 0;
 #else
     return NNTPconnect(LOOPBACK_HOST, FromServerp, ToServerp, errbuff);
-#endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 }

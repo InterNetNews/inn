@@ -11,7 +11,7 @@
 #include "configdata.h"
 #include "clibrary.h"
 #include "innd.h"
-#if	defined(DO_HAVE_UNIX_DOMAIN)
+#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
 #include <sys/un.h>
 
 STATIC char	*LCpath = NULL;
@@ -52,7 +52,7 @@ LCwritedone()
 {
     syslog(L_ERROR, "%s internal LCwritedone", LogName);
 }
-#endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 
 
 /*
@@ -61,7 +61,7 @@ LCwritedone()
 void
 LCsetup()
 {
-#if	defined(DO_HAVE_UNIX_DOMAIN)
+#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     int			i;
     struct sockaddr_un	server;
 
@@ -94,7 +94,7 @@ LCsetup()
     LCchan = CHANcreate(i, CTlocalconn, CSwaiting, LCreader, LCwritedone);
     syslog(L_NOTICE, "%s lcsetup %s", LogName, CHANname(LCchan));
     RCHANadd(LCchan);
-#endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 }
 
 
@@ -104,10 +104,10 @@ LCsetup()
 void
 LCclose()
 {
-#if	defined(DO_HAVE_UNIX_DOMAIN)
+#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     CHANclose(LCchan, CHANname(LCchan));
     LCchan = NULL;
     if (unlink(LCpath) < 0)
 	syslog(L_ERROR, "%s cant unlink %s %m", LogName, LCpath);
-#endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 }

@@ -13,6 +13,9 @@
 /* Define if you have ANSI C headers */
 #undef STDC_HEADERS
 
+/* Define if you have unix domain sockets */
+#undef HAVE_UNIX_DOMAIN_SOCKETS
+
 /* Define if you have <dirent.h> */
 #undef HAVE_DIRENT_H 
 

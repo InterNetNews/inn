@@ -36,16 +36,6 @@
   ||##[autoconf]
   ||#### =()<INT32_T			@<INT32_T>@>()=
   ||INT32_T			@ac_cv_subst_int32_t@
-[IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  How to fork?  Pick fork or vfork.
-  ||##[autoconf]
-  ||#### =()<FORK			@<FORK>@>()=
-  ||FORK			@ac_cv_subst_fork@
-[IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  Do you have Unix-domain sockets?  Pick DO or DONT.
-  ||##[autoconf]
-  ||#### =()<HAVE_UNIX_DOMAIN	@<HAVE_UNIX_DOMAIN>@>()=
-  ||HAVE_UNIX_DOMAIN	@ac_cv_subst_have_unix_domain@
 [IN1.7=@4][WDF=autoconf][WOR=no][P=high]
   ||##  Does your AF_UNIX bind use sizeof for the socket size?  Pick DO or DONT.
   ||#### =()<BIND_USE_SIZEOF		@<BIND_USE_SIZEOF>@>()=

@@ -8,9 +8,9 @@
 #include "clibrary.h"
 #include <errno.h>
 #include <sys/socket.h>
-#if	defined(DO_HAVE_UNIX_DOMAIN)
+#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
 #include <sys/un.h>
-#endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 #include <netinet/in.h>
 #include <netdb.h>
 #include "nntp.h"

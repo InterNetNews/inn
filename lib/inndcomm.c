@@ -17,9 +17,9 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#if	defined(DO_HAVE_UNIX_DOMAIN)
+#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
 #include <sys/un.h>
-#endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 #include "nntp.h"
 #include "paths.h"
 #include "libinn.h"
@@ -30,10 +30,10 @@
 #define MIN_BUFFER_SIZE		4096
 
 STATIC char			*ICCsockname = NULL;
-#if	defined(DO_HAVE_UNIX_DOMAIN)
+#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
 STATIC struct sockaddr_un	ICCserv;
 STATIC struct sockaddr_un	ICCclient;
-#endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 STATIC int			ICCfd;
 STATIC int			ICCtimeout;
 char				*ICCfailure;
@@ -68,7 +68,7 @@ ICCopen()
 	return -1;
     }
 
-#if	defined(DO_HAVE_UNIX_DOMAIN)
+#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     /* Make a socket and give it the name. */
     if ((ICCfd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0) {
 	ICCfailure = "socket";
@@ -109,7 +109,7 @@ ICCopen()
 	ICCfailure = "open";
 	return -1;
     }
-#endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 
     ICCfailure = NULL;
     return 0;
@@ -194,9 +194,9 @@ ICCcommand(cmd, argv, replyp)
     char		save;
     int			bufsiz;
     int			i ;
-#if	!defined(DO_HAVE_UNIX_DOMAIN)
+#if	!defined(HAVE_UNIX_DOMAIN_SOCKETS)
     int			fd;
-#endif	/* !defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	/* !defined(HAVE_UNIX_DOMAIN_SOCKETS) */
     int			len;
     FDSET		Rmask;
     struct timeval	T;
@@ -253,7 +253,7 @@ ICCcommand(cmd, argv, replyp)
 
     buff -= HEADER_SIZE ;
 
-#if	defined(DO_HAVE_UNIX_DOMAIN)
+#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     if (sendto(ICCfd, buff, len, 0,
 	    (struct sockaddr *)&ICCserv, AF_UNIX_SOCKSIZE(ICCserv)) < 0) {
 	DISPOSE(buff);
@@ -275,7 +275,7 @@ ICCcommand(cmd, argv, replyp)
 	return -1;
     }
     (void)close(fd);
-#endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
+#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 
     /* Possibly get a reply. */
     switch (cmd) {
@@ -322,7 +322,7 @@ ICCcommand(cmd, argv, replyp)
     }
 
 
-#if defined (DO_HAVE_UNIX_DOMAIN)
+#if defined (HAVE_UNIX_DOMAIN_SOCKETS)
     
     /* Read the reply. */
     i = RECVorREAD(ICCfd, buff, bufsiz) ;
@@ -352,7 +352,7 @@ ICCcommand(cmd, argv, replyp)
 
     buff[i] = '\0';
 
-#else  /* defined (DO_HAVE_UNIX_DOMAIN) */
+#else  /* defined (HAVE_UNIX_DOMAIN_SOCKETS) */
 
     i = RECVorREAD (ICCfd, buff, HEADER_SIZE) ;
     if (i != HEADER_SIZE) {
@@ -374,7 +374,7 @@ ICCcommand(cmd, argv, replyp)
         return -1 ;
     }
 
-#endif /* defined (DO_HAVE_UNIX_DOMAIN) */
+#endif /* defined (HAVE_UNIX_DOMAIN_SOCKETS) */
     
     /* Parse the rest of the reply; expected to be like
        <exitcode><space><text>" */
