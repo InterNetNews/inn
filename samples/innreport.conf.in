@@ -460,6 +460,82 @@ section innd_connect {
 	};
 };
 
+section innd_incoming_vol {
+        title   "Incoming Volume (INN):";
+	data    "%innd_seconds";
+	sort    "$innd_stored_size{$b} <=> $innd_stored_size{$a}";
+	numbering true;
+        column {
+                name          "Server";
+		format        "%-24.24s";
+		value         "$key";
+		format_total  "TOTAL: %-17.17s";
+		total         "$num";
+        };
+        column {
+                name          "AcceptVol";
+		format        "%9s";
+		value         "bytes($innd_stored_size{$key})";
+		total         "bytes(total(%innd_stored_size))";
+        };
+        column {
+                name          "DupVol";
+		format        "%9s";
+		value         "bytes($innd_duplicated_size{$key})";
+		total         "bytes(total(%innd_duplicated_size))";
+        };
+	column {
+		name	      "TotalVol";
+		format	      "%9s";
+		value	      "bytes($innd_stored_size{$key} +
+	                               $innd_duplicated_size{$key})";
+		total	      "bytes(total(%innd_stored_size) +
+                                       total(%innd_duplicated_size))";
+	};
+        column {
+                name          "%Acc";
+		format_name   "%4s";
+		format        "%3d%%";
+		value         "$innd_offered_size{$key} == 0 ? 0 :
+		     $innd_stored_size{$key} / $innd_offered_size{$key} * 100";
+		total         "total(%innd_offered_size) == 0 ? 0 :
+		   total(%innd_stored_size) / total(%innd_offered_size) * 100";
+        };
+	column {
+		name		"Vol/Art";
+		format		"%9s";
+		value		"bytes(($innd_stored_size{$key} +
+                                        $innd_duplicated_size{$key}) /
+                                       ($innd_accepted{$key} +
+                                        $innd_rejected{$key}))";
+		total		"bytes((total(%innd_stored_size) +
+                                        total(%innd_duplicated_size)) /
+                                     (total(%innd_accepted) +
+	                              total(%innd_rejected)))";
+	};
+        column {
+                name          "Elapsed";
+		format        "%9s";
+		value         "time($innd_seconds{$key})";
+		total         "time(total(%innd_seconds))";
+        };
+	graph {
+	        title         "Incoming Volume received by server";
+		type          histo3d;
+		sort	      "%innd_stored_size";
+		data {
+		          name    "Accepted Volume";
+			  color   "#0000FF";
+			  value   "%innd_stored_size";
+                };
+		data {
+		          name    "Duplicated Volume";
+			  color   "#FFAF00";
+			  value   "%innd_duplicated_size";
+                };
+	};
+};
+
 section inn_flow {
         title   "Incoming articles:";
 	data    "%inn_flow";
@@ -1080,7 +1156,6 @@ section innfeed_volume {
 	};
 	column {
 		name		"Elapsed";
-		format_name	"%8s";
 		format		"%9s";
 		value		"time($innfeed_seconds{$key})";
 		total		"time(total(%innfeed_seconds))";

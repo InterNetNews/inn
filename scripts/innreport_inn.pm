@@ -281,6 +281,8 @@ sub collect {
       $innd_accepted{$server} += $accepted;
       $innd_refused{$server} += $refused;
       $innd_rejected{$server} += $rejected;
+      $innd_stored_size{$server} += $accptsize;
+      $innd_duplicated_size{$server} += $dupsize;
       return 1;
     } elsif ($left =~ /(\S+):\d+ closed seconds (\d+) accepted (\d+) refused (\d+) rejected (\d+)$/o) {
       # closed (with times)
@@ -1889,6 +1891,8 @@ sub adjust {
       $innd_offered{$key} = ($innd_accepted{$key} || 0)
 	+ ($innd_refused{$key} || 0)
 	+ ($innd_rejected{$key} || 0);
+      $innd_offered_size{$key} = ($innd_stored_size{$key} || 0)
+	+ ($innd_duplicated_size{$key} || 0);
     }
 
 
