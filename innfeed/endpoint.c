@@ -630,6 +630,7 @@ void Run (void)
   keepSelecting = 1 ;
   xsignal (SIGPIPE, pipeHandler) ;
 
+  TMRinit();
   while (keepSelecting)
     {
       struct timeval timeout ;
@@ -663,11 +664,16 @@ void Run (void)
         }
 
       /* calculate host backlog statistics */
+      TMRstart(TMR_BACKLOGSTATS);
       gCalcHostBlStat ();
+      TMRstop(TMR_BACKLOGSTATS);
 
+      TMRstart(TMR_IDLE);
       sval = select (highestFd + 1, &rSet, &wSet, &eSet, twait) ;
+      TMRstop(TMR_IDLE);
 
       timePasses () ;
+      TMRmainloophook();
       
       if (sval == 0 && twait == NULL)
         die ("No fd's ready and no timeouts") ;
@@ -874,7 +880,9 @@ void Run (void)
 
                     ep->workCbk = NULL ;
                     ep->workData = NULL ;
+                    TMRstart(TMR_CALLBACK);
                     func (ep,data) ;
+                    TMRstop(TMR_CALLBACK);
                   }
               
             }
@@ -967,6 +975,7 @@ static IoStatus doRead (EndPoint endp)
   size_t amt = 0 ;
   IoStatus rval = IoIncomplete ;
 
+  TMRstart(TMR_READ);
   for (i = currIdx ; buffers && buffers [i] != NULL ; i++)
     bCount++ ;
 
@@ -1075,7 +1084,7 @@ static IoStatus doRead (EndPoint endp)
     }
   else
     rval = IoDone ;
-  
+  TMRstop(TMR_READ);
   return rval ;
 }
 
@@ -1091,6 +1100,7 @@ static IoStatus doWrite (EndPoint endp)
   u_int currIdx = endp->outBufferIdx ;
   IoStatus rval = IoIncomplete ;
   
+  TMRstart(TMR_WRITE);
   for (i = currIdx ; buffers && buffers [i] != NULL ; i++)
     bCount++ ;
 
@@ -1183,6 +1193,7 @@ static IoStatus doWrite (EndPoint endp)
   else
     rval = IoDone ;
 
+  TMRstop(TMR_WRITE);
   return rval ;
 }
 

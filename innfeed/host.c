@@ -2935,7 +2935,7 @@ static void hostLogStatus (void)
   u_int peerNum = 0, actConn = 0, slpConn = 0, maxcon = 0 ;
   static bool logged = false ;
   static bool flogged = false ;
-
+  time_t now;
 
   if (statusFile == NULL && !logged)
     {
@@ -2961,6 +2961,7 @@ static void hostLogStatus (void)
 
   lastStatusLog = theTime() ;
   
+  TMRstart(TMR_STATUSFILE);
   if ((fp = fopen (statusFile,"w")) == NULL)
     {
       if ( !flogged )
@@ -3109,6 +3110,7 @@ Default peer configuration parameters:
       
       fclose (fp) ;
     }
+    TMRstop(TMR_STATUSFILE);
 }
 
 /*
@@ -3291,7 +3293,7 @@ static void hostPrintStatus (Host host, FILE *fp)
 static void hostStatsTimeoutCbk (TimeoutId tid, void *data)
 {
   Host host = (Host) data ;
-  time_t now = theTime () ;
+  time_t delta, now = theTime () ;
 
   (void) tid ;                  /* keep lint happy */
 
@@ -3302,7 +3304,6 @@ static void hostStatsTimeoutCbk (TimeoutId tid, void *data)
 
   if (now - lastStatusLog >= statsPeriod)
     hostLogStatus () ;
-  
   
   host->statsId = prepareSleep (hostStatsTimeoutCbk, statsPeriod, host) ;
 }

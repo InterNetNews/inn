@@ -210,6 +210,7 @@ Article newArticle (const char *filename, const char *msgid)
 {
   Article newArt = NULL ;
   
+  TMRstart(TMR_NEWARTICLE);
   if (hashTable == NULL)
     {                           /* first-time through initialization. */
       int i ;
@@ -265,7 +266,7 @@ Article newArticle (const char *filename, const char *msgid)
       newArt->refCount++ ;
       d_printf (2,"Reusing existing article for %s\nx",msgid) ;
     }
-  
+  TMRstop(TMR_NEWARTICLE);
   return newArt ;
 }
 
@@ -550,6 +551,7 @@ static bool fillContents (Article article)
   
     ASSERT (article->contents == NULL) ;
     
+    TMRstart(TMR_READART);
     if (maxBytesInUse == 0)
 	maxBytesInUse = SOFT_ARTICLE_BYTE_LIMIT ;
     
@@ -565,6 +567,7 @@ static bool fillContents (Article article)
 		syslog(LOG_ERR, "Could not retrieve %s: %s",
 		       article->fname, SMerrorstr);
 		article->articleOk = false;
+		TMRstop(TMR_READART); 
 		return false;
 	    }
 	}
@@ -577,16 +580,19 @@ static bool fillContents (Article article)
 	    if (fstat (fd, &sb) < 0) {
 		article->articleOk = false ;
 		syslog (LOG_ERR,FSTAT_FAILURE,article->fname) ;
+		TMRstop(TMR_READART);
 		return false;
 	    }
 	    if (!S_ISREG (sb.st_mode)) {
 		article->articleOk = false ;
 		syslog (LOG_ERR,REGFILE_FAILURE,article->fname) ;
+		TMRstop(TMR_READART);
 		return false;
 	    }
 	    if (sb.st_size == 0) {
 		article->articleOk = false ;
 		syslog (LOG_ERR,EMPTY_ARTICLE,article->fname) ;
+		TMRstop(TMR_READART);
 		return false;
 	    }
 	    articlesize = sb.st_size;
@@ -602,6 +608,7 @@ static bool fillContents (Article article)
 	    syslog (LOG_NOTICE,NO_ARTICLE,article->msgid,article->fname) ;
 	    article->loggedMissing = true ;
 	}
+	TMRstop(TMR_READART);
 	return false;
     }
     amtToRead = (size_t) articlesize ;
@@ -748,7 +755,8 @@ static bool fillContents (Article article)
     /* If we're not useing storage api, we should close a valid file descriptor */
     if (!article->arthandle && (fd >= 0))
 	close (fd) ;
-  
+
+    TMRstop(TMR_READART);
     return (article->contents != NULL ? true : false) ;
 }
 
@@ -783,13 +791,19 @@ static bool prepareArticleForNNTP (Article article)
   int buffLen = 0 ;
   int buffIdx = 0 ;
   char *start, *end ;
-  Buffer contents = artGetContents (article) ; /* returns a reference */
+  Buffer contents ;
 
-  if (contents == NULL)
+  contents = artGetContents (article) ; /* returns a reference */
+
+  TMRstart(TMR_PREPART);
+  if (contents == NULL) {
+    TMRstop(TMR_PREPART);
     return false ;
+  }
   else if (article->nntpBuffers != NULL)
     {
       delBuffer (contents) ;
+      TMRstop(TMR_PREPART);
       return true ;               /* already done */
     }
 
@@ -840,7 +854,7 @@ static bool prepareArticleForNNTP (Article article)
       
   delBuffer (contents) ;    /* the article is still holding a reference */
   article->nntpBuffers = nntpBuffs ;
-
+  TMRstop(TMR_PREPART);
   return true ;
 }
 
