@@ -1,9 +1,5 @@
 =head1 Upgrading from 2.2 to 2.3
 
-This section is still a work in progress.  There may be additional things
-to watch out for not listed here; if you run across any, please let
-inn-bugs@isc.org know about them.
-
 Simply doing a make update is not sufficient to upgrade; the history and
 overview information will also have to be regenerated, since the formats
 of both files have changed between 2.2 and 2.3.  Regardless of whether you
