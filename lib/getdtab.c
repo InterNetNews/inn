@@ -3,7 +3,7 @@
 **  Determine the current limit on open file descriptors.
 **
 **  Portably determine the limit on open file descriptors, preferring
-**  sysconf(), then getrlimit(), then getdtablesize(), then ulimit(),
+**  getrlimit(), then sysconf(), then getdtablesize(), then ulimit(),
 **  then <sys/param.h>, and falling back on the guaranteed minimum of 20.
 */
 
@@ -17,15 +17,17 @@
 # include <limits.h>
 #endif
 
-#ifdef HAVE_SYSCONF
-# define FDCOUNT_SYSCONF
-#else
-# ifdef HAVE_RLIMIT
-#  include <sys/time.h>
-#  include <sys/resource.h>
-#  ifdef RLIMIT_NOFILE
-#   define FDCOUNT_RLIMIT
-#  endif
+#ifdef HAVE_RLIMIT
+# include <sys/time.h>
+# include <sys/resource.h>
+# ifdef RLIMIT_NOFILE
+#  define FDCOUNT_RLIMIT
+# endif
+#endif
+
+#if !defined(FDCOUNT_RLIMIT)
+# ifdef HAVE_SYSCONF
+#  define FDCOUNT_SYSCONF
 # endif
 #endif
 
