@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "TDX-UTIL 8"
-.TH TDX-UTIL 8 "2002-08-30" "INN 2.4.0" "InterNetNews Documentation"
+.TH TDX-UTIL 8 "2003-10-21" "INN 2.5.0" "InterNetNews Documentation"
 .SH "NAME"
 tdx\-util \- Tradindexed overview manipulation utility
 .SH "SYNOPSIS"
@@ -204,18 +204,6 @@ data has been corrupted.
 To see what would be changed by \fB\-F\fR, run \fBtdx-util\fR with \fB\-A\fR first.
 .IP "\fB\-g\fR" 4
 .IX Item "-g"
-Dump the master index of the overview database.  This contains similar
-information to the server active file, such as high and low water marks
-and moderation status, and is the information that nnrpd hands out to
-clients.
-.Sp
-The fields are, in order, the newsgroup name, the high water mark, the low
-water mark, the base article number (the point at which the group index
-begins), the count of articles in the group, the group status flag, the
-time (in seconds since epoch) when that newsgroup was deleted or 0 if it
-hasn't been, and the inode of the index file for that group.
-.IP "\fB\-i\fR" 4
-.IX Item "-i"
 Dump the index of a particular group.  The fields are, in order, the
 article number, the offset of the data for that article in the overview
 data file for that group, the length of the overview data, the time (in
@@ -226,6 +214,21 @@ the article.
 .Sp
 If this option is given, the \fB\-n\fR option must also be given to specify
 the newsgroup on which to act.
+.IP "\fB\-i\fR" 4
+.IX Item "-i"
+Dump the master index of the overview database.  This contains similar
+information to the server active file, such as high and low water marks
+and moderation status, and is the information that nnrpd hands out to
+clients.
+.Sp
+The fields are, in order, the newsgroup name, the high water mark, the low
+water mark, the base article number (the point at which the group index
+begins), the count of articles in the group, the group status flag, the
+time (in seconds since epoch) when that newsgroup was deleted or 0 if it
+hasn't been, and the inode of the index file for that group.
+.Sp
+A particular newsgroup can be specified with the \fB\-n\fR option.  If \fB\-n\fR
+is not given, the entire master index will be dumped.
 .IP "\fB\-n\fR \fInewsgroup\fR" 4
 .IX Item "-n newsgroup"
 Specify the newsgroup on which to act, required for the \fB\-i\fR, \fB\-o\fR, and
