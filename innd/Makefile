@@ -41,11 +41,8 @@ INNDLIBS 	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) \
 		  $(TCLLIB) $(PERLLIB) $(PYTHONLIB) $(LIBS)
 
 art.o:		art.c		; $(CC) $(CFLAGS) $(TCLINC) -c art.c
-cc.o:		cc.c		; $(CC) $(CFLAGS) $(PERLINC) -c cc.c
-innd.o:		innd.c		; $(CC) $(CFLAGS) $(PERLINC) -c innd.c
 perl.o:		perl.c		; $(CC) $(CFLAGS) $(PERLINC) -c perl.c
 python.o:	python.c	; $(CC) $(CFLAGS) $(PYTHONINC) -c python.c
-status.o:	status.c	; $(CC) $(CFLAGS) $(PERLINC) -c status.c
 tcl.o:		tcl.c		; $(CC) $(CFLAGS) $(TCLINC) -c tcl.c
 
 innd: $(OBJECTS) $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
