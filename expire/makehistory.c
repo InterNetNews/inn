@@ -49,6 +49,7 @@ FILE *OverTmpFile;
 char *OverTmpPath = NULL;
 BOOL UpdateMode;
 BOOL NoHistory;
+OVSORTTYPE sorttype;
 
 TIMEINFO Now;
 
@@ -183,6 +184,7 @@ FlushOverTmpFile(void)
     QIOSTATE *qp;
     int count;
     char *line, *p, *q;
+    time_t arrived;
 
     if (fflush(OverTmpFile) == EOF || ferror(OverTmpFile) || fclose(OverTmpFile) == EOF) {
 	(void)fprintf(stderr, "Can't close OverTmp file, %s\n",	strerror(errno));
@@ -223,12 +225,25 @@ FlushOverTmpFile(void)
 	    exit(1);
 	}
 	/* p+1 now points to start of token, q+1 points to start of overline. */
-	p++;
-	*q++ = '\0';
+	if (sorttype == OVNEWSGROUP) {
+	    *p++ = '\0';
+	    *q++ = '\0';
+	    arrived = (time_t)atol(p);
+	    p = q;
+	    if ((q = strchr(p, '\t')) == NULL) {
+	        fprintf(stderr, "makehistory: sorted over %s has bad line %d\n",
+		    SortedTmpPath, count);
+	        exit(1);
+	    }
+	    *q++ = '\0';
+	} else {
+	    *p++ = '\0';
+	    *q++ = '\0';
+	    arrived = (time_t)atol(line);
+	}
 	token = TextToToken(p);
-	if (!OVadd(token, q, strlen(q))) {
-	    fprintf(stderr, "makehistory: Can't write overview data \"%s\", %s\n", q, strerror(errno));
-/*	    exit(1); */
+	if (!OVadd(token, q, strlen(q), arrived)) {
+	    fprintf(stderr, "makehistory: Can't write overview data \"%s\"\n", q);
 	}
     }
     /* Check for errors and close. */
@@ -253,7 +268,7 @@ FlushOverTmpFile(void)
  */
 void
 WriteOverLine(TOKEN *token, char *xrefs, int xrefslen, 
-	      char *overdata, int overlen)
+	      char *overdata, int overlen, time_t arrived)
 {
     char temp[SMBUF];
     char *p, *q, *r;
@@ -270,36 +285,38 @@ WriteOverLine(TOKEN *token, char *xrefs, int xrefslen,
 	}
 	OverTmpSegCount = 0;
     }
-    
-    /* find first ng name in xref. */
-    for (p = xrefs, q=NULL ; p < xrefs+xrefslen ; ++p) {
-	if (*p == ' ') {
-	    q = p+1; /* found space */
-	    break;
+    if (sorttype == OVNEWSGROUP) {
+	/* find first ng name in xref. */
+	for (p = xrefs, q=NULL ; p < xrefs+xrefslen ; ++p) {
+	    if (*p == ' ') {
+		q = p+1; /* found space */
+		break;
+	    }
 	}
-    }
-    if (!q) {
-	fprintf(stderr, "makehistory: bogus xref data for %s\n",TokenToText(*token));
-	/* XXX do nuke here? */
-	return;
-    }
+	if (!q) {
+	    fprintf(stderr, "makehistory: bogus xref data for %s\n",TokenToText(*token));
+	    /* XXX do nuke here? */
+	    return;
+	}
 
-    for (p = q, r=NULL ; p < xrefs+xrefslen ; ++p) {
-	if (*p == ':') {
-	    r=p;
-	    break;
+	for (p = q, r=NULL ; p < xrefs+xrefslen ; ++p) {
+	    if (*p == ':') {
+		r=p;
+		break;
+	    }
 	}
-    }
-    if (!r) {
-	fprintf(stderr, "makehistory: bogus xref data for %s\n",TokenToText(*token));
-	/* XXX do nuke here? */
-	return;
-    }
-    /* q points to start of ng name, r points to its end. */
-    strncpy(temp, q, r-q);
-    temp[r-q] = '\0';
-    
-    fprintf(OverTmpFile, "%s\t%s\t", temp, TokenToText(*token));
+	if (!r) {
+	    fprintf(stderr, "makehistory: bogus xref data for %s\n",TokenToText(*token));
+	    /* XXX do nuke here? */
+	    return;
+	}
+	/* q points to start of ng name, r points to its end. */
+	strncpy(temp, q, r-q);
+	temp[r-q] = '\0';
+	fprintf(OverTmpFile, "%s\t%10d\t%s\t", temp, arrived, TokenToText(*token));
+    } else
+	fprintf(OverTmpFile, "%10d\t%s\t", arrived, TokenToText(*token));
+
     fwrite(overdata, overlen, 1, OverTmpFile);
     fprintf(OverTmpFile, "\n");
     OverTmpSegCount++;
@@ -567,7 +584,7 @@ DoArt(ARTHANDLE *art)
 		    *p = ' ';
 	}
 	WriteOverLine(art->token, Xrefp->Header, Xrefp->HeaderLength,
-		      Buff.Data, Buff.Left);
+		      Buff.Data, Buff.Left, Arrived);
     }
 
     if (!NoHistory) {
@@ -670,6 +687,7 @@ main(int argc, char **argv)
     char *p;
     char *OldHistoryPath;
     dbzoptions opt;
+    BOOL Cutofflow = FALSE;
     
     /* First thing, set up logging and our identity. */
     openlog("makehistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
@@ -690,7 +708,7 @@ main(int argc, char **argv)
     UpdateMode = FALSE;
     NoHistory = FALSE;
 
-    while ((i = getopt(argc, argv, "abf:l:OT:ux")) != EOF) {
+    while ((i = getopt(argc, argv, "abf:Il:OT:ux")) != EOF) {
 	switch(i) {
 	case 'T':
 	    TmpDir = optarg;
@@ -709,6 +727,9 @@ main(int argc, char **argv)
 	    break;
 	case 'f':
 	    HistoryPath = optarg;
+	    break;
+	case 'I':
+	    Cutofflow = TRUE;
 	    break;
 	case 'l':
 	    OverTmpSegSize = atoi(optarg);
@@ -748,6 +769,14 @@ main(int argc, char **argv)
 	/* init the overview setup. */
 	if (!OVopen(OV_WRITE)) {
 	    fprintf(stderr, "makehistory: OVopen failed\n");
+	    exit(1);
+	}
+	if (!OVctl(OVSORT, (void *)&sorttype)) {
+	    fprintf(stderr, "makehistory: OVctl(OVSORT) failed\n");
+	    exit(1);
+	}
+	if (!OVctl(OVCUTOFFLOW, (void *)&Cutofflow)) {
+	    fprintf(stderr, "makehistory: OVctl(OVCUTOFFLOW) failed\n");
 	    exit(1);
 	}
 	OverAddAllNewsgroups();
