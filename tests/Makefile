@@ -12,9 +12,9 @@ CFLAGS	= $(GCFLAGS) -I.
 
 TESTS	= lib/concat.t lib/confparse.t lib/date.t lib/error.t lib/hashtab.t \
 	lib/hstrerror.t lib/inet_aton.t lib/inet_ntoa.t lib/md5.t \
-	lib/memcmp.t lib/pread.t lib/pwrite.t lib/qio.t lib/snprintf.t \
-	lib/strerror.t lib/vector.t lib/wildmat.t lib/xwrite.t \
-	overview/tradindexed.t
+	lib/memcmp.t lib/mkstemp.t lib/pread.t lib/pwrite.t lib/qio.t \
+	lib/snprintf.t lib/strerror.t lib/vector.t lib/wildmat.t \
+	lib/xwrite.t overview/tradindexed.t
 
 ##  Extra stuff that needs to be built before tests can be run.
 
@@ -81,6 +81,12 @@ lib/memcmp.o: ../lib/memcmp.c
 
 lib/memcmp.t: lib/memcmp.o lib/memcmp-t.o libtest.o
 	$(LINK) lib/memcmp.o lib/memcmp-t.o libtest.o
+
+lib/mkstemp.o: ../lib/mkstemp.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/mkstemp.c
+
+lib/mkstemp.t: lib/mkstemp.o lib/mkstemp-t.o libtest.o
+	$(LINK) lib/mkstemp.o lib/mkstemp-t.o libtest.o
 
 lib/pread.o: ../lib/pread.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/pread.c

@@ -90,6 +90,9 @@ extern off_t            ftello(FILE *);
 #if !HAVE_HSTRERROR
 extern const char *     hstrerror(int);
 #endif
+#if !HAVE_MKSTEMP
+extern int              mkstemp(char *);
+#endif
 #if !HAVE_PREAD
 extern ssize_t          pread(int, void *, size_t, off_t);
 #endif

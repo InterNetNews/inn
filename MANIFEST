@@ -434,6 +434,7 @@ lib/lockfile.c                        Try to lock a file descriptor
 lib/makedir.c                         Make directory recursively
 lib/md5.c                             MD5 checksum calculation
 lib/memcmp.c                          memcmp replacement
+lib/mkstemp.c                         mkstemp replacement
 lib/parsedate.y                       Date parsing
 lib/perl.c                            Perl hook support for nnrpd and innd
 lib/pread.c                           pread replacement
@@ -644,6 +645,7 @@ tests/lib/inet_aton-t.c               Tests for lib/inet_aton.c
 tests/lib/inet_ntoa-t.c               Tests for lib/inet_ntoa.c
 tests/lib/md5-t.c                     Tests for lib/md5.c
 tests/lib/memcmp-t.c                  Tests for lib/memcmp.c
+tests/lib/mkstemp-t.c                 Tests for lib/mkstemp.c
 tests/lib/pread-t.c                   Tests for lib/pread.c
 tests/lib/pwrite-t.c                  Tests for lib/pwrite.c
 tests/lib/qio-t.c                     Tests for lib/qio.c

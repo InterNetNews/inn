@@ -9,6 +9,7 @@ inet_aton.t
 inet_ntoa.t
 md5.t
 memcmp.t
+mkstemp.t
 pread.t
 pwrite.t
 qio.t
