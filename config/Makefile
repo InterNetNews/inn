@@ -79,18 +79,6 @@ config.dist: config.data.in subst config.dist.subst
 	cp config.data.in config.dist
 	./subst -f config.dist.subst config.dist
 
-config.data:		config.dist
-	$(IFTRUE) '-f config.new' 'echo config.new exists! ; exit 1'
-	$(IFTRUE) '-f config.old' 'echo config.old exists! ; exit 1'
-	$(IFTRUE) '! -f config.data' '$(MAKE) CLOBBER=YES SCRATCH'
-	cat config.data config.dist >subst.tmp
-	cp config.dist config.new
-	./subst $(SED) -f subst.tmp config.new
-	-@rm -f subst.tmp
-	@echo "Update config.old from config.new!"
-	$(IFTRUE) '-f config.data' \
-	 'echo "Renaming config file to config.old"; mv config.data config.old'
-	exit 1 ;
 SCRATCH:
 	$(IFTRUE) '-z $(CLOBBER)' 'echo No way! ; exit 1'
 	@echo 'You do not have a config.data file.'
