@@ -374,6 +374,10 @@ close LOCKFILE ;
 ## for crosspost
 
 if ($opt_c) {
+  if (fork() != 0) {
+    undef $tmpfile;  # dont unlink $tmpfile
+    exit 0;
+  }
   sleep $opt_c ;
 
   open LOCKFILE, "<$lockfile" || 
