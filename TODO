@@ -136,7 +136,7 @@ High Priority Projects
 
 * Add man pages for the default authenticators, as well as documentation
   on the readers.conf external program interface.  A good place to start
-  is authprogs/README.readers.conf.
+  is authprogs/README.readers.conf.  [Jeff is working on this.]
 
 * Add documentation of adding and removing CNFS cycbuffs.
 
@@ -203,8 +203,8 @@ Documentation Projects
   1036, preferrably in a format that could be suitable for future
   inclusion into new revisions of the RFCs.
 
-* Audit readers.conf.5 against perm.c for missing options (include at
-  least is missing from the documentation)
+* Audit readers.conf.5 against perm.c for missing options ("include" at
+  least is missing from the documentation).
 
 
 Code Cleanup Projects
@@ -698,6 +698,17 @@ Long-Term Projects
 * Figure out some Samba library that we can link against for the Samba
   authenticator so that we can get all the Samba code back out of INN's
   source tree; we don't want to maintain it.
+
+* Consider replacing the awkward access: parameter in readers.conf with
+  separate commands (e.g. "allow_newnews: true") or otherwise cleaning up
+  the interaction between access: and read:/post:.  Note that at least
+  allownewnews: can be treated as a setting for overriding inn.conf and
+  should be very easy to add.
+
+* Add a localport: parameter (similar to localaddress:) to readers.conf
+  auth groups.  With those two parameters (and ssl_required:) we
+  essentially eliminate the need to run multiple instances of nnrpd just to
+  use different configurations.
 
 
 Complete Code Reorganization
