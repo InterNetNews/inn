@@ -31,6 +31,7 @@ extern const char       inn_version_string[];
    eventually go away entirely. */
 extern const char *     INNVersion(void);
 
+#define HAVE_INN_VERSION_H
 
 /*
 **  MEMORY MANAGEMENT

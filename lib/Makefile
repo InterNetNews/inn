@@ -30,13 +30,13 @@ OBJECTS = $(MISSING_OBJ) \
 
 LOBJECTS= $(OBJECTS:.o=.lo)
 
-all:		libinn.$(EXTLIB) perl.o ../include/autoconfig.h
+all:		../include/inn/version.h libinn.$(EXTLIB) perl.o ../include/autoconfig.h
 
 install:	all $(D)$(PATHLIB)/libinn.$(EXTLIB)
 
 clobber clean:
 	rm -f *.o *.lo libinn.la libinn.a parsedate.c parsedate qiotest
-	rm -f profiled libinn_p.a endian version.c
+	rm -f profiled libinn_p.a endian ../include/inn/version.h
 	rm -rf .libs
 
 tags ctags:	$(SOURCES)
@@ -62,8 +62,8 @@ perl.o: perl.c
 ../include/autoconfig.h: endian
 	./endian >../include/autoconfig.h
 
-version.c:	mkversion ../Makefile.global
-	./mkversion '$(VERSION)' '$(VERSION_EXTRA)'
+../include/inn/version.h:	mkversion ../Makefile.global
+	./mkversion '$(VERSION)' '$(VERSION_EXTRA)' $@
 
 parsedate.c:	parsedate.y
 	@echo Expect 6 shift/reduce conflicts
@@ -184,7 +184,7 @@ tempname.o: tempname.c ../include/config.h ../include/clibrary.h
 waitnb.o: waitnb.c ../include/config.h
 wildmat.o: wildmat.c ../include/configdata.h ../include/config.h \
  ../include/clibrary.h
-version.o: version.c
+version.o: version.c ../include/inn/version.h
 xfopena.o: xfopena.c ../include/configdata.h ../include/config.h \
  ../include/clibrary.h
 xmalloc.o: xmalloc.c ../include/config.h ../include/libinn.h
