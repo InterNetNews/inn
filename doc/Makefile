@@ -1,4 +1,6 @@
 ##  $Revision$
+include ../Makefile.global
+
 SHELL	= /bin/sh
 MAKE	= make
 DESTDIR	=
@@ -11,14 +13,6 @@ LINTFILTER	= | sed -n -f ../sedf.sun
 ##  =()<MANPAGESTYLE	= @<MANPAGESTYLE>@>()=
 MANPAGESTYLE	= SOURCE
 
-##  =()<MAN1	= @<MAN1>@>()=
-MAN1	= @ac_cv_subst_manpath@/man1
-##  =()<MAN3	= @<MAN3>@>()=
-MAN3	= @ac_cv_subst_manpath@/man3
-##  =()<MAN5	= @<MAN5>@>()=
-MAN5	= @ac_cv_subst_manpath@/man5
-##  =()<MAN8	= @<MAN8>@>()=
-MAN8	= @ac_cv_subst_manpath@/man8
 ##  =()<MISSING_MAN = @<MISSING_MAN>@>()=
 MISSING_MAN = 
 
