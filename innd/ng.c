@@ -39,10 +39,10 @@ typedef struct _NGHASH {
 } NGHASH;
 
 
-static BUFFER	NGnames;
-static NGHASH	NGHtable[NGH_SIZE];
-static int	NGHbuckets;
-static int	NGHcount;
+static struct buffer	NGnames;
+static NGHASH		NGHtable[NGH_SIZE];
+static int		NGHbuckets;
+static int		NGHcount;
 
 
 
@@ -79,10 +79,10 @@ NGparseentry(NEWSGROUP *ngp, const char *p, char *end)
     i = q - p;
 
     ngp->NameLength = i;
-    ngp->Name = &NGnames.Data[NGnames.Used];
+    ngp->Name = &NGnames.data[NGnames.used];
     strncpy(ngp->Name, p, i);
     ngp->Name[i] = '\0';
-    NGnames.Used += i + 1;
+    NGnames.used += i + 1;
 
     ngp->LastString = ++q;
     if ((q = strchr(q, ' ')) == NULL || q > end)
@@ -158,9 +158,9 @@ NGparsefile(void)
      * than individually allocating each element, but it is definitely easier
      * on the system. */
     i = end - active;
-    NGnames.Size = i;
-    NGnames.Data = NEW(char, NGnames.Size + 1);
-    NGnames.Used = 0;
+    NGnames.size = i;
+    NGnames.data = NEW(char, NGnames.size + 1);
+    NGnames.used = 0;
 
     /* Set up the default hash buckets. */
     NGHbuckets = nGroups / NGH_SIZE;
@@ -236,7 +236,7 @@ NGclose(void)
 	DISPOSE(Groups);
 	Groups = NULL;
 	DISPOSE(GroupPointers);
-	DISPOSE(NGnames.Data);
+	DISPOSE(NGnames.data);
     }
 
     for (i = NGH_SIZE, htp = NGHtable; --i >= 0; htp++) {

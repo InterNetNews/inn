@@ -82,7 +82,7 @@ static char		CCnochannel[] = "1 No such channel";
 static char		CCnoreason[] = "1 Empty reason";
 static char		CCbigreason[] = "1 Reason too long";
 static char		CCnotrunning[] = "1 Must be running";
-static BUFFER		CCreply;
+static struct buffer	CCreply;
 static CHANNEL		*CCchan;
 static int		CCwriter;
 static CCDISPATCH	CCcommands[] = {
@@ -179,9 +179,9 @@ CCcurrmode(void)
 static const char *
 CCgetid(char *p, const char **store)
 {
-    static char		NULLMESGID[] = "1 Empty Message-ID";
-    static BUFFER	Save;
-    int			i;
+    static char	NULLMESGID[] = "1 Empty Message-ID";
+    static struct buffer Save = { 0, 0, 0, NULL };
+    int i;
 
     if (*p == '\0')
 	return NULLMESGID;
@@ -194,16 +194,9 @@ CCgetid(char *p, const char **store)
 
     /* Make sure the Message-ID buffer has room. */
     i = 1 + strlen(p) + 1 + 1;
-    if (Save.Data == NULL) {
-	Save.Size = i;
-	Save.Data = NEW(char, Save.Size);
-    }
-    else if (Save.Size < i) {
-	Save.Size = i;
-	RENEW(Save.Data, char, Save.Size);
-    }
-    *store = Save.Data;
-    snprintf(Save.Data, Save.Size, "<%s>", p);
+    buffer_resize(&Save, i);
+    *store = Save.data;
+    snprintf(Save.data, Save.size, "<%s>", p);
     return NULL;
 }
 
@@ -476,8 +469,8 @@ CCcheckfile(char *unused[])
   unused = unused;		/* ARGSUSED */
   /* Parse all site entries. */
   strings = SITEreadfile(FALSE);
-  fake.Buffer.Size = 0;
-  fake.Buffer.Data = NULL;
+  fake.Buffer.size = 0;
+  fake.Buffer.data = NULL;
   /* save global variables not to be changed */
   needheaders = NeedHeaders;
   needoverview = NeedOverview;
@@ -502,17 +495,10 @@ CCcheckfile(char *unused[])
   if (errors == 0)
     return NULL;
 
-  if (CCreply.Data == NULL) {
-    /* If we got the "-s" flag, then CCsetup hasn't been called yet. */
-    CCreply.Size = SMBUF;
-    CCreply.Data = NEW(char, CCreply.Size);
-  } else if (CCreply.Size < SMBUF) {
-    CCreply.Size = SMBUF;
-    RENEW(CCreply.Data, char, CCreply.Size);
-  }
-
-  (void)sprintf(CCreply.Data, "1 Found %d errors -- see syslog", errors);
-  return CCreply.Data;
+  buffer_resize(&CCreply, SMBUF);
+  snprintf(CCreply.data, CCreply.size, "1 Found %d errors -- see syslog",
+           errors);
+  return CCreply.data;
 }
 
 
@@ -557,7 +543,7 @@ CCfeedinfo(char *av[])
     char	*p;
     int		i;
 
-    BUFFset(&CCreply, "0 ", 2);
+    buffer_set(&CCreply, "0 ", 2);
     p = av[0];
     if (*p != '\0') {
 	if ((sp = SITEfind(p)) == NULL)
@@ -572,8 +558,8 @@ CCfeedinfo(char *av[])
 	    if (sp->Name)
 		SITEinfo(&CCreply, sp, FALSE);
 
-    BUFFappend(&CCreply, "", 1);
-    return CCreply.Data;
+    buffer_append(&CCreply, "", 1);
+    return CCreply.data;
 }
 
 
@@ -763,8 +749,8 @@ CChangup(char *av[])
 	    p = CHANname(cp);
 	    switch (cp->Type) {
 	    default:
-		(void)sprintf(CCreply.Data, "1 Can't close %s", p);
-		return CCreply.Data;
+		snprintf(CCreply.data, CCreply.size, "1 Can't close %s", p);
+		return CCreply.data;
 	    case CTexploder:
 	    case CTprocess:
 	    case CTfile:
@@ -901,13 +887,8 @@ CCmode(char *unused[] UNUSED)
         p += strlen(strcpy(p, "disabled"));
 #endif /* defined(DO_PYTHON) */
 
-    i = strlen(buff);
-    if (CCreply.Size <= i) {
-	CCreply.Size = i;
-	RENEW(CCreply.Data, char, CCreply.Size + 1);
-    }
-    (void)strcpy(CCreply.Data, buff);
-    return CCreply.Data;
+    buffer_set(&CCreply, buff, strlen(buff) + 1);
+    return CCreply.data;
 }
 
 
@@ -941,17 +922,17 @@ CCname(char *av[])
     if (*p != '\0') {
 	if ((cp = CHANfromdescriptor(atoi(p))) == NULL)
 	    return COPY(CCnochannel);
-	(void)sprintf(CCreply.Data, "0 %s", CHANname(cp));
-	return CCreply.Data;
+	snprintf(CCreply.data, CCreply.size, "0 %s", CHANname(cp));
+	return CCreply.data;
     }
-    BUFFset(&CCreply, "0 ", 2);
+    buffer_set(&CCreply, "0 ", 2);
     for (count = 0, i = 0; (cp = CHANiter(&i, CTany)) != NULL; ) {
 	if (cp->Type == CTfree)
 	    continue;
 	if (++count > 1)
-	    BUFFappend(&CCreply, NL, 1);
+	    buffer_append(&CCreply, NL, 1);
 	p = CHANname(cp);
-	BUFFappend(&CCreply, p, strlen(p));
+	buffer_append(&CCreply, p, strlen(p));
 	switch (cp->Type) {
 	case CTremconn:
 	    sprintf(buff, ":remconn::");
@@ -985,10 +966,10 @@ CCname(char *av[])
 	    break;
 	}
 	p = buff;
-	BUFFappend(&CCreply, p, strlen(p));
+	buffer_append(&CCreply, p, strlen(p));
     }
-    BUFFappend(&CCreply, NIL, 1);
-    return CCreply.Data;
+    buffer_append(&CCreply, NIL, 1);
+    return CCreply.data;
 }
 
 
@@ -1182,8 +1163,9 @@ CCblock(OPERATINGMODE NewMode, char *reason)
 
     if (Reservation) {
 	if (!EQ(reason, Reservation)) {
-	    (void)sprintf(CCreply.Data, "1 Reserved \"%s\"", Reservation);
-	    return CCreply.Data;
+	    snprintf(CCreply.data, CCreply.size, "1 Reserved \"%s\"",
+                     Reservation);
+	    return CCreply.data;
 	}
 	DISPOSE(Reservation);
 	Reservation = NULL;
@@ -1578,9 +1560,9 @@ CCsignal(char *av[])
 	oerrno = errno;
 	syslog(L_ERROR, "%s cant kill %ld %d site %s, %m", LogName, 
 		(long) sp->pid, s, p);
-	(void)sprintf(CCreply.Data, "1 Can't signal process %ld, %s",
+	snprintf(CCreply.data, CCreply.size, "1 Can't signal process %ld, %s",
 		(long) sp->pid, strerror(oerrno));
-	return CCreply.Data;
+	return CCreply.data;
     }
 
     return NULL;
@@ -1983,10 +1965,7 @@ CCsetup(void)
     syslog(L_NOTICE, "%s ccsetup %s", LogName, CHANname(CCchan));
     RCHANadd(CCchan);
 
-    if (CCreply.Size == 0) {
-	CCreply.Size = SMBUF;
-	CCreply.Data = NEW(char, CCreply.Size);
-    }
+    buffer_resize(&CCreply, SMBUF);
 
     /*
      *  Catch SIGUSR1 so that we can recreate the control channel when
@@ -2010,8 +1989,11 @@ CCclose(void)
 	syslog(L_ERROR, "%s cant unlink %s %m", LogName, CCpath);
     DISPOSE(CCpath);
     CCpath = NULL;
-    DISPOSE(CCreply.Data);
-    CCreply.Data = NULL;
+    DISPOSE(CCreply.data);
+    CCreply.data = NULL;
+    CCreply.size = 0;
+    CCreply.used = 0;
+    CCreply.left = 0;
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     if (close(CCwriter) < 0)
 	syslog(L_ERROR, "%s cant close unbound %m", LogName);

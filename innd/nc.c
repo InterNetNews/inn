@@ -101,21 +101,21 @@ NCclearwip(CHANNEL *cp)
 /*
 **  Write an NNTP reply message.
 **
-**  Tries to do the actual write immediately if it will not block
-**  and if there is not already other buffered output.  Then, if the
-**  write is successful, calls NCwritedone (which does whatever is
-**  necessary to accommodate state changes).  Else, NCwritedone will
-**  be called from the main select loop later.
+**  Tries to do the actual write immediately if it will not block and if there
+**  is not already other buffered output.  Then, if the write is successful,
+**  calls NCwritedone (which does whatever is necessary to accommodate state
+**  changes).  Else, NCwritedone will be called from the main select loop
+**  later.
 **
-**  If the reply that we are writing now is associated with a
-**  state change, then cp->State must be set to its new value
-**  *before* NCwritereply is called.
+**  If the reply that we are writing now is associated with a state change,
+**  then cp->State must be set to its new value *before* NCwritereply is
+**  called.
 */
 void
 NCwritereply(CHANNEL *cp, const char *text)
 {
-    BUFFER	*bp;
-    int		i;
+    struct buffer *bp;
+    int i;
 
     /* XXX could do RCHANremove(cp) here, as the old NCwritetext() used to
      * do, but that would be wrong if the channel is sreaming (because it
@@ -123,18 +123,22 @@ NCwritereply(CHANNEL *cp, const char *text)
      * never calling RCHANremove here.  */
 
     bp = &cp->Out;
-    i = bp->Left;
-    WCHANappend(cp, text, (int)strlen(text));	/* text in buffer */
+    i = bp->left;
+    WCHANappend(cp, text, strlen(text));	/* text in buffer */
     WCHANappend(cp, NCterm, STRLEN(NCterm));	/* add CR NL to text */
+
+    /* FIXME: Something is wrong with this code.  At the least, it's
+       confusing.  bp->used can be incremented without decrementing bp->left,
+       which shouldn't be allowed. */
     if (i == 0) {	/* if only data then try to write directly */
-	i = write(cp->fd, &bp->Data[bp->Used], bp->Left);
+	i = write(cp->fd, &bp->data[bp->used], bp->left);
 	if (Tracing || cp->Tracing)
 	    syslog(L_TRACE, "%s NCwritereply %d=write(%d, \"%.15s\", %d)",
-		CHANname(cp), i, cp->fd,  &bp->Data[bp->Used], bp->Left);
-	if (i > 0) bp->Used += i;
-	if (bp->Used == bp->Left) {
+		CHANname(cp), i, cp->fd, &bp->data[bp->used], bp->left);
+	if (i > 0) bp->used += i;
+	if (bp->used == bp->left) {
 	    /* all the data was written */
-	    bp->Used = bp->Left = 0;
+	    bp->used = bp->left = 0;
 	    NCwritedone(cp);
 	}
 	else i = 0;
@@ -191,19 +195,19 @@ NCpostit(CHANNEL *cp)
   /* Note that some use break, some use return here. */
   if ((postok = ARTpost(cp)) != 0) {
     cp->Received++;
-    if (cp->Sendid.Size > 3) { /* We be streaming */
+    if (cp->Sendid.size > 3) { /* We be streaming */
       cp->Takethis_Ok++;
       snprintf(buff, sizeof(buff), "%d", NNTP_OK_RECID_VAL);
-      cp->Sendid.Data[0] = buff[0];
-      cp->Sendid.Data[1] = buff[1];
-      cp->Sendid.Data[2] = buff[2];
-      response = cp->Sendid.Data;
+      cp->Sendid.data[0] = buff[0];
+      cp->Sendid.data[1] = buff[1];
+      cp->Sendid.data[2] = buff[2];
+      response = cp->Sendid.data;
     } else
       response = NNTP_TOOKIT;
   } else {
     cp->Rejected++;
-    if (cp->Sendid.Size)
-      response = cp->Sendid.Data;
+    if (cp->Sendid.size)
+      response = cp->Sendid.data;
     else
       response = cp->Error;
   }
@@ -270,7 +274,7 @@ NChead(CHANNEL *cp)
     ARTHANDLE		*art;
 
     /* Snip off the Message-ID. */
-    for (p = cp->In.Data + cp->Start + STRLEN("head"); ISWHITE(*p); p++)
+    for (p = cp->In.data + cp->Start + STRLEN("head"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
     if (NCbadid(cp, p))
@@ -310,7 +314,7 @@ NCstat(CHANNEL *cp)
     size_t              length;
 
     /* Snip off the Message-ID. */
-    for (p = cp->In.Data + cp->Start + STRLEN("stat"); ISWHITE(*p); p++)
+    for (p = cp->In.data + cp->Start + STRLEN("stat"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
     if (NCbadid(cp, p))
@@ -349,7 +353,7 @@ NCauthinfo(CHANNEL *cp)
     static char		USER[] = "user ";
     char		*p;
 
-    p = cp->In.Data + cp->Start;
+    p = cp->In.data + cp->Start;
     cp->Start = cp->Next;
 
     /* Allow the poor sucker to quit. */
@@ -435,7 +439,7 @@ NCihave(CHANNEL *cp)
 
     cp->Ihave++;
     /* Snip off the Message-ID. */
-    for (p = cp->In.Data + cp->Start + STRLEN("ihave"); ISWHITE(*p); p++)
+    for (p = cp->In.data + cp->Start + STRLEN("ihave"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
     if (NCbadid(cp, p))
@@ -454,18 +458,19 @@ NCihave(CHANNEL *cp)
     if (filterrc) {
         cp->Refused++;
         msglen = strlen(p) + 5; /* 3 digits + space + id + null */
-        if (cp->Sendid.Size < msglen) {
-            if (cp->Sendid.Size > 0) DISPOSE(cp->Sendid.Data);
+        if (cp->Sendid.size < msglen) {
+            if (cp->Sendid.size > 0) DISPOSE(cp->Sendid.data);
             if (msglen > MAXHEADERSIZE)
-                cp->Sendid.Size = msglen;
+                cp->Sendid.size = msglen;
             else
-                cp->Sendid.Size = MAXHEADERSIZE;
-            cp->Sendid.Data = NEW(char, cp->Sendid.Size);
+                cp->Sendid.size = MAXHEADERSIZE;
+            cp->Sendid.data = NEW(char, cp->Sendid.size);
         }
-        sprintf(cp->Sendid.Data, "%d %.200s", NNTP_HAVEIT_VAL, filterrc);
-        NCwritereply(cp, cp->Sendid.Data);
-        DISPOSE(cp->Sendid.Data);
-        cp->Sendid.Size = 0;
+        snprintf(cp->Sendid.data, cp->Sendid.size, "%d %.200s",
+                 NNTP_HAVEIT_VAL, filterrc);
+        NCwritereply(cp, cp->Sendid.data);
+        DISPOSE(cp->Sendid.data);
+        cp->Sendid.size = 0;
         return;
     }
 #endif
@@ -479,19 +484,20 @@ NCihave(CHANNEL *cp)
     if (filterrc) {
 	cp->Refused++;
 	msglen += 5; /* 3 digits + space + id + null */
-	if (cp->Sendid.Size < msglen) {
-	    if (cp->Sendid.Size > 0)
-		DISPOSE(cp->Sendid.Data);
+	if (cp->Sendid.size < msglen) {
+	    if (cp->Sendid.size > 0)
+		DISPOSE(cp->Sendid.data);
 	    if (msglen > MAXHEADERSIZE)
-		cp->Sendid.Size = msglen;
+		cp->Sendid.size = msglen;
 	    else
-		cp->Sendid.Size = MAXHEADERSIZE;
-	    cp->Sendid.Data = NEW(char, cp->Sendid.Size);
+		cp->Sendid.size = MAXHEADERSIZE;
+	    cp->Sendid.data = NEW(char, cp->Sendid.size);
 	}
-	sprintf(cp->Sendid.Data, "%d %.200s", NNTP_HAVEIT_VAL, filterrc);
-	NCwritereply(cp, cp->Sendid.Data);
-	DISPOSE(cp->Sendid.Data);
-	cp->Sendid.Size = 0;
+	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %.200s",
+                 NNTP_HAVEIT_VAL, filterrc);
+	NCwritereply(cp, cp->Sendid.data);
+	DISPOSE(cp->Sendid.data);
+	cp->Sendid.size = 0;
 	return;
     }
 #endif
@@ -511,9 +517,9 @@ NCihave(CHANNEL *cp)
 	}
     }
     else {
-	if (cp->Sendid.Size > 0) {
-            DISPOSE(cp->Sendid.Data);
-	    cp->Sendid.Size = 0;
+	if (cp->Sendid.size > 0) {
+            DISPOSE(cp->Sendid.data);
+	    cp->Sendid.size = 0;
 	}
 	cp->Ihave_SendIt++;
 	NCwritereply(cp, NNTP_SENDIT);
@@ -533,7 +539,7 @@ NCxbatch(CHANNEL *cp)
     char	*p;
 
     /* Snip off the batch size */
-    for (p = cp->In.Data + cp->Start + STRLEN("xbatch"); ISWHITE(*p); p++)
+    for (p = cp->In.data + cp->Start + STRLEN("xbatch"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
 
@@ -569,7 +575,7 @@ NClist(CHANNEL *cp)
 {
     char *p, *q, *trash, *end, *path;
 
-    for (p = cp->In.Data + cp->Start + STRLEN("list"); ISWHITE(*p); p++)
+    for (p = cp->In.data + cp->Start + STRLEN("list"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
     if (cp->Nolist) {
@@ -628,7 +634,7 @@ NCmode(CHANNEL *cp)
     HANDOFF		h;
 
     /* Skip the first word, get the argument. */
-    for (p = cp->In.Data + cp->Start + STRLEN("mode"); ISWHITE(*p); p++)
+    for (p = cp->In.data + cp->Start + STRLEN("mode"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
 
@@ -697,7 +703,7 @@ NC_unimp(CHANNEL *cp)
     char		buff[SMBUF];
 
     /* Nip off the first word. */
-    for (p = q = cp->In.Data + cp->Start; *p && !ISWHITE(*p); p++)
+    for (p = q = cp->In.data + cp->Start; *p && !ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
     *p = '\0';
@@ -717,7 +723,7 @@ NCproc(CHANNEL *cp)
 {
   char	        *p, *q;
   NCDISPATCH   	*dp;
-  BUFFER	*bp;
+  struct buffer	*bp;
   char		buff[SMBUF];
   int		i, j;
   bool		readmore, movedata;
@@ -726,19 +732,19 @@ NCproc(CHANNEL *cp)
 
   readmore = movedata = FALSE;
   if (Tracing || cp->Tracing)
-    syslog(L_TRACE, "%s NCproc Used=%d", CHANname(cp), cp->In.Used);
+    syslog(L_TRACE, "%s NCproc Used=%d", CHANname(cp), cp->In.used);
 
   bp = &cp->In;
-  if (bp->Used == 0)
+  if (bp->used == 0)
     return;
 
   for ( ; ; ) {
     if (Tracing || cp->Tracing) {
       syslog(L_TRACE, "%s cp->Start=%d cp->Next=%d bp->Used=%d", CHANname(cp),
-	cp->Start, cp->Next, bp->Used);
-      if (bp->Used > 15)
+	cp->Start, cp->Next, bp->used);
+      if (bp->used > 15)
 	syslog(L_TRACE, "%s NCproc state=%d next \"%.15s\"", CHANname(cp),
-	  cp->State, &bp->Data[cp->Next]);
+	  cp->State, &bp->data[cp->Next]);
     }
     switch (cp->State) {
     default:
@@ -756,22 +762,22 @@ NCproc(CHANNEL *cp)
     case CSgetauth:
     case CScancel:
       /* Did we get the whole command, terminated with "\r\n"? */
-      for (i = cp->Next; (i < bp->Used) && (bp->Data[i] != '\n'); i++) ;
-      if (i == bp->Used) {
+      for (i = cp->Next; (i < bp->used) && (bp->data[i] != '\n'); i++) ;
+      if (i == bp->used) {
 	/* Check for too long command. */
-	if ((j = bp->Used - cp->Start) > NNTP_STRLEN) {
+	if ((j = bp->used - cp->Start) > NNTP_STRLEN) {
 	  /* Make some room, saving only the last few bytes. */
-	  for (p = bp->Data, i = 0; i < SAVE_AMT; i++)
-	    p[i] = p[bp->Used - SAVE_AMT + i];
+	  for (p = bp->data, i = 0; i < SAVE_AMT; i++)
+	    p[i] = p[bp->used - SAVE_AMT + i];
 	  cp->LargeCmdSize += j - SAVE_AMT;
-	  bp->Used = cp->Next = SAVE_AMT;
-	  bp->Left = bp->Size - SAVE_AMT;
+	  bp->used = cp->Next = SAVE_AMT;
+	  bp->left = bp->size - SAVE_AMT;
 	  cp->Start = 0;
 	  cp->State = CSeatcommand;
 	  /* above means moving data already */
 	  movedata = FALSE;
 	} else {
-	  cp->Next = bp->Used;
+	  cp->Next = bp->used;
 	  /* move data to the begining anyway */
 	  movedata = TRUE;
 	}
@@ -787,12 +793,12 @@ NCproc(CHANNEL *cp)
       if (i - cp->Start < 3) {
 	break;
       }
-      p = &bp->Data[i];
+      p = &bp->data[i];
       if (p[-2] != '\r') { /* probably in an article */
 	char *tmpstr;
 
 	tmpstr = NEW(char, i - cp->Start + 1);
-	memcpy(tmpstr, bp->Data + cp->Start, i - cp->Start);
+	memcpy(tmpstr, bp->data + cp->Start, i - cp->Start);
 	tmpstr[i - cp->Start] = '\0';
 	
 	syslog(L_NOTICE, "%s bad_command %s", CHANname(cp),
@@ -810,7 +816,7 @@ NCproc(CHANNEL *cp)
 	break;
       }
 
-      q = &bp->Data[cp->Start];
+      q = &bp->data[cp->Start];
       /* Ignore blank lines. */
       if (*q == '\0' || i - cp->Start == 2) {
 	cp->Start = cp->Next;
@@ -893,8 +899,8 @@ NCproc(CHANNEL *cp)
 	cp->State = CSgetcmd;
 	cp->Start = cp->Next;
 	NCclearwip(cp);
-	if (cp->Sendid.Size > 3)
-	  NCwritereply(cp, cp->Sendid.Data);
+	if (cp->Sendid.size > 3)
+	  NCwritereply(cp, cp->Sendid.data);
 	else
 	  NCwritereply(cp, cp->Error);
 	readmore = FALSE;
@@ -905,8 +911,8 @@ NCproc(CHANNEL *cp)
       if (cp->State == CSgotlargearticle) {
 	syslog(L_NOTICE, "%s internal rejecting huge article (%d > %ld)",
 	  CHANname(cp), cp->LargeArtSize, innconf->maxartsize);
-	if (cp->Sendid.Size)
-	  NCwritereply(cp, cp->Sendid.Data);
+	if (cp->Sendid.size)
+	  NCwritereply(cp, cp->Sendid.data);
 	else {
 	  snprintf(buff, sizeof(buff),
                    "%d Article exceeds local limit of %ld bytes",
@@ -939,13 +945,13 @@ NCproc(CHANNEL *cp)
 	cp->Start = cp->Next;
 	/* Clear the work-in-progress entry. */
 	NCclearwip(cp);
-	if (cp->Sendid.Size > 3) { /* We be streaming */
+	if (cp->Sendid.size > 3) { /* We be streaming */
 	  cp->Takethis_Err++;
 	  snprintf(buff, sizeof(buff), "%d", NNTP_ERR_FAILID_VAL);
-	  cp->Sendid.Data[0] = buff[0];
-	  cp->Sendid.Data[1] = buff[1];
-	  cp->Sendid.Data[2] = buff[2];
-	  NCwritereply(cp, cp->Sendid.Data);
+	  cp->Sendid.data[0] = buff[0];
+	  cp->Sendid.data[1] = buff[1];
+	  cp->Sendid.data[2] = buff[2];
+	  NCwritereply(cp, cp->Sendid.data);
 	} else
 	  NCwritereply(cp, NNTP_REJECTIT_EMPTY);
 	readmore = FALSE;
@@ -987,13 +993,13 @@ NCproc(CHANNEL *cp)
       /* Eat the command line and then complain that it was too large */
       /* Reading a line; look for "\r\n" terminator. */
       /* cp->Next should be SAVE_AMT(10) */
-      for (i = cp->Next ; i < bp->Used; i++) {
-	if ((bp->Data[i - 1] == '\r') && (bp->Data[i] == '\n')) {
+      for (i = cp->Next ; i < bp->used; i++) {
+	if ((bp->data[i - 1] == '\r') && (bp->data[i] == '\n')) {
 	  cp->Next = i + 1;
 	  break;
 	}
       }
-      if (i < bp->Used) {	/* did find terminator */
+      if (i < bp->used) {	/* did find terminator */
 	/* Reached the end of the command line. */
 	SCHANremove(cp);
 	if (cp->Argument != NULL) {
@@ -1012,9 +1018,9 @@ NCproc(CHANNEL *cp)
         readmore = FALSE;
         movedata = FALSE;
       } else {
-	cp->LargeCmdSize += bp->Used - cp->Next;
-	bp->Used = cp->Next = SAVE_AMT;
-	bp->Left = bp->Size - SAVE_AMT;
+	cp->LargeCmdSize += bp->used - cp->Next;
+	bp->used = cp->Next = SAVE_AMT;
+	bp->left = bp->size - SAVE_AMT;
 	cp->Start = 0;
         readmore = TRUE;
         movedata = FALSE;
@@ -1027,7 +1033,7 @@ NCproc(CHANNEL *cp)
        */
       if (Tracing || cp->Tracing)
 	syslog(L_TRACE, "%s CSgetxbatch: now %d of %d bytes", CHANname(cp),
-	  bp->Used, cp->XBatchSize);
+	  bp->used, cp->XBatchSize);
 
       if (cp->Next != 0) {
 	/* data must start from the begining of the buffer */
@@ -1035,7 +1041,7 @@ NCproc(CHANNEL *cp)
 	readmore = FALSE;
 	break;
       }
-      if (bp->Used < cp->XBatchSize) {
+      if (bp->used < cp->XBatchSize) {
 	movedata = FALSE;
 	readmore = TRUE;
 	break;	/* give us more data */
@@ -1064,7 +1070,7 @@ NCproc(CHANNEL *cp)
                    NNTP_RESENDIT_XBATCHERR, strerror(oerrno));
 	  NCwritereply(cp, buff);
 	} else {
-	  if (write(fd, cp->In.Data, cp->XBatchSize) != cp->XBatchSize) {
+	  if (write(fd, cp->In.data, cp->XBatchSize) != cp->XBatchSize) {
 	    oerrno = errno;
 	    syslog(L_ERROR, "%s cant write batch to file %s: %m", CHANname(cp),
 	      buff);
@@ -1111,15 +1117,15 @@ NCproc(CHANNEL *cp)
       break;
     if (Tracing || cp->Tracing)
       syslog(L_TRACE, "%s NCproc state=%d Start=%d Next=%d Used=%d",
-	CHANname(cp), cp->State, cp->Start, cp->Next, bp->Used);
+	CHANname(cp), cp->State, cp->Start, cp->Next, bp->used);
 
     if (movedata) { /* move data rather than extend buffer */
       TMRstart(TMR_DATAMOVE);
       movedata = FALSE;
       if (cp->Start > 0)
-	memmove(bp->Data, &bp->Data[cp->Start], bp->Used - cp->Start);
-      bp->Used -= cp->Start;
-      bp->Left += cp->Start;
+	memmove(bp->data, &bp->data[cp->Start], bp->used - cp->Start);
+      bp->used -= cp->Start;
+      bp->left += cp->Start;
       cp->Next -= cp->Start;
       if (cp->State == CSgetheader || cp->State == CSgetbody ||
 	cp->State == CSeatarticle) {
@@ -1157,7 +1163,7 @@ NCreader(CHANNEL *cp)
 
     if (Tracing || cp->Tracing)
 	syslog(L_TRACE, "%s NCreader Used=%d",
-	    CHANname(cp), cp->In.Used);
+	    CHANname(cp), cp->In.used);
 
     /* Read any data that's there; ignore errors (retry next time it's our
      * turn) and if we got nothing, then it's EOF so mark it closed. */
@@ -1195,7 +1201,7 @@ NCsetup(void)
     p = innconf->pathhost;
     if (p == NULL)
 	/* Worked in main, now it fails?  Curious. */
-	p = Path.Data;
+	p = Path.data;
     snprintf(buff, sizeof(buff), "%d %s InterNetNews server %s ready",
 	    NNTP_POSTOK_VAL, p, inn_version_string);
     NCgreeting = COPY(buff);
@@ -1302,22 +1308,23 @@ NCcheck(CHANNEL *cp)
 
     cp->Check++;
     /* Snip off the Message-ID. */
-    for (p = cp->In.Data + cp->Start; *p && !ISWHITE(*p); p++)
+    for (p = cp->In.data + cp->Start; *p && !ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
     for ( ; ISWHITE(*p); p++)
 	continue;
     idlen = strlen(p);
     msglen = idlen + 5; /* 3 digits + space + id + null */
-    if (cp->Sendid.Size < msglen) {
-	if (cp->Sendid.Size > 0) DISPOSE(cp->Sendid.Data);
-	if (msglen > MAXHEADERSIZE) cp->Sendid.Size = msglen;
-	else cp->Sendid.Size = MAXHEADERSIZE;
-	cp->Sendid.Data = NEW(char, cp->Sendid.Size);
+    if (cp->Sendid.size < msglen) {
+	if (cp->Sendid.size > 0) DISPOSE(cp->Sendid.data);
+	if (msglen > MAXHEADERSIZE) cp->Sendid.size = msglen;
+	else cp->Sendid.size = MAXHEADERSIZE;
+	cp->Sendid.data = NEW(char, cp->Sendid.size);
     }
     if (!ARTidok(p)) {
-	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
-	NCwritereply(cp, cp->Sendid.Data);
+	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
+                 NNTP_ERR_GOTID_VAL, p);
+	NCwritereply(cp, cp->Sendid.data);
 	syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp), MaxLength(p, p));
 	return;
     }
@@ -1325,8 +1332,9 @@ NCcheck(CHANNEL *cp)
     if ((innconf->refusecybercancels) && (strncmp(p, "<cancel.", 8) == 0)) {
 	cp->Refused++;
 	cp->Check_cybercan++;
-	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
-	NCwritereply(cp, cp->Sendid.Data);
+	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
+                 NNTP_ERR_GOTID_VAL, p);
+	NCwritereply(cp, cp->Sendid.data);
 	return;
     }
 
@@ -1335,8 +1343,9 @@ NCcheck(CHANNEL *cp)
     filterrc = PLmidfilter(p);
     if (filterrc) {
 	cp->Refused++;
-	sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
-	NCwritereply(cp, cp->Sendid.Data);
+	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
+                 NNTP_ERR_GOTID_VAL, p);
+	NCwritereply(cp, cp->Sendid.data);
 	return;
     }
 #endif /* defined(DO_PERL) */
@@ -1346,8 +1355,9 @@ NCcheck(CHANNEL *cp)
     filterrc = PYmidfilter(p, idlen);
     if (filterrc) {
 	cp->Refused++;
-	sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
-	NCwritereply(cp, cp->Sendid.Data);
+	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
+                 NNTP_ERR_GOTID_VAL, p);
+	NCwritereply(cp, cp->Sendid.data);
 	return;
     }
 #endif /* defined(DO_PYTHON) */
@@ -1355,21 +1365,25 @@ NCcheck(CHANNEL *cp)
     if (HIScheck(History, p)) {
 	cp->Refused++;
 	cp->Check_got++;
-	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
-	NCwritereply(cp, cp->Sendid.Data);
+	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
+                 NNTP_ERR_GOTID_VAL, p);
+	NCwritereply(cp, cp->Sendid.data);
     } else if (WIPinprogress(p, cp, TRUE)) {
 	cp->Check_deferred++;
 	if (cp->NoResendId) {
 	    cp->Refused++;
-	    (void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
+	    snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
+                     NNTP_ERR_GOTID_VAL, p);
 	} else {
-	    (void)sprintf(cp->Sendid.Data, "%d %s", NNTP_RESENDID_VAL, p);
+	    snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
+                     NNTP_RESENDID_VAL, p);
 	}
-	NCwritereply(cp, cp->Sendid.Data);
+	NCwritereply(cp, cp->Sendid.data);
     } else {
 	cp->Check_send++;
-	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_OK_SENDID_VAL, p);
-	NCwritereply(cp, cp->Sendid.Data);
+	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
+                 NNTP_OK_SENDID_VAL, p);
+	NCwritereply(cp, cp->Sendid.data);
     }
     /* stay in command mode */
 }
@@ -1387,7 +1401,7 @@ NCtakethis(CHANNEL *cp)
 
     cp->Takethis++;
     /* Snip off the Message-ID. */
-    for (p = cp->In.Data + cp->Start + STRLEN("takethis"); ISWHITE(*p); p++)
+    for (p = cp->In.data + cp->Start + STRLEN("takethis"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
     for ( ; ISWHITE(*p); p++)
@@ -1396,14 +1410,15 @@ NCtakethis(CHANNEL *cp)
 	syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp), MaxLength(p, p));
     }
     msglen = strlen(p) + 5; /* 3 digits + space + id + null */
-    if (cp->Sendid.Size < msglen) {
-	if (cp->Sendid.Size > 0) DISPOSE(cp->Sendid.Data);
-	if (msglen > MAXHEADERSIZE) cp->Sendid.Size = msglen;
-	else cp->Sendid.Size = MAXHEADERSIZE;
-	cp->Sendid.Data = NEW(char, cp->Sendid.Size);
+    if (cp->Sendid.size < msglen) {
+	if (cp->Sendid.size > 0) DISPOSE(cp->Sendid.data);
+	if (msglen > MAXHEADERSIZE) cp->Sendid.size = msglen;
+	else cp->Sendid.size = MAXHEADERSIZE;
+	cp->Sendid.data = NEW(char, cp->Sendid.size);
     }
     /* save ID for later NACK or ACK */
-    (void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_FAILID_VAL, p);
+    snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s", NNTP_ERR_FAILID_VAL,
+             p);
 
     cp->ArtBeg = Now.time;
     cp->State = CSgetheader;
@@ -1424,7 +1439,7 @@ NCcancel(CHANNEL *cp)
     const char *res;
 
     ++cp->Received;
-    av[0] = cp->In.Data + cp->Start;
+    av[0] = cp->In.data + cp->Start;
     cp->Start = cp->Next;
     res = CCcancel(av);
     if (res) {

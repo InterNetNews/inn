@@ -98,6 +98,25 @@ const char	*filterPath;
 
 
 /*
+**  Trim '\r' from buffer.
+*/
+static void
+buffer_trimcr(struct buffer *bp)
+{
+    char *p, *q;
+    int trimmed = 0;
+
+    for (p = q = bp->data ; p < bp->data + bp->left ; p++) {
+	if (*p == '\r' && p+1 < bp->data + bp->left && p[1] == '\n') {
+	    trimmed++;
+	    continue;
+	}
+	*q++ = *p;
+    }
+    bp->left -= trimmed;
+}
+
+/*
 **  Mark that the site gets this article.
 */
 static void
@@ -269,8 +288,8 @@ ARTsetup(void)
   DISPOSE(table);
 
   /* Get our Path name, kill trailing !. */
-  ARTpathme = COPY(Path.Data);
-  ARTpathme[Path.Used - 1] = '\0';
+  ARTpathme = COPY(Path.data);
+  ARTpathme[Path.used - 1] = '\0';
 
   /* Set up database; ignore errors. */
   (void)ARTreadschema();
@@ -389,7 +408,7 @@ ARTheaderpcmp(const void *p1, const void *p2)
 static TOKEN
 ARTstore(CHANNEL *cp)
 {
-  BUFFER	*Article = &cp->In;
+  struct buffer	*Article = &cp->In;
   ARTDATA	*data = &cp->Data;
   HDRCONTENT	*hc = data->HdrContent;
   const char	*p;
@@ -397,7 +416,7 @@ ARTstore(CHANNEL *cp)
   int		i, j, iovcnt = 0;
   long		headersize = 0;
   TOKEN		result;
-  BUFFER	*headers = &data->Headers;
+  struct buffer	*headers = &data->Headers;
   struct iovec	iov[ARTIOVCNT];
   HEADERP	hp[HPCOUNT];
 
@@ -417,7 +436,7 @@ ARTstore(CHANNEL *cp)
   /* get the order of header appearance */
   qsort(hp, i, sizeof(HEADERP), ARTheaderpcmp);
   /* p always points where the next data should be written from */
-  for (p = Article->Data + cp->Start, j = 0 ; j < i ; j++) {
+  for (p = Article->data + cp->Start, j = 0 ; j < i ; j++) {
     switch (hp[j].index) {
       case HDR__PATH:
 	if (!Hassamepath || AddAlias) {
@@ -426,13 +445,13 @@ ARTstore(CHANNEL *cp)
 	  iov[iovcnt++].iov_len = HDR(HDR__PATH) - p;
 	  arth.len += HDR(HDR__PATH) - p;
 	  /* now append new one */
-	  iov[iovcnt].iov_base = Path.Data;
-	  iov[iovcnt++].iov_len = Path.Used;
-	  arth.len += Path.Used;
+	  iov[iovcnt].iov_base = Path.data;
+	  iov[iovcnt++].iov_len = Path.used;
+	  arth.len += Path.used;
 	  if (AddAlias) {
-	    iov[iovcnt].iov_base = Pathalias.Data;
-	    iov[iovcnt++].iov_len = Pathalias.Used;
-	    arth.len += Pathalias.Used;
+	    iov[iovcnt].iov_base = Pathalias.data;
+	    iov[iovcnt++].iov_len = Pathalias.used;
+	    arth.len += Pathalias.used;
 	  }
 	  /* next to write */
 	  p = HDR(HDR__PATH);
@@ -472,8 +491,8 @@ ARTstore(CHANNEL *cp)
   if (!HDR_FOUND(HDR__XREF)) {
     /* write heading data */
     iov[iovcnt].iov_base = (char *) p;
-    iov[iovcnt++].iov_len = Article->Data + (data->Body - 2) - p;
-    arth.len += Article->Data + (data->Body - 2) - p;
+    iov[iovcnt++].iov_len = Article->data + (data->Body - 2) - p;
+    arth.len += Article->data + (data->Body - 2) - p;
     /* Xref needs to be inserted */
     iov[iovcnt].iov_base = (char *) "Xref: ";
     iov[iovcnt++].iov_len = sizeof("Xref: ") - 1;
@@ -481,12 +500,12 @@ ARTstore(CHANNEL *cp)
     iov[iovcnt].iov_base = data->Xref;
     iov[iovcnt++].iov_len = data->XrefLength;
     arth.len += data->XrefLength;
-    p = Article->Data + (data->Body - 2);
+    p = Article->data + (data->Body - 2);
   }
   /* write rest of data */
   iov[iovcnt].iov_base = (char *) p;
-  iov[iovcnt++].iov_len = Article->Data + cp->Next - p;
-  arth.len += Article->Data + cp->Next - p;
+  iov[iovcnt++].iov_len = Article->data + cp->Next - p;
+  arth.len += Article->data + cp->Next - p;
 
   /* revert trailing '\0\n' to '\r\n' of all system header */
   for (i = 0 ; i < MAX_ARTHEADER ; i++) {
@@ -522,7 +541,7 @@ ARTstore(CHANNEL *cp)
     if (NeedHeaders && (i + 1 == iovcnt)) {
       /* body begins at last iov */
       headersize = data->BytesValue +
-	Article->Data + data->Body - (char *) iov[i].iov_base;
+	Article->data + data->Body - (char *) iov[i].iov_base;
     }
     data->BytesValue += iov[i].iov_len;
   }
@@ -538,21 +557,17 @@ ARTstore(CHANNEL *cp)
   if (!NeedHeaders)
     return result;
 
-  if (headers->Size == 0) {
-    headers->Size = headersize;
-    headers->Data = NEW(char, headers->Size + 1);
-  }
-
   /* Add the data. */
-  BUFFset(headers, data->Bytes, strlen(data->Bytes));
+  buffer_resize(headers, headersize);
+  buffer_set(headers, data->Bytes, strlen(data->Bytes));
   for (i = 0 ; i < iovcnt ; i++) {
     if (i + 1 == iovcnt)
-      BUFFappend(headers, iov[i].iov_base,
-	Article->Data+ data->Body - (char *) iov[i].iov_base);
+      buffer_append(headers, iov[i].iov_base,
+	Article->data + data->Body - (char *) iov[i].iov_base);
     else
-      BUFFappend(headers, iov[i].iov_base, iov[i].iov_len);
+      buffer_append(headers, iov[i].iov_base, iov[i].iov_len);
   }
-  BUFFtrimcr(headers);
+  buffer_trimcr(headers);
 
   return result;
 }
@@ -564,7 +579,7 @@ static void
 ARTparseheader(CHANNEL *cp, int size)
 {
   ARTDATA	*data = &cp->Data;
-  char		*header = cp->In.Data + data->CurHeader;
+  char		*header = cp->In.data + data->CurHeader;
   HDRCONTENT	*hc = cp->Data.HdrContent;
   TREE		*tp;
   ARTHEADER	*hp;
@@ -749,7 +764,7 @@ ARTprepare(CHANNEL *cp)
 void
 ARTparse(CHANNEL *cp)
 {
-  BUFFER	*bp = &cp->In;
+  struct buffer	*bp = &cp->In;
   ARTDATA	*data = &cp->Data;
   int		i, limit, hopcount;
   char		**hops;
@@ -758,14 +773,14 @@ ARTparse(CHANNEL *cp)
   /* Read through the buffer to find header, body and end of article */
   /* this routine is designed not to refer data so long as possible for
      performance reason, so the code may look redundant at a glance */
-  limit = bp->Used;
+  limit = bp->used;
   i = cp->Next;
   if (cp->State == CSgetheader) {
     /* header processing */
     for (; i < limit ;) {
       if (data->LastCRLF + 1 == i) {
 	/* begining of the line */
-	switch (bp->Data[i]) {
+	switch (bp->data[i]) {
 	  case '.':
 	    data->LastTerminator = i;
 	    data->NullHeader = FALSE;
@@ -802,7 +817,7 @@ ARTparse(CHANNEL *cp)
       }
       for (; i < limit ;) {
 	/* rest of the line */
-	switch (bp->Data[i]) {
+	switch (bp->data[i]) {
 	  case '\0':
 	    snprintf(cp->Error, sizeof(cp->Error), "%d Null Header",
                      NNTP_REJECTIT_VAL);
@@ -872,7 +887,7 @@ bodyprocessing:
     for (; i < limit ;) {
       if (data->LastCRLF + 1 == i) {
         /* begining of the line */
-        switch (bp->Data[i]) {
+        switch (bp->data[i]) {
 	  case '.':
 	    data->LastTerminator = i;
 	    break;
@@ -889,7 +904,7 @@ bodyprocessing:
       }
       for (; i < limit ;) {
 	/* rest of the line */
-	switch (bp->Data[i]) {
+	switch (bp->data[i]) {
 	  case '\r':
 	    if (data->LastCR >= cp->Start)
 	      data->CRwithoutLF++;
@@ -1083,7 +1098,7 @@ ARTclean(ARTDATA *data, char *buff)
 **  and the article.
 */
 static void
-ARTreject(Reject_type code, CHANNEL *cp, BUFFER *article UNUSED)
+ARTreject(Reject_type code, CHANNEL *cp, struct buffer *article UNUSED)
 {
   /* Remember why the article was rejected (for the status file) */
 
@@ -1385,9 +1400,9 @@ ARTassignnumbers(ARTDATA *data)
   if (data->XrefBufLength == 0) {
     data->XrefBufLength = MAXHEADERSIZE * 2 + 1;
     data->Xref = NEW(char, data->XrefBufLength);
-    strncpy(data->Xref, Path.Data, Path.Used - 1);
+    strncpy(data->Xref, Path.data, Path.used - 1);
   }
-  len = Path.Used - 1;
+  len = Path.used - 1;
   p = q = data->Xref + len;
   for (linelen = i = 0; (ngp = GroupPointers[i]) != NULL; i++) {
     /* If already went to this group (i.e., multiple groups are aliased
@@ -1533,7 +1548,7 @@ ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
   SITE		*sp, *funnel;
   int		i, j, Groupcount, Followcount, Crosscount;
   char	        *p, *q;
-  BUFFER	*bp;
+  struct buffer	*bp;
   bool		sendit;
 
   /* Work out which sites should really get it. */
@@ -1641,12 +1656,12 @@ ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
       funnel->Sendit = TRUE;
       if (funnel->FNLwantsnames) {
 	bp = &funnel->FNLnames;
-	p = &bp->Data[bp->Used];
-	if (bp->Used) {
+	p = &bp->data[bp->used];
+	if (bp->used) {
 	  *p++ = ' ';
-	  bp->Used++;
+	  bp->used++;
 	}
-	bp->Used += strlen(strcpy(p, sp->Name));
+	bp->used += strlen(strcpy(p, sp->Name));
       }
     }
   }
@@ -1662,7 +1677,7 @@ ARTmakeoverview(CHANNEL *cp)
   HDRCONTENT	*hc = data->HdrContent;
   static char	SEP[] = "\t";
   static char	COLONSPACE[] = ": ";
-  BUFFER	*overview = &data->Overview;
+  struct buffer	*overview = &data->Overview;
   ARTOVERFIELD	*fp;
   ARTHEADER	*hp;
   char		*p, *q;
@@ -1676,17 +1691,13 @@ ARTmakeoverview(CHANNEL *cp)
   }
 
   /* Setup. */
-  if (overview->Size == 0) {
-    overview->Size = MAXHEADERSIZE;
-    overview->Data = NEW(char, overview->Size);
-  }
-
-  BUFFset(overview, "", 0);
+  buffer_resize(overview, MAXHEADERSIZE);
+  buffer_set(overview, "", 0);
 
   /* Write the data, a field at a time. */
   for (fp = ARTfields; fp->Header; fp++) {
     if (fp != ARTfields)
-      BUFFappend(overview, SEP, STRLEN(SEP));
+      buffer_append(overview, SEP, STRLEN(SEP));
     hp = fp->Header;
     j = hp - ARTheaders;
 
@@ -1698,7 +1709,7 @@ ARTmakeoverview(CHANNEL *cp)
       if (hp == &ARTheaders[HDR__KEYWORDS]) {
 	key_old_value  = HDR(HDR__KEYWORDS);
 	key_old_length = HDR_LEN(HDR__KEYWORDS);
-	KEYgenerate(&hc[HDR__KEYWORDS], cp->In.Data + data->Body,
+	KEYgenerate(&hc[HDR__KEYWORDS], cp->In.data + data->Body,
                     key_old_value, key_old_length);
       }
     }
@@ -1725,22 +1736,19 @@ ARTmakeoverview(CHANNEL *cp)
     if (len == 0)
       continue;
     if (fp->NeedHeader) {
-      BUFFappend(overview, hp->Name, hp->Size);
-      BUFFappend(overview, COLONSPACE, STRLEN(COLONSPACE));
+      buffer_append(overview, hp->Name, hp->Size);
+      buffer_append(overview, COLONSPACE, STRLEN(COLONSPACE));
     }
-    if (overview->Used + overview->Left + len > overview->Size) {
-        /* Round size up to next 1K */
-        overview->Size += (len + 0x3FF) & ~0x3FF;
-        RENEW(overview->Data, char, overview->Size);
-    }
-    for (i = 0, q = &overview->Data[overview->Left] ; i < len ; p++, q++, i++) {
+    if (overview->used + overview->left + len > overview->size)
+        buffer_resize(overview, overview->size + len);
+    for (i = 0, q = &overview->data[overview->left] ; i < len ; p++, q++, i++) {
       /* we can replace consecutive '\r', '\n' and '\r' with one ' ' here */
       if (*p == '\t' || *p == '\n' || *p == '\r')
 	*q = ' ';
       else
 	*q = *p;
     }
-    overview->Left += len;
+    overview->left += len;
 
     /* Patch the old keywords back in. */
     if (DO_KEYWORDS && innconf->keywords) {
@@ -1777,7 +1785,7 @@ ARTpost(CHANNEL *cp)
   bool		OverviewCreated = FALSE;
   bool		IsControl = FALSE;
   bool		Filtered = FALSE;
-  BUFFER	*article;
+  struct buffer	*article;
   HASH		hash;
   TOKEN		token;
   char		*groupbuff[2];
@@ -1827,11 +1835,11 @@ ARTpost(CHANNEL *cp)
     return FALSE;
   }
 
-  if (strncmp(Path.Data, hops[0], Path.Used - 1) == 0)
+  if (strncmp(Path.data, hops[0], Path.used - 1) == 0)
     Hassamepath = TRUE;
   else
     Hassamepath = FALSE;
-  if (Pathalias.Data != NULL &&
+  if (Pathalias.data != NULL &&
     !ListHas((const char **)hops, (const char *)innconf->pathalias))
     AddAlias = TRUE;
   else
@@ -1858,7 +1866,7 @@ ARTpost(CHANNEL *cp)
 
 #if defined(DO_PYTHON)
   TMRstart(TMR_PYTHON);
-  filterrc = PYartfilter(data, article->Data + data->Body,
+  filterrc = PYartfilter(data, article->data + data->Body,
     cp->Next - data->Body, data->Lines);
   TMRstop(TMR_PYTHON);
   if (filterrc != NULL) {
@@ -1884,7 +1892,7 @@ ARTpost(CHANNEL *cp)
 
 #if defined(DO_PERL)
   TMRstart(TMR_PERL);
-  filterrc = PLartfilter(data, article->Data + data->Body,
+  filterrc = PLartfilter(data, article->data + data->Body,
     cp->Next - data->Body, data->Lines);
   TMRstop(TMR_PERL);
   if (filterrc) {
@@ -1926,7 +1934,7 @@ ARTpost(CHANNEL *cp)
 	  TCL_GLOBAL_ONLY);
       }
     }
-    Tcl_SetVar(TCLInterpreter, "Body", article->Data + data->Body,
+    Tcl_SetVar(TCLInterpreter, "Body", article->data + data->Body,
       TCL_GLOBAL_ONLY);
     /* call filter */
 
@@ -1999,7 +2007,7 @@ ARTpost(CHANNEL *cp)
     sp->Poison = FALSE;
     sp->Sendit = FALSE;
     sp->Seenit = FALSE;
-    sp->FNLnames.Used = 0;
+    sp->FNLnames.used = 0;
     sp->ng = NULL;
   }
 
@@ -2295,7 +2303,7 @@ ARTpost(CHANNEL *cp)
     ARTmakeoverview(cp);
     MadeOverview = TRUE;
     if (innconf->enableoverview && !innconf->useoverchan) {
-      if ((result = OVadd(token, data->Overview.Data, data->Overview.Left,
+      if ((result = OVadd(token, data->Overview.data, data->Overview.left,
 	data->Arrived, data->Expires)) == OVADDFAILED) {
 	if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE)
 	  IOError("creating overview", ENOSPC);

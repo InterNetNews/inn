@@ -447,7 +447,7 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
     bool		JustUnmoderated;
     int			isp;
     SITE		*nsp;
-    BUFFER		b;
+    struct buffer	b;
 
     b = sp->Buffer;
     *sp = SITEnull;
@@ -818,13 +818,13 @@ SITEfunnelpatch(void)
 	    result = FALSE;
 	    continue;
 	}
-	if (funnel->FNLnames.Data == NULL) {
-	    funnel->FNLnames.Size = length;
-	    funnel->FNLnames.Data = NEW(char, length);
+	if (funnel->FNLnames.data == NULL) {
+	    funnel->FNLnames.size = length;
+	    funnel->FNLnames.data = NEW(char, length);
 	}
-	else if (funnel->FNLnames.Size != length) {
-	    funnel->FNLnames.Size = length;
-	    RENEW(funnel->FNLnames.Data, char, length);
+	else if (funnel->FNLnames.size != length) {
+	    funnel->FNLnames.size = length;
+	    RENEW(funnel->FNLnames.data, char, length);
 	}
 	sp->Funnel = funnel - Sites;
     }

@@ -37,9 +37,10 @@
 #include <syslog.h> 
 #include <sys/stat.h>
 
+#include "inn/buffer.h"
+#include "inn/history.h"
 #include "inn/messages.h"
 #include "inn/timer.h"
-#include "inn/history.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
@@ -80,17 +81,6 @@ typedef enum _OPERATINGMODE {
   OMthrottled
 } OPERATINGMODE;
 
-
-/*
-**  An I/O buffer, including a size, an amount used, and a count of how
-**  much space is left if reading or how much still needs to be written.
-*/
-typedef struct _BUFFER {
-  int	   Size;	/* total Data size		*/
-  int	   Used;	/* already used Data size	*/
-  int	   Left;	/* left Data size		*/
-  char  *  Data;	/* where Data begins		*/
-} BUFFER;
 
 typedef struct _LISTBUFFER {
   char	*   Data;
@@ -229,9 +219,9 @@ typedef struct _ARTDATA {
   char	      *   Replic;		/* replication data */
   int		  ReplicLength;		/* length of Replic */
   HASH	      *   Hash;			/* Message-ID hash */
-  BUFFER	  Headers;		/* buffer for headers which will be sent
+  struct buffer	  Headers;		/* buffer for headers which will be sent
 					   to site */
-  BUFFER	  Overview;		/* buffer for overview data */
+  struct buffer	  Overview;		/* buffer for overview data */
   int		  CRwithoutLF;		/* counter for '\r' without '\n' */
   int		  LFwithoutCR;		/* counter for '\n' without '\r' */
   int		  CurHeader;		/* where current header starts.
@@ -351,10 +341,10 @@ typedef struct _CHANNEL {
   innd_callback_t      Waker;
   void		    *  Argument;
   void		    *  Event;
-  BUFFER	       In;
-  BUFFER	       Out;
+  struct buffer	       In;
+  struct buffer	       Out;
   bool		       Tracing;
-  BUFFER	       Sendid;
+  struct buffer	       Sendid;
   HASH		       CurrentMessageIDHash;
   struct _WIP	    *  PrecommitWIP[PRECOMMITCACHESIZE];
   int		       PrecommitiCachenext;
@@ -459,11 +449,11 @@ typedef struct _SITE {
   int		  Master;
   int		  Funnel;
   bool		  FNLwantsnames;
-  BUFFER	  FNLnames;
+  struct buffer	  FNLnames;
   int		  Process;
   pid_t		  pid;
   long		  Flushpoint;
-  BUFFER	  Buffer;
+  struct buffer	  Buffer;
   bool		  Buffered;
   char	      **  Originator;
   int		  Next;
@@ -535,8 +525,8 @@ enum timer {
 **
 **  Set or append data to a channel's output buffer.
 */
-#define WCHANset(cp, p, l)      BUFFset(&(cp)->Out, (p), (l))
-#define WCHANappend(cp, p, l)   BUFFappend(&(cp)->Out, (p), (l))
+#define WCHANset(cp, p, l)      buffer_set(&(cp)->Out, (p), (l))
+#define WCHANappend(cp, p, l)   buffer_append(&(cp)->Out, (p), (l))
 
 /*
 **  Mark that an I/O error occurred, and block if we got too many.
@@ -575,8 +565,8 @@ extern bool		StreamingOff;
 extern bool		Tracing;
 EXTERN int		Overfdcount;
 EXTERN int		SeqNum;
-EXTERN BUFFER		Path;
-EXTERN BUFFER		Pathalias;
+EXTERN struct buffer	Path;
+EXTERN struct buffer	Pathalias;
 EXTERN char	     *  ModeReason;	/* NNTP reject message   */
 EXTERN char	     *  NNRPReason;	/* NNRP reject message   */
 EXTERN char	     *  Reservation;	/* Reserved lock message */
@@ -663,11 +653,6 @@ extern void		ARTsetup(void);
 extern void		ARTprepare(CHANNEL *cp);
 extern void		ARTparse(CHANNEL *cp);
 
-extern void		BUFFset(BUFFER *bp, const char *p, const int length);
-extern void		BUFFswap(BUFFER *b1, BUFFER *b2);
-extern void		BUFFappend(BUFFER *bp, const char *p, const int len);
-extern void		BUFFtrimcr(BUFFER *bp);
-
 extern bool		CHANsleeping(CHANNEL *cp);
 extern CHANNEL      *	CHANcreate(int fd, CHANNELTYPE Type,
 				   CHANNELSTATE State,
@@ -695,7 +680,7 @@ extern void		SCHANwakeup(void *Event);
 extern bool		WCHANflush(CHANNEL *cp);
 extern void		WCHANadd(CHANNEL *cp);
 extern void		WCHANremove(CHANNEL *cp);
-extern void		WCHANsetfrombuffer(CHANNEL *cp, BUFFER *bp);
+extern void		WCHANsetfrombuffer(CHANNEL *cp, struct buffer *bp);
 
 extern void		CCcopyargv(char *av[]);
 extern const char   *	CCaddhist(char *av[]);
@@ -776,7 +761,7 @@ extern void		SITEflush(SITE *sp, const bool Restart);
 extern void		SITEflushall(const bool Restart);
 extern void		SITEforward(SITE *sp, const char *text);
 extern void		SITEfree(SITE *sp);
-extern void		SITEinfo(BUFFER *bp, SITE *sp, const bool Verbose);
+extern void		SITEinfo(struct buffer *bp, SITE *sp, bool Verbose);
 extern void		SITEparsefile(bool StartSite);
 extern void		SITEprocdied(SITE *sp, int process, PROCESS *pp);
 extern void		SITEsend(SITE *sp, ARTDATA *Data);
@@ -800,7 +785,7 @@ extern WIP	    *	WIPbyhash(const HASH hash);
 #if DO_TCL
 extern Tcl_Interp   *	TCLInterpreter;
 extern bool		TCLFilterActive;
-extern BUFFER	    *	TCLCurrArticle;
+extern struct buffer *	TCLCurrArticle;
 extern ARTDATA	    *	TCLCurrData;
 
 extern void		TCLfilter(bool value);

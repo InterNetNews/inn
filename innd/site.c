@@ -115,8 +115,8 @@ static void
 SITEbufferoldest(void)
 {
     SITE	        *sp;
-    BUFFER	        *bp;
-    BUFFER	        *out;
+    struct buffer       *bp;
+    struct buffer       *out;
 
     /* Get the oldest user of a file. */
     if (SITEtail == NOSITE) {
@@ -146,22 +146,22 @@ SITEbufferoldest(void)
     /* Get a buffer for the site. */
     sp->Buffered = TRUE;
     bp = &sp->Buffer;
-    bp->Used = 0;
-    bp->Left = 0;
-    if (bp->Size == 0) {
-	bp->Size = sp->Flushpoint;
-	bp->Data = NEW(char, bp->Size);
+    bp->used = 0;
+    bp->left = 0;
+    if (bp->size == 0) {
+	bp->size = sp->Flushpoint;
+	bp->data = NEW(char, bp->size);
     }
     else {
-	bp->Size = sp->Flushpoint;
-	RENEW(bp->Data, char, bp->Size);
+	bp->size = sp->Flushpoint;
+	RENEW(bp->data, char, bp->size);
     }
 
     /* If there's any unwritten data, copy it. */
     out = &sp->Channel->Out;
-    if (out->Left) {
-	BUFFset(bp, &out->Data[out->Used], out->Left);
-	out->Left = 0;
+    if (out->left) {
+        buffer_set(bp, &out->data[out->used], out->left);
+	out->left = 0;
     }
 
     /* Now close the original channel. */
@@ -194,24 +194,24 @@ SITECHANbilge(SITE *sp)
         sp->Channel = NULL;
         return FALSE;
     }
-    while(sp->Channel->Out.Left > 0) {
-        i = write(fd, &sp->Channel->Out.Data[sp->Channel->Out.Used],
-                  sp->Channel->Out.Left);
+    while (sp->Channel->Out.left > 0) {
+        i = write(fd, &sp->Channel->Out.data[sp->Channel->Out.used],
+                  sp->Channel->Out.left);
         if(i <= 0) {
-            syslog(L_ERROR,"%s cant spool count %d",CHANname(sp->Channel),
-                sp->Channel->Out.Left);
+            syslog(L_ERROR,"%s cant spool count %d", CHANname(sp->Channel),
+                sp->Channel->Out.left);
             close(fd);
             return FALSE;
         }
-        sp->Channel->Out.Left -= i;
-        sp->Channel->Out.Used += i;
+        sp->Channel->Out.left -= i;
+        sp->Channel->Out.used += i;
     }
     close(fd);
-    DISPOSE(sp->Channel->Out.Data);
-    sp->Channel->Out.Data = NEW(char, SMBUF);
-    sp->Channel->Out.Size = SMBUF;
-    sp->Channel->Out.Left = 0;
-    sp->Channel->Out.Used = 0;
+    DISPOSE(sp->Channel->Out.data);
+    sp->Channel->Out.data = NEW(char, SMBUF);
+    sp->Channel->Out.size = SMBUF;
+    sp->Channel->Out.left = 0;
+    sp->Channel->Out.used = 0;
     return TRUE;
 }
 
@@ -220,14 +220,14 @@ SITECHANbilge(SITE *sp)
 **  or the feed is backed up, this gets a bit complicated.
 */
 static void
-SITEflushcheck(SITE *sp, BUFFER *bp)
+SITEflushcheck(SITE *sp, struct buffer *bp)
 {
     int	                i;
     CHANNEL	        *cp;
 
     /* If we're buffered, and we hit the flushpoint, do an LRU. */
     if (sp->Buffered) {
-	if (bp->Left < sp->Flushpoint)
+	if (bp->left < sp->Flushpoint)
 	    return;
 	while (SITEcount >= MaxOutgoing)
 	    SITEbufferoldest();
@@ -238,7 +238,7 @@ SITEflushcheck(SITE *sp, BUFFER *bp)
 	WCHANsetfrombuffer(sp->Channel, bp);
 	WCHANadd(sp->Channel);
 	/* Reset buffer; data has been moved. */
-	BUFFset(bp, "", 0);
+	buffer_set(bp, "", 0);
     }
 
     if (PROCneedscan)
@@ -246,29 +246,29 @@ SITEflushcheck(SITE *sp, BUFFER *bp)
 
     /* Handle buffering. */
     cp = sp->Channel;
-    i = cp->Out.Left;
+    i = cp->Out.left;
     if (i < sp->StopWriting)
 	WCHANremove(cp);
     if ((sp->StartWriting == 0 || i > sp->StartWriting)
      && !CHANsleeping(cp)) {
 	if (sp->Type == FTchannel) {	/* channel feed, try the write */
 	    int j;
-	    if (bp->Left == 0)
+	    if (bp->left == 0)
 		return;
-	    j = write(cp->fd, &bp->Data[bp->Used], bp->Left);
+	    j = write(cp->fd, &bp->data[bp->used], bp->left);
 	    if (j > 0) {
-		bp->Left -= j;
-		bp->Used += j;
-		i = cp->Out.Left;
+		bp->left -= j;
+		bp->used += j;
+		i = cp->Out.left;
 		/* Since we just had a successful write, we need to clear the 
 		 * channel's error counts. - dave@jetcafe.org */
 		cp->BadWrites = 0;
 		cp->BlockedWrites = 0;
 	    }
-	    if (bp->Left <= 0) {
+	    if (bp->left <= 0) {
                 /* reset Used, Left on bp, keep channel buffer size from
                    exploding. */
-                bp->Used = bp->Left = 0;
+                bp->used = bp->left = 0;
 		WCHANremove(cp);
             } else
 		WCHANadd(cp);
@@ -298,7 +298,7 @@ void
 SITEwrite(SITE *sp, const char *text)
 {
     static char		PREFIX[] = { EXP_CONTROL, '\0' };
-    BUFFER	        *bp;
+    struct buffer       *bp;
 
     if (sp->Buffered)
 	bp = &sp->Buffer;
@@ -308,9 +308,9 @@ SITEwrite(SITE *sp, const char *text)
 	sp->Channel->LastActive = Now.time;
 	bp = &sp->Channel->Out;
     }
-    BUFFappend(bp, PREFIX, STRLEN(PREFIX));
-    BUFFappend(bp, text, (int)strlen(text));
-    BUFFappend(bp, "\n", 1);
+    buffer_append(bp, PREFIX, STRLEN(PREFIX));
+    buffer_append(bp, text, strlen(text));
+    buffer_append(bp, "\n", 1);
     if (sp->Channel != NULL)
 	WCHANadd(sp->Channel);
 }
@@ -328,7 +328,7 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
     char		pbuff[12];
     char	        *p;
     bool	        Dirty;
-    BUFFER	        *bp;
+    struct buffer       *bp;
     SITE	        *spx;
     int	                i;
 
@@ -349,121 +349,123 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	    continue;
 	case FEED_BYTESIZE:
 	    if (Dirty)
-		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, Data->Bytes + sizeof("Bytes: ") - 1,
-		       Data->BytesLength);
+		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+	    buffer_append(bp, Data->Bytes + sizeof("Bytes: ") - 1,
+                          Data->BytesLength);
 	    break;
 	case FEED_FULLNAME:
 	case FEED_NAME:
 	    if (Dirty)
-		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, Data->TokenText, sizeof(TOKEN) * 2 + 2);
+		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+	    buffer_append(bp, Data->TokenText, sizeof(TOKEN) * 2 + 2);
 	    break;
 	case FEED_HASH:
 	    if (Dirty)
-		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, "[", 1);
-	    BUFFappend(bp, HashToText(*(Data->Hash)), sizeof(HASH)*2);
-	    BUFFappend(bp, "]", 1);
+		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+	    buffer_append(bp, "[", 1);
+	    buffer_append(bp, HashToText(*(Data->Hash)), sizeof(HASH)*2);
+	    buffer_append(bp, "]", 1);
 	    break;
 	case FEED_HDR_DISTRIB:
 	    if (Dirty)
-		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, HDR(HDR__DISTRIBUTION), HDR_LEN(HDR__DISTRIBUTION));
+		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+	    buffer_append(bp, HDR(HDR__DISTRIBUTION),
+                          HDR_LEN(HDR__DISTRIBUTION));
 	    break;
 	case FEED_HDR_NEWSGROUP:
 	    if (Dirty)
-		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, HDR(HDR__NEWSGROUPS), HDR_LEN(HDR__NEWSGROUPS));
+		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+	    buffer_append(bp, HDR(HDR__NEWSGROUPS), HDR_LEN(HDR__NEWSGROUPS));
 	    break;
 	case FEED_HEADERS:
 	    if (Dirty)
-		BUFFappend(bp, NL, STRLEN(NL));
-	    BUFFappend(bp, Data->Headers.Data, Data->Headers.Left);
+		buffer_append(bp, NL, STRLEN(NL));
+	    buffer_append(bp, Data->Headers.data, Data->Headers.left);
 	    break;
 	case FEED_OVERVIEW:
 	    if (Dirty)
-		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, Data->Overview.Data, Data->Overview.Left);
+		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+	    buffer_append(bp, Data->Overview.data, Data->Overview.left);
 	    break;
 	case FEED_PATH:
 	    if (Dirty)
-		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
 	    if (!Hassamepath)
-		BUFFappend(bp, Path.Data, Path.Used);
+		buffer_append(bp, Path.data, Path.used);
 	    if (AddAlias)
-		BUFFappend(bp, Pathalias.Data, Pathalias.Used);
-	    BUFFappend(bp, HDR(HDR__PATH), HDR_LEN(HDR__PATH));
+		buffer_append(bp, Pathalias.data, Pathalias.used);
+	    buffer_append(bp, HDR(HDR__PATH), HDR_LEN(HDR__PATH));
 	    break;
 	case FEED_REPLIC:
 	    if (Dirty)
-		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, Data->Replic, Data->ReplicLength);
+		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+	    buffer_append(bp, Data->Replic, Data->ReplicLength);
 	    break;
 	case FEED_STOREDGROUP:
 	    if (Dirty)
-		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, Data->Newsgroups.List[0], Data->StoredGroupLength);
+		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+	    buffer_append(bp, Data->Newsgroups.List[0],
+                          Data->StoredGroupLength);
 	    break;
 	case FEED_TIMERECEIVED:
 	    if (Dirty)
-		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
 	    snprintf(pbuff, sizeof(pbuff), "%ld", Data->Arrived);
-	    BUFFappend(bp, pbuff, strlen(pbuff));
+	    buffer_append(bp, pbuff, strlen(pbuff));
 	    break;
 	case FEED_TIMEPOSTED:
 	    if (Dirty)
-		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
 	    snprintf(pbuff, sizeof(pbuff), "%ld", Data->Posted);
-	    BUFFappend(bp, pbuff, strlen(pbuff));
+	    buffer_append(bp, pbuff, strlen(pbuff));
 	    break;
 	case FEED_TIMEEXPIRED:
 	    if (Dirty)
-		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
 	    snprintf(pbuff, sizeof(pbuff), "%ld", Data->Expires);
-	    BUFFappend(bp, pbuff, strlen(pbuff));
+	    buffer_append(bp, pbuff, strlen(pbuff));
 	    break;
 	case FEED_MESSAGEID:
 	    if (Dirty)
-		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, HDR(HDR__MESSAGE_ID), HDR_LEN(HDR__MESSAGE_ID));
+		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+	    buffer_append(bp, HDR(HDR__MESSAGE_ID), HDR_LEN(HDR__MESSAGE_ID));
 	    break;
 	case FEED_FNLNAMES:
-	    if (sp->FNLnames.Data) {
+	    if (sp->FNLnames.data) {
 		/* Funnel; write names of our sites that got it. */
 		if (Dirty)
-		    BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-		BUFFappend(bp, sp->FNLnames.Data, sp->FNLnames.Used);
+		    buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, sp->FNLnames.data, sp->FNLnames.used);
 	    }
 	    else {
 		/* Not funnel; write names of all sites that got it. */
 		for (spx = Sites, i = nSites; --i >= 0; spx++)
 		    if (spx->Sendit) {
 			if (Dirty)
-			    BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-			BUFFappend(bp, spx->Name, spx->NameLength);
+			    buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+			buffer_append(bp, spx->Name, spx->NameLength);
 			Dirty = TRUE;
 		    }
 	    }
 	    break;
 	case FEED_NEWSGROUP:
 	    if (Dirty)
-		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
 	    if (sp->ng)
-		BUFFappend(bp, sp->ng->Name, sp->ng->NameLength);
+		buffer_append(bp, sp->ng->Name, sp->ng->NameLength);
 	    else
-		BUFFappend(bp, "?", 1);
+		buffer_append(bp, "?", 1);
 	    break;
 	case FEED_SITE:
 	    if (Dirty)
-		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, Data->Feedsite, Data->FeedsiteLength);
+		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+	    buffer_append(bp, Data->Feedsite, Data->FeedsiteLength);
 	    break;
 	}
 	Dirty = TRUE;
     }
     if (Dirty) {
-	BUFFappend(bp, "\n", 1);
+	buffer_append(bp, "\n", 1);
 	SITEflushcheck(sp, bp);
     }
 }
@@ -498,7 +500,7 @@ SITEsend(SITE *sp, ARTDATA *Data)
     case FTprogram:
 	/* Set up the argument vector. */
 	if (sp->FNLwantsnames) {
-	    i = strlen(sp->Param) + sp->FNLnames.Used;
+	    i = strlen(sp->Param) + sp->FNLnames.used;
 	    if (i + (sizeof(TOKEN) * 2) + 3 >= sizeof buff) {
 		syslog(L_ERROR, "%s toolong need %d for %s",
 		    sp->Name, i + (sizeof(TOKEN) * 2) + 3, sp->Name);
@@ -508,7 +510,7 @@ SITEsend(SITE *sp, ARTDATA *Data)
 	    p = strchr(sp->Param, '*');
 	    *p = '\0';
 	    (void)strcpy(temp, sp->Param);
-	    (void)strcat(temp, sp->FNLnames.Data);
+	    (void)strcat(temp, sp->FNLnames.data);
 	    (void)strcat(temp, &p[1]);
 	    *p = '*';
 	    (void)sprintf(buff, temp, Data->TokenText);
@@ -633,22 +635,14 @@ SITEstartprocess(SITE *sp)
 static void
 SITEbuffer(SITE *sp)
 {
-    BUFFER	        *bp;
+    struct buffer *bp;
 
     SITEunlink(sp);
     sp->Buffered = TRUE;
     sp->Channel = NULL;
     bp = &sp->Buffer;
-    if (bp->Size == 0) {
-	bp->Size = sp->Flushpoint;
-	bp->Data = NEW(char, bp->Size);
-	BUFFset(bp, "", 0);
-    }
-    else if (bp->Size < sp->Flushpoint) {
-	bp->Size = sp->Flushpoint;
-	RENEW(bp->Data, char, bp->Size);
-    }
-    BUFFset(bp, "", 0);
+    buffer_resize(bp, sp->Flushpoint);
+    buffer_set(bp, "", 0);
     syslog(L_NOTICE, "%s buffered", sp->Name);
 }
 
@@ -769,7 +763,7 @@ SITEchanclose(CHANNEL *cp)
 	     * site spooling, copy any data that might be pending,
 	     * and arrange to retry later. */
 	    if (!SITEspool(sp, (CHANNEL *)NULL)) {
-		syslog(L_ERROR, "%s loss %d bytes", sp->Name, cp->Out.Left);
+		syslog(L_ERROR, "%s loss %d bytes", sp->Name, cp->Out.left);
 		return;
 	    }
 	    WCHANsetfrombuffer(sp->Channel, &cp->Out);
@@ -790,7 +784,7 @@ void
 SITEflush(SITE *sp, const bool Restart)
 {
     CHANNEL	        *cp;
-    BUFFER	        *out;
+    struct buffer       *out;
     int			count;
 
     if (sp->Name == NULL)
@@ -830,7 +824,7 @@ SITEflush(SITE *sp, const bool Restart)
 	    if (!SITEsetup(sp) || sp->Buffered)
 		syslog(L_ERROR, "%s cant unbuffer to flush", sp->Name);
 	    else
-		BUFFswap(&sp->Buffer, &sp->Channel->Out);
+		buffer_swap(&sp->Buffer, &sp->Channel->Out);
 	    SITEcount += count;
 	}
 	break;
@@ -848,21 +842,21 @@ SITEflush(SITE *sp, const bool Restart)
 	    if (sp->Buffered) {
 		/* SITEsetup had to buffer us; save any residue. */
 		out = &cp->Out;
-	        if (out->Left)
-		    BUFFset(&sp->Buffer, &out->Data[out->Used], out->Left);
+	        if (out->left)
+		    buffer_set(&sp->Buffer, &out->data[out->used], out->left);
 	    }
 	    else
 		WCHANsetfrombuffer(sp->Channel, &cp->Out);
 	}
     }
-    else if (cp != NULL && cp->Out.Left) {
+    else if (cp != NULL && cp->Out.left) {
 	if (sp->Type == FTfile || sp->Spooling) {
 	    /* Can't flush a file?  Hopeless. */
-	    syslog(L_ERROR, "%s dataloss %d", sp->Name, cp->Out.Left);
+	    syslog(L_ERROR, "%s dataloss %d", sp->Name, cp->Out.left);
 	    return;
 	}
 	/* Must be a working channel; spool and retry. */
-	syslog(L_ERROR, "%s spooling %d bytes", sp->Name, cp->Out.Left);
+	syslog(L_ERROR, "%s spooling %d bytes", sp->Name, cp->Out.left);
 	if (SITEspool(sp, cp))
 	    SITEflush(sp, FALSE);
 	return;
@@ -1043,15 +1037,15 @@ SITEfree(SITE *sp)
 	DISPOSE(sp->Distributions);
 	sp->Distributions = NULL;
     }
-    if (sp->Buffer.Data) {
-	DISPOSE(sp->Buffer.Data);
-	sp->Buffer.Data = NULL;
-	sp->Buffer.Size = 0;
+    if (sp->Buffer.data) {
+	DISPOSE(sp->Buffer.data);
+	sp->Buffer.data = NULL;
+	sp->Buffer.size = 0;
     }
-    if (sp->FNLnames.Data) {
-	DISPOSE(sp->FNLnames.Data);
-	sp->FNLnames.Data = NULL;
-	sp->FNLnames.Size = 0;
+    if (sp->FNLnames.data) {
+	DISPOSE(sp->FNLnames.data);
+	sp->FNLnames.data = NULL;
+	sp->FNLnames.size = 0;
     }
 
     /* If this site was a master, find a new one. */
@@ -1115,7 +1109,7 @@ SITEdrop(SITE *sp)
 **  Append info about the current state of the site to the buffer
 */
 void
-SITEinfo(BUFFER *bp, SITE *sp, const bool Verbose)
+SITEinfo(struct buffer *bp, SITE *sp, const bool Verbose)
 {
     static char		FREESITE[] = "<<No name>>\n\n";
     char	        *p;
@@ -1124,12 +1118,13 @@ SITEinfo(BUFFER *bp, SITE *sp, const bool Verbose)
     char		buff[BUFSIZ];
 
     if (sp->Name == NULL) {
-	BUFFappend(bp, FREESITE, STRLEN(FREESITE));
+	buffer_append(bp, FREESITE, STRLEN(FREESITE));
 	return;
     }
 
     p = buff;
-    (void)sprintf(buff, "%s%s:\t", sp->Name, sp->IsMaster ? "(*)" : "");
+    snprintf(buff, sizeof(buff), "%s%s:\t", sp->Name,
+             sp->IsMaster ? "(*)" : "");
     p += strlen(p);
 
     if (sp->Type == FTfunnel) {
@@ -1147,13 +1142,13 @@ SITEinfo(BUFFER *bp, SITE *sp, const bool Verbose)
     case FTfile:
 	p += strlen(strcpy(p, "file"));
 	if (sp->Buffered) {
-	    (void)sprintf(p, " buffered(%d)", sp->Buffer.Left);
+	    (void)sprintf(p, " buffered(%d)", sp->Buffer.left);
 	    p += strlen(p);
 	}
 	else if ((cp = sp->Channel) == NULL)
 	    p += strlen(strcpy(p, " no channel?"));
 	else {
-	    (void)sprintf(p, " open fd=%d, in mem %d", cp->fd, cp->Out.Left);
+	    (void)sprintf(p, " open fd=%d, in mem %d", cp->fd, cp->Out.left);
 	    p += strlen(p);
 	}
 	break;
@@ -1172,7 +1167,7 @@ Common:
 	if ((cp = sp->Channel) == NULL)
 	    p += strlen(strcpy(p, " no channel?"));
 	else {
-	    (void)sprintf(p, " fd=%d, in mem %d", cp->fd, cp->Out.Left);
+	    (void)sprintf(p, " fd=%d, in mem %d", cp->fd, cp->Out.left);
 	    p += strlen(p);
 	}
 	break;
@@ -1228,5 +1223,5 @@ Common:
 	}
 
     }
-    BUFFappend(bp, buff, p - buff);
+    buffer_append(bp, buff, p - buff);
 }

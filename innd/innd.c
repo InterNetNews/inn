@@ -464,16 +464,18 @@ main(int ac, char *av[])
 	syslog(L_FATAL, "%s No pathhost set", LogName);
 	exit(1);
     }
-    Path.Used = strlen(innconf->pathhost) + 1;
-    Path.Data = NEW(char, Path.Used + 1);
-    sprintf(Path.Data, "%s!", innconf->pathhost);
+    Path.used = strlen(innconf->pathhost) + 1;
+    Path.size = Path.used + 1;
+    Path.data = NEW(char, Path.size);
+    snprintf(Path.data, Path.size, "%s!", innconf->pathhost);
     if (innconf->pathalias == NULL) {
-	Pathalias.Used = 0;
-	Pathalias.Data = NULL;
+	Pathalias.used = 0;
+	Pathalias.data = NULL;
     } else {
-	Pathalias.Used = strlen(innconf->pathalias) + 1;
-	Pathalias.Data = NEW(char, Pathalias.Used + 1);
-	sprintf(Pathalias.Data, "%s!", innconf->pathalias);
+	Pathalias.used = strlen(innconf->pathalias) + 1;
+	Pathalias.size = Pathalias.used + 1;
+	Pathalias.data = NEW(char, Pathalias.size);
+	snprintf(Pathalias.data, Pathalias.size, "%s!", innconf->pathalias);
     }
     /* Trace history ? */
     if (innconf->stathist != NULL) {

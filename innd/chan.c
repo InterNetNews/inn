@@ -58,78 +58,6 @@ static int	chanlimit;
 #endif /* PRIORITISE_REMCONN */
 
 /*
-**  Append data to a buffer.
-*/
-void
-BUFFappend(BUFFER *bp, const char *p, const int len) {
-    int i;
-    
-    if (len == 0)
-	return;
-    /* Note end of buffer, grow it if we need more room */
-    i = bp->Used + bp->Left;
-    if (i + len > bp->Size) {
-	/* Round size up to next 1K */
-	bp-> Size += (len + 0x3FF) & ~0x3FF;
-	RENEW(bp->Data, char, bp->Size);
-    }
-    bp->Left += len;
-    memcpy(&bp->Data[i], p, len);
-}
-
-/*
-**  Set a buffer's contents, ignoring anything that might have
-**  been there.
-*/
-void
-BUFFset(BUFFER *bp, const char *p, const int length)
-{
-    if ((bp->Left = length) != 0) {
-	/* Need more space? */
-	if (bp->Size < length) {
-	    bp->Size = length;
-	    RENEW(bp->Data, char, bp->Size);
-	}
-	
-	/* Try to test for non-overlapping copies. */
-	memmove(bp->Data, p, length);
-    }
-    bp->Used = 0;
-}
-
-/*
-**  Swap the contents of two buffers.
-*/
-void
-BUFFswap(BUFFER *b1, BUFFER *b2)
-{
-    BUFFER		b;
-
-    b = *b1;
-    *b1 = *b2;
-    *b2 = b;
-}
-
-/*
-**  Trim '\r' from buffer.
-*/
-void
-BUFFtrimcr(BUFFER *bp)
-{
-    char *p, *q;
-    int trimmed = 0;
-
-    for (p = q = bp->Data ; p < bp->Data + bp->Left ; p++) {
-	if (*p == '\r' && p+1 < bp->Data + bp->Left && p[1] == '\n') {
-	    trimmed++;
-	    continue;
-	}
-	*q++ = *p;
-    }
-    bp->Left -= trimmed;
-}
-
-/*
 ** Tear down our world
 */
 void
@@ -140,11 +68,11 @@ CHANshutdown(void)
 
   if (CHANtable) {
     for (i = CHANtablesize, cp = &CHANtable[0]; --i >= 0; cp++) {
-      if (cp->In.Data) {
-	DISPOSE(cp->In.Data);
+      if (cp->In.data) {
+	DISPOSE(cp->In.data);
       }
-      if (cp->Out.Data) {
-	DISPOSE(cp->Out.Data);
+      if (cp->Out.data) {
+	DISPOSE(cp->Out.data);
       }
     }
     DISPOSE(CHANtable);
@@ -182,26 +110,19 @@ CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
            innd_callback_t Reader, innd_callback_t WriteDone)
 {
     CHANNEL	        *cp;
-    BUFFER		in;
-    BUFFER		out;
+    struct buffer	in  = { 0, 0, 0, NULL };
+    struct buffer	out = { 0, 0, 0, NULL };
 
     cp = &CHANtable[fd];
 
     /* Don't overwrite the buffers with CHANnull. */
     in = cp->In;
-    if (in.Size == 0) {
-	in.Size = START_BUFF_SIZE;
-	in.Data = NEW(char, in.Size);
-    }
-    in.Used = 0;
-    in.Left = in.Size;
+    buffer_resize(&in, START_BUFF_SIZE);
+    in.used = 0;
+    in.left = in.size;
     out = cp->Out;
-    if (out.Size == 0) {
-	out.Size = SMBUF;
-	out.Data = NEW(char, out.Size);
-    }
-    out.Used = 0;
-    out.Left = 0;
+    buffer_resize(&out, SMBUF);
+    buffer_set(&out, "", 0);
 
     /* Set up the channel's info. */
     *cp = CHANnull;
@@ -224,7 +145,7 @@ CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
     cp->In = in;
     cp->Out = out;
     cp->Tracing = Tracing;
-    cp->Sendid.Size = 0;
+    cp->Sendid.size = 0;
     cp->Next=0;
     cp->MaxCnx=0;
     cp->ActiveCnx=0;
@@ -315,10 +236,10 @@ CHANtracing(CHANNEL *cp, bool Flag)
 		p, (long)cp->Waketime, (void *)cp->Waker);
 	if (FD_ISSET(cp->fd, &RCHANmask))
 	    syslog(L_NOTICE, "%s trace reading %d %s",
-		p, cp->In.Used, MaxLength(cp->In.Data, cp->In.Data));
+		p, cp->In.used, MaxLength(cp->In.data, cp->In.data));
 	if (FD_ISSET(cp->fd, &WCHANmask))
 	    syslog(L_NOTICE, "%s trace writing %d %s",
-		p, cp->Out.Left, MaxLength(cp->Out.Data, cp->Out.Data));
+		p, cp->Out.left, MaxLength(cp->Out.data, cp->Out.data));
     }
 }
 
@@ -376,10 +297,12 @@ CHANclose(CHANNEL *cp, const char *name)
 		DISPOSE(cp->Data.Path.List);
 		cp->Data.Path.List = NULL;
 	    }
-	    if (cp->Data.Overview.Size != 0) {
-		DISPOSE(cp->Data.Overview.Data);
-		cp->Data.Overview.Data = NULL;
-		cp->Data.Overview.Size = 0;
+	    if (cp->Data.Overview.size != 0) {
+		DISPOSE(cp->Data.Overview.data);
+		cp->Data.Overview.data = NULL;
+		cp->Data.Overview.size = 0;
+                cp->Data.Overview.left = 0;
+                cp->Data.Overview.used = 0;
 	    }
 	    if (cp->Data.XrefBufLength != 0) {
 		DISPOSE(cp->Data.Xref);
@@ -388,8 +311,8 @@ CHANclose(CHANNEL *cp, const char *name)
 	    }
 	} else if (cp->Type == CTreject)
 	    syslog(L_NOTICE, "%s %ld", name, cp->Rejected);
-	else if (cp->Out.Left)
-	    syslog(L_NOTICE, "%s closed lost %d", name, cp->Out.Left);
+	else if (cp->Out.left)
+	    syslog(L_NOTICE, "%s closed lost %d", name, cp->Out.left);
 	else
 	    syslog(L_NOTICE, "%s closed", name);
 	WCHANremove(cp);
@@ -430,19 +353,26 @@ CHANclose(CHANNEL *cp, const char *name)
     cp->ActiveCnx = 0;
 
     /* Free the buffers if they got big. */
-    if (cp->In.Size > BIG_BUFFER) {
-	cp->In.Size = 0;
-	DISPOSE(cp->In.Data);
-	cp->In.Data = NULL; /* avoid spurious free()s of already freed data in CHANshutdown */
+    if (cp->In.size > BIG_BUFFER) {
+	cp->In.size = 0;
+        cp->In.used = 0;
+        cp->In.left = 0;
+	DISPOSE(cp->In.data);
+	cp->In.data = NULL;
     }
-    if (cp->Out.Size > BIG_BUFFER) {
-	cp->Out.Size = 0;
-	DISPOSE(cp->Out.Data);
-	cp->Out.Data = NULL; /* ditto */
+    if (cp->Out.size > BIG_BUFFER) {
+	cp->Out.size = 0;
+        cp->Out.used = 0;
+        cp->Out.left = 0;
+	DISPOSE(cp->Out.data);
+	cp->Out.data = NULL;
     }
-    if (cp->Sendid.Size) {
-	cp->Sendid.Size = 0;
-	DISPOSE(cp->Sendid.Data);
+    if (cp->Sendid.size > 0) {
+	cp->Sendid.size = 0;
+	cp->Sendid.used = 0;
+	cp->Sendid.left = 0;
+	DISPOSE(cp->Sendid.data);
+        cp->Sendid.data = NULL;
     }
 }
 
@@ -560,7 +490,7 @@ RCHANadd(CHANNEL *cp)
 
     if (cp->Type != CTnntp)
 	/* Start reading at the beginning of the buffer. */
-	cp->In.Used = 0;
+	cp->In.used = 0;
 }
 
 
@@ -653,13 +583,13 @@ SCHANwakeup(void *Event)
 
 
 /*
-**  Mark a channel as an active writer.  Don't reset the Out->Left field
+**  Mark a channel as an active writer.  Don't reset the Out->left field
 **  since we could have buffered I/O already in there.
 */
 void
 WCHANadd(CHANNEL *cp)
 {
-    if (cp->Out.Left > 0) {
+    if (cp->Out.left > 0) {
 	FD_SET(cp->fd, &WCHANmask);
 	if (cp->fd > CHANlastfd)
 	    CHANlastfd = cp->fd;
@@ -675,10 +605,10 @@ WCHANremove(CHANNEL *cp)
 {
     if (FD_ISSET(cp->fd, &WCHANmask)) {
 	FD_CLR(cp->fd, &WCHANmask);
-	if (cp->Out.Left <= 0) {
+	if (cp->Out.left <= 0) {
 	    /* No data left -- reset used so we don't grow the buffer. */
-	    cp->Out.Used = 0;
-	    cp->Out.Left = 0;
+	    cp->Out.used = 0;
+	    cp->Out.left = 0;
 	}
 	if (cp->fd == CHANlastfd) {
 	    /* This was the highest descriptor, get a new highest. */
@@ -695,9 +625,9 @@ WCHANremove(CHANNEL *cp)
 **  Set a channel to start off with the contents of an existing channel.
 */
 void
-WCHANsetfrombuffer(CHANNEL *cp, BUFFER *bp)
+WCHANsetfrombuffer(CHANNEL *cp, struct buffer *bp)
 {
-    WCHANset(cp, &bp->Data[bp->Used], bp->Left);
+    WCHANset(cp, &bp->data[bp->used], bp->left);
 }
 
 
@@ -709,24 +639,31 @@ int
 CHANreadtext(CHANNEL *cp)
 {
     int	                i, j;
-    BUFFER	        *bp;
+    struct buffer       *bp;
     char		*p;
     int			oerrno;
     int			maxbyte;
     HDRCONTENT		*hc = cp->Data.HdrContent;
 
-    /* Grow buffer if we're getting close to current limit. */
+    /* Grow buffer if we're getting close to current limit.  FIXME: The In
+       buffer doesn't use the normal meanings of .used and .left.  */
     bp = &cp->In;
-    bp->Left = bp->Size - bp->Used;
-    if (bp->Left <= LOW_WATER) {
-	i = GROW_AMOUNT(bp->Size);
-	bp->Size += i;
-	bp->Left += i;
-	p = bp->Data;
+    bp->left = bp->size - bp->used;
+    if (bp->left <= LOW_WATER) {
+	i = GROW_AMOUNT(bp->size);
+	bp->size += i;
+	bp->left += i;
+	p = bp->data;
 	TMRstart(TMR_DATAMOVE);
-	RENEW(bp->Data, char, bp->Size);
-	/* do not move data, since RENEW did it already */
-	if ((i = p - bp->Data) != 0) {
+	RENEW(bp->data, char, bp->size);
+
+	/* Adjust offets of realloc moved the location of the memory region.
+           FIXME: This is invalid C, although it will work on most (all?)
+           common systems.  The pointers need to be reduced to offets and then
+           turned back into relative pointers rather than adjusting the
+           pointers directly, since as soon as realloc is called, pointers
+           into the old space become invalid and may not be used further. */
+	if ((i = p - bp->data) != 0) {
 	    if (cp->State == CSgetheader || cp->State == CSgetbody ||
 		cp->State == CSeatarticle) {
 		/* adjust offset only in CSgetheader, CSgetbody or
@@ -742,34 +679,34 @@ CHANreadtext(CHANNEL *cp)
 	TMRstop(TMR_DATAMOVE);
     }
 
-    /* Read in whatever is there, up to some reasonable limit. */
-    /*
-     * XXX We really want to limit the amount of time it takes to
-     * process the incoming data for this channel.  But there's
-     * no easy way of doing that, so we restrict the data size instead.
-     * If the data is part of a single large article, then reading
-     * and processing many kilobytes at a time costs very little.
-     * If the data is a long list of CHECK commands from a streaming
-     * feed, then every line of data will require a history lookup, and
-     * we probably don't want to do more than about 10 of those per
-     * channel on each cycle of the main select() loop (otherwise we
-     * might take too long before giving other channels a turn).  10
-     * lines of CHECK commands suggests a limit of about 1 kilobyte of
-     * data, or less.  innconf->maxcmdreadsize(BUFSIZ by default) is often
-     * about 1 kilobyte, and is attractive for other reasons, so let's
-     * use that as our size limit.
-     *
-     * there is no read size limit if innconf->maxcmdreadsize is 0
-     */
-    /*
-     * Reduce the read size only if we are reading commands.
-     */
-    if (innconf->maxcmdreadsize > 0)
-	maxbyte = (cp->State != CSgetcmd || bp->Left < innconf->maxcmdreadsize) ? bp->Left : innconf->maxcmdreadsize;
+    /* Read in whatever is there, up to some reasonable limit.
+
+       We want to limit the amount of time devoted to processing the incoming
+       data for any given channel.  There's no easy way of doing that, though,
+       so we restrict the data size instead.
+
+       If the data is part of a single large article, then reading and
+       processing many kilobytes at a time costs very little.  If the data is
+       a long list of CHECK commands from a streaming feed, then every line of
+       data will require a history lookup, and we probably don't want to do
+       more than about 10 of those per channel on each cycle of the main
+       select() loop (otherwise we might take too long before giving other
+       channels a turn).  10 lines of CHECK commands suggests a limit of about
+       1KB of data, or less.  innconf->maxcmdreadsize (BUFSIZ by default) is
+       often about 1KB, and is attractive for other reasons, so let's use that
+       as our size limit.  If innconf->maxcmdreadsize is 0, there is no limit.
+
+       Reduce the read size only if we're reading commands.
+
+       FIXME: A better approach would be to limit the number of commands we
+       process for each channel. */
+    if (innconf->maxcmdreadsize <= 0 || cp->State != CSgetcmd
+        || bp->left < innconf->maxcmdreadsize)
+        maxbyte = bp->left;
     else
-	maxbyte = bp->Left;
+        maxbyte = innconf->maxcmdreadsize;
     TMRstart(TMR_NNTPREAD);
-    i = read(cp->fd, &bp->Data[bp->Used], maxbyte);
+    i = read(cp->fd, &bp->data[bp->used], maxbyte);
     TMRstop(TMR_NNTPREAD);
     if (i < 0) {
         /* Solaris (at least 2.4 through 2.6) will occasionally return
@@ -779,9 +716,8 @@ CHANreadtext(CHANNEL *cp)
            back out to the main loop and go on to the next file descriptor,
            as if the descriptor never selected true.  This check will
            probably never trigger on platforms other than Solaris. */
-        if (errno == EAGAIN) {
+        if (errno == EAGAIN)
             return -2;
-        }
 	oerrno = errno;
 	p = CHANname(cp);
 	errno = oerrno;
@@ -794,8 +730,8 @@ CHANreadtext(CHANNEL *cp)
 	return 0;
     }
 
-    bp->Used += i;
-    bp->Left -= i;
+    bp->used += i;
+    bp->left -= i;
     return i;
 }
 
@@ -836,20 +772,20 @@ CHANwrite(int fd, char *p, long length)
 bool
 WCHANflush(CHANNEL *cp)
 {
-    BUFFER	        *bp;
+    struct buffer       *bp;
     int	                i;
 
     /* Write it. */
-    for (bp = &cp->Out; bp->Left > 0; bp->Left -= i, bp->Used += i) {
-	i = CHANwrite(cp->fd, &bp->Data[bp->Used], bp->Left);
+    for (bp = &cp->Out; bp->left > 0; bp->left -= i, bp->used += i) {
+	i = CHANwrite(cp->fd, &bp->data[bp->used], bp->left);
 	if (i < 0) {
 	    syslog(L_ERROR, "%s cant flush count %d %m",
-		CHANname(cp), bp->Left);
+		CHANname(cp), bp->left);
 	    return FALSE;
 	}
 	if (i == 0) {
 	    syslog(L_ERROR, "%s cant flush count %d",
-		CHANname(cp), bp->Left);
+		CHANname(cp), bp->left);
 	    return FALSE;
 	}
     }
@@ -986,7 +922,7 @@ CHANreadloop(void)
     int			lastfd;
     int			oerrno;
     CHANNEL		*cp;
-    BUFFER		*bp;
+    struct buffer	*bp;
     fd_set		MyRead;
     fd_set		MyWrite;
     struct timeval	MyTime;
@@ -1130,16 +1066,16 @@ CHANreadloop(void)
 
 	    /* Check and see if the buffer is grossly overallocated and shrink
 	       if needed */
-	    if (cp->In.Size > (BIG_BUFFER)) {
-		if (cp->In.Used) {
-		    if ((cp->In.Size / cp->In.Used) > 10) {
-			cp->In.Size = (cp->In.Used * 2) > START_BUFF_SIZE ? (cp->In.Used * 2) :  START_BUFF_SIZE;
-			p = cp->In.Data;
+	    if (cp->In.size > (BIG_BUFFER)) {
+		if (cp->In.used != 0) {
+		    if ((cp->In.size / cp->In.used) > 10) {
+			cp->In.size = (cp->In.used * 2) > START_BUFF_SIZE ? (cp->In.used * 2) : START_BUFF_SIZE;
+			p = cp->In.data;
 			TMRstart(TMR_DATAMOVE);
-			RENEW(cp->In.Data, char, cp->In.Size);
-			cp->In.Left = cp->In.Size - cp->In.Used;
+			RENEW(cp->In.data, char, cp->In.size);
+			cp->In.left = cp->In.size - cp->In.used;
 			/* do not move data, since RENEW did it already */
-			if ((i = p - cp->In.Data) != 0) {
+			if ((i = p - cp->In.data) != 0) {
 			    if (cp->State == CSgetheader ||
 				cp->State == CSgetbody ||
 				cp->State == CSeatarticle) {
@@ -1157,11 +1093,11 @@ CHANreadloop(void)
 			TMRstop(TMR_DATAMOVE);
 		    }
 		} else {
-		    p = cp->In.Data;
+		    p = cp->In.data;
 		    TMRstart(TMR_DATAMOVE);
-		    RENEW(cp->In.Data, char, START_BUFF_SIZE);
-		    cp->In.Size = cp->In.Left = START_BUFF_SIZE;
-		    if ((i = p - cp->In.Data) != 0) {
+		    RENEW(cp->In.data, char, START_BUFF_SIZE);
+		    cp->In.size = cp->In.left = START_BUFF_SIZE;
+		    if ((i = p - cp->In.data) != 0) {
 			if (cp->State == CSgetheader ||
 			    cp->State == CSgetbody ||
 			    cp->State == CSeatarticle) {
@@ -1196,9 +1132,9 @@ CHANreadloop(void)
 		}
 		else {
 		    bp = &cp->Out;
-		    if (bp->Left) {
+		    if (bp->left) {
 			cp->LastActive = Now.time;
-			i = CHANwrite(fd, &bp->Data[bp->Used], bp->Left);
+			i = CHANwrite(fd, &bp->data[bp->used], bp->left);
 			if (i <= 0) {
 			    oerrno = errno;
 			    p = CHANname(cp);
@@ -1229,16 +1165,16 @@ CHANreadloop(void)
 			else {
 			    cp->BadWrites = 0;
 			    cp->BlockedWrites = 0;
-			    bp->Left -= i;
-			    bp->Used += i;
-			    if (bp->Left <= 0) {
+			    bp->left -= i;
+			    bp->used += i;
+			    if (bp->left <= 0) {
 				WCHANremove(cp);
 				(*cp->WriteDone)(cp);
-			    } else if (bp->Used > (bp->Size/COMP_THRESHOLD)) {
+			    } else if (bp->used > (bp->size/COMP_THRESHOLD)) {
                                 /* compact the buffer, shoving the
                                    data back to the beginning.
                                    <rmtodd@mailhost.ecn.ou.edu> */
-                                BUFFset(bp, &bp->Data[bp->Used], bp->Left);
+                                buffer_set(bp, &bp->data[bp->used], bp->left);
  			    }
 			}
 		    }
