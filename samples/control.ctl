@@ -215,7 +215,7 @@ newgroup:fletcher@cs.utexas.edu:austin.*:doit
 newgroup:chip@unicom.com:austin.*:doit
 newgroup:pug@pug.net:austin.*:doit
 rmgroup:fletcher@cs.utexas.edu:austin.*:doit
-rmgrous:chip@unicom.com:austin.*:doit
+rmgroup:chip@unicom.com:austin.*:doit
 rmgroup:pug@pug.net:austin.*:doit
 
 ## AZ (Arizona, USA)
