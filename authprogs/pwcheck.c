@@ -33,8 +33,9 @@
  #  tech-transfer@andrew.cmu.edu
  *
  */
-#include "libauth.h"
 
+#include "config.h"
+#include "clibrary.h"
 #include <errno.h>
 #include <sys/un.h>
 #include <sys/uio.h>
@@ -43,6 +44,8 @@
 #ifdef HAVE_LIMITS_H
 # include <limits.h>
 #endif
+
+#include "libauth.h"
 
 #define STATEDIR	"/var"
 
@@ -146,17 +149,17 @@ login_plaintext(char *user, char *pass)
 
 int main(void)
 {
+    struct authinfo *authinfo;
 
-    char uname[SMBUF], pass[SMBUF];
-
-    if (get_auth(uname,pass) != 0) {
-        fprintf(stderr, "pwcheck: internal error.\n");
+    authinfo = get_auth();
+    if (authinfo->username[0] == '\0') {
+        fprintf(stderr, "pwcheck: empty username.\n");
         exit(1);
     }
 
-    if(!login_plaintext(uname, pass)) {
+    if (!login_plaintext(authinfo->username, authinfo->password)) {
       fprintf(stderr, "valid passwd\n");
-      printf("User:%s\n", uname);
+      printf("User:%s\n", authinfo->username);
       exit(0);
     }
     exit(1);
