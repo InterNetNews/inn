@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "SEND-UUCP 8"
-.TH SEND-UUCP 8 "2003-02-09" "INN 2.4.0" "InterNetNews Documentation"
+.TH SEND-UUCP 8 "2003-05-04" "INN 2.4.0" "InterNetNews Documentation"
 .SH "NAME"
 send\-uucp \- Send Usenet articles via UUCP
 .SH "SYNOPSIS"
@@ -154,12 +154,16 @@ configuration file \fIsend\-uucp.cf\fR.  Each site is specified with a line of
 the form:
 .PP
 .Vb 1
-\&    site [compressor [maxsize [batchtime]]]
+\&    site[:host] [compressor [maxsize [batchtime]]]
 .Ve
 .IP "\fIsite\fR" 4
 .IX Item "site"
-The \s-1UUCP\s0 site name being configured.  The same site name must be the
-same in both the \s-1UUCP\s0 configuration and the \s-1INN\s0 \fInewsfeeds\fR\|(5).
+The news site name being configured.  This must match a site name 
+from \fInewsfeeds\fR\|(5).
+.IP "\fIhost\fR" 4
+.IX Item "host"
+The \s-1UUCP\s0 host name to which batches should be sent for this site.
+If omitted, the news site name will be used as the \s-1UUCP\s0 host name.
 .IP "\fIcompressor\fR" 4
 .IX Item "compressor"
 The compression method to use for batches.  This should be one of compress,
