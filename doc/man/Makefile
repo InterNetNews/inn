@@ -9,12 +9,8 @@ SEC1	= convdate.1 getlist.1 grephistory.1 inews.1 innconfval.1 innfeed.1 \
 	nntpget.1 rnews.1 shlock.1 shrinkfile.1 startinnfeed.1 subst.1 \
 	simpleftp.1
 
-##  MISSING_MAN installs man pages for standard library functions the system
-##  didn't have (and which were therefore added to libinn), as detected by
-##  configure and recorded in Makefile.global.
-SEC3	= $(MISSING_MAN) \
-	clientlib.3 dbz.3 inndcomm.3 libinn.3 libstorage.3 parsedate.3 qio.3 \
-	wildmat.3
+SEC3	= clientlib.3 dbz.3 inndcomm.3 libinn.3 libstorage.3 parsedate.3 \
+	qio.3 wildmat.3
 
 SEC5	= active.5 buffindexed.conf.5 control.ctl.5 cycbuff.conf.5 \
 	distrib.pats.5 expire.ctl.5 history.5 incoming.conf.5 inn.conf.5 \
