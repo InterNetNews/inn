@@ -185,8 +185,9 @@ innxmit.o: innxmit.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/socket.h \
  ../include/portable/time.h ../include/inn/history.h \
  ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/inn/qio.h ../include/inn/wire.h ../include/libinn.h \
- ../include/nntp.h ../include/paths.h ../include/storage.h
+ ../include/inn/qio.h ../include/inn/timer.h ../include/inn/wire.h \
+ ../include/libinn.h ../include/nntp.h ../include/paths.h \
+ ../include/storage.h
 map.o: map.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/paths.h map.h
 ninpaths.o: ninpaths.c ../include/config.h ../include/inn/defines.h \
