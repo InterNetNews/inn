@@ -1150,9 +1150,6 @@ BOOL buffindexed_groupdel(char *group) {
   }
   GROUPlock(gloc, LOCK_WRITE);
   ge = &GROUPentries[gloc.recno];
-  if (ge->count != 0 && (handle = ovopensearch(group, ge->low, ge->high, TRUE)) != NULL)
-    ovclosesearch(handle, TRUE);
-  ge->count = 0;
   ge->deleted = time(NULL);
   HashClear(&ge->hash);
   GROUPlock(gloc, LOCK_UNLOCK);
@@ -1870,7 +1867,7 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
       gloc.recno = i;
       GROUPlock(gloc, LOCK_WRITE);
       ge = &GROUPentries[gloc.recno];
-      if (ge->expired >= OVrealnow || ge->deleted != 0 || ge->count == 0) {
+      if (ge->expired >= OVrealnow || ge->count == 0) {
 	GROUPlock(gloc, LOCK_UNLOCK);
 	continue;
       }
@@ -1883,7 +1880,7 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
 	if (Gib[j].artnum == 0)
 	  continue;
 	/* this may be duplicated, but ignore it in this case */
-	OVEXPremove(Gib[j].token);
+	OVEXPremove(Gib[j].token, TRUE);
       }
       freegroupblock();
       ovgroupunmap();
