@@ -498,13 +498,23 @@ sub collect
     return 1 if $left =~ m/\S+ renumber /o;
 
     # newgroup
-    if ($left =~ m/\S+ newgroup (\S+) as (\S)$/o)
+    if ($left =~ m/\S+ newgroup (\S+) as (\S)/o)
     {
       $innd_newgroup{$1} = $2;
       return 1;
     }
     # rmgroup
-    return 1 if $left =~ m/\S+ rmgroup/o;
+    if ($left =~ m/\S+ rmgroup (\S+)$/o)
+    {
+      $innd_rmgroup{$1}++;
+      return 1;
+    }
+    # change_group
+    if ($left =~ m/\S+ change_group (\S+) to (\S)/o)
+    {
+      $innd_changegroup{$1} = $2;
+      return 1;
+    }
     # paused
     if ($left =~ m/(\S+) paused /o)
     {
@@ -519,8 +529,6 @@ sub collect
       $innd_control{"reload"}++;
       return 1;
     }
-    # change_group
-    return 1 if $left =~ m/\S+ change_group/o;
     # shutdown
     if ($left =~ m/(\S+) shutdown/o)
     {

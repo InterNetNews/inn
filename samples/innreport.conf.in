@@ -168,6 +168,36 @@ section innd_newgroup {
         };
 };
 
+section innd_changegroup {
+        title   "Newsgroups changed:";
+        data    "%innd_changegroup";
+        column {
+                name          "Group";
+                format        "%-68.68s";
+                value         "$key";
+                format_total  "TOTAL%-63.63s";
+                total         "";
+        };
+        column {
+                name          "New mode";
+                format        "%10s";
+                value         "$innd_changegroup{$key}";
+                total         "$num";
+        };
+};
+
+section innd_rmgroup {
+        title   "Newsgroups removed:";
+        data    "%innd_rmgroup";
+        column {
+                name          "Group";
+                format        "%-78.78s";
+                value         "$key";
+                format_total  "TOTAL: %-71.71s";
+                total         "$num";
+        };
+};
+
 section innd_connect {
         title   "Incoming Feeds (INN):";
 	data    "%innd_seconds";
