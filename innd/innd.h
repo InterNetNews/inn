@@ -39,6 +39,7 @@
 #include <sys/stat.h>
 
 #include "dbz.h"
+#include "inn/timer.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
@@ -494,27 +495,23 @@ typedef struct _WIP {
 
 /*
 **  Supported timers.  If you add new timers to this list, also add them to
-**  the list of tags at the top of timer.c.
+**  the list of tags in chan.c.
 */
 enum timer {
-  TMR_IDLE,	/* Server is completely idle.		*/
-  TMR_HISHAVE,	/* Looking up ID in history (yes/no).	*/
-  TMR_HISGREP,	/* Looking up ID in history (data).	*/
-  TMR_HISWRITE,	/* Writing to history.			*/
-  TMR_HISSYNC,	/* Syncing history to disk.		*/
-  TMR_ARTCLEAN,	/* Analyzing an incoming article.	*/
-  TMR_ARTWRITE,	/* Writing an article.			*/
-  TMR_ARTCTRL,	/* Processing a control message.	*/
-  TMR_ARTCNCL,	/* Processing a cancel message.		*/
-  TMR_SITESEND,	/* Sending an article to feeds.		*/
-  TMR_OVERV,	/* Generating overview information.	*/
-  TMR_PERL,	/* Perl filter.				*/
-  TMR_PYTHON,	/* Python filter.			*/
-  TMR_NNTPREAD,	/* reading nntp data			*/
-  TMR_ARTPARSE,	/* parsing article			*/
-  TMR_ARTLOG,	/* logging article 			*/
-  TMR_DATAMOVE,	/* moving data				*/
-  TMR_MAX
+    TMR_IDLE = TMR_APPLICATION, /* Server is completely idle. */
+    TMR_ARTCLEAN,               /* Analyzing an incoming article. */
+    TMR_ARTWRITE,               /* Writing an article. */
+    TMR_ARTCTRL,                /* Processing a control message. */
+    TMR_ARTCNCL,                /* Processing a cancel message. */
+    TMR_SITESEND,               /* Sending an article to feeds. */
+    TMR_OVERV,                  /* Generating overview information. */
+    TMR_PERL,                   /* Perl filter. */
+    TMR_PYTHON,                 /* Python filter. */
+    TMR_NNTPREAD,               /* Reading NNTP data from the network. */
+    TMR_ARTPARSE,               /* Parsing an article. */
+    TMR_ARTLOG,                 /* Logging article disposition. */
+    TMR_DATAMOVE,               /* Moving data. */
+    TMR_MAX
 };
 
 
@@ -770,12 +767,6 @@ extern void		SITEwrite(SITE *sp, const char *text);
 
 extern void		STATUSinit(void);
 extern void		STATUSmainloophook(void);
-
-/* timer.c */
-extern void		TMRinit(void);
-extern int		TMRmainloophook(void);
-extern void		TMRstart(enum timer timer);
-extern void		TMRstop(enum timer timer);
 
 extern void		WIPsetup(void);
 extern WIP	    *	WIPnew(const char *messageid, CHANNEL *cp);

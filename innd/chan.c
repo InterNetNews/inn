@@ -26,6 +26,11 @@
 # define ENOTTY 0
 #endif
 
+static const char * const timer_name[] = {
+    "idle", "artclean", "artwrite", "artctrl", "artcncl", "sitesend",
+    "overv", "perl", "python", "nntpread", "artparse", "artlog", "datamove"
+};
+
 /* Minutes - basically, keep the connection open but idle */
 #define PAUSE_BEFORE_DROP               5
 
@@ -946,7 +951,9 @@ CHANreadloop(void)
     time_t		LastUpdate;
     HDRCONTENT		*hc;
 
-    TMRinit();
+    if (innconf->timer)
+        TMRinit(TMR_MAX);
+
     STATUSinit();
     
     LastUpdate = GetTimeInfo(&Now) < 0 ? 0 : Now.time;
@@ -958,8 +965,17 @@ CHANreadloop(void)
 	MyRead = RCHANmask;
 	MyWrite = WCHANmask;
 	MyTime = TimeOut;
-        i = TMRmainloophook();
-        if (i != 0) MyTime.tv_sec = i;
+	if (innconf->timer) {
+	    unsigned long now = TMRnow();
+
+	    if (now >= innconf->timer * 1000) {
+		TMRsummary(timer_name);
+		MyTime.tv_sec = innconf->timer;
+	    }
+	    else {
+		MyTime.tv_sec = innconf->timer - now / 1000;
+	    }
+	}
 	TMRstart(TMR_IDLE);
 	count = select(CHANlastfd + 1, &MyRead, &MyWrite, NULL, &MyTime);
 	TMRstop(TMR_IDLE);
