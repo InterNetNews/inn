@@ -70,9 +70,9 @@ static int date_lex(void);
 **  An entry in the lexical lookup table.
 */
 typedef struct _TABLE {
-    STRING	name;
-    int		type;
-    time_t	value;
+    const char * name;
+    int          type;
+    time_t       value;
 } TABLE;
 
 /*
@@ -619,10 +619,10 @@ RelativeMonth(Start, RelMonth)
 
 static int LookupWord(char *buff, int length)
 {
-    char	        *p;
-    STRING	        q;
-    TABLE	        *tp;
-    int	                c;
+    char *p;
+    const char *q;
+    TABLE *tp;
+    int	c;
 
     p = buff;
     c = p[0];
@@ -672,7 +672,7 @@ static int LookupWord(char *buff, int length)
     length++;
 
     /* Drop out any periods. */
-    for (p = buff, q = (STRING)buff; *q; q++)
+    for (p = buff, q = buff; *q; q++)
 	if (*q != '.')
 	    *p++ = *q;
     *p = '\0';
