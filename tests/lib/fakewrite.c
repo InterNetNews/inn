@@ -51,7 +51,8 @@ write(int fd UNUSED, const void *data, size_t n)
 ssize_t
 writev(int fd UNUSED, const struct iovec *iov, int iovcnt)
 {
-    int left, total, n, i;
+    int left, total, i;
+    size_t n;
 
     if (write_fail) return 0;
     if (write_interrupt && (write_interrupt++ % 2) == 0) {
