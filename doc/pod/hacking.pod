@@ -358,6 +358,11 @@ F<clibrary.h> does also include F<config.h>, but it's somewhat poor form
 to rely on this; it's better to explicitly list the header dependencies
 for the benefit of someone else reading the code.
 
+There are portable wrappers around several header files that have known
+portability traps or that need some fixing up on some platforms.  Look in
+include/portable and familiarize yourself with them and use them where
+appropriate.
+
 Another frequently included header file is F<macros.h>, which defines the
 NEW(), COPY(), and DISPOSE() macros that are used throughout INN for
 memory management rather than directly calling malloc(), strdup(), and
@@ -410,6 +415,38 @@ If you're writing a substantial new piece of code, the prevailing
 "standard" INN coding style appears to be something like the following:
 
 =over 3
+
+=item *
+
+Write in regular ANSI C whenever possible.  Use the normal ANSI and POSIX
+constructs and use autoconf or portability wrappers to fix things up
+beforehand so that the code itself can read like regular ANSI or POSIX
+code.  Code should be written so that it works as expected on a modern
+platform and is fixed up with portability tricks for older platforms, not
+the other way around.  You may assume an ANSI C compiler.
+
+Try to use const wherever appropriate.  Don't use register; modern
+compilers will do as good of a job as you will in choosing what to put
+into a register.  Don't bother with restrict (at least yet).
+
+=item *
+
+Avoid #ifdef and friends whenever possible.  Particularly avoid using them
+in the middle of code blocks.  Try to hide all portability preprocessor
+magic in header files or in portability code in lib.  When something just
+has to be done two completely different ways depending on the platform or
+compile options or the like, try to abstract that functionality out into a
+generic function and provide two separate implementations using #ifdef;
+then the main code can just call that function.
+
+If you do have to use preprocessor defines, note that if you always define
+them to either 0 or 1 (never use #define without a second argument), you
+can use the preprocessor define in a regular if statement rather than
+using #if or #ifdef.  Make use of this instead of #ifdef when possible,
+since that way the compiler will still syntax-check the other branch for
+you and it makes it far easier to convert the code to use a run-time check
+if necessary.  (Unfortunately, this trick can't be used if one branch may
+call functions unavailable on a particular platform.)
 
 =item *
 
@@ -470,9 +507,11 @@ necessary to typedef the struct to something else.  Structs are actually
 very useful for opaque data structures, since you can predeclare them and
 then manipulate pointers to them without ever having to know what the
 contents look like.  Please try to avoid typedefs except for function
-pointers or other extremely confusing data types.  Also avoid using the _t
-suffix for any type; all types ending in _t are reserved by POSIX.  For
-typedefs of function pointer types, a suffix of _func usually works.
+pointers or other extremely confusing data types, or for data types where
+we really gain some significant data abstraction from hiding the
+underlying data type.  Also avoid using the _t suffix for any type; all
+types ending in _t are reserved by POSIX.  For typedefs of function
+pointer types, a suffix of _func usually works.
 
 This style point is currently widely violated inside of INN itself; INN
 originally made extensive use of typedefs.
