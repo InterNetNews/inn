@@ -2262,7 +2262,7 @@ static void hostDetails (scope *s,
               NO_CHECK_HIGH, rv, name, NO_CHECK_LOW, *lowFilter);
       rv = 100.0 ;
     }
-  *highFilter = rv / 10.0 ;
+  *highFilter = rv * (FILTERVALUE/100.0) ;
       
 
   if (!getInteger (s,PORT_NUMBER,&iv,INHERIT))
@@ -2655,9 +2655,9 @@ static void hostLogStatus (void)
       fprintf(fp,"         max checks: %-5d               streaming: %s\n",
 	       defaultMaxChecks, (defaultStreaming ? "true" : "false")) ;
       fprintf(fp,"       on threshold: %-2.1f%%                port num: %d\n",
-	       (defaultHighFilter * 10), defaultPortNumber) ;
+	       (defaultHighFilter * 100.0 / FILTERVALUE), defaultPortNumber) ;
       fprintf(fp,"      off threshold: %-2.1f%%\n\n",
-	       (defaultLowFilter * 10)) ;
+	       (defaultLowFilter * 100.0 / FILTERVALUE)) ;
 
       tapeLogGlobalStatus (fp) ;
 
@@ -2745,11 +2745,11 @@ static void hostPrintStatus (Host host, FILE *fp)
 	   host->initialCxns) ;
 
   fprintf (fp, "   missing: %-7ld   on threshold: %-3.1f%%      idle cxns: %d\n",
-	   (long) host->gArtsMissing, (host->lowPassHigh * 10),
+	   (long) host->gArtsMissing, (host->lowPassHigh * 100.0 / FILTERVALUE),
            host->maxConnections - (host->activeCxns + host->sleepingCxns)) ;
 
   fprintf (fp, "  deferred: %-7ld  off threshold: %-3.1f%%       max cxns: %d\n",
-	   (long) host->gArtsDeferred, (host->lowPassLow * 10),
+	   (long) host->gArtsDeferred, (host->lowPassLow * 100.0 / FILTERVALUE),
 	   host->maxConnections) ;
 
   fprintf (fp, "  requeued: %-7ld                         queue length: %-3.1f\n",
