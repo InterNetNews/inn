@@ -374,14 +374,6 @@ readers and are implemented by nnrpd(8).
 B<innd> modifies as few article headers as possible, although it could be
 better in this area.
 
-The following headers, if present, are removed:
-
-    Date-Received
-    Posted
-    Posting-Version
-    Received
-    Relay-Version
-
 Empty headers and headers that consist of nothing but whitespace are also
 dropped.
 
@@ -398,6 +390,20 @@ A Lines: header will be added if the article was missing one.
 B<innd> does not rewrite incorrect headers.  For example, it will not
 replace an incorrect Lines header, but instead may reject such an article
 depending on the value of I<linecountfuzz> in F<inn.conf>.
+
+=head1 CANCEL FEEDS
+
+In order to efficiently apply a large number of local cancels (such as
+from processing NoCeMs or from some other external source), INN supports a
+special feed mode available only to connections to the local Unix domain
+socket (not to connections to any network sockets).
+
+To enter this mode, connect to the Unix domain socket (I<pathrun>/nntpin)
+and send the command MODE CANCEL.  The response will have code 284.  Every
+subsequent line sent on that connection should consist of a single message
+ID.  An attempt will be made to cancel that message ID, and the server
+will reply 289 for success or 484 for failure.  (Failure can occur in
+circumstances such as the server being paused.)
 
 =head1 LOGGING
 
