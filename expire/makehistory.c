@@ -72,10 +72,10 @@ int RetrMode;
 TIMEINFO Now;
 
 /* Misc variables needed for the overview creation code. */
-static char		MESSAGEID[] = "Message-ID:";
-static char		EXPIRES[] = "Expires:";
-static char		DATE[] = "Date:";
-static char		XREF[] = "Xref:";
+static char		MESSAGEID[] = "Message-ID";
+static char		EXPIRES[] = "Expires";
+static char		DATE[] = "Date";
+static char		XREF[] = "Xref";
 static ARTOVERFIELD	*ARTfields; /* overview fields listed in overview.fmt */
 static size_t		ARTfieldsize;
 static ARTOVERFIELD	*Datep = (ARTOVERFIELD *)NULL;
@@ -422,13 +422,13 @@ ARTreadschema(bool Overview)
 	    fp->Header = (char *)NULL;
 	    fp->HasHeader = false;
 	    fp->HeaderLength = 0;
-	    if (strncasecmp(buff, DATE, strlen(DATE)-1) == 0)
+	    if (strncasecmp(buff, DATE, strlen(DATE)) == 0)
 		Datep = fp;
-	    if (strncasecmp(buff, MESSAGEID, strlen(MESSAGEID)-1) == 0)
+	    if (strncasecmp(buff, MESSAGEID, strlen(MESSAGEID)) == 0)
 		Msgidp = fp;
-	    if (strncasecmp(buff, EXPIRES, strlen(EXPIRES)-1) == 0)
+	    if (strncasecmp(buff, EXPIRES, strlen(EXPIRES)) == 0)
 		Expp = fp;
-	    if (strncasecmp(buff, XREF, strlen(XREF)-1) == 0) {
+	    if (strncasecmp(buff, XREF, strlen(XREF)) == 0) {
 		Xrefp = fp;
 		foundxreffull = fp->NeedHeadername;
             }
@@ -451,7 +451,7 @@ ARTreadschema(bool Overview)
 	if (Msgidp == (ARTOVERFIELD *)NULL) {
 	    fp->NeedHeadername = false;
 	    fp->Headername = xstrdup(MESSAGEID);
-	    fp->HeadernameLength = strlen(MESSAGEID)-1;
+	    fp->HeadernameLength = strlen(MESSAGEID);
 	    fp->Header = (char *)NULL;
 	    fp->HasHeader = false;
 	    fp->HeaderLength = 0;
@@ -460,7 +460,7 @@ ARTreadschema(bool Overview)
 	if (Datep == (ARTOVERFIELD *)NULL) {
 	    fp->NeedHeadername = false;
 	    fp->Headername = xstrdup(DATE);
-	    fp->HeadernameLength = strlen(DATE)-1;
+	    fp->HeadernameLength = strlen(DATE);
 	    fp->Header = (char *)NULL;
 	    fp->HasHeader = false;
 	    fp->HeaderLength = 0;
@@ -469,7 +469,7 @@ ARTreadschema(bool Overview)
 	if (Expp == (ARTOVERFIELD *)NULL) {
 	    fp->NeedHeadername = false;
 	    fp->Headername = xstrdup(EXPIRES);
-	    fp->HeadernameLength = strlen(EXPIRES)-1;
+	    fp->HeadernameLength = strlen(EXPIRES);
 	    fp->Header = (char *)NULL;
 	    fp->HasHeader = false;
 	    fp->HeaderLength = 0;
@@ -478,7 +478,7 @@ ARTreadschema(bool Overview)
         if (Overview && Xrefp == (ARTOVERFIELD *)NULL) {
 	    fp->NeedHeadername = false;
 	    fp->Headername = xstrdup(XREF);
-	    fp->HeadernameLength = strlen(XREF)-1;
+	    fp->HeadernameLength = strlen(XREF);
 	    fp->Header = (char *)NULL;
 	    fp->HasHeader = false;
 	    fp->HeaderLength = 0;
@@ -567,12 +567,12 @@ DoArt(ARTHANDLE *art)
 	    return;
 	if (ann.artnum == 0)
 	    return;
-	len = strlen(XREF) + 1 + strlen(innconf->pathhost) + 1 + strlen(ann.groupname) + 1 + 16 + 1;
+	len = strlen(XREF) + 2 + strlen(innconf->pathhost) + 1 + strlen(ann.groupname) + 1 + 16 + 1;
 	if (len > BIG_BUFFER) {
 	    Xrefp->Header = NULL;
 	    Xrefp->HeaderLength = 0;
 	} else {
-	    snprintf(overdata, sizeof(overdata), "%s %s %s:%lu", XREF,
+	    snprintf(overdata, sizeof(overdata), "%s: %s %s:%lu", XREF,
                      innconf->pathhost, ann.groupname, ann.artnum);
 	    Xrefp->Header = overdata;
 	    Xrefp->HeaderLength = strlen(overdata);
@@ -592,7 +592,7 @@ DoArt(ARTHANDLE *art)
     }
 
     buffer_set(&buffer, Msgidp->Header, Msgidp->HeaderLength);
-    buffer_append(&buffer, NUL, strlen(NUL));
+    buffer_append(&buffer, NUL, 1);
     for (i = 0, q = buffer.data; i < buffer.left; q++, i++)
 	if (*q == '\t' || *q == '\n' || *q == '\r')
 	    *q = ' ';
@@ -613,7 +613,7 @@ DoArt(ARTHANDLE *art)
 	Posted = Arrived;
     } else {
         buffer_set(&buffer, Datep->Header, Datep->HeaderLength);
-        buffer_append(&buffer, NUL, strlen(NUL));
+        buffer_append(&buffer, NUL, 1);
 	for (i = 0, q = buffer.data; i < buffer.left; q++, i++)
 	    if (*q == '\t' || *q == '\n' || *q == '\r')
 		*q = ' ';
@@ -623,7 +623,7 @@ DoArt(ARTHANDLE *art)
 
     if (Expp->HasHeader) {
         buffer_set(&buffer, Expp->Header, Expp->HeaderLength);
-        buffer_append(&buffer, NUL, strlen(NUL));
+        buffer_append(&buffer, NUL, 1);
 	for (i = 0, q = buffer.data; i < buffer.left; q++, i++)
 	    if (*q == '\t' || *q == '\n' || *q == '\r')
 		*q = ' ';
