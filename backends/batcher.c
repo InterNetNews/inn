@@ -2,6 +2,7 @@
 **
 **  Read batchfiles on standard input and spew out batches.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
@@ -20,31 +21,31 @@
 /*
 **  Global variables.
 */
-STATIC BOOL	BATCHopen;
-STATIC BOOL	STATprint;
-STATIC double	STATbegin;
-STATIC double	STATend;
-STATIC char	*Host;
-STATIC char	*InitialString;
-STATIC char	*Input;
-STATIC char	*Processor;
-STATIC int	ArtsInBatch;
-STATIC int	ArtsWritten;
-STATIC int	BATCHcount;
-STATIC int	MaxBatches;
-STATIC int	BATCHstatus;
-STATIC long	BytesInBatch = 60 * 1024;
-STATIC long	BytesWritten;
-STATIC long	MaxArts;
-STATIC long	MaxBytes;
-STATIC sig_atomic_t	GotInterrupt;
-STATIC STRING	Separator = "#! rnews %ld";
-STATIC char	*ERRLOG;
+static bool	BATCHopen;
+static bool	STATprint;
+static double	STATbegin;
+static double	STATend;
+static char	*Host;
+static char	*InitialString;
+static char	*Input;
+static char	*Processor;
+static int	ArtsInBatch;
+static int	ArtsWritten;
+static int	BATCHcount;
+static int	MaxBatches;
+static int	BATCHstatus;
+static long	BytesInBatch = 60 * 1024;
+static long	BytesWritten;
+static long	MaxArts;
+static long	MaxBytes;
+static sig_atomic_t	GotInterrupt;
+static const char *Separator = "#! rnews %ld";
+static char	*ERRLOG;
 
 /*
 **  Start a batch process.
 */
-STATIC FILE *
+static FILE *
 BATCHstart()
 {
     FILE	*F;
@@ -67,7 +68,7 @@ BATCHstart()
 /*
 **  Close a batch, return exit status.
 */
-STATIC int
+static int
 BATCHclose(F)
     FILE	*F;
 {
@@ -81,11 +82,8 @@ BATCHclose(F)
 /*
 **  Update the batch file and exit.
 */
-STATIC NORETURN
-RequeueAndExit(Cookie, line, BytesInArt)
-    OFFSET_T	Cookie;
-    char	*line;
-    long	BytesInArt;
+static void
+RequeueAndExit(off_t Cookie, char *line, long BytesInArt)
 {
     static char	LINE1[] = "batcher %s times user %.3f system %.3f elapsed %.3f";
     static char	LINE2[] ="batcher %s stats batches %d articles %d bytes %ld";
@@ -181,13 +179,13 @@ RequeueAndExit(Cookie, line, BytesInArt)
 /*
 **  Mark that we got interrupted.
 */
-STATIC SIGHANDLER
-CATCHinterrupt(s)
-    int		s;
+static RETSIGTYPE
+CATCHinterrupt(int s)
 {
     GotInterrupt = TRUE;
+
     /* Let two interrupts kill us. */
-    (void)xsignal(s, SIG_DFL);
+    xsignal(s, SIG_DFL);
 }
 
 
@@ -195,10 +193,10 @@ CATCHinterrupt(s)
 /*
 **  Print a usage message and exit.
 */
-STATIC NORETURN
-Usage()
+static void
+Usage(void)
 {
-    (void)fprintf(stderr, "batcher usage_error.\n");
+    fprintf(stderr, "batcher usage_error.\n");
     exit(1);
 }
 
@@ -209,9 +207,9 @@ main(ac, av)
     char	*av[];
 {
     static char	SKIPPING[] = "batcher %s skipping \"%.40s...\" %s\n";
-    BOOL	Redirect;
+    bool	Redirect;
     FILE	*F;
-    STRING	AltSpool;
+    const char	*AltSpool;
     TIMEINFO	Now;
     char	*p;
     char	*data;
@@ -219,8 +217,8 @@ main(ac, av)
     char	buff[BIG_BUFFER];
     int		BytesInArt;
     long	BytesInCB;
-    OFFSET_T	Cookie;
-    SIZE_T	datasize;
+    off_t	Cookie;
+    size_t	datasize;
     int		i;
     int		ArtsInCB;
     int		length;

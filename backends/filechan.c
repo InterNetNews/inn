@@ -25,18 +25,18 @@ main(ac, av)
     char		*av[];
 {
     char		buff[2048];
-    register char	*p;
-    register char	*next;
-    register int	i;
-    register int	fd;
+    char                *p;
+    char                *next;
+    int                 i;
+    int                 fd;
     int			Fields;
-    STRING		Directory;
-    BOOL		Map;
+    const char		*Directory;
+    bool		Map;
     FILE		*F;
     struct stat		Sb;
-    UID_T		uid;
-    GID_T		gid;
-    UID_T		myuid;
+    uid_t		uid;
+    gid_t		gid;
+    uid_t		myuid;
 
     /* First thing, set up logging and our identity. */
     openlog("filechan", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);           
@@ -126,20 +126,20 @@ main(ac, av)
 	    fd = open(p, O_CREAT | O_WRONLY | O_APPEND, BATCHFILE_MODE);
 	    if (fd >= 0) {
 		/* Try to lock it and set the ownership right. */
-		(void)lock_file(fd, LOCK_WRITE, TRUE);
+		lock_file(fd, LOCK_WRITE, TRUE);
 		if (myuid == 0 && uid != 0)
-		    (void)chown(p, uid, gid);
+		    chown(p, uid, gid);
 
 		/* Just in case, seek to the end. */
-		(void)lseek(fd, (OFFSET_T) 0, SEEK_END);
+		lseek(fd, 0, SEEK_END);
 
 		errno = 0;
-		if (write(fd, (POINTER)buff, (SIZE_T)i) != i) {
+		if (write(fd, buff, i) != i) {
 		    perror("write");
 		    exit(1);
 		}
 
-		(void)close(fd);
+		close(fd);
 	    }
 	}
     }

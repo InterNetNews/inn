@@ -32,8 +32,7 @@
 #include "libinn.h"
 #include "macros.h"
 
-
-#define MAX_SIZE	(OFFSET_T)0x7fffffff
+#define MAX_SIZE	0x7fffffffUL
 
 
 static char *program = NULL;	/* our name */
@@ -41,7 +40,7 @@ static char *program = NULL;	/* our name */
 /*
 **  Open a safe unique temporary file that will go away when closed.
 */
-STATIC FILE *
+static FILE *
 OpenTemp()
 {
     FILE	*F;
@@ -71,7 +70,7 @@ OpenTemp()
 /*
 **  Does file end with \n?  Assume it does on I/O error, to avoid doing I/O.
 */
-STATIC int
+static int
 EndsWithNewline(F)
     FILE	*F;
 {
@@ -97,7 +96,7 @@ EndsWithNewline(F)
 /*
 **  Add a newline to location of a file.
 */
-STATIC BOOL
+static bool
 AppendNewline(name)
     char	*name;
 {
@@ -124,10 +123,8 @@ AppendNewline(name)
 /*
 **  Just check if it is too big
 */
-STATIC BOOL
-TooBig(F, maxsize)
-    FILE	*F;
-    OFFSET_T	maxsize;
+static bool
+TooBig(FILE *F, off_t maxsize)
 {
     struct stat	Sb;
 
@@ -145,15 +142,10 @@ TooBig(F, maxsize)
 /*
 **  This routine does all the work.
 */
-STATIC BOOL
-Process(F, name, size, maxsize, Changedp)
-    FILE	*F;
-    char	*name;
-    OFFSET_T	size;
-    OFFSET_T	maxsize;
-    BOOL	*Changedp;
+static bool
+Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
 {
-    OFFSET_T	len;
+    off_t	len;
     FILE	*tmp;
     struct stat	Sb;
     char	buff[BUFSIZ + 1];
@@ -225,8 +217,8 @@ Process(F, name, size, maxsize, Changedp)
 
     /* Copy rest of file to temp. */
     tmp = OpenTemp();
-    while ((i = fread((POINTER)buff, (SIZE_T)1, (SIZE_T)sizeof buff, F)) > 0)
-	if (fwrite((POINTER)buff, (SIZE_T)1, (SIZE_T)i, tmp) != i) {
+    while ((i = fread(buff, 1, sizeof buff, F)) > 0)
+	if (fwrite(buff, 1, i, tmp) != i) {
 	    i = -1;
 	    break;
 	}
@@ -248,8 +240,8 @@ Process(F, name, size, maxsize, Changedp)
     }
     fseeko(tmp, 0, SEEK_SET);
 
-    while ((i = fread((POINTER)buff, (SIZE_T)1, (SIZE_T)sizeof buff, tmp)) > 0)
-	if (fwrite((POINTER)buff, (SIZE_T)1, (SIZE_T)i, F) != i) {
+    while ((i = fread(buff, 1, sizeof buff, tmp)) > 0)
+	if (fwrite(buff, 1, i, F) != i) {
 	    i = -1;
 	    break;
 	}
@@ -271,11 +263,10 @@ Process(F, name, size, maxsize, Changedp)
 /*
 **  Convert size argument to numeric value.  Return -1 on error.
 */
-STATIC OFFSET_T
-ParseSize(p)
-    char	*p;
+static off_t
+ParseSize(char *p)
 {
-    OFFSET_T	scale;
+    off_t	scale;
     long	str_num;
     char	*q;
 
@@ -323,10 +314,10 @@ ParseSize(p)
 /*
 **  Print usage message and exit.
 */
-STATIC NORETURN
-Usage()
+static void
+Usage(void)
 {
-    (void)fprintf(stderr, "Usage: %s [-n] [ -m maxsize ] [-s size] [-v] file...\n", program);
+    fprintf(stderr, "Usage: %s [-n] [ -m maxsize ] [-s size] [-v] file...\n", program);
     exit(1);
 }
 
@@ -336,14 +327,14 @@ main(ac, av)
     int		ac;
     char	*av[];
 {
-    BOOL	Changed;
-    BOOL	Verbose;
-    BOOL	no_op;
+    bool	Changed;
+    bool	Verbose;
+    bool	no_op;
     FILE	*F;
     char	*p;
     int		i;
-    OFFSET_T	size = (OFFSET_T)0;
-    OFFSET_T	maxsize = (OFFSET_T)0;
+    off_t	size = 0;
+    off_t	maxsize = 0;
 
     /* First thing, set up logging and our identity. */
     openlog("shrinkfile", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);

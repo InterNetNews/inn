@@ -110,7 +110,7 @@ Here's the relevant portion of my innwatch.ctl:
 #define KILOBYTES	1024L
 
 void
-Printspace(char *path, BOOL inode, BOOL needpadding)
+Printspace(char *path, bool inode, bool needpadding)
 {
 	struct STATSTRUC buf;
 	STATTYPES value;
@@ -158,9 +158,9 @@ Usage(void)
 int
 main(int argc, char **argv)
 {
-	BOOL inode = FALSE;
-	BOOL overview = FALSE;
-	BOOL numberofoverview = FALSE;
+	bool inode = FALSE;
+	bool overview = FALSE;
+	bool numberofoverview = FALSE;
 	int i, count, total = 0;
 	QIOSTATE *qp;
 	char *p, *q;

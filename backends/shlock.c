@@ -1,36 +1,34 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Produce reliable locks for shell scripts, by Peter Honeyman as told
 **  to Rich $alz.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <errno.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <sys/stat.h>
 
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 
-
-STATIC BOOL	BinaryLock;
-STATIC char	CANTUNLINK[] = "Can't unlink \"%s\", %s\n";
-STATIC char	CANTOPEN[] = "Can't open \"%s\", %s\n";
+static bool	BinaryLock;
+static char	CANTUNLINK[] = "Can't unlink \"%s\", %s\n";
+static char	CANTOPEN[] = "Can't open \"%s\", %s\n";
 
 
 /*
 **  See if the process named in an existing lock still exists by
 **  sending it a null signal.
 */
-STATIC BOOL
+static bool
 ValidLock(name, JustChecking)
     char		*name;
-    BOOL		JustChecking;
+    bool		JustChecking;
 {
     register int	fd;
     register int	i;
-    PID_T		pid;
+    pid_t		pid;
     char		buff[BUFSIZ];
 
     /* Open the file. */
@@ -54,7 +52,7 @@ ValidLock(name, JustChecking)
 	    return FALSE;
 	}
 	buff[i] = '\0';
-	pid = (PID_T) atol(buff);
+	pid = (pid_t) atol(buff);
     }
     (void)close(fd);
     if (pid <= 0)
@@ -72,7 +70,7 @@ ValidLock(name, JustChecking)
 /*
 **  Unlink a file, print a message on error, and exit.
 */
-STATIC NORETURN
+static void
 UnlinkAndExit(name, x)
     char	*name;
     int		x;
@@ -86,12 +84,11 @@ UnlinkAndExit(name, x)
 /*
 **  Print a usage message and exit.
 */
-STATIC NORETURN
-Usage()
+static void
+Usage(void)
 {
-    (void)fprintf(stderr, "Usage: shlock [-u|-b] -f file -p pid\n");
+    fprintf(stderr, "Usage: shlock [-u|-b] -f file -p pid\n");
     exit(1);
-    /* NOTREACHED */
 }
 
 
@@ -106,9 +103,9 @@ main(ac, av)
     char		tmp[BUFSIZ];
     char		buff[BUFSIZ];
     char		*name;
-    PID_T		pid;
-    BOOL		ok;
-    BOOL		JustChecking;
+    pid_t		pid;
+    bool		ok;
+    bool		JustChecking;
 
     /* Set defaults. */
     pid = 0;
@@ -130,7 +127,7 @@ main(ac, av)
 	    JustChecking = TRUE;
 	    break;
 	case 'p':
-	    pid = (PID_T) atol(optarg);
+	    pid = (pid_t) atol(optarg);
 	    break;
 	case 'f':
 	    name = optarg;
@@ -168,11 +165,11 @@ main(ac, av)
 
     /* Write the process ID. */
     if (BinaryLock)
-	ok = write(fd, (POINTER)&pid, (SIZE_T)sizeof pid) == sizeof pid;
+	ok = write(fd, &pid, sizeof pid) == sizeof pid;
     else {
 	(void)sprintf(buff, "%ld\n", (long) pid);
 	i = strlen(buff);
-	ok = write(fd, (POINTER)buff, (SIZE_T)i) == i;
+	ok = write(fd, buff, i) == i;
     }
     if (!ok) {
 	(void)fprintf(stderr, "Can't write PID to \"%s\", %s\n",

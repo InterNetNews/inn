@@ -1,25 +1,20 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Transmit articles to remote site.
-**  Modified for NNTP streaming: 3Jan96 Jerry Aguirre
+**  Modified for NNTP streaming: 1996-01-03 Jerry Aguirre
 */
+
 #include "config.h"
 #include "clibrary.h"
+#include "portable/time.h"
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <syslog.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
-
-#ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
-#endif
 
 #include "dbz.h"
 #include "inn/qio.h"
@@ -81,63 +76,63 @@ static int logRejects = FALSE ;  /* syslog the 437 responses. */
 /*
 ** Syslog formats - collected together so they remain consistent
 */
-STATIC char	STAT1[] =
+static char	STAT1[] =
 	"%s stats offered %lu accepted %lu refused %lu rejected %lu missing %lu accsize %.0f rejsize %.0f";
-STATIC char	STAT2[] = "%s times user %.3f system %.3f elapsed %.3f";
-STATIC char	GOT_RESENDIT[] = "%s requeued %s %s";
-STATIC char	GOT_BADCOMMAND[] = "%s rejected %s %s";
-STATIC char	REJECTED[] = "%s rejected %s (%s) %s";
-STATIC char	REJ_STREAM[] = "%s rejected (%s) %s";
-STATIC char	CANT_CONNECT[] = "%s connect failed %s";
-STATIC char	CANT_AUTHENTICATE[] = "%s authenticate failed %s";
-STATIC char	IHAVE_FAIL[] = "%s ihave failed %s";
+static char	STAT2[] = "%s times user %.3f system %.3f elapsed %.3f";
+static char	GOT_RESENDIT[] = "%s requeued %s %s";
+static char	GOT_BADCOMMAND[] = "%s rejected %s %s";
+static char	REJECTED[] = "%s rejected %s (%s) %s";
+static char	REJ_STREAM[] = "%s rejected (%s) %s";
+static char	CANT_CONNECT[] = "%s connect failed %s";
+static char	CANT_AUTHENTICATE[] = "%s authenticate failed %s";
+static char	IHAVE_FAIL[] = "%s ihave failed %s";
 
-STATIC char	CANT_FINDIT[] = "%s can't find %s";
-STATIC char	CANT_PARSEIT[] = "%s can't parse ID %s";
-STATIC char	UNEXPECTED[] = "%s unexpected response code %s";
+static char	CANT_FINDIT[] = "%s can't find %s";
+static char	CANT_PARSEIT[] = "%s can't parse ID %s";
+static char	UNEXPECTED[] = "%s unexpected response code %s";
 
 /*
 **  Global variables.
 */
-STATIC BOOL		AlwaysRewrite;
-STATIC BOOL		Debug;
-STATIC BOOL		DoRequeue = TRUE;
-STATIC BOOL		Purging;
-STATIC BOOL		STATprint;
-STATIC char		*BATCHname;
-STATIC char		*BATCHtemp;
-STATIC char		*REMhost;
-STATIC double		STATbegin;
-STATIC double		STATend;
-STATIC FILE		*BATCHfp;
-STATIC int		FromServer;
-STATIC int		ToServer;
-STATIC QIOSTATE		*BATCHqp;
-STATIC sig_atomic_t	GotAlarm;
-STATIC sig_atomic_t	GotInterrupt;
-STATIC sig_atomic_t	JMPyes;
-STATIC jmp_buf		JMPwhere;
-STATIC char		*REMbuffer;
-STATIC char		*REMbuffptr;
-STATIC char		*REMbuffend;
-STATIC unsigned long	STATaccepted;
-STATIC unsigned long	STAToffered;
-STATIC unsigned long	STATrefused;
-STATIC unsigned long	STATrejected;
-STATIC unsigned long	STATmissing;
-STATIC double		STATacceptedsize;
-STATIC double		STATrejectedsize;
+static bool		AlwaysRewrite;
+static bool		Debug;
+static bool		DoRequeue = TRUE;
+static bool		Purging;
+static bool		STATprint;
+static char		*BATCHname;
+static char		*BATCHtemp;
+static char		*REMhost;
+static double		STATbegin;
+static double		STATend;
+static FILE		*BATCHfp;
+static int		FromServer;
+static int		ToServer;
+static QIOSTATE		*BATCHqp;
+static sig_atomic_t	GotAlarm;
+static sig_atomic_t	GotInterrupt;
+static sig_atomic_t	JMPyes;
+static jmp_buf		JMPwhere;
+static char		*REMbuffer;
+static char		*REMbuffptr;
+static char		*REMbuffend;
+static unsigned long	STATaccepted;
+static unsigned long	STAToffered;
+static unsigned long	STATrefused;
+static unsigned long	STATrejected;
+static unsigned long	STATmissing;
+static double		STATacceptedsize;
+static double		STATrejectedsize;
 
 
 /*
 **  Find the history file entry for the Message-ID and return a file
 **  positioned at the third field.
 */
-STATIC FILE *HistorySeek(char *MessageID)
+static FILE *HistorySeek(char *MessageID)
 {
     static char		*History = NULL;
     static FILE		*F;
-    OFFSET_T		offset;
+    off_t		offset;
 
     /* Open the history file. */
     if (F == NULL) {
@@ -171,7 +166,7 @@ STATIC FILE *HistorySeek(char *MessageID)
 /*
 **  Return TRUE if the history file has the article expired.
 */
-STATIC BOOL
+static bool
 Expired(char *MessageID) {
     int		c;
     int		i;
@@ -200,7 +195,7 @@ Expired(char *MessageID) {
 /*
 **  Flush and reset the site's output buffer.  Return FALSE on error.
 */
-STATIC BOOL
+static bool
 REMflush() {
     int		i;
 
@@ -215,7 +210,7 @@ REMflush() {
 **  The hash is to speed up the search.
 **  the protocol.
 */
-STATIC int
+static int
 stindex(char *MessageID, int hash) {
     int i;
 
@@ -237,7 +232,7 @@ stindex(char *MessageID, int hash) {
 }
 
 /* stidhash(): calculate a hash value for message IDs to speed comparisons */
-STATIC int
+static int
 stidhash(char *MessageID) {
     char	*p;
     int		hash;
@@ -255,7 +250,7 @@ stidhash(char *MessageID) {
 }
 
 /* stalloc(): save path, ID, and qp into one of the streaming mode entries */
-STATIC int
+static int
 stalloc(char *Article, char *MessageID, ARTHANDLE *art, int hash) {
     int i;
 
@@ -287,7 +282,7 @@ stalloc(char *Article, char *MessageID, ARTHANDLE *art, int hash) {
 }
 
 /* strel(): release for reuse one of the streaming mode entries */
-STATIC void
+static void
 strel(int i) {
 	if (stbuf[i].art) {
 	    SMfreearticle(stbuf[i].art);
@@ -301,8 +296,8 @@ strel(int i) {
 /*
 **  Send a line to the server, adding the dot escape and \r\n.
 */
-STATIC BOOL
-REMwrite(char *p, int i, BOOL escdot) {
+static bool
+REMwrite(char *p, int i, bool escdot) {
     int	size;
 
     /* Buffer too full? */
@@ -320,7 +315,7 @@ REMwrite(char *p, int i, BOOL escdot) {
     /* Dot escape, text of the line, line terminator. */
     if (escdot && (*p == '.'))
 	*REMbuffptr++ = '.';
-    (void)memcpy((POINTER)REMbuffptr, (POINTER)p, (SIZE_T)i);
+    memcpy(REMbuffptr, p, i);
     REMbuffptr += i;
     *REMbuffptr++ = '\r';
     *REMbuffptr++ = '\n';
@@ -332,8 +327,9 @@ REMwrite(char *p, int i, BOOL escdot) {
 /*
 **  Print transfer statistics, clean up, and exit.
 */
-STATIC NORETURN
-ExitWithStats(int x) {
+static void
+ExitWithStats(int x)
+{
     static char		QUIT[] = "quit";
     TIMEINFO		Now;
     double		usertime;
@@ -378,7 +374,7 @@ ExitWithStats(int x) {
 **  Close the batchfile and the temporary file, and rename the temporary
 **  to be the batchfile.
 */
-STATIC void
+static void
 CloseAndRename() {
     /* Close the files, rename the temporary. */
     if (BATCHqp) {
@@ -405,7 +401,7 @@ CloseAndRename() {
 **  Requeue an article, opening the temp file if we have to.  If we get
 **  a file write error, exit so that the original input is left alone.
 */
-STATIC void
+static void
 Requeue(char *Article, char *MessageID) {
     /* Temp file already open? */
     if (BATCHfp == NULL) {
@@ -436,7 +432,7 @@ Requeue(char *Article, char *MessageID) {
 /*
 **  Requeue an article then copy the rest of the batch file out.
 */
-STATIC void
+static void
 RequeueRestAndExit(char *Article, char *MessageID) {
     char	*p;
 
@@ -498,7 +494,7 @@ RequeueRestAndExit(char *Article, char *MessageID) {
 /*
 **  Clean up the NNTP escapes from a line.
 */
-STATIC char *
+static char *
 REMclean(char *buff) {
     char	*p;
 
@@ -516,7 +512,7 @@ REMclean(char *buff) {
 **  Read a line of input, with timeout.  Also handle \r\n-->\n mapping
 **  and the dot escape.  Return TRUE if okay, *or we got interrupted.*
 */
-STATIC BOOL
+static bool
 REMread(char *start, int size) {
     static int		count;
     static char		buffer[BUFSIZ];
@@ -525,7 +521,7 @@ REMread(char *start, int size) {
     char		*q;
     char		*end;
     struct timeval	t;
-    FDSET		rmask;
+    fd_set		rmask;
     int			i;
     char		c;
 
@@ -540,8 +536,7 @@ REMread(char *start, int size) {
 	    FD_SET(FromServer, &rmask);
 	    t.tv_sec = 10 * 60;
 	    t.tv_usec = 0;
-	    i = select(FromServer + 1, &rmask, (FDSET *)NULL,
-			(FDSET *)NULL, &t);
+	    i = select(FromServer + 1, &rmask, NULL, NULL, &t);
 	    if (GotInterrupt)
 		return TRUE;
 	    if (i < 0) {
@@ -598,7 +593,7 @@ Interrupted(char *Article, char *MessageID) {
 /*
 **  Send a whole article to the server.
 */
-STATIC BOOL
+static bool
 REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
     char	buff[NNTP_STRLEN];
 
@@ -669,7 +664,7 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 /*
 **  Get the Message-ID header from an open article.
 */
-STATIC char *
+static char *
 GetMessageID(ARTHANDLE *art) {
     static char	*buff;
     static int	buffsize = 0;
@@ -699,11 +694,12 @@ GetMessageID(ARTHANDLE *art) {
 /*
 **  Mark that we got interrupted.
 */
-STATIC SIGHANDLER
+static RETSIGTYPE
 CATCHinterrupt(int s) {
     GotInterrupt = TRUE;
+
     /* Let two interrupts kill us. */
-    (void)xsignal(s, SIG_DFL);
+    xsignal(s, SIG_DFL);
 }
 
 
@@ -711,8 +707,9 @@ CATCHinterrupt(int s) {
 **  Mark that the alarm went off.
 */
 /* ARGSUSED0 */
-STATIC SIGHANDLER
-CATCHalarm(int s) {
+static RETSIGTYPE
+CATCHalarm(int s)
+{
     GotAlarm = TRUE;
     if (JMPyes)
 	longjmp(JMPwhere, 1);
@@ -721,7 +718,7 @@ CATCHalarm(int s) {
 /* check articles in streaming NNTP mode
 ** return TRUE on failure.
 */
-STATIC BOOL
+static bool
 check(int i) {
     char	buff[NNTP_STRLEN];
 
@@ -749,7 +746,7 @@ check(int i) {
 /* Send article in "takethis <id> streaming NNTP mode.
 ** return TRUE on failure.
 */
-STATIC BOOL
+static bool
 takethis(int i) {
     char	buff[NNTP_STRLEN];
     ARTHANDLE	*art;
@@ -806,7 +803,7 @@ takethis(int i) {
 ** the queue.  Also sends the articles on request.  Returns TRUE on error.
 ** return TRUE on failure.
 */
-STATIC BOOL
+static bool
 strlisten() {
     int		resp;
     int		i;
@@ -910,8 +907,9 @@ strlisten() {
 /*
 **  Print a usage message and exit.
 */
-STATIC NORETURN
-Usage() {
+static void
+Usage(void)
+{
     (void)fprintf(stderr,
 	"Usage: innxmit [-a] [-c] [-d] [-l] [-p] [-r] [-s] [-t#] [-T#] host file\n");
     exit(1);
@@ -929,11 +927,11 @@ int main(int ac, char *av[]) {
     char		buff[8192+128];
     char		*Article;
     char		*MessageID;
-    SIGHANDLER		(*old)();
+    RETSIGTYPE		(*old)(int);
     unsigned int	ConnectTimeout;
     unsigned int	TotalTimeout;
     int                 port = NNTP_PORT;
-    BOOL		val;
+    bool		val;
     TOKEN		token;
 
     (void)openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);

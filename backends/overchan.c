@@ -1,17 +1,13 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Parse input to add to news overview database.
 */
+
 #include "config.h"
 #include "clibrary.h"
+#include "portable/time.h"
 #include <errno.h>
 #include <syslog.h>
-
-#ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
-#else
-# include <time.h>
-#endif
 
 #include "inn/qio.h"
 #include "libinn.h"
@@ -50,7 +46,7 @@ static unsigned gettime(void)
 */
 
 #define TEXT_TOKEN_LEN (2*sizeof(TOKEN)+2)
-STATIC void ProcessIncoming(QIOSTATE *qp)
+static void ProcessIncoming(QIOSTATE *qp)
 {
     char                *Data;
     char		*p;
@@ -118,11 +114,11 @@ int main(int ac, char *av[])
 
     StartTime = gettime();
     if (ac == 0)
-	ProcessIncoming(QIOfdopen(STDIN));
+	ProcessIncoming(QIOfdopen(STDIN_FILENO));
     else {
 	for ( ; *av; av++)
 	    if (EQ(*av, "-"))
-		ProcessIncoming(QIOfdopen(STDIN));
+		ProcessIncoming(QIOfdopen(STDIN_FILENO));
 	    else if ((qp = QIOopen(*av)) == NULL)
 		(void)fprintf(stderr, "overchan cant open %s %s\n",
 			*av, strerror(errno));

@@ -27,19 +27,17 @@
 **  To prevent this, innxbatch should be invoked by a shell script that uses
 **  shlock(1) to achieve mutual exclusion.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <syslog.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 
 #ifdef HAVE_SYS_TIME_H
 # include <sys/time.h>
@@ -57,38 +55,38 @@
 /*
 ** Syslog formats - collected together so they remain consistent
 */
-STATIC char	STAT1[] =
+static char	STAT1[] =
 	"%s stats offered %lu accepted %lu refused %lu rejected %lu";
-STATIC char	STAT2[] = "%s times user %.3f system %.3f elapsed %.3f";
-STATIC char	CANT_CONNECT[] = "%s connect failed %s";
-STATIC char	CANT_AUTHENTICATE[] = "%s authenticate failed %s";
-STATIC char	XBATCH_FAIL[] = "%s xbatch failed %s";
-STATIC char	UNKNOWN_REPLY[] = "Unknown reply after sending batch -- %s";
-STATIC char	CANNOT_UNLINK[] = "cannot unlink %s: %m";
+static char	STAT2[] = "%s times user %.3f system %.3f elapsed %.3f";
+static char	CANT_CONNECT[] = "%s connect failed %s";
+static char	CANT_AUTHENTICATE[] = "%s authenticate failed %s";
+static char	XBATCH_FAIL[] = "%s xbatch failed %s";
+static char	UNKNOWN_REPLY[] = "Unknown reply after sending batch -- %s";
+static char	CANNOT_UNLINK[] = "cannot unlink %s: %m";
 /*
 **  Global variables.
 */
-STATIC BOOL		Debug = 0;
-STATIC BOOL		STATprint;
-STATIC char		*REMhost;
-STATIC double		STATbegin;
-STATIC double		STATend;
-STATIC char		*XBATCHname;
-STATIC int		FromServer;
-STATIC int		ToServer;
-STATIC sig_atomic_t	GotAlarm;
-STATIC sig_atomic_t	GotInterrupt;
-STATIC sig_atomic_t	JMPyes;
-STATIC jmp_buf		JMPwhere;
-STATIC unsigned long	STATaccepted;
-STATIC unsigned long	STAToffered;
-STATIC unsigned long	STATrefused;
-STATIC unsigned long	STATrejected;
+static bool		Debug = 0;
+static bool		STATprint;
+static char		*REMhost;
+static double		STATbegin;
+static double		STATend;
+static char		*XBATCHname;
+static int		FromServer;
+static int		ToServer;
+static sig_atomic_t	GotAlarm;
+static sig_atomic_t	GotInterrupt;
+static sig_atomic_t	JMPyes;
+static jmp_buf		JMPwhere;
+static unsigned long	STATaccepted;
+static unsigned long	STAToffered;
+static unsigned long	STATrefused;
+static unsigned long	STATrejected;
 
 /*
 **  Send a line to the server. \r\n will be appended
 */
-STATIC BOOL
+static bool
 REMwrite(fd, p)
 register int	fd;
 register char	*p;
@@ -120,7 +118,7 @@ register char	*p;
 /*
 **  Print transfer statistics, clean up, and exit.
 */
-STATIC NORETURN
+static void
 ExitWithStats(x)
 int			x;
 {
@@ -158,7 +156,7 @@ int			x;
 /*
 **  Clean up the NNTP escapes from a line.
 */
-STATIC char *
+static char *
 REMclean(buff)
     char	*buff;
 {
@@ -179,23 +177,20 @@ REMclean(buff)
 **  we ignore \r\n-->\n mapping and the dot escape.
 **  Return TRUE if okay, *or we got interrupted.*
 */
-STATIC BOOL
-REMread(start, size)
-char	*start;
-int	size;
+static bool
+REMread(char *start, int size)
 {
-  register char		*p;
-  register char		*h;
-  struct timeval	t;
-  FDSET			rmask;
-  int			i;
+  char *p, *h;
+  struct timeval t;
+  fd_set rmask;
+  int i;
 
   for (p = start; size; ) {
     FD_ZERO(&rmask);
     FD_SET(FromServer, &rmask);
     t.tv_sec = 10 * 60;
     t.tv_usec = 0;
-    i = select(FromServer + 1, &rmask, (FDSET *)NULL, (FDSET *)NULL, &t);
+    i = select(FromServer + 1, &rmask, NULL, NULL, &t);
     if (GotInterrupt) return TRUE;
     if (i < 0) {
       if (errno == EINTR) continue;
@@ -238,7 +233,7 @@ Interrupted()
 **  Send a whole xbatch to the server. Uses the global variables
 **  REMbuffer & friends
 */
-STATIC BOOL
+static bool
 REMsendxbatch(fd, buf, size)
 int fd;
 char *buf;
@@ -305,13 +300,13 @@ int size;
 /*
 **  Mark that we got interrupted.
 */
-STATIC SIGHANDLER
-CATCHinterrupt(s)
-    int		s;
+static RETSIGTYPE
+CATCHinterrupt(int s)
 {
     GotInterrupt = TRUE;
+
     /* Let two interrupts kill us. */
-    (void)xsignal(s, SIG_DFL);
+    xsignal(s, SIG_DFL);
 }
 
 
@@ -319,9 +314,8 @@ CATCHinterrupt(s)
 **  Mark that the alarm went off.
 */
 /* ARGSUSED0 */
-STATIC SIGHANDLER
-CATCHalarm(s)
-    int		s;
+static RETSIGTYPE
+CATCHalarm(int s)
 {
     GotAlarm = TRUE;
     if (JMPyes)
@@ -332,8 +326,8 @@ CATCHalarm(s)
 /*
 **  Print a usage message and exit.
 */
-STATIC NORETURN
-Usage()
+static void
+Usage(void)
 {
     (void)fprintf(stderr,
 	"Usage: innxbatch [-D] [-v] [-t#] [-T#] host file ...\n");
@@ -356,7 +350,7 @@ char *av[];
   FILE			*From;
   FILE			*To;
   char			buff[NNTP_STRLEN];
-  SIGHANDLER		(*old)();
+  RETSIGTYPE		(*old)(int);
   unsigned int		ConnectTimeout;
   unsigned int		TotalTimeout;
   struct stat		statbuf;

@@ -32,8 +32,8 @@ extern char	*MAPname();
 **  Entry for a single active site.
 */
 typedef struct _SITE {
-    BOOL	Dropped;
-    STRING	Name;
+    bool	Dropped;
+    const char	*Name;
     int		CloseLines;
     int		FlushLines;
     time_t	LastFlushed;
@@ -41,7 +41,7 @@ typedef struct _SITE {
     int 	CloseSeconds;
     int		FlushSeconds;
     FILE	*F;
-    STRING	Filename;
+    const char	*Filename;
     char	*Buffer;
 } SITE;
 
@@ -57,22 +57,22 @@ typedef struct _SITEHASH {
 
 
 /* Global variables. */
-STATIC char	*Format;
-STATIC STRING	Map;
-STATIC int	BufferMode;
-STATIC int	CloseEvery;
-STATIC int	FlushEvery;
-STATIC int	CloseSeconds;
-STATIC int	FlushSeconds;
-STATIC sig_atomic_t	GotInterrupt;
-STATIC SITEHASH	SITEtable[SITE_SIZE];
-STATIC TIMEINFO	Now;
+static char	*Format;
+static const char *Map;
+static int	BufferMode;
+static int	CloseEvery;
+static int	FlushEvery;
+static int	CloseSeconds;
+static int	FlushSeconds;
+static sig_atomic_t	GotInterrupt;
+static SITEHASH	SITEtable[SITE_SIZE];
+static TIMEINFO	Now;
 
 
 /*
 **  Set up the site information.  Basically creating empty buckets.
 */
-STATIC void
+static void
 SITEsetup()
 {
     register SITEHASH	*shp;
@@ -88,7 +88,7 @@ SITEsetup()
 /*
 **  Close a site
 */
-STATIC void
+static void
 SITEclose(sp)
     register SITE       *sp;
 {
@@ -107,7 +107,7 @@ SITEclose(sp)
 /*
 **  Close all open sites.
 */
-STATIC void
+static void
 SITEcloseall()
 {
     register SITEHASH	*shp;
@@ -123,7 +123,7 @@ SITEcloseall()
 /*
 **  Open the file for a site.
 */
-STATIC void SITEopen(SITE *sp)
+static void SITEopen(SITE *sp)
 {
     int			e;
 
@@ -158,10 +158,10 @@ STATIC void SITEopen(SITE *sp)
 /*
 **  Find a site, possibly create if not found.
 */
-STATIC SITE *
+static SITE *
 SITEfind(Name, CanCreate)
     char		*Name;
-    BOOL		CanCreate;
+    bool		CanCreate;
 {
     register char	*p;
     register int	i;
@@ -190,7 +190,7 @@ SITEfind(Name, CanCreate)
 
     /* Fill in the structure for the new site. */
     sp->Name = COPY(Name);
-    (void)sprintf(buff, (STRING)Format, Map ? MAPname(Name) : sp->Name);
+    sprintf(buff, Format, Map ? MAPname(Name) : sp->Name);
     sp->Filename = COPY(buff);
     if (BufferMode == 'u')
 	sp->Buffer = NULL;
@@ -205,7 +205,7 @@ SITEfind(Name, CanCreate)
 /*
 **  Flush a site -- close and re-open the file.
 */
-STATIC void
+static void
 SITEflush(sp)
     register SITE	*sp;
 {
@@ -227,7 +227,7 @@ SITEflush(sp)
 /*
 **  Flush all open sites.
 */
-STATIC void
+static void
 SITEflushall()
 {
     register SITEHASH	*shp;
@@ -243,7 +243,7 @@ SITEflushall()
 /*
 **  Write data to a site.
 */
-STATIC void
+static void
 SITEwrite(name, text, len)
     register char	*name;
     register char	*text;
@@ -255,7 +255,7 @@ SITEwrite(name, text, len)
     if (sp->F == NULL)
 	SITEopen(sp);
 
-    if (fwrite((POINTER)text, (SIZE_T)1, (SIZE_T)len, sp->F) != len)
+    if (fwrite(text, 1, len, sp->F) != len)
 	(void)fprintf(stderr, "buffchan %s cant write %s\n",
 		sp->Name, strerror(errno));
 
@@ -288,7 +288,7 @@ SITEwrite(name, text, len)
 /*
 **  Handle a command message.
 */
-STATIC void
+static void
 Process(p)
     register char	*p;
 {
@@ -338,10 +338,10 @@ Process(p)
 /*
 **  Print usage message and exit.
 */
-STATIC NORETURN
-Usage()
+static void
+Usage(void)
 {
-    (void)fprintf(stderr, "Usage error.\n");
+    fprintf(stderr, "Usage error.\n");
     exit(1);
 }
 
@@ -349,12 +349,11 @@ Usage()
 /*
 **  Mark that we got a signal; let two signals kill us.
 */
-STATIC SIGHANDLER
-CATCHinterrupt(s)
-    int		s;
+static RETSIGTYPE
+CATCHinterrupt(int s)
 {
     GotInterrupt = TRUE;
-    (void)xsignal(s, SIG_DFL);
+    xsignal(s, SIG_DFL);
 }
 
 
@@ -370,7 +369,7 @@ main(ac, av)
     register char	*next;
     register char	*line;
     char		*Directory;
-    BOOL		Redirect;
+    bool		Redirect;
     FILE		*F;
     char		*ERRLOG;
 

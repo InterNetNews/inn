@@ -2,6 +2,7 @@
 **
 **  Read batchfiles on standard input and archive them.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
@@ -20,16 +21,16 @@
 #include "storage.h"
 
 
-STATIC char	*Archive = NULL;
-STATIC char	*ERRLOG = NULL;
+static char	*Archive = NULL;
+static char	*ERRLOG = NULL;
 
 /*
 **  Return a YYYYMM string that represents the current year/month
 */
-STATIC char *
+static char *
 DateString()
 {
-    STATIC char		ds[10];
+    static char		ds[10];
     time_t		now;
     struct tm		*x;
 
@@ -44,7 +45,7 @@ DateString()
 /*
 **  Try to make one directory.  Return FALSE on error.
 */
-STATIC BOOL
+static bool
 MakeDir(Name)
     char		*Name;
 {
@@ -62,13 +63,13 @@ MakeDir(Name)
 **  Given an entry, comp/foo/bar/1123, create the directory and all
 **  parent directories needed.  Return FALSE on error.
 */
-STATIC BOOL
+static bool
 MakeArchiveDirectory(Name)
     register char	*Name;
 {
     register char	*p;
     register char	*save;
-    BOOL		made;
+    bool		made;
 
     if ((save = strrchr(Name, '/')) != NULL)
 	*save = '\0';
@@ -103,16 +104,14 @@ MakeArchiveDirectory(Name)
 /*
 **  Copy a file.  Return FALSE if error.
 */
-STATIC BOOL
-Copy(src, dest)
-    char		*src;
-    char		*dest;
+static bool
+Copy(char *src, char *dest)
 {
-    register FILE	*in;
-    register FILE	*out;
-    register SIZE_T	i;
-    char		*p;
-    char		buff[BUFSIZ];
+    FILE	*in;
+    FILE	*out;
+    size_t	i;
+    char	*p;
+    char	buff[BUFSIZ];
 
     /* Open the output file. */
     if ((out = fopen(dest, "w")) == NULL) {
@@ -142,8 +141,8 @@ Copy(src, dest)
     }
 
     /* Write the data. */
-    while ((i = fread((POINTER)buff, (SIZE_T)1, (SIZE_T)sizeof buff, in)) != 0)
-	if (fwrite((POINTER)buff, (SIZE_T)1, i, out) != i) {
+    while ((i = fread(buff, 1, sizeof buff, in)) != 0)
+	if (fwrite(buff, 1, i, out) != i) {
 	    (void)fprintf(stderr, "Can't write \"%s\", %s\n",
 		    dest, strerror(errno));
 	    (void)fclose(in);
@@ -175,8 +174,8 @@ Copy(src, dest)
 /*
 **  Copy an article from memory into a file.
 */
-STATIC BOOL
-CopyArt(ARTHANDLE *art, char *dest, BOOL Concat)
+static bool
+CopyArt(ARTHANDLE *art, char *dest, bool Concat)
 {
     register FILE	*out;
     char		*p,*q,*last;
@@ -263,7 +262,7 @@ CopyArt(ARTHANDLE *art, char *dest, BOOL Concat)
 /*
 **  Write an index entry.  Ignore I/O errors; our caller checks for them.
 */
-STATIC void
+static void
 WriteArtIndex(art, FullName, ShortName)
     ARTHANDLE		*art;
     char		*FullName;
@@ -302,10 +301,10 @@ WriteArtIndex(art, FullName, ShortName)
 /*
 **  Print a usage message and exit.
 */
-STATIC NORETURN
-Usage()
+static void
+Usage(void)
 {
-    (void)fprintf(stderr, "Usage error.\n");
+    fprintf(stderr, "Usage error.\n");
     exit(1);
 }
 
@@ -420,9 +419,9 @@ main(ac, av)
     register char	*p;
     register FILE	*F;
     register int	i;
-    BOOL		Flat;
-    BOOL		Redirect;
-    BOOL		Concat;
+    bool		Flat;
+    bool		Redirect;
+    bool		Concat;
     char		*Index;
     char		buff[BUFSIZ];
     char		temp[BUFSIZ];
@@ -435,7 +434,7 @@ main(ac, av)
     unsigned int	numgroups, numxrefs;
     int			j;
     char		*base = NULL;
-    BOOL		doit;
+    bool		doit;
 
     /* First thing, set up logging and our identity. */
     openlog("archive", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);

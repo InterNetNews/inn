@@ -2,6 +2,7 @@
 **
 **  Read file list on standard input and spew out batchfiles.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <errno.h>
@@ -18,10 +19,10 @@
 /*
 **  Print a usage message and exit.
 */
-STATIC NORETURN
-Usage()
+static void
+Usage(void)
 {
-    (void)fprintf(stderr, "convertbatch usage_error.\n");
+    fprintf(stderr, "convertbatch usage_error.\n");
     exit(1);
 }
 
@@ -34,7 +35,7 @@ main(int ac, char *av[]) {
     char	*text;
     char	*format;
     char	*p, *q;
-    BOOL	Dirty;
+    bool	Dirty;
     TOKEN	token;
     ARTHANDLE	*art;
     int		len;

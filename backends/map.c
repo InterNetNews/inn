@@ -17,8 +17,8 @@ typedef struct _PAIR {
     char	*Value;
 } PAIR;
 
-STATIC PAIR	*MAPdata;
-STATIC PAIR	*MAPend;
+static PAIR	*MAPdata;
+static PAIR	*MAPend;
 
 
 /*

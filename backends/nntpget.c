@@ -6,6 +6,7 @@
 */
 #include "config.h"
 #include "clibrary.h"
+#include "portable/time.h"
 #include <errno.h>
 #include <syslog.h>  
 #include <sys/socket.h>
@@ -15,17 +16,6 @@
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
-#endif
-
-#ifdef TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# ifdef HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
 #endif
 
 #include "dbz.h"
@@ -50,20 +40,20 @@ typedef struct _SITE {
 /*
 **  Global variables.
 */
-STATIC struct iovec	SITEvec[2];
-STATIC char		SITEv1[] = "\r\n";
-STATIC char		READER[] = "mode reader";
-STATIC unsigned long	STATgot;
-STATIC unsigned long	STAToffered;
-STATIC unsigned long	STATsent;
-STATIC unsigned long	STATrejected;
+static struct iovec	SITEvec[2];
+static char		SITEv1[] = "\r\n";
+static char		READER[] = "mode reader";
+static unsigned long	STATgot;
+static unsigned long	STAToffered;
+static unsigned long	STATsent;
+static unsigned long	STATrejected;
 
 
 
 /*
 **  Read a line of input, with timeout.
 */
-STATIC BOOL
+static bool
 SITEread(sp, start)
     SITE		*sp;
     char		*start;
@@ -71,7 +61,7 @@ SITEread(sp, start)
     register char	*p;
     register char	*end;
     struct timeval	t;
-    FDSET		rmask;
+    fd_set		rmask;
     int			i;
     char		c;
 
@@ -83,7 +73,7 @@ SITEread(sp, start)
 	    FD_SET(sp->Rfd, &rmask);
 	    t.tv_sec = DEFAULT_TIMEOUT;
 	    t.tv_usec = 0;
-	    i = select(sp->Rfd + 1, &rmask, (FDSET *)NULL, (FDSET *)NULL, &t);
+	    i = select(sp->Rfd + 1, &rmask, NULL, NULL, &t);
 	    if (i < 0) {
 		if (errno == EINTR)
 		    goto Again;
@@ -120,7 +110,7 @@ SITEread(sp, start)
 **  since it's only for sending DATA to local site, and the data we got from
 **  the remote site already is escaped.
 */
-STATIC BOOL
+static bool
 SITEwrite(sp, p, i)
     SITE		*sp;
     char		*p;
@@ -132,7 +122,7 @@ SITEwrite(sp, p, i)
 }
 
 
-STATIC SITE *
+static SITE *
 SITEconnect(host)
     char	*host;
 {
@@ -180,7 +170,7 @@ SITEconnect(host)
 /*
 **  Send "quit" to a site, and get its reply.
 */
-STATIC void
+static void
 SITEquit(sp)
     SITE	*sp;
 {
@@ -191,7 +181,7 @@ SITEquit(sp)
 }
 
 
-STATIC BOOL
+static bool
 HIShaveit(mesgid)
     char		*mesgid;
 {
@@ -199,9 +189,8 @@ HIShaveit(mesgid)
 }
 
 
-STATIC NORETURN
-Usage(p)
-    char	*p;
+static void
+Usage(char *p)
 {
     (void)fprintf(stderr, "Usage error:  %s\n", p);
     (void)fprintf(stderr,
@@ -219,7 +208,7 @@ main(ac, av)
     char	mesgid[NNTP_STRLEN];
     char	tbuff[SMBUF];
     char	temp[BUFSIZ];
-    STRING	Groups;
+    const char	*Groups;
     char	*distributions;
     char	*Since;
     int		i;
@@ -228,9 +217,9 @@ main(ac, av)
     SITE	*Remote;
     SITE	*Local;
     FILE	*F;
-    BOOL	Offer;
-    BOOL	Error;
-    BOOL	Verbose = FALSE;
+    bool	Offer;
+    bool	Error;
+    bool	Verbose = FALSE;
     char	*Update;
     char	*p;
 

@@ -13,15 +13,13 @@
 **  currently.  It still exists in the source tree in case someone will
 **  want to clean it up and make it useable again.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <errno.h>
+#include <fcntl.h>
 #include <syslog.h>
 #include <sys/stat.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 
 #include "libinn.h"
 #include "macros.h"
@@ -29,21 +27,21 @@
 #include "inn/qio.h"
 
 
-STATIC char	*Dir;
+static char	*Dir;
 
-STATIC int	debug = FALSE;
-STATIC int	syncfiles = TRUE;
+static int	debug = FALSE;
+static int	syncfiles = TRUE;
 
-STATIC unsigned long STATTime    = 0;
-STATIC unsigned long STATMissing = 0; /* Source file missing */
-STATIC unsigned long STATTooLong = 0; /* Name Too Long (src or dest) */
-STATIC unsigned long STATLink    = 0; /* Link done */
-STATIC unsigned long STATLError  = 0; /* Link problem */
-STATIC unsigned long STATSymlink = 0; /* Symlink done */
-STATIC unsigned long STATSLError = 0; /* Symlink problem */
-STATIC unsigned long STATMkdir   = 0; /* Mkdir done */
-STATIC unsigned long STATMdError = 0; /* Mkdir problem */
-STATIC unsigned long STATOError  = 0; /* Other errors */
+static unsigned long STATTime    = 0;
+static unsigned long STATMissing = 0; /* Source file missing */
+static unsigned long STATTooLong = 0; /* Name Too Long (src or dest) */
+static unsigned long STATLink    = 0; /* Link done */
+static unsigned long STATLError  = 0; /* Link problem */
+static unsigned long STATSymlink = 0; /* Symlink done */
+static unsigned long STATSLError = 0; /* Symlink problem */
+static unsigned long STATMkdir   = 0; /* Mkdir done */
+static unsigned long STATMdError = 0; /* Mkdir problem */
+static unsigned long STATOError  = 0; /* Other errors */
 
 #define MAXXPOST 256
 #define STATREFRESH 10800   /* 3 hours */
@@ -70,7 +68,7 @@ ProcessStats()
 /*
 **  Try to make one directory.  Return FALSE on error.
 */
-STATIC BOOL
+static bool
 MakeDir(Name)
     char		*Name;
 {
@@ -89,12 +87,12 @@ MakeDir(Name)
 /*
 **  Make spool directory.  Return FALSE on error.
 */
-STATIC BOOL
+static bool
 MakeSpoolDir(Name)
     register char	*Name;
 {
     register char	*p;
-    BOOL		made;
+    bool		made;
 
     /* Optimize common case -- parent almost always exists. */
     if (MakeDir(Name))
@@ -122,7 +120,7 @@ MakeSpoolDir(Name)
 **  or
 **	news.group.name/<number>,[news.group.name/<number>]...
 */
-STATIC void
+static void
 ProcessIncoming(qp)
     QIOSTATE		*qp;
 {
@@ -275,10 +273,10 @@ ProcessIncoming(qp)
 }
 
 
-STATIC NORETURN
-Usage()
+static void
+Usage(void)
 {
-    (void)fprintf(stderr, "usage:  crosspost [-D dir] [files...]\n");
+    fprintf(stderr, "usage:  crosspost [-D dir] [files...]\n");
     exit(1);
 }
 
@@ -323,11 +321,11 @@ main(ac, av)
     openlog("crosspost", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     STATTime = time (NULL);
     if (ac == 0)
-	ProcessIncoming(QIOfdopen(STDIN));
+	ProcessIncoming(QIOfdopen(STDIN_FILENO));
     else {
 	for ( ; *av; av++)
 	    if (EQ(*av, "-"))
-		ProcessIncoming(QIOfdopen(STDIN));
+		ProcessIncoming(QIOfdopen(STDIN_FILENO));
 	    else if ((qp = QIOopen(*av)) == NULL)
 		(void)fprintf(stderr, "crosspost cant open %s %s\n",
 			*av, strerror(errno));
