@@ -32,6 +32,9 @@ expire \- Usenet article and history expiration program
 .BI \-r " reason"
 ]
 [
+.BI \-s " size"
+]
+[
 .B \-t
 ]
 [
@@ -93,6 +96,7 @@ new history file, with an extension of ``.done'' to indicate that
 it has successfully completed the expiration.
 The calling script should install the new history file and un-pause the server.
 The ``\fB\-r\fP'' flag should be used with this flag.
+.TP
 .B \-f
 To specify an alternate history file, use the ``\fB\-f\fP'' flag.
 This flag is valid if ``\fB\-d\fP'' flag is used together, and the output will
@@ -162,6 +166,13 @@ The process ID will be appended to the reason.
 When
 .I expire
 is finished and the new history file is ready, it sends a ``go'' command.
+.TP
+.B \-s
+Size the history database for approximately 
+.I size
+pairs.  Accurately specifying the size is an optimization that will
+create a more efficient database.  (The size should be the estimated
+eventual size of the file, typically the size of the old file.)
 .TP
 .B \-t
 If the ``\fB\-t\fP'' flag is used, then
