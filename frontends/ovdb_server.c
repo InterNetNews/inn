@@ -186,49 +186,6 @@ static int putpid(char *path)
 }
 
 static void
-newclient(int fd)
-{
-    struct reader *r;
-
-    nonblocking(fd, 1);
-
-    r = NEW(struct reader, 1);
-    r->fd = fd;
-    r->mode = MODE_WRITE;
-    r->buflen = sizeof(OVDB_SERVER_BANNER);
-    r->bufpos = 0;
-    r->buf = COPY(OVDB_SERVER_BANNER);
-    r->lastactive = now;
-
-    if(numreaders >= readertablen) {
-    	readertablen += 50;
-	RENEW(readertab, struct reader *, readertablen);
-    }
-    readertab[numreaders] = r;
-    numreaders++;
-
-    handle_write(r);
-}
-
-static void
-delclient(int which)
-{
-    int i;
-    struct reader *r = readertab[which];
-
-    if(r->mode != MODE_CLOSED)
-    	close(r->fd);
-
-    if(r->buf != NULL) {
-    	DISPOSE(r->buf);
-    }
-    DISPOSE(r);
-    numreaders--;
-    for(i = which; i < numreaders; i++)
-    	readertab[i] = readertab[i+1];
-}
-
-static void
 do_groupstats(struct reader *r)
 {
     struct rs_cmd *cmd = r->buf;
@@ -445,6 +402,49 @@ handle_write(struct reader *r)
 	r->bufpos = r->buflen = 0;
 	r->mode = MODE_READ;
     }
+}
+
+static void
+newclient(int fd)
+{
+    struct reader *r;
+
+    nonblocking(fd, 1);
+
+    r = NEW(struct reader, 1);
+    r->fd = fd;
+    r->mode = MODE_WRITE;
+    r->buflen = sizeof(OVDB_SERVER_BANNER);
+    r->bufpos = 0;
+    r->buf = COPY(OVDB_SERVER_BANNER);
+    r->lastactive = now;
+
+    if(numreaders >= readertablen) {
+    	readertablen += 50;
+	RENEW(readertab, struct reader *, readertablen);
+    }
+    readertab[numreaders] = r;
+    numreaders++;
+
+    handle_write(r);
+}
+
+static void
+delclient(int which)
+{
+    int i;
+    struct reader *r = readertab[which];
+
+    if(r->mode != MODE_CLOSED)
+    	close(r->fd);
+
+    if(r->buf != NULL) {
+    	DISPOSE(r->buf);
+    }
+    DISPOSE(r);
+    numreaders--;
+    for(i = which; i < numreaders; i++)
+    	readertab[i] = readertab[i+1];
 }
 
 static pid_t
