@@ -77,8 +77,6 @@ struct innconf {
     long nfsreaderdelay;        /* Delay applied to article arrival */
     bool nnrpdcheckart;         /* Check article existence before returning? */
     long nnrpdloadlimit;	/* Maximum getloadvg() we allow */
-    bool nnrpperlauth;          /* Use Perl for nnrpd authentication */
-    bool nnrppythonauth;        /* Use Python for nnrpd authentication */
     bool noreader;              /* Refuse to fork nnrpd for readers? */
     bool readerswhenstopped;    /* Allow nnrpd when server is paused */
     bool readertrack;           /* Use the reader tracking system? */

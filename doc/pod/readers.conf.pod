@@ -96,13 +96,13 @@ the values of the default: and default-domain: parameters are used.  If
 <res-program> only returns a username, <defdomain> is used as the
 domain.
 
-If the user later authenticates via the AUTHINFO USER/PASS commands, the
-provided username and password are passed to each <auth-program>
-(multiple auth: or perl_auth: lines may be present in a block; they are
-run in sequence until one succeeds), if any.  If one succeeds and
-returns a different identity than the one assigned at the time of the
-connection, it is matched against the available access groups again and
-the actions the user is authorized to do may change.
+If the user later authenticates via the AUTHINFO USER/PASS commands,
+the provided username and password are passed to each <auth-program>
+(multiple auth: perl_auth: or python_auth: lines may be present in a
+block; they are run in sequence until one succeeds), if any.  If one
+succeeds and returns a different identity than the one assigned at the
+time of the connection, it is matched against the available access
+groups again and the actions the user is authorized to do may change.
 
 When matching auth groups, the last auth group in the file that matches a
 given connection and username/password combination is used.
@@ -135,10 +135,10 @@ various inn.conf(5) parameters for just a particular group of users.
 Just like with auth groups, when matching access groups the last matching
 one in the file is used to determine the user's permissions.  There is
 an exception to this rule: if the auth group which matched the client
-contains the perl_access: parameter then the perl script given as
-argument is used to dynamically generate an access group.  This new
-access group is then used to determine the access rights of the
-client; the access groups in the file are ignored.
+contains the perl_access: or python_access: parameter then the script
+given as argument is used to dynamically generate an access group.
+This new access group is then used to determine the access rights of
+the client; the access groups in the file are ignored.
 
 There is one additional special case to be aware of.  When forming
 particularly complex authentication and authorization rules, it is
@@ -242,13 +242,26 @@ below.
 A path to a perl script for authentication.  The perl_auth: parameter
 works exactly like auth:, except that it calls the named script using
 the perl hook rather then an external program.  Multiple/mixed use of
-auth: and perl_auth: is permitted within any auth group; each method is
-tried in order listed in F<readers.conf>.  perl_auth: has more power
-than auth: in that it provides the authentication program with
-additional information about the client and the ability to return an
-error string.  This parameter is only valid if INN is compiled with Perl
-support (B<--with-perl> passed to configure).  More information may be
-found in F<doc/hook-perl>.
+auth: perl_auth: and python_auth: is permitted within any auth group;
+each method is tried in order listed in F<readers.conf>.  perl_auth:
+has more power than auth: in that it provides the authentication
+program with additional information about the client and the ability
+to return an error string and a username.  This parameter is only
+valid if INN is compiled with Perl support (B<--with-perl> passed to
+configure).  More information may be found in F<doc/hook-perl>.
+
+=item B<python_auth:>
+
+A python script for authentication.  The python_auth: parameter works
+exactly like auth:, except that it calls the named script using the
+python hook rather then an external program.  Multiple/mixed use of
+auth: perl_auth: and python_auth: is permitted within any auth group;
+each method is tried in order listed in F<readers.conf>.  python_auth:
+has more power than auth: in that it provides the authentication
+program with additional information about the client and the ability
+to return an error string and a username.  This parameter is only
+valid if INN is compiled with Python support (B<--with-python> passed
+to configure).  More information may be found in F<doc/hook-python>.
 
 =item B<default:>
 
@@ -292,6 +305,31 @@ access groups are ignored and the client's rights are instead determined
 dynamically.  This parameter is only valid if INN is compiled with Perl
 support (B<--with-perl> passed to configure).  More information may be
 found in the file F<doc/hook-perl>.
+
+=item B<python_access:>
+
+A python script for dynamically generating an access group.  If
+an auth group matches successfully and contains a python_access parameter,
+then the argument script will be used to create an access group.
+This group will then determine the access rights of the client,
+overriding any access groups in F<readers.conf>.  If and only if a
+successful auth group contains the python_access parameter, F<readers.conf>
+access groups are ignored and the client's rights are instead determined
+dynamically.  This parameter is only valid if INN is compiled with Python
+support (B<--with-python> passed to configure).  More information may be
+found in the file F<doc/hook-python>.
+
+=item B<python_dynamic:>
+
+A python script for applying access control dynamically on a per
+newsgroup basis.  If an auth group matches successfully and contains a
+python_dynamic parameter, then the argument script will be used to
+determine the clients rights each time the user attempts to view a
+newsgroup, read or post an article. Access rights as determined by
+python_dynamic override the values of access group parameters such as
+newsgroups: read: and post:. This parameter is only valid if INN is
+compiled with Python support (B<--with-python> passed to configure).
+More information may be found in the file F<doc/hook-python>.
 
 =back
 
@@ -489,27 +527,28 @@ the user authenticates.
 =item *
 
 When the user authenticates, the auth groups are rescanned, and only the
-matching ones which contain at least one auth: or perl_auth: line are
-considered.  These auth groups are scanned from the last to the first,
-running auth: programs and perl_auth: scripts.  The first auth group
-(starting from the bottom) to return a valid user is kept as the active
-auth group.
+matching ones which contain at least one auth: perl_auth: or
+python_auth: line are considered.  These auth groups are scanned from
+the last to the first, running auth: programs and perl_auth: or
+python_auth: scripts. The first auth group (starting from the bottom)
+to return a valid user is kept as the active auth group.
 
 =item *
 
 Regardless of how an auth group is established, as soon as one is, that
 auth group is used to assign a user identity by taking the result of the
-successful res:, auth, or perl_auth: line (or the default: if necessary),
-and appending the default-domain: if necessary.  (If the perl_access:
-parameter is present, see below.)
+successful res:, auth, perl_auth: or python_auth: line (or the
+default: if necessary), and appending the default-domain: if
+necessary.  (If the perl_access: or python_access: parameter is
+present, see below.)
 
 =item *
 
 Finally, an access group is selected by scanning the access groups from
 bottom up and finding the first match.  (If the established auth group
-contained a perl_access: line, the dynamically generated access group
-returned by the Perl script is used instead.)  User permissions are granted
-based on the established access group.
+contained a perl_access: or python_access line, the dynamically
+generated access group returned by the script is used instead.)
+User permissions are granted based on the established access group.
 
 =back
 

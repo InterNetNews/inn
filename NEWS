@@ -24,6 +24,11 @@ Upgrading from 2.3 to 2.4
     is true), there have been major changes.  See "Changes to Perl
     Authentication Support for nnrpd" in doc/hook-perl for details.
 
+    Similarly, if you use Python authentication for nnrpd (if
+    *nnrpdpythonauth* in inn.conf is true), there have been major changes. 
+    See "Changes to Python Authentication and Access Control Support for
+    nnrpd" in doc/hook-python for details.
+
     The wildmat API has been renamed (to uwildmat and friends; see
     uwildmat(3) for the interfaces) to distinguish it from Rich $alz's
     original version, since it now supports UTF-8.  This may require changes
@@ -45,6 +50,11 @@ Changes from 2.3 to 2.4
       new utility, tdx-util, is provided to examine the contents of the
       overview database, repair inconsistencies, and rebuild the overview
       for particular groups from a tradspool news spool.
+
+    * The Perl and Python authentication hooks for readers have been
+      extensively overhauled and integrated better with readers.conf.  See
+      the changes sections in doc/hook-perl and doc/hook-python for more
+      details.
 
     * nnrpd now optionally supports article injection via IHAVE, see
       readers.conf(5).  Any articles injected this way must have Date, From,

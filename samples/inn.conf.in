@@ -77,7 +77,6 @@ clienttimeout:          600
 initialtimeout:         10
 msgidcachesize:         10000
 nnrpdcheckart:          true
-nnrppythonauth:         false
 noreader:               false
 readerswhenstopped:     false
 readertrack:            false

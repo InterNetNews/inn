@@ -24,6 +24,11 @@ If you use Perl authentication for nnrpd (if I<nnrpdperlauth> in
 F<inn.conf> is true), there have been major changes.  See L<"Changes to
 Perl Authentication Support for nnrpd"> in F<doc/hook-perl> for details.
 
+Similarly, if you use Python authentication for nnrpd (if
+I<nnrpdpythonauth> in F<inn.conf> is true), there have been major changes.
+See L<"Changes to Python Authentication and Access Control Support for
+nnrpd"> in F<doc/hook-python> for details.
+
 The wildmat API has been renamed (to uwildmat and friends; see uwildmat(3)
 for the interfaces) to distinguish it from Rich $alz's original version,
 since it now supports UTF-8.  This may require changes in other software
@@ -54,6 +59,12 @@ from a tradspool news spool.
 
 =item *
 
+The Perl and Python authentication hooks for readers have been extensively
+overhauled and integrated better with F<readers.conf>.  See the changes
+sections in F<doc/hook-perl> and F<doc/hook-python> for more details.
+
+=item *
+
 nnrpd now optionally supports article injection via IHAVE, see
 readers.conf(5).  Any articles injected this way must have Date, From,
 Message-ID, Newsgroups, Path, and Subject headers.  X-Trace and
@@ -61,7 +72,6 @@ X-Complaints-To headers will be added if the appropriate options are set
 in F<readers.conf>, but other headers will not be modified/inserted (e.g.
 NNTP-Posting-Host, NNTP-Posting-Date, Organization, Lines, Cc, Bcc, and To
 headers).
-
 
 =item *
 

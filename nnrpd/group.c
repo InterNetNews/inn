@@ -24,8 +24,13 @@ void CMDgroup(int ac, char *av[])
     TOKEN               token;
     int                 count;
     bool		boolval;
+    bool                hookpresent = false;
 
-    if (!PERMcanread) {
+#ifdef DO_PYTHON
+    hookpresent = PY_use_dynamic;
+#endif /* DO_PYTHON */
+
+    if (!hookpresent && !PERMcanread) {
 	Reply("%s\r\n", NOACCESS);
 	return;
     }
@@ -49,17 +54,18 @@ void CMDgroup(int ac, char *av[])
     }
 
 #ifdef DO_PYTHON
-    if (innconf->nnrppythonauth) {
+    if (PY_use_dynamic) {
         char    *reply;
 
-	/* Authorize user at a Python authorization module */
-	if (PY_authorize(ClientHost, ClientIpString, ServerHost, PERMuser, group, false, &reply) < 0) {
-	    syslog(L_NOTICE, "PY_authorize(): authorization skipped due to no Python authorization method defined.");
+	/* Authorize user using Python module method dynamic*/
+	if (PY_dynamic(ClientHost, ClientIpString, ServerHost, PERMuser, group, false, &reply) < 0) {
+	    syslog(L_NOTICE, "PY_dynamic(): authorization skipped due to no Python dynamic method defined.");
 	} else {
 	    if (reply != NULL) {
-	        syslog(L_TRACE, "PY_authorize() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, ClientHost, group, reply);
+	        syslog(L_TRACE, "PY_dynamic() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, ClientHost, group, reply);
 		Reply("%d %s\r\n", NNTP_ACCESS_VAL, reply);
 		free(group);
+                free(reply);
 		return;
 	    }
 	}
@@ -67,18 +73,20 @@ void CMDgroup(int ac, char *av[])
 #endif /* DO_PYTHON */
 
     /* If permission is denied, pretend group doesn't exist. */
-    if (PERMspecified) {
-	grplist[0] = group;
-	grplist[1] = NULL;
-	if (!PERMmatch(PERMreadlist, grplist)) {
-	    Reply("%s %s\r\n", NOSUCHGROUP, group);
-	    free(group);
-	    return;
-	}
-    } else {
-	Reply("%s %s\r\n", NOSUCHGROUP, group);
-	free(group);
-	return;
+    if (!hookpresent) {
+        if (PERMspecified) {
+            grplist[0] = group;
+            grplist[1] = NULL;
+            if (!PERMmatch(PERMreadlist, grplist)) {
+	         Reply("%s %s\r\n", NOSUCHGROUP, group);
+                 free(group);
+                 return;
+            }
+        } else {
+            Reply("%s %s\r\n", NOSUCHGROUP, group);
+            free(group);
+            return;
+        }
     }
 
     /* Close out any existing article, report group stats. */

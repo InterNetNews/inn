@@ -29,7 +29,7 @@ typedef struct _CONFCHAIN {
 typedef struct _METHOD {
     char *name;
     char *program;
-    int  type;          /* for seperating perl_auth from auth */
+    int  type;          /* type of auth (perl, python or external) */
     char *users;	/* only used for auth_methods, not for res_methods. */
     char **extra_headers;
     char **extra_logs;
@@ -47,7 +47,10 @@ typedef struct _AUTHGROUP {
     char *default_user;
     char *default_domain;
     char *localaddress;
-    char *perl_access;
+    char *access_script;
+    int  access_type; /* type of access (perl or python) */
+    char *dynamic_script;
+    int  dynamic_type; /* type of dynamic authorization (python only) */
 } AUTHGROUP;
 
 typedef struct _GROUP {
@@ -150,12 +153,15 @@ extern bool PerlLoaded;
 #define PERMrejectwith		54
 #define PERMmaxbytespersecond	55
 #define PERMperl_auth           56
-#define PERMperl_access         57
+#define PERMpython_auth         57
+#define PERMperl_access         58
+#define PERMpython_access       59
+#define PERMpython_dynamic      60
 #ifdef HAVE_SSL
-#define PERMrequire_ssl		58
-#define PERMMAX			59
+#define PERMrequire_ssl                61
+#define PERMMAX                        62
 #else
-#define PERMMAX			58
+#define PERMMAX			61
 #endif
 
 #define TEST_CONFIG(a, b) \
@@ -237,7 +243,10 @@ static CONFTOKEN PERMtoks[] = {
   { PERMrejectwith, "reject_with:" },
   { PERMmaxbytespersecond, "max_rate:" },
   { PERMperl_auth, "perl_auth:" },
+  { PERMpython_auth, "python_auth:" },
   { PERMperl_access, "perl_access:" },
+  { PERMpython_access, "python_access:" },
+  { PERMpython_dynamic, "python_dynamic:" },
 #ifdef HAVE_SSL
   { PERMrequire_ssl, "require_ssl:" },
 #endif
@@ -375,10 +384,25 @@ static AUTHGROUP *copy_authgroup(AUTHGROUP *orig)
     else
 	ret->localaddress = 0;
 
-    if (orig->perl_access)
-        ret->perl_access = xstrdup(orig->perl_access);
+    if (orig->access_script)
+        ret->access_script = xstrdup(orig->access_script);
     else
-        ret->perl_access = 0;
+        ret->access_script = 0;
+
+    if (orig->access_type)
+        ret->access_type = orig->access_type;
+    else
+        ret->access_type = 0;
+
+    if (orig->dynamic_script)
+        ret->dynamic_script = xstrdup(orig->dynamic_script);
+    else
+        ret->dynamic_script = 0;
+
+    if (orig->dynamic_type)
+        ret->dynamic_type = orig->dynamic_type;
+    else
+        ret->dynamic_type = 0;
 
     return(ret);
 }
@@ -514,8 +538,10 @@ static void free_authgroup(AUTHGROUP *del)
 	free(del->default_domain);
     if (del->localaddress)
 	free(del->localaddress);
-    if (del->perl_access)
-        free(del->perl_access);
+    if (del->access_script)
+        free(del->access_script);
+    if (del->dynamic_script)
+        free(del->dynamic_script);
     free(del);
 }
 
@@ -694,6 +720,7 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	break;
       case PERMauth:
       case PERMperl_auth:
+      case PERMpython_auth:
       case PERMauthprog:
         m = xcalloc(1, sizeof(METHOD));
 	memset(ConfigBit, '\0', ConfigBitsize);
@@ -707,6 +734,13 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	    m->program = xstrdup(tok->name);
 #else
             ReportError(f, "perl_auth can not be used in readers.conf: inn not compiled with perl support enabled.");
+#endif
+        } else if (oldtype == PERMpython_auth) {
+#ifdef DO_PYTHON
+            m->type = PERMpython_auth;
+            m->program = xstrdup(tok->name);
+#else
+            ReportError(f, "python_auth can not be used in readers.conf: inn not compiled with python support enabled.");
 #endif
         } else {
 	    m->name = xstrdup(tok->name);
@@ -730,11 +764,28 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	break;
       case PERMperl_access:
 #ifdef DO_PERL
-        curauth->perl_access = xstrdup(tok->name);
+        curauth->access_script = xstrdup(tok->name);
+        curauth->access_type = PERMperl_access;
 #else
         ReportError(f, "perl_access can not be used in readers.conf: inn not compiled with perl support enabled.");
 #endif
         break;
+      case PERMpython_access:
+#ifdef DO_PYTHON
+        curauth->access_script = xstrdup(tok->name);
+        curauth->access_type = PERMpython_access;
+#else
+        ReportError(f, "python_access can not be used in readers.conf: inn not compiled with python support enabled.");
+#endif
+        break;
+      case PERMpython_dynamic:
+#ifdef DO_PYTHON
+        curauth->dynamic_script = xstrdup(tok->name);
+        curauth->dynamic_type = PERMpython_dynamic;
+#else
+        ReportError(f, "python_dynamic can not be used in readers.conf: inn not compiled with python support enabled.");
+#endif
+       break;
       case PERMlocaladdress:
 	curauth->localaddress = xstrdup(tok->name);
 	CompressList(curauth->localaddress);
@@ -1474,7 +1525,7 @@ void PERMgetpermissions()
     char *user[2];
     static ACCESSGROUP *noaccessconf;
     char *uname;
-    char *cpp, *perl_path;
+    char *cpp, *script_path;
     char **args;
     struct vector *access_vec;
 
@@ -1494,18 +1545,18 @@ void PERMgetpermissions()
 	SetDefaultAccess(PERMaccessconf);
 	return;
 #ifdef DO_PERL
-    } else if (success_auth->perl_access != NULL) {
+    } else if (success_auth->access_script != NULL) {
       i = 0;
-      cpp = xstrdup(success_auth->perl_access);
+      cpp = xstrdup(success_auth->access_script);
       args = 0;
       Argify(cpp, &args);
-      perl_path = concat(args[0], (char *) 0);
-      if ((perl_path != NULL) && (strlen(perl_path) > 0)) {
+      script_path = concat(args[0], (char *) 0);
+      if ((script_path != NULL) && (strlen(script_path) > 0)) {
         if(!PerlLoaded) {
           loadPerl();
         }
-        PERLsetup(NULL, perl_path, "access");
-        free(perl_path);
+        PERLsetup(NULL, script_path, "access");
+        free(script_path);
 
         uname = xstrdup(PERMuser);
         
@@ -1516,17 +1567,46 @@ void PERMgetpermissions()
 
         access_realms[0] = xcalloc(1, sizeof(ACCESSGROUP));
 
-        PERMvectortoaccess(access_realms[0], "perl-dyanmic", access_vec);
+        PERMvectortoaccess(access_realms[0], "perl-dynamic", access_vec);
 
         vector_free(access_vec);
       } else {
-        syslog(L_ERROR, "No script specified in auth method.\n");
+        syslog(L_ERROR, "No script specified in perl_access method.\n");
         Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
         ExitWithStats(1, true);
       }
       free(cpp);
       free(args);
 #endif /* DO_PERL */
+#ifdef DO_PYTHON
+    } else if ((success_auth->access_script != NULL) && (success_auth->access_type == PERMpython_access)) {
+        i = 0;
+        cpp = xstrdup(success_auth->access_script);
+        args = 0;
+        Argify(cpp, &args);
+        script_path = concat(args[0], (char *) 0);
+        if ((script_path != NULL) && (strlen(script_path) > 0)) {
+            uname = xstrdup(PERMuser);
+            access_vec = vector_new();
+
+            PY_access(script_path, access_vec, ClientHost, ClientIpString, ServerHost, uname);
+            free(script_path);
+            free(uname);
+            free(args);
+            
+            access_realms[0] = xcalloc(1, sizeof(ACCESSGROUP));
+            memset(access_realms[0], 0, sizeof(ACCESSGROUP));
+            
+            PERMvectortoaccess(access_realms[0], "python-dynamic", access_vec);
+            
+            vector_free(access_vec);
+        } else {
+            syslog(L_ERROR, "No script specified in python_access method.\n");
+            Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+            ExitWithStats(1, true);
+        }
+        free(cpp);
+#endif /* DO_PYTHON */
     } else {
       for (i = 0; access_realms[i]; i++)
         ;
@@ -1621,6 +1701,12 @@ void PERMgetpermissions()
 	SetDefaultAccess(PERMaccessconf);
 	syslog(L_TRACE, "%s no_access_realm", ClientHost);
     }
+    /* check if dynamic access control is enabled, if so init it */
+#ifdef DO_PYTHON
+    if ((success_auth->dynamic_type == PERMpython_dynamic) && success_auth->dynamic_script) {
+      PY_dynamic_init(success_auth->dynamic_script);
+    }
+#endif /* DO_PYTHON */
 }
 
 /* strip blanks out of a string */
@@ -2131,7 +2217,7 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
     char *arg0;
     char *resdir;
     char *tmp;
-    char *perl_path;
+    char *script_path;
     char newUser[BIG_BUFFER];
     EXECSTUFF *foo;
     int done	    = 0;
@@ -2148,18 +2234,18 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
     ubuf[0] = '\0';
     newUser[0] = '\0';
     for (i = 0; auth->auth_methods[i]; i++) {
-#ifdef DO_PERL
       if (auth->auth_methods[i]->type == PERMperl_auth) {
+#ifdef DO_PERL
             cp = xstrdup(auth->auth_methods[i]->program);
             args = 0;
             Argify(cp, &args);
-            perl_path = concat(args[0], (char *) 0);
-            if ((perl_path != NULL) && (strlen(perl_path) > 0)) {
+            script_path = concat(args[0], (char *) 0);
+            if ((script_path != NULL) && (strlen(script_path) > 0)) {
                 if(!PerlLoaded) {
                     loadPerl();
                 }
-                PERLsetup(NULL, perl_path, "authenticate");
-                free(perl_path);
+                PERLsetup(NULL, script_path, "authenticate");
+                free(script_path);
                 perlAuthInit();
           
                 code = perlAuthenticate(ClientHost, ClientIpString, ServerHost, username, password, errorstr, newUser);
@@ -2183,8 +2269,42 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
             } else {
               syslog(L_ERROR, "No script specified in auth method.\n");
             }
-      } else if (auth->auth_methods[i]->type == PERMauthprog) {
 #endif	/* DO_PERL */    
+      } else if (auth->auth_methods[i]->type == PERMpython_auth) {
+#ifdef DO_PYTHON
+	cp = xstrdup(auth->auth_methods[i]->program);
+	args = 0;
+	Argify(cp, &args);
+	script_path = concat(args[0], (char *) 0);
+	if ((script_path != NULL) && (strlen(script_path) > 0)) {
+	  code = PY_authenticate(script_path, ClientHost, ClientIpString, ServerHost, username, password, errorstr, newUser);
+	  free(script_path);
+	  if (code < 0) {
+	    syslog(L_NOTICE, "PY_authenticate(): authentication skipped due to no Python authentication method defined.");
+	  } else {
+	    if (code == NNTP_AUTH_OK_VAL) {
+              /* Set the value of ubuf to the right username */
+              if (newUser[0] != '\0') {
+                  strlcpy(ubuf, newUser, sizeof(ubuf));
+              } else {
+                  strlcpy(ubuf, username, sizeof(ubuf));
+              }
+              
+	      syslog(L_NOTICE, "%s user %s", ClientHost, ubuf);
+	      if (LLOGenable) {
+		fprintf(locallog, "%s user %s\n", ClientHost, ubuf);
+		fflush(locallog);
+	      }
+	      break;
+	    } else {
+	      syslog(L_NOTICE, "%s bad_auth", ClientHost);
+	    }
+	  }
+	} else {
+	  syslog(L_ERROR, "No script specified in auth method.\n");
+	}
+#endif /* DO_PYTHON */
+      } else {
 	if (auth->auth_methods[i]->users &&
 	  !MatchUser(auth->auth_methods[i]->users, username))
 	    continue;
@@ -2232,9 +2352,7 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
 	if (done)
 	    /* this authenticator succeeded */
 	    break;
-#ifdef DO_PERL
       }
-#endif /* DO_PERL */
     }
     free(resdir);
     if (ubuf[0])

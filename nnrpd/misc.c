@@ -161,17 +161,19 @@ PERMartok(void)
     }
 
 #ifdef DO_PYTHON
-    if (innconf->nnrppythonauth) {
+    if (PY_use_dynamic) {
         char    *reply;
 
 	/* Authorize user at a Python authorization module */
-	if (PY_authorize(ClientHost, ClientIpString, ServerHost, PERMuser, p, false, &reply) < 0) {
-	    syslog(L_NOTICE, "PY_authorize(): authorization skipped due to no Python authorization method defined.");
+	if (PY_dynamic(ClientHost, ClientIpString, ServerHost, PERMuser, p, false, &reply) < 0) {
+	    syslog(L_NOTICE, "PY_dynamic(): authorization skipped due to no Python dynamic method defined.");
 	} else {
 	    if (reply != NULL) {
-	        syslog(L_TRACE, "PY_authorize() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, ClientHost, p, reply);
-		return true;
+	        syslog(L_TRACE, "PY_dynamic() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, ClientHost, p, reply);
+                free(reply);
+		return false;
 	    }
+            return true;
 	}
     }
 #endif /* DO_PYTHON */

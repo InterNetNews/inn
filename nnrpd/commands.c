@@ -224,9 +224,6 @@ CMDauthinfo(ac, av)
     static char	Password[SMBUF];
     char	accesslist[BIG_BUFFER];
     char        errorstr[BIG_BUFFER];
-#ifdef DO_PYTHON
-    int         code;
-#endif
 
     if (strcasecmp(av[1], "generic") == 0) {
 	char *logrec = Glom(av);
@@ -283,69 +280,37 @@ CMDauthinfo(ac, av)
 	    strlcpy(Password, av[2], sizeof(Password));
 	}
 
-#ifdef DO_PYTHON
-	    if (innconf->nnrppythonauth) {
-	        if ((code = PY_authenticate(ClientHost, ClientIpString, ServerHost, User, Password, accesslist)) < 0) {
-		    syslog(L_NOTICE, "PY_authenticate(): authentication skipped due to no Python authentication method defined.");
-		} else {
-		    if (code == NNTP_AUTH_OK_VAL) {
-		        PERMspecified = NGgetlist(&PERMreadlist, accesslist);
-			PERMpostlist = PERMreadlist;
-			syslog(L_NOTICE, "%s user %s", ClientHost, User);
-			if (LLOGenable) {
-			    fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, User);
-			    fflush(locallog);
-			}
-			Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
-			/* save these values in case you need them later */
-			strlcpy(PERMuser, User, sizeof(PERMuser));
-			strlcpy(PERMpass, Password, sizeof(PERMpass));
-			PERMneedauth = false;
-			PERMauthorized = true;
-			return;
-		    } else {
-		        syslog(L_NOTICE, "%s bad_auth", ClientHost);
-			Reply("%d Authentication error\r\n", NNTP_ACCESS_VAL);
-			ExitWithStats(1, false);
-		    }
-		}
-	    } else {
-#endif /* DO_PYTHON */
-
-	    if (strcmp(User, PERMuser) == 0 && strcmp(Password, PERMpass) == 0) {
-		syslog(L_NOTICE, "%s user %s", ClientHost, PERMuser);
-		if (LLOGenable) {
-			fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, PERMuser);
-			fflush(locallog);
-		}
-		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
-		PERMneedauth = false;
-		PERMauthorized = true;
-		return;
-	    }
-
-            errorstr[0] = '\0';
-
-            PERMlogin(User, Password, errorstr);
-	    PERMgetpermissions();
-	    if (!PERMneedauth) {
-		syslog(L_NOTICE, "%s user %s", ClientHost, PERMuser);
-		if (LLOGenable) {
-			fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, PERMuser);
-			fflush(locallog);
-		}
-		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
-		PERMneedauth = false;
-		PERMauthorized = true;
-		return;
-	    }
-#ifdef	DO_PYTHON
-	}
-#endif	/* DO_PYTHON */
+        if (strcmp(User, PERMuser) == 0 && strcmp(Password, PERMpass) == 0) {
+            syslog(L_NOTICE, "%s user %s", ClientHost, PERMuser);
+            if (LLOGenable) {
+                fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, PERMuser);
+                fflush(locallog);
+            }
+            Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
+            PERMneedauth = false;
+            PERMauthorized = true;
+            return;
+        }
+        
+        errorstr[0] = '\0';
+        
+        PERMlogin(User, Password, errorstr);
+        PERMgetpermissions();
+        if (!PERMneedauth) {
+            syslog(L_NOTICE, "%s user %s", ClientHost, PERMuser);
+            if (LLOGenable) {
+                fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, PERMuser);
+                fflush(locallog);
+            }
+            Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
+            PERMneedauth = false;
+            PERMauthorized = true;
+            return;
+        }
 
 	syslog(L_NOTICE, "%s bad_auth", ClientHost);
         if (errorstr[0] != '\0') {
-            syslog(L_NOTICE, "%s perl error str: %s", ClientHost, errorstr);
+            syslog(L_NOTICE, "%s script error str: %s", ClientHost, errorstr);
             Reply("%d %s\r\n", NNTP_ACCESS_VAL, errorstr);
         } else {
             Reply("%d Authentication error\r\n", NNTP_ACCESS_VAL);

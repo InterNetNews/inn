@@ -677,6 +677,11 @@ ValidNewsgroups(char *hdr, char **modgroup)
     bool		IsNewgroup;
     bool		FoundOne;
     int                 flag;
+    bool                hookpresent = false;
+
+#ifdef DO_PYTHON
+    hookpresent = PY_use_dynamic;
+#endif /* DO_PYTHON */
 
     p = HDR(HDR__CONTROL);
     IsNewgroup = (p && strncmp(p, "newgroup", 8) == 0);
@@ -692,7 +697,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
     do {
 	if (innconf->mergetogroups && p[0] == 't' && p[1] == 'o' && p[2] == '.')
 	    p = "to";
-        if (PERMspecified) {
+        if (!hookpresent && PERMspecified) {
 	    grplist[0] = p;
 	    grplist[1] = NULL;
 	    if (!PERMmatch(PERMpostlist, grplist)) {
@@ -707,16 +712,17 @@ ValidNewsgroups(char *hdr, char **modgroup)
 	switch (flag) {
 	case NF_FLAG_OK:
 #ifdef DO_PYTHON
-	if (innconf->nnrppythonauth) {
+	if (PY_use_dynamic) {
 	    char    *reply;
 
-	    /* Authorize user at a Python authorization module */
-	    if (PY_authorize(ClientHost, ClientIpString, ServerHost, PERMuser, p, true, &reply) < 0) {
-	        syslog(L_NOTICE, "PY_authorize(): authorization skipped due to no Python authorization method defined.");
+	    /* Authorize user using Python module method dynamic */
+	    if (PY_dynamic(ClientHost, ClientIpString, ServerHost, PERMuser, p, true, &reply) < 0) {
+	        syslog(L_NOTICE, "PY_dynamic(): authorization skipped due to no Python dynamic method defined.");
 	    } else {
 	        if (reply != NULL) {
-		    syslog(L_TRACE, "PY_authorize() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, ClientHost, p, reply);
+		    syslog(L_TRACE, "PY_dynamic() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, ClientHost, p, reply);
 		    snprintf(Error, sizeof(Error), "%s\r\n", reply);
+                    free(reply);
 		    break;
 		}
 	    }

@@ -1,44 +1,53 @@
 #
 #
-# This is a sample authentication and authorization module for nnrpd hook
+# This is a sample authentication and authorization module for python
+# nnrpd hook
 #
 # For details, see the file doc/hook-python that came with INN.
 #
 
 #
-# This file is loaded when nnrpd starts up. An instance of AUTH class
-# is passed to nnrpd via set_auth_hook() function imported from nnrpd. The
-# following methods of that class are known to nnrpd:
+# This file is loaded when one of the python_* readers.conf parameters
+# is encountered. An instance of AUTH class is passed to nnrpd via
+# set_auth_hook() function imported from nnrpd. The following methods
+# of that class are known to nnrpd:
 #
-#   __init__()                  - Called on nnrpd startup. Use this method
-#                                 to initilalize your variables or open
-#                                 a database connection.
-#   close()                     - Called on nnrpd termination. Save your state
-#                                 variables or close a database connection.
-#   authenticate()              - Called whenever a reader connects or uses
-#                                 AUTHINFO command. A "type" entry of 
-#                                 "attributes" dictionary is passed to this
-#                                 method to figure out the type of
-#                                 authentication happening.
-#   authorize()                 - Called whenever a reader requests either
-#                                 read or post access to a newsgroup.
-#
-# Attributes about the connection are passed to the program in the
-# "attributes" global dictinary variable.
-#
-# The authenticate() method should return a tuple of four elements:
-#
-# 1) NNTP response code.  Should be one of the codes from
-#    NNRPD_AUTH.connectcodes{} or NNRPD_AUTH.authcodes{}
-# 2) Reading Allowed. Should be a boolean value.
-# 3) Posting Allowed. Should be a boolean value.
-# 4) Wildmat expression that says what groups to provide access to.
-#
-# All four of these are required.
-#
-# The authorize() method should return None to grant requested
-# priveleges or a non-empty string (which will be reported back to reader)
-# otherwise.
+#   __init__()                  - Use this method to initilalize your
+#                                 general variables or open a common
+#                                 database connection. May be omitted.
+#   access_init()               - Init function specific to access
+#                                 control. May be omitted
+#   access(attributes)          - Called when a python_access
+#                                 statement is reached in the
+#                                 processing of readers.conf. Returns
+#                                 a dictionary of values representing
+#                                 statements to be included in an
+#                                 access group. 
+#   access_close()              - Called on nnrpd termination. Save
+#                                 your state variables or close a
+#                                 database connection. May be omitted
+#   authen_init()               - Init function specific to
+#                                 authentication. May be omitted
+#   authenticate(attributes)    - Called when a python_auth statement
+#                                 is reached in the processing of
+#                                 readers.conf. Returns a response
+#                                 code, an error string and an
+#                                 optional string to appear in the
+#                                 logs as the username.
+#   authen_close()              - Called on nnrpd termination. Save
+#                                 your state variables or close a database
+#                                 connection. May be omitted
+#   dynamic_init()              - Init function specific to
+#                                 authentication. May be omitted
+#   dynamic(attributes)         - Called whenever a reader requests either
+#                                 read or post access to a
+#                                 newsgroup. Returns None to grant
+#                                 access, or a non-empty string (which
+#                                 will be reported back to reader)
+#                                 otherwise. 
+#   dynamic_close()             - Called on nnrpd termination. Save
+#                                 your state variables or close a database
+#                                 connection. May be omitted
 #
 # If there is a problem with return codes from any of these methods then nnrpd
 # will die and syslog the exact reason.
@@ -59,8 +68,8 @@
 class AUTH:
     """Provide authentication and authorization callbacks to nnrpd."""
     def __init__(self):
-        """This runs on nnrpd startup. It is a good place to initialize
-           variables or open a database connection.
+        """This is a good place to initialize variables or open a
+           database connection. 
         """
         # Create a list of NNTP codes to respond on connect
         self.connectcodes = {   'READPOST':200,
@@ -76,65 +85,66 @@ class AUTH:
 
         syslog('notice', 'nnrpd authentication class instance created')
 
-    def close(self):
-        """Runs when nnrpd exits. You can use this method to save state
-           information to be restored by the __init__() method or close
-           a database connection.
-        """
-        syslog('notice', "close method running, bye!")
-
     def authenticate(self, attributes):
-        """Called when a reader connects or authenticates"""
+        """Called when python_auth is encountered in readers.conf"""
 
 	# just for debugging purposes
-	syslog('debug', 'authenticate() invoked against type %s, hostname %s, ipaddress %s, interface %s, user %s' % (\
-		attributes['type'], \
+	syslog('notice', 'n_a authenticate() invoked: hostname %s, ipaddress %s, interface %s, user %s' % (\
+		attributes['hostname'], \
+		attributes['ipaddress'], \
+		attributes['interface'], \
+		attributes['user']))
+
+	# do username passworld authentication
+        if 'foo' == str(attributes['user'])  \
+           and 'foo' == str(attributes['pass']):
+            syslog('notice', 'authentication by username succeeded')
+            return ( self.authcodes['ALLOWED'], 'No error', 'default_user')
+        else:
+            syslog('notice', 'authentication by username failed')
+            return ( self.authcodes['DENIED'], 'Access Denied!')
+
+    def access(self, attributes):
+        """Called when python_access is encountered in readers.conf"""
+
+	# just for debugging purposes
+	syslog('notice', 'n_a access() invoked: hostname %s, ipaddress %s, interface %s, user %s' % (\
 		attributes['hostname'], \
 		attributes['ipaddress'], \
 		attributes['interface'], \
 		attributes['user']))
 
 	# allow newsreading from specific host only
-        if attributes['type'] == buffer('connect'):
-            if attributes['ipaddress'] == buffer('127.0.0.1'):
-                syslog('notice', 'authentication by IP address succeeded')
-                return ( self.connectcodes['READPOST'], 1, 1, '*' )
-            else:
-                syslog('notice', 'authentication by IP address failed')
-                return ( self.connectcodes['PERMDENIED'], 0, 0, '!*' )
-                
-	# do not do any username authentication
-        elif attributes['type'] == buffer('authinfo'):
-            syslog('notice', 'authentication by username succeeded')
-            return ( self.authcodes['ALLOWED'], 1, 1, '*')
+        if '127.0.0.1' == str(attributes['ipaddress']):
+            syslog('notice', 'authentication by IP address succeeded')
+            return {'read':'*','post':'*'}
         else:
-            syslog('notice', 'authentication type is not known: %s' % attributes['type'])
-            return ( self.authcodes['DENIED'], 0, 0, '!*')
+            syslog('notice', 'authentication by IP address failed')
+            return {'read':'!*','post':'!*'}
 
-    def authorize(self, attributes):
-        """Called when a reader requests either read or post permission
-           for particular newsgroup.
+    def dynamic(self, attributes):
+        """Called when python_dynamic was reached in the processing of
+           readers.conf and a reader requests either read or post
+           permission for particular newsgroup.
         """
 	# just for debugging purposes
-	syslog('debug', 'authorize() invoked against type %s, hostname %s, ipaddress %s, interface %s, user %s, newsgroup %s' % (\
+	syslog('notice', 'n_a dyanmic() invoked against type %s, hostname %s, ipaddress %s, interface %s, user %s' % (\
 		attributes['type'], \
 		attributes['hostname'], \
 		attributes['ipaddress'], \
 		attributes['interface'], \
-		attributes['user'], \
-		attributes['newsgroup']))
+		attributes['user']))
 
-	# Allow reading of any newsgroup
-        if attributes['type'] == buffer('read'):
-            syslog('notice', 'authorization for read access succeeded')
+	# Allow reading of any newsgroup but not posting
+        if 'post' == str(attributes['type']):
+            syslog('notice', 'authorization for post access denied')
+            return "no posting for you"
+        elif 'read' == str(attributes['type']):
+            syslog('notice', 'authorization for read access granted')
             return None
-	# ..but disallow postings
-        elif attributes['type'] == buffer('post'):
-            syslog('notice', 'authorization for post access failed')
-            return "Posting disallowed"
         else:
             syslog('notice', 'authorization type is not known: %s' % attributes['type'])
-            return "Internal error"
+            return "Internal error";
 
 
 #

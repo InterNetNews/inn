@@ -24,7 +24,7 @@
 #include "nntp.h"
 
 /* Skip this entire file if DO_PERL (./configure --with-perl) isn't set. */
-#if DO_PERL
+#ifdef DO_PERL
 
 #include <EXTERN.h>
 #include <perl.h>

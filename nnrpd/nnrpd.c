@@ -102,6 +102,10 @@ const char *NNRPinstance = "";
 bool   PerlLoaded = false;
 #endif /* DO_PERL */
 
+#ifdef DO_PYTHON
+bool PY_use_dynamic = false;
+#endif /* DO_PYTHON */
+
 bool LLOGenable;
 
 static char	CMDfetchhelp[] = "[MessageID|Number]";
@@ -235,9 +239,8 @@ ExitWithStats(int x, bool readconf)
     SMshutdown();
 
 #ifdef DO_PYTHON
-    if (innconf->nnrppythonauth)
-        PY_close();
-#endif
+        PY_close_python();
+#endif /* DO_PYTHON */
 
     if (History)
 	HISclose(History);
@@ -476,11 +479,6 @@ static void StartConnection(void)
 {
     struct sockaddr_storage	ssc, sss;
     socklen_t		length;
-#ifdef DO_PYTHON
-    char		accesslist[BIG_BUFFER];
-    int                 code;
-    static ACCESSGROUP	*authconf;
-#endif
     const char		*default_host_error = "unknown error";
 
     ClientIpAddr = 0L;
@@ -581,31 +579,9 @@ static void StartConnection(void)
     strlcpy(LogName, ClientHost, sizeof(LogName));
 
     syslog(L_NOTICE, "%s (%s) connect", ClientHost, ClientIpString);
-#ifdef DO_PYTHON
-    if (innconf->nnrppythonauth) {
-        if ((code = PY_authenticate(ClientHost, ClientIpString, ServerHost, NULL, NULL, accesslist)) < 0) {
-	    syslog(L_NOTICE, "PY_authenticate(): authentication skipped due to no Python authentication method defined.");
-	} else {
-	    if (code == 502) {
-	        syslog(L_NOTICE, "%s no_access", ClientHost);
-		Printf("%d You are not in my access file. Goodbye.\r\n",
-		       NNTP_ACCESS_VAL);
-		ExitWithStats(1, true);
-	    }
-	    PERMspecified = NGgetlist(&PERMreadlist, accesslist);
-	    PERMpostlist = PERMreadlist;
-	}
-	if (!authconf)
-	    authconf = xmalloc(sizeof(ACCESSGROUP));
-	PERMaccessconf = authconf;
-	SetDefaultAccess(PERMaccessconf);
-    } else {
-#endif	/* DO_PYTHON */
-	PERMgetaccess(NNRPACCESS);
-	PERMgetpermissions();
-#ifdef DO_PYTHON
-    }
-#endif /* DO_PYTHON */
+
+    PERMgetaccess(NNRPACCESS);
+    PERMgetpermissions();
 }
 
 
@@ -773,13 +749,6 @@ WaitChild(int s NO_SIGACTION_UNUSED)
 static void SetupDaemon(void) {
     bool                val;
     time_t statinterval;
-
-#ifdef	DO_PYTHON
-    /* Load the Python code */
-    if (innconf->nnrppythonauth) {
-        PY_setup();
-    }
-#endif /* defined(DO_PYTHON) */
 
     val = true;
     if (SMsetup(SM_PREOPEN, (void *)&val) && !SMinit()) {

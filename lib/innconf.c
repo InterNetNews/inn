@@ -206,7 +206,6 @@ const struct config config_table[] = {
     { K(nnrpdauthsender),       BOOL    (false) },
     { K(nnrpdloadlimit),        NUMBER  (16) },
     { K(nnrpdoverstats),        BOOL    (false) },
-    { K(nnrppythonauth),        BOOL    (false) },
     { K(organization),          STRING  (NULL) },
     { K(readertrack),           BOOL    (false) },
     { K(spoolfirst),            BOOL    (false) },

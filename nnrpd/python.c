@@ -15,96 +15,131 @@
 
 #include "inn/innconf.h"
 #include "nnrpd.h"
+#include "inn/hashtab.h"
 
 #if defined(DO_PYTHON)
 
 #include "Python.h"
 
+/* values relate name of hook to array index */
+#define PYTHONauthen           1
+#define PYTHONaccess           2
+#define PYTHONdynamic          3
+
+#define PYTHONtypes_max        4
+
+/* values relate type of method to array index */
+#define PYTHONmain             1
+#define PYTHONinit             2
+#define PYTHONclose            3
+
+#define PYTHONmethods_max      4
+
+/* key names for attributes dictionary */
+#define PYTHONhostname         "hostname"
+#define PYTHONipaddress        "ipaddress"
+#define PYTHONinterface        "interface"
+#define PYTHONuser             "user"
+#define PYTHONpass             "pass"
+#define PYTHONtype             "type"
+#define PYTHONnewsgroup        "newsgroup"
+
+/* Max number of items in dictionary to pass to auth methods */
+#define	_PY_MAX_AUTH_ITEM	7
+
+
 /* Pointers to external Python objects */
 PyObject	*PYAuthObject = NULL;
-PyObject	*PYAuthModule = NULL;
 
 /* Dictionary of params to pass to authentication methods */
 PyObject	*PYauthinfo = NULL;
 PyObject	**PYauthitem = NULL;
-PyObject	**PYauthkey = NULL;
 
-/* Max number of items in dictionary to pass to auth methods */
-#define	_PY_MAX_AUTH_ITEM	10
-
-/* These are pointers to Python methods specified in auth module */
-PyObject	*authenticate_method = NULL;
-PyObject	*authorize_method = NULL;
-PyObject	*close_method = NULL;
+static PyMethodDef nnrpdPyMethods[];
 
 /* Forward declaration */
 static PyObject *PY_set_auth_hook(PyObject *dummy, PyObject *args);
+void PY_load_python(void);
+PyObject* PY_setup(int type, int method, char *file);
+static const void *file_key(const void *p);
+static bool file_equal(const void *k, const void *p);
+static void file_free(void *p);
+static void file_trav(void *data, void* null);
 
-/* These variable defined in other C modules */
-extern char accesslist[];
+bool   PythonLoaded = false;
+
+/* structure for storage of attributes for a module file */
+typedef struct PyFile {
+  char          *file;  
+  bool          loaded[PYTHONtypes_max];
+  PyObject	*procs[PYTHONtypes_max][PYTHONmethods_max];
+} PyFile;
+
+/* hash for storing files */
+struct hash *files;
+
+/* for passing the dynamic module filename from perm.c */
+char*    dynamic_file;
 
 /*
-** Authenticate connecting host by IP address or username&password.
+** Authenticate connecting host by username&password.
 **
 ** Return NNTP reply code as returned by Python method or -1 if method
 ** is not defined.
 */
-int PY_authenticate(char *clientHost, char *clientIpString, char *serverHost, char *Username, char *Password, char *accesslist) {
-    PyObject    *result, *item;
+int PY_authenticate(char* file, char *clientHost, char *clientIpString, char *serverHost, char *Username, char *Password, char *errorstring, char *newUser) {
+    PyObject    *result, *item, *proc;
     char        *type;
     int         authnum;
     int         code, i;
+    char        *temp;
+
+    PY_load_python();
+    proc = PY_setup(PYTHONauthen, PYTHONmain, file);
 
     /* Return if authentication method is not defined */
-    if (authenticate_method == NULL)
+    if (proc == NULL)
         return -1;
-
-    /* Figure out authentication type */
-    if (Username == NULL)
-        type = "connect";
-    else
-        type = "authinfo";
 
     /* Initialize PythonAuthObject with connect method specific items */
     authnum = 0;
 
-    /* Authentication type */
-    PYauthitem[authnum] = PyBuffer_FromMemory(type, strlen(type));
-    PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
-
     /* Client hostname */
     PYauthitem[authnum] = PyBuffer_FromMemory(clientHost, strlen(clientHost));
-    PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
+    PyDict_SetItemString(PYauthinfo, PYTHONhostname, PYauthitem[authnum++]);
 
     /* Client IP number */
     PYauthitem[authnum] = PyBuffer_FromMemory(clientIpString, strlen(clientIpString));
-    PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
+    PyDict_SetItemString(PYauthinfo, PYTHONipaddress, PYauthitem[authnum++]);
 
     /* Server interface the connection comes to */
     PYauthitem[authnum] = PyBuffer_FromMemory(serverHost, strlen(serverHost));
-    PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
+    PyDict_SetItemString(PYauthinfo, PYTHONinterface, PYauthitem[authnum++]);
 
     /* Username if known */
-    if (Username == NULL)
+    if (Username == NULL) {
         PYauthitem[authnum] = Py_None;
-    else
+    } else {
         PYauthitem[authnum] = PyBuffer_FromMemory(Username, strlen(Username));
-    PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
+    }
+    PyDict_SetItemString(PYauthinfo, PYTHONuser, PYauthitem[authnum++]);
 
     /* Password if known */
-    if (Password == NULL)
+    if (Password == NULL) {
         PYauthitem[authnum] = Py_None;
-    else
+    } else {
         PYauthitem[authnum] = PyBuffer_FromMemory(Password, strlen(Password));
-    PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
+    }
+    PyDict_SetItemString(PYauthinfo, PYTHONpass, PYauthitem[authnum++]);
 
     /* Now invoke authenticate method and see if it likes this user */
-    result = PyObject_CallFunction(authenticate_method, "O", PYauthinfo);
+    result = PyObject_CallFunction(proc, "O", PYauthinfo);
 
     /* Check the response */
-    if (result == NULL || !PyTuple_Check(result))
+    if (result == NULL || !PyTuple_Check(result) 
+        || ((PyTuple_Size(result) != 2) && (PyTuple_Size(result) != 3)))
     {
-        syslog(L_ERROR, "python authenticate_method (type %s) returned wrong result", type);
+        syslog(L_ERROR, "python authenticate method returned wrong result");
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
 	ExitWithStats(1, true);
     }
@@ -115,7 +150,7 @@ int PY_authenticate(char *clientHost, char *clientIpString, char *serverHost, ch
     /* Check the item */
     if (!PyInt_Check(item))
     {
-        syslog(L_ERROR, "python authenticate_method (type %s) returned bad NNTP response code", type);
+        syslog(L_ERROR, "python authenticate method returned bad NNTP response code");
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
 	ExitWithStats(1, true);
     }
@@ -123,165 +158,254 @@ int PY_authenticate(char *clientHost, char *clientIpString, char *serverHost, ch
     /* Store the code */
     code = PyInt_AS_LONG(item);
 
-    /* Get the CanPost setting */
+    /* Get the error string */
     item = PyTuple_GetItem(result, 1);
-
-    /* Check the item */
-    if (!PyInt_Check(item))
-    {
-        syslog(L_ERROR, "python authenticate_method (type %s) returned bad CanPost setting", type);
-	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1, true);
-    }
-
-    /* Store the setting */
-    PERMcanpost = PyInt_AS_LONG(item);
-
-    /* Get the CanRead setting */
-    item = PyTuple_GetItem(result, 2);
-
-    /* Check the item */
-    if (!PyInt_Check(item))
-    {
-        syslog(L_ERROR, "python authenticate_method (type %s) returned bad CanRead setting", type);
-	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1, true);
-    }
-
-    /* Store the setting */
-    PERMcanread = PyInt_AS_LONG(item);
-
-    /* Get the access list */
-    item = PyTuple_GetItem(result, 3);
 
     /* Check the item */
     if (!PyString_Check(item))
     {
-        syslog(L_ERROR, "python authenticate_method (type %s) returned bad access list value", type);
+        syslog(L_ERROR, "python authenticate method returned bad error string");
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
 	ExitWithStats(1, true);
     }
 
-    /* Store access list*/
-    strcpy(accesslist, PyString_AS_STRING(item));
+    /* Store error string */
+    temp = PyString_AS_STRING(item);
+    errorstring = xstrdup(temp);
+    
+    if (PyTuple_Size(result) == 3) {
+        
+        /* Get the username string */
+        item = PyTuple_GetItem(result, 2);
+        
+        /* Check the item */
+        if (!PyString_Check(item)) {
+            syslog(L_ERROR, "python authenticate method returned bad username string");
+            Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
+            ExitWithStats(1, true);
+        }
 
-    /* Fix the NNTP response code */
-    if ((code == NNTP_POSTOK_VAL) || (code == NNTP_NOPOSTOK_VAL))
-    {
-      code = PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL;
+        /* Store error string */
+        temp = PyString_AS_STRING(item);
+        newUser = xstrdup(temp);
     }
-
-    /* Initialize needauth flag */
-    if (code == NNTP_AUTH_NEEDED_VAL) 
-        PERMneedauth = true;
 
     /* Clean up the dictionary object */
     PyDict_Clear(PYauthinfo);
 
     /* Clean up dictionary items */
-    for (i = 0; i < authnum; i++)
-    {
-        if (PYauthitem[i] != Py_None)
-	{
-	    Py_DECREF(PYauthitem[i]);
-	}
+    for (i = 0; i < authnum; i++) {
+        if (PYauthitem[i] != Py_None) {
+            Py_DECREF(PYauthitem[i]);
+        }
     }
 
     /* Log auth result */
-    syslog(L_NOTICE, "python authenticate_method (type %s) succeeded, return code %d", type, code);
+    syslog(L_NOTICE, "python authenticate method succeeded, return code %d, error string %s", code, errorstring);
 
     /* Return response code */
     return code;
 }
 
-
 /*
-** Authorize user access to a newsgroup.
+** Create an access group based on the values returned by the script in file
 **
-** Return 0 if requested privelege is granted or positive value
-** and a reply_message pointer initialized with reply message.
-** Return negative value if authorize method is not defined.
 */
-int PY_authorize(char *clientHost, char *clientIpString, char *serverHost, char *Username, char *NewsGroup, int PostFlag, char **reply_message) {
-    PyObject	*result, *item;
-    char	*string;
+void PY_access(char* file, struct vector *access_vec, char *clientHost, char *clientIpString, char *serverHost, char *Username) {
+    PyObject	*result, *key, *value, *proc;
+    char	*skey, *svalue, *temp;
     int		authnum;
     int		i;
 
-    /* Return if authorize_method is not defined */
-    if (authorize_method == NULL)
+    PY_load_python();
+    proc = PY_setup(PYTHONaccess, PYTHONmain, file);
+
+    /* Exit if access method is not defined */
+    if (proc == NULL) {
+        syslog(L_ERROR, "python access method not defined");
+ 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
+ 	ExitWithStats(1, true);
+     }
+ 
+    /* Initialize PythonAuthObject with group method specific items */
+    authnum = 0;
+
+    /* Client hostname */
+    PYauthitem[authnum] = PyBuffer_FromMemory(clientHost, strlen(clientHost));
+    PyDict_SetItemString(PYauthinfo, PYTHONhostname, PYauthitem[authnum++]);
+
+    /* Client IP number */
+    PYauthitem[authnum] = PyBuffer_FromMemory(clientIpString, strlen(clientIpString));
+    PyDict_SetItemString(PYauthinfo, PYTHONipaddress, PYauthitem[authnum++]);
+
+    /* Server interface the connection comes to */
+    PYauthitem[authnum] = PyBuffer_FromMemory(serverHost, strlen(serverHost));
+    PyDict_SetItemString(PYauthinfo, PYTHONinterface, PYauthitem[authnum++]);
+
+    /* Username */
+    PYauthitem[authnum] = PyBuffer_FromMemory(Username, strlen(Username));
+    PyDict_SetItemString(PYauthinfo, PYTHONuser, PYauthitem[authnum++]);
+ 
+    /* Password is not known */
+    PYauthitem[authnum] = Py_None;
+    PyDict_SetItemString(PYauthinfo, PYTHONpass, PYauthitem[authnum++]);
+
+    /*
+     * Now invoke newsgroup access method
+     */
+    result = PyObject_CallFunction(proc, "O", PYauthinfo);
+
+    /* Check the response */
+    if (result == NULL || result == Py_None || !PyDict_Check(result)) {
+        syslog(L_ERROR, "python access method returned wrong result - expected a dictionary");
+	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
+	ExitWithStats(1, true);
+     }
+ 
+    /* resize vector to dictionary length */
+    vector_resize(access_vec, PyDict_Size(result) - 1);
+
+    /* store dict values in proper format in access vector */
+    i = 0;
+    while(PyDict_Next(result, &i, &key, &value)) {
+        if (!PyString_Check(key)) {
+            syslog(L_ERROR, "python access method return dictionary key %i not a string", i);
+            Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
+            ExitWithStats(1, false);
+        }
+        if (!PyString_Check(value)) {
+            syslog(L_ERROR, "python access method return dictionary value %i not a string", i);
+            Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
+            ExitWithStats(1, false);
+        }
+        
+        temp = PyString_AsString(key);
+        skey = xstrdup(temp);
+        
+        temp = PyString_AsString(value);
+        svalue = xstrdup(temp);
+        
+        skey = strcat(skey, ": \"");
+        skey = strcat(skey, svalue);
+        skey = strcat(skey, "\"\n");
+        vector_add(access_vec, skey);
+        
+        free(skey);
+        free(svalue);
+    }
+ 
+    /* Clean up the dictionary object */
+    PyDict_Clear(PYauthinfo);
+    /* Clean up dictionary items */
+    for (i = 0; i < authnum; i++) {
+        if (PYauthitem[i] != Py_None) {
+            Py_DECREF(PYauthitem[i]);
+	}
+    }
+
+    /* Log auth result */
+    syslog(L_NOTICE, "python access method succeeded");
+}
+
+/*
+** Initialize dynamic access control code
+*/
+
+void PY_dynamic_init (char* file) {
+  dynamic_file = xstrdup(file);
+  PY_use_dynamic = true;
+}
+
+
+/*
+** Determine dynamic user access rights to a given newsgroup.
+**
+** Return 0 if requested privelege is granted or positive value
+** and a reply_message pointer initialized with reply message.
+** Return negative value if dynamic method is not defined.
+*/
+int PY_dynamic(char *clientHost, char *clientIpString, char *serverHost, char *Username, char *NewsGroup, int PostFlag, char **reply_message) {
+    PyObject	*result, *item, *proc;
+    char	*string, *temp;
+    int		authnum;
+    int		i;
+
+    PY_load_python();
+    proc = PY_setup(PYTHONdynamic, PYTHONmain, dynamic_file);
+
+    /* Return if dynamic method is not defined */
+    if (proc == NULL)
         return -1;
 
     /* Initialize PythonAuthObject with group method specific items */
     authnum = 0;
 
-    /* Assign authentication type */
-    PYauthitem[authnum] = PyBuffer_FromMemory(PostFlag ? "post" : "read", 4);
-    PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
-
     /* Client hostname */
     PYauthitem[authnum] = PyBuffer_FromMemory(clientHost, strlen(clientHost));
-    PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
-
+    PyDict_SetItemString(PYauthinfo, PYTHONhostname, PYauthitem[authnum++]);
+    
     /* Client IP number */
     PYauthitem[authnum] = PyBuffer_FromMemory(clientIpString, strlen(clientIpString));
-    PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
-
+    PyDict_SetItemString(PYauthinfo, PYTHONipaddress, PYauthitem[authnum++]);
+    
     /* Server interface the connection comes to */
     PYauthitem[authnum] = PyBuffer_FromMemory(serverHost, strlen(serverHost));
-    PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
-
+    PyDict_SetItemString(PYauthinfo, PYTHONinterface, PYauthitem[authnum++]);
+    
     /* Username */
     PYauthitem[authnum] = PyBuffer_FromMemory(Username, strlen(Username));
-    PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
-
+    PyDict_SetItemString(PYauthinfo, PYTHONuser, PYauthitem[authnum++]);
+    
     /* Password is not known */
     PYauthitem[authnum] = Py_None;
-    PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
+    PyDict_SetItemString(PYauthinfo, PYTHONpass, PYauthitem[authnum++]);
 
+    /* Assign authentication type */
+    PYauthitem[authnum] = PyBuffer_FromMemory(PostFlag ? "post" : "read", 4);
+    PyDict_SetItemString(PYauthinfo, PYTHONtype, PYauthitem[authnum++]);
+ 
     /* Newsgroup user tries to access */
-    PYauthitem[authnum] = PyBuffer_FromMemory(NewsGroup, strlen(NewsGroup));;
-    PyDict_SetItem(PYauthinfo, PYauthkey[authnum], PYauthitem[authnum++]);
-
+    PYauthitem[authnum] = PyBuffer_FromMemory(NewsGroup, strlen(NewsGroup));
+    PyDict_SetItemString(PYauthinfo, PYTHONnewsgroup,  PYauthitem[authnum++]);
+    
     /*
-     * Now invoke newsgroup access authorization method and see if
+     * Now invoke newsgroup dynamic access method and see if
      * it likes this user to access this newsgroup.
      */
-    result = PyObject_CallFunction(authorize_method, "O", PYauthinfo);
+    result = PyObject_CallFunction(proc, "O", PYauthinfo);
 
     /* Check the response */
     if (result == NULL || result != Py_None && !PyString_Check(result))
     {
-        syslog(L_ERROR, "python authorize_method (%s access) returned wrong result", PostFlag ? "post" : "read");
+        syslog(L_ERROR, "python dyanmic method (%s access) returned wrong result: %s", PostFlag ? "post" : "read", result);
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
 	ExitWithStats(1, false);
     }
 
     /* Get the response string */
-    if (result == Py_None)
+    if (result == Py_None) {
         string = NULL;
-    else
-        string = PyString_AS_STRING(result);
-
+    } else {
+        temp = PyString_AS_STRING(result);
+        string = xstrdup(temp);
+    }
     /* Clean up the dictionary object */
     PyDict_Clear(PYauthinfo);
 
     /* Clean up dictionary items */
-    for (i = 0; i < authnum; i++)
-    {
-        if (PYauthitem[i] != Py_None)
-	{
-	    Py_DECREF(PYauthitem[i]);
-	}
+    for (i = 0; i < authnum; i++) {
+        if (PYauthitem[i] != Py_None) {
+            Py_DECREF(PYauthitem[i]);
+        }
     }
 
     /* Log auth result */
-    syslog(L_NOTICE, "python authorize_method (%s access) succeeded, refusion string: %s", PostFlag ? "post" : "read", string == NULL ? "<empty>" : string);
+    syslog(L_NOTICE, "python dynamic method (%s access) succeeded, refusion string: %s", PostFlag ? "post" : "read", string == NULL ? "<empty>" : string);
 
     /* Initialize reply string */
     if (reply_message != NULL)
         *reply_message = string;
-
+    
     /* Return result */
     return string == NULL ? 0 : 1;
 }
@@ -291,16 +415,35 @@ int PY_authorize(char *clientHost, char *clientIpString, char *serverHost, char 
 **  This runs when nnrpd shuts down.
 */
 void
-PY_close(void)
+PY_close_python(void)
 {
-    PyObject	*result;
+    hash_traverse(files, file_trav, NULL);
 
-    if (close_method != NULL) {
-        result = PyObject_CallFunction(close_method, NULL);
-        Py_XDECREF(result);
-    }
+    hash_free(files);
+    
+    free(dynamic_file);
 }
 
+/*
+** Traversal function for PY_close_python
+*/
+void
+file_trav(void *data, void* null)
+{
+    PyFile *fp = data;
+    int j;
+    PyObject	*result, *func;
+
+    for (j = 1; j < PYTHONtypes_max; j++) {
+        if (fp->loaded[j] != false) {
+            func = fp->procs[j][PYTHONclose];
+              if (func != NULL) {
+                  result = PyObject_CallFunction(func, NULL);
+                  Py_XDECREF(result);
+              }
+        }
+    }
+}
 
 /*
 **  Python's syslog module isn't compiled in by default.  It's easier
@@ -375,17 +518,60 @@ PY_set_auth_hook(dummy, args)
     return result;
 }
 
+/*
+** Load the Python interpreter
+*/
+void PY_load_python() {
+    int i, authnum;
+ 
+    if (!PythonLoaded) {
+        /* add path for nnrpd module */    
+        setenv("PYTHONPATH", innconf->pathfilter, 1);
+
+        /* Load up the interpreter ;-O */
+        Py_Initialize();
+    
+        /* It makes Python sad when its stdout and stderr are closed. */
+        if (feof(stdout) || feof(stderr))
+            PyRun_SimpleString("import sys; sys.stdout=sys.stderr=open('/dev/null', 'a')");
+   
+        /* See if Python initialized OK */
+        if (!Py_IsInitialized ()) {
+            syslog(L_ERROR, "python interpreter NOT initialized");
+            return;
+        }
+
+
+        /* Build a module interface to certain nnrpd functions */
+        (void) Py_InitModule("nnrpd", nnrpdPyMethods);
+
+        /*
+        ** Grab space for authinfo dictionary so we aren't forever
+        ** recreating them.
+        */
+        PYauthinfo = PyDict_New();
+        PYauthitem = xcalloc(_PY_MAX_AUTH_ITEM, sizeof(PyObject *));
+
+        /* create hash to store file attributes */
+        
+        files = hash_create(4, hash_string, file_key,
+                            file_equal, file_free);
+
+        PythonLoaded = true;
+
+        syslog(L_NOTICE, "python interpreter initialized OK");
+    }
+}
 
 /*
 **  Check that a method exists and is callable.	 Set up a pointer to
 **  the corresponding PyObject, or NULL if not found.
 */
 void
-PYdefonemethod(methptr, methname)
-    PyObject    **methptr;
-    char        *methname;
-{
-    Py_XDECREF(*methptr);
+PYdefonemethod(PyFile *fp, int type, int method, char *methname) {
+    PyObject **methptr;
+
+    methptr = &fp->procs[type][method];
 
     /* Get a pointer to given method */
     *methptr = PyObject_GetAttrString(PYAuthObject, methname);
@@ -405,82 +591,131 @@ PYdefonemethod(methptr, methname)
 
 
 /*
-**  Look up all the known authentication/authorization methods and set up
+**  Look up all the known python methods and set up
 **  pointers to them so that we could call them from nnrpd.
 */
 void
-PYdefmethods(void)
+PYdefmethods(PyFile *fp)
 {
     /* Get a reference to authenticate() method */
-    PYdefonemethod(&authenticate_method, "authenticate");
+    PYdefonemethod(fp, PYTHONauthen, PYTHONmain, "authenticate");
 
-    /* Get a reference to authorize() method */
-    PYdefonemethod(&authorize_method, "authorize");
+    /* Get a reference to authen_init() method */
+    PYdefonemethod(fp, PYTHONauthen, PYTHONinit, "authen_init");
+    
+    /* Get a reference to authen_close() method */
+    PYdefonemethod(fp, PYTHONauthen, PYTHONclose, "authen_close");
 
-    /* Get a reference to close() method */
-    PYdefonemethod(&close_method, "close");
+    /* Get a reference to access() method */
+    PYdefonemethod(fp, PYTHONaccess, PYTHONmain, "access");
+    
+    /* Get a reference to access_init() method */
+    PYdefonemethod(fp, PYTHONaccess, PYTHONinit, "access_init");
+    
+    /* Get a reference to access_close() method */
+    PYdefonemethod(fp, PYTHONaccess, PYTHONclose, "access_close");
+    
+    /* Get a reference to dynamic() method */
+    PYdefonemethod(fp, PYTHONdynamic, PYTHONmain, "dynamic");
+    
+    /* Get a reference to dynamic_init() method */
+    PYdefonemethod(fp, PYTHONdynamic, PYTHONinit, "dynamic_init");
+    
+    /* Get a reference to dynamic_close() method */
+    PYdefonemethod(fp, PYTHONdynamic, PYTHONclose, "dynamic_close");
 }
 
 
 /*
-**  Called when nnrpd starts -- this gets the scripts hooked in.
+**  Called when a python hook is needed -- this gets the scripts hooked in.
 */
-void
-PY_setup(void)
+PyObject*
+PY_setup(int type, int method, char *file)
 {
-    int  authnum;
+    int  i;
+    PyFile *fp;
+    char *temp;
+    PyObject    *result;
 
-    /* Export $PYTHONPATH to let Python find the scripts */
-    setenv("PYTHONPATH", innconf->pathfilter, 1);
+    /* check to see if this file is in files */
+    if (!(hash_lookup(files, file))) {
+        fp = xmalloc(sizeof(PyFile));
+        fp->file = xstrdup(file);
 
-    /* Load up the interpreter ;-O */
-    Py_Initialize();
+        for (i = 1; i < PYTHONtypes_max; i++) {
+            fp->loaded[i] = false;
+        }
+        
+        /* Load up external module */
+        (void) PyImport_ImportModule(file);
 
-    /* It makes Python sad when its stdout and stderr are closed. */
-    if (feof(stdout) || feof(stderr))
-        PyRun_SimpleString
-	  ("import sys; sys.stdout=sys.stderr=open('/dev/null', 'a')");
+        /* See if nnrpd auth object is defined in auth module */
+        if (PYAuthObject == NULL) {
+            syslog(L_ERROR, "python auth object is not defined");
+            Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
+            PY_close_python();
+            ExitWithStats(1, false);
+        } else {
+            /* Set up pointers to known Python methods */
+            PYdefmethods(fp);
+        }
+        hash_insert(files, file, fp);
 
-    /* See it Python initialized OK */
-    if (!Py_IsInitialized ()) {
-        syslog(L_ERROR, "python interpreter NOT initialized");
-	return;
+        if ((!fp->loaded[type]) && (fp->procs[type][PYTHONinit] != NULL)) {
+            result = PyObject_CallFunction(fp->procs[type][PYTHONinit], NULL);
+            if (result != NULL) {
+                Py_XDECREF(result);
+            }
+            fp->loaded[type] = true;
+        }
+        return fp->procs[type][method];
     }
-    syslog(L_NOTICE, "python interpreter initialized OK");
-
-    /* Build a module interface to certain nnrpd functions */
-    Py_InitModule("nnrpd", nnrpdPyMethods);
-
-    /* Load up external nntpd auth module */
-    PYAuthModule = PyImport_ImportModule(_PATH_PYTHON_AUTH_M);
-    if (PYAuthModule == NULL)
-        syslog(L_ERROR, "failed to import external python module");
-
-    /* See if nnrpd auth object is defined in auth module */
-    if (PYAuthObject == NULL)
-        syslog(L_ERROR, "python auth object is not defined");
-    else {
-        /* Set up pointers to known Python methods */
-        PYdefmethods();
-        syslog(L_NOTICE, "some python methods defined. good.");
-    }
-
-    /*
-    ** Grab space for authinfo dictionary so we aren't forever
-    ** recreating them.
-    */
-    PYauthinfo = PyDict_New();
-    PYauthitem = xmalloc(_PY_MAX_AUTH_ITEM * sizeof(PyObject *));
-    PYauthkey = xmalloc(_PY_MAX_AUTH_ITEM * sizeof(PyObject *));
-
-    /* Preallocate keys for the authinfo dictionary (up to PY_MAX_AUTH_ITEM) */
-    authnum = 0;
-    PYauthkey[authnum++] = PyString_InternFromString("type");
-    PYauthkey[authnum++] = PyString_InternFromString("hostname");
-    PYauthkey[authnum++] = PyString_InternFromString("ipaddress");
-    PYauthkey[authnum++] = PyString_InternFromString("interface");
-    PYauthkey[authnum++] = PyString_InternFromString("user");
-    PYauthkey[authnum++] = PyString_InternFromString("pass");
-    PYauthkey[authnum++] = PyString_InternFromString("newsgroup");
 }
+
+/*
+**  Return the key (filename) from a file struct, used by the hash table.
+*/
+static const void *
+file_key(const void *p)
+{
+    const struct PyFile *f = p;
+
+    return f->file;
+}
+
+/*
+**  Check to see if a provided key matches the key of a PyFile struct,
+**  used by the hash table.
+*/
+static bool
+file_equal(const void *k, const void *p)
+{
+    const char *key = k;
+    const struct PyFile *f = p;
+
+    return strcmp(key, f->file) == 0;
+}
+
+/*
+**  Free a file, used by the hash table.
+*/
+static void
+file_free(void *p)
+{
+    struct PyFile *fp = p;
+    int i, j;
+
+    free(fp->file);
+
+    for (i = 1; i < PYTHONtypes_max; i++) {
+        for (j = 1; j < PYTHONmethods_max; j++) {
+            if (fp->procs[i][j] != NULL) {
+                Py_DECREF(fp->procs[i][j]);
+            }
+        }
+    }
+
+    free(fp);
+}
+
 #endif /* defined(DO_PYTHON) */
