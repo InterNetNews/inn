@@ -8,8 +8,6 @@ FILE	= files.list
 LIST	= `grep -v '^;' <$(FILE)`
 BACKUP	= backup.tar
 
-INTERPLIST = inncheck innmail innreport pgpverify scanspool
-
 ##  Pick your method of source control:  RCS, SCCS, or NONE
 SRCCTL		= NONE
 CHECKOUT	= $(SRCCTL)-checkout
@@ -29,7 +27,7 @@ clobber clean:
 	rm -f all install lint profiled
 
 quiet:
-	@$(MAKE) 'FILE=$(FILE)' substitutions interpreters | grep -v unchanged
+	@$(MAKE) 'FILE=$(FILE)' substitutions | grep -v unchanged
 
 tags ctags:
 	cp /dev/null tags
@@ -42,11 +40,6 @@ substitutions:		$(CHECKOUT) subst files.list $(CONF)
 	@$(SHELL) ./checkconf.sh $(CONF)
 	./subst $(SED) -f $(CONF) $(LIST)
 	$(IFTRUE) '$(SRCCTL) != NONE' '$(MAKE) $(CHECKIN)'
-
-interpreters:
-	@echo "Fixing interpreter paths."
-	perl fixinterps.pl -v -d ../samples $(INTERPLIST)
-	perl fixinterps.pl -v -d ../storage buildconfig
 
 RCS-checkout:
 	co -l $(LIST)
