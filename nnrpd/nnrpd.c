@@ -219,6 +219,7 @@ ExitWithStats(int x, bool readconf)
 #ifdef HAVE_SSL
      if (tls_conn) {
         SSL_shutdown(tls_conn);
+        SSL_free(tls_conn);
         tls_conn = NULL;
      } 
 #endif
