@@ -1434,6 +1434,7 @@ RCclose()
 	    DISPOSE(rp->Label);
 	    DISPOSE(rp->Email);
 	    DISPOSE(rp->Password);
+	    DISPOSE(rp->Comment);
 	    if (rp->Patterns) {
 		DISPOSE(rp->Patterns[0]);
 		DISPOSE(rp->Patterns);
