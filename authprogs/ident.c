@@ -2,8 +2,8 @@
 **
 **  ident authenticator.
 */
-#include "config.h"
-#include "clibrary.h"
+#include "libauth.h"
+
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <errno.h>
@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     char *p;
     int got;
     char *endstr;
-    int gotcliaddr, gotcliport, gotlocaddr, gotlocport;
+    char result = 0;
 
     memset(&sin, '\0', sizeof(sin));
     sin.sin_family = AF_INET;
@@ -63,37 +63,11 @@ int main(int argc, char *argv[])
 	}
     }
 
-    /* read the connection info from stdin */
-#define IPNAME "ClientIP: "
-#define PORTNAME "ClientPort: "
-#define LOCIP "LocalIP: "
-#define LOCPORT "LocalPort: "
     memset(&cli, '\0', sizeof(cli));
-    cli.sin_family = AF_INET;
     memset(&loc, '\0', sizeof(loc));
-    loc.sin_family = AF_INET;
 
-    gotcliaddr = gotcliport = gotlocaddr = gotlocport = 0;
-    while(fgets(buf, sizeof(buf), stdin) != (char*) 0) {
-	/* strip '\n' */
-	buf[strlen(buf)-1] = '\0';
-
-	if (!strncmp(buf, IPNAME, strlen(IPNAME))) {
-	    cli.sin_addr.s_addr = inet_addr(buf+strlen(IPNAME));
-	    gotcliaddr = 1;
-	} else if (!strncmp(buf, PORTNAME, strlen(PORTNAME))) {
-	    cli.sin_port = htons(atoi(buf+strlen(PORTNAME)));
-	    gotcliport = 1;
-	} else if (!strncmp(buf, LOCIP, strlen(LOCIP))) {
-	    loc.sin_addr.s_addr = inet_addr(buf+strlen(LOCIP));
-	    gotlocaddr = 1;
-	} else if (!strncmp(buf, LOCPORT, strlen(LOCPORT))) {
-	    loc.sin_port = htons(atoi(buf+strlen(LOCPORT)));
-	    gotlocport = 1;
-	}
-    }
-
-    if (!gotcliaddr || !gotcliport || !gotlocaddr || !gotlocport) {
+    /* read the connection info from stdin */
+    if (get_res(&loc,&cli) != (char) GOT_ALL) {
 	fprintf(stderr, "ident: didn't get ident parameter\n");
 	exit(1);
     }

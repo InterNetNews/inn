@@ -33,8 +33,7 @@
  #  tech-transfer@andrew.cmu.edu
  *
  */
-#include "config.h"
-#include "clibrary.h"
+#include "libauth.h"
 #include <errno.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -54,27 +53,12 @@
 int main()
 {
 
-    char uname[SMBUF], pass[SMBUF], buff[SMBUF];
+    char uname[SMBUF], pass[SMBUF];
 
-    uname[0] = '\0';
-    pass[0] = '\0';
-    /* get the username and password from stdin */
-    while (fgets(buff, sizeof(buff), stdin) != (char*) 0) {
-        /* strip '\r\n' */
-        buff[strlen(buff)-1] = '\0';
-        if (strlen(buff) && (buff[strlen(buff)-1] == '\r'))
-            buff[strlen(buff)-1] = '\0';
-
-#define NAMESTR "ClientAuthname: "
-#define PASSSTR "ClientPassword: "
-        if (!strncmp(buff, NAMESTR, strlen(NAMESTR)))
-            strcpy(uname, buff+sizeof(NAMESTR)-1);
-        if (!strncmp(buff, PASSSTR, strlen(PASSSTR)))
-            strcpy(pass, buff+sizeof(PASSSTR)-1);
+    if (get_auth(uname,pass) != 0) {
+        fprintf(stderr, "pwcheck: internal error.\n");
+        exit(1);
     }
-
-    if (!uname[0] || !pass[0])
-        exit(3);
 
     if(!login_plaintext(uname, pass)) {
       fprintf(stderr, "valid passwd\n");

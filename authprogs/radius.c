@@ -3,8 +3,7 @@
 **  Authenticate a user against a remote radius server.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "libauth.h"
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <ctype.h>
@@ -402,7 +401,6 @@ int main(int argc, char *argv[])
     int opt;
     int havefile, haveother;
     char uname[SMBUF], pass[SMBUF];
-    char buff[SMBUF];
     FILE *f;
     rad_config_t radconfig;
     int retval;
@@ -518,25 +516,10 @@ int main(int argc, char *argv[])
 	exit(1);
     }
 
-    uname[0] = '\0';
-    pass[0] = '\0';
-    /* get the username and password from stdin */
-    buff[sizeof(buff)-1] = '\0';
-    while (fgets(buff, sizeof(buff)-1, stdin) != (char*) 0) {
-	/* strip '\r\n' */
-	buff[strlen(buff)-1] = '\0';
-	if (strlen(buff) && (buff[strlen(buff)-1] == '\r'))
-	    buff[strlen(buff)-1] = '\0';
-
-#define NAMESTR "ClientAuthname: "
-#define PASSSTR "ClientPassword: "
-	if (!strncmp(buff, NAMESTR, strlen(NAMESTR)))
-	    strncpy(uname, buff+sizeof(NAMESTR)-1, sizeof(uname));
-	if (!strncmp(buff, PASSSTR, strlen(PASSSTR)))
-	    strncpy(pass, buff+sizeof(PASSSTR)-1, sizeof(pass));
+    if (get_auth(uname,pass) != 0) {
+        fprintf(stderr, "radius: internal error.\n");
+        exit(1);
     }
-    if (!uname[0] || !pass[0])
-	exit(3);
 
     /* got username and password, check that they're valid */
     retval = rad_auth(&radconfig, uname, pass);

@@ -3,8 +3,8 @@
 **  The default username/password authenticator.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "libauth.h"
+
 #include <fcntl.h>
 #include <pwd.h>
 
@@ -153,26 +153,11 @@ main(int argc, char *argv[])
     }
     if (argc != optind)
 	exit(2);
-    uname[0] = '\0';
-    pass[0] = '\0';
-    /* make sure that strlen(buff) is always less than sizeof(buff) */
-    buff[sizeof(buff)-1] = '\0';
-    /* get the username and password from stdin */
-    while (fgets(buff, sizeof(buff)-1, stdin) != (char*) 0) {
-	/* strip '\r\n' */
-	buff[strlen(buff)-1] = '\0';
-	if (strlen(buff) && (buff[strlen(buff)-1] == '\r'))
-	    buff[strlen(buff)-1] = '\0';
 
-#define NAMESTR "ClientAuthname: "
-#define PASSSTR "ClientPassword: "
-	if (!strncmp(buff, NAMESTR, strlen(NAMESTR)))
-	    strcpy(uname, buff+sizeof(NAMESTR)-1);
-	if (!strncmp(buff, PASSSTR, strlen(PASSSTR)))
-	    strcpy(pass, buff+sizeof(PASSSTR)-1);
+    if (get_auth(uname,pass) != 0) {
+	fprintf(stderr, "ckpasswd: internal error.\n");
+	exit(1);
     }
-    if (!uname[0] || !pass[0])
-	exit(3);
 
     /* got username and password, check if they're valid */
 #if HAVE_GETSPNAM
