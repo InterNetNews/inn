@@ -399,7 +399,7 @@ ICDreadactive(endp)
 	exit(1);
     }
     ICDactsize = Sb.st_size;
-    ICDactpointer = mmap((caddr_t)0, ICDactsize, PROT_READ|PROT_WRITE,
+    ICDactpointer = mmap(NULL, ICDactsize, PROT_READ|PROT_WRITE,
 			MAP__ARG, ICDactfd, 0);
     if (ICDactpointer == (char *)-1) {
 	syslog(L_FATAL, "%s cant mmap %d %s %m",

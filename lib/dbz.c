@@ -1300,7 +1300,7 @@ getcore(hash_table *tab)
 		return FALSE;
 	    }
 	}
-	it = mmap((caddr_t)0, (size_t)conf.tsize * tab->reclen,
+	it = mmap(NULL, (size_t)conf.tsize * tab->reclen,
 		   readonly ? PROT_READ : PROT_WRITE | PROT_READ, MAP__ARG,
 		   tab->fd, 0);
 	if (it == (char *)-1) {
