@@ -895,7 +895,8 @@ BOOL tradindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOK
 	return FALSE;
 
     if ((char *)&ie[search->cur] >= (char *)search->gh->indexmem + search->gh->indexlen) {
-	syslog(L_ERROR, "tradindexed: truncated overview results for %s", search->group);
+	/* don't claim, since highest article may be canceled and there may be
+	   no index room for it */
 	return FALSE;
     }
 
