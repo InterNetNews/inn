@@ -72,11 +72,11 @@ typedef char ICC_PROTOCOLTYPE ;
 extern void		ICCsettimeout(int i);
 extern int		ICCopen(void);
 extern int		ICCclose(void);
-extern int		ICCcommand(char cmd, char *argv[], char **replyp);
-extern int		ICCcancel(char *msgid);
-extern int		ICCgo(char *why);
-extern int		ICCpause(char *why);
-extern int		ICCreserve(char *why);
+extern int		ICCcommand(char cmd, const char *argv[], char **replyp);
+extern int		ICCcancel(const char *msgid);
+extern int		ICCgo(const char *why);
+extern int		ICCpause(const char *why);
+extern int		ICCreserve(const char *why);
 
 extern const char	*ICCfailure;
 

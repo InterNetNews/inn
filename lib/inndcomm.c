@@ -188,11 +188,11 @@ ICCserveralive(pid_t pid)
 */
 
 int
-ICCcommand(char cmd, char *argv[], char **replyp)
+ICCcommand(char cmd, const char *argv[], char **replyp)
 {
     char		*buff;
     char		*p;
-    char		*q;
+    const char		*q;
     char		save;
     int			bufsiz;
     int			i ;
@@ -215,8 +215,8 @@ ICCcommand(char cmd, char *argv[], char **replyp)
 
     /* Get the length of the buffer. */
     bufsiz = strlen(ICCsockname) + 1 + 1;
-    for (i = 0; (p = argv[i]) != NULL; i++)
-	bufsiz += 1 + strlen(p);
+    for (i = 0; (q = argv[i]) != NULL; i++)
+	bufsiz += 1 + strlen(q);
     bufsiz += HEADER_SIZE ;
     if (bufsiz < MIN_BUFFER_SIZE)
 	bufsiz = MIN_BUFFER_SIZE;
@@ -405,9 +405,9 @@ ICCcommand(char cmd, char *argv[], char **replyp)
 **  Send a "cancel" command.
 */
 int
-ICCcancel(char *msgid)
+ICCcancel(const char *msgid)
 {
-    char	*args[2];
+    const char	*args[2];
 
     args[0] = msgid;
     args[1] = NULL;
@@ -419,9 +419,9 @@ ICCcancel(char *msgid)
 **  Send a "go" command.
 */
 int
-ICCgo(char *why)
+ICCgo(const char *why)
 {
-    char	*args[2];
+    const char	*args[2];
 
     args[0] = why;
     args[1] = NULL;
@@ -433,9 +433,9 @@ ICCgo(char *why)
 **  Send a "pause" command.
 */
 int
-ICCpause(char *why)
+ICCpause(const char *why)
 {
-    char	*args[2];
+    const char	*args[2];
 
     args[0] = why;
     args[1] = NULL;
@@ -447,9 +447,9 @@ ICCpause(char *why)
 **  Send a "reserve" command.
 */
 int
-ICCreserve(char *why)
+ICCreserve(const char *why)
 {
-    char	*args[2];
+    const char	*args[2];
 
     args[0] = why;
     args[1] = NULL;
