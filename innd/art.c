@@ -2376,9 +2376,9 @@ STRING ARTpost(CHANNEL *cp)
 	j += ngp->NameLength + 1 + MAXARTFNAME + 1;
     }
 
-    /* Loop over sites to find Poisons and undo Sendit flags. */
+    /* Loop over sites to find Poisons/ControlOnly and undo Sendit flags. */
     for (i = nSites, sp = Sites; --i >= 0; sp++)
-	if (sp->Poison)
+	if (sp->Poison || (sp->ControlOnly && (ControlHeader < 0)))
 	    sp->Sendit = FALSE;		
 
     /* Control messages not filed in "to" get filed only in control.name

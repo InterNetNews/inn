@@ -250,6 +250,7 @@ typedef struct _SITE {
     BOOL		IgnoreControl;
     BOOL		DistRequired;
     BOOL		IgnorePath;
+    BOOL		ControlOnly;
     int			Hops;
     int			Groupcount;
     FEEDTYPE		Type;

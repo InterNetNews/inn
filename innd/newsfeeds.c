@@ -196,6 +196,7 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
     sp->FileFlags[0] = FEED_NAME;
     sp->FileFlags[1] = '\0';
     sp->Nice = innconf->nicekids;
+    sp->ControlOnly = FALSE;
 
     /* Nip off the first field, the site name. */
     if ((f2 = strchr(Entry, NF_FIELD_SEP)) == NULL)
@@ -258,7 +259,12 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 		switch (*p) {
 		default:
 		    return "unknown A param in field 3";
-		case 'c': sp->IgnoreControl = TRUE;	break;
+		case 'c': sp->IgnoreControl = TRUE;
+			  sp->ControlOnly = FALSE;
+			  break;
+		case 'C': sp->ControlOnly = TRUE;
+			  sp->IgnoreControl = FALSE;
+			  break;
 		case 'd': sp->DistRequired = TRUE;	break;
 		case 'p': sp->IgnorePath = TRUE;	break;
 		}
@@ -271,6 +277,9 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 		 && CTYPE(isdigit, *p))
 		    sp->StopWriting = atoi(p);
 	    }
+	    break;
+	case 'C':
+	    sp->ControlOnly = TRUE;
 	    break;
 	case 'F':
 	    if (*++p == '\0')
