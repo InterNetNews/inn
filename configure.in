@@ -1150,7 +1150,6 @@ LIBS=`echo "$LIBS" | sed 's/^  *//' | sed 's/   */ /g' | sed 's/  *$//'`
 AC_CONFIG_HEADER(include/config.h)
 AC_OUTPUT(
         Makefile.global
-        makedirs.sh
         backends/controlchan
         backends/pgpverify
         include/paths.h

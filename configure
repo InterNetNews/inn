@@ -6852,7 +6852,6 @@ done
 ac_given_srcdir=$srcdir
 
 trap 'rm -fr `echo "Makefile.global
-        makedirs.sh
         backends/controlchan
         backends/pgpverify
         include/paths.h
@@ -7026,7 +7025,6 @@ EOF
 cat >> $CONFIG_STATUS <<EOF
 
 CONFIG_FILES=\${CONFIG_FILES-"Makefile.global
-        makedirs.sh
         backends/controlchan
         backends/pgpverify
         include/paths.h
