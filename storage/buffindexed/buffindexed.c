@@ -1839,15 +1839,14 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
     ah = NULL;
     if (len == 0)
       continue; 
-    if (SMprobe(SELFEXPIRE, &token, NULL)) {
+    if (!SMprobe(EXPENSIVESTAT, &token, NULL) || OVstatall) {
       if ((ah = SMretrieve(token, RETR_STAT)) == NULL)
         continue; 
+      SMfreearticle(ah);
     } else {
-      if (!innconf->groupbaseexpiry && !OVhisthasmsgid(data))
+      if (!OVhisthasmsgid(data))
 	continue; 
     }
-    if (ah)
-      SMfreearticle(ah);
     if (innconf->groupbaseexpiry && OVgroupbasedexpire(token, group, data, len, arrived, expires))
       continue;
 #ifdef OV_DEBUG
