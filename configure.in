@@ -594,9 +594,17 @@ dnl
 dnl Test for OpenSSL
 dnl
 AC_ARG_WITH(openssl,
-	[  --with-openssl=PATH      use OpenSSL from PATH],
-        OPENSSL_DIR=$with_openssl)
-case "$OPENSSL_DIR" in
+    [  --with-openssl=PATH     enable OpenSSL [default=no]],
+    [case "${withval}" in
+	no)  DO_SSL=DONT ;;
+	*) DO_SSL=DO
+	     OPENSSL_DIR=$with_openssl
+	     ;;
+    esac],
+    DO_SSL=DONT)
+if test "x$DL_SSL" = "xDO"
+then
+    case "$OPENSSL_DIR" in
         no) OPENSSL_DIR="no";;
         ""|yes)
 	for dir in ${prefix} /usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr; do
@@ -610,7 +618,10 @@ case "$OPENSSL_DIR" in
 		fi
 		done
 	;;
-esac
+    esac
+else
+    OPENSSL_DIR="no"
+fi
 AC_MSG_CHECKING(for openssl)
 AC_MSG_RESULT($OPENSSL_DIR)
 if test "$OPENSSL_DIR" != "no"; then
