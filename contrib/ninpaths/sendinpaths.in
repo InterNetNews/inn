@@ -11,7 +11,7 @@ ME=`${NEWSBIN}/innconfval pathhost`
 report=30
 keep=14
 TMP=""
-defaddr=pathsurvey@top1000.org
+defaddr="pathsurvey@top1000.org top1000@anthologeek.net"
 
 # Make report from (up to) $report days of dumps
 LOGS=`find . -name 'inpaths.*' ! -size 0 -mtime -$report -print`
