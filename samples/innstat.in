@@ -59,71 +59,21 @@ echo ''
 echo ''
 echo 'Server connections:'
 ctlinnd -t60 name '' 2>&1 \
-    | ${SED} -e '/^[	 ]*$/d' -e '/:file$/d' -e '/^remconn:/d' \
-	     -e '/^control:/d' -e '/^localconn:/d' \
-    | ${AWK} '{print length($0), $0}' \
-    | sort -n \
-    | ${SED} 's/^[0-9][0-9]*  *//' \
-    | ${AWK} '
-BEGIN {
-    linelen = 0;
-}
-{
-    len = length($0);
-    if (len >= 80) {
-	end = "";
-    }
-    else if (len >= 72) {
-	end = "";
-	len += (8 - len % 8);
-    }
-    else if (len >= 64) {
-	end = "";
-	len += 8 + (8 - len % 8);
-    }
-    else if (len >= 56) {
-	end = "";
-	len += 8 + (8 - len % 8);
-    }
-    else if (len >= 48) {
-	end = "";
-	len += 8 + (8 - len % 8);
-    }
-    else if (len >= 40) {
-	end = "";
-	len += 8 + (8 - len % 8);
-    }
-    else if (len >= 32) {
-	end = "";
-	len += 8 + (8 - len % 8);
-    }
-    else if (len >= 24) {
-	end = "\t";
-	len += 8 + (8 - len % 8);
-    }
-    else if (len >= 16) {
-	end = "\t\t";
-	len += 8 + (8 - len % 8);
-    }
-    else if (len >= 8) {
-	end = "\t\t";
-	len += 8 + (8 - len % 8);
-    }
-    else {
-	end = "\t\t\t";
-	len += 16 + (8 - len % 8);
-    }
-    if (len + linelen > 80) {
-	printf("\n");
-	linelen = len;
-    }
-    else {
-	linelen += len;
-    }
-    printf("%s%s", $0, end);
-}
-END {
-    if (end != "\n") {
-	printf("\n");
-    }
-}'
+  | ${PERL} -ne '
+     next if m/((^((rem|local)conn|control)|:proc):|file$)/;
+     m/^(\S+):(\d+)$/;
+     $c{$1} = [] unless $c{$1};
+     @l = @{$c{$1}};
+     push @l, $2;
+     $c{$1} = [@l];
+     $m++;
+ 
+     END {
+       $n = 0;
+       foreach $f (sort {$#{$c{$b}} <=> $#{$c{$a}}} keys %c) {
+          printf "%-35.35s %3d  (%s", $f, 1 + $#{$c{$f}}, "@{$c{$f}})\n";
+          $n++;
+       }
+       printf "\n%-35s %3d\n", "TOTAL: $n", $m;
+     }'
+

@@ -752,6 +752,7 @@ void CHANreadloop(void)
     CHANNEL             *tempchan;
     int                 j;
     int                 found;
+    int                 tfd;
     char                *tempname;
 
     TMRinit();
@@ -842,12 +843,19 @@ void CHANreadloop(void)
 	    cp = &CHANtable[fd];
 
             if (cp->MaxCnx > 0) {
-	        found = 0;
-	        for (j = 0; (tempchan = CHANiter(&j, CTnntp)) != NULL; ) {
-		    if (cp->Address.s_addr == tempchan->Address.s_addr)
-		       found++;
-		    cp->ActiveCnx = found;
-	        }
+                if((cp->fd > 0) &&
+                   (cp->Type == CTnntp) &&
+                   (cp->ActiveCnx == 0)) {
+                    found = 1;
+                    for(tfd = 0; tfd < CHANlastfd; tfd++) {
+                       tempchan = &CHANtable[tfd];
+                       if(cp->Address.s_addr == tempchan->Address.s_addr) {
+                          if(tempchan->ActiveCnx == found)
+                            found++;
+                       }
+                    }
+                    cp->ActiveCnx = found;
+		}
 
                 if((cp->ActiveCnx > cp->MaxCnx) && (cp->fd > 0)) {
 		    if(cp->Started + (PAUSE_BEFORE_DROP * 60) < Now.time) {
