@@ -9,7 +9,9 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include <errno.h>
 #include <fcntl.h>
+
 #include "libinn.h"
 
 bool
@@ -19,7 +21,8 @@ inn_lock_file(int fd, enum inn_locktype type, bool block)
 }
 
 bool
-inn_lock_range(int fd, enum inn_locktype type, bool block, off_t offset, off_t size)
+inn_lock_range(int fd, enum inn_locktype type, bool block, off_t offset,
+               off_t size)
 {
     struct flock fl;
     int status;
