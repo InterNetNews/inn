@@ -26,6 +26,9 @@ grephistory \- display file names from Usenet history file
 .B \-s
 ]
 [
+.B \-v
+]
+[
 .I messageid
 ]
 .SH DESCRIPTION
@@ -87,6 +90,14 @@ will read a similar list from its standard input.
 It will print on standard output a list of filenames for each article
 that is still available.
 This flag is used in processing ``sendme'' control messages.
+.TP
+.B \-v
+Each use of the ``\fB\-v\fP'' flag increases the verbosity of
+.IR grephistory .
+The default level is ``0'', and at present, the maximum useful level
+is ``1''.  At level 1, the hash of the Message-ID is printed out for
+diagnostic purposes.
+This flag is not useful with ``\fB\-s\fP''.
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 .de R$

@@ -78,6 +78,7 @@ main(int ac, char *av[])
     struct history	*history;
     time_t arrived, posted, expires;
     TOKEN token;
+    unsigned int	Verbosity = 0;
 
     /* First thing, set up logging and our identity. */
     openlog("grephistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
@@ -92,11 +93,14 @@ main(int ac, char *av[])
     What = '?';
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "f:eilnqs")) != EOF)
+    while ((i = getopt(ac, av, "vf:eilnqs")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
 	    /* NOTREACHED */
+	case 'v':
+	    Verbosity++;
+	    break;
 	case 'f':
 	    History = optarg;
 	    break;
@@ -148,8 +152,12 @@ main(int ac, char *av[])
     }
 
     if (!HIScheck(history, key)) {
-	if (What == 'n')
-            warn("not found");
+	if (What == 'n') {
+	    if (Verbosity > 0)
+		warn("not found (hash is %s)", HashToText(HashMessageID(key)));
+	    else
+		warn("not found");
+	}
     }
     else if (What != 'q') {
 	if (HISlookup(history, key, &arrived, &posted, &expires, &token)) {
@@ -158,7 +166,11 @@ main(int ac, char *av[])
 		       TokenToText(token));
 	    }
 	    else {
-		printf("%s\n", TokenToText(token));
+		if (Verbosity > 0)
+		    printf("%s (hash is %s)\n", TokenToText(token),
+			    HashToText(HashMessageID(key)));
+		else
+		    printf("%s\n", TokenToText(token));
 	    }
 	}
 	else if (What == 'n')
