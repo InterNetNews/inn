@@ -2979,7 +2979,7 @@ static void processResponse436 (Connection cxn, char *response)
       cxn->checkRespHead = NULL ;
     }
 
-  if (cxn->articleQTotal == 0)
+  if (cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
     cxnIdle (cxn) ;
   
   hostArticleDeferred (cxn->myHost, cxn, artHolder->article) ;
