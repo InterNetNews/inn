@@ -3,10 +3,7 @@
 
 #include "config.h"
 #include <netdb.h>
-
-#if NEED_HERRNO_DECLARATION
-extern int h_errno;
-#endif
+#include <stdio.h>
 
 const char *test_hstrerror(int);
 
