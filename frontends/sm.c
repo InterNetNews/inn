@@ -189,6 +189,9 @@ main(int argc, char *argv[])
     struct options options = { false, false, false, false, false };
     bool store = false;
 
+    /* Suppress notice messages like tradspool rebuilding its map. */
+    message_handlers_notice(0);
+
     message_program_name = "sm";
 
     if (!innconf_read(NULL))
