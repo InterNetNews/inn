@@ -2631,7 +2631,7 @@ STRING ARTpost(CHANNEL *cp)
 
     /* Start logging, then propagate the article. */
     ARTlog(&Data, Accepted ? ART_ACCEPT : ART_JUNK, (char *)NULL);
-    if ((innconf->logartsize) &&
+    if ((innconf->nntplinklog) &&
     	(fprintf(Log, " (%s)", Data.Name) == EOF || ferror(Log))) {
 	oerrno = errno;
 	syslog(L_ERROR, "%s cant write log_nntplink %m", LogName);
@@ -2643,8 +2643,8 @@ STRING ARTpost(CHANNEL *cp)
 	cp->Size += Data.SizeValue;
 	if (fprintf(Log, " %ld",Data.SizeValue) == EOF || ferror (Log)) {
             oerrno = errno;
-	    syslog(L_ERROR, "%s cant write log_nntplink %m", LogName);
-	    IOError("logging nntplink", oerrno);
+	    syslog(L_ERROR, "%s cant write artsize %m", LogName);
+	    IOError("logging artsize", oerrno);
 	    clearerr(Log);
 	}
     }
