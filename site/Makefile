@@ -209,6 +209,7 @@ $D$(PATH_ACTSYNC_CFG): actsync.cfg	; $(COPY_RPRI) $? $@
 $D$(PATH_ACTSYNC_IGN): actsync.ign	; $(COPY_RPRI) $? $@
 $D$(PATHBIN)/scanspool: scanspool	; $(COPY_XPRI) $? $@
 $D$(PATH_MOTD): motd.news		; $(COPY_RPRI) $? $@
+$D$(PATH_INNFEEDCTL): innfeed.conf	; $(COPY_RPRI) $? $@
 
 REASON	= 'Installing site config files from site/Makefile'
 go pause:
