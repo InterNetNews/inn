@@ -91,9 +91,6 @@ main(int argc, char *argv[])
 # ifdef RLIMIT_DATA
     setrlimit(RLIMIT_DATA, &rl);
 # endif
-# ifdef RLIMIT_STACK
-    setrlimit(RLIMIT_STACK, &rl);
-# endif
 #endif /* HAVE_SETRLIMIT */
 
     /* Permanently drop privileges. */
