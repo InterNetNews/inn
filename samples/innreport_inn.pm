@@ -1767,14 +1767,15 @@ sub adjust
       $hash_time{$date} = $delay;
     }
     my ($h, $t) = $last_date =~ m/ (\d+):(\d\d:\d\d)$/o;
+    my ($h2) = $date =~ m/ (\d+):\d\d:\d\d /o;
     my $date2 = $date;
-    $date2 =~ s/:59:59$/:$t/;
+    $date2 =~ s/$h2:59:59$/$h:$t/;
     $hash{$date2} = $hash{$date};
     undef $hash{"$date"};
     $hash_size{$date2} = $hash_size{$date};
     undef $hash_size{"$date"};
     $t =~ m/(\d\d):(\d\d)/o;
-    $hash_time{$date2} = $hash_time{$date} - 3600 + $1 * 60 + $2;
+    $hash_time{$date2} = $hash_time{$date} - ($h2 == $h) * 3600 + $1 * 60 + $2;
     undef $hash_time{"$date"};
     $inn_flow_labels{$date2} = $h;
     %inn_flow = %hash;
