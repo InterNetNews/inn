@@ -33,23 +33,19 @@
  #  tech-transfer@andrew.cmu.edu
  *
  */
-#include <stdio.h>
+#include "config.h"
+#include "clibrary.h"
 #include <errno.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/uio.h>
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
 #include <syslog.h>
 
-#include "configdata.h"
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 
 #define STATEDIR	"/var"
-
-extern int errno;
 
 int main()
 {
@@ -183,17 +179,7 @@ int iovcnt;
     int n;
     int i;
     int written = 0;
-    static int iov_max =
-#ifdef MAXIOV
-	MAXIOV
-#else
-#ifdef IOV_MAX
-	IOV_MAX
-#else
-	8192
-#endif
-#endif
-	;
+    static int iov_max = IOV_MAX;
     
     for (;;) {
 	while (iovcnt && iov[0].iov_len == 0) {
