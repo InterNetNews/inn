@@ -132,6 +132,19 @@ this
 value.
 The default value is ``4''.
 .TP
+.I nicennrpd
+If set to anything greater than ``0'', all
+.IR nnrpd (8)
+processes will
+.IR nice (1)
+themselves to this value. This gives other news processes a higher
+priority and can help with letting
+.IR overchan (8)
+keep up with incoming news. The default value is ``0'', which means
+that no change is made from the ``nicekids'' value. Note that this
+value will be ignored if it is set to a value lower than ``nicekids''.
+This value is cumulative to ``nicekids''.
+.TP
 .I nicenewnews
 If set to anything greater than ``0'', all
 .IR nnrpd (8)
@@ -140,8 +153,9 @@ the ``NEWNEWS'' command will
 .IR nice (1)
 themselves to this value. This gives other nnrpd processes a higher
 priority. The default value is ``0'', which means
-that no change is made from the ``nicekids'' value. Note that this
-value will be ignored if it is set to a value lower than ``nicekids''.
+that no change is made from the ``nicennrpd'' value. Note that this
+value will be ignored if it is set to a value lower than ``nicennrpd''.
+This value is cumulative to ``nicennrpd''.
 .TP
 .I mta
 This specifies the message transfer agent (mta) to be used when mailing
