@@ -14,12 +14,13 @@ INSTDIRS      = $(PATHNEWS) $(PATHBIN) $(PATHAUTH) $(PATHAUTHRESOLV) \
 
 ##  LIBDIRS are built before PROGDIRS, make update runs in all UPDATEDIRS,
 ##  and make install runs in all ALLDIRS.  Nothing runs in test except the
-##  test target itself and the clean targets.
+##  test target itself and the clean targets.  Currently, include is built
+##  before anything else but nothing else runs in it except clean targets.
 LIBDIRS     = lib storage
 PROGDIRS    = innd nnrpd innfeed expire frontends backends authprogs scripts
 UPDATEDIRS  = $(LIBDIRS) $(PROGDIRS) doc
 ALLDIRS     = $(UPDATEDIRS) samples site
-CLEANDIRS   = $(ALLDIRS) tests
+CLEANDIRS   = $(ALLDIRS) include tests
 
 ##  The directory name and tar file to use when building a release.
 TARDIR      = inn-$(VERSION)
@@ -35,12 +36,14 @@ DISTFILES   = -e 1,2d -e '/(Directory)/d' -e 's/ .*//'
 ##  Major target -- build everything.  Rather than just looping through
 ##  all the directories, use a set of parallel rules so that make -j can
 ##  work on more than one directory at a time.
-all: all-libraries all-programs
+all: all-include all-libraries all-programs
 	cd doc     && $(MAKE) all
 	cd samples && $(MAKE) all
 	cd site    && $(MAKE) all
 
 all-libraries:	all-lib all-storage
+
+all-include:			; cd include   && $(MAKE) all
 all-lib:			; cd lib       && $(MAKE) all
 all-storage:			; cd storage   && $(MAKE) all
 
@@ -112,7 +115,6 @@ clean:
 	    echo '' ; \
 	    cd $$D && $(MAKE) clean || exit 1 ; cd .. ; \
 	done
-	@echo ''
 
 clobber realclean distclean:
 	@for D in $(CLEANDIRS) ; do \
@@ -120,10 +122,10 @@ clobber realclean distclean:
 	    cd $$D && $(MAKE) $(FLAGS) clobber && cd .. ; \
 	done
 	@echo ''
-	rm -rf inews.* rnews.* $(TARDIR)
+	rm -rf $(TARDIR)
 	rm -f inn*.tar.gz CHANGES ChangeLog LIST.* TAGS tags
-	rm -f config.cache config.log config.status libtool include/config.h
-	rm -f include/paths.h support/fixscript Makefile.global
+	rm -f config.cache config.log config.status libtool
+	rm -f support/fixscript Makefile.global
 
 
 ##  Other generic targets.
