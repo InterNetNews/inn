@@ -20,7 +20,7 @@
 #include "dbz.h"
 #include "nntp.h"
 #include "macros.h"
-#include "logging.h" 
+#include <syslog.h>  
 
 
 /*

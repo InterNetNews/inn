@@ -60,7 +60,7 @@ depend:		Makefile $(SOURCES)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $(OBJECTS):	nnrpd.h \
 		../include/clibrary.h ../include/configdata.h \
-		../include/libinn.h ../include/logging.h \
+		../include/libinn.h \
 		../include/macros.h ../include/nntp.h \
 		../include/paths.h ../include/qio.h
 group.o:	../include/mydir.h

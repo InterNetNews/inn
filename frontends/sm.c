@@ -12,7 +12,7 @@
 #include "macros.h"
 #include "paths.h"
 #include "qio.h"
-#include "logging.h" 
+#include <syslog.h>  
 
 #define MAXOVERLINE	4096
 

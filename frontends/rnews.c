@@ -19,7 +19,7 @@
 #include <errno.h>
 #include "nntp.h"
 #include "paths.h"
-#include "logging.h"
+#include <syslog.h> 
 #include "libinn.h"
 #include "mydir.h"
 #include "macros.h"

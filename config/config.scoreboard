@@ -40,45 +40,6 @@
   ||##  BSD4.4 or NONE.
   ||#### =()<MANPAGESTYLE		@<MANPAGESTYLE>@>()=
   ||MANPAGESTYLE		SOURCE
-[IN1.7=@2][comments]
-  ||
-  ||
-  ||##
-  ||##  2.  LOGGING LEVELS
-[IN1.7=@2][WDF=confparam][WOR=yes]
-  ||##  Facility innd should log under.
-  ||##[autoconf]
-  ||#### =()<LOG_INN_SERVER		@<LOG_INN_SERVER>@>()=
-  ||LOG_INN_SERVER		@ac_cv_log_news@
-[IN1.7=@2][WDF=confparam][WOR=yes]
-  ||##  Facility all other programs should log under.
-  ||##[autoconf]
-  ||#### =()<LOG_INN_PROG		@<LOG_INN_PROG>@>()=
-  ||LOG_INN_PROG		@ac_cv_log_news@
-[IN1.7=@2][WDF=confparam][WOR=yes][P=low]
-  ||##  Flags to use in opening the logs; some programs add LOG_PID.
-  ||#### =()<L_OPENLOG_FLAGS		@<L_OPENLOG_FLAGS>@>()=
-  ||L_OPENLOG_FLAGS		(LOG_CONS | LOG_NDELAY)
-[IN1.7=@2][WDF=fixed][WOR=yes]
-  ||##  Log a fatal error; program is about to exit.
-  ||#### =()<L_FATAL			@<L_FATAL>@>()=
-  ||L_FATAL			LOG_CRIT
-[IN1.7=@2][WDF=fixed][WOR=yes]
-  ||##  Log an error that might mean one or more articles get lost.
-  ||#### =()<L_ERROR			@<L_ERROR>@>()=
-  ||L_ERROR			LOG_ERR
-[IN1.7=@2][WDF=fixed][WOR=yes]
-  ||##  Informational notice, usually not worth caring about.
-  ||#### =()<L_NOTICE		@<L_NOTICE>@>()=
-  ||L_NOTICE		LOG_WARNING
-[IN1.7=@2][WDF=fixed][WOR=yes]
-  ||##  A protocol trace.
-  ||#### =()<L_TRACE			@<L_TRACE>@>()=
-  ||L_TRACE			LOG_DEBUG
-[IN1.7=@2][WDF=fixed][WOR=yes]
-  ||##  All incoming control commands (ctlinnd, etc).
-  ||#### =()<L_CC_CMD		@<L_CC_CMD>@>()=
-  ||L_CC_CMD		LOG_INFO
 [IN1.7=@3][comments]
   ||
   ||

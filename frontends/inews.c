@@ -21,7 +21,7 @@
 #include "paths.h"
 #include "libinn.h"
 #include "macros.h"
-#include "logging.h" 
+#include <syslog.h>  
 
 
 #define FLUSH_ERROR(F)		(fflush((F)) == EOF || ferror((F)))

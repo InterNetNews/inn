@@ -80,9 +80,9 @@ depend:		Makefile $(SOURCES) ../include/dbz.h
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $(OBJECTS):	innd.h ../include/clibrary.h ../include/configdata.h \
-		../include/libinn.h ../include/logging.h \
+		../include/libinn.h \
 		../include/macros.h ../include/nntp.h ../include/paths.h
 ng.o:		../include/mydir.h
 inndstart.o:	../include/clibrary.h ../include/configdata.h \
-		../include/libinn.h ../include/logging.h \
+		../include/libinn.h \
 		../include/macros.h ../include/paths.h

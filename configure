@@ -3282,7 +3282,7 @@ EOF
 fi
 
 
-if test $ac_cv_prog_gcc = yes; then
+if test x$ac_cv_prog_gcc = xyes; then
     echo $ac_n "checking whether ${CC-cc} needs -traditional""... $ac_c" 1>&6
 echo "configure:3288: checking whether ${CC-cc} needs -traditional" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_gcc_traditional'+set}'`\" = set"; then
@@ -4872,11 +4872,8 @@ fi
 
 echo $ac_n "checking log level for news""... $ac_c" 1>&6
 echo "configure:4875: checking log level for news" >&5
-if eval "test \"`echo '$''{'ac_cv_log_news'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  cat > conftest.$ac_ext <<EOF
-#line 4880 "configure"
+cat > conftest.$ac_ext <<EOF
+#line 4877 "configure"
 #include "confdefs.h"
 #include <syslog.h>
 #ifdef LOG_NEWS
@@ -4887,25 +4884,22 @@ EOF
 if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
   egrep "yes" >/dev/null 2>&1; then
   rm -rf conftest*
-  ac_cv_log_news=LOG_NEWS
+  LOGNEWS=LOG_NEWS echo "$ac_t""LOG_NEWS" 1>&6
 else
   rm -rf conftest*
-  ac_cv_log_news=LOG_LOCAL1
+  LOGNEWS=LOG_LOCAL1 echo "$ac_t""LOG_LOCAL1" 1>&6
 fi
 rm -f conftest*
 
-fi
-
-echo "$ac_t""$ac_cv_log_news" 1>&6
 
 
 echo $ac_n "checking generic pointer""... $ac_c" 1>&6
-echo "configure:4904: checking generic pointer" >&5
+echo "configure:4898: checking generic pointer" >&5
 if eval "test \"`echo '$''{'ac_cv_type_generic'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 4909 "configure"
+#line 4903 "configure"
 #include "confdefs.h"
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
@@ -4916,7 +4910,7 @@ int main() {
 void *a; a = malloc(sizeof(a))
 ; return 0; }
 EOF
-if { (eval echo configure:4920: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:4914: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_type_generic=void
 else
@@ -5413,7 +5407,7 @@ s%@ac_cv_type_free@%$ac_cv_type_free%g
 s%@ac_cv_type_exit@%$ac_cv_type_exit%g
 s%@ac_cv_type__exit@%$ac_cv_type__exit%g
 s%@ac_cv_subst_have_unix_domain@%$ac_cv_subst_have_unix_domain%g
-s%@ac_cv_log_news@%$ac_cv_log_news%g
+s%@LOGNEWS@%$LOGNEWS%g
 s%@ac_cv_type_generic@%$ac_cv_type_generic%g
 s%@ac_cv_subst_uid_t@%$ac_cv_subst_uid_t%g
 s%@ac_cv_subst_gid_t@%$ac_cv_subst_gid_t%g

@@ -6,7 +6,6 @@
 ../include/clibrary.h
 ../include/configdata.h
 ../include/libinn.h
-../include/logging.h
 ../include/macros.h
 ../include/paths.h
 ../innd/Makefile

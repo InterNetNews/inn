@@ -24,7 +24,7 @@
 #include "qio.h"
 #include "macros.h"
 #include "mydir.h"
-#include "logging.h" 
+#include <syslog.h>  
 
 
 typedef struct _BUFFER {

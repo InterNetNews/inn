@@ -16,7 +16,7 @@ for I in \
 	config/subst.c config/subst.sh config/config.data \
 	doc/rnews.1 doc/inn.conf.5 frontends/rnews.c \
 	include/clibrary.h include/configdata.h include/libinn.h \
-	include/logging.h include/macros.h include/mydir.h include/mystring.h \
+	include/macros.h include/mydir.h include/mystring.h \
 	include/mymemory.h include/nntp.h include/paths.h \
 	lib/closeonexec.c lib/findheader.c lib/getconfig.c lib/getfqdn.c \
 	lib/localopen.c lib/remopen.c lib/sendarticle.c lib/sendpass.c \

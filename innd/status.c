@@ -11,7 +11,7 @@
 #include "configdata.h"
 #include "clibrary.h"
 #include "innd.h"
-#include "logging.h"
+#include <syslog.h> 
 
 #define MAX_PEER     100
 #define MIN_REFRESH   60  /* 1 min */

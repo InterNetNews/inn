@@ -25,7 +25,7 @@
 #endif
 #include "paths.h"
 #include "nntp.h"
-#include "logging.h"
+#include <syslog.h> 
 #include "libinn.h"
 #include "qio.h"
 #include "macros.h"

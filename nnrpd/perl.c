@@ -23,7 +23,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "clibrary.h"
 #include "paths.h"
 #include "post.h"
-#include "logging.h"
+#include <syslog.h> 
 #include "macros.h"
 
 #if defined(DO_PERL)

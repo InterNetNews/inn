@@ -16,7 +16,7 @@
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
-#include "logging.h" 
+#include <syslog.h>  
 
 
 #define	START_LIST_SIZE	128

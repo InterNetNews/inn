@@ -22,7 +22,7 @@
 #include <sys/uio.h>
 #include <fcntl.h>
 #include "clibrary.h"
-#include "logging.h"
+#include <syslog.h> 
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"

@@ -20,7 +20,7 @@
 #include <sys/uio.h>
 #include "nntp.h"
 #include "paths.h"
-#include "logging.h"
+#include <syslog.h> 
 #include "libinn.h"
 #include "qio.h"
 #include "dbz.h"

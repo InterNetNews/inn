@@ -522,12 +522,15 @@ dnl ***************************************************
 
 dnl ***************************************************
 dnl Non-standard checks
-AC_CACHE_CHECK(log level for news, ac_cv_log_news, AC_EGREP_CPP(yes, [#include <syslog.h>
+AC_MSG_CHECKING(log level for news)
+AC_EGREP_CPP(yes, [#include <syslog.h>
 #ifdef LOG_NEWS
 yes
 #endif
-], ac_cv_log_news=LOG_NEWS, ac_cv_log_news=LOG_LOCAL1))
-AC_SUBST(ac_cv_log_news)
+], 
+	[LOGNEWS=LOG_NEWS AC_MSG_RESULT(LOG_NEWS)], 
+	[LOGNEWS=LOG_LOCAL1 AC_MSG_RESULT(LOG_LOCAL1)])
+AC_SUBST(LOGNEWS)
 
 AC_CACHE_CHECK(generic pointer, ac_cv_type_generic,
 AC_TRY_COMPILE([#ifdef HAVE_MALLOC_H

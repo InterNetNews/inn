@@ -116,7 +116,6 @@ innconfval.o:	../include/macros.h
 rnews.o:	../include/clibrary.h
 rnews.o:	../include/configdata.h
 rnews.o:	../include/libinn.h
-rnews.o:	../include/logging.h
 rnews.o:	../include/macros.h
 rnews.o:	../include/mydir.h
 rnews.o:	../include/nntp.h

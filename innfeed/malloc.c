@@ -30,7 +30,7 @@ static char sccsid[] = "@(#)malloc.c	4.3 (Berkeley) 9/16/83";
 #include <sys/types.h>
 #include "configdata.h"
 #include "clibrary.h"
-#include "logging.h"
+#include <syslog.h> 
 
 static findbucket(), morecore();
 

@@ -46,7 +46,7 @@
 #include <sys/time.h>
 /*#include <sys/uio.h>*/
 #include "nntp.h"
-#include "logging.h"
+#include <syslog.h> 
 #include "libinn.h"
 #include "macros.h"
 

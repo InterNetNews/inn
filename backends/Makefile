@@ -107,7 +107,6 @@ archive.o:	../include/qio.h
 batcher.o:	../include/clibrary.h
 batcher.o:	../include/configdata.h
 batcher.o:	../include/libinn.h
-batcher.o:	../include/logging.h
 batcher.o:	../include/macros.h
 batcher.o:	../include/paths.h
 buffchan.o:	../include/clibrary.h
@@ -130,14 +129,12 @@ filechan.o:	../include/paths.h
 innxbatch.o:	../include/clibrary.h
 innxbatch.o:	../include/configdata.h
 innxbatch.o:	../include/libinn.h
-innxbatch.o:	../include/logging.h
 innxbatch.o:	../include/macros.h
 innxbatch.o:	../include/nntp.h 
 innxmit.o:	../include/clibrary.h
 innxmit.o:	../include/configdata.h
 innxmit.o:	../include/dbz.h
 innxmit.o:	../include/libinn.h
-innxmit.o:	../include/logging.h
 innxmit.o:	../include/macros.h
 innxmit.o:	../include/nntp.h
 innxmit.o:	../include/paths.h

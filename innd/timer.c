@@ -13,7 +13,7 @@
 #include "configdata.h"
 #include "clibrary.h"
 #include "innd.h"
-#include "logging.h"
+#include <syslog.h> 
 
 unsigned	start[TMR_MAX];
 unsigned	cumulative[TMR_MAX];

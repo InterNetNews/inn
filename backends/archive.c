@@ -17,7 +17,7 @@
 #include "libinn.h"
 #include "qio.h"
 #include "macros.h"
-#include "logging.h"
+#include <syslog.h> 
 
 
 STATIC char	*Archive = NULL;

@@ -17,7 +17,7 @@
 #include "paths.h"
 #include "libinn.h"
 #include "qio.h"
-#include "logging.h"
+#include <syslog.h> 
 #include "macros.h"
 
 

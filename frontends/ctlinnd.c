@@ -13,7 +13,7 @@
 #include "inndcomm.h"
 #include "paths.h"
 #include "macros.h"
-#include "logging.h" 
+#include <syslog.h>  
 
 
 /*

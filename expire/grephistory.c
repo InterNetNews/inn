@@ -17,7 +17,7 @@
 #include "libinn.h"
 #include "dbz.h"
 #include "macros.h"
-#include "logging.h" 
+#include <syslog.h>  
 
 
 /*

@@ -16,7 +16,7 @@
 #include "qio.h"
 #include "libinn.h"
 #include "macros.h"
-#include "logging.h" 
+#include <syslog.h>  
 
 
 /*

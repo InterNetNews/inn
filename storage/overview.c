@@ -13,7 +13,7 @@
 #include <configdata.h>
 #include <clibrary.h>
 #include <libinn.h>
-#include <logging.h>
+#include <syslog.h> 
 #include <paths.h>
 #include <methods.h>
 #include <overview.h>

@@ -13,7 +13,7 @@
 #include "clibrary.h"
 #include <fcntl.h>
 #include "paths.h"
-#include "logging.h"
+#include <syslog.h> 
 #include "libinn.h"
 #include "macros.h"
 #if	NOFILE_LIMIT > 0

@@ -35,7 +35,7 @@
 #include <fcntl.h>
 #include "nntp.h"
 #include "paths.h"
-#include "logging.h"
+#include <syslog.h> 
 #include "libinn.h"
 #include "macros.h"
 #include "dbz.h"

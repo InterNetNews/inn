@@ -20,7 +20,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <sys/types.h>
 #include "configdata.h"
 #include "clibrary.h"
-#include "logging.h"
+#include <syslog.h> 
 #include "fcntl.h"
 
 

@@ -15,7 +15,7 @@
 #include "libinn.h"
 #include "mydir.h"
 #include "macros.h"
-#include "logging.h" 
+#include <syslog.h>  
 
 
 STATIC char	*ACTIVE = NULL;

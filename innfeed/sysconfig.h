@@ -267,5 +267,5 @@
 #endif
 
 #include "configdata.h"
-#include "logging.h"
+#include <syslog.h> 
 #endif /* sysconfig_h__ */

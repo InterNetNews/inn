@@ -18,7 +18,7 @@
 #include "dbz.h"
 #include "qio.h"
 #include "macros.h"
-#include "logging.h" 
+#include <syslog.h>  
 
 
 /*

@@ -169,7 +169,6 @@ include/clibrary.h          1 C library declarations
 include/configdata.h        1 Configuration data, used by everyone
 include/inndcomm.h          1 Innd control channel commands
 include/libinn.h            1 InterNetNews library declarations
-include/logging.h           1 Interface to syslog
 include/macros.h            1 Useful syntactic sugar
 include/mydir.h             1 Encapsulate dirent/direct differences
 include/mymemory.h          1 Default <memory.h>

@@ -8,7 +8,7 @@
 #include "paths.h"
 #include "libinn.h"
 #include "macros.h"
-#include "logging.h"
+#include <syslog.h> 
 
 /* Global and initialized; to work around SunOS -Bstatic bug, sigh. */
 STATIC char		ConfigBuff[SMBUF] = "";

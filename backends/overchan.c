@@ -15,7 +15,7 @@
 #include "macros.h"
 #include "paths.h"
 #include "qio.h"
-#include "logging.h" 
+#include <syslog.h>  
 
 /*
 **  Try to make one directory.  Return FALSE on error.
