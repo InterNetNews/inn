@@ -641,13 +641,13 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp, BOOL *DidReply)
 	    return FALSE;
 	}
 	rp->High = rp->Low = ARTnumber;
-        return innconf->nnrpdcheckart ? ARTinstorebyartnum(rp->Low) : TRUE;
+        return TRUE;
     }
 
     /* Got just a single number? */
     if ((p = strchr(av[1], '-')) == NULL) {
 	rp->Low = rp->High = atol(av[1]);
-        return innconf->nnrpdcheckart ? ARTinstorebyartnum(rp->Low) : TRUE;
+        return TRUE;
     }
 
     /* Parse range. */
@@ -836,7 +836,7 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 
     Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
     while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
-	if (len == 0 || !ARTinstorebytoken(token))
+	if (len == 0 || innconf->nnrpdcheckart && !ARTinstorebytoken(token))
 	    continue;
 	p = OVERGetHeader(data, Overview);
 	sprintf(buff, "%d ", artnum);
@@ -1017,7 +1017,7 @@ FUNCTYPE CMDxpat(int ac, char *av[])
     Printf("%d %s matches follow.\r\n", NNTP_HEAD_FOLLOWS_VAL, header);
     pattern = Glom(&av[3]);
     while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
-	if (len == 0 || !ARTinstorebytoken(token))
+	if (len == 0 || innconf->nnrpdcheckart && !ARTinstorebytoken(token))
 	    continue;
 	if ((p = OVERGetHeader(data, Overview)) != NULL) {
 	    if (wildmat(p, pattern)) {
