@@ -559,10 +559,12 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
         HDR(_sender) = COPY(buff);
     }
 
-    /* Set Date. */
-    if (!makedate(-1, false, buff, sizeof(buff)))
-        die("cannot generate Date header");
-    HDR(_date) = COPY(buff);
+    if (HDR(_date) == NULL) {
+	/* Set Date. */
+	if (!makedate(-1, false, buff, sizeof(buff)))
+	    die("cannot generate Date header");
+	HDR(_date) = COPY(buff);
+    }
 
     /* Newsgroups are checked later. */
 
