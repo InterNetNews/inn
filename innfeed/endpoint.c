@@ -60,6 +60,10 @@ static void use_rcsid (const char *rId) {   /* Never called */
 # include <fcntl.h>
 #endif
 
+#ifdef HAVE_LIMITS_H
+# include <limits.h>
+#endif
+
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif
@@ -1696,7 +1700,7 @@ void setSigHandler (int signum, void (*ptr)(int))
       return ;
     }
 
-  if (xsignal (signum, signalHandler) == -1)
+  if (xsignal (signum, signalHandler) == SIG_ERR)
     die ("signal failed: %s", strerror(errno)) ;
 
   sigHandlers[signum] = ptr ;
