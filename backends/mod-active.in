@@ -28,7 +28,7 @@ $| = 1;                # show output as it happens (for an rsh/ssh pipe)
 # checks for alternative operating systems is incomplete.
 unless ($diff_flags) {
   if (`diff -v 2>&1` =~ /GNU/) {
-    $diff_flags = '-u0';
+    $diff_flags = '-U0';
   } elsif ($^O =~ /^(dec_osf|solaris)$/) {
     $diff_flags = '-C0';
   } elsif ($^O eq 'nextstep') {
