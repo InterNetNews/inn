@@ -84,7 +84,7 @@ BOOL	DaemonMode = FALSE;
 STATIC char	*ShadowGroup;
 #endif
 #if	defined(DO_NNRP_GETHOSTBYADDR)
-STATIC char 	HostErrorStr[SMBUF];
+STATIC char 	*HostErrorStr;
 #endif	/* defined(DO_NNRP_GETHOSTBYADDR) */
 
 extern FUNCTYPE	CMDauthinfo();
@@ -365,7 +365,7 @@ Address2Name(INADDR *ap, char *hostname, int i)
 
     /* Get the official hostname, store it away. */
     if ((hp = gethostbyaddr((char *)ap, sizeof *ap, AF_INET)) == NULL) {
-	herror(HostErrorStr);
+	HostErrorStr = (char *)hstrerror(h_errno);
 	return FALSE;
     }
     (void)strncpy(hostname, hp->h_name, i);
@@ -373,7 +373,7 @@ Address2Name(INADDR *ap, char *hostname, int i)
 
     /* Get addresses for this host. */
     if ((hp = gethostbyname(hostname)) == NULL) {
-	herror(HostErrorStr);
+	HostErrorStr = (char *)hstrerror(h_errno);
 	return FALSE;
     }
 
@@ -447,10 +447,10 @@ STATIC void StartConnection()
 
 	/* Get client's name. */
 #if	defined(DO_NNRP_GETHOSTBYADDR)
-	HostErrorStr[0] = '\0';
+	HostErrorStr = NULL;
 	if (!Address2Name(&sin.sin_addr, ClientHost, (int)sizeof ClientHost)) {
 	    (void)strcpy(ClientHost, inet_ntoa(sin.sin_addr));
-	    if (HostErrorStr[0] == '\0') {
+	    if (HostErrorStr == NULL) {
 		syslog(L_NOTICE,
 		    "? cant gethostbyaddr %s %m -- using IP address for access",
 		    ClientHost);
@@ -479,10 +479,10 @@ STATIC void StartConnection()
 	    ExitWithStats(1, TRUE);
 	}
 #ifdef DO_NNRP_GETHOSTBYADDR
-	HostErrorStr[0] = '\0';
+	HostErrorStr = NULL;
 	if (!Address2Name(&sin.sin_addr, ServerHost, sizeof(ServerHost))) {
 	    strcpy(ServerHost, inet_ntoa(sin.sin_addr));
-	    if (HostErrorStr[0] == '\0') {
+	    if (HostErrorStr == NULL) {
 		syslog(L_NOTICE,
 		    "? cant gethostbyaddr %s %m -- using IP address for access",
 		    ClientHost);
