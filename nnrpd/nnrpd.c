@@ -523,12 +523,14 @@ StartConnection(accesslist)
     length = sizeof sin;
     ClientAddr = NULL;
     if (getpeername(STDIN, (struct sockaddr *)&sin, &length) < 0) {
-	if (!isatty(STDIN)) {
+#ifndef DEBUG
+      if (!isatty(STDIN)) {
 	    syslog(L_TRACE, "%s cant getpeername %m", "?");
             (void)strcpy(ClientHost, "?"); /* so stats generation looks correct. */
 	    Printf("%d I can't get your name.  Goodbye.\r\n", NNTP_ACCESS_VAL);
 	    ExitWithStats(1);
 	}
+#endif
 	(void)strcpy(ClientHost, "stdin");
         ClientIP = 0L;
     }
@@ -591,6 +593,7 @@ StartConnection(accesslist)
 
 #if	!defined(VAR_NONE)
 
+#if	!defined(VAR_NONE)
 #if	defined(VAR_VARARGS)
 #if	defined(lint)
 #define START_VARARG(fmt, vp, type)	va_start(vp); fmt = NULL
@@ -601,6 +604,7 @@ StartConnection(accesslist)
 #if	defined(VAR_STDARGS)
 #define START_VARARG(fmt, vp, type)	va_start(vp, fmt)
 #endif	/* defined(VAR_STDARGS) */
+#endif /* defined(VAR_NONE) */
 
 /*
 **  Send a reply, possibly with debugging output.

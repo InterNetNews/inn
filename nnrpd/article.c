@@ -97,6 +97,10 @@ STATIC char *		OVERmempos;		/* Current position in mmaped overview file */
 STATIC struct iovec	iov[IOV_MAX];
 STATIC int		queued_iov = 0;
 
+/* Prototypes */
+STATIC BOOL IsCancelled(int artnum);
+STATIC BOOL IsCancelledByIndex(int i, int artnum);
+
 BOOL PushIOv(void) {
     fflush(stdout);
     if (writev(STDOUT_FILENO, iov, queued_iov) <= 0) {
@@ -229,6 +233,9 @@ STATIC BOOL ARTinstore(int i)
     ARTHANDLE *art;
     struct timeval	stv, etv;
 
+    if (IsCancelledByIndex(i,0))
+        return FALSE;
+
     if (ARTnumbers[i].Tokenretrieved)
 	token = ARTnumbers[i].Token;
     else {
@@ -277,21 +284,62 @@ STATIC int ARTfind(ARTNUM i, BOOL needcheck)
 	return -1;
 
     top = &ARTnumbers[ARTsize - 1];
-    if (ARTcache && (++ARTcache <= top) && (ARTcache->ArtNum <= i)) {
-	if (ARTcache->ArtNum == i) {
+    if (ARTcache) {
+        /* They're finding the same article again. */
+        if (ARTcache->ArtNum == i) {
 	    if (needcheck) {
 		return ARTinstore(ARTcache - ARTnumbers)
 		    ? (ARTcache - ARTnumbers) : -1;
 	    }
-	    return ARTcache - ARTnumbers;
-	}
-	bottom = ARTcache;
+            else
+                return ARTcache - ARTnumbers;
+        }
+        else if ((++ARTcache <= top) && (ARTcache->ArtNum <= i)) {
+            /* Next article. */
+            if (ARTcache->ArtNum == i) {
+                if (needcheck) {
+                    return ARTinstore(ARTcache - ARTnumbers)
+                        ? (ARTcache - ARTnumbers) : -1;
+                }
+                else
+                  return ARTcache - ARTnumbers;
+            }
+            bottom = ARTcache;
+        }
+        else if ( (ARTcache->ArtNum > i) && ((--ARTcache)->ArtNum < i) ) {
+            /* Missing article. */
+            return -1;
+        }
+        else {
+            ARTcache=NULL;
+            bottom = ARTnumbers;
+        }
     }
-    else {
-	ARTcache = NULL;
-	bottom = ARTnumbers;
-    }
+    else
+        bottom=ARTnumbers;
 
+    /* The first hit when looping through is always bottom.
+     * This is a common case, and also happens to be the worst-case
+     * for this binary search.
+     * So take the gamble, and check it.
+     */
+    if (bottom->ArtNum >= i)
+    {
+        ARTcache=bottom;
+        if (bottom->ArtNum == i)
+        {
+            if (needcheck) {
+                return ARTinstore(bottom - ARTnumbers)
+                    ? (bottom-ARTnumbers) : -1;
+            }
+            return bottom-ARTnumbers;
+        }
+        else
+        {
+            /* The first article requested has already been cancelled. */
+            return -1;
+        }
+    }
     for ( ; ; ) {
 	if ((i < bottom->ArtNum) || (i > top->ArtNum))
 	    break;
@@ -342,8 +390,9 @@ STATIC BOOL ARTopen(char *name)
 	return FALSE;
 
     if ((ARTnumbers[i].ArtNum == artnum) && innconf->storageapi) {
-	if (ARTnumbers[i].Token.cancelled)
-	    return FALSE;
+        if (IsCancelledByIndex(i,artnum))
+            return FALSE;
+
 	if (ARTnumbers[i].Tokenretrieved)
 	    token = ARTnumbers[i].Token;
 	else {
@@ -462,6 +511,70 @@ STATIC BOOL ARTopenbyid(char *msg_id, ARTNUM *ap)
     return TRUE;
 }
 
+/*
+ * Figure out if an article has been cancelled.
+ * As a side-effect (and a very important one), sets
+ * the Token for the article.
+ * IsCancelled uses the article number proper.
+ * IsCancelledByIndex uses an index into ARTnumbers.
+ */
+STATIC BOOL IsCancelled(int artnum)
+{
+    int i;
+    
+    if (!innconf->storageapi)
+        return FALSE;
+
+    if ((i = ARTfind(artnum, FALSE)) < 0)
+        return TRUE;
+
+    
+    return IsCancelledByIndex(i,artnum);
+}
+
+STATIC BOOL IsCancelledByIndex(int i, int artnum)
+{
+    OVERINDEX index;
+    char *tokentext;
+
+    if (!innconf->storageapi)
+        return FALSE;
+
+    if (ARTnumbers[i].Token.cancelled)
+        return TRUE;
+    if (ARTnumbers[i].Tokenretrieved) {
+        if (ARTnumbers[i].Token.type == TOKEN_EMPTY)
+            return TRUE;
+        return FALSE;
+    }
+
+    if ((artnum && (ARTnumbers[i].ArtNum != artnum)) || !ARTnumbers[i].Index)
+        return ARTnumbers[i].Token.cancelled = TRUE;
+    
+    UnpackOverIndex(*(ARTnumbers[i].Index), &index);
+    if (artnum && (index.artnum != artnum))
+        return ARTnumbers[i].Token.cancelled = TRUE;
+    
+#ifndef DO_TAGGED_HASH
+    if (innconf->extendeddbz) {
+        if (!OVERgetent(&index.hash, &ARTnumbers[i].Token))
+            return ARTnumbers[i].Token.cancelled = TRUE;
+    } else {
+        if (HISgetent(&index.hash, FALSE, &ARTnumbers[i].Offset) == (char *)NULL)
+            return ARTnumbers[i].Token.cancelled = TRUE;
+    }
+    if (innconf->extendeddbz)
+	return FALSE;
+#endif
+
+    ARTnumbers[i].Tokenretrieved = TRUE;
+    if ((tokentext = HISgetent(&index.hash, TRUE, &ARTnumbers[i].Offset)) == (char *)NULL)
+      return ARTnumbers[i].Token.cancelled = TRUE;
+    
+    ARTnumbers[i].Token = TextToToken(tokentext);
+
+    return FALSE;
+}
 /*
 **  Send a (part of) a file to stdout, doing newline and dot conversion.
 */
@@ -894,66 +1007,13 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp, BOOL *DidReply)
 	    return FALSE;
 	}
 	rp->High = rp->Low = ARTnumbers[ARTindex].ArtNum;
-	if (!innconf->storageapi)
-	    return TRUE;
-	if ((i = ARTfind(rp->High, FALSE)) < 0)
-	    return FALSE;
-	if (ARTnumbers[i].Token.cancelled)
-	    return FALSE;
-	if (ARTnumbers[i].Tokenretrieved) {
-	    if (ARTnumbers[i].Token.type == TOKEN_EMPTY)
-		return FALSE;
-	    return TRUE;
-	}
-	if ((ARTnumbers[i].ArtNum != rp->High) || !ARTnumbers[i].Index) {
-	    ARTnumbers[i].Token.cancelled = TRUE;
-	    return FALSE;
-	}
-	UnpackOverIndex(*(ARTnumbers[i].Index), &index);
-	if (index.artnum != rp->High) {
-	    ARTnumbers[i].Token.cancelled = TRUE;
-	    return FALSE;
-	}
-	ARTnumbers[i].Tokenretrieved = TRUE;
-	if ((tokentext = HISgetent(&index.hash, FALSE, NULL)) == (char *)NULL) {
-	    ARTnumbers[i].Token.cancelled = TRUE;
-	    return FALSE;
-	}
-	ARTnumbers[i].Token = TextToToken(tokentext);
-	return TRUE;
+        return !IsCancelled(rp->High);
     }
 
     /* Got just a single number? */
     if ((p = strchr(av[1], '-')) == NULL) {
 	rp->Low = rp->High = atol(av[1]);
-	if (!innconf->storageapi) {
-	    return TRUE;
-	}
-	if ((i = ARTfind(rp->Low, FALSE)) < 0)
-	    return FALSE;
-	if (ARTnumbers[i].Token.cancelled)
-	    return FALSE;
-	if (ARTnumbers[i].Tokenretrieved) {
-	    if (ARTnumbers[i].Token.type == TOKEN_EMPTY)
-		return FALSE;
-	    return TRUE;
-	}
-	if ((ARTnumbers[i].ArtNum != rp->Low) || !ARTnumbers[i].Index) {
-	    ARTnumbers[i].Token.cancelled = TRUE;
-	    return FALSE;
-	}
-	UnpackOverIndex(*(ARTnumbers[i].Index), &index);
-	if (index.artnum != rp->Low) {
-	    ARTnumbers[i].Token.cancelled = TRUE;
-	    return FALSE;
-	}
-	ARTnumbers[i].Tokenretrieved = TRUE;
-	if ((tokentext = HISgetent(&index.hash, FALSE, NULL)) == (char *)NULL) {
-	    ARTnumbers[i].Token.cancelled = TRUE;
-	    return FALSE;
-	}
-	ARTnumbers[i].Token = TextToToken(tokentext);
-	return TRUE;
+        return !IsCancelled(rp->Low);
     }
 
     /* Parse range. */
@@ -968,71 +1028,8 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp, BOOL *DidReply)
 	if (rp->Low < ARTnumbers[0].ArtNum)
 	    rp->Low = ARTnumbers[0].ArtNum;
     }
-    else
-	/* No articles; make sure loops don't run. */
-	rp->High = rp->Low ? rp->Low - 1 : 0;
-    if (!innconf->storageapi)
-	return TRUE;
-    for (artnum = rp->Low; artnum <= rp->High; artnum++) {
-	if ((i = ARTfind(artnum, FALSE)) < 0)
-	    continue;
-	if (ARTnumbers[i].Token.cancelled)
-	    continue;
-	if (ARTnumbers[i].Token.type != TOKEN_EMPTY)
-	    continue;
-	if ((ARTnumbers[i].ArtNum != artnum) || !ARTnumbers[i].Index) {
-	    ARTnumbers[i].Token.cancelled = TRUE;
-	    continue;
-	}
-	UnpackOverIndex(*(ARTnumbers[i].Index), &index);
-	if (index.artnum != artnum) {
-	    ARTnumbers[i].Token.cancelled = TRUE;
-	    continue;
-	}
-#ifdef	DO_TAGGED_HASH
-	ARTnumbers[i].Tokenretrieved = TRUE;
-	if (HISgetent(&index.hash, FALSE, &ARTnumbers[i].Offset) == (char *)NULL) {
-	    ARTnumbers[i].Token.cancelled = TRUE;
-	    continue;
-	}
-	if ((tokentext = HISgetent(&index.hash, TRUE, &ARTnumbers[i].Offset)) == (char *)NULL) {
-	    ARTnumbers[i].Token.cancelled = TRUE;
-	    continue;
-	}
-	ARTnumbers[i].Token = TextToToken(tokentext);
-#else
-	if (innconf->extendeddbz) {
-	    if (!OVERgetent(&index.hash, &ARTnumbers[i].Token)) {
-		ARTnumbers[i].Token.cancelled = TRUE;
-		continue;
-	    }
-	} else {
-	    if (HISgetent(&index.hash, FALSE, &ARTnumbers[i].Offset) == (char *)NULL) {
-		ARTnumbers[i].Token.cancelled = TRUE;
-		continue;
-	    }
-	}
-#endif
-    }
-#ifdef	DO_TAGGED_HASH
+
     return TRUE;
-#else
-    if (innconf->extendeddbz)
-	return TRUE;
-    for (artnum = rp->Low; artnum <= rp->High; artnum++) {
-	if ((i = ARTfind(artnum, FALSE)) < 0)
-	    continue;
-	if (ARTnumbers[i].Token.cancelled)
-	    continue;
-	ARTnumbers[i].Tokenretrieved = TRUE;
-	if ((tokentext = HISgetent(&index.hash, TRUE, &ARTnumbers[i].Offset)) == (char *)NULL) {
-	    ARTnumbers[i].Token.cancelled = TRUE;
-	    continue;
-	}
-	ARTnumbers[i].Token = TextToToken(tokentext);
-    }
-    return TRUE;
-#endif
 }
 
 
@@ -1486,7 +1483,7 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 	    continue;
 
 	/* Get it from the overview? */
-	if (Overview && (p = OVERfind(i, &linelen)) != NULL) {
+	if (Overview && !IsCancelled(i) && (p = OVERfind(i, &linelen)) != NULL) {
 	    p = OVERGetHeader(p, Overview);
 	    Printf("%ld %s\r\n", i, p && *p ? p : "(none)");
 	    continue;
@@ -1542,7 +1539,7 @@ FUNCTYPE CMDxover(int ac, char *av[])
     OVERcount++;
     Reply("%d data follows\r\n", NNTP_OVERVIEW_FOLLOWS_VAL);
     for (Opened = OVERopen(), i = range.Low; i <= range.High; i++) {
-	if (ARTfind(i, innconf->storageapi && innconf->nnrpdcheckart) < 0) {
+	if (IsCancelled(i)) {
 	    if (innconf->storageapi)
 		OVERmiss++;
 	    continue;
@@ -1668,6 +1665,7 @@ FUNCTYPE CMDxpat(int ac, char *av[])
 
 	/* Get it from the Overview? */
 	if (Overview
+         && !IsCancelled(i)
 	 && (p = OVERfind(i, &linelen)) != NULL
 	 && (p = OVERGetHeader(p, Overview)) != NULL) {
 	    if (wildmat(p, pattern))

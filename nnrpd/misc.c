@@ -446,9 +446,14 @@ char *HISgetent(HASH *key, BOOL flag, OFFSET_T *off)
     /* Want the full data? */
     if (flag) {
 	(void)strcpy(path, save);
-	for (p = path; *p; p++)
+	for (p = path; *p; p++) {
 	    if (*p == '.')
 		*p = '/';
+	    if (*p == ' ') {
+		*p = '\0';
+		break;
+	    }
+	}
 	return path;
     }
 
