@@ -230,10 +230,8 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     /* first, build the sockaddrs */
     bzero(&sinl, sizeof(sinl));
     sinl.sin_family = AF_INET;
-    sinl.sin_len = sizeof(sinl);
     bzero(&sinr, sizeof(sinr));
     sinr.sin_family = AF_INET;
-    sinr.sin_len = sizeof(sinr);
     if (config->lochost) {
 	if (inet_aton(config->lochost, &sinl.sin_addr) != 1) {
 	    if ((hent = gethostbyname(config->lochost)) == NULL) {
@@ -265,7 +263,7 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 	        strerror(errno));
 	return(-1);
     }
-    if (bind(sock, (struct sockaddr*) &sinl, sinl.sin_len) < 0) {
+    if (bind(sock, (struct sockaddr*) &sinl, sizeof(sinl)) < 0) {
 	fprintf(stderr, "radius: cant bind reply socket: %s\n",
 	        strerror(errno));
 	close(sock);
@@ -274,7 +272,7 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 
     /* send out the packet and wait for reply. */
     if (sendto(sock, &req, reqlen, 0, (struct sockaddr*) &sinr,
-               sinr.sin_len) < 0) {
+               sizeof(sinr)) < 0) {
 	fprintf(stderr, "radius: cant send auth_req: %s\n", strerror(errno));
 	close(sock);
 	return(-1);
