@@ -33,6 +33,14 @@ configure options have changed slightly and more of the standard --*dir
 options should be supported in lieu of the old INN-specific options.  See
 C<configure --help> for the available options.
 
+=item *
+
+B<nnrpd> now uniformly responds with a 480 or 502 status code to attempts
+to read a newsgroup to which the user does not have access, depending on
+whether the user has authenticated.  Previously, it returned a 411 status
+code, claiming the group didn't exist, which confuses the reactive
+authentication capability of news readers.
+
 =back
 
 =head1 Upgrading from 2.3 to 2.4

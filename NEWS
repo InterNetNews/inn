@@ -26,6 +26,12 @@ Changes from 2.4 to 2.5
       --*dir options should be supported in lieu of the old INN-specific
       options.  See "configure --help" for the available options.
 
+    * nnrpd now uniformly responds with a 480 or 502 status code to attempts
+      to read a newsgroup to which the user does not have access, depending
+      on whether the user has authenticated.  Previously, it returned a 411
+      status code, claiming the group didn't exist, which confuses the
+      reactive authentication capability of news readers.
+
 Upgrading from 2.3 to 2.4
 
     The inn.conf parser has changed between INN 2.3 and 2.4.  Due to that
