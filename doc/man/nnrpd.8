@@ -8,7 +8,7 @@ nnrpd \- NNTP server for on-campus hosts
 .BI \-b " address"
 ]
 [
-.BI \-c " conffile"
+.BI \-c " configfile"
 ]
 [
 .B \-D
@@ -88,11 +88,15 @@ address in dotted-quad format belonging to an interface of the local
 host.
 .TP
 .B \-c
-The ``\-c'' flag makes
+By default, 
 .I nnrpd
-use another file other than default
-.IR readers.conf (5)
-for access control.
+reads the
+.I <pathetc in inn.conf>/readers.conf
+to determine how to authenticate connections.  The ``\-c'' flag 
+specifies an alternate file for this purpose in the same directory.
+(This is useful to have several instances of 
+.I nnrpd
+running on different ports or IP addresses with different settings.)
 .TP
 .B \-D
 If specified, this parameter causes 
