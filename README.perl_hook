@@ -71,7 +71,7 @@ The innd Perl Filter
     undefine it just by deleting it from the file and reloading the filter. 
     You'll need to replace it with an empty sub.)
 
-    The Perl function filter_art() is the heard of a Perl filter.  Whenever
+    The Perl function filter_art() is the heart of a Perl filter.  Whenever
     an article is received from a peer, via either IHAVE or TAKETHIS,
     filter_art() is called if Perl filtering is turned on.  It receives no
     arguments, and should return a single scalar value.  That value should
@@ -192,7 +192,7 @@ The innd Perl Filter
 
 Supported innd Callbacks
 
-    innd makes eight functions available to any of its embedded Perl code. 
+    innd makes seven functions available to any of its embedded Perl code. 
     Those are:
 
     INN::addhist(*messageid*, *arrival*, *articledate*, *expire*, *paths*)
@@ -240,6 +240,15 @@ Supported innd Callbacks
         unmoderated group and "m" for a moderated group).  If *newsgroup*
         isn't in the active file, returns undef.
 
+    These functions can only be used from inside the innd Perl filter;
+    they're not available in the nnrpd filter.
+
+Common Callbacks
+
+    The following additional function is available from inside filters
+    embedded in innd, and is also available from filters embedded in nnrpd
+    (see below):
+
     INN::syslog(level, message)
         Logs a message via syslog(2).  This is quite a bit more reliable and
         portable than trying to use Sys::Syslog from inside the Perl filter.
@@ -250,9 +259,6 @@ Supported innd Callbacks
         levels is given, the default priority level is LOG_NOTICE.  The
         second argument is the message to log; it will be prefixed by
         "filter: " and logged to syslog with facility LOG_NEWS.
-
-    These functions can only be used from inside the innd Perl filter;
-    they're not available in the nnrpd filter.
 
 The nnrpd Posting Filter
 
@@ -441,10 +447,10 @@ Available Packages
 
       CleanFeed               Jeremy Nixon <jeremy@exit109.com>
       <URL:http://www.exit109.com/~jeremy/news/cleanfeed.html>
-            A spam filter catching excessive multi-posting and a host of other
-            things.  Uses filter_innd.pl exclusively, requires the MD5 Perl
-            module.  Probably the most popular and widely-used Perl filter
-            around.
+            A spam filter catching excessive multi-posting and a host of
+            other things.  Uses filter_innd.pl exclusively, requires the MD5
+            Perl module.  Probably the most popular and widely-used Perl
+            filter around.
 
       Usenet II Filter        Edward S. Marshall <emarshal@xnet.com>
       <URL:http://www.xnet.com/~emarshal/inn/filter_nnrpd.pl>

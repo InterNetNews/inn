@@ -188,7 +188,7 @@ fatal error (either due to Perl itself or due to a die in the Perl code).
 
 =head1 Supported innd Callbacks
 
-innd makes eight functions available to any of its embedded Perl code.
+innd makes seven functions available to any of its embedded Perl code.
 Those are:
 
 =over 4
@@ -244,6 +244,19 @@ possible values and their meanings (the most common are "y" for an
 unmoderated group and "m" for a moderated group).  If I<newsgroup> isn't
 in the active file, returns undef.
 
+=back
+
+These functions can only be used from inside the innd Perl filter; they're
+not available in the nnrpd filter.
+
+=head1 Common Callbacks
+
+The following additional function is available from inside filters
+embedded in innd, and is also available from filters embedded in nnrpd
+(see below):
+
+=over 4
+
 =item INN::syslog(level, message)
 
 Logs a message via syslog(2).  This is quite a bit more reliable and
@@ -257,9 +270,6 @@ to log; it will be prefixed by "filter: " and logged to syslog with
 facility LOG_NEWS.
 
 =back
-
-These functions can only be used from inside the innd Perl filter; they're
-not available in the nnrpd filter.
 
 =head1 The nnrpd Posting Filter
 
