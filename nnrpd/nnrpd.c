@@ -161,8 +161,6 @@ static CMDENT	CMDtable[] = {
 	"[range]" },
     {	"xpat",		CMDpat,		true,	4,	CMDany,
 	"header range|MessageID pat [morepat...]" },
-    {	"xpath",	CMDxpath,	true,	2,	2,
-	"MessageID" },
     {	NULL,           CMD_unimp,      false,  0,      0,
         NULL }
 };

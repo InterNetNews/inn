@@ -259,7 +259,6 @@ extern void		CMDpost      (int ac, char** av);
 extern void		CMDxgtitle   (int ac, char** av);
 extern void		CMDxover     (int ac, char** av);
 extern void		CMDpat       (int ac, char** av);
-extern void		CMDxpath     (int ac, char** av);
 extern void		CMD_unimp    (int ac, char** av);
 #ifdef HAVE_SSL
 extern void		CMDstarttls  (int ac, char** av);

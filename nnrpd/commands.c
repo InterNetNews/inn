@@ -626,13 +626,3 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 	POSTrejected++;
     }
 }
-
-/*
-**  The "xpath" command.  An uncommon extension.
-*/
-/* ARGSUSED */
-void
-CMDxpath(int ac UNUSED, char *av[] UNUSED)
-{
-    Reply("%d Syntax error or bad command\r\n", NNTP_BAD_COMMAND_VAL);
-}
