@@ -373,19 +373,6 @@ f\&i
 ctlinnd go ''
 .fi
 .RE
-.SH BUGS AND LIMITATIONS
-.PP
-.I Makehistory
-does not handle symbolic links.
-If the news spool area is split across multiple partitions, the following
-commands should probably be run before the database is regenerated:
-.RS
-.nf
-cd <patharticles in inn.conf>
-find . -type l -name '[1-9][0-9]*' -print | xargs -t rm
-.fi
-.RE
-Make sure to run the command on all the appropriate partitions!
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 .de R$
