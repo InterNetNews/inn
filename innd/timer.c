@@ -57,7 +57,7 @@ int		maxtimer = 0;
 
 static unsigned gettime(void)
 {
-    static			init = 0;
+    static int			init = 0;
     static struct timeval	start_tv;
     struct timeval		tv;
     
