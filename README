@@ -45,7 +45,7 @@ What is INN?
     NNTP (Network News Transport Protocol).
 
     INN supports accepting articles via either NNTP connections or via UUCP.
-    innd, the heard of INN, handles NNTP feeding connections directly; UUCP
+    innd, the heart of INN, handles NNTP feeding connections directly; UUCP
     newsfeeds use rnews (included in INN) to hand articles off to innd. 
     Other parts of INN handle feeding articles out to other news servers,
     most commonly innfeed (for real-time outgoing feeds) or nntpsend and
