@@ -373,7 +373,7 @@ sub logger {
     close MAIL;
     waitpid($kid, 0);
     return;
-  } elsif ($logfile !~ /\//) {
+  } elsif ($logfile !~ /^\//) {
     $logfile = "$inn::most_logs/$logfile.log";
   }
   
