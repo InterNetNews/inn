@@ -19,11 +19,9 @@
 */
 
 #include "config.h"
+#include "clibrary.h"
 #include <errno.h>
 #include <sys/select.h>
-#if HAVE_UNISTD_H
-# include <unistd.h>
-#endif
 
 /* FreeBSD 3.4 RELEASE needs <sys/time.h> before <sys/resource.h>. */
 #if (HAVE_GETRLIMIT || HAVE_SETRLIMIT) && defined(RLIMIT_NOFILE)
