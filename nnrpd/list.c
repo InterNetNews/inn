@@ -196,8 +196,6 @@ CMDlist(int ac, char *av[])
     if ((strstr(lp->File, "active") != NULL) ||
 	(strstr(lp->File, "newsgroups") != NULL))
 	path = innconf->pathdb;
-    if (strchr(lp->File, '/') != NULL)
-	path = "";
     path = concatpath(path, lp->File);
     qp = QIOopen(path);
     free(path);
