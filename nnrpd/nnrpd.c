@@ -35,6 +35,8 @@
 #define INITIAL_TIMEOUT	10
 #endif
 
+#define MAXPATTERNDEFINE	10
+
 #define CMDany		-1
 
 
@@ -362,8 +364,10 @@ PERMinfile(hp, ip, user, pass, accesslist, accessfile)
     register char	*p;
     register BOOL	found;
     register int	i;
+    register int	lines;
     struct passwd	*pwd;
     char		buff[BIG_BUFFER];
+    char		*definelist[MAXPATTERNDEFINE];
     char		filename[SMBUF];
     char		*fields[5];
 
@@ -378,7 +382,10 @@ PERMinfile(hp, ip, user, pass, accesslist, accessfile)
     found = FALSE;
     accesslist[0] = '\0';
     filename[0] = '\0';
+    lines = 0;
+    for (i=0;i<MAXPATTERNDEFINE;i++) definelist[i] = NULL;
     while (fgets(buff, sizeof buff, F) != NULL) {
+	lines++;
 	if ((p = strchr(buff, '\n')) != NULL)
 	    *p = '\0';
 	if ((p = strchr(buff, COMMENT_CHAR)) != NULL)
@@ -392,9 +399,21 @@ PERMinfile(hp, ip, user, pass, accesslist, accessfile)
 		*p = '\0';
 		fields[++i] = p + 1;
 	    }
-	if ((i != 4) && !((i == 1) && (*fields[1] == '/'))) {
+	if ((i != 4) && !((i == 1) && ((*fields[1] == '/') ||
+			(strncmp(fields[0],"%DEFINE", 7) == 0)))) {
 	    /* Malformed line. */
-	    syslog(L_ERROR, "Malformed line in access file");
+	    syslog(L_ERROR, "Malformed line %d in access file", lines);
+	    continue;
+	}
+
+	if ((*fields[0] == '%') && (strncmp(fields[0],"%DEFINE", 7) == 0)) {
+	    p = fields[0]; p += 7;
+	    i = atoi(p);
+	    if ((i < 0) || (i >= MAXPATTERNDEFINE)) {
+		syslog(L_ERROR, "Too many defines in access file (line %d)", lines);
+		continue;
+	    }
+	    definelist[i] = COPY(fields[1]);
 	    continue;
 	}
 
@@ -467,10 +486,21 @@ PERMinfile(hp, ip, user, pass, accesslist, accessfile)
 	if (ForceReadOnly) PERMcanpost=FALSE;
 	(void)strcpy(PERMuser, user ? user : fields[2]);
 	(void)strcpy(PERMpass, pass ? pass : fields[3]);
-	(void)strcpy(accesslist, fields[4]);
+	if (*fields[4] == '%') {
+	    p = fields[4] + 1;
+	    i = atoi(p);
+	    if ((i < 0) || (i >= MAXPATTERNDEFINE) || (definelist[i] == NULL)) {
+		syslog(L_ERROR, "No definition %d in access file (line %d)", i, lines);
+		continue;
+	    }
+	    (void)strcpy(accesslist, definelist[i]);
+	} else 
+	    (void)strcpy(accesslist, fields[4]);
 	found = TRUE;
     }
     (void)fclose(F);
+    for (i=0;i<MAXPATTERNDEFINE;i++)
+       if (definelist[i] != NULL) DISPOSE(definelist[i]);
     if (found && (strlen(filename) > 0))
 	return(PERMinfile(hp, ip, user, pass, accesslist, filename));
     return found;
