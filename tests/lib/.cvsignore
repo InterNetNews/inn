@@ -4,6 +4,7 @@ buffer.t
 concat.t
 confparse.t
 date.t
+hash.t
 hashtab.t
 hstrerror.t
 inet_aton.t
@@ -22,5 +23,6 @@ strlcat.t
 strlcpy.t
 uwildmat.t
 vector.t
+wire.t
 xmalloc
 xwrite.t
