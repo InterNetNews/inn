@@ -22,10 +22,10 @@ msync_page(void *p, size_t length, int flags)
     int pagesize;
 
     pagesize = getpagesize();
-    if (pagesize == -1)
+    if (pagesize == -1) {
         syswarn("getpagesize failed");
         return -1;
-    else {
+    } else {
         const size_t mask = ~(size_t)(pagesize - 1);
         char *start = (char *) ((size_t) p & mask);
         char *end = (char *) (((size_t) p + length + pagesize) & mask);
