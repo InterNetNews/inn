@@ -111,6 +111,59 @@ char *artBody;
    return NULL;
 }
 
+
+char *
+HandleMessageID(messageID)
+char *messageID;
+{
+   dSP;
+   int		rc;
+   char		*p;
+   static char * args[2];
+   static char	buf[256];
+
+   if (!PerlFilterActive || perl_filter_cv == NULL)
+     return NULL;
+
+
+   ENTER ;
+   SAVETMPS ;
+
+   args[0] = messageID;
+   args[1] = 0;
+   rc = perl_call_argv ("filter_messageid", G_EVAL|G_SCALAR, args);
+
+   SPAGAIN;
+
+   buf [0] = '\0' ;
+   
+   if (SvTRUE(GvSV(errgv)))     /* check $@ */
+     {
+       syslog (L_ERROR,"Perl function filter_messageid died: %s",
+               SvPV(GvSV(errgv), na)) ;
+       POPs ;
+       PerlFilter (FALSE) ;
+     }
+   else if (rc == 1)
+     {
+       p = POPp;
+
+       if (p != NULL && *p != '\0')
+         {
+           strncpy(buf, p, sizeof(buf) - 1);
+           buf[sizeof(buf) - 1] = '\0';
+         }
+     }
+ 
+   PUTBACK;
+   FREETMPS;
+   LEAVE;
+
+   if (buf[0] != '\0') 
+      return buf ;
+   return NULL;
+}
+
 void
 PerlMode(Mode, NewMode, reason)
 OPERATINGMODE	Mode, NewMode;

@@ -151,6 +151,7 @@ typedef struct _CHANNEL {
     u_long		Check_send;
     u_long		Check_deferred;
     u_long		Check_got;
+    u_long		Check_cybercan;
     u_long		Takethis;
     u_long		Takethis_Ok;
     u_long		Takethis_Err;
@@ -158,6 +159,7 @@ typedef struct _CHANNEL {
     u_long		Ihave_Duplicate;
     u_long		Ihave_Deferred;
     u_long		Ihave_SendIt;
+    u_long		Ihave_Cybercan;
     int			Reported;
     long		Received;
     long		Refused;

@@ -59,6 +59,7 @@ backoff_trigger:	10000L
 mimeversion:
 mimecontenttype:
 mimeencoding:
+refusecybercancels:	no
 #
 # 
 # These options are unlikely to need changing in most situations

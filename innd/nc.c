@@ -441,6 +441,9 @@ STATIC FUNCTYPE
 NCihave(CHANNEL *cp)
 {
     char	*p;
+#if defined(DO_PERL)
+    char	*perlrc;
+#endif /* DO_PERL */
 
     cp->Ihave++;
     /* Snip off the Message-ID. */
@@ -448,6 +451,23 @@ NCihave(CHANNEL *cp)
 	continue;
     if (NCbadid(cp, p))
 	return;
+
+    if ((innconf->refusecybercancels) && (strncmp(p, "<cancel.", 8) == 0)) {
+	cp->Refused++;
+	cp->Ihave_Cybercan++;
+	NCwritereply(cp, NNTP_HAVEIT);
+	return;
+    }
+
+#if defined(DO_PERL)
+    /*  invoke a perl message filter on the message id */
+    if ((perlrc = (char *)HandleMessageID(p)) != NULL) {
+	cp->Refused++;
+	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
+	NCwritereply(cp, cp->Sendid.Data);
+	return;
+    }
+#endif
 
     if (HIShavearticle(HashMessageID(p))) {
 	cp->Refused++;
@@ -1236,6 +1256,9 @@ NCcheck(CHANNEL *cp)
 {
     char		*p;
     int			msglen;
+#if defined(DO_PERL)
+    char		*perlrc;
+#endif /* DO_PERL */
 
     cp->Check++;
     /* Snip off the Message-ID. */
@@ -1256,6 +1279,24 @@ NCcheck(CHANNEL *cp)
 	syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp), MaxLength(p, p));
 	return;
     }
+
+    if ((innconf->refusecybercancels) && (strncmp(p, "<cancel.", 8) == 0)) {
+	cp->Refused++;
+	cp->Check_cybercan++;
+	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
+	NCwritereply(cp, cp->Sendid.Data);
+	return;
+    }
+
+#if defined(DO_PERL)
+    /*  invoke a perl message filter on the message id */
+    if ((perlrc = (char *)HandleMessageID(p)) != NULL) {
+	cp->Refused++;
+	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
+	NCwritereply(cp, cp->Sendid.Data);
+	return;
+    }
+#endif
 
     if (HIShavearticle(HashMessageID(p))) {
 	cp->Refused++;

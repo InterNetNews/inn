@@ -39,6 +39,7 @@ typedef struct _STATUS {
     unsigned long  Check_send;
     unsigned long  Check_deferred;
     unsigned long  Check_got;
+    unsigned long  Check_cybercan;
     unsigned long  Takethis;
     unsigned long  Takethis_Ok;
     unsigned long  Takethis_Err;
@@ -46,6 +47,7 @@ typedef struct _STATUS {
     unsigned long  Ihave_Duplicate;
     unsigned long  Ihave_Deferred;
     unsigned long  Ihave_SendIt;
+    unsigned long  Ihave_Cybercan;
 } STATUS;
 
 static unsigned STATUSlast_time;
@@ -143,9 +145,11 @@ static void STATUSsummary(void)
       status[j].can_stream = cp->Streaming;
       status[j].seconds = status[j].Size = 0;
       status[j].Ihave = status[j].Ihave_Duplicate =
-	status[j].Ihave_Deferred = status[j].Ihave_SendIt = 0;
+	status[j].Ihave_Deferred = status[j].Ihave_SendIt =
+	status[j].Ihave_Cybercan = 0;
       status[j].Check = status[j].Check_send = 
-	status[j].Check_deferred = status[j].Check_got = 0;
+	status[j].Check_deferred = status[j].Check_got =
+	status[j].Check_cybercan = 0;
       status[j].Takethis = status[j].Takethis_Ok = status[j].Takethis_Err = 0;
       status[j].activeCxn = status[j].sleepingCxns = 0;
       status[j].accepted = 0;
@@ -175,10 +179,12 @@ static void STATUSsummary(void)
     status[j].Ihave_Duplicate += cp->Ihave_Duplicate;
     status[j].Ihave_Deferred += cp->Ihave_Deferred;
     status[j].Ihave_SendIt += cp->Ihave_SendIt;
+    status[j].Ihave_Cybercan += cp->Ihave_Cybercan;
     status[j].Check += cp->Check;
     status[j].Check_send += cp->Check_send;
     status[j].Check_deferred += cp->Check_deferred;
     status[j].Check_got += cp->Check_got;
+    status[j].Check_cybercan += cp->Check_cybercan;
     status[j].Takethis += cp->Takethis;
     status[j].Takethis_Ok += cp->Takethis_Ok;
     status[j].Takethis_Err += cp->Takethis_Err;
@@ -290,7 +296,11 @@ static void STATUSsummary(void)
     fprintf (F, "   Takethis: %-6ld     Ok[%d]: %-6ld  Error[%d]: %-6ld\n",
 	     status[j].Takethis, NNTP_OK_RECID_VAL, status[j].Takethis_Ok,
 	     NNTP_ERR_FAILID_VAL, status[j].Takethis_Err);
-
+    if (innconf->refusecybercancels) {
+        fprintf (F, "   Cancelrejects:    Ihave[%d]: %-6ld  Check[%d]: %-6ld\n",
+	     NNTP_HAVEIT_VAL, status[j].Ihave_Cybercan,
+	     NNTP_ERR_GOTID_VAL, status[j].Check_cybercan);
+    }
     fputc ('\n', F) ;
   }
 

@@ -158,6 +158,7 @@ struct conf_vars {
 	long backoff_postfast;
 	long backoff_postslow;
 	long backoff_trigger;
+	int refusecybercancels;
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;

@@ -49,6 +49,16 @@
 # If filter_art is not defined when this file is done loading, then
 # filtering is disabled. If any syntax error occurs when loading the file,
 # then filtering is disabled.
+#
+#	sub filter_messageid { ... }
+#
+#		This routine is called when each article (in streaming
+#		mode only) is checked to see if INN wants to accept the
+#		article.  If it returns the empty string, the article
+#		is accepted. If it returns a non-empty value, the
+#		article is refused.  It is called with one argument,
+#		the message-id to check.
+
 
 
 #
@@ -101,6 +111,14 @@ sub filter_mode {
 #		&open_spam_database ;
 	}
 }
+
+sub filter_messageid {
+    my ($messageid) = @_;
+    $rval = '';
+#    $rval = 'No' if ($messageid =~ /a\.spam\.domain>?/i);
+     $rval;
+}
+
 
 
 

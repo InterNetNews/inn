@@ -216,6 +216,15 @@ Maximum size of a an article that will have keywords generated for it.
 .I keymaxwords
 Maximum number of keywords that will be generated for an article.
 .TP
+.I refusecybercancels
+Refuse articles that start with a Message-ID: of ``<cancel.''. This
+refusal is done before the history check and the ID is not written
+to the history file. The preferred way to do this is to ask your
+upstream feeder to alias out ``cyberspam'' in the newsfeed to you.
+This can also be done using the ``filter_messageid'' perl hook
+if perl filtering is turned on, in which case this option can be
+set to ``no''. The default is ``no''.
+.TP
 .I pathnews
 The news user home directory and sometimes the root of the news
 hierarchy.

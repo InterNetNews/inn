@@ -255,6 +255,7 @@ void SetDefaults()
     innconf->backoff_postfast = 0L;
     innconf->backoff_postslow = 1L;
     innconf->backoff_trigger = 10000L;
+    innconf->refusecybercancels = FALSE;
 }
 
 void ClearInnConf()
@@ -886,6 +887,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_BACKOFFTRIGGER, bit);
 		if (!bit) innconf->backoff_trigger = atol(p);
 		SET_CONFIG(CONF_VAR_BACKOFFTRIGGER);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_REFUSECYBERCANCELS)) {
+		TEST_CONFIG(CONF_VAR_REFUSECYBERCANCELS, bit);
+		if (!bit && boolval != -1) innconf->refusecybercancels = boolval;
+		SET_CONFIG(CONF_VAR_REFUSECYBERCANCELS);
 	    }
 	}
 	(void)Fclose(F);

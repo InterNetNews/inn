@@ -48,6 +48,11 @@ called ``%mode'', which has three keyed values:
 	'NewMode' ==> the new mode.
 	'reason' ==> the reason given for the mode change.
 
+	Whenever a message-id is received from a peer via the CHECK command,
+and filtering is turned on, the perl subroutine ``filter_messageid'' is
+called. It receives a single argument, the message-id, and returns a single
+scalar value. If the value is not the null string, the article is refused.
+
 	Whenever an article is received from a peer via IHAVE or TAKETHIS,
 and filtering is turned on, the perl subroutine ``filter_art'' is
 called. It receives no arguments and returns a single scalar value or the
