@@ -94,7 +94,13 @@ listens on the NNTP port (119), so either
 .I innd
 has to be started on another port or
 .I nnrpd
-is invoked with the ``\-p'' parameter.
+is invoked with the ``\-p'' parameter.  Note that with this parameter,
+.I nnrpd
+continues running until killed.  This means that it reads
+.IR inn.conf (5)
+once on startup and never again until restarted.
+.I nnrpd
+should therefore be restarted if inn.conf is changed.
 .TP
 .B \-g
 On systems that have a shadow password file,
