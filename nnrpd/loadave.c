@@ -33,7 +33,7 @@ GetLoadAverage()
 
 #else 
 #include <nlist.h>
-STATIC struct nlist NameList[] = {
+static struct nlist NameList[] = {
     { "_avenrun" },
 #define	X_AVENRUN	0
     { NULL }
@@ -68,7 +68,7 @@ GetLoadAverage()
 #endif	/* defined(SUNOS5) */
 #endif	/* !defined(HPUX) */
     if (NameList[0].n_type == 0
-     || lseek(fd, (OFFSET_T) NameList[X_AVENRUN].n_value, SEEK_SET) == -1
+     || lseek(fd, NameList[X_AVENRUN].n_value, SEEK_SET) == -1
      || read(fd, (char *)avenrun, sizeof avenrun) != sizeof avenrun) {
 	oerrno = errno;
 	(void)close(fd);
