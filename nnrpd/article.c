@@ -1024,13 +1024,13 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp, BOOL *DidReply)
 	    return FALSE;
 	}
 	rp->High = rp->Low = ARTnumbers[ARTindex].ArtNum;
-        return !IsCancelled(rp->High, TRUE);
+        return !IsCancelled(rp->High, innconf->nnrpdcheckart);
     }
 
     /* Got just a single number? */
     if ((p = strchr(av[1], '-')) == NULL) {
 	rp->Low = rp->High = atol(av[1]);
-        return !IsCancelled(rp->Low, TRUE);
+        return !IsCancelled(rp->Low, innconf->nnrpdcheckart);
     }
 
     /* Parse range. */
@@ -1559,7 +1559,7 @@ FUNCTYPE CMDxover(int ac, char *av[])
     OVERcount++;
     Reply("%d data follows\r\n", NNTP_OVERVIEW_FOLLOWS_VAL);
     for (Opened = OVERopen(), i = range.Low; i <= range.High && range.High > 0; i++) {
-	if (IsCancelled(i, TRUE)) {
+	if (IsCancelled(i, innconf->nnrpdcheckart)) {
 	    if (innconf->storageapi)
 		OVERmiss++;
 	    continue;
