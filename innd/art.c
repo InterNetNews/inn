@@ -518,7 +518,7 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
     IOVEC	        *vp;
     long	        size;
     char	        *p;
-    IOVEC		iov[8];
+    IOVEC		iov[9];
     IOVEC		*end;
     char		bytesbuff[SMBUF];
     int			i;
@@ -554,6 +554,7 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
         
     vp->iov_base = p;
     vp->iov_len  = Data->Body - p - (WireFormat == 1);
+    size += (vp++)->iov_len;
     if (NeedPath) {
 	Data->Path = p;
 	for (i = Data->Body - p; --i >= 0; p++)
@@ -561,13 +562,12 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
 		break;
 	Data->PathLength = p - Data->Path;
     }
-    size += (vp++)->iov_len;
     if (ARTheaders[_lines].Found == 0) {
 	(void)sprintf(Data->Lines, "Lines: %d%s\n", Data->LinesValue, WireFormat ? "\r" : "");
 	i = strlen(Data->Lines);
 	vp->iov_base = Data->Lines;
-	(vp++)->iov_len  = i;
-	size += i;
+	vp->iov_len = i;
+	size += (vp++)->iov_len;
 	/* Install in header table; STRLEN("Lines: ") == 7. */
 	(void)strcpy(ARTheaders[_lines].Value, Data->Lines + 7);
 	ARTheaders[_lines].Length = i - 7 - (WireFormat ? 2 : 1);
@@ -577,7 +577,7 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
     /* Install in header table; STRLEN("Xref: ") == 6. */
     vp->iov_base = "Xref: ";
     vp->iov_len = 6;
-    vp++;
+    size += (vp++)->iov_len;
     vp->iov_base = HDR(_xref);
     vp->iov_len  = ARTheaders[_xref].Length;
     size += (vp++)->iov_len;
