@@ -35,15 +35,26 @@ to the news user's manpath in your shell config files.  (You may want to
 do this, especially the second part, on your regular account; the
 manpages are very useful.)
 
-For bash and my system, this is:
+You can do this now or later, but you will certainly want the manpages
+to help with configuring INN.
+
+For bash, try:
 
     PATH=~news/bin:$PATH
     export PATH
-    MANPATH=~news/man:/usr/share/man:/usr
+    MANPATH=~news/man:$MANPATH
     export MANPATH
 
-You can do this now or later, but you will certainly want the manpages
-to help with configuring INN.
+or csh:
+
+    setenv PATH ~news/bin:$PATH
+    setenv MANPATH ~news/man:$MANPATH
+
+although if you don't already have MANPATH set, the above may give an
+error or override your defaults (making it so you can only read the news
+manpages); if C<echo $MANPATH> does not give some reasonable path,
+you'll need to look up what the default is for your system (such as
+F</usr/man> or F</usr/share/man>).
 
 =back
 
