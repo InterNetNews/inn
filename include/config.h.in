@@ -44,6 +44,12 @@
 /* Define if you have msync() with 3 args */
 #undef HAVE_MSYNC_3_ARG
 
+/* Define if you have <ndbm.h> */
+#undef HAVE_NDBM_H
+
+/* Define if you have <db1/ndbm.h> */
+#undef HAVE_DB1_NDBM_H
+
 /* Define if you have 'union wait' */
 #undef HAVE_UNION_WAIT
 
