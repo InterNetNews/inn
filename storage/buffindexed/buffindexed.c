@@ -211,6 +211,7 @@ typedef unsigned long	ULONG;
 STATIC ULONG		onarray[64], offarray[64];
 STATIC int		longsize = sizeof(long);
 STATIC BOOL		Nospace;
+STATIC BOOL		Needunlink;
 
 STATIC int ovbuffmode;
 STATIC int ovpadamount = 128;
@@ -471,7 +472,7 @@ STATIC BOOL ovlock(OVBUFF *ovbuff, LOCKTYPE type) {
   return LockRange(ovbuff->fd, type, TRUE, 0, sizeof(OVBUFFHEAD));
 }
 
-STATIC BOOL ovbuffinit_disks() {
+STATIC BOOL ovbuffinit_disks(void) {
   OVBUFF	*ovbuff = ovbufftab;
   char		buf[64];
   OVBUFFHEAD	*rpx;
@@ -537,6 +538,7 @@ STATIC BOOL ovbuffinit_disks() {
 	strncpy(buf, rpx->freea, OVBUFFLASIZ);
 	buf[OVBUFFLASIZ] = '\0';
 	ovbuff->freeblk = hex2offt(buf);
+	Needunlink = FALSE;
     } else {
 	ovbuff->totalblk = (ovbuff->len - ovbuff->base)/OV_BLOCKSIZE;
 	if (ovbuff->totalblk < 1) {
@@ -780,7 +782,8 @@ BOOL buffindexed_open(int mode) {
   if (!ovbuffread_config()) {
     return FALSE;
   }
-  if (!ovbuffinit_disks(NULL)) {
+  Needunlink = TRUE;
+  if (!ovbuffinit_disks()) {
     return FALSE;
   }
 
@@ -788,6 +791,10 @@ BOOL buffindexed_open(int mode) {
   groupfn = NEW(char, strlen(dirname) + strlen("/group.index") + 1);
   strcpy(groupfn, dirname);
   strcat(groupfn, "/group.index");
+  if (Needunlink) {
+    syslog(L_NOTICE, "%s: all buffers are brandnew, unlink '%s'", LocalLogName, groupfn);
+    unlink(groupfn);
+  }
   GROUPfd = open(groupfn, O_RDWR | O_CREAT, ARTFILE_MODE);
   if (GROUPfd < 0) {
     syslog(L_FATAL, "%s: Could not create %s: %m", LocalLogName, groupfn);
@@ -1394,11 +1401,11 @@ STATIC BOOL ovgroupmmap(GROUPENTRY *ge, GROUPINDEXBLOCK **gibp, int low, int hig
   if (!needov)
     return TRUE;
   for (gib = *gibp ; gib != NULL ; gib = gib->next) {
-    if (low > gib->base - gib->baseoffset + OVINDEXMAX)
+    if (low > gib->base - gib->baseoffset + OVINDEXMAX - 1)
       continue;
-    if (high < gib->base - gib->baseoffset)
+    if (high + gib->baseoffset < gib->base)
       break;
-    if (low < gib->base - gib->baseoffset)
+    if (low + gib->baseoffset < gib->base)
       base = gib->baseoffset;
     else
       base = low - (gib->base - gib->baseoffset);
@@ -1520,6 +1527,8 @@ BOOL buffindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOK
     if (ovblock->ovindex[search->cur].index == NULLINDEX) {
       if (len)
 	*len = 0;
+      if (artnum)
+	*artnum = ovblock->ovindexhead.base - ovblock->ovindexhead.baseoffset + search->cur;
     } else {
       if (artnum)
 	*artnum = ovblock->ovindexhead.base - ovblock->ovindexhead.baseoffset + search->cur;
@@ -1635,7 +1644,7 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
     for (j = 0 ; j < OVINDEXMAX ; j++)
       ovblks[i].ovblock->ovindex[j].index = NULLINDEX;
     if (i == 0 && type == PREPEND_BLK && ge->base - 1 < nblocks * OVINDEXMAX)
-      ovblks[i].ovblock->ovindexhead.baseoffset = nblocks * OVINDEXMAX - ge->base;
+      ovblks[i].ovblock->ovindexhead.baseoffset = nblocks * OVINDEXMAX - (ge->base - 1);
     ovblks[i].ovblock->ovindexhead.base = base;
     ovblks[i].indexov = ov;
   }
@@ -1886,7 +1895,7 @@ main(int argc, char **argv) {
   flag[0] = (char)flags;
   flag[1] = '\0';
   fprintf(stdout, "%s: low is %d, high is %d, count is %d, flag is '%s'\n", group, lo, hi, count, flag);
-  if ((search = (OVSEARCH *)ovopensearch(group, lo, hi, FALSE)) == NULL) {
+  if ((search = (OVSEARCH *)ovopensearch(group, lo, hi, TRUE)) == NULL) {
     fprintf(stderr, "ovopensearch failed for group %s\n", group);
     exit(1);
   }
@@ -1911,6 +1920,21 @@ main(int argc, char **argv) {
       else {
 	ovindex = ovblock->ovindex;
 	fprintf(stdout, "    %d %d %d\n", gib->base - gib->baseoffset + i, ovindex[i].offset, ovindex[i].len);
+      }
+    }
+  }
+  {
+    ARTNUM artnum;
+    char *data;
+    int len;
+    TOKEN token;
+    while (buffindexed_search((void *)search, &artnum, &data, &len, &token)) {
+      if (len == 0)
+	fprintf(stdout, "%d: len is 0\n", artnum);
+      else {
+	memcpy(buff, data, len);
+	buff[len] = '\0';
+	fprintf(stdout, "%d: %s\n", artnum, buff);
       }
     }
   }
