@@ -40,10 +40,16 @@
 #include "config.h"
 
 /* Skip this entire file if DO_PERL (./configure --with-perl) isn't set. */
-#if defined(DO_PERL)
+#if DO_PERL
 
 #include "clibrary.h"
 #include "innd.h"
+
+#include <EXTERN.h>
+#include <perl.h>
+#include <XSUB.h>
+#include "ppport.h"
+
 #include "innperl.h"
 
 /* From art.c.  Ew.  Need header parsing that doesn't use globals. */
@@ -224,6 +230,39 @@ PLmode(OPERATINGMODE Mode, OPERATINGMODE NewMode, char *reason)
                 SvPV(ERRSV, PL_na));
         (void) POPs;
         PerlFilter(FALSE);
+    }
+}
+
+
+/*
+**  Called by CCmode, this returns the Perl filter statistics if a Perl
+**  function to generate such statistics has been defined, or NULL otherwise.
+**  If a string is returned, it's in newly allocated memory that must be freed
+**  by the caller.
+*/
+char *
+PLstats(void)
+{
+    dSP;
+    
+    if (perl_get_cv("filter_stats", false) == NULL)
+        return NULL;
+    else {
+        char *stats = NULL;
+        char *result;
+
+	ENTER;
+	SAVETMPS;
+	perl_call_argv("filter_stats", G_EVAL | G_NOARGS, NULL);
+	SPAGAIN;
+        result = POPp;
+        if (result != NULL && *result)
+            stats = xstrdup(result);
+	PUTBACK;
+	FREETMPS;
+	LEAVE;
+
+        return stats;
     }
 }
 
