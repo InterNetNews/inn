@@ -16,7 +16,7 @@ INSTDIRS      = $(PATHNEWS) $(PATHBIN) $(PATHAUTH) $(PATHAUTHRESOLV) \
 ##  and make install runs in all ALLDIRS.  Nothing runs in test except the
 ##  test target itself and the clean targets.  Currently, include is built
 ##  before anything else but nothing else runs in it except clean targets.
-LIBDIRS     = lib storage history
+LIBDIRS     = include lib storage history
 PROGDIRS    = innd nnrpd innfeed control expire frontends backends authprogs \
               scripts
 UPDATEDIRS  = $(LIBDIRS) $(PROGDIRS) doc
