@@ -176,7 +176,7 @@ This is boolean value and the default is ``false''.
 Set this to ``false'' if you don't want to record rejected articles in
 history. This might cause duplicate articles to be offered to you,
 so be careful with it.
-This is boolean value and the default is ``false''.
+This is boolean value and the default is ``true''.
 .TP
 .I linecountfuzz
 If this number is set to any number other than ``0'', the article
@@ -584,7 +584,7 @@ statistics, in seconds.  If turned on statistics will be logged to syslog.
 The default value is ``0''.
 .TP
 .I timer
-If this is '0' or 'false', then performance monitoring will be disabled by
+If this is ``0'' or ``false'', then performance monitoring will be disabled by
 default.  Otherwise, it would be how often to report performance
 statistics, in seconds.  If turned on statistics will be logged to syslog.
 The default value is ``0''.
@@ -595,8 +595,9 @@ innd closes the channel.
 The default value is ``3600''.
 .TP
 .I readerswhenstopped
-Allow readers to connect even when the server is paused or throttled.
-This is boolean value and the default is ``false''.
+If this is ``false'',
+readers are allowed to connect even when the server is paused or throttled.
+This is boolean value and the default is ``true''.
 .TP
 .I allownewnews
 Allow use of the ``NEWNEWS'' command by clients. Allowing this can be
