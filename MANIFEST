@@ -182,6 +182,7 @@ expire/expireover.c         1 Expire news overview data
 expire/fastrm.c             1 Remove list of files
 expire/grephistory.c        1 Find entries in history database
 expire/makehistory.c        1 Recover the history database
+expire/makedbz.c            1 Recover dbz
 expire/newsrequeue.c        1 Write filechan input from history file
 expire/prunehistory.c       1 Prune file names from history file
 frontends                   1 Inews, rnews, ctlinnd (Directory)
@@ -211,10 +212,13 @@ include/libinn.h            1 InterNetNews library declarations
 include/macros.h            1 Useful syntactic sugar
 include/md5.h               1 Header file for processing md5
 include/nntp.h              1 NNTP command and reply codes
+include/ov3.h               1 Header file for OV3
 include/patchlevel.h        1 Official change log
 include/paths.h.in          1 Paths to common programs and files
 include/qio.h               1 Header file for quick I/O package
+include/rwlock.h            1 Header file for rwlock
 include/storage.h           1 Header file for storageAPI
+include/threads.h           1 Header file for threads
 include/uio.h               1 Minimal <sys/uio.h> for sites without writev
 innd                        1 Server (Directory)
 innd/Makefile               1 Makefile for server
@@ -283,6 +287,7 @@ install-sh                  1 Script for libtool
 installit.sh                1 File/directory installation tool
 lib                         1 InterNetNews library routines (Directory)
 lib/Makefile                1 Makefile for library
+lib/argparse.c              1 Used for OV3
 lib/checkart.c              1 See if lines are too long for NNTP
 lib/cleanfrom.c             1 Clean out a From line
 lib/clientactive.c          1 Client access to the active file
@@ -300,6 +305,7 @@ lib/getfqdn.c               1 Get FQDN
 lib/getmodaddr.c            1 Get a moderator's address
 lib/getopt.c                1 Help parse command line
 lib/gettime.c               1 Get time and timezone info
+lib/grpalias.c              1 Used for OV3
 lib/hash.c                  1 Create hash from msgid
 lib/inet_addr.c             1 Extra source for inet_aton() routine
 lib/inet_ntoa.c             1 Convert in_addr to string (BSD)
@@ -321,11 +327,14 @@ lib/mkfifo.c                1 Make a fifo
 lib/nonblocking.c           1 Set or clear non-blocking I/O
 lib/parsedate.y             1 Date parsing
 lib/perl.c                  1 Perl hook routines for nnrpd and innd.
+lib/pread.c                 1 Pread() routine
+lib/pwrite.c                1 Pwrite() routine
 lib/radix32.c               1 Encode a number as a radix-32 string
 lib/readin.c                1 Read file into memory
 lib/remopen.c               1 Open a remote NNTP connection
 lib/resource.c              1 Get process CPU usage
 lib/reservedfd.c            1 File descriptor reservation
+lib/rwlock.c                1 Wrlock routine
 lib/sendarticle.c           1 Send an article, NNTP style
 lib/sendpass.c              1 Send NNTP authentication
 lib/strcasecmp.c            1 Case-insenstive string comparison (BSD)
@@ -335,6 +344,7 @@ lib/strrchr.c               1 Find last char in a string (BSD)
 lib/strspn.c                1 Skip bytes in a string (BSD)
 lib/strtok.c                1 Split a string into tokens (BSD)
 lib/tempname.c              1 Temp filename generator.
+lib/threads.c               1 thread routine
 lib/waitnb.c                1 Non-blocking wait wrapper
 lib/wildmat.c               1 Pattern match routine
 lib/writev.c                1 Fake writev for sites without it
@@ -463,8 +473,7 @@ storage/cnfs/cnfs.h         1 Header file for cnfs
 storage/cnfs/method.config  1 Definition file used by buildconfig
 storage/interface.c         1 Frontends for storageapi
 storage/interface.h         1 Header file for interface.c
-storage/overview.c          1 Frontends for unified overview
-storage/overview.h          1 Header file for overview.c
+storage/ov3.c               1 OV3 routine
 storage/qio.c               1 Quick I/O package
 storage/timecaf/Makefile    1 Makefile for timecaf method
 storage/timecaf/README.CAF  1 README for timecaf method
