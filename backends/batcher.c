@@ -93,8 +93,8 @@ RequeueAndExit(Cookie, line, BytesInArt)
     static char	LINE1[] = "batcher %s times user %.3f system %.3f elapsed %.3f";
     static char	LINE2[] ="batcher %s stats batches %d articles %d bytes %ld";
     static char	NOWRITE[] = "batcher %s cant write spool %s\n";
-    char	temp[BUFSIZ];
-    char	buff[BUFSIZ];
+    char	temp[BIG_BUFFER];
+    char	buff[BIG_BUFFER];
     int		i;
     FILE	*F;
     TIMEINFO	Now;
@@ -218,8 +218,8 @@ main(ac, av)
     TIMEINFO	Now;
     char	*p;
     char	*data;
-    char	line[BUFSIZ];
-    char	buff[BUFSIZ];
+    char	line[BIG_BUFFER];
+    char	buff[BIG_BUFFER];
     int		BytesInArt;
     long	BytesInCB;
     OFFSET_T	Cookie;
