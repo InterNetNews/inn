@@ -66,21 +66,27 @@ Configuring and Portability
 
     The supporting files for autoconf are in the support subdirectory,
     including the files config.guess and config.sub to determine the system
-    name and the files ltconfig and ltmain.sh for libtool support.  The
-    latter two files come from the libtool distribution; the canonical
-    version of the former two are available from ftp.gnu.org in /gnu/config.
+    name and and ltmain.sh for libtool support.  The latter file comes from
+    the libtool distribution; the canonical version of the former two are
+    available from ftp.gnu.org in /gnu/config.  In addition, aclocal.m4 at
+    the top level of the source tree is just a copy of libtool.m4 from the
+    libtool distribution.  (Using libtool without using automake requires a
+    few odd hacks.)
 
     For maintainers with CVS access, these four files are on a separate
     vendor branch (the 1.1.2 branch in the repository).  When a new version
-    of libtool is released, put those four files in a directory and import
-    them onto that branch with something like
+    of libtool is released, put aclocal.m4 in a directory and ltmain.sh in a
+    subdirectory of that directory named support and then import that
+    directory onto that branch with something like
 
         cvs import -m "Import of libtool 1.4 support files" -b 1.1.2 \
-        inn/support FSF LIBTOOL-1_4
+        inn FSF LIBTOOL-1_4
 
     (all on one line) and then merge that vendor branch into the mainline. 
-    See the cvs manual under Tracking Sources and specifically Multiple
-    Vendor Branches for more details.
+    Do something similar for new versions of config.guess and config.sub
+    (but only import the support directory).  See the cvs manual under
+    Tracking Sources and specifically Multiple Vendor Branches for more
+    details.
 
     This process can also be done with just config.guess and config.sub when
     new versions of those are released.
