@@ -68,10 +68,9 @@ setfdlimit(int limit)
 #else /* !(HAVE_SETRLIMIT && RLIMIT_NOFILE) */
 
 int
-setfdlimit(int limit)
+setfdlimit(int limit UNUSED)
 {
     /* Unimplemented system call is close enough. */
-    limit = limit;			/* ARGSUSED */
     errno = ENOSYS;
     return -1;
 }
