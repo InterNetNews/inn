@@ -98,7 +98,7 @@ main(int argc, char *argv[])
 
     /* Check for imapfeed -- continue to use "innfeed" in variable
        names for historical reasons regardless */
-    if ((argc > 0) && (strcmp(argv[1],"imapfeed") == 0))
+    if ((argc > 1) && (strcmp(argv[1],"imapfeed") == 0))
     {
         argc--;
 	argv++;
