@@ -3,12 +3,12 @@
 
 #include "config.h"
 
+#include <sys/types.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #if STDC_HEADERS
 # include <string.h>
 #endif
-#include <sys/types.h>
 
 const char *test_inet_ntoa(const struct in_addr);
 
