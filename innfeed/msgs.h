@@ -39,7 +39,7 @@
 #define CONNECT_ERROR           "%s:%d connect : %m"
 #define CONNECTED               "%s:%d connected"
 #define CXN_CLOSED              "%s:%d closed"
-#define CXN_PERIODIC_CLOSE      "%s:%d closed periodic"
+#define CXN_PERIODIC_CLOSE      "%s:%d periodic close"
 #define CXN_REOPEN_FAILED	"%s:%d flush re-connect failed"
 
 #define CXN_BUFFER_EXPAND_ERROR "%s:%d cxnsleep can't expand input buffer"
@@ -62,6 +62,7 @@
 #define INVALID_RESP_FORMAT     "%s:%d cxnsleep response format : %s"
 #define PREPARE_READ_FAILED     "%s:%d cxnsleep prepare read failed"
 #define RESPONSE_TIMEOUT        "%s:%d cxnsleep non-responsive connection"
+#define WRITE_TIMEOUT           "%s:%d cxnsleep write timeout"
 #define GETSOCKOPT_FAILED       "%s:%d cxnsleep internal getsockopt : %m"
 #define CONNECTION_FAILURE      "%s:%d cxnsleep connect : %m"
 #define IO_FAILED               "%s:%d cxnsleep i/o failed : %m"

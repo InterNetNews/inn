@@ -57,7 +57,7 @@ typedef struct tape_s *Tape ;                   /* see tape.h */
 
 typedef int TimeoutId ;                         /* see endpoint.h */
 typedef enum {                                  /* see endpoint.h */
-  IoDone, IoIncomplete, IoFailed, IoEOF
+  IoDone, IoIncomplete, IoFailed, IoEOF, IoProgress
 } IoStatus ; 
 
 typedef void (*EndpRWCB) (EndPoint e,           /* see endpoint.h */

@@ -74,8 +74,12 @@
  *      typedef enum {
  *          IoDone,                     i/o completed successfully 
  *          IoIncomplete,               i/o still got more to read/write
+ *          IoProgress,                 i/o still got more to read/write
  *          IoFailed                    i/o failed
  *      } IoStatus ;
+ *
+ * The completion callbacks are never called with the status IoIncomplete or
+ * IoProgress.
  *
  *****************************************
  *
@@ -124,13 +128,17 @@ int prepareRead (EndPoint endp,
 /* Request a write when possible. All the data in the buffers in
  * BUFFS will be written out the endpoint. BUFFS is a NULL
  * terminated array of Buffers. See prepareWrite for a discussion on
- * the ownership of BUFFS and the Buffers inside BUFFS. The CALLBACK
- * function will be called and the CLIENTDATA value will be passed
- * through to it. Returns non-zero if scheduled succesfully.
+ * the ownership of BUFFS and the Buffers inside BUFFS. The PROGRESS
+ * callback function will be called and the CLIENTDATA value will be
+ * passed through to it whenever any data is written except for the
+ * final write.  The DONE callback function will be called and the
+ * CLIENTDATA value will be passed through to it after the final write.
+ * Returns non-zero if scheduled succesfully.
  */
 int prepareWrite (EndPoint endp,
                   Buffer *buffs,
-                  EndpRWCB func,
+                  EndpRWCB progress,
+                  EndpRWCB done,
                   void *clientData) ;
 
 /* cancel any outstanding reads. */
@@ -154,6 +162,12 @@ bool writeIsPending (EndPoint endp) ;
 TimeoutId prepareSleep (EndpTCB func,
                         int timeToSleep,
                         void *clientData) ;
+
+/* Updates tid to wakeup TIMETOSLEEP seconds from now. */
+TimeoutId updateSleep (TimeoutId tid,
+                       EndpTCB func,
+                       int timeToSleep,
+                       void *clientData) ;
 
   /* Set up a function to be called whenever the endpoint's file descriptor
      is NOT ready. This is called after all other fd-ready endpoints have

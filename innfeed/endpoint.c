@@ -129,7 +129,8 @@ struct endpoint_s
     size_t outIndex ;           /* where in current buffer we write from */
     size_t outSize ;            /* total of all the buffers */
     size_t outAmtWritten ;      /* amount written so far */
-    EndpRWCB outCbk ;           /* callback when done */
+    EndpRWCB outProgressCbk ;   /* callback when done */
+    EndpRWCB outDoneCbk ;       /* callback when done */
     void *outClientData ;       /* callback data */
 
     EndpWorkCbk workCbk ;       /* callback to run if no I/O to do */
@@ -330,7 +331,8 @@ EndPoint newEndPoint (int fd)
   ep->outBufferIdx = 0 ;
   ep->outIndex = 0 ;
   ep->outSize = 0 ;
-  ep->outCbk = NULL ;
+  ep->outProgressCbk = NULL ;
+  ep->outDoneCbk = NULL ;
   ep->outClientData = NULL ;
   ep->outAmtWritten = 0 ;
 
@@ -483,7 +485,8 @@ int prepareRead (EndPoint endp,
  */
 int prepareWrite (EndPoint endp,
                   Buffer *buffers,
-                  EndpRWCB func,
+                  EndpRWCB progress,
+                  EndpRWCB done,
                   void *clientData) 
 {
   int bufferSizeTotal = 0 ;
@@ -500,7 +503,8 @@ int prepareWrite (EndPoint endp,
   endp->outBuffer = buffers ;
   endp->outBufferIdx = 0 ;
   endp->outIndex = 0 ;
-  endp->outCbk = func ;
+  endp->outProgressCbk = progress ;
+  endp->outDoneCbk = done ;
   endp->outClientData = clientData ;
   endp->outSize = bufferSizeTotal ;
   endp->outAmtWritten = 0 ;
@@ -553,7 +557,8 @@ void cancelWrite (EndPoint endp, char *buffer, size_t *len)
   endp->outBuffer = NULL ;
   endp->outBufferIdx = 0 ;
   endp->outIndex = 0 ;
-  endp->outCbk = NULL ;
+  endp->outProgressCbk = NULL ;
+  endp->outDoneCbk = NULL ;
   endp->outClientData = NULL ;
   endp->outSize = 0 ;
   endp->outAmtWritten = 0 ;
@@ -593,6 +598,22 @@ TimeoutId prepareSleep (EndpTCB func, int timeToSleep, void *clientData)
 #endif
 
   return id ;
+}
+
+
+/* Updates a an existing timeout request to go off TIMETOSLEEP seconds from
+   now, or queues a new request.  Always returns a new ID. */
+TimeoutId updateSleep (TimeoutId tid, EndpTCB func, int timeToSleep,
+                       void *clientData) 
+{
+  if (tid == 0)
+    return prepareSleep (func, timeToSleep, clientData) ;
+  else
+    {
+      /* XXX - quick and dirty but CPU wasteful implementation */
+      removeTimeout (tid) ;
+      return prepareSleep (func, timeToSleep, clientData) ;
+    }
 }
 
 
@@ -807,7 +828,8 @@ void Run (void)
                       endpointsServiced++ ;
                       selectHit = 1 ;
                       
-                      if ((rval = doWrite (ep)) != IoIncomplete)
+                      if ((rval = doWrite (ep)) != IoIncomplete &&
+			  rval != IoProgress)
                         {
                           Buffer *buff = ep->outBuffer ;
 
@@ -816,10 +838,17 @@ void Run (void)
                           /* incase callback wants to issue a write */
                           ep->outBuffer = NULL ;        
                           
-                          if (ep->outCbk != NULL)
-                            (*ep->outCbk) (ep,rval,buff,ep->outClientData) ;
+                          if (ep->outDoneCbk != NULL)
+                            (*ep->outDoneCbk) (ep,rval,buff,ep->outClientData) ;
                           else
                             freeBufferArray (buff) ;
+                        }
+                      else if (rval == IoProgress)
+                        {
+                          Buffer *buff = ep->outBuffer ;
+
+                          if (ep->outProgressCbk != NULL)
+                            (*ep->outProgressCbk) (ep,rval,buff,ep->outClientData) ;
                         }
                       else
                         {
@@ -1156,6 +1185,8 @@ static IoStatus doWrite (EndPoint endp)
 
           if (endp->outAmtWritten == endp->outSize)
             rval = IoDone ;
+	  else
+            rval = IoProgress ;
         }
       else if (i < 0 && errno == EINTR)
         {

@@ -147,6 +147,8 @@ typedef enum {
   cxnStartingS,                 /* the connection's start state. */
   cxnWaitingS,                  /* not connected. Waiting for an article. */
   cxnConnectingS,               /* in the middle of connecting */
+  cxnIdleS,			/* open and ready to feed, has empty queues */
+  cxnIdleTimeoutS,	        /* timed out in the idle state */
   cxnFeedingS,                  /* in the processes of feeding articles */
   cxnSleepingS,                 /* blocked on reestablishment timer */
   cxnFlushingS,                 /* am waiting for queues to drain to bounce connection. */
@@ -197,6 +199,11 @@ struct connection_s
        remote */
     u_int readTimeout ;
     TimeoutId readBlockedTimerId ;
+
+    /* Timer for the max amount of time to wait for a any amount of data
+       to be written to the remote */
+    u_int writeTimeout ;
+    TimeoutId writeBlockedTimerId ;
 
     /* Timer for the max number of seconds to keep the network connection
        up (long lasting connections give older nntp servers problems). */
@@ -267,10 +274,12 @@ static void quitWritten (EndPoint e, IoStatus i, Buffer *b, void *d) ;
 static void ihaveBodyDone (EndPoint e, IoStatus i, Buffer *b, void *d) ;
 static void commandWriteDone (EndPoint e, IoStatus i, Buffer *b, void *d) ;
 static void modeCmdIssued (EndPoint e, IoStatus i, Buffer *b, void *d) ;
+static void writeProgress (EndPoint e, IoStatus i, Buffer *b, void *d) ;
 
 
 /* Timer callbacks */
 static void responseTimeoutCbk (TimeoutId id, void *data) ;
+static void writeTimeoutCbk (TimeoutId id, void *data) ;
 static void reopenTimeoutCbk (TimeoutId id, void *data) ;
 static void flushCxnCbk (TimeoutId, void *data) ;
 static void articleTimeoutCbk (TimeoutId id, void *data) ;
@@ -300,6 +309,7 @@ static void processResponse480 (Connection cxn, char *response) ;
 /* Misc functions */
 static void cxnSleep (Connection cxn) ;
 static void cxnDead (Connection cxn) ;
+static void cxnIdle (Connection cxn) ;
 static void noSuchMessageId (Connection cxn, u_int responseCode,
                            const char *msgid, const char *response) ;
 static void abortConnection (Connection cxn) ;
@@ -314,6 +324,8 @@ static Buffer buildCheckBuffer (Connection cxn) ;
 static Buffer *buildTakethisBuffers (Connection cxn, Buffer checkBuffer) ;
 static void issueQUIT (Connection cxn) ;
 static void initReadBlockedTimeout (Connection cxn) ;
+static int prepareWriteWithTimeout (EndPoint endp, Buffer *buffers,
+                                    EndpRWCB done, Connection cxn) ;
 static void delConnection (Connection cxn) ;
 static void incrFilter (Connection cxn) ;
 static void decrFilter (Connection cxn) ;
@@ -445,6 +457,9 @@ Connection newConnection (Host host,
   cxn->readTimeout = fudgeFactor (respTimeout) ;
   cxn->readBlockedTimerId = 0 ;
 
+  cxn->writeTimeout = fudgeFactor (respTimeout) ; /* XXX should be separate */
+  cxn->writeBlockedTimerId = 0 ;
+
   cxn->flushTimeout = fudgeFactor (flushTimeout) ;
   cxn->flushTimerId = 0 ;
 
@@ -517,7 +532,7 @@ bool cxnConnect (Connection cxn)
 
   if (addr == NULL)
     {
-      cxnSleep (cxn) ;
+      cxnSleepOrDie (cxn) ;
       return false ;
     }
 
@@ -531,7 +546,7 @@ bool cxnConnect (Connection cxn)
       syslog (LOG_ERR, SOCKET_CREATE_ERROR, peerName, cxn->ident) ;
       dprintf (1,"Can't get a socket: %m\n") ;
 
-      cxnSleep (cxn) ;
+      cxnSleepOrDie (cxn) ;
 
       return false ;
     }
@@ -554,7 +569,7 @@ bool cxnConnect (Connection cxn)
       syslog (LOG_ERR, FCNTL_ERROR, peerName, cxn->ident) ;
       close (fd) ;
 
-      cxnSleep (cxn) ;
+      cxnSleepOrDie (cxn) ;
 
       return false ;
     }
@@ -565,7 +580,7 @@ bool cxnConnect (Connection cxn)
       syslog (LOG_ERR, CONNECT_ERROR, peerName, cxn->ident) ;
       close (fd) ;
 
-      cxnSleep (cxn) ;
+      cxnSleepOrDie (cxn) ;
 
       return false ;
     }
@@ -575,14 +590,14 @@ bool cxnConnect (Connection cxn)
       /* If this happens, then fd was bigger than what select could handle,
          so endpoint.c refused to create the new object. */
       close (fd) ;
-      cxnSleep (cxn) ;
+      cxnSleepOrDie (cxn) ;
       return false ;
     }
   
 
   if (rval < 0)
     /* when the write callback gets done the connection went through */
-    prepareWrite (cxn->myEp, NULL, connectionDone, cxn) ;
+    prepareWrite (cxn->myEp, NULL, NULL, connectionDone, cxn) ;
   else
     connectionDone (cxn->myEp, IoDone, NULL, cxn) ;
 
@@ -657,6 +672,16 @@ void cxnFlush (Connection cxn)
         cxnConnect (cxn) ;
         break ;
 
+      case cxnIdleTimeoutS:
+      case cxnIdleS:
+        ASSERT (cxn->articleQTotal == 0) ;
+        if (cxn->state != cxnIdleTimeoutS)
+          clearTimer (cxn->artReceiptTimerId) ;
+        clearTimer (cxn->flushTimerId) ;
+        cxn->state = cxnFlushingS ;
+        issueQUIT (cxn) ;
+        break ;
+
       case cxnClosingS:
       case cxnFlushingS:
       case cxnWaitingS:
@@ -675,7 +700,6 @@ void cxnFlush (Connection cxn)
           }
         
         clearTimer (cxn->flushTimerId) ;
-        clearTimer (cxn->artReceiptTimerId) ;
 
         cxn->state = cxnFlushingS ;
 
@@ -709,14 +733,22 @@ void cxnTerminate (Connection cxn)
                  hostPeerName (cxn->myHost), cxn->ident) ;
 
         clearTimer (cxn->flushTimerId) ;
-        clearTimer (cxn->artReceiptTimerId) ;
 
         cxn->state = cxnClosingS ;
 
+        deferQueuedArticles (cxn) ;
         if (cxn->articleQTotal == 0)
           issueQUIT (cxn) ; /* send out the QUIT if we can */
-        else 
-          deferQueuedArticles (cxn) ;
+        break ;
+
+      case cxnIdleTimeoutS:
+      case cxnIdleS:
+        ASSERT (cxn->articleQTotal == 0) ;
+        if (cxn->state != cxnIdleTimeoutS)
+          clearTimer (cxn->artReceiptTimerId) ;
+        clearTimer (cxn->flushTimerId) ;
+        cxn->state = cxnClosingS ;
+        issueQUIT (cxn) ;
         break ;
 
       case cxnFlushingS: /* we are in the middle of a periodic close. */
@@ -777,12 +809,21 @@ void cxnClose (Connection cxn)
                  hostPeerName (cxn->myHost), cxn->ident) ;
 
         clearTimer (cxn->flushTimerId) ;
-        clearTimer (cxn->artReceiptTimerId) ;
 
         cxn->state = cxnClosingS ;
 
         if (cxn->articleQTotal == 0)
           issueQUIT (cxn) ; /* send out the QUIT if we can */
+        break ;
+
+      case cxnIdleS:
+      case cxnIdleTimeoutS:
+        ASSERT (cxn->articleQTotal == 0) ;
+        if (cxn->state != cxnIdleTimeoutS)
+          clearTimer (cxn->artReceiptTimerId) ;
+        clearTimer (cxn->flushTimerId) ;
+        cxn->state = cxnClosingS ;
+        issueQUIT (cxn) ;
         break ;
 
       case cxnFlushingS: /* we are in the middle of a periodic close. */
@@ -836,7 +877,7 @@ bool cxnTakeArticle (Connection cxn, Article art)
   ASSERT (cxn != NULL) ;
   VALIDATE_CONNECTION (cxn) ;
 
-  if ( !cxnQueueArticle (cxn,art) ) /* doesn't change the Connection state */
+  if ( !cxnQueueArticle (cxn,art) ) /* might change cxnIdleS to cxnFeedingS */
     return false ;
 
   if (!(cxn->state == cxnConnectingS ||
@@ -849,7 +890,6 @@ bool cxnTakeArticle (Connection cxn, Article art)
       return false ;
     }
   
-
   if (cxn->state != cxnWaitingS) /* because articleQTotal == 1 */
     VALIDATE_CONNECTION (cxn) ;
   else
@@ -881,19 +921,11 @@ bool cxnTakeArticle (Connection cxn, Article art)
 
 /* if there's room in the Connection then stick the article on the
  * queue, otherwise return false.
- *
- * We set a timer to go off in the future (and clear the previous
- * version of the timer if there is one). If the timer does
- * evenutally go off then that means that no more articles have been
- * received from INN since the timer was set and so we tear down the
- * network connection to help keep resource usage to a minimum.  The
- * network connection will be rebuilt as needed.
  */
 bool cxnQueueArticle (Connection cxn, Article art)
 {
   ArtHolder newArt ;
   bool rval = false ;
-  bool needTimer = false ;
 
   ASSERT (cxn != NULL) ;
   ASSERT (cxn->state != cxnStartingS) ;
@@ -931,6 +963,7 @@ bool cxnQueueArticle (Connection cxn, Article art)
         appendArtHolder (newArt, &cxn->checkHead, &cxn->articleQTotal) ;
         break ;
 
+      case cxnIdleS:
       case cxnFeedingS:
         if (cxn->articleQTotal >= cxn->maxCheck)
           dprintf (5, "%s:%d Refusing article due to articleQTotal >= maxCheck (%d > %d)\n",
@@ -939,12 +972,16 @@ bool cxnQueueArticle (Connection cxn, Article art)
         else
           {
             rval = true ;
-            needTimer = true ;
             newArt = newArtHolder (art) ;
             if (cxn->needsChecks)
               appendArtHolder (newArt, &cxn->checkHead, &cxn->articleQTotal) ;
             else
               appendArtHolder (newArt, &cxn->takeHead, &cxn->articleQTotal) ;
+            if (cxn->state == cxnIdleS)
+              {
+                cxn->state = cxnFeedingS ;
+                clearTimer (cxn->artReceiptTimerId) ;
+              }
           }
         break ;
 
@@ -958,14 +995,6 @@ bool cxnQueueArticle (Connection cxn, Article art)
                cxn->ident,artMsgId (art)) ;
 
       cxn->artsTaken++ ;
-
-      if (needTimer && cxn->articleReceiptTimeout > 0)
-        {
-          clearTimer (cxn->artReceiptTimerId) ;
-          cxn->artReceiptTimerId = prepareSleep (articleTimeoutCbk,
-                                                 cxn->articleReceiptTimeout,
-                                                 cxn) ;
-        }
     }
 
   return rval ;
@@ -1032,6 +1061,7 @@ size_t cxnQueueSpace (Connection cxn)
   ASSERT (cxn != NULL) ;
 
   if (cxn->state == cxnFeedingS ||
+      cxn->state == cxnIdleS ||
       cxn->state == cxnConnectingS ||
       cxn->state == cxnWaitingS)
     rval = cxn->maxCheck - cxn->articleQTotal ;
@@ -1118,6 +1148,9 @@ void printCxnInfo (Connection cxn, FILE *fp, u_int indentAmt)
   fprintf (fp,"%s    response-timeout : %d\n",indent,cxn->readTimeout) ;
   fprintf (fp,"%s    response-callback : %d\n",indent,cxn->readBlockedTimerId) ;
 
+  fprintf (fp,"%s    write-timeout : %d\n",indent,cxn->writeTimeout) ;
+  fprintf (fp,"%s    write-callback : %d\n",indent,cxn->writeBlockedTimerId) ;
+
   fprintf (fp,"%s    flushTimeout : %d\n",indent,cxn->flushTimeout) ;
   fprintf (fp,"%s    flushTimerId : %d\n",indent,cxn->flushTimerId) ;
 
@@ -1195,7 +1228,7 @@ static void connectionDone (EndPoint e, IoStatus i, Buffer *b, void *d)
       errno = endPointErrno (e) ;
       syslog (LOG_ERR,IO_FAILED,peerName,cxn->ident) ;
 
-      cxnSleep (cxn) ;
+      cxnSleepOrDie (cxn) ;
     }
   else if (getsockopt (endPointFd (e), SOL_SOCKET, SO_ERROR,
                        (GETSOCKOPT_ARG) &optval, &size) != 0)
@@ -1203,7 +1236,7 @@ static void connectionDone (EndPoint e, IoStatus i, Buffer *b, void *d)
       /* This is bad. Can't even get the SO_ERROR value out of the socket */
       syslog (LOG_ERR,GETSOCKOPT_FAILED, peerName, cxn->ident) ;
 
-      cxnSleep (cxn) ;
+      cxnSleepOrDie (cxn) ;
     }
   else if (optval != 0)
     {
@@ -1212,7 +1245,7 @@ static void connectionDone (EndPoint e, IoStatus i, Buffer *b, void *d)
       errno = optval ;
       syslog (LOG_NOTICE,CONNECTION_FAILURE,peerName,cxn->ident) ;
 
-      cxnSleep (cxn) ;
+      cxnSleepOrDie (cxn) ;
     }
   else
     {
@@ -1222,7 +1255,7 @@ static void connectionDone (EndPoint e, IoStatus i, Buffer *b, void *d)
         {
           syslog (LOG_ERR, PREPARE_READ_FAILED, peerName, cxn->ident) ;
 
-          cxnSleep (cxn) ;
+          cxnSleepOrDie (cxn) ;
         }
       else
         {
@@ -1277,7 +1310,7 @@ static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
       errno = endPointErrno (cxn->myEp) ;
       syslog (LOG_ERR, BANNER_READ_FAILED, peerName, cxn->ident) ;
 
-      cxnSleep (cxn) ;
+      cxnSleepOrDie (cxn) ;
     }
   else if (strchr (p, '\n') == NULL)
     {                           /* partial read. expand buffer and retry */
@@ -1288,10 +1321,8 @@ static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
         {
           syslog (LOG_ERR, PREPARE_READ_FAILED, peerName, cxn->ident) ;
 
-          cxnSleep (cxn) ;
+          cxnSleepOrDie (cxn) ;
         }
-      else
-        initReadBlockedTimeout (cxn) ;
     }
   else if ( !getNntpResponse (p, &code, &rest) )
     {
@@ -1299,7 +1330,7 @@ static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
 
       syslog (LOG_ERR, INVALID_RESP_FORMAT, peerName, cxn->ident, p) ;
 
-      cxnSleep (cxn) ;
+      cxnSleepOrDie (cxn) ;
     }
   else
     {
@@ -1313,13 +1344,13 @@ static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
             break ;
 
           case 400:
-            cxnSleep (cxn) ;
+            cxnSleepOrDie (cxn) ;
             hostCxnBlocked (cxn->myHost, cxn, rest) ;
             break ;
 
           case 502:
             syslog (LOG_NOTICE,NO_TALK_NNRPD,peerName,cxn->ident,p) ;
-            cxnSleep (cxn) ;
+            cxnSleepOrDie (cxn) ;
             hostCxnBlocked (cxn->myHost, cxn, rest) ;
             break ;
 
@@ -1327,7 +1358,7 @@ static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
             syslog (LOG_NOTICE,UNKNOWN_BANNER, peerName, cxn->ident, code, p) ;
             dprintf (1,"%s:%d Unknown response code: %d: %s\n",
                      hostPeerName (cxn->myHost),cxn->ident, code, p) ;
-            cxnSleep (cxn) ;
+            cxnSleepOrDie (cxn) ;
             hostCxnBlocked (cxn->myHost, cxn, rest) ;
             break ;
         }
@@ -1351,7 +1382,8 @@ static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
 
           modeCmdBuffers = makeBufferArray (modeBuffer, NULL) ;
 
-          if ( !prepareWrite (e, modeCmdBuffers, modeCmdIssued, cxn) )
+          if ( !prepareWriteWithTimeout (e, modeCmdBuffers, modeCmdIssued,
+                                         cxn) )
             {
               syslog (LOG_ERR, PREPARE_WRITE_FAILED, peerName, cxn->ident) ;
               die ("Prepare write for mode stream failed") ;
@@ -1365,10 +1397,8 @@ static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
             {
               syslog (LOG_ERR, PREPARE_READ_FAILED, peerName, cxn->ident) ;
               freeBufferArray (readBuffers) ;
-              cxnSleep (cxn) ;
+              cxnSleepOrDie (cxn) ;
             }
-          else
-            initReadBlockedTimeout (cxn) ;
         }
     }
 
@@ -1406,20 +1436,18 @@ static void getModeResponse (EndPoint e, IoStatus i, Buffer *b, void *d)
   dprintf (1,"%s:%d Processing mode response: %s", /* no NL */
            hostPeerName (cxn->myHost), cxn->ident, p) ;
 
-  clearTimer (cxn->readBlockedTimerId) ;
-
   if (i == IoDone && writeIsPending (cxn->myEp))
     {                           /* badness. should never happen */
       syslog (LOG_ERR, MODE_WRITE_PENDING, peerName, cxn->ident) ;
 
-      cxnSleep (cxn) ;
+      cxnSleepOrDie (cxn) ;
     }
   else if (i != IoDone)
     {
       errno = endPointErrno (e) ;
       syslog (LOG_ERR, RESPONSE_READ_FAILED, peerName, cxn->ident) ;
 
-      cxnSleep (cxn) ;
+      cxnSleepOrDie (cxn) ;
     }
   else if (strchr (p, '\n') == NULL)
     {                           /* partial read */
@@ -1430,76 +1458,78 @@ static void getModeResponse (EndPoint e, IoStatus i, Buffer *b, void *d)
         {
           syslog (LOG_ERR, PREPARE_READ_FAILED, peerName, cxn->ident) ;
           freeBufferArray (buffers) ;
-          cxnSleep (cxn) ;
+          cxnSleepOrDie (cxn) ;
         }
-      else
-        initReadBlockedTimeout (cxn) ;
-    }
-  else if ( !getNntpResponse (p, &code, NULL) )
-    {
-      syslog (LOG_ERR, BAD_MODE_RESPONSE, peerName, cxn->ident, p) ;
-
-      cxnSleep (cxn) ;
     }
   else
     {
-      syslog (LOG_NOTICE,CONNECTED,peerName, cxn->ident) ;
-          
-      switch (code)
-        {
-          case 203:             /* will do streaming */
-            hostRemoteStreams (cxn->myHost, cxn, true) ;
+      clearTimer (cxn->readBlockedTimerId) ;
 
-            if (hostWantsStreaming (cxn->myHost))
-              {
-                cxn->doesStreaming = true ;
-                cxn->maxCheck = hostMaxChecks (cxn->myHost) ;
-              }
-            else
-              cxn->maxCheck = 1 ;
-            
-            break ;
-                
-          default:                      /* won't do it */
-            hostRemoteStreams (cxn->myHost, cxn, false) ;
-            cxn->maxCheck = 1 ;
-            break ;
-        }
-          
-      /* now we consider ourselves completly connected. */
-      cxn->timeCon = theTime () ;
-      cxn->state = cxnFeedingS ;
-          
-          /* one for the connection and one for the buffer array */
-      ASSERT (bufferRefCount (cxn->respBuffer) == 2) ;
-          
-      /* there was only one line in there, right? */
-      bufferSetDataSize (cxn->respBuffer, 0) ;
-      buffers = makeBufferArray (bufferTakeRef (cxn->respBuffer), NULL) ;
-          
-          /* sleepTimeout get changed at each failed attempt, so reset. */
-      cxn->sleepTimeout = init_reconnect_period ;
-          
-      if ( !prepareRead (cxn->myEp, buffers, responseIsRead, cxn, 1) )
+      if ( !getNntpResponse (p, &code, NULL) )
         {
-          freeBufferArray (buffers) ;
-              
-          cxnSleep (cxn) ;
+          syslog (LOG_ERR, BAD_MODE_RESPONSE, peerName, cxn->ident, p) ;
+
+          cxnSleepOrDie (cxn) ;
         }
       else
         {
-          if (cxn->articleReceiptTimeout > 0)
-            cxn->artReceiptTimerId = prepareSleep (articleTimeoutCbk,
-                                                   cxn->articleReceiptTimeout,
-                                                   cxn) ;
+          syslog (LOG_NOTICE,CONNECTED,peerName, cxn->ident) ;
+          
+          switch (code)
+            {
+              case 203:             /* will do streaming */
+                hostRemoteStreams (cxn->myHost, cxn, true) ;
+
+                if (hostWantsStreaming (cxn->myHost))
+                  {
+                    cxn->doesStreaming = true ;
+                    cxn->maxCheck = hostMaxChecks (cxn->myHost) ;
+                  }
+                else
+                  cxn->maxCheck = 1 ;
+            
+                break ;
+                
+              default:                      /* won't do it */
+                hostRemoteStreams (cxn->myHost, cxn, false) ;
+                cxn->maxCheck = 1 ;
+                break ;
+            }
+          
+          /* now we consider ourselves completly connected. */
+          cxn->timeCon = theTime () ;
+          if (cxn->articleQTotal == 0)
+            cxnIdle (cxn) ;
+          else
+            cxn->state = cxnFeedingS ;
+
+          
+              /* one for the connection and one for the buffer array */
+          ASSERT (bufferRefCount (cxn->respBuffer) == 2) ;
+          
+          /* there was only one line in there, right? */
+          bufferSetDataSize (cxn->respBuffer, 0) ;
+          buffers = makeBufferArray (bufferTakeRef (cxn->respBuffer), NULL) ;
+          
+              /* sleepTimeout get changed at each failed attempt, so reset. */
+          cxn->sleepTimeout = init_reconnect_period ;
+          
+          if ( !prepareRead (cxn->myEp, buffers, responseIsRead, cxn, 1) )
+            {
+              freeBufferArray (buffers) ;
               
-          /* now we wait for articles from our Host, or we have some
-             articles already. On infrequently used connections, the
-             network link is torn down and rebuilt as needed. So we may
-             be rebuilding the connection here in which case we have an
-             article to send. */
-          if (writesNeeded (cxn) || hostGimmeArticle (cxn->myHost,cxn))
-            doSomeWrites (cxn) ;
+              cxnSleepOrDie (cxn) ;
+            }
+          else
+            {
+              /* now we wait for articles from our Host, or we have some
+                 articles already. On infrequently used connections, the
+                 network link is torn down and rebuilt as needed. So we may
+                 be rebuilding the connection here in which case we have an
+                 article to send. */
+              if (writesNeeded (cxn) || hostGimmeArticle (cxn->myHost,cxn))
+                doSomeWrites (cxn) ;
+            }
         }
     }
   
@@ -1532,15 +1562,13 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
   ASSERT (b [1] == NULL) ;
   ASSERT (b [0] == cxn->respBuffer) ;
   ASSERT (cxn->state == cxnFeedingS ||
+          cxn->state == cxnIdleS    ||
           cxn->state == cxnClosingS ||
           cxn->state == cxnFlushingS) ;
   VALIDATE_CONNECTION (cxn) ;
 
   bufferAddNullByte (b [0]) ;
 
-  if (!writeIsPending (cxn->myEp))
-    clearTimer (cxn->readBlockedTimerId) ;
-  
   peerName = hostPeerName (cxn->myHost) ;
 
   if (i != IoDone)
@@ -1548,6 +1576,8 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
       errno = endPointErrno (e) ;
       syslog (LOG_ERR, RESPONSE_READ_FAILED, peerName, cxn->ident) ;
       freeBufferArray (b) ;
+
+      cxnLogStats (cxn,true) ;
 
       if (cxn->state == cxnClosingS)
         {
@@ -1572,17 +1602,15 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
           syslog (LOG_ERR, CXN_BUFFER_EXPAND_ERROR, peerName, cxn->ident) ;
           freeBufferArray (b) ;
 
-          cxnSleep (cxn) ;
+          cxnSleepOrDie (cxn) ;
         }
       else if ( !prepareRead (cxn->myEp, b, responseIsRead, cxn, 1))
         {
           syslog (LOG_ERR, PREPARE_READ_FAILED, peerName, cxn->ident) ;
           freeBufferArray (b) ;
 
-          cxnSleep (cxn) ;
+          cxnSleepOrDie (cxn) ;
         }
-      else
-        initReadBlockedTimeout (cxn) ;
 
       return ;
     }
@@ -1621,7 +1649,7 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
         {
           syslog (LOG_ERR, INVALID_RESP_FORMAT, peerName,
                   cxn->ident, response) ;
-          cxnSleep (cxn) ;
+          cxnSleepOrDie (cxn) ;
 
           return ;
         }
@@ -1712,7 +1740,7 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
       VALIDATE_CONNECTION (cxn) ;
 
       if (cxn->state != cxnFeedingS && cxn->state != cxnClosingS &&
-          cxn->state != cxnFlushingS)
+          cxn->state != cxnFlushingS && cxn->state != cxnIdleS /* XXX */)
         break ;                 /* connection is terminated */
 
       response = next ;
@@ -1723,6 +1751,7 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
 
   switch (cxn->state)
     {
+      case cxnIdleS:
       case cxnFeedingS:
       case cxnClosingS:
       case cxnFlushingS:
@@ -1755,8 +1784,6 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
               }
             else if (!expandBuffer (cxn->respBuffer, BUFFER_EXPAND_AMOUNT))
               die (CXN_BUFFER_EXPAND_ERROR,peerName,cxn->ident);
-
-            initReadBlockedTimeout (cxn) ;
           }
         else
           bufferSetDataSize (cxn->respBuffer, 0) ;
@@ -1776,15 +1803,23 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
                to something. There's not necessarily a 1-to-1 mapping
                between reads and writes in streaming mode. May have been
                set already above (that would be unlikely I think). */
-            if (cxn->checkRespHead != NULL || cxn->takeRespHead != NULL)
-              initReadBlockedTimeout (cxn) ;
-
             VALIDATE_CONNECTION (cxn) ;
 
             dprintf (5,"%s:%d about to do some writes\n",
                      hostPeerName (cxn->myHost),cxn->ident) ;
 
             doSomeWrites (cxn) ;
+
+            /* If the read tiemr is (still) running, update it to give
+               those terminally slow hosts that take forever to drain
+               the network buffers and just dribble out responses the
+               benefit of the doubt.  XXX - maybe should just increase
+	       timeout for these! */
+            if (cxn->readBlockedTimerId)
+              cxn->readBlockedTimerId = updateSleep (cxn->readBlockedTimerId,
+                                                     responseTimeoutCbk,
+                                                     cxn->readTimeout,
+                                                     cxn) ;
           }
         VALIDATE_CONNECTION (cxn) ;
         break ;
@@ -1818,6 +1853,8 @@ static void quitWritten (EndPoint e, IoStatus i, Buffer *b, void *d)
 
   peerName = hostPeerName (cxn->myHost) ;
 
+  clearTimer (cxn->writeBlockedTimerId) ;
+
   ASSERT (cxn->myEp == e) ;
   VALIDATE_CONNECTION (cxn) ;
 
@@ -1833,6 +1870,9 @@ static void quitWritten (EndPoint e, IoStatus i, Buffer *b, void *d)
       else
         cxnWait (cxn) ;
     }
+  else
+    /* The QUIT command has been sent, so start the response timer. */
+    initReadBlockedTimeout (cxn) ;
 
   freeBufferArray (b) ;
 }
@@ -1850,11 +1890,15 @@ static void ihaveBodyDone (EndPoint e, IoStatus i, Buffer *b, void *d)
 
   ASSERT (e == cxn->myEp) ;
 
+  clearTimer (cxn->writeBlockedTimerId) ;
+
   if (i != IoDone)
     {
       errno = endPointErrno (e) ;
       syslog (LOG_ERR, IHAVE_WRITE_FAILED, hostPeerName (cxn->myHost),
               cxn->ident) ;
+
+      cxnLogStats (cxn,true) ;
 
       if (cxn->state == cxnClosingS)
         {
@@ -1864,6 +1908,10 @@ static void ihaveBodyDone (EndPoint e, IoStatus i, Buffer *b, void *d)
       else
         cxnSleep (cxn) ;
     }
+  else
+    /* The article has been sent, so start the response timer. */
+    initReadBlockedTimeout (cxn) ;
+
 
   freeBufferArray (b) ;
 
@@ -1889,10 +1937,14 @@ static void commandWriteDone (EndPoint e, IoStatus i, Buffer *b, void *d)
 
   freeBufferArray (b) ;
 
+  clearTimer (cxn->writeBlockedTimerId) ;
+
   if (i != IoDone)
     {
       errno = endPointErrno (e) ;
       syslog (LOG_ERR, COMMAND_WRITE_FAILED, peerName, cxn->ident) ;
+
+      cxnLogStats (cxn,true) ;
 
       if (cxn->state == cxnClosingS)
         {
@@ -1902,8 +1954,15 @@ static void commandWriteDone (EndPoint e, IoStatus i, Buffer *b, void *d)
       else
         cxnSleep (cxn) ;
     }
-  else if ( cxn->doesStreaming )
-    doSomeWrites (cxn) ;        /* pump data as fast as possible */
+  else
+    {
+      /* The command set has been sent, so start the response timer.
+         XXX - we'd like finer grained control */
+      initReadBlockedTimeout (cxn) ;
+      if ( cxn->doesStreaming )
+        doSomeWrites (cxn) ;        /* pump data as fast as possible */
+                                    /* XXX - will clear the read timeout */
+    }
 }
 
 
@@ -1919,6 +1978,11 @@ static void modeCmdIssued (EndPoint e, IoStatus i, Buffer *b, void *d)
 
   ASSERT (e == cxn->myEp) ;
 
+  clearTimer (cxn->writeBlockedTimerId) ;
+
+  /* The mode command has been sent, so start the response timer */
+  initReadBlockedTimeout (cxn) ;
+
   if (i != IoDone)
     {
       dprintf (1,"%s:%d MODE STREAM command failed to write\n",
@@ -1927,10 +1991,30 @@ static void modeCmdIssued (EndPoint e, IoStatus i, Buffer *b, void *d)
       syslog (LOG_ERR,MODE_STREAM_FAILED,hostPeerName (cxn->myHost),
               cxn->ident) ;
 
-      cxnSleep (cxn) ;
+      cxnSleepOrDie (cxn) ;
     }
 
   freeBufferArray (b) ;
+}
+
+
+
+
+
+/*
+ * Called whenever some amount of data has been written to the pipe but
+ * more data remains to be written
+ */
+static void writeProgress (EndPoint e, IoStatus i, Buffer *b, void *d)
+{
+  Connection cxn = (Connection) d ;
+
+  ASSERT (i == IoProgress) ;
+
+  if (cxn->writeTimeout > 0)
+    cxn->writeBlockedTimerId = updateSleep (cxn->writeBlockedTimerId,
+                                            writeTimeoutCbk, cxn->writeTimeout,
+                                            cxn) ;
 }
 
 
@@ -1957,17 +2041,59 @@ static void responseTimeoutCbk (TimeoutId id, void *data)
           cxn->state == cxnClosingS) ;
   VALIDATE_CONNECTION (cxn) ;
 
+  /* XXX - let abortConnection clear readBlockedTimerId, otherwise
+     VALIDATE_CONNECTION() will croak */
+
   peerName = hostPeerName (cxn->myHost) ;
 
   syslog (LOG_WARNING, RESPONSE_TIMEOUT, peerName, cxn->ident) ;
   dprintf (1,"%s:%d shutting down non-repsonsive connection\n",
            hostPeerName (cxn->myHost), cxn->ident) ;
 
+  cxnLogStats (cxn,true) ;
+
   if (cxn->state == cxnClosingS)
     {
-      if (hostLogConnectionStatsP ())
-        cxnLogStats (cxn,true) ;
+      abortConnection (cxn) ;
+      delConnection (cxn) ;
+    }
+  else  
+    cxnSleep (cxn) ;              /* will notify the Host */
+}
 
+
+
+
+
+/*
+ * This is called when the data write timeout for the remote
+ * goes off. We tear down the connection and notify our host.
+ */
+static void writeTimeoutCbk (TimeoutId id, void *data)
+{
+  Connection cxn = (Connection) data ;
+  const char *peerName ;
+
+  ASSERT (id == cxn->writeBlockedTimerId) ;
+  ASSERT (cxn->state == cxnConnectingS ||
+          cxn->state == cxnFeedingS ||
+          cxn->state == cxnFlushingS ||
+          cxn->state == cxnClosingS) ;
+  VALIDATE_CONNECTION (cxn) ;
+
+  /* XXX - let abortConnection clear writeBlockedTimerId, otherwise
+     VALIDATE_CONNECTION() will croak */
+
+  peerName = hostPeerName (cxn->myHost) ;
+
+  syslog (LOG_WARNING, WRITE_TIMEOUT, peerName, cxn->ident) ;
+  dprintf (1,"%s:%d shutting down non-responsive connection\n",
+           hostPeerName (cxn->myHost), cxn->ident) ;
+
+  cxnLogStats (cxn,true) ;
+
+  if (cxn->state == cxnClosingS)
+    {
       abortConnection (cxn) ;
       delConnection (cxn) ;
     }
@@ -2016,7 +2142,8 @@ static void flushCxnCbk (TimeoutId id, void *data)
 
   cxn->flushTimerId = 0 ;
 
-  if (!(cxn->state == cxnFeedingS || cxn->state == cxnConnectingS))
+  if (!(cxn->state == cxnFeedingS || cxn->state == cxnConnectingS ||
+        cxn->state == cxnIdleS))
     {
       syslog (LOG_ERR,CXN_BAD_STATE,hostPeerName (cxn->myHost),
               cxn->ident,stateToString (cxn->state)) ;
@@ -2026,6 +2153,9 @@ static void flushCxnCbk (TimeoutId id, void *data)
     {
       dprintf (1,"%s:%d Handling periodic connection close.\n",
                hostPeerName (cxn->myHost), cxn->ident) ;
+
+      syslog (LOG_NOTICE, CXN_PERIODIC_CLOSE,
+              hostPeerName (cxn->myHost), cxn->ident) ;
 
       cxnFlush (cxn) ;
     }
@@ -2052,7 +2182,7 @@ static void articleTimeoutCbk (TimeoutId id, void *data)
 
   cxn->artReceiptTimerId = 0 ;
 
-  if (cxn->state != cxnFeedingS)
+  if (cxn->state != cxnIdleS)
     {
       syslog (LOG_ERR,CXN_BAD_STATE,hostPeerName (cxn->myHost),
               cxn->ident,stateToString (cxn->state)) ;
@@ -2066,11 +2196,11 @@ static void articleTimeoutCbk (TimeoutId id, void *data)
   if (cxn->articleQTotal > 0)
     {
       syslog (LOG_WARNING, ARTICLE_TIMEOUT_W_Q_MSG, peerName, cxn->ident) ;
-      cxn->artReceiptTimerId = prepareSleep (articleTimeoutCbk, cxn->articleReceiptTimeout, cxn) ;
     }
   else
     {
       syslog (LOG_WARNING, ARTICLE_TIMEOUT_MSG, peerName, cxn->ident) ;
+      cxn->state = cxnIdleTimeoutS ;
       cxnFlush (cxn) ;
     }
 }
@@ -2153,6 +2283,7 @@ static void processResponse205 (Connection cxn, char *response)
   (void) response ;             /* keep lint happy */
 
   if (!(cxn->state == cxnFeedingS ||
+        cxn->state == cxnIdleS ||
         cxn->state == cxnFlushingS ||
         cxn->state == cxnClosingS)) 
     {
@@ -2168,15 +2299,7 @@ static void processResponse205 (Connection cxn, char *response)
       case cxnClosingS:
         ASSERT (cxn->articleQTotal == 0) ;
 
-        if (cxn->state == cxnFlushingS)
-          syslog (LOG_NOTICE, CXN_PERIODIC_CLOSE,
-                  hostPeerName (cxn->myHost), cxn->ident) ;
-        else
-          syslog (LOG_NOTICE, CXN_CLOSED, hostPeerName (cxn->myHost),
-                  cxn->ident) ;
-
-        if (cxn->state != cxnClosingS) /* logging already done */
-          cxnLogStats (cxn,true) ;
+        cxnLogStats (cxn,true) ;
 
         immedRecon = cxn->immedRecon ;
 
@@ -2195,11 +2318,12 @@ static void processResponse205 (Connection cxn, char *response)
           cxnDead (cxn) ;
         break ;
 
+      case cxnIdleS:
       case cxnFeedingS:
         /* this shouldn't ever happen... */
         syslog (LOG_NOTICE,BAD_RESPONSE,hostPeerName (cxn->myHost),
                 cxn->ident, 205) ;
-        cxnSleep (cxn) ;
+        cxnSleepOrDie (cxn) ;
         break ;
 
       default:
@@ -2256,7 +2380,13 @@ static void processResponse238 (Connection cxn, char *response)
       /* now remove the article from the check queue and move it onto the
          transmit queue. Another function wil take care of transmitting */
       remArtHolder (artHolder, &cxn->checkRespHead, &cxn->articleQTotal) ;
-      appendArtHolder (artHolder, &cxn->takeHead, &cxn->articleQTotal) ;
+      if (cxn->state != cxnClosingS)
+        appendArtHolder (artHolder, &cxn->takeHead, &cxn->articleQTotal) ;
+      else
+        {
+          hostTakeBackArticle (cxn->myHost, cxn, artHolder->article) ;
+          delArtHolder (artHolder) ;
+        }
     }
 
   if (msgid != NULL)
@@ -2310,6 +2440,8 @@ static void processResponse431 (Connection cxn, char *response)
   else
     {
       remArtHolder (artHolder, &cxn->checkRespHead, &cxn->articleQTotal) ;
+      if (cxn->articleQTotal == 0)
+        cxnIdle (cxn) ;
       hostArticleDeferred (cxn->myHost, cxn, artHolder->article) ;
       delArtHolder (artHolder) ;
     }
@@ -2367,6 +2499,8 @@ static void processResponse438 (Connection cxn, char *response)
       cxn->checksRefused++ ;
 
       remArtHolder (artHolder, &cxn->checkRespHead, &cxn->articleQTotal) ;
+      if (cxn->articleQTotal == 0)
+        cxnIdle (cxn) ;
       hostArticleNotWanted (cxn->myHost, cxn, artHolder->article);
       delArtHolder (artHolder) ;
     }
@@ -2423,6 +2557,8 @@ static void processResponse239 (Connection cxn, char *response)
       cxn->takesOkayed++ ;
 
       remArtHolder (artHolder, &cxn->takeRespHead, &cxn->articleQTotal) ;
+      if (cxn->articleQTotal == 0)
+        cxnIdle (cxn) ;
       hostArticleAccepted (cxn->myHost, cxn, artHolder->article) ;
       delArtHolder (artHolder) ;
     }
@@ -2503,6 +2639,8 @@ static void processResponse439 (Connection cxn, char *response)
       cxn->takesRejected++ ;
 
       remArtHolder (artHolder, &cxn->takeRespHead, &cxn->articleQTotal) ;
+      if (cxn->articleQTotal == 0)
+        cxnIdle (cxn) ;
       hostArticleRejected (cxn->myHost, cxn, artHolder->article) ;
       delArtHolder (artHolder) ;
     }
@@ -2563,6 +2701,9 @@ static void processResponse235 (Connection cxn, char *response)
       cxn->articleQTotal = 0 ;
       cxn->takesOkayed++ ;
       
+      if (cxn->articleQTotal == 0)
+        cxnIdle (cxn) ;
+
       hostArticleAccepted (cxn->myHost, cxn, artHolder->article) ;
       delArtHolder (artHolder) ;
     }
@@ -2633,6 +2774,7 @@ static void processResponse400 (Connection cxn, char *response)
   
   if (!(cxn->state == cxnFlushingS ||
         cxn->state == cxnFeedingS ||
+        cxn->state == cxnIdleS ||
         cxn->state == cxnClosingS))
     {
       syslog (LOG_ERR,CXN_BAD_STATE,hostPeerName (cxn->myHost),
@@ -2650,7 +2792,11 @@ static void processResponse400 (Connection cxn, char *response)
   /* Defer the articles here so that cxnFlush() doesn't set up an
     immediate reconnect. */
   if (cxn->articleQTotal > 0)
+    {
       deferAllArticles (cxn) ;
+      clearTimer (cxn->readBlockedTimerId) ;
+      cxnIdle (cxn) ; /* so cxnFlush doesn't croak in VALIDATE_CONNECTION */
+    }
 
   /* right here there may still be data queued to write and so we'll fail
     trying to issue the quit ('cause a write will be pending). Furthermore,
@@ -2658,6 +2804,7 @@ static void processResponse400 (Connection cxn, char *response)
     tossing the buffer is nt sufficient. But figuring out where we are and
     doing a tidy job is hard */
   cancelWrite (cxn->myEp,buffer,&len) ;
+  clearTimer (cxn->writeBlockedTimerId) ;
   
   cxnFlush (cxn) ;
 }
@@ -2702,6 +2849,9 @@ static void processResponse435 (Connection cxn, char *response)
 
   artHolder = cxn->checkRespHead ;
   cxn->checkRespHead = NULL ;
+
+  if (cxn->articleQTotal == 0)
+    cxnIdle (cxn) ;
 
   hostArticleNotWanted (cxn->myHost, cxn, artHolder->article) ;
   delArtHolder (artHolder) ;
@@ -2765,6 +2915,9 @@ static void processResponse436 (Connection cxn, char *response)
       artHolder = cxn->checkRespHead ;
       cxn->checkRespHead = NULL ;
     }
+
+  if (cxn->articleQTotal == 0)
+    cxnIdle (cxn) ;
   
   hostArticleDeferred (cxn->myHost, cxn, artHolder->article) ;
   delArtHolder (artHolder) ;
@@ -2811,6 +2964,9 @@ static void processResponse437 (Connection cxn, char *response)
 
   artHolder = cxn->takeRespHead ;
   cxn->takeRespHead = NULL ;
+
+  if (cxn->articleQTotal == 0)
+    cxnIdle (cxn) ;
 
   hostArticleRejected (cxn->myHost, cxn, artHolder->article) ;
   delArtHolder (artHolder) ;
@@ -2875,13 +3031,14 @@ static void cxnSleep (Connection cxn)
 {
   ASSERT (cxn != NULL) ;
   ASSERT (cxn->state == cxnFlushingS ||
+          cxn->state == cxnIdleS ||
           cxn->state == cxnFeedingS ||
           cxn->state == cxnConnectingS) ;
   VALIDATE_CONNECTION (cxn) ;
 
   abortConnection (cxn) ;
 
-  prepareReopenCbk (cxn) ;
+  prepareReopenCbk (cxn) ;  /* XXX - we don't want to reopen if idle */
   cxn->state = cxnSleepingS ;
 
   /* tell our Host we're asleep so it doesn't try to give us articles */
@@ -2897,6 +3054,36 @@ static void cxnDead (Connection cxn)
 
   abortConnection (cxn) ;
   cxn->state = cxnDeadS ;
+}
+
+
+
+/*
+ * Sets the idle timer. If no articles arrive before the timer expires, the
+ * connection will be closed.
+ */
+static void cxnIdle (Connection cxn)
+{
+  ASSERT (cxn != NULL) ;
+  ASSERT (cxn->state == cxnFeedingS || cxn->state == cxnConnectingS ||
+          cxn->state == cxnFlushingS || cxn->state == cxnClosingS) ;
+  ASSERT (cxn->articleQTotal == 0) ;
+
+  if (cxn->state == cxnFeedingS || cxn->state == cxnConnectingS)
+    {
+      if (cxn->articleReceiptTimeout > 0)
+        {
+          clearTimer (cxn->artReceiptTimerId) ;
+          cxn->artReceiptTimerId = prepareSleep (articleTimeoutCbk,
+                                                 cxn->articleReceiptTimeout,
+                                                 cxn) ;
+        }
+
+      if (cxn->readTimeout > 0 && cxn->state == cxnFeedingS)
+        clearTimer (cxn->readBlockedTimerId) ;
+
+      cxn->state = cxnIdleS ;
+    }
 }
 
 
@@ -2951,6 +3138,7 @@ static void abortConnection (Connection cxn)
   clearTimer (cxn->sleepTimerId) ;
   clearTimer (cxn->artReceiptTimerId) ;
   clearTimer (cxn->readBlockedTimerId) ;
+  clearTimer (cxn->writeBlockedTimerId) ;
   clearTimer (cxn->flushTimerId) ;
 
   deferAllArticles (cxn) ;      /* give any articles back to Host */
@@ -2960,6 +3148,7 @@ static void abortConnection (Connection cxn)
   resetConnection (cxn) ;
   
   if (cxn->state == cxnFeedingS ||
+      cxn->state == cxnIdleS ||
       cxn->state == cxnFlushingS ||
       cxn->state == cxnClosingS)
     hostCxnDead (cxn->myHost,cxn) ;
@@ -2977,6 +3166,7 @@ static void prepareReopenCbk (Connection cxn)
   ASSERT (cxn->sleepTimerId == 0) ;
 
   if (!(cxn->state == cxnConnectingS ||
+        cxn->state == cxnIdleS ||
         cxn->state == cxnFeedingS ||
         cxn->state == cxnFlushingS ||
         cxn->state == cxnStartingS))
@@ -3136,14 +3326,14 @@ static void doSomeWrites (Connection cxn)
         {
           if (writesNeeded (cxn)) /* Host gave us something */
             addWorkCallback (cxn->myEp,cxnWorkProc,cxn) ; /* for next time. */
-          else if (cxn->state == cxnClosingS || cxn->state == cxnFlushingS)
-            {                   /* nothing to do... */
-              if (cxn->articleQTotal == 0)
+          else if (cxn->articleQTotal == 0)
+            {
+              /* if we were in cxnFeedingS, then issueStreamingCommands
+                 already called cxnIdle(). */
+              if (cxn->state == cxnClosingS || cxn->state == cxnFlushingS)
                 issueQUIT (cxn) ; /* and nothing to wait for... */
             }
         }
-      else
-        initReadBlockedTimeout (cxn) ;
     }
   else if (cxn->state == cxnClosingS || cxn->state == cxnFlushingS)
     {                           /* nothing to do... */
@@ -3218,15 +3408,13 @@ static bool issueIHAVE (Connection cxn)
                hostPeerName (cxn->myHost),cxn->ident,msgid) ;
 
       writeArr = makeBufferArray (ihaveBuff, NULL) ;
-      if ( !prepareWrite (cxn->myEp, writeArr, commandWriteDone, cxn) )
+      if ( !prepareWriteWithTimeout (cxn->myEp, writeArr, commandWriteDone,
+                                     cxn) )
         {
           syslog (LOG_ERR, PREPARE_WRITE_FAILED,
                   hostPeerName (cxn->myHost), cxn->ident) ;
           die ("Prepare write for IHAVE failed") ;
         }
-
-      /* setup timeout for read */
-      initReadBlockedTimeout (cxn) ;
 
       /* now move the article to the second queue */
       cxn->checkRespHead = cxn->checkHead ;
@@ -3266,7 +3454,10 @@ static void issueIHAVEBody (Connection cxn)
   article = cxn->takeHead->article ;
   ASSERT (article != NULL) ;
   
-  writeArray = artGetNntpBuffers (article) ;
+  if (cxn->state != cxnClosingS)
+    writeArray = artGetNntpBuffers (article) ;
+  else
+    writeArray = NULL ;
 
   if (writeArray == NULL)
     {
@@ -3287,7 +3478,7 @@ static void issueIHAVEBody (Connection cxn)
     }
   
 
-  if ( !prepareWrite (cxn->myEp, writeArray, ihaveBodyDone, cxn) )
+  if ( !prepareWriteWithTimeout (cxn->myEp, writeArray, ihaveBodyDone, cxn) )
     {
       syslog (LOG_ERR, PREPARE_WRITE_FAILED,
               hostPeerName (cxn->myHost), cxn->ident) ;
@@ -3295,7 +3486,6 @@ static void issueIHAVEBody (Connection cxn)
     }
   else
     {
-      initReadBlockedTimeout (cxn) ;
       dprintf (5,"%s:%d prepared write for IHAVE body.\n",
                hostPeerName (cxn->myHost),cxn->ident) ;
     }
@@ -3354,15 +3544,13 @@ static bool issueStreamingCommands (Connection cxn)
      in the first spot and the takethis buffers after that. */
   if (writeArray)
     {
-      if ( !prepareWrite (cxn->myEp, writeArray, commandWriteDone, cxn) )
+      if ( !prepareWriteWithTimeout (cxn->myEp, writeArray,
+                                     commandWriteDone, cxn) )
         {
           syslog (LOG_ERR, PREPARE_WRITE_FAILED,
                   hostPeerName (cxn->myHost), cxn->ident) ;
           die ("Prepare write for STREAMING commands failed") ;
         }
-
-      /* setup timer for read timeout */
-      initReadBlockedTimeout (cxn) ;
 
       rval = true ;
 
@@ -3382,6 +3570,8 @@ static bool issueStreamingCommands (Connection cxn)
      was a big backlog of missing articles *and* we're running in
      no-CHECK mode, then the Host would be putting bad articles on the
      queue we're taking them off of. */
+  if (cxn->missing && cxn->articleQTotal == 0)
+    cxnIdle (cxn) ;
   for (p = cxn->missing ; p != NULL ; p = q)
     {
       hostArticleIsMissing (cxn->myHost, cxn, p->article) ;
@@ -3627,13 +3817,12 @@ static void issueQUIT (Connection cxn)
 
       cxn->quitWasIssued = true ; /* not exactly true, but good enough */
 
-      if ( !prepareWrite (cxn->myEp, writeArray, quitWritten, cxn) ) 
+      if ( !prepareWriteWithTimeout (cxn->myEp, writeArray, quitWritten,
+                                     cxn) ) 
         {
           syslog (LOG_ERR, PREPARE_WRITE_FAILED, peerName, cxn->ident) ;
           die ("Prepare write for QUIT command failed") ;
         }
-
-      initReadBlockedTimeout (cxn) ;
     }
 }
 
@@ -3653,6 +3842,35 @@ static void initReadBlockedTimeout (Connection cxn)
 
   if (cxn->readTimeout > 0)
     cxn->readBlockedTimerId = prepareSleep (responseTimeoutCbk, cxn->readTimeout, cxn) ;
+}
+
+
+
+
+
+/*
+ * Set up the timer for the blocked reads
+ */
+static int prepareWriteWithTimeout (EndPoint endp,
+                                    Buffer *buffers,
+                                    EndpRWCB done,
+                                    Connection cxn) 
+{
+  /* Clear the read timer, since we can't expect a response until everything
+     is sent.
+     XXX - would be nice to have a timeout for reponses if we're sending a
+     string of commands. */
+  clearTimer (cxn->readBlockedTimerId) ;
+
+  /* set up the write timer. */
+  clearTimer (cxn->writeBlockedTimerId) ;
+
+  if (cxn->readTimeout > 0)
+    cxn->writeBlockedTimerId = prepareSleep (writeTimeoutCbk, cxn->writeTimeout,
+                                             cxn) ;
+
+  /* set up the write. */
+  return prepareWrite (endp, buffers, writeProgress, done, cxn) ;
 }
 
 
@@ -3705,6 +3923,7 @@ static void delConnection (Connection cxn)
 
   clearTimer (cxn->artReceiptTimerId) ;
   clearTimer (cxn->readBlockedTimerId) ;
+  clearTimer (cxn->writeBlockedTimerId) ;
   clearTimer (cxn->flushTimerId) ;
 
   FREE (cxn) ;
@@ -3823,6 +4042,7 @@ static void validateConnection (Connection cxn)
         ASSERT (cxn->myEp == NULL) ;
         ASSERT (cxn->artReceiptTimerId == 0) ;
         ASSERT (cxn->readBlockedTimerId == 0) ;
+        ASSERT (cxn->writeBlockedTimerId == 0) ;
         ASSERT (cxn->flushTimerId == 0) ;
         ASSERT (cxn->sleepTimerId == 0) ;
         ASSERT (cxn->timeCon == 0) ;
@@ -3840,16 +4060,36 @@ static void validateConnection (Connection cxn)
         break ;
 
       case cxnFeedingS:
-        if (!cxn->doesStreaming)
-          ASSERT (cxn->articleQTotal <= 1) ;
-        if (cxn->readTimeout > 0 && writeIsPending (cxn->myEp))
+        if (cxn->doesStreaming)
+          ASSERT (cxn->articleQTotal > 0) ;
+        else
+          ASSERT (cxn->articleQTotal == 1) ;
+        if (cxn->readTimeout > 0 && !writeIsPending (cxn->myEp) &&
+	    cxn->checkRespHead != NULL && cxn->takeRespHead != NULL)
           ASSERT (cxn->readBlockedTimerId != 0) ;
-        if (cxn->articleReceiptTimeout > 0 && cxn->artReceiptTimerId == 0)
-          ASSERT (cxn->checkRespHead == NULL && cxn->takeRespHead == NULL) ;
-
+        if (cxn->writeTimeout > 0 && writeIsPending (cxn->myEp))
+          ASSERT (cxn->writeBlockedTimerId != 0) ;
         ASSERT (cxn->sleepTimerId == 0) ;
         ASSERT (cxn->timeCon != 0) ;
         ASSERT (cxn->doesStreaming || cxn->maxCheck == 1) ;
+        break;
+
+      case cxnIdleS:
+        ASSERT (cxn->articleQTotal == 0) ;
+        if (cxn->articleReceiptTimeout > 0)
+          ASSERT (cxn->artReceiptTimerId != 0) ;
+        ASSERT (cxn->readBlockedTimerId == 0) ;
+        ASSERT (cxn->writeBlockedTimerId == 0) ;
+        ASSERT (cxn->sleepTimerId == 0) ;
+        ASSERT (cxn->timeCon != 0) ;
+        break ;
+
+      case cxnIdleTimeoutS:
+        ASSERT (cxn->articleQTotal == 0) ;
+        ASSERT (cxn->artReceiptTimerId == 0) ;
+        ASSERT (cxn->writeBlockedTimerId == 0) ;
+        ASSERT (cxn->sleepTimerId == 0) ;
+        ASSERT (cxn->timeCon != 0) ;
         break ;
 
       case cxnSleepingS:
@@ -3857,6 +4097,7 @@ static void validateConnection (Connection cxn)
         ASSERT (cxn->myEp == NULL) ;
         ASSERT (cxn->artReceiptTimerId == 0) ;
         ASSERT (cxn->readBlockedTimerId == 0) ;
+        ASSERT (cxn->writeBlockedTimerId == 0) ;
         ASSERT (cxn->flushTimerId == 0) ;
         ASSERT (cxn->timeCon == 0) ;
         break ;
@@ -3866,6 +4107,7 @@ static void validateConnection (Connection cxn)
         ASSERT (cxn->myEp == NULL) ;
         ASSERT (cxn->artReceiptTimerId == 0) ;
         ASSERT (cxn->readBlockedTimerId == 0) ;
+        ASSERT (cxn->writeBlockedTimerId == 0) ;
         ASSERT (cxn->flushTimerId == 0) ;
         ASSERT (cxn->sleepTimerId == 0) ;
         ASSERT (cxn->timeCon == 0) ;
@@ -3899,6 +4141,14 @@ static const char *stateToString (CxnState state)
 
       case cxnConnectingS:
         strcpy (rval,"cxnConnectingS") ;
+        break ;
+
+      case cxnIdleS:
+        strcpy (rval,"cxnIdleS") ;
+        break ;
+
+      case cxnIdleTimeoutS:
+        strcpy (rval,"cxnIdleTimeoutS") ;
         break ;
 
       case cxnFeedingS:
