@@ -179,8 +179,8 @@ NGparsefile()
 
     /* Get active file and space for group entries. */
     active = ICDreadactive(&end);
-    for (p = active, i = 0; p < end && (p = strchr(p, '\n')) != NULL; p++, i++)
-	continue;
+    for (p = active, i = 0; p < end; p++)
+	if (*p == '\n') i++;
     if ((nGroups = i) == 0) {
 	syslog(L_FATAL, "%s empty active file", LogName);
 	exit(1);
