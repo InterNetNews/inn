@@ -745,6 +745,7 @@ BOOL tradindexed_add(TOKEN token, char *data, int len) {
     GROUPHANDLE         *gh;
     GROUPENTRY		*ge;
     char                overdata[BIG_BUFFER];
+    GROUPLOC            gloc;
 
     /*
      * find last Xref: in the overview line.  Note we need to find the *last*
