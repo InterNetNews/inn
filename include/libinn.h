@@ -168,6 +168,7 @@ struct conf_vars {
 	int activedport;
 	int storemsgid;
 	int nicenewnews;	/* If NEWNEWS command is used, set nice */
+	int nicennrpd;
 	int usecontrolchan;
 	int mergetogroups;
 	int noreader;
