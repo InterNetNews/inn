@@ -181,13 +181,6 @@ typedef unsigned long           ARTNUM;
 **  following the comments before each item and fixing it.
 */
 
-/* Only used in innd/art.c, should be moved there. */
-#define ART_ACCEPT              '+'
-#define ART_CANC                'c'
-#define ART_STRSTR              '?'
-#define ART_JUNK                'j'
-#define ART_REJECT              '-'
-
 /* Used to send commands to exploders.  Should be moved into a more specific
    header file; used by innd/site.c and backends/buffchan.c. */
 #define EXP_CONTROL             '!'

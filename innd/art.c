@@ -24,6 +24,13 @@ extern bool DoCancels;
 #define EXECUTE_BITS	0111
 #endif	/* defined(S_IXUSR) */
 
+/* Characters used in log messages indicating the disposition of messages. */
+#define ART_ACCEPT              '+'
+#define ART_CANC                'c'
+#define ART_STRSTR              '?'
+#define ART_JUNK                'j'
+#define ART_REJECT              '-'
+
 /*
 **  used to sort Xref, Bytes and Path pointers
 */
