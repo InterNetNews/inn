@@ -618,7 +618,7 @@ OverAddAllNewsgroups(void)
     int count;
     char *q,*p;
     char *line;
-    ARTNUM lo;
+    ARTNUM hi, lo;
 
     if ((qp = QIOopen(ActivePath)) == NULL) {
 	fprintf(stderr, "makehistory: Can't open %s, %s\n", ActivePath, strerror(errno));
@@ -630,6 +630,7 @@ OverAddAllNewsgroups(void)
 	    continue;
 	}
 	*p++ = '\0';
+	hi = (ARTNUM)atol(p);
 	if ((p = strchr(p, ' ')) == NULL) {
 	    fprintf(stderr, "makehistory: Bad line %ld, \"%s\"\n", count, line);
 	    continue;
@@ -641,7 +642,7 @@ OverAddAllNewsgroups(void)
 	    continue;
 	}
 	/* q+1 points to NG flag */
-	if (!OVgroupadd(line, lo, q+1)) {
+	if (!OVgroupadd(line, lo, hi, q+1)) {
 	    fprintf(stderr, "makehistory: Can't add %s to overview group.index\n", line);
 	    exit(1);
 	}
