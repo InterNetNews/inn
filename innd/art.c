@@ -2148,11 +2148,9 @@ STRING ARTpost(CHANNEL *cp)
 		NNTP_REJECTIT_VAL,
 		MaxLength(p, p));
 	ARTlog(&Data, ART_REJECT, buff);
-#if	defined(DO_REMEMBER_TRASH)
-        if (Mode == OMrunning && !HISwrite(&Data, ""))
+        if (innconf->remembertrash && Mode == OMrunning && !HISwrite(&Data, ""))
             syslog(L_ERROR, "%s cant write history %s %m",
                    LogName, Data.MessageID);
-#endif	/* defined(DO_REMEMBER_TRASH) */
 	DISPOSE(distributions);
 	ARTreject(buff, article);
 	return buff;
@@ -2408,9 +2406,9 @@ STRING ARTpost(CHANNEL *cp)
 	    } else {
 	    /* if !GroupMissing, then all the groups the article was posted
 	     * to have a flag of "x" in our active file, and therefore
-	     * we should throw the article away:  if you have define
-	     * DO_WANT_TRASH, then you want all trash except that which
-	     * you explicitly excluded in your active file. */
+	     * we should throw the article away:  if you have set
+	     * innconf->remembertrash set, then you want all trash except that
+	     * which you explicitly excluded in your active file. */
 		if (!GroupMissing) {
                     if (innconf->remembertrash && (Mode == OMrunning) &&
 				!HISremember(hash))
