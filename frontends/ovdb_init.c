@@ -113,7 +113,9 @@ static int upgrade_v1_to_v2(void)
     char group[MAXHEADERSIZE];
     u_int32_t v2 = 2;
     int ret;
+#if DB_VERSION_MAJOR < 3
     char *p;
+#endif
 
     notice("upgrading data to version 2");
     ret = open_db(&groupstats, "groupstats", DB_BTREE);
@@ -328,7 +330,7 @@ static int check_upgrade(int do_upgrade)
     return 0;
 }
 
-int
+static int
 upgrade_environment(void)
 {
     int ret;
