@@ -203,5 +203,6 @@ typedef char * const    CSTRING;
 /* Mode that directories are created under. */
 #define GROUPDIR_MODE   0775
 
+#undef HAVE_LONG_LONG
 
 #endif /* __CONFIG_H__ */
