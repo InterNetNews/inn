@@ -888,12 +888,30 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
     /* Colon or whitespace in the Newsgroups header? */
     if (strchr(HDR(_newsgroups), ':') != NULL)
 	return "Colon in \"Newsgroups\" header";
+
+    /* Whitespace - clean the header up instead of rejecting it.  Too many
+       servers are passing articles with whitespace along these days.  On
+       May 12th, 2000, I rejected 18468 of 578846 articles because of this
+       lack of adherence to standards. -rhooper@thetoybox.org 2000/05/12 */
     for (p = HDR(_newsgroups); *p; p++)
 	if (ISWHITE(*p)) {
-	    (void)sprintf(buff,
-		    "Whitespace in \"Newsgroups\" header -- \"%s\"",
-		    MaxLength(HDR(_newsgroups), p));
-	    return buff;
+	    /* Fix whitspace */
+	    char *wsp = HDR(_newsgroups);
+	    int x,y,s;
+
+	    for (s=x=y=0; y < ARTheaders[_newsgroups].Length; x++)
+	    {
+	    	while (ISWHITE(wsp[y]) && y < ARTheaders[_newsgroups].Length)
+	    	{
+	    	  y++;
+	    	  s++;
+	    	}
+	    	wsp[x]=wsp[y];
+	    	y++;
+	    }
+	    wsp[x]='\0';
+	    ARTheaders[_newsgroups].Length-=s;
+	    break;
 	}
 
     return NULL;
