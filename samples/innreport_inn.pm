@@ -56,7 +56,7 @@ sub collect {
   ##
   if ($prog eq "inn") {
     # accepted article
-    if ($res =~ m/[\+cj]/o) {
+    if ($res =~ m/[\+j]/o) {
       $hour =~ s/:.*$//o;
       $inn_flow{"$day $hour"}++;
       $inn_flow_total++;
