@@ -1274,6 +1274,12 @@ sub collect {
       $nnrpd_no_permission{$cust}++;
       return 1;
     }
+    # authinfo
+    if ($left =~ /\S+ user (\S+)$/o) {
+      my $user = $1;
+      $nnrpd_auth{$user}++;
+      return 1;
+    }
     # unrecognized + command
     if ($left =~ /(\S+) unrecognized (.*)$/o) {
       my ($cust, $error) = ($1, $2);
@@ -1299,14 +1305,15 @@ sub collect {
       return 1;
     }
     # times
-    if ($left =~ /(\S+) times user (\S+) system (\S+) elapsed (\S+)$/o) {
-      my ($cust, $user, $system, $elapsed) = ($1, $2, $3, $4);
+    if ($left =~ /(\S+) times user (\S+) system (\S+) idle (\S+) elapsed (\S+)$/o) {
+      my ($cust, $user, $system, $idle, $elapsed) = ($1, $2, $3, $4, $5);
       $cust = lc $cust unless $CASE_SENSITIVE;
       my $dom = &host2dom($cust);
       $nnrpd_times{$cust} += $elapsed;
-      $nnrpd_resource{'user'} += $user;
-      $nnrpd_resource{'sys'} += $system;
-      $nnrpd_resource{'elapsed'} += $elapsed;
+      $nnrpd_resource_user{$cust} += $user;
+      $nnrpd_resource_system{$cust} += $system;
+      $nnrpd_resource_idle{$cust} += $idle;
+      $nnrpd_resource_elapsed{$cust} += $elapsed;
       $nnrpd_dom_times{$dom} += $elapsed;
       return 1;
     }

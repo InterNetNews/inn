@@ -2171,20 +2171,66 @@ section nnrpd_dom_groups {
         };
 };
 
-section nnrpd_resource {
-        title   "NNRP total resource statistics:";
-        data    "%nnrpd_resource";
+section nnrpd_auth {
+        title   "NNRP auth users:";
+	data    "%nnrpd_auth";
+	top     20;
+	sort    "$nnrpd_auth{$b} <=> $nnrpd_auth{$a}";
         column {
                 name          "User";
-                format_name   "%10s";
-                format        "%10.3f";
+                format        "%-71.71s";
 		value         "$key";
+		format_total  "TOTAL: %-64.64s";
+		total         "$num";
         };
         column {
-                name          "Time";
-                format_name   "%10s";
-                format        "%13s";
-		value         "time_ms($nnrpd_resource{$key})";
+                name          "Conn";
+                format_name   "%7s";
+                format        "%7d";
+		value         "$nnrpd_auth{$key}";
+		total         "total(%nnrpd_auth)";
+        };
+};
+
+section nnrpd_resource {
+        title   "NNRP total resource statistics:";
+        data    "%nnrpd_resource_elapsed";
+	top     20;
+	sort    "$nnrpd_resource_elapsed{$b} <=> $nnrpd_resource_elapsed{$a}";
+        column {
+                name          "System";
+                format        "%-40.40s";
+		format_total  "TOTAL: %-33.33s";
+		value         "$key";
+                total         "$num";
+        };
+        column {
+                name          "User(ms)";
+                format_name   "%9s";
+                format        "%9.3f";
+		value         "$nnrpd_resource_user{$key}";
+                total         "total(%nnrpd_resource_user)";
+        };
+        column {
+                name          "System(ms)";
+                format_name   "%9s";
+                format        "%9.3f";
+		value         "$nnrpd_resource_system{$key}";
+                total         "total(%nnrpd_resource_system)";
+        };
+        column {
+                name          "Idle(ms)";
+                format_name   "%9s";
+                format        "%9.3f";
+		value         "$nnrpd_resource_idle{$key}";
+                total         "total(%nnrpd_resource_idle)";
+        };
+        column {
+                name          "Elapsed";
+		format_name   "%8s";
+		format        "%9s";
+		value         "time($nnrpd_resource_elapsed{$key})";
+                total         "time(total(%nnrpd_resource_elapsed))";
         };
 };
 
