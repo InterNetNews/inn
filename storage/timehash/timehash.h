@@ -16,6 +16,7 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount);
 void timehash_freearticle(ARTHANDLE *article);
 BOOL timehash_cancel(TOKEN token);
 BOOL timehash_ctl(PROBETYPE type, TOKEN *token, void *value);
+BOOL timehash_flushcacheddata(FLUSHTYPE type);
 void timehash_shutdown(void);
 
 #endif

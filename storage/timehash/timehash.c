@@ -388,7 +388,7 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
     } else {
 	priv = *(PRIV_TIMEHASH *)article->private;
 	DISPOSE(article->private);
-	DISPOSE(article);
+	DISPOSE((void *)article);
 	if (priv.base != NULL) {
 	    if (innconf->articlemmap) {
 #if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
@@ -491,6 +491,10 @@ BOOL timehash_ctl(PROBETYPE type, TOKEN *token, void *value) {
     default:
 	return FALSE;
     }
+}
+
+BOOL timehash_flushcacheddata(FLUSHTYPE type) {
+    return TRUE;
 }
 
 void timehash_shutdown(void) {
