@@ -59,32 +59,3 @@ const char *HeaderFindMem(const char *Article, const int ArtLen, const char *Hea
 	    return NULL;
     }
 }
-
-const char *HeaderFindDisk(const char *file, const char *Header, const int HeaderLen) {
-    QIOSTATE            *qp;
-    char                *line;
-    char                *p;
-
-    if ((qp = QIOopen(file)) == NULL)
-	return NULL;
-
-    while ((line = QIOread(qp)) != NULL) {
-	if (caseEQn(Header, line, HeaderLen)) {
-	    line = COPY(line);
-	    /* append contiguous line */
-	    while ((p = QIOread(qp)) != NULL && ISWHITE(*p)) {
-		RENEW(line, char, strlen(line) + strlen(p) + 1);
-		strcat(line, p);
-	    }
-	    QIOclose(qp);
-	    return line;
-	}
-	if (strlen(line) == 0) {
-	    /* end-of-header */
-	    QIOclose(qp);
-	    return NULL;
-	}
-    }
-    QIOclose(qp);
-    return NULL;
-}
