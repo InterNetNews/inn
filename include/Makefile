@@ -12,6 +12,9 @@ ALL	      = inn/system.h inn/version.h
 
 EXTRA	      = config.h paths.h
 
+INSTALL	      = config.h conffile.h dbz.h inndcomm.h libinn.h nntp.h ov.h \
+		paths.h storage.h
+
 all: $(ALL)
 
 clean:
@@ -34,6 +37,13 @@ inn/version.h: $(top)/support/mkversion $(top)/Makefile.global
 	$(top)/support/mkversion '$(VERSION)' '$(VERSION_EXTRA)' > $@
 
 
-##  Installation rules.  Don't install anything yet.
+##  Installation rules.
 
 install:
+	for F in $(INSTALL) ; do \
+	    $(CP_RPUB) $$F $D$(PATHINCLUDE)/$$F ; \
+	done
+	$(top)/support/install-sh $(OWNER) -m 0755 -d $D$(PATHINCLUDE)/inn
+	for F in inn/*.h ; do \
+	    $(CP_RPUB) $$F $D$(PATHINCLUDE)/inn/$$F ; \
+	done
