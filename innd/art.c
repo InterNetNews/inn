@@ -115,7 +115,6 @@ ARTHEADER	ARTheaders[] = {
     {	"Bytes",		HTstd },
 #define _bytes			14
     {	"Also-Control",		HTstd },
-#define _alsocontrol		15
     {	"References",		HTstd },
 #define _references		16
     {	"Xref",			HTsav },
@@ -886,19 +885,6 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
 		    MaxLength(HDR(_newsgroups), p));
 	    return buff;
 	}
-
-    /* If there is no control header, see if the article starts with
-     * "cmsg ". */
-    in = HDR(_control);
-    if (*in == '\0') {
-	p = HDR(_subject);
-	if (*p == 'c' && EQn(p, "cmsg ", 5)) {
-	    for (p += 5; *p && ISWHITE(*p); )
-		p++;
-	    if (*p)
-		(void)strcpy(in, p);
-	}
-    }
 
     return NULL;
 }
@@ -1942,6 +1928,7 @@ STRING ARTpost(CHANNEL *cp)
     BOOL		ControlStore = FALSE;
     BOOL		NonExist = FALSE;
     BOOL		OverviewCreated = FALSE;
+    BOOL                IsControl = FALSE;
     BUFFER		*article;
     HASH                hash;
     char		**groups;
@@ -1950,7 +1937,6 @@ STRING ARTpost(CHANNEL *cp)
     char		**distributions;
     STRING		error;
     char		ControlWord[SMBUF];
-    int			ControlHeader;
     int			oerrno;
     TOKEN               token;
     int			canpost;
@@ -2180,7 +2166,6 @@ STRING ARTpost(CHANNEL *cp)
 	sp->ng = NULL;
     }
 
-    /* Parse the Control or Also-Control header. */
     groups = NGsplit(HDR(_followup_to));
     for (i = 0; groups[i] != NULL; i++)
 	continue;
@@ -2192,16 +2177,13 @@ STRING ARTpost(CHANNEL *cp)
     if (Data.Followcount == 0)
 	Data.Followcount = Data.Groupcount;
 
-    if (HDR(_control)[0] != '\0')
-	ControlHeader = _control;
-    else if (HDR(_alsocontrol)[0] != '\0')
-	ControlHeader = _alsocontrol;
-    else 
-	ControlHeader = -1;
+    /* Parse the Control header. */
     LikeNewgroup = FALSE;
-    if (ControlHeader >= 0) {
+    if (HDR(_control)[0] != '\0') {
+        IsControl = TRUE;
+
 	/* Nip off the first word into lowercase. */
-	(void)strncpy(ControlWord, HDR(ControlHeader), sizeof ControlWord);
+	strncpy(ControlWord, HDR(_control), sizeof ControlWord);
 	ControlWord[sizeof ControlWord - 1] = '\0';
 	for (p = ControlWord; *p && !ISWHITE(*p); p++)
 	    if (CTYPE(isupper, *p))
@@ -2349,12 +2331,14 @@ STRING ARTpost(CHANNEL *cp)
 
     /* Loop over sites to find Poisons/ControlOnly and undo Sendit flags. */
     for (i = nSites, sp = Sites; --i >= 0; sp++)
-	if (sp->Poison || (sp->ControlOnly && (ControlHeader < 0)) || (sp->DontWantNonExist && NonExist))
+	if (sp->Poison
+            || (sp->ControlOnly && !IsControl)
+            || (sp->DontWantNonExist && NonExist))
 	    sp->Sendit = FALSE;		
 
     /* Control messages not filed in "to" get filed only in control.name
      * or control. */
-    if (ControlHeader >= 0 && Accepted && !ToGroup) {
+    if (IsControl && Accepted && !ToGroup) {
 	ControlStore = TRUE;
 	FileGlue(buff, "control", '.', ControlWord);
 	if ((ngp = NGfind(buff)) == NULL)
@@ -2417,7 +2401,7 @@ STRING ARTpost(CHANNEL *cp)
 	for (isp = ngp->Sites, i = ngp->nSites; --i >= 0; isp++)
 	    if (*isp >= 0) {
 		sp = &Sites[*isp];
-		if (!sp->Poison && !(sp->ControlOnly && (ControlHeader < 0)))
+		if (!sp->Poison && !(sp->ControlOnly && !IsControl))
 		    SITEmark(sp, ngp);
 	    }
     }
@@ -2575,9 +2559,9 @@ STRING ARTpost(CHANNEL *cp)
      * has been processed.  We could pause ourselves here, but it doesn't
      * seem to be worth it. */
     if (Accepted) {
-	if (ControlHeader >= 0) {
+	if (IsControl) {
 	    TMRstart(TMR_ARTCTRL);
-	    ARTcontrol(&Data, hash, HDR(ControlHeader), cp);
+	    ARTcontrol(&Data, hash, HDR(_control), cp);
 	    TMRstop(TMR_ARTCTRL);
 	}
 	p = HDR(_supersedes);
