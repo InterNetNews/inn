@@ -404,6 +404,7 @@ CMDlist(ac, av)
 	/* Optmize for unlikely case of no permissions and FALSE default. */
 	(void)QIOclose(qp);
 	Printf(".\r\n");
+	return;
     }
 
     /* Set up group list terminator. */
