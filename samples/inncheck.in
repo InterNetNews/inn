@@ -365,7 +365,11 @@ incoming_conf
     'nicenewnews',		0,
     'usecontrolchan',		0,
     'mergetogroups',		0,
-    'noreader',			0
+    'noreader',			0,
+    'innwatchsleeptime',	0,
+    'pgpverify',		0,
+    'controlfailnotice',	0,
+    'logcycles'
 );
 %inn_conf'optionals = (
     'innflags',			0,
