@@ -1,0 +1,111 @@
+=head1 NAME
+
+qio - Quick I/O routines for reading files
+
+=head1 SYNOPSIS
+
+B<#include E<lt>inn/qio.hE<gt>>
+
+B<QIOSTATE *QIOopen(const char *>I<name>B<);>
+
+B<QIOSTATE *QIOfdopen(int> I<fd>B<);>
+
+B<void QIOclose(QIOSTATE *>I<qp>B<);>
+
+B<char *QIOread(QIOSTATE *>I<qp>B<);>
+
+B<int QIOfileno(QIOSTATE *>I<qp>B<);>
+
+B<size_t QIOlength(QIOSTATE *>I<qp>B<);>
+
+B<int QIOrewind(QIOSTATE *>I<qp>B<);>
+
+B<off_t QIOtell(QIOSTATE *>I<qp>B<);>
+
+B<bool QIOerror(QIOSTATE *>I<qp>B<);>
+
+B<bool QIOtoolong(QIOSTATE *>I<qp>B<);>
+
+=head1 DESCRIPTION
+
+The routines described in this manual page are part of libinn(3).  They
+are used to provide quick read access to files; the QIO routines use
+buffering adapted to the block size of the device, similar to stdio, but
+with a more convenient syntax for reading newline-terminated lines.  QIO
+is short for "Quick I/O" (a bit of a misnomer, as QIO provides read-only
+access to files only).
+
+The QIOSTATE structure returned by B<QIOopen> and B<QIOfdopen> is the
+analog to stdio's FILE structure and should be treated as a black box by
+all users of these routines.  Only the above API should be used.
+
+B<QIOopen> opens the given file for reading.  For regular files, if your
+system provides that information and the size is reasonable, QIO will use
+the block size of the underlying file system as its buffer size;
+otherwise, it will default to a buffer of 8KB.  Returns a pointer to use
+for subsequent calls, or NULL on error.  B<QIOfdopen> performs the same
+operation except on an already-open file descriptor (I<fd> must designate
+a file open for reading).
+
+B<QIOclose> closes the open file and releases any resources used by the
+QIOSTATE structure.  The QIOSTATE pointer should not be used again after
+it has been passed to this function.
+
+B<QIOread> reads the next newline-terminated line in the file and returns
+a pointer to it, with the trailing newline replaced by nul.  The returned
+pointer is a pointer into a buffer in the QIOSTATE object and therefore
+will remain valid until B<QIOclose> is called on that object.  If EOF is
+reached, an error occurs, or if the line is longer than the buffer size,
+NULL is returned instead.  To distinguish between the error cases, use
+B<QIOerror> and B<QIOtoolong>.
+
+B<QIOfileno> returns the descriptor of the open file.
+
+B<QIOlength> returns the length in bytes of the last line returned by
+B<QIOread>.  Its return value is only defined after a successful call to
+B<QIOread>.
+
+B<QIOrewind> sets the read pointer back to the beginning of the file and
+reads the first block of the file in anticipation of future reads.  It
+returns 0 if successful and -1 on error.
+
+B<QIOtell> returns the current value of the read pointer (the lseek(2)
+offset at which the next line will start).
+
+B<QIOerror> returns true if there was an error in the last call to
+B<QIOread>, false otherwise.  B<QIOtoolong> returns true if there was an
+error and the error was that the line was too long.  If B<QIOread> returns
+NULL, these functions should be called to determine what happened.  If
+B<QIOread> returned NULL and B<QIOerror> is false, EOF was reached.  Note
+that if B<QIOtoolong> returns true, the next call to B<QIOread> will try
+to read the remainder of the line and will likely return a partial line;
+users of this library should in general treat long lines as fatal errors.
+
+=head1 EXAMPLES
+
+This block of code opens F</etc/motd> and reads it a line at a time,
+printing out each line preceeded by its offset in the file.
+
+    QIOSTATE *qp;
+    off_t offset;
+    char *p;
+
+    qp = QIOopen("/etc/motd");
+    if (qp == NULL) {
+        perror("Open error");
+        exit(1);
+    }
+    for (p = QIOread(qp); p != NULL; p = QIOread(qp))
+        printf("%ld: %s\n", (unsigned long) QIOtell(qp), p);
+    if (QIOerror(qp)) {
+        perror("Read error");
+        exit(1);
+    }
+    QIOclose(qp);
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Updated by
+Russ Allbery <rra@stanford.edu>.
+
+$Id$
