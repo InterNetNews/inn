@@ -602,11 +602,11 @@ static void sigchld (int sig UNUSED)
 static void sigusr (int sig)
 {
   if (sig == SIGUSR1) {
-    notice ("ME increasing logging level to %d", loggingLevel) ;
     loggingLevel++ ;
+    notice ("ME increasing logging level to %d", loggingLevel) ;
   } else if (sig == SIGUSR2 && loggingLevel > 0) {
-    notice ("ME decreasing logging level to %d", loggingLevel) ;
     loggingLevel-- ;
+    notice ("ME decreasing logging level to %d", loggingLevel) ;
   }    
 }
 
