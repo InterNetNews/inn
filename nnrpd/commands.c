@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Miscellaneous commands.
 */
@@ -618,9 +618,15 @@ FUNCTYPE CMDnewgroups(int ac, char *av[])
 	All = FALSE;
     }
 
+    /* Log an error if active.times doesn't exist, but don't return an error
+       to the client.  The most likely cause of this is a new server
+       installation that's yet to have any new groups created, and returning
+       an error was causing needless confusion.  Just return the empty list
+       of groups. */
     if ((qp = QIOopen(ACTIVETIMES)) == NULL) {
 	syslog(L_ERROR, "%s cant fopen %s %m", ClientHost, ACTIVETIMES);
-	Reply("%d Cannot open newsgroup date file.\r\n", NNTP_TEMPERR_VAL);
+	Reply("%d New newsgroups follow.\r\n", NNTP_NEWGROUPS_FOLLOWS_VAL);
+        Printf(".\r\n");
 	return;
     }
 
