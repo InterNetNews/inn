@@ -345,7 +345,7 @@ main(ac, av)
     OFFSET_T	maxsize = (OFFSET_T)0;
 
     /* First thing, set up logging and our identity. */
-    openlog("skrinkfile", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    openlog("shrinkfile", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
     /* Set defaults. */
     program = av[0];
