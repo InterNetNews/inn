@@ -275,6 +275,11 @@ Code Cleanup Projects
 * Clean up the use of #ifdef for sockets and IPv6, perhaps involving
   addition of more to include/portable/socket.h.
 
+* The source and bind addresses currently also take "any" or "all"
+  wildcards, which can more easily be specified by just not setting them
+  at all.  Remove those special strings, modify innupgrade to fix inn.conf
+  files using them, and simplify the code.
+
 
 Needed Bug Fixes
 
