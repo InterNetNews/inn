@@ -361,12 +361,12 @@ else
 	    [AC_CHECK_LIB(RSAglue, RSAPublicEncrypt,
 	        SSL_LIB="-lRSAglue -lrsaref ${SSL_LIB}",,-lrsaref $SSL_LIB)]
 	    ,,$SSL_LIB)
-	AC_CHECK_LIB(crypto,BIO_accept,
-		SSL_LIB="-lcrypto ${SSL_LIB}",
+	AC_CHECK_LIB(ssl, SSL_CTX_new,
+		SSL_LIB="${SSL_LIB} -lssl";
 		[AC_MSG_ERROR(Can not find OpenSSL)],
 		$SSL_LIB)
-	AC_CHECK_LIB(ssl, SSL_CTX_new,
-		SSL_LIB="-lssl ${SSL_LIB}";
+	AC_CHECK_LIB(crypto,BIO_accept,
+		SSL_LIB="${SSL_LIB} -lcrypto",
 		[AC_DEFINE(HAVE_SSL, 1, [Define if OpenSSL is available.])],
 		[AC_MSG_ERROR(Can not find OpenSSL)],
 		$SSL_LIB)

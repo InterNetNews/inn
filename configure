@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.205 
+# From configure.in Revision: 1.206 
 ## libtool.m4 - Configure libtool for the target system. -*-Shell-script-*-
 ## Copyright (C) 1996-1999 Free Software Foundation, Inc.
 ## Originally by Gordon Matzigkeit <gord@gnu.ai.mit.edu>, 1996
@@ -2121,24 +2121,24 @@ else
   echo "$ac_t""no" 1>&6
 fi
 
-	echo $ac_n "checking for BIO_accept in -lcrypto""... $ac_c" 1>&6
-echo "configure:2126: checking for BIO_accept in -lcrypto" >&5
-ac_lib_var=`echo crypto'_'BIO_accept | sed 'y%./+-%__p_%'`
+	echo $ac_n "checking for SSL_CTX_new in -lssl""... $ac_c" 1>&6
+echo "configure:2126: checking for SSL_CTX_new in -lssl" >&5
+ac_lib_var=`echo ssl'_'SSL_CTX_new | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   ac_save_LIBS="$LIBS"
-LIBS="-lcrypto $SSL_LIB $LIBS"
+LIBS="-lssl  $LIBS"
 cat > conftest.$ac_ext <<EOF
 #line 2134 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
     builtin and then its argument prototype would still apply.  */
-char BIO_accept();
+char SSL_CTX_new();
 
 int main() {
-BIO_accept()
+SSL_CTX_new()
 ; return 0; }
 EOF
 if { (eval echo configure:2145: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
@@ -2156,33 +2156,34 @@ LIBS="$ac_save_LIBS"
 fi
 if eval "test \"`echo '$ac_cv_lib_'$ac_lib_var`\" = yes"; then
   echo "$ac_t""yes" 1>&6
-  SSL_LIB="-lcrypto ${SSL_LIB}"
+  SSL_LIB="${SSL_LIB} -lssl";
+		{ echo "configure: error: Can not find OpenSSL" 1>&2; exit 1; }
 else
   echo "$ac_t""no" 1>&6
-{ echo "configure: error: Can not find OpenSSL" 1>&2; exit 1; }
+$SSL_LIB
 fi
 
-	echo $ac_n "checking for SSL_CTX_new in -lssl""... $ac_c" 1>&6
-echo "configure:2167: checking for SSL_CTX_new in -lssl" >&5
-ac_lib_var=`echo ssl'_'SSL_CTX_new | sed 'y%./+-%__p_%'`
+	echo $ac_n "checking for BIO_accept in -lcrypto""... $ac_c" 1>&6
+echo "configure:2168: checking for BIO_accept in -lcrypto" >&5
+ac_lib_var=`echo crypto'_'BIO_accept | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   ac_save_LIBS="$LIBS"
-LIBS="-lssl $SSL_LIB $LIBS"
+LIBS="-lcrypto { echo "configure: error: Can not find OpenSSL" 1>&2; exit 1; } $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2175 "configure"
+#line 2176 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
     builtin and then its argument prototype would still apply.  */
-char SSL_CTX_new();
+char BIO_accept();
 
 int main() {
-SSL_CTX_new()
+BIO_accept()
 ; return 0; }
 EOF
-if { (eval echo configure:2186: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2187: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -2197,14 +2198,13 @@ LIBS="$ac_save_LIBS"
 fi
 if eval "test \"`echo '$ac_cv_lib_'$ac_lib_var`\" = yes"; then
   echo "$ac_t""yes" 1>&6
-  SSL_LIB="-lssl ${SSL_LIB}";
-		cat >> confdefs.h <<\EOF
+  SSL_LIB="${SSL_LIB} -lcrypto"
+else
+  echo "$ac_t""no" 1>&6
+cat >> confdefs.h <<\EOF
 #define HAVE_SSL 1
 EOF
 
-else
-  echo "$ac_t""no" 1>&6
-{ echo "configure: error: Can not find OpenSSL" 1>&2; exit 1; }
 fi
 
     fi
