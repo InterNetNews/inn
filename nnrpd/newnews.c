@@ -175,8 +175,6 @@ process_newnews(char *group, bool AllGroups, time_t date)
 		/* We only care about the newsgroup list here, virtual
 		 * hosting isn't relevant */
 		p = overview_getheader(vector, overhdr_xref, OVextra);
-/*xstrndup(vector->strings[overhdr_xref],
-  vector->strings[overhdr_xref + 1] - vector->strings[overhdr_xref] - 1);*/
 	    }
 	    xrefs = GetGroups(p);
 	    free(p);
@@ -185,8 +183,6 @@ process_newnews(char *group, bool AllGroups, time_t date)
 	    if (HaveSeen(AllGroups, group, groups, xrefs))
 		continue;
 	    p = overview_getheader(vector, OVERVIEW_MESSAGE_ID, OVextra);
-/*	    p = xstrndup(vector->strings[OVERVIEW_MESSAGE_ID],
-	    vector->strings[OVERVIEW_MESSAGE_ID + 1] - vector->strings[OVERVIEW_MESSAGE_ID] - 1);*/
 	    if (p == NULL)
 		continue;
 
