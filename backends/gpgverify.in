@@ -174,7 +174,7 @@ sub errmsg {
 	die "$0: cannot use Sys::Syslog: $@ [$msg]\n" if $@;
 	
 	die "$0: cannot set syslog method [$msg]\n"
-		if not setlogsock('unix') or setlogsock('inet');
+		if not (setlogsock('unix') or setlogsock('inet'));
 
 	$msg .= " processing $header{'Message-ID'}" if $header{'Message-ID'};
 
