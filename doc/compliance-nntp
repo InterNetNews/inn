@@ -267,25 +267,6 @@ administrator is already doing something special.
 
 ------------------------------
 
-  Summary: innd's response to HEAD isn't correct
- Standard: draft-ietf-nntpext-base-13.txt, section 9.2.2.1
-  Version: 1.0 to CURRENT 2001-07-04
-Reference: innd/nc.c NChead()
- Severity: Violates a MUST
-
-innd implements the HEAD command for debugging purposes, but in response
-to HEAD it only gives the reply code 221, not any of the additional
-information that is required to be in the first line of the response to a
-successful HEAD command (0, a space, and the message ID).
-
-Impact:  The returned reply doesn't follow the correct format for a reply
-with that reply code.
-
-Suggested fix:  All the necessary information is already available to
-NChead() and NChead() should be modified to send it to the client.
-
-------------------------------
-
   Summary: nnrpd doesn't handle zero-argument LISTGROUP
  Standard: draft-ietf-nntpext-base-13.txt, section 9.5.1.1
   Version: 2.3 to CURRENT 2001-07-04

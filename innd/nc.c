@@ -280,7 +280,7 @@ NChead(CHANNEL *cp)
     if (NCbadid(cp, p))
 	return;
 
-    /* Get the article filenames; open the first file */
+    /* Get the article token and retrieve it. */
     if (!HISlookup(History, p, NULL, NULL, NULL, &token)) {
 	NCwritereply(cp, NNTP_DONTHAVEIT);
 	return;
@@ -292,6 +292,8 @@ NChead(CHANNEL *cp)
 
     /* Write it. */
     WCHANappend(cp, NNTP_HEAD_FOLLOWS, STRLEN(NNTP_HEAD_FOLLOWS));
+    WCHANappend(cp, " 0 ", 3);
+    WCHANappend(cp, p, strlen(p));
     WCHANappend(cp, NCterm, STRLEN(NCterm));
     WCHANappend(cp, art->data, art->len);
 
