@@ -1608,7 +1608,6 @@ ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
 	if (!sp->FeedwithoutOriginator)
 	  continue;
       } else {
-	HDR_PARSE_START(HDR__XTRACE);
 	if ((p = strchr(HDR(HDR__XTRACE), ' ')) != NULL) {
 	  *p = '\0';
 	  for (j = 0, sendit = FALSE; (q = sp->Originator[j]) != NULL; j++) {
@@ -2569,7 +2568,11 @@ ARTpost(CHANNEL *cp)
     ngp->PostCount = 0;
 
   token = ARTstore(cp);
-  HDR_PARSE_START(HDR__MESSAGE_ID);
+  /* change trailing '\r\n' to '\0\n' of all system header */
+  for (i = 0 ; i < MAX_ARTHEADER ; i++) {
+    if (HDR_FOUND(i))
+      HDR_PARSE_START(i);
+  }
   if (token.type == TOKEN_EMPTY) {
     syslog(L_ERROR, "%s cant store article: %s", LogName, SMerrorstr);
     sprintf(buff, "%d cant store article", NNTP_RESENDIT_VAL);
@@ -2674,12 +2677,10 @@ ARTpost(CHANNEL *cp)
   if (Accepted) {
     if (IsControl) {
       TMRstart(TMR_ARTCTRL);
-      HDR_PARSE_START(HDR__CONTROL);
       ARTcontrol(data, HDR(HDR__CONTROL), cp);
       TMRstop(TMR_ARTCTRL);
     }
     if (DoCancels && HDR_FOUND(HDR__SUPERSEDES)) {
-      HDR_PARSE_START(HDR__SUPERSEDES);
       if (ARTidok(HDR(HDR__SUPERSEDES)))
 	ARTcancel(data, HDR(HDR__SUPERSEDES), FALSE);
     }
