@@ -1034,7 +1034,7 @@ int fd;
     /* if needed, update free bitmap. */
     if (CAF_free_bitmap_write != NULL) {
 	/* Paranoia: check to make sure we didn't write more than we said we would. */
-	if (tocentry.Size >= CAF_numblks_write * headp->BlockSize) {
+	if (tocentry.Size > CAF_numblks_write * headp->BlockSize) {
 	    /*
 	    ** for now core dump (might as well, if we've done this the CAF
 	    ** file is probably thoroughly hosed anyway.) 
