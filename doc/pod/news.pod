@@ -10,6 +10,15 @@ from a version prior to INN 2.3, see L<"Upgrading from 2.2 to 2.3">.
 
 =item *
 
+All accesses to the history file for all parts of INN now go through a
+generic API like the storage and overview subsystems do.  This will
+eventually allow new history implementations to be dropped in without
+affecting the rest of INN, and will significantly improve the
+encapsulation of the history subsystem.  See the libinnhist(3) man page
+for the details of the interface.
+
+=item *
+
 Variables can now be used in the newsfeeds file to make it easier to
 specify a lot of similar feeds or feed patterns.  See the newsfeeds(5) man
 page for more details.

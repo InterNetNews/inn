@@ -7,8 +7,12 @@ Upgrading from 2.3 to 2.4
 
 Changes from 2.3 to 2.4
 
-    * The interface into the history file file has been abstracted into
-      the history API.  See the libinnhist(3) man page for more details.
+    * All accesses to the history file for all parts of INN now go through a
+      generic API like the storage and overview subsystems do.  This will
+      eventually allow new history implementations to be dropped in without
+      affecting the rest of INN, and will significantly improve the
+      encapsulation of the history subsystem.  See the libinnhist(3) man
+      page for the details of the interface.
 
     * Variables can now be used in the newsfeeds file to make it easier to
       specify a lot of similar feeds or feed patterns.  See the newsfeeds(5)
