@@ -1,0 +1,485 @@
+#! /usr/bin/perl
+# written April 1996, tale@isc.org (David C Lawrence)
+# Version 1.6, 14 October 1998
+#
+# Changes from 1.5 to 1.6:
+#  -- eliminated subprocess use (except pgp, of course)
+#  -- interlock against competing signing processes
+#  -- allow optional headers; see $use_or_add
+#  -- added simple comments about why particular headers are signed
+#  -- made error messages a tad more helpful for situations when it is hard
+#     to know what message was trying to be signed (such as via an "at" job)
+#  -- set $action, $group, $moderated to "" to prevent unusued variable
+#     warnings in the event a Control header can't be parsed
+#  -- moved assignment of $pgpend out of loop.
+# Changes from 1.4 to 1.5
+#  -- need to require Text::Tabs to get 'expand' for tabs in checkgroups
+# Changes from 1.3 to 1.4:
+#  -- added checkgroups checking
+#  -- added group name in several error messages (for help w/batch processing)
+#  -- disabled moderator address checking
+#  -- adjusted newsgroups line (ie, tabbing fixed) now correctly substituted
+#     into control message.
+# Changes from 1.2.3 to 1.3:
+#  -- skip minor pgp signature headers like "charset:" after "version:" header
+#     and until the empty line that starts the base64 signature block
+
+# CONFIGURATION
+
+# pgp variables.
+#
+# STORING YOUR PASS PHRASE IN A FILE IS A POTENTIAL SECURITY HOLE.
+# make sure you know what you're doing if you do it.
+# if you don't use pgppassfile, you can only use this script interactively.
+# if you DO use pgppassfile, it is possible that someone could steal
+#  your passphrase either by gaining access to the file or by seeing
+#  the environment of a running pgpverify program.
+#
+# $pgplock is used because pgp does not guard itself against concurrent
+# read/write access to its randseed.bin file.  A writable file is needed;
+# The default value is to use the .pgp/config.txt file in the home directory
+# of the user running the program.  Note that this will only work to lock
+# against other instances of signcontrol, not all pgp uses.
+$pgpsigner = 'INSERT_YOUR_PGP_USERID';
+$pgppassfile = '';      # file with pass phrase for $pgpsigner
+$pgp = "@_PATH_PGP";
+$pgpheader = "X-PGP-Sig";
+$pgplock = (getpwuid($<))[7] . '/.pgp/config.txt';
+
+# this program is strict about always wanting to be consistent about
+# what headers appear in the control messages.  the defaults for the
+# @... arrays are reasonable, but you should edit the force values.
+
+# these headers are acceptable in input,  but they will be overwritten
+# with these values.  no sanity checking is done on what you put here.
+# also, Subject: is forced to be the Control header prepending by "cmsg".
+# also, Newsgroups: is forced to be just the group being added/removed.
+#                   (but is taken as-is for checkgroups)
+$force{'Path'} = 'bounce-back';
+$force{'From'} = 'YOUR_ADDRESS_AND_NAME';
+$force{'Approved'} = 'ADDRESS_FOR_Approved_HEADER';
+$force{'X-Info'}='ftp://ftp.isc.org/pub/pgpcontrol/README.html'
+               . "\n\t"
+               . 'ftp://ftp.isc.org/pub/pgpcontrol/README';
+
+# these headers are acceptable in input, or if not present then will be
+# created with the given value.  None are enabled by default, because
+# they should not be necessary.  Setting one to a null string will pass
+# through any instance of it found in the input, but not generate one
+# if it is missing.  If you set any $default{} variables, you must also
+# put it in @orderheaders below.
+#
+# Note that Distribution nearly never works correctly, so use it only if you
+# are really sure the propagation of the article will be limited as you intend.
+# This normally means that you control all servers the distribution will go
+# to with an iron fist.
+# 
+# $use_or_add{'Reply-To'} = 'YOUR_REPLY_ADDRESS';
+# $use_or_add{'Oranization'} = 'YOUR_ORGANIZATION';
+# $use_or_add{'Distribution'} = 'MESSAGE_DISTRIBUTION';
+
+# host for message-id; this could be determined automatically based on where
+# it is run, but consistency is the goal here
+$id_host = 'FULL_HOST_NAME';
+
+# headers to sign.  Sender is included because non-PGP authentication uses it.
+# The following should always be signed:
+#  Subject    -- some older news systems use it to identify the control action.
+#  Control    -- most news systems use this to determine what to do.
+#  Message-ID -- guards against replay attacks.
+#  Date       -- guards against replay attacks.
+#  From       -- used by news systems as part of authenticating the message.
+#  Sender     -- used by news systems as part of authenticating the message.
+@signheaders = ('Subject', 'Control', 'Message-ID', 'Date', 'From', 'Sender');
+
+# headers to remove from real headers of final message.
+# If it is a signed header, it is signed with an empty value.
+# set to () if you do not want any headers removed.
+@ignoreheaders = ('Sender');
+
+# headers that will appear in final message, and their order of appearance.
+# all _must_ be set, either in input or via the $force{} and $use_or_add{}
+# variables above.
+# (exceptions: Date, Lines, Message-ID are computed by this program)
+# if header is in use_or_add with a null value, it will not appear in output.
+# several are required by the news article format standard; if you remove
+# these, your article will not propagate:
+#   Path, From, Newsgroups, Subject, Message-ID, Date
+# if you take out these, your control message is not very useful:
+#   Control, Approved
+# any headers in @ignoreheaders also in @orderheaders are silently dropped.
+# any non-null header in the input but not in @orderheaders or @ignoreheaders
+#   is an error.
+# null headers are silently dropped.
+@orderheaders =
+  ('Path', 'From', 'Newsgroups', 'Subject', 'Control', 'Approved',
+   'Message-ID', 'Date', 'Lines', 'X-Info', $pgpheader);
+
+# this program tries to help you out by not letting you sign erroneous names,
+# especially ones that are so erroneous they run afoul of naming standards.
+#
+# set to match only hierarchies you will use it on
+# include no '|' for a single hierarchy (eg, "$hierarchies = 'uk';").
+
+$hierarchies = 'HIERARCHIES';
+
+# the draft news article format standard says:
+#   "subsequent components SHOULD begin with a letter"
+# where "SHOULD" means:
+#   means that the item is a strong recommendation: there may be
+#   valid reasons to ignore it  in  unusual  circumstances,  but
+#   this  should  be  done  only after careful study of the full
+#   implications and a firm conclusion  that  it  is  necessary,
+#   because  there are serious disadvantages to doing so. 
+# as opposed to "MUST" which means:
+#   means that the item is an absolute requirement of the specification
+# MUST is preferred, but might not be acceptable if you have legacy
+# newsgroups that have name components that begin with a letter, like
+# news.announce.newgroups does with comp.sys.3b1 and 17 other groups.
+
+$start_component_with_letter = 'MUST';
+
+## END CONFIGURATION
+
+use POSIX qw(setlocale strftime LC_TIME);
+use Text::Tabs;                 # to get 'expand' for tabs in checkgroups
+
+$0 =~ s#^.*/##;
+
+die "Usage: $0 < message\n" if @ARGV > 0;
+
+umask(0022);                    # flock needs a writable file, if we create it
+open(LOCK, ">>$pgplock") || die "$0: open $lock: $!, exiting\n";
+flock(LOCK, 2);                 # block until locked
+
+&setgrouppat;
+
+$die = '';
+
+&readhead;
+&readbody;
+
+if ($die) {
+  if ($group) {
+    die "$0: ERROR PROCESSING ${action}group $group:\n", $die;
+  } elsif ($action eq 'check') {
+    die "$0: ERROR PROCESSING checkgroups:\n", $die;
+  } elsif ($header{'Subject'}) {
+    die "$0: ERROR PROCESSING Subject: $header{'Subject'}\n", $die;
+  } else {
+    die $die;
+  } 
+}
+
+&signit;
+
+close(LOCK) || warn "$0: close $lock: $!\n";
+exit 0;
+
+sub
+setgrouppat
+
+{
+  my ($hierarchy, $plain_component, $no_component);
+  my ($must_start_letter, $should_start_letter);
+  my ($eval);
+
+  # newsgroup name checks based on RFC 1036bis (not including encodings) rules:
+  #  "component MUST contain at least one letter"
+  #  "[component] MUST not contain uppercase letters"
+  #  "[component] MUST begin with a letter or digit"
+  #  "[component] MUST not be longer than 14 characters"
+  #  "sequences 'all' and 'ctl' MUST not be used as components"
+  #  "first component MUST begin with a letter"
+  # and enforcing "subsequent components SHOULD begin with a letter" as MUST
+  # and enforcing at least a 2nd level group (can't use to newgroup "general")
+  #
+  # DO NOT COPY THIS PATTERN BLINDLY TO OTHER APPLICATIONS!
+  #   It has special construction based on the pattern it is finally used in.
+
+  $plain_component = '[a-z][-+_a-z\d]{0,13}';
+  $no_component = '(.*\.)?(all|ctl)(\.|$)';
+  $must_start_letter = '(\.' . $plain_component . ')+';
+  $should_start_letter = '(\.(?=\d*[a-z])[a-z\d]+[-+_a-z\d]{0,13})+';
+
+  $grouppat = "(?!$no_component)($hierarchies)";
+  if ($start_component_with_letter eq 'SHOULD') {
+    $grouppat .= $should_start_letter;
+  } elsif ($start_component_with_letter eq 'MUST') {
+    $grouppat .= $must_start_letter;
+  } else {
+    die "$0: unknown value configured for \$start_component_with_letter\n";
+  }
+
+  foreach $hierarchy (split(/\|/, $hierarchies)) {
+    die "$0: hierarchy name $hierarchy not standards-compliant\n"
+      if $hierarchy !~ /^$plain_component$/o;
+  }
+
+  $eval = "\$_ = 'test'; /$grouppat/;";
+  eval $eval;
+  die "$0: bad regexp for matching group names:\n $@" if $@;
+}
+
+sub
+readhead
+
+{
+  my($head, $label, $value);
+  local($_, $/);
+
+  $/ = "";
+  $head = <STDIN>;              # get the whole news header
+  $die .= "$0: continuation lines in headers not allowed\n"
+    if $head =~ s/\n[ \t]+/ /g; # rejoin continued lines
+
+  for (split(/\n/, $head)) {
+    if (/^(\S+): (.*)/) {
+      $label = $1;
+      $value = $2;
+
+      $die .= "$0: duplicate header $label\n" if $header{$label};
+
+      $header{$label} = $value;
+      $header{$label} =~ s/^\s+//;
+      $header{$label} =~ s/\s+$//;
+    } elsif (/^$/) {
+      ;                           # the empty line separator(s)
+    } else {
+      $die .= "$0: non-header line:\n  $_\n";
+    }
+  }
+
+  $header{'Message-ID'} = '<' . time . ".$$\@$id_host>";
+
+  setlocale(LC_TIME, "C");
+  $header{'Date'} = strftime("%a, %d %h %Y %T -0000", gmtime);
+
+  for (@ignoreheaders) {
+    $die .= "ignored header $_ also has forced value set\n" if $force{$_};
+    $header{$_} = '';
+  }
+
+  for (@orderheaders) {
+    $header{$_} = $force{$_} if defined($force{$_});
+    next if /^(Lines|\Q$pgpheader\E)$/; # these are set later
+    unless ($header{$_}) {
+      if (defined($use_or_add{$_})) {
+        $header{$_} = $use_or_add{$_} if $use_or_add{$_} ne '';
+      } else {
+        $die .= "$0: missing $_ header\n";
+      }
+    }
+  }
+
+  $action = $group = $moderated = "";
+  if ($header{'Control'}) {
+    if ($header{'Control'} =~ /^(new)group (\S+)( moderated)?$/o ||
+        $header{'Control'} =~ /^(rm)group (\S+)()$/o ||
+        $header{'Control'} =~ /^(check)groups()()$/o) {
+      ($action, $group, $moderated) = ($1, $2, $3);
+      $die .= "$0: group name $group is not standards-compliant\n"
+        if $group !~ /^$grouppat$/ && $action eq 'new';
+      $die .= "$0: no group to rmgroup on Control: line\n"
+        if ! $group && $action eq 'rm';
+      $header{'Subject'} = "cmsg $header{'Control'}";
+      $header{'Newsgroups'} = $group unless $action eq 'check';
+    } else {
+      $die .= "$0: bad Control format: $header{'Control'}\n";
+    }
+  } else {
+    $die .= "$0: can't verify message content; missing Control header\n";
+  }
+}
+
+sub
+readbody
+
+{
+  local($_, $/);
+  local($status, $ngline, $fixline, $used, $desc, $mods);
+
+  undef $/;
+  $body = $_ = <STDIN>;
+  $header{'Lines'} = $body =~ tr/\n/\n/ if $body;
+
+  # the following tests are based on the structure of a news.announce.newgroups
+  # newgroup message; even if you comment out the "first line" test, please
+  # leave the newsgroups line and moderators checks
+  if ($action eq 'new') {
+    $status = $moderated ? 'a\smoderated' : 'an\sunmoderated';
+    $die .= "$0: nonstandard first line in body for $group\n"
+      if ! /^\Q$group\E\sis\s$status\snewsgroup\b/;
+
+    my $intro = "For your newsgroups file:\n";
+    $ngline =
+      (/^$intro\Q$group\E[ \t]+(.+)\n(\n|\Z(?!\n))/mi)[0];
+    if ($ngline) {
+      $_ = $group;
+      $desc = $1;
+      $fixline = $_;
+      $fixline .= "\t" x ((length) > 23 ? 1 : (4 - ((length) + 1) / 8));
+      $used = (length) < 24 ? 24 : (length) + (8 - (length) % 8);
+      $used--;
+      $desc =~ s/ \(Moderated\)//i;
+      $desc =~ s/\s+$//;
+      $desc =~ s/\w$/$&./;
+      $die .= "$0: $group description too long\n" if $used + length($desc) > 80;
+      $fixline .= $desc;
+      $fixline .= ' (Moderated)' if $moderated;
+      $body =~ s/^$intro(.+)/$intro$fixline/mi;
+    } else {
+      $die .= "$0: $group newsgroup line not formatted correctly\n";
+    }
+    # moderator checks are disabled; some sites were trying to automatically
+    # maintain aliases based on this, which is bad policy.
+    if (0 && $moderated) {
+      $die .= "$0: $group submission address not formatted correctly\n"
+        if $body !~ /\nGroup submission address:   ?\S+@\S+\.\S+\n/m;
+      $mods = "( |\n[ \t]+)\\([^)]+\\)\n\n";
+      $die .= "$0: $group contact address not formatted correctly\n"
+        if $body !~ /\nModerator contact address:  ?\S+@\S+\.\S+$mods/m;
+    }
+  }
+  # rmgroups have freeform bodies
+
+  # checkgroups have structured bodies
+  if ($action eq 'check') {
+    for (split(/\n/, $body)) {
+      my ($group, $description) = /^(\S+)\t+(.+)/;
+      $die .= "$0: no group:\n  $_\n"           unless $group;
+      $die .= "$0: no description:\n  $_\n"     unless $description;
+      $die .= "$0: bad group name \"$group\"\n" if $group !~ /^$grouppat$/;
+      $die .= "$0: tab in description\n"        if $description =~ /\t/;
+      s/ \(Moderated\)$//;
+      $die .= "$0: $group line too long\n"      if length(expand($_)) > 80;
+    }
+  }
+}
+
+sub
+signit
+
+{
+  my($tmp, $head, $header, $signheaders, $pgpflags, $pgpbegin, $pgpend);
+  local(*FH);
+
+  $tmp = "/tmp/sign-$$";
+  $signheaders = join(",", @signheaders);
+
+  $head = "X-Signed-Headers: $signheaders\n";
+  foreach $header (@signheaders) {
+    $head .= "$header: $header{$header}\n";
+  }
+  open(FH, "> $tmp") || die "$0: open $tmp: !$\n";
+  print FH $head;
+  print FH "\n";
+  print FH $body;
+  close(FH) || warn "$0: close TMP: $!\n";
+  die "$0: data to sign corrupted in $tmp\n"
+    if -s $tmp != length($head) + length($body) + 1;
+
+  if ($pgppassfile && -f $pgppassfile) {
+    $pgppassfile =~ s%^(\s)%./$1%;
+    if (open(PGPPASS, "< $pgppassfile\0")) {
+      $ENV{'PGPPASS'} = <PGPPASS>;
+      close(PGPPASS);
+    }
+    chomp $ENV{'PGPPASS'} if $ENV{'PGPPASS'};
+    # if PGPPASS is not now set and non-null, it will be prompted for by pgp
+  }
+
+  # -f = write to stdout
+  # -a = ciphertext file in ASCII radix-64 format
+  # -s = sign the plaintext file
+  # -t = plaintext file contains ASCII text, not binary, and
+  #      should be converted to recipient's local text line conventions
+  # -u = userid to use to sign
+  # +verbose=0 = only print errors on stderr
+  open(FH, "exec $pgp -fast -u $pgpsigner +verbose=0 < $tmp 2>/dev/null |") ||
+    die "$0: open pipe from pgp: $!\n";
+  
+  # whack any passphrase out of our environment.  don't let this kid 
+  # you, it does not stop snooping.
+  delete $ENV{'PGPPASS'};
+
+  $pgpbegin = "-----BEGIN PGP SIGNATURE-----";
+  $/ = "$pgpbegin\n";
+  $_ = <FH>;                         # read to signature, discard
+  die "$0: $pgpbegin not found in $_\n" unless /\Q$pgpbegin\E$/;
+
+  # make sure the temp file goes away even if we die now
+  unlink($tmp) || warn "$0: unlink $tmp: $!\n";
+
+  # finish getting the signature
+  $/ = "\n";
+  $_ = <FH>;
+  die "$0: didn't find PGP Version line where expected\n"
+    unless /^Version: (\S+)$/;
+  $header{$pgpheader} = "$1 $signheaders";
+
+  do {                # skip other pgp headers like "charset:" until empty line
+    $_ = <FH>;        # ... is charset significant to this application?
+  } while ! /^$/;
+
+  $pgpend = '-----END PGP SIGNATURE-----';
+  while (<FH>) {
+    chomp;
+    last if /^\Q$pgpend\E$/;
+    $header{$pgpheader} .= "\n\t$_";
+  }
+  $_ = <FH>;
+  die "$0: unexpected data following $pgpend\n" unless eof(FH);
+  close(FH) || warn "$0: close pipe from pgp returned status $?\n";
+
+  for (@ignoreheaders) {
+    delete $header{$_} if defined $header{$_};
+  }
+
+  $head = '';
+  foreach $header (@orderheaders) {
+    $head .= "$header: $header{$header}\n" if $header{$header};
+    delete $header{$header};
+  }
+
+  foreach $header (keys %header) {
+    die "$0: unexpected header $header left in header array\n";
+  }
+
+  print STDOUT $head;
+  print STDOUT "\n";
+  print STDOUT $body;
+}
+
+# Our lawyer told me to include the following.  The upshot of it is
+# that you can use the software for free as much as you like.
+
+# Copyright (c) 1996 UUNET Technologies, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. All advertising materials mentioning features or use of this software
+#    must display the following acknowledgement:
+#      This product includes software developed by UUNET Technologies, Inc.
+# 4. The name of UUNET Technologies ("UUNET") may not be used to endorse or
+#    promote products derived from this software without specific prior
+#    written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY UUNET ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL UUNET BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+# OF THE POSSIBILITY OF SUCH DAMAGE.
