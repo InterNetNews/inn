@@ -1118,12 +1118,12 @@ static void PERMreadfile(char *filename)
 		    curgroup = NEW(GROUP, 1);
 		    memset(curgroup, 0, sizeof(GROUP));
 		    memset(ConfigBit, '\0', ConfigBitsize);
-                    SetDefaultAuth(curgroup->auth);
 		}
 		if (curgroup->auth == NULL) {
 		    curgroup->auth = NEW(AUTHGROUP, 1);
 		    memset(curgroup->auth, 0, sizeof(AUTHGROUP));
 		    memset(ConfigBit, '\0', ConfigBitsize);
+                    SetDefaultAuth(curgroup->auth);
 		}
 
 		authdecl_parse(curgroup->auth, cf->f, tok);
@@ -1198,14 +1198,14 @@ static void PERMreadfile(char *filename)
 			syslog(L_TRACE, "Auth strategy '%s' does not match localhost.  Removing.",
 			   curauth->name == NULL ? "(NULL)" : curauth->name);
 			free_authgroup(curauth);
-		    }
-		    add_authgroup(curauth);
-		} else if (curauth->name) {
+		    } else
+			add_authgroup(curauth);
+		} else {
 		    syslog(L_TRACE, "Auth strategy '%s' does not match client.  Removing.",
 			   curauth->name == NULL ? "(NULL)" : curauth->name);
 		    free_authgroup(curauth);
 		}
-
+                curauth = NULL;
 		goto again;
 	    }
 
@@ -1215,10 +1215,11 @@ static void PERMreadfile(char *filename)
 	    if (tok->type == PERMrbrace) {
 		inwhat = 0;
 
-		if (curaccess->name) {
+		if (curaccess->name)
 		    add_accessgroup(curaccess);
-		}
-
+		else
+		    free_accessgroup(curaccess);
+		curaccess = NULL;
 		goto again;
 	    }
 
