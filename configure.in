@@ -181,14 +181,18 @@ AC_ENSURE_PATH_PROG(_PATH_EGREP,egrep)
 AC_ENSURE_PATH_PROG(_PATH_SORT,sort)
 AC_ENSURE_PATH_PROG(_PATH_SH,sh)
 
-AC_MSG_CHECKING(for Perl version)
-$_PATH_PERL -e 'require 5.004' > /dev/null 2>&1
-if test $? -ne 0 ; then
-	AC_MSG_ERROR(Perl 5.004 (or greater) is required)
-else
-	perl_version=`$_PATH_PERL -e 'print $]'`
-	AC_MSG_RESULT($perl_version)
-fi
+## perl5.004 is not required for building, but this code is
+## left here in case it, or something similar, needs to be
+## enabled later.  For example, we should probably check the
+## perl version for the purposes of embedded perl.
+# AC_MSG_CHECKING(for Perl version)
+# $_PATH_PERL -e 'require 5.004' > /dev/null 2>&1
+# if test $? -ne 0 ; then
+# 	AC_MSG_ERROR(Perl 5.004 (or greater) is required)
+# else
+# 	perl_version=`$_PATH_PERL -e 'print $]'`
+#	AC_MSG_RESULT($perl_version)
+# fi
 
 dnl Look for PGP 5.0's pgpv, or pgp if pgpv is not found
 pgpverify=true
