@@ -735,6 +735,7 @@ STORAGE_SUB *SMgetsub(const ARTHANDLE article) {
 		return sub;
 	}
     }
+    SMseterror(SMERR_UNDEFINED, "No entry in storage.conf matched token");
     return NULL;
 }
 
