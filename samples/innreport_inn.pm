@@ -262,9 +262,9 @@ sub collect {
       return 1;
     }
     # closed (with times)
-    if ($left =~ /(\S+):\d+ closed seconds (\d+) accepted (\d+) refused (\d+) rejected (\d+)$/o) {
-      my ($server, $seconds, $accepted, $refused, $rejected) =
-	($1, $2, $3, $4, $5);
+    if ($left =~ /(\S+):\d+ closed seconds (\d+) accepted (\d+) refused (\d+) rejected (\d+) duplicate (\d+) accepted size (\d+) duplicate size (\d+)$/o) {
+      my ($server, $seconds, $accepted, $refused, $rejected, $duplicate, $accptsize, $dupsize) =
+	($1, $2, $3, $4, $5, $6, $7, $8);
       $server = lc $server unless $CASE_SENSITIVE;
       $innd_seconds{$server} += $seconds;
       $innd_accepted{$server} += $accepted;
@@ -613,6 +613,8 @@ sub collect {
     return 1 if $left =~ /\S+ bad_newsfeeds no feeding sites/o;
     # CNFS-sm: cycbuff rollover - possibly interesting
     return 1 if $left =~ /CNFS-sm: cycbuff \S+ rollover to cycle/o;
+    # CNFS-sm: CNFSflushallheads: flushing - possibly interesting
+    return 1 if $left =~ /CNFS-sm: CNFSflushallheads: flushing /o;
   }
   ########
   ## innfeed
