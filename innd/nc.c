@@ -1185,10 +1185,12 @@ NCcreate(int fd, BOOL MustAuthorize, BOOL IsLocal)
 #endif	/* defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF) */
 
 #if	defined(SOL_SOCKET) && defined(SO_KEEPALIVE)
-    /* Set KEEPALIVE to catch broken socket connections. */
-    i = 1;
-    if (setsockopt(fd, SOL_SOCKET,  SO_KEEPALIVE, (char *)&i, sizeof i) < 0)
-        syslog(L_ERROR, "%s cant setsockopt(KEEPALIVE) %m", CHANname(cp));
+    if (!IsLocal) {
+	/* Set KEEPALIVE to catch broken socket connections. */
+	i = 1;
+	if (setsockopt(fd, SOL_SOCKET,  SO_KEEPALIVE, (char *)&i, sizeof i) < 0)
+	    syslog(L_ERROR, "%s cant setsockopt(KEEPALIVE) %m", CHANname(cp));
+    }
 #endif /* defined(SOL_SOCKET) && defined(SO_KEEPALIVE) */
 
     /* Now check our operating mode. */
