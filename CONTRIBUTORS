@@ -78,9 +78,21 @@ Sang-yong Suh:
 	Provided the fuzzy offset technique to dbz.
 
 Katsuhiro Kondou:
-	Provided unified overview as well has hundreds of fixes
-	to clean up defects as changes were made.  Did a large
-	amount of man page documentation and clean up.
+	Provided unified overview, trash method, spool translation method,
+	traditional expire policy for articles stored through storage api
+	and expireindex as well has hundreds of fixes to clean up defects
+	as changes were made.  Did a large amount of man page documentation
+	and clean up.
+
+
+Russell Vincent
+	Expanded inn.conf to make many of the old compile time options
+        into run time variables. Numerous bug fixes, small feature
+        enhancements and man updates.
+
+Darrell Fuhriman:
+	Provided various bug fixes and contributed to the pre-SM CNFS
+	development.
 
 Also:
 
@@ -101,10 +113,10 @@ testing (provided patches, bug reports, suggestions etc):
 Paul Vixie, Robert Elz, Evan Champion, Robert Keller, Barry Bouwsma,
 markd@mira.net.au, Ollivier Robert, Kevin Jameson, Heiko W. Rupp, Fletcher
 Mattox, Matus Uhlar, Gabor Kiss, Joe Greco, Matthias Scheler, Richard
-Michael Todd, Trevor Riley, Katsuhiro Kondou, Alex Bligh,
-J. Porter Clark, Alan Brown, Bert Hyman, Petter Nilsen, Gary E. Miller, Kim
-Culhan, Marc Baudoin, Neal Becker, Bjorn Knutsson, Stephen Marquard,
-Frederick Korz, Benedict Lofstedt, Dan Ellis, Joe Ramey, Odd Einar Aurbakken,
-Jon Lewis, Dan Riley, Peter Eriksson, Ken Lalonde, Sven Paulus, Koichi
-Mouri, J. Richard Sladkey, Trine Krogstad, Holger Burbach, Per Hedeland,
-Larry Rosenman, Andrew Burgess, Michael Brunnbauer
+Michael Todd, Trevor Riley, Alex Bligh, J. Porter Clark, Alan Brown,
+Bert Hyman, Petter Nilsen, Gary E. Miller, Kim Culhan, Marc Baudoin,
+Neal Becker, Bjorn Knutsson, Stephen Marquard, Frederick Korz, Benedict
+Lofstedt, Dan Ellis, Joe Ramey, Odd Einar Aurbakken, Jon Lewis, Dan
+Riley, Peter Eriksson, Ken Lalonde, Sven Paulus, Koichi Mouri, J. Richard
+Sladkey, Trine Krogstad, Holger Burbach, Per Hedeland, Larry Rosenman,
+Andrew Burgess, Michael Brunnbauer
