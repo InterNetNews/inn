@@ -176,12 +176,12 @@ ${DOEXPIRE} || {
 #
 if [ X${SAPI} = X"true" ]
 then
-    if [ -n "$DOEXPIREOVER" ] && [ -z "$DOEXPIRE" ]
+    if ${DOEXPIREOVER} && [ "$DOEXPIRE" = "false" ]
     then
 	echo "news.daily: cannot do expireover (expireindex) without expire">&2
 	exit 1
     fi
-    if [ -n "$DOEXPIREOVER" ] && [ -z "$RMFILE" ]
+    if {$DOEXPIREOVER} && [ -z "$RMFILE" ]
     then
 	echo "news.daily: cannot do expireover (expireindex) without delayrm">&2
 	exit 1
