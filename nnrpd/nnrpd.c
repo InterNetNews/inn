@@ -1014,7 +1014,7 @@ main(int argc, char *argv[])
     if (initialSSL) {
       sasl_config_read();
       ssl_result=tls_init_serverengine(5,        /* depth to verify */
-				       1,        /* can client auth? */
+				       0,        /* can client auth? */
 				       0,        /* required client to auth? */
 				       (char *)sasl_config_getstring("tls_ca_file", ""),
 				       (char *)sasl_config_getstring("tls_ca_path", ""),
