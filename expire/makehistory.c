@@ -732,7 +732,7 @@ DoMemArt(ARTHANDLE *art, BOOL Overview, BOOL Update, FILE *out, FILE *index, BOO
 	    for (p++; *p == ' '; p++);
 	    q = p;
 	    while ((p = strchr(p, ' ')) != NULL) {
-	        p = '\0';
+	        *p = '\0';
 	        i = fprintf(index, "[%s] %s\n", hash, q);
 	        if (i == EOF || ferror(index)) {
 		    (void)fprintf(stderr, "Can't write index line, %s\n", strerror(errno));
@@ -886,7 +886,7 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 			Xrefbuf[linelen - (OVERline - Xref)] = '\0';
 			p = q = Xrefbuf;
 			while ((p = strchr(p, ' ')) != NULL) {
-			    p = '\0';
+			    *p = '\0';
 			    i = fprintf(index, "[%s] %s\n", fields[0], q);
 			    if (i == EOF || ferror(index)) {
 				(void)fprintf(stderr, "Can't write index line, %s\n", strerror(errno));

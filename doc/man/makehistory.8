@@ -178,10 +178,10 @@ you can make new overview index file.  To do this,
 .PP
 .RS
 .nf
-.\" =()<sort index.file \&| @<_PATH_NEWSBIN>@/expireindex -a -o>()=
-sort index.file \&| /usr/news/bin/expireindex -a -o
+.\" =()<sort -t' ' +1 -2 file \&| @<_PATH_NEWSBIN>@/expireindex -a -o -z>()=
+sort -t' ' +1 -2 file \&| /usr/news/bin/expireindex -a -o -z
 .fi
-.PP
+.sp 1
 This flag is valid if ``\fB\-t\fP'' flag is used.
 .RE
 .TP
@@ -201,7 +201,7 @@ history files are overwritten.
 If the old database exists,
 .I makehistory
 will use it to determine the size of the new database.
-.PP
+.sp 1
 Note if ``\fB\-t\fP'' with ``H'' or ``h'' is specified together, ``\fB\-o\fP''
 will break old history and the operation is failed.
 .TP

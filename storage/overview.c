@@ -1,3 +1,8 @@
+/*  $Id$
+**
+**  unified overview processing
+*/
+
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -145,7 +150,7 @@ STATIC OVERCONFIG OVERreadconfig(BOOL New)
 		    DISPOSE(newpath);
 		    return OVER_ERROR;
 		}
-		if ((int)(addr = (char *)mmap(0, sb.st_size, PROT_READ, MAP_SHARED, fileno(fp), 0)) == -1) {
+		if (sb.st_size > 0 && (int)(addr = (char *)mmap(0, sb.st_size, PROT_READ, MAP_SHARED, fileno(fp), 0)) == -1) {
 		    syslog(L_ERROR, "OVER cant mmap overview file, line %d: %m", line);
 		    DISPOSE(dirpath);
 		    DISPOSE(newdirpath);
@@ -326,7 +331,7 @@ BOOL OVERreinit(void) {
 		    DISPOSE(path);
 	            return FALSE;
 		}
-		if ((int)(config->addr = (char *)mmap(0, sb.st_size, PROT_READ, MAP_SHARED, fileno(config->fp), 0)) == -1) {
+		if (sb.st_size > 0 && (int)(config->addr = (char *)mmap(0, sb.st_size, PROT_READ, MAP_SHARED, fileno(config->fp), 0)) == -1) {
 		    syslog(L_ERROR, "OVER cant mmap reopend overview file, index %d: %m", config->index);
 		    DISPOSE(path);
 	            return FALSE;

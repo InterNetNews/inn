@@ -142,7 +142,7 @@ CCcopyargv(av)
     /* Get the vector, copy each element. */
     for (v = CCargv = NEW(char*, i + 1); *av; av++) {
 	/* not to renumber */
-	if (strncmp(av[i], "-r", 2) == 0)
+	if (strncmp(*av, "-r", 2) == 0)
 	    continue;
 	*v++ = COPY(*av);
     }

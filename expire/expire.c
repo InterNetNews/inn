@@ -1558,7 +1558,7 @@ int main(int ac, char *av[])
 	    fprintf(stderr, "Can't setup unified overview path: %s\n", strerror(errno));
 	    exit(1);
 	}
-    if (StorageAPI)
+    if (StorageAPI) {
 	if (!OVERinit()) {
 	    fprintf(stderr, "Can't initialize unified overview: %s\n", strerror(errno));
 	    exit(1);
@@ -1567,6 +1567,7 @@ int main(int ac, char *av[])
 	    fprintf(stderr, "Can't initialize new unified overview: %s\n", strerror(errno));
 	    exit(1);
 	}
+    }
     arts = NEW(char*, nGroups);
     krps = NEW(enum KRP, nGroups);
     if ((qp = QIOopen(HistoryText)) == NULL) {

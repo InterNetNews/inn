@@ -218,7 +218,7 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
 		continue;
 	    }
 	    Hash = TextToHash(&Data[1]);
-	    for (p++; p == ' '; p++);
+	    for (p++; *p == ' '; p++);
 	    Xref = p;
 	    Unifiedover = TRUE;
 	}  else {
@@ -239,7 +239,7 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
 	    for (Xref++; *Xref == ' '; Xref++);
 	    Unifiedover = FALSE;
 	}
-	Xref = COPY(Xref + 1);
+	Xref = COPY(Xref);
 	for (p = Xref; *p; p++)
 	    if (*p == '.')
 		*p = '/';

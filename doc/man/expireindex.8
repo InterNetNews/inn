@@ -118,7 +118,11 @@ To perform no real updates, use the ``\fB\-n\fP'' flag.
 .B \-o
 If the ``\fB\-o\fP'' flag is used, then
 .I expireindex
-ignores all old verview index if it appends new index.
+ignores all old verview index before appending new index.
+.sp 1
+This flag should be used together with ``\fB\-z\fP'' flag and
+the input file should be sorted by newsgroup name.
+.sp 1
 This flag is valid if ``\fB\-a\fP'' is used.
 .TP
 .B \-q

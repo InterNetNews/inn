@@ -186,6 +186,44 @@ STATIC void WriteIndex(int fd)
     write(fd, OVERindexnew, count * OVERINDEXPACKSIZE);
 }
 
+/*
+**  Try to make one directory.  Return FALSE on error.
+*/
+STATIC BOOL MakeDir(char *Name)
+{
+    struct stat	Sb;
+
+    if (mkdir(Name, GROUPDIR_MODE) >= 0)
+	return TRUE;
+
+    /* See if it failed because it already exists. */
+    return stat(Name, &Sb) >= 0 && S_ISDIR(Sb.st_mode);
+}
+
+/*
+**  Make overview directory if not in spool directory.  Return 0 if ok,
+**  else -1.
+*/
+STATIC BOOL MakeOverDir(char *Name)
+{
+    char	*p;
+    BOOL	made;
+
+    /* Optimize common case -- parent almost always exists. */
+    if (MakeDir(Name))
+	return TRUE;
+
+    /* Try to make each of comp and comp/foo in turn. */
+    for (p = Name; *p; p++)
+	if (*p == '/') {
+	    *p = '\0';
+	    made = MakeDir(Name);
+	    *p = '/';
+	    if (!made)
+		return FALSE;
+	}
+    return MakeDir(Name);
+}
 
 /*
 **  Take in a sorted list of count article numbers in group, and delete
@@ -221,14 +259,21 @@ STATIC void RefreshLines(char *group, LIST *Refresh)
     (void)sprintf(ilockfile, "%s/.LCK%s.index", group, _PATH_OVERVIEW);
     ilfd = open(ilockfile, O_WRONLY | O_TRUNC | O_CREAT, ARTFILE_MODE);
     if (ilfd < 0) {
-	(void)fprintf(stderr, "Can't open %s, %s\n", ilockfile, strerror(errno));
-	return;
+	if (!MakeOverDir(group)) {
+	    (void)fprintf(stderr, "Can't mkdir %s, %s\n", group, strerror(errno));
+	    return;
+	}
+	ilfd = open(ilockfile, O_WRONLY | O_TRUNC | O_CREAT, ARTFILE_MODE);
+	if (ilfd < 0) {
+	    (void)fprintf(stderr, "Can't open %s, %s\n", ilockfile, strerror(errno));
+	    return;
+	}
     }
 
     /* Open file, lock it. */
     (void)sprintf(ifile, "%s/%s.index", group, _PATH_OVERVIEW);
     for (i = 0; i < 15; i++) {
-	if ((ifd = open(ifile, O_RDWR)) < 0) {
+	if ((ifd = open(ifile, O_RDWR | O_CREAT, ARTFILE_MODE)) < 0) {
 	    (void)fprintf(stderr, "Can't open %s, %s\n", ifile, strerror(errno));
 	    UnlockGroup(ilfd, ilockfile);
 	    return;
@@ -246,12 +291,12 @@ STATIC void RefreshLines(char *group, LIST *Refresh)
 	return;
     }
     if (fstat(ifd, &Sb) < 0) {
-	(void)fprintf(stderr, "Can't open %s, %s\n", ifile, strerror(errno));
+	(void)fprintf(stderr, "Can't stat %s, %s\n", ifile, strerror(errno));
 	UnlockGroup(ilfd, ilockfile);
 	(void)close(ifd);
 	return;
     }
-    if (Sb.st_size == 0) {
+    if (!Append && Sb.st_size == 0) {
 	/* Empty file; done deleting. */
 	UnlockGroup(ilfd, ilockfile);
 	(void)close(ifd);
@@ -263,7 +308,7 @@ STATIC void RefreshLines(char *group, LIST *Refresh)
     else
 	icount = Sb.st_size / OVERINDEXPACKSIZE;
     if (OVERmmap) {
-	if ((tmp = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, icount * OVERINDEXPACKSIZE,
+	if (icount != 0 && (tmp = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, icount * OVERINDEXPACKSIZE,
 	    PROT_READ, MAP__ARG, ifd, 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
 	    (void)fprintf(stderr, "cant mmap index %s, %s\n", ifile, strerror(errno));
 	    UnlockGroup(ilfd, ilockfile);
@@ -281,8 +326,7 @@ STATIC void RefreshLines(char *group, LIST *Refresh)
     }
     if (OVERindex) {
 	if (OVERmmap) {
-	    if ((munmap((MMAP_PTR)OVERindex, OVERicount * OVERINDEXPACKSIZE)) < 0)
-		(void)fprintf(stderr, "cant munmap index %s, %s\n", ifile, strerror(errno));
+	    munmap((MMAP_PTR)OVERindex, OVERicount * OVERINDEXPACKSIZE);
 	} else {
 	    DISPOSE(OVERindex);
 	}
@@ -318,7 +362,7 @@ STATIC void RefreshLines(char *group, LIST *Refresh)
     /* Remove duplicates. */
     for (i = 1; i < OVERicount; i++)
 	if (ARTnumbers[i].ArtNum == ARTnumbers[i-1].ArtNum)
-	    ARTnumbers[i].ArtNum = 0;
+	    ARTnumbers[i-1].ArtNum = 0;
 
     if (!Append) {
         /* Scan through lines, collecting clumps and skipping holes. */
@@ -423,7 +467,7 @@ STATIC void Expire(BOOL SortedInput, QIOSTATE *qp)
 		    (void)strcpy(group, p);
 		    List.Used = 0;
 		}
-		hash = TextToHash(line);
+		hash = TextToHash(++line);
 		LISTappend(&List, atol(q), &hash);
 	    } else {
 		if ((p = strrchr(line, ':')) == NULL)
@@ -504,7 +548,7 @@ STATIC void Expire(BOOL SortedInput, QIOSTATE *qp)
 		    if (*r == '.')
 			*r = '/';
 		List.Used = 0;
-		hash = TextToHash(line);
+		hash = TextToHash(++line);
 		LISTappend(&List, atol(q), &hash);
 		RefreshLines(p, &List);
 	    } else {
