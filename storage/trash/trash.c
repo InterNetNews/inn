@@ -1,18 +1,11 @@
 /*  $Id$
 **
-**  trashing articles method
+**  Trashing articles method
 */
-
-#include <stdio.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <sys/types.h>
-#include <configdata.h>
-#include <clibrary.h>
-#include <macros.h>
-#include <libinn.h>
-#include <methods.h>
-#include "paths.h"
+#include "config.h"
+#include "clibrary.h"
+#include "libinn.h"
+#include "methods.h"
 
 BOOL trash_init(BOOL *selfexpire) {
     *selfexpire = TRUE;
