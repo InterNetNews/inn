@@ -67,9 +67,12 @@ struct hisv6_walkstate {
 	bool (*walk)(void *, time_t, time_t, time_t, const TOKEN *);
     } cb;
     void *cookie;
+    bool paused;
+    bool ignore;
+    /* the next two fields are only used during expire... they should
+     * probably be linked off of cookie, but I've been lazy */
     struct hisv6 *new;
     time_t threshold;
-    bool paused;
 };
 
 /* maximum length of the string from hisv6_errloc */
