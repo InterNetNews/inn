@@ -299,6 +299,12 @@ rmgroup:group-admin@usenet.be:be.*:verify-be.announce.newgroups
 newgroup:news@*ibl.bm:bermuda.*:doit
 rmgroup:news@*ibl.bm:bermuda.*:doit
 
+## BES (*PRIVATE* -- Bejing Electron Spectrometer)
+# Contact: news@news.stanford.edu
+# Limited distribution hierarchy, contact the above address for information.
+newgroup:news@news.stanford.edu:bes.*:mail
+rmgroup:news@news.stanford.edu:bes.*:doit
+
 ## BEST (*LOCAL* -- Best Internet Communications, Inc.)
 # Contact: news@best.net
 # For local use only, contact the above address for information.
