@@ -338,7 +338,6 @@ extern char *    GetModeratorAddress(FILE *FromServer, FILE *ToServer,
                                      char *group, char *moderatormailer); 
 extern void  ClearInnConf(void);
 extern int ReadInnConf(void);
-extern const char *cpcatpath(const char *p, const char *f);
 
 #define TEMPORARYOPEN   0
 #define INND_HISTORY    1
