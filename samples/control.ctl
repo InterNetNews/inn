@@ -205,6 +205,7 @@ newgroup:newsbastard@arkane.demon.co.uk:arkane.*:doit
 rmgroup:newsbastard@arkane.demon.co.uk:arkane.*:doit
 
 ## AT (Austria)
+# URL: http://www.usenet.at/
 checkgroups:control@usenet.backbone.at:at.*:doit
 newgroup:control@usenet.backbone.at:at.*:doit
 rmgroup:control@usenet.backbone.at:at.*:doit
@@ -500,12 +501,14 @@ newgroup:control@bentium.com:cn.*:verify-cn.admin.news.announce
 rmgroup:control@bentium.com:cn.*:verify-cn.admin.news.announce
 
 ## CN.BBS (China)
+# Admin group: cn.bbs.admin.announce
+# Key URL: http://www.cn-bbs.org/pubkey-cn.bbs.admin.announce
 # *PGP*   See comment at top of file.
 newgroup:*:cn.bbs.*:drop
 rmgroup:*:cn.bbs.*:drop
-checkgroups:news@zixia.net:cn.bbs.*:verify-cn.bbs.admin.announce
-newgroup:news@zixia.net:cn.bbs.*:verify-cn.bbs.admin.announce
-rmgroup:news@zixia.net:cn.bbs.*:verify-cn.bbs.admin.announce
+checkgroups:control@cn-bbs.org:cn.bbs.*:verify-cn.bbs.admin.announce
+newgroup:control@cn-bbs.org:cn.bbs.*:verify-cn.bbs.admin.announce
+rmgroup:control@cn-bbs.org:cn.bbs.*:verify-cn.bbs.admin.announce
 
 ## CO (Colorado, USA)
 # Contact: coadmin@boyznoyz.com (Bill of Denver)
@@ -724,6 +727,16 @@ rmgroup:*:example.*:doit
 #
 newgroup:*:fa.*:mail
 rmgroup:*:fa.*:doit
+
+## FFM (Frankfurt/M., Germany)
+# URL: http://ffm.arcornews.de/
+# Key URL: ftp://ftp.arcor-online.net/pub/news/PGPKEY.FFM
+# *PGP*   See comment at top of file.
+newgroup:*:ffm.*:drop
+rmgroup:*:ffm.*:drop
+checkgroups:ffm.admin@arcor.de:ffm.*:verify-ffm.admin
+newgroup:ffm.admin@arcor.de:ffm.*:verify-ffm.admin
+rmgroup:ffm.admin@arcor.de:ffm.*:verify-ffm.admin
 
 ## FIDO (FidoNet)
 checkgroups:root@mbh.org:fido.*:doit
@@ -1416,6 +1429,19 @@ rmgroup:control@usenet.no:no.alt.*:verify-no-hir-control
 # newgroup:thilo@own.deceiver.org:nord.*:doit
 # rmgroup:thilo@own.deceiver.org:nord.*:doit
 
+## NRW (Northrine-Westfalia, Germany)
+# Contact: moderator@nrw.usenetverwaltung.de
+# URL: http://nrw.usenetverwaltung.de/
+# Admin group: nrw.admin.announce
+# Key URL: http://nrw.usenetverwaltung.de/pgp/nrw.asc
+# Key fingerprint = 13 4A 80 FE D6 34 B4 64  AF 32 08 3F 62 0E B1 E2
+# *PGP*   See comment at top of file.
+newgroup:*:nrw.*:drop
+rmgroup:*:nrw.*:drop
+checkgroups:moderator@nrw.usenetverwaltung.de:nrw.*:verify-moderator@nrw.usenetverwaltung.de
+newgroup:moderator@nrw.usenetverwaltung.de:nrw.*:verify-moderator@nrw.usenetverwaltung.de
+rmgroup:moderator@nrw.usenetverwaltung.de:nrw.*:verify-moderator@nrw.usenetverwaltung.de
+
 ## NV (Nevada)
 checkgroups:cshapiro@netcom.com:nv.*:doit
 checkgroups:doctor@netcom.com:nv.*:doit
@@ -1549,6 +1575,7 @@ rmgroup:news@toads.pgh.pa.us:pitt.*:doit
 ## PL (Poland and Polish language)
 # URL: http://www.ict.pwr.wroc.pl/doc/news-pl-new-site-faq.html
 # Admin group: pl.news.admin
+# Key URL: http://www.usenet.pl/doc/news-pl-new-site-faq.html#pgp
 # *PGP*   See comment at top of file.
 newgroup:*:pl.*:drop
 rmgroup:*:pl.*:drop
@@ -1958,9 +1985,12 @@ newgroup:newsadmin@news.uoregon.edu:uo.*:doit
 rmgroup:newsadmin@news.uoregon.edu:uo.*:doit
 
 ## US (United States of America)
-checkgroups:uscontrol@earthlink.net:us.*:doit
-newgroup:uscontrol@earthlink.net:us.*:doit
-rmgroup:uscontrol@earthlink.net:us.*:doit
+# Contact: admin@usenetnews.us
+# URL: http://www.usenetnews.us/
+# Admin group: us.config
+checkgroups:control@usenetnews.us:us.*:doit
+newgroup:control@usenetnews.us:us.*:doit
+rmgroup:control@usenetnews.us:us.*:doit
 
 ## UT (University of Toronto, Canada)
 # newgroup:news@ecf.toronto.edu:ut.*:doit
