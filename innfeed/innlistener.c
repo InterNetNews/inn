@@ -371,7 +371,7 @@ void openInputFile (void)
       if (offset > 0 && *p == '\n')
 	lseek (mainFd, offset, SEEK_SET) ;
       else
-	lseek (mainFd, 0, SEEK_SET) ;
+	lseek (mainFd, (OFFSET_T)0, SEEK_SET) ;
     }
   syslog(LOG_NOTICE, "ME opened %s", InputFile);
 }
@@ -702,14 +702,14 @@ static void writeCheckPoint (int offsetAdjust)
   int writeBytes, writeReturn, mainFd ;
 	      
   mainFd = getMainEndPointFd() ;
-  offset = lseek (mainFd, 0L, SEEK_CUR) ;
+  offset = lseek (mainFd, (OFFSET_T)0, SEEK_CUR) ;
   if (offset < 0)
     syslog (LOG_ERR, "ME tell(mainFd): %m") ;
   else
     {
       (void) sprintf (offsetString, "%ld\n",
 		      (long)(offset - offsetAdjust) ) ;
-      if ( lseek (mainFd, 0L, SEEK_SET) != 0 )
+      if ( lseek (mainFd, (OFFSET_T)0, SEEK_SET) != 0 )
 	syslog (LOG_ERR, "ME seek(mainFd, 0, 0): %m") ;
       else
 	{
