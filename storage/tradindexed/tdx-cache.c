@@ -13,6 +13,7 @@
 #include <time.h>
 
 #include "inn/hashtab.h"
+#include "inn/messages.h"
 #include "libinn.h"
 #include "storage.h"
 #include "tdx-private.h"
