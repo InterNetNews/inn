@@ -170,7 +170,11 @@ if (! $keyring && $inn'newsetc) {
   $keyring = $inn'newsetc . '/pgp' if -d $inn'newsetc . '/pgp';
 }
 
-if (! -x $pgp) {
+if ($gpgv) {
+  if (! -x $gpgv) {
+    &fail("$0: $gpgv: " . (-e _ ? "cannot execute" : "no such file") . "\n");
+  }
+} elsif (! -x $pgp) {
   &fail("$0: $pgp: " . (-e _ ? "cannot execute" : "no such file") . "\n");
 }
 
@@ -343,9 +347,9 @@ sub gpg_check {
 
   $opts = '--quiet --status-fd=1 --logger-fd=1';
   if ($ring) {
-    $opts .= " --keyring=$ring/pubring.pgp";
+    $opts .= " --keyring=$ring/pubring.gpg";
   } else {
-    $opts .= " --keyring=pubring.pgp";
+    $opts .= " --keyring=pubring.gpg";
   }
 
   open(PGP, "$gpgv $opts $file 2> /dev/null |") ||
