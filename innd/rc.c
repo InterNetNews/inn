@@ -814,11 +814,10 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	if (peer_params.Label != NULL) {
 	  RCadddata(data, &infocount, K_END_PEER, T_STRING, NULL);
 
-	  /* Hostname */
-	  if (peer_params.Name == NULL) {
-	    syslog(L_ERROR, HOST_NEEDED, LogName, filename, linecount);
-	    break;
-	  }
+	  /* Hostname defaults to label if not given */
+	  if (peer_params.Name == NULL)
+            peer_params.Name = COPY(peer_params.Label);
+
 	  for(r = q = RCCommaSplit(COPY(peer_params.Name)); *q != NULL; q++) {
 	    (*count)++;
 
