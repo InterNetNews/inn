@@ -135,9 +135,14 @@ STATIC BOOL GROUPlockhash(LOCKTYPE type);
 STATIC BOOL GROUPlock(GROUPLOC gloc, LOCKTYPE type);
 STATIC BOOL GROUPfilesize(int count);
 STATIC BOOL GROUPexpand(int mode);
-/* STATIC */ BOOL OV3packgroup(char *group, int delta);
+STATIC BOOL OV3packgroup(char *group, int delta);
 STATIC BOOL OV3readschema(void);
 STATIC char *OV3gen(char *name);
+STATIC void OV3cleancache(void);
+STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, char *data, int len);
+STATIC void OV3getdirpath(char *group, char *path);
+STATIC void OV3getIDXfilename(char *group, char *path);
+STATIC void OV3getDATfilename(char *group, char *path);
 
 BOOL OV3open(int cachesize, int mode) {
     char                dirname[1024];
@@ -512,7 +517,7 @@ STATIC void OV3closegroupfiles(GROUPHANDLE *gh) {
 }
 
 
-void OV3cleancache(void) {
+STATIC void OV3cleancache(void) {
     int                 i;
     CACHEENTRY          *ce, *prev;
     CACHEENTRY          *saved = NULL;
@@ -627,7 +632,7 @@ BOOL OV3closegroup(GROUPHANDLE *gh) {
     return TRUE;
 }
 
-BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, char *data, int len) {
+STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, char *data, int len) {
     INDEXENTRY          ie;
     int                 base;
     
@@ -842,7 +847,8 @@ BOOL OV3getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *tok
     OV3closesearch(handle);
     return retval;
 }
-void OV3getdirpath(char *group, char *path) {
+
+STATIC void OV3getdirpath(char *group, char *path) {
     char                *sepgroup;
     char                *p;
     char                **groupparts = NULL;
@@ -865,7 +871,7 @@ void OV3getdirpath(char *group, char *path) {
     freeargify(&groupparts);
 }
 
-void OV3getIDXfilename(char *group, char *path) {
+STATIC void OV3getIDXfilename(char *group, char *path) {
     char                *p;
 
     OV3getdirpath(group, path);
@@ -873,7 +879,7 @@ void OV3getIDXfilename(char *group, char *path) {
     sprintf(p, "%s.IDX", group);
 }
 
-void OV3getDATfilename(char *group, char *path) {
+STATIC void OV3getDATfilename(char *group, char *path) {
     char                *p;
 
     OV3getdirpath(group, path);
@@ -885,8 +891,7 @@ void OV3getDATfilename(char *group, char *path) {
  * Shift group index file so it has lower value of base.
  */
 
-/* STATIC */ BOOL
-OV3packgroup(char *group, int delta) {
+STATIC BOOL OV3packgroup(char *group, int delta) {
     char                newgroup[BIG_BUFFER];
     char                bakgroup[BIG_BUFFER];
     GROUPENTRY		*ge;
@@ -1255,6 +1260,7 @@ BOOL OV3rebuilddatafromindex(char *group) {
 void OV3close(void) {
     int                 i;
     CACHEENTRY          *ce, *next;
+    struct stat         sb;
 
     for (i = 0; i < CACHETABLESIZE; i++) {
 	for (ce = CACHEdata[i]; ce != NULL; ce = ce->next) {
@@ -1262,7 +1268,18 @@ void OV3close(void) {
 	}
 	for (ce = CACHEdata[i]; ce != NULL; ce = next) {
 	    next = ce->next;
+	    ce->next = NULL;
 	    DISPOSE(ce);
+	}
+    }
+    if (fstat(GROUPfd, &sb) < 0)
+	return;
+    close(GROUPfd);
+
+    if (GROUPheader) {
+	if (munmap((void *)GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
+	    syslog(L_FATAL, "Could not munmap group.index in OV3close: %m");
+	    return;
 	}
     }
 }
