@@ -441,10 +441,9 @@ Requested New Features
   would be worth trying ternary search trees to see if they're faster; the
   data structure is simpler, performance may be comparable for hits and
   significantly better for misses, sizing and resizing becomes a non-issue,
-  and the space penalty isn't too bad.  For more information, see
-  <http://www.ddj.com/articles/1998/9804/9804a/9804a.htm>.  A generic
-  implementation in libinn may be usable in many places.  (An even better
-  place to use ternary search trees may be the configuration parser.)
+  and the space penalty isn't too bad.  A generic implementation is already
+  available in libinn.  (An even better place to use ternary search trees
+  may be the configuration parser.)
 
 * Provide an innshellvars equivalent for Python.
 
