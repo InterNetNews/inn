@@ -5,10 +5,9 @@ include ../Makefile.global
 CFLAGS        = $(GCFLAGS)
 
 ALL           = actmerge actsync actsyncd archive batcher buffchan \
-		controlbatch controlchan cvtbatch filechan gpgverify inndf \
-		innxmit innxbatch mod-active news2mail nntpget nntpsend \
-		overchan pgpverify send-ihave send-nntp send-uucp sendbatch \
-		sendxbatches shlock shrinkfile
+		cvtbatch filechan inndf innxmit innxbatch mod-active \
+		news2mail nntpget nntpsend overchan send-ihave send-nntp \
+		send-uucp sendbatch sendxbatches shlock shrinkfile
 
 SOURCES       = actsync.c archive.c batcher.c buffchan.c cvtbatch.c \
 		filechan.c inndf.c innxbatch.c innxmit.c map.c nntpget.c \
@@ -20,11 +19,8 @@ INSTALLED     = $(D)$(PATHBIN)/actmerge		\
 		$(D)$(PATHBIN)/archive		\
 		$(D)$(PATHBIN)/batcher		\
 		$(D)$(PATHBIN)/buffchan		\
-		$(D)$(PATHBIN)/controlbatch	\
-		$(D)$(PATHBIN)/controlchan	\
 		$(D)$(PATHBIN)/cvtbatch		\
 		$(D)$(PATHBIN)/filechan		\
-		$(D)$(PATHBIN)/gpgverify	\
 		$(D)$(PATHBIN)/inndf		\
 		$(D)$(PATHBIN)/innxmit		\
 		$(D)$(PATHBIN)/innxbatch	\
@@ -33,7 +29,6 @@ INSTALLED     = $(D)$(PATHBIN)/actmerge		\
 		$(D)$(PATHBIN)/nntpget		\
 		$(D)$(PATHBIN)/nntpsend		\
 		$(D)$(PATHBIN)/overchan		\
-		$(D)$(PATHBIN)/pgpverify	\
 		$(D)$(PATHBIN)/send-ihave	\
 		$(D)$(PATHBIN)/send-nntp	\
 		$(D)$(PATHBIN)/send-uucp	\
@@ -85,13 +80,9 @@ filechan:	filechan.o map.o $(LIBINN)
 
 actmerge:	actmerge.in      $(FIX)	; $(FIX) actmerge.in
 actsyncd:	actsyncd.in      $(FIX)	; $(FIX) actsyncd.in
-controlbatch:	controlbatch.in  $(FIX)	; $(FIX) controlbatch.in
-controlchan:	controlchan.in   $(FIX) ; $(FIX) controlchan.in
-gpgverify:	gpgverify.in     $(FIX) ; $(FIX) gpgverify.in
 mod-active:	mod-active.in    $(FIX)	; $(FIX) mod-active.in
 news2mail:	news2mail.in     $(FIX)	; $(FIX) news2mail.in
 nntpsend:	nntpsend.in      $(FIX)	; $(FIX) nntpsend.in
-pgpverify:	pgpverify.in     $(FIX)	; $(FIX) pgpverify.in
 send-ihave:	send-ihave.in    $(FIX)	; $(FIX) send-ihave.in
 send-nntp:	send-nntp.in     $(FIX)	; $(FIX) send-nntp.in
 send-uucp:	send-uucp.in     $(FIX)	; $(FIX) send-uucp.in
@@ -112,11 +103,8 @@ $(D)$(PATHBIN)/actsyncd:            actsyncd            ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/archive:             archive             ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/batcher:             batcher             ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/buffchan:            buffchan            ; $(LI_XPUB) $? $@
-$(D)$(PATHBIN)/controlbatch:        controlbatch        ; $(CP_XPRI) $? $@
-$(D)$(PATHBIN)/controlchan:         controlchan         ; $(CP_XPRI) $? $@
 $(D)$(PATHBIN)/cvtbatch:            cvtbatch            ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/filechan:            filechan            ; $(LI_XPUB) $? $@
-$(D)$(PATHBIN)/gpgverify:           gpgverify           ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/inndf:               inndf               ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/innxbatch:           innxbatch           ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/innxmit:             innxmit             ; $(LI_XPUB) $? $@
@@ -125,7 +113,6 @@ $(D)$(PATHBIN)/news2mail:           news2mail           ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/nntpget:             nntpget             ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/nntpsend:            nntpsend            ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/overchan:            overchan            ; $(LI_XPRI) $? $@
-$(D)$(PATHBIN)/pgpverify:           pgpverify           ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/send-ihave:          send-ihave          ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/send-nntp:           send-nntp           ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/send-uucp:           send-uucp           ; $(CP_XPUB) $? $@
