@@ -6,11 +6,11 @@ CFLAGS	= $(GCFLAGS)
 
 SOURCES	=	archive.c batcher.c buffchan.c cvtbatch.c filechan.c \
 		innxmit.c innxbatch.c nntpget.c shlock.c \
-		shrinkfile.c crosspost.c actsync.c inndf.c overchan.c
+		shrinkfile.c actsync.c inndf.c overchan.c
 
 ALL	=	archive batcher buffchan cvtbatch filechan \
 		innxmit innxbatch nntpget shlock \
-		shrinkfile crosspost actsync actsyncd actmerge \
+		shrinkfile actsync actsyncd actmerge \
 		sendxbatches inndf overchan
 
 all:		$(ALL)
@@ -60,9 +60,6 @@ sendxbatches:	$(P) sendxbatches.sh
 	rm -f $@
 	cp $? $@
 	chmod +x $@
-
-crosspost:	$(P) crosspost.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ crosspost.o $(LIBNEWS) $(LIBS)
 
 actsync:	$(P) actsync.o $(LIBNEWS)
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ actsync.o $(LIBNEWS) $(LIBS)
