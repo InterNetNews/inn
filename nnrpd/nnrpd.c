@@ -16,9 +16,9 @@
 #include <pwd.h>
 #include <grp.h>
 #include <signal.h>
-#if	defined(HPUX)
+#if	defined(_HPUX_SOURCE)
 #include <sys/pstat.h>
-#endif	/* defined(HPUX) */
+#endif	/* defined(_HPUX_SOURCE) */
 #if HAVE_GETSPNAM
 #  include <shadow.h>
 #endif /* HAVE_GETSPNAM */
@@ -63,10 +63,10 @@ char 	LocalLogFileName[256];
 STATIC double	STATstart;
 STATIC double	STATfinish;
 STATIC char	*PushedBack;
-#if	!defined(HPUX)
+#if	!defined(_HPUX_SOURCE)
 STATIC char	*TITLEstart;
 STATIC char	*TITLEend;
-#endif	/* !defined(HPUX) */
+#endif	/* !defined(_HPUX_SOURCE) */
 STATIC sig_atomic_t	ChangeTrace;
 BOOL	DaemonMode = FALSE;
 #if HAVE_GETSPNAM
@@ -263,7 +263,7 @@ TITLEset(what)
 #if defined(HAVE_SETPROCTITLE)
     setproctitle("%s %s", ClientHost, what);
 #else
-#if	!defined(HPUX)
+#if	!defined(_HPUX_SOURCE)
     register char	*p;
     register int	i;
     char		buff[BUFSIZ];
@@ -288,7 +288,7 @@ TITLEset(what)
     (void)sprintf(buff, "(nnrpd) %s %s", ClientHost, what);
     un.pst_command = buff;
     (void)pstat(PSTAT_SETCMD, un, strlen(buff), 0, 0);
-#endif	/* defined(HPUX) */
+#endif	/* !defined(_HPUX_SOURCE) */
 #endif	/* defined(HAVE_SETPROCTITLE) */
 }
 
@@ -614,11 +614,11 @@ main(int argc, char *argv[], char *env[])
     GID_T		shadowgid;
 #endif /* HAVE_GETSPNAM */
 
-#if	!defined(HPUX)
+#if	!defined(_HPUX_SOURCE)
     /* Save start and extent of argv for TITLEset. */
     TITLEstart = argv[0];
     TITLEend = argv[argc - 1] + strlen(argv[argc - 1]) - 1;
-#endif	/* !defined(HPUX) */
+#endif	/* !defined(_HPUX_SOURCE) */
 
     /* Parse arguments.   Must COPY() optarg if used because the
      * TITLEset() routine would clobber it! */

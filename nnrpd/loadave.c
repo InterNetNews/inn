@@ -57,7 +57,7 @@ GetLoadAverage()
     if (fd < 0)
 	return -1;
 
-#if	defined(HPUX)
+#if	defined(_HPUX_SOURCE)
     (void)nlist("/hp-ux", NameList);
 #else
 #if	defined(SUNOS5)
