@@ -224,6 +224,7 @@ AC_SUBST(LOG_COMPRESSEXT)
 dnl FIXME: hostname is more reliable on most systems; uname may truncate.
 HOSTNAME=`uname -n`
 AC_SUBST(HOSTNAME)
+AC_CANONICAL_HOST
 
 dnl If libtool was requested, configure it now.
 if test x"$EXTOBJ" = xlo ; then
@@ -242,6 +243,21 @@ dnl System specific checks.
 AC_AIX
 AC_ISC_POSIX
 
+case "$host" in
+  *hpux*)
+    if test "$GCC" != "yes"; then
+      # Need flag to turn on ANSI
+      CFLAGS="$CFLAGS -Ae"
+      # Need -g on link command for debug to work properly
+      case "$CFLAGS" in
+        *-g*)
+          LDFLAGS="$LDFLAGS -g"
+        ;;
+      esac
+    fi
+  ;;
+esac
+  
 dnl Checks for pathnames.
 
 dnl See if we have ctags; if so, set CTAGS to its full path plus the -t -w
@@ -473,9 +489,19 @@ dnl If configuring with large file support, use getconf to set our compile
 dnl and link flags and check for some necessary functions.
 if test x"$DO_LFS" = xDO ; then
     AC_MSG_CHECKING(for largefile linkage)
-    LFS_CFLAGS=`$GETCONF LFS_CFLAGS`
-    LFS_LDFLAGS=`$GETCONF LFS_LDFLAGS`
-    LFS_LIBS=`$GETCONF LFS_LIBS`
+    case "$host" in
+      *hpux*)
+        # HP doesn't have the getconf flags
+        LFS_CFLAGS="-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+        LFS_LDFLAGS=""
+        LFS_LIBS=""
+	;;
+      *)
+        LFS_CFLAGS=`$GETCONF LFS_CFLAGS`
+        LFS_LDFLAGS=`$GETCONF LFS_LDFLAGS`
+        LFS_LIBS=`$GETCONF LFS_LIBS`
+	;;
+    esac
     AC_SUBST(LFS_CFLAGS)
     AC_SUBST(LFS_LDFLAGS)
     AC_SUBST(LFS_LIBS)
@@ -1101,18 +1127,6 @@ case "$inn_cv_sys_os" in
     fi
   ;;
 
-  HP-UX)
-    if test "$GCC" != "yes"; then
-      # Need flag to turn on ANSI
-      CFLAGS="$CFLAGS -Ae"
-      # Need -g on link command for debug to work properly
-      case "$CFLAGS" in
-        *-g*)
-          LDFLAGS="$LDFLAGS -g"
-        ;;
-      esac
-    fi
-  ;;
 esac
 AC_SUBST(CFLAGS)
 AC_SUBST(CXX)
