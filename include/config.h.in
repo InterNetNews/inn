@@ -216,6 +216,9 @@
 /* Mode that directories are created with.  */
 #undef GROUPDIR_MODE
 
+/* Define if you have the flock function.  */
+#undef HAVE_FLOCK
+
 /* Define if your msync() takes three arguments.  */
 #undef HAVE_MSYNC_3_ARG
 
@@ -293,9 +296,6 @@
 
 /* Define if you have the fcntl function.  */
 #undef HAVE_FCNTL
-
-/* Define if you have the flock function.  */
-#undef HAVE_FLOCK
 
 /* Define if you have the fseeko function.  */
 #undef HAVE_FSEEKO
@@ -494,9 +494,6 @@
 
 /* Define if you have the <wait.h> header file.  */
 #undef HAVE_WAIT_H
-
-/* Define if you have the bsd library (-lbsd).  */
-#undef HAVE_LIBBSD
 
 /* Define if you have the elf library (-lelf).  */
 #undef HAVE_LIBELF

@@ -438,9 +438,6 @@ AC_CHECK_LIB(shadow, getspnam)
 dnl FIXME: This should be combined with AC_FUNC_GETLOADAVG
 AC_CHECK_LIB(elf, nlist)
 
-dnl AIX needs libbsd for flock().
-AC_CHECK_LIB(bsd, flock)
-
 dnl FIXME: This is only used by the keywords code in innd/art.c and
 dnl shouldn't be in the global LIBS variable.
 AC_CHECK_LIB(regex, regexec)
@@ -734,10 +731,10 @@ dnl FIXME: pwrite and pread should be in REPLACE_FUNCS instead.
 
 AC_CHECK_FUNC(syslog, , AC_MSG_ERROR(syslog not found, required by INN))
 
-AC_CHECK_FUNCS(atexit fchmod gethostname getpagesize getrusage getspnam \
-               gettimeofday mkfifo pread pwrite setbuffer sigaction \
-               setsid socketpair strcspn strncasecmp strstr strtoul \
-               symlink waitpid)
+AC_CHECK_FUNCS(atexit fchmod fcntl gethostname getpagesize getrusage \
+               getspnam gettimeofday mkfifo pread pwrite setbuffer \
+               sigaction setsid socketpair strcspn strncasecmp strstr \
+               strtoul symlink waitpid)
 
 dnl We only care if we have setreuid() if we don't have seteuid().
 AC_CHECK_FUNCS(seteuid setreuid, break)
@@ -749,8 +746,14 @@ dnl Check for sysconf, getdtablesize, and then ulimit in that order; we'll
 dnl use them to figure out our current file descriptor limit.
 AC_CHECK_FUNCS(sysconf getdtablesize ulimit, break)
 
-dnl Locking style.
-AC_CHECK_FUNCS(flock lockf fcntl)
+dnl If we don't have fcntl, try to find another locking function.
+if test x"$ac_cv_func_fcntl" = xno ; then
+    AC_CHECK_FUNC(flock, AC_DEFINE(HAVE_FLOCK),
+        AC_CHECK_LIB(bsd, flock, 
+                     AC_DEFINE(HAVE_FLOCK)
+                     LIBS="-lbsd $LIBS",
+                     [AC_CHECK_FUNCS(lockf)]))
+fi
 
 dnl If we can't find any of the following, we have replacements for them.
 AC_REPLACE_FUNCS(getopt memchr memcpy memmove memset strcasecmp strchr \

@@ -153,6 +153,9 @@
 /* Mode that directories are created with.  */
 #undef GROUPDIR_MODE
 
+/* Define if you have the flock function.  */
+#undef HAVE_FLOCK
+
 /* Define if your msync() takes three arguments.  */
 #undef HAVE_MSYNC_3_ARG
 
