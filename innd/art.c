@@ -693,6 +693,10 @@ BOOL ARTidok(const char *MessageID)
     int	                c;
     const char	        *p;
 
+    /* Check the length of the message ID. */
+    if (MessageID == NULL || strlen(MessageID) > NNTP_MSGID_MAXLEN)
+        return FALSE;
+
     /* Scan local-part:  "< atom|quoted [ . atom|quoted]" */
     p = MessageID;
     if (*p++ != '<')
