@@ -1,16 +1,12 @@
 ##  $Revision$
-SHELL	= /bin/sh
-MAKE	= make
-DESTDIR	=
-D	= $(DESTDIR)
+.include ../Makefile.global
+
 IFTRUE	= @$(SHELL) ../iftrue.sh
 
 CONF	= config.data
 FILE	= files.list
 LIST	= `grep -v '^;' <$(FILE)`
 BACKUP	= backup.tar
-
-CC=@CC@
 
 INTERPLIST = inncheck innmail innreport.pl pgpverify scanspool
 
@@ -22,7 +18,6 @@ CHECKIN		= $(SRCCTL)-checkin
 ##  If you use the script version of subst, and your version of sed chokes
 ##  then get FSF sed and edit the next line as appropriate.
 #SED	= -e /usr/gnu/bin/sed
-
 
 all:                    quiet
 

@@ -1,19 +1,12 @@
 ##  $Revision$
-SHELL	= /bin/sh
-MAKE	= make
+.include ../Makefile.global
+
 IFTRUE	= @$(SHELL) ../iftrue.sh
 
 ##  =()<P	= @<P>@>()=
 P	= 
 ##  =()<PERLINC = @<PERL_INC>@>()=
 PERLINC = 
-
-CC      = @CC@
-CFLAGS  = -I../include @CPPFLAGS@ $(PERLINC) @CFLAGS@
-LDFLAGS = @LDFLAGS@
-LIBS    = @LIBS@
-RANLIB	= @RANLIB@
-YACC	= @YACC@
 
 ##  =()<LINTLIBSTYLE	= @<LINTLIBSTYLE>@>()=
 LINTLIBSTYLE	= NONE

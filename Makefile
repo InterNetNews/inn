@@ -1,5 +1,7 @@
 ##  $Revision$
 
+.include Makefile.global
+
 RELEASE=1
 PATCHLEVEL=8-current
 VERSION=$(RELEASE).$(PATCHLEVEL)
@@ -10,13 +12,7 @@ TARDIR=inn-$(VERSION)
 TARFILE=inn-$(VERSION).tar
 SQUASH=gzip
 
-SHELL	= /bin/sh
-MAKE	= make
-DESTDIR	=
-
 RCSCOFLAGS	= -u
-
-CC=@CC@
 
 ##  The first two directories must be config and lib.
 PROGS	= config lib storage frontends innd nnrpd backends expire doc innfeed

@@ -1,8 +1,6 @@
 ##  $Revision$
-SHELL	= /bin/sh
-MAKE	= make
-DESTDIR	=
-D	= $(DESTDIR)
+.include ../Makefile.global
+
 ##  =()<P	= @<P>@>()=
 P	= 
 ##  =()<PERLLIB = @<PERL_LIB>@>()=
@@ -11,13 +9,6 @@ PERLLIB =
 PERLINC = 
 ##  =()<TCLINC	= @<TCL_INC>@>()=
 TCLINC	= 
-
-CC      = @CC@
-CFLAGS  = -I../include @CPPFLAGS@ $(PERLINC) $(TCLINC) @CFLAGS@
-LDFLAGS = @LDFLAGS@
-LIBS    = @LIBS@
-
-BINDIR	= @prefix@/bin
 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@ $(PERLINC) $(TCLINC)>()=
 LINTFLAGS	= -b -h -z -I../include $(DEFS) $(PERLINC) $(TCLINC)
@@ -28,13 +19,6 @@ CTAGS		= ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
 PROF	= -pg
 
-## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
-OWNER	= -O news -G news
-## =()<NEWSGROUP	= @<NEWSGROUP>@>()=
-NEWSGROUP	= news
-
-LIBNEWS	= ../libstorage.a ../libinn.a
-LINTLIB	= ../llib-linn.ln
 ## =()<TCL_LIB	= @<TCL_LIB>@>()=
 TCL_LIB	= 
 
@@ -51,8 +35,8 @@ ALL	= innd inndstart
 all:		$(ALL)
 
 install:
-	$(SHELL) ../installit.sh $(OWNER) -m 0550 -b .OLD innd ${BINDIR}/innd
-	-$(SHELL) ../installit.sh -O root -G $(NEWSGROUP) -m 4550 -b .OLD inndstart ${BINDIR}/innd
+	$(SHELL) ../installit.sh $(OWNER) -m 0550 -b .OLD innd ${NEWSBIN}/innd
+	-$(SHELL) ../installit.sh -O root -G $(NEWSGROUP) -m 4550 -b .OLD inndstart ${NEWSBIN}/innd
 	@ME=`(whoami || /usr/ucb/whoami) 2> /dev/null` ;\
 	if [ "X$$ME" = Xroot ]; then \
 		echo $@ has been installed setuid root. ;\

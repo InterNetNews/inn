@@ -1,0 +1,35 @@
+##  $Id$
+
+## This file is meant to be the central Makefile that configure works with
+## and that all other Makefiles include
+
+CC	= @CC@
+CFLAGS	= -I../include @CPPFLAGS@ @CFLAGS@
+LDFLAGS	= @LDFLAGS@
+LIBS	= @LIBS@
+
+NEWSGROUP	= @NEWSGRP@
+OWNER		= -O @NEWSUSER@ -G ${NEWSGRP}
+ROWNER		= -O @NEWSUSER@ -G uucp
+
+NEWSBIN	= @prefix@/bin
+NEWSLIB	= @prefix@/etc
+
+MAN1    = @MANDIR@/man1
+MAN3    = @MANDIR@/man3
+MAN5    = @MANDIR@/man5
+MAN8    = @MANDIR@/man8
+
+LEX	= @LEX@ 
+YACC	= @YACC@
+RANLIB	= @RANLIB@
+AWK	= @_PATH_AWK@
+
+SHELL	= /bin/sh
+MAKE	= make
+LIBNEWS	= ../libstorage.a ../libinn.a
+LINTLIB	= ../llib-linn.ln
+
+DESTDIR =
+D	= $(DESTDIR)
+

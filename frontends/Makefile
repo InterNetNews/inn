@@ -1,17 +1,8 @@
 ##  $Revision$
-SHELL	= /bin/sh
-MAKE	= make
-DESTDIR	=
-D	= $(DESTDIR)
+.include ../Makefile.global
+
 ##  =()<P	= @<P>@>()=
 P	= 
-
-CC      = @CC@
-CFLAGS  = -I../include @CPPFLAGS@ @CFLAGS@
-LDFLAGS = @LDFLAGS@
-LIBS    = @LIBS@
-
-NEWSBIN	= @prefix@/bin
 
 RNEWSPROGS	= ${NEWSBIN}/rnews.libexec
 
@@ -22,15 +13,8 @@ LINTFILTER	= | sed -n -f ../sedf.sun
 ##  =()<CTAGS		= @<CTAGS>@>()=
 CTAGS		= ctags -t -w
 
-## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
-OWNER	= -O news -G news
-## =()<ROWNER	= -O @<NEWSUSER>@ -G @<RNEWS_GROUP>@>()=
-ROWNER	= -O news -G uucp
-
 ##  =()<NNTPLIB	= @<NNTPLIB>@>()=
 NNTPLIB	= 
-LIBNEWS	= ../libstorage.a ../libinn.a 
-LINTLIB	= ../llib-linn.ln
 
 SOURCES	= ctlinnd.c inews.c rnews.c sm.c
 

@@ -1,17 +1,9 @@
 ##  $Revision$
-SHELL	= /bin/sh
-MAKE	= make
-DESTDIR	=
-D	= $(DESTDIR)
+
+.include ../Makefile.global
+
 ##  =()<P	= @<P>@>()=
 P	= 
-
-CC	= @CC@
-CFLAGS	= -I../include @CPPFLAGS@ @CFLAGS@
-LDFLAGS	= @LDFLAGS@
-LIBS	= @LIBS@
-
-BINDIR = @prefix@/bin
 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
 LINTFLAGS	= -b -h -z -I../include $(DEFS)
@@ -20,14 +12,8 @@ LINTFILTER	= | sed -n -f ../sedf.sun
 ##  =()<CTAGS		= @<CTAGS>@>()=
 CTAGS		= ctags -t -w
 
-## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
-OWNER	= -O news -G news
-
 ##  =()<NNTPLIB	= @<NNTPLIB>@>()=
 NNTPLIB	= 
-
-LIBNEWS	= ../libstorage.a ../libinn.a
-LINTLIB	= ../llib-linn.ln
 
 SOURCES	=	archive.c batcher.c buffchan.c cvtbatch.c filechan.c \
 		innxmit.c innxbatch.c nntpget.c overchan.c shlock.c \

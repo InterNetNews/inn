@@ -1,6 +1,6 @@
 ##  $Revision$
-SHELL	= /bin/sh
-MAKE	= make
+.include ../Makefile.global
+
 IFTRUE	= @$(SHELL) ../iftrue.sh
 
 ##  =()<P	= @<P>@>()=
@@ -18,13 +18,6 @@ LINTFILTER	= | sed -n -f ../sedf.sun
 CTAGS		= ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
 PROF	= -pg
-
-RANLIB	= @RANLIB@
-CC      = @CC@
-CFLAGS  = -I. -I../include @CPPFLAGS@ $(PERLINC) @CFLAGS@
-LDFLAGS = @LDFLAGS@
-LIBS    = @LIBS@
-YACC	= @YACC@
 
 all:			autoconfig methods libstorage.a
 

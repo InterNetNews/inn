@@ -1,24 +1,8 @@
 ##  $Revision$
-SHELL	= /bin/sh
-MAKE	= make
-DESTDIR	=
-D	= $(DESTDIR)
+.include ../Makefile.global
+
 ##  =()<P	= @<P>@>()=
 P	= 
-
-CC      = @CC@
-CFLAGS  = -I../include @CPPFLAGS@ @CFLAGS@
-LDFLAGS = @LDFLAGS@
-LIBS    = @LIBS@
-LEX		= @LEX@
-YACC		= @YACC@
-NEWSBIN		= @prefix@/bin
-
-LIBNEWS	= ../libstorage.a ../libinn.a
-## =()<NEWSGROUP	= @<NEWSGROUP>@>()=
-NEWSGROUP	= news
-## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
-OWNER	= -O news -G news
 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
 LINTFLAGS	= -b -h -z -I../include $(DEFS)

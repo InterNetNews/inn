@@ -1,25 +1,18 @@
 ##  $Revision$
-SHELL	= /bin/sh
-MAKE	= make
+.include ../../Makefile.global
+
 IFTRUE	= @$(SHELL) ../iftrue.sh
 
 ##  =()<P	= @<P>@>()=
 P	= 
-
-CC      = @CC@
-CFLAGS  = -I../include -I.. -I../../include @CPPFLAGS@  
-LDFLAGS = @LDFLAGS@
-LIBS    = @LIBS@
-RANLIB	= @RANLIB@
 
 ##  =()<CTAGS		= @<CTAGS>@>()=
 CTAGS		= ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
 PROF	= -pg
 
-
-SOURCES = cnfs.c
-OBJECTS = cnfs.o
+SOURCES = timehash.c
+OBJECTS = timehash.o
 
 all:			$(OBJECTS) moveobjs
 

@@ -1,16 +1,8 @@
 ##  $Revision$
-SHELL	= /bin/sh
-MAKE	= make
-DESTDIR	=
-D	= $(DESTDIR)
+.include ../Makefile.global
+
 ##  =()<P	= @<P>@>()=
 P	= 
-
-CC      = @CC@
-CFLAGS  = -I../include @CPPFLAGS@ @CFLAGS@
-LDFLAGS = @LDFLAGS@
-LIBS    = @LIBS@
-NEWSBIN	= @prefix@
 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
 LINTFLAGS	= -b -h -z -I../include $(DEFS)
@@ -20,12 +12,6 @@ LINTFILTER	= | sed -n -f ../sedf.sun
 CTAGS		= ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
 PROF	= -pg
-
-## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
-OWNER	= -O news -G news
-
-LIBNEWS	= ../libstorage.a ../libinn.a
-LINTLIB	= ../llib-linn.ln
 
 SOURCES	=	convdate.c expire.c expireover.c fastrm.c grephistory.c \
 		makeactive.c makehistory.c newsrequeue.c prunehistory.c \

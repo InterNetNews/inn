@@ -1,8 +1,6 @@
 ##  $Revision$
-SHELL	= /bin/sh
-MAKE	= make
-DESTDIR	=
-D	= $(DESTDIR)
+.include ../Makefile.global
+
 ##  =()<P	= @<P>@>()=
 P	= 
 
@@ -19,17 +17,7 @@ CTAGS		= ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
 PROF	= -pg
 
-CC      = @CC@
-CFLAGS  = -I../include @CPPFLAGS@ $(PERLINC) @CFLAGS@
-LDFLAGS = @LDFLAGS@
-LIBS    = @LIBS@
-NNRPD	= @prefix@/bin/nnrpd
-
-## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
-OWNER	= -O news -G news
-
-LIBNEWS	= ../libstorage.a ../libinn.a
-LINTLIB	= ../llib-linn.ln
+NNRPD	= ${NEWSBIN}/nnrpd
 
 SOURCES	= \
 	article.c group.c commands.c misc.c newnews.c nnrpd.c \

@@ -1,8 +1,6 @@
 ##  $Revision$
-SHELL	= /bin/sh
-MAKE	= make
-DESTDIR	=
-D	= $(DESTDIR)
+.include ../Makefile.global
+
 ##  =()<P	= @<P>@>()=
 P	= 
 
@@ -13,11 +11,6 @@ P	=
 # Added a default rule for ".csh" because Digital UNIX has a builtin
 # rule which would overwite the innshellvars file.
 .csh:
-
-AWK	= @_PATH_AWK@
-
-NEWSLIB	= @prefix@/etc
-NEWSBIN	= @prefix@/bin
 
 CTLINND			= ${NEWSBIN}/ctlinnd
 CTLBIN			= ${NEWSBIN}/control
@@ -49,9 +42,6 @@ PATH_ACTSYNC_CFG	= ${NEWSLIB}/actsync.cfg
 PATH_MOTD		= ${NEWSLIB}/motd.news
 PATH_STORAGECTL		= ${NEWSLIB}/storage.ctl
 PATH_OVERVIEWCTL	= ${NEWSLIB}/overview.ctl
-
-## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
-OWNER	= -O news -G news
 
 ##  Order:  innd, control, expire, inews, sending, misc
 MOST	= rc.news overview.fmt checkgroups default ihave newgroup \

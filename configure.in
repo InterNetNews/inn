@@ -49,13 +49,8 @@ dnl Fix the paths
 test "x$prefix" = xNONE && prefix=$ac_default_prefix
 test "x$exec_prefix" = xNONE && exec_prefix=$ac_default_prefix
 
-AC_CACHE_CHECK(for manpath,ac_cv_subst_manpath,
-               ac_cv_subst_manpath=`eval echo $mandir`)
-AC_SUBST(ac_cv_subst_manpath)
-
-AC_CACHE_CHECK(for bindir,ac_cv_subst_binpath,
-               ac_cv_subst_binpath=`eval echo $bindir`)
-AC_SUBST(ac_cv_subst_binpath)
+AC_CACHE_CHECK(for MANDIR,MANDIR, MANDIR=`eval echo $mandir`)
+AC_SUBST(MANDIR)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -581,4 +576,4 @@ AC_SUBST(MISSING_OBJ)
 
 grep "^  ||" config/config.scoreboard | sed 's/  ||//g' >config/config.data.in
 AC_CONFIG_HEADER(include/config.h)
-AC_OUTPUT(config/config.data backends/Makefile config/Makefile expire/Makefile frontends/Makefile innd/Makefile innfeed/Makefile lib/Makefile nnrpd/Makefile storage/timehash/Makefile storage/cnfs/Makefile storage/Makefile Makefile include/paths.h samples/inncheck samples/innshellvars samples/innshellvars.pl samples/innshellvars.csh samples/innshellvars.tcl site/Makefile)
+AC_OUTPUT(config/config.data Makefile.global include/paths.h samples/inncheck samples/innshellvars samples/innshellvars.pl samples/innshellvars.csh samples/innshellvars.tcl)

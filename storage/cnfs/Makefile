@@ -1,20 +1,13 @@
-# Generated automatically from Makefile.in by configure.
 ##  $Revision$
-SHELL	= /bin/sh
-MAKE	= make
+.include ../../Makefile.global
+
 IFTRUE	= @$(SHELL) ../iftrue.sh
 
 ##  =()<P	= @<P>@>()=
 P	= 
 
-CC      = gcc
-CFLAGS  = -I../include -I.. -I../../include   
-LDFLAGS = 
-LIBS    = -lelf -lsocket -lnsl  -lresolv
-RANLIB	= :
-
 ##  =()<CTAGS		= @<CTAGS>@>()=
-CTAGS		= /usr/local/bin/ctags -t -w
+CTAGS		= ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
 PROF	= -pg
 

@@ -450,7 +450,7 @@ void cnfs_freearticle(ARTHANDLE *article) {
     
     if (article->private) {
 	private = (PRIV_CNFS *)article->private;
-#ifdef	MADV_DONTNEED
+#if defined(MADV_DONTNEED) && !defined(_nec_ews)
 	madvise(private->base, private->len, MADV_DONTNEED);
 #endif	/* MADV_DONTNEED */
 	munmap(private->base, private->len);
@@ -859,7 +859,7 @@ CNFSinit_disks(int verbose)
     fd= (protections & PROT_WRITE) ? cycbufftab[i].fdrdwr : cycbufftab[i].fdrd;
     if ((cycbufftab[i].bitfield =
 	 mmap((caddr_t) 0, cycbufftab[i].minartoffset, protections,
-	      MAP_SHARED, fd, (off_t) 0)) == MAP_FAILED || errno != 0) {
+	      MAP_SHARED, fd, (off_t) 0)) == (MMAP_PTR) -1 || errno != 0) {
 	syslog(LOG_ERR,
 	       "%s: CNFSinitdisks: mmap for %s offset %d len %d failed: %m",
 	       LocalLogName, cycbufftab[i].path, 0, cycbufftab[i].minartoffset);
