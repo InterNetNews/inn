@@ -12,7 +12,7 @@ SOURCES = argparse.c cleanfrom.c clientactive.c clientlib.c closeonexec.c \
 	memcmp.c nonblocking.c parsedate.c perl.c pread.c pwrite.c qio.c \
 	radix32.c readin.c remopen.c reservedfd.c resource.c rwlock.c \
 	sendarticle.c sendpass.c setenv.c strcasecmp.c strerror.c strspn.c \
-	strtok.c tempname.c waitnb.c wildmat.c version.c xfopena.c xmalloc.c \
+	strtok.c tempname.c wildmat.c version.c xfopena.c xmalloc.c \
 	xsignal.c xwrite.c
 
 OBJECTS = $(LIBOBJS) \
@@ -22,8 +22,7 @@ OBJECTS = $(LIBOBJS) \
 	grpalias.o hash.o inndcomm.o localopen.o lockfile.o makedir.o md5.o \
 	nonblocking.o parsedate.o qio.o radix32.o readin.o remopen.o \
 	reservedfd.o resource.o rwlock.o sendarticle.o sendpass.o \
-	tempname.o waitnb.o wildmat.o version.o xfopena.o xmalloc.o \
-	xsignal.o xwrite.o
+	tempname.o wildmat.o version.o xfopena.o xmalloc.o xsignal.o xwrite.o
 
 LOBJECTS= $(OBJECTS:.o=.lo)
 
@@ -81,7 +80,7 @@ $(D)$(PATHLIB)/libinn.$(EXTLIB): libinn.$(EXTLIB)
 
 ##  Dependencies.  Default list, below, is probably good enough.
 
-depend: Makefile $(SOURCES)
+depend: Makefile $(SOURCES) ../include/inn/version.h
 	$(MAKEDEPEND) $(CFLAGS) $(PERLINC) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
@@ -109,7 +108,6 @@ dbz.o: dbz.c ../include/config.h ../include/inn/defines.h \
 defdist.o: defdist.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/paths.h
-endian.o: endian.c ../include/config.h ../include/inn/defines.h
 error.o: error.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
 fdlimit.o: fdlimit.c ../include/config.h ../include/inn/defines.h \
@@ -131,8 +129,6 @@ getfqdn.o: getfqdn.c ../include/config.h ../include/inn/defines.h \
 getmodaddr.o: getmodaddr.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h
-getopt.o: getopt.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
 gettime.o: gettime.c ../include/config.h ../include/inn/defines.h \
  ../include/libinn.h
 grpalias.o: grpalias.c ../include/config.h ../include/inn/defines.h \
@@ -154,18 +150,12 @@ localopen.o: localopen.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h ../include/paths.h
 lockfile.o: lockfile.c ../include/config.h ../include/inn/defines.h \
- ../include/libinn.h
+ ../include/clibrary.h ../include/libinn.h
 makedir.o: makedir.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
 md5.o: md5.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/md5.h
-memchr.o: memchr.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
 memcmp.o: memcmp.c ../include/config.h ../include/inn/defines.h
-memmove.o: memmove.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
-memset.o: memset.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
 nonblocking.o: nonblocking.c ../include/config.h \
  ../include/inn/defines.h
 parsedate.o: parsedate.c ../include/config.h ../include/inn/defines.h \
@@ -210,10 +200,10 @@ strtok.o: strtok.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 tempname.o: tempname.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
-waitnb.o: waitnb.c ../include/config.h ../include/inn/defines.h
 wildmat.o: wildmat.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
-version.o: version.c ../include/inn/version.h
+version.o: version.c ../include/config.h ../include/inn/defines.h \
+ ../include/inn/version.h
 xfopena.o: xfopena.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 xmalloc.o: xmalloc.c ../include/config.h ../include/inn/defines.h \
