@@ -453,6 +453,16 @@ if test x"$LOG_COMPRESS" = xgzip ; then
     LOG_COMPRESS="$GZIP"
 fi
 
+dnl Figure out what program to use to uncompress .Z files.  On systems that
+dnl have gzip but don't have compress, we can use gzip for this purpose and
+dnl should rather than hoping compres will be found at runtime.
+if test x"$COMPRESS" = xcompress && test x"$GZIP" != xgzip ; then
+    UNCOMPRESS="$GZIP -d"
+else
+    UNCOMPRESS="$COMPRESS -d"
+fi
+AC_SUBST(UNCOMPRESS)
+
 dnl The sendmail code takes this philosophy:  We assume that there are some
 dnl sites which don't have sendmail in the path for a reason, whatever that
 dnl may be.  And we also assume that there are some of those sites which
