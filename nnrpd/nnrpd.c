@@ -216,7 +216,7 @@ ExitWithStats(int x, bool readconf)
 #ifdef DO_PYTHON
     if (innconf->nnrppythonauth) {
         if (PY_close() < 0) {
-	    syslog(L_NOTICE, "PY_close(): close method not invoked because it is not defined in Python authenticaton module.");
+	    syslog(L_NOTICE, "PY_close(): close method not invoked because it is not defined in Python authentication module.");
 	}
     }
 #endif	/* DO_PYTHON */
@@ -820,10 +820,20 @@ main(int argc, char *argv[])
     int 		count=123456789;
     struct		timeval tv;
     unsigned short	ListenPort = NNTP_PORT;
-    unsigned long	ListenAddr = htonl(INADDR_ANY);
+#ifdef HAVE_INET6
+    char		ListenAddr[INET6_ADDRSTRLEN];
+#else
+    char		ListenAddr[16];
+#endif
     int			lfd, fd;
     socklen_t		clen;
+#ifdef HAVE_INET6
+    struct sockaddr_storage ssa, csa;
+    struct sockaddr_in6	*ssa6 = (struct sockaddr_in6 *) &ssa;
+#else
     struct sockaddr_in	ssa, csa;
+#endif
+    struct sockaddr_in	*ssa4 = (struct sockaddr_in *) &ssa;
     struct stat		Sb;
     pid_t		pid = -1;
     gid_t               NewsGID;
@@ -875,10 +885,7 @@ main(int argc, char *argv[])
 	    break;
  	case 'b':			/* bind to a certain address in
  	        			   daemon mode */
-            if (inet_aton(optarg, &ssa.sin_addr))
-                ListenAddr = ssa.sin_addr.s_addr;
-            else
- 	    	ListenAddr = htonl(INADDR_ANY);
+	    strncpy( ListenAddr, optarg, sizeof(ListenAddr) );
  	    break;
  	case 'D':			/* standalone daemon mode */
  	    DaemonMode = TRUE;
@@ -944,21 +951,38 @@ main(int argc, char *argv[])
     SPOOLlen = strlen(innconf->patharticles);
 
     if (DaemonMode) {
-	if ((lfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-	    syslog(L_FATAL, "can't open socket (%m)");
-	    exit(1);
-	}
 
-	if (setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR, (char *)&one, sizeof(one)) < 0) {
+#ifdef HAVE_INET6
+	memset(&ssa, '\0', sizeof(struct sockaddr_in6));
+	ssa6->sin6_family = AF_INET6;
+	ssa6->sin6_port   = htons(ListenPort);
+	if (inet_pton(AF_INET6, ListenAddr, ssa6->sin6_addr.s6_addr) > 0) {
+	    if ( (lfd = socket(AF_INET6, SOCK_STREAM, 0)) < 0) {
+		syslog(L_FATAL, "can't open socket (%m)");
+		exit(1);
+	    }
+	}
+	else {
+#endif
+	    memset(&ssa, '\0', sizeof(struct sockaddr_in));
+	    ssa4->sin_family = AF_INET;
+	    ssa4->sin_port   = htons(ListenPort);
+	    if (inet_aton(ListenAddr, &ssa4->sin_addr) <= 0 )
+		ssa4->sin_addr.s_addr = htonl(INADDR_ANY);
+	    if ( (lfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+		syslog(L_FATAL, "can't open socket (%m)");
+		exit(1);
+	    }
+#ifdef HAVE_INET6
+	}
+#endif
+
+	if (setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR,
+		       (char *)&one, sizeof(one)) < 0) {
 	    syslog(L_FATAL, "can't setsockopt(SO_REUSEADDR) (%m)");
 	    exit(1);
 	}
 
-	memset(&ssa, '\0', sizeof(ssa));
-	ssa.sin_family = AF_INET;
-	ssa.sin_addr.s_addr = ListenAddr;
-	ssa.sin_port = htons(ListenPort);
-	
 	if (bind(lfd, (struct sockaddr *) &ssa, sizeof(ssa)) < 0) {
 	    fprintf(stderr, "%s: can't bind (%s)\n", argv[0], strerror(errno));
 	    syslog(L_FATAL, "can't bind local address (%m)");
