@@ -190,7 +190,7 @@ network_bind_all(unsigned short port, int **fds, int *count)
                 size += 2;
                 *fds = xrealloc(*fds, size * sizeof(int));
             }
-            *fds[*count] = fd;
+            (*fds)[*count] = fd;
             (*count)++;
         }
     }
