@@ -46,6 +46,14 @@ in F<doc/IPv6-info>.
 
 =item *
 
+The tradindexed overview method has been completely rewritten and should
+be considerably more robust in the face of system crashes.  A new utility,
+B<tdx-util>, is provided to examine the contents of the overview database,
+repair inconsistencies, and rebuild the overview for particular groups
+from a tradspool news spool.
+
+=item *
+
 nnrpd now optionally supports article injection via IHAVE.  Any articles
 injected this way must have Date, From, Message-ID, Newsgroups, Path, and
 Subject headers.  X-Trace and X-Complaints-To headers will be added if the
@@ -78,7 +86,7 @@ starts to rely on it.
 
 =item *
 
-Several other, more minor protocol issues have been fixed:  Connections
+Several other, more minor protocol issues have been fixed:  connections
 rejected due to the connection rate limiting in innd receive 400 replies
 instead of 504 or 505, and ARTICLE without an argument will always either
 retrieve the current article or return a 423 error, never advance the
