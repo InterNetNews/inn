@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2004-11-15
+##  Last modified: 2004-11-28
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -1650,6 +1650,17 @@ rmgroup:*:pgh.*:drop
 checkgroups:pgh-config@psc.edu:pgh.*:verify-pgh.config
 newgroup:pgh-config@psc.edu:pgh.*:verify-pgh.config
 rmgroup:pgh-config@psc.edu:pgh.*:verify-pgh.config
+
+## PGSQL (Gated PostgreSQL mailing lists)
+# Contact: news@postgresql.org
+# URL: http://news.hub.org/gpg_public_keys.html
+# Key URL: http://news.hub.org/gpg_public_keys.html
+# *PGP*   See comment at top of file.
+newgroup:*:pgsql.*:drop
+rmgroup:*:pgsql.*:drop
+checkgroups:news@postgresql.org:pgsql.*:verify-news@postgresql.org
+newgroup:news@postgresql.org:pgsql.*:verify-news@postgresql.org
+rmgroup:news@postgresql.org:pgsql.*:verify-news@postgresql.org
 
 ## PHL (Philadelphia, Pennsylvania, USA)
 checkgroups:news@vfl.paramax.com:phl.*:doit
