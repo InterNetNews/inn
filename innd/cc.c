@@ -989,7 +989,10 @@ CCname(char *av[])
 	    sprintf(buff, ":reject::");
 	    break;
 	case CTnntp:
-	    sprintf(buff, ":nntp:%d:%s", Now.time - cp->LastActive, (cp->MaxCnx > 0 && cp->ActiveCnx == 0) ? "paused" : "");
+           sprintf(buff, ":%s:%d:%s",
+                    cp->State == CScancel ? "cancel" : "nntp",
+                    Now.time - cp->LastActive,
+                    (cp->MaxCnx > 0 && cp->ActiveCnx == 0) ? "paused" : "");
 	    break;
 	case CTlocalconn:
 	    sprintf(buff, ":localconn::");

@@ -135,7 +135,8 @@ typedef enum _CHANNELSTATE {
     CSgetarticle,
     CSeatarticle,
     CSgetrep,
-    CSgetxbatch
+    CSgetxbatch,
+    CScancel
 } CHANNELSTATE;
 
 
@@ -151,6 +152,7 @@ typedef struct _CHANNEL {
     BOOL		Skip;
     BOOL		Streaming;
     BOOL		NoResendId;
+    BOOL                privileged;
     u_long		Duplicate;
     u_long		Unwanted_s;
     u_long		Unwanted_f;

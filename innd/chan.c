@@ -189,6 +189,7 @@ CHANNEL *CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
     cp->Streaming = FALSE;
     cp->Skip = FALSE;
     cp->NoResendId = FALSE;
+    cp->privileged = FALSE;
     cp->Ihave = cp->Ihave_Duplicate = cp->Ihave_Deferred = cp->Ihave_SendIt = cp->Ihave_Cybercan = 0;
     cp->Check = cp->Check_send = cp->Check_deferred = cp->Check_got = cp->Check_cybercan = 0;
     cp->Takethis = cp->Takethis_Ok = cp->Takethis_Err = 0;
@@ -286,6 +287,12 @@ void CHANclose(CHANNEL *cp, char *name)
 	if (cp->Type == CTnntp) {
 	    WIPprecomfree(cp);
 	    NCclearwip(cp);
+            if (cp->State == CScancel)
+                syslog(L_NOTICE,
+               "%s closed seconds %ld cancels %ld",
+               name, (long)(Now.time - cp->Started),
+               cp->Received);
+            else
 	    syslog(L_NOTICE,
 		"%s closed seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld accepted size %.0f duplicate size %.0f",
 		name, (long)(Now.time - cp->Started),

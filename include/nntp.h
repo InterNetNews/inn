@@ -139,6 +139,16 @@
 #define NNTP_XGTITLE_BAD		481	/* Yes, 481. */
 #define NNTP_XGTITLE_OK			282
 
+/*
+**  MODE CANCEL extension.
+*/
+#define NNTP_OK_CANCEL_VAL      284
+#define NNTP_OK_CANCELLED       "289"
+#define NNTP_ERR_CANCEL_VAL     484
+
+/*
+**  XBATCH feed extension.
+*/
 #define NNTP_OK_XBATCHED_VAL	239	/* Batch transferred successfully */
 #define NNTP_OK_XBATCHED	"239"
 #define NNTP_CONT_XBATCH_VAL	339	/* Continue to send batch */

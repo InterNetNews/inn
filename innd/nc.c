@@ -44,6 +44,7 @@ static FUNCTYPE	NCxbatch();
 static FUNCTYPE	NCcheck();
 static FUNCTYPE	NCtakethis();
 static FUNCTYPE NCwritedone();
+static FUNCTYPE NCcancel();
 
 STATIC int		NCcount;	/* Number of open connections	*/
 STATIC NCDISPATCH	NCcommands[] = {
@@ -261,6 +262,7 @@ NCwritedone(CHANNEL *cp)
     case CSgetarticle:
     case CSgetrep:
     case CSgetxbatch:
+    case CScancel:
 	RCHANadd(cp);
 	break;
     }
@@ -646,6 +648,14 @@ NCmode(CHANNEL *cp)
 	syslog(L_NOTICE, "%s NCmode \"mode stream\" received",
 		CHANname(cp));
 	return;
+    } else if (caseEQ(p, "cancel") && cp->privileged) {
+       char buff[16];
+        cp->State = CScancel;
+       (void)sprintf(buff, "%d CancelOK.", NNTP_OK_CANCEL_VAL);
+       NCwritereply(cp, buff);
+       syslog(L_NOTICE, "%s NCmode \"mode cancel\" received",
+               CHANname(cp));
+       return;
     } else {
 	NCwritereply(cp, NCbadcommand);
 	return;
@@ -761,6 +771,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 
 	case CSgetcmd:
 	case CSgetauth:
+        case CScancel:
 	    /* Did we get the whole command, terminated with "\r\n"? */
 	    for (i = 0; (i < bp->Used) && (bp->Data[i] != '\n'); i++) ;
 	    if (i < bp->Used) cp->Rest = bp->Used = ++i;
@@ -818,6 +829,9 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		else
 		    NCauthinfo(cp);
 		break;
+           } else if (cp->State == CScancel) {
+                NCcancel(cp);
+                break;
 	    }
 
 	    /* Loop through the command table. */
@@ -1214,6 +1228,7 @@ NCcreate(int fd, BOOL MustAuthorize, BOOL IsLocal)
 	    NCreader, NCwritedone);
 
     NCclearwip(cp);
+    cp->privileged = IsLocal;
 #if defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF) 
     if (!IsLocal) {
 	i = 24 * 1024;
@@ -1387,4 +1402,26 @@ STATIC FUNCTYPE NCtakethis(CHANNEL *cp)
 	wp = WIPnew(p, cp);
     WIPfree(WIPbyhash(cp->CurrentMessageIDHash));
     cp->CurrentMessageIDHash = wp->MessageID;
+}
+
+/*
+**  Process a cancel ID from a "mode cancel" channel.
+*/
+STATIC FUNCTYPE NCcancel(CHANNEL *cp)
+{
+    char                *av[2] = {NULL, NULL};
+    STRING              res;
+
+    ++cp->Received;
+    av[0] = cp->In.Data;
+    res = CCcancel(av);
+    if (res) {
+       char buff[SMBUF];
+       (void)sprintf(buff, "%d %s", NNTP_ERR_CANCEL_VAL, MaxLength(res, res));
+        syslog(L_NOTICE, "%s cant_cancel %s", CHANname(cp),
+               MaxLength(res, res));
+       NCwritereply(cp, buff);
+    } else {
+        NCwritereply(cp, NNTP_OK_CANCELLED);
+    }
 }
