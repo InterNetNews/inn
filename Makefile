@@ -17,7 +17,7 @@ SQUASH=gzip
 RCSCOFLAGS	= -u
 
 ##  The first two directories must be config and lib.
-PROGS	= config lib storage frontends innd nnrpd backends expire doc doc/man doc/sgml innfeed authprogs
+PROGS	= config lib storage frontends innd nnrpd backends expire doc innfeed authprogs
 DIRS	= $(PROGS) site
 
 ##  We invoke an extra process and set this to be what to make.

@@ -7,25 +7,32 @@ MAKE	= make
 DESTDIR	=
 D	= $(DESTDIR)
 
+DIRS    = man sgml
+
 ALL	= 
 
-all:		$(P) $(ALL)
+all:		
+	$(MAKE) $(FLAGS) WHAT_TO_MAKE=all DESTDIR=$(DESTDIR) common
 
-install:
+##  Install everything.
+install:	
+	$(MAKE) $(FLAGS) WHAT_TO_MAKE=install DESTDIR=$(DESTDIR) common
+##  Other generic targets.
+depend tags ctags profiled:
+	@$(MAKE) $(FLAGS) WHAT_TO_MAKE=$@ common
 
-clobber clean:
-	rm -f all install profiled
+etags:
+	etags */*.c */*.h
 
-tags ctags:
-	cp /dev/null tags
+clean:
+	@$(MAKE) $(FLAGS) WHAT_TO_MAKE=$@ common
 
-profiled:
-	cp /dev/null profiled
-
-.PRECIOUS:	$(ALL)
-
-##  Dependencies.  Default list, below, is probably good enough.
-depend:		Makefile $(SOURCES)
-	makedepend $(DEFS) $(SOURCES)
+##  Common target.
+common:
+	@for D in $(DIRS) ; do \
+	    echo "" ; \
+	    echo "cd $$D ; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) $(WHAT_TO_MAKE) ; cd .." ; \
+	    cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) $(WHAT_TO_MAKE) || exit 1 ; cd .. ; \
+	done
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
