@@ -19,7 +19,8 @@ VALIDATE = valid.o session.o rfcnb-util.o \
 dummy: all
 
 smbvalid.a:	$(VALIDATE) 
-	ar rcs smbvalid.a $(VALIDATE)
+	ar rc $@ $(VALIDATE)
+	$(RANLIB) $@
 
 all: smbvalid.a
 
