@@ -6,6 +6,8 @@
 
 include ../Makefile.global
 
+top	= ..
+
 TOPDOCS	= CONTRIBUTORS HACKING INSTALL LICENSE NEWS README TODO
 
 DOCS	= GPL compliance-nntp config-design config-semantics config-syntax \
