@@ -1,7 +1,6 @@
 ##  $Revision$
 include ../Makefile.global
 
-CC	= $(LIBCC)
 IFTRUE	= @$(SHELL) ../iftrue.sh
 CFLAGS	= $(GCFLAGS)
 
@@ -54,6 +53,9 @@ libinn.a:             $(P) $(OBJECTS)
 	ar r $@ $(OBJECTS)
 	$(RANLIB) libinn.a
 
+.c.o: $*.c
+	$(LIBCC) $(CFLAGS) -c $*.c -o $@
+
 ##  Profiling.  The rules are a bit brute-force, but good enough.
 profiled:		../libinn_p.a
 	date >$@
@@ -66,10 +68,10 @@ profiled:		../libinn_p.a
 	rm -f $(OBJECTS)
 
 endian: endian.c
-	$(LIBCCWITHOUTLIBTOOL) $(CFLAGS) $(LDFLAGS) -o $@ endian.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ endian.c
 
 perl.o: perl.c
-	$(LIBCCWITHOUTLIBTOOL) $(CFLAGS) $(PERLINC) $(LDFLAGS) -c perl.c
+	$(CC) $(CFLAGS) $(PERLINC) $(LDFLAGS) -c perl.c
 
 ../include/autoconfig.h: endian
 	./endian >../include/autoconfig.h
