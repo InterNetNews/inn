@@ -1,20 +1,27 @@
-##  $Revision$
+##  $Id$
+
 include ../Makefile.global
 
 CFLAGS	= $(GCFLAGS)
 
 SOURCES	=	convdate.c expire.c expireover.c fastrm.c grephistory.c \
 		makehistory.c newsrequeue.c prunehistory.c makedbz.c
+
+INSTALLED     = $(D)$(PATHBIN)/convdate		\
+		$(D)$(PATHBIN)/expire		\
+		$(D)$(PATHBIN)/expireover	\
+		$(D)$(PATHBIN)/expirerm		\
+		$(D)$(PATHBIN)/fastrm		\
+		$(D)$(PATHBIN)/grephistory	\
+		$(D)$(PATHBIN)/makedbz		\
+		$(D)$(PATHBIN)/makehistory	\
+		$(D)$(PATHBIN)/newsrequeue	\
+		$(D)$(PATHBIN)/prunehistory
+
 ALL	=	convdate expire expireover fastrm grephistory \
 		makehistory newsrequeue prunehistory makedbz
 
 all:		$(ALL)
-
-install:	$D$(PATHBIN)/convdate $D$(PATHBIN)/expire \
-		$D$(PATHBIN)/expireover $D$(PATHBIN)/fastrm \
-		$D$(PATHBIN)/grephistory \
-		$D$(PATHBIN)/makehistory $D$(PATHBIN)/newsrequeue \
-		$D$(PATHBIN)/prunehistory $D$(PATHBIN)/makedbz
 
 clobber clean:
 	rm -f *.o $(ALL)
@@ -72,27 +79,30 @@ expirep:	expire.c
 .c.src:
 	#load $(CFLAGS) $<
 
-##  Low-level install actions.
-$D$(PATHBIN)/convdate:		convdate
-	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(PATHBIN)/expire:		expire
-	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(PATHBIN)/expireover:		expireover
-	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(PATHBIN)/fastrm:		fastrm
-	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(PATHBIN)/grephistory:	grephistory
-	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(PATHBIN)/makehistory:	makehistory
-	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(PATHBIN)/newsrequeue:	newsrequeue
-	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(PATHBIN)/prunehistory:	prunehistory
-	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(PATHBIN)/makedbz:	makedbz
-	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
+
+##  Installation rules.
+
+install: $(INSTALLED)
+
+LT_XPRI = $(LIBTOOL) ../installit.sh $(OWNER) -m 0550 -b .OLD
+LT_XPUB = $(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD
+CP_XPRI = ../installit.sh $(OWNER) -m 0550 -b .OLD
+CP_XPUB = ../installit.sh $(OWNER) -m 0555 -b .OLD
+
+$(D)$(PATHBIN)/convdate:            convdate            ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/expire:              expire              ; $(LT_XPRI) $? $@
+$(D)$(PATHBIN)/expireover:          expireover          ; $(LT_XPRI) $? $@
+$(D)$(PATHBIN)/expirerm:            expirerm            ; $(CP_XPRI) $? $@
+$(D)$(PATHBIN)/fastrm:              fastrm              ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/grephistory:         grephistory         ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/makedbz:             makedbz             ; $(LT_XPRI) $? $@
+$(D)$(PATHBIN)/makehistory:         makehistory         ; $(LT_XPRI) $? $@
+$(D)$(PATHBIN)/newsrequeue:         newsrequeue         ; $(LT_XPRI) $? $@
+$(D)$(PATHBIN)/prunehistory:        prunehistory        ; $(LT_XPRI) $? $@
+
 
 ##  Dependencies.  Default list, below, is probably good enough.
+
 depend:		Makefile $(SOURCES)
 	makedepend $(DEFS) $(SOURCES)
 
