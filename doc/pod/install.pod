@@ -27,8 +27,8 @@ INN has been confirmed to work on the following operating systems:
 
   AIX 4.3
   FreeBSD 2.2.x and up
-  HP-UX 10.20
-  Linux 2.x (tested with libc 5.4 or libc 6.0)
+  HP-UX 10.20 and up
+  Linux 2.x (tested with libc 5.4 or glibc 2.0 and up)
   SCO 5.0.4 (tested with gcc 2.8.1 and cc)
   Solaris 2.5.x and up
   UnixWare 7.1
@@ -914,12 +914,12 @@ make up the metacycbuff, the size of those cycbuffs and where they will be
 stored.  Some OSes do not support files larger than 2GB which will force
 all of your cycbuffs to be < 2GB.  Some versions of Linux are known to
 have this limitation, FreeBSD does not.  Some OSes that support large
-files don't support block access to large raw partitions (Solaris is in
-this category); on those OSes, if you want cycbuffs over 2GB, you'll have
-to use regular files.  If in doubt, keep your cycbuffs smaller than 2GB.
-Also when laying out your cycbuffs, you will want to try to arrange them
-across as many physical disks as possible (or use a striped disk array and
-put them all on that).
+files don't support block access to large raw partitions (Solaris prior to
+Solaris 7 or not running in 64-bit mode is in this category); on those
+OSes, if you want cycbuffs over 2GB, you'll have to use regular files.  If
+in doubt, keep your cycbuffs smaller than 2GB.  Also when laying out your
+cycbuffs, you will want to try to arrange them across as many physical
+disks as possible (or use a striped disk array and put them all on that).
 
 For each cycbuff you will be creating, add a line to F<cycbuff.conf> like
 the following:
@@ -1139,6 +1139,14 @@ the major and minor device numbers from the existing devices in /dev.
 There's a small shell script in cycbuff.conf(5) that may help with this.
 Make sure to create the device files in the location INN expects them
 (specified in F<cycbuff.conf>).
+
+Solaris users please note:  On Solaris, do not use raw devices that
+include the first cylinder of the disk.  Solaris doesn't protect the
+superblock from being overwritten by an application writing to raw devices
+and includes it in the first cylinder of the disk, so unless you use a
+slice that starts with cylinder 1 instead of 0, INN will invalidate the
+partition table when it tries to initialize the cycbuff and all further
+accesses will fail until you repartition.
 
 =head1 Creating the Database Files
 
