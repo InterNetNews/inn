@@ -34,8 +34,6 @@ extern "C" {
 
 #define DISPOSE(p)		free(p)
 
-    /* This properly belongs in libinn.h. */
-extern int (*xmemfailure)();
 #define ONALLOCFAIL(func)		(xmemfailure = (func))
 
 #endif	/* !defined(NEW) */
