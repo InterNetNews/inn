@@ -1,6 +1,7 @@
 #!@_PATH_PERL@
 
 # mailpost - yet another mail-to-news filter
+# doka 11may99 [fixed duplicate headers problem]
 # brister 19oct98 cleaned up somewhat for perl v. 5. and made a little more robust.
 # vixie 29jan95 RCS'd [$Id$]
 # vixie 15jun93 [added -m]
@@ -258,6 +259,10 @@ $real_news_hdrs .= "Distribution: ${distribution}\n" if defined($distribution);
 $real_news_hdrs .= "Approved: ${approved}\n"         if defined($approved);
 $real_news_hdrs .= "References: ${references}\n"     if defined($references);
 
+# Remove duplicate headers.
+my %headers = ();
+$real_news_hdrs =~ s/((.*?:) .*?($|\n)([ \t]+.*?($|\n))*)/$headers{$2}++?"":"$1"/ges;
+
 # Inews writes error messages to stdout. We want to capture those and mail
 # them back to the newsmaster. Trying to write and read from a subprocess is 
 # ugly and prone to deadlock, so we use a temp file.
@@ -286,11 +291,11 @@ ${real_news_hdrs}Date: ${dateHdr}
 ${weird_mail_hdrs}
 EOF
     
-# print TMPFILE $line, "\n" ;	# left over from header parsing loop
-print TMPFILE <STDIN>;
-# do we really want to add this next line? (inews will append a signature)
-print TMPFILE "---\n" ; 
+my $rest;
+$rest .= $_ while (<STDIN>);
+$rest =~ s/\n*$/\n/g;		# Remove trailing \n except very last
 
+print TMPFILE $rest;
 close TMPFILE ;
 
 if ( ! $tmpfile ) {
