@@ -1,6 +1,36 @@
-=head1 Current
+=head1 Upgrading from 2.2 to 2.3
 
-Here are the changes for the latest version of INN.
+This section is still a work in progress and is not complete.  There may
+be additional things to watch out for not listed here; if you run across
+any, please let inn-bugs@isc.org know about them.
+
+Simply doing a make update is not sufficient to upgrade.  For one, several
+of the scripts that live in the F<samples> directory have been updated,
+and some of those updates are required to work with INN 2.3.  (It's
+possible that this will be fixed before the final 2.3 release.)
+
+The history file format changed between 2.2 and 2.3, as did the overview
+format.  Regardless of whether you were using the storage API or
+traditional spool under 2.2, you'll need to rebuild your overview and
+history files.  The program to use to rebuild the history file is makedbz,
+not makehistory.  makehistory is used to rebuild the overview database.
+
+For a reader machine, F<nnrp.access> has been replaced by F<readers.conf>.
+There currently isn't a program to convert between the old format and the
+new format (if you'd like to contribute one, it would be welcomed
+gratefully).  You may need to look over the sample F<readers.conf> and
+readers.conf(5) to understand how to write a file equivalent to your
+current F<nnrp.access>.
+
+The flags for overchan have changed, plus you probably don't want to run
+overchan at all any more.  Letting innd write overview data itself results
+in somewhat slower performance, but is more reliable and has a better
+failure mode under high loads.  Writing overview data directly is the
+default, so in a normal upgrade from 2.2 to 2.3 you'll want to comment out
+or remove your overchan entry in F<newsfeeds> and set useoverchan to false
+in F<inn.conf>.
+
+=head1 Changes from 2.2 to 2.3
 
 =over 2
 
@@ -34,9 +64,16 @@ multiple articles in a single file.  See F<INSTALL> for details on it.
 
 INN now supports embedded Python filters as well as Perl and TCL filters.
 
+=item *
+
+The INN build system no longer uses subst.  This should be mostly
+transparent to users, apart from the old annoyance of modifications to
+include files being overridden again by subst when building INN being a
+thing of the past.
+
 =back
 
-=head1 Version 2.2
+=head1 Changes from 2.1 to 2.2
 
 =over 2
 
