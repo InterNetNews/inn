@@ -61,12 +61,18 @@ static void
 dump_group_index(const char *group)
 {
     struct group_index *index;
+    struct group_entry *entry;
     struct group_data *data;
 
     index = tdx_index_open(OV_READ);
     if (index == NULL)
         return;
-    data = tdx_data_open(index, group, NULL);
+    entry = tdx_index_entry(index, group);
+    if (entry == NULL) {
+        warn("cannot find group %s in the index", group);
+        return;
+    }
+    data = tdx_data_open(index, group, entry);
     if (data == NULL) {
         warn("cannot open group %s", group);
         return;
@@ -88,7 +94,7 @@ dump_overview(const char *group, ARTNUM number)
 {
     struct group_index *index;
     struct group_data *data;
-    const struct group_entry *entry;
+    struct group_entry *entry;
     struct article article;
     struct search *search;
     char datestring[256];
@@ -96,21 +102,21 @@ dump_overview(const char *group, ARTNUM number)
     index = tdx_index_open(OV_READ);
     if (index == NULL)
         return;
-    data = tdx_data_open(index, group, NULL);
-    if (data == NULL) {
-        warn("cannot open group %s", group);
-        return;
-    }
-
     entry = tdx_index_entry(index, group);
     if (entry == NULL) {
         warn("cannot find group %s", group);
         return;
     }
+    data = tdx_data_open(index, group, entry);
+    if (data == NULL) {
+        warn("cannot open group %s", group);
+        return;
+    }
+
     if (number != 0)
-        search = tdx_search_open(data, number, number);
+        search = tdx_search_open(data, number, number, entry->high);
     else
-        search = tdx_search_open(data, entry->low, entry->high);
+        search = tdx_search_open(data, entry->low, entry->high, entry->high);
     if (search == NULL) {
         if (number != 0)
             puts("Article not found");
