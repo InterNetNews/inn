@@ -669,8 +669,6 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length)
 		if (Arrived > RealNow)
 		    Arrived = RealNow;
 		(void)sprintf(date, "%lu", (unsigned long)Arrived);
-		(void)fprintf(out, "%s%c%s\n",
-			      fields[0], HIS_FIELDSEP, fields[1]);
 		(void)fprintf(out, "%s%c%s%c%s\n", fields[0], HIS_FIELDSEP,
 			      date, HIS_SUBFIELDSEP, HIS_NOEXP);
 		Offset += strlen(fields[0]) + 1
