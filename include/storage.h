@@ -16,16 +16,15 @@ typedef enum {SM_RDWR, SM_PREOPEN} SMSETUP;
 typedef unsigned char STORAGECLASS;
 typedef unsigned char STORAGETYPE;
 typedef unsigned char OVERDATAINDEX;
-typedef unsigned long OVERDATAOFFSET;
-typedef BOOL OVERDATACANCEL;
 
 typedef struct {
     STORAGETYPE         type;
     STORAGECLASS        class;
     char                token[STORAGE_TOKEN_LENGTH];
     OVERDATAINDEX	index;
-    OVERDATAOFFSET	offset;
-    OVERDATACANCEL	cancelled;
+    OFFSET_T		offset;
+    unsigned short	overlen;    /* overlen does not include '\n' at EOL */
+    short		cancelled;
 } TOKEN;
 
 typedef struct {

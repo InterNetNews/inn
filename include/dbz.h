@@ -56,7 +56,8 @@ typedef struct {
 typedef struct {
     OFFSET_T		offset[2];
     unsigned char	overindex;
-    unsigned char	reserved[3];
+    unsigned char	reserved;
+    unsigned short	overlen;
 } idxrecext;
 #if !defined(lint) && defined(__SUNPRO_C)
 #pragma pack()
@@ -71,7 +72,8 @@ typedef struct {
 typedef struct {
     OFFSET_T		offset[2];
     unsigned char	overindex;
-    unsigned char	reserved[3];
+    unsigned char	reserved;
+    unsigned short	overlen;
 } PACKED idxrecext;
 #endif
 

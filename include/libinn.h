@@ -280,15 +280,16 @@ HASH TextToHash(const char *text);
 int HashCompare(const HASH *h1, const HASH *h2);
 
 /* Overview handling */
-typedef enum {OVER_CTL, OVER_DIR, OVER_NEWDIR, OVER_MODE, OVER_NEWMODE, OVER_MMAP, OVER_BUFFERED} OVERSETUP;
+typedef enum {OVER_CTL, OVER_DIR, OVER_NEWDIR, OVER_MODE, OVER_NEWMODE, OVER_MMAP, OVER_BUFFERED, OVER_PREOPEN} OVERSETUP;
+#define MAXOVERLINE	0x10000
 #define OVERINDEXPACKSIZE      (sizeof(unsigned long) + sizeof(HASH))
 typedef struct _OVERINDEX {
     unsigned long       artnum;
     HASH                hash;
 } OVERINDEX;
 
-extern void OVERsetoffset(TOKEN *token, OFFSET_T *offset, unsigned char *overindex);
-extern void OVERmaketoken(TOKEN *token, OFFSET_T offset, unsigned char overindex);
+extern void OVERsetoffset(TOKEN *token, OFFSET_T *offset, unsigned char *overindex, unsigned short *len);
+extern void OVERmaketoken(TOKEN *token, OFFSET_T offset, unsigned char overindex, unsigned short len);
 extern BOOL OVERsetup(OVERSETUP type, void *value);
 extern BOOL OVERinit(void);
 extern BOOL OVERnewinit(void);
