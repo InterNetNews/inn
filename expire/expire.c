@@ -662,21 +662,41 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length)
 	} else  {
 	    kr = EXPkeepit(token, when, Expires);
 	    if (kr == Remove) {
-		EXPremove(token, &size, FALSE);
-	    }
+	      EXPremove(token, &size, FALSE);
+
+	      if (out) {
+		where = Offset;
+		if (Arrived > RealNow)
+		    Arrived = RealNow;
+		(void)sprintf(date, "%lu", (unsigned long)Arrived);
+		(void)fprintf(out, "%s%c%s\n",
+			      fields[0], HIS_FIELDSEP, fields[1]);
+		(void)fprintf(out, "%s%c%s%c%s\n", fields[0], HIS_FIELDSEP,
+			      date, HIS_SUBFIELDSEP, HIS_NOEXP);
+		Offset += strlen(fields[0]) + 1
+		    + strlen(date) + 1 + STRLEN(HIS_NOEXP) + 1;
+		if (EXPverbose > 3)
+		  (void)printf("remember history: %s%c%s%c%s\n",
+			fields[0], HIS_FIELDSEP, date, HIS_SUBFIELDSEP,
+			HIS_NOEXP);
+		EXPallgone++;
+	      }
+	    } else {
 	    
-	    if (out) {
+	      if (out) {
+		tokentext = TokenToText(token);
 		where = Offset;
 		(void)fprintf(out, "%s%c%s%c%s\n",
 			      fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
-			      TokenToText(token));
+			      tokentext);
 		Offset += strlen(fields[0]) + 1 + strlen(fields[1]) + 1
-		    + strlen(TokenToText(token)) + 1;
+		        + strlen(tokentest) + 1;
 		if (EXPverbose > 3)
-		    (void)printf("remember article: %s%c%s%c%s\n",
-				 fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
-				 TokenToText(token));
+		  (void)printf("keeping article: %s%c%s%c%s\n",
+			       fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
+			       tokentext);
 		EXPstillhere++;
+	      }
 	    }
 	}
     }
