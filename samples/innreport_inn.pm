@@ -1458,6 +1458,17 @@ sub collect {
     return 1 if $left =~ /cant setgroups /o;
   }
   ########
+  ## overchan
+  if ($prog eq "overchan") {
+    # times
+    if ($left =~ /(\S+) timings (\d+) arts (\d+) of (\d+) ms$/o) {
+      my ($server, $articles, $work_time, $run_time) = ($1, $2, $3, $4);
+      $server = lc $server unless $CASE_SENSITIVE;
+      # ??? What to do with numbers
+      return 1;
+    }
+  }
+  ########
   ## batcher
   if ($prog eq "batcher") {
     # times
