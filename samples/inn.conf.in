@@ -45,6 +45,7 @@ icdsynccount:		10
 hiscachesize:		0
 overcachesize:		15
 enableoverview:		true
+useoverchan:		false
 ovmethod:		tradindexed
 readertrack:		false
 strippostcc:		false
