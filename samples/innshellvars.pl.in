@@ -73,6 +73,7 @@ $sed = "@_PATH_SED@" ;
 $inndf = "@_PATH_DF@" ;
 $egrep = "@_PATH_EGREP@" ;
 $perl = "@_PATH_PERL@" ;
+$pgp = "@_PATH_PGP@" ;
 $sort = "@_PATH_SORT@" ;
 
 
