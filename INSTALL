@@ -333,13 +333,13 @@ Installing INN
 
     --enable-uucp-rnews
         If this option is given to configure, rnews will be installed setuid
-        root, owned by group uucp, and mode 4550.  This will allow the UUCP
-        subsystem to run rnews to process UUCP batches of news articles
-        (rnews changes UID to the news user right after it starts).  Prior
-        to INN 2.3, installing rnews setuid root was standard; since most
-        sites no longer use UUCP, it is no longer the default as of INN 2.3
-        and must be requested at configure time.  You probably don't want to
-        use this option unless your server accepts UUCP news batches.
+        news, owned by group uucp, and mode 4550.  This will allow the UUCP
+        subsystem to run rnews to process UUCP batches of news articles. 
+        Prior to INN 2.3, installing rnews setuid news was standard; since
+        most sites no longer use UUCP, it is no longer the default as of INN
+        2.3 and must be requested at configure time.  You probably don't
+        want to use this option unless your server accepts UUCP news
+        batches.
 
     --enable-setgid-inews
         If this option is given to configure, inews will be installed setgid
