@@ -6,17 +6,6 @@
 ##	<newsgroup>	Shell-style newsgroup pattern or specific newsgroup
 ##	<pathname>	Mail address, "%s" becomes newgroup name with dots
 ##			changed to dashes.
-gnu.*:%s@prep.ai.mit.edu
-bionet.*:%s@net.bio.net
-bln.*:%s@fu-berlin.de
-cz.*:%s@moderator.vslib.cz
-hun.*:%s@sztaki.hu
-linux.act.*:linux-submit@yggdrasil.com
-linux.*:submit-%s@yggdrasil.com
-nz.*:%s@usenet.net.nz
-pl.*:%s@usenet.pl
-relcom.*:%s@news.ussr.eu.net
-sk.*:%s@news.ke.sanet.sk
-tnn.*:%s@news.iij.ad.jp
-# *:%s@uunet.uu.net
-*:%s@moderators.uu.net
+## Direct all public hierarchies to the master moderator database.
+*:%s@moderators.isc.org
+
