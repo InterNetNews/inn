@@ -130,8 +130,6 @@ RequeueAndExit(Cookie, line, BytesInArt)
 		(void)unlink(Input);
 	    exit(0);
 	}
-	/* Don't seek back -- batch was fine. */
-	Cookie = -1;
     }
 
     /* Make an appropriate spool file. */
@@ -337,6 +335,7 @@ main(ac, av)
 	/* Record line length in case we do an ftell. Not portable to
 	 * systems with non-Unix file formats. */
 	length = strlen(line);
+	Cookie = ftell(stdin) - length;
 
 	/* Get lines like "name size" */
 	if ((p = strchr(line, '\n')) == NULL) {
@@ -436,7 +435,6 @@ main(ac, av)
 		BytesInCB += strlen(InitialString) + 1;
 		BytesWritten += strlen(InitialString) + 1;
 	    }
-	    Cookie = ftell(stdin) - length;
 	    goto SendIt;
 	}
 
@@ -476,7 +474,7 @@ main(ac, av)
 		    QIOclose(qp);
 		else
 		    (void)close(artfd);
-		RequeueAndExit(Cookie, line, BytesInArt);
+		RequeueAndExit(Cookie, (char *)NULL, 0L);
 	    }
 
 	    if ((F = BATCHstart()) == NULL) {
@@ -488,7 +486,6 @@ main(ac, av)
 		    (void)close(artfd);
 		break;
 	    }
-	    Cookie = ftell(stdin) - length;
 	}
 
     SendIt:
@@ -542,6 +539,7 @@ main(ac, av)
 	ArtsWritten++;
 
 	if (GotInterrupt) {
+	    Cookie = ftell(stdin);
 	    BATCHstatus = BATCHclose(F);
 	    RequeueAndExit(Cookie, line, BytesInArt);
 	}
