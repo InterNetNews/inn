@@ -53,7 +53,7 @@ struct stbufs {		/* for each article we are procesing */
 	char *st_id;		/* message ID */
 	int   st_retry;		/* retry count */
 	int   st_age;		/* age count */
-	QIOSTATE *st_qp;	/* IO to read article contents */
+	ARTHANDLE *art;		/* arthandle to read article contents */
 	int   st_hash;		/* hash value to speed searches */
 	long  st_size;		/* article size */
 };
@@ -163,12 +163,10 @@ STATIC FILE *HistorySeek(char *MessageID)
 **  Return TRUE if the history file has the article expired.
 */
 STATIC BOOL
-Expired(MessageID)
-    char		*MessageID;
-{
-    register int	c;
-    register int	i;
-    register FILE	*F;
+Expired(char *MessageID) {
+    int		c;
+    int		i;
+    FILE	*F;
 
     if ((F = HistorySeek(MessageID)) == NULL)
 	/* Assume the worst. */
@@ -194,8 +192,7 @@ Expired(MessageID)
 **  Flush and reset the site's output buffer.  Return FALSE on error.
 */
 STATIC BOOL
-REMflush()
-{
+REMflush() {
     int		i;
 
     if (REMbuffptr == REMbuffer) return TRUE; /* nothing buffered */
@@ -210,16 +207,13 @@ REMflush()
 **  the protocol.
 */
 STATIC int
-stindex(MessageID, hash)
-    char		*MessageID;
-    int hash;
-{
-    register int i;
+stindex(char *MessageID, int hash) {
+    int i;
 
     for (i = 0; i < STNBUF; i++) { /* linear search for ID */
 	if ((stbuf[i].st_id) && (stbuf[i].st_id[0])
 	 && (stbuf[i].st_hash == hash)) {
-	    register int n;
+	    int n;
 
 	    if (strcasecmp(MessageID, stbuf[i].st_id)) continue;
 
@@ -235,11 +229,9 @@ stindex(MessageID, hash)
 
 /* stidhash(): calculate a hash value for message IDs to speed comparisons */
 STATIC int
-stidhash(MessageID)
-    char                *MessageID;
-{
-    register char *p;
-    register int hash;
+stidhash(char *MessageID) {
+    char	*p;
+    int		hash;
 
     hash = 0;
     for (p = MessageID + 1; *p && (*p != '>'); p++) {
@@ -255,13 +247,8 @@ stidhash(MessageID)
 
 /* stalloc(): save path, ID, and qp into one of the streaming mode entries */
 STATIC int
-stalloc(Article, MessageID, qp, hash)
-    char		*Article;
-    char		*MessageID;
-    QIOSTATE		*qp;
-    int			hash;
-{
-    register int i;
+stalloc(char *Article, char *MessageID, ARTHANDLE *art, int hash) {
+    int i;
 
     for (i = 0; i < STNBUF; i++) {
 	if ((!stbuf[i].st_fname) || (stbuf[i].st_fname[0] == '\0')) break;
@@ -282,7 +269,7 @@ stalloc(Article, MessageID, qp, hash)
     if (!stbuf[i].st_id) stbuf[i].st_id = NEW(char, NNTP_STRLEN);
     (void)strcpy(stbuf[i].st_fname, Article);
     (void)strcpy(stbuf[i].st_id, MessageID);
-    stbuf[i].st_qp = qp;
+    stbuf[i].art = art;
     stbuf[i].st_hash = hash;
     stbuf[i].st_retry = 0;
     stbuf[i].st_age = 0;
@@ -292,12 +279,11 @@ stalloc(Article, MessageID, qp, hash)
 
 /* strel(): release for reuse one of the streaming mode entries */
 STATIC void
-strel(i)
-    int		i;
-{
-	if (stbuf[i].st_qp) {
-	    QIOclose(stbuf[i].st_qp);
-	    stbuf[i].st_qp = 0;
+strel(int i) {
+	if (stbuf[i].art) {
+	    SMfreearticle(stbuf[i].art);
+	    DISPOSE(stbuf[i].art);
+	    stbuf[i].art = NULL;
 	}
 	if (stbuf[i].st_id) stbuf[i].st_id[0] = '\0';
 	if (stbuf[i].st_fname) stbuf[i].st_fname[0] = '\0';
@@ -308,15 +294,8 @@ strel(i)
 **  Send a line to the server, adding the dot escape and \r\n.
 */
 STATIC BOOL
-REMwrite(p, i, escdot)
-    register char	*p;
-    register int	i;
-    register BOOL	escdot;
-{
-    static char		HDR[] = "Content-Transfer-Encoding:";
-    static char		COD[] =
-		"Content-Transfer-Encoding: quoted-printable\r\n";
-    int			size;
+REMwrite(char *p, int i, BOOL escdot) {
+    int	size;
 
     /* Buffer too full? */
     if (REMbuffend - REMbuffptr < i + 3) {
@@ -346,15 +325,12 @@ REMwrite(p, i, escdot)
 **  Send a line to the server, adding the dot escape and \r\n.
 */
 STATIC BOOL
-REMwriteQuoted(p, i)
-    register char	*p;
-    register int	i;
-{
-    static char		HEXDIGITS[] = "0123456789ABCDEF";
-    register char	*dest;
-    register int	size;
-    register int	count;
-    register int	prev;
+REMwriteQuoted(char *p, int i) {
+    static char	HEXDIGITS[] = "0123456789ABCDEF";
+    char	*dest;
+    int		size;
+    int		count;
+    int		prev;
 
     /* Buffer too full? */
     if (REMbuffend - REMbuffptr < i + 3) {
@@ -407,9 +383,7 @@ REMwriteQuoted(p, i)
 **  Print transfer statistics, clean up, and exit.
 */
 STATIC NORETURN
-ExitWithStats(x)
-    int			x;
-{
+ExitWithStats(int x) {
     static char		QUIT[] = "quit";
     TIMEINFO		Now;
     double		usertime;
@@ -455,8 +429,7 @@ ExitWithStats(x)
 **  to be the batchfile.
 */
 STATIC void
-CloseAndRename()
-{
+CloseAndRename() {
     /* Close the files, rename the temporary. */
     if (BATCHqp) {
 	QIOclose(BATCHqp);
@@ -483,10 +456,7 @@ CloseAndRename()
 **  a file write error, exit so that the original input is left alone.
 */
 STATIC void
-Requeue(Article, MessageID)
-    char	*Article;
-    char	*MessageID;
-{
+Requeue(char *Article, char *MessageID) {
     /* Temp file already open? */
     if (BATCHfp == NULL) {
 	(void)mktemp(BATCHtemp);
@@ -517,11 +487,8 @@ Requeue(Article, MessageID)
 **  Requeue an article then copy the rest of the batch file out.
 */
 STATIC void
-RequeueRestAndExit(Article, MessageID)
-    char		*Article;
-    char		*MessageID;
-{
-    register char	*p;
+RequeueRestAndExit(char *Article, char *MessageID) {
+    char	*p;
 
     if (!AlwaysRewrite
      && STATaccepted == 0 && STATrejected == 0 && STATrefused == 0
@@ -532,7 +499,7 @@ RequeueRestAndExit(Article, MessageID)
 
     (void)fprintf(stderr, "Rewriting batch file and exiting.\n");
     if (CanStream) {	/* streaming mode has a buffer of articles */
-	register int i;
+	int i;
 
 	for (i = 0; i < STNBUF; i++) {    /* requeue unacknowledged articles */
 	    if ((stbuf[i].st_fname) && (stbuf[i].st_fname[0] != '\0')) {
@@ -582,9 +549,7 @@ RequeueRestAndExit(Article, MessageID)
 **  Clean up the NNTP escapes from a line.
 */
 STATIC char *
-REMclean(buff)
-    char	*buff;
-{
+REMclean(char *buff) {
     char	*p;
 
     if ((p = strchr(buff, '\r')) != NULL)
@@ -602,16 +567,13 @@ REMclean(buff)
 **  and the dot escape.  Return TRUE if okay, *or we got interrupted.*
 */
 STATIC BOOL
-REMread(start, size)
-    char		*start;
-    int			size;
-{
+REMread(char *start, int size) {
     static int		count;
     static char		buffer[BUFSIZ];
     static char		*bp;
-    register char	*p;
-    register char	*q;
-    register char	*end;
+    char		*p;
+    char		*q;
+    char		*end;
     struct timeval	t;
     FDSET		rmask;
     int			i;
@@ -677,10 +639,7 @@ REMread(start, size)
 **  Handle the interrupt.
 */
 static void
-Interrupted(Article, MessageID)
-    char	*Article;
-    char	*MessageID;
-{
+Interrupted(char *Article, char *MessageID) {
     (void)fprintf(stderr, "Interrupted\n");
     RequeueRestAndExit(Article, MessageID);
 }
@@ -690,53 +649,14 @@ Interrupted(Article, MessageID)
 **  Send a whole article to the server.
 */
 STATIC BOOL
-REMsendarticle(Article, MessageID, qp)
-    char		*Article;
-    char		*MessageID;
-    register QIOSTATE	*qp;
-{
-    register char	*p;
-    register BOOL	InHeaders;
-    long		length;
-    char		buff[NNTP_STRLEN];
+REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
+    char	*p;
+    char	buff[NNTP_STRLEN];
 
-    length = 0;
-    for (InHeaders = TRUE; ; ) {
-	if ((p = QIOread(qp)) == NULL) {
-	    if (QIOtoolong(qp)) {
-		(void)fprintf(stderr, "Line too long in \"%s\"\n", Article);
-		(void)QIOread(qp);
-		continue;
-	    }
-	    if (QIOerror(qp)) {
-		(void)fprintf(stderr, "Can't read \"%s\", %s\n",
-			Article, strerror(errno));
-		return FALSE;
-	    }
-
-	    /* Normal EOF. */
-	    break;
-	}
-	if (*p == '\0')
-	    InHeaders = FALSE;
-
-	if (InHeaders) {
-	    if (!REMwrite(p, QIOlength(qp), TRUE)) {
-	        (void)fprintf(stderr, "Can't send \"%s\", %s\n",
-		        Article, strerror(errno));
-	        return FALSE;
-	    }
-	    length += QIOlength(qp);
-	}
-	if (GotInterrupt)
-	    Interrupted(Article, MessageID);
-    }
-    /* Write the terminator. */
-    if (!REMwrite(".", 1, FALSE)) {
-	(void)fprintf(stderr, "Can't send \"%s\", %s\n",
-		Article, strerror(errno));
+    if (!REMflush())
 	return FALSE;
-    }
+    if (xwrite(ToServer, art->data, art->len) < 0)
+	return FALSE;
     if (GotInterrupt)
 	Interrupted(Article, MessageID);
     if (Debug)
@@ -779,14 +699,14 @@ REMsendarticle(Article, MessageID, qp)
 	break;
     case NNTP_TOOKIT_VAL:
 	STATaccepted++;
-	STATacceptedsize += (double)length;
+	STATacceptedsize += (double)art->len;
 	break;
     case NNTP_REJECTIT_VAL:
         if (logRejects)
             syslog(L_NOTICE, REJECTED, REMhost,
                    MessageID, Article, REMclean(buff));
 	STATrejected++;
-	STATrejectedsize += (double)length;
+	STATrejectedsize += (double)art->len;
 	break;
     }
 
@@ -799,35 +719,29 @@ REMsendarticle(Article, MessageID, qp)
 **  Get the Message-ID header from an open article.
 */
 STATIC char *
-GetMessageID(qp)
-    register QIOSTATE	*qp;
-{
-    static char		HDR[] = "Message-ID:";
-    static char		*buff;
-    static int          buffsize = 0;
-    register char	*p;
+GetMessageID(ARTHANDLE *art) {
+    static char	*buff;
+    static int	buffsize = 0;
+    char	*p, *q;
 
-    while ((p = QIOread(qp)) != NULL)
-	if ((*p == 'M' && EQn(p, HDR, STRLEN(HDR)))
-	 || ((*p == 'M' || *p == 'm') && caseEQn(p, HDR, STRLEN(HDR)))) {
-	    /* Found the header -- skip whitespace. */
-	    for (p += STRLEN(HDR); ISWHITE(*p); p++)
-		continue;
-	    if (*p == '\0')
-		/* Header is empty*/
-		break;
-	    if (strlen(p) > buffsize) {
-		if (buffsize)
-		    RENEW(buff, char, strlen(p) + 1);
-		else
-		    buff = NEW(char, strlen(p) + 1);
-		buffsize = strlen(p);
-		
-	    }
-	    (void)strcpy(buff, p);
-	    return buff;
-	}
-    return NULL;
+    if ((p = (char *)HeaderFindMem(art->data, art->len, "Message-ID", 10)) == NULL)
+	return NULL;
+    for (q = p; q < art->data + art->len; q++) {
+        if (*q == '\r' || *q == '\n')
+            break;
+    }
+    if (q == art->data + art->len)
+	return NULL;
+    if (buffsize < q - p) {
+	if (buffsize == 0)
+	    buff = NEW(char, q - p + 1);
+	else
+	    RENEW(buff, char, q - p + 1);
+	buffsize = q - p;
+    }
+    memcpy(buff, p, q - p);
+    buff[q - p] = '\0';
+    return buff;
 }
 
 
@@ -835,9 +749,7 @@ GetMessageID(qp)
 **  Mark that we got interrupted.
 */
 STATIC SIGHANDLER
-CATCHinterrupt(s)
-    int		s;
-{
+CATCHinterrupt(int s) {
     GotInterrupt = TRUE;
     /* Let two interrupts kill us. */
     (void)xsignal(s, SIG_DFL);
@@ -849,9 +761,7 @@ CATCHinterrupt(s)
 */
 /* ARGSUSED0 */
 STATIC SIGHANDLER
-CATCHalarm(s)
-    int		s;
-{
+CATCHalarm(int s) {
     GotAlarm = TRUE;
     if (JMPyes)
 	longjmp(JMPwhere, 1);
@@ -861,9 +771,7 @@ CATCHalarm(s)
 ** return TRUE on failure.
 */
 STATIC BOOL
-check(i)
-    int	i; /* index of stbuf to send check for */
-{
+check(int i) {
     char	buff[NNTP_STRLEN];
 
     /* send "check <ID>" to the other system */
@@ -891,18 +799,26 @@ check(i)
 ** return TRUE on failure.
 */
 STATIC BOOL
-takethis(i)
-    int i;	/* index to stbuf to be sent */
-{
+takethis(int i) {
     char	buff[NNTP_STRLEN];
+    ARTHANDLE	*art;
+    TOKEN	token;
 
-    if (!stbuf[i].st_qp) { /* should already be open but ... */
+    if (!stbuf[i].art) { /* should already be open but ... */
 	/* Open the article. */
-	if (!(stbuf[i].st_qp = QIOopen(stbuf[i].st_fname))) {
+	if (!IsToken(stbuf[i].st_fname)) {
 	    strel(i);
 	    ++STATmissing;
 	    return FALSE; /* Not an error. Could be canceled or expired */
 	}
+	token = TextToToken(stbuf[i].st_fname);
+	if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
+	    strel(i);
+	    ++STATmissing;
+	    return FALSE; /* Not an error. Could be canceled or expired */
+	}
+	stbuf[i].art = NEW(ARTHANDLE, 1);
+	*stbuf[i].art = *art;
     }
     /* send "takethis <ID>" to the other system */
     (void)sprintf(buff, "takethis %s", stbuf[i].st_id);
@@ -916,11 +832,12 @@ takethis(i)
     if (GotInterrupt)
 	Interrupted((char *)0, (char *)0);
     if (!REMsendarticle(stbuf[i].st_fname, stbuf[i].st_id,
-	    stbuf[i].st_qp))
+	    stbuf[i].art))
 	return TRUE;
-    stbuf[i].st_size = QIOtell(stbuf[i].st_qp);
-    QIOclose(stbuf[i].st_qp);	/* should not need file again */
-    stbuf[i].st_qp = 0;		/* so close to free descriptor */
+    stbuf[i].st_size = stbuf[i].art->len;
+    SMfreearticle(stbuf[i].art);	/* should not need file again */
+    DISPOSE(stbuf[i].art);		/* so close to free descriptor */
+    stbuf[i].art = 0;		/* so close to free descriptor */
     stbuf[i].st_age = 0;
     /* That all.  Response is checked later by strlisten() */
     return FALSE;
@@ -932,8 +849,7 @@ takethis(i)
 ** return TRUE on failure.
 */
 STATIC BOOL
-strlisten()
-{
+strlisten() {
     int		resp;
     int		i;
     char	*id, *p;
@@ -1031,20 +947,18 @@ strlisten()
 **  Print a usage message and exit.
 */
 STATIC NORETURN
-Usage()
-{
+Usage() {
     (void)fprintf(stderr,
 	"Usage: innxmit [-a] [-c] [-d] [-p] [-r] [-s] [-t#] [-T#] host file\n");
     exit(1);
 }
 
 
-int main(int ac, char *av[])
-{
+int main(int ac, char *av[]) {
     static char		SKIPPING[] = "Skipping \"%s\" --%s?\n";
     int	                i;
     char	        *p;
-    QIOSTATE	        *qp;
+    ARTHANDLE		*art;
     TIMEINFO		Now;
     FILE		*From;
     FILE		*To;
@@ -1058,6 +972,7 @@ int main(int ac, char *av[])
     unsigned int	TotalTimeout;
     int                 port = NNTP_PORT;
     BOOL		val;
+    TOKEN		token;
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
@@ -1266,7 +1181,7 @@ int main(int ac, char *av[])
 		for (i = 0; i < STNBUF; i++) { /* reset buffers */
 		    stbuf[i].st_fname = 0;
 		    stbuf[i].st_id = 0;
-		    stbuf[i].st_qp = 0;
+		    stbuf[i].art = 0;
 		}
 		stnq = 0;
 	    }
@@ -1362,10 +1277,11 @@ int main(int ac, char *av[])
             continue;
         }
 
+	if (!IsToken(Article))
+            continue;
+	token = TextToToken(Article);
 	/* Open the article. */
-	qp = QIOopen(Article);
-
-	if (qp == NULL) {
+	if ((art = SMretrieve(token, RETR_HEAD)) == NULL) {
 	    if ((SMerrno == SMERR_NOENT) || (SMerrno == SMERR_UNINIT)) {
 		++STATmissing;
 		continue;
@@ -1378,23 +1294,16 @@ int main(int ac, char *av[])
 	}
 
 	if (Purging) {
-	    QIOclose(qp);
+	    SMfreearticle(art);
 	    Requeue(Article, MessageID);
 	    continue;
 	}
 
 	/* Get the Message-ID from the article if we need to. */
 	if (MessageID == NULL) {
-	    if ((MessageID = GetMessageID(qp)) == NULL) {
+	    if ((MessageID = GetMessageID(art)) == NULL) {
 		(void)fprintf(stderr, SKIPPING, Article, "no Message-ID");
-		QIOclose(qp);
-		continue;
-	    }
-	    if (QIOrewind(qp) < 0) {
-		(void)fprintf(stderr, "Can't rewind \"%s\", %s -- requeue\n",
-			Article, strerror(errno));
-		QIOclose(qp);
-		Requeue(Article, (char *)NULL);
+		SMfreearticle(art);
 		continue;
 	    }
 	}
@@ -1412,7 +1321,7 @@ int main(int ac, char *av[])
 		if (Debug)
 		    (void)fprintf(stderr, "Skipping duplicate ID %s\n",
 							    MessageID);
-		QIOclose(qp);
+		SMfreearticle(art);
 		continue;
 	    }
 	    /* This code tries to optimize by sending a burst of "check"
@@ -1430,9 +1339,9 @@ int main(int ac, char *av[])
 		}
 	    }
 	    /* save new article in the buffer */
-	    i = stalloc(Article, MessageID, qp, hash);
+	    i = stalloc(Article, MessageID, art, hash);
 	    if (i < 0) {
-		QIOclose(qp);
+		SMfreearticle(art);
 		RequeueRestAndExit(Article, MessageID);
 	    }
 	    if (DoCheck && (stnofail < STNC)) {
@@ -1469,7 +1378,7 @@ int main(int ac, char *av[])
 	if (!REMwrite(buff, (int)strlen(buff), FALSE)) {
 	    (void)fprintf(stderr, "Can't offer article, %s\n",
 		    strerror(errno));
-	    QIOclose(qp);
+	    SMfreearticle(art);
 	    RequeueRestAndExit(Article, MessageID);
 	}
 	STAToffered++;
@@ -1481,7 +1390,7 @@ int main(int ac, char *av[])
 	/* Does he want it? */
 	if (!REMread(buff, (int)sizeof buff)) {
 	    (void)fprintf(stderr, "No reply to ihave, %s\n", strerror(errno));
-	    QIOclose(qp);
+	    SMfreearticle(art);
 	    RequeueRestAndExit(Article, MessageID);
 	}
 	if (GotInterrupt)
@@ -1512,7 +1421,7 @@ int main(int ac, char *av[])
 	    RequeueRestAndExit(Article, MessageID);
 	    /* NOTREACHED */
 	case NNTP_SENDIT_VAL:
-	    if (!REMsendarticle(Article, MessageID, qp))
+	    if (!REMsendarticle(Article, MessageID, art))
 		RequeueRestAndExit(Article, MessageID);
 	    break;
 	case NNTP_HAVEIT_VAL:
@@ -1525,7 +1434,7 @@ int main(int ac, char *av[])
 #endif	/* defined(NNTP_SENDIT_LATER) */
 	}
 
-	QIOclose(qp);
+	SMfreearticle(art);
     }
     if (CanStream) { /* need to wait for rest of ACKs */
 	while (stnq > 0) {

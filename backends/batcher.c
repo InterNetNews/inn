@@ -231,8 +231,9 @@ main(ac, av)
     int		ArtsInCB;
     int		length;
     struct stat	Sb;
-    BOOL Token;
-    QIOSTATE	*qp;
+    TOKEN	token;
+    ARTHANDLE	*art;
+    char	*artdata;
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
@@ -363,50 +364,19 @@ main(ac, av)
 
 	/* Open the file. */
 	if (IsToken(p)) {
-	    if ((qp = QIOopen(p)) == NULL) {
+	    token = TextToToken(p);
+	    if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
 		if ((SMerrno != SMERR_NOENT) && (SMerrno != SMERR_UNINIT))
 		    (void)fprintf(stderr, SKIPPING,
 			    Host, p, SMerrorstr);
 		continue;
 	    }
 	    BytesInArt = -1;
-	    Token = TRUE;
+	    artdata = FromWireFmt(art->data, art->len, &BytesInArt);
+	    SMfreearticle(art);
 	} else {
-	    if ((artfd = open(p, O_RDONLY)) < 0) {
-	        if (errno != ENOENT)
-		    (void)fprintf(stderr, SKIPPING, Host, p, strerror(errno));
-	        if (AltSpool == NULL)
-		    continue;
-	        (void)sprintf(buff, "%s/%s", AltSpool, p);
-	        if ((artfd = open(buff, O_RDONLY)) < 0) {
-		    if (errno != ENOENT)
-		        (void)fprintf(stderr, SKIPPING,
-			        Host, buff, strerror(errno));
-		    continue;
-	        }
-	    }
-	    Token = FALSE;
-	}
-
-	/* If we need to, get its size. */
-	if (BytesInArt <= 0) {
-	    if (Token) {
-		BytesInArt = 0;
-		while(QIOread(qp) != NULL)
-		    BytesInArt += QIOlength(qp) + 1;
-	    } else {
-		if (fstat(artfd, &Sb) < 0) {
-		    (void)fprintf(stderr, SKIPPING, Host, line, strerror(errno));
-		    (void)close(artfd);
-		    continue;
-		}
-		if (!S_ISREG(Sb.st_mode)) {
-		    (void)fprintf(stderr, SKIPPING, Host, line, "not a file");
-		    (void)close(artfd);
-		    continue;
-		}
-		BytesInArt = Sb.st_size;
-	    }
+	    (void)fprintf(stderr, SKIPPING, Host, p, "not token");
+	    continue;
 	}
 
 	/* Have an open article, do we need to open a batch?  This code
@@ -415,19 +385,11 @@ main(ac, av)
 	 * a bit more clear. */
 	if (F == NULL) {
 	    if (GotInterrupt) {
-		if (Token)
-		    QIOclose(qp);
-		else
-		    (void)close(artfd);
 		RequeueAndExit(Cookie, (char *)NULL, 0L);
 	    }
 	    if ((F = BATCHstart()) == NULL) {
 		(void)fprintf(stderr, "batcher %s cant startbatch %d %s\n",
 			Host, BATCHcount, strerror(errno));
-		if (Token)
-		    QIOclose(qp);
-		else
-		    (void)close(artfd);
 		break;
 	    }
 	    if (InitialString && *InitialString) {
@@ -449,10 +411,6 @@ main(ac, av)
 		else
 		    (void)fprintf(stderr, "batcher %s batch %d exit %d\n",
 			    Host, BATCHcount, BATCHstatus);
-		if (Token)
-		    QIOclose(qp);
-		else
-		    (void)close(artfd);
 		break;
 	    }
 	    ArtsInCB = 0;
@@ -462,28 +420,16 @@ main(ac, av)
 	    if ((MaxBatches > 0 && BATCHcount >= MaxBatches)
 	     || (MaxBytes > 0 && BytesWritten + BytesInArt >= MaxBytes)
 	     || (MaxArts > 0 && ArtsWritten + 1 >= MaxArts)) {
-		if (Token)
-		    QIOclose(qp);
-		else
-		    (void)close(artfd);
 		break;
 	    }
 
 	    if (GotInterrupt) {
-		if (Token)
-		    QIOclose(qp);
-		else
-		    (void)close(artfd);
 		RequeueAndExit(Cookie, (char *)NULL, 0L);
 	    }
 
 	    if ((F = BATCHstart()) == NULL) {
 		(void)fprintf(stderr, "batcher %s cant startbatch %d %s\n",
 			Host, BATCHcount, strerror(errno));
-		if (Token)
-		    QIOclose(qp);
-		else
-		    (void)close(artfd);
 		break;
 	    }
 	}
@@ -497,10 +443,6 @@ main(ac, av)
 	    if (fprintf(F, "%s\n", buff) == EOF || ferror(F)) {
 		(void)fprintf(stderr, "batcher %s cant write separator %s\n",
 		    Host, strerror(errno));
-		if (Token)
-		    QIOclose(qp);
-		else
-		    (void)close(artfd);
 		break;
 	    }
 	}
@@ -508,29 +450,8 @@ main(ac, av)
 	/* Write the article.  In case of interrupts, retry the read but
 	 * not the fwrite because we can't check that reliably and
 	 * portably. */
-	if (Token) {
-	    (void)QIOrewind(qp);
-	    while((p = QIOread(qp)) != NULL) {
-		if ((fprintf(F, "%s\n", p) == EOF) || ferror(F))
-		    break;
-	    }
-	    if (ferror(F)) {
-		QIOclose(qp);
-		break;
-	    }
-	    QIOclose(qp);
-	} else {
-	    while ((i = read(artfd, (POINTER)data, datasize)) > 0 || errno == EINTR)
-		if (fwrite((POINTER)data, (SIZE_T)1, (SIZE_T)i, F) != i)
-		    break;
-	    if (ferror(F)) {
-	        (void)fprintf(stderr, "batcher %s cant write article %s\n",
-		    Host, strerror(errno));
-	        (void)close(artfd);
-	        break;
-	    }
-	    (void)close(artfd);
-	}
+	if ((fprintf(F, "%s", artdata) == EOF) || ferror(F))
+	    break;
 
 	/* Update the counts. */
 	BytesInCB += BytesInArt;

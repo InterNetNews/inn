@@ -31,20 +31,18 @@ Usage()
 
 
 int
-main(ac, av)
-    int			ac;
-    char		*av[];
-{
-    static char		HDR[] = "Message-ID:";
-    int			i;
-    register QIOSTATE	*qp;
-    register QIOSTATE	*artp;
-    register char	*line;
-    register char	*text;
-    register char	*format;
-    register char	*p;
-    register BOOL	Dirty;
-    struct stat		Sb;
+main(int ac, char *av[]) {
+    static char	HDR[] = "Message-ID:";
+    int		i;
+    QIOSTATE	*qp;
+    char	*line;
+    char	*text;
+    char	*format;
+    char	*p, *q;
+    BOOL	Dirty;
+    TOKEN	token;
+    ARTHANDLE	*art;
+    int		len;
 
     /* First thing, set up logging and our identity. */
     openlog("cvtbatch", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);           
@@ -79,47 +77,42 @@ main(ac, av)
 		innconf->patharticles, strerror(errno));
 	exit(1);
     }
+    if (!SMinit()) {
+	(void)fprintf(stderr, "cvtbatch: Could not initialize the storage manager: %s", SMerrorstr);
+	exit(1);
+    }
 
     /* Loop over all input. */
     qp = QIOfdopen((int)fileno(stdin));
     while ((line = QIOread(qp)) != NULL) {
-	if (line[0] == '/'
-	 && line[strlen(innconf->patharticles)] == '/'
-	 && EQn(line, innconf->patharticles, strlen(innconf->patharticles)))
-	    line += strlen(innconf->patharticles) + 1;
-
 	for (p = line; *p; p++)
 	    if (ISWHITE(*p)) {
 		*p = '\0';
 		break;
 	    }
 
-	if ((artp = QIOopen(line)) == NULL)
-	    /* Non-existant article. */
+	if (!IsToken(line))
 	    continue;
-
-	/* Read article, looking for Message-ID header. */
-	while ((text = QIOread(artp)) != NULL) {
-	    if (*text == '\0')
-		break;
-	    if (*text == 'M' && EQn(text, HDR, STRLEN(HDR)))
-		break;
-	    if ((*text == 'M' || *text == 'm')
-	     && caseEQn(text, HDR, STRLEN(HDR)))
-		break;
-	}
-	if (text == NULL || *text == '\0') {
-	    QIOclose(artp);
+	token = TextToToken(line);
+	if ((art = SMretrieve(token, RETR_HEAD)) == NULL)
+	    continue;
+	if ((text = (char *)HeaderFindMem(art->data, art->len, "Message-ID", 10)) == NULL) {
+	    SMfreearticle(art);
 	    continue;
 	}
-
-	/* Skip to value of header. */
-	for (text += STRLEN(HDR); ISWHITE(*text); text++)
-	    continue;
-	if (*text == '\0') {
-	    QIOclose(artp);
+	len = art->len;
+	for (p = text; p < art->data + art->len; p++) {
+	    if (*p == '\r' || *p == '\n')
+		break;
+	}
+	if (p == art->data + art->len) {
+	    SMfreearticle(art);
 	    continue;
 	}
+	q = NEW(char, p - text + 1);
+	memcpy(q, text, p - text);
+	SMfreearticle(art);
+	q[p - text] = '\0';
 
 	/* Write the desired info. */
 	for (Dirty = FALSE, p = format; *p; p++) {
@@ -129,33 +122,25 @@ main(ac, av)
 	    case FEED_BYTESIZE:
 		if (Dirty)
 		    (void)putchar(' ');
-		if (stat(line, &Sb) < 0)
-		    (void)printf("0");
-		else
-		    (void)printf("%ld", Sb.st_size);
+		(void)printf("%ld", len);
 		break;
 	    case FEED_FULLNAME:
-		if (Dirty)
-		    (void)putchar(' ');
-		(void)printf("%s/%s", innconf->patharticles, line);
-		break;
-	    case FEED_MESSAGEID:
-		if (Dirty)
-		    (void)putchar(' ');
-		(void)printf("%s", text);
-		break;
 	    case FEED_NAME:
 		if (Dirty)
 		    (void)putchar(' ');
 		(void)printf("%s", line);
 		break;
+	    case FEED_MESSAGEID:
+		if (Dirty)
+		    (void)putchar(' ');
+		(void)printf("%s", q);
+		break;
 	    }
 	    Dirty = TRUE;
 	}
+	DISPOSE(q);
 	if (Dirty)
 	    (void)putchar('\n');
-
-	QIOclose(artp);
     }
 
     exit(0);

@@ -101,83 +101,6 @@ MakeArchiveDirectory(Name)
 
 
 /*
-**  Write an index entry.  Ignore I/O errors; our caller checks for them.
-*/
-STATIC void
-WriteIndex(FullName, ShortName)
-    char		*FullName;
-    char		*ShortName;
-{
-    static char		SUBJECT[] = "Subject:";
-    static char		MESSAGEID[] = "Message-ID:";
-    register char	*p;
-    register QIOSTATE	*qp;
-    char		Subject[BUFSIZ];
-    char		MessageID[BUFSIZ];
-
-    /* Open the file. */
-    if ((qp = QIOopen(FullName)) == NULL) {
-	(void)printf("%s <open error> %s\n", ShortName, strerror(errno));
-	return;
-    }
-
-    /* Scan for the desired headers. */
-    for (Subject[0] = '\0', MessageID[0] = '\0'; ; ) {
-	if ((p = QIOread(qp)) == NULL) {
-	    if (QIOerror(qp)) {
-		(void)printf("%s <read error> %s\n",
-			ShortName, strerror(errno));
-		QIOclose(qp);
-		return;
-	    }
-	    if (QIOtoolong(qp)) {
-		(void)QIOread(qp);
-		continue;
-	    }
-
-	    /* End of headers (and article) -- we're done. */
-	    break;
-	}
-
-	/* End of headers -- we're done. */
-	if (*p == '\0')
-	    break;
-
-	/* Is this a header we want? */
-	switch (*p) {
-	default:
-	    continue;
-	case 'S': case 's':
-	    if (caseEQn(p, SUBJECT, STRLEN(SUBJECT))) {
-		for (p += STRLEN(SUBJECT); ISWHITE(*p); p++)
-		    continue;
-		(void)strcpy(Subject, p);
-	    }
-	    break;
-	case 'M': case 'm':
-	    if (caseEQn(p, MESSAGEID, STRLEN(MESSAGEID))) {
-		for (p += STRLEN(MESSAGEID); ISWHITE(*p); p++)
-		    continue;
-		(void)strcpy(MessageID, p);
-	    }
-	    break;
-	}
-
-	/* Got them all? */
-	if (Subject[0] && MessageID[0])
-	    break;
-    }
-
-    /* Close file, write the line. */
-    QIOclose(qp);
-    (void)printf("%s %s %s\n",
-	    ShortName,
-	    MessageID[0] ? MessageID : "<none>",
-	    Subject[0] ? Subject : "<none>");
-}
-
-
-/*
 **  Copy a file.  Return FALSE if error.
 */
 STATIC BOOL
@@ -599,7 +522,6 @@ main(ac, av)
     Name = dest + strlen(dest);
     *Name++ = '/';
 
-    /* If storageapi is being used, initialize... */
     if (!SMinit()) {
 	(void)fprintf(stderr, "archive: Could not initialize the storage manager: %s", SMerrorstr);
 	exit(1);
@@ -740,68 +662,9 @@ main(ac, av)
 	    DISPOSE(xrefs);
 	    numxrefs = 0;
 	    xrefs = NULL;
-	}
-	else {
-	    /* Make sure we're only copying files. */
-	    if (stat(buff, &Sb) < 0) {
-	        if (errno != ENOENT)
-		    (void)fprintf(stderr, "Can't stat \"%s\", %s\n",
-			    buff, strerror(errno));
-	        continue;
-	    }
-	    if (!S_ISREG(Sb.st_mode)) {
-	        (void)fprintf(stderr, "\"%s\" is not a regular file\n", buff);
-	        continue;
-	    }
-
-	    /* Set up the destination name. */
-	    (void)strcpy(Name, buff);
-	    if (Flat) {
-	        for (last = NULL, p = Name; *p; p++)
-		    if (*p == '/') {
-		        last = p;
-		        *p = '.';
-		    }
-	        if (last)
-		    *last = '/';
-	    }
-
-#if	defined(HAVE_SYMLINK)
-	    if (Move) {
-	        if (!Copy(buff, dest))
-		    continue;
-	        if (unlink(buff) < 0 && errno != ENOENT)
-		    (void)fprintf(stderr, "Can't remove \"%s\", %s\n",
-			    buff, strerror(errno));
-	        if (symlink(dest, buff) < 0)
-		    (void)fprintf(stderr, "Can't symlink \"%s\" to \"%s\", %s\n",
-			    buff, dest, strerror(errno));
-	        continue;
-	    }
-#endif	/* defined(HAVE_SYMLINK) */
-
-	    /* Try to link the file into the archive. */
-	    if (link(buff, dest) < 0) {
-
-	        /* Make the archive directory. */
-	        if (!MakeArchiveDirectory(dest)) {
-		    (void)fprintf(stderr, "Can't mkdir for \"%s\", %s\n",
-			    dest, strerror(errno));
-		    continue;
-	        }
-
-	        /* Try to link again; if that fails, make a copy. */
-	        if (link(buff, dest) < 0 && !Copy(buff, dest))
-		    continue;
-	    }
-
-	    /* Write index. */
-	    if (Index) {
-	        WriteIndex(dest, Name);
-	        if (ferror(stdout) || fflush(stdout) == EOF)
-		    (void)fprintf(stderr, "Can't write index for \"%s\", %s\n",
-			    Name, strerror(errno));
-	    }
+	} else {
+	    (void)fprintf(stderr, "not token %s\n", buff);
+	    continue;
 	}
     }
 
