@@ -171,7 +171,7 @@ Installing INN
     --with-spool-dir=PATH
         Sets the prefix for the news spool (when using any storage method
         other than CNFS) and the overview spool.  The default is
-        PREFIX/pool.  This is another common portion of INN to move to a
+        PREFIX/spool.  This is another common portion of INN to move to a
         different file system (often /news).
 
         It's also possible to set the paths for most other sections of the
