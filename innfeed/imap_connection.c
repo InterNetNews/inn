@@ -25,6 +25,8 @@
 #include <sasl.h>
 #endif /* HAVE_SASL */
 
+#include "clibrary.h"
+
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/socket.h>
@@ -32,7 +34,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <time.h>
-#include <unistd.h>
+#include <sys/syslog.h>
 
 #include <errno.h>
 
@@ -40,10 +42,10 @@
 #include "connection.h"
 #include "endpoint.h"
 #include "host.h"
+#include "innfeed.h"
 #include "article.h"
 #include "msgs.h"
 #include "configfile.h"
-#include "clibrary.h"
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 1024
