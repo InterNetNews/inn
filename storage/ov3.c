@@ -656,6 +656,7 @@ BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, char *d
 BOOL OV3add(TOKEN token, char *data, int len) {
     char                *next;
     static char         *xrefdata;
+    char		*xrefstart;
     static int          datalen = 0;
     BOOL                found = FALSE;
     int                 xreflen;
@@ -665,18 +666,26 @@ BOOL OV3add(TOKEN token, char *data, int len) {
     GROUPHANDLE         *gh;
     GROUPENTRY		*ge;
     char                overdata[BIG_BUFFER];
-    
+
+    /*
+     * find last Xref: in the overview line.  Note we need to find the *last*
+     * Xref:, since there have been corrupted articles on Usenet with Xref:
+     * fragments stuck in other header lines.  The last Xref: is guaranteed
+     * to be from our server. 
+     */
+     
     for (next = data; ((len - (next - data)) > 6 ) && ((next = memchr(next, 'X', len - (next - data))) != NULL); ) {
 	if (memcmp(next, "Xref: ", 6) == 0) {
 	    found =  TRUE;
-	    break;
+	    xrefstart = next;
 	}
 	next++;
     }
     
     if (!found)
 	return FALSE;
-    
+
+    next = xrefstart;
     for (i = 0; (i < 2) && (next < (data + len)); i++) {
 	if ((next = memchr(next, ' ', len - (next - data))) == NULL)
 	    return FALSE;
