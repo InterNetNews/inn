@@ -16,16 +16,16 @@ ALL	= innd inndstart
 all:		$(ALL)
 
 art.o: art.c
-	$(CC) $(TCLINC) $(CFLAGS) -c art.c
+	$(CC) $(CFLAGS) $(TCLINC) -c art.c
 
 cc.o: cc.c
-	$(CC) $(PERLINC) $(CFLAGS) -c cc.c
+	$(CC) $(CFLAGS) $(PERLINC) -c cc.c
 
 perl.o: perl.c
-	$(CC) $(PERLINC) $(CFLAGS) -c perl.c
+	$(CC) $(CFLAGS) $(PERLINC) -c perl.c
 
 tcl.o: tcl.c
-	$(CC) $(TCLINC) $(CFLAGS) -c tcl.c
+	$(CC) $(CFLAGS) $(TCLINC) -c tcl.c
 
 install: $D${PATHBIN}/innd $D${PATHBIN}/inndstart
 

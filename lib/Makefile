@@ -74,7 +74,7 @@ endian: endian.c
 	$(LIBCCWITHOUTLIBTOOL) $(CFLAGS) $(LDFLAGS) -o $@ endian.c
 
 perl.o: perl.c
-	$(LIBCCWITHOUTLIBTOOL) $(PERLINC) $(CFLAGS) $(LDFLAGS) -c perl.c
+	$(LIBCCWITHOUTLIBTOOL) $(CFLAGS) $(PERLINC) $(LDFLAGS) -c perl.c
 
 ../include/autoconfig.h: endian
 	./endian >../include/autoconfig.h

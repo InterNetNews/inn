@@ -18,7 +18,7 @@ ALL	= nnrpd
 all:		$(ALL)
 
 perl.o: perl.c
-	$(CC) $(PERLINC) $(CFLAGS) -c perl.c
+	$(CC) $(CFLAGS) $(PERLINC) -c perl.c
 
 install:	$D$(NNRPD)
 
