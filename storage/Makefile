@@ -53,6 +53,7 @@ ovtest: ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
 	$(PURE) $(CC) $(CFLAGS) -I/shared/include -D_TEST_ -o ovtest ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB) $(EXTSTORAGELIBS) -L/shared/lib -ldb -lnsl -lsocket
 
 methods.h: autoconfig
+methods.c: autoconfig
 
 autoconfig: buildconfig ovbuildconfig
 	@./buildconfig `find . -name method.config -print`
@@ -80,11 +81,20 @@ $(D)$(PATHLIB)/libstorage.$(EXTLIB): libstorage.$(EXTLIB)
 	$(LI_XPUB) $? $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
-depend:		Makefile $(SOURCES)
-	makedepend $(DEFS) $(SOURCES)
+depend:	$(SOURCES)
+	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-
-interface.o: methods.h interface.h
-methods.o: interface.h
-ov.c: ../include/ov.h ovmethods.h ovinterface.h
+interface.o: interface.c ../include/config.h ../include/clibrary.h \
+ ../include/conffile.h interface.h ../include/libinn.h \
+ ../include/macros.h methods.h ../include/paths.h
+methods.o: methods.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h methods.h tradspool/tradspool.h \
+ timecaf/timecaf.h trash/trash.h cnfs/cnfs.h timehash/timehash.h
+ovmethods.o: ovmethods.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h ovinterface.h ovdb/ovdb.h \
+ buffindexed/buffindexed.h ov3/tradindexed.h
+ov.o: ov.c ../include/dbz.h ../include/libinn.h ../include/config.h \
+ ../include/configdata.h ../include/macros.h ../include/clibrary.h \
+ ../include/paths.h ../include/storage.h ../include/qio.h \
+ ../include/ov.h ovmethods.h
