@@ -107,7 +107,6 @@ rmgroup:group-admin@isc.org:*:drop
 rmgroup:tale@*uu.net:*:drop
 
 # *PGP*   See comment at top of file.
-checkgroups:*:comp.*|humanities.*|misc.*|news.*|rec.*|sci.*|soc.*|talk.*:drop
 newgroup:*:comp.*|humanities.*|misc.*|news.*|rec.*|sci.*|soc.*|talk.*:drop
 rmgroup:*:comp.*|humanities.*|misc.*|news.*|rec.*|sci.*|soc.*|talk.*:drop
 checkgroups:group-admin@isc.org:*:verify-news.announce.newgroups
@@ -153,7 +152,6 @@ rmgroup:red@redpoll.mrfs.oh.us:akr.*:doit
 ## ALABAMA & HSV (Huntsville, Alabama, USA)
 # Contact: news@news.msfc.nasa.gov
 # *PGP*   See comment at top of file.
-checkgroups:*:alabama.*|hsv.*:drop
 newgroup:*:alabama.*|hsv.*:drop
 rmgroup:*:alabama.*|hsv.*:drop
 checkgroups:news@news.msfc.nasa.gov:alabama.*|hsv.*:verify-alabama-group-admin
@@ -219,7 +217,6 @@ rmgroup:control@usenet.backbone.at:at.*:doit
 # Contact: ausadmin@aus.news-admin.org
 # URL: http://aus.news-admin.org/ 
 # *PGP*   See comment at top of file.
-checkgroups:*:aus.*:drop
 newgroup:*:aus.*:drop
 rmgroup:*:aus.*:drop
 checkgroups:ausadmin@aus.news-admin.org:aus.*:verify-ausadmin@aus.news-admin.org
@@ -245,7 +242,6 @@ rmgroup:system@asuvax.eas.asu.edu:az.*:doit
 # Contact: <ba-mod@nas.nasa.gov>
 # URL: http://ennui.org/ba/
 # *PGP*   See comment at top of file.
-checkgroups:*:ba.*:drop
 newgroup:*:ba.*:drop
 rmgroup:*:ba.*:drop
 checkgroups:ba-mod@nas.nasa.gov:ba.*:verify-ba.news.config
@@ -264,7 +260,6 @@ rmgroup:*@*:backbone.*:doit
 # Key fingerprint = F7 AD 96 D8 7A 3F 7E 84  02 0C 83 9A DB 8F EB B8
 # Syncable server: news.mayn.de (contact news@mayn.de if permission denied)
 # *PGP*   See comment at top of file.
-checkgroups:*:baynet.*:drop
 newgroup:*:baynet.*:drop
 rmgroup:*:baynet.*:drop
 checkgroups:news@mayn.de:baynet.*:verify-news.mayn.de
@@ -283,7 +278,6 @@ rmgroup:news@*netuse.de:bda.*:doit
 # Contact: usenet@innet.be
 # URL: ftp://ftp.innet.be/pub/staff/stef/
 # *PGP*   See comment at top of file.
-checkgroups:*:be.*:drop
 newgroup:*:be.*:drop
 rmgroup:*:be.*:drop
 checkgroups:news@*innet.be:be.*:verify-be.announce.newgroups
@@ -315,7 +309,6 @@ rmgroup:shibumi@*.bio.net:bionet.*:doit
 
 ## BIT (Gatewayed Mailing lists)
 # *PGP*   See comment at top of file.
-checkgroups:*:bit.*:drop
 newgroup:*:bit.*:drop
 rmgroup:*:bit.*:drop
 checkgroups:jim@american.edu:bit.*:verify-bit.admin
@@ -393,7 +386,6 @@ rmgroup:News.Support@cern.ch:cern.*:doit
 # Key URL: http://www.use-net.ch/Usenet/adminkey.html
 # *PGP*   See comment at top of file.
 # Key fingerprint = 71 80 D6 8C A7 DE 2C 70  62 4A 48 6E D9 96 02 DF
-checkgroups:*:ch.*:drop
 newgroup:*:ch.*:drop
 rmgroup:*:ch.*:drop
 checkgroups:felix.rauch@nice.ch:ch.*:verify-ch-news-admin@use-net.ch
@@ -431,7 +423,6 @@ rmgroup:pinghua@stat.berkeley.edu:chinese.*:doit
 # Contact: Dave Williams <newsmaster@demon.net>
 # URL: ftp://ftp.demon.co.uk/pub/news/doc/demon.news.txt
 # *PGP*   See comment at top of file.
-checkgroups:*:cityscp.*:drop
 newgroup:*:cityscp.*:drop
 rmgroup:*:cityscp.*:drop
 checkgroups:newsmaster@demon.net:cityscp.*:verify-demon.news
@@ -444,7 +435,6 @@ rmgroup:newsmaster@demon.net:cityscp.*:verify-demon.news
 # URL: http://www.zerberus.de/org/cl/index.html
 # Syncable server: net2.dinoex.sub.de
 # Key fingerprint: 21 ED D6 CB 05 56 6E E8  F6 F1 11 E9 2F 6C D5 BB
-checkgroups:*:cl.*:drop
 newgroup:*:cl.*:drop
 rmgroup:*:cl.*:drop
 checkgroups:cl-koordination@dinoex.sub.org:cl.*:verify-cl.koordination.einstellungen
@@ -458,7 +448,6 @@ rmgroup:cl-koordination@dinoex.sub.org:cl.*:verify-cl.koordination.einstellungen
 
 ## CLARINET ( Features and News, Available on a commercial basis)
 # *PGP*   See comment at top of file.
-checkgroups:*:clari.*:drop
 newgroup:*:clari.*:drop
 rmgroup:*:clari.*:drop
 checkgroups:cl*@clarinet.com:clari.*:verify-ClariNet.Group
@@ -517,7 +506,6 @@ rmgroup:news@mattress.atww.org:dc.*:doit
 
 ## DE (German language)
 # *PGP*   See comment at top of file.
-checkgroups:*:de.*:drop
 rmgroup:*:de.*:drop
 checkgroups:moderator@dana.de:de.*:verify-de.admin.news.announce
 newgroup:moderator@dana.de:de.*:verify-de.admin.news.announce
@@ -539,7 +527,6 @@ rmgroup:eric@*cirr.com:dfw.*:doit
 # Key URL: http://www.DK.net/Usenet/pgp.html
 # Key fingerprint = 7C B2 C7 50 F3 7D 5D 73  8C EE 2E 3F 55 80 72 FF
 # *PGP*   See comment at top of file.
-checkgroups:*:dk.*:drop
 newgroup:*:dk.*:drop
 rmgroup:*:dk.*:drop
 newgroup:news@news.dknet.dk:dk.*:verify-news@news.dknet.dk
@@ -558,7 +545,6 @@ rmgroup:*@*:duke.*:doit
 # Contact: Christiaan Keet <newsmaster@easynet.net>
 # URL: ftp://ftp.easynet.net/pub/usenet/easynet.control.txt
 # *PGP*   See comment at top of file.
-checkgroups:*:easynet.*:drop
 newgroup:*:easynet.*:drop
 rmgroup:*:easynet.*:drop
 checkgroups:newsmaster@easynet.net:easynet.*:verify-easynet.news
@@ -567,7 +553,6 @@ rmgroup:newsmaster@easynet.net:easynet.*:verify-easynet.news
 
 ## EFN & EUG (Eugene Free Computer Network, Eugene/Springfield, Oregon, USA)
 # *PGP*   See comment at top of file.
-checkgroups:*:eug.*:drop
 newgroup:*:eug.*:drop
 rmgroup:*:eug.*:drop
 checkgroups:newsadmin@efn.org:efn.*|eug.*:verify-eug.config
@@ -589,7 +574,6 @@ rmgroup:news@doc.dpc.ehime-u.ac.jp:ehime-u.*:doit
 # See: http://news.rediris.es/~moderador/grupos/newsgroups.es
 # *PGP*   See comment at top of file.
 # Key fingerprint = 3B 63 18 6F 83 EA 89 82 95 1B 7F 8D B6 ED DD 87
-checkgroups:*:es.*:drop
 newgroup:*:es.*:drop
 rmgroup:*:es.*:drop
 checkgroups:moderador@news.rediris.es:es.*:doit
@@ -604,7 +588,6 @@ rmgroup:moderador@news.rediris.es:es.*:verify-es.news
 # Contact: <mod-ena@ennui.org>
 # URL: http://ennui.org/esp/
 # *PGP*   See comment at top of file.
-checkgroups:*:esp.*:drop
 newgroup:*:esp.*:drop
 rmgroup:*:esp.*:drop
 checkgroups:mod-ena@ennui.org:esp.*:verify-esp.news.administracion
@@ -616,7 +599,6 @@ newgroup:news@noc.eu.net:eunet.*:doit
 rmgroup:news@noc.eu.net:eunet.*:doit
 
 ## EXAMPLE ( Bogus hierarchy reserved for standards documents )
-checkgroups:*@*:example.*:mail
 newgroup:*@*:example.*:mail
 rmgroup:*@*:example.*:doit
 
@@ -632,7 +614,6 @@ rmgroup:root@mbh.org:fido.*:doit
 ## FIDO.BELG.* newsgroups (FidoNet)
 # URL: http://www.z2.fidonet.org/news/fido.belg.news/
 # *PGP*   See comment at top of file.
-checkgroups:*:fido.belg.*:drop
 newgroup:*:fido.belg.*:drop
 rmgroup:*:fido.belg.*:drop
 checkgroups:fidobelg@mail.z2.fidonet.org:fido.belg.*:verify-fido.belg.news
@@ -641,7 +622,6 @@ rmgroup:fidobelg@mail.z2.fidonet.org:fido.belg.*:verify-fido.belg.news
 
 ## FIDO7
 # *PGP*   See comment at top of file.
-checkgroups:*:fido7.*:drop
 newgroup:*:fido7.*:drop
 rmgroup:*:fido7.*:drop
 checkgroups:newgroups-request@fido7.ru:fido7.*:verify-fido7.announce.newgroups
@@ -659,7 +639,6 @@ rmgroup:*@*.hut.fi:finet.*:doit
 # Contact: committee@fj-news.org
 # URL: http://www.is.tsukuba.ac.jp/~yas/fj/
 # Key URL: http://www.is.tsukuba.ac.jp/~yas/fj/fj.asc
-checkgroups:*:fj.*:drop
 newgroup:*:fj.*:drop
 rmgroup:*:fj.*:drop
 checkgroups:committee@fj-news.org:fj.*:verify-fj.news.announce
@@ -677,7 +656,6 @@ rmgroup:scheidell@fdma.fdma.com:fl.*:doit
 # See: http://news.flora.org/  for newsgroup listings and information
 # See: http://www.flora.org/russell/ for PGP keys
 # *PGP*   See comment at top of file.
-checkgroups:*:flora.*:drop
 newgroup:*:flora.*:drop
 rmgroup:*:flora.*:drop
 checkgroups:news@flora.ottawa.on.ca:flora.*:verify-flora-news
@@ -686,7 +664,6 @@ rmgroup:news@news.rediris.es:flora.*:verify-flora-news
 
 ## FR (French Language)
 # *PGP*   See comment at top of file.
-checkgroups:*:fr.*:drop
 newgroup:*:fr.*:drop
 rmgroup:*:fr.*:drop
 checkgroups:control@usenet-fr.news.eu.org:fr.*:verify-control@usenet-fr.news.eu.org
@@ -730,7 +707,6 @@ rmgroup:news@*ai.mit.edu:gnu.*:doit
 # *PGP*   See comment at top of file.
 # URL: http://www.govnews.org/govnews/
 # PGPKEY URL: http://www.govnews.org/govnews/site-setup/gov.pgpkeys
-checkgroups:*:gov.*:drop
 newgroup:*:gov.*:drop
 rmgroup:*:gov.*:drop
 checkgroups:gov-usenet-announce-moderator@govnews.org:gov.*:verify-gov.usenet.announce
@@ -750,7 +726,6 @@ rmgroup:news@*dcss.mcmaster.ca:hamilton.*:doit
 # Contact: newgroups-request@usenet.or.kr
 # PGPKEY URL: ftp://ftp.usenet.or.kr/pub/korea/usenet/pgp/PGPKEY.han
 # *PGP*   See comment at top of file.
-checkgroups:*:han.*:drop
 newgroup:*:han.*:drop
 rmgroup:*:han.*:drop
 checkgroups:newgroups-request@usenet.or.kr:han.*:verify-han.news.admin
@@ -771,7 +746,6 @@ rmgroup:hknews@comp.hkbu.edu.hk:hk.*:doit
 
 ## HOUSTON (Houston, Texas, USA)
 # *PGP*   See comment at top of file.
-checkgroups:*:houston.*:drop
 newgroup:*:houston.*:drop
 rmgroup:*:houston.*:drop
 checkgroups:news@academ.com:houston.*:verify-houston.usenet.config
@@ -782,7 +756,6 @@ rmgroup:news@academ.com:houston.*:verify-houston.usenet.config
 # rmgroup:news@academ.com:houston.*:doit
 
 ## HUN (Hungary)
-checkgroups:*:hun.*:drop
 newgroup:*:hun.*:drop
 rmgroup:*:hun.*:drop
 checkgroups:hun-mnt@news.sztaki.hu:hun.*:verify-hun.admin.news
@@ -822,7 +795,6 @@ rmgroup:rjoyner@uiuc.edu:info.*:doit
 ## IS (Iceland)
 # Contact: Marius Olafsson <news@isnet.is>
 # *PGP*   See comment at top of file.
-checkgroups:*:is.*:drop
 newgroup:*:is.*:drop
 rmgroup:*:is.*:drop
 newgroup:news@isnet.is:is.*:verify-is.isnet
@@ -838,7 +810,6 @@ rmgroup:news@news.biu.ac.il:israel.*|il.*:doit
 
 ## IT (Italian)
 # *PGP*   See comment at top of file.
-checkgroups:*:it.*:drop
 newgroup:*:it.*:drop
 rmgroup:*:it.*:drop
 checkgroups:stefano@unipi.it:it.*:verify-it.announce.newgroups
@@ -864,7 +835,6 @@ rmgroup:root@usenet.ucs.indiana.edu:iu.*:doit
 # PGP Key: http://grex.cyberspace.org/~tt/japan.admin.announce.asc
 # PGP Key: http://www.asahi-net.or.jp/~AE5T-KSN/japan/japan.admin.announce.asc
 # *PGP*   See comment at top of file.
-checkgroups:*:japan.*:drop
 newgroup:*:japan.*:drop
 rmgroup:*:japan.*:drop
 checkgroups:japan.admin.announce@news.efnet.com:japan.*:verify-japan.admin.announce@news.efnet.com
@@ -888,7 +858,6 @@ rmgroup:braultr@*csmanoirs.qc.ca:k12.*:doit
 #
 # *PGP*   See comment at top of file. 
 # Key fingerprint =  DE 19 BB 25 76 19 81 17  F0 67 D2 23 E8 C8 7C 90
-checkgroups:*:ka.*:drop
 newgroup:*:ka.*:drop
 rmgroup:*:ka.*:drop
 checkgroups:usenet@karlsruhe.org:ka.*:verify-usenet@karlsruhe.org
@@ -898,7 +867,6 @@ rmgroup:usenet@karlsruhe.org:ka.*:verify-usenet@karlsruhe.org
 
 ## KANTO
 # *PGP*   See comment at top of file.
-checkgroups:*:kanto.*:drop
 rmgroup:*:kanto.*:drop
 checkgroups:ty@kamoi.imasy.or.jp:kanto.*:verify-kanto.news.network
 # NOTE: newgroups aren't verified...
@@ -908,7 +876,6 @@ rmgroup:ty@kamoi.imasy.or.jp:kanto.*:verify-kanto.news.network
 ## KASSEL (Kassel, Germany)
 # *PGP*   See comment at top of file.
 # MAIL: pgp-public-keys@keys.de.pgp.net Subject: GET 0xC4D30EE5
-checkgroups:*:kassel.*:drop
 newgroup:*:kassel.*:drop
 rmgroup:*:kassel.*:drop
 checkgroups:dirk.meyer@dinoex.sub.org:kassel.*:verify-kassel-admin
@@ -956,7 +923,6 @@ rmgroup:*@*:local.*:drop
 # Contact: cmeli@cis.um.edu.mt
 # URL: http://www.cis.um.edu.mt/news-malta/malta-news-new-site-faq.html
 # *PGP*   See comment at top of file. 
-checkgroups:*:malta.*:drop
 newgroup:*:malta.*:drop
 rmgroup:*:malta.*:drop
 checkgroups:cmeli@cis.um.edu.mt:malta.*:verify-malta.config
@@ -975,7 +941,6 @@ rmgroup:*@*:manawatu.*:doit
 ## MAUS ( MausNet, German )
 # *PGP*   See comment at top of file. 
 # Key fingerprint: 82 52 C7 70 26 B9 72 A1  37 98 55 98 3F 26 62 3E
-checkgroups:*:maus.*:drop
 newgroup:*:maus.*:drop
 rmgroup:*:maus.*:drop
 checkgroups:guenter@gst0hb.north.de:maus.*:verify-maus-info
@@ -1018,7 +983,6 @@ rmgroup:revdoc@*uow.edu.au:melb.*:doit
 # Contact: usenet@newsgate.mensa.org
 # Key fingerprint:  A7 57 24 49 C0 D4 47 33  84 A0 52 6E F1 A4 00 5B
 # *PGP*   See comment at top of file.
-checkgroups:*:mensa.*:drop
 newgroup:*:mensa.*:drop
 rmgroup:*:mensa.*:drop
 checkgroups:usenet@newsgate.mensa.org:mensa.*:verify-mensa.config
@@ -1052,7 +1016,6 @@ rmgroup:*@*:mod.*:doit
 ## MUC (Munchen (Munich), Germany)
 # *PGP*   See comment at top of file.
 # Key fingerprint = 43 C7 0E 7C 45 C7 06 E0  BD 6F 76 CE 07 39 5E 66
-checkgroups:*:muc.*:drop
 newgroup:*:muc.*:drop
 rmgroup:*:muc.*:drop
 checkgroups:muc-cmsg@muenchen.pro-bahn.org:muc.*:verify-muc.admin
@@ -1111,7 +1074,6 @@ rmgroup:*@*:ncu.*:doit
 # URL: http://www.usenet2.org
 # *PGP*   See comment at top of file.
 # Key fingerprint: D7 D3 5C DB 18 6A 29 79  BF 74 D4 58 A3 78 9D 22
-checkgroups:*:net.*:drop
 newgroup:*:net.*:drop
 rmgroup:*:net.*:drop
 checkgroups:control@usenet2.org:net.*:verify-control@usenet2.org
@@ -1124,7 +1086,6 @@ rmgroup:control@usenet2.org:net.*:verify-control@usenet2.org
 # URL: http://www.mozilla.org/community.html
 # URL: http://www.mozilla.org/newsfeeds.html
 # Key fingerprint = B7 80 55 12 1F 9C 17 0B  86 66 AD 3B DB 68 35 EC
-checkgroups:*:netscape.*:drop
 newgroup:*:netscape.*:drop
 rmgroup:*:netscape.*:drop
 checkgroups:news@netscape.com:netscape.*:verify-netscape.public.admin
@@ -1159,7 +1120,6 @@ rmgroup:news@easnet.net:nigeria.*:doit
 # URL: http://www.kinkhorst.com/usenet/nladmin.en.html (English)
 # *PGP*   See comment at top of file.
 # Key fingerprint: 45 20 0B D5 A1 21 EA 7C  EF B2 95 6C 25 75 4D 27
-checkgroups:*:nl.*:drop
 newgroup:*:nl.*:drop
 rmgroup:*:nl.*:drop
 checkgroups:nl-admin@nic.surfnet.nl:nl.*:verify-nl.newsgroups
@@ -1175,7 +1135,6 @@ rmgroup:nl-admin@nic.surfnet.nl:nl.*:verify-nl.newsgroups
 # Several options are given in the FAQ for creating and removing groups.
 # *PGP*   See comment at top of file.
 # Key fingerprint: 6B 62 EB 53 4D 5D 2F 96  35 D9 C8 9C B0 65 0E 4C
-checkgroups:*:nl-alt.*:drop
 rmgroup:*:nl-alt.*:drop
 rmgroup:*:nl-alt.*:drop
 checkgroups:nl-alt-janitor@surfer.xs4all.nl:nl-alt.*:verify-nl-alt.config.admin
@@ -1194,7 +1153,6 @@ rmgroup:news@tesuque.cs.sandia.gov:nm.*:doit
 ## NO (Norway)
 # See also http://www.usenet.no/
 # *PGP*   See comment at top of file.
-checkgroups:*:no.*:drop
 newgroup:*:no.*:drop
 rmgroup:*:no.*:drop
 checkgroups:control@usenet.no:no.*:verify-no-hir-control
@@ -1234,7 +1192,6 @@ rmgroup:perry@piermont.com:nyc.*:doit
 # URL: http://usenet.net.nz
 # URL: http://www.faqs.org/faqs/usenet/nz-news-hierarchy
 # PGP fingerprint: 07 DF 48 AA D0 ED AA 88  16 70 C5 91 65 3D 1A 28
-checkgroups:*:nz.*:drop
 newgroup:*:nz.*:drop
 rmgroup:*:nz.*:drop
 checkgroups:root@usenet.net.nz:nz.*:verify-nz-hir-control
@@ -1289,7 +1246,6 @@ rmgroup:fxp@epix.net:pa.*:doit
 
 ## PGH (Pittsburgh, Pennsylvania, USA)
 # *PGP*   See comment at top of file.
-checkgroups:*:pgh.*:drop
 newgroup:*:pgh.*:drop
 rmgroup:*:pgh.*:drop
 checkgroups:pgh-config@psc.edu:pgh.*:verify-pgh.config
@@ -1322,7 +1278,6 @@ rmgroup:news@toads.pgh.pa.us:pitt.*:doit
 ## PL (Poland and Polish language)
 ## For more info, see http://www.ict.pwr.wroc.pl/doc/news-pl-new-site-faq.html
 # *PGP*   See comment at top of file.
-checkgroups:*:pl.*:drop
 newgroup:*:pl.*:drop
 rmgroup:*:pl.*:drop
 checkgroups:michalj@*fuw.edu.pl:pl.*:verify-pl.announce.newgroups
@@ -1356,7 +1311,6 @@ newgroup:*@*:psu.*:mail
 rmgroup:*@*:psu.*:doit
 
 ## PT (Portugal and Portuguese language)
-checkgroups:*:pt.*:drop
 newgroup:*:pt.*:drop
 rmgroup:*:pt.*:drop
 checkgroups:pmelo@*.inescc.pt:pt.*:verify-control@usenet-pt.org
@@ -1373,7 +1327,6 @@ rmgroup:*@*:pubnet.*:doit
 # The official list of relcom groups is supposed to be available from
 # URL: ftp://ftp.kiae.su/relcom/netinfo/telconfs.txt
 # *PGP*   See comment at top of file.
-checkgroups:*:relcom.*:drop
 newgroup:*:relcom.*:drop
 rmgroup:*:relcom.*:drop
 checkgroups:coord@new*.relcom.ru:relcom.*:verify-relcom.newsgroups
@@ -1398,7 +1351,6 @@ rmgroup:root@lusatia.de:sachsnet.*:doit
 # *PGP*   See comment at top of file.
 # Contact: satgroup@endicor.com
 # URL: http://www.endicor.com/~satgroup/
-checkgroups:*:sat.*:drop
 newgroup:*:sat.*:drop
 rmgroup:*:sat.*:drop
 checkgroups:satgroup@endicor.com:sat.*:verify-satgroup@endicor.com
@@ -1421,7 +1373,6 @@ rmgroup:ikluft@thunder.sbay.org:sbay.*:mail
 # Key fingerprint = 64 06 F0 AE E1 46 85 0C  BD CA 0E 53 8B 1E 73 D2
 # Key URL: http://home.pages.de/~schule-admin/schule.asc
 # *PGP*   See comment at top of file.
-checkgroups:*:schule.*:drop
 newgroup:*:schule.*:drop
 rmgroup:*:schule.*:drop
 checkgroups:newsctrl@schule.de:schule.*:verify-schule.konfig
@@ -1448,7 +1399,6 @@ rmgroup:*@*:sdsu.*:doit
 # Key URL:  http://www.usenet-se.net/pgp-key.txt
 # Key fingerprint = 68 03 F0 FD 0C C3 4E 69  6F 0D 0C 60 3C 58 63 96
 # *PGP*   See comment at top of file.
-checkgroups:*:se.*:drop
 newgroup:*:se.*:drop
 rmgroup:*:se.*:drop
 checkgroups:usenet@usenet-se.net:se.*:verify-usenet-se
@@ -1475,7 +1425,6 @@ rmgroup:archives@israel.nysernet.org:shamash.*:doit
 
 ## SI (The Republic of Slovenia)
 # *PGP*   See comment at top of file.
-checkgroups:*:si.*:drop
 newgroup:*:si.*:drop
 rmgroup:*:si.*:drop
 checkgroups:news-admin@arnes.si:si.*:verify-si.news.announce.newsgroups
@@ -1565,7 +1514,6 @@ rmgroup:*@*:test.*:mail
 ## THUR ( Thuringia, Germany )
 # *PGP*   See comment at top of file.
 # Key Fingerprint: 7E 3D 73 13 93 D4 CA 78  39 DE 3C E7 37 EE 22 F1
-checkgroups:*:thur.*:drop
 newgroup:*:thur.*:drop
 rmgroup:*:thur.*:drop
 checkgroups:usenet@thur.de:thur.*:verify-thur.net.news.groups
@@ -1611,7 +1559,6 @@ rmgroup:usenet@academ.com:tx.*:doit
 
 ## UCB ( University of California Berkeley, USA)
 # Contact: Chris van den Berg <usenet@agate.berkeley.edu>
-checkgroups:*:ucb.*:drop
 newgroup:*:ucb.*:drop
 rmgroup:*:ucb.*:drop
 checkgroups:usenet@agate.berkeley.edu:ucb.*:verify-ucb.news
@@ -1630,7 +1577,6 @@ rmgroup:usenet@mark.ucdavis.edu:ucd.*:doit
 # Key fingerprint = F7 AD 96 D8 7A 3F 7E 84  02 0C 83 9A DB 8F EB B8
 # Syncable server: news.mayn.de (contact news@mayn.de if permission denied)
 # *PGP*   See comment at top of file.
-checkgroups:*:ufra.*:drop
 newgroup:*:ufra.*:drop
 rmgroup:*:ufra.*:drop
 checkgroups:news@mayn.de:ufra.*:verify-news.mayn.de
@@ -1649,7 +1595,6 @@ rmgroup:paul@*.cso.uiuc.edu:uiuc.*:doit
 
 ## UK (United Kingdom of Great Britain and Northern Ireland)
 # *PGP*   See comment at top of file.
-checkgroups:*:uk.*:drop
 newgroup:*:uk.*:drop
 rmgroup:*:uk.*:drop
 checkgroups:control@usenet.org.uk:uk.*:verify-uk.net.news.announce
@@ -1682,7 +1627,6 @@ rmgroup:Michael.E.Hedman-1@umn.edu:umn.*:doit
 ## UN (The United Nations)
 # URL: http://www.itu.int/Conferences/un/
 # *PGP*   See comment at top of file.
-checkgroups:*:un.*:drop
 newgroup:*:un.*:drop
 rmgroup:*:un.*:drop
 checkgroups:news@news.itu.int:un.*:verify-ungroups@news.itu.int
@@ -1767,7 +1711,6 @@ rmgroup:kohe-t@*wakayama-u.ac.jp:wadai.*:doit
 ## WALES (Wales)
 # Contact: control@A470.demon.co.uk
 # *PGP*   See comment at top of file.
-checkgroups:*:wales.*:drop
 newgroup:*:wales.*:drop
 rmgroup:*:wales.*:drop
 checkgroups:control@*470.demon.co.uk:wales.*:verify-wales.config
@@ -1819,7 +1762,6 @@ rmgroup:*@*:york.*:doit
 ## Z-NETZ (German non internet based network.)
 # *PGP*   See comment at top of file.
 # MAIL: pgp-public-keys@informatik.uni-hamburg.de Subject: GET 0x40145FC9
-checkgroups:*:z-netz.*:drop
 newgroup:*:z-netz.*:drop
 rmgroup:*:z-netz.*:drop
 checkgroups:dirk.meyer@dinoex.sub.org:z-netz.*:verify-checkgroups-dinoex
