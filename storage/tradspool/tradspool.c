@@ -436,8 +436,14 @@ CheckNeedReloadDB(void) {
 /* Init routine, called by SMinit */
 
 BOOL
-tradspool_init(BOOL *selfexpire) {
-    *selfexpire = FALSE;
+tradspool_init(SMATTRIBUTE *attr) {
+    if (attr == NULL) {
+	syslog(L_ERROR, "tradspool: attr is NULL");
+	SMseterror(SMERR_INTERNAL, "attr is NULL");
+	return FALSE;
+    }
+    attr->selfexpire = FALSE;
+    attr->expensivestat = TRUE;
     return InitNGTable();
 }
 
