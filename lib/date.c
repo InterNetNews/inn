@@ -151,7 +151,7 @@ makedate(time_t clock, bool local, char *buff, size_t buflen)
         tz_name = "UTC";
     } else {
 #if HAVE_TM_ZONE
-        tz_name = tm->tm_zone;
+        tz_name = tm.tm_zone;
 #elif HAVE_VAR_TZNAME
         tz_name = tzname[(tm.tm_isdst > 0) ? 1 : 0];
 #else
