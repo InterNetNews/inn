@@ -15,6 +15,7 @@
 # include <sys/time.h>
 #endif
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
@@ -116,23 +117,20 @@ Copy(char *src, char *dest)
 	/* Failed; make any missing directories and try again. */
 	if ((p = strrchr(dest, '/')) != NULL) {
 	    if (!MakeArchiveDirectory(dest)) {
-		(void)fprintf(stderr, "Can't mkdir for \"%s\", %s\n",
-			dest, strerror(errno));
+                syswarn("cannot mkdir for %s", dest);
 		return FALSE;
 	    }
 	    out = fopen(dest, "w");
 	}
 	if (p == NULL || out == NULL) {
-	    (void)fprintf(stderr, "Can't open \"%s\" for writing, %s\n",
-		    src, strerror(errno));
+            syswarn("cannot open %s for writing", dest);
 	    return FALSE;
 	}
     }
 
     /* Opening the input file is easier. */
     if ((in = fopen(src, "r")) == NULL) {
-	(void)fprintf(stderr, "Can't open \"%s\" for reading, %s\n",
-		src, strerror(errno));
+        syswarn("cannot open %s for reading", src);
 	(void)fclose(out);
 	(void)unlink(dest);
 	return FALSE;
@@ -141,8 +139,7 @@ Copy(char *src, char *dest)
     /* Write the data. */
     while ((i = fread(buff, 1, sizeof buff, in)) != 0)
 	if (fwrite(buff, 1, i, out) != i) {
-	    (void)fprintf(stderr, "Can't write \"%s\", %s\n",
-		    dest, strerror(errno));
+            syswarn("cannot write to %s", dest);
 	    (void)fclose(in);
 	    (void)fclose(out);
 	    (void)unlink(dest);
@@ -152,15 +149,13 @@ Copy(char *src, char *dest)
 
     /* Flush and close the output. */
     if (ferror(out) || fflush(out) == EOF) {
-	(void)fprintf(stderr, "Can't close \"%s\", %s\n",
-		dest, strerror(errno));
+        syswarn("cannot flush %s", dest);
 	(void)unlink(dest);
 	(void)fclose(out);
 	return FALSE;
     }
     if (fclose(out) == EOF) {
-	(void)fprintf(stderr, "Can't close \"%s\", %s\n",
-		dest, strerror(errno));
+        syswarn("cannot close %s", dest);
 	(void)unlink(dest);
 	return FALSE;
     }
@@ -188,15 +183,13 @@ CopyArt(ARTHANDLE *art, char *dest, bool Concat)
 	/* Failed; make any missing directories and try again. */
 	if ((p = strrchr(dest, '/')) != NULL) {
 	    if (!MakeArchiveDirectory(dest)) {
-		(void)fprintf(stderr, "Can't mkdir for \"%s\", %s\n",
-			dest, strerror(errno));
+                syswarn("cannot mkdir for %s", dest);
 		return FALSE;
 	    }
 	    out = fopen(dest, mode);
 	}
 	if (p == NULL || out == NULL) {
-	    (void)fprintf(stderr, "Can't open \"%s\" for writing, %s\n",
-		    dest, strerror(errno));
+            syswarn("cannot open %s for writing", dest);
 	    return FALSE;
 	}
     }
@@ -229,8 +222,7 @@ CopyArt(ARTHANDLE *art, char *dest, bool Concat)
 	fprintf(out, "-----------\n");
     }
     if (fwrite(article.data, i, 1, out) != 1) {
-	(void)fprintf(stderr, "Can't write \"%s\", %s\n",
-		dest, strerror(errno));
+        syswarn("cannot write to %s", dest);
 	(void)fclose(out);
 	if (!Concat) (void)unlink(dest);
 	DISPOSE(article.data);
@@ -240,15 +232,13 @@ CopyArt(ARTHANDLE *art, char *dest, bool Concat)
 
     /* Flush and close the output. */
     if (ferror(out) || fflush(out) == EOF) {
-	(void)fprintf(stderr, "Can't close \"%s\", %s\n",
-		dest, strerror(errno));
+        syswarn("cannot flush %s", dest);
 	if (!Concat) (void)unlink(dest);
 	(void)fclose(out);
 	return FALSE;
     }
     if (fclose(out) == EOF) {
-	(void)fprintf(stderr, "Can't close \"%s\", %s\n",
-		dest, strerror(errno));
+        syswarn("cannot close %s", dest);
 	if (!Concat) (void)unlink(dest);
 	return FALSE;
     }
@@ -294,17 +284,6 @@ WriteArtIndex(ARTHANDLE *art, char *ShortName)
 
 
 /*
-**  Print a usage message and exit.
-*/
-static void
-Usage(void)
-{
-    fprintf(stderr, "Usage error.\n");
-    exit(1);
-}
-
-
-/*
 ** Crack an Xref line apart into separate strings, each of the form "ng:artnum".
 ** Return in "lenp" the number of newsgroups found.
 ** 
@@ -324,7 +303,7 @@ CrackXref(const char *xref, unsigned int *lenp) {
 
     /* skip pathhost */
     if ((p = strchr(xref, ' ')) == NULL) {
-	fprintf(stderr, "archive: Could not find pathhost in Xref header");
+        warn("cannot find pathhost in Xref header");
 	return NULL;
     }
     /* skip next spaces */
@@ -431,6 +410,7 @@ main(int ac, char *av[])
 
     /* First thing, set up logging and our identity. */
     openlog("archive", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "archive";
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
@@ -448,8 +428,8 @@ main(int ac, char *av[])
     while ((i = getopt(ac, av, "a:cfi:p:r")) != EOF)
 	switch (i) {
 	default:
-	    Usage();
-	    /* NOTREACHED */
+            die("usage error");
+            break;
 	case 'a':
 	    Archive = optarg;
 	    break;
@@ -475,45 +455,32 @@ main(int ac, char *av[])
     ac -= optind;
     av += optind;
     if (ac > 2)
-	Usage();
+        die("usage error");
 
     /* Do file redirections. */
     if (Redirect)
 	(void)freopen(ERRLOG, "a", stderr);
-    if (ac == 1 && freopen(av[0], "r", stdin) == NULL) {
-	(void)fprintf(stderr, "archive:  Can't open \"%s\" for input, %s\n",
-		av[0], strerror(errno));
-	    exit(1);
-    }
-    if (Index && freopen(Index, "a", stdout) == NULL) {
-	(void)fprintf(stderr, "archive:  Can't open \"%s\" for output, %s\n",
-		Index, strerror(errno));
-	exit(1);
-    }
+    if (ac == 1 && freopen(av[0], "r", stdin) == NULL)
+        sysdie("cannot open %s for input", av[0]);
+    if (Index && freopen(Index, "a", stdout) == NULL)
+        sysdie("cannot open %s for output", Index);
 
     /* Go to where the action is. */
-    if (chdir(innconf->patharticles) < 0) {
-	(void)fprintf(stderr, "archive:  Can't cd to \"%s\", %s\n",
-		innconf->patharticles, strerror(errno));
-	exit(1);
-    }
+    if (chdir(innconf->patharticles) < 0)
+        sysdie("cannot chdir to %s", innconf->patharticles);
 
     /* Set up the destination. */
     (void)strcpy(dest, Archive);
     Name = dest + strlen(dest);
     *Name++ = '/';
 
-    if (!SMinit()) {
-	(void)fprintf(stderr, "archive: Could not initialize the storage manager: %s", SMerrorstr);
-	exit(1);
-    }
+    if (!SMinit())
+        die("cannot initialize storage manager: %s", SMerrorstr);
 
     /* Read input. */
     while (fgets(buff, sizeof buff, stdin) != NULL) {
 	if ((p = strchr(buff, '\n')) == NULL) {
-	    (void)fprintf(stderr,
-		    "archive:  Skipping \"%.40s...\" -- too long\n",
-		    buff);
+            warn("skipping %.40s: too long", buff);
 	    continue;
 	}
 	*p = '\0';
@@ -525,21 +492,20 @@ main(int ac, char *av[])
 	    /* Get a copy of the article. */
 	    token = TextToToken(buff);
 	    if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
-		(void)fprintf(stderr, "Could not retrieve %s\n",
-			buff);
+                warn("cannot retrieve %s", buff);
 		continue;
 	    }
 
 	    /* Determine groups from the Xref header */
     	    xrefhdr = HeaderFindMem(art->data, art->len, "Xref", 4);
 	    if (xrefhdr == NULL) {
-		fprintf(stderr, "archive: cant find Xref: header");
+                warn("cannot find Xref header");
 		SMfreearticle(art);
 		continue;
 	    }
 
 	    if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
-		fprintf(stderr, "archive: bogus Xref: header");
+                warn("bogus Xref header");
 		SMfreearticle(art);
 		continue;
 	    }
@@ -552,7 +518,7 @@ main(int ac, char *av[])
 	    for (i=0; (unsigned)i<numxrefs; i++) {
 		/* Check for group limits... -p flag */
 		if ((p=strchr(xrefs[i], ':')) == NULL) {
-		    fprintf(stderr, "archive: bogus xref '%s'\n", xrefs[i]);
+                    warn("bogus Xref entry %s", xrefs[i]);
 		    continue;	/* Skip to next xref */
 		}
 		if (numgroups > 0) {
@@ -599,8 +565,7 @@ main(int ac, char *av[])
 
 			    /* Make the archive directory. */
 			    if (!MakeArchiveDirectory(dest)) {
-				(void)fprintf(stderr, "Can't mkdir for \"%s\", %s\n",
-					dest, strerror(errno));
+                                syswarn("cannot mkdir for %s", dest);
 				continue;
 			    }
 
@@ -608,8 +573,8 @@ main(int ac, char *av[])
 			    if (link(base, dest) < 0) {
 #if	defined(HAVE_SYMLINK)
 				if (symlink(base, dest) < 0)
-				    (void)fprintf(stderr, "Can't symlink \"%s\" to \"%s\", %s\n",
-					    dest, base, strerror(errno));
+                                    syswarn("cannot symlink %s to %s",
+                                            dest, base);
 				else
 #endif	/* defined(HAVE_SYMLINK) */
 				if (!Copy(base, dest))
@@ -618,10 +583,8 @@ main(int ac, char *av[])
 			    }
 			}
 		    } else {
-			if (!CopyArt(art, dest, Concat)) {
-			    fprintf(stderr, 
-				"archive: %s->%s failed\n", buff, dest);
-			}
+			if (!CopyArt(art, dest, Concat))
+                            syswarn("copying %s to %s failed", buff, dest);
 			base = COPY(dest);
 		    }
 
@@ -629,8 +592,7 @@ main(int ac, char *av[])
 	            if (Index) {
 	                WriteArtIndex(art, Name);
 	                if (ferror(stdout) || fflush(stdout) == EOF)
-		            (void)fprintf(stderr, "Can't write index for \"%s\", %s\n",
-			            Name, strerror(errno));
+                            syswarn("cannot write index for %s", Name);
 	            }
 		}
 	    }
@@ -644,7 +606,7 @@ main(int ac, char *av[])
 	    numxrefs = 0;
 	    xrefs = NULL;
 	} else {
-	    (void)fprintf(stderr, "not token %s\n", buff);
+            warn("%s is not a token", buff);
 	    continue;
 	}
     }
@@ -668,36 +630,29 @@ main(int ac, char *av[])
         spool = concat(p, ".bch", (char *) 0);
     else
         spool = concat(innconf->pathoutgoing, "/", p, ".bch", (char *) 0);
-    if ((F = xfopena(spool)) == NULL) {
-	(void)fprintf(stderr, "archive: Can't spool to \"%s\", %s\n",
-	    spool, strerror(errno));
-	exit(1);
-    }
+    if ((F = xfopena(spool)) == NULL)
+        sysdie("cannot spool to %s", spool);
 
     /* Write the rest of stdin to the spool file. */
     i = 0;
     if (fprintf(F, "%s\n", buff) == EOF) {
-	(void)fprintf(stderr, "archive:  Can't start spool, %s\n",
-		strerror(errno));
+        syswarn("cannot start spool");
 	i = 1;
     }
     while (fgets(buff, sizeof buff, stdin) != NULL) 
 	if (fputs(buff, F) == EOF) {
-	    (void)fprintf(stderr, "archive: Can't write spool, %s\n",
-		    strerror(errno));
+            syswarn("cannot write to spool");
 	    i = 1;
 	    break;
 	}
     if (fclose(F) == EOF) {
-	(void)fprintf(stderr, "archive: Can't close spool, %s\n",
-	    strerror(errno));
+        syswarn("cannot close spool");
 	i = 1;
     }
 
     /* If we had a named input file, try to rename the spool. */
     if (p != NULL && rename(spool, av[0]) < 0) {
-	(void)fprintf(stderr, "archive: Can't rename spool, %s\n",
-	    strerror(errno));
+        syswarn("cannot rename spool");
 	i = 1;
     }
 

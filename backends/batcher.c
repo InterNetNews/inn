@@ -12,6 +12,7 @@
 #include <syslog.h> 
 #include <sys/stat.h>
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
@@ -86,7 +87,6 @@ RequeueAndExit(off_t Cookie, char *line, long BytesInArt)
 {
     static char	LINE1[] = "batcher %s times user %.3f system %.3f elapsed %.3f";
     static char	LINE2[] ="batcher %s stats batches %d articles %d bytes %ld";
-    static char	NOWRITE[] = "batcher %s cant write spool %s\n";
     char	*spool;
     char	buff[BIG_BUFFER];
     int		i;
@@ -129,44 +129,38 @@ RequeueAndExit(off_t Cookie, char *line, long BytesInArt)
         spool = concatpath(innconf->pathoutgoing, Host);
     else
         spool = concat(Input, ".bch", (char *) 0);
-    if ((F = xfopena(spool)) == NULL) {
-	(void)fprintf(stderr, "batcher %s cant open %s %s\n",
-	    Host, spool, strerror(errno));
-	exit(1);
-    }
+    if ((F = xfopena(spool)) == NULL)
+        sysdie("%s cannot open %s", Host, spool);
 
     /* If we can back up to where the batch started, do so. */
     i = 0;
     if (Cookie != -1 && fseeko(stdin, Cookie, SEEK_SET) == -1) {
-	(void)fprintf(stderr, "batcher %s cant seek %s\n",
-		Host, strerror(errno));
+        syswarn("%s cannot seek", Host);
 	i = 1;
     }
 
     /* Write the line we had; if the fseeko worked, this will be an
      * extra line, but that's okay. */
     if (line && fprintf(F, "%s %ld\n", line, BytesInArt) == EOF) {
-	(void)fprintf(stderr, NOWRITE, Host, strerror(errno));
+        syswarn("%s cannot write spool", Host);
 	i = 1;
     }
 
     /* Write rest of stdin to spool. */
     while (fgets(buff, sizeof buff, stdin) != NULL) 
 	if (fputs(buff, F) == EOF) {
-	    (void)fprintf(stderr, NOWRITE, Host, strerror(errno));
+            syswarn("%s cannot write spool", Host);
 	    i = 1;
 	    break;
 	}
     if (fclose(F) == EOF) {
-	(void)fprintf(stderr, "batcher %s cant close spool %s\n",
-	    Host, strerror(errno));
+        syswarn("%s cannot close spool", Host);
 	i = 1;
     }
 
     /* If we had a named input file, try to rename the spool. */
     if (Input != NULL && rename(spool, Input) < 0) {
-	(void)fprintf(stderr, "batcher %s cant rename spool %s\n",
-	    Host, strerror(errno));
+        syswarn("%s cannot rename spool", Host);
 	i = 1;
     }
 
@@ -188,22 +182,9 @@ CATCHinterrupt(int s)
 }
 
 
-
-/*
-**  Print a usage message and exit.
-*/
-static void
-Usage(void)
-{
-    fprintf(stderr, "batcher usage_error.\n");
-    exit(1);
-}
-
-
 int
 main(int ac, char *av[])
 {
-    static char	SKIPPING[] = "batcher %s skipping \"%.40s...\" %s\n";
     bool	Redirect;
     FILE	*F;
     const char	*AltSpool;
@@ -228,6 +209,8 @@ main(int ac, char *av[])
        have opened a log first or get syslog mesgs with no identiy
        "Reading ..." . Ctlinnd nnrpd will log these mesgs properly */
     (void)openlog("batcher", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "batcher";
+
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
     AltSpool = NULL;
@@ -239,8 +222,8 @@ main(int ac, char *av[])
     while ((i = getopt(ac, av, "a:A:b:B:i:N:p:rs:S:v")) != EOF)
 	switch (i) {
 	default:
-	    Usage();
-	    /* NOTREACHED */
+            die("usage error");
+            break;
 	case 'a':
 	    ArtsInBatch = atoi(optarg);
 	    break;
@@ -284,28 +267,21 @@ main(int ac, char *av[])
     ac -= optind;
     av += optind;
     if (ac != 1 && ac != 2)
-	Usage();
+        die("usage error");
     Host = av[0];
     if ((Input = av[1]) != NULL) {
-	if (Input[0] != '/') {
+	if (Input[0] != '/')
             Input = concatpath(innconf->pathoutgoing, av[1]);
-	}
-	if (freopen(Input, "r", stdin) == NULL) {
-	    (void)fprintf(stderr, "batcher %s cant open %s %s\n",
-		    Host, Input, strerror(errno));
-		exit(1);
-	}
+	if (freopen(Input, "r", stdin) == NULL)
+            sysdie("%s cannot open %s", Host, Input);
     }
 
     if (Redirect)
 	(void)freopen(ERRLOG, "a", stderr);
 
     /* Go to where the articles are. */
-    if (chdir(innconf->patharticles) < 0) {
-	(void)fprintf(stderr, "batcher %s cant cd %s %s\n",
-		Host, innconf->patharticles, strerror(errno));
-	exit(1);
-    }
+    if (chdir(innconf->patharticles) < 0)
+        sysdie("%s cannot chdir to %s", Host, innconf->patharticles);
 
     /* Set initial counters, etc. */
     datasize = 8 * 1024;
@@ -331,7 +307,7 @@ main(int ac, char *av[])
 
 	/* Get lines like "name size" */
 	if ((p = strchr(line, '\n')) == NULL) {
-	    (void)fprintf(stderr, SKIPPING, Host, line, "too long");
+            warn("%s skipping %.40s: too long", Host, line);
 	    continue;
 	}
 	*p = '\0';
@@ -358,15 +334,14 @@ main(int ac, char *av[])
 	    token = TextToToken(p);
 	    if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
 		if ((SMerrno != SMERR_NOENT) && (SMerrno != SMERR_UNINIT))
-		    (void)fprintf(stderr, SKIPPING,
-			    Host, p, SMerrorstr);
+                    warn("%s skipping %.40s: %s", Host, p, SMerrorstr);
 		continue;
 	    }
 	    BytesInArt = -1;
 	    artdata = FromWireFmt(art->data, art->len, &BytesInArt);
 	    SMfreearticle(art);
 	} else {
-	    (void)fprintf(stderr, SKIPPING, Host, p, "not token");
+            warn("%s skipping %.40s: not token", Host, p);
 	    continue;
 	}
 
@@ -379,8 +354,7 @@ main(int ac, char *av[])
 		RequeueAndExit(Cookie, (char *)NULL, 0L);
 	    }
 	    if ((F = BATCHstart()) == NULL) {
-		(void)fprintf(stderr, "batcher %s cant startbatch %d %s\n",
-			Host, BATCHcount, strerror(errno));
+                syswarn("%s cannot start batch %d", Host, BATCHcount);
 		break;
 	    }
 	    if (InitialString && *InitialString) {
@@ -397,11 +371,10 @@ main(int ac, char *av[])
 	 || (BytesInBatch > 0 && BytesInCB + BytesInArt >= BytesInBatch)) {
 	    if ((BATCHstatus = BATCHclose(F)) != 0) {
 		if (BATCHstatus == -1)
-		    (void)fprintf(stderr, "batcher %s cant closebatch %d %s\n",
-			    Host, BATCHcount, strerror(errno));
+                    syswarn("%s cannot close batch %d", Host, BATCHcount);
 		else
-		    (void)fprintf(stderr, "batcher %s batch %d exit %d\n",
-			    Host, BATCHcount, BATCHstatus);
+                    syswarn("%s batch %d exit status %d", Host, BATCHcount,
+                            BATCHstatus);
 		break;
 	    }
 	    ArtsInCB = 0;
@@ -419,8 +392,7 @@ main(int ac, char *av[])
 	    }
 
 	    if ((F = BATCHstart()) == NULL) {
-		(void)fprintf(stderr, "batcher %s cant startbatch %d %s\n",
-			Host, BATCHcount, strerror(errno));
+                syswarn("%s cannot start batch %d", Host, BATCHcount);
 		break;
 	    }
 	}
@@ -432,8 +404,7 @@ main(int ac, char *av[])
 	    BytesInCB += strlen(buff) + 1;
 	    BytesWritten += strlen(buff) + 1;
 	    if (fprintf(F, "%s\n", buff) == EOF || ferror(F)) {
-		(void)fprintf(stderr, "batcher %s cant write separator %s\n",
-		    Host, strerror(errno));
+                syswarn("%s cannot write separator", Host);
 		break;
 	    }
 	}

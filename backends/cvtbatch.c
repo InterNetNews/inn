@@ -9,22 +9,12 @@
 #include <syslog.h>  
 #include <sys/stat.h>
 
+#include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
 #include "storage.h"
-
-
-/*
-**  Print a usage message and exit.
-*/
-static void
-Usage(void)
-{
-    fprintf(stderr, "convertbatch usage_error.\n");
-    exit(1);
-}
 
 
 int
@@ -41,7 +31,8 @@ main(int ac, char *av[]) {
     int		len;
 
     /* First thing, set up logging and our identity. */
-    openlog("cvtbatch", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);           
+    openlog("cvtbatch", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "cvtbatch";
 
     if (ReadInnConf() < 0) exit(1);
     /* Parse JCL. */
@@ -49,8 +40,8 @@ main(int ac, char *av[]) {
     while ((i = getopt(ac, av, "w:")) != EOF)
 	switch (i) {
 	default:
-	    Usage();
-	    /* NOTREACHED */
+            die("usage error");
+            break;
 	case 'w':
 	    for (p = format = optarg; *p; p++) {
 		switch (*p) {
@@ -60,23 +51,18 @@ main(int ac, char *av[]) {
 		case FEED_NAME:
 		    continue;
 		}
-		(void)fprintf(stderr, "Ignoring \"%c\" in -w flag.\n", *p);
+                warn("ignoring %c in -w flag", *p);
 	    }
 	}
     ac -= optind;
     av += optind;
     if (ac)
-	Usage();
+	die("usage error");
 
-    if (chdir(innconf->patharticles) < 0) {
-	(void)fprintf(stderr, "batchconvert cant chdir %s, %s\n",
-		innconf->patharticles, strerror(errno));
-	exit(1);
-    }
-    if (!SMinit()) {
-	(void)fprintf(stderr, "cvtbatch: Could not initialize the storage manager: %s", SMerrorstr);
-	exit(1);
-    }
+    if (chdir(innconf->patharticles) < 0)
+        sysdie("cannot chdir to %s", innconf->patharticles);
+    if (!SMinit())
+        die("cannot initialize storage manager: %s", SMerrorstr);
 
     /* Loop over all input. */
     qp = QIOfdopen((int)fileno(stdin));

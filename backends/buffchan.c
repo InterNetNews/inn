@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <syslog.h>
 
+#include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
@@ -95,8 +96,7 @@ SITEclose(SITE *sp)
 	if (fflush(F) == EOF || ferror(F)
 	 || fchmod((int)fileno(F), 0664) < 0
 	 || fclose(F) == EOF)
-	    (void)fprintf(stderr, "buffchan %s cant close %s, %s\n",
-		    sp->Name, sp->Filename, strerror(errno));
+            syswarn("%s cannot close %s", sp->Name, sp->Filename);
 	sp->F = NULL;
     }
 }
@@ -127,18 +127,13 @@ static void SITEopen(SITE *sp)
     if ((sp->F = xfopena(sp->Filename)) == NULL
      && ((e = errno) != EACCES || chmod(sp->Filename, 0644) < 0
       || (sp->F = xfopena(sp->Filename)) == NULL)) {
-	(void)fprintf(stderr, "buffchan %s cant fopen %s, %s\n",
-		sp->Name, sp->Filename, strerror(e));
-	if ((sp->F = fopen("/dev/null", "w")) == NULL) {
+        syswarn("%s cannot fopen %s", sp->Name, sp->Filename);
+	if ((sp->F = fopen("/dev/null", "w")) == NULL)
 	    /* This really should not happen. */
-	    (void)fprintf(stderr, "buffchan %s cant fopen %s, %s\n",
-		    sp->Name, "/dev/null", strerror(errno));
-	    exit(1);
-	}
+            sysdie("%s cannot fopen /dev/null", sp->Name);
     }
     else if (fchmod((int)fileno(sp->F), 0444) < 0)
-	(void)fprintf(stderr, "buffchan %s cant fchmod %s %s\n",
-		sp->Name, sp->Filename, strerror(errno));
+        syswarn("%s cannot fchmod %s", sp->Name, sp->Filename);
 	
     if (BufferMode != '\0')
 	setbuf(sp->F, sp->Buffer);
@@ -209,8 +204,7 @@ SITEflush(register SITE *sp)
 	if (fflush(F) == EOF || ferror(F)
 	 || fchmod((int)fileno(F), 0664) < 0
 	 || fclose(F) == EOF)
-	    (void)fprintf(stderr, "buffchan %s cant close %s, %s\n",
-		    sp->Name, sp->Filename, strerror(errno));
+            syswarn("%s cannot close %s", sp->Name, sp->Filename);
 	sp->F = NULL;
     }
     if (!sp->Dropped)
@@ -247,8 +241,7 @@ SITEwrite(register char *name, register char *text, register size_t len)
 	SITEopen(sp);
 
     if (fwrite(text, 1, len, sp->F) != len)
-	(void)fprintf(stderr, "buffchan %s cant write %s\n",
-		sp->Name, strerror(errno));
+        syswarn("%s cannot write", sp->Name);
 
     /* Bump line count; see if time to close or flush. */
     if (CloseEvery && ++(sp->CloseLines) >= CloseEvery) {
@@ -261,15 +254,13 @@ SITEwrite(register char *name, register char *text, register size_t len)
     }
     if (FlushEvery && ++(sp->FlushLines) >= FlushEvery) {
 	if (fflush(sp->F) == EOF || ferror(sp->F))
-	    (void)fprintf(stderr, "buffchan %s cant flush %s, %s\n",
-		    sp->Name, sp->Filename, strerror(errno));
+            syswarn("%s cannot flush %s", sp->Name, sp->Filename);
 	sp->LastFlushed = Now.time;
 	sp->FlushLines = 0;
     }
     else if (FlushSeconds && sp->LastFlushed + FlushSeconds < Now.time) {
 	if (fflush(sp->F) == EOF || ferror(sp->F))
-	    (void)fprintf(stderr, "buffchan %s cant flush %s, %s\n",
-		    sp->Name, sp->Filename, strerror(errno));
+            syswarn("%s cannot flush %s", sp->Name, sp->Filename);
 	sp->LastFlushed = Now.time;
 	sp->FlushLines = 0;
     }
@@ -306,7 +297,7 @@ Process(register char *p)
 	if (*p == '\0')
 	    SITEcloseall();
 	else if ((sp = SITEfind(p, FALSE)) == NULL)
-	    (void)fprintf(stderr, "buffchan drop %s unknown site\n", p);
+            warn("drop %s unknown site", p);
 	else {
 	    SITEclose(sp);
 	    sp->Dropped = TRUE;
@@ -320,18 +311,7 @@ Process(register char *p)
     }
 
     /* Other command messages -- ignored. */
-    (void)fprintf(stderr, "buffchan unknown message %s\n", p);
-}
-
-
-/*
-**  Print usage message and exit.
-*/
-static void
-Usage(void)
-{
-    fprintf(stderr, "Usage error.\n");
-    exit(1);
+    warn("unknown message %s", p);
 }
 
 
@@ -361,7 +341,8 @@ main(int ac, char *av[])
     char		*ERRLOG;
 
     /* First thing, set up logging and our identity. */
-    openlog("buffchan", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);           
+    openlog("buffchan", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "buffchan";
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
@@ -384,8 +365,8 @@ main(int ac, char *av[])
     while ((i = getopt(ac, av, "bc:C:d:f:l:L:m:p:rs:u")) != EOF)
 	switch (i) {
 	default:
-	    Usage();
-	    /* NOTREACHED */
+            die("usage error");
+            break;
 	case 'b':
 	case 'u':
 	    BufferMode = i;
@@ -415,17 +396,11 @@ main(int ac, char *av[])
 	    MAPread(Map);
 	    break;
 	case 'p':
-	    if ((F = fopen(optarg, "w")) == NULL) {
-		(void)fprintf(stderr, "buffchan cant fopen %s %s\n",
-			optarg, strerror(errno));
-		exit(1);
-	    }
+	    if ((F = fopen(optarg, "w")) == NULL)
+                sysdie("cannot fopen %s", optarg);
 	    (void)fprintf(F, "%ld\n", (long)getpid());
-	    if (ferror(F) || fclose(F) == EOF) {
-		(void)fprintf(stderr, "buffchan cant fclose %s %s\n",
-			optarg, strerror(errno));
-		exit(1);
-	    }
+	    if (ferror(F) || fclose(F) == EOF)
+                sysdie("cannot fclose %s", optarg);
 	    break;
 	case 'r':
 	    Redirect = FALSE;
@@ -437,7 +412,7 @@ main(int ac, char *av[])
     ac -= optind;
     av += optind;
     if (ac)
-	Usage();
+	die("usage error");
 
     /* Do some basic set-ups. */
     if (Redirect)
@@ -445,23 +420,19 @@ main(int ac, char *av[])
     if (Format == NULL) {
         Format = concatpath(innconf->pathoutgoing, "%s");
     }
-    if (Directory && chdir(Directory) < 0) {
-	(void)fprintf(stderr, "buffchan cant chdir %s %s\n",
-	    Directory, strerror(errno));
-	exit(1);
-    }
+    if (Directory && chdir(Directory) < 0)
+        sysdie("cannot chdir to %s", Directory);
     SITEsetup();
 
     /* Read input. */
     for (qp = QIOfdopen((int)fileno(stdin)); !GotInterrupt ; ) {
 	if ((line = QIOread(qp)) == NULL) {
 	    if (QIOerror(qp)) {
-		(void)fprintf(stderr, "buffchan cant read %s\n",
-			strerror(errno));
+                syswarn("cannot read");
 		break;
 	    }
 	    if (QIOtoolong(qp)) {
-		(void)fprintf(stderr, "buffchan long_line");
+                warn("long line");
 		(void)QIOread(qp);
 		continue;
 	    }
@@ -489,8 +460,7 @@ main(int ac, char *av[])
 	i = p - line;
 
 	if (GetTimeInfo(&Now) < 0) {
-	    (void)fprintf(stderr, "buffchan cant gettime %s\n",
-		    strerror(errno));
+            syswarn("cannot get time");
 	    break;
 	}
 

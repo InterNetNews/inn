@@ -12,9 +12,11 @@
 #include <sys/stat.h>
 #include <syslog.h>  
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
+
 #include "map.h"
 
 int
@@ -35,7 +37,8 @@ main(int ac, char *av[])
     uid_t		myuid;
 
     /* First thing, set up logging and our identity. */
-    openlog("filechan", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);           
+    openlog("filechan", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "filechan";
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
@@ -49,8 +52,8 @@ main(int ac, char *av[])
     while ((i = getopt(ac, av, "d:f:m:p:")) != EOF)
 	switch (i) {
 	default:
-	    (void)fprintf(stderr, "Usage error.\n");
-	    exit(1);
+            die("usage error");
+            break;
 	case 'd':
 	    Directory = optarg;
 	    break;
@@ -62,31 +65,19 @@ main(int ac, char *av[])
 	    MAPread(optarg);
 	    break;
 	case 'p':
-	    if ((F = fopen(optarg, "w")) == NULL) {
-		(void)fprintf(stderr, "filechan cant fopen %s %s\n",
-			optarg, strerror(errno));
-		exit(1);
-	    }
+	    if ((F = fopen(optarg, "w")) == NULL)
+                sysdie("cannot fopen %s", optarg);
 	    (void)fprintf(F, "%ld\n", (long)getpid());
-	    if (ferror(F) || fclose(F) == EOF) {
-		(void)fprintf(stderr, "filechan cant fclose %s %s\n",
-			optarg, strerror(errno));
-		exit(1);
-	    }
+	    if (ferror(F) || fclose(F) == EOF)
+                sysdie("cannot fclose %s", optarg);
 	    break;
 	}
 
     /* Move, and get owner of current directory. */
-    if (chdir(Directory) < 0) {
-	(void)fprintf(stderr, "Can't chdir to %s, %s\n",
-	    Directory, strerror(errno));
-	exit(1);
-    }
-    if (stat(".", &Sb) < 0) {
-	(void)fprintf(stderr, "Can't stat %s, %s\n",
-	    Directory, strerror(errno));
-	exit(1);
-    }
+    if (chdir(Directory) < 0)
+        sysdie("cannot chdir to %s", Directory);
+    if (stat(".", &Sb) < 0)
+        sysdie("cannot stat %s", Directory);
     uid = Sb.st_uid;
     gid = Sb.st_gid;
 
@@ -130,10 +121,8 @@ main(int ac, char *av[])
 		lseek(fd, 0, SEEK_END);
 
 		errno = 0;
-		if (write(fd, buff, i) != i) {
-		    perror("write");
-		    exit(1);
-		}
+		if (write(fd, buff, i) != i)
+                    sysdie("write failed");
 
 		close(fd);
 	    }
