@@ -350,9 +350,9 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 		}
 	    }
 	    HDR_SET(HDR__SENDER, sendbuff);
-	}
-	else
+	} else {
 	    HDR_SET(HDR__SENDER, NULL);
+	}
     }
 
     /* Set Date.  datebuff is used later for NNTP-Posting-Date, so we have
