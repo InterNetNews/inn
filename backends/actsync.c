@@ -1100,6 +1100,8 @@ get_active(host, hostid, len, grp, errs)
     int namelen;		/* length of newsgroup name */
     int is_file;		/* 1 => host is actually a filename */
     int num_check;		/* TRUE => check for all numeric components */
+    char *rhost;
+    int rport;
     char *p;
     int i;
 
@@ -1154,13 +1156,26 @@ get_active(host, hostid, len, grp, errs)
 	/* note that host is actually a hostname or NULL */
 	is_file = 0;
 
+        /* prepare remote host variables */
+	if ((p = strchr(host, ':')) != NULL) {
+		rport = atoi(p + 1);
+		*p = '\0';
+		rhost = COPY(host);
+		*p = ':';
+	} else {
+		rhost = COPY(host);
+		rport = NNTP_PORT;
+	}
+
 	/* open a connection to the server */
 	buff[0] = '\0';
-	if (NNTPconnect(host, NNTP_PORT, &FromServer, &ToServer, buff) < 0) {
+	if (NNTPconnect(rhost, rport, &FromServer, &ToServer, buff) < 0) {
 	    (void) fprintf(stderr, "can't connect to server, %s\n",
 		    buff[0] ? buff : strerror(errno));
+	    DISPOSE(rhost);
 	    exit(NOT_REACHED);
 	}
+	DISPOSE(rhost);
 
 	/* get the active data from the server */
 	active = CAlistopen(FromServer, ToServer, NULL);
