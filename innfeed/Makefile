@@ -39,7 +39,7 @@ tags: $(SOURCES) $(INCLUDES)
 
 ##  Compilation rules.
 
-INNFEEDLIBS	= $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
+INNFEEDLIBS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
 
 config_y.c config_y.h: configfile.y
 	$(YACC) -d $?

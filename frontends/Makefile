@@ -50,7 +50,7 @@ tags ctags: $(SOURCES)
 
 ##  Compilation rules.
 
-BOTH		= $(LIBSTORAGE) $(LIBINN)
+BOTH		= $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
 
 LINK 		= $(LIBLD) $(LDFLAGS) -o $@
 INNLIBS		= $(LIBINN) $(LIBS)
