@@ -37,7 +37,7 @@ find_terminator(QIOSTATE *qp)
         p = memchr(p, '\n', qp->End - p);
         if (p == NULL)
             return NULL;
-        if (qp->WireFormat == -1)
+        if (qp->WireFormat == -1 || qp->WireFormat == 1)
             qp->WireFormat = (*(p - 1) == '\r');
         if (qp->WireFormat == 0 || *(p - 1) == '\r')
             break;
