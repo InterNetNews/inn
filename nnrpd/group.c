@@ -21,7 +21,7 @@
 FUNCTYPE CMDgroup(int ac, char *av[])
 {
     static char		NOSUCHGROUP[] = NNTP_NOSUCHGROUP;
-    int	                i;
+    ARTNUM              i;
     char		*grplist[2];
     char		*group;
     void                *handle;

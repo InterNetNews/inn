@@ -91,7 +91,7 @@ BOOL PushIOvRateLimited(void) {
 		chunkbittenoff = MaxBytesPerSecond - bytesfound;
 		newiov[newiov_len].iov_base = iov[i].iov_base;
 		newiov[newiov_len++].iov_len = chunkbittenoff;
-		iov[i].iov_base += chunkbittenoff;
+		iov[i].iov_base = (char *)iov[i].iov_base + chunkbittenoff;
 		iov[i].iov_len -= chunkbittenoff;
 		bytesfound += chunkbittenoff;
 	    } else {

@@ -1061,11 +1061,12 @@ static void GetConnInfo(METHOD *method, char *buf)
     struct sockaddr_in cli, loc;
     int gotsin;
     int i;
+    unsigned long j;
 
-    i = sizeof(cli);
-    gotsin = (getpeername(0, (struct sockaddr*)&cli, &i) == 0);
+    j = sizeof(cli);
+    gotsin = (getpeername(0, (struct sockaddr*)&cli, &j) == 0);
     if (gotsin)
-	getsockname(0, (struct sockaddr*)&loc, &i);
+	getsockname(0, (struct sockaddr*)&loc, &j);
     buf[0] = '\0';
     if (*ClientHost)
 	sprintf(buf, "ClientHost: %s\r\n", ClientHost);
