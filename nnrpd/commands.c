@@ -176,11 +176,9 @@ PERMgeneric(av, accesslist)
 	*p = '\0';
 
     if (PERMauthstring)
-	free(PERMauthstring);
+	DISPOSE(PERMauthstring);
 
-    PERMauthstring = malloc(strlen(path) + 1);
-    if (PERMauthstring)
-	strcpy(PERMauthstring, path);
+    PERMauthstring = COPY(path);
 
     while( pid != waitnb(&status) );
 
@@ -232,13 +230,13 @@ CMDauthinfo(ac, av)
 		Reply("%d Authentication succeeded\r\n", NNTP_AUTH_OK_VAL);
 		PERMneedauth = FALSE;
 		PERMauthorized = TRUE;
-		free(logrec);
+		DISPOSE(logrec);
 		return;
 	    case 0:
 		syslog(L_NOTICE, "%s bad_auth %s (%s)", ClientHost, PERMuser,
 			logrec);
 		Reply("%d Authentication failed\r\n", NNTP_ACCESS_VAL);
-		free(logrec);
+		DISPOSE(logrec);
 		ExitWithStats(1, FALSE);
 	    default:
 		/* lower level has issued Reply */
@@ -717,23 +715,21 @@ FUNCTYPE CMDnewgroups(int ac, char *av[])
 */
 /* ARGSUSED */
 FUNCTYPE
-CMDpost(ac, av)
-    int		ac;
-    char	*av[];
+CMDpost(int ac, char *av[])
 {
-    static char		*article;
-    static int		size;
-    register char	*p;
-    register char	*end;
-    register int	longline;
-    register READTYPE	r;
-    int			i;
-    long		l;
-    long                sleeptime;
-    char               *path;
-    STRING		response;
-    char		idbuff[SMBUF];
-    static int		backoff_inited = FALSE;
+    static char	*article;
+    static int	size;
+    char	*p, *q;
+    char	*end;
+    int		longline;
+    READTYPE	r;
+    int		i;
+    long	l;
+    long	sleeptime;
+    char	*path;
+    STRING	response;
+    char	idbuff[SMBUF];
+    static int	backoff_inited = FALSE;
 
 
     if (!PERMcanpost) {
@@ -792,8 +788,17 @@ CMDpost(ac, av)
 	article = NEW(char, size);
     }
     idbuff[0] = 0;
-    if ((p = GenerateMessageID(PERMaccessconf->domain)) != NULL)
-        strcpy(idbuff, p);
+    if ((p = GenerateMessageID(PERMaccessconf->domain)) != NULL) {
+	if (VirtualPathlen > 0) {
+	    q = p;
+	    if ((p = strchr(p, '@')) != NULL) {
+		*++p = '\0';
+		sprintf(idbuff, "%s%s>", q, PERMaccessconf->domain);
+	    }
+	} else {
+	    strcpy(idbuff, p);
+	}
+    }
     Reply("%d Ok, recommended ID %s\r\n", NNTP_START_POST_VAL, idbuff);
     (void)fflush(stdout);
 

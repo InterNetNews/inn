@@ -156,7 +156,9 @@ static int	ConfigBitsize;
 #define PERMbackoff_trigger	48
 #define PERMnnrpdcheckart	49
 #define PERMnnrpdauthsender	50
-#define PERMMAX			51
+#define PERMvirtualhost		51
+#define PERMnewsmaster		52
+#define PERMMAX			53
 
 #define TEST_CONFIG(a, b) \
     { \
@@ -231,6 +233,8 @@ static CONFTOKEN PERMtoks[] = {
   { PERMbackoff_trigger, "backoff_trigger:" },
   { PERMnnrpdcheckart, "nnrpdcheckart:" },
   { PERMnnrpdauthsender, "nnrpdauthsender:" },
+  { PERMvirtualhost, "virtualhost:" },
+  { PERMnewsmaster, "newsmaster:" },
   { 0, 0 }
 };
 
@@ -394,6 +398,8 @@ static ACCESSGROUP *copy_accessgroup(ACCESSGROUP *orig)
 	ret->nnrpdposthost = COPY(orig->nnrpdposthost);
     if (orig->backoff_db)
 	ret->backoff_db = COPY(orig->backoff_db);
+    if (orig->newsmaster)
+	ret->newsmaster = COPY(orig->newsmaster);
     return(ret);
 }
 
@@ -493,12 +499,14 @@ static void free_accessgroup(ACCESSGROUP *del)
 	DISPOSE(del->nnrpdposthost);
     if (del->backoff_db)
 	DISPOSE(del->backoff_db);
+    if (del->newsmaster)
+	DISPOSE(del->newsmaster);
     DISPOSE(del);
 }
 
 static void ReportError(CONFFILE *f, char *err)
 {
-    syslog(L_NOTICE, "%s syntax error in %s(%d), %s", ClientHost,
+    syslog(L_ERROR, "%s syntax error in %s(%d), %s", ClientHost,
       f->filename, f->lineno, err);
     Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
     ExitWithStats(1, TRUE);
@@ -753,6 +761,42 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	if (boolval != -1) curaccess->nnrpdpythonfilter = boolval;
 	SET_CONFIG(oldtype);
 	break;
+      case PERMfromhost:
+	if (curaccess->fromhost)
+	    DISPOSE(curaccess->fromhost);
+	curaccess->fromhost = COPY(tok->name);
+	SET_CONFIG(oldtype);
+	break;
+      case PERMpathhost:
+	if (curaccess->pathhost)
+	    DISPOSE(curaccess->pathhost);
+	curaccess->pathhost = COPY(tok->name);
+	SET_CONFIG(oldtype);
+	break;
+      case PERMorganization:
+	if (curaccess->organization)
+	    DISPOSE(curaccess->organization);
+	curaccess->organization = COPY(tok->name);
+	SET_CONFIG(oldtype);
+	break;
+      case PERMmoderatormailer:
+	if (curaccess->moderatormailer)
+	    DISPOSE(curaccess->moderatormailer);
+	curaccess->moderatormailer = COPY(tok->name);
+	SET_CONFIG(oldtype);
+	break;
+      case PERMdomain:
+	if (curaccess->domain)
+	    DISPOSE(curaccess->domain);
+	curaccess->domain = COPY(tok->name);
+	SET_CONFIG(oldtype);
+	break;
+      case PERMcomplaints:
+	if (curaccess->complaints)
+	    DISPOSE(curaccess->complaints);
+	curaccess->complaints = COPY(tok->name);
+	SET_CONFIG(oldtype);
+	break;
       case PERMspoolfirst:
 	if (boolval != -1) curaccess->spoolfirst = boolval;
 	SET_CONFIG(oldtype);
@@ -785,6 +829,12 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	if (boolval != -1) curaccess->addnntppostingdate = boolval;
 	SET_CONFIG(oldtype);
 	break;
+      case PERMnnrpdposthost:
+	if (curaccess->nnrpdposthost)
+	    DISPOSE(curaccess->nnrpdposthost);
+	curaccess->nnrpdposthost = COPY(tok->name);
+	SET_CONFIG(oldtype);
+	break;
       case PERMnnrpdpostport:
 	curaccess->nnrpdpostport = atoi(tok->name);
 	SET_CONFIG(oldtype);
@@ -795,6 +845,12 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	break;
       case PERMbackoff_auth:
 	if (boolval != -1) curaccess->backoff_auth = boolval;
+	SET_CONFIG(oldtype);
+	break;
+      case PERMbackoff_db:
+	if (curaccess->backoff_db)
+	    DISPOSE(curaccess->backoff_db);
+	curaccess->backoff_db = COPY(tok->name);
 	SET_CONFIG(oldtype);
 	break;
       case PERMbackoff_k:
@@ -819,6 +875,16 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	break;
       case PERMnnrpdauthsender:
 	if (boolval != -1) curaccess->nnrpdauthsender = boolval;
+	SET_CONFIG(oldtype);
+	break;
+      case PERMvirtualhost:
+	if (boolval != -1) curaccess->virtualhost = boolval;
+	SET_CONFIG(oldtype);
+	break;
+      case PERMnewsmaster:
+	if (curaccess->newsmaster)
+	    DISPOSE(curaccess->newsmaster);
+	curaccess->newsmaster = COPY(tok->name);
 	SET_CONFIG(oldtype);
 	break;
       default:
@@ -1039,6 +1105,8 @@ static void PERMreadfile(char *filename)
 	      case PERMbackoff_trigger:
 	      case PERMnnrpdcheckart:
 	      case PERMnnrpdauthsender:
+	      case PERMvirtualhost:
+	      case PERMnewsmaster:
 		if (!curgroup) {
 		    curgroup = NEW(GROUP, 1);
 		    memset((POINTER) curgroup, 0, sizeof(GROUP));
@@ -1319,6 +1387,34 @@ void PERMgetpermissions()
 	    PERMcanpost = FALSE;
 	}
 	PERMaccessconf = access_realms[i];
+	if (PERMaccessconf->virtualhost) {
+	    if (PERMaccessconf->domain == NULL) {
+		syslog(L_ERROR, "%s virtualhost needs domain parameter(%s)",
+		    ClientHost, PERMaccessconf->name);
+		Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+		ExitWithStats(1, TRUE);
+	    }
+	    if (VirtualPath)
+		DISPOSE(VirtualPath);
+	    if (EQ(innconf->pathhost, PERMaccessconf->pathhost)) {
+		/* use domain, if pathhost in access relm matches one in
+		   inn.conf to differentiate virtual host */
+		if (innconf->domain != NULL && EQ(innconf->domain, PERMaccessconf->domain)) {
+		    syslog(L_ERROR, "%s domain parameter(%s) in readers.conf must be different from the one in inn.conf",
+			ClientHost, PERMaccessconf->name);
+		    Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+		    ExitWithStats(1, TRUE);
+		}
+		VirtualPathlen = strlen(PERMaccessconf->domain) + strlen("!");
+		VirtualPath = NEW(char, VirtualPathlen + 1);
+		sprintf(VirtualPath, "%s!", PERMaccessconf->domain);
+	    } else {
+		VirtualPathlen = strlen(PERMaccessconf->pathhost) + strlen("!");
+		VirtualPath = NEW(char, VirtualPathlen + 1);
+		sprintf(VirtualPath, "%s!", PERMaccessconf->pathhost);
+	    }
+	} else
+	    VirtualPathlen = 0;
     } else
 	syslog(L_TRACE, "%s no_access_realm", ClientHost);
 }

@@ -95,6 +95,8 @@ typedef struct _ACCESSGROUP {
     long backoff_trigger;
     int nnrpdcheckart;
     int nnrpdauthsender;
+    int virtualhost;
+    char *newsmaster;
 } ACCESSGROUP;
 
 /*
@@ -113,7 +115,6 @@ typedef enum _READTYPE {
 typedef struct _ARTOVERFIELD {
     char	*Header;
     int		Length;
-    BOOL	HasHeader;
     BOOL	NeedsHeader;
 } ARTOVERFIELD;
 
@@ -158,11 +159,11 @@ EXTERN long	MaxBytesPerSecond; /* maximum bytes per sec a client can use, defaul
 EXTERN long	ARTget;
 EXTERN long	ARTgettime;
 EXTERN long	ARTgetsize;
-EXTERN long	OVERcount;	/* number of XOVER commands			*/
-EXTERN long	OVERhit;	/* number of XOVER records found in .overview	*/
-EXTERN long	OVERmiss;	/* number of XOVER records found in articles	*/
-EXTERN long	OVERtime;	/* number of ms spent sending XOVER data	*/
-EXTERN long	OVERsize;	/* number of bytes of XOVER data sent		*/
+EXTERN long	OVERcount;	/* number of XOVER commands */
+EXTERN long	OVERhit;	/* number of XOVER records found in .overview */
+EXTERN long	OVERmiss;	/* number of XOVER records found in articles */
+EXTERN long	OVERtime;	/* number of ms spent sending XOVER data */
+EXTERN long	OVERsize;	/* number of bytes of XOVER data sent	*/
 EXTERN long	OVERdbz;	/* number of ms spent reading dbz data	*/
 EXTERN long	OVERseek;	/* number of ms spent seeking history	*/
 EXTERN long	OVERget;	/* number of ms spent reading history	*/
@@ -175,6 +176,8 @@ EXTERN long	POSTrejected;
 
 EXTERN BOOL     BACKOFFenabled;
 EXTERN long     ClientIP;                                 
+EXTERN char	*VirtualPath;
+EXTERN int	VirtualPathlen;
 
 
 #if	NNRP_LOADLIMIT > 0
