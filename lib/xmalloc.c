@@ -13,12 +13,12 @@
 /*
 **  Allocate some memory or call the memory failure handler.
 */
-ALIGNPTR xmalloc(unsigned int i)
+ALIGNPTR xmalloc(unsigned int i, const char *file, int line)
 {
     POINTER		new;
 
     while ((new = malloc(i)) == NULL)
-	(*xmemfailure)("malloc", i);
+	(*xmemfailure)("malloc", i, file, line);
 #if 0
     memset (new,0,i) ;
 #endif

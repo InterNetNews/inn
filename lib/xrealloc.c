@@ -13,11 +13,11 @@
 /*
 **  Reallocate some memory or call the memory failure handler.
 */
-ALIGNPTR xrealloc(char *p, unsigned int i)
+ALIGNPTR xrealloc(char *p, unsigned int i, const char *file, int line)
 {
     POINTER		new;
 
     while ((new = realloc((POINTER)p, i)) == NULL)
-	(*xmemfailure)("remalloc", i);
+	(*xmemfailure)("remalloc", i, file, line);
     return CAST(ALIGNPTR, new);
 }

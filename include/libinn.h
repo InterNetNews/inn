@@ -11,8 +11,8 @@
     /* Worst-case alignment, in order to shut lint up. */
     /* =()<typedef @<ALIGNPTR>@	*ALIGNPTR;>()= */
 typedef long	*ALIGNPTR;
-extern ALIGNPTR	xmalloc(unsigned int i);
-extern ALIGNPTR	xrealloc(char *p, unsigned int i);
+extern ALIGNPTR	xmalloc(unsigned int i, const char *file, int line);
+extern ALIGNPTR	xrealloc(char *p, unsigned int i, const char *file, int line);
 
 /* Headers. */
 extern char	        *GenerateMessageID(void);

@@ -12,13 +12,16 @@
 **  Memory failure handler; print an error and exit.
 */
 STATIC int
-xmemerr(what, i)
+xmemerr(what, i, file, line)
     char		*what;
     unsigned int	i;
+    const char		*file;
+    int			line;
 {
     /* We want large values to show up as negative, hence %d. */
-    (void)fprintf(stderr, "Can't %s %d bytes, %s", what, i, strerror(errno));
-    exit(1);
+    (void)fprintf(stderr, "%s:%d Can\'t %s %d bytes, %s",
+                  file, line, what, i, strerror(errno));
+    exit(1); 
     /* NOTREACHED */
 }
 
