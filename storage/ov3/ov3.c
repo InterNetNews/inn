@@ -825,8 +825,10 @@ BOOL tradindexed_add(TOKEN token, char *data, int len, time_t arrived) {
 
 	/* pack group if needed. */
 	ge = &GROUPentries[gh->gloc.recno];
-	if (Cutofflow && ge->low > artnum)
+	if (Cutofflow && ge->low > artnum) {
+	    OV3closegroup(gh, TRUE);
 	    continue;
+	}
 	if (ge->base > artnum) {
 	    if (!OV3packgroup(group, OV3padamount + ge->base - artnum)) {
 		OV3closegroup(gh, TRUE);
