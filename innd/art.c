@@ -1345,7 +1345,11 @@ STATIC void ARTcontrol(ARTDATA *Data, HASH hash, char *Control)
     av[1] = COPY(Data->Poster);
     av[2] = COPY(Data->Replyto);
     av[3] = Data->Name;
-    av[4] = (char *)Data->Feedsite;
+    if (innconf->logipaddr) {
+	av[4] = hops && hops[0] ? hops[0] : CHANname(cp);
+    } else {
+	av[4] = (char *)Data->Feedsite;
+    }
     av[5] = NULL;
     HeaderCleanFrom(av[1]);
     HeaderCleanFrom(av[2]);
