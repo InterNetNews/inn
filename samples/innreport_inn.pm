@@ -349,7 +349,7 @@ sub collect
                    artlink\ (\d+)\((\d+)\)\s+      # artlink
                    hiswrite\ (\d+)\((\d+)\)\s+     # hiswrite
                    hissync\ (\d+)\((\d+)\)\s+      # hissync
-                   sitesend\ (\d+)\((\d+)\)\s+  # sitesend
+                   sitesend\ (\d+)\((\d+)\)\s+     # sitesend
                    artctrl\ (\d+)\((\d+)\)\s+      # artctrl
                    artcncl\ (\d+)\((\d+)\)\s+      # artcncl
                    hishave\ (\d+)\((\d+)\)\s+      # hishave
@@ -623,6 +623,8 @@ sub collect
     }
     # bad_newsfeeds no feeding sites
     return 1 if $left =~ /\S+ bad_newsfeeds no feeding sites/o;
+    # CNFS-sm: cycbuff rollover - possibly interesting
+    return 1 if $left =~ /CNFS-sm: cycbuff \S+ rollover to cycle/o;
   }
   ########
   ## innfeed
