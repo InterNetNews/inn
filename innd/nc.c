@@ -1323,7 +1323,7 @@ NCcheck(CHANNEL *cp)
 
 #if defined(DO_PYTHON)
     /*  invoke a perl message filter on the message id */
-    if ((perlrc = (char *)PYHandleMessageID(p)) != NULL) {
+    if ((filterrc = (char *)PYHandleMessageID(p)) != NULL) {
 	cp->Refused++;
 	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
 	NCwritereply(cp, cp->Sendid.Data);
