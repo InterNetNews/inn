@@ -1910,7 +1910,7 @@ ARTmakekeys(hp, body, v, l)
 	goto out;
 
     /* Sort the words. */
-    qsort(&word, word_count, sizeof(word[0]), ptr_strcmp);
+    qsort(word, word_count, sizeof(word[0]), ptr_strcmp);
 
     /* Count unique words. */
     distinct_words = 0;			/* the 1st word is "pre-figured". */
