@@ -723,12 +723,12 @@ rmgroup:group-admin@usenet.eu.org:europa.*:verify-group-admin@usenet.eu.org
 newgroup:*:example.*:mail
 rmgroup:*:example.*:doit
 
-## FA (*DEFUNCT* -- "From ARPA" gatewayed mailing lists)
-# Removed in the "Great Renaming" of 1988.
+## FA (Gated mailing lists)
+# This hierarchy was removed in the "Great Renaming" of 1988.
 #
-# Note that a site in Finland is currently (as of 2001) gatewaying various
-# mailing lists into fa.* newsgroups, but that site does not appear to be
-# issuing any control messages for those groups.
+# A site in Norway is currently (as of 2002) gatewaying various mailing
+# lists into fa.* newsgroups, but that site does not appear to be issuing
+# any control messages for those groups.
 #
 newgroup:*:fa.*:mail
 rmgroup:*:fa.*:doit
@@ -1416,7 +1416,7 @@ rmgroup:news@tesuque.cs.sandia.gov:nm.*:doit
 
 ## NO (Norway)
 # URL: http://www.usenet.no/
-# Admin group: no.news.diverse
+# Admin group: no.usenet.admin
 # Key URL: http://www.usenet.no/pgp-key.txt
 # *PGP*   See comment at top of file.
 newgroup:*:no.*:drop
