@@ -14,8 +14,10 @@ SOURCES = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
 	parsedate.c perl.c pread.c pwrite.c qio.c radix32.c readin.c \
 	remopen.c reservedfd.c resource.c sendarticle.c sendpass.c \
 	sequence.c setenv.c setproctitle.c sockaddr.c strcasecmp.c \
-	strerror.c strlcat.c strlcpy.c strspn.c strtok.c timer.c uwildmat.c \
-	vector.c version.c wire.c xfopena.c xmalloc.c xsignal.c xwrite.c
+	strerror.c strlcat.c strlcpy.c strspn.c strtok.c timer.c tst_cleanup.c \
+	tst_grow_node_free_list.c tst_insert.c tst_delete.c tst_init.c \
+	tst_search.c uwildmat.c vector.c version.c wire.c xfopena.c xmalloc.c \
+	xsignal.c xwrite.c
 
 OBJECTS = $(LIBOBJS) \
 	buffer.o cleanfrom.o clientactive.o clientlib.o concat.o conffile.o \
@@ -24,8 +26,9 @@ OBJECTS = $(LIBOBJS) \
 	hashtab.o innconf.o inndcomm.o localopen.o lockfile.o makedir.o \
 	md5.o messages.o mmap.o parsedate.o qio.o radix32.o readin.o \
 	remopen.o reservedfd.o resource.o sendarticle.o sendpass.o \
-	sequence.o sockaddr.o timer.o uwildmat.o vector.o version.o wire.o \
-	xfopena.o xmalloc.o xsignal.o xwrite.o
+	sequence.o sockaddr.o timer.o tst_cleanup.o tst_grow_node_free_list.o \
+	tst_insert.o tst_delete.o tst_init.o uwildmat.o vector.o version.o \
+	wire.o xfopena.o xmalloc.o xsignal.o xwrite.o
 
 LOBJECTS= $(OBJECTS:.o=.lo)
 
