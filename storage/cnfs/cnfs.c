@@ -159,7 +159,7 @@ STATIC CYCBUFF_OFF_T CNFShex2offt(char *hex) {
 		break;
 	    }
 	    n += (*hex - diff);
-	    if (isalnum(*(hex + 1)))
+	    if (isalnum((int)*(hex + 1)))
 		n <<= 4;
 	}
 	return n;
@@ -374,7 +374,6 @@ STATIC BOOL CNFSparse_part_line(char *l) {
 
 STATIC BOOL CNFSparse_metapart_line(char *l) {
   char		*p, *cycbuff;
-  int		rpi;
   CYCBUFF	*rp;
   METACYCBUFF	*metacycbuff, *tmp;
 
@@ -492,7 +491,7 @@ STATIC BOOL CNFSparse_groups_line() {
 STATIC BOOL CNFSinit_disks(CYCBUFF *cycbuff) {
   char		buf[64];
   CYCBUFFEXTERN	rpx;
-  int		i, fd, bytes;
+  int		fd, bytes;
   CYCBUFF_OFF_T	tmpo;
   BOOL		oneshot;
 
@@ -611,7 +610,6 @@ STATIC BOOL CNFSread_config(void) {
     int		ctab_i;
     BOOL	metacycbufffound = FALSE;
     BOOL	cycbuffupdatefound = FALSE;
-    BOOL	cycbuffupdatetimefound = FALSE;
     int		update;
 
     if ((config = ReadInFile(cpcatpath(innconf->pathetc, _PATH_CYCBUFFCONFIG),
@@ -641,7 +639,7 @@ STATIC BOOL CNFSread_config(void) {
 	while (1) {
 	    if (*from && *from == '\\' && *(from + 1) == '\n') {
 		from += 2;		/* Skip past backslash+newline */
-		while (*from && isspace(*from))
+		while (*from && isspace((int)*from))
 		    from++;
 		continue;
 	    }
@@ -916,12 +914,10 @@ BOOL cnfs_init(BOOL *selfexpire) {
 
 TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
     TOKEN               token;
-    char		*p;
     CYCBUFF		*cycbuff = NULL;
     METACYCBUFF		*metacycbuff = NULL;
     int			i;
-    static char		buf[1024], *bufp = buf;
-    int			chars = 0;
+    static char		buf[1024];
     char		*artcycbuffname;
     CYCBUFF_OFF_T	artoffset, middle;
     U_INT32_T		artcyclenum;
@@ -1144,9 +1140,9 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     private = NEW(PRIV_CNFS, 1);
     art->private = (void *)private;
     art->arrived = ntohl(cah.arrived);
+    pagefudge = offset % pagesize;
     if (innconf->articlemmap) {
 	offset += sizeof(cah);
-	pagefudge = offset % pagesize;
 	mmapoffset = offset - pagefudge;
 	private->len = pagefudge + ntohl(cah.size);
 	if ((private->base = mmap((MMAP_PTR)0, private->len, PROT_READ,
@@ -1418,9 +1414,9 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
     art->arrived = ntohl(cah.arrived);
     token = CNFSMakeToken(cycbuff->name, offset, cycbuff->cyclenum, ntohl(cah.class), (TOKEN *)NULL);
     art->token = &token;
+    pagefudge = offset % pagesize;
     if (innconf->articlemmap) {
 	offset += sizeof(cah);
-	pagefudge = offset % pagesize;
 	mmapoffset = offset - pagefudge;
 	private->len = pagefudge + ntohl(cah.size);
 	if ((private->base = mmap((MMAP_PTR)0, private->len, PROT_READ,

@@ -55,7 +55,7 @@ BOOL IsToken(const char *text) {
 	return FALSE;
 
     for (p = text + 1; *p != '@'; p++)
-	if (!isxdigit(*p))
+	if (!isxdigit((int)*p))
 	    return FALSE;
     
     return TRUE;
@@ -86,7 +86,7 @@ char *TokenToText(const TOKEN token) {
 /*
 ** Converts a hex digit and converts it to a int
 */
-STATIC int hextodec(const char c) {
+STATIC int hextodec(const int c) {
     return isdigit(c) ? (c - '0') : ((c - 'A') + 10);
 }
 
@@ -149,7 +149,7 @@ static time_t parse_time(char *tmbuf)
     ret = 0;
     startnum = tmbuf;
     while (*tmbuf) {
-	if (!isdigit(*tmbuf)) {
+	if (!isdigit((int)*tmbuf)) {
 	    tmp = atol(startnum);
 	    switch (*tmbuf) {
 	      case 'M':
@@ -202,7 +202,6 @@ static BOOL SMreadconfig(void) {
     CONFFILE            *f;
     CONFTOKEN           *tok;
     int			type;
-    char                line[1024];
     int                 i;
     char                *p;
     char                *q;
@@ -213,7 +212,6 @@ static BOOL SMreadconfig(void) {
     time_t		minexpire;
     time_t		maxexpire;
     int                 class;
-    STORAGE_SUB         *checksub;
     STORAGE_SUB         *sub = NULL;
     STORAGE_SUB         *prev = NULL;
     char		*options = 0;
@@ -560,7 +558,7 @@ TOKEN SMstore(const ARTHANDLE article) {
     }
 
     expiretime = 0;
-    if (expire = (char *)HeaderFindMem(article.data, article.len, "Expires", 7)) {
+    if ((expire = (char *)HeaderFindMem(article.data, article.len, "Expires", 7))) {
 	/* optionally parse expire header */
 	char *x, *p;
 	for (p = expire+1; (*p != '\n') && (*(p - 1) != '\r'); p++);

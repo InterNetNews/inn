@@ -338,24 +338,24 @@ static struct dirent *FindDir(DIR *dir, FINDTYPE type) {
         if (type == FIND_TOPDIR)
 	    if ((strlen(de->d_name) == 7) &&
 		(strncmp(de->d_name, "time-", 5) == 0) &&
-		isxdigit(de->d_name[5]) &&
-		isxdigit(de->d_name[6]))
+		isxdigit((int)de->d_name[5]) &&
+		isxdigit((int)de->d_name[6]))
 	        return de;
 
 	if (type == FIND_DIR)
-	    if ((strlen(de->d_name) == 2) && isxdigit(de->d_name[0]) && isxdigit(de->d_name[1]))
+	    if ((strlen(de->d_name) == 2) && isxdigit((int)de->d_name[0]) && isxdigit((int)de->d_name[1]))
 		return de;
 
 	if (type == FIND_ART)
 	    if ((strlen(de->d_name) == 9) &&
-		isxdigit(de->d_name[0]) &&
-		isxdigit(de->d_name[1]) &&
-		isxdigit(de->d_name[2]) &&
-		isxdigit(de->d_name[3]) &&
-		isxdigit(de->d_name[5]) &&
-		isxdigit(de->d_name[6]) &&
-		isxdigit(de->d_name[7]) &&
-		isxdigit(de->d_name[8]) &&
+		isxdigit((int)de->d_name[0]) &&
+		isxdigit((int)de->d_name[1]) &&
+		isxdigit((int)de->d_name[2]) &&
+		isxdigit((int)de->d_name[3]) &&
+		isxdigit((int)de->d_name[5]) &&
+		isxdigit((int)de->d_name[6]) &&
+		isxdigit((int)de->d_name[7]) &&
+		isxdigit((int)de->d_name[8]) &&
 		(de->d_name[4] == '-'))
 		return de;
 	}
@@ -366,7 +366,7 @@ static struct dirent *FindDir(DIR *dir, FINDTYPE type) {
 ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
     PRIV_TIMEHASH       priv;
     PRIV_TIMEHASH       *newpriv;
-    char                *path, *p;
+    char                *path;
     struct dirent       *de;
     ARTHANDLE           *art;
     int                 seqnum;
