@@ -69,8 +69,10 @@ krb5_check_password (char *principal_name, char *password)
        return 0;
    }
    
+#ifdef HAVE_KRB5_INIT_ETS
    /* Initialize krb5 error tables */    
    krb5_init_ets (kcontext);
+#endif
 
    /* Get current time */
    code = krb5_timeofday (kcontext, &now);
