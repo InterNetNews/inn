@@ -12,7 +12,8 @@ CFLAGS	= $(GCFLAGS) -I.
 TESTS	= lib/concat.t lib/confparse.t lib/date.t lib/error.t lib/hashtab.t \
 	lib/hstrerror.t lib/inet_aton.t lib/inet_ntoa.t lib/md5.t \
 	lib/memcmp.t lib/pread.t lib/pwrite.t lib/qio.t lib/snprintf.t \
-	lib/strerror.t lib/vector.t lib/wildmat.t lib/xwrite.t
+	lib/strerror.t lib/vector.t lib/wildmat.t lib/xwrite.t \
+	overview/tradindexed.t
 
 ##  Extra stuff that needs to be built before tests can be run.
 
@@ -31,7 +32,9 @@ clean clobber:
 .c.o: $*.c
 	$(CC) $(CFLAGS) -c -o $@ $*.c
 
-LINK = $(LIBTOOL) $(CC) $(LDFLAGS) -o $@
+LINK		= $(LIBTOOL) $(CC) $(LDFLAGS) -o $@
+STORAGEDEPS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
+STORAGELIBS	= $(STORAGEDEPS) $(EXTSTORAGELIBS)
 
 runtests: runtests.o
 	$(LINK) runtests.o
@@ -122,3 +125,6 @@ lib/xmalloc: lib/xmalloc.o $(LIBINN)
 
 lib/xwrite.t: lib/xwrite-t.o lib/fakewrite.o $(LIBINN)
 	$(LINK) lib/xwrite-t.o lib/fakewrite.o $(LIBINN)
+
+overview/tradindexed.t: overview/tradindexed-t.o libtest.o $(STORAGEDEPS)
+	$(LINK) overview/tradindexed-t.o libtest.o $(STORAGELIBS) $(LIBS)
