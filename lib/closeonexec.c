@@ -5,7 +5,6 @@
 */
 #include "config.h"
 #include "libinn.h"
-
 #include <errno.h>
 
 #ifdef HAVE_UNISTD_H
@@ -19,9 +18,6 @@
 #  define FD_CLOEXEC 1
 # endif
 #else
-# ifdef HAVE_SGTTY_H
-#  include <sgtty.h>
-# endif
 # ifdef HAVE_SYS_FILIO_H
 #  include <sys/filio.h>
 # endif
@@ -54,7 +50,7 @@ CloseOnExec(int fd, int flag)
 
 /*
 **  If we don't have fcntl.h, assume we'll be able to find a definition of
-**  FIOCLEX somewhere.
+**  FIOCLEX in sys/filio.h.
 */
 void
 CloseOnExec(int fd, int flag)
