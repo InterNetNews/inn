@@ -64,7 +64,7 @@ BOOL OVgroupstats(char *group, int *lo, int *hi, int *count, int *flag) {
     return ((*ov.groupstats)(group, lo, hi, count, flag));
 }
 
-BOOL OVgroupadd(char *group, ARTNUM lo, char *flag) {
+BOOL OVgroupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
     /* lomark should never be changed in each ovmethod if lo is 0 */
     if (!ov.open) {
 	/* must be opened */
@@ -72,7 +72,7 @@ BOOL OVgroupadd(char *group, ARTNUM lo, char *flag) {
 	(void)fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
-    return ((*ov.groupadd)(group, lo, flag));
+    return ((*ov.groupadd)(group, lo, hi, flag));
 }
 
 BOOL OVgroupdel(char *group) {
