@@ -26,6 +26,9 @@ INSTALLED	= $(D)$(PATHBIN)/innfeed \
 
 all: $(ALL)
 
+warnings:
+	$(MAKE) COPT='$(WARNINGS)' all
+
 clean:
 	rm -f *.o $(ALL) version.c innfeed-convcfg
 	rm -rf .libs

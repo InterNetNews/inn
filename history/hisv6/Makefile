@@ -11,6 +11,9 @@ ROBJECTS = hisv6.$(EXTOBJ)
 
 all:			$(OBJECTS)
 
+warnings:
+	$(MAKE) COPT='$(WARNINGS)' all
+
 .c.o:
 	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
 

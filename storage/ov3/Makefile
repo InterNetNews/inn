@@ -15,6 +15,9 @@ ROBJECTS = ov3.$(EXTOBJ)
 
 all: $(ALL) $(OBJECTS)
 
+warnings:
+	$(MAKE) COPT='$(WARNINGS)' all
+
 .c.o .c.lo:
 	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
 

@@ -8,6 +8,9 @@ all:			autoconfig
 	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) methods
 	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) libinnhist.$(EXTLIB)
 
+warnings:
+	$(MAKE) COPT='$(WARNINGS)' all
+
 include Make.hismethods
 
 SOURCES = his.c hismethods.c

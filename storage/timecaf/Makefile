@@ -13,6 +13,9 @@ ROBJECTS = caf.$(EXTOBJ) timecaf.$(EXTOBJ)
 
 all:		$(OBJECTS)
 
+warnings:
+	$(MAKE) COPT='$(WARNINGS)' all
+
 .c.o .c.lo:
 	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
 

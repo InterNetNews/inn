@@ -36,6 +36,9 @@ INSTALLED     = $(D)$(PATHBIN)/cnfsheadconf	\
 
 all: $(ALL)
 
+warnings:
+	$(MAKE) COPT='$(WARNINGS)' all
+
 clean:
 	rm -f *.o $(ALL)
 	rm -rf .libs

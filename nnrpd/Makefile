@@ -18,6 +18,9 @@ INSTALLED	= $(D)$(PATHBIN)/nnrpd
 
 all: $(ALL)
 
+warnings:
+	$(MAKE) COPT='$(WARNINGS)' all
+
 clean:
 	rm -f *.o $(ALL) nnrpdp profiled
 	rm -rf .libs

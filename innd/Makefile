@@ -20,6 +20,9 @@ INSTALLED	= $(D)$(PATHBIN)/innd \
 
 all: $(ALL)
 
+warnings:
+	$(MAKE) COPT='$(WARNINGS)' all
+
 clean:
 	rm -f *.o $(ALL) inndp profiled
 	rm -rf .libs

@@ -39,6 +39,9 @@ INSTALLED     = $(D)$(PATHBIN)/actmerge		\
 
 all: $(ALL)
 
+warnings:
+	$(MAKE) COPT='$(WARNINGS)' all
+
 clean:
 	rm -f *.o $(ALL)
 	rm -rf .libs

@@ -22,6 +22,9 @@ INSTALLED     = $(D)$(PATHBIN)/convdate		\
 
 all: $(ALL)
 
+warnings:
+	$(MAKE) COPT='$(WARNINGS)' all
+
 clean:
 	rm -f *.o $(ALL)
 	rm -rf .libs

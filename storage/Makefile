@@ -13,6 +13,9 @@ LOBJECTS      = $(OBJECTS:.o=.lo)
 
 all:		methods libstorage.$(EXTLIB)
 
+warnings:
+	$(MAKE) COPT='$(WARNINGS)' all
+
 install:	all $(D)$(PATHLIB)/libstorage.$(EXTLIB) 
 
 methods: methods.c buildconfig
