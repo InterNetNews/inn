@@ -220,10 +220,6 @@
   ||#### =()<NNRP_GETHOSTBYADDR	@<NNRP_GETHOSTBYADDR>@>()=
   ||NNRP_GETHOSTBYADDR	DO
 [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-  ||##  Strip Sender from posts that didn't authenticate?  Pick DO or DONT.
-  ||#### =()<NNRP_AUTH_SENDER	@<NNRP_AUTH_SENDER>@>()=
-  ||NNRP_AUTH_SENDER	DO
-[IN1.7=@6][WDF=confparam][WOR=yes][P=low]
   ||##  Tell resolver _res.options to be fast?  Pick DO or DONT.
   ||#### =()<FAST_RESOLV		@<FAST_RESOLV>@>()=
   ||FAST_RESOLV		DONT
