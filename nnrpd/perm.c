@@ -2147,6 +2147,7 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
     char *resdir;
     char *tmp;
     char *perl_path;
+    char newUser[BIG_BUFFER];
     EXECSTUFF *foo;
     int done	    = 0;
     int code;
@@ -2160,6 +2161,7 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
     free(tmp);
 
     ubuf[0] = '\0';
+    newUser[0] = '\0';
     for (i = 0; auth->auth_methods[i]; i++) {
 #ifdef DO_PERL
       if (auth->auth_methods[i]->type == PERMperl_auth) {
@@ -2175,16 +2177,20 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
                 free(perl_path);
                 perlAuthInit();
           
-                code = perlAuthenticate(ClientHost, ClientIpString, ServerHost, username, password, errorstr);
+                code = perlAuthenticate(ClientHost, ClientIpString, ServerHost, username, password, errorstr, newUser);
                 if (code == NNTP_AUTH_OK_VAL) {
-                    syslog(L_NOTICE, "%s user %s", ClientHost, username);
+                    /* Set the value of ubuf to the right username */
+                    if (newUser[0] != '\0') {
+                      strcpy(ubuf, newUser);
+                    } else {
+                      strcpy(ubuf, username);
+                    }
+
+                    syslog(L_NOTICE, "%s user %s", ClientHost, ubuf);
                     if (LLOGenable) {
-                        fprintf(locallog, "%s user %s\n", ClientHost, username);
+                        fprintf(locallog, "%s user %s\n", ClientHost, ubuf);
                         fflush(locallog);
                     }
-              
-                    /* save these values in case you need them later */
-                    strcpy(ubuf, username);
                     break;
                 } else {
                     syslog(L_NOTICE, "%s bad_auth", ClientHost);

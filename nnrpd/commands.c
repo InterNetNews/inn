@@ -322,9 +322,9 @@ CMDauthinfo(ac, av)
 #endif /* DO_PYTHON */
 
 	    if (EQ(User, PERMuser) && EQ(Password, PERMpass)) {
-		syslog(L_NOTICE, "%s user %s", ClientHost, User);
+		syslog(L_NOTICE, "%s user %s", ClientHost, PERMuser);
 		if (LLOGenable) {
-			fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, User);
+			fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, PERMuser);
 			fflush(locallog);
 		}
 		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
@@ -338,9 +338,9 @@ CMDauthinfo(ac, av)
             PERMlogin(User, Password, errorstr);
 	    PERMgetpermissions();
 	    if (!PERMneedauth) {
-		syslog(L_NOTICE, "%s user %s", ClientHost, User);
+		syslog(L_NOTICE, "%s user %s", ClientHost, PERMuser);
 		if (LLOGenable) {
-			fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, User);
+			fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, PERMuser);
 			fflush(locallog);
 		}
 		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);

@@ -310,7 +310,7 @@ void perlAuthInit(void) {
     
 }
 
-int perlAuthenticate(char *clientHost, char *clientIpString, char *serverHost, char *user, char *passwd, char *errorstring) {
+int perlAuthenticate(char *clientHost, char *clientIpString, char *serverHost, char *user, char *passwd, char *errorstring, char *newUser) {
     dSP;
     HV              *attribs;
     int             rc;
@@ -347,14 +347,20 @@ int perlAuthenticate(char *clientHost, char *clientIpString, char *serverHost, c
 	ExitWithStats(1, FALSE);
     }
 
-    if (rc != 2) {
+    if ((rc != 3) && (rc != 2)) {
 	syslog(L_ERROR, "Perl function authenticate returned wrong number of results: %d", rc);
 	Reply("%d Internal Error (2).  Goodbye\r\n", NNTP_ACCESS_VAL);
 	ExitWithStats(1, FALSE);
     }
 
+    if (rc == 3) {
+      p = POPp;
+      strcpy(newUser, p);
+    } 
+
     p = POPp;
     strcpy(errorstring, p);
+
     code = POPi;
 
     if ((code == NNTP_POSTOK_VAL) || (code == NNTP_NOPOSTOK_VAL))
