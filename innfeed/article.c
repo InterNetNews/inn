@@ -87,7 +87,7 @@ struct article_s
     bool loggedMissing ;        /* true if article is missing and we logged */
     bool articleOk ;            /* true until we know otherwise. */
     bool inWireFormat ;         /* true if ->contents is \r\n/dot-escaped */
-    ARTHANDLE *arthandle ;       /* points to the stroage api handle if used, NULL otherwise */
+    ARTHANDLE *arthandle ;      /* Storage manager article handle */
 } ;
 
 struct hash_entry_s {
@@ -100,7 +100,6 @@ struct hash_entry_s {
 };
 
 typedef struct hash_entry_s *HashEntry ;
-
 
   /*
    * Private functions
@@ -475,9 +474,7 @@ void artSetMaxBytesInUse (u_int val)
 
 
   /* return a single buffer that contains the disk image of the article (i.e.
-     not fixed up for NNTP). Note that if artBitFiddleContents (true) has
-     been called then the Buffer this functions returns will be fixed up
-     tfor NNTP. */
+     not fixed up for NNTP). */
 static Buffer artGetContents (Article article)
 {
   Buffer rval = NULL ;
@@ -495,16 +492,16 @@ static Buffer artGetContents (Article article)
 }
 
 
-static void artUnmap (Article article, int size)
-{
-    if (article->arthandle) {
+static void artUnmap (Article article, int size) {
+    
+    if (article->arthandle)
 	SMfreearticle(article->arthandle);
-    } else {
+    else
 	if (munmap(article->mMapping, size) < 0)
-	    syslog (LOG_NOTICE, "munmap %s: %m", article->fname);
-    }
+	    syslog (LOG_NOTICE, "munmap %s: %m", article->fname) ;
+
     article->arthandle = NULL;
-    article->mMapping = NULL;
+    article->mMapping = NULL ;
 }
 
 
@@ -535,254 +532,215 @@ static void logArticleStats (TimeoutId id, void *data)
 
 static bool fillContents (Article article)
 {
-  int fd ;
-  char *p;
-  struct stat buf ;
-  static bool maxLimitNotified ;
-  BOOL opened;
-  ARTHANDLE *arthandle;
-
-  ASSERT (article->contents == NULL) ;
-
-  if (maxBytesInUse == 0)
-    maxBytesInUse = SOFT_ARTICLE_BYTE_LIMIT ;
-
-  if (avgCharsPerLine == 0)
-    avgCharsPerLine = 75 ;      /* roughly number of characters per line */
-
-  if (IsToken(article->fname)) {
-      opened = ((arthandle = SMretrieve(TextToToken(article->fname), RETR_ALL)) != NULL);
-  } else {
-      opened = ((fd = open (article->fname,O_RDONLY,0)) >= 0);
-      arthandle = NULL;
-  }
-  article->arthandle = arthandle;
-  if (!opened) {
-      article->articleOk = false ;
-      missingArticleCount++ ;
-      
-      if (logMissingArticles && !article->loggedMissing)
-        {
-          syslog (LOG_NOTICE,NO_ARTICLE,article->msgid,article->fname) ;
-          article->loggedMissing = true ;
-        }
-    }
-  else if (!arthandle) {
-      if (fstat (fd, &buf) < 0)
-      {
-	  article->articleOk = false ;
-	  syslog (LOG_ERR,FSTAT_FAILURE,article->fname) ;
-      }
-      else if (!S_ISREG (buf.st_mode))
-      {
-	  article->articleOk = false ;
-	  syslog (LOG_ERR,REGFILE_FAILURE,article->fname) ;
-      }
-      else if (buf.st_size == 0)
-      {
-	  article->articleOk = false ;
-	  syslog (LOG_ERR,EMPTY_ARTICLE,article->fname) ;
-      }
-  } else {
-      char *buffer = NULL ;
-      int amt = 0 ;
-      size_t idx = 0;
-      size_t amtToRead;
-      size_t newBufferSize;
-      HashEntry h ;
-
-      if (arthandle) {
-	  amtToRead = (size_t) arthandle->len;
-	  newBufferSize = (size_t) arthandle->len;
-      } else {
-	  amtToRead = (size_t) buf.st_size ;
-	  newBufferSize = (size_t) buf.st_size ;
-      }
-
-      if (arthandle || useMMap) {
-	  if (useMMap) {
-	      article->mMapping = mmap((caddr_t) 0, (size_t) buf.st_size,
-				       PROT_READ, MAP_SHARED, fd, 0);
-	  } else {
-	      article->mMapping = arthandle->data;
-	  }
-	  
-          if (article->mMapping == (caddr_t) -1) {
-                /* dunno, but revert to plain reading */
-	      article->mMapping = NULL ;
-	      syslog (LOG_NOTICE, MMAP_FAILURE, article->fname) ;
-	  } else {
-              article->contents = newBufferByCharP((char *)article->mMapping,
-                                                   (size_t) newBufferSize,
-                                                   (size_t) newBufferSize);
-              buffer = bufferBase (article->contents) ;
-              if ((p = memchr(buffer, '\n', newBufferSize)) == NULL)
-	      {                  
-                  article->articleOk = false;
-                  delBuffer (article->contents) ;
-                  article->contents = NULL ;
-                  syslog (LOG_NOTICE, MUNGED_ARTICLE, article->fname) ;
-	      }
-              else if (p[-1] == '\r')
-		  article->inWireFormat = true ;
-              else 
-	      {
-                  /* we need to copy the contents into a buffer below */
-                  delBuffer (article->contents) ;
-                  article->contents = NULL ;
-	      }
-	  }
-      }
-
-      if (article->contents == NULL && article->articleOk)
-      {
-	  /* an estimate to give some room for nntpPrepareBuffer to use. */
-	  newBufferSize *= (1.0 + (1.0 / avgCharsPerLine)) ;
-	  newBufferSize ++ ;
-          
-          /* if we're going over the limit try to free up some older article's
-             contents.  */
-          if (amtToRead + bytesInUse > maxBytesInUse)
-            {
-              for (h = chronList ; h != NULL ; h = h->nextTime)
-                {
-                  if (artFreeContents (h->article))
-                    if (amtToRead + bytesInUse <= maxBytesInUse)
-                      break ;
-                }
-            }
-
-          /* we we couldn't get below, then log it (one time only) */
-          if ((amtToRead + bytesInUse) > maxBytesInUse &&
-              maxLimitNotified == false)
-            {
-              maxLimitNotified = true ;
-              syslog (LOG_NOTICE,MAX_BYTES_LIMIT,maxBytesInUse,
-                      amtToRead + bytesInUse) ;
-            }
-
-          if ((article->contents = newBuffer (newBufferSize)) == NULL)
-            amtToRead = 0 ;
-          else
-            {
-              buffer = bufferBase (article->contents) ;
-	      if (article->arthandle) {
-		  bytesInUse += arthandle->len;
-		  byteTotal += arthandle->len;
-	      } else {
-		  bytesInUse += buf.st_size ;
-		  byteTotal += buf.st_size ;
-	      }
-            }
-
-          if (article->mMapping && buffer != NULL)
-            {               
-              (void)memcpy(buffer, (char *) article->mMapping,
-                           (int) buf.st_size);
-              artUnmap(article, (int) buf.st_size) ;
-              amtToRead = 0;
-            }
-
-          while (amtToRead > 0)
-            {
-              if ((amt = read (fd, buffer + idx,amtToRead)) <= 0)
-                {
-                  syslog (LOG_ERR,BAD_ART_READ, article->fname) ;
-		  if (article->arthandle) {
-		      bytesInUse -= arthandle->len;
-		      byteTotal -= arthandle->len;
-		  } else {
-		      bytesInUse -= buf.st_size ;
-		      byteTotal -= buf.st_size ;
-		  }
-                  amtToRead = 0 ;
-
-                  delBuffer (article->contents) ;
-                  article->contents = NULL ;
-                }
-              else
-                {
-                  idx += amt ;
-                  amtToRead -= amt ;
-                }
-            }
-
-          if (article->contents != NULL)
-            {
-	      if (article->arthandle) 
-		  bufferSetDataSize (article->contents, (size_t) arthandle->len);
-	      else 
-		  bufferSetDataSize (article->contents, (size_t) buf.st_size) ;
-
-              if ((p = strchr(buffer, '\n')) == NULL)
-                {                  
-                  article->articleOk = false;
-                  syslog (LOG_NOTICE, MUNGED_ARTICLE, article->fname) ;
-                }
-              else if (p[-1] == '\r')
-                {
-                  article->inWireFormat = true ;
-                }
-              else if ( nntpPrepareBuffer (article->contents) )
-                  {
-		    size_t diff;
-		    if (article->arthandle)
-			diff = (bufferDataSize (article->contents) - arthandle->len) ;
-		    else
-                    diff = (bufferDataSize (article->contents) - buf.st_size) ;
-
-                    if (((u_int) UINT_MAX) - diff <= preparedBytes)
-                      {
-                        dprintf (2,"Newline ratio so far: %02.2f\n",
-                                 ((double) preparedBytes / preparedNewlines)) ;
-                        syslog (LOG_NOTICE,PREPARED_NEWLINES,
-                                ((double) preparedBytes)/preparedNewlines,
-                                preparedBytes,preparedNewlines) ;
-                        preparedBytes = 0 ;
-                        preparedNewlines = 0 ;
-                        rolledOver = true ;
-                      }
-
-		    if (article->arthandle)
-			preparedBytes += arthandle->len ;
-		    else
-			preparedBytes += buf.st_size ;
-
-                    preparedNewlines += diff ;
-                    bytesInUse += diff ;
-                    byteTotal += diff ;
-
-                    if (preparedBytes > (1024 * 1024))
-                      {
-                        avgCharsPerLine =
-                          ((double) preparedBytes) / preparedNewlines ;
-                        avgCharsPerLine++ ;
-                      }
-                    article->inWireFormat = true ;
-                  }
-                else
-                  {
-                    syslog (LOG_ERR,PREPARE_FAILED) ;
-		    if (article->arthandle) {
-			bytesInUse -= arthandle->len;
-			byteTotal -= arthandle->len;
-		    } else {
-			bytesInUse -= buf.st_size ;
-			byteTotal -= buf.st_size ;
-		    }
-
-                    delBuffer (article->contents) ;
-                    article->contents = NULL ;
-                  }
-            }
-        }
-    }
-
-  /* If we're not doin' RAW stuff, we should close a valid file descriptor */
-  if (!article->arthandle && (fd >= 0))
-    close (fd) ;
+    int fd ;
+    char *p;
+    static bool maxLimitNotified ;
+    bool opened;
+    int articlesize;
+    char *buffer = NULL ;
+    int amt = 0 ;
+    size_t idx = 0, amtToRead ;
+    size_t newBufferSize ;
+    HashEntry h ;
   
-  return (article->contents != NULL ? true : false) ;
+    ASSERT (article->contents == NULL) ;
+    
+    if (maxBytesInUse == 0)
+	maxBytesInUse = SOFT_ARTICLE_BYTE_LIMIT ;
+    
+    if (avgCharsPerLine == 0)
+	avgCharsPerLine = 75 ;      /* roughly number of characters per line */
+    
+    if (IsToken(article->fname)) {
+	opened = ((article->arthandle = SMretrieve(TextToToken(article->fname), RETR_ALL)) != NULL);
+	if (opened)
+	    articlesize = article->arthandle->len;
+	else {
+	    syslog(LOG_ERR, "Could not retrieve %s: %s",
+		   article->fname, SMerrorstr);
+	    article->articleOk = false;
+	    return false;
+	}
+    } else {
+	struct stat sb ;
+	
+	opened = ((fd = open (article->fname,O_RDONLY,0)) >= 0);
+	article->arthandle = NULL;
+	if (fstat (fd, &sb) < 0) {
+	    article->articleOk = false ;
+	    syslog (LOG_ERR,FSTAT_FAILURE,article->fname) ;
+	    return false;
+	}
+	if (!S_ISREG (sb.st_mode)) {
+	    article->articleOk = false ;
+	    syslog (LOG_ERR,REGFILE_FAILURE,article->fname) ;
+	    return false;
+	}
+	if (sb.st_size == 0) {
+	    article->articleOk = false ;
+	    syslog (LOG_ERR,EMPTY_ARTICLE,article->fname) ;
+	    return false;
+	}
+	articlesize = sb.st_size;
+    }
+    
+    if (!opened) {
+	article->articleOk = false ;
+	missingArticleCount++ ;
+	
+	if (logMissingArticles && !article->loggedMissing)
+	{
+	    syslog (LOG_NOTICE,NO_ARTICLE,article->msgid,article->fname) ;
+	    article->loggedMissing = true ;
+	}
+	return false;
+    }
+    amtToRead = (size_t) articlesize ;
+    newBufferSize = (size_t) articlesize ;
+    
+    if (article->arthandle || useMMap) {
+	if (article->arthandle)
+	    article->mMapping = article->arthandle->data;
+	else 
+	    article->mMapping = mmap((caddr_t) 0, (size_t) articlesize,
+				     PROT_READ, MAP_SHARED, fd, 0);
+	
+	if (article->mMapping == (caddr_t) -1) {
+	    /* dunno, but revert to plain reading */
+	    article->mMapping = NULL ;
+	    syslog (LOG_NOTICE, MMAP_FAILURE, article->fname) ;
+	} else {
+	    article->contents = newBufferByCharP((char *)article->mMapping,
+						 (size_t) articlesize,
+						 (size_t) articlesize);
+	    buffer = bufferBase (article->contents) ;
+	    if ((p = strchr(buffer, '\n')) == NULL) {
+		article->articleOk = false;
+		delBuffer (article->contents) ;
+		article->contents = NULL ;
+		syslog (LOG_NOTICE, MUNGED_ARTICLE, article->fname) ;
+	    } else {
+		if (p[-1] == '\r') {
+		    article->inWireFormat = true ;
+		} else {
+		    /* we need to copy the contents into a buffer below */
+		    delBuffer (article->contents) ;
+		    article->contents = NULL ;
+		}
+	    }
+	}
+    }
+	
+    if (article->contents == NULL && article->articleOk) {
+	/* an estimate to give some room for nntpPrepareBuffer to use. */
+	newBufferSize *= (1.0 + (1.0 / avgCharsPerLine)) ;
+	newBufferSize ++ ;
+	
+	/* if we're going over the limit try to free up some older article's
+	   contents.  */
+	if (amtToRead + bytesInUse > maxBytesInUse)
+	{
+	    for (h = chronList ; h != NULL ; h = h->nextTime)
+	    {
+		if (artFreeContents (h->article))
+		    if (amtToRead + bytesInUse <= maxBytesInUse)
+			break ;
+	    }
+	}
+	
+	/* we we couldn't get below, then log it (one time only) */
+	if ((amtToRead + bytesInUse) > maxBytesInUse && maxLimitNotified == false) {
+	    maxLimitNotified = true ;
+	    syslog (LOG_NOTICE,MAX_BYTES_LIMIT,maxBytesInUse,
+		    amtToRead + bytesInUse) ;
+	}
+	
+	if ((article->contents = newBuffer (newBufferSize)) == NULL)
+	    amtToRead = 0 ;
+	else {
+	    buffer = bufferBase (article->contents) ;
+	    bytesInUse += articlesize ;
+	    byteTotal += articlesize ;
+	}
+	
+	if (article->mMapping && buffer != NULL) {               
+	    (void)memcpy(buffer, (char *) article->mMapping,
+			 (int) articlesize);
+	    artUnmap(article, (int) articlesize) ;
+	    amtToRead = 0;
+	}
+	
+	while (amtToRead > 0) {
+	    if ((amt = read (fd, buffer + idx,amtToRead)) <= 0) {
+		syslog (LOG_ERR,BAD_ART_READ, article->fname) ;
+		bytesInUse -= articlesize ;
+		byteTotal -= articlesize ;
+		amtToRead = 0 ;
+		
+		delBuffer (article->contents) ;
+		article->contents = NULL ;
+	    }
+	    else {
+		idx += amt ;
+		amtToRead -= amt ;
+	    }
+	}
+	
+	if (article->contents != NULL) {
+	    bufferSetDataSize (article->contents, (size_t) articlesize) ;
+	    
+	    if ((p = strchr(buffer, '\n')) == NULL) {                  
+		article->articleOk = false;
+		syslog (LOG_NOTICE, MUNGED_ARTICLE, article->fname) ;
+	    }
+	    else if (p[-1] == '\r') {
+		article->inWireFormat = true ;
+	    }
+	    else {
+		if ( nntpPrepareBuffer (article->contents) ) {
+		    size_t diff =
+			(bufferDataSize (article->contents) - articlesize) ;
+		    
+		    if (((u_int) UINT_MAX) - diff <= preparedBytes) {
+			dprintf (2,"Newline ratio so far: %02.2f\n",
+				 ((double) preparedBytes / preparedNewlines)) ;
+			syslog (LOG_NOTICE,PREPARED_NEWLINES,
+				((double) preparedBytes)/preparedNewlines,
+				preparedBytes,preparedNewlines) ;
+			preparedBytes = 0 ;
+			preparedNewlines = 0 ;
+			rolledOver = true ;
+		    }
+		    
+		    preparedBytes += articlesize ;
+		    preparedNewlines += diff ;
+		    bytesInUse += diff ;
+		    byteTotal += diff ;
+		    
+		    if (preparedBytes > (1024 * 1024)) {
+			avgCharsPerLine =
+			    ((double) preparedBytes) / preparedNewlines ;
+			avgCharsPerLine++ ;
+		    }
+		    article->inWireFormat = true ;
+		} else {
+		    syslog (LOG_ERR,PREPARE_FAILED) ;
+		    bytesInUse -= articlesize ;
+		    byteTotal -= articlesize ;
+		    
+		    delBuffer (article->contents) ;
+		    article->contents = NULL ;
+		}
+	    }
+	}
+    }
+
+    
+    /* If we're not useing storage api, we should close a valid file descriptor */
+    if (!article->arthandle && (fd >= 0))
+	close (fd) ;
+  
+    return (article->contents != NULL ? true : false) ;
 }
 
 
@@ -852,7 +810,7 @@ static bool prepareArticleForNNTP (Article article)
           
           if (*end != '\0')
             end++ ;
-
+          
         }
       while (*end != '\0') ;
       
