@@ -83,7 +83,7 @@ address in a netblock; for example, "10.10.10.0/24" will match any IP
 address between 10.10.10.0 and 10.10.10.255 inclusive.
 
 If compiled against the SSL libraries, an auth group with the
-ssl_required: parameter set to true only applies if the incoming
+require_ssl: parameter set to true only applies if the incoming
 connection is using SSL.
 
 For any connection from a host that matches that wildmat expression or
@@ -504,7 +504,7 @@ Here's a basic summary of what happens when a client connects:
 =item *
 
 All auth groups are scanned and the ones that don't match the client
-(due to hosts:, localaddress:, ssl_required:, etc) are eliminated.
+(due to hosts:, localaddress:, require_ssl:, etc) are eliminated.
 
 =item *
 
@@ -743,7 +743,7 @@ some ideas:
 =item *
 
 To restrict connections on the standard nntp port (119) to use SSL for
-some (or all) of the auth groups to match, use the ssl_required:
+some (or all) of the auth groups to match, use the require_ssl:
 parameter.
 
 =item *
@@ -756,7 +756,7 @@ above, with ones having global applicability below.
 
 Consider running a C<nnrpd -S> (with C<-D>, or out of "super-server"
 like inetd) on the nntps port (563) for clients that support SSL.  You
-can use the ssl_required: parameter, or C<-c> to specify an alternate
+can use the require_ssl: parameter, or C<-c> to specify an alternate
 F<readers.conf> if you want a substantially different configuration for
 this case.
 
