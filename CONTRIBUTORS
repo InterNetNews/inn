@@ -87,7 +87,8 @@ Also:
 Dave Barr:
 	Kept INN alive after Rich Salz didn't have the time anymore but 
 	before the ISC took over. He released 4 unofficial versions that 
-	provided a good boost to what the ISC started with.
+	provided a good boost to what the ISC started with.  Minor work
+	on 2.0, mostly with example files and minor code tweaks.
 
 Marc Fournier:
 	Provided various bug fixes and did a lot of work integrating other
