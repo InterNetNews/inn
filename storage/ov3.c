@@ -1021,7 +1021,7 @@ BOOL OV3expiregroup(char *group, int *lo) {
 	return FALSE;
     }
     newge = *ge;
-    newge.base = newge.low = newge.count = 0;
+    newge.base = newge.count = 0;
     while (OV3search(handle, &artnum, &data, &len, &token)) {
 	if ((ah = SMretrieve(token, RETR_STAT)) == NULL)
 	    continue;
