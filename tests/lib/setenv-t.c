@@ -39,9 +39,9 @@ main(void)
        that we can allocate one string of this size but not two.  Note that
        Linux doesn't support data limits, so skip if we get an unexpected
        success here. */
-    value = xmalloc(50 * 1024);
-    memset(value, 'A', 50 * 1024 - 1);
-    value[50 * 1024 - 1] = 0;
+    value = xmalloc(100 * 1024);
+    memset(value, 'A', 100 * 1024 - 1);
+    value[100 * 1024 - 1] = 0;
     ok(9, test_setenv(test_var, value, 0) == 0);
     ok_string(10, "", getenv(test_var));
     status = test_setenv(test_var, value, 1);
