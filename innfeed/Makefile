@@ -54,10 +54,10 @@ version.c: Makefile ../Makefile.global
 	version=`echo '$(VERSION) ($(VERSION_EXTRA))' | sed 's/ ()//'` ; \
 	echo 'const char *versionInfo = "innfeed' "$$version\" ;" > $@
 
-innfeed: $(OBJECTS) connection.o $(MALLOC) $(LIBSTORAGE) $(LIBINN)
+innfeed: $(OBJECTS) connection.o $(LIBSTORAGE) $(LIBINN)
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $(OBJECTS) connection.o $(INNFEEDLIBS)
 
-imapfeed: $(OBJECTS) imap_connection.o $(MALLOC) $(LIBSTORAGE) $(LIBINN)
+imapfeed: $(OBJECTS) imap_connection.o $(LIBSTORAGE) $(LIBINN)
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $(OBJECTS) imap_connection.o $(INNFEEDLIBS)
 
 procbatch: procbatch.in $(FIXSCRIPT)
