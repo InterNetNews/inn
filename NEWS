@@ -1,4 +1,5 @@
 Upgrading from 2.2 to 2.3
+
     Simply doing a make update is not sufficient to upgrade; the history and
     overview information will also have to be regenerated, since the formats
     of both files have changed between 2.2 and 2.3.  Regardless of whether
@@ -24,7 +25,7 @@ Upgrading from 2.2 to 2.3
 
         makehistory -b -f history.n -O -F
 
-    (This is suitable for ``buffindexed'' ovmethod.)  Both will generate a
+    (This is suitable for ``buffindexed'' ovmethod.) Both will generate a
     new history file as history.n and rebuild overview at the same time.  If
     you want to preseve a record of expired message IDs in the history file,
     run:
@@ -83,7 +84,20 @@ Upgrading from 2.2 to 2.3
     to generate, on your old server, a list of all of your existing article
     files and then feed that list to innxmit.
 
+    If you are using a version of Cleanfeed that still has a line in it
+    like:
+
+        $lines = $hdr{'__BODY__'} =~ tr/\n/\n/;
+
+    you will need to change this line to:
+
+        $lines = $hdr{'__LINES__'};
+
+    to work with INN 2.3 or later.  This is due to an internal optimization
+    of the interface to embedded filters that's new in INN 2.3.
+
 Changes from 2.2 to 2.3
+
     * New readers.conf file (replaces nnrp.access) which allows more
       flexible specification of access restrictions.  Included in the sample
       implementations is a RADIUS-based authenticator.
@@ -120,7 +134,7 @@ Changes from 2.2 to 2.3
     * To simplify anti-abuse filtering, and to be more compliant with news
       standards and proposed standards, INN now treats as control messages
       only articles containing a Control header.  A Subject line beginning
-      with `cmsg ' is no longer sufficient for a message to be considered a
+      with "cmsg " is no longer sufficient for a message to be considered a
       control message, and the Also-Control header is no longer supported.
 
     * inews is not installed setgid news and rnews is not installed setuid
@@ -143,6 +157,7 @@ Changes from 2.2 to 2.3
       included in INN 2.3.
 
 Changes from 2.1 to 2.2
+
     * New storage.conf file (replaces storage.ctl).
 
     * New (optional) way of handling non-cancel control messages
