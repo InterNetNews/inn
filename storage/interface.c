@@ -396,6 +396,7 @@ static BOOL InitMethod(STORAGETYPE method) {
 static BOOL MatchGroups(const char *g, int num, char **patterns) {
     char                *group;
     char                *groups;
+    char		*groupsep, *q;
     const char          *p;
     int                 i;
     BOOL                wanted = FALSE;
@@ -407,7 +408,13 @@ static BOOL MatchGroups(const char *g, int num, char **patterns) {
     memcpy(groups, g, p - g - 1);
     groups[p - g - 1] = '\0';
 
-    for (group = strtok(groups, ","); group != NULL; group = strtok(NULL, ",")) {
+    if (innconf->storeonxref)
+	groupsep = " ";
+    else
+	groupsep = ",";
+    for (group = strtok(groups, groupsep); group != NULL; group = strtok(NULL, groupsep)) {
+	if (innconf->storeonxref && ((q = strchr(group, ':')) != (char *)NULL))
+	    *q = '\0';
 	for (i = 0; i < num; i++) {
 	    switch (patterns[i][0]) {
 	    case '!':
@@ -445,9 +452,22 @@ TOKEN SMstore(const ARTHANDLE article) {
 	return result;
     }
 
-    if ((groups = (char *)HeaderFindMem(article.data, article.len, "Newsgroups", 10)) == NULL) {
-	SMseterror(SMERR_UNDEFINED, "Could not find Newsgroups header");
-	return result;
+    if (innconf->storeonxref) {
+	if ((groups = (char *)HeaderFindMem(article.data, article.len, "Xref", 4)) == NULL) {
+	    SMseterror(SMERR_UNDEFINED, "Could not find Xref header");
+	    return result;
+	}
+	/* skip pathhost */
+	if ((groups = strchr(groups, ' ')) == NULL) {
+	    SMseterror(SMERR_UNDEFINED, "Could not find pathhost in Xref header");
+	    return result;
+	}
+	for (groups++; *groups == ' '; groups++);
+    } else {
+	if ((groups = (char *)HeaderFindMem(article.data, article.len, "Newsgroups", 10)) == NULL) {
+	    SMseterror(SMERR_UNDEFINED, "Could not find Newsgroups header");
+	    return result;
+	}
     }
 
     for (sub = subscriptions; sub != NULL; sub = sub->next) {
