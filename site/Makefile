@@ -79,7 +79,7 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(CTLBIN)/checkgroups \
 	$D$(PATHBIN)/innstat $D$(PATHBIN)/pgpverify $D$(PATHBIN)/innwatch \
 	$D$(PATHBIN)/controlbatch $D$(PATHBIN)/innreport $D$(PATH_SHELLVARS) \
 	$D$(PATH_PERL_SHELLVARS) $D$(PATH_TCL_SHELLVARS) \
-	$D$(PATH_CSH_SHELLVARS) $D$(PATHBIN)/scanspool $D$(PATHBIN)/cnfsstat \
+	$D$(PATHBIN)/scanspool $D$(PATHBIN)/cnfsstat \
 	$D$(PATHBIN)/mod-active $D$(PATHBIN)/simpleftp \
 	$D$(CTLBIN)/checkgroups.pl $D$(CTLBIN)/ihave.pl \
 	$D$(PATHBIN)/mailpost $D$(PATHBIN)/news2mail $D$(PATHBIN)/pullnews \
