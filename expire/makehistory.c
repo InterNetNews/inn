@@ -175,8 +175,8 @@ FlushOverTmpFile(void)
     TOKEN token;
     QIOSTATE *qp;
     int count;
-    char *line, *p, *q;
-    time_t arrived;
+    char *line, *p, *q, *r;
+    time_t arrived, expires;
 
     if (OverTmpFile == NULL)
 	return;
@@ -214,7 +214,8 @@ FlushOverTmpFile(void)
 
     for (count = 1; (line = QIOread(qp)) != NULL ; ++count) {
 	if ((p = strchr(line, '\t')) == NULL 
-	    || (q = strchr(p+1, '\t')) == NULL) {
+	    || (q = strchr(p+1, '\t')) == NULL
+	    || (r = strchr(q+1, '\t')) == NULL) {
 	    fprintf(stderr, "makehistory: sorted over %s has bad line %d\n",
 		    SortedTmpPath, count);
 	    exit(1);
@@ -223,21 +224,25 @@ FlushOverTmpFile(void)
 	if (sorttype == OVNEWSGROUP) {
 	    *p++ = '\0';
 	    *q++ = '\0';
+	    *r++ = '\0';
 	    arrived = (time_t)atol(p);
-	    p = q;
-	    if ((q = strchr(p, '\t')) == NULL) {
+	    expires = (time_t)atol(q);
+	    q = r;
+	    if ((r = strchr(r, '\t')) == NULL) {
 	        fprintf(stderr, "makehistory: sorted over %s has bad line %d\n",
 		    SortedTmpPath, count);
 	        exit(1);
 	    }
-	    *q++ = '\0';
+	    *r++ = '\0';
 	} else {
 	    *p++ = '\0';
 	    *q++ = '\0';
+	    *r++ = '\0';
 	    arrived = (time_t)atol(line);
+	    expires = (time_t)atol(p);
 	}
-	token = TextToToken(p);
-	if (!OVadd(token, q, strlen(q), arrived)) {
+	token = TextToToken(q);
+	if (!OVadd(token, r, strlen(r), arrived, expires)) {
 	    if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE) {
 		fprintf(stderr, "makehistory: no space left for overview\n");
 		exit(1);
@@ -267,7 +272,7 @@ FlushOverTmpFile(void)
  */
 void
 WriteOverLine(TOKEN *token, char *xrefs, int xrefslen, 
-	      char *overdata, int overlen, time_t arrived)
+	      char *overdata, int overlen, time_t arrived, time_t expires)
 {
     char temp[SMBUF];
     char *p, *q, *r;
@@ -312,10 +317,12 @@ WriteOverLine(TOKEN *token, char *xrefs, int xrefslen,
 	/* q points to start of ng name, r points to its end. */
 	strncpy(temp, q, r-q);
 	temp[r-q] = '\0';
-	fprintf(OverTmpFile, "%s\t%10lu\t%s\t", temp,
-                (unsigned long) arrived, TokenToText(*token));
+	fprintf(OverTmpFile, "%s\t%10lu\t%u\t%s\t", temp,
+                (unsigned long) arrived, (unsigned long) expires,
+                TokenToText(*token));
     } else
-	fprintf(OverTmpFile, "%10lu\t%s\t", (unsigned long) arrived,
+	fprintf(OverTmpFile, "%10lu\t%u\t%s\t", (unsigned long) arrived,
+                (unsigned long) expires,
                 TokenToText(*token));
 
     fwrite(overdata, overlen, 1, OverTmpFile);
@@ -603,7 +610,7 @@ DoArt(ARTHANDLE *art)
 		    *p = ' ';
 	}
 	WriteOverLine(art->token, Xrefp->Header, Xrefp->HeaderLength,
-		      Buff.Data, Buff.Left, Arrived);
+		      Buff.Data, Buff.Left, Arrived, Expires);
     }
 
     if (!NoHistory) {

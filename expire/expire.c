@@ -607,14 +607,14 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length)
 	    return TRUE;
 	}
 	token = TextToToken(fields[2]);
-	if (SMprobe(SELFEXPIRE, &token, NULL)) {
+	if (innconf->groupbaseexpiry || SMprobe(SELFEXPIRE, &token, NULL)) {
 	    if ((article = SMretrieve(token, RETR_STAT)) == (ARTHANDLE *)NULL) {
 		HasSelfexpire = TRUE;
 		Selfexpired = TRUE;
 	    } else {
 		/* the article is still alive */
 		SMfreearticle(article);
-		if (!Ignoreselfexpire)
+		if (innconf->groupbaseexpiry || !Ignoreselfexpire)
 		    HasSelfexpire = TRUE;
 	    }
 	}
@@ -744,7 +744,8 @@ STATIC NORETURN CleanupAndExit(BOOL Server, BOOL Paused, int x)
 	(void)printf("Article lines processed %8ld\n", EXPprocessed);
 	(void)printf("Articles retained       %8ld\n", EXPstillhere);
 	(void)printf("Entries expired         %8ld\n", EXPallgone);
-	(void)printf("Articles dropped        %8ld\n", EXPunlinked);
+	if (!innconf->groupbaseexpiry)
+	    (void)printf("Articles dropped        %8ld\n", EXPunlinked);
 	(void)printf("Old entries dropped     %8ld\n", EXPhistdrop);
 	(void)printf("Old entries retained    %8ld\n", EXPhistremember);
     }
@@ -910,7 +911,7 @@ int main(int ac, char *av[])
 	F = EQ(av[0], "-") ? stdin : EXPfopen(FALSE, av[0], "r", FALSE, FALSE, FALSE);
     else
 	F = EXPfopen(FALSE, cpcatpath(innconf->pathetc, _PATH_EXPIRECTL), "r", FALSE, FALSE, FALSE);
-    if (!EXPreadfile(F)) {
+    if (!innconf->groupbaseexpiry && !EXPreadfile(F)) {
 	(void)fclose(F);
 	(void)fprintf(stderr, "Format error in expire.ctl\n");
 	exit(1);

@@ -21,25 +21,55 @@ void usage(void) {
 }
 
 int main(int argc, char *argv[]) {
-    int		                i;
-    char                activefn[BIG_BUFFER] = "";
-    int                 linenum = 0;
-    QIOSTATE			*qp;
-    char			*line;
-    char			*p;
-    int				lo;
-    FILE			*F;
-    BOOL			LowmarkFile = FALSE;
-    char			*lofile;
+    int		i;
+    char        activefn[BIG_BUFFER] = "";
+    QIOSTATE	*qp;
+    char	*line;
+    char	*p;
+    int		lo;
+    FILE	*F;
+    BOOL	Nonull, LowmarkFile = FALSE;
+    char	*lofile;
+    OVGE	ovge;
 
     /* First thing, set up logging and our identity. */
     openlog("expireover", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
 
-    while ((i = getopt(argc, argv, "f:Z:")) != EOF) {
+    ovge.earliest = FALSE;
+    ovge.keep = FALSE;
+    ovge.ignoreselfexpire = FALSE;
+    ovge.usepost = FALSE;
+    ovge.quiet = FALSE;
+    ovge.timewarp = 0;
+    ovge.filename = NULL;
+    ovge.delayrm = FALSE;
+    while ((i = getopt(argc, argv, "ef:kNpqw:z:Z:")) != EOF) {
 	switch (i) {
-	case 'f':	    
+	case 'e':
+	    ovge.earliest = TRUE;
+	    break;
+	case 'f':
 	    strcpy(activefn, optarg);
 		    break;
+	case 'k':
+	    ovge.keep = TRUE;
+	    break;
+	case 'N':
+	    ovge.ignoreselfexpire = TRUE;
+	    break;
+	case 'p':
+	    ovge.usepost = TRUE;
+	    break;
+	case 'q':
+	    ovge.quiet = TRUE;
+	    break;
+	case 'w':
+	    ovge.timewarp = (time_t)(atof(optarg) * 86400.);
+            break;
+	case 'z':
+	    ovge.filename = optarg;
+	    ovge.delayrm = TRUE;
+	    break;
 	case 'Z':
 	    LowmarkFile = TRUE;
 	    lofile = COPY(optarg);
@@ -48,6 +78,12 @@ int main(int argc, char *argv[]) {
 	    usage();
 	    }
     }
+    if (ovge.earliest && ovge.keep) {
+	fprintf(stderr, "expireover: -e and -k cannot be specified at the same time\n");
+	exit(1);
+    }
+    if (!ovge.earliest && !ovge.keep)
+	ovge.earliest = TRUE;
 
     if (ReadInnConf() < 0) exit(1);
 
@@ -72,9 +108,20 @@ int main(int argc, char *argv[]) {
 	fprintf(stderr, "expireover: could not open OV database\n");
 	exit(1);
     }
+    if (innconf->groupbaseexpiry) {
+	(void)time(&ovge.now);
+	if (!OVctl(OVGROUPBASEDEXPIRE, (void *)&ovge)) {
+	    fprintf(stderr, "expireover: OVctl failed\n");
+	    exit(1);
+	}
+    }
 
-    if (activefn[0] == '\0')
+    if (activefn[0] == '\0') {
 	strcpy(activefn, cpcatpath(innconf->pathdb, _PATH_ACTIVE));
+	Nonull = FALSE;
+    } else {
+	Nonull = TRUE;
+    }
     if (strcmp(activefn, "-") == 0) {
 	qp = QIOfdopen(fileno(stdin));
     } else {
@@ -82,10 +129,9 @@ int main(int argc, char *argv[]) {
 	    fprintf(stderr, "expireover: could not open active file (%s)\n", activefn);
 		OVclose();
 		exit(1);
-	    }
 	}
+    }
     while ((line = QIOread(qp)) != NULL) {
-	linenum++;
 	if ((p = strchr(line, ' ')) != NULL)
 	    *p = '\0';
 	if ((p = strchr(line, '\t')) != NULL)
@@ -99,6 +145,11 @@ int main(int argc, char *argv[]) {
 	    fprintf(stderr, "expireover: could not expire %s\n", line);
 	}
     }
+    /* purge deleted newsgroups */
+    if (!Nonull && !OVexpiregroup(NULL, NULL)) {
+	fprintf(stderr, "expireover: could not expire purged newsgroups\n");
+    }
+    QIOclose(qp);
 
     OVclose();
     if (LowmarkFile && (fclose(F) == EOF)) {
