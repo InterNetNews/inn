@@ -56,7 +56,7 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
     char		*p;
     TOKEN		token;
     unsigned int 	starttime, endtime;
-    time_t		Time;
+    time_t		Time, Expires;
 
     for ( ; ; ) {
 	/* Read the first line of data. */
@@ -78,10 +78,13 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
 	for (p = Data; !ISWHITE(*p) ;p++) ;
 	*p++ = '\0';
 	Time = (time_t)atol(Data);
+	for (Data = p; !ISWHITE(*p) ;p++) ;
+	*p++ = '\0';
+	Expires = (time_t)atol(Data);
 	Data = p;
 	NumArts++;
 	starttime = gettime();
-	if (!OVadd(token, Data, strlen(Data), Time)) {
+	if (!OVadd(token, Data, strlen(Data), Time, Expires)) {
 	    fprintf(stderr, "overchan: Can't write overview \"%s\", %s\n", Data, strerror(errno));
 	}
 	endtime = gettime();
