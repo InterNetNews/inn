@@ -653,17 +653,34 @@ sub collect
       my ($server, $seconds, $offered, $accepted, $refused, $rejected,
 	  $missing, $spooled) = ($1, $2, $3, $4, $5, $6, $7, $8);
       $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $t_innfeed_seconds{$server} = $seconds;
+      $t_innfeed_offered{$server} = $offered;
+      $t_innfeed_accepted{$server} = $accepted;
+      $t_innfeed_refused{$server} = $refused;
+      $t_innfeed_missing{$server} = $missing;
+      $t_innfeed_spooled{$server} = $spooled;
+      $t_innfeed_rejected{$server} = $rejected;
+      return 1;
+    }
+    # global (real)
+    if ($left =~ /(\S+) global seconds (\d+) offered (\d+) accepted (\d+) refused (\d+) rejected (\d+) missing (\d+)/o)
+    {
+      my ($server, $seconds, $offered, $accepted, $refused, $rejected,
+	  $missing) = ($1, $2, $3, $4, $5, $6, $7);
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
       $innfeed_seconds{$server} += $seconds;
       $innfeed_offered{$server} += $offered;
       $innfeed_accepted{$server} += $accepted;
       $innfeed_refused{$server} += $refused;
       $innfeed_rejected{$server} += $rejected;
       $innfeed_missing{$server} += $missing;
-      $innfeed_spooled{$server} += $spooled;
+      $innfeed_spooled{$server} += $spooled + $t_innfeed_spooled{$server};
       $t_innfeed_seconds{$server} = 0;
       $t_innfeed_offered{$server} = 0;
       $t_innfeed_accepted{$server} = 0;
       $t_innfeed_refused{$server} = 0;
+      $t_innfeed_missing{$server} = 0;
+      $t_innfeed_spooled{$server} = 0;
       $t_innfeed_rejected{$server} = 0;
       return 1;
     }
@@ -1611,6 +1628,8 @@ sub adjust
       $innfeed_accepted{$server} += $t_innfeed_accepted{$server}; 
       $innfeed_refused{$server} += $t_innfeed_refused{$server};
       $innfeed_rejected{$server} += $t_innfeed_rejected{$server};
+      $innfeed_missing{$server} += $t_innfeed_missing{$server};
+      $innfeed_spooled{$server} += $t_innfeed_spooled{$server};
     }
   }
   
