@@ -46,16 +46,15 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "innfeed.h"
 #include "config.h"
 #include "clibrary.h"
+#include "portable/mmap.h"
 
 #include <assert.h>
 #include <fcntl.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <syslog.h>
-
-#ifdef HAVE_LIMITS_H
+#if HAVE_LIMITS_H
 # include <limits.h>
 #endif
+#include <sys/stat.h>
+#include <syslog.h>
 
 #include "libinn.h"
 #include "storage.h"
@@ -621,7 +620,7 @@ static bool fillContents (Article article)
 	    article->mMapping = mmap((caddr_t) 0, (size_t) articlesize,
 				     PROT_READ, MAP_SHARED, fd, 0);
 	
-	if (article->mMapping == (caddr_t) -1) {
+	if (article->mMapping == MAP_FAILED) {
 	    /* dunno, but revert to plain reading */
 	    article->mMapping = NULL ;
 	    syslog (LOG_NOTICE, MMAP_FAILURE, article->fname) ;
