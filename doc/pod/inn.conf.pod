@@ -145,6 +145,19 @@ are badly delayed.  A good value for a system with more than one incoming
 feed is C<256>; systems with only one incoming feed should probably leave
 this at C<0>.  The default value is C<0>.
 
+=item I<wipcheck>
+
+How long (in seconds) pre-committed message-ids are kept before unused.
+Pre-commit cache is used to respond to peers with ``436'' which means
+innd does not want the article currently and requests to try later.
+The default value is <5>.
+
+=item I<wipexpire>
+
+How long (in seconds) pre-committed message-ids are kept before expired.
+This is used to respond with ``436'' on pending channel before finishing
+transfer.  The default value is <10>.
+
 =item I<ignorenewsgroups>
 
 Whether newsgroup creation control messages (newgroup and rmgroup) should
@@ -298,6 +311,13 @@ impossible since there will be no overview files for readers.
 I<ovmethod> needs to be set, if I<enableoverview> is set to true.
 This is a boolean value and the default is true.
 
+=item I<groupbaseexpiry>
+
+Whether to enable newsgroup base expiry.  If set to false, expiry is
+done based on class of storing method.  If set to true and overview
+data is created, expiry is done based on newsgroup name.
+This is a boolean value and the default is false.
+
 =item I<mergetogroups>
 
 Whether to file all postings to C<to.*> groups in the pseudonewsgroup
@@ -321,6 +341,16 @@ open file descriptors it may throttle and stop accepting new news.  The
 default value is C<15> (which is probably way too low if you have a large
 number of file descriptors available).
 
+=item I<ovgrouppat>
+
+For which newsgroups should overview be stored.  If nothing is specified,
+overview data for all newsgroups will be stored.  If something is specified,
+it is treated as a comma separated list of wildmat and any of matched overview
+data will be stored.  Note that if I<groupbaseexpiry> is true, I<ovgrouppat>
+is specifed and article storage method does not have self expire functionality,
+storing overview data will fail.
+This is a boolean value and the default is false.
+
 =item I<ovmethod>
 
 What overview storage method to use.  Currently supported values
@@ -342,15 +372,6 @@ defined in F<buffinedexed.conf>.  C<buffindexed> never consumes disk
 space other than those files for overview data and index.
 
 =back
-
-=item I<ovmmapthreshold>
-
-Threshold not to use mmap when retrieving overview data for C<buffindexed>.
-If the number of retrieving overview data is beyond this value,
-C<buffindexed> does not hold mmapped area and allocates memory for it.
-If set to a negative value or if the number of retrieving overview data is
-under this value, C<buffindexed> holds mmapped area.  The default value is
-C<10000>.
 
 =item I<storeonxref>
 
