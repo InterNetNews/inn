@@ -252,6 +252,9 @@ STATIC BOOL ARTinstore(int i)
 	    || token.cancelled )
 	 return FALSE;
     }
+    if (!innconf->nnrpdcheckart) {
+	return TRUE;
+    }
     if (innconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
     art = SMretrieve(token, RETR_STAT);
