@@ -32,11 +32,22 @@ my %ctlinnd = ('a', 'addhist',     'D', 'allow',
 	       'E', 'logmode',     'F', 'feedinfo',
 	       'T', 'filter',      'P', 'perl',);
 
+my %timer_names = (idle     => 'idle',
+                   hishave  => 'history lookup',
+                   hiswrite => 'history write',
+                   hissync  => 'history sync',
+                   artclean => 'article cleanup',
+                   artwrite => 'article write',
+                   artlink  => 'article link',
+                   artctrl  => 'article control',
+                   artcncl  => 'article cancel',
+                   sitesend => 'site send',
+                   overv    => 'overview write',
+                   perl     => 'perl filter',
+                   python   => 'python filter');
+
 # init innd timer
-foreach ('article cancel', 'article control', 'article link',
-	 'article write', 'history grep', 'history lookup',
-	 'history sync', 'history write', 'idle', 'site send',
-	 'overview write', 'perl filter') {
+foreach (values %timer_names) {
   $innd_time_min{$_} = $MIN;
   $innd_time_max{$_} = $MAX;
   $innd_time_time{$_} = 0;   # to avoid a warning... Perl < 5.004
@@ -345,124 +356,26 @@ sub collect {
       $innd_control{"throttle"}++;
       return 1;
     }
-    # time (from the Greco's patch)
-    # ME time X idle X(X) artwrite X(X) artlink X(X) hiswrite X(X) hissync
-    # X(X) sitesend X(X) artctrl X(X) artcncl X(X) hishave X(X) hisgrep X(X)
-    # perl X(X) python X(X)
-    # Note : some parameters are optional because several versions of this
-    # patch exist.
+    # profile timer
+    # ME time X nnnn X(X) [...]
+    # The exact timers change from various versions of INN, so try to deal
+    # with this in a general fashion.
     if ($left =~ m/^\S+\s+                         # ME
 	           time\ (\d+)\s+                  # time
-	           idle\ (\d+)\((\d+)\)\s+         # idle
-                   artwrite\ (\d+)\((\d+)\)\s+     # artwrite
-                   artlink\ (\d+)\((\d+)\)\s+      # artlink
-                   hiswrite\ (\d+)\((\d+)\)\s+     # hiswrite
-                   hissync\ (\d+)\((\d+)\)         # hissync
-                   (?:\s+sitesend\ (\d+)\((\d+)\)\s+  # sitesend (optional)
-                   artctrl\ (\d+)\((\d+)\)\s+      # artctrl
-                   artcncl\ (\d+)\((\d+)\)\s+      # artcncl
-                   hishave\ (\d+)\((\d+)\)         # hishave
-                   (?:\s+hisgrep\ (\d+)\((\d+)\)   # hisgrep (optional)
-                   (?:\s+artclean\ (\d+)\((\d+)\)  # artclean (optional)
-		   (?:\s+perl\ (\d+)\((\d+)\)      # perl (optional)
-		   (?:\s+overv\ (\d+)\((\d+)\)     # overv (optional)
-		   (?:\s+python\ (\d+)\((\d+)\))?)?)?)?)?)?  # python (optional)
-	           \s*$/ox) {
+                   ((?:\S+ \d+\(\d+\)\s*)+)        # timer values
+                   $/ox) {
       $innd_time_times += $1;
-      $innd_time_time{'idle'} += $2;
-      $innd_time_num{'idle'} += $3;
-      $innd_time_min{'idle'} = $2 / ($3 || 1)
-	if $3 && $innd_time_min{'idle'} > $2 / ($3 || 1);
-      $innd_time_max{'idle'} = $2 / ($3 || 1)
-	if $3 && $innd_time_max{'idle'} < $2 / ($3 || 1);
+      my $timers = $2;
 
-      $innd_time_time{'article write'} += $4;
-      $innd_time_num{'article write'} += $5;
-      $innd_time_min{'article write'} = $4 / ($5 || 1)
-	if $5 && $innd_time_min{'article write'} > $4 / ($5 || 1);
-      $innd_time_max{'article write'} = $4 / ($5 || 1)
-	if $5 && $innd_time_max{'article write'} < $4 / ($5 || 1);
-
-      $innd_time_time{'article link'} += $6;
-      $innd_time_num{'article link'} += $7;
-      $innd_time_min{'article link'} = $6 / ($7 || 1)
-	if $7 && $innd_time_min{'article link'} > $6 / ($7 || 1);
-      $innd_time_max{'article link'} = $6 / ($7 || 1)
-	if $7 && $innd_time_max{'article link'} < $6 / ($7 || 1);
-
-      $innd_time_time{'history write'} += $8;
-      $innd_time_num{'history write'} += $9;
-      $innd_time_min{'history write'} = $8 / ($9 || 1)
-	if $9 && $innd_time_min{'history write'} > $8 / ($9 || 1);
-      $innd_time_max{'history write'} = $8 / ($9 || 1)
-	if $9 && $innd_time_max{'history write'} < $8 / ($9 || 1);
-
-      $innd_time_time{'history sync'} += $10;
-      $innd_time_num{'history sync'} += $11;
-      $innd_time_min{'history sync'} = $10 / ($11 || 1)
-	if $11 && $innd_time_min{'history sync'} > $10 / ($11 || 1);
-      $innd_time_max{'history sync'} = $10 / ($11 || 1)
-	if $11 && $innd_time_max{'history sync'} < $10 / ($11 || 1);
-
-      $innd_time_time{'site send'} += $12;
-      $innd_time_num{'site send'} += $13;
-      $innd_time_min{'site send'} = $12 / ($13 || 1)
-	if $13 && $innd_time_min{'site send'} > $12 / ($13 || 1);
-      $innd_time_max{'site send'} = $12 / ($13 || 1)
-	if $13 && $innd_time_max{'site send'} < $12 / ($13 || 1);
-
-      $innd_time_time{'article control'} += $14;
-      $innd_time_num{'article control'} += $15;
-      $innd_time_min{'article control'} = $14 / ($15 || 1)
-	if $15 && $innd_time_min{'article control'} > $14 / ($15 || 1);
-      $innd_time_max{'article control'} = $14 / ($15 || 1)
-	if $15 && $innd_time_max{'article control'} < $14 / ($15 || 1);
-
-      $innd_time_time{'article cancel'} += $16;
-      $innd_time_num{'article cancel'} += $17;
-      $innd_time_min{'article cancel'} = $16 / ($17 || 1)
-	if $17 && $innd_time_min{'article cancel'} > $16 / ($17 || 1);
-      $innd_time_max{'article cancel'} = $16 / ($17 || 1)
-	if $17 && $innd_time_max{'article cancel'} < $16 / ($17 || 1);
-
-      $innd_time_time{'history lookup'} += $18;
-      $innd_time_num{'history lookup'} += $19;
-      $innd_time_min{'history lookup'} = $18 / ($19 || 1)
-	if $19 && $innd_time_min{'history lookup'} > $18 / ($19 || 1);
-      $innd_time_max{'history lookup'} = $18 / ($19 || 1)
-	if $19 && $innd_time_max{'history lookup'} < $18 / ($19 || 1);
-
-      if (defined($20) && defined($21)) {
-        $innd_time_time{'history grep'} += $20;
-        $innd_time_num{'history grep'} += $21;
-        $innd_time_min{'history grep'} = $20 / ($21 || 1)
-	  if $21 && $innd_time_min{'history grep'} > $20 / ($21 || 1);
-        $innd_time_max{'history grep'} = $20 / ($21 || 1)
-	  if $21 && $innd_time_max{'history grep'} < $20 / ($21 || 1);
-        if (defined($22) && defined($23)) {
-          $innd_time_time{'article clean'} += $22;
-          $innd_time_num{'article clean'} += $23;
-          $innd_time_min{'article clean'} = $22 / ($23 || 1)
-	    if $23 && $innd_time_min{'article clean'} > $22 / ($23 || 1);
-          $innd_time_max{'article clean'} = $22 / ($23 || 1)
-	  if $23 && $innd_time_max{'article clean'} < $22 / ($23 || 1);
-	}
-        if (defined($24) && defined($25)) {
-          $innd_time_time{'perl filter'} += $24;
-          $innd_time_num{'perl filter'} += $25;
-          $innd_time_min{'perl filter'} = $24 / ($25 || 1)
-	    if $25 && $innd_time_min{'perl filter'} > $24 / ($25 || 1);
-          $innd_time_max{'perl filter'} = $24 / ($25 || 1)
-	    if $25 && $innd_time_max{'perl filter'} < $24 / ($25 || 1);
-	  if (defined($26) && defined($27))  {
-	    $innd_time_time{'overview write'} += $26;
-	    $innd_time_num{'overview write'} += $27;
-	    $innd_time_min{'overview write'} = $26 / ($27 || 1)
-	      if $27 && $innd_time_min{'overview write'} > $26 / ($27 || 1);
-	    $innd_time_max{'overview write'} = $26 / ($27 || 1)
-	      if $27 && $innd_time_max{'overview write'} < $26 / ($27 || 1);
-	  }
-	}
+      while ($timers =~ /(\S+) (\d+)\((\d+)\)\s*/g) {
+        my $name = $timer_names{$1} || $1;
+        my $average = $2 / ($3 || 1);
+        $innd_time_time{$name} += $2;
+        $innd_time_num{$name} += $3;
+        $innd_time_min{$name} = $average
+          if ($3 && $innd_time_min{$name} > $average);
+        $innd_time_max{$name} = $average
+          if ($3 && $innd_time_max{$name} < $average);
       }
       return 1;
     }
