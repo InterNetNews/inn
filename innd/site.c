@@ -349,8 +349,10 @@ STATIC void SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	case FEED_FULLNAME:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, innconf->patharticles, SPOOLlen);
-	    BUFFappend(bp, "/", 1);
+	    if (!innconf->storageapi) {
+		BUFFappend(bp, innconf->patharticles, SPOOLlen);
+		BUFFappend(bp, "/", 1);
+	    }
 	    BUFFappend(bp, Data->Name, Data->NameLength);
 	    break;
 	case FEED_HASH:

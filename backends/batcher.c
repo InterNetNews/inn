@@ -331,6 +331,7 @@ main(ac, av)
     (void)GetTimeInfo(&Now);
     STATbegin = TIMEINFOasDOUBLE(Now);
 
+    (void)SMinit();
     F = NULL;
     while (fgets(line, sizeof line, stdin) != NULL) {
 	/* Record line length in case we do an ftell. Not portable to
@@ -362,7 +363,6 @@ main(ac, av)
 	    p = line;
 
 	/* Open the file. */
-	Token = FALSE;
 	if (IsToken(p)) {
 	    if ((qp = QIOopen(p)) == NULL) {
 		if ((SMerrno != SMERR_NOENT) && (SMerrno != SMERR_UNINIT))
@@ -370,6 +370,7 @@ main(ac, av)
 			    Host, p, SMerrorstr);
 		continue;
 	    }
+	    BytesInArt = -1;
 	    Token = TRUE;
 	} else if ((artfd = open(p, O_RDONLY)) < 0) {
 	    if (errno != ENOENT)
@@ -383,6 +384,7 @@ main(ac, av)
 			    Host, buff, strerror(errno));
 		continue;
 	    }
+	    Token = FALSE;
 	}
 
 	/* If we need to, get its size. */

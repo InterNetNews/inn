@@ -305,7 +305,8 @@ should be chosen from the following set:
 		site gets
 	h	Article's Message-ID hash key
 	m	Article's Message-ID
-	n	Article's pathname relative to the spool directory
+	n	Article's pathname relative to the spool directory or
+		token of the article if storage api is turned on
 	p	The time the article was posted as seconds since epoch.
 	s	The site that fed the article to the server; from the
 		Path: header or the IP address of the site that sent
@@ -352,6 +353,12 @@ If the site is fed by a program, then an asterisk in the
 field will be expanded into the list of funnel feeds that received the article.
 A site fed by a program cannot get the site list unless it is the target
 of other ``Tm'' feeds.
+.sp
+If storage api is turned on, the ``b'' and ``f'' items differs
+from non-storage api slightly.
+The ``b'' item shows the size of wire formatted size of the article.
+The ``f'' item shows the token of the article, and this is equivalent to
+the ``n'' item.
 .PP
 The interpretation of the
 .I param
