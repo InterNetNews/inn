@@ -25,7 +25,18 @@ stop)
   if [ -f $PATHRUN/logremover.pid ]; then
     kill -HUP `cat $PATHRUN/logremover.pid`
   fi
-  sleep 5
+
+  i=12
+  while [ $i -gt 0 ];
+  do
+    if [ -f $PATHRUN/db_checkpoint.pid ]; then
+      sleep 5
+      let i=i-1
+    else
+      i=0
+    fi
+  done
+
   # run one more checkpoint just to make sure
   db_checkpoint -1
   ;;
