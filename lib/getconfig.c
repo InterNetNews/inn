@@ -186,7 +186,7 @@ SetDefaults(void)
     innconf->chaninacttime = 600;
     innconf->maxconnections = 50;
     innconf->chanretrytime = 300;
-    innconf->artcutoff = 10 * 24 * 60 * 60;
+    innconf->artcutoff = 10;
     innconf->pauseretrytime = 300;
     innconf->nntplinklog = FALSE;
     innconf->nntpactsync = 200;
@@ -638,7 +638,7 @@ ReadInnConf(void)
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ARTCUTOFF)) {
 		TEST_CONFIG(CONF_VAR_ARTCUTOFF, bit);
-		if (!bit) innconf->artcutoff = atoi(p) * 24 * 60 * 60;
+		if (!bit) innconf->artcutoff = atoi(p);
 		SET_CONFIG(CONF_VAR_ARTCUTOFF);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PAUSERETRYTIME)) {

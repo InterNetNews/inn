@@ -349,7 +349,7 @@ main(int ac, char *av[])
 	    AnyIncoming = TRUE;
 	    break;
 	case 'c':
-	    innconf->artcutoff = atoi(optarg) * 24 * 60 * 60;
+	    innconf->artcutoff = atoi(optarg);
 	    break;
  	case 'C':
  	    DoCancels = FALSE;

@@ -1023,11 +1023,15 @@ ARTclean(ARTDATA *data, char *buff)
     TMRstop(TMR_ARTCLEAN);
     return FALSE;
   }
-  if (innconf->artcutoff && data->Posted < Now.time - innconf->artcutoff) {
-    (void)sprintf(buff, "%d Too old -- \"%s\"", NNTP_REJECTIT_VAL,
-      MaxLength(p, p));
-    TMRstop(TMR_ARTCLEAN);
-    return FALSE;
+  if (innconf->artcutoff) {
+      long cutoff = innconf->artcutoff * 24 * 60 * 60;
+
+      if (data->Posted < Now.time - cutoff) {
+          sprintf(buff, "%d Too old -- \"%s\"", NNTP_REJECTIT_VAL,
+                  MaxLength(p, p));
+          TMRstop(TMR_ARTCLEAN);
+          return FALSE;
+      }
   }
   if (data->Posted > Now.time + DATE_FUZZ) {
     (void)sprintf(buff, "%d Article posted in the future -- \"%s\"",

@@ -241,7 +241,7 @@ STATUSsummary(void)
   fprintf (F, "      Max Outgoing file feeds: %d\n", MaxOutgoing);
   fprintf (F, "                       Cutoff: ");
   if (innconf->artcutoff)
-    fprintf (F, "%d days\n", (int) (innconf->artcutoff / 3600L / 24L));
+    fprintf (F, "%d days\n", innconf->artcutoff);
   else
     fprintf (F, "none\n");
   fprintf (F, "               Timeout period: %ld seconds\n",

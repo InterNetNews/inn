@@ -839,13 +839,12 @@ CCmode(char *unused[] UNUSED)
     for (i = 0, h = 0; CHANiter(&h, CTnntp) != NULL; )
 	i++;
     *p++ = '\n';
-    (void)sprintf(p, "Parameters c %ld i %d (%d) l %ld o %d t %ld H %d T %d X %d %s %s",
-	    (long)innconf->artcutoff / (24L * 60L * 60L),
-	    innconf->maxconnections, i,
-	    innconf->maxartsize, MaxOutgoing, (long)TimeOut.tv_sec,
-	    RemoteLimit, RemoteTotal, (int) RemoteTimer,
-	    innconf->xrefslave ? "slave" : "normal",
-	    AnyIncoming ? "any" : "specified");
+    (void)sprintf(p, "Parameters c %d i %d (%d) l %ld o %d t %ld H %d T %d X %d %s %s",
+                  innconf->artcutoff, innconf->maxconnections, i,
+                  innconf->maxartsize, MaxOutgoing, (long)TimeOut.tv_sec,
+                  RemoteLimit, RemoteTotal, (int) RemoteTimer,
+                  innconf->xrefslave ? "slave" : "normal",
+                  AnyIncoming ? "any" : "specified");
     p += strlen(p);
 
     /* Reservation. */
@@ -1124,7 +1123,7 @@ CCparam(char *av[])
 	    return BADVAL;
 	break;
     case 'c':
-	innconf->artcutoff = atoi(p) * 24 * 60 * 60;
+	innconf->artcutoff = atoi(p);
 	syslog(L_NOTICE, "%s changed -c %d", LogName, innconf->artcutoff);
 	break;
     case 'i':
