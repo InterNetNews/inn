@@ -44,6 +44,7 @@ PATH_CYCBUFFCONFIG	= ${PATHETC}/cycbuff.conf
 PATH_INNFEEDCTL		= ${PATHETC}/innfeed.conf
 PATH_BUFFINDEXED	= ${PATHETC}/buffindexed.conf
 PATH_RADIUS_CONF	= ${PATHETC}/radius.conf
+PATH_OVDB_CONF		= ${PATHETC}/ovdb.conf
 
 ##  Order:  innd, control, expire, inews, sending, misc
 MOST	= checkgroups default ihave newgroup \
@@ -62,7 +63,7 @@ REST		= \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
 	filter_innd.py INN.py \
 	startup.tcl filter.tcl nnrpd_auth.pl news2mail.cf readers.conf \
-	radius.conf nnrpd_auth.py
+	radius.conf nnrpd_auth.py ovdb.conf
 
 ALL		= $(MOST) $(REST)
 
@@ -90,7 +91,7 @@ REST_INSTALLED	= \
 	$D$(PATH_PYTHON_FILTER_INND) $D$(PATH_PYTHON_INN_MODULE) \
 	$D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER) \
 	$D$(PATH_NNRPAUTH) $D$(PATHETC)/news2mail.cf $D$(PATH_READERSCONF) \
-	$D$(PATH_RADIUS_CONF) $D$(PATH_NNRPYAUTH)
+	$D$(PATH_RADIUS_CONF) $D$(PATH_NNRPYAUTH) $D$(PATH_OVDB_CONF)
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
 
@@ -187,6 +188,7 @@ $D$(PATHETC)/innreport.conf: innreport.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_STORAGECONF): storage.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_CYCBUFFCONFIG): cycbuff.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_BUFFINDEXED): buffindexed.conf	; $(COPY_RPRI) $? $@
+$D$(PATH_OVDB_CONF): ovdb.conf		; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_STARTUP_INND): startup_innd.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_FILTER_INND): filter_innd.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_FILTER_NNRPD): filter_nnrpd.pl ; $(COPY_RPRI) $? $@
@@ -237,6 +239,7 @@ innreport.conf:	../samples/innreport.conf	; $(COPY) $? $@
 storage.conf:	../samples/storage.conf		; $(COPY) $? $@
 cycbuff.conf:	../samples/cycbuff.conf		; $(COPY) $? $@
 buffindexed.conf: ../samples/buffindexed.conf	; $(COPY) $? $@
+ovdb.conf:	../samples/ovdb.conf		; $(COPY) $? $@
 innwatch.ctl:	../samples/innwatch.ctl		; $(COPY) $? $@
 innfeed.conf:	../samples/innfeed.conf		; $(COPY) $? $@
 moderators:	../samples/moderators		; $(COPY) $? $@
