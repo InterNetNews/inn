@@ -24,10 +24,10 @@ all:		$(ALL)
 install: $D${PATHBIN}/innd $D${PATHBIN}/inndstart
 
 $D${PATHBIN}/innd: innd
-	$(SHELL) ../installit.sh $(OWNER) -m 0550 -b .OLD innd $D${PATHBIN}/innd
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 0550 -b .OLD innd $D${PATHBIN}/innd
 
 $D${PATHBIN}/inndstart: inndstart
-	-$(SHELL) ../installit.sh -O root -G $(NEWSGROUP) -m 4550 -b .OLD inndstart $D${PATHBIN}/inndstart
+	-$(LIBTOOL) ../installit.sh -O root -G $(NEWSGROUP) -m 4550 -b .OLD inndstart $D${PATHBIN}/inndstart
 	@ME=`(whoami || /usr/ucb/whoami) 2> /dev/null` ;\
 	if [ "X$$ME" = Xroot ]; then \
 		echo $@ has been installed setuid root. ;\
@@ -42,6 +42,7 @@ $D${PATHBIN}/inndstart: inndstart
 
 clobber clean:
 	rm -f *.o $(ALL)
+	rm -rf .libs
 	rm -f inndp profiled
 	rm -f all install 
 
@@ -49,16 +50,16 @@ tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../lib/*.c innd.h ../include/*.h
 
 innd:		$(P) $(OBJECTS) $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBNEWS) $(TCL_LIB) $(PERLLIB) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBNEWS) $(TCL_LIB) $(PERLLIB) $(LIBS)
 
 inndstart:	$(P) inndstart.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ inndstart.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ inndstart.o $(LIBNEWS) $(LIBS)
 
 ../include/dbz.h:
 	(cd ../lib ; $(MAKE) ../include/dbz.h)
 
 $(LIBNEWS):
-	(cd ../lib ; $(MAKE) install)
+	(cd ../lib ; $(MAKE) )
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
 profiled:	inndp
