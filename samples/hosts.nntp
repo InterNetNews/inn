@@ -4,11 +4,14 @@
 ##	<host>:
 ##	<host>:<password>
 ##	<host>:<password>:<distrib>
+##	<host>:<password>:<distrib>:<max incoming conn>
 ##  <host> can be a name or IP address; no wildcards.  Any hosts not
 ##  listed here are handed off to nnrpd.  <password> is used if you wish
 ##  to also require feed to supply a password (keep empty for no password).
 ##  <distrib> is a list of newsfeeds(5)-style list of newsgroups which
-##  are to be accepted from this host (default="*").
+##  are to be accepted from this host (default="*").  <max incoming conn> is
+##  used if you wish to restrict the number of incoming connections on a per
+##  host basis.
 ##  
 ##  Examples:
 #      news.feeder1.com:

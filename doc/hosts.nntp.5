@@ -26,7 +26,8 @@ and standard output.
 Comments begin with a number sign (``#'') and continue through the end of
 the line.
 Blank lines and comments also ignored.
-All other lines should consist of two or three fields separated by a colon.
+All other lines should consist of two, three or four fields separated by a 
+colon.
 .PP
 The first field should be either an Internet address in dotted-quad
 format or an address that can be parsed by
@@ -40,6 +41,9 @@ the host may send articles.
 This list is parsed as a
 .IR newsfeeds (5)
 subscription list; groups not in the list are ignored.
+The fourth field, which may be omitted, is the maximum number of active 
+incoming connections that that host is allowed to have.  Connections over
+that maximum will be held idle for a period of time.
 .PP
 For example:
 .RS
