@@ -3,6 +3,10 @@
  * ovdb 2.00 beta1
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2000-09-27 : Further improvements to ovdb_expiregroup: restructured the
+ *              loop; now updates groupinfo as it goes along rather than
+ *              counting records at the end, which prevents a possible
+ *              deadlock.
  * 2000-09-19 : *lo wasn't being set in ovdb_expiregroup
  * 2000-09-15 : added ovdb_check_user(); tweaked some error msgs; fixed an
  *              improper use of RENEW
@@ -726,6 +730,7 @@ out:
     return TRUE;
 }
 
+#if 0
 static int count_records(struct groupinfo *gi)
 {
     int ret;
@@ -782,7 +787,7 @@ static int count_records(struct groupinfo *gi)
 	return 0;
     return ret;
 }
-
+#endif
 
 /*
  * Locking:  OVopen() calls ovdb_getlock(OVDB_LOCK_NORMAL).  This
@@ -1779,7 +1784,7 @@ BOOL ovdb_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *t
 BOOL ovdb_expiregroup(char *group, int *lo)
 {
     DB *db, *ndb;
-    DBT key, val, nkey;
+    DBT key, val, nkey, gkey, gval;
     DB_TXN *tid;
     DBC *cursor = NULL;
     int ret, delete, old_db;
@@ -1789,8 +1794,7 @@ BOOL ovdb_expiregroup(char *group, int *lo)
     group_id_t old_gid;
     ARTHANDLE *ah;
     ARTNUM artnum, currentart, low, high;
-    int state, count, i;
-    int compact;
+    int i, lowest, newlowest, compact, done;
 
     if(eo_start == 0) {
 	eo_start = time(NULL);
@@ -1908,37 +1912,38 @@ BOOL ovdb_expiregroup(char *group, int *lo)
      *
      * loop {
      *    start transaction
+     *    get groupinfo
      *    process EXPIREGROUP_TXN_SIZE records
+     *    write updated groupinfo
      *    commit transaction
      * }
-     * After processing all of the articles, we go back through the
-     * loop again, this time retrieving the groupinfo record first
-     * (to lock it and prevent further adds to the group).
-     * Then we update groupinfo and write it back out.
      */
     currentart = 0;
-    state = 0;
+    lowest = 0;
 
-    while(state < 3) {
+    memset(&gkey, 0, sizeof gkey);
+    memset(&gval, 0, sizeof gval);
+    gkey.data = group;
+    gkey.size = strlen(group);
+    gval.data = &gi;
+    gval.size = sizeof gi;
+
+    while(1) {
 	TXN_START(t_expgroup_loop, tid);
 	if(tid==NULL)
 	    return FALSE;
+        done = 0;
+	newlowest = 0;
 
-	if(state==2) {
-	    /* At this point, we're nearly done. Lock the groupinfo by
-	       retrieving it w/DB_RMW.  This will prevent ovdb_add() from
-	       slipping in any more records until we finish up. */
-
-	    switch(ret = ovdb_getgroupinfo(group, &gi, FALSE, tid, DB_RMW)) {
-	    case 0:
-		break;
-	    case TRYAGAIN:
-		TXN_RETRY(t_expgroup_loop, tid);
-	    default:
-		TXN_ABORT(t_expgroup_loop, tid);
-		syslog(L_ERROR, "OVDB: expiregroup: ovdb_getgroupinfo: %s", db_strerror(ret));
-		return FALSE;
-	    }
+	switch(ret = ovdb_getgroupinfo(group, &gi, FALSE, tid, DB_RMW)) {
+	case 0:
+	    break;
+	case TRYAGAIN:
+	    TXN_RETRY(t_expgroup_loop, tid);
+	default:
+	    TXN_ABORT(t_expgroup_loop, tid);
+	    syslog(L_ERROR, "OVDB: expiregroup: ovdb_getgroupinfo: %s", db_strerror(ret));
+	    return FALSE;
 	}
 
 	switch(ret = db->cursor(db, tid, &cursor, 0)) {
@@ -1979,7 +1984,7 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 	    if(ret == DB_NOTFOUND
 		    || key.size != sizeof dk
 		    || dk.groupnum != gi.current_gid) {
-		state++;
+		done++;
 		break;
 	    }
 
@@ -2028,6 +2033,8 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 			return FALSE;
 		    }
 		}
+		if(gi.count > 0)
+		    gi.count--;
 	    } else {
 		if(compact) {
 		    ndk.groupnum = gi.new_gid;
@@ -2048,70 +2055,60 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 			return FALSE;
 		    }
 		}
+		if(lowest == 0 && newlowest == 0)
+		    newlowest = artnum;
 	    }
 	}
 	/* end of for loop */
 
 	if(cursor->c_close(cursor) == TRYAGAIN) {
-	    if(state==1 || state==3)
-		state--;
 	    TXN_RETRY(t_expgroup_loop, tid);
 	}
-	if(state==3)
-	    break;
 
+	if(lowest == 0 && newlowest != 0)
+	    gi.low = newlowest;
+
+	if(done) {
+	    if(compact) {
+		old_db = gi.current_db;
+		gi.current_db = gi.new_db;
+		old_gid = gi.current_gid;
+		gi.current_gid = gi.new_gid;
+		gi.status &= ~GROUPINFO_MOVING;
+	    }
+
+	    gi.status &= ~GROUPINFO_EXPIRING;
+	    gi.expired = time(NULL);
+	}
+
+	switch(ret = groupinfo->put(groupinfo, tid, &gkey, &gval, 0)) {
+	case 0:
+	    break;
+	case TRYAGAIN:
+	    TXN_RETRY(t_expgroup_loop, tid);
+	default:
+	    TXN_ABORT(t_expgroup_loop, tid);
+	    syslog(L_ERROR, "OVDB: expiregroup: groupinfo->put: %s", db_strerror(ret));
+	    return FALSE;
+	}
         TXN_COMMIT(t_expgroup_loop, tid);
 
-	if(state==1)
-	    state++;
+	if(done)
+	    break;
+	lowest = newlowest;
 	currentart = artnum+1;
     }
 
-    state=2; /* in case we need to do a retry */
-
     if(compact) {
-	old_db = gi.current_db;
-	gi.current_db = gi.new_db;
-	old_gid = gi.current_gid;
-	gi.current_gid = gi.new_gid;
-	gi.status &= ~GROUPINFO_MOVING;
-    }
-    if(count_records(&gi)) {
-	TXN_ABORT(t_expgroup_loop, tid);
-	return FALSE;
-    }
-    gi.status &= ~GROUPINFO_EXPIRING;
-    gi.expired = time(NULL);
+	if(delete_all_records(old_db, old_gid)) {
+	    syslog(L_ERROR, "OVDB: expiregroup: delete_all_records: %s", db_strerror(ret));
+	    return FALSE;
+	}
 
-    memset(&key, 0, sizeof key);
-    memset(&val, 0, sizeof val);
-    key.data = group;
-    key.size = strlen(group);
-    val.data = &gi;
-    val.size = sizeof gi;
-
-    switch(ret = groupinfo->put(groupinfo, tid, &key, &val, 0)) {
-    case 0:
-	break;
-    case TRYAGAIN:
-	TXN_RETRY(t_expgroup_loop, tid);
-    default:
-	TXN_ABORT(t_expgroup_loop, tid);
-	syslog(L_ERROR, "OVDB: expiregroup: groupinfo->put: %s", db_strerror(ret));
-	return FALSE;
-    }
-    TXN_COMMIT(t_expgroup_loop, tid);
-
-    if(compact) {
 	TXN_START(t_expgroup_cleanup, tid);
 	if(tid == NULL)
 	    return FALSE;
 
-	if(delete_all_records(old_db, old_gid)) {
-	    TXN_ABORT(t_expgroup_cleanup, tid);
-	    syslog(L_ERROR, "OVDB: expiregroup: delete_all_records: %s", db_strerror(ret));
-	    return FALSE;
-	}
 	switch(ret = groupid_free(old_gid, tid)) {
 	case 0:
 	    break;
