@@ -5,22 +5,21 @@
 
 #include "libauth.h"
 
+#if HAVE_CRYPT_H
+# include <crypt.h>
+#endif
 #include <fcntl.h>
 #include <pwd.h>
 
-#ifdef HAVE_CRYPT_H
-# include <crypt.h>
-#endif
-
-#ifdef HAVE_NDBM_H
-# include <ndbm.h>
-#else
-# ifdef HAVE_DB1_NDBM_H
+#if HAVE_DBM
+# if HAVE_NDBM_H
+#  include <ndbm.h>
+# elif HAVE_DB1_NDBM_H
 #  include <db1/ndbm.h>
 # endif
 #endif
 
-#ifdef HAVE_GETSPNAM
+#if HAVE_GETSPNAM
 # include <shadow.h>
 #endif
 
@@ -34,7 +33,7 @@ GetShadowPass(char *user)
 	return(spwd->sp_pwdp);
     return(0);
 }
-#endif
+#endif /* HAVE_GETSPNAM */
 
 char *
 GetPass(char *user)
@@ -79,7 +78,7 @@ GetFilePass(char *name, char *file)
     return(pass);
 }
 
-#if defined(HAVE_NDBM_H) || defined(HAVE_DB1_NDBM_H)
+#if HAVE_DBM
 char *
 GetDBPass(char *name, char *file)
 {
@@ -103,7 +102,7 @@ GetDBPass(char *name, char *file)
     dbm_close(D);
     return(pass);
 }
-#endif
+#endif /* HAVE_DBM */
 
 int
 main(int argc, char *argv[])
@@ -120,17 +119,17 @@ main(int argc, char *argv[])
     do_shadow = do_file = do_db = 0;
     fname = 0;
 #if HAVE_GETSPNAM
-#if defined(HAVE_NDBM_H) || defined(HAVE_DB1_NDBM_H)
+# if HAVE_DBM
     while ((opt = getopt(argc, argv, "sf:d:")) != -1) {
-#else
+# else
     while ((opt = getopt(argc, argv, "sf:")) != -1) {
-#endif
+# endif
 #else
-#if defined(HAVE_NDBM_H) || defined(HAVE_DB1_NDBM_H)
+# if HAVE_DBM
     while ((opt = getopt(argc, argv, "f:d:")) != -1) {
-#else
+# else
     while ((opt = getopt(argc, argv, "f:")) != -1) {
-#endif
+# endif
 #endif
 	/* only allow one of the three possibilities */
 	if (do_shadow || do_file || do_db)
@@ -143,7 +142,7 @@ main(int argc, char *argv[])
 	    fname = optarg;
 	    do_file = 1;
 	    break;
-#if defined(HAVE_NDBM_H) || defined(HAVE_DB1_NDBM_H)
+#if HAVE_DBM
 	  case 'd':
 	    fname = optarg;
 	    do_db = 1;
@@ -169,7 +168,7 @@ main(int argc, char *argv[])
     if (do_file)
 	rpass = GetFilePass(uname, fname);
     else
-#if defined(HAVE_NDBM_H) || defined(HAVE_DB1_NDBM_H)
+#if HAVE_DBM
     if (do_db)
 	rpass = GetDBPass(uname, fname);
     else
