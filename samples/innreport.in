@@ -5,7 +5,7 @@
 #   innreport: Perl script to summarize news log files
 #              (with optional HTML output and graphs).
 #
-# version: 2.1.9_7
+# version: 3.0.0
 #
 # Copyright (c) 1996-1998, Fabien Tassin (fta@oleane.net).
 #
@@ -37,6 +37,7 @@
 #     -unknown           : Unknown entries from news log file
 #     -maxunrec          : Max number of unrecognized line to display
 #     -casesensitive     : Case sensitive
+#     -notdaily          : Never perform daily actions
 #
 # Use no in front of boolean options to unset them.
 # For example, "-html" is set by default. Use "-nohtml" to remove this
@@ -131,11 +132,16 @@ my $MAX_UNRECOGNIZED = 50;
 ## Do you want to be case sensitive. Pick DO or DONT.
 my $CASE_SENSITIVE = "DO";
 
+## Some actions must only be performed daily (once for a log file).
+## (ex: unwanted.log with INN). Default value (DONT) means to perform
+## these actions each . Pick DO or DONT.
+my $NOT_DAILY = "DONT";
+
 ###############################################
 ## THERE'S NOTHING TO CHANGE AFTER THIS LINE ##
 ###############################################
 
-my $version = "2.1.9_7";
+my $version = "3.0.0";
 local %output; # content of the configuration file.
 my $DEBUG = 0; # set to 1 to verify the structure/content of the conf file.
 my $start_time = time;
@@ -149,8 +155,8 @@ my @old_argv = @ARGV;
 # Convert DO/DONT into boolean values.
 {
   my $i;
-  foreach $i (\$HTML, \$GRAPH, \$ARCHIVE, \$WANT_UNKNOWN, \$CASE_SENSITIVE)
-  {
+  foreach $i (\$HTML, \$GRAPH, \$ARCHIVE, \$WANT_UNKNOWN,
+              \$CASE_SENSITIVE, \$NOT_DAILY) {
     $$i = ($$i eq 'DO') ? 1 : 0 ;
   }
 }
@@ -172,6 +178,7 @@ GetOptions (\%ref,
 	      -unknown!
 	      -maxunrec=i
 	      -casesensitive!
+              -notdaily!
 	      -v
 	      ));
 
@@ -238,6 +245,9 @@ if (defined ($output{'default'}{'unknown'}))
 }
 $WANT_UNKNOWN = 0 if defined $ref{'unknown'};
 $WANT_UNKNOWN = 1 if $ref{'unknown'};
+
+$NOT_DAILY = 0 if defined $ref{'notdaily'};
+$NOT_DAILY = 1 if $ref{'notdaily'};
 
 $MAX_UNRECOGNIZED = &GetValue ($output{'default'}{'max_unknown'})
   if defined $output{'default'}{'max_unknown'};
@@ -505,9 +515,8 @@ if ($ARCHIVE) {
   }
 }
 
-# Code needed by INN only.
-if (defined ($output{'default'}{'unwanted_log'}))
-{
+# Code needed by INN only. It must be in innreport_inn.pm to keep things clean.
+if (!$NOT_DAILY && defined ($output{'default'}{'unwanted_log'})) {
   my $logfile = &GetValue ($output{'default'}{'unwanted_log'});
   my $logpath = &GetValue ($output{'default'}{'logpath'});
   {
@@ -2521,6 +2530,9 @@ sub Usage
   print "    -maxunrec           Max number of unrecognized lines to display\n";
   print "                        [default=$MAX_UNRECOGNIZED]"
     if (defined ($MAX_UNRECOGNIZED));
+  print "\n";
+  print "    -notdaily           Never perform daily actions";
+  print " [default]" if $NOT_DAILY;
   print "\n";
   print "    -casesensitive      Case sensitive";
   print " [default]" if ($CASE_SENSITIVE);
