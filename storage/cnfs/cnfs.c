@@ -1140,9 +1140,9 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     private = NEW(PRIV_CNFS, 1);
     art->private = (void *)private;
     art->arrived = ntohl(cah.arrived);
-    pagefudge = offset % pagesize;
     if (innconf->articlemmap) {
 	offset += sizeof(cah);
+	pagefudge = offset % pagesize;
 	mmapoffset = offset - pagefudge;
 	private->len = pagefudge + ntohl(cah.size);
 	if ((private->base = mmap((MMAP_PTR)0, private->len, PROT_READ,
@@ -1160,6 +1160,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 #endif
     } else {
 	private->base = NEW(char, ntohl(cah.size));
+	pagefudge = 0;
 	if (read(cycbuff->fd, private->base, ntohl(cah.size)) < 0) {
 	    SMseterror(SMERR_UNDEFINED, "read failed");
 	    syslog(L_ERROR, "%s: could not read token %s %s:0x%s:%ld: %m",
@@ -1414,9 +1415,9 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
     art->arrived = ntohl(cah.arrived);
     token = CNFSMakeToken(cycbuff->name, offset, cycbuff->cyclenum, ntohl(cah.class), (TOKEN *)NULL);
     art->token = &token;
-    pagefudge = offset % pagesize;
     if (innconf->articlemmap) {
 	offset += sizeof(cah);
+	pagefudge = offset % pagesize;
 	mmapoffset = offset - pagefudge;
 	private->len = pagefudge + ntohl(cah.size);
 	if ((private->base = mmap((MMAP_PTR)0, private->len, PROT_READ,
@@ -1431,6 +1432,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 #endif
     } else {
 	private->base = NEW(char, ntohl(cah.size));
+	pagefudge = 0;
 	if (read(cycbuff->fd, private->base, ntohl(cah.size)) < 0) {
 	    art->data = NULL;
 	    art->len = 0;
