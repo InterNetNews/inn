@@ -366,14 +366,18 @@ Changes to Perl Authentication Support for nnrpd
     the use of other authentication and resolving programs.  To use an perl
     authentication code that predates the readers.conf mechanism, you would
     need to modify the code slightly (see below for the new specification)
-    and supply a simple readers.conf file.
+    and supply a simple readers.conf file.  If you don't want to modify your
+    code, the samples directory has nnrpd_auth_wrapper.pl and
+    nnrpd_access_wrapper.pl which should allow you to use your old code
+    without needing to change it.
 
     However, before trying to use your old perl code, you may want to
     consider replacing it entirely with non-perl authentication.  (With
     readers.conf and the regular authenticator and resolver programs, much
     of what once required perl can be done directly.)  Even if the
     functionality is not available directly, you may prefer writing a new
-    authenticator or resolver in any language to working in perl.
+    authenticator or resolver (which can be done in whatever language you
+    prefer) to working in perl.
 
 Perl Authentication Support for nnrpd
 

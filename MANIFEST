@@ -513,7 +513,9 @@ samples/newsfeeds.in                  innd feed configuration
 samples/newsgroups.minimal            Minimal starting newsgroups file
 samples/nnrpd.py                      Python hooks for nnrpd
 samples/nnrpd.track                   Reader tracking configuration
+samples/nnrpd_access_wrapper.pl.in    Wrapper around old Perl access hooks
 samples/nnrpd_access.pl.in            Sample nnrpd Perl access hooks
+samples/nnrpd_auth_wrapper.pl.in      Wrapper around old Perl auth hooks
 samples/nnrpd_auth.pl.in              Sample nnrpd Perl authorization hooks
 samples/nnrpd_auth.py                 Sample nnrpd Python authorization hooks
 samples/nntpsend.ctl                  Outgoing nntpsend feed configuration
