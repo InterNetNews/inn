@@ -12,7 +12,7 @@
 #include "paths.h"
 
 
-static char	CApathname[256];
+static char	*CApathname;
 static FILE	*CAfp;
 
 
@@ -31,7 +31,7 @@ CAopen(FILE *FromServer, FILE *ToServer)
     CAfp = fopen(path, "r");
     free(path);
     if (CAfp != NULL) {
-	CApathname[0] = '\0';
+	CApathname = NULL;
 	return CAfp;
     }
 
@@ -45,15 +45,15 @@ CAopen(FILE *FromServer, FILE *ToServer)
 */
 FILE *
 CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer,
-	    const char *request)
+            const char *request)
 {
     char	buff[BUFSIZ];
     char	*p;
     int		oerrno;
     FILE	*F;
 
-    (void)unlink(pathname);
-    if ((F = fopen(pathname, "w")) == NULL)
+    F = fopen(pathname, "w");
+    if (F == NULL)
 	return NULL;
 
     /* Send a LIST command to and capture the output. */
@@ -68,7 +68,8 @@ CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer,
      || !EQn(buff, NNTP_LIST_FOLLOWS, STRLEN(NNTP_LIST_FOLLOWS))) {
 	oerrno = errno;
 	/* Only call CAclose() if opened through CAopen() */
-	if (strcmp(CApathname, pathname) == 0) CAclose();
+	if (strcmp(CApathname, pathname) == 0)
+            CAclose();
 	errno = oerrno;
 	return NULL;
     }
@@ -103,14 +104,24 @@ CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer,
 FILE *
 CAlistopen(FILE *FromServer, FILE *ToServer, const char *request)
 {
+    int fd, oerrno;
+
     /* Gotta talk to the server -- see if we can. */
     if (FromServer == NULL || ToServer == NULL) {
 	errno = EBADF;
 	return NULL;
     }
 
-    (void)sprintf(CApathname, "%.220s/%s", innconf->pathtmp, _PATH_TEMPACTIVE);
-    (void)mktemp(CApathname);
+    CApathname = concatpath(innconf->pathtmp, _PATH_TEMPACTIVE);
+    fd = mkstemp(CApathname);
+    if (fd < 0) {
+        oerrno = errno;
+        free(CApathname);
+        CApathname = 0;
+        errno = oerrno;
+        return NULL;
+    }
+    close(fd);
     return CAfp = CA_listopen(CApathname, FromServer, ToServer, request);
 }
 
@@ -126,8 +137,8 @@ CAclose(void)
 	(void)fclose(CAfp);
 	CAfp = NULL;
     }
-    if (CApathname[0]) {
-	(void)unlink(CApathname);
-	CApathname[0] = '\0';
+    if (CApathname != NULL) {
+	unlink(CApathname);
+	CApathname = NULL;
     }
 }

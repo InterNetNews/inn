@@ -229,10 +229,10 @@ bool getNntpResponse (char *p, int *code, char **rest)
   if (p == NULL)
     return false ;
   
-  while (*p && isspace (*p))
+  while (*p && CTYPE (isspace, *p))
     p++ ;
 
-  while (*p && isdigit (*p))
+  while (*p && CTYPE (isdigit, *p))
     {
       digits++ ;
       cd = (cd * 10) + (*p - '0') ;
@@ -245,7 +245,7 @@ bool getNntpResponse (char *p, int *code, char **rest)
   if (*p == '-')
     p++ ;
   
-  while (*p && isspace (*p))
+  while (*p && CTYPE (isspace, *p))
     p++ ;
       
   if (rest)
@@ -264,15 +264,15 @@ char *getMsgId (const char *p)
   const char *q ;
   char *rval ;
   
-  while (*p && isspace (*p)) p++ ;
-  while (*p && !isspace (*p)) p++ ; /* skip response code */
-  while (*p && isspace (*p)) p++ ;
+  while (*p && CTYPE (isspace, *p)) p++ ;
+  while (*p && !CTYPE (isspace, *p)) p++ ; /* skip response code */
+  while (*p && CTYPE (isspace, *p)) p++ ;
 
   if ( *p == '\0' )
     return NULL ;
 
   q = p ;
-  while ( *q && !isspace (*q) )
+  while ( *q && !CTYPE (isspace, *q) )
     q++ ;
   
   rval = MALLOC ((size_t) (q - p + 1)) ;
@@ -291,12 +291,12 @@ char *findNonBlankString (char *ptr, char **tail)
 {
   char *p, *q ;
 
-  for (p = ptr ; *p && isspace (*p) ; p++)
+  for (p = ptr ; *p && CTYPE (isspace, *p) ; p++)
     /* nada */ ;
   if ( ! *p )
     return NULL ;
 
-  for (q = p ; *q && !isspace (*q) ; q++)
+  for (q = p ; *q && !CTYPE (isspace, *q) ; q++)
     /* nada */ ;
 
   *tail = q ;
@@ -364,7 +364,7 @@ void trim_ws (char *string)
   if (len == 0)
     return ;
   
-  for (p = string + len - 1 ; p >= string && isspace (*p) ; p--)
+  for (p = string + len - 1 ; p >= string && CTYPE (isspace, *p) ; p--)
     /* nada */ ;
   *++p = '\0' ;
 }
@@ -692,22 +692,27 @@ bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
   FILE *tmpFp ;
   int c ;
   int i ;
-
-  tmpname = malloc (pathMax(NULL) + 1) ;
-  sprintf (tmpname,"%s.XXXXXX",name) ;
-  mktemp (tmpname) ;
+  int fd ;
 
   if (currlen <= size)
     {
-      FREE(tmpname) ;
-      
       d_printf (1,"No need to shrink file (%s %ld vs %ld\n",
                name,size,currlen) ;
       return true ;
     }
 
-  /* create a temp file that will go away when closed. */
-  if ((tmpFp = fopen (tmpname,"w")) == NULL)
+  /* create a temp file. */
+  tmpname = concat (name,".XXXXXX",(char *)0) ;
+  fd = mkstemp (tmpname) ;
+
+  if (fd < 0)
+    {
+      syslog (LOG_ERR,SHRINK_TEMP_CREATE,name) ;
+      FREE (tmpname) ;
+      return false ;
+    }
+
+  if ((tmpFp = fdopen (fd,"w")) == NULL)
     {
       syslog (LOG_ERR,SHRINK_TEMP_OPEN,tmpname) ;
       FREE (tmpname) ;

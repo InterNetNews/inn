@@ -112,7 +112,7 @@ SITEread(SITE *sp, char *start)
 static bool
 SITEwrite(SITE *sp, const char *p, int i)
 {
-    SITEvec[0].iov_base = p;
+    SITEvec[0].iov_base = (char *) p;
     SITEvec[0].iov_len = i;
     return xwritev(sp->Wfd, SITEvec, 2) >= 0;
 }
@@ -198,7 +198,8 @@ main(int ac, char *av[])
     char	buff[NNTP_STRLEN];
     char	mesgid[NNTP_STRLEN];
     char	tbuff[SMBUF];
-    char	temp[BUFSIZ];
+    char	*msgidfile = NULL;
+    int         msgidfd;
     const char	*Groups;
     char	*distributions;
     char	*Since;
@@ -207,7 +208,7 @@ main(int ac, char *av[])
     struct tm	*gt;
     struct stat	Sb;
     SITE	*Remote;
-    SITE	*Local;
+    SITE	*Local = NULL;
     FILE	*F;
     bool	Offer;
     bool	Error;
@@ -303,7 +304,6 @@ main(int ac, char *av[])
 
     if (Since == NULL) {
 	F = stdin;
-	temp[0] = '\0';
 	if (distributions || Groups)
 	    Usage("No -d or -n when reading stdin");
     }
@@ -328,14 +328,20 @@ main(int ac, char *av[])
 	    exit(1);
 	}
 
-	/* Create a temporary file. */
-	(void)sprintf(temp, "%s/nntpgetXXXXXX", innconf->pathtmp);
-	(void)mktemp(temp);
-	if ((F = fopen(temp, "w+")) == NULL) {
-	    (void)fprintf(stderr, "Can't open \"%s\", %s\n",
-		    temp, strerror(errno));
-	    exit(1);
-	}
+        /* Create a temporary file. */
+        msgidfile = concatpath(innconf->pathtmp, "nntpgetXXXXXX");
+        msgidfd = mkstemp(msgidfile);
+        if (msgidfd < 0) {
+            fprintf(stderr, "Can't create a temporary file, %s\n",
+                    strerror(errno));
+            exit(1);
+        }
+        F = fopen(msgidfile, "w+");
+        if (F == NULL) {
+            fprintf(stderr, "Can't open \"%s\", %s\n", msgidfile,
+                    strerror(errno));
+            exit(1);
+        }
 
 	/* Read and store the Message-ID list. */
 	for ( ; ; ) {
@@ -352,7 +358,7 @@ main(int ac, char *av[])
 		continue;
 	    if (fprintf(F, "%s\n", buff) == EOF || ferror(F)) {
 		(void)fprintf(stderr, "Can't write \"%s\", %s\n",
-			temp, strerror(errno));
+			msgidfile, strerror(errno));
 		(void)fclose(F);
 		SITEquit(Remote);
 		exit(1);
@@ -360,7 +366,7 @@ main(int ac, char *av[])
 	}
 	if (fflush(F) == EOF) {
 	    (void)fprintf(stderr, "Can't flush \"%s\", %s\n",
-		    temp, strerror(errno));
+		    msgidfile, strerror(errno));
 	    (void)fclose(F);
 	    SITEquit(Remote);
 	    exit(1);
@@ -480,9 +486,9 @@ main(int ac, char *av[])
     (void)fclose(F);
 
     /* Remove our temp file. */
-    if (temp[0] && unlink(temp) < 0)
+    if (msgidfile && unlink(msgidfile) < 0)
 	(void)fprintf(stderr, "Can't remove \"%s\", %s\n",
-		temp, strerror(errno));
+		msgidfile, strerror(errno));
 
     /* All done. */
     SITEquit(Remote);

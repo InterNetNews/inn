@@ -74,13 +74,14 @@ typedef struct _BUFFER {
     char	*Data;
 } BUFFER;
 
-void OverAddAllNewsgroups(void);
+static void OverAddAllNewsgroups(void);
 
 /*
  * Misc routines needed by DoArt...
  */
 
-void BUFFset(BUFFER *bp, const char *p, const int length)
+static void
+BUFFset(BUFFER *bp, const char *p, const int length)
 {
     if ((bp->Left = length) != 0) {
 	/* Need more space? */
@@ -95,7 +96,9 @@ void BUFFset(BUFFER *bp, const char *p, const int length)
     bp->Used = 0;
 }
 
-void BUFFappend(BUFFER *bp, const char *p, const int len) {
+static void
+BUFFappend(BUFFER *bp, const char *p, const int len)
+{
     int i;
 
     if (len == 0)
@@ -171,16 +174,18 @@ GetMessageID(char *p)
  * back in, and add it to overview. 
  */
 
-void
+static void
 FlushOverTmpFile(void)
 {
     char temp[SMBUF];
     char *SortedTmpPath;
-    int i, pid;
+    int i, pid, fd;
     TOKEN token;
     QIOSTATE *qp;
     int count;
-    char *line, *p, *q, *r;
+    char *line, *p;
+    char *q = NULL;
+    char *r = NULL;
     time_t arrived, expires;
     static int first = 1;
 
@@ -194,7 +199,7 @@ FlushOverTmpFile(void)
         if(!first) { /* if previous one is running, wait for it */
 	    int status;
 	    wait(&status);
-	    if(WIFEXITED(status) && WEXITSTATUS(status) != 0
+	    if((WIFEXITED(status) && WEXITSTATUS(status) != 0)
 		    || WIFSIGNALED(status))
 		exit(1);
 	}
@@ -230,10 +235,19 @@ FlushOverTmpFile(void)
 	}
     }
 
-    sprintf(temp, "%s/hisTXXXXXX", TmpDir);
-    mktemp(temp);
-    SortedTmpPath = COPY(temp);
-
+    /* This is a bit odd, but as long as other user's files can't be deleted
+       out of the temporary directory, it should work.  We're using mkstemp to
+       create a file and then passing its name to sort, which will then open
+       it again and overwrite it. */
+    SortedTmpPath = concatpath(TmpDir, "hisTXXXXXX");
+    fd = mkstemp(SortedTmpPath);
+    if (fd < 0) {
+        fprintf(stderr, "makehistory: Can't create temporary file, %s\n",
+                strerror(errno));
+        OVclose();
+        Fork ? _exit(1) : exit(1);
+    }
+    close(fd);
     sprintf(temp, "exec %s -T %s -t'%c' -o %s %s", _PATH_SORT,
 	    TmpDir, '\t', SortedTmpPath, OverTmpPath);
     
@@ -329,18 +343,18 @@ FlushOverTmpFile(void)
 /*
  * Write a line to the overview temp file. 
  */
-void
+static void
 WriteOverLine(TOKEN *token, char *xrefs, int xrefslen, 
 	      char *overdata, int overlen, time_t arrived, time_t expires)
 {
     char temp[SMBUF];
     char *p, *q, *r;
-    int i;
+    int i, fd;
 
     if (sorttype == OVNOSORT) {
 	if (Fork) {
 	    (void)fprintf(Overchan, "%s %ld %ld ", TokenToText(*token), (long)arrived, (long)expires);
-	    if (fwrite(overdata, 1, overlen, Overchan) != overlen) {
+	    if (fwrite(overdata, 1, overlen, Overchan) != (size_t) overlen) {
 		fprintf(stderr, "makehistory: writing overview failed\n");
 		exit(1);
 	    }
@@ -357,10 +371,15 @@ WriteOverLine(TOKEN *token, char *xrefs, int xrefslen,
     }
     if (OverTmpPath == NULL) {
 	/* need new temp file, so create it. */
-	(void)sprintf(temp, "%s/histXXXXXX", TmpDir);
-	(void)mktemp(temp);
-	OverTmpPath = COPY(temp);
-	if ((OverTmpFile = fopen(OverTmpPath, "w")) == NULL) {
+        OverTmpPath = concatpath(TmpDir, "histXXXXXX");
+        fd = mkstemp(OverTmpPath);
+        if (fd < 0) {
+            fprintf(stderr, "makehistory: can't create temporary file: %s\n",
+                    strerror(errno));
+            exit(1);
+        }
+        OverTmpFile = fdopen(fd, "w");
+	if (OverTmpFile == NULL) {
 	    fprintf(stderr, "makehistory: can't open %s:%s\n", OverTmpPath,
 			  strerror(errno));
 	    exit(1);
@@ -416,7 +435,8 @@ WriteOverLine(TOKEN *token, char *xrefs, int xrefslen,
 /*
 **  Read the overview schema.
 */
-static void ARTreadschema(bool Overview)
+static void
+ARTreadschema(bool Overview)
 {
     FILE                        *F;
     char                        *p;
@@ -526,7 +546,7 @@ static void ARTreadschema(bool Overview)
 /*
  * Handle a single article.  This routine's fairly complicated. 
  */
-void
+static void
 DoArt(ARTHANDLE *art)
 {
     ARTOVERFIELD		*fp;
@@ -707,7 +727,7 @@ DoArt(ARTHANDLE *art)
 }
 
 
-void
+static void
 Usage(void)
 {
     fprintf(stderr, "Usage: makehistory [-b] [-f file] [-O] [-I] [-l overtmpsegsize [-a] [-s size] [-x] [-T tmpdir]\n");
@@ -729,7 +749,7 @@ Usage(void)
 /*
 ** Add all groups to overview group.index. --rmt
 */
-void
+static void
 OverAddAllNewsgroups(void)
 {
     QIOSTATE *qp;

@@ -175,9 +175,10 @@ static char *REMclean(char *buff)
 static void Reject(const char *article, const char *reason, const char *arg)
 {
 #if	defined(DO_RNEWS_SAVE_BAD)
-    char	buff[SMBUF];
-    FILE	*F;
-    int		i;
+    char *filename;
+    FILE *F;
+    int fd;
+    size_t length;
 #endif	/* defined(DO_RNEWS_SAVE_BAD) */
 
     syslog(L_NOTICE, reason, arg);
@@ -188,16 +189,23 @@ static void Reject(const char *article, const char *reason, const char *arg)
     }
 
 #if	defined(DO_RNEWS_SAVE_BAD)
-    TempName(PathBadNews, buff);
-    if ((F = fopen(buff, "w")) == NULL) {
-	syslog(L_ERROR, "cant fopen %s %m", buff);
+    filename = concat(PathBadNews, "/XXXXXX", (char *) 0);
+    fd = mkstemp(filename);
+    if (fd < 0) {
+        syslog(L_ERROR, "cant create temporary file %m");
+        return;
+    }
+    F = fdopen(fd, "w");
+    if (F == NULL) {
+	syslog(L_ERROR, "cant fdopen %s %m", filename);
 	return;
     }
-    i = strlen(article);
-    if (fwrite(article, 1, i, F) != i)
-	syslog(L_ERROR, "cant fwrite %s %m", buff);
+    length = strlen(article);
+    if (fwrite(article, 1, length, F) != length)
+	syslog(L_ERROR, "cant fwrite %s %m", filename);
     if (fclose(F) == EOF)
-	syslog(L_ERROR, "cant close %s %m", buff);
+	syslog(L_ERROR, "cant close %s %m", filename);
+    free(filename);
 #endif	/* defined(DO_RNEWS_SAVE_BAD) */
 }
 
@@ -211,7 +219,7 @@ static bool Process(char *article)
 {
     HEADER	        *hp;
     char	        *p;
-    char		*id;
+    char		*id = NULL;
     char		buff[SMBUF];
 #if	defined(FILE_RNEWS_LOG_DUPS)
     FILE		*F;

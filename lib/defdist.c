@@ -36,22 +36,24 @@ DDstart(FILE *FromServer, FILE *ToServer)
     char	*q;
     char        *path;
     int		i;
-    char	name[256];
+    int         fd;
+    char	*name = NULL;
 
     /* Open the file. */
     path = concatpath(innconf->pathetc, _PATH_DISTPATS);
     F = fopen(path, "r");
     free(path);
-    if (F != NULL) {
-	name[0] = '\0';
-    } else {
+    if (F == NULL) {
 	/* Not available locally; try remotely. */
 	if (FromServer == NULL || ToServer == NULL)
 	    /* We're probably nnrpd running on the server and the
 	     * file isn't installed.  Oh well. */
 	    return NULL;
-	(void)sprintf(name, "%.220s/%s", innconf->pathtmp, _PATH_TEMPACTIVE);
-	(void)mktemp(name);
+        name = concatpath(innconf->pathtmp, _PATH_TEMPACTIVE);
+        fd = mkstemp(name);
+        if (fd < 0)
+            return NULL;
+        close(fd);
 	if ((F = CA_listopen(name, FromServer, ToServer,
 		    "distrib.pats")) == NULL)
 	    return NULL;
@@ -65,8 +67,8 @@ DDstart(FILE *FromServer, FILE *ToServer)
     if ((h = NEW(DDHANDLE, 1)) == NULL) {
 	i = errno;
 	(void)fclose(F);
-	if (name[0])
-	    (void)unlink(name);
+	if (name != NULL)
+	    unlink(name);
 	errno = i;
 	return NULL;
     }
@@ -78,8 +80,8 @@ DDstart(FILE *FromServer, FILE *ToServer)
 	i = errno;
 	DISPOSE(h);
 	(void)fclose(F);
-	if (name[0])
-	    (void)unlink(name);
+	if (name != NULL)
+	    unlink(name);
 	errno = i;
 	return NULL;
     }
@@ -104,8 +106,8 @@ DDstart(FILE *FromServer, FILE *ToServer)
     h->Count = ep - h->Entries;
 
     (void)fclose(F);
-    if (name[0])
-	(void)unlink(name);
+    if (name != NULL)
+	unlink(name);
     return h;
 }
 

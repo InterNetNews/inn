@@ -133,6 +133,7 @@
 #define L_BUFFER_EXPAND_ERROR	"ME error expanding input buffer"
 #define L_PREPARE_READ_FAILED	"ME error prepare read failed"
 
+#define SHRINK_TEMP_CREATE      "ME error creating temp shrink file for %s: %m"
 #define SHRINK_TEMP_OPEN	"ME error opening temp shrink file %s: %m"
 #define SHRINK_SEEK		"ME error seeking to point %ld in %s"
 #define SHRINK_NONL		"ME no newline in shrinking file %s"

@@ -81,7 +81,6 @@ static int logRejects = FALSE ;  /* syslog the 437 responses. */
 static char	STAT1[] =
 	"%s stats offered %lu accepted %lu refused %lu rejected %lu missing %lu accsize %.0f rejsize %.0f";
 static char	STAT2[] = "%s times user %.3f system %.3f elapsed %.3f";
-static char	GOT_RESENDIT[] = "%s requeued %s %s";
 static char	GOT_BADCOMMAND[] = "%s rejected %s %s";
 static char	REJECTED[] = "%s rejected %s (%s) %s";
 static char	REJ_STREAM[] = "%s rejected (%s) %s";
@@ -355,15 +354,24 @@ CloseAndRename(void)
 **  a file write error, exit so that the original input is left alone.
 */
 static void
-Requeue(const char *Article, const char *MessageID) {
+Requeue(const char *Article, const char *MessageID)
+{
+    int fd;
+
     /* Temp file already open? */
     if (BATCHfp == NULL) {
-	(void)mktemp(BATCHtemp);
-	if ((BATCHfp = fopen(BATCHtemp, "w")) == NULL) {
-	    (void)fprintf(stderr, "Can't open \"%s\", %s\n",
-		    BATCHtemp, strerror(errno));
-	    ExitWithStats(1);
-	}
+        fd = mkstemp(BATCHtemp);
+        if (fd < 0) {
+            fprintf(stderr, "Can't create a temporary file, %s\n",
+                    strerror(errno));
+            ExitWithStats(1);
+        }
+        BATCHfp = fdopen(fd, "w");
+        if (BATCHfp == NULL) {
+            fprintf(stderr, "Can't open \"%s\", %s\n", BATCHtemp,
+                    strerror(errno));
+            ExitWithStats(1);
+        }
     }
 
     /* Called only to get the file open? */
@@ -595,7 +603,7 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 	    vec[2].iov_base = art->data + len;
 	    vec[2].iov_len = art->len - len;
 	} else {
-	    vec[2].iov_base = ".\r\n";
+	    vec[2].iov_base = (char *) ".\r\n";
 	    vec[2].iov_len = 3;
 	}
 	if (xwritev(ToServer, vec, 3) < 0)
@@ -640,9 +648,6 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
         /* NOTREACHED */
     case NNTP_RESENDIT_VAL:
     case NNTP_GOODBYE_VAL:
-#if 0
-	syslog(L_NOTICE, GOT_RESENDIT, REMhost, MessageID, REMclean(buff));
-#endif
 	Requeue(Article, MessageID);
 	break;
     case NNTP_TOOKIT_VAL:
@@ -990,7 +995,7 @@ int main(int ac, char *av[]) {
     char		buff[8192+128];
     char		*Article;
     char		*MessageID;
-    RETSIGTYPE		(*old)(int);
+    RETSIGTYPE		(*old)(int) = NULL;
     unsigned int	ConnectTimeout;
     unsigned int	TotalTimeout;
     int                 port = NNTP_PORT;
@@ -1125,13 +1130,12 @@ int main(int ac, char *av[]) {
 	if (ConnectTimeout) {
 	    GotAlarm = FALSE;
 	    old = xsignal(SIGALRM, CATCHalarm);
+            if (setjmp(JMPwhere)) {
+                fprintf(stderr, "Can't connect to %s, timed out\n", REMhost);
+                SMshutdown();
+                exit(1);
+            }
 	    JMPyes = TRUE;
-	    if (setjmp(JMPwhere)) {
-		(void)fprintf(stderr, "Can't connect to %s, timed out\n",
-			REMhost);
-		SMshutdown();
-		exit(1);
-	    }
 	    (void)alarm(ConnectTimeout);
 	}
 	if (NNTPconnect(REMhost, port, &From, &To, buff) < 0 || GotAlarm) {
