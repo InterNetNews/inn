@@ -9,10 +9,10 @@ CFLAGS	= $(GCFLAGS)
 ##  list.  If they need other things compiled, those other things should be
 ##  added to EXTRA.
 
-TESTS	= lib/concat.t lib/date.t lib/error.t lib/hstrerror.t \
-	lib/inet_aton.t lib/inet_ntoa.t lib/md5.t lib/memcmp.t lib/pread.t \
-	lib/pwrite.t lib/qio.t lib/snprintf.t lib/strerror.t \
-	lib/wildmat.t lib/xwrite.t
+TESTS	= lib/concat.t lib/date.t lib/error.t lib/hashtab.t \
+	lib/hstrerror.t lib/inet_aton.t lib/inet_ntoa.t lib/md5.t \
+	lib/memcmp.t lib/pread.t lib/pwrite.t lib/qio.t lib/snprintf.t \
+	lib/strerror.t lib/wildmat.t lib/xwrite.t
 
 ##  Extra stuff that needs to be built before tests can be run.
 
@@ -40,6 +40,9 @@ lib/date.t: lib/date-t.o $(LIBINN)
 
 lib/error.t: lib/error-t.o $(LIBINN)
 	$(LINK) lib/error-t.o $(LIBINN)
+
+lib/hashtab.t: lib/hashtab-t.o $(LIBINN)
+	$(LINK) lib/hashtab-t.o $(LIBINN)
 
 lib/hstrerror.o: ../lib/hstrerror.o
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/hstrerror.c
