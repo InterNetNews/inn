@@ -21,6 +21,7 @@ typedef struct {
     INITTYPE		initialized;
     BOOL		configured;
     BOOL		selfexpire;
+    BOOL		expensivestat;
 } METHOD_DATA;
 
 METHOD_DATA method_data[NUM_STORAGE_METHODS];
@@ -557,8 +558,8 @@ BOOL SMsetup(SMSETUP type, void *value) {
 BOOL SMinit(void) {
     int                 i;
     BOOL		allok = TRUE;
-    BOOL		selfexpire;
     static		BOOL once = FALSE;
+    SMATTRIBUTE		smattr;
 
     if (Initialized)
 	return TRUE;
@@ -573,12 +574,14 @@ BOOL SMinit(void) {
 
     for (i = 0; i < NUM_STORAGE_METHODS; i++) {
 	if (method_data[i].configured) {
-	    if (method_data[i].configured && storage_methods[i].init(&selfexpire)) {
+	    if (method_data[i].configured && storage_methods[i].init(&smattr)) {
 		method_data[i].initialized = INIT_DONE;
-		method_data[i].selfexpire = selfexpire;
+		method_data[i].selfexpire = smattr.selfexpire;
+		method_data[i].expensivestat = smattr.expensivestat;
 	    } else {
 		method_data[i].initialized = INIT_FAIL;
 		method_data[i].selfexpire = FALSE;
+		method_data[i].expensivestat = TRUE;
 		syslog(L_ERROR, "SM storage method '%s' failed initialization", storage_methods[i].name);
 		allok = FALSE;
 	    }
@@ -603,7 +606,7 @@ BOOL SMinit(void) {
 }
 
 static BOOL InitMethod(STORAGETYPE method) {
-    BOOL		selfexpire;
+    SMATTRIBUTE		smattr;
 
     if (!Initialized)
 	if (!SMreadconfig()) {
@@ -623,14 +626,16 @@ static BOOL InitMethod(STORAGETYPE method) {
 	SMseterror(SMERR_UNDEFINED, "storage method is not configured.");
 	return FALSE;
     }
-    if (!storage_methods[method].init(&selfexpire)) {
+    if (!storage_methods[method].init(&smattr)) {
 	method_data[method].initialized = INIT_FAIL;
 	method_data[method].selfexpire = FALSE;
+	method_data[method].expensivestat = TRUE;
 	SMseterror(SMERR_UNDEFINED, "Could not initialize storage method late.");
 	return FALSE;
     }
     method_data[method].initialized = INIT_DONE;
-    method_data[method].selfexpire = selfexpire;
+    method_data[method].selfexpire = smattr.selfexpire;
+    method_data[method].expensivestat = smattr.expensivestat;
     return TRUE;
 }
 
@@ -887,6 +892,8 @@ BOOL SMprobe(PROBETYPE type, TOKEN *token, void *value) {
 	} else {
 	    return FALSE;
 	}
+    case EXPENSIVESTAT:
+	return (method_data[typetoindex[token->type]].expensivestat);
     default:
 	return FALSE;
     }

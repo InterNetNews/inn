@@ -10,9 +10,14 @@
 #include "storage.h"
 
 typedef struct {
+    BOOL	selfexpire;
+    BOOL	expensivestat;
+} SMATTRIBUTE;
+
+typedef struct {
     char                *name;
     unsigned char       type;
-    BOOL                (*init)(BOOL *type);
+    BOOL                (*init)(SMATTRIBUTE *attr);
     TOKEN               (*store)(const ARTHANDLE article, const STORAGECLASS storageclass);
     ARTHANDLE           *(*retrieve)(const TOKEN token, const RETRTYPE amount);
     ARTHANDLE           *(*next)(const ARTHANDLE *article, const RETRTYPE amount);
