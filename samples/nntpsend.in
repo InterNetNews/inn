@@ -73,7 +73,7 @@ while ${MORETODO} ; do
 	shift
 	;;
     X-s*)
-	TRUNC_SIZE="`echo $2 | ${SED} -e 's/-s//'`"
+	TRUNC_SIZE="`echo $1 | ${SED} -e 's/-s//'`"
 	;;
     X-t)
 	if [ -z "$2" ] ; then
