@@ -1,10 +1,10 @@
 ##########################################################
-# INN module for innreport (3.0.1 and more).
+# INN module for innreport (3.*).
 #
-# Sample file tested with INN 2.3, 2.2 and 1.5.1
+# Sample file tested with INN 2.3, 2.2, 1.7.2 and 1.5.1
 #
 # (c) 1997-1999 by Fabien Tassin <fta@oleane.net>
-# version 3.0.1
+# version 3.0.2
 ##########################################################
 
 # TODO: add the map file.
@@ -35,8 +35,8 @@ my %ctlinnd = ('a', 'addhist',     'D', 'allow',
 # init innd timer
 foreach ('article cancel', 'article control', 'article link',
 	 'article write', 'history grep', 'history lookup',
-	 'history sync', 'history write', 'idle', 'site send', 'overview write',
-	 'perl filter') {
+	 'history sync', 'history write', 'idle', 'site send',
+	 'overview write', 'perl filter') {
   $innd_time_min{$_} = $MIN;
   $innd_time_max{$_} = $MAX;
   $innd_time_time{$_} = 0;   # to avoid a warning... Perl < 5.004
@@ -295,7 +295,7 @@ sub collect {
     return 1 if $left =~ m/\S+ closed$/o;
     # checkpoint
     return 1 if $left =~ m/^\S+:\d+ checkpoint /o;
-    # if ($left =~ /(\S+):\d+ checkpoint seconds (\d+) accepted (\d+) 
+    # if ($left =~ /(\S+):\d+ checkpoint seconds (\d+) accepted (\d+)
     #     refused (\d+) rejected (\d+)$/) {
     #   # Skipped...
     #   my ($server, $seconds, $accepted, $refused, $rejected) =
@@ -343,7 +343,7 @@ sub collect {
     }
     # time (from the Greco's patch)
     # ME time X idle X(X) artwrite X(X) artlink X(X) hiswrite X(X) hissync
-    # X(X) sitesend X(X) artctrl X(X) artcncl X(X) hishave X(X) hisgrep X(X) 
+    # X(X) sitesend X(X) artctrl X(X) artcncl X(X) hishave X(X) hisgrep X(X)
     # perl X(X) python X(X)
     # Note : some parameters are optional because several versions of this
     # patch exist.
@@ -448,7 +448,7 @@ sub collect {
 	      if $25 && $innd_time_min{'overview write'} > $24 / ($25 || 1);
 	    $innd_time_max{'overview write'} = $24 / ($25 || 1)
 	      if $25 && $innd_time_max{'overview write'} < $24 / ($25 || 1);
-	  }  
+	  }
         }
       }
       return 1;
@@ -474,9 +474,15 @@ sub collect {
       $innd_his{'Do not exist'}  += $4;
       return 1;
     }
+    # SERVER history cache final: 388656 lookups, 1360 hits
+    if ($left =~ m/^SERVER history cache final: (\d+) lookups, (\d+) hits$/) {
+      $innd_cache{'Lookups'} += $1;
+      $innd_cache{'Hits'}    += $2;
+      return 1;
+    }
     # bad_hosts (appears after a "cant gesthostbyname" from a feed)
     return 1 if $left =~ m/\S+ bad_hosts /o;
-    # cant read 
+    # cant read
     return 1 if $left =~ m/\S+ cant read/o;
     # cant write
     return 1 if $left =~ m/\S+ cant write/o;
@@ -882,7 +888,7 @@ sub collect {
       return 1 if $left =~ m/ cant chmod \S+\/innfeed.pid/o;
       return 1 if $left =~ m/ tape open failed /o;
       return 1 if $left =~ m/ oserr open checkpoint file:/o;
-      # ME finishing (quickly) 
+      # ME finishing (quickly)
       return 1 if $left =~ m/\(quickly\) /o;
       # ME config: value of streaming is not a boolean
       return 1 if $left =~ m/config: value of \S+ is not/o;
@@ -923,7 +929,7 @@ sub collect {
       return 1;
     }
     # 437 Unwanted site ... in path
-    if ($left =~ 
+    if ($left =~
       /(\S+) rejected [^\s]+ \(.*?\) 437 Unwanted site (\S+) in path$/o) {
       my ($server, $site) = ($1, $2);
       $server = lc $server unless $CASE_SENSITIVE;
@@ -933,7 +939,7 @@ sub collect {
       return 1;
     }
     # 437 Unwanted newsgroup "..."
-    if ($left =~ 
+    if ($left =~
       /(\S+) rejected [^\s]+ \(.*?\) 437 Unwanted newsgroup \"(\S+)\"$/o) {
       my ($server, $group) = ($1, $2);
       $server = lc $server unless $CASE_SENSITIVE;
@@ -943,7 +949,7 @@ sub collect {
       return 1;
     }
     # 437 Unwanted distribution "..."
-    if ($left =~ 
+    if ($left =~
       /(\S+) rejected [^\s]+ \(.*?\) 437 Unwanted distribution \"(\S+)\"$/o) {
       my ($server, $dist) = ($1, $2);
       $server = lc $server unless $CASE_SENSITIVE;
@@ -1307,24 +1313,26 @@ sub collect {
     return 1 if $left =~ /perl filtering enabled$/o;
     # connect
     if ($left =~ /(\S+) connect$/o) {
-      my $server = $1;
-      $server = lc $server unless $CASE_SENSITIVE;
-      $nnrpd_connect{$server}++;
+      my $cust = $1;
+      $cust = lc $cust unless $CASE_SENSITIVE;
+      my $dom = &host2dom($cust);
+      $nnrpd_dom_connect{$dom}++;
+      $nnrpd_connect{$cust}++;
       return 1;
     }
     # group
     if ($left =~ /(\S+) group (\S+) (\d+)$/o) {
-      my ($server, $group, $num) = ($1, $2, $3);
-      if ($num != 0) {
+      my ($cust, $group, $num) = ($1, $2, $3);
+      if ($num) {
 	$nnrpd_group{$group} += $num;
 	my ($hierarchy) = $group =~ /^([^\.]+).*$/o;
 	$nnrpd_hierarchy{$hierarchy} += $num;
       }
       return 1;
     }
-    # post failed 
+    # post failed
     if ($left =~ /(\S+) post failed (.*)$/o) {
-      my ($server, $error) = ($1, $2);
+      my ($cust, $error) = ($1, $2);
       $nnrpd_post_error{$error}++;
       return 1;
     }
@@ -1332,99 +1340,127 @@ sub collect {
     return 1 if $left =~ /\S+ post ok/o;
     # posts
     if ($left =~ /(\S+) posts received (\d+) rejected (\d+)$/o) {
-      my ($server, $received, $rejected) = ($1, $2, $3);
-      $server = lc $server unless $CASE_SENSITIVE;
-      $nnrpd_post_ok{$server} += $received;
-      $nnrpd_post_rej{$server} += $rejected;
+      my ($cust, $received, $rejected) = ($1, $2, $3);
+      $cust = lc $cust unless $CASE_SENSITIVE;
+      my $dom = &host2dom($cust);
+      $nnrpd_dom_post_ok{$dom} += $received;
+      $nnrpd_dom_post_rej{$dom} += $rejected;
+      $nnrpd_post_ok{$cust} += $received;
+      $nnrpd_post_rej{$cust} += $rejected;
       return 1;
     }
     # noperm post without permission
     if ($left =~ /(\S+) noperm post without permission/o) {
-      my $server = $1;
-      $server = lc $server unless $CASE_SENSITIVE;
-      $nnrpd_post_rej{$server} ++;
+      my $cust = $1;
+      $cust = lc $cust unless $CASE_SENSITIVE;
+      my $dom = &host2dom($cust);
+      $nnrpd_dom_post_rej{$dom} ++;
+      $nnrpd_post_rej{$cust} ++;
       return 1;
     }
     # no_permission
     if ($left =~ /(\S+) no_(permission|access)$/o) {
-      my $server = $1;
-      $server = lc $server unless $CASE_SENSITIVE;
-      $nnrpd_no_permission{$server}++;
+      my $cust = $1;
+      $cust = lc $cust unless $CASE_SENSITIVE;
+      my $dom = &host2dom($cust);
+      $nnrpd_no_permission{$cust}++;
+      $nnrpd_dom_no_permission{$dom}++;
       return 1;
     }
     # bad_auth
     if ($left =~ /(\S+) bad_auth$/o) {
-      my $server = $1;
-      $server = lc $server unless $CASE_SENSITIVE;
-      $nnrpd_no_permission{$server}++;
+      my $cust = $1;
+      $cust = lc $cust unless $CASE_SENSITIVE;
+      my $dom = &host2dom($cust);
+      $nnrpd_dom_no_permission{$dom}++;
+      $nnrpd_no_permission{$cust}++;
       return 1;
     }
     # unrecognized + command
     if ($left =~ /(\S+) unrecognized (.*)$/o) {
-      my ($server, $error) = ($1, $2);
-      $server = lc $server unless $CASE_SENSITIVE;
+      my ($cust, $error) = ($1, $2);
+      $cust = lc $cust unless $CASE_SENSITIVE;
+      my $dom = &host2dom($cust);
       $error = "_null command_" if ($error !~ /\S/);
       $error =~ s/^(xmotd) .*$/$1/i if ($error =~ /^xmotd .*$/i);
-      $nnrpd_unrecognized{$server}++;
+      $nnrpd_dom_unrecognized{$dom}++;
+      $nnrpd_unrecognized{$cust}++;
       $nnrpd_unrecogn_cmd{$error}++;
       return 1;
     }
     # exit
     if ($left =~ /(\S+) exit articles (\d+) groups (\d+)$/o) {
-      my ($server, $articles, $groups) = ($1, $2, $3);
-      $server = lc $server unless $CASE_SENSITIVE;
-      $nnrpd_connect{$server}++ if ($server eq '?');
-      $nnrpd_groups{$server} += $groups;
-      $nnrpd_articles{$server} += $articles;
+      my ($cust, $articles, $groups) = ($1, $2, $3);
+      $cust = lc $cust unless $CASE_SENSITIVE;
+      my $dom = &host2dom($cust) || '?';
+      $nnrpd_connect{$cust}++, $nnrpd_dom_connect{$dom}++ if $cust eq '?';
+      $nnrpd_groups{$cust} += $groups;
+      $nnrpd_dom_groups{$dom} += $groups;
+      $nnrpd_articles{$cust} += $articles;
+      $nnrpd_dom_articles{$dom} += $articles;
       return 1;
     }
     # times
     if ($left =~ /(\S+) times user (\S+) system (\S+) elapsed (\S+)$/o) {
-      my ($server, $user, $system, $elapsed) = ($1, $2, $3, $4);
-      $server = lc $server unless $CASE_SENSITIVE;
-      $nnrpd_times{$server} += $elapsed;
+      my ($cust, $user, $system, $elapsed) = ($1, $2, $3, $4);
+      $cust = lc $cust unless $CASE_SENSITIVE;
+      my $dom = &host2dom($cust);
+      $nnrpd_times{$cust} += $elapsed;
+      $nnrpd_dom_times{$dom} += $elapsed;
       return 1;
     }
     # artstats
     if ($left =~ /(\S+) artstats get (\d+) time (\d+) size (\d+)$/o) {
-      my ($server, $articles, $time, $bytes) = ($1, $2, $3, $4);
-      $server = lc $server unless $CASE_SENSITIVE;
-      $nnrpd_bytes{$server} += $bytes;
+      my ($cust, $articles, $time, $bytes) = ($1, $2, $3, $4);
+      $cust = lc $cust unless $CASE_SENSITIVE;
+      my $dom = &host2dom($cust);
+      $nnrpd_bytes{$cust} += $bytes;
+      $nnrpd_dom_bytes{$cust} += $bytes;
       return 1;
     }
     # timeout
     if ($left =~ /(\S+) timeout$/o) {
-      my $server = $1;
-      $server = lc $server unless $CASE_SENSITIVE;
-      $nnrpd_timeout{$server}++;
+      my $cust = $1;
+      $cust = lc $cust unless $CASE_SENSITIVE;
+      my $dom = &host2dom($cust);
+      $nnrpd_dom_timeout{$dom}++;
+      $nnrpd_timeout{$cust}++;
       return 1;
     }
     # timeout in post
     if ($left =~ /(\S+) timeout in post$/o) {
-      my $server = $1;
-      $server = lc $server unless $CASE_SENSITIVE;
-      $nnrpd_timeout{$server}++;
+      my $cust = $1;
+      $cust = lc $cust unless $CASE_SENSITIVE;
+      my $dom = &host2dom($cust);
+      $nnrpd_dom_timeout{$dom}++;
+      $nnrpd_timeout{$cust}++;
       return 1;
     }
     # cant read Connection timed out
     if ($left =~ /(\S+) cant read Connection timed out$/o) {
-      my $server = $1;
-      $server = lc $server unless $CASE_SENSITIVE;
-      $nnrpd_timeout{$server}++;
+      my $cust = $1;
+      $cust = lc $cust unless $CASE_SENSITIVE;
+      my $dom = &host2dom($cust);
+      $nnrpd_dom_timeout{$dom}++;
+      $nnrpd_timeout{$cust}++;
       return 1;
     }
     # cant read Operation timed out
     if ($left =~ /(\S+) cant read Operation timed out$/o) {
-      my $server = $1;
-      $server = lc $server unless $CASE_SENSITIVE;
-      $nnrpd_timeout{$server}++;
+      my $cust = $1;
+      $cust = lc $cust unless $CASE_SENSITIVE;
+      my $dom = &host2dom($cust);
+      $nnrpd_dom_timeout{$dom}++;
+      $nnrpd_timeout{$cust}++;
       return 1;
     }
     # cant read Connection reset by peer
     if ($left =~ /(\S+) cant read Connection reset by peer$/o) {
-      my $server = $1;
-      $server = lc $server unless $CASE_SENSITIVE;
-      $nnrpd_reset_peer{$server}++;
+      my $cust = $1;
+      $cust = lc $cust unless $CASE_SENSITIVE;
+      my $dom = &host2dom($cust);
+      $nnrpd_dom_reset_peer{$dom}++;
+      $nnrpd_reset_peer{$cust}++;
       return 1;
     }
     # gethostbyaddr: xxx.yyy.zzz != a.b.c.d
@@ -1737,7 +1773,7 @@ sub collect {
         $added = $used - $cnfsstat_used{$buffer};
         if ($cycles > $cnfsstat_cycles{$buffer}) {
           $added += $size * ($cycles - $cnfsstat_cycles{$buffer});
-        } 
+        }
         if ($added > 0) {
           $cnfsstat_rate{$buffer} += $added / $period;
           $cnfsstat_samples{$buffer}++;
@@ -1763,8 +1799,7 @@ sub collect {
 #################################
 # Adjust some values..
 
-sub adjust
-{
+sub adjust {
   my ($first_date, $last_date) = @_;
 
   ## The following lines are commented to avoid the double
@@ -1813,21 +1848,35 @@ sub adjust
     if (%nnrpd_connect) {
       my $c = keys (%nnrpd_connect);
       foreach $serv (keys (%nnrpd_connect)) {
+	my $dom = &host2dom($serv);
 	if ($nnrpd_no_permission{$serv}) {
-	  undef ($nnrpd_connect{$serv});
-	  undef ($nnrpd_groups{$serv});
-	  undef ($nnrpd_times{$serv});
+	  $nnrpd_dom_connect{$dom} -= $nnrpd_connect{$serv}
+	    if defined $nnrpd_dom_connect{$dom};
+	  $nnrpd_dom_groups{$dom}  -= $nnrpd_groups{$serv}
+	    if defined $nnrpd_dom_groups{$dom};
+	  $nnrpd_dom_times{$dom}   -= $nnrpd_times{$serv}
+	    if defined $nnrpd_dom_times{$dom};
+	  $nnrpd_connect{$serv} -= $nnrpd_no_permission{$serv};
+	  $nnrpd_groups{$serv} -= $nnrpd_no_permission{$serv}
+	    if defined $nnrpd_groups{$serv};
+	  $nnrpd_times{$serv} -= $nnrpd_no_permission{$serv}
+	    if defined $nnrpd_times{$serv};
+	  delete $nnrpd_connect{$serv} unless $nnrpd_connect{$serv};
+	  delete $nnrpd_groups{$serv}  unless $nnrpd_groups{$serv};
+	  delete $nnrpd_times{$serv}   unless $nnrpd_times{$serv};
+	  delete $nnrpd_dom_connect{$dom} unless $nnrpd_dom_connect{$dom};
+	  delete $nnrpd_dom_groups{$dom}  unless $nnrpd_dom_groups{$dom};
+	  delete $nnrpd_dom_times{$dom}   unless $nnrpd_dom_times{$dom};
 	  $c--;
 	}
 	$nnrpd_doit++
-	  if ($nnrpd_groups{$serv} || $nnrpd_post_ok{$serv});
+	  if $nnrpd_groups{$serv} || $nnrpd_post_ok{$serv};
       }
-      undef %nnrpd_connect  unless $c;
+      undef %nnrpd_connect unless $c;
     }
     foreach $serv (keys (%nnrpd_groups)) {
-      $curious = "ok"
-	unless ($nnrpd_groups{$serv} || $nnrpd_post_ok{$serv} ||
-		$nnrpd_articles{$serv});
+      $curious = "ok" unless $nnrpd_groups{$serv} || $nnrpd_post_ok{$serv} ||
+	$nnrpd_articles{$serv};
     }
   }
 
@@ -1846,7 +1895,7 @@ sub adjust
       foreach $key (keys (%innd_time_min)) {
 	$innd_time_min{$key} = 0 if ($innd_time_min{$key} == $MIN);
 	$innd_time_max{$key} = 0 if ($innd_time_max{$key} == $MAX);
-	
+
 	#$innd_time_min{$key} /= 1000;
 	#$innd_time_max{$key} /= 1000;
       }
@@ -1863,7 +1912,7 @@ sub adjust
     # adjust the crosspost stats.
     if (%crosspost) {
       foreach $key (keys (%crosspost)) {
-	$crosspost_times{$key} = $crosspost_time ? 
+	$crosspost_times{$key} = $crosspost_time ?
 	  sprintf "%.2f", $crosspost{$key} / $crosspost_time * 60 : "?";
       }
     }
@@ -1903,11 +1952,11 @@ sub adjust
 	  my $t = sprintf "%02d", $j;
 	  $inn_flow{"$prev_dd $t"} = 0;
 	}
-	
+
 	# all the days between (if any)
 	# well, we can forget them as it is supposed to be a tool
 	# launched daily.
-	
+
 	# the beginning of the last day..
 	for ($j = 0; $j < $h; $j++) {
 	  my $t = sprintf "%02d", $j;
@@ -2056,8 +2105,10 @@ sub adjust
 
   $rnews_misc{'Too old'}{'--'} = $rnews_too_old if $rnews_too_old;
   $rnews_misc{'Bad linecount'}{'--'} = $rnews_linecount if $rnews_linecount;
-  $rnews_misc{'Duplicate articles'}{'--'} = $rnews_duplicate if $rnews_duplicate;
-  $rnews_misc{'No colon-space'}{'--'} = $rnews_no_colon_space if $rnews_no_colon_space;
+  $rnews_misc{'Duplicate articles'}{'--'} = $rnews_duplicate
+    if $rnews_duplicate;
+  $rnews_misc{'No colon-space'}{'--'} = $rnews_no_colon_space
+    if $rnews_no_colon_space;
 
   if (%nnrpd_groups) {
     my $key;
@@ -2071,8 +2122,7 @@ sub adjust
   }
 }
 
-sub report_unwanted_ng
-{
+sub report_unwanted_ng {
   my $file = shift;
   open (FILE, "$file") && do {
     while (<FILE>) {
@@ -2121,6 +2171,13 @@ sub datecmp {
   $date1 += substr($a, 7, 2);
   $date2 += substr($b, 7, 2);
   $date1 - $date2;
+}
+
+sub host2dom {
+  my $host = shift;
+
+  $host =~ m/^[^\.]+(.*)/;
+  $host =~ m/^[\d\.]+$/ ? "unresolved" : $1 ? "*$1" : "?";
 }
 
 1;

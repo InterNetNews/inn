@@ -1,11 +1,11 @@
-#!@_PATH_PERL@
+#!@_PATH_PERL@ -w
 
 ##########################################################################
 #
 #   innreport: Perl script to summarize news log files
 #              (with optional HTML output and graphs).
 #
-# version: 3.0.1
+# version: 3.0.2
 #
 # Copyright (c) 1996-1999, Fabien Tassin (fta@oleane.net).
 #
@@ -49,9 +49,11 @@
 #
 # Note: You need the Perl graphic library GD.pm if you want the graphs.
 #       GD is available on all good CPAN ftp sites:
-#           ex: [CPAN_DIR]/authors/id/LDS/GD-1.18.tar.gz (or greater)
+#           ex: [CPAN_DIR]/authors/id/LDS/GD-1.1_.tar.gz (or greater)
 #         or directly to:
 #           <URL:http://www-genome.wi.mit.edu/pub/software/WWW/GD.html>
+#       Note : innreport will create PNG or GIF files depending upon
+#              the GD version.
 #
 # Documentation: for a short explaination of the different options, you
 #        can read the usage (obtained with the -h or -help switch).
@@ -88,9 +90,9 @@
 # remember to add '-w' on the first line and to uncomment the 'use strict'
 # below before doing any changes to this file.
 
-# use strict;
+use strict;
 
-require "@LIBDIR@/innshellvars.pl" ;
+require "@LIBDIR@/innshellvars.pl"; #@AUTOCONF@
 
 ## Do you want to create a Web page. Pick DO or DONT.
 my $HTML = "DO";
@@ -99,12 +101,12 @@ my $HTML = "DO";
 my $GRAPH = "DO";
 
 ## Directory for the Web pages (used only if the previous line is active)
-my $HTML_dir = "$inn::pathhttp";
+my $HTML_dir = "$inn::pathhttp"; #@AUTOCONF@
 
-## Directory for the GIF pictures (need HTML support) in the file space
+## Directory for the pictures (need HTML support) in the file space
 my $IMG_dir = "$HTML_dir/pics";
 
-## Directory for the GIF pictures (need HTML support) in the Web space
+## Directory for the pictures (need HTML support) in the Web space
 ## (can be relative or global)
 my $IMG_pth = "pics";
 
@@ -123,7 +125,8 @@ my $CYCLE = 0;
 ## Warning: never use "/". Use only a _valid_ filename char.
 my $SEPARATOR = ".";
 
-## Do you want the "Unknown entries from news log file" report. Pick DO or DONT.
+## Do you want the "Unknown entries from news log file" report. Pick DO or
+## DONT.
 my $WANT_UNKNOWN = "DO";
 
 ## Max number of unrecognized lines to display (if $WANT_UNKNOWN)
@@ -142,7 +145,7 @@ my $NOT_DAILY = "DONT";
 ## THERE'S NOTHING TO CHANGE AFTER THIS LINE ##
 ###############################################
 
-my $version = "3.0.1";
+my $version = "3.0.2";
 my %output; # content of the configuration file.
 my $DEBUG = 0; # set to 1 to verify the structure/content of the conf file.
 my $start_time = time;
@@ -150,6 +153,7 @@ my $start_time = time;
 # Require Perl 5.002 or greater.
 require 5.002;
 use Getopt::Long;
+use vars qw/$HAVE_GD $GD_FORMAT/;
 
 my @old_argv = @ARGV;
 
@@ -277,11 +281,15 @@ umask 022;
 
 BEGIN {
   eval "use GD;";
-  $::HAVE_GD = $@ eq '';
+  $HAVE_GD = $@ eq '';
+  if ($HAVE_GD) {
+    my $gd = new GD::Image(1,1);
+    $GD_FORMAT = "gif" if $gd->can('gif');
+    $GD_FORMAT = "png" if $gd->can('png');
+  }
+  $HAVE_GD;
 };
-
 undef $GRAPH unless $HTML;
-
 if ($GRAPH && !$::HAVE_GD) {
   print "WARNING: can't make graphs as required.\n" .
         "         Install GD.pm or disable this option.\n\n";
@@ -416,7 +424,7 @@ LINE: while (!eof ()) {
   ########
   ## Program name
   # word[7164] -> word
-  $prog =~ s/\[\d+\]$//o;
+  my ($pid) = $prog =~ s/\[(\d+)\]$//o;
   # word: -> word
   $prog =~ s/:$//o;
   # wordX -> word   (where X is a digit)
@@ -523,7 +531,7 @@ if ($ARCHIVE) {
     my $i = 0;
     while ($GRAPH && defined ${${$output{$report}{'graph'}}[$i]}{'type'}) {
       my $name = $report . ($i ? $i : '');
-      &Rotate ($CYCLE, $IMG_dir, $name, ".gif");
+      &Rotate ($CYCLE, $IMG_dir, $name, '.' . $GD_FORMAT);
       $i++;
     }
   }
@@ -623,7 +631,7 @@ sub Rotate {
       unless $file =~ /^           # e.g. news-notice.1997.05.14-01:34:29.html
                         $prefix          # Prefix : news-notice
                         \.               # dot    : .
-	                (\d\d)?\d\d      # Year   : 1997 (or 97) 
+	                (\d\d)?\d\d      # Year   : 1997 (or 97)
 	                \.               # dot    : .
 	                \d\d             # Month  : 05
 	                \.               # dot    : .
@@ -654,7 +662,7 @@ sub ConvDate {
   my ($m, $d, $h, $mn, $s) = $T =~ /^(\S+)\s+(\d+)\s+(\d+):(\d+):(\d+)$/;
   my $out = $s + 60 * $mn + 3600 * $h + 86400 * ($d - 1);
 
-  $m = substr("000031059090120151181212243273304334", 
+  $m = substr("000031059090120151181212243273304334",
 	      index ("JanFebMarAprMayJunJulAugSepOctNovDec", $m), 3);
   $out += $m * 86400;
   return $out;
@@ -770,7 +778,7 @@ EOF
     my $i = 0;
     while (defined ${${$output{'index'}{'graph'}}[$i]}{'title'}) {
       my $title =  &GetValue (${${$output{'index'}{'graph'}}[$i]}{'title'});
-      my $filename = "index$i.gif";
+      my $filename = "index$i.$GD_FORMAT";
       my $color_bg = &GetValue (${${$output{'index'}{'graph'}}[$i]}{'color'});
       my $unit     = &GetValue (${${$output{'index'}{'graph'}}[$i]}{'unit'});
       my $date_idx = &GetValue (${${$output{'index'}{'graph'}}[$i]}{'value'});
@@ -843,7 +851,7 @@ EOF
   $result .= "</TR>\n<TR>$temp</TR>\n";
 
   foreach (sort {$b cmp $a} (keys %data)) {
-    if (($CYCLE == 0) || ($i < $CYCLE)) {
+    if ($CYCLE == 0 || $i < $CYCLE) {
       my @list = split /\|/, $data{$_};
       my $str = "<TR><TD ALIGN=LEFT>";
       $str .= "<A HREF=\"$_\">" if -e "$rep/$_";
@@ -888,7 +896,7 @@ EOF
 }
 
 sub Graph3d {
-  my $filename = shift;           # filename (for the GIF file)
+  my $filename = shift;           # filename
   my $title = shift;              # title
   my $xmax = shift;               # width
   my $n = shift;                  # Number of hash code tables
@@ -909,7 +917,7 @@ sub Graph3d {
     $t = 0;
     $size++;
     for $i (0 .. $n - 1) {
-      $t += ${$val[$i]}{$k};
+      $t += ${$val[$i]}{$k} if defined ${$val[$i]}{$k};
     }
     $max = $t if $max < $t;
     $t = length "$k";
@@ -948,7 +956,7 @@ sub Graph3d {
   }
   else {
     $black = $image->colorAllocate (  0,   0,   0);
-  } 
+  }
   if (defined $output{'default'}{'graph_bg'}) {
     my $t = $output{'default'}{'graph_bg'};
     $t =~ s/^\"\s*\#(.*?)\s*\"$/$1/o;
@@ -1068,6 +1076,7 @@ sub Graph3d {
                   $ml + ($t + ${$val[0]}{$k}) * $r + $rx, $e - $ry + $h,
                   $black);
     for $i (0 .. $n - 1) {
+      next unless defined ${$val[$i]}{$k};
       {
 	my $poly = new GD::Polygon;
 	$poly->addPt($ml + $t * $r, $e);
@@ -1114,7 +1123,12 @@ sub Graph3d {
     $e += $d;
   }
   open (IMG, "> $filename") || die "Error: Can't open \"$filename\": $!\n";
-  print IMG $image->gif;
+  if ($GD_FORMAT eq 'png') {
+    print IMG $image->png;
+  }
+  else {
+    print IMG $image->gif;
+  }
   close IMG;
   $ymax;
 }
@@ -1220,7 +1234,7 @@ sub Histo {
 
   # Labels
   $image->string (gdSmallFont, $marginl / 2, $margint / 2, $labely, $coltxt);
-  $image->string (gdSmallFont, $xmax - $marginr / 2 - 
+  $image->string (gdSmallFont, $xmax - $marginr / 2 -
 		  $FontWidth * length ($labelx), $ymax - $marginb / 2,
 		  $labelx, $coltxt);
 
@@ -1260,8 +1274,8 @@ sub Histo {
   # Top
   $image->line ($marginl, $margint,
 		$xmax - $marginr, $margint, $coltxt);
-  $image->setStyle ($coltxt, $coltxt, gdTransparent,
-		    gdTransparent, gdTransparent);
+  $image->setStyle ($coltxt, $coltxt, &GD::gdTransparent,
+		    &GD::gdTransparent, &GD::gdTransparent);
   # Graduations
   for ($i = 0; $i <= $part; $i++) {
     $j = $max * $i / $part ;  # Warning to floor
@@ -1285,8 +1299,8 @@ sub Histo {
 		  $i * ($ymax - $marginb - $margint - $shy) / $part, gdStyled);
     $image->string (gdSmallFont,
 		    $marginl - $shx - $FontWidth * length ("$j") - 7,
-		    $ymax - $marginb - 
-		    ($i) * ($ymax - $marginb - $margint - $shy) / ($part) - 
+		    $ymax - $marginb -
+		    ($i) * ($ymax - $marginb - $margint - $shy) / ($part) -
 		    $FontHeight / 2, "$j", $coltxt);
   }
 
@@ -1308,7 +1322,7 @@ sub Histo {
       my $ii = sprintf "%d", $i / $MAX;
       $image->string (gdSmallFont,
 		      $marginl + ($i - 0.5) * $w + 1 -
-		      ($FontWidth * length ($$labels[$i-1])) / 2 - $shx, 
+		      ($FontWidth * length ($$labels[$i-1])) / 2 - $shx,
 		      $ymax - $marginb + 3, $$labels[$i-1], $coltxt)
 	unless ($w < $FontWidth * length ($$labels[$i-1]))
 		&& ($i != $MAX * $ii);
@@ -1329,12 +1343,12 @@ sub Histo {
       $image->filledRectangle ($marginl + ($i - 1) * $w + $k - $shx,
 		   $ymax - $marginb -
 		   $j  / $factor * ($ymax - $marginb - $margint - $shy) / $max,
-		   $marginl + ($i) * $w - $k - $shx, 
+		   $marginl + ($i) * $w - $k - $shx,
 		   $ymax - $marginb, $red);
       $image->rectangle ($marginl + ($i - 1) * $w + $k - $shx,
 		   $ymax - $marginb -
 		   $j / $factor * ($ymax - $marginb - $margint - $shy) / $max,
-		   $marginl + ($i) * $w - $k - $shx, 
+		   $marginl + ($i) * $w - $k - $shx,
 		   $ymax - $marginb, $coltxt);
       # Top
       my $poly2 = new GD::Polygon;
@@ -1354,13 +1368,18 @@ sub Histo {
   }
 
   open (IMG, "> $filename") || die "Can't create '$filename'\n";
-  print IMG $image->gif;
+  if ($GD_FORMAT eq 'png') {
+    print IMG $image->png;
+  }
+  else {
+    print IMG $image->gif;
+  }
   close IMG;
   1;
 }
 
 sub Chrono {
-  my $filename = shift;           # filename (for the GIF file)
+  my $filename = shift;           # filename
   my $title = shift;              # title
   my $color_bg = shift;           # background color
   my $xmax = shift;               # width
@@ -1495,7 +1514,7 @@ sub Chrono {
 
   my $FontWidth = gdSmallFont->width;
   my $FontHeight = gdSmallFont->height;
-  $image->setStyle ($black, gdTransparent, gdTransparent);
+  $image->setStyle ($black, &GD::gdTransparent, &GD::gdTransparent);
 
   my $marginl = 13 + $FontWidth * length (sprintf "%d", $y_max * $factor);
   my $marginr = 15 + 4 * $FontWidth; # "100%"
@@ -1549,7 +1568,7 @@ sub Chrono {
     $image->line ($marginl + ($key - $x_min) * $xratio,
 		       $ymax - $marginb - $tt_out,
 		       $marginl + ($$dates{$key} - $x_min) * $xratio,
-		       $ymax - $marginb - $tt_out, gdBrushed);
+		       $ymax - $marginb - $tt_out, &GD::gdBrushed);
     $image->line ($old_x, $old_y_out, $new_x,
 		  $ymax - $marginb - $tt_out, $col_out) if defined $old_x;
     $old_x = $marginl + ($$dates{$key} - $x_min) * $xratio;
@@ -1567,17 +1586,17 @@ sub Chrono {
     my $t = $ymax - $margint - $marginb;
     $image->line ($marginl, $ymax - $marginb - $i / 100 * $t,
 		  $xmax - $marginr, $ymax - $marginb - $i / 100 * $t,
-		  gdStyled);
+		  &GD::gdStyled);
     $image->line ($xmax - $marginr, $ymax - $marginb - $i / 100 * $t,
 		  $xmax - $marginr + 3, $ymax - $marginb - $i / 100 * $t,
 		  $black);
     $image->line ($marginl - 3, $ymax - $marginb - $i / 100 * $t,
 		  $marginl, $ymax - $marginb - $i / 100 * $t,
 		  $black);
-    $image->string (gdSmallFont, $xmax - $marginr + 8, - $FontHeight / 2 +
+    $image->string (&GD::gdSmallFont, $xmax - $marginr + 8, - $FontHeight / 2 +
 		    $ymax - $marginb - $i / 100 * $t, "$i%", $black);
     my $s = sprintf "%d", $y_max * $i / 100 * $factor;
-    $image->string (gdSmallFont, $marginl - 5 - $FontWidth * length $s,
+    $image->string (&GD::gdSmallFont, $marginl - 5 - $FontWidth * length $s,
 		    - $FontHeight / 2 +
 		    $ymax - $marginb - $i / 100 * $t, $s, $black);
   }
@@ -1596,10 +1615,10 @@ sub Chrono {
     while ($n < $x_max) {
       $t = $marginl + ($n - $x_min) * $xratio;
       if ($n > $x_min) {
-	$image->line ($t, $margint, $t, $ymax - $marginb, gdStyled);
+	$image->line ($t, $margint, $t, $ymax - $marginb, &GD::gdStyled);
 	$image->line ($t, $ymax - $marginb, $t, $ymax - $marginb + 2, $black);
       }
-      $image->string (gdSmallFont, $FontWidth * 7 / 2 + $t,
+      $image->string (&GD::gdSmallFont, $FontWidth * 7 / 2 + $t,
 		      $ymax - $marginb + 4, (sprintf "Week %02d", $f), $black)
 	if ($n + $w / 2 > $x_min) && ($n + $w / 2 < $x_max);
       $f++;
@@ -1640,12 +1659,13 @@ sub Chrono {
     while ($t < $x_max) {
       $x = $marginl + ($t - $x_min) * $xratio;
       if ($t > $x_min) {
-	$image->line ($x, $margint, $x, $ymax - $marginb, gdStyled);
+	$image->line ($x, $margint, $x, $ymax - $marginb, &GD::gdStyled);
 	$image->line ($x, $ymax - $marginb, $x,
 		      $ymax - $marginb + 2, $black);
 	$image->line ($x, $margint, $x, $ymax - $marginb, $red) unless $i;
       }
-      $image->string (gdSmallFont, $mm * $xratio / 2 - $FontWidth * 3 / 2 +
+      $image->string (&GD::gdSmallFont,
+		      $mm * $xratio / 2 - $FontWidth * 3 / 2 +
 		      $x, $ymax - $marginb + 4, (sprintf "%s", $m[$i]),
 		      $black)
 	if ($t + 2 * $w > $x_min) && ($x_max > 2 * $w + $t);
@@ -1669,31 +1689,36 @@ sub Chrono {
   $image->filledPolygon($poly, $red);
 
   # Title
-  $image->string (gdMediumBoldFont,
+  $image->string (&GD::gdMediumBoldFont,
 		  $xmax / 2 - $FontWidth * length ($title) / 2, 4,
 		  $title, $black);
 
   # Legend
   my $y_in = $ymax - $size - $FontHeight + 5;
-  $image->string (gdSmallFont, $marginl, $y_in, $legend_in, $col_in);
-  $image->string (gdSmallFont, $xmax / 4, $y_in,
+  $image->string (&GD::gdSmallFont, $marginl, $y_in, $legend_in, $col_in);
+  $image->string (&GD::gdSmallFont, $xmax / 4, $y_in,
 		  (sprintf "Min: %5.1f $unit", $min_in * $factor), $black);
-  $image->string (gdSmallFont, $xmax / 2, $y_in,
+  $image->string (&GD::gdSmallFont, $xmax / 2, $y_in,
 		(sprintf "Avg: %5.1f $unit", $s_in / $t_in * $factor), $black);
-  $image->string (gdSmallFont, 3 * $xmax / 4, $y_in,
+  $image->string (&GD::gdSmallFont, 3 * $xmax / 4, $y_in,
 		  (sprintf "Max: %5.1f $unit", $max_in * $factor), $black);
 
   my $y_out = $ymax - $size + 5;
-  $image->string (gdSmallFont, $marginl, $y_out, $legend_out, $col_out);
-  $image->string (gdSmallFont, $xmax / 4, $y_out,
+  $image->string (&GD::gdSmallFont, $marginl, $y_out, $legend_out, $col_out);
+  $image->string (&GD::gdSmallFont, $xmax / 4, $y_out,
 		  (sprintf "Min: %5.1f $unit", $min_out * $factor), $black);
-  $image->string (gdSmallFont, $xmax / 2, $y_out,
+  $image->string (&GD::gdSmallFont, $xmax / 2, $y_out,
 	      (sprintf "Avg: %5.1f $unit", $s_out / $t_out * $factor), $black);
-  $image->string (gdSmallFont, 3 * $xmax / 4, $y_out,
+  $image->string (&GD::gdSmallFont, 3 * $xmax / 4, $y_out,
 		  (sprintf "Max: %5.1f $unit", $max_out * $factor), $black);
 
   open (IMG, "> $filename") || die "Error: Can't open \"$filename\": $!\n";
-  print IMG $image->gif;
+  if ($GD_FORMAT eq 'png') {
+    print IMG $image->png;
+  }
+  else {
+    print IMG $image->gif;
+  }
   close IMG;
   return $ymax;
 }
@@ -1786,8 +1811,8 @@ sub Write_all_results {
   if ($HTML) {
     open (HTML, ">> $HTML_output") || die "Error: cant open $HTML_output\n";
     print HTML <<EOT;
-<A HREF="ftp://ftp.oleane.net/pub/packages/usenet/innreport/">innreport</A> 
-$version (c) 1996-1999 by Fabien Tassin 
+<A HREF="ftp://ftp.oleane.net/pub/packages/usenet/innreport/">innreport</A>
+$version (c) 1996-1999 by Fabien Tassin
 &lt;<A HREF="mailto:fta\@oleane.net">fta\@oleane.net</A>&gt;.
 EOT
     if (defined $$h{'default'}{'footer'}) {
@@ -1885,13 +1910,19 @@ sub Write_Results {
 
   foreach $i (@{$output{$report}{'column'}}) {
     my ($v1, $v2);
+
+    my $wtext = defined $$i{'text'} ? $$i{'text'} : 1;
+    $wtext = $wtext =~ m/^(1|true)$/io ? 1 : 0;
+    my $whtml = defined $$i{'html'} ? $$i{'html'} : 1;
+    $whtml = $whtml =~ m/^(1|true)$/io ? 1 : 0;
+
     $v1 = defined ($$i{'format_name'}) ? $$i{'format_name'} :
       (defined ($$i{'format'}) ? $$i{'format'} : "%s");
     $v1 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
     $v2 = $$i{'name'};
     $v2 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
-    $s .= sprintf $v1 . " ", $v2 unless $DOUBLE && $first == 1;
-    if ($HTML) {
+    $s .= sprintf $v1 . " ", $v2 if $wtext && !($DOUBLE && $first == 1);
+    if ($HTML && $whtml) {
       my $v1 = $v1;
       $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?(\w)/\%$1/g;
       my $temp = $first ? "CENTER" : "LEFT";
@@ -1924,6 +1955,12 @@ sub Write_Results {
 	$num++;
 	foreach $i (@{$output{$report}{'column'}}) {
 	  my ($v1, $v2, $p);
+
+	  my $wtext = defined $$i{'text'} ? $$i{'text'} : 1;
+	  $wtext = $wtext =~ m/^(1|true)$/io ? 1 : 0;
+	  my $whtml = defined $$i{'html'} ? $$i{'html'} : 1;
+	  $whtml = $whtml =~ m/^(1|true)$/io ? 1 : 0;
+
 	  # is it the primary key ?
 	  $p = 0;
 	  $p = 1 if defined $$i{'primary'} && $$i{'primary'} =~ m/true/;
@@ -1943,24 +1980,26 @@ sub Write_Results {
 	  }
 	  $res[$first] += $r if $v1 =~ m/\%-?(?:\d+(?:\.\d+)?)?d/o;
 	  if ($p) {
-	    $s .= sprintf $v1. "\n", $r unless $done;
-	    if ($HTML) {
+	    $s .= sprintf $v1. "\n", $r unless $done || !$wtext;
+	    if ($HTML && $whtml) {
 	      if ($done) {
 		$html .= "<TD></TD>";
 	      }
 	      else {
 		$v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
-		$html .= $numbering ? "<TH ALIGN=\"CENTER\">$num_d</TH>" : ''
-		; #  unless $first;
+		$html .= $numbering ? "<TH ALIGN=\"CENTER\">$num_d</TH>" : '';
+		#  unless $first;
 		$html .= sprintf "<TD ALIGN=\"LEFT\">$v1</TD></TR>\n", $r;
 		$html .= "<TR><TD></TD>";
 	      }
 	    }
 	  }
 	  else {
-	    $s .= "  " if $first == 1;
-	    $s .= sprintf $v1 . " ", $r;
-	    if ($HTML) {
+	    if ($wtext) {
+	      $s .= "  " if $first == 1;
+	      $s .= sprintf $v1 . " ", $r;
+	    }
+	    if ($HTML && $whtml) {
 	      $html .= $numbering ? "<TD></TD>" : '' if $first == 1;
 	      $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
 	      my $temp = $first > 1 ? "RIGHT" : "LEFT";
@@ -2019,6 +2058,11 @@ sub Write_Results {
     $s = '';
     $html = '';
     foreach $i (@{$output{$report}{'column'}}) {
+      my $wtext = defined $$i{'text'} ? $$i{'text'} : 1;
+      $wtext = $wtext =~ m/^(1|true)$/io ? 1 : 0;
+      my $whtml = defined $$i{'html'} ? $$i{'html'} : 1;
+      $whtml = $whtml =~ m/^(1|true)$/io ? 1 : 0;
+
       my ($v1, $v2);
       $v1 = defined $$i{'format_total'} ? $$i{'format_total'} :
 	(defined $$i{'format'} ? $$i{'format'} : "%s");
@@ -2033,13 +2077,13 @@ sub Write_Results {
 	die "Error in section $report column $$i{'name'}. " .
 	  "Invalid 'total' value.\n" unless defined $r;
       }
-      $s .= sprintf $v1 . " ", $r unless ($first == 1);
-      if ($HTML) {
+      $s .= sprintf $v1 . " ", $r if $wtext && $first != 1;
+      if ($HTML && $whtml) {
 	my $temp = $first ? "RIGHT" : "LEFT";
 	$temp .= "\" COLSPAN=\"2" if $numbering && !$first;
 	$v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
 	$v1 =~ s|(.*)|<STRONG>$1</STRONG>|o unless $first;
-	$html .= $first == 1 ? "<TD></TD>" : 
+	$html .= $first == 1 ? "<TD></TD>" :
 	         sprintf "<TD ALIGN=\"$temp\">$v1</TD>", $r;
       }
       $first++;
@@ -2059,6 +2103,11 @@ sub Write_Results {
 	          $num <= $TOP_TEXT || $TOP_TEXT == -1;
       my $first = 0;
       foreach $i (@{$output{$report}{'column'}}) {
+	my $wtext = defined $$i{'text'} ? $$i{'text'} : 1;
+	$wtext = $wtext =~ m/^(1|true)$/io ? 1 : 0;
+	my $whtml = defined $$i{'html'} ? $$i{'html'} : 1;
+	$whtml = $whtml =~ m/^(1|true)$/io ? 1 : 0;
+
 	my ($v1, $v2);
 	$v1 = defined ($$i{'format'}) ? $$i{'format'} : "%s";
 	$v1 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
@@ -2071,8 +2120,8 @@ sub Write_Results {
 	    "Invalid 'value' value.\n" unless defined $r;
 	}
 	$s .= sprintf $v1 . " ", $r
-	  if (($num <= $TOP_TEXT) || ($TOP_TEXT == -1));
-	if ($HTML && ($num <= $TOP_HTML || $TOP_HTML == -1)) {
+	  if $wtext && (($num <= $TOP_TEXT) || ($TOP_TEXT == -1));
+	if ($HTML && $whtml && ($num <= $TOP_HTML || $TOP_HTML == -1)) {
 	  $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
 	  $html .= "<TH ALIGN=\"CENTER\">$num</TH>" if $numbering && !$first;
 	  my $temp = $first ? "RIGHT" : "LEFT";
@@ -2092,6 +2141,11 @@ sub Write_Results {
     print HTML "<TR></TR>\n" if $HTML;
     $first = 0;
     foreach $i (@{$output{$report}{'column'}}) {
+      my $wtext = defined $$i{'text'} ? $$i{'text'} : 1;
+      $wtext = $wtext =~ m/^(1|true)$/io ? 1 : 0;
+      my $whtml = defined $$i{'html'} ? $$i{'html'} : 1;
+      $whtml = $whtml =~ m/^(1|true)$/io ? 1 : 0;
+
       my ($v1, $v2);
       $v1 = defined ($$i{'format_total'}) ? $$i{'format_total'} :
 	(defined ($$i{'format'}) ? $$i{'format'} : "%s");
@@ -2106,8 +2160,8 @@ sub Write_Results {
 	die "Error in section $report column $$i{'name'}. " .
 	  "Invalid 'total' value.\n" unless defined $r;
       }
-      $s .= sprintf $v1 . " ", $r;
-      if ($HTML) {
+      $s .= sprintf $v1 . " ", $r if $wtext;
+      if ($HTML && $whtml) {
 	$v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
 	my $temp = $first ? "RIGHT" : "LEFT";
 	$temp .= "\" COLSPAN=\"2" if $numbering && !$first;
@@ -2154,12 +2208,12 @@ sub Write_Results {
 	  my $s = ($i ? $i : '') . $suffix;
 	  print HTML "<CENTER><IMG ALT=\"$title\" ";
 	  close HTML;
-	  my $y = &Graph3d ("$IMG_dir/$report$s.gif",
+	  my $y = &Graph3d ("$IMG_dir/$report$s.$GD_FORMAT",
 		    $title, $xmax, $num, @values, \@colors, \@labels);
 	  open (HTML, ">> $HTML_output") ||
 	    die "Error: cant open $HTML_output\n";
 	  print HTML "WIDTH=\"$xmax\" HEIGHT=\"$y\" ";
-	  print HTML "SRC=\"$IMG_pth$report$s.gif\"></CENTER>\n";
+	  print HTML "SRC=\"$IMG_pth$report$s.$GD_FORMAT\"></CENTER>\n";
 	}
         elsif ($type eq 'histo') {
 	  my (%values, %labels);
@@ -2175,7 +2229,7 @@ sub Write_Results {
 	     || die "Error in section $report section 'graph'. " .
 	       "No name specified for value.\n";
 	  $labelx =~ s/^\"\s*(.*?)\s*\"$/$1/o;
-	  my $labely = 
+	  my $labely =
 	    ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[1]}{'name'}
 	     || die "Error in section $report section 'graph'. " .
 	       "No name specified for value.\n";
@@ -2201,12 +2255,12 @@ sub Write_Results {
 	  {
 	    my $r;
 	    close HTML;
-	    $r = &Histo ("$IMG_dir/$report$s.gif", $title, $xmax,
+	    $r = &Histo ("$IMG_dir/$report$s.$GD_FORMAT", $title, $xmax,
 			 $factor, $labelx, $labely, \%values, \%labels);
 	    open (HTML, ">> $HTML_output") ||
 	      die "Error: cant open $HTML_output\n";
 	    print HTML "<CENTER><IMG ALT=\"$title\" WIDTH=\"$xmax\" " .
-	      "SRC=\"$IMG_pth$report$s.gif\"></CENTER>\n" if $r;
+	      "SRC=\"$IMG_pth$report$s.$GD_FORMAT\"></CENTER>\n" if $r;
 	  }
 	}
         elsif ($type eq 'piechart') {
@@ -2440,7 +2494,7 @@ sub Usage {
   print "\n";
   print "    -dir directory      an alias for option -d\n";
   print "    -p directory        pictures path (file space)";
-  print "\n                        [default=$IMG_dir]" 
+  print "\n                        [default=$IMG_dir]"
     if (defined ($IMG_dir));
   print "\n";
   print "    -path directory     an alias for option -p\n";
@@ -2452,7 +2506,7 @@ sub Usage {
   print "    -i file             Name of index file";
   print " [default=$index]" if (defined ($index));
   print "\n";
-  print "    -index file         an alias for option -i\n"; 
+  print "    -index file         an alias for option -i\n";
   print "    -a                  want to archive HTML results";
   print " [default]" if ($ARCHIVE);
   print "\n";
@@ -2508,10 +2562,10 @@ sub Summary {
   print "\nSummary of my INNreport (version $version) configuration:\n";
   print "  General options:\n";
   print "    command line='@old_argv' (please, check this value)\n";
-  print "    html=" . ($HTML?"yes":"no") . ", graph=" . 
+  print "    html=" . ($HTML?"yes":"no") . ", graph=" .
                       ($GRAPH?"yes":"no") . ", haveGD=" .
                       ($::HAVE_GD?"yes":"no") . "\n";
-  print "    archive=" . ($ARCHIVE?"yes":"no") . 
+  print "    archive=" . ($ARCHIVE?"yes":"no") .
                       ", cycle=$CYCLE, separator=\"" . $SEPARATOR . "\"\n";
   print "    case_sensitive=" .
                       ($CASE_SENSITIVE?"yes":"no") . ", want_unknown=" .

@@ -1,11 +1,11 @@
 ##########################################################
-# Configuration file for innreport (3.0.0 and more).
+# Configuration file for innreport (3.*).
 #
 # Sample file for INN.
-# Tested with INN 2.3, 2.1, 1.7 and 1.5.1.
+# Tested with INN 2.3, 2.1, 1.7.2 and 1.5.1.
 #
-# (c) 1997, 1998 by Fabien Tassin <fta@oleane.net>
-# version 3.0.1
+# (c) 1997, 1998, 1999 by Fabien Tassin <fta@oleane.net>
+# version 3.0.2
 ##########################################################
 
 # Default parameters
@@ -22,7 +22,7 @@ section default {
 	graph           true;        # need 'html'
 	archive		true;  # use false to keep only the latest HTML report.
 	index		"index.html"; # name of the HTML index file.
-      # html_dir        "/var/www/News/stats"; # default to pathhttp in inn.conf
+      # html_dir     "/var/www/News/stats"; # default to pathhttp in inn.conf
 	img_dir         "pics";      # images will go to ${html_dir}/${img_dir}
 	cycle		none;        # use a number or 'none'.
         separator       ".";         # use a valid filename character.
@@ -38,6 +38,8 @@ section default {
         graph_bg        "#FFFFFF";   # graph background color.
 };
 
+###########################################################################
+# Index page
 section index {
 	column {
 		title	"Dates";
@@ -94,12 +96,17 @@ section index {
 		};
 	};
 };
-		
+
+###########################################################################
+# Report
+
 section prog_type {
         # skip    true;                          # used to skip a section.
         title   "Log entries by program:";
 	data    "%prog_type";
 	sort    "$prog_type{$b} <=> $prog_type{$a}";
+	# text	false;             # to skip this section in the text report
+	# html	false;             # to skip this section in the HTML report
         column {
                 name          "Program name";
                 format        "%-46.46s";
@@ -111,6 +118,7 @@ section prog_type {
                 name          "Lines";
                 format_name   "%7s";
                 format        "%7d";
+	        # text	      false;  # to skip this column in the text report
 		value         "$prog_type{$key}";
 		total         "total(%prog_type)";
         };
@@ -118,6 +126,7 @@ section prog_type {
                 name          "%Lines";
                 format_name   "%7s";
                 format        "%6.1f%%";
+	        # html	      false;  # to skip this column in the HTML report
 		value         "$prog_type{$key} / total(%prog_type) * 100";
 		total         "100";
         };
@@ -133,6 +142,120 @@ section prog_type {
                 format        "%5.1f%%";
 		value         "$prog_size{$key} / total(%prog_size) * 100";
 		total         "100";
+        };
+};
+
+# INN 2.*
+section innd_his {
+	title	"History cache:";
+	data	"%innd_his";
+	sort    "$innd_his{$b} <=> $innd_his{$a}";
+	column {
+		name	      "Reason";
+	        format        "%-57.57s";
+		value         "$key";
+		format_total  "TOTAL: %-50.50s";
+		total         "$num";
+	};
+	column {
+		name          "Count";
+		format_name   "%10s";
+                format        "%10d";
+		value         "$innd_his{$key}";
+		total         "total(%innd_his)";
+        };
+	column {
+		name          "%Count";
+		format_name   "%10s";
+                format        "%9.1f%%";
+		value         "100 * $innd_his{$key} / total(%innd_his)";
+		total         "100";
+        };
+};
+
+# INN 1.*
+section innd_cache {
+	title	"History cache:";
+	data	"%innd_cache";
+	sort    "$innd_cache{$b} <=> $innd_cache{$a}";
+	column {
+		name	      "Reason";
+	        format        "%-57.57s";
+		value         "$key";
+		format_total  "TOTAL: %-50.50s";
+		total         "$num";
+	};
+	column {
+		name          "Count";
+		format_name   "%10s";
+                format        "%10d";
+		value         "$innd_cache{$key}";
+		total         "total(%innd_cache)";
+        };
+	column {
+		name          "%Count";
+		format_name   "%10s";
+                format        "%9.1f%%";
+		value         "100 * $innd_cache{$key} / total(%innd_cache)";
+		total         "100";
+        };
+};
+
+section innd_timer {
+        title   "INND timer:";
+	data    "%innd_time_time";
+        column {
+                name          "Code region";
+                format        "%-15.15s";
+		value         "$key";
+		format_total  "TOTAL: %-8.8s";
+		total         "time_ms($innd_time_times)";
+        };
+        column {
+                name          "Time";
+                format        "%13s";
+		value         "time_ms($innd_time_time{$key})";
+		total         "time_ms(total(%innd_time_time))";
+        };
+        column {
+                name          "Pct";
+                format_name   "%6s";
+                format        "%5.1f%%";
+		value         "100 * $innd_time_time{$key} / $innd_time_times";
+		total         "100 * total(%innd_time_time) /
+	                       $innd_time_times";
+        };
+        column {
+                name          "Invoked";
+                format        "%10s";
+		value         "$innd_time_num{$key}";
+                format_total  "%9s-";
+		total         "";
+        };
+        column {
+                name          "Min(ms)";
+                format_name   "%9s";
+                format        "%9.3f";
+		value         "$innd_time_min{$key}";
+                format_total  "%8s-";
+		total         "";
+        };
+        column {
+                name          "Avg(ms)";
+                format_name   "%10s";
+                format        "%10.3f";
+		value         "$innd_time_time{$key} /
+		            ($innd_time_num{$key} ? $innd_time_num{$key} : 1)";
+                format_total  "%9s-";
+		total         "";
+        };
+        column {
+                name          "Max(ms)";
+                format_name   "%10s";
+                format        "%10.3f";
+		value         "$innd_time_max{$key}";
+                format_total  "%9s-";
+		total         "";
         };
 };
 
@@ -303,9 +426,9 @@ section innd_connect {
                 name          "%Accpt";
 		format_name   "%6s";
 		format        "%4d%%";
-		value         "$innd_offered{$key} == 0 ? 0 : 
+		value         "$innd_offered{$key} == 0 ? 0 :
                              $innd_accepted{$key} / $innd_offered{$key} * 100";
-		total         "total(%innd_offered) == 0 ? 0 : 
+		total         "total(%innd_offered) == 0 ? 0 :
                            total(%innd_accepted) / total(%innd_offered) * 100";
         };
         column {
@@ -378,7 +501,7 @@ section inn_flow {
         column {
                 name          "%Size";
 		format_name   "%7s";
-		value         "$inn_flow_size{$key} / 
+		value         "$inn_flow_size{$key} /
                                           total(%inn_flow_size) * 100";
 		format        "%6.1f%%";
 		total         "100";
@@ -386,7 +509,7 @@ section inn_flow {
         column {
                 name          "KB/sec";
 		format_name   "%7s";
-		value         "$inn_flow_size{$key} / 
+		value         "$inn_flow_size{$key} /
 		                       $inn_flow_time{$key} / 1024";
 		format        "%7.2f";
 		total         "total(%inn_flow_size) /
@@ -468,7 +591,7 @@ section cnfsstat {
         column {
                 name          "KB/sec";
                 format_name   "%7s";
-                value         "$cnfsstat_rate{$key} / 
+                value         "$cnfsstat_rate{$key} /
                                        $cnfsstat_samples{$key} / 1024";
                 format        "%7.2f";
                 total         "total(%cnfsstat_rate) /
@@ -669,90 +792,6 @@ section innd_perl {
         };
 };
 
-section innd_his {
-	title	"History cache:";
-	data	"%innd_his";
-	sort    "$innd_his{$b} <=> $innd_his{$a}";
-	column {
-		name	      "Reason";
-	        format        "%-57.57s";
-		value         "$key";
-		format_total  "TOTAL: %-50.50s";
-		total         "$num";
-	};
-	column {
-		name          "Count";
-		format_name   "%10s";
-                format        "%10d";
-		value         "$innd_his{$key}";
-		total         "total(%innd_his)";
-        };
-	column {
-		name          "%Count";
-		format_name   "%10s";
-                format        "%9.1f%%";
-		value         "100 * $innd_his{$key} / total(%innd_his)";
-		total         "100";
-        };
-};
-
-section innd_timer {
-        title   "INND timer:";
-	data    "%innd_time_time";
-        column {
-                name          "Code region";
-                format        "%-20.20s";
-		value         "$key";
-		format_total  "TOTAL: %-13.13s";
-		total         "time_ms($innd_time_times)";
-        };
-        column {
-                name          "Time";
-                format        "%13s";
-		value         "time_ms($innd_time_time{$key})";
-		total         "time_ms(total(%innd_time_time))";
-        };
-        column {
-                name          "Pct";
-                format_name   "%6s";
-                format        "%5.1f%%";
-		value         "100 * $innd_time_time{$key} / $innd_time_times";
-		total         "100 * total(%innd_time_time) / $innd_time_times";
-        };
-        column {
-                name          "Invoked";
-                format        "%10s";
-		value         "$innd_time_num{$key}";
-                format_total  "%9s-";
-		total         "";
-        };
-        column {
-                name          "Min(ms)";
-                format_name   "%8s";
-                format        "%8.3f";
-		value         "$innd_time_min{$key}";
-                format_total  "%7s-";
-		total         "";
-        };
-        column {
-                name          "Avg(ms)";
-                format_name   "%8s";
-                format        "%8.3f";
-		value         "$innd_time_time{$key} /
-		            ($innd_time_num{$key} ? $innd_time_num{$key} : 1)";
-                format_total  "%7s-";
-		total         "";
-        };
-        column {
-                name          "Max(ms)";
-                format_name   "%8s";
-                format        "%8.3f";
-		value         "$innd_time_max{$key}";
-                format_total  "%7s-";
-		total         "";
-        };
-};
-
 section nocem {
         title   "NoCeM on Spool:";
 	data    "%nocem_goodsigs";
@@ -813,7 +852,8 @@ section innd_no_permission {
 section innd_too_many_connects_per_minute {
 	title	"INND too many connects per minute:";
 	data	"%innd_too_many_connects_per_minute";
-	sort	"$innd_too_many_connects_per_minute{$b} <=> $innd_too_many_connects_per_minute{$a}";
+	sort	"$innd_too_many_connects_per_minute{$b} <=>
+                 $innd_too_many_connects_per_minute{$a}";
 	column {
 		name		"System";
 		format		"%-71.71s";
@@ -1010,21 +1050,33 @@ section innfeed_volume {
 	column {
 		name		"TotalVol";
 		format		"%9s";
-		value		"bytes($innfeed_accepted_size{$key}+$innfeed_rejected_size{$key})";
-		total		"bytes(total(%innfeed_accepted_size)+total(%innfeed_rejected_size))";
+		value		"bytes($innfeed_accepted_size{$key} +
+	                               $innfeed_rejected_size{$key})";
+		total		"bytes(total(%innfeed_accepted_size) +
+                                       total(%innfeed_rejected_size))";
 	};
 	column {
 		name		"Volume/sec";
 		format_name	"%11s";
 		format		"%9s/s";
-		value		"bytes(($innfeed_accepted_size{$key}+$innfeed_rejected_size{$key})/$innfeed_seconds{$key})";
-		total		"bytes((total(%innfeed_accepted_size)+total(%innfeed_rejected_size))/total(%innfeed_seconds))";
+		value		"bytes(($innfeed_accepted_size{$key} +
+                                        $innfeed_rejected_size{$key}) /
+                                    $innfeed_seconds{$key})";
+		total		"bytes((total(%innfeed_accepted_size) +
+                                        total(%innfeed_rejected_size)) /
+                                    total(%innfeed_seconds))";
 	};
 	column {
 		name		"Vol/Art";
 		format		"%9s";
-		value		"bytes(($innfeed_accepted_size{$key}+$innfeed_rejected_size{$key})/($innfeed_accepted{$key}+$innfeed_rejected{$key}))";
-		total		"bytes((total(%innfeed_accepted_size)+total(%innfeed_rejected_size))/(total(%innfeed_accepted)+total(%innfeed_rejected)))";
+		value		"bytes(($innfeed_accepted_size{$key} +
+                                        $innfeed_rejected_size{$key}) /
+                                       ($innfeed_accepted{$key} +
+                                        $innfeed_rejected{$key}))";
+		total		"bytes((total(%innfeed_accepted_size) +
+                                        total(%innfeed_rejected_size)) /
+                                     (total(%innfeed_accepted) +
+	                              total(%innfeed_rejected)))";
 	};
 	column {
 		name		"Elapsed";
@@ -1050,7 +1102,8 @@ section innfeed_volume {
 		data {
 			name	"Total";
 			color	"#00FF00";
-			value	"%innfeed_accepted_size+%innfeed_rejected_size";
+			value	"%innfeed_accepted_size +
+                                 %innfeed_rejected_size";
 		};
 	};
 };
@@ -1346,22 +1399,22 @@ section innxmit_connect {
 		type          histo3d;
 		sort	      "%innxmit_accepted";
 		data {
-		          name    "Articles accepted";
+		          name    "Art. accepted";
 			  color   "#0000FF";
 			  value   "%innxmit_accepted";
                 };
 		data {
-		          name    "Articles refused";
+		          name    "Art. refused";
 			  color   "#FFAF00";
 			  value   "%innxmit_refused";
                 };
 		data {
-		          name    "Articles rejected";
+		          name    "Art. rejected";
 			  color   "#FF0000";
 			  value   "%innxmit_rejected";
                 };
 		data {
-		          name    "Articles missing";
+		          name    "Art. missing";
 			  color   "#00FF00";
 			  value   "%innxmit_missing";
                 };
@@ -1370,7 +1423,7 @@ section innxmit_connect {
 
 section innxmit_volume {
 	title	"Outgoing Feeds (innxmit) by Volume:";
-	data	"%innxmit_times";
+	data	"%innxmit_accepted_size";
 	sort	"$innxmit_accepted_size{$b} <=> $innxmit_accepted_size{$a}";
 	numbering true;
 	column {
@@ -1395,21 +1448,39 @@ section innxmit_volume {
 	column {
 		name		"TotalVol";
 		format		"%9s";
-		value		"bytes($innxmit_accepted_size{$key}+$innxmit_rejected_size{$key}+$innxmit_bytes{$key})";
-		total		"bytes(total(%innxmit_accepted_size)+total(%innxmit_rejected_size)+total(%innxmit_bytes))";
+		value		"bytes($innxmit_accepted_size{$key} +
+	                               $innxmit_rejected_size{$key} +
+                                       $innxmit_bytes{$key})";
+		total		"bytes(total(%innxmit_accepted_size) +
+                                       total(%innxmit_rejected_size) +
+                                       total(%innxmit_bytes))";
 	};
 	column {
 		name		"KB/s";
 		format_name	"%5s";
 		format		"%5.1f";
-		value		"($innxmit_accepted_size{$key}+$innxmit_rejected_size{$key}+$innxmit_bytes{$key})/$innxmit_times{$key}/1024";
-		total		"(total(%innxmit_accepted_size)+total(%innxmit_rejected_size)+total(%innxmit_bytes))/total(%innxmit_times)/1024";
+		value		"($innxmit_accepted_size{$key} +
+                                  $innxmit_rejected_size{$key} +
+                                  $innxmit_bytes{$key}) /
+                                    $innxmit_times{$key} / 1024";
+		total		"(total(%innxmit_accepted_size) +
+                                  total(%innxmit_rejected_size) +
+                                  total(%innxmit_bytes)) /
+                                    total(%innxmit_times) / 1024";
 	};
 	column {
 		name		"Vol/Art";
 		format		"%9s";
-		value		"bytes(($innxmit_accepted_size{$key}+$innxmit_rejected_size{$key}+$innxmit_bytes{$key})/($innxmit_accepted{$key}+$innxmit_rejected{$key}))";
-		total		"bytes((total(%innxmit_accepted_size)+total(%innxmit_rejected_size)+total(%innxmit_bytes))/(total(%innxmit_accepted)+total(%innxmit_rejected)))";
+		value		"bytes(($innxmit_accepted_size{$key} +
+                                        $innxmit_rejected_size{$key} +
+                                        $innxmit_bytes{$key}) /
+                                         ($innxmit_accepted{$key} +
+                                          $innxmit_rejected{$key}))";
+		total		"bytes((total(%innxmit_accepted_size) +
+                                        total(%innxmit_rejected_size) +
+        	                        total(%innxmit_bytes)) /
+                                         (total(%innxmit_accepted) +
+	                                  total(%innxmit_rejected)))";
 	};
 	column {
 		name		"Elapsed";
@@ -1522,7 +1593,7 @@ section innxmit_connect2 {
                 name          "Pct";
 		format_name   "%4s";
 		format        "%3d%%";
-		value         "$innxmit_site{$key} ? 100 * 
+		value         "$innxmit_site{$key} ? 100 *
 		               ($innxmit_site{$key} -
 			       ($innxmit_afail_host{$key} +
 			       $innxmit_hiload{$key} + $innxmit_nospace{$key} +
@@ -1797,7 +1868,8 @@ section nnrpd_groups {
                 name          "Rej";
                 format_name   "%4s";
                 format        "%4d";
-		value         "$nnrpd_post_rej{$key} + $nnrpd_post_error{$key}";
+		value         "$nnrpd_post_rej{$key} +
+                               $nnrpd_post_error{$key}";
 		total         "total(%nnrpd_post_rej) +
 		               total(%nnrpd_post_error)";
         };
@@ -1809,9 +1881,73 @@ section nnrpd_groups {
         };
 };
 
+section nnrpd_dom_groups {
+        title   "NNRP readership statistics (by domain):";
+        data    "%nnrpd_dom_connect";
+        sort    "$nnrpd_dom_articles{$b} <=> $nnrpd_dom_articles{$a}";
+        numbering true;
+        column {
+                name          "System";
+                format        "%-30.30s";
+                value         "$key";
+                format_total  "TOTAL: %-23.23s";
+                total         "$num";
+        };
+        column {
+                name          "Conn";
+                format_name   "%4s";
+                format        "%4d";
+                value         "$nnrpd_dom_connect{$key}";
+                total         "total(%nnrpd_dom_connect)";
+        };
+        column {
+                name          "Arts";
+                format_name   "%6s";
+                format        "%6d";
+                value         "$nnrpd_dom_articles{$key}";
+                total         "total(%nnrpd_dom_articles)";
+        };
+        column {
+                name          "Size";
+                format        "%9s";
+                value         "bytes($nnrpd_dom_bytes{$key})";
+                total         "bytes(total(%nnrpd_dom_bytes))";
+        };
+        column {
+                name          "Groups";
+                format_name   "%6s";
+                format        "%6d";
+                value         "$nnrpd_dom_groups{$key}";
+                total         "total(%nnrpd_dom_groups)";
+        };
+        column {
+                name          "Post";
+                format_name   "%4s";
+                format        "%4d";
+                value         "$nnrpd_dom_post_ok{$key}";
+                total         "total(%nnrpd_dom_post_ok)";
+        };
+        column {
+                name          "Rej";
+                format_name   "%4s";
+                format        "%4d";
+                value         "$nnrpd_dom_post_rej{$key} +
+	                       $nnrpd_dom_post_error{$key}";
+                total         "total(%nnrpd_dom_post_rej) +
+                               total(%nnrpd_dom_post_error)";
+        };
+        column {
+                name          "Elapsed";
+                format        "%9s";
+                value         "time($nnrpd_dom_times{$key})";
+                total         "time(total(%nnrpd_dom_times))";
+        };
+};
+
 section nnrpd_curious {
         title   "Curious NNRP server explorers:";
 	data    "%nnrpd_curious";
+	top     20;
 	sort    "$nnrpd_curious{$b} <=> $nnrpd_curious{$a}";
         column {
                 name          "System";
@@ -1852,6 +1988,7 @@ section nnrpd_no_permission {
 section nnrpd_gethostbyaddr {
         title   "NNRP gethostbyaddr failures:";
 	data    "%nnrpd_gethostbyaddr";
+	top     20;
 	sort    "$nnrpd_gethostbyaddr{$b} <=> $nnrpd_gethostbyaddr{$a}";
         column {
                 name          "System";
@@ -1912,6 +2049,7 @@ section nnrpd_unrecognized2 {
 section nnrpd_timeout {
         title   "NNRP client timeouts:";
 	data    "%nnrpd_timeout";
+	top     20;
 	sort    "$nnrpd_timeout{$b} <=> $nnrpd_timeout{$a}";
         column {
                 name          "System";
@@ -1970,7 +2108,7 @@ section nnrpd_group {
         title   "Newsgroup request counts (by newsgroup):";
 	data    "%nnrpd_group";
 	sort    "$nnrpd_group{$b} <=> $nnrpd_group{$a}";
-	top     20;
+	top     100;
 	numbering true;
         column {
                 name          "Newsgroup";
@@ -2011,7 +2149,8 @@ section ihave_site {
 section sendme_site {
 	title	"SENDME messages offered from:";
 	data	"%controlchan_sendme_site";
-	sort	"$controlchan_sendme_site{$b} <=> $controlchan_sendme_site{$a}";
+	sort	"$controlchan_sendme_site{$b} <=>
+	         $controlchan_sendme_site{$a}";
 	column {
 		name		"System";
 		format		"%-71.71s";
