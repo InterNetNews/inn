@@ -241,8 +241,9 @@ process_line(QIOSTATE *qp, int *queued, int *deleted)
 {
     static char *line = NULL;
     filelist *list = NULL;
-    char *p, *dir;
-    int dlen;
+    char *p;
+    char *dir = NULL;
+    int dlen = -1;
 
     *queued = 0;
     *deleted = 0;
@@ -387,7 +388,8 @@ static bool
 chdir_checked(const char *path, int filecount)
 {
     if (filecount < chdir_threshold) {
-        strcpy(prefix_dir, path);
+        strncpy(prefix_dir, path, sizeof(prefix_dir));
+        prefix_dir[sizeof(prefix_dir) - 1] = '\0';
         prefix_len = strlen(path);
     } else {
         prefix_len = 0;
@@ -464,8 +466,10 @@ setup_dir(char *dir, int filecount)
         p++;
         if (!chdir_checked(p, filecount))
             return false;
-        if (prefix_len == 0)
-            strcpy(current_dir, absolute);
+        if (prefix_len == 0) {
+            strncpy(current_dir, absolute, sizeof(current_dir));
+            current_dir[sizeof(current_dir) - 1] = '\0';
+        }
         return true;
     }
 
@@ -476,15 +480,20 @@ setup_dir(char *dir, int filecount)
        we're willing to use; the default of 1 seems fractionally faster than
        2 and 0 indicates to always use absolute paths.  Values larger than 3
        would require extending the dotdots string, but are unlikely to be
-       worth it. */
+       worth it.
+
+       FIXME: It's too hard to figure out what this code does.  It needs to be
+       rewritten. */
     if (p != '\0' && relative_threshold > 0) {
         depth = slashcount(q);
         if (depth <= relative_threshold) {
             while (p > absolute && *--p != '/')
                 ;
             p++;
-            strcpy(prefix_dir, dotdots + 9 - depth * 3);
-            strcpy(prefix_dir + (depth + 1) * 3, p);
+            strncpy(prefix_dir, dotdots + 9 - depth * 3, sizeof(prefix_dir));
+            strncpy(prefix_dir + (depth + 1) * 3, p,
+                    sizeof(prefix_dir) - (depth + 1) * 3);
+            prefix_dir[sizeof(prefix_dir) - 1] = '\0';
             if (!chdir_checked(prefix_dir, filecount))
                 return false;
 
@@ -506,8 +515,10 @@ setup_dir(char *dir, int filecount)
        we don't bother. */
     if (!chdir_checked(absolute, filecount))
         return false;
-    if (prefix_len == 0)
-        strcpy(current_dir, absolute);
+    if (prefix_len == 0) {
+        strncpy(current_dir, absolute, sizeof(current_dir));
+        current_dir[sizeof(current_dir) - 1] = '\0';
+    }
     return true;
 }
 

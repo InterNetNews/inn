@@ -33,18 +33,18 @@ RemoveDBZFiles(char *p)
     static char	NOCANDO[] = "Can't remove \"%s\", %s\n";
     char	buff[SMBUF];
 
-    (void)sprintf(buff, "%s.dir", p);
+    snprintf(buff, sizeof(buff), "%s.dir", p);
     if (unlink(buff) && errno != ENOENT)
 	(void)fprintf(stderr, NOCANDO, buff, strerror(errno));
 #ifdef	DO_TAGGED_HASH
-    (void)sprintf(buff, "%s.pag", p);
+    snprintf(buff, sizeof(buff), "%s.pag", p);
     if (unlink(buff) && errno != ENOENT)
 	(void)fprintf(stderr, NOCANDO, buff, strerror(errno));
 #else
-    (void)sprintf(buff, "%s.index", p);
+    snprintf(buff, sizeof(buff), "%s.index", p);
     if (unlink(buff) && errno != ENOENT)
 	(void)fprintf(stderr, NOCANDO, buff, strerror(errno));
-    (void)sprintf(buff, "%s.hash", p);
+    snprintf(buff, sizeof(buff), "%s.hash", p);
     if (unlink(buff) && errno != ENOENT)
 	(void)fprintf(stderr, NOCANDO, buff, strerror(errno));
 #endif
@@ -130,7 +130,7 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
 
     /* If using the standard history file, force DBZ to use history.n. */
     if (EQ(TextFile, HISTORY) && !Overwrite) {
-	(void)sprintf(temp, "%s.n", HISTORY);
+	snprintf(temp, sizeof(temp), "%s.n", HISTORY);
 	if (link(HISTORY, temp) < 0) {
 	    (void)fprintf(stderr, "Can't make temporary link to \"%s\", %s\n",
 		    temp, strerror(errno));

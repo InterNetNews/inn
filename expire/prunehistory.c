@@ -31,7 +31,7 @@ main(int ac, char *av[])
     char		buff[BUFSIZ];
     const char		*History;
     bool		Passing;
-    struct history	*history;
+    struct history	*history = NULL;
     int			rc = 0;
 
     /* First thing, set up logging and our identity. */
@@ -116,7 +116,7 @@ main(int ac, char *av[])
 
  fail:
     /* Close files; we're done. */
-    if (!HISclose(history)) {
+    if (history != NULL && !HISclose(history)) {
 	fprintf(stderr, "Can't close \"%s\", %s\n",
 		History, strerror(errno));
 	rc = 1;

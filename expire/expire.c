@@ -53,9 +53,6 @@ static struct history	*History;
 static char		*NHistory;
 
 static void CleanupAndExit(bool Server, bool Paused, int x);
-#if ! defined (atof)            /* NEXT defines aotf as a macro */
-extern double		atof();
-#endif
 
 static int EXPsplit(char *p, char sep, char **argv, int count);
 
@@ -67,12 +64,12 @@ enum KR {Keep, Remove};
 **  Open a file or give up.
 */
 static FILE *
-EXPfopen(bool Remove, const char *Name, char *Mode, bool Needclean,
+EXPfopen(bool Unlink, const char *Name, const char *Mode, bool Needclean,
 	 bool Server, bool Paused)
 {
     FILE *F;
 
-    if (Remove && unlink(Name) < 0 && errno != ENOENT)
+    if (Unlink && unlink(Name) < 0 && errno != ENOENT)
 	(void)fprintf(stderr, "Warning, can't remove %s, %s\n",
 		Name, strerror(errno));
     if ((F = fopen(Name, Mode)) == NULL) {
@@ -135,7 +132,7 @@ static int EXPsplit(char *p, char sep, char **argv, int count)
 **  just about everything you expect.  Print a message and return FALSE
 **  on error.
 */
-static bool EXPgetnum(int line, char *word, time_t *v, char *name)
+static bool EXPgetnum(int line, char *word, time_t *v, const char *name)
 {
     char	        *p;
     bool	        SawDot;
@@ -379,7 +376,7 @@ EXPremove(const TOKEN *token)
 **  Do the work of expiring one line.
 */
 static bool
-EXPdoline(void *cookie, time_t arrived, time_t posted, time_t expires,
+EXPdoline(void *cookie UNUSED, time_t arrived, time_t posted, time_t expires,
 	  TOKEN *token)
 {
     time_t		when;
@@ -503,8 +500,8 @@ int main(int ac, char *av[])
     char 	        *p;
     FILE		*F;
     char		*HistoryText;
-    char		*NHistoryPath = NULL;
-    char		*NHistoryText = NULL;
+    const char		*NHistoryPath = NULL;
+    const char		*NHistoryText = NULL;
     char		*EXPhistdir;
     char		buff[SMBUF];
     bool		Server;
@@ -634,7 +631,8 @@ int main(int ac, char *av[])
     /* Set up the link, reserve the lock. */
     if (Server) {
 	if (EXPreason == NULL) {
-	    (void)sprintf(buff, "Expiring process %ld", (long)getpid());
+	    snprintf(buff, sizeof(buff), "Expiring process %ld",
+                     (long) getpid());
 	    EXPreason = COPY(buff);
 	}
     }
@@ -698,7 +696,7 @@ int main(int ac, char *av[])
     }
 
     if (!Bad && NHistory != NULL) {
-	(void)sprintf(buff, "%s.n.done", NHistory);
+	snprintf(buff, sizeof(buff), "%s.n.done", NHistory);
 	(void)fclose(EXPfopen(FALSE, buff, "w", TRUE, Server, FALSE));
 	CleanupAndExit(Server, FALSE, Bad ? 1 : 0);
     }

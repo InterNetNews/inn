@@ -25,7 +25,7 @@ typedef struct _ARTOVERFIELD {
     char	*Headername;
     int		HeadernameLength;
     bool	NeedHeadername;
-    char	*Header;
+    const char	*Header;
     int		HeaderLength;
     bool	HasHeader;
 } ARTOVERFIELD;
@@ -248,8 +248,8 @@ FlushOverTmpFile(void)
         Fork ? _exit(1) : exit(1);
     }
     close(fd);
-    sprintf(temp, "exec %s -T %s -t'%c' -o %s %s", _PATH_SORT,
-	    TmpDir, '\t', SortedTmpPath, OverTmpPath);
+    snprintf(temp, sizeof(temp), "exec %s -T %s -t'%c' -o %s %s", _PATH_SORT,
+             TmpDir, '\t', SortedTmpPath, OverTmpPath);
     
     i = system(temp) >> 8;
     if (i != 0) {
@@ -344,11 +344,11 @@ FlushOverTmpFile(void)
  * Write a line to the overview temp file. 
  */
 static void
-WriteOverLine(TOKEN *token, char *xrefs, int xrefslen, 
+WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen, 
 	      char *overdata, int overlen, time_t arrived, time_t expires)
 {
     char temp[SMBUF];
-    char *p, *q, *r;
+    const char *p, *q, *r;
     int i, fd;
 
     if (sorttype == OVNOSORT) {
@@ -550,7 +550,8 @@ static void
 DoArt(ARTHANDLE *art)
 {
     ARTOVERFIELD		*fp;
-    char			*p, *p1;
+    const char                  *p, *p1;
+    char                        *q;
     static BUFFER 		Buff;
     static char			SEP[] = "\t";
     static char			NUL[] = "\0";
@@ -582,7 +583,7 @@ DoArt(ARTHANDLE *art)
 	}
     }
     for (i = ARTfieldsize, fp = ARTfields; --i >= 0;fp++) {
-	if ((fp->Header = (char *)HeaderFindMem(art->data, art->len, fp->Headername, fp->HeadernameLength)) != (char *)NULL) {
+	if ((fp->Header = HeaderFindMem(art->data, art->len, fp->Headername, fp->HeadernameLength)) != (char *)NULL) {
 	    fp->HasHeader = TRUE;
 	    for (p = fp->Header, p1 = (char *)NULL; p < art->data + art->len; p++) {
 		if (p1 != (char *)NULL && (*p1 == '\r' || *p1 == '\n') &&
@@ -597,7 +598,7 @@ DoArt(ARTHANDLE *art)
             fp->HeaderLength = p1 - fp->Header;
 	} else if (RetrMode == RETR_ALL && strcmp(fp->Headername, "Bytes") == 0)
 	{
-		sprintf(bytes, "%d", art->len);
+		snprintf(bytes, sizeof(bytes), "%d", art->len);
 		fp->HasHeader = TRUE;
 		fp->Header = bytes;
 		fp->HeaderLength = strlen(bytes);
@@ -605,7 +606,7 @@ DoArt(ARTHANDLE *art)
     }
     if (Missfieldsize > 0) {
 	for (i = Missfieldsize, fp = Missfields; --i >= 0;fp++) {
-	    if ((fp->Header = (char *)HeaderFindMem(art->data, art->len, fp->Headername, fp->HeadernameLength)) != (char *)NULL) {
+	    if ((fp->Header = HeaderFindMem(art->data, art->len, fp->Headername, fp->HeadernameLength)) != (char *)NULL) {
 		fp->HasHeader = TRUE;
 		for (p = fp->Header, p1 = (char *)NULL; p < art->data + art->len; p++) {
 		    if (p1 != (char *)NULL && (*p1 == '\r' || *p1 == '\n') &&
@@ -634,8 +635,8 @@ DoArt(ARTHANDLE *art)
 	    Xrefp->Header = NULL;
 	    Xrefp->HeaderLength = 0;
 	} else {
-	    sprintf(overdata, "%s %s %s:%lu", XREF, innconf->pathhost,
-                    ann.groupname, ann.artnum);
+	    snprintf(overdata, sizeof(overdata), "%s %s %s:%lu", XREF,
+                     innconf->pathhost, ann.groupname, ann.artnum);
 	    Xrefp->Header = overdata;
 	    Xrefp->HeaderLength = strlen(overdata);
 	}
@@ -657,9 +658,9 @@ DoArt(ARTHANDLE *art)
 	Buff.Data = NEW(char, 1);
     BUFFset(&Buff, Msgidp->Header, Msgidp->HeaderLength);
     BUFFappend(&Buff, NUL, STRLEN(NUL));
-    for (i = 0, p = Buff.Data; i < Buff.Left; p++, i++)
-	if (*p == '\t' || *p == '\n' || *p == '\r')
-	    *p = ' ';
+    for (i = 0, q = Buff.Data; i < Buff.Left; q++, i++)
+	if (*q == '\t' || *q == '\n' || *q == '\r')
+	    *q = ' ';
     MessageID = GetMessageID(Buff.Data);
     if (*MessageID == '\0') {
 	(void)fprintf(stderr, "No %s in %s\n", MESSAGEID, TokenToText(*art->token));
@@ -678,9 +679,9 @@ DoArt(ARTHANDLE *art)
     } else {
 	BUFFset(&Buff, Datep->Header, Datep->HeaderLength);
 	BUFFappend(&Buff, NUL, STRLEN(NUL));
-	for (i = 0, p = Buff.Data; i < Buff.Left; p++, i++)
-	    if (*p == '\t' || *p == '\n' || *p == '\r')
-		*p = ' ';
+	for (i = 0, q = Buff.Data; i < Buff.Left; q++, i++)
+	    if (*q == '\t' || *q == '\n' || *q == '\r')
+		*q = ' ';
 	if ((Posted = GetaDate(Buff.Data)) == 0)
 	    Posted = Arrived;
     }
@@ -688,9 +689,9 @@ DoArt(ARTHANDLE *art)
     if (Expp->HasHeader) {
 	BUFFset(&Buff, Expp->Header, Expp->HeaderLength);
 	BUFFappend(&Buff, NUL, STRLEN(NUL));
-	for (i = 0, p = Buff.Data; i < Buff.Left; p++, i++)
-	    if (*p == '\t' || *p == '\n' || *p == '\r')
-		*p = ' ';
+	for (i = 0, q = Buff.Data; i < Buff.Left; q++, i++)
+	    if (*q == '\t' || *q == '\n' || *q == '\r')
+		*q = ' ';
 	Expires = GetaDate(Buff.Data);
     }
 
@@ -706,9 +707,9 @@ DoArt(ARTHANDLE *art)
 	    }
 	    i = Buff.Left;
 	    BUFFappend(&Buff, fp->Header, fp->HeaderLength);
-	    for (p = &Buff.Data[i]; i < Buff.Left; p++, i++)
-		if (*p == '\t' || *p == '\n' || *p == '\r')
-		    *p = ' ';
+	    for (q = &Buff.Data[i]; i < Buff.Left; q++, i++)
+		if (*q == '\t' || *q == '\n' || *q == '\r')
+		    *q = ' ';
 	}
 	WriteOverLine(art->token, Xrefp->Header, Xrefp->HeaderLength,
 		      Buff.Data, Buff.Left, Arrived, Expires);

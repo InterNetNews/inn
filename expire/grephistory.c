@@ -142,11 +142,9 @@ main(int ac, char *av[])
 	HISclose(history);
 	exit(1);
     } else {
-	if (*key != '<') {
-	    /* Add optional braces. */
-	    key = NEW(char, 1 + strlen(key) + 1 + 1);
-	    (void)sprintf(key, "<%s>", key);
-	}
+        /* Add optional braces if not already present. */
+	if (*key != '<')
+            key = concat("<", key, ">", (char *) 0);
     }
 
     if (!HIScheck(history, key)) {
