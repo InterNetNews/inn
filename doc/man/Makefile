@@ -6,8 +6,8 @@ include ../../Makefile.global
 MANFLAGS = -c $(OWNER) -m 0444 -B .OLD
 
 SEC1	= ckpasswd.1 convdate.1 fastrm.1 getlist.1 grephistory.1 inews.1 \
-	innconfval.1 innfeed.1 nntpget.1 rnews.1 shlock.1 shrinkfile.1 \
-	startinnfeed.1 simpleftp.1
+	innconfval.1 innfeed.1 innmail.1 nntpget.1 rnews.1 shlock.1 \
+	shrinkfile.1 startinnfeed.1 simpleftp.1
 
 ##  MISSING_MAN installs man pages for standard library functions the system
 ##  didn't have (and which were therefore added to libinn), as detected by
@@ -36,7 +36,8 @@ INSTALLED_SEC1 =	$D$(MAN1)/ckpasswd.1 $D$(MAN1)/convdate.1 \
 			$D$(MAN1)/fastrm.1 \
 			$D$(MAN1)/getlist.1 $D$(MAN1)/grephistory.1 \
 			$D$(MAN1)/inews.1 $D$(MAN1)/innconfval.1 \
-			$D$(MAN1)/innfeed.1 $D$(MAN1)/nntpget.1 \
+			$D$(MAN1)/innfeed.1 $D$(MAN1)/innmail.1 \
+			$D$(MAN1)/nntpget.1 \
 			$D$(MAN1)/rnews.1 $D$(MAN1)/shlock.1 \
 			$D$(MAN1)/shrinkfile.1 $D$(MAN1)/startinnfeed.1 \
 			$D$(MAN1)/simpleftp.1
@@ -121,6 +122,7 @@ $D$(MAN1)/grephistory.1:	grephistory.1	   ; $(COPY) $? $@
 $D$(MAN1)/inews.1:		inews.1		   ; $(COPY) $? $@
 $D$(MAN1)/innconfval.1:		innconfval.1	   ; $(COPY) $? $@
 $D$(MAN1)/innfeed.1:		innfeed.1	   ; $(COPY) $? $@
+$D$(MAN1)/innmail.1:		innmail.1          ; $(COPY) $? $@
 $D$(MAN1)/nntpget.1:		nntpget.1	   ; $(COPY) $? $@
 $D$(MAN1)/rnews.1:		rnews.1		   ; $(COPY) $? $@
 $D$(MAN1)/shlock.1:		shlock.1	   ; $(COPY) $? $@

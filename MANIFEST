@@ -130,6 +130,7 @@ doc/man/inndf.8                       Manpage for inndf utility
 doc/man/inndstart.8                   Manpage for inndstart
 doc/man/innfeed.1                     Manpage for innfeed backend
 doc/man/innfeed.conf.5                Manpage for innfeed.conf config file
+doc/man/innmail.1                     Manpage for innmail utility
 doc/man/innreport.8                   Manpage for innreport
 doc/man/innstat.8                     Manpage for innstat utility
 doc/man/innwatch.8                    Manpage for innwatch
@@ -191,6 +192,7 @@ doc/pod/hacking.pod                   Master file for HACKING
 doc/pod/hook-perl.pod                 Master file for README.perl_hook
 doc/pod/inn.conf.pod                  Master file for inn.conf.5
 doc/pod/inndstart.pod                 Master file for inndstart.8
+doc/pod/innmail.pod                   Master file for innmail.1
 doc/pod/install.pod                   Master file for INSTALL
 doc/pod/makehistory.pod               Master file for makehistory.8
 doc/pod/news.pod                      Master file for NEWS
