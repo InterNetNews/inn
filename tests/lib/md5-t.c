@@ -84,13 +84,21 @@ ok(int n, const unsigned char *expected, const unsigned char *data,
     }
 }
 
+static void
+ok_bool(int n, int success)
+{
+    printf("%sok %d\n", success ? "" : "not ", n);
+}
+
 int
 main(void)
 {
     int i, j, n;
     char *data;
+    struct md5_context context;
+    char hexdigest[33];
 
-    printf("%d\n", 11 + ARRAY_SIZE(testdata));
+    printf("%d\n", 12 + ARRAY_SIZE(testdata));
 
     ok(1, "93b885adfe0da089cdf634904fd59f71", "\0", 1);
     ok(2, "e94a053c3fbfcfb22b4debaa11af7718", "\0ab\n", 4);
@@ -106,6 +114,15 @@ main(void)
     ok(8, "0871ffa021e2bc4da87eb93ac22d293c", data, 63);
     ok(9, "784d68ba9112308689114a6816c628ce", data, 64);
 
+    /* Check the individual functions. */
+    md5_init(&context);
+    md5_update(&context, data, 32 * 1024);
+    md5_update(&context, data + 32 * 1024, 32 * 1024 - 42);
+    md5_update(&context, data + 64 * 1024 - 42, 42);
+    md5_final(&context);
+    digest2hex(context.digest, hexdigest);
+    ok_bool(10, !strcmp("3d8897b14254c9f86fbad3fe22f62edd", hexdigest));
+
     /* Part of the MD5 test suite from RFC 1321. */
     for (i = 0, n = 'A'; n <= 'Z'; i++, n++)
         data[i] = n;
@@ -113,15 +130,15 @@ main(void)
         data[i] = n;
     for (i = 52, n = '0'; n <= '9'; i++, n++)
         data[i] = n;
-    ok(10, "d174ab98d277d9f5a5611c2c9f419d9f", data, 62);
+    ok(11, "d174ab98d277d9f5a5611c2c9f419d9f", data, 62);
     for (i = 0, j = 0; j < 8; j++) {
         for (n = '1'; n <= '9'; i++, n++)
             data[i] = n;
         data[i++] = '0';
     }
-    ok(11, "57edf4a22be3c955ac49da2e2107b67a", data, 80);
+    ok(12, "57edf4a22be3c955ac49da2e2107b67a", data, 80);
 
-    n = 12;
+    n = 13;
     for (i = 0; i < ARRAY_SIZE(testdata); i++)
         ok(n++, testhash[i], testdata[i], strlen(testdata[i]));
 
