@@ -1690,10 +1690,10 @@ ptr_strcmp(const void *p1, const void *p2)
 
 static void
 ARTmakekeys(
-    register ARTHEADER	*hp,	/* header data */
-    register char	*body,	/* article body */
-    register char	*v;	/* old kw value */
-    register int	l)	/* old kw length */
+    register ARTHEADER	*hp,		/* header data */
+    register char	*body,		/* article body */
+    register char	*v,		/* old kw value */
+    register int	l)		/* old kw length */
 {
 
     int		word_count, word_length, bodylen, word_index, distinct_words;

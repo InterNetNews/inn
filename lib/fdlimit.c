@@ -69,6 +69,7 @@ int
 setfdlimit(int limit)
 {
     /* Unimplemented system call is close enough. */
+    limit = limit;			/* ARGSUSED */
     errno = ENOSYS;
     return -1;
 }

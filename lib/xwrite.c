@@ -56,7 +56,7 @@ xwrite(int fd, const void *buffer, size_t size)
 ssize_t
 xwritev(int fd, const struct iovec iov[], int iovcnt)
 {
-    ssize_t total, status;
+    ssize_t total, status = 0;
     size_t left;
     int iovleft, i, count;
     struct iovec *tmpiov;
@@ -82,7 +82,7 @@ xwritev(int fd, const struct iovec iov[], int iovcnt)
        the rest of it so that we can modify it to reflect how much we manage
        to write on successive tries. */
     left = total - status;
-    for (i = 0; status >= iov[i].iov_len; i++)
+    for (i = 0; (size_t)status >= iov[i].iov_len; i++)
         status -= iov[i].iov_len;
     iovleft = iovcnt - i;
     tmpiov = xmalloc(iovleft * sizeof(struct iovec));
@@ -98,7 +98,8 @@ xwritev(int fd, const struct iovec iov[], int iovcnt)
 
         /* Skip any leading data that has been written out. */
         if (status < 0) status = 0;
-        for (; status >= tmpiov[i].iov_len && iovleft > 0; i++, iovleft--)
+        for (; (size_t)status >= tmpiov[i].iov_len && iovleft > 0;
+	     i++, iovleft--)
             status -= tmpiov[i].iov_len;
         tmpiov[i].iov_base = (char *) tmpiov[i].iov_base + status;
         tmpiov[i].iov_len -= status;

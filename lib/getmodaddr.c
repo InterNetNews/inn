@@ -19,7 +19,8 @@ static FILE	*GMAfp = NULL;
 /*
 **  Close the file opened by GMAlistopen.
 */
-void GMAclose(void)
+void
+GMAclose(void)
 {
     if (GMAfp) {
 	(void)fclose(GMAfp);
@@ -33,7 +34,9 @@ void GMAclose(void)
 /*
 **  Internal library routine.
 */
-FILE *GMA_listopen(char *pathname, FILE *FromServer, FILE *ToServer, char *request)
+static FILE *
+GMA_listopen(const char *pathname, FILE *FromServer, FILE *ToServer,
+	     const char *request)
 {
     char	buff[BUFSIZ];
     char	*p;
@@ -85,7 +88,9 @@ FILE *GMA_listopen(char *pathname, FILE *FromServer, FILE *ToServer, char *reque
 /*
 **  Read the moderators file, looking for a moderator.
 */
-char *GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group, char *moderatormailer)
+char *
+GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
+		    char *moderatormailer)
 {
     static char		address[SMBUF];
     char	        *p;

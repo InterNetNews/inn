@@ -25,7 +25,8 @@ struct _DDHANDLE {
 };
 typedef struct _DDHANDLE	DDHANDLE;
 
-struct _DDHANDLE *DDstart(FILE *FromServer, FILE *ToServer)
+struct _DDHANDLE *
+DDstart(FILE *FromServer, FILE *ToServer)
 {
     DDHANDLE	*h;
     DDENTRY	*ep;
@@ -105,7 +106,8 @@ struct _DDHANDLE *DDstart(FILE *FromServer, FILE *ToServer)
 }
 
 
-void DDcheck(DDHANDLE *h, char *group)
+void
+DDcheck(DDHANDLE *h, char *group)
 {
     DDENTRY	*ep;
     int		i;
@@ -123,7 +125,8 @@ void DDcheck(DDHANDLE *h, char *group)
 }
 
 
-char *DDend(DDHANDLE *h)
+char *
+DDend(DDHANDLE *h)
 {
     static char	NIL[] = "";
     char	*p;
@@ -150,9 +153,7 @@ char *DDend(DDHANDLE *h)
 
 #if	defined(TEST)
 int
-main(ac, av)
-    int			ac;
-    char		*av[];
+main(int ac, char *av[])
 {
     struct _DDHANDLE	*h;
     char		*p;

@@ -175,9 +175,10 @@ extern int      server_init(char *host, int port);
 
 /* Opening the active file on a client. */
 extern FILE *   CAopen(FILE *FromServer, FILE *ToServer);
-extern FILE *   CAlistopen(FILE *FromServer, FILE *ToServer, char *request);
-extern FILE *   CA_listopen(char *pathname, FILE *FromServer,
-                            FILE *ToServer, char *request);
+extern FILE *   CAlistopen(FILE *FromServer, FILE *ToServer,
+			   const char *request);
+extern FILE *   CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer,
+			    const char *request);
 extern void     CAclose(void);
 
     
@@ -314,8 +315,8 @@ struct conf_vars {
     char *pathtmp;              /* Temporary files for the news system */
 };
 
-extern struct   conf_vars *innconf;
-extern char *    innconffile;
+extern struct conf_vars *innconf;
+extern const char *innconffile;
 extern char *    GetFQDN(char *domain);
 extern char *    GetConfigValue(char *value);
 extern char *    GetFileConfigValue(char *value);
@@ -324,7 +325,7 @@ extern char *    GetModeratorAddress(FILE *FromServer, FILE *ToServer,
                                      char *group, char *moderatormailer); 
 extern void  ClearInnConf(void);
 extern int ReadInnConf(void);
-extern char *cpcatpath(const char *p, const char *f);
+extern const char *cpcatpath(const char *p, const char *f);
 
 #define TEMPORARYOPEN   0
 #define INND_HISTORY    1

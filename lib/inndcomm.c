@@ -37,15 +37,14 @@ static struct sockaddr_un	ICCclient;
 #endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 static int			ICCfd;
 static int			ICCtimeout;
-char				*ICCfailure;
+const char			*ICCfailure;
 
 
 /*
 **  Set the timeout.
 */
 void
-ICCsettimeout(i)
-    int		i;
+ICCsettimeout(int i)
 {
     ICCtimeout = i;
 }
@@ -55,7 +54,7 @@ ICCsettimeout(i)
 **  Get ready to talk to the server.
 */
 int
-ICCopen()
+ICCopen(void)
 {
     int		mask;
     int		oerrno;
@@ -127,7 +126,7 @@ ICCopen()
 **  Close down.
 */
 int
-ICCclose()
+ICCclose(void)
 {
     int		i;
 
@@ -149,7 +148,7 @@ ICCclose()
 **  Get the server's pid.
 */
 static pid_t
-ICCserverpid()
+ICCserverpid(void)
 {
     pid_t		pid;
     FILE		*F;
@@ -171,8 +170,7 @@ ICCserverpid()
 **  message.
 */
 static bool
-ICCserveralive(pid)
-    pid_t		pid;
+ICCserveralive(pid_t pid)
 {
     if (kill(pid, 0) > 0 || errno != ESRCH)
 	return TRUE;
@@ -190,10 +188,7 @@ ICCserveralive(pid)
 */
 
 int
-ICCcommand(cmd, argv, replyp)
-    char		cmd;
-    char		*argv[];
-    char		**replyp;
+ICCcommand(char cmd, char *argv[], char **replyp)
 {
     char		*buff;
     char		*p;
@@ -333,7 +328,7 @@ ICCcommand(cmd, argv, replyp)
     
     /* Read the reply. */
     i = RECVorREAD(ICCfd, buff, bufsiz) ;
-    if (i < HEADER_SIZE) {
+    if ((unsigned int)i < HEADER_SIZE) {
         DISPOSE(buff) ;
         ICCfailure = "read" ;
         return -1 ;
@@ -410,8 +405,7 @@ ICCcommand(cmd, argv, replyp)
 **  Send a "cancel" command.
 */
 int
-ICCcancel(msgid)
-    char	*msgid;
+ICCcancel(char *msgid)
 {
     char	*args[2];
 
@@ -425,8 +419,7 @@ ICCcancel(msgid)
 **  Send a "go" command.
 */
 int
-ICCgo(why)
-    char	*why;
+ICCgo(char *why)
 {
     char	*args[2];
 
@@ -440,8 +433,7 @@ ICCgo(why)
 **  Send a "pause" command.
 */
 int
-ICCpause(why)
-    char	*why;
+ICCpause(char *why)
 {
     char	*args[2];
 
@@ -455,8 +447,7 @@ ICCpause(why)
 **  Send a "reserve" command.
 */
 int
-ICCreserve(why)
-    char	*why;
+ICCreserve(char *why)
 {
     char	*args[2];
 

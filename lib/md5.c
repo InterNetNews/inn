@@ -76,7 +76,7 @@
 
    Let the compiler zero the remainder of the array for us, guaranteed by
    ISO C99 6.7.8 paragraph 21.  */
-static const char padding[MD5_CHUNKSIZE] = { 0x80, 0 /* 0, 0, ... */ };
+static const unsigned char padding[MD5_CHUNKSIZE] = { 0x80, 0 /* 0, ... */ };
 
 /* Internal prototypes. */
 static void md5_transform(uint32_t *, const uint32_t *);

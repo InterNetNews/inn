@@ -12,20 +12,21 @@
 FILE	*ser_rd_fp = NULL;
 FILE	*ser_wr_fp = NULL;
 char	ser_line[NNTP_STRLEN + 2];
-void put_server(char *buff);
-int get_server(char *buff, int buffsize);
+void	put_server(const char *buff);
+int	get_server(char *buff, int buffsize);
 
 
 /*
 **  Get the name of the NNTP server.  Ignore the filename; we use
 **  our own configuration stuff.  Return pointer to static data.
 */
-/* ARGSUSED0 */
-char *getserverbyfile(char *file)
+char *
+getserverbyfile(char *file)
 {
     static char	buff[256];
 
-    strncpy(buff, innconf->server, sizeof(buff));
+    file = file;		/* ARGSUSED0 */
+    strncpy(buff, innconf->server, sizeof(buff)-1);
     buff[255] = '\0';
     return buff;
 }
@@ -35,7 +36,8 @@ char *getserverbyfile(char *file)
 **  Get a connection to the remote news server.  Return server's reply
 **  code or -1 on error.
 */
-int server_init(char *host, int port)
+int
+server_init(char *host, int port)
 {
     char	line2[NNTP_STRLEN];
 
@@ -73,7 +75,8 @@ int server_init(char *host, int port)
 **  Print a message based on the the server's initial response.
 **  Return -1 if server wants us to go away.
 */
-int handle_server_response(int response, char *host)
+int
+handle_server_response(int response, char *host)
 {
     char	*p;
 
@@ -110,7 +113,8 @@ int handle_server_response(int response, char *host)
 /*
 **  Send a line of text to the server.
 */
-void put_server(char *buff)
+void
+put_server(const char *buff)
 {
     (void)fprintf(ser_wr_fp, "%s\r\n", buff);
     (void)fflush(ser_wr_fp);
@@ -121,9 +125,10 @@ void put_server(char *buff)
 **  Get a line of text from the server, strip trailing \r\n.
 **  Return -1 on error.
 */
-int get_server(char *buff, int buffsize)
+int
+get_server(char *buff, int buffsize)
 {
-    char	        *p;
+    char	*p;
 
     if (fgets(buff, buffsize, ser_rd_fp) == NULL)
 	return -1;
@@ -138,7 +143,7 @@ int get_server(char *buff, int buffsize)
 **  Send QUIT and close the server.
 */
 void
-close_server()
+close_server(void)
 {
     char	buff[NNTP_STRLEN];
 

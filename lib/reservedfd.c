@@ -60,18 +60,18 @@ fdreserve(int fdnum)
 }
 
 FILE *
-Fopen(const char *p, const char *type, int index)
+Fopen(const char *p, const char *type, int xindex)
 {
     FILE *nfp;
     if (p == NULL || *p == '\0')
 	return NULL;
-    if (index < 0 || index > Maxfd || Reserved_fd[index] == NULL)
+    if (xindex < 0 || xindex > Maxfd || Reserved_fd[xindex] == NULL)
 	return fopen(p, type);
-    if ((nfp = freopen(p, type, Reserved_fd[index])) == NULL) {
-	Reserved_fd[index] = freopen("/dev/null", "r", Reserved_fd[index]);
+    if ((nfp = freopen(p, type, Reserved_fd[xindex])) == NULL) {
+	Reserved_fd[xindex] = freopen("/dev/null", "r", Reserved_fd[xindex]);
 	return NULL;
     }
-    return (Reserved_fd[index] = nfp);
+    return (Reserved_fd[xindex] = nfp);
 }
 
 int

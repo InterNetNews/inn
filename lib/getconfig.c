@@ -41,23 +41,24 @@ static int		ConfigBitsize;
 */
 
 struct conf_vars	*innconf = NULL;
-char			*innconffile = _PATH_CONFIG;
+const char		*innconffile = _PATH_CONFIG;
 char			pathbuff[SMBUF];
 
-char *
+const char *
 cpcatpath(const char *p, const char *f)
 {
     if (strchr(f, '/') != NULL) {
-	return(f);
+	return f;
     } else {
 	strcpy(pathbuff, p);
 	strcat(pathbuff, "/");
 	strcat(pathbuff, f);
     }
-    return(pathbuff);
+    return pathbuff;
 }
 
-char *GetFileConfigValue(char *value)
+char *
+GetFileConfigValue(char *value)
 {
     FILE	        *F;
     int	                i;
@@ -94,7 +95,8 @@ char *GetFileConfigValue(char *value)
 /*
 **  Get a configuration parameter, usually from reading the file.
 */
-char *GetConfigValue(char *value)
+char *
+GetConfigValue(char *value)
 {
     char	        *p;
 
@@ -121,7 +123,9 @@ char *GetConfigValue(char *value)
 /*
 **  Get a boolean config value and return it by value
 */
-bool GetBooleanConfigValue(char *key, bool defaultvalue) {
+bool
+GetBooleanConfigValue(char *key, bool defaultvalue)
+{
     char *value;
 
     if ((value = GetConfigValue(key)) == NULL)
@@ -134,7 +138,8 @@ bool GetBooleanConfigValue(char *key, bool defaultvalue) {
     return defaultvalue;
 }
 
-void SetDefaults()
+void
+SetDefaults(void)
 {
     char *p;	/* Temporary working variable */
     if (ConfigBit == NULL) {
@@ -269,7 +274,8 @@ void SetDefaults()
     innconf->dontrejectfiltered = FALSE;
 }
 
-void ClearInnConf()
+void
+ClearInnConf(void)
 {
     if (innconf->fromhost != NULL) DISPOSE(innconf->fromhost);
     if (innconf->server != NULL) DISPOSE(innconf->server);
@@ -311,7 +317,8 @@ void ClearInnConf()
    Make sure some compulsory inn.conf values are set and set them
    to defaults if possible 
 */
-int CheckInnConf()
+int
+CheckInnConf(void)
 {
     static char *tmpdir = NULL;
     static unsigned int dirlen = 0;
@@ -406,7 +413,8 @@ int CheckInnConf()
     return(0);
 }
 
-int ReadInnConf()
+int
+ReadInnConf(void)
 {
     FILE	        *F;
     char	        *p, *q;

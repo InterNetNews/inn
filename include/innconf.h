@@ -14,10 +14,10 @@
             3: long
 */
 struct conf_rec {
-	char *name;
-	char *value;
-	int valtype;
-	int mustset;
+	const char	*name;
+	const char	*value;
+	int		valtype;
+	int		mustset;
 };
 
 struct conf_rec conf_defaults[] = {

@@ -57,7 +57,7 @@ typedef char ICC_PROTOCOLTYPE ;
 #define SC_STATUS	'S'
 #define SC_SIGNAL	'B'
 #define SC_THROTTLE	'r'
-#define SC_TIMER        'Z'
+#define SC_TIMER	'Z'
 #define SC_TRACE	'w'
 #define SC_XABORT	'x'
 #define SC_XEXEC	'y'
@@ -65,19 +65,19 @@ typedef char ICC_PROTOCOLTYPE ;
     /* Yes, we don't want anyone to use this. */
 #define SC_FIRSTFREE	G
 
-#define MAX_REASON_LEN 80
+#define MAX_REASON_LEN	80
 
 
-extern void	ICCsettimeout(int i);
-extern int	ICCopen(void);
-extern int	ICCclose(void);
-extern int	ICCcommand(char cmd, char *argv[], char **replyp);
-extern int	ICCcancel(char *msgid);
-extern int	ICCgo(char *why);
-extern int	ICCpause(char *why);
-extern int	ICCreserve(char *why);
+extern void		ICCsettimeout(int i);
+extern int		ICCopen(void);
+extern int		ICCclose(void);
+extern int		ICCcommand(char cmd, char *argv[], char **replyp);
+extern int		ICCcancel(char *msgid);
+extern int		ICCgo(char *why);
+extern int		ICCpause(char *why);
+extern int		ICCreserve(char *why);
 
-extern char	*ICCfailure;
+extern const char	*ICCfailure;
 
 #ifdef __cplusplus
 }

@@ -63,7 +63,7 @@ extern bool dbzinit(const char *name);
 extern bool dbzclose(void);
 
 /* new stuff for dbz */
-extern bool dbzfresh(const char *name, off_t size, int fillpercent);
+extern bool dbzfresh(const char *name, off_t size);
 extern bool dbzagain(const char *name, const char *oldname);
 extern bool dbzexists(const HASH key);
 extern bool dbzfetch(const HASH key, off_t *value);

@@ -26,13 +26,15 @@ static HASH empty= { { 0, 0, 0, 0, 0, 0, 0, 0,
  *
  * Returns: pointer into s, or NULL for "nowhere"
  */
-static char *cipoint(char *s, size_t size) {
+static char *
+cipoint(char *s, size_t size)
+{
     char *p;
     static char post[] = "postmaster";
     static int plen = sizeof(post) - 1;
 
-    if ((p = memchr(s, '@', size))== NULL)			/* no local/domain split */
-	return NULL;		/* assume all local */
+    if ((p = memchr(s, '@', size))== NULL)	/* no local/domain split */
+	return NULL;				/* assume all local */
     if ((p - (s + 1) == plen) && !strncasecmp(post, s+1, plen)) {
 	/* crazy -- "postmaster" is case-insensitive */
 	return s;
@@ -40,7 +42,9 @@ static char *cipoint(char *s, size_t size) {
     return p;
 }
 
-HASH Hash(const void *value, const size_t len) {
+HASH
+Hash(const void *value, const size_t len)
+{
     struct md5_context context;
     HASH hash;
 
@@ -53,7 +57,9 @@ HASH Hash(const void *value, const size_t len) {
     return hash;
 }
 
-HASH HashMessageID(const char *MessageID) {
+HASH
+HashMessageID(const char *MessageID)
+{
     char                *new;
     char                *cip;
     char                *p;
@@ -76,7 +82,9 @@ HASH HashMessageID(const char *MessageID) {
 **  Check if the hash is all zeros, and subseqently empty, see HashClear
 **  for more info on this.
 */
-bool HashEmpty(const HASH h) {
+bool
+HashEmpty(const HASH h)
+{
     return (memcmp(&empty, &h, sizeof(HASH)) == 0);
 }
 
@@ -85,7 +93,9 @@ bool HashEmpty(const HASH h) {
 **  introduces the possibility of colliding w/a value that actually hashes
 **  to all zeros, but that's fairly unlikely.
 */
-void HashClear(HASH *hash) {
+void
+HashClear(HASH *hash)
+{
     memset(hash, '\0', sizeof(HASH));
 }
 
@@ -93,13 +103,15 @@ void HashClear(HASH *hash) {
 **  Convert the binary form of the hash to a form that we can use in error
 **  messages and logs.
 */
-char *HashToText(const HASH hash) {
-    static char         hex[] = "0123456789ABCDEF";
-    char                *p;
-    unsigned int        i;
-    static char         hashstr[(sizeof(HASH)*2) + 1];
+char *
+HashToText(const HASH hash)
+{
+    static const char	hex[] = "0123456789ABCDEF";
+    const char		*p;
+    unsigned int	i;
+    static char		hashstr[(sizeof(HASH)*2) + 1];
 
-    for (p = (char *)&hash, i = 0; i < sizeof(HASH); i++, p++) {
+    for (p = hash.hash, i = 0; i < sizeof(HASH); i++, p++) {
 	hashstr[i * 2] = hex[(*p & 0xF0) >> 4];
 	hashstr[(i * 2) + 1] = hex[*p & 0x0F];
     }
@@ -110,14 +122,18 @@ char *HashToText(const HASH hash) {
 /*
 ** Converts a hex digit and converts it to a int
 */
-static int hextodec(const int c) {
+static
+int hextodec(const int c)
+{
     return isdigit(c) ? (c - '0') : ((c - 'A') + 10);
 }
 
 /*
 **  Convert the ASCII representation of the hash back to the canonical form
 */
-HASH TextToHash(const char *text) {
+HASH
+TextToHash(const char *text)
+{
     char                *q;
     int                 i;
     HASH                hash;

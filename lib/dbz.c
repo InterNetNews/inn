@@ -327,9 +327,11 @@ int dbzneedfilecount(void) {
 /*
  - dbzconfbase - reconfigure dbzconf from base file size.
  */
-static void config_by_text_size(dbzconfig *c, of_t basesize) {
-    int i;
-    unsigned long m;
+static void
+config_by_text_size(dbzconfig *c, of_t basesize)
+{
+    int			i;
+    unsigned long	m;
 
     /* if no tag requested, just return. */
     if ((c->tagmask | c->tagenb) == 0)
@@ -339,7 +341,7 @@ static void config_by_text_size(dbzconfig *c, of_t basesize) {
     basesize += basesize / 10;
 
     /* calculate tagging from old file */
-    for (m = 1, i = 0; m < basesize; i++, m <<= 1)
+    for (m = 1, i = 0; m < (unsigned long)basesize; i++, m <<= 1)
 	continue;
  
     /* if we had more tags than the default, use the new data */
@@ -373,16 +375,18 @@ static void config_by_text_size(dbzconfig *c, of_t basesize) {
  - create and truncate .pag, .idx, or .hash files
  - return FALSE on error
  */
-static bool create_truncate(const char *name, const char *pag) {
+static bool
+create_truncate(const char *name, const char *pag1)
+{
     char *fn;
     FILE *f;
 
-    if ((fn = enstring(name, pag)) == NULL)
+    if ((fn = enstring(name, pag1)) == NULL)
 	return FALSE;
     f = Fopen(fn, "w", TEMPORARYOPEN);
     DISPOSE(fn);
     if (f == NULL) {
-	DEBUG(("dbz.c create_truncate: unable to create/truncate %s\n", pag));
+	DEBUG(("dbz.c create_truncate: unable to create/truncate %s\n", pag1));
 	return FALSE;
     } else
         Fclose(f);
@@ -393,10 +397,9 @@ static bool create_truncate(const char *name, const char *pag) {
  * Return TRUE for success, FALSE for failure
  * name - base name; .dir and .pag must exist
  * size - table size (0 means default)
- * fillpercent - target percentage full ***** inactive
  */
 bool
-dbzfresh(const char *name, off_t size, const int fillpercent)
+dbzfresh(const char *name, off_t size)
 {
     char *fn;
     dbzconfig c;
@@ -486,12 +489,12 @@ isprime(long x)
 {
     static int quick[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 0 };
     int *ip;
-    long div, stop;
+    long div1, stop;
 
     /* hit the first few primes quickly to eliminate easy ones */
     /* this incidentally prevents ridiculously small tables */
-    for (ip = quick; (div = *ip) != 0; ip++)
-	if (x % div == 0) {
+    for (ip = quick; (div1 = *ip) != 0; ip++)
+	if (x % div1 == 0) {
 	    DEBUG(("isprime: quick result on %ld\n", (long)x));
 	    return FALSE;
 	}
@@ -502,8 +505,8 @@ isprime(long x)
     stop <<= 1;
 
     /* try odd numbers up to stop */
-    for (div = *--ip; div < stop; div += 2)
-	if (x%div == 0)
+    for (div1 = *--ip; div1 < stop; div1 += 2)
+	if (x%div1 == 0)
 	    return FALSE;
 
     return TRUE;
@@ -550,7 +553,8 @@ dbzsize(off_t contents)
  * name - base name; .dir and .pag must exist
  * oldname - basename, all must exist
  */
-bool dbzagain(const char *name, const char *oldname)
+bool
+dbzagain(const char *name, const char *oldname)
 {
     char *fn;
     dbzconfig c;
@@ -661,8 +665,10 @@ bool dbzagain(const char *name, const char *oldname)
     return dbzinit(name);
 }
 
-static bool openhashtable(const char *base, const char *ext, hash_table *tab,
-			  const size_t reclen, const dbz_incore_val incore) {
+static bool
+openhashtable(const char *base, const char *ext, hash_table *tab,
+	      const size_t reclen, const dbz_incore_val incore)
+{
     char *name;
 
     if ((name = enstring(base, ext)) == NULL)
@@ -716,7 +722,9 @@ static void closehashtable(hash_table *tab) {
 }
 
 #ifdef	DO_TAGGED_HASH
-static bool openbasefile(const char *name) {
+static bool
+openbasefile(const char *name)
+{
     basef = Fopen(name, "r", DBZ_BASE);
     if (basef == NULL) {
 	DEBUG(("dbzinit: basefile open failed\n"));
@@ -742,7 +750,9 @@ static bool openbasefile(const char *name) {
  * functions permit this, since many people consult it if dbzinit() fails.
  * return TRUE for success, FALSE for failure
  */
-int dbzinit(const char *name) {
+int
+dbzinit(const char *name)
+{
     char *fname;
 
     if (opendb) {
@@ -817,7 +827,8 @@ int dbzinit(const char *name) {
 /* enstring - concatenate two strings into newly allocated memory
  * Returns NULL on failure
  */
-static char *enstring(const char *s1, const char *s2)
+static char *
+enstring(const char *s1, const char *s2)
 {
     char *p;
 
@@ -829,7 +840,8 @@ static char *enstring(const char *s1, const char *s2)
 
 /* dbzclose - close a database
  */
-bool dbzclose(void)
+bool
+dbzclose(void)
 {
     bool ret = TRUE;
 
@@ -868,7 +880,8 @@ bool dbzclose(void)
 
 /* dbzsync - push all in-core data out to disk
  */
-bool dbzsync(void)
+bool
+dbzsync(void)
 {
     bool ret = TRUE;
 
@@ -902,7 +915,9 @@ bool dbzsync(void)
 /*
  - okayvalue - check that a value can be stored
  */
-static int okayvalue(of_t value) {
+static int
+okayvalue(of_t value)
+{
     if (HASTAG(value))
 	return(0);
 #ifdef OVERFLOW
@@ -915,7 +930,8 @@ static int okayvalue(of_t value) {
 
 /* dbzexists - check if the given message-id is in the database */
 bool
-dbzexists(const HASH key) {
+dbzexists(const HASH key)
+{
 #ifdef	DO_TAGGED_HASH
     off_t value;
 
@@ -1060,7 +1076,9 @@ dbzfetch(const HASH key, off_t *value)
  * dbzstore - add an entry to the database
  * returns TRUE for success and FALSE for failure
  */
-DBZSTORE_RESULT dbzstore(const HASH key, off_t data) {
+DBZSTORE_RESULT
+dbzstore(const HASH key, off_t data)
+{
 #ifdef	DO_TAGGED_HASH
     of_t value;
 #else
@@ -1135,8 +1153,10 @@ DBZSTORE_RESULT dbzstore(const HASH key, off_t data) {
  *   pf    - NULL means don't care about .pag 
  *   returns TRUE for success, FALSE for failure
  */
-static bool getconf(FILE *df, dbzconfig *cp) {
-    int i;
+static bool
+getconf(FILE *df, dbzconfig *cp)
+{
+    int		i;
 
     /* empty file, no configuration known */
 #ifdef	DO_TAGGED_HASH
@@ -1219,7 +1239,9 @@ static bool getconf(FILE *df, dbzconfig *cp) {
 /* putconf - write configuration to .dir file
  * Returns: 0 for success, -1 for failure
  */
-static int putconf(FILE *f, dbzconfig *cp) {
+static int
+putconf(FILE *f, dbzconfig *cp)
+{
     int i;
     int ret = 0;
 
@@ -1257,7 +1279,9 @@ static int putconf(FILE *f, dbzconfig *cp) {
  *
  * Returns: pointer to copy of .pag or NULL on errror
  */
-static bool getcore(hash_table *tab) {
+static bool
+getcore(hash_table *tab)
+{
     char *it;
     int nread;
     int i;
@@ -1313,7 +1337,9 @@ static bool getcore(hash_table *tab) {
  *
  * Returns TRUE on success, FALSE on failure
  */
-static bool putcore(hash_table *tab) {
+static bool
+putcore(hash_table *tab)
+{
     int size;
     
     if (tab->incore == INCORE_MEM) {
@@ -1332,7 +1358,9 @@ static bool putcore(hash_table *tab) {
 /*
  - makehash31 : make 31-bit hash from HASH
  */
-static unsigned int makehash31(const HASH *hash) {
+static unsigned int
+makehash31(const HASH *hash)
+{
     unsigned int h;
     memcpy(&h, hash, sizeof(h));
     return (h >> 1);
@@ -1342,9 +1370,11 @@ static unsigned int makehash31(const HASH *hash) {
 /* start - set up to start or restart a search
  * osp == NULL is acceptable
  */
-static void start(searcher *sp, const HASH hash, searcher *osp) {
+static void
+start(searcher *sp, const HASH hash, searcher *osp)
+{
 #ifdef	DO_TAGGED_HASH
-    long h;
+    unsigned int	h;
 
     h = makehash31(&hash);
     if (osp != FRESH && osp->shorthash == h) {
@@ -1459,7 +1489,9 @@ search(searcher *sp)
  *
  * return FALSE if we hit vacant rec's or error
  */
-static bool search(searcher *sp) {
+static bool
+search(searcher *sp)
+{
     erec value;
     unsigned long taboffset = 0;
 
@@ -1522,7 +1554,9 @@ static bool search(searcher *sp) {
  *
  * Returns:  TRUE success, FALSE failure
  */
-static bool set(searcher *sp, hash_table *tab, void *value) {
+static bool
+set(searcher *sp, hash_table *tab, void *value)
+{
     off_t offset;
     
     if (sp->aborted)
@@ -1571,7 +1605,9 @@ static bool set(searcher *sp, hash_table *tab, void *value) {
  -       on the pag table.
  - Returns: TRUE success, FALSE failure
  */
-static bool set_pag(searcher *sp, of_t value) {
+static bool
+set_pag(searcher *sp, of_t value)
+{
     of_t v = value;
 
     if (CANTAG(v)) {
@@ -1595,7 +1631,9 @@ static bool set_pag(searcher *sp, of_t value) {
 
 /* dbzsetoptions - set runtime options for the database.
  */
-void dbzsetoptions(const dbzoptions o) {
+void
+dbzsetoptions(const dbzoptions o)
+{
     options = o;
 #ifndef HAVE_MMAP
     /* Without a working mmap on files, we should avoid it. */
@@ -1606,7 +1644,9 @@ void dbzsetoptions(const dbzoptions o) {
 
 /* dbzgetoptions - get runtime options for the database.
  */
-void dbzgetoptions(dbzoptions *o) {
+void
+dbzgetoptions(dbzoptions *o)
+{
     *o = options;
 }
 
@@ -1625,12 +1665,16 @@ int dbzdebug(bool value) {
 
 #ifdef DBZTEST
 
-int timediffms(struct timeval start, struct timeval end) {
+int
+timediffms(struct timeval start, struct timeval end)
+{
     return (((end.tv_sec - start.tv_sec) * 1000) +
-	((end.tv_usec - start.tv_usec)) / 1000);
+	    ((end.tv_usec - start.tv_usec)) / 1000);
 }
 
-void RemoveDBZ(char *filename) {
+void
+RemoveDBZ(char *filename)
+{
     char fn[1024];
 
 #ifdef	DO_TAGGED_HASH
@@ -1646,7 +1690,8 @@ void RemoveDBZ(char *filename) {
     unlink(fn);
 }
 
-static void usage()
+static void
+usage(void)
 {
     fprintf(stderr, "usage: dbztest [-i] [-n|m] [-s size] <history>\n");
     fprintf(stderr, "  -i       initialize history. deletes .pag files\n");
@@ -1656,9 +1701,8 @@ static void usage()
     exit(1);
 }
 
-int main(argc, argv)
-int  argc;
-char *argv[];
+int
+main(int argc, char *argv[])
 {
     int  i, line;
     FILE *fpi;
@@ -1704,7 +1748,7 @@ char *argv[];
     if (initialize) {
 	RemoveDBZ(history);
 	gettimeofday(&start, NULL);
-	if (dbzfresh(history, dbzsize(size), 0) < 0) {
+	if (dbzfresh(history, dbzsize(size)) < 0) {
 	    fprintf(stderr, "cant dbzfresh %s\n", history);
 	    exit(1);
 	}

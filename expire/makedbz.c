@@ -102,7 +102,7 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
 #endif
     dbzsetoptions(opt);
     if (IgnoreOld) {
-	if (!dbzfresh(p, dbzsize(size), 0)) {
+	if (!dbzfresh(p, dbzsize(size))) {
 	    (void)fprintf(stderr, "Can't do dbzfresh, %s\n",
 		    strerror(errno));
 	    if (temp[0])

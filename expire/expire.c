@@ -935,7 +935,7 @@ int main(int ac, char *av[])
 #endif
 	dbzsetoptions(opt);
 	if (IgnoreOld) {
-	    if (!dbzfresh(NHistory, dbzsize(0L), 0)) {
+	    if (!dbzfresh(NHistory, dbzsize(0L))) {
 		(void)fprintf(stderr, "Can't create database, %s\n",
 			strerror(errno));
 		CleanupAndExit(Server, FALSE, 1);
