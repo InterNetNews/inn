@@ -206,9 +206,36 @@ sub logdie {
     exit 1;
 }
 
-# FIXME to be copied from controlchan
-sub ctlinnd { print '=> ctlinnd '.(shift).join(' ', '', @_)."\n" }
-sub shlock { }
+sub ctlinnd {
+    my ($cmd, @args) = @_;
+
+    my $st = system("$inn::newsbin/ctlinnd", '-s', $cmd, @args);
+    logdie('Cannot run ctlinnd: ' . $!) if $st == -1;
+    logdie('ctlinnd returned status ' . ($st & 255)) if $st > 0;
+}
+
+sub shlock {
+    my $lockfile = shift;
+
+    my $locktry = 0;
+    while ($locktry < 60) {
+        if (system("$inn::newsbin/shlock", '-p', $$, '-f', $lockfile) == 0) {
+            return 1;
+        }
+        $locktry++;
+        sleep 2;
+    }
+
+    my $lockreason;
+    if (open(LOCKFILE, $lockfile)) {
+        $lockreason = 'held by ' . (<LOCKFILE> || '?');
+        close LOCKFILE;
+    } else {
+        $lockreason = $!;
+    }
+    logdie("Cannot get lock $lockfile: $lockreason");
+    return undef;
+}
 
 __END__
 
