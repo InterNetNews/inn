@@ -892,7 +892,7 @@ main(int argc, char *argv[])
 		syslog(L_FATAL, "nnrpd %s must have group %s", innconf->pathrun, NEWSGRP);
 		exit(1);
 	    } else if (pwd->pw_uid != Sb.st_uid) {
-		syslog(L_FATAL, "nnrpd % must be owned by %s", innconf->pathrun, NEWSUSER);
+		syslog(L_FATAL, "nnrpd %s must be owned by %s", innconf->pathrun, NEWSUSER);
 		exit(1);
 	    }
 
