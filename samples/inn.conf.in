@@ -43,13 +43,14 @@ maxconnections:		50
 artcutoff:		14
 icdsynccount:		10
 hiscachesize:		0
+overcachesize:		15
+enableoverview:		true
 readertrack:		false
 strippostcc:		false
 status:			0
 timer:			0
 readerswhenstopped:	false
 noreader:		false
-extendeddbz:		false
 nnrpdoverstats:		false
 storeonxref:		true
 nnrpdcheckart:		true
@@ -70,6 +71,8 @@ activedupdate:		30
 activedport:		1119
 nnrpperlauth:		false
 nnrpdauthsender:	false
+addnntppostinghost:	false
+addnntppostingdate:	false
 cnfscheckfudgesize:	0L
 ignorenewsgroups:	false
 #
@@ -88,15 +91,12 @@ blockbackoff:		120
 # Changing these options can have an effect on the way articles are
 # stored and may require recreating the spool and/or database files
 #
-wireformat:		false
 xrefslave:		false
 nnrpdposthost:
 nnrpdpostport:		119
 spoolfirst:		false
 writelinks:		true
-storageapi:		false
 articlemmap:		false
-overviewmmap:		true
 bindaddress:		all
 sourceaddress:		any
 port:			119

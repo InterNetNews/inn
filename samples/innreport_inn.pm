@@ -35,7 +35,7 @@ my %ctlinnd = ('a', 'addhist',     'D', 'allow',
 # init innd timer
 foreach ('article cancel', 'article control', 'article link',
 	 'article write', 'history grep', 'history lookup',
-	 'history sync', 'history write', 'idle', 'site send',
+	 'history sync', 'history write', 'idle', 'site send', 'overview write',
 	 'perl filter') {
   $innd_time_min{$_} = $MIN;
   $innd_time_max{$_} = $MAX;
@@ -340,7 +340,8 @@ sub collect {
                    artcncl\ (\d+)\((\d+)\)\s+      # artcncl
                    hishave\ (\d+)\((\d+)\)         # hishave
                    (?:\s+hisgrep\ (\d+)\((\d+)\)   # hisgrep (optional)
-		   (?:\s+perl\ (\d+)\((\d+)\))?)?)?   # perl (optional)
+		   (?:\s+perl\ (\d+)\((\d+)\) # perl (optional)
+		   (?:\s+overv\ (\d+)\((\d+)\))?)?)?)?   # perl (optional)
 	           \s*$/ox) {
       $innd_time_times += $1;
       $innd_time_time{'idle'} += $2;
@@ -406,20 +407,28 @@ sub collect {
       $innd_time_max{'history lookup'} = $18 / ($19 || 1)
 	if $19 && $innd_time_max{'history lookup'} < $18 / ($19 || 1);
 
-      if ($20 || $21) {
+      if (defined($20) && defined($21)) {
         $innd_time_time{'history grep'} += $20;
         $innd_time_num{'history grep'} += $21;
         $innd_time_min{'history grep'} = $20 / ($21 || 1)
 	  if $21 && $innd_time_min{'history grep'} > $20 / ($21 || 1);
         $innd_time_max{'history grep'} = $20 / ($21 || 1)
 	  if $21 && $innd_time_max{'history grep'} < $20 / ($21 || 1);
-        if ($22 || $23) {
+        if (defined($22) && defined($23)) {
           $innd_time_time{'perl filter'} += $22;
           $innd_time_num{'perl filter'} += $23;
           $innd_time_min{'perl filter'} = $22 / ($23 || 1)
 	    if $23 && $innd_time_min{'perl filter'} > $22 / ($23 || 1);
           $innd_time_max{'perl filter'} = $22 / ($23 || 1)
 	    if $23 && $innd_time_max{'perl filter'} < $22 / ($23 || 1);
+	  if (defined($24) && defined($25))  {
+	    $innd_time_time{'overview write'} += $24;
+	    $innd_time_num{'overview write'} += $25;
+	    $innd_time_min{'overview write'} = $24 / ($25 || 1)
+	      if $25 && $innd_time_min{'overview write'} > $24 / ($25 || 1);
+	    $innd_time_max{'overview write'} = $24 / ($25 || 1)
+	      if $25 && $innd_time_max{'overview write'} < $24 / ($25 || 1);
+	  }  
         }
       }
       return 1;

@@ -5,7 +5,6 @@
 ##	expdir=xxx	Directory in which to build new history file
 ##	expirectl=xxx	Use xxx as expire.ctl file
 ##	flags=xxx	Pass xxx flags to expire
-##	lowmark		Create and use a lowmark file.
 ##	noexpire	Do not expire
 ##	noexplog	Do not log expire output
 ##	nologs		Do not scan logfiles
@@ -51,15 +50,8 @@ DOSTAT=true
 EXPIRECTL=
 EXPDIR=
 EXPIREFLAGS="-v1"
-SAPI=`innconfval storageapi 2>/dev/null | tr ${AZ} ${az}`
-if [ X${SAPI} = X"true" -o X${SAPI} = X"yes" -o X${SAPI} = X"on" ]; then
-    SAPI="true"
-    EXPIREOVER=expireindex
-    INDEXFILE=${MOST_LOGS}/expire.index.rm
-    EXPIREFLAGS="${EXPIREFLAGS} -c -e"
-else
-    EXPIREOVER=expireover
-fi
+EXPIREOVER=expireover
+
 HISTDIR="`dirname ${HISTORY}`"
 TOUT=600   # timeout value for ctlinnd commands
 if [ -z "${HISTDIR}" -o X"." = X"${HISTDIR}" -o ! -d "${HISTDIR}" ]; then
@@ -73,7 +65,6 @@ EXPIREOVERFLAGS=
 PROGRAMS=
 REASON=
 RMFILE=
-LOWMARKFILE=
 SCANARG=
 
 ##  Parse JCL.
@@ -106,10 +97,6 @@ do
     Xflags=*)
 	EXPIREFLAGS=`expr "${I}" : 'flags=\(.*\)'`
 	;;
-    Xlowmark)
-	LOWMARKFILE=${MOST_LOGS}/expire.lowmark
-	DORENUMBER=false
- 	;;
     Xnotdaily)
         DAILY=false
 	DOLOGS=false
@@ -189,31 +176,10 @@ test -n "${EXPDIR}" && {
 	EXPIREFLAGS="${EXPIREFLAGS} '-d${EXPDIR}' '-r${REASON}'"
 }
 
-if [ X${SAPI} = X"true" ]; then
-    test -n "${RMFILE}" && {
+test -n "${RMFILE}" && {
 	EXPIREFLAGS="${EXPIREFLAGS} -z${RMFILE}"
     }
-    ${DOEXPIREOVER} && {
-	EXPIREFLAGS="${EXPIREFLAGS} -u${INDEXFILE}"
-	EXPIREOVERFLAGS="${EXPIREOVERFLAGS} -z ${INDEXFILE}"
-	test -n "${EXPDIR}" && {
-	    EXPIREFLAGS="${EXPIREFLAGS} '-D${EXPDIR}'"
-	}
-    }
-else
-    test -n "${RMFILE}" && {
-	EXPIREFLAGS="${EXPIREFLAGS} -z${RMFILE}"
-	${DOEXPIREOVER} && {
-	    EXPIREOVERFLAGS="${EXPIREOVERFLAGS} -z ${RMFILE}.$$"
-	}
-    }
-fi
 
-test -n "${LOWMARKFILE}" && {
-    EXPIREFLAGS="${EXPIREFLAGS} -Z${LOWMARKFILE}"
-}
-
-test -z "${EXPIREOVERFLAGS}" && EXPIREOVERFLAGS=-s
 
 if ${DOMAIL} ; then
     ##  Try to get a temporary file.
@@ -340,21 +306,6 @@ if ${DOEXPIRE} ; then
 	fi
 	rm -f ${EXPDIR}/history.n.done
 
-	##  move unified overview files.
-	if ${DOEXPIREOVER} && [ X${SAPI} = X"true" ] ; then
-	    NEWLIST=`cd ${EXPDIR}; find * -name 'overview.new'`
-	    if [ -z "${NEWLIST}" -a ! -f ${EXPDIR}/overview.done ] ; then
-		( echo "$0: No new unified overview files"; ${INNSTAT} ) | eval ${MAIL}
-		exit 1
-	    fi
-	    for NEW in ${NEWLIST}; do
-		UOV=`echo ${NEW} | ${SED} -e 's/\.new$//'`
-		cp /dev/null ${PATHUNIOVER}/${UOV}
-		mv -f ${EXPDIR}/${NEW} ${PATHUNIOVER}/${UOV}
-	    done
-	    rm -f ${EXPDIR}/overview.done
-	fi
-
 	case "${EXPIREFLAGS}" in
 	*-n*)
 	    ;;
@@ -398,34 +349,12 @@ rm ${LOCK}
 
 ## Remove the articles that are supposed to go
 if ${DOEXPIRE} ; then
-    test -n "${LOWMARKFILE}" && {
-	echo "lowmarkrenumber begin `date`: (${LOWMARKFILE})"   >>${EXPLOG}
-	ctlinnd -s -t`wc -l <${ACTIVE}` lowmark ${LOWMARKFILE} 2>&1
-	echo "lowmarkrenumber end `date`"			    >>${EXPLOG}
-	# expireover with lowmark has less performance than sorted list
-	# ${DOEXPIREOVER} && {
-	#   if ${DOEXPLOG}; then
-	#       echo "	${EXPIREOVER} start `date`" >>${EXPLOG}
-	#   fi
-	#   eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" 2>&1 | \
-	#     grep -v 'No such file or directory'
-	#   DOEXPIREOVER=false
-	#   if ${DOEXPLOG}; then
-	#       echo "	${EXPIREOVER} end `date`" >>${EXPLOG}
-	#   fi
-	# }
-	rm -f ${MOST_LOGS}/expire.lastlowmark
-	mv ${LOWMARKFILE} ${MOST_LOGS}/expire.lastlowmark
-    }
-
     test -n "${RMFILE}" -a -s "${RMFILE}" && {
 	mv ${RMFILE} ${RMFILE}.$$ && RMFILE=${RMFILE}.$$
 
 	test -n "${TMPDIR}" && SORT="${SORT} -T ${TMPDIR}"	
 	${SORT} -u -o ${RMFILE} ${RMFILE}
-	if [ X${SAPI} = X"true" ]; then
-	    ${SORT} -u -o ${INDEXFILE} ${INDEXFILE}
-	fi
+
 	${DOEXPIREOVER} && {
 	    if ${DOEXPLOG}; then
 		echo "	${EXPIREOVER} start `date`" >>${EXPLOG}
@@ -435,10 +364,6 @@ if ${DOEXPIRE} ; then
 	    DOEXPIREOVER=false
 	    if ${DOEXPLOG}; then
 		echo "	${EXPIREOVER} end `date`" >>${EXPLOG}
-	    fi
-	    if [ X${SAPI} = X"true" ]; then
-		rm -f ${MOST_LOGS}/expire.lastindex
-		mv ${INDEXFILE} ${MOST_LOGS}/expire.lastindex
 	    fi
 	}
 	if ${DOEXPLOG}; then
@@ -451,9 +376,6 @@ if ${DOEXPIRE} ; then
     }
     # expire overview lines for files we just removed
     if ${DOEXPIREOVER}; then
-	if [ X${SAPI} = X"true" ]; then
-	    ${SORT} -u -o ${INDEXFILE} ${INDEXFILE}
-	fi
 	if ${DOEXPLOG}; then
 	    echo "	${EXPIREOVER} start `date`" >>${EXPLOG}
 	fi
@@ -461,10 +383,6 @@ if ${DOEXPIRE} ; then
 	    grep -v 'No such file or directory'
 	if ${DOEXPLOG}; then
 	    echo "	${EXPIREOVER} end `date`" >>${EXPLOG}
-	fi
-	if [ X${SAPI} = X"true" ]; then
-	    rm -f ${MOST_LOGS}/expire.lastindex
-	    mv ${INDEXFILE} ${MOST_LOGS}/expire.lastindex
 	fi
     fi
 fi
