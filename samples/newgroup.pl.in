@@ -74,12 +74,12 @@ sub control_newgroup {
       #elsif (length($c) > 30) {
       #    $errmsg = 'name component longer than 30 characters';
       #}
-      elsif ($c =~ /[A-Z]/) {
-	$errmsg = 'uppercase letter(s) in name';
-      }
-      #elsif ($c =~ /[^a-z0-9+_\-]/) {
-      #    $errmsg = 'illegal character(s) in name';
+      #elsif ($c =~ /[A-Z]/) {
+      # $errmsg = 'uppercase letter(s) in name';
       #}
+      elsif ($c =~ /[^a-z0-9+_\-.]/) {
+          $errmsg = 'illegal character(s) in name';
+      }
       elsif ($c =~ /--|__|\+\+./) { # sigh, c++ etc must be allowed
 	$errmsg = 'repeated punctuation in name';
       }
