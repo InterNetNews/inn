@@ -1,18 +1,15 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Net News Reading Protocol server.
 */
+
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <syslog.h>
-#include <sys/file.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 
 #ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>
