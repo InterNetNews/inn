@@ -134,11 +134,17 @@ if [ ! -s ${ACTIVE} ] ; then
     #		&& mv history.n.hash history.hash
 fi
 
+##  Overview data was rebuilt, and also active needs to be renumbered
+if [ -f ${PATHRUN}/.rebuildoverview ] ; then
+    echo 'INND:  overview was rebuilt, and active needs to be renumbered!'
+    RFLAG="-r"
+fi
+
 ##  Remove temporary batchfiles and lock files.
 ( cd ${BATCH} && rm -f bch* )
 ( cd ${LOCKS} && rm -f LOCK* )
 ( cd ${TEMPSOCKDIR} && rm -f ${TEMPSOCK} )
-rm -f ${NEWSCONTROL} ${NNTPCONNECT} ${SERVERPID}
+rm -f ${NEWSCONTROL} ${NNTPCONNECT} ${SERVERPID} ${PATHRUN}/.rebuildoverview
 
 ## Initialize ovdb.  Must be done before starting innd.
 if [ "$OVMETHOD" = "ovdb" ]; then

@@ -732,9 +732,11 @@ main(int argc, char **argv)
     bool AppendMode;
     int i, val;
     char *HistoryDir;
+    char *RebuiltflagPath;
     char *p;
     char *buff;
     size_t npairs = 0;
+    FILE *F;
 
     /* First thing, set up logging and our identity. */
     openlog("makehistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
@@ -747,6 +749,7 @@ main(int argc, char **argv)
     ActivePath = concatpath(innconf->pathdb, _PATH_ACTIVE);
     TmpDir = innconf->pathtmp;
     SchemaPath = concatpath(innconf->pathetc, _PATH_SCHEMA);
+    RebuiltflagPath = concatpath(innconf->pathrun, _PATH_REBUILDOVERVIEW);
 
     OverTmpSegSize = DEFAULT_SEGSIZE;
     OverTmpSegCount = 0;
@@ -901,9 +904,13 @@ main(int argc, char **argv)
 	    if(Fork)
 		wait(&status);
 	}
+	if ((F = fopen(RebuiltflagPath, "w")) == NULL)
+            sysdie("cannot open %s", RebuiltflagPath);
+	if (fprintf(F, "%d\n", Now.time) == EOF || ferror(F))
+	    sysdie("cannot write rebuilt flag file");
+	fclose(F);
     }
     if(!Fork)
 	OVclose();
     exit(0);
 }
-

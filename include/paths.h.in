@@ -42,6 +42,7 @@
 #define _PATH_NEWSCONTROL	"control"
 #define _PATH_TEMPSOCK		"ctlinndXXXXXX"
 #define _PATH_SERVERPID		"innd.pid"
+#define _PATH_REBUILDOVERVIEW	".rebuildoverview"
 
 /* Default prefix path is pathdb. */
 #define _PATH_HISTORY		"history"
