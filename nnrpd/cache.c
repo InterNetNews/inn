@@ -48,9 +48,9 @@ cache_add(const HASH h, const TOKEN t)
 	    TOKEN *token = malloc(sizeof *token);
 
 	    if (token) {
-		const char *p;
+		const unsigned char *p;
 
-		p = HashToText(h);
+		p = (unsigned char *) HashToText(h);
 		*token = t;
 		
 		if (tst_insert(p, token, msgidcache,
