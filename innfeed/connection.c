@@ -2738,7 +2738,7 @@ static void processResponse439 (Connection cxn, char *response)
   if (cxn->takeRespHead == NULL) /* peer is confused */
     {
       syslog (LOG_NOTICE,BAD_RESPONSE,
-              hostPeerName (cxn->myHost),cxn->ident,239) ;
+              hostPeerName (cxn->myHost),cxn->ident,439) ;
       cxnSleepOrDie (cxn) ;
     }
   else if (msgid == NULL || strlen (msgid) == 0 ||
@@ -2954,8 +2954,18 @@ static void processResponse435 (Connection cxn, char *response)
       return ;
     }
 
+  /* Some servers, such as early versions of Diablo, had a bug where they'd
+     respond with a 435 code (which should only be used for refusing an
+     article before it was offered) after an article has been sent. */
+  if (cxn->checkRespHead == NULL)
+    {
+      syslog (LOG_ERR,BAD_RESPONSE,hostPeerName (cxn->myHost),
+              cxn->ident,435) ;
+      cxnSleepOrDie (cxn) ;
+      return ;
+    }
+
   ASSERT (cxn->articleQTotal == 1) ;
-  ASSERT (cxn->checkRespHead != NULL) ;
   VALIDATE_CONNECTION (cxn) ;
 
   cxn->articleQTotal-- ;
@@ -3080,7 +3090,8 @@ static void processResponse437 (Connection cxn, char *response)
   cxn->takeRespHead = NULL ;
   cxn->takesSizeRejected += (double) artSize(artHolder->article);
 
-  if (cxn->articleQTotal == 0)
+  /* Some servers return the 437 response before we're done sending. */
+  if (cxn->articleQTotal == 0 && !writeIsPending (cxn->myEp))
     cxnIdle (cxn) ;
 
   hostArticleRejected (cxn->myHost, cxn, artHolder->article) ;
