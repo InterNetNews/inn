@@ -871,7 +871,7 @@ false.
 =item I<status>
 
 How frequently (in seconds) innd(8) should write out a status report.  The
-report is written to I<pathlog>/inn.status.  If this is set to C<0> or
+report is written to I<pathhttp>/inn_status.html.  If this is set to C<0> or
 C<false>, status reporting is disabled.  The default value is C<0>.
 
 =item I<timer>
