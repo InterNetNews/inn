@@ -898,6 +898,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 	    if (Mode == OMpaused) { /* defer processing while paused */
 		cp->Rest = 0;
 		bp->Used = cp->SaveUsed;
+		RCHANremove(cp); /* don't bother trying to read more for now */
 		SCHANadd(cp, (time_t)(Now.time + innconf->pauseretrytime),
 		    (POINTER)&Mode, NCproc, (POINTER)NULL);
 		return;
