@@ -13,7 +13,7 @@ typedef struct {
     char	*name;
     BOOL	(*open)(int mode);
     BOOL	(*groupstats)(char *group, int *lo, int *hi, int *count, int *flag);
-    BOOL	(*groupadd)(char *group, char *flag);
+    BOOL	(*groupadd)(char *group, ARTNUM lo, char *flag);
     BOOL	(*groupdel)(char *group);
     BOOL	(*add)(TOKEN token, char *data, int len);
     BOOL	(*cancel)(TOKEN token);
