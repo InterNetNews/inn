@@ -773,8 +773,8 @@ main(argc, argv, env)
 	    exit(1);
 	}
 
-	if (setsockopt(lfd,SOL_SOCKET,SO_REUSEADDR,&one,sizeof(one)) < 0) {
-	    syslog(L_FATAL, "can't set socket options (%m)");
+	if (setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR, (char *)&one, sizeof(one)) < 0) {
+	    syslog(L_FATAL, "can't setsockopt(SO_REUSEADDR) (%m)");
 	    exit(1);
 	}
 
