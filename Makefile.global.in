@@ -198,6 +198,7 @@ POD2TEXT        = pod2text -s -l
 ##  list of supported flags.
 
 prefix          = @prefix@
+exec_prefix     = @exec_prefix@
 bindir          = @bindir@
 docdir          = @docdir@
 includedir      = @includedir@
