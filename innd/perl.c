@@ -34,7 +34,8 @@ extern CV		*perl_filter_cv ;
 extern char		*pathForPerl ;
 
 char *
-HandleArticle()
+HandleArticle(artBody)
+char *artBody;
 {
    dSP;
    ARTHEADER	*hp;
@@ -53,6 +54,10 @@ HandleArticle()
        if (hp->Found && hp->Value && strcmp (hp->Name,"Path") != 0)
          hv_store(hdr, (char *) hp->Name, strlen(hp->Name), newSVpv(hp->Value, 0), 0);
      }
+
+   /* store article body */
+   if (artBody != NULL)
+     hv_store(hdr, (char *) "__BODY__", 8, newSVpv(artBody, 0), 0) ;
 
    if (pathForPerl != NULL)
      {

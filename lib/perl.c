@@ -31,6 +31,9 @@ static void use_rcsid (const char *rid) {   /* Never called */
 
 #include "macros.h"
 
+extern void xs_init    _((void));
+extern void boot_DynaLoader _((CV* cv));
+
 int	PerlFilterActive = FALSE;
 
 static PerlInterpreter	*PerlCode;
@@ -89,7 +92,7 @@ PerlParse ()
     /* We can't call 'eval' and 'do' directly for some reason, so we define
        some wrapper functions to give us access. */
         
-    perl_parse (PerlCode,NULL,5,argv,NULL) ;
+    perl_parse (PerlCode,xs_init,5,argv,NULL) ;
 }
 
 
@@ -220,6 +223,15 @@ PerlClose()
    perl_free(PerlCode);
    PerlFilterActive = FALSE;
 }
+
+extern void xs_init()
+{
+    char * file = __FILE__;
+    dXSUB_SYS;
+
+    newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
+}
+
 
 #endif /* defined(DO_PERL) */
 

@@ -128,6 +128,18 @@ ARTHEADER	ARTheaders[] = {
     {	"Posting-Version",	HTobs },
     {	"Received",		HTobs },
     {	"Relay-Version",	HTobs },
+    {	"NNTP-Posting-Host",	HTstd },
+    {	"Followup-To",		HTstd },
+    {	"Organization",		HTstd },
+    {	"Content-Type",		HTstd },
+    {	"Content-Base",		HTstd },
+    {	"Content-Disposition",	HTstd },
+    {	"X-Trace",		HTstd },
+    {	"X-Newsreader",		HTstd },
+    {	"X-Mailer",		HTstd },
+    {	"X-Newsposter",		HTstd },
+    {	"X-Cancelled-By",	HTstd },
+    {	"X-Canceled-By",	HTstd },
 };
 
 ARTHEADER	*ARTheadersENDOF = ENDOF(ARTheaders);
@@ -1790,7 +1802,7 @@ STRING ARTpost(CHANNEL *cp)
 
 #if defined(DO_PERL)
     pathForPerl = HeaderFindMem(article->Data, article->Used, "Path", 4) ;
-    if ((perlrc = (char *)HandleArticle()) != NULL) {
+    if ((perlrc = (char *)HandleArticle(Data.Body)) != NULL) {
         (void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, perlrc);
         syslog(L_NOTICE, "rejecting[perl] %s %s", HDR(_message_id), buff);
         ARTlog(&Data, ART_REJECT, buff);
