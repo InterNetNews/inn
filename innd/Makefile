@@ -52,7 +52,7 @@ tags ctags: $(SOURCES)
 ##  Compilation rules.
 
 INNDLIBS 	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) \
-		  $(TCLLIB) $(PYTHONLIB) $(REGEXLIB) $(LIBS) $(PERLLIB)
+		  $(PERLLIB) $(TCLLIB) $(PYTHONLIB) $(REGEXLIB) $(LIBS)
 
 perl.o:		perl.c		; $(CC) $(CFLAGS) $(PERLINC) -c perl.c
 python.o:	python.c	; $(CC) $(CFLAGS) $(PYTHONINC) -c python.c

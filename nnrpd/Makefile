@@ -39,7 +39,7 @@ tags ctags: $(SOURCES) $(INCLUDES)
 ##  Compilation rules.
 
 NNRPDLIBS	= $(LIBHIST) $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) \
-		  $(PYTHONLIB) $(SSLLIB) $(LIBS) $(PERLLIB)
+		  $(PERLLIB) $(PYTHONLIB) $(SSLLIB) $(LIBS)
 
 perl.o:		perl.c		; $(CC) $(CFLAGS) $(PERLINC) -c perl.c
 python.o:	python.c	; $(CC) $(CFLAGS) $(PYTHONINC) -c python.c
