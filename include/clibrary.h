@@ -266,12 +266,6 @@ extern char             *optarg;
 # undef HAVE_UNION_WAIT
 #endif
 
-/* Always use sigaction() if we have it.  Anywhere USE_SIGACTION is used,
-   just use HAVE_SIGACTION instead. */
-#ifdef HAVE_SIGACTION
-# define USE_SIGACTION
-#endif
-
 /* Use SUN_LEN instead of AF_UNIX_SOCKSIZE. */
 #define AF_UNIX_SOCKSIZE(sun) SUN_LEN(&(sun))
 
