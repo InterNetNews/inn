@@ -5391,7 +5391,6 @@ trap 'rm -fr `echo "Makefile.global
 	samples/tally.control
 	samples/version
 	samples/writelog
-	site/subst.pl 
 	storage/buildconfig 
 	syslog/syslog.conf
  include/config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
@@ -5581,7 +5580,6 @@ CONFIG_FILES=\${CONFIG_FILES-"Makefile.global
 	samples/tally.control
 	samples/version
 	samples/writelog
-	site/subst.pl 
 	storage/buildconfig 
 	syslog/syslog.conf
 "}
@@ -5758,4 +5756,4 @@ rm -fr confdefs* $ac_clean_files
 test "$no_create" = yes || ${CONFIG_SHELL-/bin/sh} $CONFIG_STATUS || exit 1
 
 
-chmod +x site/subst.pl storage/buildconfig
+chmod +x storage/buildconfig

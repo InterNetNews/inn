@@ -671,9 +671,8 @@ AC_OUTPUT(
 	samples/tally.control
 	samples/version
 	samples/writelog
-	site/subst.pl 
 	storage/buildconfig 
 	syslog/syslog.conf
 )
 
-chmod +x site/subst.pl storage/buildconfig
+chmod +x storage/buildconfig
