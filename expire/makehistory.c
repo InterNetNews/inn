@@ -938,7 +938,7 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 			token = TextToToken(fields[2]);
 			if (token.index < OVER_NONE) {
 			    if ((p = OVERretrieve(&token, &linelen)) == (char *)NULL)
-				break;
+				continue;
 			    if (OVERmmap) {
 				if (!OVERline)
 				    OVERline = NEW(char, MAXOVERLINE);
@@ -951,13 +951,13 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 			    }
 			    if (index != (FILE *)NULL) {
 			        if ((Xref = strstr(OVERline, "\tXref:")) == NULL) {
-				    break;
+				    continue;
 			        }
 			        if ((Xref = strchr(Xref, ' ')) == NULL)
-				    break;
+				    continue;
 			        for (Xref++; *Xref == ' '; Xref++);
 			        if ((Xref = strchr(Xref, ' ')) == NULL)
-				    break;
+				    continue;
 			        for (Xref++; *Xref == ' '; Xref++);
 			        if (!Xrefbuf)
 				    Xrefbuf = NEW(char, MAXOVERLINE);
@@ -984,12 +984,12 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 			    }
 			}
 		    }
-		    break;
+		    continue;
 		}
 		token = TextToToken(fields[2]);
 		if ((art = SMretrieve(token, RETR_ALL)) == (ARTHANDLE *)NULL) {
 		    /* fprintf(stderr, "Cannot retrieve %s, skipping\n", fields[2]); */
-		    break;
+		    continue;
 		}
 		if (artbuff.Left == 0) {
 		    artbuff.Data = NEW(char, art->len);
@@ -1009,11 +1009,10 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 		token = SMstore(arth);
 		if (token.type == TOKEN_EMPTY) {
 		    fprintf(stderr, "Cannot store %s, skipping\n", fields[0]);
-		    break;
+		    continue;
 		}
 		arth.token = &token;
 		DoMemArt(&arth, Overview, FALSE, out, index, TRUE);
-		break;
 	    } else {
 		if ((p = strchr(fields[1], HIS_SUBFIELDSEP)) == (char *)NULL)
 		    Arrived = atol(fields[1]);
@@ -1037,7 +1036,7 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 			    exit(1);
 			}
 		    }
-		    break;
+		    continue;
 		}
 		if (RemoveOld)
 		    i = 0;
@@ -1055,11 +1054,10 @@ TranslateFromHistory(FILE *out, char *OldHistory, char *Tradspooldir, BOOL Unlin
 		token = SMstore(arth);
 		if (token.type == TOKEN_EMPTY) {
 		    fprintf(stderr, "Cannot store %s, skipping\n", fields[0]);
-		    break;
+		    continue;
 		}
 		arth.token = &token;
 		DoMemArt(&arth, Overview, FALSE, out, index, TRUE);
-		break;
 	    }
 	} else
 	    break;
