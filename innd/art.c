@@ -1210,9 +1210,9 @@ ARTcontrol(ARTDATA *Data, char *Control, CHANNEL *cp)
 	av[3] = Data->Name;
 	if (innconf->logipaddr) {
 	    hops = ARTparsepath(HDR(_path), &hopcount);
-	    (const char *)av[4] = hops && hops[0] ? hops[0] : CHANname(cp);
+	    av[4] = (char *)(hops && hops[0] ? hops[0] : CHANname(cp));
 	} else {
-	    (const char *)av[4] = Data->Feedsite;
+	    av[4] = (char *)(Data->Feedsite);
 	}
 	av[5] = NULL;
 	HeaderCleanFrom(av[1]);
