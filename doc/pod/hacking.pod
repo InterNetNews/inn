@@ -92,13 +92,15 @@ use.  Having the documentation exist in I<some> form is more important
 than what language you write it in.  If you really don't have any
 particular preference, there's a slight preference currently for POD.
 
-The pod2text and pod2man scripts that come with Perl versions prior to 5.6
-are adequate but not ideal for processing INN's documentation.  The best
-converters are available as part of the podlators package, available from
-CPAN (ftp.perl.org or another mirror) in F<modules/by-module/Pod>.  This
-module also requires installation of PodParser, found in the same
-directory, and File::Spec for versions of Perl before 5.005.  File::Spec
-you can find in F<modules/by-module/File>.
+The pod2text and pod2man scripts that come with Perl versions prior to
+5.6.0 are adequate but not ideal for processing INN's documentation.  The
+best converters are available as part of the podlators package, available
+from CPAN (ftp.perl.org or another mirror) in F<modules/by-module/Pod>;
+fairly recent versions of the podlators utilities (and good enough for INN
+documentation) come with Perl 5.6.0.  This module also requires
+installation of PodParser for Perl versions before 5.6.0, found in the
+same directory, and File::Spec for versions of Perl before 5.005.
+File::Spec you can find in F<modules/by-module/File>.
 
 To generate text documentation (like INSTALL or README), use:
 
@@ -109,26 +111,23 @@ and C<-l> adds a blank line after major headings.
 
 To generate a man page from POD source, use:
 
-    pod2roff -c "InterNetNews Documentation" -r "INN 2.3" in > out
+    pod2man -c "InterNetNews Documentation" -r "INN 2.3" in > out
 
 where in is the name of the POD file and out is what to name the *roff
 output.  For some documentation, you also have to provide -s <section> to
-set the correct manual section (pod2roff will assume section 1 if -s isn't
-given).  It's best to run pod2roff from the F<doc/pod> directory,
-directing the output to the appropriate file in the F<doc/man> directory,
-since it does some tricks with the name of the file to determine the title
-of the man page and can be confused by longer paths.
+set the correct manual section (pod2man will assume section 1 if -s isn't
+given).  It's best to run pod2man from the F<doc/pod> directory, directing
+the output to the appropriate file in the F<doc/man> directory, since it
+does some tricks with the name of the file to determine the title of the
+man page and can be confused by longer paths.
 
 At some point this should go into Makefile rules.
-
-pod2text and pod2roff from podlators are included with Perl as of the
-5.005_62 development version and will be included in Perl 5.6.
 
 For conversion of POD to DocBook SGML, use Pod::DocBook, also found on
 CPAN in F<modules/by-module/Pod>.
 
-The current versions of these tools as of this writing are podlators 0.08,
-PodParser 1.085, and Pod::DocBook 0.05.
+The current versions of these tools as of this writing are podlators 1.01,
+PodParser 1.13, and Pod::DocBook 0.05.
 
 =head1 Makefiles
 
@@ -256,11 +255,7 @@ purposes; see the comments in each file.
 
 Finally, many INN source files still include F<configdata.h>; this header
 file is now obsolete (merged into F<config.h> and F<clibrary.h>) and
-should be removed where it appears.  The one exception to this may be in
-the innfeed tree, which is organized somewhat differently than the rest of
-INN and has its own F<config.h>, making for some interesting naming
-conflicts that should be studied carefully before a project to fix them is
-undertaken.
+should be removed where it appears.
 
 =head1 Coding Style
 
