@@ -733,6 +733,7 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	    curaccess->post = 0;
 	    CLEAR_CONFIG(PERMpost);
 	}
+	curaccess->allowapproved = (strchr(tok->name, 'A') != NULL);
 	curaccess->allownewnews = (strchr(tok->name, 'N') != NULL);
 	curaccess->locpost = (strchr(tok->name, 'L') != NULL);
 	SET_CONFIG(oldtype);
