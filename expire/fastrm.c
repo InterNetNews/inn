@@ -242,6 +242,14 @@ STATIC void unlink_node(dnode *n)
 	p = prefix_dir;
     }
 
+    if (IsToken(p)) {
+	if (!SMcancel(TextToToken(p)) && (SMerrno != SMERR_NOENT)) {
+	    fprintf(stderr, "%s: can't cancel %s\n", MyName, p);
+	    fatals++;
+	}
+	return;
+    }
+
     if (AmRoot) {
 	if (stat(p, &sb) < 0) {
 	    if (errno != ENOENT) {
@@ -269,14 +277,6 @@ STATIC void unlink_node(dnode *n)
 	    (void)printf("%s\n", p);
 	else
 	    (void)printf("%s / %s\n", cur_dir, p);
-	return;
-    }
-
-    if (IsToken(p)) {
-	if (!SMcancel(TextToToken(p)) && (SMerrno != SMERR_NOENT)) {
-	    fprintf(stderr, "%s: can't cancel %s\n", MyName, p);
-	    fatals++;
-	}
 	return;
     }
 
