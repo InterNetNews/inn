@@ -5,11 +5,11 @@ include ../Makefile.global
 CFLAGS	= $(GCFLAGS)
 
 SOURCES	=	archive.c batcher.c buffchan.c cvtbatch.c filechan.c \
-		innxmit.c innxbatch.c nntpget.c overchan.c shlock.c \
+		innxmit.c innxbatch.c nntpget.c shlock.c \
 		shrinkfile.c crosspost.c actsync.c inndf.c
 
 ALL	=	archive batcher buffchan cvtbatch filechan \
-		innxmit innxbatch nntpget overchan shlock \
+		innxmit innxbatch nntpget shlock \
 		shrinkfile crosspost actsync actsyncd actmerge \
 		sendxbatches inndf
 
@@ -60,9 +60,6 @@ sendxbatches:	$(P) sendxbatches.sh
 	rm -f $@
 	cp $? $@
 	chmod +x $@
-
-overchan:	$(P) overchan.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ overchan.o $(LIBNEWS) $(LIBS)
 
 crosspost:	$(P) crosspost.o $(LIBNEWS)
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ crosspost.o $(LIBNEWS) $(LIBS)
@@ -152,12 +149,6 @@ nntpget.o:	../include/libinn.h
 nntpget.o:	../include/macros.h
 nntpget.o:	../include/nntp.h
 nntpget.o:	../include/paths.h
-overchan.o:	../include/configdata.h
-overchan.o:	../include/libinn.h
-overchan.o:	../include/clibrary.h
-overchan.o:	../include/macros.h
-overchan.o:	../include/paths.h
-overchan.o:	../include/qio.h
 shlock.o:	../include/clibrary.h
 shlock.o:	../include/configdata.h
 shrinkfile.o:	../include/clibrary.h

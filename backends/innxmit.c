@@ -146,7 +146,6 @@ STATIC FILE *HistorySeek(char *MessageID)
     OFFSET_T		offset;
 #ifndef	DO_TAGGED_HASH
     idxrec		ionevalue;
-    idxrecext		iextvalue;
 #endif
 
     /* Open the history file. */
@@ -172,15 +171,9 @@ STATIC FILE *HistorySeek(char *MessageID)
     if ((offset = dbzfetch(HashMessageID(MessageID))) < 0)
 	return NULL;
 #else
-    if (innconf->extendeddbz) {
-	if (!dbzfetch(HashMessageID(MessageID), &iextvalue))
-	    return NULL;
-	offset = iextvalue.offset[HISTOFFSET];
-    } else {
 	if (!dbzfetch(HashMessageID(MessageID), &ionevalue))
 	    return NULL;
 	offset = ionevalue.offset;
-    }
 #endif
 
     /* Get the seek offset, and seek. */
@@ -1175,6 +1168,7 @@ int main(int ac, char *av[])
     unsigned int	ConnectTimeout;
     unsigned int	TotalTimeout;
     int                 port = NNTP_PORT;
+    BOOL		val;
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
@@ -1250,17 +1244,15 @@ int main(int ac, char *av[])
 
     (void)openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
-    if (innconf->storageapi) {
-	BOOL val;
-	val = TRUE;
-	if (!SMsetup(SM_PREOPEN,(void *)&val)) {
-	    fprintf(stderr, "Can't setup the storage manager\n");
-	    exit(1);
-	}
-	if (!SMinit()) {
-	    fprintf(stderr, "Can't initialize the storage manager: %s\n", SMerrorstr);
-	    exit(1);
-	}
+    
+    val = TRUE;
+    if (!SMsetup(SM_PREOPEN,(void *)&val)) {
+	fprintf(stderr, "Can't setup the storage manager\n");
+	exit(1);
+    }
+    if (!SMinit()) {
+	fprintf(stderr, "Can't initialize the storage manager: %s\n", SMerrorstr);
+	exit(1);
     }
 
     /* Open the batch file and lock others out. */

@@ -600,11 +600,9 @@ main(ac, av)
     *Name++ = '/';
 
     /* If storageapi is being used, initialize... */
-    if (innconf->storageapi) {
-	if (!SMinit()) {
-	    (void)fprintf(stderr, "archive: Could not initialize the storage manager: %s", SMerrorstr);
-	    exit(1);
-	}
+    if (!SMinit()) {
+	(void)fprintf(stderr, "archive: Could not initialize the storage manager: %s", SMerrorstr);
+	exit(1);
     }
 
     /* Read input. */
@@ -808,9 +806,7 @@ main(ac, av)
     }
 
     /* close down the storage manager api */
-    if (innconf->storageapi) {
-	SMshutdown();
-    }
+    SMshutdown();
 
     /* If we read all our input, try to remove the file, and we're done. */
     if (feof(stdin)) {

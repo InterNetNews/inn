@@ -5,7 +5,7 @@
  *
  * usage:
  *    actsync [-b hostid][-d hostid][-g max][-i ignore_file][-I][-k][-l hostid]
- *	      [-m][-n name][-o fmt][-p %][-q hostid][-s size][-S spool_dir]
+ *	      [-m][-n name][-o fmt][-p %][-q hostid][-s size]
  *	      [-t hostid][-T][-v verbose_lvl][-z sec]
  *	      [host1] host2
  *
@@ -34,7 +34,6 @@
  *	-p %		min % host1 lines unchanged allowed	  (def: -p 96)
  *	-q hostid	silence errors from a host (see -b)	  (def: -q 0)
  *	-s size		ignore names longer than size (0=no lim)  (def: -s 0)
- *	-S spool_dir	scan spool_dir for hi & low water marks	  (def: dont)
  *	-t hostid	ignore bad top level groups from:(see -b) (def: -t 2)
  *	-T		no new hierarchies (requires -S dir)	  (def: allow)
  *	-v verbose_lvl	verbosity level				  (def: -v 0)
@@ -75,267 +74,12 @@
 #include <math.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <dirent.h>
 #include "clibrary.h"
-#include "mydir.h"
 #include "libinn.h"
 #include "qio.h"
 #include "paths.h"
 #include "macros.h"
-
-
-/*
- * HiLowWater - Given an newsgroup name determine the hi and low water marks
- *
- * Given:
- *	name	name of newsgroup (in . notation)
- *	hi	where to place the hi water mark value
- *	low	where to place the low water mark value
- *	oldhi	current hi water mark, or -1 to force to compute
- *	oldlow	current low water mark, or -1 to force to compute
- *
- * Returns:
- *	TRUE	newsgroup directory was found with files in it
- *	FALSE	newsgroup directiry was not found, or did not contain
- *		and files with all numeric (non-leading 0) names
- *
- * NOTE: This routine assumes that the current directory is $SPOOL.
- */
-BOOL
-HiLowWater(name, hi, low, oldhi, oldlow)
-    char	*name;
-    long	*hi;
-    long	*low;
-    long	oldhi;
-    long	oldlow;
-{
-    int		dir_len;	/* length of newsgroup name */
-    int		file_len;	/* length of the filename in the dir */
-    char	dir[BUFSIZ];	/* name of directory to probe */
-    char	path[BUFSIZ+SMBUF];	/* spool relative path of a file */
-    DIR		*dp;		/* directory 'read descriptor' */
-    DIRENTRY	*ep;		/* entry read from a directory */
-    long	num;		/* numeric value of a filename */
-    long	himark;		/* current hi water mark found */
-    long	lowmark;	/* current low water mark found */
-    BOOL	found_art;	/* TRUE => found an article */
-    struct stat	statbuf;	/* stat of the file in the directory */
-    char	*p;
-    char	*q;
-    FILE	*fi;
-    struct stat sb;
-    int		count;
-    char	(*mapped)[][OVERINDEXPACKSIZE];
-    char	packed[OVERINDEXPACKSIZE];
-    OVERINDEX	index;
-
-    /*
-     * firewall
-     */
-    if (hi == NULL || low == NULL || name == NULL) {
-	/* error - bogus args ... assume FALSE */
-	return FALSE;
-    }
-    dir_len = strlen(name);
-    if (dir_len == 0 || dir_len >= BUFSIZ) {
-	/* newsgroup name length is bad, so punt on the search */
-	return FALSE;
-    }
-
-    /*
-     * assume current hi and low values unless we find otherwise
-     *
-     * force low > 0 && hi >= low-1
-     */
-    if (oldlow > 0) {
-	*low = oldlow;
-	lowmark = oldlow;
-	if (oldhi < oldlow-1) {
-	    oldhi = oldlow-1;
-	}
-    } else {
-	*low = 1;
-	lowmark = 0x7fffffff;
-    }
-    if (oldhi >= 0) {
-	*hi = oldhi;
-	himark = oldhi;
-    } else {
-	*hi = 0;
-	himark = 0;
-    }
-
-    /* 
-     * Turn group name into directory name
-     */
-    for (p=name, q=dir; *p; ++p, ++q) {
-	if (*p == '.') {
-	    *q = '/';
-	} else {
-	    *q = *p;
-	}
-    }
-    *q = '\0';
-
-    if (innconf->storageapi) {
-	sprintf(q, "/%s.index", innconf->overviewname);
-	if ((fi = fopen(dir, "r")) == NULL) {
-	    /* cannot open overview.index, assume not found or non-accessable */
-	    return FALSE;
-	}           
-	if (innconf->overviewmmap) {
-	    if (fstat(fileno(fi), &sb) < 0) {
-		fclose(fi);
-		return FALSE;
-	    }
-	    count = sb.st_size / OVERINDEXPACKSIZE;
-	    if (count == 0) {
-		fclose(fi);
-		return FALSE;
-	    }
-	    if ((mapped = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, count * OVERINDEXPACKSIZE,
-		PROT_READ, MAP__ARG, fileno(fi), 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
-		fclose(fi);
-		return FALSE;
-	    }
-	    fclose(fi);
-	    /* assumes .overview.index is sorted */
-	    UnpackOverIndex((*mapped)[0], &index);
-	    if (index.artnum < lowmark)
-		lowmark = index.artnum;
-	    UnpackOverIndex((*mapped)[count-1], &index);
-	    if (index.artnum > himark)
-		himark = index.artnum;
-	    if ((munmap((MMAP_PTR)mapped, count * OVERINDEXPACKSIZE)) < 0)
-		return FALSE;
-	} else {
-	    while (fread(packed, OVERINDEXPACKSIZE, 1, fi) == 1) {
-		UnpackOverIndex(packed, &index);
-		if (index.artnum < lowmark)
-		    lowmark = index.artnum;
-		if (index.artnum > himark)
-		    himark = index.artnum;
-	    }
-	    fclose(fi);
-	}
-    } else {
-	/*
-	 * attempt to open the directory
-	 */
-	dp = opendir(dir);
-	if (dp == NULL) {
-	    /* cannot scan the directory, assume not found or non-accessable */
-	    return FALSE;
-	}
-
-	/*
-	 * scan the directory for all numeric non-leading zero entries
-	 * looking for the lowest and highest values
-	 */
-	found_art = FALSE;
-	while ((ep = readdir(dp)) != NULL) {
-
-	    /*
-	     * ignore if it it does not begin with [1-9]
-	     */
-	    p = ep->d_name;
-	    if (!CTYPE(isdigit, (int)*p) || *p == '0') {
-		/* first char is not [1-9], ignore */
-		continue;
-	    }
-
-	    /*
-	     * ignore if contains a non-digit elsewhere in the name
-	     */
-	    for (++p; *p; ++p) {
-		if (!CTYPE(isdigit, (int)*p)) {
-		    break;
-		}
-	    }
-	    if (*p) {
-		/* found a non-digit, ignore this entry */
-		continue;
-	    }
-
-	    /*
-	     * convert numeric file name to a digit
-	     */
-	    num = atol(ep->d_name);
-
-	    /*
-	     * look for a new low water mark
-	     *
-	     * Ignore this entry if it is not a file.
-	     */
-	    if (num < lowmark) {
-
-		/*
-		 * ignore if this entry is not a file
-		 *
-		 * If the numeric name is too long, assume we have a file
-		 */
-		file_len = strlen(ep->d_name);
-		if (dir_len+1+file_len < BUFSIZ+SMBUF) {
-
-		    /* 
-		     * form the filename 
-		     */
-		    strncpy(path, dir, dir_len);
-		    path[dir_len] = '/';
-		    strncpy(path+dir_len+1, ep->d_name, file_len);
-		    path[dir_len+1+file_len] = '\0';
-
-		    /* 
-		     * skip if fie is not found or if it is not a regular file
-		     */
-		    if (stat(path, &statbuf) < 0 || !S_ISREG(statbuf.st_mode)) {
-			continue;
-		    }
-		}
-
-		/*
-		 * we have a new low water mark
-		 */
-		lowmark = num;
-	    }
-
-	    /*
-	     * note that we saw a numeric non-learing 0 file
-	     */
-	    found_art = TRUE;
-
-	    /*
-	     * look for a new hi water mark
-	     */
-	    if (num > himark) {
-		himark = num;
-	    }
-	}
-	(void)closedir(dp);
-    }
-
-    /* 
-     * if lowmark was never set, set it to 1
-     */
-    if (!found_art) {
-	lowmark = himark+1;
-    }
-
-    /*
-     * We know that lowmark is > 0, so now we will force hi >= low-1
-     */
-    if (himark < lowmark-1) {
-	himark = lowmark-1;
-    }
-
-    /*
-     * note new marks
-     */
-    *hi = himark;
-    *low = lowmark;
-    /* found new marks */
-    return found_art;
-}
-
 
 /*
  * pat - internal ignore/check pattern
@@ -522,7 +266,6 @@ int host2_errs = 0;		/* errors found in host2 active file */
 int quiet_host1 = 0; 		/* 1 => -q 1 or -q 12 or -q 21 given */
 int quiet_host2 = 0;	 	/* 1 => -q 2 or -q 12 or -q 21 given */
 int s_flag = 0;			/* max group size (length), 0 => do not check */
-char *spool = NULL;		/* non-NULL => scan spool_dir for hi & low */
 int t_host1_flag = 0;		/* 1 => -t 1 or -t 12 or -t 21 given */
 int t_host2_flag = 1;		/* 1 => -t 2 or -d 12 or -t 21 given */
 int no_new_hier = 0;		/* 1 => -T; no new hierarchies */
@@ -547,7 +290,6 @@ static void error_mark();	    /* mark for removal, error grps from host */
 static int eq_merge_cmp();	    /* qsort compare for =type grp processing */
 static int mark_eq_probs();	    /* mark =type problems from a host */
 static int exec_cmd();		    /* exec a ctlinnd command */
-static int scan_spool_dir();	    /* scan spool dir for existing articles */
 static int new_top_hier();	    /* see if we have a new top level */
 
 int
@@ -593,17 +335,6 @@ fprintf(stderr, "Couldn't init inn.conf\n");
 
     /* compare groups from both hosts */
     merge_grps(grp, grplen, host1, host2);
-
-    /* if -S, cd to that spool dir for later hi/low water checking */
-    if (spool != NULL) {
-	if (chdir(spool) < 0) {
-	    fprintf(stderr, "%s: cannot cd to %s\n", program, spool);
-	    exit(1);
-	}
-	if (D_BUG) {
-	    fprintf(stderr, "%s: cd %s\n", program, spool);
-	}
-    }
 
     /* mark for removal, error groups from host1 if -e */
     if (! k_flag) {
@@ -866,9 +597,6 @@ process_args(argc, argv, host1, host2)
 	case 's':		/* -s size */
 	    s_flag = atoi(optarg);
 	    break;
-	case 'S':		/* -S spool_dir */
-	    spool = optarg;
-	    break;
 	case 't':		/* -t {0|1|2|12|21} */
 	    switch (atoi(optarg)) {
 	    case 0:
@@ -938,13 +666,6 @@ process_args(argc, argv, host1, host2)
 	/* NOTREACHED */
     }
 
-    /* -T requires -S */
-    if (no_new_hier && spool == NULL) {
-	fprintf(stderr, "%s: -T requires -S spool_dir\n", program);
-	usage();
-	/* NOTREACHED */
-    }
-
     /* determine default host name if needed */
     if (*host1 == NULL || strcmp(*host1, "-") == 0) {
 	def_serv = innconf->server;
@@ -981,7 +702,7 @@ usage()
     (void) fprintf(stderr,
       "\t[-l hostid][-m][-n name][-o fmt][-p min_%%_unchg][-q hostid]\n");
     (void) fprintf(stderr,
-      "\t[-s size][-S spool_dir][-t hostid][-T][-v verbose_lvl][-z sec]\n");
+      "\t[-s size][-t hostid][-T][-v verbose_lvl][-z sec]\n");
     (void) fprintf(stderr, "\t[host1] host2\n\n");
 
     (void) fprintf(stderr,
@@ -1034,8 +755,6 @@ usage()
      "    -q hostid\tsilence errors from a host (see -b)\t     (def: -q 0)\n");
     (void) fprintf(stderr,
 	"    -s size\tignore names > than size (0=no lim)\t     (def: -s 0)\n");
-    (void) fprintf(stderr,
-	"    -S spool_dir\tscan spool_dir for hi & low water marks\t(def: dont)\n");
     (void) fprintf(stderr,
  "    -t hostid\tignore bad top level grps from: (see -b)     (def: -t 2)\n");
     (void) fprintf(stderr,
@@ -2378,7 +2097,6 @@ output_grps(grp, grplen)
     int add;		/* number of groups added */
     int change;		/* number of groups changed */
     int remove;		/* number of groups removed */
-    int scan_ret;	/* scan_spool_dir() return */
     int no_new_dir;	/* number of new groups with missing/empty dirs */
     int new_dir;	/* number of new groupsm, non-empty dir no water chg */
     int water_change;	/* number of new groups where hi&low water changed */
@@ -2597,28 +2315,6 @@ output_grps(grp, grplen)
 		/* case: group will be kept */
 		} else {
 
-		    /* if -S spool and new group, reset hi & low water mark */
-		    if (spool != NULL && grp[i].hostid == HOSTID2) {
-			scan_ret = scan_spool_dir(grp+i);
-			switch (scan_ret) {
-			case NEWGRP_EMPTY:
-			    ++no_new_dir;
-			    break;
-			case NEWGRP_NOCHG:
-			    ++new_dir;
-			    break;
-			case NEWGRP_CHG:
-			    ++water_change;
-			    break;
-			default:
-			    fprintf(stderr, 
-				"%s: internal error #10, %s:%d\n",
-				"bad scan_spool_dir return",
-				program, scan_ret);
-			    exit(37);
-			}
-		    }
-
 		    /* output in active file format */
 		    printf("%s %s %s %s\n",
 			grp[i].name,  grp[i].outhi, grp[i].outlow,
@@ -2800,11 +2496,6 @@ output_grps(grp, grplen)
 	if (o_flag == OUTPUT_EXEC || o_flag == OUTPUT_IEXEC) {
 	    fprintf(stderr,
 		"%s: STATUS: %d exec(s) not performed\n", program, not_done);
-	}
-	if (spool != NULL) {
-	    fprintf(stderr,
-	    "%s: STATUS: no/empty dir:%d, dir no hi/low chg:%d hi/low chg:%d\n",
-		program, no_new_dir, new_dir, water_change);
 	}
     }
 }
@@ -3421,128 +3112,6 @@ exec_cmd(mode, cmd, grp, type, who)
 
     /* all done */
     return 1;
-}
-
-/*
- * scan_spool_dir - scan a spool directory for existing articles
- *
- * In order to avoid article number collisions, this function will
- * look under the spool directory for the related directory.  If
- * this directory exists, then is it scanned for existing article
- * files.  The hi and low water values will be set the the highest
- * and lowest all numeric filenames found directly under the
- * given directory.
- *
- * given:
- *	grp		pointer to a representation of an active line		
- *
- * returns:
- *	NEWGRP_EMPTY	no dir under spool_dir was found, no change made
- *	NEWGRP_NOCHG	dir found, but no change to hi & low water was made
- *	NEWGRP_CHG	dir found, change to hi & low water was made
- *
- * NOTE: This function assumes that we are at the top of the news spool.
- */
-static int
-scan_spool_dir(grp)
-    struct grp *grp;
-{
-    long oldhi;		/* old (from merge) hi water mark */
-    long oldlow;	/* old (from merge) low water mark */
-    long newhi;		/* new hi water mark from merge AND spool */
-    long newlow;	/* new low water mark from merge AND spool */
-    BOOL found;		/* TRUE => the newsgroup dir already exists */
-    char *hi;		/* changed hi water mark */
-    char *low;		/* changed low water mark */
-
-    /*
-     * firewall
-     */
-    if (grp == NULL) {
-	fprintf(stderr,
-	    "%s: internal error #14, grp is NULL\n", program);
-	exit(53);
-    }
-
-    /*
-     * convert hi and low fields into numeric values
-     */
-    oldhi = atol(grp->outhi);
-    oldlow = atol(grp->outlow);
-    found = HiLowWater(grp->name, &newhi, &newlow, (long)-1, (long)-1);
-    if (D_SUMMARY) {
-	fprintf(stderr,
-	    "%s: new: %s, found %d, old hi/low: %ld %ld, new hi/low: %ld %ld\n",
-	    program, grp->name, found, oldhi, oldlow, newhi, newlow);
-    }
-    if (!found) {
-
-	/*
-	 * we found no dir or it is empty so there is no reason
-	 * to change the hi & low water marks
-	 */
-	if (D_SUMMARY) {
-	    fprintf(stderr, 
-	      "%s: new: %s dir not found or is empty\n",
-	      program, grp->name);
-	}
-	return NEWGRP_EMPTY;
-    }
-
-    /*
-     * determine if there is no hi or low water mark changes
-     */
-    if (newhi == oldhi && newlow == oldlow) {
-
-	/* non-empty dir found, but no hi & low water change */
-	if (D_SUMMARY) {
-	    fprintf(stderr, 
-	      "%s: new: %s, non-empty dir, no hi/low water change\n",
-	      program, grp->name);
-	}
-	return NEWGRP_NOCHG;
-    }
-
-    /*
-     * form the new water marks
-     */
-    if (newhi != oldhi) {
-	hi = malloc(WATER_LEN+1);
-	if (hi == NULL) {
-	    fprintf(stderr,
-		"%s: unable to malloc %d octet hi water string\n",
-		program, WATER_LEN+1);
-	    exit(54);
-	}
-	sprintf(hi, "%010ld", newhi);
-	if (D_BUG) {
-	    fprintf(stderr,
-	      "%s: new: %s, dir found, oldhi:<%s> != newhi:<%s>\n",
-	      program, grp->name, grp->outhi, hi);
-	}
-	grp->outhi = hi;
-    }
-    if (newlow != oldlow) {
-	low = malloc(WATER_LEN+1);
-	if (low == NULL) {
-	    fprintf(stderr,
-		"%s: unable to malloc %d octet low water string\n",
-		program, WATER_LEN+1);
-	    exit(55);
-	}
-	sprintf(low, "%010ld", newlow);
-	if (D_BUG) {
-	    fprintf(stderr,
-	      "%s: new: %s, dir found, oldlow:<%s> != newlow:<%s>\n",
-	      program, grp->name, grp->outlow, low);
-	}
-	grp->outlow = low;
-    }
-
-    /*
-     * report the change 
-     */
-    return NEWGRP_CHG;
 }
 
 /*
