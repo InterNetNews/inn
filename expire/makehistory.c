@@ -659,13 +659,13 @@ DoArt(ARTHANDLE *art)
                 buffer_set(&buffer, "", 0);
 	    else
                 buffer_append(&buffer, SEP, strlen(SEP));
+            if (fp->HeaderLength == 0)
+                continue;
 	    if (fp->NeedHeadername) {
                 buffer_append(&buffer, fp->Headername, fp->HeadernameLength);
                 buffer_append(&buffer, COLONSPACE, strlen(COLONSPACE));
 	    }
 	    i = buffer.left;
-            if (fp->HeaderLength == 0)
-                continue;
             buffer_resize(&buffer, buffer.left + fp->HeaderLength);
             end = fp->Header + fp->HeaderLength - 1;
             for (p = fp->Header, q = &buffer.data[i]; p <= end; p++) {
