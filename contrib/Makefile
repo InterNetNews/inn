@@ -6,6 +6,7 @@
 
 include ../Makefile.global
 
+top           = ..
 CFLAGS        = $(GCFLAGS)
 
 ALL	      = archivegz backupfeed cleannewsgroups delayer findreadgroups \
@@ -21,7 +22,7 @@ clean clobber distclean:
 
 ##  Compilation rules.
 
-LINK 		= $(CC) $(LDFLAGS) -o $@
+LINK 		= $(lIBLD) $(LDFLAGS) -o $@
 FIX		= $(FIXSCRIPT)
 
 expirectl:	expirectl.o	; $(LINK) expirectl.o
