@@ -1170,12 +1170,20 @@ STATIC char *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const H
     /* Get the author header. */
     if ((p = strchr(files, ' ')) != NULL)
 	*p = '\0';
-    if ((local = (char *)HeaderFindDisk(files, "Sender", 6)) == NULL
-     && (local = (char *)HeaderFindDisk(files, "From", 4)) == NULL) {
+    if ((local = (char *)HeaderFindDisk(files, "Sender:", 7)) == NULL
+     && (local = (char *)HeaderFindDisk(files, "From:", 5)) == NULL) {
 	return NULL;
     }
     if (p)
 	*p = ' ';
+    if (*local == 'S') {
+	local += 7;
+    } else {
+	local += 5;
+    }
+    for (local++; *local == ' '; local++);
+    if (*local == NULL)
+	return NULL;
     
     HeaderCleanFrom(local);
 
