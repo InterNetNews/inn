@@ -1,0 +1,21 @@
+.\" -*- nroff -*-
+.\" $Revision$
+.TH MOTD.NEWS 5
+.SH NAME
+motd.news
+.SH DESCRIPTION
+The
+.I <pathetc in inn.conf>/motd.news
+file contains any local information for news readers to be shown when they
+issue the LIST MOTD command. Such information may be notifications of
+upcoming downtime etc. The entire file is returned to the newsreader. 
+.LP
+A missing \fImotd.news\fP is not an error--the client will just get an
+empty response.
+.LP
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+.SH "SEE ALSO"
+inn.conf(5).

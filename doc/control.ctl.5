@@ -1,0 +1,212 @@
+.\" $Revision$
+.TH CONTROL.CTL 5
+.SH NAME
+control.ctl \- specify handling of Usenet control messages
+.SH DESCRIPTION
+The file
+.I <pathetc in inn.conf>/control.ctl
+is used to determine what action is taken when a control message
+is received.
+If
+.I <usecontrolchan in inn.conf>
+is ``true'', it is read by the
+.I controlchan
+script, which can be invoked as channel program by
+.IR innd (8).
+When
+.I control.ctl
+is modified,
+.I
+.I controlchan
+notices this automatically and reload it.
+If
+.I <usecontrolchan in inn.conf>
+is ``false'', it is read by the
+.I parsecontrol
+script, which is called by all the control scripts.
+(For an explanation of how the control scripts are invoked, see
+.IR innd (8).)
+.PP
+The file consists of a series of lines; blank lines and lines beginning
+with a number sign (``#'') are ignored.
+All other lines consist of four fields separated by a colon:
+.RS
+message:from:newsgroups:action
+.RE
+.PP
+The first field is the name of the message for which this line is valid.
+It should be either the name of the control message or the word ``all''
+to mean that it is valid for all messages.
+.PP
+The second field is a shell-style pattern that matches the email address
+of the person posting the message.
+(The poster's address is first converted to lowercase.)
+The matching is done using the shell's
+.I case
+statement (or the equivalent); see
+.IR sh (1)
+for details.
+.PP
+If the control message is ``newgroup'' or ``rmgroup'' then the third
+field specifies the shell-style pattern that must match the group
+being created or removed.
+If the control message is ``checkgroups'' then the third field specifies the
+shell-style pattern that is used to determine which newsgroups are processed
+for checking.
+If the control message is of a different type, then this field is
+ignored.
+.PP
+The fourth field specifies what action to take on control messages
+that match this line.
+The following actions are understood:
+.TP
+.B doit
+The action requested by the control message should be performed.
+In some cases, the control script will also send mail to
+.IR <USER\ specified\ with\ \-\-with\-news\-master\ at\ configure> ,
+but if notification of the action should always be sent,
+.B doit=mail
+should be used instead (see below).
+.TP
+.B doifarg
+If the control message has an argument, this is treated as a ``doit'' action.
+If no argument was given, it is treated as a ``mail'' entry.
+This is used in ``sendsys'' entries
+script so that a site can request its own
+.IR newsfeeds (5)
+entry by posting a ``sendsys mysite'' article.
+On the other hand, sendsys ``bombs'' ask that the entire
+.I newsfeeds
+file be sent to a forged reply-to address; by using ``doifarg'' such
+messages will not be processed automatically.
+(Processing ``sendsys'' control messages is still not recommended,
+even with this work-around, unless they are authenticated in some
+fashion.  The risk of having news servers turned into anonymous mail
+bombing services is too high.)
+.TP
+.BI doit= file
+The action is performed, but a log entry is written to the specified
+log file,
+.IR file .
+If
+.I file
+is the word ``mail'' then the record is mailed.
+A null string is equivalent to /dev/null (in other words, with a null
+string, nothing is logged).
+A pathname that starts with a slash is taken as the absolute filename to
+use as the log.
+Otherwise, the log entry is written to
+.IR <pathlog\ in\ inn.conf>/file.log .
+The log is written by
+.I writelog
+(see
+.IR newslog (8)).
+.TP
+.B drop
+No action is taken; the message is ignored.
+.TP
+.B verify-*
+If the value starts with the string ``verify-'' (for example, 
+\&``verify-news.announce.newgroups'') then PGP verification of the control
+message will be done using the key issued by the ``user'' defined by the
+rest of the string -- ``news.announce.newsgroups'' in this example.
+If no logging is specified (with
+.BI = file
+mentioned below), notification of successful ``newgroup'' and ``rmgroup''
+messages and the output of ``checkgroups'' messages will be mailed to the
+news administrator.
+.TP
+.BI verify-*= file
+PGP verification is done as for the ``verify-*'' entries, and a log entry
+is written to the specified file.
+(In the case of ``checkgroups'' messages, this means the shell script
+output of the ``checkgroups'' message will be written to that file.)
+.TP
+.B log
+A one-line log notice is sent to standard error.
+.IR innd (8)
+normally directs this to the file
+.IR <pathlog\ in\ inn.conf>/errlog .
+.TP
+.BI log= file
+A log entry is written to the specified log file,
+.IR file ,
+which is interpreted as described above.
+.TP
+.B mail
+A mail message is sent to the news administrator.
+.PP
+Processing of a ``checkgroups'' message will never actually change
+the active file.
+The difference between an action of
+.B doit
+(or
+.BR verify )
+and an action of
+.B mail
+for ``checkgroups'' control messages lies only in what mail is sent;
+.B doit
+will mail the news administrator a shell script to create, delete, or
+modify newsgroups to match the ``checkgroups'' message, whereas
+.B mail
+will just mail the entire message.
+In either case, the news administrator will have to take action to
+implement the ``checkgroups'' and if the mail is ignored, nothing
+will be changed.
+.PP
+Lines are matched in order; the last match found in the file is the one
+that is used.
+For example, with the following three lines:
+.RS
+.nf
+
+newgroup:*:*:drop
+newgroup:group-admin@isc.org:comp.*|humanities.*|misc.*|news.*|\e
+rec.*|sci.*|soc.*|talk.*:verify-news.announce.newgroups
+newgroup:kre@munnari.oz.au:aus.*:mail
+
+.fi
+.RE
+A newgroup coming from ``group-admin'' at a ISC machine will be honored if
+it is one of the listed hierarchies and if it has a valid
+signature with the ``news.announce.newgroups'' key.
+If ``kre'' posts a newgroup message creating ``aus.foo'', then mail will
+be sent.
+All other newgroup messages are ignored.
+.PP
+Use of the
+.B verify
+action for processing ``newgroup'', ``rmgroup'', and ``checkgroups''
+messages is
+.B strongly
+recommended.
+Abuse of control messages is rampant, and authentication
+via PGP signatures is currently the only reliable way to be sure that
+a control message comes from who it claims to be from.
+Most major hierarchies are now using PGP-authenticated control
+messages.
+.PP
+In order to use
+.B verify
+actions, the PGP key ring of the news user must be populated with the
+PGP keys of the hierarchy maintainers whose control messages you want
+to honor.  For more details on PGP-authenticated control messages and
+the URL for downloading the PGP keys of major hierarchies, see
+.IR pgpverify (8).
+.PP
+Control messages of type ``cancel'' are handled internally by
+.BR innd (8)
+and cannot be controlled by any of the mechanisms described here.
+.SH HISTORY
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+.SH "SEE ALSO"
+inn.conf(5),
+innd(8),
+newsfeeds(5),
+controlchan(8),
+pgpverify(8),
+scanlogs(8).

@@ -1,0 +1,137 @@
+.\" $Revision$
+.TH ARCHIVE 8
+.SH NAME
+archive \- Usenet article archiver
+.SH SYNOPSIS
+.B archive
+[
+.BI \-a " archive"
+]
+[
+.B \-f
+]
+[
+.BI \-i " index"
+]
+[
+.B \-m
+]
+[
+.B \-r
+]
+[
+.I input
+]
+.SH DESCRIPTION
+.I Archive
+makes copies of files specified on its standard input.
+It is normally run either as a channel feed under
+.IR innd (8),
+or by a script before
+.IR expire (8)
+is run.
+.PP
+.I Archive
+reads the named
+.I input
+file, or standard input if no file is given.
+The input is taken as a set of lines.
+Blank lines and lines starting with a number sign (``#'') are ignored.
+All other lines should specify the name of a file to archive.
+If a filename is not an absolute pathname, it is taken to be relative to
+.IR <patharticles\ in\ inn.conf> .
+
+.PP
+Files are copied to a directory within the archive directory,
+.IR <patharchive\ in\ inn.conf> .
+
+The default is to create a hierarchy that mimics the input files;
+intermediate directories will be created as needed.
+For example, the input file
+.I comp/sources/unix/2211
+(article 2211 in the newsgroup comp.sources.unix) will be copied to
+.IR <patharchive\ in\ inn.conf>/comp/sources/unix/2211 .)
+.SH OPTIONS
+.TP
+.B \-a archive
+If the ``\-a'' flag is used then its argument specifies the directory to
+archive in instead of the default.
+.TP
+.B \-f
+If the ``\-f'' flag is used, then all directory names will be
+flattened out, replacing the slashes with periods.
+In this case, the file would be copied to
+.IR <patharchive\ in\ inn.conf>/comp.sources.unix/2211 .)
+.B \-i
+If the ``\-i'' flag is used, then
+.I archive
+will append one line to the specified
+.I index
+file for each article that it copies.
+This line will contain the destination name and the Message-ID and
+Subject headers.
+.TP
+.B \-m
+Files are copied by making a link.
+If that fails a new file is created.
+If
+.I <$ac_cv_func_symlink in config.cache>
+is ``yes'', and the ``\-m'' flag is used, then the file will be copied to the
+destination, and the input file will be replaced with a symbolic
+link pointing to the new file.
+If
+.I <$ac_cv_func_symlink in config.cache>
+is ``no'', 
+The ``\-m'' flag is ignored.
+.TP 
+.B \-r
+By default,
+.I archive
+sets its standard error to
+.IR <pathlog\ in\ inn.conf>/errlog .
+To suppress this redirection, use the ``\-r'' flag.
+.SH EXIT STATUS
+If the input is exhausted,
+.I archive
+will exit with a zero status.
+If an I/O error occures, it will try to spool its input, copying it to a file.
+If there was no input filename, the standard input will be copied to
+.I <pathoutgoing in inn.conf>/archive
+and the program will exit.
+If an input filename was given, a temporary file named
+.IR input .bch
+(if
+.I input
+is an absolute pathname)
+or
+.I <pathoutgoing in inn.conf>/input.bch
+(if the filename does not begin with a slash) is created.
+Once the input is copied,
+.I archive
+will try to rename this temporary file to be the name of the input file,
+and then exit.
+
+.SH EXAMPLES
+A typical
+.IR newsfeeds (5)
+entry to archive most source newsgroups is as follows:
+.PP
+.RS
+.nf
+source-archive\e
+	:!*,*sources*,!*wanted*,!*.d\e
+	:Tc,Wn\e
+	:<PREFIX specified with \-\-prefix at configure>/archive \-f \-i \e
+	    <patharchive in inn.conf>/INDEX
+.fi
+.RE
+
+.SH HISTORY
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+.SH "SEE ALSO"
+inn.conf(5),
+newsfeeds(5).

@@ -1,0 +1,149 @@
+.\" $Revision$
+.TH NNRP.ACCESS 5
+.SH NAME
+nnrp.access \- access file for NNTP news readers.
+.SH DESCRIPTION
+The file
+.I <pathetc in inn.conf>/nnrp.access
+specifies the access control for those NNTP sites that are not
+handled by the main InterNetNews daemon
+.IR innd (8).
+The
+.IR nnrpd (8)
+server reads it when first spawned by
+.IR innd .
+.PP
+Comments begin with a number sign (``#'') and continue through the end
+of the line.
+Blank lines and comments are ignored.
+All other lines should consist of two or five fields separated by colons:
+.RS
+.nf
+hosts:perms:username:password:patterns
+hosts:/full/path/filename
+.fi
+.RE
+.PP
+The first field is a
+.IR wildmat (3)-style
+pattern specifying the names or Internet address of a set of
+.IR hosts .
+Internet address style can be specified with slash ``/'' followed by
+netmask (e.g. ``/25'' or ``255.255.255.128'').
+Before a match is checked, the client's hostname (or its Internet
+address if
+.IR gethostbyaddr (3)
+fails)
+is converted to lowercase.
+Each line is matched in turn, and the last successful match is taken
+as the correct one.
+.PP
+The second field is either a full pathname (with leading ``/'') to
+a second access file (in the same format) to scan for a specified
+first field pattern or a set of letters specifying the permissions granted
+to the client.
+The
+.I perms
+should be chosen from the following set (case is significant):
+.RS
+.nf
+R	The client can retrieve articles
+P	The client can post articles
+N	The client can use the NEWNEWS command, overriding the global setting
+L	The client can post to groups with local-posting prohibited
+.fi
+.RE
+If the filename option is used, no checks are done for recursion
+so loops can occur - be careful.
+.PP
+The third and fourth fields specify the
+.I username
+and
+.I password
+that the client must use to authenticate themselves before the server
+will accept any articles.
+Note that authentication
+is required for newsreading, unless both are empty.
+In this case, the connection is never closed until it is timed out or the
+client explicitly issues ``QUIT''.
+If they are empty, then no password is required.
+Whitespace in these fields will result in the client being unable
+to properly authenticate themselves and may be used to disable access.
+If the third field is ``+'', then
+.IR nnrpd (8)
+uses
+.IR crypt (3)
+to authenticate passed username and password. This might not work on
+systems that use a shadow password file, since nnrpd normally doesn't
+have the permissions to read that file. If nnrpd is started in standalone
+mode, it tries to adjust its permissions so that it can read the shadow
+file. See also the
+.I \-g
+option in the manual page for
+.IR nnrpd (8).
+.PP
+The fifth field is a set of patterns identifying the newsgroups that
+the client is allowed to access.
+The patterns are interpreted in the same manner as the
+.IR newsfeeds (5)
+file except for ``@''.
+The default, however, denies access to all groups.
+.PP
+There is another line format, which can be used to pre-define an access
+list.
+.RS
+.nf
+%DEFINEn:pattern
+.fi
+.RE
+.PP
+The %DEFINE is literal and is followed by a number to define that
+particular pattern. You can then use ``%n'' (replacing ``n'' with
+the number you used in the %DEFINE) as a complete
+replacement for the ``pattern'' option in subsequent lines (i.e: you
+cannot use it along with normal patterns). This can be used to reduce
+the size of the access file when large access patterns are used and
+hence speed up scanning the file. By default, only 10 patterns can
+be used.
+.PP
+The access file is normally used to provide host-level access control
+for reading and posting articles.
+There are times, however, when this is not sufficient and user-level access
+control is needed.
+Whenever an NNTP ``authinfo'' command is used, the 
+.I nnrpd
+server re-reads this file and looks for a matching username and password.
+If the local newsreaders are modified to send the ``authinfo'' command,
+then all host entries can have no access and specific users can be granted
+the appropriate read and post access.
+.PP
+For example:
+.RS
+.nf
+##  host:perm:user:pass:groups
+## Default is no access.
+*::  -no-  :  -no-  :!*
+##  FOO hosts have no password, can read anything.
+*.foo.com:Read Post:::*
+##  A related workstation can't access FOO newsgroups.
+lenox.foo.net:RP:martha:hiatt:*,!foo.*
+## Define a list to be used twice
+%DEFINE0:!*,bar.*,foo.*,comp.*,news.*,rec.*,soc.*,alt.*,!alt.binaries.*
+bar1.foo.net:RP:::%0
+bar2.foo.net:R:::%0
+.fi
+.RE
+.PP
+If the file contains passwords, it should not be world-readable.
+.SH HISTORY
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+.SH "SEE ALSO"
+inn.conf(5),
+innd(8),
+newsfeeds(5),
+nnrpd(8),
+wildmat(3).

@@ -1,0 +1,141 @@
+.\" $Revision$
+.TH CYCBUFF.CONF 5
+.SH NAME
+cycbuff.conf \- configuration file for CNFS method
+.SH DESCRIPTION
+The file
+.I <pathetc in inn.conf>/cycbuff.conf
+is required if CNFS (Cyclic News File System) method is used.
+CNFS is one of storage method which can be defined at
+.IR storage.conf (5).
+.PP
+The file consists of a series of lines;
+blank lines and lines beginning with a number sign (``#'') are ignored.
+There are three kinds of configuration line; ``cycbuffupdate'',
+``refreshinterval'', ``cycbuff'' and ``metacycbuff.''
+The order of lines in this file is not important among the same kind of
+configuration line.  But all ``cycbuff'' lines should be presented before
+any ``metacycbuff'' lines.
+.PP
+\&``Cycbuffupdate'' line is formatted as:
+.PP
+.RS
+.nf
+cycbuffupdate:update
+.fi
+.RE
+.PP
+\&``Update'' is how many article-stores between cycbuff header updates.
+This line can be omitted and the default value is ``25.''
+.PP
+\&``Refreshinterval'' line is formatted as:
+.PP
+.RS
+.nf
+refreshinterval:interval
+.fi
+.RE
+.PP
+\&``Inerval'' is what interval (seconds) between rereading cycbuff header if
+cycbuff is preopend. (This is the case
+.IR nnrpd (8)
+runs as daemon.)
+This line can be omitted and the default value is ``30.''
+.PP
+\&``Cycbuff'' line is formatted as:
+.PP
+.RS
+.nf
+cycbuff:buffer_name:file_name:buffer_size
+.fi
+.RE
+.PP
+\&``Buffer_name'' is the symbolic name of the buffer.
+The length of this name should be within 7 letters.
+This name is referred at ``metacycbuff'' lines.
+\&``File_name'' is the path to buffer file.
+The length of this path should be within 63 letters.
+\&``Buffer_size'' is the length of buffer file in kilobytes
+in decimal (1KB = 1024 bytes).  If the ``file_name'' is not a special
+device, the file should be buffer_size * 1024 bytes.
+.PP
+\&``Metacycbuff'' line is formatted as:
+.PP
+.RS
+.nf
+metacycbuff:meta_cyclic_buffer_name:buffer_names
+.fi
+.RE
+.PP
+\&``Meta_cyclic_buffer_name'' is the symbolic name of meta-cyclic buffer.
+This name is referred at ``options'' field at ``cnfs'' lines in
+.IR storage.conf (5).
+\&``Buffer_names'' is comma separated list of buffer names of ``cycbuff.''
+These buffer names should be defined at ``metacycbuff'' lines.
+If ``buffer_names'' has more than one buffer names, CNFS method
+stores articles into each ``cycbuff'' in order cyclically.
+.PP
+Also it is necessary to set up ``options'' field at ``cnfs'' lines in
+.IR storage.conf (5)
+to use CNFS method.
+That field should be one of ``meta_cyclic_buffer_name'' defined at
+\&``metacycbuff'' lines.
+.PP
+To create new ``cycbuff'', there are two different methods for creating
+the cyclic buffer files.
+.TP
+.BR 1. " Create a big file on top of a standard filesystem."
+The use "dd" to create the ``cycbuff''
+files, such as "dd if=/dev/zero of=/path/to/cycbuff bs=32k count=N"
+where N is the buffer_size divided by 32.
+.TP
+.BR 2. " Use block disk devices directly."
+If your operating system will allow you to
+.I mmap()
+block disk devices (Solaris does, FreeBSD does not), this is the
+recommended method.  Partition the disks to make each partition
+slightly larger (a few MB larger) than the intended size of each cycbuff.
+It is not recommend to use the block device files already located in ``/dev.''
+Instead, use "mknod" to create a new set of block device files.
+In order to do this, do an "ls -l" of the /dev/dsk partition and then a
+subsequent "ls -l" of the destination of the symbolic link under /devices.
+The major and minor device numbers are in the fifth and sixth columns (right
+before the date) respectively.  This information should be fed to "mknod"
+to make a "block-type special file" (b).
+Here is a short script that accomplishes this when fed the /dev/dsk/
+partition name:
+.sp 1
+.nf
+.in +0.5i
+#!/bin/sh
+disk=$1
+link=`ls -l /dev/dsk/$disk | awk '{print $11}'`
+major=`ls -l /dev/dsk/$link | awk '{print $5}' | tr -d ,`
+minor=`ls -l /dev/dsk/$link | awk '{print $6}`
+mkdir /cycbuff
+mknod /cycbuff/$disk b $major $minor
+.in -0.5i
+.fi
+The created device files themselves consume very little space.
+.PP
+In either case, make certain that each cycbuff file is owned by your
+news user, news group, and has rw modes for the owner and group (mode
+0664 or 0660).
+.PP
+When you first start innd and everything is configured properly, you
+should see messages in news.notice which look like:
+.sp 1   
+.nf
+.in +0.5i
+Mar 1 00:00:00 kevlar innd: CNFS-sm No magic cookie found for cycbuff ONE, initializing
+.in -0.5i
+.fi
+.SH HISTORY
+Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+.SH "SEE ALSO"
+inn.conf(5),
+storage.conf(5).
