@@ -233,6 +233,16 @@ Should nnrpd check the existense of article before responding nntp command.
 This can be useful, if article are gone but their overview data still exist.
 This is boolean value and the default is ``true''.
 .TP
+.I storemsgid
+Should history store Message-ID in
+.IR history (5),
+not HASH format.
+.I storemsgid
+is available, if
+.I storageapi
+is ``false''.
+This is boolean value and the default is ``true''.
+.TP
 .I keywords
 Should keywords be generated in the overview databases. Must be a boolean
 value.
@@ -268,12 +278,13 @@ set to ``false''.
 This is boolean value and the default is ``false''.
 .TP
 .I activedenable
-If set to ``yes'' then
+If set to ``true'' then
 .I nnrpd
 processes access the active file through a separate process, using
 UDP requests. The actived process will be started automatically on
 innd startup. This saves a significant amount of memory and processing
-time for news readers, particularly on startup. Default is ``off''.
+time for news readers, particularly on startup.
+This is boolean value and the default is ``false''.
 .TP
 .I activedupdate
 This is the interval (in seconds) that actived updates its in-memory
@@ -519,7 +530,7 @@ is discarded.
 This is boolean value and the default is ``true''.
 .TP
 .I timer
-If this is '0' or 'off', then performance monitoring will be disabled by
+If this is '0' or 'false', then performance monitoring will be disabled by
 default.  Otherwise, it would be how often to report performance
 statistics, in seconds.  If turned on statistics will be logged to syslog.
 The default value is ``0''.
@@ -697,4 +708,4 @@ This is revision \\$3, dated \\$4.
 ..
 .R$ $Id$
 .SH "SEE ALSO"
-libinn(3), moderators(5), makehistory(8), newsrequeue(8), nnrpd(8).
+history(5), libinn(3), moderators(5), makehistory(8), newsrequeue(8), nnrpd(8).
