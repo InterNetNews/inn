@@ -80,7 +80,7 @@ if ${SM} ${ARTICLE} | grep "^Control:[ 	]*${PROG}" >/dev/null 2>&1 ; then
     set X `${SM} ${ARTICLE} | ${SED} -n -e "s/^Control:[ 	]*${PROG}//p" -e '/^$/q'  |tr -d '\015'`
     shift
 else
-    if grep "^Subject:[ 	]*cmsg[ 	]*${PROG}" \
+    if ${SM} ${ARTICLE} | grep "^Subject:[ 	]*cmsg[ 	]*${PROG}" \
 		 >/dev/null 2>&1 ; then
 	set X `${SM} {$ARTICLE} | ${SED} -n -e "s/^Subject:[ 	]*cmsg[ 	]*${PROG}//p" \
 		-e '/^$/q'`
