@@ -62,6 +62,8 @@ struct artngnum {
 char *TokenToText(const TOKEN token);
 TOKEN TextToToken(const char *text);
 BOOL IsToken(const char *text);
+char *ToWireFmt(const char *article, int len, int *newlen);
+char *FromWireFmt(const char *article, int len, int *newlen);
 
 BOOL      SMsetup(SMSETUP type, void *value);
 BOOL      SMinit(void);
