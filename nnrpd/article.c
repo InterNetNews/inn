@@ -416,7 +416,7 @@ STATIC void ARTsendmmap(SENDTYPE what)
 	}
     }
 
-    if (VirtualPathlen > 0) {
+    if (VirtualPathlen > 0 && (what != STbody)) {
 	if ((path = (char *)HeaderFindMem(ARThandle->data, ARThandle->len, "path", sizeof("path") - 1)) == NULL) {
 	    SendIOv(".\r\n", 3);
 	    ARTgetsize += 3;
@@ -458,9 +458,14 @@ STATIC void ARTsendmmap(SENDTYPE what)
 		return;
 	    }
 	}
-	virtualpath = NEW(char, VirtualPathlen + 1);
+	virtualpath = NEW(char, VirtualPathlen + 2);
 	sprintf(virtualpath, "!%s", VirtualPath);
-	if ((s = strstr(path, virtualpath)) != NULL) {
+	for (s = path ; s + VirtualPathlen + 1 < ARThandle->data + ARThandle->len ; s++) {
+	    if (*s != *virtualpath || !EQn(s, virtualpath, VirtualPathlen + 1))
+		continue;
+	    break;
+	}
+	if (s + VirtualPathlen + 1 < ARThandle->data + ARThandle->len) {
 	    if (xref > path) {
 	        SendIOv(q, path - q);
 	        SendIOv(s + 1, xref - (s + 1));
@@ -561,7 +566,12 @@ char *GetHeader(char *header, BOOL IsLines)
 		if (pathheader && (VirtualPathlen > 0)) {
 		    virtualpath = NEW(char, VirtualPathlen + 1);
 		    sprintf(virtualpath, "!%s", VirtualPath);
-		    if ((s = strstr(p, virtualpath)) != NULL) {
+		    for (s = p ; s + VirtualPathlen + 1 < ARThandle->data + ARThandle->len ; s++) {
+			if (*s != *virtualpath || !EQn(s, virtualpath, VirtualPathlen + 1))
+			    continue;
+			break;
+		    }
+		    if (s + VirtualPathlen + 1 < ARThandle->data + ARThandle->len) {
 			memcpy(retval, s + 1, q - (s + 1));
 		    } else {
 			memcpy(retval, VirtualPath, VirtualPathlen);
