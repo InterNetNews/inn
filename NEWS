@@ -64,9 +64,21 @@ Upgrading from 2.2 to 2.3
     For a reader machine, nnrp.access has been replaced by readers.conf. 
     There currently isn't a program to convert between the old format and
     the new format (if you'd like to contribute one, it would be welcomed
-    gratefully).  You may need to look over the sample readers.conf and
-    readers.conf(5) to understand how to write a file equivalent to your
-    current nnrp.access.
+    gratefully).  The new file is unfortunately considerably more complex to
+    support its new capabilities; please carefully read the example
+    readers.conf provided and the man page when setting up your initial
+    configuration.  The provided commented-out examples cover the most
+    common installation (IP-based authentication for all machines on the
+    local network).
+
+    INN makes extensive use of mmap for the new overview mechanisms, so at
+    the present time NFS-mounting the spool and overview from one central
+    server on multiple reader machines probably isn't feasible in this
+    version.  mmap tends to interact poorly with NFS (at the least, NFS
+    clients won't see updates to the mapped files in situations where they
+    should).  (The preferred way to fix this would, rather than backing out
+    the use of mmap or making it optional, to add support for Diablo-style
+    header feeds and pull-on-demand of articles from a master server.)
 
     The flags for overchan have changed, plus you probably don't want to run
     overchan at all any more.  Letting innd write overview data itself
@@ -85,7 +97,7 @@ Upgrading from 2.2 to 2.3
     to your new server rather than trying to build overview and history
     directly from the old spool.  It's more reliable and ensures that
     everything gets put into the right place.  The easiest way to do this is
-    to, on your old server, generate a list of all of your existing article
+    to generate, on your old server, a list of all of your existing article
     files and then feed that list to innxmit.
 
 Changes from 2.2 to 2.3
@@ -97,12 +109,15 @@ Changes from 2.2 to 2.3
     * Unified overview has been replaced with an overview API, and there are
       now three separate overview implementations to choose from.  One
       (tradindexed) is very like traditional overview but uses an additional
-      index file for faster responses to readers.  The second (buffindexed)
-      uses circular buffers and can handle a higher incoming article rate
-      while still being fast for readers.  The third (ovdb) uses Berkeley DB
-      to store overview information (so you need to have Berkeley DB
-      installed to use it).  The ovmethod key in inn.conf chooses the
-      overview method to use.
+      index file.  The second (buffindexed) uses large buffers rather than
+      separate files for each group and can handle a higher incoming article
+      rate while still being fast for readers.  The third (ovdb) uses
+      Berkeley DB to store overview information (so you need to have
+      Berkeley DB installed to use it).  The ovmethod key in inn.conf
+      chooses the overview method to use.
+
+      Note that ovdb has not been as widely tested as the other overview
+      mechanisms and should be considered experimental.
 
     * All article storage and retrieval is now done via the storage API. 
       Traditional spool is now available as a storage type under the storage
@@ -123,17 +138,16 @@ Changes from 2.2 to 2.3
     * To simplify anti-abuse filtering, and to be more compliant with news
       standards and proposed standards, INN now treats as control messages
       only articles containing a Control header.  A Subject line beginning
-      with `cmesg ' is no longer sufficient for a message to be considered a
+      with `cmsg ' is no longer sufficient for a message to be considered a
       control message, and the Also-Control header is no longer supported.
 
     * inews is not installed setgid news and rnews is not installed setuid
       root by default any more.  If you need the old permissions, you have
       to give a flag to configure.  See INSTALL for more details.
 
-    * The INN build system no longer uses subst.  This should be mostly
-      transparent to users, apart from the old annoyance of modifications to
-      include files being overridden again by subst when building INN being
-      a thing of the past.
+    * The INN build system no longer uses subst.  (This will be transparent
+      to most users; it's an improvement and modernization of how INN is
+      configured.)
 
     * The build and installation system has been substantially overhauled. 
       make update now updates scripts as well as binaries and documentation,
