@@ -1606,7 +1606,7 @@ int main(int ac, char *av[])
 	    CleanupAndExit(Server, Paused, 1);
 	}
 	Paused = TRUE;
-	if (!OVERreinit())
+        if (StorageAPI && !OVERreinit())
 	    CleanupAndExit(Server, Paused, 1);
     }
     QIOclose(qp);
