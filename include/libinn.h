@@ -66,16 +66,19 @@ char *HashToText(const HASH hash);
 HASH TextToHash(const char *text);
 int HashCompare(const HASH *h1, const HASH *h2);
 
-/* Miscellaneous. */
+/* Overview handling */
+#define OVERINDEXPACKSIZE      (4 + 4 + sizeof(TOKEN) + 1)
 typedef struct _OVERINDEX {
-    long    artnum;
-/* =()<    @<LSEEKVAL>@   offset;>()= */
-    off_t   offset;
-    TOKEN   token;
-    BOOL    cancelled;
+    unsigned long       artnum;
+    unsigned long       offset;
+    TOKEN               token;
+    BOOL                cancelled;
 } OVERINDEX;
 
+void PackOverIndex(OVERINDEX *index, char *packedindex);
+void UnpackOverIndex(char *packedindex, OVERINDEX *index);
 
+/* Miscellaneous. */
 extern BOOL     MakeDirectory(char *Name, BOOL Recurse);
 extern int	getfdcount(void);
 extern int	wildmat(const char *text, const char *p);

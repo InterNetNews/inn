@@ -449,7 +449,7 @@ extern BOOL		ARTreadschema(void);
 extern const char       *ARTreadarticle(char *files);
 extern char             *ARTreadheader(char *files);
 extern STRING		ARTpost(CHANNEL *cp);
-extern void		ARTcancel(const ARTDATA *Data, const char *MessageID, const HASH hash, const BOOL Trusted);
+extern void		ARTcancel(const ARTDATA *Data, const char *MessageID, const BOOL Trusted);
 extern void		ARTclose(void);
 extern void		ARTsetup(void);
 

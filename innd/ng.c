@@ -342,7 +342,7 @@ BOOL NGrenumber(NEWSGROUP *ngp)
     char		*dummy;
     FILE                *fi;
     OVERINDEX           index;
-
+    char                packed[OVERINDEXPACKSIZE];
     /* Get a valid offset into the active file. */
     if (ICDneedsetup) {
 	syslog(L_ERROR, "%s unsynched must reload before renumber", LogName);
@@ -369,7 +369,8 @@ BOOL NGrenumber(NEWSGROUP *ngp)
 	    return TRUE;
 	}
 	DISPOSE(p);
-	while (fread(&index, sizeof(index), 1, fi) == 1) {
+	while (fread(&packed, OVERINDEXPACKSIZE, 1, fi) == 1) {
+	    UnpackOverIndex(packed, &index);
 	    if (index.artnum < lomark)
 		lomark = index.artnum;
 	    if (index.artnum > himark)

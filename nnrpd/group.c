@@ -337,8 +337,9 @@ STATIC void GRPscandir(char *dir)
     char                *path;
     int                 fd;
     struct stat         sb;
-    OVERINDEX           *tmp;
+    char                (*tmp)[][OVERINDEXPACKSIZE];
     int                 icount;
+    OVERINDEX           index;
 
     ARTsize = 0;
     GRPcount++;
@@ -352,17 +353,17 @@ STATIC void GRPscandir(char *dir)
 	    close(fd);
 	    return;
 	}
-	icount = sb.st_size / sizeof(OVERINDEX);
+	icount = sb.st_size / OVERINDEXPACKSIZE;
 #ifdef OVER_MMAP
-	if ((tmp = mmap((MMAP_PTR)0, icount * sizeof(OVERINDEX),
-			PROT_READ, MAP__ARG, fd, 0)) == (OVERINDEX *)-1) {
+	if ((tmp = mmap((MMAP_PTR)0, icount * OVERINDEXPACKSIZE,
+			PROT_READ, MAP__ARG, fd, 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
 	    syslog(L_ERROR, "%s cant mmap index %s %m", ClientHost, dir);
 	    close(fd);
 	    return;
 	}
 #else
-	tmp = NEW(OVERINDEX, icount);
-	if (read(fd, tmp, icount * sizeof(OVERINDEX)) != (icount * sizeof(OVERINDEX))) {
+	tmp = NEW(char [OVERINDEXPACKSIZE], icount);
+	if (read(fd, tmp, icount * OVERINDEXPACKSIZE) != (icount * OVERINDEXPACKSIZE)) {
 	    syslog(L_ERROR, "%s cant read index %s %m", ClientHost, dir);
 	    close(fd);
 	    return;
@@ -371,7 +372,7 @@ STATIC void GRPscandir(char *dir)
 	close(fd);
 	if (OVERindex) {
 #ifdef OVER_MMAP
-	    if ((munmap((MMAP_PTR)OVERindex, OVERicount * sizeof(OVERINDEX))) < 0)
+	    if ((munmap((MMAP_PTR)OVERindex, OVERicount * OVERINDEXPACKSIZE)) < 0)
 		syslog(L_ERROR, "%s cant munmap index %m", ClientHost, dir);
 #else
 	    DISPOSE(OVERindex);
@@ -387,10 +388,11 @@ STATIC void GRPscandir(char *dir)
 	}
 	ARTarraysize = OVERicount;
 	for (i = 0; i < OVERicount; i++) {
-	    if (OVERindex[i].cancelled)
+	    UnpackOverIndex((*OVERindex)[i], &index);
+	    if (index.cancelled)
 		continue;
-	    ARTnumbers[ARTsize].ArtNum = OVERindex[i].artnum;
-	    ARTnumbers[ARTsize++].Index = &OVERindex[i];
+	    ARTnumbers[ARTsize].ArtNum = index.artnum;
+	    ARTnumbers[ARTsize++].Index = &(*OVERindex)[i];
 	}
 	
     } else {

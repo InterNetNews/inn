@@ -618,6 +618,7 @@ main(argc, argv, env)
     MyHostName = COPY(MyHostName);
 
     ARTmmap = GetBooleanConfigValue(_CONF_ARTMMAP, TRUE);
+    OVERmmap = GetBooleanConfigValue(_CONF_OVERMMAP, TRUE);
 
 #if	NNRP_LOADLIMIT > 0
     if ((load = GetLoadAverage()) > NNRP_LOADLIMIT) {

@@ -41,7 +41,7 @@ const char *HeaderFindDisk(const char *file, const char *Header, const int Heade
     if ((qp = QIOopen(file)) == NULL)
 	return NULL;
 
-    while (line = QIOread(qp)) {
+    while ((line = QIOread(qp)) != NULL) {
 	if (caseEQn(Header, line, HeaderLen)) {
 	    QIOclose(qp);
 	    return COPY(line);

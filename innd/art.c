@@ -1096,12 +1096,13 @@ STATIC char *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const H
 /*
 **  Process a cancel message.
 */
-void ARTcancel(const ARTDATA *Data, const char *MessageID, const HASH hash, const BOOL Trusted)
+void ARTcancel(const ARTDATA *Data, const char *MessageID, const BOOL Trusted)
 {
     char	        *files;
     char	        *p;
     BOOL	        more;
     char		buff[SMBUF+16];
+    HASH                hash;
 
     TMRstart(TMR_ARTCNCL);
     if (!DoCancels && !Trusted) {
@@ -1115,6 +1116,8 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const HASH hash, cons
 	TMRstop(TMR_ARTCNCL);
         return;
     }
+
+    hash = HashMessageID(MessageID);
     
     if (!HIShavearticle(hash)) {
 	/* Article hasn't arrived here, so write a fake entry using
@@ -1190,7 +1193,7 @@ STATIC void ARTcontrol(ARTDATA *Data, HASH hash, char *Control)
 	for (p = &Control[6]; ISWHITE(*p); p++)
 	    continue;
 	if (*p && ARTidok(p))
-	    ARTcancel(Data, p, hash, FALSE);
+	    ARTcancel(Data, p, FALSE);
 	return;
     }
 
@@ -2338,7 +2341,7 @@ STRING ARTpost(CHANNEL *cp)
 	}
 	p = HDR(_supersedes);
 	if (*p && ARTidok(p)) {
-	    ARTcancel(&Data, p, hash, FALSE);
+	    ARTcancel(&Data, p, FALSE);
 	}
     }
 

@@ -76,6 +76,7 @@ STATIC BOOL WriteData(TOKEN Token, char *Dir, char *Art, char *Rest, BOOL Compla
     int	                i;
     BOOL	        ok;
     struct stat		Sb;
+    char                packed[OVERINDEXPACKSIZE];
 
     /* Build the I/O vector. */
     i = 0;
@@ -143,7 +144,8 @@ STATIC BOOL WriteData(TOKEN Token, char *Dir, char *Art, char *Rest, BOOL Compla
     index.artnum = atol(Art);
     index.token = Token;
     index.cancelled = FALSE;
-    if (xwrite(ifd, (char *)&index, sizeof(OVERINDEX)) < 0) {
+    PackOverIndex(&index, packed);
+    if (xwrite(ifd, &packed, OVERINDEXPACKSIZE) < 0) {
 	(void)fprintf(stderr, "overchan cant write %s %s\n",
 		ifile, strerror(errno));
 	close(fd);

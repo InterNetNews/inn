@@ -260,6 +260,7 @@ STATIC BOOL ARTopen(char *name)
     int			fd;
     int                 artnum;
     int                 i;
+    OVERINDEX           index;
 
     /* Re-use article if it's the same one. */
     if (save_artnum == (artnum = atol(name))) {
@@ -273,37 +274,41 @@ STATIC BOOL ARTopen(char *name)
     if ((i = ARTfind(artnum)) < 0)
 	return FALSE;
 
-    if ((ARTnumbers[i].ArtNum == artnum) && ARTnumbers[i].Index && (ARTnumbers[i].Index->token.type != TOKEN_EMPTY)) {
-	if ((ARThandle = SMretrieve(ARTnumbers[i].Index->token, RETR_ALL)) == NULL) {
+    if ((ARTnumbers[i].ArtNum == artnum) && ARTnumbers[i].Index) {
+	UnpackOverIndex(ARTnumbers[i].Index, &index);
+	if (index.token.type != TOKEN_EMPTY) {
+	    if ((ARThandle = SMretrieve(index.token, RETR_ALL)) == NULL) {
+		return FALSE;
+	    }
+	    ARTmem = ARThandle->data;
+	    ARTlen = ARThandle->len;
+	    save_artnum = artnum;
+	    return TRUE;
+	}
+    }
+    /* Open it, make sure it's a regular file. */
+    if (ARTmmap) {
+	if ((fd = open(name, O_RDONLY)) < 0)
+	    return FALSE;
+	if ((fstat(fd, &Sb) < 0) || !S_ISREG(Sb.st_mode)) {
+	    close(fd);
 	    return FALSE;
 	}
-	ARTmem = ARThandle->data;
-	ARTlen = ARThandle->len;
-    } else {
-	/* Open it, make sure it's a regular file. */
-	if (ARTmmap) {
-	    if ((fd = open(name, O_RDONLY)) < 0)
-		return FALSE;
-	    if ((fstat(fd, &Sb) < 0) || !S_ISREG(Sb.st_mode)) {
-		close(fd);
-		return FALSE;
-	    }
-	    ARTlen = Sb.st_size;
-	    if ((int)(ARTmem = mmap(0, ARTlen, PROT_READ, MAP_SHARED, fd, 0)) == -1) {
-		close(fd);
-		return FALSE;
-	    }
+	ARTlen = Sb.st_size;
+	if ((int)(ARTmem = mmap(0, ARTlen, PROT_READ, MAP_SHARED, fd, 0)) == -1) {
 	    close(fd);
-	} else {
-	    if ((ARTqp = QIOopen(name)) == NULL)
-		return FALSE;
-	    if (fstat(QIOfileno(ARTqp), &Sb) < 0 || !S_ISREG(Sb.st_mode)) {
-		ARTclose();
-		return FALSE;
-	    }
-	    ARTlen = Sb.st_size;
-	    CloseOnExec(QIOfileno(ARTqp), TRUE);
+	    return FALSE;
 	}
+	close(fd);
+    } else {
+	if ((ARTqp = QIOopen(name)) == NULL)
+	    return FALSE;
+	if (fstat(QIOfileno(ARTqp), &Sb) < 0 || !S_ISREG(Sb.st_mode)) {
+	    ARTclose();
+	    return FALSE;
+	}
+	ARTlen = Sb.st_size;
+	CloseOnExec(QIOfileno(ARTqp), TRUE);
     }
 
     save_artnum = artnum;
@@ -933,9 +938,10 @@ void OVERclose(void)
 STATIC char *OVERfind(ARTNUM artnum, int *linelen)
 {
     int		i, j;
-#ifdef OVER_MMAP
     char	*OVERline, *q;
+    OVERINDEX   index;
 
+#ifdef OVER_MMAP
     if (OVERmem == NULL)
 #else
     if (OVERfp == NULL)
@@ -945,9 +951,10 @@ STATIC char *OVERfind(ARTNUM artnum, int *linelen)
     if (OVERindex != NULL) {
     	for (i = 0; i < OVERicount; i++) {
     	    j = (i + OVERioff) % OVERicount;
-    	    if (OVERindex[j].artnum == artnum) {
+	    UnpackOverIndex((*OVERindex)[j], &index);
+    	    if (index.artnum == artnum) {
 #ifdef OVER_MMAP
-		OVERline = (char *)OVERmem + OVERindex[j].offset;
+		OVERline = (char *)OVERmem + index.offset;
                 if ((OVERline >= (OVERmem + OVERlen)) || (OVERline < OVERmem))
                     return NULL;
                 for (q = OVERline; q < (OVERmem+OVERlen); q++)
@@ -956,9 +963,9 @@ STATIC char *OVERfind(ARTNUM artnum, int *linelen)
 
                 *linelen = q - OVERline;
 #else
-    	        if (OVERoffset != OVERindex[j].offset) {
-    	            fseek(OVERfp, OVERindex[j].offset, SEEK_SET);
-    	            OVERoffset = OVERindex[j].offset;
+    	        if (OVERoffset != index.offset) {
+    	            fseek(OVERfp, index.offset, SEEK_SET);
+    	            OVERoffset = index.offset;
     	        }
     	        if (fgets(OVERline, MAXOVERLINE, OVERfp) == NULL)
     	            return NULL;

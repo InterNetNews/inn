@@ -195,7 +195,9 @@
    /* Whether or not to use the storage api */
 #define _CONF_STORAGEAPI        "storageapi"
    /* Whether or not to mmap articles */
-#define _CONF_ARTMMAP           "artmmap"
+#define _CONF_ARTMMAP           "articlemmap"
+   /* Whether or not to mmap overviews and indices */
+#define _CONF_OVERMMAP          "overviewmmap"
      
 /*
 **  13.  TCL Support

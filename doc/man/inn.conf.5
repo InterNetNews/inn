@@ -153,11 +153,17 @@ If this is set, then it contains the value of the X-Complaints-To:
 header that will be added to all posts.  If not, then this defaults to
 the newsmaster's e-mail address.
 .TP
-.I artmmap
+.I articlemmap
 If this is false then nnrpd will use regular file access to access 
 articles, otherwise it will mmap() the articles.  Setting this to true
 will give better performance on most systems, but some systems do have 
-problems with mmap.
+problems with mmap().
+.TP
+.I overviewmmap
+If this is false then nnrpd will use regular file access to access overviews 
+and overview indices, otherwise it will mmap() them.  Setting this to true
+will give better performance on most system, but some system do have problems
+with mmap().
 .PP
 Note that this file can be identical on all machines in an organization.
 .SH EXAMPLE

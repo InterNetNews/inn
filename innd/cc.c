@@ -420,11 +420,11 @@ CCcancel(av)
 	return p;
     hash = HashMessageID(Data.MessageID);
     if (Mode == OMrunning)
-	ARTcancel(&Data, Data.MessageID, hash, TRUE);
+	ARTcancel(&Data, Data.MessageID, TRUE);
     else {
 	/* Possible race condition, but documented in ctlinnd manpage. */
 	HISsetup();
-	ARTcancel(&Data, Data.MessageID, hash, TRUE);
+	ARTcancel(&Data, Data.MessageID, TRUE);
 	HISclose();
     }
 #if	defined(DO_LOG_CANCEL_COMMANDS)
