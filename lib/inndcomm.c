@@ -1,29 +1,22 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Library routines to let other programs control innd.
 */
+
 #include "config.h"
 #include "clibrary.h"
+#include "portable/time.h"
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <signal.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
-
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
-#endif
-
-#ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
-#else
-# include <time.h>
 #endif
 
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
@@ -37,13 +30,13 @@
 
 #define MIN_BUFFER_SIZE		4096
 
-STATIC char			*ICCsockname = NULL;
+static char			*ICCsockname = NULL;
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
-STATIC struct sockaddr_un	ICCserv;
-STATIC struct sockaddr_un	ICCclient;
+static struct sockaddr_un	ICCserv;
+static struct sockaddr_un	ICCclient;
 #endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
-STATIC int			ICCfd;
-STATIC int			ICCtimeout;
+static int			ICCfd;
+static int			ICCtimeout;
 char				*ICCfailure;
 
 
@@ -88,9 +81,9 @@ ICCopen()
 	ICCfailure = "socket";
 	return -1;
     }
-    (void)memset((POINTER)&ICCclient, 0, sizeof ICCclient);
+    memset(&ICCclient, 0, sizeof ICCclient);
     ICCclient.sun_family = AF_UNIX;
-    (void)strcpy(ICCclient.sun_path, ICCsockname);
+    strcpy(ICCclient.sun_path, ICCsockname);
     mask = umask(0);
     if (bind(ICCfd, (struct sockaddr *) &ICCclient,
              SUN_LEN(&ICCclient)) < 0) {
@@ -103,11 +96,11 @@ ICCopen()
     (void)umask(mask);
 
     /* Name the server's socket. */
-    (void)memset((POINTER)&ICCserv, 0, sizeof ICCserv);
+    memset(&ICCserv, 0, sizeof ICCserv);
     ICCserv.sun_family = AF_UNIX;
-    (void)strcpy(ICCserv.sun_path, innconf->pathrun);
-    (void)strcat(ICCserv.sun_path, "/");
-    (void)strcat(ICCserv.sun_path, _PATH_NEWSCONTROL);
+    strcpy(ICCserv.sun_path, innconf->pathrun);
+    strcat(ICCserv.sun_path, "/");
+    strcat(ICCserv.sun_path, _PATH_NEWSCONTROL);
 #else
     /* Make a named pipe and open it. */
     mask = umask(0);
@@ -155,7 +148,7 @@ ICCclose()
 /*
 **  Get the server's pid.
 */
-STATIC PID_T
+static pid_t
 ICCserverpid()
 {
     pid_t		pid;
@@ -177,9 +170,9 @@ ICCserverpid()
 **  Cache the pid since a rebooted server won't know about our pending
 **  message.
 */
-STATIC BOOL
+static bool
 ICCserveralive(pid)
-    PID_T		pid;
+    pid_t		pid;
 {
     if (kill(pid, 0) > 0 || errno != ESRCH)
 	return TRUE;
@@ -212,9 +205,9 @@ ICCcommand(cmd, argv, replyp)
     int			fd;
 #endif	/* !defined(HAVE_UNIX_DOMAIN_SOCKETS) */
     int			len;
-    FDSET		Rmask;
+    fd_set		Rmask;
     struct timeval	T;
-    PID_T		pid;
+    pid_t		pid;
     ICC_MSGLENTYPE      rlen ;
     ICC_PROTOCOLTYPE   protocol ;
 
@@ -310,7 +303,7 @@ ICCcommand(cmd, argv, replyp)
 	FD_SET(ICCfd, &Rmask);
 	T.tv_sec = ICCtimeout ? ICCtimeout : 120;
 	T.tv_usec = 0;
-	i = select(ICCfd + 1, &Rmask, (FDSET *)NULL, (FDSET *)NULL, &T);
+	i = select(ICCfd + 1, &Rmask, NULL, NULL, &T);
 	if (i < 0) {
 	    DISPOSE(buff);
 	    ICCfailure = "select";
