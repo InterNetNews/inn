@@ -210,6 +210,7 @@ sub collect {
     if ($left =~ /^(\w):.*$/o) {
       my $command = $1;
       my $cmd = $ctlinnd{$command};
+      $cmd = $command unless $cmd;
       return 1 if $cmd eq 'flush'; # to avoid a double count
       $innd_control{"$cmd"}++;
       return 1;
