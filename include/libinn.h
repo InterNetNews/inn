@@ -171,6 +171,7 @@ struct conf_vars {
 	int usecontrolchan;
 	int mergetogroups;
 	int noreader;
+	int nnrpdauthsender;
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;
