@@ -875,6 +875,11 @@ Whether to put the storage API token for accepted articles (used by
 nntplink) in the article log.  This is a boolean value and the default is
 false.
 
+=item I<stathist>
+
+Where to write history statistics.  It's not logged unless specified.
+This can be disabled by ctlinnd(8) after innd runs.
+
 =item I<status>
 
 How frequently (in seconds) innd(8) should write out a status report.  The
