@@ -46,22 +46,17 @@
 #include "innd.h"
 #include "art.h"
 
-/* Linux doesn't have bool, yet sets _G_HAVE_BOOL to true.  Hello? */
-#ifdef DO_NEED_BOOL
-typedef int bool;
-#endif
-
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
 #include "ppport.h"
 
 /* From lib/perl.c. */
-extern BOOL		PerlFilterActive;
+extern bool             PerlFilterActive;
 
 /* From art.c.  Ew.  Need header parsing that doesn't use globals. */
-extern ARTHEADER	ARTheaders[], *ARTheadersENDOF;
-extern char		*filterPath;
+extern ARTHEADER        ARTheaders[], *ARTheadersENDOF;
+extern char             *filterPath;
 
 /*
 **  Run an incoming article through the Perl article filter.  Returns NULL
