@@ -47,9 +47,20 @@
 /* Skip this entire file if DO_PERL (./configure --with-perl) isn't set. */
 #if defined(DO_PERL)
 
+/* Linux doesn't have bool, yet sets _G_HAVE_BOOL to true.  Hello? */
+#ifdef DO_NEED_BOOL
+typedef int bool;
+#endif
+
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
+
+/* Perl 5.004 didn't define ERRSV and PL_na was called na. */
+#ifndef ERRSV
+# define ERRSV GvSV(errgv)
+# define PL_na na
+#endif
 
 /* From lib/perl.c. */
 extern BOOL		PerlFilterActive;
