@@ -4,5 +4,4 @@
 ../include/clibrary.h
 ../include/configdata.h
 ../include/libinn.h
-../include/macros.h
 ../storage/cnfs/cnfs-private.h
