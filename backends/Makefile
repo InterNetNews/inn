@@ -87,7 +87,7 @@ overchan:	$(P) overchan.o $(LIBNEWS)
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ overchan.o $(LIBNEWS) $(LIBS)
 
 inndf:	$(P) inndf.o
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ inndf.o
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ inndf.o $(LIBNEWS) $(LIBS)
 
 
 $(LIBNEWS):

@@ -70,6 +70,8 @@ Here's the relevant portion of my innwatch.ctl:
 #include "config.h"
 #include "configdata.h"
 #include "clibrary.h"
+#include "storage.h"
+#include "ov.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -144,7 +146,7 @@ Printspace(char *path, BOOL inode, BOOL needpadding)
 void
 Usage(void)
 {
-	(void)fprintf(stderr, "Usage: inndf [-i] director{y|ies}\n");
+	(void)fprintf(stderr, "Usage: inndf [-i] director{y|ies}|-o\n");
 	exit(1);
 }
 
@@ -152,9 +154,10 @@ int
 main(int argc, char **argv)
 {
 	BOOL inode = FALSE;
+	BOOL overview = FALSE;
 	int i;
 
-	while ((i = getopt(argc, argv, "i")) != EOF) {
+	while ((i = getopt(argc, argv, "oi")) != EOF) {
 		switch (i) {
 		default:
 			Usage();
@@ -162,12 +165,15 @@ main(int argc, char **argv)
 		case 'i':
 			inode = TRUE;
 			break;
+		case 'o':
+			overview = TRUE;
+			break;
 		}
 	}
 	argc -= optind;
 	argv += optind;
 	/* This argument handling is gross */
-	if (argc == 0) {
+	if (argc == 0 && overview == FALSE) {
 		Usage();
 		/* not reached */
 	}
@@ -183,6 +189,15 @@ main(int argc, char **argv)
 			else
 				printf(" Kbytes available\n");
 		}
+	}
+	if (overview) {
+		int i;
+		if (!OVopen(OV_READ)) {
+			printf("OVopen failed\n");
+			exit(1);
+		}
+		if (OVprobe(OVSPACE, (void *)&i))
+			printf("%d %% overview space used\n", i);
 	}
 	exit(0);
 }
