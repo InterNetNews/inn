@@ -28,7 +28,7 @@ typedef struct {
 
 typedef enum {FIND_DIR, FIND_ART} FINDTYPE;
 
-static SeqNum = 0;
+static int SeqNum = 0;
 
 static TOKEN MakeToken(time_t time, int seqnum, STORAGECLASS class) {
     TOKEN               token;
@@ -156,7 +156,8 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 	return NULL;
     }
     
-    art->private = (void *)private = NEW(PRIV_TIMEHASH, 1);
+    private = NEW(PRIV_TIMEHASH, 1);
+    art->private = (void *)private;
     private->len = sb.st_size;
     if ((private->base = mmap((MMAP_PTR)0, sb.st_size, PROT_READ, MAP__ARG, fd, 0)) == (MMAP_PTR)-1) {
 	SMseterror(SMERR_UNDEFINED, NULL);
@@ -179,9 +180,10 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 	return art;
     }
     
-    if ((p = SMFindBody(private->base, private->len)) == NULL)
+    if ((p = SMFindBody(private->base, private->len)) == NULL) {
 	SMseterror(SMERR_NOBODY, NULL);
 	return NULL;
+    }
 
     if (amount == RETR_HEAD) {
 	art->data = private->base;
