@@ -849,7 +849,7 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 
     Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
     while (OVsearch(handle, &artnum, &data, &len, &token)) {
-	if (!ARTinstorebytoken(token))
+	if (len == 0 || !ARTinstorebytoken(token))
 	    continue;
 	p = OVERGetHeader(data, Overview);
 	sprintf(buff, "%d ", artnum);
@@ -1030,7 +1030,7 @@ FUNCTYPE CMDxpat(int ac, char *av[])
     Printf("%d %s matches follow.\r\n", NNTP_HEAD_FOLLOWS_VAL, header);
     pattern = Glom(&av[3]);
     while (OVsearch(handle, &artnum, &data, &len, &token)) {
-	if (!ARTinstorebytoken(token))
+	if (len == 0 || !ARTinstorebytoken(token))
 	    continue;
 	if ((p = OVERGetHeader(data, Overview)) != NULL) {
 	    if (wildmat(p, pattern)) {
