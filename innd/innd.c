@@ -6,6 +6,7 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include "inn/messages.h"
 #include "innperl.h"
 
 #define DEFINE_DATA
@@ -301,10 +302,10 @@ main(int ac, char *av[])
         if (p != NULL)
             name = p + 1;
     }
-    error_program_name = name;
+    message_program_name = name;
     openlog(name, LOG_CONS | LOG_NDELAY, LOG_INN_SERVER);
-    die_set_handlers(2, error_log_stderr, error_log_syslog_crit);
-    warn_set_handlers(2, error_log_stderr, error_log_syslog_err);
+    message_handlers_die(2, message_log_stderr, message_log_syslog_crit);
+    message_handlers_warn(2, message_log_stderr, message_log_syslog_err);
 
     /* Make sure innd is not running as root.  innd must be either started
        via inndstart or use a non-privileged port. */

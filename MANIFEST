@@ -411,7 +411,6 @@ lib/daemonize.c                       Code necessary to become a daemon
 lib/date.c                            Date parsing and conversion routines
 lib/dbz.c                             DBZ database library
 lib/defdist.c                         Determine default Distribution header
-lib/error.c                           Error reporting
 lib/fdflags.c                         Set or clear file descriptor flags
 lib/fdlimit.c                         File descriptor limits
 lib/findheader.c                      Find a header in an article
@@ -434,6 +433,7 @@ lib/lockfile.c                        Try to lock a file descriptor
 lib/makedir.c                         Make directory recursively
 lib/md5.c                             MD5 checksum calculation
 lib/memcmp.c                          memcmp replacement
+lib/messages.c                        Error reporting and debug output
 lib/mkstemp.c                         mkstemp replacement
 lib/parsedate.y                       Date parsing
 lib/perl.c                            Perl hook support for nnrpd and innd
@@ -638,7 +638,6 @@ tests/lib/config/warn-int             Invalid integer parameters
 tests/lib/config/warnings             Various config files with warnings
 tests/lib/confparse-t.c               Tests for lib/confparse.c
 tests/lib/date-t.c                    Tests for lib/date.c
-tests/lib/error-t.c                   Tests for lib/error.c
 tests/lib/fakewrite.c                 Helper functions for xwrite tests
 tests/lib/hashtab-t.c                 Tests for lib/hashtab.c
 tests/lib/hstrerror-t.c               Tests for lib/hstrerror.c
@@ -646,6 +645,7 @@ tests/lib/inet_aton-t.c               Tests for lib/inet_aton.c
 tests/lib/inet_ntoa-t.c               Tests for lib/inet_ntoa.c
 tests/lib/md5-t.c                     Tests for lib/md5.c
 tests/lib/memcmp-t.c                  Tests for lib/memcmp.c
+tests/lib/messages-t.c                Tests for lib/messages.c
 tests/lib/mkstemp-t.c                 Tests for lib/mkstemp.c
 tests/lib/pread-t.c                   Tests for lib/pread.c
 tests/lib/pwrite-t.c                  Tests for lib/pwrite.c

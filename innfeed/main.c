@@ -55,6 +55,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 # include <sys/un.h>
 #endif
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "storage.h"
 
@@ -150,15 +151,15 @@ int main (int argc, char **argv)
   strcpy (dateString,ctime(&now)) ;
   dateString [24] = '\0' ;
 
-  error_program_name = strrchr (argv [0],'/');
-  if (error_program_name == NULL)
-    error_program_name = argv [0] ;
+  message_program_name = strrchr (argv [0],'/');
+  if (message_program_name == NULL)
+    message_program_name = argv [0] ;
   else
-    error_program_name++;
+    message_program_name++;
 
   gPrintInfo = gprintinfo ;
 
-  openlog (error_program_name,(int)(L_OPENLOG_FLAGS|LOG_PID),LOG_INN_PROG) ;
+  openlog (message_program_name,(int)(L_OPENLOG_FLAGS|LOG_PID),LOG_INN_PROG) ;
   if (ReadInnConf() < 0) {
       syslog(LOG_ERR, "cant read inn.conf\n");
       exit(1);
@@ -170,8 +171,8 @@ int main (int argc, char **argv)
   useMMap = false ;
 #endif
 
-  die_set_handlers (2, error_log_stderr_date, error_log_syslog_err) ;
-  warn_set_handlers (2, error_log_stderr_date, error_log_syslog_warning) ;
+  message_handlers_die (2, error_log_stderr_date, message_log_syslog_err) ;
+  message_handlers_warn (2, error_log_stderr_date, message_log_syslog_warning);
 
 #define OPT_STRING "a:b:c:Cd:e:hl:mMo:p:S:s:vxyz"
 
@@ -276,7 +277,7 @@ int main (int argc, char **argv)
 
   if (seenV)
     {
-      warn ("%s version: %s\n",error_program_name, versionInfo) ;
+      warn ("%s version: %s\n",message_program_name, versionInfo) ;
       exit (0) ;
     }
 
@@ -515,7 +516,7 @@ int main (int argc, char **argv)
 static void usage (int val)
 {
   fprintf (stderr,"usage: %s [ options ] [ file ]\n\n",
-           error_program_name) ;
+           message_program_name) ;
   fprintf (stderr,"Version: %s\n\n",versionInfo) ;
   fprintf (stderr,"Config file: %s\n",CONFIG_FILE) ;
   fprintf (stderr,"Backlog directory: %s/%s\n", innconf->pathspool, TAPE_DIRECTORY) ;

@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include "inn/confparse.h"
+#include "inn/messages.h"
 #include "libinn.h"
 #include "libtest.h"
 
@@ -40,14 +41,14 @@ capture_errors(void)
         free(errors);
         errors = NULL;
     }
-    warn_set_handlers(1, string_error);
+    message_handlers_warn(1, string_error);
 }
 
 /* Turn off the capturing of warnings and errors. */
 static void
 uncapture_errors(void)
 {
-    warn_set_handlers(1, error_log_stderr);
+    message_handlers_warn(1, message_log_stderr);
 }
 
 /* Given a FILE *, read from that file, putting the results into a newly

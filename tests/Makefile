@@ -10,10 +10,10 @@ CFLAGS	= $(GCFLAGS) -I.
 ##  list.  If they need other things compiled, those other things should be
 ##  added to EXTRA.
 
-TESTS	= lib/concat.t lib/confparse.t lib/date.t lib/error.t lib/hashtab.t \
+TESTS	= lib/concat.t lib/confparse.t lib/date.t lib/hashtab.t \
 	lib/hstrerror.t lib/inet_aton.t lib/inet_ntoa.t lib/md5.t \
-	lib/memcmp.t lib/mkstemp.t lib/pread.t lib/pwrite.t lib/qio.t \
-	lib/snprintf.t lib/strerror.t lib/vector.t lib/wildmat.t \
+	lib/memcmp.t lib/messages.t lib/mkstemp.t lib/pread.t lib/pwrite.t \
+	lib/qio.t lib/snprintf.t lib/strerror.t lib/vector.t lib/wildmat.t \
 	lib/xwrite.t overview/tradindexed.t
 
 ##  Extra stuff that needs to be built before tests can be run.
@@ -49,9 +49,6 @@ lib/confparse.t: lib/confparse-t.o libtest.o $(LIBINN)
 lib/date.t: lib/date-t.o libtest.o $(LIBINN)
 	$(LINK) lib/date-t.o libtest.o $(LIBINN)
 
-lib/error.t: lib/error-t.o $(LIBINN)
-	$(LINK) lib/error-t.o $(LIBINN)
-
 lib/hashtab.t: lib/hashtab-t.o libtest.o $(LIBINN)
 	$(LINK) lib/hashtab-t.o libtest.o $(LIBINN)
 
@@ -81,6 +78,15 @@ lib/memcmp.o: ../lib/memcmp.c
 
 lib/memcmp.t: lib/memcmp.o lib/memcmp-t.o libtest.o
 	$(LINK) lib/memcmp.o lib/memcmp-t.o libtest.o
+
+lib/messages.o: ../lib/messages.c
+	$(CC) $(CFLAGS) -DDEBUG -c -o $@ ../lib/messages.c
+
+lib/messages-t.o: lib/messages-t.c
+	$(CC) $(CFLAGS) -DDEBUG -c -o $@ lib/messages-t.c
+
+lib/messages.t: lib/messages.o lib/messages-t.o $(LIBINN)
+	$(LINK) lib/messages-t.o lib/messages.o $(LIBINN)
 
 lib/mkstemp.o: ../lib/mkstemp.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/mkstemp.c

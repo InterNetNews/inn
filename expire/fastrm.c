@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include <syslog.h>
 
+#include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
@@ -194,7 +195,7 @@ sm_initialize(void)
     if (!SMinit())
         die("can't initialize storage manager: %s", SMerrorstr);
     sm_initialized = true;
-    error_fatal_cleanup = sm_cleanup;
+    message_fatal_cleanup = sm_cleanup;
 }
 
 
@@ -640,7 +641,7 @@ main(int argc, char *argv[])
         if (p != NULL)
             name = p + 1;
     }
-    error_program_name = name;
+    message_program_name = name;
     openlog(name, LOG_CONS | LOG_PID, LOG_INN_PROG);
 
     /* If we're running as root, unlink may remove directories. */

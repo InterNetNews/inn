@@ -14,6 +14,7 @@
 #include <signal.h>
 #include <syslog.h>
 
+#include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
@@ -61,7 +62,7 @@ main(int argc, char *argv[])
 
     /* First thing, set up logging and our identity. */
     openlog("expireover", LOG_PID, LOG_INN_PROG);
-    error_program_name = "expireover";
+    message_program_name = "expireover";
 
     /* Set up some default options for group-based expiration, although none
        of these will be used if groupbaseexpiry isn't true. */

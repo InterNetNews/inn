@@ -46,6 +46,7 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
 #include "ov.h"
@@ -245,7 +246,7 @@ main(int argc, char *argv[])
 
     /* Set the program name now rather than earlier so that it doesn't get
        prepended to usage messages. */
-    error_program_name = "inndf";
+    message_program_name = "inndf";
 
     /* If directories were specified, get statistics about them.  If only
        one was given, just print out the number without the path or any

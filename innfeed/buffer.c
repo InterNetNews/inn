@@ -37,13 +37,13 @@ static void use_rcsid (const char *rid) {   /* Never called */
 }
 #endif
 
-#include "libinn.h"
 #include "innfeed.h"
-
+#include "config.h"
+#include "clibrary.h"
 #include <assert.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
+
+#include "inn/messages.h"
+#include "libinn.h"
 
 #include "buffer.h"
 

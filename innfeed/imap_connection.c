@@ -27,16 +27,17 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include "libinn.h"
-#include "macros.h"
 #include "portable/socket.h"
-
 #include <ctype.h>
 #include <errno.h>
 #include <netdb.h>
 #include <netdb.h>
 #include <time.h>
 #include <syslog.h>
+
+#include "inn/messages.h"
+#include "libinn.h"
+#include "macros.h"
 
 #include "buffer.h"
 #include "connection.h"

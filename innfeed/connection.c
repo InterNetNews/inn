@@ -101,7 +101,9 @@ static void use_rcsid (const char *rid) {   /* Never called */
 # include <sys/ioctl.h>
 #endif
 
+#include "inn/messages.h"
 #include "libinn.h"
+
 #include "article.h"
 #include "buffer.h"
 #include "configfile.h"

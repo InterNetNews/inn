@@ -1,12 +1,12 @@
 lib/concat
 lib/confparse
 lib/date
-lib/error
 lib/hashtab
 lib/inet_aton
 lib/inet_ntoa
 lib/md5
 lib/memcmp
+lib/messages
 lib/mkstemp
 lib/pread
 lib/pwrite

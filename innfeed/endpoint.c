@@ -66,6 +66,7 @@ static void use_rcsid (const char *rId) {   /* Never called */
 # include <sys/select.h>
 #endif
 
+#include "inn/messages.h"
 #include "libinn.h"
 
 #include "buffer.h"

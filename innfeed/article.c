@@ -56,6 +56,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <sys/stat.h>
 #include <syslog.h>
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "storage.h"
 

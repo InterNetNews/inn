@@ -8,6 +8,7 @@
 #include <ctype.h>
 #include <time.h>
 
+#include "inn/messages.h"
 #include "libinn.h"
 
 static const char usage[] = "\
@@ -123,7 +124,7 @@ main(int argc, char *argv[])
     char *date;
     char mode = '\0';
 
-    error_program_name = "convdate";
+    message_program_name = "convdate";
 
     /* Parse options. */
     while ((option = getopt(argc, argv, "cdhlns")) != EOF) {

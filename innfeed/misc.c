@@ -60,6 +60,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 # define PATH_MAX 256
 #endif
 
+#include "inn/messages.h"
 #include "libinn.h"
 
 #include "endpoint.h"
@@ -78,7 +79,7 @@ void (*gCleanUp) (void) = 0 ;
 
 
 /* Log a message to stderr, called from warn or die.  Mostly the same as the
-   standard error_log_stderr, but prepends the date to each line. */
+   standard message_log_stderr, but prepends the date to each line. */
 void
 error_log_stderr_date(int len UNUSED, const char *fmt, va_list args, int err)
 {
@@ -90,7 +91,7 @@ error_log_stderr_date(int len UNUSED, const char *fmt, va_list args, int err)
     tm = localtime(&now);
     strftime(timebuff, sizeof(timebuff), "%Y-%m-%d %H:%M:%S", tm);
     fprintf(stderr, "%s %s: ", timebuff,
-            (error_program_name ? error_program_name : "UNKNOWN"));
+            (message_program_name ? message_program_name : "UNKNOWN"));
     vfprintf(stderr, fmt, args);
     if (err) fprintf(stderr, ": %s", strerror(err));
     fprintf(stderr, "\n");
@@ -138,7 +139,7 @@ logAndExit(int status, const char *format, ...)
     error_log_stderr_date(length, format, args, 0);
     va_end(args);
     va_start(args, format);
-    error_log_syslog_err(length, format, args, 0);
+    message_log_syslog_err(length, format, args, 0);
     va_end(args);
     exit(status);
 }
@@ -164,7 +165,7 @@ void d_printf (u_int level, const char *fmt, ...)
 
   va_start (ap, fmt) ;
   fprintf (stderr, "%s %s[%ld]: ",timeString,
-           (error_program_name ? error_program_name : "UNKNOWN"),
+           (message_program_name ? message_program_name : "UNKNOWN"),
            (long) myPid) ;
   vfprintf (stderr, fmt, ap) ;
   va_end (ap) ;

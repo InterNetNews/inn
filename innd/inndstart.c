@@ -54,6 +54,7 @@
 # include <netdb.h>
 #endif
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
@@ -91,9 +92,9 @@ main(int argc, char *argv[])
        syslog with a priority of LOG_CRIT.  These priority levels are a
        little high, but they're chosen to match innd. */
     openlog("inndstart", LOG_CONS, LOG_INN_PROG);
-    warn_set_handlers(2, error_log_stderr, error_log_syslog_err);
-    die_set_handlers(2, error_log_stderr, error_log_syslog_crit);
-    error_program_name = "inndstart";
+    message_handlers_warn(2, message_log_stderr, message_log_syslog_err);
+    message_handlers_die(2, message_log_stderr, message_log_syslog_crit);
+    message_program_name = "inndstart";
 
     /* Convert NEWSUSER and NEWSGRP to a UID and GID.  getpwnam() and
        getgrnam() don't set errno normally, so don't print strerror() on

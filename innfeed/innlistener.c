@@ -38,7 +38,6 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "innfeed.h"
 #include "config.h"
 #include "clibrary.h"
-#include "libinn.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -46,6 +45,9 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <fcntl.h>
 #include <syslog.h>
 #include <time.h>
+
+#include "inn/messages.h"
+#include "libinn.h"
 
 #include "article.h"
 #include "buffer.h"

@@ -37,6 +37,7 @@
 #include <syslog.h> 
 #include <sys/stat.h>
 
+#include "inn/messages.h"
 #include "inn/timer.h"
 #include "inn/history.h"
 #include "libinn.h"

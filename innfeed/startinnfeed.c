@@ -23,6 +23,7 @@
 # include <sys/resource.h>
 #endif
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
 
@@ -49,8 +50,8 @@ main(int argc, char *argv[])
 #endif
 
     openlog("innfeed", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
-    warn_set_handlers(1, error_log_syslog_warning);
-    die_set_handlers(1, error_log_syslog_err);
+    message_handlers_warn(1, message_log_syslog_warning);
+    message_handlers_die(1, message_log_syslog_err);
 
     /* Convert NEWSUSER and NEWSGRP to a UID and GID.  getpwnam() and
        getgrnam() don't set errno normally, so don't print strerror() on

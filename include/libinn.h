@@ -12,7 +12,6 @@
    header and we don't want to install config.h. */
 #include "config.h"
 
-#include <stdarg.h>             /* va_list */
 #include <stdio.h>              /* FILE */
 #include <sys/types.h>          /* size_t and ssize_t */
 
@@ -24,38 +23,6 @@ struct sockaddr_in;
 struct in_addr;
 
 BEGIN_DECLS
-
-/*
-**  ERROR HANDLING AND LOGGING
-*/
-extern void warn(const char *, ...)
-    __attribute__((__format__(printf, 1, 2)));
-extern void syswarn(const char *, ...)
-    __attribute__((__format__(printf, 1, 2)));
-extern void die(const char *, ...)
-    __attribute__((__noreturn__, __format__(printf, 1, 2)));
-extern void sysdie(const char *, ...)
-    __attribute__((__noreturn__, __format__(printf, 1, 2)));
-extern void warn_set_handlers(int count, ...);
-extern void die_set_handlers(int count, ...);
-
-/* Handlers intended to be passed to *_set_handlers.  error_log_stderr is
-   the only handler enabled by default. */
-extern void error_log_stderr(int, const char *, va_list, int);
-extern void error_log_syslog_crit(int, const char *, va_list, int);
-extern void error_log_syslog_err(int, const char *, va_list, int);
-extern void error_log_syslog_warning(int, const char *, va_list, int);
-
-/* Log handling functions take the length of the resulting message, the
-   format, the arguments, and the errno if any. */
-typedef void (*error_handler_t)(int, const char *, va_list, int);
-
-/* If non-NULL, called before exit and its return value passed to exit. */
-extern int (*error_fatal_cleanup)(void);
-
-/* If non-NULL, prepended (followed by ": ") to all error messages. */
-extern const char *error_program_name;
-
 
 /*
 **  MEMORY MANAGEMENT
