@@ -72,9 +72,8 @@ char *GetFilePass(char *name, char *file)
     if (!found)
 	return(0);
     iter = colon+1;
-    if (!(colon = strchr(iter, ':')))
-	return(0);
-    *colon = 0;
+    if (colon = strchr(iter, ':'))
+	*colon = 0;
     strcpy(pass, iter);
     return(pass);
 }
