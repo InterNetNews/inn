@@ -1600,8 +1600,14 @@ main(int ac, char *av[])
 	/* we'll not tranlate from spool thru storage api */
 	if (Translate == NO_TRANS)
 	    /* Start scanning articles stored by storage api */
-	    while ((art = SMnext(art, RETR_HEAD)) != NULL)
+	    while ((art = SMnext(art, RETR_HEAD)) != NULL) {
+		if (art->len == 0) {
+		    if (RemoveBad)
+			(void)SMcancel(*art->token);
+		    continue;
+		}
 		DoMemArt(art, Overview, Update, out, index, RemoveBad);
+	    }
     } else if (Translate == FROM_HIST) {
 	if (!TranslateFromHistory(out, OldHistory, Tradspooldir, UnlinkCrosspost, RemoveOld, Overview, index))
 	    ErrorExit(Update, DoRebuild);

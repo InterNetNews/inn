@@ -228,6 +228,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
     if (amount == RETR_BODY) {
 	art->data = p + 4;
 	art->len = art->len - (private->base - p - 4);
+	return art;
     }
     SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
     DISPOSE(art->private);
@@ -390,17 +391,22 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
     sprintf(path, "%s/time/%s/%s/%s", _PATH_SPOOL, priv.topde->d_name, priv.secde->d_name, de->d_name);
 
     art = OpenArticle(path, amount);
-    if (art) {
-	newpriv = (PRIV_TIMEHASH *)art->private;
-	newpriv->top = priv.top;
-	newpriv->sec = priv.sec;
-	newpriv->artdir = priv.artdir;
-	newpriv->topde = priv.topde;
-	newpriv->secde = priv.secde;
-	sprintf(path, "%s/%s/%s", priv.topde->d_name, priv.secde->d_name, de->d_name);
-	art->token = PathToToken(path);
-	BreakToken(*art->token, (int *)&(art->arrived), &seqnum);
+    if (art == (ARTHANDLE *)NULL) {
+	art = NEW(ARTHANDLE, 1);
+	art->type = TOKEN_TIMEHASH;
+	art->data = NULL;
+	art->len = 0;
+	art->private = (void *)NEW(PRIV_TIMEHASH, 1);
     }
+    newpriv = (PRIV_TIMEHASH *)art->private;
+    newpriv->top = priv.top;
+    newpriv->sec = priv.sec;
+    newpriv->artdir = priv.artdir;
+    newpriv->topde = priv.topde;
+    newpriv->secde = priv.secde;
+    sprintf(path, "%s/%s/%s", priv.topde->d_name, priv.secde->d_name, de->d_name);
+    art->token = PathToToken(path);
+    BreakToken(*art->token, (int *)&(art->arrived), &seqnum);
     DISPOSE(path);
     return art;
 }
