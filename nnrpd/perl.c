@@ -58,7 +58,7 @@ char *HandleHeaders(char *article)
    int		rc;
    char		*p, *q;
    static char	buf[256];
-   int   i;
+   int   i, len;
    char *s,*t;
    HE            *scan;
    SV            *modswitch;
@@ -130,7 +130,7 @@ char *HandleHeaders(char *article)
      hv_iterinit(hdr);
      while ((scan = hv_iternext(hdr)) != NULL) {
        /* Get the values */
-       p = HePV(scan, PL_na);  
+       p = HePV(scan, len);
        s = SvPV(HeVAL(scan), PL_na);
 #ifdef DEBUG_MODIFY     
        fprintf(flog,"Hash iter: '%s','%s'\n",p,s);
