@@ -1308,7 +1308,9 @@ INN_SOCKADDR_STORAGE
 dnl Source used by INN_IN6_EQ_BROKEN
 dnl Test borrowed from a bug report by tmoestl@gmx.net for glibc
 define([_INN_IN6_EQ_BROKEN_SOURCE],
-[#include <netinet/in.h>
+[#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 
 int
