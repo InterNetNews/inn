@@ -6,6 +6,12 @@
 ##	<newsgroup>	Shell-style newsgroup pattern or specific newsgroup
 ##	<pathname>	Mail address, "%s" becomes newgroup name with dots
 ##			changed to dashes.
+
+## Russian hierarchies
+fido7.*:%s@fido7.ru
+medlux.*:%s@news.medlux.ru
+relcom.*:%s@moderators.relcom.ru
+
 ## Direct all public hierarchies to the master moderator database.
 *:%s@moderators.isc.org
 
