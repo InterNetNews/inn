@@ -237,8 +237,8 @@ static void req_copyto (auth_req to, sending_t *from)
   to.code = from->req.code;
   to.id = from->req.id;
   to.length = from->req.length;
-  strcpy(to.vector, from->req.vector);
-  strcpy(to.data, from->req.data);
+  strncpy(to.vector, from->req.vector, sizeof(to.vector));
+  strncpy(to.data, from->req.data, sizeof(to.data));
   to.datalen = from->req.datalen;
 
   return;
@@ -249,8 +249,8 @@ static void req_copyfrom (sending_t *to, auth_req from)
   to->req.code = from.code;
   to->req.id = from.id;
   to->req.length = from.length;
-  strcpy(to->req.vector, from.vector);
-  strcpy(to->req.data, from.data);
+  strncpy(to->req.vector, from.vector, sizeof(to->req.vector));
+  strncpy(to->req.data, from.data, sizeof(to->req.data));
   to->req.datalen = from.datalen;
 
   return;
@@ -352,7 +352,7 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
     /* build the visible part of the auth vector randomly */
     for (i = 0; i < AUTH_VECTOR_LEN; i++)
 	req.vector[i] = random() % 256;
-    strcpy(secbuf, config->secret);
+    strncpy(secbuf, config->secret, sizeof(secbuf));
     memcpy(secbuf+strlen(config->secret), req.vector, AUTH_VECTOR_LEN);
     md5_hash(secbuf, strlen(config->secret)+AUTH_VECTOR_LEN, digest);
     /* fill in the auth_req data */
@@ -423,7 +423,7 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
 	    req.data[passstart+2+i+j] ^= digest[j];
 	if (jlen == sizeof(HASH)) {
 	    /* Recalculate the digest from the HASHed previous */
-	    strcpy(secbuf, config->secret);
+	    strncpy(secbuf, config->secret, sizeof(secbuf));
 	    memcpy(secbuf+strlen(config->secret), &req.data[passstart+2+i],
                    sizeof(HASH));
             md5_hash(secbuf, strlen(config->secret)+sizeof(HASH), digest);

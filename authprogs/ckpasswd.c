@@ -111,7 +111,8 @@ GetFilePass(char *name, char *file)
 	    iter = colon+1;			/* user matches */
 	    if ((colon = strchr(iter, ':')) != NULL)
 		*colon = 0;
-	    strcpy(pass, iter);
+	    strncpy(pass, iter, sizeof(pass));
+            pass[sizeof(pass) - 1] = '\0';
 	    fclose(pwfile);
 	    return(pass);
 	}
@@ -139,6 +140,8 @@ GetDBPass(char *name, char *file)
         dbm_close(D);
         return(0);
     }
+    if (val.dsize > sizeof(pass) - 1)
+        return NULL;
     strncpy(pass, val.dptr, val.dsize);
     pass[val.dsize] = 0;
     dbm_close(D);

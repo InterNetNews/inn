@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
     }
 
     /* send the request out */
-    sprintf(buf, "%d , %d\r\n", cport, lport);
+    snprintf(buf, sizeof(buf), "%d , %d\r\n", cport, lport);
     got = 0;
     while (got != strlen(buf)) {
 	opt = write(sock, buf+got, strlen(buf)-got);
