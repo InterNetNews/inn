@@ -72,7 +72,7 @@ lib/hash.t: lib/hash-t.o libtest.o $(LIBINN)
 lib/hashtab.t: lib/hashtab-t.o libtest.o $(LIBINN)
 	$(LINK) lib/hashtab-t.o libtest.o $(LIBINN)
 
-lib/hstrerror.o: ../lib/hstrerror.o
+lib/hstrerror.o: ../lib/hstrerror.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/hstrerror.c
 
 lib/hstrerror.t: lib/hstrerror.o lib/hstrerror-t.o libtest.o
