@@ -167,13 +167,73 @@ static CYCBUFF_OFF_T CNFShex2offt(char *hex) {
     }
 }
 
+static bool CNFSflushhead(CYCBUFF *cycbuff) {
+  int			b;
+  CYCBUFFEXTERN		rpx;
+
+  if (!cycbuff->needflush)
+    return TRUE;
+  if (!SMopenmode) {
+    syslog(L_ERROR, "%s: CNFSflushhead: attempted flush whilst read only",
+      LocalLogName);
+    return FALSE;
+  }
+  memset(&rpx, 0, sizeof(CYCBUFFEXTERN));
+  if (cycbuff->magicver == 3) {
+    cycbuff->updated = time(NULL);
+    strncpy(rpx.magic, CNFS_MAGICV3, strlen(CNFS_MAGICV3));
+    strncpy(rpx.name, cycbuff->name, CNFSNASIZ);
+    strncpy(rpx.path, cycbuff->path, CNFSPASIZ);
+    /* Don't use sprintf() directly ... the terminating '\0' causes grief */
+    strncpy(rpx.lena, CNFSofft2hex(cycbuff->len, TRUE), CNFSLASIZ);
+    strncpy(rpx.freea, CNFSofft2hex(cycbuff->free, TRUE), CNFSLASIZ);
+    strncpy(rpx.cyclenuma, CNFSofft2hex(cycbuff->cyclenum, TRUE), CNFSLASIZ);
+    strncpy(rpx.updateda, CNFSofft2hex(cycbuff->updated, TRUE), CNFSLASIZ);
+    strncpy(rpx.metaname, cycbuff->metaname, CNFSNASIZ);
+    strncpy(rpx.orderinmeta, CNFSofft2hex(cycbuff->order, TRUE), CNFSLASIZ);
+    if (cycbuff->currentbuff) {
+	strncpy(rpx.currentbuff, "TRUE", CNFSMASIZ);
+    } else {
+	strncpy(rpx.currentbuff, "FALSE", CNFSMASIZ);
+    }
+    memcpy(cycbuff->bitfield, &rpx, sizeof(CYCBUFFEXTERN));
+#ifdef MMAP_NEEDS_MSYNC
+# ifdef HAVE_MSYNC_3_ARG
+    msync(cycbuff->bitfield, cycbuff->minartoffset, MS_ASYNC);
+# else
+    msync(cycbuff->bitfield, cycbuff->minartoffset);
+# endif
+#endif
+    cycbuff->needflush = FALSE;
+  } else {
+    syslog(L_ERROR, "%s: CNFSflushhead: bogus magicver for %s: %d",
+      LocalLogName, cycbuff->name, cycbuff->magicver);
+    return FALSE;
+  }
+  return TRUE;
+}
+
+static void CNFSshutdowncycbuff(CYCBUFF *cycbuff) {
+    if (cycbuff == (CYCBUFF *)NULL)
+	return;
+    if (cycbuff->needflush) {
+	syslog(L_NOTICE, "%s: CNFSshutdowncycbuff: flushing %s", LocalLogName, cycbuff->name);
+	(void)CNFSflushhead(cycbuff);
+    }
+    if (cycbuff->bitfield != NULL) {
+	munmap(cycbuff->bitfield, cycbuff->minartoffset);
+	cycbuff->bitfield = NULL;
+    }
+    if (cycbuff->fd >= 0)
+	close(cycbuff->fd);
+    cycbuff->fd = -1;
+}
+
 static void CNFScleancycbuff(void) {
     CYCBUFF	*cycbuff, *nextcycbuff;
 
     for (cycbuff = cycbufftab; cycbuff != (CYCBUFF *)NULL;) {
-      if (cycbuff->fd >= 0)
-	close(cycbuff->fd);
-      cycbuff->fd = -1;
+      CNFSshutdowncycbuff(cycbuff);
       nextcycbuff = cycbuff->next;
       DISPOSE(cycbuff);
       cycbuff = nextcycbuff;
@@ -227,60 +287,6 @@ static METACYCBUFF *CNFSgetmetacycbuffbyname(char *name) {
   return NULL;
 }
 
-static bool CNFSflushhead(CYCBUFF *cycbuff) {
-  int			b;
-  CYCBUFFEXTERN		rpx;
-
-  if (!cycbuff->needflush)
-    return TRUE;
-  memset(&rpx, 0, sizeof(CYCBUFFEXTERN));
-  if (cycbuff->bitfield == NULL) {
-    if (CNFSseek(cycbuff->fd, (CYCBUFF_OFF_T) 0, SEEK_SET) < 0) {
-      syslog(L_ERROR, "CNFSflushhead: magic CNFSseek failed: %m");
-      return FALSE;
-    }
-  }
-  if (cycbuff->magicver == 3) {
-    cycbuff->updated = time(NULL);
-    strncpy(rpx.magic, CNFS_MAGICV3, strlen(CNFS_MAGICV3));
-    strncpy(rpx.name, cycbuff->name, CNFSNASIZ);
-    strncpy(rpx.path, cycbuff->path, CNFSPASIZ);
-    /* Don't use sprintf() directly ... the terminating '\0' causes grief */
-    strncpy(rpx.lena, CNFSofft2hex(cycbuff->len, TRUE), CNFSLASIZ);
-    strncpy(rpx.freea, CNFSofft2hex(cycbuff->free, TRUE), CNFSLASIZ);
-    strncpy(rpx.cyclenuma, CNFSofft2hex(cycbuff->cyclenum, TRUE), CNFSLASIZ);
-    strncpy(rpx.updateda, CNFSofft2hex(cycbuff->updated, TRUE), CNFSLASIZ);
-    strncpy(rpx.metaname, cycbuff->metaname, CNFSNASIZ);
-    strncpy(rpx.orderinmeta, CNFSofft2hex(cycbuff->order, TRUE), CNFSLASIZ);
-    if (cycbuff->currentbuff) {
-	strncpy(rpx.currentbuff, "TRUE", CNFSMASIZ);
-    } else {
-	strncpy(rpx.currentbuff, "FALSE", CNFSMASIZ);
-    }
-    if (cycbuff->bitfield == NULL) {
-      if ((b = write(cycbuff->fd, &rpx, sizeof(CYCBUFFEXTERN))) != sizeof(CYCBUFFEXTERN)) {
-	syslog(L_ERROR, "%s: CNFSflushhead: write failed (%d bytes): %m", LocalLogName, b);
-	return FALSE;
-      }
-    } else {
-      memcpy(cycbuff->bitfield, &rpx, sizeof(CYCBUFFEXTERN));
-#ifdef MMAP_NEEDS_MSYNC
-# ifdef HAVE_MSYNC_3_ARG
-      msync(cycbuff->bitfield, cycbuff->minartoffset, MS_ASYNC);
-# else
-      msync(cycbuff->bitfield, cycbuff->minartoffset);
-# endif
-#endif
-    }
-    cycbuff->needflush = FALSE;
-  } else {
-    syslog(L_ERROR, "%s: CNFSflushhead: bogus magicver for %s: %d",
-      LocalLogName, cycbuff->name, cycbuff->magicver);
-    return FALSE;
-  }
-  return TRUE;
-}
-
 static void CNFSflushallheads(void) {
   CYCBUFF	*cycbuff;
 
@@ -300,20 +306,7 @@ static void CNFSReadFreeAndCycle(CYCBUFF *cycbuff) {
     CYCBUFFEXTERN	rpx;
     char		buf[64];
 
-    if (cycbuff->bitfield == NULL) {
-	if (CNFSseek(cycbuff->fd, (CYCBUFF_OFF_T) 0, SEEK_SET) < 0) {
-	    syslog(L_ERROR, "CNFSReadFreeAndCycle: magic lseek failed: %m");
-	    SMseterror(SMERR_UNDEFINED, NULL);
-	    return;
-	}
-	if (read(cycbuff->fd, &rpx, sizeof(CYCBUFFEXTERN)) != sizeof(rpx)) {
-	    syslog(L_ERROR, "CNFSReadFreeAndCycle: magic read failed: %m");
-	    SMseterror(SMERR_UNDEFINED, NULL);
-	    return;
-	}
-    } else {
-	memcpy(&rpx, cycbuff->bitfield, sizeof(CYCBUFFEXTERN));
-    }
+    memcpy(&rpx, cycbuff->bitfield, sizeof(CYCBUFFEXTERN));
     /* Sanity checks are not needed since CNFSinit_disks() has already done. */
     buf[CNFSLASIZ] = '\0';
     strncpy(buf, rpx.freea, CNFSLASIZ);
@@ -531,7 +524,7 @@ static bool CNFSparse_groups_line() {
 
 static bool CNFSinit_disks(CYCBUFF *cycbuff) {
   char		buf[64];
-  CYCBUFFEXTERN	rpx;
+  CYCBUFFEXTERN	*rpx;
   int		fd, bytes;
   CYCBUFF_OFF_T	tmpo;
   bool		oneshot;
@@ -563,17 +556,15 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
 	    cycbuff->fd = fd;
 	}
     }
-    if ((tmpo = CNFSseek(cycbuff->fd, (CYCBUFF_OFF_T) 0, SEEK_SET)) < 0) {
-	syslog(L_ERROR, "%s: pre-magic read lseek failed: %m", LocalLogName);
-	return FALSE;
-    }
-    if ((bytes = read(cycbuff->fd, &rpx, sizeof(CYCBUFFEXTERN))) != sizeof(rpx)) {
-	syslog(L_ERROR, "%s: read magic failed %d bytes: %m", LocalLogName, bytes);
-	return FALSE;
-    }
-    if (CNFSseek(cycbuff->fd, tmpo, SEEK_SET) != tmpo) {
-	syslog(L_ERROR, "%s: post-magic read lseek to 0x%s failed: %m",
-	       LocalLogName, CNFSofft2hex(tmpo, FALSE));
+    errno = 0;
+    cycbuff->bitfield = mmap((caddr_t) 0, cycbuff->minartoffset,
+			     SMopenmode ? (PROT_READ | PROT_WRITE) : PROT_READ,
+			     MAP_SHARED, fd, (off_t) 0);
+    if (cycbuff->bitfield == MAP_FAILED || errno != 0) {
+	syslog(L_ERROR,
+	       "%s: CNFSinitdisks: mmap for %s offset %d len %d failed: %m",
+	       LocalLogName, cycbuff->path, 0, cycbuff->minartoffset);
+	cycbuff->bitfield = NULL;
 	return FALSE;
     }
 
@@ -581,19 +572,19 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
     ** Much of this checking from previous revisions is (probably) bogus
     ** & buggy & particularly icky & unupdated.  Use at your own risk.  :-)
     */
-
-    if (strncmp(rpx.magic, CNFS_MAGICV3, strlen(CNFS_MAGICV3)) == 0) {
+    rpx = (CYCBUFFEXTERN *)cycbuff->bitfield;
+    if (strncmp(rpx->magic, CNFS_MAGICV3, strlen(CNFS_MAGICV3)) == 0) {
 	cycbuff->magicver = 3;
-	if (strncmp(rpx.name, cycbuff->name, CNFSNASIZ) != 0) {
+	if (strncmp(rpx->name, cycbuff->name, CNFSNASIZ) != 0) {
 	    syslog(L_ERROR, "%s: Mismatch 3: read %s for cycbuff %s", LocalLogName,
-		   rpx.name, cycbuff->name);
+		   rpx->name, cycbuff->name);
 	    return FALSE;
 	}
-	if (strncmp(rpx.path, cycbuff->path, CNFSPASIZ) != 0) {
+	if (strncmp(rpx->path, cycbuff->path, CNFSPASIZ) != 0) {
 	    syslog(L_ERROR, "%s: Path mismatch: read %s for cycbuff %s",
-		   LocalLogName, rpx.path, cycbuff->path);
+		   LocalLogName, rpx->path, cycbuff->path);
 	} 
-	strncpy(buf, rpx.lena, CNFSLASIZ);
+	strncpy(buf, rpx->lena, CNFSLASIZ);
 	buf[CNFSLASIZ] = '\0';
 	tmpo = CNFShex2offt(buf);
 	if (tmpo != cycbuff->len) {
@@ -602,18 +593,18 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
 	    return FALSE;
 	}
 	buf[CNFSLASIZ] = '\0';
-	strncpy(buf, rpx.freea, CNFSLASIZ);
+	strncpy(buf, rpx->freea, CNFSLASIZ);
 	cycbuff->free = CNFShex2offt(buf);
 	buf[CNFSLASIZ] = '\0';
-	strncpy(buf, rpx.updateda, CNFSLASIZ);
+	strncpy(buf, rpx->updateda, CNFSLASIZ);
 	cycbuff->updated = CNFShex2offt(buf);
 	buf[CNFSLASIZ] = '\0';
-	strncpy(buf, rpx.cyclenuma, CNFSLASIZ);
+	strncpy(buf, rpx->cyclenuma, CNFSLASIZ);
 	cycbuff->cyclenum = CNFShex2offt(buf);
-	strncpy(cycbuff->metaname, rpx.metaname, CNFSLASIZ);
-	strncpy(buf, rpx.orderinmeta, CNFSLASIZ);
+	strncpy(cycbuff->metaname, rpx->metaname, CNFSLASIZ);
+	strncpy(buf, rpx->orderinmeta, CNFSLASIZ);
 	cycbuff->order = CNFShex2offt(buf);
-	if (strncmp(rpx.currentbuff, "TRUE", CNFSMASIZ) == 0) {
+	if (strncmp(rpx->currentbuff, "TRUE", CNFSMASIZ) == 0) {
 	    cycbuff->currentbuff = TRUE;
 	} else
 	    cycbuff->currentbuff = FALSE;
@@ -630,16 +621,6 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
 	cycbuff->needflush = TRUE;
 	if (!CNFSflushhead(cycbuff))
 	    return FALSE;
-    }
-    errno = 0;
-    fd = cycbuff->fd;
-    if ((cycbuff->bitfield =
-	 mmap((caddr_t) 0, cycbuff->minartoffset, SMopenmode ? (PROT_READ | PROT_WRITE) : PROT_READ,
-	      MAP_SHARED, fd, (off_t) 0)) == MAP_FAILED || errno != 0) {
-	syslog(L_ERROR,
-	       "%s: CNFSinitdisks: mmap for %s offset %d len %d failed: %m",
-	       LocalLogName, cycbuff->path, 0, cycbuff->minartoffset);
-	return FALSE;
     }
     if (oneshot)
       break;
@@ -915,22 +896,6 @@ static int CNFSUsedBlock(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset,
 
 }
 
-/*
-** CNFSmunmapbitfields() -- Call munmap() on all of the bitfields we've
-**	previously mmap()'ed.
-*/
-
-static void CNFSmunmapbitfields(void) {
-    CYCBUFF	*cycbuff;
-
-    for (cycbuff = cycbufftab; cycbuff != (CYCBUFF *)NULL; cycbuff = cycbuff->next) {
-	if (cycbuff->bitfield != NULL) {
-	    munmap(cycbuff->bitfield, cycbuff->minartoffset);
-	    cycbuff->bitfield = NULL;
-	}
-    }
-}
-
 static int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, uint32_t cycnum) {
     static time_t       lastupdate = 0;
     CYCBUFF	        *tmp;
@@ -957,20 +922,6 @@ static int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, uint32_t cyc
 	return 0;
     }
     return CNFSUsedBlock(cycbuff, offset, FALSE, FALSE);
-}
-
-static void CNFSshutdowncycbuff(CYCBUFF *cycbuff) {
-    if (cycbuff == (CYCBUFF *)NULL)
-	return;
-    if (cycbuff->needflush)
-	(void)CNFSflushhead(cycbuff);
-    if (cycbuff->bitfield != NULL) {
-	munmap(cycbuff->bitfield, cycbuff->minartoffset);
-	cycbuff->bitfield = NULL;
-    }
-    if (cycbuff->fd >= 0)
-	close(cycbuff->fd);
-    cycbuff->fd = -1;
 }
 
 bool cnfs_init(SMATTRIBUTE *attr) {
@@ -1258,15 +1209,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     ** XXX water here.  So, to be safe, we double MAX_ART_SIZE and add enough
     ** XXX extra for the pagesize fudge factor and CNFSARTHEADER structure.
     */
-    if (CNFSseek(cycbuff->fd, offset, SEEK_SET) < 0) {
-        SMseterror(SMERR_UNDEFINED, "CNFSseek failed");
-        syslog(L_ERROR, "%s: could not lseek token %s %s:0x%s:%ld: %m",
-		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
-        DISPOSE(art);
-	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
-        return NULL;
-    }
-    if (read(cycbuff->fd, &cah, sizeof(cah)) != sizeof(cah)) {
+    if (pread(cycbuff->fd, &cah, sizeof(cah), offset) != sizeof(cah)) {
         SMseterror(SMERR_UNDEFINED, "read failed");
         syslog(L_ERROR, "%s: could not read token %s %s:0x%s:%ld: %m",
 		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
@@ -1576,11 +1519,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	return (ARTHANDLE *)NULL;
 
     offset = middle;
-    if (CNFSseek(cycbuff->fd, offset, SEEK_SET) < 0) {
-	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
-	return (ARTHANDLE *)NULL;
-    }
-    if (read(cycbuff->fd, &cah, sizeof(cah)) != sizeof(cah)) {
+    if (pread(cycbuff->fd, &cah, sizeof(cah), offset) != sizeof(cah)) {
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	return (ARTHANDLE *)NULL;
     }
@@ -1764,8 +1703,6 @@ void cnfs_printfiles(FILE *file, TOKEN token, char **xref, int ngroups) {
 }
 
 void cnfs_shutdown(void) {
-    CNFSflushallheads();
-    CNFSmunmapbitfields();
     CNFScleancycbuff();
     CNFScleanmetacycbuff();
     CNFScleanexpirerule();
