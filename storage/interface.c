@@ -359,6 +359,7 @@ static bool SMreadconfig(void) {
     int                 i;
     char                *p;
     char                *q;
+    char                *path;
     char                *method;
     char                *patterns = NULL;
     int                 minsize;
@@ -384,12 +385,15 @@ static bool SMreadconfig(void) {
 	method_data[i].initialized = INIT_NO;
 	method_data[i].configured = FALSE;
     }
-    if ((f = CONFfopen((char *)cpcatpath(innconf->pathetc, _PATH_STORAGECTL))) == NULL) {
+    path = concatpath(innconf->pathetc, _PATH_STORAGECTL);
+    f = CONFfopen(path);
+    if (f == NULL) {
 	SMseterror(SMERR_UNDEFINED, NULL);
-	syslog(L_ERROR, "SM Could not open %s: %m",
-			cpcatpath(innconf->pathetc, _PATH_STORAGECTL));
+	syslog(L_ERROR, "SM Could not open %s: %m", path);
+        free(path);
 	return FALSE;
     }
+    free(path);
     
     inbrace = 0;
     while ((tok = CONFgettoken(smtoks, f)) != NULL) {
