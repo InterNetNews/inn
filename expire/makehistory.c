@@ -736,7 +736,7 @@ DoArt(ARTHANDLE *art)
 void
 Usage(void)
 {
-    fprintf(stderr, "Usage: makehistory [-b] [-f file] [-O] [-I] [-l overtmpsegsize [-a] [-u] [-x] [-T tmpdir]\n");
+    fprintf(stderr, "Usage: makehistory [-b] [-f file] [-O] [-I] [-l overtmpsegsize [-a] [-x] [-T tmpdir]\n");
     fprintf(stderr, "\t-b -- delete bad articles from spool\n");
     fprintf(stderr, "\t-e -- read entire articles to compute proper Bytes headers\n");
     fprintf(stderr, "\t-f -- write history entries to file (default $pathdb/history)\n");
@@ -744,7 +744,6 @@ Usage(void)
     fprintf(stderr, "\t-O -- create overview entries for articles\n");
     fprintf(stderr, "\t-I -- do not create overview entries for articles below lowmark in active\n");
     fprintf(stderr, "\t-l nnn -- set size of batches too do overview updates in (default 10000)\n");
-    fprintf(stderr, "\t-u -- 'update mode' assume server running, only output to file\n");
     fprintf(stderr,"\t\tentries not already in main history file.\n");
     fprintf(stderr, "\t-x -- don't bother writing any history entries at all\n");
     fprintf(stderr, "\t-T tmpdir -- use directory tmpdir for temp files. \n");
