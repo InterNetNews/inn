@@ -595,7 +595,6 @@ STATIC enum KRP EXPkeepit(char *Entry, time_t when, time_t Expires)
     NEWSGROUP	        *ngp;
     EXPIRECLASS         class;
     TOKEN               token;
-    unsigned long	ArtNum;
     enum KRP		retval = Remove;
 
     if (IsToken(Entry)) {
@@ -691,26 +690,9 @@ STATIC enum KRP EXPkeepit(char *Entry, time_t when, time_t Expires)
         if (when >= ngp->Purge && (Expires >= Now || when >= ngp->Keep))
 	    retval = Keep;
     }
-    ArtNum = atol(p + 1);
     if (retval == Keep) {
-	if (EXPverbose > 3)
-	    printf("Lowmark checking for article number %u (Last = %u)\n",
-		ArtNum, ngp->Last);
-	if (ngp->Last > ArtNum) {
-	    ngp->Last = ArtNum;
-	    if (EXPverbose > 3)
-		printf("New lowmark %u\n", ArtNum);
-	}
 	return Keep;
     } else {
-	if (EXPverbose > 3)
-	    printf("Lowmark checking for article number %u (Last = %u)\n",
-		ArtNum, ngp->Lastpurged);
-	if (ngp->Lastpurged < ArtNum) {
-	    ngp->Lastpurged = ArtNum;
-	    if (EXPverbose > 3)
-		printf("New lowmark %u\n", ArtNum);
-	}
 	return ngp->Poison ? Poison : Remove;
     }
 }
@@ -722,8 +704,10 @@ STATIC enum KRP EXPkeepit(char *Entry, time_t when, time_t Expires)
 */
 STATIC void EXPremove(char *p, long *size, BOOL index)
 {
-    char	        *q;
+    char	        save, *q;
     struct stat		Sb;
+    unsigned long	ArtNum;
+    NEWSGROUP	        *ngp;
 
     /* Turn into a filename and get the size if we need it. */
     if (!IsToken(p)) {
@@ -746,6 +730,21 @@ STATIC void EXPremove(char *p, long *size, BOOL index)
 	(void)printf("%s\n", p);
 	return;
     }
+
+    if (EXPlowmarkfile && ((q = strpbrk(p, "/:")) != NULL)) {
+	save = *q;
+	*q = '\0';
+	if ((ngp = NGfind(p)) != NULL) {
+	    ArtNum = atol(q + 1);
+	    if (ngp->Lastpurged < ArtNum) {
+		ngp->Lastpurged = ArtNum;
+		if (EXPverbose > 3)
+		    printf("New lowmark %u\n", ArtNum);
+	    }
+	}
+	*q = save;
+    }
+
     if (index) {
 	if (EXPunlinkindex) {
 	    (void)fprintf(EXPunlinkindex, "%s\n", p);
@@ -773,6 +772,34 @@ STATIC void EXPremove(char *p, long *size, BOOL index)
     }
 }
 
+/*
+**  Get lowest article number which is still retained.
+*/
+STATIC void EXPlowmark(char *p)
+{
+    char		save, *q;
+    NEWSGROUP		*ngp;
+    unsigned long	ArtNum;
+
+    if (!IsToken(p)) {
+	if ((q = strpbrk(p, "/:")) == NULL)
+	    return;
+	save = *q;
+	*q = '\0';
+	if ((ngp = NGfind(p)) == NULL) {
+	    *q = save;
+	    return;
+	}
+	*q = save;
+	ArtNum = atol(q + 1);
+	if (ngp->Last > ArtNum) {
+	    ngp->Last = ArtNum;
+	    if (EXPverbose > 3)
+		printf("New lowmark %u\n", ArtNum);
+        }
+    }
+    return;
+}
 
 /*
 **  Do the work of expiring one line.
@@ -810,6 +837,12 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
     static char		*Xrefbuf = NULL;
     char		*Xref;
     char		*tokentext;
+    BOOL		tokenretained = FALSE;
+#ifndef	DO_TAGGED_HASH
+    void	*ivalue;
+    idxrec	ionevalue;
+    idxrecext	iextvalue;
+#endif
 
     /* Split up the major fields. */
     i = EXPsplit(line, HIS_FIELDSEP, fields, SIZEOF(fields));
@@ -1008,6 +1041,16 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 			    fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
 			    tokentext);
 		EXPstillhere++;
+		tokenretained = TRUE;
+		if (Hasover && EXPlowmarkfile) {
+		    for (i = 0; i < count; i++) {
+			p = arts[i];
+			if (*p == '\0')
+			    /* Shouldn't happen. */
+			    continue;
+			EXPlowmark(p);
+		    }
+		}
 	    }
 	} else if (ClassicExpire && Hastoken && Hasover) {
 	    if (EXPearliest) {
@@ -1054,6 +1097,16 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 				fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
 				tokentext);
 		    EXPstillhere++;
+		    tokenretained = TRUE;
+		    if (EXPlowmarkfile) {
+			for (i = 0; i < count; i++) {
+			    p = arts[i];
+			    if (*p == '\0')
+				/* Shouldn't happen. */
+				continue;
+			    EXPlowmark(p);
+			}
+		    }
 		}
 	    } else { /* not earliest mode */
 		if (!keeper || token.type == TOKEN_EMPTY || token.cancelled) {
@@ -1098,6 +1151,16 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 				fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
 				tokentext);
 		    EXPstillhere++;
+		    tokenretained = TRUE;
+		    if (EXPlowmarkfile) {
+		        for (i = 0; i < count; i++) {
+			    p = arts[i];
+			    if (*p == '\0')
+			        /* Shouldn't happen. */
+			        continue;
+			    EXPlowmark(p);
+		        }
+		    }
 		}
 	    }
 	} else {
@@ -1235,6 +1298,17 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 			    (void)printf("remember article: %s%c%s%c%s\n",
 				    fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
 				    tokentext);
+			tokenretained = TRUE;
+			EXPstillhere++;
+			if (EXPlowmarkfile) {
+			    for (i = 0; i < count; i++) {
+				p = arts[i];
+				if (*p == '\0')
+				    /* Shouldn't happen. */
+				    continue;
+				EXPlowmark(p);
+			    }
+			}
 		    }
 		} else {
 		    where = Offset;
@@ -1247,8 +1321,17 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 			(void)printf("remember article: %s%c%s%c%s\n",
 				fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
 				New.Data);
+		    EXPstillhere++;
+		    if (EXPlowmarkfile) {
+			for (i = 0; i < count; i++) {
+			    p = arts[i];
+			    if (*p == '\0')
+				/* Shouldn't happen. */
+				continue;
+			    EXPlowmark(p);
+			}
+		    }
 		}
-		EXPstillhere++;
 	    }
 	}
     }
@@ -1266,10 +1349,30 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
      * since it had to have been clean to get in there. */
     if (EXPverbose > 4)
 	(void)printf("\tdbz %s@%ld\n", fields[0], where);
+#ifdef	DO_TAGGED_HASH
     if (dbzstore(key, where) == DBZSTORE_ERROR) {
 	fprintf(stderr, "Can't store key, \"%s\"\n", strerror(errno));
 	return FALSE;
     }
+#else
+    if (innconf->extendeddbz) {
+	iextvalue.offset[HISTOFFSET] = where;
+	if (tokenretained)
+	    OVERsetoffset(&token, (int *)&iextvalue.offset[OVEROFFSET], &iextvalue.overindex);
+	else {
+	    iextvalue.offset[OVEROFFSET] = 0;
+	    iextvalue.overindex = OVER_NONE;
+	}
+	ivalue = (void *)&iextvalue;
+    } else {
+	ionevalue.offset = where;
+	ivalue = (void *)&ionevalue;
+    }
+    if (dbzstore(key, ivalue) == DBZSTORE_ERROR) {
+	fprintf(stderr, "Can't store key, \"%s\"\n", strerror(errno));
+	return FALSE;
+    }
+#endif
     return TRUE;
 }
 
@@ -1645,9 +1748,16 @@ int main(int ac, char *av[])
 	}
     }
 
-    if (chdir(SPOOL) < 0) {
-	(void)fprintf(stderr, CANTCD, SPOOL, strerror(errno));
-	exit(1);
+    if (innconf->storageapi) {
+	if (chdir(innconf->pathoverview) < 0) {
+	    (void)fprintf(stderr, CANTCD, SPOOL, strerror(errno));
+	    exit(1);
+	}
+    } else {
+	if (chdir(SPOOL) < 0) {
+	    (void)fprintf(stderr, CANTCD, SPOOL, strerror(errno));
+	    exit(1);
+	}
     }
 
     if (!SMinit()) {
@@ -1754,7 +1864,7 @@ int main(int ac, char *av[])
 		NHistory, strerror(errno));
 	    Bad = TRUE;
 	}
-	if (!dbmclose()) {
+	if (!dbzclose()) {
 	    (void)fprintf(stderr, "Can't close history, %s\n",
 		    strerror(errno));
 	    Bad = TRUE;
