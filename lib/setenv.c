@@ -10,21 +10,8 @@
 */
 
 #include "config.h"
-
+#include "clibrary.h"
 #include <errno.h>
-#if STDC_HEADERS
-# include <string.h>
-#endif
-
-/* Solaris at least wants _XOPEN_SOURCE defined and _XOPEN_VERSION set to at
-   least 4 in order to make putenv available when compiling in a strictly
-   standards-conforming environment (e.g. gcc -ansi). */
-#ifndef _XOPEN_SOURCE
-# define _XOPEN_SOURCE
-# undef _XOPEN_VERSION
-# define _XOPEN_VERSION 4
-#endif
-#include <stdlib.h>
 
 /* If we're running the test suite, rename setenv to avoid conflicts with
    the system version. */
