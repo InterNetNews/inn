@@ -15,9 +15,9 @@
 # include "config.h"
 #endif
 
-/* We need FILE, size_t, and various other types only found here. */
-#include <stdio.h>
-#include <sys/types.h>
+#include <stdarg.h>             /* va_list */
+#include <stdio.h>              /* FILE */
+#include <sys/types.h>          /* size_t and ssize_t */
 
 /* Forward declarations to avoid unnecessary includes. */
 struct stat;
@@ -36,6 +36,13 @@ extern void die(const char *, ...)
     __attribute__((__noreturn__, __format__(printf, 1, 2)));
 extern void sysdie(const char *, ...)
     __attribute__((__noreturn__, __format__(printf, 1, 2)));
+
+/* Additional log function takes the length of the resulting message, the
+   format, the arguments, and the errno if any. */
+typedef void (*error_log_t)(int, const char *, va_list, int);
+
+/* If non-NULL, called after printing to stderr and passed the message. */
+extern error_log_t error_log_function;
 
 /* If non-NULL, called before exit and its return value passed to exit. */
 extern int (*error_fatal_cleanup)(void);
