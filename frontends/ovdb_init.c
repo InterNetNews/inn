@@ -372,7 +372,6 @@ int main(int argc, char **argv)
         die("command must be run as user " NEWSUSER);
 
     chdir(innconf->pathtmp);
-    ovdb_errmode = OVDB_ERR_STDERR;
 
     while((c = getopt(argc, argv, "ru")) != -1) {
 	switch(c) {
