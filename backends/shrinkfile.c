@@ -1,8 +1,10 @@
 /*  $Id$
 **
 **  Shrink files on line boundaries.
+**
 **  Written by Landon Curt Noll <chongo@toad.com>, and placed in the
 **  public domain.  Rewritten for INN by Rich Salz.
+**
 **  Usage:
 **	shrinkfile [-n] [-s size [-m maxsize]] [-v] file...
 **	-n		No writes, exit 0 if any file is too large, 1 otherwise
@@ -29,13 +31,12 @@
 #include <sys/stat.h>
 #include <syslog.h>
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
 
 #define MAX_SIZE	0x7fffffffUL
 
-
-static char *program = NULL;	/* our name */
 
 /*
 **  Open a safe unique temporary file that will go away when closed.
@@ -44,25 +45,18 @@ static FILE *
 OpenTemp(void)
 {
     FILE	*F;
-    char	buff[SMBUF];
-    int		i;
+    char        *filename;
+    int		fd;
 
-    /* Get filename. */
-    snprintf(buff, sizeof(buff), "%s/shrinkXXXXXX", innconf->pathtmp);
-    (void)mktemp(buff);
-
-    /* Open the file. */
-    if ((i = open(buff, O_RDWR | O_CREAT | O_EXCL | O_TRUNC, 0600)) < 0) {
-	(void)fprintf(stderr, "%s: Can't make temporary file, %s\n",
-		program, strerror(errno));
-	exit(1);
-    }
-    if ((F = fdopen(i, "w+")) == NULL) {
-	(void)fprintf(stderr,
-	  "%s: Can't fdopen %d, %s\n", program, i, strerror(errno));
-	exit(1);
-    }
-    (void)unlink(buff);
+    filename = concatpath(innconf->pathtmp, "shrinkXXXXXX");
+    fd = mkstemp(filename);
+    if (fd < 0)
+        sysdie("cannot create temporary file");
+    F = fdopen(fd, "w+");
+    if (F == NULL)
+        sysdie("cannot fdopen %s", filename);
+    unlink(filename);
+    free(filename);
     return F;
 }
 
@@ -76,16 +70,14 @@ EndsWithNewline(FILE *F)
     int		c;
 
     if (fseeko(F, 1, SEEK_END) < 0) {
-	(void)fprintf(stderr, "%s: Can't seek to end of file, %s\n",
-		program, strerror(errno));
+        syswarn("cannot seek to end of file");
 	return TRUE;
     }
 
     /* return the actual character or EOF */
     if ((c = fgetc(F)) == EOF) {
 	if (ferror(F))
-	    (void)fprintf(stderr, "%s: Can't read last byte, %s\n",
-		    program, strerror(errno));
+            syswarn("cannot read last byte");
 	return TRUE;
     }
     return c == '\n';
@@ -101,8 +93,7 @@ AppendNewline(char *name)
     FILE	*F;
 
     if ((F = xfopena(name)) == NULL) {
-	(void)fprintf(stderr,
-	  "%s: Can't add newline, %s\n", program, strerror(errno));
+        syswarn("cannot add newline");
 	return FALSE;
     }
 
@@ -110,8 +101,7 @@ AppendNewline(char *name)
      || fflush(F) == EOF
      || ferror(F)
      || fclose(F) == EOF) {
-	(void)fprintf(stderr,
-	  "%s: Can't add newline, %s\n", program, strerror(errno));
+        syswarn("cannot add newline");
 	return FALSE;
     }
 
@@ -128,8 +118,7 @@ TooBig(FILE *F, off_t maxsize)
 
     /* Get the file's size. */
     if (fstat((int)fileno(F), &Sb) < 0) {
-	(void)fprintf(stderr,
-	  "%s: Can't fstat, %s\n", program, strerror(errno));
+        syswarn("cannot fstat");
 	return FALSE;
     }
 
@@ -153,8 +142,7 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
 
     /* Get the file's size. */
     if (fstat((int)fileno(F), &Sb) < 0) {
-	(void)fprintf(stderr,
-	  "%s: Can't fstat, %s\n", program, strerror(errno));
+        syswarn("cannot fstat");
 	return FALSE;
     }
     len = Sb.st_size;
@@ -164,8 +152,7 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
 	if (len > 0) {
 	    (void)fclose(F);
 	    if ((F = fopen(name, "w")) == NULL) {
-		(void)fprintf(stderr,
-		  "%s: Can't overwrite, %s\n", program, strerror(errno));
+                syswarn("cannot overwrite");
 		return FALSE;
 	    }
 	    (void)fclose(F);
@@ -200,16 +187,14 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
      * we want.  Starting from {size} bytes from end, move forward
      * until we get a newline. */
     if (fseeko(F, -size, SEEK_END) < 0) {
-	(void)fprintf(stderr,
-	  "%s: Can't fseeko, %s\n", program, strerror(errno));
+        syswarn("cannot fseeko");
 	(void)fclose(F);
 	return FALSE;
     }
 
     while ((c = getc(F)) != '\n')
 	if (c == EOF) {
-	    (void)fprintf(stderr,
-	      "%s: Can't read, %s\n", program, strerror(errno));
+            syswarn("cannot read");
 	    (void)fclose(F);
 	    return FALSE;
 	}
@@ -223,8 +208,7 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
 	    break;
 	}
     if (err) {
-	(void)fprintf(stderr, 
-	  "%s: Can't copy to temp file, %s\n", program, strerror(errno));
+        syswarn("cannot copy to temporary file");
 	(void)fclose(F);
 	(void)fclose(tmp);
 	return FALSE;
@@ -233,8 +217,7 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
     /* Now copy temp back to original file. */
     (void)fclose(F);
     if ((F = fopen(name, "w")) == NULL) {
-	(void)fprintf(stderr,
-	  "%s: Can't overwrite, %s\n", program, strerror(errno));
+        syswarn("cannot overwrite file");
 	(void)fclose(tmp);
 	return FALSE;
     }
@@ -246,8 +229,7 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
 	    break;
 	}
     if (err) {
-	(void)fprintf(stderr,
-	  "%s: Can't overwrite file, %s\n", program, strerror(errno));
+        syswarn("cannot overwrite file");
 	(void)fclose(F);
 	(void)fclose(tmp);
 	return FALSE;
@@ -302,10 +284,8 @@ ParseSize(char *p)
     /* Convert string to number. */
     if (sscanf(p, "%lud", &str_num) != 1)
 	return -1;
-    if (str_num > MAX_SIZE / scale) {
-	(void)fprintf(stderr, "%s: Size is too big\n", program);
-	exit(1);
-    }
+    if (str_num > MAX_SIZE / scale)
+        die("size is too big");
 
     return scale * str_num;
 }
@@ -317,7 +297,8 @@ ParseSize(char *p)
 static void
 Usage(void)
 {
-    fprintf(stderr, "Usage: %s [-n] [ -m maxsize ] [-s size] [-v] file...\n", program);
+    fprintf(stderr,
+            "Usage: shrinkfile [-n] [ -m maxsize ] [-s size] [-v] file...");
     exit(1);
 }
 
@@ -336,9 +317,9 @@ main(int ac, char *av[])
 
     /* First thing, set up logging and our identity. */
     openlog("shrinkfile", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "shrinkfile";
 
     /* Set defaults. */
-    program = av[0];
     Verbose = FALSE;
     no_op = FALSE;
     (void)umask(NEWSUMASK);
@@ -376,8 +357,7 @@ main(int ac, char *av[])
 
     while ((p = *av++) != NULL) {
 	if ((F = fopen(p, "r")) == NULL) {
-	    (void)fprintf(stderr,
-	      "%s: Can't open %s, %s\n", program, p, strerror(errno));
+            syswarn("cannot open %s", p);
 	    continue;
 	}
 
@@ -387,7 +367,7 @@ main(int ac, char *av[])
 	    /* check if too big and exit zero if it is */
 	    if (TooBig(F, maxsize)) {
 		if (Verbose)
-		    (void)printf("%s: %s is too large\n", program, p);
+                    notice("%s is too large", p);
 		exit(0);
 		/* NOTREACHED */
 	    }
@@ -396,13 +376,13 @@ main(int ac, char *av[])
 	} else {
 	    Changed = FALSE;
 	    if (!Process(F, p, size, maxsize, &Changed))
-		(void)fprintf(stderr, "%s: Can't shrink %s\n", program, p);
+                syswarn("cannot shrink %s", p);
 	    else if (Verbose && Changed)
-		(void)printf("%s: Shrunk %s\n", program, p);
+                notice("shrunk %s", p);
 	}
     }
     if (no_op && Verbose) {
-	(void)printf("%s: did not find a file that was too large\n", program);
+        notice("did not find a file that was too large");
     }
 
     /* if -n, then exit non-zero to indicate no file too big */
