@@ -150,6 +150,7 @@ prefix          = @prefix@
 
 PATHNEWS        = $(prefix)
 PATHBIN         = $(PATHNEWS)/bin
+PATHDOC         = @DOCDIR@
 PATHETC         = @ETCDIR@
 PATHMAN         = @mandir@
 PATHLIB         = @LIBDIR@
