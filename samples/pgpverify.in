@@ -1,4 +1,4 @@
-#! /usr/bin/perl -ws
+#!@_PATH_PERL@ -ws
 # written April 1996, tale@isc.org (David C Lawrence)
 # Version 1.10
 #
@@ -50,7 +50,7 @@ $pgp = '/usr/local/bin/pgp';
 # uncomment the next line and set appropriately.
 # $ENV{'PGPPATH'} = '/path/to/your/pgp/config';
 
-$tmpdir = "/tmp/pgp$$";
+$tmpdir = "/tmp";
 
 ### Exit value:
 ### 0  good signature
