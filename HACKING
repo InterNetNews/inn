@@ -136,6 +136,81 @@ Documentation
     The current versions of these tools as of this writing are podlators
     1.02, PodParser 1.13, and Pod::DocBook 0.05.
 
+Error Handling
+
+    INN has a set of generic error handling routines that should be used as
+    much as possible so that the same syntax can be used for reporting
+    errors everywhere in INN.  The four basic functions are warn, syswarn,
+    die, and sysdie; warn prints or logs a warning, and die does the same
+    and then exits the current program.  The sys* versions add a colon, a
+    space, and the value of strerror(errno) to the end of the message, and
+    should be used to report failing system calls.
+
+    All of the actual error reporting is done via error handlers, and a
+    program can register its own handlers in addition to or instead of the
+    default one.  The default error handler (error_log_stderr) prints to
+    stderr, prepending the value of error_program_name if it's set to
+    something other than NULL.  Two other error handlers are available,
+    error_log_syslog_err and error_log_syslog_warning, which log the message
+    to syslog at LOG_ERR or LOG_WARNING priority, respectively.
+
+    There is a different set of error handlers for warn/syswarn and
+    die/sysdie.  To set them, make calls like:
+
+        warn_set_handlers(2, error_log_stderr, error_log_syslog_warning);
+        die_set_handlers(2, error_log_stderr, error_log_syslog_err);
+
+    The first argument is the number of handlers, and the remaining
+    arguments are pointers to functions taking an int (the length of the
+    formatted message), a const char * (the format), a va_list (the
+    arguments), and an int that's 0 if warn or die was called and equal to
+    the value of errno if syswarn or sysdie was called.  The length of the
+    formatted message is obtained by calling vsnprintf with the provided
+    format and arguments, and therefore is reliable to use as the size of a
+    buffer to malloc to hold the result of formatting the message provided
+    that vsnprintf is used to format it (warning: the system vsprintf may
+    produce more output under some circumstances, so always use vsnprintf).
+
+    The error handler can do anything it wishes; each error handler is
+    called in the sequence given.  Error handlers shouldn't call warn or die
+    unless great caution is taken to prevent infinite recursion.  Also be
+    aware that sysdie is called if malloc fails in xmalloc, so if the error
+    handler needs to allocate memory, it must not use xmalloc or a related
+    function to do so and it shouldn't call die to report failure.  The
+    default syslog handlers report memory allocation failure to stderr and
+    exit.
+
+    Finally, die and sysdie support an additional handler that's called
+    immediate before exiting, takes no arguments, and returns an int which
+    is used as the argument for exit.  It can do any necessary global
+    cleanup, call abort instead to generate a core dump or the like.
+
+    The advantage of using this system everywhere in INN is that library
+    code can use warn and die to report errors and each calling program can
+    set up the error handlers as appropriate to make sure the errors go to
+    the right place.  The default handler is fine for interactive programs;
+    for programs that run from interactive scripts, adding something like:
+
+        error_program_name = "program";
+
+    to the beginning of main (where program is the name of the program) will
+    make it easier to figure out which program the script calls is failing. 
+    For programs that may also be called non-interactively, like inndstart,
+    one may want to set up handlers like:
+
+        warn_set_handlers(2, error_log_stderr, error_log_syslog_warning);
+        die_set_handlers(2, error_log_stderr, error_log_syslog_err);
+
+    Finally, for daemons and other non-interactive programs, one may want to
+    do:
+
+        warn_set_handlers(1, error_log_syslog_warning);
+        die_set_handlers(1, error_log_syslog_err);
+
+    to report errors only via syslog.  (Note that if you use syslog error
+    handlers, the program should call openlog first thing to make sure they
+    are logged with the right facility.)
+
 Test Suite
 
     The test suite for INN is located in the tests directory and is just
@@ -255,6 +330,7 @@ Include Files
     The second is portably equivalent to:
 
         #include <sys/types.h>
+        #include <stdarg.h>
         #include <stdio.h>
         #include <stdlib.h>
         #include <stddef.h>
@@ -352,6 +428,20 @@ Coding Style
     designed to make lint shut up.  Don't feel like you have to preserve
     them provided that gcc -Wall doesn't complain when they're removed.
 
+    INN's indentation style roughly corresponds to that produced by GNU
+    indent with the following options:
+
+        -bad -bap -sob -fca -lc76 -cd41 -cp1 -br -ce -cli2 -ss -npcs -cs
+        -di1 -nbc -psl -brs -i4 -ci4 -lp -ts0 -ip5 -lps -l76 -bbo -hnl
+
+    For users of emacs cc-mode, use the "bsd" style.  The primary difference
+    between the INN style and the results of the above are no space between
+    a function pointer dereference and the open paren of its arguments
+    (impossible to fix in GNU indent, which seems to think that construct is
+    a cast) and places where code is all on one line (such as large blocks
+    of short case code) to emphasize parallel structures and take up less
+    space.
+
     Note that this is only a rough guideline and the maintainers aren't
     style nazis; we're more interested in your code contribution than in how
     you write it.
@@ -412,6 +502,18 @@ References
 
     Some additional references that may be hard to find and may be of use to
     people working on INN:
+
+    <ftp://ftp.academ.com/pub/nntp/ietf/>
+        The archives for the NNTP IETF working group, containing the latest
+        drafts of the new NNTP standard and the archived mailing list
+        traffic (which contains a lot of interesting discussion of why NNTP
+        is the way it is).
+
+    <http://www.landfield.com/usefor/>
+        The archives for the USEFOR IETF working group, the working group
+        for the RFC 1036 replacement (the format of Usenet articles).  Also
+        contains a lot of references to other relevant work, such as the RFC
+        822 replacement work.
 
     <http://www.mibsoftware.com/userkt/inn/dev/>
         Forrest Cavalier provides several tools for following INN
