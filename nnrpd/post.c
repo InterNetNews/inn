@@ -28,62 +28,62 @@ static const char * const BadDistribs[] = {
 };
 
 HEADER	Table[] = {
-    /* 	Name			Canset	Type	*/
-    {	"Path",			TRUE,	HTstd },
+    /* 	Name			Canset	Type	Size  Value */
+    {	"Path",			TRUE,	HTstd,  0,    NULL },
 #define HDR__PATH	      0
-    {	"From",			TRUE,	HTreq },
+    {	"From",			TRUE,	HTreq,  0,    NULL },
 #define HDR__FROM	      1
-    {	"Newsgroups",	 	TRUE,	HTreq },
+    {	"Newsgroups",	 	TRUE,	HTreq,  0,    NULL },
 #define HDR__NEWSGROUPS	      2
-    {	"Subject",		TRUE,	HTreq },
+    {	"Subject",		TRUE,	HTreq,  0,    NULL },
 #define HDR__SUBJECT	      3
-    {	"Control",		TRUE,	HTstd },
+    {	"Control",		TRUE,	HTstd,  0,    NULL },
 #define HDR__CONTROL	      4
-    {	"Supersedes",		TRUE,	HTstd },
-    {	"Followup-To",		TRUE,	HTstd },
+    {	"Supersedes",		TRUE,	HTstd,  0,    NULL },
+    {	"Followup-To",		TRUE,	HTstd,  0,    NULL },
 #define HDR__FOLLOWUPTO	      6
-    {	"Date",			TRUE,	HTstd },
+    {	"Date",			TRUE,	HTstd,  0,    NULL },
 #define HDR__DATE	      7
-    {	"Organization",		TRUE,	HTstd },
+    {	"Organization",		TRUE,	HTstd,  0,    NULL },
 #define HDR__ORGANIZATION     8
-    {	"Lines",		TRUE,	HTstd },
+    {	"Lines",		TRUE,	HTstd,  0,    NULL },
 #define HDR__LINES	      9
-    {	"Sender",		TRUE,	HTstd },
+    {	"Sender",		TRUE,	HTstd,  0,    NULL },
 #define HDR__SENDER	     10
-    {	"Approved",		TRUE,	HTstd },
+    {	"Approved",		TRUE,	HTstd,  0,    NULL },
 #define HDR__APPROVED	     11
-    {	"Distribution",		TRUE,	HTstd },
+    {	"Distribution",		TRUE,	HTstd,  0,    NULL },
 #define HDR__DISTRIBUTION    12
-    {	"Expires",		TRUE,	HTstd },
+    {	"Expires",		TRUE,	HTstd,  0,    NULL },
 #define HDR__EXPIRES	     13
-    {	"Message-ID",		TRUE,	HTstd },
+    {	"Message-ID",		TRUE,	HTstd,  0,    NULL },
 #define HDR__MESSAGEID	     14
-    {	"References",		TRUE,	HTstd },
-    {	"Reply-To",		TRUE,	HTstd },
-    {	"NNTP-Posting-Host",	FALSE,	HTstd },
+    {	"References",		TRUE,	HTstd,  0,    NULL },
+    {	"Reply-To",		TRUE,	HTstd,  0,    NULL },
+    {	"NNTP-Posting-Host",	FALSE,	HTstd,  0,    NULL },
 #define HDR__NNTPPOSTINGHOST 17
-    {	"Mime-Version",		TRUE,	HTstd },
-    {	"Content-Type",		TRUE,	HTstd },
-    {	"Content-Transfer-Encoding", TRUE, HTstd },
-    {   "X-Trace",              FALSE, HTstd },
+    {	"Mime-Version",		TRUE,	HTstd,  0,    NULL },
+    {	"Content-Type",		TRUE,	HTstd,  0,    NULL },
+    {	"Content-Transfer-Encoding", TRUE, HTstd,  0,    NULL },
+    {   "X-Trace",              FALSE, HTstd,  0,    NULL },
 #define HDR__XTRACE          21
-    {   "X-Complaints-To",	FALSE, HTstd },
+    {   "X-Complaints-To",	FALSE, HTstd,  0,    NULL },
 #define HDR__XCOMPLAINTSTO   22
-    {   "NNTP-Posting-Date",	FALSE, HTstd },
+    {   "NNTP-Posting-Date",	FALSE, HTstd,  0,    NULL },
 #define HDR__NNTPPOSTINGDATE 23
-    {	"Xref",			FALSE,	HTstd },
-    {	"Summary",		TRUE,	HTstd },
-    {	"Keywords",		TRUE,	HTstd },
-    {	"Date-Received",	FALSE,	HTobs },
-    {	"Received",		FALSE,	HTobs },
-    {	"Posted",		FALSE,	HTobs },
-    {	"Posting-Version",	FALSE,	HTobs },
-    {	"Relay-Version",	FALSE,	HTobs },
-    {   "Cc",			TRUE, HTstd },
+    {	"Xref",			FALSE,	HTstd,  0,    NULL },
+    {	"Summary",		TRUE,	HTstd,  0,    NULL },
+    {	"Keywords",		TRUE,	HTstd,  0,    NULL },
+    {	"Date-Received",	FALSE,	HTobs,  0,    NULL },
+    {	"Received",		FALSE,	HTobs,  0,    NULL },
+    {	"Posted",		FALSE,	HTobs,  0,    NULL },
+    {	"Posting-Version",	FALSE,	HTobs,  0,    NULL },
+    {	"Relay-Version",	FALSE,	HTobs,  0,    NULL },
+    {   "Cc",			TRUE, HTstd,  0,    NULL },
 #define HDR__CC		     32
-    {   "Bcc",			TRUE, HTstd },
+    {   "Bcc",			TRUE, HTstd,  0,    NULL },
 #define HDR__BCC		    33
-    {   "To",			TRUE, HTstd },
+    {   "To",			TRUE, HTstd,  0,    NULL },
 #define HDR__TO		     34
 };
 

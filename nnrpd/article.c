@@ -295,34 +295,10 @@ bool ARTinstorebytoken(TOKEN token)
     return FALSE;
 }
 
-static bool ARTinstorebyartnum(int artnum)
-{
-    ARTHANDLE           *art;
-    struct timeval	stv, etv;
-    TOKEN               token;
-    
-    if (PERMaccessconf->nnrpdoverstats)
-	gettimeofday(&stv, NULL);
-    if (!OVgetartinfo(GRPcur, artnum, &token))
-	return FALSE;
-  
-    art = SMretrieve(token, RETR_STAT);
-    if (PERMaccessconf->nnrpdoverstats) {
-	gettimeofday(&etv, NULL);
-	OVERartcheck+=(etv.tv_sec - stv.tv_sec) * 1000;
-	OVERartcheck+=(etv.tv_usec - stv.tv_usec) / 1000;
-    }
-    if (art) {
-	SMfreearticle(art);
-	return TRUE;
-    }
-    return FALSE;
-}
-
 /*
 **  If the article name is valid, open it and stuff in the ID.
 */
-static bool ARTopen(int artnum)
+static bool ARTopen(ARTNUM artnum)
 {
     static ARTNUM	save_artnum;
     TOKEN		token;

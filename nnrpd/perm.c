@@ -428,7 +428,7 @@ static ACCESSGROUP *copy_accessgroup(ACCESSGROUP *orig)
     return(ret);
 }
 
-static void SetDefaultAuth(AUTHGROUP *curauth)
+static void SetDefaultAuth(AUTHGROUP *curauth UNUSED)
 {
 #ifdef HAVE_SSL
         curauth->require_ssl = FALSE;
@@ -2096,7 +2096,6 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
     EXECSTUFF *foo;
     int done	    = 0;
     int code;
-    char accesslist[BIG_BUFFER];
     char buf[BIG_BUFFER];
 
     if (!auth->auth_methods)

@@ -267,12 +267,12 @@ void perlAccess(char *clientHost, char *clientIP, char *serverHost, char *user, 
 
 }
 
-int perlAuthInit(void) {
+void perlAuthInit(void) {
     dSP;
     int             rc;
     
     if (!PerlFilterActive)
-	return NNTP_ACCESS_VAL;
+	return;
 
     ENTER;
     SAVETMPS;

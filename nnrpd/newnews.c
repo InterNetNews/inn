@@ -18,7 +18,7 @@ static bool FindHeader(ARTHANDLE *art, const char **pp, const char **qp,
     const char* hdr, size_t hdrlen)
 {
   const char *p, *p1, *q;
-  bool Nocr;
+  bool Nocr = TRUE;
 
   if ((p = q = HeaderFindMem(art->data, art->len, hdr, hdrlen - 1)) == NULL)
     return false;
@@ -177,7 +177,7 @@ void CMDnewnews(int ac, char *av[]) {
   char		line[BIG_BUFFER];
   time_t	date;
   TOKEN		token;
-  ARTHANDLE	*art;
+  ARTHANDLE	*art = NULL;
   QIOSTATE	*qp;
   char		*grplist[2];
   int		count;

@@ -158,7 +158,8 @@ static CMDENT	CMDtable[] = {
 	"header range|MessageID pat [morepat...]" },
     {	"xpath",	CMDxpath,	TRUE,	2,	2,
 	"MessageID" },
-    {	NULL }
+    {	NULL,           CMD_unimp,      FALSE,  0,      0,
+        NULL }
 };
 
 
@@ -1049,7 +1050,7 @@ main(int argc, char *argv[])
 	    syslog(L_ERROR, "cannot write %s %m", buff);
             exit(1);
 	}
-	fprintf(pidfile,"%d\n", getpid());
+	fprintf(pidfile,"%lu\n", (unsigned long) getpid());
 	fclose(pidfile);
 
 	/* Set signal handle to care for dead children */

@@ -136,7 +136,7 @@ PERMgeneric(char *av[], char *accesslist)
 	return -1;
     }
 
-    for (i = 0; (pid = vfork()) < 0; i++) {
+    for (i = 0; (pid = fork()) < 0; i++) {
 	if (i == innconf->maxforks) {
 	    Reply("%d Can't fork %s\r\n", NNTP_TEMPERR_VAL,
 		strerror(errno));
@@ -576,8 +576,6 @@ static int GroupCompare(const void *a1, const void* b1) {
 */
 void CMDnewgroups(int ac, char *av[])
 {
-    static char		USAGE[] =
-	"NEWGROUPS [yy]yymmdd hhmmss [\"GMT\"|\"UTC\"] [<distributions>]";
     static char		**distlist;
     char	        *p;
     char	        *q;
