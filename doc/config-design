@@ -109,3 +109,13 @@ were chosen.
      group types are used.  This must *not* be done by the parser, but the
      parser must provide sufficient hooks that the client program can do
      this if it chooses.
+
+13.  The parser must be re-entrant and thread-safe.
+
+14.  The grammar shouldn't require any lookahead to parse.  This is in
+     order to keep the parser extremely simple and therefore maintainable.
+     (It's worth noting that this design principle leads to the
+     requirement that parameter keys end in a colon; the presence of the
+     colon allows parameter keys to be distinguished from other syntactic
+     elements allowed in the same scope, like the beginning of a nested
+     group.)
