@@ -301,7 +301,7 @@ DumpDB(void) {
 	return;
     }
     if (rename(fnamenew, fname) < 0) {
-	syslog(L_ERROR, "tradspool: can't rename %s\n", fnamenew);
+	syslog(L_ERROR, "tradspool: can't rename %s", fnamenew);
 	DISPOSE(fname);
 	DISPOSE(fnamenew);
 	return;
@@ -543,7 +543,7 @@ tradspool_init(BOOL *selfexpire) {
 
 /* Make a token for an article given the primary newsgroup name and article # */
 static TOKEN
-MakeToken(char *ng, unsigned long artnum) {
+MakeToken(char *ng, unsigned long artnum, STORAGECLASS class) {
     TOKEN token;
     NGTENT *ngtp;
     unsigned long num;
@@ -551,7 +551,7 @@ MakeToken(char *ng, unsigned long artnum) {
     memset(&token, '\0', sizeof(token));
 
     token.type = TOKEN_TRADSPOOL;
-    token.class = 0; /* "class" is irrelevant for traditional spool */
+    token.class = class;
 
     /* 
     ** if not already in the NG Table, be sure to add this ng! This way we
@@ -688,7 +688,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
     DeDotify(ng);
     artnum = atol(p);
     
-    token = MakeToken(ng, artnum);
+    token = MakeToken(ng, artnum, class);
 
     path = NEW(char, strlen(innconf->patharticles) + strlen(ng) + 32);
     sprintf(path, "%s/%s/%lu", innconf->patharticles, ng, artnum);
@@ -1132,6 +1132,8 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
     char **xrefs;
     char *xrefhdr, *ng, *p;
     unsigned int numxrefs;
+    STORAGE_SUB	*sub;
+    STORAGECLASS class;
 
     if (article == NULL) {
 	priv.ngtp = NULL;
@@ -1240,7 +1242,13 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
     newpriv->curdirname = priv.curdirname;
     newpriv->ngtp = priv.ngtp;
     
-    token = MakeToken(priv.ngtp->ngname, artnum);
+    if ((sub = SMgetsub(*art)) == NULL || sub->type != TOKEN_TRADSPOOL) {
+	/* maybe storage.conf is modified, after receiving article */
+	token = MakeToken(priv.ngtp->ngname, artnum, 0);
+	syslog(L_ERROR, "tradspool: can't determine class: %s", TokenToText(token));
+    } else {
+	token = MakeToken(priv.ngtp->ngname, artnum, class);
+    }
     art->token = &token;
     DISPOSE(path);
     return art;
