@@ -65,27 +65,8 @@
 
 #define	OVMAXCYCBUFFNAME	8
 
-/*
-** The preferred value of shared memory version of buffindexed.
-**
-** OV_HDR_PAGESIZE	4096
-** OV_BEFOREBITF	256
-**
-** Turing on the above change will result no upward compatibility.
-** The benifit is saving (8192 - 256) bytes per buffindexed file.
-** Also it will save additional 16384 byets depending on the round-off
-** effect of the buffer size.  BTW, I am not sure if the value 4096
-** is applicable to OSes other than i386 Linux.
-*/
- 
-#ifndef  KEEP_COMPATIBILTY
-#define OV_HDR_PAGESIZE 4096
-#define OV_BEFOREBITF   256
-#else
 #define OV_HDR_PAGESIZE 16384
 #define OV_BEFOREBITF   (1 * OV_BLOCKSIZE)
-#endif
-
 #define	OV_BLOCKSIZE	8192
 #define	OV_FUDGE	1024
 
