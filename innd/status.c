@@ -273,7 +273,7 @@ static void STATUSsummary(void)
   fprintf (F, "      duplicated: %-9ld     %%duplicated: %.1f%%\n",
 	   duplicate, (float) duplicate / offered * 100);
   fprintf (F, "           bytes: %-7s\n", PrettySize (size + DuplicateSize, str));
-  fprintf (F, " duplicated size: %-7s   %%duplicated size: %.1f%%\n",
+  fprintf (F, " duplicated size: %-7s  %%duplicated size: %.1f%%\n",
 	   PrettySize(DuplicateSize, str), (float) DuplicateSize / size * 100);
   fputc ('\n', F) ;
   
