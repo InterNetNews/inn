@@ -48,6 +48,7 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include "libinn.h"
 #include "tst.h"
 
 /*
@@ -65,24 +66,11 @@ tst_init(int width)
     struct node *current_node;
     int i;
 
-    tst = (struct tst *) calloc(1, sizeof(struct tst));
-    if (tst == NULL)
-        return NULL;
-
-    tst->node_lines = (struct node_lines *) calloc(1, sizeof(struct node_lines));
-    if (tst->node_lines == NULL) {
-        free(tst);
-        return NULL;
-    }
-
+    tst = xcalloc(1, sizeof(struct tst));
+    tst->node_lines = xcalloc(1, sizeof(struct node_lines));
     tst->node_line_width = width;
     tst->node_lines->next = NULL;
-    tst->node_lines->node_line = (struct node *) calloc(width, sizeof(struct node));
-    if (tst->node_lines->node_line == NULL) {
-        free(tst->node_lines);
-        free(tst);
-        return NULL;
-    }
+    tst->node_lines->node_line = xcalloc(width, sizeof(struct node));
 
     current_node = tst->node_lines->node_line;
     tst->free_list = current_node;
@@ -94,29 +82,21 @@ tst_init(int width)
     return tst;
 }
 
+
 /*
 **  Allocate new nodes for the free list, called when the free list is empty.
 */
-static int
+static void
 tst_grow_node_free_list(struct tst *tst)
 {
     struct node *current_node;
     struct node_lines *new_line;
     int i;
 
-    new_line = (struct node_lines *) malloc(sizeof(struct node_lines));
-    if (new_line == NULL)
-        return TST_ERROR;
-
-    new_line->node_line = (struct node *)
-        calloc(tst->node_line_width, sizeof(struct node));
-    if (new_line->node_line == NULL) {
-        free(new_line);
-        return TST_ERROR;
-    } else {
-        new_line->next = tst->node_lines;
-        tst->node_lines = new_line;
-    }
+    new_line = xmalloc(sizeof(struct node_lines));
+    new_line->node_line = xcalloc(tst->node_line_width, sizeof(struct node));
+    new_line->next = tst->node_lines;
+    tst->node_lines = new_line;
 
     current_node = tst->node_lines->node_line;
     tst->free_list = current_node;
@@ -125,7 +105,6 @@ tst_grow_node_free_list(struct tst *tst)
         current_node = current_node->middle;
     }
     current_node->middle = NULL;
-    return 1;
 }
 
 
@@ -165,8 +144,7 @@ tst_insert(unsigned char *key, void *data, struct tst *tst, int option,
 
     if (tst->head[(int) key[0]] == NULL) {
         if (tst->free_list == NULL)
-            if (tst_grow_node_free_list(tst) != 1)
-                return TST_ERROR;
+            tst_grow_node_free_list(tst);
         tst->head[(int) key[0]] = tst->free_list;
         tst->free_list = tst->free_list->middle;
         current_node = tst->head[(int) key[0]];
@@ -196,8 +174,7 @@ tst_insert(unsigned char *key, void *data, struct tst *tst, int option,
             } else {
                 if (current_node->middle == NULL) {
                     if (tst->free_list == NULL)
-                        if (tst_grow_node_free_list(tst) != 1)
-                            return TST_ERROR;
+                        tst_grow_node_free_list(tst);
                     current_node->middle = tst->free_list;
                     tst->free_list = tst->free_list->middle;
                     new_node_tree_begin = current_node;
@@ -217,8 +194,7 @@ tst_insert(unsigned char *key, void *data, struct tst *tst, int option,
                 && (key[key_index] < current_node->value))) {
             if (current_node->left == NULL)  {
                 if (tst->free_list == NULL)
-                    if (tst_grow_node_free_list(tst) != 1)
-                        return TST_ERROR;
+                    tst_grow_node_free_list(tst);
                 current_node->left = tst->free_list;
                 tst->free_list = tst->free_list->middle;
                 new_node_tree_begin = current_node;
@@ -236,8 +212,7 @@ tst_insert(unsigned char *key, void *data, struct tst *tst, int option,
         } else {
             if (current_node->right == NULL) {
                 if (tst->free_list == NULL)
-                    if (tst_grow_node_free_list(tst) != 1)
-                        return TST_ERROR;
+                    tst_grow_node_free_list(tst);
                 current_node->right = tst->free_list;
                 tst->free_list = tst->free_list->middle;
                 new_node_tree_begin = current_node;
@@ -253,22 +228,8 @@ tst_insert(unsigned char *key, void *data, struct tst *tst, int option,
 
     do {
         key_index++;
-
-        if (tst->free_list == NULL) {
-            if (tst_grow_node_free_list(tst) != 1) {
-                current_node = new_node_tree_begin->middle;
-                while (current_node->middle != NULL)
-                    current_node = current_node->middle;
-                current_node->middle = tst->free_list;
-                tst->free_list = new_node_tree_begin->middle;
-                new_node_tree_begin->middle = NULL;
-                return TST_ERROR;
-            }
-        }
-
         if (tst->free_list == NULL)
-            if (tst_grow_node_free_list(tst) != 1)
-                return TST_ERROR;
+            tst_grow_node_free_list(tst);
         current_node->middle = tst->free_list;
         tst->free_list = tst->free_list->middle;
         current_node = current_node->middle;
@@ -351,7 +312,7 @@ tst_delete(unsigned char *key, struct tst *tst)
 
     last_branch = NULL;
     last_branch_parent = NULL;
-    current_node = tst->head[(int)key[0]];
+    current_node = tst->head[(int) key[0]];
     current_node_parent = NULL;
     key_index = 1;
     while (current_node != NULL) {
