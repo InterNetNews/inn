@@ -546,7 +546,7 @@ static void usage (int val)
            program) ;
   fprintf (stderr,"Version: %s\n\n",versionInfo) ;
   fprintf (stderr,"Config file: %s\n",CONFIG_FILE) ;
-  fprintf (stderr,"Backlog directory: %s/" TAPE_DIRECTORY "\n", innconf->pathspool) ;
+  fprintf (stderr,"Backlog directory: %s/%s\n", innconf->pathspool, TAPE_DIRECTORY) ;
   fprintf (stderr,"\nLegal options are:\n") ;
   fprintf (stderr,"\t-a dir      Use the given directory as the top of the article spool\n") ;
 
@@ -791,18 +791,18 @@ static int mainConfigLoadCbk (void *data)
 
   if (getString (topScope,"news-spool", &p,NO_INHERIT))
     {
-      if ( !isDirectory (p) && isDirectory (innconf->pathspool) )
+      if ( !isDirectory (p) && isDirectory (innconf->patharticles) )
         {
-          logOrPrint (LOG_WARNING,fp,BADSPOOL_CHANGE,p,innconf->pathspool) ;
-          p = strdup (innconf->pathspool) ;
+          logOrPrint (LOG_WARNING,fp,BADSPOOL_CHANGE,p,innconf->patharticles) ;
+          p = strdup (innconf->patharticles) ;
         }
       else if (!isDirectory (p))
-        logAndExit (1,"Bad spool directories: %s, %s\n",p,innconf->pathspool) ;
+        logAndExit (1,"Bad spool directories: %s, %s\n",p,innconf->patharticles) ;
     }
-  else if (!isDirectory (innconf->pathspool))
-    logAndExit (1,SPOOL_NODEF,innconf->pathspool);
+  else if (!isDirectory (innconf->patharticles))
+    logAndExit (1,SPOOL_NODEF,innconf->patharticles);
   else
-    p = strdup (innconf->pathspool) ;
+    p = strdup (innconf->patharticles) ;
   newsspool = p ;
 
   /***************************************************/
