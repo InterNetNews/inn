@@ -133,6 +133,14 @@ printspace(const char *path, bool inode, bool fancy)
     if (df_stat(path, &info)) {
         if (inode) {
             amount = df_favail(info);
+
+            /* This value is compared using the shell by innwatch, and some
+               shells can't cope with anything larger than the maximum value
+               of a signed long.  ReiserFS returns 2^32 - 1, however, since it
+               has no concept of inodes.  So cap the returned value at the max
+               value of a signed long. */
+            if (amount > (1UL << 31) - 1)
+                amount = (1UL << 31) - 1;
         } else {
             /* Do the multiplication in floating point to try to retain
                accuracy if the free space in bytes would overflow an
@@ -144,7 +152,7 @@ printspace(const char *path, bool inode, bool fancy)
                easy to cast back into an unsigned long a value that
                overflows, and one then gets silently wrong results. */
             amount = (unsigned long)
-                (((double) df_avail(info) * df_scale(info)) / 1024L);
+                (((double) df_avail(info) * df_scale(info)) / 1024.0);
         }
     } else {
         /* On error, free space is zero. */
