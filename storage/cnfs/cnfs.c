@@ -1182,7 +1182,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
     if ((p = SMFindBody(innconf->articlemmap ? private->base + pagefudge : private->base, art->len)) == NULL) {
         SMseterror(SMERR_NOBODY, NULL);
 	if (innconf->articlemmap) {
-#if defined(MADV_DONTNEED) && !defined(_nec_ews)
+#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
 	    madvise(private->base, private->len, MADV_DONTNEED);
 #endif
 	    munmap(private->base, private->len);
@@ -1215,7 +1215,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
     }
     SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
     if (innconf->articlemmap) {
-#if defined(MADV_DONTNEED) && !defined(_nec_ews)
+#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
 	madvise(private->base, private->len, MADV_DONTNEED);
 #endif
 	munmap(private->base, private->len);
@@ -1236,7 +1236,7 @@ void cnfs_freearticle(ARTHANDLE *article) {
     if (article->private) {
 	private = (PRIV_CNFS *)article->private;
 	if (innconf->articlemmap) {
-#if defined(MADV_DONTNEED) && !defined(_nec_ews)
+#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
 	    madvise(private->base, private->len, MADV_DONTNEED);
 #endif	/* MADV_DONTNEED */
 	    munmap(private->base, private->len);
@@ -1311,7 +1311,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, RETRTYPE amount) {
 	DISPOSE(article->private);
 	DISPOSE(article);
 	if (innconf->articlemmap) {
-#if defined(MADV_DONTNEED) && !defined(_nec_ews)
+#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
 	    madvise(priv.base, priv.len, MADV_DONTNEED);  
 #endif
 	    munmap(priv.base, priv.len);
