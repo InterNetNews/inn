@@ -201,10 +201,6 @@
   ||#### =()<BAD_DISTRIBS		@<BAD_DISTRIBS>@>()=
   ||BAD_DISTRIBS		"*.*",NULL
 [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-  ||##  File unknown "to.*" groups into the "to" newsgroup?  Pick DO or DONT.
-  ||#### =()<MERGE_TO_GROUPS		@<MERGE_TO_GROUPS>@>()=
-  ||MERGE_TO_GROUPS		@DO_MERGE_TO_GROUPS@
-[IN1.7=@6][WDF=confparam][WOR=yes][P=low]
   ||##  Have innd throttle itself after this many I/O errors.
   ||#### =()<IO_ERROR_COUNT		@<IO_ERROR_COUNT>@>()=
   ||IO_ERROR_COUNT		50
