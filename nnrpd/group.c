@@ -99,7 +99,7 @@ void CMDgroup(int ac, char *av[])
 	if ((handle = OVopensearch(group, ARTlow, ARThigh)) != NULL) {
 	    Reply("%d Article list follows\r\n", NNTP_GROUPOK_VAL);
 	    while (OVsearch(handle, &i, NULL, NULL, &token, NULL)) {
-		if (!ARTinstorebytoken(token))
+		if (PERMaccessconf->nnrpdcheckart && !ARTinstorebytoken(token))
 		    continue;
 		Printf("%ld\r\n", i);
 	    }
