@@ -148,27 +148,32 @@ extern ssize_t  xwritev(int fd, const struct iovec iov[], int iovcnt);
 
 
 /* Headers. */
-extern char	        *GenerateMessageID(char *domain);
-extern const char	*HeaderFindMem(const char *Article, const int ArtLen, const char *Header, const int HeaderLen);
+extern char             *GenerateMessageID(char *domain);
+extern const char       *HeaderFindMem(const char *Article, const int ArtLen, const char *Header, const int HeaderLen);
 extern const char       *HeaderFindDisk(const char *file, const char *Header, const int HeaderLen);
-extern void	        HeaderCleanFrom(char *from);
-extern struct _DDHANDLE	*DDstart(FILE *FromServer, FILE *ToServer);
-extern void		DDcheck(struct _DDHANDLE *h, char *group);
-extern char		*DDend(struct _DDHANDLE *h);
+extern void             HeaderCleanFrom(char *from);
+extern struct _DDHANDLE *DDstart(FILE *FromServer, FILE *ToServer);
+extern void             DDcheck(struct _DDHANDLE *h, char *group);
+extern char             *DDend(struct _DDHANDLE *h);
 
 /* NNTP functions. */
-extern int	NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff);
-extern int	NNTPremoteopen(int port, FILE **FromServerp, FILE **ToServerp, char *errbuff);
-extern int      NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char *errbuff);
-extern int	NNTPsendarticle(char *, FILE *F, BOOL Terminate);
-extern int	NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer);
+extern int      NNTPlocalopen(FILE **FromServerp, FILE **ToServerp,
+                              char *errbuff);
+extern int      NNTPremoteopen(int port, FILE **FromServerp,
+                               FILE **ToServerp, char *errbuff);
+extern int      NNTPconnect(char *host, int port, FILE **FromServerp,
+                            FILE **ToServerp, char *errbuff);
+extern int      NNTPsendarticle(char *, FILE *F, BOOL Terminate);
+extern int      NNTPsendpassword(char *server, FILE *FromServer,
+                                 FILE *ToServer);
 extern int      server_init(char *host, int port);
 
 /* Opening the active file on a client. */
-extern FILE	*CAopen(FILE *FromServer, FILE *ToServer);
-extern FILE	*CAlistopen(FILE *FromServer, FILE *ToServer, char *request);
-extern FILE     *CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer, char *request);
-extern void	CAclose(void);
+extern FILE *   CAopen(FILE *FromServer, FILE *ToServer);
+extern FILE *   CAlistopen(FILE *FromServer, FILE *ToServer, char *request);
+extern FILE *   CA_listopen(char *pathname, FILE *FromServer,
+                            FILE *ToServer, char *request);
+extern void     CAclose(void);
 
     
 /*
@@ -304,58 +309,60 @@ struct conf_vars {
     char *pathtmp;              /* Temporary files for the news system */
 };
 
-extern struct	conf_vars *innconf;
-extern char	*innconffile;
-extern char	*GetFQDN(char *domain);
-extern char	*GetConfigValue(char *value);
-extern char	*GetFileConfigValue(char *value);
-extern BOOL      GetBooleanConfigValue(char *value, BOOL DefaultValue);
-extern char	*GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group, char *moderatormailer);
-extern int ReadInnConf();
+extern struct   conf_vars *innconf;
+extern char *    innconffile;
+extern char *    GetFQDN(char *domain);
+extern char *    GetConfigValue(char *value);
+extern char *    GetFileConfigValue(char *value);
+extern bool      GetBooleanConfigValue(char *value, BOOL DefaultValue);
+extern char *    GetModeratorAddress(FILE *FromServer, FILE *ToServer,
+                                     char *group, char *moderatormailer); 
+extern void  ClearInnConf(void);
+extern int ReadInnConf(void);
 extern char *cpcatpath(char *p, char *f);
 
-#define	TEMPORARYOPEN	0
-#define	INND_HISTORY	1
-#define	DBZ_DIR		2
-#define	DBZ_BASE	3
+#define TEMPORARYOPEN   0
+#define INND_HISTORY    1
+#define DBZ_DIR         2
+#define DBZ_BASE        3
 
 /* Hash functions */
 typedef struct {
     char        hash[16];
 } HASH;
-HASH Hash(const void *value, const size_t len);
+extern HASH     Hash(const void *value, const size_t len);
 /* Return the hash of a case mapped message-id */
-HASH HashMessageID(const char *MessageID);
-BOOL HashEmpty(const HASH hash);
-void HashClear(HASH *hash);
-char *HashToText(const HASH hash);
-HASH TextToHash(const char *text);
-int HashCompare(const HASH *h1, const HASH *h2);
+extern HASH     HashMessageID(const char *MessageID);
+extern bool     HashEmpty(const HASH hash);
+extern void     HashClear(HASH *hash);
+extern char *   HashToText(const HASH hash);
+extern HASH     TextToHash(const char *text);
+extern int      HashCompare(const HASH *h1, const HASH *h2);
 
 /* Miscellaneous. */
-extern int	dbzneedfilecount(void);
-extern BOOL     MakeDirectory(char *Name, BOOL Recurse);
-extern int	xread(int fd, char *p, OFFSET_T i);
-extern int	GetResourceUsage(double *usertime, double *systime);
-extern int	SetNonBlocking(int fd, BOOL flag);
-extern void	CloseOnExec(int fd, int flag);
-extern void	Radix32(unsigned long, char *buff);
-extern char	*ReadInDescriptor(int fd, struct stat *Sbp);
-extern char	*ReadInFile(const char *name, struct stat *Sbp);
-extern void	TempName(char *dir, char *buff);
-extern FILE	*xfopena(const char *p);
-extern BOOL	fdreserve(int fdnum);
-extern FILE	*Fopen(const char *p, char *type, int index);
-extern int	Fclose(FILE *fp);
-
-const char  *Aliasgetnamebyhash(const HASH hash);
-HASH Aliasgethashbyhash(const HASH hash);
-HASH Aliasgethashbygroup(const char *group);
-const char  *Aliasgetnamebygroup(const char *group);
-BOOL LoadGroupAliases(void);
+extern int      dbzneedfilecount(void);
+extern bool     MakeDirectory(char *Name, BOOL Recurse);
+extern int      xread(int fd, char *p, off_t i);
+extern int      GetResourceUsage(double *usertime, double *systime);
+extern int      SetNonBlocking(int fd, BOOL flag);
+extern void     CloseOnExec(int fd, int flag);
+extern void     Radix32(unsigned long, char *buff);
+extern char *   ReadInDescriptor(int fd, struct stat *Sbp);
+extern char *   ReadInFile(const char *name, struct stat *Sbp);
+extern void     TempName(char *dir, char *buff);
+extern FILE *   xfopena(const char *p);
+extern bool     fdreserve(int fdnum);
+extern FILE *   Fopen(const char *p, char *type, int fd);
+extern int      Fclose(FILE *fp);
 
 extern int      argify(char *line, char ***argvp);
 extern void     freeargify(char ***argvp);
+
+extern const char *     Aliasgetnamebyhash(const HASH hash);
+extern HASH             Aliasgethashbyhash(const HASH hash);
+extern HASH             Aliasgethashbygroup(const char *group);
+extern const char *     Aliasgetnamebygroup(const char *group);
+extern bool             LoadGroupAliases(void);
 
 END_DECLS
 
