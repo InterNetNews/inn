@@ -47,6 +47,7 @@
 
 #ifdef HAVE_SASL
 # include <sasl/sasl.h>
+# include <sasl/saslutil.h>
 #endif
 
 #ifndef MAXHOSTNAMELEN
@@ -1227,12 +1228,11 @@ static void show_stats(connection_t *cxn)
 
 #ifdef HAVE_SASL
 /* callback to get userid or authid */
-static int getsimple(void *context __attribute__((unused)),
+static int getsimple(void *context UNUSED,
 		     int id,
 		     const char **result,
 		     unsigned *len)
 {
-  char *username;
   char *authid;
 
   if (! result)
@@ -1271,7 +1271,7 @@ static int getsimple(void *context __attribute__((unused)),
 /* callback to get password */
 static int
 getsecret(sasl_conn_t *conn,
-	  void *context __attribute__((unused)),
+	  void *context UNUSED,
 	  int id,
 	  sasl_secret_t **psecret)
 {
@@ -1291,7 +1291,7 @@ getsecret(sasl_conn_t *conn,
   if (! *psecret)
     return SASL_FAIL;
 
-  strlcpy((*psecret)->data, deliver_password, passlen + 1);
+  strlcpy((char *)(*psecret)->data, deliver_password, passlen + 1);
   (*psecret)->len = passlen;
 
   return SASL_OK;
@@ -1358,9 +1358,8 @@ static int iptostring(const struct sockaddr *addr, socklen_t addrlen,
 
 static conn_ret SetSASLProperties(sasl_conn_t *conn, int sock, int minssf, int maxssf)
 {
-  int saslresult;
   sasl_security_properties_t *secprops=NULL;
-  int addrsize=sizeof(struct sockaddr_in);
+  socklen_t addrsize = sizeof(struct sockaddr_in);
   char localip[60], remoteip[60];
   struct sockaddr_in saddr_l;
   struct sockaddr_in saddr_r;
@@ -2119,7 +2118,6 @@ static conn_ret lmtp_authenticate(connection_t *cxn)
     unsigned int outlen;
     char *inbase64;
     int inbase64len;
-    int status;
     int result;
 
     char *p;
@@ -2175,7 +2173,6 @@ static conn_ret lmtp_authenticate(connection_t *cxn)
 
 static imt_stat lmtp_getauthline(char *str, char **line, int *linelen)
 {
-  char buf[4096];
   int saslresult;
   int response_code = -1;
   
@@ -2453,8 +2450,6 @@ static conn_ret imap_sendAuthenticate(connection_t *cxn)
     char *p;
 
 #ifdef HAVE_SASL
-    char *inbase64;
-    int inbase64len;
     int saslresult=SASL_NOMECH;
 
     sasl_interact_t *client_interact=NULL;
@@ -3183,7 +3178,7 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 #ifdef HAVE_SASL
     int inlen;
     char *in;
-    int outlen;
+    size_t outlen;
     const char *out;
     char *inbase64;
     int inbase64len;
