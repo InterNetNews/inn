@@ -1907,13 +1907,13 @@ CCreader(CHANNEL *cp)
     memcpy (tbuff,&bufflen,sizeof (bufflen)) ;
     tbuff += sizeof (bufflen) ;
 
-    strcpy (tbuff,p) ;
+    strlcpy(tbuff, p, len + 1 - sizeof(protocol) - sizeof(bufflen));
     tbuff -= HEADER_SIZE ;
 
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     memset(&client, 0, sizeof client);
     client.sun_family = AF_UNIX;
-    strcpy(client.sun_path, argv[0]);
+    strlcpy(client.sun_path, argv[0], sizeof(client.sun_path));
     if (sendto(CCwriter, tbuff, len, 0,
 	    (struct sockaddr *) &client, SUN_LEN(&client)) < 0) {
 	i = errno;
@@ -1978,7 +1978,7 @@ CCsetup(void)
     }
     memset(&server, 0, sizeof server);
     server.sun_family = AF_UNIX;
-    strcpy(server.sun_path, CCpath);
+    strlcpy(server.sun_path, CCpath, sizeof(server.sun_path));
     if (bind(i, (struct sockaddr *) &server, SUN_LEN(&server)) < 0) {
 	syslog(L_FATAL, "%s cant bind %s %m", LogName, CCpath);
 	exit(1);
