@@ -756,7 +756,7 @@ newgroup:news@picard.cs.osakafu-u.ac.jp:fudai.*:doit
 rmgroup:news@picard.cs.osakafu-u.ac.jp:fudai.*:doit
 
 ## FUR (*PRIVATE* -- furrynet)
-# Contact: fur-config@taronga.com
+# Contact: fur-config@news.furry.net
 # Please contact the above address before adding these groups.
 newgroup:*@*:fur.*:mail
 rmgroup:*@*:fur.*:doit
