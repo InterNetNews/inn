@@ -1955,7 +1955,7 @@ static char *ResolveUser(AUTHGROUP *auth)
 	    GetProgInput(foo);
 	    done = (ubuf[0] != '\0');
 	    if (done)
-		syslog(L_TRACE, "%s res resolver succesful, user %s", ClientHost, ubuf);
+		syslog(L_TRACE, "%s res resolver successful, user %s", ClientHost, ubuf);
 	    else
 		syslog(L_TRACE, "%s res resolver failed", ClientHost);
 	    DISPOSE(foo);
