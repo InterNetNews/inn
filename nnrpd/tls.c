@@ -475,7 +475,6 @@ int tls_start_servertls(int readfd, int writefd)
       return (-1);
     }
     
-
     /*
      * This is the actual handshake routine. It will do all the negotiations
      * and will check the client cert etc.
