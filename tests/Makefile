@@ -28,8 +28,8 @@ clean clobber:
 
 LINK = $(LIBTOOL) $(CC) $(LDFLAGS) -o $@
 
-runtests: runtests.o $(LIBINN)
-	$(LINK) runtests.o $(LIBINN)
+runtests: runtests.o
+	$(LINK) runtests.o
 
 lib/concat.t: lib/concat-t.o $(LIBINN)
 	$(LINK) lib/concat-t.o $(LIBINN)
@@ -90,6 +90,9 @@ lib/strerror.o: ../lib/strerror.c
 
 lib/strerror.t: lib/strerror.o lib/strerror-t.o
 	$(LINK) lib/strerror.o lib/strerror-t.o
+
+lib/wildmat.t: lib/wildmat-t.o $(LIBINN)
+	$(LINK) lib/wildmat-t.o $(LIBINN)
 
 lib/xmalloc: lib/xmalloc.o $(LIBINN)
 	$(LINK) lib/xmalloc.o $(LIBINN)
