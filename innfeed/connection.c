@@ -3478,9 +3478,6 @@ static void issueIHAVEBody (Connection cxn)
           dotBuffer = newBufferByCharP (".\r\n",3,3) ;
           dotFirstBuffer = newBufferByCharP ("\r\n.",3,3) ;
           crlfBuffer = newBufferByCharP ("\r\n",2,2) ;
-          addPointerFreedOnExit ((char *)dotBuffer) ;
-          addPointerFreedOnExit ((char *)dotFirstBuffer) ;
-          addPointerFreedOnExit ((char *)crlfBuffer) ;
         }
 
       /* we'll just write the empty buffer and the remote will complain
