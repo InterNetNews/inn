@@ -80,7 +80,7 @@ STATIC CHANNEL		*RCchan;
 STATIC REMOTEHOST_DATA	*RCpeerlistfile;
 STATIC REMOTEHOST	*RCpeerlist;
 STATIC int		RCnpeerlist;
-STATIC char		RCbuff[SMBUF];
+STATIC char		RCbuff[BIG_BUFFER];
 
 #define PEER	        "peer"
 #define GROUP	        "group"
