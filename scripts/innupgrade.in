@@ -111,9 +111,9 @@ GetOptions ('file|f=s' => \$file,
 if ($file) {
     my $basename = $file;
     $basename =~ s%.*/%%;
-    $type ||= $FIXES{$basename};
-    if (!$type) { die "No upgrade rules defined for $basename\n" }
-    upgrade_file ($file, $type);
+    $type ||= $basename;
+    if (!$FIXES{$type}) { die "No upgrade rules defined for $basename\n" }
+    upgrade_file ($file, $FIXES{$type});
 } else {
     if (@ARGV != 1) { die "Usage: innupgrade <directory>\n" }
     my $directory = shift;
