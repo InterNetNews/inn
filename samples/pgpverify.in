@@ -97,6 +97,9 @@ while (<PGP>) {
     $signer = $+;
   } elsif (/^Bad signature /) {
     $ok = 3;
+  } elsif (/^.?(Keyring file .*? does not exist)/) {
+    warn "$0: pgp error: $1.\n";
+    $ok = 255;
   }
 }
 close(PGP) || warn "$0: closing pgp pipe returned status $?\n";
