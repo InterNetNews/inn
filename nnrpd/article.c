@@ -1564,9 +1564,8 @@ FUNCTYPE CMDxover(int ac, char *av[])
     for (Opened = OVERopen();
 	 (i >= 0) && (i < ARTsize) && (ARTnumbers[i].ArtNum <= range.High) && (range.High > 0);
 	 i++) {
-	if (!ARTinstore(i)) {
-	    if (innconf->storageapi)
-		OVERmiss++;
+	if (innconf->storageapi && !ARTinstore(i)) {
+	    OVERmiss++;
 	    continue;
 	}
 
