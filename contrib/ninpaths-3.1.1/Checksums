@@ -1,0 +1,29 @@
+# This file contains a list of the files in this package with checksums.
+# If you run this as a /bin/sh script, it will verify the PGP signature on
+# this file and verify the individual files' checksums.
+#
+# Packaged by olaf@bigred, Thu Jan 11 00:25:54 2001
+:<<'_marker_'
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+___size ____date_time _____________________________md5  name___________________
+   2421 20010109-2335 ae0b51c988cf8a3709fa0e6ca765084d  ninpaths.README
+  11814 20010111-0023 0f71cd132bb19569f551c407bb2e2dd7  ninpaths.c
+    738 20010109-2335 d7c2917ac67007dbfca2d3c96cf4074e  sendinpaths
+    615 20010111-0025 3bca6e754dc3571e7cdb814f8516e6c5  Makefile
+___size ____date_time _____________________________md5  name___________________
+
+_marker_
+echo "No output after the PGP signature check means everything is okay."
+test `which gpg` && pgp="gpg" || pgp="pgp -tf"
+$pgp <$0 | sed '/^_marker_/q;/^_/d' | tr -d "\r" | cut -b23- | md5sum -c
+exit $?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.0.1 (GNU/Linux)
+Comment: For info see http://www.gnupg.org
+
+iEYEARECAAYFAjpc74YACgkQGPw4gdAdiZ2SrQCffP/qNzTT8jZkqXDcmFCHNYcB
+UDoAoJBhU0wFh0ElfV7eIbe4fpGzejKS
+=WWmQ
+-----END PGP SIGNATURE-----
