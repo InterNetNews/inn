@@ -1,24 +1,25 @@
-/* $Revision$
- *
- * ckpasswd.c - The default username/password authenticator.
- */
+/*  $Id$
+**
+**  The default username/password authenticator.
+*/
 #include "config.h"
-#include <sys/types.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <configdata.h>
-#include <clibrary.h>
+#include "clibrary.h"
 #include <pwd.h>
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
 #ifdef HAVE_NDBM_H
-#include <ndbm.h>
+# include <ndbm.h>
 #else
-#ifdef HAVE_DB1_NDBM_H
-#include <db1/ndbm.h>
+# ifdef HAVE_DB1_NDBM_H
+#  include <db1/ndbm.h>
+# endif
 #endif
-#endif
-#include <fcntl.h>
-#if HAVE_GETSPNAM
-#include <shadow.h>
+
+#ifdef HAVE_GETSPNAM
+# include <shadow.h>
 #endif
 
 #if HAVE_GETSPNAM

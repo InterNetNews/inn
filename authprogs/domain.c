@@ -1,6 +1,8 @@
-#include <stdio.h>
-#include <string.h>
+#include "config.h"
+#include "clibrary.h"
 #include <errno.h>
+
+#include "libinn.h"
 #include "macros.h"
 
 int main(int argc, char *argv[])

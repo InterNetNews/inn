@@ -1,11 +1,17 @@
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <netdb.h>
-#include <string.h>
-#include <syslog.h>
+/*  $Id$
+**
+**  ident authenticator.
+*/
+#include "config.h"
+#include "clibrary.h"
+#include <arpa/inet.h>
 #include <errno.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <syslog.h>
+#include <sys/socket.h>
+
+#include "libinn.h"
 #include "macros.h"
 
 int main(int argc, char *argv[])
@@ -65,7 +71,7 @@ int main(int argc, char *argv[])
     gotcliaddr = gotcliport = gotlocaddr = gotlocport = 0;
     while(fgets(buf, sizeof(buf), stdin) != (char*) 0) {
 	/* strip '\n' */
-	buf[strlen(buf)-1];
+	buf[strlen(buf)-1] = '\0';
 
 	if (!strncmp(buf, IPNAME, strlen(IPNAME))) {
 	    cli.sin_addr.s_addr = inet_addr(buf+strlen(IPNAME));

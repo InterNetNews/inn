@@ -1,34 +1,37 @@
-/* $Revision$
- *
- * radius.c - Authenticate a user against a remote radius server.
- */
+/*  $Id$
+**
+**  Authenticate a user against a remote radius server.
+*/
 #include "config.h"
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <signal.h>
-#include <unistd.h>
-#include <stdio.h>
+#include "clibrary.h"
+#include <arpa/inet.h>
+#include <ctype.h>
 #include <errno.h>
-#ifdef HAVE_NDBM_H
-#include <ndbm.h>
-#else
-#ifdef HAVE_DB1_NDBM_H
-#include <db1/ndbm.h>
-#endif
-#endif
-#include <fcntl.h>
-#include <stdlib.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <signal.h>
+#include <sys/socket.h>
 
-#include <configdata.h>
-#include <clibrary.h>
-#include <macros.h>
-#include <md5.h>
-#include <libinn.h>
-#include <nntp.h>
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+
+#ifdef HAVE_NDBM_H
+# include <ndbm.h>
+#else
+# ifdef HAVE_DB1_NDBM_H
+#  include <db1/ndbm.h>
+# endif
+#endif
+
+#include "macros.h"
+#include "md5.h"
+#include "libinn.h"
+#include "nntp.h"
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
