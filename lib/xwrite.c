@@ -4,15 +4,17 @@
 **
 **  Usage:
 **
-**      ssize_t xwrite(int fildes, void *buf, size_t nbyte);
+**      ssize_t xwrite(int fildes, const void *buf, size_t nbyte);
+**      ssize_t xpwrite(int fildes, const void *buf, size_t nbyte,
+**                      off_t offset);
 **      ssize_t xwritev(int fildes, const struct iovec *iov, int iovcnt);
 **
-**  xwrite and xwritev behave exactly like their C library counterparts
-**  except that, if write or writev succeeds but returns a number of bytes
-**  written less than the total bytes, the write is repeated picking up
-**  where it left off until the full amount of the data is written.  The
-**  write is also repeated if it failed with EINTR.  The write will be
-**  aborted after 10 successive writes with no forward progress.
+**  xwrite, xpwrite, and xwritev behave exactly like their C library
+**  counterparts except that, if write or writev succeeds but returns a number
+**  of bytes written less than the total bytes, the write is repeated picking
+**  up where it left off until the full amount of the data is written.  The
+**  write is also repeated if it failed with EINTR.  The write will be aborted
+**  after 10 successive writes with no forward progress.
 **
 **  Both functions return the number of bytes written on success or -1 on an
 **  error, and will leave errno set to whatever the underlying system call
@@ -23,14 +25,23 @@
 */
 
 #include "config.h"
+#include "clibrary.h"
+#include <errno.h>
+#include <sys/uio.h>
+
 #include "libinn.h"
 
-#include <errno.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/uio.h>
-#if HAVE_UNISTD_H
-# include <unistd.h>
+/* If we're running the test suite, call testing versions of the write
+   functions.  #undef pwrite first because large file support may define a
+   macro pwrite (pointing to pwrite64) on some platforms (e.g. Solaris). */
+#if TESTING
+# undef pwrite
+# define pwrite fake_pwrite
+# define write  fake_write
+# define writev fake_writev
+ssize_t fake_pwrite(int, const void *, size_t, off_t);
+ssize_t fake_write(int, const void *, size_t);
+ssize_t fake_writev(int, const struct iovec *, int);
 #endif
 
 ssize_t
@@ -45,6 +56,30 @@ xwrite(int fd, const void *buffer, size_t size)
         if (++count > 10)
             break;
         status = write(fd, (const char *) buffer + total, size - total);
+        if (status > 0)
+            count = 0;
+        if (status < 0) {
+            if (errno != EINTR)
+                break;
+            status = 0;
+        }
+    }
+    return (total < size) ? -1 : (ssize_t) total;
+}
+
+ssize_t
+xpwrite(int fd, const void *buffer, size_t size, off_t offset)
+{
+    size_t total;
+    ssize_t status;
+    int count = 0;
+
+    /* Abort the write if we try ten times with no forward progress. */
+    for (total = 0; total < size; total += status) {
+        if (++count > 10)
+            break;
+        status = pwrite(fd, (const char *) buffer + total, size - total,
+                        offset + total);
         if (status > 0)
             count = 0;
         if (status < 0) {
