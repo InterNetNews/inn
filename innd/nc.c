@@ -964,7 +964,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		    cp->Argument = NULL;
 		}
 		i = cp->LargeArtSize + bp->Used;
-		syslog(L_ERROR, "%s internal rejecting huge article (%d > %d)",
+		syslog(L_NOTICE, "%s internal rejecting huge article (%d > %d)",
 		    CHANname(cp), i, innconf->maxartsize);
 		cp->LargeArtSize = 0;
 		(void)sprintf(buff, "%d Article exceeds local limit of %ld bytes",
