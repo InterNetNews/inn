@@ -135,12 +135,6 @@
   ||##[autoconf]
   ||#### =()<ACT_STYLE		@<ACT_STYLE>@>()=
   ||ACT_STYLE		@ac_cv_subst_act_style@
-[IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-  ||##  Do you want mail notifications of bad control messages. DO or DONT
-  ||##  Setting it to do results in a lot of mail with the number of spammers
-  ||##  out there.
-  ||#### =()<MAIL_BADCONTROLS	@<MAIL_BADCONTROLS>@>()=
-  ||MAIL_BADCONTROLS		DONT
 [IN1.7=@6][WDF=autoconf][WOR=no][P=high]
   ||##  What type of pointer does mmap() manage? Normally ``caddr_t'' or ``void *''
   ||##  or ``char *''
@@ -292,10 +286,6 @@
   ||## The group owner of the rnews program. Usually uucp.
   ||#### =()<RNEWS_GROUP		@<RNEWS_GROUP>@>()=
   ||RNEWS_GROUP		uucp
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  How many generates of log files to keep.
-  ||#### =()<LOG_CYCLES		@<LOG_CYCLES>@>()=
-  ||LOG_CYCLES		3
 [IN1.7=@12][WDF=confparam][WOR=yes][P=low]
   ||##  Load average (* 100) at which innd should be paused.
   ||#### =()<INNWATCH_PAUSELOAD	@<INNWATCH_PAUSELOAD>@>()=
@@ -325,10 +315,6 @@
   ||##  Number of inodes at which to throttle innd on _PATH_SPOOL.
   ||#### =()<INNWATCH_SPOOLNODES	@<INNWATCH_SPOOLNODES>@>()=
   ||INNWATCH_SPOOLNODES	200
-[IN1.7=@12][WDF=confparam][WOR=yes][P=low]
-  ||##  How long to sleep between innwatch iterations.
-  ||#### =()<INNWATCH_SLEEPTIME	@<INNWATCH_SLEEPTIME>@>()=
-  ||INNWATCH_SLEEPTIME	600
 [IN1.7=@12][WDF=autoconf][WOR=yes][P=moderate]
   ||##  Field number of INNWATCH_DF (with -i) output that gives free
   ||##  inodes (starting at 1).
@@ -355,13 +341,6 @@
   ||#### =()<TCL_LIB		@<TCL_LIB>@>()=
   ||TCL_LIB			@TCL_LIB@
   ||# TCL_LIB		-ltcl -lm
-[IN1.7=@14][WDF=confparam][WOR=yes]
-  ||## Do you want PGP verification of control messages? Pick DO or DONT
-  ||## If you change this then you need to fiddle with control.ctl.
-  ||## Setting it DONT is a really bad idea with all the miscreants out there...
-  ||##[autoconf]
-  ||#### =()<WANT_PGPVERIFY		@<WANT_PGPVERIFY>@>()=
-  ||WANT_PGPVERIFY		@DO_PGP@
 [IN1.7=@17][WDF=confparam][WOR=no]
   ||##  Do you want Perl support?  Pick DO or DONT
   ||##[autoconf]
