@@ -164,6 +164,7 @@ struct conf_vars {
 	long activedupdate;
 	int activedport;
 	int storemsgid;
+	int nicenewnews;	/* If NEWNEWS command is used, set nice */
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;

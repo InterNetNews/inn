@@ -300,6 +300,9 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_STOREMSGID			"storemsgid"
 #define CONF_VAR_STOREMSGID			92
     { _CONF_STOREMSGID,				"",	2, 1 },
+#define _CONF_NICENEWNEWS			"nicenewnews"
+#define CONF_VAR_NICENEWNEWS			93
+    { _CONF_NICENEWNEWS,			"",	2, 1 },
 };
-#define MAX_CONF_VAR 93
+#define MAX_CONF_VAR 94
 
