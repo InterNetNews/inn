@@ -55,7 +55,9 @@ PROCcatchsignal(s)
     int			s;
 {
     PROCreap();
-    (void)signal(s, PROCcatchsignal);
+#ifndef USE_SIGACTION
+    (void)xsignal(s, PROCcatchsignal);
+#endif
 }
 
 
@@ -175,7 +177,7 @@ PROCsetup(i)
 	*pp = PROCnull;
 
 #if	defined(SIGCHLD)
-    (void)signal(SIGCHLD, PROCcatchsignal);
+    (void)xsignal(SIGCHLD, PROCcatchsignal);
 #endif	/* defined(SIGCHLD) */
-    (void)signal(SIGPIPE, PROCcatchsignal);
+    (void)xsignal(SIGPIPE, PROCcatchsignal);
 }

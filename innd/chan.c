@@ -282,9 +282,10 @@ void CHANclose(CHANNEL *cp, char *name)
 	    WIPprecomfree(cp);
 	    NCclearwip(cp);
 	    syslog(L_NOTICE,
-		"%s closed seconds %ld accepted %ld refused %ld rejected %ld",
+		"%s closed seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld accepted size %.0f duplicate size %.0f",
 		name, (long)(Now.time - cp->Started),
-		cp->Received, cp->Refused, cp->Rejected);
+		cp->Received, cp->Refused, cp->Rejected,
+		cp->Duplicate, cp->Size, cp->DuplicateSize);
 	} else if (cp->Type == CTreject)
 	    syslog(L_NOTICE, "%s %ld", name, cp->Rejected);
 	else if (cp->Out.Left)

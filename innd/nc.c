@@ -212,9 +212,10 @@ NCpostit(CHANNEL *cp)
 	cp->Reported++;
 	if (cp->Reported >= innconf->nntpactsync) {
 	    syslog(L_NOTICE,
-	    "%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld",
+	    "%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld accepted size %.0f duplicate size %.0f",
 		CHANname(cp), (long)(Now.time - cp->Started),
-		cp->Received, cp->Refused, cp->Rejected);
+		cp->Received, cp->Refused, cp->Rejected,
+		cp->Duplicate, cp->Size, cp->DuplicateSize);
 	    cp->Reported = 0;
 	}
 	if (Mode == OMthrottled) {

@@ -2042,7 +2042,7 @@ CCsetup()
      *  needed (i.e. something has deleted our named socket.
      */
 #if     defined(SIGUSR1)
-    (void)signal(SIGUSR1, CCresetup);
+    (void)xsignal(SIGUSR1, CCresetup);
 #endif  /* defined(SIGUSR1) */
 }
 
@@ -2075,7 +2075,9 @@ STATIC SIGHANDLER
 CCresetup(s)
     int         s;
 {
-    (void)signal(s, CCresetup);
+#ifndef USE_SIGACTION
+    (void)xsignal(s, CCresetup);
+#endif
     CCclose();
     CCsetup();
 }

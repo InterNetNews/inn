@@ -946,6 +946,7 @@ ARTreject(code, cp, buff, article)
   switch (code) {
     case REJECT_DUPLICATE:
       cp->Duplicate++;
+      cp->DuplicateSize += article->Used;
       break;
     case REJECT_SITE:
       cp->Unwanted_s++;
@@ -2491,8 +2492,8 @@ STRING ARTpost(CHANNEL *cp)
 	clearerr(Log);
     }
 
+    cp->Size += Data.SizeValue;
     if (innconf->logartsize) {
-	cp->Size += Data.SizeValue;
 	if (fprintf(Log, " %ld",Data.SizeValue) == EOF || ferror (Log)) {
             oerrno = errno;
 	    syslog(L_ERROR, "%s cant write artsize %m", LogName);

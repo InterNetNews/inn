@@ -38,7 +38,8 @@ typedef struct _STATUS {
     unsigned long  Unwanted_g;
     unsigned long  Unwanted_s;
     unsigned long  Unwanted_f;
-    unsigned long  Size;
+    float          Size;
+    float          DuplicateSize;
     unsigned long  Check;
     unsigned long  Check_send;
     unsigned long  Check_deferred;
@@ -81,7 +82,7 @@ void STATUSinit(void)
   strcpy (start_time, ctime (&now)) ;
 }
 
-char *PrettySize (unsigned long size, char *str)
+char *PrettySize (float size, char *str)
 {
   if (size > 1073741824) /* 1024*1024*1024 */
     sprintf (str, "%.1fGb", size / 1073741824.);
@@ -106,7 +107,8 @@ static void STATUSsummary(void)
   unsigned long     accepted = 0;
   unsigned long     refused = 0;
   unsigned long     rejected = 0;
-  unsigned long     size = 0;
+  float             size = 0;
+  float             DuplicateSize = 0;
   int               peers = 0;
   char              TempString [SMBUF];
   STATUS            status[MAX_PEER];
@@ -151,7 +153,7 @@ static void STATUSsummary(void)
       strcpy (status[j].name, TempString);                         /* name */
       strcpy (status[j].ip_addr, inet_ntoa(cp->Address));    /* ip address */
       status[j].can_stream = cp->Streaming;
-      status[j].seconds = status[j].Size = 0;
+      status[j].seconds = status[j].Size = status[j].DuplicateSize = 0;
       status[j].Ihave = status[j].Ihave_Duplicate =
 	status[j].Ihave_Deferred = status[j].Ihave_SendIt =
 	status[j].Ihave_Cybercan = 0;
@@ -197,7 +199,9 @@ static void STATUSsummary(void)
     status[j].Takethis_Ok += cp->Takethis_Ok;
     status[j].Takethis_Err += cp->Takethis_Err;
     status[j].Size += cp->Size;
+    status[j].DuplicateSize += cp->DuplicateSize;
     size += cp->Size;
+    DuplicateSize += cp->DuplicateSize;
     if (CHANsleeping(cp)) {
       sleepingCxns++;
       status[j].sleepingCxns++;
@@ -256,17 +260,21 @@ static void STATUSsummary(void)
 
   /* Global values */
   fprintf (F, "global (process)\n");
-  fprintf (F, "    seconds: %ld\n", seconds);
+  fprintf (F, "         seconds: %ld\n", seconds);
   offered = accepted + refused + rejected;
-  fprintf (F, "    offered: %-9ld\n", offered);
+  fprintf (F, "         offered: %-9ld\n", offered);
   if (!offered) offered = 1; /* to avoid division by zero */
-  fprintf (F, "   accepted: %-9ld  %%accepted: %.1f%%\n",
+  fprintf (F, "        accepted: %-9ld       %%accepted: %.1f%%\n",
 	   accepted, (float) accepted / offered * 100);
-  fprintf (F, "    refused: %-9ld   %%refused: %.1f%%\n",
+  fprintf (F, "         refused: %-9ld        %%refused: %.1f%%\n",
 	   refused, (float) refused / offered * 100);
-  fprintf (F, "   rejected: %-9ld  %%rejected: %.1f%%\n",
+  fprintf (F, "        rejected: %-9ld       %%rejected: %.1f%%\n",
 	   rejected, (float) rejected / offered * 100);
-  fprintf (F, "      bytes: %-7s\n", PrettySize (size, str));
+  fprintf (F, "      duplicated: %-9ld     %%duplicated: %.1f%%\n",
+	   duplicate, (float) duplicate / offered * 100);
+  fprintf (F, "           bytes: %-7s\n", PrettySize (size + DuplicateSize, str));
+  fprintf (F, " duplicated size: %-7s   %%duplicated size: %.1f%%\n",
+	   PrettySize(DuplicateSize, str), (float) DuplicateSize / size * 100);
   fputc ('\n', F) ;
   
   /* Incoming Feeds */
@@ -291,7 +299,8 @@ static void STATUSsummary(void)
     fprintf (F, "  is streaming: %s\n",
 	     (status[j].Check || status[j].Takethis) ? "Yes" : "No");
     fprintf (F, "       size: %-8s ",        PrettySize(status[j].Size, str));
-    fprintf (F, "       bad sites: %-7ld\n", status[j].Unwanted_s);
+    fprintf (F, "       bad sites: %-7ld ", status[j].Unwanted_s);
+    fprintf (F, "duplicate size: %s\n", PrettySize(status[j].DuplicateSize, str));
     fprintf (F, "  Protocol:\n");
     fprintf (F, "      Ihave: %-6ld SendIt[%d]: %-6ld    Got[%d]: %-6ld Deferred[%d]: %ld\n",
 	     status[j].Ihave, NNTP_SENDIT_VAL, status[j].Ihave_SendIt,

@@ -514,7 +514,9 @@ CatchTerminate(s)
 {
     GotTerminate = TRUE;
     KillerSignal = s;
-    (void)signal(s, CatchTerminate);
+#ifndef USE_SIGACTION
+    (void)xsignal(s, CatchTerminate);
+#endif
 }
 
 
@@ -764,7 +766,7 @@ int main(int ac, char *av[])
     if (Debug) {
 	Log = stdout;
 	Errlog = stderr;
-	(void)signal(SIGINT, CatchTerminate);
+	(void)xsignal(SIGINT, CatchTerminate);
     }
     else {
 	if (ShouldFork) {
@@ -851,9 +853,9 @@ int main(int ac, char *av[])
     /* Set up the various parts of the system.  Channel feeds start
      * processes so call PROCsetup before ICDsetup.  NNTP needs to know
      * if it's a slave, so call RCsetup before NCsetup. */
-    (void)signal(SIGTERM, CatchTerminate);
+    (void)xsignal(SIGTERM, CatchTerminate);
 #if	defined(SIGDANGER)
-    (void)signal(SIGDANGER, CatchTerminate);
+    (void)xsignal(SIGDANGER, CatchTerminate);
 #endif	/* defined(SIGDANGER) */
     CHANsetup(i);
     PROCsetup(10);
