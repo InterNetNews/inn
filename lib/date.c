@@ -125,13 +125,8 @@ makedate(time_t clock, bool local, char *buff, size_t buflen)
 
     /* tz_min_offset cannot be larger than 60 (by basic mathematics).  In
        some insane circumstances, tz_hour_offset could be larger; if it is,
-       set a time zone of -0000 indicating that we don't know the zone.
-       Otherwise, we could overflow our buffer. */
-    if (tz_hour_offset > 24) {
-        tz_sign = -1;
-        tz_hour_offset = 0;
-        tz_min_offset = 0;
-    }
+       fail.  Otherwise, we could overflow our buffer. */
+    if (tz_hour_offset > 24) return FALSE;
 
     /* Generate the actual date string, sans the trailing time zone comment
        but with the day of the week and the seconds (both of which are
