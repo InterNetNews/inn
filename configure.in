@@ -1112,6 +1112,89 @@ if test "$NBIO_STYLE" = unknown ; then
     AC_MSG_ERROR(Must set NBIO_STYLE)
 fi
 
+AC_DEFUN(AC_SYS_COMPILER_FLAG,
+[
+  AC_MSG_CHECKING($1)
+  OLD_CFLAGS="[$]CFLAGS"
+  AC_CACHE_VAL(inn_cv_option_$2,
+  [
+    CFLAGS="[$]OLD_CFLAGS $1"
+    AC_TRY_RUN([int main(){exit(0);}],inn_cv_option_$2=yes,inn_cv_option_$2=no)
+  ])
+  
+  CFLAGS="[$]OLD_CFLAGS"
+  
+  if test x"[$]inn_cv_option_$2" = "xyes" ; then
+    $3="[$]$3 $1"
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+])
+
+# We need some special hacks when running slowaris
+AC_PATH_PROG(uname_prog,uname,no)
+AC_MSG_CHECKING(operating system)
+AC_CACHE_VAL(inn_cv_sys_os,
+[
+if test "$uname_prog" != "no"; then
+  inn_cv_sys_os="`uname`"
+
+  case "$inn_cv_sys_os" in
+    SunOS)
+      case "`uname -r`" in
+        5.*) inn_cv_sys_os="Solaris";
+      esac
+    ;;
+  esac
+else
+  inn_cv_sys_os="Not Solaris"
+fi
+])
+AC_MSG_RESULT($inn_cv_sys_os)
+
+case "$inn_cv_sys_os" in
+  SCO*)
+     case "$CFLAGS" in
+       *-belf*) 
+          AC_SYS_COMPILER_FLAG(-belf,sco_belf_option,CFLAGS,[],[
+           case "$LDFLAGS" in
+             *-belf*) ;;
+             *)
+	        echo "Adding -belf option to ldflags."
+                LDFLAGS="$LDFLAGS -belf"
+             ;;
+           esac
+          ])
+	;;
+       *)
+          AC_SYS_COMPILER_FLAG(-belf,sco_belf_option,CFLAGS,[],[
+           case "$LDFLAGS" in
+             *-belf*) ;;
+             *)
+	        echo "Adding -belf option to ldflags."
+                LDFLAGS="$LDFLAGS -belf"
+             ;;
+           esac
+          ])
+       ;;
+     esac
+  ;;
+
+  UnixWare*)
+    if test "$GCC" != "yes"; then
+      # We are using built-in inline function
+      CFLAGS="$CFLAGS -Kalloca"
+      CXX="CC -DNO_CPLUSPLUS_ALLOCA"
+    fi
+  ;;
+esac
+AC_SUBST(CFLAGS)
+AC_SUBST(CXX)
+AC_SUBST(LD)
+AC_SUBST(LDFLAGS)
+
+
 
 dnl Default to LOG_NEWS for syslog facility if it's available, but if it's
 dnl not, fall back on LOG_LOCAL1.

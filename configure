@@ -6709,10 +6709,177 @@ if test "$NBIO_STYLE" = unknown ; then
 fi
 
 
+
+# We need some special hacks when running slowaris
+# Extract the first word of "uname", so it can be a program name with args.
+set dummy uname; ac_word=$2
+echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
+echo "configure:6718: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_path_uname_prog'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  case "$uname_prog" in
+  /*)
+  ac_cv_path_uname_prog="$uname_prog" # Let the user override the test with a path.
+  ;;
+  *)
+  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}:"
+  for ac_dir in $PATH; do
+    test -z "$ac_dir" && ac_dir=.
+    if test -f $ac_dir/$ac_word; then
+      ac_cv_path_uname_prog="$ac_dir/$ac_word"
+      break
+    fi
+  done
+  IFS="$ac_save_ifs"
+  test -z "$ac_cv_path_uname_prog" && ac_cv_path_uname_prog="no"
+  ;;
+esac
+fi
+uname_prog="$ac_cv_path_uname_prog"
+if test -n "$uname_prog"; then
+  echo "$ac_t""$uname_prog" 1>&6
+else
+  echo "$ac_t""no" 1>&6
+fi
+
+echo $ac_n "checking operating system""... $ac_c" 1>&6
+echo "configure:6748: checking operating system" >&5
+if eval "test \"`echo '$''{'inn_cv_sys_os'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
+if test "$uname_prog" != "no"; then
+  inn_cv_sys_os="`uname`"
+
+  case "$inn_cv_sys_os" in
+    SunOS)
+      case "`uname -r`" in
+        5.*) inn_cv_sys_os="Solaris";
+      esac
+    ;;
+  esac
+else
+  inn_cv_sys_os="Not Solaris"
+fi
+
+fi
+
+echo "$ac_t""$inn_cv_sys_os" 1>&6
+
+case "$inn_cv_sys_os" in
+  SCO*)
+     case "$CFLAGS" in
+       *-belf*) 
+          
+  echo $ac_n "checking -belf""... $ac_c" 1>&6
+echo "configure:6777: checking -belf" >&5
+  OLD_CFLAGS="$CFLAGS"
+  if eval "test \"`echo '$''{'inn_cv_option_sco_belf_option'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
+    CFLAGS="$OLD_CFLAGS -belf"
+    if test "$cross_compiling" = yes; then
+    { echo "configure: error: can not run test program while cross compiling" 1>&2; exit 1; }
+else
+  cat > conftest.$ac_ext <<EOF
+#line 6788 "configure"
+#include "confdefs.h"
+int main(){exit(0);}
+EOF
+if { (eval echo configure:6792: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest && (./conftest; exit) 2>/dev/null
+then
+  inn_cv_option_sco_belf_option=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -fr conftest*
+  inn_cv_option_sco_belf_option=no
+fi
+rm -fr conftest*
+fi
+
+  
+fi
+
+  
+  CFLAGS="$OLD_CFLAGS"
+  
+  if test x"$inn_cv_option_sco_belf_option" = "xyes" ; then
+    CFLAGS="$CFLAGS -belf"
+    echo "$ac_t""yes" 1>&6
+  else
+    echo "$ac_t""no" 1>&6
+  fi
+
+	;;
+       *)
+          
+  echo $ac_n "checking -belf""... $ac_c" 1>&6
+echo "configure:6821: checking -belf" >&5
+  OLD_CFLAGS="$CFLAGS"
+  if eval "test \"`echo '$''{'inn_cv_option_sco_belf_option'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
+    CFLAGS="$OLD_CFLAGS -belf"
+    if test "$cross_compiling" = yes; then
+    { echo "configure: error: can not run test program while cross compiling" 1>&2; exit 1; }
+else
+  cat > conftest.$ac_ext <<EOF
+#line 6832 "configure"
+#include "confdefs.h"
+int main(){exit(0);}
+EOF
+if { (eval echo configure:6836: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest && (./conftest; exit) 2>/dev/null
+then
+  inn_cv_option_sco_belf_option=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -fr conftest*
+  inn_cv_option_sco_belf_option=no
+fi
+rm -fr conftest*
+fi
+
+  
+fi
+
+  
+  CFLAGS="$OLD_CFLAGS"
+  
+  if test x"$inn_cv_option_sco_belf_option" = "xyes" ; then
+    CFLAGS="$CFLAGS -belf"
+    echo "$ac_t""yes" 1>&6
+  else
+    echo "$ac_t""no" 1>&6
+  fi
+
+       ;;
+     esac
+  ;;
+
+  UnixWare*)
+    if test "$GCC" != "yes"; then
+      # We are using built-in inline function
+      CFLAGS="$CFLAGS -Kalloca"
+      CXX="CC -DNO_CPLUSPLUS_ALLOCA"
+    fi
+  ;;
+esac
+
+
+
+
+
+
+
 echo $ac_n "checking log facility for news""... $ac_c" 1>&6
-echo "configure:6714: checking log facility for news" >&5
+echo "configure:6881: checking log facility for news" >&5
 cat > conftest.$ac_ext <<EOF
-#line 6716 "configure"
+#line 6883 "configure"
 #include "confdefs.h"
 
 #include <syslog.h>
@@ -6738,12 +6905,12 @@ rm -f conftest*
 
 
 echo $ac_n "checking generic pointer""... $ac_c" 1>&6
-echo "configure:6742: checking generic pointer" >&5
+echo "configure:6909: checking generic pointer" >&5
 if eval "test \"`echo '$''{'ac_cv_type_generic'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 6747 "configure"
+#line 6914 "configure"
 #include "confdefs.h"
 
 #ifdef STDC_HEADERS
@@ -6757,7 +6924,7 @@ int main() {
 void *a; a = malloc(sizeof(a))
 ; return 0; }
 EOF
-if { (eval echo configure:6761: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:6928: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_type_generic=void
 else
@@ -7223,6 +7390,8 @@ s%@ac_cv_type_qsort@%$ac_cv_type_qsort%g
 s%@ac_cv_type_free@%$ac_cv_type_free%g
 s%@ac_cv_type_exit@%$ac_cv_type_exit%g
 s%@ac_cv_type__exit@%$ac_cv_type__exit%g
+s%@uname_prog@%$uname_prog%g
+s%@CXX@%$CXX%g
 s%@ac_cv_type_generic@%$ac_cv_type_generic%g
 s%@ac_cv_subst_uid_t@%$ac_cv_subst_uid_t%g
 s%@ac_cv_subst_gid_t@%$ac_cv_subst_gid_t%g
