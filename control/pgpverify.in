@@ -2,13 +2,22 @@
 do '@LIBDIR@/innshellvars.pl';
 #
 # written April 1996, tale@isc.org (David C Lawrence)
-# Version 1.13.1, 16 Feb 2001
+# Version 1.14, 6 May 2001
 #
 # NOTICE TO INN MAINTAINERS:  The version that is shipped with INN
 # is the same as the version that I make available to the rest of the
 # world (including non-INN sites), so please make all changes through me.
 #
 # This program is intended to be compatible with Perl 4 and Perl 5.
+#
+# Changes from 1.13.1 -> 1.14
+# -- Native support for GnuPG without the pgpgpg wrapper, using GnuPG's
+#    program interface by Marco d'Itri.
+# -- Always use Sys::Syslog without any setlogsock call for Perl 5.6.0 or
+#    later, since Sys::Syslog in those versions of Perl uses the C library
+#    interface and is now portable.
+# -- Default to expecting the key ring in $inn'newsetc/pgp if it exists.
+# -- Fix a portability problem for Perl 4 introduced in 1.12.
 #
 # Changes from 1.13 -> 1.13.1
 # -- Nothing functional, just moved the innshellvars.pl line to the head of
@@ -71,34 +80,47 @@ do '@LIBDIR@/innshellvars.pl';
 # -- checks to ensure that the temporary file is really a file, and
 #    not a link or some other weirdness
 
+# Path to the GnuPG gpgv binary, if you have GnuPG.  If you do, this will
+# be used in preference to PGP.  For most current control messages, you
+# need a version of GnuPG that can handle RSA signatures.  If you have INN
+# and the script is able to successfully include your innshellvars.pl
+# file, the value of $inn::gpgv will override this.
+# $gpgv = '/usr/local/bin/gpgv';
+
 # Path to pgp binary; for PGP 5.0, set the path to the pgpv binary.
-# GnuPG users should point this to the pgpgpg wrapper.
-# If you have INN and the script is able to successfully include you
+# If you have INN and the script is able to successfully include your
 # innshellvars.pl file, the value of $inn::pgp will override this.
 $pgp = '/usr/local/bin/pgp';
 
-# if you keep your keyring somewhere that is not the default used by pgp,
-# uncomment the next line and set appropriately.
-# $ENV{'PGPPATH'} = '/path/to/your/pgp/config';
+# If you keep your keyring somewhere that is not the default used by pgp,
+# uncomment the next line and set appropriately.  If you have INN and the
+# script is able to successfully include your innshellvars.pl file, this
+# will be set to $inn::newsetc/pgp if that directory exists unless you set
+# it explicitly.  GnuPG will use a file named pubring.gpg in this
+# directory.
+# $keyring = '/path/to/your/pgp/config';
 
-# If you have INN and the script is able to successfully include you
+# If you have INN and the script is able to successfully include your
 # innshellvars.pl file, the value of $inn::pathtmp and $inn::locks will
 # override these.
 $tmpdir = "/tmp";
 $lockdir = $tmpdir;
 
 # How should syslog be accessed?
-# As it turns out, syslogging is very hard to do portably in all
-# versions of perl up to and including 5.005_02. 'inet' is all that
-# was available in perl up to version 5.004_03. If your syslog does
-# not accept UDP log packets, such as when syslogd runs with the -l flag,
+#
+# As it turns out, syslogging is very hard to do portably in versions of
+# Perl prior to 5.6.0.  Sys::Syslog should work without difficulty in
+# 5.6.0 or later and will be used automatically for those versions of Perl
+# (unless $syslog_method is '').  For earlier versions of Perl, 'inet' is
+# all that's available up to version 5.004_03.  If your syslog does not
+# accept UDP log packets, such as when syslogd runs with the -l flag,
 # 'inet' will not work.  A value of 'unix' will try to contact syslogd
-# directly over a Unix domain socket built entirely in perl code
-# (no subprocesses).  If that is not working for you, and you have
-# the 'logger' program on your system, set this variable to its full
-# path name to have a subprocess contact syslogd.  If the method is just
-# "logger", the script will search some known directories for that program.
-# If it can't be found & used, everything falls back on stderr logging.
+# directly over a Unix domain socket built entirely in perl code (no
+# subprocesses).  If that is not working for you, and you have the
+# 'logger' program on your system, set this variable to its full path name
+# to have a subprocess contact syslogd.  If the method is just "logger",
+# the script will search some known directories for that program.  If it
+# can't be found & used, everything falls back on stderr logging.
 #
 # You can test the script's syslogging by running "pgpverify < /some/text/file"
 # on a file that is not a valid news article.  The "non-header at line #"
@@ -140,18 +162,13 @@ die "Usage: $0 < message\n" if @ARGV != 0;
 $0 =~ s%^.*/%%;                 # trim /path/to/prog to prog
 
 $pgp = $inn'pgp if $inn'pgp && $inn'pgp ne "no-pgp-found-during-configure";
+$gpgv = $inn'gpgv if $inn'gpgv;
 $tmp = ($inn'pathtmp ? $inn'pathtmp : $tmpdir) . "/pgp$$";
 $lockdir = $inn'locks if $inn'locks;
 $syslog_facility = $inn'syslog_facility if $inn'syslog_facility;
-#
-# ... and it is expected some day that an INN variable will let perl
-# scripts know how syslogging should be done.
-
-# the call to pgp needs to be locked because it tries to both read and write
-# a file named randseed.bin but doesn't do its own locking as it should,
-# and the consequences of a multiprocess conflict is failure to verify.
-#
-$lock = "$lockdir/LOCK.$0";
+if (! $keyring && $inn'newsetc) {
+  $keyring = $inn'newsetc . '/pgp' if -d $inn'newsetc . '/pgp';
+}
 
 if (! -x $pgp) {
   &fail("$0: $pgp: " . (-e _ ? "cannot execute" : "no such file") . "\n");
@@ -249,59 +266,122 @@ close(TMP) || &errmsg("$0: close > $tmp: $!\n");
 
 print $message if $test;
 
-until (&shlock($lock) > 0) {
-  sleep(2);
-}
-
-open(PGP,"$pgp -f +language=en < $tmp 2>&1 >/dev/null |") ||
-  &fail("$0: failed to execute pgp: $!\n");
-
-undef $/;
-$_ = <PGP>;
-
-unlink($lock) || &errmsg("$0: unlink $lock: $!\n");
-unlink($tmp)  || &errmsg("$0: unlink $tmp: $!\n");
-
-unless (close(PGP)) {
-  if ($? >> 8) {
-    &errmsg("$0: pgp exited status " . ($? >> 8) . "\n");
-  } else {
-    &errmsg("$0: pgp died on signal " . ($? & 255) . "\n");
-  }
-}
-
-print if $test;
-
-# MIT PGP 2.6.2:
-#   Good signature from user "Robert Braver <rbraver@ohww.norman.ok.us>".
-# ViaCrypt PGP 4.0:
-#   Good signature from user:  Robert Braver <rbraver@ohww.norman.ok.us>
-# GnuPG (via pgpgpg)
-#   Good signature from "news.announce.newgroups"
-# PGP 5.0i:
-#   Good signature made 1997-07-09 21:57 GMT by key:
-#     1024 bits, Key ID B88DA9C1, Created 1996-04-10
-#      "news.announce.newgroups"
-
-$ok = 2;                        # unknown signature result is default
-if (/B[Aa][Dd] signature /) {
-  $ok = 3;
-} elsif (/Good signature from user(:  (.*)| "(.*)"\.)/ ||
-         /Good signature from "(.*)"/ ||
-         /Good signature made .* by key:\n.+\n +"(.*)"/) {
-  $ok = 0;
-  $signer = $+;
-} elsif (/Keyring file '(.*)' does not exist/) {
-  &fail("$0: couldn't access $1.  Bad \$HOME or \$PGPPATH?\n");
+if ($gpgv) {
+  ($ok, $signer) = &gpg_check($tmp, $keyring);
+} else {
+  ($ok, $signer) = &pgp_check($tmp, $keyring);
 }
 
 print "$signer\n" if $signer;
 exit $ok;
 
-sub
-errmsg
+# Check the signature using PGP (including 2.6.2, 5.0, and the pgpgpg
+# wrapper for GnuPG).
+sub pgp_check {
+  ($file, $ring) = @_;
 
-{
+  $ENV{'PGPPATH'} = $ring if $ring;
+
+  # The call to pgp needs to be locked because it tries to both read and
+  # write a file named randseed.bin but doesn't do its own locking as it
+  # should, and the consequences of a multiprocess conflict is failure to
+  # verify.
+  $lock = "$lockdir/LOCK.$0";
+
+  until (&shlock($lock) > 0) {
+    sleep(2);
+  }
+
+  open(PGP,"$pgp -f +language=en < $file 2>&1 >/dev/null |") ||
+    &fail("$0: failed to execute pgp: $!\n");
+
+  undef $/;
+  $_ = <PGP>;
+
+  unlink($lock) || &errmsg("$0: unlink $lock: $!\n");
+  unlink($file) || &errmsg("$0: unlink $file: $!\n");
+
+  unless (close(PGP)) {
+    if ($? >> 8) {
+      &errmsg("$0: pgp exited status " . ($? >> 8) . "\n");
+    } else {
+      &errmsg("$0: pgp died on signal " . ($? & 255) . "\n");
+    }
+  }
+
+  print if $test;
+
+  # MIT PGP 2.6.2:
+  #   Good signature from user "Robert Braver <rbraver@ohww.norman.ok.us>".
+  # ViaCrypt PGP 4.0:
+  #   Good signature from user:  Robert Braver <rbraver@ohww.norman.ok.us>
+  # GnuPG (via pgpgpg)
+  #   Good signature from "news.announce.newgroups"
+  # PGP 5.0i:
+  #   Good signature made 1997-07-09 21:57 GMT by key:
+  #     1024 bits, Key ID B88DA9C1, Created 1996-04-10
+  #      "news.announce.newgroups"
+
+  $ok = 2;                        # unknown signature result is default
+  if (/B[Aa][Dd] signature /) {
+    $ok = 3;
+  } elsif (/Good signature from user(:  (.*)| "(.*)"\.)/ ||
+           /Good signature from "(.*)"/ ||
+           /Good signature made .* by key:\n.+\n +"(.*)"/) {
+    $ok = 0;
+    $signer = $+;
+  } elsif (/Keyring file '(.*)' does not exist/) {
+    &fail("$0: couldn't access $1.  Bad \$HOME or \$PGPPATH?\n");
+  }
+
+  return ($ok, $signer);
+}
+
+# Check the signature using GnuPG.
+sub gpg_check {
+  ($file, $ring) = @_;
+
+  $opts = '--quiet --status-fd=1 --logger-fd=1';
+  if ($ring) {
+    $opts .= " --keyring=$ring/pubring.pgp";
+  } else {
+    $opts .= " --keyring=pubring.pgp";
+  }
+
+  open(PGP, "$gpgv $opts $file 2> /dev/null |") ||
+    &fail("$0: failed to execute $pgp: $!\n");
+
+  undef $/;
+  $_ = <PGP>;
+
+  unlink($file) || &errmsg("$0: unlink $file: $!\n");
+
+  unless (close(PGP)) {
+    if ($? >> 8) {
+      &errmsg("$0: gpgv exited status " . ($? >> 8) . "\n");
+    } else {
+      &errmsg("$0: gpgv died on signal " . ($? & 255) . "\n");
+    }
+  }
+
+  $ok = 255;        # default exit status
+  if (/\[GNUPG:\]\s+GOODSIG\s+\S+\s+(\S+)/) {
+    $ok = 0;
+    $signer = $1;
+  } elsif (/\[GNUPG:\]\s+NODATA/ || /\[GNUPG:\]\s+UNEXPECTED/) {
+    $ok = 1;
+  } elsif (/\[GNUPG:\]\s+NO_PUBKEY/) {
+    $ok = 2;
+  } elsif (/\[GNUPG:\]\s+BADSIG\s+/) {
+    $ok = 3;
+  }
+
+  return ($ok, $signer);
+}
+
+# Log an error message, attempting syslog first based on $syslog_method
+# and falling back on stderr.
+sub errmsg {
   $_[0] =~ s/\n$//;
 
   $date = '';
@@ -309,6 +389,11 @@ errmsg
     eval "require 'ctime.pl'";
     ($date = &ctime(time)) =~ s/\d{4}\n//
       unless $@;
+  }
+
+  if ($syslog_method && $] >= 5.006) {
+    eval "use Sys::Syslog";
+    $syslog_method = 'internal';
   }
 
   if ($syslog_method eq "logger") {
@@ -325,7 +410,7 @@ errmsg
   if ($syslog_method ne '' && $syslog_method !~ m%/logger$%) {
     if ($] >= 5) {
       eval "use Sys::Syslog";
-    } else { 
+    } else {
       eval "require 'syslog.pl'";
     }
   }
@@ -357,16 +442,17 @@ errmsg
       # to use a Unix domain socket to talk to syslogd, which is
       # the only way to do it when syslog runs with the -l switch.
       if ($syslog_method eq "unix") {
-        if ($^O eq "dec_osf") {
-          sub Sys::Syslog::_PATH_LOG { "/dev/log" }
+        if ($^O eq "dec_osf" && $] >= 5) {
+          eval 'sub Sys::Syslog::_PATH_LOG { "/dev/log" }';
         }
         if ($] <= 5.00403 || ! eval "setlogsock('unix')") {
           warn $date, "$0: cannot use syslog_method 'unix' on this system\n";
           $syslog_method = '';
           &errmsg($_[0]);
+          return;
         }
       }
-      
+
       # unfortunately, there is no way to definitively know in this program if
       # the message was logged.  I wish there were a way to send a message
       # to stderr if and only if the syslog attempt failed.
@@ -377,14 +463,9 @@ errmsg
   }
 }
 
-sub
-fail
-
-{
+sub fail {
   unlink($tmp);
-
   &errmsg($_[0]);
-
   exit 255;
 }
 
@@ -418,7 +499,7 @@ sub shlock {
     if ($! == &EEXIST) {
       if (open(LOCK, "<$file")) {
         $pid = <LOCK>;
-        if ($pid =~ /^\d+$/ && (kill(0, $pid) == 1 || $! != &ESRCH)) { 
+        if ($pid =~ /^\d+$/ && (kill(0, $pid) == 1 || $! != &ESRCH)) {
           unlink($ltmp);
           return 0;
         }
@@ -426,14 +507,14 @@ sub shlock {
         # ok, the pid in the lockfile is not a number or no longer exists.
         close(LOCK);            # silent failure is ok here
 
-        # unlink failed 
+        # unlink failed
         if (unlink($file) != 1 && $! != &ENOENT) {
           unlink($ltmp);
           return 0;
         }
 
       # check if open failed for reason other than file no longer present
-      } elsif ($! != &ENOENT) { 
+      } elsif ($! != &ENOENT) {
         unlink($ltmp);
         return -1;
       }
@@ -487,3 +568,8 @@ sub shlock {
 # STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# Local variables:
+# cperl-indent-level: 2
+# fill-column: 74
+# End:
