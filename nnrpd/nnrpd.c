@@ -177,14 +177,12 @@ static const char *const timer_name[] = {
 void
 ExitWithStats(int x, bool readconf)
 {
-    TIMEINFO		Now;
     double		usertime;
     double		systime;
 
     line_free(&NNTPline);
     fflush(stdout);
-    GetTimeInfo(&Now);
-    STATfinish = TIMEINFOasDOUBLE(Now);
+    STATfinish = TMRnow_double();
     if (GetResourceUsage(&usertime, &systime) < 0) {
 	usertime = 0;
 	systime = 0;
@@ -838,7 +836,6 @@ main(int argc, char *argv[])
     char		**av;
     int			ac;
     READTYPE		r;
-    TIMEINFO		Now;
     int			i;
     char		*Reject;
     int			timeout;
@@ -1199,12 +1196,7 @@ main(int argc, char *argv[])
 
     /* Setup. */
     TMRinit(TMR_MAX);
-    if (GetTimeInfo(&Now) < 0) {
-	syslog(L_FATAL, "cant gettimeinfo %m");
-	OVclose();
-	exit(1);
-    }
-    STATstart = TIMEINFOasDOUBLE(Now);
+    STATstart = TMRnow_double();
 
 #ifdef HAVE_SSL
     ClientSSL = false;

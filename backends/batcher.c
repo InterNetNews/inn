@@ -92,13 +92,11 @@ RequeueAndExit(off_t Cookie, char *line, long BytesInArt)
     char	buff[BIG_BUFFER];
     int		i;
     FILE	*F;
-    TIMEINFO	Now;
     double	usertime;
     double	systime;
 
     /* Do statistics. */
-    GetTimeInfo(&Now);
-    STATend = TIMEINFOasDOUBLE(Now);
+    STATend = TMRnow_double();
     if (GetResourceUsage(&usertime, &systime) < 0) {
 	usertime = 0;
 	systime = 0;
@@ -189,7 +187,6 @@ main(int ac, char *av[])
     bool	Redirect;
     FILE	*F;
     const char	*AltSpool;
-    TIMEINFO	Now;
     char	*p;
     char	*data;
     char	line[BIG_BUFFER];
@@ -291,8 +288,7 @@ main(int ac, char *av[])
     xsignal(SIGINT, CATCHinterrupt);
     xsignal(SIGTERM, CATCHinterrupt);
     /* xsignal(SIGPIPE, CATCHinterrupt); */
-    GetTimeInfo(&Now);
-    STATbegin = TIMEINFOasDOUBLE(Now);
+    STATbegin = TMRnow_double();
 
     SMinit();
     F = NULL;

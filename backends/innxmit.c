@@ -284,7 +284,6 @@ static void
 ExitWithStats(int x)
 {
     static char		QUIT[] = "quit";
-    TIMEINFO		Now;
     double		usertime;
     double		systime;
 
@@ -292,8 +291,7 @@ ExitWithStats(int x)
 	REMwrite(QUIT, strlen(QUIT), false);
 	REMflush();
     }
-    GetTimeInfo(&Now);
-    STATend = TIMEINFOasDOUBLE(Now);
+    STATend = TMRnow_double();
     if (GetResourceUsage(&usertime, &systime) < 0) {
 	usertime = 0;
 	systime = 0;
@@ -980,7 +978,6 @@ int main(int ac, char *av[]) {
     int	                i;
     char	        *p;
     ARTHANDLE		*art;
-    TIMEINFO		Now;
     FILE		*From;
     FILE		*To;
     char		buff[8192+128];
@@ -1100,12 +1097,7 @@ int main(int ac, char *av[]) {
     REMbuffptr = REMbuffer;
 
     /* Start timing. */
-    if (GetTimeInfo(&Now) < 0) {
-        syswarn("cannot get time");
-	SMshutdown();
-	exit(1);
-    }
-    STATbegin = TIMEINFOasDOUBLE(Now);
+    STATbegin = TMRnow_double();
 
     if (!Purging) {
 	/* Open a connection to the remote server. */

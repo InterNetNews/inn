@@ -118,14 +118,12 @@ static void
 ExitWithStats(int x)
 {
   static char		QUIT[] = "quit";
-  TIMEINFO		Now;
   double		usertime;
   double		systime;
 
   REMwrite(ToServer, QUIT);
 
-  GetTimeInfo(&Now);
-  STATend = TIMEINFOasDOUBLE(Now);
+  STATend = TMRnow_double();
   if (GetResourceUsage(&usertime, &systime) < 0) {
     usertime = 0;
     systime = 0;
@@ -329,8 +327,7 @@ int
 main(int ac, char *av[])
 {
   int			i;
-  char		*p;
-  TIMEINFO		Now;
+  char                  *p;
   FILE			*From;
   FILE			*To;
   char			buff[NNTP_STRLEN];
@@ -452,10 +449,7 @@ main(int ac, char *av[])
   }
 
   /* Start timing. */
-  if (GetTimeInfo(&Now) < 0)
-    sysdie("cannot get time");
-  STATbegin = TIMEINFOasDOUBLE(Now);
-
+  STATbegin = TMRnow_double();
 
   /* main loop over all specified files */
   for (XBATCHname = *av; ac && (XBATCHname = *av); av++, ac--) {
