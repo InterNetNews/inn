@@ -5,14 +5,18 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include <sys/uio.h>
 
+#include "inn/buffer.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
+#include "inn/wire.h"
+#include "libinn.h"
 #include "storage.h"
 
 static const char usage[] = "\
-Usage: sm [-dHiqrRS] [token ...]\n\
+Usage: sm [-dHiqrRSs] [token ...]\n\
 \n\
 Command-line interface to the INN storage manager.  The default action is\n\
 to display the complete article associated with each token given.  If no\n\
@@ -24,7 +28,8 @@ line.\n\
     -i          Translate tokens into newsgroup names and article numbers\n\
     -q          Suppress all error messages except usage\n\
     -R          Display the raw article rather than undoing wire format\n\
-    -S          Output articles in rnews batch file format\n";
+    -S          Output articles in rnews batch file format\n\
+    -s          Store the article provided on stdin.\n";
 
 /* The options that can be set on the command line, used to determine what to
    do with each token. */
@@ -35,6 +40,89 @@ struct options {
     bool raw;                   /* Show the raw wire-format articles. */
     bool rnews;                 /* Output articles as rnews batch files. */
 };
+
+
+/*
+**  Given a file descriptor, read a post from that file descriptor and then
+**  store it.  This basically duplicates what INN does, except that INN has to
+**  do more complex things to add the Path header.
+**
+**  Note that we make no attempt to add history or overview information, at
+**  least right now.
+*/
+static bool
+store_article(int fd)
+{
+    struct buffer *article;
+    size_t size;
+    char *text, *start, *end;
+    ARTHANDLE handle;
+    TOKEN token;
+
+    /* Build the basic article handle. */
+    article = buffer_new();
+    if (!buffer_read_file(article, fd))
+        sysdie("cannot read article");
+    text = ToWireFmt(article->data, article->left, &size);
+    handle.type = TOKEN_EMPTY;
+    handle.data = text;
+    handle.iov = xmalloc(sizeof(struct iovec));
+    handle.iov->iov_base = text;
+    handle.iov->iov_len = size;
+    handle.iovcnt = 1;
+    handle.len = size;
+    handle.arrived = 0;
+    buffer_free(article);
+
+    /* Find the expiration time, if any. */
+    start = wire_findheader(text, size, "Expires");
+    if (start != NULL) {
+        char *expires;
+
+        end = wire_endheader(start, text + size - 1);
+        if (end == NULL)
+            die("cannot find end of Expires header");
+        expires = xstrndup(start, end - start);
+        handle.expires = parsedate(expires, NULL);
+        free(expires);
+    }
+
+    /* Find the appropriate newsgroups header. */
+    if (innconf->storeonxref) {
+        start = wire_findheader(text, size, "Xref");
+        if (start == NULL)
+            die("no Xref header found in message");
+        end = wire_endheader(start, text + size - 1);
+        if (end == NULL)
+            die("cannot find end of Xref header");
+        for (; *start != ' ' && start < end; start++)
+            ;
+        if (start >= end)
+            die("malformed Xref header");
+        start++;
+    } else {
+        start = wire_findheader(text, size, "Newsgroups");
+        if (start == NULL)
+            die("no Newsgroups header found in message");
+        end = wire_endheader(start, text + size - 1);
+        if (end == NULL)
+            die("cannot find end of Newsgroups header");
+    }
+    handle.groups = start;
+    handle.groupslen = end - start;
+
+    /* Store the article. */
+    token = SMstore(handle);
+    free(text);
+    free(handle.iov);
+    if (token.type == TOKEN_EMPTY) {
+        warn("failed to store article: %s", SMerrorstr);
+        return false;
+    } else {
+        printf("%s\n", TokenToText(token));
+        return true;
+    }
+}
 
 
 /*
@@ -99,13 +187,14 @@ main(int argc, char *argv[])
     int option;
     bool okay, status;
     struct options options = { false, false, false, false, false };
+    bool store = false;
 
     message_program_name = "sm";
 
     if (!innconf_read(NULL))
         exit(1);
 
-    while ((option = getopt(argc, argv, "iqrdRSH")) != EOF) {
+    while ((option = getopt(argc, argv, "iqrdRSsH")) != EOF) {
         switch (option) {
         case 'd':
         case 'r':
@@ -127,6 +216,9 @@ main(int argc, char *argv[])
         case 'S':
             options.rnews = true;
             break;
+        case 's':
+            store = true;
+            break;
         default:
             fprintf(stderr, usage);
             exit(1);
@@ -135,7 +227,7 @@ main(int argc, char *argv[])
 
     /* Check options for consistency. */
     if (options.artinfo && options.delete)
-        die("-i cannot be used with -r, -d");
+        die("-i cannot be used with -r or -d");
     if (options.artinfo && (options.header || options.raw || options.rnews))
         die("-i cannot be used with -H, -R, or -S");
     if (options.delete && (options.header || options.rnews))
@@ -144,10 +236,14 @@ main(int argc, char *argv[])
         die("-R cannot be used with -S");
     if (options.header && options.rnews)
         die("-H cannot be used with -S");
+    if (store && (options.artinfo || options.delete || options.header))
+        die("-s cannot be used with -i, -r, -d, -H, -R, or -S");
+    if (store && (options.raw || options.rnews))
+        die("-s cannot be used with -i, -r, -d, -H, -R, or -S");
 
     /* Initialize the storage manager.  If we're doing article deletions, we
        need to open it read/write. */
-    if (options.delete) {
+    if (store || options.delete) {
         bool value = true;
 
         if (!SMsetup(SM_RDWR, &value))
@@ -155,6 +251,12 @@ main(int argc, char *argv[])
     }
     if (!SMinit())
         die("cannot initialize storage manager: %s", SMerrorstr);
+
+    /* If we're storing an article, do that and then exit. */
+    if (store) {
+        status = store_article(fileno(stdin));
+        exit(status ? 0 : 1);
+    }
 
     /* Process tokens.  If no arguments were given on the command line,
        process tokens from stdin.  Otherwise, walk through the remaining
