@@ -279,12 +279,15 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_PATHUNIOVER			"pathuniover"
 #define CONF_VAR_PATHUNIOVER			85
     { _CONF_PATHUNIOVER,			"",	1, 1 },
-#define _CONF_STOREONXREF				"storeonxref"
+#define _CONF_STOREONXREF			"storeonxref"
 #define CONF_VAR_STOREONXREF			86
     { _CONF_STOREONXREF,			"",	2, 1 },
 #define _CONF_REFUSECYBERCANCELS		"refusecybercancels"
 #define CONF_VAR_REFUSECYBERCANCELS		87
     { _CONF_REFUSECYBERCANCELS,			"",	2, 1 },
+#define _CONF_NNRPDCHECKART			"nnrpdcheckart"
+#define CONF_VAR_NNRPDCHECKART			87
+    { _CONF_NNRPDCHECKART,			"",	2, 1 },
 };
-#define MAX_CONF_VAR 88
+#define MAX_CONF_VAR 89
 
