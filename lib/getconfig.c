@@ -12,6 +12,22 @@
 
 /* Global and initialized; to work around SunOS -Bstatic bug, sigh. */
 STATIC char		ConfigBuff[SMBUF] = "";
+STATIC char		*ConfigBit;
+STATIC int		ConfigBitsize;
+#define	TEST_CONFIG(a, b) \
+    { \
+	int byte, offset; \
+	offset = a % 8; \
+	byte = (a - offset) / 8; \
+	b = ((ConfigBit[byte] & (1 << offset)) != 0) ? TRUE : FALSE; \
+    }
+#define	SET_CONFIG(a) \
+    { \
+	int byte, offset; \
+	offset = a % 8; \
+	byte = (a - offset) / 8; \
+	ConfigBit[byte] |= (1 << offset); \
+    }
 /*
   To add a new config value, add it to the following:
 	Use the comment embedded method in include/libinn.h, then
@@ -89,9 +105,6 @@ char *GetConfigValue(char *value)
     if (EQ(value, _CONF_ORGANIZATION)
      && (p = getenv(_ENV_ORGANIZATION)) != NULL)
 	return p;
-/* BEGIN_AUTO_INSERTED_SECTION from ../include/libinn.h ||GETVALUE */
-if (EQ(value,"fromhost")) { return innconf->fromhost; }
-/* END_AUTO_INSERTED_SECTION from ../include/libinn.h ||GETVALUE */
     if (EQ(value, _CONF_INNBINDADDR)
      && (p = getenv(_ENV_INNBINDADDR)) != NULL)
 	return p;
@@ -127,11 +140,17 @@ BOOL GetBooleanConfigValue(char *key, BOOL defaultvalue) {
 
 void SetDefaults()
 {
-char *p;	/* Temporary working variable */
-/* BEGIN_AUTO_INSERTED_SECTION from ../include/libinn.h ||DEFAULT */
-innconf->fromhost = NULL;
-if ((p = getenv(_ENV_FROMHOST)) != NULL) { innconf->fromhost = COPY(p); }
-/* END_AUTO_INSERTED_SECTION from ../include/libinn.h ||DEFAULT */
+    char *p;	/* Temporary working variable */
+    if (ConfigBit == NULL) {
+	if (MAX_CONF_VAR % 8 == 0)
+	    ConfigBitsize = MAX_CONF_VAR/8;
+	else
+	    ConfigBitsize = (MAX_CONF_VAR - (MAX_CONF_VAR % 8))/8 + 1;
+	ConfigBit = NEW(char, ConfigBitsize);
+	memset(ConfigBit, '\0', ConfigBitsize);
+    }
+    innconf->fromhost = NULL;
+    if ((p = getenv(_ENV_FROMHOST)) != NULL) { innconf->fromhost = COPY(p); }
     innconf->server = NULL;
     innconf->pathhost = NULL;
     innconf->pathalias = NULL;
@@ -143,7 +162,7 @@ if ((p = getenv(_ENV_FROMHOST)) != NULL) { innconf->fromhost = COPY(p); }
     innconf->mimeencoding = NULL;
     innconf->hiscachesize = 0;
     innconf->wireformat = FALSE;
-    innconf->xrefslave = FALSE;
+    innconf->xrefslave = NULL;
     innconf->complaints = NULL;
     innconf->spoolfirst = FALSE;
     innconf->writelinks = TRUE;
@@ -204,13 +223,13 @@ if ((p = getenv(_ENV_FROMHOST)) != NULL) { innconf->fromhost = COPY(p); }
     innconf->pathoutgoing = NULL;
     innconf->pathincoming = NULL;
     innconf->patharchive = NULL;
+
+    innconf->logsitename = TRUE;
 }
 
 void ClearInnConf()
 {
-/* BEGIN_AUTO_INSERTED_SECTION from ../include/libinn.h ||CLEAR */
-if (innconf->fromhost != NULL) DISPOSE(innconf->fromhost);
-/* END_AUTO_INSERTED_SECTION from ../include/libinn.h ||CLEAR */
+    if (innconf->fromhost != NULL) DISPOSE(innconf->fromhost);
     if (innconf->server != NULL) DISPOSE(innconf->server);
     if (innconf->pathhost != NULL) DISPOSE(innconf->pathhost);
     if (innconf->pathalias != NULL) DISPOSE(innconf->pathalias);
@@ -225,6 +244,7 @@ if (innconf->fromhost != NULL) DISPOSE(innconf->fromhost);
     if (innconf->mailcmd != NULL) DISPOSE(innconf->mailcmd);
     if (innconf->bindaddress != NULL) DISPOSE(innconf->bindaddress);
     if (innconf->overviewname != NULL) DISPOSE(innconf->bindaddress);
+    if (innconf->xrefslave != NULL) DISPOSE(innconf->xrefslave);
 
     if (innconf->pathnews != NULL) DISPOSE(innconf->pathnews);
     if (innconf->pathbin != NULL) DISPOSE(innconf->pathbin);
@@ -240,6 +260,7 @@ if (innconf->fromhost != NULL) DISPOSE(innconf->fromhost);
     if (innconf->pathoutgoing != NULL) DISPOSE(innconf->pathoutgoing);
     if (innconf->pathincoming != NULL) DISPOSE(innconf->pathincoming);
     if (innconf->patharchive != NULL) DISPOSE(innconf->patharchive);
+    memset(ConfigBit, '\0', ConfigBitsize);
 }
 
 /*
@@ -248,7 +269,15 @@ if (innconf->fromhost != NULL) DISPOSE(innconf->fromhost);
 */
 int CheckInnConf()
 {
-    if (innconf->pathhost == NULL) {
+    if (GetFQDN() == NULL) {
+	syslog(L_FATAL, "Must set 'domain' in inn.conf");
+	(void)fprintf(stderr, "Must set 'domain' in inn.conf");
+	return(-1);
+    }
+    if (innconf->fromhost == NULL) {
+	innconf->fromhost = COPY(GetFQDN());
+    }
+    if (innconf->pathhost == NULL && ((innconf->pathhost = COPY(GetFQDN())) == NULL)) {
 	syslog(L_FATAL, "Must set 'pathhost' in inn.conf");
 	(void)fprintf(stderr, "Must set 'pathhost' in inn.conf");
 	return(-1);
@@ -315,6 +344,7 @@ int ReadInnConf()
     FILE	        *F;
     char	        *p;
     int			boolval;
+    BOOL		bit;
 
     if (innconf != NULL) {
 	ClearInnConf();
@@ -348,228 +378,383 @@ int ReadInnConf()
 		boolval = TRUE;
 	    if (caseEQ(p, "off") || caseEQ(p, "false") || caseEQ(p, "no"))
 		boolval = FALSE;
-/* BEGIN_AUTO_INSERTED_SECTION from ../include/libinn.h ||READ */
-/*  Special: For read, must not overwrite the ENV_FROMHOST set by DEFAULT */
-if (EQ(ConfigBuff,"fromhost")) {
-if (innconf->fromhost == NULL) { innconf->fromhost = COPY(p); }
-} else
-/* END_AUTO_INSERTED_SECTION from ../include/libinn.h ||READ */
+	    if (EQ(ConfigBuff,"fromhost")) {
+		TEST_CONFIG(CONF_VAR_FROMHOST, bit);
+		if (!bit) {
+		    if (innconf->fromhost != NULL) DISPOSE(innconf->fromhost);
+		    innconf->fromhost = COPY(p);
+		}
+		SET_CONFIG(CONF_VAR_FROMHOST);
+	    } else
 	    if (EQ(ConfigBuff,_CONF_SERVER)) {
-		innconf->server = COPY(p);
+		TEST_CONFIG(CONF_VAR_SERVER, bit);
+		if (!bit) innconf->server = COPY(p);
+		SET_CONFIG(CONF_VAR_SERVER);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHHOST)) {
-		innconf->pathhost = COPY(p);
+		TEST_CONFIG(CONF_VAR_PATHHOST, bit);
+		if (!bit) innconf->pathhost = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHHOST);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHALIAS)) {
-		innconf->pathalias = COPY(p);
+		TEST_CONFIG(CONF_VAR_PATHALIAS, bit);
+		if (!bit) innconf->pathalias = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHALIAS);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ORGANIZATION)) {
-		innconf->organization = COPY(p);
+		TEST_CONFIG(CONF_VAR_ORGANIZATION, bit);
+		if (!bit) innconf->organization = COPY(p);
+		SET_CONFIG(CONF_VAR_ORGANIZATION);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_MODMAILER)) {
-		innconf->moderatormailer = COPY(p);
+		TEST_CONFIG(CONF_VAR_MODERATORMAILER, bit);
+		if (!bit) innconf->moderatormailer = COPY(p);
+		SET_CONFIG(CONF_VAR_MODERATORMAILER);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_DOMAIN)) {
-		innconf->domain = COPY(p);
+		TEST_CONFIG(CONF_VAR_DOMAIN, bit);
+		if (!bit) innconf->domain = COPY(p);
+		SET_CONFIG(CONF_VAR_DOMAIN);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_MIMEVERSION)) {
-		innconf->mimeversion = COPY(p);
+		TEST_CONFIG(CONF_VAR_MIMEVERSION, bit);
+		if (!bit) innconf->mimeversion = COPY(p);
+		SET_CONFIG(CONF_VAR_MIMEVERSION);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_CONTENTTYPE)) {
-		innconf->mimecontenttype = COPY(p);
+		TEST_CONFIG(CONF_VAR_MIMECONTENTTYPE, bit);
+		if (!bit) innconf->mimecontenttype = COPY(p);
+		SET_CONFIG(CONF_VAR_MIMECONTENTTYPE);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ENCODING)) {
-		innconf->mimeencoding = COPY(p);
+		TEST_CONFIG(CONF_VAR_MIMEENCODING, bit);
+		if (!bit) innconf->mimeencoding = COPY(p);
+		SET_CONFIG(CONF_VAR_MIMEENCODING);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_HISCACHESIZE)) {
-		innconf->hiscachesize = atoi(p);
+		TEST_CONFIG(CONF_VAR_HISCACHESIZE, bit);
+		if (!bit) innconf->hiscachesize = atoi(p);
+		SET_CONFIG(CONF_VAR_HISCACHESIZE);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_WIREFORMAT)) {
-		if (boolval != -1) innconf->wireformat = boolval;
+		TEST_CONFIG(CONF_VAR_WIREFORMAT, bit);
+		if (!bit) {
+		if (innconf->storageapi != TRUE && boolval != -1) innconf->wireformat = boolval;
+		}
+		SET_CONFIG(CONF_VAR_WIREFORMAT);
 	    } else
 	    if (EQ (ConfigBuff,_CONF_XREFSLAVE)) {
-		if (boolval != -1) innconf->xrefslave = boolval;
+		TEST_CONFIG(CONF_VAR_XREFSLAVE, bit);
+		if (!bit) innconf->xrefslave = COPY(p);
+		SET_CONFIG(CONF_VAR_XREFSLAVE);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_COMPLAINTS)) {
-		innconf->complaints = COPY(p);
+		TEST_CONFIG(CONF_VAR_COMPLAINTS, bit);
+		if (!bit) innconf->complaints = COPY(p);
+		SET_CONFIG(CONF_VAR_COMPLAINTS);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_NNRP_SPOOLFIRST)) {
-		if (boolval != -1) innconf->spoolfirst = boolval;
+		TEST_CONFIG(CONF_VAR_SPOOLFIRST, bit);
+		if (!bit && boolval != -1) innconf->spoolfirst = boolval;
+		SET_CONFIG(CONF_VAR_SPOOLFIRST);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_WRITELINKS)) {
-		if (boolval != -1) innconf->writelinks = boolval;
+		TEST_CONFIG(CONF_VAR_WRITELINKS, bit);
+		if (!bit && boolval != -1) innconf->writelinks = boolval;
+		SET_CONFIG(CONF_VAR_WRITELINKS);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_TIMER)) {
-		innconf->timer = atoi(p);
+		TEST_CONFIG(CONF_VAR_TIMER, bit);
+		if (!bit) innconf->timer = atoi(p);
+		SET_CONFIG(CONF_VAR_TIMER);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_STATUS)) {
-		innconf->status = atoi(p);
+		TEST_CONFIG(CONF_VAR_STATUS, bit);
+		if (!bit) innconf->status = atoi(p);
+		SET_CONFIG(CONF_VAR_STATUS);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_STORAGEAPI)) {
+		TEST_CONFIG(CONF_VAR_STORAGEAPI, bit);
+		if (!bit) {
 		if (boolval != -1) innconf->storageapi = boolval;
 		if (innconf->storageapi == TRUE) innconf->wireformat = TRUE;
+		}
+		SET_CONFIG(CONF_VAR_STORAGEAPI);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ARTMMAP)) {
-		if (boolval != -1) innconf->articlemmap = boolval;
+		TEST_CONFIG(CONF_VAR_ARTICLEMMAP, bit);
+		if (!bit && boolval != -1) innconf->articlemmap = boolval;
+		SET_CONFIG(CONF_VAR_ARTICLEMMAP);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_OVERMMAP)) {
-		if (boolval != -1) innconf->overviewmmap = boolval;
+		TEST_CONFIG(CONF_VAR_OVERVIEWMMAP, bit);
+		if (!bit && boolval != -1) innconf->overviewmmap = boolval;
+		SET_CONFIG(CONF_VAR_OVERVIEWMMAP);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_MTA)) {
-		innconf->mta = COPY(p);
+		TEST_CONFIG(CONF_VAR_MTA, bit);
+		if (!bit) innconf->mta = COPY(p);
+		SET_CONFIG(CONF_VAR_MTA);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_MAILCMD)) {
-		innconf->mailcmd = COPY(p);
+		TEST_CONFIG(CONF_VAR_MAILCMD, bit);
+		if (!bit) innconf->mailcmd = COPY(p);
+		SET_CONFIG(CONF_VAR_MAILCMD);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_CHECK_INC_TEXT)) {
-		if (boolval != -1) innconf->checkincludedtext = boolval;
+		TEST_CONFIG(CONF_VAR_CHECKINCLUDEDTEXT, bit);
+		if (!bit && boolval != -1) innconf->checkincludedtext = boolval;
+		SET_CONFIG(CONF_VAR_CHECKINCLUDEDTEXT);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_MAX_FORKS)) {
-		innconf->maxforks = atoi(p);
+		TEST_CONFIG(CONF_VAR_MAXFORKS, bit);
+		if (!bit) innconf->maxforks = atoi(p);
+		SET_CONFIG(CONF_VAR_MAXFORKS);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_MAX_ART_SIZE)) {
-		innconf->maxartsize = atol(p);
+		TEST_CONFIG(CONF_VAR_MAXARTSIZE, bit);
+		if (!bit) innconf->maxartsize = atol(p);
+		SET_CONFIG(CONF_VAR_MAXARTSIZE);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_NICE_KIDS)) {
-		innconf->nicekids = atoi(p);
+		TEST_CONFIG(CONF_VAR_NICEKIDS, bit);
+		if (!bit) innconf->nicekids = atoi(p);
+		SET_CONFIG(CONF_VAR_NICEKIDS);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_VERIFY_CANCELS)) {
-		if (boolval != -1) innconf->verifycancels = boolval;
+		TEST_CONFIG(CONF_VAR_VERIFYCANCELS, bit);
+		if (!bit && boolval != -1) innconf->verifycancels = boolval;
+		SET_CONFIG(CONF_VAR_VERIFYCANCELS);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_LOG_CANCEL_COMM)) {
-		if (boolval != -1) innconf->logcancelcomm = boolval;
+		TEST_CONFIG(CONF_VAR_LOGCANCELCOMM, bit);
+		if (!bit && boolval != -1) innconf->logcancelcomm = boolval;
+		SET_CONFIG(CONF_VAR_LOGCANCELCOMM);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_WANT_TRASH)) {
-		if (boolval != -1) innconf->wanttrash = boolval;
+		TEST_CONFIG(CONF_VAR_WANTTRASH, bit);
+		if (!bit && boolval != -1) innconf->wanttrash = boolval;
+		SET_CONFIG(CONF_VAR_WANTTRASH);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_REMEMBER_TRASH)) {
-		if (boolval != -1) innconf->remembertrash = boolval;
+		TEST_CONFIG(CONF_VAR_REMEMBERTRASH, bit);
+		if (!bit && boolval != -1) innconf->remembertrash = boolval;
+		SET_CONFIG(CONF_VAR_REMEMBERTRASH);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_LINECOUNT_FUZZ)) {
-		innconf->linecountfuzz = atoi(p);
+		TEST_CONFIG(CONF_VAR_LINECOUNTFUZZ, bit);
+		if (!bit) innconf->linecountfuzz = atoi(p);
+		SET_CONFIG(CONF_VAR_LINECOUNTFUZZ);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PEER_TIMEOUT)) {
-		innconf->peertimeout = atoi(p);
+		TEST_CONFIG(CONF_VAR_PEERTIMEOUT, bit);
+		if (!bit) innconf->peertimeout = atoi(p);
+		SET_CONFIG(CONF_VAR_PEERTIMEOUT);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_CLIENT_TIMEOUT)) {
-		innconf->clienttimeout = atoi(p);
+		TEST_CONFIG(CONF_VAR_CLIENTTIMEOUT, bit);
+		if (!bit) innconf->clienttimeout = atoi(p);
+		SET_CONFIG(CONF_VAR_CLIENTTIMEOUT);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ALLOW_READERS)) {
-		if (boolval != -1) innconf->allowreaders = boolval;
+		TEST_CONFIG(CONF_VAR_ALLOWREADERS, bit);
+		if (!bit && boolval != -1) innconf->allowreaders = boolval;
+		SET_CONFIG(CONF_VAR_ALLOWREADERS);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ALLOW_NEWNEWS)) {
-		if (boolval != -1) innconf->allownewnews = boolval;
+		TEST_CONFIG(CONF_VAR_ALLOWNEWNEWS, bit);
+		if (!bit && boolval != -1) innconf->allownewnews = boolval;
+		SET_CONFIG(CONF_VAR_ALLOWNEWNEWS);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_LOCAL_MAX_ARTSIZE)) {
-		innconf->localmaxartsize = atoi(p);
+		TEST_CONFIG(CONF_VAR_LOCALMAXARTSIZE, bit);
+		if (!bit) innconf->localmaxartsize = atoi(p);
+		SET_CONFIG(CONF_VAR_LOCALMAXARTSIZE);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_LOG_ARTSIZE)) {
-		if (boolval != -1) innconf->logartsize = boolval;
+		TEST_CONFIG(CONF_VAR_LOGARTSIZE, bit);
+		if (!bit && boolval != -1) innconf->logartsize = boolval;
+		SET_CONFIG(CONF_VAR_LOGARTSIZE);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_LOG_IPADDR)) {
-		if (boolval != -1) innconf->logipaddr = boolval;
+		TEST_CONFIG(CONF_VAR_LOGIPADDR, bit);
+		if (!bit && boolval != -1) innconf->logipaddr = boolval;
+		SET_CONFIG(CONF_VAR_LOGIPADDR);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_CHAN_INACT_TIME)) {
-		innconf->chaninacttime = atoi(p);
+		TEST_CONFIG(CONF_VAR_CHANINACTTIME, bit);
+		if (!bit) innconf->chaninacttime = atoi(p);
+		SET_CONFIG(CONF_VAR_CHANINACTTIME);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_MAX_CONNECTIONS)) {
-		innconf->maxconnections = atoi(p);
+		TEST_CONFIG(CONF_VAR_MAXCONNECTIONS, bit);
+		if (!bit) innconf->maxconnections = atoi(p);
+		SET_CONFIG(CONF_VAR_MAXCONNECTIONS);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_CHAN_RETRY_TIME)) {
-		innconf->chanretrytime = atoi(p);
+		TEST_CONFIG(CONF_VAR_CHANRETRYTIME, bit);
+		if (!bit) innconf->chanretrytime = atoi(p);
+		SET_CONFIG(CONF_VAR_CHANRETRYTIME);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ART_CUTOFF)) {
-		innconf->artcutoff = atoi(p) * 24 * 60 * 60;
+		TEST_CONFIG(CONF_VAR_ARTCUTOFF, bit);
+		if (!bit) innconf->artcutoff = atoi(p) * 24 * 60 * 60;
+		SET_CONFIG(CONF_VAR_ARTCUTOFF);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PAUSE_RETRY_TIME)) {
-		innconf->pauseretrytime = atoi(p);
+		TEST_CONFIG(CONF_VAR_PAUSERETRYTIME, bit);
+		if (!bit) innconf->pauseretrytime = atoi(p);
+		SET_CONFIG(CONF_VAR_PAUSERETRYTIME);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_NNTPLINK_LOG)) {
-		if (boolval != -1) innconf->nntplinklog = boolval;
+		TEST_CONFIG(CONF_VAR_NNTPLINKLOG, bit);
+		if (!bit && boolval != -1) innconf->nntplinklog = boolval;
+		SET_CONFIG(CONF_VAR_NNTPLINKLOG);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_NNTP_ACT_SYNC)) {
-		innconf->nntpactsync = atoi(p);
+		TEST_CONFIG(CONF_VAR_NNTPACTSYNC, bit);
+		if (!bit) innconf->nntpactsync = atoi(p);
+		SET_CONFIG(CONF_VAR_NNTPACTSYNC);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_BAD_IO_COUNT)) {
-		innconf->badiocount = atoi(p);
+		TEST_CONFIG(CONF_VAR_BADIOCOUNT, bit);
+		if (!bit) innconf->badiocount = atoi(p);
+		SET_CONFIG(CONF_VAR_BADIOCOUNT);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_BLOCK_BACKOFF)) {
-		innconf->blockbackoff = atoi(p);
+		TEST_CONFIG(CONF_VAR_BLOCKBACKOFF, bit);
+		if (!bit) innconf->blockbackoff = atoi(p);
+		SET_CONFIG(CONF_VAR_BLOCKBACKOFF);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ICD_SYNC_COUNT)) {
-		innconf->icdsynccount = atoi(p);
+		TEST_CONFIG(CONF_VAR_ICDSYNCCOUNT, bit);
+		if (!bit) innconf->icdsynccount = atoi(p);
+		SET_CONFIG(CONF_VAR_ICDSYNCCOUNT);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_INNBINDADDR)) {
+		TEST_CONFIG(CONF_VAR_BINDADDRESS, bit);
+		if (!bit) {
 		if (EQ(p,"all") || EQ(p,"any"))
 		    innconf->bindaddress =  NULL;
 		else
-		    innconf->bindaddress =  COPY(p);
+		    innconf->bindaddress = COPY(p);
+		}
+		SET_CONFIG(CONF_VAR_BINDADDRESS);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_INNPORT)) {
-		innconf->port = atoi(p);
+		TEST_CONFIG(CONF_VAR_PORT, bit);
+		if (!bit) innconf->port = atoi(p);
+		SET_CONFIG(CONF_VAR_PORT);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_READERTRACK)) {
-		if (boolval != -1) innconf->readertrack = boolval;
+		TEST_CONFIG(CONF_VAR_READERTRACK, bit);
+		if (!bit && boolval != -1) innconf->readertrack = boolval;
+		SET_CONFIG(CONF_VAR_READERTRACK);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_STRIPPOSTCC)) {
-		if (boolval != -1) innconf->strippostcc = boolval;
+		TEST_CONFIG(CONF_VAR_STRIPPOSTCC, bit);
+		if (!bit && boolval != -1) innconf->strippostcc = boolval;
+		SET_CONFIG(CONF_VAR_STRIPPOSTCC);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_OVERVIEWNAME)) {
-		    innconf->overviewname =  COPY(p);
+		TEST_CONFIG(CONF_VAR_OVERVIEWNAME, bit);
+		if (!bit) innconf->overviewname = COPY(p);
+		SET_CONFIG(CONF_VAR_OVERVIEWNAME);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_KEYWORDS)) {
-		if (boolval != -1) innconf->keywords = boolval;
+		TEST_CONFIG(CONF_VAR_KEYWORDS, bit);
+		if (!bit && boolval != -1) innconf->keywords = boolval;
+		SET_CONFIG(CONF_VAR_KEYWORDS);
 	    } else
             if (EQ(ConfigBuff,_CONF_KEYLIMIT)) {
-		innconf->keylimit = atoi(p);
+		TEST_CONFIG(CONF_VAR_KEYLIMIT, bit);
+		if (!bit) innconf->keylimit = atoi(p);
+		SET_CONFIG(CONF_VAR_KEYLIMIT);
 	    } else 
 	    if (EQ(ConfigBuff,_CONF_KEYARTLIMIT)) {
-		innconf->keyartlimit = atoi(p);
+		TEST_CONFIG(CONF_VAR_KEYARTLIMIT, bit);
+		if (!bit) innconf->keyartlimit = atoi(p);
+		SET_CONFIG(CONF_VAR_KEYARTLIMIT);
 	    } else  
 	    if (EQ(ConfigBuff,_CONF_KEY_MAXWORDS)) {
-		innconf->keymaxwords = atoi(p);
+		TEST_CONFIG(CONF_VAR_KEYMAXWORDS, bit);
+		if (!bit) innconf->keymaxwords = atoi(p);
+		SET_CONFIG(CONF_VAR_KEYMAXWORDS);
 	    } else
  	    if (EQ(ConfigBuff,_CONF_PATHNEWS)) {
-		    innconf->pathnews =  COPY(p);
+		TEST_CONFIG(CONF_VAR_PATHNEWS, bit);
+		if (!bit) innconf->pathnews = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHNEWS);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHBIN)) {
-		    innconf->pathbin =  COPY(p);
+		TEST_CONFIG(CONF_VAR_PATHBIN, bit);
+		if (!bit) innconf->pathbin = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHBIN);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHFILTER)) {
-		    innconf->pathfilter =  COPY(p);
+		TEST_CONFIG(CONF_VAR_PATHFILTER, bit);
+		if (!bit) innconf->pathfilter = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHFILTER);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHCONTROL)) {
-		    innconf->pathcontrol =  COPY(p);
+		TEST_CONFIG(CONF_VAR_PATHCONTROL, bit);
+		if (!bit) innconf->pathcontrol = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHCONTROL);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHDB)) {
-		    innconf->pathdb =  COPY(p);
+		TEST_CONFIG(CONF_VAR_PATHDB, bit);
+		if (!bit) innconf->pathdb = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHDB);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHETC)) {
-		    innconf->pathetc =  COPY(p);
+		TEST_CONFIG(CONF_VAR_PATHETC, bit);
+		if (!bit) innconf->pathetc = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHETC);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHRUN)) {
-		    innconf->pathrun =  COPY(p);
+		TEST_CONFIG(CONF_VAR_PATHRUN, bit);
+		if (!bit) innconf->pathrun = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHRUN);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHLOG)) {
-		    innconf->pathlog =  COPY(p);
+		TEST_CONFIG(CONF_VAR_PATHLOG, bit);
+		if (!bit) innconf->pathlog = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHLOG);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHSPOOL)) {
-		    innconf->pathspool =  COPY(p);
+		TEST_CONFIG(CONF_VAR_PATHSPOOL, bit);
+		if (!bit) innconf->pathspool = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHSPOOL);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHARTICLES)) {
-		    innconf->patharticles =  COPY(p);
+		TEST_CONFIG(CONF_VAR_PATHARTICLES, bit);
+		if (!bit) innconf->patharticles = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHARTICLES);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHOVERVIEW)) {
-		    innconf->pathoverview =  COPY(p);
+		TEST_CONFIG(CONF_VAR_PATHOVERVIEW, bit);
+		if (!bit) innconf->pathoverview = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHOVERVIEW);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHOUTGOING)) {
-		    innconf->pathoutgoing =  COPY(p);
+		TEST_CONFIG(CONF_VAR_PATHOUTGOING, bit);
+		if (!bit) innconf->pathoutgoing = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHOUTGOING);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHINCOMING)) {
-		    innconf->pathincoming =  COPY(p);
+		TEST_CONFIG(CONF_VAR_PATHINCOMING, bit);
+		if (!bit) innconf->pathincoming = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHINCOMING);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHARCHIVE)) {
-		    innconf->patharchive =  COPY(p);
+		TEST_CONFIG(CONF_VAR_PATHARCHIVE, bit);
+		if (!bit) innconf->patharchive = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHARCHIVE);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_LOGSITENAME)) {
+		TEST_CONFIG(CONF_VAR_LOGSITENAME, bit);
+		if (!bit && boolval != -1) innconf->logsitename = boolval;
+		SET_CONFIG(CONF_VAR_LOGSITENAME);
 	    }
 	}
 	(void)fclose(F);
