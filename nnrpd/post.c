@@ -691,6 +691,13 @@ ValidNewsgroups(hdr, modgroup)
     do {
 	if (innconf->mergetogroups && p[0] == 't' && p[1] == 'o' && p[2] == '.')
 	    p = "to";
+        if (PERMspecified) {
+	    grplist[0] = p;
+	    grplist[1] = NULL;
+	    if (!PERMmatch(PERMlist, grplist)) {
+		sprintf(Error, "You are not allowed to post to %s\r\n", p);
+	    }
+        }
 	if ((gp = GRPfind(p)) == NULL)
 	    continue;
 	FoundOne = TRUE;
@@ -718,13 +725,6 @@ ValidNewsgroups(hdr, modgroup)
 		    p, GPALIAS(gp));
 	    break;
 	}
-        if (PERMspecified) {
-	    grplist[0] = p;
-	    grplist[1] = NULL;
-	    if (!PERMmatch(PERMlist, grplist)) {
-		sprintf(Error,"%s: %s\r\n", NNTP_NOSUCHGROUP,p);
-	    }
-        }
     } while ((p = strtok((char *)NULL, NGSEPS)) != NULL);
     DISPOSE(groups);
 
