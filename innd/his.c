@@ -363,7 +363,7 @@ BOOL HISremember(const HASH hash)
     TMRstart(TMR_HISWRITE);
     
     if (HISwritefp == NULL)
-        return NULL;
+        return FALSE;
     
     offset = ftell(HISwritefp);
     /* Convert the hash to hex */
