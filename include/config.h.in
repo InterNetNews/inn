@@ -226,9 +226,6 @@
 /* Define if <sys/un.h> defines the SUN_LEN macro.  */
 #undef HAVE_SUN_LEN
 
-/* Define if your `struct tm' has a `tm_gmtoff' member.  */
-#undef HAVE_TM_GMTOFF
-
 /* Define if you have unix domain sockets.  */
 #undef HAVE_UNIX_DOMAIN_SOCKETS
 
@@ -497,6 +494,19 @@
 
 /* Define if you have the shadow library (-lshadow).  */
 #undef HAVE_LIBSHADOW
+
+/* Define if your struct tm has a tm_gmtoff member. */
+#undef HAVE_TM_GMTOFF
+
+/* Define if your struct tm has a tm_zone member. */
+#undef HAVE_TM_ZONE
+
+/* Define if timezone is an external variable in <time.h>. */
+#undef HAVE_VAR_TIMEZONE
+
+/* Define if tzname is an external variable in <time.h>. */
+#undef HAVE_VAR_TZNAME
+
 
 
 /*
