@@ -325,8 +325,7 @@ ClearInnConf(void)
 int
 CheckInnConf(void)
 {
-    static char *tmpdir = NULL;
-    static unsigned int dirlen = 0;
+    char *tmpdir;
 
     if (GetFQDN(innconf->domain) == NULL) {
 	syslog(L_FATAL, "Hostname does not resolve or 'domain' in inn.conf is missing");
@@ -400,15 +399,14 @@ CheckInnConf(void)
 	innconf->mailcmd = COPY(cpcatpath(innconf->pathbin, "innmail"));
     }
     /* Set the TMPDIR variable unconditionally and globally */
-    if (8 + strlen(innconf->pathtmp) > dirlen)
-	dirlen = 8 + strlen(innconf->pathtmp);
-    if (tmpdir == NULL)
-	tmpdir = NEW(char, dirlen);
-    else
-	RENEW(tmpdir, char, dirlen);
-    sprintf(tmpdir, "TMPDIR=%s", innconf->pathtmp);
-    putenv(tmpdir);
-    /* tmpdir should not be freed for some OS */
+    tmpdir = getenv("TMPDIR");
+    if (!tmpdir || strcmp(tmpdir, innconf->pathtmp) != 0) {
+	if (setenv("TMPDIR", innconf->pathtmp, true) != 0) {
+	    syslog(L_FATAL, "can't set TMPDIR in environment");
+	    (void)fprintf(stderr, "can't set TMPDIR in environment\n");
+	    return(-1);
+	}
+    }
     if (innconf->enableoverview && innconf->ovmethod == NULL) {
 	syslog(L_FATAL, "'ovmethod' must be defined in inn.conf if enableoverview is true");
 	(void)fprintf(stderr, "'ovmethod' must be defined in inn.conf if enableoverview is true\n");
