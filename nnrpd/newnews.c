@@ -185,7 +185,7 @@ STATIC BOOL HaveSeen(char *group, char **groups, char **xrefs) {
 }
 
 /*
-**  NEWNEWS newsgroups date time ["GMT"] [<distributions>]
+**  NEWNEWS newsgroups date time ["GMT"|"UTC"] [<distributions>]
 **  Return the Message-ID of any articles after the specified date,
 **  and within the specified distributions.
 */
@@ -226,7 +226,7 @@ FUNCTYPE CMDnewnews(int ac, char *av[]) {
     nice(innconf->nicenewnews);
 
   (void)sprintf(line, "%s %s %s %s %s", av[1], av[2], av[3],
-    (ac >= 5 && *av[4] == 'G') ? "GMT" : "local",
+    (ac >= 5 && (*av[4] == 'G' || *av[4] == 'U')) ? "GMT" : "local",
     (ac >= 5 && *av[ac - 1] == '<') ? av[ac - 1] : "none");
   syslog(L_NOTICE, "%s newnews %s", ClientHost, line);
 
@@ -252,7 +252,7 @@ FUNCTYPE CMDnewnews(int ac, char *av[]) {
   }
   ac -= 4;
   av += 4;
-  if (ac > 0 && caseEQ(*av, "GMT")) {
+  if (ac > 0 && (caseEQ(*av, "GMT") || caseEQ(*av, "UTC"))) {
     ac--;
     av++;
   } else

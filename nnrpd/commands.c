@@ -575,7 +575,7 @@ STATIC int GroupCompare(const void *a1, const void* b1) {
 FUNCTYPE CMDnewgroups(int ac, char *av[])
 {
     static char		USAGE[] =
-	"NEWGROUPS yymmdd hhmmss [\"GMT\"] [<distributions>]";
+	"NEWGROUPS [yy]yymmdd hhmmss [\"GMT\"|\"UTC\"] [<distributions>]";
     static char		**distlist;
     char	        *p;
     char	        *q;
@@ -601,7 +601,7 @@ FUNCTYPE CMDnewgroups(int ac, char *av[])
     }
     ac -= 3;
     av += 3;
-    if (ac > 0 && caseEQ(*av, "GMT")) {
+    if (ac > 0 && (caseEQ(*av, "GMT")|| caseEQ(*av, "UTC"))) {
 	av++;
 	ac--;
     }
@@ -612,7 +612,7 @@ FUNCTYPE CMDnewgroups(int ac, char *av[])
 	All = TRUE;
     else {
 	if (!ParseDistlist(&distlist, *av)) {
-	    Reply("%d Bad distribution list %s:\r\n", NNTP_SYNTAX_VAL, *av);
+	    Reply("%d Bad distribution list: %s\r\n", NNTP_SYNTAX_VAL, *av);
 	    return;
 	}
 	All = FALSE;
@@ -656,7 +656,7 @@ FUNCTYPE CMDnewgroups(int ac, char *av[])
 	    grouplist = NEW(GROUPDATA, 1000);
 	    listsize = 1000;
 	}
-	if (listsize < numgroups) {
+	if (listsize <= numgroups) {
 	    listsize += 1000;
 	    grouplist = RENEW(grouplist, GROUPDATA, listsize);
 	}

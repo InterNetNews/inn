@@ -788,6 +788,11 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 	Printf(".\r\n");
 	return;
     }
+    
+    if (GRPcount == 0) {
+	Reply("%s\r\n", ARTnotingroup);
+	return;
+    }
 
     /* Range specified. */
     if (!CMDgetrange(ac - 1, av + 1, &range, &DidReply)) {
@@ -835,6 +840,8 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 	if (len == 0 || PERMaccessconf->nnrpdcheckart && !ARTinstorebytoken(token))
 	    continue;
 	p = OVERGetHeader(data, Overview);
+	if (!p)
+	    continue;
 	sprintf(buff, "%lu ", artnum);
 	SendIOb(buff, strlen(buff));
 	SendIOb(p, strlen(p));
