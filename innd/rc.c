@@ -12,8 +12,6 @@
 #include <errno.h>
 #include <netdb.h>
 
-#define COPYADDR(dest, src) memcpy((dest), (src), sizeof(struct in_addr))
-
 #define TEST_CONFIG(a, b) \
     { \
 	b = ((peer_params.Keysetbit & (1 << a)) != 0) ? TRUE : FALSE; \
@@ -33,9 +31,9 @@ typedef struct _REMOTEHOST {
     struct in_addr Address;     /* List of ip adresses */
     char	*Password;      /* Optional password */
     char 	*Identd;		/* Optional identd */
-    BOOL	Streaming;      /* Streaming allowed ? */
-    BOOL	Skip;	        /* Skip this peer ? */
-    BOOL	NoResendId;	/* Don't send RESEND responses ? */
+    bool	Streaming;      /* Streaming allowed ? */
+    bool	Skip;	        /* Skip this peer ? */
+    bool	NoResendId;	/* Don't send RESEND responses ? */
     int		MaxCnx;		/* Max connections (per peer) */
     char	**Patterns;	/* List of groups allowed */
     char	*Pattern;       /* List of groups allowed (string) */
@@ -56,14 +54,14 @@ typedef struct _REMOTETABLE {
     time_t         Expires;
 } REMOTETABLE;
 
-STATIC char		*RCslaveflag;
-STATIC char		*RCnnrpd = NULL;
-STATIC char		*RCnntpd = NULL;
-STATIC CHANNEL		*RCchan;
-STATIC REMOTEHOST_DATA	*RCpeerlistfile;
-STATIC REMOTEHOST	*RCpeerlist;
-STATIC int		RCnpeerlist;
-STATIC char		RCbuff[BIG_BUFFER];
+static char		*RCslaveflag;
+static char		*RCnnrpd = NULL;
+static char		*RCnntpd = NULL;
+static CHANNEL		*RCchan;
+static REMOTEHOST_DATA	*RCpeerlistfile;
+static REMOTEHOST	*RCpeerlist;
+static int		RCnpeerlist;
+static char		RCbuff[BIG_BUFFER];
 
 #define PEER	        "peer"
 #define GROUP	        "group"
@@ -102,16 +100,16 @@ typedef enum {T_STRING, T_BOOLEAN, T_INTEGER} _Types;
 /*
 ** Stuff needed for limiting incoming connects.
 */
-STATIC char		RCterm[] = "\r\n";
-STATIC REMOTETABLE	remotetable[REMOTETABLESIZE];
-STATIC int		remotecount;
-STATIC int		remotefirst;
+static char		RCterm[] = "\r\n";
+static REMOTETABLE	remotetable[REMOTETABLESIZE];
+static int		remotecount;
+static int		remotefirst;
 
 /*
  * Check that the client has the right identd. Return TRUE if is the
  * case, false, if not.
  */
-BOOL
+bool
 GoodIdent(int fd, char *identd)
 {
 #define PORT_IDENTD 113
@@ -240,7 +238,7 @@ RCfix_options(int fd, struct sockaddr_in *remote)
 #if IP_OPTIONS
     unsigned char optbuf[BUFSIZ / 3], *cp;
     char    lbuf[BUFSIZ], *lp;
-    ARGTYPE optsize = sizeof(optbuf);
+    socklen_t optsize = sizeof(optbuf);
     int     ipproto;
     struct protoent *ip;
 
@@ -270,7 +268,7 @@ RCfix_options(int fd, struct sockaddr_in *remote)
 /*
 **  See if the site properly entered the password.
 */
-BOOL
+bool
 RCauthorized(register CHANNEL *cp, char *pass)
 {
     register REMOTEHOST	*rp;
@@ -296,7 +294,7 @@ RCauthorized(register CHANNEL *cp, char *pass)
 /*
 **  See if a host is limited or not.
 */
-BOOL
+bool
 RCnolimit(register CHANNEL *cp)
 {
     register REMOTEHOST	*rp;
@@ -330,7 +328,7 @@ RClimit(register CHANNEL *cp)
 /*
 **  Called when input is ready to read.  Shouldn't happen.
 */
-STATIC FUNCTYPE
+static void
 RCrejectreader(CHANNEL *cp)
 {
     syslog(L_ERROR, "%s internal RCrejectreader (%s)", LogName,
@@ -341,7 +339,7 @@ RCrejectreader(CHANNEL *cp)
 /*
 **  Write-done function for rejects.
 */
-STATIC FUNCTYPE
+static void
 RCrejectwritedone(register CHANNEL *cp)
 {
     switch (cp->State) {
@@ -362,9 +360,9 @@ RCrejectwritedone(register CHANNEL *cp)
 void
 RChandoff(int fd, HANDOFF h)
 {
-    STRING	argv[6];
-    char	buff[SMBUF];
-    int		i;
+    const char *argv[6];
+    char buff[SMBUF];
+    int i;
 
     if (RCnnrpd == NULL)
 	RCnnrpd = COPY(cpcatpath(innconf->pathbin, "nnrpd"));
@@ -377,7 +375,7 @@ RChandoff(int fd, HANDOFF h)
         syslog(L_ERROR, "fd %d cant setsockopt(KEEPALIVE) %m", fd);
 #endif /* defined(SOL_SOCKET) && defined(SO_KEEPALIVE) */
 
-    if (SetNonBlocking(fd, FALSE) < 0)
+    if (nonblocking(fd, false) < 0)
 	syslog(L_ERROR, "%s cant nonblock %d in RChandoff %m", LogName, fd);
     switch (h) {
     default:
@@ -408,14 +406,14 @@ RChandoff(int fd, HANDOFF h)
 **  Read function.  Accept the connection and either create an NNTP channel
 **  or spawn an nnrpd to handle it.
 */
-STATIC FUNCTYPE
+static void
 RCreader(CHANNEL *cp)
 {
     int			fd;
     struct sockaddr_in	remote;
-    ARGTYPE		size;
-    register int	i;
-    register REMOTEHOST	*rp;
+    socklen_t		size;
+    int                 i;
+    REMOTEHOST          *rp;
     CHANNEL		*new;
     char		*name;
     long		reject_val = 0;
@@ -616,7 +614,7 @@ RCreader(CHANNEL *cp)
 /*
 **  Write-done function.  Shouldn't happen.
 */
-STATIC FUNCTYPE
+static void
 RCwritedone()
 {
     syslog(L_ERROR, "%s internal RCwritedone", LogName);
@@ -634,13 +632,13 @@ RCwritedone()
 /*
  * Read something (a word or a double quoted string) from a file.
  */
-char *RCreaddata (int *num, FILE *F, BOOL *toolong)
+char *RCreaddata (int *num, FILE *F, bool *toolong)
 {
   register char *p;
   register char *s;
   register char *t;
   char          *word;
-  register BOOL flag;
+  register bool flag;
 
   *toolong = FALSE;
   if (*RCbuff == '\0') {
@@ -731,7 +729,7 @@ void RCadddata(REMOTEHOST_DATA **d, int *count, int Key, int Type, char* Value)
 **  first element of the address list in modern systems, while it's a field
 **  name in old ones.
 */
-STATIC void
+static void
 RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count, 
 	    char *filename)
 {
@@ -1696,7 +1694,7 @@ RCsetup(i)
 		(caddr_t)&on, sizeof on) < 0)
 	    syslog(L_ERROR, "%s cant setsockopt RCreader %m", LogName);
 #endif	/* defined(SO_REUSEADDR) */
-	(void)memset((POINTER)&server, 0, sizeof server);
+	memset(&server, 0, sizeof server);
 	server.sin_port = htons(innconf->port);
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = htonl(INADDR_ANY);
