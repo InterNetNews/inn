@@ -22,14 +22,15 @@ install:	$D$(NNRPD) $D$(ACTIVED)
 
 ##  Low-level install actions.
 $D$(NNRPD):	nnrpd
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
 
 ##  Low-level install actions.
 $D$(ACTIVED):	actived
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
 
 clobber clean:
 	rm -f *.o $(ALL)
+	rm -rf .libs
 	rm -f nnrpd nnrpdp actived profiled
 	rm -f all install 
 
@@ -38,16 +39,16 @@ tags ctags:	$(SOURCES)
 
 nnrpd:		$(P) nnrpd.o $(OBJECTS) $(LIBNEWS)
 	@rm -f $@
-	$(CC) $(LDFLAGS) -o $@ $@.o $(OBJECTS) $(LIBNEWS) $(LIBS) $(PERLLIB)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $@.o $(OBJECTS) $(LIBNEWS) $(LIBS) $(PERLLIB)
 
 actived:	$(P) actived.o activedstats.o $(OBJECTS) $(LIBNEWS)
 	@rm -f $@
-	$(CC) $(LDFLAGS) -o $@ $@.o activedstats.o $(OBJECTS) $(LIBNEWS) $(LIBS) $(PERLLIB)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $@.o activedstats.o $(OBJECTS) $(LIBNEWS) $(LIBS) $(PERLLIB)
 
 ../include/dbz.h:
 	(cd ../lib ; $(MAKE) ../include/dbz.h)
 $(LIBNEWS):
-	(cd ../lib ; $(MAKE) install )
+	(cd ../lib ; $(MAKE) )
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
 profiled:	nnrpdp
