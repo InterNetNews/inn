@@ -509,6 +509,12 @@ the size of \fBbacklog-limit\fP. If both \fBbacklog-factor\fP and
 \fBbacklog-limit-highwater\fP are defined, then the value of
 \fBbacklog-factor\fP is used.
 .TP
+.B backlog-feed-first
+This key requires a boolean value. By default it is set to false. When set
+to true, the backlog is fed before new files. This is intended to enforce
+in-order delivery, so setting this to true when initial-connections or
+max-connections is more than 1 is inconsistent.
+.TP
 .B username
 This key requires a string value.  If the value is defined, then innfeed
 tries to authenticate by ``AUTHINFO USER'' and this value used for user name.

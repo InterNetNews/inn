@@ -86,6 +86,15 @@ starts to rely on it.
 
 =item *
 
+innfeed supports a new peer parameter, backlog-feed-first, that if set to
+true feeds any backlog to a peer before new articles.  When used in
+combination with setting max-connections to 1, this can be used to enforce
+in-order delivery of messages to a peer that is doing Xref slaving,
+avoiding cases where a higher-numbered message is received before a
+lower-numbered message in the same group.
+
+=item *
+
 Several other, more minor protocol issues have been fixed:  connections
 rejected due to the connection rate limiting in innd receive 400 replies
 instead of 504 or 505, and ARTICLE without an argument will always either

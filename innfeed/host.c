@@ -104,6 +104,7 @@ typedef struct host_param_s
   double dynBacklogFilter ;
   double dynBacklogLowWaterMark ;
   double dynBacklogHighWaterMark ;
+  bool backlogFeedFirst ;
   char *username;
   char *password;
 } *HostParams ;
@@ -514,6 +515,7 @@ HostParams newHostParams(HostParams p)
       params->dynBacklogFilter = BACKLOGFILTER ;
       params->dynBacklogLowWaterMark = BACKLOGLWM;
       params->dynBacklogHighWaterMark = BACKLOGHWM;
+      params->backlogFeedFirst=FALSE;
       params->username=NULL;
       params->password=NULL;
     }
@@ -1320,6 +1322,8 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
 	   host->params->backlogFactor) ;
   fprintf (fp,"%s    max-connections : %d\n",indent,
 	   host->maxConnections) ;
+  fprintf (fp,"%s    backlog-feed-first : %s\n",indent,
+           boolToString (host->params->backlogFeedFirst)) ;
 
 
   fprintf (fp,"%s    statistics-id : %d\n",indent,host->statsId) ;
@@ -2327,6 +2331,7 @@ bool hostGimmeArticle (Host host, Connection cxn)
   Article article = NULL ;
   bool gaveSomething = false ;
   size_t amtToGive = cxnQueueSpace (cxn) ; /* may be more than one */
+  int feed = 0 ;
 
   if (amClosing (host))
     {
@@ -2342,9 +2347,26 @@ bool hostGimmeArticle (Host host, Connection cxn)
     {
       bool tookIt ;
       unsigned int queue = host->params->maxChecks - amtToGive ;
-      
-      if ((article = remHead (&host->queued,&host->queuedTail)) != NULL)
-        {
+
+      if (host->params->backlogFeedFirst) {
+       if ((article = getArticle (host->myTape)) != NULL)
+         feed = 2;
+       else if ((article = remHead (&host->queued,&host->queuedTail)) != NULL)
+         feed = 1;
+       else
+         feed = 3;
+      }
+      else {
+       if ((article = remHead (&host->queued,&host->queuedTail)) != NULL)
+         feed = 1;
+       else if ((article = getArticle (host->myTape)) != NULL)
+         feed = 2;
+       else
+         feed = 3;
+      }
+
+      switch (feed) {
+      case 1:
           host->backlog-- ;
           tookIt = cxnQueueArticle (cxn,artTakeRef (article)) ;
 
@@ -2357,9 +2379,10 @@ bool hostGimmeArticle (Host host, Connection cxn)
           amtToGive-- ;
 
           gaveSomething = true ;
-        }
-      else if ((article = getArticle (host->myTape)) != NULL) 
-        {                       /* go to the tapes */
+          break ;
+
+      case 2:
+          /* go to the tapes */
           tookIt = cxnQueueArticle (cxn,artTakeRef (article)) ;
 
           ASSERT (tookIt == true) ;
@@ -2374,16 +2397,19 @@ bool hostGimmeArticle (Host host, Connection cxn)
           amtToGive-- ;
 
           gaveSomething = true ;
-        }
-      else
-        {
+
+          break ;
+
+      case 3:
           /* we had nothing left to give... */
           
           if (host->processed == NULL) /* and if nothing outstanding... */
             listenerHostIsIdle (host->listener,host) ; /* tell our owner */
   
           amtToGive = 0 ;
-        }
+
+          break ;
+      }
     }
 
   return gaveSomething ;
@@ -2666,6 +2692,24 @@ static HostParams hostDetails (scope *s,
                   LIMIT_FUDGE) ;
       addReal (s,"backlog-factor",LIMIT_FUDGE) ;
       rv = 0 ;
+    }
+
+  GETBOOL(s,fp,"backlog-feed-first",NOTREQ,p->backlogFeedFirst, inherit);
+
+  /* Innfeed should emit a warning if backlog-feed-first is set
+     to "true" for any peer that doesn't have max-connections and
+     initial-connections both set to "1" */
+  if ((p->backlogFeedFirst)
+      && ((p->initialConnections <= 1) || (p->absMaxConnections != 1)))
+    {
+      if (p->peerName != NULL)
+       logOrPrint (LOG_WARNING,fp,
+                   "ME config: innfeed will make more than one connection"
+                   " to peer %s, but backlog-feed-first is set", p->peerName);
+      else
+       logOrPrint (LOG_WARNING,fp,
+                   "ME config: innfeed will make more than one connection"
+                   " to peer, but backlog-feed-first is set");
     }
 
   GETINT(s,fp,"backlog-limit-high",0,LONG_MAX,NOTREQNOADD,p->backlogLimitHigh, inherit);
@@ -3100,7 +3144,7 @@ Default peer configuration parameters:
        no-check off: 90.0%    dynamic backlog high: 50%
     no-check filter: 50.0   dynamic backlog filter: 0.7
   backlog low limit: 1024                 port num: 119
- backlog high limit: 1280
+ backlog high limit: 1280       backlog feed first: false
      backlog factor: 1.1
 */
       fprintf(fp,"%sDefault peer configuration parameters:%s\n",
@@ -3132,6 +3176,8 @@ Default peer configuration parameters:
       fprintf(fp," backlog limit high: %-7d         min-queue-cxn: %s\n",
 	    defaultParams->backlogLimitHigh,
 	    defaultParams->minQueueCxn ? "true " : "false");
+      fprintf(fp,"  backlog feed first: %s\n",
+           defaultParams->backlogFeedFirst ? "true " : "false");
       fprintf(fp,"     backlog factor: %1.1f\n\n",
 	    defaultParams->backlogFactor);
 

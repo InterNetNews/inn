@@ -205,38 +205,6 @@ for INN's extensions that specify an extension name (beginning with X).
 
 ------------------------------
 
-  Summary: Xref slaving causes problems with article numbers
- Standard: draft-ietf-nntpext-base-15.txt, section 9.1
-  Version: 2.0 to CURRENT 2002-12-26
-Reference: innd/art.c ARTxrefslave() and innfeed
- Severity: Violates a MUST
-
-The standard says:
-
-    The server MUST ensure that article numbers are issued in order of
-    arrival timestamp; that is, articles arriving later MUST have higher
-    numbers than those that arrive earlier.  The server SHOULD allocate
-    the next sequential unused number to each new article.
-
-This can only be done with Xref slaving if the master server feeds all of
-the articles in strict arrival order, not using multiple streams to feed
-the slave.  Otherwise, articles are very likely to arrive out of order, if
-only by a few seconds.  Furthermore, any backlog must be processed before
-new articles on a feed to a slave server.
-
-innxmit handles this correctly.  innfeed configured to use a single stream
-almost does, but it gives preference to new articles over backlog.
-
-Impact:  If a slave server falls behind, article numbers within the high
-and low water marks may not be present on the server when a reader first
-checks and then show up later, causing the reader to permanently miss
-those articles.
-
-Suggested fix:  Provide an option for innfeed to feed the backlog first
-before new articles.
-
-------------------------------
-
   Summary: Articles without Message-ID headers can't be retrieved
  Standard: draft-ietf-nntpext-base-15.txt, section 9.2.1.1
   Version: 1.0 to CURRENT 2002-12-26
