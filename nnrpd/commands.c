@@ -419,7 +419,12 @@ CMDlist(int ac, char *av[])
 	lp = &INFOactive;
 	if (ac == 3) {
 	    wildarg = av[2];
-	    if (OVgroupstats(wildarg, &lo, &hi, NULL, &flag)) {
+
+            /* Try to do this the quick way for a single group, but
+               currently some overview backends don't support group aliases
+               fully, so if the flag is '=' for an alias, fall through to
+               the slow way. */
+	    if (OVgroupstats(wildarg, &lo, &hi, NULL, &flag) && flag != '=') {
 		Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);
 		Printf("%s %010d %010d %c\r\n.\r\n", wildarg, hi, lo, flag);
 		return;
