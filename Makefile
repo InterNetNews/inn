@@ -81,11 +81,10 @@ install: directories
 	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
 	done
 	@echo ''
-	@echo 'Do not forget to update your cron entries, and also run'
-	@echo 'makedbz if you need to.  If this is a first-time installation'
-	@echo 'a minimal active file has been installed.  You will need to'
-	@echo 'touch history and run "makedbz -i" to initialize the history'
-	@echo 'database.  See INSTALL for more information.'
+	@echo 'If this is a first-time installation, a minimal active file and'
+	@echo 'history database have been installed.  Do not forget to update'
+	@echo 'your cron entries and configure INN.  See INSTALL for more'
+	@echo 'information.'
 	@echo ''
 
 directories:
