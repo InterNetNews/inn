@@ -110,6 +110,8 @@ extern const char *     INNVersion(void);
 **  MISCELLANEOUS UTILITY FUNCTIONS
 */
 extern void *   concat(const char *first, ...);
+int             getfdlimit(void);
+int             setfdlimit(int limit);
 ssize_t         xwrite(int fd, const void *buffer, size_t size);
 ssize_t         xwritev(int fd, const struct iovec iov[], int iovcnt);
 
@@ -310,7 +312,6 @@ int HashCompare(const HASH *h1, const HASH *h2);
 /* Miscellaneous. */
 extern int	dbzneedfilecount(void);
 extern BOOL     MakeDirectory(char *Name, BOOL Recurse);
-extern int	getfdcount(void);
 extern int	wildmat(const char *text, const char *p);
 extern pid_t	waitnb(int *statusp);
 extern int	xread(int fd, char *p, OFFSET_T i);
