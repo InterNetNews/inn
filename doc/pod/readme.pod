@@ -267,7 +267,7 @@ only, unfortunately.
 
 =item suck
 
-URL: <http://www.sucknews.org/>
+URL: <http://home.comcast.net/~bobyetman/index.html>
 
 suck is a separate package for downloading a news feed via a reading
 connection (rather than via a direct NNTP or UUCP feed) and sending
