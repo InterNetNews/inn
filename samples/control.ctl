@@ -1429,7 +1429,7 @@ rmgroup:*@*:pubnet.*:doit
 
 ## RELCOM (Commonwealth of Independent States)
 # The official list of relcom groups is supposed to be available from
-# URL: ftp://ftp.kiae.su/relcom/netinfo/telconfs.txt
+# URL: ftp://kiarchive.relcom.ru/pub/relcom/netinfo/
 # *PGP*   See comment at top of file.
 newgroup:*:relcom.*:drop
 rmgroup:*:relcom.*:drop
@@ -1563,6 +1563,8 @@ newgroup:news@stardivision.de:staroffice.*:verify-staroffice.admin
 rmgroup:news@stardivision.de:staroffice.*:verify-staroffice.admin
 
 ## STGT (Stuttgart, Germany)
+# URL: http://news.uni-stuttgart.de/hierarchie/stgt/stgt-control.txt
+# *PGP*   See comment at start of file.
 newgroup:*:stgt.*:drop
 rmgroup:*:stgt.*:drop
 checkgroups:stgt-control@news.uni-stuttgart.de:stgt.*:verify-stgt-control
