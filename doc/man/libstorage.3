@@ -8,15 +8,15 @@ libstorage \- InterNetNews Storage API library routines
 .B
 #include "storage.h"
 
-.B "BOOL IsToken(const char *text);"
+.B "bool IsToken(const char *text);"
 
 .B "char *TokenToText(const TOKEN token);"
 
 .B "TOKEN TextToToken(const char *text);"
 
-.B "BOOL SMsetup(SMSETUP type, void *value);"
+.B "bool SMsetup(SMSETUP type, void *value);"
 
-.B "BOOL SMinit(void);"
+.B "bool SMinit(void);"
 
 .B "TOKEN SMstore(const ARTHANDLE article);"
 
@@ -26,11 +26,11 @@ libstorage \- InterNetNews Storage API library routines
 
 .B "void SMfreearticle(ARTHANDLE *article);"
 
-.B "BOOL SMcancel(TOKEN token);"
+.B "bool SMcancel(TOKEN token);"
 
-.B "BOOL SMprobe(PROBETYPE type, TOKEN *token, void *value);"
+.B "bool SMprobe(PROBETYPE type, TOKEN *token, void *value);"
 
-.B "BOOL SMflushcacheddata(FLUSHTYPE type);"
+.B "bool SMflushcacheddata(FLUSHTYPE type);"
 
 .B "void SMshutdown(void);"
 
@@ -39,37 +39,37 @@ libstorage \- InterNetNews Storage API library routines
 
 #include "ov.h"
 
-.B "BOOL OVopen(int mode);"
+.B "bool OVopen(int mode);"
 
-.B "BOOL OVctl(OVCTLTYPE type, void *val);"
+.B "bool OVctl(OVCTLTYPE type, void *val);"
 
-.B "BOOL OVgroupstats(char *group, int *lo, int *hi, int *count, int *flag);"
+.B "bool OVgroupstats(char *group, int *lo, int *hi, int *count, int *flag);"
 
-.B "BOOL OVgroupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag);"
+.B "bool OVgroupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag);"
 
-.B "BOOL OVgroupdel(char *group);"
+.B "bool OVgroupdel(char *group);"
 
-.B "BOOL OVadd(TOKEN token, char *data, int len, time_t arrived);"
+.B "bool OVadd(TOKEN token, char *data, int len, time_t arrived);"
 
-.B "BOOL OVcancel(TOKEN token);"
+.B "bool OVcancel(TOKEN token);"
 
 .B "void *OVopensearch(char *group, int low, int high);"
 
-.B "BOOL OVsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived);"
+.B "bool OVsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived);"
 
 .B "void OVclosesearch(void *handle);"
 
-.B "BOOL OVgetartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token);"
+.B "bool OVgetartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token);"
 
-.B "BOOL OVexpiregroup(char *group, int *lo);"
+.B "bool OVexpiregroup(char *group, int *lo);"
 
 .B "typedef struct _OVGE {"
-.B "    BOOL        delayrm;"
-.B "    BOOL        usepost;"
-.B "    BOOL        quiet;"
-.B "    BOOL        keep;"
-.B "    BOOL        earliest;"
-.B "    BOOL        ignoreselfexpire;"
+.B "    bool        delayrm;"
+.B "    bool        usepost;"
+.B "    bool        quiet;"
+.B "    bool        keep;"
+.B "    bool        earliest;"
+.B "    bool        ignoreselfexpire;"
 .B "    char        *filename;"
 .B "    time_t      now;"
 .B "    float       timewarp;"
