@@ -1544,7 +1544,7 @@ retry:
 	    memcpy(&ovd, val.data, sizeof ovd);
 
 	    ah = NULL;
-	    if (!SMprobe(EXPENSIVESTAT, &token, NULL) || OVstatall) {
+	    if (!SMprobe(EXPENSIVESTAT, &ovd.token, NULL) || OVstatall) {
 		if((ah = SMretrieve(ovd.token, RETR_STAT)) == NULL) { 
 		    delete = 1;
 		} else
