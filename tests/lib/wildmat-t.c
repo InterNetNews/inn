@@ -10,7 +10,7 @@
 #include "libinn.h"
 
 static void
-ok_reg(int n, const char *text, const char *pattern, bool matches)
+test_r(int n, const char *text, const char *pattern, bool matches)
 {
     bool matched;
 
@@ -21,7 +21,7 @@ ok_reg(int n, const char *text, const char *pattern, bool matches)
 }
 
 static void
-ok_poi(int n, const char *text, const char *pattern, enum wildmat matches)
+test_p(int n, const char *text, const char *pattern, enum wildmat matches)
 {
     enum wildmat matched;
 
@@ -33,7 +33,7 @@ ok_poi(int n, const char *text, const char *pattern, enum wildmat matches)
 }
 
 static void
-ok_sim(int n, const char *text, const char *pattern, bool matches)
+test_s(int n, const char *text, const char *pattern, bool matches)
 {
     bool matched;
 
@@ -49,192 +49,192 @@ main(void)
     puts("166");
 
     /* Basic wildmat features. */
-    ok_reg(  1, "foo",            "foo",               true);
-    ok_reg(  2, "foo",            "bar",               false);
-    ok_reg(  3, "",               "",                  true);
-    ok_reg(  4, "foo",            "???",               true);
-    ok_reg(  5, "foo",            "??",                false);
-    ok_reg(  6, "foo",            "*",                 true);
-    ok_reg(  7, "foo",            "f*",                true);
-    ok_reg(  8, "foo",            "*f",                false);
-    ok_reg(  9, "foo",            "*foo*",             true);
-    ok_reg( 10, "foobar",         "*ob*a*r*",          true);
-    ok_reg( 11, "aaaaaaabababab", "*ab",               true);
-    ok_reg( 12, "foo*",           "foo\\*",            true);
-    ok_reg( 13, "foobar",         "foo\\*bar",         false);
-    ok_reg( 14, "\\",             "\\\\",              true);
-    ok_reg( 15, "ball",           "*[al]?",            true);
-    ok_reg( 16, "ten",            "[ten]",             false);
-    ok_reg( 17, "ten",            "**[^te]",           true);
-    ok_reg( 18, "ten",            "**[^ten]",          false);
-    ok_reg( 19, "ten",            "t[a-g]n",           true);
-    ok_reg( 20, "ten",            "t[^a-g]n",          false);
-    ok_reg( 21, "ton",            "t[^a-g]n",          true);
-    ok_reg( 22, "]",              "]",                 true);
-    ok_reg( 23, "a]b",            "a[]]b",             true);
-    ok_reg( 24, "a-b",            "a[]-]b",            true);
-    ok_reg( 25, "a]b",            "a[]-]b",            true);
-    ok_reg( 26, "aab",            "a[]-]b",            false);
-    ok_reg( 27, "aab",            "a[]a-]b",           true);
+    test_r(  1, "foo",            "foo",               true);
+    test_r(  2, "foo",            "bar",               false);
+    test_r(  3, "",               "",                  true);
+    test_r(  4, "foo",            "???",               true);
+    test_r(  5, "foo",            "??",                false);
+    test_r(  6, "foo",            "*",                 true);
+    test_r(  7, "foo",            "f*",                true);
+    test_r(  8, "foo",            "*f",                false);
+    test_r(  9, "foo",            "*foo*",             true);
+    test_r( 10, "foobar",         "*ob*a*r*",          true);
+    test_r( 11, "aaaaaaabababab", "*ab",               true);
+    test_r( 12, "foo*",           "foo\\*",            true);
+    test_r( 13, "foobar",         "foo\\*bar",         false);
+    test_r( 14, "\\",             "\\\\",              true);
+    test_r( 15, "ball",           "*[al]?",            true);
+    test_r( 16, "ten",            "[ten]",             false);
+    test_r( 17, "ten",            "**[^te]",           true);
+    test_r( 18, "ten",            "**[^ten]",          false);
+    test_r( 19, "ten",            "t[a-g]n",           true);
+    test_r( 20, "ten",            "t[^a-g]n",          false);
+    test_r( 21, "ton",            "t[^a-g]n",          true);
+    test_r( 22, "]",              "]",                 true);
+    test_r( 23, "a]b",            "a[]]b",             true);
+    test_r( 24, "a-b",            "a[]-]b",            true);
+    test_r( 25, "a]b",            "a[]-]b",            true);
+    test_r( 26, "aab",            "a[]-]b",            false);
+    test_r( 27, "aab",            "a[]a-]b",           true);
 
     /* Multiple and negation. */
-    ok_reg( 28, "foo",            "!foo",              false);
-    ok_reg( 29, "foo",            "!bar",              false);
-    ok_reg( 30, "foo",            "*,!foo",            false);
-    ok_reg( 31, "foo",            "*,!bar",            true);
-    ok_reg( 32, "foo",            "foo,bar",           true);
-    ok_reg( 33, "bar",            "foo,bar",           true);
-    ok_reg( 34, "baz",            "foo,bar",           false);
-    ok_reg( 35, "baz",            "foo,ba?",           true);
-    ok_reg( 36, "",               "!",                 false);
-    ok_reg( 37, "foo",            "!",                 false);
-    ok_reg( 38, "a",              "a,!b,c",            true);
-    ok_reg( 39, "b",              "a,!b,c",            false);
-    ok_reg( 40, "c",              "a,!b,c",            true);
-    ok_reg( 41, "ab",             "a*,!ab",            false);
-    ok_reg( 42, "abc",            "a*,!ab",            true);
-    ok_reg( 43, "dabc",           "a*,!ab",            false);
-    ok_reg( 44, "abc",            "a*,!ab*,abc",       true);
-    ok_reg( 45, "",               ",",                 true);
-    ok_reg( 46, "a",              ",a",                true);
-    ok_reg( 47, "a",              "a,,,",              true);
-    ok_reg( 48, "b",              ",a",                false);
-    ok_reg( 49, "b",              "a,,,",              false);
-    ok_reg( 50, "a,b",            "a\\,b",             true);
-    ok_reg( 51, "a,b",            "a\\\\,b",           false);
-    ok_reg( 52, "a\\",            "a\\\\,b",           true);
-    ok_reg( 53, "a\\,b",          "a\\\\,b",           false);
-    ok_reg( 54, "a\\,b",          "a\\\\\\,b",         true);
-    ok_reg( 55, ",",              "\\,",               true);
-    ok_reg( 56, ",\\",            "\\,",               false);
-    ok_reg( 57, ",\\",            "\\,\\\\,",          true);
-    ok_reg( 58, "",               "\\,\\\\,",          true);
-    ok_reg( 59, "",               "\\,,!",             false);
-    ok_reg( 60, "",               "\\,!,",             true);
+    test_r( 28, "foo",            "!foo",              false);
+    test_r( 29, "foo",            "!bar",              false);
+    test_r( 30, "foo",            "*,!foo",            false);
+    test_r( 31, "foo",            "*,!bar",            true);
+    test_r( 32, "foo",            "foo,bar",           true);
+    test_r( 33, "bar",            "foo,bar",           true);
+    test_r( 34, "baz",            "foo,bar",           false);
+    test_r( 35, "baz",            "foo,ba?",           true);
+    test_r( 36, "",               "!",                 false);
+    test_r( 37, "foo",            "!",                 false);
+    test_r( 38, "a",              "a,!b,c",            true);
+    test_r( 39, "b",              "a,!b,c",            false);
+    test_r( 40, "c",              "a,!b,c",            true);
+    test_r( 41, "ab",             "a*,!ab",            false);
+    test_r( 42, "abc",            "a*,!ab",            true);
+    test_r( 43, "dabc",           "a*,!ab",            false);
+    test_r( 44, "abc",            "a*,!ab*,abc",       true);
+    test_r( 45, "",               ",",                 true);
+    test_r( 46, "a",              ",a",                true);
+    test_r( 47, "a",              "a,,,",              true);
+    test_r( 48, "b",              ",a",                false);
+    test_r( 49, "b",              "a,,,",              false);
+    test_r( 50, "a,b",            "a\\,b",             true);
+    test_r( 51, "a,b",            "a\\\\,b",           false);
+    test_r( 52, "a\\",            "a\\\\,b",           true);
+    test_r( 53, "a\\,b",          "a\\\\,b",           false);
+    test_r( 54, "a\\,b",          "a\\\\\\,b",         true);
+    test_r( 55, ",",              "\\,",               true);
+    test_r( 56, ",\\",            "\\,",               false);
+    test_r( 57, ",\\",            "\\,\\\\,",          true);
+    test_r( 58, "",               "\\,\\\\,",          true);
+    test_r( 59, "",               "\\,,!",             false);
+    test_r( 60, "",               "\\,!,",             true);
 
     /* Various additional tests. */
-    ok_reg( 61, "acrt",           "a[c-c]st",          false);
-    ok_reg( 62, "]",              "[^]-]",             false);
-    ok_reg( 63, "a",              "[^]-]",             true);
-    ok_reg( 64, "",               "\\",                false);
-    ok_reg( 65, "\\",             "\\",                false);
-    ok_reg( 66, "foo",            "*,@foo",            true);
-    ok_reg( 67, "@foo",           "@foo",              true);
-    ok_reg( 68, "foo",            "@foo",              false);
-    ok_reg( 69, "[ab]",           "\\[ab]",            true);
-    ok_reg( 70, "?a?b",           "\\??\\?b",          true);
-    ok_reg( 71, "abc",            "\\a\\b\\c",         true);
+    test_r( 61, "acrt",           "a[c-c]st",          false);
+    test_r( 62, "]",              "[^]-]",             false);
+    test_r( 63, "a",              "[^]-]",             true);
+    test_r( 64, "",               "\\",                false);
+    test_r( 65, "\\",             "\\",                false);
+    test_r( 66, "foo",            "*,@foo",            true);
+    test_r( 67, "@foo",           "@foo",              true);
+    test_r( 68, "foo",            "@foo",              false);
+    test_r( 69, "[ab]",           "\\[ab]",            true);
+    test_r( 70, "?a?b",           "\\??\\?b",          true);
+    test_r( 71, "abc",            "\\a\\b\\c",         true);
 
     /* Poison negation. */
-    ok_poi( 72, "abc",            "*",                 WILDMAT_MATCH);
-    ok_poi( 73, "abc",            "def",               WILDMAT_FAIL);
-    ok_poi( 74, "abc",            "*,!abc",            WILDMAT_FAIL);
-    ok_poi( 75, "a",              "*,@a",              WILDMAT_POISON);
-    ok_poi( 76, "ab",             "*,@a*,ab",          WILDMAT_MATCH);
-    ok_poi( 77, "ab",             "*,@a**,!ab",        WILDMAT_FAIL);
-    ok_poi( 78, "@ab",            "\\@ab",             WILDMAT_MATCH);
-    ok_poi( 79, "@ab",            "@\\@ab",            WILDMAT_POISON);
+    test_p( 72, "abc",            "*",                 WILDMAT_MATCH);
+    test_p( 73, "abc",            "def",               WILDMAT_FAIL);
+    test_p( 74, "abc",            "*,!abc",            WILDMAT_FAIL);
+    test_p( 75, "a",              "*,@a",              WILDMAT_POISON);
+    test_p( 76, "ab",             "*,@a*,ab",          WILDMAT_MATCH);
+    test_p( 77, "ab",             "*,@a**,!ab",        WILDMAT_FAIL);
+    test_p( 78, "@ab",            "\\@ab",             WILDMAT_MATCH);
+    test_p( 79, "@ab",            "@\\@ab",            WILDMAT_POISON);
 
     /* UTF-8 characters. */
-    ok_reg( 80, "S\303\256ne",    "S\303\256ne",       true);
-    ok_reg( 81, "S\303\256ne",    "S\303\257ne",       false);
-    ok_reg( 82, "S\303\256ne",    "S?ne",              true);
-    ok_reg( 83, "S\303\256ne",    "S*e",               true);
-    ok_reg( 84, "S\303\256ne",    "S[a-\330\200]ne",   true);
-    ok_reg( 85, "S\303\256ne",    "S[a-\300\256]ne",   false);
-    ok_reg( 86, "S\303\256ne",    "S[^\1-\177]ne",     true);
-    ok_reg( 87, "S\303\256ne",    "S[0\303\256$]ne",   true);
-    ok_reg( 88, "\2",             "[\1-\3]",           true);
-    ok_reg( 89, "\330\277",     "[\330\276-\331\200]", true);
-    ok_reg( 90, "\337\277", "[\337\276-\350\200\200]", true);
-    ok_reg( 91, "\357\277\277", "[\357\277\276-\364\200\200\200]", true);
-    ok_reg( 92, "\357\276\277", "[\357\277\276-\364\200\200\200]", false);
-    ok_reg( 93, "\367\277\277\277",
+    test_r( 80, "S\303\256ne",    "S\303\256ne",       true);
+    test_r( 81, "S\303\256ne",    "S\303\257ne",       false);
+    test_r( 82, "S\303\256ne",    "S?ne",              true);
+    test_r( 83, "S\303\256ne",    "S*e",               true);
+    test_r( 84, "S\303\256ne",    "S[a-\330\200]ne",   true);
+    test_r( 85, "S\303\256ne",    "S[a-\300\256]ne",   false);
+    test_r( 86, "S\303\256ne",    "S[^\1-\177]ne",     true);
+    test_r( 87, "S\303\256ne",    "S[0\303\256$]ne",   true);
+    test_r( 88, "\2",             "[\1-\3]",           true);
+    test_r( 89, "\330\277",     "[\330\276-\331\200]", true);
+    test_r( 90, "\337\277", "[\337\276-\350\200\200]", true);
+    test_r( 91, "\357\277\277", "[\357\277\276-\364\200\200\200]", true);
+    test_r( 92, "\357\276\277", "[\357\277\276-\364\200\200\200]", false);
+    test_r( 93, "\367\277\277\277",
                     "[\310\231-\372\200\200\200\200]", true);
-    ok_reg( 94, "\373\277\277\277\277",
+    test_r( 94, "\373\277\277\277\277",
                       "[\1-\375\200\200\200\200\200]", true);
-    ok_reg( 95, "\375\200\200\200\200\200",
+    test_r( 95, "\375\200\200\200\200\200",
                       "[\5-\375\200\200\200\200\200]", true);
-    ok_reg( 96, "\375\277\277\277\277\276",
+    test_r( 96, "\375\277\277\277\277\276",
            "[\375\277\277\277\277\275-\375\277\277\277\277\277]", true);
-    ok_reg( 97, "b\357\277\277a", "b?a",               true);
-    ok_reg( 98, "b\367\277\277\277a", "b?a",           true);
-    ok_reg( 99, "b\373\277\277\277\277a", "b?a",       true);
-    ok_reg(100, "b\375\277\277\277\277\276a", "b?a",   true);
-    ok_reg(101, "\357\240\275S\313\212\375\206\203\245\260\211",
+    test_r( 97, "b\357\277\277a", "b?a",               true);
+    test_r( 98, "b\367\277\277\277a", "b?a",           true);
+    test_r( 99, "b\373\277\277\277\277a", "b?a",       true);
+    test_r(100, "b\375\277\277\277\277\276a", "b?a",   true);
+    test_r(101, "\357\240\275S\313\212\375\206\203\245\260\211",
                                                "????", true);
-    ok_reg(102, "S\303\256ne",    "S\\\303\256ne",     true);
-    ok_reg(103, "s", "[^\330\277-\375\277\277\277\277\277]", true);
-    ok_reg(104, "\367\277\277\277",
+    test_r(102, "S\303\256ne",    "S\\\303\256ne",     true);
+    test_r(103, "s", "[^\330\277-\375\277\277\277\277\277]", true);
+    test_r(104, "\367\277\277\277",
                "[^\330\277-\375\277\277\277\277\277]", false);
 
     /* Malformed UTF-8. */
-    ok_reg(105, "S\303\256ne",    "S?\256ne",          false);
-    ok_reg(106, "\303\303",       "?",                 false);
-    ok_reg(107, "\303\303",       "??",                true);
-    ok_reg(108, "\200",           "[\177-\201]",       true);
-    ok_reg(109, "abc\206d",       "*\206d",            true);
-    ok_reg(110, "\303\206",       "*\206",             true);
-    ok_reg(111, "\40",            "\240",              false);
-    ok_reg(112, "\323",           "[a-\377]",          true);
-    ok_reg(113, "\376\277\277\277\277\277", "?",       false);
-    ok_reg(114, "\376\277\277\277\277\277", "??????",  true);
-    ok_reg(115, "\377\277\277\277\277\277", "?",       false);
-    ok_reg(116, "\377\277\277\277\277\277", "??????",  true);
-    ok_reg(117, "\303\323\206",   "??",                true);
-    ok_reg(118, "\206",           "[\341\206f]",       true);
-    ok_reg(119, "f",              "[\341\206f]",       true);
-    ok_reg(120, "\207",           "[\341\206-\277]",   true);
-    ok_reg(121, "\207",           "[\341\206\206-\277]", false);
-    ok_reg(122, "\300",           "[\277-\341\206]",   true);
-    ok_reg(123, "\206",           "[\277-\341\206]",   true);
-    ok_reg(124, "\341\206",       "[\341\206-\277]?",  true);
+    test_r(105, "S\303\256ne",    "S?\256ne",          false);
+    test_r(106, "\303\303",       "?",                 false);
+    test_r(107, "\303\303",       "??",                true);
+    test_r(108, "\200",           "[\177-\201]",       true);
+    test_r(109, "abc\206d",       "*\206d",            true);
+    test_r(110, "\303\206",       "*\206",             true);
+    test_r(111, "\40",            "\240",              false);
+    test_r(112, "\323",           "[a-\377]",          true);
+    test_r(113, "\376\277\277\277\277\277", "?",       false);
+    test_r(114, "\376\277\277\277\277\277", "??????",  true);
+    test_r(115, "\377\277\277\277\277\277", "?",       false);
+    test_r(116, "\377\277\277\277\277\277", "??????",  true);
+    test_r(117, "\303\323\206",   "??",                true);
+    test_r(118, "\206",           "[\341\206f]",       true);
+    test_r(119, "f",              "[\341\206f]",       true);
+    test_r(120, "\207",           "[\341\206-\277]",   true);
+    test_r(121, "\207",           "[\341\206\206-\277]", false);
+    test_r(122, "\300",           "[\277-\341\206]",   true);
+    test_r(123, "\206",           "[\277-\341\206]",   true);
+    test_r(124, "\341\206",       "[\341\206-\277]?",  true);
 
     /* Additional tests, including some malformed wildmats. */
-    ok_reg(125, "ab",             "a[]b",              false);
-    ok_reg(126, "a[]b",           "a[]b",              false);
-    ok_reg(127, "ab[",            "ab[",               false);
-    ok_reg(128, "ab",             "[^",                false);
-    ok_reg(129, "ab",             "[-",                false);
-    ok_reg(130, "-",              "[-]",               true);
-    ok_reg(131, "-",              "[a-",               false);
-    ok_reg(132, "-",              "[^a-",              false);
-    ok_reg(133, "-",              "[--A]",             true);
-    ok_reg(134, "5",              "[--A]",             true);
-    ok_reg(135, "\303\206",       "[--A]",             false);
-    ok_reg(136, " ",              "[ --]",             true);
-    ok_reg(137, "$",              "[ --]",             true);
-    ok_reg(138, "-",              "[ --]",             true);
-    ok_reg(139, "0",              "[ --]",             false);
-    ok_reg(140, "-",              "[---]",             true);
-    ok_reg(141, "-",              "[------]",          true);
-    ok_reg(142, "j",              "[a-e-n]",           false);
-    ok_reg(143, "a",              "[^------]",         true);
-    ok_reg(144, "[",              "[]-a]",             false);
-    ok_reg(145, "^",              "[]-a]",             true);
-    ok_reg(146, "^",              "[^]-a]",            false);
-    ok_reg(147, "[",              "[^]-a]",            true);
-    ok_reg(148, "^",              "[a^bc]",            true);
-    ok_reg(149, "-b]",            "[a-]b]",            true);
-    ok_reg(150, "\\]",            "[\\]]",             true);
-    ok_reg(151, "]",              "[\\-^]",            true);
-    ok_reg(152, "[",              "[\\-^]",            false);
-    ok_reg(153, "G",              "[A-\\]",            true);
-    ok_reg(154, "aaabbb",         "b*a",               false);
-    ok_reg(155, "aabcaa",         "*ba*",              false);
-    ok_reg(156, ",",              "[,]",               true);
-    ok_reg(157, ",",              "[\\,]",             true);
-    ok_reg(158, "\\",             "[\\,]",             true);
-    ok_reg(159, "-",              "[,-.]",             true);
-    ok_reg(160, "+",              "[,-.]",             false);
-    ok_reg(161, "-.]",            "[,-.]",             false);
+    test_r(125, "ab",             "a[]b",              false);
+    test_r(126, "a[]b",           "a[]b",              false);
+    test_r(127, "ab[",            "ab[",               false);
+    test_r(128, "ab",             "[^",                false);
+    test_r(129, "ab",             "[-",                false);
+    test_r(130, "-",              "[-]",               true);
+    test_r(131, "-",              "[a-",               false);
+    test_r(132, "-",              "[^a-",              false);
+    test_r(133, "-",              "[--A]",             true);
+    test_r(134, "5",              "[--A]",             true);
+    test_r(135, "\303\206",       "[--A]",             false);
+    test_r(136, " ",              "[ --]",             true);
+    test_r(137, "$",              "[ --]",             true);
+    test_r(138, "-",              "[ --]",             true);
+    test_r(139, "0",              "[ --]",             false);
+    test_r(140, "-",              "[---]",             true);
+    test_r(141, "-",              "[------]",          true);
+    test_r(142, "j",              "[a-e-n]",           false);
+    test_r(143, "a",              "[^------]",         true);
+    test_r(144, "[",              "[]-a]",             false);
+    test_r(145, "^",              "[]-a]",             true);
+    test_r(146, "^",              "[^]-a]",            false);
+    test_r(147, "[",              "[^]-a]",            true);
+    test_r(148, "^",              "[a^bc]",            true);
+    test_r(149, "-b]",            "[a-]b]",            true);
+    test_r(150, "\\]",            "[\\]]",             true);
+    test_r(151, "]",              "[\\-^]",            true);
+    test_r(152, "[",              "[\\-^]",            false);
+    test_r(153, "G",              "[A-\\]",            true);
+    test_r(154, "aaabbb",         "b*a",               false);
+    test_r(155, "aabcaa",         "*ba*",              false);
+    test_r(156, ",",              "[,]",               true);
+    test_r(157, ",",              "[\\,]",             true);
+    test_r(158, "\\",             "[\\,]",             true);
+    test_r(159, "-",              "[,-.]",             true);
+    test_r(160, "+",              "[,-.]",             false);
+    test_r(161, "-.]",            "[,-.]",             false);
 
     /* Tests for the wildmat_simple interface. */
-    ok_sim(162, "ab,cd",          "ab,cd",             true);
-    ok_sim(163, "ab",             "ab,cd",             false);
-    ok_sim(164, "!aaabbb",        "!a*b*",             true);
-    ok_sim(165, "ccc",            "*,!a*",             false);
-    ok_sim(166, "foo",            "*",                 true);
+    test_s(162, "ab,cd",          "ab,cd",             true);
+    test_s(163, "ab",             "ab,cd",             false);
+    test_s(164, "!aaabbb",        "!a*b*",             true);
+    test_s(165, "ccc",            "*,!a*",             false);
+    test_s(166, "foo",            "*",                 true);
 
     return 0;
 }

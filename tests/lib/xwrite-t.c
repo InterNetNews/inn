@@ -17,7 +17,7 @@ extern int write_interrupt;
 extern int write_fail;
 
 static void
-ok(int n, int status, int total)
+test_write(int n, int status, int total)
 {
     int success;
 
@@ -35,22 +35,22 @@ main(void)
 
     puts("11");
     for (i = 0; i < 256; i++) data[i] = i;
-    ok(1, xwrite(0, data, 256), 256);
+    test_write(1, xwrite(0, data, 256), 256);
     write_offset = 0;
     write_interrupt = 1;
     memset(data, 0, 256);
-    ok(2, xwrite(0, data, 256), 256);
+    test_write(2, xwrite(0, data, 256), 256);
     write_offset = 0;
     for (i = 0; i < 32; i++) data[i] = i * 2;
-    ok(3, xwrite(0, data, 32), 32);
+    test_write(3, xwrite(0, data, 32), 32);
     for (i = 32; i < 65; i++) data[i] = i * 2;
-    ok(4, xwrite(0, data + 32, 33), 33);
+    test_write(4, xwrite(0, data + 32, 33), 33);
     write_offset = 0;
     write_interrupt = 0;
     memset(data, 0, 256);
     iov[0].iov_base = data;
     iov[0].iov_len = 256;
-    ok(5, xwritev(0, iov, 1), 256);
+    test_write(5, xwritev(0, iov, 1), 256);
     write_offset = 0;
     for (i = 0; i < 256; i++) data[i] = i;
     iov[0].iov_len = 128;
@@ -58,17 +58,17 @@ main(void)
     iov[1].iov_len = 16;
     iov[2].iov_base = &data[144];
     iov[2].iov_len = 112;
-    ok(6, xwritev(0, iov, 3), 256);
+    test_write(6, xwritev(0, iov, 3), 256);
     write_offset = 0;
     write_interrupt = 1;
     memset(data, 0, 256);
     iov[0].iov_len = 32;
     iov[1].iov_base = &data[32];
     iov[1].iov_len = 224;
-    ok(7, xwritev(0, iov, 2), 256);
+    test_write(7, xwritev(0, iov, 2), 256);
     for (i = 0; i < 32; i++) data[i] = i * 2;
     write_offset = 0;
-    ok(8, xwritev(0, iov, 1), 32);
+    test_write(8, xwritev(0, iov, 1), 32);
     for (i = 32; i < 65; i++) data[i] = i * 2;
     iov[0].iov_base = &data[32];
     iov[0].iov_len = 16;
@@ -78,13 +78,13 @@ main(void)
     iov[2].iov_len = 8;
     iov[3].iov_base = &data[57];
     iov[3].iov_len = 8;
-    ok(9, xwritev(0, iov, 4), 33);
+    test_write(9, xwritev(0, iov, 4), 33);
     write_offset = 0;
     write_interrupt = 0;
     write_fail = 1;
-    ok(10, xwrite(0, data + 1, 255), -1);
+    test_write(10, xwrite(0, data + 1, 255), -1);
     iov[0].iov_base = data + 1;
     iov[0].iov_len = 255;
-    ok(11, xwritev(0, iov, 1), -1);
+    test_write(11, xwritev(0, iov, 1), -1);
     return 0;
 }
