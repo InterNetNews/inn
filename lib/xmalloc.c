@@ -12,18 +12,20 @@
 **       buffer = xmalloc(1024);
 **       xrealloc(buffer, 2048);
 **       free(buffer);
+**       buffer = xcalloc(1024);
+**       free(buffer);
 **       buffer = xstrdup(string);
 **
-**  xmalloc, xrealloc, and xstrdup behave exactly like their C library
-**  counterparts without the leading x except that they will never return
-**  NULL.  Instead, on error, they call xmalloc_error_handler, passing it
-**  the name of the function whose memory allocation failed, the amount of
-**  the allocation, and the file and line number where the allocation
-**  function was invoked (from __FILE__ and __LINE__).  This function may do
-**  whatever it wishes, such as some action to free up memory or a call to
-**  sleep to hope that system resources return.  If the handler returns, the
-**  interrupted memory allocation function will try its allocation again
-**  (calling the handler again if it still fails).
+**  xmalloc, xcalloc, xrealloc, and xstrdup behave exactly like their C
+**  library counterparts without the leading x except that they will never
+**  return NULL.  Instead, on error, they call xmalloc_error_handler,
+**  passing it the name of the function whose memory allocation failed, the
+**  amount of the allocation, and the file and line number where the
+**  allocation function was invoked (from __FILE__ and __LINE__).  This
+**  function may do whatever it wishes, such as some action to free up
+**  memory or a call to sleep to hope that system resources return.  If the
+**  handler returns, the interrupted memory allocation function will try its
+**  allocation again (calling the handler again if it still fails).
 **
 **  The default error handler, if none is set by the caller, prints an error
 **  message to stderr and exits with exit status 1.  An error handler must
@@ -73,6 +75,21 @@ x_malloc(size_t size, const char *file, int line)
     while (p == NULL) {
         (*xmalloc_error_handler)("malloc", size, file, line);
         p = malloc(real_size);
+    }
+    return p;
+}
+
+void *
+x_calloc(size_t n, size_t size, const char *file, int line)
+{
+    void *p;
+
+    n = (n > 0) ? n : 1;
+    size = (size > 0) ? size : 1;
+    p = calloc(n, size);
+    while (p == NULL) {
+        (*xmalloc_error_handler)("calloc", n * size, file, line);
+        p = calloc(n, size);
     }
     return p;
 }
