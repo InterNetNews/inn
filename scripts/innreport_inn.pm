@@ -1676,7 +1676,7 @@ sub collect {
     if ($left =~ m|^Class\ (\S+)\ for\ groups\ matching\ \S+
                     (\ article\ size\ min/max:\ \d+/\d+)?
                     \ Buffer\ (\S+),
-                    \ len:\ (\d+)\s+Mbytes,
+                    \ len:\ ([\d.]+)\s+Mbytes,
                     \ used:\ ([\d.]+)\ Mbytes\ \(\s*[\d.]+%\)
                     \s+(\d+)\ cycles\s*
                  $|ox) {
