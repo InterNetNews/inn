@@ -466,6 +466,16 @@ AC_SUBST(SASL_INC)
 AC_SUBST(SASL_LIB)])
 INN_LIB_SASL
 
+dnl Specify the path to the Kerberos libraries if the user wants to build
+dnl auth_krb5.  Note that we don't search far and wide for the libraries if
+dnl the user doesn't specify the path.
+AC_ARG_WITH(kerberos,
+    [  --with-kerberos=PATH    Path to Kerberos v5 (for auth_krb5)],
+    [if test x"$with_kerberos" != xno ; then
+         KRB5_LIB="-L$with_kerberos/lib"
+         KRB5_INC="-I$with_kerberos/include"
+     fi])
+
 dnl Checks for embedded interpretors.
 dnl
 dnl FIXME: These should ideally be combined with the later logic to
@@ -703,7 +713,7 @@ dnl fourth argument, if any.  This is for libraries we don't want to pollute
 dnl LIBS with.
 AC_DEFUN([INN_SEARCH_AUX_LIBS],
 [inn_save_LIBS=$LIBS
-LIBS=
+LIBS=${$3}
 AC_SEARCH_LIBS($1, $2,
                [$3=$LIBS
                 $4], $5, $6)
@@ -754,6 +764,13 @@ if test x"$inn_enable_keywords" = x1 ; then
     INN_SEARCH_AUX_LIBS(regexec, regex, REGEX_LIB, ,
         [AC_MSG_ERROR(no usable regular expression library found)])
 fi
+
+dnl Check for Kerberos libraries for auth_krb5, and if found define KRB5_AUTH
+dnl to the relevant object file, which will enable compilation of it.
+INN_SEARCH_AUX_LIBS(krb5_parse_name, krb5, KRB5_LIB,
+    [KRB5_AUTH="auth_krb5"
+     AC_SUBST(KRB5_AUTH)
+     AC_SUBST(KRB5_INC)], , [$LIBS -lk5crypto -lcom_err])
 
 dnl Libraries and flags for embedded Perl.  Some distributions of Linux have
 dnl Perl linked with gdbm but don't normally have gdbm installed, so on that
@@ -909,9 +926,10 @@ AC_HEADER_TIME
 AC_HEADER_SYS_WAIT
 
 dnl Generic checks for header files.
-AC_CHECK_HEADERS(crypt.h inttypes.h limits.h ndbm.h stdbool.h stddef.h \
-                 stdint.h string.h sys/bitypes.h sys/filio.h sys/loadavg.h \
-                 sys/param.h sys/select.h sys/sysinfo.h sys/time.h unistd.h)
+AC_CHECK_HEADERS(crypt.h inttypes.h limits.h ndbm.h pam/pam_appl.h stdbool.h \
+                 stddef.h stdint.h string.h sys/bitypes.h sys/filio.h \
+                 sys/loadavg.h sys/param.h sys/select.h sys/sysinfo.h \
+                 sys/time.h unistd.h)
 
 dnl Some Linux systems have db1/ndbm.h instead of ndbm.h.  Others have
 dnl gdbm-ndbm.h.

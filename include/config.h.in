@@ -1,4 +1,4 @@
-/* include/config.h.in.  Generated automatically from configure.in by autoheader.  */
+/* include/config.h.in.  Generated automatically from configure.in by autoheader 2.13.  */
 /*  $Id$
 **
 **  Here be configuration data used by various InterNetNews programs.  This
@@ -330,6 +330,9 @@
 
 /* Define if you have the <ndir.h> header file.  */
 #undef HAVE_NDIR_H
+
+/* Define if you have the <pam/pam_appl.h> header file.  */
+#undef HAVE_PAM_PAM_APPL_H
 
 /* Define if you have the <stdbool.h> header file.  */
 #undef HAVE_STDBOOL_H
