@@ -102,6 +102,7 @@ contrib/pullart.c                     Recover articles from cyclic buffers
 contrib/reset-cnfs.c                  Reset the state parts of a CNFS buffer
 contrib/sample.init.script            Example SysV-style init.d script
 contrib/showtoken.in                  Decode storage API tokens
+contrib/stathist.pl                   Parse history statistics
 contrib/tunefeed.in                   Tune a feed by comparing active files
 doc                                   Documentation (Directory)
 doc/Makefile                          Makefile for documentation
