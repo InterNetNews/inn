@@ -593,8 +593,8 @@ char *GetHeader(char *header, bool IsLines)
 		    if (r == q)
 			return NULL;
 		    memcpy(retval, VirtualPath, VirtualPathlen - 1);
-		    memcpy(retval + VirtualPathlen - 1, r, q - r);
-		    *(retval + (int)(q - r) + VirtualPathlen - 1) = '\0';
+		    memcpy(retval + VirtualPathlen - 1, r - 1, q - r + 1);
+		    *(retval + (int)(q - r) + VirtualPathlen) = '\0';
 		} else {
 		    memcpy(retval, p, q - p);
 		    *(retval + (int)(q - p)) = '\0';
