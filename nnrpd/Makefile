@@ -39,11 +39,11 @@ tags ctags:	$(SOURCES)
 
 nnrpd:		$(P) nnrpd.o $(OBJECTS) $(LIBNEWS)
 	@rm -f $@
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $@.o $(OBJECTS) $(LIBNEWS) $(LIBS) $(PERLLIB)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $@.o $(OBJECTS) $(LIBNEWS) $(PERLLIB) $(LIBS) 
 
 actived:	$(P) actived.o activedstats.o $(OBJECTS) $(LIBNEWS)
 	@rm -f $@
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $@.o activedstats.o $(OBJECTS) $(LIBNEWS) $(LIBS) $(PERLLIB)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $@.o activedstats.o $(OBJECTS) $(LIBNEWS) $(PERLLIB) $(LIBS) 
 
 ../include/dbz.h:
 	(cd ../lib ; $(MAKE) ../include/dbz.h)
