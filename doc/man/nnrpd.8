@@ -8,6 +8,9 @@ nnrpd \- NNTP server for on-campus hosts
 .BI \-r " reason"
 ]
 [
+.BI \-R
+]
+[
 .BI \-s " title padding"
 ]
 [
@@ -65,6 +68,13 @@ as the text.
 This flag is used by
 .I innd
 when it is paused or throttled.
+.TP
+.B \-R
+This options forces
+.I nnrpd
+to be ``read-only'' and overrides any ``P'' options in
+.IR nnrp.access (5).
+The startup banner will indicate ``no posting''.
 .TP
 .B \-s
 As each command is received,
