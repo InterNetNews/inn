@@ -2,81 +2,96 @@
 
 include ../Makefile.global
 
-top     = ..
-CFLAGS	= $(GCFLAGS) -I.
+top           = ..
+CFLAGS        = $(GCFLAGS) -I.
 
-all:			autoconfig
-	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) methods
-	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) libinnhist.$(EXTLIB)
+SOURCES       = his.c hismethods.c
+TOP_OBJECTS   = $(SOURCES:.c=.o)
+OBJECTS	      = $(TOP_OBJECTS) $(METHOD_OBJECTS)
+LOBJECTS      = $(OBJECTS:.o=.lo)
+
+.SUFFIXES: .lo
+
+all: library programs
+
+# Included here after the all target, since additional rules are defined in
+# Make.methods to be sure that we recurse properly to build the methods.
+include Make.methods
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
-include Make.hismethods
+library: libinnhist.$(EXTLIB)
 
-SOURCES = his.c hismethods.c
-OBJECTS = his.o hismethods.o
-LOBJECTS = his.lo hismethods.lo
-
-methods: 
-	@for D in $(HISSUBDIR); do \
-	cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) || exit 1; cd ..; \
-	done
-
-install:		all $(D)$(PATHLIB)/libinnhist.$(EXTLIB) 
+programs:
 
 clobber clean distclean:
 	rm -f *.o *.lo libinnhist.la libinnhist.a libinnhist_pure_*.a .pure
-	rm -rf .libs
-	rm -f hismethods.c hismethods.h
+	rm -f buildconfig hismethods.c hismethods.h
 	rm -f profiled libinnhist_p.a
-	rm -f hisbuildconfig
-	@for D in $(HISSUBDIR); do \
-		cd $$D; $(MAKE) clean; cd .. ;\
+	rm -rf .libs
+	@for D in $(SUBDIRS); do \
+	    cd $$D && $(MAKE) clean || exit 1 ; cd .. ; \
 	done
 
-tags ctags:	$(SOURCES)
+tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h
 
-libinnhist.la:	$(P) $(OBJECTS) $(LOBJECTS) $(LHIS_OBJECTS)
-	$(LIBLD) $(LDFLAGS) -o libinnhist.la $(LOBJECTS) $(LHIS_OBJECTS) \
+libinnhist.la: $(OBJECTS) $(LIBSTORAGE) $(LIBINN)
+	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) \
 	    $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS) \
 	    -rpath $(PATHLIB) -version-info 2:0:0
 
-libinnhist.a:         $(P) $(OBJECTS) $(HIS_OBJECTS)
-	ar r $@ $(OBJECTS) $(HIS_OBJECTS)
+libinnhist.a: $(OBJECTS)
+	ar r $@ $(OBJECTS)
 	$(RANLIB) libinnhist.a
 
-.c.o:
+# Try to set up these rules so that buildconfig is only run once.
+# Make.methods is included in the distribution tarball since some non-GNU
+# makes can't deal with including a non-existent file, so don't depend on
+# it.  The dependencies aren't entirely accurate; you really want to re-run
+# buildconfig each time a new subdirectory is added to the directory.  But
+# adding a dependency on . is a bit too non-portable for my taste and causes
+# too many rebuilds.
+Make.methods hismethods.h: hismethods.c buildconfig
+hismethods.c: buildconfig
+	./buildconfig
+
+buildconfig: buildconfig.in $(FIXSCRIPT)
+	$(FIXSCRIPT) -i buildconfig.in
+
+.c.o .c.lo:
 	$(LIBCC) $(CFLAGS) -c $*.c -o $@
 
-hismethods.h hismethods.c: autoconfig
+$(LIBINN):      ; (cd ../lib ; $(MAKE))
+$(LIBSTORAGE):	; (cd ../storage ; $(MAKE) library)
 
-autoconfig: hisbuildconfig
-	@./hisbuildconfig `find . -name hismethod.config -print`
-
-hisbuildconfig: hisbuildconfig.in $(FIXSCRIPT)
-	$(FIXSCRIPT) -i hisbuildconfig.in
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
-profiled:		../libinnhist_p.a
+profiled: ../libinnhist_p.a
 	date >$@
 
-../libinnhist_p.a:	$(SOURCES)
+../libinnhist_p.a: $(SOURCES)
 	rm -f $(OBJECTS)
 	$(MAKE) libinnhist.a CFLAGS="$(CFLAGS) $(PROF)"
 	mv libinnhist.a ../libinnhist_p.a
 	$(RANLIB) ../libinnhist_p.a
 	rm -f $(OBJECTS)
 
+
 ##  Low-level install actions.
+
+install: $(D)$(PATHLIB)/libinnhist.$(EXTLIB) 
+
 $(D)$(PATHLIB)/libinnhist.$(EXTLIB): libinnhist.$(EXTLIB)
-	$(LI_XPUB) $? $@
+	$(LI_XPUB) libinnhist.$(EXTLIB) $@
+
 
 ##  Dependencies.  Default list, below, is probably good enough.
+
 depend:	$(SOURCES)
 	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
-	@for D in $(HISSUBDIR) ; do \
+	@for D in $(SUBDIRS) ; do \
 	    cd $$D && $(MAKE) depend || exit 1 ; cd .. ; \
 	done
 

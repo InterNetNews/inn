@@ -2,30 +2,29 @@
 
 include ../../Makefile.global
 
-top     = ../..
-CFLAGS	= $(GCFLAGS) -I.. $(BERKELEY_DB_CFLAGS)
+top	= ../..
+CFLAGS	= $(GCFLAGS) -I..
 
 SOURCES = hisv6.c
 OBJECTS = hisv6.o
-LOBJECTS = hisv6.lo
-ROBJECTS = hisv6.$(EXTOBJ)
 
-all:			$(OBJECTS)
+all: objects
+
+objects: $(OBJECTS)
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
-.c.o:
+.c.o .c.lo:
 	$(LIBCC) $(CFLAGS) -c $*.c -o $@
 
 clobber clean distclean:
-	rm -f *.o *.lo obj/*.o *~
-	rm -f profiled
-	rm -f all install lint lint.all
+	rm -f *.o *.lo
 	rm -rf .libs
 
-tags ctags:	$(SOURCES)
+tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../../include/*.h ../*.h
+
 
 ##  Dependencies.  Default list, below, is probably good enough.
 

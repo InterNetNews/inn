@@ -302,10 +302,10 @@ frontends/scanspool.in                Scan spool directory for trash
 frontends/sm.c                        Get article or overview data from token
 frontends/sys2nf.c                    Sys file to newsfeeds conversion aid
 history                               History library routines (Directory)
-history/Make.hismethods               Makefile for history methods
+history/Make.methods                  Makefile for history methods
 history/Makefile                      Makefile for history library
+history/buildconfig.in                Construct history interface
 history/his.c                         History API glue implementation
-history/hisbuildconfig.in             Construct history interface
 history/hisinterface.h                History API interface
 history/hisv6                         History v6 method (Directory)
 history/hisv6/Makefile                Makefile for v6 history

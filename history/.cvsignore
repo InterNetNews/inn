@@ -1,6 +1,6 @@
 .libs
 .pure
-hisbuildconfig
+buildconfig
 hismethods.c
 hismethods.h
 *.la
