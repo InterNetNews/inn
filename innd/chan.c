@@ -785,12 +785,12 @@ CHANreadtext(CHANNEL *cp)
 	oerrno = errno;
 	p = CHANname(cp);
 	errno = oerrno;
-	syslog(L_ERROR, "%s cant read %m", p);
+	sysnotice("%s cant read", p);
 	return -1;
     }
     if (i == 0) {
 	p = CHANname(cp);
-	syslog(L_NOTICE, "%s readclose", p);
+	notice("%s readclose", p);
 	return 0;
     }
 
@@ -1204,9 +1204,9 @@ CHANreadloop(void)
 			    p = CHANname(cp);
 			    errno = oerrno;
 			    if (i < 0)
-				syslog(L_ERROR, "%s cant write %m", p);
+				sysnotice("%s cant write", p);
 			    else
-				syslog(L_ERROR, "%s cant write", p);
+				notice("%s cant write", p);
 			    cp->BadWrites++;
 			    if (i < 0 && oerrno == EPIPE) {
 				SITEchanclose(cp);
