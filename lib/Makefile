@@ -33,14 +33,14 @@ OBJECTS = $(MISSING_OBJ) \
 	readin.o remopen.o reservedfd.o resource.o sendarticle.o sendpass.o tempname.o \
 	waitnb.o wildmat.o xfopena.o xmalloc.o xmemerr.o xrealloc.o xwrite.o \
 	xwritev.o
-LOBJECTS	= $(OBJECTS:.o=.lo)
+LOBJECTS	= $(OBJECTS:.o=.$(EXTOBJ))
 
-all:			libinn.la perl.o ../include/autoconfig.h
+all:			libinn.$(EXTLIB) perl.o ../include/autoconfig.h
 
-install:		all $(D)$(PATHLIB)/libinn.la
+install:		all $(D)$(PATHLIB)/libinn.$(EXTLIB)
 
 clobber clean:
-	rm -f *.o *.lo libinn.la
+	rm -f *.o *.lo libinn.la libinn.a
 	rm -rf .libs
 	rm -f parsedate parsedate.c
 	rm -f profiled libinn_p.a endian
@@ -52,6 +52,10 @@ tags ctags:	$(SOURCES)
 libinn.la:		$(P) $(OBJECTS) $(LOBJECTS)
 	$(CC) $(LDFLAGS) -o $@ $(LOBJECTS) \
 		-rpath $(PATHLIB) -version-info 2:0:0
+
+libinn.a:             $(P) $(OBJECTS)
+	ar r $@ $(OBJECTS)
+	$(RANLIB) libinn.a
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
 profiled:		../libinn_p.a
@@ -94,9 +98,9 @@ ccenter:	$(SOURCES)
 	#load $(CFLAGS) $(SOURCES)
 
 ##  Low-level install actions.
-$(D)$(PATHLIB)/libinn.la:		libinn.la
+$(D)$(PATHLIB)/libinn.$(EXTLIB):		libinn.$(EXTLIB)
 	@rm -f $@
-	$(LIBTOOL) cp libinn.la $@
+	$(LIBTOOL) cp libinn.$(EXTLIB) $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES) ../include/dbz.h
