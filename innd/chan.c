@@ -52,13 +52,7 @@ BUFFset(bp, p, length)
 	}
 
 	/* Try to test for non-overlapping copies. */
-	if (length > MEMCPY_THRESHOLD
-	 && (p < bp->Data || p >= &bp->Data[length]))
-	    (void)memcpy((POINTER)bp->Data, (POINTER)p, (SIZE_T)length);
-	else {
-	    for (dest = bp->Data, length++; --length > 0; )
-		*dest++ = *p++;
-	}
+	memmove((POINTER)bp->Data, (POINTER)p, (SIZE_T)length);
     }
     bp->Used = 0;
 }

@@ -1262,7 +1262,7 @@ NCproc(cp)
 		** would require changes to the bp structure and
 		** the way it is used.
 		*/
-		(void)memcpy((POINTER)bp->Data, (POINTER)&bp->Data[cp->Rest], (SIZE_T)bp->Used);
+		(void)memmove((POINTER)bp->Data, (POINTER)&bp->Data[cp->Rest], (SIZE_T)bp->Used);
 		cp->Rest = cp->Lastch = 0;
 	    } else {
 		bp->Used = cp->Lastch = 0;
