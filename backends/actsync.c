@@ -65,11 +65,6 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <syslog.h>
-#ifdef HAVE_WAIT_H
-# include <wait.h>
-#else
-# include <sys/wait.h>
-#endif
 #include <ctype.h>
 #include <math.h>
 #include <signal.h>
@@ -80,6 +75,28 @@
 #include "qio.h"
 #include "paths.h"
 #include "macros.h"
+
+/* wait portability mess.  Per autoconf, #define macros ourself. */
+#ifdef HAVE_SYS_WAIT_H
+# include <sys/wait.h>
+#endif
+#ifndef WEXITSTATUS
+# define WEXITSTATUS(status)    ((((unsigned)(status)) >> 8) & 0xFF)
+#endif
+#ifndef WIFEXITED
+# define WIFEXITED(status)      ((((unsigned)(status)) & 0xFF) == 0)
+#endif
+#ifndef WIFSIGNALED
+# define WIFSIGNALED(status)    ((((unsigned)(status)) & 0xFF) > 0 \
+                                 && (((unsigned)(status)) & 0xFF00) == 0)
+#endif
+#ifndef WIFSTOPPED
+# define WIFSTOPPED(status)     ((((unsigned)(status)) & 0xFF) == 0177 \
+                                 && (((unsigned)(status)) & 0xFF00) != 0)
+#endif
+#ifndef WTERMSIG
+# define WTERMSIG(status)       (((unsigned)(status)) & 0x7F)
+#endif
 
 /*
  * pat - internal ignore/check pattern
@@ -196,15 +213,6 @@ struct eqgrp {
 #define NEWGRP_EMPTY 0		/* no new group dir was found */
 #define NEWGRP_NOCHG 1		/* new group dir found but no hi/low change */
 #define NEWGRP_CHG 2		/* new group dir found but no hi/low change */
-
-#if defined(HAVE_UNION_WAIT)
-# if !defined(WEXITSTATUS)
-#  define WEXITSTATUS(status) ((status).w_retcode)
-# endif
-# if !defined(WTERMSIG)
-#  define WTERMSIG(status) ((status).w_termsig)
-# endif
-#endif
 
 /* -b macros */
 #define BORK_CHECK(hostid)  \
@@ -2892,11 +2900,7 @@ exec_cmd(mode, cmd, grp, type, who)
     char buf[BUFSIZ+1];		/* interactive buffer */
     int pid;			/* pid of child process */
     int io[2];			/* pair of pipe descriptors */
-#if !defined(HAVE_UNION_WAIT)
     int status;			/* wait status */
-#else
-    union wait status;		/* wait status */
-#endif
     int exitval;		/* exit status of the child */
     char *p;
 
