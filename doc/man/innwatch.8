@@ -14,8 +14,10 @@ innwatch \- monitor innd.
 is normally started by
 .IR rc.news .
 It periodically \(em every
-.\" =()<.I (@<INNWATCH_SLEEPTIME>@)>()=
-.I (600)
+.I <INNWATCH_SLEEPTIME in config.data>
+(typically
+.\" =()<.I @<typINNWATCH_SLEEPTIME>@ )>()=
+.I 600 )
 seconds \(em examines the load average, and the number of free blocks
 and inodes on the spool partition, as described by its
 control file,
@@ -25,16 +27,20 @@ If the load gets too high, or the disk gets too full, it throttles the server.
 When the condition restores, it unblocks the server.
 In addition, on each pass through the loop it will check the
 logfile
-.\" =()<.I @<_PATH_MOST_LOGS>@/news.crit>()=
-.I /var/log/news/news.crit
+.I <_PATH_MOST_LOGS in config.data>/news.crit
+(typically
+.\" =()<.I @<typ_PATH_MOST_LOGS>@/news.crit )>()=
+.I /var/log/news/news.crit )
 to see if it has been modified, and send mail to the news administrator
 if so.
 .PP
 Upon receipt of an interrupt signal (SIGINT),
 .IR innwatch
 will report its status in the file
-.\" =()<.IR @<_PATH_INNWSTATUS>@ .>()=
-.IR /var/news/run/innwatch.status .
+.I <_PATH_INNWSTATUS in config.data> 
+(typically
+.\" =()<.I @<typ_PATH_INNWSTATUS>@ .)>()=
+.I /var/news/run/innwatch.status .)
 .SH OPTIONS
 .TP
 .B \-l 

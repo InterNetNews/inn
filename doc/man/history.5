@@ -4,8 +4,10 @@
 history \- record of current and recently expired Usenet articles
 .SH DESCRIPTION
 The file
-.\" =()<.I @<_PATH_HISTORY>@>()=
-.I /var/news/etc/history
+.I <_PATH_HISTORY in config.data>
+(typically
+.\" =()<.I @<typ_PATH_HISTORY>@ )>()=
+.I /var/news/etc/history )
 keeps a record of all articles currently stored in the news system,
 as well as those that have been received but since expired.
 In a typical production environment, this file will be many megabytes.

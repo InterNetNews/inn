@@ -73,12 +73,24 @@ entry to produce appropriate xbatch files (thanks to Karsten Leipold
   nase\e
     :*\e
     :Tc,Wnb\e
-.\" =()<.ds R$ @<_PATH_NEWSBIN>@>()=
+.ds R$ <_PATH_NEWSBIN in config.data>
+    :\*(R$/batcher \e
+.ds R$ <_PATH_COMPRESS in config.data>
+.ds P$ <_PATH_BATCHDIR in config.data>
+       -p "(\*(R$ > \*(P$/nase.\e$\e$)" \e
+       nase.do.main
+.fi
+(typically:)
+.nf
+  nase\e
+    :*\e
+    :Tc,Wnb\e
+.\" =()<.ds R$ @<typ_PATH_NEWSBIN>@>()=
 .ds R$ /usr/news/bin
     :\*(R$/batcher \e
-.\" =()<.ds R$ @<_PATH_COMPRESS>@>()=
+.\" =()<.ds R$ @<typ_PATH_COMPRESS>@>()=
 .ds R$ /usr/bin/compress
-.\" =()<.ds P$ @<_PATH_BATCHDIR>@>()=
+.\" =()<.ds P$ @<typ_PATH_BATCHDIR>@>()=
 .ds P$ /var/news/spool/out.going
        -p "(\*(R$ > \*(P$/nase.\e$\e$)" \e
        nase.do.main
@@ -100,7 +112,7 @@ is:
 	exit 1
   fi
 
-.\" =()<  . @<_PATH_SHELLVARS>@>()=
+  ##  The next line should match <PATH_SHELLVARS in config.data>
   . /var/news/etc/innshellvars
 
   site="$1"; host="$2"; shift; shift

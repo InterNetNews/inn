@@ -88,18 +88,22 @@ and
 .IR hosts.nntp (5)
 files into memory.
 It then opens the NNTP port to receive articles from remote sites (see 
-the ``\fB\-P\fP'' option),
-.\" =()<.ie '@<HAVE_UNIX_DOMAIN>@'DO' \{\>()=
-.ie 'DO'DO' \{\
+the ``\fB\-p\fP'' option),
+When
+.I <HAVE_UNIX_DOMAIN in config.data>
+== DO,
 a Unix-domain stream socket to receive articles from local processes
 such as
 .IR nnrpd (8)
 and
 .IR rnews (1),
-and a Unix-domain datagram socket for use by\}
-.el and a named pipe for use by
+and a Unix-domain datagram socket for use by 
+.IR ctlinnd (8) .
+When
+.I <HAVE_UNIX_DOMAIN in config.data>
+is not DO named pipes are used instead.
 .IR ctlinnd (8)
-to direct the server to perform certain actions.
+is used to direct the server to perform certain actions.
 It also opens the
 .IR history (5)
 database and two log files to replace its standard output and standard error.
@@ -111,8 +115,12 @@ waits for connections and data to be ready on its ports by using
 and non-blocking I/O.
 If no data is available, then it will flush its in-core data structures.
 The default number of seconds to timeout before flushing is
-.\" =()<@<DEFAULT_TIMEOUT>@ seconds.>()=
-300 seconds.
+set as
+.I <DEFAULT_TIMEOUT in config.data>
+(typically
+.\" =()<.IR @<typDEFAULT_TIMEOUT>@ ) >()=
+.IR 300 ) 
+seconds.
 .PP
 If
 .I innd
@@ -135,7 +143,7 @@ If the ``\fB\-a\fP'' flag is used, then any host can connect and transfer
 articles.
 .TP
 .B \-c
-.I Innd
+.I innd
 rejects articles that are too old.
 While this behavior can be controlled by the history database,
 occasionally a site dumps a batch of very old news back onto the network.
@@ -316,9 +324,11 @@ starts with the five characters \&``cmsg\ '' are called
 .IR "control messages" .
 Except for the cancel message, these messages are implemented by
 external programs in the
-.\" =()<.I @<_PATH_CONTROLPROGS>@>()=
-.I /usr/news/bin/control
-directory.
+.I <_PATH_CONTROLPROGS in config.data>
+directory
+(typically
+.\" =()<.IR @<typ_PATH_CONTROLPROGS>@ .) >()=
+.IR /usr/news/bin/control .) 
 (Cancel messages update the history database, so they must be handled
 internally; the cost of syncing, locking, then unlocking would be too
 high given the number of cancel messages that are received.)
@@ -326,8 +336,10 @@ high given the number of cancel messages that are received.)
 When a control message arrives, the first word of the text is converted
 to lowercase except for ``cancel'' and used as the name of the program to execute; if the named
 program does not exist, then a program named
-.\" =()<.I @<_PATH_BADCONTROLPROG>@>()=
-.I default
+.I <_PATH_BADCONTROLPROG in config.data>
+(typically
+.\" =()<.IR @<typ_PATH_BADCONTROLPROG>@ ) >()=
+.IR default ) 
 is executed.
 .PP
 All control programs are invoked with four parameters.
@@ -365,10 +377,10 @@ Newgroup and rmgroup messages receive additional special treatment.
 If the message is approved and posted to the name of the group being created
 or removed, then the message will be sent to all sites whose subscription
 patterns would cause them to receive articles posted in that group.
-.\" =()<.if '@<MERGE_TO_GROUPS>@'DO' \{\>()=
-.if 'DONT'DO' \{\
 .PP
-If an article is posted to a newsgroup that starts with the three
+When
+.I <MERGE_TO_GROUPS in config.data>
+== DO, if an article is posted to a newsgroup that starts with the three
 letters ``to.'' it will get special treatment if the newsgroup does not
 exist in the
 .I active
@@ -376,7 +388,7 @@ file:
 the article is filed into the newsgroup ``to'' and it is sent to
 the first site named after the prefix.
 For example, a posting to ``to.uunet'' will be filed in ``to'' and sent
-to the site ``uunet.''\}
+to the site ``uunet.''
 .SH "PROTOCOL DIFFERENCES"
 .I Innd
 implements the NNTP commands defined in RFC 977, with the following
@@ -538,7 +550,7 @@ Whitespace in "Newsgroups" header -- "%s"
 .RE
 Where ``%s'', above, is replaced by more specific information.
 .PP
-Note that if an article is accepted, the ``wanttrash'' config value is
+Note that if an article is accepted, and <WANT_TRASH in config.data> is
 set to ``yes'' and none of the newsgroups are valid, it will be logged
 with two lines, a ``j'' line and a minus sign line.
 .PP
