@@ -427,7 +427,7 @@ CheckNeedReloadDB(BOOL force) {
 	return;
     }
     DISPOSE(fname);
-    if (sb.st_mtime > oldlastcheck.time && oldlastcheck.time != 0) {
+    if (sb.st_mtime > oldlastcheck.time) {
 	/* add any newly added ngs to our in-memory copy of the db. */
 	ReadDBFile();
     }
