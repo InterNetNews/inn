@@ -673,6 +673,8 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp, BOOL *DidReply)
 	rp->High = ARThigh;
     if (rp->Low < ARTlow)
 	rp->Low = ARTlow;
+    p--;
+    *p = '-';
 
     return TRUE;
 }
@@ -887,7 +889,6 @@ FUNCTYPE CMDxover(int ac, char *av[])
     }
 
     /* Parse range. */
-    gettimeofday(&stv, NULL);
     if (!CMDgetrange(ac, av, &range, &DidReply)) {
 	if (!DidReply) {
 	    Reply("%d data follows\r\n", NNTP_OVERVIEW_FOLLOWS_VAL);
@@ -897,25 +898,56 @@ FUNCTYPE CMDxover(int ac, char *av[])
     }
 
     OVERcount++;
+    gettimeofday(&stv, NULL);
     if ((handle = (void *)OVopensearch(GRPcur, range.Low, range.High)) == NULL) {
 	Reply("%d %s fields follow\r\n.\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
 	return;
     }
+    if (innconf->nnrpdoverstats) {
+	gettimeofday(&etv, NULL);
+	OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
+	OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;
+    }
 
     Reply("%d %s fields follow\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, av[1]);
+    if (innconf->nnrpdoverstats)
+	gettimeofday(&stv, NULL);
     while (OVsearch(handle, &artnum, &data, &len, &token)) {
-	if (innconf->nnrpdcheckart && !ARTinstorebytoken(token))
+	if (innconf->nnrpdoverstats) {
+	    gettimeofday(&etv, NULL);
+	    OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
+	    OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;
+	}
+	if (len == 0 || innconf->nnrpdcheckart && !ARTinstorebytoken(token)) {
+	    if (innconf->nnrpdoverstats) {
+		OVERmiss++;
+		gettimeofday(&stv, NULL);
+	    }
 	    continue;
-	OVERhit++;
-	OVERsize += len;
+	}
+	if (innconf->nnrpdoverstats) {
+	    OVERhit++;
+	    OVERsize += len;
+	}
 	SendIOv(data, len);
+	if (innconf->nnrpdoverstats)
+	    gettimeofday(&stv, NULL);
+    }
+    if (innconf->nnrpdoverstats) {
+        gettimeofday(&etv, NULL);
+        OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
+        OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;
     }
     SendIOv(".\r\n", 3);
     PushIOv();
+    if (innconf->nnrpdoverstats)
+	gettimeofday(&stv, NULL);
     OVclosesearch(handle);
-    gettimeofday(&etv, NULL);
-    OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
-    OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;
+    if (innconf->nnrpdoverstats) {
+        gettimeofday(&etv, NULL);
+        OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
+        OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;
+    }
 
 }
 

@@ -109,7 +109,6 @@ EXTERN long	OVERcount;	/* number of XOVER commands			*/
 EXTERN long	OVERhit;	/* number of XOVER records found in .overview	*/
 EXTERN long	OVERmiss;	/* number of XOVER records found in articles	*/
 EXTERN long	OVERtime;	/* number of ms spent sending XOVER data	*/
-EXTERN long	OVERread;	/* number of bytes of XOVER data read		*/
 EXTERN long	OVERsize;	/* number of bytes of XOVER data sent		*/
 EXTERN long	OVERdbz;	/* number of ms spent reading dbz data	*/
 EXTERN long	OVERseek;	/* number of ms spent seeking history	*/
