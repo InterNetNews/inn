@@ -367,6 +367,72 @@ section inn_flow {
         };
 };
 
+section cnfsstat {
+        title   "CNFS buffer status:";
+        data    "%cnfsstat";
+        column {
+                name          "Buffer";
+                format        "%-13.13s";
+                value         "$key";
+                format_total  "TOTAL: %-6.6s";
+                total         "$num";
+        };
+        column {
+                name          "Class";
+                format        "%-13.13s";
+                value         "$cnfsstat{$key}";
+                format_total  "-%12s";
+                total         "";
+        };
+        column {
+                name          "Size";
+                format        "%9s";
+                value         "bytes($cnfsstat_size{$key})";
+                total         "bytes(total(%cnfsstat_size))";
+        };
+        column {
+                name          "Used";
+                format        "%9s";
+                value         "bytes($cnfsstat_used{$key})";
+                total         "bytes(total(%cnfsstat_used))";
+        };
+        column {
+                name          "%Used";
+                format_name   "%7s";
+                value         "$cnfsstat_used{$key} /
+                                       $cnfsstat_size{$key} * 100";
+                format        "%6.1f%%";
+                total         "total(%cnfsstat_used) /
+                                       total(%cnfsstat_size) * 100";
+        };
+        column {
+                name          "Cycles";
+                format_name   "%6s";
+                format        "%6d";
+                value         "$cnfsstat_cycles{$key}";
+                total         "total(%cnfsstat_cycles)";
+        };
+        column {
+                name          "KB/sec";
+                format_name   "%7s";
+                value         "$cnfsstat_rate{$key} / 
+                                       $cnfsstat_samples{$key} / 1024";
+                format        "%7.2f";
+                total         "total(%cnfsstat_rate) /
+                                       total(%cnfsstat_samples) / 1024";
+        };
+        column {
+                name          "Days";
+                format_name   "%8s";
+                value         "$cnfsstat_size{$key} /
+                                 ($cnfsstat_rate{$key} /
+                                    $cnfsstat_samples{$key}) / 86400";
+                format        "%8.2f";
+                format_total  "%7s-";
+                total         "";
+        };
+};
+
 section inn_unwanted {
         title   "Sites sending bad articles:";
 	data    "%inn_badart";

@@ -1583,6 +1583,67 @@ sub collect
     }
   }
 
+  ###########
+  ## cnfsstat
+  if ($prog eq "cnfsstat")
+  {
+    # Class ALT for groups matching "alt.*" article size min/max: 0/1048576
+    # Buffer T3, len: 1953  Mbytes, used: 483.75 Mbytes (24.8%)   0 cycles
+    if ($left =~ m|^Class\ (\S+)\ for\ groups\ matching\ \S+
+                    (\ article\ size\ min/max:\ \d+/\d+)?
+                    \ Buffer\ (\S+),
+                    \ len:\ (\d+)\s+Mbytes,
+                    \ used:\ ([\d.]+)\ Mbytes\ \([\d.]+%\)
+                    \s+(\d+)\ cycles
+                 $|ox)
+    {
+      my ($class, $buffer, $size, $used, $cycles) = ($1, $3, $4, $5, $6);
+      my ($h, $m, $s) = $hour =~ m/^(\d+):(\d+):(\d+)$/;
+      my $time = $h * 3600 + $m * 60 + $s;
+      $size *= 1024 * 1024;
+      $used *= 1024 * 1024;
+      $cnfsstat{$buffer} = $class;
+
+      # If the size changed, invalidate all of our running fill rate stats.
+      if ($size != $cnfsstat_size{$buffer})
+      {
+        delete $cnfsstat_rate{$buffer};
+        delete $cnfsstat_samples{$buffer};
+        delete $cnfsstat_time{$buffer};
+        $cnfsstat_size{$buffer} = $size;
+      }
+      elsif ($cnfsstat_time{$buffer})
+      {
+        # We want to gather the rate at which cycbuffs fill.  Store a
+        # running total of bytes/second and a total number of samples.
+        # Ideally we'd want a weighted average of those samples by the
+        # length of the sample period, but we'll ignore that and assume
+        # cnfsstat runs at a roughly consistent interval.
+        my ($period, $added);
+        $period = $time - $cnfsstat_time{$buffer};
+        $period = 86400 - $cnfsstat_time{$buffer} + $time
+          if ($period < 0);
+        if ($cycles == $cnfsstat_cycles{$buffer})
+        {
+          $added = $used - $cnfsstat_used{$buffer};
+        }
+        elsif ($cycles > $cnfsstat_cycles{$buffer})
+        {
+          $added = $size * ($cycles - $cnfsstat_cycles{$buffer}) + $used;
+        }
+        if ($added > 0)
+        {
+          $cnfsstat_rate{$buffer} += $added / $period;
+          $cnfsstat_samples{$buffer}++;
+        }
+      }
+      $cnfsstat_used{$buffer} = $used;
+      $cnfsstat_cycles{$buffer} = $cycles;
+      $cnfsstat_time{$buffer} = $time;
+      return 1;
+    }
+  }
+  
   # Ignore following programs :
   return 1 if ($prog eq "uxfxn");
   return 1 if ($prog eq "beverage");
@@ -1590,7 +1651,6 @@ sub collect
   return 1 if ($prog eq "demmf");
   return 1 if ($prog eq "nnnn");
   return 1 if ($prog eq "controlchan");
-  return 1 if ($prog eq "cnfsstat");
   return 0;
 }
 
