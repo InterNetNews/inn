@@ -112,7 +112,7 @@ while (<STDIN>) {
 
     if ($action eq '_pgpfail') {
         my $type = '';
-        if ($progparams[0] and $progparams[0] eq 'newgroup') {
+        if ($progname and $progname eq 'newgroup') {
             if ($progparams[1] and $progparams[1] eq 'moderated') {
                 $type = 'm ';
             } else {
@@ -252,6 +252,15 @@ sub ctlperm {
 
     my $action = 'drop';    # default
     my ($logname, $hier);
+
+    # newgroup and rmgroup require newsgroup names; check explicitly for that
+    # here and return drop if the newsgroup is missing (to avoid a bunch of
+    # warnings from undefined values later on in permission checking).
+    if ($type eq 'newgroup' or $type eq 'rmgroup') {
+        unless ($newsgroup) {
+            return ('drop', undef, undef);
+        }
+    }
 
     my $ctllist = readctlfile();
     foreach (@$ctllist) {
