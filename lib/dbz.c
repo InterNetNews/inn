@@ -1456,6 +1456,7 @@ search(searcher *sp)
 	    }
 
 	    /* read it */
+	    errno = 0;
 	    if (read(fileno(pagtab.f), (POINTER)&value, sizeof(value)) != sizeof(value)) {
 		if (errno != 0) {
 		    DEBUG(("search: read failed\n"));
@@ -1535,6 +1536,7 @@ static BOOL search(searcher *sp) {
 	    }
 
 	    /* read it */
+	    errno = 0;
 	    if (read(fileno(etab.f), (POINTER)&value, sizeof(erec)) != sizeof(erec)) {
 		if (errno != 0) {
 		    DEBUG(("search: read failed\n"));
