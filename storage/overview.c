@@ -82,11 +82,11 @@ STATIC BOOL OVERdommap(UNIOVER *config, OFFSET_T offset)
 }
 
 /*
-** check mmap ovrerview file.
+** check mmap overview file.
 */
 STATIC BOOL OVERcheckmmap(UNIOVER *config, OFFSET_T offset, unsigned short len)
 {
-    int i, j, refcount = ~0;
+    int i, j, refcount = 0;
     OFFSET_T pagefudge;
 
     if ((config == (UNIOVER *)NULL) || (config->size == 0))
@@ -96,7 +96,7 @@ STATIC BOOL OVERcheckmmap(UNIOVER *config, OFFSET_T offset, unsigned short len)
 	    break;
 	if (OVERmmapconfig[i].config == config)
 	    break;
-	if (refcount < OVERmmapconfig[i].refcount) {
+	if (refcount == 0 || refcount < OVERmmapconfig[i].refcount) {
 	    /* find least referenced config */
 	    refcount = OVERmmapconfig[i].refcount;
 	    j = i;
