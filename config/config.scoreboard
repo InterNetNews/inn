@@ -334,10 +334,10 @@
  #||#### =()<HAVE_FCHMOD		@<HAVE_FCHMOD>@>()=
  #||HAVE_FCHMOD		@ac_cv_subst_have_fchmod@
 [IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  Do you have setsid()?  Pick DO or DONT.
-  ||##[autoconf]
-  ||#### =()<HAVE_SETSID		@<HAVE_SETSID>@>()=
-  ||HAVE_SETSID		@ac_cv_subst_have_setsid@
+ #||##  Do you have setsid()?  Pick DO or DONT.
+ #||##[autoconf]
+ #||#### =()<HAVE_SETSID		@<HAVE_SETSID>@>()=
+ #||HAVE_SETSID		@ac_cv_subst_have_setsid@
 [IN1.7=@4][WDF=autoconf][WOR=no]
   ||##  Does your (struct tm) have a tm_gmtoff field?  Pick DO or DONT.
   ||##[autoconf]
@@ -349,10 +349,10 @@
   ||#### =()<HAVE_ST_BLKSIZE		@<HAVE_ST_BLKSIZE>@>()=
   ||HAVE_ST_BLKSIZE		@ac_cv_subst_have_st_blksize@
 [IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  Use waitpid instead of wait3?  Pick DO or DONT.
-  ||##[autoconf]
-  ||#### =()<HAVE_WAITPID		@<HAVE_WAITPID>@>()=
-  ||HAVE_WAITPID		@ac_cv_subst_have_waitpid@
+ #||##  Use waitpid instead of wait3?  Pick DO or DONT.
+ #||##[autoconf]
+ #||#### =()<HAVE_WAITPID		@<HAVE_WAITPID>@>()=
+ #||HAVE_WAITPID		@ac_cv_subst_have_waitpid@
 [IN1.7=@4][WDF=autoconf][WOR=no]
   ||##  Use "union wait" instead of int?  Pick DO or DONT.
   ||##[autoconf]
@@ -369,10 +369,10 @@
   ||#### =()<HAVE_VFORK		@<HAVE_VFORK>@>()=
   ||HAVE_VFORK		@ac_cv_subst_have_vfork@
 [IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  Do you have symbolic links?  Pick DO or DONT.
-  ||##[autoconf]
-  ||#### =()<HAVE_SYMLINK		@<HAVE_SYMLINK>@>()=
-  ||HAVE_SYMLINK		@ac_cv_subst_have_symlink@
+ #||##  Do you have symbolic links?  Pick DO or DONT.
+ #||##[autoconf]
+ #||#### =()<HAVE_SYMLINK		@<HAVE_SYMLINK>@>()=
+ #||HAVE_SYMLINK		@ac_cv_subst_have_symlink@
 [IN1.7=@4][WDF=autoconf][WOR=no]
   ||##  Do you have Unix-domain sockets?  Pick DO or DONT.
   ||##[autoconf]

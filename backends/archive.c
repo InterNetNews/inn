@@ -291,10 +291,10 @@ main(ac, av)
 	    Redirect = FALSE;
 	    break;
 	}
-#if	defined(DONT_HAVE_SYMLINK)
+#if !defined(HAVE_SYMLINK)
 	if (Move)
 	    (void)fprintf(stderr, "archive:  Ignoring ``-m'' flag\n");
-#endif	/* defined(DONT_HAVE_SYMLINK) */
+#endif	/* !defined(HAVE_SYMLINK) */
 
     /* Parse arguments -- at most one, the batchfile. */
     ac -= optind;
@@ -364,7 +364,7 @@ main(ac, av)
 		*last = '/';
 	}
 
-#if	defined(DO_HAVE_SYMLINK)
+#if	defined(HAVE_SYMLINK)
 	if (Move) {
 	    if (!Copy(buff, dest))
 		continue;
@@ -376,7 +376,7 @@ main(ac, av)
 			buff, dest, strerror(errno));
 	    continue;
 	}
-#endif	/* defined(DO_HAVE_SYMLINK) */
+#endif	/* defined(HAVE_SYMLINK) */
 
 	/* Try to link the file into the archive. */
 	if (link(buff, dest) < 0) {

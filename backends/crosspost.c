@@ -193,7 +193,7 @@ ProcessIncoming(qp)
 			lnval = link(names[0], names[i]) ;
 			if (lnval == 0) STATLink++;
 			if (lnval < 0 && errno == EXDEV) {
-#if	defined(DONT_HAVE_SYMLINK)
+#if !defined(HAVE_SYMLINK)
 			    (void)fprintf(stderr, "crosspost cant link %s %s",
 				names[0], names[i]);
 			    perror(" ");
@@ -216,7 +216,7 @@ ProcessIncoming(qp)
 			    }
 			    else
 			      STATSymlink++;
-#endif	/* defined(DONT_HAVE_SYMLINK) */
+#endif	/* !defined(HAVE_SYMLINK) */
 			} else if (lnval < 0) {
 			    if (lnval == ENOENT)
 			      STATMissing++;
@@ -237,7 +237,7 @@ ProcessIncoming(qp)
 		register int j;
 		char path[SPOOLNAMEBUFF+2];
 
-#if	defined(DONT_HAVE_SYMLINK)
+#if !defined(HAVE_SYMLINK)
                 (void)fprintf(stderr, "crosspost cant link %s %s",
                               names[0], names[i]);
                 perror(" ");
@@ -260,7 +260,7 @@ ProcessIncoming(qp)
                 }
 		else
 		  STATSymlink++;
-#endif	/* defined(DONT_HAVE_SYMLINK) */
+#endif	/* !defined(HAVE_SYMLINK) */
             }
 	}
 

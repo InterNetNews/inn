@@ -1127,10 +1127,10 @@ DoNewsgroup(char *group, FILE *out, BOOL RemoveBad, BOOL Update, TRANS Translate
     struct stat		Sb;
     char		buff[SPOOLNAMEBUFF];
     char		artbuff[SPOOLNAMEBUFF];
-#if	defined(DO_HAVE_SYMLINK)
+#if	defined(HAVE_SYMLINK)
     char		linkbuff[SPOOLNAMEBUFF];
     int			oerrno;
-#endif	/* defined(DO_HAVE_SYMLINK) */
+#endif	/* defined(HAVE_SYMLINK) */
     ARTHANDLE		arth;
     char		*groupname;
     TOKEN		token;
@@ -1165,7 +1165,7 @@ DoNewsgroup(char *group, FILE *out, BOOL RemoveBad, BOOL Update, TRANS Translate
 	if (stat(p, &Sb) < 0) {
 	    (void)fprintf(stderr, "Can't stat %s, %s\n",
 		    buff, strerror(errno));
-#if	defined(DO_HAVE_SYMLINK)
+#if	defined(HAVE_SYMLINK)
 	    /* Symlink to nowhere? */
 	    oerrno = errno;
 	    (void)memset((POINTER)linkbuff, '\0', sizeof linkbuff);
@@ -1177,7 +1177,7 @@ DoNewsgroup(char *group, FILE *out, BOOL RemoveBad, BOOL Update, TRANS Translate
 		if (RemoveBad)
 		    Removeit(buff);
 	    }
-#endif	/* defined(DO_HAVE_SYMLINK) */
+#endif	/* defined(HAVE_SYMLINK) */
 	    if (Translate == FROM_SPOOL && UnlinkCrosspost)
 		(void)unlink(p);
 	    continue;

@@ -251,11 +251,11 @@ RebuildFromFind(void)
     char		buff[BUFSIZ];
 
     /* Start getting a list of the directories. */
-#if	defined(DO_HAVE_SYMLINK)
+#if	defined(HAVE_SYMLINK)
     F = popen("exec find . -follow -type d -print", "r");
 #else
     F = popen("exec find . -type d -print", "r");
-#endif	/* defined(DO_HAVE_SYMLINK) */
+#endif	/* defined(HAVE_SYMLINK) */
     if (F == NULL) {
 	(void)fprintf(stderr, "Can't start find, %s\n", strerror(errno));
 	exit(1);

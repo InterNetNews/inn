@@ -25,13 +25,11 @@ PID_T waitnb(int *statusp)
     WAITER	w;
     PID_T	pid;
 
-#if	defined(DO_HAVE_WAITPID)
+#if defined(HAVE_WAITPID)
     pid = waitpid(-1, &w, WNOHANG);
-#endif	/* defined(DO_HAVE_WAITPID) */
-
-#if	defined(DONT_HAVE_WAITPID)
+#else
     pid = wait3(&w, WNOHANG, (struct rusage *)NULL);
-#endif	/* defined(DONT_HAVE_WAITPID) */
+#endif	
 
     if (pid > 0)
 	*statusp = WAITVAL(w);

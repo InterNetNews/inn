@@ -805,9 +805,9 @@ int main(int ac, char *av[])
 		    syslog(L_ERROR, "%s cant close /dev/tty %m", LogName);
 	    }
 #endif	/* defined(TIOCNOTTY) */
-#if	defined(DO_HAVE_SETSID)
+#if	defined(HAVE_SETSID)
 	    (void)setsid();
-#endif	/* defined(DO_HAVE_SETSID) */
+#endif	/* defined(HAVE_SETSID) */
 	}
 
 	/* Open the Log. */

@@ -81,27 +81,18 @@ typedef char		*CSTRING;
     /* Use flock, lockf, or nothing to lock files? */
     /* =()<#define LOCK_@<LOCK_STYLE>@>()= */
 #define LOCK_FLOCK
-    /* Do you have setsid()? */
-    /* =()<#define @<HAVE_SETSID>@_HAVE_SETSID>()= */
-#define DO_HAVE_SETSID
     /* Does your (struct tm) have a tm_gmtoff field? */
     /* =()<#define @<HAVE_TM_GMTOFF>@_HAVE_TM_GMTOFF>()= */
 #define DONT_HAVE_TM_GMTOFF
     /* Does your (struct stat) have a st_blksize field? */
     /* =()<#define @<HAVE_ST_BLKSIZE>@_HAVE_ST_BLKSIZE>()= */
 #define DO_HAVE_ST_BLKSIZE
-    /* Use waitpid instead of wait3? */
-    /* =()<#define @<HAVE_WAITPID>@_HAVE_WAITPID>()= */
-#define DO_HAVE_WAITPID
     /* Use "union wait" instead of int? */
     /* =()<#define @<USE_UNION_WAIT>@_USE_UNION_WAIT>()= */
 #define DONT_USE_UNION_WAIT
     /* How to fork? */
     /* =()<#define FORK()	@<FORK>@()>()= */
 #define FORK()	vfork()
-    /* Do you have symbolic links? */
-    /* =()<#define @<HAVE_SYMLINK>@_HAVE_SYMLINK>()= */
-#define DO_HAVE_SYMLINK
     /* Does your AF_UNIX bind use sizeof for the socket size? */
     /* =()<#define @<BIND_USE_SIZEOF>@_BIND_USE_SIZEOF>()= */
 #define DO_BIND_USE_SIZEOF

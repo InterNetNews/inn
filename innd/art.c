@@ -2239,7 +2239,7 @@ STRING ARTpost(CHANNEL *cp)
 		if (DoLinks && link(Data.Name, linkname) < 0
 		    && (!MakeDirectory(ngp->Dir, TRUE)
 			|| link(Data.Name, linkname) < 0)) {
-#if	defined(DONT_HAVE_SYMLINK)
+#if !defined(HAVE_SYMLINK)
 		    oerrno = errno;
 		    syslog(L_ERROR, "%s cant link %s and %s %m",
 			   LogName, Data.Name, linkname);
@@ -2257,7 +2257,7 @@ STRING ARTpost(CHANNEL *cp)
 			IOError("symlinking article", oerrno);
 			continue;
 		    }
-#endif	/* defined(DONT_HAVE_SYMLINK) */
+#endif	/* !defined(HAVE_SYMLINK) */
 		}
 		TMRstop(TMR_ARTLINK);
 		if (innconf->writelinks) {
