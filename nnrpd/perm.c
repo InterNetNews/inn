@@ -3,16 +3,36 @@
 **  How to figure out where a user comes from, and what that user can do once
 **  we know who sie is.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
+#include <netdb.h>
+#include <netinet/in.h>
+#include <signal.h>
 #include "nnrpd.h"
 #include "conffile.h"
-#include <netdb.h>
-#include <sys/wait.h>
-#include <signal.h>
+
+/* wait portability mess.  Per autoconf, #define macros ourself. */
+#ifdef HAVE_SYS_WAIT_H
+# include <sys/wait.h>
+#endif
+#ifndef WEXITSTATUS
+# define WEXITSTATUS(status)    ((((unsigned)(status)) >> 8) & 0xFF)
+#endif
+#ifndef WIFEXITED
+# define WIFEXITED(status)      ((((unsigned)(status)) & 0xFF) == 0)
+#endif
+#ifndef WIFSIGNALED
+# define WIFSIGNALED(status)    ((((unsigned)(status)) & 0xFF) > 0 \
+                                 && (((unsigned)(status)) & 0xFF00) == 0)
+#endif
+#ifndef WTERMSIG
+# define WTERMSIG(status)       (((unsigned)(status)) & 0x7F)
+#endif
+
+/* Error returns from inet_addr. */
+#ifndef INADDR_NONE
+# define INADDR_NONE 0xffffffff
+#endif
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
@@ -1046,8 +1066,7 @@ static int MatchClient(AUTHGROUP *group)
 		*p = '\0';
 		ia.s_addr = inet_addr(ClientIp);
 		net.s_addr = inet_addr(pat);
-		if (ia.s_addr != (unsigned int)INADDR_NONE &&
-		    net.s_addr != (unsigned int)INADDR_NONE) {
+		if (ia.s_addr != INADDR_NONE && net.s_addr != INADDR_NONE) {
 		    if (strchr(p+1, '.') == (char *)NULL) {
 			mask = atoi(p+1);
 			for (bits = c = 0; c < mask && c < 32; c++)
