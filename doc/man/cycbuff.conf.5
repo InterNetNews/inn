@@ -11,7 +11,7 @@ CNFS is one of storage method which can be defined at
 .PP
 The file consists of a series of lines;
 blank lines and lines beginning with a number sign (``#'') are ignored.
-There are three kinds of configuration line; ``cycbuffupdate'',
+There are four kinds of configuration lines: ``cycbuffupdate'',
 ``refreshinterval'', ``cycbuff'' and ``metacycbuff.''
 The order of lines in this file is not important among the same kind of
 configuration line.  But all ``cycbuff'' lines should be presented before
@@ -37,9 +37,9 @@ refreshinterval:interval
 .RE
 .PP
 \&``Inerval'' is what interval (seconds) between rereading cycbuff header if
-cycbuff is preopend. (This is the case
+cycbuff is preopend. (This is in the case
 .IR nnrpd (8)
-runs as daemon.)
+runs as a daemon.)
 This line can be omitted and the default value is ``30.''
 .PP
 \&``Cycbuff'' line is formatted as:
