@@ -44,7 +44,7 @@ main(void)
     char *article;
     struct stat st;
 
-    test_init(34);
+    test_init(36);
 
     end = ta + sizeof(ta) - 1;
     p = end - 4;
@@ -116,6 +116,13 @@ main(void)
     ok(32, strncmp(p, "Mon, 23 Dec", strlen("Mon, 23 Dec")) == 0);
     ok(33, wire_endheader(p, article + st.st_size - 1) == NULL);
     ok(34, wire_nextline(p, article + st.st_size - 1) == NULL);
+
+    free(article);
+
+    ok(35, wire_findbody("\r\n.\r\n", 5) == NULL);
+
+    article = xstrdup("\r\nNo header.\r\n.\r\n");
+    ok(36, wire_findbody(article, strlen(article)) == article + 2);
 
     free(article);
 
