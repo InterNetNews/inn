@@ -232,13 +232,6 @@ typedef bool            BOOL;
    should be moved there (or made dynamic). */
 #define FEED_MAXFLAGS           20
 
-/* Used by lots of stuff that parses history file entries.  Should be moved
-   into a header specifically for history parsing. */
-#define HIS_BADCHAR             '_'
-#define HIS_FIELDSEP            '\t'
-#define HIS_NOEXP               "-"
-#define HIS_SUBFIELDSEP         '~'
-
 /* Only used in innd/rc.c and lib/localopen.c; the former should be using
    INADDR_LOOPBACK anyway to avoid a useless call to inet_ntoa() and this
    should be moved to the latter. */
