@@ -1702,12 +1702,12 @@ ARTpropagate(Data, hops, hopcount, list)
 	}
 
 	/* Write that the site is getting it, and flag to send it. */
-	if (fprintf(Log, " %s", sp->Name) == EOF || ferror(Log)) {
+/*	if (fprintf(Log, " %s", sp->Name) == EOF || ferror(Log)) {
 	    j = errno;
 	    syslog(L_ERROR, "%s cant write log_site %m", LogName);
 	    IOError("logging site", j);
 	    clearerr(Log);
-	}
+	} */
 	sp->Sendit = TRUE;
 	sp->Seenit = TRUE;
 	if (sp->Master != NOSITE)

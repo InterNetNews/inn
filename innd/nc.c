@@ -990,8 +990,10 @@ NCproc(cp)
 		if (p) {
 		    av[0] = p;
 		    av[1] = NULL;
+#if 0		    
 		    if ((q = CCcancel(av)) != NULL)
-			syslog(L_ERROR, "%s cant cancel %s %s", LogName, av[0], q);
+			syslog(L_ERROR, "%s cant cancel %s %s", LogName, av[0], q); 
+#endif
 		}
 
 		/* Clear the work-in-progress entry. */

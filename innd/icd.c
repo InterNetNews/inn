@@ -26,7 +26,7 @@ STATIC int		ICDactsize;
 **  avoid problems with mmap.
 */
 #if	defined(ACT_MMAP)
-void ICDiovset(IOVEC iovp, char *base, int len) {
+void ICDiovset(IOVEC *iovp, char *base, int len) {
     (iovp)->iov_len = len; 
     (iovp)->iov_base = NEW(char, (iovp)->iov_len); 
     (void)memcpy((POINTER)(iovp)->iov_base, (POINTER)base, 
