@@ -24,7 +24,7 @@
 #include <sys/resource.h>       /* setrlimit */
 #include <string.h>
 
-#include "logging.h"
+#include <syslog.h> 
 #include "configdata.h"
 #include "clibrary.h"
 #include "libinn.h"
