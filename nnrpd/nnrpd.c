@@ -788,7 +788,7 @@ main(int argc, char *argv[])
     if (ReadInnConf() < 0) exit(1);
 
 #ifdef HAVE_SSL
-    while ((i = getopt(argc, argv, "b:Di:g:op:Rr:s:t:S")) != EOF)
+    while ((i = getopt(argc, argv, "b:Di:g:op:Rr:s:tS")) != EOF)
 #else
     while ((i = getopt(argc, argv, "b:Di:g:op:Rr:s:t")) != EOF)
 #endif /* HAVE_SSL */
