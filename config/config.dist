@@ -538,7 +538,7 @@ _PATH_NEWSBOOT		/usr/news/bin/rc.news
 ##  Where sendmail, or a look-alike, lives.
 ##  The -t is optional and says to read message for recipients
 #### =()<_PATH_SENDMAIL		@<_PATH_SENDMAIL>@>()=
-_PATH_SENDMAIL		/usr/sbin/sendmail -t
+_PATH_SENDMAIL		/usr/sbin/sendmail -oi %s
 ##  Where the shell is.
 #### =()<_PATH_SH		@<_PATH_SH>@>()=
 _PATH_SH		/bin/sh
@@ -776,6 +776,10 @@ _PATH_INNWSTATUS	/var/news/run/innwatch.status
 ##  Format of news overview database
 #### =()<_PATH_SCHEMA		@<_PATH_SCHEMA>@>()=
 _PATH_SCHEMA		/var/news/etc/overview.fmt
+## Location of the MOTD file.
+#### =()<_PATH_MOTD		@<_PATH_MOTD>@>()=
+_PATH_MOTD		/var/news/etc/motd.news
+
 
 
 ##
