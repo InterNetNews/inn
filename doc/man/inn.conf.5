@@ -354,6 +354,15 @@ when retrieving article.  This is useful to verify article, after system
 crash which may cause cyclic buffer corruption.
 The default value is ``0''.
 .TP
+.I ignorenewsgroups
+If set to ``true'' innd will never see Newsgroups header, if the article is
+cmsg newgroup or cmsg rmgroup.  In this case, the newsgroup which the article
+belongs to is determined by the newsgroup name in Control or Subject header.
+This is useful if the article is posted to irrelevant newsgroup to that cmsg
+and Newsgroups header should not be used to determine feeding entry in
+newsfeeds.
+This is boolean value and the default is ``false''.
+.TP
 .I pathnews
 The news user home directory and sometimes the root of the news
 hierarchy.
