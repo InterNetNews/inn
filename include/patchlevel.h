@@ -12,10 +12,9 @@
 /*
 **  Try to avoid changing these.
 */
-#define RELEASE "1"
-#define PATCHLEVEL "8-current"
-#define DATE "13-Oct-1997"
-
+#define RELEASE "2"
+#define PATCHLEVEL "0-beta"
+#define DATE "6-Apr-1998"
 
 /*
 **  See lib/innvers.c, but the version string should look like this:
