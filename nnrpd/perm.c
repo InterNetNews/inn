@@ -1453,7 +1453,7 @@ static void CompressList(char *list)
     *cpto = '\0';
 }
 
-static int MatchHost(char *hostlist, char *host, char *ip)
+static bool MatchHost(char *hostlist, char *host, char *ip)
 {
     char    **list;
     bool    ret	= FALSE;
