@@ -172,10 +172,9 @@ DoSub(F, p)
 	)
 	    continue;
 
-#if	defined(DO_MERGE_TO_GROUPS)
-	if (EQ(s, "!to") || EQn(s, "to.", 3))
-	    continue;
-#endif	/* defined(DO_MERGE_TO_GROUPS) */
+	if (innconf->mergetogroups)
+	    if (EQ(s, "!to") || EQn(s, "to.", 3))
+		continue;
 
 	(void)putc(',', F);
 	len++;
@@ -247,6 +246,7 @@ main(ac, av)
     char	*sys;
     int		i;
 
+    if (ReadInnConf() < 0) exit(1);
     /* Set defaults. */
     act = "/usr/local/lib/newslib/active";
     sys = "sys";

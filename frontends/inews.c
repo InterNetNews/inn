@@ -966,10 +966,8 @@ ValidNewsgroups(hdr, F, article)
 
     h = DDstart(FromServer, ToServer);
     do {
-#if	defined(DO_MERGE_TO_GROUPS)
-	if (p[0] == 't' && p[1] == 'o' && p[2] == '.')
+	if (innconf->mergetogroups && p[0] == 't' && p[1] == 'o' && p[2] == '.')
 	    p = "to";
-#endif	/* defined(DO_MERGE_TO_GROUPS) */
 	i = strlen(p);
 	(void)fseek(F, (OFFSET_T)0, SEEK_SET);
 	while (fgets(buff, sizeof buff, F) != NULL)
