@@ -1,10 +1,21 @@
 #!@_PATH_PERL@ -ws
 # written April 1996, tale@isc.org (David C Lawrence)
-# Version 1.10
+# Version 1.11, 14 Oct 1998
 #
 # NOTICE TO INN MAINTAINERS:  The version that is shipped with INN
 # is the same as the version that I make available to the rest of the
 # world (including non-INN sites), so please make all changes through me.
+#
+# This program is intended to be compatible with Perl 4 and Perl 5.
+#
+# Changes from 1.10 -> 1.11
+# -- code to log error messages to syslog.
+#    See $syslog and $syslog_method configurable variables.
+# -- configurably allow date stamp on stderr error messages.
+# -- added locking for multiple concurrent pgp instances.
+# -- more clear error message if pgp exits abnormally.
+# -- identify PGP 5 "BAD signature" string.
+# -- minor diddling for INN (path to innshellvars.pl changed)
 #
 # Changes from 1.9 -> 1.10
 # -- minor diddling for INN 2.0: use $inn'pathtmp if it exists, and
@@ -44,13 +55,51 @@
 #    not a link or some other weirdness
 
 # Path to pgp binary; for PGP 5.0, set the path to the pgpv binary.
-$pgp = '@_PATH_PGP@';
+$pgp = '/usr/local/bin/pgp';
 
 # if you keep your keyring somewhere that is not the default used by pgp,
 # uncomment the next line and set appropriately.
 # $ENV{'PGPPATH'} = '/path/to/your/pgp/config';
 
 $tmpdir = "/tmp";
+$lockdir = $tmpdir;
+
+# Set to have the script use syslog for errors instead of stderr.
+# Value should be the facility and level to use, as would be found
+# in syslog.conf; ie, "news.err" is the "news" facility and "err" level.
+# For various reasons, it is impossible to economically have the script
+# figure out how to do syslogging correctly on the machine.
+#
+$syslog = 'news.err';
+# $syslog = '';  # an empty value means don't try to do syslogging.
+
+# How should syslog be accessed?
+# As it turns out, syslogging is very hard to do portably in all
+# versions of perl up to and including 5.005_02. 'inet' is all that
+# was available in perl up to version 5.004_03. If your syslog does
+# not accept UDP log packets, such as when syslogd runs with the -l flag,
+# 'inet' will not work.  A value of 'unix' will try to contact syslogd
+# directly over a Unix domain socket built entirely in perl code
+# (no subprocesses).  If that is not working for you, and you have
+# the 'logger' program on your system, set this variable to its full
+# path name to have a subprocess contact syslogd.  If the method is just
+# "logger", the script will search some known directories for that program.
+# If it can't be found & used, everything falls back on stderr logging.
+#
+# You can test the script's syslogging by running "pgpverify < /some/text/file"
+# on a file that is not a valid news article.  The "non-header at line #"
+# error should be syslogged.
+#
+# $syslog_method = 'unix';    # Unix doman socket, perl5.004_03 or higher
+# $syslog_method = 'inet';    # UDP to port 514 of localhost
+$syslog_method = 'logger';
+
+# Prepend the error message with a timestamp?
+# This is only relevant if not syslogging, when errors go to stderr.
+#
+# $log_date = 0;  # zero means don't do it.
+# $log_date = 1;  # non-zero means do it.
+$log_date = -t STDOUT; # do it if STDOUT is to a terminal
 
 ### Exit value:
 ### 0  good signature
@@ -59,6 +108,8 @@ $tmpdir = "/tmp";
 ### 3  bad signature
 ### 255 problem not directly related to pgp analysis of signature
 
+# not syslogged, such an error is almost certainly from someone running
+# the script manually.
 die "Usage: $0 < message\n" if @ARGV != 0;
 
 $0 =~ s%^.*/%%;                 # trim /path/to/prog to prog
@@ -66,9 +117,19 @@ $0 =~ s%^.*/%%;                 # trim /path/to/prog to prog
 do '@LIBDIR@/innshellvars.pl';
 $pgp = $inn'pgp if $inn'pgp && $inn'pgp ne "no-pgp-found-during-configure";
 $tmp = ($inn'pathtmp ? $inn'pathtmp : $tmpdir) . "/pgp$$";
+$lockdir = $inn'locks if $inn'locks;
+#
+# ... and it is expected some day that an INN variable will let perl
+# scripts know how syslogging should be done.
+
+# the call to pgp needs to be locked because it tries to both read and write
+# a file named randseed.bin but doesn't do its own locking as it should,
+# and the consequences of a multiprocess conflict is failure to verify.
+#
+$lock = "$lockdir/LOCK.$0";
 
 if (! -x $pgp) {
-  die "$0: $pgp: ", (-e _ ? "cannot execute" : "no such file"), "\n";
+  &fail("$0: $pgp: " . (-e _ ? "cannot execute" : "no such file") . "\n");
 }
 
 # this is, by design, case-sensitive with regards to the headers it checks.
@@ -86,10 +147,10 @@ while (<>) {
     $dup{$label} = 1 if $header{$label};
     $header{$label} = $value;
   } elsif (/^\s/) {
-    &fail("$0: non-header line at $_\n") unless $label;
+    &fail("$0: non-header at line $.: $_\n") unless $label;
     $header{$label} .= "\n$_";
   } else {
-    &fail("$0: non-header line at $_\n");
+    &fail("$0: non-header at line $.: $_\n");
   }
 }
 
@@ -153,22 +214,36 @@ open(TMP,">> $tmp") || &fail("$0: open > $tmp: $!\n");
 (stat(_))[3] == 1 ||
   &fail("$0: $tmp has hard links, possible security violation attempt\n");
 
-seek TMP, 0, 0;                 # make sure pointer is at beginning of file
-truncate TMP, 0;                # make sure file is zero length
+seek(TMP, 0, 0);                # make sure pointer is at beginning of file
+truncate(TMP, 0);               # make sure file is zero length
 
 print TMP $message;
-close(TMP) || warn "$0: close > $tmp: $!\n";
+close(TMP) || &errmsg("$0: close > $tmp: $!\n");
 &fail("$0: write error for message to check\n")
   if -s $tmp != length($message);
 
 print $message if $test;
 
-$ok = 2;                        # unknown signature result is default
+until (&shlock($lock) > 0) {
+  sleep(2);
+}
+
 open(PGP,"$pgp -f +language=en < $tmp 2>&1 >/dev/null |") ||
   &fail("$0: failed to execute pgp: $!\n");
 
 undef $/;
 $_ = <PGP>;
+
+unlink($lock) || &errmsg("$0: unlink $lock: $!\n");
+unlink($tmp)  || &errmsg("$0: unlink $tmp: $!\n");
+
+unless (close(PGP)) {
+  if ($? >> 8) {
+    &errmsg("$0: pgp exited status " . $? >> 8 . "\n");
+  } else {
+    &errmsg("$0: pgp died on signal " . $? &255 . "\n");
+  }
+}
 
 print if $test;
 
@@ -181,7 +256,8 @@ print if $test;
 #     1024 bits, Key ID B88DA9C1, Created 1996-04-10
 #      "news.announce.newgroups"
 
-if (/Bad signature /) {
+$ok = 2;                        # unknown signature result is default
+if (/B[Aa][Dd] signature /) {
   $ok = 3;
 } elsif (/Good signature from user(:  (.*)| "(.*)"\.)/ ||
          /Good signature made .* by key:\n.+\n +"(.*)"/) {
@@ -191,21 +267,163 @@ if (/Bad signature /) {
   &fail("$0: couldn't access $1.  Bad \$HOME or \$PGPPATH?\n");
 }
 
-close(PGP) || warn "$0: closing pgp pipe returned status $?\n";
-unlink("$tmp") || warn "$0: unlink $tmp: $!\n";
-
 print "$signer\n" if $signer;
 exit $ok;
+
+sub
+errmsg
+
+{
+  $_[0] =~ s/\n$//;
+
+  $date = '';
+  if ($log_date) {
+    eval "require 'ctime.pl'";
+    ($date = &ctime(time)) =~ s/\d{4}\n//
+      unless $@;
+  }
+
+  if ($syslog_method eq "logger") {
+    @loggers = ('/usr/bin/logger', '/usr/local/bin/logger');
+    foreach $try (@loggers) {
+      if (-x $try) {
+        $syslog_method = $try;
+        last;
+      }
+    }
+    $syslog = '' if $syslog_method eq 'logger';
+  }
+
+  if ($syslog && $syslog_method !~ m%/logger$%) {
+    if ($] >= 5) {
+      eval "use Sys::Syslog";
+    } else { 
+      eval "require 'syslog.pl'";
+    }
+  }
+
+  if ($@ || $syslog eq '') {
+    warn $date, "$0: trying to use perl's syslog: $@\n" if $@;
+    warn $date, $_[0], "\n";
+    warn $date, "... while processing $header{'Message-ID'}\n"
+      if $header{'Message-ID'};
+
+  } else {
+    $_[0] .= " processing $header{'Message-ID'}"
+      if $header{'Message-ID'};
+
+    if ($syslog_method =~ m%/logger$%) {
+      unless (system($syslog_method, "-i", "-p", $syslog, $_[0]) == 0) {
+        if ($? >> 8) {
+          warn $date, "$0: $syslog_method exited status ",  $? >>  8, "\n";
+        } else {
+          warn $date, "$0: $syslog_method died on signal ", $? & 255, "\n";
+        }
+        $syslog = '';
+        &errmsg($_[0]);
+      }
+
+    } else {
+      # setlogsock arrived in perl 5.004_03 to enable Sys::Syslog
+      # to use a Unix domain socket to talk to syslogd, which is
+      # the only way to do it when syslog runs with the -l switch.
+      if ($syslog_method eq "unix") {
+        if ($] <= 5.00403 || ! eval "setlogsock('unix')") {
+          warn $date, "$0: cannot use syslog_method 'unix' on this system\n";
+          $syslog = '';
+          &errmsg($_[0]);
+        }
+      }
+      
+      ($facility, $level) = ($syslog =~ /^(w+)\.(\w+)$/);
+
+      # unfortunately, there is no way to definitively know in this program if
+      # the message was logged.  I wish there were a way to send a message
+      # to stderr if and only if the syslog attempt failed.
+      &openlog($0, 'pid', $facility);
+      &syslog($level, $_[0]);
+      &closelog();
+    }
+  }
+
+}
 
 sub
 fail
 
 {
   unlink($tmp);
-  print STDERR $_[0];
-  print STDERR " ... while processing $header{'Message-ID'}\n"
-    if $header{'Message-ID'};
+
+  &errmsg($_[0]);
+
   exit 255;
+}
+
+# get a lock in essentially the same fashion as INN's shlock.
+# return 1 on success, 0 for normal failure, -1 for abnormal failure.
+# "normal failure" is that a lock is apparently in use by someone else.
+sub shlock {
+  local($file) = @_;
+  local($ltmp, $pid);
+
+  unless (defined(&ENOENT)) {
+    eval "require POSIX qw(:errno_h)";
+    if ($@) {
+      # values taken from BSD/OS 3.1
+      sub ENOENT {  2 }
+      sub ESRCH  {  3 }
+      sub EEXIST { 17 }
+    }
+  }
+
+  $ltmp = ($file =~ m#(.*/)#)[0] . "shlock$$";
+
+  # this should really attempt to use another temp name
+  -e $ltmp && (unlink($ltmp) || return -1);
+
+  open(LTMP, ">$ltmp") || return -1;
+  print LTMP "$$\n" || (unlink($ltmp), return -1);
+  close(LTMP) || (unlink($ltmp), return -1);
+
+  if (!link($ltmp, $file)) {
+    if ($! == &EEXIST) {
+      if (open(LOCK, "<$file")) {
+        $pid = <LOCK>;
+        if ($pid =~ /^\d+$/ && (kill(0, $pid) == 1 || $! != &ESRCH)) { 
+          unlink($ltmp);
+          return 0;
+        }
+
+        # ok, the pid in the lockfile is not a number or no longer exists.
+        close(LOCK);            # silent failure is ok here
+
+        # unlink failed 
+        if (unlink($file) != 1 && $! != &ENOENT) {
+          unlink($ltmp);
+          return 0;
+        }
+
+      # check if open failed for reason other than file no longer present
+      } elsif ($! != &ENOENT) { 
+        unlink($ltmp);
+        return -1;
+      }
+
+      # either this process unlinked the lockfile because it was bogus,
+      # or between this process's link() and open() the other process
+      # holding the lock unlinked it.  This process can now try to aquire.
+      if (! link($ltmp, $file)) {
+        unlink($ltmp);
+        return $! == &EEXIST ? 0 : -1; # maybe another proc grabbed the lock
+      }
+
+    } else {                    # first attempt to link failed
+      unlink($ltmp);
+      return 0;
+    }
+  }
+  unlink($ltmp);
+  return 1;
 }
 
 # Our lawyer told me to include the following.  The upshot of it is
