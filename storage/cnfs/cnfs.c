@@ -351,6 +351,7 @@ STATIC BOOL CNFSparse_part_line(char *l) {
   cycbuff->fd = -1;
   cycbuff->next = (CYCBUFF *)NULL;
   cycbuff->needflush = FALSE;
+  cycbuff->bitfield = (caddr_t)NULL;
   /*
   ** The minimum article offset will be the size of the bitfield itself,
   ** len / (blocksize * 8), plus however many additional blocks the CYCBUFF
@@ -1315,8 +1316,16 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, RETRTYPE amount) {
 	    madvise(priv.base, priv.len, MADV_DONTNEED);  
 #endif
 	    munmap(priv.base, priv.len);
-	} else
-	    DISPOSE(priv.base);
+	} else {
+	    /* In the case we return art->data = NULL, we
+             * must not free an already stale pointer.
+               -mibsoft@mibsoftware.com
+	     */
+	    if (priv.base) {
+	        DISPOSE(priv.base);
+		priv.base = 0;
+	    }
+	}
 	cycbuff = priv.cycbuff;
     }
 
@@ -1424,8 +1433,9 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, RETRTYPE amount) {
 	    art->data = NULL;
 	    art->len = 0;
 	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
-	    return art;
 	    DISPOSE(private->base);
+	    private->base = 0;
+	    return art;
 	}
     }
     art->len = ntohl(cah.size);
