@@ -1904,6 +1904,10 @@ BOOL buffindexed_ctl(OVCTLTYPE type, void *val) {
   case OVCUTOFFLOW:
     Cutofflow = *(BOOL *)val;
     return TRUE;
+  case OVSTATICSEARCH:
+    i = (int *)val;
+    *i = FALSE;
+    return TRUE;
   default:
     return FALSE;
   }
