@@ -37,12 +37,12 @@ $newsgroup = '@NEWSGRP@';
     'overview.fmt',	"$inn::pathetc/overview.fmt",
     'newsetc',		"$inn::pathetc",
     'newslib',		"@LIBDIR@",
-    'nnrp.access',	"$inn::pathetc/nnrp.access",
     'nnrpd',		"$inn::pathbin/nnrpd",
     'nntpsend.ctl',	"$inn::pathetc/nntpsend.ctl",
     'oldlogs',		"$inn::pathlog/OLD",
     'parsectl',		"$inn::pathbin/parsecontrol",
     'passwd.nntp',	"$inn::pathetc/passwd.nntp",
+    'readers.conf',	"$inn::pathetc/readers.conf",
     'rnews',		"$inn::pathbin/rnews",
     'rnewsprogs',	"$inn::pathbin/rnews.libexec",
     'spooltemp',	"$inn::pathtmp",
@@ -60,9 +60,9 @@ $newsgroup = '@NEWSGRP@';
     'moderators',	'moderators',
     'newsfeeds',	'newsfeeds',
     'overview.fmt',	'overview_fmt',
-    'nnrp.access',	'nnrp_access',
     'nntpsend.ctl',	'nntpsend_ctl',
     'passwd.nntp',	'passwd_nntp'
+    'readers.conf',	'readers_conf',
 );
 
 ##  The modes of the config files we can check.
@@ -75,9 +75,9 @@ $newsgroup = '@NEWSGRP@';
     'moderators',	0644,
     'newsfeeds',	0644,
     'overview.fmt',	0644,
-    'nnrp.access',	0640,
     'nntpsend.ctl',	0640,
     'passwd.nntp',	0640
+    'readers.conf',	0640,
 );
 
 
@@ -709,32 +709,6 @@ overview_fmt
 
 
 ##
-##  nnrp.access
-##
-sub
-nnrp_access
-{
-    local ($host, $perm, $user, $pass, $groups);
-
-    input: while ( <IN> ) {
-	next input if &spacious($file, ++$line);
-
-	unless ( ($host, $perm, $user, $pass, $groups) =
-	    /^([^:])+:([^:]*):([^:]*):([^:]*):([^:]+)$/ ) {
-	    print "$file:$line: malformed line.\n";
-	    next input;
-	}
-
-	print "$file:$line: access list has a / in it\n"
-	    if $host =~ m@/@;
-	print "$file:$line: unknown permissions: `$perm'\n"
-	    unless $perm eq "" || $perm =~ /[RP]/;
-    }
-    1;
-}
-
-
-##
 ##  nntpsend.ctl
 ##
 sub
@@ -786,6 +760,16 @@ passwd_nntp
 	print "$file:$line: username/password must both be blank or non-blank\n"
 	    if ( $name eq "" && $pass ne "" ) || ($name ne "" && $pass eq "");
     }
+    1;
+}
+
+
+##
+##  readers.conf
+##
+sub
+readers_conf
+{
     1;
 }
 
@@ -1078,8 +1062,8 @@ if ( 0 ) {
     &inn_conf();
     &moderators();
     &nntpsend_ctl();
-    &nnrp_access();
     &newsfeeds();
     &overview_fmt();
     &passwd_nntp();
+    &readers_conf();
 }
