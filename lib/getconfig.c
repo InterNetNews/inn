@@ -65,7 +65,7 @@ char *GetFileConfigValue(char *value)
 {
     FILE	        *F;
     int	                i;
-    char	        *p;
+    char	        *p, *q;
     char	        c;
 
     /* Read the config file. */
@@ -83,6 +83,9 @@ char *GetFileConfigValue(char *value)
 		(void)Fclose(F);
 		for (p = &ConfigBuff[i + 1]; ISWHITE(*p); p++)
 		    continue;
+		q = &p[strlen(p)-1];
+		while (q>p && ISWHITE(*q))
+		    *q-- = '\0';
 		return p;
 	    }
 	}
