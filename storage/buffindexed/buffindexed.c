@@ -1653,9 +1653,11 @@ void *buffindexed_opensearch(char *group, int low, int high) {
   if (Gib != NULL) {
     DISPOSE(Gib);
     Gib = NULL;
-    DISPOSE(Cachesearch->group);
-    DISPOSE(Cachesearch);
-    Cachesearch = NULL;
+    if (Cachesearch != NULL) {
+      DISPOSE(Cachesearch->group);
+      DISPOSE(Cachesearch);
+      Cachesearch = NULL;
+    }
   }
   gloc = GROUPfind(group, FALSE);
   if (GROUPLOCempty(gloc)) {
@@ -1859,12 +1861,14 @@ bool buffindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, T
   bool		retval, grouplocked = FALSE;
 
   if (Gib != NULL) {
-    if (data != NULL || len != NULL || !EQ(Cachesearch->group, group)) {
+    if (data != NULL || len != NULL || (Cachesearch != NULL && !EQ(Cachesearch->group, group))) {
       DISPOSE(Gib);
       Gib = NULL;
-      DISPOSE(Cachesearch->group);
-      DISPOSE(Cachesearch);
-      Cachesearch = NULL;
+      if (Cachesearch != NULL) {
+        DISPOSE(Cachesearch->group);
+        DISPOSE(Cachesearch);
+        Cachesearch = NULL;
+      }
     } else {
       if (gettoken(artnum, token))
 	return TRUE;
@@ -1875,7 +1879,7 @@ bool buffindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, T
 	  return FALSE;
 	}
 	GROUPlock(gloc, LOCK_WRITE);
-	if (GROUPentries[gloc.recno].count == Cachesearch->count) {
+	if ((Cachesearch != NULL) && (GROUPentries[gloc.recno].count == Cachesearch->count)) {
 	  /* no new overview data is stored */
 	  GROUPlock(gloc, LOCK_UNLOCK);
 	  return FALSE;
@@ -1883,9 +1887,11 @@ bool buffindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, T
 	  grouplocked = TRUE;
 	  DISPOSE(Gib);
 	  Gib = NULL;
-	  DISPOSE(Cachesearch->group);
-	  DISPOSE(Cachesearch);
-	  Cachesearch = NULL;
+	  if (Cachesearch != NULL) {
+	    DISPOSE(Cachesearch->group);
+	    DISPOSE(Cachesearch);
+	    Cachesearch = NULL;
+	  }
 	}
       }
     }
@@ -2062,9 +2068,11 @@ bool buffindexed_ctl(OVCTLTYPE type, void *val) {
     if (Gib != NULL) {
       DISPOSE(Gib);
       Gib = NULL;
-      DISPOSE(Cachesearch->group);
-      DISPOSE(Cachesearch);
-      Cachesearch = NULL;
+      if (Cachesearch != NULL) {
+	DISPOSE(Cachesearch->group);
+	DISPOSE(Cachesearch);
+	Cachesearch = NULL;
+      }
     }
     return TRUE;
   default:
@@ -2134,9 +2142,11 @@ void buffindexed_close(void) {
   if (Gib != NULL) {
     DISPOSE(Gib);
     Gib = NULL;
-    DISPOSE(Cachesearch->group);
-    DISPOSE(Cachesearch);
-    Cachesearch = NULL;
+    if (Cachesearch != NULL) {
+      DISPOSE(Cachesearch->group);
+      DISPOSE(Cachesearch);
+      Cachesearch = NULL;
+    }
   }
   if (fstat(GROUPfd, &sb) < 0)
     return;
