@@ -456,7 +456,6 @@ int tls_start_servertls(int readfd, int writefd)
     unsigned int n;
     SSL_SESSION *session;
     SSL_CIPHER *cipher;
-    X509   *peer;
 
     if (!tls_serverengine)
     {		
@@ -523,56 +522,6 @@ int tls_start_servertls(int readfd, int writefd)
       if (tls_loglevel < 4)
 	do_dump = 0;
 
-    /*
-     * Lets see, whether a peer certificate is availabe and what is
-     * the actual information. We want to save it for later use.
-     */
-    peer = SSL_get_peer_certificate(tls_conn);
-
-    if (peer != NULL) {
-      
-      syslog(L_ERROR,"GOT CLIENT CERTIFICATE!!!\n");
-
-	X509_NAME_oneline(X509_get_subject_name(peer),
-			  peer_subject, CCERT_BUFSIZ);
-	if (tls_loglevel >= 2)
-	  Printf("subject=%s", peer_subject);
-
-	syslog(L_ERROR, "subject=%s", peer_subject);
-	tls_peer_subject = peer_subject;
-	X509_NAME_oneline(X509_get_issuer_name(peer),
-			  peer_issuer, CCERT_BUFSIZ);
-	if (tls_loglevel >= 2)
-	   Printf("issuer=%s", peer_issuer);
-	tls_peer_issuer = peer_issuer;
-	if (X509_digest(peer, EVP_md5(), md, &n)) {
-	    for (j = 0; j < (int) n; j++)
-	    {
-		fingerprint[j * 3] = hexcodes[(md[j] & 0xf0) >> 4];
-		fingerprint[(j * 3) + 1] = hexcodes[(md[j] & 0x0f)];
-		if (j + 1 != (int) n)
-		    fingerprint[(j * 3) + 2] = '_';
-		else
-		    fingerprint[(j * 3) + 2] = '\0';
-	    }
-	    if (tls_loglevel >= 2)
-		Printf("fingerprint=%s", fingerprint);
-	    syslog(L_ERROR,"fingerprint=%s", fingerprint);
-	    tls_peer_fingerprint = fingerprint;
-	}
-	X509_NAME_get_text_by_NID(X509_get_subject_name(peer),
-			  NID_commonName, peer_CN, CCERT_BUFSIZ);
-	tls_peer_CN = peer_CN;
-	X509_NAME_get_text_by_NID(X509_get_issuer_name(peer),
-			  NID_commonName, issuer_CN, CCERT_BUFSIZ);
-	if (tls_loglevel >= 3)
-	   Printf("subject_CN=%s, issuer_CN=%s", peer_CN, issuer_CN);
-
-	syslog(L_ERROR,"subject_CN=%s, issuer_CN=%s", peer_CN, issuer_CN);
-
-	tls_issuer_CN = issuer_CN;
-	/* xxx	X509_free(peer);*/
-    }
     tls_protocol = SSL_get_version(tls_conn);
     cipher = SSL_get_current_cipher(tls_conn);
 
