@@ -2,7 +2,6 @@
 SHELL	= /bin/sh
 MAKE	= make
 IFTRUE	= @$(SHELL) ../iftrue.sh
-NOPATCH	= 'rm dbz.c ; echo Cannot apply patch ; exit 1'
 
 ##  =()<P	= @<P>@>()=
 P	= 
@@ -39,8 +38,6 @@ RANLIB	= ranlib
 ##  See the rule for version.o, below.
 OSXATTOBJ= version.o memchr.o memcmp.o memcpy.o memset.o strchr.o strrchr.o
 
-##  =()<DBZDIR	= @<DBZDIR>@>()=
-DBZDIR	= ../dbz
 ##  =()<MISSING_SRC = @<MISSING_SRC>@>()=
 MISSING_SRC = 
 ##  =()<MISSING_OBJ = @<MISSING_OBJ>@>()=
@@ -117,25 +114,6 @@ syslog.c:		../syslog/syslog.c
 version.o:
 	@rm -f $(OSXATTOBJ)
 	/.attbin/ar vx /usr/.attlib/libc.a $(OSXATTOBJ)
-
-dbz.o:			dbz.c
-	$(CC) $(DBZCFLAGS) -c dbz.c
-
-../include/dbz.h:	$(DBZDIR)/dbz.h
-	@rm -f ../include/dbz.h
-	cp $(DBZDIR)/dbz.h ../include/dbz.h
-
-dbz.c:			$(DBZDIR)/dbz.c
-	cp $(DBZDIR)/dbz.c dbz.c
-
-##  Only do this if you're building a release kit.
-PATCH:			dbz.pch.intro
-	rcs -l dbz.pch
-	@rm -f dbz.pch
-	cat dbz.pch.intro >dbz.pch
-	@echo "Ignore diff's exit status."
-	-diff -c $(DBZDIR)/dbz.c dbz.c >>dbz.pch
-	ci -u dbz.pch
 
 ##
 ccenter:	$(SOURCES)
