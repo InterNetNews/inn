@@ -11,59 +11,103 @@ test "x$prefix" = xNONE && prefix=$ac_default_prefix
 test "x$exec_prefix" = xNONE && exec_prefix=$ac_default_prefix
 
 dnl Parse the arguments
-AC_ARG_ENABLE(pgp-verify,[  --enable-pgp-verify     use pgp control verification], DO_PGP=DO, DO_PGP=DONT)
+
+AC_ARG_ENABLE(pgp-verify,
+	[  --enable-pgp-verify     use pgp control verification], 
+	DO_PGP=DO, 
+	DO_PGP=DONT)
 AC_SUBST(DO_PGP)
-dnl
-AC_ARG_WITH(tcl,[  --with-tcl              TCL script support], DO_TCL=DO
-TCL_LIB="-ltcl -lm"
-TCL_INC="-I/usr/local/include", DO_TCL=DONT
-TCL_LIB=""
-TCL_INC="")
+
+AC_ARG_WITH(tcl,
+	[  --with-tcl              TCL script support], 
+	DO_TCL=DO
+	TCL_LIB="-ltcl -lm"
+	TCL_INC="-I/usr/local/include", DO_TCL=DONT
+	TCL_LIB=""
+	TCL_INC="")
 AC_SUBST(DO_TCL)
 AC_SUBST(TCL_LIB)
 AC_SUBST(TCL_INC)
-dnl
-AC_ARG_WITH(perl,[  --with-perl             Perl script support], DO_PERL=DO, DO_PERL=DONT)
+
+AC_ARG_WITH(perl,
+	[  --with-perl             Perl script support], 
+	DO_PERL=DO, 
+	DO_PERL=DONT)
 AC_SUBST(DO_PERL)
-dnl
-AC_ARG_WITH(keywords,[  --with-keywords         Overview keyword support],DO_KEYWORDS=DO,DO_KEYWORDS=DONT)
+
+AC_ARG_WITH(keywords,
+	[  --with-keywords         Overview keyword support],
+	DO_KEYWORDS=DO,
+	DO_KEYWORDS=DONT)
 AC_SUBST(DO_KEYWORDS)
-dnl
-AC_ARG_WITH(db-dir,[  --with-db-dir=PATH   News database files [PREFIX/db]], DBDIR=$with_db_dir, DBDIR=$prefix/db)
+
+AC_ARG_WITH(db-dir,
+	[  --with-db-dir=PATH   News database files [PREFIX/db]], 
+	DBDIR=$with_db_dir, 
+	DBDIR=$prefix/db)
 AC_SUBST(DBDIR)
-dnl
-AC_ARG_WITH(run-dir,[  --with-run-dir=PATH   News pid/runtime files [PREFIX/run]], RUNDIR=$with_run_dir, RUNDIR=$prefix/run)
+
+AC_ARG_WITH(run-dir,
+	[  --with-run-dir=PATH   News pid/runtime files [PREFIX/run]], 
+	RUNDIR=$with_run_dir, 
+	RUNDIR=$prefix/run)
 AC_SUBST(RUNDIR)
-dnl
-AC_ARG_WITH(etc-dir,[  --with-etc-dir=PATH   News config files [PREFIX/etc]], ETCDIR=$with_etc_dir, ETCDIR=$prefix/etc)
+
+AC_ARG_WITH(etc-dir,
+	[  --with-etc-dir=PATH   News config files [PREFIX/etc]], 
+	ETCDIR=$with_etc_dir, 
+	ETCDIR=$prefix/etc)
 AC_SUBST(ETCDIR)
-dnl
-AC_ARG_WITH(spool-dir,[  --with-spool-dir=PATH   News storage (default /var/news/spool)], SPOOLDIR=$with_spool_dir, SPOOLDIR=/var/news/spool)
+
+AC_ARG_WITH(spool-dir,
+	[  --with-spool-dir=PATH   News storage (default /var/news/spool)], 
+	SPOOLDIR=$with_spool_dir, 
+	SPOOLDIR=/var/news/spool)
 AC_SUBST(SPOOLDIR)
-dnl
-AC_ARG_WITH(log-dir,[  --with-log-dir=PATH     Logging directory (default /var/log/news)], LOGDIR=$with_log_dir, LOGDIR=/var/log/news)
+
+AC_ARG_WITH(log-dir,
+	[  --with-log-dir=PATH     Logging directory (default /var/log/news)], 
+	LOGDIR=$with_log_dir, 
+	LOGDIR=/var/log/news)
 AC_SUBST(LOGDIR)
-dnl
-AC_ARG_WITH(tmp-path,[  --with-tmp-path=PATH    Temporary files directory], TMPPATH=$with_tmp_path, if test -d /var/tmp; then
+
+AC_ARG_WITH(tmp-path,
+	[  --with-tmp-path=PATH    Temporary files directory], 
+	TMPPATH=$with_tmp_path, 
+if test -d /var/tmp
+then
 	TMPPATH=/var/tmp
 else
-	if test -d /usr/tmp; then
+	if test -d /usr/tmp
+	then
 		TMPPATH=/usr/tmp
 	else
 		TMPPATH=/tmp
 	fi
 fi) 
-AC_ARG_WITH(news-user,[  --with-news-user=USER    News user id [news]], NEWSUSER=$with_news_user, NEWSUSER=news)
-AC_SUBST(NEWSUSER)
-dnl
-AC_ARG_WITH(news-group,[  --with-news-group=GROUP   News group id [news]], NEWSGRP=$with_news_group, NEWSGRP=news)
-AC_SUBST(NEWSGRP)
-dnl
-AC_ARG_WITH(news-master,[  --with-news-master=USER   News master [usenet]], NEWSGRP=$with_news_master, NEWSMASTER=usenet)
-AC_SUBST(NEWSMASTER)
-dnl
 AC_SUBST(TMPPATH)
-AC_ARG_WITH(sendmail,[  --with-sendmail=PATH    Specify sendmail], SENDMAIL=$with_sendmail)
+
+AC_ARG_WITH(news-user,
+	[  --with-news-user=USER    News user id [news]], 
+	NEWSUSER=$with_news_user, 
+	NEWSUSER=news)
+AC_SUBST(NEWSUSER)
+
+AC_ARG_WITH(news-group,
+	[  --with-news-group=GROUP   News group id [news]], 
+	NEWSGRP=$with_news_group, 
+	NEWSGRP=news)
+AC_SUBST(NEWSGRP)
+
+AC_ARG_WITH(news-master,
+	[  --with-news-master=USER   News master [usenet]], 
+	NEWSMASTER=$with_news_master, 
+	NEWSMASTER=usenet)
+AC_SUBST(NEWSMASTER)
+
+AC_ARG_WITH(sendmail,
+	[  --with-sendmail=PATH    Specify sendmail], 
+	SENDMAIL=$with_sendmail)
 
 AC_CACHE_CHECK(for MANDIR,MANDIR, MANDIR=`eval echo $mandir`)
 ac_cv_subst_manpath="$MANDIR"
@@ -416,9 +460,7 @@ yes
 # ifdef FD_SETFD
 yes
 # endif
-#endif], 
-	[AC_DEFINE(CLX_FCNTL) AC_MSG_RESULT(FCNTL)], 
-	CLX_STYLE=unknown)
+#endif], [AC_DEFINE(CLX_FCNTL) AC_MSG_RESULT(FCNTL)], CLX_STYLE=unknown)
 else
 	CLX_STYLE=unknown
 fi
@@ -430,9 +472,7 @@ if test $ac_cv_header_sys_filio_h = yes; then
 	AC_EGREP_CPP(yes, [#include <sys/filio.h>
 #ifdef FIOCLEX
 yes
-#endif], 
-	[AC_DEFINE(CLX_IOCTL) AC_MSG_RESULT(IOCTL)], 
-	CLX_STYLE=unknown)
+#endif], [AC_DEFINE(CLX_IOCTL) AC_MSG_RESULT(IOCTL)], CLX_STYLE=unknown)
 else
 	CLX_STYLE=unknown
 fi
@@ -450,33 +490,33 @@ dnl Non-blocking I/O style.....fjc mibsoftware.com
 dnl Want to avoid fcntl(FNDELAY) which is inconsistent.
 dnl if O_NONBLOCK is present we use that.
 dnl fall back to FIONBIO
-
-AC_CACHE_CHECK(for nbio style, ac_cv_subst_nbio_style,
+AC_MSG_CHECKING(for nbio style)
+NBIO_STYLE=pre_test
 if test $ac_cv_header_fcntl_h = yes; then
 	AC_EGREP_CPP(yes, [#include <fcntl.h>
 #ifdef O_NONBLOCK
 yes
-#endif], ac_cv_subst_nbio_style=FCNTL, ac_cv_subst_nbio_style=unknown)
+#endif], [AC_DEFINE(NBIO_FCNTL) AC_MSG_RESULT(FCNTL)], NBIO_STYLE=unknown)
 else
-	ac_cv_subst_nbio_style=unknown
-fi)
+	NBIO_STYLE=unknown
+fi
 
-if test $ac_cv_subst_nbio_style = unknown; then
+if test $NBIO_STYLE = unknown; then
 if test $ac_cv_header_sys_filio_h = yes; then
 	AC_EGREP_CPP(yes, [#include <sys/filio.h>
 #ifdef FIONBIO
 yes
-#endif], ac_cv_subst_nbio_style=IOCTL, ac_cv_subst_nbio_style=unknown)
+#endif], [AC_DEFINE(NBIO_IOCTL) AC_MSG_RESULT(IOCTL)], NBIO_STYLE=unknown)
 else
-	ac_cv_subst_nbio_style=unknown
+	NBIO_STYLE=unknown
 fi
 fi
 
-if test ${ac_cv_subst_nbio_style} = "unknown"
+if test $NBIO_STYLE = "unknown"
 then
-	AC_MSG_ERROR(Must set ac_cv_subst_nbio_style)
+	AC_MSG_ERROR(Must set NBIO_STYLE)
 fi
-AC_SUBST(ac_cv_subst_nbio_style)
+
 dnl ***************************************************
 
 
@@ -595,7 +635,6 @@ YN_to_cv_subst(ac_cv_c_const, ac_cv_subst_use_char_const, DO, DONT)
 YN_to_cv_subst(ac_cv_type_size_t, ac_cv_subst_size_t, size_t, unsigned)
 YN_to_cv_subst(ac_cv_type_pid_t, ac_cv_subst_pid_t, pid_t, int)
 YN_to_cv_subst(ac_cv_type_off_t, ac_cv_subst_lseekval, off_t, long)
-YN_to_cv_subst(ac_cv_union_wait, ac_cv_subst_have_union_wait, DO, DONT)
 YN_to_cv_subst(ac_cv_func_vfork_works, ac_cv_subst_fork, vfork, fork)
 YN_to_cv_subst(ac_cv_header_vfork_h, ac_cv_subst_have_vfork, DO, DONT)
 YN_to_cv_subst(ac_cv_func_getrusage, ac_cv_subst_res_style, RUSAGE, TIMES)

@@ -80,9 +80,6 @@ typedef char		*CSTRING;
     /* Do you have Unix-domain sockets? */
     /* =()<#define @<HAVE_UNIX_DOMAIN>@_HAVE_UNIX_DOMAIN>()= */
 #define DO_HAVE_UNIX_DOMAIN
-    /* How should non-blocking I/O be done? */
-    /* =()<#define NBIO_@<NBIO_STYLE>@>()= */
-#define NBIO_FCNTL
     /* How should resource-totalling be done? */
     /* =()<#define RES_@<RES_STYLE>@>()= */
 #define RES_RUSAGE

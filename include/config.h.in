@@ -54,6 +54,10 @@
 #undef CLX_FCNTL
 #undef CLX_IOCTL
 
+/* Define one of the following for Non-Blocking I/O Style */
+#undef NBIO_FCNTL
+#undef NBIO_IOCTL
+
 /* Define if you have msync() with 3 args */
 #undef HAVE_MSYNC_3_ARG
 #ifdef HAVE_MSYNC_3_ARG 

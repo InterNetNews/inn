@@ -186,11 +186,6 @@
   ||#### =()<BIND_USE_SIZEOF		@<BIND_USE_SIZEOF>@>()=
   ||BIND_USE_SIZEOF		DO
 [IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  How should non-blocking I/O be done?  Pick IOCTL or FCNTL.
-  ||##[autoconf]
-  ||#### =()<NBIO_STYLE		@<NBIO_STYLE>@>()=
-  ||NBIO_STYLE		@ac_cv_subst_nbio_style@
-[IN1.7=@4][WDF=autoconf][WOR=no]
   ||##  How should resource-totalling be done?  Pick RUSAGE or TIMES
   ||##[autoconf]
   ||#### =()<RES_STYLE		@<RES_STYLE>@>()=
