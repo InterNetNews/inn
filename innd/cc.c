@@ -259,8 +259,20 @@ CCaddhist(av)
 	  return p;
 	hash = HashMessageID(Data.MessageID);
     }
-    if (HIShavearticle(hash))
+
+    /* If throttled, don't try to use the history database. */
+    if (Mode == OMthrottled)
+	return "1 Server throttled";
+
+    /* If paused, briefly open the history database. */
+    if (Mode != OMrunning)
+	HISsetup();
+
+    if (HIShavearticle(hash)) {
+	if (Mode != OMrunning) HISclose();
 	return "1 Duplicate";
+    }
+    if (Mode != OMrunning) HISclose();
     if (strspn(av[1], DIGITS) != strlen(av[1]))
 	return "1 Bad arrival date";
     Data.Arrived = atol(av[1]);
@@ -993,6 +1005,20 @@ CCnewgroup(av)
     if ((ngp = NGfind(Name)) != NULL)
 	return CCdochange(ngp, Rest);
 
+    /*
+     * See FAQ Q 6.3: INN shreds the active file when doing multiple
+     * newgroups/rmgroups if the server is throttled. So disallow that for now.
+     */
+   if (Mode == OMthrottled)
+	return "1 server throttled";
+
+    /*
+     * See FAQ Q 6.3: INN shreds the active file when doing multiple
+     * newgroups/rmgroups if the server is throttled. So disallow that for now.
+     */
+   if (Mode == OMthrottled)
+	return "1 server throttled";
+
     /* Update the log of groups created.  Don't use stdio because SunOS
      * 4.1 has broken libc which can't handle fd's greater than 127. */
     if ((fd = open(TIMES, O_WRONLY | O_APPEND | O_CREAT, 0664)) < 0) {
@@ -1478,6 +1504,20 @@ CCrmgroup(av)
 
     if ((ngp = NGfind(av[0])) == NULL)
 	return CCnogroup;
+
+    /*
+     * See FAQ Q 6.3: INN shreds the active file when doing multiple
+     * newgroups/rmgroups if the server is throttled. So disallow that for now.
+     */
+    if (Mode == OMthrottled)
+	return "1 server throttled";
+
+    /*
+     * See FAQ Q 6.3: INN shreds the active file when doing multiple
+     * newgroups/rmgroups if the server is throttled. So disallow that for now.
+     */
+    if (Mode == OMthrottled)
+	return "1 server throttled";
 
     /* Update the in-core data. */
     if (!ICDrmgroup(ngp))
