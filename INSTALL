@@ -1018,6 +1018,12 @@ Configuring INN
     slices of a larger disk), but will probably give worse performance if
     your cycbuffs are spread out across a lot of spindles.
 
+    By default, CNFS data is flushed to disk every 25 articles.  If you're
+    running a small server with a light article load, this could mean losing
+    quite a few articles in a crash.  You can change this interval by adding
+    a cycbuffupdate line to your cycbuff.conf file; see cycbuff.conf(5) for
+    more details.
+
     Finally, you have to create the cycbuffs.  See "Creating the Article
     Spool" for more information on how to do that.
 
