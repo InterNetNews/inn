@@ -163,7 +163,7 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     struct sockaddr_in sinl, sinr;
     int sock;
     struct hostent *hent;
-    int done;
+    int done = 0;
     int ret;
     int reqlen;
     int passlen;
