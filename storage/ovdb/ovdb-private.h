@@ -172,7 +172,7 @@ char *db_strerror(int err);
   int txn_ret; \
   txn_ret = txn_begin(OVDBenv->tx_info, NULL, &tid); \
   if (txn_ret != 0) { \
-    syslog(L_ERROR, "OVDB: " #label " txn_begin: %s", db_strerror(ret)); \
+    warn("OVDB: " #label " txn_begin: %s", db_strerror(ret)); \
     tid = NULL; \
   } \
 }
@@ -196,7 +196,7 @@ char *db_strerror(int err);
   int txn_ret; \
   txn_ret = txn_begin(OVDBenv, NULL, &tid, 0); \
   if (txn_ret != 0) { \
-    syslog(L_ERROR, "OVDB: " #label " txn_begin: %s", db_strerror(ret)); \
+    warn("OVDB: " #label " txn_begin: %s", db_strerror(ret)); \
     tid = NULL; \
   } \
 }
@@ -220,7 +220,7 @@ char *db_strerror(int err);
   int txn_ret; \
   txn_ret = OVDBenv->txn_begin(OVDBenv, NULL, &tid, 0); \
   if (txn_ret != 0) { \
-    syslog(L_ERROR, "OVDB: " #label " txn_begin: %s", db_strerror(ret)); \
+    warn("OVDB: " #label " txn_begin: %s", db_strerror(ret)); \
     tid = NULL; \
   } \
 }
