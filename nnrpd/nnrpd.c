@@ -1033,7 +1033,7 @@ main(int argc, char *argv[])
       ssl_result=tls_start_servertls(0, /* read */
 				     1); /* write */
       if (ssl_result==-1) {
-	Reply("%d Starttls failed\r\n", NNTP_STARTTLS_BAD_VAL);
+	Reply("%d SSL connection failed\r\n", NNTP_STARTTLS_BAD_VAL);
 	ExitWithStats(1, FALSE);
       }
 
