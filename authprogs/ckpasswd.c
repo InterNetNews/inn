@@ -1,10 +1,20 @@
 /*  $Id$
 **
 **  The default username/password authenticator.
+**
+**  This program is intended to be run by nnrpd and handle usernames and
+**  passwords.  It can authenticate against a regular flat file (the type
+**  managed by htpasswd), a DBM file, the system password file or shadow file,
+**  or PAM.
 */
 
 #include "config.h"
 #include "clibrary.h"
+
+#include "inn/messages.h"
+#include "inn/qio.h"
+#include "inn/vector.h"
+#include "libinn.h"
 
 #include "libauth.h"
 
@@ -20,258 +30,321 @@
 # elif HAVE_DB1_NDBM_H
 #  include <db1/ndbm.h>
 # endif
+# define OPT_DBM "d:"
+#else
+# define OPT_DBM ""
 #endif
 
 #if HAVE_GETSPNAM
 # include <shadow.h>
+# define OPT_SHADOW "s"
+#else
+# define OPT_SHADOW ""
 #endif
 
 #if HAVE_PAM
 # include <security/pam_appl.h>
 #endif
 
-#if HAVE_PAM
+
 /*
- * PAM conversation function.  Since we can't very well ask the user for
- * a password interactively, this function returns the password to every
- * question PAM asks.  There appears to be no generic way to determine
- * whether the message in question is indeed asking for the password which
- * is less than ideal...
- *
- * NOTE: This function allocates an array of 'struct pam_response' which
- * needs to be free()'d later on.  For this program though, it's not exactly
- * an issue because it will get called once and the program will exit...
- *
- * appdata_ptr contains the password we were given.
- */
-static int pass_conv (int num_msg, const struct pam_message **msgm UNUSED,
-		struct pam_response **response, void *appdata_ptr)
+**  The PAM conversation function.
+**
+**  Since we already have all the information and can't ask the user
+**  questions, we can't quite follow the real PAM protocol.  Instead, we just
+**  return the password in response to every question that PAM asks.  There
+**  appears to be no generic way to determine whether the message in question
+**  is indeed asking for the password....
+**
+**  This function allocates an array of struct pam_response to return to the
+**  PAM libraries that's never freed.  For this program, this isn't much of an
+**  issue, since it will likely only be called once and then the program will
+**  exit.
+**
+**  appdata_ptr contains the password we were given.
+*/
+#if HAVE_PAM
+static int
+pass_conv(int num_msg, const struct pam_message **msgm UNUSED,
+          struct pam_response **response, void *appdata_ptr)
 {
     int i;
 
-    *response = (struct pam_response *)malloc (num_msg *
-		    sizeof(struct pam_response));
+    *response = malloc(num_msg * sizeof(struct pam_response));
     if (*response == NULL)
         return PAM_CONV_ERR;
-
     for (i = 0; i < num_msg; i++) {
-	/* Construct the response */
-	(*response)[i].resp = strdup((char *)appdata_ptr);
-	(*response)[i].resp_retcode = 0;
+        (*response)[i].resp = strdup((char *)appdata_ptr);
+        (*response)[i].resp_retcode = 0;
     }
     return PAM_SUCCESS;
 }
-
-static struct pam_conv conv = {
-    pass_conv,
-    NULL
-};
 #endif /* HAVE_PAM */
 
-#if HAVE_GETSPNAM
-static char *
-GetShadowPass(char *user)
-{
-    static struct spwd *spwd;
 
-    if ((spwd = getspnam(user)) != NULL)
-	return(spwd->sp_pwdp);
-    return(0);
+/*
+**  Authenticate a user via PAM.
+**
+**  Attempts to authenticate a user with PAM, returning true if the user
+**  successfully authenticates and false otherwise.  Note that this function
+**  doesn't attempt to handle any remapping of the authenticated user by the
+**  PAM stack, but just assumes that the authenticated user was the same as
+**  the username given.
+**
+**  Right now, all failures are handled via die.  This may be worth revisiting
+**  in case we want to try other authentication methods if this fails for a
+**  reason other than the system not having PAM support.
+*/
+#if !HAVE_PAM
+static bool
+auth_pam(char *password UNUSED)
+{
+    return false;
 }
-#endif /* HAVE_GETSPNAM */
-
-static char *
-GetPass(char *user)
+#else
+static bool
+auth_pam(const char *username, char *password)
 {
-    static struct passwd *pwd;
+    pam_handle_t *pamh;
+    struct pam_conv conv;
+    int status;
 
-    if ((pwd = getpwnam(user)) != NULL)
-	return(pwd->pw_passwd);
-    return(0);
+    conv.conv = pass_conv;
+    conv.appdata_ptr = password;
+    status = pam_start("nnrpd", username, &conv, &pamh);
+    if (status != PAM_SUCCESS)
+        die("pam_start failed: %s", pam_strerror(pamh, status));
+    status = pam_authenticate(pamh, PAM_SILENT);
+    if (status != PAM_SUCCESS)
+        die("pam_authenticate failed: %s", pam_strerror(pamh, status));
+    status = pam_acct_mgmt(pamh, PAM_SILENT);
+    if (status != PAM_SUCCESS)
+        die("pam_acct_mgmt failed: %s", pam_strerror(pamh, status));
+    status = pam_end(pamh, status);
+    if (status != PAM_SUCCESS)
+        die("pam_end failed: %s", pam_strerror(pamh, status));
+
+    /* If we get to here, the user successfully authenticated. */
+    return true;
 }
+#endif /* HAVE_PAM */
 
+
+/*
+**  Try to get a password out of a dbm file.  The dbm file should have the
+**  username for the key and the crypted password as the value.  The crypted
+**  password, if found, is returned as a newly allocated string; otherwise,
+**  NULL is returned.
+*/
+#if !HAVE_DBM
 static char *
-GetFilePass(char *name, char *file)
+password_dbm(char *user UNUSED, const char *file UNUSED)
 {
-    FILE *pwfile;
-    char buf[SMBUF];
-    char *colon, *iter;
-    int found;
-    static char pass[SMBUF];
-
-    pwfile = fopen(file, "r");
-    if (!pwfile)
-	return(0);
-    found = 0;
-    while ((!found) && fgets(buf, sizeof(buf), pwfile)) {
-	if (*buf == '#')			/* ignore comment lines */
-	    continue;
-	buf[strlen(buf)-1] = 0;			/* clean off the \n */
-	if ((colon = strchr(buf, ':'))) {	/* correct format */
-	    *colon = 0;
-	    if (strcmp(buf, name))
-		continue;
-	    iter = colon+1;			/* user matches */
-	    if ((colon = strchr(iter, ':')) != NULL)
-		*colon = 0;
-	    strncpy(pass, iter, sizeof(pass));
-            pass[sizeof(pass) - 1] = '\0';
-	    fclose(pwfile);
-	    return(pass);
-	}
-    }
-    fclose(pwfile);
-    return(0);
+    return NULL;
 }
-
-#if HAVE_DBM
+#else
 static char *
-GetDBPass(char *name, char *file)
+password_dbm(char *name, const char *file)
 {
-    datum key;
-    datum val;
-    DBM *D;
-    static char pass[SMBUF];
+    datum key, value;
+    DBM *database;
+    char *password;
 
-    D = dbm_open(file, O_RDONLY, 0600);
-    if (!D)
-        return(0);
+    database = dbm_open(file, O_RDONLY, 0600);
+    if (database == NULL)
+        return NULL;
     key.dptr = name;
     key.dsize = strlen(name);
-    val = dbm_fetch(D, key);
-    if (!val.dptr) {
-        dbm_close(D);
-        return(0);
-    }
-    if ((size_t) val.dsize > sizeof(pass) - 1)
+    value = dbm_fetch(database, key);
+    if (value.dptr == NULL) {
+        dbm_close(database);
         return NULL;
-    strncpy(pass, val.dptr, val.dsize);
-    pass[val.dsize] = 0;
-    dbm_close(D);
-    return(pass);
+    }
+    password = xmalloc(value.dsize + 1);
+    strlcpy(password, value.dptr, value.dsize + 1);
+    dbm_close(database);
+    return password;
 }
 #endif /* HAVE_DBM */
 
+
+/*
+**  Try to get a password out of the system /etc/shadow file.  The crypted
+**  password, if found, is returned as a newly allocated string; otherwise,
+**  NULL is returned.
+*/
+#if !HAVE_GETSPNAM
+static char *
+password_shadow(const char *user UNUSED)
+{
+    return NULL;
+}
+#else
+static char *
+password_shadow(const char *user)
+{
+    struct spwd *spwd;
+
+    spwd = getspnam(user);
+    if (spwd != NULL)
+        return xstrdup(spwd->sp_pwdp);
+    return NULL;
+}
+#endif /* HAVE_GETSPNAM */
+
+
+/*
+**  Try to get a password out of a file.  The crypted password, if found, is
+**  returned as a newly allocated string; otherwise, NULL is returned.
+*/
+static char *
+password_file(const char *username, const char *file)
+{
+    QIOSTATE *qp;
+    char *line, *password;
+    struct cvector *info = NULL;
+
+    qp = QIOopen(file);
+    if (qp == NULL)
+        return NULL;
+    for (line = QIOread(qp); line != NULL; line = QIOread(qp)) {
+        if (*line == '#' || *line == '\n')
+            continue;
+        info = cvector_split(line, ':', info);
+        if (info->count < 2 || strcmp(info->strings[0], username) != 0)
+            continue;
+        password = xstrdup(info->strings[1]);
+        QIOclose(qp);
+        cvector_free(info);
+        return password;
+    }
+    if (QIOtoolong(qp))
+        die("line too long in %s", file);
+    if (QIOerror(qp))
+        sysdie("error reading %s", file);
+    QIOclose(qp);
+    cvector_free(info);
+    return NULL;
+}
+
+
+/*
+**  Try to get a password out of the system password file.  The crypted
+**  password, if found, is returned as a newly allocated string; otherwise,
+**  NULL is returned.
+*/
+static char *
+password_system(const char *username)
+{
+    struct passwd *pwd;
+
+    pwd = getpwnam(username);
+    if (pwd != NULL)
+        return xstrdup(pwd->pw_passwd);
+    return NULL;
+}
+
+
+/*
+**  Main routine.
+**
+**  We handle the variences between systems with #if blocks above, so that
+**  this code can look fairly clean.
+*/
 int
 main(int argc, char *argv[])
 {
-    int opt;
-    int do_shadow, do_file, do_db;
-    char *fname;
-    struct authinfo *authinfo;
-    char *rpass;
+    enum authtype { AUTH_NONE, AUTH_SHADOW, AUTH_FILE, AUTH_DBM };
 
-    do_shadow = do_file = do_db = 0;
-    fname = 0;
-#if HAVE_GETSPNAM
-# if HAVE_DBM
-    while ((opt = getopt(argc, argv, "sf:d:")) != -1) {
-# else
-    while ((opt = getopt(argc, argv, "sf:")) != -1) {
-# endif
-#else
-# if HAVE_DBM
-    while ((opt = getopt(argc, argv, "f:d:")) != -1) {
-# else
-    while ((opt = getopt(argc, argv, "f:")) != -1) {
-# endif
-#endif
-	/* only allow one of the three possibilities */
-	if (do_shadow || do_file || do_db)
-	    exit(1);
-	switch (opt) {
-	  case 's':
-	    do_shadow = 1;
-	    break;
-	  case 'f':
-	    fname = optarg;
-	    do_file = 1;
-	    break;
-#if HAVE_DBM
-	  case 'd':
-	    fname = optarg;
-	    do_db = 1;
-	    break;
-#endif
-	}
+    int opt;
+    enum authtype type = AUTH_NONE;
+    const char *filename = NULL;
+    struct authinfo *authinfo = NULL;
+    char *password = NULL;
+
+    message_program_name = "ckpasswd";
+
+    while ((opt = getopt(argc, argv, "f:u:p:" OPT_DBM OPT_SHADOW)) != -1) {
+        switch (opt) {
+        case 'd':
+            if (type != AUTH_NONE)
+                die("only one of -s, -f, or -d allowed");
+            type = AUTH_DBM;
+            filename = optarg;
+            break;
+        case 'f':
+            if (type != AUTH_NONE)
+                die("only one of -s, -f, or -d allowed");
+            type = AUTH_FILE;
+            filename = optarg;
+            break;
+        case 's':
+            if (type != AUTH_NONE)
+                die("only one of -s, -f, or -d allowed");
+            type = AUTH_SHADOW;
+            break;
+        case 'u':
+            if (authinfo == NULL) {
+                authinfo = xmalloc(sizeof(struct authinfo));
+                authinfo->password = NULL;
+            }
+            authinfo->username = optarg;
+            break;
+        case 'p':
+            if (authinfo == NULL) {
+                authinfo = xmalloc(sizeof(struct authinfo));
+                authinfo->username = NULL;
+            }
+            authinfo->password = optarg;
+            break;
+        default:
+            exit(1);
+        }
     }
     if (argc != optind)
-	exit(2);
+	die("extra arguments given");
+    if (authinfo != NULL && authinfo->username == NULL)
+        die("-u option is required if -p option is given");
+    if (authinfo != NULL && authinfo->password == NULL)
+        die("-p option is required if -u option is given");
 
-    authinfo = get_auth();
-    if (authinfo == NULL) {
-	fprintf(stderr, "ckpasswd: internal error.\n");
-	exit(1);
-    }
-    if (authinfo->username[0] == '\0') {
-	fprintf(stderr, "ckpasswd: null username.\n");
-	exit(1);
-    }
+    /* Unless a username or password was given on the command line, assume
+       we're being run by nnrpd. */
+    if (authinfo == NULL)
+        authinfo = get_auth();
+    if (authinfo == NULL)
+        die("no authentication information from nnrpd");
+    if (authinfo->username[0] == '\0')
+        die("null username");
 
-    /* got username and password, check if they're valid */
-#if HAVE_GETSPNAM
-    if (do_shadow) {
-	if ((rpass = GetShadowPass(authinfo->username)) == (char*) 0)
-	    rpass = GetPass(authinfo->username);
-    } else
-#endif
-    if (do_file)
-	rpass = GetFilePass(authinfo->username, fname);
-    else
-#if HAVE_DBM
-    if (do_db)
-	rpass = GetDBPass(authinfo->username, fname);
-    else
-#endif
-#if HAVE_PAM
-    {
-        pam_handle_t *pamh;
-	int res;
-	
-	conv.appdata_ptr = authinfo->password;
-        res = pam_start ("nnrpd", authinfo->username, &conv, &pamh);
-	if (res != PAM_SUCCESS) {
-            fprintf (stderr, "Failed: pam_start(): %s\n",
-			    pam_strerror(pamh, res));
-            exit (1);
+    /* Run the appropriate authentication routines. */
+    switch (type) {
+    case AUTH_SHADOW:
+        password = password_shadow(authinfo->username);
+        if (password == NULL)
+            password = password_system(authinfo->username);
+        break;
+    case AUTH_FILE:
+        password = password_file(authinfo->username, filename);
+        break;
+    case AUTH_DBM:
+        password = password_dbm(authinfo->username, filename);
+        break;
+    case AUTH_NONE:
+        if (auth_pam(authinfo->username, authinfo->password)) {
+            printf("User:%s\n", authinfo->username);
+            exit(0);
         }
-
-        if ((res = pam_authenticate (pamh, 0)) != PAM_SUCCESS) {
-            fprintf (stderr, "Failed: pam_authenticate(): %s\n",
-			    pam_strerror(pamh, res));
-            exit (1);
-        }
-
-        if ((res = pam_acct_mgmt (pamh, 0)) != PAM_SUCCESS) {
-	    fprintf (stderr, "Failed: pam_acct_mgmt(): %s\n",
-			    pam_strerror (pamh, res));
-	    exit (1);
-        }
-
-        if ((res = pam_end (pamh, res) != PAM_SUCCESS)) {
-            fprintf (stderr, "Failed: pam_end(): %s\n",
-			    pam_strerror (pamh, res));
-	    exit (1);
-        }
-
-	/* If it gets this far, the user has been successfully authenticated. */
-        fprintf (stdout, "User:%s\n", authinfo->username);
-        exit (0);
+        password = password_system(authinfo->username);
+        break;
     }
-#else /* HAVE_PAM */
-	rpass = GetPass(authinfo->username);
-#endif /* HAVE_PAM */
 
-    if (!rpass) {
-	fprintf(stderr, "ckpasswd: user %s does not exist.\n",
-                authinfo->username);
-	exit(1);
-    }
-    if (strcmp(rpass, crypt(authinfo->password, rpass)) == 0) {
-	printf("User:%s\n", authinfo->username);
-	exit(0);
-    }
-    fprintf(stderr, "ckpasswd: user %s password doesn't match.\n",
-            authinfo->username);
-    exit(1);
+    if (password == NULL)
+        die("user %s unknown", authinfo->username);
+    if (strcmp(password, crypt(authinfo->password, password)) != 0)
+        die("invalid password for user %s", authinfo->username);
+
+    /* The password matched. */
+    printf("User:%s\n", authinfo->username);
+    exit(0);
 }
