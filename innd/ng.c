@@ -348,7 +348,6 @@ BOOL NGrenumber(NEWSGROUP *ngp)
     struct stat		sb;
     char		(*mapped)[][OVERINDEXPACKSIZE];
     int			count;
-    int			i;
     /* Get a valid offset into the active file. */
     if (ICDneedsetup) {
 	syslog(L_ERROR, "%s unsynched must reload before renumber", LogName);
@@ -391,13 +390,13 @@ BOOL NGrenumber(NEWSGROUP *ngp)
 		return TRUE;
 	    }
 	    fclose(fi);
-	    for (i = 0; i < count; i++) {
-		UnpackOverIndex((*mapped)[i], &index);
-		if (index.artnum < lomark)
-		    lomark = index.artnum;
-		if (index.artnum > himark)
-		    himark = index.artnum;
-	    }
+	    /* assumes .overview.index is sorted */
+	    UnpackOverIndex((*mapped)[0], &index);
+	    if (index.artnum < lomark)
+		lomark = index.artnum;
+	    UnpackOverIndex((*mapped)[count-1], &index);
+	    if (index.artnum > himark)
+		himark = index.artnum;
 	    if ((munmap((MMAP_PTR)mapped, count * OVERINDEXPACKSIZE)) < 0)
 		return TRUE;
 	} else {
