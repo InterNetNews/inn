@@ -178,7 +178,10 @@ message_log_syslog(int pri, int len, const char *fmt, va_list args, int err)
         exit(message_fatal_cleanup ? (*message_fatal_cleanup)() : 1);
     }
     vsnprintf(buffer, len + 1, fmt, args);
-    syslog(pri, err ? "%s: %m" : "%s", buffer);
+    if (err == 0)
+        syslog(pri, "%s", buffer);
+    else
+        syslog(pri, "%s: %s", buffer, strerror(err));
     free(buffer);
 }
 
