@@ -71,7 +71,7 @@ foreach $method (keys %methods) {
     print DEF $method, "_open, ", $method, "_close, \n\t  ", $method, "_sync, ";
     print DEF $method, "_lookup, \n\t  ", $method, "_check, ", $method, "_write, \n\t  ";
     print DEF $method, "_replace, ", $method, "_expire, \n\t  ", $method, "_walk, ";
-    print DEF $method, "_error, \n\t  ", $method, "_remember, \n\t  ", $method, "_ctl";
+    print DEF $method, "_remember, \n\t  ", $method, "_ctl";
     $first++;
 }
 
