@@ -119,7 +119,8 @@ GoodIdent(int fd, char *identd)
     struct sockaddr_in s_ident;
     struct sockaddr_in s_local;
     struct sockaddr_in s_distant;
-    int ident_fd, len=sizeof(struct sockaddr);
+    int ident_fd;
+    socklen_t len = sizeof(struct sockaddr_in);
     u_short port1,port2;
     ssize_t lu;
 

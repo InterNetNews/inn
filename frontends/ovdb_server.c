@@ -537,7 +537,8 @@ static pid_t
 serverproc(int me)
 {
     fd_set rdset, wrset;
-    int i, ret, count, lastfd, salen, lastnumreaders;
+    int i, ret, count, lastfd, lastnumreaders;
+    socklen_t salen;
     struct sockaddr_in sa;
     struct timeval tv;
     char string[50];
@@ -615,7 +616,7 @@ serverproc(int me)
 	if(FD_ISSET(listensock, &rdset)) {
 	    if(!ovdb_conf.maxrsconn || numreaders < ovdb_conf.maxrsconn) {
 		salen = sizeof(sa);
-	    	ret = accept(listensock, &sa, &salen);
+	    	ret = accept(listensock, (struct sockaddr *)&sa, &salen);
 		if(ret >= 0) {
 		    newclient(ret);
 		    wholistens = -1;
@@ -714,7 +715,8 @@ sharemem(size_t len)
 int
 main(int argc, char *argv[])
 {
-    int i, salen, ret;
+    int i, ret;
+    socklen_t salen;
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
     struct sockaddr_un sa;
 #else
@@ -831,7 +833,8 @@ main(int argc, char *argv[])
 	    ret = select(listensock+1, &rdset, NULL, NULL, &tv);
 
 	    if(ret == 1 && wholistens == -2) {
-		ret = accept(listensock, &sa, &salen);
+		salen = sizeof(sa);
+		ret = accept(listensock, (struct sockaddr *)&sa, &salen);
 		if(ret >= 0)
 		   close(ret);
 	    }
