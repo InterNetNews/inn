@@ -506,6 +506,16 @@ the size of \fBbacklog-limit\fP. If both \fBbacklog-factor\fP and
 \fBbacklog-limit-highwater\fP are defined, then the value of
 \fBbacklog-factor\fP is used.
 .TP
+.B username
+This key requires a string value.  If the value is defined, then innfeed
+tries to authenticate by ``AUTHINFO USER'' and this value used for user name.
+\fBpassword\fP must also be defined, if this key is defined.
+.TP
+.B password
+This key requires a string value.  The value is the password
+used for ``AUTHINFO PASS''.
+\fBusername\fP must also be defined, if this key is defined.
+.TP
 .B deliver
 This key is used with imapfeed to authenticate to a remote host.  It is optional.
 There are several parameters that must be included with deliver:
