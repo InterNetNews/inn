@@ -44,19 +44,6 @@ struct conf_vars	*innconf = NULL;
 const char		*innconffile = _PATH_CONFIG;
 char			pathbuff[SMBUF];
 
-const char *
-cpcatpath(const char *p, const char *f)
-{
-    if (strchr(f, '/') != NULL) {
-	return f;
-    } else {
-	strcpy(pathbuff, p);
-	strcat(pathbuff, "/");
-	strcat(pathbuff, f);
-    }
-    return pathbuff;
-}
-
 char *
 GetFileConfigValue(char *value)
 {
@@ -347,51 +334,37 @@ CheckInnConf(void)
 	(void)fprintf(stderr, "Must set 'pathnews' in inn.conf");
 	return(-1);
     }
-    if (innconf->pathbin == NULL) {
-	innconf->pathbin = COPY(cpcatpath(innconf->pathnews, "bin"));
-    }
-    if (innconf->pathfilter == NULL) {
-	innconf->pathfilter = COPY(cpcatpath(innconf->pathbin, "filter"));
-    }
-    if (innconf->pathdb == NULL) {
-	innconf->pathdb = COPY(cpcatpath(innconf->pathnews, "db"));
-    }
-    if (innconf->pathetc == NULL) {
-	innconf->pathetc = COPY(cpcatpath(innconf->pathnews, "etc"));
-    }
-    if (innconf->pathrun == NULL) {
-	innconf->pathrun = COPY(cpcatpath(innconf->pathnews, "run"));
-    }
-    if (innconf->pathlog == NULL) {
-	innconf->pathlog = COPY(cpcatpath(innconf->pathnews, "log"));
-    }
-    if (innconf->pathhttp == NULL) {
+    if (innconf->pathbin == NULL)
+	innconf->pathbin = concatpath(innconf->pathnews, "bin");
+    if (innconf->pathfilter == NULL)
+	innconf->pathfilter = concatpath(innconf->pathbin, "filter");
+    if (innconf->pathdb == NULL)
+	innconf->pathdb = concatpath(innconf->pathnews, "db");
+    if (innconf->pathetc == NULL)
+	innconf->pathetc = concatpath(innconf->pathnews, "etc");
+    if (innconf->pathrun == NULL)
+	innconf->pathrun = concatpath(innconf->pathnews, "run");
+    if (innconf->pathlog == NULL)
+	innconf->pathlog = concatpath(innconf->pathnews, "log");
+    if (innconf->pathhttp == NULL)
 	innconf->pathhttp = COPY(innconf->pathlog);
-    }
-    if (innconf->pathspool == NULL) {
-	innconf->pathspool = COPY(cpcatpath(innconf->pathnews, "spool"));
-    }
-    if (innconf->patharticles == NULL) {
-	innconf->patharticles = COPY(cpcatpath(innconf->pathspool, "articles"));
-    }
-    if (innconf->pathoverview == NULL) {
-	innconf->pathoverview = COPY(cpcatpath(innconf->pathspool, "overview"));
-    }
-    if (innconf->pathoutgoing == NULL) {
-	innconf->pathoutgoing = COPY(cpcatpath(innconf->pathspool, "outgoing"));
-    }
-    if (innconf->pathincoming == NULL) {
-	innconf->pathincoming = COPY(cpcatpath(innconf->pathspool, "incoming"));
-    }
-    if (innconf->patharchive == NULL) {
-	innconf->patharchive = COPY(cpcatpath(innconf->pathspool, "archive"));
-    }
-    if (innconf->pathtmp == NULL) {
+    if (innconf->pathspool == NULL)
+	innconf->pathspool = concatpath(innconf->pathnews, "spool");
+    if (innconf->patharticles == NULL)
+	innconf->patharticles = concatpath(innconf->pathspool, "articles");
+    if (innconf->pathoverview == NULL)
+	innconf->pathoverview = concatpath(innconf->pathspool, "overview");
+    if (innconf->pathoutgoing == NULL)
+	innconf->pathoutgoing = concatpath(innconf->pathspool, "outgoing");
+    if (innconf->pathincoming == NULL)
+	innconf->pathincoming = concatpath(innconf->pathspool, "incoming");
+    if (innconf->patharchive == NULL)
+	innconf->patharchive = concatpath(innconf->pathspool, "archive");
+    if (innconf->pathtmp == NULL)
 	innconf->pathtmp = COPY(_PATH_TMP);
-    }
-    if (innconf->mailcmd == NULL) {
-	innconf->mailcmd = COPY(cpcatpath(innconf->pathbin, "innmail"));
-    }
+    if (innconf->mailcmd == NULL)
+	innconf->mailcmd = concatpath(innconf->pathbin, "innmail");
+
     /* Set the TMPDIR variable unconditionally and globally */
     tmpdir = getenv("TMPDIR");
     if (!tmpdir || strcmp(tmpdir, innconf->pathtmp) != 0) {
