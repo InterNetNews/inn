@@ -67,9 +67,10 @@
 ##     If you have permission to carry any of the hierachies so listed in
 ##     this file, you should change the entries for those hierarchies below.
 ##
-##  Please copy inn-bugs@isc.org on any updates to this file so that it can
-##  be updated in the INN CVS repository.  For changes to any public
-##  hierarchy, please also post the changes to news.admin.hierarchies.
+##  Please copy usenet-config@isc.org on any updates to this file so that
+##  it can be updated in the INN CVS repository and on ftp.isc.org.  For
+##  changes to a public hierarchy, please also post the changes to
+##  news.admin.hierarchies.
 ##
 ##  The comments of this file aren't in any formal or well-defined syntax,
 ##  but they are meant to use a consistent syntax to allow eventual parsing
@@ -470,7 +471,7 @@ checkgroups:cl*@clarinet.com:clari.*:verify-ClariNet.Group
 newgroup:cl*@clarinet.com:clari.*:verify-ClariNet.Group
 rmgroup:cl*@clarinet.com:clari.*:verify-ClariNet.Group
 
-## CMI (*LOCAL* -- University of Illinois, Urbana-Champaign, IL, USA)
+## CMI (*LOCAL* -- Champaign County, IL, USA)
 # Contact: news@uiuc.edu
 # For internal use only, contact above address for questions.
 newgroup:*:cmi.*:drop
@@ -1602,7 +1603,7 @@ rmgroup:cgunn@laplaza.org:taos.*:doit
 newgroup:news@t-fcn.net:tcfn.*:doit
 rmgroup:news@t-fcn.net:tcfn.*:doit
 
-## T-NETZ (*DEFUNCT* -- German Email Network)
+## T-NETZ (*DEFUNCT* -- Germany)
 # Defunct, use z-netz.*.
 newgroup:*@*:t-netz.*:mail
 rmgroup:*@*:t-netz.*:doit
@@ -1692,11 +1693,11 @@ checkgroups:news@mayn.de:ufra.*:verify-news.mayn.de
 newgroup:news@mayn.de:ufra.*:verify-news.mayn.de
 rmgroup:news@mayn.de:ufra.*:verify-news.mayn.de
 
-## UIUC (University of Illinois, USA)
-newgroup:p-pomes@*.cso.uiuc.edu:uiuc.*:doit
-newgroup:paul@*.cso.uiuc.edu:uiuc.*:doit
-rmgroup:p-pomes@*.cso.uiuc.edu:uiuc.*:doit
-rmgroup:paul@*.cso.uiuc.edu:uiuc.*:doit
+## UIUC (*LOCAL* -- University of Illinois at Urbana-Champaign, USA)
+# Contact: usenet@uiuc.edu
+# For internal use only, contact above address for questions.
+newgroup:*@*:uiuc.*:mail
+rmgroup:*@*:uiuc.*:doit
 
 ## UK (United Kingdom of Great Britain and Northern Ireland)
 # *PGP*   See comment at top of file.
@@ -1859,15 +1860,14 @@ newgroup:*@*:york.*:mail
 rmgroup:*@*:york.*:doit
 
 ## Z-NETZ (German non-Internet based network)
-# Key mail: pgp-public-keys@informatik.uni-hamburg.de Subject: GET 0x40145FC9
+# Contact: teko@dinoex.sub.org
+# Key URL: ftp://ftp.dinoex.de/pub/keys/z-netz.koordination.user+sysops.asc
 # *PGP*   See comment at top of file.
 newgroup:*:z-netz.*:drop
 rmgroup:*:z-netz.*:drop
-checkgroups:dirk.meyer@dinoex.sub.org:z-netz.*:verify-checkgroups-dinoex
-newgroup:dirk.meyer@dinoex.sub.org:z-netz.*:verify-checkgroups-dinoex
-newgroup:*@*.de:z-netz.alt.*:doit
-newgroup:*@*.sub.org:z-netz.alt.*:doit
-rmgroup:dirk.meyer@dinoex.sub.org:z-netz.*:verify-checkgroups-dinoex
+checkgroups:teko@dinoex.sub.org:z-netz.*:verify-z-netz.koordination.user+sysops
+newgroup:teko@dinoex.sub.org:z-netz.*:verify-z-netz.koordination.user+sysops
+rmgroup:teko@dinoex.sub.org:z-netz.*:verify-z-netz.koordination.user+sysops
 
 ## ZA (South Africa)
 newgroup:root@duvi.eskom.co.za:za.*:doit
@@ -1875,7 +1875,7 @@ newgroup:ccfj@hippo.ru.ac.za:za.*:doit
 rmgroup:root@duvi.eskom.co.za:za.*:doit
 rmgroup:ccfj@hippo.ru.ac.za:za.*:doit
 
-## ZER (*DEFUNCT* -- German Email Network)
+## ZER (*DEFUNCT* -- Germany)
 # Defunct, use z-netz.*.
 newgroup:*@*:zer.*:mail
 rmgroup:*@*:zer.*:doit
