@@ -349,6 +349,10 @@ sub print_cycbuff_head {
 sub lookup_age {
     my ($msgid) = @_;
 
+    # This isn't really sufficient; we should use a safe fork.
+    $msgid =~ s/\\/\\\\/;
+    $msgid =~ s/\'/\'\\\'\'/;
+
     my $history = `grephistory -l '$msgid' 2>&1`;
     if ($history =~ /\t(\d+)~/) {
 	return $1;
