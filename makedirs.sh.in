@@ -56,16 +56,16 @@ for F in \
 	${PATHSPOOL} ${PATHARTICLES} ${PATHOVERVIEW} ${PATHARCHIVE} \
 	${PATHINCOMING} ${PATHOUTGOING} ${PATHINCOMING}/bad \
 	${PATHLOG} ${PATHLOG}/OLD ${PATHBIN}/rnews.libexec ${PATHBIN}/auth ; do
-    if [ ! -d ${F} ] ; then
-	mkdir ${PFLAG} ${F} || exit 1
-	${CHOWN} ${NEWSUSER} ${F} || exit 1
-	chgrp ${NEWSGROUP} ${F} || exit 1
+    if [ ! -d ${DESTDIR}${F} ] ; then
+	mkdir ${PFLAG} ${DESTDIR}${F} || exit 1
+	${CHOWN} ${NEWSUSER} ${DESTDIR}${F} || exit 1
+	chgrp ${NEWSGROUP} ${DESTDIR}${F} || exit 1
 	case ${F} in
 	${PATHRUN})
-	    chmod 0770 ${F} || exit 1
+	    chmod 0770 ${DESTDIR}${F} || exit 1
 	    ;;
 	*)
-	    chmod 0775 ${F} || exit 1
+	    chmod 0775 ${DESTDIR}${F} || exit 1
 	    ;;
 	esac
     fi

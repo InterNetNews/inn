@@ -57,7 +57,7 @@ MOST	= rc.news overview.fmt checkgroups default ihave newgroup \
 	startup.tcl startup_innd.pl filter_innd.pl filter_nnrpd.pl \
 	actsync.cfg actsync.ign scanspool innmail
 
-MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(PATH_SCHEMA) $D$(CTLBIN)/checkgroups \
+MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(CTLBIN)/checkgroups \
 	$D$(PATHETC)/default $D$(CTLBIN)/ihave $D$(CTLBIN)/newgroup \
 	$D$(CTLBIN)/rmgroup $D$(CTLBIN)/sendme $D$(CTLBIN)/sendsys \
 	$D$(CTLBIN)/senduuname $D$(CTLBIN)/version $D$(PATH_PARSECTL) \
@@ -89,7 +89,7 @@ REST_INSTALLED	= \
 	$D$(PATH_CONFIG) $D$(PATH_MODERATORS) \
 	$D$(PATH_CONTROLCTL) $D$(PATH_EXPIRECTL) $D$(PATHETC)/nntpsend.ctl \
 	$D$(PATHETC)/innreport.conf $D$(PATHETC)/innreport_inn.pm \
-	$D$(PATH_CTLWATCH) $D$(PATH_DISTPATS) \
+	$D$(PATH_CTLWATCH) $D$(PATH_DISTPATS) $D$(PATH_SCHEMA) \
 	$D$(PATH_ACTSYNC_CFG) $D$(PATH_ACTSYNC_IGN) \
 	$D$(PATH_MOTD) $D$(PATH_STORAGECTL) \
 	$D$(PATH_OVERVIEWCTL) $D$(PATH_CYCBUFFCONFIG)

@@ -23,11 +23,11 @@ ALL	= inews rnews ctlinnd getlist innconfval decode encode sm
 all:		$(ALL)
 	date >$@
 
-install:	$(PATHBIN)/inews $(PATHBIN)/rnews \
-		$(PATHBIN)/ctlinnd $(PATHBIN)/getlist $(PATHBIN)/innconfval \
-		$(RNEWSPROGS)/c7unbatch \
-		$(RNEWSPROGS)/decode $(RNEWSPROGS)/encode \
-		$(PATHBIN)/sm
+install:	$D$(PATHBIN)/inews $D$(PATHBIN)/rnews \
+		$D$(PATHBIN)/ctlinnd $D$(PATHBIN)/getlist
+		$D$(PATHBIN)/innconfval $D$(RNEWSPROGS)/c7unbatch \
+		$D$(RNEWSPROGS)/decode $D$(RNEWSPROGS)/encode \
+		$D$(PATHBIN)/sm
 
 clobber clean:
 	rm -f *.o $(ALL)
@@ -83,23 +83,23 @@ profiled:
 	#load $(CFLAGS) $<
 
 ##  Low-level install actions.
-$(PATHBIN)/inews:		inews
+$D$(PATHBIN)/inews:		inews
 	$(SHELL) ../installit.sh $(OWNER) -m 02555 -b .OLD $? $@
-$(PATHBIN)/rnews:		rnews
+$D$(PATHBIN)/rnews:		rnews
 	$(SHELL) ../installit.sh $(ROWNER) -m 04550 -b .OLD $? $@
-$(PATHBIN)/ctlinnd:	ctlinnd
+$D$(PATHBIN)/ctlinnd:	ctlinnd
 	$(SHELL) ../installit.sh $(OWNER) -m  0550 -b .OLD $? $@
-$(PATHBIN)/sm:	sm
+$D$(PATHBIN)/sm:	sm
 	$(SHELL) ../installit.sh $(OWNER) -m  0550 -b .OLD $? $@
-$(PATHBIN)/getlist:	getlist
+$D$(PATHBIN)/getlist:	getlist
 	$(SHELL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
-$(PATHBIN)/innconfval:	innconfval
+$D$(PATHBIN)/innconfval:	innconfval
 	$(SHELL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
-$(RNEWSPROGS)/c7unbatch:	c7unbatch.sh
+$D$(RNEWSPROGS)/c7unbatch:	c7unbatch.sh
 	$(SHELL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
-$(RNEWSPROGS)/decode:		decode
+$D$(RNEWSPROGS)/decode:		decode
 	$(SHELL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
-$(RNEWSPROGS)/encode:		encode
+$D$(RNEWSPROGS)/encode:		encode
 	$(SHELL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
