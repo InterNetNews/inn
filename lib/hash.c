@@ -77,7 +77,7 @@ HashMessageID(const char *MessageID)
         }
     }
     if (new != NULL)
-        for (q = new + (cip - p); *p != '\0'; q++)
+        for (q = new + (p - MessageID); *q != '\0'; q++)
             *q = tolower(*q);
     hash = Hash(new ? new : MessageID, len);
     if (new != NULL)
