@@ -177,7 +177,7 @@ void SetDefaults()
     innconf->xrefslave = FALSE;
     innconf->complaints = NULL;
     innconf->spoolfirst = FALSE;
-    innconf->writelinks = TRUE;
+    innconf->immediatecancel = FALSE;
     innconf->timer = 0;
     innconf->status = 0;
     innconf->articlemmap = FALSE;
@@ -534,10 +534,10 @@ int ReadInnConf()
 		if (!bit && boolval != -1) innconf->spoolfirst = boolval;
 		SET_CONFIG(CONF_VAR_SPOOLFIRST);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_WRITELINKS)) {
-		TEST_CONFIG(CONF_VAR_WRITELINKS, bit);
-		if (!bit && boolval != -1) innconf->writelinks = boolval;
-		SET_CONFIG(CONF_VAR_WRITELINKS);
+	    if (EQ(ConfigBuff,_CONF_IMMEDIATECANCEL)) {
+		TEST_CONFIG(CONF_VAR_IMMEDIATECANCEL, bit);
+		if (!bit && boolval != -1) innconf->immediatecancel = boolval;
+		SET_CONFIG(CONF_VAR_IMMEDIATECANCEL);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_TIMER)) {
 		TEST_CONFIG(CONF_VAR_TIMER, bit);
