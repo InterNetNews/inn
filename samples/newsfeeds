@@ -93,3 +93,16 @@ ME\
 #ihnp4\
 #	:!junk,!control/!foo\
 #	:Tf,Wnb,B4096/1024:
+
+# Innfeed funnel master; individual peers feed into the funnel.
+# We run innfeed with "-y" so that you don't have to setup all
+# peers seperately in innfeed.conf.
+#innfeed!:\
+#	!*,\
+#	:Tc,Wnm*,S16384:/usr/local/news/bin/startinnfeed -y
+
+# A real-time feed through innfeed.
+#news.uu.net/uunet\
+#	:!junk,!control/!foo\
+#	:Tm:innfeed!
+

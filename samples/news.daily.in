@@ -159,12 +159,34 @@ fi
 MAIL="cut -c 1-1022 | ${SED} -e 's/^~/~~/' | \
     ${MAILCMD} -s '$MAILSUBJ' ${NEWSMASTER}"
 
+#
+#	Sanity check. Shouldn't we just bail out here with an error
+#	instead of trying to patch things up?
+#
 ${DOEXPIRE} || {
     EXPDIR=
     RMFILE=
     INDEXFILE=
     LOWMARKFILE=
 }
+
+#
+#	When expireindex gets called we need to run expire first
+#	_and_ we need to create an index.rm file.
+#
+if [ X${SAPI} = X"true" ]
+then
+    if [ -n "$DOEXPIREOVER" ] && [ -z "$DOEXPIRE" ]
+    then
+	echo "news.daily: cannot do expireover (expireindex) without expire">&2
+	exit 1
+    fi
+    if [ -n "$DOEXPIREOVER" ] && [ -z "$RMFILE" ]
+    then
+	echo "news.daily: cannot do expireover (expireindex) without delayrm">&2
+	exit 1
+    fi
+fi
 
 test -n "${EXPDIR}" && {
 	test -z "${REASON}" && REASON="Expiring $$ on ${EXPDIR}"
