@@ -789,6 +789,21 @@ ARTHANDLE *timecaf_next(const ARTHANDLE *article, const RETRTYPE amount) {
     return art;
 }
 
+BOOL timecaf_ctl(PROBETYPE type, TOKEN *token, void *value) {
+    struct artngnum *ann;
+
+    switch (type) {
+    case SMARTNGNUM:
+	if ((ann = (struct artngnum *)value) == NULL)
+	    return FALSE;
+	/* make SMprobe() call timecaf_retrieve() */
+	ann->artnum = 0;
+	return TRUE;
+    default:
+	return FALSE;
+    }
+}
+
 void timecaf_shutdown(void) {
     CloseOpenFile(&WritingFile);
     DoCancels();
