@@ -497,7 +497,9 @@ out separately after the initial alphabetized list.
 Whether to allow use of the NEWNEWS command by clients.  This command used
 to put a heavy load on the server in older versions of INN, but is now
 reasonably efficient, at least if only one newsgroup is specified by the
-client.  This is a boolean value and the default is true.
+client.  This is a boolean value and the default is true.  If you use the
+I<access> parameter in readers.conf(5), be sure to read about the way it
+overrides I<allownewnews>.
 
 =item I<articlemmap>
 

@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "INN.CONF 5"
-.TH INN.CONF 5 "2002-09-01" "INN 2.4.0" "InterNetNews Documentation"
+.TH INN.CONF 5 "2002-09-08" "INN 2.4.0" "InterNetNews Documentation"
 .SH "NAME"
 inn.conf \- Configuration data for InterNetNews programs
 .SH "DESCRIPTION"
@@ -568,7 +568,9 @@ out separately after the initial alphabetized list.
 Whether to allow use of the \s-1NEWNEWS\s0 command by clients.  This command used
 to put a heavy load on the server in older versions of \s-1INN\s0, but is now
 reasonably efficient, at least if only one newsgroup is specified by the
-client.  This is a boolean value and the default is true.
+client.  This is a boolean value and the default is true.  If you use the
+\&\fIaccess\fR parameter in \fIreaders.conf\fR\|(5), be sure to read about the way it
+overrides \fIallownewnews\fR.
 .IP "\fIarticlemmap\fR" 4
 .IX Item "articlemmap"
 Whether to attempt to \fImmap()\fR articles.  Setting this to true will give
