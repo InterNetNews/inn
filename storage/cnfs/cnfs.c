@@ -338,7 +338,7 @@ STATIC BOOL CNFSparse_part_line(char *l) {
   l = ++p;
 
   /* Length/size of symbolic partition */
-  len = strtoul(l, NULL, 10) * 1024;	/* This value in KB in decimal */
+  len = strtoul(l, NULL, 10) * (CYCBUFF_OFF_T)1024;	/* This value in KB in decimal */
   if (S_ISREG(sb.st_mode) && len != sb.st_size) {
     if (sizeof(CYCBUFFEXTERN) > sb.st_size) {
       syslog(L_NOTICE, "%s: length must be at least '%ld' for '%s' cycbuff(%ld bytes)",
