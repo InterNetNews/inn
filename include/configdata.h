@@ -333,6 +333,9 @@ typedef char		*CSTRING;
     /* Should Inn be calling setsockopt() on network fds. */
     /* =()<#define @<SET_SOCKOPT>@_SET_SOCKOPT @<SET_SOCKOPT>@>()= */
 #define DO_SET_SOCKOPT DO
+    /* How your DBZ be compiled? Use tagged-hash or splitted tables */
+    /* =()<#define @<DBZ_TAGGED_HASH>@_TAGGED_HASH>()= */
+#define DO_TAGGED_HASH
     /* Do you have shadow file? */
     /* =()<#define @<HAVE_SHADOW>@_HAVE_SHADOW @<HAVE_SHADOW>@>()= */
 #define DONT_HAVE_SHADOW DONT

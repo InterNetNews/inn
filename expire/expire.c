@@ -1312,12 +1312,17 @@ int main(int ac, char *av[])
     STRING		HistoryDB;
     STRING		OverPath;
     char		*Historydir;
-    char		*Historyindex;
-    char		*Historyhash;
     char		*NHistory;
     char		*NHistorydir;
-    char		*NHistoryindex;
+#ifdef	DO_TAGGED_HASH
+    char		*Historypag;
+    char		*NHistorypag;
+#else
+    char		*Historyhash;
+    char		*Historyindex;
     char		*NHistoryhash;
+    char		*NHistoryindex;
+#endif
     char		*EXPhistdir;
     char		buff[SMBUF];
     FILE	        *out;
@@ -1480,10 +1485,15 @@ int main(int ac, char *av[])
     HistoryDB = COPY(HistoryText);
     (void)sprintf(buff, "%s.dir", HistoryDB);
     Historydir = COPY(buff);
+#ifdef	DO_TAGGED_HASH
+    (void)sprintf(buff, "%s.pag", HistoryDB);
+    Historypag = COPY(buff);
+#else
     (void)sprintf(buff, "%s.index", HistoryDB);
     Historyindex = COPY(buff);
     (void)sprintf(buff, "%s.hash", HistoryDB);
     Historyhash = COPY(buff);
+#endif
     if (HistoryPath)
 	(void)sprintf(buff, "%s/%s.n", HistoryPath, History);
     else
@@ -1491,10 +1501,15 @@ int main(int ac, char *av[])
     NHistory = COPY(buff);
     (void)sprintf(buff, "%s.dir", NHistory);
     NHistorydir = COPY(buff);
+#ifdef	DO_TAGGED_HASH
+    (void)sprintf(buff, "%s.pag", NHistory);
+    NHistorypag = COPY(buff);
+#else
     (void)sprintf(buff, "%s.index", NHistory);
     NHistoryindex = COPY(buff);
     (void)sprintf(buff, "%s.hash", NHistory);
     NHistoryhash = COPY(buff);
+#endif
 
     if (!Writing)
 	out = NULL;
@@ -1506,14 +1521,27 @@ int main(int ac, char *av[])
 	}
 	out = EXPfopen(TRUE, NHistory, "w");
 	(void)fclose(EXPfopen(TRUE, NHistorydir, "w"));
+#ifdef	DO_TAGGED_HASH
+	(void)fclose(EXPfopen(TRUE, NHistorypag, "w"));
+#else
 	(void)fclose(EXPfopen(TRUE, NHistoryindex, "w"));
 	(void)fclose(EXPfopen(TRUE, NHistoryhash, "w"));
+#endif
 	if (EXPverbose > 3)
+#ifdef	DO_TAGGED_HASH
+	    (void)printf("created: %s %s %s\n",
+		    NHistory, NHistorydir, NHistorypag);
+#else
 	    (void)printf("created: %s %s %s %s\n",
 		    NHistory, NHistorydir, NHistoryindex, NHistoryhash);
+#endif
 	dbzgetoptions(&opt);
+#ifdef	DO_TAGGED_HASH
+	opt.pag_incore = INCORE_MEM;
+#else
 	opt.idx_incore = INCORE_MEM;
 	opt.exists_incore = INCORE_MEM;
+#endif
 	dbzsetoptions(opt);
 	if (IgnoreOld) {
 	    if (!dbzfresh(NHistory, dbzsize(0L), 0)) {
@@ -1582,8 +1610,12 @@ int main(int ac, char *av[])
 		if (errno == ENOSPC) {
 		    (void)unlink(NHistory);
 		    (void)unlink(NHistorydir);
+#ifdef	DO_TAGGED_HASH
+		    (void)unlink(NHistorypag);
+#else
 		    (void)unlink(NHistoryindex);
 		    (void)unlink(NHistoryhash);
+#endif
 		}
 		break;
 	    }
@@ -1675,8 +1707,12 @@ int main(int ac, char *av[])
 
 	    if (rename(NHistory, HistoryText) < 0
 	     || rename(NHistorydir, Historydir) < 0
+#ifdef	DO_TAGGED_HASH
+	     || rename(NHistorypag, Historypag) < 0) {
+#else
 	     || rename(NHistoryindex, Historyindex) < 0
 	     || rename(NHistoryhash, Historyhash) < 0) {
+#endif
 		(void)fprintf(stderr, "Can't replace history files, %s\n",
 			strerror(errno));
 		/* Yes -- leave the server paused. */

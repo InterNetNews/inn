@@ -237,12 +237,18 @@ RemoveDBZFiles(char *p)
     (void)sprintf(buff, "%s.dir", p);
     if (unlink(buff) && errno != ENOENT)
 	(void)fprintf(stderr, NOCANDO, buff, strerror(errno));
+#ifdef	DO_TAGGED_HASH
+    (void)sprintf(buff, "%s.pag", p);
+    if (unlink(buff) && errno != ENOENT)
+	(void)fprintf(stderr, NOCANDO, buff, strerror(errno));
+#else
     (void)sprintf(buff, "%s.index", p);
     if (unlink(buff) && errno != ENOENT)
 	(void)fprintf(stderr, NOCANDO, buff, strerror(errno));
     (void)sprintf(buff, "%s.hash", p);
     if (unlink(buff) && errno != ENOENT)
 	(void)fprintf(stderr, NOCANDO, buff, strerror(errno));
+#endif
 }
 
 /*
@@ -288,8 +294,12 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 
     /* Open the new database, using the old file if desired and possible. */
     dbzgetoptions(&opt);
+#ifdef	DO_TAGGED_HASH
+    opt.pag_incore = INCORE_MEM;
+#else
     opt.idx_incore = INCORE_MEM;
     opt.exists_incore = INCORE_MEM;
+#endif
     dbzsetoptions(opt);
     if (IgnoreOld) {
 	if (!dbzfresh(p, dbzsize(size), 0)) {

@@ -97,8 +97,12 @@ void HISsetup(void)
 	/* Open the DBZ file. */
 	dbzgetoptions(&opt);
 	opt.writethrough = TRUE;
+#ifdef	DO_TAGGED_HASH
+	opt.pag_incore = INCORE_MMAP;
+#else
 	opt.idx_incore = INCORE_NO;
 	opt.exists_incore = HISincore ? INCORE_MMAP : INCORE_NO;
+#endif
 	dbzsetoptions(opt);
 	if (!dbminit(HIShistpath)) {
 	    syslog(L_FATAL, "%s cant dbminit %s %m", HIShistpath, LogName);
