@@ -12,8 +12,8 @@ SOURCES = argparse.c cleanfrom.c clientactive.c clientlib.c concat.c \
 	makedir.c md5.c memcmp.c parsedate.c perl.c pread.c pwrite.c qio.c \
 	radix32.c readin.c remopen.c reservedfd.c resource.c rwlock.c \
 	sendarticle.c sendpass.c setenv.c strcasecmp.c strerror.c strspn.c \
-	strtok.c tempname.c wildmat.c version.c xfopena.c xmalloc.c \
-	xsignal.c xwrite.c
+	strtok.c tempname.c timer.c wildmat.c version.c xfopena.c \
+	xmalloc.c xsignal.c xwrite.c
 
 OBJECTS = $(LIBOBJS) \
 	argparse.o cleanfrom.o clientactive.o clientlib.o concat.o \
@@ -22,7 +22,8 @@ OBJECTS = $(LIBOBJS) \
 	gettime.o grpalias.o hash.o inndcomm.o localopen.o lockfile.o \
 	makedir.o md5.o parsedate.o qio.o radix32.o readin.o remopen.o \
 	reservedfd.o resource.o rwlock.o sendarticle.o sendpass.o \
-	tempname.o wildmat.o version.o xfopena.o xmalloc.o xsignal.o xwrite.o
+	tempname.o timer.o wildmat.o version.o xfopena.o xmalloc.o \
+	xsignal.o xwrite.o
 
 LOBJECTS= $(OBJECTS:.o=.lo)
 
@@ -201,6 +202,8 @@ strtok.o: strtok.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 tempname.o: tempname.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
+timer.o: timer.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/inn/timer.h
 wildmat.o: wildmat.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
 version.o: version.c ../include/config.h ../include/inn/defines.h \
