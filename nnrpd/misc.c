@@ -483,7 +483,10 @@ InitBackoffConstants()
   BACKOFFenabled = FALSE;
   
   /* Read the runtime config file to get parameters */
-  (void)strncpy(postrec_dir,GetFileConfigValue("backoff_db"),SMBUF);
+  if ((s = GetFileConfigValue("backoff_db")) != NULL)
+    (void)strncpy(postrec_dir,s,SMBUF);
+  else
+    return;
   backoff_k = atol(GetFileConfigValue("backoff_k"));
   post_fast = atol(GetFileConfigValue("backoff_postfast"));
   post_slow = atol(GetFileConfigValue("backoff_postslow"));
