@@ -168,7 +168,7 @@ group_index_open(int mode)
         syswarn("tradindexed: cannot fstat %s", index->path);
         goto fail;
     }
-    if (st.st_size > sizeof(struct group_header)) {
+    if ((size_t) st.st_size > sizeof(struct group_header)) {
         index->count = group_index_entry_count(st.st_size);
         if (!group_index_map(index))
             goto fail;
@@ -269,7 +269,7 @@ group_index_dump(struct group_index *index)
                 return;
             }
             entry = index->entries + current.recno;
-            printf("%s %lu %lu %lu %lu %c %lu %lu\n", HashToText(entry->hash),
+            printf("%s %lu %lu %lu %lu %c %lu\n", HashToText(entry->hash),
                    entry->high, entry->low, entry->base,
                    (unsigned long) entry->count, entry->flag, entry->deleted);
             current = entry->next;
