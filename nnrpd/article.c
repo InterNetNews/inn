@@ -1,7 +1,8 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Article-related routines.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <netinet/in.h>
@@ -16,11 +17,11 @@
 #include "ov.h"
 
 #ifdef HAVE_SSL
-#include <openssl/ssl.h>
-#include <openssl/err.h>
-#include <openssl/bio.h>
-#include <openssl/pem.h>
-#include "tls.h"
+# include <openssl/ssl.h>
+# include <openssl/err.h>
+# include <openssl/bio.h>
+# include <openssl/pem.h>
+# include "tls.h"
 extern SSL *tls_conn;
 #endif 
 
@@ -35,34 +36,34 @@ typedef enum _SENDTYPE {
 } SENDTYPE;
 
 typedef struct _SENDDATA {
-    SENDTYPE	Type;
-    int		ReplyCode;
-    STRING	Item;
+    SENDTYPE    Type;
+    int         ReplyCode;
+    const char *Item;
 } SENDDATA;
 
-STATIC char		ARTnotingroup[] = NNTP_NOTINGROUP;
-STATIC char		ARTnoartingroup[] = NNTP_NOARTINGRP;
-STATIC char		ARTnocurrart[] = NNTP_NOCURRART;
-STATIC ARTHANDLE        *ARThandle = NULL;
-STATIC int              ARTxreffield = 0;
-STATIC SENDDATA		SENDbody = {
+static char		ARTnotingroup[] = NNTP_NOTINGROUP;
+static char		ARTnoartingroup[] = NNTP_NOARTINGRP;
+static char		ARTnocurrart[] = NNTP_NOCURRART;
+static ARTHANDLE        *ARThandle = NULL;
+static int              ARTxreffield = 0;
+static SENDDATA		SENDbody = {
     STbody,	NNTP_BODY_FOLLOWS_VAL,		"body"
 };
-STATIC SENDDATA		SENDarticle = {
+static SENDDATA		SENDarticle = {
     STarticle,	NNTP_ARTICLE_FOLLOWS_VAL,	"article"
 };
-STATIC SENDDATA		SENDstat = {
+static SENDDATA		SENDstat = {
     STstat,	NNTP_NOTHING_FOLLOWS_VAL,	"status"
 };
-STATIC SENDDATA		SENDhead = {
+static SENDDATA		SENDhead = {
     SThead,	NNTP_HEAD_FOLLOWS_VAL,		"head"
 };
 
 
-STATIC struct iovec	iov[IOV_MAX];
-STATIC int		queued_iov = 0;
+static struct iovec	iov[IOV_MAX];
+static int		queued_iov = 0;
 
-BOOL PushIOvRateLimited(void) {
+bool PushIOvRateLimited(void) {
     struct timeval      start, end;
     struct iovec        newiov[IOV_MAX];
     int                 newiov_len;
@@ -115,7 +116,7 @@ BOOL PushIOvRateLimited(void) {
     return TRUE;
 }
 
-BOOL PushIOv(void) {
+bool PushIOv(void) {
     fflush(stdout);
 #ifdef HAVE_SSL
     if (tls_conn) {
@@ -141,7 +142,7 @@ BOOL PushIOv(void) {
     return TRUE;
 }
 
-BOOL SendIOv(char *p, int len) {
+bool SendIOv(char *p, int len) {
     char                *q;
 
     if (queued_iov) {
@@ -158,10 +159,10 @@ BOOL SendIOv(char *p, int len) {
     return TRUE;
 }
 
-STATIC char		*_IO_buffer_ = NULL;
-STATIC int		highwater = 0;
+static char		*_IO_buffer_ = NULL;
+static int		highwater = 0;
 
-BOOL PushIOb(void) {
+bool PushIOb(void) {
     fflush(stdout);
 #ifdef HAVE_SSL
     if (tls_conn) {
@@ -185,7 +186,7 @@ BOOL PushIOb(void) {
     return TRUE;
 }
 
-BOOL SendIOb(char *p, int len) {
+bool SendIOb(char *p, int len) {
     int tocopy;
     
     if (_IO_buffer_ == NULL)
@@ -207,7 +208,7 @@ BOOL SendIOb(char *p, int len) {
 /*
 **  Read the overview schema.
 */
-BOOL ARTreadschema(void)
+bool ARTreadschema(void)
 {
     static char			*SCHEMA = NULL;
     FILE			*F;
@@ -215,8 +216,8 @@ BOOL ARTreadschema(void)
     ARTOVERFIELD		*fp;
     int				i;
     char			buff[SMBUF];
-    BOOL			foundxref = FALSE;
-    BOOL			foundxreffull = FALSE;
+    bool			foundxref = FALSE;
+    bool			foundxreffull = FALSE;
 
     /* Open file, count lines. */
     if (SCHEMA == NULL)
@@ -279,7 +280,7 @@ void ARTclose(void)
     }
 }
 
-BOOL ARTinstorebytoken(TOKEN token)
+bool ARTinstorebytoken(TOKEN token)
 {
     ARTHANDLE *art;
     struct timeval	stv, etv;
@@ -300,7 +301,7 @@ BOOL ARTinstorebytoken(TOKEN token)
     return FALSE;
 }
 
-STATIC BOOL ARTinstorebyartnum(int artnum)
+static bool ARTinstorebyartnum(int artnum)
 {
     ARTHANDLE           *art;
     struct timeval	stv, etv;
@@ -327,7 +328,7 @@ STATIC BOOL ARTinstorebyartnum(int artnum)
 /*
 **  If the article name is valid, open it and stuff in the ID.
 */
-STATIC BOOL ARTopen(int artnum)
+static bool ARTopen(int artnum)
 {
     static ARTNUM	save_artnum;
     TOKEN		token;
@@ -353,7 +354,7 @@ STATIC BOOL ARTopen(int artnum)
 /*
 **  Open the article for a given Message-ID.
 */
-STATIC BOOL ARTopenbyid(char *msg_id, ARTNUM *ap)
+static bool ARTopenbyid(char *msg_id, ARTNUM *ap)
 {
     char		*p;
     HASH		hash = HashMessageID(msg_id);
@@ -375,7 +376,7 @@ STATIC BOOL ARTopenbyid(char *msg_id, ARTNUM *ap)
 /*
 **  Send a (part of) a file to stdout, doing newline and dot conversion.
 */
-STATIC void ARTsendmmap(SENDTYPE what)
+static void ARTsendmmap(SENDTYPE what)
 {
     char		*p, *q, *r, *s, *path, *xref, *virtualpath;
     struct timeval	stv, etv;
@@ -517,7 +518,7 @@ STATIC void ARTsendmmap(SENDTYPE what)
 **  Return the header from the specified file, or NULL if not found.
 **  We can estimate the Lines header, if that's what's wanted.
 */
-char *GetHeader(char *header, BOOL IsLines)
+char *GetHeader(char *header, bool IsLines)
 {
     static char		buff[40];
     char		*p, *q, *r, *s, *virtualpath;
@@ -527,8 +528,8 @@ char *GetHeader(char *header, BOOL IsLines)
     static char		*retval = NULL;
     static int		retlen = 0;
     int			headerlen;
-    BOOL		pathheader = FALSE;
-    BOOL		xrefheader = FALSE;
+    bool		pathheader = FALSE;
+    bool		xrefheader = FALSE;
 
     limit = ARThandle->data + ARThandle->len - strlen(header);
     for (p = ARThandle->data; p < limit; p++) {
@@ -609,11 +610,11 @@ char *GetHeader(char *header, BOOL IsLines)
 /*
 **  Fetch part or all of an article and send it to the client.
 */
-FUNCTYPE CMDfetch(int ac, char *av[])
+void CMDfetch(int ac, char *av[])
 {
     char		buff[SMBUF];
     SENDDATA		*what;
-    BOOL		ok;
+    bool		ok;
     ARTNUM		art;
     char		*msgid;
     ARTNUM		tart;
@@ -712,14 +713,12 @@ FUNCTYPE CMDfetch(int ac, char *av[])
 /*
 **  Go to the next or last (really previous) article in the group.
 */
-FUNCTYPE CMDnextlast(int ac, char *av[])
+void CMDnextlast(int ac, char *av[])
 {
-    char	*msgid;
-    int		save;
-    BOOL	next;
-    int		delta;
-    int		errcode;
-    STRING	message;
+    char *msgid;
+    int	save, delta, errcode;
+    bool next;
+    const char *message;
 
     if (!PERMcanread) {
 	Reply("%s\r\n", NOACCESS);
@@ -774,7 +773,7 @@ FUNCTYPE CMDnextlast(int ac, char *av[])
 }
 
 
-STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp, BOOL *DidReply)
+static bool CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
 {
     char		*p;
 
@@ -831,7 +830,7 @@ char *OVERGetHeader(char *p, int field)
     ARTOVERFIELD	*fp;
     char		*next, *q;
     char                *newsgroupbuff;
-    BOOL                BuildingNewsgroups = FALSE;
+    bool                BuildingNewsgroups = FALSE;
 
     fp = &ARTfields[field];
 
@@ -912,9 +911,9 @@ char *OVERGetHeader(char *p, int field)
 /*
 **  XOVER another extension.  Dump parts of the overview database.
 */
-FUNCTYPE CMDxover(int ac, char *av[])
+void CMDxover(int ac, char *av[])
 {
-    BOOL	        DidReply;
+    bool	        DidReply;
     ARTRANGE		range;
     struct timeval	stv, etv;
     ARTNUM		artnum;
@@ -1053,13 +1052,13 @@ FUNCTYPE CMDxover(int ac, char *av[])
 **  XHDR, XPAT and PAT extensions.
 */
 /* ARGSUSED */
-FUNCTYPE CMDpat(int ac, char *av[])
+void CMDpat(int ac, char *av[])
 {
     char	        *p;
     int	        	i;
     ARTRANGE		range;
-    BOOL		IsLines;
-    BOOL		DidReply;
+    bool		IsLines;
+    bool		DidReply;
     char		*header;
     char		*pattern;
     char		*text;

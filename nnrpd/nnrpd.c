@@ -75,51 +75,51 @@ char	*HISTORY = NULL;
 char	*NEWSGROUPS = NULL;
 char	*NNRPACCESS = NULL;
 
-BOOL	ForceReadOnly = FALSE;
+bool	ForceReadOnly = FALSE;
 char 	LocalLogFileName[256];
 
-STATIC double	STATstart;
-STATIC double	STATfinish;
-STATIC char	*PushedBack;
+static double	STATstart;
+static double	STATfinish;
+static char	*PushedBack;
 #if	!defined(_HPUX_SOURCE)
-STATIC char	*TITLEstart;
-STATIC char	*TITLEend;
+static char	*TITLEstart;
+static char	*TITLEend;
 #endif	/* !defined(_HPUX_SOURCE) */
-STATIC sig_atomic_t	ChangeTrace;
-BOOL	DaemonMode = FALSE;
+static sig_atomic_t	ChangeTrace;
+bool	DaemonMode = FALSE;
 #if HAVE_GETSPNAM
-STATIC char	*ShadowGroup;
+static char	*ShadowGroup;
 #endif
 #if	defined(DO_NNRP_GETHOSTBYADDR)
-STATIC char 	*HostErrorStr;
+static char 	*HostErrorStr;
 #endif	/* defined(DO_NNRP_GETHOSTBYADDR) */
 
-extern FUNCTYPE	CMDauthinfo();
-extern FUNCTYPE	CMDdate();
-extern FUNCTYPE	CMDfetch();
-extern FUNCTYPE	CMDgroup();
-STATIC FUNCTYPE	CMDhelp();
-extern FUNCTYPE	CMDlist();
-extern FUNCTYPE	CMDmode();
-extern FUNCTYPE	CMDnewgroups();
-extern FUNCTYPE	CMDnewnews();
-extern FUNCTYPE	CMDnextlast();
-extern FUNCTYPE	CMDpost();
-extern FUNCTYPE	CMDxgtitle();
-extern FUNCTYPE	CMDxover();
-extern FUNCTYPE	CMDpat();
-extern FUNCTYPE	CMDxpath();
-extern FUNCTYPE	CMD_unimp();
+extern void	CMDauthinfo();
+extern void	CMDdate();
+extern void	CMDfetch();
+extern void	CMDgroup();
+static void	CMDhelp();
+extern void	CMDlist();
+extern void	CMDmode();
+extern void	CMDnewgroups();
+extern void	CMDnewnews();
+extern void	CMDnextlast();
+extern void	CMDpost();
+extern void	CMDxgtitle();
+extern void	CMDxover();
+extern void	CMDpat();
+extern void	CMDxpath();
+extern void	CMD_unimp();
 #ifdef HAVE_SSL
-extern FUNCTYPE	CMDstarttls();
+extern void	CMDstarttls();
 #endif
 
 int LLOGenable;
 extern int TrackClient();
 
-STATIC char	CMDfetchhelp[] = "[MessageID|Number]";
+static char	CMDfetchhelp[] = "[MessageID|Number]";
 
-STATIC CMDENT	CMDtable[] = {
+static CMDENT	CMDtable[] = {
     {	"authinfo",	CMDauthinfo,	FALSE,	3,	CMDany,
 	"user Name|pass Password|generic <prog> <args>" },
 #ifdef HAVE_SSL
@@ -181,8 +181,8 @@ STATIC CMDENT	CMDtable[] = {
 /*
 **  Log a summary status message and exit.
 */
-NORETURN
-ExitWithStats(int x, BOOL readconf)
+void
+ExitWithStats(int x, bool readconf)
 {
     TIMEINFO		Now;
     double		usertime;
@@ -223,12 +223,12 @@ ExitWithStats(int x, BOOL readconf)
             OVERcount, OVERhit, OVERmiss, OVERtime, OVERsize, OVERdbz, OVERseek, OVERget, OVERartcheck);
 
      if (DaemonMode) {
-     	shutdown(STDIN, 2);
-     	shutdown(STDOUT, 2);
-     	shutdown(STDERR, 2);
- 	close(STDIN);    	
- 	close(STDOUT);
- 	close(STDERR);    	
+     	shutdown(STDIN_FILENO, 2);
+     	shutdown(STDOUT_FILENO, 2);
+     	shutdown(STDERR_FILENO, 2);
+ 	close(STDIN_FILENO);
+ 	close(STDOUT_FILENO);
+ 	close(STDERR_FILENO);
      }
     
     OVclose();
@@ -249,7 +249,7 @@ ExitWithStats(int x, BOOL readconf)
 **  The "help" command.
 */
 /* ARGSUSED0 */
-STATIC FUNCTYPE
+static void
 CMDhelp(int ac, char *av[])
 {
     CMDENT	*cp;
@@ -300,7 +300,7 @@ CMDhelp(int ac, char *av[])
 **  Unimplemented catch-all.
 */
 /* ARGSUSED0 */
-FUNCTYPE
+void
 CMD_unimp(ac, av)
     int		ac;
     char	*av[];
@@ -319,7 +319,7 @@ CMD_unimp(ac, av)
 /*
 **  Overwrite the original argv so that ps will show what's going on.
 */
-STATIC void
+static void
 TITLEset(what)
     char		*what;
 {
@@ -364,7 +364,7 @@ TITLEset(what)
 **  Convert an IP address to a hostname.  Don't trust the reverse lookup,
 **  since anyone can fake .in-addr.arpa entries.
 */
-STATIC BOOL
+static bool
 Address2Name(INADDR *ap, char *hostname, int i)
 {
     char		*p;
@@ -391,15 +391,13 @@ Address2Name(INADDR *ap, char *hostname, int i)
 #if	defined(h_addr)
     /* We have many addresses */
     for (pp = hp->h_addr_list; *pp; pp++)
-	if (memcmp((POINTER)&ap->s_addr, (POINTER)*pp,
-		(SIZE_T)hp->h_length) == 0)
+	if (memcmp(&ap->s_addr, *pp, hp->h_length) == 0)
 	    break;
     if (*pp == NULL)
 	return FALSE;
 #else
     /* We have one address. */
-    if (memcmp((POINTER)&ap->s_addr, (POINTER)hp->h_addr,
-	    (SIZE_T)hp->h_length) != 0)
+    if (memcmp(&ap->s_addr, hp->h_addr, hp->h_length) != 0)
 	return FALSE;
 #endif
 
@@ -422,10 +420,10 @@ Address2Name(INADDR *ap, char *hostname, int i)
 /*
 **  Determine access rights of the client.
 */
-STATIC void StartConnection()
+static void StartConnection()
 {
     struct sockaddr_in	sin;
-    ARGTYPE		length;
+    socklen_t		length;
     char		buff[SMBUF];
     char		*ClientAddr;
     char		accesslist[BIG_BUFFER];
@@ -435,8 +433,8 @@ STATIC void StartConnection()
     /* Get the peer's name. */
     length = sizeof sin;
     ClientAddr = NULL;
-    if (getpeername(STDIN, (struct sockaddr *)&sin, &length) < 0) {
-      if (!isatty(STDIN)) {
+    if (getpeername(STDIN_FILENO, (struct sockaddr *)&sin, &length) < 0) {
+      if (!isatty(STDIN_FILENO)) {
 	    syslog(L_TRACE, "%s cant getpeername %m", "?");
             (void)strcpy(ClientHost, "?"); /* so stats generation looks correct. */
 	    Printf("%d I can't get your name.  Goodbye.\r\n", NNTP_ACCESS_VAL);
@@ -483,7 +481,7 @@ STATIC void StartConnection()
 #endif /* defined(DO_NNRP_GETHOSTBYADDR) */
 	(void)strncpy(ClientIp, inet_ntoa(sin.sin_addr), sizeof(ClientIp));
 	length = sizeof sin;
-	if (getsockname(STDIN, (struct sockaddr *)&sin, &length) < 0) {
+	if (getsockname(STDIN_FILENO, (struct sockaddr *)&sin, &length) < 0) {
 	    syslog(L_NOTICE, "%s can't getsockname %m", ClientHost);
 	    Printf("%d Can't figure out where you connected to.  Goodbye\r\n", NNTP_ACCESS_VAL);
 	    ExitWithStats(1, TRUE);
@@ -643,9 +641,8 @@ Printf VA_PARAM(const char *, fmt)
 /*
 **  Got a signal; toggle tracing.
 */
-STATIC SIGHANDLER
-ToggleTrace(s)
-    int		s;
+static RETSIGTYPE
+ToggleTrace(int s)
 {
     ChangeTrace = TRUE;
 #ifndef HAVE_SIGACTION
@@ -656,9 +653,8 @@ ToggleTrace(s)
 /*
 ** Got a SIGPIPE; exit cleanly
 */
-STATIC SIGHANDLER
-CatchPipe(s)
-    int		s;
+static RETSIGTYPE
+CatchPipe(int s)
 {
     ExitWithStats(0, FALSE);
 }
@@ -666,7 +662,7 @@ CatchPipe(s)
 /*
 **  Got a signal; wait for children.
 */
-static SIGHANDLER
+static RETSIGTYPE
 WaitChild(int s)
 {
     int pid;
@@ -681,8 +677,8 @@ WaitChild(int s)
 #endif
 }
 
-STATIC void SetupDaemon(void) {
-    BOOL                val;
+static void SetupDaemon(void) {
+    bool                val;
     
 #if defined(DO_PERL)
     /* Load the Perl code */
@@ -724,7 +720,7 @@ STATIC void SetupDaemon(void) {
 /*
 **  Print a usage message and exit.
 */
-STATIC void
+static void
 Usage()
 {
     (void)fprintf(stderr, "Usage error.\n");
@@ -754,12 +750,12 @@ main(int argc, char *argv[])
     unsigned short	ListenPort = NNTP_PORT;
     unsigned long	ListenAddr = htonl(INADDR_ANY);
     int			lfd, fd;
-    ARGTYPE		clen;
+    socklen_t		clen;
     struct sockaddr_in	ssa, csa;
     struct stat		Sb;
-    PID_T		pid = -1;
-    GID_T               NewsGID;
-    UID_T               NewsUID;
+    pid_t		pid = -1;
+    gid_t               NewsGID;
+    uid_t               NewsUID;
     int                 one = 1;
     FILE                *pidfile;
     struct passwd	*pwd;
@@ -767,7 +763,7 @@ main(int argc, char *argv[])
     char		*ConfFile = NULL;
 #if HAVE_GETSPNAM
     struct group	*grp;
-    GID_T		shadowgid;
+    gid_t		shadowgid;
 #endif /* HAVE_GETSPNAM */
 
 #ifdef HAVE_SSL

@@ -15,15 +15,15 @@
 
 extern int LLOGenable;
 
-STATIC char     *tmpPtr ;
-STATIC char	Error[SMBUF];
-STATIC char	NGSEPS[] = NG_SEPARATOR;
+static char     *tmpPtr ;
+static char	Error[SMBUF];
+static char	NGSEPS[] = NG_SEPARATOR;
 char	**OtherHeaders;
 int	OtherCount;
-BOOL   HeadersModified;
-STATIC int	OtherSize;
-STATIC BOOL	WasMailed;
-STATIC STRING	BadDistribs[] = {
+bool   HeadersModified;
+static int	OtherSize;
+static bool	WasMailed;
+static const char * const BadDistribs[] = {
     BAD_DISTRIBS
 };
 
@@ -102,7 +102,7 @@ HEADER *EndOfTable = ENDOF(Table);
 **  Turn any \r or \n in text into spaces.  Used to splice back multi-line
 **  headers into a single line.
 */
-STATIC char *
+static char *
 Join(text)
     register char	*text;
 {
@@ -154,7 +154,7 @@ MaxLength(p, q)
 /*
 **  Trim trailing spaces, return pointer to first non-space char.
 */
-STATIC char *
+static char *
 TrimSpaces(p)
     register char	*p;
 {
@@ -172,7 +172,7 @@ TrimSpaces(p)
 **  Mark the end of the header starting at p, and return a pointer
 **  to the start of the next one or NULL.  Handles continuations.
 */
-STATIC char *
+static char *
 NextHeader(p)
     register char	*p;
 {
@@ -190,7 +190,7 @@ NextHeader(p)
 **  Strip any headers off the article and dump them into the table.
 **  On error, return NULL and fill in Error.
 */
-STATIC char *
+static char *
 StripOffHeaders(article)
     char		*article;
 {
@@ -249,7 +249,7 @@ StripOffHeaders(article)
 **  Check the control message, and see if it's legit.  Return pointer to
 **  error message if not.
 */
-STATIC STRING
+static const char *
 CheckControl(ctrl)
     char	*ctrl;
 {
@@ -292,12 +292,12 @@ CheckControl(ctrl)
 /*
 **  Check the Distribution header, and exit on error.
 */
-STATIC STRING
+static const char *
 CheckDistribution(p)
     register char	*p;
 {
-    static char		SEPS[] = " \t,";
-    register STRING	*dp;
+    static char	SEPS[] = " \t,";
+    const char * const *dp;
 
     if ((p = strtok(p, SEPS)) == NULL)
 	return "Can't parse Distribution line.";
@@ -316,7 +316,7 @@ CheckDistribution(p)
 **  Process all the headers.  FYI, they're done in RFC-order.
 **  Return NULL if okay, or an error message.
 */
-STATIC STRING
+static const char *
 ProcessHeaders(int linecount, char *idbuff)
 {
     static char		MONTHS[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
@@ -333,9 +333,9 @@ ProcessHeaders(int linecount, char *idbuff)
     time_t		t;
     struct tm		*gmt;
     TIMEINFO		Now;
-    STRING		error;
+    const char          *error;
     pid_t               pid;
-    BOOL		addvirtual = FALSE;
+    bool		addvirtual = FALSE;
 
     /* Various things need Now to be set. */
     if (GetTimeInfo(&Now) < 0) {
@@ -553,7 +553,7 @@ ProcessHeaders(int linecount, char *idbuff)
 **  with > is included text.  Decrement the count on lines starting with <
 **  so that we don't reject diff(1) output.
 */
-STATIC STRING
+static const char *
 CheckIncludedText(p, lines)
     register char	*p;
     register int	lines;
@@ -588,7 +588,7 @@ CheckIncludedText(p, lines)
 /*
 **  Try to mail an article to the moderator of the group.
 */
-STATIC STRING
+static const char *
 MailArticle(group, article)
     char		*group;
     char		*article;
@@ -641,7 +641,7 @@ MailArticle(group, article)
     }
     (void)fprintf(F, "\n");
     i = strlen(article);
-    if (fwrite((POINTER)article, (SIZE_T)1, (SIZE_T)i, F) != i)
+    if (fwrite(article, 1, i, F) != i)
 	return "Can't send article";
     if (FLUSH_ERROR(F)) {
 	(void)pclose(F);
@@ -662,16 +662,17 @@ MailArticle(group, article)
 **  Check the newsgroups and make sure they're all valid, that none are
 **  moderated, etc.
 */
-STATIC STRING ValidNewsgroups(char *hdr, char **modgroup)
+static const char *
+ValidNewsgroups(char *hdr, char **modgroup)
 {
     static char		distbuff[SMBUF];
     char	        *groups;
     char	        *p;
-    BOOL	        approved;
+    bool	        approved;
     struct _DDHANDLE	*h;
     char      *grplist[2];
-    BOOL		IsNewgroup;
-    BOOL		FoundOne;
+    bool		IsNewgroup;
+    bool		FoundOne;
     int                 flag;
 
     p = HDR(_control);
@@ -764,7 +765,7 @@ STATIC STRING ValidNewsgroups(char *hdr, char **modgroup)
 /*
 **  Send a quit message to the server, eat its reply.
 */
-STATIC void
+static void
 SendQuit(FromServer, ToServer)
     FILE	*FromServer;
     FILE	*ToServer;
@@ -782,7 +783,7 @@ SendQuit(FromServer, ToServer)
 /*
 **  Offer the article to the server, return its reply.
 */
-STATIC int
+static int
 OfferArticle(buff, buffsize, FromServer, ToServer)
     char		*buff;
     int			buffsize;
@@ -804,7 +805,7 @@ OfferArticle(buff, buffsize, FromServer, ToServer)
 /*
 **  Spool article to temp file.
 */
-STATIC STRING
+static const char *
 SpoolitTo(article, Error, SpoolDir)
     char 		*article;
     char		*Error;
@@ -850,7 +851,7 @@ SpoolitTo(article, Error, SpoolDir)
 
     /* Write the article body */
     i = strlen(article);
-    if (fwrite((POINTER)article, (SIZE_T)1, (SIZE_T)i, F) != i) {
+    if (fwrite(article, 1, i, F) != i) {
         fclose(F);
         return CANTSPOOL;
     }
@@ -872,7 +873,7 @@ SpoolitTo(article, Error, SpoolDir)
 /*
 **  Spool article to temp file.
 */
-STATIC STRING
+static const char *
 Spoolit(article, Error)
     char 		*article;
     char		*Error;
@@ -880,7 +881,7 @@ Spoolit(article, Error)
     return SpoolitTo(article, Error, innconf->pathincoming);
 }
  
-STATIC char *Towire(char *p) {
+static char *Towire(char *p) {
     char	*q, *r, *s;
     int		curlen, len = BIG_BUFFER;
 
@@ -913,7 +914,7 @@ STATIC char *Towire(char *p) {
     return s;
 }
 
-STRING
+const char *
 ARTpost(article, idbuff)
     char		*article;
     char		*idbuff;
@@ -927,7 +928,7 @@ ARTpost(article, idbuff)
     FILE		*FromServer;
     char		buff[NNTP_STRLEN + 2], frombuf[SMBUF];
     char		*modgroup = NULL;
-    STRING		error;
+    const char		*error;
     char		TrackID[NNTP_STRLEN];
     FILE		*ftd;
     int			result;
@@ -1046,7 +1047,7 @@ ARTpost(article, idbuff)
     if (modgroup)
     {
       if (idbuff != NULL) {
-          STRING retstr;
+          const char *retstr;
           retstr = MailArticle(modgroup, article);
           strcpy (idbuff,"(mailed to moderator)") ;
 	  return retstr;

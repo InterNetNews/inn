@@ -19,11 +19,11 @@
 /*
 **  see if its distribution is in the list.
 */
-STATIC BOOL DistMatches(ARTHANDLE *art, char **distribs) {
+static bool DistMatches(ARTHANDLE *art, char **distribs) {
   char  **dp;
   char	*p, *p1;
   char	*q;
-  BOOL	Nocr;
+  bool	Nocr;
 
   if ((p = q = (char *)HeaderFindMem(art->data, art->len, "distribution", sizeof("distribution")-1)) == NULL)
     return FALSE;
@@ -51,11 +51,11 @@ STATIC BOOL DistMatches(ARTHANDLE *art, char **distribs) {
 /*
 **  get Xref header
 */
-STATIC char *GetXref(ARTHANDLE *art) {
+static char *GetXref(ARTHANDLE *art) {
   char		*p, *p1;
   char		*q;
   static char	buff[BIG_BUFFER];
-  BOOL		Nocr;
+  bool		Nocr;
 
   if ((p = q = (char *)HeaderFindMem(art->data, art->len, "xref", sizeof("xref")-1)) == NULL)
     return NULL;
@@ -84,11 +84,11 @@ STATIC char *GetXref(ARTHANDLE *art) {
 /*
 **  get Message-ID header
 */
-STATIC char *GetMsgid(ARTHANDLE *art) {
+static char *GetMsgid(ARTHANDLE *art) {
   char		*p, *p1;
   char		*q;
   static char	buff[BIG_BUFFER];
-  BOOL		Nocr;
+  bool		Nocr;
 
   if ((p = q = (char *)HeaderFindMem(art->data, art->len, "message-id", sizeof("message-id")-1)) == NULL)
     return NULL;
@@ -118,7 +118,7 @@ STATIC char *GetMsgid(ARTHANDLE *art) {
 **  Split newsgroup list into array of newsgroups.  Return static pointer,
 **  or NULL if there are no newsgroup.
 */
-STATIC char **GetGroups(char *p) {
+static char **GetGroups(char *p) {
   static int	size;
   static char	**list;
   int		i, len;
@@ -168,7 +168,7 @@ STATIC char **GetGroups(char *p) {
   return i ? list : NULL;
 }
 
-STATIC BOOL HaveSeen(BOOL AllGroups, char *group, char **groups, char **xrefs) {
+static bool HaveSeen(bool AllGroups, char *group, char **groups, char **xrefs) {
   char *list[2];
 
   list[1] = NULL;
@@ -189,12 +189,12 @@ STATIC BOOL HaveSeen(BOOL AllGroups, char *group, char **groups, char **xrefs) {
 **  Return the Message-ID of any articles after the specified date,
 **  and within the specified distributions.
 */
-FUNCTYPE CMDnewnews(int ac, char *av[]) {
+void CMDnewnews(int ac, char *av[]) {
   static char	**groups;
   char		*group;
   char		*p, *q;
-  BOOL		AllDists;
-  BOOL		AllGroups;
+  bool		AllDists;
+  bool		AllGroups;
   char		**distribs;
   char		**xrefs;
   char		line[BIG_BUFFER];
