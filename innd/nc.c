@@ -471,7 +471,7 @@ NCihave(CHANNEL *cp)
 	    else cp->Sendid.Size = MAXHEADERSIZE;
 	    cp->Sendid.Data = NEW(char, cp->Sendid.Size);
 	}
-	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
+	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_HAVEIT_VAL, perlrc);
 	NCwritereply(cp, cp->Sendid.Data);
 	return;
     }
