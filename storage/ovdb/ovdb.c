@@ -1505,8 +1505,11 @@ bool ovdb_open(int mode)
 	return false;
     }
 #if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
-    ret = groupaliases->open(groupaliases, NULL, "groupaliases", NULL, DB_HASH,
+    TXN_START(t_open_groupaliases, tid);
+    ret = groupaliases->open(groupaliases, tid, "groupaliases", NULL, DB_HASH,
                              _db_flags, 0666);
+    if (ret == 0)
+	TXN_COMMIT(t_open_groupaliases, tid);
 #else
     ret = groupaliases->open(groupaliases, "groupaliases", NULL, DB_HASH,
                              _db_flags, 0666);
