@@ -47,18 +47,16 @@ static void use_rcsid (const char *rId) {   /* Never called */
 #include "innfeed.h"
 #include "config.h"
 #include "clibrary.h"
+#include "portable/time.h"
 
 #include <assert.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <syslog.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 
 #ifdef HAVE_LIMITS_H
 # include <limits.h>
@@ -66,17 +64,6 @@ static void use_rcsid (const char *rId) {   /* Never called */
 
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
-#endif
-
-#ifdef TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# ifdef HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
 #endif
 
 #include "libinn.h"
@@ -1203,7 +1190,7 @@ static IoStatus doWrite (EndPoint endp)
 static IoStatus doExcept (EndPoint endp)
 {
   int optval;
-  ARGTYPE size ;
+  socklen_t size ;
   int fd = endPointFd (endp) ;
 
   if (getsockopt (fd, SOL_SOCKET, SO_ERROR,
