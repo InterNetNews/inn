@@ -33,11 +33,11 @@ LINTLIB	= ../llib-linn.ln
 
 SOURCES	= \
 	article.c group.c commands.c misc.c newnews.c nnrpd.c \
-	perl.c post.c loadave.c
+	perl.c post.c loadave.c track.c
 
 OBJECTS	= \
 	article.o group.o commands.o misc.o newnews.o nnrpd.o \
-	perl.o post.o loadave.o
+	perl.o post.o loadave.o track.o
 
 ALL	= nnrpd
 

@@ -35,6 +35,10 @@ STATIC GROUPENTRY	*GRPentries;
 STATIC int		GRPbuckets;
 STATIC int		GRPsize;
 
+unsigned int	RARTtable[ART_MAX];
+int		RARTcount=0;
+int		RARTenable=FALSE;
+int 		LLOGenable=FALSE;
 
 /*
 **  See if a given newsgroup exists.
@@ -544,7 +548,9 @@ void
 GRPreport()
 {
     register char	*p;
+    register int	pp;
     char		buff[SPOOLNAMEBUFF];
+    char		repbuff[1024], tmpbuff[80];
 
     if (GRPlast[0] && GRParticles != 0) {
 	(void)strcpy(buff, GRPlast);
@@ -553,6 +559,23 @@ GRPreport()
 		*p = '.';
 	syslog(L_NOTICE, "%s group %s %ld", ClientHost, buff, GRParticles);
 	GRParticles = 0;
+	repbuff[0]='\0';
+	if (RARTenable && (RARTcount > 0)) {
+		for (pp=0;pp<RARTcount; pp++) {
+			sprintf(tmpbuff, "%ld", RARTtable[pp]);
+			strcat(repbuff, tmpbuff);
+			if (pp != RARTcount-1)
+				strcat(repbuff, ",");
+			RARTtable[pp]=-1;
+		}
+		syslog(L_NOTICE, "artcount %s(%s):%s:%s", ClientHost, Username, buff, repbuff);
+		if (LLOGenable) {
+			fprintf(locallog, "artcount %s(%s):%s:%s\n", ClientHost, Username, buff, repbuff);
+			fflush(locallog);
+		}
+		RARTcount=0;
+	}
+			
     }
 }
 

@@ -37,6 +37,7 @@
 #define ART_LINE_LENGTH		1000
 #define ART_LINE_MALLOC		1024
 #define MAXOVERLINE             4096
+#define ART_MAX			1024
 
 
 /*
@@ -108,6 +109,7 @@ EXTERN char	**PERMlist;
 EXTERN STRING	MyHostName;
 extern char	ACTIVE[];
 EXTERN char	ClientHost[SMBUF];
+EXTERN char	Username[SMBUF];
 EXTERN char     ClientIp[20];
 EXTERN char	LogName[256] ;
 extern char	ACTIVETIMES[];
@@ -119,6 +121,7 @@ EXTERN char	PERMuser[20];
 EXTERN char	*RemoteMaster;
 EXTERN ARTLIST	*ARTcache;
 EXTERN ARTLIST	*ARTnumbers;
+EXTERN FILE	*locallog;
 EXTERN int	ARTindex;
 EXTERN int	ARTsize;
 extern int	PERMdefault;

@@ -50,6 +50,7 @@ char	NEWSGROUPS[] = _PATH_NEWSGROUPS;
     /* Default permission -- change with adb. */
 BOOL	PERMdefault = FALSE;
 BOOL	ForceReadOnly = FALSE;
+char 	LocalLogFileName[256];
 
 STATIC double	STATstart;
 STATIC double	STATfinish;
@@ -77,6 +78,10 @@ extern FUNCTYPE	CMDxover();
 extern FUNCTYPE	CMDxpat();
 extern FUNCTYPE	CMDxpath();
 extern FUNCTYPE	CMD_unimp();
+
+extern int RARTenable;
+extern int LLOGenable;
+extern int TrackClient();
 
 STATIC char	CMDfetchhelp[] = "[MessageID|Number]";
 
@@ -159,6 +164,16 @@ ExitWithStats(x)
 	   ClientHost, POSTreceived, POSTrejected);
     syslog(L_NOTICE, "%s times user %.3f system %.3f elapsed %.3f",
 	ClientHost, usertime, systime, STATfinish - STATstart);
+    /* Tracking code - Make entries in the logfile(s) to show that we have
+	finished with this session */
+    if (RARTenable) {
+	syslog(L_NOTICE, "Tracking Disabled for %s (%s)", ClientHost, Username);
+	if (LLOGenable) {
+		fprintf(locallog, "Tracking Disabled for %s (%s)\n", ClientHost, Username);
+		fclose(locallog);
+		syslog(L_NOTICE,"Local Logging ends %s (%s) %s",ClientHost, Username, LocalLogFileName);
+	}
+    }
     if (ARTget)
         syslog(L_NOTICE, "%s artstats get %d time %d size %d", ClientHost,
             ARTget, ARTgettime, ARTgetsize);
@@ -595,6 +610,10 @@ main(argc, argv, env)
     int			ClientTimeout, timeout;
     BOOL		val;
     char		*p;
+    int			vid=0; 
+    int 		pid=-1;
+    int 		count=123456789;
+    struct		timeval tv;
 
 #if	!defined(HPUX)
     /* Save start and extent of argv for TITLEset. */
@@ -605,7 +624,9 @@ main(argc, argv, env)
     /* Parse arguments.   Must COPY() optarg if used because the
      * TITLEset() routine would clobber it! */
     Reject = NULL;
-    while ((i = getopt(argc, argv, "Rr:s:S:t")) != EOF)
+    RARTenable=TRUE;
+    LLOGenable=FALSE;
+    while ((i = getopt(argc, argv, "Rr:s:S:t:l")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -626,6 +647,9 @@ main(argc, argv, env)
 	    break;
 	case 'R':			/* Ignore 'P' option in access file */
 	    ForceReadOnly = TRUE;
+	    break;
+	case 'l':			/* Tracking */
+	    RARTenable=TRUE;
 	    break;
 	}
     argc -= optind;
@@ -703,6 +727,26 @@ main(argc, argv, env)
 	syslog(L_NOTICE, "%s rejected %s", ClientHost, Reject);
 	Reply("%s %s\r\n", NNTP_GOODBYE, Reject);
 	ExitWithStats(0);
+    }
+
+    if (RARTenable)
+	RARTenable=TrackClient(ClientHost,Username);
+
+    if (RARTenable) {
+	syslog(L_NOTICE, "Tracking Enabled for %s (%s)", ClientHost, Username);
+	pid=getpid();
+	gettimeofday(&tv,NULL);
+	count += pid;
+	vid = tv.tv_sec ^ tv.tv_usec ^ pid ^ count;
+	sprintf(LocalLogFileName, "%s/tracklogs/log-%ld", _PATH_MOST_LOGS,vid);
+	if ((locallog=fopen(LocalLogFileName, "w")) != NULL) {
+		syslog(L_NOTICE, "Local Logging begins %s (%s) %s",ClientHost, Username, LocalLogFileName);
+		fprintf(locallog, "Tracking Enabled for %s (%s)\n", ClientHost, Username);
+		fflush(locallog);
+		LLOGenable=TRUE;
+	} else {
+		syslog(L_NOTICE, "Local Logging failed %s (%s) %s", ClientHost, Username, LocalLogFileName);
+	}
     }
 
     ARTreadschema();

@@ -17,6 +17,9 @@
 #define FLUSH_ERROR(F)		(fflush((F)) == EOF || ferror((F)))
 #define HEADER_DELTA		20
 
+extern int RARTenable;
+extern int LLOGenable;
+
 STATIC char     *tmpPtr ;
 STATIC char	Error[SMBUF];
 STATIC char	NGSEPS[] = NG_SEPARATOR;
@@ -848,6 +851,11 @@ ARTpost(article, idbuff)
     FILE		*FromServer;
     char		buff[NNTP_STRLEN + 2], frombuf[SMBUF];
     STRING		error;
+    char		TrackID[NNTP_STRLEN];
+    FILE		*ftd;
+    int			result;
+
+    sprintf(TrackID,"%s/trackposts/track.", _PATH_MOST_LOGS);
 
     /* Set up the other headers list. */
     if (OtherHeaders == NULL) {
@@ -1005,5 +1013,30 @@ ARTpost(article, idbuff)
 	(void)strncpy(idbuff, HDR(_messageid), SMBUF - 1);
 	idbuff[SMBUF - 1] = '\0';
     }
+
+    /* Tracking */
+    if (RARTenable) {
+	strcat(TrackID,HDR(_messageid));
+	if ((ftd=fopen(TrackID,"w")) != NULL) {
+		for (hp = Table; hp < ENDOF(Table); hp++)
+			if (hp->Value)
+				(void)fprintf(ftd, "%s: %s\r\n", hp->Name, hp->Value);
+		for (i=0; i<OtherCount; i++)
+			(void)fprintf(ftd,"%s\r\n",OtherHeaders[i]);
+		(void)fprintf(ftd,"\r\n");
+		result=fputs(article,ftd);
+		fclose(ftd);
+		if (result != EOF) {
+			syslog(L_NOTICE, "%s (%s) posttrack ok %s",
+				ClientHost, Username, TrackID);
+			if (LLOGenable)
+				fprintf(locallog, "%s (%s) posttrack ok %s\n",
+					ClientHost, Username, TrackID);
+		} else 
+			syslog(L_NOTICE, "%s (%s) posttrack error 2 %s",
+				ClientHost, Username, TrackID);
+	}
+    }
+
     return NULL;
 }

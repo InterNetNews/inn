@@ -75,6 +75,9 @@ STATIC SENDDATA		SENDhead = {
     SThead,	NNTP_HEAD_FOLLOWS_VAL,		"head"
 };
 
+extern unsigned int RARTtable[];
+extern int RARTcount;
+extern int RARTenable;
 
 /*
 **  Overview state information.
@@ -523,7 +526,6 @@ STATIC void ARTsendqio(SENDTYPE what)
     ARTget++;
     ARTgettime+=(etv.tv_sec - stv.tv_sec) * 1000;
     ARTgettime+=(etv.tv_usec - stv.tv_usec) / 1000;
-
 }
 
 
@@ -613,6 +615,7 @@ FUNCTYPE CMDfetch(int ac, char *av[])
     BOOL		ok;
     ARTNUM		art;
     char		*msgid;
+    ARTNUM		tart;
 
     /* Find what to send; get permissions. */
     ok = PERMcanread;
@@ -649,12 +652,16 @@ FUNCTYPE CMDfetch(int ac, char *av[])
 	    Reply("%s\r\n", NOACCESS);
 	    return;
 	}
+	tart=art;
 	Reply("%d %ld %s %s\r\n", what->ReplyCode, art, what->Item, av[1]);
-	if (what->Type != STstat)
+	if (what->Type != STstat) {
 	    if (ARTmem) 
 		ARTsendmmap(what->Type);
 	    else
 		ARTsendqio(what->Type);
+    	    if (tart != 0 && RARTenable)
+	        RARTtable[RARTcount++]=tart;
+	}
 	ARTclose();
 	return;
     }
@@ -672,6 +679,7 @@ FUNCTYPE CMDfetch(int ac, char *av[])
 	    return;
 	}
 	(void)sprintf(buff, "%ld", ARTnumbers[ARTindex].ArtNum);
+	tart=ARTnumbers[ARTindex].ArtNum;
     }
     else {
 	if (strspn(av[1], "0123456789") != strlen(av[1])) {
@@ -679,6 +687,7 @@ FUNCTYPE CMDfetch(int ac, char *av[])
 	    return;
 	}
 	(void)strcpy(buff, av[1]);
+	tart=(ARTNUM)atol(buff);
     }
 
     /* Move forward until we can find one. */
@@ -688,17 +697,21 @@ FUNCTYPE CMDfetch(int ac, char *av[])
 	    return;
 	}
 	(void)sprintf(buff, "%ld", ARTnumbers[ARTindex].ArtNum);
+	tart=ARTnumbers[ARTindex].ArtNum;
     }
     if ((msgid = GetHeader("Message-ID", FALSE)) == NULL) {
         Reply("%s\r\n", ARTnoartingroup);
 	return;
     }
     Reply("%d %s %.512s %s\r\n", what->ReplyCode, buff, msgid, what->Item); 
-    if (what->Type != STstat)
+    if (what->Type != STstat) {
 	if (ARTmem)
 	    ARTsendmmap(what->Type);
 	else
 	    ARTsendqio(what->Type);
+    	    if (tart != 0 && RARTenable)
+	        RARTtable[RARTcount++]=tart;
+    }
     if (ac > 1)
 	ARTindex = ARTfind((ARTNUM)atol(buff));
 }
