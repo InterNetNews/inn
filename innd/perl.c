@@ -116,52 +116,48 @@ char *
 HandleMessageID(messageID)
 char *messageID;
 {
-   dSP;
-   int		rc;
-   char		*p;
-   static char * args[2];
-   static char	buf[256];
+    dSP;
+    int			rc;
+    char		*p;
+    static char		*args[2];
+    static char		buf[256];
 
-   if (!PerlFilterActive || perl_filter_cv == NULL)
-     return NULL;
+    if (!PerlFilterActive || perl_filter_cv == NULL) return NULL;
 
+    ENTER ;
+    SAVETMPS ;
 
-   ENTER ;
-   SAVETMPS ;
+ 	/* Is this filter present? */
+    if (perl_get_cv("filter_messageid", FALSE) != NULL) {
+	args[0] = messageID;
+	args[1] = 0;
+	rc = perl_call_argv ("filter_messageid", G_EVAL|G_SCALAR, args);
 
-   args[0] = messageID;
-   args[1] = 0;
-   rc = perl_call_argv ("filter_messageid", G_EVAL|G_SCALAR, args);
+	SPAGAIN;
 
-   SPAGAIN;
-
-   buf [0] = '\0' ;
+	buf [0] = '\0' ;
    
-   if (SvTRUE(GvSV(errgv)))     /* check $@ */
-     {
-       syslog (L_ERROR,"Perl function filter_messageid died: %s",
-               SvPV(GvSV(errgv), na)) ;
-       POPs ;
-       PerlFilter (FALSE) ;
-     }
-   else if (rc == 1)
-     {
-       p = POPp;
+	if (SvTRUE(GvSV(errgv))) {  /* check $@ */
+	    syslog (L_ERROR,"Perl function filter_messageid died: %s",
+		SvPV(GvSV(errgv), na)) ;
+	    POPs ;
+	    PerlFilter (FALSE) ;
+	}
+	else if (rc == 1) {
+	    p = POPp;
+	    if (p != NULL && *p != '\0') {
+		strncpy(buf, p, sizeof(buf) - 1);
+		buf[sizeof(buf) - 1] = '\0';
+	    }
+	}
+	PUTBACK;
+    }
+    FREETMPS;
+    LEAVE;
 
-       if (p != NULL && *p != '\0')
-         {
-           strncpy(buf, p, sizeof(buf) - 1);
-           buf[sizeof(buf) - 1] = '\0';
-         }
-     }
- 
-   PUTBACK;
-   FREETMPS;
-   LEAVE;
-
-   if (buf[0] != '\0') 
-      return buf ;
-   return NULL;
+    if (buf[0] != '\0') 
+	return buf;
+    return NULL;
 }
 
 void
