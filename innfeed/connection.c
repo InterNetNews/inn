@@ -129,6 +129,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "connection.h"
 #include "endpoint.h"
 #include "host.h"
+#include "libinn.h"
 #include "msgs.h"
 
 #if defined (NDEBUG)
@@ -476,7 +477,7 @@ Connection newConnection (Host host,
   cxn->respBuffer = newBuffer (BUFFER_SIZE) ;
   ASSERT (cxn->respBuffer != NULL) ;
 
-  cxn->ipName = strdup (ipname) ;
+  cxn->ipName = xstrdup (ipname) ;
   cxn->port = portNum ;
 
   /* Time out the higher numbered connections faster */

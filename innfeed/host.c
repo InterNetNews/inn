@@ -504,9 +504,9 @@ HostParams newHostParams(HostParams p)
       /* Copy old stuff in */
       memcpy ((char *) params, (char *) p, sizeof(struct host_param_s));
       if (params->peerName)
-	params->peerName = strdup(params->peerName);
+	params->peerName = xstrdup(params->peerName);
       if (params->ipName)
-	params->ipName = strdup(params->ipName);
+	params->ipName = xstrdup(params->ipName);
     }
   else
     {
@@ -559,7 +559,7 @@ void hostReconfigure(Host h, HostParams params)
   if (strcmp(h->params->ipName, params->ipName) != 0)
     {
       FREE (h->params->ipName) ;
-      h->params->ipName = strdup (params->ipName) ;
+      h->params->ipName = xstrdup (params->ipName) ;
       h->nextIpLookup = theTime () ;
     }
   
@@ -672,8 +672,8 @@ void configHosts (bool talkSelf)
 	      ASSERT(params->ipName == NULL);
 	      ASSERT(h->params->peerName != NULL);
 	      ASSERT(h->params->ipName != NULL);
-	      params->peerName = strdup(h->params->peerName);
-	      params->ipName = strdup(h->params->ipName);
+	      params->peerName = xstrdup(h->params->peerName);
+	      params->ipName = xstrdup(h->params->ipName);
 	      hostReconfigure(h, params);
 	      h->removeOnReload = true;
 	    }
@@ -943,8 +943,8 @@ Host newDefaultHost (InnListener listener,
       ASSERT(p!=NULL);
 
       /* relies on fact listener and names are null in default*/
-      p->peerName=strdup(name);
-      p->ipName=strdup(name);
+      p->peerName=xstrdup(name);
+      p->ipName=xstrdup(name);
       
       h=newHost (listener,p);
       if (h==NULL)
@@ -1789,7 +1789,7 @@ void hostCxnBlocked (Host host, Connection cxn, char *reason)
 #endif
 
   if (host->blockedReason == NULL)
-    host->blockedReason = strdup (reason) ;
+    host->blockedReason = xstrdup (reason) ;
   
   if (host->activeCxns == 0 && host->spoolTime == 0)
     {
@@ -2446,7 +2446,7 @@ void hostSetStatusFile (const char *filename)
     die ("Can't set status file name with a empty string\n") ;
 
   if (*filename == '/')
-    statusFile = strdup (filename) ;
+    statusFile = xstrdup (filename) ;
   else
     {
       const char *logDir = innconf->pathlog;
@@ -2518,14 +2518,14 @@ static HostParams hostDetails (scope *s,
     {
       if (name)
 	{
-	  p->peerName=strdup(name);
+	  p->peerName=xstrdup(name);
 	}
   
       if (s != NULL)
 	if (getString (s,IP_NAME,&q,NO_INHERIT))
 	  p->ipName = q ;
 	else
-	  p->ipName = strdup (name) ;
+	  p->ipName = xstrdup (name) ;
     }
 
 

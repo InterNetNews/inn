@@ -19,6 +19,7 @@
 
 #include "configfile.h"
 #include "config_y.h"
+#include "libinn.h"
 
 #if ! defined (FLEX_SCANNER)
 #error "You must use FLEX to process the lex input file."
@@ -102,7 +103,7 @@ ID	[a-zA-Z][-a-zA-Z0-9._/]+
       d_printf (1,"Including (%d) from %s\n",
                include_stack_ptr + 1,yytext) ;
       include_stack[include_stack_ptr].state = YY_CURRENT_BUFFER;
-      include_stack[++include_stack_ptr].name = strdup (yytext) ;
+      include_stack[++include_stack_ptr].name = xstrdup (yytext) ;
       yy_switch_to_buffer(yy_create_buffer(yyin, YY_BUF_SIZE));
     }
 
@@ -234,7 +235,7 @@ ID	[a-zA-Z][-a-zA-Z0-9._/]+
 [-0-9][0-9]*\.[0-9]*	{ yylval.real = atof (yytext) ; return (RVAL) ; }
 
 [^#:\'\" \t\n]+	{
-  yylval.name = strdup (yytext) ;
+  yylval.name = xstrdup (yytext) ;
   if (strcasecmp (yylval.name,"false") == 0)
     return (FALSEBVAL) ;
   else if (strcasecmp (yylval.name,"true") == 0)

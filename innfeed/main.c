@@ -799,7 +799,7 @@ static int mainConfigLoadCbk (void *data)
       if ( !isDirectory (p) && isDirectory (innconf->patharticles) )
         {
           logOrPrint (LOG_WARNING,fp,BADSPOOL_CHANGE,p,innconf->patharticles) ;
-          p = strdup (innconf->patharticles) ;
+          p = xstrdup (innconf->patharticles) ;
         }
       else if (!isDirectory (p))
         logAndExit (1,"Bad spool directories: %s, %s\n",p,innconf->patharticles) ;
@@ -807,7 +807,7 @@ static int mainConfigLoadCbk (void *data)
   else if (!isDirectory (innconf->patharticles))
     logAndExit (1,SPOOL_NODEF,innconf->patharticles);
   else
-    p = strdup (innconf->patharticles) ;
+    p = xstrdup (innconf->patharticles) ;
   newsspool = p ;
 
   /***************************************************/
@@ -893,10 +893,10 @@ static int mainOptionsProcess (void *data)
       if ((v = findValue (topScope,"backlog-directory",NO_INHERIT)) != NULL) 
         {
           FREE (v->v.charp_val) ;
-          v->v.charp_val = strdup (bopt) ;
+          v->v.charp_val = xstrdup (bopt) ;
         }
       else
-        addString (topScope,"backlog-directory",strdup (bopt)) ;
+        addString (topScope,"backlog-directory",xstrdup (bopt)) ;
     }
 
   if (aopt != NULL)
@@ -904,10 +904,10 @@ static int mainOptionsProcess (void *data)
       if ((v = findValue (topScope,"news-spool",NO_INHERIT)) != NULL)
         {
           FREE (v->v.charp_val) ;
-          v->v.charp_val = strdup (aopt) ;
+          v->v.charp_val = xstrdup (aopt) ;
         }
       else
-        addString (topScope,"news-spool",strdup (aopt)) ;
+        addString (topScope,"news-spool",xstrdup (aopt)) ;
     }
 
   if (sopt != NULL)
@@ -915,10 +915,10 @@ static int mainOptionsProcess (void *data)
       if ((v = findValue (topScope,"status-file",NO_INHERIT)) != NULL)
         {
           FREE (v->v.charp_val) ;
-          v->v.charp_val = strdup (sopt) ;
+          v->v.charp_val = xstrdup (sopt) ;
         }
       else
-        addString (topScope,"status-file",strdup (sopt)) ;
+        addString (topScope,"status-file",xstrdup (sopt)) ;
     }
 
 
@@ -957,10 +957,10 @@ static int mainOptionsProcess (void *data)
       if ((v = findValue (topScope,"pid-file",NO_INHERIT)) != NULL)
         {
           FREE (v->v.charp_val) ;
-          v->v.charp_val = strdup (popt) ;
+          v->v.charp_val = xstrdup (popt) ;
         }
       else
-        addString (topScope,"pid-file",strdup (popt)) ;
+        addString (topScope,"pid-file",xstrdup (popt)) ;
     }
 
   if (Zopt)
@@ -976,10 +976,10 @@ static int mainOptionsProcess (void *data)
       if ((v = findValue (topScope,"log-file",NO_INHERIT)) != NULL)
         {
           FREE (v->v.charp_val) ;
-          v->v.charp_val = strdup (lopt) ;
+          v->v.charp_val = xstrdup (lopt) ;
         }
       else
-        addString (topScope,"log-file",strdup (lopt)) ;
+        addString (topScope,"log-file",xstrdup (lopt)) ;
     }
 
   if (InputFile != NULL)
@@ -987,10 +987,10 @@ static int mainOptionsProcess (void *data)
       if ((v = findValue (topScope,"input-file",NO_INHERIT)) != NULL)
         {
           FREE (v->v.charp_val) ;
-          v->v.charp_val = strdup (InputFile) ;
+          v->v.charp_val = xstrdup (InputFile) ;
         }
       else
-        addString (topScope,"input-file",strdup (InputFile)) ;
+        addString (topScope,"input-file",xstrdup (InputFile)) ;
     }
 
   return 1 ;

@@ -427,6 +427,7 @@ char *yytext;
 
 #include "configfile.h"
 #include "config_y.h"
+#include "libinn.h"
 
 #if ! defined (FLEX_SCANNER)
 #error "You must use FLEX to process the lex input file."
@@ -465,7 +466,7 @@ int include_stack_ptr = 0;
 
 #define incl 1
 
-#line 469 "lex.yy.c"
+#line 470 "lex.yy.c"
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -619,10 +620,10 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
 
-#line 64 "configfile.l"
+#line 65 "configfile.l"
 
 
-#line 626 "lex.yy.c"
+#line 627 "lex.yy.c"
 
 	if ( yy_init )
 		{
@@ -708,42 +709,42 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 66 "configfile.l"
+#line 67 "configfile.l"
 lineCount++ ;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 68 "configfile.l"
+#line 69 "configfile.l"
 { return (COLON) ; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 70 "configfile.l"
+#line 71 "configfile.l"
 { return (LBRACE) ; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 72 "configfile.l"
+#line 73 "configfile.l"
 { return (RBRACE) ; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 74 "configfile.l"
+#line 75 "configfile.l"
 { return (PEER) ; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 76 "configfile.l"
+#line 77 "configfile.l"
 BEGIN(incl);
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 78 "configfile.l"
+#line 79 "configfile.l"
 /* eat the whitespace before include filename */
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 80 "configfile.l"
+#line 81 "configfile.l"
 {
   if (include_stack_ptr == MAX_INCLUDE_DEPTH - 1)
     {
@@ -769,7 +770,7 @@ YY_RULE_SETUP
       d_printf (1,"Including (%d) from %s\n",
                include_stack_ptr + 1,yytext) ;
       include_stack[include_stack_ptr].state = YY_CURRENT_BUFFER;
-      include_stack[++include_stack_ptr].name = strdup (yytext) ;
+      include_stack[++include_stack_ptr].name = xstrdup (yytext) ;
       yy_switch_to_buffer(yy_create_buffer(yyin, YY_BUF_SIZE));
     }
 
@@ -778,7 +779,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(incl):
-#line 112 "configfile.l"
+#line 113 "configfile.l"
 {
   if ( include_stack_ptr <= 0 )
     yyterminate();
@@ -792,22 +793,22 @@ case YY_STATE_EOF(incl):
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 123 "configfile.l"
+#line 124 "configfile.l"
 { return (GROUP) ; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 125 "configfile.l"
+#line 126 "configfile.l"
 { (void) 0 ; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 127 "configfile.l"
+#line 128 "configfile.l"
 { (void) 1 ; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 129 "configfile.l"
+#line 130 "configfile.l"
 {
 	switch (yytext[2]) {
 		case '\\': yylval.chr = '\\' ; break ;
@@ -823,18 +824,18 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 142 "configfile.l"
+#line 143 "configfile.l"
 { yylval.chr = yytext[1] ; return (CHAR) ; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 144 "configfile.l"
+#line 145 "configfile.l"
 { yylval.chr = (char)strtol(&yytext[2], (char **)NULL, 8);
 			  return (CHAR) ;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 147 "configfile.l"
+#line 148 "configfile.l"
 {{
 	int i ;
 
@@ -922,19 +923,19 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 232 "configfile.l"
+#line 233 "configfile.l"
 { yylval.integer = atoi (yytext) ; return (IVAL) ; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 234 "configfile.l"
+#line 235 "configfile.l"
 { yylval.real = atof (yytext) ; return (RVAL) ; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 236 "configfile.l"
+#line 237 "configfile.l"
 {
-  yylval.name = strdup (yytext) ;
+  yylval.name = xstrdup (yytext) ;
   if (strcasecmp (yylval.name,"false") == 0)
     return (FALSEBVAL) ;
   else if (strcasecmp (yylval.name,"true") == 0)
@@ -945,10 +946,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 246 "configfile.l"
+#line 247 "configfile.l"
 ECHO;
 	YY_BREAK
-#line 952 "lex.yy.c"
+#line 953 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1834,7 +1835,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 246 "configfile.l"
+#line 247 "configfile.l"
 
 
 

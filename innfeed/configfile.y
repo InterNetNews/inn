@@ -21,6 +21,7 @@
 #endif
   
 #include "configfile.h"
+#include "libinn.h"
 #include "msgs.h"
 #include "misc.h"
 
@@ -79,7 +80,7 @@ int getString (scope *s, const char *name, char **rval, int inherit)
   else if (v->type != stringval)
     return 0 ;
 
-  *rval = strdup (v->v.charp_val) ;
+  *rval = xstrdup (v->v.charp_val) ;
   return 1 ;
 }
 
@@ -147,7 +148,7 @@ char *addInteger (scope *s, const char *name, long val)
     return error ;
 
   v = (value *) calloc (1,sizeof (value)) ;
-  v->name = strdup (name) ;
+  v->name = xstrdup (name) ;
   v->type = intval ;
   v->v.int_val = val ;
   
@@ -165,7 +166,7 @@ char *addChar (scope *s, const char *name, char val)
     return error ;
 
   v = (value *) calloc (1,sizeof (value)) ;
-  v->name = strdup (name) ;
+  v->name = xstrdup (name) ;
   v->type = charval ;
   v->v.char_val = val ;
   
@@ -183,7 +184,7 @@ char *addBoolean (scope *s, const char *name, int val)
     return error ;
 
   v = (value *) calloc (1,sizeof (value)) ;
-  v->name = strdup (name) ;
+  v->name = xstrdup (name) ;
   v->type = boolval ;
   v->v.bool_val = val ;
   
@@ -201,7 +202,7 @@ char *addReal (scope *s, const char *name, double val)
     return error ;
 
   v = (value *) calloc (1,sizeof (value)) ;
-  v->name = strdup (name) ;
+  v->name = xstrdup (name) ;
   v->type = realval ;
   v->v.real_val = val ;
   
@@ -219,9 +220,9 @@ char *addString (scope *s, const char *name, const char *val)
     return error ;
 
   v = (value *) calloc (1,sizeof (value)) ;
-  v->name = strdup (name) ;
+  v->name = xstrdup (name) ;
   v->type = stringval ;
-  v->v.charp_val = strdup (val) ;
+  v->v.charp_val = xstrdup (val) ;
   
   addValue (s,v) ;
 
@@ -253,7 +254,7 @@ value *findValue (scope *s, const char *name, int inherit)
               if (*p == '\0')     /* last segment of name */
                 return s->values[i] ;
               else if (s->values[i]->type != scopeval)
-                errbuff = strdup ("Component not a scope") ;
+                errbuff = xstrdup ("Component not a scope") ;
               else
                 return findValue (s->values[i]->v.scope_val,p + 1,0) ;
             }
@@ -426,7 +427,7 @@ static char *addScope (scope *s, const char *name, scope *val)
     return error ;
 
   v = (value *) calloc (1,sizeof (value)) ;
-  v->name = strdup (name) ;
+  v->name = xstrdup (name) ;
   v->type = scopeval ;
   v->v.scope_val = val ;
   val->me = v ;
@@ -524,7 +525,7 @@ static scope *newScope (const char *type)
   
   t = (scope *) calloc (1,sizeof (scope)) ;
   t->parent = NULL ;
-  t->scope_type = strdup (type) ;
+  t->scope_type = xstrdup (type) ;
 
   for (i = 0 ; t->scope_type[i] != '\0' ; i++)
     t->scope_type[i] = tolower (t->scope_type[i]) ;
@@ -881,7 +882,7 @@ int buildPeerTable (FILE *fp, scope *s)
                                          peerTableCount) ;
                 }
   
-              peerTable[peerTableIdx].peerName = strdup (s->values[i]->name);
+              peerTable[peerTableIdx].peerName = xstrdup (s->values[i]->name);
               peerTable[peerTableIdx].peerValue = s->values[i] ;
               peerTableIdx++ ;
             }

@@ -223,14 +223,14 @@ int tapeConfigLoadCbk (void *data)
         {
           syslog (LOG_ERR,NO_CHANGE_BACKLOG) ;
           FREE (dir) ;
-          dir = strdup (tapeDirectory) ;
+          dir = xstrdup (tapeDirectory) ;
         }
 
       if (!isDirectory (dir) && isDirectory (dflTapeDir))
         {
           logOrPrint (LOG_ERR,fp,BAD_TAPEDIR_CHANGE,dir,dflTapeDir) ;
           FREE (dir) ;
-          dir = strdup (dflTapeDir) ;
+          dir = xstrdup (dflTapeDir) ;
         }
       else if (!isDirectory (dir))
         logAndExit (1,NO_TAPE_DIR) ;
@@ -238,7 +238,7 @@ int tapeConfigLoadCbk (void *data)
   else if (!isDirectory (dflTapeDir))
     logAndExit (1,NO_TAPE_DIR) ;
   else
-    dir = strdup (dflTapeDir) ;
+    dir = xstrdup (dflTapeDir) ;
   
   if (tapeDirectory != NULL)
     FREE (tapeDirectory) ;
@@ -346,7 +346,7 @@ Tape newTape (const char *peerName, bool dontRotate)
   if (endsIn (peerName,LOCK_TAIL))
     die ("Sorry, can't have a peer name ending in \"%s\"",LOCK_TAIL) ;
 
-  nt->peerName = strdup (peerName) ;
+  nt->peerName = xstrdup (peerName) ;
   
   nt->handFilename = MALLOC (pLen + dLen + 2) ;
   ASSERT (nt->handFilename != NULL) ;
@@ -880,7 +880,7 @@ void setTapeDirectory (const char *newDir)
   if (tapeDirectory != NULL)
     freeCharP (tapeDirectory) ;
   
-  tapeDirectory = strdup (newDir) ;
+  tapeDirectory = xstrdup (newDir) ;
 
   addPointerFreedOnExit (tapeDirectory) ;
 }
@@ -894,7 +894,7 @@ const char *getTapeDirectory (void)
 #if 0
   if (tapeDirectory == NULL)
     {
-      tapeDirectory = strdup (dflTapeDir) ;
+      tapeDirectory = xstrdup (dflTapeDir) ;
       addPointerFreedOnExit (tapeDirectory) ;
     }
 #endif
