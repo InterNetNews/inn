@@ -118,7 +118,6 @@ RequeueAndExit(Cookie, line, BytesInArt)
 	(void)printf("\n");
     }
 
-    (void)openlog("batcher", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     syslog(L_NOTICE, LINE1, Host, usertime, systime, STATend - STATbegin);
     syslog(L_NOTICE, LINE2, Host, BATCHcount, ArtsWritten, BytesWritten);
 
@@ -236,6 +235,11 @@ main(ac, av)
     ARTHANDLE	*art;
     char	*artdata;
 
+    /* Set defaults. */
+    /* ReadInnConf does a syslog at LOG_DEBUG so need to
+       have opened a log first or get syslog mesgs with no identiy
+       "Reading ..." . Ctlinnd nnrpd will log these mesgs properly */
+    (void)openlog("batcher", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
     AltSpool = NULL;
