@@ -109,11 +109,8 @@ pack12(p, n, last)
 }
 
 
-/* ARGSUSED0 */
 int
-main(ac, av)
-    int			ac;
-    char		*av[];
+main(void)
 {
     register int	c;
     register char	*p;

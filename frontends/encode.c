@@ -100,11 +100,8 @@ encode(dest, n)
 }
 
 
-/* ARGSUSED0 */
 int
-main(ac, av)
-    int			ac;
-    char		*av[];
+main(void)
 {
     register char	*p;
     register int	c;
