@@ -44,6 +44,13 @@ AC_PREFIX_DEFAULT(/usr/local/news)
 dnl Make sure $prefix is set so that we can use it internally.
 test x"$prefix" = xNONE && prefix="$ac_default_prefix"
 
+dnl Earlier versions of INN used --with-largefiles, which was the wrong flag
+dnl from the perspective of what --with and --enable are supposed to mean.
+dnl Catch the old usage and error out.
+if test x"$with_largefiles" != x ; then
+    AC_MSG_ERROR([Use --enable-largefiles instead of --with-largefiles])
+fi
+
 dnl Check to see if the user wants to use libtool.  We only invoke the
 dnl libtool setup macros if they do.  Keep this call together with the
 dnl libtool setup so that the arguments to configure will be together in
