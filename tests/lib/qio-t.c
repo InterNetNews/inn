@@ -9,12 +9,7 @@
 
 #include "libinn.h"
 #include "inn/qio.h"
-
-static void
-ok(int n, int success)
-{
-    printf("%sok %d\n", success ? "" : "not ", n);
-}
+#include "libtest.h"
 
 static void
 output(int fd, const void *data, size_t size)
@@ -83,62 +78,73 @@ main(void)
     output(fd, "\n", 1);
     close(fd);
 
-    puts("17");
+    puts("30");
 
     /* Now make sure we can read all that back correctly. */
     qio = QIOopen(".testout");
-    ok(1, (qio != NULL) && !QIOerror(qio) && (QIOfileno(qio) > 0));
+    ok(1, qio != NULL);
+    ok(2, !QIOerror(qio));
+    ok(3, QIOfileno(qio) > 0);
     if (unlink(".testout") < 0) sysdie("Can't unlink .testout");
     for (success = true, i = 0; i < count; i++) {
         result = QIOread(qio);
         success = (success && !QIOerror(qio) && (QIOlength(qio) == 255)
                    && !strcmp(result, (char *) out));
     }
-    ok(2, success);
-    ok(3, QIOtell(qio) == size);
+    ok(4, success);
+    ok(5, QIOtell(qio) == (off_t) size);
     result = QIOread(qio);
     if (strlen(result) < size - 1) {
-        ok(4, false);
+        ok(6, false);
     } else {
         for (success = true, i = 0; i < count - 1; i++)
             success = success && !memcmp(result + i * 256, data, 256);
         success = success && !memcmp(result + i * 256, data, 255);
-        ok(4, success);
+        ok(6, success);
     }
-    ok(5, QIOtell(qio) == 2 * size);
+    ok(7, QIOtell(qio) == (off_t) (2 * size));
     result = QIOread(qio);
-    ok(6, !QIOerror(qio) && QIOlength(qio) == 0 && *result == 0);
+    ok(8, !QIOerror(qio));
+    ok(9, QIOlength(qio) == 0);
+    ok(10, *result == 0);
     result = QIOread(qio);
     if (strlen(result) < size - 1) {
-        ok(7, false);
+        ok(11, false);
     } else {
         for (success = true, i = 0; i < count - 1; i++)
             success = success && !memcmp(result + i * 256, data, 256);
         success = success && !memcmp(result + i * 256, data, 255);
-        ok(7, success);
+        ok(11, success);
     }
-    ok(8, QIOtell(qio) == 3 * size + 1);
+    ok(12, QIOtell(qio) == (off_t) (3 * size + 1));
     result = QIOread(qio);
-    ok(9, (!QIOerror(qio) && QIOlength(qio) == 127 && strlen(result) == 127
-           && !memcmp(result, data, 127)));
+    ok(13, !QIOerror(qio));
+    ok(14, QIOlength(qio) == 127);
+    ok(15, strlen(result) == 127);
+    ok(16, !memcmp(result, data, 127));
     for (success = true, i = 0; i < count; i++) {
         result = QIOread(qio);
         success = (success && !QIOerror(qio) && (QIOlength(qio) == 255)
                    && !strcmp(result, (char *) out));
     }
-    ok(10, success);
-    ok(11, QIOtell(qio) == 4 * size + 129);
+    ok(17, success);
+    ok(18, QIOtell(qio) == (off_t) (4 * size + 129));
     result = QIOread(qio);
-    ok(12, !result && QIOerror(qio) && QIOtoolong(qio));
-    ok(13, QIOrewind(qio) == 0);
-    ok(14, QIOtell(qio) == 0);
+    ok(19, !result);
+    ok(20, QIOerror(qio));
+    ok(21, QIOtoolong(qio));
+    ok(22, QIOrewind(qio) == 0);
+    ok(23, QIOtell(qio) == 0);
     result = QIOread(qio);
-    ok(15, (!QIOerror(qio) && QIOlength(qio) == 255 && strlen(result) == 255
-            && !strcmp(result, (char *) out)));
-    ok(16, QIOtell(qio) == 256);
+    ok(24, !QIOerror(qio));
+    ok(25, QIOlength(qio) == 255);
+    ok(26, strlen(result) == 255);
+    ok(27, !strcmp(result, (char *) out));
+    ok(28, QIOtell(qio) == 256);
     fd = QIOfileno(qio);
     QIOclose(qio);
-    ok(17, close(fd) < 0 && errno == EBADF);
+    ok(29, close(fd) < 0);
+    ok(30, errno == EBADF);
 
     return 0;
 }
