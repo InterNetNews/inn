@@ -5,15 +5,11 @@
 #ifndef LIBINN_H
 #define LIBINN_H 1
 
-#ifndef INN_DEFINES_H
-# include "inn/defines.h"
-#endif
+#include "inn/defines.h"
 
-/* Eventually we don't want to install this, since this is an installed
+/* Eventually we don't want to install this, since this will be an installed
    header and we don't want to install config.h. */
-#ifndef CONFIG_H
-# include "config.h"
-#endif
+#include "config.h"
 
 #include <stdarg.h>             /* va_list */
 #include <stdio.h>              /* FILE */
@@ -127,6 +123,20 @@ extern enum wildmat     wildmat_poison(const char *text, const char *pat);
 
 
 /*
+**  FILE LOCKING
+*/
+enum locktype {
+    LOCK_READ,
+    LOCK_WRITE,
+    LOCK_UNLOCK
+};
+
+extern bool     lock_file(int fd, enum locktype type, bool block);
+extern bool     lock_range(int fd, enum locktype type, bool block,
+                           off_t offset, off_t size);
+
+
+/*
 **  MISCELLANEOUS UTILITY FUNCTIONS
 */
 extern void *   concat(const char *first, ...);
@@ -159,14 +169,6 @@ extern FILE	*CAlistopen(FILE *FromServer, FILE *ToServer, char *request);
 extern FILE     *CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer, char *request);
 extern void	CAclose(void);
 
-/* File locking. */
-typedef enum { LOCK_READ, LOCK_WRITE, LOCK_UNLOCK } LOCKTYPE;
-extern BOOL      lock_file(int fd, LOCKTYPE type, BOOL block);
-
-#ifdef HAVE_FCNTL
-extern BOOL     LockRange(int fd, LOCKTYPE type, BOOL block,
-                          OFFSET_T offset, OFFSET_T size);
-#endif
     
 /*
 **  INNCONF SETTINGS
