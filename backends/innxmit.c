@@ -124,6 +124,11 @@ static double		STATacceptedsize;
 static double		STATrejectedsize;
 
 
+/* Prototypes. */
+static ARTHANDLE *article_open(const char *path, const char *id);
+static void article_free(ARTHANDLE *);
+
+
 /*
 **  Find the history file entry for the Message-ID and return a file
 **  positioned at the third field.
@@ -286,7 +291,7 @@ stalloc(char *Article, char *MessageID, ARTHANDLE *art, int hash) {
 static void
 strel(int i) {
 	if (stbuf[i].art) {
-	    SMfreearticle(stbuf[i].art);
+            article_free(stbuf[i].art);
 	    stbuf[i].art = NULL;
 	}
 	if (stbuf[i].st_id) stbuf[i].st_id[0] = '\0';
@@ -750,49 +755,27 @@ check(int i) {
 static bool
 takethis(int i) {
     char	buff[NNTP_STRLEN];
-    ARTHANDLE	*art;
-    TOKEN	token;
 
-    if (!IsToken(stbuf[i].st_fname)) {
-	strel(i);
-	++STATmissing;
-	return FALSE; /* Not an error. Could be canceled or expired */
-    }
-    token = TextToToken(stbuf[i].st_fname);
-    if (!stbuf[i].art) { /* should already be open but ... */
-	/* Open the article. */
-	if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
-	    strel(i);
-	    ++STATmissing;
-	    return FALSE; /* Not an error. Could be canceled or expired */
-	}
-	stbuf[i].art = NEW(ARTHANDLE, 1);
-	*stbuf[i].art = *art;
-    } else if (SMprobe(SELFEXPIRE, &token, NULL)) {
-	/* examine if the article still exists */
-	if ((art = SMretrieve(token, RETR_STAT)) == NULL) {
-	    strel(i);
-	    ++STATmissing;
-	    return FALSE; /* Not an error. Could be canceled or expired */
-	}
-	SMfreearticle(art);
+    if (!stbuf[i].art) {
+        fprintf(stderr, "Internal error: null article for %s in takethis\n",
+                stbuf[i].st_fname);
+        return TRUE;
     }
     /* send "takethis <ID>" to the other system */
     (void)sprintf(buff, "takethis %s", stbuf[i].st_id);
     if (!REMwrite(buff, (int)strlen(buff), FALSE)) {
-	(void)fprintf(stderr, "Can't send takethis <id>, %s\n",
-		strerror(errno));
-	return TRUE;
+        (void)fprintf(stderr, "Can't send takethis <id>, %s\n",
+                      strerror(errno));
+        return TRUE;
     }
     if (Debug)
-	(void)fprintf(stderr, "> %s\n", buff);
+        (void)fprintf(stderr, "> %s\n", buff);
     if (GotInterrupt)
-	Interrupted((char *)0, (char *)0);
-    if (!REMsendarticle(stbuf[i].st_fname, stbuf[i].st_id,
-	    stbuf[i].art))
-	return TRUE;
+        Interrupted((char *)0, (char *)0);
+    if (!REMsendarticle(stbuf[i].st_fname, stbuf[i].st_id, stbuf[i].art))
+        return TRUE;
     stbuf[i].st_size = stbuf[i].art->len;
-    SMfreearticle(stbuf[i].art);	/* should not need file again */
+    article_free(stbuf[i].art); /* should not need file again */
     stbuf[i].art = 0;		/* so close to free descriptor */
     stbuf[i].st_age = 0;
     /* That all.  Response is checked later by strlisten() */
