@@ -632,6 +632,12 @@ dnl Perl linked with gdbm but don't normally have gdbm installed, so on that
 dnl platform only strip -lgdbm out of the Perl libraries.  Leave it in on
 dnl other platforms where it may be necessary (it isn't on Linux; Linux
 dnl shared libraries can manage their own dependencies).
+dnl
+dnl If we aren't compiling with large-file support, strip out the large file
+dnl flags from inn_perl_core_flags; otherwise, innd/cc.c and lib/qio.c
+dnl disagree over the size of an off_t.  Since none of our calls into Perl
+dnl use variables of type off_t, this should be harmless; in any event, it's
+dnl going to be better than the innd/cc.c breakage.
 if test x"$DO_PERL" = xDO ; then
     AC_MSG_CHECKING(for Perl linkage)
     inn_perl_core_path=`$_PATH_PERL -MConfig -e 'print $Config{archlibexp}'`
@@ -645,6 +651,11 @@ if test x"$DO_PERL" = xDO ; then
         inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/ -lgdbm//'`
         ;;
     esac
+    if test x"$inn_enable_largefiles" != xyes ; then
+        for f in -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES ; do
+            inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed "s/ $f//"`
+        done
+    fi
     inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed 's/^  *//'`
     inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/^  *//'`
     PERL_INC="$inn_perl_core_flags"
