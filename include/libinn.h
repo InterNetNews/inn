@@ -163,6 +163,7 @@ struct conf_vars {
 	int activedenable;
 	long activedupdate;
 	int activedport;
+	int storemsgid;
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;
