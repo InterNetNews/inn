@@ -187,6 +187,11 @@ CHANNEL *CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
 
     /* Make the descriptor close-on-exec and non-blocking. */
     CloseOnExec(fd, TRUE);
+#if !defined(HPUX)
+    /* Stupid HPUX 11.0 has a broken listen/accept where setting the
+     * listensocket to nonblocking prevents you from successfully setting the
+     * socket returned by accept(2) back to blocking mode, no matter what,
+     * resulting in all kinds of funny behaviour, data loss, etc. etc.  */
     if (SetNonBlocking(fd, TRUE) < 0
 #if	defined(ENOTSOCK)
 	    && errno != ENOTSOCK
@@ -196,6 +201,7 @@ CHANNEL *CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
 #endif	/* defined(ENOTTY) */
     )
 	syslog(L_ERROR, "%s cant nonblock %d %m", LogName, fd);
+#endif
 
     /* Note control channel, for efficiency. */
     if (Type == CTcontrol) {
