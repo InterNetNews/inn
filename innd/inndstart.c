@@ -167,7 +167,7 @@ int main(int ac, char *av[])
     (void)sprintf(buff, "PATH=%s:%s:/bin:/usr/bin:/usr/ucb",
 	    innconf->pathbin, innconf->pathetc);
     env[0] = COPY(buff);
-    (void)sprintf(buff, "TMPDIR=%s", _PATH_TMP);
+    (void)sprintf(buff, "TMPDIR=%s", innconf->pathtmp);
     env[1] = COPY(buff);
     (void)sprintf(buff, "SHELL=%s", _PATH_SH);
     env[2] = COPY(buff);
