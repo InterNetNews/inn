@@ -1831,13 +1831,6 @@ STRING ARTpost(CHANNEL *cp)
 	return buff;
     }
     Data.MessageID = HDR(_message_id);
-    hash = HashMessageID(Data.MessageID);
-    if (HIShavearticle(hash)) {
-	sprintf(buff, "%d Article already recieved", NNTP_REJECTIT_VAL);
-	ARTlog(&Data, ART_REJECT, buff);
-	ARTreject(buff, article);
-	return buff;
-    }
     
     /* Fill in other Data fields. */
     Data.Poster = HDR(_sender);
@@ -1857,6 +1850,15 @@ STRING ARTpost(CHANNEL *cp)
     Data.FeedsiteLength = strlen(Data.Feedsite);
     (void)sprintf(Data.TimeReceived, "%lu", Now.time);
     Data.TimeReceivedLength = strlen(Data.TimeReceived);
+
+    hash = HashMessageID(Data.MessageID);
+    if (HIShavearticle(hash)) {
+	sprintf(buff, "%d Duplicate", NNTP_REJECTIT_VAL);
+	ARTlog(&Data, ART_REJECT, buff);
+	ARTreject(buff, article);
+	return buff;
+    }
+
 
     /* And now check the path for unwanted sites -- Andy */
     for( j = 0 ; ME.Exclusions && ME.Exclusions[j] ; j++ ) {
