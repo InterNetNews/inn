@@ -1202,6 +1202,17 @@ static bool ovsetcurindexblock(GROUPENTRY *ge) {
     syslog(L_ERROR, "%s: ovsetcurindexblock could not get ovbuff block for new, %d, %d", LocalLogName, ov.index, ov.blocknum);
     return FALSE;
   }
+  ovindexhead.next = ovnull;
+  ovindexhead.low = 0;
+  ovindexhead.high = 0;
+#ifdef MMAP_MISSES_WRITES
+  if (mmapwrite(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD), ovbuff->base + ov.blocknum * OV_BLOCKSIZE) != sizeof(OVINDEXHEAD)) {
+#else
+  if (pwrite(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD), ovbuff->base + ov.blocknum * OV_BLOCKSIZE) != sizeof(OVINDEXHEAD)) {
+#endif /* MMAP_MISSES_WRITES */
+    syslog(L_ERROR, "%s: could not write index record index '%d', blocknum '%d': %m", LocalLogName, ge->curindex.index, ge->curindex.blocknum);
+    return TRUE;
+  }
   if (ge->baseindex.index == NULLINDEX) {
     ge->baseindex = ov;
   } else {
