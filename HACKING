@@ -615,6 +615,9 @@ Using CVSup
     repository.  Creating your own local CVS repository is outside the scope
     of this document.
 
+    Note that only multiplexed mode is supported (this mode should be the
+    default).
+
     For more general information on using CVSup, see the FreeBSD page on it
     at <http://www.freebsd.org/handbook/mirrors-cvsup.html>.
 
