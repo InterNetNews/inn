@@ -382,15 +382,11 @@ ReopenLog(F)
 /*
 **  Function called when memory allocation fails.
 */
-STATIC int
-AllocationFailure(what, i)
-    char		*what;
-    unsigned int	i;
+static int
+AllocationFailure(const char *what, size_t size)
 {
-    /* Print i as %d so huge values are real obvious. */
-    syslog(L_FATAL, "%s cant %s %d bytes %m", LogName, what, i);
+    syslog(L_FATAL, "%s cant %s %lu bytes: %m", LogName, what, size);
     exit(1);
-    /* NOTREACHED */
 }
 
 
