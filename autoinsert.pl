@@ -79,6 +79,9 @@ require 5.000; # Perl 4 has no POD
 # 
 # !$Id$
 # !$Log$
+# !Revision 1.3  1998/03/04 12:55:04  mibsoft
+# !Improved error handling in autoinsert.pl
+# !
 # !Revision 1.2  1998/02/27 04:24:54  mibsoft
 # !More robust error checking in the autoinsert.pl utility.
 # !parameters to END_AUTO_INSERTED_SECTION must match the
@@ -139,6 +142,7 @@ while (<INFILE>) {
     if (/^\S+\s+BEGIN_AUTO_INSERTED_SECTION\s+(\S+)\s+(\S+)\s+(\S+)\s/o) {
 	if ($state != 0) {
 	    warn "Error (BEGIN on line $state): Mismatched auto insert sections\n";
+	    next;
 	}
 	$from = $1;
 	$file = $2;
@@ -181,11 +185,20 @@ while (<INFILE>) {
     } 
 
     # check for end token
-    if (/^\S+\s+END_AUTO_INSERTED_SECTION\s+$from\s+$file\s+$tag/) {
-	$state = 0; 
-	print OUTFILE $sub;
-	print OUTFILE;
-	next;
+    if (/^\S+\s+END_AUTO_INSERTED_SECTION\s+/o) {
+	if ($state == 0) {
+	    warn "Error (line $line): No BEGIN for this END token\n";
+	    next;
+	}
+	if (/^\S+\s+END_AUTO_INSERTED_SECTION\s+$from\s+$file\s+$tag/) {
+	    $state = 0; 
+	    print OUTFILE $sub;
+	    print OUTFILE;
+	    next;
+	} else {
+	    warn "Error (Line $line, begin on line $state): END token does not match BEGIN\n";
+	    $state = 0;
+	}
     }
 
     print OUTFILE if ($state == 0);
