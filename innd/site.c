@@ -1190,7 +1190,7 @@ Common:
 		ctime(&cp->LastActive) + 4);
 	    p += strlen(p);
 	    if (cp->Waketime > Now.time) {
-		(void)sprintf("\tSleeping until %.12s\n",
+		(void)sprintf(p, "\tSleeping until %.12s\n",
 		    ctime(&cp->Waketime) + 4);
 		p += strlen(p);
 	    }
