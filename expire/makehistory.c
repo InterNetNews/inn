@@ -463,7 +463,7 @@ static void ARTreadschema(BOOL Overview)
 	Missfieldsize++;
     if (Expp == (ARTOVERFIELD *)NULL)
 	Missfieldsize++;
-    if (Xrefp == (ARTOVERFIELD *)NULL || !foundxreffull) {
+    if (Overview && (Xrefp == (ARTOVERFIELD *)NULL || !foundxreffull)) {
 	(void)fprintf(stderr, "'Xref:full' must be included in %s\n", SchemaPath);
 	exit(1);
     }
@@ -496,6 +496,15 @@ static void ARTreadschema(BOOL Overview)
 	    fp->HasHeader = FALSE;
 	    fp->HeaderLength = 0;
 	    Expp = fp++;
+	}
+        if (Overview && Xrefp == (ARTOVERFIELD *)NULL) {
+	    fp->NeedHeadername = FALSE;
+	    fp->Headername = COPY(XREF);
+	    fp->HeadernameLength = strlen(XREF)-1;
+	    fp->Header = (char *)NULL;
+	    fp->HasHeader = FALSE;
+	    fp->HeaderLength = 0;
+	    Xrefp = fp++;
 	}
     }
 }
@@ -584,7 +593,7 @@ DoArt(ARTHANDLE *art)
 	    }
 	}
     }
-    if (Xrefp->HeaderLength == 0) {
+    if (DoOverview && Xrefp->HeaderLength == 0) {
 	if (!SMprobe(SMARTNGNUM, art->token, (void *)&ann)) {
 	    Xrefp->Header = NULL;
 	    Xrefp->HeaderLength = 0;
