@@ -9,34 +9,9 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include <assert.h>
-
-#include "inn/mmap.h"
-
 #include "portable/mmap.h"
 
-static ssize_t pagesize = -1;
-
-/*
-**  Return the system pagesize
-*/
-ssize_t
-syspagesize(void)
-{
-    if (pagesize == -1) {
-#if defined(HAVE_GETPAGESIZE)
-	pagesize = getpagesize();
-#elif defined(_SC_PAGESIZE)
-	pagesize = sysconf(_SC_PAGESIZE);
-	if (pagesize == -1) {
-	    syswarn("sysconf(_SC_PAGESIZE) failed: %m");
-	}
-#else
-	pagesize = 16384;
-#endif
-    }
-    return pagesize;
-}
+#include "inn/mmap.h"
 
 /*
 **  Figure out what page an address is in and flush those pages
@@ -44,7 +19,12 @@ syspagesize(void)
 void
 mapcntl(void *p, size_t length, int flags)
 {
-    if (syspagesize() != -1) {
+    int pagesize;
+
+    pagesize = getpagesize();
+    if (pagesize == -1)
+        syswarn("getpagesize failed");
+    else {
 	char *start, *end;
 
 	start = (char *)((size_t)p & ~(size_t)(pagesize - 1));
