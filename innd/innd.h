@@ -702,6 +702,9 @@ extern void		ICDwriteactive(void);
 extern void		CCclose(void);
 extern void		CCsetup(void);
 
+extern void             KEYgenerate(HDRCONTENT *, const char *body,
+                                    const char *orig, size_t length);
+
 extern void		LCclose(void);
 extern void		LCsetup(void);
 
@@ -802,7 +805,7 @@ extern const char   *	PYcontrol(char **av);
 extern int		PYreadfilter(void);
 extern char	    *	PYartfilter(const ARTDATA *Data, char *artBody, long artLen, int lines);
 extern char	    *	PYmidfilter(char *messageID, int msglen);
-extern void		PYmode(OPERATINGMODE Mode, OPERATINGMODE newmode,
+extern void		PYmode(OPERATINGMODE mode, OPERATINGMODE newmode,
 			       char *reason);
 extern void		PYsetup(void);
 extern void		PYclose(void);

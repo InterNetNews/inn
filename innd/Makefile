@@ -7,12 +7,12 @@ CFLAGS		= $(GCFLAGS)
 
 ALL		= innd inndstart
 
-SOURCES		= art.c cc.c chan.c icd.c innd.c inndstart.c lc.c \
+SOURCES		= art.c cc.c chan.c icd.c innd.c inndstart.c keywords.c lc.c \
 		  nc.c newsfeeds.c ng.c perl.c proc.c python.c rc.c site.c \
 		  status.c tcl.c util.c wip.c
 
 # The objects that are linked into innd.  All SOURCES except inndstart.
-OBJECTS		= art.o cc.o chan.o icd.o innd.o lc.o nc.o \
+OBJECTS		= art.o cc.o chan.o icd.o innd.o keywords.o lc.o nc.o \
 		  newsfeeds.o ng.o perl.o proc.o python.o rc.o site.o \
 		  status.o tcl.o util.o wip.o
 
@@ -38,7 +38,7 @@ tags ctags: $(SOURCES)
 ##  Compilation rules.
 
 INNDLIBS 	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) \
-		  $(TCLLIB) $(PYTHONLIB) $(LIBS) $(PERLLIB)
+		  $(TCLLIB) $(PYTHONLIB) $(REGEXLIB) $(LIBS) $(PERLLIB)
 
 art.o:		art.c		; $(CC) $(CFLAGS) $(TCLINC) -c art.c
 perl.o:		perl.c		; $(CC) $(CFLAGS) $(PERLINC) -c perl.c
@@ -134,6 +134,12 @@ inndstart.o: inndstart.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/socket.h \
  ../include/inn/messages.h ../include/libinn.h ../include/macros.h \
  ../include/paths.h
+keywords.o: keywords.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h innd.h \
+ ../include/portable/time.h ../include/portable/socket.h \
+ ../include/inn/messages.h ../include/inn/timer.h \
+ ../include/inn/history.h ../include/nntp.h ../include/paths.h \
+ ../include/storage.h
 lc.o: lc.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h innd.h ../include/portable/time.h \
  ../include/portable/socket.h ../include/inn/messages.h \
