@@ -2169,7 +2169,10 @@ STRING ARTpost(CHANNEL *cp)
 
 #if defined(DO_PERL)
     pathForPerl = HeaderFindMem(article->Data, article->Used, "Path", 4) ;
-    if ((perlrc = (char *)HandleArticle(Data.Body)) != NULL) {
+    TMRstart(TMR_PERL);
+    perlrc = (char *)HandleArticle(Data.Body);
+    TMRstop(TMR_PERL);
+    if (perlrc != NULL) {
         (void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, perlrc);
         syslog(L_NOTICE, "rejecting[perl] %s %s", HDR(_message_id), buff);
         ARTlog(&Data, ART_REJECT, buff);

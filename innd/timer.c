@@ -103,6 +103,7 @@ static void dosummary(unsigned secs)
 	case TMR_ARTCNCL:	str = "artcncl";  break;
 	case TMR_HISHAVE:	str = "hishave";  break;
 	case TMR_HISGREP:	str = "hisgrep";  break;
+	case TMR_PERL:		str = "perl";  break;
 	}
 	sprintf(buf, "%s %d(%d) ", str, cumulative[i], count[i]);
 	cumulative[i] = count[i] = 0;
@@ -131,9 +132,8 @@ void		TMRstart(TMRTYPE t)
 {
     if (!innconf->timer)
 	return;
-    if (t >= maxtimer) {
-	maxtimer = t + 1;
-    }
+    if (!maxtimer)
+	maxtimer = TMR_MAX;
     start[t] = gettime();
 }
 
