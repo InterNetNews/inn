@@ -927,6 +927,7 @@ int main(int ac, char *av[])
     p = COPY(cpcatpath(innconf->pathfilter, _PATH_PERL_STARTUP_INND));
     PERLsetup(p, cpcatpath(innconf->pathfilter, _PATH_PERL_FILTER_INND),
 				"filter_art");
+    PERLinndAPIinit();
     PerlFilter (TRUE) ;
     DISPOSE(p);
 #endif /* defined(DO_PERL) */

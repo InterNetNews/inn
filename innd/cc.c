@@ -2031,6 +2031,130 @@ CCresetup(s)
     CCsetup();
 }
 
+/*
+ * The beginnings of a perl interface to the INN command set.
+ * I chose to put it in this file to avoid having to rewrite any code,
+ * and to avoid having to change the visibility of any of the functions
+ * in this module.
+ * -- Ed Mooring (mooring@acm.org) May 14, 1998
+ */
+
+#if defined(DO_PERL)
+
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+
+
+XS(XS_INN_havehist)
+{
+    dXSARGS;
+    char*	msgid;
+
+    if (items != 1)
+        croak("Usage: INN::havehist(msgid)");
+
+    msgid = (char *)SvPV(ST(0),na);
+    HIShavearticle(msgid) ? XSRETURN_YES : XSRETURN_NO;
+}
+
+XS(XS_INN_cancel)
+{
+    dXSARGS;
+    char*	msgid;
+    char*	parambuf[2];
+
+    if (items != 1)
+        croak("Usage: INN::cancel(msgid)");
+
+    msgid = (char *)SvPV(ST(0),na);
+    parambuf[0]=msgid;
+    parambuf[1]= 0;
+    /* CCcancel returns NULL on success, hence reversed return codes */
+    CCcancel(parambuf) ? XSRETURN_NO : XSRETURN_YES;
+}
+
+XS(XS_INN_addhist)
+{
+    dXSARGS;
+    char*	msgid;
+    char*	arrivaltime;
+    char*	articletime;
+    char*	expiretime;
+    char*	articlepaths = "";
+    char	tbuff[12];
+    char*	parambuf[6];
+
+    if (items < 1 || items > 5)
+	croak("Usage INN::addhist(msgid,[arrivaltime,articletime,expiretime,paths])");
+
+
+    /* we will always have a message id */
+    msgid = (char *)SvPV(ST(0),na);
+
+    /* set up sensible defaults for the time values */
+    sprintf(tbuff, "%d",time((long *)0));
+    arrivaltime = articletime = expiretime = tbuff;
+
+    switch (items) {
+    case 2:
+	arrivaltime = (char *)SvPV(ST(1),na);
+	articletime = expiretime = arrivaltime;
+	break;
+    case 3: 
+	arrivaltime = (char *)SvPV(ST(1),na);
+	articletime = (char *)SvPV(ST(2),na);
+	expiretime = arrivaltime;
+	break;
+    case 4:
+	arrivaltime = (char *)SvPV(ST(1),na);
+	articletime = (char *)SvPV(ST(2),na);
+	expiretime =  (char *)SvPV(ST(3),na);
+	break;
+    case 5:
+	arrivaltime = (char *)SvPV(ST(1),na);
+	articletime = (char *)SvPV(ST(2),na);
+	expiretime =  (char *)SvPV(ST(3),na);
+	articlepaths =  (char *)SvPV(ST(4),na);
+	break;
+    }
+    parambuf[0] = msgid;
+    parambuf[1] = arrivaltime;
+    parambuf[2] = articletime;
+    parambuf[3] = expiretime;
+    parambuf[4] = articlepaths;
+    parambuf[5] = 0;
+
+    /* CCaddhist returns NULL on success, hence reversed return codes */
+    CCaddhist(parambuf) ? XSRETURN_NO : XSRETURN_YES;
+}
+
+XS(XS_INN_newsgroup)
+{
+    dXSARGS;
+    char*	newsgroup;
+    NEWSGROUP*  ngp;
+
+    if (items != 1)
+        croak("Usage: INN::newsgroup(msgid)");
+    newsgroup = (char *)SvPV(ST(0),na);
+
+    if ((ngp = NGfind(newsgroup)) == NULL)
+	XSRETURN_UNDEF;
+    else
+	XSRETURN_PV(ngp->Rest);
+}
+
+void
+PERLinndAPIinit()
+{
+    newXS("INN::havehist", XS_INN_havehist, "cc.c");
+    newXS("INN::cancel", XS_INN_cancel, "cc.c");
+    newXS("INN::addhist", XS_INN_addhist, "cc.c");
+    newXS("INN::newsgroup", XS_INN_newsgroup, "cc.c");
+}
+#endif
+
 # include "qio.h"
 /*
  * Read a file containing lines of the form "newsgroup lowmark",
