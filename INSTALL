@@ -625,3 +625,20 @@ Setting up the news.daily cron job
   The parameters passed to news.daily in the above example are the most
   common (and usually the most efficient) ones to use. More information on what
   these parameters do can be found in the news.daily man page.
+
+Starting the system
+
+  INN is normally started via the shell script rc.news. This must be run as
+  the news user and not as root. Put the following command (or something
+  similar) into the system boot script:
+
+	su news -c /usr/local/news/bin/rc.news
+
+  If innd gets stopped or killed and you want to restart it without
+  re-running rc.news, then run inndstart
+
+	/usr/local/news/bin/inndstart
+
+  If you added any values to the innflags variable in inn.conf, then you'll
+  need to add the same values to the command line of inndstart if you run it
+  by hand.
