@@ -658,6 +658,10 @@ sub collect {
     return 1 if $left =~ m/\S+:\d+ closed periodic$/o;
     # periodic close
     return 1 if $left =~ m/\S+:\d+ periodic close$/o;
+    # final (child)
+    return 1 if $left =~ m/\S+:\d+ final seconds \d+ offered \d+ accepted \d+ refused \d+ rejected \d+/o;
+    # global (real)
+    return 1 if $left =~ m/\S+ global seconds \d+ offered \d+ accepted \d+ refused \d+ rejected \d+ missing \d+/o;
     # final (real) (new format)
     if ($left =~ /(\S+) final seconds (\d+) offered (\d+) accepted (\d+) refused (\d+) rejected (\d+) missing (\d+) accsize (\d+) rejsize (\d+) spooled (\d+)/o) {
       my ($server, $seconds, $offered, $accepted, $refused, $rejected,
