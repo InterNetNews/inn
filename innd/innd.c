@@ -11,9 +11,7 @@
 #include "innd.h"
 #include <sys/ioctl.h>
 #include <sys/uio.h>
-#if	NOFILE_LIMIT > 0
 #include <sys/resource.h>
-#endif	/* NOFILE_LIMIT > 0 */
 #if	defined(DO_FAST_RESOLV)
 #include <arpa/nameser.h>
 #include <resolv.h>
@@ -476,7 +474,7 @@ CleanupAndExit(x, why)
 }
 
 
-#if	NOFILE_LIMIT > 0
+#if	defined(HAVE_RLIMIT)
 /*
 **  Set the limit on the number of open files we can have.  I don't
 **  like having to do this.
@@ -497,7 +495,7 @@ SetDescriptorLimit(i)
 	return;
     }
 }
-#endif	/* NOFILE_LIMIT > 0 */
+#endif	/* defined(HAVE_RLIMIT) */
 
 
 /*
@@ -820,10 +818,10 @@ int main(int ac, char *av[])
     }
 
     /* Set number of open channels. */
-#if	NOFILE_LIMIT > 0
-    if (AmRoot)
-	SetDescriptorLimit(NOFILE_LIMIT);
-#endif	/* NOFILE_LIMIT > 0 */
+#if	defined(HAVE_RLIMIT)
+    if (AmRoot && innconf->rlimitnofile >= 0)
+	SetDescriptorLimit(innconf->rlimitnofile);
+#endif	/* defined(HAVE_RLIMIT) */
     /* Get number of open channels. */
     if ((i = getfdcount()) < 0) {
 	syslog(L_FATAL, "%s cant getfdcount %m", LogName);

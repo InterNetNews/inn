@@ -16,18 +16,18 @@
 #include <syslog.h> 
 #include "libinn.h"
 #include "macros.h"
-#if	NOFILE_LIMIT > 0
+#if	defined(HAVE_RLIMIT)
 #if	defined(DO_NEED_TIME)
 #include <time.h>
 #endif	/* defined(DO_NEED_TIME) */
 #include <sys/time.h>
-#endif	/* NOFILE_LIMIT > 0 */
+#endif	/* defined(HAVE_RLIMIT) */
 #include <sys/resource.h>
 #include <errno.h>
 
 /* #define DEBUGGER "/usr/ucb/dbx" */
 
-#if	NOFILE_LIMIT > 0
+#if	defined(HAVE_RLIMIT)
 /*
 **  Set the limit on the number of open files we can have.  I don't
 **  like having to do this.
@@ -48,7 +48,7 @@ SetDescriptorLimit(i)
 	return;
     }
 }
-#endif	/* NOFILE_LIMIT > 0 */
+#endif	/* defined(HAVE_RLIMIT) */
 
 
 int main(int ac, char *av[])
@@ -85,9 +85,10 @@ int main(int ac, char *av[])
     if (setgroups(1, &NewsGID) < 0)
         syslog(L_ERROR, "inndstart cant setgroups %m");
     
-#if	NOFILE_LIMIT > 0
-    SetDescriptorLimit(NOFILE_LIMIT);
-#endif	/* NOFILE_LIMIT > 0 */
+#if	defined(HAVE_RLIMIT)
+    if (innconf->rlimitnofile >= 0)
+	SetDescriptorLimit(innconf->rlimitnofile);
+#endif	/* defined(HAVE_RLIMIT) */
 
 	/* Start actived if required */
     if (innconf->activedenable && (fork() == 0)) {
