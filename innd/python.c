@@ -19,7 +19,6 @@
 #include "clibrary.h"
 #include "innd.h"
 #include "art.h"
-#include "qio.h"
 
 
 #if defined(DO_PYTHON)

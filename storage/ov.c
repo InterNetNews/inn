@@ -16,7 +16,6 @@
 #include "libinn.h"
 #include "paths.h"
 #include "storage.h"
-#include "qio.h"
 #include "ov.h"
 #include "ovmethods.h"
 #include "ovinterface.h"

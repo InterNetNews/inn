@@ -24,7 +24,6 @@
 #include "macros.h"
 #include "ov.h"
 #include "paths.h"
-#include "qio.h"
 #include "ovinterface.h"
 #include "storage.h"
 

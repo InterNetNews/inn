@@ -26,7 +26,6 @@
 #include "macros.h"
 #include "ov.h"
 #include "paths.h"
-#include "qio.h"
 #include "ov.h"
 #include "ovinterface.h"
 #include "tradindexed.h"
