@@ -1,86 +1,99 @@
 /*  $Revision$
 **
+**  Determine the current limit on open file descriptors.
+**
+**  Portably determine the limit on open file descriptors, preferring
+**  sysconf(), then getrlimit(), then getdtablesize(), then ulimit(),
+**  then <sys/param.h>, and falling back on the guaranteed minimum of 20.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
-#include "clibrary.h"
-#include <sys/param.h>
 
+#include "config.h"
 
-#if	defined(FDCOUNT_GETDTAB)
-int getfdcount(void)
-{
-    static int		size;
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 
-    if (size <= 0) {
-	if ((size = getdtablesize()) < 0)
-	    return -1;
-    }
-    return size;
-}
-#endif	/* defined(FDCOUNT_GETDTAB) */
+#ifdef HAVE_LIMITS_H
+# include <limits.h>
+#endif
 
-
-#if	defined(FDCOUNT_GETRLIMIT)
-#include <sys/time.h>
-#include <sys/resource.h>
-
-int getfdcount(void)
-{
-    static int		size;
-    struct rlimit	rl;
-
-#if	defined(HAVE_RLIMIT)
-    if (size <= 0) {
-	if (getrlimit(RLIMIT_NOFILE, &rl) < 0)
-	    return -1;
-	size = rl.rlim_cur;
-    }
-#endif	/* defined(HAVE_RLIMIT) */
-    return size;
-}
-#endif	/* defined(FDCOUNT_GETRLIMIT) */
-
-
-#if	defined(FDCOUNT_SYSCONF)
-#include <unistd.h>
-#include <limits.h>
-
-int getfdcount(void)
-{
-    static int		size;
-
-    if (size <= 0) {
-	if ((size = sysconf(_SC_OPEN_MAX)) < 0)
-	    return -1;
-    }
-    return size;
-}
-#endif	/* defined(FDCOUNT_SYSCONF) */
-
-
-#if	defined(FDCOUNT_ULIMIT)
-int getfdcount(void)
-{
-    static int		size;
-
-    if (size <= 0) {
-	if ((size = ulimit(4, 0L)) < 0)
-	    return -1;
-    }
-    return size;
-}
-#endif	/* defined(FDCOUNT_ULIMIT) */
-
-
-#if	defined(FDCOUNT_CONSTANT)
-int getfdcount(void)
-{
-#if	defined(NOFILE)
-    return NOFILE;
+#ifdef HAVE_SYSCONF
+# define FDCOUNT_SYSCONF
 #else
-    return 20;
-#endif	/* defined(NOFILE) */
+# ifdef HAVE_RLIMIT
+#  include <sys/time.h>
+#  include <sys/resource.h>
+#  ifdef RLIMIT_NOFILE
+#   define FDCOUNT_RLIMIT
+#  endif
+# endif
+#endif
+
+#if !defined(FDCOUNT_SYSCONF) && !defined(FDCOUNT_RLIMIT)
+# ifdef HAVE_GETDTABLESIZE
+#  define FDCOUNT_GETDTAB
+# else
+#  ifdef HAVE_ULIMIT
+#   define FDCOUNT_ULIMIT
+#  else
+#   include <sys/param.h>
+#   define FDCOUNT_CONSTANT
+#  endif
+# endif
+#endif
+
+
+#ifdef FDCOUNT_SYSCONF
+int
+getfdcount(void)
+{
+    return sysconf(_SC_OPEN_MAX);
 }
-#endif	/* defined(FDCOUNT_CONSTANT) */
+#endif /* FDCOUNT_SYSCONF */
+
+
+#ifdef FDCOUNT_RLIMIT
+int
+getfdcount(void)
+{
+    struct rlimit rl;
+
+    if (getrlimit(RLIMIT_NOFILE, &rl) < 0)
+        return -1;
+    return rl.rlim_cur;
+}
+#endif /* FDCOUNT_RLIMIT */
+
+
+#ifdef FDCOUNT_GETDTAB
+int
+getfdcount(void)
+{
+    return getdtablesize();
+}
+#endif /* FDCOUNT_GETDTAB */
+
+
+#ifdef FDCOUNT_ULIMIT
+int
+getfdcount(void)
+{
+# ifdef UL_GDESLIM
+    return ulimit(UL_GDESLIM, 0);
+# else
+    return ulimit(4, 0);
+# endif
+}
+#endif /* FDCOUNT_ULIMIT */
+
+
+#ifdef FDCOUNT_CONSTANT
+int getfdcount(void)
+{
+# ifdef NOFILE
+    return NOFILE;
+# else
+    return 20;
+# endif
+}
+#endif /* FDCOUNT_CONSTANT */
