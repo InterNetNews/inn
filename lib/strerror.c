@@ -22,6 +22,9 @@
 # define __STRICT_ANSI__ 1
 #endif
 
+extern const int sys_nerr;
+extern const char *sys_errlist[];
+
 #include <errno.h>
 #include <stdio.h>
 
@@ -29,13 +32,12 @@
    the system version. */
 #if TESTING
 # define strerror test_strerror
+const char *test_strerror(int);
 #endif
 
 const char *
 strerror(int error)
 {
-    extern const int sys_nerr;
-    extern const char *sys_errlist[];
     static char buff[32];
     int oerrno;
 
