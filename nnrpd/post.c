@@ -1117,8 +1117,16 @@ ARTpost(article, idbuff)
 		(void)fprintf(ToServer, "%s: %s\r\n", hp->Name, hp->Value);
 	    }
 	}
-    for (i = 0; i < OtherCount; i++)
-	(void)fprintf(ToServer, "%s\r\n", OtherHeaders[i]);
+    for (i = 0; i < OtherCount; i++) {
+	if (strchr(OtherHeaders[i], '\n') != NULL) {
+	    if ((p = Towire(OtherHeaders[i])) != NULL) {
+		(void)fprintf(ToServer, "%s\r\n", p);
+		DISPOSE(p);
+	    }
+	} else {
+	    (void)fprintf(ToServer, "%s\r\n", OtherHeaders[i]);
+	}
+    }
     (void)fprintf(ToServer, "\r\n");
     if (FLUSH_ERROR(ToServer)) {
 	(void)sprintf(Error, CANTSEND, "headers", strerror(errno));
