@@ -17,17 +17,12 @@ Supported Systems
 
       FreeBSD 2.2.x
       FreeBSD 3.x
+      HP-UX 10.20
       Linux 2.x (tested with libc 5.4 or libc 6.0)
-      OpenBSD ?.?
       SCO 5.0.4 (tested with gcc 2.8.1)
       Solaris 2.5.x
       Solaris 2.6.x
-      SunOS 4.1.4
       UX/4800 R11 and up
-
-    FIXME: I'm pretty sure that Clayton's work makes this list outdated and
-    we should reverify all platforms again.  It would surprise me if SunOS
-    has an mmap() up to the task, for example.
 
     So far as possible, INN is written in portable C and should work on any
     Unix platform.  It does, however, make extensive use of mmap() and
@@ -48,7 +43,8 @@ Before You Begin
       recommended.  You can get it from ftp://ftp.gnu.org/gcc/ or its
       mirrors.  INN is tested with gcc more thoroughly than with any other
       compiler, so even if you have another compiler available, you may wish
-      to use gcc instead.
+      to use gcc instead (note that gcc has some known problems compiling
+      calls to inet_ntoa() on IRIX platforms).
 
     * INN requires Perl 5.003 to build and to run several subsystems, and
       requires 5.004 for embedded Perl filters to work.  All versions of
@@ -67,13 +63,13 @@ Before You Begin
 
     * If you want to enable support for authenticated control messages (this
       is NOT required) then you will need to install PGP.  Unfortunately,
-      the licensing restrictions on PGP are extremely unclear; it's possible
-      that if you are installing INN for a company, even if the news server
-      is not part of the business of that company, you would need to
-      purchase a commercial license for PGP.  For an educational or
-      non-profit organization, this shouldn't be a problem.  See
-      http://www.pgp.com/ for more information about PGP, including the
-      licensing restrictions.
+      the licensing restrictions on PGP inside the United States are
+      extremely unclear; it's possible that if you are installing INN for a
+      company in the U.S., even if the news server is not part of the
+      business of that company, you would need to purchase a commercial
+      license for PGP.  For an educational or non-profit organization, this
+      shouldn't be a problem.  See http://www.pgp.com/ for more information
+      about PGP, including the licensing restrictions.
 
       You may also want to look at GnuPG (http://www.gnupg.org/), a free
       software OpenPGP implementation.  Unfortunately, most control message
@@ -110,6 +106,12 @@ Installing INN
     and group.  You can change these if you want but these are the defaults
     and it's easier to stick with them on a new installation.
 
+    Installing INN so that all of its files are under a single directory
+    tree, rather than scattering binaries, libraries, and man pages
+    throughout the file system, is strongly recommended.  It helps keep
+    everything involved in the operation of INN together as a unit and will
+    make the installation instructions easier to follow.
+
     As a side note, whenever doing anything with a running news server,
     first log in as this user.  That way, you can ensure that all files
     created by any commands you run are created with the right ownership to
@@ -132,18 +134,24 @@ Installing INN
     --prefix=PATH
         Sets the installation prefix for INN.  The default is
         /usr/local/news.  All of INN's programs and support files will be
-        installed under this directory.  You should set this to the home
+        installed under this directory.  This should match the home
         directory of your news user (it will make installation and
         maintenance easier).
 
     --with-db-dir=PATH
         Sets the prefix for INN database files.  The default is PREFIX/db,
         where PREFIX is /usr/local/news unless overridden with the option
-        above.  All of the really large files created by INN, including the
-        history file, the overview files, and the news spool (for tradspool,
-        timehash, and timecaf storage methods) are created under this
-        directory, so it's the most common portion of INN to move to a
-        different location on the system (often /news).
+        above.  This history and active files will be stored in this
+        directory, and writes to those files are an appreciable percentage
+        of INN's disk activity.  The history file can also be quite large
+        (requiring up to 2GB or more during nightly expire), so this is a
+        common portion of INN to move to a different file system.
+
+    --with-spool-dir=PATH
+        Sets the prefix for the news spool (when using any storage method
+        other than CNFS) and the overview spool.  The default is
+        PREFIX/pool.  This is another common portion of INN to move to a
+        different file system (often /news).
 
         It's also possible to set the paths for most other sections of the
         INN installation independently; see `./configure --help' and look
@@ -205,32 +213,45 @@ Installing INN
         facility not used by anything else on your system (one of LOG_LOCAL0
         through LOG_LOCAL7, for example).
 
-    --disable-uucp-rnews
-        By default, rnews is installed setuid root, owned by group uucp, and
-        mode 4550.  This is so that the UUCP subsystem can run rnews to
-        process UUCP batches of news articles (rnews changes UID to the news
-        user right after it starts).  If you don't plan on using UUCP, and
-        particularly if you don't have a uucp group on your system, you
-        probably want to use this option to cut down on the number of
-        needless setuid root binaries on your system.  When this option is
-        used, rnews will only be executable by the news user.
+    --enable-libtool
+        INN has optional support for libtool to generate shared versions of
+        INN's libraries.  This can significantly decrease the size of the
+        various binaries that come with a complete INN installation.  You
+        can also choose to use libtool even when only building static
+        libraries; a libtool build may be somewhat more portable on weird
+        systems.  libtool builds aren't the default because they take
+        somewhat longer.  See `./configure --help' for the various available
+        options related to libtool builds.
 
-    --disable-setgid-inews
-        By default, inews is installed setgid news so that it can be run by
-        regular users and still be able to talk to innd via a Unix domain
-        socket (somewhat faster than opening a new network connection).  If
-        you are installing a standalone news server that won't have regular
-        users (or at least regular users who need to run inews), you
-        probably want to use this option to cut down on needless setgid
-        binaries.  When this option is used, inews will only be executable
-        by users in the news group.
+    --enable-uucp-rnews
+        If this option is given to configure, rnews will be installed setuid
+        root, owned by group uucp, and mode 4550.  This will allow the UUCP
+        subsystem to run rnews to process UUCP batches of news articles
+        (rnews changes UID to the news user right after it starts).  Prior
+        to INN 2.3, installing rnews setuid root was standard; since most
+        sites no longer use UUCP, it is no longer the default as of INN 2.3
+        and must be requested at configure time.  You probably don't want to
+        use this option unless your server accepts UUCP news batches.
+
+    --enable-setgid-inews
+        If this option is given to configure, inews will be installed setgid
+        news and world-executable so that non-privileged users on the news
+        server machine can use inews to post articles locally (somewhat
+        faster than opening a new network connection).  For standalone news
+        servers, by far the most common configuration now, there's no need
+        to use this option; even if you have regular login accounts on your
+        news server, nearly all news readers these days handle posting
+        through a network connection and don't need a local setgid inews to
+        post.  Installing inews setgid was the default prior to INN 2.3.
 
     For the most common installation, a standalone news server, a suggested
     set of options is:
 
-        ./configure --with-perl --disable-uucp-rnews --disable-setgid-inews
+        ./configure --with-perl
 
-    provided that you have the necessary version of Perl installed.
+    provided that you have the necessary version of Perl installed. 
+    (Compiling with an embedded Perl interpretor will allow you to use one
+    of the available excellent spam filters if you so choose.)
 
     If the configure program runs successfully, then you are ready to build
     the distribution.  From the root of the INN source tree, type:
@@ -347,6 +368,9 @@ Choosing an Article Storage Format
     special hierarchies like local hierarchies and hierarchies that should
     never expire in tradspool.
 
+    FIXME: Some discussion of different overview methods should also be
+    added here.
+
 Configuring INN
 
     All documentation from this point on assumes that you have set up the
@@ -426,19 +450,51 @@ Configuring INN
     full details), but only a few really need to be edited during normal
     operation:
 
+    allownewnews
+        If set to true then INN will support the NEWNEWS command for news
+        readers.  While this can be an expensive operation, its speed has
+        been improved considerably as of INN 2.3 and it's probably safe to
+        turn on without risking excessive server load.  The default is
+        false.
+
     complaints
         Used to set the value of the X-Complaints-To: header which is added
         to all articles posted locally.  The usual value would be something
         like `abuse@example.com' or `postmaster@example.com'.  If not
         specified, the newsmaster email address will be used.
 
+    domain
+        Sets the domain name for your server.  Normally this is determined
+        automatically by INN, but in some cases it is necessary to set it
+        manually.  For example, if you are running NIS on a SunOS system
+        *and* your hostnames are not fully-qualified (ie, your systems are
+        named "host" instead of "host.example.com") then you will need to
+        use this option to set your domain name manually.  If in doubt,
+        leave this option commented out or remove it completely.
+
+    hiscachesize
+        The memory in kilobytes to allocate for a cache of recently used
+        history file entries.  Setting this to 0 disables history caching. 
+        History caching can greatly increase the number of articles per
+        second that your server is capable of processing.  A value of 256 is
+        a good default choice.
+
+    logipaddr
+        If set to true (the default), INN will log the IP address of the
+        remote host from which it received an article.  If set to false, the
+        trailing Path: header entry is logged instead.  If you are using
+        controlchan (see below) and need to process ihave/sendme control
+        messages (this is very, very unlikely, so if you don't know what
+        this means, don't worry about it), make sure you set this to false,
+        since controlchan needs a site name, not an IP address.
+
     organization
         Set this to the name of your organization as you want it to appear
-        in the Organization: header of all articles posted locally.  This
-        will be overridden by the value of the ORGANIZATION environment
-        variable (if it exists).  If neither this parameter nor the
-        environment variable or set then no Organization: header will be
-        added.
+        in the Organization: header of all articles posted locally not
+        already containing that header.  This will be overridden by the
+        value of the ORGANIZATION environment variable (if it exists).  If
+        neither this parameter nor the environment variable or set, no
+        Organization: header will be added to posts without one.
 
     pathhost
         This is the name of your news server as you wish it to appear in the
@@ -449,28 +505,6 @@ Configuring INN
         the FQDN of your server or an alias for your server unless you have
         a very good reason not to; a future version of the news RFCs may
         require this.
-
-    allownewnews
-        If set to true then INN will support the NEWNEWS command for news
-        readers.  This will really kill your server performance if clients
-        use it heavily, so it is strongly suggested that you set this to
-        false (the default).
-
-    hiscachesize
-        The size in kilobytes to use for caching recently used history file
-        entries.  Setting this to 0 disables history caching.  History
-        caching can greatly increase the number of articles per second that
-        your server is capable of processing.  A value of 256 is a good
-        default choice.
-
-    logipaddr
-        If set to true (the default), INN will log the IP address of the
-        remote host from which it received an article.  If set to false, the
-        trailing Path: header entry is logged instead.  If you are using
-        controlchan (see below) and need to process ihave/sendme control
-        messages (this is very, very unlikely, so if you don't know what
-        this means, don't worry about it), make sure you set this to false,
-        since controlchan needs a site name, not an IP address.
 
     rlimitnofile
         If set to a non-negative value (the default is -1), INN (both innd
@@ -498,15 +532,6 @@ Configuring INN
         so that the Sys::Syslog Perl module works correctly.  (Otherwise,
         controlchan will log messages to errlog, which probably isn't what
         you want.)
-
-    domain
-        Sets the domain name for your server.  Normally this is determined
-        automatically by INN, but in some cases it is necessary to set it
-        manually.  For example, if you are running NIS on a SunOS system
-        *and* your hostnames are not fully-qualified (ie, your systems are
-        named "host" instead of "host.example.com") then you will need to
-        use this option to set your domain name manually.  If in doubt,
-        leave this option commented out or remove it completely.
 
     There are tons of other possible settings; you may want to read through
     inn.conf(5) to get a feel for your options.  Don't worry if you don't
@@ -573,13 +598,11 @@ Configuring INN
     and the distribution pattern for this entry determines what
     distributions (from the Distribution: header of incoming articles) are
     accepted from remote sites by your server.  The example in the sample
-    newsfeeds file is a good starting point; if you are going to create a
-    local hierarchy that should not be distributed off of your system, make
-    sure to exclude it from the default subscription pattern.
-
-    FIXME: This file originally recommended ME:*,!junk,!local*/!local::,
-    which is considerably different than the current sample newsfeeds file. 
-    This should be reconciled....
+    newsfeeds file is a good starting point.  If you are going to create a
+    local hierarchy that should not be distributed off of your system, it
+    may be useful to exclude it from the default subscription pattern, but
+    default subscription patterns are somewhat difficult to use right so you
+    may want to just exclude it specifically from every feed instead.
 
     The ME entry tends to confuse a lot of people, so this point is worth
     repeating:  The newsgroup patterns set the default subscription for
@@ -666,9 +689,12 @@ Configuring INN
 
     For those of you upgrading from earlier versions of INN, note that the
     functionality of overchan and crosspost is now incorporated into INN and
-    neither of those programs are necessary (and running them could cause
-    problems).  Unfortunately, crosspost currently will not work even with
-    the tradspool storage method.
+    neither of those programs are necessary.  Unfortunately, crosspost
+    currently will not work even with the tradspool storage method.  You can
+    still use overchan if you make sure to set useoverchan to true in
+    inn.conf so that innd doesn't write overview data itself, but be
+    careful; innd may accept articles faster than overchan can process the
+    data.
 
   incoming.conf
 
@@ -756,24 +782,27 @@ Configuring INN
     overrun the server and push out articles on the more useful groups.  If
     you have any local groups that you want to stay around for a while then
     you should put them in their own metacycbuff as well, so that they don't
-    get pushed out by other traffic.
+    get pushed out by other traffic.  (Or store them in one of the other
+    storage methods, such as tradspool.)
 
     For each metacycbuff, you now need to determine how many cycbuffs will
     make up the metacycbuff, the size of those cycbuffs and where they will
-    be stored.  Some OSs do not support files larger than 2GB which will
-    force all of your cycbuffs to be < 2GB (even if they are stored on raw
-    disk partitions).  Linux is known to have this limitation, FreeBSD does
-    not.  If in doubt, keep your cycbuffs smaller than 2GB.  Also when
-    laying out your cycbuffs, you will want to try to arrange them across as
-    many physical disks as possible (or use a striped disk array and put
-    them all on that).
+    be stored.  Some OSes do not support files larger than 2GB which will
+    force all of your cycbuffs to be < 2GB.  Linux is known to have this
+    limitation, FreeBSD does not.  Some OSes that support large files don't
+    support block access to large raw partitions (Solaris is in this
+    category); on those OSes, if you want cycbuffs over 2GB, you'll have to
+    use regular files.  If in doubt, keep your cycbuffs smaller than 2GB. 
+    Also when laying out your cycbuffs, you will want to try to arrange them
+    across as many physical disks as possible (or use a striped disk array
+    and put them all on that).
 
     For each cycbuff you will be creating, add a line to cycbuff.conf like
     the following:
 
-        cycbuff:BUFFNAME:/path/to/buffer:SIZE
+        cycbuff:NAME:/path/to/buffer:SIZE
 
-    BUFFNAME must be unique and must be at most seven characters long. 
+    NAME must be unique and must be at most seven characters long. 
     Something simple like "BUFF00", "BUFF01", etc. is a decent choice, or
     you may want to use something that includes the SCSI target and slice
     number of the partition.  SIZE is the buffer size in kilobytes (if
@@ -905,8 +934,7 @@ Configuring INN
     future.  (Note that if <keep> is set to `never', all articles with
     Expires: headers are kept forever and the value of <purge> is not used.)
 
-    FIXME: When we fix group-based expiry, documentation of that needs to be
-    added to this section.
+    FIXME: We have group-based expiry now; does it work like it used to?
 
   readers.conf
 
