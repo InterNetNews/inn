@@ -865,6 +865,38 @@ Spoolit(article, Error)
     return SpoolitTo(article, Error, innconf->pathincoming);
 }
  
+STATIC char *Towire(char *p) {
+    char	*q, *r, *s;
+    int		curlen, len = BIG_BUFFER;
+
+    for (r = p, q = s = NEW(char, len); *r != '\0' ;) {
+	curlen = q - s;
+	if (curlen + 3 > len) {
+	    len += BIG_BUFFER;
+	    RENEW(s, char, len);
+	    q = s + curlen;
+	}
+	if (*r == '\n') {
+	    if (r > p) {
+		if (*(r - 1) != '\r')
+		    *q++ = '\r';
+	    } else {
+		/* this should not happen */
+		DISPOSE(s);
+		return NULL;
+	    }
+	}
+	*q++ = *r++;
+    }
+    curlen = q - s;
+    if (curlen + 1 > len) {
+	len++;
+	RENEW(s, char, len);
+	q = s + curlen;
+    }
+    *q = '\0';
+    return s;
+}
 
 STRING
 ARTpost(article, idbuff)
@@ -1060,8 +1092,16 @@ ARTpost(article, idbuff)
 
     /* Write the headers and a blank line. */
     for (hp = Table; hp < ENDOF(Table); hp++)
-	if (hp->Value)
-	    (void)fprintf(ToServer, "%s: %s\r\n", hp->Name, hp->Value);
+	if (hp->Value) {
+	    if (strchr(hp->Value, '\n') != NULL) {
+		if ((p = Towire(hp->Value)) != NULL) {
+		    (void)fprintf(ToServer, "%s: %s\r\n", hp->Name, p);
+		    DISPOSE(p);
+		}
+	    } else {
+		(void)fprintf(ToServer, "%s: %s\r\n", hp->Name, hp->Value);
+	    }
+	}
     for (i = 0; i < OtherCount; i++)
 	(void)fprintf(ToServer, "%s\r\n", OtherHeaders[i]);
     (void)fprintf(ToServer, "\r\n");
@@ -1100,8 +1140,16 @@ ARTpost(article, idbuff)
 	strcat(TrackID,HDR(_messageid));
 	if ((ftd=fopen(TrackID,"w")) != NULL) {
 		for (hp = Table; hp < ENDOF(Table); hp++)
-			if (hp->Value)
-				(void)fprintf(ftd, "%s: %s\r\n", hp->Name, hp->Value);
+			if (hp->Value) {
+			    if (strchr(hp->Value, '\n') != NULL) {
+				if ((p = Towire(hp->Value)) != NULL) {
+				    (void)fprintf(ftd, "%s: %s\r\n", hp->Name, p);
+				    DISPOSE(p);
+				}
+			    }
+			} else {
+			    (void)fprintf(ToServer, "%s: %s\r\n", hp->Name, hp->Value);
+			}
 		for (i=0; i<OtherCount; i++)
 			(void)fprintf(ftd,"%s\r\n",OtherHeaders[i]);
 		(void)fprintf(ftd,"\r\n");
