@@ -40,7 +40,6 @@ $newsgroup = '@NEWSGRP@';
     'nnrpd',		"$inn::pathbin/nnrpd",
     'nntpsend.ctl',	"$inn::pathetc/nntpsend.ctl",
     'oldlogs',		"$inn::pathlog/OLD",
-    'parsectl',		"$inn::pathbin/parsecontrol",
     'passwd.nntp',	"$inn::pathetc/passwd.nntp",
     'readers.conf',	"$inn::pathetc/readers.conf",
     'rnews',		"$inn::pathbin/rnews",
@@ -902,8 +901,8 @@ intersect
 @newsbin_public = (
     'archive', 'batcher', 'buffchan', 'convdate', 'cvtbatch', 'expire',
     'filechan', 'getlist', 'grephistory', 'innconfval', 'innxmit',
-    'makehistory', 'newsrequeue', 'nntpget', 'overchan',
-    'prunehistory', 'shlock', 'shrinkfile'
+    'makehistory', 'nntpget', 'overchan', 'prunehistory', 'shlock',
+    'shrinkfile'
 );
 @newsbin_private = (
     'ctlinnd', 'expirerm', 'inncheck', 'innstat', 'innwatch',
@@ -921,7 +920,6 @@ intersect
     'innd',		 0550,
     'newsboot',		 0550,
     'nnrpd',		 0555,
-    'parsectl',		 0550,
     'rnews',		 @RNEWSMODE@,
 );
 
