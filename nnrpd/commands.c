@@ -251,7 +251,7 @@ CMDauthinfo(ac, av)
 	    return;
 	}
 	if (PERMinfile((char *)NULL, (char *)NULL, User, Password,
-		accesslist)) {
+		accesslist, _PATH_NNRPACCESS)) {
 	    PERMspecified = NGgetlist(&PERMlist, accesslist);
 	    syslog(L_NOTICE, "%s user %s", ClientHost, User);
 	    Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);

@@ -310,24 +310,25 @@ Address2Name(ap, hostname, i)
 
 
 BOOL
-PERMinfile(hp, ip, user, pass, accesslist)
+PERMinfile(hp, ip, user, pass, accesslist, accessfile)
     char		*hp;
     char		*ip;
     char		*user;
     char		*pass;
     char		*accesslist;
+    char		*accessfile;
 {
-    static char		ACCESS[] = _PATH_NNRPACCESS;
     register FILE	*F;
     register char	*p;
     register BOOL	found;
     register int	i;
     struct passwd	*pwd;
     char		buff[BIG_BUFFER];
+    char		filename[SMBUF];
     char		*fields[5];
 
-    if ((F = fopen(ACCESS, "r")) == NULL) {
-	syslog(L_ERROR, "%s cant fopen %s %m", ClientHost, ACCESS);
+    if ((F = fopen(accessfile, "r")) == NULL) {
+	syslog(L_ERROR, "%s cant fopen %s %m", ClientHost, accessfile);
 	return FALSE;
     }
 
@@ -335,6 +336,7 @@ PERMinfile(hp, ip, user, pass, accesslist)
     PERMcanpost = FALSE;
     found = FALSE;
     accesslist[0] = '\0';
+    filename[0] = '\0';
     while (fgets(buff, sizeof buff, F) != NULL) {
 	if ((p = strchr(buff, '\n')) != NULL)
 	    *p = '\0';
@@ -349,15 +351,24 @@ PERMinfile(hp, ip, user, pass, accesslist)
 		*p = '\0';
 		fields[++i] = p + 1;
 	    }
-	if (i != 4)
+	if ((i != 4) && !((i == 1) && (*fields[1] == '/'))) {
 	    /* Malformed line. */
+	    syslog(L_ERROR, "Malformed line in access file");
 	    continue;
+	}
 
 	if (hp)
 	    /* Got an address; try to match either the IP address or as
 	     * a text hostname. */
 	    if (!(ip && wildmat(ip, fields[0])) && !wildmat(hp, fields[0]))
 		continue;
+
+	/* If the PERM field starts with '/', then we go to another file */
+	if (*fields[1] == '/') {
+	    strncpy(filename, fields[1], sizeof(filename));
+	    continue;
+	} else
+	    filename[0] = '\0';
 
 	/* See if we should lookup a specific user in the passwd file */
 	if (user && pass && EQ(fields[2], "+")) {
@@ -378,6 +389,8 @@ PERMinfile(hp, ip, user, pass, accesslist)
 	found = TRUE;
     }
     (void)fclose(F);
+    if (found && (strlen(filename) > 0))
+	return(PERMinfile(hp, ip, user, pass, accesslist, filename));
     return found;
 }
 
@@ -455,7 +468,7 @@ StartConnection(accesslist)
 
     syslog(L_NOTICE, "%s connect", ClientHost);
     if (!PERMinfile(ClientHost, ClientAddr, (char *)NULL, (char *)NULL,
-	    accesslist)) {
+	    accesslist, _PATH_NNRPACCESS)) {
 	syslog(L_NOTICE, "%s no_access", ClientHost);
 	Printf("%d You are not in my access file.  Goodbye.\r\n",
 	    NNTP_ACCESS_VAL);

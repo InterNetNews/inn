@@ -17,10 +17,11 @@ server reads it when first spawned by
 Comments begin with a number sign (``#'') and continue through the end
 of the line.
 Blank lines and comments are ignored.
-All other lines should consist of five fields separated by colons:
+All other lines should consist of two or five fields separated by colons:
 .RS
 .nf
 hosts:perms:username:password:patterns
+hosts:/full/path/filename
 .fi
 .RE
 .PP
@@ -36,7 +37,9 @@ is converted to lowercase.
 Each line is matched in turn, and the last successful match is taken
 as the correct one.
 .PP
-The second field is a set of letters specifying the permissions granted
+The second field is either a full pathname (with leading ``/'') to
+a second access file (in the same format) to scan for a specified
+first field pattern or a set of letters specifying the permissions granted
 to the client.
 The
 .I perms
@@ -47,6 +50,8 @@ R	The client can retrieve articles
 P	The client can post articles
 .fi
 .RE
+If the filename option is used, no checks are done for recursion
+so loops can occur - be careful.
 .PP
 The third and fourth fields specify the
 .I username
