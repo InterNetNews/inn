@@ -701,6 +701,7 @@ main(argc, argv, env)
     GID_T               NewsGID;
     UID_T               NewsUID;
     int                 one = 1;
+    FILE                *pidfile;
 
 #if	!defined(HPUX)
     /* Save start and extent of argv for TITLEset. */
@@ -813,7 +814,15 @@ main(argc, argv, env)
 	    exit(0);
 
 	setsid();
- 
+
+	if ((pidfile = fopen(cpcatpath(innconf->pathrun, "nnrpd.pid"),
+                                                "w")) == NULL) {
+	    syslog(L_ERROR, "cannot write nnrpd.pid %m");
+            exit(1);
+	}
+	fprintf(pidfile,"%d\n", getpid());
+	fclose(pidfile);
+
 	/* Set signal handle to care for dead children */
 	(void)signal(SIGCHLD, WaitChild);
  
@@ -836,8 +845,10 @@ listen_loop:
 	    (void)sleep(1);
 	}
 
-	if (pid != 0)
+	if (pid != 0) {
+		close(fd);
 		goto listen_loop;
+	}
 
 	/* child process starts here */
 	TITLEset("nnrpd: connected");
