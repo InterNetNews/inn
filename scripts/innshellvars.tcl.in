@@ -11,6 +11,7 @@
 eval `@prefix@/bin/innconfval -t`
 
 set inn_newshome "$inn_pathnews"
+set inn_newslib "@LIBDIR@"
 set inn_spooldir "$inn_pathspool"
 set inn_most_logs "$inn_pathlog"
 
