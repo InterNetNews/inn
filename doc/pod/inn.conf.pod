@@ -10,6 +10,13 @@ of various programs, as well as the paths to all portions of the news
 installation, are found here.  The INNCONF environment variable, if set,
 specifies an alternate path to F<inn.conf>.
 
+This file is intended to be fairly static.  Any changes made to it will
+generally not affect any running programs until they restart.  Unlike
+nearly every other configuration file, F<inn.conf> cannot be reloaded
+dynamically using ctlinnd(8); innd(8) must be stopped and restarted for
+relevant changes to F<inn.conf> to take effect (C<ctlinnd xexec innd> is
+the fastest way to do this.)
+
 Blank lines and lines starting with a number sign (C<#>) are ignored.  All
 other lines specify parameters, and should be of the following form:
 
@@ -39,13 +46,6 @@ Many parameters take a boolean value.  For all such parameters, the value
 may be specified as C<true>, C<yes>, or C<on> to turn it on and may be any
 of C<false>, C<no>, or C<off> to turn it off.  The case of these values is
 not significant.
-
-This file is intended to be fairly static.  Any changes made to it will
-generally not affect any running programs until they restart.  Unlike
-nearly every other configuration file, F<inn.conf> cannot be reloaded
-dynamically using ctlinnd(8); innd(8) must be stopped and restarted for
-relevant changes to F<inn.conf> to take effect (C<ctlinnd xexec innd> is
-the fastest way to do this.)
 
 This documentation is extremely long and organized as a reference manual
 rather than as a tutorial.  If this is your first exposure to INN and
