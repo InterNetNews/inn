@@ -176,7 +176,7 @@ Mailing Lists
                             want to read the newsgroup news.software.nntp,
                             which gets a lot of INN-related questions.)
 
-    To join these lists, send a subscription request to the `-request'
+    To join these lists, send a subscription request to the "-request"
     address.  The addresses for the above lists are:
 
        inn-announce-request@isc.org
@@ -236,7 +236,7 @@ Related Packages
         OPENSTEP only, unfortunately.
 
     suck
-        URL: <http://home.att.net/~bobyetman/>
+        URL: <http://members.home.net/bobyetman/>
 
         suck is a separate package for downloading a news feed via a reading
         connection (rather than via a direct NNTP or UUCP feed) and sending
