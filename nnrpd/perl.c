@@ -251,10 +251,10 @@ void perlAccess(char *clientHost, char *clientIP, char *serverHost, char *user, 
 
   for (i = (rc / 2); i >= 1; i--) {
     sv = POPs;
-    p = SvPV_nolen(sv);
+    p = SvPV(sv, PL_na);
     val = COPY(p);
     sv = POPs;
-    p = SvPV_nolen(sv);
+    p = SvPV(sv, PL_na);
     key = COPY(p);
 
     key = strcat(key, ": \"");
