@@ -18,10 +18,12 @@
 #include "portable/mmap.h"
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 
+#include "inn/hashtab.h"
+#include "inn/qio.h"
 #include "libinn.h"
 #include "ov.h"
+#include "paths.h"
 #include "tdx-private.h"
 #include "tdx-structure.h"
 
@@ -250,39 +252,6 @@ tdx_group_index_info(struct group_index *index, const char *group,
 }
 
 /*
-**  Dump the complete contents of the group.index file in human-readable form
-**  to stdout.  The format is:
-**
-**    hash high low base count flag deleted
-**
-**  all on one line for each group contained in the index file.  Hash is the
-**  textual representation of the MD5 hash of the group; high, low, base,
-**  count, and deleted are numbers; and flag is a character.
-*/
-void
-tdx_group_index_dump(struct group_index *index)
-{
-    int bucket;
-    GROUPLOC current;
-    struct group_entry *entry;
-
-    for (bucket = 0; bucket < GROUPHEADERHASHSIZE; bucket++) {
-        current = index->header->hash[bucket];
-        while (current.recno != empty_loc.recno) {
-            if (!group_index_maybe_remap(index, current)) {
-                warn("tradindexed: cannot remap %s", index->path);
-                return;
-            }
-            entry = index->entries + current.recno;
-            printf("%s %lu %lu %lu %lu %c %lu\n", HashToText(entry->hash),
-                   entry->high, entry->low, entry->base,
-                   (unsigned long) entry->count, entry->flag, entry->deleted);
-            current = entry->next;
-        }
-    }
-}
-
-/*
 **  Close an open handle to the group index file, freeing the group_index
 **  structure at the same time.  The argument to this function becomes invalid
 **  after this call.
@@ -306,4 +275,148 @@ tdx_group_index_close(struct group_index *index)
         close(index->fd);
     free(index->path);
     free(index);
+}
+
+/*
+**  RECOVERY AND AUDITING
+**
+**  All code below this point is not used in the normal operations of the
+**  overview method.  Instead, it's code to dump various data structures or
+**  audit them for consistency, used by recovery tools and inspection tools.
+*/
+
+/* Holds a newsgroup name and its hash, used to form a hash table mapping
+   newsgroup hash values to the actual names. */
+struct hashmap {
+    HASH hash;
+    char *name;
+};
+
+/*
+**  Hash table functions for the mapping from group hashes to names.
+*/
+static unsigned long
+hashmap_hash(const void *entry)
+{
+    unsigned long hash;
+    const struct hashmap *group = entry;
+
+    memcpy(&hash, &group->hash, sizeof(hash));
+    return hash;
+}
+
+static const void *
+hashmap_key(const void *entry)
+{
+    return &((const struct hashmap *) entry)->hash;
+}
+
+static bool
+hashmap_equal(const void *key, const void *entry)
+{
+    const HASH *first = key;
+    const HASH *second;
+
+    second = &((const struct hashmap *) entry)->hash;
+    return memcmp(first, second, sizeof(HASH)) == 0;
+}
+
+static void
+hashmap_delete(void *entry)
+{
+    struct hashmap *group = entry;
+
+    free(group->name);
+    free(group);
+}
+
+/*
+**  Construct a hash table of group hashes to group names by scanning the
+**  active file.  Returns the constructed hash table.
+*/
+static struct hash *
+hashmap_load(void)
+{
+    struct hash *hash;
+    QIOSTATE *active;
+    char *activepath, *line, *p;
+    struct stat st;
+    size_t hash_size;
+    struct hashmap *group;
+    HASH grouphash;
+
+    activepath = concatpath(innconf->pathdb, _PATH_ACTIVE);
+    active = QIOopen(activepath);
+    free(activepath);
+    if (active == NULL)
+        return NULL;
+    if (fstat(QIOfileno(active), &st) < 0)
+        hash_size = 32 * 1024;
+    else
+        hash_size = st.st_size / 30;
+    hash = hash_create(hash_size, hashmap_hash, hashmap_key, hashmap_equal,
+                       hashmap_delete);
+
+    line = QIOread(active);
+    while (line != NULL) {
+        p = strchr(line, ' ');
+        if (p != NULL)
+            *p = '\0';
+        group = xmalloc(sizeof(struct hashmap));
+        group->name = xstrdup(line);
+        grouphash = Hash(group->name, strlen(group->name));
+        memcpy(&group->hash, &grouphash, sizeof(HASH));
+        hash_insert(hash, &group->hash, group);
+        line = QIOread(active);
+    }
+    QIOclose(active);
+    return hash;
+}
+
+/*
+**  Dump the complete contents of the group.index file in human-readable form
+**  to stdout.  The format is:
+**
+**    name high low base count flag deleted
+**
+**  all on one line for each group contained in the index file.  Name is the
+**  name of the group if it can be found in the active file, and otherwise is
+**  a textual representation of the MD5 hash of the group; high, low, base,
+**  count, and deleted are numbers; and flag is a character.
+*/
+void
+tdx_group_index_dump(struct group_index *index)
+{
+    int bucket;
+    GROUPLOC current;
+    struct group_entry *entry;
+    struct hash *hashmap;
+    struct hashmap *group;
+    char *name;
+
+    hashmap = hashmap_load();
+    for (bucket = 0; bucket < GROUPHEADERHASHSIZE; bucket++) {
+        current = index->header->hash[bucket];
+        while (current.recno != empty_loc.recno) {
+            if (!group_index_maybe_remap(index, current)) {
+                warn("tradindexed: cannot remap %s", index->path);
+                return;
+            }
+            entry = index->entries + current.recno;
+            name = NULL;
+            if (hashmap != NULL) {
+                group = hash_lookup(hashmap, &entry->hash);
+                if (group != NULL)
+                    name = group->name;
+            }
+            if (name == NULL)
+                name = HashToText(entry->hash);
+            printf("%s %lu %lu %lu %lu %c %lu\n", name, entry->high,
+                   entry->low, entry->base, (unsigned long) entry->count,
+                   entry->flag, entry->deleted);
+            current = entry->next;
+        }
+    }
+    if (hashmap != NULL)
+        hash_free(hashmap);
 }
