@@ -101,28 +101,28 @@ static void test11(void) {
     sysdie("fatal");
 }
 
-static void log(int len, const char *format, va_list args, int error) {
+static int log(int len, const char *format, va_list args, int error) {
     fprintf(stderr, "%d %d ", len, error);
-    vfprintf(stderr, format, args);
+    len = vfprintf(stderr, format, args);
     fprintf(stderr, "\n");
+    return len;
 }
 
 static void test12(void) {
-    error_log_function = log;
+    warn_set_handlers(1, log);
     warn("warning");
 }
 static void test13(void) {
-    error_log_function = log;
+    die_set_handlers(1, log);
     die("fatal");
 }
 static void test14(void) {
-    error_log_function = log;
-    error_program_name = "test14";
+    warn_set_handlers(2, log, log);
     errno = EPERM;
     syswarn("warning");
 }
 static void test15(void) {
-    error_log_function = log;
+    die_set_handlers(2, log, log);
     error_fatal_cleanup = return10;
     errno = EPERM;
     sysdie("fatal");
@@ -170,17 +170,14 @@ main(void)
     ok(10, 10, concat("fatal perm: ", strerror(EPERM), "\n", END), test10);
     ok(11, 10, concat("1st test11: fatal: ", strerror(EPERM), "\n", END),
        test11);
-    ok(12, 0, "warning\n7 0 warning\n", test12);
-    ok(13, 1, "fatal\n5 0 fatal\n", test13);
+    ok(12, 0, "0 0 warning\n", test12);
+    ok(13, 1, "0 0 fatal\n", test13);
 
     sprintf(buff, "%d", EPERM);
 
-    ok(14, 0,
-       concat("test14: warning: ", strerror(EPERM), "\n7 ", buff,
-              " warning\n", END),
+    ok(14, 0, concat("0 ", buff, " warning\n7 ", buff, " warning\n", END),
        test14);
-    ok(15, 10,
-       concat("fatal: ", strerror(EPERM), "\n5 ", buff, " fatal\n", END),
+    ok(15, 10, concat("0 ", buff, " fatal\n5 ", buff, " fatal\n", END),
        test15);
 
     return 0;
