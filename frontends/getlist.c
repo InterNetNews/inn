@@ -7,9 +7,9 @@
 #include <errno.h>
 #include <syslog.h>
 
+#include "inn/qio.h"
 #include "macros.h"
 #include "libinn.h"
-#include "qio.h"
 #include "paths.h"
 
 

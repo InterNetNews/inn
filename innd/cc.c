@@ -17,9 +17,9 @@
 # include <sys/un.h>
 #endif
 
+#include "inn/qio.h"
 #include "innd.h"
 #include "inndcomm.h"
-#include "qio.h"
 
 /*
 **  An entry in the dispatch table.  The name, and implementing function,

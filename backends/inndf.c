@@ -73,7 +73,7 @@ Here's the relevant portion of my innwatch.ctl:
 #include "libinn.h"
 #include "storage.h"
 #include "paths.h"
-#include "qio.h"
+#include "inn/qio.h"
 #include "ov.h"
 
 #ifdef HAVE_UNISTD_H

@@ -11,7 +11,7 @@
 #include <errno.h>
 #include "paths.h"
 #include "libinn.h"
-#include "qio.h"
+#include "inn/qio.h"
 #include "macros.h"
 #include <syslog.h>
 #include <signal.h>

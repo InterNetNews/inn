@@ -8,7 +8,7 @@
 #include <ctype.h>
 #include "libinn.h"
 #include "macros.h"
-#include "qio.h"
+#include "inn/qio.h"
 
 
 /*

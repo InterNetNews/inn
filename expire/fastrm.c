@@ -12,7 +12,7 @@
 #include <sys/types.h>
 #include "configdata.h"
 #include "clibrary.h"
-#include "qio.h"
+#include "inn/qio.h"
 #include <ctype.h>
 #include <sys/stat.h>
 #include <errno.h>

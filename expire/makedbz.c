@@ -8,10 +8,10 @@
 #include <syslog.h>  
 
 #include "dbz.h"
+#include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
-#include "qio.h"
 #include "storage.h"
 
 char *TextFile = NULL;

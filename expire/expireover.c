@@ -8,7 +8,7 @@
 #include <signal.h>
 #include "configdata.h"
 #include "clibrary.h"
-#include "qio.h"
+#include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"

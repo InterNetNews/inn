@@ -7,7 +7,7 @@
 #include "macros.h"
 #include "libinn.h"
 #include "paths.h"
-#include "qio.h"
+#include "inn/qio.h"
 
 #define TABLESIZE       1024;
 

@@ -8,11 +8,11 @@
 #include <syslog.h>  
 
 #include "dbz.h"
+#include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
 #include "ov.h"
 #include "paths.h"
-#include "qio.h"
 #include "storage.h"
 
 #ifdef HAVE_SYS_WAIT_H

@@ -26,7 +26,7 @@
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
-#include "qio.h"
+#include "inn/qio.h"
 
 
 STATIC char	*Dir;
