@@ -273,7 +273,7 @@ Configuring INN
                        If no pathhost is specified then the FQDN of the
                        machine will be used instead.
 
-  domainname           Sets the domain name for your server. Normally this
+  domain               Sets the domain name for your server. Normally this
                        is determined automatically by INN, but in some cases
                        it is necessary to set it manually. For example, if you
                        are running NIS on a SunOS system -and- your hostnames
