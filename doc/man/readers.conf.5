@@ -1,0 +1,183 @@
+.\" $Revision$
+.TH READERS.CONF 5
+.SH NAME
+readers.conf \- configuration file for nnrpd.
+.SH DESCRIPTION
+The file
+.I <pathetc in config.data>/readers.conf
+specifies the access control for those NNTP sites that are not
+handled by the main InterNetNews daemon
+.IR innd (8).
+The
+.IR nnrpd (8)
+server reads it when first spawned by
+.IR innd .
+.PP
+Comments begin with a number sign (``#'') and continue through the end
+of the line.
+Blank lines and comments are ignored.
+There are three types of entries in the readers.conf file: key/value entries,
+authentication realms and access realms.
+.PP
+Key/value entries are a keyword immediately followed by a colon, at least
+one blank and a value. For example:
+.PP
+.RS
+.nf
+       hosts: "*.foo.com"
+.fi
+.RE
+.PP
+A legal key contains neither blanks, nor colon, nor ``#''.
+.PP
+An authentication realm declaration looks like:
+.RS
+.nf
+auth <name> {
+	# body
+}
+.fi
+.RE
+.PP
+The word ``auth'' is required.  <name> is a special label for this
+authentication realm, and associates it with an access realm, or set of
+access realms.
+.PP
+An access realm declaration looks like:
+.RS
+.nf
+access <name> {
+	# body
+}
+.fi
+.RE
+.PP
+The word ``access'' is required.  <name> is a special label for this
+access realm, and associates it with an authentication realm, or set of
+authentication realms.
+.PP
+A small example would be:
+.RS
+.nf
+# An authentication realm.
+auth "local" {
+     hosts: "foo.com,*.foo.com"
+     res: "ident"
+     auth: "shadow"
+     default: "<FAIL>"
+     default-domain: "foo.com"
+}
+
+# Access realms for two different groups of users.
+access "local" {
+     users: "*@foo.com"
+     newsgroups: "*,!internal.*"
+     access: "Read Post"
+}
+
+access "local" {
+     users: "admin1@foo.com,admin2@foo.com"
+     newsgroups: "*"
+     access: "Read Post"
+}
+
+# Access realm for users who couldn't authenticate.
+access "local" {
+     users: "<FAIL>@foo.com"
+     newsgroups: "*,!internal.*"
+     access: "Read"
+}
+.fi
+.RE
+.PP
+In all cases, the realm defined later in the file is used to override realms
+defined earlier.
+.PP
+Authentication realms and access realms take two different sets of key/value
+pairs.  Here is the list of keys in an authentication realm:
+.TP
+.BI hosts:
+A comma-seperated list of remote hosts.  If the user connects from a host that
+doesn't match one of these hosts, this authentication realm declaration is
+ignored.
+.TP
+.BI res:
+A command line for a username resolver.  The resolver program is located in
+<pathbin in
+.IR inn.conf (5)
+>/auth/resolv.  A resolver attempts to figure out the
+remote username from nothing more than the remote address.  More than one
+resolver can be tried in each authentication realm.
+.TP
+.BI auth:
+A command line for a user authenticator.  The authenticator program is located
+in <pathbin in
+.IR inn.conf (5)
+>/auth/passwd.  The user authenticator takes the
+username and password the remote user supplied, and the remote address
+information on standard input, and returns the username of this user as known
+to the system.  More than one authenticator can be tried in each authentication
+realm.
+.TP
+.BI default:
+The default username for users in this authentication realm.  When all user
+resolution methods fail, this username is used to determine newsgroup access
+for the user.
+.TP
+.BI default-domain:
+The default e-mail address domain for this authentication realm.  When the
+user resolvers or authenticators fail to provide nnrpd with a domain after
+the username, this domain is appended to the remote username.
+.PP
+This is the list of keys allowed in an access realm:
+.TP
+.BI users:
+A comma-seperated wildmat list of remote users for this access realm.  If
+this field doesn't exist, this access realm applies to all remote users.
+.TP
+.BI newsgroups:
+A set of patterns identifying the newsgroups that the client is allowed to
+read and post.
+The patterns are interpreted in the same manner as the
+.IR newsfeeds (5)
+file except for ``@''.
+The default, however, denies access to all groups.
+.TP
+.BI read:
+Like the ``newsgroups:'' key, but only defining the newsgroups that the client
+is allowed to read.
+This key can not be used in the same access group as the ``newsgroups:'' key
+defined above.
+.TP
+.BI post:
+Like the ``newsgroups:'' key, but only defining the newsgroups that the client
+is allowed to post to.
+This key can not be used in the same access group as the ``newsgroups:'' key
+defined above.
+.TP
+.BI access:
+A set of letters specifying the permissions granted to the client.
+The
+.I perms
+should be chosen from the following set (case is significant):
+.RS
+.nf
+R	The client can retrieve articles
+P	The client can post articles
+N	The client can use the NEWNEWS command, overriding the global setting
+L	The client can post to groups with local-posting prohibited
+.fi
+.RE
+This field can override the values of ``read:'' and ``post:'' defined above.
+.SH HISTORY
+Written by Aidan Cully <aidan@panix.com>, for InterNetNews.
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+.SH "SEE ALSO"
+inn.conf(5),
+innd(8),
+newsfeeds(5),
+nnrpd(8),
+wildmat(3).

@@ -51,7 +51,7 @@ supports all NNTP commands for user-oriented reading and posting.
 .PP
 .I Nnrpd
 uses the
-.IR nnrp.access (5)
+.IR readers.conf (5)
 file to control who is authorized to access the Usenet database.
 When
 .I <NNRP_LOADLIMIT in config.data>
@@ -97,8 +97,7 @@ when it is paused or throttled.
 .B \-R
 This option forces
 .I nnrpd
-to be ``read-only'' and overrides any ``P'' options in
-.IR nnrp.access (5).
+to be ``read-only''.
 The startup banner will indicate ``no posting''.
 .TP
 .B \-s
@@ -298,4 +297,4 @@ This is revision \\$3, dated \\$4.
 ..
 .R$ $Id$
 .SH "SEE ALSO"
-ctlinnd(8), innd(8), inn.conf(5), nnrp.access(5), signal(2), wildmat(3).
+ctlinnd(8), innd(8), inn.conf(5), signal(2), wildmat(3).
