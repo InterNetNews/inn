@@ -340,8 +340,6 @@ int CheckInnConf()
 	(void)fprintf(stderr, "Must set 'mta' in inn.conf");
 	return(-1);
     }
-    if (innconf->mailcmd == NULL)
-	innconf->mailcmd = innconf->mta;
     if (innconf->overviewname == NULL) 
 	innconf->overviewname = COPY(".overview");
 
@@ -397,6 +395,9 @@ int CheckInnConf()
     }
     if (innconf->pathtmp == NULL) {
 	innconf->pathtmp = COPY(_PATH_TMP);
+    }
+    if (innconf->mailcmd == NULL) {
+	innconf->mailcmd = COPY(cpcatpath(innconf->pathbin, "innmail"));
     }
     if (innconf->pathuniover == NULL) {
 	innconf->pathuniover = COPY(cpcatpath(innconf->pathspool, "uniover"));
