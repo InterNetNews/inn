@@ -75,9 +75,6 @@ extern u_int loggingLevel ;     /* if 0 then d_printf is a no-op */
 /* the current count of file desccriptors */
 extern u_int openfds ;
 
-/* return the maximum number of fds this process can have. */
-int maxFds (void) ;
-
 /* if level <= loggingLevel then print */
 void d_printf (u_int level, const char *fmt, ...) __attribute__ ((__format__ (printf, 2, 3)));
 

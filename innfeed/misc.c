@@ -186,14 +186,6 @@ logAndExit(int status, const char *format, ...)
 
 
 
-int maxFds (void)
-{
-  static int size = 0 ;
-  size = getfdcount () ;
-  return size;
-}
-
-
 void d_printf (u_int level, const char *fmt, ...) 
 {
   static pid_t myPid ;
