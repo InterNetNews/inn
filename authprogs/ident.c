@@ -3,15 +3,18 @@
 **  ident authenticator.
 */
 
-#include "libauth.h"
-
+#include "config.h"
+#include "clibrary.h"
 #include <errno.h>
 #include <netdb.h>
+#include <signal.h>
 #include <syslog.h>
 #include <sys/signal.h>
 
 #include "libinn.h"
 #include "macros.h"
+
+#include "libauth.h"
 
 static void out(int sig UNUSED) {
     exit(1);
