@@ -17,13 +17,13 @@ case "$1" in
 stop)
 
   if [ -f $PATHRUN/db_checkpoint.pid ]; then
-    kill $(cat $PATHRUN/db_checkpoint.pid)
+    kill `cat $PATHRUN/db_checkpoint.pid`
   fi
   if [ -f $PATHRUN/db_deadlock.pid ]; then
-    kill $(cat $PATHRUN/db_deadlock.pid)
+    kill `cat $PATHRUN/db_deadlock.pid`
   fi
   if [ -f $PATHRUN/logremover.pid ]; then
-    kill -HUP $(cat $PATHRUN/logremover.pid)
+    kill -HUP `cat $PATHRUN/logremover.pid`
   fi
   sleep 5
   # run one more checkpoint just to make sure
