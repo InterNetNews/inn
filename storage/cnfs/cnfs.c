@@ -1159,7 +1159,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    return NULL;
 	}
-#ifdef MADV_SEQUENTIAL
+#if defined(MADV_SEQUENTIAL) && defined(HAVE_MADVISE)
 	madvise(private->base, private->len, MADV_SEQUENTIAL);
 #endif
     } else {
@@ -1430,7 +1430,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    return art;
 	}
-#ifdef MADV_SEQUENTIAL
+#if defined(MADV_SEQUENTIAL) && defined(HAVE_MADVISE)
 	madvise(private->base, private->len, MADV_SEQUENTIAL);
 #endif
     } else {
