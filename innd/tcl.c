@@ -180,7 +180,7 @@ TCLsetup()
     
     TCLInterpreter = Tcl_CreateInterp();
     if (TCLSTARTUP == NULL)
-	TCLSTARTUP = cpcatrpath(innconf->pathfilter, _PATH_TCL_STARTUP);
+	TCLSTARTUP = cpcatpath(innconf->pathfilter, _PATH_TCL_STARTUP);
     code = Tcl_EvalFile(TCLInterpreter, TCLSTARTUP);
     if (code != TCL_OK) {
 	syslog(L_FATAL, "%s cant read Tcl startup file: %s", LogName,

@@ -154,6 +154,14 @@ static BOOL SMreadconfig(void) {
     STORAGE_SUB         *prev = NULL;
     char		*options;
 
+    /* if innconf isn't already read in, do so. */
+    if (innconf == NULL) {
+	if (ReadInnConf(_PATH_CONFIG) < 0) {
+	    SMseterror(SMERR_INTERNAL, "ReadInnConf() failed");
+	    return FALSE;
+	}
+    }
+
     for (i = 0; i < NUM_STORAGE_METHODS; i++) {
 	method_data[i].initialized = INIT_NO;
 	method_data[i].configured = FALSE;
