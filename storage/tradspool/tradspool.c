@@ -1,0 +1,750 @@
+/*
+** $Id$
+** tradspool -- storage manager module for traditional spool format.
+*/
+
+#include <stdio.h>
+#include <errno.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <dirent.h>
+#include <ctype.h>
+#include <clibrary.h>
+#include <syslog.h>
+#include <macros.h>
+#include <configdata.h>
+#include <libinn.h>
+#include <methods.h> 
+#include "tradspool.h"
+#include <paths.h>
+#include <qio.h>
+
+    
+typedef struct {
+    char		*artbase; /* start of the article data -- may be mmaped */
+    unsigned int	artlen; /* art length. */
+    int 	nextindex;
+    char		*curdirname;
+    DIR			*curdir;
+    struct _ngtent	*ngtp;
+} PRIV_TRADSPOOL;
+
+/*
+** The 64-bit hashed representation of a ng name that gets stashed in each token. 
+*/
+
+#define HASHEDNGLEN 8
+typedef struct {
+    char hash[HASHEDNGLEN];
+} HASHEDNG;
+
+/*
+** Structures for our hash id->newsgroup mapping.
+*/
+
+#define NGT_SIZE  2048
+
+typedef struct _ngtent {
+    char *ngname;
+    HASHEDNG hash;
+    struct _ngtent *next;
+} NGTENT;
+
+NGTENT *NGTable[NGT_SIZE];
+
+/* 
+** Convert all .s to /s in a newsgroup name.  Modifies the passed string 
+** inplace.
+*/
+static void
+DeDotify(char *ngname) {
+    char *p = ngname;
+
+    for ( ; *p ; ++p) {
+	if (*p == '.') *p = '/';
+    }
+    return;
+}
+
+/*
+** Hash a newsgroup name to a 32-bit int.  Basically, we convert all .s to 
+** /s (so it doesn't matter if we're passed the spooldir name or newsgroup
+** name) and then call Hash to MD5 the mess, then take 4 bytes worth of 
+** data from the front of the hash.  This should be good enough for our
+** purposes. 
+*/
+
+static HASHEDNG 
+HashNGName(char *ng) {
+    HASH hash;
+    HASHEDNG return_hash;
+    char *p;
+
+    p = COPY(ng);
+    DeDotify(p);
+    hash = Hash(p, strlen(p));
+    DISPOSE(p);
+
+    memcpy(return_hash.hash, hash.hash, HASHEDNGLEN);
+
+    return return_hash;
+}
+
+/* compare two hashes */
+static int
+CompareHash(HASHEDNG *h1, HASHEDNG *h2) {
+    int i;
+    for (i = 0 ; i < HASHEDNGLEN ; ++i) {
+	if (h1->hash[i] != h2->hash[i]) {
+	    return h1->hash[i] - h2->hash[i];
+	}
+    }
+    return 0;
+}
+
+/* Add a new newsgroup name to the NG table. */
+static void
+AddNG(char *ng) {
+    char *p;
+    unsigned int h;
+    HASHEDNG hash;
+    NGTENT *ngtp, **ngtpp;
+
+    p = COPY(ng);
+    DeDotify(p); /* canonicalize p to standard (/) form. */
+    hash = HashNGName(p);
+
+    h = (unsigned char)hash.hash[0];
+    h = h + (((unsigned char)hash.hash[1])<<8);
+
+    h = h % NGT_SIZE;
+
+    ngtp = NGTable[h];
+    ngtpp = &NGTable[h];
+    while (TRUE) {
+	if (ngtp == NULL) {
+	    /* ng wasn't in table, add new entry. */
+	    ngtp = NEW(NGTENT, 1);
+	    ngtp->ngname = p; /* note: we store canonicalized name */
+	    ngtp->hash = hash;
+	    ngtp->next = NULL;
+	    /* link new table entry into the chain. */
+	    *ngtpp = ngtp;
+	    return;
+	} else if (strcmp(ngtp->ngname, p) == 0) {
+	    /* entry in table already, so return */
+	    DISPOSE(p);
+	    return;
+	} else if (CompareHash(&ngtp->hash, &hash) == 0) {
+	    /* eep! we hit a hash collision. */
+	    syslog(L_ERROR, "tradspool: AddNG: Hash collison %s/%s", ngtp->ngname, p);
+	    DISPOSE(p);
+	    return;
+	} else {
+	    /* not found yet, so advance to next entry in chain */
+	    ngtpp = &(ngtp->next);
+	    ngtp = ngtp->next;
+	}
+    }
+}
+
+/* find a newsgroup/spooldir name, given only the 8-byte hash. */
+static char *
+FindNG(HASHEDNG hash) {
+    NGTENT *ngtp;
+    unsigned int h;
+
+    h = (unsigned char)hash.hash[0];
+    h = h + (((unsigned char)hash.hash[1])<<8);
+
+    h = h % NGT_SIZE;
+
+    ngtp = NGTable[h];
+
+    while (ngtp) {
+	if (CompareHash(&hash, &ngtp->hash) == 0) return ngtp->ngname;
+	ngtp = ngtp->next;
+    }
+    return NULL; 
+}
+
+/* init NGTable from active. */
+BOOL
+InitNGTable(void) {
+    char *active;
+    QIOSTATE *qp;
+    char *line;
+    char *p;
+
+    active = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
+    if ((qp = QIOopen(active)) == NULL) {
+	syslog(L_FATAL, "tradspool: can't open %s", active);
+	return FALSE;
+    }
+
+    while ((line = QIOread(qp)) != NULL) {
+	p = strchr(line, ' ');
+	if (p == NULL) {
+	    syslog(L_FATAL, "tradspool: corrupt line in active %s", line);
+	    return FALSE;
+	}
+	*p = 0;
+	AddNG(line);
+    }
+    QIOclose(qp);
+    return TRUE;
+}
+
+/* Init routine, called by SMinit */
+
+BOOL
+tradspool_init(BOOL *selfexpire) {
+    *selfexpire = FALSE;
+    return InitNGTable();
+}
+
+/* Make a token for an article given the primary newsgroup name and article # */
+static TOKEN
+MakeToken(char *ng, unsigned long artnum) {
+    TOKEN token;
+    HASHEDNG hash;
+    char *p;
+    memset(&token, '\0', sizeof(token));
+
+    token.type = TOKEN_TRADSPOOL;
+    token.class = 0; /* "class" is irrelevant for traditional spool */
+    hash = HashNGName(ng);
+
+    /* 
+    ** if not already in the NG Table, be sure to add this ng! This way we
+    ** catch things like newsgroups added since startup. 
+    */
+    if ((p = FindNG(hash)) == NULL) {
+	AddNG(ng);
+    } 
+
+    memcpy(token.token, hash.hash, HASHEDNGLEN);
+    artnum = htonl(artnum);
+    memcpy(&token.token[HASHEDNGLEN], &artnum, sizeof(artnum));
+    return token;
+}
+
+/* 
+** Convert a token back to a pathname. 
+*/
+static char *
+TokenToPath(TOKEN token) {
+    HASHEDNG hash;
+    unsigned long artnum;
+    char *ng, *path;
+
+    memcpy(hash.hash, &token.token[0], HASHEDNGLEN);
+    memcpy(&artnum, &token.token[HASHEDNGLEN], sizeof(artnum));
+    artnum = ntohl(artnum);
+
+    ng = FindNG(hash);
+    if (ng == NULL) return NULL;
+
+    path = NEW(char, strlen(ng)+30);
+    sprintf(path, "%s/%s/%lu", innconf->patharticles, ng, artnum);
+    return path;
+}
+
+/*
+** Crack an Xref line apart into separate strings, each of the form "ng:artnum".
+** Return in "num" the number of newsgroups found. 
+*/
+static char **
+CrackXref(char *xref, unsigned int *lenp) {
+    char *p;
+    char **xrefs;
+    char *q;
+    unsigned int len, xrefsize;
+    unsigned int slen;
+
+    len = 0;
+    xrefsize = 5;
+    xrefs = NEW(char *, xrefsize);
+
+    /* skip pathhost */
+    if ((p = strchr(xref, ' ')) == NULL) {
+	SMseterror(SMERR_UNDEFINED, "Could not find pathhost in Xref header");
+	return NULL;
+    }
+    /* skip next spaces */
+    for (p++; *p == ' ' ; p++) ;
+    while (TRUE) {
+	/* check for EOL */
+	/* shouldn't ever hit null w/o hitting a \r\n first, but best to be paranoid */
+	if (*p == '\n' || *p == '\r' || *p == 0) {
+	    /* hit EOL, return. */
+	    *lenp = len;
+	    return xrefs;
+	}
+	/* skip to next space or EOL */
+	for (q=p; *q && *q != ' ' && *q != '\n' && *q != '\r' ; ++q) ;
+
+	slen = q-p;
+	xrefs[len] = NEW(char, slen+1);
+	strncpy(xrefs[len], p, slen);
+	xrefs[len][slen] = '\0';
+
+	if (++len == xrefsize) {
+	    /* grow xrefs if needed. */
+	    xrefsize *= 2;
+	    RENEW(xrefs, char *, xrefsize);
+	}
+
+ 	p = q;
+	/* skip spaces */
+	for ( ; *p == ' ' ; p++) ;
+    }
+}
+
+TOKEN
+tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
+    char **xrefs;
+    char *xrefhdr;
+    TOKEN token;
+    unsigned int numxrefs;
+    char *ng, *p;
+    unsigned long artnum;
+    char *path, *linkpath;
+    int fd;
+    int i;
+    
+    xrefhdr = (char *)HeaderFindMem(article.data, article.len, "Xref", 4);
+    if (xrefhdr == NULL) {
+	token.type = TOKEN_EMPTY;
+	SMseterror(SMERR_UNDEFINED, "cant find Xref: header");
+	return token;
+    }
+
+    if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
+	token.type = TOKEN_EMPTY;
+	SMseterror(SMERR_UNDEFINED, "bogus Xref: header");
+	return token;
+    }
+
+    if ((p = strchr(xrefs[0], ':')) == NULL) {
+	token.type = TOKEN_EMPTY;
+	SMseterror(SMERR_UNDEFINED, "bogus Xref: header");
+	return token;
+    }
+    *p++ = '\0';
+    ng = xrefs[0];
+    DeDotify(ng);
+    artnum = atol(p);
+    
+    token = MakeToken(ng, artnum);
+
+    path = NEW(char, strlen(innconf->patharticles) + strlen(ng) + 32);
+    sprintf(path, "%s/%s/%lu", innconf->patharticles, ng, artnum);
+
+    /* following chunk of code boldly stolen from timehash.c  :-) */
+    if ((fd = open(path, O_CREAT|O_EXCL|O_WRONLY, ARTFILE_MODE)) < 0) {
+	p = strrchr(path, '/');
+	*p = '\0';
+	if (!MakeDirectory(path, TRUE)) {
+	    syslog(L_ERROR, "tradspool: could not make directory %s %m", path);
+	    token.type = TOKEN_EMPTY;
+	    DISPOSE(path);
+	    SMseterror(SMERR_UNDEFINED, NULL);
+	    return token;
+	} else {
+	    *p = '/';
+	    if ((fd = open(path, O_CREAT|O_EXCL|O_WRONLY, ARTFILE_MODE)) < 0) {
+		SMseterror(SMERR_UNDEFINED, NULL);
+		syslog(L_ERROR, "tradspool: could not open %s %m", path);
+		token.type = TOKEN_EMPTY;
+		DISPOSE(path);
+		return token;
+	    }
+	}
+    }
+    if (write(fd, article.data, article.len) != article.len) {
+	SMseterror(SMERR_UNDEFINED, NULL);
+	syslog(L_ERROR, "timehash error writing %s %m", path);
+	close(fd);
+	token.type = TOKEN_EMPTY;
+	unlink(path);
+	DISPOSE(path);
+	return token;
+    }
+    close(fd);
+
+    /* 
+    ** blah, this is ugly.  Have to make symlinks under other pathnames for
+    ** backwards compatiblility purposes. 
+    */
+
+    if (numxrefs > 1) {
+	for (i = 1; i < numxrefs ; ++i) {
+	    if ((p = strchr(xrefs[i], ':')) == NULL) continue;
+	    *p++ = '\0';
+	    ng = xrefs[i];
+	    DeDotify(ng);
+	    artnum = atol(p);
+
+	    linkpath = NEW(char, strlen(innconf->patharticles) + strlen(ng) + 32);
+	    sprintf(linkpath, "%s/%s/%lu", innconf->patharticles, ng, artnum);
+	    if (symlink(path, linkpath) < 0) {
+		p = strrchr(linkpath, '/');
+		*p = '\0';
+		if (!MakeDirectory(linkpath, TRUE)) {
+		    syslog(L_ERROR, "tradspool: could not make directory %s %m", path);
+		    token.type = TOKEN_EMPTY;
+		    DISPOSE(linkpath);
+		    DISPOSE(path);
+		    SMseterror(SMERR_UNDEFINED, NULL);
+		    return token;
+		} else {
+		    *p = '/';
+		    if (symlink(path, linkpath) < 0) {
+			SMseterror(SMERR_UNDEFINED, NULL);
+			syslog(L_ERROR, "tradspool: could not open %s %m", path);
+			token.type = TOKEN_EMPTY;
+			DISPOSE(path);
+			return token;
+		    }
+		}
+	    }
+	    DISPOSE(linkpath);
+	}
+    }
+    DISPOSE(path);
+    for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
+    DISPOSE(xrefs);
+    return token;
+}
+
+static ARTHANDLE *
+OpenArticle(const char *path, RETRTYPE amount) {
+    int fd;
+    PRIV_TRADSPOOL *private;
+    char *p;
+    struct stat sb;
+    ARTHANDLE *art;
+
+    if ((fd = open(path, O_RDONLY)) < 0) {
+	SMseterror(SMERR_UNDEFINED, NULL);
+	return NULL;
+    }
+
+    art = NEW(ARTHANDLE, 1);
+    art->type = TOKEN_TRADSPOOL;
+
+    if (amount == RETR_STAT) {
+	art->data = NULL;
+	art->len = 0;
+	art->private = NULL;
+	close(fd);
+	return art;
+    }
+
+    if (fstat(fd, &sb) < 0) {
+	SMseterror(SMERR_UNDEFINED, NULL);
+	syslog(L_ERROR, "tradspool: could not fstat article: %m");
+	DISPOSE(art);
+	return NULL;
+    }
+
+    art->arrived = sb.st_mtime;
+
+    private = NEW(PRIV_TRADSPOOL, 1);
+    art->private = (void *)private;
+    private->artlen = sb.st_size;
+    if (innconf->articlemmap) {
+	if ((private->artbase = mmap((MMAP_PTR)0, sb.st_size, PROT_READ, MAP__ARG, fd, 0)) == (MMAP_PTR)-1) {
+	    SMseterror(SMERR_UNDEFINED, NULL);
+	    syslog(L_ERROR, "tradspool: could not mmap article: %m");
+	    DISPOSE(art->private);
+	    DISPOSE(art);
+	    return NULL;
+	}
+    } else {
+	private->artbase = NEW(char, private->artlen);
+	if (read(fd, private->artbase, private->artlen) < 0) {
+	    SMseterror(SMERR_UNDEFINED, NULL);
+	    syslog(L_ERROR, "tradspool: could not read article: %m");
+	    DISPOSE(private->artbase);
+	    DISPOSE(art->private);
+	    DISPOSE(art);
+	    return NULL;
+	}
+    }
+    close(fd);
+    
+    private->ngtp = NULL;
+    private->curdir = NULL;
+    private->curdirname = NULL;
+    private->nextindex = -1;
+
+    if (amount == RETR_ALL) {
+	art->data = private->artbase;
+	art->len = private->artlen;
+	return art;
+    }
+    
+    if ((p = SMFindBody(private->artbase, private->artlen)) == NULL) {
+	SMseterror(SMERR_NOBODY, NULL);
+	DISPOSE(art->private);
+	DISPOSE(art);
+	return NULL;
+    }
+
+    if (amount == RETR_HEAD) {
+	art->data = private->artbase;
+	art->len = p - private->artbase;
+	return art;
+    }
+
+    if (amount == RETR_BODY) {
+	art->data = p;
+	art->len = private->artlen - (p - private->artbase);
+	return art;
+    }
+    SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
+    DISPOSE(art->private);
+    DISPOSE(art);
+    return NULL;
+}
+
+    
+ARTHANDLE *
+tradspool_retrieve(const TOKEN token, const RETRTYPE amount) {
+    char *path;
+    ARTHANDLE *art;
+    static TOKEN ret_token;
+
+    if (token.type != TOKEN_TRADSPOOL) {
+	SMseterror(SMERR_INTERNAL, NULL);
+	return NULL;
+    }
+
+    if ((path = TokenToPath(token)) == NULL) return NULL;
+    if ((art = OpenArticle(path, amount)) != (ARTHANDLE *)NULL) {
+        ret_token = token;
+        art->token = &ret_token;
+    }
+    DISPOSE(path);
+    return art;
+}
+
+void
+tradspool_freearticle(ARTHANDLE *article) {
+    PRIV_TRADSPOOL *private;
+
+    if (!article) return;
+
+    if (article->private) {
+	private = (PRIV_TRADSPOOL *) article->private;
+	if (innconf->articlemmap) {
+#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
+	    madvise(private->artbase, private->artlen, MADV_DONTNEED);
+#endif
+	    munmap(private->artbase, private->artlen);
+	} else {
+	    DISPOSE(private->artbase);
+	}
+	if (private->curdir) {
+	    closedir(private->curdir);
+	}
+	DISPOSE(private->curdirname);
+    }
+}
+
+BOOL 
+tradspool_cancel(TOKEN token) {
+    char **xrefs;
+    char *xrefhdr;
+    ARTHANDLE *article;
+    unsigned int numxrefs;
+    char *ng, *p;
+    char *path, *linkpath;
+    int i;
+    BOOL result = TRUE;
+    unsigned long artnum;
+
+    if ((path = TokenToPath(token)) == NULL) {
+	SMseterror(SMERR_UNDEFINED, NULL);
+	return FALSE;
+    }
+    /*
+    **  Ooooh, this is gross.  To find the symlinks pointing to this article,
+    ** we open the article and grab its Xref line (since the token isn't long
+    ** enough to store this info on its own).   This is *not* going to do 
+    ** good things for performance of fastrm...  -- rmtodd
+    */
+    if ((article = OpenArticle(path, RETR_HEAD)) == NULL) {
+	SMseterror(SMERR_UNDEFINED, NULL);
+        return FALSE;
+    }
+
+    xrefhdr = (char *)HeaderFindMem(article->data, article->len, "Xref", 4);
+    if (xrefhdr == NULL) {
+	SMseterror(SMERR_UNDEFINED, NULL);
+        return FALSE;
+    }
+
+    if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
+        SMseterror(SMERR_UNDEFINED, NULL);
+        return FALSE;
+    }
+
+    tradspool_freearticle(article);
+    for (i = 1 ; i < numxrefs ; ++i) {
+	if ((p = strchr(xrefs[i], ':')) == NULL) continue;
+	*p++ = '\0';
+	ng = xrefs[i];
+	DeDotify(ng);
+	artnum = atol(p);
+
+	linkpath = NEW(char, strlen(innconf->patharticles) + strlen(ng) + 32);
+	sprintf(linkpath, "%s/%s/%lu", innconf->patharticles, ng, artnum);
+	/* hmm, do we want to abort this if one of the symlink unlinks fails? */
+	if (unlink(linkpath) < 0) result = FALSE;
+	DISPOSE(linkpath);
+    }
+    if (unlink(path) < 0) result = FALSE;
+    DISPOSE(path);
+    for (i = 0 ; i < numxrefs ; ++i) DISPOSE(xrefs[i]);
+    DISPOSE(xrefs);
+    return result;
+}
+
+   
+/*
+** Find entries for possible articles in dir. "dir" (directory name "dirname").
+** The dirname is needed so we can do stats in the directory to disambiguate
+** files from symlinks and directories.
+*/
+
+static struct dirent *
+FindDir(DIR *dir, char *dirname) {
+    struct dirent *de;
+    int i;
+    BOOL flag;
+    char *path;
+    struct stat sb;
+    unsigned char namelen;
+
+    while ((de = readdir(dir)) != NULL) {
+	namelen = strlen(de->d_name);
+	for (i = 0, flag = TRUE ; i < namelen ; ++i) {
+	    if (!isdigit(de->d_name[i])) flag = FALSE;
+	}
+	if (!flag) continue; /* if not all digits, skip this entry. */
+
+	path = NEW(char, strlen(dirname)+namelen+2);
+	strcpy(path, dirname);
+	strcat(path, "/");
+	strncpy(&path[strlen(dirname)+1], de->d_name, namelen);
+	path[strlen(dirname)+namelen+1] = '\0';
+
+	if (lstat(path, &sb) < 0) {
+	    DISPOSE(path);
+	    continue;
+	}
+	DISPOSE(path);
+	if (!S_ISREG(sb.st_mode)) continue;
+	return de;
+    }
+    return NULL;
+}
+
+ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
+    PRIV_TRADSPOOL priv;
+    PRIV_TRADSPOOL *newpriv;
+    char *path;
+    struct dirent *de;
+    ARTHANDLE *art;
+    unsigned long artnum;
+    int i;
+    static TOKEN token;
+    unsigned char namelen;
+
+    if (article == NULL) {
+	priv.ngtp = NULL;
+	priv.curdir = NULL;
+	priv.curdirname = NULL;
+	priv.nextindex = -1;
+    } else {
+	priv = *(PRIV_TRADSPOOL *) article->private;
+	DISPOSE(article->private);
+	DISPOSE(article);
+	if (innconf->articlemmap) {
+#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
+	    madvise(priv.artbase, priv.artlen, MADV_DONTNEED);
+#endif
+	    munmap(priv.artbase, priv.artlen);
+	} else {
+	    DISPOSE(priv.artbase);
+	}
+    }
+
+    while (!priv.curdir || ((de = FindDir(priv.curdir, priv.curdirname)) == NULL)) {
+	if (priv.curdir) {
+	    closedir(priv.curdir);
+	    priv.curdir = NULL;
+	    DISPOSE(priv.curdirname);
+	    priv.curdirname = NULL;
+	}
+
+	/*
+	** advance ngtp to the next entry, if it exists, otherwise start 
+	** searching down another ngtable hashchain. 
+	*/
+	while (priv.ngtp == NULL || (priv.ngtp = priv.ngtp->next) == NULL) {
+	    /*
+	    ** note that at the start of a search nextindex is -1, so the inc.
+	    ** makes nextindex 0, as it should be.
+	    */
+	    priv.nextindex++;
+	    if (priv.nextindex >= NGT_SIZE) {
+		/* ran off the end of the table, so return. */
+		return NULL;
+	    }
+	    priv.ngtp = NGTable[priv.nextindex];
+	}
+
+	priv.curdirname = NEW(char, strlen(innconf->patharticles)+strlen(priv.ngtp->ngname)+2);
+	sprintf(priv.curdirname, "%s/%s",innconf->patharticles,priv.ngtp->ngname);
+	priv.curdir = opendir(priv.curdirname);
+    }
+
+    namelen = strlen(de->d_name);
+    path = NEW(char, strlen(priv.curdirname) + 2 + namelen);
+    strcpy(path, priv.curdirname);
+    strcat(path, "/");
+    i = strlen(priv.curdirname);
+    strncpy(&path[i+1], de->d_name, namelen);
+    path[i+namelen+1] = '\0';
+    /* get the article number while we're here, we'll need it later. */
+    artnum = atol(&path[i+1]);
+
+    art = OpenArticle(path, amount);
+    if (art == (ARTHANDLE *)NULL) {
+	art = NEW(ARTHANDLE, 1);
+	art->type = TOKEN_TRADSPOOL;
+	art->data = NULL;
+	art->len = 0;
+	art->private = (void *)NEW(PRIV_TRADSPOOL, 1);
+    }
+    newpriv = (PRIV_TRADSPOOL *) art->private;
+    newpriv->nextindex = priv.nextindex;
+    newpriv->curdir = priv.curdir;
+    newpriv->curdirname = priv.curdirname;
+    newpriv->ngtp = priv.ngtp;
+    
+    token = MakeToken(priv.ngtp->ngname, artnum);
+    art->token = &token;
+    DISPOSE(path);
+    return art;
+}
+
+void
+tradspool_shutdown(void) {
+}
