@@ -46,6 +46,7 @@ main(int ac, char **av, char **ep)
       exit(1);
   }
 
+#if	defined(HAVE_RLIMIT)
   /* (try to) unlimit datasize and stacksize for us and our children */
   rl.rlim_cur = rl.rlim_max = RLIM_INFINITY;
 
@@ -55,13 +56,16 @@ main(int ac, char **av, char **ep)
   if (setrlimit(RLIMIT_STACK, &rl) == -1)
     syslog(LOG_WARNING, "%s: setrlimit(RLIMIT_STACK, RLIM_INFINITY): %s",
             *av, strerror (errno));
-#if NOFILE_LIMIT > 0
-  getrlimit(RLIMIT_NOFILE, &rl);
-  if (rl.rlim_max < NOFILE_LIMIT) rl.rlim_max = NOFILE_LIMIT;
-  if (rl.rlim_cur < NOFILE_LIMIT) rl.rlim_cur = NOFILE_LIMIT;
-  if (setrlimit(RLIMIT_NOFILE, &rl) == -1)
-    syslog(LOG_WARNING, "%s: setrlimit(RLIMIT_NOFILE, %d): %s",
+  if (innconf->rlimitnofile >= 0) {
+    getrlimit(RLIMIT_NOFILE, &rl);
+    if (rl.rlim_max < NOFILE_LIMIT) rl.rlim_max = NOFILE_LIMIT;
+    if (innconf->rlimitnofile < rl.rlim_max) rl.rlim_max = innconf->rlimitnofile;
+    if (rl.rlim_cur < NOFILE_LIMIT) rl.rlim_cur = NOFILE_LIMIT;
+    if (innconf->rlimitnofile < rl.rlim_cur) rl.rlim_cur = innconf->rlimitnofile;
+    if (setrlimit(RLIMIT_NOFILE, &rl) == -1)
+      syslog(LOG_WARNING, "%s: setrlimit(RLIMIT_NOFILE, %d): %s",
             *av, rl.rlim_cur, strerror (errno));
+  }
 #endif
 
   /* stop being root */
