@@ -1783,9 +1783,9 @@ newgroup:usenet@news.spokane.wa.us:spokane.*:doit
 rmgroup:usenet@news.spokane.wa.us:spokane.*:doit
 
 ## STAROFFICE (StarOffice business suite, Sun Microsystems, Inc.)
-# Contact: news@stardivision.de
+# Contact: news@starnews.sun.com
 # Admin group: staroffice.admin
-# Key fingerprint = F6 6A 5C 57 77 1F 63 26  F2 43 02 41 75 2A 04 1C
+# Key fingerprint = C6 3E 81 6F 2A 19 D3 84  72 51 F9 1B E3 B9 B2 C9
 # Syncable server: starnews.sun.com
 # *PGP*   See comment at top of file.
 newgroup:*:staroffice.*:drop
