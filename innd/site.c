@@ -371,12 +371,12 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	case FEED_HDR_DISTRIB:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, HDR(_distribution), HDR_LEN(_distribution));
+	    BUFFappend(bp, HDR(HDR__DISTRIBUTION), HDR_LEN(HDR__DISTRIBUTION));
 	    break;
 	case FEED_HDR_NEWSGROUP:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, HDR(_newsgroups), HDR_LEN(_newsgroups));
+	    BUFFappend(bp, HDR(HDR__NEWSGROUPS), HDR_LEN(HDR__NEWSGROUPS));
 	    break;
 	case FEED_HEADERS:
 	    if (Dirty)
@@ -395,7 +395,7 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 		BUFFappend(bp, Path.Data, Path.Used);
 	    if (AddAlias)
 		BUFFappend(bp, Pathalias.Data, Pathalias.Used);
-	    BUFFappend(bp, HDR(_path), HDR_LEN(_path));
+	    BUFFappend(bp, HDR(HDR__PATH), HDR_LEN(HDR__PATH));
 	    break;
 	case FEED_REPLIC:
 	    if (Dirty)
@@ -428,7 +428,7 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	case FEED_MESSAGEID:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, HDR(_message_id), HDR_LEN(_message_id));
+	    BUFFappend(bp, HDR(HDR__MESSAGE_ID), HDR_LEN(HDR__MESSAGE_ID));
 	    break;
 	case FEED_FNLNAMES:
 	    if (sp->FNLnames.Data) {

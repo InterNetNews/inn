@@ -30,53 +30,47 @@ static const char * const BadDistribs[] = {
 HEADER	Table[] = {
     /* 	Name			Canset	Type	*/
     {	"Path",			TRUE,	HTstd },
-#define _path		 0
+#define HDR__PATH	      0
     {	"From",			TRUE,	HTreq },
-#define _from		 1
-    {	"Newsgroups",		TRUE,	HTreq },
-#define _newsgroups	 2
+#define HDR__FROM	      1
+    {	"Newsgroups",	 	TRUE,	HTreq },
+#define HDR__NEWSGROUPS	      2
     {	"Subject",		TRUE,	HTreq },
-#define _subject	 3
+#define HDR__SUBJECT	      3
     {	"Control",		TRUE,	HTstd },
-#define _control	 4
+#define HDR__CONTROL	      4
     {	"Supersedes",		TRUE,	HTstd },
-#define _supersedes	 5
     {	"Followup-To",		TRUE,	HTstd },
-#define _followupto	 6
+#define HDR__FOLLOWUPTO	      6
     {	"Date",			TRUE,	HTstd },
-#define _date		 7
+#define HDR__DATE	      7
     {	"Organization",		TRUE,	HTstd },
-#define _organization	 8
+#define HDR__ORGANIZATION     8
     {	"Lines",		TRUE,	HTstd },
-#define _lines		 9
+#define HDR__LINES	      9
     {	"Sender",		TRUE,	HTstd },
-#define _sender		10
+#define HDR__SENDER	     10
     {	"Approved",		TRUE,	HTstd },
-#define _approved	11
+#define HDR__APPROVED	     11
     {	"Distribution",		TRUE,	HTstd },
-#define _distribution	12
+#define HDR__DISTRIBUTION    12
     {	"Expires",		TRUE,	HTstd },
-#define _expires	13
+#define HDR__EXPIRES	     13
     {	"Message-ID",		TRUE,	HTstd },
-#define _messageid	14
+#define HDR__MESSAGEID	     14
     {	"References",		TRUE,	HTstd },
-#define _references	15
     {	"Reply-To",		TRUE,	HTstd },
-#define _replyto	16
     {	"NNTP-Posting-Host",	FALSE,	HTstd },
-#define _nntpposthost	17
+#define HDR__NNTPPOSTINGHOST 17
     {	"Mime-Version",		TRUE,	HTstd },
-#define _mimeversion	18
     {	"Content-Type",		TRUE,	HTstd },
-#define _contenttype	19
     {	"Content-Transfer-Encoding", TRUE, HTstd },
-#define _contenttransferencoding 20
     {   "X-Trace",              FALSE, HTstd },
-#define _xtrace         21
+#define HDR__XTRACE          21
     {   "X-Complaints-To",	FALSE, HTstd },
-#define _xcomplaintsto	22
+#define HDR__XCOMPLAINTSTO   22
     {   "NNTP-Posting-Date",	FALSE, HTstd },
-#define _nntppostdate	23
+#define HDR__NNTPPOSTINGDATE 23
     {	"Xref",			FALSE,	HTstd },
     {	"Summary",		TRUE,	HTstd },
     {	"Keywords",		TRUE,	HTstd },
@@ -86,11 +80,11 @@ HEADER	Table[] = {
     {	"Posting-Version",	FALSE,	HTobs },
     {	"Relay-Version",	FALSE,	HTobs },
     {   "Cc",			TRUE, HTstd },
-#define _cc		32
+#define HDR__CC		     32
     {   "Bcc",			TRUE, HTstd },
-#define _bcc		33
+#define HDR__BCC		    33
     {   "To",			TRUE, HTstd },
-#define _to		34
+#define HDR__TO		     34
 };
 
 HEADER *EndOfTable = ENDOF(Table);
@@ -370,26 +364,26 @@ ProcessHeaders(int linecount, char *idbuff)
 		    (void)sprintf(sendbuff, "%s", PERMuser);
 		}
 	    }
-	    HDR(_sender) = sendbuff;
+	    HDR(HDR__SENDER) = sendbuff;
 	}
 	else
-	    HDR(_sender) = NULL;
+	    HDR(HDR__SENDER) = NULL;
     }
 
     /* Set Date.  datebuff is used later for NNTP-Posting-Date, so we have
        to set it and it has to be the UTC date. */
     if (!makedate(-1, false, datebuff, sizeof(datebuff)))
         return "Can't generate date header";
-    if (HDR(_date) == NULL) {
+    if (HDR(HDR__DATE) == NULL) {
         if (PERMaccessconf->localtime) {
             if (!makedate(-1, true, localdatebuff, sizeof(localdatebuff)))
                 return "Can't generate local date header";
-	    HDR(_date) = localdatebuff;
+	    HDR(HDR__DATE) = localdatebuff;
 	} else {
-	    HDR(_date) = datebuff;
+	    HDR(HDR__DATE) = datebuff;
 	}
     } else {
-	if ((t = parsedate(HDR(_date), &Now)) == -1)
+	if ((t = parsedate(HDR(HDR__DATE), &Now)) == -1)
 	    return "Can't parse \"Date\" header";
 	if (t > Now.time + DATE_FUZZ)
 	    return "Article posted in the future";
@@ -397,42 +391,42 @@ ProcessHeaders(int linecount, char *idbuff)
 
     /* Newsgroups are checked later. */
 
-    if (HDR(_control)) {
-	if ((error = CheckControl(HDR(_control))) != NULL)
+    if (HDR(HDR__CONTROL)) {
+	if ((error = CheckControl(HDR(HDR__CONTROL))) != NULL)
 	    return error;
     }
     else {
-	p = HDR(_subject);
+	p = HDR(HDR__SUBJECT);
 	if (p == NULL)
 	    return "Required \"Subject\" header is missing";
         if (EQn(p, "cmsg ", 5)) {
-            HDR(_control) = p + 5;
-            if ((error = CheckControl(HDR(_control))) != NULL)
+            HDR(HDR__CONTROL) = p + 5;
+            if ((error = CheckControl(HDR(HDR__CONTROL))) != NULL)
                 return error;
         }
     }
 
     /* Set Message-ID */
-    if (HDR(_messageid) == NULL) {
-	HDR(_messageid) = idbuff;
+    if (HDR(HDR__MESSAGEID) == NULL) {
+	HDR(HDR__MESSAGEID) = idbuff;
     }
 
     /* Set Path */
-    if (HDR(_path) == NULL) {
+    if (HDR(HDR__PATH) == NULL) {
 	/* Note that innd will put host name here for us. */
-	HDR(_path) = PATHMASTER;
+	HDR(HDR__PATH) = PATHMASTER;
 	if (VirtualPathlen > 0)
 	    addvirtual = TRUE;
     } else if (PERMaccessconf->strippath) {
 	/* Here's where to do Path changes for new Posts. */
-	if ((p = strrchr(HDR(_path), '!')) != NULL) {
+	if ((p = strrchr(HDR(HDR__PATH), '!')) != NULL) {
 	    p++;
 	    if (*p == '\0') {
-		HDR(_path) = PATHMASTER;
+		HDR(HDR__PATH) = PATHMASTER;
 		if (VirtualPathlen > 0)
 		    addvirtual = TRUE;
 	    } else {
-		HDR(_path) = p;
+		HDR(HDR__PATH) = p;
 		if ((VirtualPathlen > 0) &&
 		    !EQ(p, PERMaccessconf->pathhost))
 		    addvirtual = TRUE;
@@ -441,9 +435,9 @@ ProcessHeaders(int linecount, char *idbuff)
 	    addvirtual = TRUE;
     } else {
 	if ((VirtualPathlen > 0) &&
-	    (p = strchr(HDR(_path), '!')) != NULL) {
+	    (p = strchr(HDR(HDR__PATH), '!')) != NULL) {
 	    *p = '\0';
-	    if (!EQ(HDR(_path), PERMaccessconf->pathhost))
+	    if (!EQ(HDR(HDR__PATH), PERMaccessconf->pathhost))
 		addvirtual = TRUE;
 	    *p = '!';
 	} else if (VirtualPathlen > 0)
@@ -452,9 +446,9 @@ ProcessHeaders(int linecount, char *idbuff)
     if (addvirtual) {
 	if (newpath != NULL)
 	    DISPOSE(newpath);
-	newpath = NEW(char, VirtualPathlen + strlen(HDR(_path)) + 1);
-	sprintf(newpath, "%s%s", VirtualPath, HDR(_path));
-	HDR(_path) = newpath;
+	newpath = NEW(char, VirtualPathlen + strlen(HDR(HDR__PATH)) + 1);
+	sprintf(newpath, "%s%s", VirtualPath, HDR(HDR__PATH));
+	HDR(HDR__PATH) = newpath;
     }
     
 
@@ -462,14 +456,14 @@ ProcessHeaders(int linecount, char *idbuff)
     /* Sender; set above. */
 
     /* Check Expires. */
-    if (HDR(_expires) && parsedate(HDR(_expires), &Now) == -1)
+    if (HDR(HDR__EXPIRES) && parsedate(HDR(HDR__EXPIRES), &Now) == -1)
 	return "Can't parse \"Expires\" header";
 
     /* References; left alone. */
     /* Control; checked above. */
 
     /* Distribution. */
-    if ((p = HDR(_distribution)) != NULL) {
+    if ((p = HDR(HDR__DISTRIBUTION)) != NULL) {
 	p = COPY(p);
 	error = CheckDistribution(p);
 	DISPOSE(p);
@@ -478,10 +472,10 @@ ProcessHeaders(int linecount, char *idbuff)
     }
 
     /* Set Organization */
-    if (HDR(_organization) == NULL
+    if (HDR(HDR__ORGANIZATION) == NULL
      && (p = PERMaccessconf->organization) != NULL) {
 	(void)strcpy(orgbuff, p);
-	HDR(_organization) = orgbuff;
+	HDR(HDR__ORGANIZATION) = orgbuff;
     }
 
     /* Keywords; left alone. */
@@ -490,16 +484,16 @@ ProcessHeaders(int linecount, char *idbuff)
 
     /* Set Lines */
     (void)sprintf(linebuff, "%d", linecount);
-    HDR(_lines) = linebuff;
+    HDR(HDR__LINES) = linebuff;
 
     /* Supersedes; left alone. */
 
     /* NNTP-Posting host; set. */
     if (PERMaccessconf->addnntppostinghost) 
-    HDR(_nntpposthost) = ClientHost;
+    HDR(HDR__NNTPPOSTINGHOST) = ClientHost;
     /* NNTP-Posting-Date - not in RFC (yet) */
     if (PERMaccessconf->addnntppostingdate)
-    HDR(_nntppostdate) = datebuff;
+    HDR(HDR__NNTPPOSTINGDATE) = datebuff;
 
     /* X-Trace; set */
     t = time((time_t *)NULL) ;
@@ -515,7 +509,7 @@ ProcessHeaders(int linecount, char *idbuff)
 	p, (long) t, (long) pid, ClientIp,
 	gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
 	gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
-    HDR (_xtrace) = tracebuff ;
+    HDR (HDR__XTRACE) = tracebuff ;
 
     /* X-Complaints-To; set */
     if ((p = PERMaccessconf->complaints) != NULL)
@@ -526,13 +520,13 @@ ProcessHeaders(int linecount, char *idbuff)
       else
 	sprintf (complaintsbuff, "%s", NEWSMASTER);
     }
-    HDR(_xcomplaintsto) = complaintsbuff ;
+    HDR(HDR__XCOMPLAINTSTO) = complaintsbuff ;
 
     /* Clear out some headers that should not be here */
     if (PERMaccessconf->strippostcc) {
-	HDR(_cc) = NULL;
-	HDR(_bcc) = NULL;
-	HDR(_to) = NULL;
+	HDR(HDR__CC) = NULL;
+	HDR(HDR__BCC) = NULL;
+	HDR(HDR__TO) = NULL;
     }
     /* Now make sure everything is there. */
     for (hp = Table; hp < ENDOF(Table); hp++)
@@ -685,14 +679,14 @@ ValidNewsgroups(char *hdr, char **modgroup)
     bool		FoundOne;
     int                 flag;
 
-    p = HDR(_control);
+    p = HDR(HDR__CONTROL);
     IsNewgroup = p && EQn(p, "newgroup", 8);
     groups = COPY(hdr);
     if ((p = strtok(groups, NGSEPS)) == NULL)
 	return "Can't parse newsgroups line";
 
     /* Don't mail article if just checking Followup-To line. */
-    approved = HDR(_approved) != NULL || modgroup == NULL;
+    approved = HDR(HDR__APPROVED) != NULL || modgroup == NULL;
 
     Error[0] = '\0';
     FoundOne = FALSE;
@@ -763,9 +757,9 @@ ValidNewsgroups(char *hdr, char **modgroup)
     }
 
     p = DDend(h);
-    if (HDR(_distribution) == NULL && *p) {
+    if (HDR(HDR__DISTRIBUTION) == NULL && *p) {
 	(void)strcpy(distbuff, p);
-	HDR(_distribution) = distbuff;
+	HDR(HDR__DISTRIBUTION) = distbuff;
     }
     DISPOSE(p);
     return NULL;
@@ -802,7 +796,7 @@ OfferArticle(buff, buffsize, FromServer, ToServer)
 {
     static char		CANTSEND[] = "Can't send %s to server, %s";
 
-    (void)fprintf(ToServer, "ihave %s\r\n", HDR(_messageid));
+    (void)fprintf(ToServer, "ihave %s\r\n", HDR(HDR__MESSAGEID));
     if (FLUSH_ERROR(ToServer)
      || fgets(buff, buffsize, FromServer) == NULL) {
 	(void)sprintf(buff, CANTSEND, "IHAVE", strerror(errno));
@@ -970,13 +964,13 @@ ARTpost(article, idbuff)
     }
     if ((error = ProcessHeaders(i, idbuff)) != NULL)
 	return error;
-    if (i == 0 && HDR(_control) == NULL)
+    if (i == 0 && HDR(HDR__CONTROL) == NULL)
 	return "Article is empty";
 
-    if ((error = ValidNewsgroups(HDR(_newsgroups), &modgroup)) != NULL)
+    if ((error = ValidNewsgroups(HDR(HDR__NEWSGROUPS), &modgroup)) != NULL)
 	return error;
     
-    strncpy(frombuf, HDR(_from), sizeof(frombuf) - 1);
+    strncpy(frombuf, HDR(HDR__FROM), sizeof(frombuf) - 1);
     frombuf[sizeof(frombuf) - 1] = '\0';
     for (i = 0, p = frombuf;p < frombuf + sizeof(frombuf);)
 	if ((p = strchr(p, '\n')) == NULL)
@@ -999,7 +993,7 @@ ARTpost(article, idbuff)
 	    DISPOSE(modgroup);
 	return "From: address not in Internet syntax";
     }
-    if ((p = HDR(_followupto)) != NULL
+    if ((p = HDR(HDR__FOLLOWUPTO)) != NULL
      && !EQ(p, "poster")
      && (error = ValidNewsgroups(p, (char **)NULL)) != NULL) {
 	if (modgroup)
@@ -1023,7 +1017,7 @@ ARTpost(article, idbuff)
 	    if (modgroup)
 		sprintf(idbuff, "(mailed to moderator for %s)", modgroup);
 	    else
-		(void)strncpy(idbuff, HDR(_messageid), SMBUF - 1);
+		(void)strncpy(idbuff, HDR(HDR__MESSAGEID), SMBUF - 1);
 	    idbuff[SMBUF - 1] = '\0';
 	}
 	if (strncmp(p, "DROP", 4) == 0) {
@@ -1161,13 +1155,13 @@ ARTpost(article, idbuff)
     /* Send a quit and close down */
     SendQuit(FromServer, ToServer);
     if (idbuff) {
-	(void)strncpy(idbuff, HDR(_messageid), SMBUF - 1);
+	(void)strncpy(idbuff, HDR(HDR__MESSAGEID), SMBUF - 1);
 	idbuff[SMBUF - 1] = '\0';
     }
 
     /* Tracking */
     if (PERMaccessconf->readertrack) {
-	strcat(TrackID,HDR(_messageid));
+	strcat(TrackID,HDR(HDR__MESSAGEID));
 	if ((ftd=fopen(TrackID,"w")) != NULL) {
 		for (hp = Table; hp < ENDOF(Table); hp++)
 			if (hp->Value) {

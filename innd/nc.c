@@ -917,7 +917,7 @@ NCproc(CHANNEL *cp)
 	cp->Start = cp->Next;
 
 	/* Write a local cancel entry so nobody else gives it to us. */
-	hash = HashMessageID(HDR(_message_id));
+	hash = HashMessageID(HDR(HDR__MESSAGE_ID));
 	if (!HIShavearticle(hash) && !HISremember(hash)) 
 	  syslog(L_ERROR, "%s cant write %s", LogName, HashToText(hash)); 
 	/* Clear the work-in-progress entry. */
