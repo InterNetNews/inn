@@ -52,12 +52,12 @@ install-man5:
 	done
 
 # auth_krb5 is conditionally compiled, so handle it specially.  actsync(8)
-# also covers actsynd.
+# also covers actsyncd.
 install-man8:
 	for M in $(SEC8) ; do \
 	    $(CP_MAN) $$M $D$(MAN8)/$$M ; \
 	done
-	rm -f $(MAN8)/actsynd.8
+	rm -f $(MAN8)/actsyncd.8
 	cd $(MAN8) && $(LN_S) actsync.8 actsyncd.8
 	if [ x"$(KRB5_AUTH)" != x ] ; then \
 	    $(CP_MAN) auth_krb5.8 $D$(MAN8)/auth_krb5.8 ; \
