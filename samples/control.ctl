@@ -1077,6 +1077,19 @@ checkgroups:gcn@news.nic.it:it.*:verify-gcn@news.nic.it
 newgroup:gcn@news.nic.it:it.*:verify-gcn@news.nic.it
 rmgroup:gcn@news.nic.it:it.*:verify-gcn@news.nic.it
 
+## IT-ALT (Alternate Italian)
+# Contact: it-alt@x-privat.org
+# URL: http://www.x-privat.org/it-alt/
+# Admin group: it-alt.config
+# Key URL: http://www.x-privat.org/it-alt/pgp.txt
+# Key fingerprint = 01 AE 93 F7 CE 3B C1 F4  E0 35 8E 23 C4 04 A2 30
+# *PGP*   See comment at top of file.
+newgroup:*:it-alt.*:drop
+rmgroup:*:it-alt.*:drop
+checkgroups:it-alt@x-privat.org:it-alt.*:verify-it-alt@x-privat.org
+newgroup:it-alt@x-privat.org:it-alt.*:verify-it-alt@x-privat.org
+rmgroup:it-alt@x-privat.org:it-alt.*:verify-it-alt@x-privat.org
+
 ## ITALIA (Italy)
 # Contact: news@news.cineca.it
 # URL: http://news.cineca.it/italia/
