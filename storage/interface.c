@@ -533,39 +533,32 @@ static BOOL MatchGroups(const char *g, int num, char **patterns) {
     return wanted;
 }
 
-TOKEN SMstore(const ARTHANDLE article) {
+STORAGE_SUB *SMgetsub(const ARTHANDLE article) {
     STORAGE_SUB         *sub;
-    TOKEN               result;
     char                *groups;
     char		*expire;
     time_t		expiretime;
 
-    if (!SMopenmode) {
-	result.type = TOKEN_EMPTY;
-	SMseterror(SMERR_INTERNAL, "read only storage api");
-	return result;
-    }
-    result.type = TOKEN_EMPTY;
     if (!article.data || !article.len) {
 	SMseterror(SMERR_BADHANDLE, NULL);
-	return result;
+	return NULL;
     }
 
     if (innconf->storeonxref) {
 	if ((groups = (char *)HeaderFindMem(article.data, article.len, "Xref", 4)) == NULL) {
 	    SMseterror(SMERR_UNDEFINED, "Could not find Xref header");
-	    return result;
+	    return NULL;
 	}
 	/* skip pathhost */
 	if ((groups = strchr(groups, ' ')) == NULL) {
 	    SMseterror(SMERR_UNDEFINED, "Could not find pathhost in Xref header");
-	    return result;
+	    return NULL;
 	}
 	for (groups++; *groups == ' '; groups++);
     } else {
 	if ((groups = (char *)HeaderFindMem(article.data, article.len, "Newsgroups", 10)) == NULL) {
 	    SMseterror(SMERR_UNDEFINED, "Could not find Newsgroups header");
-	    return result;
+	    return NULL;
 	}
     }
 
@@ -594,11 +587,26 @@ TOKEN SMstore(const ARTHANDLE article) {
 	    (!sub->maxexpire || (expiretime <= sub->maxexpire)) &&
 	    MatchGroups(groups, sub->numpatterns, sub->patterns)) {
 	    if (InitMethod(typetoindex[sub->type]))
-		return storage_methods[typetoindex[sub->type]].store(article, sub->class);
+		return sub;
 	}
     }
+    return NULL;
+}
 
-    return result;
+TOKEN SMstore(const ARTHANDLE article) {
+    STORAGE_SUB         *sub;
+    TOKEN               result;
+
+    if (!SMopenmode) {
+	result.type = TOKEN_EMPTY;
+	SMseterror(SMERR_INTERNAL, "read only storage api");
+	return result;
+    }
+    result.type = TOKEN_EMPTY;
+    if ((sub = SMgetsub(article)) == NULL) {
+	return result;
+    }
+    return storage_methods[typetoindex[sub->type]].store(article, sub->class);
 }
 
 ARTHANDLE *SMretrieve(const TOKEN token, const RETRTYPE amount) {
