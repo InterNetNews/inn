@@ -169,11 +169,11 @@ ReopenLog(FILE *F)
                       (F == stdout) ? _PATH_LOGFILE : _PATH_ERRLOG);
     oldpath = concat(path, ".old", (char *) 0);
     if (rename(path, oldpath) < 0)
-        syswarn("cant rename %s to %s", path, oldpath);
+        syswarn("SERVER cant rename %s to %s", path, oldpath);
     free(oldpath);
     mask = umask(033);
     if (freopen(path, "a", F) != F)
-        sysdie("cant freopen %s", path);
+        sysdie("SERVER cant freopen %s", path);
     free(path);
     umask(mask);
     if (BufferedLogs)
@@ -231,7 +231,7 @@ main(int ac, char *av[])
     /* Make sure innd is not running as root.  innd must be either started
        via inndstart or use a non-privileged port. */
     if (getuid() == 0 || geteuid() == 0)
-        die("must be run as user news, not root (use inndstart)");
+        die("SERVER must be run as user news, not root (use inndstart)");
 
     /* Handle malloc debugging. */
 #if	defined(_DEBUG_MALLOC_INC)
@@ -399,7 +399,7 @@ main(int ac, char *av[])
     if (Debug) {
 	xsignal(SIGINT, catch_terminate);
         if (chdir(innconf->patharticles) < 0)
-            sysdie("cant chdir to %s", innconf->patharticles);
+            sysdie("SERVER cant chdir to %s", innconf->patharticles);
     } else {
 	if (ShouldFork)
             daemonize(innconf->patharticles);
@@ -410,12 +410,12 @@ main(int ac, char *av[])
            normally fully buffered. */
         path = concatpath(innconf->pathlog, _PATH_LOGFILE);
         if (freopen(path, "a", stdout) == NULL)
-            sysdie("cant freopen stdout to %s", path);
+            sysdie("SERVER cant freopen stdout to %s", path);
         setvbuf(stdout, NULL, _IOFBF, LOG_BUFSIZ);
         free(path);
         path = concatpath(innconf->pathlog, _PATH_ERRLOG);
         if (freopen(path, "a", stderr) == NULL)
-            sysdie("cant freopen stderr to %s", path);
+            sysdie("SERVER cant freopen stderr to %s", path);
         setvbuf(stderr, NULL, _IOLBF, BUFSIZ);
         free(path);
     }
@@ -424,7 +424,7 @@ main(int ac, char *av[])
 
     /* Initialize overview if necessary. */
     if (innconf->enableoverview && !OVopen(OV_WRITE))
-        die("cant open overview method");
+        die("SERVER cant open overview method");
 
     /* Always attempt to increase the number of open file descriptors.  If
        we're not root, this may just fail quietly. */
@@ -483,9 +483,9 @@ main(int ac, char *av[])
     /* Initialize the storage subsystem. */
     flag = true;
     if (!SMsetup(SM_RDWR, &flag) || !SMsetup(SM_PREOPEN, &flag))
-        die("cant set up the storage subsystem");
+        die("SERVER cant set up storage manager");
     if (!SMinit())
-        die("cant initialize the storage subsystem: %s", SMerrorstr);
+        die("SERVER cant initalize storage manager: %s", SMerrorstr);
 
 #if	defined(_DEBUG_MALLOC_INC)
     m.i = 1;
@@ -544,11 +544,11 @@ main(int ac, char *av[])
  
     /* And away we go... */
     if (ShouldRenumber) {
-        syslog(LOG_NOTICE, "renumbering");
+        syslog(LOG_NOTICE, "SERVER renumbering");
         if (!ICDrenumberactive())
-            die("cant renumber");
+            die("SERVER cant renumber");
     }
-    syslog(LOG_NOTICE, "starting");
+    syslog(LOG_NOTICE, "SERVER starting");
     CHANreadloop();
 
     /* CHANreadloop should never return. */
