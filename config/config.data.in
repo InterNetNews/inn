@@ -384,6 +384,10 @@ MISSING_SRC		@MISSING_SRC@
 ##[autoconf]
 #### =()<MISSING_OBJ		@<MISSING_OBJ>@>()=
 MISSING_OBJ		@MISSING_OBJ@
+# do we have inet_aton?  If not, use supplied version
+##[autoconf]
+#### =()<MISSING_INET_ATON	@<MISSING_INET_ATON>@>()=
+MISSING_INET_ATON	@MISSING_INET_ATON@
 
 
 ##
