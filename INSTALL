@@ -414,7 +414,7 @@ Choosing an Article Storage Format
         over article retention times.
 
         Disadvantages:  Takes a very fast file system and I/O system to keep
-        up with current Usenet traffic volues due to file system overhead. 
+        up with current Usenet traffic volumes due to file system overhead. 
         Groups with heavy traffic tend to create a bottleneck because of
         inefficiencies in storing large numbers of article files in a single
         directory.  Requires a nightly expire program to delete old articles
