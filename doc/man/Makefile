@@ -5,7 +5,7 @@ include ../../Makefile.global
 ##  Edit these if you need to.
 MANFLAGS = -c $(OWNER) -m 0444 -B .OLD
 
-SEC1	= ckpasswd.1 convdate.1 getlist.1 grephistory.1 inews.1 \
+SEC1	= ckpasswd.1 convdate.1 fastrm.1 getlist.1 grephistory.1 inews.1 \
 	innconfval.1 innfeed.1 nntpget.1 rnews.1 shlock.1 shrinkfile.1 \
 	startinnfeed.1 simpleftp.1
 
@@ -24,7 +24,7 @@ SEC5	= active.5 buffindexed.conf.5 control.ctl.5 cycbuff.conf.5 \
 
 SEC8	= actsync.8 actsyncd.8 archive.8 batcher.8 buffchan.8 cnfsheadconf.8 \
 	cnfsstat.8 controlchan.8 ctlinnd.8 cvtbatch.8 expire.8 expireover.8 \
-	expirerm.8 fastrm.8 filechan.8 inncheck.8 innd.8 inndf.8 inndstart.8 \
+	expirerm.8 filechan.8 inncheck.8 innd.8 inndf.8 inndstart.8 \
 	innreport.8 innstat.8 innwatch.8 innxbatch.8 innxmit.8 mailpost.8 \
 	makedbz.8 makehistory.8 mod-active.8 news.daily.8 news2mail.8 \
 	newsrequeue.8 nnrpd.8 nntpsend.8 ovdb_recover.8 ovdb_upgrade.8 \
@@ -32,6 +32,7 @@ SEC8	= actsync.8 actsyncd.8 archive.8 batcher.8 buffchan.8 cnfsheadconf.8 \
 	send-uucp.8 sm.8 tally.control.8 writelog.8 dbprocs.8
 
 INSTALLED_SEC1 =	$D$(MAN1)/ckpasswd.1 $D$(MAN1)/convdate.1 \
+			$D$(MAN1)/fastrm.1 \
 			$D$(MAN1)/getlist.1 $D$(MAN1)/grephistory.1 \
 			$D$(MAN1)/inews.1 $D$(MAN1)/innconfval.1 \
 			$D$(MAN1)/innfeed.1 $D$(MAN1)/nntpget.1 \
@@ -64,7 +65,7 @@ INSTALLED_SEC8 =	$D$(MAN8)/actsync.8 $D$(MAN8)/actsyncd.8 \
 			$D$(MAN8)/cnfsstat.8 $D$(MAN8)/controlchan.8 \
 			$D$(MAN8)/ctlinnd.8 $D$(MAN8)/cvtbatch.8 \
 			$D$(MAN8)/expire.8 $D$(MAN8)/expireover.8 \
-			$D$(MAN8)/expirerm.8 $D$(MAN8)/fastrm.8 \
+			$D$(MAN8)/expirerm.8 \
 			$D$(MAN8)/filechan.8 $D$(MAN8)/inncheck.8 \
 			$D$(MAN8)/innd.8 $D$(MAN8)/inndf.8 \
 			$D$(MAN8)/inndstart.8 $D$(MAN8)/innreport.8 \
@@ -113,6 +114,7 @@ COPY	= $(SHELL) ./putman.sh $(MANPAGESTYLE) "$(MANFLAGS)"
 
 $D$(MAN1)/ckpasswd.1:		ckpasswd.1	   ; $(COPY) $? $@
 $D$(MAN1)/convdate.1:		convdate.1	   ; $(COPY) $? $@
+$D$(MAN1)/fastrm.1:		fastrm.1           ; $(COPY) $? $@
 $D$(MAN1)/getlist.1:		getlist.1	   ; $(COPY) $? $@
 $D$(MAN1)/grephistory.1:	grephistory.1	   ; $(COPY) $? $@
 $D$(MAN1)/inews.1:		inews.1		   ; $(COPY) $? $@
@@ -173,7 +175,6 @@ $D$(MAN8)/dbprocs.8:		dbprocs.8          ; $(COPY) $? $@
 $D$(MAN8)/expire.8:		expire.8           ; $(COPY) $? $@
 $D$(MAN8)/expireover.8:		expireover.8       ; $(COPY) $? $@
 $D$(MAN8)/expirerm.8:		expirerm.8         ; $(COPY) $? $@
-$D$(MAN8)/fastrm.8:		fastrm.8           ; $(COPY) $? $@
 $D$(MAN8)/filechan.8:		filechan.8         ; $(COPY) $? $@
 $D$(MAN8)/inncheck.8:		inncheck.8         ; $(COPY) $? $@
 $D$(MAN8)/innd.8:		innd.8             ; $(COPY) $? $@
