@@ -103,7 +103,7 @@ main(void)
     ok(44, strcmp(vector->strings[0], "This is a ") == 0);
     ok(45, strcmp(vector->strings[1], "es") == 0);
     ok(46, strcmp(vector->strings[2], ".") == 0);
-    ok(47, vector->strings[0] == string);
+    ok(47, vector->strings[0] != string);
     p = vector_join(vector, "fe");
     ok(48, strcmp(p, "This is a feesfe.") == 0);
     free(p);
