@@ -612,6 +612,10 @@ FUNCTYPE CMDnewgroups(int ac, char *av[])
     /* Parse the date. */
     local = (ac > 3 && (caseEQ(av[3], "GMT") || caseEQ(av[3], "UTC")));
     date = parsedate_nntp(av[1], av[2], local);
+    if (date == (time_t) -1) {
+        Reply("%d Bad date\r\n", NNTP_SYNTAX_VAL);
+        return;
+    }
 
     if (ac < 5)
 	All = TRUE;
