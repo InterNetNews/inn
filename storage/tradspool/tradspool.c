@@ -12,6 +12,7 @@
 #include <syslog.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 
 #ifndef MAP_FAILED
 # define MAP_FAILED     (caddr_t) -1
