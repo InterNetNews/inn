@@ -206,8 +206,7 @@ ICDwritevactive(struct iovec *vp, int vpcount)
 	 newvp = xmalloc((vpcount + 1) * sizeof(struct iovec));
 	 for (i = 0; i < vpcount; i++)
 	      newvp[i] = vp[i];
-	 filler = xmalloc(padactsize);
-	 memset(filler, '\0', padactsize);
+	 filler = xcalloc(padactsize, 1);
 	 *filler = '.';
 	 filler[padactsize - 1] = '\n';
 	 newvp[vpcount].iov_base = filler;

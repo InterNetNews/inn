@@ -1307,8 +1307,7 @@ int ovdb_open_berkeleydb(int mode, int flags)
 
 #if DB_VERSION_MAJOR == 2
 
-    OVDBenv = xmalloc(sizeof(DB_ENV));
-    memset(OVDBenv, 0, sizeof(DB_ENV));
+    OVDBenv = xcalloc(1, sizeof(DB_ENV));
 
     OVDBenv->db_errcall = OVDBerror;
     OVDBenv->mp_size = ovdb_conf.cachesize;
@@ -1412,8 +1411,7 @@ bool ovdb_open(int mode)
     _dbinfo.bt_minkey = ovdb_conf.minkey;
 #endif
 
-    dbs = xmalloc(ovdb_conf.numdbfiles * sizeof(DB *));
-    memset(dbs, 0, sizeof(DB *) * ovdb_conf.numdbfiles);
+    dbs = xcalloc(ovdb_conf.numdbfiles, sizeof(DB *));
     
     if(!oneatatime) {
 	for(i = 0; i < ovdb_conf.numdbfiles; i++) {

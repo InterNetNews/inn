@@ -1631,8 +1631,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 	return -1;
     }
 
-    newtocarray = xmalloc((head.High - newlow + 1) * sizeof(CAFTOCENT));
-    memset(newtocarray, 0, sizeof(CAFTOCENT)*(head.High - newlow+1));
+    newtocarray = xcalloc((head.High - newlow + 1), sizeof(CAFTOCENT));
 
     if (fseeko(outfile, 0, SEEK_SET) < 0) {
 	perror(newpath);
@@ -1661,8 +1660,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     blocksize = newhead.BlockSize;
     if (blocksize == 0) blocksize=CAF_DEFAULT_BLOCKSIZE;
 
-    zerobuff = xmalloc(blocksize);
-    memset(zerobuff, 0, blocksize);
+    zerobuff = xcalloc(blocksize, 1);
 
     /* seek to end of output file/place to start writing new articles */
     fseeko(outfile, 0, SEEK_END);

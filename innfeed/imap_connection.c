@@ -2708,10 +2708,7 @@ static conn_ret imap_ParseCapability(char *string, imap_capabilities_t **caps)
 
     /* allocate the caps structure if it doesn't already exist */
     if ( (*caps) == NULL)
-    {
-	(*caps) = (imap_capabilities_t *) malloc( sizeof(imap_capabilities_t));
-	memset( (*caps), 0, sizeof(imap_capabilities_t));
-    }
+	(*caps) = xcalloc(1, sizeof(imap_capabilities_t));
 
     while ( (*str) != '\0')
     {

@@ -599,8 +599,7 @@ static bool ovbuffinit_disks(void) {
 	ovflushhead(ovbuff);
     }
 #ifdef OV_DEBUG
-    ovbuff->trace = xmalloc(ovbuff->totalblk * sizeof(ov_trace_array));
-    memset(ovbuff->trace, '\0', sizeof(struct ov_trace_array) * ovbuff->totalblk);
+    ovbuff->trace = xcalloc(ovbuff->totalblk, sizeof(ov_trace_array));
 #endif /* OV_DEBUG */
     ovlock(ovbuff, INN_LOCK_UNLOCK);
   }
@@ -748,9 +747,8 @@ static OV ovblocknew(void) {
   }
   trace = &ovbuff->trace[ovbuff->freeblk];
   if (trace->ov_trace == NULL) {
-    trace->ov_trace = xmalloc(OV_TRACENUM * sizeof(struct ov_trace));
+    trace->ov_trace = xcalloc(OV_TRACENUM, sizeof(struct ov_trace));
     trace->max = OV_TRACENUM;
-    memset(trace->ov_trace, '\0', sizeof(struct ov_trace) * OV_TRACENUM);
   } else if (trace->cur + 1 == trace->max) {
     trace->max += OV_TRACENUM;
     trace->ov_trace = xrealloc(trace->ov_trace, trace->max * sizeof(struct ov_trace));
@@ -801,9 +799,8 @@ static void ovblockfree(OV ov) {
   }
   trace = &ovbuff->trace[ov.blocknum];
   if (trace->ov_trace == NULL) {
-    trace->ov_trace = xmalloc(OV_TRACENUM * sizeof(struct ov_trace));
+    trace->ov_trace = xcalloc(OV_TRACENUM, sizeof(struct ov_trace));
     trace->max = OV_TRACENUM;
-    memset(trace->ov_trace, '\0', sizeof(struct ov_trace) * OV_TRACENUM);
   } else if (trace->cur + 1 == trace->max) {
     trace->max += OV_TRACENUM;
     trace->ov_trace = xrealloc(trace->ov_trace, trace->max * sizeof(struct ov_trace));

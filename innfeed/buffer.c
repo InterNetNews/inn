@@ -382,11 +382,10 @@ bool concatBuffer (Buffer dest, Buffer src)
       
   if ((dest->dataSize + src->dataSize) > dest->memSize)
     {
-      char *newMem = xmalloc (dest->dataSize + src->dataSize + 1) ;
+      char *newMem = xcalloc (dest->dataSize + src->dataSize + 1, 1) ;
 
       bufferByteCount += ((dest->dataSize + src->dataSize) - dest->memSize) ;
       
-      memset (newMem, 0, dest->dataSize + src->dataSize + 1) ;
       memcpy (newMem, dest->mem, dest->dataSize) ;
 
       ASSERT (dest->mem != NULL) ;

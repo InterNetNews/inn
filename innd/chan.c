@@ -93,10 +93,9 @@ CHANsetup(int i)
     FD_ZERO(&WCHANmask);
     CHANshutdown();
     CHANtablesize = i;
-    CHANtable = xmalloc(CHANtablesize * sizeof(CHANNEL));
-    memset(CHANtable, 0, CHANtablesize * sizeof *CHANtable);
+    CHANtable = xcalloc(CHANtablesize, sizeof(CHANNEL));
     CHANnull.NextLog = innconf->chaninacttime;
-    memset( &CHANnull.Address, 0, sizeof( CHANnull.Address ) );
+    memset(&CHANnull.Address, 0, sizeof(CHANnull.Address));
     for (cp = CHANtable; --i >= 0; cp++)
 	*cp = CHANnull;
 }

@@ -862,8 +862,7 @@ SITEparsefile(bool StartSite)
   /* Count the number of sites. */
   for (strings = SITEreadfile(false), nSites = 0; strings[nSites]; nSites++)
     continue;
-  Sites = xmalloc(nSites * sizeof(SITE));
-  memset(Sites, '\0', nSites * sizeof(SITE));
+  Sites = xcalloc(nSites, sizeof(SITE));
 
   /* Set up scratch subscription list. */
   subbed = xmalloc(nGroups);

@@ -667,8 +667,7 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	break;
       case PERMresolv:
       case PERMresprog:
-        m = xmalloc(sizeof(METHOD));
-	memset(m, 0, sizeof(METHOD));
+        m = xcalloc(1, sizeof(METHOD));
 	memset(ConfigBit, '\0', ConfigBitsize);
 	GrowArray((void***) &curauth->res_methods, (void*) m);
 
@@ -696,8 +695,7 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
       case PERMauth:
       case PERMperl_auth:
       case PERMauthprog:
-        m = xmalloc(sizeof(METHOD));
-	memset(m, 0, sizeof(METHOD));
+        m = xcalloc(1, sizeof(METHOD));
 	memset(ConfigBit, '\0', ConfigBitsize);
 	GrowArray((void***) &curauth->auth_methods, (void*) m);
 	if (oldtype == PERMauthprog) {
@@ -1004,8 +1002,7 @@ static void PERMvectortoaccess(ACCESSGROUP *acc, const char *name, struct vector
     char        *str;
     unsigned int i;
 
-    file	= xmalloc(sizeof(CONFFILE));
-    memset(file, 0, sizeof(CONFFILE));
+    file = xcalloc(1, sizeof(CONFFILE));
     file->array = access_vec->strings;
     file->array_len = access_vec->count;
  
@@ -1146,8 +1143,7 @@ static void PERMreadfile(char *filename)
 		    if (curgroup && curgroup->auth)
 			curauth = copy_authgroup(curgroup->auth);
 		    else {
-			curauth = xmalloc(sizeof(AUTHGROUP));
-			memset(curauth, 0, sizeof(AUTHGROUP));
+			curauth = xcalloc(1, sizeof(AUTHGROUP));
 			memset(ConfigBit, '\0', ConfigBitsize);
                         SetDefaultAuth(curauth);
 		    }
@@ -1160,8 +1156,7 @@ static void PERMreadfile(char *filename)
 		    if (curgroup && curgroup->access)
 			curaccess = copy_accessgroup(curgroup->access);
 		    else {
-			curaccess = xmalloc(sizeof(ACCESSGROUP));
-			memset(curaccess, 0, sizeof(ACCESSGROUP));
+			curaccess = xcalloc(1, sizeof(ACCESSGROUP));
 			memset(ConfigBit, '\0', ConfigBitsize);
 			SetDefaultAccess(curaccess);
 		    }
@@ -1199,13 +1194,11 @@ static void PERMreadfile(char *filename)
 	      case PERMdefuser:
 	      case PERMdefdomain:
 		if (curgroup == NULL) {
-		    curgroup = xmalloc(sizeof(GROUP));
-		    memset(curgroup, 0, sizeof(GROUP));
+		    curgroup = xcalloc(1, sizeof(GROUP));
 		    memset(ConfigBit, '\0', ConfigBitsize);
 		}
 		if (curgroup->auth == NULL) {
-		    curgroup->auth = xmalloc(sizeof(AUTHGROUP));
-		    memset(curgroup->auth, 0, sizeof(AUTHGROUP));
+		    curgroup->auth = xcalloc(1, sizeof(AUTHGROUP));
 		    memset(ConfigBit, '\0', ConfigBitsize);
                     SetDefaultAuth(curgroup->auth);
 		}
@@ -1252,13 +1245,11 @@ static void PERMreadfile(char *filename)
 	      case PERMvirtualhost:
 	      case PERMnewsmaster:
 		if (!curgroup) {
-		    curgroup = xmalloc(sizeof(GROUP));
-		    memset(curgroup, 0, sizeof(GROUP));
+		    curgroup = xcalloc(1, sizeof(GROUP));
 		    memset(ConfigBit, '\0', ConfigBitsize);
 		}
 		if (!curgroup->access) {
-		    curgroup->access = xmalloc(sizeof(ACCESSGROUP));
-		    memset(curgroup->access, 0, sizeof(ACCESSGROUP));
+		    curgroup->access = xcalloc(1, sizeof(ACCESSGROUP));
 		    memset(ConfigBit, '\0', ConfigBitsize);
 		    SetDefaultAccess(curgroup->access);
 		}
@@ -1350,8 +1341,7 @@ void PERMgetaccess(char *nnrpaccess)
 	    ConfigBitsize = PERMMAX/8;
 	else
 	    ConfigBitsize = (PERMMAX - (PERMMAX % 8))/8 + 1;
-	ConfigBit = xmalloc(ConfigBitsize);
-	memset(ConfigBit, '\0', ConfigBitsize);
+	ConfigBit = xcalloc(ConfigBitsize, 1);
     }
     PERMreadfile(nnrpaccess);
 
@@ -1423,8 +1413,7 @@ void PERMlogin(char *uname, char *pass, char *errorstr)
 	    ConfigBitsize = PERMMAX/8;
 	else
 	    ConfigBitsize = (PERMMAX - (PERMMAX % 8))/8 + 1;
-	ConfigBit = xmalloc(ConfigBitsize);
-	memset(ConfigBit, '\0', ConfigBitsize);
+	ConfigBit = xcalloc(ConfigBitsize, 1);
     }
     /* The check in CMDauthinfo uses the value of PERMneedauth to know if
      * authentication succeeded or not.  By default, authentication doesn't
@@ -1494,8 +1483,7 @@ void PERMgetpermissions()
 	    ConfigBitsize = PERMMAX/8;
 	else
 	    ConfigBitsize = (PERMMAX - (PERMMAX % 8))/8 + 1;
-	ConfigBit = xmalloc(ConfigBitsize);
-	memset(ConfigBit, '\0', ConfigBitsize);
+	ConfigBit = xcalloc(ConfigBitsize, 1);
     }
     if (!success_auth) {
 	/* if we haven't successfully authenticated, we can't do anything. */
@@ -1526,8 +1514,7 @@ void PERMgetpermissions()
         perlAccess(ClientHost, ClientIpString, ServerHost, uname, access_vec);
         free(uname);
 
-        access_realms[0] = xmalloc(sizeof(ACCESSGROUP));
-        memset(access_realms[0], 0, sizeof(ACCESSGROUP));
+        access_realms[0] = xcalloc(1, sizeof(ACCESSGROUP));
 
         PERMvectortoaccess(access_realms[0], "perl-dyanmic", access_vec);
 
