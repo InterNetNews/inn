@@ -163,6 +163,7 @@ typedef struct _CHANNEL {
     int			Lastch;
     int			Rest;
     int			SaveUsed;
+    int                 ActiveConnects; /* Used by Per-Host Restrictions */
 } CHANNEL;
 
 
