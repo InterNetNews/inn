@@ -70,53 +70,6 @@ hurt to check this along with everything else.
 
 ------------------------------
 
-  Summary: Initial activity timer is shorter than three minutes
- Standard: draft-ietf-nntpext-base-13.txt, section 4
-  Version: 1.5 to CURRENT 2001-07-04
-Reference: nnrpd/nnrpd.c main()
- Severity: Violates MUST
-
-The standard says:
-
-    An NNTP server MAY have an inactivity autologout timer.  Such a timer
-    MUST be of at least three minutes duration.
-
-nnrpd has a hard-coded timeout of 10 seconds for an initial command.  Once
-at least one command has been received, the timeout becomes whatever was
-configured in inn.conf, but the standard doesn't appear to make an
-exception for an initial timeout.
-
-Impact:  Valid connections over extremely slow links may see the news
-server drop the connection before the first command is received.  This
-behavior has been seen in practice (we have bug reports about it).  It's
-also slightly annoying when debugging problems by hand over protocol.
-
-Suggested fix:  Use either the standard inactivity timeout period or a
-value of at least three minutes for the initial timeout.  Alternately, if
-the impact of this fix is too grave, propose that the standard be changed
-to allow a shorter timeout for the initial command.  Another alternative
-would be to make this timeout separately configurable, with a default that
-complies with the standard and warnings about setting it lower than that.
-
-Impact of fix:  The code has the following justification for its current
-behavior:
-
-    /*
-    ** Here is some defensive code to protect the news server from hosts,
-    ** mostly PC's, that sometimes make a connection and then never give
-    ** any commands.  The connection is abandoned, but we're never told
-    ** about it.  The first time the connection is read, it will have a
-    ** timeout value of INITIAL_TIMEOUT seconds.  All subsequent reads
-    ** will have the standard timeout of CLIENT_TIMEOUT seconds.
-    */
-
-A proliferation of such clients could cause an unacceptable number of
-forked nnrpd processes on the news server, impacting performance for the
-rest of the server.  It is unknown how many clients in current use have
-this problem.
-
-------------------------------
-
   Summary: Inactivity timer configuration isn't checked
  Standard: draft-ietf-nntpext-base-13.txt, section 4
   Version: 1.0 to CURRENT 2001-07-04
