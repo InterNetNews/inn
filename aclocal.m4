@@ -30,9 +30,23 @@ AC_REQUIRE([AM_PROG_LD])
 AC_REQUIRE([AM_PROG_NM])
 AC_REQUIRE([AC_PROG_LN_S])
 
-# Always use our own libtool.
-LIBTOOL='$(SHELL) $(top_builddir)/libtool'
+dnl Allow the --disable-libtool flag to stop using libtool
+LIBTOOL='$(SHELL) ../libtool'
+UPLIBTOOL='$(SHELL) ../../libtool'
+EXTOBJ='lo'
+EXTLIB='la'
+AC_ARG_ENABLE(libtool,
+[  --enable-libtool        use libtool for lib generation [default=yes]],
+[if test "$enableval" = no; then
+  LIBTOOL=''
+  UPLIBTOOL=''
+  EXTOBJ='o'
+  EXTLIB='a'
+fi])
 AC_SUBST(LIBTOOL)
+AC_SUBST(UPLIBTOOL)
+AC_SUBST(EXTOBJ)
+AC_SUBST(EXTLIB)
 
 dnl Allow the --disable-shared flag to stop us from building shared libs.
 AC_ARG_ENABLE(shared,

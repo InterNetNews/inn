@@ -19,8 +19,12 @@ NNTPLIB 	=
 # need to look before here .. you can though, if you really want
 
 CC	= @CC@
-LIBTOOL	= ../libtool
+LIBTOOL	= @LIBTOOL@
+UPLIBTOOL = @UPLIBTOOL@
+EXTOBJ  = @EXTOBJ@
+EXTLIB  = @EXTLIB@
 LIBCC	= $(LIBTOOL) @CC@
+UPLIBCC	= $(UPLIBTOOL) @CC@
 OUTPUT_OPTION	=
 GCFLAGS	= -I../include @CPPFLAGS@ @CFLAGS@
 LDFLAGS	= @LDFLAGS@
@@ -63,7 +67,7 @@ AWK	= @_PATH_AWK@
 
 SHELL	= /bin/sh
 @SET_MAKE@
-LIBNEWS = ../storage/libstorage.la ../lib/libinn.la
+LIBNEWS = ../storage/libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
 
 DESTDIR =
 D	= $(DESTDIR)
