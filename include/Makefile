@@ -26,7 +26,7 @@ depend tags ctags profiled:
 ##  Build rules.
 
 inn/system.h: config.h $(top)/support/mksystem
-	$(top)/support/mksystem config.h > $@
+	$(top)/support/mksystem $(AWK) config.h > $@
 
 inn/version.h: $(top)/support/mkversion $(top)/Makefile.global
 	$(top)/support/mkversion '$(VERSION)' '$(VERSION_EXTRA)' > $@
