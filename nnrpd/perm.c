@@ -15,11 +15,6 @@
 #include "conffile.h"
 #include "nnrpd.h"
 
-/* Error returns from inet_addr. */
-#ifndef INADDR_NONE
-# define INADDR_NONE 0xffffffff
-#endif
-
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
@@ -1492,20 +1487,21 @@ static int MatchHost(char *hostlist, char *host, char *ip)
 	    ret = wildmat(ip, pat);
 	    if (!ret && (p = strchr(pat, '/')) != (char *)NULL) {
 		int bits, c;
-		struct in_addr ia, net;
+		struct in_addr ia, net, tmp;
 		unsigned int mask;
 
 		*p = '\0';
-		ia.s_addr = inet_addr(ip);
-		net.s_addr = inet_addr(pat);
-		if (ia.s_addr != INADDR_NONE && net.s_addr != INADDR_NONE) {
+                if (inet_aton(ip, &ia) && inet_aton(pat, &net)) {
 		    if (strchr(p+1, '.') == (char *)NULL) {
 			mask = atoi(p+1);
 			for (bits = c = 0; c < mask && c < 32; c++)
 			    bits |= (1 << (31 - c));
 			mask = htonl(bits);
 		    } else {
-		        mask = inet_addr(p+1);
+                        if (inet_aton(p+1, &tmp))
+                            mask = tmp.s_addr;
+                        else
+                            continue;
 		    }
 		    if ((ia.s_addr & mask) == (net.s_addr & mask))
 			ret = TRUE;
@@ -1639,7 +1635,7 @@ static EXECSTUFF *ExecProg(char *arg0, char **args)
     pipe(rdfd);
     pipe(errfd);
     pipe(wrfd);
-    switch (pid = FORK()) {
+    switch (pid = vfork()) {
       case -1:
 	close(rdfd[0]);
 	close(rdfd[1]);
