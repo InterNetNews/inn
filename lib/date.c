@@ -32,6 +32,12 @@ static const char MONTH[12][4] = {
     "Nov", "Dec"
 };
 
+/* Complete month names, used only for lax date parsing. */
+static const char OBS_MONTH[12][10] = {
+    "January",  "February",  "March",     "April",     "May",       "June",
+    "July",     "August",    "September", "October",   "November",  "December"
+};
+
 /* Number of days in a month. */
 static const int MONTHDAYS[] = {
     31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
@@ -49,6 +55,51 @@ static const struct {
     { "CDT", -5 * 60 * 60 },    { "CST", -6 * 60 * 60 },
     { "MDT", -6 * 60 * 60 },    { "MST", -7 * 60 * 60 },
     { "PDT", -7 * 60 * 60 },    { "PST", -8 * 60 * 60 },
+};
+
+/* Additional non-numeric time zones supported because parsedate supported
+   them.  These aren't legal in RFC 2822, but are supported in lax mode. */
+static const struct {
+    const char name[5];
+    long offset;
+} OBS_ZONE_OFFSET[] = {
+    { "UTC",    0 },                 /* Universal Coordinated */
+    { "CUT",    0 },                 /* Coordinated Universal */
+    { "WET",    0 },                 /* Western European */
+    { "BST",    1 * 60 * 60 },       /* British Summer */
+    { "NDT",  (-2 * 60 + 30) * 60 }, /* Newfoundland Daylight */
+    { "NST",  (-3 * 60 + 30) * 60 }, /* Newfoundland Standard */
+    { "ADT",   -3 * 60 * 60 },       /* Atlantic Daylight */
+    { "AST",   -4 * 60 * 60 },       /* Atlantic Standard */
+    { "YDT",   -8 * 60 * 60 },       /* Yukon Daylight */
+    { "YST",   -9 * 60 * 60 },       /* Yukon Standard */
+    { "AKDT",  -8 * 60 * 60 },       /* Alaska Daylight */
+    { "AKST",  -9 * 60 * 60 },       /* Alaska Standard */
+    { "HADT",  -9 * 60 * 60 },       /* Hawaii-Aleutian Daylight */
+    { "HAST", -10 * 60 * 60 },       /* Hawaii-Aleutian Standard */
+    { "HST",  -10 * 60 * 60 },       /* Hawaii Standard */
+    { "CES",    2 * 60 * 60 },       /* Central European Summer */
+    { "CEST",   2 * 60 * 60 },       /* Central European Summer */
+    { "MEZ",    1 * 60 * 60 },       /* Middle European */
+    { "MEZT",   2 * 60 * 60 },       /* Middle European Summer */
+    { "CET",    1 * 60 * 60 },       /* Central European */
+    { "MET",    1 * 60 * 60 },       /* Middle European */
+    { "EET",    2 * 60 * 60 },       /* Eastern European */
+    { "MSK",    3 * 60 * 60 },       /* Moscow Winter */
+    { "MSD",    4 * 60 * 60 },       /* Moscow Summer */
+    { "WAST",   8 * 60 * 60 },       /* Western Australian Standard */
+    { "WADT",   9 * 60 * 60 },       /* Western Australian Daylight */
+    { "HKT",    8 * 60 * 60 },       /* Hong Kong */
+    { "CCT",    8 * 60 * 60 },       /* China Coast */
+    { "JST",    9 * 60 * 60 },       /* Japan Standard */
+    { "KST",    9 * 60 * 60 },       /* Korean Standard */
+    { "KDT",    9 * 60 * 60 },       /* Korean Daylight (no change?) */
+    { "CAST",  (9 * 60 + 30) * 60 }, /* Central Australian Standard */
+    { "CADT", (10 * 60 + 30) * 60 }, /* Central Australian Daylight */
+    { "EAST",  10 * 60 * 60 },       /* Eastern Australian Standard */
+    { "EADT",  11 * 60 * 60 },       /* Eastern Australian Daylight */
+    { "NZST",  12 * 60 * 60 },       /* New Zealand Standard */
+    { "NZST",  13 * 60 * 60 },       /* New Zealand Daylight */
 };
 
 
@@ -74,6 +125,7 @@ struct rule {
     enum {
         TYPE_NUMBER,
         TYPE_LOOKUP,
+        TYPE_OBS_MONTH,
         TYPE_DELIM
     } type;
     char delimiter;
@@ -461,6 +513,47 @@ parse_lookup(const char *p, const struct rule *rule, int *value)
 
 
 /*
+**  Parse a single string value that should be an obsolete month name.  If we
+**  have three characters available, check against the abbreviation.  Likewise
+**  if we have four characters and the fourth is a period.  Otherwise, check
+**  against the full English month name.  Puts the month number into the value
+**  pointer and and returns the new position of the string, or NULL if the
+**  string is not a valid month.
+*/
+static const char *
+parse_legacy_month(const char *p, const struct rule *rule UNUSED, int *value)
+{
+    size_t i, size;
+    const char *end;
+
+    for (end = p; *end != '\0' && CTYPE(isalpha, *end); end++)
+        ;
+    if (end == p)
+        return NULL;
+    size = end - p;
+    if (size == 3 || (size == 4 && p[3] == '.')) {
+        for (i = 0; i < ARRAY_SIZE(MONTH); i++)
+            if (strncasecmp(MONTH[i], p, rule->max) == 0) {
+                p += size;
+                *value = i;
+                return p;
+            }
+    } else {
+        for (i = 0; i < ARRAY_SIZE(OBS_MONTH); i++) {
+            if (size != strlen(OBS_MONTH[i]))
+                continue;
+            if (strncasecmp(OBS_MONTH[i], p, size) == 0) {
+                p += size;
+                *value = i;
+                return p;
+            }
+        }
+    }
+    return NULL;
+}
+
+
+/*
 **  Apply a set of date parsing rules to a string.  Returns the new position
 **  in the parse string if this succeeds and NULL if it fails.  As part of the
 **  parse, stores values into the value pointer in the array of rules that was
@@ -484,16 +577,17 @@ parse_by_rule(const char *p, const struct rule rules[], size_t count,
             break;
         case TYPE_LOOKUP:
             p = parse_lookup(p, rule, &values[i]);
-            if (p == NULL)
-                return NULL;
+            break;
+        case TYPE_OBS_MONTH:
+            p = parse_legacy_month(p, rule, &values[i]);
             break;
         case TYPE_NUMBER:
             p = parse_number(p, rule, &values[i]);
-            if (p == NULL)
-                return NULL;
             break;
         }
 
+        if (p == NULL)
+            return NULL;
         p = skip_cfws(p);
     }
     return p;
@@ -504,15 +598,16 @@ parse_by_rule(const char *p, const struct rule rules[], size_t count,
 **  Parse a legacy time zone.  This uses the parsing rules in RFC 2822,
 **  including assigning an offset of 0 to all single-character military time
 **  zones due to their ambiguity in practice.  Returns the new position in the
-**  parse stream or NULL if we failed to parse the zone.
+**  parse stream or NULL if we failed to parse the zone.  If the obsolete flag
+**  is set, also check against obsolete time zones.
 */
 static const char *
-parse_legacy_timezone(const char *p, long *offset)
+parse_legacy_timezone(const char *p, long *offset, bool obsolete)
 {
     const char *end;
     size_t max, i;
 
-    for (end = p; *end != '\0' && !CTYPE(isspace, *end); end++)
+    for (end = p; *end != '\0' && CTYPE(isalpha, *end); end++)
         ;
     if (end == p)
         return NULL;
@@ -527,14 +622,24 @@ parse_legacy_timezone(const char *p, long *offset)
         *offset = 0;
         return p + 1;
     }
+    if (obsolete)
+        for (i = 0; i < ARRAY_SIZE(OBS_ZONE_OFFSET); i++) {
+            if (strlen(OBS_ZONE_OFFSET[i].name) > max)
+                continue;
+            if (strncasecmp(OBS_ZONE_OFFSET[i].name, p, max) == 0) {
+                p += strlen(OBS_ZONE_OFFSET[i].name);
+                *offset = OBS_ZONE_OFFSET[i].offset;
+                return p;
+            }
+        }
     return NULL;
 }
 
 
 /*
 **  Parse an RFC 2822 date, accepting the normal and obsolete syntax.  Takes a
-**  pointer to the beginning of the date and the length.  Returns the
-**  translated time in seconds since epoch, or (time_t) -1 on error.
+**  pointer to the beginning of the date.  Returns the translated time in
+**  seconds since epoch, or (time_t) -1 on error.
 */
 time_t
 parsedate_rfc2822(const char *date)
@@ -549,25 +654,26 @@ parsedate_rfc2822(const char *date)
     /* The basic rules.  Note that we don't bother to check whether the day of
        the week is accurate or not. */
     static const struct rule base_rule[] = {
-        { TYPE_LOOKUP, 0,   WEEKDAY, 7,  3, 3 },
-        { TYPE_DELIM,  ',', NULL,    0,  1, 1 },
-        { TYPE_NUMBER, 0,   NULL,    0,  1, 2 },
+        { TYPE_LOOKUP, 0,   WEEKDAY,  7, 3, 3 },
+        { TYPE_DELIM,  ',', NULL,     0, 1, 1 },
+        { TYPE_NUMBER, 0,   NULL,     0, 1, 2 },
         { TYPE_LOOKUP, 0,   MONTH,   12, 3, 3 },
-        { TYPE_NUMBER, 0,   NULL,    0,  2, 4 },
-        { TYPE_NUMBER, 0,   NULL,    0,  2, 2 },
-        { TYPE_DELIM,  ':', NULL,    0,  1, 1 },
-        { TYPE_NUMBER, 0,   NULL,    0,  2, 2 }
+        { TYPE_NUMBER, 0,   NULL,     0, 2, 4 },
+        { TYPE_NUMBER, 0,   NULL,     0, 2, 2 },
+        { TYPE_DELIM,  ':', NULL,     0, 1, 1 },
+        { TYPE_NUMBER, 0,   NULL,     0, 2, 2 }
     };
 
     /* Optional seconds at the end of the time. */
     static const struct rule seconds_rule[] = {
-        { TYPE_DELIM,  ':', NULL,    0,  1, 1 },
-        { TYPE_NUMBER, 0,   NULL,    0,  2, 2 }
+        { TYPE_DELIM,  ':', NULL,     0, 1, 1 },
+        { TYPE_NUMBER, 0,   NULL,     0, 2, 2 }
     };
 
-    /* Numeric time zone. */
+    /* Numeric time zone.  Keep the hours and minutes separate. */
     static const struct rule zone_rule[] = {
-        { TYPE_NUMBER, 0,   NULL,    0,  4, 4 }
+        { TYPE_NUMBER, 0,   NULL,     0, 2, 2 },
+        { TYPE_NUMBER, 0,   NULL,     0, 2, 2 }
     };
 
     /* Start with a clean slate. */
@@ -608,10 +714,10 @@ parsedate_rfc2822(const char *date)
         p = parse_by_rule(p + 1, zone_rule, ARRAY_SIZE(zone_rule), values);
         if (p == NULL)
             return (time_t) -1;
-        zone_offset = ((values[0] / 100) * 60 + values[0] % 100) * 60;
+        zone_offset = (values[0] * 60 + values[1]) * 60;
         zone_offset *= zone_sign;
     } else {
-        p = parse_legacy_timezone(p, &zone_offset);
+        p = parse_legacy_timezone(p, &zone_offset, false);
         if (p == NULL)
             return (time_t) -1;
     }
@@ -629,6 +735,122 @@ parsedate_rfc2822(const char *date)
     p = skip_cfws(p);
     if (*p != '\0')
         return (time_t) -1;
+    if (!valid_tm(&tm))
+        return (time_t) -1;
+    result = mktime_utc(&tm);
+    return (result == (time_t) -1) ? result : result - zone_offset;
+}
+
+
+/*
+**  Parse a date, accepting a lax syntax that tries to allow for any date that
+**  the old parsedate code would accept, allowing for a lot of variation
+**  that's seen in Usenet articles.  Takes a pointer to the date and returns
+**  the translated time in seconds since epoch, or (time_t) -1 on error.
+*/
+time_t
+parsedate_rfc2822_lax(const char *date)
+{
+    const char *p, *start;
+    struct tm tm;
+    int values[6];
+    int zone_sign;
+    long zone_offset;
+    time_t result;
+
+    /* The basic rules.  Allow one or two digits in time components, since
+       some broken software omits the leading zero and parsedate didn't
+       care. */
+    static const struct rule base_rule[] = {
+        { TYPE_NUMBER,    0,   NULL,  0, 1, 2 },
+        { TYPE_OBS_MONTH, 0,   NULL, 12, 3, 3 },
+        { TYPE_NUMBER,    0,   NULL,  0, 2, 4 },
+        { TYPE_NUMBER,    0,   NULL,  0, 1, 2 },
+        { TYPE_DELIM,     ':', NULL,  0, 1, 1 },
+        { TYPE_NUMBER,    0,   NULL,  0, 1, 2 }
+    };
+
+    /* Optional seconds at the end of the time.  Similarly, don't require the
+       leading zero. */
+    static const struct rule seconds_rule[] = {
+        { TYPE_DELIM,     ':', NULL,  0, 1, 1 },
+        { TYPE_NUMBER,    0,   NULL,  0, 1, 2 }
+    };
+
+    /* Numeric time zone.  Allow the hour portion to omit the leading zero.
+       Unfortunately, our parser is greedy, so we have to parse this as one
+       number and then patch it up later. */
+    static const struct rule zone_rule[] = {
+        { TYPE_NUMBER,    0,   NULL,  0, 1, 5 }
+    };
+
+    /* Start with a clean slate. */
+    memset(&tm, 0, sizeof(struct tm));
+    memset(values, 0, sizeof(values));
+
+    /* Parse the base part of the date.  The initial day of the week is
+       optional.  Allow for anything that looks vaguely day-like. */
+    p = skip_cfws(date);
+    while (*p != '\0' && !CTYPE(isdigit, *p) && *p != ',')
+        p++;
+    if (*p == ',')
+        p = skip_cfws(p + 1);
+    p = parse_by_rule(p, base_rule, ARRAY_SIZE(base_rule), values);
+    if (p == NULL)
+        return (time_t) -1;
+
+    /* Stash the results into a struct tm.  Values are associated with the
+       rule number of the same index. */
+    tm.tm_mday = values[0];
+    tm.tm_mon = values[1];
+    tm.tm_year = values[2];
+    tm.tm_hour = values[3];
+    tm.tm_min = values[5];
+
+    /* Parse seconds if they're present. */
+    if (*p == ':') {
+        p = parse_by_rule(p, seconds_rule, ARRAY_SIZE(seconds_rule), values);
+        if (p == NULL)
+            return (time_t) -1;
+        tm.tm_sec = values[1];
+    }
+
+    /* Time zone.  Unfortunately this is weird enough that we can't use nice
+       parsing rules for it.  If we don't recognize the time zone at all, just
+       bail and assume GMT.  parsedate used the final time zone found, when
+       multiple ones were supplied, so emulate that behavior. */
+    zone_offset = 0;
+    while (p != NULL && *p != '\0') {
+        if (*p == '-' || *p == '+') {
+            zone_sign = (*p == '+') ? 1 : -1;
+            start = p + 1;
+            p = parse_by_rule(start, zone_rule, ARRAY_SIZE(zone_rule), values);
+            if (p == NULL)
+                return (time_t) -1;
+            if (p - start < 3)
+                zone_offset = values[0] * 60 * 60;
+            else
+                zone_offset = ((values[0] / 100) * 60 + values[0] % 100) * 60;
+            zone_offset *= zone_sign;
+        } else {
+            p = parse_legacy_timezone(p, &zone_offset, true);
+            if (p == NULL)
+                zone_offset = 0;
+        }
+        if (p != NULL)
+            p = skip_cfws(p);
+    }
+
+    /* Fix up the year, using the RFC 2822 rules.  Remember that tm_year
+       stores the year - 1900. */
+    if (tm.tm_year < 50)
+        tm.tm_year += 100;
+    else if (tm.tm_year >= 1000)
+        tm.tm_year -= 1900;
+
+    /* Done parsing.  We don't check to see if this is the end of the string;
+       we allow for any trailing garbage.  Convert the struct tm to seconds
+       since epoch and then apply the time zone offset. */
     if (!valid_tm(&tm))
         return (time_t) -1;
     result = mktime_utc(&tm);
