@@ -1494,7 +1494,7 @@ EOF
   ;;
 *) cat <<EOF >> $ofile
 # Find the path to this script.
-thisdir=\`$echo "\$0" | sed -e 's%/[^/]*\$%%'\`
+thisdir=\`\$echo \$0 | sed -e 's%/[^/]*\$%%'\`
 test "X\$0" = "X\$thisdir" && thisdir=.
 
 # Execute the libtool backend.
