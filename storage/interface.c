@@ -457,7 +457,7 @@ static bool SMreadconfig(void) {
 		    options = COPY(p);
 		    break;
 		  case SMexactmatch:
-		    if (strcasecmp(p, "true") || strcasecmp(p, "yes") || strcasecmp(p, "on"))
+		    if (caseEQ(p, "true") || caseEQ(p, "yes") || caseEQ(p, "on"))
 			exactmatch = TRUE;
 		    break;
 		  default:
@@ -654,7 +654,7 @@ static bool MatchGroups(const char *g, int num, char **patterns, bool exactmatch
     char		*groupsep, *q;
     const char          *p;
     int                 i;
-    bool                wanted = FALSE;
+    bool                matched, wanted = FALSE;
 
     /* Find the end of the line */
     for (p = g+1; (*p != '\n') && (*(p - 1) != '\r'); p++);
@@ -670,7 +670,7 @@ static bool MatchGroups(const char *g, int num, char **patterns, bool exactmatch
     for (group = strtok(groups, groupsep); group != NULL; group = strtok(NULL, groupsep)) {
 	if (innconf->storeonxref && ((q = strchr(group, ':')) != (char *)NULL))
 	    *q = '\0';
-	for (i = 0; i < num; i++) {
+	for (matched = FALSE, i = 0; i < num; i++) {
 	    switch (patterns[i][0]) {
 	    case '@':
 		if (wildmat(group, &patterns[i][1])) {
@@ -680,12 +680,12 @@ static bool MatchGroups(const char *g, int num, char **patterns, bool exactmatch
 		break;
 	    default:
 		if (wildmat(group, patterns[i]))
-		    wanted = TRUE;
-		else if (exactmatch) {
-		    DISPOSE(groups);
-		    return FALSE;
-		}
+		    matched = wanted = TRUE;
 	    }
+	}
+	if (exactmatch && (matched == FALSE)) {
+	    DISPOSE(groups);
+	    return FALSE;
 	}
     }
 
