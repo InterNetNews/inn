@@ -2,110 +2,80 @@
 
 include ../Makefile.global
 
-######################################################################
-####           NOTHING BELOW HERE IS REALLY CONFIGURABLE          ####
-######################################################################
+CFLAGS		= $(GCFLAGS)
 
-CFLAGS	= $(GCFLAGS)
+ALL		= innfeed procbatch startinnfeed
 
-.SUFFIXES:	.E .sh .pl
+SOURCES		= article.c buffer.c config_l.c config_y.c connection.c \
+		  endpoint.c host.c innlistener.c main.c misc.c \
+		  startinnfeed.c tape.c version.c
 
-CPP.c		= $(CC) $(CFLAGS) -E -I.
-COMPILE.c	= $(CC) $(CFLAGS) -c -I.
-LINK.c		= $(LIBTOOL) $(CC) $(CFLAGS) $(LDFLAGS)
-OUTPUT_OPTION	= -o $@
-
-
-
-SRC 		= article.c \
-		  buffer.c \
-		  connection.c \
-		  endpoint.c \
-		  host.c \
-		  innlistener.c \
-		  main.c \
-		  misc.c \
-		  tape.c
-
-INCS		= article.h \
-		  buffer.h \
-		  configfile.h \
-		  connection.h \
-		  endpoint.h \
-		  host.h \
-		  innfeed.h \
-		  innlistener.h \
-		  misc.h \
-		  msgs.h \
+INCLUDES	= article.h buffer.h configfile.h config_y.h connection.h \
+		  endpoint.h host.h innfeed.h innlistener.h misc.h msgs.h \
 		  tape.h
 
-OBJS		= $(SRC:.c=.o) \
-		  config_l.o config_y.o
+# The objects linked into innfeed.  All SOURCES except startinnfeed.
+OBJECTS		= article.o buffer.o config_l.o config_y.o connection.o \
+		  endpoint.o host.o innlistener.o main.o misc.o tape.o \
+		  version.o
 
-INNFEED_BIN	= $D$(PATHBIN)/innfeed
+INSTALLED	= $(D)$(PATHBIN)/innfeed \
+		  $(D)$(PATHBIN)/procbatch \
+		  $(D)$(PATHBIN)/startinnfeed
 
-STARTINNFEED	= $D$(PATHBIN)/startinnfeed
+all: $(ALL)
+
+clean:
+	rm -f *.o $(ALL) version.c innfeed-convcfg
+	rm -rf .libs
+
+clobber: clean 
+	rm -f tags y.tab.c y.tab.h lex.yy.c config_y.c config_y.h
+
+tags: $(SOURCES) $(INCLUDES)
+	$(CTAGS) $(SOURCES) $(INCLUDES)
 
 
-ALL_INSTALLED	= $D$(PATHBIN)/innfeed $D$(PATHBIN)/startinnfeed \
-		  $D$(PATHBIN)/procbatch $D$(PATHBIN)/innfeed-convcfg
+##  Compilation rules.
 
-ALL_GCC_WARNINGS = -pedantic -W -Waggregate-return -Wcast-align \
-		   -Wcast-qual -Wcomment -Wformat \
-                   -Wimplicit -Winline -Wmissing-prototypes \
-                   -Wmissing-declarations -Wnested-externs \
-                   -Wparentheses -Wpointer-arith \
-                   -Wshadow -Wstrict-prototypes -Wswitch \
-                   -Wtraditional -Wtrigraphs \
-                   -Wunused -Wwrite-strings
+INNFEEDLIBS	= $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
 
-# -Wreturn-type -Wtemplate-debugging 
+config_y.c config_y.h: configfile.y
+	$(YACC) -d $?
+	mv y.tab.h config_y.h
+	mv y.tab.c config_y.c
 
-MORE_WARN	= -Wconversion 
+config_l.c: configfile.l
+	$(LEX) $?
+	mv lex.yy.c config_l.c
 
-VERSION		= 1.0
+version.c: Makefile ../Makefile.global
+	version=`echo '$(VERSION) ($(VERSION_EXTRA))' | sed 's/ ()//'` ; \
+	echo 'const char *versionInfo = "innfeed' "$$version\" ;" > $@
 
-CP		= cp -p
-RM		= rm -f
-MV		= mv
-TAG		= etags
-CHMOD		= chmod
-
-MAKEDEPEND	= ./makedepend
-DEPENDFLAGS	= -s -c '$(CC) -E'
-
-.c.o:
-	$(COMPILE.c) $< $(OUTPUT_OPTION)
-
-.c.E:
-	$(CPP.c) $< $(OUTPUT_OPTION)
-
-.sh:
-	$(RM) $@ ; $(CP) $< $@ ; $(CHMOD) a-w,a+x $@
-
-all: innfeed startinnfeed innfeed-convcfg procbatch
-
-install: $(ALL_INSTALLED)
-
-innfeed: $(OBJS) version.o $(MALLOC) $(LIBSTORAGE) $(LIBINN)
-	$(LINK.c) -o $@ $(OBJS) version.o $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
-
-innfeed-convcfg: innfeed-convcfg.in $(FIXSCRIPT)
-	$(FIXSCRIPT) -i innfeed-convcfg.in
+innfeed: $(OBJECTS) $(MALLOC) $(LIBSTORAGE) $(LIBINN)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(INNFEEDLIBS)
 
 procbatch: procbatch.in $(FIXSCRIPT)
 	$(FIXSCRIPT) procbatch.in
 
-$(D)$(PATHBIN)/innfeed: innfeed
-	$(LI_XPRI) $? $@
+startinnfeed: startinnfeed.o $(LIBINN)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ startinnfeed.o $(LIBINN) $(LIBS)
 
-$(D)$(PATHBIN)/procbatch: procbatch
-	$(CP_XPRI) $? $@
+# Not normally built.
+innfeed-convcfg: innfeed-convcfg.in $(FIXSCRIPT)
+	$(FIXSCRIPT) -i innfeed-convcfg.in
 
-$(D)$(PATHBIN)/innfeed-convcfg: innfeed-convcfg
-	$(CP_XPRI) $? $@
-	$(SAVEOLD)
-	$(COPYFILE)
+tst: config_y.c config_l.c
+	gcc -DWANT_MAIN -o tst -g -Wall config_y.c config_l.c -ly -ll
+
+
+##  Installation rules.  Installation commands set in Makefile.global.
+
+install: $(INSTALLED)
+
+$(D)$(PATHBIN)/innfeed:		innfeed		; $(LI_XPRI) $? $@
+$(D)$(PATHBIN)/procbatch:	procbatch	; $(CP_XPRI) $? $@
 
 $(D)$(PATHBIN)/startinnfeed: startinnfeed
 	@ME=`$(WHOAMI)` ; \
@@ -123,92 +93,46 @@ $(D)$(PATHBIN)/startinnfeed: startinnfeed
 	    echo '' ; echo ; \
 	fi
 
-objs:	$(OBJS)
 
-tags: $(SRC) $(INCS)
-	$(TAG) $(SRC) $(INCS)
+##  Dependencies.  Default list, below, is probably good enough.
 
-clean::
-	$(RM) version.c *.E *.o *.a *.core makedepend tags TAGS core \#* *~ 
-	$(RM) Makefile.BAK
-	$(RM) innfeed startinnfeed uio_maxiov listing.ps logfile
-	$(RM) innfeed-convcfg procbatch
-	$(RM) -rf .libs
+depend: Makefile $(SOURCES)
+	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
 
-realclean:: clean 
-	$(RM) y.tab.c y.tab.h lex.yy.c config_y.c config_y.h
-
-clobber distclean:: realclean
-
-.PHONY:	listing
-
-listing::
-	@$(RM) foo.ps ; \
-	F=`/bin/ls *.c *.h 2> /dev/null | sed 's/h$$/H/' |\
-	   sort | sed 's/H$$/h/'` ;\
-	CMD="nenscript -p- $$F | psnup -4 -d1 > listing.ps" ;\
-	if [ "X$$F" != X ]; then echo $$CMD ; eval $$CMD ; fi
-
-startinnfeed.o: startinnfeed.c
-	$(COMPILE.c) $?
-
-startinnfeed: startinnfeed.o $(LIBINN)
-	$(LINK.c) -o $@ startinnfeed.o $(LIBINN) $(LIBS)
-
+# This version of makedepend isn't actually used currently.
 makedepend: makedepend.sh
-
-version.c: $(OBJS)
-	echo 'const char *versionInfo = "innfeed v. $(VERSION) ('\
-		`date` ')" ;' |\
-		sed -e 's/( /(/' -e 's/ )/)/' > version.c
-
-depend: makedepend $(SRC) $(INCS)
-	$(MAKEDEPEND) $(DEPENDFLAGS) $(CPPFLAGS) $(SRC)
-
-diffdir::
-	echo -n "Directory? " ; read dir ;\
-	if [ -d $$dir ]; then\
-		for i in *.c *.h Makefile;do\
-			[ ! -f $$dir/$$i ] && continue;\
-			if ! cmp $$i $$dir/$$i > /dev/null 2>&1; then\
-				echo patch $$i "<< 'EOF'";\
-				diff $$dir/$$i $$i;\
-				echo EOF;\
-			fi;\
-		done;\
-	else\
-		echo No such directory $$dir;\
-	fi
-
-config_y.c config_y.h: configfile.y
-	$(YACC) -d $?
-	mv y.tab.h config_y.h
-	mv y.tab.c config_y.c
-
-config_l.c: configfile.l
-	$(LEX) $?
-	mv lex.yy.c config_l.c
-
-config_l.o: config_y.o config_l.c
-
-tst:	config_y.c config_l.c
-	gcc -DWANT_MAIN -o tst -g -Wall config_y.c config_l.c -ly -ll
+	cp makedepend.sh makedepend
+	chmod 755 makedepend
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-
-article.o: article.c article.h buffer.h innfeed.h endpoint.h misc.h \
-   msgs.h
-buffer.o: buffer.c buffer.h innfeed.h misc.h
-connection.o: article.h buffer.h innfeed.h configfile.h connection.c \
-   connection.h endpoint.h host.h misc.h msgs.h
-endpoint.o: buffer.h innfeed.h configfile.h endpoint.c endpoint.h host.h \
-   misc.h msgs.h
-host.o: article.h buffer.h innfeed.h configfile.h connection.h endpoint.h \
-   host.c host.h innlistener.h misc.h msgs.h tape.h
-innlistener.o: article.h buffer.h innfeed.h configfile.h endpoint.h host.h \
-   innlistener.c innlistener.h misc.h msgs.h tape.h
-main.o: article.h buffer.h innfeed.h configfile.h connection.h endpoint.h \
-   host.h innlistener.h main.c misc.h msgs.h tape.h
-misc.o: innfeed.h endpoint.h misc.c misc.h msgs.h tape.h
-tape.o: article.h innfeed.h configfile.h endpoint.h misc.h msgs.h \
-   tape.c tape.h
+article.o: article.c innfeed.h ../include/config.h \
+ ../include/clibrary.h ../include/libinn.h ../include/storage.h \
+ article.h misc.h buffer.h endpoint.h msgs.h
+buffer.o: buffer.c innfeed.h buffer.h misc.h ../include/config.h
+config_l.o: config_l.c innfeed.h configfile.h config_y.h
+config_y.o: config_y.c innfeed.h ../include/config.h \
+ ../include/clibrary.h configfile.h msgs.h misc.h
+connection.o: connection.c innfeed.h ../include/config.h \
+ ../include/clibrary.h article.h misc.h buffer.h configfile.h \
+ connection.h endpoint.h host.h msgs.h
+endpoint.o: endpoint.c innfeed.h ../include/config.h \
+ ../include/clibrary.h ../include/libinn.h buffer.h misc.h \
+ configfile.h endpoint.h host.h msgs.h
+host.o: host.c innfeed.h ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h article.h misc.h buffer.h configfile.h \
+ connection.h endpoint.h host.h innlistener.h msgs.h tape.h
+innlistener.o: innlistener.c innfeed.h ../include/config.h \
+ ../include/clibrary.h article.h misc.h buffer.h configfile.h \
+ endpoint.h host.h innlistener.h msgs.h tape.h
+main.o: main.c innfeed.h ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h ../include/storage.h article.h misc.h buffer.h \
+ configfile.h connection.h endpoint.h host.h innlistener.h msgs.h \
+ tape.h
+misc.o: misc.c innfeed.h ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h endpoint.h misc.h msgs.h tape.h
+startinnfeed.o: startinnfeed.c ../include/config.h \
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h
+tape.o: tape.c innfeed.h ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h article.h misc.h configfile.h endpoint.h msgs.h \
+ tape.h
+version.o: version.c
