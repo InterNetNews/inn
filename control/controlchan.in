@@ -323,7 +323,9 @@ sub logger {
 
     open(LOGFILE, ">>$logfile") or logdie("Cannot open $logfile: $!");
     print LOGFILE "$message\n";
-    print LOGFILE "    $_\n" foreach (@$headers, '', @$body, '');
+    foreach (@$headers, '', @$body, '') {
+        print LOGFILE "    $_\n";
+    }
     close LOGFILE;
     unlink $lockfile;
 }
