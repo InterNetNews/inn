@@ -69,7 +69,10 @@ profiled:		../libinn_p.a
 	rm -f $(OBJECTS)
 
 endian: endian.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ endian.c
+	$(LIBCCWITHOUTLIBTOOL) $(CFLAGS) $(LDFLAGS) -o $@ endian.c
+
+perl.o: perl.c
+	$(LIBCCWITHOUTLIBTOOL) $(CFLAGS) $(LDFLAGS) -c $@ perl.c
 
 ../include/autoconfig.h: endian
 	./endian >../include/autoconfig.h
