@@ -452,13 +452,13 @@ STATIC BOOL CNFSparse_groups_line() {
   sub = SMGetConfig(TOKEN_CNFS, sub);
   for (;sub != (STORAGE_SUB *)NULL; sub = SMGetConfig(TOKEN_CNFS, sub)) {
     if (sub->options == (char *)NULL) {
-      syslog(L_ERROR, "%s: storage.ctl additional field is missing",
+      syslog(L_ERROR, "%s: storage.conf options field is missing",
 	   LocalLogName);
       CNFScleanexpirerule();
       return FALSE;
     }
     if ((mrp = CNFSgetmetacycbuffbyname(sub->options)) == NULL) {
-      syslog(L_ERROR, "%s: storage.ctl additional field '%s' undefined",
+      syslog(L_ERROR, "%s: storage.conf options field '%s' undefined",
 	   LocalLogName, sub->options);
       CNFScleanexpirerule();
       return FALSE;
