@@ -29,6 +29,10 @@ Upgrading from 2.3 to 2.4
     See "Changes to Python Authentication and Access Control Support for
     nnrpd" in doc/hook-python for details.
 
+    If you use send-uucp, it has been completely rewritten and now takes a
+    configuration file to specify its behavior.  See its man page for more
+    information.
+
     The wildmat API has been renamed (to uwildmat and friends; see
     uwildmat(3) for the interfaces) to distinguish it from Rich $alz's
     original version, since it now supports UTF-8.  This may require changes
@@ -112,7 +116,13 @@ Changes from 2.3 to 2.4
       certain values must be included in inn.conf even if using the defaults
       for the use of shell or Perl scripts, and it will serve as the basis
       for standardizing and cleaning up the configuration file parsing in
-      other parts of INN.
+      other parts of INN.  innupgrade is run during make update and should
+      convert an existing inn.conf file for you.
+
+    * send-uucp has been replaced by a completely rewritten version from
+      Marco d'Itri, Edvard Tuinder, and Miquel van Smoorenburg, which uses a
+      configuration file that specifies batch sizes, compression methods,
+      and hours during which batches should be generated.
 
     * Two configure options have changed names:  --with-tmp-path is now
       --with-tmp-dir, and --with-largefiles is now --enable-largefiles, to

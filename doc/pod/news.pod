@@ -29,6 +29,10 @@ I<nnrpdpythonauth> in F<inn.conf> is true), there have been major changes.
 See L<"Changes to Python Authentication and Access Control Support for
 nnrpd"> in F<doc/hook-python> for details.
 
+If you use B<send-uucp>, it has been completely rewritten and now takes a
+configuration file to specify its behavior.  See its man page for more
+information.
+
 The wildmat API has been renamed (to uwildmat and friends; see uwildmat(3)
 for the interfaces) to distinguish it from Rich $alz's original version,
 since it now supports UTF-8.  This may require changes in other software
@@ -133,7 +137,15 @@ quoted; see inn.conf(5).  It fixes the long-standing bug that certain
 values must be included in F<inn.conf> even if using the defaults for the
 use of shell or Perl scripts, and it will serve as the basis for
 standardizing and cleaning up the configuration file parsing in other
-parts of INN.
+parts of INN.  B<innupgrade> is run during make update and should convert
+an existing F<inn.conf> file for you.
+
+=item *
+
+B<send-uucp> has been replaced by a completely rewritten version from
+Marco d'Itri, Edvard Tuinder, and Miquel van Smoorenburg, which uses a
+configuration file that specifies batch sizes, compression methods, and
+hours during which batches should be generated.
 
 =item *
 

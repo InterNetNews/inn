@@ -191,8 +191,9 @@ Alex Kiernan:
 
 Marco d'Itri:
         Wrote gpgverify and overhauled controlchan and its modules.  Added
-        IPv6 support to innd and inndstart.  Has also contributed a variety
-        of bug fixes.
+        IPv6 support to innd and inndstart.  Contributed a rewritten
+        send-uucp.  Has also contributed a variety of bug fixes and helped
+        with testing.
 
 Jeffrey M. Vinocur:
         Broke parts of the interface with nnrpd for authentication programs
@@ -254,4 +255,4 @@ Christopher Masto, Hiroaki Sengoku, Yury July, Yar Tikhiy, Kees Bakker,
 Peter da Silva, Matt McLeod, Ed Korthof, Jan Rychter, Winfried Magerl,
 Andreas Lamrecht, Duane Currie, Ian Dickinson, Bettina Fink,
 Jochen Erwied, Rebecca Ore, Felicia Neff, Antonio Querubin, Bear Giles,
-Christopher P. Lindsey, Winfried Szukalski
+Christopher P. Lindsey, Winfried Szukalski, Edvard Tuinder
