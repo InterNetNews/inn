@@ -142,11 +142,12 @@ static int	ConfigBitsize;
 #define PERMnewsmaster		52
 #define PERMlocaladdress	53
 #define PERMrejectwith		54
+#define PERMmaxbytespersecond	55
 #ifdef HAVE_SSL
-#define PERMrequire_ssl		55
-#define PERMMAX			56
+#define PERMrequire_ssl		56
+#define PERMMAX			57
 #else
-#define PERMMAX			55
+#define PERMMAX			56
 #endif
 
 #define TEST_CONFIG(a, b) \
@@ -226,6 +227,7 @@ static CONFTOKEN PERMtoks[] = {
   { PERMnewsmaster, "newsmaster:" },
   { PERMlocaladdress, "localaddress:" },
   { PERMrejectwith, "reject_with:" },
+  { PERMmaxbytespersecond, "max_rate:" },
 #ifdef HAVE_SSL
   { PERMrequire_ssl, "require_ssl:" },
 #endif
@@ -458,6 +460,7 @@ void SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->nnrpdauthsender = innconf->nnrpdauthsender;
     curaccess->virtualhost = FALSE;
     curaccess->newsmaster = NULL;
+    curaccess->maxbytespersecond = 0;
 }
 
 static void free_authgroup(AUTHGROUP *del)
@@ -928,6 +931,10 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	if (curaccess->newsmaster)
 	    DISPOSE(curaccess->newsmaster);
 	curaccess->newsmaster = COPY(tok->name);
+	SET_CONFIG(oldtype);
+	break;
+      case PERMmaxbytespersecond:
+	curaccess->maxbytespersecond = atol(tok->name);
 	SET_CONFIG(oldtype);
 	break;
       default:
@@ -1460,6 +1467,7 @@ void PERMgetpermissions()
 	    PERMcanpost = FALSE;
 	}
 	PERMaccessconf = access_realms[i];
+	MaxBytesPerSecond = PERMaccessconf->maxbytespersecond;
 	if (PERMaccessconf->virtualhost) {
 	    if (PERMaccessconf->domain == NULL) {
 		syslog(L_ERROR, "%s virtualhost needs domain parameter(%s)",

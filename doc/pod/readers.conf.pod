@@ -342,6 +342,13 @@ disconnected with a "Permission denied" message containing the contents
 (a "reason") of this parameter.  Some newsreaders will then display the 
 reason to the user.
 
+=item B<max_rate:>
+
+If this parameter is present (and nonzero) it is used for nnrpd's 
+rate-limiting code.  The client will only be able to download at this 
+speed (in bytes/second).  Note that at present these limits are 
+ignored if compiled with SSL support.
+
 =item B<localtime:>
 
 If a Date: header is not included in a posted article, nnrpd(8) normally

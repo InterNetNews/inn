@@ -89,6 +89,7 @@ typedef struct _ACCESSGROUP {
     int nnrpdauthsender;
     int virtualhost;
     char *newsmaster;
+    long maxbytespersecond;
 } ACCESSGROUP;
 
 /*
