@@ -887,7 +887,10 @@ FUNCTYPE CMDxover(int ac, char *av[])
     OVERcount++;
     gettimeofday(&stv, NULL);
     if ((handle = (void *)OVopensearch(GRPcur, range.Low, range.High)) == NULL) {
-	Reply("%d %s fields follow\r\n.\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, av[1]);
+	if (av[1] != NULL)
+	    Reply("%d %s fields follow\r\n.\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, av[1]);
+	else
+	    Reply("%d %d fields follow\r\n.\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, ARTnumber);
 	return;
     }
     if (innconf->nnrpdoverstats) {
@@ -896,7 +899,10 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;
     }
 
-    Reply("%d %s fields follow\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, av[1]);
+    if (av[1] != NULL)
+	Reply("%d %s fields follow\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, av[1]);
+    else
+	Reply("%d %d fields follow\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, ARTnumber);
     if (innconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
     while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
