@@ -122,6 +122,14 @@ is the number that you specified in
 .IR storage.ctl (5).
 The 
 rest of the fields are identical to the 5 field format.
+If the line for
+.I classnum
+is not defined,
+.IR keep ,
+.I default
+and
+.I purge
+are assumed to be all ``0''.
 .PP
 It is often useful to honor the expiration headers in articles, especially
 those in moderated groups.
