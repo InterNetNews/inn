@@ -31,15 +31,6 @@ Scheduled for INN 2.4:
   (mostly adding quotes around parameter values containing whitespace).
   [Russ is working on this.]
 
-* Complete rewrite of history.  History should have a single API and the
-  same interface for both innd and nnrpd, the current WIP cache and
-  history cache should be integrated into that interface, things like
-  message ID hashing should become a selectable property of the history
-  file, and the history API should support multiple backend storage
-  formats and automatically select the right one for an existing history
-  file based on stored metainformation.  [Alex Kiernan is working on
-  this.]
-
 * There are some outstanding issues with the IPv6 that should be examined,
   see doc/IPv6-info.  Whatever is not fixed should be documented.
 
@@ -49,20 +40,28 @@ Scheduled for INN 2.4:
   capabilities to be available to the portions of INN written in Perl.
   [Russ plans on doing this.]
 
-* A complete audit of INN against the latest NNTP protocol draft, with at
-  least a report on the differences and preferrably all issues fixed.
-  [Russ plans on doing this.]
+* Fix as many of the protocol issues documented in doc/compliance-nntp as
+  possible.
 
 * Switch at least nnrpd over to using the new wildmat routines rather than
   breaking apart strings on commas and matching each expression
   separately.
 
-* Figure out some Samba library that we can link against for the Samba
-  authenticator so that we can get all the Samba code back out of INN's
-  source tree; we don't want to maintain it.
+* The recovery tools currently need serious work in the area of recovering
+  overview for a single newsgroup using tradspool, analyzing a broken
+  overview file (rather than just deleting it and regenerating it) and
+  doing things like regenerating a .IDX from a .DAT for tradindexed, and
+  renumbering the active file if it gets out of sync with the article
+  numbers on disk.
 
 
 Scheduled for INN 2.5:
+
+* The current WIP cache and history cache should be integrated into the
+  history API, things like message ID hashing should become a selectable
+  property of the history file, and the history API should support
+  multiple backend storage formats and automatically select the right one
+  for an existing history file based on stored metainformation.
 
 * The interface to embedded filters needs to be reworked.  The information
   about which filters are enabled should be isolated in the filtering API,
@@ -93,19 +92,12 @@ Scheduled for INN 2.5:
   to use the new parsing system and break out program-specific sections
   of inn.conf into their own groups.
 
-* The recovery tools currently need serious work in the area of recovering
-  overview for a single newsgroup using tradspool, analyzing a broken
-  overview file (rather than just deleting it and regenerating it) and
-  doing things like regenerating a .IDX from a .DAT for tradindexed, and
-  renumbering the active file if it gets out of sync with the article
-  numbers on disk.
-
 * Rewrite configure, breaking all of the tests out into separate files
-  using the new capabilities in autoconf 2.50.  Replace our local macros
-  with the more general features provided by autoconf 2.50.  At the same
-  time, configure.in and Makefile.global.in should be fixed to use the
-  same names as each other for various parameters.  [Russ plans to work on
-  this.]
+  using the new capabilities in autoconf 2.50 and later.  Replace our
+  local macros with the more general features provided by autoconf.  At
+  the same time, configure.in and Makefile.global.in should be fixed to
+  use the same names as each other for various parameters.  [Russ plans to
+  work on this.]
 
 
 Scheduled for INN 2.6:
@@ -291,8 +283,6 @@ Code Cleanup Projects:
 * Eliminate all of the needless casts to void that are scattered around to
   silent old versions of lint.
 
-* Use ANSI C prototypes and definitions for all functions.
-
 * Convert nnrpd to use daemonize rather than its own daemon code.
 
 * Split out the keyword generation code in innd/art.c into its own source
@@ -301,7 +291,7 @@ Code Cleanup Projects:
 
 * Break the CNFS code, the tradspool code, and the tradindexed code into
   multiple source files to make it easier to understand the logical
-  divisions of the code.
+  divisions of the code.  [Russ is working on tradindexed now.]
 
 * Examine the (mostly socket) code that currently should probably be
   compiled with -fno-strict-aliasing on gcc and move the relevant casts
@@ -542,7 +532,7 @@ General Projects:
   lost the name of the group to which a group is aliased; that needs to be
   fixed.
 
-* More details as to *why* a message ID is bad would be useful to return
+* More details as to why a message ID is bad would be useful to return
   to the user, particularly for rnews, inews, etc.  rnews also reportedly
   rejects message IDs with trailing spaces, which can be hard to check.
 
@@ -552,8 +542,6 @@ General Projects:
 * nnrpd's NNTP command parsing interacts poorly with AUTHINFO and
   passwords containing spaces.  The correct solution isn't clear; check
   with the current NNTP RFC draft and how existing clients handle it?
-
-* The test suite currently doesn't work when compiled with libtool.
 
 * Support building a profiling version of INN.  The current build rules
   for this have doubtless suffered from bit rot and need to be tested and
@@ -722,7 +710,12 @@ Long-Term Projects:
   semantics regardless of whether the system has mmap.  It may be possible
   to emulate mmap on systems that don't have it by reading the entirety of
   the file into memory and setting the flags that require things to call
-  mmap_flush and mmap_invalidate on a regular basis.
+  mmap_flush and mmap_invalidate on a regular basis, but it's not clear
+  where to stash the file descriptor that corresponds to the mapped file.
+
+* Figure out some Samba library that we can link against for the Samba
+  authenticator so that we can get all the Samba code back out of INN's
+  source tree; we don't want to maintain it.
 
 
 Complete Code Reorganization
