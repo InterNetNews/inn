@@ -617,18 +617,13 @@ CCfilter(char *av[])
 
 #include <EXTERN.h>
 #include <perl.h>
+#include "innperl.h"
 
 extern CV *perl_filter_cv;
-
-/* From lib/perl.c. */
-extern void PerlFilter(bool value);
-extern int  PERLreadfilter(char *filterfile, char *function);
 
 static const char *
 CCperl(char *av[])
 {
-    extern int	PerlFilterActive;
-
     switch (av[0][0]) {
     default:
 	return "1 Bad flag";
@@ -808,7 +803,6 @@ CCmode(char *unused[])
     int		h;
     char	buff[BUFSIZ];
 #if defined(DO_PERL)
-    extern int	PerlFilterActive;
     dSP;
 #endif /* defined(DO_PERL) */
 

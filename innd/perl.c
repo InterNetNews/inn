@@ -49,10 +49,7 @@
 #include <perl.h>
 #include <XSUB.h>
 #include "ppport.h"
-
-/* From lib/perl.c. */
-extern bool             PerlFilterActive;
-extern void             PerlFilter(bool value);
+#include "innperl.h"
 
 /* From art.c.  Ew.  Need header parsing that doesn't use globals. */
 extern ARTHEADER        ARTheaders[];

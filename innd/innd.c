@@ -6,16 +6,11 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include "innperl.h"
+
 #define DEFINE_DATA
 #include "innd.h"
 #include "ov.h"
-
-/* From lib/perl.c. */
-#if DO_PERL
-extern void PerlFilter(bool value);
-extern void PerlClose(void);
-extern void PERLsetup(char *startupfile, char *filterfile, char *function);
-#endif
 
 
 bool		Debug = FALSE;

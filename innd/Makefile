@@ -42,6 +42,7 @@ INNDLIBS 	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) \
 
 art.o:		art.c		; $(CC) $(CFLAGS) $(TCLINC) -c art.c
 cc.o:		cc.c		; $(CC) $(CFLAGS) $(PERLINC) -c cc.c
+innd.o:		innd.c		; $(CC) $(CFLAGS) $(PERLINC) -c innd.c
 perl.o:		perl.c		; $(CC) $(CFLAGS) $(PERLINC) -c perl.c
 python.o:	python.c	; $(CC) $(CFLAGS) $(PYTHONINC) -c python.c
 tcl.o:		tcl.c		; $(CC) $(CFLAGS) $(TCLINC) -c tcl.c
@@ -109,7 +110,7 @@ cc.o: cc.c ../include/config.h ../include/inn/defines.h \
  ../include/portable/time.h ../include/inn/timer.h \
  ../include/inn/history.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h ../include/paths.h ../include/storage.h \
- ../include/inndcomm.h
+ ../include/inndcomm.h ../include/innperl.h
 chan.o: chan.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h innd.h ../include/portable/time.h \
  ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \
@@ -122,10 +123,11 @@ icd.o: icd.c ../include/config.h ../include/inn/defines.h \
  ../include/nntp.h ../include/paths.h ../include/storage.h \
  ../include/ov.h
 innd.o: innd.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/portable/time.h \
- ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h ../include/ov.h
+ ../include/clibrary.h ../include/innperl.h innd.h \
+ ../include/portable/time.h ../include/inn/timer.h \
+ ../include/inn/history.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h \
+ ../include/ov.h
 inndstart.o: inndstart.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/paths.h
@@ -153,7 +155,7 @@ perl.o: perl.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h innd.h ../include/portable/time.h \
  ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h ../include/ppport.h
+ ../include/storage.h ../include/ppport.h ../include/innperl.h
 proc.o: proc.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/wait.h innd.h \
  ../include/portable/time.h ../include/inn/timer.h \
@@ -178,7 +180,7 @@ status.o: status.c ../include/clibrary.h ../include/config.h \
  ../include/inn/defines.h innd.h ../include/portable/time.h \
  ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h
+ ../include/storage.h ../include/innperl.h
 tcl.o: tcl.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h innd.h ../include/portable/time.h \
  ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \

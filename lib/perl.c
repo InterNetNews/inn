@@ -28,11 +28,12 @@
 #include <XSUB.h>
 #include "ppport.h"
 
+#include "innperl.h"
+
 /* Provided by DynaLoader but not declared in Perl's header files. */
 extern void boot_DynaLoader(CV *cv);
 
 /* Forward declarations. */
-int     PERLreadfilter(char *filterfile, char *function);
 void    PerlSilence(void);
 void    PerlUnSilence(void);
 void    xs_init(void);
@@ -47,7 +48,7 @@ CV *perl_filter_cv;
 static PerlInterpreter *PerlCode;
 
 
-void LogPerl()
+void LogPerl(void)
 {
    syslog(L_NOTICE, "SERVER perl filtering %s", PerlFilterActive ? "enabled" : "disabled");
 }
@@ -85,7 +86,7 @@ void PerlFilter(bool value)
     LEAVE ;
 }
 
-void PerlParse (void)
+static void PerlParse (void)
 {
     char *argv[] = { "innd",
                      "-e", "sub _load_ { do $_[0] }",
@@ -107,7 +108,7 @@ void PerlParse (void)
 ** function name that must be defined after the file file is loaded for
 ** filtering to be turned on to start with.
 */
-void PERLsetup (char *startupfile, char *filterfile, char *function)
+void PERLsetup (char *startupfile, char *filterfile, const char *function)
 {
     if (PerlCode == NULL) {
         PerlCode = perl_alloc();
@@ -154,7 +155,7 @@ void PERLsetup (char *startupfile, char *filterfile, char *function)
    off. We remember whether the filter function was defined properly so
    that we can catch when the use tries to turn filtering on without the
    the funciton there. */
-int PERLreadfilter(char *filterfile, char *function)
+int PERLreadfilter(char *filterfile, const char *function)
 {
     dSP ;
     char *argv [3] ;

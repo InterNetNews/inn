@@ -177,7 +177,7 @@ parsedate.o: parsedate.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
- ../include/ppport.h
+ ../include/ppport.h ../include/innperl.h
 pread.o: pread.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 pwrite.o: pwrite.c ../include/config.h ../include/inn/defines.h \

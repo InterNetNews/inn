@@ -6,6 +6,8 @@
 #include "innd.h"
 #include <arpa/inet.h>
 
+#include "innperl.h"
+
 #define MIN_REFRESH   60  /* 1 min */
 #define HTML_STATUS
 #if defined(HTML_STATUS)
@@ -111,9 +113,6 @@ STATUSsummary(void)
   STATUS		*head, *status, *tmp;
   char			str[9];
   time_t		now;
-#if defined(DO_PERL)
-  extern int		PerlFilterActive;
-#endif /* defined(DO_PERL) */
  
 #if defined(HTML_STATUS)
   sprintf (TempString, "%s/%s", innconf->pathhttp, STATUS_FILE);
