@@ -828,6 +828,16 @@ checkgroups:control@usenet-fr.news.eu.org:fr.*:verify-control@usenet-fr.news.eu.
 newgroup:control@usenet-fr.news.eu.org:fr.*:verify-control@usenet-fr.news.eu.org
 rmgroup:control@usenet-fr.news.eu.org:fr.*:verify-control@usenet-fr.news.eu.org
 
+## FRANCE (France)
+# Contact: control@usenet-france.news.eu.org
+# Admin group: france.admin.evolutions
+# *PGP*   See comment at top of file.
+newgroup:*:france.*:drop
+rmgroup:*:france.*:drop
+checkgroups:control@usenet-france.news.eu.org:france.*:verify-control@usenet-france.news.eu.org
+newgroup:control@usenet-france.news.eu.org:france.*:verify-control@usenet-france.news.eu.org
+rmgroup:control@usenet-france.news.eu.org:france.*:verify-control@usenet-france.news.eu.org
+
 ## FREE (Open Hierarchy where anyone can create a group)
 newgroup:*:free.*:doit
 newgroup:group-admin@isc.org:free.*:drop
@@ -1145,7 +1155,7 @@ rmgroup:*@*.kentlaw.edu:law.*:doit
 rmgroup:*@*.law.vill.edu:law.*:doit
 
 ## LINUX (Gated Linux mailing lists)
-# Contact: Marco d'Itri <md@toglimi.linux.it>
+# Contact: Marco d'Itri <md@linux.it>
 # Admin group: linux.admin.news
 # Key fingerprint = 81 B3 27 99 4F CE 32 D1  1B C9 01 0D BB B3 2E 41
 # *PGP*   See comment at top of file.
