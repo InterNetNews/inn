@@ -65,7 +65,7 @@ tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h
 
 libstorage.a:		$(P) $(OBJECTS)
-	$(AR) r $@ $(OBJECTS) objs/*
+	ar r $@ $(OBJECTS) objs/*
 	$(RANLIB) libstorage.a
 
 qiotest: qio.c ../libstorage.a ../libinn.a
