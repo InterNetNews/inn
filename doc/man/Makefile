@@ -182,8 +182,8 @@ $D$(MAN8)/innwatch.8:		innwatch.8         ; $(COPY) $? $@
 $D$(MAN8)/innxbatch.8:		innxbatch.8        ; $(COPY) $? $@
 $D$(MAN8)/innxmit.8:		innxmit.8          ; $(COPY) $? $@
 $D$(MAN8)/mailpost.8:		mailpost.8	   ; $(COPY) $? $@
-$D$(MAN8)/makeactive.8:		makeactive.8       ; $(COPY) $? $@
 $D$(MAN8)/makedbz.8:		makedbz.8          ; $(COPY) $? $@
+$D$(MAN8)/makehistory.8:	makehistory.8      ; $(COPY) $? $@
 $D$(MAN8)/mod-active.8:		mod-active.8       ; $(COPY) $? $@
 $D$(MAN8)/news.daily.8:		news.daily.8       ; $(COPY) $? $@
 $D$(MAN8)/news2mail.8:		news2mail.8	   ; $(COPY) $? $@
