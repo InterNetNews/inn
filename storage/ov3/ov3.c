@@ -395,6 +395,12 @@ STATIC GROUPLOC GROUPnewnode(void) {
 
 BOOL tradindexed_groupdel(char *group) {
     GROUPLOC            gloc;
+    char                *sepgroup;
+    char                *p;
+    char                IDXpath[BIG_BUFFER];
+    char                DATpath[BIG_BUFFER];
+    char                **groupparts = NULL;
+    int                 i, j;
     
     gloc = GROUPfind(group);
     if (GROUPLOCempty(gloc))
@@ -402,6 +408,29 @@ BOOL tradindexed_groupdel(char *group) {
 
     GROUPentries[gloc.recno].deleted = time(NULL);
     HashClear(&GROUPentries[gloc.recno].hash);
+
+    sepgroup = COPY(group);
+    for (p = sepgroup; *p != '\0'; p++)
+	if (*p == '.')
+	    *p = ' ';
+    
+    i = argify(sepgroup, &groupparts);
+    DISPOSE(sepgroup);
+    strcpy(IDXpath, innconf->pathoverview);
+    strcat(IDXpath, "/");
+    for (p = IDXpath + strlen(IDXpath), j = 0; j < i; j++) {
+	*p++ = groupparts[j][0];
+	*p++ = '/';
+    }
+    *p = '\0';
+    freeargify(&groupparts);
+
+    sprintf(p, "%s.DAT", group);
+    strcpy(DATpath, IDXpath);
+    sprintf(p, "%s.IDX", group);
+    unlink(IDXpath);
+    unlink(DATpath);
+
     return TRUE;
 }
 
