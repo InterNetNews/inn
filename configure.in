@@ -567,34 +567,6 @@ AC_ARG_WITH(python,
     esac],
     DO_PYTHON=DONT)
 
-dnl Tcl support.  For Tcl, the user can supply the path to the Tcl include
-dnl files and libraries (for Perl and Python, this is determined
-dnl automatically from little scripts run by the binary found in the user's
-dnl path).
-dnl
-dnl FIXME: This should really use tclConfig.sh.
-AC_DEFUN([INN_LIB_TCL],
-[AC_ARG_WITH(tcl,
-    [  --with-tcl=PATH         Embedded TCL script support [default=no]],
-    TCL_DIR=$with_tcl,
-    TCL_DIR=no)
-if test x"$TCL_DIR" = xno ; then
-    TCL_INC=
-    TCL_LIB=
-else
-    if test x"$TCL_DIR" = xyes ; then
-        TCL_INC="-I/usr/local/include"
-        TCL_LIB="-L/usr/local/lib -ltcl -lm"
-    else
-        TCL_INC="-I${TCL_DIR}/include"
-        TCL_LIB="-L${TCL_DIR}/lib -ltcl -lm"
-    fi
-    AC_DEFINE(DO_TCL, 1, [Define to compile in TCL script support.])
-fi
-AC_SUBST(TCL_LIB)
-AC_SUBST(TCL_INC)])
-INN_LIB_TCL
-
 dnl Set some configuration file defaults from the machine hostname.
 HOSTNAME=`hostname 2> /dev/null || uname -n`
 AC_SUBST(HOSTNAME)

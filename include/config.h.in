@@ -441,9 +441,6 @@
 /* Define to compile in Python module support. */
 #undef DO_PYTHON
 
-/* Define to compile in TCL script support. */
-#undef DO_TCL
-
 /* Define if you have the setproctitle function. */
 #undef HAVE_SETPROCTITLE
 
