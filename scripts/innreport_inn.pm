@@ -251,7 +251,15 @@ sub collect {
     }
     # closed lost
     return 1 if $left =~ /^\S+ closed lost \d+/o;
-    # control command (by letter)
+    # new control command
+    if ($left =~ /^ctlinnd command (\w)(:.*)?/o) {
+      my $command = $1;
+      my $cmd = $ctlinnd{$command};
+      $cmd = $command unless $cmd;
+      return 1 if $cmd eq 'flush'; # to avoid a double count
+      $innd_control{"$cmd"}++;
+    }
+    # old control command (by letter)
     if ($left =~ /^(\w)$/o) {
       my $command = $1;
       my $cmd = $ctlinnd{$command};
@@ -260,7 +268,7 @@ sub collect {
       $innd_control{"$cmd"}++;
       return 1;
     }
-    # control command (letter + reason)
+    # old control command (letter + reason)
     if ($left =~ /^(\w):.*$/o) {
       my $command = $1;
       my $cmd = $ctlinnd{$command};
