@@ -3,6 +3,15 @@
 ##  Format
 ##	<host>:
 ##	<host>:<password>
+##	<host>:<password>:<distrib>
 ##  <host> can be a name or IP address; no wildcards.  Any hosts not
-##  listed here are handed off to nnrpd.
+##  listed here are handed off to nnrpd.  <password> is used if you wish
+##  to also require feed to supply a password (keep empty for no password).
+##  <distrib> is a list of newsfeeds(5)-style list of newsgroups which
+##  are to be accepted from this host (default="*").
+##  
+##  Examples:
+#      news.feeder1.com:
+#      news.feeder2.com:seekrit
+#      news.feeder3.com::!widget.*
 localhost:
