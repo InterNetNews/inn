@@ -3,10 +3,6 @@ include ../Makefile.global
 
 ##  =()<P	= @<P>@>()=
 P	= 
-##  =()<PERLLIB = @<PERL_LIB>@>()=
-PERLLIB = 
-##  =()<PERLINC = @<PERL_INC>@>()=
-PERLINC = 
 ##  =()<TCLINC	= @<TCL_INC>@>()=
 TCLINC	= 
 
