@@ -27,7 +27,7 @@ typedef enum {SM_RDWR, SM_PREOPEN} SMSETUP;
 typedef unsigned char STORAGECLASS;
 typedef unsigned char STORAGETYPE;
 
-typedef struct {
+typedef struct token {
     STORAGETYPE         type;
     STORAGECLASS        class;
     char                token[STORAGE_TOKEN_LENGTH];
