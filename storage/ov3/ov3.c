@@ -468,6 +468,11 @@ STATIC BOOL OV3mmapgroup(GROUPHANDLE *gh) {
 	return FALSE;
     }
     gh->indexlen = sb.st_size;
+    if (gh->datalen == 0 || gh->indexlen == 0) {
+	gh->datamem = (char *)-1;
+	gh->indexmem = (INDEXENTRY *)-1;
+	return TRUE;
+    }
     if (!gh->datamem) {
 	if ((gh->datamem = (char *)mmap(0, gh->datalen, PROT_READ, MAP_SHARED,
 					gh->datafd, 0)) == (char *)-1) {
@@ -829,6 +834,8 @@ BOOL ov3search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token
     OV3SEARCH           *search = (OV3SEARCH *)handle;
     INDEXENTRY           *ie;
 
+    if (search->gh->datamem == (char *)-1 || search->gh->indexmem == (INDEXENTRY *)-1)
+	return FALSE;
     for (ie = search->gh->indexmem;
 	 ((char *)&ie[search->cur] < (char *)search->gh->indexmem + search->gh->indexlen) &&
 	     (search->cur <= search->limit) &&
