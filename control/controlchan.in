@@ -51,7 +51,7 @@ logmsg('starting');
 opendir(CTL, $inn::controlprogs)
     or logdie("Cannot open $inn::controlprogs", 'crit');
 foreach (readdir CTL) {
-    next if not /^([a-z\.]+\.pl)$/ and not -f "$inn::controlprogs/$_";
+    next if not /^([a-z\.]+\.pl)$/ or not -f "$inn::controlprogs/$_";
     eval { require "$inn::controlprogs/$1" };
     if ($@) {
         $@ =~ s/\n/  /g;
