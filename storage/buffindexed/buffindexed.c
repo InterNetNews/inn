@@ -1938,7 +1938,11 @@ bool buffindexed_expiregroup(char *group, int *lo, struct history *h) {
 	/* this may be duplicated, but ignore it in this case */
 	OVEXPremove(Gib[j].token, TRUE, NULL, 0);
       }
+#ifdef OV_DEBUG
+      freegroupblock(ge);
+#else
       freegroupblock();
+#endif
       ovgroupunmap();
       ge->expired = time(NULL);
       ge->count = 0;
@@ -2082,7 +2086,7 @@ void buffindexed_close(void) {
   FILE		*F = NULL;
   pid_t		pid;
   char		*path = NULL;
-  int		j;
+  int		i,j;
   struct ov_trace_array *trace;
   struct ov_name_table	*ntp;
 #endif /* OV_DEBUG */
