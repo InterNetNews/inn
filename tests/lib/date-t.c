@@ -1,5 +1,5 @@
 /* $Id$ */
-/* makedate() test suite */
+/* makedate test suite */
 
 #include "clibrary.h"
 #include <time.h>

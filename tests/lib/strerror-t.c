@@ -1,5 +1,5 @@
 /* $Id$ */
-/* strerror() test suite. */
+/* strerror test suite. */
 
 #include "config.h"
 

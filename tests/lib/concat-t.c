@@ -1,5 +1,5 @@
 /* $Id$ */
-/* concat() test suite. */
+/* concat test suite. */
 
 #include <stdio.h>
 #include <string.h>
