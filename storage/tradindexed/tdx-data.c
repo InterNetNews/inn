@@ -869,6 +869,15 @@ entry_audit(struct group_data *data, struct index_entry *entry,
              group, article);
         if (fix)
             goto clear;
+        return;
+    }
+    if (entry->offset > data->datalen || entry->length > data->datalen) {
+        warn("tradindexed: offset %lu or length %lu out of bounds for %s:%lu",
+             (unsigned long) entry->offset, (unsigned long) entry->length,
+             group, article);
+        if (fix)
+            goto clear;
+        return;
     }
     if (entry->offset + entry->length > data->datalen) {
         warn("tradindexed: offset %lu plus length %lu out of bounds for"
@@ -876,6 +885,7 @@ entry_audit(struct group_data *data, struct index_entry *entry,
              (unsigned long) entry->length, group, article);
         if (fix)
             goto clear;
+        return;
     }
     if (!overview_check(data->data + entry->offset, entry->length, article)) {
         warn("tradindexed: malformed overview data for %s:%lu", group,
