@@ -89,7 +89,9 @@ my(@line, %class, %buff, %stor, $c, @buffers);
 
 my($gr, $cl, $min, $max, @storsort, $oclass, $header_printed);
 
-GetOptions("-a", "-c=s", \$oclass, "-h", "-l:i", "-s", "-m=s", \$obuffer, "-p", "-P");
+Getopt::Long::config('no_ignore_case');
+GetOptions("-a", "-c=s", \$oclass, "-h", "-l:i", "-s", "-m=s", \$obuffer,
+           "-p", "-P");
 
 &usage if $opt_h;
 
