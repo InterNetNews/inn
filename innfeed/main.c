@@ -486,6 +486,7 @@ int main (int argc, char **argv)
   sleep (initialSleep) ;
 
 
+#if NOFILE_LIMIT > 0
   /* now lower maximum open file limit to match what select(2) can handle. */
   if (getrlimit(RLIMIT_NOFILE,&rl) != 0)
     syslog (LOG_ERR,GETRLIM_FAILED) ;
@@ -504,7 +505,7 @@ int main (int argc, char **argv)
             syslog (LOG_ERR,SETRLIM_FAILED,(long)fd_max);
         }
     }
-  
+#endif	/* NOFILE_LIMIT > 0 */
       
   
   configHosts (talkToSelf) ;

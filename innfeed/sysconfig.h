@@ -110,6 +110,18 @@ extern int h_errno ;
 
 
 /*
+** ULTRIX
+**
+*/
+
+#if defined (__ultrix__)
+#define DO_NEED_STRDUP 1
+#define GETSOCKOPT_ARG  char *
+#define MAX_WRITEV_VEC  16
+#endif
+
+
+/*
 ** SOLARIS
 **
 */

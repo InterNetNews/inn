@@ -62,6 +62,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "msgs.h"
 #include "tape.h"
 #include "configfile.h"
+#include "configdata.h"
 
 #define LISTENER_INPUT_BUFFER (1024 * 8) /* byte size of the input buffer */
 #define EOF_SLEEP_TIME 1	/* seconds to sleep when EOF on InputFile */
@@ -445,6 +446,9 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
   else if (i == IoFailed)
     {
       errno = endPointErrno (ep) ;
+#if HAVE_SOCKETPAIR
+      if (errno != ECONNABORTED)
+#endif
       syslog (LOG_CRIT,INN_IO_ERROR) ;
       d_printf (1,"Got IO Error on listener\n") ;
       shutDown (lis) ;
