@@ -2127,7 +2127,7 @@ STRING ARTpost(CHANNEL *cp)
     p = HDR(_distribution);
     distributions = *p ? CommaSplit(p) : NULL;
     if (distributions) {
-      if (distributions[0] == '\0') {
+      if (*distributions[0] == '\0') {
 	(void)sprintf(buff, "%d bogus distribution \"%s\"",
 		NNTP_REJECTIT_VAL,
 		MaxLength(p, p));
