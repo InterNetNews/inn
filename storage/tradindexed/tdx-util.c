@@ -181,6 +181,55 @@ extract_messageid(const char *overview)
 
 
 /*
+**  Compare two file names assuming they're numbers, used to sort the list of
+**  articles numerically.  Suitable for use as a comparison function for
+**  qsort.
+*/
+static int
+file_compare(const void *p1, const void *p2)
+{
+    const char *file1 = *((const char * const *) p1);
+    const char *file2 = *((const char * const *) p2);
+    ARTNUM n1, n2;
+
+    n1 = strtoul(file1, NULL, 10);
+    n2 = strtoul(file2, NULL, 10);
+    if (n1 > n2)
+        return 1;
+    else if (n1 < n2)
+        return -1;
+    else
+        return 0;
+}
+
+
+/*
+**  Get a list of articles in a directory, sorted by article number.
+*/
+static struct vector *
+article_list(const char *directory)
+{
+    DIR *articles;
+    struct dirent *file;
+    struct vector *list;
+
+    list = vector_new();
+    articles = opendir(directory);
+    if (articles == NULL)
+        sysdie("cannot open directory %s", directory);
+    while ((file = readdir(articles)) != NULL) {
+        if (!check_number(file->d_name))
+            continue;
+        vector_add(list, file->d_name);
+    }
+    closedir(articles);
+
+    qsort(list->strings, list->count, sizeof(list->strings[0]), file_compare);
+    return list;
+}
+
+
+/*
 **  Rebuild the overview data for a particular group.  Takes a path to a
 **  directory containing all the articles, as individual files, that should be
 **  in that group.  The names of the files should be the article numbers in
@@ -189,14 +238,12 @@ extract_messageid(const char *overview)
 static void
 group_rebuild(const char *group, const char *path)
 {
-    DIR *articles;
     char *filename, *histpath, *article, *wireformat, *p;
-    size_t size;
+    size_t size, file;
     int flags, length;
     struct buffer *overview = NULL;
-    struct vector *extra;
+    struct vector *extra, *files;
     struct history *history;
-    struct dirent *file;
     struct group_index *index;
     struct group_data *data;
     struct group_entry *entry, info;
@@ -207,8 +254,13 @@ group_rebuild(const char *group, const char *path)
     if (index == NULL)
         die("cannot open group index");
     entry = tdx_index_entry(index, group);
-    if (entry == NULL)
-        die("cannot find group %s", group);
+    if (entry == NULL) {
+        if (!tdx_index_add(index, group, 1, 0, "y"))
+            die("cannot create group %s", group);
+        entry = tdx_index_entry(index, group);
+        if (entry == NULL)
+            die("cannot find group %s", group);
+    }
     info = *entry;
     data = tdx_data_rebuild_start(group);
     if (data == NULL)
@@ -223,19 +275,14 @@ group_rebuild(const char *group, const char *path)
         sysdie("cannot open history %s", histpath);
     free(histpath);
 
-    articles = opendir(path);
-    if (articles == NULL)
-        sysdie("cannot open directory %s", path);
-
     extra = overview_extra_fields();
+    files = article_list(path);
 
     info.count = 0;
     info.high = 0;
     info.low = 0;
-    while ((file = readdir(articles)) != NULL) {
-        if (!check_number(file->d_name))
-            continue;
-        filename = concatpath(path, file->d_name);
+    for (file = 0; file < files->count; file++) {
+        filename = concatpath(path, files->strings[file]);
         article = ReadInFile(filename, &st);
         size = st.st_size;
         if (article == NULL) {
@@ -254,7 +301,7 @@ group_rebuild(const char *group, const char *path)
             size = length;
         }
 
-        artdata.number = strtoul(file->d_name, NULL, 10);
+        artdata.number = strtoul(files->strings[file], NULL, 10);
         if (artdata.number > info.high)
             info.high = artdata.number;
         if (artdata.number < info.low || info.low == 0)
@@ -282,7 +329,8 @@ group_rebuild(const char *group, const char *path)
         free(filename);
         free(article);
     }
-    closedir(articles);
+    vector_free(files);
+    vector_free(extra);
 
     info.indexinode = data->indexinode;
     info.base = data->base;
@@ -292,7 +340,6 @@ group_rebuild(const char *group, const char *path)
         die("cannot finish rebuilding data for group %s", group);
     tdx_data_close(data);
     HISclose(history);
-    vector_free(extra);
 }
 
 
