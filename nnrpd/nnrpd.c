@@ -59,12 +59,12 @@ extern int h_errno;
 
 
 typedef struct _CMDENT {
-    STRING	Name;
-    FUNCPTR	Function;
-    BOOL	Needauth;
-    int		Minac;
-    int		Maxac;
-    STRING	Help;
+    const char *        Name;
+    void                (*Function)(int, char **);
+    bool                Needauth;
+    int                 Minac;
+    int                 Maxac;
+    const char *        Help;
 } CMDENT;
 
 
