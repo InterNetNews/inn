@@ -531,9 +531,8 @@ SetDescriptorLimit(i)
 /*
 **  Signal handler to catch SIGTERM and queue a clean shutdown.
 */
-STATIC SIGHANDLER
-CatchTerminate(s)
-    int		s;
+static RETSIGTYPE
+CatchTerminate(int s)
 {
     GotTerminate = TRUE;
     KillerSignal = s;
@@ -876,6 +875,7 @@ int main(int ac, char *av[])
     /* Set up the various parts of the system.  Channel feeds start
      * processes so call PROCsetup before ICDsetup.  NNTP needs to know
      * if it's a slave, so call RCsetup before NCsetup. */
+    (void)xsignal(SIGHUP, CatchTerminate);
     (void)xsignal(SIGTERM, CatchTerminate);
 #if	defined(SIGDANGER)
     (void)xsignal(SIGDANGER, CatchTerminate);
