@@ -1580,6 +1580,7 @@ sub collect
   return 1 if ($prog eq "demmf");
   return 1 if ($prog eq "nnnn");
   return 1 if ($prog eq "controlchan");
+  return 1 if ($prog eq "cnfsstat");
   return 0;
 }
 
