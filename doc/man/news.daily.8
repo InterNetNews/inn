@@ -56,6 +56,8 @@ or
 The names of articles to be removed are written to a temporary file, and
 then renamed after expiration by calling
 .IR expirerm (8).
+If the ``delayrm'' keyword is specified, the ``expireover'' keyword
+is specified implicitly.
 .TP
 .IR expctl= path
 Specify the file to use as the
@@ -163,11 +165,14 @@ If the file is empty, no message is sent.
 .I expireover
 The
 .I expireover
-program is called after expiration to purge the overview databases.
+program is called after expiration to purge the overview databases or indices.
 If you have turned on the storage manager with the 'storageapi' in
 .IR inn.conf (5),
 .I expireindex
-program is called instead.
+program is called instead.  
+If storageapi turned on and no overview data is created, the ``expireover''
+keyword is not needed.  This is the case that the server runs only for
+feeder(no reader).
 .TP
 .IR expireoverflags= "'expireover\ args'"
 If the ``expireover'' keyword is used, this keyword may be used to specify
@@ -194,6 +199,10 @@ Normal
 .IR ctlinnd (8)
 renumber operation will take long time.  With ``lowmark'' keyword this will
 take less time.
+If the ``lowmark'' keyword is used,
+\&``norenumber'' keyword is not needed, since
+.I news.daily
+specifies it implicitly.
 .SH HISTORY
 .I News.daily
 and this manual page written by Landon Curt Noll <chongo@toad.com> and
