@@ -8,13 +8,13 @@ CFLAGS  = $(GCFLAGS)
 # The base library files that are always compiled and included.
 SOURCES       = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
 		conffile.c confparse.c daemonize.c date.c dbz.c defdist.c \
-		fdflags.c fdlimit.c findheader.c genid.c getfqdn.c \
-		getmodaddr.c gettime.c hash.c hashtab.c innconf.c inndcomm.c \
-		localopen.c lockfile.c makedir.c md5.c messages.c mmap.c \
-		parsedate.c qio.c radix32.c readin.c remopen.c reservedfd.c \
-		resource.c sendarticle.c sendpass.c sequence.c sockaddr.c \
-		timer.c tst.c uwildmat.c vector.c version.c wire.c xfopena.c \
-		xmalloc.c xsignal.c xwrite.c
+		fdflags.c fdlimit.c genid.c getfqdn.c getmodaddr.c gettime.c \
+		hash.c hashtab.c innconf.c inndcomm.c localopen.c lockfile.c \
+		makedir.c md5.c messages.c mmap.c parsedate.c qio.c \
+		radix32.c readin.c remopen.c reservedfd.c resource.c \
+		sendarticle.c sendpass.c sequence.c sockaddr.c timer.c tst.c \
+		uwildmat.c vector.c version.c wire.c xfopena.c xmalloc.c \
+		xsignal.c xwrite.c
 
 # Sources for additional functions only built to replace missing system ones.
 EXTRA_SOURCES = fseeko.c ftello.c getpagesize.c hstrerror.c inet_aton.c \

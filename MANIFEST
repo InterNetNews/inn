@@ -444,7 +444,6 @@ lib/dbz.c                             DBZ database library
 lib/defdist.c                         Determine default Distribution header
 lib/fdflags.c                         Set or clear file descriptor flags
 lib/fdlimit.c                         File descriptor limits
-lib/findheader.c                      Find a header in an article
 lib/fseeko.c                          fseeko replacement
 lib/ftello.c                          ftello replacement
 lib/genid.c                           Generate a message ID
