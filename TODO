@@ -593,12 +593,6 @@ Long-Term Projects
   to a local disk file rather than storing it.  (See the stuff that the
   nnrpd filter can already do.)
 
-* Add authentication via SASL to nnrpd.  This is a boatload of additional
-  issues, particularly if we want to add authentication methods like
-  Kerberos that require their own separate libraries (although we should
-  use Cyrus's SASL libraries, which will simplify a lot of that).
-  [Ken Murchison has this mostly done.]
-
 * When articles expire out of a storage method with self-expire
   functionality, the overview and history entries for those articles
   should also be expired immediately.  Otherwise, things like the GROUP
@@ -687,7 +681,9 @@ Long-Term Projects
 
 * Set up the infrastructure required so that INN can use alloca.  This
   would significantly decrease the number of calls to malloc needed and
-  would be a lot more convenient.
+  would be a lot more convenient.  alloca is now available, but most
+  programs still need to call alloca_free in their main loops before we
+  can use it in the various libraries.
 
 * A serious investigation into whether INN could use a garbage collector
   is probably a good idea.  The network buffers probably need to be
