@@ -24,6 +24,7 @@ clobber: clean
 	rm -f $(EXTRA)
 
 install:
+depend:
 
 
 ##  Build rules.

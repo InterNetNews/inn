@@ -148,6 +148,8 @@ tags ctags:
 profiled:
 	cp /dev/null profiled
 
+depend:
+
 ##  Commands to make private or public, read or executable files.
 COPY_RPRI	= $(CP_RPRI)
 COPY_RPUB	= $(CP_RPUB)

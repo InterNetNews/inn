@@ -24,6 +24,8 @@ man: $(MAN)
 clean clobber distclean:
 	rm -f $(ALL)
 
+depend:
+
 
 ##  Build rules.
 

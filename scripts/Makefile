@@ -40,6 +40,8 @@ clean:
 clobber: clean
 	rm -f $(EXTRA)
 
+depend:
+
 
 ##  Build rules.
 
