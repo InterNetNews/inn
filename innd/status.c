@@ -79,7 +79,7 @@ STATUSinit(void)
   strcpy (start_time, ctime (&now)) ;
 }
 
-char *
+static char *
 PrettySize(float size, char *str)
 {
   if (size > 1073741824) /* 1024*1024*1024 */

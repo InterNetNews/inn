@@ -22,7 +22,7 @@ static int		ICDactsize;
 **  avoid problems with mmap.
 */
 #ifdef HAVE_MMAP
-void
+static void
 ICDiovset(struct iovec *iovp, char *base, int len)
 {
     iovp->iov_len = len; 

@@ -47,7 +47,7 @@ SITEcopystrings(char **av)
 /*
 ** Adds a variable from a line.
 */
-bool
+static bool
 SITEaddvariable(char *line)
 {
     char *p, *q;
@@ -107,7 +107,7 @@ SITEaddvariable(char *line)
     return TRUE;        
 }
 
-void
+static void
 SITEclearvariables(void)
 {
     SITEVARIABLES *v, *w;
@@ -123,7 +123,7 @@ SITEclearvariables(void)
     SITEvariables = NULL;
 }
 
-SITEVARIABLES *
+static SITEVARIABLES *
 SITEfindvariable(char *name)
 {
     SITEVARIABLES *v;
@@ -397,7 +397,7 @@ SITEsetlist(char **patlist, char *subbed, char *poison, bool *poisonEntry)
 **  the caller is expected to save or free.  We don't use strchr() since
 **  the text is expected to be either relatively short or "slash-dense."
 */
-char **
+static char **
 SlashSplit(char *text)
 {
     int		i;

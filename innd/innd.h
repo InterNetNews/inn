@@ -647,6 +647,7 @@ extern void		ARTcancel(const ARTDATA *Data,
 extern void		ARTclose(void);
 extern void		ARTsetup(void);
 extern void		ARTprepare(CHANNEL *cp);
+extern void		ARTparse(CHANNEL *cp);
 
 extern void		BUFFset(BUFFER *bp, const char *p, const int length);
 extern void		BUFFswap(BUFFER *b1, BUFFER *b2);

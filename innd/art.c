@@ -91,7 +91,7 @@ const char	*filterPath;
 /*
 **  Mark that the site gets this article.
 */
-void
+static void
 SITEmark(SITE *sp, NEWSGROUP *ngp)
 {
   SITE	*funnel;
@@ -328,7 +328,7 @@ ARTlog(const ARTDATA *data, char code, const char *text)
 /*
 **  Parse a Path line, splitting it up into NULL-terminated array of strings.
 */
-static int
+int
 ARTparsepath(const char *p, int size, LISTBUFFER *list)
 {
   int	i;
@@ -1060,7 +1060,7 @@ ARTclean(ARTDATA *data, char *buff)
 **  and the article.
 */
 static void
-ARTreject(Reject_type code, CHANNEL *cp, BUFFER *article)
+ARTreject(Reject_type code, CHANNEL *cp, BUFFER *article UNUSED)
 {
   /* Remember why the article was rejected (for the status file) */
 
@@ -1213,7 +1213,7 @@ ARTcancel(const ARTDATA *data, const char *MessageID, const bool Trusted)
 **  has the same name as the first word of the control message.
 */
 static void
-ARTcontrol(ARTDATA *data, char *Control, CHANNEL *cp)
+ARTcontrol(ARTDATA *data, char *Control, CHANNEL *cp UNUSED)
 {
   char *p, c;
 
@@ -1657,7 +1657,7 @@ struct word_entry {
 ** Wrapper for qsort(3) comparison of word_entry (frequency).
 */
 
-int
+static int
 wvec_freq_cmp(const void *p1, const void *p2)
 {
     return ((const struct word_entry *)p2)->count -	/* decreasing sort */
@@ -1668,7 +1668,7 @@ wvec_freq_cmp(const void *p1, const void *p2)
 ** Wrapper for qsort(3) comparison of word_entry (word length).
 */
 
-int
+static int
 wvec_length_cmp(const void *p1, const void *p2)
 {
     return ((const struct word_entry *)p2)->length -	/* decreasing sort */
@@ -1679,7 +1679,7 @@ wvec_length_cmp(const void *p1, const void *p2)
 ** Wrapper for qsort(3), for pointer-to-pointer strings.
 */
 
-int
+static int
 ptr_strcmp(const void *p1, const void *p2)
 {
     int cdiff;

@@ -53,7 +53,7 @@ FILE *Errlog = NULL;
 #endif
 
 /* Internal prototypes. */
-static RETSIGTYPE       catch_terminate(int signal);
+static RETSIGTYPE       catch_terminate(int sig);
 static void             xmalloc_abort(const char *what, size_t size,
                                       const char *file, int line);
 
@@ -148,10 +148,10 @@ ARTHEADER ARTheaders[] = {
 **  shutdown.
 */
 static RETSIGTYPE
-catch_terminate(int signal)
+catch_terminate(int sig)
 {
     GotTerminate = TRUE;
-    killer_signal = signal;
+    killer_signal = sig;
 
 #ifndef HAVE_SIGACTION
     xsignal(signal, catch_terminate);

@@ -112,7 +112,7 @@ static int		remotefirst;
  * Check that the client has the right identd. Return TRUE if is the
  * case, false, if not.
  */
-bool
+static bool
 GoodIdent(int fd, char *identd)
 {
 #define PORT_IDENTD 113
@@ -221,7 +221,7 @@ GoodIdent(int fd, char *identd)
  * and removed here)
  */
 
-char **
+static char **
 RCCommaSplit(char *text)
 {
     int		i;
@@ -267,7 +267,7 @@ RCCommaSplit(char *text)
 #define IP_OPTIONS 1
 #endif
 
-int
+static int
 RCfix_options(int fd, struct sockaddr_storage *remote)
 {
 #if IP_OPTIONS
@@ -314,7 +314,7 @@ RCfix_options(int fd, struct sockaddr_storage *remote)
     return 0;
 }
 
-BOOL
+static BOOL
 RCaddressmatch(const struct sockaddr_storage *cp, const struct sockaddr_storage *rp)
 {
 #ifdef HAVE_INET6
@@ -730,7 +730,7 @@ RCwritedone(CHANNEL *unused)
 /*
  * Read something (a word or a double quoted string) from a file.
  */
-char *
+static char *
 RCreaddata(int *num, FILE *F, bool *toolong)
 {
   char	*p;
@@ -811,7 +811,7 @@ RCreaddata(int *num, FILE *F, bool *toolong)
 /*
  *  Add all data into RCpeerlistfile.
  */
-void
+static void
 RCadddata(REMOTEHOST_DATA **d, int *count, int Key, int Type, char* Value)
 {
   (*d)[*count].key = Key;
@@ -1636,7 +1636,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 **  Indent a line with 3 * c blanks.
 **  Used by RCwritelist().
 */
-void
+static void
 RCwritelistindent(FILE *F, int c)
 {
     int		i;
@@ -1649,7 +1649,7 @@ RCwritelistindent(FILE *F, int c)
 **  Add double quotes around a string, if needed.
 **  Used by RCwritelist().
 */
-void
+static void
 RCwritelistvalue(FILE *F, char *value)
 {
     if (*value == '\0' || strchr (value, '\n') ||
@@ -1662,7 +1662,7 @@ RCwritelistvalue(FILE *F, char *value)
 /*
 **  Write the incoming configuration (memory->disk)
 */
-void
+static void
 RCwritelist(char *filename)
 {
     FILE	*F;
@@ -1934,7 +1934,7 @@ RCsetup(int i)
 	syslog(L_FATAL, "%s cant listen RCreader %m", LogName);
 	/* some IPv6 systems already listening on any address will 
 	   return EADDRINUSE when trying to listen on the IPv4 socket */
-	if ( j = EADDRINUSE ) return -1;
+	if ( j == EADDRINUSE ) return -1;
 	exit(1);
     }
 
