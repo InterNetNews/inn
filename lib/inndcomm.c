@@ -3,34 +3,37 @@
 **  Library routines to let other programs control innd.
 */
 #include "config.h"
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
 #include "clibrary.h"
-#include <errno.h>
 #include <ctype.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#if	defined(DO_NEED_TIME)
-#include <time.h>
-#endif	/* defined(DO_NEED_TIME) */
-#include <sys/time.h>
-#include <sys/socket.h>
+#include <errno.h>
 #include <netinet/in.h>
-#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
-#include <sys/un.h>
-#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
-#include "nntp.h"
-#include "paths.h"
-#include "libinn.h"
-#include "inndcomm.h"
-#include "macros.h"
+#include <signal.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif
+
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#else
+# include <time.h>
+#endif
+
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
+# include <sys/un.h>
+#endif
+
+#include "inndcomm.h"
+#include "libinn.h"
+#include "macros.h"
+#include "paths.h"
 
 #define MIN_BUFFER_SIZE		4096
 
@@ -155,14 +158,14 @@ ICCclose()
 STATIC PID_T
 ICCserverpid()
 {
-    PID_T		pid;
+    pid_t		pid;
     FILE		*F;
     char		buff[SMBUF];
 
     pid = 1;
     if ((F = fopen(cpcatpath(innconf->pathrun, _PATH_SERVERPID), "r")) != NULL) {
 	if (fgets(buff, sizeof buff, F) != NULL)
-	    pid = (PID_T) atol(buff);
+	    pid = atol(buff);
 	(void)fclose(F);
     }
     return pid;
