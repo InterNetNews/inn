@@ -42,8 +42,8 @@
 
 #include <errno.h>
 
-#if defined (__FreeBSD__)
-#include <sys/param.h>
+#if HAVE_SYS_PARAM_H
+# include <sys/param.h>
 #endif
 
 #include "buffer.h"
