@@ -60,7 +60,7 @@ static int
 xmemerr(const char *what, size_t size, const char *file, int line)
 {
     fprintf(stderr, "%s:%d Can\'t %s %lu bytes: %s",
-            file, line, what, (unsigned int) size, strerror(errno));
+            file, line, what, (unsigned long) size, strerror(errno));
     exit(1);
 }
 
