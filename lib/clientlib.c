@@ -41,7 +41,7 @@ int server_init(char *host, int port)
     /* This interface may be used by clients that assume C News behavior and
        won't read inn.conf themselves. */
     if (innconf == NULL)
-        if (ReadInnConf() < 0) exit(1);
+        if (ReadInnConf() < 0) return -1;
 
     if (NNTPconnect(host, port, &ser_rd_fp, &ser_wr_fp, ser_line) < 0) {
 	if (ser_line[0] == '\0')
