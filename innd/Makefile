@@ -35,7 +35,7 @@ tags ctags: $(SOURCES)
 ##  Compilation rules.
 
 INNDLIBS 	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) \
-		  $(PYTHON_LIBS) $(REGEX_LIBS) $(LIBS) $(PERL_LIBS)
+		  $(PERL_LIBS) $(PYTHON_LIBS) $(REGEX_LIBS) $(LIBS)
 
 perl.o:		perl.c   ; $(CC) $(CFLAGS) $(PERL_CPPFLAGS) -c perl.c
 python.o:	python.c ; $(CC) $(CFLAGS) $(PYTHON_CPPFLAGS) -c python.c
