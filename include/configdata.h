@@ -197,6 +197,7 @@ typedef int		BOOL;
 #define FEED_FNLNAMES		'*'
 #define FEED_HEADERS		'H'
 #define FEED_NAME		'n'
+#define FEED_STOREDGROUP	'G'
 #define FEED_NEWSGROUP		'g'
 #define FEED_OVERVIEW		'O'
 #define FEED_PATH		'P'
