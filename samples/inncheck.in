@@ -364,6 +364,7 @@ incoming_conf
     'activedport',		0,
     'storemsgid',		0,
     'nicenewnews',		0,
+    'nicennrpd',		0,
     'usecontrolchan',		0,
     'mergetogroups',		0,
     'noreader',			0,

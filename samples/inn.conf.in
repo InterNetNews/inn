@@ -25,6 +25,7 @@ maxforks:		10
 maxartsize:		1000000
 nicekids:		4
 nicenewnews:		0
+nicennrpd:		0
 verifycancels:		false
 logcancelcomm:		false
 wanttrash:		false
