@@ -281,6 +281,7 @@ EXTRA_SRC=""
 dnl Removed (only in auth_progs): AC_CHECK_LIB(crypt,  crypt)
 AC_CHECK_LIB(util,   setproctitle)
 AC_CHECK_LIB(44bsd,  inet_addr)
+AC_CHECK_LIB(bind,  __inet_addr)
 AC_CHECK_LIB(resolv, gethostbyname, ac_need_libresolv=1, ac_try_bind=1)
 AC_CHECK_LIB(resolv, inet_aton, ac_need_libresolv=1, ac_try_bind=1)
 if test x$ac_need_libresolv = x1
@@ -292,7 +293,11 @@ then
 	AC_CHECK_LIB(bind, inet_aton, ac_need_extra_inet_aton=1)
 	if test x$ac_need_extra_inet_aton = x
 	then
-		EXTRA_SRC="inet_addr.c"
+		AC_CHECK_LIB(bind, __inet_aton, ac_need_extra__inet_aton=1)
+		if test x$ac_need_extra__inet_aton = x
+		then
+			EXTRA_SRC="inet_addr.c"
+		fi
 	fi
 fi
 AC_CHECK_LIB(nsl, gethostbyname)
