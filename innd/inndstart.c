@@ -101,6 +101,7 @@ int main(int ac, char *av[])
 	argv = NEW(STRING, 3);
 	argv[0] = cpcatpath(innconf->pathbin, "actived");
 	argv[1] = NULL;
+	env[0] = NULL;
 	(void)execve(argv[0], (CSTRING *)argv, (CSTRING *)env);
 	syslog(L_FATAL, "inndstart cant exec %s %m", argv[0]);
 	_exit(0);
