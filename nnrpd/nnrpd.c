@@ -1280,8 +1280,6 @@ main(int argc, char *argv[])
 		    syslog(L_NOTICE, "%s timeout short", ClientHost);
 		else
 		    syslog(L_NOTICE, "%s timeout", ClientHost);
-		Printf("%d Timeout after %d seconds, closing connection.\r\n",
-		       NNTP_TEMPERR_VAL, timeout);
 		ExitWithStats(1, FALSE);
 		break;
 	    case RTok:

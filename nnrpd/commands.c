@@ -821,8 +821,6 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 	    /* FALLTHROUGH */
 	case RTtimeout:
 	    warn("%s timeout in post", ClientHost);
-	    Printf("%d timeout after %d seconds, closing connection\r\n",
-		   NNTP_TEMPERR_VAL, PERMaccessconf->clienttimeout);
 	    ExitWithStats(1, FALSE);
 	    /* NOTREACHED */
 	case RTeof:
