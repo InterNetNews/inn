@@ -1,50 +1,3 @@
-[IN1.7=@1][comments]
-  ||##  $Revision$
-  ||##
-  ||##  InterNetNews configuration file.
-  ||##  Note that if you leave a field blank, you must have the trailing tab!
-  ||##
-  ||
-  ||##
-  ||## NOTE. This file is ready to build on BSD/OS (although you may want to
-  ||## tweak some things). If you're not on BSD/OS, then pay attention to
-  ||## variables like LIBS.
-  ||##
-  ||
-  ||## Many of the settings in this file can be generated automatically
-  ||## by running the configure script, which takes the template
-  ||## config.data.in.  These settings are marked "autoconf"
-  ||##
-  ||## To change this file:
-  ||##      1. You can edit this file directly
-  ||##
-  ||##	    2. You can choose to edit entries in config.data.in and
-  ||##         generate config.data again.
-  ||##
-  ||##      3. You can use subst and a short list (perhaps from
-  ||##         INN FAQ section 9) to change only a few parameters.
-  ||##
-  ||##
-  ||##  1.  MAKE CONFIG PARAMETERS
-[IN1.7=@1][WDF=autoconf][WOR=no]
-  ||##  Does your compiler properly do "char const *"? Pick DO DONT or DUNNO
-  ||##[autoconf]
-  ||#### =()<USE_CHAR_CONST		@<USE_CHAR_CONST>@>()=
-  ||USE_CHAR_CONST		@ac_cv_subst_use_char_const@
-[IN1.7=@1][WDF=autoconf][WOR=no][P=low]
-  ||##  If you use the standard NNTP way of connecting, where is the library?
-  ||#### =()<NNTPLIB		@<NNTPLIB>@>()=
-  ||NNTPLIB		
-[IN1.7=@1][WDF=confparam][WOR=no][P=low]
-  ||##  How to install manpages; pick SOURCE, NROFF-PACK, NROFF-PACK-SCO,
-  ||##  BSD4.4 or NONE.
-  ||#### =()<MANPAGESTYLE		@<MANPAGESTYLE>@>()=
-  ||MANPAGESTYLE		SOURCE
-[IN1.7=@3][comments]
-  ||
-  ||
-  ||##
-  ||##  3.  OWNERSHIPS AND FILE MODES
 [IN1.7=@3][WDF=confparam][WOR=yes]
   ||##  Who gets email on the Path line?
   ||#### =()<PATHMASTER		@<PATHMASTER>@>()=
@@ -65,11 +18,6 @@
   ||##  Mode that directories are created under.
   ||#### =()<GROUPDIR_MODE		@<GROUPDIR_MODE>@>()=
   ||GROUPDIR_MODE		0775
-[IN1.7=@4][comments]
-  ||
-  ||
-  ||##
-  ||##  4.  C LIBRARY DIFFERENCES
 [IN1.7=@4][WDF=autoconf][WOR=no][P=high]
   ||##  What is a file offset?  MUST BE LONG FOR NOW.
   ||#### =()<OFFSET_T		@<OFFSET_T>@>()=
@@ -195,11 +143,6 @@
   ||##[autoconf]
   ||#### =()<_EXITVAL		@<_EXITVAL>@>()=
   ||_EXITVAL		@ac_cv_type__exit@
-[IN1.7=@5][comments]
-  ||
-  ||
-  ||##
-  ||##  5.  C LIBRARY OMISSIONS
 [IN1.7=@5][WDF=autoconf][WOR=no]
   ||##  Possible values:
   ||##	MISSING_MAN		strcasecmp.3 syslog.3
@@ -217,12 +160,6 @@
   ||##[autoconf]
   ||#### =()<MISSING_OBJ		@<MISSING_OBJ>@>()=
   ||MISSING_OBJ		@MISSING_OBJ@
-[IN1.7=@6][comments]
-  ||
-  ||
-  ||##
-  ||##  6.  MISCELLANEOUS CONFIG DATA
-  ||##
 [IN1.7=@6][WDF=confparam][WOR=yes]
   ||##  Use read/write to update the active file, or mmap?  Pick READ or MMAP.
   ||##[autoconf]
@@ -381,11 +318,6 @@
   ||##  Where rnews puts bad input, relative to _PATH_SPOOLNEWS.
   ||#### =()<_PATH_RELBAD		@<_PATH_RELBAD>@>()=
   ||_PATH_RELBAD		bad
-[IN1.7=@9][comments]
-  ||
-  ||
-  ||##
-  ||##  9.  EXECUTION PATHS FOR INND AND RNEWS
 [IN1.7=@9][WDF=confparam][WOR=yes][P=low]
   ||##  Pathname where dups are logged if RNEWS_LOG_DUPS is FILE.
   ||#### =()<_PATH_RNEWS_DUP_LOG	@<_PATH_RNEWS_DUP_LOG>@>()=
@@ -394,11 +326,6 @@
   ||##  Default "unknown/illegal" control script, within _PATH_CONTROLPROGS.
   ||#### =()<_PATH_BADCONTROLPROG	@<_PATH_BADCONTROLPROG>@>()=
   ||_PATH_BADCONTROLPROG	default
-[IN1.7=@11][comments]
-  ||
-  ||
-  ||##
-  ||##  11.  LOG AND CONFIG FILES
 [IN1.7=@11][WDF=confparam][WOR=yes][P=low]
   ||## The group owner of the rnews program. Usually uucp.
   ||#### =()<RNEWS_GROUP		@<RNEWS_GROUP>@>()=
@@ -407,11 +334,6 @@
   ||##  How many generates of log files to keep.
   ||#### =()<LOG_CYCLES		@<LOG_CYCLES>@>()=
   ||LOG_CYCLES		3
-[IN1.7=@12][comments]
-  ||
-  ||
-  ||##
-  ||##  12.  INNWATCH CONFIGURATION
 [IN1.7=@12][WDF=confparam][WOR=yes][P=low]
   ||##  Load average (* 100) at which innd should be paused.
   ||#### =()<INNWATCH_PAUSELOAD	@<INNWATCH_PAUSELOAD>@>()=
@@ -454,12 +376,6 @@
   ||##  Field number of INNWATCH_DF output that gives the free block count.
   ||##### =()<INNWATCH_BLOCKS		@<INNWATCH_BLOCKS>@>()=
   ||INNWATCH_BLOCKS		4
-[IN1.7=@13][comments]
-  ||
-  ||
-  ||
-  ||##
-  ||##  13.  TCL Configuration
 [IN1.7=@13][WDF=confparam][WOR=yes]
   ||##  Do you want TCL support?  Pick DO or DONT
   ||##[autoconf]
@@ -477,13 +393,6 @@
   ||#### =()<TCL_LIB		@<TCL_LIB>@>()=
   ||TCL_LIB			@TCL_LIB@
   ||# TCL_LIB		-ltcl -lm
-[IN1.7=@14][comments]
-  ||
-  ||
-  ||##
-  ||##  14. PGP Configuration
-  ||##
-  ||
 [IN1.7=@14][WDF=confparam][WOR=yes]
   ||## Do you want PGP verification of control messages? Pick DO or DONT
   ||## If you change this then you need to fiddle with control.ctl.
@@ -491,33 +400,11 @@
   ||##[autoconf]
   ||#### =()<WANT_PGPVERIFY		@<WANT_PGPVERIFY>@>()=
   ||WANT_PGPVERIFY		@DO_PGP@
-[IN1.7=@17][comments]
-  ||
-  ||
-  ||
-  ||##  17.  Perl Configuration
 [IN1.7=@17][WDF=confparam][WOR=no]
   ||##  Do you want Perl support?  Pick DO or DONT
   ||##[autoconf]
   ||#### =()<PERL_SUPPORT		@<PERL_SUPPORT>@>()=
   ||PERL_SUPPORT		@DO_PERL@
-[IN1.7=@17][WDF=autoconf][WOR=no]
-  ||##  How do you get the PERL libraries?  Probably -lperl -lm, blank if no PERL
-  ||##[autoconf]
-  ||#### =()<PERL_LIB	@<PERL_LIB>@>()=
-  ||PERL_LIB		@PERL_LIB@
-  ||#PERL_LIB	-L/usr/local/gnu/lib/perl5/i386-bsdos/5.003/CORE -lperl -lm
-[IN1.7=@17][WDF=autoconf][WOR=no]
-  ||##  Core directory (includes, libs). See perlembed(1)
-  ||##[autoconf]
-  ||#### =()<PERL_INC	@<PERL_INC>@>()=
-  ||PERL_INC		@PERL_INC@
-  ||#PERL_INC		-I/usr/local/gnu/lib/perl5/i386-bsdos/5.003/CORE
-[IN1.7=@NO][comments]
-  ||
-  ||
-  ||##  18. CNFS partition hackery
-  ||##
 [IN1.7=@NO][WDF=autoconf][WOR=no]
   ||##  C type to use for offsets (should be a big integer like "off_t" 
   ||##  (or "offset_t" (64 bits) for Solaris 2.5).
@@ -531,10 +418,6 @@
   ||##  use a different system call, namedly llseek().
   ||#### =()<CNFSseekcall		@<CNFSseekcall>@>()=
   ||CNFSseekcall		lseek
-  ||
-  ||
-  ||##  19. Keywords in Overview support
-  ||##
 [IN1.7=@NO][WDF=autoconf][WOR=no]
   ||##  Should INN fabricate Keywords: data for overviews?  Pick DO or DONT.
   ||#### =()<KEYWORDS	@<KEYWORDS>@>()=

@@ -83,6 +83,12 @@
 /* Define if you have symlink() */
 #undef HAVE_SYMLINK
 
+/* if I understand how configure does this, if 'const' isn't valid, 
+ * it will remove the 'const' declarations from the typedef's below 
+ * <scrappy@hub.org 
+ */
+typedef char const      *STRING;
+typedef char * const    CSTRING;
 
 #if defined(STDC_HEADERS) 
 # if defined(HAVE_STDARG_H)

@@ -4960,26 +4960,6 @@ fi
 
 
 
-if test "x${ac_cv_subst_use_char_const}" = "x"
-then
-if test x${ac_cv_c_const} = "xno"
-then
-    echo setting ac_cv_subst_use_char_const...DONT 
-	ac_cv_subst_use_char_const=DONT
-else
-    if test x${ac_cv_c_const} = "xyes"
-    then
-	    echo setting ac_cv_subst_use_char_const...DO
-	    ac_cv_subst_use_char_const=DO
-	else
-	    { echo "configure: error: ac_cv_c_const = ${ac_cv_c_const}. Must be yes or no" 1>&2; exit 1; }
-	fi
-fi
-else
-    echo "setting ac_cv_subst_use_char_const... (cached) ${ac_cv_subst_use_char_const}" 
-fi
-
-
 if test "x${ac_cv_subst_size_t}" = "x"
 then
 if test x${ac_cv_type_size_t} = "xno"
@@ -5412,7 +5392,6 @@ s%@ac_cv_type_generic@%$ac_cv_type_generic%g
 s%@ac_cv_subst_uid_t@%$ac_cv_subst_uid_t%g
 s%@ac_cv_subst_gid_t@%$ac_cv_subst_gid_t%g
 s%@ac_cv_subst_fdcount_style@%$ac_cv_subst_fdcount_style%g
-s%@ac_cv_subst_use_char_const@%$ac_cv_subst_use_char_const%g
 s%@ac_cv_subst_size_t@%$ac_cv_subst_size_t%g
 s%@ac_cv_subst_pid_t@%$ac_cv_subst_pid_t%g
 s%@ac_cv_subst_lseekval@%$ac_cv_subst_lseekval%g
