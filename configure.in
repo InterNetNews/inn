@@ -144,9 +144,11 @@ AC_ENSURE_PATH_PROG(ac_cv_subst_path_mail,Mail)
 AC_ENSURE_PATH_PROG(ac_cv_subst_path_perl,perl)
 AC_PATH_PROG(ac_cv_subst_path_pgp,pgp,no-pgp-found-during-configure)
 AC_ENSURE_PATH_PROG(ac_cv_subst_path_sed,sed)
-AC_ENSURE_PATH_PROG(ac_cv_subst_path_sendmail,sendmail)
 AC_ENSURE_PATH_PROG(ac_cv_subst_path_sort,sort)
 AC_ENSURE_PATH_PROG(ac_cv_subst_path_sh,sh)
+dnl Common to have sendmail in /usr/lib.  We make sure to look there.
+PATH=$PATH:/usr/lib
+AC_ENSURE_PATH_PROG(ac_cv_subst_path_sendmail,sendmail)
 PATH="$ac_save_path"
 dnl If the path mucking above must be done, redo the echo test.
 if (echo "testing\c"; echo 1,2,3) | grep c >/dev/null; then
@@ -167,11 +169,18 @@ dnl Checks for libraries.
 dnl Removed (only in auth_progs): AC_CHECK_LIB(crypt,  crypt)
 AC_CHECK_LIB(util,   setproctitle)
 AC_CHECK_LIB(44bsd,  inet_addr)
-AC_CHECK_LIB(resolv, gethostbyname)
-AC_CHECK_LIB(resolv, inet_aton)
+AC_CHECK_LIB(resolv, gethostbyname, ac_need_libresolv=1)
+AC_CHECK_LIB(resolv, inet_aton, ac_need_libresolv=1)
+if test x$ac_need_libresolv=x1
+then
+LIBS="$LIBS -lresolv"
+fi
+AC_CHECK_LIB(bind, inet_aton)
 AC_CHECK_LIB(nsl, gethostbyname)
 AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(elf, nlist)
+dnl AIX needs flock from libbsd
+AC_CHECK_LIB(bsd,flock)
 dnl Check for PERL location
 if test x${DO_PERL} = xDO ; then
 	AC_MSG_CHECKING(for Perl configuration)
