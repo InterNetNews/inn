@@ -44,35 +44,35 @@ for SITE in ${LIST}; do
 	;;
     esac
     BATCHFILE=${SITE}.ihave.batch
-    LOCK=${LOCKS}/LOCK.${SITE}
+    LOCK=${LOCKS}/LOCK.${SITE}.ihave
     trap 'rm -f ${LOCK} ; exit 1' 1 2 3 15
     shlock -p $$ -f ${LOCK} || {
-	echo "${PROGNAME}: [$$] ${SITE} locked by `cat ${LOCK}`"
+	echo "${PROGNAME}: [$$] ${SITE}.ihave locked by `cat ${LOCK}`"
 	continue
     }
 
     ##  See if any data is ready for host.
-    if [ -f ${SITE}.work ] ; then
-	cat ${SITE}.work >>${BATCHFILE}
-	rm -f ${SITE}.work
+    if [ -f ${SITE}.ihave.work ] ; then
+	cat ${SITE}.ihave.work >>${BATCHFILE}
+	rm -f ${SITE}.ihave.work
     fi
-    if [ ! -f ${SITE} -o ! -s ${SITE} ] ; then
+    if [ ! -f ${SITE}.ihave -o ! -s ${SITE}.ihave ] ; then
 	if [ ! -f ${BATCHFILE} -o ! -s ${BATCHFILE} ] ; then
 	    rm -f ${LOCK}
 	    continue
 	fi
     fi
-    mv ${SITE} ${SITE}.work
-    ctlinnd -s -t30 flush ${SITE} || continue
-    cat ${SITE}.work >>${BATCHFILE}
-    rm -f ${SITE}.work
+    mv ${SITE}.ihave ${SITE}.ihave.work
+    ctlinnd -s -t30 flush ${SITE}.ihave || continue
+    cat ${SITE}.ihave.work >>${BATCHFILE}
+    rm -f ${SITE}.ihave.work
     if [ ! -s ${BATCHFILE} ] ; then
-	echo "${PROGNAME}: [$$] no articles for ${SITE}"
+	echo "${PROGNAME}: [$$] no articles for ${SITE}.ihave"
 	rm -f ${BATCHFILE}
 	continue
     fi
 
-    echo "${PROGNAME}: [$$] begin ${SITE}"
+    echo "${PROGNAME}: [$$] begin ${SITE}.ihave"
 
     ##  Write out the batchfile as a control message, in clumps.
     export SITE PERMESSAGE BATCHFILE
@@ -87,7 +87,7 @@ for SITE in ${LIST}; do
 	${SED} -e "1,${PERMESSAGE}d" <${BATCHFILE} >${BATCHFILE}.tmp
 	mv ${BATCHFILE}.tmp ${BATCHFILE}
     done
-    echo "${PROGNAME}: [$$] end ${SITE}"
+    echo "${PROGNAME}: [$$] end ${SITE}.ihave"
     rm -f ${LOCK}
 done
 
