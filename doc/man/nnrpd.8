@@ -93,7 +93,9 @@ By default,
 reads the
 .I <pathetc in inn.conf>/readers.conf
 to determine how to authenticate connections.  The ``\-c'' flag 
-specifies an alternate file for this purpose in the same directory.
+specifies an alternate file for this purpose.  If the file name
+isn't fully qualified, it's taken to be relative to
+.IR "<pathetc in inn.conf>" .
 (This is useful to have several instances of 
 .I nnrpd
 running on different ports or IP addresses with different settings.)
