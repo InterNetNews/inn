@@ -3,13 +3,13 @@
 **  Routines for the NNTP channel.  Other channels get the descriptors which
 **  we turn into NNTP channels, and over which we speak NNTP.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
-#include "innd.h"
+#include <netinet/in.h>
+
 #include "dbz.h"
+#include "innd.h"
 
 #define BAD_COMMAND_COUNT	10
 #define SAVE_AMT		10
@@ -587,7 +587,7 @@ NClist(CHANNEL *cp)
 	continue;
     if (caseEQ(p, "newsgroups")) {
 	trash = p = ReadInFile(cpcatpath(innconf->pathdb, _PATH_NEWSGROUPS),
-			(struct stat *)NULL);
+                               NULL);
 	if (p == NULL) {
 	    NCwritereply(cp, NCdot);
 	    return;
@@ -596,7 +596,7 @@ NClist(CHANNEL *cp)
     }
     else if (caseEQ(p, "active.times")) {
 	trash = p = ReadInFile(cpcatpath(innconf->pathdb, _PATH_ACTIVETIMES),
-			(struct stat *)NULL);
+                               NULL);
 	if (p == NULL) {
 	    NCwritereply(cp, NCdot);
 	    return;
