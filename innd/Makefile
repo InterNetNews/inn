@@ -2,39 +2,58 @@
 
 include ../Makefile.global
 
-CFLAGS  = $(GCFLAGS)
+CFLAGS		= $(GCFLAGS)
 
-SOURCES	= \
-	art.c cc.c chan.c his.c icd.c innd.c lc.c nc.c newsfeeds.c ng.c \
-	perl.c proc.c python.c rc.c site.c status.c tcl.c timer.c wip.c
+ALL		= innd inndstart
 
-OBJECTS	= \
-	art.o cc.o chan.o his.o icd.o innd.o lc.o nc.o newsfeeds.o ng.o \
-	perl.o proc.o python.o rc.o site.o status.o tcl.o timer.o wip.o
+SOURCES		= art.c cc.c chan.c his.c icd.c innd.c inndstart.c lc.c \
+		  nc.c newsfeeds.c ng.c perl.c proc.c python.c rc.c site.c \
+		  status.c tcl.c timer.c wip.c
 
-ALL	= innd inndstart
+# The objects that are linked into innd.  All SOURCES except inndstart.
+OBJECTS		= art.o cc.o chan.o his.o icd.o innd.o lc.o nc.o \
+		  newsfeeds.o ng.o perl.o proc.o python.o rc.o site.o \
+		  status.o tcl.o timer.o wip.o
 
-all:		$(ALL)
+INSTALLED	= $(D)$(PATHBIN)/innd \
+		  $(D)$(PATHBIN)/inndstart
 
-art.o: art.c
-	$(CC) $(CFLAGS) $(TCLINC) -c art.c -o $@
+all: $(ALL)
 
-cc.o: cc.c
-	$(CC) $(CFLAGS) $(PERLINC) -c cc.c -o $@
+clean:
+	rm -f *.o $(ALL) inndp profiled
+	rm -rf .libs
 
-perl.o: perl.c
-	$(CC) $(CFLAGS) $(PERLINC) -c perl.c -o $@
+clobber: clean
+	rm -f tags
 
-python.o: python.c
-	$(CC) $(CFLAGS) $(PYTHONINC) -c python.c -o $@
+tags ctags: $(SOURCES)
+	$(CTAGS) $(SOURCES) ../lib/*.c innd.h ../include/*.h
 
-tcl.o: tcl.c
-	$(CC) $(CFLAGS) $(TCLINC) -c tcl.c -o $@
 
-install: $(D)$(PATHBIN)/innd $(D)$(PATHBIN)/inndstart
+##  Compilation rules.
 
-$(D)${PATHBIN}/innd: innd
-	$(LI_XPRI) innd $(D)$(PATHBIN)/innd
+INNDLIBS 	= $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(TCLLIB) \
+		  $(PERLLIB) $(PYTHONLIB) $(LIBS)
+
+art.o:		art.c		; $(CC) $(CFLAGS) $(TCLINC) -c art.c
+cc.o:		cc.c		; $(CC) $(CFLAGS) $(PERLINC) -c cc.c
+perl.o:		perl.c		; $(CC) $(CFLAGS) $(PERLINC) -c perl.c
+python.o:	python.c	; $(CC) $(CFLAGS) $(PYTHONINC) -c python.c
+tcl.o:		tcl.c		; $(CC) $(CFLAGS) $(TCLINC) -c tcl.c
+
+innd: $(OBJECTS) $(LIBSTORAGE) $(LIBINN)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(INNDLIBS)
+
+inndstart: inndstart.o $(LIBINN)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ inndstart.o $(LIBINN) $(LIBS)
+
+
+##  Installation rules.  Installation commands set in Makefile.global.
+
+install: $(INSTALLED)
+
+$(D)$(PATHBIN)/innd:	innd	; $(LI_XPRI) $? $@
 
 $(D)$(PATHBIN)/inndstart: inndstart
 	@ME=`$(WHOAMI)` ; \
@@ -52,27 +71,13 @@ $(D)$(PATHBIN)/inndstart: inndstart
 	    echo '' ; echo ; \
 	fi
 
-clobber clean:
-	rm -f *.o $(ALL)
-	rm -rf .libs
-	rm -f inndp profiled
-	rm -f all install 
+$(LIBINN):	; (cd ../lib ; $(MAKE))
+$(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
 
-tags ctags:	$(SOURCES)
-	$(CTAGS) $(SOURCES) ../lib/*.c innd.h ../include/*.h
 
-innd:		$(P) $(OBJECTS) $(LIBSTORAGE) $(LIBINN)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(TCLLIB) $(PERLLIB) $(PYTHONLIB) $(LIBS)
+##  Profiling.  These rules have not been checked for a while and may need
+##  some work.
 
-inndstart:	$(P) inndstart.o $(LIBINN)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ inndstart.o $(LIBINN) $(LIBS)
-
-$(LIBINN):
-	(cd ../lib ; $(MAKE))
-$(LIBSTORAGE):
-	(cd ../storage ; $(MAKE))
-
-##  Profiling.  The rules are a bit brute-force, but good enough.
 profiled:	inndp
 	date >$@
 
@@ -82,14 +87,81 @@ inndp:		$(SOURCES)
 	mv innd inndp
 	rm -f $(OBJECTS)
 
+
 ##  Dependencies.  Default list, below, is probably good enough.
-depend:		Makefile $(SOURCES) ../include/dbz.h
-	makedepend $(DEFS) $(SOURCES)
+
+depend: Makefile $(SOURCES)
+	$(MAKEDEPEND) $(CFLAGS) $(PERLINC) $(PYTHONINC) $(TCLINC) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-$(OBJECTS):	innd.h ../include/clibrary.h ../include/configdata.h \
-		../include/libinn.h \
-		../include/macros.h ../include/nntp.h ../include/paths.h
-inndstart.o:	../include/clibrary.h ../include/configdata.h \
-		../include/libinn.h \
-		../include/macros.h ../include/paths.h
+art.o: art.c ../include/config.h ../include/clibrary.h art.h \
+ ../include/dbz.h ../include/libinn.h innd.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h \
+ ../include/ov.h
+cc.o: cc.c ../include/config.h ../include/clibrary.h innd.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h \
+ ../include/inndcomm.h ../include/qio.h
+chan.o: chan.c ../include/config.h ../include/clibrary.h innd.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
+his.o: his.c ../include/config.h ../include/clibrary.h \
+ ../include/dbz.h ../include/libinn.h innd.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
+icd.o: icd.c ../include/config.h ../include/clibrary.h innd.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h \
+ ../include/ov.h
+innd.o: innd.c ../include/config.h ../include/clibrary.h innd.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h \
+ ../include/ov.h
+lc.o: lc.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h \
+ ../include/storage.h
+nc.o: nc.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h \
+ ../include/storage.h ../include/qio.h
+newsfeeds.o: newsfeeds.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h \
+ ../include/storage.h
+ng.o: ng.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h \
+ ../include/storage.h ../include/ov.h
+perl.o: perl.c ../include/config.h ../include/clibrary.h innd.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h art.h \
+ ../include/ppport.h
+proc.o: proc.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h \
+ ../include/storage.h
+python.o: python.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h \
+ ../include/storage.h art.h ../include/qio.h
+rc.o: rc.c ../include/config.h ../include/clibrary.h innd.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
+site.o: site.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h \
+ ../include/storage.h
+status.o: status.c ../include/clibrary.h ../include/config.h innd.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
+tcl.o: tcl.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h \
+ ../include/storage.h
+timer.o: timer.c ../include/clibrary.h ../include/config.h innd.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
+wip.o: wip.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h innd.h ../include/dbz.h ../include/libinn.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h \
+ ../include/storage.h

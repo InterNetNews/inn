@@ -1,57 +1,59 @@
-##  $Revision$
+##  $Id$
+
 include ../Makefile.global
 
-CFLAGS = $(GCFLAGS) $(SSLINC)
+CFLAGS		= $(GCFLAGS) $(SSLINC)
 
-NNRPD	= ${PATHBIN}/nnrpd
+ALL		= nnrpd
 
-SOURCES	= \
-	article.c group.c commands.c misc.c newnews.c nnrpd.c \
-	perl.c perm.c post.c loadave.c track.c python.c tls.c \
-	sasl_config.c
+SOURCES		= article.c group.c commands.c loadave.c misc.c newnews.c \
+		  nnrpd.c perl.c perm.c post.c python.c sasl_config.c \
+		  tls.c track.c
 
-OBJECTS	= \
-	article.o group.o commands.o misc.o newnews.o \
-	perl.o perm.o post.o loadave.o track.o python.o tls.o \
-	sasl_config.o
+INCLUDES	= nnrpd.h post.h sasl_config.h tls.h
 
-ALL	= nnrpd
+OBJECTS		= $(SOURCES:.c=.o)
 
-all:		$(ALL)
+INSTALLED	= $(D)$(PATHBIN)/nnrpd
 
-perl.o: perl.c
-	$(CC) $(CFLAGS) $(PERLINC) -c perl.c
+all: $(ALL)
 
-python.o: python.c
-	$(CC) $(CFLAGS) $(PYTHONINC) -c python.c -o $@
-
-install:	$D$(NNRPD)
-
-##  Low-level install actions.
-$D$(NNRPD):	nnrpd
-	$(LI_XPUB) $? $@
-
-clobber clean:
-	rm -f *.o $(ALL)
+clean:
+	rm -f *.o $(ALL) nnrpdp profiled
 	rm -rf .libs
-	rm -f nnrpd nnrpdp profiled
-	rm -f all install 
 
-tags ctags:	$(SOURCES)
-	$(CTAGS) $(SOURCES) ../lib/*.c nnrpd.h ../include/*.h
+clobber: clean
+	rm -f tags
 
-BIGLIST = $(OBJECTS) $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(PERLLIB) $(PYTHONLIB) $(SSLLIB) $(LIBS)
+tags ctags: $(SOURCES) $(INCLUDES)
+	$(CTAGS) $(SOURCES) $(INCLUDES) ../lib/*.c ../include/*.h
 
-nnrpd:		$(P) nnrpd.o $(OBJECTS) $(LIBSTORAGE) $(LIBINN)
-	@rm -f $@
-#	$(LIBTOOL) ./quantify $(CC) $(LDFLAGS) -o $@ $@.o $(BIGLIST)
-#	$(LIBTOOL) purify $(CC) $(LDFLAGS) -o $@ $@.o $(BIGLIST)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $@.o $(BIGLIST)
 
-$(LIBINN):
-	(cd ../lib ; $(MAKE) )
+##  Compilation rules.
 
-##  Profiling.  The rules are a bit brute-force, but good enough.
+NNRPDLIBS	= $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(PERLLIB) \
+		  $(PYTHONLIB) $(SSLLIB) $(LIBS)
+
+perl.o:		perl.c		; $(CC) $(CFLAGS) $(PERLINC) -c perl.c
+python.o:	python.c	; $(CC) $(CFLAGS) $(PYTHONINC) -c python.c
+
+nnrpd: $(OBJECTS) $(LIBSTORAGE) $(LIBINN)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(NNRPDLIBS)
+
+
+##  Installation rules.  Installation commands set in Makefile.global.
+
+install: $(INSTALLED)
+
+$(D)$(PATHBIN)/nnrpd:	nnrpd	; $(LI_XPUB) $? $@
+
+$(LIBINN):	; (cd ../lib ; $(MAKE))
+$(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
+
+
+##  Profiling.  These rules have not been checked for a while and may need
+##  some work.
+
 profiled:	nnrpdp
 	date >$@
 
@@ -61,17 +63,50 @@ nnrpdp:		$(SOURCES)
 	mv nnrpd nnrpdp
 	rm -f $(OBJECTS)
 
-ccenter:	$(SOURCES)
-	#load $(CFLAGS) $(SOURCES) $(LIBINN)
 
 ##  Dependencies.  Default list, below, is probably good enough.
-depend:		Makefile $(SOURCES)
-	makedepend $(DEFS) $(SOURCES)
+
+depend:	$(SOURCES)
+	$(MAKEDEPEND) $(CFLAGS) $(PERLINC) $(PYTHONINC) $(TCLINC) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-$(OBJECTS):	nnrpd.h \
-		../include/clibrary.h ../include/configdata.h \
-		../include/libinn.h \
-		../include/macros.h ../include/nntp.h \
-		../include/paths.h ../include/qio.h
-misc.o:		../include/dbz.h
+article.o: article.c ../include/config.h ../include/clibrary.h nnrpd.h \
+ ../include/libinn.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h ../include/qio.h ../include/ov.h
+group.o: group.c ../include/config.h ../include/clibrary.h nnrpd.h \
+ ../include/libinn.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h ../include/qio.h ../include/ov.h
+commands.o: commands.c ../include/config.h ../include/clibrary.h \
+ nnrpd.h ../include/libinn.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h ../include/qio.h ../include/ov.h
+misc.o: misc.c ../include/config.h ../include/clibrary.h nnrpd.h \
+ ../include/libinn.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h ../include/qio.h ../include/dbz.h
+newnews.o: newnews.c ../include/config.h ../include/clibrary.h nnrpd.h \
+ ../include/libinn.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h ../include/qio.h ../include/ov.h
+nnrpd.o: nnrpd.c ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h ../include/ov.h ../include/storage.h nnrpd.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h \
+ ../include/qio.h
+perl.o: perl.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h ../include/paths.h post.h ../include/macros.h \
+ ../include/nntp.h nnrpd.h ../include/libinn.h ../include/qio.h \
+ ../include/ppport.h
+perm.o: perm.c ../include/config.h ../include/clibrary.h \
+ ../include/conffile.h nnrpd.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/qio.h
+post.o: post.c ../include/config.h ../include/clibrary.h nnrpd.h \
+ ../include/libinn.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h ../include/qio.h ../include/ov.h post.h
+loadave.o: loadave.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h nnrpd.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/qio.h
+track.o: track.c ../include/config.h ../include/clibrary.h nnrpd.h \
+ ../include/libinn.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h ../include/qio.h
+python.o: python.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h nnrpd.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/qio.h
+tls.o: tls.c ../include/config.h
+sasl_config.o: sasl_config.c ../include/config.h
