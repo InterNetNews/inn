@@ -153,7 +153,14 @@ extern int      NNTPconnect(char *host, int port, FILE **FromServerp,
 extern int      NNTPsendarticle(char *, FILE *F, bool Terminate);
 extern int      NNTPsendpassword(char *server, FILE *FromServer,
                                  FILE *ToServer);
+
+/* clientlib compatibility functions. */
+extern char *   getserverbyfile(char *file);
 extern int      server_init(char *host, int port);
+extern int      handle_server_response(int response, char *host);
+extern void     put_server(const char *text);
+extern int      get_server(char *buff, int buffsize);
+extern void     close_server(void);
 
 /* Opening the active file on a client. */
 extern FILE *   CAopen(FILE *FromServer, FILE *ToServer);
@@ -351,6 +358,7 @@ extern void	make_sin(struct sockaddr_in *s, const struct in_addr *src);
 
 extern int      argify(char *line, char ***argvp);
 extern void     freeargify(char ***argvp);
+extern char *   glom(char **argv);
 
 extern const char *     Aliasgetnamebyhash(const HASH hash);
 extern HASH             Aliasgethashbyhash(const HASH hash);
