@@ -16,15 +16,15 @@ mail)
 	echo 'To reply, do the following:'
 	echo "	uuname | ${MAILCMD} -s \"${SUBJECT}\" ${FROM}"
 	echo 'The full article was:'
-	cat ${ARTICLE}
+	${SM} ${ARTICLE}
     ) | sed -e 's/^~/~~/' | ${MAILCMD} -s "senduuname by ${FROM}" ${NEWSMASTER}
     ;;
 logit)
-    ${WRITELOG} ${LOGFILE} "senduuname by ${FROM}; reply skipped" <${ARTICLE}
+    ${SM} ${ARTICLE} | ${WRITELOG} ${LOGFILE} "senduuname by ${FROM}; reply skipped"
     ;;
 doit)
     uuname | ${MAILCMD} -s "${SUBJECT}" ${REPLYTO}
-    ${WRITELOG} ${LOGFILE} "senduuname by ${FROM}; reply sent" <${ARTICLE}
+    ${SM} ${ARTICLE} | ${WRITELOG} ${LOGFILE} "senduuname by ${FROM}; reply sent"
     ;;
 esac
 

@@ -1003,14 +1003,8 @@ SITEfindnext(p, sp)
 /*
 **  Close a site down.
 */
-void
-SITEfree(sp)
-    register SITE	*sp;
+void SITEfree(SITE *sp)
 {
-    register SITE	*s;
-    register int	new;
-    register int	i;
-
     if (sp->Channel) {
 	CHANclose(sp->Channel, CHANname(sp->Channel));
 	sp->Channel = NULL;

@@ -25,7 +25,7 @@ mail)
 	echo "	${NEWSBIN}/ctlinnd rmgroup "'"'${P1}'"'
 	echo ''
 	echo 'The full article was:'
-	sed -e 's/^~/~~/' ${ARTICLE}
+	${SM} ${ARTICLE} | sed -e 's/^~/~~/'
     ) | ${MAILCMD} -s "rmgroup $1 by ${FROM}" ${NEWSMASTER}
     exit
     ;;
@@ -34,7 +34,7 @@ esac
 ##  Make sure the article is approved and that the group exists.
 ${SED} -e '/^$/q' <$ARTICLE >${TEMP}
 grep '^Approved:' <${TEMP} >/dev/null 2>&1 || {
-    ${WRITELOG} ${LOGFILE} "Unapproved rmgroup by ${FROM}" <${ARTICLE}
+    ${SM} ${ARTICLE} | ${WRITELOG} ${LOGFILE} "Unapproved rmgroup by ${FROM}"
     rm -f ${TEMP}
     exit
 }
@@ -46,14 +46,14 @@ grep "^$GROUPNAME " ${ACTIVE} >/dev/null 2>&1 || {
 
 case ${ACTION} in
 logit)
-    ${WRITELOG} ${LOGFILE} "rmgroup $1 by ${FROM} skipped" <${ARTICLE}
+    ${SM} ${ARTICLE} | ${WRITELOG} ${LOGFILE} "rmgroup $1 by ${FROM} skipped"
     exit
     ;;
 esac
 
 ##  Do the work.
 ctlinnd -s rmgroup "$1"
-${WRITELOG} ${LOGFILE} "rmgroup $1 by ${FROM}" <${ARTICLE}
+${SM} ${ARTICLE} | ${WRITELOG} ${LOGFILE} "rmgroup $1 by ${FROM}"
 
 ##  We're sending to a file.
 LOCK=${LOCKS}/LOCK.newsgroups

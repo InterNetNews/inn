@@ -12,13 +12,13 @@ case "$#" in
 1|2)
     ;;
 *)
-    ${WRITELOG} ${LOGFILE} "Unparseable newgroup by ${FROM}" <${ARTICLE}
+    ${SM} ${ARTICLE} | ${WRITELOG} ${LOGFILE} "Unparseable newgroup by ${FROM}"
     exit
     ;;
 esac
 case "$1" in
 *[\ \	/:]*)
-    ${WRITELOG} ${LOGFILE} "Unsafe newgroup by ${FROM}" <${ARTICLE}
+    ${SM} ${ARTICLE} | ${WRITELOG} ${LOGFILE} "Unsafe newgroup by ${FROM}"
     exit
     ;;
 esac
@@ -29,15 +29,15 @@ esac
 
 #ELEMS=`echo "$1" | awk -F. '{print NF}'`
 #if [ $ELEMS -gt 7 ]; then
-#    ${WRITELOG} ${LOGFILE} "Too many elements in newsgroup name by ${FROM}" <${ARTICLE}
+#    ${SM} ${ARTICLE} | ${WRITELOG} ${LOGFILE} "Too many elements in newsgroup name by ${FROM}" 
 #    exit
 #fi
 
 ##  Make sure article is approved.
-${SED} -e '/^$/q' <${ARTICLE} >${TEMP}
+${SM} ${ARTICLE} | ${SED} -e '/^$/q' >${TEMP}
 grep '^Approved:' <${TEMP} >/dev/null 2>&1 || {
     rm -f ${TEMP}
-    ${WRITELOG} ${LOGFILE} "Unapproved newgroup by ${FROM}" <${ARTICLE}
+    ${SM} ${ARTICLE} | ${WRITELOG} ${LOGFILE} "Unapproved newgroup by ${FROM}"
     exit
 }
 rm -f ${TEMP}
@@ -78,8 +78,7 @@ case "${LINE}" in
     exit
     ;;
 "$1 "*" ="*|"$1 "*" x"|"$1 "*" j")
-    ${WRITELOG} ${LOGFILE} "Rejected special newsgroup ($1) by ${FROM}" \
-	    <${ARTICLE}
+    ${SM} ${ARTICLE} | ${WRITELOG} ${LOGFILE} "Rejected special newsgroup ($1) by ${FROM}"
     exit
     ;;
 *)
@@ -106,24 +105,23 @@ mail)
 	echo "	${NEWSBIN}/ctlinnd newgroup ${P1} ${P2} ${FROM}"
 	echo ''
 	echo 'The original article was:'
-	cat ${ARTICLE}
+	${SM} ${ARTICLE}
     ) | ${WRITELOG} ${LOGFILE} "newgroup $1 $2 ${FROM}"
     exit
     ;;
 logit)
-    ${WRITELOG} ${LOGFILE} "skipping newgroup $1 $2 ${FROM} (would be ${WORD})" \
-	<${ARTICLE}
+    ${SM} ${ARTICLE} | ${WRITELOG} ${LOGFILE} "skipping newgroup $1 $2 ${FROM} (would be ${WORD})" 
     exit
     ;;
 esac
 
 ##  Do the work.
 ctlinnd -s newgroup $1 $2 "${FROM}"
-${WRITELOG} ${LOGFILE} "newgroup $1 $2 ${WORD} ${FROM}" <${ARTICLE}
+${SM} ${ARTICLE} | ${WRITELOG} ${LOGFILE} "newgroup $1 $2 ${WORD} ${FROM}"
 
 ##  Get a description of the newsgroup; first from the article, and
 ##  then from the newsgroups file.
-DESC=`${SED} <${ARTICLE} -n -e "
+DESC=`${SM} ${ARTICLE} | ${SED} -n -e "
 :top
 /^For your newsgroups file:\$/b scan
 n

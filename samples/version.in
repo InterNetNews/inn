@@ -20,15 +20,15 @@ mail)
 	echo 'To reply, do the following:'
 	echo "	echo InterNetNews ${VERSION} | ${MAILCMD} -s \"${SUBJECT}\" ${FROM}"
 	echo 'The full article was:'
-	cat ${ARTICLE}
+	${SM} ${ARTICLE}
     ) | sed -e 's/^~/~~/' | ${MAILCMD} -s "version by ${FROM}" ${NEWSMASTER}
     ;;
 logit)
-    ${WRITELOG} ${LOGFILE} "version by ${FROM}; reply skipped" <${ARTICLE}
+    ${SM} ${ARTICLE} | ${WRITELOG} ${LOGFILE} "version by ${FROM}; reply skipped"
     ;;
 doit)
     echo "InterNetNews ${VERSION}" | ${MAILCMD} -s "${SUBJECT}" ${REPLYTO}
-    ${WRITELOG} ${LOGFILE} "version by ${FROM}; reply sent" <${ARTICLE}
+    ${SM} ${ARTICLE} | ${WRITELOG} ${LOGFILE} "version by ${FROM}; reply sent"
     ;;
 esac
 

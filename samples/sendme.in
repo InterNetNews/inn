@@ -9,12 +9,12 @@ PROG=sendme
 
 case ${ACTION} in
 mail)
-    sed -e 's/^~/~~/' <${ARTICLE} \
+    ${SM} ${ARTICLE} | sed -e 's/^~/~~/' \
 	| ${MAILCMD} -s "sendme by ${FROM}" ${NEWSMASTER}
     ;;
 doit)
     ##  Scan the message body.
-    ${SED} -e '1,/^$/d' <${ARTICLE} | grephistory -s >${TEMP}
+    ${SM} ${ARTICLE} | ${SED} -e '1,/^$/d' | grephistory -s >${TEMP}
     if [ -s ${TEMP} ]; then
 	## xxx Need to lock the work file?
 	cat ${TEMP} >>${BATCH}/${PATHHOST}.work

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <grp.h>
 #include "configdata.h"
 #include "clibrary.h"
 #include <sys/stat.h>
@@ -171,4 +172,5 @@ int main(int ac, char *av[])
     syslog(L_FATAL, "inndstart cant exec %s %m", argv[0]);
     _exit(1);
     /* NOTREACHED */
+    return(1);
 }

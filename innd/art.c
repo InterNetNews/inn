@@ -398,7 +398,7 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
     char                *path;
     char                *p;
     char                *end;
-    int                 size;
+    unsigned long       size;
     char                *artbuff;
     ARTHANDLE           arth;
     int                 i;
@@ -1470,7 +1470,7 @@ ARTxrefslave()
 	GroupPointers[i++] = ngp;
 
 	/* Turn news.group/# into news.group:#, append to Xref. */
-	p+=sprintf(p, " %s:%d", name, ngp->Filenum);
+	p+=sprintf(p, " %s:%ld", name, ngp->Filenum);
 	
     }
     
@@ -2152,8 +2152,8 @@ STRING ARTpost(CHANNEL *cp)
 		    i--;
 		    ngp->PostCount = 1;
 		    /* Pull the bottom 14 bits off and split them into two levels of hierarchy */
-		    sprintf(dirname, "time/%02x/%02x", (Now.time >> 13) &0x7f, (Now.time >> 6) & 0x7f);
-		    sprintf(Data.Name, "%s/%08x-%04x", dirname, Now.time, SeqNum);
+		    sprintf(dirname, "time/%02lx/%02lx", (Now.time >> 13) &0x7f, (Now.time >> 6) & 0x7f);
+		    sprintf(Data.Name, "%s/%08lx-%04x", dirname, Now.time, SeqNum);
 		    SeqNum = (SeqNum + 1) % (64*1024);
 		} else {
 		    sprintf(Data.Name, "%s/%lu", ngp->Dir, ngp->Filenum);

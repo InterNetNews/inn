@@ -67,7 +67,7 @@ fastrm:	$(P) fastrm.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ fastrm.o $(LIBNEWS) $(LIBNEWS) $(LIBS)
 
 grephistory:	$(P) grephistory.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ grephistory.o $(LIBNEWS) $(LIBS)
+	$(CC) $(LDFLAGS) -o $@ grephistory.o $(LIBNEWS) $(LIBNEWS) $(LIBS)
 
 makeactive:	$(P) makeactive.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ makeactive.o $(LIBNEWS) $(LIBS)

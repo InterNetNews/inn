@@ -5,6 +5,7 @@
 ##  =()<. @<_PATH_SHELLVARS>@>()=
 . /var/news/etc/innshellvars
 WRITELOG=${NEWSBIN}/writelog
+SM=${NEWSBIN}/sm
 
 PGPVERIFY=false
 if [ "X$WANT_PGPVERIFY" = XDO ]; then
@@ -26,6 +27,9 @@ case "$3" in
 "")
     ARTICLE=/dev/null
     ;;
+@*@)
+    ARTICLE="$3"
+    ;;
 /*)
     ARTICLE="$3"
     ;;
@@ -40,10 +44,10 @@ test -z "$MAILFAILURES" && MAILFAILURES=false
 case "X$FROM" in
     X-*) 
         if $MAILFAILURES; then
-            ${SED} -e 's/^~/~~/' < ${ARTICLE} \
+            ${SM} ${ARTICLE} |${SED} -e 's/^~/~~/' \
                 | ${MAILCMD} -s "Bad FROM address" ${NEWSMASTER}
         fi
-        cat ${ARTICLE} | \
+        ${SM} ${ARTICLE} | \
             writelog $MOST_LOGS/badcontrol.log "`date` Bad FROM address"
         exit
         ;;
@@ -52,10 +56,10 @@ esac
 case "X$REPLYTO" in
     X-*)
         if $MAILFAILURES; then
-            ${SED} -e 's/^~/~~/' < ${ARTICLE} \
+            ${SM} | ${SED} -e 's/^~/~~/' \
                 | ${MAILCMD} -s "Bad REPLY-TO address" ${NEWSMASTER}
         fi
-        cat ${ARTICLE} | \
+        ${SM} ${ARTICLE} | \
             writelog $MOST_LOGS/badcontrol.log "`date` Bad REPLY-TO address"
         exit
         ;;
@@ -68,22 +72,22 @@ test -z "${PROG}" && PROG=all
 ${EGREP} "^(${PROG}|all):" <${CTLFILE} >${TEMP}
 
 ##  Get any arguments.
-if grep "^Control:[ 	]*${PROG}" <${ARTICLE} >/dev/null 2>&1 ; then
-    set X `${SED} -n -e "s/^Control:[ 	]*${PROG}//p" -e '/^$/q' <${ARTICLE} |tr -d '\015'`
+if ${SM} ${ARTICLE} | grep "^Control:[ 	]*${PROG}" >/dev/null 2>&1 ; then
+    set X `${SM} ${ARTICLE} | ${SED} -n -e "s/^Control:[ 	]*${PROG}//p" -e '/^$/q'  |tr -d '\015'`
     shift
 else
     if grep "^Subject:[ 	]*cmsg[ 	]*${PROG}" \
-		<${ARTICLE} >/dev/null 2>&1 ; then
-	set X `${SED} -n -e "s/^Subject:[ 	]*cmsg[ 	]*${PROG}//p" \
-		-e '/^$/q' <${ARTICLE}`
+		 >/dev/null 2>&1 ; then
+	set X `${SM} {$ARTICLE} | ${SED} -n -e "s/^Subject:[ 	]*cmsg[ 	]*${PROG}//p" \
+		-e '/^$/q'`
 	shift
     else
 	rm -f ${TEMP}
 	if $MAILFAILURES; then
-		${SED} -e 's/^~/~~/' < ${ARTICLE} \
+		${SM} ${ARTICLE} | ${SED} -e 's/^~/~~/' \
 			| ${MAILCMD} -s "Bad header by ${FROM}" ${NEWSMASTER}
 	fi
-	cat ${ARTICLE} |
+	${SM} ${ARTICLE} |
 	     writelog $MOST_LOGS/badcontrol.log "`date` Bad header by ${FROM}"
 	exit
     fi
@@ -94,10 +98,10 @@ TRANS1="`echo \"$1\" | tr ${AZ} ${az} | tr -dc \\\055${az}${ZN}+_.`"
 if [ ${1}X != ${TRANS1}X ]; then
     rm -f ${TEMP}
     if $MAILFAILURES; then
-	${SED} -e 's/^~/~~/' < ${ARTICLE} \
+	${SM} ${ARTICLE} | ${SED} -e 's/^~/~~/' \
 	    | ${MAILCMD} -s "Malformed newsgroup name by ${FROM}" ${NEWSMASTER}
     fi
-    cat ${ARTICLE} |
+    ${SM} ${ARTICLE} |
 	writelog $MOST_LOGS/badcontrol.log \
 	    "`date` Malformed newsgroup name by ${FROM}"
     exit
@@ -106,10 +110,10 @@ TRANSP="`echo \"$PROG\" | tr ${AZ} ${az} | tr -dc \\\055${az}${ZN}+_.`"
 if [ ${PROG}X != ${TRANSP}X ]; then
     rm -f ${TEMP}
     if $MAILFAILURES; then
-	${SED} -e 's/^~/~~/' < ${ARTICLE} \
+	${SM} ${ARTICLE} | ${SED} -e 's/^~/~~/' \
 	    | ${MAILCMD} -s "Unexpected program name by ${FROM}" ${NEWSMASTER}
     fi
-    cat ${ARTICLE} |
+    ${SM} ${ARTICLE} |
 	writelog $MOST_LOGS/badcontrol.log \
 	    "`date` Unexpected program name by ${FROM}"
     exit
@@ -182,7 +186,7 @@ esac
 export LOGFILE
 
 if $PGPVERIFY; then
-    PGPSENDER=`pgpverify < ${ARTICLE}`;
+    PGPSENDER=`${SM} ${ARTICLE} | pgpverify`;
     PGP_STATUS=$?
     case "${ACTION}:${PGP_STATUS}" in
     verify:0)
@@ -212,3 +216,4 @@ if $PGPVERIFY; then
        ;;
     esac
 fi
+

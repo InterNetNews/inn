@@ -12,19 +12,19 @@ mail)
     export FROM CONTROLPROGS NEWSUSER ARTICLE
     (
 	echo "${FROM} posted the following checkgroups message:"
-	${SED} -e '/^$/q' -e 's/^/    /' <${ARTICLE}
+	${SM} ${ARTICLE} | ${SED} -e '/^$/q' -e 's/^/    /'
 	echo ''
 	echo 'If you want to process it, then feed the body of the'
 	echo 'message into docheckgroups while running as the'
 	echo "\"${NEWSUSER}\" userid:"
 	echo ''
 	echo "${CONTROLPROGS}/docheckgroups <<\-EOF-"
-	${SED} -e '1,/^$/d' <${ARTICLE}
+	${SM} ${ARTICLE} | ${SED} -e '1,/^$/d' 
 	echo '-EOF-'
     ) | sed -e 's/^~/~~/' | ${MAILCMD} -s "checkgroups by ${FROM}" ${NEWSMASTER}
     ;;
 doit)
-    ${SED} -e '1,/^$/d' <${ARTICLE} \
+    ${SM} ${ARTICLE} | ${SED} -e '1,/^$/d' \
 	| ${CONTROLPROGS}/docheckgroups \
 	| ${WRITELOG} ${LOGFILE} "checkgroups by ${FROM}"
     ;;

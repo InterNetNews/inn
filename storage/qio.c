@@ -125,6 +125,7 @@ char *QIOread(QIOSTATE *qp)
     char                *q;
     char                *save;
     int                 i;
+    int                 size;
 
     while (TRUE) {
 
@@ -161,7 +162,8 @@ char *QIOread(QIOSTATE *qp)
             p = qp->Buffer;
         /* Read data, reset the pointers. */
 	if (qp->handle) {
-	    i = (qp->Size < (qp->handle->len - qp->Count)) ? qp->Size : (qp->handle->len - qp->Count);
+	    size = qp->Size - (p - qp->Buffer);
+	    i = (size < (qp->handle->len - qp->Count)) ? size : (qp->handle->len - qp->Count);
 	    memcpy(p, qp->handle->data, i);
 	} else {
 	    i = read(qp->fd, p, (SIZE_T)(&qp->Buffer[qp->Size] - p));

@@ -1213,6 +1213,7 @@ CCxexec(av)
     syslog(L_FATAL, "%s cant execv %s %m", LogName, CCargv[0]);
     _exit(1);
     /* NOTREACHED */
+    return "1 Exit failed";
 }
 
 /*
@@ -1403,6 +1404,7 @@ CCshutdown(av)
     syslog(L_NOTICE, "%s shutdown %s", LogName, av[0]);
     CleanupAndExit(0, av[0]);
     /* NOTREACHED */
+    return "1 Exit failed";
 }
 
 

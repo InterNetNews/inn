@@ -28,17 +28,17 @@ mail)
 	echo "	${MAILCMD} -s \"${SUBJECT}\" ${FROM} <${NEWSFEEDS}"
 	echo ''
 	echo 'The full article was:'
-	cat ${ARTICLE}
+	${SM} ${ARTICLE}
     ) | sed -e 's/^~/~~/' | ${MAILCMD} -s "sendsys by ${FROM}" ${NEWSMASTER}
     ;;
 logit)
-    ${WRITELOG} ${LOGFILE} "sendsys by ${FROM}; reply skipped" <${ARTICLE}
+    ${SM} ${ARTICLE} | ${WRITELOG} ${LOGFILE} "sendsys by ${FROM}; reply skipped"
     ;;
 doit)
     case "$1" in
     "")
 	${MAILCMD} -s "${SUBJECT}" ${REPLYTO} <${NEWSFEEDS}
-	sed -e 's/^~/~~/' <${ARTICLE} \
+	${SM} ${ARTICLE} | sed -e 's/^~/~~/'  \
 	    | ${MAILCMD} -s "sendsys by ${FROM}; reply sent" ${NEWSMASTER} 
 	;;
     *)
@@ -46,7 +46,7 @@ doit)
 	trap 'rm -f ${TEMP} ; exit' 1 2 3 15
 	if [ -s ${TEMP} ] ;  then
 	    ${MAILCMD} -s "${SUBJECT} for $1" ${REPLYTO} <${TEMP}
-	    sed -e 's/^~/~~/' <${ARTICLE} \
+	    ${SM} ${ARTICLE} | sed -e 's/^~/~~/'  \
 		| ${MAILCMD} -s "sendsys $1 by ${FROM}; reply sent" \
 		    ${NEWSMASTER}
 	fi

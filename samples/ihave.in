@@ -9,12 +9,12 @@ PROG=ihave
 
 case ${ACTION} in
 mail)
-    sed -e 's/^~/~~/' <${ARTICLE} \
+    ${SM} ${ARTICLE} | sed -e 's/^~/~~/' \
 	| ${MAILCMD} -s "ihave by ${FROM}" ${NEWSMASTER}
     ;;
 doit)
     ##  Scan the message body for articles we don't have.
-    ${SED} -e '1,/^$/d' <${ARTICLE} | grephistory -i >${TEMP}
+    ${SM} ${ARTICLE} | ${SED} -e '1,/^$/d' | grephistory -i >${TEMP}
     if [ -s ${TEMP} ] ; then
 	export PATHHOST TEMP
 	(

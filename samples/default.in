@@ -10,12 +10,12 @@ PROG=default
 
 case ${ACTION} in
 mail)
-    sed -e 's/^~/~~/' <${ARTICLE} \
+    ${SM} ${ARTICLE} sed -e 's/^~/~~/' \
         | ${MAILCMD} -s "Unknown control message by ${FROM}" ${NEWSMASTER}
     ;;
 doit|logit)
-    ${WRITELOG} ${LOGFILE} "Unknown control message by ${FROM}" \
-	    ${NEWSMASTER} <${ARTICLE}
+    ${SM} ${ARTICLE} | ${WRITELOG} ${LOGFILE} "Unknown control message by ${FROM}" \
+	    ${NEWSMASTER} 
     ;;
 esac
 
