@@ -358,7 +358,7 @@ STATIC BOOL CNFSparse_part_line(char *l) {
   */
   minartoffset =
       cycbuff->len / (CNFS_BLOCKSIZE * 8) + CNFS_BEFOREBITF;
-  tonextblock = CNFS_BLOCKSIZE - (minartoffset & (CNFS_BLOCKSIZE - 1));
+  tonextblock = pagesize - (minartoffset & (pagesize - 1));
   cycbuff->minartoffset = minartoffset + tonextblock;
 
   if (cycbufftab == (CYCBUFF *)NULL)
@@ -865,7 +865,7 @@ BOOL cnfs_init(BOOL *selfexpire) {
     if (pagesize == 0) {
 #ifdef  XXX
 	if ((pagesize = sysconf(_SC_PAGESIZE)) < 0) {
-	    syslog(L_ERROR, "%s: sysconf(_SC_PAGESIZE) failed: %m", LocalLogNam);
+	    syslog(L_ERROR, "%s: sysconf(_SC_PAGESIZE) failed: %m", LocalLogName);
 	    SMseterror(SMERR_INTERNAL, "sysconf(_SC_PAGESIZE) failed");
 	    return NULL;
 	}
@@ -1008,12 +1008,6 @@ TOKEN cnfs_store(const ARTHANDLE article, STORAGECLASS class) {
 	    (void)CNFSflushhead(metacycbuff->members[i]);
 	}
     }
-    if (metacycbuff->write_count % 1000000 == 0) {
-	syslog(L_NOTICE,
-	       "%s: cnfs_store metacycbuff %s just wrote its %ld'th article",
-	       LocalLogName, metacycbuff->name, metacycbuff->write_count);
-    }
-    /* is this stuff needed? */
     CNFSUsedBlock(cycbuff, artoffset, TRUE, TRUE);
     for (middle = artoffset + CNFS_BLOCKSIZE; middle < cycbuff->free;
 	 middle += CNFS_BLOCKSIZE) {
