@@ -1330,10 +1330,11 @@ BOOL RCcanpost(CHANNEL *cp, char *group)
 **  Create the channel.
 */
 void
-RCsetup(i, master)
-    register int	i;
+RCsetup(port, master)
+    register int	port;
     char		*master;
 {
+	register int i;
     struct sockaddr_in	server;
     struct hostent	*hp;
     INADDR		a;
@@ -1342,7 +1343,6 @@ RCsetup(i, master)
     int			on;
 #endif	/* defined(SO_REUSEADDR) */
 
-    if (i < 0) {
 	/* Create a socket and name it. */
 	if ((i = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 	    syslog(L_FATAL, "%s cant socket RCreader %m", LogName);
@@ -1355,6 +1355,10 @@ RCsetup(i, master)
 	    syslog(L_ERROR, "%s cant setsockopt RCreader %m", LogName);
 #endif	/* defined(SO_REUSEADDR) */
 	(void)memset((POINTER)&server, 0, sizeof server);
+	if (port < 0)
+		server.sin_port = htons(NNTP_PORT);
+	else
+		server.sin_port = htons(port);
 	server.sin_port = htons(NNTP_PORT);
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -1362,7 +1366,7 @@ RCsetup(i, master)
 	    syslog(L_FATAL, "%s cant bind RCreader %m", LogName);
 	    exit(1);
 	}
-    }
+    
 
     /* Set it up to wait for connections. */
     if (listen(i, MAXLISTEN) < 0) {
