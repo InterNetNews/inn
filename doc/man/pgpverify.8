@@ -7,6 +7,9 @@
 pgpverify - cryptographically verify Usenet control messages
 .SH SYNOPSIS
 .B pgpverify
+[
+.B \-test
+]
 .SH DESCRIPTION
 The
 .I pgpverify
@@ -22,9 +25,12 @@ message was validly signed,
 .I pgpverify
 outputs (to stdout) the User ID of the key ID that signed the message.
 .SH OPTIONS
-The
+The ``-test'' flag causes
 .I pgpverify
-program takes no options.
+to 
+print out the input it is passing to pgp (which is a reconstructed
+version of the input that supposedly created the control message) as
+well as the output of pgp's analysis of the message.
 .SH EXIT STATUS
 .I pgpverify
 returns the follow exit statuses for the following cases:
