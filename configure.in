@@ -785,7 +785,7 @@ if test x"$DO_PERL" = xDO ; then
     inn_perl_core_flags=" $inn_perl_core_flags "
     if test x"$inn_enable_largefiles" != xyes ; then
         for f in -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES ; do
-            inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed "s/ $f //"`
+            inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed "s/ $f / /"`
         done
     fi
     inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed 's/^  *//'`
