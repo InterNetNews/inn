@@ -478,7 +478,7 @@ UnpackOne(int *fdp, size_t *countp)
 
 	if (buff[0] == 0x1f)
 	    gzip = 1;
-	else if (buff[0] != RNEWS_MAGIC1)
+	else if (buff[0] != '#')
 	    /* Not a batch file.  If we already got one count, the batch
 	     * is corrupted, else read rest of input as an article. */
 	    return HadCount ? FALSE : ReadRemainder(*fdp, buff[0], '\0');
@@ -506,7 +506,7 @@ UnpackOne(int *fdp, size_t *countp)
 	    SawCunbatch = TRUE;
 	    continue;
 	}
-	if (buff[1] != RNEWS_MAGIC2)
+	if (buff[1] != '!')
 	    return HadCount ? FALSE : ReadRemainder(*fdp, buff[0], buff[1]);
 
 	/* Some kind of batch -- get the command. */

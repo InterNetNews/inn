@@ -641,10 +641,6 @@ typedef unsigned long           ARTNUM;
 #define NG_SEPARATOR            ","
 #define NG_ISSEP(c)             ((c) == ',')
 
-/* Only used by rnews.  Should be moved there. */
-#define RNEWS_MAGIC1            '#'
-#define RNEWS_MAGIC2            '!'
-
 /* Only used by inews.  Should be moved there. */
 #define SIG_MAXLINES		4
 #define SIG_SEPARATOR		"-- \n"
