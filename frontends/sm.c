@@ -14,8 +14,6 @@
 #include "qio.h"
 #include <syslog.h>  
 
-#define MAXOVERLINE	4096
-
 void Usage(void) {
     fprintf(stderr, "Usage sm [-q] [-r] [-d] [-o] token [token] [token] ...\n");
     exit(1);
@@ -67,17 +65,17 @@ int main(int argc, char **argv) {
 	    val = FALSE;
 	if (!OVERsetup(OVER_MMAP, (void *)&val)) {
 	    if (!Quiet)
-		fprintf(stderr, "Can't setup unified overview mmap: %s\n", strerror(errno));
+		fprintf(stderr, "Can't setup unified overview mmap\n");
 	    exit(1);
 	}
 	if (!OVERsetup(OVER_MODE, "r")) {
 	    if (!Quiet)
-		fprintf(stderr, "Can't setup unified overview mode: %s\n", strerror(errno));
+		fprintf(stderr, "Can't setup unified overview mode\n");
 	    exit(1);
 	}
 	if (!OVERinit()) {
 	    if (!Quiet)
-		fprintf(stderr, "Can't initialize unified overview mode: %s\n", strerror(errno));
+		fprintf(stderr, "Can't initialize unified overview mode\n");
 	    exit(1);
 	}
     } else {
@@ -119,14 +117,14 @@ int main(int argc, char **argv) {
 	    }
 	    if (fwrite(p, linelen, 1, stdout) != 1) {
 		if (!Quiet)
-		    fprintf(stderr, "Output failed: %s\n", strerror(errno));
+		    fprintf(stderr, "Output failed\n");
 		exit(1);
 	    }
 	    printf("\n");
 	} else {
 	    if ((qp = QIOopen(argv[i])) == NULL) {
 		if (!Quiet)
-		    fprintf(stderr, "Coult not open %s\n", argv[i]);
+		    fprintf(stderr, "Could not open %s\n", argv[i]);
 		continue;
 	    } else {
 		while ((p = QIOread(qp)) != NULL) {
