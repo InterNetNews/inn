@@ -165,9 +165,7 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
 
 /* ARGSUSED */
 void
-CMDauthinfo(ac, av)
-    int		ac;
-    char	*av[];
+CMDauthinfo(int ac, char *av[])
 {
     static char	User[SMBUF];
     static char	Password[SMBUF];
@@ -280,9 +278,7 @@ CMDauthinfo(ac, av)
 */
 /* ARGSUSED0 */
 void
-CMDdate(ac, av)
-    int		ac UNUSED;
-    char	*av[] UNUSED;
+CMDdate(int ac UNUSED, char *av[] UNUSED)
 {
     TIMEINFO	t;
     struct tm	*gmt;
@@ -303,9 +299,7 @@ CMDdate(ac, av)
 */
 /* ARGSUSED */
 void
-CMDmode(ac, av)
-    int		ac UNUSED;
-    char	*av[];
+CMDmode(int ac UNUSED, char *av[])
 {
     if (strcasecmp(av[1], "reader") == 0)
 	Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
@@ -327,7 +321,8 @@ static int GroupCompare(const void *a1, const void* b1) {
 **  Display new newsgroups since a given date and time for specified
 **  <distributions>.
 */
-void CMDnewgroups(int ac, char *av[])
+void
+CMDnewgroups(int ac, char *av[])
 {
     char	        *p;
     char	        *q;
@@ -637,9 +632,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 */
 /* ARGSUSED */
 void
-CMDxpath(ac, av)
-    int		ac UNUSED;
-    char	*av[] UNUSED;
+CMDxpath(int ac UNUSED, char *av[] UNUSED)
 {
     Reply("%d Syntax error or bad command\r\n", NNTP_BAD_COMMAND_VAL);
 }
