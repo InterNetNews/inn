@@ -9,6 +9,7 @@
 #include "nnrpd.h"
 #if	NNRP_LOADLIMIT > 0
 #ifdef linux
+#include <sys/sysinfo.h>
 
 /*
 **  Get the current load average as an integer.
@@ -16,15 +17,12 @@
 int
 GetLoadAverage()
 {
-    FILE *ProcLoadAve;
-    float load;
+    struct sysinfo si;
 
-    if ((ProcLoadAve=fopen("/proc/loadavg", "r"))==NULL)
-        return -1;
-    if (fscanf(ProcLoadAve,"%f", &load)!=1)
-    	return -1;
-    fclose(ProcLoadAve);
-    return (int)(load+0.5);
+    if (sysinfo (&si))
+	return -1;
+
+    return (si.loads[0] + (1 << 15)) >> 16;
 }
 
 #else 

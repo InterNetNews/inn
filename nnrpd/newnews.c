@@ -248,6 +248,10 @@ CMDnewnews(int ac, char *av[])
 	return;
     }
 
+    /* Make other processes happier if someone uses NEWNEWS */
+    if (innconf->nicenewnews > 0)
+	nice(innconf->nicenewnews);
+
     (void)sprintf(line, "%s %s %s %s %s",
 	    av[1], av[2], av[3],
 	    (ac >= 5 && *av[4] == 'G') ? "GMT" : "local",
