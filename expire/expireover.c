@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
 	    continue;
 	}
 	if (OV3expiregroup(line, &lo)) {
-	    if (LowmarkFile) {
+	    if (LowmarkFile && lo != 0) {
 		(void)fprintf(F, "%s %u\n", line, lo);
 	    }
 	} else {
