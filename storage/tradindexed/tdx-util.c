@@ -113,6 +113,7 @@ dump_overview(const char *group, ARTNUM number)
         warn("cannot open group %s", group);
         return;
     }
+    data->refcount++;
 
     if (number != 0)
         search = tdx_search_open(data, number, number, entry->high);
