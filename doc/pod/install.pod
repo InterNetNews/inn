@@ -1,4 +1,4 @@
-=head1 Welcome to INN 2.3!
+=head1 Welcome to INN 2.4!
 
 Please read this document thoroughly before trying to install INN.  You'll
 be glad you did.
@@ -23,6 +23,11 @@ extension of .OLD so that you can easily back out.
 
 =head1 Supported Systems
 
+So far as possible, INN is written in portable C and should work on any
+Unix platform.  It does, however, make extensive use of mmap() and certain
+other constructs that may be poorly or incompletely implemented,
+particularly on very old operating systems.
+
 INN has been confirmed to work on the following operating systems:
 
   AIX 4.3
@@ -33,11 +38,6 @@ INN has been confirmed to work on the following operating systems:
   Solaris 2.5.x and up
   UnixWare 7.1
   UX/4800 R11 and up
-
-So far as possible, INN is written in portable C and should work on any
-Unix platform.  It does, however, make extensive use of mmap() and certain
-other constructs that may be poorly or incompletely implemented,
-particularly on old operating systems.
 
 If you have gotten INN working on an operating system other than the ones
 listed above, please let us know at inn-bugs@isc.org.
@@ -101,7 +101,7 @@ particularly if you are outside the United States.
 
 Also, if you want to use either the Tcl or Python embedded hooks, you'll
 need to have suitable versions of Tcl and/or Python installed.  See
-F<README.tcl_hook> and F<README.python_hook> for more information.
+F<doc/hook-tcl> and F<doc/hook-python> for more information.
 
 =head1 Unpacking the Distribution
 
@@ -217,7 +217,7 @@ Enables support for embedded Perl, allowing you to install filter scripts
 written in Perl.  Highly recommended, because many really good spam
 filters are written in Perl.  You will need Perl 5.004 or later installed
 on your system to use this option (otherwise, INN will not compile).  See
-F<README.perl_hook> for all the details.
+F<doc/hook-perl> for all the details.
 
 Even if you do not use this option, INN still requires Perl to build (but
 an earlier version may suffice).
@@ -226,7 +226,7 @@ an earlier version may suffice).
 
 Enables support for Python, allowing you to install filter scripts written
 in Python.  You will need Python 1.5.2 or later installed on your system
-to enable this option.  See F<README.python_hook> for all the details.
+to enable this option.  See F<doc/hook-python> for all the details.
 
 =item B<--with-tcl>
 
@@ -234,7 +234,7 @@ Enables support for Tcl, allowing you to install filter scripts written in
 Tcl.  Most available filterse seem to be written in Perl these days, so
 you can safely leave out Tcl support.  If you choose to enable this, you
 will need to have a suitable Tcl distribution installed.  See
-F<README.tcl_hook> for all the details.
+F<doc/hook-tcl> for all the details.
 
 =item B<--with-innd-port>=PORT
 
