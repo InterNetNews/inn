@@ -1,8 +1,10 @@
 /*
  * ovdb.c
- * ovdb 2.00 beta3
+ * ovdb 2.00 beta4
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2000-12-12 : Add support for BerkeleyDB DB_SYSTEM_MEM option, controlled
+ *            : by ovdb.conf 'useshm' and 'shmkey'
  * 2000-11-27 : Update for DB 3.2.x compatibility
  * 2000-11-13 : New 'readserver' feature
  * 2000-10-10 : ovdb_search now closes the cursor right after the last
@@ -199,6 +201,8 @@ static DB *groupaliases = NULL;
 #define OVDBreadserver	8
 #define OVDBnumrsprocs	9
 #define OVDBmaxrsconn	10
+#define OVDBuseshm	11
+#define OVDBshmkey	12
 
 static CONFTOKEN toks[] = {
   { OVDBtxn_nosync, "txn_nosync" },
@@ -211,6 +215,8 @@ static CONFTOKEN toks[] = {
   { OVDBreadserver, "readserver" },
   { OVDBnumrsprocs, "numrsprocs" },
   { OVDBmaxrsconn, "maxrsconn" },
+  { OVDBuseshm, "useshm" },
+  { OVDBshmkey, "shmkey" },
   { 0, NULL },
 };
 
@@ -425,6 +431,8 @@ void read_ovdb_conf(void)
     ovdb_conf.readserver = 0;
     ovdb_conf.numrsprocs = 5;
     ovdb_conf.maxrsconn = 0;
+    ovdb_conf.useshm = 0;
+    ovdb_conf.shmkey = 6400;
 
     f = CONFfopen(cpcatpath(innconf->pathetc, _PATH_OVDBCONF));
 
@@ -529,6 +537,26 @@ void read_ovdb_conf(void)
 		}
 		if(conf_long_val(tok->name, &l) && l >= 0) {
 		    ovdb_conf.maxrsconn = l;
+		}
+		break;
+	    case OVDBuseshm:
+		tok = CONFgettoken(0, f);
+		if(!tok) {
+		    done = 1;
+		    continue;
+		}
+		if(conf_bool_val(tok->name, &b)) {
+		    ovdb_conf.useshm = b;
+		}
+		break;
+	    case OVDBshmkey:
+		tok = CONFgettoken(0, f);
+		if(!tok) {
+		    done = 1;
+		    continue;
+		}
+		if(conf_long_val(tok->name, &l) && l >= 0) {
+		    ovdb_conf.shmkey = l;
 		}
 		break;
 	    }
@@ -1295,6 +1323,12 @@ int ovdb_open_berkeleydb(int mode, int flags)
 	syslog(L_FATAL, "OVDB: db_env_create: %s", db_strerror(ret));
 	return ret;
     }
+
+    if(ovdb_conf.useshm)
+	ai_flags |= DB_SYSTEM_MEM;
+#if DB_VERSION_MINOR > 0
+    OVDBenv->set_shm_key(OVDBenv, ovdb_conf.shmkey);
+#endif
 
     OVDBenv->set_errcall(OVDBenv, OVDBerror);
     OVDBenv->set_cachesize(OVDBenv, 0, ovdb_conf.cachesize, 1);

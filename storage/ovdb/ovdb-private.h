@@ -43,6 +43,8 @@ struct ovdb_conf {
     int readserver;
     int numrsprocs;
     int maxrsconn;
+    int useshm;
+    int shmkey;
 };
 
 typedef u_int32_t group_id_t;
