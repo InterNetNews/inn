@@ -5,18 +5,45 @@ square brackets and should be contacted if you want to help.  Otherwise,
 let inn-workers@isc.org know if you'd like to work on any item listed
 below.
 
-The list is divided into higher priority changes that will hopefully be
-done in the near future, small or medium-scale projects for the future,
-and long-term, large-scale problems.
+The list is divided into changes already tentatively scheduled for a
+particular release, higher priority changes that will hopefully be done in
+the near future, small or medium-scale projects for the future, and
+long-term, large-scale problems.  Note that just because a particular
+feature is scheduled for a later release doesn't mean it can't be
+completed earlier if someone decides to take it on.  The association of
+features with releases is intended to be a rough guide for prioritization
+and a set of milestones to use to judge when a new major release is
+justified.
+
+Also, one major thing that is *always* welcome is additions to the test
+suite, which is currently very minimal.  Any work done on the test suite
+to allow more portions of INN to be automatically tested will make all
+changes easier and will be *greatly* appreciated.
 
 Last modified $Id$.
 
 
-High Priority Projects:
+Scheduled for INN 2.4:
 
-* Rewrite the configuration file parsing code, starting with the parser
-  for inn.conf and eventually extending to all of the configuration file
-  parsers in INN.  [Russ is working on this.]
+* Write new generic configuration file parsing code based on a tree of
+  hash tables and the basic file syntax seen in readers.conf,
+  innfeed.conf, storage.conf, and incoming.conf.  The goal of the parser
+  is to support a single common, simple syntax, to allow configuration
+  files to be both read and written back to disk by programs, to
+  generalize the parsing sufficiently so that it can eventually be used by
+  all parts of INN, and to try to minimize the number of places that have
+  to be changed to add a new configuration parameter.  [Russ is working on
+  this.]
+
+* Implement the inn.conf parser using the new configuration parsing
+  library and supply a script to make any necessary changes from the old
+  file format to the new file format.
+
+* Integrate the new version of controlchan and docheckgroups by Marco
+  d'Itri.  Add the ability to run pgpverify as a module of controlchan
+  rather than a separate binary.  This takes care of fixing the processing
+  of checkgroups with Supersedes headers, updating the newsgroups file on
+  receipt of a newgroup or checkgroups, and supporting GnuPG.
 
 * Complete rewrite of history.  History should have a single API and the
   same interface for both innd and nnrpd, the current WIP cache and
@@ -24,23 +51,103 @@ High Priority Projects:
   message ID hashing should become a selectable property of the history
   file, and the history API should support multiple backend storage
   formats and automatically select the right one for an existing history
-  file based on stored metainformation.  [Russ is working on this.]
+  file based on stored metainformation.  [Alex Kiernan is working on
+  this.]
+
+* Integrate IPv6 support.  [Marco d'Itri is working on this.]
+
+* Replace the current innshellvars mechanism with a real INN Perl module
+  for Perl programs, and include the necessary glue so that other Perl
+  modules can be added to INN's build tree and installed with INN,
+  allowing their capabilities to be available to the portions of INN
+  written in Perl.  [Russ will be working on this.]
+
+* A complete audit of INN against the latest NNTP protocol draft, with at
+  least a report on the differences and preferrably all issues fixed.
+  [Russ plans on doing this.]
+
+
+Scheduled for INN 2.5:
+
+* The interface to embedded filters needs to be reworked.  The information
+  about which filters are enabled should be isolated in the filtering API,
+  and there should be standard API calls for filtering message IDs, remote
+  posts, and local posts.  As part of this revision, all of the Perl
+  callbacks should be defined before any of the user code is loaded, and
+  the Perl loading code needs considerable cleanup.  At the same time as
+  this is done, the implementation should really be documented; we do some
+  interesting things with embedded filters and it would be nice to have a
+  general document describing how we do it.  [Russ is planning on working
+  on this at some point.]
+
+* All of INN's documentation should be written in POD, with text and man
+  pages generated from the POD source.  Anyone is encouraged to work on
+  this by just taking any existing documentation in man format and convert
+  it to POD while checking that it's still accurate and adding any
+  additional useful information that was missed.
+
+* Convert readers.conf, storage.conf (and related configuration files),
+  incoming.conf, and innfeed.conf to use the new parsing system.
+
+
+Scheduled for INN 2.6:
+
+* A unified configuration file combining the facilities of newsfeeds,
+  incoming.conf, and innfeed.conf, but hopefully more readable and easier
+  for new INN users to edit.  This should have all of the capabilities of
+  the existing configuration files, but specifying common things (such as
+  file feeds or innfeed feeds) should be very simple and straightforward.
+  This configuration file should use the new parsing infrastructure.
+
+* Convert all remaining INN configuration files to the new parsing
+  infrastructure.
+
+* INN really should be capable of both sending and receiving a
+  headers-only feed (or even an overview-only feed) similar to Diablo and
+  using it for the same things that Diablo does, namely clustering,
+  pull-on-demand for articles, and the like.  This should be implementable
+  as a new backend, although the API may need a few more hooks.  Both a
+  straight headers-only feed that only pulls articles down via NNTP from a
+  remote server and a caching feed where some articles are pre-fed, some
+  articles are pulled down at first read, and some articles are never
+  stored locally should be possible.
+
+* The libinn, libstorage, and other library interfaces should be treated
+  as stable libraries and properly versioned using libtool's
+  recommendation for library versioning when changes are made so that they
+  can be installed as shared libraries and work properly through releases
+  of INN.  This is currently waiting on a systematic review of the
+  interface and removal of things that we don't want to support long-term.
+
+* The include files necessary to use libinn, libstorage, and other
+  libraries should be installed in a suitable directory so that other
+  programs can link against them.  All such include files should be under
+  include/inn and included with <inn/header.h>.  All such include files
+  should only depend on other inn/* header files and not on, e.g.,
+  config.h.  All such include files should be careful about namespace to
+  avoid conflicts with other include files used by applications.
+
+
+High Priority Projects:
+
+* Modulo warnings from system headers and warnings where the compiler is
+  simply wrong and there's no equally readable way to rewrite the code,
+  INN should compile cleanly under "make warnings".  It should be possible
+  for maintainers to routinely compile INN with make warnings to catch
+  problems.
 
 * Add man pages for the default authenticators, as well as documentation
   on the readers.conf external program interface.  A good place to start
   is authprogs/README.readers.conf.
 
-* Break the interface code common to all the authenticators out into a
-  library that can be used by people writing new authenticators.  Ideally,
-  also wrap the interface nnrpd uses to talk to authenticators into a
-  library with a standard API as well.
+* Add man pages for all libinn interfaces.  There should be a subdirectory
+  of doc/pod for this since there will be a lot of them; installing them
+  as libinn_<section>.3 seems to make the most sense (so, for example,
+  error handling routines would be documented in libinn_error.3).
 
-* Completely rewrite the header parsing and turn it into a library so that
-  all the various parts of INN that have to parse headers (innd, nnrpd,
-  inews, rnews, controlchan, etc.) can all use the same code.  This will
-  probably require a dynamic string library.  [Russ has the beginnings of
-  a suitable dynamic string library, but it needs more work and a test
-  suite.]
+* Look at turning header parsing into a library of some sort.  Lots of INN
+  does this, but different parts of INN need subtly different things, so
+  the best best API is unclear.
 
 * Add documentation of adding and removing CNFS cycbuffs.
 
@@ -78,12 +185,10 @@ High Priority Projects:
 * Apparently on Solaris open can also be interrupted by a signal; we may
   need to have an xopen wrapper that checks for EINTR and retries.
 
-* Some installed binaries and configuration files don't have man pages.
-  In particular, man pages are needed for actsync.conf, actsync.ign,
-  innreport.conf, and news2mail.cf.  (Some of these configuration files
-  could instead be obsoleted by better implementations with better
-  configuration syntaxes, or merged into other existing more general
-  configuration files.)
+* Everything installed by INN should have a man page.  Currently, there
+  are several binaries and configuration files that don't have man pages.
+  (In some cases, the best thing to do with the configuration file is to
+  merge it into another one or find a way to eliminate it.)
 
 * The recovery tools currently need serious work in the area of recovering
   overview for a single newsgroup using tradspool, analyzing a broken
@@ -110,13 +215,25 @@ Future Projects:
   eventually allowing us to dispense with an acconfig.h file.  [Russ plans
   to work on this after autoconf 2.50 is released.]
 
-* Checkgroups processing should also update the newsgroups file, and it
-  should be possible to synchronize the newsgroups file against external
-  sources when that's done with the active file.  Likewise, when a
-  newgroup is received for a group the server already carries, the
-  newsgroups line should be updated if necessary.  See
-  <ftp://ftp.tin.org/pub/news/servers/utils/docheckgroups> for a partial
-  implementation.
+* Eliminate everything in the LEGACY section of config.h.
+
+* Move all compile-time configuration in config.h either into a separate
+  header (such as inn/options.h) or turn it into a configuration file
+  directive or a command-line option.
+
+* Move include/paths.h to include/inn/paths.h and change _PATH as a prefix
+  to INN_PATH to move the identifiers out of the C reserved namespace.
+  Check to be sure we still need all of the #defines and look at adding
+  anything needed by innfeed (and eliminating the separate innfeed header
+  serving the same purpose).
+
+* Move include/nntp.h to include/inn/nntp.h and at the same time look at
+  standardizing the names of all of the #defines it provides, including
+  the message class.  [Russ has a start on this.]
+
+* Add portable/mmap.h, centralizing all of the system-specific mmap mess
+  and providing macros that can be used without any additional
+  system-specific stuff in the source code.  [Russ is working on this.]
 
 * All the old packages in unoff-contrib should be reviewed for integration
   into INN.
@@ -161,7 +278,8 @@ Future Projects:
   filled in by the various pieces of information that might be useful.
 
 * A PAM-based authenticator for the readers.conf external authentication
-  support.
+  support.  [A preliminary patch for this was posted to news.software.nntp
+  some time back.]
 
 * If backoffdb is set in inn.conf and that directory doesn't exist, nnrpd
   refuses to start.  Either the directory should be created by the install
@@ -274,10 +392,10 @@ Future Projects:
 
 * Various things may break when trying to use data written while compiled
   with large file support using a server that wasn't so compiled (and vice
-  versa).  The main one is the history file, but also reportedly affected
-  is the buffindexed (and probably the tradindexed) overview method.
-  Ideally, all of INN's data files should be as portable as possible
-  (although network byte order is almost definitely too much effort).
+  versa).  The main one is the history file, but tradindexed is also
+  affected and buffindexed has been reported to have problems with this
+  as well.  Ideally, all of INN's data files should be as portable as
+  possible.
 
 * makedbz should be more robust in the presence of malformed history
   lines, discarding with them or otherwise dealing with them.
@@ -326,13 +444,6 @@ Future Projects:
   with the backoff stuff?).  These should be per-IP or per-user, but
   possibly also per-access group.
 
-* innxmit currently can only handle storage API tokens; it should also be
-  able to handle files and get the message ID from them so that you can
-  use it to feed articles you got from some arbitrary source, not
-  necessarily INN.  Ideally, it should also take message ID hashes (and
-  use the history file to get the storage API token so that it can open
-  the article and get the real message ID).
-
 * timecaf should have more configurable parameters (at the least, how
   frequently to switch to a new CAF file should be an option).
   storage.conf should really be extended to allow method-specific
@@ -377,17 +488,6 @@ Long-Term Projects:
 * INN's header handling needs to be checked against the current USEFOR
   draft.  This probably has to wait until after we have a header parsing
   library.
-
-* The interface to embedded filters needs to be reworked.  The information
-  about which filters are enabled should be isolated in the filtering API,
-  and there should be standard API calls for filtering message IDs, remote
-  posts, and local posts.  As part of this revision, all of the Perl
-  callbacks should be defined before any of the user code is loaded, and
-  the Perl loading code needs considerable cleanup.  At the same time as
-  this is done, the implementation should really be documented; we do some
-  interesting things with embedded filters and it would be nice to have a
-  general document describing how we do it.  [Russ is planning on working
-  on this at some point.]
 
 * The innd filter should be able to specify additional or replacement
   groups into which an article should be filed, or even spool the article
@@ -450,16 +550,6 @@ Long-Term Projects:
   include removed groups, since they'd need to be kept in the active file
   to reserve their numbers until the last articles expired.
 
-* INN really should be capable of both sending and receiving a
-  headers-only feed (or even an overview-only feed) similar to Diablo and
-  using it for the same things that Diablo does, namely clustering,
-  pull-on-demand for articles, and the like.  This should be implementable
-  as a new backend, although the API may need a few more hooks.  Both a
-  straight headers-only feed that only pulls articles down via NNTP from a
-  remote server and a caching feed where some articles are pre-fed, some
-  articles are pulled down at first read, and some articles are never
-  stored locally should be possible.
-
 * The locking of the active file leaves something to be desired; in
   general, the locking in INN (for the active file, the history file,
   spool updates, overview updates, and the like) needs a thorough
@@ -470,14 +560,6 @@ Long-Term Projects:
   *everything* that needs to write to the history file, active file, etc.
   and that keeps track of the PID of the process locking things and is
   accessible via ctlinnd.
-
-* The proliferation of configuration files should be significantly
-  reduced.  For example, cycbuff.conf, buffindexed.conf, and storage.conf
-  could probably be combined; innfeed.conf, newsfeeds, and incoming.conf
-  would ideally be combined; and several of the other small auxilliary
-  files could be rolled into other, more general configuration files.
-  This probably shouldn't be done until the new configuration parsing
-  infrastructure is in place.
 
 * One would ideally not want to offer articles to a peer that that peer
   has offered to us (even if we didn't accept them from that peer).  This
@@ -520,6 +602,8 @@ Long-Term Projects:
   allocations and deallocations that may be much more efficient and safer
   using a garbage collector.
 
+* Look at integrating asprintf and vasprintf.
+
 
 Complete Code Reorganization
 
@@ -532,10 +616,10 @@ POD.)  Should this ever be done, we should consider doing all of the
 following at the same time:
 
 * Don't include any generated files in the CVS tree.  Maintainers should
-  have autoconf and friends, as well as bison, around anyway.  This would
-  save a bunch of extra check-ins, remove the danger of the generated
-  files getting out of sync, and drastically reduce the repository size in
-  the case of configure.
+  have autoconf and friends, pod2text and pod2man, and bison around anyway.
+  This would save a bunch of extra check-ins, remove the danger of the
+  generated files getting out of sync, and drastically reduce the
+  repository size in the case of configure.
 
 * Don't include any of the generated man pages in the CVS tree, as an
   additional case of the above.  All of the documentation should be in POD
