@@ -8,6 +8,11 @@
 #include "clibrary.h"
 #include "nnrpd.h"
 
+#ifdef __FreeBSD__
+#include <osreldate.h>
+#endif
+
+
 
 /*
 **  Data structures for use in ARTICLE/HEAD/BODY/STAT common code.
@@ -94,6 +99,10 @@ STATIC int		OVERioff;		/* Current index pointer */
 /* Solaris */
 #if defined(sun) && defined(__svr4__)
 #define IOV_MAX 16
+#endif
+/* FreeBSD 3.0 or above */
+#if defined(__FreeBSD__) && (__FreeBSD_version >= 222000)
+#define	IOV_MAX	1024
 #endif
 
 #endif
