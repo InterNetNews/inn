@@ -548,8 +548,8 @@ main(void)
     ok(19, true);
     ok(20, overview_verify_data("data/bogus"));
     hash_free(groups);
-    system("/bin/rm -r ov-tmp");
     OVclose();
+    system("/bin/rm -r ov-tmp");
     ok(21, true);
 
     return 0;
