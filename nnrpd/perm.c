@@ -442,7 +442,7 @@ void SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->nnrpdoverstats = innconf->nnrpdoverstats;
     curaccess->backoff_auth = innconf->backoff_auth;
     curaccess->backoff_db = NULL;
-    if (innconf->backoff_db)
+    if (innconf->backoff_db && *innconf->backoff_db != '\0')
 	curaccess->backoff_db = COPY(innconf->backoff_db);
     curaccess->backoff_k = innconf->backoff_k;
     curaccess->backoff_postfast = innconf->backoff_postfast;
