@@ -180,7 +180,7 @@ typedef struct _HDRCONTENT {
 **  are not always valid.
 */
 typedef struct _ARTDATA {
-  int		  Body;			/* where body begins in article
+  size_t	  Body;			/* where body begins in article
 					   it indicates offset from bp->Data */
   char	      *   Poster;		/* Sender otherwise From in article */
   char	      *   Replyto;		/* Reply-To otherwise From in article */
@@ -219,12 +219,6 @@ typedef struct _ARTDATA {
   int		  LFwithoutCR;		/* counter for '\n' without '\r' */
   size_t	  CurHeader;		/* where current header starts.
 					   this is used for folded header
-					   it indicates offset from bp->Data */
-  bool		  NullHeader;		/* contains NULL in current header    */
-  size_t	  LastTerminator;	/* where last '.' exists.  only set if
-					   it exists at the begining of line
-					   it indicates offset from bp->Data */
-  size_t	  LastCR;		/* where last CR exists
 					   it indicates offset from bp->Data */
   size_t	  LastCRLF;		/* where last CRLF exists.
 					   indicates where last LF exists

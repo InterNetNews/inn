@@ -901,36 +901,7 @@ NCproc(CHANNEL *cp)
 	break;
       }
 
-      if (cp->State == CSgotlargearticle) {
-	syslog(L_NOTICE, "%s internal rejecting huge article (%d > %ld)",
-	  CHANname(cp), cp->Next - cp->Start, innconf->maxartsize);
-	if (cp->Sendid.size)
-	  NCwritereply(cp, cp->Sendid.data);
-	else {
-	  snprintf(buff, sizeof(buff),
-                   "%d Article exceeds local limit of %ld bytes",
-                   NNTP_REJECTIT_VAL, innconf->maxartsize);
-	  NCwritereply(cp, buff);
-        }
-	cp->State = CSgetcmd;
-	cp->Rejected++;
-	cp->RejectSize += cp->Next - cp->Start;
-	cp->Start = cp->Next;
-
-	/* Write a local cancel entry so nobody else gives it to us. */
-	if (HDR_FOUND(HDR__MESSAGE_ID)) {
-	  HDR_PARSE_START(HDR__MESSAGE_ID);
-	  if (!HIScheck(History, HDR(HDR__MESSAGE_ID)) &&
-	      !InndHisRemember(HDR(HDR__MESSAGE_ID)))
-	    syslog(L_ERROR, "%s cant write %s", LogName, HDR(HDR__MESSAGE_ID)); 
-	}
-	/* Clear the work-in-progress entry. */
-	NCclearwip(cp);
-	readmore = false;
-	movedata = false;
-	break;
-      }
-
+      /* If error is set, we're rejecting this article. */
       if (*cp->Error != '\0') {
 	cp->Rejected++;
 	cp->RejectSize += cp->Next - cp->Start;
@@ -1120,8 +1091,6 @@ NCproc(CHANNEL *cp)
 	cp->State == CSeatarticle) {
 	/* adjust offset only in CSgetheader, CSgetbody or CSeatarticle */
 	data->CurHeader -= cp->Start;
-	data->LastTerminator -= cp->Start;
-	data->LastCR -= cp->Start;
 	data->LastCRLF -= cp->Start;
 	data->Body -= cp->Start;
 	if (data->BytesHeader != NULL)

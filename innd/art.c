@@ -19,12 +19,6 @@ typedef struct iovec	IOVEC;
 
 extern bool DoCancels;
 
-#if	defined(S_IXUSR)
-#define EXECUTE_BITS	(S_IXUSR | S_IXGRP | S_IXOTH)
-#else
-#define EXECUTE_BITS	0111
-#endif	/* defined(S_IXUSR) */
-
 /* Characters used in log messages indicating the disposition of messages. */
 #define ART_ACCEPT              '+'
 #define ART_CANC                'c'
@@ -94,6 +88,11 @@ static char		ARTcclass[256];
 #if defined(DO_PERL) || defined(DO_PYTHON)
 const char	*filterPath;
 #endif /* DO_PERL || DO_PYTHON */
+
+/* Prototypes. */
+static void ARTerror(CHANNEL *cp, const char *format, ...)
+    __attribute__((__format__(printf, 2, 3)));
+static void ARTparsebody(CHANNEL *cp);
 
 
 
@@ -397,6 +396,42 @@ ARTparsepath(const char *p, int size, LISTBUFFER *list)
 }
 
 /*
+**  We're rejecting an article.  Log a message to the news log about that,
+**  including all the interesting article information.
+*/
+static void
+ARTlogreject(CHANNEL *cp)
+{
+    ARTDATA *data = &cp->Data;
+    HDRCONTENT *hc = data->HdrContent;
+    int hopcount;
+    char **hops;
+
+    /* We can't do anything unless we know the message ID. */
+    if (!HDR_FOUND(HDR__MESSAGE_ID))
+        return;
+
+    /* Set up the headers that we want to use.  We only need to parse the path
+       on rejections if logipaddr is false or we can't find a good host. */
+    HDR_PARSE_START(HDR__MESSAGE_ID);
+    if (innconf->logipaddr && cp->Address.ss_family != 0)
+        data->Feedsite = RChostname(cp);
+    else {
+        HDR_PARSE_START(HDR__PATH);
+        hopcount =
+            ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH), &data->Path);
+        HDR_PARSE_END(HDR__PATH);
+        hops = data->Path.List;
+        if (hopcount > 0 && hops != NULL && hops[0] != NULL)
+            data->Feedsite = hops[0];
+        else
+            data->Feedsite = "localhost";
+    }
+    ARTlog(data, ART_REJECT, cp->Error);
+    HDR_PARSE_END(HDR__MESSAGE_ID);
+}
+
+/*
 **  Sorting pointer where header starts
 */
 static int
@@ -575,10 +610,11 @@ ARTstore(CHANNEL *cp)
 }
 
 /*
-**  Parse a header that starts at header.  size includes trailing "\r\n"
+**  Parse, check, and possibly store in the system header table a header that
+**  starts at cp->CurHeader.  size includes the trailing "\r\n".
 */
 static void
-ARTparseheader(CHANNEL *cp, int size)
+ARTcheckheader(CHANNEL *cp, int size)
 {
   ARTDATA	*data = &cp->Data;
   char		*header = cp->In.data + data->CurHeader;
@@ -587,6 +623,10 @@ ARTparseheader(CHANNEL *cp, int size)
   const ARTHEADER *hp;
   char		c, *p, *colon;
   int		i;
+
+  /* If we've already found an error, don't parse any more headers. */
+  if (*cp->Error != '\0')
+    return;
 
   /* Find first colon */
   if ((colon = memchr(header, ':', size)) == NULL || !ISWHITE(colon[1])) {
@@ -749,250 +789,196 @@ ARTprepare(CHANNEL *cp)
     hc->Length = 0;
   }
   data->Lines = data->HeaderLines = data->CRwithoutLF = data->LFwithoutCR = 0;
-  data->CurHeader = data->LastTerminator = data->LastCR = cp->Start - 1;
-  data->LastCRLF = data->Body = cp->Start - 1;
+  data->CurHeader = data->LastCRLF = data->Body = cp->Start;
   data->BytesHeader = NULL;
   data->Feedsite = "?";
   *cp->Error = '\0';
 }
 
 /*
-**  Clean up an article.  This is mainly copying in-place, stripping bad
-**  headers.  Also fill in the article data block with what we can find.
-**  Return NULL if the article is okay, or a string describing the error.
-**  Parse headers and end of article
-**  This is called by NCproc().
+**  Report a rejection of an article by putting the reason for rejection into
+**  the Error field of the supplied channel.
+*/
+static void
+ARTerror(CHANNEL *cp, const char *format, ...)
+{
+    va_list args;
+
+    snprintf(cp->Error, sizeof(cp->Error), "%d ", NNTP_REJECTIT_VAL);
+    va_start(args, format);
+    vsnprintf(cp->Error + 4, sizeof(cp->Error) - 4, format, args);
+}
+
+/*
+**  Check to see if an article exceeds the local size limit and set the
+**  channel state appropriately.  If the article has been fully received, also
+**  update the Error buffer in the channel if needed.
+*/
+static void
+ARTchecksize(CHANNEL *cp)
+{
+    size_t size;
+    HDRCONTENT *hc = cp->Data.HdrContent;
+    const char *msgid;
+
+    size = cp->Next - cp->Start;
+    if (innconf->maxartsize > 0 && size > (size_t) innconf->maxartsize) {
+        if (cp->State == CSgotarticle)
+            cp->State = CSgotlargearticle;
+        else
+            cp->State = CSeatarticle;
+    }
+    if (cp->State == CSgotlargearticle) {
+        notice("%s internal rejecting huge article (%lu > %ld)", CHANname(cp),
+               (unsigned long) size, innconf->maxartsize);
+        ARTerror(cp, "Article of %lu bytes exceeds local limit of %ld bytes",
+                 (unsigned long) size, innconf->maxartsize);
+
+	/* Write a local cancel entry so nobody else gives it to us. */
+	if (HDR_FOUND(HDR__MESSAGE_ID)) {
+            HDR_PARSE_START(HDR__MESSAGE_ID);
+            msgid = HDR(HDR__MESSAGE_ID);
+            if (!HIScheck(History, msgid) && !InndHisRemember(msgid))
+                warn("SERVER cant write %s", msgid);
+	}
+    }
+}
+
+/*
+**  Parse a section of the header of an article.  This is called by ARTparse()
+**  while the channel state is CSgetheader.  If we find the beginning of the
+**  body, change the channel state and hand control off to ARTparsebody.
+*/
+static void
+ARTparseheader(CHANNEL *cp)
+{
+    struct buffer *bp = &cp->In;
+    ARTDATA *data = &cp->Data;
+    size_t i;
+    unsigned long length;
+
+    for (i = cp->Next; i < bp->used; i++) {
+        if (bp->data[i] == '\0')
+            ARTerror(cp, "Nul character in header");
+        if (bp->data[i] == '\n')
+            data->LFwithoutCR++;
+        if (bp->data[i] != '\r')
+            continue;
+
+        /* We saw a \r, which is the beginning of everything interesting.  The
+           longest possibly interesting thing we could see is an article
+           terminator (five characters).  If we don't have at least five more
+           characters, we're guaranteed that the article isn't complete, so
+           save ourselves complexity and just return and wait for more
+           data. */
+        if (bp->used - i < 5) {
+            cp->Next = i;
+            return;
+        }
+        if (memcmp(&bp->data[i], "\r\n.\r\n", 5) == 0) {
+            if (i == cp->Start) {
+                ARTerror(cp, "Empty article");
+                cp->State = CSnoarticle;
+            } else {
+                ARTerror(cp, "No body");
+                cp->State = CSgotarticle;
+            }
+            cp->Next = i + 5;
+            return;
+        } else if (bp->data[i + 1] == '\n') {
+            length = i - data->LastCRLF - 1;
+            if (data->LastCRLF == cp->Start)
+                length++;
+            if (length > MAXHEADERSIZE)
+                ARTerror(cp, "Header line too long (%lu bytes)", length);
+
+            /* Be a little tricky here.  Normally, the headers end at the
+               first occurrance of \r\n\r\n, so since we've seen \r\n, we want
+               to advance i and then look to see if we have another one.  The
+               exception is the degenerate case of an article with no headers.
+               In that case, log an error and *don't* advance i so that we'll
+               still see the end of headers. */
+            if (i == cp->Start) {
+                ARTerror(cp, "No headers");
+            } else {
+                i += 2;
+                ARTcheckheader(cp, i - data->CurHeader);
+            }
+            if (bp->data[i] == '\r' && bp->data[i + 1] == '\n') {
+                cp->Next = i + 2;
+                data->Body = i;
+                cp->State = CSgetbody;
+                return ARTparsebody(cp);
+            } else if (bp->data[i] != ' ' && bp->data[i] != '\t') {
+                data->CurHeader = i;
+            }
+            data->HeaderLines++;
+            data->LastCRLF = i - 1;
+        } else {
+            data->CRwithoutLF++;
+        }
+    }
+    cp->Next = i;
+}
+
+/*
+**  Parse a section of the body of an article.  This is called by ARTparse()
+**  while the channel state is CSgetbody or CSeatarticle.
+*/
+static void
+ARTparsebody(CHANNEL *cp)
+{
+    struct buffer *bp = &cp->In;
+    ARTDATA *data = &cp->Data;
+    size_t i;
+
+    for (i = cp->Next; i < bp->used; i++) {
+        if (bp->data[i] == '\0')
+            ARTerror(cp, "Nul character in body");
+        if (bp->data[i] == '\n')
+            data->LFwithoutCR++;
+        if (bp->data[i] != '\r')
+            continue;
+
+        /* Saw \r.  We're just scanning for the article terminator, so if we
+           don't have at least five characters left, we can save effort and
+           stop now. */
+        if (bp->used - i < 5) {
+            cp->Next = i;
+            return;
+        }
+        if (memcmp(&bp->data[i], "\r\n.\r\n", 5) == 0) {
+            if (cp->State == CSeatarticle)
+                cp->State = CSgotlargearticle;
+            else
+                cp->State = CSgotarticle;
+            cp->Next = i + 5;
+            data->Lines++;
+            return;
+        } else if (bp->data[i + 1] == '\n') {
+            data->Lines++;
+        } else {
+            data->LFwithoutCR++;
+        }
+    }
+    cp->Next = i;
+}
+
+/*
+**  The external interface to article parsing, called by NCproc.  This
+**  function may be called repeatedly as each new block of data arrives.
 */
 void
 ARTparse(CHANNEL *cp)
 {
-  struct buffer	*bp = &cp->In;
-  ARTDATA	*data = &cp->Data;
-  size_t        i, limit, fudge, size;
-  int		hopcount;
-  char		**hops;
-  HDRCONTENT	*hc = data->HdrContent;
-
-  /* Read through the buffer to find header, body and end of article */
-  /* this routine is designed not to refer data so long as possible for
-     performance reason, so the code may look redundant at a glance */
-  limit = bp->used;
-  i = cp->Next;
-  if (cp->State == CSgetheader) {
-    /* header processing */
-    for (; i < limit ;) {
-      if (data->LastCRLF + 1 == i) {
-	/* begining of the line */
-	switch (bp->data[i]) {
-	  case '.':
-	    data->LastTerminator = i;
-	    data->NullHeader = false;
-	    break;
-	  case '\r':
-	    data->LastCR = i;
-	    data->NullHeader = false;
-	    break;
-	  case '\n':
-	    data->LFwithoutCR++;
-	    data->NullHeader = false;
-	    break;
-	  case '\t':
-	  case ' ':
-	    /* header is folded.  NullHeader is untouched */
-	    break;
-	  case '\0':
-	    snprintf(cp->Error, sizeof(cp->Error), "%d Null Header",
-                     NNTP_REJECTIT_VAL);
-	    data->NullHeader = true;
-	    break;
-	  default:
-	    if (data->CurHeader >= cp->Start) {
-	      /* parse previous header */
-	      if (!data->NullHeader && (*cp->Error == '\0'))
-		/* skip if already got an error */
-		ARTparseheader(cp, i - data->CurHeader);
-	    }
-	    data->CurHeader = i;
-	    data->NullHeader = false;
-	    break;
-	}
-	i++;
-      }
-      for (; i < limit ;) {
-	/* rest of the line */
-	switch (bp->data[i]) {
-	  case '\0':
-	    snprintf(cp->Error, sizeof(cp->Error), "%d Null Header",
-                     NNTP_REJECTIT_VAL);
-	    data->NullHeader = true;
-	    break;
-	  case '\r':
-            if (data->LastCR >= cp->Start && data->LastCR != (size_t) -1)
-	      data->CRwithoutLF++;
-	    data->LastCR = i;
-	    break;
-	  case '\n':
-	    if (data->LastCR + 1 == i) {
-	      /* found CRLF */
-	      data->LastCR = cp->Start - 1;
-	      if (data->LastTerminator + 2 == i) {
-		/* terminated still in header */
-		if (cp->Start + 3 == i) {
-		  snprintf(cp->Error, sizeof(cp->Error), "%d Empty article",
-                           NNTP_REJECTIT_VAL);
-		  cp->State = CSnoarticle;
-		} else {
-		  snprintf(cp->Error, sizeof(cp->Error), "%d No body",
-                           NNTP_REJECTIT_VAL);
-		  cp->State = CSgotarticle;
-		}
-		cp->Next = ++i;
-		goto sizecheck;
-	      }
-	      if (data->LastCRLF + MAXHEADERSIZE < i)
-		snprintf(cp->Error, sizeof(cp->Error),
-                         "%d Too long line in header %d bytes",
-                         NNTP_REJECTIT_VAL, i - data->LastCRLF);
-	      else if (data->LastCRLF + 2 == i) {
-		/* header ends */
-		/* parse previous header */
-		if (data->CurHeader >= cp->Start) {
-		  if (!data->NullHeader && (*cp->Error == '\0'))
-		    /* skip if already got an error */
-		    ARTparseheader(cp, i - 1 - data->CurHeader);
-		} else {
-		  snprintf(cp->Error, sizeof(cp->Error), "%d No header",
-                           NNTP_REJECTIT_VAL);
-		}
-		data->LastCRLF = i++;
-		data->Body = i;
-		cp->State = CSgetbody;
-		goto bodyprocessing;
-	      }
-	      data->HeaderLines++;
-	      data->LastCRLF = i++;
-	      goto endofheaderline;
-	    } else {
-	      data->LFwithoutCR++;
-	    }
-	    break;
-	  default:
-	    break;
-	}
-	i++;
-      }
-endofheaderline:
-      ;
-    }
-  } else {
-bodyprocessing:
-    /* body processing, or eating huge article */
-    for (; i < limit ;) {
-      if (data->LastCRLF + 1 == i) {
-        /* begining of the line */
-        switch (bp->data[i]) {
-	  case '.':
-	    data->LastTerminator = i;
-	    break;
-	  case '\r':
-	    data->LastCR = i;
-	    break;
-	  case '\n':
-	    data->LFwithoutCR++;
-	    break;
-	  default:
-	    break;
-        }
-        i++;
-      }
-      for (; i < limit ;) {
-	/* rest of the line */
-	switch (bp->data[i]) {
-	  case '\r':
-            if (data->LastCR >= cp->Start && data->LastCR != (size_t) -1)
-	      data->CRwithoutLF++;
-	    data->LastCR = i;
-	    break;
-	  case '\n':
-	    if (data->LastCR + 1 == i) {
-	      /* found CRLF */
-	      data->LastCR = cp->Start - 1;
-	      if (data->LastTerminator + 2 == i) {
-		/* found end of article */
-		if (cp->State == CSeatarticle) {
-		  cp->State = CSgotlargearticle;
-		  cp->Next = ++i;
-		  snprintf(cp->Error, sizeof(cp->Error),
-		    "%d Article of %lu bytes exceeds local limit of %ld bytes",
-		    NNTP_REJECTIT_VAL, (unsigned long) (i - cp->Start),
-                    innconf->maxartsize);
-		} else {
-		  cp->State = CSgotarticle;
-		  i++;
-		}
-		if (*cp->Error != '\0' && HDR_FOUND(HDR__MESSAGE_ID)) {
-		  HDR_PARSE_START(HDR__MESSAGE_ID);
-		  if (HDR_FOUND(HDR__PATH)) {
-		    /* to record path into news log */
-		    HDR_PARSE_START(HDR__PATH);
-		    hopcount = ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH),
-		      &data->Path);
-		    HDR_PARSE_END(HDR__PATH);
-		    if (hopcount > 0) {
-		      hops = data->Path.List;
-		      if (innconf->logipaddr) {
-			data->Feedsite = RChostname(cp);
-			if (data->Feedsite == NULL)
-			  data->Feedsite = CHANname(cp);
-			if (strcmp("0.0.0.0", data->Feedsite) == 0 ||
-			  data->Feedsite[0] == '\0')
-			  data->Feedsite =
-			    hops && hops[0] ? hops[0] : CHANname(cp);
-		      } else {
-			data->Feedsite =
-			  hops && hops[0] ? hops[0] : CHANname(cp);
-		      }
-		    }
-		  }
-		  ARTlog(data, ART_REJECT, cp->Error);
-		  HDR_PARSE_END(HDR__MESSAGE_ID);
-		}
-		if (cp->State == CSgotlargearticle)
-		  return;
-		goto sizecheck;
-	      }
-#if 0 /* this may be examined in the future */
-	      if (data->LastCRLF + MAXHEADERSIZE < i)
-		snprintf(cp->Error, sizeof(cp->Error),
-                         "%d Too long line in body %d bytes",
-                         NNTP_REJECTIT_VAL, i);
-#endif
-	      data->Lines++;
-	      data->LastCRLF = i++;
-	      goto endofline;
-	    } else {
-	      data->LFwithoutCR++;
-	    }
-	    break;
-	  default:
-	    break;
-	}
-	i++;
-      }
-endofline:
-      ;
-    }
-  }
-sizecheck:
-  /* data->HeaderLines + data->Lines + 4 means that "\r\n" is counted as 1
-     byte and trailing ".\r\n" and body delimitor is excluded. */
-  size = i - cp->Start;
-  fudge = data->HeaderLines + data->Lines + 4;
-  if (innconf->maxartsize > 0)
-    if (size > fudge && size - fudge > (size_t) innconf->maxartsize)
-        cp->State = CSeatarticle;
-  cp->Next = i;
-  return;
+    if (cp->State == CSgetheader)
+        ARTparseheader(cp);
+    else
+        ARTparsebody(cp);
+    ARTchecksize(cp);
+    if (cp->State == CSgotarticle || cp->State == CSgotlargearticle)
+        if (cp->Error[0] != '\0')
+            ARTlogreject(cp);
 }
 
 /*
