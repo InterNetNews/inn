@@ -14,9 +14,8 @@
 **      #include <unistd.h>
 **
 **  Missing functions are provided via #define or prototyped if we'll be
-**  adding them to INN's library.  vfork.h is included if it exists.  If
-**  the system doesn't define a SUN_LEN macro, one will be provided.  Also
-**  provides some standard #defines and typedefs.
+**  adding them to INN's library.  If the system doesn't define a SUN_LEN
+**  macro, one will be provided.  Also provides some standard #defines.
 */
 
 #ifndef CLIBRARY_H
@@ -70,9 +69,6 @@
 #endif
 #if HAVE_UNISTD_H
 # include <unistd.h>
-#endif
-#if HAVE_VFORK_H
-# include <vfork.h>
 #endif
 
 /* SCO OpenServer gets int32_t from here. */
