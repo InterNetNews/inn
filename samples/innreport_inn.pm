@@ -325,7 +325,7 @@ sub collect {
     # time (from the Greco's patch)
     # ME time X idle X(X) artwrite X(X) artlink X(X) hiswrite X(X) hissync
     # X(X) sitesend X(X) artctrl X(X) artcncl X(X) hishave X(X) hisgrep X(X) 
-    # perl X(X)
+    # perl X(X) python X(X)
     # Note : some parameters are optional because several versions of this
     # patch exist.
     if ($left =~ m/^\S+\s+                         # ME
@@ -340,8 +340,9 @@ sub collect {
                    artcncl\ (\d+)\((\d+)\)\s+      # artcncl
                    hishave\ (\d+)\((\d+)\)         # hishave
                    (?:\s+hisgrep\ (\d+)\((\d+)\)   # hisgrep (optional)
-		   (?:\s+perl\ (\d+)\((\d+)\) # perl (optional)
-		   (?:\s+overv\ (\d+)\((\d+)\))?)?)?)?   # perl (optional)
+		   (?:\s+perl\ (\d+)\((\d+)\)      # perl (optional)
+		   (?:\s+overv\ (\d+)\((\d+)\)     # overv (optional)
+		   (?:\s+python\ (\d+)\((\d+)\))?)?)?)?)?   # python (optional)
 	           \s*$/ox) {
       $innd_time_times += $1;
       $innd_time_time{'idle'} += $2;
