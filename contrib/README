@@ -103,6 +103,19 @@ showtoken
 
     Decodes storage API tokens.
 
+stathist
+
+    Parses and summarizes the log files created by the history profiling
+    code.
+
+thdexpire
+
+    A dynamic expire daemon for timehash and timecaf spools.  It should
+    be started along with innd and periodically looks if news spool space
+    is getting tight, and then frees space by removing articles until
+    enough is free.  It is an adjunct to (not a replacement for) INN's
+    expire program.
+
 tunefeed
 
     Given two active files, attempts to produce a good set of wildmat
