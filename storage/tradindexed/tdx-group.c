@@ -1327,7 +1327,7 @@ index_audit_group(struct group_index *index, struct group_entry *entry,
     } else {
         if (entry->flag != group->flag) {
             entry->flag = group->flag;
-            msync_page(entry, sizeof(*entry), MS_ASYNC);
+            mapcntl(entry, sizeof(*entry), MS_ASYNC);
         }
         tdx_data_audit(group->name, entry, fix);
     }
