@@ -103,6 +103,10 @@ In this case,
 will attempt to use the
 .B NNTP
 protocol to obtain a copy of the the specified system's active file.
+If the host argument contains a 
+.B ``:'' ,
+the right side will be considerd the port to connect to on the remote system.
+If no port number ist specified, actsync will connect to port 119.
 .PP
 Regardless how the active file information is obtained,
 the actions of

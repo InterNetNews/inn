@@ -64,17 +64,20 @@ This specifies how to name the local site when building the Path header line.
 The default is the fully-qualified domain name of the local host.
 .TP
 .I server
-This specifies the name of the NNTP server, and if the server does not use UNIX
-domain socket, articles passed by
-.IR nnrpd (8)
-are get through INET domain socket to this server.
+This specifies the name of the default NNTP server. 
+If
+.IR nnrpdposthost 
+is not specified and UNIX domain sockets are not supported, 
+.IR nnrpd(8) 
+tries to hand off locally-posted articles through an INET domain socket to 
+this server.
 .IR actsync (8),
 .IR nntpget (8)
 and
 .IR getlist (8)
-also use the server to get where to connect.
-The value of the NNTPSERVER environment variable, if it exists, overrides this.
-The default value is unset.
+also use this value as the default server to connect to.
+In the latter cases, the value of the NNTPSERVER environment variable, if it 
+exists, overrides this. The default value is unset.
 .TP
 .I domain
 This should be the domain name of the local host.
