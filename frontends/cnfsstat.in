@@ -328,8 +328,7 @@ sub human_readable {
 	$scaled *= $factor;
 	$unit--;
     }
-    my $predigits = int(log($scaled) / log(10));
-    $predigits = 0 if $predigits < 0;
+    my $predigits = length (int($scaled));
     my $postdigits = $digits - $predigits - 1;
     ++$digits;
 
