@@ -14,10 +14,9 @@
 /* Global and initialized; to work around SunOS -Bstatic bug, sigh. */
 STATIC char		ConfigBuff[SMBUF] = "";
 int		format = 0;
-STATIC char	*ver = FALSE;
 STATIC BOOL	version = FALSE;
 
-int isnum(char *v)
+int isnum(const char *v)
 {
     if (!*v) return(0);
     for (; *v; v++)
@@ -34,7 +33,7 @@ char *upit(char *v)
 }
 
 void
-printit(char *v, char *val)
+printit(char *v, const char *val)
 {
     switch (format) {
 	case 0: printf("%s\n", val); break;
@@ -95,7 +94,7 @@ wholeconfig()
 	}
 	(void)fclose(F);
     }
-    printit(COPY("version"), ver);
+    printit(COPY("version"), inn_version_string);
     exit(0);
 }
 
@@ -143,9 +142,8 @@ main(int ac, char **av)
     ac -= optind;
     av += optind;
 
-    ver = INNVersion();
     if (version) {
-	printit(COPY("version"), ver);
+	printit(COPY("version"), inn_version_string);
 	exit(0);
     }
     if (!*av) wholeconfig();   /* Doesn't return */
