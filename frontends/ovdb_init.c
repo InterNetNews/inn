@@ -106,6 +106,7 @@ static int upgrade_v1_to_v2()
     char group[MAXHEADERSIZE];
     u_int32_t v2 = 2;
     int ret;
+    char *p;
 
     printf("ovdb_init: Upgrading data to version 2\n");
     if(ret = open_db(&groupstats, "groupstats", DB_BTREE))
@@ -212,8 +213,12 @@ static int upgrade_v1_to_v2()
     groupsbyname->remove(groupsbyname, "groupsbyname", NULL, 0);
 #else
     /* This won't work if someone changed DB_DATA_DIR in DB_CONFIG */
-    unlink(cpcatpath(ovdb_conf.home, "groupstats"));
-    unlink(cpcatpath(ovdb_conf.home, "groupsbyname"));
+    p = concatpath(ovdb_conf.home, "groupstats");
+    unlink(p);
+    free(p);
+    p = concatpath(ovdb_conf.home, "groupsbyname");
+    unlink(p);
+    free(p);
 #endif
 
     return 0;
@@ -397,7 +402,7 @@ int main(int argc, char **argv)
 	    exit(1);
 	case 0:
 	    setsid();
-	    execl(cpcatpath(innconf->pathbin, "ovdb_monitor"),
+	    execl(concatpath(innconf->pathbin, "ovdb_monitor"),
 		"ovdb_monitor", SPACES, NULL);
 	    fprintf(stderr, "Can't exec ovdb_monitor: %s\n", strerror(errno));
 	    _exit(1);
@@ -415,7 +420,7 @@ int main(int argc, char **argv)
 		exit(1);
 	    case 0:
 		setsid();
-		execl(cpcatpath(innconf->pathbin, "ovdb_server"),
+		execl(concatpath(innconf->pathbin, "ovdb_server"),
 		    "ovdb_server", SPACES, NULL);
 		fprintf(stderr, "Can't exec ovdb_server: %s\n", strerror(errno));
 		_exit(1);

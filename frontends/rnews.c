@@ -837,7 +837,7 @@ int main(int ac, char *av[])
 #endif
      if (ReadInnConf() < 0) exit(1);
      UUCPHost = getenv(_ENV_UUCPHOST);
-     PathBadNews = COPY(cpcatpath(innconf->pathincoming, _PATH_BADNEWS));
+     PathBadNews = concatpath(innconf->pathincoming, _PATH_BADNEWS);
      port = innconf->nnrpdpostport;
 
     (void)umask(NEWSUMASK);

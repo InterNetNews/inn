@@ -277,7 +277,7 @@ static void cleanup(int status)
     if(logremoverpid)
 	waitpid(logremoverpid, &cs, 0);
 
-    unlink(cpcatpath(innconf->pathrun, OVDB_MONITOR_PIDFILE));
+    unlink(concatpath(innconf->pathrun, OVDB_MONITOR_PIDFILE));
     exit(status);
 }
 
@@ -321,6 +321,8 @@ static int monitorloop(void)
 
 int main(int argc, char **argv)
 {
+    char *pidfile;
+
     if(argc != 2 || strcmp(argv[1], SPACES)) {
 	fprintf(stderr, "Use ovdb_init to start me\n");
 	exit(1);
@@ -353,7 +355,8 @@ int main(int argc, char **argv)
     xsignal(SIGTERM, sigfunc);
     xsignal(SIGHUP, sigfunc);
 
-    if(putpid(cpcatpath(innconf->pathrun, OVDB_MONITOR_PIDFILE)))
+    pidfile = concatpath(innconf->pathrun, OVDB_MONITOR_PIDFILE);
+    if(putpid(pidfile))
 	exit(1);
     if(start_process(&deadlockpid, deadlock))
 	cleanup(1);

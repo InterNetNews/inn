@@ -717,6 +717,7 @@ main(int argc, char *argv[])
 {
     int i, ret;
     socklen_t salen;
+    char *path, *pidfile;
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
     struct sockaddr_un sa;
 #else
@@ -761,8 +762,10 @@ main(int argc, char *argv[])
 
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
     sa.sun_family = AF_UNIX;
-    strcpy(sa.sun_path, cpcatpath(innconf->pathrun, OVDB_SERVER_SOCKET));
+    path = concatpath(innconf->pathrun, OVDB_SERVER_SOCKET);
+    strcpy(sa.sun_path, path);
     unlink(sa.sun_path);
+    free(path);
     ret = bind(listensock, (struct sockaddr *)&sa, sizeof sa);
 #else
     sa.sin_family = AF_INET;
@@ -789,7 +792,8 @@ main(int argc, char *argv[])
 	exit(1);
     }
 
-    if(putpid(cpcatpath(innconf->pathrun, OVDB_SERVER_PIDFILE)))
+    pidfile = concatpath(innconf->pathrun, OVDB_SERVER_PIDFILE);
+    if(putpid(path))
         exit(1);
 
     xrsignal(SIGINT, sigfunc);
@@ -850,7 +854,7 @@ main(int argc, char *argv[])
     while(wait(&ret) > 0)
 	;
 
-    unlink(cpcatpath(innconf->pathrun, OVDB_SERVER_PIDFILE));
+    unlink(pidfile);
 
     exit(0);
 }
