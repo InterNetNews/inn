@@ -351,7 +351,7 @@ CMDnewnews(int ac, char *av[])
 		    continue;
 	    } else
 		    art = NULL;
-	    if (!AllGroups && !PERMmatch(FALSE, groups, files))
+	    if (!AllGroups && !PERMmatch(groups, files))
 		continue;
 	    if (!AllDists && !DistMatches(art, distribs, files))
 		continue;

@@ -467,7 +467,10 @@ GetActivedGroupList()
     struct timeval timeout;
 
     if (GRPactived < 0) {
-	if ((s = create_udp_socket(0)) < 0) {
+	/* On Linux, the obtained socket can have the same ID (IP+port)	*/
+	/* than the actived server. In that case, any future nnrpd will	*/
+	/* be unable to connect to actived.				*/
+	if ((s = create_udp_socket(0, innconf->activedport)) < 0) {
 	    syslog(L_ERROR, "%s actived socket couldnt be created %m",
 				ClientHost);
 	    return(FALSE);

@@ -159,7 +159,7 @@ main(argc, argv)
     ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
     innconf->activedenable = 0;		/* This is the daemon */
 
-    if ((s = create_udp_socket(innconf->activedport)) < 0) {
+    if ((s = create_udp_socket(innconf->activedport, 0)) < 0) {
 	syslog(L_ERROR, "cant createudpsocket %m");
 	exit(1);
     }
