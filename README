@@ -1,18 +1,14 @@
-Welcome to INN 2.1!
+Welcome to INN 2.2!
 
-  This is the public release of version 2.1 of InterNet News (INN). This work
+  This is the public release of version 2.2 of InterNet News (INN). This work
   is sponsored by the Internet Software Consortium.
 
   This release is a bug-fix to the previous version.  Please see
   the INSTALL document for installation instructions.
 
+  See the NEWS file for what's changed from the previous release.
+
 Reporting Bugs
-
-  We're gathering information on who uses INN. Please do the following
-
-        uname -a | Mail -s "2.1 usage survey" inn-survey@isc.org
-
-  We appreciate it. You won't get a reply.
 
   We're interested in all bug reports. Not just on the programs, but on
   the documentation too. Please send *all* such reports to:
@@ -27,46 +23,37 @@ Reporting Bugs
   (please do *not* send bug reports to this address)
 
   For general "how do I do this" questions you should post to
-  news.software.nntp as there are a lot of experienced INN users there, and 
-  there isn't the time necessary to answer general questions
+  news.software.nntp as there are a lot of experienced INN users there,
+  and there isn't the time necessary to answer general questions
 
   Have fun!
 
 Who's Responsible / Who to Thank
 
-  See the CONTRIBUTORS file for a long list of past constributors as well 
-  as people from the inn-workers mailing list who have dedicated a
-  lot of time and effort to getting this new version together. They deserve
-  a big round of applause. They've certainly got my thanks.
+  See the CONTRIBUTORS file for a long list of past constributors as
+  well as people from the inn-workers mailing list who have dedicated
+  a lot of time and effort to getting this new version together. They
+  deserve a big round of applause. They've certainly got our thanks.
+
+  Last, but certainly not least, Rich Salz, the original author of INN
+  deserves a lion's share of the credit for writing INN in the first 
+  place and making it the most popular news server software on the 
+  planet (no NNTP yet to the moon, but we plan to be there first)..
 
 Supporting the INN Effort
 
-  Note that INN is supported by the Internet Software Consortium, and although
-  it is free for use and redistribution and incorporation into vendor products
-  and export and anything else you can think of, it costs money to produce.
-  That money comes from ISP's, hardware and software vendors, companies who
-  make extensive use of the software, and generally kind hearted folk such as
-  yourself.  
+  Note that INN is supported by the Internet Software Consortium,
+  and although it is free for use and redistribution and incorporation
+  into vendor products and export and anything else you can think of,
+  it costs money to produce.  That money comes from ISP's, hardware and
+  software vendors, companies who make extensive use of the software,
+  and generally kind hearted folk such as yourself.
 
-  The Internet Software Consortium has also commissioned a DHCP server
-  implementation, handles the official support/release of BIND, and supports
-  the Kerberos Version 5 effort at MIT.  You can learn more about the ISC's
-  goals and accomplishments from the web page at <URL:http://www.isc.org/isc/>.
-
-Some History
-
-  1.4sec was the last release produced by Rich Salz, the original author of
-  INN. 1.4sec came out in the middle of 1993. After that Rich was unable to
-  dedicate the time necessary to maintain it (and I now fully understand why).
-  Dave Barr unofficially took over and produced 4 releases with a lot of help
-  from the user community. Dave's 4 releases contained a lot of bug fixes and
-  some functionality additions.
-
-  Rich Salz, at the beginning of 1996, handed the source pool over to me as
-  part of the agreement that the ISC would take over maintenance and
-  development of future INN releases. Starting with Rich's post 1.4 source
-  pool, I merged in the changes that had occured through the four 'unoff'
-  versions, and then added quite a few bug fixes, enhancements etc.
+  The Internet Software Consortium has also commissioned a DHCP
+  server implementation, handles the official support/release of BIND,
+  and supports the Kerberos Version 5 effort at MIT.  You can learn
+  more about the ISC's goals and accomplishments from the web page at
+  <URL:http://www.isc.org/isc/>.
 
 James Brister
 inn@isc.org		(INN related mail)
