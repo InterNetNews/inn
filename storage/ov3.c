@@ -42,9 +42,9 @@ typedef struct {
     HASH                alias;            /* If not empty then this is the hash
 					     of the group that this group is an
 					     alias for */
-    int                 high;             /* High water mark in group */
-    int                 low;              /* Low water mark in group */
-    int                 base;             /* Article number of the first entry
+    ARTNUM              high;             /* High water mark in group */
+    ARTNUM              low;              /* Low water mark in group */
+    ARTNUM              base;             /* Article number of the first entry
 					     in the index */
     int                 count;            /* Number of articles in group */
     int                 flag;             /* Posting/Moderation Status */
@@ -782,7 +782,7 @@ void *OV3opensearch(char *group, int low, int high) {
     return (void *)search;
 }
 
-BOOL OV3search(void *handle, int *artnum, char **data, int *len, TOKEN *token) {
+BOOL OV3search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token) {
     OV3SEARCH           *search = (OV3SEARCH *)handle;
     INDEXENTRY           *ie;
 
@@ -823,7 +823,7 @@ void OV3closesearch(void *handle) {
     DISPOSE(search);
 }
 
-BOOL OV3getartinfo(char *group, int artnum, char **data, int *len, TOKEN *token) {
+BOOL OV3getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token) {
     void                *handle;
     BOOL                retval;
     if (!(handle = OV3opensearch(group, artnum, artnum)))
@@ -981,7 +981,7 @@ BOOL OV3expiregroup(char *group, int *lo) {
     char                *data;
     int                 len;
     TOKEN               token;
-    int                 artnum;
+    ARTNUM              artnum;
     GROUPENTRY          newge;
     GROUPHANDLE         *newgh;
     ARTHANDLE           *ah;
@@ -1126,7 +1126,7 @@ BOOL OV3rebuilddatafromindex(char *group) {
     char                *data;
     int                 len;
     TOKEN               token;
-    int                 artnum;
+    ARTNUM              artnum;
     GROUPENTRY          newge;
     GROUPHANDLE         *newgh;
     char                *gendata;
