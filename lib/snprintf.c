@@ -73,12 +73,18 @@
  *    fixed return value to comply with C99
  *    fixed handling of snprintf(NULL, ...)
  *
+ *  Hrvoje Niksic <hniksic@arsdigita.com> 2000-11-04
+ *    include <stdio.h> for NULL.
+ *    added support for long long.
+ *    don't declare argument types to (v)snprintf if stdarg is not used.
+ *
  **************************************************************/
 
 #include "config.h"
 #include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
+#include <stdio.h>              /* for NULL */
 
 /* varargs declarations: */
 
@@ -95,6 +101,12 @@
 #define LDOUBLE double
 #endif
 
+#ifdef HAVE_LONG_LONG
+# define LLONG long long
+#else
+# define LLONG long
+#endif
+
 int snprintf (char *str, size_t count, const char *fmt, ...);
 int vsnprintf (char *str, size_t count, const char *fmt, va_list arg);
 
@@ -103,7 +115,7 @@ static int dopr (char *buffer, size_t maxlen, const char *format,
 static int fmtstr (char *buffer, size_t *currlen, size_t maxlen,
 		   char *value, int flags, int min, int max);
 static int fmtint (char *buffer, size_t *currlen, size_t maxlen,
-		   long value, int base, int min, int max, int flags);
+		   LLONG value, int base, int min, int max, int flags);
 static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
 		  LDOUBLE fvalue, int min, int max, int flags);
 static int dopr_outch (char *buffer, size_t *currlen, size_t maxlen, char c );
@@ -119,8 +131,9 @@ static int dopr_outch (char *buffer, size_t *currlen, size_t maxlen, char c );
 #define DP_S_DOT     3
 #define DP_S_MAX     4
 #define DP_S_MOD     5
-#define DP_S_CONV    6
-#define DP_S_DONE    7
+#define DP_S_MOD_L   6
+#define DP_S_CONV    7
+#define DP_S_DONE    8
 
 /* format flags - Bits */
 #define DP_F_MINUS 	(1 << 0)
@@ -134,7 +147,8 @@ static int dopr_outch (char *buffer, size_t *currlen, size_t maxlen, char c );
 /* Conversion Flags */
 #define DP_C_SHORT   1
 #define DP_C_LONG    2
-#define DP_C_LDOUBLE 3
+#define DP_C_LLONG   3
+#define DP_C_LDOUBLE 4
 
 #define char_to_int(p) (p - '0')
 #define MAX(p,q) ((p >= q) ? p : q)
@@ -143,7 +157,7 @@ static int dopr_outch (char *buffer, size_t *currlen, size_t maxlen, char c );
 static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 {
   char ch;
-  long value;
+  LLONG value;
   LDOUBLE fvalue;
   char *strvalue;
   int min;
@@ -244,7 +258,6 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	state = DP_S_MOD;
       break;
     case DP_S_MOD:
-      /* Currently, we don't support Long Long, bummer */
       switch (ch) 
       {
       case 'h':
@@ -262,6 +275,21 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
       default:
 	break;
       }
+      if (cflags != DP_C_LONG)
+        state = DP_S_CONV;
+      else
+        state = DP_S_MOD_L;
+      break;
+    case DP_S_MOD_L:
+      switch (ch)
+      {
+      case 'l':
+        cflags = DP_C_LLONG;
+        ch = *format++;
+        break;
+      default:
+        break;
+      }
       state = DP_S_CONV;
       break;
     case DP_S_CONV:
@@ -273,6 +301,8 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	  value = va_arg (args, short int);
 	else if (cflags == DP_C_LONG)
 	  value = va_arg (args, long int);
+        else if (cflags == DP_C_LLONG)
+          value = va_arg (args, LLONG);
 	else
 	  value = va_arg (args, int);
 	total += fmtint (buffer, &currlen, maxlen, value, 10, min, max, flags);
@@ -283,6 +313,8 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	  value = va_arg (args, unsigned short int);
 	else if (cflags == DP_C_LONG)
 	  value = va_arg (args, unsigned long int);
+        else if (cflags == DP_C_LLONG)
+          value = va_arg (args, unsigned LLONG);
 	else
 	  value = va_arg (args, unsigned int);
 	total += fmtint (buffer, &currlen, maxlen, value, 8, min, max, flags);
@@ -293,6 +325,8 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	  value = va_arg (args, unsigned short int);
 	else if (cflags == DP_C_LONG)
 	  value = va_arg (args, unsigned long int);
+        else if (cflags == DP_C_LLONG)
+          value = va_arg (args, unsigned LLONG);
 	else
 	  value = va_arg (args, unsigned int);
 	total += fmtint (buffer, &currlen, maxlen, value, 10, min, max, flags);
@@ -305,6 +339,8 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	  value = va_arg (args, unsigned short int);
 	else if (cflags == DP_C_LONG)
 	  value = va_arg (args, unsigned long int);
+        else if (cflags == DP_C_LLONG)
+          value = va_arg (args, unsigned LLONG);
 	else
 	  value = va_arg (args, unsigned int);
 	total += fmtint (buffer, &currlen, maxlen, value, 16, min, max, flags);
@@ -357,6 +393,12 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	  long int *num;
 	  num = va_arg (args, long int *);
 	  *num = currlen;
+        }
+        else if (cflags == DP_C_LLONG) 
+        {
+          LLONG *num;
+          num = va_arg (args, LLONG *);
+          *num = currlen;
         } 
 	else 
 	{
@@ -440,15 +482,15 @@ static int fmtstr (char *buffer, size_t *currlen, size_t maxlen,
 /* Have to handle DP_F_NUM (ie 0x and 0 alternates) */
 
 static int fmtint (char *buffer, size_t *currlen, size_t maxlen,
-		   long value, int base, int min, int max, int flags)
+		   LLONG value, int base, int min, int max, int flags)
 {
   int signvalue = 0;
-  unsigned long uvalue;
-  char convert[20];
+  unsigned LLONG uvalue;
+  char convert[24];
   int place = 0;
   int spadlen = 0; /* amount to space pad */
   int zpadlen = 0; /* amount to zero pad */
-  int caps = 0;
+  const char *digits;
   int total = 0;
   
   if (max < 0)
@@ -470,15 +512,17 @@ static int fmtint (char *buffer, size_t *currlen, size_t maxlen,
 	signvalue = ' ';
   }
   
-  if (flags & DP_F_UP) caps = 1; /* Should characters be upper case? */
+  if (flags & DP_F_UP)
+    /* Should characters be upper case? */
+    digits = "0123456789ABCDEF";
+  else
+    digits = "0123456789abcdef";
 
   do {
-    convert[place++] =
-      (caps? "0123456789ABCDEF":"0123456789abcdef")
-      [uvalue % (unsigned)base  ];
+    convert[place++] = digits[uvalue % (unsigned)base];
     uvalue = (uvalue / (unsigned)base );
-  } while(uvalue && (place < 20));
-  if (place == 20) place--;
+  } while(uvalue && (place < sizeof (convert)));
+  if (place == sizeof (convert)) place--;
   convert[place] = 0;
 
   zpadlen = max - place;
