@@ -1137,13 +1137,14 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 		art->len = 0;
 	    } else {
 		/* assumes first one is the original */
-		if ((p = strchr(xrefs[0], ':')) != NULL) {
+		if ((p = strchr(xrefs[1], ':')) != NULL) {
 		    *p++ = '\0';
-		    ng = xrefs[0];
+		    ng = xrefs[1];
 		    DeDotify(ng);
 		    artnum = atol(p);
 
                     length = strlen(innconf->patharticles) + strlen(ng) + 32;
+		    linkpath = xmalloc(length);
 		    snprintf(linkpath, length, "%s/%s/%lu",
                              innconf->patharticles, ng, artnum);
 		    if (strcmp(path, linkpath) != 0) {
@@ -1167,11 +1168,8 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 		    art->groupslen = p - xrefhdr;
 		}
 	    }
-	} else if (innconf->storeonxref) {
-	    art->groups = NULL;
-	    art->groupslen = 0;
 	}
-	if (!innconf->storeonxref) {
+	if (xrefhdr == NULL || !innconf->storeonxref) {
             ng = wire_findheader(art->data, art->len, "Newsgroups");
 	    if (ng == NULL) {
 		art->groups = NULL;

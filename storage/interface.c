@@ -641,37 +641,27 @@ static bool
 MatchGroups(const char *g, int len, const char *pattern, bool exactmatch)
 {
     char *group, *groups, *q;
-    const char *groupsep;
     int i, lastwhite;
     enum uwildmat matched;
     bool wanted = false;
-
-    if (innconf->storeonxref)
-	groupsep = " ";
-    else
-	groupsep = ",";
 
     q = groups = xmalloc(len + 1);
     for (lastwhite = -1,  i = 0 ; i < len ; i++) {
 	/* trim white chars */
 	if (g[i] == '\r' || g[i] == '\n' || g[i] == ' ' || g[i] == '\t') {
-	    if (innconf->storeonxref) {
-		if (lastwhite + 1 != i)
-		    *q++ = ' ';
-		lastwhite = i;
-	    }
+	    if (lastwhite + 1 != i)
+	        *q++ = ' ';
+	    lastwhite = i;
 	} else
 	    *q++ = g[i];
     }
     *q = '\0';
 
-    group = strtok(groups, groupsep);
+    group = strtok(groups, " ,");
     while (group != NULL) {
-	if (innconf->storeonxref) {
-            q = strchr(group, ':');
-            if (q != NULL)
-                *q = '\0';
-        }
+        q = strchr(group, ':');
+        if (q != NULL)
+            *q = '\0';
         matched = uwildmat_poison(group, pattern);
         if (matched == UWILDMAT_POISON || (exactmatch && !matched)) {
 	    free(groups);
@@ -679,7 +669,7 @@ MatchGroups(const char *g, int len, const char *pattern, bool exactmatch)
 	}
         if (matched == UWILDMAT_MATCH)
             wanted = true;
-        group = strtok(NULL, groupsep);
+        group = strtok(NULL, " ,");
     }
 
     free(groups);
