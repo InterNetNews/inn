@@ -10,6 +10,9 @@
 /* Change to fork() if your vfork() is broken */
 #define FORK() vfork()
 
+/* Define vfork to be fork if vfork is not available or broken */
+#undef vfork
+
 /* Define if you have ANSI C headers */
 #undef STDC_HEADERS
 

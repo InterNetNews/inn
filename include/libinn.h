@@ -198,7 +198,7 @@ extern int	GetTimeInfo(TIMEINFO *Now);
 typedef struct {
     char        hash[16];
 } HASH;
-HASH Hash(const void *value, size_t len);
+HASH Hash(const void *value, const size_t len);
 /* Return the hash of a case mapped message-id */
 HASH HashMessageID(const char *MessageID);
 BOOL HashEmpty(const HASH hash);
