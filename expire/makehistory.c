@@ -495,7 +495,7 @@ static void
 DoArt(ARTHANDLE *art)
 {
     ARTOVERFIELD		*fp;
-    const char                  *p;
+    const char                  *p, *end;
     char                        *q;
     static struct buffer        buffer = { 0, 0, 0, NULL };
     static char			SEP[] = "\t";
