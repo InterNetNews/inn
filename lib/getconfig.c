@@ -1,15 +1,14 @@
-/*  $Revision$
+/*  $Id$
 **
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
-#include "paths.h"
+#include <syslog.h> 
+
+#include "innconf.h"
 #include "libinn.h"
 #include "macros.h"
-#include <syslog.h> 
-#include "innconf.h"
+#include "paths.h"
 
 /* Global and initialized; to work around SunOS -Bstatic bug, sigh. */
 STATIC char		ConfigBuff[SMBUF] = "";
@@ -35,9 +34,9 @@ STATIC int		ConfigBitsize;
 	include/innconf.h	:	Add to conf_defaults
 	include/libinn.h	:	Add varname to conf_vars struct
 	lib/getconfig.c		:	SetDefaults() & ReadInnConf(), ClearInnConf()
-	samples/inn.conf	:	Set the default value
-	samples/inncheck.in	:	So we can check it
-	doc/inn.conf.5		:	Document it!
+	samples/inn.conf.in	:	Set the default value
+	scripts/inncheck.in	:	So we can check it
+	doc/pod/inn.conf.pod	:	Document it!
 	wherever you need it	:	Use as innconf->varname
 */
 
