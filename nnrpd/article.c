@@ -109,6 +109,10 @@ STATIC int		OVERioff;		/* Current index pointer */
 #define IOV_MAX 16
 #endif
 
+#if (defined(HPUX) || defined(__hpux__)) && !defined(IOV_MAX)
+#define IOV_MAX 16
+#endif
+
 #endif
 
 STATIC struct iovec	iov[IOV_MAX];
