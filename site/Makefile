@@ -47,6 +47,10 @@ PATH_RADIUS_CONF	= ${PATHETC}/radius.conf
 PATH_OVDB_CONF		= ${PATHETC}/ovdb.conf
 PATH_SASL_CONF		= ${PATHETC}/sasl.conf
 
+PATH_ACTIVE		= ${PATHDB}/active
+PATH_ACTIVE_TIMES	= ${PATHDB}/active.times
+PATH_NEWSGROUPS		= ${PATHDB}/newsgroups
+
 ##  Order:  innd, control, expire, inews, sending, misc
 MOST	= checkgroups default ihave newgroup \
 	rmgroup sendme sendsys senduuname version parsecontrol \
@@ -64,7 +68,8 @@ REST		= \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
 	filter_innd.py INN.py \
 	startup.tcl filter.tcl nnrpd_auth.pl news2mail.cf readers.conf \
-	radius.conf nnrpd_auth.py ovdb.conf sasl.conf
+	radius.conf nnrpd_auth.py ovdb.conf sasl.conf active.minimal \
+	newsgroups.minimal
 
 ALL		= $(MOST) $(REST)
 
@@ -97,6 +102,8 @@ REST_INSTALLED	= \
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
 
+SPECIAL		= $D$(PATH_ACTIVE) $D$(PATH_ACTIVE_TIMES) $D$(PATH_NEWSGROUPS)
+
 ##  Get new versions of everything from samples directory.
 all:		$(P) $(ALL) config
 
@@ -121,7 +128,7 @@ config:		$(ALL)
 ##  Don't use parallel rules -- we want this to be viewed carefully.
 install:	all $(PAUSE) install-config $(RELOAD_AND_GO)
 reload-install:	all pause    install-config reload go
-install-config:		update $(REST_INSTALLED)
+install-config:		update $(REST_INSTALLED) $(SPECIAL)
 
 ##  Install scripts, not per-host config files.
 update:		all $(MOST_INSTALLED)
@@ -129,6 +136,17 @@ update:		all $(MOST_INSTALLED)
 	@echo which installed inn.conf does not have.  Check those parameters
 	@echo before you run innd. ; echo ""
 	date >update
+
+##  Special rules for files that sould never be overwritten if they are
+##  already installed.  These are used only for the initial install of a
+##  brand new server.
+$D$(PATH_ACTIVE): 	; $(CP_RPUB) active.minimal $@
+$D$(PATH_NEWSGROUPS):	; $(CP_RPUB) newsgroups.minimal $@
+$D$(PATH_ACTIVE_TIMES):
+	touch $@
+	chown $(NEWSUSER) $@
+	chgrp $(NEWSGROUP) $@
+	chmod 644 $@
 
 ##  Remove files that are unchanged from the release version.
 clean:
@@ -272,6 +290,8 @@ startup_innd.pl: ../samples/startup_innd.pl	; $(COPY) $? $@
 version:	../samples/version		; $(COPY) $? $@
 version.pl:	../samples/version.pl		; $(COPY) $? $@
 sasl.conf:	../samples/sasl.conf		; $(COPY) $? $@
+active.minimal:	../samples/active.minimal	; $(COPY) $? $@
+newsgroups.minimal: ../samples/newsgroups.minimal ; $(COPY) $? $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES)
