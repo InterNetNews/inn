@@ -42,13 +42,14 @@ typedef struct _ARTOVERFIELD {
     BOOL	HasHeader;
 } ARTOVERFIELD;
 
-#define DEFAULT_SEGSIZE	100000;
+#define DEFAULT_SEGSIZE	10000;
 
 BOOL NukeBadArts;
 char *SchemaPath = NULL;
 char *ActivePath = NULL;
 char *HistoryPath = NULL;
 FILE *HistFile;
+FILE *Overchan;
 BOOL DoOverview;
 BOOL Fork;
 BOOL Cutofflow = FALSE;
@@ -175,7 +176,7 @@ GetMessageID(char *p)
  * The overview temp file is used to accumulate overview lines as articles are
  * scanned.  The format is
  * (1st) newsgroup name\tToken\toverview data.
- * When about 100000 lines of this overview data are accumulated, the data
+ * When about 10000 lines of this overview data are accumulated, the data
  * file is sorted and then read back in and the data added to overview.
  * The sorting/batching helps improve efficiency.
  */
@@ -349,7 +350,26 @@ WriteOverLine(TOKEN *token, char *xrefs, int xrefslen,
 {
     char temp[SMBUF];
     char *p, *q, *r;
+    int i;
 
+    if (sorttype == OVNOSORT) {
+	if (Fork) {
+	    (void)fprintf(Overchan, "%s %d %d ", TokenToText(*token), arrived, expires);
+	    if (fwrite((POINTER)overdata, (SIZE_T)1, (SIZE_T)overlen, Overchan) != overlen) {
+		fprintf(stderr, "makehistory: writing overview failed\n");
+		exit(1);
+	    }
+	    fputc('\n', Overchan);
+	} else if (!OVadd(*token, overdata, overlen, arrived, expires)) {
+	    if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE) {
+		fprintf(stderr, "makehistory: no space left for overview\n");
+		OVclose();
+		exit(1);
+	    }
+	    fprintf(stderr, "makehistory: Can't write overview data for article \"%s\"\n", TokenToText(*token));
+	}
+	return;
+    }
     if (OverTmpPath == NULL) {
 	/* need new temp file, so create it. */
 	(void)sprintf(temp, "%s/histXXXXXX", TmpDir);
@@ -726,7 +746,7 @@ Usage(void)
     fprintf(stderr, "\t-a -- open output history file in append mode\n");
     fprintf(stderr, "\t-O -- create overview entries for articles\n");
     fprintf(stderr, "\t-I -- do not create overview entries for articles below lowmark in active\n");
-    fprintf(stderr, "\t-l nnn -- set size of batches too do overview updates in (default 100000)\n");
+    fprintf(stderr, "\t-l nnn -- set size of batches too do overview updates in (default 10000)\n");
     fprintf(stderr, "\t-u -- 'update mode' assume server running, only output to file\n");
     fprintf(stderr,"\t\tentries not already in main history file.\n");
     fprintf(stderr, "\t-x -- don't bother writing any history entries at all\n");
@@ -797,6 +817,7 @@ main(int argc, char **argv)
     char *p;
     char *OldHistoryPath;
     dbzoptions opt;
+    char *buff;
     
     /* First thing, set up logging and our identity. */
     openlog("makehistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
@@ -879,7 +900,7 @@ main(int argc, char **argv)
     /* Read in the overview schema */
     ARTreadschema(DoOverview);
     
-    if (DoOverview && !Fork) {
+    if (DoOverview) {
 	/* init the overview setup. */
 	if (!OVopen(OV_WRITE)) {
 	    fprintf(stderr, "makehistory: OVopen failed\n");
@@ -889,11 +910,24 @@ main(int argc, char **argv)
 	    fprintf(stderr, "makehistory: OVctl(OVSORT) failed\n");
 	    exit(1);
 	}
-	if (!OVctl(OVCUTOFFLOW, (void *)&Cutofflow)) {
-	    fprintf(stderr, "makehistory: OVctl(OVCUTOFFLOW) failed\n");
-	    exit(1);
+	if (!Fork) {
+	    if (!OVctl(OVCUTOFFLOW, (void *)&Cutofflow)) {
+	        fprintf(stderr, "makehistory: OVctl(OVCUTOFFLOW) failed\n");
+	        exit(1);
+	    }
+	    OverAddAllNewsgroups();
+	} else {
+	    OverAddAllNewsgroups();
+	    if (sorttype == OVNOSORT) {
+		buff = concat(innconf->pathbin, "/", "overchan", NULL);
+		if ((Overchan = popen(buff, "w")) == NULL) {
+		    fprintf(stderr, "makehistory: forking overchan failed\n");
+		    exit(1);
+		}
+		DISPOSE(buff);
+	    }
+	    OVclose();
 	}
-	OverAddAllNewsgroups();
     }
 
     /* Init the Storage Manager */
@@ -945,10 +979,18 @@ main(int argc, char **argv)
     }
 
     if (DoOverview) {
-	int status;
-	FlushOverTmpFile();
-	if(Fork)
-	    wait(&status);
+	if (sorttype == OVNOSORT && Fork) {
+	    if (fflush(Overchan) == EOF || ferror(Overchan) || pclose(Overchan) == EOF) {
+		(void)fprintf(stderr, "Can't flush overview data , %s\n", strerror(errno));
+		exit(1);
+	    }
+	}
+	if (sorttype != OVNOSORT) {
+	    int status;
+	    FlushOverTmpFile();
+	    if(Fork)
+		wait(&status);
+	}
     }
     if(!Fork)
 	OVclose();
