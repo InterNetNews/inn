@@ -1097,6 +1097,8 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const BOOL Trusted)
 	if (!more)
 	    break;
     }
+    (void)sprintf(buff, "Cancelling %s", MaxLength(MessageID, MessageID));
+    ARTlog(Data, ART_CANC, buff);
     TMRstop(TMR_ARTCNCL);
 }
 
