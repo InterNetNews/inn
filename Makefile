@@ -141,14 +141,14 @@ world:		Install.ms
 
 release: include/innversion.h samples/version tar
 
-include/innversion.h:
+include/innversion.h::
 	sed -e 's/^\(#define RELEASE\).*/\1 "$(RELEASE)"/' \
 	    -e 's/^\(#define PATCHLEVEL\).*/\1 "$(PATCHLEVEL)"/' \
 	    -e 's/^\(#define DATE\).*/\1 "'"`date '+%d-%b-%Y'`"'"/' \
 		$@ > $@.new ;\
 	mv $@.new $@
 
-samples/version: Makefile
+samples/version::
 	sed -e 's/^\(VERSION="\).*/\1INN $(RELEASE).$(PATCHLEVEL)"/' \
 		$@ > $@.new ;
 	mv $@.new $@
