@@ -144,7 +144,7 @@ static bool HaveSeen(bool AllGroups, char *group, char **groups, char **xrefs) {
 }
 
 /*
-**  NEWNEWS newsgroups date time ["GMT"|"UTC"]
+**  NEWNEWS newsgroups date time ["GMT"]
 **  Return the Message-ID of any articles after the specified date
 */
 void CMDnewnews(int ac, char *av[]) {
@@ -206,7 +206,7 @@ void CMDnewnews(int ac, char *av[]) {
   }
 
   /* Parse the date. */
-  local = (ac > 4 && (caseEQ(av[4], "GMT") || caseEQ(av[4], "UTC")));
+  local = !(ac > 4 && caseEQ(av[4], "GMT"));
   date = parsedate_nntp(av[2], av[3], local);
   if (date == (time_t) -1) {
     Reply("%d Bad date\r\n", NNTP_SYNTAX_VAL);

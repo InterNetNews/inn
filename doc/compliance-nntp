@@ -608,27 +608,6 @@ draft and it's not clear that the current text is the intended meaning.
 
 ------------------------------
 
-  Summary: NEWGROUPS and NEWNEWS support the UTC keyword
- Standard: draft-ietf-nntpext-base-13.txt, section 11.3
-  Version: 2.3 to CURRENT 2001-07-07
-Reference: nnrpd/commands.c CMDnewgroups(), nnrpd/newnews.c CMDnewnews()
- Severity: Allows non-standard behavior
-
-There was a short-lived attempt to add the UTC keyword in addition to the
-GMT keyword to specify that the given time was in UTC.  This was later
-shown to be a bad idea, but support for it had crept into INN.  It should
-be removed again before client authors get the wrong idea.
-
-Impact:  A client author may think that sending UTC instead of GMT is
-correct.
-
-Suggested fix:  Remove support for UTC, only allowing GMT.
-
-Impact of fix:  Clients that have switched to the unportable UTC keyword
-will need to change back.
-
-------------------------------
-
   Summary: innd improperly caches DNS returns
  Standard: draft-ietf-nntpext-base-13.txt, section 14.3
   Version: 1.0 to CURRENT 2001-07-07

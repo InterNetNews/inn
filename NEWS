@@ -124,6 +124,11 @@ Changes from 2.3 to 2.4
       list of newsgroups (which is generally fairly short) to achieve the
       same results.
 
+    * nnrpd no longer accepts UTC as a synonym for GMT for NEWGROUPS or
+      NEWNEWS.  This usage was never portable, and was rejected by the NNTP
+      working group.  It is being removed now in the hope that it will be
+      caught before anyone starts to rely on it.
+
     * All of the applicable bug fixes from the INN 2.3 STABLE series are
       also included in INN 2.4.
 
