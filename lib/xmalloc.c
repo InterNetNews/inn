@@ -14,7 +14,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifndef STDC_HEADERS
+#ifdef STDC_HEADERS
+# include <string.h>
+#else
 # ifdef HAVE_MEMORY_H
 #  include <memory.h>
 # endif
@@ -58,7 +60,7 @@ static int
 xmemerr(const char *what, size_t size, const char *file, int line)
 {
     fprintf(stderr, "%s:%d Can\'t %s %lu bytes: %s",
-            file, line, what, size, strerror(errno));
+            file, line, what, (unsigned int) size, strerror(errno));
     exit(1);
 }
 
