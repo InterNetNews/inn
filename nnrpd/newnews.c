@@ -379,7 +379,7 @@ CMDnewnews(int ac, char *av[])
 		msgid[p2-q] = '\0';
 		Printf("%s\r\n", msgid);
 	    } else {
-		*p = '\0';
+		*(--p) = '\0';
 		Printf("%s\r\n", line);
 	    }
 	} while (fgets(line, sizeof line, F) != NULL);
