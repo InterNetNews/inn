@@ -84,7 +84,7 @@ INSTALLED_SEC8 =	$D$(MAN8)/actived.8 $D$(MAN8)/actsync.8 \
 			$D$(MAN8)/pgpverify.8 $D$(MAN8)/prunehistory.8 \
 			$D$(MAN8)/pullnews.8 $D$(MAN8)/scanlogs.8 \
 			$D$(MAN8)/send-uucp.8 $D$(MAN8)/sm.8 \
-			$D$(MAN8)/tally.control.8 $D$(MAN8)/writelog.8 \
+			$D$(MAN8)/tally.control.8 $D$(MAN8)/writelog.8
 
 
 ALL	= $(SEC1) $(SEC3) $(SEC5) $(SEC8)
