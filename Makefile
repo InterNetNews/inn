@@ -5,7 +5,7 @@ include Makefile.global
 CFLAGS = $(GCFLAGS)
 
 RELEASE=2
-PATCHLEVEL=2.1
+PATCHLEVEL=2.2
 VERSION=$(RELEASE).$(PATCHLEVEL)
 
 #TARDIR=inn
@@ -141,42 +141,19 @@ world:		Install.ms
 
 release: include/innversion.h samples/version tar
 
-include/innversion.h: Makefile
-	-set -x ; [ -f $@ ] || co -u $@ ; \
+include/innversion.h:
 	sed -e 's/^\(#define RELEASE\).*/\1 "$(RELEASE)"/' \
 	    -e 's/^\(#define PATCHLEVEL\).*/\1 "$(PATCHLEVEL)"/' \
 	    -e 's/^\(#define DATE\).*/\1 "'"`date '+%d-%b-%Y'`"'"/' \
 		$@ > $@.new ;\
-	if diff -u $@ $@.new > PATCH.$$$$ 2>&1;then \
-		: ;\
-	elif rcsdiff $@ > /dev/null 2>&1; then \
-		rcsclean -u $@ ;\
-		co -l $@ ;\
-		patch < PATCH.$$$$ ;\
-		ci -u -m'new release' $@ ;\
-	else \
-		ci -l -m'unknown snapshot' $@ ;\
-		patch < PATCH.$$$$ ;\
-		ci -u -m'new release' $@ ;\
-	fi ;\
-	rm -f PATCH.$$$$
-
+	mv $@.new $@
 
 samples/version: Makefile
-	-set -x ; rcsclean -u $@ ;\
-	co -l $@ ;\
 	sed -e 's/^\(VERSION="\).*/\1INN $(RELEASE).$(PATCHLEVEL)"/' \
-		$@ > $@.new ;\
-	if cmp $@ $@.new > /dev/null 2>&1; then \
-		rm -f $@.new ;\
-		rcsdiff $@ > /dev/null 2>&1 && rcs -u $@ ;\
-	else \
-		mv $@.new $@ ;\
-		ci -u -m'new version $(RELEASE).$(PATCHLEVEL)' $@ ;\
-	fi
+		$@ > $@.new ;
+	mv $@.new $@
 
-
-tardir: MANIFEST CHANGES
+tardir:
 	rm -f inn*.tar.Z inn*.tar.gz
 	rm -fr $(TARDIR)
 	mkdir $(TARDIR)
@@ -184,29 +161,13 @@ tardir: MANIFEST CHANGES
 
 tar:	tardir
 	for i in `sed $(SEDCOMMANDS) <MANIFEST`;do \
-		[ -f $$i ] || co $$i ; cp $$i $(TARDIR)/$$i;done
+		cp $$i $(TARDIR)/$$i; \
+	done
 	find $(TARDIR) -type f -print | xargs touch -t `date +%m%d%H%M.%S`
 	tar cf $(TARFILE) $(TARDIR)
 	$(SQUASH) $(TARFILE)
 
 FAQ: FORCE
-	-cd FAQ && co -q RCS/*
-
-rcsclean: FORCE
-	-for i in . *;do\
-		if [ -d $$i -a -d $$i/RCS ]; then\
-			echo "RCS Cleaning $$i";\
-			(cd $$i && rcsclean -q -u);\
-		fi;\
-	done
-
-rcscoall: FORCE
-	-for i in . *;do\
-		if [ -d $$i -a -d $$i/RCS ]; then\
-			echo "Checking out in $$i";\
-			(cd $$i && co -q $(RCSCOFLAGS) RCS/*);\
-		fi;\
-	done
 
 CHANGES: FORCE
 	-for i in ChangeLog */ChangeLog;do\
@@ -220,6 +181,7 @@ CHANGES: FORCE
 ##  Local convention; for xargs.
 list:	FORCE
 	@sed $(SEDCOMMANDS) <MANIFEST >FILELIST
+
 FORCE:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
