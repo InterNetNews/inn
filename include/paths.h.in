@@ -1,4 +1,4 @@
-/*  $Id$
+/*  $Id$ -*- c -*-
 **  @configure_input@
 **
 **  Here be #define's for filenames, socket names, environment variables,
