@@ -15,6 +15,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <syslog.h>
+#if defined(_HPUX_SOURCE)
+#include <alloca.h>
+#endif
   
 #include "config.h"
 #include "configfile.h"
