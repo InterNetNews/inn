@@ -3,6 +3,11 @@
 ##
 ##  control.ctl - Access control for control messages.
 ##
+##  Please copy usenet-config@isc.org on any updates to this file so that
+##  it can be updated in the INN CVS repository and on ftp.isc.org.  For
+##  changes to a public hierarchy, please also post the changes to
+##  news.admin.hierarchies.
+##
 ##  The canonical version of this file can be found in the latest INN
 ##  release and at <ftp://ftp.isc.org/pub/usenet/CONFIG/control.ctl>; these
 ##  two files will be kept in sync.  Please refer to the latest version of
@@ -66,11 +71,6 @@
 ##
 ##     If you have permission to carry any of the hierachies so listed in
 ##     this file, you should change the entries for those hierarchies below.
-##
-##  Please copy usenet-config@isc.org on any updates to this file so that
-##  it can be updated in the INN CVS repository and on ftp.isc.org.  For
-##  changes to a public hierarchy, please also post the changes to
-##  news.admin.hierarchies.
 ##
 ##  The comments of this file aren't in any formal or well-defined syntax,
 ##  but they are meant to use a consistent syntax to allow eventual parsing
@@ -279,6 +279,11 @@ rmgroup:*:baynet.*:drop
 checkgroups:news@mayn.de:baynet.*:verify-news.mayn.de
 newgroup:news@mayn.de:baynet.*:verify-news.mayn.de
 rmgroup:news@mayn.de:baynet.*:verify-news.mayn.de
+
+## BC (British Columbia, Canada)
+checkgroups:bc_van_usenet@fastmail.ca:bc.*:mail
+newgroup:bc_van_usenet@fastmail.ca:bc.*:doit
+rmgroup:bc_van_usenet@fastmail.ca:bc.*:doit
 
 ## BDA (German groups?)
 newgroup:news@*netuse.de:bda.*:doit
@@ -491,6 +496,12 @@ checkgroups:control@bentium.com:cn.*:verify-cn.admin.news.announce
 newgroup:control@bentium.com:cn.*:verify-cn.admin.news.announce
 rmgroup:control@bentium.com:cn.*:verify-cn.admin.news.announce
 
+## CN.BBS (China)
+# Key URL: http://news.zixia.net/pubkey-cn.bbs.admin.announce
+# *PGP*   See comment at top of file.
+newgroup:news@zixia.net:cn.bbs.*:verify-cn.bbs.admin.announce
+rmgroup:news@zixia.net:cn.bbs.*:verify-cn.bbs.admin.announce
+
 ## CUHK (*LOCAL* -- Chinese University of Hong Kong)
 # Contact: shlam@ie.cuhk.edu.hk (Alan S H Lam)
 # For internal use only, contact above address for questions.
@@ -565,7 +576,7 @@ newgroup:eric@*cirr.com:dfw.*:doit
 rmgroup:eric@*cirr.com:dfw.*:doit
 
 ## DK (Denmark)
-# URL: http://www.usenet.dk/
+# URL: http://www.usenet.dk/dk-admin/
 # Key URL: http://www.usenet.dk/grupper/control_pubkey.html
 # Key fingerprint = 7C B2 C7 50 F3 7D 5D 73  8C EE 2E 3F 55 80 72 FF
 # *PGP*   See comment at top of file.
@@ -1791,6 +1802,11 @@ rmgroup:*@*:uwarwick.*:doit
 ## UWO (University of Western Ontario, London, Canada)
 newgroup:reggers@julian.uwo.ca:uwo.*:doit
 rmgroup:reggers@julian.uwo.ca:uwo.*:doit
+
+## VAN (Vancouver, British Columbia, Canada)
+checkgroups:bc_van_usenet@fastmail.ca:van.*:mail
+newgroup:bc_van_usenet@fastmail.ca:van.*:doit
+rmgroup:bc_van_usenet@fastmail.ca:van.*:doit
 
 ## VEGAS (Las Vegas, Nevada, USA)
 newgroup:cshapiro@netcom.com:vegas.*:doit
