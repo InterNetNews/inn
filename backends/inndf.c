@@ -239,8 +239,12 @@ main(int argc, char **argv)
 			}
 			printf("%d overview data stored\n", total);
 		} else {
-			if (OVctl(OVSPACE, (void *)&i))
-				printf("%d %% overview space used\n", i);
+			if (OVctl(OVSPACE, (void *)&i)) {
+				if (i == -1)
+					printf("%s does not support -o\n", innconf->ovmethod);
+				else
+					printf("%d %% overview space used\n", i);
+			}
 		}
 	}
 	exit(0);
