@@ -33,9 +33,9 @@
 **     directory).
 **
 **  We therefore use the following procedure to update the data:  The high
-**  water mark may be changed at any time.  The base may only be changed as
-**  part of an index rebuild.  To do an index rebuild, we follow the following
-**  procedure:
+**  water mark may be changed at any time but surrounded in a write lock.  The
+**  base may only be changed as part of an index rebuild.  To do an index
+**  rebuild, we follow the following procedure:
 **
 **   1) Obtain a write lock on the group entry in the main index.
 **   2) Write out new index and data files to new temporary file names.
@@ -86,6 +86,7 @@
 #include "portable/mmap.h"
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #include "inn/hashtab.h"
 #include "inn/qio.h"
@@ -104,7 +105,7 @@
 struct group_index {
     char *path;
     int fd;
-    int mode;
+    bool writable;
     struct group_header *header;
     struct group_entry *entries;
     int count;
@@ -120,7 +121,9 @@ static bool index_lock(int fd, enum inn_locktype type);
 static bool index_lock_group(int fd, GROUPLOC loc, enum inn_locktype type);
 static bool index_map(struct group_index *);
 static bool index_maybe_remap(struct group_index *, GROUPLOC loc);
+static void index_unmap(struct group_index *);
 static bool index_expand(struct group_index *);
+static unsigned int index_bucket(HASH hash);
 static GROUPLOC index_find(struct group_index *, const char *group);
 
 
@@ -177,7 +180,7 @@ index_lock_group(int fd, GROUPLOC group, enum inn_locktype type)
 static bool
 index_map(struct group_index *index)
 {
-    if (NFSREADER && (index->mode & OV_WRITE)) {
+    if (NFSREADER && index->writable) {
         warn("tradindexed: cannot open for writing without mmap");
         return false;
     }
@@ -203,6 +206,8 @@ index_map(struct group_index *index)
     fail:
         free(index->header);
         free(index->entries);
+        index->header = NULL;
+        index->entries = NULL;
         return false;
 
     } else {
@@ -210,7 +215,7 @@ index_map(struct group_index *index)
         size_t size;
         int flag = PROT_READ;
 
-        if (index->mode & OV_WRITE)
+        if (index->writable)
             flag = PROT_READ | PROT_WRITE;
         size = index_file_size(index->count);
         data = mmap(NULL, size, flag, MAP_SHARED, index->fd, 0);
@@ -229,23 +234,89 @@ index_map(struct group_index *index)
 /*
 **  Given a group location, remap the index file if our existing mapping isn't
 **  large enough to include that group.  (This can be the case when another
-**  writer is appending entries to the group index.)  Not yet implemented.
+**  writer is appending entries to the group index.)
 */
 static bool
-index_maybe_remap(struct group_index *index UNUSED, GROUPLOC loc UNUSED)
+index_maybe_remap(struct group_index *index, GROUPLOC loc)
 {
-    return true;
+    struct stat st;
+    int count;
+
+    if (loc.recno < index->count)
+        return true;
+
+    /* Don't remap if remapping wouldn't actually help. */
+    if (fstat(index->fd, &st) < 0) {
+        syswarn("tradindexed: cannot stat %s", index->path);
+        return false;
+    }
+    count = index_entry_count(st.st_size);
+    if (count < loc.recno)
+        return true;
+
+    /* Okay, remapping will actually help. */
+    index_unmap(index);
+    index->count = count;
+    return index_map(index);
+}
+
+
+/*
+**  Unmap the index file, either in preparation for closing the overview
+**  method or to get ready to remap it.  We warn about failures to munmap but
+**  don't do anything about them; there isn't much that we can do.
+*/
+static void
+index_unmap(struct group_index *index)
+{
+    if (index->header == NULL)
+        return;
+    if (NFSREADER) {
+        free(index->header);
+        free(index->entries);
+    } else {
+        if (munmap(index->header, index_file_size(index->count)) < 0)
+            syswarn("tradindexed: cannot munmap %s", index->path);
+    }
+    index->header = NULL;
+    index->entries = NULL;
 }
 
 
 /*
 **  Expand the group.index file to hold more entries; also used to build the
-**  initial file.  Not yet implemented.
+**  initial file.  The caller is expected to lock the group index.
 */
 static bool
-index_expand(struct group_index *index UNUSED)
+index_expand(struct group_index *index)
 {
-    return false;
+    int i;
+
+    index_unmap(index);
+    index->count += 1024;
+    if (ftruncate(index->fd, index_file_size(index->count)) < 0) {
+        syswarn("tradindexed: cannot expand %s", index->path);
+        return false;
+    }
+    if (!index_map(index))
+        return false;
+
+    /* If the magic isn't right, assume this is a new index file. */
+    if (index->header->magic != GROUPHEADERMAGIC) {
+        index->header->magic = GROUPHEADERMAGIC;
+        index->header->freelist.recno = -1;
+        for (i = 0; i < GROUPHEADERHASHSIZE; i++)
+            index->header->hash[i].recno = -1;
+    }
+
+    /* Walk the new entries back to front, adding them to the free list. */
+    for (i = index->count - 1; i >= index->count - 1024; i--) {
+        index->entries[i].next = index->header->freelist;
+        index->header->freelist.recno = i;
+    }
+
+    msync(index->header, index_file_size(index->count), MS_ASYNC);
+    return true;
 }
 
 
@@ -263,9 +334,9 @@ tdx_index_open(int mode)
 
     index = xmalloc(sizeof(struct group_index));
     index->path = concatpath(innconf->pathoverview, "group.index");
-    index->mode = mode;
+    index->writable = (mode & OV_WRITE);
     index->header = NULL;
-    open_mode = (mode & OV_WRITE) ? O_RDWR | O_CREAT : O_RDONLY;
+    open_mode = index->writable ? O_RDWR | O_CREAT : O_RDONLY;
     index->fd = open(index->path, open_mode, ARTFILE_MODE);
     if (index->fd < 0) {
         syswarn("tradindexed: cannot open %s", index->path);
@@ -282,11 +353,10 @@ tdx_index_open(int mode)
             goto fail;
     } else {
         index->count = 0;
-        if (mode & OV_WRITE) {
+        if (index->writable) {
             if (!index_expand(index))
                 goto fail;
         } else {
-            index->count = 0;
             index->header = NULL;
             index->entries = NULL;
         }
@@ -301,28 +371,82 @@ tdx_index_open(int mode)
 
 
 /*
+**  Given a group name hash, return an index into the hash table in the
+**  group.index header.
+*/
+static unsigned int
+index_bucket(HASH hash)
+{
+    unsigned int bucket;
+
+    memcpy(&bucket, &hash, sizeof(bucket));
+    return bucket % GROUPHEADERHASHSIZE;
+}
+
+
+/*
 **  Find a group in the index file, returning the GROUPLOC for that group.
 */
 static GROUPLOC
 index_find(struct group_index *index, const char *group)
 {
-    HASH grouphash;
-    unsigned int bucket;
+    HASH hash;
     GROUPLOC loc;
 
-    grouphash = Hash(group, strlen(group));
-    memcpy(&bucket, &grouphash, sizeof(index));
-    loc = index->header->hash[bucket % GROUPHEADERHASHSIZE];
-    if (!index_maybe_remap(index, loc))
+    if (index->header == NULL || index->entries == NULL)
         return empty_loc;
+    hash = Hash(group, strlen(group));
+    loc = index->header->hash[index_bucket(hash)];
 
     while (loc.recno >= 0) {
         struct group_entry *entry;
 
+        if (loc.recno > index->count && !index_maybe_remap(index, loc))
+            return empty_loc;
         entry = index->entries + loc.recno;
         if (entry->deleted == 0)
-            if (memcmp(&grouphash, &entry->hash, sizeof(grouphash)) == 0)
+            if (memcmp(&hash, &entry->hash, sizeof(hash)) == 0)
                 return loc;
+        loc = entry->next;
+    }
+    return empty_loc;
+}
+
+
+/*
+**  Like index_find, but also splices that entry out of whatever chain it
+**  might belong to.  This function is called by tdx_index_delete.  No locking
+**  is at present done.
+*/
+static GROUPLOC
+index_splice(struct group_index *index, const char *group)
+{
+    HASH hash;
+    GROUPLOC *parent;
+    GROUPLOC loc;
+
+    if (!index->writable)
+        return empty_loc;
+    if (index->header == NULL || index->entries == NULL)
+        return empty_loc;
+    hash = Hash(group, strlen(group));
+    parent = &index->header->hash[index_bucket(hash)];
+    loc = *parent;
+
+    while (loc.recno >= 0) {
+        struct group_entry *entry;
+
+        if (loc.recno > index->count && !index_maybe_remap(index, loc))
+            return empty_loc;
+        entry = index->entries + loc.recno;
+        if (entry->deleted == 0)
+            if (memcmp(&hash, &entry->hash, sizeof(hash)) == 0) {
+                *parent = entry->next;
+                entry->next.recno = -1;
+                msync(parent, sizeof(*parent), MS_ASYNC);
+                return loc;
+            }
+        parent = &entry->next;
         loc = entry->next;
     }
     return empty_loc;
@@ -345,6 +469,101 @@ tdx_index_entry(struct group_index *index, const char *group)
 
 
 /*
+**  Add a new newsgroup to the group.index file.  Takes the newsgroup name,
+**  its high and low water marks, and the newsgroup flag.  Note that aliased
+**  newsgroups are not currently handled.  If the group already exists, just
+**  update the flag (not the high and low water marks).
+*/
+bool
+tdx_index_add(struct group_index *index, const char *group, ARTNUM low,
+              ARTNUM high, const char *flag)
+{
+    HASH hash;
+    unsigned int bucket;
+    GROUPLOC loc;
+    struct group_entry *entry;
+
+    if (!index->writable)
+        return false;
+
+    loc = index_find(index, group);
+    if (loc.recno != -1) {
+        entry = &index->entries[loc.recno];
+        if (entry->flag != *flag) {
+            entry->flag = *flag;
+            msync(entry, sizeof(*entry), MS_ASYNC);
+        }
+        return true;
+    }
+
+    index_lock(index->fd, INN_LOCK_WRITE);
+
+    /* Find a free entry.  If we don't have any free space, make some. */
+    if (index->header->freelist.recno == -1)
+        if (!index_expand(index)) {
+            index_lock(index->fd, INN_LOCK_UNLOCK);
+            return false;
+        }
+    loc = index->header->freelist;
+    index->header->freelist = index->entries[loc.recno].next;
+
+    /* Initialize the entry. */
+    entry = &index->entries[loc.recno];
+    entry->hash = hash;
+    entry->low = low;
+    entry->high = high;
+    entry->deleted = 0;
+    entry->base = 0;
+    entry->count = 0;
+    hash = Hash(group, strlen(group));
+    bucket = index_bucket(hash);
+    entry->next = index->header->hash[bucket];
+    index->header->hash[bucket] = loc;
+
+    index_lock(index->fd, INN_LOCK_UNLOCK);
+    msync(index->header, sizeof(struct group_header), MS_ASYNC);
+    msync(entry, sizeof(*entry), MS_ASYNC);
+
+    return true;
+}
+
+
+/*
+**  Delete a group index entry.
+*/
+bool
+tdx_index_delete(struct group_index *index, const char *group)
+{
+    GROUPLOC loc;
+    struct group_entry *entry;
+
+    if (!index->writable)
+        return false;
+
+    loc = index_splice(index, group);
+    if (loc.recno == -1)
+        return false;
+
+    entry = &index->entries[loc.recno];
+    entry->deleted = time(NULL);
+    HashClear(&entry->hash);
+
+    /* The only thing we have to lock is the modification of the free list. */
+    index_lock(index->fd, INN_LOCK_WRITE);
+    entry->next = index->header->freelist;
+    index->header->freelist = loc;
+    index_lock(index->fd, INN_LOCK_UNLOCK);
+    msync(index->header, sizeof(struct group_header), MS_ASYNC);
+    msync(entry, sizeof(*entry), MS_ASYNC);
+
+    /* Delete the group data files for this group. */
+    tdx_data_delete(group);
+
+    return true;
+}
+
+
+/*
 **  Close an open handle to the group index file, freeing the group_index
 **  structure at the same time.  The argument to this function becomes invalid
 **  after this call.
@@ -352,18 +571,7 @@ tdx_index_entry(struct group_index *index, const char *group)
 void
 tdx_index_close(struct group_index *index)
 {
-    if (index->header != NULL) {
-        if (NFSREADER) {
-            free(index->header);
-            free(index->entries);
-        } else {
-            size_t count;
-
-            count = index_file_size(index->count);
-            if (munmap((void *) index->header, count) < 0)
-                syswarn("tradindexed: cannot munmap %s", index->path);
-        }
-    }
+    index_unmap(index);
     if (index->fd >= 0)
         close(index->fd);
     free(index->path);
@@ -375,22 +583,25 @@ tdx_index_close(struct group_index *index)
 **  Open the data files for a particular group.  The interface to this has to
 **  be in this file because we have to lock the group and retry if the inode
 **  of the opened index file doesn't match the one recorded in the group index
-**  file.
+**  file.  Optionally take a pointer to the group index entry if the caller
+**  has already gone to the work of finding it.
 */
 struct group_data *
-tdx_data_open(struct group_index *index, const char *group)
+tdx_data_open(struct group_index *index, const char *group,
+              struct group_entry *entry)
 {
     GROUPLOC loc;
-    struct group_entry *entry;
     struct group_data *data;
     ARTNUM high, base;
 
-    loc = index_find(index, group);
-    if (loc.recno == empty_loc.recno)
-        return NULL;
-    entry = &index->entries[loc.recno];
+    if (entry == NULL) {
+        loc = index_find(index, group);
+        if (loc.recno == -1)
+            return NULL;
+        entry = &index->entries[loc.recno];
+    }
 
-    data = tdx_data_new(group, index->mode & OV_WRITE);
+    data = tdx_data_new(group, index->writable);
 
     /* Check to see if the inode of the index file matches.  If it doesn't,
        this probably means that as we were opening the index file, someone
@@ -398,14 +609,8 @@ tdx_data_open(struct group_index *index, const char *group)
        again.  If there's still a mismatch, go with what we get; there's some
        sort of corruption.
 
-       We have to be sure we get a group index entry that corresponds to the
-       index file, since otherwise base may be wrong and we'll find the wrong
-       overview entries.
-
-       We also need to get a high water mark and base that match the index and
-       data files that we opened, but the group index entry can change at any
-       time.  So grab local copies and then set the data variables after we've
-       successfully opened the data files. */
+       This code is very sensitive to order and parallelism.  See the comment
+       at the beginning of this file for methodology. */
     if (!tdx_data_open_files(data))
         goto fail;
     high = entry->high;
@@ -429,6 +634,69 @@ tdx_data_open(struct group_index *index, const char *group)
  fail:
     tdx_data_close(data);
     return NULL;
+}
+
+
+/*
+**  Add an overview record for a particular article.  Takes the group and the
+**  information about the article and returns true on success, false on
+**  failure.  This function calls tdx_data_store to do most of the real work
+**  and then updates the index information.
+*/
+bool
+tdx_data_add(struct group_index *index, const char *group,
+             const struct article *article)
+{
+    GROUPLOC loc;
+    struct group_data *data;
+    struct group_entry *entry;
+    ARTNUM old_base;
+
+    if (!index->writable)
+        return false;
+
+    loc = index_find(index, group);
+    if (loc.recno == -1)
+        return false;
+    entry = &index->entries[loc.recno];
+    index_lock_group(index->fd, loc, INN_LOCK_WRITE);
+    data = tdx_data_open(index, group, entry);
+    if (data == NULL)
+        return false;
+
+    /* If the article number is too low to store in the group index, repack
+       the group with a lower base index. */
+    if (entry->base > article->number) {
+        if (!tdx_data_pack_start(data, article->number))
+            goto fail;
+        old_base = entry->base;
+        entry->base = data->base;
+        msync(entry, sizeof(*entry), MS_ASYNC);
+        if (!tdx_data_pack_finish(data)) {
+            entry->base = old_base;
+            goto fail;
+        }
+    }
+
+    /* Store the data. */
+    if (!tdx_data_store(data, article))
+        goto fail;
+    if (entry->base == 0)
+        entry->base = data->base;
+    if (entry->low == 0 || entry->low > article->number)
+        entry->low = article->number;
+    if (entry->high < article->number)
+        entry->high = article->number;
+    entry->count++;
+    mmap_flush(entry, sizeof(*entry));
+    index_lock_group(index->fd, loc, INN_LOCK_UNLOCK);
+    tdx_data_close(data);
+    return true;
+
+ fail:
+    index_lock_group(index->fd, loc, INN_LOCK_UNLOCK);
+    tdx_data_close(data);
+    return false;
 }
 
 
@@ -565,6 +833,8 @@ tdx_index_dump(struct group_index *index)
     struct hashmap *group;
     char *name;
 
+    if (index->header == NULL || index->entries == NULL)
+        return;
     hashmap = hashmap_load();
     for (bucket = 0; bucket < GROUPHEADERHASHSIZE; bucket++) {
         current = index->header->hash[bucket];

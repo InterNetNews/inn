@@ -54,6 +54,13 @@ const struct group_entry *tdx_index_entry(struct group_index *,
    form. */
 void tdx_index_print(const char *name, const struct group_entry *);
 
+/* Add a new newsgroup to the index file. */
+bool tdx_index_add(struct group_index *, const char *group, ARTNUM low,
+                   ARTNUM high, const char *flag);
+
+/* Delete a newsgroup from the index file. */
+bool tdx_index_delete(struct group_index *, const char *group);
+
 /* Dump the contents of the index file to stdout in human-readable form. */
 void tdx_index_dump(struct group_index *);
 
@@ -61,7 +68,12 @@ void tdx_index_dump(struct group_index *);
 void tdx_index_close(struct group_index *);
 
 /* Open the overview information for a particular group. */
-struct group_data *tdx_data_open(struct group_index *, const char *group);
+struct group_data *tdx_data_open(struct group_index *, const char *group,
+                                 struct group_entry *);
+
+/* Add a new overview entry. */
+bool tdx_data_add(struct group_index *, const char *group,
+                  const struct article *);
 
 
 /* tdx-data.c */
@@ -81,10 +93,22 @@ struct search *tdx_search_open(struct group_data *, ARTNUM low, ARTNUM high);
 bool tdx_search(struct search *, struct article *);
 void tdx_search_close(struct search *);
 
+/* Store article data. */
+bool tdx_data_store(struct group_data *, const struct article *);
+
+/* Start a repack of the files for a newsgroup. */
+bool tdx_data_pack_start(struct group_data *, ARTNUM);
+
+/* Complete a repack of the files for a newsgroup. */
+bool tdx_data_pack_finish(struct group_data *);
+
 /* Dump the contents of the index file for a group. */
 void tdx_data_index_dump(struct group_data *data);
 
 /* Close the open data files for a group and free the structure. */
 void tdx_data_close(struct group_data *);
+
+/* Delete the data files for a group. */
+void tdx_data_delete(const char *group);
 
 #endif /* INN_TDX_PRIVATE_H */

@@ -41,13 +41,17 @@ struct search {
 
 /* Internal prototypes. */
 static char *group_path(const char *group);
-static int file_open(const char *base, const char *suffix, bool writable);
+static int file_open(const char *base, const char *suffix, bool writable,
+                     bool append);
+static bool file_open_index(struct group_data *);
+static bool file_open_data(struct group_data *);
 static void *map_file(int fd, size_t length, const char *base,
                       const char *suffix);
 static bool map_index(struct group_data *data);
 static bool map_data(struct group_data *data);
 static void unmap_file(void *data, off_t length, const char *base,
                        const char *suffix);
+static ARTNUM index_base(ARTNUM artnum);
 
 
 /*
@@ -86,17 +90,20 @@ group_path(const char *group)
 
 /*
 **  Open a data file for a group.  Takes the base portion of the file, the
-**  suffix, and a bool saying whether or not the file is being opened for
-**  write.  Returns the file descriptor
+**  suffix, a bool saying whether or not the file is being opened for write,
+**  and a bool saying whether to open it for append.  Returns the file
+**  descriptor.
 */
 static int
-file_open(const char *base, const char *suffix, bool writable)
+file_open(const char *base, const char *suffix, bool writable, bool append)
 {
     char *file;
     int flags, fd;
 
     file = concat(base, ".", suffix, (char *) 0);
     flags = writable ? (O_RDWR | O_CREAT) : O_RDONLY;
+    if (append)
+        flags |= O_APPEND;
     fd = open(file, flags, ARTFILE_MODE);
     if (fd < 0 && writable && errno == ENOENT) {
         char *p = strrchr(file, '/');
@@ -117,6 +124,47 @@ file_open(const char *base, const char *suffix, bool writable)
         return -1;
     }
     return fd;
+}
+
+
+/*
+**  Open the index file for a group.
+*/
+static bool
+file_open_index(struct group_data *data)
+{
+    struct stat st;
+
+    if (data->indexfd >= 0)
+        close(data->indexfd);
+    data->indexfd = file_open(data->path, "IDX", data->writable, false);
+    if (data->indexfd < 0)
+        return false;
+    if (fstat(data->indexfd, &st) < 0) {
+        syswarn("tradindexed: cannot stat %s.IDX", data->path);
+        close(data->indexfd);
+        return false;
+    }
+    data->indexinode = st.st_ino;
+    data->indexlen = st.st_size;
+    close_on_exec(data->indexfd, true);
+    return true;
+}
+
+
+/*
+**  Open the data file for a group.
+*/
+static bool
+file_open_data(struct group_data *data)
+{
+    if (data->datafd >= 0)
+        close(data->datafd);
+    data->datafd = file_open(data->path, "DAT", data->writable, true);
+    if (data->datafd < 0)
+        return false;
+    close_on_exec(data->datafd, true);
+    return true;
 }
 
 
@@ -147,33 +195,10 @@ tdx_data_new(const char *group, bool writable)
 bool
 tdx_data_open_files(struct group_data *data)
 {
-    struct stat st;
-
-    if (data->indexfd >= 0)
-        close(data->indexfd);
-    data->indexfd = file_open(data->path, "IDX", data->writable);
-    if (data->indexfd < 0)
+    if (!file_open_index(data))
         goto fail;
-    if (fstat(data->indexfd, &st) < 0) {
-        syswarn("tradindexed: cannot stat %s.IDX", data->path);
+    if (!file_open_data(data))
         goto fail;
-    }
-    data->indexinode = st.st_ino;
-    data->indexlen = st.st_size;
-    close_on_exec(data->indexfd, true);
-
-    if (data->datafd >= 0)
-        close(data->datafd);
-    data->datafd = file_open(data->path, "DAT", data->writable);
-    if (data->datafd < 0)
-        goto fail;
-    if (fstat(data->datafd, &st) < 0) {
-        syswarn("tradindexed: cannot stat %s.DAT", data->path);
-        goto fail;
-    }
-    data->datalen = st.st_size;
-    close_on_exec(data->datafd, true);
-
     return true;
 
  fail:
@@ -233,6 +258,13 @@ map_index(struct group_data *data)
 static bool
 map_data(struct group_data *data)
 {
+    struct stat st;
+
+    if (fstat(data->datafd, &st) < 0) {
+        syswarn("tradindexed: cannot stat %s.DAT", data->path);
+        return false;
+    }
+    data->datalen = st.st_size;
     data->data = map_file(data->datafd, data->datalen, data->path, "DAT");
     return (data->data == NULL) ? false : true;
 }
@@ -368,6 +400,171 @@ tdx_search_close(struct search *search)
 
 
 /*
+**  Given an article number, return an index base appropriate for that article
+**  number.  This includes a degree of slop so that we don't have to
+**  constantly repack if the article numbers are clustered around a particular
+**  value but don't come in order.
+*/
+ARTNUM
+index_base(ARTNUM artnum)
+{
+    return (artnum > 128) ? (artnum - 128) : 1;
+}
+
+
+/*
+**  Store the data for a single article into the overview files for a group.
+**  Assumes any necessary repacking has already been done.  If the base value
+**  in the group_data structure is 0, assumes this is the first time we've
+**  written overview information to this group and sets it appropriately.
+*/
+bool
+tdx_data_store(struct group_data *data, const struct article *article)
+{
+    struct index_entry entry;
+    off_t offset;
+
+    if (!data->writable)
+        return false;
+    if (data->base == 0)
+        data->base = index_base(article->number);
+    if (data->base > article->number) {
+        warn("tradindexed: cannot add %lu to %s.IDX, base == %lu",
+             article->number, data->path, data->base);
+        return false;
+    }
+
+    /* Write out the data and fill in the index entry. */
+    memset(&entry, 0, sizeof(entry));
+    if (xwrite(data->datafd, article->overview, article->overlen) < 0) {
+        syswarn("tradindexed: cannot append %lu of data for %lu to %s.DAT",
+                (unsigned long) article->overlen, article->number,
+                data->path);
+        return false;
+    }
+    entry.offset = lseek(data->datafd, 0, SEEK_CUR);
+    if (entry.offset < 0) {
+        syswarn("tradindexed: cannot get offset for article %lu in %s.DAT",
+                article->number, data->path);
+        return false;
+    }
+    entry.length = article->overlen;
+    entry.offset -= entry.length;
+    entry.arrived = article->arrived;
+    entry.expires = article->expires;
+    entry.token = article->token;
+
+    /* Write out the index entry. */
+    offset = (article->number - data->base) * sizeof(struct index_entry);
+    if (xpwrite(data->indexfd, &entry, sizeof(entry), offset) < 0) {
+        syswarn("tradindexed: cannot write index record for %lu in %s.IDX",
+                article->number, data->path);
+        return false;
+    }
+    return true;
+}
+
+
+/*
+**  Start the process of packing a group (rewriting its index file so that it
+**  uses a different article base).  Takes the article number of an article
+**  that needs to be written to the index file and is below the current base.
+**  Returns true on success and false on failure, and sets data->base to the
+**  new article base.  At the conclusion of this routine, the new index file
+**  has been created, but it has not yet been moved into place; that is done
+**  by tdx_data_pack_finish.
+*/
+bool
+tdx_data_pack_start(struct group_data *data, ARTNUM artnum)
+{
+    ARTNUM base;
+    unsigned long delta;
+    int fd;
+    char *idxfile;
+    struct stat st;
+
+    if (!data->writable)
+        return false;
+    if (data->base <= artnum) {
+        warn("tradindexed: tdx_data_pack_start called unnecessarily");
+        return false;
+    }
+
+    /* Open the new index file. */
+    base = index_base(artnum);
+    delta = data->base - base;
+    fd = file_open(data->path, "IDX-NEW", true, false);
+    if (fd < 0)
+        return false;
+
+    /* For convenience, memory map the old index file. */
+    unmap_file(data->index, data->indexlen, data->path, "IDX");
+    if (fstat(data->indexfd, &st) < 0) {
+        syswarn("tradindexed: cannot stat %s.IDX", data->path);
+        goto fail;
+    }
+    data->indexlen = st.st_size;
+    if (!map_index(data))
+        goto fail;
+
+    /* Write the contents of the old index file to the new index file. */
+    if (lseek(fd, delta * sizeof(struct index_entry), SEEK_SET) < 0) {
+        syswarn("tradindexed: cannot seek in %s.IDX-NEW", data->path);
+        goto fail;
+    }
+    if (xwrite(fd, data->index, data->indexlen) < 0) {
+        syswarn("tradindexed: cannot write to %s.IDX-NEW", data->path);
+        goto fail;
+    }
+    if (close(fd) < 0) {
+        syswarn("tradindexed: cannot close %s.IDX-NEW", data->path);
+        goto fail;
+    }
+    return true;
+
+ fail:
+    if (fd >= 0) {
+        close(fd);
+        idxfile = concat(data->path, ".IDX-NEW", (char *) 0);
+        if (unlink(idxfile) < 0)
+            syswarn("tradindexed: cannot unlink %s", idxfile);
+        free(idxfile);
+    }
+    return false;
+}
+
+
+/*
+**  Finish the process of packing a group by replacing the new index with the
+**  old index.  Also reopen the index file and update indexinode to keep our
+**  caller from having to close and reopen the index file themselves.
+*/
+bool
+tdx_data_pack_finish(struct group_data *data)
+{
+    char *newidx, *idx;
+
+    if (!data->writable)
+        return false;
+    newidx = concat(data->path, ".IDX-NEW", (char *) 0);
+    idx = concat(data->path, ".IDX", (char *) 0);
+    if (rename(newidx, idx) < 0) {
+        syswarn("tradindexed: cannot rename %s to %s", newidx, idx);
+        unlink(newidx);
+        free(newidx);
+        free(idx);
+        return false;
+    } else {
+        free(newidx);
+        free(idx);
+        if (!file_open_index(data))
+            return false;
+        return true;
+    }
+}
+
+
+/*
 **  Close the data files for a group and free the data structure.
 */
 void
@@ -381,6 +578,28 @@ tdx_data_close(struct group_data *data)
         close(data->datafd);
     free(data->path);
     free(data);
+}
+
+
+/*
+**  Delete the data files for a particular group, called when that group is
+**  deleted from the server.
+*/
+void
+tdx_data_delete(const char *group)
+{
+    char *path, *idx, *dat;
+
+    path = group_path(group);
+    idx = concat(path, ".IDX", (char *) 0);
+    dat = concat(path, ".DAT", (char *) 0);
+    if (unlink(idx) < 0 && errno != ENOENT)
+        syswarn("tradindexed: cannot unlink %s", idx);
+    if (unlink(dat) < 0 && errno != ENOENT)
+        syswarn("tradindexed: cannot unlink %s", dat);
+    free(dat);
+    free(idx);
+    free(path);
 }
 
 

@@ -66,7 +66,7 @@ dump_group_index(const char *group)
     index = tdx_index_open(OV_READ);
     if (index == NULL)
         return;
-    data = tdx_data_open(index, group);
+    data = tdx_data_open(index, group, NULL);
     if (data == NULL) {
         warn("cannot open group %s", group);
         return;
@@ -96,7 +96,7 @@ dump_overview(const char *group, ARTNUM number)
     index = tdx_index_open(OV_READ);
     if (index == NULL)
         return;
-    data = tdx_data_open(index, group);
+    data = tdx_data_open(index, group, NULL);
     if (data == NULL) {
         warn("cannot open group %s", group);
         return;
