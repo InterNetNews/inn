@@ -30,7 +30,7 @@ OBJECTS = timehash.o
 all:			$(OBJECTS) moveobjs
 
 moveobjs: $(OBJECTS)
-	cp $(OBJECTS) ../objs
+	cp -p $(OBJECTS) ../objs
 
 clobber clean:
 	rm -f *.o obj/*.o *~

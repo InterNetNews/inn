@@ -88,7 +88,7 @@ profiled:		../libstorage_p.a
 ##  Low-level install actions.
 ../libstorage.a:	libstorage.a
 	@rm -f $@
-	cp libstorage.a $@
+	cp -p libstorage.a $@
 	$(RANLIB) $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
