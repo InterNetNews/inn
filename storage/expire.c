@@ -198,7 +198,7 @@ BuildGroups(char *active)
     for (p = active, i = 0; (p = strchr(p, '\n')) != NULL; p++, i++)
         continue;
     nGroups = i;
-    Groups = xmalloc(sizeof(NEWSGROUP));
+    Groups = xmalloc(i * sizeof(NEWSGROUP));
 
     /* Set up the default hash buckets. */
     NGHbuckets = i / NGH_SIZE;
