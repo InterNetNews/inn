@@ -202,6 +202,15 @@ and begin buffering again; the units are bytes.
 The default is to do no buffering, sending output as soon as it is
 possible to do so.
 .TP
+.BI C count
+If this flag is specified, an article will only be sent to the site if
+the following is true:
+The number of groups it is posted to, plus the square of the number of
+groups followups would appear in, is no more than
+.I count
+newsgroups.
+30 is a good value for this flag.
+.TP
 .BI F name
 This flag specifies the name of the file that should be used if it is
 necessary to begin spooling for the site (see below).
@@ -218,6 +227,8 @@ If this flag is specified, an article will only be sent to the site if
 it is posted to no more than
 .I count
 newsgroups.
+This has the problem of filtering out many FAQs, and also RFDs/CFVs for
+group creation. The C or U flags are a better solution.
 .TP
 .BI H count
 If this flag is specified, an article will only be sent to the site
@@ -291,6 +302,12 @@ Each feed is described below in the section on
 .IR "feed types" .
 The default is
 .IR Tf .
+.TP
+.BI U count
+If this flag is specified, an article will only be sent to the site if
+followups to this article would be posted to no more than
+.I count
+newsgroups.
 .TP
 .BI W items
 If a site is fed by file, channel, or exploder, this flag controls what
