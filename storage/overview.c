@@ -559,6 +559,7 @@ BOOL OVERreinit(void) {
 
     if (!Initialized)
 	return FALSE;
+    memset(OVERmmapconfig, '\0', sizeof(OVERMMAP) * MAXMMAPCONFIG);
     for(config=OVERconfig;config!=(UNIOVER *)NULL;config=config->next) {
 	if (config->fp != (FILE *)NULL || config->fd >= 0) {
 	    OVERclose(config, FALSE);
@@ -568,7 +569,6 @@ BOOL OVERreinit(void) {
             }
 	}
     }
-    memset(OVERmmapconfig, '\0', sizeof(OVERMMAP) * MAXMMAPCONFIG);
     return TRUE;
 }
 
@@ -586,6 +586,7 @@ BOOL OVERreplace(void) {
 	return FALSE;
     path = NEW(char, strlen(OVERdir) + sizeof("/255") + sizeof("/overview") + 1);
     newpath = NEW(char, strlen(OVERnewdir) + sizeof("/255") + sizeof("/overview.new") + 1);
+    memset(OVERmmapconfig, '\0', sizeof(OVERMMAP) * MAXMMAPCONFIG);
     for(config=OVERconfig;config!=(UNIOVER *)NULL;config=config->next) {
 	if (config->newfp != (FILE *)NULL) {
 	    OVERclose(config, TRUE);
@@ -607,7 +608,6 @@ BOOL OVERreplace(void) {
 	}
     }
     Newfp = FALSE;
-    memset(OVERmmapconfig, '\0', sizeof(OVERMMAP) * MAXMMAPCONFIG);
     DISPOSE(path);
     DISPOSE(newpath);
     return TRUE;
