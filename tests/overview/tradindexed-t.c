@@ -92,7 +92,6 @@ overview_data_parse(char *data, unsigned long *artnum)
 
     if (data[strlen(data) - 1] != '\n')
         die("Line too long in input data");
-    data[strlen(data) - 1] = '\0';
 
     start = strchr(data, ':');
     if (start == NULL)
@@ -341,7 +340,7 @@ overview_verify_search(const char *data)
     }
     search = tradindexed_opensearch(group, start, end);
     if (search == NULL) {
-        warn("Unable to open search for %s:%lu", buffer, artnum);
+        warn("Unable to open search for %s:%lu", buffer, start);
         free(group);
         vector_free(expected);
         return false;
@@ -373,13 +372,79 @@ overview_verify_search(const char *data)
     return status;
 }
 
+/* Try an overview search and verify that all of the data is returned in the
+   right order.  The search will cover everything from article 1 to the
+   highest numbered article plus one.  There were some problems with a search
+   low-water mark lower than the base of the group.  Returns true if
+   everything checks out, false otherwise. */
+static bool
+overview_verify_full_search(const char *data)
+{
+    unsigned long artnum, overnum, i;
+    unsigned long end = 0;
+    struct vector *expected;
+    char *line;
+    char *group = NULL;
+    FILE *overview;
+    char buffer[4096];
+    int length;
+    TOKEN token;
+    void *search;
+    time_t arrived;
+    bool status = true;
+
+    overview = fopen(data, "r");
+    if (overview == NULL)
+        sysdie("Cannot open %s for reading", data);
+    expected = vector_new();
+    while (fgets(buffer, sizeof(buffer), overview) != NULL) {
+        line = overview_data_parse(buffer, &artnum);
+        if (group == NULL)
+            group = xstrdup(buffer);
+        vector_add(expected, line);
+        end = artnum;
+    }
+    search = tradindexed_opensearch(group, 1, end + 1);
+    if (search == NULL) {
+        warn("Unable to open full search for %s", group);
+        free(group);
+        vector_free(expected);
+        return false;
+    }
+    i = 0;
+    while (tradindexed_search(search, &overnum, &line, &length, &token,
+                              &arrived)) {
+        if (!check_data(group, overnum, expected->strings[i], line, length,
+                        token))
+            status = false;
+        if ((unsigned long) arrived != overnum * 10) {
+            warn("Arrival time wrong for %s:%lu: %lu != %lu", group, overnum,
+                 (unsigned long) arrived, overnum * 10);
+            status = false;
+        }
+        i++;
+    }
+    tradindexed_closesearch(search);
+    if (overnum != end) {
+        warn("End of search in %s wrong: %lu != %lu", group, overnum, end);
+        status = false;
+    }
+    if (i != expected->count) {
+        warn("Didn't see all expected entries in %s", group);
+        status = false;
+    }
+    free(group);
+    vector_free(expected);
+    return status;
+}
+
 int
 main(void)
 {
     struct hash *groups;
     bool status;
 
-    puts("12");
+    puts("17");
 
     if (!overview_init())
         die("Opening the overview database failed, cannot continue");
@@ -412,6 +477,19 @@ main(void)
     tradindexed_close();
     system("/bin/rm -r tdx-tmp");
     ok(12, true);
+
+    if (!overview_init())
+        die("Opening the overview database failed, cannot continue");
+    ok(13, true);
+
+    groups = overview_load("data/high-numbered");
+    ok(14, true);
+    ok(15, overview_verify_data("data/high-numbered"));
+    ok(16, overview_verify_full_search("data/high-numbered"));
+    hash_free(groups);
+    tradindexed_close();
+    system("/bin/rm -r tdx-tmp");
+    ok(17, true);
 
     return 0;
 }

@@ -729,9 +729,10 @@ tests/libtest.h                       Interface to libtest
 tests/overview                        Test suite for overview (Directory)
 tests/overview/data                   Test overview data (Directory)
 tests/overview/data/basic             Basic set of overview test data
+tests/overview/data/high-numbered     High-numbered article test data
 tests/overview/data/reversed          Same as basic, but in reverse order
 tests/overview/munge-data             Support script to generate test data
-tests/overview/tradindexed-t.c        Tests for storage/ov3/*
+tests/overview/tradindexed-t.c        Tests for storage/tradindexed/*
 tests/runtests.c                      The test suite driver program
 tests/util                            Test suite for utilities (Directory)
 tests/util/convdate.t                 Tests for expire/convdate
