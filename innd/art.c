@@ -2464,11 +2464,13 @@ STRING ARTpost(CHANNEL *cp)
     if (innconf->xrefslave) {
     	if (ARTxrefslave() == FALSE) {
     	    if (HDR(_xref)) {
-                (void)sprintf(buff, "%d Invalid Xref header \"%s\"",
+                (void)sprintf(buff,
+                    "%d Xref header \"%s\" invalid in xrefslave mode",
 		    NNTP_REJECTIT_VAL,
 		    MaxLength(HDR(_xref), HDR(_xref)));
 	    } else {
-                (void)sprintf(buff, "%d No Xref header",
+                (void)sprintf(buff,
+                    "%d Xref header required in xrefslave mode",
 		    NNTP_REJECTIT_VAL);
 	    }
             ARTlog(&Data, ART_REJECT, buff);
