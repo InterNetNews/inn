@@ -3,29 +3,30 @@
 **  Transmit articles to remote site.
 **  Modified for NNTP streaming: 3Jan96 Jerry Aguirre
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
 #include <setjmp.h>
+#include <signal.h>
+#include <syslog.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#if	defined(DO_NEED_TIME)
-#include <time.h>
-#endif	/* defined(DO_NEED_TIME) */
-#include <sys/time.h>
-#include <sys/uio.h>
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+
+#include "dbz.h"
+#include "libinn.h"
+#include "macros.h"
 #include "nntp.h"
 #include "paths.h"
-#include <syslog.h>
-#include <signal.h>
-#include "libinn.h"
 #include "qio.h"
-#include "dbz.h"
-#include "macros.h"
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
@@ -327,64 +328,6 @@ REMwrite(char *p, int i, BOOL escdot) {
 
 
 /*
-**  Send a line to the server, adding the dot escape and \r\n.
-*/
-STATIC BOOL
-REMwriteQuoted(char *p, int i) {
-    static char	HEXDIGITS[] = "0123456789ABCDEF";
-    char	*dest;
-    int		size;
-    int		count;
-    int		prev;
-
-    /* Buffer too full? */
-    if (REMbuffend - REMbuffptr < i + 3) {
-	if (!REMflush())
-	    return FALSE;
-	if (REMbuffend - REMbuffer < i + 3) {
-	    /* Line too long -- grow buffer. */
-	    size = i * 2;
-	    RENEW(REMbuffer, char, size);
-	    REMbuffend = &REMbuffer[size];
-	}
-    }
-
-    for (count = 0, prev = 255, dest = REMbuffptr, i++; --i > 0; ) {
-	if ((*p < 32 && *p != '\t')
-	 || *p == '='
-	 || *p >= 127
-	 || (count == 0 && *p =='.')) {
-	    *dest++ = '=';
-	    *dest++ = HEXDIGITS[*p >> 4];
-	    *dest++ = HEXDIGITS[*p & 0x0F];
-	    p++;
-	    count += 3;
-	    prev = 'A';
-	}
-	else {
-	    prev = *dest++ = *p++;
-	    count++;
-	}
-        if (count > 72) {
-	    *dest++ = '=';
-	    *dest++ = '\r';
-	    *dest++ = '\n';
-	    count = 0;
-	    prev = '\n';
-        }
-    }
-    if (prev == ' ' || prev == '\t')
-	*dest++ = '=';
-
-    REMbuffptr = dest;
-    *REMbuffptr++ = '\r';
-    *REMbuffptr++ = '\n';
-
-    return TRUE;
-}
-
-
-/*
 **  Print transfer statistics, clean up, and exit.
 */
 STATIC NORETURN
@@ -655,7 +598,6 @@ Interrupted(char *Article, char *MessageID) {
 */
 STATIC BOOL
 REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
-    char	*p;
     char	buff[NNTP_STRLEN];
 
     if (!REMflush())
@@ -968,8 +910,6 @@ int main(int ac, char *av[]) {
     FILE		*To;
     char		buff[8192+128];
     char		*Article;
-    char		*ContentEncoding;
-    char		*ContentType;
     char		*MessageID;
     SIGHANDLER		(*old)();
     unsigned int	ConnectTimeout;
