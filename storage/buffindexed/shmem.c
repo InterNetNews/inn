@@ -49,7 +49,7 @@ static int smcCreateSemaphore(const char *name)
                 return id;
             }
             /* try to remove it */
-#ifdef SEMCTL_NEEDS_UNION
+#ifdef HAVE_UNION_SEMUN
             {
                 union semun semArg;
                 semArg.val = 1;

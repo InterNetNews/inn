@@ -61,6 +61,14 @@
    don't. */
 #undef HAVE_DECL_ALTZONE
 
+/* Define to 1 if you have the declaration of `fseeko', and to 0 if you don't.
+   */
+#undef HAVE_DECL_FSEEKO
+
+/* Define to 1 if you have the declaration of `ftello', and to 0 if you don't.
+   */
+#undef HAVE_DECL_FTELLO
+
 /* Define to 1 if you have the declaration of `h_errno', and to 0 if you
    don't. */
 #undef HAVE_DECL_H_ERRNO
@@ -361,6 +369,9 @@
 
 /* Define to 1 if you have the `ulimit' function. */
 #undef HAVE_ULIMIT
+
+/* Define to 1 if the system has the type `union semun'. */
+#undef HAVE_UNION_SEMUN
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H

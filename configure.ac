@@ -421,6 +421,10 @@ AC_CHECK_TYPE([socklen_t], ,
         [Define to int if <sys/socket.h> does not define.])],
 [#include <sys/types.h>
 #include <sys/socket.h>])
+AC_CHECK_TYPES([union semun], , ,
+[#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>])
 
 dnl See if struct sockaddr_storage is available, and if so, how its members
 dnl are named.
