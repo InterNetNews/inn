@@ -1,4 +1,5 @@
-##  $Revision$
+##  $Id$
+
 include ../Makefile.global
 
 ######################################################################
@@ -88,7 +89,6 @@ RM		= rm -f
 MV		= mv
 TAG		= etags
 CHMOD		= chmod
-INSTALL		= $(LIBTOOL) install -c 
 
 MAKEDEPEND	= ./makedepend
 DEPENDFLAGS	= -s -c '$(CC) -E'
@@ -115,29 +115,31 @@ innfeed-convcfg: innfeed-convcfg.in $(FIXSCRIPT)
 procbatch: procbatch.in $(FIXSCRIPT)
 	$(FIXSCRIPT) procbatch.in
 
-$D$(PATHBIN)/innfeed: innfeed
-	$(LIBTOOL) ../installit.sh $(OWNER) -m 550 -b .OLD $? $@
+$(D)$(PATHBIN)/innfeed: innfeed
+	$(LI_XPRI) $? $@
 
-$D$(PATHBIN)/procbatch: procbatch
-	$(LIBTOOL) ../installit.sh $(OWNER) -m 550 -b .OLD $? $@
+$(D)$(PATHBIN)/procbatch: procbatch
+	$(CP_XPRI) $? $@
 
-
-$D$(PATHBIN)/innfeed-convcfg: innfeed-convcfg
-	$(LIBTOOL) ../installit.sh $(OWNER) -m 550 -b .OLD $? $@
+$(D)$(PATHBIN)/innfeed-convcfg: innfeed-convcfg
+	$(CP_XPRI) $? $@
 	$(SAVEOLD)
 	$(COPYFILE)
 
-$D$(PATHBIN)/startinnfeed: startinnfeed
-	-$(LIBTOOL) ../installit.sh -O root -G $(NEWSGROUP) -m 4550 -b .OLD $? $@
-	@ME=`(whoami || /usr/ucb/whoami) 2> /dev/null` ;\
-	if [ "X$$ME" = Xroot ]; then \
-		echo $@ has been installed setuid root. ;\
-	else\
-		echo "" ; echo "===============================" ;\
-		echo  "NOTE NOTE NOTE NOTE NOTE" ;\
-		ls -l $@ ;\
-		echo $@ needs to be installed setuid root ;\
-		echo "" ; echo "" ;\
+$(D)$(PATHBIN)/startinnfeed: startinnfeed
+	@ME=`$(WHOAMI)` ; \
+	if [ x"$$ME" = xroot ] ; then \
+	    echo $(LI_SPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
+	    $(LI_SPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
+	else \
+	    echo $(LI_XPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
+	    $(LI_XPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
+	    echo '' ; \
+	    echo '========================' ; \
+	    echo 'NOTE NOTE NOTE NOTE NOTE' ; \
+	    ls -l $@ ; \
+	    echo '$@ needs to be installed setuid root' ; \
+	    echo '' ; echo ; \
 	fi
 
 objs:	$(OBJS)
@@ -153,9 +155,8 @@ clean::
 	$(RM) -rf .libs
 
 realclean:: clean 
-	$(RM) y.tab.c y.tab.h lex.yy.c config_y.c config_y.h
+	$(RM) y.tab.c y.tab.h lex.yy.c config_y.c config_y.h $(TARBALL)
 	$(RM) -rf $(TARDIR)
-	$(RM) $(TARBALL)
 
 clobber distclean:: realclean
 
