@@ -723,7 +723,8 @@ if test x"$DO_PYTHON" = xdefine ; then
     py_libm=`grep '^LIBM=' $py_libdir/config/Makefile | sed -e 's/^.*=//'`
     py_liblocalmod=`grep '^LOCALMODLIBS=' $py_libdir/config/Makefile | sed -e 's/^.*=//'`
     py_libbasemod=`grep '^BASEMODLIBS=' $py_libdir/config/Makefile | sed -e 's/^.*=//'`
-    PYTHON_LIB="-L$py_libdir/config $py_libs $py_libc $py_libm -lpython$py_ver $py_liblocalmod $py_libbasemod"
+    py_linkforshared=`grep '^LINKFORSHARED=' $py_libdir/config/Makefile | sed -e 's/^.*=//'`
+    PYTHON_LIB="-L$py_libdir/config $py_libs $py_libc $py_libm -lpython$py_ver $py_liblocalmod $py_libbasemod $py_linkforshared"
     PYTHON_LIB=`echo $PYTHON_LIB | sed -e 's/[ \\t]*/ /g'`
     AC_MSG_RESULT($py_libdir)
 else
