@@ -48,6 +48,12 @@
 # endif
 #endif
 
+/* Define if you have <string.h> */
+#undef HAVE_STRING_H 
+
+/* Define if you have <memory.h> */
+#undef HAVE_MEMORY_H 
+
 /* Define if you have <varargs.h> */
 #undef HAVE_VARARGS_H 
 
