@@ -514,11 +514,13 @@ and the default is false.
 
 =item I<readertrack>
 
-Whether to enable the tracking system for client posting.  What is
-tracked is posted article itself, and written to
-I<patharticles>/Message-ID.  Which user and client, that is recorded,
-is determined by nnrpd.track.  See nnrpd.track(5) for more information.
-This is a boolean value and the default is false.
+Whether to enable the tracking system for client behavior.  Tracked
+information is recoreded to I<pathlog>/tracklogs/log-ID.  ID is determined
+by nnrpd's PID and when nnrpd runs.  Currenlty that information includes
+the messages which tell enabling reader track and where posted article is
+tracked.  Which user and client, that is recorded, is determined by
+nnrpd.track.  See nnrpd.track(5) for more information.  This is a boolean
+value and the default is false.
 
 =back
 
