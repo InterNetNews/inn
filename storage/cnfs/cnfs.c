@@ -1098,7 +1098,7 @@ BOOL cnfs_cancel(TOKEN token) {
 
     if (token.type != TOKEN_CNFS) {
 	SMseterror(SMERR_INTERNAL, NULL);
-	return NULL;
+	return FALSE;
     }
     if (! CNFSBreakToken(token, cycbuffname, &offset, &cycnum)) {
 	SMseterror(SMERR_INTERNAL, NULL);

@@ -242,7 +242,7 @@ incoming.conf:	../samples/incoming.conf		; $(COPY) $? $@
 ihave:		../samples/ihave		; $(COPY) $? $@
 inn.conf:	../samples/inn.conf		; $(COPY) $? $@
 inncheck:	../samples/inncheck		; $(COPY) $? $@
-innreport.pl:	../samples/innreport.pl		; $(COPY) $? $@
+innreport:	../samples/innreport		; $(COPY) $? $@
 innreport_inn.pm: ../samples/innreport_inn.pm	; $(COPY) $? $@
 innreport.conf:	../samples/innreport.conf	; $(COPY) $? $@
 storage.ctl:	../samples/storage.ctl		; $(COPY) $? $@

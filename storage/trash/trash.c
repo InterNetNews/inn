@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <sys/types.h>
 #include <clibrary.h>
 #include <macros.h>
 #include <configdata.h>

@@ -123,7 +123,7 @@ struct conf_vars {
 	int strippostcc;	/* Strip To:, Cc: and Bcc: lines from posts */
 };
 extern struct	conf_vars *innconf;
-extern char *innconffile = _PATH_CONFIG;
+extern char	*innconffile;
 extern char	*GetFQDN(void);
 extern char	*GetConfigValue(char *value);
 extern char	*GetFileConfigValue(char *value);
