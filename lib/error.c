@@ -98,9 +98,8 @@ die_set_handlers(int count, ...)
 
 
 void
-error_log_stderr(int len, const char *fmt, va_list args, int err)
+error_log_stderr(int len UNUSED, const char *fmt, va_list args, int err)
 {
-    len = len;			/* ARGSUSED */
     fflush(stdout);
     if (error_program_name != NULL)
         fprintf(stderr, "%s: ", error_program_name);
@@ -120,7 +119,7 @@ error_log_syslog(int pri, int len, const char *fmt, va_list args, int err)
     if (buffer == NULL) {
         fprintf(stderr, "failed to malloc %u bytes at %s line %d: %s",
                 len + 1, __FILE__, __LINE__, strerror(errno));
-        exit(1);
+        exit(error_fatal_cleanup ? (*error_fatal_cleanup)() : 1);
     }
     vsnprintf(buffer, len + 1, fmt, args);
     syslog(pri, err ? "%s: %m" : "%s", buffer);
