@@ -87,6 +87,12 @@ extern void *memset();
 #endif
 
 /* Provide prototypes for functions we're replacing. */
+#ifndef HAVE_PREAD
+extern ssize_t pread(int fd, void *buf, size_t nbyte, OFFSET_T offset);
+#endif
+#ifndef HAVE_PWRITE
+extern ssize_t pwrite(int fd, void *buf, size_t nbyte, OFFSET_T offset);
+#endif
 #ifndef HAVE_INET_NTOA
 extern char *inet_ntoa();
 #endif
