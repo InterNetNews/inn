@@ -2096,7 +2096,6 @@ static conn_ret lmtp_getcapabilities(connection_t *cxn)
 #endif /* SMTPMODE */
 
     result = WriteToWire_lmtpstr(cxn, p, strlen(p));
-    free(p);
     if (result!=RET_OK) return result;
 
     cxn->lmtp_state = LMTP_WRITING_LHLO;
@@ -2162,7 +2161,6 @@ static conn_ret lmtp_authenticate(connection_t *cxn)
     }
 
     result = WriteToWire_lmtpstr(cxn, p, strlen(p));
-    free(p);
 
     cxn->lmtp_state = LMTP_WRITING_STARTAUTH;
 
@@ -2649,7 +2647,6 @@ static conn_ret imap_sendSimple(connection_t *cxn, const char *atom, int st)
 
     imap_GetTag(cxn);
     tosend = concat(cxn->imap_currentTag, " ", atom, "\r\n", (char *) 0);
-    sprintf(tosend,"%s %s\r\n", cxn->imap_currentTag, atom);
 
     result = WriteToWire_imapstr(cxn, tosend, -1);
     if (result != RET_OK) return result;
@@ -2677,19 +2674,7 @@ static conn_ret imap_noop(connection_t *cxn)
 
 static conn_ret imap_sendCapability(connection_t *cxn)
 {
-    conn_ret result;
-    char *tosend;
-
-    imap_GetTag(cxn);
-
-    tosend = concat(cxn->imap_currentTag, " CAPABILITY\r\n");
-
-    result = WriteToWire_imapstr(cxn, tosend, -1);
-    if (result != RET_OK) return result;
-
-    cxn->imap_state = IMAP_WRITING_CAPABILITY;
-
-    return RET_OK;
+    return imap_sendSimple(cxn, "CAPABILITY", IMAP_WRITING_CAPABILITY);
 }
 
 /************************** END IMAP sending functions ************************/
@@ -3478,6 +3463,9 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 #endif /* HAVE_SASL */
 		    
 	case LMTP_READING_RSET:
+	    if (ask_keepgoing(str)) {
+		goto reset;
+	    }
 	    if (ask_code(str) != 250) {
 		d_printf(0,"%s:%d:LMTP RSET failed with (%d)\n",
 			 hostPeerName (cxn->myHost),cxn->ident,
@@ -3491,6 +3479,9 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 	    goto reset;
 
 	case LMTP_READING_MAILFROM:
+	    if (ask_keepgoing(str)) {
+		goto reset;
+	    }
 	    if (ask_code(str) != 250) {
 		d_printf(0,"%s:%d:LMTP MAILFROM failed with (%d)\n",
 			 hostPeerName (cxn->myHost),cxn->ident,
@@ -3505,6 +3496,9 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 	    break;
 
 	case LMTP_READING_RCPTTO:
+	    if (ask_keepgoing(str)) {
+		goto reset;
+	    }
 	    if (ask_code(str)!=250) {
 		d_printf(1,"%s:%d:LMTP RCPT TO failed with (%d) %s\n",
 			 hostPeerName (cxn->myHost),cxn->ident,
@@ -3528,6 +3522,9 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 	    break;
 
 	case LMTP_READING_DATA:
+	    if (ask_keepgoing(str)) {
+		goto reset;
+	    }
 	    if (cxn->current_rcpts_issued == 0) {
 		if (cxn->current_article->trys < 100) {
 		    d_printf(1, "%s:%d:LMTP None of the rcpts "
@@ -3554,6 +3551,10 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 	    break;
 
 	case LMTP_READING_CONTENTS:
+	    if (ask_keepgoing(str)) {
+		goto reset;
+	    }
+
 	    /* need 1 response from server for every rcpt */
 	    cxn->current_rcpts_issued--;
 	    
@@ -3594,6 +3595,9 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 	    break;
 
 	case LMTP_READING_NOOP:
+	    if (ask_keepgoing(str)) {
+		goto reset;
+	    }
 	    cxn->lmtp_state = LMTP_AUTHED_IDLE;
 	    break;
 
