@@ -358,8 +358,10 @@ static int open_db_file(int which)
     if(ret = db_create(&(dbs[which]), OVDBenv, 0))
 	return ret;
 
-    (dbs[which])->set_bt_minkey(dbs[which], ovdb_conf.minkey);
-    (dbs[which])->set_pagesize(dbs[which], ovdb_conf.pagesize);
+    if(ovdb_conf.minkey > 0)
+	(dbs[which])->set_bt_minkey(dbs[which], ovdb_conf.minkey);
+    if(ovdb_conf.pagesize > 0)
+	(dbs[which])->set_pagesize(dbs[which], ovdb_conf.pagesize);
 
     if(ret = (dbs[which])->open(dbs[which], _dbnames[which], NULL, DB_BTREE,
 		_db_flags, 0666)) {
