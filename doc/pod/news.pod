@@ -268,7 +268,16 @@ Simply doing a make update is not sufficient to upgrade; the history and
 overview information will also have to be regenerated, since the formats
 of both files have changed between 2.2 and 2.3.  Regardless of whether you
 were using the storage API or traditional spool under 2.2, you'll need to
-rebuild your overview and history files.
+rebuild your overview and history files.  You will also need to add a
+storage.conf file, if you weren't using the storage API under INN 2.2.  A
+good default storage.conf file for 2.2 users would be:
+
+    method tradspool {
+        newsgroups: *
+        class: 0
+    }
+
+Create this storage.conf file before rebuilding history or overview.
 
 If you want to allow readers, or if you want to expire based on newsgroup
 name, you need to tell INN to generate overview data and pick an overview
