@@ -1,115 +1,156 @@
-/*
- * $Id$
- *
- * Start innfeed and pass it all the arguments given. Sets up process
- * limits for innfeed.
- */
+/*  $Id$
+**
+**  Raise system limits and exec innfeed.
+**
+**  This is a setuid root wrapper around innfeed to increase system limits
+**  (file descriptor limits and stack and data sizes).  In order to prevent
+**  abuse, it uses roughly the same security model as inndstart; only the
+**  news user can run this program, and it attempts to drop privileges when
+**  doing operations that don't require it.
+*/
+#include "config.h"
+#include "clibrary.h"
+#include <syslog.h>
+#include <errno.h>
+#include <grp.h>
+#include <pwd.h>
 
-#if ! defined (INNFEED)
-#define INNFEED "innfeed"
+#include "libinn.h"
+#include "macros.h"
+
+/* Some odd systems need sys/time.h included before sys/resource.h. */
+#ifdef HAVE_RLIMIT
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# endif
+# include <sys/resource.h>
 #endif
 
-#include <pwd.h>                /* getpwent */
-#include <stdio.h>              /* fprintf */
-#include <errno.h>              /* errno, sys_errlist */
-#include <unistd.h>             /* setgid, setuid, execve */
-#include <stdlib.h>             /* exit */
-#include <sys/types.h>          /* setrlimit */
-#include <time.h>               /* setrlimit */
-#include <sys/time.h>           /* setrlimit */
-#include <sys/resource.h>       /* setrlimit */
-#include <string.h>
+/* Options for debugging malloc. */
+#ifdef USE_DMALLOC
+# define DMALLOC_OPTIONS \
+    "DMALLOC_OPTIONS=debug=0x4e405c3,inter=100,log=innfeed-logfile"
+#endif
 
-#include <syslog.h> 
-#include "macros.h"
-#include "configdata.h"
-#include "clibrary.h"
-#include "libinn.h"
+
+/*
+**  Drop or regain privileges.  On systems with POSIX saved UIDs, we can
+**  simply set the effective UID directly, since the saved UID preserves our
+**  ability to get back root access.  Otherwise, we have to swap the real
+**  and effective UIDs (which doesn't work correctly on AIX).  Assume any
+**  system with seteuid() has POSIX saved UIDs.  First argument is the new
+**  effective UID, second argument is the UID to preserve (not used if the
+**  system has saved UIDs).
+*/
+static void
+set_user (uid_t euid, uid_t ruid)
+{
+#ifdef HAVE_SETEUID
+    if (seteuid(euid) < 0) {
+        syslog(L_ERROR, "seteuid(%d) failed: %m", euid);
+        exit(1);
+    }
+#else
+# ifdef HAVE_SETREUID
+#  ifdef _POSIX_SAVED_IDS
+    ruid = -1;
+#  endif
+    if (setreuid(ruid, euid) < 0) {
+        syslog(L_ERROR, "setreuid(%d, %d) failed: %m", ruid, euid);
+        exit(1);
+    }
+# endif /* HAVE_SETREUID */
+#endif /* HAVE_SETEUID */
+}
+
 
 int
-main(int ac, char **av, char **ep)
+main(void)
 {
-  struct passwd *pwd;
-  struct rlimit rl;
-  char *progname;
-  char *innfeed;
+    struct passwd *     pwd;
+    struct group *      grp;
+    uid_t               news_uid;
+    gid_t               news_gid;
+    struct rlimit       rl;
+    char *              innfeed_argv[2];
 
-  if ((progname = strrchr(av[0], '/')) != NULL)
-	progname++;
-  else
-	progname = av[0];
+    openlog("innfeed", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
-  openlog (progname,(int)(L_OPENLOG_FLAGS|LOG_PID),LOG_INN_PROG) ;
+    /* Convert NEWSUSER and NEWSGRP to a UID and GID.  getpwnam() and
+       getgrnam() don't set errno normally, so don't print strerror() on
+       failure; it probably contains garbage.*/
+    pwd = getpwnam(NEWSUSER);
+    if (!pwd) {
+        syslog(L_FATAL, "getpwnam(%s) failed", NEWSUSER);
+        exit(1);
+    }
+    news_uid = pwd->pw_uid;
+    grp = getgrnam(NEWSGRP);
+    if (!grp) {
+        syslog(L_FATAL, "getgrnam(%s) failed", NEWSGRP);
+        exit(1);
+    }
+    news_gid = grp->gr_gid;
 
-  if (ReadInnConf() < 0) {
-      syslog(LOG_ERR, "cant read inn.conf");
-      exit(1);
-  }
+    /* Exit if run by another user. */
+    if (getuid() != news_uid) {
+        syslog(L_FATAL, "ran by UID %d, who isn't %s (%d)", getuid(),
+               NEWSUSER, news_uid);
+        exit(1);
+    }
 
-#if	defined(HAVE_RLIMIT)
-  /* (try to) unlimit datasize and stacksize for us and our children */
-  rl.rlim_cur = rl.rlim_max = RLIM_INFINITY;
+    /* Drop privileges to read inn.conf. */
+    set_user(news_uid, 0);
+    if (ReadInnConf() < 0) exit(1);
 
-  if (setrlimit(RLIMIT_DATA, &rl) == -1)
-    syslog(LOG_WARNING, "%s: setrlimit(RLIMIT_DATA, RLIM_INFINITY): %s",
-            *av, strerror(errno));
-  if (setrlimit(RLIMIT_STACK, &rl) == -1)
-    syslog(LOG_WARNING, "%s: setrlimit(RLIMIT_STACK, RLIM_INFINITY): %s",
-            *av, strerror (errno));
+    /* Regain privileges to increase system limits. */
+#ifdef HAVE_RLIMIT
+    set_user(0, news_uid);
+    rl.rlim_cur = RLIM_INFINITY;
+    rl.rlim_max = RLIM_INFINITY;
+
+    if (setrlimit(RLIMIT_DATA, &rl) == -1)
+        syslog(LOG_WARNING, "can't setrlimit(DATA, INFINITY): %m");
+    if (setrlimit(RLIMIT_STACK, &rl) == -1)
+        syslog(LOG_WARNING, "can't setrlimit(STACK, INFINITY): %m");
+
 # ifdef RLIMIT_NOFILE
-  if (innconf->rlimitnofile >= 0) {
-    getrlimit(RLIMIT_NOFILE, &rl);
-    if (innconf->rlimitnofile < rl.rlim_max)
-        rl.rlim_max = innconf->rlimitnofile;
-    if (innconf->rlimitnofile < rl.rlim_cur)
-        rl.rlim_cur = innconf->rlimitnofile;
-    if (setrlimit(RLIMIT_NOFILE, &rl) == -1)
-      syslog(LOG_WARNING, "%s: setrlimit(RLIMIT_NOFILE, %d): %s",
-            *av, rl.rlim_cur, strerror (errno));
-  }
+    if (innconf->rlimitnofile >= 0) {
+        if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
+            syslog(LOG_WARNING, "can't getrlimit(NOFILE): %m");
+        } else {
+            if (innconf->rlimitnofile < rl.rlim_max)
+                rl.rlim_max = innconf->rlimitnofile;
+            if (innconf->rlimitnofile < rl.rlim_cur)
+                rl.rlim_cur = innconf->rlimitnofile;
+            if (setrlimit(RLIMIT_NOFILE, &rl) == -1)
+                syslog(LOG_WARNING, "can't setrlimit(NOFILE, %d): %m",
+                       rl.rlim_cur);
+        }
+    }
 # endif /* RLIMIT_NOFILE */
 #endif /* HAVE_RLIMIT */
 
-  /* stop being root */
-  pwd = getpwnam(NEWSUSER);
-  if (pwd == (struct passwd *)NULL)
-    syslog(LOG_ERR, "%s: getpwnam(%s): %s", *av, NEWSUSER,
-                  strerror (errno));
-  else if (setgid(pwd->pw_gid) == -1)
-    syslog(LOG_ERR, "%s: setgid(%d): %s", *av, pwd->pw_gid,
-                  strerror (errno));
-  else if (setuid(pwd->pw_uid) == -1)
-    syslog(LOG_ERR, "%s: setuid(%d): %s", *av, pwd->pw_uid,
-                  strerror (errno));
-  else 
-    {
-      char **evp = NULL ;
-
-      innfeed = NEW(char, (strlen(innconf->pathbin)+1+strlen(INNFEED)+1));
-      sprintf(innfeed, "%s/%s", innconf->pathbin, INNFEED);
-      av[0] = (char *) innfeed;
-
-#if defined (USE_DMALLOC)
-      {
-        int i ;
-        
-        for (i = 0 ; ep[i] != NULL ; i++)
-          /* nada */ ;
-
-        evp = (char **) malloc (sizeof (char *) * i + 2) ;
-        for (i = 0 ; ep[i] != NULL ; i++)
-          evp [i] = ep [i] ;
-        evp [i] = "DMALLOC_OPTIONS=debug=0x4e405c3,inter=100,log=innfeed-logfile";
-        evp [i+1] = NULL ;
-      }
-#else
-      evp = ep ;
-#endif
-      
-      if (execve(innfeed, av, evp) == -1)
-        syslog(LOG_ERR, "%s: execve: %s",
-                      progname, strerror (errno));
+    /* Permanently drop privileges. */
+    if (setuid(news_uid) < 0 || getuid() != news_uid) {
+        syslog(LOG_ERR, "can't setuid(%d): %m", news_uid);
+        exit(1);
     }
-  
-  exit(1);
+
+    /* Build the argument vector for innfeed. */
+    innfeed_argv[0] = concat(innconf->pathbin, "/innfeed", (char *) 0);
+    innfeed_argv[1] = NULL;
+
+    /* Set debugging malloc options. */
+#ifdef USE_DMALLOC
+    putenv(DMALLOC_OPTIONS);
+#endif
+
+    /* Exec innfeed. */
+    execv(innfeed_argv[0], innfeed_argv);
+    syslog(LOG_ERR, "can't exec %s: %m", innfeed_argv[0]);
+    _exit(1);
+
+    /* NOTREACHED */
+    return 1;
 }
