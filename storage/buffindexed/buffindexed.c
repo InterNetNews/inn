@@ -599,6 +599,7 @@ STATIC void ovnextblock(OVBUFF *ovbuff) {
   int		bitoffset;	/* From the 'left' side of the long */
   int		i, j, last, lastbit, left;
   static int	next = 1;
+  ULONG		mask = 0x80000000;
   ULONG		*table;
 
   last = ovbuff->totalblk/(sizeof(long) * 8);
@@ -607,8 +608,16 @@ STATIC void ovnextblock(OVBUFF *ovbuff) {
   }
   table = ((ULONG *) ovbuff->bitfield + (OV_BEFOREBITF / sizeof(long)));
   for (i = next ; i < last ; i++) {
-    if ((table[i] ^ ~0) != 0)
-      break;
+    if (i == last - 1 && left != 0) {
+      for (j = 1 ; j < last ; j++) {
+	mask |= mask >> 1;
+      }
+      if ((table[i] & mask) != mask)
+	break;
+    } else {
+      if ((table[i] ^ ~0) != 0)
+	break;
+    }
   }
   if (i == last) {
     for (i = 0 ; i < next ; i++) {
@@ -735,6 +744,8 @@ STATIC void *ovblockfree(OV ov) {
   ovlock(ovbuff, LOCK_WRITE);
   ovusedblock(ovbuff, ov.blocknum, TRUE, FALSE);
   ovreadhead(ovbuff);
+  if (ovbuff->freeblk == ovbuff->totalblk)
+    ovbuff->freeblk = ov.blocknum;
   ovbuff->usedblk--;
   ovbuff->needflush = TRUE;
   ovflushhead(ovbuff);
