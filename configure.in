@@ -111,18 +111,19 @@ AC_MSG_ERROR($2 is a required program not found in path)
 fi
 ])
 
-AC_ENSURE_PATH_PROG(ac_cv_subst_innwatch_df,df)
-AC_ENSURE_PATH_PROG(_PATH_AWK, awk)
+AC_ENSURE_PATH_PROG(_PATH_AWK  , awk)
+AC_ENSURE_PATH_PROG(_PATH_PERL , perl)
+AC_ENSURE_PATH_PROG(_PATH_SED  , sed)
+AC_ENSURE_PATH_PROG(_PATH_DF   , df)
+AC_ENSURE_PATH_PROG(_PATH_EGREP, egrep)
+AC_ENSURE_PATH_PROG(_PATH_SORT , sort)
+
 AC_PATH_PROG(ac_cv_subst_path_compress,compress,no-compress-found-during-configure)
-AC_ENSURE_PATH_PROG(ac_cv_subst_path_egrep,egrep)
 AC_PATH_PROG(ac_cv_subst_path_gzip,gzip,no-gzip-found-during-configure)
 dnl Automatic check for Mail is frequently wrong.  Use innmail to have
 dnl a single interface.
 dnl AC_ENSURE_PATH_PROG(ac_cv_subst_path_mail,Mail)
-AC_ENSURE_PATH_PROG(ac_cv_subst_path_perl,perl)
 AC_PATH_PROG(ac_cv_subst_path_pgp,pgp,no-pgp-found-during-configure)
-AC_ENSURE_PATH_PROG(_PATH_SED, sed)
-AC_ENSURE_PATH_PROG(ac_cv_subst_path_sort,sort)
 AC_ENSURE_PATH_PROG(ac_cv_subst_path_sh,sh)
 dnl Even though it is common to have sendmail in /usr/lib, we
 dnl have to trust the admin.
