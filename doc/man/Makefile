@@ -24,8 +24,8 @@ SEC5	= active.5 buffindexed.conf.5 control.ctl.5 cycbuff.conf.5 \
 SEC8	= actsync.8 actsyncd.8 archive.8 batcher.8 buffchan.8 \
 	cnfsheadconf.8 cnfsstat.8 controlchan.8 ctlinnd.8 \
 	cvtbatch.8 expire.8 expireover.8 expirerm.8 filechan.8 inncheck.8 \
-	innd.8 inndf.8 inndstart.8 innreport.8 innstat.8 innwatch.8 \
-	innxbatch.8 innxmit.8 mailpost.8 makedbz.8 makehistory.8 \
+	innd.8 inndf.8 inndstart.8 innreport.8 innstat.8 innupgrade.8 \
+	innwatch.8 innxbatch.8 innxmit.8 mailpost.8 makedbz.8 makehistory.8 \
 	mod-active.8 news.daily.8 news2mail.8 nnrpd.8 nntpsend.8 \
 	ovdb_init.8 ovdb_monitor.8 ovdb_server.8 ovdb_stat.8 \
 	overchan.8 perl-nocem.8 pgpverify.8 prunehistory.8 pullnews.8 \
