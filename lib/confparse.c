@@ -1251,7 +1251,7 @@ config_error_param(struct config_group *group, const char *key,
         return;
     message = xmalloc(length + 1);
     va_start(args, fmt);
-    snprintf(message, length + 1, fmt, args);
+    vsnprintf(message, length + 1, fmt, args);
     va_end(args);
 
     param = hash_lookup(group->params, key);
