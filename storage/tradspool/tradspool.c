@@ -389,6 +389,9 @@ InitNGTable(void) {
     ** any AddNGs later on did in fact add new entries to the db.
     */
     NGTableUpdated = FALSE; 
+    if (!SMopenmode)
+	/* don't read active unless write mode. */
+	return TRUE;
     return ReadActiveFile(); 
 }
 
@@ -643,7 +646,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 		*p = '\0';
 		dirname = COPY(linkpath);
 		*p = '/';
-		if (!MakeDirectory(linkpath, TRUE) || link(path, linkpath) < 0) {
+		if (!MakeDirectory(dirname, TRUE) || link(path, linkpath) < 0) {
 #if !defined(HAVE_SYMLINK)
 		    SMseterror(SMERR_UNDEFINED, NULL);
 		    syslog(L_ERROR, "tradspool: could not link %s to %s %m", path, linkpath);
@@ -655,20 +658,21 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 		    DISPOSE(xrefs);
 		    return token;
 #else
-		} else if (symlink(path, linkpath) < 0) {
-		    SMseterror(SMERR_UNDEFINED, NULL);
-		    syslog(L_ERROR, "tradspool: could not symlink %s to %s %m", path, linkpath);
-		    token.type = TOKEN_EMPTY;
-		    DISPOSE(dirname);
-		    DISPOSE(linkpath);
-		    DISPOSE(path);
-		    for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
-		    DISPOSE(xrefs);
-		    return token;
+		    if (symlink(path, linkpath) < 0) {
+			SMseterror(SMERR_UNDEFINED, NULL);
+			syslog(L_ERROR, "tradspool: could not symlink %s to %s %m", path, linkpath);
+			token.type = TOKEN_EMPTY;
+			DISPOSE(dirname);
+			DISPOSE(linkpath);
+			DISPOSE(path);
+			for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
+			DISPOSE(xrefs);
+			return token;
+		    }
 #endif  /* !defined(HAVE_SYMLINK) */
 		}
+		DISPOSE(dirname);
 	    }
-	    DISPOSE(dirname);
 	    DISPOSE(linkpath);
 	}
     }
