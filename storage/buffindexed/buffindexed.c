@@ -1,27 +1,28 @@
 /*  $Id$
 **
-**  overview buffer and index method
+**  Overview buffer and index method.
 */
-
-#include <unistd.h>
+#include "config.h"
+#include "clibrary.h"
+#include <assert.h>
 #include <ctype.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <errno.h>
 #include <syslog.h>
 #include <sys/mman.h>
-#include <assert.h>
-#include <errno.h>
-#include <string.h>
-#include "configdata.h"
-#include "macros.h"
-#include "clibrary.h"
+#include <sys/stat.h>
+#include <time.h>
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
 #include "libinn.h"
-#include "paths.h"
-#include "storage.h"
-#include "qio.h"
+#include "macros.h"
 #include "ov.h"
+#include "paths.h"
+#include "qio.h"
+#include "storage.h"
+
 #include "buffindexed.h"
 
 #define	OVBUFF_MAGIC	"ovbuff"
@@ -366,7 +367,6 @@ STATIC BOOL ovbuffread_config(void) {
   char		*config, *from, *to, **ctab = (char **)NULL;
   int		ctab_free = 0;  /* Index to next free slot in ctab */
   int		ctab_i;
-  int		update, refresh;
 
   if ((config = ReadInFile(cpcatpath(innconf->pathetc, _PATH_OVBUFFCONFIG),
 	(struct stat *)NULL)) == NULL) {
@@ -537,7 +537,7 @@ STATIC BOOL ovbuffinit_disks(void) {
   OVBUFF	*ovbuff = ovbufftab;
   char		buf[64];
   OVBUFFHEAD	*rpx;
-  int		i, fd, bytes;
+  int		i, fd;
   OFFSET_T	tmpo;
 
   /*
@@ -630,7 +630,6 @@ STATIC BOOL ovbuffinit_disks(void) {
 STATIC int ovusedblock(OVBUFF *ovbuff, int blocknum, BOOL set_operation, BOOL setbitvalue) {
   OFFSET_T	longoffset;
   int		bitoffset;	/* From the 'left' side of the long */
-  int		i;
   ULONG		bitlong, mask;
 
   longoffset = blocknum / (sizeof(long) * 8);
@@ -656,8 +655,6 @@ STATIC int ovusedblock(OVBUFF *ovbuff, int blocknum, BOOL set_operation, BOOL se
 }
 
 STATIC void ovnextblock(OVBUFF *ovbuff) {
-  OFFSET_T	longoffset;
-  int		bitoffset;	/* From the 'left' side of the long */
   int		i, j, last, lastbit, left;
   ULONG		mask = 0x80000000;
   ULONG		*table;
@@ -870,12 +867,11 @@ STATIC OV ovblocknew(void) {
 }
 
 #ifdef OV_DEBUG
-STATIC void *ovblockfree(OV ov, GROUPENTRY *ge) {
+STATIC void ovblockfree(OV ov, GROUPENTRY *ge) {
 #else
-STATIC void *ovblockfree(OV ov) {
+STATIC void ovblockfree(OV ov) {
 #endif /* OV_DEBUG */
   OVBUFF	*ovbuff;
-  OVBLOCK	*ovblock;
 #ifdef OV_DEBUG
   int		recno;
   struct ov_trace_array *trace;
@@ -1271,7 +1267,7 @@ STATIC BOOL ovsetcurindexblock(GROUPENTRY *ge, ARTNUM artnum, int *baseoffset) {
   OVBUFF	*ovbuff;
   OV		ov;
   OVBLOCK	ovblock;
-  int		delta, nblocks, i;
+  int		delta, i;
   ARTNUM	base;
   OVINDEXHEAD	ovindexhead;
 
@@ -1478,7 +1474,6 @@ BOOL buffindexed_add(TOKEN token, char *data, int len, time_t arrived) {
   GROUPLOC	gloc;
   GROUPENTRY	*ge;
   char		overdata[BIG_BUFFER];
-  OV		*ov;
 
   /*
    * find last Xref: in the overview line.  Note we need to find the *last*
@@ -1526,7 +1521,7 @@ BOOL buffindexed_add(TOKEN token, char *data, int len, time_t arrived) {
     if (artnum <= 0)
       continue;
 
-    sprintf(overdata, "%d\t", artnum);
+    sprintf(overdata, "%lu\t", artnum);
     i = strlen(overdata);
     memcpy(overdata + i, data, len);
     i += len;
@@ -1574,6 +1569,7 @@ BOOL buffindexed_add(TOKEN token, char *data, int len, time_t arrived) {
 }
 
 BOOL buffindexed_cancel(TOKEN token) {
+    return TRUE;
 }
 
 #ifdef OV_DEBUG
@@ -1665,7 +1661,7 @@ STATIC BOOL ovgroupmmap(GROUPENTRY *ge, GROUPINDEXBLOCK **gibp, int low, int hig
   OVBUFF		*ovbuff;
   GROUPINDEXBLOCK	*gib, *gibprev = NULL;
   GROUPDATABLOCK	*gdb;
-  int			pagefudge, len, base, limit, i, count;
+  int			pagefudge, base, limit, i, count;
   OFFSET_T		offset, mmapoffset;
   OVBLOCK		*ovblock;
 
@@ -1889,7 +1885,7 @@ void *buffindexed_opensearch(char *group, int low, int high) {
 BOOL buffindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived) {
   OVSEARCH		*search = (OVSEARCH *)handle;
   OVBLOCK		*ovblock;
-  OV			*ov, srchov;
+  OV			srchov;
   GROUPDATABLOCK	*gdb;
 
   if (!setcurrent(&search->curgib, &search->cur, search->lo, search->hi)) {
@@ -2307,7 +2303,6 @@ BOOL buffindexed_ctl(OVCTLTYPE type, void *val) {
 }
 
 void buffindexed_close(void) {
-  int		i;
   struct stat	sb;
 #ifdef OV_DEBUG
   FILE		*F = NULL;
