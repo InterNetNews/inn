@@ -85,6 +85,7 @@ typedef struct direct DIRENTRY ;
 #include "libinn.h"
 
 extern char *dflTapeDir;
+extern bool genHtml ;
 
 #if 0
 /* a structure for temporary storage of articles. */
@@ -510,7 +511,8 @@ void gPrintTapeInfo (FILE *fp, u_int indentAmt)
 
 void tapeLogGlobalStatus (FILE *fp)
 {
-  fprintf (fp,"Backlog file global values\n") ;
+  fprintf (fp,"%sBacklog file global values:%s\n",
+           genHtml ? "<H2>" : "", genHtml ? "</H2>" : "") ;
   fprintf (fp,"        directory: %s\n",tapeDirectory) ;
   fprintf (fp,"    rotate period: %-3ld seconds\n",(long) rotatePeriod) ;
   fprintf (fp,"checkpoint period: %-3ld seconds\n",(long) tapeCkPtPeriod) ;

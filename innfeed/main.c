@@ -110,6 +110,7 @@ extern char *versionInfo ;
 extern char *optarg ;           /* needed for Solaris */
 extern int optind;
 #endif
+extern bool genHtml ;
 
 extern void openInputFile (void);
 
@@ -983,7 +984,8 @@ static void mainCleanup (void)
 
 void mainLogStatus (FILE *fp)
 {
-  fprintf (fp,"Global configuration parameters:\n") ;
+  fprintf (fp,"%sGlobal configuration parameters:%s\n",
+           genHtml ? "<H2>" : "", genHtml ? "</H2>" : "") ;
   fprintf (fp,"          Mode: ") ;
   if (InputFile != NULL)
     fprintf (fp,"Funnel file") ;

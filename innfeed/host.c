@@ -360,7 +360,7 @@ static char *statusFile = NULL ;
 static u_int dnsRetPeriod ;
 static u_int dnsExpPeriod ;
 
-static bool genHtml = false ;
+bool genHtml = false ;
 
 /*******************************************************************/
 /*                  PUBLIC FUNCTIONS                               */
@@ -2948,6 +2948,15 @@ static void hostLogStatus (void)
                peerNum, actConn, slpConn,(maxcon - (actConn + slpConn))) ;
 
       fprintf (fp,"Configuration file: %s\n\n",configFile) ;
+      
+      if (genHtml)
+      {
+        fprintf (fp,"<UL>");
+        for (h = gHostList ; h != NULL ; h = h->next)
+          fprintf (fp,"<LI><A href=\"#%s\">%s</A></LI>",
+                   h->params->peerName, h->params->peerName);
+        fprintf (fp,"</UL>\n\n");
+      }
 
       mainLogStatus (fp) ;
       listenerLogStatus (fp) ;
@@ -2965,8 +2974,8 @@ Default peer configuration parameters:
  backlog high limit: 1280
      backlog factor: 1.1
 */
-      
-      fprintf(fp,"Default peer configuration parameters:\n") ;
+      fprintf(fp,"%sDefault peer configuration parameters:%s\n",
+              genHtml ? "<H2>" : "", genHtml ? "</H2>" : "") ;
       fprintf(fp,"    article timeout: %-5d     initial connections: %d\n",
 	    defaultParams->articleTimeout,
 	    defaultParams->initialConnections) ;
@@ -3000,7 +3009,8 @@ Default peer configuration parameters:
       tapeLogGlobalStatus (fp) ;
 
       fprintf (fp,"\n") ;
-      fprintf (fp,"global (process)\n") ;
+      fprintf(fp,"%sglobal (process)%s\n",
+              genHtml ? "<H2>" : "", genHtml ? "</H2>" : "") ;
       
       fprintf (fp, "   seconds: %ld\n", sec) ;
       if (sec == 0) sec = 1 ;
@@ -3047,7 +3057,7 @@ Default peer configuration parameters:
 		procArtsSizeRejected*100./totalsize) ;
 
       fprintf (fp, "\n");
-      
+
       for (h = gHostList ; h != NULL ; h = h->next)
         hostPrintStatus (h,fp) ;
 
@@ -3098,7 +3108,11 @@ static void hostPrintStatus (Host host, FILE *fp)
   ASSERT (host != NULL) ;
   ASSERT (fp != NULL) ;
 
-  fprintf (fp,"%s",host->params->peerName);
+  if (genHtml)
+    fprintf (fp,"<A name=\"%s\"><H2>%s</H2></A>",host->params->peerName,
+             host->params->peerName);
+  else
+    fprintf (fp,"%s",host->params->peerName);
 
   if (host->blockedReason != NULL)
     fprintf (fp,"  (remote status: ``%s'')",host->blockedReason) ;
