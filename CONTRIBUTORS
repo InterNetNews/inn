@@ -4,126 +4,135 @@ something has been incorrectly attributed to you (ditto), please let us
 know.
 
 Rich Salz:
-	Designed and wrote most of it.
+        Designed and wrote most of it.
 
 Bob Halley:
-	Did the TCL extension.
+        Did the TCL extension.
 
 Christophe Wolfhugel:
-	Did the Perl extension.
+        Did the Perl extension.
 
 Doug Needham:
-	Made nnrpd spool if innd is unavailable.
-	Made nnrpd handle the LIST SUBSCRIPTIONS command.
-	Added the rebilding of control connections to innd (SIGUSR1 handling)
-	Got inews to ask the nntp peer for moderator info instead of
-	   digging it out of a local file.
+        Made nnrpd spool if innd is unavailable.
+        Made nnrpd handle the LIST SUBSCRIPTIONS command.
+        Added the rebuilding of control connections to innd (SIGUSR1).
+        Got inews to ask the nntp peer for moderator info instead of
+           digging it out of a local file.
 
 David Lawrence: 
-	Did the hooks for PGP verificiation of control messages.
+        Did the hooks for PGP verificiation of control messages.
 
 John Stapleton:
-	Wrote the poison newsgroup code ('@') for newsfeeds(5).
-	Wrote the too-many-connects support ('-X -H -T' flags to innd).
-	
+        Wrote the poison newsgroup code ('@') for newsfeeds(5).
+        Wrote the too-many-connects support ('-X -H -T' flags to innd).
+        
 Landon Curt Noll:
-	Wrote or co-wrote actsync, nntpsend, shrinkfile, innstat,
-	news.daily, tally.control and misc man pages. He also was the
-	person originally behind the site directory 
-	configuration/installation process.
+        Wrote or co-wrote actsync, nntpsend, shrinkfile, innstat,
+        news.daily, tally.control and various man pages.  He also was the
+        person originally behind the site directory
+        configuration/installation process.
 
 John Levine:
-	Wrote the '-e' support for expire (expire on shortest time).
+        Wrote the '-e' support for expire (expire on shortest time).
 
 Matthias Urlichs:
-	Made rnews recognise gzip compression.
-	Made newsfeeds(5) take the 'Wp' flag.
+        Made rnews recognise gzip compression.
+        Made newsfeeds(5) take the 'Wp' flag.
 
 Stefan Petri:
-	Did the original XBATCH support
+        Did the original XBATCH support
 
 Russel Street:
-	Did more XBATCH support.
+        Did more XBATCH support.
 
 Alan Barrett:
-	Did the work-limiter in the select loop to stop streaming from
-	killing performance.
+        Did the work-limiter in the select loop to stop streaming from
+        killing performance.
 
 Greg Patten:
-	Wrote the perl innlog
+        Wrote the perl innlog
 
 Clayton O'Neill:
-	Wrote the articles storage API and implemented the timehash
-	and regular storage mechanisms with it. He made significant
-	modifications to dbz. Integrating innfeed, adding Xref slaving,
-	the history cache, the WIP rewrite and various speedups were
-	also his doing.
+        Wrote the articles storage API and implemented the timehash
+        and regular storage mechanisms with it.  He made significant
+        modifications to dbz.  Integrating innfeed, adding Xref slaving,
+        the history cache, the WIP rewrite and various speedups were
+        also his doing.
 
 Vincent Archer:
-	Wrote the initial autoconf scripts.
+        Wrote the initial autoconf scripts.
 
 Forrest J. Cavalier III:
-	Provided a lot of bug fixes to 1.5.2. He extended the autoconf
-	setup a lot to work with version 2.0
+        Provided a lot of bug fixes to 1.5.2.  He extended the autoconf
+        setup a lot to work with version 2.0
 
 Scott Fritchie:
-	Wrote the CNFS storage back end.
+        Wrote the CNFS storage back end.
 
 Fabien Tassin:
-	Wrote the innreport package. Implemented the new incoming.conf
-	configuration file.
+        Wrote the innreport package.  Implemented the new incoming.conf
+        configuration file.
 
 Dave Hayes:
-	Along with some bugfixes, Dave wrote the posting-backoff code for 
-	nnrpd and the patches to the perl hooks to make the headers
-	modifiable.
+        Along with some bugfixes, Dave wrote the posting-backoff code for 
+        nnrpd and the patches to the perl hooks to make the headers
+        modifiable.
 
 Joe Greco:
-	Wrote the code for measuring the timing of various parts of innd
-	and the original actived code.
+        Wrote the code for measuring the timing of various parts of innd
+        and the original actived code.
 
 Sang-yong Suh:
-	Provided the fuzzy offset technique to dbz.
+        Provided the fuzzy offset technique to dbz.
 
 Katsuhiro Kondou:
-	Provided unified overview, trash method, spool translation method,
-	traditional expire policy for articles stored through storage API
-	and expireindex, as well has hundreds of fixes to clean up defects
-	as changes were made.  Did a large amount of man page documentation
-	and clean up.
+        Provided unified overview, trash method, spool translation method,
+        traditional expire policy for articles stored through storage API
+        and expireindex, as well has hundreds of fixes to clean up defects
+        as changes were made.  Did a large amount of man page documentation
+        and clean up.  Has also been a major force in the CVS pool
+        maintenace.
 
 Russell Vincent
-	Expanded inn.conf to make many of the old compile time options
-        into run time variables. Numerous bug fixes, small feature
+        Expanded inn.conf to make many of the old compile time options
+        into run time variables.  Numerous bug fixes, small feature
         enhancements and man updates.
 
 Darrell Fuhriman:
-	Provided various bug fixes and contributed to the pre-SM CNFS
-	development.
+        Provided various bug fixes and contributed to the pre-SM CNFS
+        development.
 
 Steve Carrue:
-	Modified nnrpd to allow detailed client tracking.
+        Modified nnrpd to allow detailed client tracking.
 
 Adian Cully
-	Provided the patches to support the new readers.conf file, and
-	wrote the initial user authenticators and resolvers for the
-	readers.conf.  Provided the patches to support the new storage.conf
-	format.  Also added the '@' article exclusion code to incoming.conf.
+        Provided the patches to support the new readers.conf file, and
+        wrote the initial user authenticators and resolvers for the
+        readers.conf.  Provided the patches to support the new
+        storage.conf format.  Added the option to store articles based on
+        the Expires header.  Also added the '@' article exclusion code to
+        incoming.conf.
+
+Russ Allbery:
+        Has done large amounts of clean-up on various pieces of the system
+        (especially the documentation and build system), and has helped
+        with the CVS pool maintenance.  Improved the speed and portability
+        of the Perl filter.
 
 Also:
 
 Dave Barr:
-	Kept INN alive after Rich Salz didn't have the time anymore but 
-	before the ISC took over. He released 4 unofficial versions that 
-	provided a good boost to what the ISC started with.  Minor work
-	on 2.0, mostly with example files and minor code tweaks.
+        Kept INN alive after Rich Salz didn't have the time anymore but 
+        before the ISC took over. He released 4 unofficial versions that 
+        provided a good boost to what the ISC started with.  Minor work
+        on 2.0, mostly with example files and minor code tweaks.
 
 Marc Fournier:
-	Provided various bug fixes and did a lot of work integrating other
-	peoples patches and looking after the CVS pool. 
+        Provided various bug fixes and did a lot of work integrating other
+        peoples patches and looking after the CVS pool. 
 
 Joshua M. Thompson
-	Wrote the INSTALL documentation.
+        Wrote the original INSTALL documentation.
 
 The following people helped above and beyond the call of duty with testing
 (provided patches, bug reports, suggestions and lobbying):
