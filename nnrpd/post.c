@@ -1031,7 +1031,7 @@ ARTpost(char *article,
 
 #if defined(DO_PERL)
     /* Calls the Perl subroutine for headers management */
-    if ((p = (char *)HandleHeaders(article)) != NULL) {
+    if ((p = HandleHeaders(article)) != NULL) {
 	if (idbuff) {
 	    if (modgroup)
 		snprintf(idbuff, sizeof(idbuff),

@@ -107,7 +107,7 @@ static const char	*ShadowGroup;
 #endif
 static const char 	*HostErrorStr;
 bool GetHostByAddr = TRUE;      /* formerly DO_NNRP_GETHOSTBYADDR */
-char *NNRPinstance = "";
+const char *NNRPinstance = "";
 
 #ifdef DO_PERL
 bool   PerlLoaded = FALSE;
@@ -217,10 +217,10 @@ ExitWithStats(int x, bool readconf)
 	}
     }
     if (ARTget)
-        syslog(L_NOTICE, "%s artstats get %d time %d size %ld", ClientHost,
+        syslog(L_NOTICE, "%s artstats get %ld time %ld size %ld", ClientHost,
             ARTget, ARTgettime, ARTgetsize);
     if (!readconf && PERMaccessconf && PERMaccessconf->nnrpdoverstats && OVERcount)
-        syslog(L_NOTICE, "%s overstats count %d hit %d miss %d time %d size %d dbz %d seek %d get %d artcheck %d", ClientHost,
+        syslog(L_NOTICE, "%s overstats count %ld hit %ld miss %ld time %ld size %ld dbz %ld seek %ld get %ld artcheck %ld", ClientHost,
             OVERcount, OVERhit, OVERmiss, OVERtime, OVERsize, OVERdbz, OVERseek, OVERget, OVERartcheck);
 
      if (DaemonMode) {
@@ -438,7 +438,7 @@ Address2Name6(struct sockaddr *sa, char *hostname, int i)
 static bool
 Sock2String( struct sockaddr *sa, char *string, int len, bool lookup )
 {
-    struct sockaddr_in *sin = (struct sockaddr_in *)sa;
+    struct sockaddr_in *sin4 = (struct sockaddr_in *)sa;
 
 #ifdef HAVE_INET6
     struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)sa;
@@ -459,15 +459,15 @@ Sock2String( struct sockaddr *sa, char *string, int len, bool lookup )
 	    temp.sin_family = AF_INET;
 	    memcpy( &temp.sin_addr, sin6->sin6_addr.s6_addr + 12, 4 );
 	    temp.sin_port = sin6->sin6_port;
-	    sin = &temp;
+	    sin4 = &temp;
 	    /* fall through to AF_INET case */
 	}
     }
 #endif
     if( lookup ) {
-	return Address2Name(&sin->sin_addr, string, len);
+	return Address2Name(&sin4->sin_addr, string, len);
     } else {
-	strncpy( string, inet_ntoa(sin->sin_addr), len );
+	strncpy( string, inet_ntoa(sin4->sin_addr), len );
 	return TRUE;
     }
 }
@@ -1103,7 +1103,7 @@ main(int argc, char *argv[])
 	/* if we are a daemon innd didn't make us nice, so be nice kids */
 	if (innconf->nicekids) {
 	    if (nice(innconf->nicekids) < 0)
-		syslog(L_ERROR, "Could not nice child to %d: %m", innconf->nicekids);
+		syslog(L_ERROR, "Could not nice child to %ld: %m", innconf->nicekids);
 	}
 
 	/* Only automatically reap children in the listening process */
@@ -1167,7 +1167,7 @@ main(int argc, char *argv[])
             warn("cannot obtain system load");
         else {
             if ((int)(load[0] + 0.5) > innconf->nnrpdloadlimit) {
-                syslog(L_NOTICE, "load %.2f > %d", load[0], innconf->nnrpdloadlimit);
+                syslog(L_NOTICE, "load %.2f > %ld", load[0], innconf->nnrpdloadlimit);
                 Reply("%d load at %.2f, try later\r\n", NNTP_GOODBYE_VAL,
                       load[0]);
                 ExitWithStats(1, TRUE);

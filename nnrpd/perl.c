@@ -206,7 +206,7 @@ void perlAccess(char *clientHost, char *clientIP, char *serverHost, char *user, 
   HV              *attribs;
   SV              *sv;
   int             rc, i;
-  char            *p, *key, *val, *buffer;
+  char            *key, *val, *buffer;
 
   if (!PerlFilterActive)
     return;

@@ -33,7 +33,7 @@ extern SSL *tls_conn;
 void
 line_free(struct line *line)
 {
-    static const struct line nullline = {0};
+    static const struct line nullline = {0, 0, 0, 0};
 
     if (line && line->start) {
 	free(line->start);
@@ -121,7 +121,7 @@ line_read(struct line *line, int timeout, const char **p, size_t *len)
 	    
 		/* don't grow the buffer bigger than the maximum
 		 * article size we'll accept */
-		if (newsize > PERMaccessconf->localmaxartsize)
+		if (newsize > (unsigned)PERMaccessconf->localmaxartsize)
 		    newsize = PERMaccessconf->localmaxartsize;
 
 		/* if we're trying to grow from the same size, to the

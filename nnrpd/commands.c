@@ -28,7 +28,7 @@ typedef struct {
 
 
 extern int LLOGenable;
-extern char *NNRPinstance;
+extern const char *NNRPinstance;
 
 static LISTINFO		INFOactive = {
     NULL, _PATH_ACTIVE, TRUE, "active newsgroups",
