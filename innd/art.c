@@ -1939,8 +1939,6 @@ STRING ARTpost(CHANNEL *cp)
     ngptr = GroupPointers;
     j = 0;
     for (GroupMissing = Accepted = FALSE; (p = *groups) != NULL; groups++) {
-	if (!RCcanpost(cp, p))
-	    continue;
 	if ((ngp = NGfind(p)) == NULL) {
 	    GroupMissing = TRUE;
 	    if (LikeNewgroup && Approved) {
@@ -1992,6 +1990,12 @@ STRING ARTpost(CHANNEL *cp)
 	for (isp = ngp->Poison, i = ngp->nPoison; --i >= 0; isp++)
 	    if (*isp >= 0)
 		Sites[*isp].Poison = TRUE;
+
+        /* Check if we accept articles in this group from this peer, after
+           poisoning.  This means that articles that we accept from them will
+           be handled correctly if they're crossposted. */
+        if (!RCcanpost(cp, p))
+	    continue;
 
 	/* Valid group, feed it to that group's sites. */
 	Accepted = TRUE;
