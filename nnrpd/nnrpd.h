@@ -3,6 +3,9 @@
 **  Net News Reading Protocol server.
 */
 
+#include "config.h"
+#include "portable/time.h"
+
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -10,17 +13,6 @@
 #include <syslog.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-
-#ifdef TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# ifdef HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
-#endif
 
 #include "inn/qio.h"
 #include "libinn.h"
@@ -114,7 +106,7 @@ typedef enum _READTYPE {
 typedef struct _ARTOVERFIELD {
     char	*Header;
     int		Length;
-    BOOL	NeedsHeader;
+    bool	NeedsHeader;
 } ARTOVERFIELD;
 
 #if	defined(MAINLINE)
@@ -123,15 +115,15 @@ typedef struct _ARTOVERFIELD {
 #define EXTERN	extern
 #endif	/* defined(MAINLINE) */
 
-EXTERN BOOL	PERMauthorized;
-EXTERN BOOL	PERMcanpost;
-EXTERN BOOL	PERMcanread;
-EXTERN BOOL	PERMneedauth;
-EXTERN BOOL	PERMspecified;
+EXTERN bool	PERMauthorized;
+EXTERN bool	PERMcanpost;
+EXTERN bool	PERMcanread;
+EXTERN bool	PERMneedauth;
+EXTERN bool	PERMspecified;
 EXTERN ACCESSGROUP	*PERMaccessconf;
-EXTERN BOOL	Tracing;
-EXTERN BOOL 	Offlinepost;
-EXTERN BOOL 	initialSSL;
+EXTERN bool	Tracing;
+EXTERN bool 	Offlinepost;
+EXTERN bool 	initialSSL;
 EXTERN char	**PERMreadlist;
 EXTERN char	**PERMpostlist;
 EXTERN char	ClientHost[SMBUF];
@@ -174,7 +166,7 @@ EXTERN char	*GRPcur;
 EXTERN long	POSTreceived;
 EXTERN long	POSTrejected;
 
-EXTERN BOOL     BACKOFFenabled;
+EXTERN bool     BACKOFFenabled;
 EXTERN long     ClientIP;                                 
 EXTERN char	*VirtualPath;
 EXTERN int	VirtualPathlen;
@@ -183,23 +175,23 @@ EXTERN int	VirtualPathlen;
 #if	NNRP_LOADLIMIT > 0
 extern int		GetLoadAverage();
 #endif	/* NNRP_LOADLIMIT > 0 */
-extern STRING		ARTpost();
+extern const char	*ARTpost();
 extern void		ARTclose();
-extern BOOL		ARTreadschema();
+extern bool		ARTreadschema();
 extern char		*Glom();
 extern int		Argify();
-extern NORETURN		ExitWithStats(int x, BOOL readconf);
-extern BOOL		GetGroupList();
+extern void		ExitWithStats(int x, bool readconf);
+extern bool		GetGroupList();
 extern char		*GetHeader();
 extern void		GRPreport();
 extern void		HIScheck();
 extern char		*HISgetent();
 extern long		LOCALtoGMT();
-extern BOOL		NGgetlist();
+extern bool		NGgetlist();
 extern long		NNTPtoGMT();
-extern BOOL		PERMartok();
-extern BOOL		PERMmatch();
-extern BOOL		ParseDistlist();
+extern bool		PERMartok();
+extern bool		PERMmatch();
+extern bool		ParseDistlist();
 extern READTYPE		READline();
 extern char		*OVERGetHeader(char *p, int field);
 extern void SetDefaultAccess(ACCESSGROUP*);
@@ -223,7 +215,7 @@ extern void             Printf(const char *fmt, ...);
 char *HandleHeaders(char *article);
 int perlConnect(char *ClientHost, char *ClientIP, char *ServerHost, char *accesslist);
 int perlAuthenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *user, char *passwd, char *accesslist);
-BOOL ARTinstorebytoken(TOKEN token);
+bool ARTinstorebytoken(TOKEN token);
 
 #ifdef	DO_PYTHON
 int PY_authenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *Username, char *Password, char *accesslist);
