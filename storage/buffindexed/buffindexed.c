@@ -77,7 +77,7 @@ typedef struct _OVBUFF {
   unsigned int		usedblk;		/* number of used blocks */
   time_t		updated;		/* Time of last update to
 						   header */
-  caddr_t		bitfield;		/* Bitfield for ovbuff block in
+  void *		bitfield;		/* Bitfield for ovbuff block in
 						   use */
   bool			needflush;		/* true if OVBUFFHEAD is needed
 						   to be flushed */
@@ -114,7 +114,7 @@ typedef struct _OVBLOCK {
 
 typedef struct _OVBLKS {
   OVBLOCK	*ovblock;
-  caddr_t	addr;
+  void *	addr;
   int		len;
   OV		indexov;
 } OVBLKS;
@@ -188,8 +188,8 @@ typedef struct _GIBLIST {
 
 typedef struct _GDB {
   OV		datablk;
-  caddr_t	addr;
-  caddr_t	data;
+  void *	addr;
+  void *	data;
   int		len;
   bool		mmapped;
   struct _GDB	*next;
@@ -257,13 +257,13 @@ static int	Gibcount;
 static off_t mmapwrite(int fd, void *buf, off_t nbyte, off_t offset) {
   int		pagefudge, len;
   off_t         mmapoffset;
-  caddr_t	addr;
+  void *	addr;
 
   pagefudge = offset % pagesize;
   mmapoffset = offset - pagefudge;
   len = pagefudge + nbyte;
 
-  if ((addr = mmap((caddr_t) 0, len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, mmapoffset)) == (caddr_t) -1) {
+  if ((addr = mmap(NULL, len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, mmapoffset)) == MAP_FAILED) {
     return -1;
   }
   memcpy(addr+pagefudge, buf, nbyte);
@@ -337,7 +337,7 @@ static bool ovparse_part_line(char *l) {
   ovbuff->fd = -1;
   ovbuff->next = (OVBUFF *)NULL;
   ovbuff->needflush = FALSE;
-  ovbuff->bitfield = (caddr_t)NULL;
+  ovbuff->bitfield = NULL;
   ovbuff->nextchunk = 1;
 
   if (ovbufftab == (OVBUFF *)NULL)
@@ -541,7 +541,7 @@ static bool ovbuffinit_disks(void) {
       }
     }
     if ((ovbuff->bitfield =
-	 mmap((caddr_t) 0, ovbuff->base, ovbuffmode & OV_WRITE ? (PROT_READ | PROT_WRITE) : PROT_READ,
+	 mmap(NULL, ovbuff->base, ovbuffmode & OV_WRITE ? (PROT_READ | PROT_WRITE) : PROT_READ,
 	      MAP_SHARED, ovbuff->fd, (off_t) 0)) == MAP_FAILED) {
       syslog(L_ERROR,
 	       "%s: ovinitdisks: mmap for %s offset %d len %d failed: %m",
@@ -1499,7 +1499,7 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
   int			pagefudge, limit, i, count, len;
   off_t                 offset, mmapoffset;
   OVBLOCK		*ovblock;
-  caddr_t		addr;
+  void *		addr;
   GIBLIST		*giblist;
 
   if (high - low < 0) {
@@ -1522,7 +1522,7 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
     pagefudge = offset % pagesize;
     mmapoffset = offset - pagefudge;
     len = pagefudge + OV_BLOCKSIZE;
-    if ((addr = mmap((caddr_t) 0, len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == MAP_FAILED) {
+    if ((addr = mmap(NULL, len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == MAP_FAILED) {
       syslog(L_ERROR, "%s: ovgroupmmap could not mmap index block: %m", LocalLogName);
       ovgroupunmap();
       return FALSE;
@@ -1590,7 +1590,7 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
       pagefudge = offset % pagesize;
       mmapoffset = offset - pagefudge;
       gdb->len = pagefudge + OV_BLOCKSIZE;
-      if ((gdb->addr = mmap((caddr_t) 0, gdb->len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == MAP_FAILED) {
+      if ((gdb->addr = mmap(NULL, gdb->len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == MAP_FAILED) {
         syslog(L_ERROR, "%s: ovgroupmmap could not mmap data block: %m", LocalLogName);
         DISPOSE(gdb);
         ovgroupunmap();
@@ -1722,7 +1722,7 @@ bool ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
 	    pagefudge = offset % pagesize;
 	    mmapoffset = offset - pagefudge;
 	    search->gdb.len = pagefudge + OV_BLOCKSIZE;
-	    if ((search->gdb.addr = mmap((caddr_t) 0, search->gdb.len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == MAP_FAILED) {
+	    if ((search->gdb.addr = mmap(NULL, search->gdb.len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == MAP_FAILED) {
 	      syslog(L_ERROR, "%s: ovsearch could not mmap data block: %m", LocalLogName);
 	      return FALSE;
 	    }
