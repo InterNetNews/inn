@@ -55,10 +55,7 @@ backends/actsyncd.in                  Daemon to run actsync periodically
 backends/archive.c                    Simple article archiver
 backends/batcher.c                    Make news batches
 backends/buffchan.c                   Buffered funnel to file splitter
-backends/controlbatch.in              Batch program for controlchan
-backends/controlchan.in               Channel program for control messages
 backends/cvtbatch.c                   Add fields to simple batchfile
-backends/gpgverify.in                 Verify control messages with GnuPG
 backends/filechan.c                   Split a funnel into separate files
 backends/inndf.c                      df used for innwatch
 backends/innxbatch.c                  Send batches using XBATCH to remote
@@ -69,7 +66,6 @@ backends/news2mail.in                 News to mail gateway
 backends/nntpget.c                    Get articles from remote site
 backends/nntpsend.in                  Invoke all innxmit's at once
 backends/overchan.c                   Update news overview database
-backends/pgpverify.in                 Verify control messages with PGP
 backends/send-ihave.in                Script to post ihave messages
 backends/send-nntp.in                 Shell script to call innxmit
 backends/send-uucp.in                 Script to call batcher
@@ -108,6 +104,22 @@ contrib/showtoken.in                  Decode storage API tokens
 contrib/stathist.in                   Parse history statistics
 contrib/thdexpire.in                  Dynamic expire for timehash and timecaf
 contrib/tunefeed.in                   Tune a feed by comparing active files
+control                               Control message handling (Directory)
+control/Makefile                      Makefile for control programs
+control/controlbatch.in               Batch program for controlchan
+control/controlchan.in                Channel program for control messages
+control/docheckgroups.in              Script to execute checkgroups
+control/gpgverify.in                  Verify control messages with GnuPG
+control/modules                       Modules for controlchan (Directory)
+control/modules/checkgroups.pl        checkgroups controlchan handler
+control/modules/ihave.pl              ihave controlchan handler
+control/modules/newgroup.pl           newgroup controlchan handler
+control/modules/rmgroup.pl            rmgroup controlchan handler
+control/modules/sendme.pl             sendme controlchan handler
+control/modules/sendsys.pl            sendsys controlchan handler
+control/modules/senduuname.pl         senduuname controlchan handler
+control/modules/version.pl            version controlchan handler
+control/pgpverify.in                  Verify control messages with PGP
 doc                                   Documentation (Directory)
 doc/Makefile                          Makefile for documentation
 doc/control-messages                  tal's description of control messages
@@ -450,19 +462,16 @@ samples/actsync.cfg.in                Config file for actsync
 samples/actsync.ign                   Ignore file for actsync
 samples/buffindexed.conf              Buffindexed overview config file
 samples/checkgroups.in                checkgroups handler
-samples/checkgroups.pl                checkgroups controlchan handler
 samples/control.ctl                   Access control for control messages
 samples/cycbuff.conf                  Sample cycbuff.conf file
 samples/default.in                    Default control message handler
 samples/distrib.pats                  Default values for Distribution header
-samples/docheckgroups.in              Script to execute checkgroups
 samples/expire.ctl                    Expiration config file
 samples/filter.tcl                    Sample Tcl filter for innd
 samples/filter_innd.pl                Sample Perl filter for innd
 samples/filter_innd.py                Sample Python filter for innd
 samples/filter_nnrpd.pl               Sample Perl filter for nnrpd
 samples/ihave.in                      ihave handler
-samples/ihave.pl                      ihave controlchan handler
 samples/incoming.conf                 Permissions for incoming feeds
 samples/inn.conf.in                   General INN configuration
 samples/innfeed.conf                  Outgoing feed configuration
@@ -471,7 +480,6 @@ samples/innwatch.ctl.in               INN monitoring configuration
 samples/moderators                    Moderation submission addresses
 samples/motd.news                     Sample MOTD file
 samples/newgroup.in                   newgroup handler
-samples/newgroup.pl                   newgroup controlchan handler
 samples/newsgroups.minimal            Minimal starting newsgroups file
 samples/news2mail.cf                  news2mail config file
 samples/newsfeeds.in                  innd feed configuration
@@ -487,20 +495,15 @@ samples/passwd.nntp                   Passwords for remote connections
 samples/radius.conf                   Sample config for RADIUS authentication
 samples/readers.conf                  Reader connection configuration
 samples/rmgroup.in                    rmgroup handler
-samples/rmgroup.pl                    rmgroup controlchan handler
 samples/sasl.conf.in                  SASL configuration
 samples/sendme.in                     sendme handler
-samples/sendme.pl                     sendme controlchan handler
 samples/sendsys.in                    sendsys handler
-samples/sendsys.pl                    sendsys controlchan handler
 samples/senduuname.in                 senduuname handler
-samples/senduuname.pl                 senduuname controlchan handler
 samples/startup.tcl.in                Tcl startup code for innd
 samples/startup_innd.pl               Perl startup code for innd
 samples/storage.conf                  Sample storage configuration
 samples/subscriptions                 Sample default subscriptions list
 samples/version.in                    version handler
-samples/version.pl                    version controlchan handler
 scripts                               Various utilities (Directory)
 scripts/Makefile                      Makefile for script files
 scripts/inncheck.in                   Syntax-check INN config files
