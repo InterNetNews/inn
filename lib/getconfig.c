@@ -14,9 +14,13 @@ STATIC char		ConfigBuff[SMBUF] = "";
 
 /*
   To add a new config value, add it to the following:
+	Use the comment embedded method in include/libinn.h, then
+	run developconfig.sh, which splits items out to the other
+	locations.
+  OR:
 	include/paths.h		:	Add #define _CONF_VARNAME "varname"
 	include/libinn.h	:	Add varname to conf_vars struct
-	lib/getconfig.c		:	SetDefaults() & ReadConfig()
+	lib/getconfig.c		:	SetDefaults() & ReadConfig(), ClearInnConf()
 	samples/inn.conf	:	Set the default value
 	doc/inn.conf.5		:	Document it!
 	wherever you need it	:	Use as innconf->varname
@@ -69,9 +73,9 @@ char *GetConfigValue(char *value)
     if (EQ(value, _CONF_ORGANIZATION)
      && (p = getenv(_ENV_ORGANIZATION)) != NULL)
 	return p;
-    if (EQ(value, _CONF_FROMHOST)
-     && (p = getenv(_ENV_FROMHOST)) != NULL)
-	return p;
+/* BEGIN_AUTO_INSERTED_SECTION from ../include/libinn.h ||GETVALUE */
+if (EQ(value,"fromhost")) { return innconf->fromhost; }
+/* END_AUTO_INSERTED_SECTION from ../include/libinn.h ||GETVALUE */
     if (EQ(value, _CONF_INNBINDADDR)
      && (p = getenv(_ENV_INNBINDADDR)) != NULL)
 	return p;
@@ -107,7 +111,11 @@ BOOL GetBooleanConfigValue(char *key, BOOL defaultvalue) {
 
 void SetDefaults()
 {
-    innconf->fromhost = NULL;
+char *p;	/* Temporary working variable */
+/* BEGIN_AUTO_INSERTED_SECTION from ../include/libinn.h ||DEFAULT */
+innconf->fromhost = NULL;
+if (p = getenv(_ENV_FROMHOST)) { innconf->fromhost = COPY(p); }
+/* END_AUTO_INSERTED_SECTION from ../include/libinn.h ||DEFAULT */
     innconf->server = NULL;
     innconf->pathhost = NULL;
     innconf->organization = NULL;
@@ -161,7 +169,9 @@ void SetDefaults()
 
 void ClearInnConf()
 {
-    if (innconf->fromhost != NULL) DISPOSE(innconf->fromhost);
+/* BEGIN_AUTO_INSERTED_SECTION from ../include/libinn.h ||CLEAR */
+if (innconf->fromhost != NULL) DISPOSE(innconf->fromhost);
+/* END_AUTO_INSERTED_SECTION from ../include/libinn.h ||CLEAR */
     if (innconf->server != NULL) DISPOSE(innconf->server);
     if (innconf->pathhost != NULL) DISPOSE(innconf->pathhost);
     if (innconf->organization != NULL) DISPOSE(innconf->organization);
@@ -209,9 +219,12 @@ int ReadInnConf(char *configfile)
 		boolval = TRUE;
 	    if (caseEQ(p, "off") || caseEQ(p, "false") || caseEQ(p, "no"))
 		boolval = FALSE;
-	    if (EQ(ConfigBuff,_CONF_FROMHOST)) {
-		innconf->fromhost = COPY(p);
-	    } else
+/* BEGIN_AUTO_INSERTED_SECTION from ../include/libinn.h ||READ */
+/*  Special: For read, must not overwrite the ENV_FROMHOST set by DEFAULT */
+if (EQ(ConfigBuff,"fromhost")) {
+if (innconf->fromhost == NULL) { innconf->fromhost = COPY(p); }
+} else
+/* END_AUTO_INSERTED_SECTION from ../include/libinn.h ||READ */
 	    if (EQ(ConfigBuff,_CONF_SERVER)) {
 		innconf->server = COPY(p);
 	    } else

@@ -30,12 +30,14 @@ Some parameters specified in the file may be overridden by environment
 variables, and some file parameters may be used to mask real data, such
 as when hiding a cluster of hosts behind a single electronic mail hostname.
 The current set of parameters is as follows:
+.\" BEGIN_AUTO_INSERTED_SECTION from ../include/libinn.h ||DOC
 .TP
 .I fromhost
 This is the name of the host to use when building the From header line.
 The default is the fully-qualified domain name of the local host.
 The value of the FROMHOST environment variable, if it exists,
 overrides this.
+.\" END_AUTO_INSERTED_SECTION from ../include/libinn.h ||DOC
 .TP
 .I moderatormailer
 This names the default machine that contains forwarding aliases for all

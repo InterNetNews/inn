@@ -41,6 +41,36 @@ extern void	CAclose(void);
 
 struct conf_vars {
 	char *fromhost;		/* Host for the From line */
+#if 0
+||LABEL  fromhost
+||
+||DOC     .TP
+||DOC     .I fromhost
+||DOC     This is the name of the host to use when building the From header line.
+||DOC     The default is the fully-qualified domain name of the local host.
+||DOC     The value of the FROMHOST environment variable, if it exists,
+||DOC     overrides this.
+
+||Lines with ||SAMPLE are placed in samples/inn.conf
+||SAMPLE #fromhost:      our.domain
+
+||Lines with ||CLEAR are placed in getconfig.c::ClearInnConf()
+||CLEAR if (innconf->fromhost != NULL) DISPOSE(innconf->fromhost);
+
+||Lines with ||DEFAULT are placed in getconfig.c::SetDefaults()
+||DEFAULT innconf->fromhost = NULL;
+||DEFAULT if (p = getenv(_ENV_FROMHOST)) { innconf->fromhost = COPY(p); }
+
+||Lines with ||READ are placed in getconfig.c::ReadInnConf()
+||READ /*  Special: For read, must not overwrite the ENV_FROMHOST set by DEFAULT */
+||READ   if (EQ(ConfigBuff,"fromhost")) {
+||READ       if (innconf->fromhost == NULL) { innconf->fromhost = COPY(p); }
+||READ   } else
+
+||Lines with ||GETVALUE are placed in getconfig.c::GetConfigValue()
+||GETVALUE if (EQ(value,"fromhost")) { return innconf->fromhost; }
+#endif
+
 	char *server;		/* NNTP server to post to */
 	char *pathhost;		/* Host for the Path line */
 	char *organization;	/* Data for the Organization line */
