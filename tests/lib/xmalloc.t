@@ -45,9 +45,11 @@ for file in ./xmalloc lib/xmalloc ../xmalloc ; do
 done
 
 # Total tests.
-echo 16
+echo 21
 
 # First run the tests expected to succeed.
+runsuccess "c" "24"
+runsuccess "c" "128000"
 runsuccess "m" "21"
 runsuccess "m" "128000"
 runsuccess "m" "0"
@@ -65,13 +67,17 @@ runfailure "r" "128000" \
     "failed to realloc 128000 bytes at lib/xmalloc.c line 49"
 runfailure "s" "64000" \
     "failed to strdup 64000 bytes at lib/xmalloc.c line 73"
+runfailure "c" "128000" \
+    "failed to calloc 128000 bytes at lib/xmalloc.c line 93"
 
 # Check our custom error handler.
 runfailure "M" "128000" "malloc 128000 lib/xmalloc.c 28"
 runfailure "R" "128000" "realloc 128000 lib/xmalloc.c 49"
 runfailure "S" "64000" "strdup 64000 lib/xmalloc.c 73"
+runfailure "C" "128000" "calloc 128000 lib/xmalloc.c 93"
 
 # Check the smaller ones again just for grins.
+runsuccess "c" "24"
 runsuccess "m" "21"
 runsuccess "r" "32"
 runsuccess "s" "64"

@@ -78,6 +78,28 @@ test_strdup(size_t size)
     return (match == 0);
 }
 
+/* Allocate the amount of memory given and check that it's all zeroed,
+   returning true if that succeeded and false on any sort of detectable
+   error. */
+static int
+test_calloc(size_t size)
+{
+    char *buffer;
+    size_t i, nelems;
+
+    nelems = size / 4;
+    if (nelems * 4 != size)
+        return 0;
+    buffer = xcalloc(nelems, 4);
+    if (!buffer)
+        return 0;
+    for (i = 0; i < size; i++)
+        if (buffer[i] != 0)
+            return 0;
+    free(buffer);
+    return 1;
+}
+
 /* Take the amount of memory to allocate in bytes as a command-line argument
    and call test_malloc with that amount of memory. */
 int
@@ -99,6 +121,9 @@ main(int argc, char *argv[])
     }
 
     switch (code) {
+    case 'c':
+        exit(test_calloc(size) ? 0 : 1);
+        break;
     case 'm':
         exit(test_malloc(size) ? 0 : 1);
         break;
