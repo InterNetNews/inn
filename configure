@@ -4161,10 +4161,10 @@ EOF
 if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
   egrep "yes" >/dev/null 2>&1; then
   rm -rf conftest*
-  ac_cv_af_unix=DO
+  ac_cv_subst_have_unix_domain=DO
 else
   rm -rf conftest*
-  ac_cv_af_unix=DONT
+  ac_cv_subst_have_unix_domain=DONT
 fi
 rm -f conftest*
 
