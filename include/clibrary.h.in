@@ -186,6 +186,10 @@ extern void	setproctitle();
 #define strtoul(a,b,c) strtol (a,b,c)
 #endif
 
+#if (defined(__hpux) || defined(__hpux__)) && ! defined(HPUX)
+#define HPUX
+#endif
+
 #if defined(UIO_MAXIOV) && !defined(IOV_MAX)
 #define IOV_MAX		UIO_MAXIOV
 #endif
@@ -208,7 +212,7 @@ extern void	setproctitle();
 #define IOV_MAX 16
 #endif
 
-#if (defined(HPUX) || defined(__hpux__)) && !defined(IOV_MAX)
+#if defined(HPUX) && !defined(IOV_MAX)
 #define IOV_MAX 16
 #endif
 
@@ -222,7 +226,7 @@ extern void	setproctitle();
 
 #endif
 
-#if (defined(__hpux) || defined(hpux)) && defined(HAVE_UNION_WAIT)
+#if defined(HPUX) && defined(HAVE_UNION_WAIT)
 /* Even though hpux defines a union wait, it's better to not use it.
  */
 #undef HAVE_UNION_WAIT
