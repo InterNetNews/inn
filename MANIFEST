@@ -762,13 +762,15 @@ tests/lib/xwrite-t.c                  Tests for lib/xwrite.c
 tests/libtest.c                       Helper library for writing tests
 tests/libtest.h                       Interface to libtest
 tests/overview                        Test suite for overview (Directory)
+tests/overview/etc                    Configuration for testing (Directory)
+tests/overview/etc/buffindexed.conf   buffindexed configuration for testing
 tests/overview/data                   Test overview data (Directory)
 tests/overview/data/basic             Basic set of overview test data
 tests/overview/data/bogus             Bad newsgroup name test data
 tests/overview/data/high-numbered     High-numbered article test data
 tests/overview/data/reversed          Same as basic, but in reverse order
 tests/overview/munge-data             Support script to generate test data
-tests/overview/tradindexed-t.c        Tests for storage/tradindexed/*
+tests/overview/overview-t.c           Basic tests for overview methods
 tests/runtests.c                      The test suite driver program
 tests/util                            Test suite for utilities (Directory)
 tests/util/convdate.t                 Tests for expire/convdate

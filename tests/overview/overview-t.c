@@ -1,9 +1,14 @@
 /* $Id$ */
-/* tradindexed test suite. */
+/* Overview test suite, usable for any of the overview methods. */
+
+/* Compile this program with OVTYPE defined to one of the valid overview
+   methods (not surrounded in quotes) to generate a binary that tests that
+   overview method. */
 
 #include "config.h"
 #include "clibrary.h"
 #include <errno.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 
 #include "inn/innconf.h"
@@ -15,7 +20,21 @@
 #include "ov.h"
 #include "storage.h"
 
+#include "../storage/buffindexed/buffindexed.h"
+#include "../storage/ovdb/ovdb.h"
 #include "../storage/tradindexed/tradindexed.h"
+
+/* Used to set ovmethod to the value of OVTYPE. */
+#define STRING(x)  XSTRING(x)
+#define XSTRING(x) (#x)
+
+/* We don't want to use OVadd, since it's too smart for what we're testing.
+   It tries to figure out what newsgroup and article number to store the
+   article under from the Xref data.  Instead, choose the appropriate direct
+   call depending on the overview method we're using.  We need to go through
+   two macro redirections since we want to expand the OVTYPE argument. */
+#define OV_ADD(type, g, n, t, d, l, a, e) XV_ADD(type, g, n, t, d, l, a, e)
+#define XV_ADD(type, g, n, t, d, l, a, e) type ## _add(g, n, t, d, l, a, e)
 
 /* Used as the artificial token for all articles inserted into overview. */
 static const TOKEN faketoken = { 1, 1, "" };
@@ -58,25 +77,59 @@ group_del(void *entry)
 static void
 fake_innconf(void)
 {
+    if (innconf != NULL) {
+        free(innconf->ovmethod);
+        free(innconf->pathdb);
+        free(innconf->pathetc);
+        free(innconf->pathoverview);
+        free(innconf->pathrun);
+        free(innconf);
+    }
     innconf = xmalloc(sizeof(*innconf));
-    innconf->pathoverview = xstrdup("tdx-tmp");
-    innconf->overcachesize = 20;
+    innconf->enableoverview = true;
     innconf->groupbaseexpiry = true;
+    innconf->keepmmappedthreshold = 1024;
+    innconf->overcachesize = 20;
+    innconf->ovgrouppat = NULL;
+    innconf->ovmethod = xstrdup(STRING(OVTYPE));
+    innconf->pathdb = xstrdup("ov-tmp");
+    innconf->pathetc = xstrdup("etc");
+    innconf->pathoverview = xstrdup("ov-tmp");
+    innconf->pathrun = xstrdup("ov-tmp");
     innconf->tradindexedmmap = true;
+}
+
+/* Initialize an empty buffindexed buffer. */
+static void
+overview_init_buffindexed(void)
+{
+    int fd, i;
+    char zero[1024];
+
+    fd = open("ov-tmp/buffer", O_CREAT | O_TRUNC | O_WRONLY, 0666);
+    if (fd < 0)
+        sysdie("Cannot create ov-tmp/buffer");
+    memset(zero, 0, sizeof(zero));
+    for (i = 0; i < 1024; i++)
+        if (write(fd, zero, sizeof(zero)) < (ssize_t) sizeof(zero))
+            sysdie("Cannot write to ov-tmp/buffer");
+    close(fd);
 }
 
 /* Initialize the overview database. */
 static bool
 overview_init(void)
 {
-    fake_innconf();
     if (access("data/basic", F_OK) < 0)
         if (access("overview/data/basic", F_OK) == 0)
             if (chdir("overview") != 0)
                 sysdie("Cannot cd to overview");
-    if (mkdir("tdx-tmp", 0755) != 0 && errno != EEXIST)
-        sysdie("Cannot mkdir tdx-tmp");
-    return tradindexed_open(OV_READ | OV_WRITE);
+    system("/bin/rm -r ov-tmp");
+    if (mkdir("ov-tmp", 0755))
+        sysdie("Cannot mkdir ov-tmp");
+    if (strcmp(innconf->ovmethod, "buffindexed") == 0)
+        overview_init_buffindexed();
+    return OVopen(OV_READ | OV_WRITE);
 }
 
 /* Check to be sure that the line wasn't too long, and then parse the
@@ -143,7 +196,7 @@ overview_load(const char *data)
             group->high = artnum;
             if (!hash_insert(groups, group->group, group))
                 die("Cannot insert %s into hash table", group->group);
-            if (!tradindexed_groupadd(group->group, 0, 0, flag))
+            if (!OVgroupadd(group->group, 0, 0, flag))
                 die("Cannot insert group %s into overview", group->group);
         } else {
             group->count++;
@@ -154,9 +207,9 @@ overview_load(const char *data)
         /* Do the actual insert of the data.  Note that we set the arrival
            time and expires time in a deterministic fashion so that we can
            check later if that data is being stored properly. */
-        if (!tradindexed_add(group->group, artnum, faketoken, start,
-                             strlen(start), artnum * 10,
-                             (artnum % 5 == 0) ? artnum * 100 : artnum))
+        if (!OV_ADD(OVTYPE, group->group, artnum, faketoken, start,
+                    strlen(start), artnum * 10,
+                    (artnum % 5 == 0) ? artnum * 100 : artnum))
             die("Cannot insert %s:%lu into overview", group->group, artnum);
     }
     fclose(overview);
@@ -176,7 +229,7 @@ overview_verify_groups(void *data, void *cookie)
     bool *status = (bool *) cookie;
     int low, high, count, flag;
 
-    if (!tradindexed_groupstats(group->group, &low, &high, &count, &flag)) {
+    if (!OVgroupstats(group->group, &low, &high, &count, &flag)) {
         warn("Unable to get data for %s", group->group);
         *status = false;
         return;
@@ -252,7 +305,7 @@ overview_verify_data(const char *data)
         start = overview_data_parse(buffer, &artnum);
 
         /* Now check that the overview data is correct for that group. */
-        if (!tradindexed_getartinfo(buffer, artnum, &token)) {
+        if (!OVgetartinfo(buffer, artnum, &token)) {
             warn("No overview data found for %s:%lu", buffer, artnum);
             status = false;
             continue;
@@ -263,14 +316,14 @@ overview_verify_data(const char *data)
         }
 
         /* Do the same thing, except use search. */
-        search = tradindexed_opensearch(buffer, artnum, artnum);
+        search = OVopensearch(buffer, artnum, artnum);
         if (search == NULL) {
             warn("Unable to open search for %s:%lu", buffer, artnum);
             status = false;
             continue;
         }
-        if (!tradindexed_search(search, &overnum, &overview, &length, &token,
-                                &arrived)) {
+        if (!OVsearch(search, &overnum, &overview, &length, &token,
+                      &arrived)) {
             warn("No overview data found for %s:%lu", buffer, artnum);
             status = false;
             continue;
@@ -287,12 +340,12 @@ overview_verify_data(const char *data)
                  (unsigned long) arrived, artnum * 10);
             status = false;
         }
-        if (tradindexed_search(search, &overnum, &overview, &length, &token,
-                               &arrived)) {
+        if (OVsearch(search, &overnum, &overview, &length, &token,
+                     &arrived)) {
             warn("Unexpected article found for %s:%lu", buffer, artnum);
             status = false;
         }
-        tradindexed_closesearch(search);
+        OVclosesearch(search);
     }
     fclose(overdata);
     return status;
@@ -338,7 +391,7 @@ overview_verify_search(const char *data)
         end = last;
         last = artnum;
     }
-    search = tradindexed_opensearch(group, start, end);
+    search = OVopensearch(group, start, end);
     if (search == NULL) {
         warn("Unable to open search for %s:%lu", buffer, start);
         free(group);
@@ -346,8 +399,7 @@ overview_verify_search(const char *data)
         return false;
     }
     i = 0;
-    while (tradindexed_search(search, &overnum, &line, &length, &token,
-                              &arrived)) {
+    while (OVsearch(search, &overnum, &line, &length, &token, &arrived)) {
         if (!check_data(group, overnum, expected->strings[i], line, length,
                         token))
             status = false;
@@ -358,7 +410,7 @@ overview_verify_search(const char *data)
         }
         i++;
     }
-    tradindexed_closesearch(search);
+    OVclosesearch(search);
     if (overnum != end) {
         warn("End of search in %s wrong: %lu != %lu", group, overnum, end);
         status = false;
@@ -404,7 +456,7 @@ overview_verify_full_search(const char *data)
         vector_add(expected, line);
         end = artnum;
     }
-    search = tradindexed_opensearch(group, 1, end + 1);
+    search = OVopensearch(group, 1, end + 1);
     if (search == NULL) {
         warn("Unable to open full search for %s", group);
         free(group);
@@ -412,8 +464,7 @@ overview_verify_full_search(const char *data)
         return false;
     }
     i = 0;
-    while (tradindexed_search(search, &overnum, &line, &length, &token,
-                              &arrived)) {
+    while (OVsearch(search, &overnum, &line, &length, &token, &arrived)) {
         if (!check_data(group, overnum, expected->strings[i], line, length,
                         token))
             status = false;
@@ -424,7 +475,7 @@ overview_verify_full_search(const char *data)
         }
         i++;
     }
-    tradindexed_closesearch(search);
+    OVclosesearch(search);
     if (overnum != end) {
         warn("End of search in %s wrong: %lu != %lu", group, overnum, end);
         status = false;
@@ -446,6 +497,7 @@ main(void)
 
     puts("21");
 
+    fake_innconf();
     if (!overview_init())
         die("Opening the overview database failed, cannot continue");
     ok(1, true);
@@ -458,8 +510,7 @@ main(void)
     ok(4, overview_verify_data("data/basic"));
     ok(5, overview_verify_search("data/basic"));
     hash_free(groups);
-    tradindexed_close();
-    system("/bin/rm -r tdx-tmp");
+    OVclose();
     ok(6, true);
 
     if (!overview_init())
@@ -474,8 +525,7 @@ main(void)
     ok(10, overview_verify_data("data/basic"));
     ok(11, overview_verify_search("data/basic"));
     hash_free(groups);
-    tradindexed_close();
-    system("/bin/rm -r tdx-tmp");
+    OVclose();
     ok(12, true);
 
     if (!overview_init())
@@ -487,8 +537,7 @@ main(void)
     ok(15, overview_verify_data("data/high-numbered"));
     ok(16, overview_verify_full_search("data/high-numbered"));
     hash_free(groups);
-    tradindexed_close();
-    system("/bin/rm -r tdx-tmp");
+    OVclose();
     ok(17, true);
 
     if (!overview_init())
@@ -499,8 +548,8 @@ main(void)
     ok(19, true);
     ok(20, overview_verify_data("data/bogus"));
     hash_free(groups);
-    tradindexed_close();
-    system("/bin/rm -r tdx-tmp");
+    system("/bin/rm -r ov-tmp");
+    OVclose();
     ok(21, true);
 
     return 0;

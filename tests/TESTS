@@ -30,6 +30,7 @@ lib/vector
 lib/wire
 lib/xmalloc
 lib/xwrite
+overview/buffindexed
 overview/tradindexed
 util/convdate
 util/innbind
