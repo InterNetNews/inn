@@ -67,15 +67,9 @@ static const char *	CCtimer(char *av[]);
 static const char *	CCtrace(char *av[]);
 static const char *	CCxabort(char *av[]);
 static const char *	CCxexec(char *av[]);
-#if defined(DO_TCL)
 static const char *	CCfilter(char *av[]);
-#endif /* defined(DO_TCL) */
-#if defined(DO_PERL)
 static const char *	CCperl(char *av[]);
-#endif /* defined(DO_PERL) */
-#if defined(DO_PYTHON)
 static const char *	CCpython(char *av[]);
-#endif /* defined(DO_PYTHON) */
 static const char *	CClowmark(char *av[]);
 
 
@@ -100,15 +94,9 @@ static CCDISPATCH	CCcommands[] = {
     {	SC_CHECKFILE,	0, CCcheckfile	},
     {	SC_DROP,	1, CCdrop	},
     {	SC_FEEDINFO,	1, CCfeedinfo	},
-#if defined(DO_TCL)
     {	SC_FILTER,	1, CCfilter     },
-#endif /* defined(DO_TCL) */
-#if defined(DO_PERL)
     {	SC_PERL,	1, CCperl       },
-#endif /* defined(DO_PERL) */
-#if defined(DO_PYTHON)
     {	SC_PYTHON,	1, CCpython     },
-#endif /* defined(DO_PYTHON) */
     {	SC_FLUSH,	1, CCflush	},
     {	SC_FLUSHLOGS,	0, CCflushlogs	},
     {	SC_GO,		1, CCgo		},
@@ -589,10 +577,10 @@ CCfeedinfo(char *av[])
 }
 
 
-#if defined(DO_TCL)
 static const char *
 CCfilter(char *av[])
 {
+#if defined(DO_TCL)
     char	*p;
 
     switch (av[0][0]) {
@@ -610,14 +598,16 @@ CCfilter(char *av[])
 	break;
     }
     return NULL;
-}
+#else /* defined(DO_TCL) */
+    return "1 TCL filtering support not compiled in";
 #endif /* defined(DO_TCL) */
+}
 
 
-#if defined(DO_PERL)
 static const char *
 CCperl(char *av[])
 {
+#if defined(DO_PERL)
     switch (av[0][0]) {
     default:
 	return "1 Bad flag";
@@ -634,17 +624,21 @@ CCperl(char *av[])
 	break;
     }
     return NULL;
-}
+#else /* defined(DO_PERL) */
+    return "1 Perl filtering support not compiled in";
 #endif /* defined(DO_PERL) */
+}
 
 
-#if defined(DO_PYTHON)
 static const char *
 CCpython(char *av[])
 {
+#if defined(DO_PYTHON)
     return PYcontrol(av);
-}
+#else /* defined(DO_PYTHON) */
+    return "1 Python filtering support not compiled in";
 #endif /* defined(DO_PYTHON) */
+}
 
 
 /*
@@ -2064,13 +2058,27 @@ CClowmark(char *av[])
     while ((line = QIOread(qp)) != NULL) {
 	if (QIOerror(qp))
 		break;
-	if (QIOtoolong(qp) || (cp = strchr(line, ' ')) == NULL) {
-	    ret = "1 Malformed input line";
+	if (QIOtoolong(qp)) {
+	    ret = "1 Malformed input line (too long)";
+	    break;
+	}
+	while (ISWHITE(*line))
+	    line++;
+	for (cp = line; *cp && !ISWHITE(*cp); cp++)
+	    ;
+	if (*cp == '\0') {
+	    ret = "1 Malformed input line (only one field)";
 	    break;
 	}
 	*cp++ = '\0';
-	if ((lo = atol(cp)) == 0 && cp[0] != '0') {
-	    ret = "1 Malformed input line (missing low mark)";
+	while (ISWHITE(cp))
+	    cp++;
+	if (strspn(cp, DIGITS) != strlen(cp)) {
+	    ret = "1 Malformed input line (non-digit in low mark)";
+	    break;
+	}
+	if ((lo = atol(cp)) == 0 && (cp[0] != '0' || cp[1] != '\0')) {
+	    ret = "1 Malformed input line (bad low mark)";
 	    break;
 	}
         if ((ngp = NGfind(line)) == NULL) {
