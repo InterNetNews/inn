@@ -371,7 +371,7 @@ process_args(argc, argv, host1, host2)
 
     /* parse args */
     program = argv[0];
-    while ((i = getopt(argc,argv,"b:d:g:i:I:kl:mn:o:p:q:s:S:t:Tv:z:")) != EOF) {
+    while ((i = getopt(argc,argv,"b:d:g:i:I:kl:mn:o:p:q:s:t:Tv:z:")) != EOF) {
 	switch (i) {
 	case 'b':		/* -b {0|1|2|12|21} */
 	    switch (atoi(optarg)) {
