@@ -727,6 +727,7 @@ ARTprepare(CHANNEL *cp)
   data->CurHeader = data->LastTerminator = data->LastCR = cp->Start - 1;
   data->LastCRLF = data->Body = cp->Start - 1;
   data->BytesHeader = NULL;
+  data->Feedsite = "?";
   *cp->Error = '\0';
 }
 
@@ -741,8 +742,8 @@ void
 ARTparse(CHANNEL *cp) {
   BUFFER	*bp = &cp->In;
   ARTDATA	*data = &cp->Data;
-  int		i, j, limit;
-  char		*p;
+  int		i, j, limit, hopcount;
+  char		*p, **hops;
   HDRCONTENT	*hc = data->HdrContent;
 
   /* Read through the buffer to find header, body and end of article */
@@ -895,6 +896,25 @@ bodyprocessing:
 		i++;
 		if (*cp->Error != '\0' && HDR_FOUND(_message_id)) {
 		  HDR_PARSE_START(_message_id);
+		  if (HDR_FOUND(_path)) {
+		    /* to record path into news log */
+		    hopcount = ARTparsepath(HDR(_path), HDR_LEN(_path),
+		      &data->Path);
+		    if (hopcount > 0) {
+		      hops = data->Path.List;
+		      if (innconf->logipaddr) {
+			data->Feedsite = RChostname(cp);
+			if (data->Feedsite == NULL)
+			  data->Feedsite = CHANname(cp);
+			if (strcmp("0.0.0.0", data->Feedsite) == 0)
+			  data->Feedsite =
+			    hops && hops[0] ? hops[0] : CHANname(cp);
+		      } else {
+			data->Feedsite =
+			  hops && hops[0] ? hops[0] : CHANname(cp);
+		      }
+		    }
+		  }
 		  ARTlog(data, ART_REJECT, cp->Error);
 		  HDR_PARSE_END(_message_id);
 		}
@@ -949,7 +969,6 @@ ARTclean(ARTDATA *data, char *buff)
   int		delta;
 
   TMRstart(TMR_ARTCLEAN);
-  data->Feedsite = "?";
   data->Arrived = Now.time;
   data->Expires = 0;
 
@@ -2086,17 +2105,6 @@ ARTpost(CHANNEL *cp)
   if (!artclean)
     return FALSE;
 
-  hash = HashMessageID(HDR(_message_id));
-  data->Hash = &hash;
-  if (HIShavearticle(hash)) {
-    sprintf(buff, "%d Duplicate", NNTP_REJECTIT_VAL);
-    ARTlog(data, ART_REJECT, buff);
-    if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
-      syslog(L_ERROR, "%s cant write history %s %m", LogName, HDR(_message_id));
-    ARTreject(REJECT_DUPLICATE, cp, article);
-    return FALSE;
-  }
-
   /* assumes Path header is required header */
   hopcount = ARTparsepath(HDR(_path), HDR_LEN(_path), &data->Path);
   if (hopcount == 0) {
@@ -2108,15 +2116,7 @@ ARTpost(CHANNEL *cp)
     return FALSE;
   }
   hops = data->Path.List;
-  if (strncmp(Path.Data, hops[0], Path.Used - 1) == 0)
-    Hassamepath = TRUE;
-  else
-    Hassamepath = FALSE;
-  if (Pathalias.Data != NULL &&
-    !ListHas((const char **)hops, (const char *)innconf->pathalias))
-    AddAlias = TRUE;
-  else
-    AddAlias = FALSE;
+
   if (innconf->logipaddr) {
     data->Feedsite = RChostname(cp);
     if (data->Feedsite == NULL)
@@ -2127,6 +2127,27 @@ ARTpost(CHANNEL *cp)
     data->Feedsite = hops && hops[0] ? hops[0] : CHANname(cp);
   }
   data->FeedsiteLength = strlen(data->Feedsite);
+
+  hash = HashMessageID(HDR(_message_id));
+  data->Hash = &hash;
+  if (HIShavearticle(hash)) {
+    sprintf(buff, "%d Duplicate", NNTP_REJECTIT_VAL);
+    ARTlog(data, ART_REJECT, buff);
+    if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
+      syslog(L_ERROR, "%s cant write history %s %m", LogName, HDR(_message_id));
+    ARTreject(REJECT_DUPLICATE, cp, article);
+    return FALSE;
+  }
+
+  if (strncmp(Path.Data, hops[0], Path.Used - 1) == 0)
+    Hassamepath = TRUE;
+  else
+    Hassamepath = FALSE;
+  if (Pathalias.Data != NULL &&
+    !ListHas((const char **)hops, (const char *)innconf->pathalias))
+    AddAlias = TRUE;
+  else
+    AddAlias = FALSE;
 
   /* And now check the path for unwanted sites -- Andy */
   for(j = 0 ; ME.Exclusions && ME.Exclusions[j] ; j++) {
