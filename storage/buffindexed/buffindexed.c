@@ -730,7 +730,7 @@ static bool ovbuffinit_disks(void) {
       ovbuff->totalblk = (ovbuff->len - ovbuff->base)/OV_BLOCKSIZE;
       if (ovbuff->totalblk < 1) {
 	syslog(L_ERROR, "%s: too small length '%lu' for buffindexed %s",
-	    LocalLogName, ovbuff->len, ovbuff->path);
+	    LocalLogName, (unsigned long) ovbuff->len, ovbuff->path);
 	ovlock(ovbuff, INN_LOCK_UNLOCK);
 	return false;
       }
