@@ -4,11 +4,24 @@
 
 =item *
 
+Some serious performance problems with expiration of tradspool should now
+be at least somewhat alleviated.  tradspool and timehash now know how to
+output file names for removal rather than tokens, and fastrm's ability to
+remove regular files has been restored.  This should bring expiration
+times for tradspool back to within a factor of two of pre-storage-API
+expiration times.
+
+=item *
+
 An item that was actually changed in 2.3.0 but wasn't noted in NEWS when
 it should have been:  Users can no longer post articles containing
 Approved: headers to moderated groups by default; they must be
 specifically given that permission with the access: parameter in
 F<readers.conf>.  See the man page for more details.
+
+=item *
+
+Added a sample subscriptions file and documentation for it and innmail.
 
 =back
 
