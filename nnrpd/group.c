@@ -31,8 +31,12 @@ FUNCTYPE CMDgroup(int ac, char *av[])
 
     /* Parse arguments. */
     if (ac == 1) {
+	if (GRPcur == NULL) {
 	    Printf("%d No group specified\r\n", NNTP_XGTITLE_BAD);
 	    return;
+	} else {
+	    group = GRPcur;
+	}
     } else {
 	group = av[1];
     }
