@@ -224,7 +224,7 @@ answer questions about it.
 
 =item CleanFeed
 
-URL: <http://www.exit109.com/~jeremy/news/cleanfeed.html>
+URL: <http://www.bofh.it/~md/cleanfeed/>
 
 CleanFeed is an extremely powerful spam filter, probably the most widely
 used spam filter on Usenet currently.  It catches excessive multiposting
