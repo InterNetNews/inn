@@ -12,7 +12,7 @@
 #include "macros.h"
 #include "paths.h"
 #include "storage.h"
-#include "ov3.h"
+#include "ov.h"
 
 void usage(void) {
     fprintf(stderr, "Usage: expireover [flags]\n");
@@ -26,20 +26,16 @@ int main(int argc, char *argv[]) {
     QIOSTATE			*qp;
     char			*line;
     char			*p;
-    BOOL                RebuildData = FALSE;
     int				lo;
     FILE			*F;
     BOOL			LowmarkFile = FALSE;
     char			*lofile;
 
-    while ((i = getopt(argc, argv, "df:Z:")) != EOF) {
+    while ((i = getopt(argc, argv, "f:Z:")) != EOF) {
 	switch (i) {
 	case 'f':	    
 	    strcpy(activefn, optarg);
 		    break;
-	case 'd':
-	    RebuildData = TRUE;
-		break;
 	case 'Z':
 	    LowmarkFile = TRUE;
 	    lofile = COPY(optarg);
@@ -68,8 +64,8 @@ int main(int argc, char *argv[]) {
 	exit(1);
 	}
 
-    if (!OV3open(1, OV3_READ | OV3_WRITE)) {
-	fprintf(stderr, "expireover: could not open OV3 database\n");
+    if (!OVopen(OV_READ | OV_WRITE)) {
+	fprintf(stderr, "expireover: could not open OV database\n");
 	exit(1);
     }
 
@@ -80,7 +76,7 @@ int main(int argc, char *argv[]) {
     } else {
 	if ((qp = QIOopen(activefn)) == NULL) {
 	    fprintf(stderr, "expireover: could not open active file (%s)\n", activefn);
-		OV3close();
+		OVclose();
 		exit(1);
 	    }
 	}
@@ -91,13 +87,7 @@ int main(int argc, char *argv[]) {
 	if ((p = strchr(line, '\t')) != NULL)
 	    *p = '\0';
 
-	if (RebuildData) {
-	    if (!OV3rebuilddatafromindex(line)) {
-		fprintf(stderr, "expireover: could not rebuld data for %s\n", line);
-	    }
-	    continue;
-	}
-	if (OV3expiregroup(line, &lo)) {
+	if (OVexpiregroup(line, &lo)) {
 	    if (LowmarkFile && lo != 0) {
 		(void)fprintf(F, "%s %u\n", line, lo);
 	    }
@@ -106,7 +96,7 @@ int main(int argc, char *argv[]) {
 	}
     }
 
-    OV3close();
+    OVclose();
     if (LowmarkFile && (fclose(F) == EOF)) {
 	(void)fprintf(stderr, "expireover: can't close %s, %s\n", lofile, strerror(errno));
     }

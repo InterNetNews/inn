@@ -23,7 +23,6 @@
 #include "macros.h"
 #include <dirent.h>
 #include <syslog.h>  
-#include "ov3.h"
 
 char *TextFile = NULL;
 char *HistoryDir = NULL;

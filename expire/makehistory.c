@@ -23,7 +23,7 @@
 #include "macros.h"
 #include <dirent.h>
 #include <syslog.h>  
-#include "ov3.h"
+#include "ov.h"
 
 /*
 **  Information about the schema of the news overview files.
@@ -226,7 +226,7 @@ FlushOverTmpFile(void)
 	p++;
 	*q++ = '\0';
 	token = TextToToken(p);
-	if (!OV3add(token, q, strlen(q))) {
+	if (!OVadd(token, q, strlen(q))) {
 	    fprintf(stderr, "makehistory: Can't write overview data \"%s\", %s\n", q, strerror(errno));
 /*	    exit(1); */
 	}
@@ -634,7 +634,7 @@ OverAddAllNewsgroups(void)
 	    continue;
 	}
 	/* q+1 points to NG flag */
-	if (!OV3groupadd(line, q+1)) {
+	if (!OVgroupadd(line, q+1)) {
 	    fprintf(stderr, "makehistory: Can't add %s to overview group.index\n", line);
 	    exit(1);
 	}
@@ -738,7 +738,7 @@ main(int argc, char **argv)
     
     if (DoOverview) {
 	/* init the overview setup. */
-	OV3open(innconf->overcachesize, OV3_WRITE);
+	OVopen(OV_WRITE);
 	OverAddAllNewsgroups();
     }
 
@@ -812,7 +812,7 @@ main(int argc, char **argv)
     if (DoOverview) {
 	FlushOverTmpFile();
     }
-    OV3close();
+    OVclose();
     exit(0);
 }
 
