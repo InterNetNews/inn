@@ -234,43 +234,6 @@ before new articles.
 
 ------------------------------
 
-  Summary: nnrpd improperly handles zero-argument ARTICLE w/missing articles
- Standard: draft-ietf-nntpext-base-13.txt, section 9.2.1
-  Version: 1.0 to CURRENT 2001-07-04
-Reference: nnrpd/article.c CMDfetch()
- Severity: Violates a MUST
-
-The standard says:
-
-    The server MUST NOT change the currently selected group as a result of
-    this command.  The server MUST NOT change the current selected article
-    except when an article number argument was provided and the article
-    exists; in particular, it MUST NOT change it following an unsuccessful
-    response.
-
-However, with a zero-argument ARTICLE command, if the current article
-pointer doesn't point to a valid article (if that article has since been
-cancelled or expired, for example), nnrpd increments the article pointer
-until it finds a valid article or reaches the high water mark.
-
-The standard seems to indicate that the correct thing to do here is to
-return a 423 error code.
-
-Impact:  The current behavior doesn't make as much sense in the presence
-of NEXT, since it means that one could advance the article pointer with
-NEXT to an interesting article and then give an ARTICLE command, only to
-have ARTICLE return some other article with a different message ID than
-that returned by NEXT.
-
-Suggested fix:  Reduce the intelligence of CMDfetch and have it return 423
-if the current article isn't valid on a zero-argument ARTICLE.  This also
-applies to HEAD, BODY, and STAT.
-
-Impact of fix:  This may confuse clients that rely on the current behavior
-and aren't prepared to handle a 423 return from this command.
-
-------------------------------
-
   Summary: Articles without Message-ID headers can't be retrieved
  Standard: draft-ietf-nntpext-base-13.txt, section 9.2.1.1
   Version: 1.0 to CURRENT 2001-07-04

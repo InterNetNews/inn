@@ -691,14 +691,10 @@ void CMDfetch(int ac, char *av[])
 	tart=(ARTNUM)atol(buff);
     }
 
-    /* Move forward until we can find one. */
-    while (!ARTopen(atol(buff))) {
-	if (ac > 1 || ++ARTnumber >= ARThigh) {
-	    Reply("%s\r\n", ARTnoartingroup);
-	    return;
-	}
-	snprintf(buff, sizeof(buff), "%d", ARTnumber);
-	tart=ARTnumber;
+    /* Open the article and send the reply. */
+    if (!ARTopen(atol(buff))) {
+        Reply("%s\r\n", ARTnoartingroup);
+        return;
     }
     if (ac > 1)
 	ARTnumber = tart;
@@ -707,9 +703,8 @@ void CMDfetch(int ac, char *av[])
 	return;
     }
     Reply("%d %s %.512s %s\r\n", what->ReplyCode, buff, msgid, what->Item); 
-    if (what->Type != STstat) {
+    if (what->Type != STstat)
 	ARTsendmmap(what->Type);
-    }
     ARTclose();
 }
 
