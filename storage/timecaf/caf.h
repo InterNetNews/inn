@@ -14,11 +14,11 @@ typedef struct _CAFHEADER {
     ARTNUM      Low; /* lowest article in the file */
     ARTNUM      NumSlots; /* number of articles there are room for in the TOC */
     ARTNUM      High; /* last article actually present in the file */
-    SIZE_T	Free; /* amount of space currently unused (freed by cancels/expires) */
-    OFFSET_T    StartDataBlock; /* offset of first article data block. */
+    size_t	Free; /* amount of space currently unused (freed by cancels/expires) */
+    off_t       StartDataBlock; /* offset of first article data block. */
     unsigned int BlockSize; /* unit of allocation for CAF files. */
-    SIZE_T      FreeZoneTabSize; /* amount of space taken up by the free zone table. */
-    SIZE_T      FreeZoneIndexSize; /* size taken up by the "index" part of the free zone table. */
+    size_t      FreeZoneTabSize; /* amount of space taken up by the free zone table. */
+    size_t      FreeZoneIndexSize; /* size taken up by the "index" part of the free zone table. */
     time_t      LastCleaned; /* note time of last cleaning. */
     int         spare[3];
 } CAFHEADER;
@@ -68,11 +68,11 @@ typedef struct _CAFHEADER {
 */
 
 typedef struct _CAFBITMAP {
-    OFFSET_T StartDataBlock;
-    OFFSET_T MaxDataBlock; /* can only handle offsets < this with this bitmap. */
-    SIZE_T FreeZoneTabSize;
-    SIZE_T FreeZoneIndexSize;
-    SIZE_T BytesPerBMB; /* size of chunk, in bytes, that any given BMBLK can map. */
+    off_t StartDataBlock;
+    off_t MaxDataBlock; /* can only handle offsets < this with this bitmap. */
+    size_t FreeZoneTabSize;
+    size_t FreeZoneIndexSize;
+    size_t BytesPerBMB; /* size of chunk, in bytes, that any given BMBLK can map. */
     unsigned int BlockSize;
     unsigned int NumBMB; /* size of Blocks array. */
     struct _CAFBMB **Blocks;
@@ -80,8 +80,8 @@ typedef struct _CAFBITMAP {
 } CAFBITMAP;
 
 typedef struct _CAFBMB {
-    OFFSET_T StartDataBlock;
-    OFFSET_T MaxDataBlock;
+    off_t StartDataBlock;
+    off_t MaxDataBlock;
     int Dirty; /* 1 if this BMB has had any bits changed. */
     char *BMBBits;
 } CAFBMB;
@@ -92,9 +92,9 @@ typedef struct _CAFBMB {
 */
 
 typedef struct _CAFTOCENT {
-    OFFSET_T Offset;
-    SIZE_T   Size;
-    time_t   ModTime;
+    off_t  Offset;
+    size_t Size;
+    time_t ModTime;
 } CAFTOCENT;
 
 /*
@@ -120,12 +120,12 @@ typedef struct _CAFTOCENT {
 #define PROTO(x) ()
 #endif
 
-extern int CAFOpenArtRead PROTO((char *cfpath, ARTNUM art, SIZE_T *len));
-extern int CAFOpenArtWrite PROTO((char *cfpath, ARTNUM *art, int WaitLock, SIZE_T size));
-extern int CAFStartWriteFd PROTO((int fd, ARTNUM *art, SIZE_T size));
+extern int CAFOpenArtRead PROTO((char *cfpath, ARTNUM art, size_t *len));
+extern int CAFOpenArtWrite PROTO((char *cfpath, ARTNUM *art, int WaitLock, size_t size));
+extern int CAFStartWriteFd PROTO((int fd, ARTNUM *art, size_t size));
 extern int CAFFinishWriteFd PROTO((int fd));
 extern int CAFFinishArtWrite PROTO((int fd));
-extern int CAFCreateCAFFile PROTO((char *cfpath, ARTNUM lowart, ARTNUM tocsize, SIZE_T cfsize, int nolink, char *temppath));
+extern int CAFCreateCAFFile PROTO((char *cfpath, ARTNUM lowart, ARTNUM tocsize, size_t cfsize, int nolink, char *temppath));
 extern char *CAFErrorStr PROTO((void));
 extern CAFTOCENT *CAFReadTOC PROTO((char *cfpath, CAFHEADER *ch));
 extern int CAFRemoveMultArts PROTO((char *cfpath, unsigned int narts, ARTNUM *arts));
@@ -136,14 +136,14 @@ extern int CAFStatArticle PROTO((char *path, ARTNUM art, struct stat *st));
    but probably aren't useful/desirable to be used by others. */
 extern int CAFOpenReadTOC PROTO((char *cfpath, CAFHEADER *ch, CAFTOCENT **tocpp));
 extern int CAFReadHeader PROTO((int fd, CAFHEADER *h));
-extern OFFSET_T CAFRoundOffsetUp PROTO((OFFSET_T offt, unsigned int bsize));
+extern off_t CAFRoundOffsetUp PROTO((off_t offt, unsigned int bsize));
 extern CAFBITMAP * CAFReadFreeBM PROTO((int fd, CAFHEADER *h));
 extern void CAFDisposeBitmap PROTO((CAFBITMAP *cbm));
 /*
 ** note! CAFIsBlockFree needs the fd, since blocks of the free bitmap may 
 ** need to be fetched from disk.
 */
-extern int CAFIsBlockFree PROTO((CAFBITMAP *bm, int fd, OFFSET_T block));
+extern int CAFIsBlockFree PROTO((CAFBITMAP *bm, int fd, off_t block));
 #endif
 
 extern int caf_error; /* last error encountered by library. */
