@@ -49,6 +49,7 @@ typedef struct _rad_config_t {
     char *lochost;
 
     char *prefix, *suffix;	/* futz with the username, if necessary */
+    int ignore_source;
 } rad_config_t;
 
 int read_config(FILE *f, rad_config_t *radconfig)
@@ -137,6 +138,16 @@ int read_config(FILE *f, rad_config_t *radconfig)
 		exit(1);
 	    }
 	    radconfig->suffix = COPY(iter);
+	} else if (!strcmp(keyword, "ignore-source")) {
+	    if (!strcasecmp(iter, "true"))
+		radconfig->ignore_source = 1;
+	    else if (!strcasecmp(iter, "false"))
+		radconfig->ignore_source = 0;
+	    else {
+		fprintf(stderr, "Expected \"true\" or \"false\" after %s in rad_config, line %d\n",
+		  keyword, lineno);
+		exit(1);
+	    }
 	} else {
 	    fprintf(stderr, "unknown keyword %s in rad_config, line %d\n",
 	      keyword, lineno);
@@ -334,13 +345,14 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 	    fprintf(stderr, "radius: couldnt recvfrom: %s\n", strerror(errno));
 	    break;
 	}
-	/* skip for proxy */
-	/* if (sinl.sin_addr.s_addr != sinr.sin_addr.s_addr ||
-	  (sinl.sin_port != sinr.sin_port)) {
-	    fprintf(stderr, "radius: received unexpected UDP packet from %s:%d.\n",
-	      inet_ntoa(sinl.sin_addr), ntohs(sinl.sin_port));
-	    continue;
-	} */
+	if (!config->ignore_source) {
+	    if (sinl.sin_addr.s_addr != sinr.sin_addr.s_addr ||
+	      (sinl.sin_port != sinr.sin_port)) {
+		fprintf(stderr, "radius: received unexpected UDP packet from %s:%d.\n",
+		  inet_ntoa(sinl.sin_addr), ntohs(sinl.sin_port));
+		continue;
+	    }
+	}
 	reqlen = ntohs(req.length);
 	if (jlen < 4+AUTH_VECTOR_LEN || jlen != reqlen) {
 	    fprintf(stderr, "radius: received badly-sized packet.\n");
@@ -391,7 +403,7 @@ int main(int argc, char *argv[])
     bzero(&radconfig, sizeof(rad_config_t));
     haveother = havefile = 0;
 
-    while ((opt = getopt(argc, argv, "f:h:p:q:s:l:")) != -1) {
+    while ((opt = getopt(argc, argv, "f:h:p:q:s:l:S")) != -1) {
 	switch (opt) {
 	  case 'f':
 	    if (haveother) {
@@ -462,6 +474,9 @@ int main(int argc, char *argv[])
 	    if (radconfig.lochost)
 		DISPOSE(radconfig.lochost);
 	    radconfig.lochost = optarg;
+	    break;
+	  case 'S':
+	    radconfig.ignore_source = 1;
 	    break;
 	}
     }
