@@ -20,6 +20,24 @@
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif
+#ifdef HAVE_MMAP
+# include <sys/mman.h>
+#endif
+
+#ifdef HAVE_SYS_WAIT_H
+#include <sys/wait.h>
+#endif
+#ifndef WEXITSTATUS
+# define WEXITSTATUS(status)    ((((unsigned)(status)) >> 8) & 0xFF)
+#endif
+#ifndef WIFEXITED
+# define WIFEXITED(status)      ((((unsigned)(status)) & 0xFF) == 0)
+#endif
+#ifndef WIFSIGNALED
+# define WIFSIGNALED(status)    ((((unsigned)(status)) & 0xFF) > 0 \
+                                 && (((unsigned)(status)) & 0xFF00) == 0)
+#endif
+
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
@@ -109,27 +127,24 @@ xrsignal(int signum, SIG_HANDLER_T sigfunc)
 
     act.sa_handler = sigfunc;
     sigemptyset(&act.sa_mask);
+#ifdef SA_INTERRUPT
+    act.sa_flags = SA_INTERRUPT;
+#else
     act.sa_flags = 0;
+#endif
 
     if (sigaction(signum, &act, &oact) < 0)
         return SIG_ERR;
     return oact.sa_handler;
 }
 
-/* If there is no SA_RESTART, then maybe we can't set signal handler
-   semantics to NOT restart.  So to be safe, we'll assume the select
-   won't exit with EINTR when signalled and give it a timeout. */
-#ifndef SA_RESTART
-#define SELECT_TIMEOUT 30
-#endif
-
 #else /* HAVE_SIGACTION */
 
 #define xrsignal xsignal
-#define SELECT_TIMEOUT 30
 
 #endif /* HAVE_SIGACTION */
 
+#define SELECT_TIMEOUT 15
 
 
 /* This will work unless user sets a larger clienttimeout
@@ -155,16 +170,58 @@ struct reader {
     time_t lastactive;
 };
 
-static struct reader **readertab;
+static struct reader *readertab;
 static int readertablen;
 static int numreaders;
 static time_t now;
+static pid_t parent;
+
+struct child {
+    pid_t pid;
+    int num;
+    time_t started;
+};
+static struct child *children;
+#define wholistens (children[ovdb_conf.numrsprocs].num)
 
 static int signalled = 0;
 static void
 sigfunc(int sig)
 {
     signalled = 1;
+}
+
+static int updated = 0;
+static void
+childsig(int sig)
+{
+    updated = 1;
+}
+
+static void
+parentsig(int sig)
+{
+    int i, which, smallest;
+    if(wholistens < 0) {
+	which = smallest = -1;
+	for(i = 0; i < ovdb_conf.numrsprocs; i++) {
+	    if(children[i].pid == -1)
+		continue;
+	    if(!ovdb_conf.maxrsconn || children[i].num <= ovdb_conf.maxrsconn) {
+		if(smallest == -1 || children[i].num < smallest) {
+		    smallest = children[i].num;
+		    which = i;
+		}
+	    }
+	}
+	if(which != -1) {
+	    wholistens = which;
+	    kill(children[which].pid, SIGUSR1);
+	} else {
+	    wholistens = -2;
+	}
+	updated = 1;
+    }
 }
 
 static int putpid(const char *path)
@@ -422,20 +479,20 @@ newclient(int fd)
 
     nonblocking(fd, 1);
 
-    r = NEW(struct reader, 1);
+    if(numreaders >= readertablen) {
+    	readertablen += 50;
+	RENEW(readertab, struct reader, readertablen);
+    }
+
+    r = &(readertab[numreaders]);
+    numreaders++;
+
     r->fd = fd;
     r->mode = MODE_WRITE;
     r->buflen = sizeof(OVDB_SERVER_BANNER);
     r->bufpos = 0;
     r->buf = COPY(OVDB_SERVER_BANNER);
     r->lastactive = now;
-
-    if(numreaders >= readertablen) {
-    	readertablen += 50;
-	RENEW(readertab, struct reader *, readertablen);
-    }
-    readertab[numreaders] = r;
-    numreaders++;
 
     handle_write(r);
 }
@@ -444,7 +501,7 @@ static void
 delclient(int which)
 {
     int i;
-    struct reader *r = readertab[which];
+    struct reader *r = &(readertab[which]);
 
     if(r->mode != MODE_CLOSED)
     	close(r->fd);
@@ -452,21 +509,22 @@ delclient(int which)
     if(r->buf != NULL) {
     	DISPOSE(r->buf);
     }
-    DISPOSE(r);
+
     /* numreaders will get decremented by the calling function */
     for(i = which; i < numreaders-1; i++)
     	readertab[i] = readertab[i+1];
+
+    readertab[i].mode = MODE_CLOSED;
+    readertab[i].buf = NULL;
 }
 
 static pid_t
-serverproc(void)
+serverproc(int me)
 {
     fd_set rdset, wrset;
     int i, ret, count, lastfd, salen, lastnumreaders;
     struct sockaddr_in sa;
-#ifdef SELECT_TIMEOUT
     struct timeval tv;
-#endif
     char string[50];
     pid_t pid;
 
@@ -480,13 +538,7 @@ serverproc(void)
     xrsignal(SIGINT, sigfunc);
     xrsignal(SIGTERM, sigfunc);
     xrsignal(SIGHUP, sigfunc);
-
-    nonblocking(listensock, 1);
-
-    if(listen(listensock, MAXLISTEN) < 0) {
-	syslog(L_FATAL, "ovdb_server: cant listen: %m");
-	exit(1);
-    }
+    xrsignal(SIGUSR1, childsig);
 
     numreaders = lastnumreaders = 0;
     if(ovdb_conf.maxrsconn) {
@@ -494,89 +546,95 @@ serverproc(void)
     } else {
     	readertablen = 50;
     }
-    readertab = NEW(struct reader *, ovdb_conf.maxrsconn);    
-    lastfd = listensock;
+    readertab = NEW(struct reader, readertablen);    
+    for(i = 0; i < readertablen; i++) {
+	readertab[i].mode = MODE_CLOSED;
+	readertab[i].buf = NULL;
+    }
+
     TITLEset("ovdb_server: 0 clients");
 
     /* main loop */
     while(!signalled) {
 	FD_ZERO(&rdset);
 	FD_ZERO(&wrset);
-	if(!ovdb_conf.maxrsconn || numreaders < ovdb_conf.maxrsconn) {
-	    FD_SET(listensock, &rdset);
-	    lastfd = listensock;
-	} else {
-	    lastfd = 0;
-	}
+	lastfd = 0;
+	if(wholistens == me) {
+	    if(!ovdb_conf.maxrsconn || numreaders < ovdb_conf.maxrsconn) {
+		FD_SET(listensock, &rdset);
+		lastfd = listensock;
+		sprintf(string, "ovdb_server: %d client%s *", numreaders,
+			numreaders == 1 ? "" : "s");
+		TITLEset(string);
+	    } else {
+		wholistens = -1;
+		kill(parent, SIGUSR1);
+	    }
+        }
 
 	for(i = 0; i < numreaders; i++) {
-	    switch(readertab[i]->mode) {
+	    switch(readertab[i].mode) {
 	    case MODE_READ:
-	    	FD_SET(readertab[i]->fd, &rdset);
+	    	FD_SET(readertab[i].fd, &rdset);
 		break;
 	    case MODE_WRITE:
-	    	FD_SET(readertab[i]->fd, &wrset);
+	    	FD_SET(readertab[i].fd, &wrset);
 		break;
 	    default:
 	    	continue;
 	    }
-	    if(readertab[i]->fd > lastfd)
-	    	lastfd = readertab[i]->fd;
+	    if(readertab[i].fd > lastfd)
+	    	lastfd = readertab[i].fd;
 	}
-#ifdef SELECT_TIMEOUT
 	tv.tv_usec = 0;
 	tv.tv_sec = SELECT_TIMEOUT;
-#endif
-
-#ifdef SELECT_TIMEOUT
 	count = select(lastfd + 1, &rdset, &wrset, NULL, &tv);
-#else
-	count = select(lastfd + 1, &rdset, &wrset, NULL, NULL);
-#endif
-	if(count < 0)
-	    continue;
+
 	if(signalled)
 	    break;
+	if(count <= 0)
+	    continue;
 
 	now = time(NULL);
-
-	for(i = 0; i < numreaders; i++) {
-	    switch(readertab[i]->mode) {
-	    case MODE_READ:
-	    	if(FD_ISSET(readertab[i]->fd, &rdset))
-		    handle_read(readertab[i]);
-	        break;
-	    case MODE_WRITE:
-	    	if(FD_ISSET(readertab[i]->fd, &wrset))
-		    handle_write(readertab[i]);
-		break;
-	    }
-	}
-
-	if(signalled)
-	    break;
-
-	for(i = 0; i < numreaders; i++) {
-	    if(readertab[i]->mode == MODE_CLOSED
-		  || readertab[i]->lastactive + CLIENT_TIMEOUT < now) {
-	    	delclient(i);
-		numreaders--;
-		i--;
-	    }
-	}
 
 	if(FD_ISSET(listensock, &rdset)) {
 	    if(!ovdb_conf.maxrsconn || numreaders < ovdb_conf.maxrsconn) {
 		salen = sizeof(sa);
 	    	ret = accept(listensock, &sa, &salen);
-		if(ret >= 0)
+		if(ret >= 0) {
 		    newclient(ret);
+		    wholistens = -1;
+		    children[me].num = numreaders;
+		    kill(parent, SIGUSR1);
+		}
 	    }
 	}
 
-	if(signalled)
-	    break;
+	for(i = 0; i < numreaders; i++) {
+	    switch(readertab[i].mode) {
+	    case MODE_READ:
+	    	if(FD_ISSET(readertab[i].fd, &rdset))
+		    handle_read(&(readertab[i]));
+	        break;
+	    case MODE_WRITE:
+	    	if(FD_ISSET(readertab[i].fd, &wrset))
+		    handle_write(&(readertab[i]));
+		break;
+	    }
+	}
 
+	for(i = 0; i < numreaders; i++) {
+	    if(readertab[i].mode == MODE_CLOSED
+		  || readertab[i].lastactive + CLIENT_TIMEOUT < now) {
+	    	delclient(i);
+		numreaders--;
+		i--;
+	    }
+	}
+	if(children[me].num != numreaders) {
+	    children[me].num = numreaders;
+	    kill(parent, SIGUSR1);
+        }
 	if(numreaders != lastnumreaders) {
 	    lastnumreaders = numreaders;
 	    sprintf(string, "ovdb_server: %d client%s", numreaders,
@@ -589,12 +647,43 @@ serverproc(void)
     exit(0);
 }
 
+static int
+reap(void)
+{
+    int i, cs, restart = 0;
+    pid_t c;
+
+    while((c = waitpid(-1, &cs, WNOHANG)) > 0) {
+	for(i = 0; i < ovdb_conf.numrsprocs; i++) {
+	    if(c == children[i].pid) {
+		if(children[i].started + 30 > time(NULL))
+		    return 1;
+
+		children[i].num = 0;
+
+		if(wholistens == i)
+		    wholistens = -1;
+
+		if((children[i].pid = serverproc(i)) == -1)
+		    return 1;
+
+		children[i].started = time(NULL);
+		break;
+	    }
+	}
+    }
+    if(wholistens == -1)
+	parentsig(SIGUSR1);
+    return 0;
+}
+
 int
 main(int argc, char *argv[])
 {
-    int i;
+    int i, salen, ret;
     struct sockaddr_in sa;
-    pid_t *children;
+    struct timeval tv;
+    fd_set rdset;
 
     if(argc != 2 || strcmp(argv[1], SPACES)) {
         fprintf(stderr, "Use ovdb_init to start me\n");
@@ -623,12 +712,20 @@ main(int argc, char *argv[])
 	fprintf(stderr, "ovdb_server: socket: %s\n", strerror(errno));
 	exit(1);
     }
+
+    nonblocking(listensock, 1);
+
     sa.sin_family = AF_INET;
     sa.sin_port = htons(OVDB_SERVER_PORT);
     sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     
     if(bind(listensock, (struct sockaddr *)&sa, sizeof sa) != 0) {
 	fprintf(stderr, "ovdb_server: bind: %s\n", strerror(errno));
+	exit(1);
+    }
+
+    if(listen(listensock, MAXLISTEN) < 0) {
+	fprintf(stderr, "ovdb_server: cant listen: %s\n", strerror(errno));
 	exit(1);
     }
 
@@ -639,42 +736,63 @@ main(int argc, char *argv[])
     xrsignal(SIGTERM, sigfunc);
     xrsignal(SIGHUP, sigfunc);
 
-    children = NEW(pid_t, ovdb_conf.numrsprocs);
+    xrsignal(SIGUSR1, parentsig);
+    xrsignal(SIGCHLD, childsig);
+    parent = getpid();
+
+    children = mmap(0, sizeof(struct child) * (ovdb_conf.numrsprocs+1),
+		PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_SHARED, -1, 0);
+    if(children == NULL) {
+	fprintf(stderr, "ovdb_server: mmap: %s\n");
+	exit(1);
+    }
+    for(i = 0; i < ovdb_conf.numrsprocs+1; i++) {
+	children[i].pid = -1;
+	children[i].num = 0;
+    }
 
     for(i = 0; i < ovdb_conf.numrsprocs; i++) {
-	if((children[i] = serverproc()) == -1) {
+	if((children[i].pid = serverproc(i)) == -1) {
 	    for(i--; i >= 0; i--)
-		kill(children[i], SIGTERM);
+		kill(children[i].pid, SIGTERM);
 	    exit(1);
 	}
+	children[i].started = time(NULL);
 	sleep(1);
     }
 
     while(!signalled) {
-	/* TODO:
-	 *  + Do waits here to check for child exits.
-	 *  + If all the children are full, we should answer
-	 *    new requests with a 'not available' message
-	 *    of some kind.  This will require some kind
-	 *    of IPC from the children.
-	 */
+	if(reap())
+	    break;
 
-#ifdef SELECT_TIMEOUT
-	/* see comment above about SELECT_TIMEOUT */
-	sleep(20);
-#else
-	pause();
-#endif
+	if(wholistens == -2) {
+	    FD_ZERO(&rdset);
+	    FD_SET(listensock, &rdset);
+	    tv.tv_usec = 0;
+	    tv.tv_sec = SELECT_TIMEOUT;
+	    ret = select(listensock+1, &rdset, NULL, NULL, &tv);
+
+	    if(ret == 1 && wholistens == -2) {
+		ret = accept(listensock, &sa, &salen);
+		if(ret >= 0)
+		   close(ret);
+	    }
+	} else {
+	    pause();
+	}
     }
 
     for(i = 0; i < ovdb_conf.numrsprocs; i++)
-	kill(children[i], SIGTERM);
+	if(children[i].pid != -1)
+	    kill(children[i].pid, SIGTERM);
+
+    while(wait(&ret) > 0)
+	;
 
     unlink(cpcatpath(innconf->pathrun, OVDB_SERVER_PIDFILE));
 
     exit(0);
 }
-
 
 
 #endif /* USE_BERKELEY_DB */
