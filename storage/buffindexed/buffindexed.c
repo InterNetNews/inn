@@ -1886,6 +1886,7 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
       freegroupblock();
       ovgroupunmap();
       ge->expired = time(NULL);
+      ge->count = 0;
       GROUPlock(gloc, LOCK_UNLOCK);
     }
     return TRUE;
