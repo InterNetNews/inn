@@ -82,7 +82,7 @@
 
 /* If we have to declare either inet_aton or inet_ntoa, we have to include
    <netinet/in.h>.  Bleh. */
-#if !HAVE_INET_ATON || NEED_DECLARATION_INET_NTOA
+#if NEED_DECLARATION_INET_ATON || NEED_DECLARATION_INET_NTOA
 # include <netinet/in.h>
 #endif
 
@@ -100,7 +100,7 @@ extern off_t            ftello(FILE *);
 #if !HAVE_HSTRERROR
 extern const char *     hstrerror(int);
 #endif
-#if !HAVE_INET_ATON
+#if NEED_DECLARATION_INET_ATON
 extern int              inet_aton(const char *, struct in_addr *);
 #endif
 #if NEED_DECLARATION_INET_NTOA
