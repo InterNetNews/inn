@@ -1,0 +1,92 @@
+=head1 Current
+
+Here are the changes for the latest version of INN.
+
+=over 2
+
+=item *
+
+New F<readers.conf> file (replaces F<nnrp.access>) which allows more
+flexible specification of access restrictions.
+
+=item *
+
+Unified overview has been replaced with an overview API, and there are now
+two separate overview implementations to choose from.  One (tradindexed)
+is very like traditional overview but uses an additional index file for
+faster responses to readers.  The other (buffindexed) uses circular
+buffers and can handle a higher incoming article rate while still being
+fast for readers.  The ovmethod key in F<inn.conf> chooses the overview
+method to use.
+
+=item *
+
+All article storage and retrieval is now done via the storage API.
+Traditional spool is now available as a storage type under the storage
+API.
+
+=item *
+
+The timecaf storage method has been added, similar to timehash but storing
+multiple articles in a single file.  See F<INSTALL> for details on it.
+
+=item *
+
+INN now supports embedded Python filters as well as Perl and TCL filters.
+
+=back
+
+=head1 Version 2.2
+
+=over 2
+
+=item *
+
+New storage.conf file (replaces storage.ctl).
+
+=item *
+
+New (optional) way of handling non-cancel control messages (controlchan)
+that serializes them and prevents server overload from control message
+storms.
+
+=item *
+
+Support for actsyncd to fetch active file with ftp; configured by default
+to get the one at ftp://ftp.isc.org/pub/usenet/CONFIG/active.Z if you run
+actsyncd.  Be sure to read the manual page for actsync to configure an
+actsync.ign file for your site, and test simpleftp if you do not configure
+with wget or ncftp.  Also see ftp://ftp.isc.org/pub/usenet/CONFIG/README.
+
+=item *
+
+Some options to configure are now moved to inn.conf (merge-to-groups and
+pgp-verify).
+
+=item *
+
+inndf, a portable version of df(1) is supplied.
+
+=item *
+
+New cnfsstat program to show stats of cnfs buffers.
+
+=item *
+
+news2mail program for gateway'ing news into email is provided.
+
+=item *
+
+mailpost program for gateway'ing email to news is provided.
+
+=item *
+
+pullnews program for doing a sucking feed is provided (not meant for large
+feeds).
+
+=item *
+
+The innshellvars.csh.in script is obsolete (and lives in the obsolete
+directory, for now).
+
+=back
