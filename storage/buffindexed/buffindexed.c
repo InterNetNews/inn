@@ -133,6 +133,14 @@ struct ov_trace_array {
   int			cur;
   struct ov_trace	*ov_trace;
 };
+
+struct ov_name_table {
+  char			*name;
+  int			recno;
+  struct ov_name_table	*next;
+};
+
+STATIC struct ov_name_table *name_table = NULL;
 #endif /* OV_DEBUG */
 
 #define GROUPHEADERHASHSIZE (16 * 1024)
@@ -749,26 +757,24 @@ STATIC OV ovblocknew(void) {
     }
   }
 #ifdef OV_DEBUG
+  recno = ((char *)ge - (char *)&GROUPentries[0])/sizeof(GROUPENTRY);
   if (ovusedblock(ovbuff, ovbuff->freeblk, FALSE, TRUE)) {
-    syslog(L_FATAL, "%s: new block(%d, %d) already occupied", LocalLogName, ovbuff->index, ovbuff->freeblk);
+    syslog(L_FATAL, "%s: 0x%08x trying to occupy new block(%d, %d), but already occupied", LocalLogName, recno, ovbuff->index, ovbuff->freeblk);
     buffindexed_close();
     abort();
   }
-  recno = ((char *)ge - (char *)&GROUPentries[0])/sizeof(GROUPENTRY);
   trace = &ovbuff->trace[ovbuff->freeblk];
   if (trace->ov_trace == NULL) {
     trace->ov_trace = NEW(struct ov_trace, OV_TRACENUM);
     trace->max = OV_TRACENUM;
     memset(trace->ov_trace, '\0', sizeof(struct ov_trace) * OV_TRACENUM);
-  } else if (trace->cur == trace->max) {
+  } else if (trace->cur + 1 == trace->max) {
     trace->max += OV_TRACENUM;
     RENEW(trace->ov_trace, struct ov_trace, trace->max);
-    memset(&trace->ov_trace[trace->cur], '\0', sizeof(struct ov_trace) * OV_TRACENUM);
+    memset(&trace->ov_trace[trace->cur], '\0', sizeof(struct ov_trace) * (trace->max - trace->cur));
   }
   if (trace->ov_trace[trace->cur].occupied != 0) {
-    syslog(L_FATAL, "%s: new block(%d, %d) already occupied at %d", LocalLogName, ovbuff->index, ovbuff->freeblk, trace->ov_trace[trace->cur].occupied);
-    buffindexed_close();
-    abort();
+    trace->cur++;
   }
   trace->ov_trace[trace->cur].gloc.recno = recno;
   trace->ov_trace[trace->cur].occupied = time(NULL);
@@ -805,24 +811,27 @@ STATIC void *ovblockfree(OV ov) {
     return;
   ovlock(ovbuff, LOCK_WRITE);
 #ifdef OV_DEBUG
-  if (!ovusedblock(ovbuff, ov.blocknum, FALSE, FALSE)) {
-    syslog(L_FATAL, "%s: block(%d, %d) already freed", LocalLogName, ovbuff->index, ov.blocknum);
-    buffindexed_close();
-    abort();
-  }
   recno = ((char *)ge - (char *)&GROUPentries[0])/sizeof(GROUPENTRY);
-  trace = &ovbuff->trace[ov.blocknum];
-  if (trace->ov_trace[trace->cur].occupied == 0) {
-    syslog(L_FATAL, "%s: block(%d, %d) not occupied", LocalLogName, ovbuff->index, ov.blocknum);
+  if (!ovusedblock(ovbuff, ov.blocknum, FALSE, FALSE)) {
+    syslog(L_FATAL, "%s: 0x%08x trying to free block(%d, %d), but already freed", LocalLogName, recno, ov.index, ov.blocknum);
     buffindexed_close();
     abort();
   }
-  if (trace->ov_trace[trace->cur].gloc.recno != recno) {
-    syslog(L_FATAL, "%s: block(%d, %d) mismatch occupied recno, %d, %d", LocalLogName, ovbuff->index, ov.blocknum, trace->ov_trace[trace->cur].gloc.recno, recno);
-    buffindexed_close();
-    abort();
+  trace = &ovbuff->trace[ov.blocknum];
+  if (trace->ov_trace == NULL) {
+    trace->ov_trace = NEW(struct ov_trace, OV_TRACENUM);
+    trace->max = OV_TRACENUM;
+    memset(trace->ov_trace, '\0', sizeof(struct ov_trace) * OV_TRACENUM);
+  } else if (trace->cur + 1 == trace->max) {
+    trace->max += OV_TRACENUM;
+    RENEW(trace->ov_trace, struct ov_trace, trace->max);
+    memset(&trace->ov_trace[trace->cur], '\0', sizeof(struct ov_trace) * (trace->max - trace->cur));
+  }
+  if (trace->ov_trace[trace->cur].freed != 0) {
+    trace->cur++;
   }
   trace->ov_trace[trace->cur].freed = time(NULL);
+  trace->ov_trace[trace->cur].gloc.recno = recno;
   trace->cur++;
 #endif /* OV_DEBUG */
   ovusedblock(ovbuff, ov.blocknum, TRUE, FALSE);
@@ -1001,6 +1010,9 @@ BOOL buffindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
   GROUPLOC	gloc;
   GROUPENTRY	*ge;
   void		*handle;
+#ifdef OV_DEBUG
+  struct ov_name_table	*ntp;
+#endif /* OV_DEBUG */
 
   gloc = GROUPfind(group);
   if (!GROUPLOCempty(gloc)) {
@@ -1021,6 +1033,18 @@ BOOL buffindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
   }
   setinitialge(ge, grouphash, flag, GROUPheader->hash[i], lo, hi);
   GROUPheader->hash[i] = gloc;
+#ifdef OV_DEBUG
+  ntp = NEW(struct ov_name_table, 1);
+  memset(ntp, '\0', sizeof(struct ov_name_table));
+  ntp->name = COPY(group);
+  ntp->recno = gloc.recno;
+  if (name_table == NULL)
+    name_table = ntp;
+  else {
+    ntp->next = name_table;
+    name_table = ntp;
+  }
+#endif /* OV_DEBUG */
   GROUPlockhash(LOCK_UNLOCK);
   return TRUE;
 }
@@ -1164,7 +1188,11 @@ STATIC BOOL GROUPlock(GROUPLOC gloc, LOCKTYPE type) {
 	     sizeof(GROUPENTRY));
 }
 
+#ifdef OV_DEBUG
+STATIC BOOL ovsetcurindexblock(GROUPENTRY *ge, ARTNUM artnum, int *baseoffset, GROUPENTRY *georig) {
+#else
 STATIC BOOL ovsetcurindexblock(GROUPENTRY *ge, ARTNUM artnum, int *baseoffset) {
+#endif /* OV_DEBUG */
   OVBUFF	*ovbuff;
   OV		ov;
   OVBLOCK	ovblock;
@@ -1176,7 +1204,7 @@ STATIC BOOL ovsetcurindexblock(GROUPENTRY *ge, ARTNUM artnum, int *baseoffset) {
     /* there is no index */
     base = artnum > ovpadamount ? artnum - ovpadamount : 1;
 #ifdef OV_DEBUG
-    ov = ovblocknew(ge);
+    ov = ovblocknew(georig ? georig : ge);
 #else
     ov = ovblocknew();
 #endif /* OV_DEBUG */
@@ -1244,14 +1272,17 @@ STATIC BOOL ovsetcurindexblock(GROUPENTRY *ge, ARTNUM artnum, int *baseoffset) {
   return TRUE;
 }
 
+#ifdef OV_DEBUG
+STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, GROUPENTRY *georig) {
+#else
 STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived) {
+#endif /* OV_DEBUG */
   OV		ov;
   OVINDEX	ie;
   OVBUFF	*ovbuff;
   int		baseoffset = 0;
 #ifdef OV_DEBUG
   int		recno;
-  struct ov_trace_array *trace;
 #endif /* OV_DEBUG */
 
   Nospace = FALSE;
@@ -1262,14 +1293,18 @@ STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
   if (ge->curdata.index == NULLINDEX) {
     /* no data block allocated */
 #ifdef OV_DEBUG
-    ov = ovblocknew(ge);
+    ov = ovblocknew(georig ? georig : ge);
 #else
     ov = ovblocknew();
 #endif /* OV_DEBUG */
-    if (ov.index == NULLINDEX)
+    if (ov.index == NULLINDEX) {
+      syslog(L_ERROR, "%s: ovaddrec could not get new block", LocalLogName);
       return FALSE;
-    if ((ovbuff = getovbuff(ov)) == NULL)
+    }
+    if ((ovbuff = getovbuff(ov)) == NULL) {
+      syslog(L_ERROR, "%s: ovaddrec could not get ovbuff block for new, %d, %d, %d", LocalLogName, ov.index, ov.blocknum, artnum);
       return FALSE;
+    }
     ge->curdata = ov;
     ge->curoffset = 0;
   } else if ((ovbuff = getovbuff(ge->curdata)) == NULL)
@@ -1277,14 +1312,18 @@ STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
   else if (OV_BLOCKSIZE - ge->curoffset < len) {
     /* too short to store data, allocate new block */
 #ifdef OV_DEBUG
-    ov = ovblocknew(ge);
+    ov = ovblocknew(georig ? georig : ge);
 #else
     ov = ovblocknew();
 #endif /* OV_DEBUG */
-    if (ov.index == NULLINDEX)
+    if (ov.index == NULLINDEX) {
+      syslog(L_ERROR, "%s: ovaddrec could not get new block", LocalLogName);
       return FALSE;
-    if ((ovbuff = getovbuff(ov)) == NULL)
+    }
+    if ((ovbuff = getovbuff(ov)) == NULL) {
+      syslog(L_ERROR, "%s: ovaddrec could not get ovbuff block for new, %d, %d, %d", LocalLogName, ov.index, ov.blocknum, artnum);
       return FALSE;
+    }
     ge->curdata = ov;
     ge->curoffset = 0;
   }
@@ -1293,20 +1332,6 @@ STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
     syslog(L_FATAL, "%s: block(%d, %d) not occupied", LocalLogName, ovbuff->index, ge->curdata.blocknum);
     buffindexed_close();
     abort();
-  }
-  trace = &ovbuff->trace[ge->curdata.blocknum];
-  if (&trace->ov_trace[trace->cur] != NULL) {
-    if (trace->ov_trace[trace->cur].occupied == 0) {
-      syslog(L_FATAL, "%s: block(%d, %d) will be written, but not occupied", LocalLogName, ovbuff->index, ge->curdata.blocknum);
-      buffindexed_close();
-      abort();
-    }
-    recno = ((char *)ge - (char *)&GROUPentries[0])/sizeof(GROUPENTRY);
-    if (trace->ov_trace[trace->cur].gloc.recno != recno) {
-      syslog(L_FATAL, "%s: block(%d, %d) will be written, but mismatch occupied recno, %d, %d", LocalLogName, ovbuff->index, ge->curdata.blocknum, trace->ov_trace[trace->cur].gloc.recno, recno);
-      buffindexed_close();
-      abort();
-    }
   }
 #endif /* OV_DEBUG */
   if (pwrite(ovbuff->fd, data, len, ovbuff->base + ge->curdata.blocknum * OV_BLOCKSIZE + ge->curoffset) != len) {
@@ -1322,7 +1347,11 @@ STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
   ie.arrived = arrived;
 
   if (ge->limit == 0 || artnum < ge->baseinblock || ge->baseinblock + OVINDEXMAX <= artnum) {
+#ifdef OV_DEBUG
+    if (!ovsetcurindexblock(ge, artnum, &baseoffset, georig)) {
+#else
     if (!ovsetcurindexblock(ge, artnum, &baseoffset)) {
+#endif /* OV_DEBUG */
       syslog(L_ERROR, "%s: could not set current index", LocalLogName);
       return FALSE;
     }
@@ -1334,20 +1363,6 @@ STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
     syslog(L_FATAL, "%s: block(%d, %d) not occupied (index)", LocalLogName, ovbuff->index, ge->curindex.blocknum);
     buffindexed_close();
     abort();
-  }
-  trace = &ovbuff->trace[ge->curindex.blocknum];
-  if (&trace->ov_trace[trace->cur] != NULL) {
-    if (trace->ov_trace[trace->cur].occupied == 0) {
-      syslog(L_FATAL, "%s: block(%d, %d) will be written, but not occupied (index)", LocalLogName, ovbuff->index, ge->curindex.blocknum);
-      buffindexed_close();
-      abort();
-    }
-    recno = ((char *)ge - (char *)&GROUPentries[0])/sizeof(GROUPENTRY);
-    if (trace->ov_trace[trace->cur].gloc.recno != recno) {
-      syslog(L_FATAL, "%s: block(%d, %d) will be written, but mismatch occupied recno, %d, %d (index)", LocalLogName, ovbuff->index, ge->curindex.blocknum, trace->ov_trace[trace->cur].gloc.recno, recno);
-      buffindexed_close();
-      abort();
-    }
   }
 #endif /* OV_DEBUG */
   if (pwrite(ovbuff->fd, &ie, sizeof(ie), ovbuff->base + ge->curindex.blocknum * OV_BLOCKSIZE + sizeof(OVINDEXHEAD) + sizeof(ie) * (artnum - ge->baseinblock + baseoffset)) != sizeof(ie)) {
@@ -1454,12 +1469,17 @@ BOOL buffindexed_add(TOKEN token, char *data, int len, time_t arrived) {
 	return FALSE;
       }
     }
+#ifdef OV_DEBUG
+    if (!ovaddrec(ge, artnum, token, overdata, i, arrived, NULL)) {
+#else
     if (!ovaddrec(ge, artnum, token, overdata, i, arrived)) {
-      syslog(L_ERROR, "%s: could not add overview for '%s'", LocalLogName, group);
+#endif /* OV_DEBUG */
       if (Nospace) {
 	GROUPlock(gloc, LOCK_UNLOCK);
+	syslog(L_ERROR, "%s: no space left for buffer, adding '%s'", LocalLogName, group);
 	return FALSE;
       }
+      syslog(L_ERROR, "%s: could not add overview for '%s'", LocalLogName, group);
     }
     GROUPlock(gloc, LOCK_UNLOCK);
   }
@@ -1585,7 +1605,7 @@ STATIC BOOL ovgroupmmap(GROUPENTRY *ge, GROUPINDEXBLOCK **gibp, int low, int hig
     if (high > gib->base - gib->baseoffset + OVINDEXMAX)
       limit = OVINDEXMAX;
     else
-      limit = high - (gib->base - gib->baseoffset - 1);
+      limit = high - (gib->base - gib->baseoffset);
     for (i = base ; i < limit ; i++) {
       ov.index = gib->ovblock->ovindex[i].index;
       ov.blocknum = gib->ovblock->ovindex[i].blocknum;
@@ -1736,18 +1756,17 @@ STATIC void ovclosesearch(void *handle, BOOL freeblock) {
   GROUPLOC	gloc;
 #endif /* OV_DEBUG */
 
-  if (freeblock)
+  if (freeblock) {
 #ifdef OV_DEBUG
-  {
     gloc = GROUPfind(search->group);
     if (!GROUPLOCempty(gloc)) {
       ge = &GROUPentries[gloc.recno];
       freegroupblock(search->gib, ge);
     }
-  }
 #else
     freegroupblock(search->gib);
 #endif /* OV_DEBUG */
+  }
   ovgroupunmap(search->gib);
   DISPOSE(search->group);
   DISPOSE(search);
@@ -1818,11 +1837,11 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
     ov = ovblocknew();
 #endif /* OV_DEBUG */
     if (ov.index == NULLINDEX) {
-      syslog(L_ERROR, "%s: could not get new block", LocalLogName);
+      syslog(L_ERROR, "%s: ovaddblk could not get new block", LocalLogName);
       break;
     }
     if ((ovbuff = getovbuff(ov)) == NULL) {
-      syslog(L_ERROR, "%s: could not get ovbuff block", LocalLogName);
+      syslog(L_ERROR, "%s: ovaddblk could not get ovbuff block", LocalLogName);
       break;
     }
     offset = ovbuff->base + (ov.blocknum * OV_BLOCKSIZE);
@@ -2008,7 +2027,11 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
     if (len == 0 || (ah = SMretrieve(token, RETR_STAT)) == NULL)
       continue;
     SMfreearticle(ah);
+#ifdef OV_DEBUG
+    if (!ovaddrec(&newge, artnum, token, data, len, arrived, ge)) {
+#else
     if (!ovaddrec(&newge, artnum, token, data, len, arrived)) {
+#endif /* OV_DEBUG */
       ovclosesearch(handle, TRUE);
       GROUPlock(gloc, LOCK_UNLOCK);
       syslog(L_ERROR, "%s: could not add new overview for '%s'", LocalLogName, group);
@@ -2070,28 +2093,48 @@ void buffindexed_close(void) {
   char		*path = NULL;
   int		j;
   struct ov_trace_array *trace;
+  struct ov_name_table	*ntp;
 #endif /* OV_DEBUG */
 
 #ifdef OV_DEBUG
   for (; ovbuff != (OVBUFF *)NULL; ovbuff = ovbuff->next) {
+    for (i = 0 ; i < ovbuff->totalblk ; i++) {
+      trace = &ovbuff->trace[i];
+      if (trace->ov_trace == NULL)
+	continue;
+      for (j = 0 ; j <= trace->cur && j < trace->max ; j++) {
+	if (trace->ov_trace[j].occupied != 0 ||
+	  trace->ov_trace[j].freed != 0) {
+	  if (F == NULL) {
+	    path = NEW(char, strlen(innconf->pathtmp) + 10);
+	    pid = getpid();
+	    sprintf(path, "%s/%d", innconf->pathtmp, pid);
+	    if ((F = fopen(path, "w")) == NULL) {
+	      syslog(L_ERROR, "%s: could not open %s: %m", LocalLogName, path);
+	      break;
+	    }
+	  }
+	  fprintf(F, "%d: % 6d, % 2d: 0x%08x, % 10d, % 10d\n", ovbuff->index, i, j,
+	  trace->ov_trace[j].gloc.recno,
+	  trace->ov_trace[j].occupied,
+	  trace->ov_trace[j].freed);
+	}
+      }
+    }
+  }
+  if ((ntp = name_table) != NULL) {
     if (F == NULL) {
       path = NEW(char, strlen(innconf->pathtmp) + 10);
       pid = getpid();
       sprintf(path, "%s/%d", innconf->pathtmp, pid);
       if ((F = fopen(path, "w")) == NULL) {
-	syslog(L_ERROR, "%s: could not open %s: %m", LocalLogName, path);
-	break;
+        syslog(L_ERROR, "%s: could not open %s: %m", LocalLogName, path);
       }
     }
-    for (i = 0 ; i < ovbuff->totalblk ; i++) {
-      trace = &ovbuff->trace[i];
-      if (trace->ov_trace == NULL)
-	continue;
-      for (j = 0 ; j < trace->cur ; j++) {
-	fprintf(F, "%d: % 6d, % 2d: 0x%08x, %d, %d", ovbuff->index, i, j,
-	trace->ov_trace[trace->cur].gloc.recno,
-	trace->ov_trace[trace->cur].occupied,
-	trace->ov_trace[trace->cur].freed);
+    if (F != NULL) {
+      while(ntp) {
+        fprintf(F, "0x%08x: %s\n", ntp->recno, ntp->name);
+        ntp = ntp->next;
       }
     }
   }
@@ -2146,7 +2189,7 @@ main(int argc, char **argv) {
     fprintf(stderr, "gloc is null\n");
   }
   ge = &GROUPentries[gloc.recno];
-  fprintf(stdout, "base %d, last %d, cur %d, prev %d, next %d\n", ge->baseindex.blocknum, ge->lastindex.blocknum, ge->curindex.blocknum, ge->previndex.blocknum, ge->nextindex.blocknum);
+  fprintf(stdout, "base %d(%d), last %d(%d), cur %d(%d), prev %d(%d), next %d(%d)\n", ge->baseindex.blocknum, ge->baseindex.index, ge->lastindex.blocknum, ge->lastindex.index, ge->curindex.blocknum, ge->curindex.index, ge->previndex.blocknum, ge->previndex.index, ge->nextindex.blocknum, ge->nextindex.index);
   if (!buffindexed_groupstats(group, &lo, &hi, &count, &flags)) {
     fprintf(stderr, "buffindexed_groupstats failed for group %s\n", group);
     exit(1);
@@ -2160,7 +2203,7 @@ main(int argc, char **argv) {
   }
   fprintf(stdout, "  gloc is 0x%08x\n", search->gloc.recno);
   for (gib = search->gib ; gib != NULL ; gib = gib->next) {
-    fprintf(stdout, "    addr 0x%x, ovblock 0x%x, base %d, baseoffset %d, len %d\n", gib->addr, gib->ovblock, gib->base, gib->baseoffset, gib->len);
+    fprintf(stdout, "    addr 0x%x, ovblock 0x%x, base %d, baseoffset %d, len %d, index %d, blocknum %d\n", gib->addr, gib->ovblock, gib->base, gib->baseoffset, gib->len, gib->ov.index, gib->ov.blocknum);
   }
   for (gib = search->gib ; gib != NULL ; gib = gib->next) {
     ovblock = gib->ovblock;
