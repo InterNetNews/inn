@@ -8,7 +8,7 @@
 /*
 **  Try to make one directory.  Return FALSE on error.
 */
-STATIC BOOL MakeDir(char *Name)
+static bool MakeDir(char *Name)
 {
     struct stat		Sb;
 
@@ -29,10 +29,10 @@ STATIC BOOL MakeDir(char *Name)
 **  Given a directory, comp/foo/bar, create that directory and all
 **  intermediate directories needed.  Return TRUE if ok, else FALSE.
 */
-BOOL MakeDirectory(char *Name, BOOL Recurse)
+bool MakeDirectory(char *Name, bool Recurse)
 {
     char	        *p;
-    BOOL		made;
+    bool		made;
 
     /* Optimize common case -- parent almost always exists. */
     if (MakeDir(Name))

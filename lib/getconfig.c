@@ -11,9 +11,9 @@
 #include "paths.h"
 
 /* Global and initialized; to work around SunOS -Bstatic bug, sigh. */
-STATIC char		ConfigBuff[SMBUF] = "";
-STATIC char		*ConfigBit;
-STATIC int		ConfigBitsize;
+static char		ConfigBuff[SMBUF] = "";
+static char		*ConfigBit;
+static int		ConfigBitsize;
 #define	TEST_CONFIG(a, b) \
     { \
 	int byte, offset; \
@@ -122,7 +122,7 @@ char *GetConfigValue(char *value)
 /*
 **  Get a boolean config value and return it by value
 */
-BOOL GetBooleanConfigValue(char *key, BOOL defaultvalue) {
+bool GetBooleanConfigValue(char *key, bool defaultvalue) {
     char *value;
 
     if ((value = GetConfigValue(key)) == NULL)
@@ -412,7 +412,7 @@ int ReadInnConf()
     FILE	        *F;
     char	        *p, *q;
     int			boolval;
-    BOOL		bit;
+    bool		bit;
 
     if (innconf != NULL) {
 	ClearInnConf();

@@ -10,10 +10,10 @@
 #include "macros.h"
 
 
-STATIC FILE **Reserved_fd = NULL;
-STATIC int Maxfd = -1;
+static FILE **Reserved_fd = NULL;
+static int Maxfd = -1;
 
-BOOL fdreserve(int fdnum) {
+bool fdreserve(int fdnum) {
     static int allocated = 0;
     int i, start = allocated;
 

@@ -10,7 +10,7 @@
 #include "libinn.h"
 #include "macros.h"
 
-STATIC HASH empty= { { 0, 0, 0, 0, 0, 0, 0, 0,
+static HASH empty= { { 0, 0, 0, 0, 0, 0, 0, 0,
 		       0, 0, 0, 0, 0, 0, 0, 0 }};
 
 /* cipoint - where in this message-ID does it become case-insensitive?
@@ -26,7 +26,7 @@ STATIC HASH empty= { { 0, 0, 0, 0, 0, 0, 0, 0,
  *
  * Returns: pointer into s, or NULL for "nowhere"
  */
-STATIC char *cipoint(char *s, size_t size) {
+static char *cipoint(char *s, size_t size) {
     char *p;
     static char post[] = "postmaster";
     static int plen = sizeof(post) - 1;
@@ -76,7 +76,7 @@ HASH HashMessageID(const char *MessageID) {
 **  Check if the hash is all zeros, and subseqently empty, see HashClear
 **  for more info on this.
 */
-BOOL HashEmpty(const HASH h) {
+bool HashEmpty(const HASH h) {
     return (memcmp(&empty, &h, sizeof(HASH)) == 0);
 }
 
@@ -94,10 +94,10 @@ void HashClear(HASH *hash) {
 **  messages and logs.
 */
 char *HashToText(const HASH hash) {
-    STATIC char         hex[] = "0123456789ABCDEF";
+    static char         hex[] = "0123456789ABCDEF";
     char                *p;
     unsigned int        i;
-    STATIC char         hashstr[(sizeof(HASH)*2) + 1];
+    static char         hashstr[(sizeof(HASH)*2) + 1];
 
     for (p = (char *)&hash, i = 0; i < sizeof(HASH); i++, p++) {
 	hashstr[i * 2] = hex[(*p & 0xF0) >> 4];
@@ -110,7 +110,7 @@ char *HashToText(const HASH hash) {
 /*
 ** Converts a hex digit and converts it to a int
 */
-STATIC int hextodec(const int c) {
+static int hextodec(const int c) {
     return isdigit(c) ? (c - '0') : ((c - 'A') + 10);
 }
 
