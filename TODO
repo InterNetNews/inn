@@ -147,10 +147,6 @@ Future Projects:
   are members of a specific Unix group.  ckpasswd could do this as an
   option and it would probably be easy enough to add.
 
-* rnews currently rejects articles with lines ending in CRLF, according to
-  one report.  This should be checked, and if true, it should be more
-  flexible about line endings.  [Matt McLeod is working on this.]
-
 * The Tcl filtering support code has undergone serious bitrot and needs
   some work to fix it and make it work with modern versions of Tcl and the
   current version of INN.  It also lacks a lot of the functionality of the
@@ -339,6 +335,18 @@ Future Projects:
   probably be removed (possibly with some extra support in nntpsend for
   doing simpler things).
 
+* Allow generation of arbitrary additional information that could go in
+  overview by using embedded Perl or Python code.  This might be a cleaner
+  way to do the keywords code, which really wants Perl's regex engine
+  ideally.  It would also let one do something like doing MD5 hashes of
+  each article and putting that in the overview if you care a lot about
+  making sure that articles aren't corrupted.
+
+* Allow some way of accepting articles regardless of the Date header, even
+  if it's far into the future.  Some people are running into articles that
+  are dated years into the future for some reason that they still want to
+  store on the server.
+
 
 Long-Term Projects:
 
@@ -477,14 +485,21 @@ Long-Term Projects:
   out of the box.  A little interactive Perl script asking some simple
   questions could probably get a lot of cases easily right.
 
+* One ideally wants to be able to easily convert between different
+  overview formats or storage methods, refiling articles in place.  This
+  should be possible once we have a history API that allows changing the
+  storage location of an article in-place.
+
 
 Complete Code Reorganization
 
 At some point, we should probably abandon and archive the current CVS
 repository, reimport all of the current source files, and start with a
 fresh repository.  This would let us rename and move things around
-arbitrarily, something CVS doesn't handle at all well.  Should this ever
-be done, we should consider doing all of the following at the same time:
+arbitrarily, something CVS doesn't handle at all well.  (This should
+probably be done after all of the documentation has been converted to
+POD.)  Should this ever be done, we should consider doing all of the
+following at the same time:
 
 * Don't include any generated files in the CVS tree.  Maintainers should
   have autoconf and friends, as well as bison, around anyway.  This would
