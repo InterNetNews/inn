@@ -557,12 +557,6 @@
   ||##
   ||##  7.  PATHS TO COMMON PROGRAMS
 [IN1.7=@7][WDF=autoconf][WOR=yes]
-  ||##  Where sendmail, or a look-alike, lives.
-  ||##[autoconf]
-  ||##  The -t is optional and says to read message for recipients
-  ||#### =()<_PATH_SENDMAIL		@<_PATH_SENDMAIL>@>()=
-  ||_PATH_SENDMAIL		@ac_cv_subst_path_sendmail@ -t
-[IN1.7=@7][WDF=autoconf][WOR=yes]
   ||##  Where the shell is.
   ||##[autoconf]
   ||#### =()<_PATH_SH		@<_PATH_SH>@>()=
@@ -582,11 +576,6 @@
   ||#### =()<_PATH_TMP		@<_PATH_TMP>@>()=
   ||_PATH_TMP		@TMPPATH@
 [IN1.7=@7][WDF=autoconf][WOR=yes]
- # ||##  Command to send mail (with -s "subject" allowed)
- # ||##[autoconf]
- #||#### =()<_PATH_MAILCMD		@<_PATH_MAILCMD>@>()=
- #||_PATH_MAILCMD		@ac_cv_subst_bindir@/innmail
-[IN1.7=@7][WDF=autoconf][WOR=yes]
   ||##  Where your GNU gzip binary is (for rnews to run on gzipped batches).
   ||##[autoconf]
   ||#### =()<_PATH_GZIP		@<_PATH_GZIP>@>()=
@@ -595,10 +584,6 @@
   ||
   ||##
   ||##  8.  PATHS RELATED TO THE SPOOL DIRECTORY
-[IN1.7=@8][WDF=fixed][WOR=yes]
-  ||##  Name of overview file within its spool directory.
-  ||#### =()<_PATH_OVERVIEW		@<_PATH_OVERVIEW>@>()=
-  ||_PATH_OVERVIEW		.overview
 [IN1.7=@8][WDF=confparam][WOR=yes]
   ||##  Where rnews creates temporary files until finished
   ||##[autoconf]
@@ -802,10 +787,6 @@
   ||
   ||##  18. CNFS partition hackery
   ||##
-[IN1.7=@NO][WDF=confparam][WOR=yes]
-  ||##  Location of the cnfs partition configuration file
-  ||#### =()<_PATH_CYCBUFFCONFIG	@<_PATH_CYCBUFFCONFIG>@>()=
-  ||_PATH_CYCBUFFCONFIG		/var/news/etc/cycbuff.conf
 [IN1.7=@NO][WDF=autoconf][WOR=no]
   ||##  C type to use for offsets (should be a big integer like "off_t" 
   ||##  (or "offset_t" (64 bits) for Solaris 2.5).
@@ -819,9 +800,12 @@
   ||##  use a different system call, namedly llseek().
   ||#### =()<CNFSseekcall		@<CNFSseekcall>@>()=
   ||CNFSseekcall		lseek
+  ||
+  ||
+  ||##  19. Keywords in Overview support
+  ||##
 [IN1.7=@NO][WDF=autoconf][WOR=no]
-  ||##  Number of articles to be written to a cycbuff before that cycbuff's
-  ||##  status header is updated.
-  ||#### =()<METACYCBUFF_UPDATE		@<METACYCBUFF_UPDATE>@>()=
-  ||METACYCBUFF_UPDATE		25
-
+  ||##  Should INN fabricate Keywords: data for overviews?  Pick DO or DONT.
+  ||#### =()<KEYWORDS	@<KEYWORDS>@>()=
+  ||KEYWORDS		@DO_KEYWORDS@
+ 

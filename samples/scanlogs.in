@@ -180,11 +180,11 @@ if ${ROTATE} ; then
 
     ##  Truncate logs from send-nntp and/or send-uucp.
     if [ -s ${MOST_LOGS}/send-nntp.log ] ; then
-	${COMPRESS} <${MOST_LOGS}/send-nntp.log >${OLD}/send-nntp.1${Z}
+	${LOG_COMPRESS} <${MOST_LOGS}/send-nntp.log >${OLD}/send-nntp.1${Z}
 	cat /dev/null >${MOST_LOGS}/send-nntp.log
     fi
     if [ -s ${MOST_LOGS}/send-uucp.log ] ; then
-	${COMPRESS} <${MOST_LOGS}/send-uucp.log >${OLD}/send-uucp.1${Z}
+	${LOG_COMPRESS} <${MOST_LOGS}/send-uucp.log >${OLD}/send-uucp.1${Z}
 	cat /dev/null >${MOST_LOGS}/send-uucp.log
     fi
 else
@@ -261,7 +261,7 @@ if ${ROTATE} ; then
 	test -f ${BASE} || continue
 
 	##  Compress the file.
-	${COMPRESS} <${BASE} >${BASE}.0${Z} && rm -f ${BASE}
+	${LOG_COMPRESS} <${BASE} >${BASE}.0${Z} && rm -f ${BASE}
 	chmod 0440 ${BASE}.0${Z}
 
 	##  Do rotation.

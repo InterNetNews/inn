@@ -74,12 +74,12 @@ set inn_pgp "@_PATH_PGP@"
 set inn_inndf "@_PATH_DF@"
 set inn_egrep "@_PATH_EGREP@"
 set inn_sort "@_PATH_SORT@"
+set inn_compress "@ac_cv_subst_path_compress@"
+set inn_log_compress "@LOG_COMPRESS@"
+set inn_z "@LOG_COMPRESSEXT@"
 
 set inn_tempsock [ eval exec basename ${inn_innddir}/ctlinndXXXXXX | $inn_sed -e {s/XXXXXX$/*/} ]
 set inn_tempsockdir [ exec echo ${inn_innddir}/ctlinndXXXXXX | $inn_sed -e {s@/[^/]*$@@} ]
-
-##  =()<set inn_compress "@<_PATH_COMPRESS>@">()=
-set inn_compress "/usr/bin/compress"
 
 ##  =()<scan "@<LOG_CYCLES>@" "%d" inn_cycles>()=
 scan "3" "%d" inn_cycles
@@ -100,9 +100,6 @@ scan "600" "%d" inn_sleeptime
 
 ##  =()<set inn_want_pgpverify [ expr { "@<WANT_PGPVERIFY>@" == "DO" ? 1 : 0 } ]>()=
 set inn_want_pgpverify [ expr { "DO" == "DO" ? 1 : 0 } ]
-
-##  =()<set inn_z "@<_PATH_COMPRESSEXT>@">()=
-set inn_z ".Z"
 
 ##  =()<set inn_perl_support [ expr { "@<PERL_SUPPORT>@" == "DO" ? 1 : 0 } ]>()=
 set inn_perl_support [ expr { "DONT" == "DO" ? 1 : 0 } ]

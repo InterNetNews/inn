@@ -144,6 +144,21 @@ fi
 
 AC_PATH_PROG(ac_cv_subst_path_compress,compress,no-compress-found-during-configure)
 AC_PATH_PROG(ac_cv_subst_path_gzip,gzip,no-gzip-found-during-configure)
+dnl
+AC_ARG_WITH(log-compress,[  --with-log-compress=METHOD   Log compression method (default gzip)], LOG_COMPRESS=$with_log_compress, LOG_COMPRESS=gzip)
+case "$LOG_COMPRESS" in
+gzip)
+	LOG_COMPRESS=$ac_cv_subst_path_gzip
+	LOG_COMPRESSEXT=".gz" ;;
+compress)
+	LOG_COMPRESS=$ac_cv_subst_path_compress
+	LOG_COMPRESSEXT=".Z" ;;
+*)
+	LOG_COMPRESS=$LOG_COMPRESS
+	LOG_COMPRESSEXT=".unknown" ;;
+esac
+AC_SUBST(LOG_COMPRESS)
+AC_SUBST(LOG_COMPRESSEXT)
 dnl Automatic check for Mail is frequently wrong.  Use innmail to have
 dnl a single interface.
 dnl AC_ENSURE_PATH_PROG(ac_cv_subst_path_mail,Mail)
