@@ -772,11 +772,9 @@ NCclean(bp)
 STATIC FUNCTYPE NCproc(CHANNEL *cp)
 {
     char	        *p;
-    char                *q;
     NCDISPATCH   	*dp;
     BUFFER	        *bp;
     char		buff[SMBUF];
-    char		*av[2];
     int			i;
 
     if (Tracing || cp->Tracing)
@@ -814,9 +812,16 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 	    p = &bp->Data[cp->Rest];
 	    if (p[-2] != '\r' || p[-1] != '\n') { /* probably in an article */
 		int j;
+		char *tmpstr;
 
+		tmpstr = NEW(char, bp->Used);
+		memcpy(tmpstr, bp->Data, bp->Used);
+		tmpstr[bp->Used] = '\0';
+		
 		syslog(L_NOTICE, "%s bad_command %s",
-		    CHANname(cp), MaxLength(bp->Data, bp->Data));
+		    CHANname(cp), MaxLength(tmpstr, tmpstr));
+		DISPOSE(tmpstr);
+	    
 		if (++(cp->BadCommands) >= BAD_COMMAND_COUNT) {
 		    cp->State = CSwritegoodbye;
 		    NCwritereply(cp, NCbadcommand);
