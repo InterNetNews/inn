@@ -46,11 +46,11 @@
 #endif
 
 #if HAVE_PAM
-#if defined(__MACH__) && defined(__APPLE__)
-# include <pam/pam_appl.h>
-#else
-# include <security/pam_appl.h>
-#endif
+# if HAVE_PAM_PAM_APPL
+#  include <pam/pam_appl.h>
+# else
+#  include <security/pam_appl.h>
+# endif
 #endif
 
 
