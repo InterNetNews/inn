@@ -1172,7 +1172,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
         SMseterror(SMERR_NOBODY, NULL);
 	if (innconf->articlemmap) {
 #if defined(MADV_DONTNEED) && !defined(_nec_ews)
-	    madvise(priv.base, priv.len, MADV_DONTNEED);
+	    madvise(private->base, private->len, MADV_DONTNEED);
 #endif
 	    munmap(private->base, private->len);
 	} else
@@ -1205,7 +1205,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
     SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
     if (innconf->articlemmap) {
 #if defined(MADV_DONTNEED) && !defined(_nec_ews)
-	madvise(priv.base, priv.len, MADV_DONTNEED);
+	madvise(private->base, private->len, MADV_DONTNEED);
 #endif
 	munmap(private->base, private->len);
     } else
