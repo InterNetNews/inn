@@ -894,7 +894,7 @@ BOOL buffindexed_open(int mode) {
   if (Needunlink && unlink(groupfn) == 0) {
     syslog(L_NOTICE, "%s: all buffers are brandnew, unlink '%s'", LocalLogName, groupfn);
   }
-  GROUPfd = open(groupfn, ovbuffmode & OV_WRITE ? O_RDWR | O_CREAT : O_RDONLY);
+  GROUPfd = open(groupfn, ovbuffmode & OV_WRITE ? O_RDWR | O_CREAT : O_RDONLY, 0660);
   if (GROUPfd < 0) {
     syslog(L_FATAL, "%s: Could not create %s: %m", LocalLogName, groupfn);
     DISPOSE(groupfn);
