@@ -208,6 +208,10 @@ tdx_data_new(const char *group, bool writable)
 bool
 tdx_data_open_files(struct group_data *data)
 {
+    unmap_file(data->index, data->indexlen, data->path, "IDX");
+    unmap_file(data->data, data->datalen, data->path, "DAT");
+    data->index = NULL;
+    data->data = NULL;
     if (!file_open_index(data, NULL))
         goto fail;
     if (!file_open_data(data, NULL))
@@ -658,12 +662,11 @@ tdx_data_expire_start(const char *group, struct group_data *data,
                 continue;
             SMfreearticle(ah);
         } else {
-            if (!OVhisthasmsgid(history, (char *) article.overview))
+            if (!OVhisthasmsgid(history, article.overview))
                 continue;
         }
         if (innconf->groupbaseexpiry)
-            if (OVgroupbasedexpire(article.token, group,
-                                   (char *) article.overview,
+            if (OVgroupbasedexpire(article.token, group, article.overview,
                                    article.overlen, article.arrived,
                                    article.expires))
                 continue;
