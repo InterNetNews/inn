@@ -181,6 +181,7 @@ struct conf_vars {
 	int enableoverview;
 	int wireformat; /* enable/disable wire format for tradspool */
 	char *ovmethod;
+        int useoverchan; /* should innd write overview, or should overchan */
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;
