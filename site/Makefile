@@ -47,6 +47,7 @@ PATH_SUBSCRIPTIONS	= ${PATHETC}/subscriptions
 
 PATH_ACTIVE		= ${PATHDB}/active
 PATH_ACTIVE_TIMES	= ${PATHDB}/active.times
+PATH_HISTORY		= ${PATHDB}/history
 PATH_NEWSGROUPS		= ${PATHDB}/newsgroups
 
 ##  Scripts from above, plus site-specific config files.
@@ -85,7 +86,8 @@ REST_INSTALLED	= \
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
 
-SPECIAL		= $D$(PATH_ACTIVE) $D$(PATH_ACTIVE_TIMES) $D$(PATH_NEWSGROUPS)
+SPECIAL		= $D$(PATH_ACTIVE) $D$(PATH_ACTIVE_TIMES) \
+		$D$(PATH_NEWSGROUPS) $D$(PATH_HISTORY)
 
 ##  Get new versions of everything from samples directory.
 all:		$(P) $(ALL) config
@@ -130,6 +132,9 @@ $D$(PATH_ACTIVE_TIMES):
 	chown $(NEWSUSER) $@
 	chgrp $(NEWSGROUP) $@
 	chmod $(FILEMODE) $@
+$D$(PATH_HISTORY):
+	touch $@
+	$(PATHBIN)/makedbz -i -o
 
 ##  Remove files that are unchanged from the release version.
 clean:
