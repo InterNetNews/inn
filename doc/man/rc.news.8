@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "RC.NEWS 8"
-.TH RC.NEWS 8 "2002-12-02" "INN 2.4.0" "InterNetNews Documentation"
+.TH RC.NEWS 8 "2003-04-15" "INN 2.5.0" "InterNetNews Documentation"
 .SH "NAME"
 rc.news \- Start or stop INN daemons
 .SH "SYNOPSIS"
@@ -144,13 +144,11 @@ the preceeding shutdown, emails certain boot-time warnings to
 \&\fInewsmaster\fR (as set in \fIinn.conf\fR), and is generally safer and easier
 than starting and stopping everything directly.  It needs to be run as the
 news user so that files in \fIpathrun\fR are created with the right ownership
-(though this is less important for \f(CW\*(C`rc.news stop\*(C'\fR), and therefore
-requires that \fIinndstart\fR be setuid root, see \fIinndstart\fR\|(8) for
-discussion.
+(though this is less important for \f(CW\*(C`rc.news stop\*(C'\fR).
 .PP
 Programs run and stopped by this script include:
 .IP "\(bu" 4
-Always:  \fBinndstart\fR is run, and \fBinnd\fR is stopped.
+Always:  \fBinnd\fR is started or stopped.
 .IP "\(bu" 4
 If \fIdoinnwatch\fR is true in \fIinn.conf\fR:  \fBinnwatch\fR is started and
 stopped.
@@ -211,6 +209,5 @@ $Id$
 \&\fIctlinnd\fR\|(8),
 \&\fIcnfsstat\fR\|(8),
 \&\fIinn.conf\fR\|(5),
-\&\fIinndstart\fR\|(8),
 \&\fIinnwatch\fR\|(8),
 \&\fIovdb\fR\|(5).

@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "NEWSFEEDS 5"
-.TH NEWSFEEDS 5 "2002-12-03" "INN 2.4.0" "InterNetNews Documentation"
+.TH NEWSFEEDS 5 "2003-04-16" "INN 2.5.0" "InterNetNews Documentation"
 .SH "NAME"
 newsfeeds \- Determine where Usenet articles are sent
 .SH "DESCRIPTION"
@@ -765,16 +765,15 @@ The typical feed entry for \fIinnfeed\fR\|(8) is a good example of a channel fee
 that's the target of various funnel feeds:
 .PP
 .Vb 1
-\&    innfeed!:!*:Tc,Wnm*:/usr/local/news/bin/startinnfeed -y
+\&    innfeed!:!*:Tc,Wnm*:/usr/local/news/bin/innfeed -y
 .Ve
 .PP
 Note that the \fIpattern\fR for this feed is just \f(CW\*(C`!*\*(C'\fR so that it won't
 receive any articles directly.  The feed should only receive those
 articles that would go to one of the funnel feeds that are feeding into
-it.  \fIinnfeed\fR\|(8) (spawned by \fBstartinnfeed\fR) will receive one line per
-article on its standard input containing the storage \s-1API\s0 token, the
-message \s-1ID\s0, and a space-separated list of sites that should receive that
-article.
+it.  \fIinnfeed\fR\|(8) will receive one line per article on its standard input
+containing the storage \s-1API\s0 token, the message \s-1ID\s0, and a space-separated
+list of sites that should receive that article.
 .PP
 Here's a more esoteric example of a channel feed:
 .PP

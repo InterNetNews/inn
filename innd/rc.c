@@ -12,6 +12,7 @@
 #include <netdb.h>
 
 #include "inn/innconf.h"
+#include "inn/network.h"
 #include "innd.h"
 
 #define TEST_CONFIG(a, b) \
@@ -1852,95 +1853,79 @@ RCcanpost(CHANNEL *cp, char *group)
 
 
 /*
-**  Create the channel.
+**  Create the listening channels.  When IPv6 is available, if only one of
+**  bindaddress and bindaddress6 are set, INN only listens on that address.
+**  If both are set, INN listens to both IPv4 andn IPv6 connections on those
+**  addresses.  If neither is set, use getaddrinfo to walk through all the
+**  possible addresses.  (When IPv6 isn't available, this is obviously a lot
+**  simpler.)
 */
 void
-RCsetup(int i)
+RCsetup(void)
 {
-#if	defined(SO_REUSEADDR)
-    int		on;
-#endif	/* defined(SO_REUSEADDR) */
-    int		j;
-    CHANNEL	*rcchan;
+    CHANNEL *rc;
+    int count, i, start;
+    int *fds;
+    bool okay;
 
-    /* This code is called only when inndstart is not being used */
-    if (i < 0) {
-#ifdef HAVE_INET6
-	syslog(L_FATAL, "%s innd MUST be started with inndstart", LogName);
-	exit(1);
-#else
-	/* Create a socket and name it. */
-	struct sockaddr_in	server;
-
-	if ((i = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-	    syslog(L_FATAL, "%s cant socket RCreader %m", LogName);
-	    exit(1);
-	}
-#if	defined(SO_REUSEADDR)
-	on = 1;
-	if (setsockopt(i, SOL_SOCKET, SO_REUSEADDR, &on, sizeof on) < 0)
-	    syslog(L_ERROR, "%s cant setsockopt RCreader %m", LogName);
-#endif	/* defined(SO_REUSEADDR) */
-	memset(&server, 0, sizeof server);
-	server.sin_port = htons(innconf->port);
-	server.sin_family = AF_INET;
-#ifdef HAVE_SOCKADDR_LEN
-	server.sin_len = sizeof( struct sockaddr_in );
-#endif
-	server.sin_addr.s_addr = htonl(INADDR_ANY);
-	if (innconf->bindaddress) {
-            if (!inet_aton(innconf->bindaddress, &server.sin_addr)) {
-                syslog(L_FATAL, "unable to determine bind ip (%s) %m",
-                       innconf->bindaddress);
-		exit(1);
-	    }
-	}
-	if (bind(i, (struct sockaddr *)&server, sizeof server) < 0) {
-	    syslog(L_FATAL, "%s cant bind RCreader %m", LogName);
-	    exit(1);
-	}
-#endif /* HAVE_INET6 */
+    /* If neither bindaddress or bindaddress6 are set, we have to do this the
+       hard way.  Either way, allocate an fds array to hold the file
+       descriptors.  Two is probably always sufficient, but we can't tell for
+       sure how many will be returned by getaddrinfo and this only happens on
+       startup so doing a bit of memory allocation won't hurt. */
+    if (innconf->bindaddress == NULL && innconf->bindaddress6 == NULL)
+        network_bind_all(innconf->port, &fds, &count);
+    else {
+        if (innconf->bindaddress != NULL && innconf->bindaddress6 != NULL)
+            count = 2;
+        else
+            count = 1;
+        fds = xmalloc(count * sizeof(int));
+        i = 0;
+        if (innconf->bindaddress6 != NULL)
+            fds[i++] = network_bind_ipv6(innconf->bindaddress6, innconf->port);
+        if (innconf->bindaddress != NULL)
+            fds[i] = network_bind_ipv4(innconf->bindaddress, innconf->port);
     }
 
-    /* Set it up to wait for connections. */
-    if (listen(i, MAXLISTEN) < 0) {
-	j = errno;
-	syslog(L_FATAL, "%s cant listen RCreader %m", LogName);
-	/* some IPv6 systems already listening on any address will 
-	   return EADDRINUSE when trying to listen on the IPv4 socket */
-	if (j == EADDRINUSE)
-	   return;
-	exit(1);
-    }
-
-    rcchan = CHANcreate(i, CTremconn, CSwaiting, RCreader, RCwritedone);
-    syslog(L_NOTICE, "%s rcsetup %s", LogName, CHANname(rcchan));
-    RCHANadd(rcchan);
-
-    for (j = 0 ; j < chanlimit ; j++ ) {
-	if (RCchan[j] == NULL) {
-	    break;
-	}
-    }
-    if (j < chanlimit) {
-	RCchan[j] = rcchan;
-    } else if (chanlimit == 0) {
-	/* assuming two file descriptors(AF_INET and AF_INET6) */
-	chanlimit = 2;
-        RCchan = xmalloc(chanlimit * sizeof(CHANNEL **));
-	for (j = 0 ; j < chanlimit ; j++ ) {
-	    RCchan[j] = NULL;
-	}
-	RCchan[0] = rcchan;
+    /* Make sure that the RCchan array is of the appropriate size. */
+    if (chanlimit == 0) {
+        chanlimit = count;
+        RCchan = xmalloc(chanlimit * sizeof(CHANNEL *));
+        start = 0;
     } else {
-	/* extend to double size */
-        RCchan = xrealloc(RCchan, chanlimit * 2 * sizeof(CHANNEL **));
-	for (j = chanlimit ; j < chanlimit * 2 ; j++ ) {
-	    RCchan[j] = NULL;
-	}
-	RCchan[chanlimit] = rcchan;
-	chanlimit *= 2;
+        for (start = 0; start < chanlimit; start++)
+            if (RCchan[start] == NULL)
+                break;
+        if (chanlimit - start < count) {
+            chanlimit += count - (chanlimit - start);
+            RCchan = xrealloc(RCchan, chanlimit * sizeof(CHANNEL *));
+        }
     }
+
+    /* Walk the list of file descriptors, listen on each, and create new
+       channels for each.  Some IPv6 systems already listening on the IPv6
+       wildcard address will return EADDRINUSE when trying to listen to the
+       IPv4 socket; just ignore that error. */
+    okay = false;
+    for (i = 0; i < count; i++) {
+        if (fds[i] < 0)
+            continue;
+        if (listen(fds[i], MAXLISTEN) < 0) {
+            if (i != 0 && errno == EADDRINUSE)
+                continue;
+            syswarn("SERVER cant listen to socket");
+        }
+        rc = CHANcreate(fds[i], CTremconn, CSwaiting, RCreader, RCwritedone);
+        notice("%s rcsetup %s", LogName, CHANname(rc));
+        RCHANadd(rc);
+        RCchan[start + i] = rc;
+        okay = true;
+    }
+
+    /* Bail if we couldn't listen on any sockets. */
+    if (!okay)
+        die("SERVER cant listen on any sockets");
 
     /* Get the list of hosts we handle. */
     RCreadlist();

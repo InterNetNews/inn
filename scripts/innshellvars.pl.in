@@ -50,7 +50,6 @@ $controlprogs = $pathcontrol;
 $inews = "${newsbin}/inews" ;
 $innconfval = "${newsbin}/innconfval" ;
 $innd = "${newsbin}/innd" ;
-$inndstart = "${newsbin}/inndstart" ;
 $innwatch = "${newsbin}/innwatch" ;
 $rnews = "${newsbin}/rnews" ;
 $perl_startup_innd = "$pathfilter/startup_innd.pl" ;

@@ -4,5 +4,4 @@ config_y.h
 imapfeed
 innfeed
 procbatch
-startinnfeed
 version.c

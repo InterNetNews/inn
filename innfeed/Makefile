@@ -2,27 +2,26 @@
 
 include ../Makefile.global
 
-top	        = ..
-CFLAGS		= $(GCFLAGS) $(SASLINC)
+top	      = ..
+CFLAGS	      = $(GCFLAGS) $(SASLINC)
 
-ALL		= innfeed procbatch startinnfeed imapfeed
+ALL	      = innfeed procbatch imapfeed
 
-SOURCES		= article.c buffer.c config_l.c config_y.c \
-		  endpoint.c host.c innlistener.c main.c misc.c \
-		  startinnfeed.c tape.c version.c
+SOURCES	      = article.c buffer.c config_l.c config_y.c endpoint.c \
+		host.c imap_connection.c innlistener.c main.c misc.c \
+		tape.c version.c
 
-INCLUDES	= article.h buffer.h configfile.h config_y.h connection.h \
-		  endpoint.h host.h innfeed.h innlistener.h misc.h tape.h
+INCLUDES      = article.h buffer.h configfile.h config_y.h connection.h \
+		endpoint.h host.h innfeed.h innlistener.h misc.h tape.h
 
-# The objects linked into innfeed.  All SOURCES except startinnfeed.
-OBJECTS		= article.o buffer.o config_l.o config_y.o \
-		  endpoint.o host.o innlistener.o main.o misc.o tape.o \
-		  version.o
+# The objects linked into innfeed.  All SOURCES except connection.o or
+# imap_connection.o
+OBJECTS	      = article.o buffer.o config_l.o config_y.o endpoint.o host.o \
+		innlistener.o main.o misc.o tape.o version.o
 
-INSTALLED	= $(D)$(PATHBIN)/innfeed \
-		  $(D)$(PATHBIN)/procbatch \
-		  $(D)$(PATHBIN)/startinnfeed \
-		  $(D)$(PATHBIN)/imapfeed
+INSTALLED     = $(D)$(PATHBIN)/imapfeed		\
+		$(D)$(PATHBIN)/innfeed		\
+		$(D)$(PATHBIN)/procbatch
 
 all: $(ALL)
 
@@ -72,9 +71,6 @@ imapfeed: $(OBJECTS) imap_connection.o $(LIBSTORAGE) $(LIBINN)
 procbatch: procbatch.in $(FIXSCRIPT)
 	$(FIXSCRIPT) procbatch.in
 
-startinnfeed: startinnfeed.o $(LIBINN)
-	$(LIBLD) $(LDFLAGS) -o $@ startinnfeed.o $(LIBINN) $(LIBS)
-
 # Not normally built.
 innfeed-convcfg: innfeed-convcfg.in $(FIXSCRIPT)
 	$(FIXSCRIPT) -i innfeed-convcfg.in
@@ -90,22 +86,6 @@ install: $(INSTALLED)
 $(D)$(PATHBIN)/innfeed:		innfeed		; $(LI_XPRI) $? $@
 $(D)$(PATHBIN)/imapfeed:	imapfeed	; $(LI_XPRI) $? $@
 $(D)$(PATHBIN)/procbatch:	procbatch	; $(CP_XPRI) $? $@
-
-$(D)$(PATHBIN)/startinnfeed: startinnfeed
-	@ME=`$(WHOAMI)` ; \
-	if [ x"$$ME" = xroot ] ; then \
-	    echo $(LI_SPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
-	    $(LI_SPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
-	else \
-	    echo $(LI_XPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
-	    $(LI_XPRI) startinnfeed $(D)$(PATHBIN)/startinnfeed ; \
-	    echo '' ; \
-	    echo '========================' ; \
-	    echo 'NOTE NOTE NOTE NOTE NOTE' ; \
-	    ls -l $@ ; \
-	    echo '$@ needs to be installed setuid root' ; \
-	    echo '' ; echo ; \
-	fi
 
 
 ##  Profiling.  These rules have not been checked for a while and may need
@@ -163,10 +143,6 @@ main.o: main.c innfeed.h ../include/inn/timer.h ../include/config.h \
 misc.o: misc.c innfeed.h ../include/inn/timer.h ../include/config.h \
  ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h \
  endpoint.h misc.h tape.h
-startinnfeed.o: startinnfeed.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
- ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/libinn.h
 tape.o: tape.c innfeed.h ../include/inn/timer.h ../include/config.h \
  ../include/clibrary.h ../include/inn/innconf.h \
  ../include/inn/messages.h ../include/libinn.h article.h misc.h \

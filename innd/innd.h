@@ -739,7 +739,7 @@ extern char	    *	RClabelname(CHANNEL *cp);
 extern void		RCclose(void);
 extern void		RChandoff(int fd, HANDOFF h);
 extern void		RCreadlist(void);
-extern void		RCsetup(int i);
+extern void		RCsetup(void);
 
 extern bool		SITEfunnelpatch(void);
 extern bool		SITEsetup(SITE *sp);

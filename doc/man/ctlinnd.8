@@ -609,11 +609,11 @@ routine.
 .BI xexec " path"
 The server gets ready to shut itself down, but instead of exiting it
 .IR exec 's
-.I <pathbin in inn.conf>/inndstart
+.I <pathbin in inn.conf>/innd
 with all of its original arguments except for ``\fB\-r\fP''.
 .I Path
-can be any of ``innd'', ``inndstart'', or an empty string, although all
-three valid parameters have exactly the same effect.
+can be either ``innd'' or an empty string, both of which will have
+exactly the same effect.
 Any other value is an error.
 .SH NOTES
 In addition to being acted upon within the server, certain commands can

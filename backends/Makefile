@@ -6,7 +6,7 @@ top	      = ..
 CFLAGS        = $(GCFLAGS)
 
 ALL           = actmerge actsync actsyncd archive batcher buffchan \
-		cvtbatch filechan inndf innxmit innxbatch mod-active \
+		cvtbatch filechan innbind inndf innxmit innxbatch mod-active \
 		news2mail ninpaths nntpget nntpsend overchan send-ihave \
 		send-nntp send-uucp sendinpaths sendxbatches shlock \
 		shrinkfile
@@ -14,8 +14,8 @@ ALL           = actmerge actsync actsyncd archive batcher buffchan \
 MAN	      = ../doc/man/send-uucp.8
 
 SOURCES       = actsync.c archive.c batcher.c buffchan.c cvtbatch.c \
-		filechan.c inndf.c innxbatch.c innxmit.c map.c ninpaths.c \
-		nntpget.c overchan.c shlock.c shrinkfile.c
+		filechan.c innbind.c inndf.c innxbatch.c innxmit.c map.c \
+		ninpaths.c nntpget.c overchan.c shlock.c shrinkfile.c
 
 INSTALLED     = $(D)$(PATHBIN)/actmerge		\
 		$(D)$(PATHBIN)/actsync		\
@@ -25,6 +25,7 @@ INSTALLED     = $(D)$(PATHBIN)/actmerge		\
 		$(D)$(PATHBIN)/buffchan		\
 		$(D)$(PATHBIN)/cvtbatch		\
 		$(D)$(PATHBIN)/filechan		\
+		$(D)$(PATHBIN)/innbind		\
 		$(D)$(PATHBIN)/inndf		\
 		$(D)$(PATHBIN)/innxmit		\
 		$(D)$(PATHBIN)/innxbatch	\
@@ -78,6 +79,7 @@ actsync:	actsync.o    $(LIBINN)	; $(LINK) actsync.o    $(INNLIBS)
 archive:	archive.o    $(BOTH)	; $(LINK) archive.o    $(STORELIBS)
 batcher:	batcher.o    $(BOTH)	; $(LINK) batcher.o    $(STORELIBS)
 cvtbatch:	cvtbatch.o   $(BOTH)	; $(LINK) cvtbatch.o   $(STORELIBS)
+innbind:	innbind.o    $(LIBINN)	; $(LINK) innbind.o    $(INNLIBS)
 inndf:		inndf.o      $(BOTH)	; $(LINK) inndf.o      $(STORELIBS)
 innxbatch:	innxbatch.o  $(LIBINN)	; $(LINK) innxbatch.o  $(INNLIBS)
 innxmit:	innxmit.o    $(BOTH)	; $(LINK) innxmit.o    $(STORELIBS)
@@ -141,6 +143,22 @@ $(D)$(PATHBIN)/sendxbatches:        sendxbatches        ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/shlock:              shlock              ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/shrinkfile:          shrinkfile          ; $(LI_XPUB) $? $@
 
+# Install innbind setuid root.
+$(D)$(PATHBIN)/innbind: innbind
+	@ME=`$(WHOAMI)` ; \
+	if [ x"$$ME" = xroot ] ; then \
+	    echo $(LI_SPRI) innbind $(D)$(PATHBIN)/innbind ; \
+	    $(LI_SPRI) innbind $(D)$(PATHBIN)/innbind ; \
+	else \
+	    echo $(LI_XPRI) innbind $(D)$(PATHBIN)/innbind ; \
+	    $(LI_XPRI) innbind $(D)$(PATHBIN)/innbind ; \
+	    echo '' ; \
+	    echo '========================' ; \
+	    echo 'NOTE NOTE NOTE NOTE NOTE' ; \
+	    ls -l $@ ; \
+	    echo '$@ needs to be installed setuid root' ; \
+	    echo '' ; echo ; \
+	fi
 
 ##  Dependencies.  Default list, below, is probably good enough.
 

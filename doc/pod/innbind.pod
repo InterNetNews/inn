@@ -1,0 +1,163 @@
+=head1 NAME
+
+innbind - Helper program to bind sockets to privileged ports
+
+=head1 SYNOPSIS
+
+B<innbind> I<fd>,I<family>,I<address>,I<port> [...]
+
+=head1 DESCRIPTION
+
+B<innbind> is a helper program that's not meant to be run directly.
+Instead, B<innd> and B<nnrpd> use it internally to bind to ports that
+require root privileges to bind to.
+
+This program must be installed setuid root in order for B<innd> or
+B<nnrpd> to bind to ports under 1024.  The only function that it's willing
+to perform is to bind an open file descriptor to a given address and port.
+It can only be run as the news user (as specified at configure time), and
+will only bind to ports 119, 433, an additional port specified with the
+B<--with-innd-port> argument to configure, or ports numbered 1024 or
+higher.
+
+Each argument to B<innbind> must be a comma-separated list of four
+elements.  The first is the file descriptor number that should be bound,
+the second is the numeric family of the socket (AF_INET or AF_INET6), the
+third is the local address to bind to (in dotted quad format for IPv4 and
+in colon-separated address format for IPv6), and the fourth is the port
+number.  To bind to all addresses with IPv4, use C<0.0.0.0> as the
+address.  To bind to all addresses with IPv6, use C<::> as the address.
+
+Multiple arguments can be specified to tell B<innbind> to bind multiple
+sockets at the same time.  Any errors encountered will cause B<innbind> to
+abort, and error messages will be sent both to syslog and to standard
+error.
+
+=head1 SECURITY
+
+As B<innbind> is normally installed setuid root, security is even more of
+an issue for it than for other parts of INN.  It is a fairly short
+program, and if you understand C, you are encouraged to audit it yourself
+to be certain that it does only what it is supposed to do.
+
+The ports that will be bound are restricted to prevent potential attacks
+made possible by the ability to bind low-numbered ports, such as exploits
+of the rsh(1) family of commands on some systems.  If B<innbind> is
+installed setuid root, it can only be executed by the news user to prevent
+other users on the system from being able to bind to even those few
+privileged ports that it allows.
+
+B<innbind> uses no external configuration files; the only files it might
+open are through the system getpwnam(3) service to get the UID of the news
+user.  The only user input that it accepts are its command-line arguments.
+
+=head1 DIAGNOSTICS
+
+B<innbind> may log the following messages to syslog and print them to
+standard error.
+
+=over 4
+
+=item cannot bind socket for %s: %s
+
+(Fatal) Calling bind for the socket corresponding to the given argument
+failed with a system error.  This can be caused by trying to use IPv6 on
+a system whose kernel does not support it.
+
+=item cannot bind to restricted port %hu in %s
+
+(Fatal) The port number portion of the given command-line argument is for
+a port below 1024 which is not 119, 433, or a port given to
+B<--with-innd-port> at configure time.  Other ports are not allowed for
+security reasons.
+
+=item cannot get socket options for file descriptor %d: %s
+
+(Fatal) B<innbind> was unable to get the socket options for that file
+descriptor.  The most likely cause of this error is passing the wrong file
+descriptor number to B<innbind> (a file descriptor that isn't open, or
+that corresponds to a regular file rather than a network socket).
+
+=item cannot get UID for %s
+
+(Fatal) B<innbind> was unable to get the UID for the news user specified
+during configure (and defaulting to C<news>).  This normally means that
+user isn't in the system passwd file.
+
+=item invalid file descriptor %d: not SOCK_STREAM
+
+(Fatal) The given file descriptor is not a SOCK_STREAM socket.  B<innbind>
+can only bind SOCK_STREAM sockets.
+
+=item invalid IPv4 address %s in %s
+
+(Fatal) The IPv4 address specified in the given command-line option could
+not be parsed by inet_aton(3).  IPv4 addresses should be specified in the
+standard dotted quad format (10.2.3.4).
+
+=item invalid IPv6 address %s in %s
+
+(Fatal) The IPv6 address specified in the given command-line option could
+not be parsed by inet_pton(3).  IPv6 addresses should be specified in RFC
+2373 format (1080:0:0:0:8:800:200C:417A or 1080::8:800:200C:417A).
+
+=item invalid command-line argument %s
+
+(Fatal) The specified command-line argument could not be parsed or was not
+in the correct format.
+
+=item invalid file descriptor %s in %s
+
+(Fatal) The file descriptor portion of the given command-line argument is
+not a non-negative integer.
+
+=item invalid port number %s in %s
+
+(Fatal) The port number portion of the given command-line argument is not
+a non-negative integer.
+
+=item invalid protocol family %s in %s
+
+(Fatal) The protocol family portion of the given command-line argument is
+not a non-negative integer.  It should be equal to either AF_INET or
+AF_INET6 on the system where B<innbind> is run.
+
+=item must be run by user %s (%lu), not %lu
+
+(Fatal) When setuid root, B<innbind> may only be run by the news user as
+specified at configure time (C<news> by default), for security reasons.
+
+=item unknown protocol family %s in %s
+
+(Fatal) The protocol number portion of the given command-line argument is
+neither AF_INET nor AF_INET6.
+
+=back
+
+=head1 EXAMPLES
+
+As mentioned above, B<innbind> is never run directly, only by B<innd> and
+other programs that need to bind to and listen to network ports.  Sample
+invocations by B<innd> would be:
+
+    innbind 3,10,::,119
+
+to bind the IPv6 socket on file descriptor 3 to port 119, all addresses,
+or:
+
+    innbind 6,2,10.0.0.3,433
+
+to bind the IPv4 socket on file descriptor 6 to port 433 in the address
+10.0.0.3.
+
+=head1 HISTORY
+
+Written by Russ Allbery <rra@stanford.edu> for InterNetNews.
+
+$Id$
+
+=head1 SEE ALSO
+
+inet_aton(3), inet_pton(3), innd(8), nnrpd(8)
+
+=cut

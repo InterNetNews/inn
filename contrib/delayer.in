@@ -10,9 +10,7 @@
 # innfeed-delayed!\
 #        :!*\
 #        :Tc,Wnm*,S16384:/usr/local/news/bin/delayer 60 \
-#		/usr/local/news/bin/startinnfeed -c innfeed-delayed.conf
-#
-#
+#		/usr/local/news/bin/innfeed -c innfeed-delayed.conf
 #
 # done by christian mock <cm@tahina.priv.at> sometime in july 1998,
 # and put into the public domain.

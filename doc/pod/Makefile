@@ -24,7 +24,7 @@ MAN5	= ../man/active.5 ../man/active.times.5 ../man/control.ctl.5 \
 
 MAN8	= ../man/auth_krb5.8 ../man/auth_smb.8 ../man/ckpasswd.8 \
 	../man/domain.8 ../man/expireover.8 ../man/ident.8 ../man/innd.8 \
-	../man/inndf.8 ../man/nnrpd.8 ../man/inndstart.8 ../man/innupgrade.8 \
+	../man/inndf.8 ../man/nnrpd.8 ../man/innbind.8 ../man/innupgrade.8 \
 	../man/mailpost.8 ../man/makehistory.8 ../man/ninpaths.8 \
 	../man/ovdb_init.8 ../man/ovdb_monitor.8 ../man/ovdb_server.8 \
 	../man/ovdb_stat.8 ../man/radius.8 ../man/rc.news.8 \
@@ -76,9 +76,9 @@ all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 ../man/domain.8:	domain.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/expireover.8:	expireover.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/ident.8:		ident.pod		; $(POD2MAN) -s 8 $? > $@
+../man/innbind.8:	innbind.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/innd.8:		innd.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/inndf.8:		inndf.pod		; $(POD2MAN) -s 8 $? > $@
-../man/inndstart.8:	inndstart.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/innupgrade.8:	innupgrade.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/mailpost.8:	mailpost.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/makehistory.8:	makehistory.pod		; $(POD2MAN) -s 8 $? > $@

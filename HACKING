@@ -198,8 +198,8 @@ Error Handling
 
     to the beginning of main (where program is the name of the program) will
     make it easier to figure out which program the script calls is failing. 
-    For programs that may also be called non-interactively, like inndstart,
-    one may want to set up handlers like:
+    For programs that may also be called non-interactively, like rnews, one
+    may want to set up handlers like:
 
         warn_set_handlers(2, error_log_stderr, error_log_syslog_warning);
         die_set_handlers(2, error_log_stderr, error_log_syslog_err);

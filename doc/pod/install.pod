@@ -297,12 +297,12 @@ F<doc/hook-tcl> for all the details.
 
 =item B<--with-innd-port>=PORT
 
-By default, inndstart(8) refuses to bind to any port under 1024 other than
+By default, innbind(8) refuses to bind to any port under 1024 other than
 119 and 433 for security reasons (to prevent attacks on rsh(1)-based
 commands and replacing standard system daemons).  If you want to run innd
 on a different port under 1024, you'll need to tell configure what port
 you intend to use.  (You'll also still need to set the port number in
-F<inn.conf> or give it to inndstart on the command line.)
+F<inn.conf> or give it to innd on the command line.)
 
 =item B<--with-syslog-facility>=FACILITY
 
@@ -828,11 +828,11 @@ the funnel feeds:
 
     innfeed!\
         :!*\
-        :Tc,Wnm*:/usr/local/news/bin/startinnfeed -y
+        :Tc,Wnm*:/usr/local/news/bin/innfeed -y
 
-(adjust the path to startinnfeed(1) if you installed it elsewhere).  Note
-that we don't feed this entry any articles directly (its newsgroup pattern
-is C<!*>).  Note also that the name of this entry ends in an exclamation
+(adjust the path to innfeed(1) if you installed it elsewhere).  Note that
+we don't feed this entry any articles directly (its newsgroup pattern is
+C<!*>).  Note also that the name of this entry ends in an exclamation
 point.  This is a standard convention for all special feeds; since the
 delimiter for the Path: header is C<!>, no site name containing that
 character can ever match the name of a real site.
@@ -851,13 +851,12 @@ different than the actual name of the server), and <newsgroups> is the
 wildmat pattern of newsgroups to be sent.
 
 As an alternative to NNTP, INN may also feed news out to an IMAP server,
-by using imapfeed(8), which is almost identical to F<innfeed>.  The
-F<startinnfeed> process can be told to start F<imapfeed> instead of
-F<innfeed>.  The feed entry for this is as follows:
+by using imapfeed(8), which is almost identical to F<innfeed>.  The feed
+entry for this is as follows:
 
     imapfeed!\
         :!*\
-        :Tc,Wnm*,S16384:/usr/local/news/bin/startinnfeed imapfeed
+        :Tc,Wnm*,S16384:/usr/local/news/bin/imapfeed
 
 And set up entries for each remote site like:
 
@@ -1401,20 +1400,18 @@ and innfeed).  This is vital on Solaris, which defaults (at least as of
 2.6) to an absurdly low limit of 64 file descriptors per process.
 
 One way to increase the number of file descriptors is to set
-I<rlimitnofile> in F<inn.conf> to a higher value.  This will cause both
-startinnfeed and inndstart (the setuid root wrapper scripts that start
-innfeed and innd, respectively) to increase the file descriptor limits
-before they run the regular INN programs.  Note, however, that INN won't
-be able to increase the limits above the hard limits set by your operating
-system; on some systems, that hard limit is normally 256 file descriptors
-(Linux, for example).  On others, like Solaris, it's 1024.  Increasing the
-limit beyond that value may require serious system configuration work.
-(On some operating systems, it requires patching and recompiling the
-kernel.  On Solaris it can be changed in F</etc/system>, but for 2.6 or
-earlier the limit cannot be increased beyond 1024 without breaking
-select(2) and thereby breaking all of INN.  For current versions of Linux,
-you may be able to change the maximum by writing to
-F</proc/sys/fs/file-max>.)
+I<rlimitnofile> in F<inn.conf> to a higher value.  This will cause B<innd>
+and B<innfeed> to try to increase the file descriptor limits when they
+start.  Note, however, that INN won't be able to increase the limits above
+the hard limits set by your operating system; on some systems, that hard
+limit is normally 256 file descriptors (Linux, for example).  On others,
+like Solaris, it's 1024.  Increasing the limit beyond that value may
+require serious system configuration work.  (On some operating systems, it
+requires patching and recompiling the kernel.  On Solaris it can be
+changed in F</etc/system>, but for 2.6 or earlier the limit cannot be
+increased beyond 1024 without breaking select(2) and thereby breaking all
+of INN.  For current versions of Linux, you may be able to change the
+maximum by writing to F</proc/sys/fs/file-max>.)
 
 256 file descriptors will probably be enough for all but the largest
 sites.  There is no harm in setting the limits higher than you actually

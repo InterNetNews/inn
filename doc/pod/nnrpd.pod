@@ -4,9 +4,10 @@ nnrpd - NNTP server for on-campus hosts
 
 =head1 SYNOPSIS
 
-B<nnrpd> [B<-DfnoRSt>] [B<-b> I<address>] [B<-c> I<configfile>]
-[B<-g> I<shadowgroup>>] [B<-i> I<initial>] [B<-I> I<instance>] [B<-p> I<port>]
-[B<-P> I<prefork>] [B<-r> I<reason>] [B<-s> I<padding>]
+B<nnrpd> [B<-DfnoRSt>] [B<-6> I<address>] [B<-b> I<address>]
+[B<-c> I<configfile>] S<[B<-g> I<shadowgroup>]> [B<-i> I<initial>]
+[B<-I> I<instance>] [B<-p> I<port>] [B<-P> I<prefork>] [B<-r> I<reason>]
+[B<-s> I<padding>]
 
 =head1 DESCRIPTION
 
@@ -32,13 +33,27 @@ resources. See the discussion of exponential backoff in inn.conf(5).
 
 =over 4
 
+=item B<-6> I<address>
+
+The B<-6> parameter instructs B<nnrpd> to bind to the specified IPv6
+address when started as a standalone daemon using the B<-D> flag.  This
+has to be a valid IPv6 address belonging to an interface of the local
+host.  It can also be C<::0>, saying to bind to all IPv6 addresses.
+
+Only one of B<-6> or B<-b> may be specified.  By default, B<nnrpd> in
+daemon mode listens to only IPv4 addresses.  With this option, it will
+listen to the specified IPv6 addresses instead.  On some systems, a value
+of C<::0> will cause it to listen to all IPv4 addresses as well, but on
+other systems, two copies of B<nnrpd>, one with B<-6> and one without it,
+will have to be run to accept both IPv6 and IPv4 connections.
+
 =item B<-b> I<address>
 
-The B<-b> parameter instructs B<nnrpd> to bind to the specified IP
-address when started as a standalone daemon using the B<-D> flag. This
-has to be a valid IPv4 or IPv6 address belonging to an interface of
-the local host.  It can also be ::0 (although the default is 0.0.0.0
-if unspecified).
+The B<-b> parameter instructs B<nnrpd> to bind to the specified IPv4
+address when started as a standalone daemon using the B<-D> flag.  This
+has to be a valid IPv4 address belonging to an interface of the local
+host.  It can also be 0.0.0.0, saying to bind to all addresses (this is
+the default).
 
 =item B<-c> I<configfile>
 

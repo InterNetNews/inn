@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.243 
+# From configure.in Revision: 1.244 
 # libtool.m4 - Configure libtool for the host system. -*-Shell-script-*-
 ## Copyright 1996, 1997, 1998, 1999, 2000, 2001
 ## Free Software Foundation, Inc.
@@ -392,7 +392,7 @@ ac_help="$ac_help
 ac_help="$ac_help
   --with-log-compress=METHOD   Log compression method [gzip]"
 ac_help="$ac_help
-  --with-innd-port=PORT   Additional low-numbered port for inndstart"
+  --with-innd-port=PORT   Additional low-numbered port for innbind"
 ac_help="$ac_help
   --enable-ipv6           Enable IPv6 support"
 ac_help="$ac_help
@@ -1941,7 +1941,7 @@ else
   if { (eval echo configure:1942: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
     for file in conftest.*; do
       case $file in
-      *.c | *.o | *.obj) ;;
+      *.$ac_ext | *.c | *.o | *.obj) ;;
       *) ac_cv_exeext=`echo $file | sed -e s/conftest//` ;;
       esac
     done

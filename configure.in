@@ -280,12 +280,12 @@ esac
 AC_SUBST(LOG_COMPRESS)
 AC_SUBST(LOG_COMPRESSEXT)
 
-dnl inndstart by default only allows ports 119 and 433 below 1024; if the user
+dnl innbind by default only allows ports 119 and 433 below 1024; if the user
 dnl wants to use some other port as well, they must use this option.
 AC_ARG_WITH(innd-port,
-    [  --with-innd-port=PORT   Additional low-numbered port for inndstart],
+    [  --with-innd-port=PORT   Additional low-numbered port for innbind],
     AC_DEFINE_UNQUOTED(INND_PORT, $with_innd_port,
-                       [Additional valid low-numbered port for inndstart.]))
+                       [Additional valid low-numbered port for innbind.]))
 
 dnl By default, we omit all IPv6 support.  This option enables it.
 AC_ARG_ENABLE(ipv6,

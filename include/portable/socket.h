@@ -6,6 +6,7 @@
 **
 **      #include <arpa/inet.h>
 **      #include <netinet/in.h>
+**      #include <netdb.h>
 **      #include <sys/socket.h>
 **
 **  but also cleans up various messes, mostly related to IPv6 support.  It
@@ -22,6 +23,7 @@
 /* BSDI needs <netinet/in.h> before <arpa/inet.h>. */
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netdb.h>
 #include <sys/socket.h>
 
 /* Provide prototypes for inet_aton and inet_ntoa if not prototyped in the
@@ -80,5 +82,12 @@ struct sockaddr_storage {
 #  endif
 # endif /* HAVE_SOCKADDR_LEN */
 #endif /* !HAVE_SA_LEN_MACRO */
+
+/* POSIX requires AI_ADDRCONFIG, but some implementations don't have it yet.
+   It's only used in a bitwise OR of flags, so defining it to 0 makes it
+   harmlessly go away. */
+#ifndef AI_ADDRCONFIG
+# define AI_ADDRCONFIG 0
+#endif
 
 #endif /* PORTABLE_SOCKET_H */

@@ -2,8 +2,7 @@
 # fixscript will replace this line with code to load innshellvars
 
 ##  $Revision$
-##  News boot script.  Runs as "news" user.  Requires inndstart be
-##  setuid root.  Run from rc.whatever as:
+##  News boot script.  Runs as "news" user.  Run from rc.whatever as:
 ##     su news -c /path/to/rc.news >/dev/console
 ##
 ##  Or to stop INN:
@@ -72,7 +71,7 @@ Xstop)
 esac
 
 ##  Pick ${INND} or ${INNDSTART}
-WHAT=${INNDSTART}
+WHAT=${INND}
 
 MAIL="${MAILCMD} -s 'Boot-time Usenet warning on `hostname`' ${NEWSMASTER}"
 

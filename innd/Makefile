@@ -5,19 +5,15 @@ include ../Makefile.global
 top	        = ..
 CFLAGS		= $(GCFLAGS) $(TCLINC)
 
-ALL		= innd inndstart
+ALL		= innd
 
-SOURCES		= art.c cc.c chan.c icd.c innd.c inndstart.c keywords.c lc.c \
-		  nc.c newsfeeds.c ng.c perl.c proc.c python.c rc.c site.c \
+SOURCES		= art.c cc.c chan.c icd.c innd.c keywords.c lc.c nc.c \
+		  newsfeeds.c ng.c perl.c proc.c python.c rc.c site.c \
 		  status.c tcl.c util.c wip.c
 
-# The objects that are linked into innd.  All SOURCES except inndstart.
-OBJECTS		= art.o cc.o chan.o icd.o innd.o keywords.o lc.o nc.o \
-		  newsfeeds.o ng.o perl.o proc.o python.o rc.o site.o \
-		  status.o tcl.o util.o wip.o
+OBJECTS		= $(SOURCES:.c=.o)
 
-INSTALLED	= $(D)$(PATHBIN)/innd \
-		  $(D)$(PATHBIN)/inndstart
+INSTALLED	= $(D)$(PATHBIN)/innd
 
 all: $(ALL)
 
@@ -46,31 +42,12 @@ python.o:	python.c	; $(CC) $(CFLAGS) $(PYTHONINC) -c python.c
 innd: $(OBJECTS) $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) $(INNDLIBS)
 
-inndstart: inndstart.o $(LIBINN)
-	$(LIBLD) $(LDFLAGS) -o $@ inndstart.o $(LIBINN) $(LIBS)
-
 
 ##  Installation rules.  Installation commands set in Makefile.global.
 
 install: $(INSTALLED)
 
 $(D)$(PATHBIN)/innd:	innd	; $(LI_XPRI) $? $@
-
-$(D)$(PATHBIN)/inndstart: inndstart
-	@ME=`$(WHOAMI)` ; \
-	if [ x"$$ME" = xroot ] ; then \
-	    echo $(LI_SPRI) inndstart $(D)$(PATHBIN)/inndstart ; \
-	    $(LI_SPRI) inndstart $(D)$(PATHBIN)/inndstart ; \
-	else \
-	    echo $(LI_XPRI) inndstart $(D)$(PATHBIN)/inndstart ; \
-	    $(LI_XPRI) inndstart $(D)$(PATHBIN)/inndstart ; \
-	    echo '' ; \
-	    echo '========================' ; \
-	    echo 'NOTE NOTE NOTE NOTE NOTE' ; \
-	    ls -l $@ ; \
-	    echo '$@ needs to be installed setuid root' ; \
-	    echo '' ; echo ; \
-	fi
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
@@ -130,10 +107,6 @@ innd.o: innd.c ../include/config.h ../include/inn/defines.h \
  ../include/inn/buffer.h ../include/inn/history.h \
  ../include/inn/timer.h ../include/libinn.h ../include/nntp.h \
  ../include/paths.h ../include/storage.h ../include/ov.h
-inndstart.o: inndstart.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/socket.h \
- ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/libinn.h ../include/paths.h
 keywords.o: keywords.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/inn/innconf.h \
  innd.h ../include/portable/time.h ../include/portable/socket.h \

@@ -15,9 +15,7 @@ the preceeding shutdown, emails certain boot-time warnings to
 I<newsmaster> (as set in F<inn.conf>), and is generally safer and easier
 than starting and stopping everything directly.  It needs to be run as the
 news user so that files in I<pathrun> are created with the right ownership
-(though this is less important for C<rc.news stop>), and therefore
-requires that F<inndstart> be setuid root, see inndstart(8) for
-discussion.
+(though this is less important for C<rc.news stop>).
 
 Programs run and stopped by this script include:
 
@@ -25,7 +23,7 @@ Programs run and stopped by this script include:
 
 =item *
 
-Always:  B<inndstart> is run, and B<innd> is stopped.
+Always:  B<innd> is started or stopped.
 
 =item *
 
@@ -96,7 +94,6 @@ $Id$
 ctlinnd(8),
 cnfsstat(8),
 inn.conf(5),
-inndstart(8),
 innwatch(8),
 ovdb(5).
 

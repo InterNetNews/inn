@@ -183,13 +183,6 @@ High Priority Projects
   care of these and to do things like analyze the tradspool.map file
   should be provided.
 
-* Rewrite inndstart as a helper program that only binds the relevant
-  sockets and then returns them to innd.  Since file descriptors are
-  shared by child processes, this can be done with a program spawned by
-  innd.  This may have gotten more complicated with IPv6.  Drop
-  startinnfeed entirely in favor of recommending people use ulimit in the
-  news init script.
-
 * contrib/mkbuf and contrib/reset-cnfs.c should be combined into a utility
   for creating and clearing cycbuffs, perhaps combined with cnfsheadconf,
   and the whole thing moved into storage/cnfs rather than frontends (along

@@ -21,6 +21,7 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/network.h"
 #include "libinn.h"
 #include "ov.h"
 #define MAINLINE
@@ -800,25 +801,19 @@ main(int argc, char *argv[])
     int 		count=123456789;
     struct		timeval tv;
     unsigned short	ListenPort = NNTP_PORT;
-#ifdef HAVE_INET6
-    char		ListenAddr[INET6_ADDRSTRLEN];
-#else
-    char		ListenAddr[16];
-#endif
+    char                *ListenAddr = NULL;
+    char                *ListenAddr6 = NULL;
     int			lfd, fd;
     socklen_t		clen;
 #ifdef HAVE_INET6
-    struct sockaddr_storage ssa, csa;
-    struct sockaddr_in6	*ssa6 = (struct sockaddr_in6 *) &ssa;
+    struct sockaddr_storage csa;
 #else
-    struct sockaddr_in	ssa, csa;
+    struct sockaddr_in	csa;
 #endif
-    struct sockaddr_in	*ssa4 = (struct sockaddr_in *) &ssa;
     struct stat		Sb;
     pid_t		pid = -1;
     gid_t               NewsGID;
     uid_t               NewsUID;
-    int                 one = 1;
     FILE                *pidfile;
     struct passwd	*pwd;
     int			clienttimeout;
@@ -863,25 +858,27 @@ main(int argc, char *argv[])
         exit(1);
 
 #ifdef HAVE_SSL
-    while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nop:P:Rr:s:tS")) != EOF)
+    while ((i = getopt(argc, argv, "6:c:b:Dfi:I:g:nop:P:Rr:s:tS")) != EOF)
 #else
-    while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nop:P:Rr:s:t")) != EOF)
+    while ((i = getopt(argc, argv, "6:c:b:Dfi:I:g:nop:P:Rr:s:t")) != EOF)
 #endif /* HAVE_SSL */
 	switch (i) {
 	default:
 	    Usage();
 	    /* NOTREACHED */
+        case '6':                       /* bind to a certain IPv6 address */
+            ListenAddr6 = xstrdup(optarg);
+            break;
+ 	case 'b':			/* bind to a certain IPv4 address */
+            ListenAddr = xstrdup(optarg);
+ 	    break;
 	case 'c':		/* use alternate readers.conf */
 	    ConfFile = concatpath(innconf->pathetc, optarg);
 	    break;
- 	case 'b':			/* bind to a certain address in
- 	        			   daemon mode */
-	    strlcpy(ListenAddr, optarg, sizeof(ListenAddr));
- 	    break;
  	case 'D':			/* standalone daemon mode */
  	    DaemonMode = true;
  	    break;
-       case 'P':                       /* prespawn count in daemon mode */
+        case 'P':                       /* prespawn count in daemon mode */
 	    respawn = atoi(optarg);
 	    break;
  	case 'f':			/* Don't fork on daemon mode */
@@ -927,6 +924,8 @@ main(int argc, char *argv[])
     argc -= optind;
     if (argc)
 	Usage();
+    if (ListenAddr != NULL && ListenAddr6 != NULL)
+        die("-6 and -b may not both be given");
 
     /*
      * Make other processes happier if someone is reading
@@ -948,42 +947,14 @@ main(int argc, char *argv[])
     SPOOLlen = strlen(innconf->patharticles);
 
     if (DaemonMode) {
-#ifdef HAVE_INET6
-	memset(&ssa, '\0', sizeof(struct sockaddr_in6));
-	ssa6->sin6_family = AF_INET6;
-	ssa6->sin6_port   = htons(ListenPort);
-	if (inet_pton(AF_INET6, ListenAddr, ssa6->sin6_addr.s6_addr) > 0) {
-	    if ( (lfd = socket(AF_INET6, SOCK_STREAM, 0)) < 0) {
-		syslog(L_FATAL, "can't open socket (%m)");
-		exit(1);
-	    }
-	}
-	else {
-#endif
-	    memset(&ssa, '\0', sizeof(struct sockaddr_in));
-	    ssa4->sin_family = AF_INET;
-	    ssa4->sin_port   = htons(ListenPort);
-	    if (inet_aton(ListenAddr, &ssa4->sin_addr) <= 0 )
-		ssa4->sin_addr.s_addr = htonl(INADDR_ANY);
-	    if ( (lfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-		syslog(L_FATAL, "can't open socket (%m)");
-		exit(1);
-	    }
-#ifdef HAVE_INET6
-	}
-#endif
-
-	if (setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR,
-		       (char *)&one, sizeof(one)) < 0) {
-	    syslog(L_FATAL, "can't setsockopt(SO_REUSEADDR) (%m)");
-	    exit(1);
-	}
-
-	if (bind(lfd, (struct sockaddr *) &ssa, sizeof(ssa)) < 0) {
-	    fprintf(stderr, "%s: can't bind (%s)\n", argv[0], strerror(errno));
-	    syslog(L_FATAL, "can't bind local address (%m)");
-	    exit(1);
-	}
+        if (ListenAddr6 != NULL)
+            lfd = network_bind_ipv6(ListenAddr6, ListenPort);
+        else if (ListenAddr != NULL)
+            lfd = network_bind_ipv4(ListenAddr, ListenPort);
+        else
+            lfd = network_bind_ipv4("0.0.0.0", ListenPort);
+        if (lfd < 0)
+            die("cant bind to any addresses");
 
 	/* If started as root, switch to news uid */
 	if (getuid() == 0) {

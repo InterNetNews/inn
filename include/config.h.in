@@ -1,4 +1,4 @@
-/* include/config.h.in.  Generated automatically from configure.in by autoheader.  */
+/* include/config.h.in.  Generated automatically from configure.in by autoheader 2.13.  */
 /*  $Id$
 **
 **  Here be configuration data used by various InterNetNews programs.  This
@@ -213,6 +213,9 @@
 /* Define if you have the inet_aton function.  */
 #undef HAVE_INET_ATON
 
+/* Define if you have the krb5_init_ets function.  */
+#undef HAVE_KRB5_INIT_ETS
+
 /* Define if you have the madvise function.  */
 #undef HAVE_MADVISE
 
@@ -293,9 +296,6 @@
 
 /* Define if you have the ulimit function.  */
 #undef HAVE_ULIMIT
-
-/* Define if you have the krb5_init_ets function.  */
-#undef HAVE_KRB5_INIT_ETS
 
 /* Define if you have the <crypt.h> header file.  */
 #undef HAVE_CRYPT_H
@@ -405,7 +405,7 @@
 /* The umask used by all INN programs. */
 #undef NEWSUMASK
 
-/* Additional valid low-numbered port for inndstart. */
+/* Additional valid low-numbered port for innbind. */
 #undef INND_PORT
 
 /* Define to enable IPv6 support. */
@@ -425,6 +425,9 @@
 
 /* Define if OpenSSL is available. */
 #undef HAVE_SSL
+
+/* Define if SASL is available. */
+#undef HAVE_SASL
 
 /* Define if SASL is available. */
 #undef HAVE_SASL

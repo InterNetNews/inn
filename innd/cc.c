@@ -1254,18 +1254,18 @@ CCreaders(char *av[])
 static const char *
 CCxexec(char *av[])
 {
-    char	*inndstart;
+    char	*innd;
     char	*p;
     int		i;
 
     if (CCargv == NULL)
 	return "1 no argv!";
     
-    inndstart = concatpath(innconf->pathbin, "inndstart");
+    innd = concatpath(innconf->pathbin, "innd");
     /* Get the pathname. */
     p = av[0];
-    if (*p == '\0' || strcmp(p, "innd") == 0 || strcmp(p, "inndstart") == 0)
-	CCargv[0] = inndstart;
+    if (*p == '\0' || strcmp(p, "innd") == 0)
+	CCargv[0] = innd;
     else
 	return "1 Bad value";
 

@@ -59,14 +59,14 @@ controlchan!\
 ##  The feed pattern for innfeed should *always* be "!*"; don't ever
 ##  feed articles directly into innfeed.
 ##
-##  Add "-y" as an option to startinnfeed to use the name of each feed as
-##  the name of the host to feed articles to; without "-y" an innfeed.conf
+##  Add "-y" as an option to innfeed to use the name of each feed as the
+##  name of the host to feed articles to; without "-y" an innfeed.conf
 ##  file is needed.
 
 # innfeed funnel master.
 #innfeed!\
 #	:!*\
-#	:Tc,Wnm*:@prefix@/bin/startinnfeed
+#	:Tc,Wnm*:@prefix@/bin/innfeed
 
 ##  Only uncomment this feed if both enableoverview and useoverchan are
 ##  set to true in inn.conf.  By default, innd will write out overview

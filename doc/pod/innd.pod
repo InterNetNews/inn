@@ -4,9 +4,9 @@ innd - InterNetNews daemon
 
 =head1 SYNOPSIS
 
-B<innd> [B<-aCdfNrsu>] [B<-c> I<days>] [B<-H> I<count>] [B<-i> I<count>]
-[B<-I> I<address>] [B<-l> I<size>] [B<-m> I<mode>] [B<-n> I<flag>]
-[B<-o> I<count>] [B<-p> I<fd>] [B<-P> I<port>] [B<-t> I<timeout>]
+B<innd> [B<-aCdfNrsu>] [B<-6> I<address>] [B<-c> I<days>] [B<-H> I<count>]
+[B<-i> I<count>] S<[B<-I> I<address>]> [B<-l> I<size>] [B<-m> I<mode>]
+[B<-n> I<flag>] [B<-o> I<count>] [B<-P> I<port>] S<[B<-t> I<timeout>]>
 [B<-T> I<count>] [B<-X> I<seconds>]
 
 =head1 DESCRIPTION
@@ -51,15 +51,11 @@ variety of configuration parameters.  Some parameters in inn.conf(5) can
 also be set with command-line flags; for these, the command-line flags
 take precedence if used.
 
-B<innd> should normally not run directly.  It must run as the news user or
-all sorts of file ownership problems may result, and normally the port it
-listens on (119 or 433) is privileged and must be opened by root.
-Instead, B<innd> should normally be started via inndstart(8), a small
-setuid-root program that opens the appropriate port, cleans up the
-environment, changes to the news user, and then runs B<innd>, passing
-along any command-line arguments.
-
-To use IPv6, B<innd> must be started by B<inndstart>.
+B<innd> must be run as the news user and news group.  It will check for
+this at startup and fail to start if not run properly.  Normally it should
+be started via rc.news(8) as part of the system bootup process.  It relies
+on the setuid root helper program innbind(8) to listen on a privileged
+port (119 or 433).
 
 =head1 OPTIONS
 
@@ -68,6 +64,18 @@ for the default values if neither the F<inn.conf> setting nor the
 command-line option is given.
 
 =over 4
+
+=item B<-6> I<address>
+
+Only applies when INN has been built with IPv6 support.  Normally B<innd>
+binds to all local IP addresses (unless I<bindaddress6> is set in
+F<inn.conf>).  If this option is given, it specifies the IPv6 address that
+INN should bind to.  The IPv6 address must be in colon-separated RFC 2373
+format (C<n:n:n:n:n:n:n:n>).
+
+If this option is specified, it's the same as setting I<bindaddress6> in
+F<inn.conf> and may cause changes in whether INN binds to an IPv4 address
+as well.  See inn.conf(5) for more details.
 
 =item B<-a>
 
@@ -130,14 +138,15 @@ check is suppressed.
 
 =item B<-I> I<address>
 
-Normally if B<innd> itself binds to a port, it lets the operating system
-pick the source IP address (unless I<bindaddress> is set in F<inn.conf>).
-If this option is given, it specifies the IP address that INN should bind
-as.  This is only relevant for servers with multiple local IP addresses.
-The IP address must be in dotted quad (C<nnn.nnn.nnn.nnn>) format.
+Normally B<innd> binds to all local IP addresses (unless I<bindaddress> is
+set in F<inn.conf>).  If this option is given, it specifies the IP address
+that INN should bind as.  This is only relevant for servers with multiple
+local IP addresses.  The IP address must be in dotted quad
+(C<nnn.nnn.nnn.nnn>) format.
 
-This option is rarely useful since B<innd> should not be binding to a
-port itself.  Instead, use inndstart(8) and its analgous B<-I> option.
+If this option is specified, it's the same as setting I<bindaddress> in
+F<inn.conf> and may cause changes in whether INN binds to an IPv6 address
+as well.  See inn.conf(5) for more details.
 
 =item B<-l> I<size>
 
@@ -183,24 +192,11 @@ feeds is fixed, being the number of file feeds configured in F<newsfeeds>,
 and is generally small (particularly given that innfeed(8) is now used for
 most outgoing feeds at large sites).
 
-=item B<-p> I<fd>
-
-If this flag is given, B<innd> expects the file descriptor given by I<fd>
-to already be open and bound to the appropriate local port and to be
-suitable for listening to for incoming connections.  This is how
-B<inndstart> tells B<innd> which open file descriptor is the network
-connection.  If this flag is not given, B<innd> will attempt to open its
-network socket itself.  B<inndstart> always passes this flag to B<innd>.
-
 =item B<-P> I<port>
 
 The port B<innd> should listen on is normally given by the value of
 I<port> in F<inn.conf>.  This option, if given, overrides that value and
-specifies the port that B<innd> should bind to.  This option is rarely
-useful since B<innd> normally does not bind itself; instead the analgous
-B<-P> option to inndstart(8) should be used.  Since B<innd> should never
-be run as root, I<port> has to be a non-privileged port (one larger than
-1024).
+specifies the port that B<innd> should bind to.
 
 =item B<-r>
 
@@ -488,6 +484,6 @@ $Id$
 =head1 SEE ALSO
 
 active(5), ctlinnd(8), dbz(3), history(5), incoming.conf(5), inn.conf(5),
-newsfeeds(5), nnrpd(8), rnews(1), syslog(3).
+innbind(8), newsfeeds(5), nnrpd(8), rnews(1), syslog(3).
 
 =cut

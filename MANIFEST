@@ -54,6 +54,7 @@ backends/buffchan.c                   Buffered funnel to file splitter
 backends/crosspost.c                  Create links for crossposts (obselete)
 backends/cvtbatch.c                   Add fields to simple batchfile
 backends/filechan.c                   Split a funnel into separate files
+backends/innbind.c                    Bind to low-numbered network ports
 backends/inndf.c                      df used for innwatch
 backends/innxbatch.c                  Send batches using XBATCH to remote
 backends/innxmit.c                    Send articles to remote site
@@ -172,12 +173,12 @@ doc/man/ident.8                       Manpage for ident resolver
 doc/man/incoming.conf.5               Manpage for incoming.conf config file
 doc/man/inews.1                       Manpage for inews frontend
 doc/man/inn.conf.5                    Manpage for inn.conf config file
+doc/man/innbind.8                     Manpage for innbind
 doc/man/inncheck.8                    Manpage for inncheck utility
 doc/man/innconfval.1                  Manpage for innconfval
 doc/man/innd.8                        Manpage for innd server
 doc/man/inndcomm.3                    Manpage for part of INN library
 doc/man/inndf.8                       Manpage for inndf utility
-doc/man/inndstart.8                   Manpage for inndstart
 doc/man/innfeed.1                     Manpage for innfeed backend
 doc/man/innfeed.conf.5                Manpage for innfeed.conf config file
 doc/man/innmail.1                     Manpage for innmail utility
@@ -239,7 +240,6 @@ doc/man/shlock.1                      Manpage for shlock backend utility
 doc/man/shrinkfile.1                  Manpage for shrinkfile utility
 doc/man/simpleftp.1                   Manpage for simpleftp utility
 doc/man/sm.1                          Manpage for sm
-doc/man/startinnfeed.1                Manpage for startinnfeed
 doc/man/storage.conf.5                Manpage for storage.conf config file
 doc/man/subscriptions.5               Manpage for subscriptions list
 doc/man/tally.control.8               Manpage for tally.control
@@ -269,10 +269,10 @@ doc/pod/hook-perl.pod                 Master file for doc/hook-perl
 doc/pod/hook-python.pod               Master file for doc/hook-python
 doc/pod/ident.pod                     Master file for ident.8
 doc/pod/inn.conf.pod                  Master file for inn.conf.5
+doc/pod/innbind.pod                   Master file for innbind.8
 doc/pod/innconfval.pod                Master file for innconfval.1
 doc/pod/innd.pod                      Master file for innd.8
 doc/pod/inndf.pod                     Master file for inndf.8
-doc/pod/inndstart.pod                 Master file for inndstart.8
 doc/pod/innmail.pod                   Master file for innmail.1
 doc/pod/innupgrade.pod                Master file for innupgrade.8
 doc/pod/install.pod                   Master file for INSTALL
@@ -367,6 +367,7 @@ include/inn/list.h                    Header file for list routines
 include/inn/md5.h                     Header file for MD5 digests
 include/inn/messages.h                Header file for message functions
 include/inn/mmap.h                    Header file for mmap() functions
+include/inn/network.h                 Header file for network functions
 include/inn/qio.h                     Header file for quick I/O package
 include/inn/sequence.h                Header file for sequence space arithmetic
 include/inn/timer.h                   Header file for generic timers
@@ -395,7 +396,6 @@ innd/chan.c                           I/O channel routines
 innd/icd.c                            Read and write the active file
 innd/innd.c                           Main and utility routines
 innd/innd.h                           Header file for server
-innd/inndstart.c                      Open the NNTP port, then exec innd
 innd/keywords.c                       Generate article keywords
 innd/lc.c                             Local NNTP channel routines
 innd/nc.c                             NNTP channel routines
@@ -436,7 +436,6 @@ innfeed/main.c                        Main routines for the innfeed program
 innfeed/misc.c                        Miscelloneous routines for innfeed
 innfeed/misc.h                        Header file for misc.c
 innfeed/procbatch.in                  Script to process dropped articles
-innfeed/startinnfeed.c                Start innfeed
 innfeed/tape.c                        Implementation of the Tape class
 innfeed/tape.h                        Public interface to the Tape class
 innfeed/testListener.pl               Script to hand articles to innfeed
@@ -478,6 +477,7 @@ lib/memcmp.c                          memcmp replacement
 lib/messages.c                        Error reporting and debug output
 lib/mkstemp.c                         mkstemp replacement
 lib/mmap.c                            mmap manipulation routines
+lib/network.c                         Network utility functions
 lib/parsedate.y                       Date parsing
 lib/perl.c                            Perl hook support for nnrpd and innd
 lib/pread.c                           pread replacement
@@ -737,3 +737,4 @@ tests/overview/tradindexed-t.c        Tests for storage/tradindexed/*
 tests/runtests.c                      The test suite driver program
 tests/util                            Test suite for utilities (Directory)
 tests/util/convdate.t                 Tests for expire/convdate
+tests/util/innbind-t.c                Tests for backends/innbind

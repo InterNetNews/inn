@@ -45,7 +45,8 @@ were chosen.
      happens to be true for most clients of inn.conf, for example, but
      inndstart doesn't want the code needed to reduce everything to a
      struct and set default values to necessarily be executed in a
-     security-critical context.
+     security-critical context.  (The example is now obsolete with the
+     removal of inndstart, but the basic idea is still sound.)
 
      Additionally, making the parser know more semantic information either
      complicates (significantly) the parser interface or means that the

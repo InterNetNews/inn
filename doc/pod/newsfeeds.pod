@@ -671,15 +671,14 @@ rather than C<feed.example.com>.
 The typical feed entry for innfeed(8) is a good example of a channel feed
 that's the target of various funnel feeds:
 
-    innfeed!:!*:Tc,Wnm*:/usr/local/news/bin/startinnfeed -y
+    innfeed!:!*:Tc,Wnm*:/usr/local/news/bin/innfeed -y
 
 Note that the I<pattern> for this feed is just C<!*> so that it won't
 receive any articles directly.  The feed should only receive those
 articles that would go to one of the funnel feeds that are feeding into
-it.  innfeed(8) (spawned by B<startinnfeed>) will receive one line per
-article on its standard input containing the storage API token, the
-message ID, and a space-separated list of sites that should receive that
-article.
+it.  innfeed(8) will receive one line per article on its standard input
+containing the storage API token, the message ID, and a space-separated
+list of sites that should receive that article.
 
 Here's a more esoteric example of a channel feed:
 

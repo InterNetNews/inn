@@ -8,7 +8,6 @@ Notes about IPv6 support in INN:
 
 Things that will break if you compile with --enable-ipv6:
 
-    * innd can only be started via inndstart
     * IP_OPTIONS are not cleared for any incoming connections to innd even
       over IPv4
   
@@ -44,4 +43,3 @@ Some comments as of the completion of the original patch:
     non-portable behavior; the IPv6 API standardization process has left
     quite a wake of incompatible API implementations over the years.
     -Nathan
-

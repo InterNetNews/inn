@@ -15,7 +15,8 @@ TESTS	= lib/buffer.t lib/concat.t lib/confparse.t lib/date.t lib/hash.t \
 	lib/innconf.t lib/list.t lib/md5.t lib/memcmp.t lib/messages.t \
 	lib/mkstemp.t lib/pread.t lib/pwrite.t lib/qio.t lib/snprintf.t \
 	lib/strerror.t lib/strlcat.t lib/strlcpy.t lib/tst.t lib/uwildmat.t \
-	lib/vector.t lib/wire.t lib/xwrite.t overview/tradindexed.t
+	lib/vector.t lib/wire.t lib/xwrite.t overview/tradindexed.t \
+	util/innbind.t
 
 ##  Extra stuff that needs to be built before tests can be run.
 
@@ -177,3 +178,6 @@ lib/xwrite.t: lib/xwrite-t.o lib/xwrite.o lib/fakewrite.o $(LIBINN)
 
 overview/tradindexed.t: overview/tradindexed-t.o libtest.o $(STORAGEDEPS)
 	$(LINK) overview/tradindexed-t.o libtest.o $(STORAGELIBS) $(LIBS)
+
+util/innbind.t: util/innbind-t.o libtest.o $(LIBINN)
+	$(LINK) util/innbind-t.o libtest.o $(LIBINN) $(LIBS)

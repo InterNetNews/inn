@@ -5,6 +5,8 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include <grp.h>
+#include <pwd.h>
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
@@ -281,8 +283,10 @@ main(int ac, char *av[])
     char *path;
     char *t;
     bool flag;
+    struct passwd *pwd;
+    struct group *grp;
     static char		WHEN[] = "PID file";
-    int			i, j, fd[MAX_SOCKETS + 1];
+    int			i, j;
     char		buff[SMBUF], *path1, *path2;
     FILE		*F;
     bool		ShouldFork;
@@ -310,10 +314,24 @@ main(int ac, char *av[])
     message_handlers_warn(2, message_log_stderr, message_log_syslog_err);
     message_handlers_notice(1, message_log_syslog_notice);
 
-    /* Make sure innd is not running as root.  innd must be either started
-       via inndstart or use a non-privileged port. */
-    if (getuid() == 0 || geteuid() == 0)
-        die("SERVER must be run as user news, not root (use inndstart)");
+    /* Make sure innd is running as the correct user.  If it is started as
+       root, switch to running as the news user. */
+    grp = getgrnam(NEWSGRP);
+    if (grp == NULL)
+        die("SERVER cannot get GID for %s", NEWSGRP);
+    pwd = getpwnam(NEWSUSER);
+    if (pwd == NULL)
+        die("SERVER cannot get UID for %s", NEWSUSER);
+    if (getuid() == 0 || geteuid() == 0) {
+        setgid(grp->gr_gid);
+        setuid(pwd->pw_uid);
+    }
+    if (getuid() != pwd->pw_uid)
+        die("SERVER should run as user %s (%lu), not %lu", NEWSUSER,
+            (unsigned long) pwd->pw_uid, (unsigned long) getuid());
+    if (getgid() != grp->gr_gid)
+        die("SERVER should run as group %s (%lu), not %lu", NEWSGRP,
+            (unsigned long) grp->gr_gid, (unsigned long) getgid());
 
     /* Handle malloc debugging. */
 #if	defined(_DEBUG_MALLOC_INC)
@@ -333,7 +351,6 @@ main(int ac, char *av[])
     ShouldFork = true;
     ShouldRenumber = false;
     ShouldSyntaxCheck = false;
-    fd[0] = fd[1] = -1;
 
     /* Set some options from inn.conf that can be overridden with
        command-line options if they exist, so read inn.conf first. */
@@ -342,11 +359,16 @@ main(int ac, char *av[])
 
     /* Parse JCL. */
     CCcopyargv(av);
-    while ((i = getopt(ac, av, "ac:Cdfi:l:m:o:Nn:p:P:rst:uH:T:X:")) != EOF)
+    while ((i = getopt(ac, av, "6:ac:Cdfi:l:m:o:Nn:P:rst:uH:T:X:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
 	    /* NOTREACHED */
+        case '6':
+            if (innconf->bindaddress6)
+                free(innconf->bindaddress6);
+            innconf->bindaddress6 = xstrdup(optarg);
+            break;
 	case 'a':
 	    AnyIncoming = true;
 	    break;
@@ -404,22 +426,6 @@ main(int ac, char *av[])
 	    break;
 	case 'o':
 	    MaxOutgoing = atoi(optarg);
-	    break;
-	case 'p':
-	    /* Silently ignore multiple -p flags, in case ctlinnd xexec
-	       called inndstart. */
-	    if (fd[0] != -1)
-		break;
-	    t = xstrdup(optarg);
-	    p = strtok(t, ",");
-	    j = 0;
-	    do {
-		fd[j++] = atoi(p);
-		if (j == MAX_SOCKETS)
-		    break;
-	    } while ((p = strtok(NULL, ",")) != NULL);
-	    fd[j] = -1;
-	    free(t);
 	    break;
 	case 'P':
 	    innconf->port = atoi(optarg);
@@ -523,17 +529,15 @@ main(int ac, char *av[])
     if (innconf->enableoverview && !OVopen(OV_WRITE))
         die("SERVER cant open overview method");
 
-    /* Always attempt to increase the number of open file descriptors.  If
-       we're not root, this may just fail quietly. */
+    /* Attempt to increase the number of open file descriptors. */
     if (innconf->rlimitnofile > 0)
-        setfdlimit(innconf->rlimitnofile);
+        if (setfdlimit(innconf->rlimitnofile) < 0)
+            syswarn("SERVER cant set file descriptor limit");
 
     /* Get number of open channels. */
     i = getfdlimit();
-    if (i < 0) {
-	syslog(L_FATAL, "%s cant get file descriptor limit: %m", LogName);
-	exit(1);
-    }
+    if (i < 0)
+        sysdie("SERVER cant get file descriptor limit");
 
     /* There is no file descriptor limit on some hosts; for those, cap at
        MaxOutgoing plus maxconnections plus 20, or 5000, whichever is larger. 
@@ -584,9 +588,7 @@ main(int ac, char *av[])
     InndHisOpen();
     CCsetup();
     LCsetup();
-    RCsetup(fd[0]);
-    for (i = 1; fd[i] != -1; i++)
-	RCsetup(fd[i]);
+    RCsetup();
     WIPsetup();
     NCsetup();
     ARTsetup();

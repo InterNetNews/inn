@@ -26,9 +26,9 @@ $newsgroup = '@NEWSGRP@';
     'incoming.conf',	"$inn::pathetc/incoming.conf",
     'inews',		"$inn::pathbin/inews",
     'inn.conf',		"$inn::pathetc/inn.conf",
+    'innbind',          "$inn::pathbin/innbind",
     'innd',		"$inn::pathbin/innd",
     'innddir',		"$inn::pathrun",
-    'inndstart',	"$inn::pathbin/inndstart",
     'moderators',	"$inn::pathetc/moderators",
     'most_logs',	"$inn::pathlog",
     'newsbin',		"$inn::pathbin",
@@ -760,10 +760,10 @@ check_all_perms
 	&checkperm($paths{$_}, 0755);
     }
     &checkperm($paths{'innddir'}, 0750);
+    &checkperm($paths{'innbind'}, 04550, 'root');
     foreach ( keys %prog_modes ) {
 	&checkperm($paths{$_}, $prog_modes{$_});
     }
-    &checkperm($paths{'inndstart'}, 04550, 'root', $newsgroup);
     foreach ( keys %paths ) {
 	&checkperm($paths{$_}, $modes{$_})
 	    if defined $modes{$_};

@@ -129,14 +129,14 @@
 .\" ========================================================================
 .\"
 .IX Title "INND 8"
-.TH INND 8 "2003-03-18" "INN 2.4.0" "InterNetNews Documentation"
+.TH INND 8 "2003-04-18" "INN 2.5.0" "InterNetNews Documentation"
 .SH "NAME"
 innd \- InterNetNews daemon
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
-\&\fBinnd\fR [\fB\-aCdfNrsu\fR] [\fB\-c\fR \fIdays\fR] [\fB\-H\fR \fIcount\fR] [\fB\-i\fR \fIcount\fR]
-[\fB\-I\fR \fIaddress\fR] [\fB\-l\fR \fIsize\fR] [\fB\-m\fR \fImode\fR] [\fB\-n\fR \fIflag\fR]
-[\fB\-o\fR \fIcount\fR] [\fB\-p\fR \fIfd\fR] [\fB\-P\fR \fIport\fR] [\fB\-t\fR \fItimeout\fR]
+\&\fBinnd\fR [\fB\-aCdfNrsu\fR] [\fB\-6\fR \fIaddress\fR] [\fB\-c\fR \fIdays\fR] [\fB\-H\fR \fIcount\fR]
+[\fB\-i\fR \fIcount\fR] [\fB\-I\fR\ \fIaddress\fR] [\fB\-l\fR \fIsize\fR] [\fB\-m\fR \fImode\fR]
+[\fB\-n\fR \fIflag\fR] [\fB\-o\fR \fIcount\fR] [\fB\-P\fR \fIport\fR] [\fB\-t\fR\ \fItimeout\fR]
 [\fB\-T\fR \fIcount\fR] [\fB\-X\fR \fIseconds\fR]
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
@@ -180,20 +180,27 @@ variety of configuration parameters.  Some parameters in \fIinn.conf\fR\|(5) can
 also be set with command-line flags; for these, the command-line flags
 take precedence if used.
 .PP
-\&\fBinnd\fR should normally not run directly.  It must run as the news user or
-all sorts of file ownership problems may result, and normally the port it
-listens on (119 or 433) is privileged and must be opened by root.
-Instead, \fBinnd\fR should normally be started via \fIinndstart\fR\|(8), a small
-setuid-root program that opens the appropriate port, cleans up the
-environment, changes to the news user, and then runs \fBinnd\fR, passing
-along any command-line arguments.
-.PP
-To use IPv6, \fBinnd\fR must be started by \fBinndstart\fR.
+\&\fBinnd\fR must be run as the news user and news group.  It will check for
+this at startup and fail to start if not run properly.  Normally it should
+be started via \fIrc.news\fR\|(8) as part of the system bootup process.  It relies
+on the setuid root helper program \fIinnbind\fR\|(8) to listen on a privileged
+port (119 or 433).
 .SH "OPTIONS"
 .IX Header "OPTIONS"
 For the options below that override \fIinn.conf\fR settings, see \fIinn.conf\fR\|(5)
 for the default values if neither the \fIinn.conf\fR setting nor the
 command-line option is given.
+.IP "\fB\-6\fR \fIaddress\fR" 4
+.IX Item "-6 address"
+Only applies when \s-1INN\s0 has been built with IPv6 support.  Normally \fBinnd\fR
+binds to all local \s-1IP\s0 addresses (unless \fIbindaddress6\fR is set in
+\&\fIinn.conf\fR).  If this option is given, it specifies the IPv6 address that
+\&\s-1INN\s0 should bind to.  The IPv6 address must be in colon-separated \s-1RFC\s0 2373
+format (\f(CW\*(C`n:n:n:n:n:n:n:n\*(C'\fR).
+.Sp
+If this option is specified, it's the same as setting \fIbindaddress6\fR in
+\&\fIinn.conf\fR and may cause changes in whether \s-1INN\s0 binds to an IPv4 address
+as well.  See \fIinn.conf\fR\|(5) for more details.
 .IP "\fB\-a\fR" 4
 .IX Item "-a"
 By default, if a host connects to \fBinnd\fR but is not listed in
@@ -249,14 +256,15 @@ given, overrides the value of that setting.  If \fIcount\fR is \f(CW0\fR, this
 check is suppressed.
 .IP "\fB\-I\fR \fIaddress\fR" 4
 .IX Item "-I address"
-Normally if \fBinnd\fR itself binds to a port, it lets the operating system
-pick the source \s-1IP\s0 address (unless \fIbindaddress\fR is set in \fIinn.conf\fR).
-If this option is given, it specifies the \s-1IP\s0 address that \s-1INN\s0 should bind
-as.  This is only relevant for servers with multiple local \s-1IP\s0 addresses.
-The \s-1IP\s0 address must be in dotted quad (\f(CW\*(C`nnn.nnn.nnn.nnn\*(C'\fR) format.
+Normally \fBinnd\fR binds to all local \s-1IP\s0 addresses (unless \fIbindaddress\fR is
+set in \fIinn.conf\fR).  If this option is given, it specifies the \s-1IP\s0 address
+that \s-1INN\s0 should bind as.  This is only relevant for servers with multiple
+local \s-1IP\s0 addresses.  The \s-1IP\s0 address must be in dotted quad
+(\f(CW\*(C`nnn.nnn.nnn.nnn\*(C'\fR) format.
 .Sp
-This option is rarely useful since \fBinnd\fR should not be binding to a
-port itself.  Instead, use \fIinndstart\fR\|(8) and its analgous \fB\-I\fR option.
+If this option is specified, it's the same as setting \fIbindaddress\fR in
+\&\fIinn.conf\fR and may cause changes in whether \s-1INN\s0 binds to an IPv6 address
+as well.  See \fIinn.conf\fR\|(5) for more details.
 .IP "\fB\-l\fR \fIsize\fR" 4
 .IX Item "-l size"
 \&\fBinnd\fR normally rejects any article larger than the value of
@@ -296,23 +304,11 @@ Normally you never need to use this option, since the number of outgoing
 feeds is fixed, being the number of file feeds configured in \fInewsfeeds\fR,
 and is generally small (particularly given that \fIinnfeed\fR\|(8) is now used for
 most outgoing feeds at large sites).
-.IP "\fB\-p\fR \fIfd\fR" 4
-.IX Item "-p fd"
-If this flag is given, \fBinnd\fR expects the file descriptor given by \fIfd\fR
-to already be open and bound to the appropriate local port and to be
-suitable for listening to for incoming connections.  This is how
-\&\fBinndstart\fR tells \fBinnd\fR which open file descriptor is the network
-connection.  If this flag is not given, \fBinnd\fR will attempt to open its
-network socket itself.  \fBinndstart\fR always passes this flag to \fBinnd\fR.
 .IP "\fB\-P\fR \fIport\fR" 4
 .IX Item "-P port"
 The port \fBinnd\fR should listen on is normally given by the value of
 \&\fIport\fR in \fIinn.conf\fR.  This option, if given, overrides that value and
-specifies the port that \fBinnd\fR should bind to.  This option is rarely
-useful since \fBinnd\fR normally does not bind itself; instead the analgous
-\&\fB\-P\fR option to \fIinndstart\fR\|(8) should be used.  Since \fBinnd\fR should never
-be run as root, \fIport\fR has to be a non-privileged port (one larger than
-1024).
+specifies the port that \fBinnd\fR should bind to.
 .IP "\fB\-r\fR" 4
 .IX Item "-r"
 Instructs \fBinnd\fR to renumber the \fIactive\fR file after starting, just as
@@ -573,4 +569,4 @@ $Id$
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
 \&\fIactive\fR\|(5), \fIctlinnd\fR\|(8), \fIdbz\fR\|(3), \fIhistory\fR\|(5), \fIincoming.conf\fR\|(5), \fIinn.conf\fR\|(5),
-\&\fInewsfeeds\fR\|(5), \fInnrpd\fR\|(8), \fIrnews\fR\|(1), \fIsyslog\fR\|(3).
+\&\fIinnbind\fR\|(8), \fInewsfeeds\fR\|(5), \fInnrpd\fR\|(8), \fIrnews\fR\|(1), \fIsyslog\fR\|(3).
