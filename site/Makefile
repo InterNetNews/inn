@@ -78,42 +78,31 @@ NEWSBIN	= /usr/news/bin
 OWNER	= -O news -G news
 
 ##  Order:  innd, control, expire, inews, sending, misc
-MOST		= \
-	rc.news overview.fmt \
-	checkgroups default ihave \
-	    newgroup rmgroup sendme \
-	    sendsys senduuname version \
-	    parsecontrol writelog docheckgroups \
-	news.daily scanlogs expirerm \
-	    tally.control tally.unwanted \
-	nntpsend send-ihave \
-	    send-nntp send-uucp sendbatch \
-	inncheck innstat pgpverify \
-	    innwatch innlog.pl innshellvars innshellvars.pl innshellvars.csh \
-	    innshellvars.tcl filter.tcl startup.tcl startup_innd.pl \
-	    filter_innd.pl filter_nnrpd.pl \
+MOST	= rc.news overview.fmt checkgroups default ihave newgroup \
+	rmgroup sendme sendsys senduuname version parsecontrol writelog \
+	docheckgroups news.daily scanlogs scanlogs-backend.pl expirerm \
+	tally.control tally.unwanted nntpsend send-ihave send-nntp send-uucp \
+	sendbatch inncheck innstat pgpverify innwatch innlog.pl innshellvars \
+	innshellvars.pl innshellvars.csh innshellvars.tcl filter.tcl \
+	startup.tcl startup_innd.pl filter_innd.pl filter_nnrpd.pl \
 	actsync.cfg actsync.ign scanspool
 
-MOST_INSTALLED	= \
-	$D$(PATH_NEWSBOOT) $D$(PATH_SCHEMA) \
-	$D$(CTLBIN)/checkgroups $D$(CTLBIN)/default $D$(CTLBIN)/ihave \
-	    $D$(CTLBIN)/newgroup $D$(CTLBIN)/rmgroup $D$(CTLBIN)/sendme \
-	    $D$(CTLBIN)/sendsys $D$(CTLBIN)/senduuname $D$(CTLBIN)/version \
-	    $D$(PATH_PARSECTL) $D$(NEWSBIN)/writelog $D$(CTLBIN)/docheckgroups \
-	$D$(NEWSBIN)/news.daily $D$(NEWSBIN)/scanlogs $D$(NEWSBIN)/expirerm \
-	    $D$(NEWSBIN)/tally.control $D$(NEWSBIN)/tally.unwanted \
-	$D$(NEWSBIN)/nntpsend $D$(NEWSLIB)/send-ihave \
-	    $D$(NEWSLIB)/send-nntp $D$(NEWSLIB)/send-uucp \
-	    $D$(NEWSBIN)/sendbatch \
-	$D$(NEWSBIN)/inncheck $D$(NEWSBIN)/innstat $D$(NEWSBIN)/pgpverify \
-	    $D$(NEWSBIN)/innwatch \
-	    $D$(NEWSLIB)/innlog.pl \
-	    $D$(PATH_SHELLVARS) $D$(PATH_PERL_SHELLVARS) \
-	    $D$(PATH_PERL_STARTUP_INND) $D$(PATH_PERL_FILTER_INND) \
-	    $D$(PATH_PERL_FILTER_NNRPD) \
-	    $D$(PATH_TCL_SHELLVARS) $D$(PATH_TCL_STARTUP) \
-	    $D$(PATH_CSH_SHELLVARS) \
-	    $D$(PATH_TCL_FILTER) $D$(NEWSBIN)/scanspool
+MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(PATH_SCHEMA) $D$(CTLBIN)/checkgroups \
+	$D$(CTLBIN)/default $D$(CTLBIN)/ihave $D$(CTLBIN)/newgroup \
+	$D$(CTLBIN)/rmgroup $D$(CTLBIN)/sendme $D$(CTLBIN)/sendsys \
+	$D$(CTLBIN)/senduuname $D$(CTLBIN)/version $D$(PATH_PARSECTL) \
+	$D$(NEWSBIN)/writelog $D$(CTLBIN)/docheckgroups \
+	$D$(NEWSBIN)/news.daily $D$(NEWSBIN)/scanlogs \
+	$D$(NEWSBIN)/scanlogs-backend.pl $D$(NEWSBIN)/expirerm \
+	$D$(NEWSBIN)/tally.control $D$(NEWSBIN)/tally.unwanted \
+	$D$(NEWSBIN)/nntpsend $D$(NEWSLIB)/send-ihave $D$(NEWSLIB)/send-nntp \
+	$D$(NEWSLIB)/send-uucp $D$(NEWSBIN)/sendbatch $D$(NEWSBIN)/inncheck \
+	$D$(NEWSBIN)/innstat $D$(NEWSBIN)/pgpverify $D$(NEWSBIN)/innwatch \
+	$D$(NEWSLIB)/innlog.pl $D$(PATH_SHELLVARS) $D$(PATH_PERL_SHELLVARS) \
+	$D$(PATH_PERL_STARTUP_INND) $D$(PATH_PERL_FILTER_INND) \
+	$D$(PATH_PERL_FILTER_NNRPD) $D$(PATH_TCL_SHELLVARS) \
+	$D$(PATH_TCL_STARTUP) $D$(PATH_CSH_SHELLVARS) \
+	$D$(PATH_TCL_FILTER) $D$(NEWSBIN)/scanspool
 
 ##  Scripts from above, plus site-specific config files.
 REST		= \
@@ -217,6 +206,7 @@ $D$(NEWSBIN)/writelog:	writelog	; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/docheckgroups: docheckgroups ; $(COPY_XPRI) $? $@
 $D$(NEWSBIN)/news.daily: news.daily	; $(COPY_XPRI) $? $@
 $D$(NEWSBIN)/scanlogs:	scanlogs	; $(COPY_XPRI) $? $@
+$D$(NEWSBIN)/scanlogs-backend.pl: scanlogs-backend.pl	; $(COPY_XPRI) $? $@
 $D$(NEWSBIN)/expirerm:	expirerm	; $(COPY_XPRI) $? $@
 $D$(NEWSBIN)/tally.control: tally.control ; $(COPY_XPRI) $? $@
 $D$(NEWSBIN)/tally.unwanted: tally.unwanted ; $(COPY_XPRI) $? $@
@@ -305,6 +295,7 @@ rc.news:	../samples/rc.news		; $(COPY) $? $@
 rmgroup:	../samples/rmgroup		; $(COPY) $? $@
 sample.control: ../samples/sample.control	; $(COPY) $? $@
 scanlogs:	../samples/scanlogs		; $(COPY) $? $@
+scanlogs-backend.pl:	../samples/scanlogs-backend.pl	; $(COPY) $? $@
 scanspool:	../samples/scanspool		; $(COPY) $? $@
 send-ihave:	../samples/send-ihave		; $(COPY) $? $@
 send-nntp:	../samples/send-nntp		; $(COPY) $? $@
