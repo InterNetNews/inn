@@ -122,9 +122,8 @@ clobber realclean distclean:
 	@echo ''
 	rm -rf inews.* rnews.* $(TARDIR)
 	rm -f inn*.tar.gz CHANGES ChangeLog LIST.* TAGS tags
-	rm -f config.cache config.log config.status libtool
-	rm -f include/autoconfig.h include/config.h include/paths.h
-	rm -f support/fixscript Makefile.global
+	rm -f config.cache config.log config.status libtool include/config.h
+	rm -f include/paths.h support/fixscript Makefile.global
 
 
 ##  Other generic targets.
