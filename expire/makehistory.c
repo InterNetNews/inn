@@ -360,7 +360,7 @@ WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen,
 	    return;
 	}
 	/* q points to start of ng name, r points to its end. */
-        assert(sizeof(temp) > r - q + 1);
+        assert((ptrdiff_t) sizeof(temp) > r - q + 1);
 	memcpy(temp, q, r - q + 1);
         temp[r - q + 1] = '\0';
 	fprintf(OverTmpFile, "%s\t%10lu\t%lu\t%s\t", temp,

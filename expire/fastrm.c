@@ -86,8 +86,8 @@ file_compare(const void *a, const void *b)
 {
     const char *f1, *f2;
 
-    f1 = *((const char **) a);
-    f2 = *((const char **) b);
+    f1 = *((const char *const *) a);
+    f2 = *((const char *const *) b);
     return strcmp(f1, f2);
 }
 
