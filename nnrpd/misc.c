@@ -137,10 +137,13 @@ PERMartok()
 
     if ((p = GetHeader("Xref", FALSE)) == NULL) {
 	/* in case article does not include Xref */
-	if ((p = GetHeader("Newsgroups", FALSE)) == NULL)
+	if ((p = GetHeader("Newsgroups", FALSE)) != NULL) {
 	    if (!NGgetlist(&grplist, p))
 		/* No newgroups or null entry. */
 		return TRUE;
+	} else {
+	    return TRUE;
+	}
     } else {
 	/* skip path element */
 	if ((p = strchr(p, ' ')) == NULL)
