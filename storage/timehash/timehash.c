@@ -2,21 +2,18 @@
 **
 **  Timehash based storage method.
 */
+
 #include "config.h"
 #include "clibrary.h"
+#include "portable/mmap.h"
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <syslog.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
 #include <time.h>
-
-#ifndef MAP_FAILED
-# define MAP_FAILED     (caddr_t) -1
-#endif
 
 #include "libinn.h"
 #include "macros.h"
@@ -252,14 +249,10 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
     
     if ((p = SMFindBody(private->base, private->len)) == NULL) {
 	SMseterror(SMERR_NOBODY, NULL);
-	if (innconf->articlemmap) {
-#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-	    madvise(private->base, private->len, MADV_DONTNEED);
-#endif
+	if (innconf->articlemmap)
 	    munmap(private->base, private->len);
-	} else {
+	else
 	    DISPOSE(private->base);
-	}
 	DISPOSE(art->private);
 	DISPOSE(art);
 	return NULL;
@@ -277,14 +270,10 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 	return art;
     }
     SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
-    if (innconf->articlemmap) {
-#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-	madvise(private->base, private->len, MADV_DONTNEED);
-#endif
+    if (innconf->articlemmap)
 	munmap(private->base, private->len);
-    } else {
+    else
 	DISPOSE(private->base);
-    }
     DISPOSE(art->private);
     DISPOSE(art);
     return NULL;
@@ -321,14 +310,10 @@ void timehash_freearticle(ARTHANDLE *article) {
     
     if (article->private) {
 	private = (PRIV_TIMEHASH *)article->private;
-	if (innconf->articlemmap) {
-#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-	    madvise(private->base, private->len, MADV_DONTNEED);
-#endif
+	if (innconf->articlemmap)
 	    munmap(private->base, private->len);
-	} else {
+	else
 	    DISPOSE(private->base);
-	}
 	if (private->top)
 	    closedir(private->top);
 	if (private->sec)
@@ -413,14 +398,10 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	DISPOSE(article->private);
 	DISPOSE((void *)article);
 	if (priv.base != NULL) {
-	    if (innconf->articlemmap) {
-#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-		madvise(priv.base, priv.len, MADV_DONTNEED);
-#endif
+	    if (innconf->articlemmap)
 		munmap(priv.base, priv.len);
-	    } else {
+	    else
 		DISPOSE(priv.base);
-	    }
 	}
     }
 

@@ -6,18 +6,14 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/mmap.h"
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <syslog.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
 #include <time.h>
-
-#ifndef MAP_FAILED
-# define MAP_FAILED     (caddr_t) -1
-#endif
 
 #include "caf.h"
 #include "libinn.h"
@@ -469,13 +465,7 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
 	    DISPOSE(art);
 	    return NULL;
 	}
-#ifdef MMAP_MISSES_WRITES
-# ifdef HAVE_MSYNC_3_ARG
-	msync(private->mmapbase, private->mmaplen, MS_INVALIDATE);
-# else
-        msync(private->mmapbase, private->mmaplen);
-# endif
-#endif
+	mmap_invalidate(private->mmapbase, private->mmaplen);
 	private->artdata = private->mmapbase + delta;
     } else {
         private->artdata = NEW(char, private->artlen);
@@ -507,14 +497,10 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
     
     if ((p = SMFindBody(private->artdata, private->artlen)) == NULL) {
 	SMseterror(SMERR_NOBODY, NULL);
-	if (innconf->articlemmap) {
-#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-	    madvise(private->mmapbase, private->mmaplen, MADV_DONTNEED);
-#endif
+	if (innconf->articlemmap)
 	    munmap(private->mmapbase, private->mmaplen);
-	} else {
+	else
 	    DISPOSE(private->artdata);
-	}
 	DISPOSE(art->private);
 	DISPOSE(art);
 	return NULL;
@@ -532,14 +518,10 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
 	return art;
     }
     SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
-    if (innconf->articlemmap) {
-#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-	madvise(private->mmapbase, private->mmaplen, MADV_DONTNEED);
-#endif
+    if (innconf->articlemmap)
 	munmap(private->mmapbase, private->mmaplen);
-    } else {
+    else
 	DISPOSE(private->artdata);
-    }
     DISPOSE(art->private);
     DISPOSE(art);
     return NULL;
@@ -600,14 +582,10 @@ void timecaf_freearticle(ARTHANDLE *article) {
     
     if (article->private) {
 	private = (PRIV_TIMECAF *)article->private;
-	if (innconf->articlemmap) {
-#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-	    madvise(private->mmapbase, private->mmaplen, MADV_DONTNEED);
-#endif
+	if (innconf->articlemmap)
 	    munmap(private->mmapbase, private->mmaplen);
-	} else {
+	else
 	    DISPOSE(private->artdata);
-	}
 	if (private->top)
 	    closedir(private->top);
 	if (private->sec)
@@ -749,14 +727,10 @@ ARTHANDLE *timecaf_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	priv = *(PRIV_TIMECAF *)article->private;
 	DISPOSE(article->private);
 	DISPOSE((void *)article);
-	if (innconf->articlemmap) {
-#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-	    madvise(priv.mmapbase, priv.mmaplen, MADV_DONTNEED);
-#endif
+	if (innconf->articlemmap)
 	    munmap(priv.mmapbase, priv.mmaplen);
-	} else {
+	else
 	    DISPOSE(priv.artdata);
-	}
     }
 
     while (priv.curtoc == NULL || !FindNextArt(&priv.curheader, priv.curtoc, &priv.curartnum)) {
