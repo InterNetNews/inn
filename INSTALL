@@ -19,7 +19,13 @@ Welcome to INN 2.4!
     after building INN and then comparing the new sample configuration files
     with your current ones to see if anything has changed.  If you take this
     route, the old binaries, scripts, and man pages will be saved with an
-    extension of .OLD so that you can easily back out.
+    extension of .OLD so that you can easily back out.  Be sure to configure
+    INN with the same options that you used previously if you take this
+    approach (in particular, INN compiled with --enable-largefiles can't
+    read the data structures written by INN compiled without that flag and
+    vice versa).  If you don't remember what options you used but you have
+    your old build tree, look at the comments at the beginning of
+    config.status.
 
 Supported Systems
 
