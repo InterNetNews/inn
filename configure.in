@@ -53,11 +53,14 @@ else
 		TMPPATH=/tmp
 	fi
 fi) 
-AC_ARG_WITH(news-user,[  --with-news-user=UID    News user id (default news)], NEWSUSER=$with_news_user, NEWSUSER=news)
+AC_ARG_WITH(news-user,[  --with-news-user=USER    News user id [news]], NEWSUSER=$with_news_user, NEWSUSER=news)
 AC_SUBST(NEWSUSER)
 dnl
-AC_ARG_WITH(news-group,[  --with-news-group=GID   News group id (default news)], NEWSGRP=$with_news_group, NEWSGRP=news)
+AC_ARG_WITH(news-group,[  --with-news-group=GROUP   News group id [news]], NEWSGRP=$with_news_group, NEWSGRP=news)
 AC_SUBST(NEWSGRP)
+dnl
+AC_ARG_WITH(news-master,[  --with-news-master=USER   News master [usenet]], NEWSGRP=$with_news_master, NEWSGRP=usenet)
+AC_SUBST(NEWSMASTER)
 dnl
 AC_SUBST(TMPPATH)
 AC_ARG_WITH(sendmail,[  --with-sendmail=PATH    Specify sendmail], SENDMAIL=$with_sendmail)

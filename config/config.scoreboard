@@ -85,21 +85,6 @@
   ||##
   ||##  3.  OWNERSHIPS AND FILE MODES
 [IN1.7=@3][WDF=confparam][WOR=yes]
-  ||##  Owner of articles and directories and _PATH_INNDDIR
-  ||##[autoconf]
-  ||#### =()<NEWSUSER			@<NEWSUSER>@>()=
-  ||NEWSUSER			@NEWSUSER@
-[IN1.7=@3][WDF=fixed][WOR=yes][P=low]
-  ||##  Group, for same purpose
-  ||##[autoconf]
-  ||#### =()<NEWSGROUP		@<NEWSGROUP>@>()=
-  ||NEWSGROUP		@NEWSGRP@
-[IN1.7=@3][WDF=confparam][WOR=yes]
-  ||##  Who gets email from news.daily and about control messages.
-  ||##[autoconf]
-  ||#### =()<NEWSMASTER		@<NEWSMASTER>@>()=
-  ||NEWSMASTER		@NEWSUSER@
-[IN1.7=@3][WDF=confparam][WOR=yes]
   ||##  Who gets email on the Path line?
   ||#### =()<PATHMASTER		@<PATHMASTER>@>()=
   ||PATHMASTER		not-for-mail

@@ -91,9 +91,7 @@ $have_uustat = ("DO" eq "DO" ? 1 : 0) ;
 ##  =()<$mail_badcontrols = ("@<MAIL_BADCONTROLS>@" eq "DO" ? 1 : 0) ;>()=
 $mail_badcontrols = ("DONT" eq "DO" ? 1 : 0) ;
 
-##  =()<$newsmaster = '@<NEWSMASTER>@' ;>()=
-$newsmaster = 'usenet' ;
-
+$newsmaster = '@NEWSMASTER@' ;
 $newsuser = "@NEWSUSER@" ;
 
 ##  =()<$sleeptime = @<INNWATCH_SLEEPTIME>@ ;>()=

@@ -62,4 +62,8 @@
 # endif
 #endif
 
+#define NEWSMASTER	@NEWSMASTER@
+#define NEWSUSER	@NEWSUSER@
+#define NEWSGRP		@NEWSGRP@
+
 #endif /* __CONFIG_H__ */

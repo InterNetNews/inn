@@ -52,12 +52,6 @@ typedef char		*CSTRING;
 /*
 **  3.  OWNERSHIPS AND FILE MODES
 */
-    /* =()<#define NEWSUSER		"@<NEWSUSER>@">()= */
-#define NEWSUSER		"news"
-    /* =()<#define NEWSGID		"@<NEWSGROUP>@">()= */
-#define NEWSGID		"news"
-    /* =()<#define NEWSMASTER		"@<NEWSMASTER>@">()= */
-#define NEWSMASTER		"news"
     /* =()<#define PATHMASTER		"@<PATHMASTER>@">()= */
 #define PATHMASTER		"not-for-mail"
     /* Umask to set. */

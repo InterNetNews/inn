@@ -92,9 +92,7 @@ set inn_have_uustat = DO
 ##  =()<set inn_mail_badcontrols = @<MAIL_BADCONTROLS>@>()=
 set inn_mail_badcontrols = DONT
 
-##  =()<set inn_newsmaster = @<NEWSMASTER>@>()=
-set inn_newsmaster = usenet
-
+set inn_newsmaster = @NEWSMASTER@
 set inn_newsuser = @NEWSUSER@
 
 ##  =()<set inn_sleeptime = @<INNWATCH_SLEEPTIME>@>()=
