@@ -356,13 +356,6 @@ InitBackoffConstants()
     !(PERMaccessconf->backoff_k >= 0L && PERMaccessconf->backoff_postfast >= 0L && PERMaccessconf->backoff_postslow >= 1L))
     return;
 
-#ifdef HAVE_INET6
-  /* FIXME - backoff is only disabled because I'm too lazy to figure out the
-     best way to fix it for IPv6 users.  -lutchann */
-  syslog(L_ERROR, "%s backoff is not available with IPv6 build",ClientHost);
-  return;
-#endif
-
   /* Need this database for backing off */
   (void)strncpy(postrec_dir,PERMaccessconf->backoff_db,SMBUF);
   if (stat(postrec_dir, &st) < 0) {
@@ -394,30 +387,45 @@ InitBackoffConstants()
  */
 char
 *PostRecFilename(ip,user) 
-     unsigned long                 ip;
+     char                         *ip;
      char                         *user;
 {
      static char                   buff[SPOOLNAMEBUFF];
      char                          dirbuff[SPOOLNAMEBUFF];
-     unsigned char addr[4];
-     unsigned int i;
+     struct in_addr                inaddr;
+     unsigned long int             addr;
+     unsigned char                 quads[4];
+     unsigned int                  i;
 
      if (PERMaccessconf->backoff_auth) {
-       sprintf(buff,"%s/%s",postrec_dir,user);
+       snprintf(buff, sizeof(buff), "%s/%s", postrec_dir, user);
        return(buff);
      }
 
-     for (i=0; i<4; i++) {
-       addr[i] = (unsigned char) (0x000000ff & (ip>>(i*8)));
+     if (inet_aton(ip, &inaddr) < 1) {
+       /* If inet_aton() fails, we'll assume it's an IPv6 address.  We'll
+        * also assume for now that we're dealing with a limited number of
+        * IPv6 clients so we'll place their files all in the same 
+        * directory for simplicity.  Someday we'll need to change this to
+        * something more scalable such as DBZ when IPv6 clients become
+        * more popular. */
+       snprintf(buff, sizeof(buff), "%s/%s", postrec_dir, ip);
+       return(buff);
      }
+     /* If it's an IPv4 address just fall through. */
 
-     sprintf(dirbuff,"%s/%03d%03d/%03d",postrec_dir,addr[3],addr[2],addr[1]);
+     addr = ntohl(inaddr.s_addr);
+     for (i=0; i<4; i++)
+       quads[i] = (unsigned char) (0xff & (addr>>(i*8)));
+
+     snprintf(dirbuff, sizeof(dirbuff), "%s/%03d%03d/%03d",
+         postrec_dir, quads[3], quads[2], quads[1]);
      if (!MakeDirectory(dirbuff,TRUE)) {
-       syslog(L_ERROR,"%s Unable to create postrec directories '%s': %s",
-               ClientHost,dirbuff,strerror(errno));
+       syslog(L_ERROR, "%s Unable to create postrec directories '%s': %s",
+               ClientHost, dirbuff, strerror(errno));
        return NULL;
      }
-     sprintf(buff,"%s/%03d",dirbuff,addr[0]);
+     snprintf(buff, sizeof(buff), "%s/%03d", dirbuff, quads[0]);
      return(buff);
 }
 
@@ -432,7 +440,7 @@ LockPostRec(path)
   char temp[SPOOLNAMEBUFF];
   int statfailed = 0;
  
-  sprintf(lockname, "%s.lock", path);
+  snprintf(lockname, sizeof(lockname), "%s.lock", path);
 
   for (;; sleep(5)) {
     int fd;
@@ -442,7 +450,7 @@ LockPostRec(path)
     fd = open(lockname, O_WRONLY|O_EXCL|O_CREAT, 0600);
     if (fd >= 0) {
       /* We got the lock! */
-      sprintf(temp, "pid:%ld\n", (unsigned long) getpid());
+      snprintf(temp, sizeof(temp), "pid:%ld\n", (unsigned long) getpid());
       write(fd, temp, strlen(temp));
       close(fd);
       return(1);
@@ -455,8 +463,8 @@ LockPostRec(path)
       continue;
     }
 
-    /* If lockfile is older than the value of PERMaccessconf->backoff_postslow, remove it
-     */
+    /* If lockfile is older than the value of
+       PERMaccessconf->backoff_postslow, remove it */
     statfailed = 0;
     time(&now);
     if (now < st.st_ctime + PERMaccessconf->backoff_postslow) continue;
@@ -471,7 +479,7 @@ UnlockPostRec(path)
 {
   char lockname[SPOOLNAMEBUFF];  
 
-  sprintf(lockname, "%s.lock", path);
+  snprintf(lockname, sizeof(lockname), "%s.lock", path);
   if (unlink(lockname) < 0) {
     syslog(L_ERROR, "%s can't unlink lock file: %s", ClientHost,strerror(errno)) ;
   }

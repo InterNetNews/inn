@@ -195,7 +195,7 @@ extern bool		ARTreadschema(void);
 extern char		*Glom(char **av);
 extern int		Argify(char *line, char ***argvp);
 extern void		InitBackoffConstants(void);
-extern char		*PostRecFilename(unsigned long ip, char *user);
+extern char		*PostRecFilename(char *ip, char *user);
 extern int		LockPostRec(char *path);
 extern int		LockPostRec(char *path);
 extern void		UnlockPostRec(char *path);

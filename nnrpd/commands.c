@@ -745,7 +745,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
       /* Acquire lock (this could be in RateLimit but that would
        * invoke the spaghetti factor). 
        */
-      if ((path = (char *) PostRecFilename(ClientIpAddr,PERMuser)) == NULL) {
+      if ((path = (char *) PostRecFilename(ClientIpString,PERMuser)) == NULL) {
         Reply("%s\r\n", NNTP_CANTPOST);
         return;
       }
