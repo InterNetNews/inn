@@ -163,7 +163,7 @@ listing::
 	if [ "X$$F" != X ]; then echo $$CMD ; eval $$CMD ; fi
 
 startinnfeed.o: startinnfeed.c
-	$(COMPILE.c) -o $@ $?
+	$(COMPILE.c) $?
 
 startinnfeed: startinnfeed.o $(EXTRA_SRC:.c=.o)
 	$(LINK.c) -o $@ $? $(LIBNEWS)
