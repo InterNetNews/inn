@@ -667,6 +667,7 @@ then
 	MISSING_SRC="${MISSING_SRC}strrchr.c "
 	MISSING_OBJ="${MISSING_OBJ}strrchr.o "
 fi
+AC_SUBST(ac_cv_subst_innwatch_df)
 AC_SUBST(MISSING_MAN)
 AC_SUBST(MISSING_SRC)
 AC_SUBST(MISSING_OBJ)

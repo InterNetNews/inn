@@ -5363,6 +5363,7 @@ fi
 
 
 
+
 grep "^  ||" config/config.scoreboard | sed 's/  ||//g' >config/config.data.in
 
 trap '' 1 2 15
@@ -5616,6 +5617,7 @@ s%@ac_cv_subst_have_vfork@%$ac_cv_subst_have_vfork%g
 s%@ac_cv_subst_res_style@%$ac_cv_subst_res_style%g
 s%@ac_cv_subst_need_time@%$ac_cv_subst_need_time%g
 s%@ac_cv_subst_act_style@%$ac_cv_subst_act_style%g
+s%@ac_cv_subst_innwatch_df@%$ac_cv_subst_innwatch_df%g
 s%@MISSING_MAN@%$MISSING_MAN%g
 s%@MISSING_SRC@%$MISSING_SRC%g
 s%@MISSING_OBJ@%$MISSING_OBJ%g
