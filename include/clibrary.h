@@ -80,12 +80,6 @@
 # include <sys/bitypes.h>
 #endif
 
-/* If we have to declare either inet_aton or inet_ntoa, we have to include
-   <netinet/in.h>.  Bleh. */
-#if NEED_DECLARATION_INET_ATON || NEED_DECLARATION_INET_NTOA
-# include <netinet/in.h>
-#endif
-
 BEGIN_DECLS
 
 /* Provide prototypes for functions not declared in system headers.  Use the
@@ -99,12 +93,6 @@ extern off_t            ftello(FILE *);
 #endif
 #if !HAVE_HSTRERROR
 extern const char *     hstrerror(int);
-#endif
-#if NEED_DECLARATION_INET_ATON
-extern int              inet_aton(const char *, struct in_addr *);
-#endif
-#if NEED_DECLARATION_INET_NTOA
-extern const char *     inet_aton(const struct in_addr);
 #endif
 #if !HAVE_PREAD
 extern ssize_t          pread(int, void *, size_t, off_t);
@@ -174,43 +162,6 @@ extern int              vsnprintf(char *, size_t, const char *, va_list);
 #if !HAVE_SUN_LEN
 # define SUN_LEN(sun) \
     (sizeof(*(sun)) - sizeof((sun)->sun_path) + strlen((sun)->sun_path))
-#endif
-
-/* Defined by RFC 2553. */
-#ifndef HAVE_SOCKADDR_STORAGE
-struct sockaddr_storage {
-# ifdef HAVE_SOCKADDR_LEN
-	u_char ss_len;
-	u_char ss_family;
-# else
-	u_short ss_family;
-# endif
-	u_char __padding[128 - 2];
-};
-#endif
-
-#ifdef HAVE_2553_STYLE_SS_FAMILY
-# define	ss_family	__ss_family
-# define	ss_len		__ss_len
-#endif
-
-#ifndef HAVE_SA_LEN_MACRO
-# if defined HAVE_SOCKADDR_LEN
-#  define SA_LEN(s)      ((s)->sa_len)
-# else
-/* Use ugly hack from USAGI project */
-#  if defined HAVE_INET6
-#   define SA_LEN(s) ((((struct sockaddr *)(s))->sa_family == AF_INET6) \
-		        ? sizeof(struct sockaddr_in6) \
-		        : ((((struct sockaddr *)(s))->sa_family == AF_INET) \
-	                ? sizeof(struct sockaddr_in) \
-		                : sizeof(struct sockaddr)))
-#  else
-#   define SA_LEN(s) ((((struct sockaddr *)(s))->sa_family == AF_INET) \
-	                ? sizeof(struct sockaddr_in) \
-		                : sizeof(struct sockaddr))
-#  endif
-# endif
 #endif
 
 /* Used to name the elements of the array passed to pipe(). */
