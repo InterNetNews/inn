@@ -11,7 +11,7 @@ size_t test_strlcat(char *, const char *, size_t);
 int
 main(void)
 {
-    char buffer[10];
+    char buffer[10] = "";
 
     puts("27");
 
