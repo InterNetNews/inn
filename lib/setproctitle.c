@@ -82,7 +82,7 @@ setproctitle(const char *format, ...)
        message_program_name if it's set. */
     if (message_program_name != NULL) {
         delta = snprintf(title, length, "%s: ", message_program_name);
-        if (delta > length)
+        if (delta < 0 || (size_t) delta > length)
             return;
         if (delta > 0) {
             title += delta;
@@ -92,7 +92,7 @@ setproctitle(const char *format, ...)
     va_start(args, format);
     delta = vsnprintf(title, length, format, args);
     va_end(args);
-    if (delta > length)
+    if (delta < 0 || (size_t) delta > length)
         return;
     if (delta > 0) {
         title += delta;
