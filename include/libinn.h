@@ -218,7 +218,9 @@ struct conf_vars {
 	char *patharchive;
 #define	CONF_VAR_LOGSITENAME 72
 	int logsitename;	/* log site names? */
-#define	MAX_CONF_VAR 73
+#define	CONF_VAR_PATHHTTP 73
+	char *pathhttp;
+#define	MAX_CONF_VAR 74
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;

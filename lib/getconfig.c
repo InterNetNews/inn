@@ -217,6 +217,7 @@ void SetDefaults()
     innconf->pathetc = NULL;
     innconf->pathrun = NULL;
     innconf->pathlog = NULL;
+    innconf->pathhttp = NULL;
     innconf->pathspool = NULL;
     innconf->patharticles = NULL;
     innconf->pathoverview = NULL;
@@ -254,6 +255,7 @@ void ClearInnConf()
     if (innconf->pathetc != NULL) DISPOSE(innconf->pathetc);
     if (innconf->pathrun != NULL) DISPOSE(innconf->pathrun);
     if (innconf->pathlog != NULL) DISPOSE(innconf->pathlog);
+    if (innconf->pathhttp != NULL) DISPOSE(innconf->pathhttp);
     if (innconf->pathspool != NULL) DISPOSE(innconf->pathspool);
     if (innconf->patharticles != NULL) DISPOSE(innconf->patharticles);
     if (innconf->pathoverview != NULL) DISPOSE(innconf->pathoverview);
@@ -317,6 +319,9 @@ int CheckInnConf()
     }
     if (innconf->pathlog == NULL) {
 	innconf->pathlog = COPY(cpcatpath(innconf->pathnews, "log"));
+    }
+    if (innconf->pathhttp == NULL) {
+	innconf->pathhttp = COPY(innconf->pathlog);
     }
     if (innconf->pathspool == NULL) {
 	innconf->pathspool = COPY(cpcatpath(innconf->pathnews, "spool"));
@@ -720,6 +725,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_PATHLOG, bit);
 		if (!bit) innconf->pathlog = COPY(p);
 		SET_CONFIG(CONF_VAR_PATHLOG);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_PATHHTTP)) {
+		TEST_CONFIG(CONF_VAR_PATHHTTP, bit);
+		if (!bit) innconf->pathhttp = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHHTTP);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHSPOOL)) {
 		TEST_CONFIG(CONF_VAR_PATHSPOOL, bit);

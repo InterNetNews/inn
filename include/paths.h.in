@@ -240,6 +240,7 @@
 #define _CONF_PATHRUN		"pathrun"
 #define _CONF_PATHLOG		"pathlog"
 #define _CONF_PATHDB		"pathdb"
+#define _CONF_PATHHTTP		"pathhttp"
 #define _CONF_PATHSPOOL		"pathspool"
 #define _CONF_PATHARTICLES	"patharticles"
 #define _CONF_PATHOVERVIEW	"pathoverview"

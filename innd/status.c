@@ -16,7 +16,7 @@
 #define MAX_PEER     100
 #define MIN_REFRESH   60  /* 1 min */
 #define HTML_STATUS
-#define STATUS_FILE  "inn.status" /* will be in MOST_LOG */
+#define STATUS_FILE  "inn.status" /* will be in pathhttp */
 
 typedef struct _STATUS {
     char           name[SMBUF];
@@ -110,7 +110,7 @@ static void STATUSsummary(void)
   extern int        PerlFilterActive;
 #endif /* defined(DO_PERL) */
  
-  sprintf (TempString, "%s/%s", innconf->pathlog, STATUS_FILE);
+  sprintf (TempString, "%s/%s", innconf->pathhttp, STATUS_FILE);
   if ((F = fopen(TempString, "w")) == NULL)
     return;
 
