@@ -103,7 +103,7 @@ static int dbzversion = 6;	/* for validating .dir file format */
 #define PACKED __attribute__ ((packed))
 #endif
 
-#ifdef __SUNPRO_C
+#if defined(__SUNPRO_C) || defined(_nec_ews)
 #pragma pack(1)
 typedef struct {
     char               hash[DBZ_INTERNAL_HASH_SIZE];
@@ -833,7 +833,7 @@ static BOOL getcore(hash_table *tab) {
 	    DEBUG(("getcore: mmap failed\n"));
 	    return FALSE;
 	}
-#if defined (MADV_RANDOM)                           
+#if defined (MADV_RANDOM)
 	/* not present in all versions of mmap() */
 	madvise(it, (size_t)conf.tsize * sizeof(tab->reclen), MADV_RANDOM);
 #endif
@@ -982,7 +982,7 @@ static BOOL set(searcher *sp, hash_table *tab, void *value) {
 
     /* If we have the index file in memory, use it */
     if ((tab->incore != INCORE_NO) && (sp->place < conf.tsize)) {
-	memcpy(tab->core + (sp->place * tab->reclen), value, tab->reclen);
+	memcpy((void *)((char *)tab->core + (sp->place * tab->reclen)), value, tab->reclen);
 	DEBUG(("set: incore\n"));
 	if (tab->incore == INCORE_MMAP)
 	    return TRUE;

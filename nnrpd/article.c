@@ -105,6 +105,10 @@ STATIC int		OVERioff;		/* Current index pointer */
 #define	IOV_MAX	1024
 #endif
 
+#if defined(_nec_ews)
+#define IOV_MAX 16
+#endif
+
 #endif
 
 STATIC struct iovec	iov[IOV_MAX];
