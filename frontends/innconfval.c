@@ -1,7 +1,8 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Get a config value from INN.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
@@ -12,9 +13,9 @@
 #include "paths.h"
 
 /* Global and initialized; to work around SunOS -Bstatic bug, sigh. */
-STATIC char		ConfigBuff[SMBUF] = "";
+static char	ConfigBuff[SMBUF] = "";
 int		format = 0;
-STATIC BOOL	version = FALSE;
+static bool	version = FALSE;
 
 int isnum(const char *v)
 {
@@ -103,7 +104,7 @@ main(int ac, char **av)
 {
     char	*p;
     char	*val;
-    BOOL	File;
+    bool	File;
     int	i;
 
     /* First thing, set up logging and our identity. */

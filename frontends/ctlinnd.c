@@ -2,6 +2,7 @@
 **
 **  Send control messages to the InterNetNews daemon.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
@@ -19,15 +20,15 @@
 **  Datatype for an entry in the command table.
 */
 typedef struct _COMMAND {
-    STRING	Command;
-    STRING	Text;
+    const char *Command;
+    const char *Text;
     int		argc;
     char	Letter;
-    BOOL	Glue;
+    bool	Glue;
 } COMMAND;
 
 
-STATIC COMMAND	Commands[] = {
+static COMMAND	Commands[] = {
     {	"addhist",	"id arr exp post path...\tAdd history line",
 	5,	SC_ADDHIST,	TRUE	},
     {	"allow",	"reason...\t\t\tAllow remote connections",
@@ -117,9 +118,8 @@ STATIC COMMAND	Commands[] = {
 /*
 **  Print a help summary.
 */
-STATIC NORETURN
-Help(p)
-    char		*p;
+static void
+Help(char *p)
 {
     register COMMAND	*cp;
 
@@ -145,12 +145,11 @@ Help(p)
 /*
 **  Print a command-usage message and exit.
 */
-STATIC NORETURN
-WrongArgs(cp)
-    COMMAND	*cp;
+static void
+WrongArgs(COMMAND *cp)
 {
-    (void)printf("Wrong number of arguments -- usage:\n");
-    (void)printf("  %s %s\n", cp->Command, cp->Text);
+    printf("Wrong number of arguments -- usage:\n");
+    printf("  %s %s\n", cp->Command, cp->Text);
     exit(1);
 }
 
@@ -158,9 +157,8 @@ WrongArgs(cp)
 /*
 **  Print an error message and exit.
 */
-STATIC NORETURN
-Failed(p)
-    char	*p;
+static void
+Failed(char *p)
 {
     if (ICCfailure)
 	(void)fprintf(stderr, "Can't %s (%s failure) %s.\n",
@@ -175,11 +173,10 @@ Failed(p)
 /*
 **  Print an error reporting incorrect usage.
 */
-STATIC NORETURN
-Usage(what)
-    char	*what;
+static void
+Usage(char *what)
 {
-    (void)fprintf(stderr, "Usage error (%s) -- try -h for help.\n", what);
+    fprintf(stderr, "Usage error (%s) -- try -h for help.\n", what);
     exit(1);
 }
 
@@ -191,8 +188,8 @@ int main(int ac, char *av[])
     COMMAND	        *cp;
     char	        *p;
     int	                i;
-    BOOL		Silent;
-    BOOL		NeedHelp;
+    bool		Silent;
+    bool		NeedHelp;
     char		*reply;
     char		*new;
     int			length;

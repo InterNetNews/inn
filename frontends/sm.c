@@ -1,7 +1,8 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Provide a command line interface to the storage manager
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <errno.h>
@@ -19,11 +20,11 @@ void Usage(void) {
 
 int main(int argc, char **argv) {
     int                 c;
-    BOOL                Quiet = FALSE;
-    BOOL                Delete = FALSE;
-    BOOL                Rawformat = FALSE;
-    BOOL                Artinfo = FALSE;
-    BOOL		val;
+    bool                Quiet = FALSE;
+    bool                Delete = FALSE;
+    bool                Rawformat = FALSE;
+    bool                Artinfo = FALSE;
+    bool		val;
     int                 i, len;
     char                *p;
     TOKEN		token;

@@ -16,8 +16,8 @@
 /*
 **  Print usage message and exit.
 */
-static NORETURN
-Usage()
+static void
+Usage(void)
 {
     fprintf(stderr, "Usage: getlist [-p port] [-h host] [type [pat [groups]]\n");
     exit(1);

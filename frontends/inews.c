@@ -3,8 +3,10 @@
 **  Send an article (prepared by someone on the local site) to the
 **  master news server.
 */
+
 #include "config.h"
 #include "clibrary.h"
+#include "portable/time.h"
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -12,15 +14,6 @@
 #include <pwd.h>
 #include <sys/stat.h>
 #include <syslog.h>  
-
-#ifdef TM_IN_SYS_TIME
-# include <sys/time.h>
-# ifdef TIME_WITH_SYS_TIME
-#  include <time.h>
-# endif
-#else
-# include <time.h>
-#endif
 
 #include "libinn.h"
 #include "macros.h"
@@ -42,30 +35,30 @@ typedef enum _HEADERTYPE {
 } HEADERTYPE;
 
 typedef struct _HEADER {
-    STRING	Name;
-    BOOL	CanSet;
+    const char *Name;
+    bool	CanSet;
     HEADERTYPE	Type;
     int		Size;
     char	*Value;
 } HEADER;
 
-STATIC char     *tmpPtr ;
-STATIC BOOL	Dump;
-STATIC BOOL	Revoked;
-STATIC BOOL	Spooling;
-STATIC char	**OtherHeaders;
-STATIC char	NGSEPS[] = NG_SEPARATOR;
-STATIC char	SIGSEP[] = SIG_SEPARATOR;
-STATIC FILE	*FromServer;
-STATIC FILE	*ToServer;
-STATIC int	OtherCount;
-STATIC int	OtherSize;
-STATIC char	*Exclusions = "";
-STATIC STRING	BadDistribs[] = {
+static char     *tmpPtr ;
+static bool	Dump;
+static bool	Revoked;
+static bool	Spooling;
+static char	**OtherHeaders;
+static char	NGSEPS[] = NG_SEPARATOR;
+static char	SIGSEP[] = SIG_SEPARATOR;
+static FILE	*FromServer;
+static FILE	*ToServer;
+static int	OtherCount;
+static int	OtherSize;
+static char	*Exclusions = "";
+static const char * const BadDistribs[] = {
     BAD_DISTRIBS
 };
 
-STATIC HEADER	Table[] = {
+static HEADER	Table[] = {
     /* 	Name			Canset	Type	*/
     {	"Path",			TRUE,	HTstd },
 #define _path		 0
@@ -120,9 +113,8 @@ STATIC HEADER	Table[] = {
 /*
 **  Send the server a quit message, wait for a reply.
 */
-STATIC NORETURN
-QuitServer(x)
-    int		x;
+static void
+QuitServer(int x)
 {
     char	buff[HEADER_STRLEN];
     char	*p;
@@ -160,12 +152,10 @@ QuitServer(x)
 /*
 **  Print and error message (with errno) and exit with an error code.
 */
-STATIC NORETURN
-PerrorExit(ShouldQuit, s)
-    BOOL	ShouldQuit;
-    char	*s;
+static void
+PerrorExit(bool ShouldQuit, char *s)
 {
-    (void)fprintf(stderr, "%s, %s.\n", s, strerror(errno));
+    fprintf(stderr, "%s, %s.\n", s, strerror(errno));
     if (ShouldQuit)
 	QuitServer(1);
     exit(1);
@@ -176,7 +166,7 @@ PerrorExit(ShouldQuit, s)
 /*
 **  Flush a stdio FILE; exit if there are any errors.
 */
-STATIC void
+static void
 SafeFlush(F)
     FILE	*F;
 {
@@ -188,7 +178,7 @@ SafeFlush(F)
 /*
 **  Trim trailing spaces, return pointer to first non-space char.
 */
-STATIC char *
+static char *
 TrimSpaces(p)
     register char	*p;
 {
@@ -206,7 +196,7 @@ TrimSpaces(p)
 **  Mark the end of the header starting at p, and return a pointer
 **  to the start of the next one.  Handles continuations.
 */
-STATIC char *
+static char *
 NextHeader(p)
     register char	*p;
 {
@@ -226,7 +216,7 @@ NextHeader(p)
 /*
 **  Strip any headers off the article and dump them into the table.
 */
-STATIC char *
+static char *
 StripOffHeaders(article)
     char		*article;
 {
@@ -316,10 +306,10 @@ StripOffHeaders(article)
 **  See if the user is allowed to cancel the indicated message.  Assumes
 **  that the Sender or From line has already been filled in.
 */
-STATIC void
+static void
 CheckCancel(msgid, JustReturn)
     char		*msgid;
-    BOOL		JustReturn;
+    bool		JustReturn;
 {
     char		localfrom[SMBUF];
     register char	*p;
@@ -381,7 +371,7 @@ CheckCancel(msgid, JustReturn)
 /*
 **  See if the user is the news administrator.
 */
-STATIC BOOL
+static bool
 AnAdministrator(name, group)
     char		*name;
     gid_t		group;
@@ -417,7 +407,7 @@ AnAdministrator(name, group)
 /*
 **  Check the control message, and see if it's legit.
 */
-STATIC void
+static void
 CheckControl(ctrl, pwp)
     char		*ctrl;
     struct passwd	*pwp;
@@ -485,7 +475,7 @@ CheckControl(ctrl, pwp)
 **  into the login name, with perhaps an initial capital.  (Everyone seems
 **  to hate that, but everyone also supports it.)
 */
-STATIC char *
+static char *
 FormatUserName(pwp, node)
     struct passwd	*pwp;
     char		*node;
@@ -563,10 +553,10 @@ FormatUserName(pwp, node)
 /*
 **  Check the Distribution header, and exit on error.
 */
-STATIC void CheckDistribution(char *p)
+static void CheckDistribution(char *p)
 {
-    static char		SEPS[] = " \t,";
-    register STRING	*dp;
+    static char	SEPS[] = " \t,";
+    const char  *dp;
 
     if ((p = strtok(p, SEPS)) == NULL) {
 	(void)fprintf(stderr, "Can't parse Distribution line.\n");
@@ -585,9 +575,9 @@ STATIC void CheckDistribution(char *p)
 /*
 **  Process all the headers.  FYI, they're done in RFC-order.
 */
-STATIC void
+static void
 ProcessHeaders(AddOrg, linecount, pwp)
-    BOOL		AddOrg;
+    bool		AddOrg;
     int			linecount;
     struct passwd	*pwp;
 {
@@ -769,9 +759,9 @@ ProcessHeaders(AddOrg, linecount, pwp)
 **  out in order to avoid postings like "Sorry, I forgot my .signature
 **  -- here's the article again."
 */
-STATIC char *
+static char *
 AppendSignature(UseMalloc, article, homedir, linesp)
-    BOOL	UseMalloc;
+    bool	UseMalloc;
     char	*article;
     char	*homedir;
     int		*linesp;
@@ -798,7 +788,7 @@ AppendSignature(UseMalloc, article, homedir, linesp)
     }
 
     /* Read it in. */
-    length = fread((POINTER)buff, (SIZE_T)1, (SIZE_T)sizeof buff - 2, F);
+    length = fread(buff, 1, sizeof buff - 2, F);
     i = feof(F);
     (void)fclose(F);
     if (length == 0) {
@@ -848,7 +838,7 @@ AppendSignature(UseMalloc, article, homedir, linesp)
 **  with > is included text.  Decrement the count on lines starting with <
 **  so that we don't reject diff(1) output.
 */
-STATIC void
+static void
 CheckIncludedText(p, lines)
     register char	*p;
     register int	lines;
@@ -885,7 +875,7 @@ CheckIncludedText(p, lines)
 /*
 **  Try to mail an article to the moderator of the group.
 */
-STATIC BOOL
+static bool
 MailArticle(group, article)
     char		*group;
     char		*article;
@@ -937,7 +927,7 @@ MailArticle(group, article)
     }
     (void)fprintf(F, "\n");
     i = strlen(article);
-    if (fwrite((POINTER)article, (SIZE_T)1, (SIZE_T)i, F) != i)
+    if (fwrite(article, 1, i, F) != i)
 	PerrorExit(TRUE, "Can't send article");
     SafeFlush(F);
     i = pclose(F);
@@ -954,7 +944,7 @@ MailArticle(group, article)
 **  Check the newsgroups, make sure they're all valid, that none are
 **  moderated, etc.
 */
-STATIC BOOL
+static bool
 ValidNewsgroups(hdr, F, article)
     char		*hdr;
     FILE		*F;
@@ -963,14 +953,14 @@ ValidNewsgroups(hdr, F, article)
     register char	*groups;
     register char	*p;
     register int	i;
-    BOOL		approved;
-    BOOL		mailed;
-    BOOL		FoundOne;
+    bool		approved;
+    bool		mailed;
+    bool		FoundOne;
     char		*group;
     char		*q;
     char		buff[SMBUF];
     struct _DDHANDLE	*h;
-    BOOL		IsNewgroup;
+    bool		IsNewgroup;
 
     p = HDR(_control);
     IsNewgroup = p && EQn(p, "newgroup", 8);
@@ -1067,7 +1057,7 @@ ValidNewsgroups(hdr, F, article)
 **  Read stdin into a string and return it.  Can't use ReadInDescriptor
 **  since that will fail if stdin is a tty.
 */
-STATIC char *
+static char *
 ReadStdin()
 {
     register int	size;
@@ -1099,10 +1089,10 @@ ReadStdin()
 /*
 **  Offer the article to the server, return its reply.
 */
-STATIC int
+static int
 OfferArticle(buff, Authorized)
     char		*buff;
-    BOOL		Authorized;
+    bool		Authorized;
 {
     (void)fprintf(ToServer, "post\r\n");
     SafeFlush(ToServer);
@@ -1117,11 +1107,8 @@ OfferArticle(buff, Authorized)
 /*
 **  Spool article to temp file.
 */
-STATIC void
-Spoolit(article, Length, deadfile)
-    char		*article;
-    SIZE_T		Length;
-    char		*deadfile;
+static void
+Spoolit(char *article, size_t Length, char *deadfile)
 {
     register HEADER	*hp;
     register FILE	*F;
@@ -1152,7 +1139,7 @@ Spoolit(article, Length, deadfile)
 	PerrorExit(FALSE, "Can't write headers");
 
     /* Write the article and exit. */
-    if (fwrite((POINTER)article, (SIZE_T)1, Length, F) != Length)
+    if (fwrite(article, 1, Length, F) != Length)
 	PerrorExit(FALSE, "Can't write article");
     SafeFlush(F);
     if (fclose(F) == EOF)
@@ -1170,10 +1157,10 @@ Spoolit(article, Length, deadfile)
 /*
 **  Print usage message and exit.
 */
-STATIC NORETURN
-Usage()
+static void
+Usage(void)
 {
-    (void)fprintf(stderr, "Usage: inews [-D] [-h] [header_flags] [article]\n");
+    fprintf(stderr, "Usage: inews [-D] [-h] [header_flags] [article]\n");
     /* Don't call QuitServer here -- connection isn't open yet. */
     exit(1);
 }
@@ -1185,9 +1172,9 @@ main(ac, av)
     char		*av[];
 {
     static char		NOCONNECT[] = "Can't connect to server";
-    register int	i;
-    register char	*p;
-    register HEADER	*hp;
+    int                 i;
+    char                *p;
+    HEADER              *hp;
     int			j;
     int			port;
     int			Mode;
@@ -1198,17 +1185,19 @@ main(ac, av)
     char		*deadfile;
     char		buff[HEADER_STRLEN];
     char		SpoolMessage[HEADER_STRLEN];
-    BOOL		DoSignature;
-    BOOL		AddOrg;
-    SIZE_T		Length;
+    bool		DoSignature;
+    bool		AddOrg;
+    size_t		Length;
+    uid_t               uid;
 
     /* First thing, set up logging and our identity. */
     openlog("inews", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);      
 
     /* Find out who we are. */
-    if ((i = geteuid()) < 0)
+    uid = geteuid();
+    if (uid == (pid_t) -1)
 	PerrorExit(TRUE, "Can't get your user ID");
-    if ((pwp = getpwuid((UID_T)i)) == NULL)
+    if ((pwp = getpwuid(uid)) == NULL)
 	PerrorExit(TRUE, "Can't get your password entry");
 
     /* Set defaults. */
@@ -1400,7 +1389,7 @@ main(ac, av)
 	    PerrorExit(TRUE, "Can't write headers");
 
 	/* Write the article and exit. */
-	if (fwrite((POINTER)article, (SIZE_T)1, Length, stdout) != Length)
+	if (fwrite(article, 1, Length, stdout) != Length)
 	    PerrorExit(TRUE, "Can't write article");
 	SafeFlush(stdout);
 	QuitServer(0);

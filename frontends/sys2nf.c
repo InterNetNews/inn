@@ -106,7 +106,7 @@ ReadSys(sys)
 **  Is this the name of a top-level group?  We want a simple name, "foo",
 **  and should find a "foo." in the group list.
 */
-static BOOL
+static bool
 Toplevel(p)
     char	*p;
 {
@@ -127,7 +127,7 @@ Toplevel(p)
 **  Do we have a name that's a prefix for more then one newsgroup?
 **  For "foo.bar", we must find more then one "foo.bar" or "foo.bar."
 */
-static BOOL
+static bool
 GroupPrefix(p)
     char	*p;
 {
@@ -156,8 +156,8 @@ DoSub(F, p)
 {
     register char	*s;
     register int	len;
-    register BOOL	SawBang;
-    register BOOL	SawAll;
+    register bool	SawBang;
+    register bool	SawAll;
 
     if ((s = strtok(p, ",")) == NULL)
 	return;

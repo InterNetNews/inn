@@ -12,15 +12,15 @@
 #include "nntp.h"
 
 
-STATIC FILE	*FromServer;
-STATIC FILE	*ToServer;
-STATIC int	Tracing;
+static FILE	*FromServer;
+static FILE	*ToServer;
+static int	Tracing;
 
 
 /*
 **  Print and error message (with errno) and exit with an error code.
 */
-STATIC NORETURN
+static void
 PerrorExit(s)
     char	*s;
 {
@@ -32,7 +32,7 @@ PerrorExit(s)
 /*
 **  Read a line from the server or die trying.
 */
-STATIC NORETURN
+static void
 GetFromServer(buff, size, text)
     char	*buff;
     int		size;
@@ -48,7 +48,7 @@ GetFromServer(buff, size, text)
 /*
 **  Flush a stdio FILE; exit if there are any errors.
 */
-STATIC void
+static void
 SafeFlush(F)
     FILE	*F;
 {
@@ -57,7 +57,7 @@ SafeFlush(F)
 }
 
 
-STATIC NORETURN
+static void
 SendQuit(x)
     int		x;
 {
@@ -72,7 +72,7 @@ SendQuit(x)
 }
 
 
-STATIC NORETURN
+static void
 Usage()
 {
     (void)fprintf(stderr,
@@ -93,7 +93,7 @@ main(ac, av)
     char	mesgid[SMBUF];
     char	*p;
     char	*q;
-    BOOL	PostMode;
+    bool	PostMode;
 
     /* Set defaults. */
     mesgid[0] = '\0';
