@@ -43,14 +43,11 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
-#if HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
+#include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <resolv.h>
 #include <signal.h>
-#include <stdarg.h>
 #include <syslog.h>
 #include <sys/param.h>
 #include <sys/stat.h>
@@ -71,7 +68,6 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "tape.h"
 
 u_int openfds ;
-char *program ;                 /* this should be set to argv[0] */
 int debuggingOutput ;
 u_int loggingLevel ;
 char **PointersFreedOnExit ;
@@ -81,9 +77,10 @@ extern void (*gPrintInfo) (void) ;
 void (*gCleanUp) (void) = 0 ;
 
 
-/* Log a message to stderr, called from warn or die. */
-int
-log_stderr(int len, const char *format, va_list args, int error)
+/* Log a message to stderr, called from warn or die.  Mostly the same as the
+   standard error_log_stderr, but prepends the date to each line. */
+void
+error_log_stderr_date(int len, const char *fmt, va_list args, int err)
 {
     char timebuff[30];
     time_t now;
@@ -92,53 +89,11 @@ log_stderr(int len, const char *format, va_list args, int error)
     now = time(NULL);
     tm = localtime(&now);
     strftime(timebuff, sizeof(timebuff), "%Y-%m-%d %H:%M:%S", tm);
-    fprintf(stderr, "%s %s: ", timebuff, (program ? program : "UNKNOWN"));
-    len = vfprintf(stderr, format, args);
-    if (error) fprintf(stderr, ": %s", strerror(error));
+    fprintf(stderr, "%s %s: ", timebuff,
+            (error_program_name ? error_program_name : "UNKNOWN"));
+    vfprintf(stderr, fmt, args);
+    if (err) fprintf(stderr, ": %s", strerror(err));
     fprintf(stderr, "\n");
-    return len;
-}
-
-/* syslog a message.  Relies on len being accurate to avoid buffer
-   overflows, so always put another handler in front of this one that
-   produces a valid length. */
-static void
-log_syslog(int level, int len, const char *format, va_list args, int error)
-{
-    char *p;
-    int size;
-
-    size = len + 1;
-    if (error) size += 2 + strlen(strerror(error));
-    p = malloc(size);
-    if (p == NULL) {
-        fprintf(stderr, "failed to malloc %lu bytes at %s line %d: %s",
-                size, __FILE__, __LINE__, strerror(errno));
-        exit(1);
-    }
-    vsprintf(p, format, args);
-    if (error) {
-        strcat(p, ": ");
-        strcat(p, strerror(error));
-    }
-    syslog(level, "%s", p);
-    free(p);
-}
-
-/* syslog a message with priority LOG_ERR. */
-int
-syslog_err(int len, const char *format, va_list args, int error)
-{
-    log_syslog(LOG_ERR, len, format, args, error);
-    return len;
-}
-
-/* syslog a message with priority LOG_WARNING. */
-int
-syslog_warn(int len, const char *format, va_list args, int error)
-{
-    log_syslog(LOG_WARNING, len, format, args, error);
-    return len;
 }
 
 /* If desired, print out the state of innfeed, call a cleanup function, and
@@ -167,20 +122,25 @@ dump_core(void)
 }
 
 /* An alternate version of die, used when we don't want to dump core.  This
-   should somehow eventually be phased out to simplify things. */
+   should somehow eventually be phased out to simplify things; it's
+   basically a copy of die() from lib/error.c that ignores the cleanup
+   handler and has innfeed's handlers hard-coded (ugh). */
 void
 logAndExit(int status, const char *format, ...)
 {
     va_list args;
+    error_handler_t *log;
     int length;
 
     va_start(args, format);
-    length = log_stderr(0, format, args, 0);
+    length = vsnprintf(NULL, 0, format, args);
     va_end(args);
     va_start(args, format);
-    syslog_err(length, format, args, 0);
+    error_log_stderr_date(length, format, args, 0);
     va_end(args);
-
+    va_start(args, format);
+    error_log_syslog_err(length, format, args, 0);
+    va_end(args);
     exit(status);
 }
 
@@ -205,7 +165,8 @@ void d_printf (u_int level, const char *fmt, ...)
 
   va_start (ap, fmt) ;
   fprintf (stderr, "%s %s[%ld]: ",timeString,
-           (program ? program : "UNKNOWN PROGRAM NAME"), (long) myPid) ;
+           (error_program_name ? error_program_name : "UNKNOWN"),
+           (long) myPid) ;
   vfprintf (stderr, fmt, ap) ;
   va_end (ap) ;
 }
