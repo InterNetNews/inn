@@ -139,9 +139,6 @@
     /* Default number of bytes to hold in memory when buffered. */
     /* =()<#define SITE_BUFFER_SIZE	@<SITE_BUFFER_SIZE>@>()= */
 #define SITE_BUFFER_SIZE	(16 * 1024)
-    /* Should Inn be calling setsockopt() on network fds. */
-    /* =()<#define @<SET_SOCKOPT>@_SET_SOCKOPT @<SET_SOCKOPT>@>()= */
-#define DO_SET_SOCKOPT DO
     /* How your DBZ be compiled? Use tagged-hash or splitted tables */
     /* =()<#define @<DBZ_TAGGED_HASH>@_TAGGED_HASH>()= */
 #define DONT_TAGGED_HASH
