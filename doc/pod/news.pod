@@ -43,6 +43,17 @@ The sample control.ctl file has been extensively updated.
 
 =item *
 
+Wildmat exclusions (@ and !) should now work properly in storage.conf
+newsgroup patterns.
+
+=item *
+
+The implementation of the -w flag for expireover was fixed; previously,
+the value given to -w to change expireover's notion of the current time
+was scaled by too much.
+
+=item *
+
 Various other more minor bug fixes, standards compliance fixes, and
 documentation improvements.
 

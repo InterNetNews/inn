@@ -28,6 +28,13 @@ Changes from 2.3.2 to 2.3.3
 
     * The sample control.ctl file has been extensively updated.
 
+    * Wildmat exclusions (@ and !) should now work properly in storage.conf
+      newsgroup patterns.
+
+    * The implementation of the -w flag for expireover was fixed;
+      previously, the value given to -w to change expireover's notion of the
+      current time was scaled by too much.
+
     * Various other more minor bug fixes, standards compliance fixes, and
       documentation improvements.
 
