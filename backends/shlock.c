@@ -11,10 +11,10 @@
 #include <signal.h>
 #include <sys/stat.h>
 
+#include "inn/messages.h"
+
 
 static bool	BinaryLock;
-static char	CANTUNLINK[] = "Can't unlink \"%s\", %s\n";
-static char	CANTOPEN[] = "Can't open \"%s\", %s\n";
 
 
 /*
@@ -33,7 +33,7 @@ ValidLock(char *name, bool JustChecking)
     if ((fd = open(name, O_RDONLY)) < 0) {
 	if (JustChecking)
 	    return FALSE;
-	(void)fprintf(stderr, CANTOPEN, name, strerror(errno));
+        syswarn("cannot open %s", name);
 	return TRUE;
     }
 
@@ -72,7 +72,7 @@ static void
 UnlinkAndExit(char *name, int x)
 {
     if (unlink(name) < 0)
-	(void)fprintf(stderr, CANTUNLINK, name, strerror(errno));
+        syswarn("cannot unlink %s", name);
     exit(x);
 }
 
@@ -100,6 +100,9 @@ main(int ac, char *av[])
     pid_t		pid;
     bool		ok;
     bool		JustChecking;
+
+    /* Establish our identity. */
+    message_program_name = "shlock";
 
     /* Set defaults. */
     pid = 0;
@@ -146,14 +149,11 @@ main(int ac, char *av[])
 	switch (errno) {
 	default:
 	    /* Unknown error -- give up. */
-	    (void)fprintf(stderr, CANTOPEN, tmp, strerror(errno));
-	    exit(1);
+            sysdie("cannot open %s", tmp);
 	case EEXIST:
 	    /* If we can remove the old temporary, retry the open. */
-	    if (unlink(tmp) < 0) {
-		(void)fprintf(stderr, CANTUNLINK, tmp, strerror(errno));
-		exit(1);
-	    }
+	    if (unlink(tmp) < 0)
+                sysdie("cannot unlink %s", tmp);
 	    break;
 	}
 
@@ -166,8 +166,7 @@ main(int ac, char *av[])
 	ok = write(fd, buff, i) == i;
     }
     if (!ok) {
-	(void)fprintf(stderr, "Can't write PID to \"%s\", %s\n",
-	    tmp, strerror(errno));
+        syswarn("cannot write PID to %s", tmp);
 	(void)close(fd);
 	UnlinkAndExit(tmp, 1);
     }
@@ -186,8 +185,7 @@ main(int ac, char *av[])
 	switch (errno) {
 	default:
 	    /* Unknown error -- give up. */
-	    (void)fprintf(stderr, "Can't link \"%s\" to \"%s\", %s\n",
-		    tmp, name, strerror(errno));
+            syswarn("cannot link %s to %s", tmp, name);
 	    UnlinkAndExit(tmp, 1);
 	    /* NOTREACHED */
 	case EEXIST:
@@ -195,7 +193,7 @@ main(int ac, char *av[])
 	    if (ValidLock(name, FALSE))
 		UnlinkAndExit(tmp, 1);
 	    if (unlink(name) < 0) {
-		(void)fprintf(stderr, CANTUNLINK, name, strerror(errno));
+                syswarn("cannot unlink %s", name);
 		UnlinkAndExit(tmp, 1);
 	    }
 	}
