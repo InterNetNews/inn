@@ -1770,7 +1770,7 @@ sub collect {
         # cnfsstat runs at a roughly consistent interval.
         my ($period, $added);
         $period = $time - $cnfsstat_time{$buffer};
-        $period = 86400 - $cnfsstat_time{$buffer} + $time if $period < 0;
+        $period = 86400 - $cnfsstat_time{$buffer} + $time if $period <= 0;
         $added = $used - $cnfsstat_used{$buffer};
         if ($cycles > $cnfsstat_cycles{$buffer}) {
           $added += $size * ($cycles - $cnfsstat_cycles{$buffer});
