@@ -13,19 +13,8 @@
 */
 
 #include "config.h"
-
+#include "clibrary.h"
 #include <errno.h>
-#include <sys/types.h>
-#if HAVE_UNISTD_H
-# include <unistd.h>
-#endif
-
-#ifndef SEEK_SET
-# define SEEK_SET 0
-#endif
-#ifndef SEEK_CUR
-# define SEEK_CUR 1
-#endif
 
 /* If we're running the test suite, rename pread to avoid conflicts with the
    system version.  #undef first because large file support may define a
