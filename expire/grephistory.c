@@ -172,7 +172,7 @@ IhaveSendme(STRING History, char What)
 	    continue;
 	if (HistorySeek(F, offset))
 	    while (GetName(F, Name, &More)) {
-		if (stat(Name, &Sb) >= 0) {
+		if (IsToken(Name) || (stat(Name, &Sb) >= 0)) {
 		    (void)printf("%s\n", Name);
 		    break;
 		}
