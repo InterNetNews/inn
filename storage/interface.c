@@ -155,14 +155,17 @@ static time_t parse_time(char *tmbuf)
 	      case 'M':
 		ret += tmp*60*60*24*31;
 		break;
-	      case 'h':
+	      case 'd':
 		ret += tmp*60*60*24;
 		break;
-	      case 'm':
+	      case 'h':
 		ret += tmp*60*60;
 		break;
-	      case 's':
+	      case 'm':
 		ret += tmp*60;
+		break;
+	      case 's':
+		ret += tmp;
 		break;
 	      default:
 		return(0);
@@ -524,7 +527,6 @@ TOKEN SMstore(const ARTHANDLE article) {
     STORAGE_SUB         *sub;
     TOKEN               result;
     char                *groups;
-    TIMEINFO		Now;
     char		*expire;
     time_t		expiretime;
 
@@ -560,11 +562,18 @@ TOKEN SMstore(const ARTHANDLE article) {
     expiretime = 0;
     if (expire = (char *)HeaderFindMem(article.data, article.len, "Expires", 7)) {
 	/* optionally parse expire header */
-	expiretime = parsedate(expire, &Now);
+	char *x, *p;
+	for (p = expire+1; (*p != '\n') && (*(p - 1) != '\r'); p++);
+	x = NEW(char, p - expire);
+    	memcpy(x, expire, p - expire - 1);
+    	x[p - expire - 1] = '\0';
+	
+	expiretime = parsedate(x, NULL);
 	if (expiretime == -1)
 	    expiretime = 0;
 	else
-	    expiretime -= Now.time;
+	    expiretime -= time(0);
+	DISPOSE(x);
     }
 
     for (sub = subscriptions; sub != NULL; sub = sub->next) {
