@@ -49,9 +49,13 @@ die "Usage: $0 < message\n" if $#ARGV != -1;
 
 # Path to gpg binary
 my $gpg;
-foreach (split(/:/, $ENV{PATH}), qw(/usr/local/bin /opt/gnu/bin)) {
-    if (-x "$_/gpgv") {
-        $gpg = "$_/gpgv"; last;
+if ($inn::gpgv) { 
+    $gpg = $inn::gpgv;
+} else {
+    foreach (split(/:/, $ENV{PATH}), qw(/usr/local/bin /opt/gnu/bin)) {
+	if (-x "$_/gpgv") {
+            $gpg = "$_/gpgv"; last;
+	}
     }
 }
 fail('cannot find the gpgv binary') if not $gpg;
