@@ -1287,8 +1287,9 @@ AC_OUTPUT(
 	samples/version.pl
 	samples/writelog
 	storage/buildconfig
+	storage/ovbuildconfig
 	,
-	chmod +x storage/buildconfig
+	chmod +x storage/buildconfig storage/ovbuildconfig
 )
 
 cat .now_do
