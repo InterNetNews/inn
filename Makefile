@@ -99,8 +99,8 @@ cert:
 	$(SSLBIN)/openssl req -new -x509 -nodes \
 	    -out $(PATHLIB)/cert.pem -days 366 \
 	    -keyout $(PATHLIB)/cert.pem
-	chown news $(PATHLIB)/cert.pem
-	chgrp news $(PATHLIB)/cert.pem
+	chown $(NEWSUSER) $(PATHLIB)/cert.pem
+	chgrp $(NEWSGROUP) $(PATHLIB)/cert.pem
 	chmod 640 $(PATHLIB)/cert.pem
 
 
