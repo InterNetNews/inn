@@ -151,7 +151,7 @@ main(ac, av)
     }
 
     /* Connect to the server. */
-    if (NNTPremoteopen(&FromServer, &ToServer, buff) < 0
+    if (NNTPremoteopen(NNTP_PORT, &FromServer, &ToServer, buff) < 0
      || FromServer == NULL
      || ToServer == NULL) {
 	if (buff[0])

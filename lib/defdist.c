@@ -160,7 +160,7 @@ main(ac, av)
     FILE		*ToServer;
     char		buff[SMBUF];
 
-    if (NNTPremoteopen(&FromServer, &ToServer, buff) < 0) {
+    if (NNTPremoteopen(NNTP_PORT, &FromServer, &ToServer, buff) < 0) {
 	if ((p = strchr(buff, '\n')) != NULL)
 	    *p = '\0';
 	if ((p = strchr(buff, '\r')) != NULL)
