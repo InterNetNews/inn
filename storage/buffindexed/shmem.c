@@ -16,6 +16,7 @@
 #include <sys/stat.h>
 #include <syslog.h>
 
+#include "inn/messages.h"
 #include "shmem.h"
   
 #ifndef MAP_FAILED
@@ -183,16 +184,15 @@ smcd_t* smcGetShmemBuffer(const char *name, int size)
     }
 
     this = malloc( sizeof(smcd_t) );
-    this->addr = addr;;
+    this->addr = addr;
     this->size = size;
     this->shmid = shmid;
     this->semap = semap;
 
-#if 0
-    /* This makes news log file huge */
-    syslog( L_NOTICE, "got shmid %d semap %d addr %8.8x size %lu",
-        shmid, semap, addr, size );
-#endif
+    /* This makes news log file huge if enabled */
+    debug("got shmid %d semap %d addr %p size %lu", shmid, semap,
+          (void *) addr, size);
+
     return this;
 }
 
@@ -254,8 +254,8 @@ smcd_t* smcCreateShmemBuffer(const char *name, int size)
     this->shmid = shmid;
     this->semap = semap;
 
-    syslog( L_NOTICE, "created shmid %d semap %d addr %8.8lx size %d",
-        shmid, semap, (unsigned long) addr, size );
+    notice("created shmid %d semap %d addr %p size %d", shmid, semap,
+           (void *) addr, size);
 
     return this;
 }
