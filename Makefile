@@ -84,31 +84,39 @@ Install.ms:	Install.ms.1 Install.ms.2
 	chmod 444 Install.ms
 
 ##  Additional cleanups.
-clobber realclean:	clean
+clobber realclean distclean:	clean
 	@echo ""
 	rm -f Install.ms inn*.tar.Z inn*.tar.gz Part0? MANIFEST.BAK
 	rm -rf inews.* rnews.* nntplib.*
 	rm -f tags */tags core */core a.out */a.out foo */foo
 	rm -f CHANGES *~
 	rm -fr $(TARDIR)
-	rm -f config.cache config.log libtool
+	rm -f config.cache config.log config.status libtool
 	rm -f BUILD makedirs.sh config/config.data backends/actmerge.sh
-	rm -f backends/actsyncd.sh backends/sendxbatches.sh include/clibrary.h
-	rm -f include/config.h include/paths.h samples/actsync.cfg
-	rm -f samples/checkgroups samples/default samples/docheckgroups
-	rm -f samples/expirerm samples/ihave samples/inn.conf samples/inncheck
-	rm -f samples/innmail  samples/innreport samples/innreport.conf
+	rm -f backends/actsyncd.sh backends/sendxbatches.sh
+	rm -f frontends/c7unbatch.sh frontends/gunbatch.sh
+	rm -f includes/autoconfig.h include/clibrary.h include/config.h
+	rm -f include/paths.h innfeed/innfeed-convcfg innfeed/procbatch
+	rm -f samples/actsync.cfg samples/checkgroups samples/checkgroups.pl
+	rm -f samples/cnfsstat samples/controlbatch samples/controlchan
+	rm -f samples/default samples/docheckgroups samples/expirerm
+	rm -f samples/ihave samples/ihave.pl samples/inn.conf samples/inncheck
+	rm -f samples/innmail samples/innreport samples/innreport.conf
 	rm -f samples/innshellvars samples/innshellvars.csh
 	rm -f samples/innshellvars.pl samples/innshellvars.tcl
 	rm -f samples/innstat samples/innwatch samples/innwatch.ctl
-	rm -f samples/news.daily samples/newgroup samples/nntpsend
-	rm -f samples/parsecontrol samples/pgpverify samples/rc.news
-	rm -f samples/rmgroup samples/scanlogs samples/scanspool
-	rm -f samples/send-ihave samples/send-nntp samples/send-uucp
-	rm -f samples/sendbatch samples/sendme samples/sendsys
-	rm -f samples/senduuname samples/signcontrol samples/startup.tcl
-	rm -f samples/tally.control samples/version samples/writelog
-	rm -f storage/buildconfig syslog/syslog.conf
+	rm -f samples/mailpost samples/mod-active samples/news.daily
+	rm -f samples/news2mail samples/newgroup samples/newgroup.pl
+	rm -f samples/nnrpd_auth.pl samples/nntpsend samples/parsecontrol
+	rm -f samples/pgpverify samples/pullnews samples/rc.news
+	rm -f samples/rmgroup samples/rmgroup.pl samples/scanlogs
+	rm -f samples/scanspool samples/send-ihave samples/send-nntp
+	rm -f samples/send-uucp samples/sendbatch samples/sendme
+	rm -f samples/sendme.pl samples/sendsys samples/sendsys.pl
+	rm -f samples/senduuname samples/senduuname.pl samples/signcontrol
+	rm -f samples/simpleftp samples/startup.tcl samples/tally.control
+	rm -f samples/version samples/version.pl samples/writelog
+	rm -f site/config storage/buildconfig syslog/syslog.conf
 	@echo ""
 	cd site ; make clobber ; cd ..
 	rm -f Makefile.global 

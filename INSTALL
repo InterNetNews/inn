@@ -429,6 +429,12 @@ Configuring INN
                 !*\
                 :Tc,Wnm*,S16384:/usr/local/news/bin/startinnfeed -y
 
+  If the server will not be supporting readers (a transit news server only),
+  it's not necessary to run overchan.  If you do that, however, and you're
+  using CNFS or timehash, be sure to leave overview.ctl empty so that INN
+  doesn't generate overview information either.  See the information about
+  overview.ctl below.
+
   Finally, you need to add entries for any actual sites to which you will
   be feeding articles. They will all have the same general format:
 
@@ -590,6 +596,14 @@ Configuring INN
   storage file number followed by a single colon and a wildmat pattern list
   of which newsgroups are to be stored in that file. As with storage.conf, the
   first matching line is used.
+
+  If your server will not be supporting any readers (if it's for news transit
+  only), you can leave this file empty and not run an overchan process (see
+  above under newsfeeds).  As a result, no overview information will be
+  generated and reading from the server will be impossible, but the server may
+  run faster.  If you choose to do this and you're using timehash, you'll need
+  to use a different syntax in expire.ctl.  See the expire.ctl man page for
+  details.
 
   The exact way in which you distribute articles across multiple overview
   storage areas is not an exact science. As a start we suggest creating 27
