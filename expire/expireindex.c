@@ -323,52 +323,26 @@ STATIC void RefreshLines(char *group, LIST *Refresh)
     else
 	icount = Sb.st_size / OVERINDEXPACKSIZE;
 
-    i = icount;
-    if (i == 0 ) i = Refresh->Used;
-
     if (OVERmmap) {
-
-/*	if (icount != 0 && (tmp = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, icount * OVERINDEXPACKSIZE,
- *	    PROT_READ, MAP__ARG, ifd, 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
- *	    (void)fprintf(stderr, "cant mmap index %s, %s\n", ifile, strerror(errno));
- *	    UnlockGroup(ilfd, ilockfile);
- *	    (void)close(ifd);
- *	    return;
- *	}
- */
-
-/* we *must* call mmap here.  if we don't we will later call munmap and really 
-   mess things up */
-
-      if (  (tmp = (char (*)[][OVERINDEXPACKSIZE])mmap(
-                        (MMAP_PTR)0, 
-			i * OVERINDEXPACKSIZE,
-	                PROT_READ, 
-                        MAP__ARG, 
-                        ifd, 
-                        0 )
-            ) == (char (*)[][OVERINDEXPACKSIZE] ) -1 
-         ) {
-	    (void)fprintf( stderr, 
-			   "cant mmap index %s, %s\n", 
-			   ifile, 
-			   strerror(errno)
-			 );
-	    UnlockGroup(ilfd, ilockfile);
-	    (void)close(ifd);
-	    return;
-      }
-
-
+	if (icount == 0) {
+	    /* set tmp to NULL so that we don't munmap() random stuff later. */
+	    tmp = (char (*)[][OVERINDEXPACKSIZE]) NULL; 
+	} else {
+	    if ((tmp = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, icount * OVERINDEXPACKSIZE,
+                  PROT_READ, MAP__ARG, ifd, 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
+		(void)fprintf(stderr, "cant mmap index %s, %s\n", ifile, strerror(errno));
+		UnlockGroup(ilfd, ilockfile);
+		(void)close(ifd);
+		return;
+	    }
+	}
     } else {
 	tmp = (char (*)[][OVERINDEXPACKSIZE]) NEW(
-/*				char, icount * OVERINDEXPACKSIZE); */
-				char, i * OVERINDEXPACKSIZE); 
+				char, icount * OVERINDEXPACKSIZE);
 	if (read( ifd, 
                   tmp, 
-/*		  icount * OVERINDEXPACKSIZE	*/
-		  i * OVERINDEXPACKSIZE	
-                ) != (i * OVERINDEXPACKSIZE)
+		  icount * OVERINDEXPACKSIZE
+                ) != (icount * OVERINDEXPACKSIZE)
            ) {
 	     (void)fprintf( stderr, 
  		            "cant read index %s, %s\n", 
