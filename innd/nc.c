@@ -333,7 +333,6 @@ STATIC FUNCTYPE NCstat(CHANNEL *cp)
     SMfreearticle(art);
 
     /* Write the message. */
-    p = TokenToText(*token);
     buff = NEW(char, strlen(p) + 16);
     (void)sprintf(buff, "%d 0 %s", NNTP_NOTHING_FOLLOWS_VAL, p);
     NCwritereply(cp, buff);
