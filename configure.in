@@ -1036,7 +1036,9 @@ AC_OUTPUT(
 	samples/innstat
 	samples/innwatch
 	samples/innwatch.ctl 
+	samples/mailpost
 	samples/mod-active
+	samples/news2mail
 	samples/news.daily
 	samples/newgroup
 	samples/newgroup.pl
@@ -1045,6 +1047,7 @@ AC_OUTPUT(
 	samples/nntpsend
 	samples/parsecontrol
 	samples/pgpverify
+	samples/pullnews
 	samples/rc.news
 	samples/rmgroup
 	samples/rmgroup.pl

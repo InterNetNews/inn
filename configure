@@ -6333,7 +6333,9 @@ trap 'rm -fr `echo "Makefile.global
 	samples/innstat
 	samples/innwatch
 	samples/innwatch.ctl 
+	samples/mailpost
 	samples/mod-active
+	samples/news2mail
 	samples/news.daily
 	samples/newgroup
 	samples/newgroup.pl
@@ -6342,6 +6344,7 @@ trap 'rm -fr `echo "Makefile.global
 	samples/nntpsend
 	samples/parsecontrol
 	samples/pgpverify
+	samples/pullnews
 	samples/rc.news
 	samples/rmgroup
 	samples/rmgroup.pl
@@ -6560,7 +6563,9 @@ CONFIG_FILES=\${CONFIG_FILES-"Makefile.global
 	samples/innstat
 	samples/innwatch
 	samples/innwatch.ctl 
+	samples/mailpost
 	samples/mod-active
+	samples/news2mail
 	samples/news.daily
 	samples/newgroup
 	samples/newgroup.pl
@@ -6569,6 +6574,7 @@ CONFIG_FILES=\${CONFIG_FILES-"Makefile.global
 	samples/nntpsend
 	samples/parsecontrol
 	samples/pgpverify
+	samples/pullnews
 	samples/rc.news
 	samples/rmgroup
 	samples/rmgroup.pl
