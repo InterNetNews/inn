@@ -51,11 +51,9 @@ static CHANNEL	CHANnull = { CTfree, CSerror, -1 };
 
 #define PRIORITISE_REMCONN
 #ifdef PRIORITISE_REMCONN
-/* FIXME - Russ says these need to become arrays too, but I'm not really sure
- * how it works, and they're not breaking anything for non-IPv6 installations
- * or systems with IPv4-mapped addressing like Linux.  -lutchann */
-static int	CHANrcfd;
-static CHANNEL	*CHANrc;
+static int	*CHANrcfd;
+static CHANNEL	**CHANrc;
+static int	chanlimit;
 #endif /* PRIORITISE_REMCONN */
 
 /*
@@ -256,8 +254,38 @@ CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
 #ifdef PRIORITISE_REMCONN
     /* Note remconn channel, for efficiency */
     if (Type == CTremconn) {
-	CHANrc = cp;
-	CHANrcfd = fd;
+	int j;
+	for (j = 0 ; j < chanlimit ; j++ ) {
+	    if (CHANrcfd[j] == -1) {
+		break;
+	    }
+	}
+	if (j < chanlimit) {
+	    CHANrc[j] = cp;
+	    CHANrcfd[j] = fd;
+	} else if (chanlimit == 0) {
+	    /* assuming two file descriptors(AF_INET and AF_INET6) */
+	    chanlimit = 2;
+	    CHANrc = NEW(CHANNEL **, chanlimit);
+	    CHANrcfd = NEW(int *, chanlimit);
+	    for (j = 0 ; j < chanlimit ; j++ ) {
+		CHANrc[j] = NULL;
+		CHANrcfd[j] = -1;
+	    }
+	    CHANrc[0] = cp;
+	    CHANrcfd[0] = fd;
+	} else {
+	    /* extend to double size */
+	    RENEW(CHANrc, CHANNEL **, chanlimit * 2);
+	    RENEW(CHANrcfd, int *, chanlimit * 2);
+	    for (j = chanlimit ; j < chanlimit * 2 ; j++ ) {
+		CHANrc[j] = NULL;
+		CHANrcfd[j] = -1;
+	    }
+	    CHANrc[chanlimit] = cp;
+	    CHANrcfd[chanlimit] = fd;
+	    chanlimit *= 2;
+	}
     }
 #endif /* PRIORITISE_REMCONN */
     return cp;
@@ -1029,18 +1057,22 @@ CHANreadloop(void)
 	/* Try the control channel first. */
 	if (FD_ISSET(CHANccfd, &RCHANmask) && FD_ISSET(CHANccfd, &MyRead)) {
 	    count--;
- 	    if (count > 3) count = 3; /* might be more requests */
+ 	    if (count > 3)
+		count = 3; /* might be more requests */
 	    (*CHANcc->Reader)(CHANcc);
 	    FD_CLR(CHANccfd, &MyRead);
 	}
 
 #ifdef PRIORITISE_REMCONN
 	/* Try the remconn channel next. */
-	if (FD_ISSET(CHANrcfd, &RCHANmask) && FD_ISSET(CHANrcfd, &MyRead)) {
-	    count--;
-	    if (count > 3) count = 3; /* might be more requests */
-	    (*CHANrc->Reader)(CHANrc);
-	    FD_CLR(CHANrcfd, &MyRead);
+	for (j = 0 ; (j < chanlimit) && (CHANrcfd[j] >= 0) ; j++) {
+	    if (FD_ISSET(CHANrcfd[j], &RCHANmask) && FD_ISSET(CHANrcfd[j], &MyRead)) {
+		count--;
+		if (count > 3)
+		    count = 3; /* might be more requests */
+		(*CHANrc[j]->Reader)(CHANrc[j]);
+		FD_CLR(CHANrcfd[j], &MyRead);
+	    }
 	}
 #endif /* PRIORITISE_REMCONN */
 
