@@ -35,7 +35,7 @@ message:from:newsgroups:action
 .RE
 .PP
 The first field is the name of the message for which this line is valid.
-It should be either the name of the control message, or the word ``all''
+It should be either the name of the control message or the word ``all''
 to mean that it is valid for all messages.
 .PP
 The second field is a shell-style pattern that matches the email address
@@ -43,7 +43,7 @@ of the person posting the message.
 (The poster's address is first converted to lowercase.)
 The matching is done using the shell's
 .I case
-statement; see
+statement (or the equivalent); see
 .IR sh (1)
 for details.
 .PP
@@ -56,14 +56,17 @@ for checking.
 If the control message is of a different type, then this field is
 ignored.
 .PP
-The fourth field specifies what action to take if this line is selected
-for the message.
+The fourth field specifies what action to take on control messages
+that match this line.
 The following actions are understood:
 .TP
 .B doit
 The action requested by the control message should be performed.
-In most cases the control script will also send mail to
-.IR <USER\ specified\ with\ \-\-with\-news\-master\ at\ configure> .
+In some cases, the control script will also send mail to
+.IR <USER\ specified\ with\ \-\-with\-news\-master\ at\ configure> ,
+but if notification of the action should always be sent,
+.B doit=mail
+should be used instead (see below).
 .TP
 .B doifarg
 If the control message has an argument, this is treated as a ``doit'' action.
@@ -76,6 +79,10 @@ On the other hand, sendsys ``bombs'' ask that the entire
 .I newsfeeds
 file be sent to a forged reply-to address; by using ``doifarg'' such
 messages will not be processed automatically.
+(Processing ``sendsys'' control messages is still not recommended,
+even with this work-around, unless they are authenticated in some
+fashion.  The risk of having news servers turned into anonymous mail
+bombing services is too high.)
 .TP
 .BI doit= file
 The action is performed, but a log entry is written to the specified
@@ -84,10 +91,11 @@ log file,
 If
 .I file
 is the word ``mail'' then the record is mailed.
-A null string is equivalent to /dev/null.
+A null string is equivalent to /dev/null (in other words, with a null
+string, nothing is logged).
 A pathname that starts with a slash is taken as the absolute filename to
 use as the log.
-All other pathnames are written to
+Otherwise, the log entry is written to
 .IR <pathlog\ in\ inn.conf>/file.log .
 The log is written by
 .I writelog
@@ -98,18 +106,25 @@ The log is written by
 No action is taken; the message is ignored.
 .TP
 .B verify-*
-If the value starts with the string ``verify-'', for example, 
-\&``verify-news.announce.newgroups'', then PGP verification of the control
+If the value starts with the string ``verify-'' (for example, 
+\&``verify-news.announce.newgroups'') then PGP verification of the control
 message will be done using the key issued by the ``user'' defined by the
 rest of the string -- ``news.announce.newsgroups'' in this example.
+If no logging is specified (with
+.BI = file
+mentioned below), notification of successful ``newgroup'' and ``rmgroup''
+messages and the output of ``checkgroups'' messages will be mailed to the
+news administrator.
 .TP
 .BI verify-*= file
 PGP verification is done as for the ``verify-*'' entries, and a log entry
 is written to the specified file.
+(In the case of ``checkgroups'' messages, this means the shell script
+output of the ``checkgroups'' message will be written to that file.)
 .TP
 .B log
 A one-line log notice is sent to standard error.
-.I Innd
+.IR innd (8)
 normally directs this to the file
 .IR <pathlog\ in\ inn.conf>/errlog .
 .TP
@@ -121,22 +136,67 @@ which is interpreted as described above.
 .B mail
 A mail message is sent to the news administrator.
 .PP
+Processing of a ``checkgroups'' message will never actually change
+the active file.
+The difference between an action of
+.B doit
+(or
+.BR verify )
+and an action of
+.B mail
+for ``checkgroups'' control messages lies only in what mail is sent;
+.B doit
+will mail the news administrator a shell script to create, delete, or
+modify newsgroups to match the ``checkgroups'' message, whereas
+.B mail
+will just mail the entire message.
+In either case, the news administrator will have to take action to
+implement the ``checkgroups'' and if the mail is ignored, nothing
+will be changed.
+.PP
 Lines are matched in order; the last match found in the file is the one
 that is used.
 For example, with the following three lines:
 .RS
 .nf
+
 newgroup:*:*:drop
 newgroup:group-admin@isc.org:comp.*|humanities.*|misc.*|news.*|\e
 rec.*|sci.*|soc.*|talk.*:verify-news.announce.newgroups
 newgroup:kre@munnari.oz.au:aus.*:mail
+
 .fi
 .RE
 A newgroup coming from ``group-admin'' at a ISC machine will be honored if
-it is in the mainstream Usenet hierarchy.
+it is one of the listed hierarchies and if it has a valid
+signature with the ``news.announce.newgroups'' key.
 If ``kre'' posts a newgroup message creating ``aus.foo'', then mail will
 be sent.
 All other newgroup messages are ignored.
+.PP
+Use of the
+.B verify
+action for processing ``newgroup'', ``rmgroup'', and ``checkgroups''
+messages is
+.B strongly
+recommended.
+Abuse of control messages is rampant, and authentication
+via PGP signatures is currently the only reliable way to be sure that
+a control message comes from who it claims to be from.
+Most major hierarchies are now using PGP-authenticated control
+messages.
+.PP
+In order to use
+.B verify
+actions, the PGP key ring of the news user must be populated with the
+PGP keys of the hierarchy maintainers whose control messages you want
+to honor.  For more details on PGP-authenticated control messages and
+the URL for downloading the PGP keys of major hierarchies, see
+.IR pgpverify (8).
+.PP
+Control messages of type ``cancel'' are handled internally by
+.BR innd (8)
+and cannot be controlled by any of the mechanisms described here.
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 .de R$
@@ -147,4 +207,6 @@ This is revision \\$3, dated \\$4.
 inn.conf(5),
 innd(8),
 newsfeeds(5),
+controlchan(8),
+pgpverify(8),
 scanlogs(8).
