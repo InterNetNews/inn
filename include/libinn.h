@@ -222,7 +222,9 @@ struct conf_vars {
 	char *pathhttp;
 #define	CONF_VAR_NNRPDPOSTHOST 74
 	char *nnrpdposthost;
-#define	MAX_CONF_VAR 75
+#define	CONF_VAR_EXTENDEDDBZ 75
+	int extendeddbz;
+#define	MAX_CONF_VAR 76
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;
@@ -264,6 +266,8 @@ typedef struct _OVERINDEX {
     HASH                hash;
 } OVERINDEX;
 
+extern void OVERsetoffset(TOKEN *token, int *offset, unsigned char *overindex);
+extern void OVERmaketoken(TOKEN *token, int offset, unsigned char overindex);
 extern BOOL OVERsetup(OVERSETUP type, void *value);
 extern BOOL OVERinit(void);
 extern BOOL OVERnewinit(void);

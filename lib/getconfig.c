@@ -227,6 +227,7 @@ void SetDefaults()
     innconf->patharchive = NULL;
 
     innconf->logsitename = TRUE;
+    innconf->extendeddbz = FALSE;
 }
 
 void ClearInnConf()
@@ -771,8 +772,14 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_NNRPDPOSTHOST, bit);
 		if (!bit) innconf->nnrpdposthost = COPY(p);
 		SET_CONFIG(CONF_VAR_NNRPDPOSTHOST);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_EXTENDEDDBZ)) {
+		TEST_CONFIG(CONF_VAR_EXTENDEDDBZ, bit);
+		if (!bit && boolval != -1) innconf->extendeddbz = boolval;
+		SET_CONFIG(CONF_VAR_EXTENDEDDBZ);
 	    }
 	}
+	if (innconf->storageapi != TRUE) innconf->extendeddbz = FALSE;
 	(void)fclose(F);
     } else {
 	syslog(L_FATAL, "Cannot open %s", _PATH_CONFIG);

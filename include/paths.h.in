@@ -223,6 +223,8 @@
 #define _CONF_LOGSITENAME	"logsitename"
     /* Which server will nnrpd post */
 #define _CONF_NNRPDPOSTHOST     "nnrpdposthost"
+    /* Whether or not to make DBZ have extra data */
+#define _CONF_EXTENDEDDBZ       "extendeddbz"
 
    /* Enable keyword overview data to be generated (if compiled in) */
 #define _CONF_KEYWORDS		"keywords"

@@ -167,6 +167,24 @@ The default value is ``true''.
 What file name to use for storing overview data. Defaults to
 ``.overview''.
 .TP
+.I extendeddbz
+Should overview offset be put into dbz file.
+This can be useful to gain overview performance, but note that dbz
+file size will be three times.
+Whenever
+.I extendeddbz
+is changed, dbz files should be rebuilt with
+.IR makehistory (8).
+If 
+.I storageapi
+is ``false'', 
+.I extendeddbz
+is ignored and always treated as ``false''.
+.I extendeddbz
+is available only if
+.I <DBZ_TAGGED_HASH in config.data>
+is ``DONT''.
+.TP
 .I keywords
 Should keywords be generated in the overview databases. Must be a boolean
 value. Default is false. Changing this requires also changing
@@ -530,4 +548,4 @@ This is revision \\$3, dated \\$4.
 ..
 .R$ $Id$
 .SH "SEE ALSO"
-libinn(3), moderators(5), newsrequeue(8).
+libinn(3), moderators(5), makehistory(8), newsrequeue(8).
