@@ -1349,7 +1349,7 @@ Starting and Stopping the System
     news user and not as root.  To start INN on system boot, you therefore
     want to put something like:
 
-        su news -c /usr/local/news/bin/rc.news
+        su - news -c /usr/local/news/bin/rc.news
 
     in the system boot scripts.  If innd is stopped or killed, you can
     restart it by running rc.news by hand as the news user.
@@ -1357,7 +1357,7 @@ Starting and Stopping the System
     The rc.news script may also be used to shut down INN, with the "stop"
     option:
 
-        su news -c '/usr/local/news/bin/rc.news stop'
+        su - news -c '/usr/local/news/bin/rc.news stop'
 
     In the contrib directory of this source tree is a sample init script for
     people using System V-style init.d directories.
