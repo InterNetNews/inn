@@ -17,12 +17,12 @@ SOURCES       = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
 		version.c wire.c xfopena.c xmalloc.c xsignal.c xwrite.c
 
 # Sources for additional functions only built to replace missing system ones.
-EXTRA_SOURCES = fseeko.c ftello.c getaddrinfo.c getpagesize.c hstrerror.c \
-		inet_aton.c inet_ntoa.c memcmp.c mkstemp.c pread.c pwrite.c \
-		setenv.c setproctitle.c strcasecmp.c strerror.c strlcat.c \
-		strlcpy.c strspn.c strtok.c symlink.c
+EXTRA_SOURCES = alloca.c fseeko.c ftello.c getaddrinfo.c getpagesize.c \
+		hstrerror.c inet_aton.c inet_ntoa.c memcmp.c mkstemp.c \
+		pread.c pwrite.c setenv.c setproctitle.c strcasecmp.c \
+		strerror.c strlcat.c strlcpy.c strspn.c strtok.c symlink.c
 
-OBJECTS       = $(LIBOBJS) $(SOURCES:.c=.o)
+OBJECTS       = $(LIBOBJS) $(ALLOCA) $(SOURCES:.c=.o)
 LOBJECTS      = $(OBJECTS:.o=.lo)
 
 .SUFFIXES: .lo

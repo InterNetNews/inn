@@ -161,6 +161,7 @@ KRB5_LIBS	= @KRB5_LIBS@
 ##  was missing some standard functions, and INN will be providing its own
 ##  replacements from the lib directory.
 
+ALLOCA		= @ALLOCA@
 LIBOBJS		= @LIBOBJS@
 
 ##  Paths to various standard programs used during the build process.
