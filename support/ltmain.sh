@@ -3152,7 +3152,7 @@ libdir='$install_libdir'\
       # Added to support INN's install program.
       -O) prev="-O" ;;
       -G) prev="-G" ;;
-      -b) prev="-b" ;;
+      -B) prev="-B" ;;
 
       -s)
 	stripme=" -s"
