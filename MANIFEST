@@ -552,6 +552,7 @@ tests/Makefile                        Makefile for test suite
 tests/TESTS                           List of tests to run
 tests/lib                             Test suite for libinn (Directory)
 tests/lib/concat-t.c                  Tests for lib/concat.c
+tests/lib/date-t.c                    Tests for lib/date.c
 tests/lib/error-t.c                   Tests for lib/error.c
 tests/lib/fakewrite.c                 Helper functions for xwrite tests
 tests/lib/strerror-t.c                Tests for lib/strerror.c
