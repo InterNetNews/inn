@@ -778,10 +778,14 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
     STRING		error;
     int			delta;
 
+    TMRstart(TMR_ARTCLEAN);
     /* Read through the headers one at a time. */
     Data->Feedsite = "?";
     Data->Size[0] = '0';
     Data->Size[1] = '\0';
+    Data->Arrived = Now.time;
+    Data->Expires = 0;
+
     for (hp = ARTheaders; hp < ENDOF(ARTheaders); hp++) {
 	if (hp->Value && hp->Type != HTobs)
 	    *hp->Value = '\0';
@@ -818,18 +822,22 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
     if (error == NULL && Data->MessageID == NULL)
 	error = "Bad \"Message-ID\" header";
 
-    if (error)
+    if (error) {
+	TMRstop(TMR_ARTCLEAN);
 	return error;
+    }
 
     /* Make sure all the headers we need are there, and no duplicates. */
     for (hp = ARTheaders; hp < ENDOF(ARTheaders); hp++)
 	if (hp->Type == HTreq) {
 	    if (*hp->Value == '\0') {
 		(void)sprintf(buff, "Missing \"%s\" header", hp->Name);
+		TMRstop(TMR_ARTCLEAN);
 		return buff;
 	    }
 	    if (hp->Found > 1) {
 		(void)sprintf(buff, "Duplicate \"%s\" header", hp->Name);
+		TMRstop(TMR_ARTCLEAN);
 		return buff;
 	    }
 	}
@@ -848,6 +856,7 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
     if (Article->Data + Article->Used != in + 1) {
 	i++;
 	(void)sprintf(buff, "Line %d includes null character", i);
+	TMRstop(TMR_ARTCLEAN);
 	return buff;
     }
     Article->Used = out - Article->Data;
@@ -861,6 +870,7 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
 		*in = '\0';
 	    (void)sprintf(buff, "Linecount %s != %d +- %d",
 		MaxLength(p, p), i, innconf->linecountfuzz);
+	    TMRstop(TMR_ARTCLEAN);
 	    return buff;
 	}
     }
@@ -869,31 +879,35 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
     p = HDR(_date);
     if ((Data->Posted = parsedate(p, &Now)) == -1) {
 	(void)sprintf(buff, "Bad \"Date\" header -- \"%s\"", MaxLength(p, p));
+	TMRstop(TMR_ARTCLEAN);
 	return buff;
     }
     if (innconf->artcutoff && Data->Posted < Now.time - innconf->artcutoff) {
 	(void)sprintf(buff, "Too old -- \"%s\"", MaxLength(p, p));
+	TMRstop(TMR_ARTCLEAN);
 	return buff;
     }
     if (Data->Posted > Now.time + DATE_FUZZ) {
 	(void)sprintf(buff, "Article posted in the future -- \"%s\"",
 		MaxLength(p, p));
+	TMRstop(TMR_ARTCLEAN);
 	return buff;
     }
-    Data->Arrived = Now.time;
     p = HDR(_expires);
-    Data->Expires = 0;
     if (*p != '\0' && (Data->Expires = parsedate(p, &Now)) == -1) {
 #if	0
 	(void)sprintf(buff, "Bad \"Expires\" header -- \"%s\"",
 		MaxLength(p, p));
+	TMRstop(TMR_ARTCLEAN);
 	return buff;
 #endif
     }
 
     /* Colon or whitespace in the Newsgroups header? */
-    if (strchr(HDR(_newsgroups), ':') != NULL)
+    if (strchr(HDR(_newsgroups), ':') != NULL) {
+	TMRstop(TMR_ARTCLEAN);
 	return "Colon in \"Newsgroups\" header";
+    }
 
     /* Whitespace - clean the header up instead of rejecting it.  Too many
        servers are passing articles with whitespace along these days.  On
@@ -920,6 +934,7 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
 	    break;
 	}
 
+    TMRstop(TMR_ARTCLEAN);
     return NULL;
 }
 

@@ -470,7 +470,7 @@ JustCleanup()
 #endif /* defined(DO_PERL) */
 #if defined(DO_PYTHON)
     PYclose();
-#endif /* defined(DO_TCL) */
+#endif /* defined(DO_PYTHON) */
 
     CHANshutdown();
     ClearInnConf();
@@ -538,6 +538,7 @@ int main(int ac, char *av[])
     BOOL		ShouldRenumber;
     BOOL		ShouldSyntaxCheck;
     BOOL		val;
+    BOOL		filter = TRUE;
     PID_T		pid;
 #if	defined(_DEBUG_MALLOC_INC)
     union malloptarg	m;
@@ -586,7 +587,7 @@ int main(int ac, char *av[])
 
     /* Parse JCL. */
     CCcopyargv(av);
-    while ((i = getopt(ac, av, "ac:Cdfi:l:m:o:n:p:P:rst:uH:T:X:")) != EOF)
+    while ((i = getopt(ac, av, "ac:Cdfi:l:m:o:Nn:p:P:rst:uH:T:X:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -635,6 +636,9 @@ int main(int ac, char *av[])
 			Mode == OMpaused ? "Paus" : "Throttl");
 		ModeReason = COPY(buff);
 	    }
+	    break;
+	case 'N':
+	    filter = FALSE;
 	    break;
 	case 'n':
 	    switch (*optarg) {
@@ -905,6 +909,8 @@ int main(int ac, char *av[])
 
 #if defined(DO_TCL)
     TCLsetup();
+    if (!filter)
+	TCLfilter(FALSE);
 #endif /* defined(DO_TCL) */
 
 #if defined(DO_PERL)
@@ -914,12 +920,15 @@ int main(int ac, char *av[])
     PERLsetup(p, cpcatpath(innconf->pathfilter, _PATH_PERL_FILTER_INND),
 				"filter_art");
     PLxsinit();
-    PerlFilter (TRUE) ;
+    if (filter)
+	PerlFilter (TRUE) ;
     DISPOSE(p);
 #endif /* defined(DO_PERL) */
 
 #if defined(DO_PYTHON)
     PYsetup();
+    if (!filter)
+	PYfilter(FALSE)
 #endif /* (DO_PYTHON) */
  
     /* And away we go... */
