@@ -815,7 +815,7 @@ EOF
     }
     $result .= "<P>\n";
   }
-  my $i = 0;
+  $i = 0;
   $result .= "<TABLE BORDER=\"1\"><TR>";
   my $temp = "";
   while (defined ${${$output{'index'}{'column'}}[$i]}{'title'}) {

@@ -69,9 +69,9 @@ ME\
 
 ##  News overview
 # use this flag if storage api is used
-#overview!:*:Tc,Ao,WhR:/usr/news/bin/overchan
+#overview!:*:Tc,Ao,WhR,S30000:/usr/news/bin/overchan
 # else
-#overview!:*:Tc,WO:/usr/news/bin/overchan
+#overview!:*:Tc,WO,S30000:/usr/news/bin/overchan
 
 # Feed all local non-internal postings to nearnet; sent off-line via
 # nntpsend or send-nntp.
@@ -101,7 +101,7 @@ ME\
 # would cause a problem that innfeed drops the first article.
 #innfeed!:\
 #	!*,\
-#	:Tc,Wnm*,S16384:/usr/local/news/bin/startinnfeed
+#	:Tc,Wnm*,S30000:/usr/local/news/bin/startinnfeed
 
 # A real-time feed through innfeed.
 #news.uu.net/uunet\

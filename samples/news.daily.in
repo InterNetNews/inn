@@ -486,7 +486,7 @@ fi
 
 ##  All done
 if ${DAILY} ; then
-    date >${PATHETC}/.news.daily
+    date >${PATHDB}/.news.daily
 fi
 ${RNEWS} -U
 exit 0

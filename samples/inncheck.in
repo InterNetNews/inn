@@ -865,9 +865,7 @@ intersect
 @newsbin_private = (
     'ctlinnd', 'expirerm', 'inncheck', 'innstat', 'innwatch',
     'makegroup', 'news.daily', 'nntpsend', 'scanlogs', 'sendbatch',
-    'tally.control', 'tally.unwanted', 'updatemods', 'writelog'
-);
-@newslib_private = (
+    'tally.control', 'tally.unwanted', 'updatemods', 'writelog',
     'send-ihave', 'send-nntp', 'send-uucp'
 );
 @newslib_private_read = (
@@ -909,9 +907,6 @@ check_all_perms
     &checkperm($paths{'history'} . ".dir", 0644);
     &checkperm($paths{'history'} . ".index", 0644);
     &checkperm($paths{'history'} . ".hash", 0644);
-    foreach ( @newslib_private ) {
-	&checkperm("$newslib/$_", 0550);
-    }
     foreach ( @newslib_private_read ) {
 	&checkperm("$newslib/$_", 0440);
     }

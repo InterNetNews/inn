@@ -4,40 +4,31 @@
 . @ETCDIR@/innshellvars
 
 PROGNAME=`basename $0`
-LOCK=${LOCKS}/LOCK.${PROGNAME}
 LOG=${MOST_LOGS}/${PROGNAME}.log
 
 MAXJOBS=200
 UUXFLAGS="- -r -gd"
 
-##  Start logging.
-test ! -f ${LOG} && touch ${LOG}
-chmod 0660 ${LOG}
-exec >>${LOG} 2>&1
+##  Go to where the action is, start logging
+cd $BATCH
+umask 002
+DEBUG=""
+if [ "X$1" = X-d ] ; then
+    DEBUG="-d"
+    shift
+else
+    test ! -f ${LOG} && touch ${LOG}
+    chmod 0660 ${LOG}
+    exec >>${LOG} 2>&1
+fi
+
 echo "${PROGNAME}: [$$] begin `date`"
-cd ${BATCH}
 
-##  Anyone else there?
-trap 'rm -f ${LOCK} ; exit 1' 1 2 3 15
-shlock -p $$ -f ${LOCK} || {
-    echo "${PROGNAME}: [$$] locked by [`cat ${LOCK}`]"
-    exit 0
-}
-
-##  Who are we sending to?
+##  List of sitename:hostname pairs to send to
 if [ -n "$1" ] ; then
     LIST="$*"
 else
-#    LIST=""
-#    case `date +%H` in
-#    01|04|07|21|23)
-#	LIST="kurz-ai aoa clsib21 leafusa metasoft"
-#	;;
-#    06|12|15|17|20)
-#	LIST="esca"
-#	;;
-#    esac
-    echo "${PROGNAME}: [$$] no sites specified"
+    echo "${PROGNAME}: [$$] no sites specified" >&2
     exit 1
 fi
 
@@ -50,12 +41,33 @@ esac
 
 ##  Do the work...
 for SITE in ${LIST}; do
+    case $SITE in
+    *:*)
+	HOST=`expr $SITE : '.*:\(.*\)'`
+	SITE=`expr $SITE : '\(.*\):.*'`
+        ;;
+    *)
+        HOST=$SITE
+        ;;
+    esac
+    BATCHFILE=${SITE}.uucp
+    LOCK=${LOCKS}/LOCK.${SITE}
+    trap 'rm -f ${LOCK} ; exit 1' 1 2 3 15
+    shlock -p $$ -f ${LOCK} || {
+	echo "${PROGNAME}: [$$] ${SITE} locked by `cat ${LOCK}`"
+	continue
+    }
 
     ##  See if any data is ready for host.
-    BATCHFILE=${SITE}.uucp
     if [ -f ${SITE}.work ] ; then
 	cat ${SITE}.work >>${BATCHFILE}
 	rm -f ${SITE}.work
+    fi
+    if [ ! -f ${SITE} -o ! -s ${SITE} ] ; then
+	if [ ! -f ${BATCHFILE} -o ! -s ${BATCHFILE} ] ; then
+	    rm -f ${LOCK}
+	    continue
+	fi
     fi
     mv ${SITE} ${SITE}.work
     ctlinnd -s -t30 flush ${SITE} || continue
@@ -71,10 +83,10 @@ for SITE in ${LIST}; do
     case ${HAVE_UUSTAT} in
     DONT)
 	JOBS=`${AWK} \
-	    'BEGIN{X=0}  {if ($1 == "'$SITE'") X=$2}  END{print X}' <${TEMP}`
+	    'BEGIN{X=0}  {if ($1 == "'$HOST'") X=$2}  END{print X}' <${TEMP}`
 	;;
     DO)
-	JOBS=`uustat -s${SITE} | grep rnews | wc -l`
+	JOBS=`uustat -s${HOST} | grep rnews | wc -l`
 	;;
     *)
 	JOBS=0
@@ -100,9 +112,10 @@ for SITE in ${LIST}; do
 
     time batcher -N ${QUEUEJOBS} \
 	-p"(echo '#! cunbatch' ; exec ${COMPRESS} ) | uux ${UUXFLAGS} %s!rnews" \
-	${SITE} ${BATCHFILE}
+	${HOST} ${BATCHFILE}
 
     echo "${PROGNAME}: [$$] end ${SITE}"
+    rm -f ${LOCK}
 done
 
 case ${HAVE_UUSTAT} in
@@ -110,8 +123,5 @@ DONT)
     rm -f ${TEMP}
     ;;
 esac
-
-##  Remove the lock file.
-rm -f ${LOCK}
 
 echo "${PROGNAME}: [$$] end `date`"

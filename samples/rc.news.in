@@ -29,10 +29,10 @@ if [ -f ${SERVERPID} ] ; then
     RFLAG="-r"
 fi
 
-if [ ! -f ${PATHETC}/.news.daily ] ; then
+if [ ! -f ${PATHDB}/.news.daily ] ; then
     echo 'No .news.daily file; need to run news.daily?' | eval ${MAIL}
 else
-    case `find ${PATHETC}/.news.daily -mtime +1 -print 2>/dev/null` in
+    case `find ${PATHDB}/.news.daily -mtime +1 -print 2>/dev/null` in
     "")
 	;;
     *)
