@@ -769,7 +769,7 @@ takethis(int i) {
 	}
 	stbuf[i].art = NEW(ARTHANDLE, 1);
 	*stbuf[i].art = *art;
-    } else {
+    } else if (SMprobe(SELFEXPIRE, &token, NULL)) {
 	/* examine if the article still exists */
 	if ((art = SMretrieve(token, RETR_STAT)) == NULL) {
 	    strel(i);
