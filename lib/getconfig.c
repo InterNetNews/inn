@@ -261,6 +261,7 @@ SetDefaults(void)
     innconf->maxcmdreadsize = BUFSIZ;
     innconf->datamovethreshold = BIG_BUFFER;
     innconf->stathist = NULL;
+    innconf->hismethod = NULL;
 }
 
 void
@@ -299,6 +300,7 @@ ClearInnConf(void)
     if (innconf->ovmethod != NULL) DISPOSE(innconf->ovmethod);
     if (innconf->ovgrouppat != NULL) DISPOSE(innconf->ovgrouppat);
     if (innconf->stathist != NULL) DISPOSE(innconf->stathist);
+    if (innconf->hismethod != NULL) DISPOSE(innconf->hismethod);
     memset(ConfigBit, '\0', ConfigBitsize);
 }
 
@@ -980,6 +982,11 @@ ReadInnConf(void)
 		TEST_CONFIG(CONF_VAR_STATHIST, bit);
 		if (!bit) innconf->stathist = COPY(p);
 		SET_CONFIG(CONF_VAR_STATHIST);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_HISMETHOD)) {
+		TEST_CONFIG(CONF_VAR_HISMETHOD, bit);
+		if (!bit) innconf->hismethod = COPY(p);
+		SET_CONFIG(CONF_VAR_HISMETHOD);
 	    }
 	}
 	(void)Fclose(F);

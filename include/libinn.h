@@ -228,6 +228,9 @@ struct conf_vars {
     int wipexpire;              /* How long to keep pending article record */
     int dontrejectfiltered;     /* Don't reject filtered article? */
 
+    /* History settings */
+    char *hismethod;            /* Which history method to use */
+    
     /* Article Storage */
     long cnfscheckfudgesize;    /* Additional CNFS integrity checking */
     int enableoverview;         /* Store overview info for articles? */

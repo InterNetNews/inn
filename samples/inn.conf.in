@@ -20,6 +20,7 @@
 mta:                    @SENDMAIL@ -oi -oem %s
 organization:           A poorly-installed InterNetNews site
 ovmethod:               tradindexed
+hismethod:              hisv6
 pathhost:               @HOSTNAME@
 pathnews:               @prefix@
 

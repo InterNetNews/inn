@@ -338,6 +338,9 @@ struct conf_rec conf_defaults[] = {
     { _CONF_DATAMOVETHRESHOLD,			"",     2, 1 },
 #define _CONF_STATHIST				"stathist"
 #define CONF_VAR_STATHIST			108
-    { _CONF_STATHIST,				"",     1, 0 }
+    { _CONF_STATHIST,				"",     1, 0 },
+#define _CONF_HISMETHOD				"hismethod"
+#define CONF_VAR_HISMETHOD			109
+    { _CONF_HISMETHOD,				"",     1, 1 }
 };
-#define MAX_CONF_VAR 109
+#define MAX_CONF_VAR 110

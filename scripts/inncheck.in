@@ -307,6 +307,8 @@ incoming_conf
     'wipcheck',                 0,
     'wipexpire',                0,
 
+    'hismethod',                0,
+
     'cnfscheckfudgesize',       0,
     'enableoverview',           0,
     'groupbaseexpiry',          0,
