@@ -6,7 +6,7 @@
 ##  Usage:
 ##	nntpsend [-n][-p][-r][-s size][-S][-t timeout][-T limit][host fqdn]...
 ##	-a		Always have innxmit rewrite the batchfile
-##	-d		debug mode, run ixxmmits with debug as well
+##	-d		debug mode, run innxmits with debug as well
 ##	-D		same as -d except innxmits are not debugged
 ##	-p		Run innxmit with -p to prune batch files
 ##	-r		innxmit, don't requeue on unexpected error code
@@ -18,6 +18,7 @@
 ##	-l		innxmit, log rejected articles
 ##	-N		innxmit, disable streaming mode
 ##	-n		do not lock for nntpsend, do not sleep between sets
+##	-w delay	wait delay seconds just before innxmit
 ##	host fqdn	send to host and qualified domain (def: nntpsend.ctl)
 ##  If no "host fqdn" pairs appear on the command line, then ${CTLFILE}
 ##  file is read.
@@ -42,6 +43,7 @@ T_FLAG=
 TIMELIMIT=
 PP_FLAG=
 NOLOCK=
+W_SECONDS=
 
 ##  Parse JCL.
 MORETODO=true
@@ -121,6 +123,14 @@ while ${MORETODO} ; do
 	;;
     X-n)
 	NOLOCK=true
+	;;
+    X-w)
+	if [ -z "$2" ] ; then
+	    echo "${PROGNAME}: option requires an argument -- w" 1>&2
+	    exit 1
+	fi
+	W_SECONDS="$2"
+	shift
 	;;
     X--)
 	shift
@@ -297,6 +307,15 @@ cat ${INPUT} | while read SITE HOST SIZE_ARG FLAGS; do
 	X-T*)
 	    TIMELIMIT_PARAM="$1"
 	    ;;
+	X-w)
+	    if [ -z "$2" ] ; then
+		echo "${PROGNAME}: option requires an argument -- w" 1>&2
+	    rm -f "${NNTPLOCK}" "${LOCK}"
+	    exit 1
+	    fi
+	    W_SECONDS="$2"
+	    shift
+            ;;
 	*)
 	    MORETODO=false
 	    ;;
@@ -404,7 +423,7 @@ cat ${INPUT} | while read SITE HOST SIZE_ARG FLAGS; do
     fi
 
     ##  Start sending this site in the background.
-    export MAXSIZE SITE HOST PROGNAME PARENTPID SIZE TMPDIR LOCK BATCHFILE
+    export MAXSIZE SITE HOST PROGNAME PARENTPID SIZE TMPDIR LOCK BATCHFILE W_SECONDS
     sh -c '
 	# grab the lock from the parent
 	#
@@ -421,6 +440,10 @@ cat ${INPUT} | while read SITE HOST SIZE_ARG FLAGS; do
 	if [ -f "${BATCHFILE}" ]; then
 	    test -n "${SIZE}" && shrinkfile -m${MAXSIZE} -s${SIZE} -v ${BATCHFILE}
 	    if [ -s ${BATCHFILE} ] ; then
+		if [ -n "${W_SECONDS}" ] ; then
+		    echo "${PROGNAME}: [${PARENTPID}:$$] sleeping ${W_SECONDS} seconds before ${SITE}"
+		    sleep "${W_SECONDS}"
+		fi
 		echo "${PROGNAME}: [${PARENTPID}:$$] begin ${SITE} `date`"
 		echo "${PROGNAME}: [${PARENTPID}:$$] innxmit ${INNFLAGS} ${HOST} ..."
 		eval innxmit ${INNFLAGS} ${HOST} ${BATCH}/${BATCHFILE}

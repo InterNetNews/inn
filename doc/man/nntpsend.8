@@ -46,6 +46,9 @@ nntpsend \- send Usenet articles to remote site
 .BI \-t " timeout"
 ]
 [
+.BI \-w " delay"
+]
+[
 .I sitename
 .I fqdn
 ] ...
@@ -135,6 +138,14 @@ If the ``\-s'' flag is used, then
 .IR shrinkfile (1)
 will be invoked to perform a head truncation on the batchfile and the flag
 will be passed to it.
+.TP
+.B \-w
+If the ``\-w'' flag is used, then
+.I nntpsend
+waits for
+.I delay
+seconds after flushing the site before launching
+.IR innxmit .
 .TP
 .B "\-a \-c \-l \-N \-P \-p \-r \-S \-T \-t"
 The ``\fB\-a\fP'', ``\fB\-c\fP'', ``\fB\-l\fP'', ``\fB\-P\fP'', ``\fB\-p\fP'',
