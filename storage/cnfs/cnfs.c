@@ -1309,21 +1309,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	    return NULL;
 	}
     }
-    /* check the bitmap to ensure cah.size is not broken */
-    /* cannot believe cycbuff->free, since it may not be updated by writer */
-    blockfudge = (sizeof(cah) + plusoffset + ntohl(cah.size)) % CNFS_BLOCKSIZE;
-    limit = offset + sizeof(cah) + plusoffset + ntohl(cah.size) - blockfudge + CNFS_BLOCKSIZE;
-    for (middle = offset + CNFS_BLOCKSIZE; middle < limit;
-	middle += CNFS_BLOCKSIZE) {
-	if (CNFSUsedBlock(cycbuff, middle, FALSE, FALSE) != 0)
-	/* Bitmap set.  This article assumes to be broken */
-	break;
-    }
-    if (middle != limit) {
-	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
-	DISPOSE(art);
-	return NULL;
-    }
+    /* checking the bitmap to ensure cah.size is not broken was dropped */
     if ((innconf->cnfscheckfudgesize != 0) && (ntohl(cah.size) > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
 	char buf1[24], buf2[24], buf3[24];
 	strcpy(buf1, CNFSofft2hex(cycbuff->free, FALSE));
