@@ -1,10 +1,14 @@
 #!@_PATH_PERL@
+#  $Id$
 # 
 #  Copyright Andreas Lamrecht 1998
 #  <Andreas.Lamprect@siemens.at>
 #
 #  Modified by Kjetil T. Homme 1998
 #  <kjetilho@ifi.uio.no>
+#
+#  Modified by Robert R. Collier 1998
+#  <rob@lspace.org>
 
 use vars qw($opt_l $opt_h $opt_a $opt_s);
 use Getopt::Long;
@@ -24,11 +28,13 @@ Usage:
 	$0 [-c CLASS] [-l [seconds]]
 
 	If called without args, does a one-time status of all CNFS buffers
-	-a:         print the age of the oldest article in the cycbuff
-	-c <CLASS>: prints out status of CNFS buffers in class CLASS
-	-l seconds: loops like vmstat, default seconds = 600
-	-s:         logs through syslog
-	-h:         This information
+	-a:          print the age of the oldest article in the cycbuff
+	-c <CLASS>:  prints out status of CNFS buffers in class CLASS
+	-l seconds:  loops like vmstat, default seconds = 600
+	-s:          logs through syslog
+	-h:          This information
+	-m <BUFFER>: prints out information suitable for mrtg
+	-p:	     prints out an mrtg config file 
 _end_
     exit(1);
 }
@@ -37,7 +43,7 @@ my(@line, %class, %buff, %stor, $c, @buffers);
 
 my($gr, $cl, $min, $max, @storsort, $oclass, $header_printed);
 
-GetOptions("-a", "-c=s", \$oclass, "-h", "-l:i", "-s");
+GetOptions("-a", "-c=s", \$oclass, "-h", "-l:i", "-s", "-m=s", \$obuffer, "-p");
 
 &usage if $opt_h;
 
@@ -168,6 +174,8 @@ sub read_storageconf {
     return 1;
 }
 
+&mrtg($obuffer) if $obuffer;
+&mrtg_config if $opt_p;
 
 #foreach $c (keys(%class)) {
 #  print "Class: $c, definition: $class{$c}\n";
@@ -262,10 +270,99 @@ if(defined($opt_l)) {
     goto START;
 }
 
-
-
-
 sub print_cycbuff_head {
+    my($buffpath) = $_[0];
+    my($name,$len,$free,$update,$cyclenum,$nupdate_str,$nago_str,$oupdate_str,$oago_str) = &get_cycbuff_info($buffpath);
+    
+    if ($use_syslog) {
+	($name) = split(/\b/, $name);
+	syslog ('notice', '%s Buffer %s, len: %d  Mbytes, used: %.2f Mbytes (%4.1f%%) %3d cycles', $logline, $name, $len / (1024 * 1024), $free / (1024 * 1024), 100 * $free/$len, $cyclenum);
+	return 0;
+    } else {
+	print " Buffer $name, len: ";
+	print $len / (1024 * 1024);
+	print " Mbytes, used: ";
+	printf("%.2f Mbytes", $free / (1024 * 1024));
+	printf(" (%4.1f%%) %3d cycles", 100 * $free/$len, $cyclenum);
+    }
+    
+    print "\n  Newest: $nupdate_str, $nago_str ago\n";
+    
+    if ($opt_a) {
+	print "  Oldest: $oupdate_str, $oago_str ago\n";
+    }
+}
+
+sub lookup_age {
+    my ($msgid) = @_;
+
+    my $history = `grephistory -l '$msgid' 2>&1`;
+    if ($history =~ /\t(\d+)~/) {
+	return $1;
+    }
+    print "  (Missing $msgid)\n";
+    return 0;
+}
+
+sub make_time {
+    my ($t) = @_;
+    my (@ret);
+
+    my ($sec,$min,$hour,$mday,$mon,$year) =
+	    (localtime($t))[0..5];
+    push (@ret, sprintf("%04d-%02d-%02d %2d:%02d:%02d",
+			$year + 1900, $mon + 1, $mday, $hour, $min, $sec));
+    $t = time - $t;
+
+    $mday = int($t/86400); $t = $t % 86400;
+    $hour = int($t/3600);  $t = $t % 3600;
+    $min  = int($t/60);    $t = $t % 60;
+
+    push (@ret, sprintf("%4d days, %2d:%02d:%02d",
+			$mday, $hour, $min, $t));
+    return @ret;
+}
+
+sub mrtg {
+	my $buffer = shift;
+	print "Buffer = $buff{$buffer}\n";
+	@info = &get_cycbuff_info($buff{$buffer});
+	print "$info[1]\n";
+	print "$info[2]\n";
+	print "$info[4]\n";
+	print "$info[0]\n";
+	exit(0);
+}
+
+sub mrtg_config {
+	print "Sub MRTG-CONFIG\n";
+	foreach $class (sort(keys(%class))) {
+		print "##\n## Class  : $class\n## Wildmat: $stor{$class}\n##\n\n";
+		foreach $buffer (split /\,/,$class{$class}) {
+			&mrtg_buffer($class,$buffer);
+		}
+	}
+	exit(0);
+}
+
+sub mrtg_buffer {
+	my ($class,$buffer) = @_;
+	#my ($name, $num, $buff, $size) = @_;
+        $tag = 'cnfs-' . $buffer;
+
+        print 'Target[', $tag, ']: `', "$inn::pathbin/cnfsstat -m ", $buffer, '`', "\n";  
+        print 'MaxBytes[', $tag, ']: ', (&get_cycbuff_info($buff{$buffer}))[1], "\n";
+        print 'Title[', $tag, ']: ', "${buffer} Usage\n";
+        print 'Options[', $tag, ']: growright gauge', "\n";
+        print 'YLegend[', $tag, ']: ', "${buffer}\n";
+        print 'ShortLegend[', $tag, ']: MB', "\n";
+        print 'PageTop[', $tag, ']: ', "<H1>Usage of ${buffer}</H1>\n";
+	print "<BR><TT>$stor{$class}</TT>\n";
+        print "\n";
+        1;
+}
+
+sub get_cycbuff_info {
     my($buffpath) = $_[0];
     
     my($CNFSMASIZ)=8;
@@ -300,20 +397,7 @@ sub print_cycbuff_head {
     my($update) = hex($updatea);
     my($cyclenum) = hex($cyclenuma) - 1;
     
-    if ($use_syslog) {
-	($name) = split(/\b/, $name);
-	syslog ('notice', '%s Buffer %s, len: %d  Mbytes, used: %.2f Mbytes (%4.1f%%) %3d cycles', $logline, $name, $len / (1024 * 1024), $free / (1024 * 1024), 100 * $free/$len, $cyclenum);
-	return 0;
-    } else {
-	print " Buffer $name, len: ";
-	print $len / (1024 * 1024);
-	print " Mbytes, used: ";
-	printf("%.2f Mbytes", $free / (1024 * 1024));
-	printf(" (%4.1f%%) %3d cycles", 100 * $free/$len, $cyclenum);
-    }
-    
-    my ($update_str, $ago_str) = &make_time ($update);
-    print "\n  Newest: $update_str, $ago_str ago\n";
+    my ($nupdate_str, $nago_str) = &make_time ($update);
     
     if ($opt_a) {
 	
@@ -339,41 +423,12 @@ sub print_cycbuff_head {
 		    next do_seek;
 		}
 	  
-		($update_str, $ago_str) = &make_time ($time);
-		print "  Oldest: $update_str, $ago_str ago\n";
+		($oupdate_str, $oago_str) = &make_time ($time);
 		last do_seek;
 	    }
 	}
     }
     close(BUFF);
+    return($name,$len,$free,$update,$cyclenum,$nupdate_str,$nago_str,$oupdate_str,$oago_str);
 }
 
-sub lookup_age {
-    my ($msgid) = @_;
-
-    my $history = `grephistory -l '$msgid' 2>&1`;
-    if ($history =~ /\t(\d+)~/) {
-	return $1;
-    }
-    print "  (Missing $msgid)\n";
-    return 0;
-}
-
-sub make_time {
-    my ($t) = @_;
-    my (@ret);
-
-    my ($sec,$min,$hour,$mday,$mon,$year) =
-	    (localtime($t))[0..5];
-    push (@ret, sprintf("%04d-%02d-%02d %2d:%02d:%02d",
-			$year + 1900, $mon + 1, $mday, $hour, $min, $sec));
-    $t = time - $t;
-
-    $mday = int($t/86400); $t = $t % 86400;
-    $hour = int($t/3600);  $t = $t % 3600;
-    $min  = int($t/60);    $t = $t % 60;
-
-    push (@ret, sprintf("%4d days, %2d:%02d:%02d",
-			$mday, $hour, $min, $t));
-    return @ret;
-}

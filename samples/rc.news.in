@@ -105,7 +105,7 @@ ${DOINNWATCH} && {
 
 ${DOCNFSSTAT} && {
     echo "Scheduled start of cnfsstat."
-    ${PATHBIN}/cnfsstat -a -s -l &
+    ${PATHBIN}/cnfsstat -s -l &
 }
 
 RMFILE=${MOST_LOGS}/expire.rm
