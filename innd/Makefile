@@ -21,13 +21,13 @@ ALL	= innd inndstart
 
 all:		$(ALL)
 
-install: ${PATHBIN}/innd ${PATHBIN}/inndstart
+install: $D${PATHBIN}/innd $D${PATHBIN}/inndstart
 
-${PATHBIN}/innd: innd
-	$(SHELL) ../installit.sh $(OWNER) -m 0550 -b .OLD innd ${PATHBIN}/innd
+$D${PATHBIN}/innd: innd
+	$(SHELL) ../installit.sh $(OWNER) -m 0550 -b .OLD innd $D${PATHBIN}/innd
 
-${PATHBIN}/inndstart: inndstart
-	-$(SHELL) ../installit.sh -O root -G $(NEWSGROUP) -m 4550 -b .OLD inndstart ${PATHBIN}/inndstart
+$D${PATHBIN}/inndstart: inndstart
+	-$(SHELL) ../installit.sh -O root -G $(NEWSGROUP) -m 4550 -b .OLD inndstart $D${PATHBIN}/inndstart
 	@ME=`(whoami || /usr/ucb/whoami) 2> /dev/null` ;\
 	if [ "X$$ME" = Xroot ]; then \
 		echo $@ has been installed setuid root. ;\
