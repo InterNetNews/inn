@@ -31,6 +31,9 @@ LOBJECTS= $(OBJECTS:.o=.lo)
 
 all:		libinn.$(EXTLIB) perl.o
 
+warnings:
+	$(MAKE) COPT='$(WARNINGS)' all
+
 install:	all $(D)$(PATHLIB)/libinn.$(EXTLIB)
 
 clobber clean:

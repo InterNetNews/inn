@@ -21,6 +21,9 @@ EXTRA	= runtests lib/setenv.tr lib/xmalloc
 all check test: $(TESTS) $(EXTRA)
 	./runtests TESTS
 
+warnings:
+	$(MAKE) COPT='$(WARNINGS)' all
+
 clean clobber:
 	rm -f *.o *.lo */*.o */*.lo $(TESTS) $(EXTRA)
 	rm -rf .libs */.libs
