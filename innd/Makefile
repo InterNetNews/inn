@@ -61,11 +61,11 @@ clobber clean:
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../lib/*.c innd.h ../include/*.h
 
-innd:		$(P) $(OBJECTS) $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBNEWS) $(TCLLIB) $(PERLLIB) $(PYTHONLIB) $(LIBS)
+innd:		$(P) $(OBJECTS) $(LIBSTORAGE) $(LIBINN)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(TCLLIB) $(PERLLIB) $(PYTHONLIB) $(LIBS)
 
-inndstart:	$(P) inndstart.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ inndstart.o $(LIBNEWS) $(LIBS)
+inndstart:	$(P) inndstart.o $(LIBINN)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ inndstart.o $(LIBINN) $(LIBS)
 
 $(LIBINN):
 	(cd ../lib ; $(MAKE))
@@ -78,7 +78,7 @@ profiled:	inndp
 
 inndp:		$(SOURCES)
 	rm -f $(OBJECTS)
-	$(MAKE) innd CFLAGS="$(CFLAGS) $(PROF)" LIBNEWS=../libinn_p.a
+	$(MAKE) innd CFLAGS="$(CFLAGS) $(PROF)" LIBINN=../libinn_p.a
 	mv innd inndp
 	rm -f $(OBJECTS)
 
