@@ -50,7 +50,7 @@ if (not -t 2) {
 
 if ($use_syslog) {
     eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
-    Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf/;
+    Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf|darwin/;
     openlog('controlchan', 'pid', $inn::syslog_facility);
 }
 logmsg('starting');
