@@ -820,7 +820,7 @@ STATIC void CNFSmunmapbitfields(void) {
 }
 
 STATIC int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, U_INT32_T cycnum) {
-    static	count = 0;
+    static int	count = 0;
     CYCBUFF	*tmp;
 
     if (++count % 1000 == 0) {	/* XXX 1K articles is just a guess */
