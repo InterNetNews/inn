@@ -631,7 +631,7 @@ int ReadInnConf()
 	    } else
 	    if (EQ(ConfigBuff,_CONF_READERSWHENSTOPPED)) {
 		TEST_CONFIG(CONF_VAR_READERSWHENSTOPPED, bit);
-		if (!bit && boolval != -1) innconf->allownewnews = boolval;
+		if (!bit && boolval != -1) innconf->readerswhenstopped = boolval;
 		SET_CONFIG(CONF_VAR_READERSWHENSTOPPED);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ALLOWNEWNEWS)) {
