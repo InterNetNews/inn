@@ -43,6 +43,7 @@ OBJECTS = interface.o methods.o qio.o
 
 
 methods: 
+	mkdir -p objs 
 	@for D in $(SUBDIR); do \
 	cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) || exit 1; cd ..; \
 	done
@@ -62,7 +63,6 @@ tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h
 
 libstorage.a:		$(P) $(OBJECTS)
-	mkdir -p objs 
 	$(AR) r $@ $(OBJECTS) objs/*
 	$(RANLIB) libstorage.a
 
