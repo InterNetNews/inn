@@ -131,9 +131,9 @@ world:		Install.ms
 #shar:
 #	makekit -m -k40 -s70k
 
-release: include/patchlevel.h samples/version tar
+release: include/innversion.h samples/version tar
 
-include/patchlevel.h: Makefile
+include/innversion.h: Makefile
 	-set -x ; [ -f $@ ] || co -u $@ ; \
 	sed -e 's/^\(#define RELEASE\).*/\1 "$(RELEASE)"/' \
 	    -e 's/^\(#define PATCHLEVEL\).*/\1 "$(PATCHLEVEL)"/' \
