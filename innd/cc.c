@@ -1355,7 +1355,7 @@ CCreload(char *av[])
 	TCLreadfilter();
 #endif /* defined(DO_TCL) */
 #if defined(DO_PERL)
-        PERLreadfilter (cpcatpath(innconf->pathfilter,_PATH_PERL_FILTER_INND),"filter_art") ;
+        PERLreadfilter ((char *)cpcatpath(innconf->pathfilter,_PATH_PERL_FILTER_INND),"filter_art") ;
 #endif /* defined(DO_PERL) */
 #if defined(DO_PYTHON)
 	syslog(L_NOTICE, "reloading pyfilter");
@@ -1410,7 +1410,7 @@ CCreload(char *av[])
 #endif /* defined(DO_TCL) */
 #if defined(DO_PERL)
     else if (EQ(p, "filter.perl")) {
-        if (!PERLreadfilter (cpcatpath(innconf->pathfilter,_PATH_PERL_FILTER_INND),"filter_art"))
+        if (!PERLreadfilter ((char *)cpcatpath(innconf->pathfilter,_PATH_PERL_FILTER_INND),"filter_art"))
             return BADPERLRELOAD ;
     }
 #endif /* defined(DO_PERL) */

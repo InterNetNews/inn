@@ -215,7 +215,7 @@ main(int argc, char *argv[])
     printf("When starting innd, use -dp%d\n", s);
 #else /* DEBUGGER */
     sprintf(pflag, "-p%d", s);
-    innd_argv[i++] = cpcatpath(innconf->pathbin, "innd");
+    innd_argv[i++] = (char *)cpcatpath(innconf->pathbin, "innd");
     innd_argv[i++] = pflag;
 
     /* Don't pass along -p, -P, or -I.  Check the length of the argument

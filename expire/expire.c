@@ -661,7 +661,7 @@ CleanupAndExit(bool Server, bool Paused, int x)
 
     if (Server)
 	(void)ICCreserve("");
-    if (Paused && ICCgo(EXPreason) != 0) {
+    if (Paused && ICCgo((char *)EXPreason) != 0) {
 	(void)fprintf(stderr, "Can't unpause server, %s\n",
 		strerror(errno));
 	x = 1;
@@ -868,7 +868,7 @@ int main(int ac, char *av[])
 		    strerror(errno));
 	    CleanupAndExit(FALSE, FALSE, 1);
 	}
-	if (ICCreserve(EXPreason) != 0) {
+	if (ICCreserve((char *)EXPreason) != 0) {
 	    (void)fprintf(stderr, "Can't reserve server\n");
 	    CleanupAndExit(FALSE, FALSE, 1);
 	}
@@ -999,7 +999,7 @@ int main(int ac, char *av[])
 	if (Paused || !Server)
 	    /* Already paused or we don't want to pause -- we're done. */
 	    break;
-	if (ICCpause(EXPreason) != 0) {
+	if (ICCpause((char *)EXPreason) != 0) {
 	    (void)fprintf(stderr, "Can't pause server, %s\n",
 		    strerror(errno));
 	    QIOclose(qp);

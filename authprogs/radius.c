@@ -500,7 +500,7 @@ int main(int argc, char *argv[])
     if (argc != optind)
 	exit(2);
     if (!havefile) {
-	radius_config = cpcatpath(innconf->pathetc, _PATH_RADIUS_CONFIG);
+	radius_config = (char *)cpcatpath(innconf->pathetc, _PATH_RADIUS_CONFIG);
 	if (!(f = fopen(radius_config, "r"))) {
 	    fprintf(stderr, "couldn't open config file %s: %s\n", radius_config,
                     strerror(errno));

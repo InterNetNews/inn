@@ -380,7 +380,7 @@ static bool SMreadconfig(void) {
 	method_data[i].initialized = INIT_NO;
 	method_data[i].configured = FALSE;
     }
-    if ((f = CONFfopen(cpcatpath(innconf->pathetc, _PATH_STORAGECTL))) == NULL) {
+    if ((f = CONFfopen((char *)cpcatpath(innconf->pathetc, _PATH_STORAGECTL))) == NULL) {
 	SMseterror(SMERR_UNDEFINED, NULL);
 	syslog(L_ERROR, "SM Could not open %s: %m",
 			cpcatpath(innconf->pathetc, _PATH_STORAGECTL));

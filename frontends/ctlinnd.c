@@ -312,7 +312,7 @@ int main(int ac, char *av[])
     i = ICCcommand(cp->Letter, av, &reply);
     if (i < 0) {
 	i = errno;
-	p = cpcatpath(innconf->pathrun, _PATH_SERVERPID);
+	p = (char *)cpcatpath(innconf->pathrun, _PATH_SERVERPID);
 	if (stat(p, &Sb) < 0)
 	    (void)fprintf(stderr, "No innd.pid file; did server die?\n");
 	(void)sprintf(buff, "send \"%s\" command", cp->Command);
