@@ -6,20 +6,19 @@ D	= $(DESTDIR)
 ##  =()<P	= @<P>@>()=
 P	= 
 
-##  =()<CC	= @<CC>@>()=
-CC	= gcc
+
 ##  =()<PERLLIB = @<PERL_LIB>@>()=
 PERLLIB = 
 ##  =()<PERLINC = @<PERL_INC>@>()=
 PERLINC = 
 ##  =()<TCLINC	= @<TCL_INC>@>()=
 TCLINC	= 
-##  =()<DEFS	= @<DEFS>@ $(PERLINC) $(TCLINC)>()=
-DEFS	= -I../include $(PERLINC) $(TCLINC)
-##  =()<CFLAGS	= @<CFLAGS>@>()=
-CFLAGS	= $(DEFS) -g
-##  =()<LDFLAGS	= @<LDFLAGS>@>()=
-LDFLAGS	= 
+
+CC      = @CC@
+CFLAGS  = -I../include @CPPFLAGS@ $(PERLINC) $(TCLINC)
+LDFLAGS = @LDFLAGS@
+LIBS    = @LIBS@
+
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@ $(PERLINC) $(TCLINC)>()=
 LINTFLAGS	= -b -h -z $(DEFS) $(PERLINC) $(TCLINC)
 ##  =()<LINTFILTER	= @<LINTFILTER>@>()=
@@ -38,8 +37,6 @@ OWNER	= -O news -G news
 ## =()<NEWSGROUP	= @<NEWSGROUP>@>()=
 NEWSGROUP	= news
 
-##  =()<LIBS	= @<LIBS>@>()=
-LIBS	= 
 LIBNEWS	= ../libstorage.a ../libinn.a
 LINTLIB	= ../llib-linn.ln
 ## =()<TCL_LIB	= @<TCL_LIB>@>()=

@@ -16,6 +16,8 @@ DESTDIR	=
 
 RCSCOFLAGS	= -u
 
+CC=@CC@
+
 ##  The first two directories must be config and lib.
 PROGS	= config lib storage frontends innd nnrpd backends expire doc innfeed
 DIRS	= $(PROGS) site

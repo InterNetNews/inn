@@ -6,16 +6,11 @@ D	= $(DESTDIR)
 ##  =()<P	= @<P>@>()=
 P	= 
 
-##  =()<CC	= @<CC>@>()=
-CC	= gcc
-##  =()<DEFS	= @<DEFS>@>()=
-DEFS	= -I../include
-##  =()<CFLAGS	= @<CFLAGS>@>()=
-CFLAGS	= $(DEFS) -g
-## Add any `-L' flags here
-LDFLAGS		= 
-##  =()<LIBS	= @<LIBS>@>()=
-LIBS	= 
+CC      = @CC@
+CFLAGS  = -I../include @CPPFLAGS@ 
+LDFLAGS = @LDFLAGS@
+LIBS    = @LIBS@
+
 LIBNEWS	= ../libstorage.a ../libinn.a
 # How to run lex and yacc. Innfeed requires Flex (but you shouldn't need it).
 ##  =()<LEX		= @<LEX>@>()=

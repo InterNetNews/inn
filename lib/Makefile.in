@@ -5,17 +5,14 @@ IFTRUE	= @$(SHELL) ../iftrue.sh
 
 ##  =()<P	= @<P>@>()=
 P	= 
-
-##  =()<CC	= @<CC>@>()=
-CC	= gcc
-##  =()<DEFS	= @<DEFS>@>()=
-DEFS	= -I../include
 ##  =()<PERLINC = @<PERL_INC>@>()=
 PERLINC = 
-##  =()<CFLAGS	= @<CFLAGS>@ $(PERLINC)>()=
-CFLAGS	= $(DEFS) -g $(PERLINC)
-##  =()<LDFLAGS	= @<LDFLAGS>@>()=
-LDFLAGS	= 
+
+CC      = @CC@
+CFLAGS  = -I../include @CPPFLAGS@ $(PERLINC)
+LDFLAGS = @LDFLAGS@
+LIBS    = @LIBS@
+
 ##  =()<LINTLIBSTYLE	= @<LINTLIBSTYLE>@>()=
 LINTLIBSTYLE	= NONE
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@ $(PERLINC)>()=
@@ -31,8 +28,6 @@ PROF	= -pg
 
 ##  =()<RANLIB	= @<RANLIB>@>()=
 RANLIB	= ranlib
-##  =()<LIBS	= @<LIBS>@>()=
-LIBS	= 
 
 ##  For OSx systems, get these from the ATT Universe libc.
 ##  See the rule for version.o, below.

@@ -10,6 +10,8 @@ FILE	= files.list
 LIST	= `grep -v '^;' <$(FILE)`
 BACKUP	= backup.tar
 
+CC=@CC@
+
 INTERPLIST = inncheck innmail innreport.pl pgpverify scanspool
 
 ##  Pick your method of source control:  RCS, SCCS, or NONE

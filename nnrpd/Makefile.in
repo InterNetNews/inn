@@ -6,18 +6,10 @@ D	= $(DESTDIR)
 ##  =()<P	= @<P>@>()=
 P	= 
 
-##  =()<CC	= @<CC>@>()=
-CC	= gcc
 ##  =()<PERLLIB = @<PERL_LIB>@>()=
 PERLLIB = 
 ##  =()<PERLINC = @<PERL_INC>@>()=
 PERLINC = 
-##  =()<DEFS	= @<DEFS>@ $(PERLINC)>()=
-DEFS	= -I../include $(PERLINC)
-##  =()<CFLAGS	= @<CFLAGS>@>()=
-CFLAGS	= $(DEFS) -g
-##  =()<LDFLAGS	= @<LDFLAGS>@>()=
-LDFLAGS	= 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
 LINTFLAGS	= -b -h -z $(DEFS)
 ##  =()<LINTFILTER	= @<LINTFILTER>@>()=
@@ -27,13 +19,16 @@ CTAGS		= ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
 PROF	= -pg
 
+CC      = @CC@
+CFLAGS  = -I../include @CPPFLAGS@ $(PERLINC)
+LDFLAGS = @LDFLAGS@
+LIBS    = @LIBS@
+
 ##  =()<NNRPD	= @<_PATH_NNRPD>@>()=
 NNRPD	= /usr/news/bin/nnrpd
 ## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
 OWNER	= -O news -G news
 
-##  =()<LIBS	= @<LIBS>@>()=
-LIBS	= 
 LIBNEWS	= ../libstorage.a ../libinn.a
 LINTLIB	= ../llib-linn.ln
 

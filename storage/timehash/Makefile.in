@@ -6,14 +6,11 @@ IFTRUE	= @$(SHELL) ../iftrue.sh
 ##  =()<P	= @<P>@>()=
 P	= 
 
-##  =()<CC	= @<CC>@>()=
-CC	= gcc
-##  =()<DEFS	= -I.. -I../../include @<DEFS>@>()=
-DEFS	= -I.. -I../../include -I../include
-##  =()<CFLAGS	= -I. @<CFLAGS>@ $(PERLINC)>()=
-CFLAGS	= -I. $(DEFS) -g -Wall $(PERLINC)
-##  =()<LDFLAGS	= @<LDFLAGS>@>()=
-LDFLAGS	= 
+CC      = @CC@
+CFLAGS  = -I../include -I.. -I../../include @CPPFLAGS@ 
+LDFLAGS = @LDFLAGS@
+LIBS    = @LIBS@
+
 ##  =()<CTAGS		= @<CTAGS>@>()=
 CTAGS		= ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
@@ -21,8 +18,6 @@ PROF	= -pg
 
 ##  =()<RANLIB	= @<RANLIB>@>()=
 RANLIB	= ranlib
-##  =()<LIBS	= @<LIBS>@>()=
-LIBS	= 
 
 SOURCES = timehash.c
 OBJECTS = timehash.o

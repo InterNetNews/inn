@@ -6,16 +6,8 @@ IFTRUE	= @$(SHELL) ../iftrue.sh
 ##  =()<P	= @<P>@>()=
 P	= 
 
-##  =()<CC	= @<CC>@>()=
-CC	= gcc
-##  =()<DEFS	= @<DEFS>@>()=
-DEFS	= -I../include
 ##  =()<PERLINC = @<PERL_INC>@>()=
 PERLINC = 
-##  =()<CFLAGS	= -I. @<CFLAGS>@ $(PERLINC)>()=
-CFLAGS	= -I. $(DEFS) -g -Wall $(PERLINC)
-##  =()<LDFLAGS	= @<LDFLAGS>@>()=
-LDFLAGS	= 
 ##  =()<LINTLIBSTYLE	= @<LINTLIBSTYLE>@>()=
 LINTLIBSTYLE	= NONE
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@ -I. $(PERLINC)>()=
@@ -31,8 +23,11 @@ PROF	= -pg
 
 ##  =()<RANLIB	= @<RANLIB>@>()=
 RANLIB	= ranlib
-##  =()<LIBS	= @<LIBS>@>()=
-LIBS	= 
+
+CC      = @CC@
+CFLAGS  = -I../include @CPPFLAGS@ $(PERLINC)
+LDFLAGS = @LDFLAGS@
+LIBS    = @LIBS@
 
 all:			autoconfig methods libstorage.a
 

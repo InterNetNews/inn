@@ -6,14 +6,11 @@ D	= $(DESTDIR)
 ##  =()<P	= @<P>@>()=
 P	= 
 
-##  =()<CC	= @<CC>@>()=
-CC	= gcc
-##  =()<DEFS	= @<DEFS>@>()=
-DEFS	= -I../include
-##  =()<CFLAGS	= @<CFLAGS>@>()=
-CFLAGS	= $(DEFS) -g
-##  =()<LDFLAGS	= @<LDFLAGS>@>()=
-LDFLAGS	= 
+CC      = @CC@
+CFLAGS  = -I../include @CPPFLAGS@ 
+LDFLAGS = @LDFLAGS@
+LIBS    = @LIBS@
+
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
 LINTFLAGS	= -b -h -z $(DEFS)
 ##  =()<LINTFILTER	= @<LINTFILTER>@>()=
@@ -28,8 +25,6 @@ NEWSBIN	= /usr/news/bin
 ## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
 OWNER	= -O news -G news
 
-##  =()<LIBS	= @<LIBS>@>()=
-LIBS	= 
 LIBNEWS	= ../libstorage.a ../libinn.a
 LINTLIB	= ../llib-linn.ln
 

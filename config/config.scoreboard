@@ -42,25 +42,25 @@
   ||#### =()<P			@<P>@>()=
   ||P			
 [IN1.7=@1][WDF=autoconf][WOR=no]
-  ||##  C pre-processor flags
-  ||##[autoconf]
-  ||#### =()<DEFS			@<DEFS>@>()=
-  ||DEFS			-I../include @CPPFLAGS@
+#  ||##  C pre-processor flags
+#  ||##[autoconf]
+#  ||#### =()<DEFS			@<DEFS>@>()=
+#  ||DEFS			-I../include @CPPFLAGS@
 [IN1.7=@1][WDF=autoconf][WOR=no]
-  ||##  C compiler
-  ||##[autoconf]
-  ||#### =()<CC			@<CC>@>()=
-  ||CC			@CC@
+#  ||##  C compiler
+#  ||##[autoconf]
+#  ||#### =()<CC			@<CC>@>()=
+#  ||CC			@CC@
 [IN1.7=@1][WDF=autoconf][WOR=no]
   ||##  Does your compiler properly do "char const *"? Pick DO DONT or DUNNO
   ||##[autoconf]
   ||#### =()<USE_CHAR_CONST		@<USE_CHAR_CONST>@>()=
   ||USE_CHAR_CONST		@ac_cv_subst_use_char_const@
 [IN1.7=@1][WDF=autoconf][WOR=no]
-  ||##  C compiler flags
-  ||##[autoconf]
-  ||#### =()<CFLAGS			@<CFLAGS>@>()=
-  ||CFLAGS			$(DEFS) @CFLAGS@
+#  ||##  C compiler flags
+#  ||##[autoconf]
+#  ||#### =()<CFLAGS			@<CFLAGS>@>()=
+#  ||CFLAGS			$(DEFS) @CFLAGS@
 [IN1.7=@1][WDF=obsolete][WOR=no]
  #||##  C compiler flags to use when compiling dbz
  #||#### =()<DBZCFLAGS			@<DBZCFLAGS>@>()=
@@ -70,21 +70,21 @@
   ||#### =()<PROF			@<PROF>@>()=
   ||PROF			-pg
 [IN1.7=@1][WDF=autoconf][WOR=no]
-  ||##  Flags for the "cc -o" line; e.g., -Bstatic on SunOS4.x while debugging.
-  ||##[autoconf]
-  ||#### =()<LDFLAGS			@<LDFLAGS>@>()=
-  ||LDFLAGS			@LDFLAGS@
+#  ||##  Flags for the "cc -o" line; e.g., -Bstatic on SunOS4.x while debugging.
+#  ||##[autoconf]
+#  ||#### =()<LDFLAGS			@<LDFLAGS>@>()=
+#  ||LDFLAGS			@LDFLAGS@
 [IN1.7=@1][WDF=autoconf][WOR=no][P=low]
   ||##  If you use the standard NNTP way of connecting, where is the library?
   ||#### =()<NNTPLIB		@<NNTPLIB>@>()=
   ||NNTPLIB		
 [IN1.7=@1][WDF=autoconf][WOR=no]
-  ||##  If you need to link in other libraries, add them here.
-  ||##[autoconf]
-  ||##  On NetBSD and FreeBSD, you must add the -lcrypt directive here
-  ||##  -lutil on BSD/OS gives you setproctitle() see HAVE_SETPROCTITLE.
-  ||#### =()<LIBS			@<LIBS>@>()=
-  ||LIBS			@LIBS@
+#  ||##  If you need to link in other libraries, add them here.
+#  ||##[autoconf]
+#  ||##  On NetBSD and FreeBSD, you must add the -lcrypt directive here
+#  ||##  -lutil on BSD/OS gives you setproctitle() see HAVE_SETPROCTITLE.
+#  ||#### =()<LIBS			@<LIBS>@>()=
+#  ||LIBS			@LIBS@
 [IN1.7=@1][WDF=autoconf][WOR=no][P=low]
   ||##  How to make a lint library; pick BSD, SYSV, or NONE.
   ||#### =()<LINTLIBSTYLE		@<LINTLIBSTYLE>@>()=
