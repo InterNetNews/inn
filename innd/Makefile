@@ -3,7 +3,7 @@
 include ../Makefile.global
 
 top	        = ..
-CFLAGS		= $(GCFLAGS)
+CFLAGS		= $(GCFLAGS) $(TCLINC)
 
 ALL		= innd inndstart
 
@@ -40,10 +40,8 @@ tags ctags: $(SOURCES)
 INNDLIBS 	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) \
 		  $(TCLLIB) $(PYTHONLIB) $(REGEXLIB) $(LIBS) $(PERLLIB)
 
-art.o:		art.c		; $(CC) $(CFLAGS) $(TCLINC) -c art.c
 perl.o:		perl.c		; $(CC) $(CFLAGS) $(PERLINC) -c perl.c
 python.o:	python.c	; $(CC) $(CFLAGS) $(PYTHONINC) -c python.c
-tcl.o:		tcl.c		; $(CC) $(CFLAGS) $(TCLINC) -c tcl.c
 
 innd: $(OBJECTS) $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) $(INNDLIBS)
@@ -99,122 +97,139 @@ depend: Makefile $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 art.o: art.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/portable/time.h \
- ../include/portable/socket.h ../include/inn/messages.h \
- ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \
+ ../include/clibrary.h ../include/inn/innconf.h ../include/inn/wire.h \
+ innd.h ../include/portable/time.h ../include/portable/socket.h \
+ ../include/inn/buffer.h ../include/inn/history.h \
+ ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \
  ../include/storage.h ../include/ov.h
 cc.o: cc.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/qio.h innd.h \
- ../include/portable/time.h ../include/portable/socket.h \
- ../include/inn/messages.h ../include/inn/timer.h \
- ../include/inn/history.h ../include/libinn.h ../include/macros.h \
- ../include/nntp.h ../include/paths.h ../include/storage.h \
- ../include/inndcomm.h ../include/innperl.h
+ ../include/clibrary.h ../include/inn/innconf.h ../include/inn/qio.h \
+ innd.h ../include/portable/time.h ../include/portable/socket.h \
+ ../include/inn/buffer.h ../include/inn/history.h \
+ ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h \
+ ../include/storage.h ../include/inndcomm.h ../include/innperl.h
 chan.o: chan.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/portable/time.h \
- ../include/portable/socket.h ../include/inn/messages.h \
- ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \
+ ../include/clibrary.h ../include/inn/innconf.h innd.h \
+ ../include/portable/time.h ../include/portable/socket.h \
+ ../include/inn/buffer.h ../include/inn/history.h \
+ ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \
  ../include/storage.h
 icd.o: icd.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/mmap.h innd.h \
- ../include/portable/time.h ../include/portable/socket.h \
- ../include/inn/messages.h ../include/inn/timer.h \
- ../include/inn/history.h ../include/libinn.h ../include/macros.h \
+ ../include/clibrary.h ../include/portable/mmap.h \
+ ../include/inn/innconf.h innd.h ../include/portable/time.h \
+ ../include/portable/socket.h ../include/inn/buffer.h \
+ ../include/inn/history.h ../include/inn/messages.h \
+ ../include/inn/timer.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h ../include/paths.h ../include/storage.h \
  ../include/ov.h
 innd.o: innd.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/messages.h ../include/innperl.h \
- innd.h ../include/portable/time.h ../include/portable/socket.h \
- ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h ../include/ov.h
+ ../include/clibrary.h ../include/inn/innconf.h \
+ ../include/inn/messages.h ../include/innperl.h innd.h \
+ ../include/portable/time.h ../include/portable/socket.h \
+ ../include/inn/buffer.h ../include/inn/history.h \
+ ../include/inn/timer.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h \
+ ../include/ov.h
 inndstart.o: inndstart.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/socket.h \
- ../include/inn/messages.h ../include/libinn.h ../include/macros.h \
- ../include/paths.h
+ ../include/inn/innconf.h ../include/inn/messages.h \
+ ../include/libinn.h ../include/macros.h ../include/paths.h
 keywords.o: keywords.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h ../include/macros.h innd.h \
- ../include/portable/time.h ../include/portable/socket.h \
- ../include/inn/messages.h ../include/inn/timer.h \
- ../include/inn/history.h ../include/nntp.h ../include/paths.h \
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h \
+ ../include/inn/innconf.h innd.h ../include/portable/time.h \
+ ../include/portable/socket.h ../include/inn/buffer.h \
+ ../include/inn/history.h ../include/inn/messages.h \
+ ../include/inn/timer.h ../include/nntp.h ../include/paths.h \
  ../include/storage.h
 lc.o: lc.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/portable/time.h \
- ../include/portable/socket.h ../include/inn/messages.h \
- ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \
+ ../include/clibrary.h ../include/inn/innconf.h innd.h \
+ ../include/portable/time.h ../include/portable/socket.h \
+ ../include/inn/buffer.h ../include/inn/history.h \
+ ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \
  ../include/storage.h
 nc.o: nc.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/portable/time.h \
- ../include/portable/socket.h ../include/inn/messages.h \
- ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \
+ ../include/clibrary.h ../include/inn/innconf.h innd.h \
+ ../include/portable/time.h ../include/portable/socket.h \
+ ../include/inn/buffer.h ../include/inn/history.h \
+ ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \
  ../include/storage.h
 newsfeeds.o: newsfeeds.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/portable/time.h \
- ../include/portable/socket.h ../include/inn/messages.h \
- ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \
+ ../include/clibrary.h ../include/inn/innconf.h innd.h \
+ ../include/portable/time.h ../include/portable/socket.h \
+ ../include/inn/buffer.h ../include/inn/history.h \
+ ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \
  ../include/storage.h
 ng.o: ng.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/portable/time.h \
- ../include/portable/socket.h ../include/inn/messages.h \
- ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \
+ ../include/clibrary.h ../include/inn/innconf.h innd.h \
+ ../include/portable/time.h ../include/portable/socket.h \
+ ../include/inn/buffer.h ../include/inn/history.h \
+ ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \
  ../include/storage.h ../include/ov.h
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h innd.h ../include/portable/time.h \
- ../include/portable/socket.h ../include/inn/messages.h \
- ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h ../include/ppport.h ../include/innperl.h
+ ../include/portable/socket.h ../include/inn/buffer.h \
+ ../include/inn/history.h ../include/inn/messages.h \
+ ../include/inn/timer.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h \
+ ../include/ppport.h ../include/innperl.h
 proc.o: proc.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/wait.h innd.h \
  ../include/portable/time.h ../include/portable/socket.h \
- ../include/inn/messages.h ../include/inn/timer.h \
- ../include/inn/history.h ../include/libinn.h ../include/macros.h \
- ../include/nntp.h ../include/paths.h ../include/storage.h
+ ../include/inn/buffer.h ../include/inn/history.h \
+ ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h \
+ ../include/storage.h
 python.o: python.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/portable/time.h \
- ../include/portable/socket.h ../include/inn/messages.h \
- ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \
+ ../include/clibrary.h ../include/inn/innconf.h innd.h \
+ ../include/portable/time.h ../include/portable/socket.h \
+ ../include/inn/buffer.h ../include/inn/history.h \
+ ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \
  ../include/storage.h
 rc.o: rc.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/portable/time.h \
- ../include/portable/socket.h ../include/inn/messages.h \
- ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \
+ ../include/clibrary.h ../include/inn/innconf.h innd.h \
+ ../include/portable/time.h ../include/portable/socket.h \
+ ../include/inn/buffer.h ../include/inn/history.h \
+ ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \
  ../include/storage.h
 site.o: site.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/portable/time.h \
- ../include/portable/socket.h ../include/inn/messages.h \
- ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \
+ ../include/clibrary.h ../include/inn/innconf.h innd.h \
+ ../include/portable/time.h ../include/portable/socket.h \
+ ../include/inn/buffer.h ../include/inn/history.h \
+ ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \
  ../include/storage.h
 status.o: status.c ../include/clibrary.h ../include/config.h \
- ../include/inn/defines.h innd.h ../include/portable/time.h \
- ../include/portable/socket.h ../include/inn/messages.h \
- ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \
+ ../include/inn/defines.h ../include/inn/innconf.h innd.h \
+ ../include/portable/time.h ../include/portable/socket.h \
+ ../include/inn/buffer.h ../include/inn/history.h \
+ ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \
  ../include/storage.h ../include/innperl.h
 tcl.o: tcl.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h innd.h ../include/portable/time.h \
- ../include/portable/socket.h ../include/inn/messages.h \
- ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h
+ ../include/portable/socket.h ../include/inn/buffer.h \
+ ../include/inn/history.h ../include/inn/messages.h \
+ ../include/inn/timer.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
 util.o: util.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h innd.h \
- ../include/portable/time.h ../include/portable/socket.h \
- ../include/inn/messages.h ../include/inn/timer.h \
- ../include/inn/history.h ../include/macros.h ../include/nntp.h \
- ../include/paths.h ../include/storage.h
+ ../include/clibrary.h ../include/inn/innconf.h ../include/libinn.h \
+ innd.h ../include/portable/time.h ../include/portable/socket.h \
+ ../include/inn/buffer.h ../include/inn/history.h \
+ ../include/inn/messages.h ../include/inn/timer.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h
 wip.o: wip.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h innd.h ../include/portable/time.h \
- ../include/portable/socket.h ../include/inn/messages.h \
- ../include/inn/timer.h ../include/inn/history.h ../include/libinn.h \
+ ../include/clibrary.h ../include/inn/innconf.h innd.h \
+ ../include/portable/time.h ../include/portable/socket.h \
+ ../include/inn/buffer.h ../include/inn/history.h \
+ ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \
  ../include/storage.h
