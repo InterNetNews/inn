@@ -14,14 +14,15 @@ aclocal.m4                            M4 macro for libtool
 authprogs                             The authentication programs (Directory)
 authprogs/Makefile                    Makefile for auth programs
 authprogs/README.readers.conf         Developer docs for readers.conf
-authprogs/auth_smb.c                  Authenticator against samba servers
+authprogs/auth_krb5.c                 Authenticator against Kerberos v5
+authprogs/auth_smb.c                  Authenticator against Samba servers
 authprogs/ckpasswd.c                  Check password
 authprogs/domain.c                    Get username from remote user's hostname
 authprogs/ident.c                     Get username from ident
 authprogs/libauth.c                   Library for talking to nnrpd
 authprogs/libauth.h                   Interface for libauth
 authprogs/pam.conf.example            Example pam.conf file for ckpasswd
-authprogs/radius.c                    Get username from RADIUS server
+authprogs/radius.c                    Authenticator against RADIUS servers
 authprogs/smbval                      The smb auth libraries (Directory)
 authprogs/smbval/Makefile             Libraries for smb auth
 authprogs/smbval/byteorder.h          Libraries for smb auth
@@ -139,10 +140,11 @@ doc/man/active.5                      Manpage for active database
 doc/man/actsync.8                     Manpage for active file synch program
 doc/man/actsyncd.8                    Manpage for active synch daemon
 doc/man/archive.8                     Manpage for archive backend
+doc/man/auth_krb5.8                   Manpage for auth_krb5 authenticator
 doc/man/batcher.8                     Manpage for batcher
 doc/man/buffchan.8                    Manpage for buffchan backend
 doc/man/buffindexed.conf.5            Manpage for buffindexed.conf config file
-doc/man/ckpasswd.1                    Manpage for ckpasswd
+doc/man/ckpasswd.8                    Manpage for ckpasswd authenticator
 doc/man/clientlib.3                   Manpage for C News library interface
 doc/man/cnfsheadconf.8                Manpage for cnfsheadconf
 doc/man/cnfsstat.8                    Manpage for cnfsstat
@@ -217,7 +219,7 @@ doc/man/prunehistory.8                Manpage for prunehistory
 doc/man/pullnews.8                    Manpage for pullnews
 doc/man/putman.sh                     Install a manpage
 doc/man/qio.3                         Manpage for fast I/O file routines
-doc/man/radius.1                      Manpage for radius authenticator
+doc/man/radius.8                      Manpage for radius authenticator
 doc/man/radius.conf.5                 Manpage for radius.conf config file
 doc/man/readers.conf.5                Manpage for readers.conf config file
 doc/man/rnews.1                       Manpage for rnews frontend
@@ -238,8 +240,9 @@ doc/man/uwildmat.3                    Manpage for uwildmat library routine
 doc/man/writelog.8                    Manpage for writelog
 doc/pod                               POD documentation (Directory)
 doc/pod/Makefile                      Maintainer rules for derived files
+doc/pod/auth_krb5.pod                 Master file for auth_krb5.8
 doc/pod/checklist.pod                 Master file for doc/checklist
-doc/pod/ckpasswd.pod                  Master file for ckpasswd.1
+doc/pod/ckpasswd.pod                  Master file for ckpasswd.8
 doc/pod/control.ctl.pod               Master file for control.ctl.5
 doc/pod/convdate.pod                  Master file for convdate.1
 doc/pod/expireover.pod                Master file for expireover.8
@@ -267,7 +270,7 @@ doc/pod/ovdb_stat.pod                 Master file for ovdb_stat.8
 doc/pod/passwd.nntp.pod               Master file for passwd.nntp.5
 doc/pod/qio.pod                       Master file for qio.3
 doc/pod/radius.conf.pod               Master file for radius.conf.5
-doc/pod/radius.pod                    Master file for radius.1
+doc/pod/radius.pod                    Master file for radius.8
 doc/pod/readers.conf.pod              Master file for readers.conf.5
 doc/pod/readme.pod                    Master file for README
 doc/pod/sasl.conf.pod                 Master file for sasl.conf.5
