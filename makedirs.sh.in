@@ -19,7 +19,7 @@ PATHINCOMING=${PATHSPOOL}/incoming
 PATHARCHIVE=${PATHSPOOL}/archive
 PATHUNIOVER=${PATHSPOOL}/uniover
 PATHTAPE=${PATHSPOOL}/innfeed
-PATHMAN=${PATHNEWS}/man
+PATHMAN=@MANDIR@
 PATHTMP=@TMPPATH@
 
 ##  Some systems don't support -x, so we have to use -f.
