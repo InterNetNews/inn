@@ -26,9 +26,8 @@ int main(int argc, char **argv) {
     BOOL                Rawformat = FALSE;
     BOOL                Artinfo = FALSE;
     BOOL		val;
-    int                 i;
+    int                 i, len;
     char                *p;
-    QIOSTATE            *qp;
     TOKEN		token;
     ARTHANDLE		*art;
     struct artngnum	ann;
@@ -72,13 +71,13 @@ int main(int argc, char **argv) {
 	}
     
     for (i = optind; i < argc; i++) {
+	if (!IsToken(argv[i])) {
+	    if (!Quiet)
+		fprintf(stderr, "%s is not a storage token\n", argv[i]);
+	    continue;
+	}
+	token = TextToToken(argv[i]);
 	if (Artinfo) {
-	    if (!IsToken(argv[i])) {
-		if (!Quiet)
-		    fprintf(stderr, "%s is not a storage token\n", argv[i]);
-		continue;
-	    }
-	    token = TextToToken(argv[i]);
 	    if (!SMprobe(SMARTNGNUM, &token, (void *)&ann)) {
 		if (!Quiet)
 		    fprintf(stderr, "Could not get art info %s\n", argv[i]);
@@ -87,52 +86,33 @@ int main(int argc, char **argv) {
 		DISPOSE(ann.groupname);
 	    }
 	} else if (Delete) {
-	    if (!IsToken(argv[i])) {
-		if (!Quiet)
-		    fprintf(stderr, "%s is not a storage token\n", argv[i]);
-		continue;
-	    }
-	    if (!SMcancel(TextToToken(argv[i]))) {
+	    if (!SMcancel(token)) {
 		if (!Quiet)
 		    fprintf(stderr, "Could not remove %s: %s\n", argv[i], SMerrorstr);
 	    }
-	} else  if (Rawformat) {
-		if (!IsToken(argv[i])) {
-		    if (!Quiet)
-			fprintf(stderr, "%s is not a storage token\n", argv[i]);
-		    continue;
-		}
-		token = TextToToken(argv[i]);
-		if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
-		    if (!Quiet)
-			fprintf(stderr, "Could not retrieve %s\n", argv[i]);
-		    continue;
-		}
+	} else {
+	    if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
+		if (!Quiet)
+		    fprintf(stderr, "Could not retrieve %s\n", argv[i]);
+		continue;
+	    }
+	    if (Rawformat) {
 		if (fwrite(art->data, art->len, 1, stdout) != 1) {
 		    if (!Quiet)
 			fprintf(stderr, "Output failed\n");
 		    exit(1);
 		}
-		SMfreearticle(art);
 	    } else {
-		if ((qp = QIOopen(argv[i])) == NULL) {
+		p = FromWireFmt(art->data, art->len, &len);
+		if (fwrite(p, len, 1, stdout) != 1) {
 		    if (!Quiet)
-			fprintf(stderr, "Could not open %s\n", argv[i]);
-		    continue;
-		} else {
-		    while ((p = QIOread(qp)) != NULL) {
-			if (QIOlength(qp) != 0)
-			    if (fwrite(p, QIOlength(qp), 1, stdout) != 1) {
-				if (!Quiet)
-				    fprintf(stderr, "Output failed: %s\n", strerror(errno));
-				exit(1);
-			    }
-			printf("\n");
-		    }
-		    QIOclose(qp);
+			fprintf(stderr, "Output failed\n");
+		    exit(1);
 		}
 	    }
+	    SMfreearticle(art);
 	}
+    }
 	  
     SMshutdown();
     return 0;
