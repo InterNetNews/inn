@@ -115,6 +115,7 @@ STATIC long		EXPstillhere;
 
 STATIC BOOL		OVERmmap;
 
+STATIC NORETURN CleanupAndExit(BOOL Server, BOOL Paused, int x);
 #if ! defined (atof)            /* NEXT defines aotf as a macro */
 extern double		atof();
 #endif
@@ -249,7 +250,7 @@ STATIC void BuildGroups(char *active)
 /*
 **  Open a file or give up.
 */
-STATIC FILE *EXPfopen(BOOL Remove, STRING Name, char *Mode)
+STATIC FILE *EXPfopen(BOOL Remove, STRING Name, char *Mode, BOOL Needclean, BOOL Server, BOOL Paused)
 {
     FILE	*F;
 
@@ -259,7 +260,10 @@ STATIC FILE *EXPfopen(BOOL Remove, STRING Name, char *Mode)
     if ((F = fopen(Name, Mode)) == NULL) {
 	(void)fprintf(stderr, "Can't open %s in %s mode, %s\n",
 		Name, Mode, strerror(errno));
-	exit(1);
+	if (Needclean)
+	    CleanupAndExit(Server, Paused, 1);
+	else
+	    exit(1);
     }
     return F;
 }
@@ -1385,7 +1389,7 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 /*
 **  Clean up link with the server and exit.
 */
-STATIC NORETURN CleanupAndExit(BOOL Server,BOOL Paused, int x)
+STATIC NORETURN CleanupAndExit(BOOL Server, BOOL Paused, int x)
 {
     FILE	*F;
 
@@ -1455,7 +1459,7 @@ STATIC NORETURN CleanupAndExit(BOOL Server,BOOL Paused, int x)
 
     /* Append statistics to a summary file */
     if (EXPgraph) {
-	F = EXPfopen(FALSE, EXPgraph, "a");
+	F = EXPfopen(FALSE, EXPgraph, "a", FALSE, FALSE, FALSE);
 	if (StorageAPI) {
 	    (void)fprintf(F, "%ld %ld %ld %ld %ld %ld %ld %ld\n",
 		(long)Now, EXPprocessed, EXPstillhere, EXPallgone,
@@ -1612,7 +1616,7 @@ int main(int ac, char *av[])
 	    EXPtracing = TRUE;
 	    break;
 	case 'u':
-	    EXPunlinkindex = EXPfopen(TRUE, optarg, "a");
+	    EXPunlinkindex = EXPfopen(TRUE, optarg, "a", FALSE, FALSE, FALSE);
 	    break;
 	case 'v':
 	    EXPverbose = atoi(optarg);
@@ -1624,13 +1628,13 @@ int main(int ac, char *av[])
 	    Writing = FALSE;
 	    break;
 	case 'z':
-	    EXPunlinkfile = EXPfopen(TRUE, optarg, "a");
+	    EXPunlinkfile = EXPfopen(TRUE, optarg, "a", FALSE, FALSE, FALSE);
 	    UnlinkFile = TRUE;
 	    break;
 	case 'Z':
 	    if (EXPverbose > 3)
 		printf("Opening lowmark file %s\n", optarg);
-	    EXPlowmarkfile = EXPfopen(TRUE, optarg, "a");
+	    EXPlowmarkfile = EXPfopen(TRUE, optarg, "a", FALSE, FALSE, FALSE);
 	    LowmarkFile = TRUE;
 	    break;
 	}
@@ -1654,9 +1658,9 @@ int main(int ac, char *av[])
 
     /* Parse the control file. */
     if (av[0])
-	F = EQ(av[0], "-") ? stdin : EXPfopen(FALSE, av[0], "r");
+	F = EQ(av[0], "-") ? stdin : EXPfopen(FALSE, av[0], "r", FALSE, FALSE, FALSE);
     else
-	F = EXPfopen(FALSE, cpcatpath(innconf->pathetc, _PATH_EXPIRECTL), "r");
+	F = EXPfopen(FALSE, cpcatpath(innconf->pathetc, _PATH_EXPIRECTL), "r", FALSE, FALSE, FALSE);
     if (!EXPreadfile(F)) {
 	(void)fclose(F);
 	(void)fprintf(stderr, "Format error in expire.ctl\n");
@@ -1718,15 +1722,15 @@ int main(int ac, char *av[])
 	/* Open new history files, relative to news lib. */
 	if (chdir(EXPhistdir) < 0) {
 	    (void)fprintf(stderr, CANTCD, EXPhistdir, strerror(errno));
-	    exit(1);
+	    CleanupAndExit(Server, FALSE, 1);
 	}
-	out = EXPfopen(TRUE, NHistory, "w");
-	(void)fclose(EXPfopen(TRUE, NHistorydir, "w"));
+	out = EXPfopen(TRUE, NHistory, "w", TRUE, Server, FALSE);
+	(void)fclose(EXPfopen(TRUE, NHistorydir, "w", TRUE, Server, FALSE));
 #ifdef	DO_TAGGED_HASH
-	(void)fclose(EXPfopen(TRUE, NHistorypag, "w"));
+	(void)fclose(EXPfopen(TRUE, NHistorypag, "w", TRUE, Server, FALSE));
 #else
-	(void)fclose(EXPfopen(TRUE, NHistoryindex, "w"));
-	(void)fclose(EXPfopen(TRUE, NHistoryhash, "w"));
+	(void)fclose(EXPfopen(TRUE, NHistoryindex, "w", TRUE, Server, FALSE));
+	(void)fclose(EXPfopen(TRUE, NHistoryhash, "w", TRUE, Server, FALSE));
 #endif
 	if (EXPverbose > 3)
 #ifdef	DO_TAGGED_HASH
@@ -1748,35 +1752,35 @@ int main(int ac, char *av[])
 	    if (!dbzfresh(NHistory, dbzsize(0L), 0)) {
 		(void)fprintf(stderr, "Can't create database, %s\n",
 			strerror(errno));
-		exit(1);
+		CleanupAndExit(Server, FALSE, 1);
 	    }
 	}
 	else if (!dbzagain(NHistory, HistoryDB)) {
 	    (void)fprintf(stderr, "Can't dbzagain, %s\n", strerror(errno));
-	    exit(1);
+	    CleanupAndExit(Server, FALSE, 1);
 	}
     }
 
     if (innconf->storageapi) {
 	if (chdir(innconf->pathoverview) < 0) {
 	    (void)fprintf(stderr, CANTCD, SPOOL, strerror(errno));
-	    exit(1);
+	    CleanupAndExit(Server, FALSE, 1);
 	}
     } else {
 	if (chdir(SPOOL) < 0) {
 	    (void)fprintf(stderr, CANTCD, SPOOL, strerror(errno));
-	    exit(1);
+	    CleanupAndExit(Server, FALSE, 1);
 	}
     }
 
     val = TRUE;
     if (!SMsetup(SM_RDWR, (void *)&val) || !SMsetup(SM_PREOPEN, (void *)&val)) {
 	fprintf(stderr, "Can't setup storage manager\n");
-	exit(1);
+	CleanupAndExit(Server, FALSE, 1);
     }
     if (innconf->storageapi && !SMinit()) {
 	fprintf(stderr, "Can't initialize storage manager: %s\n", SMerrorstr);
-	exit(1);
+	CleanupAndExit(Server, FALSE, 1);
     }
 
     /* Main processing loop. */
@@ -1788,39 +1792,39 @@ int main(int ac, char *av[])
 	val = FALSE;
     if (!OVERsetup(OVER_MMAP, (void *)&val)) {
 	fprintf(stderr, "Can't setup unified overview mmap\n");
-	exit(1);
+	CleanupAndExit(Server, FALSE, 1);
     }
     val = TRUE;
     if (!OVERsetup(OVER_BUFFERED, (void *)&val)) {
 	fprintf(stderr, "Can't setup unified overview buffered\n");
-	exit(1);
+	CleanupAndExit(Server, FALSE, 1);
     }
     if (!OVERsetup(OVER_PREOPEN, (void *)&val)) {
 	fprintf(stderr, "Can't setup unified overview preopen\n");
-	exit(1);
+	CleanupAndExit(Server, FALSE, 1);
     }
     if (!OVERsetup(OVER_MODE, "r")) {
 	fprintf(stderr, "Can't setup unified overview mode\n");
-	exit(1);
+	CleanupAndExit(Server, FALSE, 1);
     }
     if (!OVERsetup(OVER_NEWMODE, "w")) {
-       fprintf(stderr, "Can't setup unified overview mode to be created\n");
-       exit(1);
+	fprintf(stderr, "Can't setup unified overview mode to be created\n");
+	CleanupAndExit(Server, FALSE, 1);
     }
 
     if (OverPath)
 	if (!OVERsetup(OVER_NEWDIR, (void *)OverPath)) {
 	    fprintf(stderr, "Can't setup unified overview path\n");
-	    exit(1);
+	    CleanupAndExit(Server, FALSE, 1);
 	}
     if (StorageAPI) {
 	if (!OVERinit()) {
 	    fprintf(stderr, "Can't initialize unified overview\n");
-	    exit(1);
+	    CleanupAndExit(Server, FALSE, 1);
 	}
 	if (Writing && !OVERnewinit()) {
 	    fprintf(stderr, "Can't initialize new unified overview\n");
-	    exit(1);
+	    CleanupAndExit(Server, FALSE, 1);
 	}
     }
     arts = NEW(char*, nGroups);
@@ -1916,11 +1920,11 @@ int main(int ac, char *av[])
 	    /* If user used the -d flag, mark we're done and exit. */
 	    if (HistoryPath != NULL) {
 		(void)sprintf(buff, "%s.done", NHistory);
-		(void)fclose(EXPfopen(FALSE, buff, "w"));
+		(void)fclose(EXPfopen(FALSE, buff, "w", TRUE, Server, FALSE));
 		if (StorageAPI && Writing) {
 		    if (OverPath) {
 			(void)sprintf(buff, "%s/overview.done", OverPath);
-			(void)fclose(EXPfopen(FALSE, buff, "w"));
+			(void)fclose(EXPfopen(FALSE, buff, "w", TRUE, Server, FALSE));
 		    } else {
 			if (!OVERreplace()) {
 			    (void)fprintf(stderr, "Can't replace overview data, %s\n",
@@ -1948,8 +1952,8 @@ int main(int ac, char *av[])
 	    if (StorageAPI && Writing) {
 		if (OverPath) {
 		    (void)sprintf(buff, "%s/overview.done", OverPath);
-		    (void)fclose(EXPfopen(FALSE, buff, "w"));
-		    CleanupAndExit(Server, FALSE, 0);
+		    (void)fclose(EXPfopen(FALSE, buff, "w", TRUE, Server, Paused));
+		    CleanupAndExit(Server, Paused, 0);
 		} else {
 		    if (!OVERreplace()) {
 			(void)fprintf(stderr, "Can't replace overview data, %s\n",
