@@ -506,7 +506,6 @@ int main(int argc, char *argv[])
             read_config(f, &radconfig);
             fclose(f);
         }
-	DISPOSE(radius_config);
     }
     if (!radconfig.radhost) {
 	fprintf(stderr, "No radius host to authenticate against.\n");
