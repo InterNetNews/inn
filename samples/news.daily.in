@@ -350,28 +350,28 @@ rm ${LOCK}
 
 ## Remove the articles that are supposed to go
 if ${DOEXPIRE} ; then
+    test -n "${LOWMARKFILE}" && {
+	echo "lowmarkrenumber begin `date`: (${LOWMARKFILE})"   >>${EXPLOG}
+	ctlinnd -s -t`wc -l <${ACTIVE}` lowmark ${LOWMARKFILE} 2>&1
+	echo "lowmarkrenumber end `date`"			    >>${EXPLOG}
+	# expireover with lowmark has less performance than sorted list
+	# ${DOEXPIREOVER} && {
+	#   if ${DOEXPLOG}; then
+	#       echo "	${EXPIREOVER} start `date`" >>${EXPLOG}
+	#   fi
+	#   eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" 2>&1 | \
+	#     grep -v 'No such file or directory'
+	#   DOEXPIREOVER=false
+	#   if ${DOEXPLOG}; then
+	#       echo "	${EXPIREOVER} end `date`" >>${EXPLOG}
+	#   fi
+	# }
+	rm -f ${MOST_LOGS}/expire.lastlowmark
+	mv ${LOWMARKFILE} ${MOST_LOGS}/expire.lastlowmark
+    }
+
     test -n "${RMFILE}" -a -s "${RMFILE}" && {
 	mv ${RMFILE} ${RMFILE}.$$ && RMFILE=${RMFILE}.$$
-
-        test -n "${LOWMARKFILE}" && {
-	    echo "lowmarkrenumber begin `date`: (${LOWMARKFILE})"   >>${EXPLOG}
-	    ctlinnd -s -t`wc -l <${ACTIVE}` lowmark ${LOWMARKFILE} 2>&1
-	    echo "lowmarkrenumber end `date`"			    >>${EXPLOG}
-	    # expireover with lowmark has less performance than sorted list
-	    # ${DOEXPIREOVER} && {
-	    #   if ${DOEXPLOG}; then
-	    #       echo "	${EXPIREOVER} start `date`" >>${EXPLOG}
-	    #   fi
-	    #   eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" 2>&1 | \
-	    #     grep -v 'No such file or directory'
-	    #   DOEXPIREOVER=false
-	    #   if ${DOEXPLOG}; then
-	    #       echo "	${EXPIREOVER} end `date`" >>${EXPLOG}
-	    #   fi
-	    # }
-	    rm -f ${MOST_LOGS}/expire.lastlowmark
-	    mv ${LOWMARKFILE} ${MOST_LOGS}/expire.lastlowmark
-	}
 
 	test -n "${TMPDIR}" && T="-T ${TMPDIR}"
 	sort -u -o ${RMFILE} ${RMFILE}
