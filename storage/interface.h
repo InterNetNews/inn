@@ -7,13 +7,13 @@
 typedef struct {
     char                *name;
     unsigned char       type;
-    void                *(*init)(void);
-    TOKEN               (*store)(void *handle, const ARTHANDLE article, STORAGECLASS storageclass);
-    ARTHANDLE           *(*retrieve)(void *handle, const TOKEN token, const RETRTYPE amount);
-    ARTHANDLE           *(*next)(void *handle, const ARTHANDLE *article, const RETRTYPE amount);
-    void                (*freearticle)(void *handle, ARTHANDLE *article);
-    BOOL                (*cancel)(void *handle, TOKEN token);
-    void                (*shutdown)(void *handle);
+    BOOL                (*init)(void);
+    TOKEN               (*store)(const ARTHANDLE article, STORAGECLASS storageclass);
+    ARTHANDLE           *(*retrieve)(const TOKEN token, const RETRTYPE amount);
+    ARTHANDLE           *(*next)(const ARTHANDLE *article, const RETRTYPE amount);
+    void                (*freearticle)(ARTHANDLE *article);
+    BOOL                (*cancel)(TOKEN token);
+    void                (*shutdown)(void);
 } STORAGE_METHOD;
 
 char *SMFindBody(char *article, int len);

@@ -28,6 +28,8 @@ typedef struct {
 
 typedef enum {FIND_DIR, FIND_ART} FINDTYPE;
 
+static int SeqNum = 0;
+
 static TOKEN MakeToken(time_t time, int seqnum, STORAGECLASS class) {
     TOKEN               token;
     unsigned int        i;
@@ -66,20 +68,16 @@ static char *MakePath(int time, int seqnum, const STORAGECLASS class) {
     return path;
 }
 
-void *timehash_init(void) {
-    int                 *seqnum;
-    
+BOOL timehash_init(void) {
     if (STORAGE_TOKEN_LENGTH < 6) {
 	syslog(L_FATAL, "timehash: token length is less than 6 bytes");
 	SMseterror(SMERR_TOKENSHORT, NULL);
-	return NULL;
+	return FALSE;
     }
-    seqnum = NEW(int, 1);
-    *seqnum = 0;
-    return (void *)seqnum;
+    return TRUE;
 }
 
-TOKEN timehash_store(void *handle, const ARTHANDLE article, STORAGECLASS class) {
+TOKEN timehash_store(const ARTHANDLE article, STORAGECLASS class) {
     char                *path;
     char                *p;
     time_t              now;
@@ -87,12 +85,11 @@ TOKEN timehash_store(void *handle, const ARTHANDLE article, STORAGECLASS class) 
     int                 fd;
     int                 result;
     int                 seq;
-    int                 *seqnum;
 
     now = time(NULL);
 
-    seq = *seqnum;
-    *seqnum = (*seqnum + 1) & 0xffff;
+    seq = SeqNum;
+    SeqNum = (SeqNum + 1) & 0xffff;
     path = MakePath(now, seq, class);
 
     if ((fd = open(path, O_CREAT|O_EXCL|O_WRONLY, ARTFILE_MODE)) < 0) {
@@ -202,7 +199,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
     return NULL;
 }
 
-ARTHANDLE *timehash_retrieve(void *handle, const TOKEN token, RETRTYPE amount) {
+ARTHANDLE *timehash_retrieve(const TOKEN token, RETRTYPE amount) {
     int                 time;
     int                 seqnum;
     char                *path;
@@ -220,7 +217,7 @@ ARTHANDLE *timehash_retrieve(void *handle, const TOKEN token, RETRTYPE amount) {
     return art;
 }
 
-void timehash_freearticle(void *handle, ARTHANDLE *article) {
+void timehash_freearticle(ARTHANDLE *article) {
     PRIV_TIMEHASH       *private;
 
     if (article->private) {
@@ -240,7 +237,7 @@ void timehash_freearticle(void *handle, ARTHANDLE *article) {
     DISPOSE(article);
 }
 
-BOOL timehash_cancel(void *handle, TOKEN token) {
+BOOL timehash_cancel(TOKEN token) {
     int                 time;
     int                 seqnum;
     char                *path;
@@ -275,7 +272,7 @@ static struct dirent *FindDir(DIR *dir, FINDTYPE type) {
     return NULL;
 }
 
-ARTHANDLE *timehash_next(void *handle, const ARTHANDLE *article, RETRTYPE amount) {
+ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
     PRIV_TIMEHASH       priv;
     PRIV_TIMEHASH       *newpriv;
     char                *path;
@@ -339,5 +336,5 @@ ARTHANDLE *timehash_next(void *handle, const ARTHANDLE *article, RETRTYPE amount
     return art;
 }
 
-void timehash_shutdown(void *handle) {
+void timehash_shutdown(void) {
 }
