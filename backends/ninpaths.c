@@ -145,9 +145,9 @@ writedump(FILE *f)
     if (!total) {
 	return -1;
     }
-    fprintf(f, "!!NINP " VERSION " %ld %ld %ld %ld %ld\n",
-	    starttime, time(0), sites, total,
-            (long)(atimes/total)+starttime);
+    fprintf(f, "!!NINP " VERSION " %lu %lu %ld %ld %ld\n",
+            (unsigned long) starttime, (unsigned long) time(NULL), sites,
+            total, (long)(atimes/total)+starttime);
     n=j=0;
     /* write the S-records (hosts), numbering them in the process */
     for (i=0; i<HASH_TBL; ++i)
@@ -216,7 +216,7 @@ readdump(FILE *f)
 {
     int a, b;
     long i, m, l;
-    time_t st, et, at;
+    unsigned long st, et, at;
     long sit, tot;
     struct nrec **n;
     struct trec *t;
@@ -226,7 +226,7 @@ readdump(FILE *f)
     #define formerr(i) {\
 	fprintf(stderr, "dump file format error #%d\n", (i)); return -1; }
 
-    if (fscanf(f, "!!NINP %15s %ld %ld %ld %ld %ld\n",
+    if (fscanf(f, "!!NINP %15s %lu %lu %ld %ld %lu\n",
 	       v, &st, &et, &sit, &tot, &at)!=6)
 	formerr(0);
 
@@ -283,7 +283,7 @@ readdump(FILE *f)
             ctime(&st), tot, at, at-st);
 #endif
     /* Adjust the time average and total count */
-    if (starttime>st) {
+    if ((unsigned long) starttime > st) {
 	atimes+=(double)total*(starttime-st);
 	starttime=st;
     }
@@ -369,7 +369,7 @@ procpaths(FILE *f)
 	    c+=6;
 	/* find end of line. Some broken newsreaders preload Path with
 	   a name containing spaces. Chop off those entries. */
-	for (ce=c; *ce && !isspace(*ce); ++ce);
+	for (ce=c; *ce && !CTYPE(isspace, *ce); ++ce);
 	if (!*ce) {
 	    /* bogus line */
 	    v=0;
