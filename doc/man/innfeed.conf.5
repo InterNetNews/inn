@@ -453,6 +453,13 @@ response.
 This key requires a positive integer value. It defines the tcp/ip port
 number to use when connecting to the remote.
 .TP
+.B drop-deferred
+This key requires a boolean value. By default it is set to false. When
+set to true, and a peer replies with code 431 (try again later) just
+drop the article and don't try to re-send it. This is useful for some
+peers that keep on deferring articles for a long time to prevent innfeed
+from trying to offer the same article over and over again.
+.TP
 .B no-backlog
 This key requires a boolean value. It specifies whether spooling should
 be enabled (false, the default) or disabled (true). Note that when no-backlog
