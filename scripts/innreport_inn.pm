@@ -34,6 +34,7 @@ my %ctlinnd = ('a', 'addhist',     'D', 'allow',
 
 my %timer_names = (idle     => 'idle',
                    hishave  => 'history lookup',
+                   hisgrep  => 'history grep',
                    hiswrite => 'history write',
                    hissync  => 'history sync',
                    artclean => 'article cleanup',
@@ -362,7 +363,7 @@ sub collect {
     # with this in a general fashion.
     if ($left =~ m/^\S+\s+                         # ME
 	           time\ (\d+)\s+                  # time
-                   ((?:\S+ \d+\(\d+\)\s*)+)        # timer values
+                   ((?:\S+\ \d+\(\d+\)\s*)+)       # timer values
                    $/ox) {
       $innd_time_times += $1;
       my $timers = $2;
