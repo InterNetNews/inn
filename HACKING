@@ -263,6 +263,11 @@ Makefiles
     make in any subdirectory and pick up all the definitions and settings
     from the top level configuration.
 
+    All INN makefiles should also set $(top) to be the path to the top of
+    the build directory (usually relative).  This path is used to find
+    various programs like fixscript and libtool so that the same macros (set
+    in Makefile.global) can be used all over INN.
+
     The format of INN's makefiles is mostly standardized; the best examples
     of the format are probably frontends/Makefile and backends/Makefile, at
     least for directories with lots of separate programs.  The ALL variable
