@@ -18,7 +18,7 @@ echo > config/config.data <<EOF
 # configure did not complete successfully.  Resolve problems and re-run.
 EOF
 
-dnl FIXME: These should be executable in the repository.
+dnl Just to be sure.
 chmod +x config.sub config.guess
 
 dnl Fix the paths.
@@ -111,24 +111,27 @@ AC_ARG_WITH(news-user,
     NEWSUSER=$with_news_user,
     NEWSUSER=news)
 AC_SUBST(NEWSUSER)
+AC_DEFINE_UNQUOTED(NEWSUSER, "$NEWSUSER")
 
 AC_ARG_WITH(news-group,
     [  --with-news-group=GROUP News group id [news]],
     NEWSGRP=$with_news_group,
     NEWSGRP=news)
 AC_SUBST(NEWSGRP)
+AC_DEFINE_UNQUOTED(NEWSGRP, "$NEWSGRP")
 
 AC_ARG_WITH(news-master,
     [  --with-news-master=USER News master [usenet]],
     NEWSMASTER=$with_news_master,
     NEWSMASTER=usenet)
 AC_SUBST(NEWSMASTER)
+AC_DEFINE_UNQUOTED(NEWSMASTER, "$NEWSMASTER")
 
+dnl This is actually give to AC_SUBST later on.
 AC_ARG_WITH(syslog-facility,
     [  --with-syslog-facility=LOG_FAC  Syslog facility [LOG_NEWS or LOG_LOCAL1]],
     SYSLOG_FACILITY=$with_syslog_facility,
-    SYSLOG_FACILITY="LOG_NEWS")
-AC_SUBST(SYSLOG_FACILITY)
+    SYSLOG_FACILITY=none)
 
 NEWSUMASK=02
 FILEMODE=0664
@@ -151,6 +154,10 @@ AC_SUBST(NEWSUMASK)
 AC_SUBST(FILEMODE)
 AC_SUBST(DIRMODE)
 AC_SUBST(RUNDIRMODE)
+AC_DEFINE_UNQUOTED(ARTFILE_MODE, $FILEMODE)
+AC_DEFINE_UNQUOTED(BATCHFILE_MODE, $FILEMODE)
+AC_DEFINE_UNQUOTED(GROUPDIR_MODE, $DIRMODE)
+AC_DEFINE_UNQUOTED(NEWSUMASK, $NEWSUMASK)
 
 AC_ARG_WITH(innd-port,
     [  --with-innd-port=PORT   Additional low-numbered port for inndstart],
@@ -189,9 +196,8 @@ AC_SUBST(DO_PERL)
 
 AC_ARG_WITH(python,
     [  --with-python           Embedded Python module support],
-    DO_PYTHON='define',
-    DO_PYTHON='undef')
-AC_SUBST(DO_PYTHON)
+    DO_PYTHON=define
+    AC_DEFINE(DO_PYTHON))
 
 AC_ARG_WITH(tcl,
     [  --with-tcl              Embedded TCL script support],
@@ -219,10 +225,6 @@ esac
 AC_SUBST(LOG_COMPRESS)
 AC_SUBST(LOG_COMPRESSEXT)
 
-dnl FIXME: Should be replaced with @mandir@ anywhere it occurs.
-MANDIR=`eval echo $mandir`
-AC_SUBST(MANDIR)
-
 dnl FIXME: hostname is more reliable on most systems; uname may truncate.
 HOSTNAME=`uname -n`
 AC_SUBST(HOSTNAME)
@@ -236,7 +238,6 @@ dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_GCC_TRADITIONAL
 AC_PROG_LEX
-AC_PROG_LN_S            dnl NOTUSED
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 AC_PROG_YACC
@@ -245,31 +246,13 @@ dnl System specific checks.
 AC_AIX                  dnl NOTUSED
 AC_ISC_POSIX
 
-dnl We only use this check in one place, namely below to decide that
-dnl memory.h is useless on Digital UNIX.  Host-specific checks are evil
-dnl and should be avoided whenever possible, and I think this one can be;
-dnl can't we just go with the results of AC_HEADER_STDC?
-AC_DEFUN(INN_DEC_UNIX, [
-    AC_REQUIRE([AC_PROG_CC])dnl
-    AC_BEFORE([$0], [AC_TRY_COMPILE])dnl
-    AC_BEFORE([$0], [AC_TRY_RUN])dnl
-    AC_MSG_CHECKING(for Digital Unix)
-    if test -f /osf_boot ; then
-        AC_MSG_RESULT(yes)
-        DEC_UNIX=yes
-    else
-        AC_MSG_RESULT(no)
-        DEC_UNIX=
-    fi
-])
-INN_DEC_UNIX
-
 dnl Checks for pathnames.
 
-dnl FIXME: Should just be CTAGS.
-AC_PATH_PROG(PATH_CTAGS, ctags, echo)
-if test x"$PATH_CTAGS" != xecho ; then
-    PATH_CTAGS="$PATH_CTAGS -t -w"
+dnl See if we have ctags; if so, set CTAGS to its full path plus the -t -w
+dnl options.  Otherwise, set CTAGS to echo.
+AC_PATH_PROG(CTAGS, ctags, echo)
+if test x"$CTAGS" != xecho ; then
+    CTAGS="$CTAGS -t -w"
 fi
 
 dnl Use INN_PATH_PROG if it's an error not to find a program.
@@ -286,6 +269,9 @@ INN_ENSURE_PATH_PROG(_PATH_PERL,perl)
 INN_ENSURE_PATH_PROG(_PATH_SH,sh)
 INN_ENSURE_PATH_PROG(_PATH_SED,sed)
 INN_ENSURE_PATH_PROG(_PATH_SORT,sort)
+
+dnl makehistory needs to know what the sort program is.
+AC_DEFINE_UNQUOTED(SORT_PGM, "$_PATH_SORT")
 
 dnl Check for a required version of Perl.  We have to use English to get
 dnl around the fact Perl's version variable is $], a variable that m4 simply
@@ -328,11 +314,11 @@ if test x"$DO_LFS" = xDO ; then
 fi
 
 dnl Make sure we have both compress and gzip, since the UUCP batching
-dnl scripts require both.  Then, if we're using a log compression method
-dnl other than compress or gzip, check for it too and make sure it exists.
-dnl If we don't find compress or gzip, just use the bare program names in
-dnl the hope that the path will be better at the time the script runs (or
-dnl that the script will never run).
+dnl scripts require both.  If we're using a log compression method other
+dnl than compress or gzip, check for it too and make sure it exists.  If
+dnl we don't find compress or gzip, just use the bare program names in the
+dnl hope that the path will be better at the time the script runs (or that
+dnl the script will never run).
 case "$LOG_COMPRESS" in
 compress|gzip) ;;
 *)             INN_ENSURE_PATH_PROG(LOG_COMPRESS, "$LOG_COMPRESS")
@@ -524,48 +510,52 @@ if test x"$DO_LFS" = xDO ; then
 fi
 
 dnl Special checks for header files.
-AC_HEADER_DIRENT
+
+dnl Start by checking for standard C headers.  AC_HEADER_STDC will set
+dnl STDC_HEADERS if stdlib.h, stdarg.h, string.h, and float.h all exist,
+dnl if memchr() (and probably the other mem functions) is in string.h,
+dnl if free() (and probably malloc() and friends) are in stdlib.h, and if
+dnl ctype.h will work on high-bit characters.
 AC_HEADER_STDC
+
+dnl Only if that wasn't set do we need to go hunting for other headers to
+dnl include on non-ANSI systems and check for functions that all ANSI C
+dnl systems should have.
+if test x"$ac_cv_header_stdc" = xno ; then
+    AC_CHECK_HEADERS(memory.h stdarg.h string.h varargs.h)
+    AC_CHECK_FUNCS(memcpy strchr)
+    AC_REPLACE_FUNCS(memchr memmove memset)
+fi
+
+dnl Special checks for header files.
+AC_HEADER_DIRENT
 AC_HEADER_TIME          dnl NOTUSED
 AC_HEADER_SYS_WAIT      dnl NOTUSED
 
 dnl Generic checks for header files.
-dnl NOTUSED: sgtty.h sys/file.h sys/ioctl.h sys/select.h sys/time.h
+dnl NOTUSED: getopt.h sgtty.h sys/file.h sys/ioctl.h sys/time.h
 dnl
-dnl FIXME: Checks for stdlib, stdarg, etc. are somewhat redundant with the
-dnl overall HEADER_STDC check.  Some of the other checks here are probably
-dnl also redundant with other standard checks.  This code, config.h, and
-dnl clibrary.h badly need an overhaul.
+dnl FIXME: The checks for sys/filio.h and sys/ioctl.h should be included
+dnl in the check for what type of close-on-exec method to use, and that
+dnl should preferrably be in source code rather than configure hackage.
 
-AC_CHECK_HEADERS(fcntl.h limits.h memory.h sgtty.h stdarg.h)
-AC_CHECK_HEADERS(stdlib.h string.h sys/file.h sys/filio.h sys/ioctl.h)
-AC_CHECK_HEADERS(sys/select.h sys/signal.h sys/time.h unistd.h)
-AC_CHECK_HEADERS(varargs.h wait.h getopt.h sys/sysinfo.h)
-AC_CHECK_HEADERS(ndbm.h db1/ndbm.h)
+AC_CHECK_HEADERS(fcntl.h getopt.h limits.h sgtty.h stddef.h stdint.h)
+AC_CHECK_HEADERS(sys/file.h sys/filio.h sys/ioctl.h sys/select.h)
+AC_CHECK_HEADERS(sys/sysinfo.h sys/time.h unistd.h wait.h)
 
-dnl malloc.h doesn't contain function declarations for malloc() and friends
-dnl on Digital Unix.
-dnl
-dnl FIXME: This check should be irrelevant; AC_HEADER_STDC takes care of
-dnl this and stdlib.h should be used in preference to malloc.h if
-dnl STDC_HEADERS is defined by it (which is the case on Digital Unix).
-
-if test -z "$DEC_UNIX" ; then
-    AC_CHECK_HEADERS(malloc.h)
-else
-    AC_MSG_WARN(not checking for malloc.h as this is Digital Unix)
-fi
+dnl Some Linux systems have db1/ndbm.h instead of ndbm.h.
+AC_CHECK_HEADER(ndbm.h, AC_DEFINE(HAVE_NDBM_H),
+    AC_CHECK_HEADERS(db1/ndbm.h))
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_STRUCT_ST_BLKSIZE
 AC_STRUCT_TM            dnl NOTUSED
-
-dnl FIXME: These all need config.h magic that doesn't appear to be present.
 AC_C_CONST
 AC_TYPE_SIZE_T
 AC_TYPE_UID_T
 AC_TYPE_OFF_T
 AC_TYPE_PID_T
+AC_CHECK_TYPE(caddr_t, char *)
 
 dnl From Paul D. Smith <psmith@baynetworks.com> on the autoconf mailing
 dnl list, this is a version of AC_CHECK_TYPE that allows specification of
@@ -589,7 +579,7 @@ $3],
     )])dnl
     AC_MSG_RESULT($ac_cv_type_$1)
     if test x"$ac_cv_type_$1" = xno ; then
-        AC_DEFINE($1, $2)
+        AC_DEFINE_UNQUOTED($1, $2)
     fi
 ])
 
@@ -597,13 +587,32 @@ dnl If sig_atomic_t is available, use it instead of int as the type of a
 dnl variable that can be set inside signal handlers.
 INN_CHECK_TYPE(sig_atomic_t, int, [#include <signal.h>])
 
-dnl FIXME: Old subst linkage.
-if test "$ac_cv_type_sig_atomic_t" = yes ; then
-    ac_cv_type_atomic=sig_atomic_t
-else
-    ac_cv_type_atomic="$ac_cv_type_sig_atomic_t"
-fi
-AC_SUBST(ac_cv_type_atomic)
+dnl Make sure INADDR_NONE is defined.
+dnl FIXME: The code that uses this should just check against -1 instead.
+AC_DEFUN(INN_CHECK_DEFINE, [
+    AC_MSG_CHECKING(for $1)
+changequote(<<, >>)dnl
+define(<<AC_VAR_NAME>>, translit($1, [A-Z], [a-z]))dnl
+changequote([, ])dnl
+    AC_CACHE_VAL(ac_cv_[]AC_VAR_NAME, [AC_EGREP_CPP(yes, [
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#ifdef INADDR_NONE
+yes
+#endif
+],
+        ac_cv_[]AC_VAR_NAME=yes,
+        ac_cv_[]AC_VAR_NAME=no
+    )])dnl
+    AC_MSG_RESULT($ac_cv_[]AC_VAR_NAME)
+    if test x"$ac_cv_[]AC_VAR_NAME" = xno ; then
+        AC_DEFINE($1, $2)
+    fi
+])
+INN_CHECK_DEFINE(INADDR_NONE, [(unsigned long) -1])
 
 dnl FIXME: The external variable timezone is available on some platforms and
 dnl accomplishes the same purpose (but is more standard).
@@ -634,58 +643,92 @@ if test "$inn_cv_union_wait" = yes ; then
     AC_DEFINE(HAVE_UNION_WAIT)
 fi
 
-dnl Find a 32 bit type, by trying likely candidates.
-dnl FIXME: Old subst linkage.
-AC_CHECK_SIZEOF(int, 4)
-if test "$ac_cv_sizeof_int" = 4 ; then
-    ac_cv_subst_int32_t=int
+dnl A modified version of AC_CHECK_SIZEOF that doesn't always AC_DEFINE, but
+dnl instead lets you execute shell code based on success or failure.  This
+dnl is to avoid config.h clutter.
+AC_DEFUN(INN_IF_SIZEOF,
+[changequote(<<, >>)dnl
+dnl The name to #define.
+define(<<AC_TYPE_NAME>>, translit(sizeof_$1, [a-z *], [A-Z_P]))dnl
+dnl The cache variable name.
+define(<<AC_CV_NAME>>, translit(ac_cv_sizeof_$1, [ *], [_p]))dnl
+changequote([, ])dnl
+AC_MSG_CHECKING(size of $1)
+AC_CACHE_VAL(AC_CV_NAME,
+[AC_TRY_RUN([#include <stdio.h>
+main()
+{
+    FILE *f = fopen("conftestval", "w");
+    if (!f) exit(1);
+    fprintf(f, "%d\n", sizeof($1));
+    exit(0);
+}], AC_CV_NAME=`cat conftestval`, AC_CV_NAME=0,
+ifelse([$2], , , AC_CV_NAME=$2))
+])dnl
+AC_MSG_RESULT($AC_CV_NAME)
+if test x"$AC_CV_NAME" = x"$3" ; then
+    ifelse([$4], , :, [$4])
 else
-    AC_CHECK_SIZEOF(long, 4)
-    if test "$ac_cv_sizeof_long" = 4 ; then
-        ac_cv_subst_int32_t=long
-    else
-	AC_CHECK_SIZEOF(short, 2)
-        if test "$ac_cv_sizeof_short" = 4 ; then
-            ac_cv_subst_int32_t=short
-        else
-            AC_MSG_ERROR(no 32 bits integer available)
-	fi
-    fi
+    ifelse([$5], , :, [$5])
 fi
-AC_SUBST(ac_cv_subst_int32_t)
+undefine([AC_TYPE_NAME])dnl
+undefine([AC_CV_NAME])dnl
+])
+
+dnl Find a 32 bit type, by trying likely candidates.  First, check for the
+dnl C9X int32_t, then look for something else with a size of four bytes.
+INN_IF_SIZEOF(int, 4, 4, INN_INT32=int, [
+    INN_IF_SIZEOF(long, 4, 4, INN_INT32=long, [
+        INN_IF_SIZEOF(short, 2, 4, INN_INT32=short)
+    ])
+])
+INN_CHECK_TYPE(int32_t, $INN_INT32,
+[#ifdef HAVE_STDINT_H
+# include <stdint.h>
+#endif
+])
+
+dnl Figure out the unsigned version.
+if test x"$ac_cv_type_int32_t" = xyes ; then
+    INN_INT32=int32_t
+fi
+INN_CHECK_TYPE(uint32_t, $INN_INT32,
+[#ifdef HAVE_STDINT_H
+# include <stdint.h>
+#endif
+])
 
 dnl Checks for library functions.
 AC_FUNC_MEMCMP
 AC_FUNC_SETVBUF_REVERSED        dnl NOTUSED
 AC_FUNC_VFORK
 AC_FUNC_VPRINTF                 dnl NOTUSED
-
-dnl FIXME: Old subst linkage
 AC_TYPE_SIGNAL
-AC_SUBST(ac_cv_type_signal)
 
 dnl Check for various other functions.
 dnl
-dnl NOTUSED: gethostname mkdir mkfifo select strcspn strspn strstr
+dnl NOTUSED: gethostname mkfifo strcspn strstr
 dnl
 dnl FIXME: Some of these are only used internally and shouldn't export stuff
-dnl into config.h.  Also, there used to be a comment that getdtab was a
-dnl permanent part of INN?
+dnl into config.h.
+dnl
+dnl FIXME: fchmod and gettimeofday are checked some of the places they're
+dnl used, but not all of them.
+dnl
+dnl FIXME: pwrite and pread should be in REPLACE_FUNCS instead.
 
 AC_CHECK_FUNC(syslog, , AC_MSG_ERROR(syslog not found, required by INN))
 
-AC_CHECK_FUNCS(fchmod getdtab gethostname getrusage)
-AC_CHECK_FUNCS(gettimeofday)
-AC_CHECK_FUNCS(mkdir mkfifo select setbuffer)
-AC_CHECK_FUNCS(setsid strcspn)
-AC_CHECK_FUNCS(strspn strstr symlink sysconf ulimit)
-AC_CHECK_FUNCS(waitpid socketpair getpagesize getspnam pwrite pread)
+AC_CHECK_FUNCS(atexit fchmod gethostname getpagesize getrusage getspnam)
+AC_CHECK_FUNCS(gettimeofday mkfifo pread pwrite setbuffer sigaction setsid)
+AC_CHECK_FUNCS(socketpair strcspn strncasecmp strstr strtoul symlink)
+AC_CHECK_FUNCS(sysconf ulimit waitpid)
 
 dnl Locking style.
 AC_CHECK_FUNCS(flock lockf fcntl)
 
-AC_REPLACE_FUNCS(mktemp memchr memcpy memmove memset strcasecmp strchr)
-AC_REPLACE_FUNCS(strerror strrchr)
+AC_REPLACE_FUNCS(getopt memchr memcpy memmove memset strcasecmp strchr)
+AC_REPLACE_FUNCS(strerror strrchr strspn)
 
 MISSING_OBJ="$LIBOBJS"
 MISSING_SRC=`echo "$MISSING_OBJ" | sed 's/\.o/.c/g'`
@@ -706,7 +749,7 @@ AC_CHECK_FUNCS(statvfs, AC_DEFINE(HAVE_STATVFS), [
     AC_CHECK_HEADERS(sys/vfs.h sys/param.h sys/mount.h)
 ])
 
-dnl See if mmap sees writes
+dnl See if mmap sees writes. 
 dnl ========================================================
 dnl For cross compiling, just define it as no, which is a safe default
 AC_MSG_CHECKING(if mmap() sees write()s)
@@ -1000,90 +1043,6 @@ if test "$inn_cv_func_msync_3_args" = yes ; then
     AC_DEFINE(HAVE_MSYNC_3_ARG)
 fi
 
-dnl Various checks for return types.  If we're trying to decide between an
-dnl int and a void, we can just try to compile a program that assigns the
-dnl result of the function to a variable.  Otherwise, try to compile a
-dnl function that prototypes the function and see if that fails.
-dnl
-dnl FIXME: Old subst linkage.
-dnl FIXME: In several cases here, I think we only cared for lint, and we
-dnl don't run lint any more.  So we could probably get rid of a bunch of
-dnl this.
-
-AC_CACHE_CHECK(for return type of abort, ac_cv_type_abort,
-    AC_TRY_COMPILE([
-#ifdef STDC_HEADERS
-# include <stdlib.h>
-#endif],
-    [int a;a=abort()],
-    ac_cv_type_abort=int,
-    ac_cv_type_abort=void))
-AC_SUBST(ac_cv_type_abort)
-
-AC_CACHE_CHECK(for return type of alarm, ac_cv_type_alarm,
-    AC_TRY_COMPILE([
-#ifdef HAVE_UNISTD_H
-# include <unistd.h>
-#endif],
-    [unsigned int alarm()],
-    ac_cv_type_alarm="unsigned int",
-    ac_cv_type_alarm=int))
-AC_SUBST(ac_cv_type_alarm)
-
-AC_CACHE_CHECK(for return type of sleep, ac_cv_type_sleep,
-    AC_TRY_COMPILE([
-#ifdef HAVE_UNISTD_H
-# include <unistd.h>
-#endif],
-    [unsigned int sleep()],
-    ac_cv_type_sleep="unsigned int",
-    ac_cv_type_sleep=int))
-AC_SUBST(ac_cv_type_sleep)
-
-AC_CACHE_CHECK(for return type of qsort, ac_cv_type_qsort,
-    AC_TRY_COMPILE([
-#ifdef STDC_HEADERS
-# include <stdlib.h>
-#endif],
-    [int a; a = qsort(0,0,0,0)],
-    ac_cv_type_qsort=int,
-    ac_cv_type_qsort=void))
-AC_SUBST(ac_cv_type_qsort)
-
-AC_CACHE_CHECK(for return type of free, ac_cv_type_free,
-    AC_TRY_COMPILE([
-#ifdef STDC_HEADERS
-# include <stdlib.h>
-#else
-# ifdef HAVE_MALLOC_H
-#  include <malloc.h>
-# endif
-#endif],
-    [int a; a = free(0)],
-    ac_cv_type_free=int,
-    ac_cv_type_free=void))
-AC_SUBST(ac_cv_type_free)
-
-AC_CACHE_CHECK(for return type of exit, ac_cv_type_exit,
-    AC_TRY_COMPILE([
-#ifdef STDC_HEADERS
-# include <stdlib.h>
-#endif],
-    [int a; a = exit(0)],
-    ac_cv_type_exit=int,
-    ac_cv_type_exit=void))
-AC_SUBST(ac_cv_type_exit)
-
-AC_CACHE_CHECK(for return type of _exit, ac_cv_type__exit,
-    AC_TRY_COMPILE([
-#ifdef HAVE_UNISTD_H
-# include <unistd.h>
-#endif],
-    [int a; a = _exit(0)],
-    ac_cv_type__exit=int,
-    ac_cv_type__exit=void))
-AC_SUBST(ac_cv_type__exit)
-
 dnl If AF_UNIX is set in <sys/socket.h>, assume we have Unix domain sockets.
 AC_MSG_CHECKING(for Unix domain sockets)
 AC_EGREP_CPP(yes, [
@@ -1097,6 +1056,10 @@ yes
     AC_MSG_RESULT(no))
 
 dnl How to set file descriptors close on exec.  -- fjc mibsoftware.com
+dnl
+dnl FIXME: This belongs in the source code, not in configure.  configure has
+dnl already done the necessary probes and the results are only used in a
+dnl single place, lib/closeonexec.c.
 AC_MSG_CHECKING(for close on exec style)
 CLX_STYLE=unknown
 if test "$ac_cv_header_fcntl_h" = yes ; then
@@ -1105,7 +1068,7 @@ if test "$ac_cv_header_fcntl_h" = yes ; then
 #ifdef FD_CLOEXEC
 yes
 #else
-# ifdef FD_SETFD
+# ifdef F_SETFD
 yes
 # endif
 #endif], [
@@ -1135,6 +1098,10 @@ dnl How to set non-blocking I/O.  -- fjc mibsoftware.com
 dnl
 dnl Want to avoid fcntl(FNDELAY) which is inconsistent.  If O_NONBLOCK is
 dnl present, we use that, otherwise fall back to FIONBIO.
+dnl
+dnl FIXME: This belongs in the source code, not in configure.  configure has
+dnl already done the necessary probes and the results are only used in
+dnl lib/nonblocking.c and in innfeed/connection.c.
 AC_MSG_CHECKING(for non-blocking I/O style)
 NBIO_STYLE=unknown
 if test "$ac_cv_header_fcntl_h" = yes ; then
@@ -1165,6 +1132,12 @@ if test "$NBIO_STYLE" = unknown ; then
     AC_MSG_ERROR(Must set NBIO_STYLE)
 fi
 
+dnl FIXME: This is totally the wrong way to do this.  First, it should be
+dnl using the results of config.guess and should be done at the top of
+dnl configure, and second, it should use autoconf's standard check for
+dnl compiler consistency rather than rolling its own test if at all
+dnl possible.
+
 AC_DEFUN(AC_SYS_COMPILER_FLAG,
 [
   AC_MSG_CHECKING($1)
@@ -1172,7 +1145,9 @@ AC_DEFUN(AC_SYS_COMPILER_FLAG,
   AC_CACHE_VAL(inn_cv_option_$2,
   [
     CFLAGS="[$]OLD_CFLAGS $1"
-    AC_TRY_RUN([int main(){exit(0);}],inn_cv_option_$2=yes,inn_cv_option_$2=no)
+    AC_TRY_RUN([int main(){exit(0);}],
+               inn_cv_option_$2=yes,
+               inn_cv_option_$2=no, inn_cv_option_$2=no)
   ])
   
   CFLAGS="[$]OLD_CFLAGS"
@@ -1260,41 +1235,28 @@ AC_SUBST(CXX)
 AC_SUBST(LD)
 AC_SUBST(LDFLAGS)
 
-
-
 dnl Default to LOG_NEWS for syslog facility if it's available, but if it's
-dnl not, fall back on LOG_LOCAL1.
-dnl
-dnl FIXME: We should just define LOG_NEWS to be LOG_LOCAL1.
+dnl not, fall back on LOG_LOCAL1.  --with-syslog-facility may have already
+dnl set this.
 AC_MSG_CHECKING(log facility for news)
-AC_EGREP_CPP(yes, [
+if test x"$SYSLOG_FACILITY" = xnone ; then
+    AC_EGREP_CPP(yes, [
 #include <syslog.h>
 #ifdef LOG_NEWS
 yes
-#endif],
-    [
-        AC_DEFINE(FACILITY_NEWS)
+#endif], [
+        SYSLOG_FACILITY=LOG_NEWS
         AC_MSG_RESULT(LOG_NEWS)
-    ],
-    AC_MSG_RESULT(LOG_LOCAL1))
-
-dnl This test will probably eventually go away, since we're now assuming
-dnl ANSI C and support for void.
-dnl
-dnl FIXME: Old subst linkage.
-AC_CACHE_CHECK(generic pointer, ac_cv_type_generic,
-    AC_TRY_COMPILE([
-#ifdef STDC_HEADERS
-# include <stdlib.h>
-#else
-# ifdef HAVE_MALLOC_H
-#  include <malloc.h>
-# endif
-#endif],
-    [void *a; a = malloc(sizeof(a))],
-    ac_cv_type_generic=void,
-    ac_cv_type_generic=char))
-AC_SUBST(ac_cv_type_generic)
+    ], [
+        SYSLOG_FACILITY=LOG_LOCAL1
+        AC_MSG_RESULT(LOG_LOCAL1)
+    ])
+else
+    AC_MSG_RESULT($SYSLOG_FACILITY)
+fi
+AC_DEFINE_UNQUOTED(LOG_INN_SERVER, $SYSLOG_FACILITY)
+AC_DEFINE_UNQUOTED(LOG_INN_PROG, $SYSLOG_FACILITY)
+AC_SUBST(SYSLOG_FACILITY)
 
 dnl Convert a yes no value to a ac_cv_subst value which is not already
 dnl overridden by config.cache.
@@ -1320,19 +1282,10 @@ AC_DEFUN(YN_to_cv_subst, [
 ])
 
 
-dnl FIXME: Old subst linkage.
-if test "$ac_cv_type_uid_t" = "no" ; then
-    ac_cv_subst_uid_t=int
-    ac_cv_subst_gid_t=int
-else
-    ac_cv_subst_uid_t=uid_t
-    ac_cv_subst_gid_t=gid_t
-fi
-AC_SUBST(ac_cv_subst_uid_t)
-AC_SUBST(ac_cv_subst_gid_t)
-
 dnl fjc mibsoftware.com Removed getrlimit.  Prefer SYSCONF
 dnl FIXME: Old subst linkage.
+dnl
+dnl FIXME: This belongs in the code; it's only used in lib/getdtab.c.
 if test "$ac_cv_func_getdtab" = no ; then
     if test "$ac_cv_func_sysconf" = no ; then
         if test $"ac_cv_func_ulimit" = no ; then
@@ -1351,9 +1304,6 @@ AC_SUBST(ac_cv_subst_fdcount_style)
 dnl Convert ac_cv_ yes or no values into subst values for config.data (but
 dnl only if the cv_subst value is not already defined.  This is to permit
 dnl overriding in config.cache.
-YN_to_cv_subst(ac_cv_type_size_t, ac_cv_subst_size_t, size_t, unsigned)
-YN_to_cv_subst(ac_cv_type_pid_t, ac_cv_subst_pid_t, pid_t, int)
-YN_to_cv_subst(ac_cv_type_off_t, ac_cv_subst_lseekval, off_t, long)
 YN_to_cv_subst(ac_cv_func_getrusage, ac_cv_subst_res_style, RUSAGE, TIMES)
 YN_to_cv_subst(ac_cv_header_time, ac_cv_subst_need_time, DO, DONT)
 YN_to_cv_subst(ac_cv_func_mmap_shared, ac_cv_subst_act_style, MMAP, READ)
@@ -1363,7 +1313,7 @@ dnl Clean up our LIBS, just for grins.
 LIBS=`echo "$LIBS" | sed 's/^  *//' | sed 's/   */ /g'`
 
 grep "^  ||" config/config.scoreboard | sed 's/  ||//g' > config/config.data.in
-AC_CONFIG_HEADER(include/config.h:include/config.h)
+AC_CONFIG_HEADER(include/config.h)
 AC_OUTPUT(
 	Makefile.global
 	makedirs.sh
@@ -1373,8 +1323,6 @@ AC_OUTPUT(
 	backends/sendxbatches.sh
 	frontends/c7unbatch.sh
 	frontends/gunbatch.sh
-	include/clibrary.h
-	include/config.h
 	include/paths.h
 	innfeed/innfeed-convcfg
 	innfeed/procbatch

@@ -16,13 +16,10 @@ extern "C" {
 #endif /* __cplusplus */
 
 /* Memory allocation. */
-    /* Worst-case alignment, in order to shut lint up. */
-    /* =()<typedef @<ALIGNPTR>@	*ALIGNPTR;>()= */
-typedef long	*ALIGNPTR;
 extern ALIGNPTR	xmalloc(unsigned int i);
 extern ALIGNPTR	xrealloc(char *p, unsigned int i);
 
-#ifdef VAR_STDARGS
+#if defined(STDC_HEADERS) || defined(HAVE_STDARG_H)
 extern void *   concat(const char *first, ...);
 #else
 extern void *   concat();
