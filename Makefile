@@ -19,7 +19,7 @@ RCSCOFLAGS	= -u
 ##  The first two directories must be lib and storage.
 PROGS = lib storage innd nnrpd innfeed expire frontends backends authprogs \
 	scripts doc
-DIRS  = $(PROGS) site
+DIRS  = $(PROGS) samples site
 
 ##  We invoke an extra process and set this to be what to make.
 WHAT_TO_MAKE	= all
@@ -75,42 +75,16 @@ update:
 	done
 
 ##  Additional cleanups.
-clobber realclean distclean:	clean
-	@echo ""
-	rm -f inn*.tar.Z inn*.tar.gz Part0? MANIFEST.BAK
-	rm -rf inews.* rnews.* nntplib.*
-	rm -f tags */tags core */core a.out */a.out foo */foo
-	rm -f CHANGES *~
-	rm -fr $(TARDIR)
-	rm -f config.cache config.log config.status libtool
-	rm -f BUILD makedirs.sh
-	rm -f backends/actmerge backends/actsyncd backends/controlbatch
-	rm -f backends/controlchan backends/mod-active backends/news2mail
-	rm -f backends/nntpsend backends/pgpverify backends/send-ihave
-	rm -f backends/send-nntp backends/send-uucp backends/sendbatch
-	rm -f backends/sendxbatches expire/expirerm frontends/c7unbatch
-	rm -f frontends/cnfsheadconf frontends/cnfsstat frontends/gunbatch
-	rm -f frontends/mailpost frontends/pullnews frontends/scanspool
-	rm -f frontends/signcontrol include/autoconfig.h include/config.h
-	rm -f include/paths.h innfeed/innfeed-convcfg innfeed/procbatch
-	rm -f samples/actsync.cfg samples/checkgroups samples/checkgroups.pl
-	rm -f samples/default samples/docheckgroups samples/ihave
-	rm -f samples/ihave.pl samples/inn.conf samples/innreport.conf
-	rm -f samples/innwatch.ctl samples/newgroup samples/newgroup.pl
-	rm -f samples/newsfeeds samples/nnrpd_auth.pl samples/parsecontrol
-	rm -f samples/rmgroup samples/rmgroup.pl samples/sendme
-	rm -f samples/sendme.pl samples/sendsys samples/sendsys.pl
-	rm -f samples/senduuname samples/senduuname.pl samples/startup.tcl
-	rm -f samples/version samples/version.pl scripts/inncheck
-	rm -f scripts/innmail scripts/innreport scripts/innshellvars
-	rm -f scripts/innshellvars.pl scripts/innshellvars.tcl
-	rm -f scripts/innstat scripts/innwatch scripts/news.daily
-	rm -f scripts/rc.news scripts/scanlogs scripts/simpleftp
-	rm -f scripts/tally.control scripts/writelog site/config
-	rm -f storage/buildconfig
-	@echo ""
-	cd site ; make clobber ; cd ..
-	rm -f Makefile.global 
+clobber realclean distclean:
+	@for D in $(DIRS) ; do \
+	    cd $$D; $(MAKE) $(FLAGS) clobber || exit 1; cd ..; \
+	done
+	rm -rf inews.* rnews.* nntplib.* $(TARDIR)
+	rm -f inn*.tar.Z inn*.tar.gz Part0? CHANGES MANIFEST.BAK
+	rm -f tags */tags core */core
+	rm -f config.cache config.log config.status libtool makedirs.sh
+	rm -f include/autoconfig.h include/config.h include/paths.h
+	rm -f support/fixscript Makefile.global
 
 ##  Configure and compile
 world:
