@@ -396,7 +396,7 @@ ICDwriteactive()
         exit(1);
     }
 #else
-    if (msync(ICDactpointer, 0) < 0) {
+    if (msync(ICDactpointer, ICDactsize) < 0) {
         syslog(L_FATAL, "%s msync failed %s %m", LogName, ICDactpath);
         exit(1);
     }
