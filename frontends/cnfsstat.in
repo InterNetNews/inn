@@ -80,6 +80,7 @@ Usage:
 	-h:          This information
 	-m <BUFFER>: prints out information suitable for mrtg
 	-p:	     prints out an mrtg config file 
+	-P:          write PID into $inn::pathrun/cnfsstat.pid
 _end_
     exit(1);
 }
@@ -88,7 +89,7 @@ my(@line, %class, %buff, %stor, $c, @buffers);
 
 my($gr, $cl, $min, $max, @storsort, $oclass, $header_printed);
 
-GetOptions("-a", "-c=s", \$oclass, "-h", "-l:i", "-s", "-m=s", \$obuffer, "-p");
+GetOptions("-a", "-c=s", \$oclass, "-h", "-l:i", "-s", "-m=s", \$obuffer, "-p", "-P");
 
 &usage if $opt_h;
 
@@ -101,6 +102,13 @@ if ($opt_s) {
     } else {
 	print STDERR "Syslog is not available.  -s option is ignored.\n";
     }
+}
+
+if ($opt_P) {
+    open(FILE, ">$inn::pathrun/cnfsstat.pid") && do {
+	print FILE "$$\n";
+	close FILE;
+    };
 }
 
 my($sleeptime) = (defined($opt_l) && $opt_l > 0) ? $opt_l : 600;

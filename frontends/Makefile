@@ -6,10 +6,10 @@ CFLAGS        = $(GCFLAGS)
 
 ALL	      = c7unbatch cnfsheadconf cnfsstat ctlinnd decode encode \
 		getlist gunbatch inews innconfval mailpost pullnews \
-		rnews scanspool signcontrol sm
+		ovdb_recover rnews scanspool signcontrol sm
 
 SOURCES	      = ctlinnd.c decode.c encode.c getlist.c inews.c innconfval.c \
-		rnews.c sm.c
+		ovdb_recover.c rnews.c sm.c
 
 PATHRNEWS     = $(PATHBIN)/rnews.libexec
 
@@ -20,6 +20,8 @@ INSTALLED     = $(D)$(PATHBIN)/cnfsheadconf	\
 		$(D)$(PATHBIN)/inews		\
 		$(D)$(PATHBIN)/innconfval	\
 		$(D)$(PATHBIN)/mailpost		\
+		$(D)$(PATHBIN)/ovdb_recover	\
+		$(D)$(PATHBIN)/ovdb_upgrade	\
 		$(D)$(PATHBIN)/pullnews		\
 		$(D)$(PATHBIN)/rnews		\
 		$(D)$(PATHBIN)/scanspool	\
@@ -46,17 +48,22 @@ tags ctags:	$(SOURCES)
 ##  Compilation rules.
 
 LINK 		= $(LIBTOOL) $(CC) $(LDFLAGS) -o $@
-NEWSLIBS	= $(LIBNEWS) $(LIBS)
+LIB_S_I		= $(LIBSTORAGE) $(LIBINN)
+ES		= $(EXTSTORAGELIBS)
 FIX		= $(FIXSCRIPT)
 
-ctlinnd:	ctlinnd.o    $(LIBNEWS)	; $(LINK) ctlinnd.o    $(NEWSLIBS)
+ovdb_recover.o: ovdb_recover.c
+	$(CC) $(CFLAGS) $(BERKELEY_DB_CFLAGS) -c $<
+
+ctlinnd:	ctlinnd.o    $(LIBINN)	; $(LINK) ctlinnd.o    $(LIBINN) $(LIBS)
 decode:		decode.o		; $(LINK) decode.o
 encode:		encode.o		; $(LINK) encode.o
-getlist:	getlist.o    $(LIBNEWS)	; $(LINK) getlist.o    $(NEWSLIBS)
-inews:		inews.o      $(LIBNEWS)	; $(LINK) inews.o      $(NEWSLIBS)
-innconfval:	innconfval.o $(LIBNEWS)	; $(LINK) innconfval.o $(NEWSLIBS)
-rnews:		rnews.o      $(LIBNEWS)	; $(LINK) rnews.o      $(NEWSLIBS)
-sm:		sm.o         $(LIBNEWS)	; $(LINK) sm.o         $(NEWSLIBS)
+getlist:	getlist.o    $(LIBINN)	; $(LINK) getlist.o    $(LIBINN) $(LIBS)
+inews:		inews.o      $(LIBINN)	; $(LINK) inews.o      $(LIBINN) $(LIBS)
+innconfval:	innconfval.o $(LIBINN)	; $(LINK) innconfval.o $(LIBINN) $(LIBS)
+ovdb_recover: ovdb_recover.o $(LIB_S_I) ; $(LINK) ovdb_recover.o $(LIB_S_I) $(ES) $(LIBS)
+rnews:		rnews.o      $(LIBINN)	; $(LINK) rnews.o      $(LIBINN) $(LIBS)
+sm:		sm.o         $(LIB_S_I)	; $(LINK) sm.o         $(LIB_S_I) $(ES) $(LIBS)
 
 cnfsheadconf:	cnfsheadconf.in  $(FIX)	; $(FIX) cnfsheadconf.in
 cnfsstat:	cnfsstat.in      $(FIX)	; $(FIX) cnfsstat.in
@@ -74,8 +81,8 @@ gunbatch:	../Makefile.global
 	echo 'exec $(GZIP) -d -c' >> gunbatch
 
 ##  Not normally built.
-feedone:	feedone.o    $(LIBNEWS)	; $(LINK) feedone.o    $(NEWSLIBS)
-sys2nf:		sys2nf.o     $(LIBNEWS)	; $(LINK) sys2nf.o     $(NEWSLIBS)
+feedone:	feedone.o    $(LIBINN)	; $(LINK) feedone.o    $(LIBINN) $(LIBS)
+sys2nf:		sys2nf.o     $(LIBINN)	; $(LINK) sys2nf.o     $(LIBINN) $(LIBS)
 
 $(LIBINN):
 	(cd ../lib ; $(MAKE))
@@ -96,6 +103,7 @@ $(D)$(PATHBIN)/ctlinnd:             ctlinnd             ; $(LI_XPRI) $? $@
 $(D)$(PATHBIN)/getlist:             getlist             ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/innconfval:          innconfval          ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/mailpost:            mailpost            ; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/ovdb_recover:        ovdb_recover	; $(LI_XPRI) $? $@
 $(D)$(PATHBIN)/pullnews:            pullnews            ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/scanspool:           scanspool           ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/signcontrol:         signcontrol         ; $(CP_XPUB) $? $@
@@ -105,6 +113,9 @@ $(D)$(PATHRNEWS)/decode:            decode              ; $(LI_XPUB) $? $@
 $(D)$(PATHRNEWS)/encode:            encode              ; $(LI_XPUB) $? $@
 $(D)$(PATHRNEWS)/gunbatch:          gunbatch            ; $(CP_XPUB) $? $@
 
+$(D)$(PATHBIN)/ovdb_upgrade:	../Makefile.global
+	rm -f $@
+	ln -s ovdb_recover $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES)
