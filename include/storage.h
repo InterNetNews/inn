@@ -35,10 +35,10 @@ typedef struct token {
 
 typedef struct {
   unsigned char  type;       /* Method that retrieved the article */
-  char           *data;      /* Where the requested data starts */
+  const char     *data;      /* Where the requested data starts */
   struct iovec   *iov;       /* writev() style vector */
   int            iovcnt;     /* writev() style count */
-  int            len;        /* Length of the requested data */
+  size_t         len;        /* Length of the requested data */
   unsigned char  nextmethod; /* Next method to try when iterating over the
 				spool */
   void           *private;   /* A pointer to method specific data */
@@ -77,8 +77,8 @@ BEGIN_DECLS
 char *      TokenToText(const TOKEN token);
 TOKEN       TextToToken(const char *text);
 bool        IsToken(const char *text);
-char *      ToWireFmt(const char *article, int len, int *newlen);
-char *      FromWireFmt(const char *article, int len, int *newlen);
+char *      ToWireFmt(const char *article, size_t len, size_t *newlen);
+char *      FromWireFmt(const char *article, size_t len, size_t *newlen);
             
 bool        SMsetup(SMSETUP type, void *value);
 bool        SMinit(void);

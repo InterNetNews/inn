@@ -136,7 +136,7 @@ static char * CNFSofft2hex(CYCBUFF_OFF_T offset, bool leadingzeros) {
 
 static CYCBUFF_OFF_T CNFShex2offt(char *hex) {
     if (sizeof(CYCBUFF_OFF_T) <= 4) {
-	CYCBUFF_OFF_T	rpofft;
+	unsigned long rpofft;
 	/* I'm lazy */
 	sscanf(hex, "%lx", &rpofft);
 	return rpofft;

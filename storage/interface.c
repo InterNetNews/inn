@@ -65,16 +65,19 @@ bool IsToken(const char *text) {
 ** Converts a token to a textual representation for error messages
 ** and the like.
 */
-char *TokenToText(const TOKEN token) {
-    static char         hex[] = "0123456789ABCDEF";
+char *
+TokenToText(const TOKEN token)
+{
+    static const char   hex[] = "0123456789ABCDEF";
     static char         result[(sizeof(TOKEN) * 2) + 3];
-    char                *p;
+    const char          *p;
     char                *q;
     size_t              i;
 
     
     result[0] = '@';
-    for (q = result + 1, p = (char *)&token, i = 0; i < sizeof(TOKEN); i++, p++) {
+    for (q = result + 1, p = (const char *) &token, i = 0; i < sizeof(TOKEN);
+         i++, p++) {
 	*q++ = hex[(*p & 0xF0) >> 4];
 	*q++ = hex[*p & 0x0F];
     }
@@ -118,8 +121,10 @@ TOKEN TextToToken(const char *text) {
 ** containing the article in wire format.  Set *newlen to the length of the
 ** new article.
 */ 
-char *ToWireFmt(const char *article, int len, int *newlen) {
-    int bytes;
+char *
+ToWireFmt(const char *article, size_t len, size_t *newlen)
+{
+    size_t bytes;
     char *newart;
     const char *p;
     char  *dest;
@@ -160,8 +165,10 @@ char *ToWireFmt(const char *article, int len, int *newlen) {
     return newart;
 }
 
-char *FromWireFmt(const char *article, int len, int *newlen) {
-    int bytes;
+char *
+FromWireFmt(const char *article, size_t len, size_t *newlen)
+{
+    size_t bytes;
     char *newart;
     const char *p;
     char *dest;
@@ -213,13 +220,15 @@ char *FromWireFmt(const char *article, int len, int *newlen) {
 /*
 **  get Xref header without pathhost
 */
-static char *GetXref(ARTHANDLE *art) {
-  char	*p, *p1;
-  char	*q;
+static char *
+GetXref(ARTHANDLE *art)
+{
+  const char *p, *p1;
+  const char *q;
   char	*buff;
-  bool	Nocr;
+  bool	Nocr = false;
 
-  if ((p = q = (char *)HeaderFindMem(art->data, art->len, "xref", sizeof("xref")-1)) == NULL)
+  if ((p = q = HeaderFindMem(art->data, art->len, "xref", sizeof("xref")-1)) == NULL)
     return NULL;
   for (p1 = NULL; p < art->data + art->len; p++) {
     if (p1 != (char *)NULL && *p1 == '\r' && *p == '\n') {
@@ -338,7 +347,9 @@ static CONFTOKEN smtoks[] = {
 };
 
 /* Open the config file and parse it, generating the policy data */
-static bool SMreadconfig(void) {
+static bool
+SMreadconfig(void)
+{
     CONFFILE            *f;
     CONFTOKEN           *tok;
     int			type;
@@ -346,18 +357,18 @@ static bool SMreadconfig(void) {
     char                *p;
     char                *q;
     char                *path;
-    char                *method;
+    char                *method = NULL;
     char                *pattern = NULL;
-    int                 minsize;
-    int                 maxsize;
-    time_t		minexpire;
-    time_t		maxexpire;
-    int                 class;
+    size_t              minsize = 0;
+    size_t              maxsize = 0;
+    time_t		minexpire = 0;
+    time_t		maxexpire = 0;
+    int                 class = 0;
     STORAGE_SUB         *sub = NULL;
     STORAGE_SUB         *prev = NULL;
     char		*options = 0;
     int			inbrace;
-    bool		exactmatch;
+    bool		exactmatch = false;
 
     /* if innconf isn't already read in, do so. */
     if (innconf == NULL) {
@@ -429,10 +440,10 @@ static bool SMreadconfig(void) {
 		    pattern = COPY(tok->name);
 		    break;
 		  case SMsize:
-		    minsize = atoi(p);
+		    minsize = strtoul(p, NULL, 10);
 		    if ((p = strchr(p, ',')) != NULL) {
 			p++;
-			maxsize = atoi(p);
+			maxsize = strtoul(p, NULL, 10);
 		    }
 		    break;
 		  case SMclass:

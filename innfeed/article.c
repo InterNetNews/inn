@@ -95,7 +95,8 @@ static bool artFreeContents (Article art) ;  /* Tell the Article to release
                                                 its contents buffer if
                                                 possible. */
 
-static void artUnmap (Article art, int size) ; /* munmap an mmap()ed article */
+static void artUnmap (Article art, size_t size) ; /* munmap an mmap()ed
+                                                     article */
 
 
   /*
@@ -466,7 +467,7 @@ static Buffer artGetContents (Article article)
 }
 
 
-static void artUnmap (Article article, int size) {
+static void artUnmap (Article article, size_t size) {
     
     if (article->arthandle)
 	SMfreearticle(article->arthandle);
@@ -510,7 +511,7 @@ static bool fillContents (Article article)
     char *p;
     static bool maxLimitNotified ;
     bool opened;
-    int articlesize = 0;
+    size_t articlesize = 0;
     char *buffer = NULL ;
     int amt = 0 ;
     size_t idx = 0, amtToRead ;
@@ -580,15 +581,15 @@ static bool fillContents (Article article)
 	TMRstop(TMR_READART);
 	return false;
     }
-    amtToRead = (size_t) articlesize ;
-    newBufferSize = (size_t) articlesize ;
+    amtToRead = articlesize ;
+    newBufferSize = articlesize ;
     
     if (article->arthandle || useMMap) {
 	if (article->arthandle)
 	    article->mMapping = article->arthandle->data;
 	else 
-	    article->mMapping = mmap(NULL, (size_t) articlesize,
-				     PROT_READ, MAP_SHARED, fd, 0);
+	    article->mMapping = mmap(NULL, articlesize, PROT_READ,
+                                     MAP_SHARED, fd, 0);
 	
 	if (article->mMapping == MAP_FAILED) {
 	    /* dunno, but revert to plain reading */
@@ -596,8 +597,8 @@ static bool fillContents (Article article)
             syswarn ("ME mmap failure %s", article->fname) ;
 	} else {
 	    article->contents = newBufferByCharP((char *)article->mMapping,
-						 (size_t) articlesize,
-						 (size_t) articlesize);
+						 articlesize,
+						 articlesize);
 	    buffer = bufferBase (article->contents) ;
 	    if ((p = strchr(buffer, '\n')) == NULL) {
 		article->articleOk = false;
@@ -649,9 +650,8 @@ static bool fillContents (Article article)
 	}
 	
 	if (article->mMapping && buffer != NULL) {               
-	    (void)memcpy(buffer, (char *) article->mMapping,
-			 (int) articlesize);
-	    artUnmap(article, (int) articlesize) ;
+	    memcpy(buffer, article->mMapping, articlesize);
+	    artUnmap(article, articlesize) ;
 	    amtToRead = 0;
 	}
 	
@@ -672,7 +672,7 @@ static bool fillContents (Article article)
 	}
 	
 	if (article->contents != NULL) {
-	    bufferSetDataSize (article->contents, (size_t) articlesize) ;
+	    bufferSetDataSize (article->contents, articlesize) ;
 	    
 	    if ((p = strchr(buffer, '\n')) == NULL) {                  
 		article->articleOk = false;

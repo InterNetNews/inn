@@ -326,7 +326,7 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
     int			timestamp;
     TOKEN               token;
     int                 fd;
-    int                 result;
+    ssize_t             result;
     ARTNUM		art;
 
     if (article.arrived == (time_t)0)
@@ -392,7 +392,8 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
     WritingFile.fd = fd;
     WritingFile.path = path;
     close_on_exec(fd, true);
-    if ((result = xwritev(fd, article.iov, article.iovcnt)) != article.len) {
+    result = xwritev(fd, article.iov, article.iovcnt);
+    if (result != (ssize_t) article.len) {
 	SMseterror(SMERR_UNDEFINED, NULL);
 	syslog(L_ERROR, "timecaf error writing %s %m", path);
 	token.type = TOKEN_EMPTY;

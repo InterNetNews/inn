@@ -577,10 +577,10 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
     unsigned long artnum;
     char *path, *linkpath, *dirname;
     int fd;
-    unsigned int i;
+    size_t used;
     char *nonwfarticle; /* copy of article converted to non-wire format */
-    int nonwflen, used;
-    size_t length;
+    unsigned int i;
+    size_t length, nonwflen;
     
     xrefhdr = article.groups;
     if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
@@ -635,7 +635,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	}
     }
     if (innconf->wireformat) {
-	if ((xwritev(fd, article.iov, article.iovcnt)) != article.len) {
+	if (xwritev(fd, article.iov, article.iovcnt) != (ssize_t) article.len) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    syslog(L_ERROR, "tradspool error writing %s %m", path);
 	    close(fd);
@@ -647,14 +647,14 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	    return token;
 	}
     } else {
-	onebuffer = (char *)xmalloc(article.len);
+	onebuffer = xmalloc(article.len);
 	for (used = i = 0 ; i < article.iovcnt ; i++) {
 	    memcpy(&onebuffer[used], article.iov[i].iov_base, article.iov[i].iov_len);
 	    used += article.iov[i].iov_len;
 	}
 	nonwfarticle = FromWireFmt(onebuffer, used, &nonwflen);
 	free(onebuffer);
-	if (write(fd, nonwfarticle, nonwflen) != nonwflen) {
+	if (write(fd, nonwfarticle, nonwflen) != (ssize_t) nonwflen) {
 	    DISPOSE(nonwfarticle);
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    syslog(L_ERROR, "tradspool error writing %s %m", path);
@@ -736,7 +736,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
     struct stat sb;
     ARTHANDLE *art;
     char *wfarticle;
-    int wflen;
+    size_t wflen;
 
     if (amount == RETR_STAT) {
 	if (access(path, R_OK) < 0) {
@@ -929,7 +929,7 @@ tradspool_cancel(TOKEN token) {
     unsigned int numxrefs;
     char *ng, *p;
     char *path, *linkpath;
-    int i;
+    unsigned int i;
     bool result = TRUE;
     unsigned long artnum;
     size_t length;
@@ -1046,7 +1046,7 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
     struct dirent *de;
     ARTHANDLE *art;
     unsigned long artnum;
-    int i;
+    unsigned int i;
     static TOKEN token;
     char **xrefs;
     char *xrefhdr, *ng, *p, *expires, *x;

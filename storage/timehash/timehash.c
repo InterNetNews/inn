@@ -119,7 +119,7 @@ TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class) {
     time_t              now;
     TOKEN               token;
     int                 fd;
-    int                 result;
+    ssize_t             result;
     int                 seq;
     int                 i;
 
@@ -165,7 +165,8 @@ TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class) {
 	return token;
     }
 
-    if ((result = xwritev(fd, article.iov, article.iovcnt)) != article.len) {
+    result = xwritev(fd, article.iov, article.iovcnt);
+    if (result != (ssize_t) article.len) {
 	SMseterror(SMERR_UNDEFINED, NULL);
 	syslog(L_ERROR, "timehash error writing %s %m", path);
 	close(fd);

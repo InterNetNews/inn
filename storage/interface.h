@@ -16,7 +16,7 @@ typedef struct {
 } SMATTRIBUTE;
 
 typedef struct {
-    char                *name;
+    const char          *name;
     unsigned char       type;
     bool                (*init)(SMATTRIBUTE *attr);
     TOKEN               (*store)(const ARTHANDLE article, const STORAGECLASS storageclass);
@@ -32,8 +32,8 @@ typedef struct {
 
 typedef struct __S_SUB__ {
     int                 type;        /* Index into storage_methods of the one to use */
-    int                 minsize;     /* Minimum size to send to this method */
-    int                 maxsize;     /* Maximum size to send to this method */
+    size_t              minsize;     /* Minimum size to send to this method */
+    size_t              maxsize;     /* Maximum size to send to this method */
     time_t		minexpire;   /* Minimum expire offset to send method */
     time_t		maxexpire;   /* Maximum expire offset to send method */
     int                 numpatterns; /* Number of patterns in patterns */

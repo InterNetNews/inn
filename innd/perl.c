@@ -330,7 +330,7 @@ XS(XS_INN_article)
     TOKEN       token;
     ARTHANDLE * art;
     char *      p;
-    int         len;
+    size_t      len;
 
     if (items != 1)
 	croak("Usage: INN::article(msgid)");
@@ -432,7 +432,7 @@ XS(XS_INN_head)
     TOKEN *     token;
     ARTHANDLE * art;
     char *      p;
-    int         len;
+    size_t      len;
 
     if (items != 1)
         croak("Usage: INN::head(msgid)");
