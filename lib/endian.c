@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <signal.h>
 #include <sys/types.h>
+#include <configdata.h>
 #include <clibrary.h>
 
 /*

@@ -247,7 +247,7 @@ void SetDefaults()
     innconf->logsitename = TRUE;
     innconf->extendeddbz = FALSE;
     innconf->nnrpdoverstats = FALSE;
-    innconf->storeonxref = FALSE;
+    innconf->storeonxref = TRUE;
     innconf->decnetdomain = NULL;
     innconf->backoff_auth = FALSE;
     innconf->backoff_db = NULL;

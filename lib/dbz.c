@@ -77,9 +77,9 @@ Limited can't tag warnings once per dbzinit() by Sang-yong Suh (May, 1998)
 #include <errno.h>
 #include <netinet/in.h>
 #include <sys/mman.h>
+#include <configdata.h>
 #include <clibrary.h>
 #include <md5.h>
-#include <configdata.h>
 #include <libinn.h>
 #include <macros.h>
 #include <dbz.h>
