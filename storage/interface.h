@@ -19,6 +19,7 @@ typedef struct {
     void                (*freearticle)(ARTHANDLE *article);
     BOOL                (*cancel)(TOKEN token);
     BOOL                (*ctl)(PROBETYPE type, TOKEN *token, void *value);
+    BOOL                (*flushcacheddata)(FLUSHTYPE type);
     void                (*shutdown)(void);
 } STORAGE_METHOD;
 

@@ -793,6 +793,16 @@ BOOL SMprobe(PROBETYPE type, TOKEN *token, void *value) {
     }
 }
 
+BOOL SMflushcacheddata(FLUSHTYPE type) {
+    int		i;
+
+    for (i = 0; i < NUM_STORAGE_METHODS; i++) {
+	if (method_data[i].initialized == INIT_DONE &&
+	    !storage_methods[i].flushcacheddata(type))
+	    syslog(L_ERROR, "SM can't flush cached data method '%s'", storage_methods[i].name);
+    }
+}
+
 void SMshutdown(void) {
     int                 i;
     STORAGE_SUB         *old;
