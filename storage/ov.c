@@ -14,7 +14,6 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
 #include <syslog.h>
 
@@ -911,6 +910,7 @@ static void ARTreadschema(void)
 {
     FILE			*F;
     char			*p;
+    char                        *path;
     ARTOVERFIELD		*fp;
     int				i;
     char			buff[SMBUF];
@@ -918,7 +918,9 @@ static void ARTreadschema(void)
     bool			foundxreffull = FALSE;
 
     /* Open file, count lines. */
-    if ((F = fopen(cpcatpath(innconf->pathetc, _PATH_SCHEMA), "r")) == NULL)
+    path = concatpath(innconf->pathetc, _PATH_SCHEMA);
+    F = fopen(path, "r");
+    if (F == NULL)
 	return;
     for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
 	continue;
@@ -950,11 +952,12 @@ static void ARTreadschema(void)
 	fp++;
     }
     ARTfieldsize = fp - ARTfields;
-    (void)fclose(F);
+    fclose(F);
     if (!foundxref || !foundxreffull) {
-	(void)fprintf(stderr, "'Xref:full' must be included in %s", cpcatpath(innconf->pathetc, _PATH_SCHEMA));
+	fprintf(stderr, "'Xref:full' must be included in %s", path);
 	exit(1);
     }
+    free(path);
 }
 
 /*
@@ -1016,12 +1019,13 @@ static char *OVERGetHeader(char *p, int field)
 static OVfindheaderindex() {
     FILE	*F;
     char	*active;
+    char        *path;
     int		i;
 
     if (ReadOverviewfmt)
 	return;
     if (innconf->groupbaseexpiry) {
-	ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
+	ACTIVE = concatpath(innconf->pathdb, _PATH_ACTIVE);
 	if ((active = ReadInFile(ACTIVE, (struct stat *)NULL)) == NULL) {
 	    (void)fprintf(stderr, "Can't read %s, %s\n",
 	    ACTIVE, strerror(errno));
@@ -1030,7 +1034,9 @@ static OVfindheaderindex() {
 	BuildGroups(active);
 	arts = NEW(char *, nGroups);
 	krps = NEW(enum KRP, nGroups);
-	F = fopen(cpcatpath(innconf->pathetc, _PATH_EXPIRECTL), "r");
+        path = concatpath(innconf->pathetc, _PATH_EXPIRECTL);
+	F = fopen(path, "r");
+        free(path);
 	if (!EXPreadfile(F)) {
 	    (void)fclose(F);
 	    (void)fprintf(stderr, "Format error in expire.ctl\n");
@@ -1189,7 +1195,7 @@ bool OVhisthasmsgid(char *data) {
 	OVfindheaderindex();
     }
     if (History == NULL) {
-	History = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
+	History = concatpath(innconf->pathdb, _PATH_HISTORY);
 	if (!dbzinit(History)) {
 	    syslog(L_ERROR, "OVhisthasmsgid: dbzinit failed '%s'", History);
 	    return FALSE;
