@@ -753,14 +753,14 @@ takethis(int i) {
     ARTHANDLE	*art;
     TOKEN	token;
 
+    if (!IsToken(stbuf[i].st_fname)) {
+	strel(i);
+	++STATmissing;
+	return FALSE; /* Not an error. Could be canceled or expired */
+    }
+    token = TextToToken(stbuf[i].st_fname);
     if (!stbuf[i].art) { /* should already be open but ... */
 	/* Open the article. */
-	if (!IsToken(stbuf[i].st_fname)) {
-	    strel(i);
-	    ++STATmissing;
-	    return FALSE; /* Not an error. Could be canceled or expired */
-	}
-	token = TextToToken(stbuf[i].st_fname);
 	if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
 	    strel(i);
 	    ++STATmissing;
@@ -768,6 +768,14 @@ takethis(int i) {
 	}
 	stbuf[i].art = NEW(ARTHANDLE, 1);
 	*stbuf[i].art = *art;
+    } else {
+	/* examine if the article still exists */
+	if ((art = SMretrieve(token, RETR_STAT)) == NULL) {
+	    strel(i);
+	    ++STATmissing;
+	    return FALSE; /* Not an error. Could be canceled or expired */
+	}
+	SMfreearticle(art);
     }
     /* send "takethis <ID>" to the other system */
     (void)sprintf(buff, "takethis %s", stbuf[i].st_id);
