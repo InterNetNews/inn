@@ -736,9 +736,12 @@ AC_MSG_CHECKING(for openssl)
 AC_MSG_RESULT($OPENSSL_DIR)
 if test "$OPENSSL_DIR" != "no"; then
 	SSL_INC="-I${OPENSSL_DIR}/include"
-	SSL_LIB="-L${OPENSSL_DIR}/lib -lssl -lcrypto"
 	SSL_BIN="${OPENSSL_DIR}/bin"
 	AC_DEFINE(HAVE_SSL)
+	LIB_RSAREF=""
+	AC_CHECK_LIB(rsaref, RSA_PKCS1_RSAref,
+	LIB_RSAREF="-lRSAglue -lrsaref",)
+	SSL_LIB="-L${OPENSSL_DIR}/lib -lssl -lcrypto ${LIB_RSAREF}"
 else
 	SSL_LIB=""
 	SSL_INC=""
