@@ -502,7 +502,7 @@ FormatUserName(pwp, node)
 #endif	/* !defined(DONT_MUNGE_GETENV) */
 
 
-#if	defined(DONT_MUNGE_GECOS)
+#ifndef DO_MUNGE_GECOS
     strncpy(outbuff, pwp->pw_gecos, SMBUF);
     outbuff[SMBUF - 1] = '\0';
 #else
@@ -536,7 +536,7 @@ FormatUserName(pwp, node)
         }
     }
     *out = '\0';
-#endif	/* defined(DONT_MUNGE_GECOS) */
+#endif /* DO_MUNGE_GECOS */
 
 #if	!defined(DONT_MUNGE_GETENV)
     }
