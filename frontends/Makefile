@@ -15,6 +15,7 @@ all:		$(ALL)
 install:	$D$(PATHBIN)/inews $D$(PATHBIN)/rnews \
 		$D$(PATHBIN)/ctlinnd $D$(PATHBIN)/getlist \
 		$D$(PATHBIN)/innconfval $D$(RNEWSPROGS)/c7unbatch \
+		$D$(RNEWSPROGS)/gunbatch \
 		$D$(RNEWSPROGS)/decode $D$(RNEWSPROGS)/encode \
 		$D$(PATHBIN)/sm
 
@@ -75,6 +76,8 @@ $D$(PATHBIN)/getlist:	getlist
 $D$(PATHBIN)/innconfval:	innconfval
 	$(LIBTOOL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
 $D$(RNEWSPROGS)/c7unbatch:	c7unbatch.sh
+	$(LIBTOOL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
+$D$(RNEWSPROGS)/gunbatch:	gunbatch.sh
 	$(LIBTOOL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
 $D$(RNEWSPROGS)/decode:		decode
 	$(LIBTOOL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@

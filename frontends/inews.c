@@ -853,7 +853,7 @@ CheckIncludedText(p, lines)
 	    i--;
 	    break;
 	}
-	if ((p = strchr(p + 1, '\n')) == NULL)
+	if ((p = strchr(p, '\n')) == NULL)
 	    break;
     }
     if ((i * 2 > lines) && (lines > 40)) {

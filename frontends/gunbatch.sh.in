@@ -1,0 +1,2 @@
+#! /bin/sh
+exec @GZIP@ -d -c
