@@ -6,8 +6,10 @@ top	= ../..
 CFLAGS	= $(GCFLAGS) -I..
 
 ALL	= tdx-util
-SOURCES = tdx-group.c tdx-util.c
-OBJECTS = tdx-group.o
+SOURCES = tdx-data.c tdx-group.c tdx-util.c
+OBJECTS = tdx-data.o tdx-group.o
+
+STORELIBS = $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
 
 .SUFFIXES: .lo
 
@@ -19,8 +21,8 @@ warnings:
 .c.o .c.lo:
 	$(LIBCC) $(CFLAGS) -c $*.c -o $@
 
-tdx-util: group.o tdx-util.o
-	$(LIBLD) $(LDFLAGS) -o $@ tdx-util.o $(OBJECTS) ../$(LIBINN) $(LIBS)
+tdx-util: tdx-util.o $(OBJECTS)
+	$(LIBLD) $(LDFLAGS) -o $@ tdx-util.o $(OBJECTS) $(STORELIBS)
 
 clobber clean:
 	rm -f *.o *.lo obj/*.o $(ALL)
