@@ -708,6 +708,7 @@ parse_parameter(config_group group, config_file file, char *key)
     token = token_next(file);
     if (token == TOKEN_STRING || token == TOKEN_QSTRING) {
         parameter param;
+        unsigned int line;
         char *value;
 
         /* Before storing the parameter, check to make sure that the next
@@ -715,6 +716,7 @@ parse_parameter(config_group group, config_file file, char *key)
            tried to set a parameter to a value containing spaces without
            quoting the value. */
         value = file->token.string;
+        line = file->line;
         token = token_next(file);
         switch (token) {
         default:
@@ -727,7 +729,8 @@ parse_parameter(config_group group, config_file file, char *key)
             param = xmalloc(sizeof(*param));
             param->key = key;
             param->raw_value = value;
-            param->line = file->line;
+            param->type = VALUE_UNKNOWN;
+            param->line = line;
             if (!hash_insert(group->params, key, param)) {
                 warn("%s:%u: duplicate parameter %s", file->filename,
                      file->line, key);
@@ -987,6 +990,7 @@ convert_string_quoted(parameter param, const char *file, void *result)
             }
         }
     }
+    *dest = '\0';
 
     /* The tokenizer already checked this for most cases but could miss the
        case where the final quote mark is escaped with a backslash. */
