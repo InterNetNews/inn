@@ -160,7 +160,7 @@ $D$(MAN5)/innfeed.conf.5:	innfeed.conf.5	   ; $(COPY) $? $@
 $D$(MAN5)/motd.news.5:		motd.news.5	   ; $(COPY) $? $@
 $D$(MAN5)/overview.ctl.5:	overview.ctl.5	   ; $(COPY) $? $@
 $D$(MAN5)/storage.ctl.5:	storage.ctl.5	   ; $(COPY) $? $@
-$D$(MAN5)/cycbuff.conf.5	cycbuff.conf.5     ; $(COPY) $? $@
+$D$(MAN5)/cycbuff.conf.5:	cycbuff.conf.5     ; $(COPY) $? $@
 
 $D$(MAN8)/actsync.8:		actsync.8	   ; $(COPY) $? $@
 $D$(MAN8)/archive.8:		archive.8          ; $(COPY) $? $@
