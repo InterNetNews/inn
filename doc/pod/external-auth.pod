@@ -1,0 +1,107 @@
+=head1 NNRPD External Authentication Support
+
+This is $Revision$ dated $Date$.
+
+A fundamental part of the readers.conf(5)-based authorization mechanism
+is the interface to external authenticator and resolver programs.  This
+interface is documented below.
+
+INN ships with a number of such programs (all written in C, although any
+language can be used).  Code for them can be found in F<authprogs/> of
+the source tree; the authenticators are installed to
+I<pathbin>/auth/passwd, and the resolvers are installed to
+I<pathbin>/auth/resolv.
+
+=head1 Reading information from nnrpd
+
+When nnrpd spawns an external auth program, it passes information on
+standard input as a sequence of "key: value" lines.  Each line ends with
+CRLF, and a line consisting of only "." indicates the end of the input.
+The order of the fields is not significant.  Additional fields not
+mentioned below may be included; this should not be cause for alarm.
+
+(For robustness as well as ease of debugging, it is probably wise to
+accept line endings consisting only of LF, and to treat EOF as
+indicating the end of the input even if "." has not been received.)
+
+=head2 For authenticators
+
+When nnrpd calls an authenticator, the lines it passes are
+
+    ClientAuthname: user\r
+    ClientPassword: pass\r
+
+where I<user> and I<pass> are the username and password provided by the
+client (e.g. using AUTHINFO).  In addition, nnrpd generally also passes
+the fields mentioned as intended for resolvers; it rare instances this
+data may be useful for authenticators.
+
+=head2 For resolvers
+
+When nnrpd calls a resolver, the lines it passes are
+
+    ClientHost: hostname\r
+    ClientIP: IP-address\r
+    ClientPort: port\r
+    LocalIP: IP-address\r
+    LocalPort: port\r
+    .\r
+
+where I<hostname> indicates a string representing the hostname if
+available, I<IP-address> is a numeric IP address (dotted-quad for IPv4,
+equivalent for IPv6 if appropriate), and I<port> is a numeric port
+number.  (The I<LocalIP> paramter may be useful for determining which
+interface was used for the incoming connection.)
+
+If information is not available, nnrpd will omit the corresponding
+fields.  In particular, this applies to the unusual situation of nnrpd
+not being connected to a socket; TCP-related information is not
+available for standard input.
+
+=head1 Returning information to nnrpd
+
+=head2 Exit status and signals
+
+The external auth program must exit with a status of C<0> to indicate
+success; any other exit status indicates failure.  (The non-zero exit
+value will be logged.)
+
+If the program dies due to catching a signal (for example, a
+segmentation fault occurs), this will be logged and treated as a
+failure.
+
+=head2 Returning a username and domain
+
+If the program succeeds, it may return a username string (optionally
+with a domain appended) by writing to standard output.  The line it
+should write is exactly:
+
+    user:username\r
+
+where I<username> is the string that nnrpd should use in matching
+readers.conf access blocks.
+
+There should be no extra spaces in lines sent from the hook to nnrpd;
+C<user:aidan> is read by nnrpd as a different username than C<user:
+aidan>.
+
+=head1 Error messages
+
+As mentioned above, errors can be indicated by a non-zero exit value, or
+termination due to an unhandled signal; both cases are logged by nnrpd.
+However, external auth programs may wish to log error messages
+separately.
+
+Although nnrpd will syslog() anything an external auth program writes to
+standard error, it is generally better to use the F<messages.h>
+functions, such as warn() and die().
+
+Please use the ckpasswd.c program as an example for any authenticators
+you write, and ident.c as an example for any resolvers.
+
+=head1 HISTORY
+
+Written by Aidan Cully for InterNetNews.  This documentation rewritten
+in POD by Jeffrey M. Vinocur <jeff@litech.org>.
+
+=cut
