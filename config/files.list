@@ -1,4 +1,0 @@
-;;  $Id$
-;;  List of InterNetNews files that are fed to subst.
-;;  Lines beginning with a semi-colon are comment lines.
-../include/configdata.h
