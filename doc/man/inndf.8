@@ -10,6 +10,9 @@ inndf \- Replacement for 'df | awk' in innwatch.ctl
 .I filesystem(s)
 \&|
 [
+.B \-n
+]
+[
 .B \-o
 ]
 .SH DESCRIPTION
@@ -33,6 +36,10 @@ doesn't sync, forks less, is less complicated, etc.
 .B \-i
 If the ``\-i'' flag is used, then the number of free inodes are reported
 instead of the number of free Kilobytes.
+.TP
+.B \-n
+If the ``\-n'' flag is used, then total number of stored overview data.
+The number counts different data even if article is crossposted.
 .TP
 .B \-o
 If the ``\-o'' flag is used, then overview space usage are reported as
