@@ -170,6 +170,10 @@ extern void	setproctitle();
 #define	IOV_MAX	1024
 #endif
 
+#if defined(__bsdi__)
+#define IOV_MAX 1024
+#endif
+
 #if defined(_nec_ews)
 #define IOV_MAX 16
 #endif
@@ -180,6 +184,10 @@ extern void	setproctitle();
 
 #if defined(sgi) && !defined(IOV_MAX)
 #define IOV_MAX 16
+#endif
+
+#if ! defined(IOV_MAX)
+#define IOV_MAX 16		/* 16 is the lowest value known for any OS */
 #endif
 
 #endif
