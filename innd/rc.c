@@ -469,19 +469,6 @@ RCreader(CHANNEL *cp)
 	return;
     }
 
-    /*
-    ** Clear any IP_OPTIONS, including source routing, on the socket
-    */
-    /* FIXME RCfix_options breaks IPv6 sockets, at least on Linux -lutchann */
-#ifndef HAVE_INET6
-    if (RCfix_options(fd, &remote) != 0) {
-	/* shouldn't happen, but we're bit paranoid at this point */
-	if (close(fd) < 0)
-	    syslog(L_ERROR, "%s cant close %d %m", LogName, fd);
-	return;
-    }
-#endif
-
     /* If RemoteTimer is not zero, then check the limits on incoming
        connections on a total and per host basis.
 
