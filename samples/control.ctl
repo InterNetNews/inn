@@ -289,7 +289,7 @@ rmgroup:bc_van_usenet@fastmail.ca:bc.*:doit
 newgroup:news@*netuse.de:bda.*:doit
 rmgroup:news@*netuse.de:bda.*:doit
 
-## BE  (Belgique/Belgie/Belgien/Belgium)
+## BE (Belgique/Belgie/Belgien/Belgium)
 # Contact: be-hierarchy-admin@usenet.be
 # URL: http://usenet.be/
 # Key URL: http://usenet.be/be.announce.newgroups.asc
@@ -550,7 +550,7 @@ rmgroup:miller@cpcuiia.org:cpcuiia.*:doit
 newgroup:*@*:cu.*:mail
 rmgroup:*@*:cu.*:doit
 
-## CZ newsgroups (Czech Republic)
+## CZ (Czech Republic)
 # URL: ftp://ftp.vslib.cz/pub/news/config/cz/newsgroups (text)
 # URL: http://www.ces.net/cgi-bin/newsgroups.p?cz (HTML)
 checkgroups:petr.kolar@vslib.cz:cz.*:mail
@@ -637,16 +637,15 @@ rmgroup:admin@england.news-admin.org:england.*:verify-england-usenet
 checkgroups:admin@england.news-admin.org:england.*:verify-england-usenet
 
 ## ES (Spain)
-# Contact: Daniel.Diaz@rediris.es
+# Contact: david.martinez@rediris.es
 # URL: http://www.rediris.es/netnews/infonews/config.es.html
 # URL: http://news.rediris.es/~moderador/grupos/newsgroups.es
-# Key fingerprint = 3B 63 18 6F 83 EA 89 82 95 1B 7F 8D B6 ED DD 87
 # *PGP*   See comment at top of file.
 newgroup:*:es.*:drop
 rmgroup:*:es.*:drop
-checkgroups:moderador@news.rediris.es:es.*:doit
-newgroup:moderador@news.rediris.es:es.*:verify-es.news
-rmgroup:moderador@news.rediris.es:es.*:verify-es.news
+checkgroups:moderador@news.rediris.es:es.*:verify-es.news.anuncios
+newgroup:moderador@news.rediris.es:es.*:verify-es.news.anuncios
+rmgroup:moderador@news.rediris.es:es.*:verify-es.news.anuncios
 
 ## ESP (Spanish-language newsgroups)
 # Contact: <mod-ena@ennui.org>
@@ -881,6 +880,11 @@ rmgroup:*@*:ibmnet.*:doit
 # For local use only, contact the above address for information.
 newgroup:*@*:iconz.*:mail
 rmgroup:*@*:iconz.*:doit
+
+## IDOCTRA (Idoctra Translation Software, Translation Discussion)
+# Contact: support@idoctra.com
+newgroup:support@idoctra.com:idoctra.*:doit
+rmgroup:support@idoctra.com:idoctra.*:doit
 
 ## IE (Ireland)
 # Contact: control@usenet.ie
@@ -1557,7 +1561,11 @@ rmgroup:news@punk.net:slo.*:doit
 newgroup:news@tcp.co.uk:solent.*:doit
 rmgroup:news@tcp.co.uk:solent.*:doit
 
-## StarOffice (StarOffice business suite, Sun Microsystems, Inc.)
+## SPOKANE (Spokane, Washington, USA)
+newgroup:usenet@news.spokane.wa.us:spokane.*:doit
+rmgroup:usenet@news.spokane.wa.us:spokane.*:doit
+
+## STAROFFICE (StarOffice business suite, Sun Microsystems, Inc.)
 # Contact: news@stardivision.de
 # URL: http://www.sun.com/products/staroffice/newsgroups.html
 # Key fingerprint = F6 6A 5C 57 77 1F 63 26  F2 43 02 41 75 2A 04 1C
@@ -1751,10 +1759,9 @@ newgroup:newsadmin@news.uoregon.edu:uo.*:doit
 rmgroup:newsadmin@news.uoregon.edu:uo.*:doit
 
 ## US (United States of America)
-# *PGP*   See comment at top of file.
-checkgroups:usadmin@wwa.com:us.*:mail
-newgroup:usadmin@wwa.com:us.*:doit
-rmgroup:usadmin@wwa.com:us.*:doit
+checkgroups:uscontrol@earthlink.net:us.*:mail
+newgroup:uscontrol@earthlink.net:us.*:doit
+rmgroup:uscontrol@earthlink.net:us.*:doit
 
 ## UT (University of Toronto, Canada)
 # newgroup:news@ecf.toronto.edu:ut.*:doit
