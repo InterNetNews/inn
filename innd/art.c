@@ -520,7 +520,6 @@ ARTstore(CHANNEL *cp)
       /* body begins at last iov */
       headersize = data->BytesValue +
 	Article->Data + data->Body - (char *) iov[i].iov_base;
-      break;
     }
     data->BytesValue += iov[i].iov_len;
   }
