@@ -89,7 +89,7 @@ STATIC BOOL CNFSBreakToken(TOKEN token, char *cycbuffname,
     INT32_T	int32;
 
     if (cycbuffname == NULL || offset == NULL || cycnum == NULL) {
-	syslog(L_ERROR, "%s: BreakToken: invalid argument",
+	syslog(L_ERROR, "%s: BreakToken: invalid argument %s",
 	       LocalLogName, cycbuffname);
 	SMseterror(SMERR_INTERNAL, "BreakToken: invalid argument");
 	return FALSE;
@@ -380,7 +380,7 @@ STATIC BOOL CNFSparse_part_line(char *l) {
   len = strtoul(l, NULL, 10) * (CYCBUFF_OFF_T)1024;	/* This value in KB in decimal */
   if (S_ISREG(sb.st_mode) && len != sb.st_size) {
     if (sizeof(CYCBUFFEXTERN) > sb.st_size) {
-      syslog(L_NOTICE, "%s: length must be at least '%ld' for '%s' cycbuff(%ld bytes)",
+      syslog(L_NOTICE, "%s: length must be at least '%lu' for '%s' cycbuff(%ld bytes)",
 	LocalLogName, sizeof(CYCBUFFEXTERN), cycbuff->name, sb.st_size);
       DISPOSE(cycbuff);
       return FALSE;
@@ -657,8 +657,8 @@ STATIC BOOL CNFSinit_disks(CYCBUFF *cycbuff) {
 	 mmap((caddr_t) 0, cycbuff->minartoffset, SMopenmode ? (PROT_READ | PROT_WRITE) : PROT_READ,
 	      MAP_SHARED, fd, (off_t) 0)) == (MMAP_PTR) -1 || errno != 0) {
 	syslog(L_ERROR,
-	       "%s: CNFSinitdisks: mmap for %s offset %d len %d failed: %m",
-	       LocalLogName, cycbuff->path, 0, cycbuff->minartoffset);
+	       "%s: CNFSinitdisks: mmap for %s offset %d len %ld failed: %m",
+	       LocalLogName, cycbuff->path, 0, (long) cycbuff->minartoffset);
 	return FALSE;
     }
     if (oneshot)
@@ -736,7 +736,7 @@ STATIC BOOL CNFSread_config(void) {
     if ((config = ReadInFile(cpcatpath(innconf->pathetc, _PATH_CYCBUFFCONFIG),
 				(struct stat *)NULL)) == NULL) {
 	syslog(L_ERROR, "%s: cannot read %s", LocalLogName,
-		cpcatpath(innconf->pathetc, _PATH_CYCBUFFCONFIG), NULL);
+		cpcatpath(innconf->pathetc, _PATH_CYCBUFFCONFIG));
 	DISPOSE(config);
 	return FALSE;
     }
@@ -1025,7 +1025,7 @@ BOOL cnfs_init(SMATTRIBUTE *attr) {
 	pagesize = 16384;
 #endif
 	if ((pagesize > CNFS_HDR_PAGESIZE) || (CNFS_HDR_PAGESIZE % pagesize)) {
-	    syslog(L_ERROR, "%s: CNFS_HDR_PAGESIZE (%d) is not a multiple of pagesize (%d)", LocalLogName, CNFS_HDR_PAGESIZE, pagesize);
+	    syslog(L_ERROR, "%s: CNFS_HDR_PAGESIZE (%d) is not a multiple of pagesize (%ld)", LocalLogName, CNFS_HDR_PAGESIZE, pagesize);
 	    SMseterror(SMERR_INTERNAL, "CNFS_HDR_PAGESIZE not multiple of pagesize");
 	    return FALSE;
 	}
@@ -1232,8 +1232,8 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     if ((cycbuff = CNFSgetcycbuffbyname(cycbuffname)) == NULL) {
 	SMseterror(SMERR_NOENT, NULL);
 	if (!nomessage) {
-	    syslog(L_ERROR, "%s: cnfs_retrieve: token %s: bogus cycbuff name: %s:0x%s:%ld",
-	       LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
+	    syslog(L_ERROR, "%s: cnfs_retrieve: token %s: bogus cycbuff name: %s:0x%s:%u",
+	       LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), (unsigned int) cycnum);
 	    nomessage = TRUE;
 	}
 	return NULL;
@@ -1270,16 +1270,16 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     */
     if (CNFSseek(cycbuff->fd, offset, SEEK_SET) < 0) {
         SMseterror(SMERR_UNDEFINED, "CNFSseek failed");
-        syslog(L_ERROR, "%s: could not lseek token %s %s:0x%s:%ld: %m",
-		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
+        syslog(L_ERROR, "%s: could not lseek token %s %s:0x%s:%u: %m",
+		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), (unsigned int) cycnum);
         DISPOSE(art);
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
         return NULL;
     }
     if (read(cycbuff->fd, &cah, sizeof(cah)) != sizeof(cah)) {
         SMseterror(SMERR_UNDEFINED, "read failed");
-        syslog(L_ERROR, "%s: could not read token %s %s:0x%s:%ld: %m",
-		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
+        syslog(L_ERROR, "%s: could not read token %s %s:0x%s:%u: %m",
+		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), (unsigned int) cycnum);
         DISPOSE(art);
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
         return NULL;
@@ -1306,8 +1306,8 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     if (offset > cycbuff->len - CNFS_BLOCKSIZE - ntohl(cah.size) - 1) {
         if (!SMpreopen) {
 	    SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
-	    syslog(L_ERROR, "%s: could not match article size token %s %s:0x%s:%ld: %ld",
-		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum, ntohl(cah.size));
+	    syslog(L_ERROR, "%s: could not match article size token %s %s:0x%s:%u: %u",
+		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), (unsigned int) cycnum, (unsigned int) ntohl(cah.size));
 	    DISPOSE(art);
 	    CNFSshutdowncycbuff(cycbuff);
 	    return NULL;
@@ -1329,8 +1329,8 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	strcpy(buf2, CNFSofft2hex(middle, FALSE));
 	strcpy(buf3, CNFSofft2hex(limit, FALSE));
 	SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER fudge size overflow");
-	syslog(L_ERROR, "%s: fudge size overflows bitmaps %s %s:0x%s:0x%s:0x%s: %ld",
-	LocalLogName, TokenToText(token), cycbuffname, buf1, buf2, buf3, ntohl(cah.size));
+	syslog(L_ERROR, "%s: fudge size overflows bitmaps %s %s:0x%s:0x%s:0x%s: %u",
+	LocalLogName, TokenToText(token), cycbuffname, buf1, buf2, buf3, (unsigned int) ntohl(cah.size));
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	DISPOSE(art);
 	return NULL;
@@ -1368,8 +1368,8 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	pagefudge = 0;
 	if (read(cycbuff->fd, private->base, ntohl(cah.size)) < 0) {
 	    SMseterror(SMERR_UNDEFINED, "read failed");
-	    syslog(L_ERROR, "%s: could not read token %s %s:0x%s:%ld: %m",
-		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
+	    syslog(L_ERROR, "%s: could not read token %s %s:0x%s:%u: %m",
+		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), (unsigned int) cycnum);
 	    DISPOSE(private->base);
 	    DISPOSE(art->private);
 	    DISPOSE(art);

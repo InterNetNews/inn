@@ -706,7 +706,7 @@ STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, 
     } else {
 	base = ge->base;
 	if (ge->base > artnum) {
-	    syslog(L_ERROR, "tradindexed: could not add %s:%d, base == %d", gh->group, artnum, ge->base);
+	    syslog(L_ERROR, "tradindexed: could not add %s:%d, base == %lu", gh->group, artnum, ge->base);
 	    return FALSE;
 	}
     }

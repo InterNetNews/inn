@@ -188,7 +188,7 @@ AddNG(char *ng, unsigned long number) {
 			nextnode = &curnode->left;
 		    } else {
 			/* Error, same number is already in NGtree (shouldn't happen!) */
-			syslog(L_ERROR, "tradspool: AddNG: duplicate newsgroup number in NGtree: %d(%s)", number, p);
+			syslog(L_ERROR, "tradspool: AddNG: duplicate newsgroup number in NGtree: %lu(%s)", number, p);
 			return;
 		    }
 		}

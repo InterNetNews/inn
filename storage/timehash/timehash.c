@@ -156,7 +156,7 @@ TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class) {
     }
     if (i == 0x10000) {
 	SMseterror(SMERR_UNDEFINED, NULL);
-	syslog(L_ERROR, "timehash: all sequence numbers for the time and class are reserved %d %d", now, class);
+	syslog(L_ERROR, "timehash: all sequence numbers for the time and class are reserved %ld %d", now, class);
 	token.type = TOKEN_EMPTY;
 	DISPOSE(path);
 	return token;

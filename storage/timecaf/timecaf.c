@@ -355,7 +355,7 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
 		    *p = '/';
 		    fd = CAFOpenArtWrite(path, &art, TRUE, article.len);
 		    if (fd < 0) {
-			syslog(L_ERROR, "timecaf: could not OpenArtWrite %s/%d, %s", path, art, CAFErrorStr());
+			syslog(L_ERROR, "timecaf: could not OpenArtWrite %s/%lu, %s", path, art, CAFErrorStr());
 			SMseterror(SMERR_UNDEFINED, NULL);
 			DISPOSE(path);
 			token.type = TOKEN_EMPTY;
@@ -363,7 +363,7 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
 		    }
 		} 
 	    } else {
-		syslog(L_ERROR, "timecaf: could not OpenArtWrite %s/%d, %s", path, art, CAFErrorStr());
+		syslog(L_ERROR, "timecaf: could not OpenArtWrite %s/%lu, %s", path, art, CAFErrorStr());
 		SMseterror(SMERR_UNDEFINED, NULL);
 		DISPOSE(path);
 		token.type = TOKEN_EMPTY;
@@ -379,7 +379,7 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
 	path = WritingFile.path;
 
 	if (CAFStartWriteFd(fd, &art, article.len) < 0) {
-	    syslog(L_ERROR, "timecaf: could not OpenArtWrite %s/%d, %s", path, art, CAFErrorStr());
+	    syslog(L_ERROR, "timecaf: could not OpenArtWrite %s/%lu, %s", path, art, CAFErrorStr());
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    DISPOSE(path);
 	    token.type = TOKEN_EMPTY;

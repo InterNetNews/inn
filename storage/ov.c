@@ -301,7 +301,7 @@ BOOL OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
         if (artnum <= 0)
             continue;
 
-        sprintf(overdata, "%d\t", artnum);
+        sprintf(overdata, "%lu\t", artnum);
         i = strlen(overdata);
         memcpy(overdata + i, data, len);
         i += len;

@@ -364,7 +364,7 @@ STATIC BOOL ovbuffread_config(void) {
   if ((config = ReadInFile(cpcatpath(innconf->pathetc, _PATH_OVBUFFCONFIG),
 	(struct stat *)NULL)) == NULL) {
     syslog(L_ERROR, "%s: cannot read %s", LocalLogName,
-	cpcatpath(innconf->pathetc, _PATH_OVBUFFCONFIG), NULL);
+	cpcatpath(innconf->pathetc, _PATH_OVBUFFCONFIG));
     DISPOSE(config);
     return FALSE;
   }
@@ -551,8 +551,8 @@ STATIC BOOL ovbuffinit_disks(void) {
 	 mmap((caddr_t) 0, ovbuff->base, ovbuffmode & OV_WRITE ? (PROT_READ | PROT_WRITE) : PROT_READ,
 	      MAP_SHARED, ovbuff->fd, (off_t) 0)) == (MMAP_PTR) -1) {
       syslog(L_ERROR,
-	       "%s: ovinitdisks: mmap for %s offset %d len %d failed: %m",
-	       LocalLogName, ovbuff->path, 0, ovbuff->base);
+	       "%s: ovinitdisks: mmap for %s offset %d len %ld failed: %m",
+	       LocalLogName, ovbuff->path, 0, (long) ovbuff->base);
       return FALSE;
     }
     rpx = (OVBUFFHEAD *)ovbuff->bitfield;
@@ -596,8 +596,8 @@ STATIC BOOL ovbuffinit_disks(void) {
     } else {
 	ovbuff->totalblk = (ovbuff->len - ovbuff->base)/OV_BLOCKSIZE;
 	if (ovbuff->totalblk < 1) {
-	  syslog(L_ERROR, "%s: too small length '%d' for buffindexed %s",
-	    LocalLogName, ovbuff->len, ovbuff->path);
+	  syslog(L_ERROR, "%s: too small length '%ld' for buffindexed %s",
+	    LocalLogName, (long) ovbuff->len, ovbuff->path);
 	  ovlock(ovbuff, LOCK_UNLOCK);
 	  return FALSE;
 	}
@@ -874,7 +874,7 @@ BOOL buffindexed_open(int mode) {
     pagesize = 16384;
 #endif
     if ((pagesize > OV_HDR_PAGESIZE) || (OV_HDR_PAGESIZE % pagesize)) {
-      syslog(L_ERROR, "%s: OV_HDR_PAGESIZE (%d) is not a multiple of pagesize (%d)", LocalLogName, OV_HDR_PAGESIZE, pagesize);
+      syslog(L_ERROR, "%s: OV_HDR_PAGESIZE (%d) is not a multiple of pagesize (%ld)", LocalLogName, OV_HDR_PAGESIZE, pagesize);
       return FALSE;
     }
   }
@@ -1272,7 +1272,7 @@ STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
       return FALSE;
     }
     if ((ovbuff = getovbuff(ov)) == NULL) {
-      syslog(L_ERROR, "%s: ovaddrec could not get ovbuff block for new, %d, %d, %d", LocalLogName, ov.index, ov.blocknum, artnum);
+      syslog(L_ERROR, "%s: ovaddrec could not get ovbuff block for new, %d, %d, %ld", LocalLogName, ov.index, ov.blocknum, artnum);
       return FALSE;
     }
     ge->curdata = ov;
@@ -1291,7 +1291,7 @@ STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
       return FALSE;
     }
     if ((ovbuff = getovbuff(ov)) == NULL) {
-      syslog(L_ERROR, "%s: ovaddrec could not get ovbuff block for new, %d, %d, %d", LocalLogName, ov.index, ov.blocknum, artnum);
+      syslog(L_ERROR, "%s: ovaddrec could not get ovbuff block for new, %d, %d, %ld", LocalLogName, ov.index, ov.blocknum, artnum);
       return FALSE;
     }
     ge->curdata = ov;
