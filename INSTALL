@@ -241,7 +241,7 @@ Installing INN
         through a network connection and don't need a local setgid inews to
         post. Installing inews setgid was the default prior to INN 2.3.
 
-    --with-ssl=PATH
+    --with-openssl=PATH
         Enables SSL for news reading, which means get SSL or TLS encrypted
         NNRP between your server and newsreaders. Sets the path of the
         installed directory of OpenSSL. You must make a certificate and
