@@ -76,9 +76,6 @@
  **************************************************************/
 
 #include "config.h"
-
-#if !defined(HAVE_SNPRINTF) || !defined(HAVE_VSNPRINTF)
-
 #include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
@@ -829,5 +826,3 @@ int main (void)
   printf ("%d tests failed out of %d.\n", fail, num);
 }
 #endif /* SNPRINTF_TEST */
-
-#endif /* !HAVE_SNPRINTF */
