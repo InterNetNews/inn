@@ -58,7 +58,7 @@ main(void)
     int reported, i;
     char buffer[1024];
     char *word;
-    char *test, *testing, *strange, *change;
+    char *test, *testing, *strange, *change, *foo, *bar;
 
     struct wordref wordrefs[4] = {
         { "test", 0 }, { "testing", 0 }, { "change", 0 }, { NULL, 0 }
@@ -68,13 +68,15 @@ main(void)
     testing = xstrdup("testing");
     strange = xstrdup("strange");
     change = xstrdup("change");
+    foo = xstrdup("foo");
+    bar = xstrdup("bar");
 
-    puts("26");
+    puts("33");
     hash = hash_create(4, hash_string, string_key, string_equal,
                        string_delete);
     ok(1, hash != NULL);
     if (hash == NULL)
-        abort();
+        die("Unable to create hash, cannot continue");
 
     ok(2, hash_insert(hash, "test", test));
     ok(3, hash_collisions(hash) == 0);
@@ -110,16 +112,31 @@ main(void)
             printf("not ");
             reported = 1;
         }
-    printf("ok 23\n");
+    puts("ok 23");
     ok(24, wordrefs[3].count == 0);
 
+    hash_free(hash);
+
+    /* Test hash creation with an odd size.  This previously could result
+       in the wrong table size being allocated. */
+    hash = hash_create(5, hash_string, string_key, string_equal,
+                       string_delete);
+    ok(25, hash != NULL);
+    if (hash == NULL)
+        die("Unable to create hash, cannot continue");
+    ok(26, hash_insert(hash, "test", test));
+    ok(27, hash_insert(hash, "testing", testing));
+    ok(28, hash_insert(hash, "strange", strange));
+    ok(29, hash_insert(hash, "change", change));
+    ok(30, hash_insert(hash, "foo", foo));
+    ok(31, hash_insert(hash, "bar", bar));
     hash_free(hash);
 
     words = fopen("/usr/dict/words", "r");
     if (words == NULL)
         words = fopen("/usr/share/dict/words", "r");
     if (words == NULL) {
-        puts("ok 25 # skip\nok 26 # skip");
+        puts("ok 32 # skip\nok 33 # skip");
         exit(0);
     }
 
@@ -139,7 +156,7 @@ main(void)
             }
         }
     }
-    puts("ok 25");
+    puts("ok 32");
 
     if (fseek(words, 0, SEEK_SET) < 0)
         sysdie("Unable to rewind words file");
@@ -157,7 +174,7 @@ main(void)
             }
         }
     }
-    puts("ok 26");
+    puts("ok 33");
 
     return 0;
 }
