@@ -505,6 +505,15 @@ This is aimed mainly at stopping abuse of posting
 to moderated newsgroups, whereby those headers are added by the client
 and honoured by the mailer when mailed to the moderator.
 This is boolean value and the default is ``false''.
+.TP
+.I nnrpperlauth
+This enables
+.IR nnrpd (8)
+to authenticate reader with external perl hook.
+If this is enabled, normal authentication with
+.IR nnrp.access (5)
+will not be used.
+This is boolean value and the default is ``false''.
 .PP
 The following parameters are used only by
 .I innd.
