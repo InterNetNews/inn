@@ -10,6 +10,7 @@ mlockfile
 newsresp
 pathinfo
 pullart
+respool
 showtoken
 stathist
 thdexpire
