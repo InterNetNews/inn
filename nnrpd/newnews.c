@@ -169,8 +169,6 @@ process_newnews(char *group, bool AllGroups, time_t date)
 		    continue;
 		p = GetXref(art);
 		SMfreearticle(art);
-		if (p == NULL)
-		    continue;
 	    } else {
 		if (PERMaccessconf->nnrpdcheckart && 
 		    !ARTinstorebytoken(token))
@@ -179,6 +177,8 @@ process_newnews(char *group, bool AllGroups, time_t date)
 		 * hosting isn't relevant */
 		p = overview_getheader(vector, overhdr_xref, OVextra);
 	    }
+	    if (p == NULL)
+		continue;
 	    xrefs = GetGroups(p);
 	    free(p);
 	    if (xrefs == NULL)
