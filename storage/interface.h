@@ -8,6 +8,7 @@
 
 #include <configdata.h>
 #include <storage.h>
+#include <stdio.h>
 
 typedef struct {
     BOOL	selfexpire;
@@ -25,6 +26,7 @@ typedef struct {
     BOOL                (*cancel)(TOKEN token);
     BOOL                (*ctl)(PROBETYPE type, TOKEN *token, void *value);
     BOOL                (*flushcacheddata)(FLUSHTYPE type);
+    void                (*printfiles)(FILE *, TOKEN, char **xref, int ngroups);
     void                (*shutdown)(void);
 } STORAGE_METHOD;
 

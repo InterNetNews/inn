@@ -910,6 +910,18 @@ BOOL SMflushcacheddata(FLUSHTYPE type) {
     return TRUE;
 }
 
+void SMprintfiles(FILE *file, TOKEN token, char **xref, int ngroups) {
+    if (method_data[typetoindex[token.type]].initialized == INIT_FAIL)
+	return;
+    if (method_data[typetoindex[token.type]].initialized == INIT_NO
+        && !InitMethod(typetoindex[token.type])) {
+	SMseterror(SMERR_UNINIT, NULL);
+	syslog(L_ERROR, "SM can't print files for article with uninitialized method");
+	return;
+    }
+    storage_methods[typetoindex[token.type]].printfiles(file, token, xref, ngroups);
+}
+
 void SMshutdown(void) {
     int                 i;
     STORAGE_SUB         *old;
