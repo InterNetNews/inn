@@ -16,6 +16,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include <errno.h>
 
 #include "inn/buffer.h"
 #include "libinn.h"
@@ -38,6 +39,18 @@ buffer_new(void)
 
 
 /*
+**  Free a buffer.
+*/
+void
+buffer_free(struct buffer *buffer)
+{
+    if (buffer->data != NULL)
+        free(buffer->data);
+    free(buffer);
+}
+
+
+/*
 **  Resize a buffer to be at least as large as the provided second argument.
 **  Resize buffers to multiples of 1KB to keep the number of reallocations to
 **  a minimum.  Refuse to resize a buffer to make it smaller.
@@ -49,6 +62,21 @@ buffer_resize(struct buffer *buffer, size_t size)
         return;
     buffer->size = (size + 1023) & ~1023UL;
     buffer->data = xrealloc(buffer->data, buffer->size);
+}
+
+
+/*
+**  Compact a buffer by moving the data between buffer->used and buffer->left
+**  to the beginning of the buffer, overwriting the already-consumed data.
+*/
+void
+buffer_compact(struct buffer *buffer)
+{
+    if (buffer->used == 0)
+        return;
+    if (buffer->left != 0)
+        memmove(buffer->data, buffer->data + buffer->used, buffer->left);
+    buffer->used = 0;
 }
 
 
@@ -96,4 +124,53 @@ buffer_swap(struct buffer *one, struct buffer *two)
     tmp = *one;
     *one = *two;
     *two = tmp;
+}
+
+
+/*
+**  Find a given string in the unconsumed data in buffer.  We know that all
+**  the data prior to start (an offset into the space between buffer->used and
+**  buffer->left) has already been searched.  Returns the offset of the string
+**  (with the same meaning as start) in offset if found, and returns true if
+**  the terminator is found and false otherwise.
+*/
+bool
+buffer_find_string(struct buffer *buffer, const char *string, size_t start,
+                   size_t *offset)
+{
+    char *terminator, *data;
+    size_t length;
+
+    length = strlen(string);
+    do {
+        data = buffer->data + buffer->used + start;
+        terminator = memchr(data, string[0], buffer->left - start);
+        if (terminator == NULL)
+            return false;
+        start = (terminator - buffer->data) - buffer->used;
+        if (buffer->left - start < length)
+            return false;
+        start++;
+    } while (memcmp(terminator, string, length) != 0);
+    *offset = start - 1;
+    return true;
+}
+
+
+/*
+**  Read from a file descriptor into a buffer, up to the available space in
+**  the buffer, and return the number of characters read.
+*/
+ssize_t
+buffer_read(struct buffer *buffer, int fd)
+{
+    ssize_t count;
+
+    do {
+        size_t used = buffer->used + buffer->left;
+        count = read(fd, buffer->data + used, buffer->size - used);
+    } while (count == -1 && (errno == EAGAIN || errno == EINTR));
+    if (count > 0)
+        buffer->left += count;
+    return count;
 }
