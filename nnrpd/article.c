@@ -908,7 +908,7 @@ void CMDxover(int ac, char *av[])
 	cache_add(HashMessageID(r), token);
 	free(r);
 	if (VirtualPathlen > 0 && overhdr_xref != -1) {
-	    if ((overhdr_xref + 1) >= vector->count)
+	    if ((size_t)(overhdr_xref + 1) >= vector->count)
 		continue;
 	    p = vector->strings[overhdr_xref] + sizeof("Xref: ") - 1;
 	    while ((p < data + len) && *p == ' ')

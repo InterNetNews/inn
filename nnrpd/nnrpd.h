@@ -278,6 +278,7 @@ extern bool PY_use_dynamic;
 
 int PY_authenticate(char *path, char *Username, char *Password, char *errorstring, char *newUser);
 void PY_access(char* path, struct vector *access_vec, char *Username);
+void PY_close_python(void);
 int PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message);
 void PY_dynamic_init (char* file);
 #endif	/* DO_PYTHON */

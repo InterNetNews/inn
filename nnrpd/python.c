@@ -145,7 +145,7 @@ int PY_authenticate(char* file, char *Username, char *Password, char *errorstrin
     PyDict_SetItemString(PYauthinfo, PYTHONpass, PYauthitem[authnum++]);
 
     /* Now invoke authenticate method and see if it likes this user */
-    result = PyObject_CallFunction(proc, "O", PYauthinfo);
+    result = PyObject_CallFunction(proc, (char *) "O", PYauthinfo);
 
     /* Check the response */
     if (result == NULL || !PyTuple_Check(result) 
@@ -277,7 +277,7 @@ void PY_access(char* file, struct vector *access_vec, char *Username) {
     /*
      * Now invoke newsgroup access method
      */
-    result = PyObject_CallFunction(proc, "O", PYauthinfo);
+    result = PyObject_CallFunction(proc, (char *) "O", PYauthinfo);
 
     /* Check the response */
     if (result == NULL || result == Py_None || !PyDict_Check(result)) {
@@ -349,7 +349,7 @@ void PY_dynamic_init (char* file) {
 ** Return negative value if dynamic method is not defined.
 */
 int PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message) {
-    PyObject	*result, *item, *proc;
+    PyObject	*result, *proc;
     char	*string, *temp;
     int		authnum;
     int		i;
@@ -397,7 +397,8 @@ int PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_messa
     PyDict_SetItemString(PYauthinfo, PYTHONpass, PYauthitem[authnum++]);
 
     /* Assign authentication type */
-    PYauthitem[authnum] = PyBuffer_FromMemory(PostFlag ? "post" : "read", 4);
+    PYauthitem[authnum] =
+        PyBuffer_FromMemory((char *)(PostFlag ? "post" : "read"), 4);
     PyDict_SetItemString(PYauthinfo, PYTHONtype, PYauthitem[authnum++]);
  
     /* Newsgroup user tries to access */
@@ -408,12 +409,12 @@ int PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_messa
      * Now invoke newsgroup dynamic access method and see if
      * it likes this user to access this newsgroup.
      */
-    result = PyObject_CallFunction(proc, "O", PYauthinfo);
+    result = PyObject_CallFunction(proc, (char *) "O", PYauthinfo);
 
     /* Check the response */
     if (result == NULL || (result != Py_None && !PyString_Check(result)))
     {
-        syslog(L_ERROR, "python dyanmic method (%s access) returned wrong result: %s", PostFlag ? "post" : "read", result);
+        syslog(L_ERROR, "python dyanmic method (%s access) returned wrong result", PostFlag ? "post" : "read");
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
 	ExitWithStats(1, false);
     }
@@ -497,7 +498,8 @@ PY_syslog(PyObject *self UNUSED, PyObject *args)
     int         priority;
 
     /* Get loglevel and message */
-    if (!PyArg_ParseTuple(args, "s#s#", &loglevel, &levellen, &logmsg, &msglen))
+    if (!PyArg_ParseTuple(args, (char *) "s#s#", &loglevel, &levellen,
+                          &logmsg, &msglen))
         return NULL;
 
     /* Assign syslog priority by abbreviated names */
@@ -522,12 +524,18 @@ PY_syslog(PyObject *self UNUSED, PyObject *args)
 
 
 /*
-**  Make the internal nnrpd module's functions visible to Python.
+**  Make the internal nnrpd module's functions visible to Python.  Python
+**  annoyingly doesn't use const where appropriate in its structure
+**  definitions, so we have to add casts for all of the string parameters that
+**  we're initializing with constant strings.
 */
+#define METHOD(name, func, flags, help) \
+    { (char *)(name), (func), (flags), (char *)(help) }
+
 static PyMethodDef nnrpdPyMethods[] = {
-    {"set_auth_hook",   PY_set_auth_hook,	METH_VARARGS},
-    {"syslog",		PY_syslog,		METH_VARARGS},
-    {NULL,		NULL}
+    METHOD("set_auth_hook", PY_set_auth_hook, METH_VARARGS, ""),
+    METHOD("syslog",        PY_syslog,        METH_VARARGS, ""),
+    METHOD(NULL,            NULL,             0,            "")
 };
 
 
@@ -541,7 +549,7 @@ PY_set_auth_hook(PyObject *dummy UNUSED, PyObject *args)
     PyObject    *temp;
 
     /* set_auth_hook method should return a pointer to nnrpd auth object */
-    if (PyArg_ParseTuple(args, "O:set_auth_hook", &temp)) {
+    if (PyArg_ParseTuple(args, (char *) "O:set_auth_hook", &temp)) {
         Py_XINCREF(temp);
         Py_XDECREF(PYAuthObject);
         PYAuthObject = temp;
@@ -576,7 +584,7 @@ void PY_load_python() {
 
 
         /* Build a module interface to certain nnrpd functions */
-        (void) Py_InitModule("nnrpd", nnrpdPyMethods);
+        Py_InitModule((char *) "nnrpd", nnrpdPyMethods);
 
         /*
         ** Grab space for authinfo dictionary so we aren't forever
@@ -600,14 +608,14 @@ void PY_load_python() {
 **  Check that a method exists and is callable.	 Set up a pointer to
 **  the corresponding PyObject, or NULL if not found.
 */
-void
-PYdefonemethod(PyFile *fp, int type, int method, char *methname) {
+static void
+PYdefonemethod(PyFile *fp, int type, int method, const char *methname) {
     PyObject **methptr;
 
     methptr = &fp->procs[type][method];
 
     /* Get a pointer to given method */
-    *methptr = PyObject_GetAttrString(PYAuthObject, methname);
+    *methptr = PyObject_GetAttrString(PYAuthObject, (char *) methname);
 
     /* See if such method is defined */
     if (*methptr == NULL)
@@ -627,7 +635,7 @@ PYdefonemethod(PyFile *fp, int type, int method, char *methname) {
 **  Look up all the known python methods and set up
 **  pointers to them so that we could call them from nnrpd.
 */
-void
+static void
 PYdefmethods(PyFile *fp)
 {
     /* Get a reference to authenticate() method */

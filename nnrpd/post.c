@@ -409,7 +409,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
  	if (ihave)
 	    return "Missing \"Path\" header";
 	/* Note that innd will put host name here for us. */
-	HDR_SET(HDR__PATH, PATHMASTER);
+	HDR_SET(HDR__PATH, (char *) PATHMASTER);
 	if (VirtualPathlen > 0)
 	    addvirtual = true;
     } else if (PERMaccessconf->strippath) {
@@ -417,7 +417,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	if ((p = strrchr(HDR(HDR__PATH), '!')) != NULL) {
 	    p++;
 	    if (*p == '\0') {
-		HDR_SET(HDR__PATH, PATHMASTER);
+		HDR_SET(HDR__PATH, (char *) PATHMASTER);
 		if (VirtualPathlen > 0)
 		    addvirtual = true;
 	    } else {
@@ -500,7 +500,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	p = PERMaccessconf->domain;
     else
 	if ((p = GetFQDN(PERMaccessconf->domain)) == NULL)
-	    p = "unknown";
+	    p = (char *) "unknown";
     snprintf(tracebuff, sizeof(tracebuff),
              "%s %ld %ld %s (%d %3.3s %d %02d:%02d:%02d GMT)",
              p, (long) t, (long) pid, ClientIpString,
@@ -697,7 +697,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
     h = DDstart((FILE *)NULL, (FILE *)NULL);
     do {
 	if (innconf->mergetogroups && p[0] == 't' && p[1] == 'o' && p[2] == '.')
-	    p = "to";
+	    p = (char *) "to";
         if (!hookpresent && PERMspecified) {
 	    grplist[0] = p;
 	    grplist[1] = NULL;

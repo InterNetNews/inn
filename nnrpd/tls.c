@@ -67,6 +67,7 @@
 
 /* outside the ifdef so `make depend` works even ifndef HAVE_SSL */
 #include "tls.h"
+#include "sasl_config.h"
 
 #ifdef HAVE_SSL
 
@@ -106,7 +107,7 @@ int tls_loglevel = 0;
  * tim - this seems to just be giving logging messages
  */
 
-static void apps_ssl_info_callback(SSL * s, int where, int ret)
+static void apps_ssl_info_callback(const SSL *s, int where, int ret)
 {
     const char  *str;
     int         w;

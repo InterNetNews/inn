@@ -15,7 +15,7 @@
 #define GROUP_LIST_DELTA	10
 
 static bool FindHeader(ARTHANDLE *art, const char **pp, const char **qp,
-    const char* hdr, size_t hdrlen)
+    const char* hdr, size_t hdrlen UNUSED)
 {
   const char *p, *p1, *q;
   bool Nocr = true;
