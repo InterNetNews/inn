@@ -33,7 +33,7 @@ SEC1	= convdate.1 getlist.1 grephistory.1 inews.1 innconfval.1 installit.1 \
 SEC3	= $(MISSING_MAN) \
 	clientlib.3 dbz.3 inndcomm.3 libinn.3 parsedate.3 qio.3 wildmat.3
 SEC5	= active.5 control.ctl.5 distrib.pats.5 expire.ctl.5 history.5 \
-	hosts.nntp.5 inn.conf.5 innwatch.ctl.5 moderators.5 newsfeeds.5 \
+	inn.conf.5 innwatch.ctl.5 moderators.5 newsfeeds.5 \
 	newslog.5 nnrp.access.5 nntpsend.ctl.5 overview.fmt.5 passwd.nntp.5 \
 	innfeed.conf.5
 SEC8	= actsync.8 archive.8 batcher.8 buffchan.8 crosspost.8 ctlinnd.8 \
@@ -62,7 +62,7 @@ INSTALLED_SEC3 =	$D$(MAN3)/clientlib.3 $D$(MAN3)/dbz.3 \
 
 INSTALLED_SEC5 =	$D$(MAN5)/active.5 $D$(MAN5)/control.ctl.5 \
 			$D$(MAN5)/distrib.pats.5 $D$(MAN5)/expire.ctl.5 \
-			$D$(MAN5)/history.5 $D$(MAN5)/hosts.nntp.5 \
+			$D$(MAN5)/history.5 \
 			$D$(MAN5)/inn.conf.5 $D$(MAN5)/innwatch.ctl.5 \
 			$D$(MAN5)/moderators.5 $D$(MAN5)/newsfeeds.5 \
 			$D$(MAN5)/newslog.5 $D$(MAN5)/nnrp.access.5 \
@@ -149,7 +149,6 @@ $D$(MAN5)/control.ctl.5:	control.ctl.5	   ; $(COPY) $? $@
 $D$(MAN5)/distrib.pats.5:	distrib.pats.5 	   ; $(COPY) $? $@
 $D$(MAN5)/expire.ctl.5:		expire.ctl.5	   ; $(COPY) $? $@
 $D$(MAN5)/history.5:		history.5	   ; $(COPY) $? $@
-$D$(MAN5)/hosts.nntp.5:		hosts.nntp.5	   ; $(COPY) $? $@
 $D$(MAN5)/inn.conf.5:		inn.conf.5	   ; $(COPY) $? $@
 $D$(MAN5)/innwatch.ctl.5:	innwatch.ctl.5 	   ; $(COPY) $? $@
 $D$(MAN5)/moderators.5:		moderators.5	   ; $(COPY) $? $@
