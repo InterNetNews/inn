@@ -294,7 +294,7 @@ MD5Final(md5Ctx)
     int count = md5Ctx->datalen;
     ULONG lowBitcount = md5Ctx->countLo;
     ULONG highBitcount = md5Ctx->countHi;
-#if INN_BYTE_ORDER == BIG_ENDIAN
+#if INN_BYTE_ORDER == INN_BIG_ENDIAN
     ULONG tmp;
     UINT i, ii;
 #endif
@@ -304,7 +304,7 @@ MD5Final(md5Ctx)
     MD5Update(md5Ctx, PADDING, padLen);
 
     /* append length in bits and transform */
-#if INN_BYTE_ORDER == BIG_ENDIAN
+#if INN_BYTE_ORDER == INN_BIG_ENDIAN
     for (i = 0; i < 14; i++) {
 	tmp = (md5Ctx->in_ulong[i] << 16) | (md5Ctx->in_ulong[i] >> 16);
 	md5Ctx->in_ulong[i] = ((tmp & 0xFF00FF00L) >> 8) |
