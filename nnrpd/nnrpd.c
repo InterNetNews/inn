@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <netinet/in.h>
 #include "configdata.h"
 #include "clibrary.h"
 #define MAINLINE

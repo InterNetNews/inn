@@ -7,6 +7,7 @@
 #include <sys/uio.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <netinet/in.h>
 #include "configdata.h"
 #if defined(HAVE_UNISTD_H)
 # include <unistd.h>
