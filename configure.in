@@ -676,10 +676,6 @@ if test x"$DO_LFS" = xDO ; then
     AC_SUBST(LFS_CFLAGS)
     AC_SUBST(LFS_LDFLAGS)
     AC_SUBST(LFS_LIBS)
-    AC_REPLACE_FUNCS(fseeko ftello)
-    if test "$ac_cv_func_fseeko" = no ; then
-        INN_TYPE_FPOS_T_LARGE
-    fi
 fi
 
 dnl
@@ -1100,8 +1096,13 @@ if test x"$ac_cv_func_statvfs" = xno ; then
 fi
 
 dnl If we can't find any of the following, we have replacements for them.
-AC_REPLACE_FUNCS(getopt hstrerror inet_aton pread pwrite strcasecmp \
-                 strerror strspn setenv)
+AC_REPLACE_FUNCS(fseeko ftello getopt hstrerror inet_aton pread pwrite \
+                 strcasecmp strerror strspn setenv)
+
+dnl If replacing fseeko or ftello, see if we can use fsetpos/fgetpos.
+if test "$ac_cv_func_fseeko" = no || test "$ac_cv_func_ftello" = no ; then
+   INN_TYPE_FPOS_T_LARGE
+fi
 
 dnl See if mmap sees writes. 
 dnl ========================================================
