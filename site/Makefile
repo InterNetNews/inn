@@ -39,7 +39,7 @@ PATH_CTLWATCH		= ${PATHETC}/innwatch.ctl
 PATH_ACTSYNC_IGN	= ${PATHETC}/actsync.ign
 PATH_ACTSYNC_CFG	= ${PATHETC}/actsync.cfg
 PATH_MOTD		= ${PATHETC}/motd.news
-PATH_STORAGECTL		= ${PATHETC}/storage.ctl
+PATH_STORAGECONF	= ${PATHETC}/storage.conf
 PATH_OVERVIEWCTL	= ${PATHETC}/overview.ctl
 PATH_CYCBUFFCONFIG	= ${PATHETC}/cycbuff.conf
 PATH_INNFEEDCTL		= ${PATHETC}/innfeed.conf
@@ -53,7 +53,9 @@ MOST	= rc.news overview.fmt checkgroups default ihave newgroup \
 	innshellvars \
 	innshellvars.pl innshellvars.csh innshellvars.tcl filter.tcl \
 	startup.tcl startup_innd.pl filter_innd.pl filter_nnrpd.pl \
-	actsync.cfg actsync.ign scanspool innmail
+	actsync.cfg actsync.ign scanspool innmail checkgroups.pl \
+	ihave.pl newgroup.pl rmgroup.pl sendme.pl sendsys.pl senduuname.pl \
+	version.pl
 
 MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(CTLBIN)/checkgroups \
 	$D$(CTLBIN)/default $D$(CTLBIN)/ihave $D$(CTLBIN)/newgroup \
@@ -67,7 +69,9 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(CTLBIN)/checkgroups \
 	$D$(PATHBIN)/innstat $D$(PATHBIN)/pgpverify $D$(PATHBIN)/innwatch \
 	$D$(PATHBIN)/innreport $D$(PATH_SHELLVARS) $D$(PATH_PERL_SHELLVARS) \
 	$D$(PATH_TCL_SHELLVARS) $D$(PATH_CSH_SHELLVARS) $D$(PATHBIN)/scanspool \
-	$D$(PATH_MOTD)
+	$D$(PATH_MOTD) $D$(CTLBIN)/checkgroups.pl $D$(CTLBIN)/ihave.pl \
+	$D$(CTLBIN)/newgroup.pl $D$(CTLBIN)/rmgroup.pl $D$(CTLBIN)/sendme.pl \
+	$D$(CTLBIN)/sendsys.pl $D$(CTLBIN)/senduuname.pl $D$(CTLBIN)/version.pl
 
 ##  Scripts from above, plus site-specific config files.
 REST		= \
@@ -75,7 +79,7 @@ REST		= \
 	inn.conf moderators innreport.conf innreport_inn.pm \
 	control.ctl expire.ctl nntpsend.ctl \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
-	motd.news storage.ctl overview.ctl cycbuff.conf \
+	motd.news storage.conf overview.ctl cycbuff.conf \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
 	startup.tcl filter.tcl
 
@@ -89,7 +93,7 @@ REST_INSTALLED	= \
 	$D$(PATHETC)/innreport.conf $D$(PATHLIB)/innreport_inn.pm \
 	$D$(PATH_CTLWATCH) $D$(PATH_DISTPATS) $D$(PATH_SCHEMA) \
 	$D$(PATH_ACTSYNC_CFG) $D$(PATH_ACTSYNC_IGN) \
-	$D$(PATH_MOTD) $D$(PATH_STORAGECTL) \
+	$D$(PATH_MOTD) $D$(PATH_STORAGECONF) \
 	$D$(PATH_OVERVIEWCTL) $D$(PATH_CYCBUFFCONFIG) \
 	$D$(PATH_INNFEEDCTL)
 
@@ -156,16 +160,22 @@ $D$(PATH_NNRPDTRACK):	nnrpd.track	; $(COPY_RPRI) $? $@
 $D$(PATH_NEWSBOOT):	rc.news		; $(COPY_XPRI) $? $@
 $D$(PATH_SCHEMA):	overview.fmt	; $(COPY_RPUB) $? $@
 $D$(CTLBIN)/checkgroups: checkgroups	; $(COPY_XPRI) $? $@
+$D$(CTLBIN)/checkgroups.pl: checkgroups.pl	; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/default:	default		; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/ihave:	ihave		; $(COPY_XPRI) $? $@
+$D$(CTLBIN)/ihave.pl:	ihave.pl		; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/newgroup:	newgroup	; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/newgroup.pl:	newgroup.pl	; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/rmgroup:	rmgroup		; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/rmgroup.pl:	rmgroup.pl		; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/sendme:	sendme		; $(COPY_XPRI) $? $@
+$D$(CTLBIN)/sendme.pl:	sendme.pl		; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/sendsys:	sendsys		; $(COPY_XPRI) $? $@
+$D$(CTLBIN)/sendsys.pl:	sendsys.pl		; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/senduuname:	senduuname	; $(COPY_XPRI) $? $@
+$D$(CTLBIN)/senduuname.pl:	senduuname.pl	; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/version:	version		; $(COPY_XPRI) $? $@
+$D$(CTLBIN)/version.pl:	version.pl		; $(COPY_XPRI) $? $@
 $D$(PATH_CONTROLCTL):	control.ctl	; $(COPY_RPRI) $? $@
 $D$(PATH_CTLWATCH):	innwatch.ctl	; $(COPY_RPRI) $? $@
 $D$(PATH_PARSECTL):	parsecontrol	; $(COPY_XPRI) $? $@
@@ -199,7 +209,7 @@ $D$(PATH_CSH_SHELLVARS): innshellvars.csh ; $(COPY_RPRI) $? $@
 $D$(PATHBIN)/innreport: innreport	; $(COPY_XPRI) $? $@
 $D$(PATHLIB)/innreport_inn.pm: innreport_inn.pm	; $(COPY_RPRI) $? $@
 $D$(PATHETC)/innreport.conf: innreport.conf	; $(COPY_RPRI) $? $@
-$D$(PATH_STORAGECTL): storage.ctl	; $(COPY_RPRI) $? $@
+$D$(PATH_STORAGECONF): storage.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_OVERVIEWCTL): overview.ctl	; $(COPY_RPRI) $? $@
 $D$(PATH_CYCBUFFCONFIG): cycbuff.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_STARTUP_INND): startup_innd.pl ; $(COPY_RPRI) $? $@
@@ -229,6 +239,7 @@ COPY	= $(SHELL) ./getsafe.sh
 actsync.cfg:	../samples/actsync.cfg		; $(COPY) $? $@
 actsync.ign:	../samples/actsync.ign		; $(COPY) $? $@
 checkgroups:	../samples/checkgroups		; $(COPY) $? $@
+checkgroups.pl:	../samples/checkgroups.pl		; $(COPY) $? $@
 control.ctl:	../samples/control.ctl		; $(COPY) $? $@
 default:	../samples/default		; $(COPY) $? $@
 docheckgroups:	../samples/docheckgroups	; $(COPY) $? $@
@@ -240,12 +251,13 @@ expirerm:	../samples/expirerm		; $(COPY) $? $@
 innmail:	../samples/innmail		; $(COPY) $? $@
 incoming.conf:	../samples/incoming.conf		; $(COPY) $? $@
 ihave:		../samples/ihave		; $(COPY) $? $@
+ihave.pl:		../samples/ihave.pl		; $(COPY) $? $@
 inn.conf:	../samples/inn.conf		; $(COPY) $? $@
 inncheck:	../samples/inncheck		; $(COPY) $? $@
 innreport:	../samples/innreport		; $(COPY) $? $@
 innreport_inn.pm: ../samples/innreport_inn.pm	; $(COPY) $? $@
 innreport.conf:	../samples/innreport.conf	; $(COPY) $? $@
-storage.ctl:	../samples/storage.ctl		; $(COPY) $? $@
+storage.conf:	../samples/storage.conf		; $(COPY) $? $@
 overview.ctl:	../samples/overview.ctl		; $(COPY) $? $@
 cycbuff.conf:	../samples/cycbuff.conf		; $(COPY) $? $@
 innstat:	../samples/innstat		; $(COPY) $? $@
@@ -260,6 +272,7 @@ moderators:	../samples/moderators		; $(COPY) $? $@
 distrib.pats:	../samples/distrib.pats		; $(COPY) $? $@
 motd.news:	../samples/motd.news		; $(COPY) $? $@
 newgroup:	../samples/newgroup		; $(COPY) $? $@
+newgroup.pl:	../samples/newgroup.pl		; $(COPY) $? $@
 news.daily:	../samples/news.daily		; $(COPY) $? $@
 newsfeeds:	../samples/newsfeeds		; $(COPY) $? $@
 nnrp.access:	../samples/nnrp.access		; $(COPY) $? $@
@@ -273,6 +286,7 @@ passwd.nntp:	../samples/passwd.nntp		; $(COPY) $? $@
 pgpverify:	../samples/pgpverify		; $(COPY) $? $@
 rc.news:	../samples/rc.news		; $(COPY) $? $@
 rmgroup:	../samples/rmgroup		; $(COPY) $? $@
+rmgroup.pl:	../samples/rmgroup.pl		; $(COPY) $? $@
 scanlogs:	../samples/scanlogs		; $(COPY) $? $@
 scanspool:	../samples/scanspool		; $(COPY) $? $@
 send-ihave:	../samples/send-ihave		; $(COPY) $? $@
@@ -280,12 +294,16 @@ send-nntp:	../samples/send-nntp		; $(COPY) $? $@
 send-uucp:	../samples/send-uucp		; $(COPY) $? $@
 sendbatch:	../samples/sendbatch		; $(COPY) $? $@
 sendme:		../samples/sendme		; $(COPY) $? $@
+sendme.pl:		../samples/sendme.pl		; $(COPY) $? $@
 sendsys:	../samples/sendsys		; $(COPY) $? $@
+sendsys.pl:	../samples/sendsys.pl		; $(COPY) $? $@
 senduuname:	../samples/senduuname		; $(COPY) $? $@
+senduuname.pl:	../samples/senduuname.pl		; $(COPY) $? $@
 startup.tcl:	../samples/startup.tcl		; $(COPY) $? $@
 startup_innd.pl: ../samples/startup_innd.pl	; $(COPY) $? $@
 tally.control:	../samples/tally.control	; $(COPY) $? $@
 version:	../samples/version		; $(COPY) $? $@
+version.pl:	../samples/version.pl		; $(COPY) $? $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES)
