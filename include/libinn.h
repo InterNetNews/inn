@@ -120,6 +120,7 @@ struct conf_vars {
 	int blockbackoff;	/* Multiplier for sleep in EWOULDBLOCK writes */
 	int icdsynccount;	/* How many article-writes between active and history updates */
 	char *bindaddress;	/* Which interface IP to bind to */
+	char *sourceaddress;	/* Source IP for outgoing NNTP connections */
 	int port;		/* Which port INND should listen on */
 	int readertrack;	/* Enable/Disable the reader tracking system */
 	int strippostcc;	/* Strip To:, Cc: and Bcc: lines from posts */

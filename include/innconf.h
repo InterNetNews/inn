@@ -310,8 +310,11 @@ struct conf_rec conf_defaults[] = {
 #define CONF_VAR_MERGETOGROUPS			95
     { _CONF_MERGETOGROUPS,			"",	2, 1 },
 #define _CONF_NOREADER				"noreader"
-#define CONF_VAR_NOREADER				96
-    { _CONF_NOREADER,				"",	2, 1 }
+#define CONF_VAR_NOREADER			96
+    { _CONF_NOREADER,				"",	2, 1 },
+#define _CONF_SOURCEADDRESS			"sourceaddress"
+#define CONF_VAR_SOURCEADDRESS			97
+    { _CONF_SOURCEADDRESS,			"",	1, 1 }
 };
-#define MAX_CONF_VAR 97
+#define MAX_CONF_VAR 98
 
