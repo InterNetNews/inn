@@ -726,3 +726,4 @@ AC_OUTPUT(
 )
 
 chmod +x storage/buildconfig
+cat .now_do

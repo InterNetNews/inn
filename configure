@@ -5934,3 +5934,4 @@ test "$no_create" = yes || ${CONFIG_SHELL-/bin/sh} $CONFIG_STATUS || exit 1
 
 
 chmod +x storage/buildconfig
+cat .now_do

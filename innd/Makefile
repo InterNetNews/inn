@@ -1,8 +1,6 @@
 ##  $Revision$
 include ../Makefile.global
 
-##  =()<P	= @<P>@>()=
-P	= 
 ##  =()<TCLINC	= @<TCL_INC>@>()=
 TCLINC	= 
 

@@ -2,9 +2,6 @@
 
 include ../Makefile.global
 
-##  =()<P	= @<P>@>()=
-P	= 
-
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
 LINTFLAGS	= -b -h -z  -I../include $(DEFS)
 ##  =()<LINTFILTER	= @<LINTFILTER>@>()=

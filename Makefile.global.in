@@ -3,6 +3,9 @@
 ## This file is meant to be the central Makefile that configure works with
 ## and that all other Makefiles include
 
+##  If you have a parallel make, set this to "&"
+#P	= &
+
 CC	= @CC@
 CFLAGS	= -I../include @CPPFLAGS@ @CFLAGS@
 LDFLAGS	= @LDFLAGS@

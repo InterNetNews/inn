@@ -33,10 +33,6 @@
   ||##
   ||##
   ||##  1.  MAKE CONFIG PARAMETERS
-[IN1.7=@1][WDF=autoconf][WOR=no][P=low]
-  ||##  If you have a parallel make, set this to "&"
-  ||#### =()<P			@<P>@>()=
-  ||P			
 [IN1.7=@1][WDF=autoconf][WOR=no]
   ||##  Does your compiler properly do "char const *"? Pick DO DONT or DUNNO
   ||##[autoconf]

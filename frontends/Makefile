@@ -1,9 +1,6 @@
 ##  $Revision$
 include ../Makefile.global
 
-##  =()<P	= @<P>@>()=
-P	= 
-
 RNEWSPROGS	= ${PATHBIN}/rnews.libexec
 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=

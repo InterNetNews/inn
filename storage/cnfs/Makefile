@@ -5,9 +5,6 @@ CFLAGS +=	-I../../include -I..
 
 IFTRUE	= @$(SHELL) ../iftrue.sh
 
-##  =()<P	= @<P>@>()=
-P	= 
-
 ##  =()<CTAGS		= @<CTAGS>@>()=
 CTAGS		= /usr/bin/ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=

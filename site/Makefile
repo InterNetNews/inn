@@ -1,9 +1,6 @@
 ##  $Revision$
 include ../Makefile.global
 
-##  =()<P	= @<P>@>()=
-P	= 
-
 ##  If you want to do ctlinnd pause/reload/go, uncomment these lines.
 #PAUSE		= pause
 #RELOAD_AND_GO	= reload go
