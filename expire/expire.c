@@ -84,6 +84,7 @@ STATIC BOOL		EXPusepost;
 STATIC BOOL		EXPkeep;
 STATIC BOOL		EXPearliest;
 STATIC BOOL		ClassicExpire = FALSE;
+STATIC BOOL		Ignoreselfexpire = FALSE;
 STATIC char		ACTIVE[] = _PATH_ACTIVE;
 STATIC char		SPOOL[] = _PATH_SPOOL;
 STATIC int		nGroups;
@@ -735,35 +736,35 @@ STATIC void EXPremove(char *p, long *size, BOOL index)
     }
     if (EXPverbose > 1)
 	(void)printf("\tunlink %s\n", p);
-    EXPunlinked++;
 
     if (EXPtracing) {
+	EXPunlinked++;
 	(void)printf("%s\n", p);
 	return;
     }
-    if (index && EXPunlinkindex) {
-	(void)fprintf(EXPunlinkindex, "%s\n", p);
+    if (index) {
+	if (EXPunlinkindex) {
+	    (void)fprintf(EXPunlinkindex, "%s\n", p);
+	}
+	return;
     }
+    EXPunlinked++;
     if (EXPunlinkfile) {
-	if (!index) {
-	    (void)fprintf(EXPunlinkfile, "%s\n", p);
-	    if (!ferror(EXPunlinkfile))
-		return;
-	    (void)fprintf(stderr, "Can't write to -z file, %s\n",
-		strerror(errno));
-	    (void)fprintf(stderr, "(Will ignore it for rest of run.)\n");
-	    (void)fclose(EXPunlinkfile);
-	    EXPunlinkfile = NULL;
-	} else
+	(void)fprintf(EXPunlinkfile, "%s\n", p);
+	if (!ferror(EXPunlinkfile))
 	    return;
+	(void)fprintf(stderr, "Can't write to -z file, %s\n",
+	    strerror(errno));
+	(void)fprintf(stderr, "(Will ignore it for rest of run.)\n");
+	(void)fclose(EXPunlinkfile);
+	EXPunlinkfile = NULL;
     }
     if (IsToken(p)) {
 	if (!SMcancel(TextToToken(p)) && SMerrno != SMERR_NOENT)
 	    fprintf(stderr, "Can't unlink %s\n", p);
     } else {
-	if (!index)
-	    if (unlink(p) < 0 && errno != ENOENT)
-		(void)fprintf(stderr, "Can't unlink %s, %s\n", p, strerror(errno));
+	if (unlink(p) < 0 && errno != ENOENT)
+	    (void)fprintf(stderr, "Can't unlink %s, %s\n", p, strerror(errno));
     }
 }
 
@@ -795,6 +796,8 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
     char		date[20];
     BOOL		Hastoken;
     BOOL		Hasover;
+    BOOL		Selfexpired = FALSE;
+    ARTHANDLE		*article;
     TOKEN		token;
     int			linelen;
     static char		*OVERline = NULL;
@@ -917,34 +920,67 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 	    } else {
 		Hasover = FALSE;
 	    }
+	    if (!Ignoreselfexpire && SMprobe(SELFEXPIRE, &token)) {
+		if ((article = SMretrieve(token, RETR_STAT)) == (ARTHANDLE *)NULL)
+		    /* the article is cancelled or has been expired by the
+		       method's functionality */
+		    Selfexpired = TRUE;
+		else
+		    /* the article is still alive */
+		    SMfreearticle(article);
+	    }
 	} else {
 	    Hasover = FALSE;
 	}
-	if (!ClassicExpire || !Hastoken || !Hasover) {
-	    count = EXPsplit(fields[2], ' ', arts, nGroups);
-	}
-	if (count == -1) {
-	    (void)fprintf(stderr, IGNORING, line);
-	    return TRUE;
+	when = EXPusepost ? Posted : Arrived;
+	if (!Selfexpired) {
+	    if (!ClassicExpire || !Hastoken || !Hasover) {
+		count = EXPsplit(fields[2], ' ', arts, nGroups);
+	    }
+	    if (count == -1) {
+		(void)fprintf(stderr, IGNORING, line);
+		return TRUE;
+	    }
+	    /* First check all postings */
+	    poisoned = FALSE;
+	    keeper = FALSE;
+	    remove = FALSE;
+	    for (i = 0; i < count; ++i) {
+	      if ((krps[i] = EXPkeepit(arts[i], when, Expires)) == Poison)
+		  poisoned = TRUE;
+	      if (EXPkeep && (krps[i] == Keep))
+		  keeper = TRUE;
+	      if ((krps[i] == Remove))
+		  remove = TRUE;
+	    }
 	}
 	EXPprocessed++;
-	when = EXPusepost ? Posted : Arrived;
 
-	/* First check all postings */
-
-	poisoned = FALSE;
-	keeper = FALSE;
-	remove = FALSE;
-	for (i = 0; i < count; ++i) {
-	  if ((krps[i] = EXPkeepit(arts[i], when, Expires)) == Poison)
-	      poisoned = TRUE;
-	  if (EXPkeep && (krps[i] == Keep))
-	      keeper = TRUE;
-	  if ((krps[i] == Remove))
-	      remove = TRUE;
-	}
-
-	if (ClassicExpire && Hastoken && Hasover) {
+	if (Selfexpired) {
+	    for (i = 0; i < count; i++) {
+		p = arts[i];
+		if (*p == '\0')
+		    /* Shouldn't happen. */
+		    continue;
+		EXPremove(p, &size, TRUE);
+	    }
+	    if (EXPremember > 0 && out != NULL) {
+		where = Offset;
+		if (Arrived > RealNow)
+		    Arrived = RealNow;
+		(void)sprintf(date, "%lu", (unsigned long)Arrived);
+		(void)fprintf(out, "%s%c%s%c%s\n",
+			fields[0], HIS_FIELDSEP,
+			date, HIS_SUBFIELDSEP, HIS_NOEXP);
+		Offset += strlen(fields[0]) + 1
+			+ strlen(date) + 1 + STRLEN(HIS_NOEXP) + 1;
+		if (EXPverbose > 3)
+		    (void)printf("remember history: %s%c%s%c%s\n",
+			    fields[0], HIS_FIELDSEP,
+			    date, HIS_SUBFIELDSEP, HIS_NOEXP);
+		EXPallgone++;
+	    }
+	} else if (ClassicExpire && Hastoken && Hasover) {
 	    if (EXPearliest) {
 		if (remove || poisoned ||
 		    token.type == TOKEN_EMPTY || token.cancelled) {
@@ -1363,7 +1399,7 @@ int main(int ac, char *av[])
     }
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "cf:h:D:d:eg:iklnpqr:stu:v:w:xz:Z:")) != EOF)
+    while ((i = getopt(ac, av, "cf:h:D:d:eg:iklNnpqr:stu:v:w:xz:Z:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -1397,6 +1433,9 @@ int main(int ac, char *av[])
 	    break;
 	case 'l':
 	    EXPlinks = TRUE;
+	    break;
+	case 'N':
+	    Ignoreselfexpire = TRUE;
 	    break;
 	case 'n':
 	    Server = FALSE;

@@ -26,6 +26,8 @@ libstorage \- InterNetNews Storage API library routines
 
 .B "BOOL SMcancel(TOKEN token);"
 
+.B "BOOL SMprobe(PROBETYPE type, TOKEN *token);
+
 .B "void SMshutdown(void);"
 
 .B "int SMerrno;"
@@ -192,6 +194,14 @@ frees allocated memory in itself.
 removes an article specified with
 .IR token .
 It returns TRUE if cancellation is successful or returns FALSE if not.
+.PP
+.I SMprobe
+checks the token on
+.IR PROBETYPE .
+Currently, only
+.I SELFEXPIRE
+is supported and this can be used to see if the method of the token
+has self expire functionality.
 .PP
 .I SMshutdown
 calls the shutdown for each configured storage method and

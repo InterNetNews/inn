@@ -1,3 +1,8 @@
+/*  $Id$
+**
+**  Storage Manager interface header
+*/
+
 #ifndef __INTERFACE_H__
 #define __INTERFACE_H__
 
@@ -7,7 +12,7 @@
 typedef struct {
     char                *name;
     unsigned char       type;
-    BOOL                (*init)(void);
+    BOOL                (*init)(BOOL *type);
     TOKEN               (*store)(const ARTHANDLE article, STORAGECLASS storageclass);
     ARTHANDLE           *(*retrieve)(const TOKEN token, const RETRTYPE amount);
     ARTHANDLE           *(*next)(const ARTHANDLE *article, const RETRTYPE amount);

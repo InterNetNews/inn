@@ -53,6 +53,8 @@ typedef struct {
 extern int              SMerrno;
 extern char             *SMerrorstr;
 
+typedef enum {SELFEXPIRE} PROBETYPE;
+
 char *TokenToText(const TOKEN token);
 TOKEN TextToToken(const char *text);
 BOOL IsToken(const char *text);
@@ -63,5 +65,6 @@ ARTHANDLE *SMretrieve(const TOKEN token, const RETRTYPE amount);
 ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount);
 void      SMfreearticle(ARTHANDLE *article);
 BOOL      SMcancel(TOKEN token);
+BOOL      SMprobe(PROBETYPE type, TOKEN *token);
 void      SMshutdown(void);
 #endif

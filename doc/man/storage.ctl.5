@@ -26,6 +26,7 @@ methodname:wildmat:storage_class:minsize:maxsize[:options]
 .PP
 The ``methodname'' is the name of storage method.
 Currently, ``timehash'', ``cnfs'' and ``trash'' are available for its name.
+See STORAGE METHODS section for thier method.
 \&``Wildmat'' refers to a newsgroup pattern that will be parsed with
 .IR wildmat (3).
 Matching newsgroup is against newsgroup name in ``Newsgroups'' header.
@@ -40,7 +41,7 @@ is only used for matching.
 .IR expire.ctl (5).
 \&``Minsize'' and ``maxsize'' is the range in which article is stored.
 \&``options'' is method specific option which is needed only for some
-method. See method specific man page for a description of its use.
+method. See STORAGE METHODS sectoin for a description of its use.
 .PP
 If a newsgroup matches wildmat pattern and the range, the article is stored
 in that ``storage_class.''
@@ -51,6 +52,41 @@ If a newsgroup does not match any wildmat pattern nor the range in all entries,
 the article is not stored and
 .IR innd (8)
 rejects it.
+.SH STORAGE METHODS
+.TP
+.B cnfs
+\&``Cnfs'' method stores articles in preconfigured files cyclically.
+So, if storing position reaches at the end of the file,
+the position is moved to the bigining of the file and
+old articles are overwritten to write new articles.
+This method is assumed to have self expire functionality.
+There is a configuration file,
+.IR cycbuff.conf ,
+for this method and ``options'' field is needed.
+See
+.IR cycbuff.conf (5)
+for description of thier use.
+.TP
+.B timehash
+\&``Timehash'' method stores each article into each file whose path name
+is based on article's arrival time.  The path name is created as
+.I <_PATH_SPOOL in config.data>
+/time-xx/bb/cc/yyyy-aadd
+(typically _PATH_SPOOL is
+.\" =()<.I @<typ_PATH_SPOOL>@)>()=
+.IR /var/news/spool/articles ).
+Where ``xx'' is hexa decimal value of ``storage_class.''
+Where ``yyyy'' is hexa decimal value of sequence number.
+Where ``bb'', ``cc'' and ``aadd'' are hexa decimal value of splitted
+arrival time and 0xaabbccdd is the actual time.
+There is no configuration file for this method.
+.TP
+.B trash
+\&``Trash'' method stores no article and this can be used simply to
+trash the article but the article is accepted without any problem.
+For this reason, any article stored through this method never can be
+retrieved and this method is assumed to have self expire functionality.
+There is no configuration file for this method.
 .SH HISTORY
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
 .de R$
@@ -58,6 +94,7 @@ This is revision \\$3, dated \\$4.
 ..
 .R$ $Id$
 .SH "SEE ALSO"
+cycbuff.conf(5),
 expire.ctl(5),
 inn.conf(5),
 innd(8),

@@ -93,7 +93,8 @@ static TOKEN *PathToToken(char *path) {
     return &token;
 }
 
-BOOL timehash_init(void) {
+BOOL timehash_init(BOOL *selfexpire) {
+    *selfexpire = FALSE;
     if (STORAGE_TOKEN_LENGTH < 6) {
 	syslog(L_FATAL, "timehash: token length is less than 6 bytes");
 	SMseterror(SMERR_TOKENSHORT, NULL);

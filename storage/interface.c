@@ -21,6 +21,7 @@ typedef enum {INIT_NO, INIT_DONE, INIT_FAIL} INITTYPE;
 typedef struct {
     INITTYPE		initialized;
     BOOL		configured;
+    BOOL		selfexpire;
 } METHOD_DATA;
 
 METHOD_DATA method_data[NUM_STORAGE_METHODS];
@@ -275,6 +276,7 @@ static BOOL SMreadconfig(void) {
 BOOL SMinit(void) {
     int                 i;
     BOOL		allok = TRUE;
+    BOOL		selfexpire;
 
     if (Initialized)
 	return TRUE;
@@ -288,10 +290,12 @@ BOOL SMinit(void) {
 
     for (i = 0; i < NUM_STORAGE_METHODS; i++) {
 	if (method_data[i].configured) {
-	    if (method_data[i].configured && storage_methods[i].init()) {
+	    if (method_data[i].configured && storage_methods[i].init(&selfexpire)) {
 		method_data[i].initialized = INIT_DONE;
+		method_data[i].selfexpire = selfexpire;
 	    } else {
 		method_data[i].initialized = INIT_FAIL;
+		method_data[i].selfexpire = FALSE;
 		syslog(L_ERROR, "SM storage method '%s' failed initialization", storage_methods[i].name);
 		allok = FALSE;
 	    }
@@ -315,6 +319,8 @@ BOOL SMinit(void) {
 }
 
 static BOOL InitMethod(STORAGETYPE method) {
+    BOOL		selfexpire;
+
     if (!Initialized)
 	if (!SMreadconfig()) {
 	    Initialized = FALSE;
@@ -333,12 +339,14 @@ static BOOL InitMethod(STORAGETYPE method) {
 	SMseterror(SMERR_UNDEFINED, "storage method is not configured.");
 	return FALSE;
     }
-    if (!storage_methods[typetoindex[method]].init()) {
+    if (!storage_methods[typetoindex[method]].init(&selfexpire)) {
 	method_data[method].initialized = INIT_FAIL;
+	method_data[method].selfexpire = FALSE;
 	SMseterror(SMERR_UNDEFINED, "Could not initialize storage method late.");
 	return FALSE;
     }
     method_data[method].initialized = INIT_DONE;
+    method_data[method].selfexpire = selfexpire;
     return TRUE;
 }
 
@@ -481,6 +489,15 @@ BOOL SMcancel(TOKEN token) {
 	return FALSE;
     }
     return storage_methods[typetoindex[token.type]].cancel(token);
+}
+
+BOOL SMprobe(PROBETYPE type, TOKEN *token) {
+    switch (type) {
+    case SELFEXPIRE:
+	return (method_data[typetoindex[token->type]].selfexpire);
+    default:
+	return FALSE;
+    }
 }
 
 void SMshutdown(void) {

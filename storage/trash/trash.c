@@ -14,7 +14,8 @@
 #include <methods.h>
 #include "paths.h"
 
-BOOL trash_init(void) {
+BOOL trash_init(BOOL *selfexpire) {
+    *selfexpire = TRUE;
     return TRUE;
 }
 

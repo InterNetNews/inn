@@ -11,6 +11,7 @@
 #include <sys/mman.h>
 #include <dirent.h>
 #include <ctype.h>
+#include <sys/types.h>
 #include <clibrary.h>
 #include <errno.h>
 #include <limits.h>
@@ -812,9 +813,10 @@ STATIC int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, U_INT32_T cy
     return CNFSUsedBlock(cycbuff, offset, FALSE, FALSE);
 }
 
-BOOL cnfs_init(void) {
+BOOL cnfs_init(BOOL *selfexpire) {
     int			ret;
 
+    *selfexpire = FALSE;
     if (innconf == NULL) {
 	if ((ret = ReadInnConf(_PATH_CONFIG)) < 0) {
 	    syslog(L_ERROR, "%s: ReadInnConf failed, returned %d", LocalLogName, ret);
@@ -852,6 +854,7 @@ BOOL cnfs_init(void) {
 	return FALSE;
     }
 
+    *selfexpire = TRUE;
     return TRUE;
 }
 
@@ -1000,6 +1003,8 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
 	art->data = NULL;
 	art->len = 0;
 	art->private = NULL;
+	ret_token = token;    
+	art->token = &ret_token;
 	return art;
     }
     /*

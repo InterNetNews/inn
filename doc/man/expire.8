@@ -35,6 +35,9 @@ expire \- Usenet article and history expiration program
 .B \-l
 ]
 [
+.B \-N
+]
+[
 .B \-n
 ]
 [
@@ -83,8 +86,15 @@ text file
 .\" =()<.I @<typ_PATH_HISTORY>@ )>()=
 .I /var/news/etc/history )
 and uses the information recorded in it to purge old news articles.
-If you have turned on the storage manager with the 'storageapi' in inn.conf (5)
-and set up overview.ctl (5), it also purges old overview data.
+If you have turned on the storage manager with the 'storageapi' in
+.IR inn.conf (5)
+and set up
+.IR overview.ctl (5),
+it also purges old overview data.
+And if the storage methods have self expire functionality and stored
+article has already been purged,
+.I expire
+treats the article as expired regardless of control file by default.
 .SH OPTIONS
 .TP
 .B \-c
@@ -169,6 +179,15 @@ treated as if they could be symbolic links to the first one.
 In this case, the first article will not be removed as long as any other
 cross-posts of the article remain.
 If ``\fB\-e\fP'' flag is used together, ``\fB\-l\fP'' flag is ignored.
+.TP
+.B \-N
+If the storage methods have self expire functionality and stored
+article has already been purged,
+.I expire
+treats the article as expired regardless of control file by default.
+If ``\fB\-N\fP'' flag is used,
+.I expire
+ignores self expire functionality even if it exists.
 .TP
 .B \-n
 If
