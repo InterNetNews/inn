@@ -1359,7 +1359,6 @@ RCsetup(port, master)
 		server.sin_port = htons(NNTP_PORT);
 	else
 		server.sin_port = htons(port);
-	server.sin_port = htons(NNTP_PORT);
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = htonl(INADDR_ANY);
 	if (bind(i, (struct sockaddr *)&server, sizeof server) < 0) {
