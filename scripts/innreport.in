@@ -381,7 +381,9 @@ LINE: while (!eof ()) {
 
   my $res;
   my ($day, $hour, $prog, $left) =
-    $_ =~ m/^(\S+\s+\S+) (\S+) \S+ (\S+): (.*)$/o;
+    $_ =~ m/^(\S+\s+\S+) (\S+) \S+ (\S+): \[ID \d+ \S+\] (.*)$/o;
+  ($day, $hour, $prog, $left) =
+    $_ =~ m/^(\S+\s+\S+) (\S+) \S+ (\S+): (.*)$/o unless $day;
   ($day, $hour, $prog, $left) =
     $_ =~ m/^(\S+\s+\S+) (\S+) \d+ \S+ (\S+): (.*)$/o unless $day;
 
