@@ -400,7 +400,7 @@ static int tls_dump(const char *s, int len)
 
 static int set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
 {
-	struct stat buf;
+    struct stat buf;
 
     if (cert_file != NULL) {
 	if (SSL_CTX_use_certificate_file(ctx, cert_file,
@@ -464,6 +464,7 @@ int tls_init_serverengine(int verifydepth,
     char   *CAfile;
     char   *s_cert_file;
     char   *s_key_file;
+    struct stat buf;
 
     if (tls_serverengine)
       return (0);				/* already running */
@@ -514,6 +515,12 @@ int tls_init_serverengine(int verifydepth,
 	Printf("TLS engine: cannot load cert/key data\n");
       return (-1);
     }
+
+    /* load some randomization data from /dev/urandom, if it exists */
+    /* FIXME: should also check for ".rand" file, update it on exit */
+    if (stat("/dev/urandom", &buf) == 0)
+      RAND_load_file("/dev/urandom", 16 * 1024);
+
     SSL_CTX_set_tmp_dh_callback(CTX, tmp_dh_cb);
     SSL_CTX_set_options(CTX, SSL_OP_SINGLE_DH_USE);
 
