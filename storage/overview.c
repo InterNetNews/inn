@@ -520,7 +520,8 @@ char *OVERretrieve(TOKEN *token, int *Overlen) {
 	return addr;
     } else {
 	if (OVERconfig[token->index].offset != token->offset) {
-	    fseek(OVERconfig[token->index].fp, token->offset, SEEK_SET);
+	    if (fseek(OVERconfig[token->index].fp, token->offset, SEEK_SET) == -1)
+		return (char *)NULL;
 	    OVERconfig[token->index].offset = token->offset;
 	}
 	if (line == (char *)NULL)

@@ -881,6 +881,10 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
     else {
 	/* Active article -- split up the file entries. */
 	if (Hastoken) {
+	    if (!IsToken(fields[2])) {
+		fprintf(stderr, "Invalid token %s, skipping\n", fields[2]);
+		return TRUE;
+	    }
 	    token = TextToToken(fields[2]);
 	    if (token.index < OVER_NONE) {
 		Hasover = TRUE;
