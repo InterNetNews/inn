@@ -352,20 +352,20 @@ main(int ac, char *av[])
 	else
 	  val = FALSE;
 	if (!OVERsetup(OVER_MMAP, (void *)&val)) {
-	  fprintf(stderr, "Can't setup unified overview mmap: %s\n", strerror(errno));
+	  fprintf(stderr, "Can't setup unified overview mmap\n");
 	  exit(1);    
 	}
 	if (!OVERsetup(OVER_MODE, "r")) {
-	  fprintf(stderr, "Can't setup unified overview mode: %s\n", strerror(errno));
+	  fprintf(stderr, "Can't setup unified overview mode\n");
 	  exit(1);
 	}
 	if (!OVERinit()) {
-	  fprintf(stderr, "Can't initialize unified overview mode: %s\n", strerror(errno));
+	  fprintf(stderr, "Can't initialize unified overview mode\n");
 	  exit(1);
 	}
-	OVERmaketoken(&token, iextvalue.offset[OVEROFFSET], iextvalue.overindex);
+	OVERmaketoken(&token, iextvalue.offset[OVEROFFSET], iextvalue.overindex, iextvalue.overlen);
 	if ((p = OVERretrieve(&token, &len)) == NULL) {
-	  fprintf(stderr, "Can't retrieve overview : %s\n", strerror(errno));
+	  fprintf(stderr, "Can't retrieve overview\n");
 	  exit(1);
 	}
 	q = NEW(char, len + 1);

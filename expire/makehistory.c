@@ -47,7 +47,6 @@ typedef struct _ARTOVERFIELD {
 } ARTOVERFIELD;
 
 typedef enum {NO_TRANS, FROM_HIST, FROM_SPOOL} TRANS;
-#define MAXOVERLINE	4096
 
 STATIC char		*ACTIVE = NULL;
 STATIC char		*HISTORYDIR;
@@ -354,7 +353,7 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 		if (innconf->extendeddbz) {
 		    iextvalue.offset[HISTOFFSET] = where;
 		    token = TextToToken(save);
-		    OVERsetoffset(&token, &iextvalue.offset[OVEROFFSET], &iextvalue.overindex); 
+		    OVERsetoffset(&token, &iextvalue.offset[OVEROFFSET], &iextvalue.overindex, &iextvalue.overlen); 
 		    ivalue = (void *)&iextvalue;
 		} else {
 		    ionevalue.offset = where;
@@ -365,6 +364,7 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 		    iextvalue.offset[HISTOFFSET] = where;
 		    iextvalue.offset[OVEROFFSET] = 0;
 		    iextvalue.overindex = OVER_NONE;
+		    iextvalue.overlen = 0;
 		    ivalue = (void *)&iextvalue;
 		} else {
 		    ionevalue.offset = where;
@@ -1598,26 +1598,28 @@ main(int ac, char *av[])
 	else
 	    val = FALSE;
 	if (!OVERsetup(OVER_MMAP, (void *)&val)) {
-	    (void)fprintf(stderr, "Can't setup unified overview mmap %s\n",
-		strerror(errno));
+	    (void)fprintf(stderr, "Can't setup unified overview mmap\n");
 	}
 	val = TRUE;
 	if (!OVERsetup(OVER_BUFFERED, (void *)&val)) {
-	    fprintf(stderr, "Can't setup unified overview buffered: %s\n", strerror(errno));
+	    fprintf(stderr, "Can't setup unified overview buffered\n");
+	    exit(1);
+	}
+	if (!OVERsetup(OVER_PREOPEN, (void *)&val)) {
+	    fprintf(stderr, "Can't setup unified overview preopen\n");
 	    exit(1);
 	}
 	if (!OVERsetup(OVER_MODE, (void *)mode)) {
-	    fprintf(stderr, "Can't setup unified overview mode: %s\n", strerror(errno));
+	    fprintf(stderr, "Can't setup unified overview mode\n");
 	    exit(1);
 	}
 	if (OverPath)
 	    if (!OVERsetup(OVER_DIR, (void *)OverPath)) {
-		fprintf(stderr, "Can't setup unified overview path: %s\n", strerror(errno));
+		fprintf(stderr, "Can't setup unified overview path\n");
 		exit(1);
 	    }
 	if (!OVERinit()) {
-	    (void)fprintf(stderr, "Can't initialize unified overview %s\n",
-		strerror(errno));
+	    (void)fprintf(stderr, "Can't initialize unified overview\n");
 	}
 	if (IndexFile && (index = fopen(IndexFile, "w")) == (FILE *)NULL) {
 	    (void)fprintf(stderr, "Can't open index file, %s\n",

@@ -64,7 +64,6 @@ typedef struct _NGHASH {
     NEWSGROUP	**Groups;
 } NGHASH;
 
-#define MAXOVERLINE	4096
 /*
 **  Expire-specific stuff.
 */
@@ -1359,10 +1358,11 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
     if (innconf->extendeddbz) {
 	iextvalue.offset[HISTOFFSET] = where;
 	if (tokenretained)
-	    OVERsetoffset(&token, &iextvalue.offset[OVEROFFSET], &iextvalue.overindex);
+	    OVERsetoffset(&token, &iextvalue.offset[OVEROFFSET], &iextvalue.overindex, &iextvalue.overlen);
 	else {
 	    iextvalue.offset[OVEROFFSET] = 0;
 	    iextvalue.overindex = OVER_NONE;
+	    iextvalue.overlen = 0;
 	}
 	ivalue = (void *)&iextvalue;
     } else {
@@ -1782,35 +1782,39 @@ int main(int ac, char *av[])
     else
 	val = FALSE;
     if (!OVERsetup(OVER_MMAP, (void *)&val)) {
-	fprintf(stderr, "Can't setup unified overview mmap: %s\n", strerror(errno));
+	fprintf(stderr, "Can't setup unified overview mmap\n");
 	exit(1);
     }
     val = TRUE;
     if (!OVERsetup(OVER_BUFFERED, (void *)&val)) {
-	fprintf(stderr, "Can't setup unified overview buffered: %s\n", strerror(errno));
+	fprintf(stderr, "Can't setup unified overview buffered\n");
+	exit(1);
+    }
+    if (!OVERsetup(OVER_PREOPEN, (void *)&val)) {
+	fprintf(stderr, "Can't setup unified overview preopen\n");
 	exit(1);
     }
     if (!OVERsetup(OVER_MODE, "r")) {
-	fprintf(stderr, "Can't setup unified overview mode: %s\n", strerror(errno));
+	fprintf(stderr, "Can't setup unified overview mode\n");
 	exit(1);
     }
     if (!OVERsetup(OVER_NEWMODE, "w")) {
-       fprintf(stderr, "Can't setup unified overview mode to be created: %s\n", strerror(errno));
+       fprintf(stderr, "Can't setup unified overview mode to be created\n");
        exit(1);
     }
 
     if (OverPath)
 	if (!OVERsetup(OVER_NEWDIR, (void *)OverPath)) {
-	    fprintf(stderr, "Can't setup unified overview path: %s\n", strerror(errno));
+	    fprintf(stderr, "Can't setup unified overview path\n");
 	    exit(1);
 	}
     if (StorageAPI) {
 	if (!OVERinit()) {
-	    fprintf(stderr, "Can't initialize unified overview: %s\n", strerror(errno));
+	    fprintf(stderr, "Can't initialize unified overview\n");
 	    exit(1);
 	}
 	if (Writing && !OVERnewinit()) {
-	    fprintf(stderr, "Can't initialize new unified overview: %s\n", strerror(errno));
+	    fprintf(stderr, "Can't initialize new unified overview\n");
 	    exit(1);
 	}
     }
