@@ -45,7 +45,7 @@ COPT            = @CFLAGS@
 GCFLAGS         = $(COPT) -I../include @CPPFLAGS@ $(LFS_CFLAGS)
 WARNINGS        = -pedantic -Wall -W -Wunused -Wshadow -Wpointer-arith \
                   -Wbad-function-cast -Wcast-qual -Wcast-align \
-                  -Wwrite-strings -Wstrict-prototypes -Werror
+                  -Wwrite-strings -Wstrict-prototypes
 
 BERKELEY_DB_CFLAGS = @BERKELEY_DB_CFLAGS@
 
