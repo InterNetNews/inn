@@ -138,7 +138,7 @@
 .\" ======================================================================
 .\"
 .IX Title "CKPASSWD 1"
-.TH CKPASSWD 1 "INN 2.4.0" "2000-11-05" "InterNetNews Documentation"
+.TH CKPASSWD 1 "INN 2.4.0" "2000-11-29" "InterNetNews Documentation"
 .UC
 .SH "NAME"
 ckpasswd \- nnrpd password authenticator
@@ -208,7 +208,8 @@ vaguely.  That means each line should look something like:
 \&    username:pdIh9NCNslkq6
 .Ve
 (and each line may have an additional colon after the encrypted password
-and additional data; that data will be ignored by \fBckpasswd\fR).  \s-1INN\s0 does
+and additional data; that data will be ignored by \fBckpasswd\fR).  Lines
+starting with a number sign (`#') are ignored.  \s-1INN\s0 does
 not come with a utility to create the encrypted passwords, but it's a
 quick job with Perl (see the example script under \fB\-d\fR).
 .Ip "\fB\-s\fR" 4

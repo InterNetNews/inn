@@ -71,7 +71,8 @@ vaguely.  That means each line should look something like:
     username:pdIh9NCNslkq6
 
 (and each line may have an additional colon after the encrypted password
-and additional data; that data will be ignored by B<ckpasswd>).  INN does
+and additional data; that data will be ignored by B<ckpasswd>).  Lines
+starting with a number sign (`#') are ignored.  INN does
 not come with a utility to create the encrypted passwords, but it's a
 quick job with Perl (see the example script under B<-d>).
 

@@ -62,13 +62,11 @@ GetFilePass(char *name, char *file)
     while ((!found) && fgets(buf, sizeof(buf), pwfile)) {
 	if (*buf != '#') {			/* ignore comment lines */
 	    buf[strlen(buf)-1] = 0;		/* clean off the \n */
-	    if (!(colon = strchr(buf, ':'))) {
-		fclose(pwfile);
-		return(0);
+	    if ((colon = strchr(buf, ':'))) {	/* correct format */
+		*colon = 0;
+		if (!strcmp(buf, name))
+    		    found = 1;
 	    }
-	    *colon = 0;
-	    if (!strcmp(buf, name))
-    		found = 1;
 	}
     }
     fclose(pwfile);
