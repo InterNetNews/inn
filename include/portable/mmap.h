@@ -22,7 +22,7 @@
 /* Make sure that the symbolic constant for the error return from mmap is
    defined (some platforms don't define it). */
 #ifndef MAP_FAILED
-# define MAP_FAILED     ((caddr_t) -1)
+# define MAP_FAILED     ((void *) -1)
 #endif
 
 /* On some platforms, msync only takes two arguments.  (ANSI C allows macro
