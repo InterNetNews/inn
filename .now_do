@@ -5,5 +5,5 @@ everything was set correctly.
 	Makefile.global
 	include/config.h
 	include/paths.h
-	innfeed/config.h
+	innfeed/innfeed.h
 
