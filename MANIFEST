@@ -129,14 +129,12 @@ doc/man/inndf.8                       Manpage for inndf utility
 doc/man/inndstart.8                   Manpage for inndstart
 doc/man/innfeed.1                     Manpage for innfeed backend
 doc/man/innfeed.conf.5                Manpage for innfeed.conf config file
-doc/man/innlog.pl.8                   Manpage for innlog.pl
 doc/man/innreport.8                   Manpage for innreport
 doc/man/innstat.8                     Manpage for innstat utility
 doc/man/innwatch.8                    Manpage for innwatch
 doc/man/innwatch.ctl.5                Manpage for innwatch.ctl config file
 doc/man/innxbatch.8                   Manpage for innxbatch
 doc/man/innxmit.8                     Manpage for innxmit
-doc/man/installit.1                   Manpage for installit
 doc/man/libinn.3                      Manpage for INN library routines
 doc/man/libstorage.3                  Manpage for storage API library routines
 doc/man/mailpost.8                    Manpage for mailpost frontend
@@ -146,12 +144,10 @@ doc/man/makehistory.8                 Manpage for makehistory
 doc/man/mod-active.8                  Manpage for mod-active
 doc/man/moderators.5                  Manpage for moderators config file
 doc/man/motd.news.5                   Manpage for motd.news config file
-doc/man/news-recovery.8               Manpage for recovery programs
 doc/man/news.daily.8                  Manpage for news.daily
 doc/man/news2mail.8                   Manpage for news2mail
 doc/man/newsfeeds.5                   Manpage for newsfeeds config file
 doc/man/newslog.5                     Manpage for log files
-doc/man/newslog.8                     Manpage for log file administration
 doc/man/newsrequeue.8                 Manpage for newsrequeue
 doc/man/nnrp.access.5                 Manpage for nnrp.access config file
 doc/man/nnrpd.8                       Manpage for nnrpd daemon
@@ -187,7 +183,6 @@ doc/man/storage.ctl.5                 Manpage for storage.ctl config file
 doc/man/strcasecmp.3                  Manpage for strcasecmp (from BSD)
 doc/man/subst.1                       Manpage for subst
 doc/man/tally.control.8               Manpage for tally.control
-doc/man/tally.unwanted.8              Manpage for tally.unwanted
 doc/man/wildmat.3                     Manpage for wildmat library routine
 doc/man/writelog.8                    Manpage for writelog
 doc/pod                               POD documentation (Directory)
