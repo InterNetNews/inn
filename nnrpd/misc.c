@@ -650,20 +650,17 @@ InitBackoffConstants()
   
   /* Read the runtime config file to get parameters */
 
-  if (innconf->backoff_db == NULL) return;
-  else
-    (void)strncpy(postrec_dir,innconf->backoff_db,SMBUF);
+  if ((innconf->backoff_db == NULL) ||
+    !(innconf->backoff_k > 1L && innconf->backoff_postfast > 0L && innconf->backoff_postslow > 1L))
+    return;
 
   /* Need this database for backing off */
+  (void)strncpy(postrec_dir,innconf->backoff_db,SMBUF);
   if (stat(postrec_dir, &st) < 0) {
     syslog(L_ERROR, "%s cannot stat backoff_db '%s': %s",ClientHost,postrec_dir,strerror(errno));
     return;
   }
-
-  /* Only enable if the constants make sense */
-  if (innconf->backoff_k > 1L && innconf->backoff_postfast > 0L && innconf->backoff_postslow > 1L) {
-    BACKOFFenabled = TRUE;
-  }
+  BACKOFFenabled = TRUE;
 
   return;
 }
