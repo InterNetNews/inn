@@ -85,8 +85,8 @@ char *HandleHeaders(char *article)
    /* Create the Perl Hash */
    hdr = perl_get_hv("hdr", TRUE);
    for (hp = Table; hp < EndOfTable; hp++) {
-      if (hp->Value)
-         hv_store(hdr, (char *) hp->Name, strlen(hp->Name), newSVpv(hp->Value, 0), 0);
+      if (hp->Body)
+         hv_store(hdr, (char *) hp->Name, strlen(hp->Name), newSVpv(hp->Body, 0), 0);
    }
    
    /* Also store other headers */
