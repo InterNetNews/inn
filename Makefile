@@ -93,6 +93,13 @@ clobber realclean:	clean
 	rm -f tags */tags core */core a.out */a.out foo */foo
 	rm -f CHANGES *~
 	rm -fr $(TARDIR)
+	rm -f config.cache config.log include/config.h
+	rm -f Makefile.global makedirs.sh config/config.data 
+	rm -f include/paths.h samples/actsync.cfg samples/inncheck 
+	rm -f samples/innshellvars samples/innshellvars.csh 
+	rm -f samples/innshellvars.pl samples/innshellvars.tcl 
+	rm -f samples/innreport.conf samples/innwatch.ctl samples/startup.tcl 
+	rm -f site/subst.pl storage/buildconfig syslog/syslog.conf
 	@echo ""
 	cd site ; make clobber ; cd ..
 
