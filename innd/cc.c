@@ -410,7 +410,7 @@ CCcancel(av)
     ARTDATA	Data;
     STRING	p;
 
-    Data.Posted = Now.time;
+    Data.Posted = Data.Arrived = Now.time;
     Data.Expires = 0;
     Data.Feedsite = "?";
     if ((p = CCgetid(av[0], &Data.MessageID)) != NULL)
