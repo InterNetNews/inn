@@ -164,6 +164,34 @@ if ${ROTATE} ; then
 	${SYSLOG_ERR})
 	    mv ${F}.old ${OLD}/${BASE}
 	    ;;
+	${UNWANTED_LOG})
+	    ##  Rotate and compress the file.
+	    BASE=`basename ${F}`
+	    if [ ! -f ${BASE} -a -f ../${BASE} ]; then
+		cp ../${BASE} ${BASE}
+		chmod 0440 ${BASE}
+	    fi
+	    if [ -f ${BASE} ]; then
+		${LOG_COMPRESS} <${BASE} >${BASE}.0${Z} && rm -f ${BASE}
+		chmod 0440 ${BASE}.0${Z}
+
+		##  Do rotation.
+		if [ X${LOGCYCLES} = X ]; then       
+		    LOGCYCLES=3
+		fi
+		EXT=${LOGCYCLES}
+		rm -f ${BASE}.${LOGCYCLES}${Z}
+		while [ ${EXT} -gt 0 ] ; do
+		    NEXT=${EXT}
+		    EXT=`expr ${EXT} - 1`
+		    test -f ${BASE}.${EXT}${Z} \
+			&& rm -f ${BASE}.${NEXT}${Z} \
+			&& mv ${BASE}.${EXT}${Z} ${BASE}.${NEXT}${Z}
+		done
+	    fi
+	    ##  Innreport assumes where unwanted.log exists, so leave it
+	    ##  and process later.
+	    ;;
 	*)
 	    if [ -f ${F}.old ]; then
 		mv ${F}.old ${OLD}/${BASE}
@@ -241,6 +269,16 @@ if [ -s ${OLD_SYSLOG} -o -s ${OLD_LOG} ] ; then
     echo ''
 fi
 rm -f ${OLD_LOG} ${OLD_SYSLOG}
+if ${ROTATE} ; then
+    BASE=`basename ${UNWANTED_LOG}`
+    if [ -f ${UNWANTED_LOG}.old ]; then
+	mv ${UNWANTED_LOG}.old ${OLD}/${BASE}
+    else
+	rm -f ${OLD}/${BASE}
+	cp ${UNWANTED_LOG} ${OLD}/${BASE}
+	chmod 0660 ${OLD}/${BASE}
+    fi
+fi
 
 OLD_SYSLOG=${OLD}/${EXPLOG}.0
 rm -f ${EXPLOG}
@@ -252,6 +290,10 @@ if ${ROTATE} ; then
         LOGCYCLES=3
     fi
     for F in ${LOGS} ; do
+	##  Skip if it's unwanted.log, since it's already rotated
+	if [ ${F} = ${UNWANTED_LOG} ]; then
+	    continue
+	fi
 	##  Skip if file doesn't exist.
 	BASE=`basename ${F}`
 	test -f ${BASE} || continue
