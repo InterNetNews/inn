@@ -1030,7 +1030,6 @@ AC_OUTPUT(
 	samples/innreport
 	samples/innreport.conf 
 	samples/innshellvars 
-	samples/innshellvars.csh 
 	samples/innshellvars.pl 
 	samples/innshellvars.tcl 
 	samples/innstat

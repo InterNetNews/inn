@@ -6327,7 +6327,6 @@ trap 'rm -fr `echo "Makefile.global
 	samples/innreport
 	samples/innreport.conf 
 	samples/innshellvars 
-	samples/innshellvars.csh 
 	samples/innshellvars.pl 
 	samples/innshellvars.tcl 
 	samples/innstat
@@ -6557,7 +6556,6 @@ CONFIG_FILES=\${CONFIG_FILES-"Makefile.global
 	samples/innreport
 	samples/innreport.conf 
 	samples/innshellvars 
-	samples/innshellvars.csh 
 	samples/innshellvars.pl 
 	samples/innshellvars.tcl 
 	samples/innstat
