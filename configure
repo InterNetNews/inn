@@ -5317,7 +5317,7 @@ done
 
 ac_given_srcdir=$srcdir
 
-trap 'rm -fr `echo "config/config.data backends/Makefile.in config/Makefile.in expire/Makefile.in frontends/Makefile.in innd/Makefile.in innfeed/Makefile.in lib/Makefile.in nnrpd/Makefile.in storage/timehash/Makefile.in storage/Makefile.in Makefile.in include/config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+trap 'rm -fr `echo "config/config.data backends/Makefile config/Makefile expire/Makefile frontends/Makefilend/Makefilenfeed/Makefile lib/Makefile nnrpd/Makefile storage/timehash/Makefile storage/Makefile Makefile include/config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
@@ -5466,7 +5466,7 @@ EOF
 
 cat >> $CONFIG_STATUS <<EOF
 
-CONFIG_FILES=\${CONFIG_FILES-"config/config.data backends/Makefile.in config/Makefile.in expire/Makefile.in frontends/Makefile.in innd/Makefile.in innfeed/Makefile.in lib/Makefile.in nnrpd/Makefile.in storage/timehash/Makefile.in storage/Makefile.in Makefile.in"}
+CONFIG_FILES=\${CONFIG_FILES-"config/config.data backends/Makefile config/Makefile expire/Makefile frontends/Makefilend/Makefilenfeed/Makefile lib/Makefile nnrpd/Makefile storage/timehash/Makefile storage/Makefile Makefile"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then
