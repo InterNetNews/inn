@@ -12,7 +12,7 @@
 #include "paths.h"
 
 
-static char	GMApathname[256];
+static char	*GMApathname = NULL;
 static FILE	*GMAfp = NULL;
 
 
@@ -23,12 +23,13 @@ static void
 GMAclose(void)
 {
     if (GMAfp) {
-	(void)fclose(GMAfp);
+	fclose(GMAfp);
 	GMAfp = NULL;
     }
-    if (GMApathname[0]) {
-	(void)unlink(GMApathname);
-	GMApathname[0] = '\0';
+    if (GMApathname != NULL) {
+	unlink(GMApathname);
+        free(GMApathname);
+	GMApathname = NULL;
     }
 }
 
@@ -36,29 +37,29 @@ GMAclose(void)
 **  Internal library routine.
 */
 static FILE *
-GMA_listopen(const char *pathname, FILE *FromServer, FILE *ToServer,
-	     const char *request)
+GMA_listopen(int fd, FILE *FromServer, FILE *ToServer, const char *request)
 {
     char	buff[BUFSIZ];
     char	*p;
     int		oerrno;
     FILE	*F;
 
-    (void)unlink(pathname);
-    if ((F = fopen(pathname, "w")) == NULL)
-	return NULL;
+    F = fdopen(fd, "r+");
+    if (F == NULL)
+        return NULL;
 
     /* Send a LIST command to and capture the output. */
     if (request == NULL)
-	(void)fprintf(ToServer, "list moderators\r\n");
+	fprintf(ToServer, "list moderators\r\n");
     else
-	(void)fprintf(ToServer, "list %s\r\n", request);
-    (void)fflush(ToServer);
+	fprintf(ToServer, "list %s\r\n", request);
+    fflush(ToServer);
 
     /* Get the server's reply to our command. */
     if (fgets(buff, sizeof buff, FromServer) == NULL
      || !EQn(buff, NNTP_LIST_FOLLOWS, STRLEN(NNTP_LIST_FOLLOWS))) {
 	oerrno = errno;
+        fclose(F);
 	GMAclose();
 	errno = oerrno;
 	return NULL;
@@ -71,16 +72,16 @@ GMA_listopen(const char *pathname, FILE *FromServer, FILE *ToServer,
 	if ((p = strchr(buff, '\n')) != NULL)
 	    *p = '\0';
 	if (buff[0] == '.' && buff[1] == '\0') {
-	    if (ferror(F) || fflush(F) == EOF || fclose(F) == EOF)
+	    if (ferror(F) || fflush(F) == EOF || fseeko(F, 0, SEEK_SET) != 0)
 		break;
-	    return fopen(pathname, "r");
+	    return F;
 	}
-	(void)fprintf(F, "%s\n", buff);
+	fprintf(F, "%s\n", buff);
     }
 
     /* Ran out of input before finding the terminator; quit. */
     oerrno = errno;
-    (void)fclose(F);
+    fclose(F);
     GMAclose();
     errno = oerrno;
     return NULL;
@@ -99,6 +100,7 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
     char                *path;
     char		buff[BUFSIZ];
     char		name[SMBUF];
+    int                 fd;
 
     (void)strcpy(name, group);
     address[0] = '\0';
@@ -116,10 +118,13 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
         /*
          *  Get a local copy of the moderators file from the server.
          */
-	(void)sprintf(GMApathname, "%.220s/%s", innconf->pathtmp,
-		_PATH_TEMPMODERATORS);
-        (void)mktemp(GMApathname);
-        GMAfp = GMA_listopen(GMApathname, FromServer, ToServer, "moderators");
+        GMApathname = concatpath(innconf->pathtmp, _PATH_TEMPMODERATORS);
+        fd = mkstemp(GMApathname);
+        if (fd >= 0)
+            GMAfp = GMA_listopen(fd, FromServer, ToServer, "moderators");
+        else
+            GMAfp = NULL;
+
 	/* Fallback to the local copy if the server doesn't have it */
 	if (GMAfp == NULL) {
             path = concatpath(innconf->pathetc, _PATH_MODERATORS);
@@ -150,7 +155,7 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
 		for (p = name; *p; p++)
 		    if (*p == '.')
 			*p = '-';
-		(void)sprintf(address, save, name);
+		snprintf(address, sizeof(address), save, name);
 		break;
 	    }
 	}
@@ -167,6 +172,6 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
     for (p = name; *p; p++)
 	if (*p == '.')
 	    *p = '-';
-    (void)sprintf(address, save, name);
+    snprintf(address, sizeof(address), save, name);
     return address;
 }
