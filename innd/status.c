@@ -16,7 +16,11 @@
 #define MAX_PEER     100
 #define MIN_REFRESH   60  /* 1 min */
 #define HTML_STATUS
-#define STATUS_FILE  "inn.status" /* will be in pathlog/pathhttp */
+#if defined(HTML_STATUS)
+#define STATUS_FILE	"inn_status.html"	/* will be in pathhttp */
+#else
+#define STATUS_FILE	"inn.status"		/* will be in pathlog */
+#endif
 
 typedef struct _STATUS {
     char           name[SMBUF];
