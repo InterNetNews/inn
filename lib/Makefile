@@ -3,7 +3,7 @@ include ../Makefile.global
 
 CC	= $(LIBCC)
 IFTRUE	= @$(SHELL) ../iftrue.sh
-CFLAGS	= $(GCFLAGS) $(PERLINC)
+CFLAGS	= $(GCFLAGS)
 
 ##  For OSx systems, get these from the ATT Universe libc.
 ##  See the rule for version.o, below.
@@ -74,7 +74,7 @@ endian: endian.c
 	$(LIBCCWITHOUTLIBTOOL) $(CFLAGS) $(LDFLAGS) -o $@ endian.c
 
 perl.o: perl.c
-	$(LIBCCWITHOUTLIBTOOL) $(CFLAGS) $(LDFLAGS) -c perl.c
+	$(LIBCCWITHOUTLIBTOOL) $(PERLINC) $(CFLAGS) $(LDFLAGS) -c perl.c
 
 ../include/autoconfig.h: endian
 	./endian >../include/autoconfig.h
