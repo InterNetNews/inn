@@ -27,10 +27,11 @@ extern "C" {
 #if	!defined(NEW)
 
 #define NEW(T, c)			\
-	((T *)xmalloc((unsigned int)(sizeof (T) * (c))))
+	((T *)xmalloc((unsigned int)(sizeof (T) * (c)), __FILE__, __LINE__))
 
 #define RENEW(p, T, c)			\
-        (p = (T *)xrealloc((char *)(p), (unsigned int)(sizeof (T) * (c))))
+        (p = (T *)xrealloc((char *)(p), (unsigned int)(sizeof (T) * (c)), \
+                           __FILE__, __LINE__))
 
 #define DISPOSE(p)		free(p)
 

@@ -29,37 +29,38 @@ extern char *strerror();
 #endif
 
 void *
-xmalloc(size_t size)
+xmalloc(size_t size, const char *file, int line)
 {
     void *p;
 
     p = malloc(size);
     while (p == NULL) {
-        (*xmemfailure)("malloc", size);
+        (*xmemfailure)("malloc", size, file, line);
         p = malloc(size);
     }
     return p;
 }
 
 void *
-xrealloc(void *p, size_t size)
+xrealloc(void *p, size_t size, const char *file, int line)
 {
     void *newp;
 
     newp = realloc(p, size);
     while (newp == NULL) {
-        (*xmemfailure)("remalloc", size);
+        (*xmemfailure)("remalloc", size, file, line);
         newp = realloc(p, size);
     }
     return newp;
 }
 
 static int
-xmemerr(const char *what, size_t size)
+xmemerr(const char *what, size_t size, const char *file, int line)
 {
-    fprintf(stderr, "Can't %s %lu bytes: %s", what, size, strerror(errno));
+    fprintf(stderr, "%s:%d Can\'t %s %lu bytes: %s",
+            file, line, what, size, strerror(errno));
     exit(1);
 }
 
 /* Set the default error handler. */
-int (*xmemfailure)(const char *, size_t) = xmemerr;
+int (*xmemfailure)(const char *, size_t, const char *, int) = xmemerr;

@@ -23,11 +23,11 @@ extern "C" {
 /*
 **  MEMORY MANAGEMENT
 */
-extern void *   xmalloc(size_t size);
-extern void *   xrealloc(void *p, size_t size);
+extern void *   xmalloc(size_t size, const char *file, int line);
+extern void *   xrealloc(void *p, size_t size, const char *file, int line);
 
 /* This function is called whenever a memory allocation fails. */
-extern int (*xmemfailure)(const char *, size_t);
+extern int (*xmemfailure)(const char *, size_t, const char *, int);
 
 
 /* String handling. */

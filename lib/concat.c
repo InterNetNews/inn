@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "libinn.h"
+#include "macros.h"
 
 #ifdef STDC_HEADERS
 # include <string.h>
@@ -70,7 +71,8 @@ concat VA_PARAM(const char *, first)
        traversals of result, if using strcat(), or string, if using strlen
        to increment a pointer into result, at the cost of losing the
        native optimization of strcat() if any. */
-    result = (char *) xmalloc(length);
+    result = NEW(char, length);
+    /* xmalloc(length, __FILE__, __LINE__)); */
     p = result;
     VA_START(first);
     for (string = first; string != 0; VA_NEXT(string, const char *))
