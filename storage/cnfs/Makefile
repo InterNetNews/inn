@@ -1,4 +1,5 @@
-##  $Revision$
+##  $Id$
+
 include ../../Makefile.global
 
 CP	= $(UPLIBTOOL) cp
@@ -28,10 +29,11 @@ tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../../include/*.h ../*.h
 
 ##  Dependencies.  Default list, below, is probably good enough.
-depend:		Makefile $(SOURCES)
-	makedepend $(DEFS) $(SOURCES)
+
+depend:	Makefile $(SOURCES)
+	$(UPMAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-
-interface.o: methods.h interface.h
-methods.o: interface.h
+cnfs.o: cnfs.c ../../include/config.h ../../include/clibrary.h \
+ ../interface.h ../../include/libinn.h ../../include/macros.h \
+ ../methods.h cnfs.h cnfs-private.h ../../include/paths.h

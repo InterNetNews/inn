@@ -1,4 +1,5 @@
-##  $Revision$
+##  $Id$
+
 include ../../Makefile.global
 
 CP	= $(UPLIBTOOL) cp
@@ -26,10 +27,14 @@ tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../../include/*.h ../*.h
 
 ##  Dependencies.  Default list, below, is probably good enough.
-depend:		Makefile $(SOURCES)
-	makedepend $(DEFS) $(SOURCES)
+
+depend:	Makefile $(SOURCES)
+	$(UPMAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-
-caf.o: caf.h
-timecaf.o: caf.h timecaf.h
+caf.o: caf.c ../../include/configdata.h ../../include/config.h \
+ ../../include/clibrary.h caf.h ../../include/macros.h \
+ ../../include/libinn.h
+timecaf.o: timecaf.c ../../include/config.h ../../include/clibrary.h \
+ caf.h ../../include/libinn.h ../../include/macros.h ../methods.h \
+ timecaf.h ../../include/paths.h

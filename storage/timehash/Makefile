@@ -1,4 +1,5 @@
-##  $Revision$
+##  $Id$
+
 include ../../Makefile.global
 
 CP	= $(UPLIBTOOL) cp
@@ -25,7 +26,11 @@ tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../../include/*.h ../*.h
 
 ##  Dependencies.  Default list, below, is probably good enough.
-depend:		Makefile $(SOURCES)
-	makedepend $(DEFS) $(SOURCES)
+
+depend:	Makefile $(SOURCES)
+	$(UPMAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
+timehash.o: timehash.c ../../include/config.h ../../include/clibrary.h \
+ ../../include/libinn.h ../../include/macros.h ../methods.h \
+ ../../include/paths.h timehash.h

@@ -34,5 +34,13 @@ tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../../include/*.h ../*.h
 
 ##  Dependencies.  Default list, below, is probably good enough.
-depend:		Makefile $(SOURCES)
-	makedepend $(DEFS) $(SOURCES)
+
+depend:	$(SOURCES)
+	$(UPMAKEDEPEND) $(CFLAGS) $(SOURCES)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+buffindexed.o: buffindexed.c ../../include/config.h \
+ ../../include/clibrary.h ../../include/libinn.h \
+ ../../include/macros.h ../../include/ov.h ../../include/storage.h \
+ ../../include/paths.h ../../include/qio.h ../ovinterface.h \
+ buffindexed.h
