@@ -358,6 +358,7 @@ samples/actsync.cfg.in      1 Config file for actsync
 samples/actsync.ign         1 Ignore file for actsync
 samples/checkgroups.in      1 Checkgroups control message handler
 samples/control.ctl         1 Access control for control messages
+samples/controlchan.in      1 Channel program for control messages
 samples/cycbuff.conf        1 Sample cycbuff.conf(5) file
 samples/default.in          1 Default control message handler
 samples/distrib.pats        1 Default values for Distribution header
@@ -386,8 +387,9 @@ samples/innwatch.in         1 Throttle innd based on load and disk space
 samples/moderators          1 Sample moderators(5) file
 samples/motd.news           1 Sample motd.news(5) file
 samples/newgroup.in         1 Newgroup control message handler
+samples/newgroup.pl.in      1 Newgroup control message handler for controlchan
 samples/news.daily.in       1 Front-end script to run expire, etc.
-samples/newsfeeds           1 Sample newsfeeds(5) file
+samples/newsfeeds.in        1 Sample newsfeeds(5) file
 samples/nnrp.access         1 Sample nnrp.access(5) file
 samples/nnrpd.track         1 Sample nnrpd.track(5) file
 samples/nntpsend.ctl        1 Sample control file for nntpsend
@@ -398,7 +400,8 @@ samples/parsecontrol.in     1 Initial parsing of control messages
 samples/passwd.nntp         1 Sample passwd.nntp(5) file
 samples/pgpverify.in        1 Sample pgpverify program.
 samples/rc.news.in          1 News boot script
-samples/rmgroup.in          1 Rmgoup control message handler
+samples/rmgroup.in          1 Rmgroup control message handler
+samples/rmgroup.pl.in       1 Rmgroup control message handler for controlchan
 samples/sample.control      1 Control message for testing PGP.
 samples/scanlogs.in         1 Summarize log files
 samples/scanspool.in        1 Scan spool directory for trash
