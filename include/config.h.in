@@ -217,9 +217,6 @@
 /* Define if your msync() takes three arguments.  */
 #undef HAVE_MSYNC_3_ARG
 
-/* Define if you have both setrlimit() and getrlimit().  */
-#undef HAVE_RLIMIT
-
 /* Define if you have the setproctitle function.  */
 #undef HAVE_SETPROCTITLE
 
@@ -303,6 +300,9 @@
 /* Define if you have the getpagesize function.  */
 #undef HAVE_GETPAGESIZE
 
+/* Define if you have the getrlimit function.  */
+#undef HAVE_GETRLIMIT
+
 /* Define if you have the getrusage function.  */
 #undef HAVE_GETRUSAGE
 
@@ -356,6 +356,9 @@
 
 /* Define if you have the setreuid function.  */
 #undef HAVE_SETREUID
+
+/* Define if you have the setrlimit function.  */
+#undef HAVE_SETRLIMIT
 
 /* Define if you have the setsid function.  */
 #undef HAVE_SETSID
@@ -521,6 +524,9 @@
 
 /* Define if fpos_t is at least 64 bits and compatible with off_t. */
 #undef HAVE_LARGE_FPOS_T
+
+/* Define if <netdb.h> does not declare h_errno. */
+#undef NEED_HERRNO_DECLARATION
 
 
 
