@@ -5,10 +5,6 @@
  * limits for innfeed.
  */
 
-#if ! defined (USER)
-#define USER "news"
-#endif
-
 #if ! defined (INNFEED)
 #define INNFEED "innfeed"
 #endif
@@ -69,9 +65,9 @@ main(int ac, char **av, char **ep)
 #endif
 
   /* stop being root */
-  pwd = getpwnam(USER);
+  pwd = getpwnam(NEWSUSER);
   if (pwd == (struct passwd *)NULL)
-    syslog(LOG_ERR, "%s: getpwnam(%s): %s", *av, USER,
+    syslog(LOG_ERR, "%s: getpwnam(%s): %s", *av, NEWSUSER,
                   strerror (errno));
   else if (setgid(pwd->pw_gid) == -1)
     syslog(LOG_ERR, "%s: setgid(%d): %s", *av, pwd->pw_gid,
