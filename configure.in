@@ -263,40 +263,50 @@ if test x"$BERKELEY_DB_DIR" = xno ; then
     BERKELEY_DB_LDFLAGS=
     BERKELEY_DB_CFLAGS=
     BERKELEY_DB_LIB=
-    BERKELEY_DB_BINDIR=
 else
     AC_MSG_RESULT(yes)
     AC_MSG_CHECKING(for BerkeleyDB location)
     if test x"$BERKELEY_DB_DIR" = xyes ; then
         for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1 BerkeleyDB.3.2 ; do
-            for d in /opt /usr /usr/local ; do
+            for d in /usr /opt /usr/local ; do
                 test -d "$d/$v" && BERKELEY_DB_DIR="$d/$v"  
 	    done
         done
     fi
     if test x"$BERKELEY_DB_DIR" = xyes ; then
-        if test -d "/usr/local/include/db2" ; then
-            BERKELEY_DB_LDFLAGS="-L/usr/local/lib"
-            BERKELEY_DB_CFLAGS="-I/usr/local/include/db2"
-            BERKELEY_DB_LIB="-ldb2"
-            BERKELEY_DB_BINDIR="/usr/local/bin"
-            AC_MSG_RESULT(FreeBSD locations)
-        else
-            AC_MSG_ERROR(Can not find BerkeleyDB)
+        for v in db3 db2 ; do
+            if test -d "/usr/local/include/$v" ; then
+                BERKELEY_DB_LDFLAGS="-L/usr/local/lib"
+                BERKELEY_DB_CFLAGS="-I/usr/local/include/$v"
+                BERKELEY_DB_LIB="-l$v"
+                AC_MSG_RESULT(FreeBSD locations)
+                break
+            fi
+        done
+        if test x"$BERKELEY_DB_LIB" = x ; then
+            for v in db3 db2 ; do
+                if test -d "/usr/include/$v" ; then
+                    BERKELEY_DB_CFLAGS="-I/usr/include/$v"
+                    BERKELEY_DB_LIB="-l$v"
+                    AC_MSG_RESULT(Linux locations)
+                    break
+                fi
+            done
+            if test x"$BERKELEY_DB_LIB" = x ; then        
+                AC_MSG_ERROR(Cannot find BerkeleyDB)
+            fi
         fi
     else
         BERKELEY_DB_LDFLAGS="-L$BERKELEY_DB_DIR/lib"
         BERKELEY_DB_CFLAGS="-I$BERKELEY_DB_DIR/include"
         BERKELEY_DB_LIB="-ldb"
-        BERKELEY_DB_BINDIR="$BERKELEY_DB_DIR/bin"
         AC_MSG_RESULT($BERKELEY_DB_DIR)
     fi
     AC_DEFINE(USE_BERKELEY_DB, 1, [Define if BerkeleyDB is available.])
 fi
 AC_SUBST(BERKELEY_DB_LDFLAGS)
 AC_SUBST(BERKELEY_DB_CFLAGS)
-AC_SUBST(BERKELEY_DB_LIB)
-AC_SUBST(BERKELEY_DB_BINDIR)])
+AC_SUBST(BERKELEY_DB_LIB)])
 INN_LIB_BERKELEYDB
 
 dnl Check for whether the user wants to compile with OpenSSL, and if so
@@ -594,9 +604,6 @@ dnl includes gethostbyname in libsocket but needs libnsl for socket().
 AC_SEARCH_LIBS(gethostbyname, nsl)
 AC_SEARCH_LIBS(socket, socket, ,
     [AC_CHECK_LIB(nsl, socket, LIBS="$LIBS -lsocket -lnsl", , -lsocket)])
-
-dnl FIXME: We should be using inet_aton instead of inet_addr everywhere.
-AC_SEARCH_LIBS(inet_addr, 44bsd)
 
 dnl FIXME: These shouldn't go into the global LIBS variable.  getspnam() is
 dnl only used by the authentication programs.
