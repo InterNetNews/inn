@@ -2176,7 +2176,7 @@ STRING ARTpost(CHANNEL *cp)
             syslog(L_ERROR, "%s cant write history %s %m",
                    LogName, Data.MessageID);
 	DISPOSE(distributions);
-	ARTreject(buff, article);
+	ARTreject(REJECT_DISTRIB, cp, buff, article);
 	return buff;
       } else {
 	DISTparse(distributions, &Data);
