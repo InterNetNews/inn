@@ -746,7 +746,10 @@ main(int argc, char **argv)
     
     if (DoOverview) {
 	/* init the overview setup. */
-	OVopen(OV_WRITE);
+	if (!OVopen(OV_WRITE)) {
+	    fprintf(stderr, "makehistory: OVopen failed\n");
+	    exit(1);
+	}
 	OverAddAllNewsgroups();
     }
 
