@@ -474,11 +474,23 @@ storage/interface.h         1 Header file for interface.c
 storage/overview.c          1 Frontends for unified overview
 storage/overview.h          1 Header file for overview.c
 storage/qio.c               1 Quick I/O package
+storage/timecaf/Makefile    1 Makefile for timecaf method
+storage/timecaf/README.CAF  1 README for timecaf method
+storage/timecaf/caf.c       1 Subroutines for timecaf method
+storage/timecaf/caf.h       1 Header for subroutines of timecaf method
+storage/timecaf/method.config 1 Definition file used by buildconfig
+storage/timecaf/timecaf.c   1 Timecaf routines
+storage/timecaf/timecaf.h   1 Header file for timecaf
 storage/timehash            1 Timehash method (Directory)
 storage/timehash/Makefile   1 Makefile for timehash method
 storage/timehash/method.config 1 Definition file used by buildconfig
 storage/timehash/timehash.c 1 Timehash routines
 storage/timehash/timehash.h 1 Header file for timehash
+storage/tradspool/Makefile  1 Makefile for tradspool method
+storage/tradspool/README.tradspool 1 README for tradspool method
+storage/tradspool/method.config 1 Definition file used by buildconfig
+storage/tradspool/tradspool.c 1 Tradspool routines
+storage/tradspool/tradspool.h 1 Tradspool routines
 storage/trash               1 Trash method (Directory)
 storage/trash/Makefile      1 Makefile for trash method
 storage/trash/method.config 1 Definition file used by buildconfig
