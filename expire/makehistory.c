@@ -15,6 +15,21 @@
 #include "qio.h"
 #include "storage.h"
 
+#ifdef HAVE_SYS_WAIT_H
+#include <sys/wait.h>
+#endif
+#ifndef WEXITSTATUS
+# define WEXITSTATUS(status)    ((((unsigned)(status)) >> 8) & 0xFF)
+#endif
+#ifndef WIFEXITED
+# define WIFEXITED(status)      ((((unsigned)(status)) & 0xFF) == 0)
+#endif
+#ifndef WIFSIGNALED
+# define WIFSIGNALED(status)    ((((unsigned)(status)) & 0xFF) > 0 \
+                                 && (((unsigned)(status)) & 0xFF00) == 0)
+#endif
+
+
 /*
 **  Information about the schema of the news overview files.
 */
@@ -35,6 +50,8 @@ char *ActivePath = NULL;
 char *HistoryPath = NULL;
 FILE *HistFile;
 BOOL DoOverview;
+BOOL Fork;
+BOOL Cutofflow = FALSE;
 char *TmpDir;
 int OverTmpSegSize, OverTmpSegCount;
 FILE *OverTmpFile;
@@ -67,6 +84,8 @@ typedef struct _BUFFER {
     long	Left;
     char	*Data;
 } BUFFER;
+
+void OverAddAllNewsgroups(void);
 
 /*
  * Misc routines needed by DoArt...
@@ -171,18 +190,59 @@ FlushOverTmpFile(void)
 {
     char temp[SMBUF];
     char *SortedTmpPath;
-    int i;
+    int i, pid;
     TOKEN token;
     QIOSTATE *qp;
     int count;
     char *line, *p, *q, *r;
     time_t arrived, expires;
+    static int first = 1;
 
     if (OverTmpFile == NULL)
 	return;
     if (fflush(OverTmpFile) == EOF || ferror(OverTmpFile) || fclose(OverTmpFile) == EOF) {
 	(void)fprintf(stderr, "Can't close OverTmp file, %s\n",	strerror(errno));
 	exit(1);
+    }
+    if(Fork) {
+        if(!first) { /* if previous one is running, wait for it */
+	    int status;
+	    wait(&status);
+	    if(WIFEXITED(status) && WEXITSTATUS(status) != 0
+		    || WIFSIGNALED(status))
+		exit(1);
+	}
+
+	pid = fork();
+	if(pid == -1) {
+	    fprintf(stderr, "makehistory: fork(): %s\n", strerror(errno));
+	    exit(1);
+	}
+	if(pid > 0) {
+	    /* parent */
+	    first = 0;
+	    DISPOSE(OverTmpPath);
+	    OverTmpPath = NULL;
+	    return;
+	}
+
+	/* child */
+	/* init the overview setup. */
+	if (!OVopen(OV_WRITE)) {
+	    fprintf(stderr, "makehistory: OVopen failed\n");
+	    exit(1);
+	}
+	if (!OVctl(OVSORT, (void *)&sorttype)) {
+	    fprintf(stderr, "makehistory: OVctl(OVSORT) failed\n");
+	    exit(1);
+	}
+	if (!OVctl(OVCUTOFFLOW, (void *)&Cutofflow)) {
+	    fprintf(stderr, "makehistory: OVctl(OVCUTOFFLOW) failed\n");
+	    exit(1);
+	}
+
+	if(first)
+	    OverAddAllNewsgroups();
     }
 
     sprintf(temp, "%s/hisTXXXXXX", TmpDir);
@@ -264,6 +324,10 @@ FlushOverTmpFile(void)
     /* unlink sorted tmp file */
     unlink(SortedTmpPath);
     DISPOSE(SortedTmpPath);
+    if(Fork) {
+	OVclose();
+	exit(0);
+    }
 }
 	    
 
@@ -649,6 +713,7 @@ Usage(void)
     fprintf(stderr,"\t\tentries not already in main history file.\n");
     fprintf(stderr, "\t-x -- don't bother writing any history entries at all\n");
     fprintf(stderr, "\t-T tmpdir -- use directory tmpdir for temp files. \n");
+    fprintf(stderr, "\t-F -- fork when writing overview\n");
     exit(1);
 }
 
@@ -714,7 +779,6 @@ main(int argc, char **argv)
     char *p;
     char *OldHistoryPath;
     dbzoptions opt;
-    BOOL Cutofflow = FALSE;
     
     /* First thing, set up logging and our identity. */
     openlog("makehistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
@@ -731,11 +795,12 @@ main(int argc, char **argv)
     OverTmpSegCount = 0;
     NukeBadArts = FALSE;
     DoOverview = FALSE;
+    Fork = FALSE;
     AppendMode = FALSE;
     UpdateMode = FALSE;
     NoHistory = FALSE;
 
-    while ((i = getopt(argc, argv, "abf:Il:OT:ux")) != EOF) {
+    while ((i = getopt(argc, argv, "abf:Il:OT:uxF")) != EOF) {
 	switch(i) {
 	case 'T':
 	    TmpDir = optarg;
@@ -763,6 +828,9 @@ main(int argc, char **argv)
 	    break;
 	case 'O':
 	    DoOverview = TRUE;
+	    break;
+	case 'F':
+	    Fork = TRUE;
 	    break;
 	default:
 	    Usage();
@@ -792,7 +860,7 @@ main(int argc, char **argv)
     /* Read in the overview schema */
     ARTreadschema(DoOverview);
     
-    if (DoOverview) {
+    if (DoOverview && !Fork) {
 	/* init the overview setup. */
 	if (!OVopen(OV_WRITE)) {
 	    fprintf(stderr, "makehistory: OVopen failed\n");
@@ -877,9 +945,13 @@ main(int argc, char **argv)
     }
 
     if (DoOverview) {
+	int status;
 	FlushOverTmpFile();
+	if(Fork)
+	    wait(&status);
     }
-    OVclose();
+    if(!Fork)
+	OVclose();
     exit(0);
 }
 

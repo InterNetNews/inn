@@ -37,18 +37,19 @@ tags ctags: $(SOURCES)
 ##  Compilation rules.
 
 LINK            = $(LIBTOOL) $(CC) $(LDFLAGS) -o $@
-NEWSLIBS        = $(LIBNEWS) $(LIBS)
+LIB_S_I		= $(LIBSTORAGE) $(LIBINN)
+ES		= $(EXTSTORAGELIBS)
 FIX             = $(FIXSCRIPT)
 
-convdate:	convdate.o     $(LIBNEWS) ; $(LINK) convdate.o     $(NEWSLIBS)
-expire:		expire.o       $(LIBNEWS) ; $(LINK) expire.o       $(NEWSLIBS)
-expireover:	expireover.o   $(LIBNEWS) ; $(LINK) expireover.o   $(NEWSLIBS)
-fastrm:		fastrm.o       $(LIBNEWS) ; $(LINK) fastrm.o       $(NEWSLIBS)
-grephistory:	grephistory.o  $(LIBNEWS) ; $(LINK) grephistory.o  $(NEWSLIBS)
-makedbz:	makedbz.o      $(LIBNEWS) ; $(LINK) makedbz.o      $(NEWSLIBS)
-makehistory:	makehistory.o  $(LIBNEWS) ; $(LINK) makehistory.o  $(NEWSLIBS)
-newsrequeue:	newsrequeue.o  $(LIBNEWS) ; $(LINK) newsrequeue.o  $(NEWSLIBS)
-prunehistory:	prunehistory.o $(LIBNEWS) ; $(LINK) prunehistory.o $(NEWSLIBS)
+convdate:	convdate.o     $(LIBINN)  ; $(LINK) convdate.o     $(LIBINN) $(LIBS)
+expire:		expire.o       $(LIB_S_I) ; $(LINK) expire.o       $(LIB_S_I) $(ES) $(LIBS)
+expireover:	expireover.o   $(LIB_S_I) ; $(LINK) expireover.o   $(LIB_S_I) $(ES) $(LIBS)
+fastrm:		fastrm.o       $(LIB_S_I) ; $(LINK) fastrm.o       $(LIB_S_I) $(ES) $(LIBS)
+grephistory:	grephistory.o  $(LIB_S_I) ; $(LINK) grephistory.o  $(LIB_S_I) $(ES) $(LIBS)
+makedbz:	makedbz.o      $(LIBINN)  ; $(LINK) makedbz.o      $(LIBINN) $(LIBS)
+makehistory:	makehistory.o  $(LIB_S_I) ; $(LINK) makehistory.o  $(LIB_S_I) $(ES) $(LIBS)
+newsrequeue:	newsrequeue.o  $(LIBINN)  ; $(LINK) newsrequeue.o  $(LIBINN) $(LIBS)
+prunehistory:	prunehistory.o $(LIBINN)  ; $(LINK) prunehistory.o $(LIBINN) $(LIBS)
 
 expirerm:	expirerm.in        $(FIX) ; $(FIX) expirerm.in
 
@@ -66,7 +67,7 @@ NEWFLAGS	= CFLAGS="$(CFLAGS) $(PROF)" LDFLAGS="$(LDFLAGS) $(PROF)"
 
 expirep:	expire.c
 	rm -f expire.o
-	$(MAKE) expire $(NEWFLAGS) LIBNEWS=../libinn_p.a
+	$(MAKE) expire $(NEWFLAGS) LIBINN=../libinn_p.a
 	mv expire expirep
 	rm -f expire.o
 
