@@ -61,7 +61,7 @@ main(void)
     ok_string(24, "Strange", tst_delete(U"Strange", tst));
     ok(25, tst_search(U"Strange", tst) == NULL);
     ok_string(26, "t", tst_delete(U"t", tst));
-    ok(27, tst_search("t", tst) == NULL);
+    ok(27, tst_search(U"t", tst) == NULL);
     ok_string(28, "testing", tst_search(U"testing", tst));
     ok_string(29, "foo", tst_search(U"test", tst));
     ok_string(30, "testing", tst_delete(U"testing", tst));
