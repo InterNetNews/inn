@@ -23,6 +23,7 @@ authprogs/README.auth_pass  1 The authprogs README
 authprogsREADME.readers.conf  1 Developer docs for readers.conf
 authprogs/auth_pass.c       1 A sample prog for use with authinfo generic.
 authprogs/ckpasswd.c        1 Prog for checking password
+authprogs/domain.c          1 Prog to get the username from remote-user's hostname
 authprogs/ident.c           1 Prog for checking ident
 authprogs/pwcheck.c         1 Prog for checking password thru socket
 authprogs/radius.c          1 Prog for checking thru radius server
