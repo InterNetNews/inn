@@ -27,6 +27,22 @@ extern unsigned long	htonl(); /* nobody should really need this anymore */
 #define COPYADDR(dest, src) \
 	    (void)memcpy((POINTER)dest, (POINTER)src, (SIZE_T)sizeof (INADDR))
 
+#define TEST_CONFIG(a, b) \
+    { \
+	int byte, offset; \
+	offset = a % 8; \
+	byte = (a - offset) / 8; \
+	b = ((peer_params.Keysetbit & (1 << offset)) != 0) ? TRUE : FALSE; \
+    }
+
+#define SET_CONFIG(a) \
+    { \
+	int byte, offset; \
+	offset = a % 8; \
+	byte = (a - offset) / 8; \
+	peer_params.Keysetbit |= (1 << offset); \
+    }
+
 /*
 **  A remote host has an address and a password.
 */
@@ -34,7 +50,7 @@ typedef struct _REMOTEHOST {
     char	*Label;         /* Peer label */
     char	*Name;          /* Hostname */
     INADDR	Address;        /* List of ip adresses */
-    char	*Password;      /* Optionnnal password */
+    char	*Password;      /* Optional password */
     BOOL	Streaming;      /* Streaming allowed ? */
     BOOL	Skip;	        /* Skip this peer ? */
     BOOL	NoResendId;	/* Don't send RESEND responses ? */
@@ -43,6 +59,7 @@ typedef struct _REMOTEHOST {
     char	*Pattern;       /* List of groups allowed (string) */
     char        *Email;         /* Email(s) of contact */
     char	*Comment;	/* Commentary [max size = MAXBUFF] */
+    int		Keysetbit;	/* Bit to check duplicated key */
 } REMOTEHOST;
 
 typedef struct _REMOTEHOST_DATA {
@@ -63,6 +80,7 @@ STATIC CHANNEL		*RCchan;
 STATIC REMOTEHOST_DATA	*RCpeerlistfile;
 STATIC REMOTEHOST	*RCpeerlist;
 STATIC int		RCnpeerlist;
+STATIC char		RCbuff[SMBUF];
 
 #define PEER	        "peer"
 #define GROUP	        "group"
@@ -92,6 +110,7 @@ typedef enum {T_STRING, T_BOOLEAN, T_INTEGER} _Types;
 #define MUST_BE_BOOL    "%s Must be 'true' or 'false' in %s line %d"
 #define MUST_BE_INT	"%s Must be an integer value in %s line %d"
 #define HOST_NEEDED     "%s 'hostname' needed in %s line %d"
+#define DUPLICATE_KEY   "%s duplicate key in %s line %d"
 
 /*
 ** Stuff needed for limiting incoming connects.
@@ -532,32 +551,31 @@ char *RCreaddata (int *num, FILE *F)
   register char *s;
   register char *t;
   char          *word;
-  static   char  buff[SMBUF];
   register BOOL flag;
 
-  if (*buff == '\0') {
+  if (*RCbuff == '\0') {
     if (feof (F)) return (NULL);
-    fgets(buff, sizeof buff, F);
+    fgets(RCbuff, sizeof RCbuff, F);
     (*num)++;
-    if (strlen (buff) == sizeof buff)
+    if (strlen (RCbuff) == sizeof RCbuff)
       return (NULL); /* Line too long */
   }
-  p = buff;
+  p = RCbuff;
   do {
      /* Ignore blank and comment lines. */
-     if ((p = strchr(buff, '\n')) != NULL)
+     if ((p = strchr(RCbuff, '\n')) != NULL)
        *p = '\0';
-     if ((p = strchr(buff, COMMENT_CHAR)) != NULL) {
-       if (p == buff || (p > buff && *(p - 1) != '\\'))
+     if ((p = strchr(RCbuff, COMMENT_CHAR)) != NULL) {
+       if (p == RCbuff || (p > RCbuff && *(p - 1) != '\\'))
 	   *p = '\0';
      }
-     for (p = buff; *p == ' ' || *p == '\t' ; p++);
+     for (p = RCbuff; *p == ' ' || *p == '\t' ; p++);
      flag = TRUE;
      if (*p == '\0' && !feof (F)) {
        flag = FALSE;
-       fgets(buff, sizeof buff, F);
+       fgets(RCbuff, sizeof RCbuff, F);
        (*num)++;
-       if (strlen (buff) == sizeof buff)
+       if (strlen (RCbuff) == sizeof RCbuff)
 	 return (NULL); /* Line too long */
        continue;
      }
@@ -571,9 +589,9 @@ char *RCreaddata (int *num, FILE *F)
 	     *t != '\0'; t++);
       if (*t == '\0') {
 	*t++ = '\n';
-	fgets(t, sizeof buff - strlen (buff), F);
+	fgets(t, sizeof RCbuff - strlen (RCbuff), F);
 	(*num)++;
-	if (strlen (buff) == sizeof buff)
+	if (strlen (RCbuff) == sizeof RCbuff)
 	  return (NULL); /* Line too long */
 	if ((s = strchr(t, '\n')) != NULL)
 	  *s = '\0';
@@ -590,7 +608,7 @@ char *RCreaddata (int *num, FILE *F)
   }
   if (*p == '\0' && feof (F)) return (NULL);
   word = COPY (p);
-  for (p = buff; *t != '\0'; t++)
+  for (p = RCbuff; *t != '\0'; t++)
     *p++ = *t;
   *p = '\0';
 
@@ -642,9 +660,10 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     register REMOTEHOST		*group_params = NULL;
     register REMOTEHOST		peer_params;
     register REMOTEHOST		default_params;
-    BOOL			flag;
+    BOOL			flag, bit;
 
-
+ 
+    *RCbuff = '\0';
     if (*list) {
 	for (rp = *list, i = *count; --i >= 0; rp++) {
 	    DISPOSE(rp->Name);
@@ -707,6 +726,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     default_params.Email = COPY(NOEMAIL);
     default_params.Comment = COPY(NOCOMMENT);
     default_params.Pattern = NULL;
+    peer_params.Keysetbit = 0;
 
     /* Read the file to add all the hosts. */
     while ((word = RCreaddata (&linecount, F)) != NULL) {
@@ -756,6 +776,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	}
 	else
 	  DISPOSE(word);
+	peer_params.Keysetbit = 0;
 	continue;
       }
 
@@ -791,6 +812,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  group_params->Pattern : default_params.Pattern;
 	peer_params.Password = groupcount > 0 ?
 	  group_params->Password : default_params.Password;
+	peer_params.Keysetbit = 0;
 
 	if ((word = RCreaddata (&linecount, F)) == NULL)
 	{
@@ -967,6 +989,11 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
       /* streaming */
       if (!strncmp (word, STREAMING, sizeof STREAMING)) {
 	DISPOSE(word);
+	TEST_CONFIG(K_STREAM, bit);
+        if (bit) {
+	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
+	  break;
+	}
 	if ((word = RCreaddata (&linecount, F)) == NULL) {
 	  break;
 	}
@@ -987,12 +1014,18 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    group_params->Streaming = flag;
 	  else
 	    default_params.Streaming = flag;
+	SET_CONFIG(K_STREAM);
 	continue;
       }
 
       /* skip */
       if (!strncmp (word, SKIP, sizeof SKIP)) {
 	DISPOSE(word);
+	TEST_CONFIG(K_SKIP, bit);
+        if (bit) {
+	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
+	  break;
+	}
 	if ((word = RCreaddata (&linecount, F)) == NULL) {
 	  break;
 	}
@@ -1013,11 +1046,18 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    group_params->Skip = flag;
 	  else
 	    default_params.Skip = flag;
+	SET_CONFIG(K_SKIP);
 	continue;
       }
 
+      /* noresendid */
       if (!strncmp (word, NORESENDID, sizeof NORESENDID)) {
 	DISPOSE(word);
+	TEST_CONFIG(K_NORESENDID, bit);
+        if (bit) {
+	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
+	  break;
+	}
 	if ((word = RCreaddata (&linecount, F)) == NULL) {
 	  break;
 	}
@@ -1038,12 +1078,18 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    group_params->NoResendId = flag;
 	  else
 	    default_params.NoResendId = flag;
+	SET_CONFIG(K_NORESENDID);
 	continue;
       }
 
       /* max-connections */
       if (!strncmp (word, MAX_CONN, sizeof MAX_CONN)) {
 	DISPOSE(word);
+	TEST_CONFIG(K_MAX_CONN, bit);
+        if (bit) {
+	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
+	  break;
+	}
 	if ((word = RCreaddata (&linecount, F)) == NULL) {
 	  break;
 	}
@@ -1058,23 +1104,35 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  break;
 	}
 	peer_params.MaxCnx = atoi(word);
+	SET_CONFIG(K_MAX_CONN);
 	continue;
       }
 
       /* hostname */
       if (!strncmp (word, HOSTNAME, sizeof HOSTNAME)) {
+	TEST_CONFIG(K_HOSTNAME, bit);
+        if (bit) {
+	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
+	  break;
+	}
 	DISPOSE(word);
 	if ((word = RCreaddata (&linecount, F)) == NULL) {
 	  break;
 	}
 	RCadddata(data, &infocount, K_HOSTNAME, T_STRING, word);
 	peer_params.Name = word;
+	SET_CONFIG(K_HOSTNAME);
 	continue;
       }
 
       /* password */
       if (!strncmp (word, PASSWORD, sizeof PASSWORD)) {
 	DISPOSE(word);
+	TEST_CONFIG(K_PASSWORD, bit);
+        if (bit) {
+	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
+	  break;
+	}
 	if ((word = RCreaddata (&linecount, F)) == NULL) {
 	  break;
 	}
@@ -1086,11 +1144,17 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    group_params->Password = word;
 	  else
 	    default_params.Password = word;
+	SET_CONFIG(K_PASSWORD);
 	continue;
       }
 
       /* patterns */
       if (!strncmp (word, PATTERNS, sizeof PATTERNS)) {
+	TEST_CONFIG(K_PATTERNS, bit);
+        if (bit) {
+	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
+	  break;
+	}
 	DISPOSE(word);
 	if ((word = RCreaddata (&linecount, F)) == NULL) {
 	  break;
@@ -1103,12 +1167,18 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    group_params->Pattern = word;
 	  else
 	    default_params.Pattern = word;
+	SET_CONFIG(K_PATTERNS);
 	continue;
       }
 
       /* email */
       if (!strncmp (word, EMAIL, sizeof EMAIL)) {
 	DISPOSE(word);
+	TEST_CONFIG(K_EMAIL, bit);
+        if (bit) {
+	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
+	  break;
+	}
 	if ((word = RCreaddata (&linecount, F)) == NULL) {
 	  break;
 	}
@@ -1120,12 +1190,18 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    group_params->Email = word;
 	  else
 	    default_params.Email = word;
+	SET_CONFIG(K_EMAIL);
 	continue;
       }
 
       /* comment */
       if (!strncmp (word, COMMENT, sizeof COMMENT)) {
 	DISPOSE(word);
+	TEST_CONFIG(K_COMMENT, bit);
+        if (bit) {
+	  syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
+	  break;
+	}
 	if ((word = RCreaddata (&linecount, F)) == NULL) {
 	  break;
 	}
@@ -1137,6 +1213,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    group_params->Comment = word;
 	  else
 	    default_params.Comment = word;
+	SET_CONFIG(K_COMMENT);
 	continue;
       }
 
