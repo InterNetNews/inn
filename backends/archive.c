@@ -232,6 +232,80 @@ Copy(src, dest)
 
 
 /*
+**  Copy an article from memory into a file.
+*/
+STATIC BOOL
+CopyArt(ARTHANDLE *art, char *dest)
+{
+    register FILE	*out;
+    char		*p,*q,*last;
+    ARTHANDLE		article;
+    size_t		i;
+
+    /* Open the output file. */
+    if ((out = fopen(dest, "w")) == NULL) {
+	/* Failed; make any missing directories and try again. */
+	if ((p = strrchr(dest, '/')) != NULL) {
+	    if (!MakeArchiveDirectory(dest)) {
+		(void)fprintf(stderr, "Can't mkdir for \"%s\", %s\n",
+			dest, strerror(errno));
+		return FALSE;
+	    }
+	    out = fopen(dest, "w");
+	}
+	if (p == NULL || out == NULL) {
+	    (void)fprintf(stderr, "Can't open \"%s\" for writing, %s\n",
+		    dest, strerror(errno));
+	    return FALSE;
+	}
+    }
+
+    /* Copy the data. */
+    article.data = NEW(char, art->len);
+    for (i=0, last=NULL, q=article.data, p=art->data; i<art->len; i++,p++) {
+	if (*p == '.' && *last == '\n') {
+	    last = p;
+	} else if (*p != '\r') {
+	    last = p;
+	    *q++ = *p;
+	}
+    }
+    *q++ = '\0';
+    if ( q >= article.data ) {
+	article.len = q - article.data;
+    } else {
+	article.len = article.data - q;
+    }
+
+    /* Write the data. */
+    if (fwrite(article.data, article.len, 1, out) != 1) {
+	(void)fprintf(stderr, "Can't write \"%s\", %s\n",
+		dest, strerror(errno));
+	(void)fclose(out);
+	(void)unlink(dest);
+	return FALSE;
+    }
+
+    /* Flush and close the output. */
+    if (ferror(out) || fflush(out) == EOF) {
+	(void)fprintf(stderr, "Can't close \"%s\", %s\n",
+		dest, strerror(errno));
+	(void)unlink(dest);
+	(void)fclose(out);
+	return FALSE;
+    }
+    if (fclose(out) == EOF) {
+	(void)fprintf(stderr, "Can't close \"%s\", %s\n",
+		dest, strerror(errno));
+	(void)unlink(dest);
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+
+/*
 **  Print a usage message and exit.
 */
 STATIC NORETURN
@@ -259,6 +333,9 @@ main(ac, av)
     char		buff[BUFSIZ];
     char		temp[BUFSIZ];
     char		dest[BUFSIZ];
+    char		*groups, *q;
+    ARTHANDLE		*art;
+    TOKEN		token;
     struct stat		Sb;
 
     /* First thing, set up logging and our identity. */
@@ -333,6 +410,14 @@ main(ac, av)
     Name = dest + strlen(dest);
     *Name++ = '/';
 
+    /* If storageapi is being used, initialize... */
+    if (innconf->storageapi) {
+	if (!SMinit()) {
+	    (void)fprintf(stderr, "archive: Could not initialize the storage manager: %s", SMerrorstr);
+	    exit(1);
+	}
+    }
+
     /* Read input. */
     while (fgets(buff, sizeof buff, stdin) != NULL) {
 	if ((p = strchr(buff, '\n')) == NULL) {
@@ -345,66 +430,132 @@ main(ac, av)
 	if (buff[0] == '\0' || buff[0] == COMMENT_CHAR)
 	    continue;
 
-	/* Make sure we're only copying files. */
-	if (stat(buff, &Sb) < 0) {
-	    if (errno != ENOENT)
-		(void)fprintf(stderr, "Can't stat \"%s\", %s\n",
-			buff, strerror(errno));
-	    continue;
-	}
-	if (!S_ISREG(Sb.st_mode)) {
-	    (void)fprintf(stderr, "\"%s\" is not a regular file\n", buff);
-	    continue;
-	}
-
-	/* Set up the destination name. */
-	(void)strcpy(Name, buff);
-	if (Flat) {
-	    for (last = NULL, p = Name; *p; p++)
-		if (*p == '/') {
-		    last = p;
-		    *p = '.';
-		}
-	    if (last)
-		*last = '/';
-	}
-
-#if	defined(HAVE_SYMLINK)
-	if (Move) {
-	    if (!Copy(buff, dest))
-		continue;
-	    if (unlink(buff) < 0 && errno != ENOENT)
-		(void)fprintf(stderr, "Can't remove \"%s\", %s\n",
-			buff, strerror(errno));
-	    if (symlink(dest, buff) < 0)
-		(void)fprintf(stderr, "Can't symlink \"%s\" to \"%s\", %s\n",
-			buff, dest, strerror(errno));
-	    continue;
-	}
-#endif	/* defined(HAVE_SYMLINK) */
-
-	/* Try to link the file into the archive. */
-	if (link(buff, dest) < 0) {
-
-	    /* Make the archive directory. */
-	    if (!MakeArchiveDirectory(dest)) {
-		(void)fprintf(stderr, "Can't mkdir for \"%s\", %s\n",
-			dest, strerror(errno));
+	/* Check to see if this is a token... */
+	if (IsToken(buff)) {
+	    /* Get a copy of the article. */
+	    token = TextToToken(buff);
+	    if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
+		(void)fprintf(stderr, "Could not retrieve %s\n",
+			buff);
 		continue;
 	    }
 
-	    /* Try to link again; if that fails, make a copy. */
-	    if (link(buff, dest) < 0 && !Copy(buff, dest))
-		continue;
-	}
+	    /* Determine groups from the Xref header */
+    	    groups = (char *)HeaderFindMem(art->data, art->len, "Xref", 4);
 
-	/* Write index. */
-	if (Index) {
-	    WriteIndex(dest, Name);
-	    if (ferror(stdout) || fflush(stdout) == EOF)
-		(void)fprintf(stderr, "Can't write index for \"%s\", %s\n",
-			Name, strerror(errno));
+	    /* Skip over the newsserver name */
+	    while (*groups!=' ' && *groups!='\r' && *groups!='\n') {
+		groups++;
+	    }
+	    while (*groups==' ') {
+		groups++;
+	    }
+
+	    /* Process each newsgroup... */
+	    while (*groups!='\r' && *groups!='\n' && *groups!='\0') {
+		p = Name;
+		while(*groups!=' ' && *groups!='\r' && *groups!='\n') {
+		    *p++ = *groups++; 
+		}
+		*p='\0';
+		if ((p=strchr(Name, ':')) == NULL) {
+		    fprintf(stderr, "archive: bogus xref '%s'\n", Name);
+		    continue;
+		}
+		*p='/';
+
+		if (!Flat) {
+		    for (p=Name; *p; p++) {
+			if (*p == '.') {
+			    *p = '/';
+			}
+		    }
+		}
+
+		if (!CopyArt(art, dest)) {
+		    fprintf(stderr, 
+			"archive: %s->%s failed\n", buff, dest);
+		}
+
+	        /* Write index. */
+	        if (Index) {
+	            WriteIndex(dest, Name);
+	            if (ferror(stdout) || fflush(stdout) == EOF)
+		        (void)fprintf(stderr, "Can't write index for \"%s\", %s\n",
+			        Name, strerror(errno));
+	        }
+	    }
+
+	    /* Free up the article storage space */
+	    SMfreearticle(art);
 	}
+	else {
+	    /* Make sure we're only copying files. */
+	    if (stat(buff, &Sb) < 0) {
+	        if (errno != ENOENT)
+		    (void)fprintf(stderr, "Can't stat \"%s\", %s\n",
+			    buff, strerror(errno));
+	        continue;
+	    }
+	    if (!S_ISREG(Sb.st_mode)) {
+	        (void)fprintf(stderr, "\"%s\" is not a regular file\n", buff);
+	        continue;
+	    }
+
+	    /* Set up the destination name. */
+	    (void)strcpy(Name, buff);
+	    if (Flat) {
+	        for (last = NULL, p = Name; *p; p++)
+		    if (*p == '/') {
+		        last = p;
+		        *p = '.';
+		    }
+	        if (last)
+		    *last = '/';
+	    }
+
+#if	defined(HAVE_SYMLINK)
+	    if (Move) {
+	        if (!Copy(buff, dest))
+		    continue;
+	        if (unlink(buff) < 0 && errno != ENOENT)
+		    (void)fprintf(stderr, "Can't remove \"%s\", %s\n",
+			    buff, strerror(errno));
+	        if (symlink(dest, buff) < 0)
+		    (void)fprintf(stderr, "Can't symlink \"%s\" to \"%s\", %s\n",
+			    buff, dest, strerror(errno));
+	        continue;
+	    }
+#endif	/* defined(HAVE_SYMLINK) */
+
+	    /* Try to link the file into the archive. */
+	    if (link(buff, dest) < 0) {
+
+	        /* Make the archive directory. */
+	        if (!MakeArchiveDirectory(dest)) {
+		    (void)fprintf(stderr, "Can't mkdir for \"%s\", %s\n",
+			    dest, strerror(errno));
+		    continue;
+	        }
+
+	        /* Try to link again; if that fails, make a copy. */
+	        if (link(buff, dest) < 0 && !Copy(buff, dest))
+		    continue;
+	    }
+
+	    /* Write index. */
+	    if (Index) {
+	        WriteIndex(dest, Name);
+	        if (ferror(stdout) || fflush(stdout) == EOF)
+		    (void)fprintf(stderr, "Can't write index for \"%s\", %s\n",
+			    Name, strerror(errno));
+	    }
+	}
+    }
+
+    /* close down the storage manager api */
+    if (innconf->storageapi) {
+	SMshutdown();
     }
 
     /* If we read all our input, try to remove the file, and we're done. */
