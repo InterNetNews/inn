@@ -1,11 +1,10 @@
 Welcome to INN 2.2!
 
-  This is the public release of version 2.2 of InterNet News (INN). This work
-  is sponsored by the Internet Software Consortium.
+  This is the second BETA test version of INN 2.2.
 
-  This release is a bug-fix to the previous version.  Please see
-  the INSTALL document for installation instructions.
+  This work is sponsored by the Internet Software Consortium.
 
+  Please see the INSTALL document for installation instructions.
   See the NEWS file for what's changed from the previous release.
 
 Reporting Bugs
