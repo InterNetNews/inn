@@ -22,7 +22,8 @@ all check test: $(TESTS) $(EXTRA)
 	./runtests TESTS
 
 clean clobber:
-	rm -f *.o */*.o $(TESTS) $(EXTRA)
+	rm -f *.o *.lo */*.o */*.lo $(TESTS) $(EXTRA)
+	rm -rf .libs */.libs
 
 .c.o: $*.c
 	$(CC) $(CFLAGS) -c -o $@ $*.c
