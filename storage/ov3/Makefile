@@ -4,6 +4,8 @@ include ../../Makefile.global
 
 CFLAGS	= $(GCFLAGS) -I../../include -I..
 
+ALL = tdx-util
+
 SOURCES = ov3.c
 OBJECTS = ov3.o
 LOBJECTS = ov3.lo
@@ -11,15 +13,16 @@ ROBJECTS = ov3.$(EXTOBJ)
 
 .SUFFIXES: .lo
 
-all:			$(OBJECTS)
+all: $(ALL) $(OBJECTS)
 
 .c.o .c.lo:
 	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
 
+tdx-util: group.o tdx-util.o
+	$(UPLIBLD) $(LDFLAGS) -o $@ group.o tdx-util.o ../$(LIBINN) $(LIBS)
+
 clobber clean:
-	rm -f *.o *.lo obj/*.o
-	rm -f profiled
-	rm -f all install lint lint.all
+	rm -f *.o *.lo obj/*.o $(ALL)
 	rm -rf .libs
 
 tags ctags:	$(SOURCES)
