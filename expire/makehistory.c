@@ -1,6 +1,9 @@
 /*  $Revision$
 **
 **  Rebuild the history database.
+**
+**  1997-04-06: Fix off-by-one error when expanding buffer to fit history
+**  lines. <nick@zeta.org.au>
 */
 #include <stdio.h>
 #include <sys/types.h>
@@ -848,7 +851,7 @@ main(ac, av)
 
 	    *q = HIS_FIELDSEP;
 	    i = strlen(line);
-	    if (B.Size < i) {
+	    if (B.Size <= i) {
 		B.Size = i + 2;
 		RENEW(B.Data, char, B.Size);
 	    }
