@@ -46,6 +46,13 @@ ME:!*/!local,!collabra-internal::
 # news.example.com in the path (posts passing through that site).
 #ME/news.example.com:!*/!local,!collabra-internal::
 
+# The special feed that handles all newsgroup control messages.  Only
+# disable this if you want to ignore all newsgroup control messages; INN
+# no longer handles any control messages except cancel internally.
+controlchan!\
+	:!*,control,control.*,!control.cancel\
+	:Tc,Wnsm:@prefix@/bin/controlchan
+
 ##  Uncomment if you're using innfeed.  This feed tells INN how to run
 ##  innfeed, and then every site you're feeding with innfeed has a
 ##  flag of Tm and an argument of "innfeed!" to funnel into this feed.
@@ -60,14 +67,6 @@ ME:!*/!local,!collabra-internal::
 #innfeed!\
 #	:!*\
 #	:Tc,Wnm*:@prefix@/bin/startinnfeed
-
-##  Uncomment if usecontrolchan is set to true in inn.conf.  See INSTALL
-##  for more information.
-
-# Send non-cancel control messages through controlchan.
-#controlchan!\
-#	:!*,control,control.*,!control.cancel\
-#	:Tc,Wnsm:@prefix@/bin/controlchan
 
 ##  Only uncomment this feed if both enableoverview and useoverchan are
 ##  set to true in inn.conf.  By default, innd will write out overview
