@@ -71,9 +71,6 @@ typedef char		*CSTRING;
 /*
 **  4.  C LIBRARY DIFFERENCES
 */
-    /* How to fork? */
-    /* =()<#define FORK()	@<FORK>@()>()= */
-#define FORK()	vfork()
     /* Does your AF_UNIX bind use sizeof for the socket size? */
     /* =()<#define @<BIND_USE_SIZEOF>@_BIND_USE_SIZEOF>()= */
 #define DO_BIND_USE_SIZEOF
