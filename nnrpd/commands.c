@@ -448,7 +448,7 @@ CMDlist(int ac, char *av[])
     else if (caseEQ(p, "extensions")) {
 	lp = &INFOextensions;
 	    Reply("%d %s.\r\n", NNTP_SLAVEOK_VAL, lp->Format);
-	    Printf(" LISTGROUP\r\n OVER\r\n PAT\r\n.\r\n");
+	    Printf(" HDR\r\n LISTGROUP\r\n OVER\r\n.\r\n");
 	    return;
     }
     else if (caseEQ(p, "moderators"))
