@@ -111,21 +111,19 @@ struct group_index {
     int count;
 };
 
-/* The value used to mark an invalid or empty location in the group index. */
-static const GROUPLOC empty_loc = { -1 };
-
 /* Internal prototypes. */
 static int index_entry_count(size_t size);
 static size_t index_file_size(int count);
-static GROUPLOC index_offset_to_loc(ptrdiff_t offset);
+static long index_offset_to_loc(ptrdiff_t offset);
 static bool index_lock(int fd, enum inn_locktype type);
-static bool index_lock_group(int fd, GROUPLOC loc, enum inn_locktype type);
+static bool index_lock_group(int fd, long loc, enum inn_locktype type);
 static bool index_map(struct group_index *);
-static bool index_maybe_remap(struct group_index *, GROUPLOC loc);
+static bool index_maybe_remap(struct group_index *, long loc);
 static void index_unmap(struct group_index *);
 static bool index_expand(struct group_index *);
 static unsigned int index_bucket(HASH hash);
-static GROUPLOC index_find(struct group_index *, const char *group);
+static long index_find(struct group_index *, const char *group);
+static long index_splice(struct group_index *, const char *group);
 
 
 /*
@@ -150,15 +148,12 @@ index_file_size(int count)
 
 /*
 **  Given an offset from the beginning of the entry table in the group.index
-**  file, convert that to a GROUPLOC.
+**  file, convert that to a group number.
 */
-static GROUPLOC
+static long
 index_offset_to_loc(ptrdiff_t offset)
 {
-    GROUPLOC loc;
-
-    loc.recno = offset / sizeof(struct group_entry);
-    return loc;
+    return offset / sizeof(struct group_entry);
 }
 
 
@@ -178,11 +173,11 @@ index_lock(int fd, enum inn_locktype type)
 **  coordinating opening a group when it was just updated.
 */
 static bool
-index_lock_group(int fd, GROUPLOC group, enum inn_locktype type)
+index_lock_group(int fd, long group, enum inn_locktype type)
 {
     off_t offset = sizeof(struct group_header);
 
-    offset += group.recno * sizeof(struct group_entry);
+    offset += group * sizeof(struct group_entry);
     return inn_lock_range(fd, type, true, offset, sizeof(struct group_entry));
 }
 
@@ -252,12 +247,12 @@ index_map(struct group_index *index)
 **  writer is appending entries to the group index.)
 */
 static bool
-index_maybe_remap(struct group_index *index, GROUPLOC loc)
+index_maybe_remap(struct group_index *index, long loc)
 {
     struct stat st;
     int count;
 
-    if (loc.recno < index->count)
+    if (loc < index->count)
         return true;
 
     /* Don't remap if remapping wouldn't actually help. */
@@ -266,7 +261,7 @@ index_maybe_remap(struct group_index *index, GROUPLOC loc)
         return false;
     }
     count = index_entry_count(st.st_size);
-    if (count < loc.recno)
+    if (count < loc)
         return true;
 
     /* Okay, remapping will actually help. */
@@ -317,10 +312,10 @@ index_expand(struct group_index *index)
         return false;
 
     /* If the magic isn't right, assume this is a new index file. */
-    if (index->header->magic != GROUPHEADERMAGIC) {
-        index->header->magic = GROUPHEADERMAGIC;
+    if (index->header->magic != TDX_MAGIC) {
+        index->header->magic = TDX_MAGIC;
         index->header->freelist.recno = -1;
-        for (i = 0; i < GROUPHEADERHASHSIZE; i++)
+        for (i = 0; i < TDX_HASH_SIZE; i++)
             index->header->hash[i].recno = -1;
     }
 
@@ -395,36 +390,37 @@ index_bucket(HASH hash)
     unsigned int bucket;
 
     memcpy(&bucket, &hash, sizeof(bucket));
-    return bucket % GROUPHEADERHASHSIZE;
+    return bucket % TDX_HASH_SIZE;
 }
 
 
 /*
-**  Find a group in the index file, returning the GROUPLOC for that group.
+**  Find a group in the index file, returning the group number for that group
+**  or -1 if the group can't be found.
 */
-static GROUPLOC
+static long
 index_find(struct group_index *index, const char *group)
 {
     HASH hash;
-    GROUPLOC loc;
+    long loc;
 
     if (index->header == NULL || index->entries == NULL)
-        return empty_loc;
+        return -1;
     hash = Hash(group, strlen(group));
-    loc = index->header->hash[index_bucket(hash)];
+    loc = index->header->hash[index_bucket(hash)].recno;
 
-    while (loc.recno >= 0) {
+    while (loc >= 0) {
         struct group_entry *entry;
 
-        if (loc.recno > index->count && !index_maybe_remap(index, loc))
-            return empty_loc;
-        entry = index->entries + loc.recno;
+        if (loc > index->count && !index_maybe_remap(index, loc))
+            return -1;
+        entry = index->entries + loc;
         if (entry->deleted == 0)
             if (memcmp(&hash, &entry->hash, sizeof(hash)) == 0)
                 return loc;
-        loc = entry->next;
+        loc = entry->next.recno;
     }
-    return empty_loc;
+    return -1;
 }
 
 
@@ -433,27 +429,27 @@ index_find(struct group_index *index, const char *group)
 **  might belong to.  This function is called by tdx_index_delete.  No locking
 **  is at present done.
 */
-static GROUPLOC
+static long
 index_splice(struct group_index *index, const char *group)
 {
     HASH hash;
-    GROUPLOC *parent;
-    GROUPLOC loc;
+    struct loc *parent;
+    long loc;
 
     if (!index->writable)
-        return empty_loc;
+        return -1;
     if (index->header == NULL || index->entries == NULL)
-        return empty_loc;
+        return -1;
     hash = Hash(group, strlen(group));
     parent = &index->header->hash[index_bucket(hash)];
-    loc = *parent;
+    loc = parent->recno;
 
-    while (loc.recno >= 0) {
+    while (loc >= 0) {
         struct group_entry *entry;
 
-        if (loc.recno > index->count && !index_maybe_remap(index, loc))
-            return empty_loc;
-        entry = index->entries + loc.recno;
+        if (loc > index->count && !index_maybe_remap(index, loc))
+            return -1;
+        entry = index->entries + loc;
         if (entry->deleted == 0)
             if (memcmp(&hash, &entry->hash, sizeof(hash)) == 0) {
                 *parent = entry->next;
@@ -462,9 +458,9 @@ index_splice(struct group_index *index, const char *group)
                 return loc;
             }
         parent = &entry->next;
-        loc = entry->next;
+        loc = entry->next.recno;
     }
-    return empty_loc;
+    return -1;
 }
 
 
@@ -474,12 +470,12 @@ index_splice(struct group_index *index, const char *group)
 const struct group_entry *
 tdx_index_entry(struct group_index *index, const char *group)
 {
-    GROUPLOC loc;
+    long loc;
 
     loc = index_find(index, group);
-    if (loc.recno == empty_loc.recno)
+    if (loc == -1)
         return false;
-    return index->entries + loc.recno;
+    return index->entries + loc;
 }
 
 
@@ -495,16 +491,18 @@ tdx_index_add(struct group_index *index, const char *group, ARTNUM low,
 {
     HASH hash;
     unsigned int bucket;
-    GROUPLOC loc;
+    long loc;
     struct group_entry *entry;
     struct group_data *data;
 
     if (!index->writable)
         return false;
 
+    /* If the group already exists, update the flag as necessary and then
+       we're all done. */
     loc = index_find(index, group);
-    if (loc.recno != -1) {
-        entry = &index->entries[loc.recno];
+    if (loc != -1) {
+        entry = &index->entries[loc];
         if (entry->flag != *flag) {
             entry->flag = *flag;
             msync(entry, sizeof(*entry), MS_ASYNC);
@@ -520,11 +518,11 @@ tdx_index_add(struct group_index *index, const char *group, ARTNUM low,
             index_lock(index->fd, INN_LOCK_UNLOCK);
             return false;
         }
-    loc = index->header->freelist;
-    index->header->freelist = index->entries[loc.recno].next;
+    loc = index->header->freelist.recno;
+    index->header->freelist = index->entries[loc].next;
 
     /* Initialize the entry. */
-    entry = &index->entries[loc.recno];
+    entry = &index->entries[loc];
     hash = Hash(group, strlen(group));
     entry->hash = hash;
     entry->low = low;
@@ -535,7 +533,7 @@ tdx_index_add(struct group_index *index, const char *group, ARTNUM low,
     entry->flag = *flag;
     bucket = index_bucket(hash);
     entry->next = index->header->hash[bucket];
-    index->header->hash[bucket] = loc;
+    index->header->hash[bucket].recno = loc;
 
     /* Create the data files and initialize the index inode. */
     data = tdx_data_new(group, index->writable);
@@ -558,24 +556,24 @@ tdx_index_add(struct group_index *index, const char *group, ARTNUM low,
 bool
 tdx_index_delete(struct group_index *index, const char *group)
 {
-    GROUPLOC loc;
+    long loc;
     struct group_entry *entry;
 
     if (!index->writable)
         return false;
 
     loc = index_splice(index, group);
-    if (loc.recno == -1)
+    if (loc == -1)
         return false;
 
-    entry = &index->entries[loc.recno];
+    entry = &index->entries[loc];
     entry->deleted = time(NULL);
     HashClear(&entry->hash);
 
     /* The only thing we have to lock is the modification of the free list. */
     index_lock(index->fd, INN_LOCK_WRITE);
     entry->next = index->header->freelist;
-    index->header->freelist = loc;
+    index->header->freelist.recno = loc;
     index_lock(index->fd, INN_LOCK_UNLOCK);
     msync(index->header, sizeof(struct group_header), MS_ASYNC);
     msync(entry, sizeof(*entry), MS_ASYNC);
@@ -614,15 +612,15 @@ struct group_data *
 tdx_data_open(struct group_index *index, const char *group,
               struct group_entry *entry)
 {
-    GROUPLOC loc;
+    long loc;
     struct group_data *data;
     ARTNUM high, base;
 
     if (entry == NULL) {
         loc = index_find(index, group);
-        if (loc.recno == -1)
+        if (loc == -1)
             return NULL;
-        entry = &index->entries[loc.recno];
+        entry = &index->entries[loc];
     } else {
         loc = index_offset_to_loc(entry - index->entries);
     }
@@ -673,7 +671,7 @@ bool
 tdx_data_add(struct group_index *index, const char *group,
              const struct article *article)
 {
-    GROUPLOC loc;
+    long loc;
     struct group_data *data;
     struct group_entry *entry;
     ARTNUM old_base;
@@ -682,9 +680,9 @@ tdx_data_add(struct group_index *index, const char *group,
         return false;
 
     loc = index_find(index, group);
-    if (loc.recno == -1)
+    if (loc == -1)
         return false;
-    entry = &index->entries[loc.recno];
+    entry = &index->entries[loc];
     index_lock_group(index->fd, loc, INN_LOCK_WRITE);
     data = tdx_data_open(index, group, entry);
     if (data == NULL)
@@ -854,7 +852,7 @@ void
 tdx_index_dump(struct group_index *index)
 {
     int bucket;
-    GROUPLOC current;
+    long current;
     struct group_entry *entry;
     struct hash *hashmap;
     struct hashmap *group;
@@ -863,14 +861,12 @@ tdx_index_dump(struct group_index *index)
     if (index->header == NULL || index->entries == NULL)
         return;
     hashmap = hashmap_load();
-    for (bucket = 0; bucket < GROUPHEADERHASHSIZE; bucket++) {
-        current = index->header->hash[bucket];
-        while (current.recno != empty_loc.recno) {
-            if (!index_maybe_remap(index, current)) {
-                warn("tradindexed: cannot remap %s", index->path);
+    for (bucket = 0; bucket < TDX_HASH_SIZE; bucket++) {
+        current = index->header->hash[bucket].recno;
+        while (current != -1) {
+            if (!index_maybe_remap(index, current))
                 return;
-            }
-            entry = index->entries + current.recno;
+            entry = index->entries + current;
             name = NULL;
             if (hashmap != NULL) {
                 group = hash_lookup(hashmap, &entry->hash);
@@ -880,7 +876,7 @@ tdx_index_dump(struct group_index *index)
             if (name == NULL)
                 name = HashToText(entry->hash);
             tdx_index_print(name, entry);
-            current = entry->next;
+            current = entry->next.recno;
         }
     }
     if (hashmap != NULL)

@@ -58,19 +58,19 @@
    changed until the format of the group.index file is changed to be
    architecture-independent since putting it into a struct may have changed
    the alignment or padding on some architectures. */
-typedef struct {
-    int                 recno;             /* Record number in group index */
-} GROUPLOC;
+struct loc {
+    int recno;
+};
 
 /* The hard-coded constant size of the hash table for group.index.  This need
    not be a power of two and has no special constraints.  Changing this at
    present will break backward compatibility with group.index files written by
    previous versions of the code. */
-#define GROUPHEADERHASHSIZE (16 * 1024)
+#define TDX_HASH_SIZE   (16 * 1024)
 
 /* A magic number for the group.index file so that we can later change the
    format in a backward-compatible fashion. */
-#define GROUPHEADERMAGIC    (~(0xf1f0f33d))
+#define TDX_MAGIC       (~(0xf1f0f33d))
 
 /* The header at the top of group.index.  magic contains GROUPHEADERMAGIC
    always; hash contains pointers to the heads of the entry chains, and
@@ -78,8 +78,8 @@ typedef struct {
    for groups that have since been deleted). */
 struct group_header {
     int         magic;
-    GROUPLOC    hash[GROUPHEADERHASHSIZE];
-    GROUPLOC    freelist;
+    struct loc  hash[TDX_HASH_SIZE];
+    struct loc  freelist;
 };
 
 /* An entry for a particular group.  Note that a good bit of active file
@@ -113,7 +113,7 @@ struct group_entry {
     ino_t       indexinode;     /* The inode of the index file for the group,
                                    used to detect when the file has been
                                    recreated and swapped out. */
-    GROUPLOC    next;           /* Next block in this chain. */
+    struct loc  next;           /* Next block in this chain. */
 };
 
 /* An entry in the per-group .IDX index file. */
