@@ -1,0 +1,164 @@
+#!@_PATH_PERL@
+#
+# news to mail channel backend
+#
+# INN gives us
+#	@token@ addrs
+# for each article that needs to be mailed.  We invoke sm on the
+# localhost to get the actual article and stuff
+# it down sendmail's throat.
+# 
+# this program expect to find a file that maps listname to listaddrs,
+#	/var/news/etc/news2mail.cf
+# which must contain address mapping pairs such as
+#
+#	big-red-ants@ucsd.edu	big-red-ants-digest@ucsd.edu		
+#
+# where the first token is the name fed to us from INN, and which is
+# also placed in the To: header of the outgoing mail.  It's probably
+# the subscriber's list submittal address so that replies go to the
+# right place.  The second token is the actual address sendmail ships
+# the article to.
+#
+# In the INN newsfeeds file, you need to have a channel feed:
+#	n2m!:!*:Tc,Ac,Wn*:/var/news/local/news2mail
+# and a site for each of the various mailing lists you're feeding,
+# such as
+#	big-red-ants@ucsd.edu:rec.pets.redants.*:Tm:n2m!
+#
+# Error handling is nearly nonexistent.
+#
+#	- Brian Kantor, UCSD Aug 1998
+
+require 5.002;
+
+use FileHandle;
+use Sys::Syslog;
+
+require "@LIBDIR@/innshellvars.pl";
+my $cfFile = $inn::pathetc . "/news2mail.cf" ;
+my $sendmail = $inn::mta ;
+my $sm = $inn::pathbin . "/sm" ;
+
+#
+# the syslog calls are here but don't work on my system
+#
+openlog('news2mail', 'pid', 'mail');
+
+syslog('info', 'begin');
+
+#
+# load the list names and their mail addresses from cf file
+# #comments and blank lines are ignored
+#
+unless (open CF, "< $cfFile") {
+		syslog('notice', 'CF open failed %m');
+		die "bad CF";
+		}
+
+while ( $line = <CF> ) {
+	next if ($line =~ /^#|^\s+/);
+	( $ln, $ma ) = split /\s+/, $line;
+	$maddr{ $ln } = $ma;
+	}
+close CF;
+
+#
+# for each incoming line from the INN channel
+#
+while ( <STDIN> ) {
+	chomp;
+
+	syslog('info', $_);
+
+	($token, $lnames) = split /\s+/, $_, 2;
+
+	$addrs = "";
+	$cnt = 0;
+
+	for $ln ( split /\s+/, $lnames ) {
+		if ( $maddr{ $ln } ) {
+			$cnt++;
+			}
+		$addrs = join ' ', $addrs, $maddr{ $ln };
+		}
+
+	if ($cnt > 0) {
+		mailto($token, $lnames, $addrs);
+		}
+	else {
+		syslog('notice', 'unknown listname %s', $_);
+		}
+	}
+
+syslog ("info", "end") ;
+
+exit 0;
+
+use strict;
+
+sub mailto {
+	my($t, $l, $a) = @_ ;
+
+	my ($smgrpid, $smgr);
+	my ($smid, $smpid, $d, $ih, $line, $reply, $sendmail);
+
+
+	$sendmail = "|" . $inn::mta ;
+	$sendmail =~ s!%s!! ;
+	$sendmail .= " -ee '-f<nobody>' -odq " . $a;
+#	$sendmail = "|/usr/local/bin/debug -oi -ee '-f<nobody>' -odq " . $a;
+
+	syslog('info', $sendmail);
+
+	unless ($smpid = (open SM, $sendmail)) {
+		syslog('notice', '%s failed!', $sendmail);
+		die "bad $sendmail";
+		}
+
+	if ($inn::storageapi eq "true") {
+	    $smgr = "$sm -q $t |";
+
+	    unless ($smgrpid = (open SMGR, $smgr)) {
+		syslog('notice', '%s failed!', $smgr);
+		die "bad $smgr";
+	    }
+	} else {
+	    my $path = $inn::patharticles . "/" . $t ;
+	    unless (open SMGR, "<$path") {
+		syslog('notice', "no such path: $path");
+		return ;
+	    }
+		
+	}
+
+	$ih = 1;
+	while ( $line = <SMGR> ) {
+		chop $line;
+
+		# empty line signals end of header
+		if ($ih && $line eq "") {
+			print SM "To: $l\n";
+			$ih = 0;
+			}
+
+		# body
+		if ( $ih == 0) {
+			print SM "$line\n";
+			next;
+			}
+		
+		#
+		# only these header lines get through to mail
+		#
+		print SM "$line\n" if ($line =~ /^From: /i);
+		print SM "$line\n" if ($line =~ /^Subject: /i);
+		print SM "$line\n" if ($line =~ /^Date: /i);
+		print SM "$line\n" if ($line =~ /^Organization: /i);
+		print SM "$line\n" if ($line =~ /^Message-ID: /i);
+		}
+
+out:
+	close(SMGR);
+	close(SM);
+	}
