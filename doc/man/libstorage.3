@@ -63,6 +63,18 @@ libstorage \- InterNetNews Storage API library routines
 
 .B "BOOL OVexpiregroup(char *group, int *lo);"
 
+.B "typedef struct _OVGE {"
+.B "    BOOL        delayrm;"
+.B "    BOOL        usepost;"
+.B "    BOOL        quiet;"
+.B "    BOOL        keep;"
+.B "    BOOL        earliest;"
+.B "    BOOL        ignoreselfexpire;"
+.B "    char        *filename;"
+.B "    time_t      now;"
+.B "    float       timewarp;"
+.B "} OVGE;"
+
 .B "void OVclose(void);"
 
 .fi
@@ -299,11 +311,13 @@ is one of following.
 .sp 1
 .in +0.5i
 .nf
-OVSPACE	probe overview space usage
-OVSORT	probe which key is suitable for
-	overview method
+OVGROUPBASEDEXPIRE	setup how group based expiry is
+	done
 OVCUTOFFLOW	do not add overview data, if the
 	data is under lowest article
+OVSORT	probe which key is suitable for
+	overview method
+OVSPACE	probe overview space usage
 .fi
 .in -0.5i
 .sp 1
@@ -352,6 +366,11 @@ retrieves overview data and token specified with artnum.
 expires overview data for the newsgroup.
 .I OVexpiregroup
 checks the existense of the article and purge overview data if it's gone.
+If ``groupbaseexpiry'' in
+.I inn.conf
+is true,
+.I OVexpiregroup
+also expires articles.
 .PP
 .I OVclose
 frees all resources which is used by overview method.

@@ -321,32 +321,40 @@ The
 should be chosen from the following set:
 .nf
 	b	Size of wire formatted article in bytes
+	e	The time article will be expired as
+		seconds since epoch ``0'' means there is
+		no ``Expires'' header
 	f	Token of the article (equivalent to ``n'')
 	g	The newsgroup the article is in;
-		if cross-posted, then the first of the groups this
-		site gets (the differnece from ``G'' is that article
-		belongs to its newsgroup even if it is congrol message)
+		if cross-posted, then the first of the
+		groups this site gets (the differnece from
+		``G'' is that article belongs to its
+		newsgroup even if it is congrol message)
 	h	Article's Message-ID hash key
 	m	Article's Message-ID
 	n	Token of the article
-	p	The time the article was posted as seconds since epoch
-	s	The site that fed the article to the server; from the
-		Path: header or the IP address of the site that sent
-		the article depending on the ``logipaddr'' field in
+	p	The time the article was posted as seconds
+		since epoch
+	s	The site that fed the article to the
+		server; from the Path: header or the IP
+		address of the site that sent the article
+		depending on the ``logipaddr'' field in
 .IR			inn.conf (8);
-		if ``logipaddr'' is ``true'' and IP address is
-		``0.0.0.0'' which means the article is feeded from
-		localhost (e.g. from rnews), the result will be
-		retrieved from Path: header
-	t	Time article was received as seconds since epoch
+		if ``logipaddr'' is ``true'' and IP
+		address is ``0.0.0.0'' which means the
+		article is feeded from localhost (e.g.
+		from rnews), the result will be retrieved
+		from Path: header
+	t	The time article was received as seconds
+		since epoch
 	*	Names of the appropriate funnel entries;
 		or all sites that get the article
-	D	Value of the Distribution header;
-		? if none present
-	G	Where the article is stored;
-		if cross-posted, then the first of the groups this
-		site gets (the differnece from ``g'' is that cmsg
-		belongs to ``control.cmsg'')
+	D	Value of the Distribution header; ? if
+		none present
+	G	Where the article is stored; if cross-
+		posted, then the first of the groups this
+		site gets (the differnece from ``g'' is
+		that cmsg belongs to ``control.cmsg'')
 	H	All headers
 	N	Value of the Newsgroups header
 	P	Article's Path header

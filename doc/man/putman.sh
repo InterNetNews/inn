@@ -20,12 +20,12 @@ XNONE)
     exit 0
     ;;
 XSOURCE)
-    exec /bin/sh ../../installit.sh ${FLAGS} ${SRC} ${DEST}
+    exec /bin/sh ../../support/install-sh ${FLAGS} ${SRC} ${DEST}
     ;;
 XNROFF-PACK)
     T=${TMPDIR-/tmp}/man$$
     nroff -man ${SRC} >$T
-    /bin/sh ../../installit.sh ${FLAGS} $T ${DEST} && pack ${DEST}
+    /bin/sh ../../support/install-sh ${FLAGS} $T ${DEST} && pack ${DEST}
     rm -f $T
     exit
     ;;
@@ -33,7 +33,7 @@ XNROFF-PACK-SCO)
     T=${TMPDIR-/tmp}/man$$
     nroff -man ${SRC} >$T
     DEST2=`echo ${DEST} | sed -e 's/\..$/.INN/'`
-    /bin/sh ../../installit.sh ${FLAGS} $T ${DEST2} && pack ${DEST2}
+    /bin/sh ../../support/install-sh ${FLAGS} $T ${DEST2} && pack ${DEST2}
     rm -f $T
     exit
     ;;
@@ -41,7 +41,7 @@ XBSD4.4)
     T=${TMPDIR-/tmp}/man$$
     nroff -man ${SRC} >$T
     DEST2=`echo ${DEST} | sed -e 's/\..$/.0/'`
-    /bin/sh ../../installit.sh ${FLAGS} $T ${DEST2}
+    /bin/sh ../../support/install-sh ${FLAGS} $T ${DEST2}
     rm -f $T
     exit
     ;;

@@ -177,6 +177,11 @@ A typical use is to specify an alternate expiration program and use the
 \&``noexpire'' keyword.
 Multiple programs may be specified; they will be invoked in order.
 .TP
+.IR postexec= "'post executed program'"
+The program specified by the given path is executed just after all
+expiration is done.
+Multiple programs may be specified; they will be invoked in order.
+.TP
 .I lowmark
 If the ``lowmark'' keyword is used, 
 .IR ctlinnd (8)

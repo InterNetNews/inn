@@ -9,7 +9,7 @@ D	= $(DESTDIR)
 
 ##  Edit these if you need to.  For example, add "-b .OLD" to the MANFLAGS
 ##  variable (without quotes).
-MANFLAGS = $(OWNER) -m 0444
+MANFLAGS = -c $(OWNER) -m 0444 -B .OLD
 
 SEC1	= convdate.1 getlist.1 grephistory.1 inews.1 innconfval.1 innfeed.1 \
 	installit.1 nntpget.1 rnews.1 shlock.1 shrinkfile.1 startinnfeed.1 \

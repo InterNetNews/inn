@@ -66,6 +66,14 @@ If it does not exist,
 .I expire
 purges the relevant entries.
 To disable this, use the ``\fI\-N\fP'' flag.
+If ``groupbaseexpiry'' in
+.I inn.conf
+is true,
+.I expire
+always treats all stored articles whose storage method have self expire
+functionality regardless of its actual method.  In this case ``\fI\-e\fP'',
+\&``\fI\-k\fP'', ``\fI\-N\fP'', ``\fI\-p\fP'', ``\fI\-q\fP'', ``\fI\-w\fP''
+and ``\fI\-z\fP'' flags are ignored.
 .PP
 Note that
 .I expire

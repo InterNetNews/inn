@@ -2,6 +2,29 @@
 ''' $RCSfile$$Revision$$Date$
 '''
 ''' $Log$
+''' Revision 1.81  1999/11/26 16:47:18  kondou
+''' doc/man/Makefile:
+''' doc/man/putman.sh:
+''' 	- fixing 'make install' failure
+''' doc/man/expire.8:
+''' doc/man/expireover.8:
+''' doc/man/libstorage.3:
+''' 	- enabling group base expiry
+''' doc/man/fastrm.8:
+''' 	- drop useless options from fastrm
+''' doc/man/inn.conf.5:
+''' 	- enabling group base expiry
+''' 	- some of wip parameters are moved to inn.conf
+''' 	- ovgrouppat is added to be able specify which overview data will be
+''' 	  stored explicitly
+''' doc/man/news.daily.8:
+''' 	- enabling group base expiry
+''' 	- new keyword 'postexec=' which does post execution of news.daily is
+''' 	  added
+''' doc/man/newsfeeds.5:
+''' doc/man/overchan.8:
+''' 	- new flag 'e' is added to enable group base expiry
+'''
 ''' Revision 1.80  1999/10/16 10:34:38  kondou
 ''' doc/man/buffindexed.conf.5:
 ''' 	- explain the necessity of clearing buffer when rebuild
@@ -120,7 +143,7 @@
 .nr % 0
 .rr F
 .\}
-.TH INN.CONF 5 "INN 2.3" "15/Oct/99" "InterNetNews Documentation"
+.TH INN.CONF 5 "INN 2.3" "22/Nov/99" "InterNetNews Documentation"
 .UC
 .if n .hy 0
 .if n .na
@@ -329,6 +352,15 @@ large values aren't necessarily useful unless you have incoming feeds that
 are badly delayed.  A good value for a system with more than one incoming
 feed is \f(CW256\fR; systems with only one incoming feed should probably leave
 this at \f(CW0\fR.  The default value is \f(CW0\fR.
+.Ip "\fIwipcheck\fR" 4
+How long (in seconds) pre-committed message-ids are kept before unused.
+Pre-commit cache is used to respond to peers with ``436'\*(R' which means
+innd does not want the article currently and requests to try later.
+The default value is <5>.
+.Ip "\fIwipexpire\fR" 4
+How long (in seconds) pre-committed message-ids are kept before expired.
+This is used to respond with ``436'\*(R' on pending channel before finishing
+transfer.  The default value is <10>.
 .Ip "\fIignorenewsgroups\fR" 4
 Whether newsgroup creation control messages (newgroup and rmgroup) should
 be fed as if they were posted to the newsgroup they are creating or
@@ -444,6 +476,11 @@ will run much faster, but reading news from the system will be slow or
 impossible since there will be no overview files for readers.
 \fIovmethod\fR needs to be set, if \fIenableoverview\fR is set to true.
 This is a boolean value and the default is true.
+.Ip "\fIgroupbaseexpiry\fR" 4
+Whether to enable newsgroup base expiry.  If set to false, expiry is
+done based on class of storing method.  If set to true and overview
+data is created, expiry is done based on newsgroup name.
+This is a boolean value and the default is false.
 .Ip "\fImergetogroups\fR" 4
 Whether to file all postings to \f(CWto.*\fR groups in the pseudonewsgroup
 \f(CWto\fR.  If this is set to true, the newsgroup \f(CWto\fR must exist in the
@@ -463,6 +500,14 @@ incoming feed and outgoing channel or batch file, and if it runs out of
 open file descriptors it may throttle and stop accepting new news.  The
 default value is \f(CW15\fR (which is probably way too low if you have a large
 number of file descriptors available).
+.Ip "\fIovgrouppat\fR" 4
+For which newsgroups should overview be stored.  If nothing is specified,
+overview data for all newsgroups will be stored.  If something is specified,
+it is treated as a comma separated list of wildmat and any of matched overview
+data will be stored.  Note that if \fIgroupbaseexpiry\fR is true, \fIovgrouppat\fR
+is specifed and article storage method does not have self expire functionality,
+storing overview data will fail.
+This is a boolean value and the default is false.
 .Ip "\fIovmethod\fR" 4
 What overview storage method to use.  Currently supported values
 are \f(CWtradindexed\fR and \f(CWbuffindexed\fR.
@@ -475,13 +520,6 @@ containing the index.
 stores data and its index into buffers which are preconfigured files
 defined in \fIbuffinedexed.conf\fR.  \f(CWbuffindexed\fR never consumes disk
 space other than those files for overview data and index.
-.Ip "\fIovmmapthreshold\fR" 4
-Threshold not to use mmap when retrieving overview data for \f(CWbuffindexed\fR.
-If the number of retrieving overview data is beyond this value,
-\f(CWbuffindexed\fR does not hold mmapped area and allocates memory for it.
-If set to a negative value or if the number of retrieving overview data is
-under this value, \f(CWbuffindexed\fR holds mmapped area.  The default value is
-\f(CW10000\fR.
 .Ip "\fIstoreonxref\fR" 4
 If set to true, articles will be stored based on the newsgroup names in
 the Xref: header rather than in the Newsgroups: header.  This affects what
@@ -1033,6 +1071,10 @@ above are just the major and most frequently mentioned ones.
 
 .IX Item "\fIhiscachesize\fR"
 
+.IX Item "\fIwipcheck\fR"
+
+.IX Item "\fIwipexpire\fR"
+
 .IX Item "\fIignorenewsgroups\fR"
 
 .IX Item "\fIimmediatecancel\fR"
@@ -1067,17 +1109,19 @@ above are just the major and most frequently mentioned ones.
 
 .IX Item "\fIenableoverview\fR"
 
+.IX Item "\fIgroupbaseexpiry\fR"
+
 .IX Item "\fImergetogroups\fR"
 
 .IX Item "\fIovercachesize\fR"
+
+.IX Item "\fIovgrouppat\fR"
 
 .IX Item "\fIovmethod\fR"
 
 .IX Item "\f(CW   \fR \f(CWtradindexed\fR"
 
 .IX Item "\f(CW   \fR \f(CWbuffindexed\fR"
-
-.IX Item "\fIovmmapthreshold\fR"
 
 .IX Item "\fIstoreonxref\fR"
 

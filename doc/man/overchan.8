@@ -29,13 +29,14 @@ is true and appropriate setup is done in
 file, for example:
 .PP
 .RS
-overview!:*:Tc,WntO:<PREFIX specified with --prefix at configure>/bin/overchan
+overview!:*:Tc,WnteO:<PREFIX specified with --prefix at configure>/bin/overchan
 .RE
 .PP
-This data consists of a line of text, separated into three parts by a tab.
+This data consists of a line of text, separated into four parts by a tab.
 The first part is a token for the article.
-The second part is time when the article is received.
-The third part is the data to be written into the overview file.
+The second part is time when the article was received.
+The third part is time when the article will be expired.
+The fourth part is the data to be written into the overview file.
 The data in the overview files should be expired by running
 .IR expireover (8).
 This is normally done by adding the ``expireover'' flag to the

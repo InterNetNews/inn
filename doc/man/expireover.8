@@ -5,7 +5,28 @@ expireover \- Expire entries from the news overview database
 .SH SYNOPSIS
 .B expireover
 [
+.B \-e
+]
+[
 .BI \-f " file"
+]
+[
+.B \-k
+]
+[
+.B \-N
+]
+[
+.B \-p
+]
+[
+.B \-q
+]
+[
+.BI \-w " number"
+]
+[
+.BI \-z " rmfile"
 ]
 [
 .BI \-Z " lofile"
@@ -18,7 +39,21 @@ It reads a list of newsgroup list (
 (A file name of ``\-'' may be used to specify the standard input.)
 It then removes any mention of those articles from the appropriate overview
 database.
+If ``groupbaseexpiry'' in
+.I inn.conf
+is ``true'',
+.I expireover
+also expires articles.  If it's ``false'', ``\fI\-e\fP'', ``\fI\-k\fP'',
+\&``\fI\-N\fP'', ``\fI\-p\fP'', ``\fI\-q\fP'', ``\fI\-w\fP'' and ``\fI\-z\fP''
+flags are ignored.
 .SH OPTIONS
+.TP
+.B \-e
+If the ``\fI\-e\fP'' flag is used, then as soon as the first cross posting
+of the article expires, all overview entries relevant to the article are
+removed.
+Note that you cannot use both ``\fI\-e\fP'' and ``\fI\-k\fP'' flag at the
+same time.
 .TP
 .B \-f
 When the ``\fB\-\fPs'' flag is used, then
@@ -29,6 +64,48 @@ file.
 To specify an alternate file, use the ``\fB\-f\fP'' flag; a name 
 of ``\fB\-\fP'' is
 taken to mean the standard input.
+.TP
+.B \-k
+If this flag is used then articles are removed when they have been 
+expired from all the groups they appear in.
+Note that you cannot use both ``\fI\-e\fP'' and ``\fI\-k\fP'' flag at the
+same time.
+.TP
+.B \-N 
+If the storing method has self expire functionality, then the control file
+is ignored for that article by default.
+If the ``\fB\-N\fP'' flag is used,
+.I expireover
+purges articles and overview entries with the control file.
+.TP 
+.B \-p
+.I Expireover
+makes its decisions on the time the article arrived.
+This means articles are often kept a little longer than with other
+expiration programs that base their decisions on the article's posting
+date.
+To use the article's posting date, use the ``\fI\-p\fP'' flag.
+.TP
+.B \-q 
+.I Expireover
+normally prints statistics at the end of process.
+To suppress this action, use the ``\fB\-q\fP'' flag.
+.TP
+.B \-w
+Use the ``\fI\-w\fP'' flag to ``warp'' time so that
+.I expireover
+thinks it is running at some time other then the current time.
+The value should be a signed floating point number of the number of days
+to use as the offset.
+.TP 
+.B \-z
+If the ``\fB\-z\fP'' flag is used, then articles are not removed, but their
+names are appended to the specified
+.IR file .
+See the description of
+.I delayrm
+in 
+.IR news.daily (8).
 .TP
 .B \-Z
 If the ``\fB\-Z\fP'' flag is used, then the lowest article numbers for
@@ -44,5 +121,7 @@ This is revision \\$3, dated \\$4.
 ..
 .R$ $Id$
 .SH "SEE ALSO"
-expire(8),
-inn.conf(5).
+active(5),
+ctlinnd(8).
+inn.conf(5),
+news.daily(8).
