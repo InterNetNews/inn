@@ -281,12 +281,11 @@ main(int ac, char *av[])
 {
     const char *name, *p;
     char *path;
-    char *t;
     bool flag;
     struct passwd *pwd;
     struct group *grp;
     static char		WHEN[] = "PID file";
-    int			i, j;
+    int			i;
     char		buff[SMBUF], *path1, *path2;
     FILE		*F;
     bool		ShouldFork;
