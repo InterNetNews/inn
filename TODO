@@ -28,21 +28,22 @@ Scheduled for INN 2.4
 * There are some outstanding issues with the IPv6 that probably need not
   be fixed, but should be documented, see doc/IPv6-info.
 
-* Replace the current innshellvars.pl file with a real INN Perl module for
-  Perl programs, and include the necessary glue so that other Perl modules
-  can be added to INN's build tree and installed with INN, allowing their
-  capabilities to be available to the portions of INN written in Perl.
-  [Russ plans on doing this.]
-
-* Fix as many of the protocol issues documented in doc/compliance-nntp as
-  possible.
-
-* Switch at least nnrpd over to using the new wildmat routines rather than
-  breaking apart strings on commas and matching each expression
-  separately.
-
 
 Scheduled for INN 2.5
+
+* Rewrite configure, breaking all of the tests out into separate files
+  using the new capabilities in autoconf 2.50 and later.  Replace our
+  local macros with the more general features provided by autoconf.  At
+  the same time, configure.in and Makefile.global.in should be fixed to
+  use the same names as each other for various parameters.  [Russ plans to
+  work on this.]
+
+* Add support for groups, nesting, and vectors to the new configuration
+  parsing code.  [Russ plans on doing this.]
+
+* Convert readers.conf and storage.conf (and related configuration files)
+  to use the new parsing system and break out program-specific sections
+  of inn.conf into their own groups.
 
 * The current WIP cache and history cache should be integrated into the
   history API, things like message ID hashing should become a selectable
@@ -72,19 +73,17 @@ Scheduled for INN 2.5
   it to POD while checking that it's still accurate and adding any
   additional useful information that was missed.
 
-* Add support for groups, nesting, and vectors to the new configuration
-  parsing code.  [Russ plans on doing this.]
+* Replace the current innshellvars.pl file with a real INN Perl module for
+  Perl programs, and include the necessary glue so that other Perl modules
+  can be added to INN's build tree and installed with INN, allowing their
+  capabilities to be available to the portions of INN written in Perl.
+  [Russ plans on doing this.]
 
-* Convert readers.conf and storage.conf (and related configuration files)
-  to use the new parsing system and break out program-specific sections
-  of inn.conf into their own groups.
-
-* Rewrite configure, breaking all of the tests out into separate files
-  using the new capabilities in autoconf 2.50 and later.  Replace our
-  local macros with the more general features provided by autoconf.  At
-  the same time, configure.in and Makefile.global.in should be fixed to
-  use the same names as each other for various parameters.  [Russ plans to
-  work on this.]
+* Switch nnrpd over to using the new wildmat routines rather than breaking
+  apart strings on commas and matching each expression separately.  This
+  involves a lot of surgery, since PERMmatch is used all over the place,
+  and may change the interpretation of ! and @ in group permission
+  wildmats.
 
 
 Scheduled for INN 2.6
@@ -249,19 +248,20 @@ Code Cleanup Projects
   for creating and clearing cycbuffs, perhaps combined with cnfsheadconf,
   and the whole thing moved into storage/cnfs rather than frontends (along
   with cnfsstat).  pullart.c may also stand to be merged into the same
-  utility (cnfsadmin might not be a bad name).
+  utility (cnfs-util might not be a bad name).
 
 * Use vectors or cvectors everywhere that argify and friends are currently
   used and eliminate the separate implementation in nnrpd/misc.c.
 
 * Rename TRUE and FALSE to true and false everywhere.
 
+* Remove all the register qualifiers for variables everywhere.
+
 * Eliminate all of the needless casts to void that are scattered around to
   silent old versions of lint.
 
-* Break the CNFS code, the tradspool code, and the tradindexed code into
-  multiple source files to make it easier to understand the logical
-  divisions of the code.  [Russ is working on tradindexed now.]
+* Break the CNFS code and the tradspool code into multiple source files to
+  make it easier to understand the logical divisions of the code.
 
 * Examine the (mostly socket) code that currently should probably be
   compiled with -fno-strict-aliasing on gcc and move the relevant casts
@@ -282,7 +282,8 @@ Needed Bug Fixes
   the active file as valid groups.
 
 * INN's startup script should be sure to clean out old lock files and PID
-  files for innfeed.
+  files for innfeed.  Be careful, though, since innfeed may still be
+  running, spawned from a previous innd.
 
 * Various things may break when trying to use data written while compiled
   with large file support using a server that wasn't so compiled (and vice
@@ -316,6 +317,7 @@ Needed Bug Fixes
 
 * Someone should go through the BUGS sections of all of the manpages and
   fix those for which the current behavior is unacceptable.
+
 
 Requested New Features
 
@@ -364,9 +366,6 @@ Requested New Features
       X-Trace: g212.hadiko.de [395109AA000016FF] [AC14302A00000000] [...]
                                time    |    pid   ip      |reserved  user
 
-* Validity checks on the poster's address.  (Although this could also be
-  handled by the nnrpd posting filter.)
-
 * ctlinnd flushlogs currently renames all of the log files.  It would be
   nice to support the method of log rotation that most other daemons
   support, namely to move the logs aside and then tell innd to reopen its
@@ -382,14 +381,10 @@ Requested New Features
 
 * Several people have Perl interfaces to pieces of INN that should ideally
   be part of the INN source tree in some fashion.  Greg Andruk has a bunch
-  of stuff at <http://members.xoom.com/meowing/cssri/>, for example.
+  of stuff that Russ has copies of, for example.
 
-* nnrpd should have support for fixing broken Date headers supplied by
-  clients, although now that most clients have been fixed for Y2K this may
-  be less of a problem.  This should probably only affect a narrow set of
-  Date headers with known problems, if done at all.  Conversely, locally
-  posted articles should really get a stricter check than parsedate, which
-  accepts a huge variety of things.
+* Investigate using the new, stricter date parsing code in libinn for
+  nnrpd rather than the extremely lenient parsedate routine.
 
 * There are various available patches for Cancel-Lock and an Internet
   draft; support should be added to INN for both generation and
@@ -473,7 +468,6 @@ Requested New Features
 * news.daily could detect if expire segfaults and unpause the server.
   
 
-
 General Projects
 
 * All the old packages in unoff-contrib should be reviewed for integration
@@ -506,9 +500,9 @@ General Projects
   lost the name of the group to which a group is aliased; that needs to be
   fixed.
 
-* More details as to why a message ID is bad would be useful to return
-  to the user, particularly for rnews, inews, etc.  rnews also reportedly
-  rejects message IDs with trailing spaces, which can be hard to check.
+* More details as to why a message ID is bad would be useful to return to
+  the user, particularly for rnews, inews, etc.  innd also rejects message
+  IDs with trailing spaces, which can be hard to check.
 
 * Support putting the active file and history file in different
   directories without hand-editing a bunch of files.
@@ -517,14 +511,12 @@ General Projects
   passwords containing spaces.  The correct solution isn't clear; check
   with the current NNTP RFC draft and how existing clients handle it?
 
-* Support building a profiling version of INN.  The current build rules
-  for this have doubtless suffered from bit rot and need to be tested and
-  probably fixed.
-
-* inndstart and startinnfeed ideally shouldn't parse any configuration
-  files at all, but instead should get all the information they need from
-  elsewhere.  Some of what inndstart does could probably be done by
-  rc.news instead, although be careful of interactions with ctlinnd xexec.
+* Rewrite inndstart as a helper program that only binds the relevant
+  sockets and then returns them to innd.  Since file descriptors are
+  shared by child processes, this can be done with a program spawned by
+  innd.  This may have gotten more complicated with IPv6.  Drop
+  startinnfeed entirely in favor of recommending people use ulimit in the
+  news init script.
 
 
 Long-Term Projects
@@ -609,11 +601,6 @@ Long-Term Projects
   and that keeps track of the PID of the process locking things and is
   accessible via ctlinnd.
 
-* One would ideally not want to offer articles to a peer that that peer
-  has offered to us (even if we didn't accept them from that peer).  This
-  is really hard to do right, but even a small cache might increase feed
-  performance.
-
 * There is a fundamental problem with the current design of the
   control.ctl file.  It combines two things:  A database of hierarchies,
   their maintainers, and related information, and a list of which
@@ -661,8 +648,8 @@ Long-Term Projects
   be best to just support this via lndir rather than try to do it in
   configure, but it would be ideal to add support for this to the autoconf
   system.  Unfortunately, the standard method requires letting configure
-  generate all of the makefiles, which would make running configure take
-  much longer than it does currently.
+  generate all of the makefiles, which would make running configure and
+  config.status take much longer than it does currently.
 
 * Look at adding some kind of support for MODE CANCEL via network sockets
   and fixing up the protocol so that it could possibly be standardized
@@ -713,11 +700,11 @@ Complete Code Reorganization
 
 At some point, we should probably abandon and archive the current CVS
 repository, reimport all of the current source files, and start with a
-fresh repository.  This would let us rename and move things around
-arbitrarily, something CVS doesn't handle at all well.  (This should
-probably be done after all of the documentation has been converted to
-POD.)  Should this ever be done, we should consider doing all of the
-following at the same time:
+fresh repository with a better revision control system such as Subversion.
+A better revision control system would let us rename and move things
+around arbitrarily, something CVS doesn't handle at all well.  Should this
+ever be done, we should consider doing all of the following at the same
+time:
 
 * Don't include any generated files in the CVS tree.  Maintainers should
   have autoconf and friends, pod2text and pod2man, and bison around anyway.
