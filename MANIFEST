@@ -342,7 +342,6 @@ include/portable/socket.h             Wrapper for <sys/socket.h> and friends
 include/portable/time.h               Wrapper for <time.h> and <sys/time.h>
 include/portable/wait.h               Wrapper for <sys/wait.h>
 include/ppport.h                      Header file for Perl support
-include/rwlock.h                      Header file for rwlock
 include/storage.h                     Header file for storage API
 innd                                  Server (Directory)
 innd/Makefile                         Makefile for server
@@ -421,7 +420,6 @@ lib/getconfig.c                       Parse the inn.conf file
 lib/getfqdn.c                         Get FQDN of local host
 lib/getmodaddr.c                      Get a moderator's address
 lib/gettime.c                         Get time and timezone info
-lib/grpalias.c                        Group alias code used for OV3
 lib/hash.c                            Create hash from message ID
 lib/hashtab.c                         Generic hash table
 lib/hstrerror.c                       Error reporting for resolver
@@ -445,7 +443,6 @@ lib/readin.c                          Read file into memory
 lib/remopen.c                         Open a remote NNTP connection
 lib/reservedfd.c                      File descriptor reservation
 lib/resource.c                        Get process CPU usage
-lib/rwlock.c                          Read/write locking routines
 lib/sendarticle.c                     Send an article, NNTP style
 lib/sendpass.c                        Send NNTP authentication
 lib/sequence.c                        Sequence space arithmetic routines

@@ -8,24 +8,23 @@ CFLAGS  = $(GCFLAGS)
 SOURCES = argparse.c cleanfrom.c clientactive.c clientlib.c concat.c \
 	conffile.c confparse.c daemonize.c date.c dbz.c defdist.c fdflags.c \
 	fdlimit.c findheader.c fseeko.c ftello.c genid.c getconfig.c \
-	getfqdn.c getmodaddr.c gettime.c grpalias.c hash.c hashtab.c \
-	hstrerror.c inet_aton.c inet_ntoa.c inndcomm.c localopen.c \
-	lockfile.c makedir.c md5.c memcmp.c messages.c mkstemp.c \
-	parsedate.c perl.c pread.c pwrite.c qio.c radix32.c readin.c \
-	remopen.c reservedfd.c resource.c rwlock.c sendarticle.c sendpass.c \
-	sequence.c setenv.c sockaddr.c strcasecmp.c strerror.c strspn.c \
-	strtok.c timer.c wildmat.c vector.c version.c xfopena.c xmalloc.c \
-	xsignal.c xwrite.c
+	getfqdn.c getmodaddr.c gettime.c hash.c hashtab.c hstrerror.c \
+	inet_aton.c inet_ntoa.c inndcomm.c localopen.c lockfile.c makedir.c \
+	md5.c memcmp.c messages.c mkstemp.c parsedate.c perl.c pread.c \
+	pwrite.c qio.c radix32.c readin.c remopen.c reservedfd.c resource.c \
+	sendarticle.c sendpass.c sequence.c setenv.c sockaddr.c strcasecmp.c \
+	strerror.c strspn.c strtok.c timer.c wildmat.c vector.c version.c \
+	xfopena.c xmalloc.c xsignal.c xwrite.c
 
 OBJECTS = $(LIBOBJS) \
 	argparse.o cleanfrom.o clientactive.o clientlib.o concat.o \
 	conffile.o confparse.o daemonize.o date.o dbz.o defdist.o fdflags.o \
 	fdlimit.o findheader.o genid.o getconfig.o getfqdn.o getmodaddr.o \
-	gettime.o grpalias.o hash.o hashtab.o inndcomm.o localopen.o \
-	lockfile.o makedir.o md5.o messages.o parsedate.o qio.o radix32.o \
-	readin.o remopen.o reservedfd.o resource.o rwlock.o sendarticle.o \
-	sendpass.o sequence.o sockaddr.o timer.o wildmat.o vector.o \
-	version.o xfopena.o xmalloc.o xsignal.o xwrite.o
+	gettime.o hash.o hashtab.o inndcomm.o localopen.o lockfile.o \
+	makedir.o md5.o messages.o parsedate.o qio.o radix32.o readin.o \
+	remopen.o reservedfd.o resource.o sendarticle.o sendpass.o \
+	sequence.o sockaddr.o timer.o wildmat.o vector.o version.o xfopena.o \
+	xmalloc.o xsignal.o xwrite.o
 
 LOBJECTS= $(OBJECTS:.o=.lo)
 
@@ -143,9 +142,6 @@ getmodaddr.o: getmodaddr.c ../include/config.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h
 gettime.o: gettime.c ../include/config.h ../include/inn/defines.h \
  ../include/libinn.h
-grpalias.o: grpalias.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
- ../include/macros.h ../include/paths.h
 hash.o: hash.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/md5.h ../include/libinn.h \
  ../include/macros.h
@@ -200,7 +196,6 @@ reservedfd.o: reservedfd.c ../include/config.h \
  ../include/macros.h
 resource.o: resource.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
-rwlock.o: rwlock.c ../include/rwlock.h
 sendarticle.o: sendarticle.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
  ../include/nntp.h

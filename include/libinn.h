@@ -360,12 +360,6 @@ extern int      argify(char *line, char ***argvp);
 extern void     freeargify(char ***argvp);
 extern char *   glom(char **argv);
 
-extern const char *     Aliasgetnamebyhash(const HASH hash);
-extern HASH             Aliasgethashbyhash(const HASH hash);
-extern HASH             Aliasgethashbygroup(const char *group);
-extern const char *     Aliasgetnamebygroup(const char *group);
-extern bool             LoadGroupAliases(void);
-
 END_DECLS
 
 #endif /* LIBINN_H */
