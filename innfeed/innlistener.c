@@ -42,12 +42,9 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <syslog.h>
 #include <time.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 
 #include "article.h"
 #include "buffer.h"
@@ -372,7 +369,7 @@ void openInputFile (void)
       if (offset > 0 && *p == '\n')
 	lseek (mainFd, offset, SEEK_SET) ;
       else
-	lseek (mainFd, (OFFSET_T)0, SEEK_SET) ;
+	lseek (mainFd, 0, SEEK_SET) ;
     }
   syslog(LOG_NOTICE, "ME opened %s", InputFile);
 }
@@ -709,14 +706,14 @@ static void writeCheckPoint (int offsetAdjust)
   int writeBytes, writeReturn, mainFd ;
 	      
   mainFd = getMainEndPointFd() ;
-  offset = lseek (mainFd, (OFFSET_T)0, SEEK_CUR) ;
+  offset = lseek (mainFd, 0, SEEK_CUR) ;
   if (offset < 0)
     syslog (LOG_ERR, "ME tell(mainFd): %m") ;
   else
     {
       (void) sprintf (offsetString, "%ld\n",
 		      (long)(offset - offsetAdjust) ) ;
-      if ( lseek (mainFd, (OFFSET_T)0, SEEK_SET) != 0 )
+      if ( lseek (mainFd, 0, SEEK_SET) != 0 )
 	syslog (LOG_ERR, "ME seek(mainFd, 0, 0): %m") ;
       else
 	{
