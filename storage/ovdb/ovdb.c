@@ -1369,8 +1369,6 @@ int ovdb_open_berkeleydb(int mode, int flags)
     }
     if(flags & OVDB_RECOVER)
 	ai_flags |= DB_RECOVER;
-    if((flags & (OVDB_UPGRADE | OVDB_RECOVER)) == (OVDB_UPGRADE | OVDB_RECOVER))
-	ai_flags |= DB_PRIVATE;
 
 #if DB_VERSION_MAJOR == 2 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR < 2)
     if(ovdb_conf.txn_nosync)
@@ -1400,6 +1398,8 @@ int ovdb_open_berkeleydb(int mode, int flags)
 	return ret;
     }
 
+    if((flags & (OVDB_UPGRADE | OVDB_RECOVER)) == (OVDB_UPGRADE | OVDB_RECOVER))
+	ai_flags |= DB_PRIVATE;
     if(!(ai_flags & DB_PRIVATE)) {
 	if(ovdb_conf.useshm)
 	    ai_flags |= DB_SYSTEM_MEM;
