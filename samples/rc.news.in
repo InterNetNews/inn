@@ -53,7 +53,8 @@ if [ ! -s ${ACTIVE} ] ; then
     #cd ${NEWSLIB} \
     #		&& makehistory -r \
     #		&& mv history.n.dir history.dir \
-    #		&& mv history.n.pag history.pag
+    #		&& mv history.n.index history.index
+    #           && mv history.n.hash history.hash
 fi
 
 ##  Remove temporary batchfiles and lock files.

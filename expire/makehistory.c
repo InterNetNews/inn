@@ -72,7 +72,10 @@ RemoveDBZFiles(p)
     (void)sprintf(buff, "%s.dir", p);
     if (unlink(buff) && errno != ENOENT)
 	(void)fprintf(stderr, NOCANDO, buff, strerror(errno));
-    (void)sprintf(buff, "%s.pag", p);
+    (void)sprintf(buff, "%s.index", p);
+    if (unlink(buff) && errno != ENOENT)
+	(void)fprintf(stderr, NOCANDO, buff, strerror(errno));
+    (void)sprintf(buff, "%s.hash", p);
     if (unlink(buff) && errno != ENOENT)
 	(void)fprintf(stderr, NOCANDO, buff, strerror(errno));
 }

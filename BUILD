@@ -299,10 +299,12 @@ ${NEWSBIN}/makehistory ${FLAGS} || {
     exit 1
 }
 mv history.n.dir history.dir
-mv history.n.pag history.pag
+mv history.n.index history.index
+mv history.n.hash history.hash
 
 cd ${HERE}
 sh ./installit.sh ${OWNERS} -m 0664 ${HISTORY}.dir ${HISTORY}.dir
-sh ./installit.sh ${OWNERS} -m 0664 ${HISTORY}.pag ${HISTORY}.pag
+sh ./installit.sh ${OWNERS} -m 0664 ${HISTORY}.index ${HISTORY}.index
+sh ./installit.sh ${OWNERS} -m 0664 ${HISTORY}.hash ${HISTORY}.hash
 
 exit 0

@@ -865,7 +865,8 @@ check_all_perms
     }
     &checkperm($paths{'history'}, 0644);
     &checkperm($paths{'history'} . ".dir", 0644);
-    &checkperm($paths{'history'} . ".pag", 0644);
+    &checkperm($paths{'history'} . ".index", 0644);
+    &checkperm($paths{'history'} . ".hash", 0644);
     foreach ( @newslib_private ) {
 	&checkperm("$newslib/$_", 0550);
     }

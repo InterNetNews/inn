@@ -82,7 +82,8 @@ awk 'NF > 2 {
 }' <history >history.n
 if makehistory \-r \-f history.n ; then
     mv history.n history
-    mv history.n.pag history.pag
+    mv history.n.index history.index
+    mv history.n.hash history.hash
     mv history.n.dir history.dir
 else
     echo 'Problem rebuilding history; old file not replaced'

@@ -92,12 +92,16 @@ will remove any articles that do not have valid Message-ID headers in them.
 .B \-f
 If the ``\fB\-f\fP'' flag is used, then the database files are named
 .I file.dir
+,
+.I file.index
 and
-.IR file.pag .
+.IR file.hash .
 If the ``\fB\-f\fP'' flag is not used, then a temporary link to the name
 .I history.n
 is made and the database files are written as
-.I history.n.pag
+.I history.n.index
+,
+.I history.n.hash
 and
 .IR history.n.dir .
 .TP
@@ -207,7 +211,8 @@ f\&i
 if makehistory \-r \-s `wc \-l <history` \-f history.n; then
     mv history.n history
     mv history.n.dir history.dir
-    mv history.n.pag history.pag
+    mv history.n.index history.index
+    mv history.n.hash history.hash
 f\&i
 ctlinnd go ''
 .fi

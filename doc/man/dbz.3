@@ -160,8 +160,10 @@ the number of key-value pairs exceeds about 80% of
 (Nothing awful will happen if the database grows beyond 100% of
 .IR size ,
 but accesses will slow down quite a bit and the 
-.B .pag
-file will grow somewhat.)
+.B .index
+and 
+.B .hash
+files will grow somewhat.)
 .PP
 For historical reasons,
 .I fetch
@@ -264,7 +266,7 @@ option should be set to TRUE;
 If the
 .B nonblock
 option is turn on then, then writes to the 
-.B .pag
+.B .index
 and 
 .B .hash
 files will be done using non-blocking I/O.  This can be significantly faster if
