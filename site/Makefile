@@ -42,6 +42,7 @@ PATH_MOTD		= ${PATHETC}/motd.news
 PATH_STORAGECTL		= ${PATHETC}/storage.ctl
 PATH_OVERVIEWCTL	= ${PATHETC}/overview.ctl
 PATH_CYCBUFFCONFIG	= ${PATHETC}/cycbuff.conf
+PATH_INNFEEDCTL		= ${PATHETC}/innfeed.conf
 
 ##  Order:  innd, control, expire, inews, sending, misc
 MOST	= rc.news overview.fmt checkgroups default ihave newgroup \
@@ -76,7 +77,8 @@ REST		= \
 	inn.conf moderators innreport.conf innreport_inn.pm \
 	control.ctl expire.ctl nntpsend.ctl \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
-	motd.news storage.ctl overview.ctl cycbuff.conf
+	motd.news storage.ctl overview.ctl cycbuff.conf \
+	innfeed.conf
 
 ALL		= $(MOST) $(REST)
 
@@ -89,7 +91,8 @@ REST_INSTALLED	= \
 	$D$(PATH_CTLWATCH) $D$(PATH_DISTPATS) $D$(PATH_SCHEMA) \
 	$D$(PATH_ACTSYNC_CFG) $D$(PATH_ACTSYNC_IGN) \
 	$D$(PATH_MOTD) $D$(PATH_STORAGECTL) \
-	$D$(PATH_OVERVIEWCTL) $D$(PATH_CYCBUFFCONFIG)
+	$D$(PATH_OVERVIEWCTL) $D$(PATH_CYCBUFFCONFIG) \
+	$D$(PATH_INNFEEDCTL)
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
 
@@ -245,6 +248,7 @@ cycbuff.conf:	../samples/cycbuff.conf		; $(COPY) $? $@
 innstat:	../samples/innstat		; $(COPY) $? $@
 innwatch:	../samples/innwatch		; $(COPY) $? $@
 innwatch.ctl:	../samples/innwatch.ctl		; $(COPY) $? $@
+innfeed.conf:	../samples/innfeed.conf		; $(COPY) $? $@
 innshellvars:	../samples/innshellvars		; $(COPY) $? $@
 innshellvars.pl: ../samples/innshellvars.pl	; $(COPY) $? $@
 innshellvars.tcl: ../samples/innshellvars.tcl	; $(COPY) $? $@
