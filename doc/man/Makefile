@@ -65,7 +65,7 @@ INSTALLED_SEC5 =	$D$(MAN5)/active.5 $D$(MAN5)/control.ctl.5 \
 			$D$(MAN5)/overview.ctl.5 $D$(MAN5)/overview.fmt.5 \
 			$D$(MAN5)/passwd.nntp.5 $D$(MAN5)/readers.conf.5 \
 			$D$(MAN5)/storage.ctl.5 $D$(MAN5)/storage.conf.5 \
-			$D$(MAN5)/buffindexed.conf.5 $D$(MAN5)/ovdb.5
+			$D$(MAN5)/buffindexed.conf.5 $D$(MAN5)/ovdb.5 \
 			$D$(MAN5)/sasl.conf.5 $D$(MAN5)/sasl.conf.5
 
 INSTALLED_SEC8 =	$D$(MAN8)/actived.8 $D$(MAN8)/actsync.8 \
