@@ -572,7 +572,8 @@ Support for nnrpd" in F<doc/hook-perl>.
 
 =item I<nnrppythonauth>
 
-This parameter is now obsolete; see "Changes to Python Authentication and Access Control Support for nnrpd" in F<doc/hook-python>.
+This parameter is now obsolete; see "Changes to Python Authentication and
+Access Control Support for nnrpd" in F<doc/hook-python>.
 
 =item I<noreader>
 

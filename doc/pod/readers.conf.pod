@@ -98,7 +98,7 @@ domain.
 
 If the user later authenticates via the AUTHINFO USER/PASS commands,
 the provided username and password are passed to each <auth-program>
-(multiple auth: perl_auth: or python_auth: lines may be present in a
+(multiple auth, perl_auth, or python_auth lines may be present in a
 block; they are run in sequence until one succeeds), if any.  If one
 succeeds and returns a different identity than the one assigned at the
 time of the connection, it is matched against the available access
@@ -135,7 +135,7 @@ various inn.conf(5) parameters for just a particular group of users.
 Just like with auth groups, when matching access groups the last matching
 one in the file is used to determine the user's permissions.  There is
 an exception to this rule: if the auth group which matched the client
-contains the perl_access: or python_access: parameter then the script
+contains a perl_access: or python_access: parameter, then the script
 given as argument is used to dynamically generate an access group.
 This new access group is then used to determine the access rights of
 the client; the access groups in the file are ignored.
@@ -242,8 +242,8 @@ below.
 A path to a perl script for authentication.  The perl_auth: parameter
 works exactly like auth:, except that it calls the named script using
 the perl hook rather then an external program.  Multiple/mixed use of
-auth: perl_auth: and python_auth: is permitted within any auth group;
-each method is tried in order listed in F<readers.conf>.  perl_auth:
+the auth, perl_auth, and python_auth parameters is permitted within any
+auth group; each line is tried in the order it appears.  perl_auth:
 has more power than auth: in that it provides the authentication
 program with additional information about the client and the ability
 to return an error string and a username.  This parameter is only
@@ -255,8 +255,8 @@ configure).  More information may be found in F<doc/hook-perl>.
 A python script for authentication.  The python_auth: parameter works
 exactly like auth:, except that it calls the named script using the
 python hook rather then an external program.  Multiple/mixed use of
-auth: perl_auth: and python_auth: is permitted within any auth group;
-each method is tried in order listed in F<readers.conf>.  python_auth:
+the auth, perl_auth, and python_auth parameters is permitted within any
+auth group; each line is tried in the order it appears.  python_auth:
 has more power than auth: in that it provides the authentication
 program with additional information about the client and the ability
 to return an error string and a username.  This parameter is only
@@ -325,9 +325,9 @@ A python script for applying access control dynamically on a per
 newsgroup basis.  If an auth group matches successfully and contains a
 python_dynamic parameter, then the argument script will be used to
 determine the clients rights each time the user attempts to view a
-newsgroup, read or post an article. Access rights as determined by
+newsgroup, or read or post an article.  Access rights as determined by
 python_dynamic override the values of access group parameters such as
-newsgroups: read: and post:. This parameter is only valid if INN is
+newsgroups, read, and post.  This parameter is only valid if INN is
 compiled with Python support (B<--with-python> passed to configure).
 More information may be found in the file F<doc/hook-python>.
 
@@ -527,18 +527,18 @@ the user authenticates.
 =item *
 
 When the user authenticates, the auth groups are rescanned, and only the
-matching ones which contain at least one auth: perl_auth: or
-python_auth: line are considered.  These auth groups are scanned from
+matching ones which contain at least one auth, perl_auth, or
+python_auth line are considered.  These auth groups are scanned from
 the last to the first, running auth: programs and perl_auth: or
-python_auth: scripts. The first auth group (starting from the bottom)
+python_auth: scripts.  The first auth group (starting from the bottom)
 to return a valid user is kept as the active auth group.
 
 =item *
 
 Regardless of how an auth group is established, as soon as one is, that
 auth group is used to assign a user identity by taking the result of the
-successful res:, auth, perl_auth: or python_auth: line (or the
-default: if necessary), and appending the default-domain: if
+successful res, auth, perl_auth, or python_auth line (or the
+default: if necessary), and appending the default-domain if
 necessary.  (If the perl_access: or python_access: parameter is
 present, see below.)
 
