@@ -1,17 +1,12 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Convert date strings and numbers to numbers and strings.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
-#if	defined(DO_NEED_TIME)
 #include <time.h>
-#endif	/* defined(DO_NEED_TIME) */
-#include <sys/time.h>
+
 #include "libinn.h"
 #include "macros.h"
 

@@ -1,25 +1,21 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Expire news articles.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
-#include <sys/stat.h>
-#if	defined(DO_NEED_TIME)
-#include <time.h>
-#endif	/* defined(DO_NEED_TIME) */
-#include <sys/time.h>
 #include <errno.h>
-#include "paths.h"
-#include "libinn.h"
-#include "inndcomm.h"
-#include "dbz.h"
-#include "qio.h"
-#include "macros.h"
 #include <syslog.h>  
+#include <sys/stat.h>
+#include <time.h>
+
+#include "dbz.h"
+#include "inndcomm.h"
+#include "libinn.h"
+#include "macros.h"
+#include "paths.h"
+#include "qio.h"
 
 
 /*
