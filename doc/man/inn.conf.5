@@ -95,7 +95,7 @@ If MIME headers are being added, this parameter specifies the value of
 the Content-Transfer-Encoding header.
 The default value is ``7bit.''
 .PP
-The following three parameters are used only by
+The following parameters are used only by
 .I innd.
 .TP
 .I hiscachesize
@@ -114,7 +114,34 @@ If this is true then innd will write articles in wire format.  Wire format
 articles are stored with a \\r\\n at the end of each line and with periods
 at the beginning of lines doubled.  When used with applications that understand
 wire format, this can be considerably more efficent.
+.TP
+.I timespool
+This makes the normal hierarchy a shadow of a time based hierarchy.
+The time based hierarchy is two levels.  The first level is upper part
+of the time that the article was received in hex, and the second level
+is lower part of the same.
 
+The article name name is of the format tttttttt-ssss, where tttttttt
+is the time the article was recieved in time_t format, and ssss is a
+sequence number to distinguish article that were received in the same second.
+
+.PP
+The following parameters are used only by 
+.I nnrpd.
+.TP
+.I spoolfirst
+If this is true then nnrpd will spool new articles with out attempting
+to send them to innd first.  If this is false then nnrpd will spool
+new articles only after receiving an error trying to send them to
+innd.  Setting this to true can be useful if you want nnrpd to
+respond to the client as fast as possible, however, nnrpd will not
+report articles that are not accepted by innd to the client if they
+are spool.
+.TP
+.I complaints
+If this is set, then it contains the value of the X-Complaints-To:
+header that will be added to all posts.  If not, then this defaults to
+the newsmaster's e-mail address.
 .PP
 Note that this file can be identical on all machines in an organization.
 .SH EXAMPLE

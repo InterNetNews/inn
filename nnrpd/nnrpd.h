@@ -96,6 +96,7 @@ EXTERN char	**PERMlist;
 EXTERN STRING	MyHostName;
 extern char	ACTIVE[];
 EXTERN char	ClientHost[SMBUF];
+EXTERN char     ClientIp[20];
 EXTERN char	LogName[256] ;
 extern char	ACTIVETIMES[];
 extern char	HISTORY[];

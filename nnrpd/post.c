@@ -71,6 +71,10 @@ HEADER	Table[] = {
 #define _contenttype	19
     {	"Content-Transfer-Encoding", TRUE, HTstd },
 #define _contenttransferencoding 20
+    {   "X-Trace",              FALSE, HTstd },
+#define _xtrace         21
+    {   "X-Complaints-To",	FALSE, HTstd },
+#define _xcomplaintsto	22
     {	"Xref",			FALSE,	HTstd },
     {	"Summary",		TRUE,	HTstd },
     {	"Keywords",		TRUE,	HTstd },
@@ -258,6 +262,8 @@ ProcessHeaders(linecount)
     static char		datebuff[40];
     static char		orgbuff[SMBUF];
     static char		linebuff[40];
+    static char		tracebuff[SMBUF];
+    static char 	complaintsbuff[SMBUF];
     static char		sendbuff[SMBUF];
     static char		mimeversion[SMBUF];
     static char		mimetype[SMBUF];
@@ -268,6 +274,7 @@ ProcessHeaders(linecount)
     struct tm		*gmt;
     TIMEINFO		Now;
     STRING		error;
+    pid_t               pid;
 
     /* Do some preliminary fix-ups. */
     for (hp = Table; hp < ENDOF(Table); hp++) {
@@ -429,11 +436,29 @@ ProcessHeaders(linecount)
     /* NNTP-Posting host; set. */
     HDR(_nntpposthost) = ClientHost;
 
+    /* X-Trace; set */
+    t = time((time_t *)NULL) ;
+    pid = (long) getpid() ;
+    if ((gmt = gmtime(&Now.time)) == NULL)
+	return "Can't get the time";
+    sprintf(tracebuff, "%s %ld %ld %s (%d %3.3s %d %02d:%02d:%02d GMT)",
+             GetFQDN(), (long) t, (long) pid, ClientIp,
+	    gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
+	    gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
+    HDR (_xtrace) = tracebuff ;
+
+    /* X-Complaints-To; set */
+    if ((p = GetConfigValue (_CONF_COMPLAINTS)) != NULL)
+      sprintf (complaintsbuff, "%s",p) ;
+    else
+      sprintf (complaintsbuff, "%s@%s",
+                NEWSMASTER,GetConfigValue (_CONF_FROMHOST)) ;
+    HDR(_xcomplaintsto) = complaintsbuff ;
+
     /* Now make sure everything is there. */
     for (hp = Table; hp < ENDOF(Table); hp++)
 	if (hp->Type == HTreq && hp->Value == NULL) {
-	    (void)sprintf(Error, "Required \"%s\" header is missing",
-		    hp->Name);
+	    (void)sprintf(Error, "Required \"%s\" header is missing", hp->Name);
 	    return Error;
 	}
 
@@ -827,6 +852,9 @@ ARTpost(article, idbuff)
     if ((p = (char *)HandleHeaders()) != NULL)
         return p;
 #endif /* defined(DO_PERL) */
+
+    if (GetBooleanConfigValue(_CONF_NNRP_SPOOLFIRST, FALSE))
+	return Spoolit(article, Error);
 
     /* Open a local connection to the server. */
     if (RemoteMaster)

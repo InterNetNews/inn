@@ -443,6 +443,7 @@ StartConnection(accesslist)
 #else
 	(void)strcpy(ClientHost, inet_ntoa(sin.sin_addr));
 #endif /* defined(DO_NNRP_GETHOSTBYADDR) */
+	(void)strncpy(ClientIp, inet_ntoa(sin.sin_addr), sizeof(ClientIp));
     }
 
     strncpy (LogName,ClientHost,sizeof(LogName)-1) ;
