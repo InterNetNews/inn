@@ -94,7 +94,7 @@ sub control_rmgroup {
             print "Cannot get lock $inn::locks/LOCK.newsgroups";
         }
         else {
-            open(NEWSGROUPS, "<$newsgroups");
+            open(NEWSGROUPS, "<$inn::newsgroups");
             open(TEMPFILE, ">$tempfile");
             while (<NEWSGROUPS>) {
                 if (! /$qgroup\s/) {
@@ -102,7 +102,7 @@ sub control_rmgroup {
                 }
             }
             open(TEMPFILE, "<$tempfile");
-            open(NEWSGROUPS, ">$newsgroups");
+            open(NEWSGROUPS, ">$inn::newsgroups");
             while (<TEMPFILE>) {
                 print NEWSGROUPS $_;
             }
