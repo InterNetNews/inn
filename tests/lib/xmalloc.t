@@ -72,22 +72,22 @@ runsuccess "c" "128000" "0"
 # Now limit our memory to 96KB and then try the large ones again, all of
 # which should fail.
 runfailure "m" "128000" "96000" \
-    "failed to malloc 128000 bytes at lib/xmalloc.c line 35"
+    "failed to malloc 128000 bytes at lib/xmalloc.c line 36"
 runfailure "r" "128000" "96000" \
-    "failed to realloc 128000 bytes at lib/xmalloc.c line 56"
+    "failed to realloc 128000 bytes at lib/xmalloc.c line 62"
 runfailure "s" "64000"  "96000" \
-    "failed to strdup 64000 bytes at lib/xmalloc.c line 80"
+    "failed to strdup 64000 bytes at lib/xmalloc.c line 91"
 runfailure "n" "64000"  "96000" \
-    "failed to strndup 64000 bytes at lib/xmalloc.c line 102"
+    "failed to strndup 64000 bytes at lib/xmalloc.c line 115"
 runfailure "c" "128000" "96000" \
-    "failed to calloc 128000 bytes at lib/xmalloc.c line 123"
+    "failed to calloc 128000 bytes at lib/xmalloc.c line 137"
 
 # Check our custom error handler.
-runfailure "M" "128000" "96000" "malloc 128000 lib/xmalloc.c 35"
-runfailure "R" "128000" "96000" "realloc 128000 lib/xmalloc.c 56"
-runfailure "S" "64000"  "96000" "strdup 64000 lib/xmalloc.c 80"
-runfailure "N" "64000"  "96000" "strndup 64000 lib/xmalloc.c 102"
-runfailure "C" "128000" "96000" "calloc 128000 lib/xmalloc.c 123"
+runfailure "M" "128000" "96000" "malloc 128000 lib/xmalloc.c 36"
+runfailure "R" "128000" "96000" "realloc 128000 lib/xmalloc.c 62"
+runfailure "S" "64000"  "96000" "strdup 64000 lib/xmalloc.c 91"
+runfailure "N" "64000"  "96000" "strndup 64000 lib/xmalloc.c 115"
+runfailure "C" "128000" "96000" "calloc 128000 lib/xmalloc.c 137"
 
 # Check the smaller ones again just for grins.
 runsuccess "m" "21" "96000"

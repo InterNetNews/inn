@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "libtest.h"
 
@@ -24,9 +25,12 @@ main(void)
     for (c = 0, i = 0; i < 256; i++, c++)
         buf[i] = c;
     fd = open(".testout", O_RDWR | O_CREAT | O_TRUNC, 0644);
-    if (fd < 0) sysdie("Can't create .testout");
-    if (unlink(".testout") < 0) sysdie("Can't unlink .testout");
-    if (xwrite(fd, buf, 256) < 0) sysdie("Can't write to .testout");
+    if (fd < 0)
+        sysdie("Can't create .testout");
+    if (unlink(".testout") < 0)
+        sysdie("Can't unlink .testout");
+    if (xwrite(fd, buf, 256) < 0)
+        sysdie("Can't write to .testout");
     if (lseek(fd, 0, SEEK_SET) == (off_t) -1)
         sysdie("Can't rewind .testout");
     memset(result, 0, sizeof(result));

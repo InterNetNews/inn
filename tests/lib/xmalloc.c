@@ -13,6 +13,7 @@
 #endif
 #include <sys/resource.h>
 
+#include "inn/messages.h"
 #include "libinn.h"
 
 /* A customized error handler for checking xmalloc's support of them.
@@ -33,10 +34,13 @@ test_malloc(size_t size)
     size_t i;
 
     buffer = xmalloc(size);
-    if (!buffer) return 0;
-    if (size > 0) memset(buffer, 1, size);
+    if (buffer == NULL)
+        return 0;
+    if (size > 0)
+        memset(buffer, 1, size);
     for (i = 0; i < size; i++)
-        if (buffer[i] != 1) return 0;
+        if (buffer[i] != 1)
+            return 0;
     free(buffer);
     return 1;
 }
@@ -51,15 +55,21 @@ test_realloc(size_t size)
     size_t i;
 
     buffer = xmalloc(size / 2);
-    if (!buffer) return 0;
-    if (size / 2 > 0) memset(buffer, 1, size / 2);
+    if (buffer == NULL)
+        return 0;
+    if (size / 2 > 0)
+        memset(buffer, 1, size / 2);
     buffer = xrealloc(buffer, size);
-    if (!buffer) return 0;
-    if (size > 0) memset(buffer + size / 2, 2, size - size / 2);
+    if (buffer == NULL)
+        return 0;
+    if (size > 0)
+        memset(buffer + size / 2, 2, size - size / 2);
     for (i = 0; i < size / 2; i++)
-        if (buffer[i] != 1) return 0;
+        if (buffer[i] != 1)
+            return 0;
     for (i = size / 2; i < size; i++)
-        if (buffer[i] != 2) return 0;
+        if (buffer[i] != 2)
+            return 0;
     free(buffer);
     return 1;
 }
@@ -74,11 +84,13 @@ test_strdup(size_t size)
     int match;
 
     string = xmalloc(size);
-    if (!string) return 0;
+    if (string == NULL)
+        return 0;
     memset(string, 1, size - 1);
     string[size - 1] = '\0';
     copy = xstrdup(string);
-    if (!copy) return 0;
+    if (copy == NULL)
+        return 0;
     match = strcmp(string, copy);
     free(string);
     free(copy);
@@ -95,12 +107,14 @@ test_strndup(size_t size)
     int match, toomuch;
 
     string = xmalloc(size + 1);
-    if (!string) return 0;
+    if (string == NULL)
+        return 0;
     memset(string, 1, size - 1);
     string[size - 1] = 2;
     string[size] = '\0';
     copy = xstrndup(string, size - 1);
-    if (!copy) return 0;
+    if (copy == NULL)
+        return 0;
     match = strncmp(string, copy, size - 1);
     toomuch = strcmp(string, copy);
     free(string);
@@ -121,7 +135,7 @@ test_calloc(size_t size)
     if (nelems * 4 != size)
         return 0;
     buffer = xcalloc(nelems, 4);
-    if (!buffer)
+    if (buffer == NULL)
         return 0;
     for (i = 0; i < size; i++)
         if (buffer[i] != 0)
@@ -141,7 +155,8 @@ main(int argc, char *argv[])
     unsigned char code;
     struct rlimit rl;
 
-    if (argc < 3) die("Usage error.  Type, size, and limit must be given.");
+    if (argc < 3)
+        die("Usage error.  Type, size, and limit must be given.");
     errno = 0;
     size = strtol(argv[2], 0, 10);
     if (size == 0 && errno != 0)

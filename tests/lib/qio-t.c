@@ -7,8 +7,9 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include "libinn.h"
+#include "inn/messages.h"
 #include "inn/qio.h"
+#include "libinn.h"
 #include "libtest.h"
 
 static void
@@ -85,7 +86,8 @@ main(void)
     ok(1, qio != NULL);
     ok(2, !QIOerror(qio));
     ok(3, QIOfileno(qio) > 0);
-    if (unlink(".testout") < 0) sysdie("Can't unlink .testout");
+    if (unlink(".testout") < 0)
+        sysdie("Can't unlink .testout");
     for (success = true, i = 0; i < count; i++) {
         result = QIOread(qio);
         success = (success && !QIOerror(qio) && (QIOlength(qio) == 255)

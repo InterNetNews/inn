@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 
 #include "inn/hashtab.h"
+#include "inn/messages.h"
 #include "inn/vector.h"
 #include "libinn.h"
 #include "libtest.h"

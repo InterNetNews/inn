@@ -7,7 +7,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include "libinn.h"
+#include "inn/messages.h"
 #include "libtest.h"
 
 ssize_t test_pwrite(int fd, const void *buf, size_t nbyte, off_t offset);
@@ -23,8 +23,10 @@ main(void)
     for (c = 0, i = 0; i < 256; i++, c++)
         buf[i] = c;
     fd = open(".testout", O_RDWR | O_CREAT | O_TRUNC, 0644);
-    if (fd < 0) sysdie("Can't create .testout");
-    if (unlink(".testout") < 0) sysdie("Can't unlink .testout");
+    if (fd < 0)
+        sysdie("Can't create .testout");
+    if (unlink(".testout") < 0)
+        sysdie("Can't unlink .testout");
     memset(result, 0, sizeof(result));
 
     puts("6");

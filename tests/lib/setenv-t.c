@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "libtest.h"
 
@@ -22,7 +23,8 @@ main(void)
     char *value;
     int status;
 
-    if (getenv(test_var)) die("%s already in the environment!", test_var);
+    if (getenv(test_var))
+        die("%s already in the environment!", test_var);
 
     puts("12");
 
