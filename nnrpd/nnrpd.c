@@ -425,14 +425,12 @@ static void StartConnection()
     struct sockaddr_in	sin;
     socklen_t		length;
     char		buff[SMBUF];
-    char		*ClientAddr;
     char		accesslist[BIG_BUFFER];
     int                 code;
     static ACCESSGROUP	*authconf;
 
     /* Get the peer's name. */
     length = sizeof sin;
-    ClientAddr = NULL;
     if (getpeername(STDIN_FILENO, (struct sockaddr *)&sin, &length) < 0) {
       if (!isatty(STDIN_FILENO)) {
 	    syslog(L_TRACE, "%s cant getpeername %m", "?");
@@ -467,11 +465,9 @@ static void StartConnection()
 		    "? cant gethostbyaddr %s %s -- using IP address for access",
 		    ClientHost, HostErrorStr);
 	    }
-	    ClientAddr = ClientHost;
             ClientIP = inet_addr(ClientHost);
 	}
 	else {
-	    ClientAddr = buff;
 	    (void)strcpy(buff, inet_ntoa(sin.sin_addr));
             ClientIP = inet_addr(buff);
 	}
@@ -503,6 +499,7 @@ static void StartConnection()
 #else
         strcpy(ServerHost, inet_ntoa(sin.sin_addr));
 #endif /* DO_NNRP_GETHOSTBYADDR */
+	(void)strncpy(ServerIp, inet_ntoa(sin.sin_addr), sizeof(ServerIp));
     }
 
     strncpy (LogName,ClientHost,sizeof(LogName) - 1) ;

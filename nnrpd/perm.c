@@ -47,6 +47,7 @@ typedef struct _AUTHGROUP {
     METHOD **auth_methods;
     char *default_user;
     char *default_domain;
+    char *localaddress;
 } AUTHGROUP;
 
 typedef struct _GROUP {
@@ -74,7 +75,7 @@ static ACCESSGROUP *copy_accessgroup(ACCESSGROUP*);
 static void free_accessgroup(ACCESSGROUP*);
 
 static void CompressList(char*);
-static int MatchClient(AUTHGROUP*);
+static bool MatchHost(char*, char*, char*);
 static int MatchUser(char*, char*);
 static char *ResolveUser(AUTHGROUP*);
 static char *AuthenticateUser(AUTHGROUP*, char*, char*);
@@ -141,7 +142,8 @@ static int	ConfigBitsize;
 #define PERMnnrpdauthsender	50
 #define PERMvirtualhost		51
 #define PERMnewsmaster		52
-#define PERMMAX			53
+#define PERMlocaladdress	53
+#define PERMMAX			54
 
 #define TEST_CONFIG(a, b) \
     { \
@@ -218,6 +220,7 @@ static CONFTOKEN PERMtoks[] = {
   { PERMnnrpdauthsender, "nnrpdauthsender:" },
   { PERMvirtualhost, "virtualhost:" },
   { PERMnewsmaster, "newsmaster:" },
+  { PERMlocaladdress, "localaddress:" },
   { 0, 0 }
 };
 
@@ -341,6 +344,11 @@ static AUTHGROUP *copy_authgroup(AUTHGROUP *orig)
     else
 	ret->default_domain = 0;
 
+    if (orig->localaddress)
+	ret->localaddress = COPY(orig->localaddress);
+    else
+	ret->localaddress = 0;
+
     return(ret);
 }
 
@@ -455,6 +463,8 @@ static void free_authgroup(AUTHGROUP *del)
 	DISPOSE(del->default_user);
     if (del->default_domain)
 	DISPOSE(del->default_domain);
+    if (del->localaddress)
+	DISPOSE(del->localaddress);
     DISPOSE(del);
 }
 
@@ -640,6 +650,11 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	    }
 	}
 
+	break;
+      case PERMlocaladdress:
+	curauth->localaddress = COPY(tok->name);
+	CompressList(curauth->localaddress);
+	SET_CONFIG(PERMlocaladdress);
 	break;
       default:
 	ReportError(f, "Unexpected token.");
@@ -1117,7 +1132,12 @@ static void PERMreadfile(char *filename)
 	    if (tok->type == PERMrbrace) {
 		inwhat = 0;
 
-		if (curauth->name && MatchClient(curauth)) {
+		if (curauth->name && MatchHost(curauth->hosts, ClientHost, ClientIp)) {
+		    if (!MatchHost(curauth->localaddress, ServerHost, ServerIp)) {
+			syslog(L_TRACE, "Auth strategy '%s' does not match localhost.  Removing.",
+			   curauth->name == NULL ? "(NULL)" : curauth->name);
+			free_authgroup(curauth);
+		    }
 		    add_authgroup(curauth);
 		} else if (curauth->name) {
 		    syslog(L_TRACE, "Auth strategy '%s' does not match client.  Removing.",
@@ -1434,23 +1454,23 @@ static void CompressList(char *list)
     *cpto = '\0';
 }
 
-static int MatchClient(AUTHGROUP *group)
+static int MatchHost(char *hostlist, char *host, char *ip)
 {
     char    **list;
-    int	    ret	    = 0;
+    bool    ret	= FALSE;
     char    *cp;
     int	    iter;
     char    *pat, 
 	    *p;
 
-    /*	If no hosts are specified, by default they match.   */
+    /*	If no hostlist are specified, by default they match.   */
 
-    if (group->hosts == NULL) {
-	return(1);
+    if (hostlist == NULL) {
+	return(TRUE);
     }
 
     list    = 0;
-    cp	    = COPY(group->hosts);
+    cp	    = COPY(hostlist);
 
     NGgetlist(&list, cp);
 
@@ -1463,16 +1483,16 @@ static int MatchClient(AUTHGROUP *group)
 	pat = list[iter];
 	if (*pat == '!')
 	    pat++;
-	ret = wildmat(ClientHost, pat);
-	if (!ret && *ClientIp) {
-	    ret = wildmat(ClientIp, pat);
+	ret = wildmat(host, pat);
+	if (!ret && *ip) {
+	    ret = wildmat(ip, pat);
 	    if (!ret && (p = strchr(pat, '/')) != (char *)NULL) {
 		int bits, c;
 		struct in_addr ia, net;
 		unsigned int mask;
 
 		*p = '\0';
-		ia.s_addr = inet_addr(ClientIp);
+		ia.s_addr = inet_addr(ip);
 		net.s_addr = inet_addr(pat);
 		if (ia.s_addr != INADDR_NONE && net.s_addr != INADDR_NONE) {
 		    if (strchr(p+1, '.') == (char *)NULL) {
@@ -1484,7 +1504,7 @@ static int MatchClient(AUTHGROUP *group)
 		        mask = inet_addr(p+1);
 		    }
 		    if ((ia.s_addr & mask) == (net.s_addr & mask))
-			ret = 1;
+			ret = TRUE;
 		}
 	    }
         }
@@ -1492,7 +1512,7 @@ static int MatchClient(AUTHGROUP *group)
 	    break;
     }
     if (ret && list[iter][0] == '!')
-	ret = 0;
+	ret = FALSE;
     DISPOSE(list);
     DISPOSE(cp);
     return(ret);

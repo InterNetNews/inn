@@ -180,6 +180,12 @@ break that auth group into multiple auth groups, each with a portion of
 the hosts listed in its hosts: parameter, and each assigning the same user
 identity.
 
+=item B<localaddress:>
+
+A comma-separated list of local hosts.  All usage of this parameter follows
+B<hosts:>.  This parameter can be useful when the server has multiple IP
+addresses.  All local addresses match, if not specified.
+
 =item B<res:>
 
 A command line for a user resolver.  The program executed must be located
