@@ -502,7 +502,7 @@ index_find(struct group_index *index, const char *group)
 	return -1;
     loc = index->header->hash[index_bucket(hash)].recno;
 
-    while (loc >= 0) {
+    while (loc >= 0 && loc < index->count) {
         struct group_entry *entry;
 
         if (loc > index->count && !index_maybe_remap(index, loc))
@@ -549,7 +549,7 @@ index_unlink_hash(struct group_index *index, HASH hash)
     parent = &index->header->hash[index_bucket(hash)].recno;
     current = *parent;
 
-    while (current >= 0) {
+    while (current >= 0 && current < index->count) {
         struct group_entry *entry;
 
         if (current > index->count && !index_maybe_remap(index, current))
@@ -1218,7 +1218,7 @@ index_audit_header(struct group_index *index, bool fix)
         parent = &index->header->hash[bucket].recno;
         index_audit_loc(index, parent, bucket, NULL, fix);
         current = *parent;
-        while (current != -1) {
+        while (current >= 0 && current < index->count) {
             entry = &index->entries[current];
             next = &entry->next.recno;
             if (entry->deleted == 0 && bucket != index_bucket(entry->hash)) {
@@ -1258,7 +1258,7 @@ index_audit_header(struct group_index *index, bool fix)
     index_audit_loc(index, &index->header->freelist.recno, 0, NULL, fix);
     parent = &index->header->freelist.recno;
     current = *parent;
-    while (current != -1) {
+    while (current >= 0 && current < index->count) {
         entry = &index->entries[current];
         index_audit_deleted(entry, current, fix);
         reachable[current] = true;
