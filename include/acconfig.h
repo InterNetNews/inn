@@ -118,9 +118,6 @@
 */
 @TOP@
 
-/* Define to `char *' if <sys/types.h> doesn't define.  */
-#undef caddr_t
-
 /* Define to a suitable 32-bit type if standard headers don't define.  */
 #undef int32_t
 
