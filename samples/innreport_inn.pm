@@ -262,6 +262,14 @@ sub collect
     return 1 if $left =~ m/\S+ starting$/o;
     # readclose
     return 1 if $left =~ m/\S+:\d+ readclose+$/o;
+    # rejected 502
+    if ($left =~ m/(\S+) rejected 502$/)
+    {
+      my $server = $1;
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innd_no_permission{$server}++;
+      return 1;
+    }
     # connected
     if ($left =~ /(\S+) connected \d+/o)
     {

@@ -737,6 +737,26 @@ section nocem {
 	};
 };
 
+section innd_no_permission {
+        title   "INND no permission servers:";
+        data    "%innd_no_permission";
+        sort    "$innd_no_permission{$b} <=> $innd_no_permission{$a}";
+        column {
+                name          "System";
+                format        "%-71.71s";
+                value         "$key";
+                format_total  "TOTAL: %-64.64s";
+                total         "$num";
+        };
+        column {
+                name          "Conn";
+                format_name   "%7s";
+                format        "%7d";
+                value         "$innd_no_permission{$key}";
+                total         "total(%innd_no_permission)";
+        };
+};
+
 section innd_misc {
         title   "INND misc events:";
 	data    "%innd_misc";
