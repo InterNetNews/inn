@@ -1,0 +1,93 @@
+<sect1>
+
+<sect2>
+<title>Welcome to INN 2.3!</title>
+
+<para>
+  Please read this document thoroughly before trying to install INN. You'll be
+  glad you did.
+
+  If you are upgrading from a previous release of INN (pre-2.0) then it is
+  recommended that you make copies of your old configuration files and use them
+  as guides for doing a clean installation and configuration of 2.3. Many
+  config files have changed, some have been added, and some have been removed.
+  You'll find it much easier to start with a fresh install than to try to
+  update your old installation.
+</para>
+</sect2>
+
+<sect2>
+<title>Supported Systems</title>
+
+<simplelist>
+ <listitem>
+  FreeBSD 2.2.x
+ </listitem>
+ <listitem>
+  FreeBSD 3.x
+ </listitem>
+ <listitem>
+  Linux 2.0.x (with libc 5.4 or libc 6.0)
+ </listitem>
+ <listitem>
+  OpenBSD ?.?
+ </listitem>
+ <listitem>
+  SCO 5.0.4 (tested with gcc 2.8.1)
+ </listitem>
+ <listitem>
+  Solaris 2.5.x
+ </listitem>
+ <listitem>
+  Solaris 2.6.x
+ </listitem>
+ <listitem>
+  SunOS 4.1.4
+ </listitem>
+ <listitem>
+  UX/4800 R11 and up
+ </listitem>
+ <listitem>
+  AIX 4.2
+ </listitem>
+</simplelist>
+</sect2>
+
+<sect2>
+<title>Before You Begin</title>
+
+<itemizedlist>
+ <listitem>
+  <para>
+    INN requires Perl to build and to run several subsystems.  Though
+    some perl scripts are compatible with Perl 4, some features (such as
+    script embedded in the server) mandate Perl 5.  An audit has not yet
+    been done on what the minimum version of Perl for all features is, so
+    it is recommended that you have at least Perl version 5.004.  For
+    instructions on obtaining and installing Perl, see
+    http://language.perl.com/info/software.html.
+  </para>
+ </listitem>
+ <listitem>
+  <para>
+    The INN Makefiles use the syntax "include FILE", rather than the
+    syntax common on BSDish systems of ".include <FILE>".  If your system
+    expects the BSDish syntax, you can address this in two ways: change
+    each Makefile's "include" lines, or install GNU Make from
+    ftp://ftp.gnu.ai.mit.edu.  If you choose the latter route, make
+    sure that the "make" command in site/do-subst.sh points to GNU Make.
+  </para>
+ </listitem>
+ <listitem>
+  <para>
+    If you want to enable support for authenticated control messages (this is
+    NOT required) then you will need to install PGP.  There are some questions
+    involving PGP's license if you are running a commercial installation of
+    INN (i.e. you are an ISP).  See http://www.pgp.com for more information
+    about PGP.
+  </para>
+ </listitem>
+</itemizedlist>
+</sect2>
+
+</sect1>

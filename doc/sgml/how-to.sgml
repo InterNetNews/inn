@@ -1,0 +1,560 @@
+
+ <article>
+ <title>INN 2.x How-To 
+ </title>
+ <author>Elena Samsonova
+<url url="mailto:E.Samsonova@wxs.nl" name="<E.Samsonova@wxs.nl>">
+ </author>
+ <toc>
+ <sect>Instead a foreword 
+ <Para>Since I only run one particular configuration and often follow plain vanilla
+ choices, I cannot know all the intricacies of other sites, therefore <bf>contributions
+ are welcome!</bf> All the author rights will be preserved, in the sense that the
+ author's name will appear next to his/her contribution.  
+ </Para>
+ <Para>Parts of the document that are not yet completed, are marked in blue. They
+ ask for a contribution! 
+ </Para>
+ <Para>This document <bf>is not</bf> a transcript of the manuals, and by no means a replacement
+ for them! Although it may be a great disappointment to those who don't like
+ to RTFM :) I'm still not going to copy and paste manuals into here. Instead,
+ every section that talks of programs or scripts, lists relevant manual pages
+ on the right. As one of the greatest difficulties in installing INN is finding
+ the right man page, this is supposed to help. 
+ </Para>
+ <sect1>References 
+ <Para>One of the best sources I found so far, and the one I used mostly, is presented
+ by Forrest J. Cavalier, Mib Software (<htmlurl url="http://www.mibsoftware.com/userkt" name="http://www.mibsoftware.com/userkt">). 
+ </Para>
+ <Para>Other nice pages??? 
+ </Para>
+ <sect1>Acknowledgements 
+ <Para>Many thanks to the following people who sent me very useful comments: 
+ </Para>
+ <Para>
+ <itemize>
+  <item>Forrest J. Cavalier 
+  <item>Ragnar Lonn 
+  <item>Hans Lambermont 
+  <item>Steve Tremblett 
+  <item><bf>you??</bf> 
+ </itemize></Para>
+ <sect1>Request for input 
+ <Para>Some of the functionalities are not covered in this How-To simply because
+ I have insufficient knowledge on them, therefore <bf>please contribute!!</bf> At least
+ the following parts are not covered: 
+ </Para>
+ <Para>
+ <itemize>
+  <item><tt>actived</tt>
+  <item>overview usage
+  <item>cyclical buffer and hashed spool formats
+  <item>other?
+ </itemize></Para>
+ <sect>System Architecture 
+ <sect1>Overview  
+ <Para>INN is a package of various programs and scripts meant for different purposes,
+ and different system and server configuration may require different programs.
+ This section describes several most commonly used configurations, as far as
+ I got input on those that I don't run myself. 
+ </Para>
+ <Para>For now, the section contains two configurations: centralized and distributed
+ with separate multiple readers and a single feeder. Input about other configurations
+ is welcome. 
+ </Para>
+ <Para>In a <bf>centralized system</bf>, one machine runs a set of programs that handle
+ incoming feed, outgoing feed and user connections for reading and posting.
+ A stand-alone configuration is also possible when the server is used for internal
+ purposes only and no incoming or outgoing feed is needed. 
+ </Para>
+ <Para>In a <bf>distributed system</bf> not every machine runs the same programs. INN,
+ being a package of multiple programs working together, offers many mix-and-match
+ possibilities.  
+ </Para>
+ <sect1>Centralized System Architecture  
+ <Para>Figure 1 depicts overal architecture of a centralized system. This section
+ is meant to shed some light on the interaction of the processes on the system,
+ it does not explain how to get those processes to behave this way. See section
+ Implementation for further details. 
+ </Para>
+ <Para>The system runs an <tt>innd</tt> daemon which handles incoming feeds, manages the
+ <tt>active</tt> and <tt>history </tt> files, as well as the article spool, and listens on port
+ 119 and accepts user connections. For each accepted connection it spawns a
+ child  <tt>nnrpd </tt>  process which handles further interaction with the user. 
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>innd, nnrpd, inn.conf, nnrp.access </bf><bf><tt> </tt></bf>
+ </itemize></Para>
+ <Para>Each  <tt>nnrpd</tt>  process reads the  <tt>active</tt>  and  <tt>history</tt>  files to find article
+ information, fetches requested articles from the spool and sends them to the
+ user. It also accepts user postings. 
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>active, history </bf>
+ </itemize></Para>
+ <Para>User postings are first pulled through a filter,  <tt>filter_nnrpd</tt>, which is
+ a Perl script. It is loaded when  <tt>nnrpd</tt>  starts up for subsequent use. The
+ filter may reject certain postings, in which case the user gets an error back.
+ If a postings passes through the filter,  <tt>nnrpd</tt>  passes it on to  <tt>innd</tt>.<bf>  </bf><bf><tt>nnrpd</tt>
+  does not attempt to store user postings in the spool.</bf>
+ </Para>
+ <Para><tt>innd</tt>  is configured to accept incoming feed from several external peers.
+ All the incoming articles are first pulled through a filter which is loaded
+ at startup. One of the popular filter scripts is  <tt>cleanfeed</tt> . Contributions
+ about other filters are welcome! The filter drops rejected articles silently.
+ It does however log relevant information. 
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>incoming.conf, news, news.log, cleanfeed, control.ctl </bf><bf><tt> </tt></bf>
+ </itemize></Para>
+ <Para>When an article makes it through  <tt>cleanfeed</tt>, <tt>innd </tt> registers it in the
+  <tt>active</tt>  and  <tt>history</tt>  file and stores it in the article spool. If configured,
+  <tt>innd</tt>  also sends the article to the corresponding external peer, either via
+ a channel or via a batch.
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>newsfeeds, moderators </bf><bf><tt> </tt></bf>
+ </itemize></Para>
+ <Para>For peers that receive low volume feed, a <tt>news</tt> administrator can choose
+ to use the batch method. It therefore spools relevant articles to batch files
+ (one per peer) for further processing.  <tt>nntpsend</tt>  is called on a regular basis
+ from <tt>cron</tt> which examins the batch files and spawns one  <tt>innxmit</tt>  process per
+ peer, according to peer configuration.  <tt>innxmit</tt>  establishes connection with
+ the peer, transfers the articles and closes the connection when done. Note
+ that <bf>when a peer goes down ungracefully (without closing connection),  </bf><bf><tt>innxmit</tt>
+  hangs.</bf> It is possible to install a script on the feeder which checks for peers
+ and kills hanging  <tt>innxmit</tt>  processes if necessary. It is also possible to
+ use  <tt>innfeed</tt>  (see below) for low volume feed.  Contributions about performance
+ comparisons are wanted!! 
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>nntpsend, nntpsend.ctl, passwd.nntp, innxmit, cron </bf><bf><tt> </tt></bf>
+ </itemize></Para>
+ <Para>For peers that receive high volume feed, as well as for peers that receive
+ identical feed, a news administrator can choose to use the channel method.
+ It spawns  <tt>innfeed</tt>  at startup and opens a channel to it. Every time  <tt>innd
+ </tt>  finds an article to be fed to the peers, it sends it to the  <tt>innfeed </tt>channel.
+  <tt>innfeed</tt>  is configured to feed multiple peers with the same articles from
+ the channel. It manages connections to the peers and writes backlogs in case
+ a peer is unavailable or too slow.  <tt>innfeed</tt>  writes one backlog file per peer.
+ The backlog is truncated to a specified length in order to prevent disk space
+ overflow. When this happens, the peer is said to miss articles.  <tt>innxmit</tt> does
+ not process backlogs; a separate program (e.g.  <tt>innxmit</tt>) should be called to
+ do that afterwards. 
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>innfeed,</bf><bf><tt> </tt>innfeed.conf </bf><bf><tt></tt></bf><tt> </tt>
+ </itemize></Para>
+ <Para><tt>news.daily</tt>  is run daily for article expiration, log file rotation and
+ reporting purposes. For article expiration  <tt>news.daily</tt>  spawns  <tt>expire</tt>  which
+ processes the <tt>history</tt> database purging entries for articles to be expired.
+ It produces a list of articles to be removed from the spool, and renumbers
+ the  <tt>active</tt>  file to reflect changes.  <tt>expire</tt>  calls  <tt>fastrm</tt> to actually remove
+ the articles on the expire<tt> </tt> list from the spool. 
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>news.daily, expire, expire.ctl, fastrm </bf><bf><tt></tt></bf><tt> </tt>
+ </itemize></Para>
+ <Para>For log rotation and reporting purposes, <tt>news.daily</tt> calls <tt>scanlogs</tt>, which
+ analogous to the one on the readers, rotates the log files and calls <tt>innreport</tt>
+ to process them, create a report and mail it to the news administrator. 
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>scanlogs, innreport</bf>
+ </itemize></Para>
+ <Para>There is a separate program that maintains <tt>innd</tt>, called ctl<tt>innd</tt>, and another
+ special program that watches over <tt>innd</tt>, called <tt>innwatch</tt>. News group maintenance
+ is also done with ctl<tt>innd</tt>. See Implementation Guide for further details. 
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>control.ctl, ctlinnd, innwatch, innwatch.ctl </bf><bf><tt></tt></bf><tt> </tt>
+ </itemize></Para>
+ <sect1>Distributed System Architecture  
+ <sect2>Server Level 
+ <Para>Figure 2 depicts overal architecture on server level. Functions of the
+ readers are all identical, so there may be as many of them as necessary to
+ cope with the load, which provides for horisontal scaling.  
+ </Para>
+ <Para>The readers accept user connections, read articles from the spool and deliver
+ them to the users, and accept user postings and forward them to the feeder.
+ <bf>The readers do not write either to the spool or to the database files (in </bf><bf><tt>&tilde;news/db</tt>).</bf>
+  
+ </Para>
+ <Para>The feeder accepts incoming feeds from external peers and user postings
+ from the readers and writes them to the spool and sends them out to the internet
+ to the external peers. Note that <bf>the feeder replicates external newsfeed</bf>. 
+ 
+ </Para>
+ <Para>The news store is merely a filer which hosts shared data.  
+ </Para>
+ <Para>Because of this functional split, the readers and the feeder are called
+ the frontend, and the news store is called the backend.  
+ </Para>
+ <sect2>Process level 
+ <Para>Figure 3 depicts overal architecture on process level. The figure shows
+ only one reader because all the readers have identical architecture.  
+ </Para>
+ <Para>The readers run <tt>nnrpd</tt> which handles user connections and spawns one process
+ per user. It reads article information from the <tt>active</tt> and <tt>history</tt> files and
+ the articles from the spool, and delivers them to the users. It accepts user
+ postings and stores them in a batch. <tt>rnews</tt> is run periodically, it reads user
+ postings from the batch and sends them to the feeder for propagation. <bf>The readers
+ do not store user postings in the spool, as they don't register them in the
+ database.</bf>  
+ </Para>
+ <Para>The feeder runs <tt>innd</tt> which handles newsfeeds. It accepts incoming newsfeeds
+ from external peers and user postings from the readers, stores them in the
+ spool and updates the <tt>active</tt> and <tt>history</tt> files accordingly. It also propagates
+ newsfeed to external peers and sends out user postings. The feeder runs <tt>expire</tt>
+ daily to purge old articles from the spool.  
+ </Para>
+ <Para>All frontend machines also run <tt>innreport</tt> daily which scans the log files
+ and creates a daily report which is then mailed to the news administrator.
+  
+ </Para>
+ <sect1>Architectural Details 
+ <Para>This section is meant to shed some light on the interaction of the processes
+ on the reader and feeder systems, it does not explain how to get those processes
+ to behave this way. See section Implementation Guide for further details. 
+ </Para>
+ <sect3>Readers 
+ <Para>Figure 4 depicts INN architecture on a reader. The system runs an <tt>nnrpd</tt>
+ daemon (started up with the -D switch), which listens on port 119 and accepts
+ user connections. For each accepted connection it spawns a child <tt>nnrpd</tt> process
+ which handles further interaction with the user. 
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>nnrpd, inn.conf, nnrp.access, moderators </bf>
+ </itemize></Para>
+ <Para>Alternatively, <tt>nnrpd</tt> could be started by <tt>inetd</tt> from <tt>/etc/inetd.conf</tt> and
+ <tt>/etc/services</tt> by specifying it for port 119. This ensures that the mother daemon
+ will never die since there's no mother daemon in this case. However, if <tt>inetd</tt>
+ dies, you're still in trouble.This approach is equivalent to running a mother
+ daemon <tt>nnrpd -D</tt> because the program simply forks a new process for each incoming
+ user.
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>inetd, /etc/inetd.conf, /etc/services</bf>
+ </itemize></Para>
+ <Para>Each <tt>nnrpd</tt> process reads the <tt>active</tt> and <tt>history</tt> files to find article information,
+ fetches requested articles from the spool and sends them to the user. It also
+ accepts user postings. 
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>active, history</bf><bf><tt> </tt></bf>
+ </itemize></Para>
+ <Para>User postings are first pulled through a filter, <tt>filter_nnrpd</tt>, which is
+ a Perl script. It is loaded when <tt>nnrpd</tt> starts up for subsequent use. The filter
+ may reject certain postings, in which case the user gets an error back.
+ </Para>
+ <Para>If a posting passes through the filter, there are two configurations possible:
+ either <tt>nnrpd</tt> immediately connects to the feeder and forwards the posting, or
+ <tt>nnrpd</tt> stores it in a batch to be sent to the feeder. In either case however
+ <tt></tt><tt><bf>nnrpd </bf></tt><bf>does not attempt to store user postings in the spool.</bf> The first option
+ has the following properties:
+ </Para>
+ <Para>
+ <itemize>
+  <item>postings get sent out immediately without any delay
+  <item>users get notified if the postings get rejected by the feeder for some
+ reason
+ <Para><bf>Note:</bf> you may not always want to notify your users that their spam has
+ been dropped as it would present a perfect way to find a work-around for your
+ anti-spam filter. 
+ </Para>
+  <item><tt>nnrpd</tt> does not return until the article is transferred to the feeder, or
+ an error returned, which means that it will generally take longer for the user
+ compared with the second option
+  <item>users cannot post when the feeder is down or busy expiring or renumbering,
+ or if it is throttled or overloaded
+ </itemize></Para>
+ <Para>The second option has the following properties:
+ </Para>
+ <Para>
+ <itemize>
+  <item>postings get spooled into a queue and get sent to the feeder as frequently
+ as<tt> rnews </tt> is configured to do it (see below)
+  <item>users get notified if the postings get rejected by <tt>nnrpd</tt> but do not get
+ notified if they get rejected by the feeder 
+  <item><tt>nnrpd</tt> returns as soon as the article gets spooled, which is very quickly
+  <item>unavailability of the feeder does not impair the users' ability to post
+ </itemize></Para>
+ <Para>When the second option is used, <tt>rnews</tt> is run on a regular basis from <tt>cron</tt>
+ to send user postings to the feeder. It processes the batch created by <tt>nnrpd</tt>
+ and attempts to make a connection to the feeder. If the feeder is temporarily
+ down or does not accept connections for some other reason, <tt>rnews</tt> leaves the
+ articles in the batch. Next time it is started, it will try again. 
+ </Para>
+ <Para>
+ <itemize>
+  <item><tt></tt><tt><bf>r</bf></tt><bf>news, cron</bf><bf><tt> </tt></bf>
+ </itemize></Para>
+ <Para>For log file rotation and reporting purposes, <tt>news.daily</tt> is run daily.
+ <tt></tt><tt><bf>news.daily</bf></tt><bf> on the readers does not run </bf><bf><tt>expire</tt>.</bf> It spawns <tt>scanlogs</tt> which rotates
+ the logs and calls <tt>innreport</tt> which analyses them, creates a report and mails
+ it to the news administrator.
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>news.daily, scanlogs, innreport, innreport.conf </bf><bf><tt> </tt></bf>
+ </itemize></Para>
+ <sect3>Feeder 
+ <Para>Figure 5 depicts INN architecture on the feeder. The system runs <tt>innd</tt> daemon
+ which handles incoming feeds and manages the <tt>active</tt> and <tt>history</tt> files, as well
+ as the article spool. 
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>innd, active, history</bf><bf><tt> </tt></bf>
+ </itemize></Para>
+ <Para><tt>innd</tt> is configured to accept incoming feed from several external peers
+ and from the readers. Note that <bf>the feeder does not see any difference between
+ external feed and user postings from the readers.</bf> All the incoming articles
+ are first pulled through a filter which is loaded at startup. One of the popular
+ filter scripts is <tt>cleanfeed</tt>. Contributions about other filters are welcome! The
+ filter drops rejected articles silently, as there is no user to issue the error
+ to. It does however log relevant information. 
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>incoming.conf, news, news.log, cleanfeed, control.ctl </bf>
+ </itemize></Para>
+ <Para>When an article makes it through <tt>cleanfeed</tt>, <tt>innd</tt> registers it in the <tt>active</tt>
+ and <tt>history</tt> file and stores it in the article spool. If configured, <tt>innd</tt> also
+ sends the article to the corresponding external peer, either via a channel
+ or via a batch.
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>newsfeeds, moderators</bf>
+ </itemize></Para>
+ <Para>For peers that receive low volume feed, <tt>innd</tt> uses the batch method. It
+ therefore spools relevant articles to batch files (one per peer) for further
+ processing. <tt>nntpsend</tt> is called on a regular basis from <tt>cron </tt>which examins the
+ batch files and spawns one <tt>innxmit</tt> process per peer, according to peer configuration.
+ <tt>innxmit</tt> establishes connection with the peer, transfers the articles and closes
+ the connection when done. Note that <bf>when a peer goes down ungracefully (without
+ closing connection), </bf><bf><tt>innxmit</tt> hangs.</bf> It is possible to install a script on the
+ feeder which checks for peers and kills hanging <tt>innxmit</tt> processes if necessary.
+ 
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>nntpsend, nntpsend.ctl, passwd.nntp, innxmit, cron</bf><bf><tt> </tt></bf>
+ </itemize></Para>
+ <Para>For peers that receive high volume feed, as well as for peers that receive
+ identical feed, <tt>innd</tt> uses the channel method. It spawns <tt>innfeed</tt> at startup
+ and opens a channel to it. Every time <tt>innd</tt> finds an article to be fed to the
+ peers, it sends it to the <tt>innfeed</tt> channel. <tt>innfeed</tt> is configured to feed multiple
+ peers with the same articles from the channel. It manages connections to the
+ peers and writes backlogs in case a peer is unavailable or too slow. <tt>innfeed</tt>
+ writes one backlog file per peer. The backlog is truncated to a specified length
+ in order to prevent disk space overflow. When this happens, the peer is said
+ to miss articles. <tt>innxmit</tt> does not process backlogs; a separate program (e.g.
+ <tt>innxmit</tt>) should be called to do that afterwards. 
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>innfeed, innfeed.conf </bf>
+ </itemize></Para>
+ <Para><tt>news.daily</tt> is run daily for article expiration, log file rotation and reporting
+ purposes. For article expiration <tt>news.daily</tt> spawns <tt>expire</tt> which processes the
+ <tt>history</tt> database purging entries for articles to be expired. It produces a
+ list of articles to be removed from the spool, and renumbers the <tt>active</tt> file
+ to reflect changes. <tt>expire</tt> calls <tt>fastrm </tt>to actually remove the articles on
+ the expire<tt> </tt>list from the spool. 
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>news.daily, expire, expire.ctl, fastrm</bf><bf><tt> </tt></bf>
+ </itemize></Para>
+ <Para>For log rotation and reporting purposes, <tt>news.daily </tt>calls <tt>scanlogs</tt>, which
+ analogous to the one on the readers, rotates the log files and calls <tt>innreport</tt>
+ to process them, create a report and mail it to the news administrator. 
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>scanlogs, innreport</bf><bf><tt> </tt></bf>
+ </itemize></Para>
+ <Para>There is a separate program that maintains <tt>innd</tt>, called ctl<tt>innd</tt>, and another
+ special program that watches over <tt>innd</tt>, called <tt>innwatch</tt>. News group maintenance
+ is also done with ctl<tt>innd</tt>. See Implementation Guide for further details.
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>control.ctl, </bf><bf><tt>ctl</tt>innd, innwatch, innwatch.ctl </bf><bf><tt> </tt></bf>
+ </itemize></Para>
+ <sect>Implementation Guide 
+ <sect1>Centralized System  
+ <Para>Input welcome!! 
+ </Para>
+ <sect1>Distributed System  
+ <Para>There are a couple of things to pay attention to when configuring machines
+ in a distributed system. This section describes those specific things. Note
+ that I only describe deviations from the norm because explanations for standard
+ values can be found in the manuals. However, the meaning and use of the various
+ configuration files is outlined here.  
+ </Para>
+ <sect2>Readers 
+ <Para><tt></tt><tt><bf>nnrpd</bf></tt><bf> configuration: </bf>
+ </Para>
+ <Para>Standard <tt>nnrpd</tt> is configured in <tt>inn.conf</tt>. This file contains configuration
+ parameters for <tt>innd</tt> as well which are ignored on the readers. 
+ </Para>
+ <Para><bf>Having </bf><bf><tt>nnrpd</tt> send postings to the feeder: </bf>
+ </Para>
+ <Para>To make <tt>nnrpd</tt> connect to the feeder for every posting, set <tt>spoolfirst</tt> to
+ false and <tt>nnrpdposthost</tt> to the feeder. 
+ </Para>
+ <Para><bf>Having </bf><bf><tt>nnrpd</tt> write postings to a queue: </bf>
+ </Para>
+ <Para>To make sure that <tt>nnrpd</tt> stores user postings in a batch in queue/incoming
+ directory, set <tt>spoolfirst</tt> to true and <tt>nnrpdposthost</tt> to the feeder. 
+ </Para>
+ <Para><bf>Running </bf><bf><tt>rnews</tt>: </bf>
+ </Para>
+ <Para><tt>rnews</tt> should be run frequently enough to make sure your users don't complain.
+ The postings will only appear on the news server (and will only be sent out
+ to the Internet) when they are transmitted to the feeder. A sensible value
+ is every 5 minutes. 
+ </Para>
+ <Para>The following parameters are usually used: <tt>rnews </tt> <tt>-v -U</tt>. 
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>nnrpd, inn.conf, rnews, cron, crontab</bf>
+ </itemize></Para>
+ <Para><bf>User access rights and closed groups: </bf>
+ </Para>
+ <Para>User access rights are configured in <tt>nnrp.access</tt>. Closed groups are also
+ set up here. All standard stuff. 
+ </Para>
+ <Para>Although it is all standard stuff, a good description of how to set up
+ a closed group without turning on authentication for all the public groups
+ as well, is wanted. Please contribute!
+ </Para>
+ <Para><bf>Moderated groups: </bf>
+ </Para>
+ <Para>Moderated groups are marked as <tt>m</tt> in the <tt>active</tt> file. Moderator addresses
+ are listed in the <tt>moderators</tt> file. <tt>nnrpd</tt> consults this file when an article
+ is posted to a moderated group. 
+ </Para>
+ <Para>See feeder section on how to set up a moderated group in the <tt>active</tt> file.
+  
+ </Para>
+ <Para><bf>Rotating logs and creating reports: </bf>
+ </Para>
+ <Para>Use <tt>news.daily</tt> to do it. Note that you need to <bf>explicitely turn off expire
+ and renumber </bf>of the <tt>active</tt> file. Use the following parameters: 
+ </Para>
+ <Para>
+ <quote><tt>news.daily noexpire </tt> <tt>norenumber</tt> 
+ </quote></Para>
+ <Para><tt>news.daily</tt> calls <tt>scanlogs</tt> which in turn calls <tt>innreport</tt>. The latter is
+ configured in <tt>innreport.conf</tt>. 
+ </Para>
+ <sect2>Feeder 
+ <Para><tt></tt><tt><bf>innd</bf></tt><bf> configuration: </bf>
+ </Para>
+ <Para><tt>innd</tt>, is configured in <tt>inn.conf</tt>. Configuration here is quite standard.
+ 
+ </Para>
+ <Para><bf>Allowing readers to post in batch mode: </bf>
+ </Para>
+ <Para>I found it necessary to give the readers access to the feeder in the feeder's
+ <tt>nnrp.access</tt> file. Otherwise <tt>rnews</tt> from the readers cannot connect.
+ </Para>
+ <Para><bf>Allowing readers to post directly: </bf>
+ </Para>
+ <Para>In this case it is necessary to add the readers to<tt> incoming.conf</tt> rather
+ than to <tt>nnrp.access</tt> file. 
+ </Para>
+ <Para>
+ <itemize>
+  <item><bf>nnrp.access </bf>
+ </itemize></Para>
+ <Para><bf>Setting up incoming feed: </bf>
+ </Para>
+ <Para>Incoming feeds are handled by <tt>innd</tt> and are configured in <tt>incoming.conf
+ </tt>. Pay attention to the peer ME which is your own news server. If this peer
+ is not configured properly, the articles will not appear in your spool. 
+ </Para>
+ <Para><bf>Setting up outgoing feed: </bf>
+ </Para>
+ <Para>Outgoing feeds are configured in <tt>newsfeeds</tt> which determines the method
+ to be used to transfer the articles to the peer. 
+ </Para>
+ <Para>For low-volume feeds batched method may be used with the transfer handled
+ by <tt>nntpsend </tt> (which calls <tt>innxmit</tt> for each peer). <tt>nntpsend</tt> is configured in
+ <tt>nntpsend.ctl </tt> and <tt>passwd.nntp</tt>.  
+ </Para>
+ <Para>For high-volume feeds channel method may be used with the transfer handled
+ by <tt>innfeed</tt>, one instance of the program serving all the peers. It is configured
+ in <tt>innfeed.conf </tt>.  
+ </Para>
+ <Para><bf>Setting up anti-spam filters: </bf>
+ </Para>
+ <Para>The feeder may run an anti-spam filter that checks every incoming article
+ and drops ''bad'' ones. If it is a Perl script, it should be copied to the
+ <tt>bin/filter/filter_innd.pl</tt>, if it is a Tcl/Tk script, it goes to <tt>bin/filter/filter</tt>_<tt>innd.tcl</tt>.
+ 
+ </Para>
+ <Para>One of the popular filters is <tt>cleanfeed </tt> which is configured in <tt>cleanfeed.conf</tt>.
+ 
+ </Para>
+ <Para>Input about other filters is welcome!  
+ </Para>
+ <Para><bf>News groups maintenance: </bf>
+ </Para>
+ <Para>News groups are maintained (added, removed or changed attributes) with
+ <tt>ctlinnd</tt> as well as automatically by <tt>innd</tt>. 
+ </Para>
+ <Para>Automatic news group maintenance is controlled by <tt>control.ctl</tt> which defines
+ how specific types of control articles are processed.   
+ </Para>
+ <Para><bf>Timely updates of </bf><bf><tt>active</tt> and </bf><bf><tt>history</tt>: </bf>
+ </Para>
+ <Para>So that the readers would be able to access all the articles in the spool
+ for all actions (including cancelling when they need to retrieve the article
+ by message ID), <tt>active</tt> and <tt>history*</tt> files need to be updated frequently enough.
+ If MMAP is used, then MMAP_SYNC must also be used with a sufficiently short
+ interval.  
+ </Para>
+ <Para><bf>Watching over </bf><bf><tt>innd</tt>: </bf>
+ </Para>
+ <Para><tt>innwatch</tt> watches over <tt>innd</tt> and can be configure to do a wide range of things
+ in the configuration file <tt>innwatch.ctl</tt>.  
+ </Para>
+ <Para><bf>Running </bf><bf><tt>expire</tt> and rotating logs: </bf>
+ </Para>
+ <Para>Both these actions are performed by <tt>news.daily</tt> which calls <tt>expire</tt> and <tt>fastrm</tt>
+ for expiration, <tt>ctlinnd</tt> renumber for <tt>active</tt> file renumbering, and <tt>scanlogs</tt>
+ that calls <tt>innreport</tt> for log file rotation and reporting. 
+ </Para>
+ <Para><tt>news.daily</tt> is run from <tt>cron</tt> on a daily basis. To make sure that expire
+ does not take for ever, the following parameters are given: 
+ </Para>
+ <Para>
+ <quote><tt>news.daily delayrm</tt> 
+ </quote></Para>
+ <Para>Expiration policies depend on the storage method(s) used. For the traditional
+ spool they are defined in <tt>expire.ctl</tt>. Please contribute for the other storage
+ methods! 
+ </Para>
+ <Para>Reporting is defined in <tt>innreport.conf </tt> that is used by <tt>innreport</tt>. 
+ </Para>
+
+
+ </article>
