@@ -1,17 +1,30 @@
-##  $Revision$
-##  Mailing addresses for moderators.
+##  $Id$
+##
+##  moderators - Mailing addresses for moderators.
+##
+##  Whenever possible, the master moderator database at moderators.isc.org
+##  should be used rather than adding specific entries to this file.  The
+##  master database will list any publically propagated moderated group;
+##  changes should be sent to moderators-request@isc.org.
+##
+##  Exceptions listed in this file are mostly hierarchies for which the
+##  master database isn't accurate or updated quickly enough.  Local
+##  moderated newsgroups can also be added to this file.
+##
 ##  Format:
 ##	<newsgroup>:<pathname>
-##  First match found is used.
+##
 ##	<newsgroup>	Shell-style newsgroup pattern or specific newsgroup
 ##	<pathname>	Mail address, "%s" becomes newgroup name with dots
 ##			changed to dashes.
+##
+##  The first matching entry is used.
 
-## Russian hierarchies
+## Public hierarchies with exceptions.
 fido7.*:%s@fido7.ru
 medlux.*:%s@news.medlux.ru
+nl.*:%s@nl.net
 relcom.*:%s@moderators.relcom.ru
 
-## Direct all public hierarchies to the master moderator database.
+## Direct all other public hierarchies to the master moderator database.
 *:%s@moderators.isc.org
-
