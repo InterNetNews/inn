@@ -628,7 +628,10 @@ MailArticle(char *group, char *article)
     /* Write the headers, a blank line, then the article. */
     for (hp = Table; hp < ARRAY_END(Table); hp++)
 	if (hp->Value) {
-	    fprintf(F, "%s: %s\n", hp->Name, hp->Value);
+ 	    if (*hp->Value == ' ' || *hp->Value == '\t')
+                fprintf(F, "%s:%s\n", hp->Name, hp->Value);
+ 	    else
+                fprintf(F, "%s: %s\n", hp->Name, hp->Value);
 	    if (FLUSH_ERROR(F)) {
 		pclose(F);
 		return CANTSEND;
