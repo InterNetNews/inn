@@ -16,7 +16,7 @@ SOURCES = $(MISSING_SRC) \
 	makedir.c md5.c nonblocking.c parsedate.c perl.c qio.c radix32.c \
 	readin.c remopen.c reservedfd.c resource.c rwlock.c sendarticle.c \
 	sendpass.c tempname.c waitnb.c wildmat.c version.c xfopena.c \
-	xmalloc.c xsignal.c xwrite.c xwritev.c
+	xmalloc.c xsignal.c xwrite.c
 
 OBJECTS = $(MISSING_OBJ) \
 	argparse.o checkart.o cleanfrom.o clientactive.o clientlib.o \
@@ -26,7 +26,7 @@ OBJECTS = $(MISSING_OBJ) \
 	makedir.o md5.o nonblocking.o parsedate.o qio.o radix32.o readin.o \
 	remopen.o reservedfd.o resource.o rwlock.o sendarticle.o \
 	sendpass.o tempname.o waitnb.o wildmat.o version.o xfopena.o \
-	xmalloc.o xsignal.o xwrite.o xwritev.o
+	xmalloc.o xsignal.o xwrite.o
 
 LOBJECTS= $(OBJECTS:.o=.lo)
 
