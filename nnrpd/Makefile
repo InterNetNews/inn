@@ -3,7 +3,7 @@
 include ../Makefile.global
 
 top		= ..
-CFLAGS		= $(GCFLAGS) $(SSL_INC) $(SASL_INC)
+CFLAGS		= $(GCFLAGS) $(SSL_CPPFLAGS) $(SASL_CPPFLAGS)
 
 ALL		= nnrpd
 
