@@ -1,0 +1,26 @@
+=head1 NAME
+
+motd.news - Message of the day information for readers
+
+=head1 DESCRIPTION
+
+This file, found in I<pathetc>/motd.news, contains local information for
+news readers in a free-form format.  The entire file is returned verbatim
+to any client that issues the LIST MOTD command.  This might be used for
+new information, notification of upcoming downtime, or similar purposes.
+
+Be aware that use of the LIST MOTD command is not widespread and most news
+clients will never ask for this file.
+
+If this file is missing, it is not an error.  The server will just send
+the client an empty response.
+
+=head1 HISTORY
+
+Rewritten in POD by Russ Allbery <rra@stanford.edu> for InterNetNews.
+
+$Id$
+
+=head1 SEE ALSO
+
+inn.conf(5)
