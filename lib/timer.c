@@ -3,9 +3,10 @@
 **  Timer functions, to gather profiling data.
 **
 **  These functions log profiling information about where the server spends
-**  its time, and are fast enough to be left always on.  While it doesn't
-**  provide as detailed of information as a profiling build would, it's
-**  much faster and simpler.
+**  its time.  While this doesn't provide as detailed of information as a
+**  profiling build would, it's much faster and simpler, and since it's fast
+**  enough to always leave on even on production servers, it can gather
+**  information *before* it's needed and show long-term trends.
 **
 **  Functions that should have their time monitored need to call TMRstart(n)
 **  at the beginning of the segment of code and TMRstop(n) at the end.  The
@@ -16,16 +17,21 @@
 **  your application add them to your own description array.  Also add them
 **  to innreport.
 **
-**  There are no sanity checks to see if you have failed to start a timer,
-**  etc., etc.  It is assumed that the user is moderately intelligent and
-**  can properly deploy this code.
+**  Calls are sanity-checked to some degree and errors reported via
+**  warn/die, so all callers should have the proper warn and die handlers
+**  set up, if appropriate.
 **
 **  Recursion is not allowed on a given timer.  Setting multiple timers
 **  at once is fine (i.e., you may have a timer for the total time to write
 **  an article, how long the disk write takes, how long the history update
-**  takes, etc. which are components of the total article write time).
-**  innreport wouldn't handle such nested timers correctly without some
-**  changes, however.
+**  takes, etc. which are components of the total article write time).  If a
+**  timer is started while another timer is running, the new timer is
+**  considered to be a sub-timer of the running timer, and must be stopped
+**  before the parent timer is stopped.  Note that the same timer number can
+**  be a sub-timer of more than one timer or a timer without a parent, and
+**  each of those counts will be reported separately.
+**
+**  innreport can't currently handle nested timers.
 **
 **  Note that this code is not thread-safe and in fact would need to be
 **  completely overhauled for a threaded server (since the idea of global
@@ -37,28 +43,40 @@
 #include "clibrary.h"
 #include "libinn.h"
 #include "inn/timer.h"
+#include "portable/time.h"
 #include <syslog.h>
 
-#ifdef TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# ifdef HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
-#endif
+/* Timer values are stored in a series of trees.  This allows use to use
+   nested timers.  Each nested timer node is linked to three of its
+   neighbours to make lookups easy and fast.  The current position in the
+   graph is given by timer_current.
 
-/* Timer values.  start stores the time (relative to the last summary) at
-   which TMRstart was last called for each timer, or 0 if the timer hasn't
-   been started.  cumulative is the total time accrued by that timer since
-   the last summary.  count is the number of times the timer has been
-   stopped since the last summary. */
-static unsigned long *start;
-static unsigned long *cumulative;
-static unsigned long *count;
-static unsigned int timer_count;
+   As an optimization, since most timers aren't nested, timer_list holds an
+   array of pointers to non-nested timers that's filled in as TMRstart is
+   called so that the non-nested case remains O(1).  That array is stored in
+   timers.  This is the "top level" of the timer trees; if timer_current is
+   NULL, any timer that's started is found in this array.  If timer_current
+   isn't NULL, there's a running timer, and starting a new timer adds to
+   that tree.
+
+   Note that without the parent pointer, this is a tree.  id is the
+   identifier of the timer.  start stores the time (relative to the last
+   summary) at which TMRstart was last called for each timer.  total is
+   the total time accrued by that timer since the last summary.  count is
+   the number of times the timer has been stopped since the last summary. */
+struct timer {
+    unsigned int  id;
+    unsigned long start;
+    unsigned long total;
+    unsigned long count;
+
+    struct timer *parent;
+    struct timer *brother;
+    struct timer *child;
+};
+static struct timer **timers = NULL;
+static struct timer *timer_current = NULL;
+unsigned int timer_count = 0;
 
 /* Names for all of the timers.  These must be given in the same order
    as the definition of the enum in timer.h. */
@@ -74,7 +92,7 @@ static const char * const timer_name[TMR_APPLICATION] = {
 **  the base time.
 */
 static unsigned long
-get_time(bool reset)
+TMRgettime(bool reset)
 {
     unsigned long now;
     struct timeval tv;
@@ -96,6 +114,145 @@ get_time(bool reset)
     return now;
 }
 
+
+/*
+**  Initialize the timer.  Zero out even variables that would initially be
+**  zero so that this function can be called multiple times if wanted.
+*/
+void
+TMRinit(unsigned int count)
+{
+    unsigned int i;
+
+    /* TMRinit(0) disables all timers. */
+    TMRfree();
+    if (count != 0) {
+        timers = xmalloc(count * sizeof(struct timer *));
+        for (i = 0; i < count; i++)
+            timers[i] = NULL;
+        TMRgettime(true);
+    }
+    timer_count = count;
+}
+
+
+/*
+**  Recursively destroy a timer node.
+*/
+static void
+TMRfreeone(struct timer *timer)
+{
+    if (timer == NULL)
+        return;
+    if (timer->child != NULL)
+        TMRfreeone(timer->child);
+    if (timer->brother != NULL)
+        TMRfreeone(timer->brother);
+    free(timer);
+}
+
+
+/*
+**  Free all timers and the resources devoted to them.
+*/
+void
+TMRfree(void)
+{
+    unsigned int i;
+
+    if (timers != NULL)
+        for (i = 0; i < timer_count; i++)
+            TMRfreeone(timers[i]);
+    free(timers);
+    timers = NULL;
+    timer_count = 0;
+}
+
+
+/*
+**  Allocate a new timer node.  Takes the id and the parent pointer.
+*/
+struct timer *
+TMRnew(unsigned int id, struct timer *parent)
+{
+    struct timer *timer;
+
+    timer = xmalloc(sizeof(struct timer));
+    timer->parent = parent;
+    timer->brother = NULL;
+    timer->child = NULL;
+    timer->id = id;
+    timer->start = 0;
+    timer->total = 0;
+    timer->count = 0;
+    return timer;
+}
+
+
+/*
+**  Start a particular timer.  If no timer is currently running, start one
+**  of the top-level timers in the timers array (creating a new one if
+**  needed).  Otherwise, search for the timer among the children of the
+**  currently running timer, again creating a new timer if necessary.
+*/
+void
+TMRstart(unsigned int timer)
+{
+    struct timer *search;
+
+    if (timer >= timer_count) {
+        warn("timer %u is larger than the maximum timer %u, ignored",
+             timer, timer_count - 1);
+        return;
+    }
+
+    /* timers will be non-NULL if timer_count > 0. */
+    if (timer_current == NULL) {
+        if (timers[timer] == NULL)
+            timers[timer] = TMRnew(timer, NULL);
+        timer_current = timers[timer];
+    } else {
+        search = timer_current;
+
+        /* Go to the "child" level and look for the good "brother"; the
+           "brothers" are a simple linked list. */
+        if (search->child == NULL) {
+            search->child = TMRnew(timer, search);
+            timer_current = search->child;
+        } else {
+            search = search->child;
+            while (search->id != timer && search->brother != NULL)
+                search = search->brother;
+            if (search->id != timer) {
+                search->brother = TMRnew(timer, search->parent);
+                timer_current = search->brother;
+            } else {
+                timer_current = search;
+            }
+        }
+    }
+    timer_current->start = TMRgettime(false);
+}
+
+
+/*
+**  Stop a particular timer, adding the total time to total and incrementing
+**  the count of times that timer has been invoked.
+*/
+void
+TMRstop(unsigned int timer)
+{
+    if (timer != timer_current->id)
+        warn("timer %u stopped doesn't match running timer %u", timer,
+             timer_current->id);
+    else {
+        timer_current->total += TMRgettime(false) - timer_current->start;
+        timer_current->count++;
+        timer_current = timer_current->parent;
+    }
+}
+
+
 /*
 **  Return the current time in milliseconds since the last summary or the
 **  initialization of the timer.  This is intended for use by the caller to
@@ -104,109 +261,70 @@ get_time(bool reset)
 unsigned long
 TMRnow(void)
 {
-    return get_time(false);
+    return TMRgettime(false);
 }
 
+
 /*
-**  Summarize the current timer statistics and then reset them for the next
-**  polling interval.  To find the needed buffer size, note that a 64-bit
-**  unsigned number can be up to 20 digits long, so each timer can be 52
-**  characters.  We also allow another 29 characters for the introductory
-**  message.
+**  Recursively summarize a single timer tree into the supplied buffer,
+**  returning the number of characters added to the buffer.
+*/
+static size_t
+TMRsumone(const char *const *labels, struct timer *timer, char *buf,
+          size_t len)
+{
+    struct timer *node;
+    size_t off = 0;
+
+    /* This results in "child/parent nn(nn)" instead of the arguably more
+       intuitive "parent/child" but it's easy.  Since we ensure sane
+       snprintf semantics, it's safe to defer checking for overflow until
+       after formatting all of the timer data. */
+    for (node = timer; node != NULL; node = node->parent)
+        off += snprintf(buf + off, len - off, "%s/", labels[node->id]);
+    off--;
+    off += snprintf(buf + off, len - off, " %lu(%lu) ", timer->total,
+                    timer->count);
+    if (off == len) {
+        warn("timer log too long while processing %s", labels[timer->id]);
+        return 0;
+    }
+
+    node->total = 0;
+    node->count = 0;
+    if (node->child != NULL)
+        off += TMRsumone(labels, node->child, buf + off, len - off);
+    if (node->brother != NULL)
+        off += TMRsumone(labels, node->brother, buf + off, len - off);
+    return off;
+}
+
+
+/*
+**  Summarize the current timer statistics, report them to syslog, and then
+**  reset them for the next polling interval.
 */
 void
 TMRsummary(const char *const *labels)
 {
-    char result[256];
-    char *buffer;
+    char *buf;
     unsigned int i;
-    ssize_t length;
+    size_t len;
+    size_t off = 0;
 
-    length = 52 * timer_count + 29;
-    buffer = xmalloc(length + 1);
-    length -= snprintf(buffer, length + 1, "ME time %ld ", get_time(true));
-    for (i = 0; i < timer_count; i++) {
-        if (cumulative[i] != 0 || count[i] != 0) {
-            const char *name;
-
-            if (i < TMR_APPLICATION)
-                name = timer_name[i];
-            else
-                name = labels[i - TMR_APPLICATION];
-            length -= snprintf(result, sizeof(result), "%s %lu(%lu) ",
-                               name, cumulative[i], count[i]);
-            if (length < 0)
-                break;
-            strcat(buffer, result);
-            cumulative[i] = 0;
-            count[i] = 0;
-        }
-    }
-    syslog(LOG_NOTICE, "%s", buffer);
-    free(buffer);
-}
-
-
-/*
-**  Initialize the timer.  Zero out even variables that would initially be
-**  zero so that this function can be called multiple times if wanted.
-*/
-void
-TMRinit(unsigned int timers)
-{
-    unsigned int i;
-
-    /* Make sure we're multiple call safe and free any arrays we had. */
-    if (start) {
-        free(start);
-        start = NULL;
-    }
-    if (cumulative) {
-        free(cumulative);
-        cumulative = NULL;
-    }
-    if (count) {
-        free(count);
-        count = NULL;
-    }
-
-    /* To disable the timers you can do TMRinit(0), so watch for that
-       case. */ 
-    if (timers != 0) {
-        start = xmalloc(timers * sizeof(*start));
-        cumulative = xmalloc(timers * sizeof(*cumulative));
-        count = xmalloc(timers * sizeof(*count));
-
-        for (i = 0; i < timers; i++) {
-            start[i] = 0;
-            cumulative[i] = 0;
-            count[i] = 0;
-        }
-        get_time(true);
-    }
-    timer_count = timers;
-}
-
-/*
-**  Start a particular timer.
-*/
-void
-TMRstart(unsigned int timer)
-{
-    if (timer < timer_count)
-        start[timer] = get_time(false);
-}
-
-
-/*
-**  Stop a particular timer, adding the total time to cumulative and
-**  incrementing the count of times that timer has been invoked.
-*/
-void
-TMRstop(unsigned int timer)
-{
-    if (timer < timer_count) {
-        cumulative[timer] += get_time(false) - start[timer];
-        count[timer]++;
-    }
+    /* To find the needed buffer size, note that a 64-bit unsigned number
+       can be up to 20 digits long, so each timer can be 52 characters.  We
+       also allow another 29 characters for the introductory message.  We
+       may have timers recurring at multiple points in the structure, so
+       this may not be long enough, but this is over-sized enough that it
+       shouldn't be a problem.  We use snprintf, so if the buffer isn't
+       large enough it will just result in logged errors. */
+    len = 52 * timer_count + 29 + 1;
+    buf = xmalloc(len);
+    off += snprintf(buf, len, "ME time %ld ", TMRgettime(true));
+    for (i = 0; i < timer_count; i++)
+        if (timers[i] != NULL)
+            off += TMRsumone(labels, timers[i], buf + off, len - off);
+    syslog(LOG_NOTICE, "%s", buf);
+    free(buf);
 }
