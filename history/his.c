@@ -352,7 +352,7 @@ HISsetcache(struct history *h, size_t size)
     }
     h->cachesize = size / sizeof(struct hiscache);
     if (h->cachesize != 0) {
-	h->cache = malloc(h->cachesize * sizeof(struct hiscache));
+	h->cache = xmalloc(h->cachesize * sizeof(struct hiscache));
 	memset(h->cache, '\0', h->cachesize * sizeof h->cache);
     }
     h->stats = nullhist;
