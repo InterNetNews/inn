@@ -5,7 +5,7 @@
 ##	norotate	Do not rotate logfiles
 
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /var/news/etc/innshellvars
+. /news/etc/innshellvars
 
 ##  If you get an error from this line:
 ##	sh -c 'egrep "`ls /etc`" /dev/null'

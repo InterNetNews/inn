@@ -5,7 +5,7 @@ active, active.times \- list of active Usenet newsgroups
 .SH DESCRIPTION
 The file
 .\" =()<.I @<_PATH_ACTIVE>@>()=
-.I /var/news/etc/active
+.I /news/etc/active
 lists the newsgroups that the local site receives.
 Each newsgroup should be listed only once.
 Each line specifies one group; their order in the file does not matter.
@@ -82,7 +82,7 @@ An alias newsgroup should not point to another alias.
 .PP
 The file
 .\" =()<.I @<_PATH_ACTIVETIMES>@>()=
-.I /var/news/etc/active.times
+.I /news/etc/active.times
 provides a chronological record of when newsgroups are created.
 This file is normally updated by
 .IR innd (8)

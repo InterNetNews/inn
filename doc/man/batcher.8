@@ -59,7 +59,7 @@ reads the named
 file, or standard input if no file is given.
 Relative pathnames are interpreted from the
 .\" =()<.I @<_PATH_BATCHDIR>@>()=
-.I /var/news/spool/out.going
+.I /news/spool/out.going
 directory.
 The input is taken as a set of lines.
 Blank lines and lines starting with a number sign (``#'') are ignored.
@@ -67,7 +67,7 @@ All other lines should consist of one or two fields separated by a single space.
 The first field is the name of a file holding an article; if it is not an
 an absolute pathname it is taken relative to the news spool directory,
 .\" =()<.IR @<_PATH_SPOOL>@ .>()=
-.IR /var/news/spool/articles .
+.IR /news/spool/articles .
 The second field, if present, specifies the size of the article in bytes.
 .SH OPTIONS
 .TP
@@ -79,7 +79,7 @@ spool directory of a master server with longer expiration times.
 .B \-r
 By default, the program sets its standard error to
 .\" =()<.IR @<_PATH_ERRLOG>@ .>()=
-.IR /var/log/news/errlog .
+.IR /news/log/errlog .
 To suppress this redirection, use the ``\-r'' flag.
 .TP
 .B \-v
@@ -165,7 +165,7 @@ is reached, or if there is an error writing the batch, then
 will try to spool the input, copying it to a file.
 If there was no input filename, the standard input will be copied to
 .\" =()<.IR @<_PATH_BATCHDIR>@/ host>()=
-.IR /var/news/spool/out.going/ host
+.IR /news/spool/out.going/ host
 and the program will exit.
 If an input filename was given, a temporary file named
 .IR input .bch
@@ -174,7 +174,7 @@ If an input filename was given, a temporary file named
 is an absolute pathname)
 or
 .\" =()<.IR @<_PATH_BATCHDIR>@/ input.bch>()=
-.IR /var/news/spool/out.going/ input.bch
+.IR /news/spool/out.going/ input.bch
 (if the filename does not begin with a slash) is created.
 Once the input is copied,
 .I batcher

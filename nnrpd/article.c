@@ -67,19 +67,12 @@ STATIC SENDDATA		SENDhead = {
 /*
 **  Overview state information.
 */
-#ifdef OVER_MMAP
 STATIC char *		OVERmem = NULL;		/* mmaped overview file */
 STATIC int		OVERlen;		/* Length of the overview file */
-#else
-#define MAXOVERLINE	4096
 STATIC FILE		*OVERfp = NULL;		/* Open overview file	*/
-STATIC char		OVERline[MAXOVERLINE];	/* Current line		*/
 STATIC int		OVERoffset;		/* Current offset */
-STATIC char		OVERline[MAXOVERLINE];	/* Current line		*/
-#endif
 STATIC ARTNUM		OVERarticle;		/* Current article	*/
 STATIC int		OVERopens;		/* Number of opens done	*/
-STATIC int		OVERioff;		/* Current index pointer */
 
 STATIC struct iovec	iov[IOV_MAX];
 STATIC int		queued_iov = 0;
@@ -868,13 +861,7 @@ STATIC BOOL OVERopen(void)
     struct stat	sb;
 
     /* Already open? */
-#ifdef OVER_MMAP
-    if (OVERmem != NULL)
-#else
-    if (OVERfp != NULL)
-#endif
-	/* Don't rewind -- we are probably going forward via repeated
-	 * NNTP commands. */
+    if ((OVERmem != NULL) || (OVERfp != NULL))
 	return TRUE;
 
     /* Failed here before? */
@@ -882,29 +869,26 @@ STATIC BOOL OVERopen(void)
 	return FALSE;
 
     OVERarticle = 0;
-#ifndef OVER_MMAP
     OVERoffset = 0;
-#endif
-    OVERioff = 0;
     (void)sprintf(name, "%s/%s/%s", _PATH_OVERVIEWDIR, GRPlast, _PATH_OVERVIEW);
-#ifdef OVER_MMAP
-    if ((fd = open(name, O_RDONLY)) < 0)
-    	return FALSE;
-    if (fstat(fd, &sb) != 0) {
-    	close(fd);
-    	return FALSE;
+    if (OVERmmap) {
+	if ((fd = open(name, O_RDONLY)) < 0)
+	    return FALSE;
+	if (fstat(fd, &sb) != 0) {
+	    close(fd);
+	    return FALSE;
+	}
+	OVERlen = sb.st_size;
+	if ((int)(OVERmem = (char *)mmap(0, OVERlen, PROT_READ, MAP_SHARED, fd, 0)) == -1) {
+	    OVERmem = NULL;
+	    close(fd);
+	    return FALSE;
+	}
+	close(fd);
+    } else {
+	if ((OVERfp = fopen(name, "r")) == NULL)
+	    return FALSE;
     }
-    OVERlen = sb.st_size;
-    if ((int)(OVERmem = (char *)mmap(0, OVERlen, PROT_READ, MAP_SHARED, fd, 0)) == -1) {
-        OVERmem = NULL;
-    	close(fd);
-    	return FALSE;
-    }
-    close(fd);
-#else
-    if ((OVERfp = fopen(name, "r")) == NULL)
-    	return FALSE;
-#endif
     return TRUE;
 }
 
@@ -914,20 +898,17 @@ STATIC BOOL OVERopen(void)
 */
 void OVERclose(void)
 {
-#ifdef OVER_MMAP
     if (OVERmem != NULL) {
     	munmap(OVERmem, OVERlen);
     	OVERmem = NULL;
     	OVERopens = 0;
     	OVERlen = 0;
     }
-#else
     if (OVERfp != NULL) {
 	fclose(OVERfp);
 	OVERfp = NULL;
 	OVERopens = 0;
     }
-#endif
 }
 
 
@@ -937,59 +918,59 @@ void OVERclose(void)
 */
 STATIC char *OVERfind(ARTNUM artnum, int *linelen)
 {
-    int		i, j;
-    char	*OVERline, *q;
-    OVERINDEX   index;
+    int		        i;
+    char   	        *q;
+    OVERINDEX           index;
+    STATIC char         *OVERline = NULL;
+    STATIC int          last;
 
-#ifdef OVER_MMAP
-    if (OVERmem == NULL)
-#else
-    if (OVERfp == NULL)
-#endif
+    if (!OVERmem && !OVERfp)
 	return NULL;
 
     if (OVERindex != NULL) {
-    	for (i = 0; i < OVERicount; i++) {
-    	    j = (i + OVERioff) % OVERicount;
-	    UnpackOverIndex((*OVERindex)[j], &index);
-    	    if (index.artnum == artnum) {
-#ifdef OVER_MMAP
-		OVERline = (char *)OVERmem + index.offset;
-                if ((OVERline >= (OVERmem + OVERlen)) || (OVERline < OVERmem))
-                    return NULL;
-                for (q = OVERline; q < (OVERmem+OVERlen); q++)
-                    if ((*q == '\r') || (*q == '\n'))
-                        break;
-
-                *linelen = q - OVERline;
-#else
-    	        if (OVERoffset != index.offset) {
-    	            fseek(OVERfp, index.offset, SEEK_SET);
-    	            OVERoffset = index.offset;
-    	        }
-    	        if (fgets(OVERline, MAXOVERLINE, OVERfp) == NULL)
-    	            return NULL;
-    	        if ((*linelen = strlen(OVERline)) < 10)
-    	            return NULL;
-    	        if (*linelen  >= MAXOVERLINE) {
-    	            OVERoffset = -1;
-    	            *linelen = MAXOVERLINE;
-    	        } else {
-    	            OVERoffset += *linelen;
-    	        }
-   	        OVERline[*linelen-1] = '\0';
-#endif    
-    	        OVERread += *linelen;
-    	        OVERioff = j;
-    	        return OVERline;
-            }
-        }
-        return NULL;
+	if (((last + 1) < ARTsize) && (ARTnumbers[last + 1].ArtNum == artnum))
+	    i = last + 1;
+	else 
+	    i = ARTfind(artnum);
+	if ((ARTnumbers[i].ArtNum != artnum) || !ARTnumbers[i].Index)
+	    return NULL;
+	UnpackOverIndex(ARTnumbers[i].Index, &index);
+	if (index.artnum != artnum)
+	    return NULL;
+	if (OVERmem) {
+	    OVERline = (char *)OVERmem + index.offset;
+	    if ((OVERline >= (OVERmem + OVERlen)) || (OVERline < OVERmem))
+		return NULL;
+	    for (q = OVERline; q < (OVERmem+OVERlen); q++)
+		if ((*q == '\r') || (*q == '\n'))
+		    break;
+	    
+	    *linelen = q - OVERline;
+	} else {
+	    if (OVERoffset != index.offset) {
+		fseek(OVERfp, index.offset, SEEK_SET);
+		OVERoffset = index.offset;
+	    }
+	    if (!OVERline)
+		OVERline = NEW(char, MAXOVERLINE);
+	    if (fgets(OVERline, MAXOVERLINE, OVERfp) == NULL)
+		return NULL;
+	    if ((*linelen = strlen(OVERline)) < 10)
+		return NULL;
+	    if (*linelen  >= MAXOVERLINE) {
+		OVERoffset = -1;
+		*linelen = MAXOVERLINE;
+	    } else {
+		OVERoffset += *linelen;
+	    }
+	    OVERline[*linelen-1] = '\0';
+	}
+	OVERread += *linelen;
+	return OVERline;
     }
 
-#ifdef OVER_MMAP
-    return NULL;
-#else
+    if (OVERmem)
+	return NULL;
 
     if (OVERarticle > artnum) {
 	rewind(OVERfp);
@@ -1010,7 +991,6 @@ STATIC char *OVERfind(ARTNUM artnum, int *linelen)
     OVERoffset = -1;
 
     return OVERarticle == artnum ? OVERline : NULL;
-#endif
 }
 
 
@@ -1300,12 +1280,12 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	if (Opened && (p = OVERfind(i, &linelen)) != NULL) {
 	    OVERhit++;
 	    OVERsize+=linelen;
-#ifdef OVER_MMAP
-	    SendIOb(p, linelen);
-	    SendIOb("\r\n", 2); 
-#else
-            Printf("%s\r\n", p);
-#endif
+	    if (OVERmem) {
+		SendIOb(p, linelen);
+		SendIOb("\r\n", 2);
+	    } else {
+		Printf("%s\r\n", p);
+	    }
 	    continue;
 	}
 
@@ -1314,20 +1294,20 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	    OVERmiss++;
 	    linelen = strlen(p);
 	    OVERsize+=linelen;
-#ifdef OVER_MMAP
-	    SendIOb(p, linelen);
-	    SendIOb("\r\n", 2); 
-#else
-            Printf("%s\r\n", p);
-#endif
+	    if (OVERmem) {
+		SendIOb(p, linelen);
+		SendIOb("\r\n", 2); 
+	    } else {
+		Printf("%s\r\n", p);
+	    }
 	}
     }
-#ifdef OVER_MMAP
-    SendIOb(".\r\n", 3);
-    PushIOb(); 
-#else
-    Printf(".\r\n");
-#endif
+    if (OVERmem) {
+	SendIOb(".\r\n", 3);
+	PushIOb(); 
+    } else {
+	Printf(".\r\n");
+    }
     gettimeofday(&etv, NULL);
     OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
     OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;

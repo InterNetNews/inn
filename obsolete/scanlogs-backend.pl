@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 ##  =()<require "@<_PATH_PERL_SHELLVARS>@";>()=
-require "/var/news/etc/innshellvars.pl";
+require "/news/etc/innshellvars.pl";
 
 if (not defined $inn::top) {
     $top = 20;

@@ -27,7 +27,7 @@
 # preset vars
 #
 # =()<. @<_PATH_SHELLVARS>@>()=
-. /var/news/etc/innshellvars
+. /news/etc/innshellvars
 # Our lock file
 LOCK=${LOCKS}/LOCK.actmerge
 # where actsync is located

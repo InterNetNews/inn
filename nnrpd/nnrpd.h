@@ -36,6 +36,7 @@
 */
 #define ART_LINE_LENGTH		1000
 #define ART_LINE_MALLOC		1024
+#define MAXOVERLINE             4096
 
 
 /*

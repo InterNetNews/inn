@@ -314,9 +314,6 @@ MISSING_OBJ
 ##  Use read/write to update the active file, or mmap?  Pick READ or MMAP.
 #### =()<ACT_STYLE		@<ACT_STYLE>@>()=
 ACT_STYLE		READ
-## Use read to read overview, or mmap?  Pick READ or MMAP.
-#### =()<OVER_STYLE		@<OVER_STYLE>@>()=
-OVER_STYLE		MMAP
 ##  Do you want mail notifications of bad control messages. DO or DONT
 ##  Setting it to do results in a lot of mail with the number of spammers
 ##  out there.

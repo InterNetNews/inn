@@ -7,123 +7,123 @@
 ## innshellvars.pl and innshellvars.tcl and innshellvars.csh
 
 ##  =()<ACTIVE=@<_PATH_ACTIVE>@>()=
-ACTIVE=/var/news/etc/active
+ACTIVE=/news/etc/active
 ##  =()<ACTIVETIMES=@<_PATH_ACTIVETIMES>@>()=
-ACTIVETIMES=/var/news/etc/active.times
+ACTIVETIMES=/news/etc/active.times
 ##  =()<AWK=@<_PATH_AWK>@>()=
 AWK=/usr/bin/awk
 ##  =()<BATCH=@<_PATH_BATCHDIR>@>()=
-BATCH=/var/news/spool/out.going
+BATCH=/news/spool/out.going
 ##  =()<COMPRESS=@<_PATH_COMPRESS>@>()=
 COMPRESS=/usr/bin/compress
 ##  =()<CONTROLPROGS=@<_PATH_CONTROLPROGS>@>()=
-CONTROLPROGS=/usr/news/bin/control
+CONTROLPROGS=/news/bin/control
 ##  =()<CTLFILE=@<_PATH_CONTROLCTL>@>()=
-CTLFILE=/var/news/etc/control.ctl
+CTLFILE=/news/etc/control.ctl
 ##  =()<CYCLES=@<LOG_CYCLES>@>()=
 CYCLES=3
 ##  =()<DAILY=@<_PATH_LOCKS>@/LOCK.news.daily>()=
-DAILY=/var/news/locks/LOCK.news.daily
+DAILY=/news/locks/LOCK.news.daily
 ##  =()<INNDF="@<INNWATCH_DF>@">()=
 INNDF="/bin/df"
 ##  =()<EGREP=@<_PATH_EGREP>@>()=
 EGREP=/usr/bin/egrep
 ##  =()<ERRLOG=@<_PATH_ERRLOG>@>()=
-ERRLOG=/var/log/news/errlog
+ERRLOG=/news/log/errlog
 ##  =()<CTLWATCH=@<_PATH_CTLWATCH>@>()=
-CTLWATCH=/var/news/etc/innwatch.ctl
+CTLWATCH=/news/etc/innwatch.ctl
 ##  =()<HAVE_UUSTAT=@<HAVE_UUSTAT>@>()=
 HAVE_UUSTAT=DO
 ##  =()<HISTORY=@<_PATH_HISTORY>@>()=
-HISTORY=/var/news/etc/history
+HISTORY=/news/etc/history
 ##  =()<INCOMING=@<_PATH_SPOOLNEWS>@>()=
-INCOMING=/var/news/spool/in.coming
+INCOMING=/news/spool/in.coming
 ##  =()<INEWS=@<_PATH_INEWS>@>()=
-INEWS=/usr/news/bin/inews
+INEWS=/news/bin/inews
 ##  =()<INNCONFVAL=@<_PATH_NEWSBIN>@/innconfval>()=
-INNCONFVAL=/usr/news/bin/innconfval
+INNCONFVAL=/news/bin/innconfval
 ##  =()<INND=@<_PATH_INND>@>()=
-INND=/usr/news/bin/innd
+INND=/news/bin/innd
 ##  =()<INNDDIR=@<_PATH_INNDDIR>@>()=
-INNDDIR=/var/news/run
+INNDDIR=/news/run
 ##  =()<INNDSTART=@<_PATH_INNDSTART>@>()=
-INNDSTART=/usr/news/bin/inndstart
+INNDSTART=/news/bin/inndstart
 ##  =()<INNWATCH=@<_PATH_NEWSBIN>@/innwatch>()=
-INNWATCH=/usr/news/bin/innwatch
+INNWATCH=/news/bin/innwatch
 ##  =()<LOCKS=@<_PATH_LOCKS>@>()=
-LOCKS=/var/news/locks
+LOCKS=/news/locks
 ##  =()<LOG=@<_PATH_LOGFILE>@>()=
-LOG=/var/log/news/news
+LOG=/news/log/news
 ##  =()<MAIL_BADCONTROLS=@<MAIL_BADCONTROLS>@>()=
 MAIL_BADCONTROLS=DONT
 ##  =()<MAILCMD="@<_PATH_MAILCMD>@">()=
 MAILCMD="/usr/bin/Mail"
 ##  =()<MOST_LOGS=@<_PATH_MOST_LOGS>@>()=
-MOST_LOGS=/var/log/news
+MOST_LOGS=/news/log
 ##  =()<NEWACTIVE=@<_PATH_NEWACTIVE>@>()=
-NEWACTIVE=/var/news/etc/active.tmp
+NEWACTIVE=/news/etc/active.tmp
 ##  =()<NEWSBIN=@<_PATH_NEWSBIN>@>()=
-NEWSBIN=/usr/news/bin
+NEWSBIN=/news/bin
 ##  =()<NEWSCONTROL=@<_PATH_NEWSCONTROL>@>()=
-NEWSCONTROL=/var/news/run/control
+NEWSCONTROL=/news/run/control
 ##  =()<NEWSFEEDS=@<_PATH_NEWSFEEDS>@>()=
-NEWSFEEDS=/var/news/etc/newsfeeds
+NEWSFEEDS=/news/etc/newsfeeds
 ##  =()<NEWSGROUPS=@<_PATH_NEWSGROUPS>@>()=
-NEWSGROUPS=/var/news/etc/newsgroups
+NEWSGROUPS=/news/etc/newsgroups
 ##  =()<NEWSLIB=@<_PATH_NEWSLIB>@>()=
-NEWSLIB=/var/news/etc
+NEWSLIB=/news/etc
 ##  =()<NEWSMASTER=@<NEWSMASTER>@>()=
 NEWSMASTER=usenet
 ##  =()<NEWSUSER=@<NEWSUSER>@>()=
 NEWSUSER=news
 ##  =()<NNTPCONNECT=@<_PATH_NNTPCONNECT>@>()=
-NNTPCONNECT=/var/news/run/nntpin
+NNTPCONNECT=/news/run/nntpin
 ##  =()<OLDACTIVE=@<_PATH_OLDACTIVE>@>()=
-OLDACTIVE=/var/news/etc/active.old
+OLDACTIVE=/news/etc/active.old
 ##  =()<PERL=@<_PATH_PERL>@>()=
 PERL=/usr/bin/perl
 ##  =()<RNEWS=@<_PATH_RNEWS>@>()=
-RNEWS=/usr/news/bin/rnews
+RNEWS=/news/bin/rnews
 ##  =()<SED=@<_PATH_SED>@>()=
-SED=/usr/bin/sed
+SED=/bin/sed
 ##  =()<SORT="@<_PATH_SORT>@">()=
 SORT="/usr/bin/sort"
 ##  =()<SERVERPID=@<_PATH_SERVERPID>@>()=
-SERVERPID=/var/news/run/innd.pid
+SERVERPID=/news/run/innd.pid
 ##  =()<SLEEPTIME=@<INNWATCH_SLEEPTIME>@>()=
 SLEEPTIME=600
 ##  =()<SPOOL=@<_PATH_SPOOL>@>()=
-SPOOL=/var/news/spool/articles
+SPOOL=/news/spool/articles
 ##  =()<OVERVIEWDIR=@<_PATH_OVERVIEWDIR>@>()=
-OVERVIEWDIR=/var/news/spool/over.view
+OVERVIEWDIR=/news/spool/over.view
 ##  =()<INNWSTATUS=@<_PATH_INNWSTATUS>@>()=
-INNWSTATUS=/var/news/run/innwatch.status
+INNWSTATUS=/news/run/innwatch.status
 ##  =()<TEMPSOCK=`basename @<_PATH_TEMPSOCK>@ | ${SED} -e 's/XXXXXX$/*/'`>()=
-TEMPSOCK=`basename /var/news/run/ctlinndXXXXXX | ${SED} -e 's/XXXXXX$/*/'`
+TEMPSOCK=`basename /news/run/ctlinndXXXXXX | ${SED} -e 's/XXXXXX$/*/'`
 ##  =()<TEMPSOCKDIR=`echo @<_PATH_TEMPSOCK>@ | ${SED} -e 's@/[^/]*$@@'`>()=
-TEMPSOCKDIR=`echo /var/news/run/ctlinndXXXXXX | ${SED} -e 's@/[^/]*$@@'`
+TEMPSOCKDIR=`echo /news/run/ctlinndXXXXXX | ${SED} -e 's@/[^/]*$@@'`
 ##  =()<WANT_PGPVERIFY=@<WANT_PGPVERIFY>@>()=
 WANT_PGPVERIFY=DO
 ##  =()<WATCHPID=@<_PATH_WATCHPID>@>()=
-WATCHPID=/var/news/run/innwatch.pid
+WATCHPID=/news/run/innwatch.pid
 ##  =()<Z=@<_PATH_COMPRESSEXT>@>()=
 Z=.Z
 
 ##  =()<PERL_SUPPORT=@<PERL_SUPPORT>@>()=
 PERL_SUPPORT=DONT
 ##  =()<PERL_STARTUP_INND=@<_PATH_PERL_STARTUP_INND>@>()=
-PERL_STARTUP_INND=/usr/news/bin/control/startup_innd.pl
+PERL_STARTUP_INND=/news/bin/control/startup_innd.pl
 ##  =()<PERL_FILTER_INND=@<_PATH_PERL_FILTER_INND>@>()=
-PERL_FILTER_INND=/usr/news/bin/control/filter_innd.pl
+PERL_FILTER_INND=/news/bin/control/filter_innd.pl
 ##  =()<PERL_FILTER_NNRPD=@<_PATH_PERL_FILTER_NNRPD>@>()=
-PERL_FILTER_NNRPD=/usr/news/bin/control/filter_nnrpd.pl
+PERL_FILTER_NNRPD=/news/bin/control/filter_nnrpd.pl
 
 ##  =()<TCL_SUPPORT=@<TCL_SUPPORT>@>()=
 TCL_SUPPORT=DONT
 #### =()<PATH_TCL_STARTUP=@<_PATH_TCL_STARTUP>@>()=
-PATH_TCL_STARTUP=/usr/news/bin/control/startup.tcl
+PATH_TCL_STARTUP=/news/bin/control/startup.tcl
 #### =()<PATH_TCL_FILTER=@<_PATH_TCL_FILTER>@>()=
-PATH_TCL_FILTER=/usr/news/bin/control/filter.tcl
+PATH_TCL_FILTER=/news/bin/control/filter.tcl
 
 LOCALGROUPS=${NEWSLIB}/localgroups
 
@@ -132,15 +132,15 @@ TMPDIR=${TMPDIR-/var/tmp}
 export TMPDIR
 
 ##  =()<EXPIRECTL=@<_PATH_EXPIRECTL>@>()=
-EXPIRECTL=/var/news/etc/expire.ctl
+EXPIRECTL=/news/etc/expire.ctl
 ##  =()<NEWSHOME=@<_PATH_NEWSHOME>@>()=
-NEWSHOME=/usr/news
+NEWSHOME=/news
 ##  =()<ARCHIVEDIR=@<_PATH_ARCHIVEDIR>@>()=
-ARCHIVEDIR=/var/news/spool/archive
+ARCHIVEDIR=/news/spool/archive
 ##  =()<BADNEWS=@<_PATH_BADNEWS>@>()=
-BADNEWS=/var/news/spool/in.coming/bad
+BADNEWS=/news/spool/in.coming/bad
 #### =()<SPOOLNEWS=@<_PATH_SPOOLNEWS>@>()=
-SPOOLNEWS=/var/news/spool/in.coming
+SPOOLNEWS=/news/spool/in.coming
 #### =()<SPOOLTEMP=@<_PATH_SPOOLTEMP>@>()=
 SPOOLTEMP=/var/tmp
 

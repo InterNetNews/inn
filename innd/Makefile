@@ -17,7 +17,7 @@ TCLINC	=
 ##  =()<DEFS	= @<DEFS>@ $(PERLINC) $(TCLINC)>()=
 DEFS	= -I../include $(PERLINC) $(TCLINC)
 ##  =()<CFLAGS	= @<CFLAGS>@>()=
-CFLAGS	= $(DEFS) -g
+CFLAGS	= $(DEFS) -g -Wall
 ##  =()<LDFLAGS	= @<LDFLAGS>@>()=
 LDFLAGS	= 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@ $(PERLINC) $(TCLINC)>()=
@@ -30,9 +30,9 @@ CTAGS		= ctags -t -w
 PROF	= -pg
 
 ##  =()<INND	= @<_PATH_INND>@>()=
-INND	= /usr/news/bin/innd
+INND	= /news/bin/innd
 ##  =()<INNDSTART	= @<_PATH_INNDSTART>@>()=
-INNDSTART	= /usr/news/bin/inndstart
+INNDSTART	= /news/bin/inndstart
 ## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
 OWNER	= -O news -G news
 ## =()<NEWSGROUP	= @<NEWSGROUP>@>()=

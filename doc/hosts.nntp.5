@@ -5,7 +5,7 @@ hosts.nntp, hosts.nntp.nolimit \- list of hosts that feed NNTP news
 .SH DESCRIPTION
 The file
 .\" =()<.I @<_PATH_INNDHOSTS>@>()=
-.I /var/news/etc/hosts.nntp
+.I /news/etc/hosts.nntp
 is read by
 .IR innd (8)
 to get the list of hosts that feed the local site Usenet news
@@ -85,7 +85,7 @@ address in the file.
 If the file contains passwords, it should not be world-readable.
 The file
 .\" =()<.IR @<_PATH_INNDHOSTS>@.nolimit ,>()=
-.IR /var/news/etc/hosts.nntp.nolimit ,
+.IR /news/etc/hosts.nntp.nolimit ,
 if it exists is read whenever the ``hosts.nntp'' file is read.
 It has the same format, although only the first field is used.
 Any host mentioned in this file is not subject to the incoming connections

@@ -15,7 +15,7 @@ PERLINC =
 ##  =()<DEFS	= @<DEFS>@ $(PERLINC)>()=
 DEFS	= -I../include $(PERLINC)
 ##  =()<CFLAGS	= @<CFLAGS>@>()=
-CFLAGS	= $(DEFS) -g
+CFLAGS	= $(DEFS) -g -Wall
 ##  =()<LDFLAGS	= @<LDFLAGS>@>()=
 LDFLAGS	= 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
@@ -28,7 +28,7 @@ CTAGS		= ctags -t -w
 PROF	= -pg
 
 ##  =()<NNRPD	= @<_PATH_NNRPD>@>()=
-NNRPD	= /usr/news/bin/nnrpd
+NNRPD	= /news/bin/nnrpd
 ## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
 OWNER	= -O news -G news
 

@@ -16,7 +16,7 @@ invokes
 .IR find (1)
 to get a list of all directories in the news spool tree,
 .\" =()<.IR @<_PATH_SPOOL>@ .>()=
-.IR /var/news/spool/articles .
+.IR /news/spool/articles .
 It discards directories named
 .I lost+found
 as well as those that have a period in them.
@@ -74,7 +74,7 @@ commands:
 .nf
 ctlinnd throttle "Rebuilding active file"
 .\" =()<.ds R$ @<_PATH_ACTIVE>@>()=
-.ds R$ /var/news/etc/active
+.ds R$ /news/etc/active
 .\" =()<TEMP=${TMPDIR-@<_PATH_TMP>@}/act$$>()=
 TEMP=${TMPDIR-/var/tmp}/act$$
 if [ \-f \*(R$ ] ; then

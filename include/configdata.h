@@ -156,9 +156,6 @@ typedef char		*CSTRING;
     /* Use mmap() to read the active file, or read it in? */
     /* =()<#define ACT_@<ACT_STYLE>@>()= */
 #define ACT_READ
-    /* Use mmap() to read the overview, or read it in? */
-    /* =()<#define OVER_@<OVER_STYLE>@>()= */
-#define OVER_MMAP
     /* Should the routines that use mmap() also do a msync(). */
     /* =()<#define @<MMAP_SYNC>@_MMAP_SYNC>()= */
 #define DONT_MMAP_SYNC
@@ -215,7 +212,7 @@ typedef char		*CSTRING;
 #define BAD_DISTRIBS	"*.*",NULL
     /* Check that poster is the person doing the cancel? */
     /* =()<#define @<VERIFY_CANCELS>@_VERIFY_CANCELS>()= */
-#define DONT_VERIFY_CANCELS
+#define DO_VERIFY_CANCELS
     /* Log "ctlinnd cancel" commands to syslog? */
     /* =()<#define @<LOG_CANCEL_COMMANDS>@_LOG_CANCEL_COMMANDS>()= */
 #define DONT_LOG_CANCEL_COMMANDS

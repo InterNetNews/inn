@@ -354,29 +354,29 @@ STATIC void GRPscandir(char *dir)
 	    return;
 	}
 	icount = sb.st_size / OVERINDEXPACKSIZE;
-#ifdef OVER_MMAP
-	if ((tmp = mmap((MMAP_PTR)0, icount * OVERINDEXPACKSIZE,
-			PROT_READ, MAP__ARG, fd, 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
-	    syslog(L_ERROR, "%s cant mmap index %s %m", ClientHost, dir);
-	    close(fd);
-	    return;
-	}
-#else
-	tmp = NEW(char [OVERINDEXPACKSIZE], icount);
-	if (read(fd, tmp, icount * OVERINDEXPACKSIZE) != (icount * OVERINDEXPACKSIZE)) {
-	    syslog(L_ERROR, "%s cant read index %s %m", ClientHost, dir);
-	    close(fd);
-	    return;
-	}
-#endif /* OVER_MMAP */
+	if (OVERmmap) {
+	    if ((tmp = mmap((MMAP_PTR)0, icount * OVERINDEXPACKSIZE,
+			    PROT_READ, MAP__ARG, fd, 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
+		syslog(L_ERROR, "%s cant mmap index %s %m", ClientHost, dir);
+		close(fd);
+		return;
+	    }
+	} else {
+	    tmp = (char (*)[][OVERINDEXPACKSIZE])NEW(char, icount * OVERINDEXPACKSIZE);
+	    if (read(fd, tmp, icount * OVERINDEXPACKSIZE) != (icount * OVERINDEXPACKSIZE)) {
+		syslog(L_ERROR, "%s cant read index %s %m", ClientHost, dir);
+		close(fd);
+		return;
+	    }
+	} 
 	close(fd);
 	if (OVERindex) {
-#ifdef OVER_MMAP
-	    if ((munmap((MMAP_PTR)OVERindex, OVERicount * OVERINDEXPACKSIZE)) < 0)
-		syslog(L_ERROR, "%s cant munmap index %m", ClientHost, dir);
-#else
-	    DISPOSE(OVERindex);
-#endif /* OVER_MMAP */
+	    if (OVERmmap) {
+		if ((munmap((MMAP_PTR)OVERindex, OVERicount * OVERINDEXPACKSIZE)) < 0)
+		    syslog(L_ERROR, "%s cant munmap index %m", ClientHost, dir);
+	    } else {
+		DISPOSE(OVERindex);
+	    }
 	}
 	OVERindex = tmp;
 	OVERicount = icount;

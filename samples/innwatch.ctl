@@ -16,7 +16,7 @@
 
 ##  First, just exit innwatch if innd has gone away.
 ##  =()<!!! test -f @<_PATH_SERVERPID>@ && echo 0 || echo 1 ! eq ! 1 ! exit ! innd dead>()=
-!!! test -f /var/news/run/innd.pid && echo 0 || echo 1 ! eq ! 1 ! exit ! innd dead
+!!! test -f /news/run/innd.pid && echo 0 || echo 1 ! eq ! 1 ! exit ! innd dead
 
 ##  Next test the load average.  Above first threshold pause, above higher
 ##  threshold throttle, below restart limit undo whatever was done.
@@ -31,10 +31,10 @@
 ##  =()<!!! @<INNWATCH_DF>@ . | awk 'NR == 2 { print $@<INNWATCH_BLOCKS>@ }' ! lt ! @<INNWATCH_SPOOLSPACE>@ ! throttle ! No space (spool)>()=
 !!! /bin/df . | awk 'NR == 2 { print $4 }' ! lt ! 8000 ! throttle ! No space (spool)
 ##  =()<!!! @<INNWATCH_DF>@ @<_PATH_BATCHDIR>@ | awk 'NR == 2 { print $@<INNWATCH_BLOCKS>@ }' ! lt ! @<INNWATCH_BATCHSPACE>@ ! throttle ! No space (newsq)>()=
-!!! /bin/df /var/news/spool/out.going | awk 'NR == 2 { print $4 }' ! lt ! 800 ! throttle ! No space (newsq)
+!!! /bin/df /news/spool/out.going | awk 'NR == 2 { print $4 }' ! lt ! 800 ! throttle ! No space (newsq)
 ##  =()<!!! @<INNWATCH_DF>@ @<_PATH_NEWSLIB>@ | awk 'NR == 2 { print $@<INNWATCH_BLOCKS>@ }' ! lt ! @<INNWATCH_LIBSPACE>@ ! throttle ! No space (newslib)>()=
-!!! /bin/df /var/news/etc | awk 'NR == 2 { print $4 }' ! lt ! 25000 ! throttle ! No space (newslib)
+!!! /bin/df /news/etc | awk 'NR == 2 { print $4 }' ! lt ! 25000 ! throttle ! No space (newslib)
 ##  =()<!!! @<INNWATCH_DF>@ -i . | awk 'NR == 2 { print $@<INNWATCH_INODES>@ }' ! lt ! @<INNWATCH_SPOOLNODES>@ ! throttle ! No space (spool inodes)>()=
 !!! /bin/df -i . | awk 'NR == 2 { print $7 }' ! lt ! 200 ! throttle ! No space (spool inodes)
 ##  =()<!!! @<INNWATCH_DF>@ @<_PATH_OVERVIEWDIR>@ | awk 'NR == 2 { print $@<INNWATCH_BLOCKS>@ }' ! lt ! @<INNWATCH_SPOOLSPACE>@ ! throttle ! No space (overview)>()=
-!!! /bin/df /var/news/spool/over.view | awk 'NR == 2 { print $4 }' ! lt ! 8000 ! throttle ! No space (overview)
+!!! /bin/df /news/spool/over.view | awk 'NR == 2 { print $4 }' ! lt ! 8000 ! throttle ! No space (overview)

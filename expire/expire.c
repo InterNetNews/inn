@@ -48,6 +48,13 @@ typedef struct _NEWSGROUP {
     BOOL                Poison;
 } NEWSGROUP;
 
+typedef struct _EXPIRECLASS {
+    STORAGECLASS        Class;
+    time_t              Keep;
+    time_t              Default;
+    time_t              Purge;
+} EXPIRECLASS;
+
 typedef struct _NGHASH {
     int		Size;
     int		Used;

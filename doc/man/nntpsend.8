@@ -80,7 +80,7 @@ processes are spawned in the background and the script waits for
 them all to finish before returning.
 Output is sent to the file
 .\" =()<.IR @<_PATH_MOST_LOGS>@/nntpsend.log .>()=
-.IR /var/log/news/nntpsend.log .
+.IR /news/log/nntpsend.log .
 In order to keep from overwhelming the local system, 
 .I nntpsend
 waits five seconds before spawned each child.
@@ -88,7 +88,7 @@ waits five seconds before spawned each child.
 .I Nntpsend
 expects that the batchfile for a site is named
 .\" =()<.IR @<_PATH_BATCHDIR>@/sitename .>()=
-.IR /var/news/spool/out.going/sitename .
+.IR /news/spool/out.going/sitename .
 To prevent batchfile corruption,
 .IR shlock (1)
 is used to ``lock'' these files.
@@ -118,7 +118,7 @@ The ``\-d'' flag causes
 .I nntpsend
 to send output to stdout rather than the log file
 .\" =()<.IR @<_PATH_MOST_LOGS>@/nntpsend.log .>()=
-.IR /var/log/news/nntpsend.log .
+.IR /news/log/nntpsend.log .
 The ``\-D'' flag does the same
 and it passes ``\-d'' to all
 .I innxmit

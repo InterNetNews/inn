@@ -15,65 +15,65 @@ P	=
 .csh:
 
 ##  =()<CTLINND		= @<_PATH_NEWSBIN>@/ctlinnd>()=
-CTLINND		= /usr/news/bin/ctlinnd
+CTLINND		= /news/bin/ctlinnd
 ##  =()<PATH_CONFIG	= @<_PATH_CONFIG>@>()=
-PATH_CONFIG	= /var/news/etc/inn.conf
+PATH_CONFIG	= /news/etc/inn.conf
 ##  =()<PATH_CONTROLCTL	= @<_PATH_CONTROLCTL>@>()=
-PATH_CONTROLCTL	= /var/news/etc/control.ctl
+PATH_CONTROLCTL	= /news/etc/control.ctl
 ##  =()<PATH_EXPIRECTL	= @<_PATH_EXPIRECTL>@>()=
-PATH_EXPIRECTL	= /var/news/etc/expire.ctl
+PATH_EXPIRECTL	= /news/etc/expire.ctl
 ##  =()<PATH_INNDHOSTS	= @<_PATH_INNDHOSTS>@>()=
-PATH_INNDHOSTS	= /var/news/etc/hosts.nntp
+PATH_INNDHOSTS	= /news/etc/hosts.nntp
 PATH_NOLIMIT = $(PATH_INNDHOSTS).nolimit
 ##  =()<PATH_MODERATORS	= @<_PATH_MODERATORS>@>()=
-PATH_MODERATORS	= /var/news/etc/moderators
+PATH_MODERATORS	= /news/etc/moderators
 ##  =()<PATH_DISTPATS	= @<_PATH_DISTPATS>@>()=
-PATH_DISTPATS	= /var/news/etc/distrib.pats
+PATH_DISTPATS	= /news/etc/distrib.pats
 ##  =()<PATH_NEWSBOOT	= @<_PATH_NEWSBOOT>@>()=
-PATH_NEWSBOOT	= /usr/news/bin/rc.news
+PATH_NEWSBOOT	= /news/bin/rc.news
 ##  =()<PATH_NEWSFEEDS	= @<_PATH_NEWSFEEDS>@>()=
-PATH_NEWSFEEDS	= /var/news/etc/newsfeeds
+PATH_NEWSFEEDS	= /news/etc/newsfeeds
 ##  =()<PATH_NNRPACCESS	= @<_PATH_NNRPACCESS>@>()=
-PATH_NNRPACCESS	= /var/news/etc/nnrp.access
+PATH_NNRPACCESS	= /news/etc/nnrp.access
 ##  =()<PATH_SCHEMA	= @<_PATH_SCHEMA>@>()=
-PATH_SCHEMA	= /var/news/etc/overview.fmt
+PATH_SCHEMA	= /news/etc/overview.fmt
 ##  =()<PATH_PERL_SHELLVARS	= @<_PATH_PERL_SHELLVARS>@>()=
-PATH_PERL_SHELLVARS	= /var/news/etc/innshellvars.pl
+PATH_PERL_SHELLVARS	= /news/etc/innshellvars.pl
 ##  =()<PATH_TCL_SHELLVARS	= @<_PATH_TCL_SHELLVARS>@>()=
-PATH_TCL_SHELLVARS	= /var/news/etc/innshellvars.tcl
+PATH_TCL_SHELLVARS	= /news/etc/innshellvars.tcl
 ##  =()<PATH_CSH_SHELLVARS	= @<_PATH_CSH_SHELLVARS>@>()=
-PATH_CSH_SHELLVARS	= /var/news/etc/innshellvars.csh
+PATH_CSH_SHELLVARS	= /news/etc/innshellvars.csh
 ##  =()<PATH_SHELLVARS	= @<_PATH_SHELLVARS>@>()=
-PATH_SHELLVARS	= /var/news/etc/innshellvars
+PATH_SHELLVARS	= /news/etc/innshellvars
 ##  =()<PATH_NNTPPASS	= @<_PATH_NNTPPASS>@>()=
-PATH_NNTPPASS	= /var/news/etc/passwd.nntp
+PATH_NNTPPASS	= /news/etc/passwd.nntp
 ##  =()<PATH_PARSECTL	= @<_PATH_PARSECTL>@>()=
-PATH_PARSECTL	= /var/news/etc/parsecontrol
+PATH_PARSECTL	= /news/etc/parsecontrol
 ##  =()<PATH_CTLWATCH	= @<_PATH_CTLWATCH>@>()=
-PATH_CTLWATCH	= /var/news/etc/innwatch.ctl
+PATH_CTLWATCH	= /news/etc/innwatch.ctl
 ##  =()<PATH_PERL_STARTUP_INND	= @<_PATH_PERL_STARTUP_INND>@>()=
-PATH_PERL_STARTUP_INND	= /usr/news/bin/control/startup_innd.pl
+PATH_PERL_STARTUP_INND	= /news/bin/control/startup_innd.pl
 ##  =()<PATH_PERL_FILTER_INND	= @<_PATH_PERL_FILTER_INND>@>()=
-PATH_PERL_FILTER_INND	= /usr/news/bin/control/filter_innd.pl
+PATH_PERL_FILTER_INND	= /news/bin/control/filter_innd.pl
 ##  =()<PATH_PERL_FILTER_NNRPD	= @<_PATH_PERL_FILTER_NNRPD>@>()=
-PATH_PERL_FILTER_NNRPD	= /usr/news/bin/control/filter_nnrpd.pl
+PATH_PERL_FILTER_NNRPD	= /news/bin/control/filter_nnrpd.pl
 ##  =()<PATH_TCL_STARTUP	= @<_PATH_TCL_STARTUP>@>()=
-PATH_TCL_STARTUP	= /usr/news/bin/control/startup.tcl
+PATH_TCL_STARTUP	= /news/bin/control/startup.tcl
 ##  =()<PATH_TCL_FILTER	= @<_PATH_TCL_FILTER>@>()=
-PATH_TCL_FILTER	= /usr/news/bin/control/filter.tcl
+PATH_TCL_FILTER	= /news/bin/control/filter.tcl
 ##  =()<PATH_ACTSYNC_IGN = @<_PATH_ACTSYNC_IGN>@>()=
-PATH_ACTSYNC_IGN = /var/news/etc/actsync.ign
+PATH_ACTSYNC_IGN = /news/etc/actsync.ign
 ##  =()<PATH_ACTSYNC_CFG = @<_PATH_ACTSYNC_CFG>@>()=
-PATH_ACTSYNC_CFG = /var/news/etc/actsync.cfg
+PATH_ACTSYNC_CFG = /news/etc/actsync.cfg
 
 ##  =()<AWK	= @<_PATH_AWK>@>()=
 AWK	= /usr/bin/awk
 ##  =()<CTLBIN	= @<_PATH_CONTROLPROGS>@>()=
-CTLBIN	= /usr/news/bin/control
+CTLBIN	= /news/bin/control
 ##  =()<NEWSLIB	= @<_PATH_NEWSLIB>@>()=
-NEWSLIB	= /var/news/etc
+NEWSLIB	= /news/etc
 ##  =()<NEWSBIN	= @<_PATH_NEWSBIN>@>()=
-NEWSBIN	= /usr/news/bin
+NEWSBIN	= /news/bin
 ## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
 OWNER	= -O news -G news
 

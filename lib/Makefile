@@ -13,7 +13,7 @@ DEFS	= -I../include
 ##  =()<PERLINC = @<PERL_INC>@>()=
 PERLINC = 
 ##  =()<CFLAGS	= @<CFLAGS>@ $(PERLINC)>()=
-CFLAGS	= $(DEFS) -g $(PERLINC)
+CFLAGS	= $(DEFS) -g -Wall $(PERLINC)
 ##  =()<LDFLAGS	= @<LDFLAGS>@>()=
 LDFLAGS	= 
 ##  =()<LINTLIBSTYLE	= @<LINTLIBSTYLE>@>()=

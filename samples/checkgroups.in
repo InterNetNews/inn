@@ -5,7 +5,7 @@
 PROG=checkgroups
 ##  Some shells don't pass in $* unless we explicitly pass it in here.
 ##  =()<. @<_PATH_PARSECTL>@ "$@">()=
-. /var/news/etc/parsecontrol "$@"
+. /news/etc/parsecontrol "$@"
 
 case ${ACTION} in
 mail)

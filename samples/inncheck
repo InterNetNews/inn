@@ -16,69 +16,69 @@ $newsgroup = 'news';
 ##  we actually need a filename.
 %paths = (
 ## =()<    'active',		'@<_PATH_ACTIVE>@',>()=
-    'active',		'/var/news/etc/active',
+    'active',		'/news/etc/active',
 ## =()<    'archive',		'@<_PATH_ARCHIVEDIR>@',>()=
-    'archive',		'/var/news/spool/archive',
+    'archive',		'/news/spool/archive',
 ## =()<    'badnews',		'@<_PATH_BADNEWS>@',>()=
-    'badnews',		'/var/news/spool/in.coming/bad',
+    'badnews',		'/news/spool/in.coming/bad',
 ## =()<    'batchdir',		'@<_PATH_BATCHDIR>@',>()=
-    'batchdir',		'/var/news/spool/out.going',
+    'batchdir',		'/news/spool/out.going',
 ## =()<    'control.ctl',	'@<_PATH_CONTROLCTL>@',>()=
-    'control.ctl',	'/var/news/etc/control.ctl',
+    'control.ctl',	'/news/etc/control.ctl',
 ## =()<    'ctlprogs',		'@<_PATH_CONTROLPROGS>@',>()=
-    'ctlprogs',		'/usr/news/bin/control',
+    'ctlprogs',		'/news/bin/control',
 ## =()<    'expire.ctl',	'@<_PATH_EXPIRECTL>@',>()=
-    'expire.ctl',	'/var/news/etc/expire.ctl',
+    'expire.ctl',	'/news/etc/expire.ctl',
 ## =()<    'history',	'@<_PATH_HISTORY>@',>()=
-    'history',	'/var/news/etc/history',
+    'history',	'/news/etc/history',
 ## =()<    'hosts.nntp',	'@<_PATH_INNDHOSTS>@',>()=
-    'hosts.nntp',	'/var/news/etc/hosts.nntp',
+    'hosts.nntp',	'/news/etc/hosts.nntp',
 ## =()<    'inews',		'@<_PATH_INEWS>@',>()=
-    'inews',		'/usr/news/bin/inews',
+    'inews',		'/news/bin/inews',
 ## =()<    'inn.conf',		'@<_PATH_CONFIG>@',>()=
-    'inn.conf',		'/var/news/etc/inn.conf',
+    'inn.conf',		'/news/etc/inn.conf',
 ## =()<    'innd',		'@<_PATH_INND>@',>()=
-    'innd',		'/usr/news/bin/innd',
+    'innd',		'/news/bin/innd',
 ## =()<    'innddir',		'@<_PATH_INNDDIR>@',>()=
-    'innddir',		'/var/news/run',
+    'innddir',		'/news/run',
 ## =()<    'inndstart',	'@<_PATH_INNDSTART>@',>()=
-    'inndstart',	'/usr/news/bin/inndstart',
+    'inndstart',	'/news/bin/inndstart',
 ## =()<    'moderators',	'@<_PATH_MODERATORS>@',>()=
-    'moderators',	'/var/news/etc/moderators',
+    'moderators',	'/news/etc/moderators',
 ## =()<    'most_logs',	'@<_PATH_MOST_LOGS>@',>()=
-    'most_logs',	'/var/log/news',
+    'most_logs',	'/news/log',
 ## =()<    'newsbin',		'@<_PATH_NEWSBIN>@',>()=
-    'newsbin',		'/usr/news/bin',
+    'newsbin',		'/news/bin',
 ## =()<    'newsboot',		'@<_PATH_NEWSBOOT>@',>()=
-    'newsboot',		'/usr/news/bin/rc.news',
+    'newsboot',		'/news/bin/rc.news',
 ## =()<    'newsfeeds',	'@<_PATH_NEWSFEEDS>@',>()=
-    'newsfeeds',	'/var/news/etc/newsfeeds',
+    'newsfeeds',	'/news/etc/newsfeeds',
 ## =()<    'overview.fmt',	'@<_PATH_SCHEMA>@',>()=
-    'overview.fmt',	'/var/news/etc/overview.fmt',
+    'overview.fmt',	'/news/etc/overview.fmt',
 ## =()<    'newslib',		'@<_PATH_NEWSLIB>@',>()=
-    'newslib',		'/var/news/etc',
+    'newslib',		'/news/etc',
 ## =()<    'nnrp.access',	'@<_PATH_NNRPACCESS>@',>()=
-    'nnrp.access',	'/var/news/etc/nnrp.access',
+    'nnrp.access',	'/news/etc/nnrp.access',
 ## =()<    'nnrpd',		'@<_PATH_NNRPD>@',>()=
-    'nnrpd',		'/usr/news/bin/nnrpd',
+    'nnrpd',		'/news/bin/nnrpd',
 ## =()<    'nntpsend.ctl',	'@<_PATH_NEWSLIB>@/nntpsend.ctl',>()=
-    'nntpsend.ctl',	'/var/news/etc/nntpsend.ctl',
+    'nntpsend.ctl',	'/news/etc/nntpsend.ctl',
 ## =()<    'oldlogs',		'@<_PATH_MOST_LOGS>@/OLD',>()=
-    'oldlogs',		'/var/log/news/OLD',
+    'oldlogs',		'/news/log/OLD',
 ## =()<    'parsectl',		'@<_PATH_PARSECTL>@',>()=
-    'parsectl',		'/var/news/etc/parsecontrol',
+    'parsectl',		'/news/etc/parsecontrol',
 ## =()<    'passwd.nntp',	'@<_PATH_NNTPPASS>@',>()=
-    'passwd.nntp',	'/var/news/etc/passwd.nntp',
+    'passwd.nntp',	'/news/etc/passwd.nntp',
 ## =()<    'rnews',		'@<_PATH_RNEWS>@',>()=
-    'rnews',		'/usr/news/bin/rnews',
+    'rnews',		'/news/bin/rnews',
 ## =()<    'rnewsprogs',	'@<_PATH_RNEWSPROGS>@',>()=
-    'rnewsprogs',	'/usr/news/bin/rnews.libexec',
+    'rnewsprogs',	'/news/bin/rnews.libexec',
 ## =()<    'spooltemp',		'@<_PATH_SPOOLTEMP>@',>()=
     'spooltemp',		'/var/tmp',
 ## =()<    'spool',		'@<_PATH_SPOOL>@',>()=
-    'spool',		'/var/news/spool/articles',
+    'spool',		'/news/spool/articles',
 ## =()<    'spoolnews',	'@<_PATH_SPOOLNEWS>@'>()=
-    'spoolnews',	'/var/news/spool/in.coming'
+    'spoolnews',	'/news/spool/in.coming'
 );
 
 ##  The sub's that check the config files.

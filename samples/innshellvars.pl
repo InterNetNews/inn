@@ -12,31 +12,31 @@ package inn ;
 
 
 ##  =()<$active = "@<_PATH_ACTIVE>@" ;>()=
-$active = "/var/news/etc/active" ;
+$active = "/news/etc/active" ;
 
 ##  =()<$activetimes = "@<_PATH_ACTIVETIMES>@" ;>()=
-$activetimes = "/var/news/etc/active.times" ;
+$activetimes = "/news/etc/active.times" ;
 
 ##  =()<$awk = "@<_PATH_AWK>@" ;>()=
 $awk = "/usr/bin/awk" ;
 
 ##  =()<$batch = "@<_PATH_BATCHDIR>@" ;>()=
-$batch = "/var/news/spool/out.going" ;
+$batch = "/news/spool/out.going" ;
 
 ##  =()<$compress = "@<_PATH_COMPRESS>@" ;>()=
 $compress = "/usr/bin/compress" ;
 
 ##  =()<$controlprogs = "@<_PATH_CONTROLPROGS>@" ;>()=
-$controlprogs = "/usr/news/bin/control" ;
+$controlprogs = "/news/bin/control" ;
 
 ##  =()<$ctlfile = "@<_PATH_CONTROLCTL>@" ;>()=
-$ctlfile = "/var/news/etc/control.ctl" ;
+$ctlfile = "/news/etc/control.ctl" ;
 
 ##  =()<$cycles = @<LOG_CYCLES>@ ;>()=
 $cycles = 3 ;
 
 ##  =()<$daily = "@<_PATH_LOCKS>@/LOCK.news.daily" ;>()=
-$daily = "/var/news/locks/LOCK.news.daily" ;
+$daily = "/news/locks/LOCK.news.daily" ;
 
 ##  =()<$inndf = "@<INNWATCH_DF>@" ;>()=
 $inndf = "/bin/df" ;
@@ -45,43 +45,43 @@ $inndf = "/bin/df" ;
 $egrep = "/usr/bin/egrep" ;
 
 ##  =()<$errlog = "@<_PATH_ERRLOG>@" ;>()=
-$errlog = "/var/log/news/errlog" ;
+$errlog = "/news/log/errlog" ;
 
 ##  =()<$ctlwatch = "@<_PATH_CTLWATCH>@" ;>()=
-$ctlwatch = "/var/news/etc/innwatch.ctl" ;
+$ctlwatch = "/news/etc/innwatch.ctl" ;
 
 ##  =()<$have_uustat = ("@<HAVE_UUSTAT>@" eq "DO" ? 1 : 0) ;>()=
 $have_uustat = ("DO" eq "DO" ? 1 : 0) ;
 
 ##  =()<$history = "@<_PATH_HISTORY>@" ;>()=
-$history = "/var/news/etc/history" ;
+$history = "/news/etc/history" ;
 
 ##  =()<$incoming = "@<_PATH_SPOOLNEWS>@" ;>()=
-$incoming = "/var/news/spool/in.coming" ;
+$incoming = "/news/spool/in.coming" ;
 
 ##  =()<$inews = "@<_PATH_INEWS>@" ;>()=
-$inews = "/usr/news/bin/inews" ;
+$inews = "/news/bin/inews" ;
 
 ##  =()<$innconfval = "@<_PATH_NEWSBIN>@/innconfval" ;>()=
-$innconfval = "/usr/news/bin/innconfval" ;
+$innconfval = "/news/bin/innconfval" ;
 
 ##  =()<$innd = "@<_PATH_INND>@" ;>()=
-$innd = "/usr/news/bin/innd" ;
+$innd = "/news/bin/innd" ;
 
 ##  =()<$innddir = "@<_PATH_INNDDIR>@" ;>()=
-$innddir = "/var/news/run" ;
+$innddir = "/news/run" ;
 
 ##  =()<$inndstart = "@<_PATH_INNDSTART>@" ;>()=
-$inndstart = "/usr/news/bin/inndstart" ;
+$inndstart = "/news/bin/inndstart" ;
 
 ##  =()<$innwatch = "@<_PATH_NEWSBIN>@/innwatch" ;>()=
-$innwatch = "/usr/news/bin/innwatch" ;
+$innwatch = "/news/bin/innwatch" ;
 
 ##  =()<$locks = "@<_PATH_LOCKS>@" ;>()=
-$locks = "/var/news/locks" ;
+$locks = "/news/locks" ;
 
 ##  =()<$log = "@<_PATH_LOGFILE>@" ;>()=
-$log = "/var/log/news/news" ;
+$log = "/news/log/news" ;
 
 ##  =()<$mail_badcontrols = ("@<MAIL_BADCONTROLS>@" eq "DO" ? 1 : 0) ;>()=
 $mail_badcontrols = ("DONT" eq "DO" ? 1 : 0) ;
@@ -90,25 +90,25 @@ $mail_badcontrols = ("DONT" eq "DO" ? 1 : 0) ;
 $mailcmd = "/usr/bin/Mail" ;
 
 ##  =()<$most_logs = "@<_PATH_MOST_LOGS>@" ;>()=
-$most_logs = "/var/log/news" ;
+$most_logs = "/news/log" ;
 
 ##  =()<$newactive = "@<_PATH_NEWACTIVE>@" ;>()=
-$newactive = "/var/news/etc/active.tmp" ;
+$newactive = "/news/etc/active.tmp" ;
 
 ##  =()<$newsbin = "@<_PATH_NEWSBIN>@" ;>()=
-$newsbin = "/usr/news/bin" ;
+$newsbin = "/news/bin" ;
 
 ##  =()<$newscontrol = "@<_PATH_NEWSCONTROL>@" ;>()=
-$newscontrol = "/var/news/run/control" ;
+$newscontrol = "/news/run/control" ;
 
 ##  =()<$newsfeeds = "@<_PATH_NEWSFEEDS>@" ;>()=
-$newsfeeds = "/var/news/etc/newsfeeds" ;
+$newsfeeds = "/news/etc/newsfeeds" ;
 
 ##  =()<$newsgroups = "@<_PATH_NEWSGROUPS>@" ;>()=
-$newsgroups = "/var/news/etc/newsgroups" ;
+$newsgroups = "/news/etc/newsgroups" ;
 
 ##  =()<$newslib = "@<_PATH_NEWSLIB>@" ;>()=
-$newslib = "/var/news/etc" ;
+$newslib = "/news/etc" ;
 
 ##  =()<$newsmaster = "@<NEWSMASTER>@" ;>()=
 $newsmaster = "usenet" ;
@@ -117,49 +117,49 @@ $newsmaster = "usenet" ;
 $newsuser = "news" ;
 
 ##  =()<$nntpconnect = "@<_PATH_NNTPCONNECT>@" ;>()=
-$nntpconnect = "/var/news/run/nntpin" ;
+$nntpconnect = "/news/run/nntpin" ;
 
 ##  =()<$oldactive = "@<_PATH_OLDACTIVE>@" ;>()=
-$oldactive = "/var/news/etc/active.old" ;
+$oldactive = "/news/etc/active.old" ;
 
 ##  =()<$perl = "@<_PATH_PERL>@" ;>()=
 $perl = "/usr/bin/perl" ;
 
 ##  =()<$rnews = "@<_PATH_RNEWS>@" ;>()=
-$rnews = "/usr/news/bin/rnews" ;
+$rnews = "/news/bin/rnews" ;
 
 ##  =()<$sed = "@<_PATH_SED>@" ;>()=
-$sed = "/usr/bin/sed" ;
+$sed = "/bin/sed" ;
 
 ##  =()<$sort = "@<_PATH_SORT>@" ;>()=
 $sort = "/usr/bin/sort" ;
 
 ##  =()<$serverpid = "@<_PATH_SERVERPID>@" ;>()=
-$serverpid = "/var/news/run/innd.pid" ;
+$serverpid = "/news/run/innd.pid" ;
 
 ##  =()<$sleeptime = @<INNWATCH_SLEEPTIME>@ ;>()=
 $sleeptime = 600 ;
 
 ##  =()<$spool = "@<_PATH_SPOOL>@" ;>()=
-$spool = "/var/news/spool/articles" ;
+$spool = "/news/spool/articles" ;
 
 ##  =()<$overviewdir = "@<_PATH_OVERVIEWDIR>@" ;>()=
-$overviewdir = "/var/news/spool/over.view" ;
+$overviewdir = "/news/spool/over.view" ;
 
 ##  =()<$innwstatus = "@<_PATH_INNWSTATUS>@" ;>()=
-$innwstatus = "/var/news/run/innwatch.status" ;
+$innwstatus = "/news/run/innwatch.status" ;
 
 ##  =()<($tempsock = "@<_PATH_TEMPSOCK>@") =~ s!.*/(.*)XXXXXX$!$1*! ;>()=
-($tempsock = "/var/news/run/ctlinndXXXXXX") =~ s!.*/(.*)XXXXXX$!$1*! ;
+($tempsock = "/news/run/ctlinndXXXXXX") =~ s!.*/(.*)XXXXXX$!$1*! ;
 
 ##  =()<($tempsockdir = "@<_PATH_TEMPSOCK>@") =~ s!/[^/]*$!! ;>()=
-($tempsockdir = "/var/news/run/ctlinndXXXXXX") =~ s!/[^/]*$!! ;
+($tempsockdir = "/news/run/ctlinndXXXXXX") =~ s!/[^/]*$!! ;
 
 ##  =()<$want_pgpverify = ("@<WANT_PGPVERIFY>@" eq "DO" ? 1 : 0) ;>()=
 $want_pgpverify = ("DO" eq "DO" ? 1 : 0) ;
 
 ##  =()<$watchpid = "@<_PATH_WATCHPID>@" ;>()=
-$watchpid = "/var/news/run/innwatch.pid" ;
+$watchpid = "/news/run/innwatch.pid" ;
 
 ##  =()<$z = "@<_PATH_COMPRESSEXT>@" ;>()=
 $z = ".Z" ;
@@ -168,22 +168,22 @@ $z = ".Z" ;
 $perl_support = ("DONT" eq "DO" ? 1 : 0) ;
 
 ##  =()<$perl_startup_innd = "@<_PATH_PERL_STARTUP_INND>@" ;>()=
-$perl_startup_innd = "/usr/news/bin/control/startup_innd.pl" ;
+$perl_startup_innd = "/news/bin/control/startup_innd.pl" ;
 
 ##  =()<$perl_filter_innd = "@<_PATH_PERL_FILTER_INND>@" ;>()=
-$perl_filter_innd = "/usr/news/bin/control/filter_innd.pl" ;
+$perl_filter_innd = "/news/bin/control/filter_innd.pl" ;
 
 ##  =()<$perl_filter_nnrpd = "@<_PATH_PERL_FILTER_NNRPD>@" ;>()=
-$perl_filter_nnrpd = "/usr/news/bin/control/filter_nnrpd.pl" ;
+$perl_filter_nnrpd = "/news/bin/control/filter_nnrpd.pl" ;
 
 ##  =()<$tcl_support = ("@<TCL_SUPPORT>@" eq "DO" ? 1 : 0) ;>()=
 $tcl_support = ("DONT" eq "DO" ? 1 : 0) ;
 
 #### =()<$path_tcl_startup = "@<_PATH_TCL_STARTUP>@" ;>()=
-$path_tcl_startup = "/usr/news/bin/control/startup.tcl" ;
+$path_tcl_startup = "/news/bin/control/startup.tcl" ;
 
 #### =()<$path_tcl_filter = "@<_PATH_TCL_FILTER>@" ;>()=
-$path_tcl_filter = "/usr/news/bin/control/filter.tcl" ;
+$path_tcl_filter = "/news/bin/control/filter.tcl" ;
 
 $localgroups = "$newslib/localgroups" ;
 
@@ -194,19 +194,19 @@ if ( ! defined ($ENV{'TMPDIR'}) ) {
 $tmpdir = $ENV{'TMPDIR'} ;
 
 ##  =()<$expirectl = "@<_PATH_EXPIRECTL>@" ;>()=
-$expirectl = "/var/news/etc/expire.ctl" ;
+$expirectl = "/news/etc/expire.ctl" ;
 
 ##  =()<$newshome = "@<_PATH_NEWSHOME>@" ;>()=
-$newshome = "/usr/news" ;
+$newshome = "/news" ;
 
 ##  =()<$archivedir = "@<_PATH_ARCHIVEDIR>@" ;>()=
-$archivedir = "/var/news/spool/archive" ;
+$archivedir = "/news/spool/archive" ;
 
 ##  =()<$badnews = "@<_PATH_BADNEWS>@" ;>()=
-$badnews = "/var/news/spool/in.coming/bad" ;
+$badnews = "/news/spool/in.coming/bad" ;
 
 #### =()<$spoolnews = "@<_PATH_SPOOLNEWS>@" ;>()=
-$spoolnews = "/var/news/spool/in.coming" ;
+$spoolnews = "/news/spool/in.coming" ;
 
 #### =()<$spooltemp = "@<_PATH_SPOOLTEMP>@" ;>()=
 $spooltemp = "/var/tmp" ;

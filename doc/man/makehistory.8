@@ -50,14 +50,14 @@ text file and the associated
 database.
 The default name of the text file is
 .\" =()<.IR @<_PATH_HISTORY>@ ;>()=
-.IR /var/news/etc/history ;
+.IR /news/etc/history ;
 to specify a different name, use the ``\fB\-f\fP'' flag.
 .I Makehistory
 scans the
 .IR active (5)
 file to determine which newsgroup directories within the spool directory,
 .\" =()<.IR @<_PATH_SPOOL>@ ,>()=
-.IR /var/news/spool/articles ,
+.IR /news/spool/articles ,
 should be scanned.
 (If a group is removed, but its spool directory still exists,
 .I makehistory
@@ -82,7 +82,7 @@ history entries).
 If the ``\fB\-a\fP'' flag is given then the argument is the active file to
 use rather than the default one of
 .\" =()<.IR @<_PATH_ACTIVE>@ .>()=
-.IR /var/news/etc/active .
+.IR /news/etc/active .
 .TP
 .B \-b
 If the ``\-b'' flag is used, then
@@ -197,7 +197,7 @@ commands:
 .nf
 ctlinnd throttle "Rebuilding history file"
 .\" =()<cd @<_PATH_NEWSLIB>@>()=
-cd /var/news/etc
+cd /news/etc
 if makehistory \-n \-f history.n ; then
     :
 else
@@ -226,7 +226,7 @@ commands should probably be run before the database is regenerated:
 .RS
 .nf
 .\" =()<cd @<_PATH_SPOOL>@>()=
-cd /var/news/spool/articles
+cd /news/spool/articles
 find . -type l -name '[1-9]*' -print | xargs -t rm
 .fi
 .RE

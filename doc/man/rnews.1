@@ -60,7 +60,7 @@ If the command is any other word, then
 .I rnews
 will try to execute a program with that name in the directory
 .\" =()<.IR @<_PATH_RNEWSPROGS>@ .>()=
-.IR /usr/news/bin/rnews.libexec .
+.IR /news/bin/rnews.libexec .
 The batch will be fed into the program's standard input, and the
 standard output will be read back as input into
 .IR rnews .\}
@@ -73,7 +73,7 @@ detects any problems with an article such as a missing header, or
 an unintelligible reply from the server, it will save a copy of the article
 in the
 .\" =()<.I @<_PATH_BADNEWS>@>()=
-.I /var/news/spool/in.coming/bad
+.I /news/spool/in.coming/bad
 directory.\}
 .SH OPTIONS
 .TP
@@ -93,7 +93,7 @@ it will try to open a TCP connection to the default remote server.
 If the server is not available, the message is spooled into a new file
 created in the
 .\" =()<.I @<_PATH_SPOOLNEWS>@>()=
-.I /var/news/spool/in.coming
+.I /news/spool/in.coming
 directory.
 The ``\fB\-U\fP'' flag may be used to send all spooled messages to the
 server once it becomes available again, and can be invoked regularly
@@ -103,7 +103,7 @@ by
 .B \-N
 Normally, if unpacking the input fails it is re-spooled to
 .\" =()<.I @<_PATH_SPOOLNEWS>@>()=
-.I /var/news/spool/in.coming
+.I /news/spool/in.coming
 for another attempt later.  If the ``\fB\-N\fP'' flag is used then no such
 re-spooling is done and rnews exits with status value ``9'' to indicate
 this.

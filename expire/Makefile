@@ -11,7 +11,7 @@ CC	= gcc
 ##  =()<DEFS	= @<DEFS>@>()=
 DEFS	= -I../include
 ##  =()<CFLAGS	= @<CFLAGS>@>()=
-CFLAGS	= $(DEFS) -g
+CFLAGS	= $(DEFS) -g -Wall
 ##  =()<LDFLAGS	= @<LDFLAGS>@>()=
 LDFLAGS	= 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
@@ -24,7 +24,7 @@ CTAGS		= ctags -t -w
 PROF	= -pg
 
 ##  =()<NEWSBIN	= @<_PATH_NEWSBIN>@>()=
-NEWSBIN	= /usr/news/bin
+NEWSBIN	= /news/bin
 ## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
 OWNER	= -O news -G news
 
