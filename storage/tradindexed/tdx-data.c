@@ -725,6 +725,8 @@ tdx_data_expire_start(const char *group, struct group_data *data,
     ARTNUM high;
 
     new_data = tdx_data_rebuild_start(group);
+    if (new_data == NULL)
+        return false;
     index->indexinode = new_data->indexinode;
 
     /* Try to make sure that the search range is okay for even an empty group
