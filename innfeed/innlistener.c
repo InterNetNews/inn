@@ -132,7 +132,7 @@ void gPrintListenerInfo (FILE *fp, unsigned int indentAmt)
   indent [i] = '\0' ;
 
   fprintf (fp,"%sGlobal InnListener list : %p (count %d) {\n",
-           indent,listenerList,listenerCount) ;
+           indent,(void *) listenerList,listenerCount) ;
   for (p = listenerList ; p != NULL ; p = p->next)
     printListenerInfo (p,fp,indentAmt + INDENT_INCR) ;
   fprintf (fp,"%s}\n",indent) ;
@@ -149,8 +149,8 @@ void printListenerInfo (InnListener listener, FILE *fp, unsigned int indentAmt)
     indent [i] = ' ' ;
   indent [i] = '\0' ;
 
-  fprintf (fp,"%sInnListener : %p {\n",indent,listener) ;
-  fprintf (fp,"%s    endpoint : %p\n", indent, listener->myep) ;
+  fprintf (fp,"%sInnListener : %p {\n",indent,(void *) listener) ;
+  fprintf (fp,"%s    endpoint : %p\n", indent,(void *) listener->myep) ;
   fprintf (fp,"%s    dummy-listener : %s\n",indent,
            boolToString (listener->dummyListener)) ;
   fprintf (fp,"%s    dynamicPeers : %s\n",indent,
@@ -167,7 +167,7 @@ void printListenerInfo (InnListener listener, FILE *fp, unsigned int indentAmt)
       if (listener->myHosts [i] != NULL)
         printHostInfo (listener->myHosts [i],fp,indentAmt + INDENT_INCR) ;
 #else
-      fprintf (fp,"%s        %p\n",indent,listener->myHosts[i]) ;
+      fprintf (fp,"%s        %p\n",indent,(void *) listener->myHosts[i]) ;
 #endif
     }
   

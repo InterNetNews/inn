@@ -541,7 +541,7 @@ void printTapeInfo (Tape tape, FILE *fp, unsigned int indentAmt)
     indent [i] = ' ' ;
   indent [i] = '\0' ;
 
-  fprintf (fp,"%sTape : %p {\n",indent,tape) ;
+  fprintf (fp,"%sTape : %p {\n",indent,(void *) tape) ;
 
   if (tape == NULL)
     {
@@ -554,8 +554,8 @@ void printTapeInfo (Tape tape, FILE *fp, unsigned int indentAmt)
   fprintf (fp,"%s    output-file : %s\n",indent, tape->outputFilename) ;
   fprintf (fp,"%s    lock-file : %s\n",indent, tape->lockFilename) ;
   fprintf (fp,"%s    peerName : %s\n",indent,tape->peerName) ;
-  fprintf (fp,"%s    input-FILE : %p\n",indent, tape->inFp) ;
-  fprintf (fp,"%s    output-FILE : %p\n",indent, tape->outFp) ;
+  fprintf (fp,"%s    input-FILE : %p\n",indent, (void *) tape->inFp) ;
+  fprintf (fp,"%s    output-FILE : %p\n",indent, (void *) tape->outFp) ;
   fprintf (fp,"%s    output-limit : %ld\n",indent, tape->outputLowLimit) ;
 
 #if 0

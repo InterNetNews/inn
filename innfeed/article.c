@@ -217,7 +217,7 @@ Article newArticle (const char *filename, const char *msgid)
       newArt->inWireFormat = false ;
       newArt->arthandle = NULL;
       
-      d_printf (3,"Adding a new article(%p): %s\n", newArt, msgid) ;
+      d_printf (3,"Adding a new article(%p): %s\n", (void *)newArt, msgid) ;
       
       articlesInUse++ ;
       articleTotal++ ;
@@ -253,7 +253,8 @@ void delArticle (Article article)
 
       ASSERT (removed == true) ;
 
-      d_printf (2,"Cleaning up article (%p): %s\n",article, article->msgid) ;
+      d_printf (2,"Cleaning up article (%p): %s\n", 
+          (void *)article, article->msgid) ;
 
       if (article->contents != NULL)
         {
@@ -325,7 +326,7 @@ void printArticleInfo (Article art, FILE *fp, unsigned int indentAmt)
     indent [i] = ' ' ;
   indent [i] = '\0' ;
   
-  fprintf (fp,"%sArticle : %p {\n",indent,art) ;
+  fprintf (fp,"%sArticle : %p {\n",indent,(void *) art) ;
   fprintf (fp,"%s    article ok : %s\n",indent,boolToString (art->articleOk)) ;
   fprintf (fp,"%s    refcount : %d\n",indent,art->refCount) ;
   fprintf (fp,"%s    filename : %s\n",indent,art->fname) ;

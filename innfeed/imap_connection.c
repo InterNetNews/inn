@@ -4581,10 +4581,10 @@ void printCxnInfo (Connection cxn, FILE *fp, unsigned int indentAmt)
     indent [i] = ' ' ;
   indent [i] = '\0' ;
 
-  fprintf (fp,"%sConnection : %p {\n",indent,cxn) ;
+  fprintf (fp,"%sConnection : %p {\n",indent, (void *) cxn) ;
   fprintf (fp,"%s    host : %p\n",indent, (void *) cxn->myHost) ;
-  fprintf (fp,"%s    endpoint (imap): %p\n",indent,cxn->imap_endpoint) ;
-  fprintf (fp,"%s    endpoint (lmtp): %p\n",indent,cxn->lmtp_endpoint) ;
+  fprintf (fp,"%s    endpoint (imap): %p\n",indent, (void *) cxn->imap_endpoint) ;
+  fprintf (fp,"%s    endpoint (lmtp): %p\n",indent, (void *) cxn->lmtp_endpoint) ;
   fprintf (fp,"%s    state (imap) : %s\n",indent, imap_stateToString (cxn->imap_state)) ;
   fprintf (fp,"%s    state (lmtp) : %s\n",indent, lmtp_stateToString (cxn->lmtp_state)) ;
   fprintf (fp,"%s    ident : %d\n",indent,cxn->ident) ;

@@ -1187,9 +1187,9 @@ void printCxnInfo (Connection cxn, FILE *fp, unsigned int indentAmt)
     indent [i] = ' ' ;
   indent [i] = '\0' ;
 
-  fprintf (fp,"%sConnection : %p {\n",indent,cxn) ;
+  fprintf (fp,"%sConnection : %p {\n",indent, (void *) cxn) ;
   fprintf (fp,"%s    host : %p\n",indent, (void *) cxn->myHost) ;
-  fprintf (fp,"%s    endpoint : %p\n",indent,cxn->myEp) ;
+  fprintf (fp,"%s    endpoint : %p\n",indent, (void *) cxn->myEp) ;
   fprintf (fp,"%s    state : %s\n",indent, stateToString (cxn->state)) ;
   fprintf (fp,"%s    ident : %d\n",indent,cxn->ident) ;
   fprintf (fp,"%s    ip-name : %s\n", indent, cxn->ipName) ;

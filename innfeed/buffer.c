@@ -193,7 +193,7 @@ void printBufferInfo (Buffer buffer, FILE *fp, unsigned int indentAmt)
     indent [i] = ' ' ;
   indent [i] = '\0' ;
   
-  fprintf (fp,"%sBuffer : %p {\n",indent,buffer) ;
+  fprintf (fp,"%sBuffer : %p {\n",indent,(void *) buffer) ;
 
   if (buffer == NULL)
     {

@@ -1266,7 +1266,7 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
     indent [i] = ' ' ;
   indent [i] = '\0' ;
 
-  fprintf (fp,"%sHost : %p {\n",indent,host) ;
+  fprintf (fp,"%sHost : %p {\n",indent,(void *) host) ;
 
   if (host == NULL)
     {
@@ -1409,7 +1409,7 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
   printTapeInfo (host->myTape,fp,indentAmt + INDENT_INCR) ;
   fprintf (fp,"%s    }\n",indent) ;
 #else
-  fprintf (fp,"%s    tape : %p\n",indent,host->myTape) ;
+  fprintf (fp,"%s    tape : %p\n",indent,(void *) host->myTape) ;
 #endif
   
   fprintf (fp,"%s    QUEUED articles {\n",indent) ;
@@ -1418,7 +1418,7 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
 #if 0
       printArticleInfo (qe->article,fp,indentAmt + INDENT_INCR) ;
 #else
-      fprintf (fp,"%s    %p\n",indent,qe->article) ;
+      fprintf (fp,"%s    %p\n",indent,(void *) qe->article) ;
 #endif
     }
   
@@ -1430,7 +1430,7 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
 #if 0
       printArticleInfo (qe->article,fp,indentAmt + INDENT_INCR) ;
 #else
-      fprintf (fp,"%s    %p\n",indent,qe->article) ;
+      fprintf (fp,"%s    %p\n",indent,(void *) qe->article) ;
 #endif
     }
   
@@ -1441,7 +1441,7 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
 #if 0
 	printArticleInfo (qe->article,fp,indentAmt + INDENT_INCR) ;
 #else
-	fprintf (fp,"%s    %p\n",indent,qe->article) ;
+	fprintf (fp,"%s    %p\n",indent,(void *) qe->article) ;
 #endif
     }
 
@@ -1452,7 +1452,7 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
 #if 0
       printArticleInfo (qe->article,fp,indentAmt + INDENT_INCR) ;
 #else
-      fprintf (fp,"%s    %p\n",indent,qe->article) ;
+      fprintf (fp,"%s    %p\n",indent,(void *) qe->article) ;
 #endif
     }
   
@@ -1467,7 +1467,7 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
       if (host->connections[i] != NULL)
         printCxnInfo (*cxn,fp,indentAmt + INDENT_INCR) ;
 #else
-      fprintf (fp,"%s        %p\n",indent,host->connections[i]) ;
+      fprintf (fp,"%s        %p\n",indent,(void *) host->connections[i]) ;
 #endif
     }
   fprintf (fp,"%s    }\n",indent) ;
@@ -1475,13 +1475,13 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
   fprintf (fp,"%s    Active Connections {\n%s        ",indent,indent) ;
   for (i = 0 ; i < host->maxConnections ; i++)
     if (host->cxnActive[i])
-      fprintf (fp," [%d:%p]",i,host->connections[i]) ;
+      fprintf (fp," [%d:%p]",i,(void *) host->connections[i]) ;
   fprintf (fp,"\n%s    }\n",indent) ;
 
   fprintf (fp,"%s    Sleeping Connections {\n%s        ",indent,indent) ;
   for (i = 0 ; i < host->maxConnections ; i++)
     if (host->cxnSleeping[i])
-      fprintf (fp," [%d:%p]",i,host->connections[i]) ;
+      fprintf (fp," [%d:%p]",i,(void *) host->connections[i]) ;
   fprintf (fp,"\n%s    }\n",indent) ;
 
   fprintf (fp,"%s}\n",indent) ;
