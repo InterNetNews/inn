@@ -202,7 +202,7 @@ main (int argc, char *argv[])
     }
 
     if (krb5_check_password(authinfo->username, authinfo->password)) {
-        printf("User: %s\r\n", authinfo->username);
+        printf("User:%s\r\n", authinfo->username);
         exit(0);
     } else {
         die("failure validating password");
