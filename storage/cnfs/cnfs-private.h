@@ -64,6 +64,7 @@ typedef struct {
 } CYCBUFFEXTERN;
 
 #define METACYCBUFF_UPDATE	25
+#define REFRESH_INTERVAL	30
 
 typedef struct metacycbuff {
   char		*name;		/* Symbolic name of the pool */
