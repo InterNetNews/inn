@@ -955,6 +955,7 @@ static void PERMreadfile(char *filename)
     AUTHGROUP	*curauth    = NULL;
     int		oldtype;
     char	*str	    = NULL;
+    char        *path       = NULL;
 
     if(filename != NULL) {
 	syslog(L_TRACE, "Reading access from %s", 
@@ -996,10 +997,9 @@ static void PERMreadfile(char *filename)
 		/* unless the filename's path is fully qualified, open it
 		 * relative to /news/etc */
 
-		if (*tok->name == '/')
-		    hold->f = CONFfopen(tok->name);
-		else
-		    hold->f = CONFfopen((char *)cpcatpath(innconf->pathetc, tok->name));
+                path = concatpath(innconf->pathetc, tok->name);
+                hold->f = CONFfopen(path);
+                free(path);
 
 		if (hold->f == NULL) {
 		    ReportError(cf->f, "Couldn't open 'include' filename.");
@@ -1911,6 +1911,7 @@ static char *ResolveUser(AUTHGROUP *auth)
     char **args;
     char *arg0;
     char *resdir;
+    char *tmp;
     EXECSTUFF *foo;
     int done	    = 0;
     char buf[BIG_BUFFER];
@@ -1918,10 +1919,9 @@ static char *ResolveUser(AUTHGROUP *auth)
     if (!auth->res_methods)
 	return(0);
 
-    resdir = NEW(char, strlen(cpcatpath(innconf->pathbin, _PATH_AUTHDIR)) +
-      1 + strlen(_PATH_AUTHDIR_NOPASS) + 1 + 1);
-    sprintf(resdir, "%s/%s/", cpcatpath(innconf->pathbin, _PATH_AUTHDIR),
-      _PATH_AUTHDIR_NOPASS);
+    tmp = concatpath(innconf->pathbin, _PATH_AUTHDIR);
+    resdir = concatpath(tmp, _PATH_AUTHDIR_NOPASS);
+    free(tmp);
 
     ubuf[0] = '\0';
     for (i = 0; auth->res_methods[i]; i++) {
@@ -1935,8 +1935,7 @@ static char *ResolveUser(AUTHGROUP *auth)
 	cp = COPY(auth->res_methods[i]->program);
 	args = 0;
 	Argify(cp, &args);
-	arg0 = NEW(char, strlen(resdir)+strlen(args[0])+1);
-	sprintf(arg0, "%s%s", resdir, args[0]);
+        arg0 = concat(resdir, "/", args[0], (char *) 0);
 	/* exec the resolver */
 	foo = ExecProg(arg0, args);
 	if (foo) {
@@ -1976,6 +1975,7 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password)
     char **args;
     char *arg0;
     char *resdir;
+    char *tmp;
     EXECSTUFF *foo;
     int done	    = 0;
     char buf[BIG_BUFFER];
@@ -1983,10 +1983,9 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password)
     if (!auth->auth_methods)
 	return(0);
 
-    resdir = NEW(char, strlen(cpcatpath(innconf->pathbin, _PATH_AUTHDIR)) +
-      1 + strlen(_PATH_AUTHDIR_PASSWD) + 1 + 1);
-    sprintf(resdir, "%s/%s/", cpcatpath(innconf->pathbin, _PATH_AUTHDIR),
-      _PATH_AUTHDIR_PASSWD);
+    tmp = concatpath(innconf->pathbin, _PATH_AUTHDIR);
+    resdir = concatpath(tmp, _PATH_AUTHDIR_PASSWD);
+    free(tmp);
 
     ubuf[0] = '\0';
     for (i = 0; auth->auth_methods[i]; i++) {
@@ -2004,8 +2003,7 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password)
 	cp = COPY(auth->auth_methods[i]->program);
 	args = 0;
 	Argify(cp, &args);
-	arg0 = NEW(char, strlen(resdir)+strlen(args[0])+1);
-	sprintf(arg0, "%s%s", resdir, args[0]);
+        arg0 = concat(resdir, "/", args[0], (char *) 0);
 	/* exec the authenticator */
 	foo = ExecProg(arg0, args);
 	if (foo) {
