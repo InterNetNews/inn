@@ -81,6 +81,23 @@ The patterns are interpreted in the same manner as the
 file except for ``@''.
 The default, however, denies access to all groups.
 .PP
+There is another line format, which can be used to pre-define an access
+list.
+.RS
+.nf
+%DEFINEn:pattern
+.fi
+.RE
+.PP
+The %DEFINE is literal and is followed by a number to define that
+particular pattern. You can then use ``%n'' (replacing ``n'' with
+the number you used in the %DEFINE) as a complete
+replacement for the ``pattern'' option in subsequent lines (i.e: you
+cannot use it along with normal patterns). This can be used to reduce
+the size of the access file when large access patterns are used and
+hence speed up scanning the file. By default, only 10 patterns can
+be used.
+.PP
 The access file is normally used to provide host-level access control
 for reading and posting articles.
 There are times, however, when this is not sufficient and user-level access
@@ -102,6 +119,10 @@ For example:
 *.foo.com:Read Post:::*
 ##  A related workstation can't access FOO newsgroups.
 lenox.foo.net:RP:martha:hiatt:*,!foo.*
+## Define a list to be used twice
+%DEFINE0:!*,bar.*,foo.*,comp.*,news.*,rec.*,soc.*,alt.*,!alt.binaries.*
+bar1.foo.net:RP:::%0
+bar2.foo.net:R:::%0
 .fi
 .RE
 .PP
