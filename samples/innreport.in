@@ -176,6 +176,7 @@ GetOptions (\%ref,
 	      -c=i -cycle=i
 	      -s=s -separator=s
 	      -unknown!
+	      -html-unknown!
 	      -maxunrec=i
 	      -casesensitive!
               -notdaily!
@@ -245,6 +246,15 @@ if (defined ($output{'default'}{'unknown'}))
 }
 $WANT_UNKNOWN = 0 if defined $ref{'unknown'};
 $WANT_UNKNOWN = 1 if $ref{'unknown'};
+
+$WANT_HTML_UNKNOWN = $WANT_UNKNOWN;
+if (defined ($output{'default'}{'html-unknown'}))
+{
+  $WANT_HTML_UNKNOWN = &GetValue ($output{'default'}{'html-unknown'});
+  $WANT_HTML_UNKNOWN = ($WANT_HTML_UNKNOWN eq 'true' ? 1 : 0);
+}
+$WANT_HTML_UNKNOWN = 0 if defined $ref{'html-unknown'};
+$WANT_HTML_UNKNOWN = 1 if $ref{'html-unknown'};
 
 $NOT_DAILY = 0 if defined $ref{'notdaily'};
 $NOT_DAILY = 1 if $ref{'notdaily'};
@@ -1780,16 +1790,16 @@ sub Write_all_results
   if ((@unrecognize) && ($WANT_UNKNOWN))
   {
     my $mm = $#unrecognize;
-    print HTML "<A NAME=\"unrecognize\">" if ($HTML);
+    print HTML "<A NAME=\"unrecognize\">" if (($HTML) && ($WANT_HTML_UNKNOWN));
     print "Unknown entries from news log file:\n";
     print HTML "<STRONG>Unknown entries from news log file:</STRONG></A><P>\n"
-      if ($HTML);
+      if (($HTML) && ($WANT_HTML_UNKNOWN));
     $mm = $MAX_UNRECOGNIZED - 1
       if (($MAX_UNRECOGNIZED > 0) && ($mm > $MAX_UNRECOGNIZED - 1));
     if (($mm < $unrecognize_max) && ($unrecognize_max > 0))
     {
       printf HTML "First %d / $unrecognize_max lines (%3.1f%%)<BR>\n", $mm + 1,
-        ($mm + 1) / $unrecognize_max * 100 if ($HTML);
+        ($mm + 1) / $unrecognize_max * 100 if (($HTML) && ($WANT_HTML_UNKNOWN));
       printf "First %d / $unrecognize_max lines (%3.1f%%)\n", $mm + 1,
         ($mm + 1)/ $unrecognize_max * 100;
     }
@@ -1799,7 +1809,7 @@ sub Write_all_results
     {
       chomp ($unrecognize[$l]);   # sometimes, the last line need a CR
       print "$unrecognize[$l]\n"; # so, we always add one
-      if ($HTML)
+      if (($HTML) && ($WANT_HTML_UNKNOWN))
       {
 	$unrecognize[$l] =~ s/&/\&amp;/g;
 	$unrecognize[$l] =~ s/</\&lt;/g;
@@ -1808,7 +1818,7 @@ sub Write_all_results
       }
     }
     print "\n";
-    print HTML "<P><HR><P>\n" if $HTML;
+    print HTML "<P><HR><P>\n" if (($HTML) && ($WANT_HTML_UNKNOWN));
   }
 
   close (HTML) if $HTML;
@@ -2525,6 +2535,9 @@ sub Usage
   print "    -separator char     an alias for option -s\n";
   print "    -unknown            \"Unknown entries from news log file\"\n";
   print "                        report";
+  print " [default]" if ($WANT_UNKNOWN);
+  print "\n";
+  print "    -html-unknown       Same as above, but in generated HTML output.";
   print " [default]" if ($WANT_UNKNOWN);
   print "\n";
   print "    -maxunrec           Max number of unrecognized lines to display\n";
