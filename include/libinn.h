@@ -83,145 +83,138 @@ extern BOOL     LockRange(int fd, LOCKTYPE type, BOOL block,
                           OFFSET_T offset, OFFSET_T size);
 #endif
     
-/* Parameter retrieval. */
-
+/*
+**  INNCONF SETTINGS
+**
+**  This structure is organized in the same order as the variables contained
+**  in it are mentioned in the inn.conf documentation, and broken down into
+**  the same sections.
+*/
 struct conf_vars {
-	char *fromhost;		/* Host for the From line */
-#if 0
-||LABEL  fromhost
-||
-||DOC     .TP
-||DOC     .I fromhost
-||DOC     This is the name of the host to use when building the From header line.
-||DOC     The default is the fully-qualified domain name of the local host.
-||DOC     The value of the FROMHOST environment variable, if it exists,
-||DOC     overrides this.
+    /* General Settings */
+    char *domain;               /* Default domain of local host */
+    char *mailcmd;              /* Command to send report/control type mail */
+    char *mta;                  /* MTA for mailing to moderators, innmail */
+    char *pathhost;             /* Entry for the Path line */
+    char *server;               /* Default server to connect to */
 
-||Lines with ||SAMPLE are placed in samples/inn.conf
-||SAMPLE #fromhost:      our.domain
+    /* Feed Configuration */
+    int artcutoff;              /* Max accepted article age */
+    char *bindaddress;          /* Which interface IP to bind to */
+    int hiscachesize;           /* Size of the history cache in kB */
+    int ignorenewsgroups;       /* Propagate cmsgs by affected group? */
+    int immediatecancel;        /* Immediately cancel timecaf messages? */
+    int linecountfuzz;          /* Check linecount and reject if off by more */
+    long maxartsize;            /* Reject articles bigger than this */
+    int maxconnections;         /* Max number of incoming NNTP connections */
+    char *pathalias;            /* Prepended Host for the Path line */
+    int port;                   /* Which port innd should listen on */
+    int refusecybercancels;     /* Reject message IDs with "<cancel."? */
+    int remembertrash;          /* Put unwanted article IDs into history */
+    char *sourceaddress;        /* Source IP for outgoing NNTP connections */
+    int usecontrolchan;         /* Use a channel feed for control messages? */
+    int verifycancels;          /* Verify cancels against article author */
+    int wanttrash;              /* Put unwanted articles in junk */
+    int wipcheck;               /* How long to defer other copies of article */
+    int wipexpire;              /* How long to keep pending article record */
 
-||Lines with ||CLEAR are placed in getconfig.c::ClearInnConf()
-||CLEAR if (innconf->fromhost != NULL) DISPOSE(innconf->fromhost);
+    /* Article Storage */
+    long cnfscheckfudgesize;    /* Additional CNFS integrity checking */
+    int enableoverview;         /* Store overview info for articles? */
+    int groupbaseexpiry;        /* Do expiry by newsgroup? */
+    int mergetogroups;          /* Refile articles from to.* into to */
+    int overcachesize;          /* fd size cache for tradindexed */
+    char *ovgrouppat;           /* Newsgroups to store overview for */
+    char *ovmethod;             /* Which overview method to use */
+    int storeonxref;            /* SMstore use Xref to detemine class? */
+    int useoverchan;            /* overchan write the overview, not innd? */
+    int wireformat;             /* Store tradspool artilces in wire format? */
+    int xrefslave;              /* Act as a slave of another server? */
 
-||Lines with ||DEFAULT are placed in getconfig.c::SetDefaults()
-||DEFAULT innconf->fromhost = NULL;
-||DEFAULT if (p = getenv(_ENV_FROMHOST)) { innconf->fromhost = COPY(p); }
+    /* Reading */
+    int allownewnews;           /* Allow use of the NEWNEWS command */
+    int articlemmap;            /* Use mmap to read articles? */
+    int clienttimeout;          /* How long nnrpd can be inactive */
+    int nnrpdcheckart;          /* Check article existence before returning? */
+    int nnrpperlauth;           /* Use Perl for nnrpd authentication */
+    int nnrppythonauth;         /* Use Python for nnrpd authentication */
+    int noreader;               /* Refuse to fork nnrpd for readers? */
+    int readerswhenstopped;     /* Allow nnrpd when server is paused */
+    int readertrack;            /* Use the reader tracking system? */
 
-||Lines with ||READ are placed in getconfig.c::ReadInnConf()
-||READ /*  Special: For read, must not overwrite the ENV_FROMHOST set by DEFAULT */
-||READ   if (EQ(ConfigBuff,"fromhost")) {
-||READ       if (innconf->fromhost == NULL) { innconf->fromhost = COPY(p); }
-||READ   } else
+    /* Reading -- Keyword Support */
+    char keywords;              /* Generate keywords in overview? */
+    int keyartlimit;            /* Max article size for keyword generation */
+    int keylimit;               /* Max allocated space for keywords */
+    int keymaxwords;            /* Max count of interesting works */
 
-||Lines with ||GETVALUE are placed in getconfig.c::GetConfigValue()
-||GETVALUE if (EQ(value,"fromhost")) { return innconf->fromhost; }
-#endif
+    /* Posting */
+    int addnntppostingdate;     /* Add NNTP-Posting-Date: to posts */
+    int addnntppostinghost;     /* Add NNTP-Posting-Host: to posts */
+    int checkincludedtext;      /* Reject if too much included text */
+    char *complaints;           /* Address for X-Complaints-To: */
+    char *fromhost;             /* Host for the From: line */
+    long localmaxartsize;       /* Max article size of local postings */
+    char *moderatormailer;      /* Default host to mail moderated articles */
+    int nnrpdauthsender;        /* Add authenticated Sender: header? */
+    char *nnrpdposthost;        /* Host postings should be forwarded to */
+    int nnrpdpostport;          /* Port postings should be forwarded to */
+    char *organization;         /* Data for the Organization: header */
+    int spoolfirst;             /* Spool all posted articles? */
+    int strippostcc;            /* Strip To:, Cc: and Bcc: from posts */
 
-	char *server;		/* NNTP server to post to */
-	char *pathhost;		/* Host for the Path line */
-	char *pathalias;	/* Prepended Host for the Path line */
-	char *organization;	/* Data for the Organization line */
-	char *moderatormailer;	/* Default host to mail moderated articles */
-	char *domain;		/* Default domain of local host */
-	int hiscachesize;	/* Size of the history cache in kB */
-	int xrefslave;		/* master server for slaving */
-	char *complaints;	/* Addr for X-Complaints-To: header */
-	int spoolfirst;		/* Spool newly posted article or only on error*/
-	int timer;		/* Performance monitoring interval */
-	int status;		/* Status file update interval */
-	int articlemmap;	/* mmap articles? */
-	char *mta;		/* Which MTA to mail moderated posts */
-	char *mailcmd;		/* Which command for report/control type mail */
-	int checkincludedtext;	/* Reject if too much included text */
-	int maxforks;		/* Give up after fork failure */
-	long maxartsize;	/* Reject articles bigger than this */
-	int nicekids;		/* Kids get niced to this */
-	int verifycancels;	/* Verify cancels against article author */
-	int logcancelcomm;	/* Log "ctlinnd cancel" commands to syslog? */
-	int wanttrash;		/* Put unwanted articles in 'junk' */
-	int remembertrash;	/* Put unwanted article ID's into history */
-	int linecountfuzz;	/* Check linecount and adjust of out by more */
-	int peertimeout;	/* How long peers can be inactive */
-	int clienttimeout;	/* How long nnrpd can be inactive */
-	int readerswhenstopped;	/* Allow nnrpd when server is paused */
-	int allownewnews;	/* Allow use of the 'NEWNEWS' command */
-	long localmaxartsize;	/* Max article size of local postings */
-	int logartsize;		/* Log article sizes */
-	int logipaddr;		/* Log by host IP address */
-	int chaninacttime;	/* Wait time between noticing inact chans */
-	int maxconnections;	/* Max number of incoming NNTP connections */
-	int chanretrytime;	/* Wait this many secs before chan restarts */
-	int artcutoff;		/* Max article age */
-	int pauseretrytime;	/* Secs before seeing if pause is ended */
-	int nntplinklog;	/* Put nntplink info (filename) into the log */
-	int nntpactsync;	/* Log NNTP activity after this many articles */
-	int badiocount;		/* Read/write failures until chan is put to sleep or closed? */
-	int blockbackoff;	/* Multiplier for sleep in EWOULDBLOCK writes */
-	int icdsynccount;	/* How many article-writes between active and history updates */
-	char *bindaddress;	/* Which interface IP to bind to */
-	char *sourceaddress;	/* Source IP for outgoing NNTP connections */
-	int port;		/* Which port INND should listen on */
-	int readertrack;	/* Enable/Disable the reader tracking system */
-	int strippostcc;	/* Strip To:, Cc: and Bcc: lines from posts */
-        char keywords;		/* enable keyword generationg in overview */
-        int keylimit;		/* max allocated space for keywords. */
-        int keyartlimit;        /* Max size of an article for keyword generation */
-        int keymaxwords;	/* Max count of interesting workd */
-        int nnrpperlauth;       /* Use perl for nnrpd authentication */
-        int nnrppythonauth;     /* Use Python for nnrpd authentication */
-        int addnntppostinghost; /* Add NNTP-Posting-Host: header to posts */
-        int addnntppostingdate; /* Add NNTP-Posting-DATE: header to posts */
+    /* Posting -- Exponential Backoff */
+    int backoff_auth;           /* Backoff by user, not IP address */
+    char *backoff_db;           /* Directory for backoff databases */
+    long backoff_k;             /* Multiple for the sleep time */
+    long backoff_postfast;      /* Upper time limit for fast posting */
+    long backoff_postslow;      /* Lower time limit for slow posting */
+    long backoff_trigger;       /* Number of postings before triggered */
 
-	char *pathnews;	
-	char *pathbin;
-	char *pathfilter;
-	char *pathcontrol;
-	char *pathdb;
-	char *pathetc;
-	char *pathrun;
-	char *pathlog;
-	char *pathspool;
-	char *patharticles;
-	char *pathoverview;
-	char *pathoutgoing;
-	char *pathincoming;
-	char *patharchive;
-	char *pathtmp;
-	char *pathuniover;
-	int logsitename;	/* log site names? */
-	char *pathhttp;
-	char *nnrpdposthost;
-	int nnrpdpostport;
-	int nnrpdoverstats;
-	int storeonxref;	/* Should SMstore() see Xref to detemine class */
-	int backoff_auth;
-	char *backoff_db;
-	long backoff_k;
-	long backoff_postfast;
-	long backoff_postslow;
-	long backoff_trigger;
-	int refusecybercancels;
-	int nnrpdcheckart;
-	int nicenewnews;	/* If NEWNEWS command is used, set nice */
-	int nicennrpd;
-	int usecontrolchan;
-	int mergetogroups;
-	int noreader;
-	int nnrpdauthsender;
-	long cnfscheckfudgesize;
-	int rlimitnofile;
-	int ignorenewsgroups;
-	int overcachesize;
-	int enableoverview;
-	int wireformat; /* enable/disable wire format for tradspool */
-	char *ovmethod;
-        int useoverchan; /* should innd write overview, or should overchan */
-        int immediatecancel;
-	char *ovgrouppat;
-        int groupbaseexpiry;
-        int wipcheck;
-        int wipexpire;
+    /* Logging */
+    int logartsize;             /* Log article sizes? */
+    int logcancelcomm;          /* Log ctlinnd cancel commands to syslog? */
+    int logipaddr;              /* Log by host IP address? */
+    int logsitename;            /* Log outgoing site names? */
+    int nnrpdoverstats;         /* Log overview statistics? */
+    int nntpactsync;            /* Checkpoint log after this many articles */
+    int nntplinklog;            /* Put storage token into the log? */
+    int status;                 /* Status file update interval */
+    int timer;                  /* Performance monitoring interval */
+
+    /* System Tuning */
+    int badiocount;             /* Failure count before dropping channel */
+    int blockbackoff;           /* Multiplier for sleep in EAGAIN writes */
+    int chaninacttime;          /* Wait before noticing inactive channels */
+    int chanretrytime;          /* How long before channel restarts */
+    int icdsynccount;           /* Articles between active & history updates */
+    int maxforks;               /* Give up after this many fork failure */
+    int nicekids;               /* Child processes get niced to this */
+    int nicenewnews;            /* If NEWNEWS command is used, nice to this */
+    int nicennrpd;              /* nnrpd is niced to this */
+    int pauseretrytime;         /* Seconds before seeing if pause is ended */
+    int peertimeout;            /* How long peers can be inactive */
+    int rlimitnofile;           /* File descriptor limit to set */
+
+    /* Paths */
+    char *patharchive;          /* Archived news. */
+    char *patharticles;         /* Articles. */
+    char *pathbin;              /* News binaries. */
+    char *pathcontrol;          /* Control message processing routines */
+    char *pathdb;               /* News database files */
+    char *pathetc;              /* News configuration files */
+    char *pathfilter;           /* Filtering code */
+    char *pathhttp;             /* HTML files */
+    char *pathincoming;         /* Incoming spooled news */
+    char *pathlog;              /* Log files */
+    char *pathnews;             /* Home directory for news user */
+    char *pathoutgoing;         /* Outgoing news batch files */
+    char *pathoverview;         /* Overview infomation */
+    char *pathrun;              /* Runtime state and sockets */
+    char *pathspool;            /* Root of news spool hierarchy */
+    char *pathtmp;              /* Temporary files for the news system */
 };
+
 extern struct	conf_vars *innconf;
 extern char	*innconffile;
 extern char	*GetFQDN(char *domain);
