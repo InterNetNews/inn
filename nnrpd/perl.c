@@ -36,6 +36,14 @@ typedef enum { false = 0, true = 1 } bool;
 
 #include <EXTERN.h>
 #include <perl.h>
+#include <XSUB.h>
+
+/* Perl 5.004 didn't define ERRSV and PL_na was called na. */
+#ifndef ERRSV
+# define ERRSV GvSV(errgv)
+# define PL_sv_undef sv_undef
+# define PL_na na
+#endif
 
 extern BOOL PerlFilterActive;
 extern HEADER	Table[], *EndOfTable;
@@ -132,8 +140,8 @@ char *HandleHeaders(char *article)
        register int x;
        
        /* Get the values */
-       p = HePV(scan, na);  
-       s = SvPV(HeVAL(scan),na);
+       p = HePV(scan, PL_na);  
+       s = SvPV(HeVAL(scan), PL_na);
 #ifdef DEBUG_MODIFY     
        fprintf(flog,"Hash iter: '%s','%s'\n",p,s);
 #endif /* DEBUG_MODIFY */
@@ -166,13 +174,13 @@ char *HandleHeaders(char *article)
    }
 
    hv_undef (hdr);
-   sv_setsv (body, &sv_undef);
+   sv_setsv (body, &PL_sv_undef);
 
    buf [0] = '\0' ;
    
-   if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
+   if (SvTRUE(ERRSV))     /* check $@ */ {
        syslog (L_ERROR,"Perl function filter_post died: %s",
-               SvPV(GvSV(errgv), na)) ;
+               SvPV(ERRSV, PL_na)) ;
        POPs ;
        PerlFilter (FALSE) ;
    } else if (rc == 1) {
@@ -217,7 +225,7 @@ int perlConnect(char *ClientHost, char *ClientIP, char *ServerHost, char *access
 
     if (rc == 0 ) { /* Error occured, same as checking $@ */
 	syslog(L_ERROR, "Perl function authenticate died: %s",
-	       SvPV(GvSV(errgv), na));
+	       SvPV(ERRSV, PL_na));
 	Reply("%d Internal Error (1).  Goodbye\r\n", NNTP_ACCESS_VAL);
 	ExitWithStats(1);
     }
@@ -267,9 +275,9 @@ int perlAuthInit(void) {
     SPAGAIN;
 
 
-    if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
+    if (SvTRUE(ERRSV))     /* check $@ */ {
 	syslog(L_ERROR, "Perl function authenticate died: %s",
-	       SvPV(GvSV(errgv), na));
+	       SvPV(ERRSV, PL_na));
 	Reply("%d Internal Error (1).  Goodbye\r\n", NNTP_ACCESS_VAL);
 	ExitWithStats(1);
     }
@@ -312,7 +320,7 @@ int perlAuthenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *u
 
     if (rc == 0 ) { /* Error occured, same as checking $@ */
 	syslog(L_ERROR, "Perl function authenticate died: %s",
-	       SvPV(GvSV(errgv), na));
+	       SvPV(ERRSV, PL_na));
 	Reply("%d Internal Error (1).  Goodbye\r\n", NNTP_ACCESS_VAL);
 	ExitWithStats(1);
     }
