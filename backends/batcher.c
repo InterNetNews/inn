@@ -123,7 +123,7 @@ RequeueAndExit(Cookie, line, BytesInArt)
 
     /* Last batch exit okay? */
     if (BATCHstatus == 0) {
-	if (feof(stdin)) {
+	if (feof(stdin) && Cookie == -1) {
 	    /* Yes, and we're all done -- remove input and exit. */
 	    (void)fclose(stdin);
 	    if (Input)
@@ -539,7 +539,7 @@ main(ac, av)
 	ArtsWritten++;
 
 	if (GotInterrupt) {
-	    Cookie = ftell(stdin);
+	    Cookie = -1;
 	    BATCHstatus = BATCHclose(F);
 	    RequeueAndExit(Cookie, line, BytesInArt);
 	}
