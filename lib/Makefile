@@ -37,13 +37,13 @@ OBJECTS = $(MISSING_OBJ) \
 
 all:			libinn.a
 
-install:		../libinn.a ../llib-linn.ln ../include/autoconfig.h
+install:		../libinn.a ../include/autoconfig.h
 
 clobber clean:
-	rm -f *.o libinn.a llib-linn.ln
+	rm -f *.o libinn.a 
 	rm -f parsedate parsedate.c
 	rm -f profiled libinn_p.a endian
-	rm -f all install lint lint.all
+	rm -f all install 
 
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h
@@ -97,9 +97,6 @@ ccenter:	$(SOURCES)
 	@rm -f $@
 	cp libinn.a $@
 	$(RANLIB) $@
-../llib-linn.ln:	llib-linn.ln
-	@rm -f $@
-	cp llib-linn.ln $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES) ../include/dbz.h
