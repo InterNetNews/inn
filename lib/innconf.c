@@ -210,6 +210,12 @@ const struct config config_table[] = {
     { K(readertrack),           BOOL    (false) },
     { K(spoolfirst),            BOOL    (false) },
     { K(strippostcc),           BOOL    (false) },
+#ifdef HAVE_SSL
+    { K(tlscafile),             STRING  ("") },
+    { K(tlscapath),             STRING  ("") },
+    { K(tlscertfile),           STRING  ("") },
+    { K(tlskeyfile),            STRING  ("") },
+#endif /* HAVE_SSL */
 
     /* The following settings are used by nnrpd and rnews. */
     { K(nnrpdposthost),         STRING  (NULL) },
@@ -336,6 +342,14 @@ innconf_set_defaults(void)
     /* One other parameter depends on pathbin. */
     if (innconf->mailcmd == NULL)
         innconf->mailcmd = concatpath(innconf->pathbin, "innmail");
+
+    /* Defaults used only if TLS (SSL) is supported. */
+#ifdef HAVE_SSL
+    if (innconf->tlscertfile == NULL)
+        innconf->tlscertfile = concatpath(innconf->pathnews, "lib/cert.pem");
+    if (innconf->tlskeyfile == NULL)
+        innconf->tlskeyfile = concatpath(innconf->pathnews, "lib/cert.pem");
+#endif
 }
 
 
