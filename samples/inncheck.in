@@ -344,6 +344,7 @@ incoming_conf
     'logsitename',		0,
     'pathhttp',			0,
     'nnrpdposthost',		0,
+    'nnrpdpostport',		0,
     'extendeddbz',		0,
     'nnrpdoverstats',		0,
     'decnetdomain',		0,
