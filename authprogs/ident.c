@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 		/* not entirely numeric */
 		if ((s = getservbyname(optarg, "tcp")) == (struct servent *) 0) {
 		    fprintf(stderr, "ident: can't getservbyname(%s/tcp)\n", optarg);
-		    return(1);
+		    exit(1);
 		}
 		sin.sin_port = s->s_port;
 	    } else
@@ -84,25 +84,27 @@ int main(int argc, char *argv[])
 
     if (!gotcliaddr || !gotcliport || !gotlocaddr || !gotlocport) {
 	fprintf(stderr, "ident: didn't get ident parameter\n");
-	return(1);
+	exit(1);
     }
     /* got all the client parameters, create our local socket. */
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 	fprintf(stderr, "ident: couldn't create socket: %s\n", strerror(errno));
-	return(1);
+	exit(1);
     }
     opt = loc.sin_port;
     loc.sin_port = 0;
     if (bind(sock, (struct sockaddr*) &loc, sizeof(loc)) < 0) {
 	fprintf(stderr, "ident: couldn't bind socket: %s\n", strerror(errno));
-	return(1);
+	exit(1);
     }
     loc.sin_port = opt;
     sin.sin_addr.s_addr = cli.sin_addr.s_addr;
     if (connect(sock, (struct sockaddr*) &sin, sizeof(sin)) < 0) {
+      if (errno != ECONNREFUSED) {
 	fprintf(stderr, "ident: couldn't connect to %s:%d: %s\n",
 	  inet_ntoa(sin.sin_addr), ntohs(sin.sin_port), strerror(errno));
-	return(1);
+      }
+      exit(1);
     }
 
     /* send the request out */
@@ -111,9 +113,9 @@ int main(int argc, char *argv[])
     while (got != strlen(buf)) {
 	opt = write(sock, buf+got, strlen(buf)-got);
 	if (opt < 0)
-	    return(1);
+	    exit(1);
 	else if (!opt)
-	    return(1);
+	    exit(1);
 	got += opt;
     }
 
@@ -122,9 +124,9 @@ int main(int argc, char *argv[])
     do {
 	opt = read(sock, buf+got, sizeof(buf)-got);
 	if (opt < 0)
-	    return(1);
+	    exit(1);
 	else if (!opt)
-	    return(1);
+	    exit(1);
 	while (opt--)
 	    if (buf[got] != '\n')
 		got++;
@@ -136,7 +138,7 @@ int main(int argc, char *argv[])
     /* buf now contains the entire ident response. */
     if (!(iter = strchr(buf, ':')))
 	/* malformed response */
-	return(1);
+	exit(1);
     iter++;
 
     while (*iter && ISWHITE(*iter))
@@ -146,7 +148,7 @@ int main(int argc, char *argv[])
 	endstr++;
     if (!*endstr)
 	/* malformed response */
-	return(1);
+	exit(1);
     if (*endstr != ':') {
 	*endstr++ = '\0';
 	while (*endstr != ':')
@@ -156,14 +158,14 @@ int main(int argc, char *argv[])
     *endstr = '\0';
 
     if (!strcmp(iter, "ERROR"))
-	return(1);
+	exit(1);
     else if (strcmp(iter, "USERID") != 0)
 	/* malformed response */
-	return(1);
+	exit(1);
 
     /* skip the operating system */
     if (!(iter = strchr(endstr+1, ':')))
-	return(1);
+	exit(1);
 
     /* everything else is username */
     iter++;
@@ -171,8 +173,8 @@ int main(int argc, char *argv[])
 	iter++;
     if (!*iter || *iter == '[')
 	/* null, or encrypted response */
-	return(1);
+	exit(1);
     printf("User:%s\n", iter);
 
-    return(0);
+    exit(0);
 }
