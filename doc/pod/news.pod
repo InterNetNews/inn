@@ -21,9 +21,14 @@ rebuild the history and overview files, use:
 (Change the /usr/local/news/tmp path to some directory that has plenty of
 temporary space, and leave off -O if you're running a transit-only server
 and don't intend to expire based on group name, and therefore don't need
-overview.)  This will generate a new history file as history.n and rebuild
-overview at the same time.  If you want to preseve a record of expired
-message IDs in the history file, run:
+overview.)  Or use:
+
+    makehistory -b -f history.n -O -F
+
+(This is suitable for ``buffindexed'' ovmethod.)
+Both will generate a new history file as history.n and rebuild overview at
+the same time.  If you want to preseve a record of expired message IDs in
+the history file, run:
 
     awk 'NF==2 { print; }' < history >> history.n
 
