@@ -4,23 +4,16 @@
 */
 #include "config.h"
 #include "clibrary.h"
-#include <ctype.h>
-#include <sys/stat.h>
-#if	defined(DO_NEED_TIME)
-#include <time.h>
-#endif	/* defined(DO_NEED_TIME) */
-#include <sys/time.h>
 #include <errno.h>
-#include "paths.h"
-#include "libinn.h"
-#include "inndcomm.h"
-#include "dbz.h"
-#include "storage.h"
-#include "qio.h"
-#include "macros.h"
-#include <dirent.h>
 #include <syslog.h>  
+
+#include "dbz.h"
+#include "libinn.h"
+#include "macros.h"
 #include "ov.h"
+#include "paths.h"
+#include "qio.h"
+#include "storage.h"
 
 /*
 **  Information about the schema of the news overview files.
@@ -254,7 +247,7 @@ FlushOverTmpFile(void)
     }
     /* Check for errors and close. */
     if (QIOtoolong(qp)) {
-	fprintf(stderr, "makehistory: Line %ld is too long\n", count);
+	fprintf(stderr, "makehistory: Line %d is too long\n", count);
 	exit(1);
     }
     if (QIOerror(qp)) {
@@ -319,9 +312,11 @@ WriteOverLine(TOKEN *token, char *xrefs, int xrefslen,
 	/* q points to start of ng name, r points to its end. */
 	strncpy(temp, q, r-q);
 	temp[r-q] = '\0';
-	fprintf(OverTmpFile, "%s\t%10d\t%s\t", temp, arrived, TokenToText(*token));
+	fprintf(OverTmpFile, "%s\t%10lu\t%s\t", temp,
+                (unsigned long) arrived, TokenToText(*token));
     } else
-	fprintf(OverTmpFile, "%10d\t%s\t", arrived, TokenToText(*token));
+	fprintf(OverTmpFile, "%10lu\t%s\t", (unsigned long) arrived,
+                TokenToText(*token));
 
     fwrite(overdata, overlen, 1, OverTmpFile);
     fprintf(OverTmpFile, "\n");
@@ -525,7 +520,8 @@ DoArt(ARTHANDLE *art)
 	    Xrefp->Header = NULL;
 	    Xrefp->HeaderLength = 0;
 	} else {
-	    sprintf(overdata, "%s %s %s:%d", XREF, innconf->pathhost, ann.groupname, ann.artnum);
+	    sprintf(overdata, "%s %s %s:%lu", XREF, innconf->pathhost,
+                    ann.groupname, ann.artnum);
 	    Xrefp->Header = overdata;
 	    Xrefp->HeaderLength = strlen(overdata);
 	}
@@ -667,19 +663,19 @@ OverAddAllNewsgroups(void)
     }
     for (count = 1; (line = QIOread(qp)) != NULL; count++) {
 	if ((p = strchr(line, ' ')) == NULL) {
-	    fprintf(stderr, "makehistory: Bad line %ld, \"%s\"\n", count, line);
+	    fprintf(stderr, "makehistory: Bad line %d, \"%s\"\n", count, line);
 	    continue;
 	}
 	*p++ = '\0';
 	hi = (ARTNUM)atol(p);
 	if ((p = strchr(p, ' ')) == NULL) {
-	    fprintf(stderr, "makehistory: Bad line %ld, \"%s\"\n", count, line);
+	    fprintf(stderr, "makehistory: Bad line %d, \"%s\"\n", count, line);
 	    continue;
 	}
 	*p++ = '\0';
 	lo = (ARTNUM)atol(p);
 	if ((q = strrchr(p, ' ')) == NULL) {
-	    fprintf(stderr, "makehistory: Bad line %ld, \"%s\"\n", count, line);
+	    fprintf(stderr, "makehistory: Bad line %d, \"%s\"\n", count, line);
 	    continue;
 	}
 	/* q+1 points to NG flag */
@@ -690,11 +686,11 @@ OverAddAllNewsgroups(void)
     }
     /* Test error conditions; QIOtoolong shouldn't happen. */
     if (QIOtoolong(qp)) {
-	fprintf(stderr, "makehistory: Line %ld is too long\n", count);
+	fprintf(stderr, "makehistory: Line %d is too long\n", count);
 	exit(1);
     }
     if (QIOerror(qp)) {
-	fprintf(stderr, "makehistory: Can't read %s around line %ld, %s\n",
+	fprintf(stderr, "makehistory: Can't read %s around line %d, %s\n",
 		      ActivePath, count, strerror(errno));
 	exit(1);
     }
