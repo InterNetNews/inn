@@ -253,9 +253,8 @@ in
 needs to create a temporary file that contains one line for each article
 it finds, which can become very large.
 This file is created in the
-.I <_PATH_TMP in config.data>
-directory.  The ``TMPDIR'' environment variable may be used to specify a
-different directory.  Alternatively, the ``\fB\-T\fP'' flag may be used to
+.I <pathtmp in inn.conf>
+directory.  The ``\fB\-T\fP'' flag may be used to
 specify a temporary directory.  In addition, the
 .IR sort (1)
 that is invoked during the build writes large temporary files (often to

@@ -326,8 +326,6 @@ typ_PATH_SPOOL 		/var/news/spool/articles
 typ_PATH_OVERVIEW 		.overview
 =()<typ_PATH_SPOOLNEWS 			@<_PATH_SPOOLNEWS>@>()=
 typ_PATH_SPOOLNEWS 		/var/news/spool/in.coming
-=()<typ_PATH_SPOOLTEMP 			@<_PATH_SPOOLTEMP>@>()=
-typ_PATH_SPOOLTEMP 		/var/tmp
 =()<typ_PATH_BADNEWS 			@<_PATH_BADNEWS>@>()=
 typ_PATH_BADNEWS 		/var/news/spool/in.coming/bad
 =()<typ_PATH_RELBAD 			@<_PATH_RELBAD>@>()=
