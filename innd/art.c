@@ -895,7 +895,11 @@ ARTparseheader(CHANNEL *cp)
                 ARTerror(cp, "No headers");
             } else {
                 i += 2;
-                ARTcheckheader(cp, i - data->CurHeader);
+                data->HeaderLines++;
+                if (bp->data[i] != ' ' && bp->data[i] != '\t') {
+                    ARTcheckheader(cp, i - data->CurHeader);
+                    data->CurHeader = i;
+                }
             }
             if (bp->data[i] == '\r' && bp->data[i + 1] == '\n') {
                 cp->Next = i + 2;
@@ -903,10 +907,7 @@ ARTparseheader(CHANNEL *cp)
                 cp->State = CSgetbody;
                 ARTparsebody(cp);
 		return;
-            } else if (bp->data[i] != ' ' && bp->data[i] != '\t') {
-                data->CurHeader = i;
             }
-            data->HeaderLines++;
             data->LastCRLF = i - 1;
         } else {
             data->CRwithoutLF++;
