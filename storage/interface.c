@@ -12,8 +12,10 @@
 #include <interface.h>
 #include <errno.h>
 
+typedef enum {INIT_NO, INIT_DONE, INIT_FAIL} INITTYPE;
 typedef struct {
-    BOOL                initialized;
+    INITTYPE		initialized;
+    BOOL		configured;
 } METHOD_DATA;
 
 METHOD_DATA method_data[NUM_STORAGE_METHODS];
@@ -145,6 +147,10 @@ static BOOL SMreadconfig(void) {
     STORAGE_SUB         *sub = NULL;
     STORAGE_SUB         *prev = NULL;
 
+    for (i = 0; i < NUM_STORAGE_METHODS; i++) {
+	method_data[i].initialized = INIT_NO;
+	method_data[i].configured = FALSE;
+    }
     sprintf(path, "%s", _PATH_STORAGECTL);
     if ((f = fopen(path, "r")) == NULL) {
 	SMseterror(SMERR_UNDEFINED, NULL);
@@ -194,12 +200,13 @@ static BOOL SMreadconfig(void) {
 	for (i = 0; i < NUM_STORAGE_METHODS; i++) {
 	    if (!strcasecmp(method, storage_methods[i].name)) {
 		sub->type = storage_methods[i].type;
+		method_data[i].configured = TRUE;
 		break;
 	    }
 	}
 	if (sub->type == TOKEN_EMPTY) {
 	    SMseterror(SMERR_CONFIG, "Invalid storage method name");
-	    syslog(L_ERROR, "no configured storage methods are named '%s'", method);
+	    syslog(L_ERROR, "SM no configured storage methods are named '%s'", method);
 	    DISPOSE(sub);
 	    return FALSE;
 	}
@@ -237,6 +244,7 @@ static BOOL SMreadconfig(void) {
 */
 BOOL SMinit(void) {
     int                 i;
+    BOOL		allok = TRUE;
 
     if (Initialized)
 	return TRUE;
@@ -249,15 +257,22 @@ BOOL SMinit(void) {
     }
 
     for (i = 0; i < NUM_STORAGE_METHODS; i++) {
-	method_data[i].initialized = storage_methods[i].init();
+	if (method_data[i].configured) {
+	    if (method_data[i].configured && storage_methods[i].init()) {
+		method_data[i].initialized = INIT_DONE;
+	    } else {
+		method_data[i].initialized = INIT_FAIL;
+		syslog(L_ERROR, "SM storage method '%s' failed initialization", storage_methods[i].name);
+		allok = FALSE;
+	    }
+	}
 	typetoindex[storage_methods[i].type] = i;
-	if (!method_data[i].initialized)
-	    break;
     }
-    if (!method_data[i - 1].initialized) {
+    if (!allok) {
 	SMshutdown();
 	Initialized = FALSE;
-	SMseterror(SMERR_UNDEFINED, "One or more storage methods failed initialization");
+	SMseterror(SMERR_UNDEFINED, "one or more storage methods failed initialization");
+	syslog(L_ERROR, "SM one or more storage methods failed initialization");
 	return FALSE;
     }
     if (atexit(SMshutdown) < 0) {
@@ -277,14 +292,23 @@ static BOOL InitMethod(STORAGETYPE method) {
 	}
     Initialized = TRUE;
     
-    if (method_data[method].initialized)
+    if (method_data[method].initialized == INIT_DONE)
 	return TRUE;
 
+    if (method_data[method].initialized == INIT_FAIL)
+	return FALSE;
+
+    if (!method_data[typetoindex[method]].configured) {
+	method_data[method].initialized = INIT_FAIL;
+	SMseterror(SMERR_UNDEFINED, "storage method is not configured.");
+	return FALSE;
+    }
     if (!storage_methods[typetoindex[method]].init()) {
+	method_data[method].initialized = INIT_FAIL;
 	SMseterror(SMERR_UNDEFINED, "Could not initialize storage method late.");
 	return FALSE;
     }
-    method_data[method].initialized = TRUE;
+    method_data[method].initialized = INIT_DONE;
     return TRUE;
 }
 
@@ -341,7 +365,8 @@ TOKEN SMstore(const ARTHANDLE article) {
     }
 
     for (sub = subscriptions; sub != NULL; sub = sub->next) {
-	if ((article.len >= sub->minsize) &&
+	if (!(method_data[typetoindex[sub->type]].initialized == INIT_FAIL) &&
+	    (article.len >= sub->minsize) &&
 	    (!sub->maxsize || (article.len <= sub->maxsize)) &&
 	    MatchGroups(groups, sub->numpatterns, sub->patterns)) {
 	    if (InitMethod(typetoindex[sub->type]))
@@ -355,7 +380,12 @@ TOKEN SMstore(const ARTHANDLE article) {
 ARTHANDLE *SMretrieve(const TOKEN token, const RETRTYPE amount) {
     ARTHANDLE           *art;
 
-    if (!method_data[typetoindex[token.type]].initialized && !InitMethod(typetoindex[token.type])) {
+    if (method_data[typetoindex[token.type]].initialized == INIT_FAIL) {
+	syslog(L_ERROR, "SM method initialization was failed");
+	SMseterror(SMERR_BADTOKEN, NULL);
+	return NULL;
+    }
+    if (method_data[typetoindex[token.type]].initialized == INIT_NO && !InitMethod(typetoindex[token.type])) {
 	syslog(L_ERROR, "SM could not find token type or method was not initialized");
 	SMseterror(SMERR_BADTOKEN, NULL);
 	return NULL;
@@ -377,13 +407,17 @@ ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount) {
     else
 	start= article->nextmethod;
 
-    if (!method_data[start].initialized && !InitMethod(start)) {
+    if (method_data[start].initialized == INIT_FAIL) {
+	SMseterror(SMERR_BADTOKEN, NULL);
+	return NULL;
+    }
+    if (method_data[start].initialized == INIT_NO && !InitMethod(start)) {
 	SMseterror(SMERR_UNINIT, NULL);
 	return NULL;
     }
 
     for (i = start, newart = NULL; i < NUM_STORAGE_METHODS; i++) {
-	if ((newart = storage_methods[i].next(article, amount)) != (ARTHANDLE *)NULL) {
+	if (method_data[i].configured && (newart = storage_methods[i].next(article, amount)) != (ARTHANDLE *)NULL) {
 	    newart->nextmethod = i;
 	    break;
 	}
@@ -393,7 +427,11 @@ ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount) {
 }
 
 void SMfreearticle(ARTHANDLE *article) {
-    if (!method_data[typetoindex[article->type]].initialized && !InitMethod(typetoindex[article->type])) {
+    if (method_data[typetoindex[article->type]].initialized == INIT_FAIL) {
+	syslog(L_ERROR, "SM can't free article with initialization failed method");
+	return;
+    }
+    if (method_data[typetoindex[article->type]].initialized == INIT_NO && !InitMethod(typetoindex[article->type])) {
 	syslog(L_ERROR, "SM can't free article with uninitialized method");
 	return;
     }
@@ -401,9 +439,14 @@ void SMfreearticle(ARTHANDLE *article) {
 }
 
 BOOL SMcancel(TOKEN token) {
-    if (!method_data[typetoindex[token.type]].initialized && !InitMethod(typetoindex[token.type])) {
+    if (method_data[typetoindex[token.type]].initialized == INIT_FAIL) {
 	SMseterror(SMERR_UNINIT, NULL);
-	syslog(L_ERROR, "SM can't free article with uninitialized method");
+	syslog(L_ERROR, "SM can't cancel article with initialization failed method");
+	return;
+    }
+    if (method_data[typetoindex[token.type]].initialized == INIT_NO && !InitMethod(typetoindex[token.type])) {
+	SMseterror(SMERR_UNINIT, NULL);
+	syslog(L_ERROR, "SM can't cancel article with uninitialized method");
 	return FALSE;
     }
     return storage_methods[typetoindex[token.type]].cancel(token);
@@ -417,8 +460,11 @@ void SMshutdown(void) {
 	return;
 
     for (i = 0; i < NUM_STORAGE_METHODS; i++)
-	if (method_data[i].initialized)
+	if (method_data[i].initialized == INIT_DONE) {
 	    storage_methods[i].shutdown();
+	    method_data[i].initialized = INIT_NO;
+	    method_data[i].configured = FALSE;
+	}
     while (subscriptions) {
 	old = subscriptions;
 	subscriptions = subscriptions->next;

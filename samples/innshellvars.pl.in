@@ -64,8 +64,6 @@ $newscontrol = "${innddir}/control" ;
 $nntpconnect = "${innddir}/nntpin" ;
 $serverpid = "${innddir}/innd.pid" ;
 $innwstatus = "${innddir}/innwatch.status" ;
-($tempsock = "${innddir}/ctlinndXXXXXX") =~ s!.*/(.*)XXXXXX$!$1*! ;
-($tempsockdir = "${innddir}/ctlinndXXXXXX") =~ s!/[^/]*$!! ;
 $watchpid = "${innddir}/innwatch.pid" ;
 
 $awk = "@_PATH_AWK@" ;
@@ -76,6 +74,8 @@ $perl = "@_PATH_PERL@" ;
 $pgp = "@_PATH_PGP@" ;
 $sort = "@_PATH_SORT@" ;
 
+($tempsock = "${innddir}/ctlinndXXXXXX") =~ s!.*/(.*)XXXXXX$!$1*! ;
+($tempsockdir = "${innddir}/ctlinndXXXXXX") =~ s!/[^/]*$!! ;
 
 ##  =()<$sendmail = "@<_PATH_SENDMAIL>@" ;>()=
 $sendmail = "/usr/lib/sendmail -t" ;

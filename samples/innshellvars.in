@@ -62,8 +62,6 @@ NEWSCONTROL=${INNDDIR}/control
 NNTPCONNECT=${INNDDIR}/nntpin
 SERVERPID=${INNDDIR}/innd.pid
 INNWSTATUS=${INNDDIR}/innwatch.status
-TEMPSOCK=`basename ${INNDDIR}/ctlinndXXXXXX | ${SED} -e 's/XXXXXX$/*/'`
-TEMPSOCKDIR=`echo ${INNDDIR}/ctlinndXXXXXX | ${SED} -e 's@/[^/]*$@@'`
 WATCHPID=${INNDDIR}/innwatch.pid
 
 AWK=@_PATH_AWK@
@@ -73,6 +71,9 @@ EGREP=@_PATH_EGREP@
 PERL=@_PATH_PERL@
 PGP=@_PATH_PGP@
 SORT="@_PATH_SORT@"
+
+TEMPSOCK=`basename ${INNDDIR}/ctlinndXXXXXX | ${SED} -e 's/XXXXXX$/*/'`
+TEMPSOCKDIR=`echo ${INNDDIR}/ctlinndXXXXXX | ${SED} -e 's@/[^/]*$@@'`
 
 ##  =()<SENDMAIL="@<_PATH_SENDMAIL>@">()=
 SENDMAIL="/usr/lib/sendmail -t"

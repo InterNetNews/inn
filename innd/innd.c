@@ -17,7 +17,6 @@
 #include <arpa/nameser.h>
 #include <resolv.h>
 #endif	/* defined(DO_FAST_RESOLV) */
-#include "../storage/cnfs/cnfs.h"       /* XXX Is this icky? */
 
 
 #if defined(HAVE_SETBUFFER)
@@ -570,8 +569,6 @@ int main(int ac, char *av[])
     logflags = L_OPENLOG_FLAGS | LOG_NOWAIT;
     fd = -1;
     master = NULL;
-    __CNFS_Write_Allowed = 1;	/* XXX Icky */
-    __CNFS_Cancel_Allowed = 1;	/* XXX Icky */
 
 #if	defined(DO_FAST_RESOLV)
     /* We only use FQDN's in the hosts.nntp file. */
@@ -865,12 +862,12 @@ int main(int ac, char *av[])
     if (innconf->storageapi) {
 	innconf->wireformat = TRUE;
 	if (!SMinit()) {
-	    syslog(L_FATAL, "%s cant initialize the storage subsystem %m");
+	    syslog(L_FATAL, "%s cant initialize the storage subsystem %m", LogName);
 	    exit(1);
 	}
     }
     if (innconf->storageapi && !OVERinit()) {
-	syslog(L_FATAL, "%s cant initialize the unified overview %m");
+	syslog(L_FATAL, "%s cant initialize the unified overview %m", LogName);
 	exit(1);
     }
 #if	defined(_DEBUG_MALLOC_INC)

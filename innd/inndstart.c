@@ -115,7 +115,7 @@ int main(int ac, char *av[])
 
     server.sin_addr.s_addr = htonl(INADDR_ANY);
     p = GetConfigValue(_CONF_INNBINDADDR);
-    if ((p != NULL) && !EQ(p, "any")) {
+    if ((p != NULL) && !EQ(p, "all") && !EQ(p, "any")) {
 	server.sin_addr.s_addr = inet_addr(p);
 	if (server.sin_addr.s_addr == INADDR_NONE) {
 	    syslog(L_FATAL, "inndstart unable to determine bind ip (%s) %m", p);

@@ -66,8 +66,6 @@ set inn_nntpconnect = ${inn_innddir}/nntpin
 set inn_serverpid = ${inn_innddir}/innd.pid
 set inn_innwstatus = ${inn_innddir}/innwatch.status
 set inn_watchpid = ${inn_innddir}/innwatch.pid
-set inn_tempsock = `basename ${inn_innddir}/ctlinndXXXXXX | ${inn_sed} -e 's/XXXXXX$/*/'`
-set inn_tempsockdir = `echo ${inn_innddir}/ctlinndXXXXXX | ${inn_sed} -e 's@/[^/]*$@@'`
 
 set inn_awk	= @_PATH_AWK@
 set inn_sed	= @_PATH_SED@
@@ -77,6 +75,8 @@ set inn_perl	= @_PATH_PERL@
 set inn_pgp	= @_PATH_PGP@
 set inn_sort	= @_PATH_SORT@
 
+set inn_tempsock = `basename ${inn_innddir}/ctlinndXXXXXX | ${inn_sed} -e 's/XXXXXX$/*/'`
+set inn_tempsockdir = `echo ${inn_innddir}/ctlinndXXXXXX | ${inn_sed} -e 's@/[^/]*$@@'`
 
 ##  =()<set inn_sendmail = "@<_PATH_SENDMAIL>@">()=
 set inn_sendmail = "/usr/lib/sendmail -t"

@@ -146,7 +146,7 @@ extern BOOL AmNnrpd;
 
 /* Prototypes */
 
-int CNFSread_config(void);
+BOOL CNFSread_config(void);
 void CNFSparse_part_line(char *);
 void CNFSparse_metapart_line(char *);
 void CNFSparse_groups_line(char *);

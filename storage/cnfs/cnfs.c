@@ -43,8 +43,8 @@ int		metacycbufftab_free = 0;
 CNFSEXPIRERULES	metaexprulestab[MAX_METACYCBUFF_RULES];
 int		metaexprulestab_free = 0;
 
-int		__CNFS_Write_Allowed = 0;	/* XXX an ugly hack */
-int		__CNFS_Cancel_Allowed = 0;	/* XXX an ugly hack */
+int		__CNFS_Write_Allowed = 1;	/* XXX an ugly hack */
+int		__CNFS_Cancel_Allowed = 1;	/* XXX an ugly hack */
 
 #define	MAX_DESCRIPTORS	34
 struct {
@@ -108,14 +108,15 @@ BOOL cnfs_init(void) {
 
     if (initialized)
 	return TRUE;
-    initialized = 1;
     if (STORAGE_TOKEN_LENGTH < 16) {
-	syslog(L_FATAL, "timehash: token length is less than 16 bytes");
+	syslog(L_FATAL, "cnfs: token length is less than 16 bytes");
 	SMseterror(SMERR_TOKENSHORT, NULL);
 	return FALSE;
     }
 
-    CNFSread_config();
+    if (!CNFSread_config())
+	return FALSE;
+    initialized = 1;
     CNFSpost_config_debug();
 #ifdef	CNFS_DEBUG
     CNFSinit_disks(1);
@@ -434,6 +435,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
         art->data = p + 4;
         art->len = art->len - (private->base + pagefudge +
 			       sizeof(CNFSARTHEADER) - p - 4);
+        return art;
     }
     SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
     munmap(private->base, private->len);
@@ -561,7 +563,7 @@ void cnfs_shutdown(void) {
 long	the_true_zottf = 0;		/* Globally-accessed via CNFS_ZOTTF */
 int  	wearebigendian = 0;
 
-int
+BOOL
 CNFSread_config(void)
 {
 #define	MAX_CTAB_SIZE \
@@ -592,7 +594,7 @@ CNFSread_config(void)
 
     if ((config = ReadInFile(_PATH_CYCBUFFCONFIG, &statbuf)) == NULL) {
 	syslog(LOG_CRIT, "%s cannot read %s", LocalLogName, _PATH_CYCBUFFCONFIG, NULL);
-	exit(1);
+	return FALSE;
     }
     for (from = to = config; *from; ) {
 	if (ctab_free > MAX_CTAB_SIZE - 1) {
@@ -668,7 +670,7 @@ CNFSread_config(void)
 	       LocalLogName);
 	exit(1);
     }
-    return 1;
+    return TRUE;
 }
 
 /*

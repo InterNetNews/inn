@@ -1,6 +1,6 @@
 ##  $Revision$
 
-.include "../Makefile.global"
+include ../Makefile.global
 
 ##  =()<P	= @<P>@>()=
 P	= 
@@ -29,7 +29,7 @@ all:		$(ALL)
 install:	
 	for i in ${ALL}; \
 		do $(SHELL) ../installit.sh $(OWNER) -m 0555 \
-			-b .OLD ${i} ${BINDIR}/${i}; \
+			-b .OLD $${i} ${NEWSBIN}/$${i}; \
 	done
 
 clobber clean:

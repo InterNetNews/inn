@@ -1,7 +1,7 @@
 ##  $Revision$
-.include "../Makefile.global"
+include ../Makefile.global
 
-CFLAGS+=	-I.
+CFLAGS +=	-I.
 
 IFTRUE	= @$(SHELL) ../iftrue.sh
 

@@ -1,5 +1,5 @@
 ##  $Revision$
-.include "../Makefile.global"
+include ../Makefile.global
 
 ##  =()<P	= @<P>@>()=
 P	= 
@@ -16,6 +16,8 @@ LINTFILTER	= | sed -n -f ../sedf.sun
 CTAGS		= /usr/bin/ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
 PROF	= -pg
+
+CFLAGS += $(PERLINC)
 
 NNRPD	= ${NEWSBIN}/nnrpd
 

@@ -1,5 +1,5 @@
 ##  $Revision$
-.include "../Makefile.global"
+include ../Makefile.global
 
 ##  =()<P	= @<P>@>()=
 P	= 
@@ -19,6 +19,8 @@ CTAGS		= /usr/bin/ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
 PROF	= -pg
 
+CFLAGS += $(PERLINC)
+
 ## =()<TCL_LIB	= @<TCL_LIB>@>()=
 TCL_LIB	= 
 
@@ -36,7 +38,7 @@ all:		$(ALL)
 
 install:
 	$(SHELL) ../installit.sh $(OWNER) -m 0550 -b .OLD innd ${NEWSBIN}/innd
-	-$(SHELL) ../installit.sh -O root -G $(NEWSGROUP) -m 4550 -b .OLD inndstart ${NEWSBIN}/innd
+	-$(SHELL) ../installit.sh -O root -G $(NEWSGROUP) -m 4550 -b .OLD inndstart ${NEWSBIN}/inndstart
 	@ME=`(whoami || /usr/ucb/whoami) 2> /dev/null` ;\
 	if [ "X$$ME" = Xroot ]; then \
 		echo $@ has been installed setuid root. ;\

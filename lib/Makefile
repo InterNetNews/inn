@@ -1,5 +1,5 @@
 ##  $Revision$
-.include "../Makefile.global"
+include ../Makefile.global
 
 IFTRUE	= @$(SHELL) ../iftrue.sh
 
@@ -18,6 +18,8 @@ LINTFILTER	= | sed -n -f ../sedf.sun
 CTAGS		= /usr/bin/ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
 PROF	= -pg
+
+CFLAGS += $(PERLINC)
 
 
 ##  For OSx systems, get these from the ATT Universe libc.
