@@ -11,7 +11,7 @@ Version 2.2:
           configured by default to get the one at
           <URL:ftp://ftp.isc.org/pub/usenet/CONFIG/active.Z>
           if you run actsyncd.  Be sure to read the manual
-          page for actsyncd to configure an actsync.ign file
+          page for actsync to configure an actsync.ign file
           for your site, and test simpleftp if you do not configure
           with wget or ncftp.  Also see
           <URL:ftp://ftp.isc.org/pub/usenet/CONFIG/README>.
