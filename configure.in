@@ -66,9 +66,9 @@ AC_ARG_WITH(spool-dir,
 AC_SUBST(SPOOLDIR)
 
 AC_ARG_WITH(log-dir,
-	[  --with-log-dir=PATH     Logging directory [PREFIX/news]], 
+	[  --with-log-dir=PATH     Logging directory [PREFIX/log]], 
 	LOGDIR=$with_log_dir, 
-	LOGDIR=$prefix/news)
+	LOGDIR=$prefix/log)
 AC_SUBST(LOGDIR)
 
 AC_ARG_WITH(tmp-path,

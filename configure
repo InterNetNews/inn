@@ -29,7 +29,7 @@ ac_help="$ac_help
 ac_help="$ac_help
   --with-spool-dir=PATH   News storage [PREFIX/spool]"
 ac_help="$ac_help
-  --with-log-dir=PATH     Logging directory [PREFIX/news]"
+  --with-log-dir=PATH     Logging directory [PREFIX/log]"
 ac_help="$ac_help
   --with-tmp-path=PATH    Temporary files directory"
 ac_help="$ac_help
@@ -653,7 +653,7 @@ if test "${with_log_dir+set}" = set; then
   withval="$with_log_dir"
   LOGDIR=$with_log_dir
 else
-  LOGDIR=$prefix/news
+  LOGDIR=$prefix/log
 fi
 
 
