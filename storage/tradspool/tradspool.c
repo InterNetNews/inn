@@ -643,7 +643,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	}
     } else {
 	onebuffer = xmalloc(article.len);
-	for (used = i = 0 ; i < article.iovcnt ; i++) {
+	for (used = i = 0 ; i < (unsigned int) article.iovcnt ; i++) {
 	    memcpy(&onebuffer[used], article.iov[i].iov_base, article.iov[i].iov_len);
 	    used += article.iov[i].iov_len;
 	}
