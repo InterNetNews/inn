@@ -180,6 +180,7 @@ doc/man/innfeed.conf.5                Manpage for innfeed.conf config file
 doc/man/innmail.1                     Manpage for innmail utility
 doc/man/innreport.8                   Manpage for innreport
 doc/man/innstat.8                     Manpage for innstat utility
+doc/man/innupgrade.8                  Manpage for innupgrade utility
 doc/man/innwatch.8                    Manpage for innwatch
 doc/man/innwatch.ctl.5                Manpage for innwatch.ctl config file
 doc/man/innxbatch.8                   Manpage for innxbatch
