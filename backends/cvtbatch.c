@@ -57,8 +57,6 @@ main(int ac, char *av[]) {
     if (ac)
 	die("usage error");
 
-    if (chdir(innconf->patharticles) < 0)
-        sysdie("cannot chdir to %s", innconf->patharticles);
     if (!SMinit())
         die("cannot initialize storage manager: %s", SMerrorstr);
 
