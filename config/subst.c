@@ -50,7 +50,7 @@ static char *
 xstrerror()
 {
     extern int	sys_nerr;
-#if !defined(__FreeBSD__) && !defined(__NetBSD__)
+#if !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(__GLIBC__)
     extern char	*sys_errlist[];
 #endif
     extern int	errno;
