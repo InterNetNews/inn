@@ -51,7 +51,6 @@ backends/nntpget.c                    Get articles from remote site
 backends/nntpsend.in                  Invoke all innxmit's at once
 backends/overchan.c                   Update news overview database
 backends/pgpverify.in                 Sample pgpverify program
-backends/rcompress.c                  Compress on a remote host
 backends/send-ihave.in                Script to post ihave messages
 backends/send-nntp.in                 Shell script to call innxmit
 backends/send-uucp.in                 Script to call batcher
@@ -238,7 +237,6 @@ include/acconfig.h                    Master file for config.h.in
 include/clibrary.h                    C library portability
 include/conffile.h                    Header file for reading *.conf files
 include/config.h.in                   Template configuration data 
-include/configdata.h                  Obsolete header
 include/dbz.h                         Header file for DBZ
 include/inn                           Additional header files (Directory)
 include/inn/defines.h                 Portable defs for installed headers
