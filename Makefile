@@ -152,7 +152,7 @@ check test tests:
 
 ##  For maintainers, build the entire source base with warnings enabled.
 warnings:
-	$(MAKE) COPT='$(WARNINGS)' all
+	$(MAKE) COPT="$(COPT) $(WARNINGS)" all
 
 
 ##  Make a release.  We create a release by recreating the directory
