@@ -159,7 +159,9 @@ $D$(CTLBIN)/checkgroups: checkgroups	; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/default:	default		; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/ihave:	ihave		; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/newgroup:	newgroup	; $(COPY_XPRI) $? $@
+$D$(CTLBIN)/newgroup.pl:	newgroup.pl	; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/rmgroup:	rmgroup		; $(COPY_XPRI) $? $@
+$D$(CTLBIN)/rmgroup.pl:	rmgroup.pl		; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/sendme:	sendme		; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/sendsys:	sendsys		; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/senduuname:	senduuname	; $(COPY_XPRI) $? $@
@@ -172,6 +174,7 @@ $D$(PATHLIB)/docheckgroups: docheckgroups ; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/news.daily: news.daily	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/scanlogs:	scanlogs	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/expirerm:	expirerm	; $(COPY_XPRI) $? $@
+$D$(PATHBIN)/controlchan:	controlchan	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/innmail:	innmail		; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/tally.control: tally.control ; $(COPY_XPRI) $? $@
 $D$(PATH_EXPIRECTL):	expire.ctl	; $(COPY_RPRI) $? $@
