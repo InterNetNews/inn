@@ -225,15 +225,17 @@ main(int argc, char *argv[])
 	    if ((i = socket(addr->ai_family, addr->ai_socktype,
 			    addr->ai_protocol)) < 0)
 		continue; /* ignore */
+#ifdef SO_REUSEADDR
+	    if (setsockopt(i, SOL_SOCKET, SO_REUSEADDR, (char *)&i,
+			sizeof i) < 0)
+		syswarn("can't set SO_REUSEADDR");
+#endif
 	    if (bind(i, addr->ai_addr, addr->ai_addrlen) < 0) {
 		j = errno;
 		close(i);
 		errno = j;
 		continue; /* ignore */
 	    }
-	    if (setsockopt(i, SOL_SOCKET, SO_REUSEADDR, (char *)&i,
-			sizeof i) < 0)
-		syswarn("can't set SO_REUSEADDR");
 	    s[snum++] = i;
 	    if (snum == MAX_SOCKETS)
 		break;
