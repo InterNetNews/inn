@@ -41,7 +41,7 @@ main(void)
     ok(5, test_getaddrinfo(NULL, "25", NULL, &ai) == 0);
     ok(6, ai->ai_family == AF_INET);
     ok(7, ai->ai_socktype == 0);
-    ok(8, ai->ai_protocol == IPPROTO_IP);
+    ok(8, ai->ai_protocol == IPPROTO_TCP);
     ok(9, ai->ai_canonname == NULL);
     ok(10, ai->ai_addrlen == sizeof(struct sockaddr_in));
     saddr = (struct sockaddr_in *) ai->ai_addr;
@@ -92,7 +92,7 @@ main(void)
     ok(31, test_getaddrinfo("10.20.30.40", NULL, NULL, &ai) == 0);
     ok(32, ai->ai_family == AF_INET);
     ok(33, ai->ai_socktype == 0);
-    ok(34, ai->ai_protocol == IPPROTO_IP);
+    ok(34, ai->ai_protocol == IPPROTO_TCP);
     ok(35, ai->ai_canonname == NULL);
     ok(36, ai->ai_addrlen == sizeof(struct sockaddr_in));
     saddr = (struct sockaddr_in *) ai->ai_addr;
@@ -103,7 +103,7 @@ main(void)
     ok(39, test_getaddrinfo("10.20.30.40", "smtp", &hints, &ai) == 0);
     ok(40, ai->ai_family == AF_INET);
     ok(41, ai->ai_socktype == SOCK_STREAM);
-    ok(42, ai->ai_protocol == IPPROTO_IP);
+    ok(42, ai->ai_protocol == IPPROTO_TCP);
     ok(43, ai->ai_canonname == NULL);
     saddr = (struct sockaddr_in *) ai->ai_addr;
     ok(44, saddr->sin_port == htons(25));
