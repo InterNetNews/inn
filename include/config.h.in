@@ -383,9 +383,6 @@
 /* Define if you have the strcspn function.  */
 #undef HAVE_STRCSPN
 
-/* Define if you have the strdup function.  */
-#undef HAVE_STRDUP
-
 /* Define if you have the strerror function.  */
 #undef HAVE_STRERROR
 
@@ -500,6 +497,9 @@
 /* Define if you have the shadow library (-lshadow).  */
 #undef HAVE_LIBSHADOW
 
+/* Define if fpos_t is at least 64 bits and compatible with off_t. */
+#undef HAVE_LARGE_FPOS_T
+
 /* Define if your struct tm has a tm_gmtoff member. */
 #undef HAVE_TM_GMTOFF
 
@@ -512,7 +512,7 @@
 /* Define if tzname is an external variable in <time.h>. */
 #undef HAVE_VAR_TZNAME
 
-/* Define if your sstem has a working inet_ntoa function. */
+/* Define if your system has a working inet_ntoa function. */
 #undef HAVE_INET_NTOA
 
 
