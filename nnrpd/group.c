@@ -385,6 +385,7 @@ STATIC void GRPscandir(char *dir)
 	    ARTnumbers[ARTsize].ArtNum = index.artnum;
 	    ARTnumbers[ARTsize].Token.cancelled = FALSE;
 	    ARTnumbers[ARTsize].Token.type = TOKEN_EMPTY;
+	    ARTnumbers[ARTsize].Tokenretrieved = FALSE;
 	    ARTnumbers[ARTsize++].Index = &(*OVERindex)[i];
 	}
 	

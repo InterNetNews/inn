@@ -289,7 +289,7 @@ STATIC BOOL ARTopen(char *name)
     if (ARTnumbers[i].ArtNum == artnum) {
 	if (ARTnumbers[i].Token.cancelled)
 	    return FALSE;
-	if (ARTnumbers[i].Token.type != TOKEN_EMPTY)
+	if (ARTnumbers[i].Tokenretrieved)
 	    token = ARTnumbers[i].Token;
 	else {
 	    if (!ARTnumbers[i].Index) {
@@ -298,6 +298,7 @@ STATIC BOOL ARTopen(char *name)
 		return FALSE;
 	    }
 	    UnpackOverIndex(*(ARTnumbers[i].Index), &index);
+	    ARTnumbers[i].Tokenretrieved = TRUE;
 	    if ((tokentext = HISgetent(&index.hash, FALSE, NULL)) == (char *)NULL) {
 		ARTnumbers[i].Token.cancelled = TRUE;
 		return FALSE;
@@ -824,17 +825,18 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp)
 	    Reply("%s\r\n", ARTnocurrart);
 	    return FALSE;
 	}
-	if (!innconf->storageapi) {
-	    rp->High = rp->Low = ARTnumbers[ARTindex].ArtNum;
-	    return TRUE;
-	}
 	rp->High = rp->Low = ARTnumbers[ARTindex].ArtNum;
+	if (!innconf->storageapi)
+	    return TRUE;
 	if ((i = ARTfind(rp->High)) < 0)
 	    return FALSE;
 	if (ARTnumbers[i].Token.cancelled)
 	    return FALSE;
-	if (ARTnumbers[i].Token.type != TOKEN_EMPTY)
+	if (ARTnumbers[i].Tokenretrieved) {
+	    if (ARTnumbers[i].Token.type == TOKEN_EMPTY)
+		return FALSE;
 	    return TRUE;
+	}
 	if ((ARTnumbers[i].ArtNum != rp->High) || !ARTnumbers[i].Index) {
 	    ARTnumbers[i].Token.cancelled = TRUE;
 	    return FALSE;
@@ -844,6 +846,7 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp)
 	    ARTnumbers[i].Token.cancelled = TRUE;
 	    return FALSE;
 	}
+	ARTnumbers[i].Tokenretrieved = TRUE;
 	if ((tokentext = HISgetent(&index.hash, FALSE, NULL)) == (char *)NULL) {
 	    ARTnumbers[i].Token.cancelled = TRUE;
 	    return FALSE;
@@ -862,8 +865,11 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp)
 	    return FALSE;
 	if (ARTnumbers[i].Token.cancelled)
 	    return FALSE;
-	if (ARTnumbers[i].Token.type != TOKEN_EMPTY)
+	if (ARTnumbers[i].Tokenretrieved) {
+	    if (ARTnumbers[i].Token.type == TOKEN_EMPTY)
+		return FALSE;
 	    return TRUE;
+	}
 	if ((ARTnumbers[i].ArtNum != rp->Low) || !ARTnumbers[i].Index) {
 	    ARTnumbers[i].Token.cancelled = TRUE;
 	    return FALSE;
@@ -873,6 +879,7 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp)
 	    ARTnumbers[i].Token.cancelled = TRUE;
 	    return FALSE;
 	}
+	ARTnumbers[i].Tokenretrieved = TRUE;
 	if ((tokentext = HISgetent(&index.hash, FALSE, NULL)) == (char *)NULL) {
 	    ARTnumbers[i].Token.cancelled = TRUE;
 	    return FALSE;
@@ -915,6 +922,7 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp)
 	    continue;
 	}
 #ifdef	DO_TAGGED_HASH
+	ARTnumbers[i].Tokenretrieved = TRUE;
 	if (HISgetent(&index.hash, FALSE, &ARTnumbers[i].Offset) == (char *)NULL) {
 	    ARTnumbers[i].Token.cancelled = TRUE;
 	    continue;
@@ -948,6 +956,7 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp)
 	    continue;
 	if (ARTnumbers[i].Token.cancelled)
 	    continue;
+	ARTnumbers[i].Tokenretrieved = TRUE;
 	if ((tokentext = HISgetent(&index.hash, TRUE, &ARTnumbers[i].Offset)) == (char *)NULL) {
 	    ARTnumbers[i].Token.cancelled = TRUE;
 	    continue;
@@ -1109,7 +1118,7 @@ STATIC char *OVERfind(ARTNUM artnum, int *linelen)
 
     if (innconf->storageapi) {
 	i = ARTfind(artnum);
-	if (ARTnumbers[i].Token.type == TOKEN_EMPTY || ARTnumbers[i].Token.index == OVER_NONE || ARTnumbers[i].Token.cancelled)
+	if ((ARTnumbers[i].Tokenretrieved && (ARTnumbers[i].Token.type == TOKEN_EMPTY)) || ARTnumbers[i].Token.index == OVER_NONE || ARTnumbers[i].Token.cancelled)
 	    return NULL;
 	if ((OVERline = OVERretrieve(&ARTnumbers[i].Token, linelen)) != (char *)NULL)
 	    OVERread += *linelen;

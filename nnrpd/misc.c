@@ -240,7 +240,7 @@ void HIScheck(void)
 	return;
     if ((stat(HISTORY, &Sb) < 0) || (Sb.st_ino != ino)) {
 	dbzclose();
-	fclose(hfp);
+	if (hfp) fclose(hfp);
 	ino = 0;
 	setup = FALSE;
 	hfp = NULL;
@@ -260,7 +260,7 @@ BOOL OVERgetent(HASH *key, TOKEN *token)
     if (!setup) {
 	if (!dbzinit(HISTORY)) {
 	    syslog(L_ERROR, "%s cant dbzinit %s %m", ClientHost, HISTORY);
-	    return NULL;
+	    return FALSE;
 	}
 	setup = TRUE;
     }
@@ -275,7 +275,7 @@ BOOL OVERgetent(HASH *key, TOKEN *token)
 		OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
 		OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
 	    }
-	    return NULL;
+	    return FALSE;
 	}
 	if (innconf->nnrpdoverstats) {
 	    gettimeofday(&etv, NULL);
@@ -283,7 +283,6 @@ BOOL OVERgetent(HASH *key, TOKEN *token)
 	    OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
 	}
 	OVERmaketoken(token, iextvalue.offset[OVEROFFSET], iextvalue.overindex);
-	token->type = 0; /* this is not true, but just dummy */
     } else {
 	return FALSE;
     }

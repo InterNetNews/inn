@@ -90,6 +90,7 @@ typedef struct _ARTLIST {
     char                (*Index)[OVERINDEXPACKSIZE];
     TOKEN		Token; /* for overview */
     OFFSET_T		Offset;
+    BOOL		Tokenretrieved;
 } ARTLIST;
 
 
