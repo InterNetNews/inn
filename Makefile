@@ -95,7 +95,7 @@ clobber realclean distclean:	clean
 	rm -f BUILD makedirs.sh config/config.data backends/actmerge.sh
 	rm -f backends/actsyncd.sh backends/sendxbatches.sh
 	rm -f frontends/c7unbatch.sh frontends/gunbatch.sh
-	rm -f includes/autoconfig.h include/clibrary.h include/config.h
+	rm -f include/autoconfig.h include/clibrary.h include/config.h
 	rm -f include/paths.h innfeed/innfeed-convcfg innfeed/procbatch
 	rm -f samples/actsync.cfg samples/checkgroups samples/checkgroups.pl
 	rm -f samples/cnfsstat samples/controlbatch samples/controlchan
