@@ -108,10 +108,10 @@ set inn_perl_support = DONT
 ##  =()<set inn_tcl_support = @<TCL_SUPPORT>@>()=
 set inn_tcl_support = DONT
 
-setenv TMPDIR ${inn_pathtemp}
+setenv TMPDIR ${inn_pathtmp}
 
 
-set inn_spooltemp = ${inn_pathtemp}
+set inn_spooltemp = ${inn_pathtmp}
 
 setenv NEWSLBIN ${inn_newshome}/local
 
