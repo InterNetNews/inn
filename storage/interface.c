@@ -114,6 +114,57 @@ TOKEN TextToToken(const char *text) {
 }
 
 /*
+**  get Xref header without pathhost
+*/
+STATIC char *GetXref(ARTHANDLE *art) {
+  char	**dp;
+  char	*p, *p1;
+  char	*q;
+  char	*buff;
+  BOOL	Nocr;
+
+  if ((p = q = (char *)HeaderFindMem(art->data, art->len, "xref", sizeof("xref")-1)) == NULL)
+    return NULL;
+  for (p1 = NULL; p < art->data + art->len; p++) {
+    if (p1 != (char *)NULL && *p1 == '\r' && *p == '\n') {
+      Nocr = FALSE;
+      break;
+    }
+    if (*p == '\n') {
+      Nocr = TRUE;
+      break;
+    }
+    p1 = p;
+  }
+  if (p >= art->data + art->len)
+    return NULL;
+  if (!Nocr)
+    p = p1;
+  /* skip pathhost */
+  for (q; *q == ' '; q++);
+  if ((q = strchr(q, ' ')) == NULL)
+    return 0;
+  for (q++; *q == ' '; q++);
+  buff = NEW(char, p - q + 1);
+  memcpy(buff, q, p - q);
+  buff[p - q] = '\0';
+  return buff;
+}
+
+/*
+**  Split newsgroup and returns artnum
+**  or 0 if there are no newsgroup.
+*/
+STATIC ARTNUM GetGroups(char *Xref) {
+  char	*p;
+
+  if ((p = strchr(Xref, ':')) == NULL)
+    return 0;
+  *p++ = '\0';
+  return ((ARTNUM)atoi(p));
+}
+
+/*
 **  Searches through the given string and find the begining of the
 **  message body and returns that if it finds it.  If not, it returns
 **  NULL.
@@ -688,10 +739,55 @@ BOOL SMcancel(TOKEN token) {
     return storage_methods[typetoindex[token.type]].cancel(token);
 }
 
-BOOL SMprobe(PROBETYPE type, TOKEN *token) {
+BOOL SMprobe(PROBETYPE type, TOKEN *token, void *value) {
+    struct artngnum	*ann;
+    ARTHANDLE		*art;
+
     switch (type) {
     case SELFEXPIRE:
 	return (method_data[typetoindex[token->type]].selfexpire);
+    case SMARTNGNUM:
+	if (method_data[typetoindex[token->type]].initialized == INIT_FAIL) {
+	    SMseterror(SMERR_UNINIT, NULL);
+	    return FALSE;
+	}
+	if (method_data[typetoindex[token->type]].initialized == INIT_NO && !InitMethod(typetoindex[token->type])) {
+	    SMseterror(SMERR_UNINIT, NULL);
+	    syslog(L_ERROR, "SM can't cancel article with uninitialized method");
+	    return FALSE;
+	}
+	if ((ann = (struct artngnum *)value) == NULL)
+	    return FALSE;
+	ann->groupname = NULL;
+	if (storage_methods[typetoindex[token->type]].ctl(type, token, value)) {
+	    if (ann->artnum != 0) {
+		/* set by storage method */
+		return TRUE;
+	    } else {
+		art = storage_methods[typetoindex[token->type]].retrieve(*token, RETR_HEAD);
+		if (art == NULL) {
+		    if (ann->groupname != NULL)
+			DISPOSE(ann->groupname);
+		    storage_methods[typetoindex[token->type]].freearticle(art);
+		    return FALSE;
+		}
+		if ((ann->groupname = GetXref(art)) == NULL) {
+		    if (ann->groupname != NULL)
+			DISPOSE(ann->groupname);
+		    storage_methods[typetoindex[token->type]].freearticle(art);
+		    return FALSE;
+		}
+		storage_methods[typetoindex[token->type]].freearticle(art);
+		if ((ann->artnum = GetGroups(ann->groupname)) == 0) {
+		    if (ann->groupname != NULL)
+			DISPOSE(ann->groupname);
+		    return FALSE;
+		}
+		return TRUE;
+	    }
+	} else {
+	    return FALSE;
+	}
     default:
 	return FALSE;
     }

@@ -18,6 +18,7 @@ typedef struct {
     ARTHANDLE           *(*next)(const ARTHANDLE *article, const RETRTYPE amount);
     void                (*freearticle)(ARTHANDLE *article);
     BOOL                (*cancel)(TOKEN token);
+    BOOL                (*ctl)(PROBETYPE type, TOKEN *token, void *value);
     void                (*shutdown)(void);
 } STORAGE_METHOD;
 
