@@ -15,6 +15,7 @@
 #include "dbz.h"
 
 #define WIPTABLESIZE        1024
+#define WIP_ARTMAX          300		/* innfeed default max send time */
 
 STATIC WIP     *WIPtable[WIPTABLESIZE];      /* Top level of the WIP hash table */
 
@@ -100,9 +101,17 @@ BOOL WIPinprogress(const char *msgid, CHANNEL *cp, const BOOL Precommit) {
     int i;
     
     if ((wp = WIPbyid(msgid)) != NULL) {
-	if ((Now.time - wp->Timestamp) < innconf->wipcheck)
+	if(wp->Chan->ArtBeg == 0)
+	    i = 0;
+	else {
+	    i = wp->Chan->ArtMax;
+	    if(i > WIP_ARTMAX)
+		i = WIP_ARTMAX;
+	}
+ 
+	if ((Now.time - wp->Timestamp) < (i + innconf->wipcheck))
 	    return TRUE;
-	if ((Now.time - wp->Timestamp) > innconf->wipexpire) {
+	if ((Now.time - wp->Timestamp) > (i + innconf->wipexpire)) {
 	    for (i = 0 ; i < PRECOMMITCACHESIZE ; i++) {
 		if (wp->Chan->PrecommitWIP[i] == wp) {
 		    wp->Chan->PrecommitWIP[i] = (WIP *)NULL;

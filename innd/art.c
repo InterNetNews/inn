@@ -2483,10 +2483,7 @@ STRING ARTpost(CHANNEL *cp)
     
     token = ARTstore(article, &Data);
     if (token.type == TOKEN_EMPTY) {
-	if (SMerrno != SMERR_NOERROR)
-	    syslog(L_ERROR, "%s cant store article: %s", LogName, SMerrorstr);
-	else
-	    syslog(L_ERROR, "%s cant store article: no matching entry in storage.conf", LogName);
+	syslog(L_ERROR, "%s cant store article: %s", LogName, SMerrorstr);
 	sprintf(buff, "%d cant store article", NNTP_RESENDIT_VAL);
 	ARTlog(&Data, ART_REJECT, buff);
 	if ((Mode == OMrunning) && !HISremember(hash))
@@ -2570,6 +2567,11 @@ STRING ARTpost(CHANNEL *cp)
 	IOError("logging nntplink", oerrno);
 	clearerr(Log);
     }
+    /* Calculate Max Article Time */
+    i = Now.time - cp->ArtBeg;
+    if(i > cp->ArtMax)
+	cp->ArtMax = i;
+    cp->ArtBeg = 0;
 
     cp->Size += Data.SizeValue;
     if (innconf->logartsize) {
