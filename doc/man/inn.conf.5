@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "INN.CONF 5"
-.TH INN.CONF 5 "2002-12-07" "INN 2.4.0" "InterNetNews Documentation"
+.TH INN.CONF 5 "2002-12-08" "INN 2.4.0" "InterNetNews Documentation"
 .SH "NAME"
 inn.conf \- Configuration data for InterNetNews programs
 .SH "DESCRIPTION"
@@ -596,9 +596,17 @@ timing out while a post is being composed.  If the system isn't having a
 problem with too many long-lived connections, it may be a good idea to
 increase this value to \f(CW3600\fR (an hour).  The default value is \f(CW600\fR
 (ten minutes).
+.IP "\fIinitialtimeout\fR" 4
+.IX Item "initialtimeout"
+How long (in seconds) \fBnnrpd\fR will wait for the first command from a
+reader connection before dropping the connection.  This is a defensive
+timeout intended to protect the news server from badly behaved reader
+clients that open and abandon a multitude of connections without every
+closing them.  The default value is \f(CW10\fR (ten seconds), which may need to
+be increased if many clients connect via slow network links.
 .IP "\fInnrpdcheckart\fR" 4
 .IX Item "nnrpdcheckart"
-Whether \fInnrpd\fR\|(8) should check the existence of an article before listing
+Whether \fBnnrpd\fR should check the existence of an article before listing
 it as present in response to an \s-1NNTP\s0 command.  The primary use of this
 setting is to prevent nnrpd from returning information about articles
 which are no longer present on the server but which still have overview

@@ -528,9 +528,18 @@ problem with too many long-lived connections, it may be a good idea to
 increase this value to C<3600> (an hour).  The default value is C<600>
 (ten minutes).
 
+=item I<initialtimeout>
+
+How long (in seconds) B<nnrpd> will wait for the first command from a
+reader connection before dropping the connection.  This is a defensive
+timeout intended to protect the news server from badly behaved reader
+clients that open and abandon a multitude of connections without every
+closing them.  The default value is C<10> (ten seconds), which may need to
+be increased if many clients connect via slow network links.
+
 =item I<nnrpdcheckart>
 
-Whether nnrpd(8) should check the existence of an article before listing
+Whether B<nnrpd> should check the existence of an article before listing
 it as present in response to an NNTP command.  The primary use of this
 setting is to prevent nnrpd from returning information about articles
 which are no longer present on the server but which still have overview

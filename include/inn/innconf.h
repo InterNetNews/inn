@@ -71,6 +71,7 @@ struct innconf {
     bool allownewnews;          /* Allow use of the NEWNEWS command */
     bool articlemmap;           /* Use mmap to read articles? */
     long clienttimeout;         /* How long nnrpd can be inactive */
+    long initialtimeout;        /* How long nnrpd waits for first command */
     bool nfsreader;             /* Use NFS reader functionality */
     bool nnrpdcheckart;         /* Check article existence before returning? */
     long nnrpdloadlimit;	/* Maximum getloadvg() we allow */

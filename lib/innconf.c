@@ -176,6 +176,7 @@ const struct config config_table[] = {
     { K(checkincludedtext),     BOOL    (false) },
     { K(clienttimeout),         NUMBER  (600) },
     { K(complaints),            STRING  (NULL) },
+    { K(initialtimeout),        NUMBER  (10) },
     { K(keyartlimit),           NUMBER  (100000) },
     { K(keylimit),              NUMBER  (512) },
     { K(keymaxwords),           NUMBER  (250) },

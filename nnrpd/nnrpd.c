@@ -57,18 +57,6 @@ getloadavg(double loadavg[], int nelem)
 #endif
 
 
-/*
-** Here is some defensive code to protect the news server from hosts,
-** mostly PC's, that sometimes make a connection and then never give
-** any commands.  The connection is abandoned, but we're never told
-** about it.  The first time the connection is read, it will have a
-** timeout value of INITIAL_TIMEOUT seconds.  All subsequent reads
-** will have the standard timeout of CLIENT_TIMEOUT seconds.
-*/
-#if !defined(INITIAL_TIMEOUT)
-#define INITIAL_TIMEOUT	10
-#endif
-
 #define MAXPATTERNDEFINE	10
 
 #define CMDany		-1
@@ -1250,7 +1238,7 @@ main(int argc, char *argv[])
     line_init(&NNTPline);
 
     /* Main dispatch loop. */
-    for (timeout = INITIAL_TIMEOUT, av = NULL, ac = 0; ;
+    for (timeout = innconf->initialtimeout, av = NULL, ac = 0; ;
 			timeout = clienttimeout) {
 	(void)fflush(stdout);
 	if (ChangeTrace) {
