@@ -802,3 +802,41 @@
   ||#### =()<PERL_INC	@<PERL_INC>@>()=
   ||PERL_INC		@PERL_INC@
   ||#PERL_INC		-I/usr/local/gnu/lib/perl5/i386-bsdos/5.003/CORE
+[IN1.7=@NO][comments]
+  ||
+  ||
+  ||##  18. CNFS partition hackery
+  ||##
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  Location of the cnfs partition configuration file
+  ||#### =()<_PATH_CYCBUFFCONFIG   @<_PATH_CYCBUFFCONFIG>@>()=
+  ||_PATH_CYCBUFFCONFIG    /var/news/etc/cycbuff.conf
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  Maximum number of cycbuffs
+  ||#### =()<MAX_CYCBUFFS  @<MAX_CYCBUFFS>@>()=
+  ||MAX_CYCBUFFS           16
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  Maximum number of metacycbuffs
+  ||#### =()<MAX_METACYCBUFFS      @<MAX_METACYCBUFFS>@>()=
+  ||MAX_METACYCBUFFS               8
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  Maximum number of cycbuffs which any one metacycbuff can contain
+  ||#### =()<MAX_META_MEMBERS      @<MAX_META_MEMBERS>@>()=
+  ||MAX_META_MEMBERS               16
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  Maximum number of cycbuff expire rules
+  ||#### =()<MAX_METACYCBUFF_RULES @<MAX_METACYCBUFF_RULES>@>()=
+  ||MAX_METACYCBUFF_RULES          24
+[IN1.7=@NO][WDF=autoconf][WOR=no]
+  ||##  C type to use for offsets (should be a big integer like "off_t" 
+  ||##  (or "offset_t" (64 bits) for Solaris 2.5).
+  ||##  WARNING: we use "atol" to convert these values ... look in the code
+  ||##           for "Danger, Will Robinson!"
+  ||#### =()<CYCBUFF_OFF_T @<CYCBUFF_OFF_T>@>()=
+  ||CYCBUFF_OFF_T          off_t
+[IN1.7=@NO][WDF=autoconf][WOR=no]
+  ||##  Which seek system call to use?  If CYCBUFF_OFF_T is "off_t", then lseek().
+  ||##  If, like Solaris, CYCBUFF_OFF_T is bigger than "off_t", then we must
+  ||##  use a different system call, namedly llseek().
+  ||#### =()<CNFSseekcall  @<CNFSseekcall>@>()=
+  ||CNFSseekcall                   lseek
