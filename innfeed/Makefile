@@ -1,9 +1,6 @@
 ##  $Revision$
 include ../Makefile.global
 
-##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
-LINTFLAGS	= -b -h -z  -I../include $(DEFS)
-
 ######################################################################
 ####           NOTHING BELOW HERE IS REALLY CONFIGURABLE          ####
 ######################################################################
