@@ -94,6 +94,12 @@ mlockfile
     sufficient memory to speed history lookups in innd.  This seems to
     help some systems quite a lot and others not at all.
 
+mm_ckpasswd
+
+    A ckpasswd replacement that checks user passwords against a Mailman
+    list configuration database.  See the comments at the top of the
+    script for information on how to use it.
+
 newsresp
 
     Opens an NNTP channel to a server and takes a peek at various response
