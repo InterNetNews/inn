@@ -84,6 +84,7 @@
 
 #include "conffile.h"
 #include "inn/innconf.h"
+#include "inn/messages.h"
 #include "libinn.h"
 #include "paths.h"
 #include "storage.h"
@@ -838,9 +839,13 @@ static int delete_all_records(int whichdb, group_id_t gno, DB_TXN *tid)
     switch (ret)
     {
     case 0:
-    case DB_NOTFOUND:
 	break;
+    case DB_NOTFOUND:
+        return dbcursor->c_close(dbcursor);
     default:
+        warn("OVDB: delete_all_records: DBcursor->c_get(1): %s",
+             db_strerror(ret));
+    case TRYAGAIN:
         dbcursor->c_close(dbcursor);
 	return ret;
     }
@@ -851,9 +856,12 @@ static int delete_all_records(int whichdb, group_id_t gno, DB_TXN *tid)
         ret = dbcursor->c_del(dbcursor, 0);
 	switch (ret) {
 	case 0:
+        case DB_KEYEMPTY:
 	    break;
-	case DB_LOCK_DEADLOCK:
 	default:
+            warn("OVDB: delete_all_records: DBcursor->c_del: %s",
+                 db_strerror(ret));
+	case TRYAGAIN:
             dbcursor->c_close(dbcursor);
 	    return ret;
 	}
@@ -862,8 +870,10 @@ static int delete_all_records(int whichdb, group_id_t gno, DB_TXN *tid)
 	case 0:
 	case DB_NOTFOUND:
 	    break;
-	case DB_LOCK_DEADLOCK:
 	default:
+            warn("OVDB: delete_all_records: DBcursor->c_get(2): %s",
+                 db_strerror(ret));
+	case TRYAGAIN:
             dbcursor->c_close(dbcursor);
 	    return ret;
 	}
@@ -880,10 +890,18 @@ static bool delete_old_stuff(int forgotton)
     DBC *cursor;
     DB_TXN *tid;
     struct groupinfo gi;
-    char **dellist;
-    int listlen = 20, listcount = 0;
+    char **dellist = NULL;
+    int listlen, listcount;
     int i, ret;
 
+    TXN_START(t_dellist, tid);
+    if (dellist != NULL) {
+        for (i = 0; i < listcount; ++i)
+            free(dellist[i]);
+        free(dellist);
+    }
+    listlen = 20;
+    listcount = 0;
     dellist = xmalloc(listlen * sizeof(char *));
 
     memset(&key, 0, sizeof key);
@@ -894,7 +912,7 @@ static bool delete_old_stuff(int forgotton)
     val.flags = DB_DBT_USERMEM | DB_DBT_PARTIAL;
 
     /* get a cursor to traverse all of the groupinfo records */
-    ret = groupinfo->cursor(groupinfo, NULL, &cursor, 0);
+    ret = groupinfo->cursor(groupinfo, tid, &cursor, 0);
     if (ret != 0) {
 	syslog(L_ERROR, "OVDB: delete_old_stuff: groupinfo->cursor: %s", db_strerror(ret));
 	free(dellist);
@@ -922,8 +940,21 @@ static bool delete_old_stuff(int forgotton)
 	}
     }
     cursor->c_close(cursor);
-    if(ret != DB_NOTFOUND)
+    switch (ret) {
+    case 0:
+    case DB_NOTFOUND:
+        TXN_COMMIT(t_dellist, tid);
+        break;
+    case TRYAGAIN:
+        TXN_RETRY(t_dellist, tid);
+    default:
+        TXN_ABORT(t_dellist, tid);
 	syslog(L_ERROR, "OVDB: delete_old_stuff: cursor->c_get: %s", db_strerror(ret));
+        for (i = 0; i < listcount; ++i)
+            free(dellist[i]);
+        free(dellist);
+        return false;
+    }
 
     for(i = 0; i < listcount; i++) {
 	TXN_START(t_dos, tid);
@@ -2657,7 +2688,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 	    TXN_RETRY(t_expgroup_cleanup, tid);
 	default:
 	    TXN_ABORT(t_expgroup_cleanup, tid);
-	    syslog(L_ERROR, "OVDB: expiregroup: groupid_free: %s", db_strerror(ret));
+	    syslog(L_ERROR, "OVDB: expiregroup: delete_all_records: %s", db_strerror(ret));
 	    return false;
 	}
 
