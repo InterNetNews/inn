@@ -1,16 +1,16 @@
-/*  $Revision$
+/*  $Id$
 **
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
-#include "nntp.h"
-#include "paths.h"
+
 #include "libinn.h"
 #include "macros.h"
+#include "nntp.h"
+#include "paths.h"
 
 
 /*
