@@ -404,8 +404,9 @@ static ACCESSGROUP *copy_accessgroup(ACCESSGROUP *orig)
 
 void SetDefaultAccess(ACCESSGROUP *curaccess)
 {
-    curaccess->allownewnews = innconf->allownewnews;;
+    curaccess->allownewnews = innconf->allownewnews;
     curaccess->locpost = FALSE;
+    curaccess->allowapproved = FALSE;
     curaccess->localtime = FALSE;
     curaccess->strippath = FALSE;
     curaccess->nnrpdperlfilter = TRUE;
@@ -733,7 +734,6 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	SET_CONFIG(oldtype);
 	break;
       case PERMpost:
-	curaccess->allowapproved = (strchr(tok->name, 'A') != NULL);
 	curaccess->post = COPY(tok->name);
 	CompressList(curaccess->post);
 	SET_CONFIG(oldtype);
@@ -751,6 +751,7 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	    curaccess->post = 0;
 	    CLEAR_CONFIG(PERMpost);
 	}
+	curaccess->allowapproved = (strchr(tok->name, 'A') != NULL);
 	curaccess->allownewnews = (strchr(tok->name, 'N') != NULL);
 	curaccess->locpost = (strchr(tok->name, 'L') != NULL);
 	SET_CONFIG(oldtype);
