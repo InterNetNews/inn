@@ -428,53 +428,6 @@ else
 fi
 AC_SUBST(ac_cv_subst_int32_t)
 
-dnl Checks for long long.
-AC_CHECK_SIZEOF(long long)
-if test $ac_cv_sizeof_long_long = 8; then
-	echo "checking for long long... yes"
-	AC_DEFINE(HAVE_LONG_LONG)
-
-	AC_CACHE_CHECK(for long long format, ac_cv_long_long_format,
-	[AC_TRY_RUN([
-	#include <stdio.h>
-	#include <sys/types.h>
-
-	main()
-	{
-	  long long len=10000000000;
-	  char buf[128];
-
-	  sprintf(buf, "%llu", len);
-	  exit(strcmp(buf, "10000000000"));
-	}],
-	ac_cv_long_long_format=llu, ac_cv_long_long_format=no,
-	ac_cv_long_long_format=no)
-	if test $ac_cv_long_long_format = no; then
-		AC_TRY_RUN([
-		#include <stdio.h>
-		#include <sys/types.h>
-
-		main()
-		{
-		  long long len=10000000000;
-		  char buf[128];
-
-		  sprintf(buf, "%qu", len);
-		  exit(strcmp(buf, "10000000000"));
-		}],
-		ac_cv_long_long_format=qu, ac_cv_long_long_format=no,
-		ac_cv_long_long_format=no)
-	fi])
-	if test $ac_cv_long_long_format = llu; then
-		AC_DEFINE(HAVE_LONG_LONG_FORMAT_LLU)
-	elif test $ac_cv_long_long_format = qu; then
-		AC_DEFINE(HAVE_LONG_LONG_FORMAT_QU)
-	fi
-else
-	echo "checking for long long... no"
-fi
-
-
 dnl Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
 AC_FUNC_MEMCMP
