@@ -1434,6 +1434,11 @@ get_active(host, hostid, len, grp, errs)
 	/* check for a bad group type */
 	switch (cur->type[0]) {
 	case 'y':
+		/* of COURSE: collabra has incompatible flags. but it	*/
+		/* looks like they can be fixed easily enough.		*/
+		if (cur->type[1] = 'g') {
+			cur->type[1] = '\0';
+		}
 	case 'm':
 	case 'j':
 	case 'n':
