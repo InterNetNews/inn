@@ -706,6 +706,10 @@ sub collect {
     return 1 if $left =~ m/(?:SERVER|ME) articles active \d+ bytes \d+/o;
     # connect : Connection refused
     return 1 if $left =~ m/connect : Connection refused/o;
+    # connect : Network is unreachable
+    return 1 if $left =~ m/connect : Network is unreachable/o;
+    # connect : Address family not supported by protocol
+    return 1 if $left =~ m/connect : Address family not supported by protocol/o;
     # connect : No route to host
     return 1 if $left =~ m/connect : No route to host/o;
     # connection vanishing
