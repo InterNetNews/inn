@@ -152,7 +152,7 @@ extern char *   concatpath(const char *base, const char *name);
 extern void     daemonize(const char *path);
 extern int      getfdlimit(void);
 extern int      nonblocking(int fd, bool flag);
-extern int      setfdlimit(int limit);
+extern int      setfdlimit(unsigned int limit);
 extern void     (*xsignal(int signum, void (*sigfunc)(int)))(int);
 extern ssize_t  xwrite(int fd, const void *buffer, size_t size);
 extern ssize_t  xwritev(int fd, const struct iovec *iov, int iovcnt);
