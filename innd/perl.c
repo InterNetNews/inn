@@ -39,8 +39,9 @@ extern CV		*perl_filter_cv ;
 extern char		*pathForPerl ;
 
 char *
-HandleArticle(artBody)
-char *artBody;
+HandleArticle(artBody, lines)
+char*	artBody;
+int	lines;
 {
    dSP;
    ARTHEADER	*hp;
@@ -63,6 +64,9 @@ char *artBody;
    /* store article body */
    if (artBody != NULL)
      hv_store(hdr, (char *) "__BODY__", 8, newSVpv(artBody, 0), 0) ;
+
+   /* store article line count */
+   hv_store(hdr, (char *) "__LINES__", 9, newSViv(lines), 0);
 
    if (pathForPerl != NULL)
      {

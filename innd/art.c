@@ -2198,7 +2198,7 @@ STRING ARTpost(CHANNEL *cp)
 #if defined(DO_PERL)
     pathForPerl = HeaderFindMem(article->Data, article->Used, "Path", 4) ;
     TMRstart(TMR_PERL);
-    perlrc = (char *)HandleArticle(Data.Body);
+    perlrc = (char *)HandleArticle(Data.Body, Data.LinesValue);
     TMRstop(TMR_PERL);
     if (perlrc != NULL) {
         (void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, perlrc);
