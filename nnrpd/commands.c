@@ -265,6 +265,11 @@ CMDauthinfo(ac, av)
 		PERMspecified = NGgetlist(&PERMlist, accesslist);
 		syslog(L_NOTICE, "%s user %s", ClientHost, User);
 		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
+
+		/* save these values in case you need them later */
+		strcpy(PERMuser, User);
+		strcpy(PERMpass, Password);
+
 		PERMneedauth = FALSE;
 		PERMauthorized = TRUE;
 		return;
@@ -286,9 +291,6 @@ CMDauthinfo(ac, av)
 			fflush(locallog);
 		}
 		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
-		/* save these values in case you need them later */
-		strcpy(PERMuser, User);
-		strcpy(PERMpass, Password);
 		PERMneedauth = FALSE;
 		PERMauthorized = TRUE;
 		return;
