@@ -25,10 +25,16 @@ F<db_archive>, F<db_checkpoint>, and F<db_deadlock>.
 =head1 INSTALLATION
 
 To build ovdb support into INN, specify the option C<--with-berkeleydb>
-when running the configure script.  By default, configure will use
-F</usr/local/BerkeleyDB>.
-If you installed it in a different location, you'll need to specify
-that location like this (for example): C<--with-berkeleydb=/opt/BerkeleyDB>.
+when running the configure script.  By default, configure will search
+for a BerkeleyDB tree in several likely locations, and choose the highest
+version (based on the name of the directory, e.g., F<BerkeleyDB.3.0>)
+that it finds.  There will be a message in the configure output
+indicating the chosen pathname.
+
+You can override this pathname by adding a path to the option, e.g.,
+C<--with-berkeleydb=/usr/BerkeleyDB.3.1>.  This directory is expected
+to have subdirectories F<include>, F<lib>, and F<bin> containing
+F<db.h>, the library itself, and the F<db_*> utilities, respectively.
 
 The ovdb database will take up more disk space for a given spool than
 the other overview methods.  Plan on needing at least 1.1 KB for every
@@ -38,7 +44,7 @@ With BerkeleyDB 2.x, the db files are 'grow only'; the library will
 not shrink them, even if data is removed.  So, reserving extra space
 above the estimate is a good idea.
 Plus, you'll need additional space for transaction logs: at least 40 MB,
-preferably 100 MB.  (The logs may be on a different filesystem
+preferably 100 MB or more.  (The logs may be on a different filesystem
 -- see the DB_CONFIG section.)
 
 =head1 CONFIGURATION
