@@ -47,6 +47,18 @@ my %timer_names = (idle     => 'idle',
                    perl     => 'perl filter',
                    python   => 'python filter');
 
+my %innfeed_timer_names = (
+                   'idle'    => 'idle',
+		   'blstats' => 'backlog stats',
+		   'stsfile' => 'status file',
+		   'newart'  => 'article new',
+		   'prepart' => 'article prepare',
+		   'readart' => 'article read',
+		   'read'    => 'data read',
+		   'write'   => 'data write',
+		   'cb'      => 'callbacks',
+);
+
 # init innd timer
 foreach (values %timer_names) {
   $innd_time_min{$_} = $MIN;
@@ -56,6 +68,14 @@ foreach (values %timer_names) {
 }
 $innd_time_times = 0;        # ...
 
+# init innfeed timer
+foreach (values %innfeed_timer_names) {
+  $innfeed_time_min{$_} = $MIN;
+  $innfeed_time_max{$_} = $MAX;
+  $innfeed_time_time{$_} = 0;   # to avoid a warning... Perl < 5.004
+  $innfeed_time_num{$_} = 0;    # ...
+}
+$innfeed_time_times = 0;        # ...
 
 # collect: Used to collect the data.
 sub collect {
@@ -630,6 +650,28 @@ sub collect {
       my ($file, $s1, $s2) = ($1, $2, $3);
       $file =~ s|^.*/([^/]+)$|$1|; # keep only the server name
       $innfeed_shrunk{$file} += $s1 - $s2;
+      return 1;
+    }
+    # profile timer
+    # ME time X nnnn X(X) [...]
+    return 1 if $left =~ m/backlogstats/;
+    if ($left =~ m/^\S+\s+                         # ME
+                   time\ (\d+)\s+                  # time
+                   ((?:\S+\ \d+\(\d+\)\s*)+)       # timer values
+                   $/ox) {
+      $innfeed_time_times += $1;
+      my $timers = $2;
+
+      while ($timers =~ /(\S+) (\d+)\((\d+)\)\s*/g) {
+        my $name = $innfeed_timer_names{$1} || $1;
+        my $average = $2 / ($3 || 1);
+        $innfeed_time_time{$name} += $2;
+        $innfeed_time_num{$name} += $3;
+        $innfeed_time_min{$name} = $average
+          if ($3 && $innfeed_time_min{$name} > $average);
+        $innfeed_time_max{$name} = $average
+          if ($3 && $innfeed_time_max{$name} < $average);
+      }
       return 1;
     }
     # xxx grabbing external tape file
@@ -1689,13 +1731,25 @@ sub adjust {
 	#$innd_time_max{$key} /= 1000;
       }
     }
-
+    if (%innfeed_time_min) {
+      foreach $key (keys (%innfeed_time_min)) {
+        $innfeed_time_min{$key} = 0 if ($innfeed_time_min{$key} == $MIN);
+        $innfeed_time_max{$key} = 0 if ($innfeed_time_max{$key} == $MAX);
+      }
+    }
     # remove the innd timer stats if not used.
     unless ($innd_time_times) {
       undef %innd_time_min;
       undef %innd_time_max;
       undef %innd_time_num;
       undef %innd_time_time;
+    }
+    # same thing for innfeed timer
+    unless ($innfeed_time_times) {
+      undef %innfeed_time_min;
+      undef %innfeed_time_max;
+      undef %innfeed_time_num;
+      undef %innfeed_time_time;
     }
 
     # adjust the crosspost stats.
