@@ -96,6 +96,7 @@ do
 	;;
     Xexpireover)
 	DOEXPIREOVER=true
+	RMFILE=${MOST_LOGS}/expire.rm
 	;;
     Xexpireoverflags=*)
 	EXPIREOVERFLAGS=`expr "${I}" : 'expireoverflags=\(.*\)'`
@@ -175,13 +176,10 @@ ${DOEXPIRE} || {
 #	When expireindex gets called we need to run expire first
 #	_and_ we need to create an index.rm file.
 #
-if [ X${SAPI} = X"true" ]
+if ${DOEXPIREOVER} && [ "$DOEXPIRE" = "false" ]
 then
-    if ${DOEXPIREOVER} && [ "$DOEXPIRE" = "false" ]
-    then
-	echo "news.daily: cannot do expireover (expireindex) without expire">&2
-	exit 1
-    fi
+    echo "news.daily: cannot do ${EXPIREOVER} without expire">&2
+    exit 1
 fi
 
 test -n "${EXPDIR}" && {
@@ -199,6 +197,9 @@ if [ X${SAPI} = X"true" ]; then
 else
     test -n "${RMFILE}" && {
 	EXPIREFLAGS="${EXPIREFLAGS} -z${RMFILE}"
+    }
+    ${DOEXPIREOVER} && {
+	EXPIREOVERFLAGS="${EXPIREOVERFLAGS} -z ${RMFILE}.$$"
     }
 fi
 
