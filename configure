@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.163.2.14 
+# From configure.in Revision: 1.163.2.15 
 
 
 ## libtool.m4 - Configure libtool for the target system. -*-Shell-script-*-
@@ -3053,7 +3053,7 @@ else
   ;;
   *)
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
-  ac_dummy="$PATH:/usr/lib:/usr/sbin:/usr/ucblib"
+  ac_dummy="$PATH:/usr/sbin:/usr/lib:/usr/ucblib"
   for ac_dir in $ac_dummy; do 
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
