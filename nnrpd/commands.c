@@ -797,8 +797,11 @@ CMDxpath(ac, av)
     char	*p;
     HASH	hash = HashMessageID(av[1]);
 
-    if ((p = HISgetent(&hash, TRUE, NULL)) == NULL)
+    if (innconf->storageapi) {
+	Reply("%d Syntax error or bad command\r\n", NNTP_BAD_COMMAND_VAL);
+    } else if ((p = HISgetent(&hash, TRUE, NULL)) == NULL) {
 	Reply("%d Don't have it\r\n", NNTP_DONTHAVEIT_VAL);
-    else
+    } else {
 	Reply("%d %s\r\n", NNTP_NOTHING_FOLLOWS_VAL, p);
+    }
 }

@@ -434,24 +434,23 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
 	return NULL;
     save = p + 1;
 
-    if (IsToken(save)) {
+    if (IsToken(save) && ((useoffset != TRUE) || (off != NULL))) {
 	strcpy(path, save);
 	return path;
     }
 
     /* Want the full data? */
-/*    if (flag) {
+    if ((useoffset == TRUE) && (off == NULL)) {
+	/* this is the case for called by CMDxpath() */
+	if (innconf->storageapi)
+	    return NULL;
 	(void)strcpy(path, save);
 	for (p = path; *p; p++) {
 	    if (*p == '.')
 		*p = '/';
-	    if (*p == ' ') {
-		*p = '\0';
-		break;
-	    }
 	}
 	return path;
-	} */
+    }
 
     /* Want something we can open; loop over all entries. */
     for ( ; ; save = q + 1) {
