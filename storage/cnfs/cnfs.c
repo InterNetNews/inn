@@ -552,8 +552,7 @@ STATIC BOOL CNFSinit_disks(CYCBUFF *cycbuff) {
 	if (strncmp(rpx.path, cycbuff->path, CNFSPASIZ) != 0) {
 	    syslog(L_ERROR, "%s: Path mismatch: read %s for cycbuff %s",
 		   LocalLogName, rpx.path, cycbuff->path);
-	    return FALSE;
-	}
+	} 
 	strncpy(buf, rpx.lena, CNFSLASIZ);
 	buf[CNFSLASIZ] = '\0';
 	tmpo = CNFShex2offt(buf);
@@ -1160,6 +1159,9 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    return NULL;
 	}
+#ifdef MADV_SEQUENTIAL
+	madvise(private->base, private->len, MADV_SEQUENTIAL);
+#endif
     } else {
 	private->base = NEW(char, ntohl(cah.size));
 	if (read(cycbuff->fd, private->base, ntohl(cah.size)) < 0) {
@@ -1428,6 +1430,9 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    return art;
 	}
+#ifdef MADV_SEQUENTIAL
+	madvise(private->base, private->len, MADV_SEQUENTIAL);
+#endif
     } else {
 	private->base = NEW(char, ntohl(cah.size));
 	if (read(cycbuff->fd, private->base, ntohl(cah.size)) < 0) {
