@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# clean the overview index files
+
+. /usr/local/news/etc/innshellvars
+
+while read group junk; do
+        listoi $group 2>/dev/null | while read artnum hashid; do
+                grephistory -q "[$hashid]"
+                if [ $? != 0 ]; then
+                        path=`echo $group | sed -e 's/\./\//g'`
+                        echo "$path:$artnum"
+                else
+                        # with cnfs at least, the first hit means we can stop
+                        # looking 
+                        # probably not portable to all SAPI's though
+                        break
+                fi
+        done
+done <$ACTIVE
+
