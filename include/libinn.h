@@ -143,6 +143,7 @@ struct conf_vars {
 	char *pathoutgoing;
 	char *pathincoming;
 	char *patharchive;
+	char *pathtmp;
 	int logsitename;	/* log site names? */
 	char *pathhttp;
 	char *nnrpdposthost;
@@ -196,7 +197,8 @@ int HashCompare(const HASH *h1, const HASH *h2);
 /* Overview handling */
 typedef enum {OVER_CTL, OVER_DIR, OVER_NEWDIR, OVER_MODE, OVER_NEWMODE, OVER_MMAP, OVER_BUFFERED, OVER_PREOPEN} OVERSETUP;
 #define MAXOVERLINE	0x10000
-#define OVERINDEXPACKSIZE      (sizeof(unsigned long) + sizeof(HASH))
+
+#define OVERINDEXPACKSIZE      (sizeof(U_INT32_T) + sizeof(HASH))
 typedef struct _OVERINDEX {
     unsigned long       artnum;
     HASH                hash;

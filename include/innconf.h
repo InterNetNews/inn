@@ -273,6 +273,9 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_BACKOFFTRIGGER			"backofftrigger"
 #define CONF_VAR_BACKOFFTRIGGER			83
     { _CONF_BACKOFFTRIGGER,				"",	2, 1 },
+#define _CONF_PATHTMP				"pathtmp"
+#define CONF_VAR_PATHTMP			84
+    { _CONF_PATHTMP,				"",	1, 1 },
 };
-#define MAX_CONF_VAR 84
+#define MAX_CONF_VAR 85
 
