@@ -7,6 +7,14 @@ contributors, and secondarily as documentation of some of INN's internals.
 
 This is $Revision$ dated $Date$.
 
+First of all, if you plan on working on INN source, please start from the
+current development tree.  There may be significant changes from the
+previous full release, so starting from development sources will make it
+considerably easier to integrate your work.  You can get nightly snapshots
+of the current development source from ftp.isc.org in /isc/inn/snapshots
+(the snapshots named inn-CURRENT-*.tar.gz), or you can get the current CVS
+tree by using CVSup (see L<"Using CVSup">).
+
 =head1 Configuring
 
 INN uses autoconf to probe the system on which it is being compiled and
@@ -140,15 +148,15 @@ because they're testing libinn routines), and have it output first a line
 containing the count of test cases in that file and then for each test a
 line saying "ok n" or "not ok n" where n is the test case number.  (If a
 test is skipped for some reason, such as a test of an optional feature
-that wasn't compiled into INN, the test program should output " # skip" on
-the same line after "ok n".)  Add any rules necessary to build the test to
-tests/Makefile (note that for simplicity it doesn't recurse into
+that wasn't compiled into INN, the test program should output S<" # skip">
+on the same line after "ok n".)  Add any rules necessary to build the test
+to tests/Makefile (note that for simplicity it doesn't recurse into
 subdirectories) and make sure it creates an executable ending in .t.  Then
 add the name of the test to tests/TESTS, without the .t ending.
 
-One naming conventions:  To distinguish more easily between
-e.g. lib/error.c (the implementation) and tests/lib/error-t.c (the test
-suite), I've been adding -t to the end of the test file names.  So
+One naming convention:  To distinguish more easily between e.g.
+lib/error.c (the implementation) and tests/lib/error-t.c (the test suite),
+I've been adding -t to the end of the test file names.  So
 tests/lib/error-t.c is the source that compiles into an executable
 tests/lib/error.t which is run by putting a line in tests/TESTS of just
 "lib/error".
@@ -362,6 +370,47 @@ If you use emacs to edit INN code, you may want to put:
     (setq-default indent-tabs-mode nil)
 
 in your ~/.emacs file.
+
+=head1 Using CVSup
+
+If you want to get updated INN source more easily or more quickly than by
+downloading nightly snapshots, or if you want to see the full CVS history,
+you may want to use CVSup to download the source.  CVSup is a client and
+server designed for replicating CVS repositories between sites.
+
+Unfortunately, CVSup is written in Modula-3, so getting a working binary
+can be somewhat difficult.  Binaries are available in the *BSD ports
+collection or (for a wide variety of different platforms) available from
+<ftp://ftp.freebsd.org/pub/FreeBSD/CVSup/binaries/> and its mirrors.
+Alternately, you can get a compiler from <http://m3.polymtl.ca/m3/> (this
+is more actively maintained than the DEC Modula-3 compiler) and the source
+from <ftp://ftp.freebsd.org/pub/FreeBSD/CVSup/>.
+
+After you have the CVSup client, you need to have space to download the
+INN repository and space for CVSup to store its data files.  You also need
+to write a configuration file (a supfile) for CVSup.  The following
+supfile will download the latest versions from the mainline source:
+
+    *default host=inn-cvs.isc.org
+    *default base=<data-location>
+    *default prefix=<download-location>
+    *default release=cvs
+    *default tag=.
+    *default delete use-rel-suffix
+    inn
+
+where <data-location> should be a directory where CVSup can put its data
+files and <download-location> is where the downloaded source will go.  If
+you want to pull down the entire CVS repository instead (warning: this is
+much larger than just the latest versions of the source), delete the
+C<*default tag=.> line.  The best way to download the CVS repository is to
+download it into a portion of a locally-created CVS repository, so that
+then you can perform standard CVS operations (like cvs log) against the
+downloaded repository.  Creating your own local CVS repository is outside
+the scope of this document.
+
+For more general information on using CVSup, see the FreeBSD page on it at
+<http://www.freebsd.org/handbook/mirrors-cvsup.html>.
 
 =head1 References
 
