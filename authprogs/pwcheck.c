@@ -1,15 +1,15 @@
 
-/* this code was obviously taken from the Cyrus IMAP daemon source code, 
+/* this code was obviously taken from the Cyrus IMAP daemon source code,
    with the appropriate copyright left intact.  There is nothing special
-   about this code, so I hope nobody is going to get mad at me :) 
+   about this code, so I hope nobody is going to get mad at me :)
  */
 
 
 /* login_unix_pwcheck.c -- Unix pwcheck daemon login authentication
  $Id$
- 
+
  # Copyright 1998 Carnegie Mellon University
- # 
+ #
  # No warranties, either expressed or implied, are made regarding the
  # operation, use, or results of the software.
  #
@@ -50,24 +50,6 @@
 
 #define STATEDIR	"/var"
 
-int main()
-{
-
-    char uname[SMBUF], pass[SMBUF];
-
-    if (get_auth(uname,pass) != 0) {
-        fprintf(stderr, "pwcheck: internal error.\n");
-        exit(1);
-    }
-
-    if(!login_plaintext(uname, pass)) {
-      fprintf(stderr, "valid passwd\n");
-      printf("User:%s\n", uname);
-      exit(0);
-    }
-    exit(1);
-}
-
 /*
  * Unix pwcheck daemon-authenticated login (shadow password)
  */
@@ -93,7 +75,7 @@ const char *pass;
     strcat(srvaddr.sun_path, "/pwcheck/pwcheck");
     r = connect(s, (struct sockaddr *)&srvaddr, sizeof(srvaddr));
     if (r == -1) {
-	syslog(L_NOTICE, 
+	syslog(L_NOTICE,
             "connect failed to pwcheck daemon - check permissions");
 	return 1;
     }
@@ -121,39 +103,6 @@ const char *pass;
 }
 
 
-/* retry.c -- keep trying write system calls
- *
- * Keep calling the write() system call with 'fd', 'buf', and 'nbyte'
- * until all the data is written out or an error occurs.
- */
-int 
-retry_write(fd, buf, nbyte)
-int fd;
-const char *buf;
-unsigned nbyte;
-{
-    int n;
-    int written = 0;
-
-    if (nbyte == 0) return 0;
-
-    for (;;) {
-	n = write(fd, buf, nbyte);
-	if (n == -1) {
-	    if (errno == EINTR) continue;
-	    return -1;
-	}
-
-	written += n;
-
-	if (n >= nbyte) return written;
-
-	buf += n;
-	nbyte -= n;
-    }
-}
-
-	
 /*
  * Keep calling the writev() system call with 'fd', 'iov', and 'iovcnt'
  * until all the data is written out or an error occurs.
@@ -168,7 +117,7 @@ int iovcnt;
     int i;
     int written = 0;
     static int iov_max = IOV_MAX;
-    
+
     for (;;) {
 	while (iovcnt && iov[0].iov_len == 0) {
 	    iov++;
@@ -203,4 +152,53 @@ int iovcnt;
     }
 }
 
-	
+/* retry.c -- keep trying write system calls
+ *
+ * Keep calling the write() system call with 'fd', 'buf', and 'nbyte'
+ * until all the data is written out or an error occurs.
+ */
+int
+retry_write(fd, buf, nbyte)
+int fd;
+const char *buf;
+unsigned nbyte;
+{
+    int n;
+    int written = 0;
+
+    if (nbyte == 0) return 0;
+
+    for (;;) {
+	n = write(fd, buf, nbyte);
+	if (n == -1) {
+	    if (errno == EINTR) continue;
+	    return -1;
+	}
+
+	written += n;
+
+	if (n >= nbyte) return written;
+
+	buf += n;
+	nbyte -= n;
+    }
+}
+
+int main()
+{
+
+    char uname[SMBUF], pass[SMBUF];
+
+    if (get_auth(uname,pass) != 0) {
+        fprintf(stderr, "pwcheck: internal error.\n");
+        exit(1);
+    }
+
+    if(!login_plaintext(uname, pass)) {
+      fprintf(stderr, "valid passwd\n");
+      printf("User:%s\n", uname);
+      exit(0);
+    }
+    exit(1);
+}
+
