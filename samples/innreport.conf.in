@@ -207,46 +207,46 @@ section controlchan {
 	title   "Control Channel:";
 	data    "%controlchan_who";
 	column {
-		name          "From";
-		format        "%-20.20s";
+		name          "Sender";
+		format        "%-25.25s";
 		value         "$key";
-		format_total  "TOTAL%-15.15s";
+		format_total  "TOTAL%-20.20s";
 		total         "";
 	};
 	column {
 		name          "newgroup";
 		value         "$controlchan_new{$key}";
-		format        "%7s";
+		format        "%8s";
 		total         "total(%controlchan_new)";
 	};
 	column {
 		name          "rmgroup";
 		value         "$controlchan_rm{$key}";
-		format        "%7s";
+		format        "%8s";
 		total         "total(%controlchan_rm)";
 	};
 	column {
 		name          "Other";
 		value         "$controlchan_other{$key}";
-		format        "%7s";
+		format        "%8s";
 		total         "total(%controlchan_other)";
 	};
 	column {
 		name          "Bad PGP";
 		value         "$controlchan_skippgp{$key}";
-		format        "%7s";
+		format        "%8s";
 		total         "total(%controlchan_skippgp)";
 	};
 	column {
 		name          "DoIt";
 		value         "$controlchan_doit{$key}";
-		format        "%7s";
+		format        "%8s";
 		total         "total(%controlchan_doit)";
 	};
 	column {
 		name          "OK";
 		value         "$controlchan_ok{$key}";
-		format        "%7s";
+		format        "%8s";
 		total         "total(%controlchan_ok)";
 	};
 };
