@@ -135,10 +135,11 @@ PYartfilter(artBody, artLen, lines)
     }
 
     /* ...then the body... */
-    if (artBody != NULL) {
-	PYheaditem[hdrnum] = PyBuffer_FromMemory(artBody, --artLen);
-	PyDict_SetItem(PYheaders, PYbodykey, PYheaditem[hdrnum++]);
-    }
+    if (artLen && artBody != NULL)
+        PYheaditem[hdrnum] = PyBuffer_FromMemory(artBody, --artLen);
+    else
+        PYheaditem[hdrnum] = Py_None;
+    PyDict_SetItem(PYheaders, PYbodykey, PYheaditem[hdrnum++]);
 
     /* ...and finally, the line count. */
     PYheaditem[hdrnum] = PyInt_FromLong((long) lines);
