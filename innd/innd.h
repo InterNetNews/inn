@@ -138,6 +138,7 @@ typedef struct _CHANNEL {
     CHANNELSTATE	State;
     BOOL		Skip;
     BOOL		Streaming;
+    BOOL		NoResendId;
     int			fd;
     u_long		Duplicate;
     u_long		Unwanted_s;
