@@ -13,11 +13,10 @@ Christophe Wolfhugel:
         Did the Perl extension and provided several other fixes.
 
 Doug Needham:
-        Made nnrpd spool if innd is unavailable.
-        Made nnrpd handle the LIST SUBSCRIPTIONS command.
-        Added the rebuilding of control connections to innd (SIGUSR1).
-        Got inews to ask the nntp peer for moderator info instead of
-           digging it out of a local file.
+        Made nnrpd spool if innd is unavailable.  Made nnrpd handle the
+        LIST SUBSCRIPTIONS command.  Added the rebuilding of control
+        connections to innd (SIGUSR1).  Got inews to ask the nntp peer for
+        moderator info instead of digging it out of a local file.
 
 David Lawrence: 
         Did the hooks for PGP verificiation of control messages, added
@@ -25,8 +24,8 @@ David Lawrence:
         ftp.
 
 John Stapleton:
-        Wrote the poison newsgroup code ('@') for newsfeeds(5).
-        Wrote the too-many-connects support ('-X -H -T' flags to innd).
+        Wrote the poison newsgroup code ('@') for newsfeeds(5).  Wrote the
+        too-many-connects support ('-X -H -T' flags to innd).
         
 Landon Curt Noll:
         Wrote or co-wrote actsync, nntpsend, shrinkfile, innstat,
@@ -38,8 +37,8 @@ John Levine:
         Wrote the '-e' support for expire (expire on shortest time).
 
 Matthias Urlichs:
-        Made rnews recognise gzip compression.
-        Made newsfeeds(5) take the 'Wp' flag.
+        Made rnews recognise gzip compression.  Made newsfeeds(5) take the
+        'Wp' flag.
 
 Stefan Petri:
         Did the original XBATCH support

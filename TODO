@@ -23,7 +23,7 @@ changes easier and will be *greatly* appreciated.
 Last modified $Id$.
 
 
-Scheduled for INN 2.4:
+Scheduled for INN 2.4
 
 * There are some outstanding issues with the IPv6 that probably need not
   be fixed, but should be documented, see doc/IPv6-info.
@@ -50,7 +50,7 @@ Scheduled for INN 2.4:
   additional testing.]
 
 
-Scheduled for INN 2.5:
+Scheduled for INN 2.5
 
 * The current WIP cache and history cache should be integrated into the
   history API, things like message ID hashing should become a selectable
@@ -95,7 +95,7 @@ Scheduled for INN 2.5:
   work on this.]
 
 
-Scheduled for INN 2.6:
+Scheduled for INN 2.6
 
 * A unified configuration file combining the facilities of newsfeeds,
   incoming.conf, and innfeed.conf, but hopefully more readable and easier
@@ -134,7 +134,7 @@ Scheduled for INN 2.6:
   avoid conflicts with other include files used by applications.
 
 
-High Priority Projects:
+High Priority Projects
 
 * Modulo warnings from system headers and warnings where the compiler is
   simply wrong and there's no equally readable way to rewrite the code,
@@ -177,7 +177,7 @@ High Priority Projects:
   the low and high water marks in the active file or in the overview.
 
 
-Documentation Projects:
+Documentation Projects
 
 * Add man pages for all libinn interfaces.  There should be a subdirectory
   of doc/pod for this since there will be a lot of them; installing them
@@ -215,7 +215,7 @@ Documentation Projects:
   least is missing from the documentation)
 
 
-Code Cleanup Projects:
+Code Cleanup Projects
 
 * Eliminate everything in the LEGACY section of config.h.
 
@@ -283,7 +283,7 @@ Code Cleanup Projects:
   more to include/portable/socket.h.
 
 
-Needed Bug Fixes:
+Needed Bug Fixes
 
 * tradspool currently uses stdio to write out tradspool.map, which can
   cause problems if more than 256 file descriptors are in use for other
@@ -327,7 +327,7 @@ Needed Bug Fixes:
   note that some error has occurred and the logs should be examined.
 
 
-Requested New Features:
+Requested New Features
 
 * Consider implementing the HEADERS command as discussed rather
   extensively in news.software.nntp.  [Greg Andruk has a preliminary
@@ -347,8 +347,19 @@ Requested New Features:
 
 * Lots of people encrypt X-Trace in various ways.  Should that be offered
   as a standard option?  The first data element should probably remain
-  unencrypted so that the O flag in newsfeeds doesn't break.  Olaf Titz
-  suggests:
+  unencrypted so that the O flag in newsfeeds doesn't break.
+
+  Should there also be an option not to generate X-Trace?  And this whole
+  area may change if USEFOR ever standardizes poster trace information;
+  it's been proposed to put it in the path tail instead.  The current
+  USEFOR trend as of January, 2001 appears to be towards an Injector-Info
+  header with this information, allowing a token or an injecting hostname.
+  For a token, one really wants it to be hierarchically structured for
+  spam filtering even if it's encrypted (in other words, to get a "group"
+  of clients, one could just match the first n bytes of the token instead
+  of the whole thing).
+
+  Olaf Titz suggests:
 
       This can be done by formatting the (rest of) the header in a way
       that fields are always a multiple of 8 bytes and applying a 64 bit
@@ -362,16 +373,6 @@ Requested New Features:
 
       X-Trace: g212.hadiko.de [395109AA000016FF] [AC14302A00000000] [...]
                                time    |    pid   ip      |reserved  user
-
-  Should there also be an option not to generate X-Trace?  And this whole
-  area may change if USEFOR ever standardizes poster trace information;
-  it's been proposed to put it in the path tail instead.  The current
-  USEFOR trend as of January, 2001 appears to be towards an Injector-Info
-  header with this information, allowing a token or an injecting hostname.
-  For a token, one really wants it to be hierarchically structured for
-  spam filtering even if it's encrypted (in other words, to get a "group"
-  of clients, one could just match the first n bytes of the token instead
-  of the whole thing).
 
 * Validity checks on the poster's address.  (Although this could also be
   handled by the nnrpd posting filter.)
@@ -481,7 +482,7 @@ Requested New Features:
   something like "Local".
 
 
-General Projects:
+General Projects
 
 * All the old packages in unoff-contrib should be reviewed for integration
   into INN.
@@ -534,7 +535,7 @@ General Projects:
   rc.news instead, although be careful of interactions with ctlinnd xexec.
 
 
-Long-Term Projects:
+Long-Term Projects
 
 * Look at turning header parsing into a library of some sort.  Lots of INN
   does this, but different parts of INN need subtly different things, so
