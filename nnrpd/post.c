@@ -994,8 +994,12 @@ ARTpost(article, idbuff)
 
     if (modgroup)
     {
-      if (idbuff != NULL)
+      if (idbuff != NULL) {
+          STRING retstr;
+          retstr = MailArticle(modgroup, article);
           strcpy (idbuff,"(mailed to moderator)") ;
+	  return retstr;
+      }
       return MailArticle(modgroup, article);
     }
 
