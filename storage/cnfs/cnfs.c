@@ -1641,7 +1641,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 		/* Bitmap set.  This article assumes to be broken */
 		break;
 	}
-	if ((middle >= cycbuff->free) || (middle != limit)) {
+	if ((middle > cycbuff->free) || (middle != limit)) {
 	    private->offset = middle;
 	    art->data = NULL;
 	    art->len = 0;
