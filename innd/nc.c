@@ -9,8 +9,6 @@
 #include "clibrary.h"
 #include "innd.h"
 #include "dbz.h"
-#include "timer.h"
-
 
 #define BAD_COMMAND_COUNT	10
 #define SAVE_AMT		10

@@ -26,13 +26,12 @@ STATIC int		ICDactsize;
 **  avoid problems with mmap.
 */
 #if	defined(ACT_MMAP)
-#define ICDiovset(iovp, base, len)	\
-	do { \
-	    (iovp)->iov_len = len; \
-	    (iovp)->iov_base = NEW(char, (iovp)->iov_len); \
-	    (void)memcpy((POINTER)(iovp)->iov_base, (POINTER)base, \
-		    (SIZE_T)(iovp)->iov_len); \
-	} while (JUSTONCE)
+void ICDiovset(IOVEC iovp, char *base, int len) {
+    (iovp)->iov_len = len; 
+    (iovp)->iov_base = NEW(char, (iovp)->iov_len); 
+    (void)memcpy((POINTER)(iovp)->iov_base, (POINTER)base, 
+	    (SIZE_T)(iovp)->iov_len);
+}
 #define ICDiovrelease(iovp)		DISPOSE((iovp)->iov_base)
 
 #if	defined(MAP_FILE)

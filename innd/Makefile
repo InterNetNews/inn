@@ -39,7 +39,7 @@ OWNER	= -O news -G news
 NEWSGROUP	= news
 
 ##  =()<LIBS	= @<LIBS>@>()=
-LIBS	= 
+LIBS	= -lsocket
 LIBNEWS	= ../libinn.a
 LINTLIB	= ../llib-linn.ln
 ## =()<TCL_LIB	= @<TCL_LIB>@>()=
@@ -47,11 +47,11 @@ TCL_LIB	=
 
 SOURCES	= \
 	art.c cc.c chan.c his.c icd.c innd.c lc.c nc.c newsfeeds.c ng.c \
-	perl.c proc.c rc.c site.c tcl.c timer.c wip.c
+	perl.c proc.c rc.c site.c tcl.c wip.c
 
 OBJECTS	= \
 	art.o cc.o chan.o his.o icd.o innd.o lc.o nc.o newsfeeds.o ng.o \
-	perl.o proc.o rc.o site.o tcl.o timer.o wip.o
+	perl.o proc.o rc.o site.o tcl.o wip.o
 
 ALL	= innd inndstart
 
