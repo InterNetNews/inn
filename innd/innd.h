@@ -209,6 +209,8 @@ typedef struct _CHANNEL {
     int			ActiveCnx;
     int			MaxCnx;
     int			HoldTime;
+    time_t		ArtBeg;
+    int			ArtMax;
 } CHANNEL;
 
 

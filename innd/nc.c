@@ -88,6 +88,7 @@ STATIC char		NCbadcommand[] = NNTP_BAD_COMMAND;
 void NCclearwip(CHANNEL *cp) {
     WIPfree(WIPbyhash(cp->CurrentMessageIDHash));
     HashClear(&cp->CurrentMessageIDHash);
+    cp->ArtBeg = 0;
 }
 
 /*
@@ -517,6 +518,7 @@ NCihave(CHANNEL *cp)
     else {
 	cp->Ihave_SendIt++;
 	NCwritereply(cp, NNTP_SENDIT);
+	cp->ArtBeg = Now.time;
 	cp->State = CSgetarticle;
     }
 }
@@ -1396,6 +1398,7 @@ STATIC FUNCTYPE NCtakethis(CHANNEL *cp)
     /* save ID for later NACK or ACK */
     (void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_FAILID_VAL, p);
 
+    cp->ArtBeg = Now.time;
     cp->State = CSgetarticle;
     /* set WIP for benefit of later code in NCreader */
     if ((wp = WIPbyid(p)) == (WIP *)NULL)
