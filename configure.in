@@ -60,15 +60,15 @@ AC_ARG_WITH(etc-dir,
 AC_SUBST(ETCDIR)
 
 AC_ARG_WITH(spool-dir,
-	[  --with-spool-dir=PATH   News storage (default /var/news/spool)], 
+	[  --with-spool-dir=PATH   News storage [PREFIX/spool]], 
 	SPOOLDIR=$with_spool_dir, 
-	SPOOLDIR=/var/news/spool)
+	SPOOLDIR=$prefix/spool)
 AC_SUBST(SPOOLDIR)
 
 AC_ARG_WITH(log-dir,
-	[  --with-log-dir=PATH     Logging directory (default /var/log/news)], 
+	[  --with-log-dir=PATH     Logging directory [PREFIX/news]], 
 	LOGDIR=$with_log_dir, 
-	LOGDIR=/var/log/news)
+	LOGDIR=$prefix/news)
 AC_SUBST(LOGDIR)
 
 AC_ARG_WITH(tmp-path,

@@ -27,9 +27,9 @@ ac_help="$ac_help
 ac_help="$ac_help
   --with-etc-dir=PATH   News config files [PREFIX/etc]"
 ac_help="$ac_help
-  --with-spool-dir=PATH   News storage (default /var/news/spool)"
+  --with-spool-dir=PATH   News storage [PREFIX/spool]"
 ac_help="$ac_help
-  --with-log-dir=PATH     Logging directory (default /var/log/news)"
+  --with-log-dir=PATH     Logging directory [PREFIX/news]"
 ac_help="$ac_help
   --with-tmp-path=PATH    Temporary files directory"
 ac_help="$ac_help
@@ -643,7 +643,7 @@ if test "${with_spool_dir+set}" = set; then
   withval="$with_spool_dir"
   SPOOLDIR=$with_spool_dir
 else
-  SPOOLDIR=/var/news/spool
+  SPOOLDIR=$prefix/spool
 fi
 
 
@@ -653,7 +653,7 @@ if test "${with_log_dir+set}" = set; then
   withval="$with_log_dir"
   LOGDIR=$with_log_dir
 else
-  LOGDIR=/var/log/news
+  LOGDIR=$prefix/news
 fi
 
 
