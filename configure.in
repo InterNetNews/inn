@@ -370,13 +370,11 @@ if test x"$DO_PYTHON" = xdefine ; then
     INN_ENSURE_PATH_PROG(_PATH_PYTHON, python)
 fi
 
-dnl Checks for libraries.  Remember that these tests are done by linking a
-dnl small program referring to the function with that library, so if the
-dnl function exists in libc and the library exists, the test will always
-dnl succeed regardless of whether the library is needed for the function.
-dnl In several cases, we explicitly just add the library to LIBS on success
-dnl rather than using default actions so as not to clutter config.h with
-dnl defines we never use.
+dnl Checks for libraries.  Use AC_SEARCH_LIBS where possible to avoid
+dnl adding libraries when the function is found in libc.  In several
+dnl cases, we explicitly just add the library to LIBS on success rather
+dnl than using default actions so as not to clutter config.h with defines
+dnl we never use.
 
 dnl Several OSes have crypt() in a seperate library for legal reasons.
 AC_SEARCH_LIBS(crypt, crypt)
@@ -397,20 +395,7 @@ AC_CHECK_FUNC(socket, , [
         AC_CHECK_LIB(nsl, socket, LIBS="$LIBS -lsocket -lnsl", , -lsocket)
     ], "$LIBS")
 ])
-
-dnl FIXME: What platform is this actually needed on?
-AC_SEARCH_LIBS(inet_addr, 44bsd, , , "$LIBS")
-
-dnl By this point, we almost certainly have inet_aton, but if we don't,
-dnl check in another place.  If we still can't find it, add it to LIBOBJS.
-dnl
-dnl FIXME: This is a mangled version of an earlier test that looked for a
-dnl malfunctioning inet_aton on IRIX when compiling with gcc.  It needs to
-dnl be replaced by a real test for that particular problem.
-AC_CHECK_FUNC(inet_aton, , [
-    AC_CHECK_LIB(bind, inet_aton, LIBS="$LIBS -bind",
-                 LIBOBJS="$LIBOBJS inet_addr.o")
-])
+AC_SEARCH_LIBS(inet_addr, 44bsd)
 
 dnl INN currently doesn't use the threading libraries, but check for them in
 dnl preparation for the day we do.
@@ -526,9 +511,9 @@ AC_HEADER_SYS_WAIT
 
 dnl Generic checks for header files.
 dnl NOTUSED: sys/file.h sys/ioctl.h
-AC_CHECK_HEADERS(fcntl.h limits.h ndbm.h sgtty.h stddef.h stdint.h \
-                 sys/file.h sys/filio.h sys/ioctl.h sys/select.h \
-                 sys/sysinfo.h sys/time.h unistd.h)
+AC_CHECK_HEADERS(fcntl.h limits.h ndbm.h stddef.h stdint.h sys/file.h \
+                 sys/filio.h sys/ioctl.h sys/select.h sys/sysinfo.h \
+                 sys/time.h unistd.h)
 
 dnl Some Linux systems have db1/ndbm.h instead of ndbm.h.
 if test x"$ac_cv_header_ndbm_h" = xno ; then
@@ -576,33 +561,6 @@ dnl If sig_atomic_t is available, use it instead of int as the type of a
 dnl variable that can be set inside signal handlers.
 INN_CHECK_TYPE(sig_atomic_t, int, [#include <signal.h>])
 
-dnl Make sure INADDR_NONE is defined.
-dnl FIXME: The code that uses this should just check against -1 instead.
-AC_DEFUN(INN_CHECK_DEFINE, [
-    AC_MSG_CHECKING(for $1)
-changequote(<<, >>)dnl
-define(<<AC_VAR_NAME>>, translit($1, [A-Z], [a-z]))dnl
-changequote([, ])dnl
-    AC_CACHE_VAL(inn_cv_[]AC_VAR_NAME, [AC_EGREP_CPP(yes, [
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
-#ifdef INADDR_NONE
-yes
-#endif
-],
-        inn_cv_[]AC_VAR_NAME=yes,
-        inn_cv_[]AC_VAR_NAME=no
-    )])dnl
-    AC_MSG_RESULT($inn_cv_[]AC_VAR_NAME)
-    if test x"$inn_cv_[]AC_VAR_NAME" = xno ; then
-        AC_DEFINE($1, $2)
-    fi
-])
-INN_CHECK_DEFINE(INADDR_NONE, [(unsigned long) -1])
-
 dnl Check for SUN_LEN.
 AC_DEFUN(INN_MACRO_SUN_LEN, [
     AC_MSG_CHECKING(for SUN_LEN)
@@ -610,12 +568,10 @@ AC_DEFUN(INN_MACRO_SUN_LEN, [
 #include <sys/types.h>
 #include <sys/un.h>
     ], [
-int main() {
     struct sockaddr_un sun;
     int i;
 
     i = SUN_LEN(&sun);
-}
     ],
     inn_cv_macro_sun_len=yes,
     inn_cv_macro_sun_len=no))
@@ -744,7 +700,7 @@ if test x"$ac_cv_func_statvfs" = xno ; then
 fi
 
 dnl If we can't find any of the following, we have replacements for them.
-AC_REPLACE_FUNCS(getopt pread pwrite strcasecmp strerror strspn)
+AC_REPLACE_FUNCS(getopt inet_aton pread pwrite strcasecmp strerror strspn)
 
 MISSING_OBJ="$LIBOBJS"
 MISSING_SRC=`echo "$MISSING_OBJ" | sed 's/\.o/.c/g'`
