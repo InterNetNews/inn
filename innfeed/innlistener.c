@@ -387,7 +387,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
   Buffer *readArray ;
   static int checkPointCounter ;
 
-  ASSERT (ep = lis->myep) ;
+  ASSERT (ep == lis->myep) ;
 
   bufferAddNullByte  (buffs [0]) ;
   
@@ -571,7 +571,7 @@ static void wakeUp (TimeoutId id, void *data)
   InnListener lis = (InnListener) data ;
   Buffer *readArray ;
 
-  ASSERT (id = lis->inputEOFSleepId) ;
+  ASSERT (id == lis->inputEOFSleepId) ;
 
   lis->inputEOFSleepId = 0 ;
   readArray = makeBufferArray (bufferTakeRef (lis->inputBuffer), NULL) ;
