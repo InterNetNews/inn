@@ -14,6 +14,7 @@
 
 /* Forward declarations to avoid unnecessary includes. */
 struct addrinfo;
+struct sockaddr;
 
 /* We don't want to accidentally use IPv6 if we were built without it, even if
    we end up using the system getaddrinfo with IPv6 support.  We can do that
@@ -47,6 +48,10 @@ void network_bind_all(unsigned short port, int **fds, int *count);
    -1 on failure, with the error left in errno.  The source address is set
    based on innconf->sourceaddress and innconf->sourceaddress6. */
 int network_connect(struct addrinfo *);
+
+/* Kill IP options (like source routing) if possible.  Returns false only when
+   IP options have been found but clearing them failed. */
+bool network_kill_options(int fd, struct sockaddr *remote);
 
 END_DECLS
 

@@ -468,6 +468,11 @@ RCreader(CHANNEL *cp)
 	    syslog(L_ERROR, "%s cant accept RCreader %m", LogName);
 	return;
     }
+    if (!network_kill_options(fd, (struct sockaddr *) &remote)) {
+        if (close(fd) < 0)
+            syslog(L_ERROR, "%s cant close %d %m", LogName, fd);
+        return;
+    }
 
     /* If RemoteTimer is not zero, then check the limits on incoming
        connections on a total and per host basis.

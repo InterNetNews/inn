@@ -279,3 +279,49 @@ network_connect(struct addrinfo *ai)
         return -1;
     }
 }
+
+
+/*
+**  Strip IP options if possible (source routing and similar sorts of things)
+**  just out of paranoia.  This function currently only supports IPv4.  If
+**  anyone knows for sure whether this is necessary for IPv6 as well and knows
+**  how to support it if it is necessary, please submit a patch.  If any
+**  options are found, they're reported using notice.
+**
+**  Based on 4.4BSD rlogind source by way of Wietse Venema (tcp_wrappers),
+**  adapted for INN by smd and reworked some by Russ Allbery.
+*/
+#ifdef IP_OPTIONS
+bool
+network_kill_options(int fd, struct sockaddr *remote)
+{
+    int status;
+    char options[BUFSIZ / 3];
+    socklen_t optsize = sizeof(options);
+
+    if (remote->sa_family != AF_INET)
+        return true;
+    status = getsockopt(fd, IPPROTO_IP, IP_OPTIONS, options, &optsize);
+    if (status == 0 && optsize != 0) {
+        char hex[BUFSIZ];
+        char *opt, *output;
+
+        output = hex;
+        for (opt = options; optsize > 0; opt++, optsize--, output += 3)
+            snprintf(output, sizeof(hex) - (output - hex), " %2.2x", *opt);
+        notice("connect from %s with IP options (ignored):%s",
+               sprint_sockaddr(remote), hex);
+        if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, NULL, 0) != 0) {
+            syswarn("setsockopt IP_OPTIONS NULL failed");
+            return false;
+        }
+    }
+    return true;
+}
+#else /* !IP_OPTIONS */
+bool
+network_kill_options(int fd UNUSED, struct sockaddr *remote UNUSED)
+{
+    return true;
+}
+#endif
