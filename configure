@@ -4799,7 +4799,7 @@ int main() {
     struct sockaddr_un sun;
     int i;
 
-    i = SUN_LEN(sun);
+    i = SUN_LEN(&sun);
 }
     
 ; return 0; }
