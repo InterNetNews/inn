@@ -490,6 +490,16 @@ Future Projects:
   with cnfsstat).  pullart.c may also stand to be merged into the same
   utility (cnfsadmin might not be a bad name).
 
+* The test suite currently doesn't work when compiled with libtool.
+
+* Support building a profiling version of INN.  The current build rules
+  for this have doubtless suffered from bit rot and need to be tested and
+  probably fixed.
+
+* nnrpd's code to get load averages should be pulled out into libinn and
+  made to use configure results.  Similarly (ideally) with its code for
+  setproctitle.
+
 
 Long-Term Projects:
 
@@ -611,6 +621,13 @@ Long-Term Projects:
   using a garbage collector.
 
 * Look at integrating asprintf and vasprintf.
+
+* Support building in a separate directory than the source tree.  It may
+  be best to just support this via lndir rather than try to do it in
+  configure, but it would be ideal to add support for this to the autoconf
+  system.  Unfortunately, the standard method requires letting configure
+  generate all of the makefiles, which would make running configure take
+  much longer than it does currently.
 
 
 Complete Code Reorganization
