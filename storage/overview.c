@@ -502,35 +502,42 @@ char *OVERretrieve(TOKEN *token, int *Overlen) {
     char *addr;
     char *p;
     static char *line = (char *)NULL;
+    UNIOVER		*config;
 
     if (!Initialized || token->index == OVER_NONE)
 	return (char *)NULL;
+    for (config=OVERconfig;config!=NULL;config=config->next) {
+	if (config->index == token->index)
+	    break;
+    }
+    if (config == NULL)
+	return (char *)NULL;
     if (OVERmmap) {
-	if (OVERconfig[token->index].size <= token->offset || token->offset < 0)
+	if (config->size <= token->offset || token->offset < 0)
 	    return (char *)NULL;
-	addr = OVERconfig[token->index].addr + token->offset;
-	for (p = addr; p < OVERconfig[token->index].addr+OVERconfig[token->index].size; p++)
+	addr = config->addr + token->offset;
+	for (p = addr; p < config->addr+config->size; p++)
 	    if ((*p == '\r') || (*p == '\n'))
 		break;
 	*Overlen = p - addr;
 	return addr;
     } else {
-	if (OVERconfig[token->index].offset != token->offset) {
-	    if (fseek(OVERconfig[token->index].fp, token->offset, SEEK_SET) == -1)
+	if (config->offset != token->offset) {
+	    if (fseek(config->fp, token->offset, SEEK_SET) == -1)
 		return (char *)NULL;
-	    OVERconfig[token->index].offset = token->offset;
+	    config->offset = token->offset;
 	}
 	if (line == (char *)NULL)
 	    line = NEW(char, MAXOVERLINE);
-	if (fgets(line, MAXOVERLINE, OVERconfig[token->index].fp) == NULL)
+	if (fgets(line, MAXOVERLINE, config->fp) == NULL)
 	    return NULL;
 	if ((*Overlen = strlen(line)) < 10)
 	    return (char *)NULL;
 	if (*Overlen  >= MAXOVERLINE) {
-	    OVERconfig[token->index].offset = -1;
+	    config->offset = -1;
 	    *Overlen = MAXOVERLINE;
 	} else {
-	    OVERconfig[token->index].offset += *Overlen;
+	    config->offset += *Overlen;
 	}
 	line[*Overlen-1] = '\0';
 	return line;
