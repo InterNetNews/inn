@@ -14,6 +14,16 @@ static const char test_string1[] = "This is a test";
 static const char test_string2[] = " of the buffer system";
 static const char test_string3[] = "This is a test\0 of the buffer system";
 
+static void
+test_vsprintf(struct buffer *buffer, bool append, const char *format, ...)
+{
+    va_list args;
+
+    va_start(args, format);
+    buffer_vsprintf(buffer, append, format, args);
+    va_end(args);
+}
+
 int
 main(void)
 {
@@ -25,7 +35,7 @@ main(void)
     ssize_t count;
     size_t offset;
 
-    test_init(77);
+    test_init(89);
 
     /* buffer_set, buffer_append, buffer_swap */
     buffer_set(&one, test_string1, sizeof(test_string1));
@@ -199,6 +209,36 @@ main(void)
     ok_int(76, 3072, three->size);
     ok_int(77, 2049, three->left);
     unlink("buffer-test");
+    free(data);
+    buffer_free(three);
+
+    /* buffer_vsprintf */
+    three = buffer_new();
+    test_vsprintf(three, true, "testing %d testing", 6);
+    ok_int(78, 0, three->used);
+    ok_int(79, 17, three->left);
+    buffer_append(three, "", 1);
+    ok_int(80, 18, three->left);
+    ok_string(81, "testing 6 testing", three->data);
+    three->left--;
+    three->used += 5;
+    three->left -= 5;
+    test_vsprintf(three, true, " %d", 7);
+    ok_int(82, 14, three->left);
+    buffer_append(three, "", 1);
+    ok_string(83, "testing 6 testing 7", three->data);
+    test_vsprintf(three, false, "%d testing", 8);
+    ok_int(84, 9, three->left);
+    ok_string(85, "8 testing", three->data);
+    data = xmalloc(1050);
+    memset(data, 'a', 1049);
+    data[1049] = '\0';
+    ok_int(86, 1024, three->size);
+    test_vsprintf(three, false, "%s", data);
+    ok_int(87, 2048, three->size);
+    ok_int(88, 1049, three->left);
+    buffer_append(three, "", 1);
+    ok_string(89, data, three->data);
     free(data);
     buffer_free(three);
 

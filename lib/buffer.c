@@ -118,31 +118,35 @@ buffer_append(struct buffer *buffer, const char *data, size_t length)
 /*
 **  Print data into a buffer from the supplied va_list, either appending to
 **  the end of it or replacing the existing contents.  The new data shows up
-**  as unused data at the end of the buffer.  Returns true if successful and
-**  false if there isn't enough room.  If there wasn't enough room, the buffer
-**  is also resized so that if the command is retried, it will succeed.  The
-**  trailing nul is not added to the buffer.
+**  as unused data at the end of the buffer.  The trailing nul is not added to
+**  the buffer.
 */
-bool
+void
 buffer_vsprintf(struct buffer *buffer, bool append, const char *format,
                 va_list args)
 {
     size_t total, avail;
     ssize_t status;
+    va_list args_copy;
 
     if (!append)
         buffer_set(buffer, NULL, 0);
     total = buffer->used + buffer->left;
     avail = buffer->size - total;
-    status = vsnprintf(buffer->data + total, avail, format, args);
+    va_copy(args_copy, args);
+    status = vsnprintf(buffer->data + total, avail, format, args_copy);
+    va_end(args_copy);
     if (status < 0)
-        return false;
+        return;
     if ((size_t) status + 1 <= avail) {
         buffer->left += status;
-        return true;
     } else {
         buffer_resize(buffer, total + status + 1);
-        return false;
+        avail = buffer->size - total;
+        status = vsnprintf(buffer->data + total, avail, format, args);
+        if (status < 0 || (size_t) status + 1 > avail)
+            return;
+        buffer->left += status;
     }
 }
 
@@ -157,16 +161,10 @@ void
 buffer_sprintf(struct buffer *buffer, bool append, const char *format, ...)
 {
     va_list args;
-    bool done;
 
     va_start(args, format);
-    done = buffer_vsprintf(buffer, append, format, args);
+    buffer_vsprintf(buffer, append, format, args);
     va_end(args);
-    if (!done) {
-        va_start(args, format);
-        buffer_vsprintf(buffer, append, format, args);
-        va_end(args);
-    }
 }
 
 
