@@ -56,6 +56,19 @@ xrealloc(void *p, size_t size, const char *file, int line)
     return newp;
 }
 
+char *
+xstrdup(const char *s, const char *file, int line)
+{
+    char *p;
+
+    p = strdup(s);
+    while (p == NULL) {
+        (*xmemfailure)("strdup", strlen(s), file, line);
+        p = strdup(s);
+    }
+    return p;
+}
+
 static int
 xmemerr(const char *what, size_t size, const char *file, int line)
 {
