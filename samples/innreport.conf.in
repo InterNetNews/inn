@@ -1733,3 +1733,43 @@ section nnrpd_group {
 		total         "total(%nnrpd_group)";
         };
 };
+
+section ihave_site {
+        title   "IHAVE messages offered from:";
+	data    "%controlchan_ihave_site";
+	sort    "$controlchan_ihave_site{$b} <=> $controlchan_ihave_site{$a}";
+        column {
+                name          "System";
+                format        "%-71.71s";
+		value         "$key";
+		format_total  "TOTAL: %-64.64s";
+		total         "$num";
+        };
+        column {
+                name          "Offered";
+                format_name   "%7s";
+                format        "%7d";
+		value         "$controlchan_ihave_site{$key}";
+		total         "total(%controlchan_ihave_site)";
+        };
+};
+
+section sendme_site {
+        title   "SENDME messages offered from:";
+	data    "%controlchan_sendme_site";
+	sort    "$controlchan_sendme_site{$b} <=> $controlchan_sendme_site{$a}";
+        column {
+                name          "System";
+                format        "%-71.71s";
+		value         "$key";
+		format_total  "TOTAL: %-64.64s";
+		total         "$num";
+        };
+        column {
+                name          "Offered";
+                format_name   "%7s";
+                format        "%7d";
+		value         "$controlchan_sendme_site{$key}";
+		total         "total(%controlchan_sendme_site)";
+        };
+};

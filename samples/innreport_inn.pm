@@ -496,6 +496,16 @@ sub collect
     return 1 if $left =~ m/\S+ renumbering/o;
     # renumber
     return 1 if $left =~ m/\S+ renumber /o;
+    # ihave from me
+    if ($left =~ m/\S+ ihave_from_me /o) {
+	$controlchan_ihave_site{'ME'}++;
+	return 1;
+    }
+    # sendme from me
+    if ($left =~ m/\S+ sendme_from_me /o) {
+	$controlchan_sendme_site{'ME'}++;
+	return 1;
+    }
 
     # newgroup
     if ($left =~ m/\S+ newgroup (\S+) as (\S)/o)
@@ -1582,6 +1592,23 @@ sub collect
       return 1;
     }
   }
+  ########
+  ## controlchan
+  if ($prog eq "controlchan")
+  {
+      if ($left =~ m/^control_(sendme|ihave), [^,]+, (\S+), doit,/o) {
+	  my ($site) = $2;
+	  if ($1 eq "sendme") {
+	      $controlchan_sendme_site{$site}++;
+	  } elsif ($1 eq "ihave") {
+	      $controlchan_ihave_site{$site}++;
+	  }
+	  return 1;
+      }
+      return 1 if $left =~ m/^starting /o;
+      return 1 if $left =~ m/^loaded /o;
+      return 1;
+  }
 
   ###########
   ## cnfsstat
@@ -1650,7 +1677,6 @@ sub collect
   return 1 if ($prog eq "newsx");
   return 1 if ($prog eq "demmf");
   return 1 if ($prog eq "nnnn");
-  return 1 if ($prog eq "controlchan");
   return 0;
 }
 
