@@ -65,6 +65,7 @@ extern void	        HeaderCleanFrom(char *from);
 extern struct _DDHANDLE	*DDstart(FILE *FromServer, FILE *ToServer);
 extern void		DDcheck(struct _DDHANDLE *h, char *group);
 extern char		*DDend(struct _DDHANDLE *h);
+extern char		*FindEndOfHeader(const char *Body, const char *EndOfData);
 
 /* NNTP functions. */
 extern int	NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff);

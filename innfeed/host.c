@@ -95,7 +95,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #define TRYBLOCKEDHOSTPERIOD 120
 
 extern char *configFile ;
-extern mainLogStatus (FILE *fp) ;
+extern void mainLogStatus (FILE *fp) ;
 #if defined(hpux) || defined(__hpux) || defined(_SCO_DS)
 extern int h_errno;
 #endif

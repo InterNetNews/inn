@@ -954,6 +954,7 @@ STATIC void
 ARTreject(code, cp, buff, article)
     Reject_type code;
     CHANNEL     *cp;
+    char	*buff;
     BUFFER	*article;
 {
   /* Remember why the article was rejected (for the status file) */

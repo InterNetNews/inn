@@ -1008,7 +1008,7 @@ STATIC char *OVERGetHeader(char *p, int field)
 /*
 **  Read overview.fmt and find index for headers
 */
-STATIC OVfindheaderindex() {
+STATIC void OVfindheaderindex() {
     FILE	*F;
     char	*active;
     int		i;
