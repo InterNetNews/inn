@@ -77,7 +77,7 @@ INSTALLED_SEC8 =	$D$(MAN8)/actived.8 $D$(MAN8)/actsync.8 \
 			$D$(MAN8)/expirerm.8 $D$(MAN8)/fastrm.8 \
 			$D$(MAN8)/filechan.8 $D$(MAN8)/inncheck.8 \
 			$D$(MAN8)/innd.8 $D$(MAN8)/inndf.8 \
-			$D$(MAN8)/inndstart.8
+			$D$(MAN8)/inndstart.8 \
 			$D$(MAN8)/innreport.8 $D$(MAN8)/innstat.8 \
 			$D$(MAN8)/innwatch.8 $D$(MAN8)/innxbatch.8 \
 			$D$(MAN8)/innxmit.8 $D$(MAN8)/makeactive.8 \
