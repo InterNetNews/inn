@@ -60,6 +60,10 @@ not comprehensively):
    lib/md5.c is covered under the standard free MD5 license from RSA Data
    Security.  See the file for more details.
 
+   tests/runtests.c is covered under a license very similar to the X
+   Consortium license (less restrictive than INN's licese).  See the
+   beginning of the file for details.
+
 Please note that the files in the contrib directory are not properly part
 of INN and may be under widely varying licenses.  Please each file and/or
 its documentation for license information.
