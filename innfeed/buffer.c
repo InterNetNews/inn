@@ -1,0 +1,500 @@
+/* -*- c -*-
+ *
+ * Author:      James Brister <brister@vix.com> -- berkeley-unix --
+ * Start Date:  Wed Dec 27 14:25:35 1995
+ * Project:     INN (innfeed)
+ * File:        buffer.c
+ * RCSId:       $Id$
+ *              
+ * Copyright:   Copyright (c) 1996 by Internet Software Consortium
+ *
+ *              Permission to use, copy, modify, and distribute this
+ *              software for any purpose with or without fee is hereby
+ *              granted, provided that the above copyright notice and this
+ *              permission notice appear in all copies.
+ *
+ *              THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE
+ *              CONSORTIUM DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+ *              SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ *              MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL INTERNET
+ *              SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
+ *              INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ *              WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ *              WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ *              TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE
+ *              USE OR PERFORMANCE OF THIS SOFTWARE.
+ *              
+ * Description: The implementation of the Buffer class. Buffers are
+ *              reference counted objects that abstract memory regions in a
+ *              way similar to 'struct iovec'.
+ * 
+ */
+
+#if ! defined (lint)
+static const char *rcsid = "$Id$" ;
+static void use_rcsid (const char *rid) {   /* Never called */
+  use_rcsid (rcsid) ; use_rcsid (rid) ;
+}
+#endif
+
+#include "config.h"
+
+#include <stdlib.h>
+#include <assert.h>
+#include <stdarg.h>
+#include <string.h>
+
+#include "buffer.h"
+
+
+static Buffer gBufferList = NULL ;
+static u_int bufferCount = 0 ;
+static u_int bufferByteCount = 0 ;
+
+
+struct buffer_s 
+{
+    int refCount ;
+    char *mem ;
+    size_t memSize ;            /* the length of mem */
+    size_t dataSize ;           /* amount that has actual data in it. */
+    bool deletable ;
+    struct buffer_s *next ;
+};
+    
+
+Buffer newBuffer (size_t size)
+{
+  Buffer nb = CALLOC (struct buffer_s, 1) ;
+  ASSERT (nb != NULL) ;
+
+  nb->refCount = 1 ;
+
+  nb->mem = MALLOC (size + 1) ;
+  ASSERT (nb->mem != NULL) ;
+  
+  nb->mem [size] = '\0' ;
+  nb->memSize = size ;
+  nb->dataSize = 0 ;
+  nb->deletable = true ;
+
+  bufferByteCount += size + 1 ;
+  bufferCount++ ;
+
+  nb->next = gBufferList ;
+  gBufferList = nb ;
+  
+#if 0
+  dprintf (1,"Creating a DELETABLE buffer %p\n",nb) ;
+#endif
+
+  return nb ;
+}
+
+
+Buffer newBufferByCharP (const char *ptr, size_t size, size_t dataSize)
+{
+  Buffer nb = CALLOC (struct buffer_s, 1) ;
+  ASSERT (nb != NULL) ;
+  
+  nb->refCount = 1 ;
+  nb->mem = (char *) ptr ;      /* cast away const */
+  nb->memSize = size ;
+  nb->dataSize = dataSize ;
+  nb->deletable = false ;
+
+  nb->next = gBufferList ;
+  gBufferList = nb ;
+
+  bufferCount++ ;
+#if 0
+  dprintf (1,"Creating a NON-DELETABLE buffer %p\n",nb) ;
+#endif
+  
+  return nb ;
+}
+
+
+void delBuffer (Buffer buff) 
+{
+  if (buff != NULL && --(buff->refCount) == 0)
+    {
+      Buffer p, q ;
+  
+#if 0
+      dprintf (1,"Freeing a %s buffer (%p)\n",
+               (buff->deletable ? "DELETABLE" : "NON-DELETABLE"), buff) ;
+#endif
+
+      bufferCount-- ;
+      if (buff->deletable)
+        {
+          bufferByteCount -= (buff->memSize + 1) ;
+          FREE (buff->mem) ;
+          buff->mem = NULL ;
+        }
+
+      for (p = gBufferList, q = NULL ; p != NULL ; q = p, p = p->next)
+        {
+          if (p == buff)
+            {
+              if (p == gBufferList)
+                gBufferList = p->next ;
+              else
+                q->next = p->next ;
+              break ;
+            }
+        }
+
+      ASSERT (p != NULL) ;
+      
+      FREE (buff) ;
+    }
+}
+
+Buffer bufferTakeRef (Buffer buff) 
+{
+  ASSERT (buff != NULL) ;
+  
+  if (buff != NULL)
+    buff->refCount++ ;
+
+  return buff ;
+}
+
+
+void gPrintBufferInfo (FILE *fp, u_int indentAmt)
+{
+  Buffer b ;
+  char indent [INDENT_BUFFER_SIZE] ;
+  u_int i ;
+
+  for (i = 0 ; i < MIN(INDENT_BUFFER_SIZE - 1,indentAmt) ; i++)
+    indent [i] = ' ' ;
+  indent [i] = '\0' ;
+  
+  fprintf (fp,"%sGlobal Buffer List : (count %d) {\n",indent,bufferCount) ;
+  
+  for (b = gBufferList ; b != NULL ; b = b->next)
+    printBufferInfo (b,fp,indentAmt + INDENT_INCR) ;
+
+  fprintf (fp,"%s}\n",indent) ;
+}
+
+void printBufferInfo (Buffer buffer, FILE *fp, u_int indentAmt)
+{
+  char indent [INDENT_BUFFER_SIZE] ;
+  char bufferStart [256] ;
+  u_int i ;
+
+  for (i = 0 ; i < MIN(INDENT_BUFFER_SIZE - 1,indentAmt) ; i++)
+    indent [i] = ' ' ;
+  indent [i] = '\0' ;
+  
+  fprintf (fp,"%sBuffer : %p {\n",indent,buffer) ;
+
+  if (buffer == NULL)
+    {
+      fprintf (fp,"%s}\n",indent) ;
+      return ;
+    }
+
+  i = MIN(sizeof (bufferStart) - 1,buffer->dataSize) ;
+  strncpy (bufferStart,buffer->mem,i) ;
+  bufferStart [i] = '\0' ;
+  
+  fprintf (fp,"%s    refcount : %d\n",indent,buffer->refCount) ;
+  fprintf (fp,"%s    data-size : %ld\n",indent,(long) buffer->dataSize) ;
+  fprintf (fp,"%s    mem-size : %ld\n",indent,(long) buffer->memSize) ;
+  fprintf (fp,"%s    base : %p\n", indent,(void *) buffer->mem) ;
+  fprintf (fp,"%s    deletable : %s\n",indent,boolToString(buffer->deletable));
+  fprintf (fp,"%s    buffer [0:%ld] : \"%s\"\n",
+           indent, (long) i, bufferStart) ;
+  fprintf (fp,"%s}\n",indent) ;
+}
+
+
+void *bufferBase (Buffer buff) 
+{
+  return buff->mem ;
+}
+
+size_t bufferSize (Buffer buff) 
+{
+  return buff->memSize ;
+}
+
+size_t bufferDataSize (Buffer buff) 
+{
+  return buff->dataSize ;
+}
+
+void bufferIncrDataSize (Buffer buff, size_t size) 
+{
+  if (buff->dataSize + size > buff->memSize)
+    die ("Trying to make a buffer data size bigger than its memory alloc");
+  else
+    buff->dataSize += size ;
+}
+
+void bufferDecrDataSize (Buffer buff, size_t size) 
+{
+  ASSERT (size > buff->dataSize) ;
+  
+  buff->dataSize -= size ;
+}
+
+void bufferSetDataSize (Buffer buff, size_t size) 
+{
+  buff->dataSize = size ;
+
+  ASSERT (buff->dataSize <= buff->memSize) ;
+}
+
+
+void freeBufferArray (Buffer *buffs)
+{
+  Buffer *b = buffs ;
+  
+  while (b && *b)
+    {
+      delBuffer (*b) ;
+      b++ ;
+    }
+
+  if (buffs)
+    FREE (buffs) ;
+}
+
+
+  /* Allocate an array and put all the arguments (the last of which must be
+     NULL) into it. The terminating NULL is put in the returned array. */
+Buffer *makeBufferArray (Buffer buff, ...)
+{
+  va_list ap ;
+  size_t cLen = 10, idx = 0 ;
+  Buffer *ptr, p ;
+
+  ptr = CALLOC (Buffer, cLen) ;
+  ASSERT (ptr != NULL) ;
+
+  ptr [idx++] = buff ;
+
+  va_start (ap, buff) ;
+  do
+    {
+      p = va_arg (ap, Buffer) ;
+      if (idx == cLen)
+        {
+          cLen += 10 ;
+          ptr = REALLOC (ptr,Buffer,cLen) ;
+          ASSERT (ptr != NULL) ;
+        }
+      ptr [idx++] = p ;
+    }
+  while (p != NULL) ;
+  va_end (ap) ;
+
+  return ptr ;
+}
+
+
+bool isDeletable (Buffer buff)
+{
+  return buff->deletable ;
+}
+
+
+
+  /* Dups the array including taking out references on the Buffers inside */
+Buffer *dupBufferArray (Buffer *array)
+{
+  Buffer *newArr ;
+  int count = 0 ;
+
+  while (array && array [count] != NULL)
+    count++ ;
+
+  newArr = ALLOC (Buffer, count + 1) ;
+  ASSERT (newArr != NULL) ;
+
+  for (count = 0 ; array [count] != NULL ; count++)
+    newArr [count] = bufferTakeRef (array [count]) ;
+
+  newArr [count] = NULL ;
+
+  return newArr ;
+}
+
+
+u_int bufferArrayLen (Buffer *array)
+{
+  u_int count = 0 ;
+
+  if (array != NULL)
+    while (*array != NULL)
+      {
+        count++ ;
+        array++ ;
+      }
+
+  return count ;
+}
+
+
+bool copyBuffer (Buffer dest, Buffer src)
+{
+  char *baseDest = bufferBase (dest) ;
+  char *baseSrc = bufferBase (src) ;
+  u_int amt = bufferDataSize (src) ;
+
+  if (amt > bufferSize (dest))
+    return false ;
+
+  memcpy (baseDest, baseSrc, amt) ;
+
+  bufferSetDataSize (dest,amt) ;
+
+  return true ;
+}
+
+
+u_int bufferRefCount (Buffer buf)
+{
+  return buf->refCount ;
+}
+
+
+void bufferAddNullByte (Buffer buff) 
+{
+  char *p = bufferBase (buff) ;
+
+  p [buff->dataSize] = '\0' ;
+}
+
+
+  /* append the src buffer to the dest buffer growing the dest as needed.
+     Can only be done to deletable buffers. */
+bool concatBuffer (Buffer dest, Buffer src)
+{
+  ASSERT (dest->deletable) ;
+
+  if ( !dest->deletable )
+    return false ;              /* yeah, i know this is taken care of above */
+      
+  if ((dest->dataSize + src->dataSize) > dest->memSize)
+    {
+      char *newMem = MALLOC (dest->dataSize + src->dataSize + 1) ;
+      ASSERT (newMem != NULL) ;
+
+      bufferByteCount += ((dest->dataSize + src->dataSize) - dest->memSize) ;
+      
+      memset (newMem, 0, dest->dataSize + src->dataSize + 1) ;
+      memcpy (newMem, dest->mem, dest->dataSize) ;
+
+      ASSERT (dest->mem != NULL) ;
+      FREE (dest->mem) ;
+
+      dest->mem = newMem ;
+      dest->memSize = dest->dataSize + src->dataSize ; /* yep. 1 less */
+    }
+
+  memcpy (&dest->mem[dest->dataSize], src->mem, dest->dataSize) ;
+
+  dest->dataSize += src->dataSize ;
+
+  return true ;
+}
+
+
+  /* realloc the buffer's memory to increase the size by AMT */
+bool expandBuffer (Buffer buff, size_t amt)
+{
+  dprintf (2,"Expanding buffer....\n") ;
+  
+  if (!buff->deletable)
+    return false ;
+
+  bufferByteCount += amt ;
+  buff->memSize += amt ;
+
+  buff->mem = REMALLOC (buff->mem, buff->memSize + 1) ;
+  ASSERT (buff->mem != NULL) ;
+
+  return true ;
+}
+
+
+  /* Take a buffer and shift the contents around to add the necessary CR
+     before every line feed and a '.' before every '.' at the start of a
+     line. */
+bool nntpPrepareBuffer (Buffer buffer)
+{
+  int newlines, dots, msize, newDsize, dsize, i, j, extra ;
+  char *base ;
+  bool needfinal = false ;
+
+  ASSERT (buffer != NULL) ;
+
+  newlines = 0 ;
+  dots = 0 ;
+  dsize = buffer->dataSize ;
+  msize = buffer->memSize - 1 ;
+  base = buffer->mem ;
+
+  for (i = 0 ; i < dsize ; i++)
+    if (base [i] == '\n')
+      newlines++ ;
+    else if (base [i] == '.' && i > 0 && base [i - 1] == '\n')
+      dots++ ;
+
+  extra = newlines + dots ;
+
+  if (dsize > 0 && base [dsize - 1] != '\n')
+    {
+      needfinal = true ;
+      extra += 2 ;
+    }
+
+  newDsize = dsize + extra ;
+  
+  if (msize - dsize < extra)
+    {
+      dprintf (2,"Expanding buffer in nntpPrepareBuffer (from %d to %d)\n",
+               msize, msize + (extra - (msize - dsize))) ;
+
+      if ( !expandBuffer (buffer, extra - (msize - dsize)) )
+        {
+          dprintf (1,"Expand failed...\n") ;
+          return false ;
+        }
+      
+      ASSERT (dsize == (int) buffer->dataSize) ;
+
+      base = buffer->mem ;
+    }
+
+  base [newDsize] = '\0' ;
+  if (needfinal)
+    {
+      base [newDsize - 1] = '\n' ;
+      base [newDsize - 2] = '\r' ;
+      newDsize -= 2 ;
+    }
+  
+  for (j = dsize -  1, i = newDsize - 1 ; extra && i >= 0 ; i--, j--) 
+    {
+      base [i] = base [j] ;
+      if (base [i] == '\n')
+        base [--i] = '\r' ;
+      else if (base [i] == '.' && i > 0 && base [j - 1] == '\n')
+        base [--i] = '.' ;
+    }
+
+  if (needfinal)
+    newDsize += 2 ;
+  
+  bufferSetDataSize (buffer,newDsize) ;
+  
+  return true ;
+}
