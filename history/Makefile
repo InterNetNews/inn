@@ -76,6 +76,9 @@ $(D)$(PATHLIB)/libinnhist.$(EXTLIB): libinnhist.$(EXTLIB)
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:	$(SOURCES)
 	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
+	@for D in $(HISSUBDIR) ; do \
+	    cd $$D && $(MAKE) depend || exit 1 ; cd .. ; \
+	done
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 his.o: his.c ../include/config.h ../include/inn/defines.h \

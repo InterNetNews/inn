@@ -87,6 +87,9 @@ $(D)$(PATHLIB)/libstorage.$(EXTLIB): libstorage.$(EXTLIB)
 
 depend:	Makefile $(SOURCES)
 	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
+	@for D in $(SUBDIRS) ; do \
+	    cd $$D && $(MAKE) depend || exit 1 ; cd .. ; \
+	done
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 interface.o: interface.c ../include/config.h ../include/inn/defines.h \
