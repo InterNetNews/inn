@@ -2296,7 +2296,7 @@ ARTpost(CHANNEL *cp)
       }
     }
   } else {
-    data->Distribution.List[0] = NULL;
+    ARTparsedist("", 0, &data->Distribution);
   }
 
   for (i = nSites, sp = Sites; --i >= 0; sp++) {
