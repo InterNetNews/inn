@@ -155,8 +155,7 @@ time_t  PrivateTime;
 typedef void (*sigfn) (int) ;
 static sigfn *sigHandlers ;
 
-/* XXX - should be sig_atomic_t if we have it */
-static VOLATILE int *sigFlags ;
+static volatile sig_atomic_t *sigFlags ;
 
 
 
