@@ -756,6 +756,7 @@ parsedate_rfc2822_lax(const char *date)
     const char *p, *start;
     struct tm tm;
     int values[6];
+    bool have_zone;
     int zone_sign;
     long zone_offset;
     time_t result;
@@ -821,6 +822,7 @@ parsedate_rfc2822_lax(const char *date)
        parsing rules for it.  If we don't recognize the time zone at all, just
        bail and assume GMT.  parsedate used the final time zone found, when
        multiple ones were supplied, so emulate that behavior. */
+    have_zone = false;
     zone_offset = 0;
     while (p != NULL && *p != '\0') {
         if (*p == '-' || *p == '+') {
@@ -839,6 +841,7 @@ parsedate_rfc2822_lax(const char *date)
             if (p == NULL)
                 zone_offset = 0;
         }
+        have_zone = true;
         if (p != NULL)
             p = skip_cfws(p);
     }
@@ -855,6 +858,11 @@ parsedate_rfc2822_lax(const char *date)
        since epoch and then apply the time zone offset. */
     if (!valid_tm(&tm))
         return (time_t) -1;
-    result = mktime_utc(&tm);
+    if (have_zone)
+        result = mktime_utc(&tm);
+    else {
+        tm.tm_isdst = -1;
+        result = mktime(&tm);
+    }
     return (result == (time_t) -1) ? result : result - zone_offset;
 }
