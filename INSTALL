@@ -1407,3 +1407,9 @@ Processing Newsgroup Control Messages
     control.ctl.  <ftp://ftp.isc.org/pub/pgpcontrol/PGPKEYS> tries to
     collect the major hierarchy keys.
 
+    If you are using GnuPG, please note that the first user ID on the key
+    will be the one that's used by INN for verification and must match the
+    key listed in control.ctl.  If a hierarchy key has multiple user IDs,
+    you may have to remove all the user IDs except the one that matches the
+    control.ctl entry using "gpg --edit-key" and the "delkey" command.
+

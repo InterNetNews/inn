@@ -1434,3 +1434,9 @@ trust, or certify keys.
 The URLs from which you can get hierarchy keys are noted in comments in
 F<control.ctl>.  L<ftp://ftp.isc.org/pub/pgpcontrol/PGPKEYS> tries to
 collect the major hierarchy keys.
+
+If you are using GnuPG, please note that the first user ID on the key will
+be the one that's used by INN for verification and must match the key
+listed in F<control.ctl>.  If a hierarchy key has multiple user IDs, you
+may have to remove all the user IDs except the one that matches the
+F<control.ctl> entry using C<gpg --edit-key> and the C<delkey> command.
