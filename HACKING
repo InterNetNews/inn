@@ -127,7 +127,7 @@ Documentation
     latest version of podlators.  For versions of Perl earlier than 5.005,
     you'll also need File::Spec in modules/by-module/File.
 
-    podlators 1.19 or later will build INN's documentation without
+    podlators 1.25 or later will build INN's documentation without
     significant changes from the versions that are checked into the
     repository.
 
@@ -540,11 +540,6 @@ Coding Style
 
     *  When noting something that should be improved later, add a comment
        containing "FIXME:" so that one can easily grep for such comments.
-
-    The source is currently full of some rather odd casts, including a lot
-    of casts to void when calling standard functions.  These are historical,
-    designed to make lint shut up.  Don't feel like you have to preserve
-    them provided that gcc -Wall doesn't complain when they're removed.
 
     INN's indentation style roughly corresponds to that produced by GNU
     indent 2.2.6 with the following options:
