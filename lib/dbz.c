@@ -67,23 +67,20 @@ Limited can't tag warnings once per dbzinit() by Sang-yong Suh (May, 1998)
 
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include "config.h"
+#include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <sys/mman.h>
-#include <configdata.h>
-#include <clibrary.h>
-#include <md5.h>
-#include <libinn.h>
-#include <macros.h>
-#include <dbz.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+
+#include "dbz.h"
+#include "libinn.h"
+#include "macros.h"
+#include "md5.h"
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
