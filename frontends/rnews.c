@@ -22,20 +22,20 @@
 
 
 typedef struct _HEADER {
-    STRING	Name;
-    int		size;
+    const char *Name;
+    int size;
 } HEADER;
 
 
-STATIC BOOL	Verbose;
-STATIC char	*InputFile = "stdin";
-STATIC char	*UUCPHost;
-STATIC char	*PathBadNews = NULL;
-STATIC char	*remoteServer;
-STATIC FILE	*FromServer;
-STATIC FILE	*ToServer;
-STATIC char	UNPACK[] = "gzip";
-STATIC HEADER	RequiredHeaders[] = {
+static bool	Verbose;
+static char	*InputFile = "stdin";
+static char	*UUCPHost;
+static char	*PathBadNews = NULL;
+static char	*remoteServer;
+static FILE	*FromServer;
+static FILE	*ToServer;
+static char	UNPACK[] = "gzip";
+static HEADER	RequiredHeaders[] = {
     { "Message-ID",	10 },
 #define _messageid	0
     { "Newsgroups",	10 },
@@ -57,7 +57,7 @@ STATIC HEADER	RequiredHeaders[] = {
 /*
 **  Do perror, making sure errno is preserved.
 */
-STATIC void
+static void
 xperror(p)
     char	*p;
 {
@@ -73,7 +73,7 @@ xperror(p)
 **  Open up a pipe to a process with fd tied to its stdin.  Return a
 **  descriptor tied to its stdout or -1 on error.
 */
-STATIC int
+static int
 StartChild(fd, path, argv)
     int		fd;
     char	*path;
@@ -81,7 +81,7 @@ StartChild(fd, path, argv)
 {
     int		pan[2];
     int		i;
-    PID_T	pid;
+    pid_t	pid;
 
     /* Create a pipe. */
     if (pipe(pan) < 0) {
@@ -104,8 +104,8 @@ StartChild(fd, path, argv)
 	(void)close(pan[PIPE_READ]);
 
 	/* Stdin comes from our old input. */
-	if (fd != STDIN) {
-	    if ((i = dup2(fd, STDIN)) != STDIN) {
+	if (fd != STDIN_FILENO) {
+	    if ((i = dup2(fd, STDIN_FILENO)) != STDIN_FILENO) {
 		syslog(L_FATAL, "cant dup2 %d to 0 got %d %m", fd, i);
 		_exit(1);
 	    }
@@ -113,8 +113,8 @@ StartChild(fd, path, argv)
 	}
 
 	/* Stdout goes down the pipe. */
-	if (pan[PIPE_WRITE] != STDOUT) {
-	    if ((i = dup2(pan[PIPE_WRITE], STDOUT)) != STDOUT) {
+	if (pan[PIPE_WRITE] != STDOUT_FILENO) {
+	    if ((i = dup2(pan[PIPE_WRITE], STDOUT_FILENO)) != STDOUT_FILENO) {
 		syslog(L_FATAL, "cant dup2 %d to 1 got %d %m",
 		    pan[PIPE_WRITE], i);
 		_exit(1);
@@ -157,7 +157,7 @@ WaitForChildren(int n)
 /*
 **  Clean up the NNTP escapes from a line.
 */
-STATIC char *REMclean(char *buff)
+static char *REMclean(char *buff)
 {
     char	*p;
 
@@ -174,7 +174,7 @@ STATIC char *REMclean(char *buff)
 /*
 **  Write an article to the rejected directory.
 */
-STATIC void Reject(const char *article, const char *reason, const char *arg)
+static void Reject(const char *article, const char *reason, const char *arg)
 {
 #if	defined(DO_RNEWS_SAVE_BAD)
     char	buff[SMBUF];
@@ -196,7 +196,7 @@ STATIC void Reject(const char *article, const char *reason, const char *arg)
 	return;
     }
     i = strlen(article);
-    if (fwrite((POINTER)article, (SIZE_T)1, (SIZE_T)i, F) != i)
+    if (fwrite(article, 1, i, F) != i)
 	syslog(L_ERROR, "cant fwrite %s %m", buff);
     if (fclose(F) == EOF)
 	syslog(L_ERROR, "cant close %s %m", buff);
@@ -209,7 +209,7 @@ STATIC void Reject(const char *article, const char *reason, const char *arg)
 **  whole batch needs to be saved (such as when the server goes down or if
 **  the file is corrupted).
 */
-STATIC BOOL Process(char *article)
+static bool Process(char *article)
 {
     HEADER	        *hp;
     char	        *p;
@@ -327,7 +327,7 @@ STATIC BOOL Process(char *article)
 **  Read the rest of the input as an article.  Just punt to stdio in
 **  this case and let it do the buffering.
 */
-STATIC BOOL
+static bool
 ReadRemainder(fd, first, second)
     register int	fd;
     char		first;
@@ -339,7 +339,7 @@ ReadRemainder(fd, first, second)
     register int	used;
     register int	left;
     register int	i;
-    BOOL		ok;
+    bool		ok;
 
     /* Turn the descriptor into a stream. */
     if ((F = fdopen(fd, "r")) == NULL) {
@@ -356,8 +356,7 @@ ReadRemainder(fd, first, second)
     left = size - used;
 
     /* Read the input. */
-    while ((i = fread((POINTER)&article[used], (SIZE_T)1,
-		    (SIZE_T)left, F)) != 0) {
+    while ((i = fread(&article[used], 1, left, F)) != 0) {
 	if (i < 0) {
 	    syslog(L_FATAL, "cant fread after %d bytes %m", used);
 	    exit(1);
@@ -384,7 +383,7 @@ ReadRemainder(fd, first, second)
 /*
 **  Read an article from the input stream that is artsize bytes long.
 */
-STATIC BOOL
+static bool
 ReadBytecount(fd, artsize)
     register int	fd;
     int			artsize;
@@ -433,7 +432,7 @@ ReadBytecount(fd, artsize)
 /*
 **  Read a single text line; not unlike fgets().  Just more inefficient.
 */
-STATIC BOOL
+static bool
 ReadLine(p, size, fd)
     char	*p;
     int		size;
@@ -462,7 +461,7 @@ ReadLine(p, size, fd)
 /*
 **  Unpack a single batch.
 */
-STATIC BOOL
+static bool
 UnpackOne(fdp, countp)
     int		*fdp;
     int		*countp;
@@ -472,12 +471,12 @@ UnpackOne(fdp, countp)
     char	*p;
 #endif	/* defined(DO_RNEWSPROGS) */
     char	buff[SMBUF];
-    STRING	cargv[4];
+    const char *cargv[4];
     int		artsize;
     int		i;
     int		gzip = 0;
-    BOOL	HadCount;
-    BOOL	SawCunbatch;
+    bool	HadCount;
+    bool	SawCunbatch;
     int		len;
 
     *countp = 0;
@@ -512,7 +511,7 @@ UnpackOne(fdp, countp)
 	    cargv[0] = "gzip";
 	    cargv[1] = "-d";
 	    cargv[2] = NULL;
-	    lseek(*fdp, (OFFSET_T) 0, 0); /* Back to the beginning */
+	    lseek(*fdp, 0, 0); /* Back to the beginning */
 	    *fdp = StartChild(*fdp, _PATH_GZIP, cargv);
 	    if (*fdp < 0)
 	        return FALSE;
@@ -599,12 +598,12 @@ UnpackOne(fdp, countp)
 **  errors with xperror as well as syslog, since we're probably being run
 **  interactively.
 */
-STATIC void
+static void
 Unspool()
 {
     register DIR	*dp;
     struct dirent       *ep;
-    register BOOL	ok;
+    register bool	ok;
     struct stat		Sb;
     char		buff[SMBUF];
     char		hostname[10];
@@ -682,7 +681,7 @@ Unspool()
 **  we can do if this routine fails, unfortunately.  Perhaps try to use
 **  an alternate filesystem?
 */
-STATIC void
+static void
 Spool(fd, mode)
     register int	fd;
     int			mode;
@@ -722,7 +721,7 @@ Spool(fd, mode)
 	}
 	/* Write out what we read. */
 	for (count += i, p = buff; i; p += j, i -= j)
-	    if ((j = write(spfd, (POINTER)p, (SIZE_T)i)) <= 0) {
+	    if ((j = write(spfd, p, i)) <= 0) {
 		syslog(L_FATAL, "cant write around %d %m", count);
 		status++;
 		break;
@@ -750,7 +749,7 @@ Spool(fd, mode)
 **  Try to read the password file and open a connection to a remote
 **  NNTP server.
 */
-STATIC BOOL OpenRemote(char *server, int port, char *buff)
+static bool OpenRemote(char *server, int port, char *buff)
 {
     int		i;
 
@@ -777,7 +776,7 @@ STATIC BOOL OpenRemote(char *server, int port, char *buff)
 /*
 **  Can't connect to server; print message and spool if necessary.
 */
-STATIC NORETURN
+static void
 CantConnect(buff, mode, fd)
     char	*buff;
     int		mode;
@@ -796,8 +795,8 @@ CantConnect(buff, mode, fd)
 /*
 **  Log an incorrect usage.
 */
-STATIC NORETURN
-Usage()
+static void
+Usage(void)
 {
     syslog(L_FATAL, "usage error");
     exit(1);
@@ -832,7 +831,7 @@ int main(int ac, char *av[])
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
-    fd = STDIN;
+    fd = STDIN_FILENO;
     mode = '\0';
     while ((i = getopt(ac, av, "h:P:NUvr:S:")) != EOF)
 	switch (i) {
@@ -904,8 +903,8 @@ int main(int ac, char *av[])
 		CantConnect(buff, mode, fd);
 #endif	/* defined(DO_RNEWSLOCALCONNECT) */
     }
-    CloseOnExec((int)fileno(FromServer), TRUE);
-    CloseOnExec((int)fileno(ToServer), TRUE);
+    close_on_exec(fileno(FromServer), true);
+    close_on_exec(fileno(ToServer), true);
 
     /* Execute the command. */
     if (mode == 'U')
