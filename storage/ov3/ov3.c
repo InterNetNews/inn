@@ -70,6 +70,7 @@ typedef struct {
 typedef struct {
     OFFSET_T           offset;
     int                length;
+    time_t             arrived;
     TOKEN              token;
 } INDEXENTRY;
 
@@ -138,6 +139,7 @@ STATIC int CACHEentries = 0;
 STATIC int CACHEhit = 0;
 STATIC int CACHEmiss = 0;
 STATIC int CACHEmaxentries = 128;
+STATIC BOOL Cutofflow;
 
 STATIC GROUPLOC GROUPnewnode(void);
 STATIC BOOL GROUPremapifneeded(GROUPLOC loc);
@@ -150,7 +152,7 @@ STATIC BOOL GROUPexpand(int mode);
 STATIC BOOL OV3packgroup(char *group, int delta);
 STATIC GROUPHANDLE *OV3opengroup(char *group, BOOL needcache);
 STATIC void OV3cleancache(void);
-STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, char *data, int len);
+STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, char *data, int len, time_t arrived);
 STATIC BOOL OV3closegroup(GROUPHANDLE *gh, BOOL needcache);
 STATIC void OV3getdirpath(char *group, char *path);
 STATIC void OV3getIDXfilename(char *group, char *path);
@@ -225,6 +227,7 @@ BOOL tradindexed_open(int mode) {
     CloseOnExec(GROUPfd, 1);
     
     DISPOSE(groupfn);
+    Cutofflow = FALSE;
 
     return TRUE;
 }
@@ -694,7 +697,7 @@ STATIC BOOL OV3closegroup(GROUPHANDLE *gh, BOOL needcache) {
     return TRUE;
 }
 
-STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, char *data, int len) {
+STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, char *data, int len, time_t arrived) {
     INDEXENTRY          ie;
     int                 base;
     
@@ -718,6 +721,7 @@ STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, 
     }
     ie.length = len;
     ie.offset -= ie.length;
+    ie.arrived = arrived;
     ie.token = token;
     
     if (pwrite(gh->indexfd, &ie, sizeof(ie), (artnum - base) * sizeof(ie)) != sizeof(ie)) {
@@ -733,7 +737,7 @@ STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, 
     return TRUE;
 }
 
-BOOL tradindexed_add(TOKEN token, char *data, int len) {
+BOOL tradindexed_add(TOKEN token, char *data, int len, time_t arrived) {
     char                *next;
     static char         *xrefdata;
     char		*xrefstart;
@@ -817,6 +821,8 @@ BOOL tradindexed_add(TOKEN token, char *data, int len) {
 
 	/* pack group if needed. */
 	ge = &GROUPentries[gh->gloc.recno];
+	if (Cutofflow && ge->low > artnum)
+	    continue;
 	if (ge->base > artnum) {
 	    if (!OV3packgroup(group, OV3padamount + ge->base - artnum)) {
 		OV3closegroup(gh, TRUE);
@@ -828,7 +834,7 @@ BOOL tradindexed_add(TOKEN token, char *data, int len) {
 		return FALSE;
 	}
 	GROUPlock(gh->gloc, LOCK_WRITE);
-	OV3addrec(ge, gh, artnum, token, overdata, i);
+	OV3addrec(ge, gh, artnum, token, overdata, i, arrived);
 	GROUPlock(gh->gloc, LOCK_UNLOCK);
 	OV3closegroup(gh, TRUE);
     }        
@@ -875,7 +881,7 @@ void *tradindexed_opensearch(char *group, int low, int high) {
     return (void *)search;
 }
 
-BOOL tradindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token) {
+BOOL tradindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived) {
     OV3SEARCH           *search = (OV3SEARCH *)handle;
     INDEXENTRY           *ie;
 
@@ -902,6 +908,8 @@ BOOL tradindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOK
 	*data = search->gh->datamem + ie->offset;
     if (token)
 	*token = ie->token;
+    if (arrived)
+	*arrived = ie->arrived;
 
     search->cur++;
 
@@ -921,7 +929,7 @@ BOOL tradindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, T
     BOOL                retval;
     if (!(handle = tradindexed_opensearch(group, artnum, artnum)))
 	return FALSE;
-    retval = tradindexed_search(handle, NULL, data, len, token);
+    retval = tradindexed_search(handle, NULL, data, len, token, NULL);
     tradindexed_closesearch(handle);
     return retval;
 }
@@ -1082,6 +1090,7 @@ BOOL tradindexed_expiregroup(char *group, int *lo) {
     char                bakidx[BIG_BUFFER], oldidx[BIG_BUFFER], newidx[BIG_BUFFER];
     char                bakdat[BIG_BUFFER], olddat[BIG_BUFFER], newdat[BIG_BUFFER];
     struct stat         sb;
+    time_t		arrived;
 
     gloc = GROUPfind(group);
     if (GROUPLOCempty(gloc))
@@ -1119,7 +1128,7 @@ BOOL tradindexed_expiregroup(char *group, int *lo) {
     }
     newge = *ge;
     newge.base = newge.low = newge.count = 0;
-    while (tradindexed_search(handle, &artnum, &data, &len, &token)) {
+    while (tradindexed_search(handle, &artnum, &data, &len, &token, &arrived)) {
 	if ((ah = SMretrieve(token, RETR_STAT)) == NULL)
 	    continue;
 	SMfreearticle(ah);
@@ -1134,7 +1143,7 @@ BOOL tradindexed_expiregroup(char *group, int *lo) {
 		memcpy(p, data, len - newlen - 2);
 		p = overdata + len - 2;
 		memcpy(p, "\r\n", 2);
-		OV3addrec(&newge, newgh, artnum, token, overdata, len);
+		OV3addrec(&newge, newgh, artnum, token, overdata, len, arrived);
 		continue;
 	    }
 	}
@@ -1156,7 +1165,7 @@ BOOL tradindexed_expiregroup(char *group, int *lo) {
 	    artnum = atoi(p);
 	}
 #endif
-	OV3addrec(&newge, newgh, artnum, token, data, len);
+	OV3addrec(&newge, newgh, artnum, token, data, len, arrived);
     }
     do {
 	if (stat(newidx, &sb) < 0) {
@@ -1210,12 +1219,20 @@ BOOL tradindexed_expiregroup(char *group, int *lo) {
     return TRUE;
 }
 
-BOOL tradindexed_probe(OVPROBETYPE type, void *result) {
+BOOL tradindexed_ctl(OVCTLTYPE type, void *val) {
     int *i;
+    OVSORTTYPE *sorttype;
     switch (type) {
     case OVSPACE:
-	i = (int *)result;
+	i = (int *)val;
 	*i = -1;
+	return TRUE;
+    case OVSORT:
+	sorttype = (OVSORTTYPE *)val;
+	*sorttype = OVNEWSGROUP;
+	return TRUE;
+      case OVCUTOFFLOW:
+	Cutofflow = *(BOOL *)val;
 	return TRUE;
     default:
 	return FALSE;
