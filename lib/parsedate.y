@@ -256,7 +256,7 @@ date	: tUNUMBER '/' tUNUMBER {
 		    yyYear = $5;
 		} else {
 		    /* assume year is YY format, so need to add 1900 */
-		    yyYear = $5 + 1900;
+		    yyYear = $5 + (yyYear / 100 + (yyYear % 100 - $5) / 50) * 100;
 		}
 	    }
 	}
@@ -272,7 +272,7 @@ date	: tUNUMBER '/' tUNUMBER {
 		yyYear = $4;
 	    } else {
 		/* assume year is YY format, so need to add 1900 */
-		yyYear = $4 + 1900;
+		yyYear = $4 + (yyYear / 100 + (yyYear % 100 - $4) / 50) * 100;
 	    }
 	}
 	| tUNUMBER tMONTH {
@@ -287,7 +287,7 @@ date	: tUNUMBER '/' tUNUMBER {
 		yyYear = $3;
 	    } else {
 		/* assume year is YY format, so need to add 1900 */
-		yyYear = $3 + 1900;
+		yyYear = $3 + (yyYear / 100 + (yyYear % 100 - $3) / 50) * 100;
 	    }
 	}
 	| tDAY ',' tUNUMBER tMONTH tUNUMBER {
@@ -298,7 +298,7 @@ date	: tUNUMBER '/' tUNUMBER {
 		yyYear = $5;
 	    } else {
 		/* assume year is YY format, so need to add 1900 */
-		yyYear = $5 + 1900;
+		yyYear = $5 + (yyYear / 100 + (yyYear % 100 - $5) / 50) * 100;
 	    }
 	}
 	;
