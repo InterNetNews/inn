@@ -337,6 +337,7 @@ include/ov.h                          Header file for overview
 include/paths.h.in                    Paths to common programs and files
 include/portable                      Portability wrappers (Directory)
 include/portable/mmap.h               Wrapper for <sys/mman.h>
+include/portable/socket.h             Wrapper for <sys/socket.h> and friends
 include/portable/time.h               Wrapper for <time.h> and <sys/time.h>
 include/portable/wait.h               Wrapper for <sys/wait.h>
 include/ppport.h                      Header file for Perl support
