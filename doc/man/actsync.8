@@ -153,8 +153,11 @@ file is required to have 4 lines:
 .in +0.5i
 .nf
 \fBhost=\fP\fIhost2\fP
-.\" =()<\fBspool=\fP\fI@<_PATH_SPOOL>@\fP>()=
+\fBspool=\fP\fI<_PATH_SPOOL in config.data>\fP
+(typically
+.\" =()<\fBspool=\fP\fI@<typ_PATH_SPOOL>@\fP>()=
 \fBspool=\fP\fI/var/news/spool/articles\fP
+)
 \fBignore_file=\fP\fIignore_file\fP
 \fBflags=\fP\fIactsyncd\fP (8) options
 .fi
@@ -926,11 +929,13 @@ file:
 host=news.uu.net
 
 # location of the ignore file
-.\" =()<ignore_file=@<_PATH_ACTSYNC_IGN>@>()=
+# (setup as <_PATH_ACTSYNC_IGN in config.data> )
+.\" =()<ignore_file=@<typ_PATH_ACTSYNC_IGN>@>()=
 ignore_file=/var/news/etc/actsync.ign
 
 # where news articles are kept
-.\" =()<spool=@<_PATH_SPOOL>@>()=
+# (given by <_PATH_SPOOL in config.data> )
+.\" =()<spool=@<typ_PATH_SPOOL>@>()=
 spool=/var/news/spool/articles
 
 # actsync(8) flags
@@ -943,10 +948,11 @@ flags=\-o x \-v 2 \-q 2
 .fi
 .in -0.5i
 .PP
-and then by running:
+and then by running actsyncd with the path to the config
+file. (setup as <_PATH_ACTSYNC_CFG in config.data>).  Typically:
 .PP
 .in +0.5i
-.\" =()<actsyncd @<_PATH_ACTSYNC_CFG>@>()=
+.\" =()<actsyncd @<typ_PATH_ACTSYNC_CFG>@>()=
 actsyncd /var/news/etc/actsync.cfg
 .in -0.5i
 .PP
@@ -977,7 +983,7 @@ be in \fB\-o debug_outfmt\fP instead of in \fB\-o a1\fP format.
 The following /bin/sh command:
 .sp 1
 .in +0.5i
-.\" =()<actsyncd @<_PATH_ACTSYNC_CFG>@ 4 >cmd 2>dbg>()=
+.\" =()<actsyncd @<typ_PATH_ACTSYNC_CFG>@ 4 >cmd 2>dbg>()=
 actsyncd /var/news/etc/actsync.cfg 4 >cmd 2>dbg
 .in -0.5i
 .PP
@@ -1021,7 +1027,7 @@ To determine the differences between your old active and
 your current default server:
 .PP
 .in +0.5i
-.\" =()<actsync @<_PATH_OLDACTIVE>@ \->()=
+.\" =()<actsync @<typ_PATH_OLDACTIVE>@ \->()=
 actsync /var/news/etc/active.old \-
 .in -0.5i
 .PP
@@ -1082,7 +1088,7 @@ Thus, a much better and safer version of the above would be:
 .in +0.5i
 ctlinnd pause 'running actsync'
 rm -f active.new
-.\" =()<actsync ... flags ... \-o a1 -S @<_PATH_SPOOL>@ erehwon.honey.edu > active.new>()=
+.\" =()<actsync ... flags ... \-o a1 -S @<typ_PATH_SPOOL>@ erehwon.honey.edu > active.new>()=
 actsync ... flags ... \-o a1 -S /var/news/spool/articles erehwon.honey.edu > active.new
 rm -f active.old
 ln active active.old

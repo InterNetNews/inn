@@ -39,19 +39,25 @@ The input is taken as a set of lines.
 Blank lines and lines starting with a number sign (``#'') are ignored.
 All other lines should specify the name of a file to archive.
 If a filename is not an absolute pathname, it is taken to be relative to
-.\" =()<.IR @<_PATH_SPOOL>@ .>()=
-.IR /var/news/spool/articles .
+.I <_PATH_SPOOL in config.data>
+(typically
+.\" =()<.IR @<typ_PATH_SPOOL>@ .)>()=
+.IR /var/news/spool/articles .)
+
 .PP
 Files are copied to a directory within the archive directory,
-.\" =()<.IR @<_PATH_ARCHIVEDIR>@ .>()=
-.IR /var/news/spool/archive .
+.I <_PATH_ARCHIVEDIR in config.data>
+(typically
+.\" =()<.IR @<typ_PATH_ARCHIVEDIR>@ .)>()=
+.IR /var/news/spool/archive .)
+
 The default is to create a hierarchy that mimics the input files;
 intermediate directories will be created as needed.
 For example, the input file
 .I comp/sources/unix/2211
 (article 2211 in the newsgroup comp.sources.unix) will be copied to
-.\" =()<.IR @<_PATH_ARCHIVEDIR>@/comp/sources/unix/2211 .>()=
-.IR /var/news/spool/archive/comp/sources/unix/2211 .
+.\" =()<.IR @<typ_PATH_ARCHIVEDIR>@/comp/sources/unix/2211 .)>()=
+.IR /var/news/spool/archive/comp/sources/unix/2211 .)
 .SH OPTIONS
 .TP
 .B \-a archive
@@ -62,9 +68,8 @@ archive in instead of the default.
 If the ``\-f'' flag is used, then all directory names will be
 flattened out, replacing the slashes with periods.
 In this case, the file would be copied to
-.\" =()<.IR @<_PATH_ARCHIVEDIR>@/comp.sources.unix/2211 .>()=
-.IR /var/news/spool/archive/comp.sources.unix/2211 .
-.TP
+.\" =()<.IR @<typ_PATH_ARCHIVEDIR>@/comp.sources.unix/2211 .)>()=
+.IR /var/news/spool/archive/comp.sources.unix/2211 .)
 .B \-i
 If the ``\-i'' flag is used, then
 .I archive
@@ -77,20 +82,24 @@ Subject headers.
 .B \-m
 Files are copied by making a link.
 If that fails a new file is created.
-.\" =()<.ie '@<HAVE_SYMLINK>@'DO' \{\>()=
-.ie 'DO'DO' \{\
-If the ``\-m'' flag is used, then the file will be copied to the
+When
+.I <HAVE_SYMLINK in config.data>
+== DO, and the ``\-m'' flag is used, then the file will be copied to the
 destination, and the input file will be replaced with a symbolic
-link pointing to the new file.\}
-.el \{\
-The ``\-m'' flag is ignored.\}
+link pointing to the new file.
+When
+.I <HAVE_SYMLINK in config.data>
+is not DO, 
+The ``\-m'' flag is ignored.
 .TP 
 .B \-r
 By default,
 .I archive
 sets its standard error to
-.\" =()<.IR @<_PATH_ERRLOG>@ .>()=
-.IR /var/log/news/errlog .
+.I <_PATH_ERRLOG in config.data> 
+(typically
+.\" =()<.IR @<typ_PATH_ERRLOG>@ .)>()=
+.IR /var/log/news/errlog .)
 To suppress this redirection, use the ``\-r'' flag.
 .SH EXIT STATUS
 If the input is exhausted,
@@ -98,8 +107,10 @@ If the input is exhausted,
 will exit with a zero status.
 If an I/O error occures, it will try to spool its input, copying it to a file.
 If there was no input filename, the standard input will be copied to
-.\" =()<.I @<_PATH_BATCHDIR>@/archive>()=
-.I /var/news/spool/out.going/archive
+.I <_PATH_BATCHDIR in config.data>/archive
+(typically
+.\" =()<.IR @<typ_PATH_BATCHDIR>@/archive )>()=
+.IR /var/news/spool/out.going/archive )
 and the program will exit.
 If an input filename was given, a temporary file named
 .IR input .bch
@@ -107,8 +118,10 @@ If an input filename was given, a temporary file named
 .I input
 is an absolute pathname)
 or
-.\" =()<.IR @<_PATH_BATCHDIR>@/ input.bch>()=
-.IR /var/news/spool/out.going/ input.bch
+.I <_PATH_BATCHDIR in config.data>/input.bch
+(typically
+.\" =()<.IR @<typ_PATH_BATCHDIR>@/input.bch )>()=
+.IR /var/news/spool/out.going/input.bch )
 (if the filename does not begin with a slash) is created.
 Once the input is copied,
 .I archive
@@ -122,16 +135,29 @@ entry to archive most source newsgroups is as follows:
 .PP
 .RS
 .nf
-.\" =()<.ds R$ @<_PATH_NEWSBIN>@>()=
+source-archive\e
+	:!*,*sources*,!*wanted*,!*.d\e
+	:Tc,Wn\e
+	:<_PATH_NEWSBIN in config.data>/archive \-f \-i \e
+	    <_PATH_ARCHIVEDIR in config.data>/INDEX
+.fi
+.RE
+(typically:
+.PP
+.RS
+.nf
+.\" =()<.ds R$ @<typ_PATH_NEWSBIN>@>()=
 .ds R$ /usr/news/bin
 source-archive\e
 	:!*,*sources*,!*wanted*,!*.d\e
 	:Tc,Wn\e
 	:\*(R$/archive \-f \-i \e
-.\" =()<	    @<_PATH_ARCHIVEDIR>@/INDEX>()=
-	    /var/news/spool/archive/INDEX
+.\" =()<	    @<typ_PATH_ARCHIVEDIR>@>/INDEX>()=
+	    /var/news/spool/archive>/INDEX
+
 .fi
 .RE
+)
 
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.

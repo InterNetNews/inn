@@ -4,8 +4,10 @@
 active, active.times \- list of active Usenet newsgroups
 .SH DESCRIPTION
 The file
-.\" =()<.I @<_PATH_ACTIVE>@>()=
-.I /var/news/etc/active
+.I <_PATH_ACTIVE in config.data>
+(typically
+.\" =()<.I @<typ_PATH_ACTIVE>@ )>()=
+.I /var/news/etc/active )
 lists the newsgroups that the local site receives.
 Each newsgroup should be listed only once.
 Each line specifies one group; their order in the file does not matter.
@@ -29,11 +31,12 @@ Each line consists of four fields specified by a space:
 .RE
 .PP
 The first field is the name of the newsgroup.
-.\" =()<.if '@<MERGE_TO_GROUPS>@'DO' \{\>()=
-.if 'DONT'DO' \{\
+If
+.I <MERGE_TO_GROUPS in config.data>
+== DO 
 Newsgroups that start with the three characters ``to.'' are treated
 specially; see
-.IR innd (8).\}
+.IR innd (8).
 The second field is the highest article number that has been used in that
 newsgroup.
 The third field is the lowest article number in the group; this number
@@ -80,8 +83,11 @@ created with
 An alias newsgroup should not point to another alias.
 .PP
 The file
-.\" =()<.I @<_PATH_ACTIVETIMES>@>()=
+.IR <_PATH_ACTIVETIMES in config.data>
+(typically
+.\" =()<.I @<typ_PATH_ACTIVETIMES>@>()=
 .I /var/news/etc/active.times
+)
 provides a chronological record of when newsgroups are created.
 This file is normally updated by
 .IR innd (8)
