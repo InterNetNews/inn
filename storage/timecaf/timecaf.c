@@ -26,6 +26,9 @@
 #include <paths.h>
 #include "caf.h"
 
+/* Needed for htonl() and friends on AIX 4.1. */
+#include <netinet/in.h>
+
 typedef struct {
     char		*artdata; /* start of the article data -- may be mmaped */
     char		*mmapbase; /* actual start of mmaped region (on pagesize bndry, not necessarily == artdaya */

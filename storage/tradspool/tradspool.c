@@ -22,6 +22,8 @@
 #include <paths.h>
 #include <qio.h>
 
+/* Needed for htonl() and friends on AIX 4.1. */
+#include <netinet/in.h>
     
 typedef struct {
     char		*artbase; /* start of the article data -- may be mmaped */
