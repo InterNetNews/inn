@@ -22,7 +22,7 @@ debug:	buffindexed
 buffindexed:
 	rm -f buffindexed.o ../objs/*.o
 	$(CC) $(CFLAGS) -DDEBUG -c buffindexed.c
-	$(CC) $(LDFLAGS) -o $@ ../*/*.o ../interface.o ../methods.o ../../lib/libinn.$(EXTLIB) $(LIBS)
+	$(CC) $(LDFLAGS) -o $@ ../*/*.o ../interface.o ../methods.o ../ov.o ../ovmethods.o ../../lib/libinn.$(EXTLIB) $(LIBS)
 
 clobber clean:
 	rm -f *.o *.lo obj/*.o
