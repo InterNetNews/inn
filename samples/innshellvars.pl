@@ -110,8 +110,8 @@ $newsgroups = "/var/news/etc/newsgroups" ;
 ##  =()<$newslib = "@<_PATH_NEWSLIB>@" ;>()=
 $newslib = "/var/news/etc" ;
 
-##  =()<$newsmaster = "@<NEWSMASTER>@" ;>()=
-$newsmaster = "usenet" ;
+##  =()<$newsmaster = '@<NEWSMASTER>@' ;>()=
+$newsmaster = 'usenet' ;
 
 ##  =()<$newsuser = "@<NEWSUSER>@" ;>()=
 $newsuser = "news" ;
