@@ -13,6 +13,7 @@ CFLAGS  = -I../include @CPPFLAGS@ $(PERLINC) @CFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS    = @LIBS@
 RANLIB	= @RANLIB@
+YACC	= @YACC@
 
 ##  =()<LINTLIBSTYLE	= @<LINTLIBSTYLE>@>()=
 LINTLIBSTYLE	= NONE
@@ -20,8 +21,6 @@ LINTLIBSTYLE	= NONE
 LINTFLAGS	= -b -h -z -I../include $(DEFS) $(PERLINC)
 ##  =()<LINTFILTER	= @<LINTFILTER>@>()=
 LINTFILTER	= | sed -n -f ../sedf.sun
-##  =()<YACC	= @<YACC>@>()=
-YACC	= yacc
 ##  =()<CTAGS		= @<CTAGS>@>()=
 CTAGS		= ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=

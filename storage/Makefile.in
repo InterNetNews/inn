@@ -14,8 +14,6 @@ LINTLIBSTYLE	= NONE
 LINTFLAGS	= -b -h -z $(DEFS) -I. $(PERLINC)
 ##  =()<LINTFILTER	= @<LINTFILTER>@>()=
 LINTFILTER	= | sed -n -f ../sedf.sun
-##  =()<YACC	= @<YACC>@>()=
-YACC	= yacc
 ##  =()<CTAGS		= @<CTAGS>@>()=
 CTAGS		= ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
@@ -26,6 +24,7 @@ CC      = @CC@
 CFLAGS  = -I. -I../include @CPPFLAGS@ $(PERLINC) @CFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS    = @LIBS@
+YACC	= @YACC@
 
 all:			autoconfig methods libstorage.a
 

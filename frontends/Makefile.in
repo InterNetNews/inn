@@ -11,6 +11,10 @@ CFLAGS  = -I../include @CPPFLAGS@ @CFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS    = @LIBS@
 
+NEWSBIN	= @prefix@/bin
+
+RNEWSPROGS	= ${NEWSBIN}/rnews.libexec
+
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
 LINTFLAGS	= -b -h -z -I../include $(DEFS)
 ##  =()<LINTFILTER	= @<LINTFILTER>@>()=
@@ -18,14 +22,6 @@ LINTFILTER	= | sed -n -f ../sedf.sun
 ##  =()<CTAGS		= @<CTAGS>@>()=
 CTAGS		= ctags -t -w
 
-##  =()<NEWSBIN	=@<_PATH_NEWSBIN>@>()=
-NEWSBIN	=/usr/news/bin
-##  =()<INEWS	= @<_PATH_INEWS>@>()=
-INEWS	= /usr/news/bin/inews
-##  =()<RNEWS	= @<_PATH_RNEWS>@>()=
-RNEWS	= /usr/news/bin/rnews
-##  =()<RNEWSPROGS	= @<_PATH_RNEWSPROGS>@>()=
-RNEWSPROGS	= /usr/news/bin/rnews.libexec
 ## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
 OWNER	= -O news -G news
 ## =()<ROWNER	= -O @<NEWSUSER>@ -G @<RNEWS_GROUP>@>()=
@@ -43,7 +39,7 @@ ALL	= inews rnews ctlinnd getlist innconfval decode encode sm
 all:		$(ALL)
 	date >$@
 
-install:	$(INEWS) $(RNEWS) \
+install:	$(NEWSBIN)/inews $(NEWSBIN)/rnews \
 		$(NEWSBIN)/ctlinnd $(NEWSBIN)/getlist $(NEWSBIN)/innconfval \
 		$(RNEWSPROGS)/c7unbatch \
 		$(RNEWSPROGS)/decode $(RNEWSPROGS)/encode \
@@ -103,9 +99,9 @@ profiled:
 	#load $(CFLAGS) $<
 
 ##  Low-level install actions.
-$(INEWS):		inews
+$(NEWSBIN)/inews:		inews
 	$(SHELL) ../installit.sh $(OWNER) -m 02555 -b .OLD $? $@
-$(RNEWS):		rnews
+$(NEWSBIN)/rnews:		rnews
 	$(SHELL) ../installit.sh $(ROWNER) -m 04550 -b .OLD $? $@
 $(NEWSBIN)/ctlinnd:	ctlinnd
 	$(SHELL) ../installit.sh $(OWNER) -m  0550 -b .OLD $? $@

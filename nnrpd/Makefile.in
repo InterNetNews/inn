@@ -23,9 +23,8 @@ CC      = @CC@
 CFLAGS  = -I../include @CPPFLAGS@ $(PERLINC) @CFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS    = @LIBS@
+NNRPD	= @prefix@/bin/nnrpd
 
-##  =()<NNRPD	= @<_PATH_NNRPD>@>()=
-NNRPD	= /usr/news/bin/nnrpd
 ## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
 OWNER	= -O news -G news
 

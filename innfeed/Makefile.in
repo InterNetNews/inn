@@ -10,13 +10,11 @@ CC      = @CC@
 CFLAGS  = -I../include @CPPFLAGS@ @CFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS    = @LIBS@
+LEX		= @LEX@
+YACC		= @YACC@
+NEWSBIN		= @prefix@/bin
 
 LIBNEWS	= ../libstorage.a ../libinn.a
-# How to run lex and yacc. Innfeed requires Flex (but you shouldn't need it).
-##  =()<LEX		= @<LEX>@>()=
-LEX		= flex
-##  =()<YACC		= @<YACC>@ -d >()=
-YACC		= yacc -d 
 ## =()<NEWSGROUP	= @<NEWSGROUP>@>()=
 NEWSGROUP	= news
 ## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
@@ -31,14 +29,12 @@ LINTFLAGS	= -b -h -z -I../include $(DEFS)
 
 .SUFFIXES:	.E .sh .pl
 
-CPP.c		= $(CC) $(CFLAGS) $(CPPFLAGS) -E -I.
-COMPILE.c	= $(CC) $(CFLAGS) $(CPPFLAGS) -c -I.
+CPP.c		= $(CC) $(CFLAGS) -E -I.
+COMPILE.c	= $(CC) $(CFLAGS) -c -I.
 LINK.o		= $(CC) $(LDFLAGS) ($LIBS)
-LINK.c		= $(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS)
+LINK.c		= $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
 OUTPUT_OPTION	= -o $@
 
-##  =()<NEWSBIN		= @<_PATH_NEWSBIN>@>()=
-NEWSBIN		= /usr/news/bin
 
 
 SRC 		= article.c \
