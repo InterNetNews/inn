@@ -20,37 +20,38 @@ install:	$D$(PATHBIN)/inews $D$(PATHBIN)/rnews \
 
 clobber clean:
 	rm -f *.o $(ALL)
+	rm -rf .libs
 	rm -f all install profiled
 
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../lib/*.c ../include/*.h
 
 inews:		$(P) inews.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ inews.o $(NNTPLIB) $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ inews.o $(NNTPLIB) $(LIBNEWS) $(LIBS)
 rnews:		$(P) rnews.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ rnews.o $(NNTPLIB) $(LIBNEWS) $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ rnews.o $(NNTPLIB) $(LIBNEWS) $(LIBNEWS) $(LIBS)
 ctlinnd:	$(P) ctlinnd.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ ctlinnd.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ ctlinnd.o $(LIBNEWS) $(LIBS)
 sm:		$(P) sm.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ sm.o $(LIBNEWS) $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ sm.o $(LIBNEWS) $(LIBNEWS) $(LIBS)
 getlist:	$(P) getlist.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ getlist.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ getlist.o $(LIBNEWS) $(LIBS)
 innconfval:	$(P) innconfval.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ innconfval.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ innconfval.o $(LIBNEWS) $(LIBS)
 decode:		$(P) decode.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ decode.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ decode.o $(LIBNEWS) $(LIBS)
 encode:		$(P) encode.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ encode.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ encode.o $(LIBNEWS) $(LIBS)
 
 ##  Not normally built.
 feedone:		feedone.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ feedone.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ feedone.o $(LIBNEWS) $(LIBS)
 sys2nf:		sys2nf.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ sys2nf.o $(LIBNEWS) $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ sys2nf.o $(LIBNEWS) $(LIBS)
 
 
 $(LIBNEWS):
-	(cd ../lib ; $(MAKE) install)
+	(cd ../lib ; $(MAKE) )
 
 profiled:
 	cp /dev/null profiled
@@ -62,23 +63,23 @@ profiled:
 
 ##  Low-level install actions.
 $D$(PATHBIN)/inews:		inews
-	$(SHELL) ../installit.sh $(OWNER) -m 02555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 02555 -b .OLD $? $@
 $D$(PATHBIN)/rnews:		rnews
-	$(SHELL) ../installit.sh $(ROWNER) -m 04550 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(ROWNER) -m 04550 -b .OLD $? $@
 $D$(PATHBIN)/ctlinnd:	ctlinnd
-	$(SHELL) ../installit.sh $(OWNER) -m  0550 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m  0550 -b .OLD $? $@
 $D$(PATHBIN)/sm:	sm
-	$(SHELL) ../installit.sh $(OWNER) -m  0550 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m  0550 -b .OLD $? $@
 $D$(PATHBIN)/getlist:	getlist
-	$(SHELL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
 $D$(PATHBIN)/innconfval:	innconfval
-	$(SHELL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
 $D$(RNEWSPROGS)/c7unbatch:	c7unbatch.sh
-	$(SHELL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
 $D$(RNEWSPROGS)/decode:		decode
-	$(SHELL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
 $D$(RNEWSPROGS)/encode:		encode
-	$(SHELL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES)
