@@ -6,31 +6,13 @@
 #ifndef MACROS_H
 #define MACROS_H 1
 
-/* We've probably already included this; only include it if we need it. */
-#ifndef CONFIG_H
-# include "config.h"
-#endif
-
-/* Memory allocation.  Wrappers around wrapper functions.  Don't replace any
-   existing definitions, for use with malloc-debug packages, e.g. */
-#ifdef _DEBUG_MALLOC_INC
-# undef _DEBUG_MALLOC_INC
-# include "malloc.h"
-#else
-# define malloc_enter(func)
-# define malloc_leave(func)
-# define malloc_chain_check()
-# define malloc_dump(fd)
-# define malloc_list(a,b,c)
-# define malloc_size(hist)	(*(hist) = 0, 0)
-#endif
+#include "config.h"
 
 /* Memory allocation macros. */
 #define NEW(T, c)               xmalloc(sizeof(T) * (c))
 #define COPY(p)                 xstrdup(p)
 #define DISPOSE(p)              free(p)
 #define RENEW(p, T, c)          (p = xrealloc((p), sizeof(T) * (c)))
-#define ONALLOCFAIL(func)       (xmalloc_error_handler = (func))
 
 /* Wrappers around str[n]cmp.  Don't add the ((a) == (b)) test here; it's
    already been done in places where it's time-critical. */
