@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.244.2.4 
+# From configure.in Revision: 1.244.2.5 
 # libtool.m4 - Configure libtool for the host system. -*-Shell-script-*-
 ## Copyright 1996, 1997, 1998, 1999, 2000, 2001
 ## Free Software Foundation, Inc.
@@ -1939,7 +1939,7 @@ else
   if { (eval echo configure:1940: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
     for file in conftest.*; do
       case $file in
-      *.$ac_ext | *.c | *.o | *.obj) ;;
+      *.c | *.o | *.obj) ;;
       *) ac_cv_exeext=`echo $file | sed -e s/conftest//` ;;
       esac
     done
@@ -5815,7 +5815,7 @@ else
 echo "configure:5816: checking for BerkeleyDB location" >&5
     if test x"$BERKELEY_DB_DIR" = xyes ; then
         for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1 BerkeleyDB.3.2 \
-                 BerkeleyDB.3.3 BerkeleyDB.4.0 BerkeleyDB.4.1 ; do
+                 BerkeleyDB.3.3 BerkeleyDB.4.0 BerkeleyDB.4.1 BerkeleyDB.4.2 ; do
             for d in $prefix /usr/local /opt /usr ; do
                 if test -d "$d/$v" ; then
                     BERKELEY_DB_DIR="$d/$v"
@@ -5825,7 +5825,7 @@ echo "configure:5816: checking for BerkeleyDB location" >&5
         done
     fi
     if test x"$BERKELEY_DB_DIR" = xyes ; then
-        for v in db41 db4 db3 db2 ; do
+        for v in db42 db41 db4 db3 db2 ; do
             if test -d "/usr/local/include/$v" ; then
                 BERKELEY_DB_LDFLAGS="-L/usr/local/lib"
                 BERKELEY_DB_CFLAGS="-I/usr/local/include/$v"
@@ -5835,7 +5835,7 @@ echo "configure:5816: checking for BerkeleyDB location" >&5
             fi
         done
         if test x"$BERKELEY_DB_LIB" = x ; then
-            for v in db41 db4 db3 db2 ; do
+            for v in db42 db41 db4 db3 db2 ; do
                 if test -d "/usr/include/$v" ; then
                     BERKELEY_DB_CFLAGS="-I/usr/include/$v"
                     BERKELEY_DB_LIB="-l$v"

@@ -365,7 +365,7 @@ else
     AC_MSG_CHECKING(for BerkeleyDB location)
     if test x"$BERKELEY_DB_DIR" = xyes ; then
         for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1 BerkeleyDB.3.2 \
-                 BerkeleyDB.3.3 BerkeleyDB.4.0 BerkeleyDB.4.1 ; do
+                 BerkeleyDB.3.3 BerkeleyDB.4.0 BerkeleyDB.4.1 BerkeleyDB.4.2 ; do
             for d in $prefix /usr/local /opt /usr ; do
                 if test -d "$d/$v" ; then
                     BERKELEY_DB_DIR="$d/$v"
@@ -375,7 +375,7 @@ else
         done
     fi
     if test x"$BERKELEY_DB_DIR" = xyes ; then
-        for v in db41 db4 db3 db2 ; do
+        for v in db42 db41 db4 db3 db2 ; do
             if test -d "/usr/local/include/$v" ; then
                 BERKELEY_DB_LDFLAGS="-L/usr/local/lib"
                 BERKELEY_DB_CFLAGS="-I/usr/local/include/$v"
@@ -385,7 +385,7 @@ else
             fi
         done
         if test x"$BERKELEY_DB_LIB" = x ; then
-            for v in db41 db4 db3 db2 ; do
+            for v in db42 db41 db4 db3 db2 ; do
                 if test -d "/usr/include/$v" ; then
                     BERKELEY_DB_CFLAGS="-I/usr/include/$v"
                     BERKELEY_DB_LIB="-l$v"
