@@ -237,9 +237,6 @@ typedef bool            BOOL;
    should be moved there (or made dynamic). */
 #define FEED_MAXFLAGS           20
 
-/* Just use vfork() directly rather than FORK(). */
-#define FORK() vfork()
-
 /* Used by lots of stuff that parses history file entries.  Should be moved
    into a header specifically for history parsing. */
 #define HIS_BADCHAR             '_'
