@@ -39,12 +39,6 @@ Scheduled for INN 2.4:
   library and supply a script to make any necessary changes from the old
   file format to the new file format.
 
-* Integrate the new version of controlchan and docheckgroups by Marco
-  d'Itri.  Add the ability to run pgpverify as a module of controlchan
-  rather than a separate binary.  This takes care of fixing the processing
-  of checkgroups with Supersedes headers, updating the newsgroups file on
-  receipt of a newgroup or checkgroups, and supporting GnuPG.
-
 * Complete rewrite of history.  History should have a single API and the
   same interface for both innd and nnrpd, the current WIP cache and
   history cache should be integrated into that interface, things like
@@ -54,7 +48,8 @@ Scheduled for INN 2.4:
   file based on stored metainformation.  [Alex Kiernan is working on
   this.]
 
-* Integrate IPv6 support.  [Marco d'Itri is working on this.]
+* Integrate IPv6 support.  [Marco d'Itri has a patch which needs some
+  work.]
 
 * Replace the current innshellvars mechanism with a real INN Perl module
   for Perl programs, and include the necessary glue so that other Perl
@@ -692,9 +687,6 @@ following at the same time:
 * Add a separate utils directory for things like convdate, shlock,
   shrinkfile, and the like.  Some of the scripts may possibly want to go
   into that directory too.
-
-* Consider making control message handling a separate directory with
-  controlchan, its handlers, pgpverify, signcontrol, and whatnot.
 
 * The lib directory possibly should be split so that it contains only code
   always compiled and part of INN, and the various replacements for
