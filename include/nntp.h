@@ -140,8 +140,19 @@
 
 #define NNTP_STRLEN			512
 
-/* RFC 977 limits each line of the NNTP protocol to 512 octets, including
+/* Consensus on the USEFOR mailing list in June of 2000 indicates that the
+   next revision of the Usenet article standard will limit the length of the
+   message ID to 250 characters.  This is also the limit recommended by
+   son-of-1036.
+
+   You can increase this limit if you want, but don't increase it above 497.
+   RFC 977 limits each line of the NNTP protocol to 512 octets, including
    the terminating CRLF.  For a message ID to be passed using the TAKETHIS
    command, it can therefore be a maximum of 501 octets.  The November 1999
-   draft of the replacement RFC limits it to 497 octets. */
-#define NNTP_MSGID_MAXLEN       497
+   draft of the replacement RFC limits it to 497 octets.
+
+   Both Cyclone and DNews are known to reject message IDs longer than 500
+   octets as of June of 2000.  DNews has been reported to have problems with
+   message IDs of 494 octets. */
+
+#define NNTP_MSGID_MAXLEN       250
