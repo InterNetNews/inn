@@ -5,22 +5,25 @@ mailpost \- feed an email message into a news group
 .SH SYNOPSIS
 .I mailpost
 [
-.BI \-r " addr"
-]
-[
-.BI \-f " addr"
-]
-[
 .BI \-a " addr"
+]
+[
+.BI \-b " database"
+]
+[
+.BI \-c " wait-time"
 ]
 [
 .BI \-d " distribution"
 ]
 [
+.BI \-f " addr"
+]
+[
 .BI \-m " mailing-list"
 ]
 [
-.BI \-b " database"
+.BI \-r " addr"
 ]
 newsgroups
 .SH DESCRIPTION
@@ -46,26 +49,14 @@ local-mail-wreck-bikes: "|\*(R$/mailpost
          -d local local.mail.rec.bicycles.racing"
 .fi
 .RE
+.PP
+.I newsgroups
+is a list of group name separated by white spaces.
 .SH OPTIONS
-.TP
-.B \-r
-If the ``\fB\-r\fP'' flag is used the program will use the given address
-as the Path header, if no other value can be determined.
-.TP
-.B \-f 
-The ``\fB\-f\fP'' flag is a synonym for the ``\fB\-r\fP'' flag.
 .TP
 .B \-a
 If the ``\fB\-a\fP'' flag is used the value given is added to the article 
 as an Approved header.
-.TP
-.B \-d
-If the ``\fB\-d\fP'' flag is used the value given is added to the article 
-as a Distribution header.
-.TP
-.B \m 
-If the ``\fB\-m\fP'' flag is used the value given is added to the articles in a 
-Mailing-List header, if a Mailing-List header doesn't already exist.
 .TP
 .B \-b
 IF the ``\fB\-b\fP'' flag is used, then it defines the location of the database 
@@ -73,6 +64,26 @@ used to store the message ids of articles sent on. This is to prevent articles
 looping around if a news to mail gateway sends them back here. This option may
 be required if the mailpost process doesn't have write access to the news tmp
 directory (the value of \fBpathtmp\fP in \fBinn.conf(5)\fP.
+.TP
+.B \-c
+If the ``\fB\-c\fP'' flag is used the sleep time before posting.  Until 
+timeout, if duplicated message are received, original message is considered as
+a crossposted article and its Newsgroup header is update to be so.
+.TP
+.B \-d
+If the ``\fB\-d\fP'' flag is used the value given is added to the article 
+as a Distribution header.
+.TP
+.B \-f 
+The ``\fB\-f\fP'' flag is a synonym for the ``\fB\-r\fP'' flag.
+.TP
+.B \-m 
+If the ``\fB\-m\fP'' flag is used the value given is added to the articles in a 
+Mailing-List header, if a Mailing-List header doesn't already exist.
+.TP
+.B \-r
+If the ``\fB\-r\fP'' flag is used the program will use the given address
+as the Path header, if no other value can be determined.
 .SH HISTORY
 Written by Paul Vixie long ago and then hacked up by James Brister for INN 
 integration.
