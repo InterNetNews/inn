@@ -46,7 +46,7 @@ INNCONF=etc/inn.conf; export INNCONF
 mkdir -p spool
 
 # Print out the number of tests
-echo 3
+echo 5
 
 # First, store the articles.
 $sm -s < articles/1  > spool/tokens
@@ -75,5 +75,37 @@ compare spool/tokens-test spool/tokens
 sed 's/^[^ ]* [^ ]* //' < spool/overview > spool/stripped
 compare spool/stripped overview/1-4
 
-# All done.  Clean up.
+# Done with the first test.  Clean up.
+rm -rf spool
+
+# Now, we're going to build a tradspool spool containing articles without Xref
+# headers except for crossposted messages and then test building overview for
+# that, simulating importing an old INN spool.
+mkdir -p spool/example/config
+mkdir -p spool/example/test
+sed '/^Xref:.*/d' articles/1 > spool/example/test/1
+sed '/^Xref:.*/d' articles/2 > spool/example/config/1
+sed '/^Xref:.*/d' articles/4 > spool/example/test/3
+cp articles/3 spool/example/test/2
+ln -s ../test/2 spool/example/config/2
+
+# Run makehistory on the spool to generate only the overview information and
+# make sure the correct number of lines were generated.
+touch spool/tradspool.map
+$makehistory -x -O -S | sort > spool/overview
+lines=`wc -l spool/overview | sed -e 's/^ *//' -e 's/ .*//'`
+if [ "$lines" = 4 ] ; then
+    printcount "ok"
+else
+    printcount "not ok"
+fi
+
+# Compare the overview data and make sure that it's correct.  We trim off the
+# arrival date since we can't really check it, but we leave the expires time.
+sed -e 's/^[^ ]* [^ ]* //' -e 's/Xref: [^ ]*/Xref:/' spool/overview \
+    > spool/stripped
+sed -e 's/Xref: [^ ]*/Xref:/' overview/1-4 > spool/correct
+compare spool/stripped spool/correct
+
+# Done.  Clean up.
 rm -rf spool
