@@ -1,0 +1,474 @@
+#!/usr/bin/perl
+$version = q$Id$;
+#
+# tunefeed -- Compare active files with a remote site to tune a feed.
+#             Copyright 1998 by Russ Allbery <rra@stanford.edu>
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the same terms as Perl itself.
+
+############################################################################
+# Site configuration
+############################################################################
+
+# A list of hierarchies in the Big Eight.
+%big8 = map { $_ => 1 } qw(comp humanities misc news rec sci soc talk);
+
+# A list of hierarchies that are considered global and not language
+# hierarchies.
+%global = map { $_ => 1 } qw(bionet bit biz borland ddn gnu gov ieee info
+                             linux k12 microsoft netscape tnn vmsnet);
+
+# The pattern matching local-only hierarchies (that we should disregard when
+# doing feed matching).
+%ignore = map { $_ => 1 } qw(clari control junk);
+
+
+############################################################################
+# Modules and declarations
+############################################################################
+
+require 5.003;
+
+use Getopt::Long qw(GetOptions);
+
+use strict;
+use vars qw(%big8 $days %global %ignore $threshold %traffic $version);
+
+
+############################################################################
+# Active file hashing and analysis
+############################################################################
+
+# Read in an active file, putting those groups into a hash where the key is
+# the name of the group and the value is always 1.  If the optional third
+# argument is true, exclude any groups in the hierarchies listed in %local
+# and use this active file to store traffic information (in a rather
+# simple-minded fashion).
+sub hash {
+    my ($file, $hash, $local) = @_;
+    open (ACTIVE, $file) or die "$0: cannot open $file: $!\n";
+    local $_;
+    while (<ACTIVE>) {
+        my ($group, $high, $low, $flags) = split;
+        next if ($flags =~ /^=|^x/);
+        my $hierarchy = (split (/\./, $group, 2))[0];
+        next if ($local && $ignore{$hierarchy});
+        $$hash{$group} = 1;
+        $traffic{$group} = ($high - $low) / $days if $local;
+    }
+    close ACTIVE;
+}
+
+# Read in a file that gives traffic statistics.  We assume it's in the form
+# group, whitespace, number of articles per day, and we just read it
+# directly into the %traffic hash.
+sub traffic {
+    my ($file) = @_;
+    open (TRAFFIC, $file) or die "$0: cannot open $file: $!\n";
+    local $_;
+    while (<TRAFFIC>) {
+        my ($group, $traffic) = split;
+        $traffic{$group} = $traffic;
+    }
+    close TRAFFIC;
+}
+
+# Pull off the first X nodes of a group name.
+sub prefix {
+    my ($group, $count) = @_;
+    my @group = split (/\./, $group);
+    splice (@group, $count);
+    join ('.', @group);
+}
+
+# Find the common hierarchical prefix of a list.
+sub common {
+    my (@list) = @_;
+    my @prefix = split (/\./, shift @list);
+    local $_;
+    while (defined ($_ = shift @list)) {
+        my @group = split /\./;
+        my $i;
+        $i++ while ($prefix[$i] && $prefix[$i] eq $group[$i]);
+        if ($i <= $#prefix) { splice (@prefix, $i) }
+    }
+    join ('.', @prefix);
+}
+
+# Given two lists, a list of groups that the remote site does have and a
+# list of groups that the remote site doesn't have, in a single hierarchy,
+# perform a smash.  The object is to find the minimal pattern that expresses
+# just the groups they want.  We're also given the common prefix of all the
+# groups in the have and exclude lists, and a flag indicating whether we're
+# coming in with a positive assumption (all groups sent unless excluded) or
+# a negative assumption (no groups sent unless added).
+sub smash {
+    my ($have, $exclude, $top, $positive) = @_;
+    my (@positive, @negative);
+    my $level = ($top =~ tr/././) + 1;
+    
+    # Start with the positive assumption.  We make copies of our @have and
+    # @exclude arrays since we're going to be needing the virgin ones again
+    # later for the negative assumption.  If we're coming in with the
+    # negative assumption, we have to add a wildcarded entry to switch
+    # assumptions, and we also have to deal with the cases where there is a
+    # real group at the head of the hierarchy.
+    my @have = @$have;
+    my @exclude = @$exclude;
+    if ($top eq $have[0]) {
+        shift @have;
+        push (@positive, "$top*") unless $positive;
+    } else {
+        if ($top eq $exclude[0]) {
+            if ($positive && $traffic{$top} > $threshold) {
+                push (@positive, "!$top");
+            }
+            shift @exclude;
+        }
+        push (@positive, "$top.*") unless $positive;
+    }
+
+    # Now that we've got things started, keep in mind that we're set up so
+    # that every group will be sent *unless* it's excluded.  So we step
+    # through the list of exclusions.  The idea here is to pull together all
+    # of the exclusions with the same prefix (going one level deeper into
+    # the newsgroup names than we're currently at), and then find all the
+    # groups with the same prefix that the remote site *does* want.  If
+    # there aren't any, then we can just exclude that whole prefix provided
+    # that we're saving enough traffic to make it worthwhile (checked
+    # against the threshold).  If there are, and if the threshold still
+    # makes it worthwhile to worry about this, we call this sub recursively
+    # to compute the best pattern for that prefix.
+    while (defined ($_ = shift @exclude)) {
+        my ($prefix) = prefix ($_, $level + 1);
+        my @drop = ($_);
+        my @keep;
+        my $traffic = $traffic{$_};
+        while ($exclude[0] =~ /^\Q$prefix./) {
+            $traffic += $traffic{$exclude[0]};
+            push (@drop, shift @exclude);
+        }
+        $prefix = common (@drop);
+        my $saved = $traffic;
+        while (@have && $have[0] le $prefix) { shift @have }
+        while ($have[0] =~ /^\Q$prefix./) {
+            $traffic += $traffic{$have[0]};
+            push (@keep, shift @have);
+        }
+        next unless $saved > $threshold;
+        if (@keep) {
+            $traffic{"$prefix*"} = $traffic;
+            push (@positive, smash (\@keep, \@drop, $prefix, 1));
+        } elsif (@drop == 1) {
+            push (@positive, "!$_");
+        } elsif ($prefix eq $_) {
+            push (@positive, "!$prefix*");
+        } else {
+            push (@positive, "!$prefix.*");
+        }
+    }
+
+    # Now we do essentially the same thing, but from the negative
+    # perspective (adding a wildcard pattern as necessary to make sure that
+    # we're not sending all groups and then finding the groups we are
+    # sending and trying to smash them into minimal wildcard patterns).
+    @have = @$have;
+    @exclude = @$exclude;
+    if ($top eq $exclude[0]) {
+        shift @exclude;
+        push (@negative, "!$top*") if $positive;
+    } else {
+        if ($top eq $have[0]) {
+            push (@negative, $top) unless $positive;
+            shift @have;
+        }
+        push (@negative, "!$top.*") if $positive;
+    }
+
+    # This again looks pretty much the same as what we do for the positive
+    # case; the primary difference is that we have to make sure that we send
+    # them every group that they want, so we still err on the side of
+    # sending too much, rather than too little.
+    while (defined ($_ = shift @have)) {
+        my ($prefix) = prefix ($_, $level + 1);
+        my @keep = ($_);
+        my @drop;
+        my $traffic = $traffic{$_};
+        while ($have[0] =~ /^\Q$prefix./) {
+            $traffic += $traffic{$have[0]};
+            push (@keep, shift @have);
+        }
+        $prefix = common (@keep);
+        while (@exclude && $exclude[0] le $prefix) { shift @exclude }
+        my $saved = 0;
+        while ($exclude[0] =~ /^\Q$prefix./) {
+            $saved += $traffic{$exclude[0]};
+            push (@drop, shift @exclude);
+        }
+        if (@drop && $saved > $threshold) {
+            $traffic{"$prefix*"} = $traffic + $saved;
+            push (@negative, smash (\@keep, \@drop, $prefix, 0));
+        } elsif (@keep == 1) {
+            push (@negative, $_);
+        } elsif ($prefix eq $_) {
+            push (@negative, "$prefix*");
+        } else {
+            push (@negative, "$prefix.*");
+        }
+    }
+
+    # Now that we've built both the positive and negative case, we decide
+    # which to return.  We want the one that's the most succinct, and if
+    # both descriptions are equally succinct, we return the negative case on
+    # the grounds that it's likely to send less of what they don't want.
+    (@positive < @negative) ? @positive : @negative;
+}
+
+
+############################################################################
+# Output
+############################################################################
+
+# We want to sort Big Eight ahead of alt.* ahead of global non-language
+# hierarchies ahead of regionals and language hierarchies.
+sub score {
+    my ($hierarchy) = @_;
+    if ($big8{$hierarchy})      { return 1 }
+    elsif ($hierarchy eq 'alt') { return 2 }
+    elsif ($global{$hierarchy}) { return 3 }
+    else                        { return 4 }
+}
+
+# Our special sort routine for hierarchies.  It calls score to get a
+# hierarchy score and sorts on that first.
+sub by_hierarchy {
+    (score $a) <=> (score $b) || $a cmp $b;
+}
+
+# Given a reference to a list of patterns, output it in some reasonable
+# form.  Currently, this is lines prefixed by a tab, with continuation lines
+# like INN likes to have in newsfeeds, 76 column margin, and with a line
+# break each time the hierarchy score changes.
+sub output {
+    my ($patterns) = @_;
+    my ($last, $line);
+    for (@$patterns) {
+        my ($hierarchy) = /^!?([^.]+)/;
+        my $score = score $hierarchy;
+        $line += 1 + length $_;
+        if (($last && $score > $last) || $line > 76) {
+            print ",\\\n\t";
+            $line = 8 + length $_;
+        } elsif ($last) {
+            print ',';
+        } else {
+            print "\t";
+            $line += 8;
+        }
+        print;
+        $last = $score;
+    }
+    print "\n";
+}
+
+
+############################################################################
+# Main routine
+############################################################################
+
+# Clean up the name of this program for error messages.
+my $fullpath = $0;
+$0 =~ s%.*/%%;
+
+# Parse the command line.  Our argument is the path to an active file (we
+# tell the difference by seeing if it contains a /).
+my ($help, $print_version);
+Getopt::Long::config ('bundling');
+GetOptions ('help|h'        => \$help,
+            'days|d=i'      => \$days,
+            'threshold|t=i' => \$threshold,
+            'version|v'     => \$print_version) or exit 1;
+
+# Set a default for the minimum threshold traffic required to retain an
+# exclusion, and assume that active file differences represent one day of
+# traffic unless told otherwise.
+$threshold = (defined $threshold) ? $threshold : 250;
+$days ||= 1;
+
+# If they asked for our version number, abort and just print that.
+if ($print_version) {
+    my ($program, $ver) = (split (' ', $version))[1,2];
+    $program =~ s/,v$//;
+    die "$program $ver\n";
+}
+
+# If they asked for help, give them the documentation.
+if ($help) {
+    print "Feeding myself to perldoc, please wait....\n";
+    exec ('perldoc', '-t', $fullpath) or die "$0: can't fork: $!\n";
+}
+
+# Hash the active files, skipping groups we ignore in the local one.  Make
+# sure we have our two files listed first.
+unless (@ARGV == 2 || @ARGV == 3) {
+    die "Usage: $0 [-hv] [-t <threshold>] <local> <remote> [<traffic>]\n";
+}
+my (%local, %remote);
+hash (shift, \%local, 1);
+hash (shift, \%remote);
+traffic (shift) if @ARGV;
+
+# Now, we analyze the differences between the two feeds.  We're trying to
+# build a pattern of what *we* should send *them*, so stuff that's in
+# %remote and not in %local doesn't concern us.  Rather, we're looking for
+# stuff that we carry that they don't, since that's what we'll want to
+# exclude from a full feed.
+my (%have, %exclude, %count, $have, $exclude, $positive);
+for (sort keys %local) {
+    my ($hierarchy) = (split /\./);
+    $count{$hierarchy}++;
+    $traffic{"$hierarchy*"} += $traffic{$_};
+    if ($remote{$_}) { push (@{$have{$hierarchy}}, $_); $have++       }
+    else             { push (@{$exclude{$hierarchy}}, $_); $exclude++ }
+}
+my @patterns;
+if ($have > $exclude * 4) {
+    push (@patterns, "*");
+    $positive = 1;
+}
+for (sort by_hierarchy keys %count)  {
+    if ($have{$_} && !$exclude{$_}) {
+        push (@patterns, "$_.*") unless $positive;
+    } elsif ($exclude{$_} && !$have{$_}) {
+        push (@patterns, "!$_.*") if $positive;
+    } else {
+        push (@patterns, smash ($have{$_}, $exclude{$_}, $_, $positive));
+    }
+}
+output (\@patterns);
+__END__
+
+
+############################################################################
+# Documentation
+############################################################################
+
+=head1 NAME
+
+tunefeed - Build a newsgroups pattern for a remote feed
+
+=head1 SYNOPSIS
+
+B<tunefeed> [B<-hv>] [B<-t> I<threshold>] [B<-d> I<days>] I<local>
+I<remote> [I<traffic>]
+
+=head1 DESCRIPTION
+
+Given two active files, B<tunefeed> generates an INN newsfeeds pattern for
+a feed from the first site to the second, that sends the second site
+everything in its active file carried by the first site but tries to
+minimize the number of rejected articles.  It does this by noting
+differences between the two active files and then trying to generate
+wildcard patterns that cover the similarities without including much (or
+any) unwanted traffic.
+
+I<local> and I<remote> should be standard active files.  You can probably
+get the active file of a site that you feed (provided they're running INN)
+by connecting to their NNTP port and typing C<LIST ACTIVE>.
+
+B<tunefeed> makes an effort to avoid complex patterns when they're of
+minimal gain.  I<threshold> is the number of messages per day at which to
+worry about excluding a group; if a group the remote site doesn't want to
+receive gets below that number of messages per day, then that group is
+either sent or not sent depending on which choice results in the simplest
+(shortest) wildcard pattern.  If you want a pattern that exactly matches
+what the remote site wants, use C<-t 0>.
+
+Ideally, B<tunefeed> likes to be given the optional third argument,
+I<traffic>, which points at a file listing traffic numbers for each group.
+The format of this file is a group name, whitespace, and then the number
+of messages per day it receives.  Without such a file, B<tunefeed> will
+attempt to guess traffic by taking the difference between the high and low
+numbers in the active file as the amount of traffic in that group per day.
+This will almost always not be accurate, but it should at least be a
+ballpark figure.  If you know approximately how many days of traffic the
+active file numbers represent, you can tell B<tunefeed> this information
+using the B<-d> flag.
+
+B<tunefeed>'s output will look something like:
+
+        comp.*,humanities.classics,misc.*,news.*,rec.*,sci.*,soc.*,talk.*,\
+        alt.*,!alt.atheism,!alt.binaries.*,!alt.nocem.misc,!alt.punk*,\
+        !alt.sex*,!alt.video.dvd,\
+        bionet.*,biz.*,gnu.*,vmsnet.*,\
+        ba.*,!ba.jobs.agency,ca.*,sbay.*
+
+(with each line prefixed by a tab, and with standard INN newsfeeds
+continuation syntax).  Due to the preferences of the author, it will also
+be sorted as Big Eight, then alt.*, then global non-language hierarchies,
+then regional and language hierarchies.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-h>, B<--help>
+
+Print out this documentation (which is done simply by feeding the script
+to C<perldoc -t>.
+
+=item B<-v>, B<--version>
+
+Print out the version of B<tunefeed> and exit.
+
+=item B<-d> I<days>, B<--days>=I<days>
+
+Assume that the difference between the high and low numbers in the active
+file represent I<days> days of traffic.
+
+=item B<-t> I<threshold>, B<--threshold>=I<threshold>
+
+Allow any group with less than I<threshold> articles per day in traffic to
+be either sent or not sent depending on which choice makes the wildcard
+patterns simpler.  If a threshold isn't specified, the default value is
+250.
+
+=back
+
+=head1 BUGS
+
+This program takes a long time to run, not to mention being a nasty memory
+hog.  The algorithm is thorough, but definitely not very optimized, and
+isn't all that friendly.
+
+Guessing traffic from active file numbers is going to produce very skewed
+results on sites with expiration policies that vary widely by group.
+
+There is no way to optimize for size in avoiding rejections, only quantity
+of articles.
+
+There should be a way to turn off the author's idiosyncratic ordering of
+hierarchies, or to specify a different ordering, without editing this
+script.
+
+This script should attempt to retrieve the active file from the remote
+site automatically if so desired.
+
+This script should be able to be given some existing wildcard patterns and
+take them into account when generating new ones.
+
+=head1 CAVEATS
+
+Please be aware that your neighbor's active file may not accurately
+represent the groups they wish to receive from you.  As with everything,
+choices made by automated programs like this one should be reviewed by a
+human and the remote site should be notified, and if they have sent
+explicit patterns, those should be honored instead.  I definitely do *not*
+recommend running this program on any sort of automated basis.
+
+=head1 AUTHOR
+
+Russ Allbery E<lt>rra@stanford.eduE<gt>
+
+=cut
