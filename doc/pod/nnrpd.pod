@@ -73,14 +73,14 @@ addresses with different settings.)
 
 =item B<-D>
 
-If specified, this parameter causes B<nnrpd> to operate as a
-daemon. That is, it detaches itself and runs in the background,
-forking a process for every connection. By default B<nnrpd> listens on
-the NNTP port (119), so either innd(8) has to be started on another
-port or B<nnrpd> B<-p> parameter.  Note that with this parameter,
-B<nnrpd> continues running until killed.  This means that it reads
-F<inn.conf> once on startup and never again until restarted. B<nnrpd>
-should therefore be restarted if inn.conf is changed.
+If specified, this parameter causes B<nnrpd> to operate as a daemon.  That
+is, it detaches itself and runs in the background, forking a process for
+every connection.  By default B<nnrpd> listens on the NNTP port (119), so
+either innd(8) has to be started on another port or B<nnrpd> B<-p>
+parameter.  Note that with this parameter, B<nnrpd> continues running
+until killed.  This means that it reads F<inn.conf> once on startup and
+never again until restarted.  B<nnrpd> should therefore be restarted if
+inn.conf is changed.
 
 When started in daemon mode, B<nnrpd> will write its PID into a file in
 the I<pathrun> directory.  The file will be named F<nnrpd-%d.pid>, where
@@ -165,7 +165,8 @@ title.
 
 If specified, B<nnrpd> will start a negotiation for SSL session as
 soon as connected. To use this flag, C<--with-openssl> must have been
-specified at C<configure> time.
+specified at C<configure> time.  For more information on running B<nnrpd>
+with SSL support, see L<SSL SUPPORT>.
 
 =item B<-t>
 
@@ -173,6 +174,50 @@ If the B<-t> flag is used then all client commands and initial
 responses will be traced by reporting them in syslog. This flag is set
 by innd(8) under the control of the ctlinnd(8) C<trace> command, and
 is toggled upon receipt of a C<SIGHUP>; see signal(2).
+
+=back
+
+=head1 SSL SUPPORT
+
+If INN is built with C<--with-openssl>, B<nnrpd> will support news reading
+over TLS (also known as SSL).  For clients that use the STARTTLS command,
+no special configuration is needed beyond creating a TLS/SSL certificate
+for the server.  You should do this in exactly the same way that you would
+generate a certificate for a web server.
+
+If you're happy with a self-signed certificate (which will generate
+warnings with some news reader clients), you can create and install one in
+the default path by running C<make cert> after C<make install> when
+installing INN, or by running the following commands:
+
+    openssl req -new -x509 -nodes -out /usr/local/news/lib/cert.pem \
+        -days 366 -keyout /usr/local/news/lib/key.pem
+    chown news:news /usr/local/news/lib/cert.pem
+    chmod 640 /usr/local/news/lib/cert.pem
+    chown news:news /usr/local/news/lib/key.pem
+    chmod 600 /usr/local/news/lib/key.pem
+
+Replace the paths with something appropriate to your INN installation.
+This will create a self-signed certificate that will expire in a year.
+The B<openssl> program will ask you a variety of questions about your
+organization.  Enter the fully qualified domain name of the server as the
+name the certificate is for.
+
+Most news clients currently do not use the STARTTLS command, however, and
+instead expect to connect to a separate port (563) and start an SSL
+negotiation immediately.  B<innd> does not, however, know how to listen
+for connections to that port and then spawn B<nnrpd> the way that it does
+for regular reader connections.  You will therefore need to arrange for
+B<nnrpd> to listen on that port through some other means.  This can be
+done with the B<-D> flag (and C<-P 563>), but the easiest way is probably
+to add a line like:
+
+    nntps stream tcp nowait news /usr/lib/news/bin/nnrpd nnrpd -S
+
+to F</etc/inetd.conf> or the equivalent on your system and let B<inetd>
+run B<nnrpd>.  (Change the path to B<nnrpd> to match your installation if
+needed.)  You may need to replace C<nntps> with C<563> if C<nntps> isn't
+defined in F</etc/services> on your system.
 
 =head1 PROTOCOL DIFFERENCES
 
@@ -247,6 +292,8 @@ The C<date> command is provided; this is based on the draft NNTP protocol
 revision (draft-ietf-nntpext-imp-04.txt).  It returns a one-line response
 code of C<111> followed by the GMT date and time on the server in the form
 C<YYYYMMDDhhmmss>.
+
+=back
 
 =head1 HISTORY
 
