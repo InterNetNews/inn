@@ -139,7 +139,7 @@ static void log (int level, const char *fmt, va_list args)
 
   p = malloc (out + 10) ;
   vsprintf (p,fmt,args) ;
-  syslog (level,p) ;
+  syslog (level,"%s",p) ;
 }
 
 void logOrPrint (int level, FILE *fp, const char *fmt, ...)
