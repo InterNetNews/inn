@@ -329,6 +329,7 @@ include/inn/timer.h                   Header file for generic timers
 include/inn/vector.h                  Header file for vectors of strings
 include/innconf.h                     Header file for inn.conf
 include/inndcomm.h                    innd control channel commands
+include/innperl.h                     Header file for embedded Perl
 include/libinn.h                      INN library declarations
 include/macros.h                      Useful syntactic sugar
 include/nntp.h                        NNTP command and reply codes
