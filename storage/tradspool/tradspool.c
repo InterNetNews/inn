@@ -5,18 +5,14 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/mmap.h"
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <syslog.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
-
-#ifndef MAP_FAILED
-# define MAP_FAILED     (caddr_t) -1
-#endif
 
 /* Needed for htonl() and friends on AIX 4.1. */
 #include <netinet/in.h>
@@ -285,8 +281,8 @@ DumpDB(void) {
     if (!SMopenmode) return; /* don't write if we're not in read/write mode. */
     if (!NGTableUpdated) return; /* no need to dump new DB */
 
-    fname = COPY(cpcatpath(innconf->pathspool, _PATH_TRADSPOOLNGDB));
-    fnamenew = COPY(cpcatpath(innconf->pathspool, _PATH_NEWTSNGDB));
+    fname = concatpath(innconf->pathspool, _PATH_TRADSPOOLNGDB);
+    fnamenew = concatpath(innconf->pathspool, _PATH_NEWTSNGDB);
 
     if ((out = fopen(fnamenew, "w")) == NULL) {
 	syslog(L_ERROR, "tradspool: DumpDB: can't write %s: %m", fnamenew);
@@ -332,7 +328,7 @@ ReadDBFile(void) {
     char *p;
     unsigned long number;
 
-    fname = COPY(cpcatpath(innconf->pathspool, _PATH_TRADSPOOLNGDB));
+    fname = concatpath(innconf->pathspool, _PATH_TRADSPOOLNGDB);
     if ((qp = QIOopen(fname)) == NULL) {
 	/* only warn if db not found. */
 	syslog(L_NOTICE, "tradspool: %s not found", fname);
@@ -363,7 +359,7 @@ ReadActiveFile(void) {
     char *line;
     char *p;
 
-    fname = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
+    fname = concatpath(innconf->pathdb, _PATH_ACTIVE);
     if ((qp = QIOopen(fname)) == NULL) {
 	syslog(L_FATAL, "tradspool: can't open %s", fname);
 	DISPOSE(fname);
@@ -424,7 +420,7 @@ CheckNeedReloadDB(void) {
     oldlastcheck = lastcheck;
     lastcheck = now;
 
-    fname = COPY(cpcatpath(innconf->pathspool, _PATH_TRADSPOOLNGDB));
+    fname = concatpath(innconf->pathspool, _PATH_TRADSPOOLNGDB);
     if (stat(fname, &sb) < 0) {
 	DISPOSE(fname);
 	return;
@@ -771,9 +767,6 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	if (p == NULL || p == private->artbase) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    syslog(L_ERROR, "tradspool: could not mmap article: %m");
-#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-	    madvise(private->artbase, private->artlen, MADV_DONTNEED);
-#endif
 	    munmap(private->artbase, private->artlen);
 	    DISPOSE(art->private);
 	    DISPOSE(art);
@@ -784,9 +777,6 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	    private->mmapped = TRUE;
 	} else {
 	    wfarticle = ToWireFmt(private->artbase, private->artlen, &wflen);
-#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-	    madvise(private->artbase, private->artlen, MADV_DONTNEED);
-#endif
 	    munmap(private->artbase, private->artlen);
 	    private->artbase = wfarticle;
 	    private->artlen = wflen;
@@ -835,14 +825,10 @@ OpenArticle(const char *path, RETRTYPE amount) {
     }
     
     if (((p = SMFindBody(private->artbase, private->artlen)) == NULL)) {
-	if (private->mmapped) {
-#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-	    madvise(private->artbase, private->artlen, MADV_DONTNEED);
-#endif
+	if (private->mmapped)
 	    munmap(private->artbase, private->artlen);
-	} else {
+	else
 	    DISPOSE(private->artbase);
-	}
 	SMseterror(SMERR_NOBODY, NULL);
 	DISPOSE(art->private);
 	DISPOSE(art);
@@ -861,14 +847,10 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	return art;
     }
     SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
-    if (private->mmapped) {
-#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-	madvise(private->artbase, private->artlen, MADV_DONTNEED);
-#endif
+    if (private->mmapped)
 	munmap(private->artbase, private->artlen);
-    } else {
+    else
 	DISPOSE(private->artbase);
-    }
     DISPOSE(art->private);
     DISPOSE(art);
     return NULL;
@@ -906,14 +888,10 @@ tradspool_freearticle(ARTHANDLE *article) {
 
     if (article->private) {
 	private = (PRIV_TRADSPOOL *) article->private;
-	if (private->mmapped) {
-#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-	    madvise(private->artbase, private->artlen, MADV_DONTNEED);
-#endif
+	if (private->mmapped)
 	    munmap(private->artbase, private->artlen);
-	} else {
+	else
 	    DISPOSE(private->artbase);
-	}
 	if (private->curdir) {
 	    closedir(private->curdir);
 	}
@@ -1056,14 +1034,10 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	DISPOSE(article->private);
 	DISPOSE((void*)article);
 	if (priv.artbase != NULL) {
-	    if (priv.mmapped) {
-#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-		madvise(priv.artbase, priv.artlen, MADV_DONTNEED);
-#endif
+	    if (priv.mmapped)
 		munmap(priv.artbase, priv.artlen);
-	    } else {
+	    else
 		DISPOSE(priv.artbase);
-	    }
 	}
     }
 
