@@ -1165,7 +1165,6 @@ void PERMgetaccess(void)
 	ExitWithStats(1, TRUE);
     } else {
 	PERMneedauth = TRUE;
-	success_auth = auth_realms[i];
     }
     /* check maximum allowed permissions for any host that matches (for
      * the greeting string) */
