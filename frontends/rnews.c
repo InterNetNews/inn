@@ -1,10 +1,12 @@
 /*  $Id$
 **
 **  A front-end for InterNetNews.
+**
 **  Read UUCP batches and offer them up NNTP-style.  Because we may end
 **  up sending our input down a pipe to uncompress, we have to be careful
 **  to do unbuffered reads.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include "portable/wait.h"
@@ -335,6 +337,7 @@ ReadRemainder(fd, first, second)
 {
     register FILE	*F;
     register char	*article;
+    register char       *p;
     register int	size;
     register int	used;
     register int	left;
@@ -355,20 +358,29 @@ ReadRemainder(fd, first, second)
     used = second ? 2 : 1;
     left = size - used;
 
-    /* Read the input. */
-    while ((i = fread(&article[used], 1, left, F)) != 0) {
-	if (i < 0) {
-	    syslog(L_FATAL, "cant fread after %d bytes %m", used);
-	    exit(1);
-	}
+    /* Read the input.  Read a line at a time so that we can convert line
+       endings if necessary. */
+    p = fgets(article + used, left, F);
+    while (p != NULL) {
+	i = strlen(p);
+        if (p[i-2] == '\r') {
+            p[i-2] = '\n';
+            p[i-1] = '\0';
+        }
 	used += i;
-	left -= i;
-	if (left < SMBUF) {
-	    size += BUFSIZ;
-	    left += BUFSIZ;
-	    RENEW(article, char, size);
-	}
+        left -= i;
+        if (left < SMBUF) {
+            size += BUFSIZ;
+            left += BUFSIZ;
+            RENEW(article, char, size);
+        }
+        p = fgets(article + used, left, F);
     }
+    if (!feof(F)) {
+        syslog(L_FATAL, "cant fgets after %d bytes %m", used);
+        exit(1);
+    }
+
     if (article[used - 1] != '\n')
 	article[used++] = '\n';
     article[used] = '\0';
