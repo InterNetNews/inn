@@ -1,0 +1,71 @@
+#!/usr/bin/perl
+# -*- perl -*-
+#
+# delay lines for N seconds.
+#
+# primarily meant to be used with INN to generate a delayed feed with innfeed.
+#
+# put it into your newsfeeds file like
+#
+# innfeed-delayed!\
+#        :!*\
+#        :Tc,Wnm*,S16384:/usr/local/news/bin/delayer 60 \
+#		/usr/local/news/bin/startinnfeed -c innfeed-delayed.conf
+#
+#
+#
+# done by christian mock <cm@tahina.priv.at> sometime in july 1998,
+# and put into the public domain.
+#
+$delay = shift || die "usage: $0 delay prog-n-args\n";
+
+$timeout = $delay;
+$eof = 0;
+
+open(OUT, "|" . join(" ", @ARGV)) || die "open |prog-n-args: $!\n";
+
+#select(OUT);
+#$| = 1;
+#select(STDOUT);
+
+$rin = '';
+vec($rin,fileno(STDIN),1) = 1;
+
+while(!$eof || $#queue >= 0) {
+    if(!$eof) {
+	($nfound,$timeleft) =
+	    select($rout=$rin, undef, undef, $timeout);
+    } else {
+	sleep($timeout);
+    }
+    $now = time(); $exp = $now + $delay;
+
+    if(!$eof && vec($rout,fileno(STDIN),1)) {
+	$line = <STDIN>;
+	if(!defined $line) {	# exit NOW!
+	    foreach(@queue) {
+		s/^[^:]+://g;
+		print OUT;
+	    }
+	    close(OUT);
+	    sleep(1);
+	    exit;
+	}
+	push(@queue, "$exp:$line");
+    }
+
+    if($#queue < 0) {
+	undef $timeout;
+	next;
+    }
+
+    ($first, $line) = split(/:/, $queue[0], 2);
+    while($#queue >= 0 && $first <= $now) {
+	print OUT $line;
+	shift(@queue);
+	($first, $line) = split(/:/, $queue[0], 2);
+    }
+    $timeout = $first - $now;
+	
+}
+
