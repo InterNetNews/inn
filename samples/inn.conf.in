@@ -68,6 +68,7 @@ activedupdate:		30
 activedport:		1119
 nnrpperlauth:		false
 nnrpdauthsender:	false
+cnfscheckfudgesize:	0L
 #
 # 
 # These options are unlikely to need changing in most situations

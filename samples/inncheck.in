@@ -380,7 +380,8 @@ incoming_conf
     'innwatchspoolnodes',	0,
     'nnrpperlauth',		0,
     'docnfsstat',		0,
-    'nnrpdauthsender',		0
+    'nnrpdauthsender',		0,
+    'cnfscheckfudgesize',	0
 );
 %inn_conf'optionals = (
     'innflags',			0,
