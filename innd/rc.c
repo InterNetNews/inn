@@ -1,29 +1,21 @@
 /*  $Id$
 **
-**  Routines for the remote connect channel.  Create an Internet stream socket
-**  that processes connect to.  If the incoming site is not one of our feeds,
-**  then we pass the connection off to the standard nntp daemon.
+**  Routines for the remote connect channel.  Create an Internet stream
+**  socket that processes connect to.  If the incoming site is not one of
+**  our feeds, then we optionally pass the connection off to the standard
+**  NNTP daemon.
 */
-#include <stdio.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
-#include "innd.h"
+#include <errno.h>
 #include <netdb.h>
+#include <netinet/in.h>
+#include "innd.h"
 
-
-#if	!defined(NETSWAP)
-#if	!defined(htons)
-extern unsigned short	htons();
-#endif	/* !defined(htons) */
-#if	!defined(htonl)
-#if 0   
-extern unsigned long	htonl(); /* nobody should really need this anymore */
+/* Error returns from inet_addr. */
+#ifndef INADDR_NONE
+# define INADDR_NONE 0xffffffff
 #endif
-#endif	/* !defined(htonl) */
-#endif	/* !defined(NETSWAP) */
 
 #define COPYADDR(dest, src) \
 	    (void)memcpy((POINTER)dest, (POINTER)src, (SIZE_T)sizeof (INADDR))
@@ -854,7 +846,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    rp = *list + j;
 
 	    /* Was host specified as a dotted quad ? */
-	    if ((rp->Address.s_addr = inet_addr(*q)) != (unsigned int) -1) {
+	    if ((rp->Address.s_addr = inet_addr(*q)) != INADDR_NONE) {
 	      /* syslog(LOG_NOTICE, "think it's a dotquad: %s", *q); */
 	      rp->Name = COPY (*q);
 	      rp->Label = COPY (peer_params.Label);
@@ -893,7 +885,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	      int    t = 0;
 	      /* Strange DNS ? try this.. */
 	      for (r = hp->h_aliases; *r != 0; r++) {
-		if (inet_addr(*r) == (unsigned int) -1) /* IP address ? */
+		if (inet_addr(*r) == INADDR_NONE) /* IP address ? */
 		  continue;
 		(*count)++;
 		/* Grow the array */
@@ -1470,7 +1462,7 @@ RCsetup(i)
 	if (innconf->bindaddress) {
 	    server.sin_addr.s_addr = inet_addr(innconf->bindaddress);
 	    if (server.sin_addr.s_addr == INADDR_NONE) {
-		syslog(L_FATAL, "inndstart unable to determine bind ip (%s) %m",
+		syslog(L_FATAL, "unable to determine bind ip (%s) %m",
 					innconf->bindaddress);
 		exit(1);
 	    }
