@@ -611,6 +611,9 @@ int main(int ac, char *av[])
     int                 deleted;
     BOOL		empty_error, val;
 
+    /* First thing, set up logging and our identity. */
+    openlog("fastrm", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+
     MyName = av[0];
     if ((p = strrchr(MyName, '/')) != NULL)
 	MyName = p + 1;
