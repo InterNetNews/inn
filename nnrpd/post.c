@@ -77,6 +77,7 @@ HEADER	Table[] = {
 #define _xcomplaintsto	22
     {   "NNTP-Posting-Date",	FALSE, HTstd },
 #define _nntppostdate	23
+    {   "Injector-Info",        FALSE,  HTstd },
     {	"Xref",			FALSE,	HTstd },
     {	"Summary",		TRUE,	HTstd },
     {	"Keywords",		TRUE,	HTstd },
