@@ -13,23 +13,72 @@
 #include "paths.h"
 #include "storage.h"
 
+bool	Quiet = FALSE;
+bool	Delete = FALSE;
+bool	Rawformat = FALSE;
+bool	Artinfo = FALSE;
+
 void Usage(void) {
-    fprintf(stderr, "Usage sm [-q] [-r] [-d] [-R] [-i] token [token] [token] ...\n");
+    fprintf(stderr, "Usage sm [-q] [-r] [-d] [-R] [-i] [token] [token] ...\n");
     exit(1);
 }
 
-int main(int argc, char **argv) {
-    int                 c;
-    bool                Quiet = FALSE;
-    bool                Delete = FALSE;
-    bool                Rawformat = FALSE;
-    bool                Artinfo = FALSE;
-    bool		val;
-    int                 i, len;
-    char                *p;
+void getinfo(const char *p) {
     TOKEN		token;
-    ARTHANDLE		*art;
     struct artngnum	ann;
+    ARTHANDLE		*art;
+    int                 len;
+    char		*q;
+
+    if (!IsToken(p)) {
+	if (!Quiet)
+	    fprintf(stderr, "%s is not a storage token\n", p);
+	return;
+    }
+    token = TextToToken(p);
+    if (Artinfo) {
+	if (!SMprobe(SMARTNGNUM, &token, (void *)&ann)) {
+	    if (!Quiet)
+		fprintf(stderr, "Could not get art info %s\n", p);
+	} else {
+	    fprintf(stdout, "%s: %lu\n", ann.groupname, ann.artnum);
+	    DISPOSE(ann.groupname);
+	}
+    } else if (Delete) {
+	if (!SMcancel(token)) {
+	    if (!Quiet)
+		fprintf(stderr, "Could not remove %s: %s\n", p, SMerrorstr);
+	}
+    } else {
+	if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
+	    if (!Quiet)
+		fprintf(stderr, "Could not retrieve %s\n", p);
+	    return;
+	}
+	if (Rawformat) {
+	    if (fwrite(art->data, art->len, 1, stdout) != 1) {
+		if (!Quiet)
+		    fprintf(stderr, "Output failed\n");
+		exit(1);
+	    }
+	} else {
+	    q = FromWireFmt(art->data, art->len, &len);
+	    if (fwrite(q, len, 1, stdout) != 1) {
+		if (!Quiet)
+		    fprintf(stderr, "Output failed\n");
+		exit(1);
+	    }
+	    DISPOSE(q);
+	}
+	SMfreearticle(art);
+    }
+}
+
+int main(int argc, char **argv) {
+    int		c;
+    bool	val;
+    int		i;
+    char	*p, buff[BUFSIZ];
 
     /* First thing, set up logging and our identity. */
     openlog("sm", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
@@ -56,63 +105,32 @@ int main(int argc, char **argv) {
 	}
     }
 
-	if (Delete) {
-	    val = TRUE;
-	    if (!SMsetup(SM_RDWR, (void *)&val)) {
-		fprintf(stderr, "Can't setup storage manager\n");
-		exit(1);
-	    }
-	}
-	if (!SMinit()) {
-	    if (!Quiet)
-		fprintf(stderr, "Could not initialize the storage manager: %s", SMerrorstr);
+    if (Delete) {
+	val = TRUE;
+	if (!SMsetup(SM_RDWR, (void *)&val)) {
+	    fprintf(stderr, "Can't setup storage manager\n");
 	    exit(1);
 	}
-    
-    for (i = optind; i < argc; i++) {
-	if (!IsToken(argv[i])) {
-	    if (!Quiet)
-		fprintf(stderr, "%s is not a storage token\n", argv[i]);
-	    continue;
-	}
-	token = TextToToken(argv[i]);
-	if (Artinfo) {
-	    if (!SMprobe(SMARTNGNUM, &token, (void *)&ann)) {
-		if (!Quiet)
-		    fprintf(stderr, "Could not get art info %s\n", argv[i]);
-	    } else {
-		fprintf(stdout, "%s: %lu\n", ann.groupname, ann.artnum);
-		DISPOSE(ann.groupname);
-	    }
-	} else if (Delete) {
-	    if (!SMcancel(token)) {
-		if (!Quiet)
-		    fprintf(stderr, "Could not remove %s: %s\n", argv[i], SMerrorstr);
-	    }
-	} else {
-	    if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
-		if (!Quiet)
-		    fprintf(stderr, "Could not retrieve %s\n", argv[i]);
+    }
+    if (!SMinit()) {
+	if (!Quiet)
+	    fprintf(stderr, "Could not initialize the storage manager: %s", SMerrorstr);
+	exit(1);
+    }
+
+    if (optind == argc) {
+	while (fgets(buff, sizeof buff, stdin) != NULL) {
+	    if ((p = strchr(buff, '\n')) == NULL)
 		continue;
-	    }
-	    if (Rawformat) {
-		if (fwrite(art->data, art->len, 1, stdout) != 1) {
-		    if (!Quiet)
-			fprintf(stderr, "Output failed\n");
-		    exit(1);
-		}
-	    } else {
-		p = FromWireFmt(art->data, art->len, &len);
-		if (fwrite(p, len, 1, stdout) != 1) {
-		    if (!Quiet)
-			fprintf(stderr, "Output failed\n");
-		    exit(1);
-		}
-	    }
-	    SMfreearticle(art);
+	    *p = '\0';
+	    getinfo(buff);
+	}
+    } else {
+	for (i = optind; i < argc; i++) {
+	    getinfo(argv[i]);
 	}
     }
-	  
+
     SMshutdown();
-    return 0;
+    exit(0);
 }

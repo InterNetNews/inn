@@ -19,7 +19,7 @@
 static void
 Usage(void)
 {
-    fprintf(stderr, "Usage: getlist [-p port] [-h host] [type [pat [groups]]\n");
+    fprintf(stderr, "Usage: getlist [-p port] [-h host] [-A] [type [pat [groups]]\n");
     exit(1);
 }
 
@@ -40,6 +40,7 @@ main(int ac, char *av[])
     char	*pattern;
     char	buff[512 + 1];
     int		port;
+    int		authinfo;
     int		i;
 
     /* First thing, set up logging and our identity. */
@@ -52,13 +53,17 @@ main(int ac, char *av[])
     pattern = NULL;
     types = NULL;
     port = NNTP_PORT;
+    authinfo = 0;
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "h:p:")) != EOF)
+    while ((i = getopt(ac, av, "Ah:p:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
 	    /* NOTREACHED */
+	case 'A':
+	    authinfo = 1;
+	    break;
 	case 'h':
 	    host = optarg;
 	    break;
@@ -111,6 +116,10 @@ main(int ac, char *av[])
 	(void)fprintf(stderr, "Can't connect to server, %s\n",
 		buff[0] ? buff : strerror(errno));
 	exit(1);
+    }
+    if(authinfo && NNTPsendpassword(host, FromServer, ToServer) < 0) {
+        (void)fprintf(stderr, "Can't authenticate to server\n");
+        exit(1);
     }
 
     /* Get the data from the server. */
