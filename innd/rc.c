@@ -29,18 +29,12 @@ extern unsigned long	htonl(); /* nobody should really need this anymore */
 
 #define TEST_CONFIG(a, b) \
     { \
-	int byte, offset; \
-	offset = a % 8; \
-	byte = (a - offset) / 8; \
-	b = ((peer_params.Keysetbit & (1 << offset)) != 0) ? TRUE : FALSE; \
+	b = ((peer_params.Keysetbit & (1 << a)) != 0) ? TRUE : FALSE; \
     }
 
 #define SET_CONFIG(a) \
     { \
-	int byte, offset; \
-	offset = a % 8; \
-	byte = (a - offset) / 8; \
-	peer_params.Keysetbit |= (1 << offset); \
+	peer_params.Keysetbit |= (1 << a); \
     }
 
 /*
@@ -766,6 +760,9 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  groups[groupcount - 2].Pattern : default_params.Pattern;
 	group_params->Password = groupcount > 1 ?
 	  groups[groupcount - 2].Password : default_params.Password;
+        group_params->MaxCnx = groupcount > 1 ?
+          groups[groupcount - 2].MaxCnx : default_params.MaxCnx;
+
 	if ((word = RCreaddata (&linecount, F)) == NULL) {
 	  syslog(L_ERROR, LEFT_BRACE, LogName, filename, linecount);
 	  break;
@@ -814,6 +811,9 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  group_params->Pattern : default_params.Pattern;
 	peer_params.Password = groupcount > 0 ?
 	  group_params->Password : default_params.Password;
+	peer_params.MaxCnx = groupcount > 0 ?
+	  group_params->MaxCnx : default_params.MaxCnx;
+
 	peer_params.Keysetbit = 0;
 
 	if ((word = RCreaddata (&linecount, F)) == NULL)
@@ -1086,6 +1086,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 
       /* max-connections */
       if (!strncmp (word, MAX_CONN, sizeof MAX_CONN)) {
+	int max;
 	DISPOSE(word);
 	TEST_CONFIG(K_MAX_CONN, bit);
         if (bit) {
@@ -1098,14 +1099,21 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	RCadddata(data, &infocount, K_MAX_CONN, T_STRING, word);
 	for (p = word; isdigit(*p) && *p != '\0'; p++);
 	if (!strcmp (word, "none") || !strcmp (word, "unlimited")) {
-	  peer_params.MaxCnx = 0;
-	  continue;
+	  max = 0;
+	} else {
+	  if (*p != '\0') {
+	    syslog(L_ERROR, MUST_BE_INT, LogName, filename, linecount);
+	    break;
+	  }
+	  max = atoi(word);
 	}
-	if (*p != '\0') {
-	  syslog(L_ERROR, MUST_BE_INT, LogName, filename, linecount);
-	  break;
-	}
-	peer_params.MaxCnx = atoi(word);
+	if (peer_params.Label != NULL)
+	  peer_params.MaxCnx = max;
+	else
+	  if (groupcount > 0 && group_params->Label != NULL)
+	    group_params->MaxCnx = max;
+	  else
+	    default_params.MaxCnx = max;
 	SET_CONFIG(K_MAX_CONN);
 	continue;
       }
