@@ -1517,9 +1517,11 @@ static void getModeResponse (EndPoint e, IoStatus i, Buffer *b, void *d)
     }
   else if (i != IoDone)
     {
-      errno = endPointErrno (e) ;
-      syslog (LOG_ERR, RESPONSE_READ_FAILED, peerName, cxn->ident) ;
-
+      if (i != IoEOF)
+        {
+          errno = endPointErrno (e) ;
+          syslog (LOG_ERR, RESPONSE_READ_FAILED, peerName, cxn->ident) ;
+        }
       cxnSleepOrDie (cxn) ;
     }
   else if (strchr (p, '\n') == NULL)
@@ -1646,8 +1648,11 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
 
   if (i != IoDone)
     {                           /* uh oh. */
-      errno = endPointErrno (e) ;
-      syslog (LOG_ERR, RESPONSE_READ_FAILED, peerName, cxn->ident) ;
+      if (i != IoEOF)
+        {
+          errno = endPointErrno (e) ;
+          syslog (LOG_ERR, RESPONSE_READ_FAILED, peerName, cxn->ident) ;
+        }
       freeBufferArray (b) ;
 
       cxnLogStats (cxn,true) ;
