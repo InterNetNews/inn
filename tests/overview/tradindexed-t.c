@@ -15,7 +15,7 @@
 #include "ov.h"
 #include "storage.h"
 
-#include "../storage/ov3/tradindexed.h"
+#include "../storage/tradindexed/tradindexed.h"
 
 /* Used as the artificial token for all articles inserted into overview. */
 static const TOKEN faketoken = { 1, 1, "" };
