@@ -809,93 +809,93 @@
   ||##
 [IN1.7=@NO][WDF=confparam][WOR=yes]
   ||##  Location of the cnfs partition configuration file
-  ||#### =()<_PATH_CYCBUFFCONFIG   @<_PATH_CYCBUFFCONFIG>@>()=
-  ||_PATH_CYCBUFFCONFIG    /var/news/etc/cycbuff.conf
+  ||#### =()<_PATH_CYCBUFFCONFIG	@<_PATH_CYCBUFFCONFIG>@>()=
+  ||_PATH_CYCBUFFCONFIG		/var/news/etc/cycbuff.conf
 [IN1.7=@NO][WDF=confparam][WOR=yes]
   ||##  Maximum number of cycbuffs
-  ||#### =()<MAX_CYCBUFFS  @<MAX_CYCBUFFS>@>()=
-  ||MAX_CYCBUFFS           16
+  ||#### =()<MAX_CYCBUFFS		@<MAX_CYCBUFFS>@>()=
+  ||MAX_CYCBUFFS		16
 [IN1.7=@NO][WDF=confparam][WOR=yes]
   ||##  Maximum number of metacycbuffs
-  ||#### =()<MAX_METACYCBUFFS      @<MAX_METACYCBUFFS>@>()=
-  ||MAX_METACYCBUFFS               8
+  ||#### =()<MAX_METACYCBUFFS	@<MAX_METACYCBUFFS>@>()=
+  ||MAX_METACYCBUFFS		8
 [IN1.7=@NO][WDF=confparam][WOR=yes]
   ||##  Maximum number of cycbuffs which any one metacycbuff can contain
-  ||#### =()<MAX_META_MEMBERS      @<MAX_META_MEMBERS>@>()=
-  ||MAX_META_MEMBERS               16
+  ||#### =()<MAX_META_MEMBERS		@<MAX_META_MEMBERS>@>()=
+  ||MAX_META_MEMBERS		16
 [IN1.7=@NO][WDF=confparam][WOR=yes]
   ||##  Maximum number of cycbuff expire rules
-  ||#### =()<MAX_METACYCBUFF_RULES @<MAX_METACYCBUFF_RULES>@>()=
-  ||MAX_METACYCBUFF_RULES          24
+  ||#### =()<MAX_METACYCBUFF_RULES		@<MAX_METACYCBUFF_RULES>@>()=
+  ||MAX_METACYCBUFF_RULES		24
 [IN1.7=@NO][WDF=autoconf][WOR=no]
   ||##  C type to use for offsets (should be a big integer like "off_t" 
   ||##  (or "offset_t" (64 bits) for Solaris 2.5).
   ||##  WARNING: we use "atol" to convert these values ... look in the code
   ||##           for "Danger, Will Robinson!"
-  ||#### =()<CYCBUFF_OFF_T @<CYCBUFF_OFF_T>@>()=
-  ||CYCBUFF_OFF_T          off_t
+  ||#### =()<CYCBUFF_OFF_T		@<CYCBUFF_OFF_T>@>()=
+  ||CYCBUFF_OFF_T		off_t
 [IN1.7=@NO][WDF=autoconf][WOR=no]
   ||##  Which seek system call to use?  If CYCBUFF_OFF_T is "off_t", then lseek().
   ||##  If, like Solaris, CYCBUFF_OFF_T is bigger than "off_t", then we must
   ||##  use a different system call, namedly llseek().
-  ||#### =()<CNFSseekcall  @<CNFSseekcall>@>()=
-  ||CNFSseekcall                   lseek
+  ||#### =()<CNFSseekcall		@<CNFSseekcall>@>()=
+  ||CNFSseekcall		lseek
 [IN1.7=@NO][WDF=autoconf][WOR=no]
   ||##  C type to use for cycle numbers.  Should be big, like a 32 bit unsigned
   ||##  integer.
-  ||#### =()<CYCLENUM_T    @<CYCLENUM_T>@>()=
-  ||CYCLENUM_T             unsigned long
+  ||#### =()<CYCLENUM_T		@<CYCLENUM_T>@>()=
+  ||CYCLENUM_T		unsigned long
 [IN1.7=@NO][WDF=autoconf][WOR=no]
   ||##  Number of articles to be written to a cycbuff before that cycbuff's
   ||##  status header is updated.
-  ||#### =()<METACYCBUFF_UPDATE    @<METACYCBUFF_UPDATE>@>()=
-  ||METACYCBUFF_UPDATE             25
+  ||#### =()<METACYCBUFF_UPDATE		@<METACYCBUFF_UPDATE>@>()=
+  ||METACYCBUFF_UPDATE		25
 [IN1.7=@NO][WDF=confparam][WOR=yes]
   ||##  Directory where CNFS-specific utilities should go
-  ||#### =()<_PATH_CNFSBIN @<_PATH_CNFSBIN>@>()=
-  ||_PATH_CNFSBIN          /var/news/bin.cnfs
+  ||#### =()<_PATH_CNFSBIN		@<_PATH_CNFSBIN>@>()=
+  ||_PATH_CNFSBIN		/var/news/bin.cnfs
 [IN1.7=@NO][WDF=confparam][WOR=yes]
   ||##  Utilize CNFS.  Select DO or DONT.  The effects of selecting DONT
   ||##  in this particular code base are unclear....
-  ||USE_CNFS               DO
+  ||USE_CNFS		DO
 [IN1.7=@NO][WDF=confparam][WOR=yes]
   ||##  Misc MRNet hacks.  I don't even recall what they do anymore, but I
   ||##  always compile with them.  Select DO or DONT.  I recommend DO.
   ||##  -Scott <fritchie@mr.net>
-  ||MRNET_HACK             DO
+  ||MRNET_HACK		DO
 [IN1.7=@NO][WDF=confparam][WOR=yes]
   ||##  Store articles in "wire" format, namely with CR-LF terminating
   ||##  each line.  Select DO or DONT.  Recommend DO.
-  ||WIRE_FORMAT            DO
+  ||WIRE_FORMAT		DO
 [IN1.7=@NO][WDF=confparam][WOR=yes]
   ||##  USE mmap() to send articles (e.g. with "innxmit").  THIS CODE IS
   ||##  EXTREMELY OLD, ANTIQUATED, OUT-OF-DATE, AND UNMAINTAINED.  I have
   ||##  absolutely no idea why I haven't ripped it out yet.
-  ||COMMIT_MMAP_SUICIDE    DONT
+  ||COMMIT_MMAP_SUICIDE		DONT
 [IN1.7=@NO][WDF=confparam][WOR=yes]
   ||##  Use mmap() when dealiing with the article number => article
   ||##  storage location map files.  This option only matters if you're
   ||##  going to be needing NNRP support.  Use either DO or DONT.
   ||##  Recommend DO.
-  ||MMAP_MAP_FILES         DO
+  ||MMAP_MAP_FILES		DO
 [IN1.7=@NO][WDF=confparam][WOR=yes]
   ||##  History mechanism choice.  Your options are: TRADITIONAL, ONEILL
   ||##  TRADITIONAL is the DBZ mechanism bundled along with INN.
   ||##  ONEILL is an MD5-based partial-from-scratch DBZ rewrite by Clayton O'Neill
-  ||DBZ_TYPE               TRADITIONAL
+  ||DBZ_TYPE		TRADITIONAL
 [IN1.7=@NO][WDF=confparam][WOR=yes]
   ||##  History accelerator.  Allocate a large chunk of RAM for an completely
   ||##  in-core history mechanism.  Classic RAM vs. speed tradeoff.  Use
   ||##  either DO or DONT to suck up an additional 32MB RAM.
-  ||HISTORY_ACCEL          DONT
+  ||HISTORY_ACCEL		DONT
 [IN1.7=@NO][WDF=confparam][WOR=yes]
   ||##  Performance timer option, by Joe Greco.  Syslogs messages every 5
   ||##  minutes with stats on time taken to perform many operations.  Use
   ||##  either DO or DONT.
-  ||GRECO_TIMER            DO
+  ||GRECO_TIMER		DO
 [IN1.7=@NO][WDF=confparam][WOR=yes]
   ||##  CIDR slash notation support for NNRPD.  Use either DO or DONT
-  ||CIDR_SLASH_NOTATION    DO
+  ||CIDR_SLASH_NOTATION		DO
 [IN1.7=@NO][WDF=confparam][WOR=yes]
   ||##  Use mmap() to read .overview files.  Includes handy feature of
   ||##  performing binary searches on .overview files instead of reading
@@ -903,5 +903,5 @@
   ||##  implementation is rock-solid.  See the unoff-patches directory for
   ||##  "mmaptest.shar" to test your system's mmap() implementation.
   ||##  Use either DO or DONT.
-  ||OVERSCREAM             DO
+  ||OVERSCREAM		DO
 
