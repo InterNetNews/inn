@@ -155,7 +155,6 @@ if (/^From\s+([^\s]+)\s+/) {
 	$path = $' . '!' . $path;
 	$_ = $`;
     }
-    $date = $_;
 } else {
     $line = $_;
 }
@@ -326,7 +325,6 @@ if ( ! $tmpfile ) {
 ##
 
 mailArtAndDie ("no From: found") unless $from;
-mailArtAndDie ("no Date: found") unless $date;
 mailArtAndDie ("no Message-ID: found") unless $message_id;
 mailArtAndDie ("Malformed message ID ($message_id)") 
     if ($message_id !~ /\<(\S+)\@(\S+)\>/);
