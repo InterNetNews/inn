@@ -460,12 +460,13 @@ AC_REPLACE_FUNCS(getaddrinfo getpagesize hstrerror inet_aton mkstemp pread \
                  pwrite seteuid strcasecmp strerror strlcat strlcpy strspn \
                  setenv symlink)
 
-dnl AC_REPLACE_FUNCS doesn't take the normal action arguments, so we have to
-dnl do this using AC_CHECK_FUNC.
-AC_CHECK_FUNC([fseeko], ,
-    [AC_LIBOBJ(fseeko)
-     AC_LIBOBJ(ftello)
-     INN_TYPE_FPOS_T_LARGE])
+dnl Probe for fseeko and ftello, which take off_t instead of int.
+inn_need_fpos_t=0
+AC_REPLACE_FUNCS([fseeko], , [inn_need_fpos_t=1])
+AC_REPLACE_FUNCS([ftello], , [inn_need_fpos_t=1])
+if test x"$inn_need_fpos_t" = x1 ; then
+    INN_TYPE_FPOS_T_LARGE
+fi
 
 dnl Probe for mmap properties.
 INN_FUNC_MMAP(

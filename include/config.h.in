@@ -81,6 +81,12 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
+/* Define to 1 if you have the `fseeko' function. */
+#undef HAVE_FSEEKO
+
+/* Define to 1 if you have the `ftello' function. */
+#undef HAVE_FTELLO
+
 /* Define to 1 if you have the <gdbm-ndbm.h> header file. */
 #undef HAVE_GDBM_NDBM_H
 
