@@ -343,7 +343,7 @@ lib/getopt.c                          Help parse command line
 lib/gettime.c                         Get time and timezone info
 lib/grpalias.c                        Group alias code used for OV3
 lib/hash.c                            Create hash from message ID
-lib/herror.c                          Error reporting for resolver
+lib/hstrerror.c                       Error reporting for resolver
 lib/inet_aton.c                       Extra source for inet_aton routine
 lib/inet_ntoa.c                       Convert inaddr to string (BSD)
 lib/inndcomm.c                        Library routines to talk to innd
