@@ -52,10 +52,11 @@ HASH Hash(const void *value, const size_t len) {
 }
 
 HASH HashMessageID(const char *MessageID) {
-    char *new;
-    char *cip;
-    char *p;
-    int len;
+    char                *new;
+    char                *cip;
+    char                *p;
+    int                 len;
+    HASH                hash;
 
     new = COPY(MessageID);
     len = strlen(new);
@@ -63,7 +64,9 @@ HASH HashMessageID(const char *MessageID) {
 	for (p = new; p != cip; p++)
 	    *p = tolower(*p);
     }
-    return Hash(new, len);
+    hash = Hash(new, len);
+    DISPOSE(new);
+    return hash;
 }
 
 /*
