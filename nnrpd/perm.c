@@ -2026,7 +2026,8 @@ static void HandleErrorLine(char *ln)
     syslog(L_NOTICE, "%s auth_err %s", ClientHost, ln);
 }
 
-static int HandleProgInput(int fd, char *buf, int buflen, LineFunc f)
+static bool
+HandleProgInput(int fd, char *buf, int buflen, LineFunc f)
 {
     char *nl;
     char *start;
@@ -2036,11 +2037,11 @@ static int HandleProgInput(int fd, char *buf, int buflen, LineFunc f)
     curpos = strlen(buf);
     if (curpos >= buflen-1) {
 	/* data overflow (on one line!) */
-	return(-1);
+	return false;
     }
     got = read(fd, buf+curpos, buflen-curpos-1);
     if (got <= 0)
-	return(got);
+	return false;
     buf[curpos+got] = '\0';
 
     /* break what we got up into lines */
@@ -2058,7 +2059,7 @@ static int HandleProgInput(int fd, char *buf, int buflen, LineFunc f)
     nl = start;
     start = buf;
     if (nl == start) {
-	return(0);
+	return true;
     }
 
     while (*nl) {
@@ -2067,7 +2068,7 @@ static int HandleProgInput(int fd, char *buf, int buflen, LineFunc f)
 
     *start = '\0';
 
-    return(got);
+    return true;
 }
 
 static void GetProgInput(EXECSTUFF *prog)
@@ -2075,6 +2076,7 @@ static void GetProgInput(EXECSTUFF *prog)
     fd_set rfds, tfds;
     int maxfd;
     int got;
+    bool okay;
     struct timeval tmout;
     pid_t tmp;
     int status;
@@ -2098,16 +2100,16 @@ static void GetProgInput(EXECSTUFF *prog)
 	tmout.tv_usec = 0;
 	if (got > 0) {
 	    if (FD_ISSET(prog->rdfd, &tfds)) {
-		got = HandleProgInput(prog->rdfd, rdbuf, sizeof(rdbuf), HandleProgLine);
-		if (got <= 0) {
+		okay = HandleProgInput(prog->rdfd, rdbuf, sizeof(rdbuf), HandleProgLine);
+		if (!okay) {
 		    close(prog->rdfd);
 		    FD_CLR(prog->rdfd, &tfds);
 		    kill(prog->pid, SIGTERM);
 		}
 	    }
 	    if (FD_ISSET(prog->errfd, &tfds)) {
-		got = HandleProgInput(prog->errfd, errbuf, sizeof(errbuf), HandleErrorLine);
-		if (got <= 0) {
+		okay = HandleProgInput(prog->errfd, errbuf, sizeof(errbuf), HandleErrorLine);
+		if (!okay) {
 		    close(prog->errfd);
 		    FD_CLR(prog->errfd, &tfds);
 		    kill(prog->pid, SIGTERM);
