@@ -17,7 +17,8 @@ SQUASH=gzip
 RCSCOFLAGS	= -u
 
 ##  The first two directories must be lib and storage.
-PROGS = lib storage frontends innd nnrpd backends expire doc innfeed authprogs
+PROGS = lib storage innd nnrpd innfeed expire frontends backends authprogs \
+	scripts doc
 DIRS  = $(PROGS) site
 
 ##  We invoke an extra process and set this to be what to make.
@@ -83,31 +84,30 @@ clobber realclean distclean:	clean
 	rm -fr $(TARDIR)
 	rm -f config.cache config.log config.status libtool
 	rm -f BUILD makedirs.sh
-	rm -f backends/actmerge.sh backends/actsyncd.sh
-	rm -f backends/sendxbatches.sh frontends/c7unbatch.sh
-	rm -f frontends/gunbatch.sh include/autoconfig.h
-	rm -f include/config.h include/paths.h innfeed/innfeed-convcfg
-	rm -f innfeed/procbatch samples/actsync.cfg samples/checkgroups
-	rm -f samples/checkgroups.pl samples/cnfsheadconf samples/cnfsstat
-	rm -f samples/controlbatch samples/controlchan samples/default
-	rm -f samples/docheckgroups samples/expirerm samples/ihave
-	rm -f samples/ihave.pl samples/inn.conf samples/inncheck
-	rm -f samples/innmail samples/innreport samples/innreport.conf
-	rm -f samples/innshellvars samples/innshellvars.csh
-	rm -f samples/innshellvars.pl samples/innshellvars.tcl
-	rm -f samples/innstat samples/innwatch samples/innwatch.ctl
-	rm -f samples/mailpost samples/mod-active samples/news.daily
-	rm -f samples/news2mail samples/newgroup samples/newgroup.pl
-	rm -f samples/newsfeeds samples/nnrpd_auth.pl samples/nntpsend
-	rm -f samples/parsecontrol samples/pgpverify samples/pullnews
-	rm -f samples/rc.news samples/rmgroup samples/rmgroup.pl
-	rm -f samples/scanlogs samples/scanspool samples/send-ihave
-	rm -f samples/send-nntp samples/send-uucp samples/sendbatch
-	rm -f samples/sendme samples/sendme.pl samples/sendsys
-	rm -f samples/sendsys.pl samples/senduuname samples/senduuname.pl
-	rm -f samples/signcontrol samples/simpleftp samples/startup.tcl
-	rm -f samples/tally.control samples/version samples/version.pl
-	rm -f samples/writelog site/config storage/buildconfig
+	rm -f backends/actmerge backends/actsyncd backends/controlbatch
+	rm -f backends/controlchan backends/mod-active backends/news2mail
+	rm -f backends/nntpsend backends/pgpverify backends/send-ihave
+	rm -f backends/send-nntp backends/send-uucp backends/sendbatch
+	rm -f backends/sendxbatches expire/expirerm frontends/c7unbatch
+	rm -f frontends/cnfsheadconf frontends/cnfsstat frontends/gunbatch
+	rm -f frontends/mailpost frontends/pullnews frontends/scanspool
+	rm -f frontends/signcontrol include/autoconfig.h include/config.h
+	rm -f include/paths.h innfeed/innfeed-convcfg innfeed/procbatch
+	rm -f samples/actsync.cfg samples/checkgroups samples/checkgroups.pl
+	rm -f samples/default samples/docheckgroups samples/ihave
+	rm -f samples/ihave.pl samples/inn.conf samples/innreport.conf
+	rm -f samples/innwatch.ctl samples/newgroup samples/newgroup.pl
+	rm -f samples/newsfeeds samples/nnrpd_auth.pl samples/parsecontrol
+	rm -f samples/rmgroup samples/rmgroup.pl samples/sendme
+	rm -f samples/sendme.pl samples/sendsys samples/sendsys.pl
+	rm -f samples/senduuname samples/senduuname.pl samples/startup.tcl
+	rm -f samples/version samples/version.pl scripts/inncheck
+	rm -f scripts/innmail scripts/innreport scripts/innshellvars
+	rm -f scripts/innshellvars.pl scripts/innshellvars.tcl
+	rm -f scripts/innstat scripts/innwatch scripts/news.daily
+	rm -f scripts/rc.news scripts/scanlogs scripts/simpleftp
+	rm -f scripts/tally.control scripts/writelog site/config
+	rm -f storage/buildconfig
 	@echo ""
 	cd site ; make clobber ; cd ..
 	rm -f Makefile.global 
