@@ -1706,7 +1706,7 @@ int main(int ac, char *av[])
 	if (Translate == NO_TRANS)
 	    /* Start scanning articles stored by storage api */
 	    while ((art = SMnext(art, RETR_HEAD)) != NULL) {
-		if (art->len == 0) {
+		if (art->len == 0 && art->token != NULL) {
 		    if (RemoveBad)
 			(void)SMcancel(*art->token);
 		    continue;
