@@ -1923,7 +1923,7 @@ merge_grps(grp, grplen, host1, host2)
 	/* assert: cur & nxt are not the same group from the same host */
 
 	/* if nxt is ignored, look for the next non-ignored group */
-	while (grp[nxt].ignore && nxt < grplen) {
+	while (nxt < grplen && grp[nxt].ignore) {
 	    ++nxt;
 	}
 	/* assert: cur is not ignored */
