@@ -718,7 +718,9 @@ STATIC STRING ValidNewsgroups(char *hdr, char **modgroup)
 #endif /* DO_PYTHON */
 	    break;
 	case NF_FLAG_MODERATED:
-	    if (!approved && !*modgroup) {
+	    if (approved && !PERMaccessconf->allowapproved) {
+		(void)sprintf(Error, "You are not allowed to approve postings");
+	    } else if (!approved && !*modgroup) {
 		*modgroup = COPY(p);
 	    }
 	    break;

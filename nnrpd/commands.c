@@ -90,6 +90,7 @@ PERMgeneric(av, accesslist)
     PERMcanread = FALSE;
     PERMcanpost = FALSE;
     PERMaccessconf->locpost = FALSE;
+    PERMaccessconf->allowapproved = FALSE;
 
     if (!*av) {
 	Reply("%d no authenticator\r\n", NNTP_SYNTAX_VAL);
@@ -194,6 +195,7 @@ PERMgeneric(av, accesslist)
     PERMcanpost = strchr(fields[1], 'P') != NULL;
     PERMaccessconf->locpost = strchr(fields[1], 'L') != NULL;
     if (strchr(fields[1], 'N') != NULL) PERMaccessconf->allownewnews = TRUE;
+    PERMaccessconf->allowapproved = strchr(fields[1], 'A') != NULL;
     sprintf(PERMuser, "%s@%s", fields[2], fields[0]);
     (void)strcpy(PERMpass, fields[3]);
     (void)strcpy(accesslist, fields[4]);

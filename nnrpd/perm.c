@@ -733,6 +733,7 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	SET_CONFIG(oldtype);
 	break;
       case PERMpost:
+	curaccess->allowapproved = (strchr(tok->name, 'A') != NULL);
 	curaccess->post = COPY(tok->name);
 	CompressList(curaccess->post);
 	SET_CONFIG(oldtype);
