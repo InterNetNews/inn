@@ -232,16 +232,6 @@ typedef bool            BOOL;
    should be moved there (or made dynamic). */
 #define FEED_MAXFLAGS           20
 
-/* Only used in innd/rc.c and lib/localopen.c; the former should be using
-   INADDR_LOOPBACK anyway to avoid a useless call to inet_ntoa() and this
-   should be moved to the latter. */
-#define LOOPBACK_HOST		"127.0.0.1"
-
-/* Maximum length of a single article name.  Obsoleted by the advent of
-   tokens.  This is only referred to in innd/art.c and is used to determine
-   a value that's never used. */
-#define MAXARTFNAME             10
-
 /* Moved to inn.conf, but nnrpd is still using this value and the inn.conf
    code is using it as a default.  Maximum number of times to try forking
    before giving up. */
