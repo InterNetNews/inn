@@ -41,14 +41,6 @@ Scheduled for INN 2.4
   breaking apart strings on commas and matching each expression
   separately.
 
-* The recovery tools currently need serious work in the area of recovering
-  overview for a single newsgroup using tradspool, analyzing a broken
-  overview file (rather than just deleting it and regenerating it) and
-  doing things like regenerating a .IDX from a .DAT for tradindexed, and
-  renumbering the active file if it gets out of sync with the article
-  numbers on disk.  [This is essentially done and is just waiting for some
-  additional testing.]
-
 
 Scheduled for INN 2.5
 
