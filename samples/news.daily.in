@@ -189,17 +189,18 @@ test -n "${EXPDIR}" && {
 
 if [ X${SAPI} = X"true" ]; then
     test -n "${RMFILE}" && {
-	EXPIREFLAGS="${EXPIREFLAGS} -u${INDEXFILE} -z${RMFILE}"
+	EXPIREFLAGS="${EXPIREFLAGS} -z${RMFILE}"
     }
     ${DOEXPIREOVER} && {
+	EXPIREFLAGS="${EXPIREFLAGS} -u${INDEXFILE}"
 	EXPIREOVERFLAGS="${EXPIREOVERFLAGS} -z ${INDEXFILE}"
     }
 else
     test -n "${RMFILE}" && {
 	EXPIREFLAGS="${EXPIREFLAGS} -z${RMFILE}"
-    }
-    ${DOEXPIREOVER} && {
-	EXPIREOVERFLAGS="${EXPIREOVERFLAGS} -z ${RMFILE}.$$"
+	${DOEXPIREOVER} && {
+	    EXPIREOVERFLAGS="${EXPIREOVERFLAGS} -z ${RMFILE}.$$"
+	}
     }
 fi
 
