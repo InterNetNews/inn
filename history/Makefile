@@ -82,9 +82,10 @@ depend:	$(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 his.o: his.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/time.h ../include/libinn.h \
- ../include/macros.h ../include/inn/history.h ../include/inn/timer.h \
- hisinterface.h hismethods.h ../include/storage.h
+ ../include/clibrary.h /usr/include/errno.h ../include/portable/time.h \
+ ../include/libinn.h ../include/macros.h ../include/inn/history.h \
+ ../include/inn/timer.h hisinterface.h hismethods.h \
+ ../include/storage.h
 hismethods.o: hismethods.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h hisinterface.h \
  hisv6/hisv6.h

@@ -156,19 +156,21 @@ inndf.o: inndf.c ../include/config.h ../include/inn/defines.h \
  ../include/ov.h ../include/storage.h ../include/inn/history.h \
  ../include/paths.h
 innxbatch.o: innxbatch.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h ../include/macros.h \
+ ../include/clibrary.h ../include/portable/socket.h \
+ ../include/portable/time.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h
 innxmit.o: innxmit.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/time.h ../include/inn/qio.h \
- ../include/libinn.h ../include/macros.h ../include/nntp.h \
- ../include/paths.h ../include/storage.h ../include/inn/history.h
+ ../include/clibrary.h ../include/portable/socket.h \
+ ../include/portable/time.h ../include/inn/qio.h ../include/libinn.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h \
+ ../include/storage.h ../include/inn/history.h
 map.o: map.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/paths.h map.h
 nntpget.o: nntpget.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/time.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h ../include/paths.h \
- ../include/inn/history.h
+ ../include/clibrary.h ../include/portable/socket.h \
+ ../include/portable/time.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/inn/history.h
 overchan.o: overchan.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/time.h ../include/inn/qio.h \
  ../include/libinn.h ../include/macros.h ../include/ov.h \

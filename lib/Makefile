@@ -161,8 +161,8 @@ inet_ntoa.o: inet_ntoa.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 inndcomm.o: inndcomm.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/time.h \
- ../include/inndcomm.h ../include/libinn.h ../include/macros.h \
- ../include/paths.h
+ ../include/portable/socket.h ../include/inndcomm.h \
+ ../include/libinn.h ../include/macros.h ../include/paths.h
 localopen.o: localopen.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h ../include/paths.h
@@ -190,8 +190,8 @@ radix32.o: radix32.c ../include/config.h ../include/inn/defines.h \
 readin.o: readin.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
 remopen.o: remopen.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h ../include/nntp.h \
- ../include/paths.h
+ ../include/clibrary.h ../include/portable/socket.h \
+ ../include/libinn.h ../include/nntp.h ../include/paths.h
 reservedfd.o: reservedfd.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
  ../include/macros.h
@@ -209,7 +209,7 @@ sequence.o: sequence.c ../include/config.h ../include/inn/defines.h \
 setenv.o: setenv.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 sockaddr.o: sockaddr.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
+ ../include/clibrary.h ../include/portable/socket.h
 strcasecmp.o: strcasecmp.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h
 strerror.o: strerror.c ../include/config.h ../include/inn/defines.h

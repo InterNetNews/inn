@@ -79,17 +79,21 @@ depend: Makefile $(SOURCES)
 auth_smb.o: auth_smb.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h smbval/valid.h
 ckpasswd.o: ckpasswd.c libauth.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h
+ ../include/inn/defines.h ../include/clibrary.h \
+ ../include/portable/socket.h
 domain.o: domain.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
 ident.o: ident.c libauth.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
- ../include/macros.h
+ ../include/inn/defines.h ../include/clibrary.h \
+ ../include/portable/socket.h ../include/libinn.h ../include/macros.h
 libauth.o: libauth.c libauth.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h
+ ../include/inn/defines.h ../include/clibrary.h \
+ ../include/portable/socket.h
 pwcheck.o: pwcheck.c libauth.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h
+ ../include/inn/defines.h ../include/clibrary.h \
+ ../include/portable/socket.h
 radius.o: radius.c libauth.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h ../include/inn/md5.h \
- ../include/libinn.h ../include/macros.h ../include/nntp.h \
- ../include/paths.h
+ ../include/inn/defines.h ../include/clibrary.h \
+ ../include/portable/socket.h ../include/portable/time.h \
+ ../include/inn/md5.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h
