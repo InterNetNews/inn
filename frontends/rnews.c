@@ -35,6 +35,7 @@ STATIC BOOL	Verbose;
 STATIC char	*InputFile = "stdin";
 STATIC char	*UUCPHost;
 STATIC char	*PATHBADNEWS = NULL;
+STATIC char	*remoteServer;
 STATIC FILE	*FromServer;
 STATIC FILE	*ToServer;
 STATIC char	UNPACK[] = "gzip";
@@ -830,7 +831,7 @@ int main(int ac, char *av[])
     /* Parse JCL. */
     fd = STDIN;
     mode = '\0';
-    while ((i = getopt(ac, av, "h:P:NUv")) != EOF)
+    while ((i = getopt(ac, av, "h:P:NUvr:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -847,6 +848,9 @@ int main(int ac, char *av[])
 	    break;
 	case 'v':
 	    Verbose = TRUE;
+	    break;
+	case 'r':
+	    remoteServer = optarg;
 	    break;
 	}
     ac -= optind;
@@ -872,7 +876,10 @@ int main(int ac, char *av[])
     }
 
     /* Open the link to the server. */
-    if (innconf->nnrpdposthost != NULL) {
+    if (remoteServer != NULL) {
+	if (!OpenRemote(remoteServer,port,buff))
+		CantConnect(buff,mode,fd);
+    } else if (innconf->nnrpdposthost != NULL) {
 	if (!OpenRemote(innconf->nnrpdposthost, port, buff))
 	    CantConnect(buff, mode, fd);
     }
