@@ -882,6 +882,11 @@ ARTpost(article, idbuff)
     
     strncpy(frombuf, HDR(_from), sizeof(frombuf) - 1);
     frombuf[sizeof(frombuf) - 1] = '\0';
+    for (i = 0, p = frombuf;p < frombuf + sizeof(frombuf);)
+	if ((p = strchr(p, '\n')) == NULL)
+	    break;
+	else
+	    *p++ = ' ';
     HeaderCleanFrom(frombuf);
     p = strchr(frombuf, '@');
     if (p) {
