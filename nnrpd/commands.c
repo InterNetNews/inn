@@ -675,7 +675,7 @@ FUNCTYPE CMDnewgroups(int ac, char *av[])
 	}
 	if (listsize <= numgroups) {
 	    listsize += 1000;
-	    grouplist = RENEW(grouplist, GROUPDATA, listsize);
+	    RENEW(grouplist, GROUPDATA, listsize);
 	}
 
 	grouplist[numgroups].high = hi;
