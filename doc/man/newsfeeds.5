@@ -329,11 +329,15 @@ should be chosen from the following set:
 	m	Article's Message-ID
 	n	Article's pathname relative to the spool directory or
 		token of the article if storage api is turned on
-	p	The time the article was posted as seconds since epoch.
+	p	The time the article was posted as seconds since epoch
 	s	The site that fed the article to the server; from the
 		Path: header or the IP address of the site that sent
 		the article depending on the ``logipaddr'' field in
-.IR			inn.conf (8)
+.IR			inn.conf (8);
+		if ``logipaddr'' is ``true'' and IP address is
+		``0.0.0.0'' which means the article is feeded from
+		localhost (e.g. from rnews), the result will be
+		retrieved from Path: header
 	t	Time article was received as seconds since epoch
 	*	Names of the appropriate funnel entries;
 		or all sites that get the article
