@@ -6,12 +6,12 @@ CFLAGS	= $(GCFLAGS)
 
 SOURCES	=	archive.c batcher.c buffchan.c cvtbatch.c filechan.c \
 		innxmit.c innxbatch.c nntpget.c overchan.c shlock.c \
-		shrinkfile.c crosspost.c actsync.c
+		shrinkfile.c crosspost.c actsync.c inndf.c
 
 ALL	=	archive batcher buffchan cvtbatch filechan \
 		innxmit innxbatch nntpget overchan shlock \
 		shrinkfile crosspost actsync actsyncd actmerge \
-		sendxbatches
+		sendxbatches inndf
 
 all:		$(ALL)
 
@@ -85,6 +85,9 @@ shlock:		$(P) shlock.o $(LIBNEWS)
 
 shrinkfile:	$(P) shrinkfile.o $(LIBNEWS)
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ shrinkfile.o $(LIBNEWS) $(LIBS)
+
+inndf:	$(P) inndf.o
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ inndf.o
 
 
 $(LIBNEWS):
@@ -161,3 +164,4 @@ shrinkfile.o:	../include/clibrary.h
 shrinkfile.o:	../include/configdata.h
 shrinkfile.o:	../include/libinn.h
 shrinkfile.o:	../include/macros.h
+inndf.o:	../include/config.h
