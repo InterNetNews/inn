@@ -375,7 +375,7 @@ tradindexed_ctl(OVCTLTYPE type, void *val)
     case OVCUTOFFLOW:
         b = (bool *) val;
         tradindexed->cutoff = *b;
-        return TRUE;
+        return true;
     case OVSTATICSEARCH:
         i = (int *) val;
         *i = false;

@@ -14,11 +14,11 @@ trash_init(SMATTRIBUTE *attr)
 {
     if (attr == NULL) {
 	SMseterror(SMERR_INTERNAL, "attr is NULL");
-	return FALSE;
+	return false;
     }
-    attr->selfexpire = TRUE;
-    attr->expensivestat = FALSE;
-    return TRUE;
+    attr->selfexpire = true;
+    attr->expensivestat = false;
+    return true;
 }
 
 TOKEN
@@ -57,7 +57,7 @@ bool
 trash_cancel(TOKEN token UNUSED)
 {
     SMseterror(SMERR_NOENT, NULL);
-    return FALSE;
+    return false;
 }
 
 bool
@@ -66,14 +66,14 @@ trash_ctl(PROBETYPE type, TOKEN *token UNUSED, void *value UNUSED)
     switch (type) {
     case SMARTNGNUM:
     default:
-	return FALSE;
+	return false;
     }
 }
 
 bool
 trash_flushcacheddata(FLUSHTYPE type UNUSED)
 {
-    return TRUE;
+    return true;
 }
 
 void

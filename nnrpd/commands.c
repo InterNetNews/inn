@@ -31,43 +31,43 @@ extern int LLOGenable;
 extern const char *NNRPinstance;
 
 static LISTINFO		INFOactive = {
-    NULL, _PATH_ACTIVE, TRUE, "active newsgroups",
+    NULL, _PATH_ACTIVE, true, "active newsgroups",
     "Newsgroups in form \"group high low flags\""
 };
 static LISTINFO		INFOactivetimes = {
-    NULL, _PATH_ACTIVETIMES, FALSE, "creation times",
+    NULL, _PATH_ACTIVETIMES, false, "creation times",
     "Group creations in form \"name time who\""
 };
 static LISTINFO		INFOdistribs = {
-    NULL, _PATH_NNRPDIST, FALSE, "newsgroup distributions",
+    NULL, _PATH_NNRPDIST, false, "newsgroup distributions",
     "Distributions in form \"area description\""
 };
 static LISTINFO               INFOsubs = {
-    NULL, _PATH_NNRPSUBS, FALSE, "automatic group subscriptions",
+    NULL, _PATH_NNRPSUBS, false, "automatic group subscriptions",
     "Subscriptions in form \"group\""
 };
 static LISTINFO		INFOdistribpats = {
-    NULL, _PATH_DISTPATS, FALSE, "distribution patterns",
+    NULL, _PATH_DISTPATS, false, "distribution patterns",
     "Default distributions in form \"weight:pattern:value\""
 };
 static LISTINFO		INFOextensions = {
-    NULL, NULL, FALSE, "supported extensions",
+    NULL, NULL, false, "supported extensions",
     "Supported NNTP extensions"
 };
 static LISTINFO		INFOgroups = {
-    NULL, _PATH_NEWSGROUPS, FALSE, "newsgroup descriptions",
+    NULL, _PATH_NEWSGROUPS, false, "newsgroup descriptions",
     "Descriptions in form \"group description\""
 };
 static LISTINFO		INFOmoderators = {
-    NULL, _PATH_MODERATORS, FALSE, "moderator patterns",
+    NULL, _PATH_MODERATORS, false, "moderator patterns",
     "Newsgroup moderators in form \"group-pattern:mail-address-pattern\""
 };
 static LISTINFO		INFOschema = {
-    NULL, _PATH_SCHEMA, TRUE, "overview format",
+    NULL, _PATH_SCHEMA, true, "overview format",
     "Order of fields in overview database"
 };
 static LISTINFO		INFOmotd = {
-    NULL, _PATH_MOTD, FALSE, "motd",
+    NULL, _PATH_MOTD, false, "motd",
     "Message of the day text."
 };
 
@@ -91,10 +91,10 @@ PERMgeneric(char *av[], char *accesslist)
 
     av += 2;
 
-    PERMcanread = FALSE;
-    PERMcanpost = FALSE;
-    PERMaccessconf->locpost = FALSE;
-    PERMaccessconf->allowapproved = FALSE;
+    PERMcanread = false;
+    PERMcanpost = false;
+    PERMaccessconf->locpost = false;
+    PERMaccessconf->allowapproved = false;
 
     if (!*av) {
 	Reply("%d no authenticator\r\n", NNTP_SYNTAX_VAL);
@@ -202,7 +202,7 @@ PERMgeneric(char *av[], char *accesslist)
     PERMaccessconf->allowapproved = strchr(fields[1], 'A') != NULL;
     PERMaccessconf->locpost = strchr(fields[1], 'L') != NULL;
     PERMaccessconf->allowihave = strchr(fields[1], 'I') != NULL;
-    if (strchr(fields[1], 'N') != NULL) PERMaccessconf->allownewnews = TRUE;
+    if (strchr(fields[1], 'N') != NULL) PERMaccessconf->allownewnews = true;
     snprintf(PERMuser, sizeof(PERMuser), "%s@%s", fields[2], fields[0]);
     strncpy(PERMpass, fields[3], sizeof(PERMpass) - 1);
     PERMpass[sizeof(PERMpass) - 1] = '\0';
@@ -242,8 +242,8 @@ CMDauthinfo(ac, av)
 		syslog(L_NOTICE, "%s auth %s (%s -> %s)", ClientHost, PERMuser,
 			logrec, PERMauthstring? PERMauthstring: "" );
 		Reply("%d Authentication succeeded\r\n", NNTP_AUTH_OK_VAL);
-		PERMneedauth = FALSE;
-		PERMauthorized = TRUE;
+		PERMneedauth = false;
+		PERMauthorized = true;
 		free(logrec);
 		return;
 	    case 0:
@@ -251,7 +251,7 @@ CMDauthinfo(ac, av)
 			logrec);
 		Reply("%d Authentication failed\r\n", NNTP_ACCESS_VAL);
 		free(logrec);
-		ExitWithStats(1, FALSE);
+		ExitWithStats(1, false);
 	    default:
 		/* lower level has issued Reply */
 		return;
@@ -309,13 +309,13 @@ CMDauthinfo(ac, av)
                         PERMuser[sizeof(PERMuser) - 1] = '\0';
 			strncpy(PERMpass, Password, sizeof(PERMpass) - 1);
                         PERMpass[sizeof(PERMpass) - 1] = '\0';
-			PERMneedauth = FALSE;
-			PERMauthorized = TRUE;
+			PERMneedauth = false;
+			PERMauthorized = true;
 			return;
 		    } else {
 		        syslog(L_NOTICE, "%s bad_auth", ClientHost);
 			Reply("%d Authentication error\r\n", NNTP_ACCESS_VAL);
-			ExitWithStats(1, FALSE);
+			ExitWithStats(1, false);
 		    }
 		}
 	    } else {
@@ -328,8 +328,8 @@ CMDauthinfo(ac, av)
 			fflush(locallog);
 		}
 		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
-		PERMneedauth = FALSE;
-		PERMauthorized = TRUE;
+		PERMneedauth = false;
+		PERMauthorized = true;
 		return;
 	    }
 
@@ -344,8 +344,8 @@ CMDauthinfo(ac, av)
 			fflush(locallog);
 		}
 		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
-		PERMneedauth = FALSE;
-		PERMauthorized = TRUE;
+		PERMneedauth = false;
+		PERMauthorized = true;
 		return;
 	    }
 #ifdef	DO_PYTHON
@@ -359,7 +359,7 @@ CMDauthinfo(ac, av)
         } else {
             Reply("%d Authentication error\r\n", NNTP_ACCESS_VAL);
         }
-	ExitWithStats(1, FALSE);
+	ExitWithStats(1, false);
     }
 
 }
@@ -497,7 +497,7 @@ CMDlist(int ac, char *av[])
 
     Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);
     if (!PERMspecified) {
-	/* Optmize for unlikely case of no permissions and FALSE default. */
+	/* Optmize for unlikely case of no permissions and false default. */
 	QIOclose(qp);
 	Printf(".\r\n");
 	return;
@@ -721,7 +721,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
     char	*path;
     const char *response;
     char	idbuff[SMBUF];
-    static int	backoff_inited = FALSE;
+    static int	backoff_inited = false;
     bool	ihave, permanent;
 
     ihave = caseEQ(av[0], "ihave");
@@ -739,7 +739,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
     if (!backoff_inited) {
 	/* Exponential posting backoff */
 	InitBackoffConstants();
-	backoff_inited = TRUE;
+	backoff_inited = true;
     }
 
     /* Dave's posting limiter - Limit postings to a certain rate
@@ -821,11 +821,11 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 	    /* FALLTHROUGH */
 	case RTtimeout:
 	    warn("%s timeout in post", ClientHost);
-	    ExitWithStats(1, FALSE);
+	    ExitWithStats(1, false);
 	    /* NOTREACHED */
 	case RTeof:
 	    warn("%s eof in post", ClientHost);
-	    ExitWithStats(1, FALSE);
+	    ExitWithStats(1, false);
 	    /* NOTREACHED */
 	case RTlong:
 	    if (longline == 0)

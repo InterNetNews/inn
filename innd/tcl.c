@@ -54,7 +54,7 @@ TCLreadfilter(void)
     if (code != TCL_OK) {
 	syslog(L_ERROR, "%s cant evaluate Tcl filter file: %s", LogName,
 	       TCLInterpreter->result);
-	TCLfilter(FALSE);
+	TCLfilter(false);
     }
 
     /* do the after callback, discarding any errors */
@@ -182,7 +182,7 @@ TCLsetup(void)
     Tcl_CreateCommand(TCLInterpreter, "checksum_article", TCLCksumArt,
 		      NULL, NULL);
 
-    TCLfilter(TRUE);
+    TCLfilter(true);
     TCLreadfilter();
 }
 

@@ -13,7 +13,7 @@
 
 /*
 **  Sprintf a long into a buffer with enough leading zero's so that it
-**  takes up width characters.  Don't add trailing NUL.  Return TRUE
+**  takes up width characters.  Don't add trailing NUL.  Return true
 **  if it fit.  Used for updating high-water marks in the active file
 **  in-place.
 */
@@ -165,10 +165,10 @@ NeedShell(char *p, const char **av, const char **end)
 
     /* We don't use execvp(); works for users, fails out of /etc/rc. */
     if (*p != '/')
-        return TRUE;
+        return true;
     for (q = p; *q; q++)
         if (strchr(Metachars, *q) != NULL)
-            return TRUE;
+            return true;
 
     for (end--; av < end; ) {
         /* Mark this word, check for shell meta-characters. */
@@ -178,7 +178,7 @@ NeedShell(char *p, const char **av, const char **end)
         /* If end of list, we're done. */
         if (*p == '\0') {
             *av = NULL;
-            return FALSE;
+            return false;
         }
 
         /* Skip whitespace, find next word. */
@@ -186,12 +186,12 @@ NeedShell(char *p, const char **av, const char **end)
             continue;
         if (*p == '\0') {
             *av = NULL;
-            return FALSE;
+            return false;
         }
     }
 
     /* Didn't fit. */
-    return TRUE;
+    return true;
 }
 
 
@@ -282,7 +282,7 @@ ThrottleIOError(const char *when)
             syslog(L_ERROR, "%s cant throttle %s", LogName, p);
         syslog(L_FATAL, "%s throttle %s", LogName, buff);
         errno = oerrno;
-        ThrottledbyIOError = TRUE;
+        ThrottledbyIOError = true;
     }
 }
 
@@ -305,7 +305,7 @@ ThrottleNoMatchError(void)
         if ((p = CCblock(OMthrottled, buff)) != NULL)
             syslog(L_ERROR, "%s cant throttle %s", LogName, p);
         syslog(L_FATAL, "%s throttle %s", LogName, buff);
-        ThrottledbyIOError = TRUE;
+        ThrottledbyIOError = true;
     }
 }
 

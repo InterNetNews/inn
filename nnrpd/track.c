@@ -32,7 +32,7 @@ int TrackClient(char *client, char *user)
 
         dbfile = concatpath(innconf->pathetc, "nnrpd.track");
 
-	RARTon=FALSE;
+	RARTon=false;
 	strcpy(user, "unknown");
 
 	if ((fd=fopen(dbfile,"r"))!=NULL) {
@@ -50,7 +50,7 @@ int TrackClient(char *client, char *user)
 				pp=++lp;
 			}
 			if (strstr(client,pp)!=NULL) {
-				RARTon=TRUE;
+				RARTon=true;
 				if (p != NULL) 
 					strcpy(user,p);
 				break;
@@ -58,7 +58,7 @@ int TrackClient(char *client, char *user)
 		}
 		fclose(fd);
 	} else {
-		RARTon=FALSE;
+		RARTon=false;
 		syslog(L_NOTICE, "%s No logging - can't read %s", ClientHost, dbfile);
 	}
 

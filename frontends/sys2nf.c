@@ -116,11 +116,11 @@ Toplevel(p)
     int		i;
 
     if (strchr(p, '.') != NULL)
-	return FALSE;
+	return false;
     for (i = strlen(p) - 1, gp = Groups; (g = *gp++) != NULL; )
 	if (EQn(p, g, i) && g[i + 1] == '.')
-	    return TRUE;
-    return FALSE;
+	    return true;
+    return false;
 }
 
 
@@ -138,7 +138,7 @@ GroupPrefix(p)
     int		i;
 
     if (strchr(p, '.') == NULL)
-	return FALSE;
+	return false;
     for (i = strlen(p), count = 0, gp = Groups; (g = *gp++) != NULL; )
 	if (EQ(p, g) || (EQn(p, g, i) && g[i] == '.'))
 	    count++;

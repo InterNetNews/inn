@@ -63,9 +63,9 @@ static char *CONFgetword(CONFFILE *F)
            *p = '\0';
      }
      for (p = F->buf; *p == ' ' || *p == '\t' ; p++);
-     flag = TRUE;
+     flag = true;
      if (*p == '\0' && !cfeof(F)) {
-       flag = FALSE;
+       flag = false;
        if (getconfline(F, F->buf, F->sbuf))
          return (NULL); /* Line too long */
        continue;

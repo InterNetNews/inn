@@ -43,7 +43,7 @@ main(int ac, char *av[])
         exit(1);
     Fields = 1;
     Directory = innconf->pathoutgoing;
-    Map = FALSE;
+    Map = false;
     myuid = geteuid();
     umask(NEWSUMASK);
 
@@ -60,7 +60,7 @@ main(int ac, char *av[])
 	    Fields = atoi(optarg);
 	    break;
 	case 'm':
-	    Map = TRUE;
+	    Map = true;
 	    MAPread(optarg);
 	    break;
 	case 'p':
@@ -112,7 +112,7 @@ main(int ac, char *av[])
 	    fd = open(p, O_CREAT | O_WRONLY | O_APPEND, BATCHFILE_MODE);
 	    if (fd >= 0) {
 		/* Try to lock it and set the ownership right. */
-		inn_lock_file(fd, INN_LOCK_WRITE, TRUE);
+		inn_lock_file(fd, INN_LOCK_WRITE, true);
 		if (myuid == 0 && uid != 0)
 		    chown(p, uid, gid);
 

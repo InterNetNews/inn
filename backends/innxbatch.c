@@ -102,13 +102,13 @@ REMwrite(int fd, char *p)
     err = write(fd, dest, i);
     if (err < 0) {
       syswarn("cannot write %s to %s", dest, REMhost);
-      return FALSE;
+      return false;
     }
   }
   if (Debug)
     fprintf(stderr, "> %s\n", p);
 
-  return TRUE;
+  return true;
 }
 
 /*
@@ -169,7 +169,7 @@ REMclean(char *buff)
 /*
 **  Read a line of input, with timeout. We expect only answer lines, so
 **  we ignore \r\n-->\n mapping and the dot escape.
-**  Return TRUE if okay, *or we got interrupted.*
+**  Return true if okay, *or we got interrupted.*
 */
 static bool
 REMread(char *start, int size)
@@ -185,15 +185,15 @@ REMread(char *start, int size)
     t.tv_sec = 10 * 60;
     t.tv_usec = 0;
     i = select(FromServer + 1, &rmask, NULL, NULL, &t);
-    if (GotInterrupt) return TRUE;
+    if (GotInterrupt) return true;
     if (i < 0) {
       if (errno == EINTR) continue;
-      else return FALSE;
+      else return false;
     }
-    if (i == 0 || !FD_ISSET(FromServer, &rmask)) return FALSE;
+    if (i == 0 || !FD_ISSET(FromServer, &rmask)) return false;
     i = read(FromServer, p, size-1);
-    if (GotInterrupt) return TRUE;
-    if (i <= 0) return FALSE;
+    if (GotInterrupt) return true;
+    if (i <= 0) return false;
     h = p;
     p += i;
     size -= i;
@@ -208,7 +208,7 @@ REMread(char *start, int size)
   if (Debug)
     fprintf(stderr, "< %s\n", start);
 
-  return TRUE;
+  return true;
 }
 
 
@@ -238,7 +238,7 @@ REMsendxbatch(int fd, char *buf, int size)
     err = write(fd, p, i);
     if (err < 0) {
       syswarn("cannot write xbatch to %s", REMhost);
-      return FALSE;
+      return false;
     }
   }
   if (GotInterrupt) Interrupted();
@@ -248,7 +248,7 @@ REMsendxbatch(int fd, char *buf, int size)
   /* What did the remote site say? */
   if (!REMread(buf, size)) {
     syswarn("no reply after sending xbatch");
-    return FALSE;
+    return false;
   }
   if (GotInterrupt) Interrupted();
   
@@ -257,14 +257,14 @@ REMsendxbatch(int fd, char *buf, int size)
   default:
     warn("unknown reply after sending batch -- %s", buf);
     syslog(L_ERROR, UNKNOWN_REPLY, buf);
-    return FALSE;
+    return false;
     /* NOTREACHED */
     break;
   case NNTP_RESENDIT_VAL:
   case NNTP_GOODBYE_VAL:
     syslog(L_NOTICE, XBATCH_FAIL, REMhost, buf);
     STATrejected++;
-    return FALSE;
+    return false;
     /* NOTREACHED */
     break;
   case NNTP_OK_XBATCHED_VAL:
@@ -276,13 +276,13 @@ REMsendxbatch(int fd, char *buf, int size)
        */
       syswarn("cannot unlink %s", XBATCHname);
       syslog(L_NOTICE, CANNOT_UNLINK, XBATCHname);
-      return FALSE;
+      return false;
     }
     break;
   }
   
   /* Article sent */
-  return TRUE;
+  return true;
 }
 
 /*
@@ -291,7 +291,7 @@ REMsendxbatch(int fd, char *buf, int size)
 static RETSIGTYPE
 CATCHinterrupt(int s)
 {
-    GotInterrupt = TRUE;
+    GotInterrupt = true;
 
     /* Let two interrupts kill us. */
     xsignal(s, SIG_DFL);
@@ -305,7 +305,7 @@ CATCHinterrupt(int s)
 static RETSIGTYPE
 CATCHalarm(int s UNUSED)
 {
-    GotAlarm = TRUE;
+    GotAlarm = true;
     if (JMPyes)
 	longjmp(JMPwhere, 1);
 }
@@ -366,7 +366,7 @@ main(int ac, char *av[])
       break;
 #ifdef FROMSTDIN
     case 'i':
-      FromStdin = TRUE;
+      FromStdin = true;
       break;
 #endif
     case 't':
@@ -376,7 +376,7 @@ main(int ac, char *av[])
       TotalTimeout = atoi(optarg);
       break;
     case 'v':
-      STATprint = TRUE;
+      STATprint = true;
       break;
     }
   ac -= optind;
@@ -391,9 +391,9 @@ main(int ac, char *av[])
 
   /* Open a connection to the remote server. */
   if (ConnectTimeout) {
-    GotAlarm = FALSE;
+    GotAlarm = false;
     old = xsignal(SIGALRM, CATCHalarm);
-    JMPyes = TRUE;
+    JMPyes = true;
     if (setjmp(JMPwhere))
       die("cannot connect to %s: timed out", REMhost);
     alarm(ConnectTimeout);
@@ -423,7 +423,7 @@ main(int ac, char *av[])
   if (ConnectTimeout) {
     alarm(0);
     xsignal(SIGALRM, old);
-    JMPyes = FALSE;
+    JMPyes = false;
   }
   
   /* We no longer need standard I/O. */
@@ -438,8 +438,8 @@ main(int ac, char *av[])
     perror("cant setsockopt(RCVBUF)");
 #endif	/* defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF) */
 
-  GotInterrupt = FALSE;
-  GotAlarm = FALSE;
+  GotInterrupt = false;
+  GotAlarm = false;
 
   /* Set up signal handlers. */
   xsignal(SIGHUP, CATCHinterrupt);

@@ -72,7 +72,7 @@ if any, if
 .I <\-\-enable\-tagged\-hash at configure>
 is specified.  If
 .I <\-\-enable\-tagged\-hash at configure>
-is not specified, it returns TRUE and content of
+is not specified, it returns true and content of
 .I ivalue
 is set.
 .I Dbzstore
@@ -215,11 +215,11 @@ so if robustness in the presence of crashes
 or concurrent accesses is crucial, in-memory databases
 should probably be avoided or the 
 .B writethrough
-option should be set to ``TRUE'';
+option should be set to ``true'';
 .PP
 If the
 .B nonblock
-option is ``TRUE'', then writes to the 
+option is ``true'', then writes to the 
 .B .hash
 and 
 .B .index
@@ -260,7 +260,7 @@ dbm(3), history(5), libinn(3)
 .SH DIAGNOSTICS
 Functions returning
 .I bool
-values return ``TRUE'' for success, ``FALSE'' for failure.
+values return ``true'' for success, ``false'' for failure.
 Functions returning
 .I off_t
 values return a value with

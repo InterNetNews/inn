@@ -242,7 +242,7 @@ struct SMB_Connect_Def {
   int max_xmit;    /* Max xmit permitted by server                  */
   int Security;    /* 0 = share, 1 = user                           */
   int Raw_Support; /* bit 0 = 1 = Read Raw supported, 1 = 1 Write raw */
-  bool encrypt_passwords; /* FALSE = don't                          */ 
+  bool encrypt_passwords; /* false = don't                          */ 
   int MaxMPX, MaxVC, MaxRaw;
   unsigned int SessionKey, Capabilities;
   int SvrTZ;                                 /* Server Time Zone */

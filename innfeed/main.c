@@ -296,7 +296,7 @@ int main (int argc, char **argv)
       notice ("ME starting %s at %s", versionInfo, dateString) ;
     }
 
-  val = TRUE;
+  val = true;
   if (!SMsetup(SM_PREOPEN, (void *)&val)) {
       syslog(LOG_ERR, "cant setup the storage subsystem\n");
       exit(1);

@@ -167,18 +167,18 @@ bool timecaf_init(SMATTRIBUTE *attr) {
     if (attr == NULL) {
 	syslog(L_ERROR, "timecaf: attr is NULL");
 	SMseterror(SMERR_INTERNAL, "attr is NULL");
-	return FALSE;
+	return false;
     }
-    attr->selfexpire = FALSE;
-    attr->expensivestat = FALSE;
+    attr->selfexpire = false;
+    attr->expensivestat = false;
     if (STORAGE_TOKEN_LENGTH < 6) {
 	syslog(L_FATAL, "timecaf: token length is less than 6 bytes");
 	SMseterror(SMERR_TOKENSHORT, NULL);
-	return FALSE;
+	return false;
     }
     ReadingFile.fd = WritingFile.fd = -1;
     ReadingFile.path = WritingFile.path = (char *)NULL;
-    return TRUE;
+    return true;
 }
 
 /*
@@ -342,13 +342,13 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
     if (WritingFile.fd < 0 || strcmp(WritingFile.path, path) != 0) {
 	/* we're writing to a different file, close old one and start new one. */
 	CloseOpenFile(&WritingFile);
-	fd = CAFOpenArtWrite(path, &art, TRUE, article.len);
+	fd = CAFOpenArtWrite(path, &art, true, article.len);
 	if (fd < 0) {
 	    if (caf_error == CAF_ERR_IO && caf_errno == ENOENT) {
 		/* directories in the path don't exist, try creating them. */
 		p = strrchr(path, '/');
 		*p = '\0';
-		if (!MakeDirectory(path, TRUE)) {
+		if (!MakeDirectory(path, true)) {
 		    syslog(L_ERROR, "timecaf: could not make directory %s %m", path);
 		    token.type = TOKEN_EMPTY;
 		    free(path);
@@ -356,7 +356,7 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
 		    return token;
 		} else {
 		    *p = '/';
-		    fd = CAFOpenArtWrite(path, &art, TRUE, article.len);
+		    fd = CAFOpenArtWrite(path, &art, true, article.len);
 		    if (fd < 0) {
 			syslog(L_ERROR, "timecaf: could not OpenArtWrite %s/%ld, %s", path, art, CAFErrorStr());
 			SMseterror(SMERR_UNDEFINED, NULL);
@@ -549,7 +549,7 @@ ARTHANDLE *timecaf_retrieve(const TOKEN token, const RETRTYPE amount) {
     ** Do a possible shortcut on RETR_STAT requests, going thru the "TOC cache"
     ** we mentioned above.  We only try to go thru the TOC Cache under these
     ** conditions:
-    **   1) SMpreopen is TRUE (so we're "preopening" the TOCs.)
+    **   1) SMpreopen is true (so we're "preopening" the TOCs.)
     **   2) the timestamp is older than the timestamp corresponding to current
     ** time. Any timestamp that matches current time (to within 256 secondsf
     ** would be in a CAF file that innd is actively 
@@ -654,7 +654,7 @@ bool timecaf_cancel(TOKEN token) {
     }
     DeleteArtnums[NumDeleteArtnums++] = seqnum;	
 
-    return TRUE;
+    return true;
 }
 
 static struct dirent *FindDir(DIR *dir, FINDTYPE type) {
@@ -700,14 +700,14 @@ FindNextArt(const CAFHEADER *head, CAFTOCENT *toc, ARTNUM *artp)
 	art = head->Low - 1; /* we never use art # 0, so 0 is a flag to start
 			       searching at the beginning */
     }
-    while (TRUE) {
+    while (true) {
 	art++;
-	if (art > head->High) return FALSE; /* ran off the end of the TOC */
+	if (art > head->High) return false; /* ran off the end of the TOC */
 	tocp = &toc[art - head->Low];
 	if (tocp->Size != 0) {
 	    /* got a valid article */
 	    *artp = art;
-	    return TRUE;
+	    return true;
 	}
     }
 }
@@ -822,19 +822,19 @@ bool timecaf_ctl(PROBETYPE type, TOKEN *token UNUSED, void *value) {
     switch (type) {
     case SMARTNGNUM:
 	if ((ann = (struct artngnum *)value) == NULL)
-	    return FALSE;
+	    return false;
 	/* make SMprobe() call timecaf_retrieve() */
 	ann->artnum = 0;
-	return TRUE;
+	return true;
     default:
-	return FALSE;
+	return false;
     }
 }
 
 bool timecaf_flushcacheddata(FLUSHTYPE type) {
     if (type == SM_ALL || type == SM_CANCELEDART)
 	DoCancels();
-    return TRUE;
+    return true;
 }
 
 void

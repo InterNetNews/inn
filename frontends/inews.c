@@ -63,50 +63,50 @@ static const char * const BadDistribs[] = {
 
 static HEADER	Table[] = {
     /* 	Name			Canset	Type	*/
-    {	"Path",			TRUE,	HTstd,  0, NULL },
+    {	"Path",			true,	HTstd,  0, NULL },
 #define _path		 0
-    {	"From",			TRUE,	HTstd,  0, NULL },
+    {	"From",			true,	HTstd,  0, NULL },
 #define _from		 1
-    {	"Newsgroups",		TRUE,	HTreq,  0, NULL },
+    {	"Newsgroups",		true,	HTreq,  0, NULL },
 #define _newsgroups	 2
-    {	"Subject",		TRUE,	HTreq,  0, NULL },
+    {	"Subject",		true,	HTreq,  0, NULL },
 #define _subject	 3
-    {	"Control",		TRUE,	HTstd,  0, NULL },
+    {	"Control",		true,	HTstd,  0, NULL },
 #define _control	 4
-    {	"Supersedes",		TRUE,	HTstd,  0, NULL },
+    {	"Supersedes",		true,	HTstd,  0, NULL },
 #define _supersedes	 5
-    {	"Followup-To",		TRUE,	HTstd,  0, NULL },
+    {	"Followup-To",		true,	HTstd,  0, NULL },
 #define _followupto	 6
-    {	"Date",			TRUE,	HTstd,  0, NULL },
+    {	"Date",			true,	HTstd,  0, NULL },
 #define _date		 7
-    {	"Organization",		TRUE,	HTstd,  0, NULL },
+    {	"Organization",		true,	HTstd,  0, NULL },
 #define _organization	 8
-    {	"Lines",		TRUE,	HTstd,  0, NULL },
+    {	"Lines",		true,	HTstd,  0, NULL },
 #define _lines		 9
-    {	"Sender",		TRUE,	HTstd,  0, NULL },
+    {	"Sender",		true,	HTstd,  0, NULL },
 #define _sender		10
-    {	"Approved",		TRUE,	HTstd,  0, NULL },
+    {	"Approved",		true,	HTstd,  0, NULL },
 #define _approved	11
-    {	"Distribution",		TRUE,	HTstd,  0, NULL },
+    {	"Distribution",		true,	HTstd,  0, NULL },
 #define _distribution	12
-    {	"Expires",		TRUE,	HTstd,  0, NULL },
+    {	"Expires",		true,	HTstd,  0, NULL },
 #define _expires	13
-    {	"Message-ID",		TRUE,	HTstd,  0, NULL },
+    {	"Message-ID",		true,	HTstd,  0, NULL },
 #define _messageid	14
-    {	"References",		TRUE,	HTstd,  0, NULL },
+    {	"References",		true,	HTstd,  0, NULL },
 #define _references	15
-    {	"Reply-To",		TRUE,	HTstd,  0, NULL },
+    {	"Reply-To",		true,	HTstd,  0, NULL },
 #define _replyto	16
-    {	"Also-Control",		TRUE,	HTstd,  0, NULL },
+    {	"Also-Control",		true,	HTstd,  0, NULL },
 #define _alsocontrol	17
-    {	"Xref",			FALSE,	HTstd,  0, NULL },
-    {	"Summary",		TRUE,	HTstd,  0, NULL },
-    {	"Keywords",		TRUE,	HTstd,  0, NULL },
-    {	"Date-Received",	FALSE,	HTobs,  0, NULL },
-    {	"Received",		FALSE,	HTobs,  0, NULL },
-    {	"Posted",		FALSE,	HTobs,  0, NULL },
-    {	"Posting-Version",	FALSE,	HTobs,  0, NULL },
-    {	"Relay-Version",	FALSE,	HTobs,  0, NULL },
+    {	"Xref",			false,	HTstd,  0, NULL },
+    {	"Summary",		true,	HTstd,  0, NULL },
+    {	"Keywords",		true,	HTstd,  0, NULL },
+    {	"Date-Received",	false,	HTobs,  0, NULL },
+    {	"Received",		false,	HTobs,  0, NULL },
+    {	"Posted",		false,	HTobs,  0, NULL },
+    {	"Posting-Version",	false,	HTobs,  0, NULL },
+    {	"Relay-Version",	false,	HTobs,  0, NULL },
 };
 
 #define HDR(_x)	(Table[(_x)].Value)
@@ -351,25 +351,25 @@ AnAdministrator(char *name, gid_t group)
     char		*p;
 
     if (Revoked)
-	return FALSE;
+	return false;
 
     /* Find out who we are. */
     if ((pwp = getpwnam(NEWSUSER)) == NULL)
 	/* Silent falure; clients might not have the group. */
-	return FALSE;
+	return false;
     if (getuid() == pwp->pw_uid)
-	return TRUE;
+	return true;
 
     /* See if the we're in the right group. */
     if ((grp = getgrnam(NEWSGRP)) == NULL || (mem = grp->gr_mem) == NULL)
 	/* Silent falure; clients might not have the group. */
-	return FALSE;
+	return false;
     if (group == grp->gr_gid)
-	return TRUE;
+	return true;
     while ((p = *mem++) != NULL)
 	if (EQ(name, p))
-	    return TRUE;
-    return FALSE;
+	    return true;
+    return false;
 }
 
 
@@ -400,7 +400,7 @@ CheckControl(char *ctrl, struct passwd *pwp)
 	if (*q == '\0')
             die("message ID missing in cancel");
 	if (!Spooling)
-	    CheckCancel(q, FALSE);
+	    CheckCancel(q, false);
     }
     else if (EQ(ctrl, "checkgroups")
 	  || EQ(ctrl, "ihave")
@@ -654,7 +654,7 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
 
     /* Check Supersedes. */
     if (HDR(_supersedes))
-	CheckCancel(HDR(_supersedes), TRUE);
+	CheckCancel(HDR(_supersedes), true);
 
     /* Now make sure everything is there. */
     for (hp = Table; hp < ENDOF(Table); hp++)
@@ -892,9 +892,9 @@ main(int ac, char *av[])
 
     /* Set defaults. */
     Mode = '\0';
-    Dump = FALSE;
-    DoSignature = TRUE;
-    AddOrg = TRUE;
+    Dump = false;
+    DoSignature = true;
+    AddOrg = true;
     port = 0;
 
     if (!innconf_read(NULL))
@@ -910,7 +910,7 @@ main(int ac, char *av[])
 	    /* NOTREACHED */
 	case 'D':
 	case 'N':
-	    Dump = TRUE;
+	    Dump = true;
 	    break;
 	case 'A':
 	case 'V':
@@ -918,13 +918,13 @@ main(int ac, char *av[])
 	    /* Ignore C News options. */
 	    break;
 	case 'O':
-	    AddOrg = FALSE;
+	    AddOrg = false;
 	    break;
 	case 'R':
-	    Revoked = TRUE;
+	    Revoked = true;
 	    break;
 	case 'S':
-	    DoSignature = FALSE;
+	    DoSignature = false;
 	    break;
 	case 'h':
 	    Mode = i;
@@ -972,7 +972,7 @@ main(int ac, char *av[])
 
     /* Try to open a connection to the server. */
     if (NNTPremoteopen(port, &FromServer, &ToServer, buff) < 0) {
-	Spooling = TRUE;
+	Spooling = true;
 	if ((p = strchr(buff, '\n')) != NULL)
 	    *p = '\0';
 	if ((p = strchr(buff, '\r')) != NULL)
@@ -1059,12 +1059,12 @@ main(int ac, char *av[])
     }
 
     /* Article is prepared, offer it to the server. */
-    i = OfferArticle(buff, FALSE);
+    i = OfferArticle(buff, false);
     if (i == NNTP_AUTH_NEEDED_VAL) {
 	/* Posting not allowed, try to authorize. */
 	if (NNTPsendpassword((char *)NULL, FromServer, ToServer) < 0)
             sysdie("authorization error");
-	i = OfferArticle(buff, TRUE);
+	i = OfferArticle(buff, true);
     }
     if (i != NNTP_START_POST_VAL)
         die("server doesn't want the article: %s", buff);
@@ -1076,7 +1076,7 @@ main(int ac, char *av[])
     for (i = 0; i < OtherCount; i++)
 	fprintf(ToServer, "%s\r\n", OtherHeaders[i]);
     fprintf(ToServer, "\r\n");
-    if (NNTPsendarticle(article, ToServer, TRUE) < 0)
+    if (NNTPsendarticle(article, ToServer, true) < 0)
         sysdie("cannot send article to server");
     SafeFlush(ToServer);
 

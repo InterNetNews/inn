@@ -93,11 +93,11 @@ void *RFCNB_Call(char *Called_Name, char *Calling_Name, char *Called_Address,
 
   /* Now connect to the remote end */
 
-  redirect = TRUE;     /* Fudge this one so we go once through */
+  redirect = true;     /* Fudge this one so we go once through */
 
   while (redirect) {   /* Connect and get session info etc */
 
-    redirect = FALSE;  /* Assume all OK */
+    redirect = false;  /* Assume all OK */
 
     /* Build the redirect info. First one is first addr called */
     /* And tack it onto the list of addresses we called        */

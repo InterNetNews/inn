@@ -129,10 +129,10 @@ CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
     cp->fd = fd;
     cp->Type = Type;
     cp->State = State;
-    cp->Streaming = FALSE;
-    cp->Skip = FALSE;
-    cp->NoResendId = FALSE;
-    cp->privileged = FALSE;
+    cp->Streaming = false;
+    cp->Skip = false;
+    cp->NoResendId = false;
+    cp->privileged = false;
     cp->Ihave = cp->Ihave_Duplicate = cp->Ihave_Deferred = cp->Ihave_SendIt = cp->Ihave_Cybercan = 0;
     cp->Check = cp->Check_send = cp->Check_deferred = cp->Check_got = cp->Check_cybercan = 0;
     cp->Takethis = cp->Takethis_Ok = cp->Takethis_Err = 0;
@@ -781,16 +781,16 @@ WCHANflush(CHANNEL *cp)
 	if (i < 0) {
 	    syslog(L_ERROR, "%s cant flush count %d %m",
 		CHANname(cp), bp->left);
-	    return FALSE;
+	    return false;
 	}
 	if (i == 0) {
 	    syslog(L_ERROR, "%s cant flush count %d",
 		CHANname(cp), bp->left);
-	    return FALSE;
+	    return false;
 	}
     }
     WCHANremove(cp);
-    return TRUE;
+    return true;
 }
 
 

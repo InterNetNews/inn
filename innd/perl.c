@@ -124,7 +124,7 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
                HDR_FOUND(HDR__MESSAGE_ID) ? HDR(HDR__MESSAGE_ID) : "?",
                SvPV(ERRSV, PL_na));
         (void) POPs;
-        PerlFilter(FALSE);
+        PerlFilter(false);
     } else if (rc == 1) {
         p = POPp;
         if (p && *p) {
@@ -172,7 +172,7 @@ PLmidfilter(char *messageID)
         syslog(L_ERROR, "Perl function filter_messageid died on id %s: %s",
                messageID, SvPV(ERRSV, PL_na));
         (void) POPs;
-        PerlFilter(FALSE);
+        PerlFilter(false);
     } else if (rc == 1) {
         p = POPp;
         if (p && *p) {
@@ -230,7 +230,7 @@ PLmode(OPERATINGMODE Mode, OPERATINGMODE NewMode, char *reason)
         syslog(L_ERROR, "Perl function filter_mode died: %s",
                 SvPV(ERRSV, PL_na));
         (void) POPs;
-        PerlFilter(FALSE);
+        PerlFilter(false);
     }
 }
 

@@ -166,7 +166,7 @@ int RFCNB_Get_Pkt(struct RFCNB_Con *con, struct RFCNB_Pkt *pkt, int len)
   char hdr[RFCNB_Pkt_Hdr_Len];      /* Local space for the header */
   struct RFCNB_Pkt *pkt_frag;
   int more, this_time, offset, frag_len, this_len;
-  bool seen_keep_alive = TRUE;
+  bool seen_keep_alive = true;
 
   /* Read that header straight into the buffer */
 
@@ -208,7 +208,7 @@ int RFCNB_Get_Pkt(struct RFCNB_Con *con, struct RFCNB_Pkt *pkt, int len)
     }
 
     if (RFCNB_Pkt_Type(hdr) != RFCNB_SESSION_KEEP_ALIVE) {
-      seen_keep_alive = FALSE;
+      seen_keep_alive = false;
     }
 
   }

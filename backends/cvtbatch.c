@@ -96,7 +96,7 @@ main(int ac, char *av[]) {
 	q[r - text] = '\0';
 
 	/* Write the desired info. */
-	for (Dirty = FALSE, p = format; *p; p++) {
+	for (Dirty = false, p = format; *p; p++) {
 	    switch (*p) {
 	    default:
 		continue;
@@ -117,7 +117,7 @@ main(int ac, char *av[]) {
 		printf("%s", q);
 		break;
 	    }
-	    Dirty = TRUE;
+	    Dirty = true;
 	}
 	free(q);
 	if (Dirty)

@@ -18,7 +18,7 @@ static bool FindHeader(ARTHANDLE *art, const char **pp, const char **qp,
     const char* hdr, size_t hdrlen)
 {
   const char *p, *p1, *q;
-  bool Nocr = TRUE;
+  bool Nocr = true;
 
   p = wire_findheader(art->data, art->len, hdr);
   if (p == NULL)
@@ -26,11 +26,11 @@ static bool FindHeader(ARTHANDLE *art, const char **pp, const char **qp,
   q = p;
   for (p1 = NULL; p < art->data + art->len; p++) {
     if (p1 != NULL && *p1 == '\r' && *p == '\n') {
-      Nocr = FALSE;
+      Nocr = false;
       break;
     }
     if (*p == '\n') {
-      Nocr = TRUE;
+      Nocr = true;
       break;
     }
     p1 = p;
@@ -113,12 +113,12 @@ static bool HaveSeen(bool AllGroups, char *group, char **groups, char **xrefs) {
     list[0] = *xrefs;
     if ((!AllGroups && PERMmatch(groups, list)) && (!PERMspecified || (PERMspecified && PERMmatch(PERMreadlist, list)))) {
       if (!strcmp(*xrefs, group))
-	return FALSE;
+	return false;
       else
-	return TRUE;
+	return true;
     }
   }
-  return FALSE;
+  return false;
 }
 
 static char **groups;

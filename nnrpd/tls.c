@@ -569,7 +569,7 @@ tls_init(void)
                sasl_config_getstring("tls_ca_path", ""),
                sasl_config_getstring("tls_cert_file", ""),
                sasl_config_getstring("tls_key_file", ""));
-        ExitWithStats(1, FALSE);
+        ExitWithStats(1, false);
     }
     tls_initialized = true;
 }

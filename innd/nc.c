@@ -167,17 +167,17 @@ NCwriteshutdown(CHANNEL *cp, const char *text)
 
 
 /*
-**  If a Message-ID is bad, write a reject message and return TRUE.
+**  If a Message-ID is bad, write a reject message and return true.
 */
 static bool
 NCbadid(CHANNEL *cp, char *p)
 {
     if (ARTidok(p))
-	return FALSE;
+	return false;
 
     NCwritereply(cp, NNTP_HAVEIT_BADID);
     syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp), MaxLength(p, p));
-    return TRUE;
+    return true;
 }
 
 
@@ -509,7 +509,7 @@ NCihave(CHANNEL *cp)
 	cp->Ihave_Duplicate++;
 	NCwritereply(cp, NNTP_HAVEIT);
     }
-    else if (WIPinprogress(p, cp, FALSE)) {
+    else if (WIPinprogress(p, cp, false)) {
 	cp->Ihave_Deferred++;
 	if (cp->NoResendId) {
 	    cp->Refused++;
@@ -732,7 +732,7 @@ NCproc(CHANNEL *cp)
   ARTDATA	*data = &cp->Data;
   HDRCONTENT    *hc = data->HdrContent;
 
-  readmore = movedata = FALSE;
+  readmore = movedata = false;
   if (Tracing || cp->Tracing)
     syslog(L_TRACE, "%s NCproc Used=%d", CHANname(cp), cp->In.used);
 
@@ -751,13 +751,13 @@ NCproc(CHANNEL *cp)
     switch (cp->State) {
     default:
       syslog(L_ERROR, "%s internal NCproc state %d", CHANname(cp), cp->State);
-      movedata = FALSE;
-      readmore = TRUE;
+      movedata = false;
+      readmore = true;
       break;
 
     case CSwritegoodbye:
-      movedata = FALSE;
-      readmore = TRUE;
+      movedata = false;
+      readmore = true;
       break;
 
     case CSgetcmd:
@@ -777,21 +777,21 @@ NCproc(CHANNEL *cp)
 	  cp->Start = 0;
 	  cp->State = CSeatcommand;
 	  /* above means moving data already */
-	  movedata = FALSE;
+	  movedata = false;
 	} else {
 	  cp->Next = bp->used;
 	  /* move data to the begining anyway */
-	  movedata = TRUE;
+	  movedata = true;
 	}
-	readmore = TRUE;
+	readmore = true;
 	break;
       }
       /* i points where '\n" and go forward */
       cp->Next = ++i;
       /* never move data so long as "\r\n" is found, since subsequent
 	 data may also include command line */
-      movedata = FALSE;
-      readmore = FALSE;
+      movedata = false;
+      readmore = false;
       if (i - cp->Start < 3) {
 	break;
       }
@@ -888,11 +888,11 @@ NCproc(CHANNEL *cp)
 	if (cp->Next - cp->Start > innconf->datamovethreshold ||
 	  (innconf->maxartsize > 0 && cp->Size > innconf->maxartsize)) {
 	  /* avoid buffer extention for ever */
-	  movedata = TRUE;
+	  movedata = true;
 	} else {
-	  movedata = FALSE;
+	  movedata = false;
 	}
-	readmore = TRUE;
+	readmore = true;
 	break;
       }
 
@@ -905,8 +905,8 @@ NCproc(CHANNEL *cp)
 	  NCwritereply(cp, cp->Sendid.data);
 	else
 	  NCwritereply(cp, cp->Error);
-	readmore = FALSE;
-	movedata = FALSE;
+	readmore = false;
+	movedata = false;
 	break;
       }
 
@@ -935,8 +935,8 @@ NCproc(CHANNEL *cp)
 	}
 	/* Clear the work-in-progress entry. */
 	NCclearwip(cp);
-	readmore = FALSE;
-	movedata = FALSE;
+	readmore = false;
+	movedata = false;
 	break;
       }
 
@@ -956,15 +956,15 @@ NCproc(CHANNEL *cp)
 	  NCwritereply(cp, cp->Sendid.data);
 	} else
 	  NCwritereply(cp, NNTP_REJECTIT_EMPTY);
-	readmore = FALSE;
-	movedata = FALSE;
+	readmore = false;
+	movedata = false;
 	break;
       }
     case CSgotarticle: /* in case caming back from pause */
       /* never move data so long as "\r\n.\r\n" is found, since subsequent data
 	 may also include command line */
-      readmore = FALSE;
-      movedata = FALSE;
+      readmore = false;
+      movedata = false;
       if (Mode == OMpaused) { /* defer processing while paused */
 	RCHANremove(cp); /* don't bother trying to read more for now */
 	SCHANadd(cp, Now.time + innconf->pauseretrytime, &Mode, NCproc, NULL);
@@ -1017,15 +1017,15 @@ NCproc(CHANNEL *cp)
 	cp->State = CSgetcmd;
 	cp->Start = cp->Next;
 	NCwritereply(cp, buff);
-        readmore = FALSE;
-        movedata = FALSE;
+        readmore = false;
+        movedata = false;
       } else {
 	cp->LargeCmdSize += bp->used - cp->Next;
 	bp->used = cp->Next = SAVE_AMT;
 	bp->left = bp->size - SAVE_AMT;
 	cp->Start = 0;
-        readmore = TRUE;
-        movedata = FALSE;
+        readmore = true;
+        movedata = false;
       }
       break;
 
@@ -1039,17 +1039,17 @@ NCproc(CHANNEL *cp)
 
       if (cp->Next != 0) {
 	/* data must start from the begining of the buffer */
-        movedata = TRUE;
-	readmore = FALSE;
+        movedata = true;
+	readmore = false;
 	break;
       }
       if (bp->used < cp->XBatchSize) {
-	movedata = FALSE;
-	readmore = TRUE;
+	movedata = false;
+	readmore = true;
 	break;	/* give us more data */
       }
-      movedata = FALSE;
-      readmore = FALSE;
+      movedata = false;
+      readmore = false;
 
       /* now do something with the batch */
       {
@@ -1123,7 +1123,7 @@ NCproc(CHANNEL *cp)
 
     if (movedata) { /* move data rather than extend buffer */
       TMRstart(TMR_DATAMOVE);
-      movedata = FALSE;
+      movedata = false;
       if (cp->Start > 0)
 	memmove(bp->data, &bp->data[cp->Start], bp->used - cp->Start);
       bp->used -= cp->Start;
@@ -1370,7 +1370,7 @@ NCcheck(CHANNEL *cp)
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
                  NNTP_ERR_GOTID_VAL, p);
 	NCwritereply(cp, cp->Sendid.data);
-    } else if (WIPinprogress(p, cp, TRUE)) {
+    } else if (WIPinprogress(p, cp, true)) {
 	cp->Check_deferred++;
 	if (cp->NoResendId) {
 	    cp->Refused++;

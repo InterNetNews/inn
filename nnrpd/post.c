@@ -29,41 +29,41 @@ static const char * const BadDistribs[] = {
 
 HEADER	Table[] = {
     /* 	Name			Canset	Type	Size  Value */
-    {	"Path",			TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"From",			TRUE,	HTreq,  0,    NULL,    NULL, 0 },
-    {	"Newsgroups",	 	TRUE,	HTreq,  0,    NULL,    NULL, 0 },
-    {	"Subject",		TRUE,	HTreq,  0,    NULL,    NULL, 0 },
-    {	"Control",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"Supersedes",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"Followup-To",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"Date",			TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"Organization",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"Lines",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"Sender",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"Approved",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"Distribution",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"Expires",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"Message-ID",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"References",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"Reply-To",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"NNTP-Posting-Host",	FALSE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"Mime-Version",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"Content-Type",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"Content-Transfer-Encoding", TRUE, HTstd,  0,    NULL,    NULL, 0 },
-    {   "X-Trace",              FALSE, HTstd,  0,    NULL,    NULL, 0 },
-    {   "X-Complaints-To",	FALSE, HTstd,  0,    NULL,    NULL, 0 },
-    {   "NNTP-Posting-Date",	FALSE, HTstd,  0,    NULL,    NULL, 0 },
-    {	"Xref",			FALSE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"Summary",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"Keywords",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-    {	"Date-Received",	FALSE,	HTobs,  0,    NULL,    NULL, 0 },
-    {	"Received",		FALSE,	HTobs,  0,    NULL,    NULL, 0 },
-    {	"Posted",		FALSE,	HTobs,  0,    NULL,    NULL, 0 },
-    {	"Posting-Version",	FALSE,	HTobs,  0,    NULL,    NULL, 0 },
-    {	"Relay-Version",	FALSE,	HTobs,  0,    NULL,    NULL, 0 },
-    {   "Cc",			TRUE, HTstd,  0,    NULL,    NULL, 0 },
-    {   "Bcc",			TRUE, HTstd,  0,    NULL,    NULL, 0 },
-    {   "To",			TRUE, HTstd,  0,    NULL,    NULL, 0 },
+    {	"Path",			true,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"From",			true,	HTreq,  0,    NULL,    NULL, 0 },
+    {	"Newsgroups",	 	true,	HTreq,  0,    NULL,    NULL, 0 },
+    {	"Subject",		true,	HTreq,  0,    NULL,    NULL, 0 },
+    {	"Control",		true,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Supersedes",		true,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Followup-To",		true,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Date",			true,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Organization",		true,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Lines",		true,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Sender",		true,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Approved",		true,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Distribution",		true,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Expires",		true,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Message-ID",		true,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"References",		true,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Reply-To",		true,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"NNTP-Posting-Host",	false,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Mime-Version",		true,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Content-Type",		true,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Content-Transfer-Encoding", true, HTstd,  0,    NULL,    NULL, 0 },
+    {   "X-Trace",              false, HTstd,  0,    NULL,    NULL, 0 },
+    {   "X-Complaints-To",	false, HTstd,  0,    NULL,    NULL, 0 },
+    {   "NNTP-Posting-Date",	false, HTstd,  0,    NULL,    NULL, 0 },
+    {	"Xref",			false,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Summary",		true,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Keywords",		true,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Date-Received",	false,	HTobs,  0,    NULL,    NULL, 0 },
+    {	"Received",		false,	HTobs,  0,    NULL,    NULL, 0 },
+    {	"Posted",		false,	HTobs,  0,    NULL,    NULL, 0 },
+    {	"Posting-Version",	false,	HTobs,  0,    NULL,    NULL, 0 },
+    {	"Relay-Version",	false,	HTobs,  0,    NULL,    NULL, 0 },
+    {   "Cc",			true, HTstd,  0,    NULL,    NULL, 0 },
+    {   "Bcc",			true, HTstd,  0,    NULL,    NULL, 0 },
+    {   "To",			true, HTstd,  0,    NULL,    NULL, 0 },
 };
 
 HEADER *EndOfTable = ENDOF(Table);
@@ -310,7 +310,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     TIMEINFO		Now;
     const char          *error;
     pid_t               pid;
-    bool		addvirtual = FALSE;
+    bool		addvirtual = false;
 
     /* Various things need Now to be set. */
     if (GetTimeInfo(&Now) < 0) {
@@ -406,7 +406,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	/* Note that innd will put host name here for us. */
 	HDR_SET(HDR__PATH, PATHMASTER);
 	if (VirtualPathlen > 0)
-	    addvirtual = TRUE;
+	    addvirtual = true;
     } else if (PERMaccessconf->strippath) {
 	/* Here's where to do Path changes for new Posts. */
 	if ((p = strrchr(HDR(HDR__PATH), '!')) != NULL) {
@@ -414,24 +414,24 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	    if (*p == '\0') {
 		HDR_SET(HDR__PATH, PATHMASTER);
 		if (VirtualPathlen > 0)
-		    addvirtual = TRUE;
+		    addvirtual = true;
 	    } else {
 		HDR_SET(HDR__PATH, p);
 		if ((VirtualPathlen > 0) &&
 		    !EQ(p, PERMaccessconf->pathhost))
-		    addvirtual = TRUE;
+		    addvirtual = true;
 	    }
 	} else if (VirtualPathlen > 0)
-	    addvirtual = TRUE;
+	    addvirtual = true;
     } else {
 	if ((VirtualPathlen > 0) &&
 	    (p = strchr(HDR(HDR__PATH), '!')) != NULL) {
 	    *p = '\0';
 	    if (!EQ(HDR(HDR__PATH), PERMaccessconf->pathhost))
-		addvirtual = TRUE;
+		addvirtual = true;
 	    *p = '!';
 	} else if (VirtualPathlen > 0)
-	    addvirtual = TRUE;
+	    addvirtual = true;
     }
     if (addvirtual) {
 	if (newpath != NULL)
@@ -652,7 +652,7 @@ MailArticle(char *group, char *article)
                  i, "Article might not have been mailed");
 	return Error;
     }
-    WasMailed = TRUE;
+    WasMailed = true;
     return NULL;
 }
 
@@ -684,7 +684,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
     approved = HDR(HDR__APPROVED) != NULL || modgroup == NULL;
 
     Error[0] = '\0';
-    FoundOne = FALSE;
+    FoundOne = false;
     h = DDstart((FILE *)NULL, (FILE *)NULL);
     do {
 	if (innconf->mergetogroups && p[0] == 't' && p[1] == 'o' && p[2] == '.')
@@ -699,7 +699,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
         }
 	if (!OVgroupstats(p, NULL, NULL, NULL, &flag))
 	    continue;
-	FoundOne = TRUE;
+	FoundOne = true;
 	DDcheck(h, p);
 	switch (flag) {
 	case NF_FLAG_OK:
@@ -708,7 +708,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
 	    char    *reply;
 
 	    /* Authorize user at a Python authorization module */
-	    if (PY_authorize(ClientHost, ClientIpString, ServerHost, PERMuser, p, TRUE, &reply) < 0) {
+	    if (PY_authorize(ClientHost, ClientIpString, ServerHost, PERMuser, p, true, &reply) < 0) {
 	        syslog(L_NOTICE, "PY_authorize(): authorization skipped due to no Python authorization method defined.");
 	    } else {
 	        if (reply != NULL) {
@@ -967,7 +967,7 @@ ARTpost(char *article,
 
     /* Basic processing. */
     OtherCount = 0;
-    WasMailed = FALSE;
+    WasMailed = false;
     for (hp = Table; hp < ENDOF(Table); hp++) {
 	hp->Size = strlen(hp->Name);
 	hp->Value = hp->Body = NULL;
@@ -1183,7 +1183,7 @@ ARTpost(char *article,
     }
 
     /* Send the article, get the server's reply. */
-    if (NNTPsendarticle(article, ToServer, TRUE) < 0
+    if (NNTPsendarticle(article, ToServer, true) < 0
      || fgets(buff, sizeof buff, FromServer) == NULL) {
 	snprintf(Error, sizeof(Error), CANTSEND, "article", strerror(errno));
 	fclose(FromServer);
@@ -1217,7 +1217,7 @@ ARTpost(char *article,
                          HDR(HDR__MESSAGEID), (char *) 0);
 	if ((ftd = fopen(TrackID,"w")) == NULL) {
 	    DirTrackID = concatpath(innconf->pathlog, "trackposts");
-	    MakeDirectory(DirTrackID, FALSE);
+	    MakeDirectory(DirTrackID, false);
 	    free(DirTrackID);
 	}
 	if (ftd == NULL && (ftd = fopen(TrackID,"w")) == NULL) {
@@ -1260,7 +1260,7 @@ ARTpost(char *article,
 	    }
 	}
 	fprintf(ftd,"\r\n");
-	NNTPsendarticle(article, ftd, TRUE);
+	NNTPsendarticle(article, ftd, true);
 	if (fclose(ftd) != EOF) {
 	    syslog(L_NOTICE, "%s (%s) posttrack ok %s",
 		ClientHost, Username, TrackID);

@@ -316,7 +316,7 @@ CCbegin(char *av[])
 
     /* Find the named site. */
     length = strlen(av[0]);
-    for (strings = SITEreadfile(TRUE), i = 0; (p = strings[i]) != NULL; i++)
+    for (strings = SITEreadfile(true), i = 0; (p = strings[i]) != NULL; i++)
 	if ((p[length] == NF_FIELD_SEP || p[length] == NF_SUBFIELD_SEP)
 	 && caseEQn(p, av[0], length)) {
 	    p = xstrdup(p);
@@ -432,7 +432,7 @@ CCcancel(char *av[])
     Data.HdrContent[HDR__MESSAGE_ID].Value = (char *)msgid;
     Data.HdrContent[HDR__MESSAGE_ID].Length = strlen(msgid);
     if (Mode == OMrunning)
-	ARTcancel(&Data, msgid, TRUE);
+	ARTcancel(&Data, msgid, true);
     else {
 	/* If paused, don't try to use the history database since expire may be
 	   running */
@@ -442,7 +442,7 @@ CCcancel(char *av[])
 	    return "1 Server throttled";
 	/* Possible race condition, but documented in ctlinnd manpage. */
 	InndHisOpen();
-	ARTcancel(&Data, msgid, TRUE);
+	ARTcancel(&Data, msgid, true);
 	InndHisClose();
     }
     if (innconf->logcancelcomm)
@@ -468,7 +468,7 @@ CCcheckfile(char *unused[])
 
   unused = unused;		/* ARGSUSED */
   /* Parse all site entries. */
-  strings = SITEreadfile(FALSE);
+  strings = SITEreadfile(false);
   fake.Buffer.size = 0;
   fake.Buffer.data = NULL;
   /* save global variables not to be changed */
@@ -549,14 +549,14 @@ CCfeedinfo(char *av[])
 	if ((sp = SITEfind(p)) == NULL)
 	    return "1 No such site";
 
-	SITEinfo(&CCreply, sp, TRUE);
+	SITEinfo(&CCreply, sp, true);
 	while ((sp = SITEfindnext(p, sp)) != NULL)
-	    SITEinfo(&CCreply, sp, TRUE);
+	    SITEinfo(&CCreply, sp, true);
     }
     else
 	for (i = nSites, sp = Sites; --i >= 0; sp++)
 	    if (sp->Name)
-		SITEinfo(&CCreply, sp, FALSE);
+		SITEinfo(&CCreply, sp, false);
 
     buffer_append(&CCreply, "", 1);
     return CCreply.data;
@@ -575,12 +575,12 @@ CCfilter(char *av[] UNUSED)
     case 'y':
 	if (TCLFilterActive)
 	    return "1 tcl filter already enabled";
-	TCLfilter(TRUE);
+	TCLfilter(true);
 	break;
     case 'n':
 	if (!TCLFilterActive)
 	    return "1 tcl filter already disabled";
-	TCLfilter(FALSE);
+	TCLfilter(false);
 	break;
     }
     return NULL;
@@ -600,13 +600,13 @@ CCperl(char *av[])
     case 'y':
 	if (PerlFilterActive)
 	    return "1 Perl filter already enabled";
-        else if (!PerlFilter(TRUE))
+        else if (!PerlFilter(true))
             return "1 Perl filter not defined";
 	break;
     case 'n':
 	if (!PerlFilterActive)
 	    return "1 Perl filter already disabled";
-        PerlFilter(FALSE);
+        PerlFilter(false);
 	break;
     }
     return NULL;
@@ -641,14 +641,14 @@ CCflush(char *av[])
     if (*p == '\0') {
 	ICDwrite();
 	for (sp = Sites, i = nSites; --i >= 0; sp++)
-	    SITEflush(sp, TRUE);
+	    SITEflush(sp, true);
 	syslog(L_NOTICE, "%s flush_all", LogName);
     }
     else  {
 	if ((sp = SITEfind(p)) == NULL)
 	    return CCnosite;
 	syslog(L_NOTICE, "%s flush", sp->Name);
-	SITEflush(sp, TRUE);
+	SITEflush(sp, true);
     }
     return NULL;
 }
@@ -707,7 +707,7 @@ CCgo(char *av[])
     free(ModeReason);
     ModeReason = NULL;
     Mode = OMrunning;
-    ThrottledbyIOError = FALSE;
+    ThrottledbyIOError = false;
 
     if (NNRPReason && !innconf->readerswhenstopped) {
 	av[0] = YES;
@@ -719,7 +719,7 @@ CCgo(char *av[])
     InndHisOpen();
     syslog(L_NOTICE, "%s running", LogName);
     if (ICDneedsetup)
-	ICDsetup(TRUE);
+	ICDsetup(true);
     SCHANwakeup(&Mode);
     return NULL;
 }
@@ -1067,16 +1067,16 @@ CCparsebool(char name, bool *bp, char value)
 {
     switch (value) {
     default:
-	return FALSE;
+	return false;
     case 'y':
-	*bp = FALSE;
+	*bp = false;
 	break;
     case 'n':
-	*bp = TRUE;
+	*bp = true;
 	break;
     }
     syslog(L_NOTICE, "%s changed -%c %c", LogName, name, value);
-    return TRUE;
+    return true;
 }
 
 
@@ -1316,12 +1316,12 @@ CCreload(char *av[])
 
     p = av[0];
     if (*p == '\0' || EQ(p, "all")) {
-	SITEflushall(FALSE);
+	SITEflushall(false);
 	InndHisClose();
 	RCreadlist();
 	InndHisOpen();
 	ICDwrite();
-	ICDsetup(TRUE);
+	ICDsetup(true);
 	if (!ARTreadschema())
 	    return BADSCHEMA;
 #if defined(DO_TCL)
@@ -1340,9 +1340,9 @@ CCreload(char *av[])
 	p = "all";
     }
     else if (EQ(p, "active") || EQ(p, "newsfeeds")) {
-	SITEflushall(FALSE);
+	SITEflushall(false);
 	ICDwrite();
-	ICDsetup(TRUE);
+	ICDsetup(true);
     }
     else if (EQ(p, "history")) {
 	InndHisClose();
@@ -1667,8 +1667,8 @@ CCtrace(char *av[])
     p = av[1];
     switch (p[0]) {
     default:			return "1 Bad trace flag";
-    case 'y': case 'Y':		Flag = TRUE;	word = "on";	break;
-    case 'n': case 'N':		Flag = FALSE;	word = "off";	break;
+    case 'y': case 'Y':		Flag = true;	word = "on";	break;
+    case 'n': case 'N':		Flag = false;	word = "off";	break;
     }
 
     /* Parse what's being traced. */

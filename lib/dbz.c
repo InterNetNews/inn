@@ -221,14 +221,14 @@ static dbzconfig conf;
  * Default dbzoptions to
  */
 static dbzoptions options = {
-    FALSE,		/* write through off */
+    false,		/* write through off */
     INCORE_NO,		/* index/pag from disk */
 #ifdef HAVE_MMAP
     INCORE_MMAP,	/* exists mmap'ed. ignored in tagged hash mode */
 #else
     INCORE_NO,		/* exists from disk. ignored in tagged hash mode */
 #endif
-    TRUE		/* non-blocking writes */
+    true		/* non-blocking writes */
 };
 
 /*
@@ -282,7 +282,7 @@ typedef struct {
 } hash_table;
 
 /* central data structures */
-static bool opendb = FALSE;     /* Indicates if a database is currently open */
+static bool opendb = false;     /* Indicates if a database is currently open */
 static FILE *dirf;		/* descriptor for .dir file */
 static bool readonly;		/* database open read-only? */
 #ifdef	DO_TAGGED_HASH
@@ -379,7 +379,7 @@ config_by_text_size(dbzconfig *c, of_t basesize)
 
 /*
  - create and truncate .pag, .idx, or .hash files
- - return FALSE on error
+ - return false on error
  */
 static bool
 create_truncate(const char *name, const char *pag1)
@@ -388,19 +388,19 @@ create_truncate(const char *name, const char *pag1)
     FILE *f;
 
     if ((fn = enstring(name, pag1)) == NULL)
-	return FALSE;
+	return false;
     f = Fopen(fn, "w", TEMPORARYOPEN);
     free(fn);
     if (f == NULL) {
 	DEBUG(("dbz.c create_truncate: unable to create/truncate %s\n", pag1));
-	return FALSE;
+	return false;
     } else
         Fclose(f);
-    return TRUE;
+    return true;
 }
 
 /* dbzfresh - set up a new database, no historical info
- * Return TRUE for success, FALSE for failure
+ * Return true for success, false for failure
  * name - base name; .dir and .pag must exist
  * size - table size (0 means default)
  */
@@ -417,16 +417,16 @@ dbzfresh(const char *name, off_t size)
 
     if (opendb) {
 	DEBUG(("dbzfresh: database already open\n"));
-	return FALSE;
+	return false;
     }
     if (size != 0 && size < 2) {
 	DEBUG(("dbzfresh: preposterous size (%ld)\n", size));
-	return FALSE;
+	return false;
     }
 
     /* get default configuration */
     if (!getconf((FILE *)NULL, &c))
-	return FALSE;	/* "can't happen" */
+	return false;	/* "can't happen" */
 
 #ifdef	DO_TAGGED_HASH
     /* and mess with it as specified */
@@ -455,31 +455,31 @@ dbzfresh(const char *name, off_t size)
 
     /* write it out */
     if ((fn = enstring(name, dir)) == NULL)
-	return FALSE;
+	return false;
     f = Fopen(fn, "w", TEMPORARYOPEN);
     free(fn);
     if (f == NULL) {
 	DEBUG(("dbzfresh: unable to write config\n"));
-	return FALSE;
+	return false;
     }
     if (putconf(f, &c) < 0) {
 	Fclose(f);
-	return FALSE;
+	return false;
     }
     if (Fclose(f) == EOF) {
 	DEBUG(("dbzfresh: fclose failure\n"));
-	return FALSE;
+	return false;
     }
 
     /* create and truncate .pag, or .index/.hash files */
 #ifdef	DO_TAGGED_HASH
     if (!create_truncate(name, pag))
-	return FALSE;
+	return false;
 #else
     if (!create_truncate(name, idx))
-	return FALSE;
+	return false;
     if (!create_truncate(name, exists))
-	return FALSE;
+	return false;
 #endif	/* DO_TAGGED_HASH */
 
     /* and punt to dbzinit for the hard work */
@@ -502,7 +502,7 @@ isprime(long x)
     for (ip = quick; (div1 = *ip) != 0; ip++)
 	if (x % div1 == 0) {
 	    DEBUG(("isprime: quick result on %ld\n", (long)x));
-	    return FALSE;
+	    return false;
 	}
 
     /* approximate square root of x */
@@ -513,9 +513,9 @@ isprime(long x)
     /* try odd numbers up to stop */
     for (div1 = *--ip; div1 < stop; div1 += 2)
 	if (x%div1 == 0)
-	    return FALSE;
+	    return false;
 
-    return TRUE;
+    return true;
 }
 #endif
 
@@ -555,7 +555,7 @@ dbzsize(off_t contents)
 }
 
 /* dbzagain - set up a new database to be a rebuild of an old one
- * Returns TRUE on success, FALSE on failure
+ * Returns true on success, false on failure
  * name - base name; .dir and .pag must exist
  * oldname - basename, all must exist
  */
@@ -577,23 +577,23 @@ dbzagain(const char *name, const char *oldname)
 
     if (opendb) {
 	DEBUG(("dbzagain: database already open\n"));
-	return FALSE;
+	return false;
     }
 
     /* pick up the old configuration */
     if ((fn = enstring(oldname, dir))== NULL)
-	return FALSE;
+	return false;
     f = Fopen(fn, "r", TEMPORARYOPEN);
     free(fn);
     if (f == NULL) {
 	DEBUG(("dbzagain: cannot open old .dir file\n"));
-	return FALSE;
+	return false;
     }
     result = getconf(f, &c);
     Fclose(f);
     if (!result) {
 	DEBUG(("dbzagain: getconf failed\n"));
-	return FALSE;
+	return false;
     }
 
     /* tinker with it */
@@ -642,29 +642,29 @@ dbzagain(const char *name, const char *oldname)
     /* write it out */
     fn = enstring(name, dir);
     if (fn == NULL)
-	return FALSE;
+	return false;
     f = Fopen(fn, "w", TEMPORARYOPEN);
     free(fn);
     if (f == NULL) {
 	DEBUG(("dbzagain: unable to write new .dir\n"));
-	return FALSE;
+	return false;
     }
     i = putconf(f, &c);
     Fclose(f);
     if (i < 0) {
 	DEBUG(("dbzagain: putconf failed\n"));
-	return FALSE;
+	return false;
     }
 
     /* create and truncate .pag, or .index/.hash files */
 #ifdef	DO_TAGGED_HASH
     if (!create_truncate(name, pag))
-	return FALSE;
+	return false;
 #else
     if (!create_truncate(name, idx))
-	return FALSE;
+	return false;
     if (!create_truncate(name, exists))
-	return FALSE;
+	return false;
 #endif
 
     /* and let dbzinit do the work */
@@ -678,13 +678,13 @@ openhashtable(const char *base, const char *ext, hash_table *tab,
     char *name;
 
     if ((name = enstring(base, ext)) == NULL)
-	return FALSE;
+	return false;
 
     if ((tab->fd = open(name, readonly ? O_RDONLY : O_RDWR)) < 0) {
 	DEBUG(("openhashtable: could not open raw\n"));
 	free(name);
 	errno = EDOM;
-	return FALSE;
+	return false;
     }
     free(name);
 
@@ -699,7 +699,7 @@ openhashtable(const char *base, const char *ext, hash_table *tab,
 	    DEBUG(("openhashtable: getcore failure\n"));
 	    close(tab->fd);
 	    errno = EDOM;
-	    return FALSE;
+	    return false;
 	}
     }
 
@@ -707,9 +707,9 @@ openhashtable(const char *base, const char *ext, hash_table *tab,
 	DEBUG(("fcntl: could not set nonblock\n"));
 	close(tab->fd);
 	errno = EDOM;
-	return FALSE;
+	return false;
     }
-    return TRUE;
+    return true;
 }
 
 static void closehashtable(hash_table *tab) {
@@ -737,7 +737,7 @@ openbasefile(const char *name)
 	basefname = enstring(name, "");
 	if (basefname == NULL) {
 	     Fclose(dirf);
-	    return FALSE;
+	    return false;
 	}
     } else
 	basefname = NULL;
@@ -745,7 +745,7 @@ openbasefile(const char *name)
 	close_on_exec(fileno(basef), true);
     if (basef != NULL)
 	 setvbuf(basef, NULL, _IOFBF, 64);
-    return TRUE;
+    return true;
 }
 #endif	/* DO_TAGGED_HASH */
 
@@ -754,7 +754,7 @@ openbasefile(const char *name)
  *
  * We try to leave errno set plausibly, to the extent that underlying
  * functions permit this, since many people consult it if dbzinit() fails.
- * return TRUE for success, FALSE for failure
+ * return true for success, false for failure
  */
 bool
 dbzinit(const char *name)
@@ -764,21 +764,21 @@ dbzinit(const char *name)
     if (opendb) {
 	DEBUG(("dbzinit: dbzinit already called once\n"));
 	errno = 0;
-	return FALSE;
+	return false;
     }
 
     /* open the .dir file */
     if ((fname = enstring(name, dir)) == NULL)
-	return FALSE;
+	return false;
     if ((dirf = Fopen(fname, "r+", DBZ_DIR)) == NULL) {
 	dirf = Fopen(fname, "r", DBZ_DIR);
-	readonly = TRUE;
+	readonly = true;
     } else
-	readonly = FALSE;
+	readonly = false;
     free(fname);
     if (dirf == NULL) {
 	DEBUG(("dbzinit: can't open .dir file\n"));
-	return FALSE;
+	return false;
     }
     close_on_exec(fileno(dirf), true);
 
@@ -787,19 +787,19 @@ dbzinit(const char *name)
 	DEBUG(("dbzinit: getconf failure\n"));
 	Fclose(dirf);
 	errno = EDOM;	/* kind of a kludge, but very portable */
-	return FALSE;
+	return false;
     }
 
     /* open pag or idx/exists file */
 #ifdef	DO_TAGGED_HASH
     if (!openhashtable(name, pag, &pagtab, SOF, options.pag_incore)) {
 	Fclose(dirf);
-	return FALSE;
+	return false;
     }
     if (!openbasefile(name)) {
 	close(pagtab.fd);
 	Fclose(dirf);
-	return FALSE;
+	return false;
     }
     tagbits = conf.tagmask << conf.tagshift;
     taghere = conf.tagenb << conf.tagshift;
@@ -808,22 +808,22 @@ dbzinit(const char *name)
 #else
     if (!openhashtable(name, idx, &idxtab, sizeof(of_t), options.pag_incore)) {
 	Fclose(dirf);
-	return FALSE;
+	return false;
     }
     if (!openhashtable(name, exists, &etab, sizeof(erec),
 		options.exists_incore)) {
 	Fclose(dirf);
-	return FALSE;
+	return false;
     }
 #endif
 
     /* misc. setup */
-    dirty = FALSE;
-    opendb = TRUE;
+    dirty = false;
+    opendb = true;
     prevp = FRESH;
     memset(&empty_rec, '\0', sizeof(empty_rec));
     DEBUG(("dbzinit: succeeded\n"));
-    return TRUE;
+    return true;
 }
 
 /* enstring - concatenate two strings into newly allocated memory
@@ -845,21 +845,21 @@ enstring(const char *s1, const char *s2)
 bool
 dbzclose(void)
 {
-    bool ret = TRUE;
+    bool ret = true;
 
     if (!opendb) {
 	DEBUG(("dbzclose: not opened!\n"));
-	return FALSE;
+	return false;
     }
 
     if (!dbzsync())
-	ret = FALSE;
+	ret = false;
 
 #ifdef	DO_TAGGED_HASH
     closehashtable(&pagtab);
     if (Fclose(basef) == EOF) {
 	fprintf(stderr, "dbzclose: fclose(basef) failed\n");
-	ret = FALSE;
+	ret = false;
     }
     if (basefname != NULL)
 	free(basefname);
@@ -871,12 +871,12 @@ dbzclose(void)
 
     if (Fclose(dirf) == EOF) {
 	DEBUG(("dbzclose: fclose(dirf) failed\n"));
-	ret = FALSE;
+	ret = false;
     }
 
     DEBUG(("dbzclose: %s\n", (ret == 0) ? "succeeded" : "failed"));
     if (ret)
-	opendb = FALSE;
+	opendb = false;
     return ret;
 }
 
@@ -885,15 +885,15 @@ dbzclose(void)
 bool
 dbzsync(void)
 {
-    bool ret = TRUE;
+    bool ret = true;
 
     if (!opendb) {
 	DEBUG(("dbzsync: not opened!\n"));
-	return FALSE;
+	return false;
     }
 
     if (!dirty)
-	return TRUE;;
+	return true;;
 
     if (!options.writethrough) {
 #ifdef	DO_TAGGED_HASH
@@ -902,12 +902,12 @@ dbzsync(void)
 	if (!putcore(&idxtab) || !putcore(&etab)) {
 #endif
 	    DEBUG(("dbzsync: putcore failed\n"));
-	    ret = FALSE;;
+	    ret = false;;
 	}
     }
 
     if (putconf(dirf, &conf) < 0)
-	ret = FALSE;
+	ret = false;
 
     DEBUG(("dbzsync: %s\n", ret ? "succeeded" : "failed"));
     return ret;
@@ -942,7 +942,7 @@ dbzexists(const HASH key)
     
     if (!opendb) {
 	DEBUG(("dbzexists: database not open!\n"));
-	return FALSE;
+	return false;
     }
 
     prevp = FRESH;
@@ -974,7 +974,7 @@ dbzfetch(const HASH key, off_t *value)
 
     if (!opendb) {
 	DEBUG(("dbzfetch: database not open!\n"));
-	return FALSE;
+	return false;
     }
 
     start(&srch, key, FRESH);
@@ -994,12 +994,12 @@ dbzfetch(const HASH key, off_t *value)
 	    offset--;
 	if (fseeko(basef, offset, SEEK_SET) != 0) {
 	    DEBUG(("fetch: seek failed\n"));
-	    return FALSE;
+	    return false;
 	}
 	keylen = fread(buffer, 1, nb2r, basef);
 	if (keylen < MIN_KEY_LENGTH) {
 	    DEBUG(("fetch: read failed\n"));
-	    return FALSE;
+	    return false;
 	}
 	buffer[keylen] = '\0';	/* terminate the string */
 
@@ -1042,15 +1042,15 @@ dbzfetch(const HASH key, off_t *value)
 	offset += j;
 	DEBUG(("fetch: successful\n"));
 	*value = offset;
-	return TRUE;
+	return true;
     }
 
     /* we didn't find it */
     DEBUG(("fetch: failed\n"));
     prevp = &srch;			/* remember where we stopped */
-    return FALSE;
+    return false;
 #else	/* DO_TAGGED_HASH */
-    if (search(&srch) == TRUE) {
+    if (search(&srch) == true) {
 	/* Actually get the data now */
 	if ((options.pag_incore != INCORE_NO) && (srch.place < conf.tsize)) {
 	    memcpy(value, &((of_t *)idxtab.core)[srch.place], sizeof(of_t));
@@ -1059,23 +1059,23 @@ dbzfetch(const HASH key, off_t *value)
 		DEBUG(("fetch: read failed\n"));
 		idxtab.pos = -1;
 		srch.aborted = 1;
-		return FALSE;
+		return false;
 	    }
 	}
 	DEBUG(("fetch: successful\n"));
-	return TRUE;
+	return true;
     }
 
     /* we didn't find it */
     DEBUG(("fetch: failed\n"));
     prevp = &srch;			/* remember where we stopped */
-    return FALSE;
+    return false;
 #endif
 }
 
 /*
  * dbzstore - add an entry to the database
- * returns TRUE for success and FALSE for failure
+ * returns true for success and false for failure
  */
 DBZSTORE_RESULT
 dbzstore(const HASH key, off_t data)
@@ -1128,13 +1128,13 @@ dbzstore(const HASH key, off_t data)
 
     /* find the place, exploiting previous search if possible */
     start(&srch, key, prevp);
-    if (search(&srch) == TRUE)
+    if (search(&srch) == true)
 	return DBZSTORE_EXISTS;
 
     prevp = FRESH;
     conf.used[0]++;
     DEBUG(("store: used count %ld\n", conf.used[0]));
-    dirty = TRUE;
+    dirty = true;
 
     memcpy(&evalue.hash, &srch.hash,
 	   sizeof(evalue.hash) < sizeof(srch.hash) ? sizeof(evalue.hash) : sizeof(srch.hash));
@@ -1152,7 +1152,7 @@ dbzstore(const HASH key, off_t data)
  * getconf - get configuration from .dir file
  *   df    - NULL means just give me the default 
  *   pf    - NULL means don't care about .pag 
- *   returns TRUE for success, FALSE for failure
+ *   returns true for success, false for failure
  */
 static bool
 getconf(FILE *df, dbzconfig *cp)
@@ -1177,7 +1177,7 @@ getconf(FILE *df, dbzconfig *cp)
 	DEBUG(("getconf: defaults (%ld, %c, (0x%lx/0x%lx<<%d %d))\n",
 	cp->tsize, cp->casemap, cp->tagenb, 
 	cp->tagmask, cp->tagshift, cp->dropbits));
-	return TRUE;
+	return true;
     }
 
     i = fscanf(df, "dbz 6 %ld %d %d %ld %ld %d %d\n", &cp->tsize,
@@ -1185,11 +1185,11 @@ getconf(FILE *df, dbzconfig *cp)
 		&cp->tagmask, &cp->tagshift, &cp->dropbits);
     if (i != 7) {
 	DEBUG(("getconf error"));
-	return FALSE;
+	return false;
     }
     if (cp->valuesize != sizeof(of_t)) {
 	DEBUG(("getconf: wrong of_t size (%d)\n", cp->valuesize));
-	return FALSE;
+	return false;
     }
     cp->lenfuzzy = (int)(1 << cp->dropbits) - 1;
 #else	/* DO_TAGGED_HASH */
@@ -1200,18 +1200,18 @@ getconf(FILE *df, dbzconfig *cp)
 	cp->valuesize = sizeof(of_t) + sizeof(erec);
 	cp->fillpercent = 66;
 	DEBUG(("getconf: defaults (%ld)\n", cp->tsize));
-	return TRUE;
+	return true;
     }
 
     i = fscanf(df, "dbz 6 %ld %d %d\n", &cp->tsize,
 		&cp->valuesize, &cp->fillpercent);
     if (i != 3) {
 	DEBUG(("getconf error"));
-	return FALSE;
+	return false;
     }
     if (cp->valuesize != (sizeof(of_t) + sizeof(erec))) {
 	DEBUG(("getconf: wrong of_t size (%d)\n", cp->valuesize));
-	return FALSE;
+	return false;
     }
 #endif	/* DO_TAGGED_HASH */
     DEBUG(("size %ld\n", cp->tsize));
@@ -1220,7 +1220,7 @@ getconf(FILE *df, dbzconfig *cp)
     for (i = 0; i < NUSEDS; i++)
 	if (!fscanf(df, "%ld", &cp->used[i])) {
 	    DEBUG(("getconf error\n"));
-	    return FALSE;
+	    return false;
 	}
     DEBUG(("used %ld %ld %ld...\n", cp->used[0], cp->used[1], cp->used[2]));
 
@@ -1229,12 +1229,12 @@ getconf(FILE *df, dbzconfig *cp)
     for (i = 0; i < NUSEDS; i++)
 	if (!fscanf(df, "%ld", &cp->vused[i])) {
 	    DEBUG(("getconf error\n"));
-	    return FALSE;
+	    return false;
 	}
     DEBUG(("vused %ld %ld %ld...\n", cp->vused[0], cp->vused[1], cp->vused[2]));
 #endif	/* DO_TAGGED_HASH */
 
-    return TRUE;
+    return true;
 }
 
 /* putconf - write configuration to .dir file
@@ -1292,13 +1292,13 @@ getcore(hash_table *tab)
 #if defined(HAVE_MMAP)
 	if (fstat(tab->fd, &st) == -1) {
 	    DEBUG(("getcore: fstat failed\n"));
-	    return FALSE;
+	    return false;
 	}
 	if ((conf.tsize * tab->reclen) > st.st_size) {
 	    /* file too small; extend it */
 	    if (ftruncate(tab->fd, conf.tsize * tab->reclen) == -1) {
 		DEBUG(("getcore: ftruncate failed\n"));
-		return FALSE;
+		return false;
 	    }
 	}
 	it = mmap(NULL, (size_t)conf.tsize * tab->reclen,
@@ -1306,7 +1306,7 @@ getcore(hash_table *tab)
                   tab->fd, 0);
 	if (it == (char *)-1) {
 	    DEBUG(("getcore: mmap failed\n"));
-	    return FALSE;
+	    return false;
 	}
 #if defined (MADV_RANDOM) && defined(HAVE_MADVISE)
 	/* not present in all versions of mmap() */
@@ -1314,7 +1314,7 @@ getcore(hash_table *tab)
 #endif
 #else
 	DEBUG(("getcore: can't mmap files\n"));
-	return FALSE;
+	return false;
 #endif
     } else {
 	it = xmalloc(conf.tsize * tab->reclen);
@@ -1323,7 +1323,7 @@ getcore(hash_table *tab)
 	if (nread < 0) {
 	    DEBUG(("getcore: read failed\n"));
 	    free(it);
-	    return FALSE;
+	    return false;
 	}
 	
 	i = (size_t)(conf.tsize * tab->reclen) - nread;
@@ -1331,12 +1331,12 @@ getcore(hash_table *tab)
     }
 
     tab->core = it;
-    return TRUE;
+    return true;
 }
 
 /* putcore - try to rewrite an in-core table
  *
- * Returns TRUE on success, FALSE on failure
+ * Returns true on success, false on failure
  */
 static bool
 putcore(hash_table *tab)
@@ -1348,11 +1348,11 @@ putcore(hash_table *tab)
 	size = tab->reclen * conf.tsize;
 	if (pwrite(tab->fd, tab->core, size, 0) != size) {
 	    nonblocking(tab->fd, options.nonblock);
-	    return FALSE;
+	    return false;
 	}
 	nonblocking(tab->fd, options.nonblock);
     }
-    return TRUE;
+    return true;
 }
 
 #ifdef	DO_TAGGED_HASH
@@ -1488,7 +1488,7 @@ search(searcher *sp)
 
 /* search - conduct part of a search
  *
- * return FALSE if we hit vacant rec's or error
+ * return false if we hit vacant rec's or error
  */
 static bool
 search(searcher *sp)
@@ -1497,7 +1497,7 @@ search(searcher *sp)
     unsigned long taboffset = 0;
 
     if (sp->aborted)
-	return FALSE;
+	return false;
 
     for (;;) {
 	/* go to next location */
@@ -1525,7 +1525,7 @@ search(searcher *sp)
 		    DEBUG(("search: read failed\n"));
 		    etab.pos = -1;
 		    sp->aborted = 1;
-		    return FALSE;
+		    return false;
 		} else {
 		    memset(&value, '\0', sizeof(erec));
 		}
@@ -1538,13 +1538,13 @@ search(searcher *sp)
 	/* Check for an empty record */
 	if (!memcmp(&value, &empty_rec, sizeof(erec))) {
 	    DEBUG(("search: empty slot\n"));
-	    return FALSE;
+	    return false;
 	}
 
 	/* check the value */
 	DEBUG(("got 0x%lx\n", value));
 	if (!memcmp(&value.hash, &sp->hash, DBZ_INTERNAL_HASH_SIZE)) {
-	    return TRUE;
+	    return true;
 	}
     }
     /* NOTREACHED */
@@ -1553,7 +1553,7 @@ search(searcher *sp)
 
 /* set - store a value into a location previously found by search
  *
- * Returns:  TRUE success, FALSE failure
+ * Returns:  true success, false failure
  */
 static bool
 set(searcher *sp, hash_table *tab, void *value)
@@ -1561,7 +1561,7 @@ set(searcher *sp, hash_table *tab, void *value)
     off_t offset;
     
     if (sp->aborted)
-	return FALSE;
+	return false;
 
     /* If we have the index file in memory, use it */
     if ((tab->incore != INCORE_NO) && (sp->place < conf.tsize)) {
@@ -1573,10 +1573,10 @@ set(searcher *sp, hash_table *tab, void *value)
 	    if (innconf->nfswriter) {
 		mapcntl(where, tab->reclen, MS_ASYNC);
 	    }
-	    return TRUE;
+	    return true;
 	}
 	if (!options.writethrough)
-	    return TRUE;
+	    return true;
     }
 
     /* seek to spot */
@@ -1593,24 +1593,24 @@ set(searcher *sp, hash_table *tab, void *value)
 	    if (select(tab->fd + 1, NULL, &writeset, NULL, NULL) < 1) {
 		DEBUG(("set: select failed\n"));
 		sp->aborted = 1;
-		return FALSE;
+		return false;
 	    }
 	    continue;
 	}
 	DEBUG(("set: write failed\n"));
 	sp->aborted = 1;
-	return FALSE;
+	return false;
     }
 
     DEBUG(("set: succeeded\n"));
-    return TRUE;
+    return true;
 }
 
 #ifdef	DO_TAGGED_HASH
 /*
  - set_pag - store a value into a location previously found by search
  -       on the pag table.
- - Returns: TRUE success, FALSE failure
+ - Returns: true success, false failure
  */
 static bool
 set_pag(searcher *sp, of_t value)

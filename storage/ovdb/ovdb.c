@@ -53,7 +53,7 @@
  *         
  * 2000-07-11 : fix possible alignment problem; add test code
  * 2000-07-07 : bugfix: timestamp handling
- * 2000-06-10 : Modified groupnum() interface; fix ovdb_add() to return FALSE
+ * 2000-06-10 : Modified groupnum() interface; fix ovdb_add() to return false
  *              for certain groupnum() errors
  * 2000-06-08 : Added BerkeleyDB 3.1.x compatibility
  * 2000-04-09 : Tweak some default parameters; store aliased group info
@@ -105,40 +105,40 @@
 bool ovdb_open(int mode UNUSED)
 {
     syslog(L_FATAL, "OVDB: ovdb support not enabled");
-    return FALSE;
+    return false;
 }
 
 bool ovdb_groupstats(char *group UNUSED, int *lo UNUSED, int *hi UNUSED, int *count UNUSED, int *flag UNUSED)
-{ return FALSE; }
+{ return false; }
 
 bool ovdb_groupadd(char *group UNUSED, ARTNUM lo UNUSED, ARTNUM hi UNUSED, char *flag UNUSED)
-{ return FALSE; }
+{ return false; }
 
 bool ovdb_groupdel(char *group UNUSED)
-{ return FALSE; }
+{ return false; }
 
 bool ovdb_add(char *group UNUSED, ARTNUM artnum UNUSED, TOKEN token UNUSED, char *data UNUSED, int len UNUSED, time_t arrived UNUSED, time_t expires UNUSED)
-{ return FALSE; }
+{ return false; }
 
 bool ovdb_cancel(TOKEN token UNUSED)
-{ return FALSE; }
+{ return false; }
 
 void *ovdb_opensearch(char *group UNUSED, int low UNUSED, int high UNUSED)
 { return NULL; }
 
 bool ovdb_search(void *handle UNUSED, ARTNUM *artnum UNUSED, char **data UNUSED, int *len UNUSED, TOKEN *token UNUSED, time_t *arrived UNUSED)
-{ return FALSE; }
+{ return false; }
 
 void ovdb_closesearch(void *handle UNUSED) { }
 
 bool ovdb_getartinfo(char *group UNUSED, ARTNUM artnum UNUSED, TOKEN *token UNUSED)
-{ return FALSE; }
+{ return false; }
 
 bool ovdb_expiregroup(char *group UNUSED, int *lo UNUSED, struct history *h UNUSED)
-{ return FALSE; }
+{ return false; }
 
 bool ovdb_ctl(OVCTLTYPE type UNUSED, void *val UNUSED)
-{ return FALSE; }
+{ return false; }
 
 void ovdb_close(void) { }
 
@@ -358,14 +358,14 @@ char *db_strerror(int err)
 static bool conf_bool_val(char *str, bool *value)
 {
     if(caseEQ(str, "on") || caseEQ(str, "true") || caseEQ(str, "yes")) {
-	*value = TRUE;
-	return TRUE;
+	*value = true;
+	return true;
     }
     if(caseEQ(str, "off") || caseEQ(str, "false") || caseEQ(str, "no")) {
-	*value = FALSE;
-	return TRUE;
+	*value = false;
+	return true;
     }
-    return FALSE;
+    return false;
 }
 
 static bool conf_long_val(char *str, long *value)
@@ -375,10 +375,10 @@ static bool conf_long_val(char *str, long *value)
     errno = 0;
     v = strtol(str, NULL, 10);
     if(v == 0 && errno != 0) {
-	return FALSE;
+	return false;
     }
     *value = v;
-    return TRUE;
+    return true;
 }
 
 void read_ovdb_conf(void)
@@ -873,7 +873,7 @@ static bool delete_old_stuff(int forgotton)
     if (ret != 0) {
 	syslog(L_ERROR, "OVDB: delete_old_stuff: groupinfo->cursor: %s", db_strerror(ret));
 	free(dellist);
-	return FALSE;
+	return false;
     }
 
     while((ret = cursor->c_get(cursor, &key, &val, DB_NEXT)) == 0) {
@@ -906,7 +906,7 @@ static bool delete_old_stuff(int forgotton)
 	if(tid==NULL)
 	    goto out;
 
-        ret = ovdb_getgroupinfo(dellist[i], &gi, FALSE, tid, DB_RMW);
+        ret = ovdb_getgroupinfo(dellist[i], &gi, false, tid, DB_RMW);
 	switch (ret)
         {
 	case 0:
@@ -984,7 +984,7 @@ out:
     for(i = 0; i < listcount; i++)
 	free(dellist[i]);
     free(dellist);
-    return TRUE;
+    return true;
 }
 
 static int count_records(struct groupinfo *gi)
@@ -1081,33 +1081,33 @@ bool ovdb_getlock(int mode)
 	    free(lockfn);
 	    if(errno == ENOENT)
 		syslog(L_FATAL, "OVDB: can not open database unless ovdb_monitor is running.");
-	    return FALSE;
+	    return false;
 	}
-	close_on_exec(lockfd, TRUE);
+	close_on_exec(lockfd, true);
 	free(lockfn);
     } else
-	return TRUE;
+	return true;
 
     if(mode == OVDB_LOCK_NORMAL) {
 	if(!ovdb_check_pidfile(OVDB_MONITOR_PIDFILE)) {
 	    syslog(L_FATAL, "OVDB: can not open database unless ovdb_monitor is running.");
-	    return FALSE;
+	    return false;
 	}
     }
     if(mode == OVDB_LOCK_EXCLUSIVE) {
-	if(!inn_lock_file(lockfd, INN_LOCK_WRITE, FALSE)) {
+	if(!inn_lock_file(lockfd, INN_LOCK_WRITE, false)) {
 	    close(lockfd);
 	    lockfd = -1;
-	    return FALSE;
+	    return false;
 	}
-	return TRUE;
+	return true;
     } else {
-	if(!inn_lock_file(lockfd, INN_LOCK_READ, FALSE)) {
+	if(!inn_lock_file(lockfd, INN_LOCK_READ, false)) {
 	    close(lockfd);
 	    lockfd = -1;
-	    return FALSE;
+	    return false;
 	}
-	return TRUE;
+	return true;
     }
 }
 
@@ -1115,8 +1115,8 @@ bool ovdb_releaselock(void)
 {
     bool r;
     if(lockfd == -1)
-	return TRUE;
-    r = inn_lock_file(lockfd, INN_LOCK_UNLOCK, FALSE);
+	return true;
+    r = inn_lock_file(lockfd, INN_LOCK_UNLOCK, false);
     close(lockfd);
     lockfd = -1;
     return r;
@@ -1133,25 +1133,25 @@ bool ovdb_check_pidfile(char *file)
 	if(errno != ENOENT)
 	    syslog(L_FATAL, "OVDB: can't open %s: %m", pidfn);
 	free(pidfn);
-	return FALSE;
+	return false;
     }
     memset(buf, 0, SMBUF);
     if(read(f, buf, SMBUF-1) < 0) {
 	syslog(L_FATAL, "OVDB: can't read from %s: %m", pidfn);
 	free(pidfn);
 	close(f);
-	return FALSE;
+	return false;
     }
     close(f);
     free(pidfn);
     pid = atoi(buf);
     if(pid <= 1) {
-	return FALSE;
+	return false;
     }
     if(kill(pid, 0) < 0 && errno == ESRCH) {
-	return FALSE;
+	return false;
     }
-    return TRUE;
+    return true;
 }
 
 /* make sure the effective uid is that of NEWSUSER */
@@ -1164,7 +1164,7 @@ bool ovdb_check_user(void)
 	p = getpwnam(NEWSUSER);
 	if(!p) {
 	    syslog(L_FATAL, "OVDB: getpwnam(" NEWSUSER ") failed: %m");
-	    return FALSE;
+	    return false;
 	}
 	result = (p->pw_uid == geteuid());
     }
@@ -1367,7 +1367,7 @@ bool ovdb_open(int mode)
 
     if(OVDBenv != NULL || clientmode) {
 	syslog(L_ERROR, "OVDB: ovdb_open called more than once");
-	return FALSE;
+	return false;
     }
 
     read_ovdb_conf();
@@ -1379,23 +1379,23 @@ bool ovdb_open(int mode)
 
     if(clientmode) {
 	if(client_connect() == 0)
-	    return TRUE;
+	    return true;
 	clientmode = 0;
     }
     if(!ovdb_check_user()) {
 	syslog(L_FATAL, "OVDB: must be running as " NEWSUSER " to access overview.");
-	return FALSE;
+	return false;
     }
     if(!ovdb_getlock(OVDB_LOCK_NORMAL)) {
 	syslog(L_FATAL, "OVDB: ovdb_getlock failed: %m");
-	return FALSE;
+	return false;
     }
 
     if(ovdb_open_berkeleydb(mode, 0) != 0)
-	return FALSE;
+	return false;
 
     if(check_version() != 0)
-	return FALSE;
+	return false;
 
     if(mode & OV_WRITE || mode & OVDB_SERVER) {
 	oneatatime = 0;
@@ -1417,7 +1417,7 @@ bool ovdb_open(int mode)
             ret = open_db_file(i);
 	    if (ret != 0) {
 		syslog(L_FATAL, "OVDB: open_db_file failed: %s", db_strerror(ret));
-		return FALSE;
+		return false;
 	    }
 	}
     }
@@ -1429,44 +1429,44 @@ bool ovdb_open(int mode)
                   &dbinfo, &groupinfo);
     if (ret != 0) {
 	syslog(L_FATAL, "OVDB: db_open failed: %s", db_strerror(ret));
-	return FALSE;
+	return false;
     }
 
     ret = db_open("groupaliases", DB_HASH, _db_flags, 0666, OVDBenv,
                   &dbinfo, &groupaliases);
     if (ret != 0) {
 	syslog(L_FATAL, "OVDB: db_open failed: %s", db_strerror(ret));
-	return FALSE;
+	return false;
     }
 #else
     ret = db_create(&groupinfo, OVDBenv, 0);
     if (ret != 0) {
 	syslog(L_FATAL, "OVDB: open: db_create: %s", db_strerror(ret));
-	return FALSE;
+	return false;
     }
     ret = groupinfo->open(groupinfo, "groupinfo", NULL, DB_BTREE,
                           _db_flags, 0666);
     if (ret != 0) {
 	groupinfo->close(groupinfo, 0);
 	syslog(L_FATAL, "OVDB: open: groupinfo->open: %s", db_strerror(ret));
-	return FALSE;
+	return false;
     }
     ret = db_create(&groupaliases, OVDBenv, 0);
     if (ret != 0) {
 	syslog(L_FATAL, "OVDB: open: db_create: %s", db_strerror(ret));
-	return FALSE;
+	return false;
     }
     ret = groupaliases->open(groupaliases, "groupaliases", NULL, DB_HASH,
                              _db_flags, 0666);
     if (ret != 0) {
 	groupaliases->close(groupaliases, 0);
 	syslog(L_FATAL, "OVDB: open: groupaliases->open: %s", db_strerror(ret));
-	return FALSE;
+	return false;
     }
 #endif
 
-    Cutofflow = FALSE;
-    return TRUE;
+    Cutofflow = false;
+    return true;
 }
 
 
@@ -1487,7 +1487,7 @@ bool ovdb_groupstats(char *group, int *lo, int *hi, int *count, int *flag)
 	crecv(&repl, sizeof(repl));
 
 	if(repl.status != CMD_GROUPSTATS)
-	    return FALSE;
+	    return false;
 
 	/* we don't use the alias yet, but the OV API will be extended
 	   at some point so that the alias is returned also */
@@ -1505,19 +1505,19 @@ bool ovdb_groupstats(char *group, int *lo, int *hi, int *count, int *flag)
 	    *count = repl.count;
 	if(flag)
 	    *flag = repl.flag;
-	return TRUE;
+	return true;
     }
 
-    ret = ovdb_getgroupinfo(group, &gi, TRUE, NULL, 0);
+    ret = ovdb_getgroupinfo(group, &gi, true, NULL, 0);
     switch (ret)
     {
     case 0:
 	break;
     case DB_NOTFOUND:
-	return FALSE;
+	return false;
     default:
 	syslog(L_ERROR, "OVDB: ovdb_getgroupinfo failed: %s", db_strerror(ret));
-	return FALSE;
+	return false;
     }
 
     if(lo != NULL)
@@ -1528,7 +1528,7 @@ bool ovdb_groupstats(char *group, int *lo, int *hi, int *count, int *flag)
 	*count = gi.count;
     if(flag != NULL)
 	*flag = gi.flag;
-    return TRUE;
+    return true;
 }
 
 bool ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
@@ -1545,10 +1545,10 @@ bool ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
     TXN_START(t_groupadd, tid);
 
     if(tid==NULL)
-	return FALSE;
+	return false;
 
     new = 0;
-    ret = ovdb_getgroupinfo(group, &gi, FALSE, tid, DB_RMW);
+    ret = ovdb_getgroupinfo(group, &gi, false, tid, DB_RMW);
     switch (ret)
     {
     case DB_NOTFOUND:
@@ -1560,7 +1560,7 @@ bool ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
     default:
 	TXN_ABORT(t_groupadd, tid);
 	syslog(L_ERROR, "OVDB: ovdb_getgroupinfo failed: %s", db_strerror(ret));
-	return FALSE;
+	return false;
     }
 
     if(!new && (gi.status & GROUPINFO_DELETED)
@@ -1594,7 +1594,7 @@ bool ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
 	default:
 	    TXN_ABORT(t_groupadd, tid);
 	    syslog(L_ERROR, "OVDB: groupinfo->put: %s", db_strerror(ret));
-	    return FALSE;
+	    return false;
 	}
 	key.data = group;
 	key.size = strlen(group);
@@ -1608,7 +1608,7 @@ bool ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
 	default:
 	    TXN_ABORT(t_groupadd, tid);
 	    syslog(L_ERROR, "OVDB: groupinfo->del: %s", db_strerror(ret));
-	    return FALSE;
+	    return false;
 	}
 	new = 1;
     }
@@ -1624,7 +1624,7 @@ bool ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
 	default:
 	    TXN_ABORT(t_groupadd, tid);
 	    syslog(L_ERROR, "OVDB: groupid_new: %s", db_strerror(ret));
-	    return FALSE;
+	    return false;
 	}
 	gi.low = lo ? lo : 1;
 	gi.high = hi;
@@ -1653,7 +1653,7 @@ bool ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
     default:
 	TXN_ABORT(t_groupadd, tid);
 	syslog(L_ERROR, "OVDB: groupadd: groupinfo->put: %s", db_strerror(ret));
-	return FALSE;
+	return false;
     }
 
     if(*flag == '=') {
@@ -1670,12 +1670,12 @@ bool ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
 	default:
 	    TXN_ABORT(t_groupadd, tid);
 	    syslog(L_ERROR, "OVDB: groupadd: groupaliases->put: %s", db_strerror(ret));
-	    return FALSE;
+	    return false;
 	}
     }
 
     TXN_COMMIT(t_groupadd, tid);
-    return TRUE;
+    return true;
 }
 
 bool ovdb_groupdel(char *group)
@@ -1697,13 +1697,13 @@ bool ovdb_groupdel(char *group)
     TXN_START(t_groupdel, tid);
 
     if(tid==NULL)
-	return FALSE;
+	return false;
 
-    ret = ovdb_getgroupinfo(group, &gi, TRUE, tid, DB_RMW);
+    ret = ovdb_getgroupinfo(group, &gi, true, tid, DB_RMW);
     switch (ret)
     {
     case DB_NOTFOUND:
-	return TRUE;
+	return true;
     case 0:
 	break;
     case TRYAGAIN:
@@ -1711,7 +1711,7 @@ bool ovdb_groupdel(char *group)
     default:
 	syslog(L_ERROR, "OVDB: ovdb_getgroupinfo failed: %s", db_strerror(ret));
 	TXN_ABORT(t_groupdel, tid);
-	return FALSE;
+	return false;
     }
 
     gi.status |= GROUPINFO_DELETED;
@@ -1729,7 +1729,7 @@ bool ovdb_groupdel(char *group)
     default:
 	TXN_ABORT(t_groupdel, tid);
 	syslog(L_ERROR, "OVDB: groupadd: groupinfo->put: %s", db_strerror(ret));
-	return FALSE;
+	return false;
     }
 
     switch(ret = groupaliases->del(groupaliases, tid, &key, 0)) {
@@ -1741,11 +1741,11 @@ bool ovdb_groupdel(char *group)
     default:
 	syslog(L_ERROR, "OVDB: groupdel: groupaliases->del: %s", db_strerror(ret));
 	TXN_ABORT(t_groupdel, tid);
-	return FALSE;
+	return false;
     }
 
     TXN_COMMIT(t_groupdel, tid);
-    return TRUE;
+    return true;
 }
 
 bool ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires)
@@ -1786,29 +1786,29 @@ bool ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
     TXN_START(t_add, tid);
 
     if(tid==NULL)
-	return FALSE;
+	return false;
 
     /* first, retrieve groupinfo */
-    ret = ovdb_getgroupinfo(group, &gi, TRUE, tid, DB_RMW);
+    ret = ovdb_getgroupinfo(group, &gi, true, tid, DB_RMW);
     switch (ret)
     {
     case 0:
 	break;
     case DB_NOTFOUND:
 	TXN_ABORT(t_add, tid);
-	return TRUE;
+	return true;
     case TRYAGAIN:
 	TXN_RETRY(t_add, tid);
     default:
 	TXN_ABORT(t_add, tid);
 	syslog(L_ERROR, "OVDB: add: ovdb_getgroupinfo: %s", db_strerror(ret));
-	return FALSE;
+	return false;
     }
 
     /* adjust groupinfo */
     if(Cutofflow && gi.low > artnum) {
 	TXN_ABORT(t_add, tid);
-	return TRUE;
+	return true;
     }
     if(gi.low == 0 || gi.low > artnum)
 	gi.low = artnum;
@@ -1832,14 +1832,14 @@ bool ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
     default:
 	TXN_ABORT(t_add, tid);
 	syslog(L_ERROR, "OVDB: add: groupinfo->put: %s", db_strerror(ret));
-	return FALSE;
+	return false;
     }
 
     /* store overview */
     db = get_db_bynum(gi.current_db);
     if(db == NULL) {
 	TXN_ABORT(t_add, tid);
-	return FALSE;
+	return false;
     }
     dk.groupnum = gi.current_gid;
     dk.artnum = htonl((u_int32_t)artnum);
@@ -1859,7 +1859,7 @@ bool ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
     default:
 	TXN_ABORT(t_add, tid);
 	syslog(L_ERROR, "OVDB: add: db->put: %s", db_strerror(ret));
-	return FALSE;
+	return false;
     }
 
     if(artnum < gi.high && gi.status & GROUPINFO_MOVING) {
@@ -1870,7 +1870,7 @@ bool ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
 	db = get_db_bynum(gi.new_db);
 	if(db == NULL) {
 	    TXN_ABORT(t_add, tid);
-	    return FALSE;
+	    return false;
 	}
 	dk.groupnum = gi.new_gid;
 
@@ -1884,17 +1884,17 @@ bool ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
 	default:
 	    TXN_ABORT(t_add, tid);
 	    syslog(L_ERROR, "OVDB: add: db->put: %s", db_strerror(ret));
-	    return FALSE;
+	    return false;
 	}
     }
 
     TXN_COMMIT(t_add, tid);
-    return TRUE;
+    return true;
 }
 
 bool ovdb_cancel(TOKEN token UNUSED)
 {
-    return TRUE;
+    return true;
 }
 
 struct ovdbsearch {
@@ -1931,7 +1931,7 @@ void *ovdb_opensearch(char *group, int low, int high)
 	return repl.handle;
     }
 
-    ret = ovdb_getgroupinfo(group, &gi, TRUE, NULL, 0);
+    ret = ovdb_getgroupinfo(group, &gi, true, NULL, 0);
     switch (ret)
     {
     case 0:
@@ -1987,7 +1987,7 @@ bool ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
 	crecv(&repl, sizeof(repl));
 
 	if(repl.status != CMD_SRCH)
-	    return FALSE;
+	    return false;
 	if(repl.len > buflen) {
 	    if(buflen == 0) {
 		buflen = repl.len + 512;
@@ -2009,7 +2009,7 @@ bool ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
 	    *len = repl.len;
 	if(data)
 	    *data = databuf;
-	return TRUE;
+	return true;
     }
 
     switch(s->state) {
@@ -2025,10 +2025,10 @@ bool ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
 	break;
     case 2:
 	s->state = 3;
-	return FALSE;
+	return false;
     default:
-	syslog(L_ERROR, "OVDB: OVsearch called again after FALSE return");
-	return FALSE;
+	syslog(L_ERROR, "OVDB: OVsearch called again after false return");
+	return false;
     }
 
     memset(&key, 0, sizeof key);
@@ -2052,27 +2052,27 @@ bool ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
 	s->state = 3;
 	s->cursor->c_close(s->cursor);
 	s->cursor = NULL;
-	return FALSE;
+	return false;
     default:
 	syslog(L_ERROR, "OVDB: search: c_get: %s", db_strerror(ret));
 	s->state = 3;
 	s->cursor->c_close(s->cursor);
 	s->cursor = NULL;
-	return FALSE;
+	return false;
     }
 
     if(key.size != sizeof(struct datakey)) {
 	s->state = 3;
 	s->cursor->c_close(s->cursor);
 	s->cursor = NULL;
-	return FALSE;
+	return false;
     }
 
     if(dk.groupnum != s->gid || ntohl(dk.artnum) > s->lastart) {
 	s->state = 3;
 	s->cursor->c_close(s->cursor);
 	s->cursor = NULL;
-	return FALSE;
+	return false;
     }
 
     if( ((len || data) && val.size <= sizeof(struct ovdata))
@@ -2081,7 +2081,7 @@ bool ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
 	s->state = 3;
 	s->cursor->c_close(s->cursor);
 	s->cursor = NULL;
-	return FALSE;
+	return false;
     }
 
     if(ntohl(dk.artnum) == s->lastart) {
@@ -2105,7 +2105,7 @@ bool ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
     if(data)
 	*data = (char *)val.data + sizeof(struct ovdata);
 
-    return TRUE;
+    return true;
 }
 
 void ovdb_closesearch(void *handle)
@@ -2151,25 +2151,25 @@ bool ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
 	crecv(&repl, sizeof(repl));
 
 	if(repl.status != CMD_ARTINFO)
-	    return FALSE;
+	    return false;
 
 	if(token)
 	    *token = repl.token;
 
-	return TRUE;
+	return true;
     }
 
     while(1) {
-        ret = ovdb_getgroupinfo(group, &gi, TRUE, NULL, 0);
+        ret = ovdb_getgroupinfo(group, &gi, true, NULL, 0);
 	switch (ret)
         {
 	case 0:
 	    break;
 	case DB_NOTFOUND:
-	    return FALSE;
+	    return false;
 	default:
 	    syslog(L_ERROR, "OVDB: ovdb_getgroupinfo failed: %s", db_strerror(ret));
-	    return FALSE;
+	    return false;
 	}
 
 	if(pass) {
@@ -2179,12 +2179,12 @@ bool ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
 	       is definitely not there.  Otherwise, we'll try to retrieve
 	       it the article again. */
 	    if(cdb == gi.current_db && cgid == gi.current_gid)
-		return FALSE;
+		return false;
 	}
 
 	db = get_db_bynum(gi.current_db);
 	if(db == NULL)
-	    return FALSE;
+	    return false;
 
 	memset(&dk, 0, sizeof dk);
 	dk.groupnum = gi.current_gid;
@@ -2208,7 +2208,7 @@ bool ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
 	    break;
 	default:
 	    syslog(L_ERROR, "OVDB: getartinfo: db->get: %s", db_strerror(ret));
-	    return FALSE;
+	    return false;
 	}
 
 	if(ret == DB_NOTFOUND) {
@@ -2222,21 +2222,21 @@ bool ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
 		pass++;
 		continue;
 	    }
-	    return FALSE;
+	    return false;
 	}
 	break;
     }
 
     if(token && val.size < sizeof(struct ovdata)) {
 	syslog(L_ERROR, "OVDB: getartinfo: data too short");
-	return FALSE;
+	return false;
     }
 
     if(token) {
 	memcpy(&ovd, val.data, sizeof(struct ovdata));
 	*token = ovd.token;
     }
-    return TRUE;
+    return true;
 }
 
 bool ovdb_expiregroup(char *group, int *lo, struct history *h)
@@ -2280,9 +2280,9 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
     TXN_START(t_expgroup_1, tid);
 
     if(tid==NULL)
-	return FALSE;
+	return false;
 
-    ret = ovdb_getgroupinfo(group, &gi, TRUE, tid, DB_RMW);
+    ret = ovdb_getgroupinfo(group, &gi, true, tid, DB_RMW);
     switch (ret)
     {
     case 0:
@@ -2293,7 +2293,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 	syslog(L_ERROR, "OVDB: expiregroup: ovdb_getgroupinfo failed: %s", db_strerror(ret));
     case DB_NOTFOUND:
 	TXN_ABORT(t_expgroup_1, tid);
-	return FALSE;
+	return false;
     }
 
     if(gi.status & GROUPINFO_EXPIRING) {
@@ -2304,7 +2304,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 	case 0:
 	case EPERM:
 	    TXN_ABORT(t_expgroup_1, tid);
-	    return FALSE;
+	    return false;
 	}
 
 	/* a previous expireover run must've died.  We'll clean
@@ -2312,7 +2312,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 	if(gi.status & GROUPINFO_MOVING) {
 	    if(delete_all_records(gi.new_db, gi.new_gid)) {
 		TXN_ABORT(t_expgroup_1, tid);
-		return FALSE;
+		return false;
 	    }
 	    if(groupid_free(gi.new_gid, tid) == TRYAGAIN) {
 		TXN_RETRY(t_expgroup_1, tid);
@@ -2332,7 +2332,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
     db = get_db_bynum(gi.current_db);
     if(db == NULL) {
 	TXN_ABORT(t_expgroup_1, tid);
-	return FALSE;
+	return false;
     }
 
     gi.status |= GROUPINFO_EXPIRING;
@@ -2351,7 +2351,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 	default:
 	    TXN_ABORT(t_expgroup_1, tid);
 	    syslog(L_ERROR, "OVDB: expiregroup: groupid_new: %s", db_strerror(ret));
-	    return FALSE;
+	    return false;
 	}
     }
 
@@ -2370,7 +2370,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
     default:
 	TXN_ABORT(t_expgroup_1, tid);
 	syslog(L_ERROR, "OVDB: expiregroup: groupinfo->put: %s", db_strerror(ret));
-	return FALSE;
+	return false;
     }
     TXN_COMMIT(t_expgroup_1, tid);
 
@@ -2399,11 +2399,11 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
     while(1) {
 	TXN_START(t_expgroup_loop, tid);
 	if(tid==NULL)
-	    return FALSE;
+	    return false;
         done = 0;
 	newcount = 0;
 
-        ret = ovdb_getgroupinfo(group, &gi, FALSE, tid, DB_RMW);
+        ret = ovdb_getgroupinfo(group, &gi, false, tid, DB_RMW);
 	switch (ret)
         {
 	case 0:
@@ -2413,7 +2413,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 	default:
 	    TXN_ABORT(t_expgroup_loop, tid);
 	    syslog(L_ERROR, "OVDB: expiregroup: ovdb_getgroupinfo: %s", db_strerror(ret));
-	    return FALSE;
+	    return false;
 	}
 
         ret = db->cursor(db, tid, &cursor, 0);
@@ -2426,7 +2426,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 	default:
 	    TXN_ABORT(t_expgroup_loop, tid);
 	    syslog(L_ERROR, "OVDB: expiregroup: db->cursor: %s", db_strerror(ret));
-	    return FALSE;
+	    return false;
 	}
 
 	dk.groupnum = gi.current_gid;
@@ -2450,7 +2450,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 		cursor->c_close(cursor);
 		TXN_ABORT(t_expgroup_loop, tid);
 		syslog(L_ERROR, "OVDB: expiregroup: c_get: %s", db_strerror(ret));
-		return FALSE;
+		return false;
 	    }
 
 	    /* stop if: there are no more keys, an unknown key is reached,
@@ -2505,7 +2505,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 			cursor->c_close(cursor);
 			TXN_ABORT(t_expgroup_loop, tid);
 			syslog(L_ERROR, "OVDB: expiregroup: c_del: %s", db_strerror(ret));
-			return FALSE;
+			return false;
 		    }
 		}
 		if(gi.count > 0)
@@ -2527,7 +2527,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 			cursor->c_close(cursor);
 			TXN_ABORT(t_expgroup_loop, tid);
 			syslog(L_ERROR, "OVDB: expiregroup: ndb->put: %s", db_strerror(ret));
-			return FALSE;
+			return false;
 		    }
 		}
 		newcount++;
@@ -2569,7 +2569,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 	default:
 	    TXN_ABORT(t_expgroup_loop, tid);
 	    syslog(L_ERROR, "OVDB: expiregroup: groupinfo->put: %s", db_strerror(ret));
-	    return FALSE;
+	    return false;
 	}
         TXN_COMMIT(t_expgroup_loop, tid);
 
@@ -2587,12 +2587,12 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
         ret = delete_all_records(old_db, old_gid);
 	if (ret) {
 	    syslog(L_ERROR, "OVDB: expiregroup: delete_all_records: %s", db_strerror(ret));
-	    return FALSE;
+	    return false;
 	}
 
 	TXN_START(t_expgroup_cleanup, tid);
 	if(tid == NULL)
-	    return FALSE;
+	    return false;
 
         ret = groupid_free(old_gid, tid);
 	switch (ret)
@@ -2604,7 +2604,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 	default:
 	    TXN_ABORT(t_expgroup_cleanup, tid);
 	    syslog(L_ERROR, "OVDB: expiregroup: groupid_free: %s", db_strerror(ret));
-	    return FALSE;
+	    return false;
 	}
 
 	TXN_COMMIT(t_expgroup_cleanup, tid);
@@ -2615,9 +2615,9 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 
 	TXN_START(t_expgroup_recount, tid);
 	if(tid == NULL)
-	    return FALSE;
+	    return false;
 
-	switch(ret = ovdb_getgroupinfo(group, &gi, FALSE, tid, DB_RMW)) {
+	switch(ret = ovdb_getgroupinfo(group, &gi, false, tid, DB_RMW)) {
 	case 0:
 	    break;
 	case TRYAGAIN:
@@ -2625,12 +2625,12 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 	default:
 	    TXN_ABORT(t_expgroup_recount, tid);
 	    syslog(L_ERROR, "OVDB: expiregroup: ovdb_getgroupinfo: %s", db_strerror(ret));
-	    return FALSE;
+	    return false;
 	}
 
 	if(count_records(&gi) != 0) {
 	    TXN_ABORT(t_expgroup_recount, tid);
-	    return FALSE;
+	    return false;
 	}
 
         ret = groupinfo->put(groupinfo, tid, &gkey, &gval, 0);
@@ -2643,14 +2643,14 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 	default:
 	    TXN_ABORT(t_expgroup_recount, tid);
 	    syslog(L_ERROR, "OVDB: expiregroup: groupinfo->put: %s", db_strerror(ret));
-	    return FALSE;
+	    return false;
 	}
         TXN_COMMIT(t_expgroup_recount, tid);
     }
 
     if(lo)
 	*lo = gi.low;
-    return TRUE;
+    return true;
 }
 
 bool ovdb_ctl(OVCTLTYPE type, void *val)
@@ -2663,25 +2663,25 @@ bool ovdb_ctl(OVCTLTYPE type, void *val)
     case OVSPACE:
         i = (int *)val;
         *i = -1;
-        return TRUE;
+        return true;
     case OVSORT:
         sorttype = (OVSORTTYPE *)val;
         *sorttype = OVNEWSGROUP;
-        return TRUE;
+        return true;
     case OVCUTOFFLOW:
         Cutofflow = *(bool *)val;
-        return TRUE;
+        return true;
     case OVSTATICSEARCH:
 	i = (int *)val;
-	*i = TRUE;
-	return TRUE;
+	*i = true;
+	return true;
     case OVCACHEKEEP:
     case OVCACHEFREE:
         boolval = (bool *)val;
-        *boolval = FALSE;
-        return TRUE;
+        *boolval = false;
+        return true;
     default:
-        return FALSE;
+        return false;
     }
 }
 

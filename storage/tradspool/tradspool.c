@@ -75,7 +75,7 @@ NGTENT *NGTable[NGT_SIZE];
 unsigned long MaxNgNumber = 0;
 NGTREENODE *NGTree;
 
-bool NGTableUpdated; /* set to TRUE if we've added any entries since reading 
+bool NGTableUpdated; /* set to true if we've added any entries since reading 
 			in the database file */
 
 /* 
@@ -150,10 +150,10 @@ AddNG(char *ng, unsigned long number) {
 
     ngtp = NGTable[h];
     ngtpp = &NGTable[h];
-    while (TRUE) {
+    while (true) {
 	if (ngtp == NULL) {
 	    /* ng wasn't in table, add new entry. */
-	    NGTableUpdated = TRUE;
+	    NGTableUpdated = true;
 
 	    ngtp = xmalloc(sizeof(NGTENT));
 	    ngtp->ngname = p; /* note: we store canonicalized name */
@@ -314,7 +314,7 @@ DumpDB(void)
     }
     free(fname);
     free(fnamenew);
-    NGTableUpdated = FALSE; /* reset modification flag. */
+    NGTableUpdated = false; /* reset modification flag. */
     return;
 }
 
@@ -344,7 +344,7 @@ ReadDBFile(void)
 		syslog(L_FATAL, "tradspool: corrupt line in active %s", line);
 		QIOclose(qp);
 		free(fname);
-		return FALSE;
+		return false;
 	    }
 	    *p++ = 0;
 	    number = atol(p);
@@ -354,7 +354,7 @@ ReadDBFile(void)
 	QIOclose(qp);
     }
     free(fname);
-    return TRUE;
+    return true;
 }
 
 static bool
@@ -369,7 +369,7 @@ ReadActiveFile(void)
     if ((qp = QIOopen(fname)) == NULL) {
 	syslog(L_FATAL, "tradspool: can't open %s", fname);
 	free(fname);
-	return FALSE;
+	return false;
     }
 
     while ((line = QIOread(qp)) != NULL) {
@@ -378,7 +378,7 @@ ReadActiveFile(void)
 	    syslog(L_FATAL, "tradspool: corrupt line in active %s", line);
 	    QIOclose(qp);
 	    free(fname);
-	    return FALSE;
+	    return false;
 	}
 	*p = 0;
 	AddNG(line, 0);
@@ -387,22 +387,22 @@ ReadActiveFile(void)
     free(fname);
     /* dump any newly added changes to database */
     DumpDB();
-    return TRUE;
+    return true;
 }
 
 static bool
 InitNGTable(void)
 {
-    if (!ReadDBFile()) return FALSE;
+    if (!ReadDBFile()) return false;
 
     /*
     ** set NGTableUpdated to false; that way we know if the load of active or
     ** any AddNGs later on did in fact add new entries to the db.
     */
-    NGTableUpdated = FALSE; 
+    NGTableUpdated = false; 
     if (!SMopenmode)
 	/* don't read active unless write mode. */
-	return TRUE;
+	return true;
     return ReadActiveFile(); 
 }
 
@@ -447,15 +447,15 @@ tradspool_init(SMATTRIBUTE *attr) {
     if (attr == NULL) {
 	syslog(L_ERROR, "tradspool: attr is NULL");
 	SMseterror(SMERR_INTERNAL, "attr is NULL");
-	return FALSE;
+	return false;
     }
     if (!innconf->storeonxref) {
 	syslog(L_ERROR, "tradspool: storeonxref needs to be true");
 	SMseterror(SMERR_INTERNAL, "storeonxref needs to be true");
-	return FALSE;
+	return false;
     }
-    attr->selfexpire = FALSE;
-    attr->expensivestat = TRUE;
+    attr->selfexpire = false;
+    attr->expensivestat = true;
     return InitNGTable();
 }
 
@@ -500,7 +500,7 @@ TokenToPath(TOKEN token) {
     char *ng, *path;
     size_t length;
 
-    CheckNeedReloadDB(FALSE);
+    CheckNeedReloadDB(false);
 
     memcpy(&ngnum, &token.token[0], sizeof(ngnum));
     memcpy(&artnum, &token.token[sizeof(ngnum)], sizeof(artnum));
@@ -509,7 +509,7 @@ TokenToPath(TOKEN token) {
 
     ng = FindNGByNum(ngnum);
     if (ng == NULL) {
-	CheckNeedReloadDB(TRUE);
+	CheckNeedReloadDB(true);
 	ng = FindNGByNum(ngnum);
 	if (ng == NULL)
 	    return NULL;
@@ -539,7 +539,7 @@ CrackXref(char *xref, unsigned int *lenp) {
 
     /* no path element should exist, nor heading white spaces exist */
     p = xref;
-    while (TRUE) {
+    while (true) {
 	/* check for EOL */
 	/* shouldn't ever hit null w/o hitting a \r\n first, but best to be paranoid */
 	if (*p == '\n' || *p == '\r' || *p == 0) {
@@ -613,7 +613,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
     if ((fd = open(path, O_CREAT|O_EXCL|O_WRONLY, ARTFILE_MODE)) < 0) {
 	p = strrchr(path, '/');
 	*p = '\0';
-	if (!MakeDirectory(path, TRUE)) {
+	if (!MakeDirectory(path, true)) {
 	    syslog(L_ERROR, "tradspool: could not make directory %s %m", path);
 	    token.type = TOKEN_EMPTY;
 	    free(path);
@@ -692,7 +692,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 		*p = '\0';
 		dirname = xstrdup(linkpath);
 		*p = '/';
-		if (!MakeDirectory(dirname, TRUE) || link(path, linkpath) < 0) {
+		if (!MakeDirectory(dirname, true) || link(path, linkpath) < 0) {
 #if !defined(HAVE_SYMLINK)
 		    SMseterror(SMERR_UNDEFINED, NULL);
 		    syslog(L_ERROR, "tradspool: could not link %s to %s %m", path, linkpath);
@@ -793,16 +793,16 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	    return NULL;
 	}
 	if (p[-1] == '\r') {
-	    private->mmapped = TRUE;
+	    private->mmapped = true;
 	} else {
 	    wfarticle = ToWireFmt(private->artbase, private->artlen, &wflen);
 	    munmap(private->artbase, private->artlen);
 	    private->artbase = wfarticle;
 	    private->artlen = wflen;
-	    private->mmapped = FALSE;
+	    private->mmapped = false;
 	}
     } else {
-	private->mmapped = FALSE;
+	private->mmapped = false;
 	private->artbase = xmalloc(private->artlen);
 	if (read(fd, private->artbase, private->artlen) < 0) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
@@ -930,14 +930,14 @@ tradspool_cancel(TOKEN token) {
     char *ng, *p;
     char *path, *linkpath;
     unsigned int i;
-    bool result = TRUE;
+    bool result = true;
     unsigned long artnum;
     size_t length;
 
     if ((path = TokenToPath(token)) == NULL) {
 	SMseterror(SMERR_UNDEFINED, NULL);
 	free(path);
-	return FALSE;
+	return false;
     }
     /*
     **  Ooooh, this is gross.  To find the symlinks pointing to this article,
@@ -948,14 +948,14 @@ tradspool_cancel(TOKEN token) {
     if ((article = OpenArticle(path, RETR_HEAD)) == NULL) {
 	free(path);
 	SMseterror(SMERR_UNDEFINED, NULL);
-        return FALSE;
+        return false;
     }
 
     xrefhdr = wire_findheader(article->data, article->len, "Xref");
     if (xrefhdr == NULL) {
 	/* for backwards compatibility; there is no Xref unless crossposted
 	   for 1.4 and 1.5 */
-	if (unlink(path) < 0) result = FALSE;
+	if (unlink(path) < 0) result = false;
 	free(path);
 	tradspool_freearticle(article);
         return result;
@@ -965,7 +965,7 @@ tradspool_cancel(TOKEN token) {
 	free(path);
 	tradspool_freearticle(article);
         SMseterror(SMERR_UNDEFINED, NULL);
-        return FALSE;
+        return false;
     }
 
     tradspool_freearticle(article);
@@ -984,12 +984,12 @@ tradspool_cancel(TOKEN token) {
 	   of the file no longer existing without it truly being an error */
 	if (unlink(linkpath) < 0)
 	    if (errno != ENOENT || i == 1)
-		result = FALSE;
+		result = false;
 	free(linkpath);
     }
     if (unlink(path) < 0)
     	if (errno != ENOENT || numxrefs == 1)
-	    result = FALSE;
+	    result = false;
     free(path);
     for (i = 0 ; i < numxrefs ; ++i) free(xrefs[i]);
     free(xrefs);
@@ -1014,9 +1014,9 @@ FindDir(DIR *dir, char *dirname) {
 
     while ((de = readdir(dir)) != NULL) {
 	namelen = strlen(de->d_name);
-	for (i = 0, flag = TRUE ; i < namelen ; ++i) {
+	for (i = 0, flag = true ; i < namelen ; ++i) {
 	    if (!CTYPE(isdigit, de->d_name[i])) {
-		flag = FALSE;
+		flag = false;
 		break;
 	    }
 	}
@@ -1259,31 +1259,31 @@ bool tradspool_ctl(PROBETYPE type, TOKEN *token, void *value) {
     switch (type) { 
     case SMARTNGNUM:
 	if ((ann = (struct artngnum *)value) == NULL)
-	    return FALSE;
-	CheckNeedReloadDB(FALSE);
+	    return false;
+	CheckNeedReloadDB(false);
 	memcpy(&ngnum, &token->token[0], sizeof(ngnum));
 	memcpy(&artnum, &token->token[sizeof(ngnum)], sizeof(artnum));
 	artnum = ntohl(artnum);
 	ngnum = ntohl(ngnum);
 	ng = FindNGByNum(ngnum);
 	if (ng == NULL) {
-	    CheckNeedReloadDB(TRUE);
+	    CheckNeedReloadDB(true);
 	    ng = FindNGByNum(ngnum);
 	    if (ng == NULL)
-		return FALSE;
+		return false;
 	}
 	ann->groupname = xstrdup(ng);
 	ann->artnum = (ARTNUM)artnum;
-	return TRUE;
+	return true;
     default:
-	return FALSE;
+	return false;
     }       
 }
 
 bool
 tradspool_flushcacheddata(FLUSHTYPE type UNUSED)
 {
-    return TRUE;
+    return true;
 }
 
 void

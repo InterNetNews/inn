@@ -106,7 +106,7 @@ int PY_authenticate(char *clientHost, char *clientIpString, char *serverHost, ch
     {
         syslog(L_ERROR, "python authenticate_method (type %s) returned wrong result", type);
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1, TRUE);
+	ExitWithStats(1, true);
     }
 
     /* Get the NNTP response code */
@@ -117,7 +117,7 @@ int PY_authenticate(char *clientHost, char *clientIpString, char *serverHost, ch
     {
         syslog(L_ERROR, "python authenticate_method (type %s) returned bad NNTP response code", type);
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1, TRUE);
+	ExitWithStats(1, true);
     }
 
     /* Store the code */
@@ -131,7 +131,7 @@ int PY_authenticate(char *clientHost, char *clientIpString, char *serverHost, ch
     {
         syslog(L_ERROR, "python authenticate_method (type %s) returned bad CanPost setting", type);
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1, TRUE);
+	ExitWithStats(1, true);
     }
 
     /* Store the setting */
@@ -145,7 +145,7 @@ int PY_authenticate(char *clientHost, char *clientIpString, char *serverHost, ch
     {
         syslog(L_ERROR, "python authenticate_method (type %s) returned bad CanRead setting", type);
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1, TRUE);
+	ExitWithStats(1, true);
     }
 
     /* Store the setting */
@@ -159,7 +159,7 @@ int PY_authenticate(char *clientHost, char *clientIpString, char *serverHost, ch
     {
         syslog(L_ERROR, "python authenticate_method (type %s) returned bad access list value", type);
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1, TRUE);
+	ExitWithStats(1, true);
     }
 
     /* Store access list*/
@@ -173,7 +173,7 @@ int PY_authenticate(char *clientHost, char *clientIpString, char *serverHost, ch
 
     /* Initialize needauth flag */
     if (code == NNTP_AUTH_NEEDED_VAL) 
-        PERMneedauth = TRUE;
+        PERMneedauth = true;
 
     /* Clean up the dictionary object */
     PyDict_Clear(PYauthinfo);
@@ -254,7 +254,7 @@ int PY_authorize(char *clientHost, char *clientIpString, char *serverHost, char 
     {
         syslog(L_ERROR, "python authorize_method (%s access) returned wrong result", PostFlag ? "post" : "read");
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1, FALSE);
+	ExitWithStats(1, false);
     }
 
     /* Get the response string */

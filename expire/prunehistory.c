@@ -46,7 +46,7 @@ main(int ac, char *av[])
         exit(1);
 
     History = concatpath(innconf->pathdb, _PATH_HISTORY);
-    Passing = FALSE;
+    Passing = false;
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "f:p")) != EOF)
@@ -58,7 +58,7 @@ main(int ac, char *av[])
 	    History = optarg;
 	    break;
 	case 'p':
-	    Passing = TRUE;
+	    Passing = true;
 	    break;
 	}
     ac -= optind;

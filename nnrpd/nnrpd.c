@@ -80,7 +80,7 @@ char	*HISTORY = NULL;
 char	*NEWSGROUPS = NULL;
 char	*NNRPACCESS = NULL;
 
-bool	ForceReadOnly = FALSE;
+bool	ForceReadOnly = false;
 static char 	*LocalLogFileName = NULL;
 static char 	*LocalLogDirName;
 
@@ -89,17 +89,17 @@ static double	STATstart;
 static double	STATfinish;
 static char	*PushedBack;
 static sig_atomic_t	ChangeTrace;
-bool	DaemonMode = FALSE;
-bool	ForeGroundMode = FALSE;
+bool	DaemonMode = false;
+bool	ForeGroundMode = false;
 #if HAVE_GETSPNAM
 static const char	*ShadowGroup;
 #endif
 static const char 	*HostErrorStr;
-bool GetHostByAddr = TRUE;      /* formerly DO_NNRP_GETHOSTBYADDR */
+bool GetHostByAddr = true;      /* formerly DO_NNRP_GETHOSTBYADDR */
 const char *NNRPinstance = "";
 
 #ifdef DO_PERL
-bool   PerlLoaded = FALSE;
+bool   PerlLoaded = false;
 #endif /* DO_PERL */
 
 bool LLOGenable;
@@ -107,57 +107,57 @@ bool LLOGenable;
 static char	CMDfetchhelp[] = "[MessageID|Number]";
 
 static CMDENT	CMDtable[] = {
-    {	"authinfo",	CMDauthinfo,	FALSE,	3,	CMDany,
+    {	"authinfo",	CMDauthinfo,	false,	3,	CMDany,
 	"user Name|pass Password|generic <prog> <args>" },
 #ifdef HAVE_SSL
-    {	"starttls",	CMDstarttls,	FALSE,	1,	1,
+    {	"starttls",	CMDstarttls,	false,	1,	1,
 	NULL },
 #endif
-    {	"article",	CMDfetch,	TRUE,	1,	2,
+    {	"article",	CMDfetch,	true,	1,	2,
 	CMDfetchhelp },
-    {	"body",		CMDfetch,	TRUE,	1,	2,
+    {	"body",		CMDfetch,	true,	1,	2,
 	CMDfetchhelp },
-    {	"date",		CMDdate,	FALSE,	1,	1,
+    {	"date",		CMDdate,	false,	1,	1,
 	NULL },
-    {	"group",	CMDgroup,	TRUE,	2,	2,
+    {	"group",	CMDgroup,	true,	2,	2,
 	"newsgroup" },
-    {	"head",		CMDfetch,	TRUE,	1,	2,
+    {	"head",		CMDfetch,	true,	1,	2,
 	CMDfetchhelp },
-    {	"help",		CMDhelp,	FALSE,	1,	CMDany,
+    {	"help",		CMDhelp,	false,	1,	CMDany,
 	NULL },
-    {	"ihave",	CMDpost,	TRUE,	2,	2,
+    {	"ihave",	CMDpost,	true,	2,	2,
 	"MessageID" },
-    {	"last",		CMDnextlast,	TRUE,	1,	1,
+    {	"last",		CMDnextlast,	true,	1,	1,
 	NULL },
-    {	"list",		CMDlist,	TRUE,	1,	3,
+    {	"list",		CMDlist,	true,	1,	3,
 	"[active|active.times|extensions|newsgroups|distributions|distrib.pats|overview.fmt|subscriptions|motd]" },
-    {	"listgroup",	CMDgroup,	TRUE,	1,	2,
+    {	"listgroup",	CMDgroup,	true,	1,	2,
 	"newsgroup" },
-    {	"mode",		CMDmode,	FALSE,	2,	2,
+    {	"mode",		CMDmode,	false,	2,	2,
 	"reader" },
-    {	"newgroups",	CMDnewgroups,	TRUE,	3,	5,
+    {	"newgroups",	CMDnewgroups,	true,	3,	5,
 	"[YY]yymmdd hhmmss [\"GMT\"]" },
-    {	"newnews",	CMDnewnews,	TRUE,	4,	5,
+    {	"newnews",	CMDnewnews,	true,	4,	5,
 	"newsgroups [YY]yymmdd hhmmss [\"GMT\"]" },
-    {	"next",		CMDnextlast,	TRUE,	1,	1,
+    {	"next",		CMDnextlast,	true,	1,	1,
 	NULL },
-    {	"post",		CMDpost,	TRUE,	1,	1,
+    {	"post",		CMDpost,	true,	1,	1,
 	NULL },
-    {	"slave",	CMD_unimp,	FALSE,	1,	1,
+    {	"slave",	CMD_unimp,	false,	1,	1,
 	NULL },
-    {	"stat",		CMDfetch,	TRUE,	1,	2,
+    {	"stat",		CMDfetch,	true,	1,	2,
 	CMDfetchhelp },
-    {	"xgtitle",	CMDxgtitle,	TRUE,	1,	2,
+    {	"xgtitle",	CMDxgtitle,	true,	1,	2,
 	"[group_pattern]" },
-    {	"xhdr",		CMDpat,		TRUE,	2,	3,
+    {	"xhdr",		CMDpat,		true,	2,	3,
 	"header [range|MessageID]" },
-    {	"xover",	CMDxover,	TRUE,	1,	2,
+    {	"xover",	CMDxover,	true,	1,	2,
 	"[range]" },
-    {	"xpat",		CMDpat,		TRUE,	4,	CMDany,
+    {	"xpat",		CMDpat,		true,	4,	CMDany,
 	"header range|MessageID pat [morepat...]" },
-    {	"xpath",	CMDxpath,	TRUE,	2,	2,
+    {	"xpath",	CMDxpath,	true,	2,	2,
 	"MessageID" },
-    {	NULL,           CMD_unimp,      FALSE,  0,      0,
+    {	NULL,           CMD_unimp,      false,  0,      0,
         NULL }
 };
 
@@ -342,7 +342,7 @@ Address2Name(INADDR *ap, char *hostname, int i)
     /* Get the official hostname, store it away. */
     if ((hp = gethostbyaddr((char *)ap, sizeof *ap, AF_INET)) == NULL) {
 	HostErrorStr = hstrerror(h_errno);
-	return FALSE;
+	return false;
     }
     strncpy(hostname, hp->h_name, i);
     hostname[i - 1] = '\0';
@@ -350,7 +350,7 @@ Address2Name(INADDR *ap, char *hostname, int i)
     /* Get addresses for this host. */
     if ((hp = gethostbyname(hostname)) == NULL) {
 	HostErrorStr = hstrerror(h_errno);
-	return FALSE;
+	return false;
     }
 
     /* Make sure one of those addresses is the address we got. */
@@ -360,7 +360,7 @@ Address2Name(INADDR *ap, char *hostname, int i)
     if (*pp == NULL)
     {
 	HostErrorStr = mismatch_error;
-	return FALSE;
+	return false;
     }
 
     /* Only needed for misconfigured YP/NIS systems. */
@@ -374,7 +374,7 @@ Address2Name(INADDR *ap, char *hostname, int i)
     for (p = hostname; *p; p++)
 	if (CTYPE(isupper, (int)*p))
 	    *p = tolower(*p);
-    return TRUE;
+    return true;
 }
 
 /*
@@ -395,7 +395,7 @@ Address2Name6(struct sockaddr *sa, char *hostname, int i)
     if( ret != 0 )
     {
 	HostErrorStr = gai_strerror( ret );
-	return FALSE;
+	return false;
     }
 
     /* Get addresses for this host. */
@@ -405,7 +405,7 @@ Address2Name6(struct sockaddr *sa, char *hostname, int i)
     if( ( ret = getaddrinfo( hostname, NULL, &hints, &res0 ) ) != 0 )
     {
 	HostErrorStr = gai_strerror( ret );
-	return FALSE;
+	return false;
     }
 
     /* Make sure one of those addresses is the address we got. */
@@ -427,11 +427,11 @@ Address2Name6(struct sockaddr *sa, char *hostname, int i)
 
     freeaddrinfo( res0 );
 
-    if( valid ) return TRUE;
+    if( valid ) return true;
     else
     {
 	HostErrorStr = mismatch_error;
-	return FALSE;
+	return false;
     }
 }
 #endif
@@ -455,7 +455,7 @@ Sock2String( struct sockaddr *sa, char *string, int len, bool lookup )
 		return Address2Name6(sa, string, len);
 	    } else {
 		strncpy( string, sprint_sockaddr( sa ), len );
-		return TRUE;
+		return true;
 	    }
 	} else {
 	    temp.sin_family = AF_INET;
@@ -470,7 +470,7 @@ Sock2String( struct sockaddr *sa, char *string, int len, bool lookup )
 	return Address2Name(&sin4->sin_addr, string, len);
     } else {
 	strncpy( string, inet_ntoa(sin4->sin_addr), len );
-	return TRUE;
+	return true;
     }
 }
 
@@ -503,7 +503,7 @@ static void StartConnection(void)
 	    syslog(L_TRACE, "%s cant getpeername %m", "?");
             strcpy(ClientHost, "?"); /* so stats generation looks correct. */
 	    Printf("%d I can't get your name.  Goodbye.\r\n", NNTP_ACCESS_VAL);
-	    ExitWithStats(1, TRUE);
+	    ExitWithStats(1, true);
 	}
         strcpy(ClientHost, "stdin");
     }
@@ -517,27 +517,27 @@ static void StartConnection(void)
 	    syslog(L_ERROR, "%s bad_address_family %ld",
 		"?", (long)ssc.ss_family);
 	    Printf("%d Bad address family.  Goodbye.\r\n", NNTP_ACCESS_VAL);
-	    ExitWithStats(1, TRUE);
+	    ExitWithStats(1, true);
 	}
 
 	length = sizeof sss;
 	if (getsockname(STDIN_FILENO, (struct sockaddr *)&sss, &length) < 0) {
 	    syslog(L_NOTICE, "%s can't getsockname %m", ClientHost);
 	    Printf("%d Can't figure out where you connected to.  Goodbye\r\n", NNTP_ACCESS_VAL);
-	    ExitWithStats(1, TRUE);
+	    ExitWithStats(1, true);
 	}
 
 	/* figure out client's IP address/hostname */
 	HostErrorStr = default_host_error;
 	if( ! Sock2String( (struct sockaddr *)&ssc, ClientIpString,
-				sizeof( ClientIpString ), FALSE ) ) {
+				sizeof( ClientIpString ), false ) ) {
             syslog(L_NOTICE, "? cant get client numeric address: %s", HostErrorStr);
-	    ExitWithStats(1, TRUE);
+	    ExitWithStats(1, true);
 	}
 	if(GetHostByAddr) {
 	    HostErrorStr = default_host_error;
 	    if( ! Sock2String( (struct sockaddr *)&ssc, ClientHost,
-				    sizeof( ClientHost ), TRUE ) ) {
+				    sizeof( ClientHost ), true ) ) {
                 syslog(L_NOTICE,
                        "? reverse lookup for %s failed: %s -- using IP address for access",
                        ClientIpString, HostErrorStr);
@@ -552,14 +552,14 @@ static void StartConnection(void)
 	/* figure out server's IP address/hostname */
 	HostErrorStr = default_host_error;
 	if( ! Sock2String( (struct sockaddr *)&sss, ServerIpString,
-				sizeof( ServerIpString ), FALSE ) ) {
+				sizeof( ServerIpString ), false ) ) {
             syslog(L_NOTICE, "? cant get server numeric address: %s", HostErrorStr);
-	    ExitWithStats(1, TRUE);
+	    ExitWithStats(1, true);
 	}
 	if(GetHostByAddr) {
 	    HostErrorStr = default_host_error;
 	    if( ! Sock2String( (struct sockaddr *)&sss, ServerHost,
-				    sizeof( ServerHost ), TRUE ) ) {
+				    sizeof( ServerHost ), true ) ) {
                 syslog(L_NOTICE,
                        "? reverse lookup for %s failed: %s -- using IP address for access",
                        ServerIpString, HostErrorStr);
@@ -599,7 +599,7 @@ static void StartConnection(void)
 	        syslog(L_NOTICE, "%s no_access", ClientHost);
 		Printf("%d You are not in my access file. Goodbye.\r\n",
 		       NNTP_ACCESS_VAL);
-		ExitWithStats(1, TRUE);
+		ExitWithStats(1, true);
 	    }
 	    PERMspecified = NGgetlist(&PERMreadlist, accesslist);
 	    PERMpostlist = PERMreadlist;
@@ -746,7 +746,7 @@ Again:
 static RETSIGTYPE
 ToggleTrace(int s NO_SIGACTION_UNUSED)
 {
-    ChangeTrace = TRUE;
+    ChangeTrace = true;
 #ifndef HAVE_SIGACTION
     xsignal(s, ToggleTrace);
 #endif
@@ -758,7 +758,7 @@ ToggleTrace(int s NO_SIGACTION_UNUSED)
 static RETSIGTYPE
 CatchPipe(int s UNUSED)
 {
-    ExitWithStats(0, FALSE);
+    ExitWithStats(0, false);
 }
 
 /*
@@ -790,30 +790,30 @@ static void SetupDaemon(void) {
     }
 #endif /* defined(DO_PYTHON) */
 
-    val = TRUE;
+    val = true;
     if (SMsetup(SM_PREOPEN, (void *)&val) && !SMinit()) {
 	syslog(L_NOTICE, "cant initialize storage method, %s", SMerrorstr);
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
-	ExitWithStats(1, TRUE);
+	ExitWithStats(1, true);
     }
     OVextra = overview_extra_fields();
     if (OVextra == NULL) {
 	/* overview_extra_fields should already have logged something
 	 * useful */
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
-	ExitWithStats(1, TRUE);
+	ExitWithStats(1, true);
     }
     overhdr_xref = overview_index("Xref", OVextra);
     if (!OVopen(OV_READ)) {
 	/* This shouldn't really happen. */
 	syslog(L_NOTICE, "cant open overview %m");
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
-	ExitWithStats(1, TRUE);
+	ExitWithStats(1, true);
     }
     if (!OVctl(OVCACHEKEEP, &val)) {
 	syslog(L_NOTICE, "cant enable overview cache %m");
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
-	ExitWithStats(1, TRUE);
+	ExitWithStats(1, true);
     }
 }
 
@@ -882,7 +882,7 @@ main(int argc, char *argv[])
     /* Parse arguments.   Must xstrdup() optarg if used because setproctitle may
        clobber it! */
     Reject = NULL;
-    LLOGenable = FALSE;
+    LLOGenable = false;
     GRPcur = NULL;
     MaxBytesPerSecond = 0;
     strcpy(Username, "unknown");
@@ -925,13 +925,13 @@ main(int argc, char *argv[])
 	    strncpy( ListenAddr, optarg, sizeof(ListenAddr) );
  	    break;
  	case 'D':			/* standalone daemon mode */
- 	    DaemonMode = TRUE;
+ 	    DaemonMode = true;
  	    break;
        case 'P':                       /* prespawn count in daemon mode */
 	    respawn = atoi(optarg);
 	    break;
  	case 'f':			/* Don't fork on daemon mode */
- 	    ForeGroundMode = TRUE;
+ 	    ForeGroundMode = true;
  	    break;
 #if HAVE_GETSPNAM
 	case 'g':
@@ -945,16 +945,16 @@ main(int argc, char *argv[])
 	    NNRPinstance = xstrdup(optarg);
 	    break;
 	case 'n':			/* No DNS lookups */
-	    GetHostByAddr = FALSE;
+	    GetHostByAddr = false;
 	    break;
 	case 'o':
-	    Offlinepost = TRUE;		/* Offline posting only */
+	    Offlinepost = true;		/* Offline posting only */
 	    break;
  	case 'p':			/* tcp port for daemon mode */
  	    ListenPort = atoi(optarg);
  	    break;
 	case 'R':			/* Ignore 'P' option in access file */
-	    ForceReadOnly = TRUE;
+	    ForceReadOnly = true;
 	    break;
 	case 'r':			/* Reject connection message */
 	    Reject = xstrdup(optarg);
@@ -962,11 +962,11 @@ main(int argc, char *argv[])
 	case 's':			/* Unused title string */
 	    break;
 	case 't':			/* Tracing */
-	    Tracing = TRUE;
+	    Tracing = true;
 	    break;
 #ifdef HAVE_SSL
 	case 'S':			/* SSL negotiation as soon as connected */
-	    initialSSL = TRUE;
+	    initialSSL = true;
 	    break;
 #endif /* HAVE_SSL */
 	}
@@ -1164,9 +1164,9 @@ main(int argc, char *argv[])
 		    sleep(1);
 		}
 		if (ChangeTrace) {
-		    Tracing = Tracing ? FALSE : TRUE;
+		    Tracing = Tracing ? false : true;
 		    syslog(L_TRACE, "trace %sabled", Tracing ? "en" : "dis");
-		    ChangeTrace = FALSE;
+		    ChangeTrace = false;
 		}
 		if (pid != 0)
 		    close(fd);
@@ -1207,15 +1207,15 @@ main(int argc, char *argv[])
     STATstart = TIMEINFOasDOUBLE(Now);
 
 #ifdef HAVE_SSL
-    ClientSSL = FALSE;
+    ClientSSL = false;
     if (initialSSL) {
         tls_init();
         if (tls_start_servertls(0, 1) == -1) {
             Reply("%d SSL connection failed\r\n", NNTP_STARTTLS_BAD_VAL);
-            ExitWithStats(1, FALSE);
+            ExitWithStats(1, false);
         }
         nnrpd_starttls_done = 1;
-        ClientSSL = TRUE;
+        ClientSSL = true;
     }
 #endif /* HAVE_SSL */
 
@@ -1230,7 +1230,7 @@ main(int argc, char *argv[])
                 syslog(L_NOTICE, "load %.2f > %ld", load[0], innconf->nnrpdloadlimit);
                 Reply("%d load at %.2f, try later\r\n", NNTP_GOODBYE_VAL,
                       load[0]);
-                ExitWithStats(1, TRUE);
+                ExitWithStats(1, true);
             }
         }
     }
@@ -1246,7 +1246,7 @@ main(int argc, char *argv[])
 	syslog(L_NOTICE, "%s no_permission", ClientHost);
 	Printf("%d You have no permission to talk.  Goodbye.\r\n",
 	       NNTP_ACCESS_VAL);
-	ExitWithStats(1, FALSE);
+	ExitWithStats(1, false);
     }
 
     /* Proceed with initialization. */
@@ -1256,7 +1256,7 @@ main(int argc, char *argv[])
     if (Reject) {
 	syslog(L_NOTICE, "%s rejected %s", ClientHost, Reject);
 	Reply("%s %s\r\n", NNTP_GOODBYE, Reject);
-	ExitWithStats(0, FALSE);
+	ExitWithStats(0, false);
     }
 
     if (PERMaccessconf) {
@@ -1280,7 +1280,7 @@ main(int argc, char *argv[])
 	sprintf(LocalLogFileName, "%s/tracklogs/log-%d", innconf->pathlog, vid);
 	if ((locallog = fopen(LocalLogFileName, "w")) == NULL) {
             LocalLogDirName = concatpath(innconf->pathlog, "tracklogs");
-	    MakeDirectory(LocalLogDirName, FALSE);
+	    MakeDirectory(LocalLogDirName, false);
 	    free(LocalLogDirName);
 	}
 	if (locallog == NULL && (locallog = fopen(LocalLogFileName, "w")) == NULL) {
@@ -1289,7 +1289,7 @@ main(int argc, char *argv[])
 	    syslog(L_NOTICE, "%s Local Logging begins (%s) %s",ClientHost, Username, LocalLogFileName);
 	    fprintf(locallog, "%s Tracking Enabled (%s)\n", ClientHost, Username);
 	    fflush(locallog);
-	    LLOGenable = TRUE;
+	    LLOGenable = true;
 	}
     }
 
@@ -1316,9 +1316,9 @@ main(int argc, char *argv[])
 	fflush(stdout);
 	TMRstop(TMR_NNTPWRITE);
 	if (ChangeTrace) {
-	    Tracing = Tracing ? FALSE : TRUE;
+	    Tracing = Tracing ? false : true;
 	    syslog(L_TRACE, "trace %sabled", Tracing ? "en" : "dis");
-	    ChangeTrace = FALSE;
+	    ChangeTrace = false;
 	}
 	if (PushedBack) {
 	    if (PushedBack[0] == '\0')
@@ -1342,7 +1342,7 @@ main(int argc, char *argv[])
 		    syslog(L_NOTICE, "%s timeout short", ClientHost);
 		else
 		    syslog(L_NOTICE, "%s timeout", ClientHost);
-		ExitWithStats(1, FALSE);
+		ExitWithStats(1, false);
 		break;
 	    case RTok:
 		if (len < sizeof(buff)) {
@@ -1410,7 +1410,7 @@ main(int argc, char *argv[])
 
     Reply("%s\r\n", NNTP_GOODBYE_ACK);
 
-    ExitWithStats(0, FALSE);
+    ExitWithStats(0, false);
     /* NOTREACHED */
     return 1;
 }

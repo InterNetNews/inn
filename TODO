@@ -269,8 +269,6 @@ Code Cleanup Projects
 * Use vectors or cvectors everywhere that argify and friends are currently
   used and eliminate the separate implementation in nnrpd/misc.c.
 
-* Rename TRUE and FALSE to true and false everywhere.
-
 * Eliminate use of EQ, EQn, caseEQ, and caseEQn everywhere in favor of
   calling strcmp, strncmp, strcasecmp, and strncasecmp and comparing the
   result to 0.

@@ -96,7 +96,7 @@ Again:
     if (result == -1) {
 	/* we can't recover, since we can't resynchronise with our
 	 * peer */
-	ExitWithStats(1, TRUE);
+	ExitWithStats(1, true);
     }
 }
 
@@ -286,9 +286,9 @@ bool ARTinstorebytoken(TOKEN token)
     }
     if (art) {
 	SMfreearticle(art);
-	return TRUE;
+	return true;
     } 
-    return FALSE;
+    return false;
 }
 
 /*
@@ -302,22 +302,22 @@ static bool ARTopen(ARTNUM artnum)
     /* Re-use article if it's the same one. */
     if (save_artnum == artnum) {
 	if (ARThandle)
-	    return TRUE;
+	    return true;
     }
     ARTclose();
 
     if (!OVgetartinfo(GRPcur, artnum, &token))
-	return FALSE;
+	return false;
   
     TMRstart(TMR_READART);
     ARThandle = SMretrieve(token, RETR_ALL);
     TMRstop(TMR_READART);
     if (ARThandle == NULL) {
-	return FALSE;
+	return false;
     }
 
     save_artnum = artnum;
-    return TRUE;
+    return true;
 }
 
 
@@ -343,7 +343,7 @@ ARTopenbyid(char *msg_id, ARTNUM *ap)
 		syslog(L_NOTICE, "cant initialize history");
 		Reply("%d NNTP server unavailable. Try later.\r\n",
 		      NNTP_TEMPERR_VAL);
-		ExitWithStats(1, TRUE);
+		ExitWithStats(1, true);
 	    }
 	    statinterval = 30;
 	    HISctl(History, HISCTLS_STATINTERVAL, &statinterval);
@@ -509,8 +509,8 @@ char *GetHeader(const char *header)
     static char		*retval = NULL;
     static int		retlen = 0;
     int			headerlen;
-    bool		pathheader = FALSE;
-    bool		xrefheader = FALSE;
+    bool		pathheader = false;
+    bool		xrefheader = false;
 
     limit = ARThandle->data + ARThandle->len - strlen(header) - 1;
     for (p = ARThandle->data; p < limit; p++) {
@@ -547,9 +547,9 @@ char *GetHeader(const char *header)
 		if (q == limit)
 		    return NULL;
 		if (caseEQn("Path", header, headerlen))
-		    pathheader = TRUE;
+		    pathheader = true;
 		else if (caseEQn("Xref", header, headerlen))
-		    xrefheader = TRUE;
+		    xrefheader = true;
 		if (retval == NULL) {
 		    retlen = q - p + VirtualPathlen + 1;
 		    retval = xmalloc(retlen);
@@ -768,28 +768,28 @@ static bool CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
 {
     char		*p;
 
-    *DidReply = FALSE;
+    *DidReply = false;
     if (GRPcount == 0) {
 	Reply("%s\r\n", ARTnotingroup);
-	*DidReply = TRUE;
-	return FALSE;
+	*DidReply = true;
+	return false;
     }
 
     if (ac == 1) {
 	/* No argument, do only current article. */
 	if (ARTnumber < ARTlow || ARTnumber > ARThigh) {
 	    Reply("%s\r\n", ARTnocurrart);
-	    *DidReply = TRUE;
-	    return FALSE;
+	    *DidReply = true;
+	    return false;
 	}
 	rp->High = rp->Low = ARTnumber;
-        return TRUE;
+        return true;
     }
 
     /* Got just a single number? */
     if ((p = strchr(av[1], '-')) == NULL) {
 	rp->Low = rp->High = atol(av[1]);
-        return TRUE;
+        return true;
     }
 
     /* Parse range. */
@@ -805,7 +805,7 @@ static bool CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
     p--;
     *p = '-';
 
-    return TRUE;
+    return true;
 }
 
 
@@ -1023,7 +1023,7 @@ void CMDpat(int ac, char *av[])
     char                *data;
     int                 len;
     TOKEN               token;
-    bool                BuildingNewsgroups = FALSE;
+    bool                BuildingNewsgroups = false;
     struct cvector *vector = NULL;
 
     if (!PERMcanread) {
@@ -1075,7 +1075,7 @@ void CMDpat(int ac, char *av[])
 
 	/* In overview? */
 	if (caseEQ(header, "Newsgroups")) {
-	    BuildingNewsgroups = TRUE;
+	    BuildingNewsgroups = true;
 	    Overview = overview_index("Xref", OVextra);
 	} else
 	    Overview = overview_index(header, OVextra);

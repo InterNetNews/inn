@@ -15,18 +15,18 @@
 #include "ov.h"
 
 
-bool		Debug = FALSE;
-bool		NNRPTracing = FALSE;
-bool		StreamingOff = FALSE ; /* default is we can stream */
-bool		Tracing = FALSE;
-bool		DoCancels = TRUE;
+bool		Debug = false;
+bool		NNRPTracing = false;
+bool		StreamingOff = false ; /* default is we can stream */
+bool		Tracing = false;
+bool		DoCancels = true;
 char		LogName[] = "SERVER";
 int		ErrorCount = IO_ERROR_COUNT;
 OPERATINGMODE	Mode = OMrunning;
 int		RemoteLimit = REMOTELIMIT;
 time_t		RemoteTimer = REMOTETIMER;
 int		RemoteTotal = REMOTETOTAL;
-bool		ThrottledbyIOError = FALSE;
+bool		ThrottledbyIOError = false;
 
 static char	*PID = NULL;
 
@@ -151,7 +151,7 @@ ARTHEADER ARTheaders[] = {
 static RETSIGTYPE
 catch_terminate(int sig)
 {
-    GotTerminate = TRUE;
+    GotTerminate = true;
     killer_signal = sig;
 
 #ifndef HAVE_SIGACTION
@@ -197,7 +197,7 @@ CleanupAndExit(int status, const char *why)
 void
 JustCleanup(void)
 {
-    SITEflushall(FALSE);
+    SITEflushall(false);
     CCclose();
     LCclose();
     NCclose();
@@ -215,7 +215,7 @@ JustCleanup(void)
 #endif
 
 #if DO_PERL
-    PerlFilter(FALSE);
+    PerlFilter(false);
     PerlClose();
 #endif
 
@@ -288,7 +288,7 @@ main(int ac, char *av[])
     bool		ShouldFork;
     bool		ShouldRenumber;
     bool		ShouldSyntaxCheck;
-    bool		filter = TRUE;
+    bool		filter = true;
     pid_t		pid;
 #if	defined(_DEBUG_MALLOC_INC)
     union malloptarg	m;
@@ -330,9 +330,9 @@ main(int ac, char *av[])
     /* Set defaults. */
     TimeOut.tv_sec = DEFAULT_TIMEOUT;
     TimeOut.tv_usec = 0;
-    ShouldFork = TRUE;
-    ShouldRenumber = FALSE;
-    ShouldSyntaxCheck = FALSE;
+    ShouldFork = true;
+    ShouldRenumber = false;
+    ShouldSyntaxCheck = false;
     fd[0] = fd[1] = -1;
 
     /* Set some options from inn.conf that can be overridden with
@@ -348,19 +348,19 @@ main(int ac, char *av[])
 	    Usage();
 	    /* NOTREACHED */
 	case 'a':
-	    AnyIncoming = TRUE;
+	    AnyIncoming = true;
 	    break;
 	case 'c':
 	    innconf->artcutoff = atoi(optarg);
 	    break;
  	case 'C':
- 	    DoCancels = FALSE;
+ 	    DoCancels = false;
   	    break;
 	case 'd':
-	    Debug = TRUE;
+	    Debug = true;
 	    break;
 	case 'f':
-	    ShouldFork = FALSE;
+	    ShouldFork = false;
 	    break;
 	case 'H':
 	    RemoteLimit = atoi(optarg);
@@ -391,15 +391,15 @@ main(int ac, char *av[])
                                     "ed from the command line", (char *) 0);
 	    break;
 	case 'N':
-	    filter = FALSE;
+	    filter = false;
 	    break;
 	case 'n':
 	    switch (*optarg) {
 	    default:
 		Usage();
 		/* NOTREACHED */
-	    case 'n':	innconf->readerswhenstopped = FALSE;	break;
-	    case 'y':	innconf->readerswhenstopped = TRUE;	break;
+	    case 'n':	innconf->readerswhenstopped = false;	break;
+	    case 'y':	innconf->readerswhenstopped = true;	break;
 	    }
 	    break;
 	case 'o':
@@ -425,10 +425,10 @@ main(int ac, char *av[])
 	    innconf->port = atoi(optarg);
 	    break;
 	case 'r':
-	    ShouldRenumber = TRUE;
+	    ShouldRenumber = true;
 	    break;
 	case 's':
-	    ShouldSyntaxCheck = TRUE;
+	    ShouldSyntaxCheck = true;
 	    break;
 	case 't':
 	    TimeOut.tv_sec = atol(optarg);
@@ -437,13 +437,13 @@ main(int ac, char *av[])
 	    RemoteTotal = atoi(optarg);
 	    break;
 	case 'u':
-	    BufferedLogs = FALSE;
+	    BufferedLogs = false;
 	    break;
 	case 'X':
 	    RemoteTimer = atoi(optarg);
 	    break;
         case 'Z':
-            StreamingOff = TRUE;
+            StreamingOff = true;
             break;
 	}
     ac -= optind;
@@ -590,7 +590,7 @@ main(int ac, char *av[])
     WIPsetup();
     NCsetup();
     ARTsetup();
-    ICDsetup(TRUE);
+    ICDsetup(true);
     if (innconf->timer)
         TMRinit(TMR_MAX);
 
@@ -635,7 +635,7 @@ main(int ac, char *av[])
 #if DO_TCL
     TCLsetup();
     if (!filter)
-	TCLfilter(FALSE);
+	TCLfilter(false);
 #endif /* DO_TCL */
 
 #if DO_PERL
@@ -647,13 +647,13 @@ main(int ac, char *av[])
     free(path2);
     PLxsinit();
     if (filter)
-	PerlFilter(TRUE);
+	PerlFilter(true);
 #endif /* DO_PERL */
 
 #if DO_PYTHON
     PYsetup();
     if (!filter)
-	PYfilter(FALSE);
+	PYfilter(false);
 #endif /* DO_PYTHON */
  
     /* And away we go... */

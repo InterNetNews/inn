@@ -111,7 +111,7 @@ traditional spool.
 .PP
 .I IsToken
 checks to see if the text is formatted as a text token string.
-It returns TRUE if formatted correctly or returns FALSE if not.
+It returns true if formatted correctly or returns false if not.
 .PP
 .I TokenToText
 converts token into text string for output.
@@ -127,16 +127,16 @@ is one of following.
 .in +0.5i
 .nf
 SM_RDWR	allow read/write open for storage
-	files (default is FALSE)
+	files (default is false)
 SM_PREOPEN	open all storage files at startup
-	time and keep them (default is FALSE)
+	time and keep them (default is false)
 .fi
 .in -0.5i
 .sp 1
 The
 .I value
 is the pointer which tells each type's value.
-It returns TRUE if setup is successful, or FALSE if not.
+It returns true if setup is successful, or false if not.
 .PP
 .I SMinit
 calls the setup function for all of the configured methods based on
@@ -144,9 +144,9 @@ calls the setup function for all of the configured methods based on
 This function should be called prior to all other storage API functions which
 begin with ``SM'' except
 .IR SMsetup .
-It returns TRUE if initialization is successful or returns FALSE if not.
+It returns true if initialization is successful or returns false if not.
 .I SMinit
-returns TRUE, unless all storage methods fail initialization.
+returns true, unless all storage methods fail initialization.
 .PP
 .I SMstore
 stores an article specified with
@@ -242,7 +242,7 @@ frees allocated memory internally.
 .I SMcancel
 removes the article specified with
 .IR token .
-It returns TRUE if cancellation is successful or returns FALSE if not.
+It returns true if cancellation is successful or returns false if not.
 .I SMcancel
 fails if
 .I SM_RDWR
@@ -362,7 +362,7 @@ subsequent
 calls should use the handle returned by the previous call to
 .IR OVsearch .
 .I OVsearch
-returns TRUE, unless it reaches high which is specified by
+returns true, unless it reaches high which is specified by
 .IR OVopensearch .
 Retrieved overview data are sorted by article number, and
 .I len

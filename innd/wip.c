@@ -118,7 +118,7 @@ WIPinprogress(const char *msgid, CHANNEL *cp, bool Precommit)
 	}
  
 	if ((Now.time - wp->Timestamp) < (i + innconf->wipcheck))
-	    return TRUE;
+	    return true;
 	if ((Now.time - wp->Timestamp) > (i + innconf->wipexpire)) {
 	    for (i = 0 ; i < PRECOMMITCACHESIZE ; i++) {
 		if (wp->Chan->PrecommitWIP[i] == wp) {
@@ -128,11 +128,11 @@ WIPinprogress(const char *msgid, CHANNEL *cp, bool Precommit)
 	    }
 	    WIPfree(wp);
 	    WIPinprogress(msgid, cp, Precommit);
-	    return FALSE;
+	    return false;
 	}
 	if (wp->Chan == cp)
-	    return TRUE;
-	return FALSE;
+	    return true;
+	return false;
     }
     wp = WIPnew(msgid, cp);
     if (Precommit) {
@@ -145,7 +145,7 @@ WIPinprogress(const char *msgid, CHANNEL *cp, bool Precommit)
 	WIPfree(WIPbyhash(cp->CurrentMessageIDHash));
 	cp->CurrentMessageIDHash = wp->MessageID;
     }
-    return FALSE;
+    return false;
 }
 
 WIP *

@@ -71,14 +71,14 @@ EndsWithNewline(FILE *F)
 
     if (fseeko(F, 1, SEEK_END) < 0) {
         syswarn("cannot seek to end of file");
-	return TRUE;
+	return true;
     }
 
     /* return the actual character or EOF */
     if ((c = fgetc(F)) == EOF) {
 	if (ferror(F))
             syswarn("cannot read last byte");
-	return TRUE;
+	return true;
     }
     return c == '\n';
 }
@@ -94,7 +94,7 @@ AppendNewline(char *name)
 
     if ((F = xfopena(name)) == NULL) {
         syswarn("cannot add newline");
-	return FALSE;
+	return false;
     }
 
     if (fputc('\n', F) == EOF
@@ -102,10 +102,10 @@ AppendNewline(char *name)
      || ferror(F)
      || fclose(F) == EOF) {
         syswarn("cannot add newline");
-	return FALSE;
+	return false;
     }
 
-    return TRUE;
+    return true;
 }
 
 /*
@@ -119,11 +119,11 @@ TooBig(FILE *F, off_t maxsize)
     /* Get the file's size. */
     if (fstat((int)fileno(F), &Sb) < 0) {
         syswarn("cannot fstat");
-	return FALSE;
+	return false;
     }
 
-    /* return TRUE if too large */
-    return (maxsize > Sb.st_size ? FALSE : TRUE);
+    /* return true if too large */
+    return (maxsize > Sb.st_size ? false : true);
 }
 
 /*
@@ -143,7 +143,7 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
     /* Get the file's size. */
     if (fstat((int)fileno(F), &Sb) < 0) {
         syswarn("cannot fstat");
-	return FALSE;
+	return false;
     }
     len = Sb.st_size;
 
@@ -153,12 +153,12 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
 	    fclose(F);
 	    if ((F = fopen(name, "w")) == NULL) {
                 syswarn("cannot overwrite");
-		return FALSE;
+		return false;
 	    }
 	    fclose(F);
-	    *Changedp = TRUE;
+	    *Changedp = true;
 	}
-	return TRUE;
+	return true;
     }
 
     /* See if already small enough. */
@@ -166,20 +166,20 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
 	/* Newline already present? */
 	if (EndsWithNewline(F)) {
 	    fclose(F);
-	    return TRUE;
+	    return true;
 	}
 
 	/* No newline, add it if it fits. */
 	if (len < size - 1) {
 	    fclose(F);
-	    *Changedp = TRUE;
+	    *Changedp = true;
 	    return AppendNewline(name);
 	}
     }
     else if (!EndsWithNewline(F)) {
 	if (!AppendNewline(name)) {
 	    fclose(F);
-	    return FALSE;
+	    return false;
 	}
     }
 
@@ -189,14 +189,14 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
     if (fseeko(F, -size, SEEK_END) < 0) {
         syswarn("cannot fseeko");
 	fclose(F);
-	return FALSE;
+	return false;
     }
 
     while ((c = getc(F)) != '\n')
 	if (c == EOF) {
             syswarn("cannot read");
 	    fclose(F);
-	    return FALSE;
+	    return false;
 	}
 
     /* Copy rest of file to temp. */
@@ -211,7 +211,7 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
         syswarn("cannot copy to temporary file");
 	fclose(F);
 	fclose(tmp);
-	return FALSE;
+	return false;
     }
 
     /* Now copy temp back to original file. */
@@ -219,7 +219,7 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
     if ((F = fopen(name, "w")) == NULL) {
         syswarn("cannot overwrite file");
 	fclose(tmp);
-	return FALSE;
+	return false;
     }
     fseeko(tmp, 0, SEEK_SET);
 
@@ -232,13 +232,13 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
         syswarn("cannot overwrite file");
 	fclose(F);
 	fclose(tmp);
-	return FALSE;
+	return false;
     }
 
     fclose(F);
     fclose(tmp);
-    *Changedp = TRUE;
-    return TRUE;
+    *Changedp = true;
+    return true;
 }
 
 
@@ -319,8 +319,8 @@ main(int ac, char *av[])
     message_program_name = "shrinkfile";
 
     /* Set defaults. */
-    Verbose = FALSE;
-    no_op = FALSE;
+    Verbose = false;
+    no_op = false;
     umask(NEWSUMASK);
 
     if (!innconf_read(NULL))
@@ -333,7 +333,7 @@ main(int ac, char *av[])
 	    Usage();
 	    /* NOTREACHED */
 	case 'n':
-	    no_op = TRUE;
+	    no_op = true;
 	    break;
 	case 'm':
 	    if ((maxsize = ParseSize(optarg)) < 0)
@@ -344,7 +344,7 @@ main(int ac, char *av[])
 		Usage();
 	    break;
 	case 'v':
-	    Verbose = TRUE;
+	    Verbose = true;
 	    break;
 	}
     if (maxsize < size) {
@@ -374,7 +374,7 @@ main(int ac, char *av[])
 
 	/* no -n, do some real work */
 	} else {
-	    Changed = FALSE;
+	    Changed = false;
 	    if (!Process(F, p, size, maxsize, &Changed))
                 syswarn("cannot shrink %s", p);
 	    else if (Verbose && Changed)

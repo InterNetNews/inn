@@ -101,16 +101,16 @@ bool timehash_init(SMATTRIBUTE *attr) {
     if (attr == NULL) {
 	syslog(L_ERROR, "timehash: attr is NULL");
 	SMseterror(SMERR_INTERNAL, "attr is NULL");
-	return FALSE;
+	return false;
     }
-    attr->selfexpire = FALSE;
-    attr->expensivestat = TRUE;
+    attr->selfexpire = false;
+    attr->expensivestat = true;
     if (STORAGE_TOKEN_LENGTH < 6) {
 	syslog(L_FATAL, "timehash: token length is less than 6 bytes");
 	SMseterror(SMERR_TOKENSHORT, NULL);
-	return FALSE;
+	return false;
     }
-    return TRUE;
+    return true;
 }
 
 TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class) {
@@ -138,7 +138,7 @@ TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class) {
 		continue;
 	    p = strrchr(path, '/');
 	    *p = '\0';
-	    if (!MakeDirectory(path, TRUE)) {
+	    if (!MakeDirectory(path, true)) {
 	        syslog(L_ERROR, "timehash: could not make directory %s %m", path);
 	        token.type = TOKEN_EMPTY;
 	        free(path);
@@ -345,9 +345,9 @@ bool timehash_cancel(TOKEN token) {
     free(path);
     if (result < 0) {
 	SMseterror(SMERR_UNDEFINED, NULL);
-	return FALSE;
+	return false;
     }
-    return TRUE;
+    return true;
 }
 
 static struct dirent *FindDir(DIR *dir, FINDTYPE type) {
@@ -496,19 +496,19 @@ bool timehash_ctl(PROBETYPE type, TOKEN *token UNUSED, void *value) {
     switch (type) {
     case SMARTNGNUM:
 	if ((ann = (struct artngnum *)value) == NULL)
-	    return FALSE;
+	    return false;
 	/* make SMprobe() call timehash_retrieve() */
 	ann->artnum = 0;
-	return TRUE;
+	return true;
     default:
-	return FALSE;
+	return false;
     }
 }
 
 bool
 timehash_flushcacheddata(FLUSHTYPE type UNUSED)
 {
-    return TRUE;
+    return true;
 }
 
 void

@@ -302,11 +302,11 @@ tries to lock the file descriptor
 .IR fd .
 If
 .I block
-is TRUE it will block until the lock can be made, otherwise
-it will return FALSE if the file cannot be locked.
+is true it will block until the lock can be made, otherwise
+it will return false if the file cannot be locked.
 .I type
 is one of: INN_LOCK_READ, INN_LOCK_WRITE, or INN_LOCK_UNLOCK.
-It returns FALSE on failure or TRUE on success.
+It returns false on failure or true on success.
 .PP
 .I GetFQDN
 returns the fully-qualified domain name of the local host.

@@ -31,89 +31,89 @@ typedef struct _COMMAND {
 
 static COMMAND	Commands[] = {
     {	"addhist",	"id arr exp post token...\tAdd history line",
-	5,	SC_ADDHIST,	TRUE	},
+	5,	SC_ADDHIST,	true	},
     {	"allow",	"reason...\t\t\tAllow remote connections",
-	1,	SC_ALLOW,	TRUE	},
+	1,	SC_ALLOW,	true	},
     {	"begin",	"site\t\t\tStart newly-added site",
-	1,	SC_BEGIN,	FALSE	},
+	1,	SC_BEGIN,	false	},
     {	"cancel",	"id\t\t\tCancel message locally",
-	1,	SC_CANCEL,	FALSE	},
+	1,	SC_CANCEL,	false	},
     {	"changegroup",	"group rest\tChange mode of group",
-	2,	SC_CHANGEGROUP,	FALSE	},
+	2,	SC_CHANGEGROUP,	false	},
     {	"checkfile",	"\t\t\tCheck syntax of newsfeeds file",
-	0,	SC_CHECKFILE,	FALSE	},
+	0,	SC_CHECKFILE,	false	},
     {	"drop",		"site\t\t\tStop feeding site",
-	1,	SC_DROP,	FALSE		},
+	1,	SC_DROP,	false		},
     {	"feedinfo",		"site\t\t\tPrint state of feed to site*",
-	1,	SC_FEEDINFO,	FALSE		},
+	1,	SC_FEEDINFO,	false		},
 #if defined(DO_TCL)
     {	"tcl",			"flag\t\t\tEnable or disable Tcl filtering",
-	1,	SC_FILTER,	FALSE		},
+	1,	SC_FILTER,	false		},
 #endif /* defined(DO_TCL) */
     {	"flush",	"site\t\t\tFlush feed for site*",
-	1,	SC_FLUSH,	FALSE	},
+	1,	SC_FLUSH,	false	},
     {	"flushlogs",	"\t\t\tFlush log files",
-	0,	SC_FLUSHLOGS,	FALSE	},
+	0,	SC_FLUSHLOGS,	false	},
     {	"go",		"reason...\t\t\tRestart after pause or throttle",
-	1,	SC_GO,		TRUE	},
+	1,	SC_GO,		true	},
     {	"hangup",	"channel\t\tHangup specified incoming channel",
-	1,	SC_HANGUP,	FALSE	},
+	1,	SC_HANGUP,	false	},
     {	"logmode",		"\t\t\t\tSend server mode to syslog",
-	0,	SC_LOGMODE,	FALSE		},
+	0,	SC_LOGMODE,	false		},
     {	"mode",		"\t\t\t\tPrint operating mode",
-	0,	SC_MODE,	FALSE		},
+	0,	SC_MODE,	false		},
     {	"name",		"nnn\t\t\tPrint name of specified channel*",
-	1,	SC_NAME,	FALSE		},
+	1,	SC_NAME,	false		},
     {	"newgroup",	"group rest creator\tCreate new group",
-	3,	SC_NEWGROUP,	FALSE	},
+	3,	SC_NEWGROUP,	false	},
     {	"param",	"letter value\t\tChange command-line parameters",
-	2,	SC_PARAM,	FALSE	},
+	2,	SC_PARAM,	false	},
     {	"pause",	"reason...\t\tShort-term pause in accepting articles",
-	1,	SC_PAUSE,	TRUE	},
+	1,	SC_PAUSE,	true	},
 #if defined(DO_PERL)
     {	"perl",			"flag\t\t\tEnable or disable Perl filtering",
-	1,	SC_PERL,	FALSE	},
+	1,	SC_PERL,	false	},
 #endif /* defined(DO_PERL) */
 #if defined(DO_PYTHON)
     {	"python",		"flag\t\t\tEnable or disable Python filtering",
-	1,	SC_PYTHON,	FALSE	},
+	1,	SC_PYTHON,	false	},
 #endif /* (DO_PYTHON) */
     {	"readers",	"flag text...\t\tEnable or disable newsreading",
-	2,	SC_READERS,	TRUE	},
+	2,	SC_READERS,	true	},
     {	"reject",	"reason...\t\t\tReject remote connections",
-	1,	SC_REJECT,	TRUE	},
+	1,	SC_REJECT,	true	},
     {	"reload",	"what reason...\t\tRe-read config files*",
-	2,	SC_RELOAD,	TRUE	},
+	2,	SC_RELOAD,	true	},
     {	"renumber",	"group\t\tRenumber the active file*",
-	1,	SC_RENUMBER,	FALSE	},
+	1,	SC_RENUMBER,	false	},
     {	"reserve",	"reason...\t\tReserve the next pause or throttle",
-	1,	SC_RESERVE,	TRUE	},
+	1,	SC_RESERVE,	true	},
     {	"rmgroup",	"group\t\t\tRemove named group",
-	1,	SC_RMGROUP,	FALSE	},
+	1,	SC_RMGROUP,	false	},
     {	"send",		"feed text...\t\tSend text to exploder feed",
-	2,	SC_SEND,	TRUE	},
+	2,	SC_SEND,	true	},
     {	"shutdown",	"reason...\t\tShut down server",
-	1,	SC_SHUTDOWN,	TRUE	},
+	1,	SC_SHUTDOWN,	true	},
     {	"stathist",	"filename|off\t\tLog into filename some history stats",
-	1,	SC_STATHIST,	FALSE	},
+	1,	SC_STATHIST,	false	},
     {	"status",	"interval|off\t\tTurn innd status generation on or off",
-	1,	SC_STATUS,	FALSE	},
+	1,	SC_STATUS,	false	},
     {	"kill",	"signal site\t\tSend signal to site's process",
-	2,	SC_SIGNAL,	FALSE	},
+	2,	SC_SIGNAL,	false	},
     {	"throttle",	"reason...\t\tStop accepting articles",
-	1,	SC_THROTTLE,	TRUE	},
+	1,	SC_THROTTLE,	true	},
     {   "timer",	"interval|off\t\tTurn performance monitoring on or off",
-	1,	SC_TIMER,	FALSE	},
+	1,	SC_TIMER,	false	},
     {	"trace",	"innd|#|nnrpd flag\tTurn tracing on or off",
-	2,	SC_TRACE,	FALSE	},
+	2,	SC_TRACE,	false	},
     {	"xabort",	"text...\t\tAbort the server",
-	1,	SC_XABORT,	TRUE	},
+	1,	SC_XABORT,	true	},
     { "lowmark",	"filename\t\tReset active file low article marks",
-	1,	SC_LOWMARK,	FALSE	},
+	1,	SC_LOWMARK,	false	},
     { "renumberlow",	"filename\t\tReset active file low article marks",
-	1,	SC_LOWMARK,	FALSE	},
+	1,	SC_LOWMARK,	false	},
     {	"xexec",	"path\t\t\tExec new server",
-	1,	SC_XEXEC,	FALSE	}
+	1,	SC_XEXEC,	false	}
 };
 
 
@@ -205,8 +205,8 @@ int main(int ac, char *av[])
     /* Set defaults. */
     if (!innconf_read(NULL))
         exit(1);
-    Silent = FALSE;
-    NeedHelp = FALSE;
+    Silent = false;
+    NeedHelp = false;
     ICCsettimeout(CTLINND_TIMEOUT);
 
     /* Parse JCL. */
@@ -216,10 +216,10 @@ int main(int ac, char *av[])
 	    Usage("bad flags");
 	    /* NOTREACHED */
 	case 'h':		/* Get help			*/
-	    NeedHelp = TRUE;
+	    NeedHelp = true;
 	    break;
 	case 's':		/* Silent -- no output		*/
-	    Silent = TRUE;
+	    Silent = true;
 	    break;
 	case 't':		/* Time to wait for reply	*/
 	    ICCsettimeout(atoi(optarg));

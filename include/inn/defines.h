@@ -58,12 +58,6 @@
 # endif
 #endif /* INN_HAVE_STDBOOL_H */
 
-/* Lots of INN still uses TRUE and FALSE. */
-#undef TRUE
-#undef FALSE
-#define TRUE   true
-#define FALSE  false
-
 /* Tell Perl that we have a bool type. */
 #ifndef HAS_BOOL
 # define HAS_BOOL 1

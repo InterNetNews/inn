@@ -143,7 +143,7 @@ static void SITEopen(SITE *sp)
     sp->CloseLines = 0;
     sp->LastFlushed = Now.time;
     sp->LastClosed = Now.time;
-    sp->Dropped = FALSE;
+    sp->Dropped = false;
 }
 
 
@@ -236,7 +236,7 @@ SITEwrite(char *name, char *text, size_t len)
 {
     SITE	*sp;
 
-    sp = SITEfind(name, TRUE);
+    sp = SITEfind(name, true);
     if (sp->F == NULL)
 	SITEopen(sp);
 
@@ -284,7 +284,7 @@ Process(char *p)
 	    continue;
 	if (*p == '\0')
 	    SITEflushall();
-	else if ((sp = SITEfind(p, FALSE)) != NULL)
+	else if ((sp = SITEfind(p, false)) != NULL)
 	    SITEflush(sp);
 	/*else
 	    fprintf(stderr, "buffchan flush %s unknown site\n", p);*/
@@ -296,11 +296,11 @@ Process(char *p)
 	    continue;
 	if (*p == '\0')
 	    SITEcloseall();
-	else if ((sp = SITEfind(p, FALSE)) == NULL)
+	else if ((sp = SITEfind(p, false)) == NULL)
             warn("drop %s unknown site", p);
 	else {
 	    SITEclose(sp);
-	    sp->Dropped = TRUE;
+	    sp->Dropped = true;
 	}
 	return;
     }
@@ -321,7 +321,7 @@ Process(char *p)
 static RETSIGTYPE
 CATCHinterrupt(int s)
 {
-    GotInterrupt = TRUE;
+    GotInterrupt = true;
     xsignal(s, SIG_DFL);
 }
 
@@ -350,8 +350,8 @@ main(int ac, char *av[])
     Directory = NULL;
     Fields = 1;
     Format = NULL;
-    Redirect = TRUE;
-    GotInterrupt = FALSE;
+    Redirect = true;
+    GotInterrupt = false;
     umask(NEWSUMASK);
 
     xsignal(SIGHUP, CATCHinterrupt);
@@ -403,7 +403,7 @@ main(int ac, char *av[])
                 sysdie("cannot fclose %s", optarg);
 	    break;
 	case 'r':
-	    Redirect = FALSE;
+	    Redirect = false;
 	    break;
 	case 's':
 	    Format = optarg;

@@ -58,7 +58,7 @@ SITEspool(SITE *sp, CHANNEL *cp)
 	syslog(L_ERROR, "%s cant open %s %m", sp->Name, name);
 	IOError("site batch file", i);
 	sp->Channel = NULL;
-	return FALSE;
+	return false;
     }
     if (cp) {
       if (cp->fd >= 0)
@@ -69,17 +69,17 @@ SITEspool(SITE *sp, CHANNEL *cp)
 	SCHANremove(cp);
 	close(cp->fd);
 	cp->fd = i;
-	return TRUE;
+	return true;
     }
     sp->Channel = CHANcreate(i, CTfile, CSwriting, SITEreader, SITEwritedone);
     if (sp->Channel == NULL) {
 	syslog(L_ERROR, "%s cant channel %m", sp->Name);
 	close(i);
-	return FALSE;
+	return false;
     }
     WCHANset(sp->Channel, "", 0);
-    sp->Spooling = TRUE;
-    return TRUE;
+    sp->Spooling = true;
+    return true;
 }
 
 
@@ -144,7 +144,7 @@ SITEbufferoldest(void)
     WCHANflush(sp->Channel);
 
     /* Get a buffer for the site. */
-    sp->Buffered = TRUE;
+    sp->Buffered = true;
     bp = &sp->Buffer;
     bp->used = 0;
     bp->left = 0;
@@ -192,7 +192,7 @@ SITECHANbilge(SITE *sp)
         syslog(L_ERROR, "%s cant open %s %m", sp->Name, name);
         IOError("site batch file",oerrno);
         sp->Channel = NULL;
-        return FALSE;
+        return false;
     }
     while (sp->Channel->Out.left > 0) {
         i = write(fd, &sp->Channel->Out.data[sp->Channel->Out.used],
@@ -201,7 +201,7 @@ SITECHANbilge(SITE *sp)
             syslog(L_ERROR,"%s cant spool count %d", CHANname(sp->Channel),
                 sp->Channel->Out.left);
             close(fd);
-            return FALSE;
+            return false;
         }
         sp->Channel->Out.left -= i;
         sp->Channel->Out.used += i;
@@ -212,7 +212,7 @@ SITECHANbilge(SITE *sp)
     sp->Channel->Out.size = SMBUF;
     sp->Channel->Out.left = 0;
     sp->Channel->Out.used = 0;
-    return TRUE;
+    return true;
 }
 
 /*
@@ -342,7 +342,7 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	    return;
 	bp = &sp->Channel->Out;
     }
-    for (Dirty = FALSE, p = sp->FileFlags; *p; p++) {
+    for (Dirty = false, p = sp->FileFlags; *p; p++) {
 	switch (*p) {
 	default:
 	    syslog(L_ERROR, "%s internal SITEwritefromflags %c", sp->Name, *p);
@@ -444,7 +444,7 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 			if (Dirty)
 			    buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
 			buffer_append(bp, spx->Name, spx->NameLength);
-			Dirty = TRUE;
+			Dirty = true;
 		    }
 	    }
 	    break;
@@ -462,7 +462,7 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	    buffer_append(bp, Data->Feedsite, Data->FeedsiteLength);
 	    break;
 	}
-	Dirty = TRUE;
+	Dirty = true;
     }
     if (Dirty) {
 	buffer_append(bp, "\n", 1);
@@ -555,7 +555,7 @@ SITEspoolwake(CHANNEL *cp)
         return;
     }
     syslog(L_NOTICE, "%s spoolwake", sp->Name);
-    SITEflush(sp, TRUE);
+    SITEflush(sp, true);
 }
 
 
@@ -576,13 +576,13 @@ SITEstartprocess(SITE *sp)
     /* Create a socketpair. */
     if (socketpair(PF_UNIX, SOCK_STREAM, 0, pan) < 0) {
 	syslog(L_ERROR, "%s cant socketpair %m", sp->Name);
-	return FALSE;
+	return false;
     }
 #else
     /* Create a pipe. */
     if (pipe(pan) < 0) {
 	syslog(L_ERROR, "%s cant pipe %m", sp->Name);
-	return FALSE;
+	return false;
     }
 #endif
     close_on_exec(pan[PIPE_WRITE], true);
@@ -601,14 +601,14 @@ SITEstartprocess(SITE *sp)
 	      (int)fileno(Errlog), argv);
     if (i > 0) {
 	sp->pid = i;
-	sp->Spooling = FALSE;
+	sp->Spooling = false;
 	sp->Process = PROCwatch(i, sp - Sites);
 	close(pan[PIPE_READ]);
 	sp->Channel = CHANcreate(pan[PIPE_WRITE],
 			sp->Type == FTchannel ? CTprocess : CTexploder,
 			CSwriting, SITEreader, SITEwritedone);
 	free(process);
-	return TRUE;
+	return true;
     }
 
     /* Error.  Switch to spooling. */
@@ -617,7 +617,7 @@ SITEstartprocess(SITE *sp)
     close(pan[PIPE_READ]);
     free(process);
     if (!SITEspool(sp, (CHANNEL *)NULL))
-	return FALSE;
+	return false;
 
     /* We'll try to restart the channel later. */
     syslog(L_ERROR, "%s cant spawn spooling %m", sp->Name);
@@ -625,7 +625,7 @@ SITEstartprocess(SITE *sp)
     *ip = sp - Sites;
     SCHANadd(sp->Channel, Now.time + innconf->chanretrytime, NULL,
              SITEspoolwake, ip);
-    return TRUE;
+    return true;
 }
 
 
@@ -638,7 +638,7 @@ SITEbuffer(SITE *sp)
     struct buffer *bp;
 
     SITEunlink(sp);
-    sp->Buffered = TRUE;
+    sp->Buffered = true;
     sp->Channel = NULL;
     bp = &sp->Buffer;
     buffer_resize(bp, sp->Flushpoint);
@@ -681,7 +681,7 @@ SITEsetup(SITE *sp)
     default:
 	syslog(L_ERROR, "%s internal SITEsetup %d",
 	    sp->Name, sp->Type);
-	return FALSE;
+	return false;
     case FTfunnel:
     case FTlogonly:
     case FTprogram:
@@ -691,7 +691,7 @@ SITEsetup(SITE *sp)
 	if (SITEcount >= MaxOutgoing)
 	    SITEbuffer(sp);
 	else {
-	    sp->Buffered = FALSE;
+	    sp->Buffered = false;
 	    fd = open(sp->Param, O_APPEND | O_CREAT | O_WRONLY, BATCHFILE_MODE);
 	    if (fd < 0) {
 		if (errno == EMFILE) {
@@ -702,7 +702,7 @@ SITEsetup(SITE *sp)
 		oerrno = errno;
 		syslog(L_NOTICE, "%s cant open %s %m", sp->Name, sp->Param);
 		IOError("site file", oerrno);
-		return FALSE;
+		return false;
 	    }
 	    SITEmovetohead(sp);
 	    sp->Channel = CHANcreate(fd, CTfile, CSwriting,
@@ -714,13 +714,13 @@ SITEsetup(SITE *sp)
     case FTchannel:
     case FTexploder:
 	if (!SITEstartprocess(sp))
-	    return FALSE;
+	    return false;
 	syslog(L_NOTICE, "%s spawned %s", sp->Name, CHANname(sp->Channel));
 	WCHANset(sp->Channel, "", 0);
 	WCHANadd(sp->Channel);
 	break;
     }
-    return TRUE;
+    return true;
 }
 
 
@@ -858,7 +858,7 @@ SITEflush(SITE *sp, const bool Restart)
 	/* Must be a working channel; spool and retry. */
 	syslog(L_ERROR, "%s spooling %d bytes", sp->Name, cp->Out.left);
 	if (SITEspool(sp, cp))
-	    SITEflush(sp, FALSE);
+	    SITEflush(sp, false);
 	return;
     }
 
@@ -1054,13 +1054,13 @@ SITEfree(SITE *sp)
 	    if (&Sites[s->Master] == sp) {
 		if (new == NOSITE) {
 		    s->Master = NOSITE;
-		    s->IsMaster = TRUE;
+		    s->IsMaster = true;
 		    new = s - Sites;
 		}
 		else
 		    s->Master = new;
             }
-	sp->IsMaster = FALSE;
+	sp->IsMaster = false;
     }
 }
 
@@ -1100,7 +1100,7 @@ void
 SITEdrop(SITE *sp)
 {
     SITEforward(sp, "drop");
-    SITEflush(sp, FALSE);
+    SITEflush(sp, false);
     SITEfree(sp);
 }
 

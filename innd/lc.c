@@ -39,7 +39,7 @@ LCreader(CHANNEL *cp)
 	syslog(L_ERROR, "%s cant accept CCreader %m", LogName);
 	return;
     }
-    if ((new = NCcreate(fd, FALSE, TRUE)) != NULL) {
+    if ((new = NCcreate(fd, false, true)) != NULL) {
 	memset( &new->Address, 0, sizeof( new->Address ) );
 	syslog(L_NOTICE, "%s connected %d", "localhost", new->fd);
 	NCwritereply(new, (char *)NCgreeting);

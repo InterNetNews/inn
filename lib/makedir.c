@@ -6,28 +6,28 @@
 #include "libinn.h"
 
 /*
-**  Try to make one directory.  Return FALSE on error.
+**  Try to make one directory.  Return false on error.
 */
 static bool MakeDir(char *Name)
 {
     struct stat		Sb;
 
     if (mkdir(Name, GROUPDIR_MODE) >= 0) {
-	return TRUE;
+	return true;
     }
 
     /* See if it failed because it already exists. */
     if (stat(Name, &Sb) >= 0 && S_ISDIR(Sb.st_mode)) {
 	errno = 0;
-	return TRUE;
+	return true;
     }
-    return FALSE;
+    return false;
 }
 
 
 /*
 **  Given a directory, comp/foo/bar, create that directory and all
-**  intermediate directories needed.  Return TRUE if ok, else FALSE.
+**  intermediate directories needed.  Return true if ok, else false.
 */
 bool MakeDirectory(char *Name, bool Recurse)
 {
@@ -36,10 +36,10 @@ bool MakeDirectory(char *Name, bool Recurse)
 
     /* Optimize common case -- parent almost always exists. */
     if (MakeDir(Name))
-	return TRUE;
+	return true;
 
     if (!Recurse)
-	return FALSE;
+	return false;
 
     /* Try to make each of comp and comp/foo in turn. */
     for (p = (Name[0] == '/') ? &Name[1] : Name; *p; p++)
@@ -48,7 +48,7 @@ bool MakeDirectory(char *Name, bool Recurse)
 	    made = MakeDir(Name);
 	    *p = '/';
 	    if (!made)
-		return FALSE;
+		return false;
 	}
 
     return MakeDir(Name);

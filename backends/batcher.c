@@ -61,7 +61,7 @@ BATCHstart(void)
     }
     else
 	F = stdout;
-    BATCHopen = TRUE;
+    BATCHopen = true;
     BATCHcount++;
     return F;
 }
@@ -73,7 +73,7 @@ BATCHstart(void)
 static int
 BATCHclose(FILE *F)
 {
-    BATCHopen = FALSE;
+    BATCHopen = false;
     if (F == stdout)
 	return fflush(stdout) == EOF ? 1 : 0;
     return pclose(F);
@@ -176,7 +176,7 @@ RequeueAndExit(off_t Cookie, char *line, long BytesInArt)
 static RETSIGTYPE
 CATCHinterrupt(int s)
 {
-    GotInterrupt = TRUE;
+    GotInterrupt = true;
 
     /* Let two interrupts kill us. */
     xsignal(s, SIG_DFL);
@@ -211,7 +211,7 @@ main(int ac, char *av[])
     if (!innconf_read(NULL))
         exit(1);
     AltSpool = NULL;
-    Redirect = TRUE;
+    Redirect = true;
     umask(NEWSUMASK);
     ERRLOG = concatpath(innconf->pathlog, _PATH_ERRLOG);
 
@@ -243,7 +243,7 @@ main(int ac, char *av[])
 	    Processor = optarg;
 	    break;
 	case 'r':
-	    Redirect = FALSE;
+	    Redirect = false;
 	    break;
 	case 's':
 	    Separator = optarg;
@@ -252,7 +252,7 @@ main(int ac, char *av[])
 	    AltSpool = optarg;
 	    break;
 	case 'v':
-	    STATprint = TRUE;
+	    STATprint = true;
 	    break;
 	}
     if (MaxArts && ArtsInBatch == 0)
@@ -286,7 +286,7 @@ main(int ac, char *av[])
     BytesInCB = 0;
     ArtsInCB = 0;
     Cookie = -1;
-    GotInterrupt = FALSE;
+    GotInterrupt = false;
     xsignal(SIGHUP, CATCHinterrupt);
     xsignal(SIGINT, CATCHinterrupt);
     xsignal(SIGTERM, CATCHinterrupt);

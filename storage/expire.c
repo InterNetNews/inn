@@ -262,7 +262,7 @@ BuildGroups(char *active)
 /*
 **  Parse a number field converting it into a "when did this start?".
 **  This makes the "keep it" tests fast, but inverts the logic of
-**  just about everything you expect.  Print a message and return FALSE
+**  just about everything you expect.  Print a message and return false
 **  on error.
 */
 static bool
@@ -274,7 +274,7 @@ EXPgetnum(int line, char *word, time_t *v, const char *name)
 
     if (caseEQ(word, "never")) {
         *v = (time_t)0;
-        return TRUE;
+        return true;
     }
 
     /* Check the number.  We don't have strtod yet. */
@@ -282,25 +282,25 @@ EXPgetnum(int line, char *word, time_t *v, const char *name)
         continue;
     if (*p == '+' || *p == '-')
         p++;
-    for (SawDot = FALSE; *p; p++)
+    for (SawDot = false; *p; p++)
         if (*p == '.') {
             if (SawDot)
                 break;
-            SawDot = TRUE;
+            SawDot = true;
         }
         else if (!CTYPE(isdigit, (int)*p))
             break;
     if (*p) {
         fprintf(stderr, "Line %d, bad `%c' character in %s field\n",
                 line, *p, name);
-        return FALSE;
+        return false;
     }
     d = atof(word);
     if (d > MAGIC_TIME)
         *v = (time_t)0;
     else
         *v = OVnow - (time_t)(d * 86400.);
-    return TRUE;
+    return true;
 }
 
 /*
@@ -329,7 +329,7 @@ EXPmatch(char *p, NEWSGROUP *v, char mod)
 }
 
 /*
-**  Parse the expiration control file.  Return TRUE if okay.
+**  Parse the expiration control file.  Return true if okay.
 */
 static bool
 EXPreadfile(FILE *F)
@@ -346,14 +346,14 @@ EXPreadfile(FILE *F)
     char                **patterns;
 
     /* Scan all lines. */
-    SawDefault = FALSE;
+    SawDefault = false;
     patterns = xmalloc(nGroups * sizeof(char *));
     
     for (i = 1; fgets(buff, sizeof buff, F) != NULL; i++) {
         if ((p = strchr(buff, '\n')) == NULL) {
             fprintf(stderr, "Line %d too long\n", i);
             free(patterns);
-            return FALSE;
+            return false;
         }
         *p = '\0';
         p = strchr(buff, '#');
@@ -372,7 +372,7 @@ EXPreadfile(FILE *F)
         if ((j = EXPsplit(buff, ':', fields, SIZEOF(fields))) == -1) {
             fprintf(stderr, "Line %d too many fields\n", i);
             free(patterns);
-            return FALSE;
+            return false;
         }
 
         /* Expired-article remember line? */
@@ -384,7 +384,7 @@ EXPreadfile(FILE *F)
         if (j != 5) {
             fprintf(stderr, "Line %d bad format\n", i);
             free(patterns);
-            return FALSE;
+            return false;
         }
 
         /* Parse the fields. */
@@ -397,14 +397,14 @@ EXPreadfile(FILE *F)
         else {
             fprintf(stderr, "Line %d bad modflag\n", i);
             free(patterns);
-            return FALSE;
+            return false;
         }
         v.Poison = (strchr(fields[1], 'X') != NULL);
         if (!EXPgetnum(i, fields[2], &v.Keep,    "keep")
          || !EXPgetnum(i, fields[3], &v.Default, "default")
          || !EXPgetnum(i, fields[4], &v.Purge,   "purge")) {
             free(patterns);
-            return FALSE;
+            return false;
         }
         /* These were turned into offsets, so the test is the opposite
          * of what you think it should be.  If Purge isn't forever,
@@ -414,12 +414,12 @@ EXPreadfile(FILE *F)
             if (v.Keep && v.Keep < v.Purge) {
                 fprintf(stderr, "Line %d keep>purge\n", i);
                 free(patterns);
-                return FALSE;
+                return false;
             }
             if (v.Default && v.Default < v.Purge) {
                 fprintf(stderr, "Line %d default>purge\n", i);
                 free(patterns);
-                return FALSE;
+                return false;
             }
         }
 
@@ -428,27 +428,27 @@ EXPreadfile(FILE *F)
             if (SawDefault) {
                 fprintf(stderr, "Line %d duplicate default\n", i);
                 free(patterns);
-                return FALSE;
+                return false;
             }
             EXPdefault.Keep    = v.Keep;
             EXPdefault.Default = v.Default;
             EXPdefault.Purge   = v.Purge;
             EXPdefault.Poison  = v.Poison;
-            SawDefault = TRUE;
+            SawDefault = true;
         }
 
         /* Assign to all groups that match the pattern and flags. */
         if ((j = EXPsplit(fields[0], ',', patterns, nGroups)) == -1) {
             fprintf(stderr, "Line %d too many patterns\n", i);
             free(patterns);
-            return FALSE;
+            return false;
         }
         for (k = 0; k < j; k++)
             EXPmatch(patterns[k], &v, mod);
     }
     free(patterns);
 
-    return TRUE;
+    return true;
 }
 
 /*
@@ -553,8 +553,8 @@ ARTreadschema(void)
     ARTOVERFIELD                *fp;
     int                         i;
     char                        buff[SMBUF];
-    bool                        foundxref = FALSE;
-    bool                        foundxreffull = FALSE;
+    bool                        foundxref = false;
+    bool                        foundxreffull = false;
 
     /* Open file, count lines. */
     path = concatpath(innconf->pathetc, _PATH_SCHEMA);
@@ -580,12 +580,12 @@ ARTreadschema(void)
             fp->NeedsHeader = EQ(p, "full");
         }
         else
-            fp->NeedsHeader = FALSE;
-        fp->HasHeader = FALSE;
+            fp->NeedsHeader = false;
+        fp->HasHeader = false;
         fp->Header = xstrdup(buff);
         fp->Length = strlen(buff);
         if (caseEQ(buff, "Xref")) {
-            foundxref = TRUE;
+            foundxref = true;
             foundxreffull = fp->NeedsHeader;
         }
         fp++;
@@ -698,13 +698,13 @@ OVfindheaderindex(void)
             }
         }
     }
-    ReadOverviewfmt = TRUE;
+    ReadOverviewfmt = true;
     return;
 }
 
 /*
 **  Do the work of expiring one line.  Assumes article still exists in the
-**  spool.  Returns TRUE if article should be purged, or return FALSE.
+**  spool.  Returns true if article should be purged, or return false.
 */
 bool
 OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
@@ -724,7 +724,7 @@ OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
     if (SMprobe(SELFEXPIRE, &token, NULL)) {
         if (!OVignoreselfexpire)
             /* this article should be kept */
-            return FALSE;
+            return false;
     }
     if (!ReadOverviewfmt) {
         OVfindheaderindex();
@@ -733,11 +733,11 @@ OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
     if (OVusepost) {
         if ((p = OVERGetHeader(data, Dateindex)) == NULL) {
             EXPoverindexdrop++;
-            return TRUE;
+            return true;
         }
         if ((when = parsedate(p, NULL)) == -1) {
             EXPoverindexdrop++;
-            return TRUE;
+            return true;
         }
     } else {
         when = arrived;
@@ -753,14 +753,14 @@ OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
     } else {
         if ((Xref = strchr(Xref, ' ')) == NULL) {
             EXPoverindexdrop++;
-            return TRUE;
+            return true;
         }
         for (Xref++; *Xref == ' '; Xref++)
             ;
     }
     if ((count = EXPsplit(Xref, ' ', arts, nGroups)) == -1) {
         EXPoverindexdrop++;
-        return TRUE;
+        return true;
     }
 
     /* arts is now an array of strings, each of which is a group name, a
@@ -773,25 +773,25 @@ OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
             fflush(stdout);
             fprintf(stderr, "Bad entry, \"%s\"\n", arts[i]);
             EXPoverindexdrop++;
-            return TRUE;
+            return true;
         }
         *p = '\0';
     }
 
     /* First check all postings */
-    poisoned = FALSE;
-    keeper = FALSE;
-    delete = FALSE;
-    purge = TRUE;
+    poisoned = false;
+    keeper = false;
+    delete = false;
+    purge = true;
     for (i = 0; i < count; ++i) {
         if ((krps[i] = EXPkeepit(arts[i], when, expires)) == Poison)
-            poisoned = TRUE;
+            poisoned = true;
         if (OVkeep && (krps[i] == Keep))
-            keeper = TRUE;
+            keeper = true;
         if ((krps[i] == Remove) && EQ(group, arts[i]))
-            delete = TRUE;
+            delete = true;
         if ((krps[i] == Keep))
-            purge = FALSE;
+            purge = false;
     }
     EXPprocessed++;
 
@@ -801,10 +801,10 @@ OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
             if (EQ(group, arts[0])) {
                 for (i = 0; i < count; i++)
                     arts[i][strlen(arts[i])] = ':';
-                OVEXPremove(token, FALSE, arts, count);
+                OVEXPremove(token, false, arts, count);
             }
             EXPoverindexdrop++;
-            return TRUE;
+            return true;
         }
     } else { /* not earliest mode */
         if ((!keeper && delete) || token.type == TOKEN_EMPTY) {
@@ -813,15 +813,15 @@ OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
             if (purge) {
                 for (i = 0; i < count; i++)
                     arts[i][strlen(arts[i])] = ':';
-                OVEXPremove(token, FALSE, arts, count);
+                OVEXPremove(token, false, arts, count);
             }
             EXPoverindexdrop++;
-            return TRUE;
+            return true;
         }
     }
 
     /* this article should be kept */
-    return FALSE;
+    return false;
 }
 
 bool
@@ -833,7 +833,7 @@ OVhisthasmsgid(struct history *h, const char *data)
         OVfindheaderindex();
     }
     if ((p = OVERGetHeader(data, Messageidindex)) == NULL)
-        return FALSE;
+        return false;
     return HISlookup(h, p, NULL, NULL, NULL, NULL);
 }
 
@@ -841,10 +841,10 @@ bool
 OVgroupmatch(const char *group)
 {
     int i;
-    bool wanted = FALSE;
+    bool wanted = false;
 
     if (OVnumpatterns == 0 || group == NULL)
-        return TRUE;
+        return true;
     for (i = 0; i < OVnumpatterns; i++) {
         switch (OVpatterns[i][0]) {
         case '!':
@@ -852,12 +852,12 @@ OVgroupmatch(const char *group)
                 break;
         case '@':
             if (uwildmat(group, &OVpatterns[i][1])) {
-                return FALSE;
+                return false;
             }
             break;
         default:
             if (uwildmat(group, OVpatterns[i]))
-                wanted = TRUE;
+                wanted = true;
         }
     }
     return wanted;

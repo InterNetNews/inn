@@ -55,16 +55,16 @@ SITEaddvariable(char *line)
     SITEVARIABLES *v, *w;
     
     if (*line != VARIABLE_CHAR)
-    	return FALSE;
+    	return false;
     	
     for (p = line + 1; *p != '\0' && CTYPE(isalnum, *p); p++)
         ;
     if (*p != '=')
-    	return FALSE;
+    	return false;
     if (p - line > 32) {
 	syslog(L_FATAL, "%s bad_newsfeed variable name '%s' too long", 
                LogName, line+1);
-	return FALSE;
+	return false;
     }
 
     /* Chop off trailing spaces. */
@@ -75,7 +75,7 @@ SITEaddvariable(char *line)
     /* Seperate variable name from contents. */
     *p++ = '\0';	
     if (*p == '\0')
-    	return FALSE;
+    	return false;
 
     /* Is variable already defined?  Free and reassign. */
     w = NULL;
@@ -105,7 +105,7 @@ SITEaddvariable(char *line)
             v->Elements++;
     }
     *q = '\0';
-    return TRUE;        
+    return true;        
 }
 
 static void
@@ -368,7 +368,7 @@ SITEsetlist(char **patlist, char *subbed, char *poison, bool *poisonEntry)
 	if (!*pat)
 	    continue;
 	if (!*poisonEntry && poisonvalue)
-	    *poisonEntry = TRUE;
+	    *poisonEntry = true;
 
 	/* See if pattern is a simple newsgroup name.  If so, set the
 	 * right subbed element for that one group (if found); if not,
@@ -454,7 +454,7 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
     sp->Buffer = b;
     sp->Master = NOSITE;
     sp->Funnel = NOSITE;
-    sp->PoisonEntry = FALSE;
+    sp->PoisonEntry = false;
     sp->Process = -1;
     sp->Next = sp->Prev = NOSITE;
     sp->Entry = Entry;
@@ -462,11 +462,11 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
     sp->FileFlags[0] = FEED_NAME;
     sp->FileFlags[1] = '\0';
     sp->Nice = innconf->nicekids;
-    sp->ControlOnly = FALSE;
-    sp->DontWantNonExist = FALSE;
-    sp->NeedOverviewCreation = FALSE;
-    sp->FeedwithoutOriginator = FALSE;
-    sp->DropFiltered = FALSE;
+    sp->ControlOnly = false;
+    sp->DontWantNonExist = false;
+    sp->NeedOverviewCreation = false;
+    sp->FeedwithoutOriginator = false;
+    sp->DropFiltered = false;
 
     /* Nip off the first field, the site name. */
     if ((f2 = strchr(Entry, NF_FIELD_SEP)) == NULL)
@@ -507,8 +507,8 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
     if ((f4 = strchr(f3, NF_FIELD_SEP)) == NULL)
 	return "missing field 4";
     *f4++ = '\0';
-    JustModerated = FALSE;
-    JustUnmoderated = FALSE;
+    JustModerated = false;
+    JustUnmoderated = false;
     sp->Type = FTfile;
     for (save = argv = CommaSplit(f3); (p = *argv++) != NULL; )
 	switch (*p) {
@@ -529,18 +529,18 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 		switch (*p) {
 		default:
 		    return "unknown A param in field 3";
-		case 'c': sp->IgnoreControl = TRUE;
-			  sp->ControlOnly = FALSE;
+		case 'c': sp->IgnoreControl = true;
+			  sp->ControlOnly = false;
 			  break;
-		case 'C': sp->ControlOnly = TRUE;
-			  sp->IgnoreControl = FALSE;
+		case 'C': sp->ControlOnly = true;
+			  sp->IgnoreControl = false;
 			  break;
-		case 'd': sp->DistRequired = TRUE;	break;
-		case 'e': sp->DontWantNonExist = TRUE;	break;
-		case 'f': sp->DropFiltered = TRUE;	break;
-		case 'o': sp->NeedOverviewCreation = TRUE;	break;
-		case 'O': sp->FeedwithoutOriginator = TRUE;	break;
-		case 'p': sp->IgnorePath = TRUE;	break;
+		case 'd': sp->DistRequired = true;	break;
+		case 'e': sp->DontWantNonExist = true;	break;
+		case 'f': sp->DropFiltered = true;	break;
+		case 'o': sp->NeedOverviewCreation = true;	break;
+		case 'O': sp->FeedwithoutOriginator = true;	break;
+		case 'p': sp->IgnorePath = true;	break;
 		}
 	    break;
 	case 'B':
@@ -590,8 +590,8 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 		switch (*p) {
 		default:
 		    return "unknown N param in field 3";
-		case 'm': JustModerated = TRUE;		break;
-		case 'u': JustUnmoderated = TRUE;	break;
+		case 'm': JustModerated = true;		break;
+		case 'u': JustUnmoderated = true;	break;
 		}
 	    break;
 	case 'O':
@@ -631,30 +631,30 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 		default:
 		    return "unknown W param in field 3";
 		case FEED_FNLNAMES:		/* Funnel feed names	*/
-		    sp->FNLwantsnames = TRUE;
+		    sp->FNLwantsnames = true;
 		    break;
 		case FEED_HEADERS:		/* Article headers	*/
-		    NeedHeaders = TRUE;
+		    NeedHeaders = true;
 		    break;
 		case FEED_OVERVIEW:
-		    NeedOverview = TRUE;	/* Overview data	*/
+		    NeedOverview = true;	/* Overview data	*/
 		    break;
 		case FEED_PATH:			/* Path			*/
-		    NeedPath = TRUE;
+		    NeedPath = true;
 		    break;
 		case FEED_BYTESIZE:		/* Size in bytes	*/
 		case FEED_FULLNAME:		/* Full filename	*/
 		case FEED_HASH:			/* Hash			*/
 		case FEED_HDR_DISTRIB:		/* Distribution header	*/
 		case FEED_STOREDGROUP:		/* stored newsgroup	*/
-		    NeedStoredGroup = TRUE;
+		    NeedStoredGroup = true;
 		    break;
 		case FEED_HDR_NEWSGROUP:	/* Newsgroup header	*/
 		case FEED_MESSAGEID:		/* Message-ID		*/
 		case FEED_NAME:			/* Filename		*/
 		case FEED_NEWSGROUP:		/* Newsgroup		*/
 		case FEED_REPLIC:		/* Replication data	*/
-		    NeedReplicdata = TRUE;
+		    NeedReplicdata = true;
 		    break;
 		case FEED_SITE:			/* Site that gave it	*/
 		case FEED_TIMERECEIVED:		/* When received	*/
@@ -680,11 +680,11 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 	if (JustModerated)
 	    for (p = subbed, ngp = Groups, i = nGroups; --i >= 0; ngp++, p++)
 		if (ngp->Rest[0] != NF_FLAG_MODERATED)
-		    *p = FALSE;
+		    *p = false;
 	if (JustUnmoderated)
 	    for (p = subbed, ngp = Groups, i = nGroups; --i >= 0; ngp++, p++)
 		if (ngp->Rest[0] == NF_FLAG_MODERATED)
-		    *p = FALSE;
+		    *p = false;
     }
 
     /* Get the fourth field, the param. */
@@ -769,7 +769,7 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 	    nsp = &Sites[nsp->Master];
 	if (nsp != sp) {
 	    sp->Master = nsp - Sites;
-	    nsp->IsMaster = TRUE;
+	    nsp->IsMaster = true;
 	}
     }
 
@@ -795,7 +795,7 @@ SITEfunnelpatch(void)
 	    length += 1 + strlen(sp->Name);
 
     /* Loop over all funnel feeds. */
-    for (result = TRUE, i = nSites, sp = Sites; --i >= 0; sp++) {
+    for (result = true, i = nSites, sp = Sites; --i >= 0; sp++) {
 	if (sp->Name == NULL || sp->Type != FTfunnel)
 	    continue;
 
@@ -803,19 +803,19 @@ SITEfunnelpatch(void)
 	if (sp->Param == NULL) {
 	    syslog(L_FATAL, "%s funnel NULL", sp->Name);
 	    SITEfree(sp);
-	    result = FALSE;
+	    result = false;
 	    continue;
 	}
 	if ((funnel = SITEfind(sp->Param)) == NULL) {
 	    syslog(L_FATAL, "%s funnel_bad", sp->Name);
 	    SITEfree(sp);
-	    result = FALSE;
+	    result = false;
 	    continue;
 	}
 	if (funnel->Type == FTfunnel) {
 	    syslog(L_FATAL, "%s funnels to funnel %s", sp->Name, funnel->Name);
 	    SITEfree(sp);
-	    result = FALSE;
+	    result = false;
 	    continue;
 	}
 	if (funnel->FNLnames.data == NULL) {
@@ -852,7 +852,7 @@ SITEparsefile(bool StartSite)
   /* Free old sites info. */
   if (Sites) {
     for (i = nSites, sp = Sites; --i >= 0; sp++) {
-      SITEflush(sp, FALSE);
+      SITEflush(sp, false);
       SITEfree(sp);
     }
     free(Sites);
@@ -860,7 +860,7 @@ SITEparsefile(bool StartSite)
   }
 
   /* Count the number of sites. */
-  for (strings = SITEreadfile(FALSE), nSites = 0; strings[nSites]; nSites++)
+  for (strings = SITEreadfile(false), nSites = 0; strings[nSites]; nSites++)
     continue;
   Sites = xmalloc(nSites * sizeof(SITE));
   memset(Sites, '\0', nSites * sizeof(SITE));
@@ -870,7 +870,7 @@ SITEparsefile(bool StartSite)
   poison = xmalloc(nGroups);
   /* reset global variables */
   NeedHeaders = NeedOverview = NeedPath = NeedStoredGroup = NeedReplicdata
-    = FALSE;
+    = false;
 
   ME.Prev = 0; /* Used as a flag to ensure exactly one ME entry */
   for (sp = Sites, errors = 0, setuperrors = 0, i = 0; i < nSites; i++) {
@@ -896,7 +896,7 @@ SITEparsefile(bool StartSite)
       setuperrors++;
       continue;
     }
-    sp->Working = TRUE;
+    sp->Working = true;
     sp++;
   }
   if (ME.Prev != NOSITE) {

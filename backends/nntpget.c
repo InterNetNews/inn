@@ -78,14 +78,14 @@ SITEread(SITE *sp, char *start)
 	    if (i < 0) {
 		if (errno == EINTR)
 		    goto Again;
-		return FALSE;
+		return false;
 	    }
 	    if (i == 0
 	     || !FD_ISSET(sp->Rfd, &rmask)
 	     || (sp->Count = read(sp->Rfd, sp->Buffer, sizeof sp->Buffer)) < 0)
-		return FALSE;
+		return false;
 	    if (sp->Count == 0)
-		return FALSE;
+		return false;
 	    sp->bp = sp->Buffer;
 	}
 
@@ -102,7 +102,7 @@ SITEread(SITE *sp, char *start)
     if (p > start && p < end && p[-1] == '\r')
 	p--;
     *p = '\0';
-    return TRUE;
+    return true;
 }
 
 
@@ -204,7 +204,7 @@ main(int ac, char *av[])
     FILE	*F;
     bool	Offer;
     bool	Error;
-    bool	Verbose = FALSE;
+    bool	Verbose = false;
     char	*Update;
     char	*p;
 
@@ -215,7 +215,7 @@ main(int ac, char *av[])
     distributions = NULL;
     Groups = NULL;
     Since = NULL;
-    Offer = FALSE;
+    Offer = false;
     Update = NULL;
     if (!innconf_read(NULL))
         exit(1);
@@ -256,7 +256,7 @@ main(int ac, char *av[])
 	    if (!History)
                 sysdie("cannot open history");
             free(path);
-	    Offer = TRUE;
+	    Offer = true;
 	    break;
 	case 't':
 	    if (Since)
@@ -264,7 +264,7 @@ main(int ac, char *av[])
 	    Since = optarg;
 	    break;
 	case 'v':
-	    Verbose = TRUE;
+	    Verbose = true;
 	    break;
 	}
     ac -= optind;
@@ -393,16 +393,16 @@ main(int ac, char *av[])
             notice("%s...", mesgid);
 
 	/* Read each line in the article and write it. */
-	for (Error = FALSE; ; ) {
+	for (Error = false; ; ) {
 	    if (!SITEread(Remote, buff)) {
                 syswarn("cannot read %s from %s", mesgid, Remote->Name);
-		Error = TRUE;
+		Error = true;
 		break;
 	    }
 	    if (Offer) {
 		if (!SITEwrite(Local, buff, (int)strlen(buff))) {
                     syswarn("cannot send %s", mesgid);
-		    Error = TRUE;
+		    Error = true;
 		    break;
 		}
 	    }

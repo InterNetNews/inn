@@ -75,12 +75,12 @@ PYcontrol(char **av)
             return "1 Python filter already enabled";
         else if (PYFilterObject == NULL)
             return "1 Python filter not defined" ;
-        PYfilter(TRUE);
+        PYfilter(true);
         break;
     case 'n':
         if (!PythonFilterActive)
             return "1 Python filter already disabled";
-        PYfilter(FALSE);
+        PYfilter(false);
         break;
     }
     return NULL;
@@ -621,17 +621,17 @@ PYreadfilter(void)
 
     if ((newmodule = PyImport_ReloadModule(PYFilterModule)) == NULL) {
 	syslog(L_ERROR, "cant reload python filter module");
-	PYfilter(FALSE);
+	PYfilter(false);
 	return 0;
     }
     Py_DECREF(PYFilterModule);
     PYFilterModule = newmodule;
     if (PYFilterObject == NULL) {
 	syslog(L_ERROR, "python reload error, filter object not defined");
-	PYfilter(FALSE);
+	PYfilter(false);
 	return 0;
     }
-    PYfilter(TRUE);
+    PYfilter(true);
     PYdefmethods();
     return 1;
 }
@@ -669,9 +669,9 @@ PYsetup(void)
 
     if (PYFilterObject == NULL) {
 	syslog(L_ERROR, "python filter object is not defined");
-	PYfilter(FALSE);
+	PYfilter(false);
     } else {
-	PYfilter(TRUE);
+	PYfilter(true);
 	PYdefmethods();
 	syslog(L_NOTICE, "defined python methods");
     }

@@ -270,10 +270,10 @@ struct eqgrp {
 #define VER_REPORT 3		/* output summary & actions performed */
 #define VER_FULL 4		/* output all summary, actins and debug */
 #define VER_MAX 4		/* maximum -v level */
-#define D_IF_SUMM (v_flag >= VER_SUMM_IF_WORK) /* TRUE => give summary always */
-#define D_REPORT (v_flag >= VER_REPT_IF_WORK)  /* TRUE => give reports */
-#define D_BUG (v_flag == VER_FULL)	       /* TRUE => debug processing */
-#define D_SUMMARY (v_flag >= VER_REPORT)       /* TRUE => give summary always */
+#define D_IF_SUMM (v_flag >= VER_SUMM_IF_WORK) /* true => give summary always */
+#define D_REPORT (v_flag >= VER_REPT_IF_WORK)  /* true => give reports */
+#define D_BUG (v_flag == VER_FULL)	       /* true => debug processing */
+#define D_SUMMARY (v_flag >= VER_REPORT)       /* true => give summary always */
 
 /* flag and arg related defaults */
 int bork_host1_flag = 0; 	/* 1 => -b 1 or -b 12 or -b 21 given */
@@ -723,7 +723,7 @@ get_active(host, hostid, len, grp, errs)
     int ucnt;			/* number of entries to be used */
     int namelen;		/* length of newsgroup name */
     int is_file;		/* 1 => host is actually a filename */
-    int num_check;		/* TRUE => check for all numeric components */
+    int num_check;		/* true => check for all numeric components */
     char *rhost;
     int rport;
     char *p;
@@ -1110,8 +1110,8 @@ get_active(host, hostid, len, grp, errs)
  *
  * given:
  *	name	newsgroup name to check
- *	num_chk	TRUE => all numeric newsgroups components are invalid
- *		FALSE => do not check for numeric newsgroups
+ *	num_chk	true => all numeric newsgroups components are invalid
+ *		false => do not check for numeric newsgroups
  *
  * returns:
  *	0	group is ok
@@ -1120,10 +1120,10 @@ get_active(host, hostid, len, grp, errs)
 static int
 bad_grpname(name, num_chk)
     char *name;			/* newsgroup name to check */
-    int num_chk;		/* TRUE => check for numeric newsgroup */
+    int num_chk;		/* true => check for numeric newsgroup */
 {
     char *p;
-    int non_num;	/* TRUE => found a non-numeric, non-. character */
+    int non_num;	/* true => found a non-numeric, non-. character */
     int level;		/* group levels (.'s) */
 
     /* firewall */
@@ -1137,9 +1137,9 @@ bad_grpname(name, num_chk)
     }
     /* set non_num as needed */
     if (isalpha((int)name[0])) {
-	non_num = TRUE;
+	non_num = true;
     } else if ((int)isdigit((int)name[0])) {
-	non_num = FALSE;
+	non_num = false;
     } else {
 	return 1;
     }
@@ -1155,7 +1155,7 @@ bad_grpname(name, num_chk)
 
 	/* alpha chars are ok */
 	if (isalpha((int)*p)) {
-	    non_num = TRUE;
+	    non_num = true;
 	    continue;
 	}
 
@@ -1166,7 +1166,7 @@ bad_grpname(name, num_chk)
 
 	/* +, - and _ are ok */
 	if (*p == '+' || *p == '-' || *p == '_') {
-	    non_num = TRUE;
+	    non_num = true;
 	    continue;
 	}
 
@@ -1193,9 +1193,9 @@ bad_grpname(name, num_chk)
 	    if ((!num_chk || non_num) && isascii(*(p+1)) && isalnum((int)*(p+1))) {
 		++p;		/* '.' is ok, and so is the next char */
 		if (isdigit((int)*p)) {	/* reset non_num as needed */
-		    non_num = FALSE;
+		    non_num = false;
 		} else {
-		    non_num = TRUE;
+		    non_num = true;
 		}
 		continue;
 	    }
@@ -2730,8 +2730,8 @@ exec_cmd(mode, cmd, grp, type, who)
  *	name	name of newsgroup to check
  *
  * returns:
- *	FALSE	hierarchy already exists
- *	TRUE	hierarchy does not exist, name represents a new hierarchy
+ *	false	hierarchy already exists
+ *	true	hierarchy does not exist, name represents a new hierarchy
  *
  * NOTE: This function assumes that we are at the top of the news spool.
  */

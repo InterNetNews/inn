@@ -82,7 +82,7 @@ char *HandleHeaders(char *article)
    SAVETMPS ;
    
    /* Create the Perl Hash */
-   hdr = perl_get_hv("hdr", TRUE);
+   hdr = perl_get_hv("hdr", true);
    for (hp = Table; hp < EndOfTable; hp++) {
       if (hp->Body)
          hv_store(hdr, (char *) hp->Name, strlen(hp->Name), newSVpv(hp->Body, 0), 0);
@@ -106,10 +106,10 @@ char *HandleHeaders(char *article)
         hv_store(hdr, p, (s - p) - 1, newSVpv(t, 0), 0);
    }
    /* Store user */
-   sv_setpv(perl_get_sv("user",TRUE), PERMuser);
+   sv_setpv(perl_get_sv("user",true), PERMuser);
    
    /* Store body */
-   body = perl_get_sv("body", TRUE);
+   body = perl_get_sv("body", true);
    sv_setpv(body, article);
 
    /* Call the filtering function */
@@ -118,10 +118,10 @@ char *HandleHeaders(char *article)
    SPAGAIN;
 
    /* Restore headers */
-   modswitch = perl_get_sv("modify_headers",FALSE);
-   HeadersModified = FALSE;
+   modswitch = perl_get_sv("modify_headers",false);
+   HeadersModified = false;
    if (SvTRUE(modswitch)) {
-     HeadersModified = TRUE;
+     HeadersModified = true;
      i = 0;
 
 #ifdef DEBUG_MODIFY     
@@ -178,7 +178,7 @@ char *HandleHeaders(char *article)
        syslog (L_ERROR,"Perl function filter_post died: %s",
                SvPV(ERRSV, PL_na)) ;
        (void)POPs ;
-       PerlFilter (FALSE) ;
+       PerlFilter (false) ;
    } else if (rc == 1) {
        p = POPp;
        if (p != NULL && *p != '\0') {
@@ -201,8 +201,8 @@ void loadPerl(void) {
     path = concatpath(innconf->pathfilter, _PATH_PERL_FILTER_NNRPD);
     PERLsetup(NULL, path, "filter_post");
     free(path);
-    PerlFilter(TRUE);
-    PerlLoaded = TRUE;
+    PerlFilter(true);
+    PerlLoaded = true;
 }
 
 void perlAccess(char *clientHost, char *clientIP, char *serverHost, char *user, struct vector *access_vec) {
@@ -218,7 +218,7 @@ void perlAccess(char *clientHost, char *clientIP, char *serverHost, char *user, 
   ENTER;
   SAVETMPS;
 
-  attribs = perl_get_hv("attributes", TRUE);
+  attribs = perl_get_hv("attributes", true);
   hv_store(attribs, "hostname", 8, newSVpv(clientHost, 0), 0);
   hv_store(attribs, "ipaddress", 9, newSVpv(clientIP, 0), 0);
   hv_store(attribs, "interface", 9, newSVpv(serverHost, 0), 0);
@@ -229,7 +229,7 @@ void perlAccess(char *clientHost, char *clientIP, char *serverHost, char *user, 
   if (perl_get_cv("access", 0) == NULL) {
     syslog(L_ERROR, "Perl function access not defined");
     Reply("%d Internal Error (3).  Goodbye\r\n", NNTP_ACCESS_VAL);
-    ExitWithStats(1, TRUE);
+    ExitWithStats(1, true);
   }
 
   rc = perl_call_pv("access", G_EVAL|G_ARRAY);
@@ -240,13 +240,13 @@ void perlAccess(char *clientHost, char *clientIP, char *serverHost, char *user, 
     syslog(L_ERROR, "Perl function access died: %s",
            SvPV(ERRSV, PL_na));
     Reply("%d Internal Error (1).  Goodbye\r\n", NNTP_ACCESS_VAL);
-    ExitWithStats(1, TRUE);
+    ExitWithStats(1, true);
   }
 
   if ((rc % 2) != 0) {
     syslog(L_ERROR, "Perl function access returned an odd number of arguments: %i", rc);
     Reply("%d Internal Error (2).  Goodbye\r\n", NNTP_ACCESS_VAL);
-    ExitWithStats(1, TRUE);
+    ExitWithStats(1, true);
   }
 
   vector_resize(access_vec, (rc / 2));
@@ -289,7 +289,7 @@ void perlAuthInit(void) {
     if (perl_get_cv("auth_init", 0) == NULL) {
       syslog(L_ERROR, "Perl function auth_init not defined");
       Reply("%d Internal Error (3).  Goodbye\r\n", NNTP_ACCESS_VAL);
-      ExitWithStats(1, TRUE);
+      ExitWithStats(1, true);
     }
 
     rc = perl_call_pv("auth_init", G_EVAL|G_DISCARD);
@@ -301,7 +301,7 @@ void perlAuthInit(void) {
 	syslog(L_ERROR, "Perl function authenticate died: %s",
 	       SvPV(ERRSV, PL_na));
 	Reply("%d Internal Error (1).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1, TRUE);
+	ExitWithStats(1, true);
     }
 
     while (rc--) {
@@ -327,12 +327,12 @@ int perlAuthenticate(char *clientHost, char *clientIpString, char *serverHost, c
     if (perl_get_cv("authenticate", 0) == NULL) {
         syslog(L_ERROR, "Perl function authenticate not defined");
         Reply("%d Internal Error (3).  Goodbye\r\n", NNTP_ACCESS_VAL);
-        ExitWithStats(1, TRUE);
+        ExitWithStats(1, true);
     }
 
     ENTER;
     SAVETMPS;
-    attribs = perl_get_hv("attributes", TRUE);
+    attribs = perl_get_hv("attributes", true);
     hv_store(attribs, "hostname", 8, newSVpv(clientHost, 0), 0);
     hv_store(attribs, "ipaddress", 9, newSVpv(clientIpString, 0), 0);
     hv_store(attribs, "interface", 9, newSVpv(serverHost, 0), 0);
@@ -348,13 +348,13 @@ int perlAuthenticate(char *clientHost, char *clientIpString, char *serverHost, c
 	syslog(L_ERROR, "Perl function authenticate died: %s",
 	       SvPV(ERRSV, PL_na));
 	Reply("%d Internal Error (1).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1, FALSE);
+	ExitWithStats(1, false);
     }
 
     if ((rc != 3) && (rc != 2)) {
 	syslog(L_ERROR, "Perl function authenticate returned wrong number of results: %d", rc);
 	Reply("%d Internal Error (2).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1, FALSE);
+	ExitWithStats(1, false);
     }
 
     if (rc == 3) {
@@ -371,7 +371,7 @@ int perlAuthenticate(char *clientHost, char *clientIpString, char *serverHost, c
 	code = PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL;
 
     if (code == NNTP_AUTH_NEEDED_VAL) 
-	PERMneedauth = TRUE;
+	PERMneedauth = true;
 
     hv_undef(attribs);
 

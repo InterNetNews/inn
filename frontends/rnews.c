@@ -198,7 +198,7 @@ static void Reject(const char *article, const char *reason, const char *arg)
 
 
 /*
-**  Process one article.  Return TRUE if the article was okay; FALSE if the
+**  Process one article.  Return true if the article was okay; false if the
 **  whole batch needs to be saved (such as when the server goes down or if
 **  the file is corrupted).
 */
@@ -220,7 +220,7 @@ static bool Process(char *article)
 
     /* Empty article? */
     if (*article == '\0')
-	return TRUE;
+	return true;
 
     /* Convert the article to wire format. */
     wirefmt = ToWireFmt(article, strlen(article), &length);
@@ -231,7 +231,7 @@ static bool Process(char *article)
         if (p == NULL) {
             free(wirefmt);
 	    Reject(article, "bad_article missing %s", hp->Name);
-	    return FALSE;
+	    return false;
 	}
 	if (IS_MESGID(hp)) {
 	    id = p;
@@ -251,7 +251,7 @@ static bool Process(char *article)
     if ((p = strchr(id, '\r')) == NULL) {
         free(wirefmt);
 	Reject(article, "bad_article unterminated %s header", "Message-ID");
-	return FALSE;
+	return false;
     }
     msgid = xstrndup(id, p - id);
     fprintf(ToServer, "ihave %s\r\n", msgid);
@@ -264,22 +264,22 @@ static bool Process(char *article)
     if (fgets(buff, sizeof buff, FromServer) == NULL) {
         free(wirefmt);
         syswarn("cannot fgets after ihave");
-	return FALSE;
+	return false;
     }
     REMclean(buff);
     if (!CTYPE(isdigit, buff[0])) {
         free(wirefmt);
         notice("bad_reply after ihave %s", buff);
-	return FALSE;
+	return false;
     }
     switch (atoi(buff)) {
     default:
         free(wirefmt);
 	Reject(article, "unknown_reply after ihave %s", buff);
-	return TRUE;
+	return true;
     case NNTP_RESENDIT_VAL:
         free(wirefmt);
-	return FALSE;
+	return false;
     case NNTP_SENDIT_VAL:
 	break;
     case NNTP_HAVEIT_VAL:
@@ -295,40 +295,40 @@ static bool Process(char *article)
 	}
 #endif	/* defined(FILE_RNEWS_LOG_DUPS) */
         free(wirefmt);
-	return TRUE;
+	return true;
     }
 
     /* Send the article to the server. */
     if (fwrite(wirefmt, length, 1, ToServer) != 1) {
         free(wirefmt);
         sysnotice("cant sendarticle");
-	return FALSE;
+	return false;
     }
     free(wirefmt);
 
     /* Process server reply code. */
     if (fgets(buff, sizeof buff, FromServer) == NULL) {
         syswarn("cannot fgets after article");
-	return FALSE;
+	return false;
     }
     REMclean(buff);
     if (!CTYPE(isdigit, buff[0])) {
         notice("bad_reply after article %s", buff);
-	return FALSE;
+	return false;
     }
     switch (atoi(buff)) {
     default:
         notice("unknown_reply after article %s", buff);
 	/* FALLTHROUGH */
     case NNTP_RESENDIT_VAL:
-	return FALSE;
+	return false;
     case NNTP_TOOKIT_VAL:
 	break;
     case NNTP_REJECTIT_VAL:
 	Reject(article, "rejected %s", buff);
 	break;
     }
-    return TRUE;
+    return true;
 }
 
 
@@ -427,7 +427,7 @@ ReadBytecount(int fd, int artsize)
 	    article[artsize] = '\0';
 	    Reject(article, "short read (%s?)", strerror(i));
 #endif	/* 0 */
-	    return TRUE;
+	    return true;
 	}
     if (p[-1] != '\n')
 	*p++ = '\n';
@@ -454,12 +454,12 @@ ReadLine(char *p, int size, int fd)
 	}
 	if (*p == '\n') {
 	    *p = '\0';
-	    return TRUE;
+	    return true;
 	}
     }
     *p = '\0';
     warn("bad_line too long %s", save);
-    return FALSE;
+    return false;
 }
 
 
@@ -483,11 +483,11 @@ UnpackOne(int *fdp, size_t *countp)
     int		len;
 
     *countp = 0;
-    for (SawCunbatch = FALSE, HadCount = FALSE; ; ) {
+    for (SawCunbatch = false, HadCount = false; ; ) {
 	/* Get the first character. */
 	if ((i = read(*fdp, &buff[0], 1)) < 0) {
             syswarn("cannot read first character");
-	    return FALSE;
+	    return false;
 	}
 	if (i == 0)
 	    break;
@@ -497,16 +497,16 @@ UnpackOne(int *fdp, size_t *countp)
 	else if (buff[0] != '#')
 	    /* Not a batch file.  If we already got one count, the batch
 	     * is corrupted, else read rest of input as an article. */
-	    return HadCount ? FALSE : ReadRemainder(*fdp, buff[0], '\0');
+	    return HadCount ? false : ReadRemainder(*fdp, buff[0], '\0');
 
 	/* Get the second character. */
 	if ((i = read(*fdp, &buff[1], 1)) < 0) {
             syswarn("cannot read second character");
-	    return FALSE;
+	    return false;
 	}
 	if (i == 0)
 	    /* A one-byte batch? */
-	    return FALSE;
+	    return false;
 
 	/* Check second magic character. */
 	/* gzipped ($1f$8b) or compressed ($1f$9d) */
@@ -517,47 +517,47 @@ UnpackOne(int *fdp, size_t *countp)
 	    lseek(*fdp, 0, 0); /* Back to the beginning */
 	    *fdp = StartChild(*fdp, _PATH_GZIP, cargv);
 	    if (*fdp < 0)
-	        return FALSE;
+	        return false;
 	    (*countp)++;
-	    SawCunbatch = TRUE;
+	    SawCunbatch = true;
 	    continue;
 	}
 	if (buff[1] != '!')
-	    return HadCount ? FALSE : ReadRemainder(*fdp, buff[0], buff[1]);
+	    return HadCount ? false : ReadRemainder(*fdp, buff[0], buff[1]);
 
 	/* Some kind of batch -- get the command. */
 	if (!ReadLine(&buff[2], (int)(sizeof buff - 3), *fdp))
-	    return FALSE;
+	    return false;
 
 	if (strncmp(buff, "#! rnews ", 9) == 0) {
 	    artsize = atoi(&buff[9]);
 	    if (artsize <= 0) {
                 syswarn("bad_line bad count %s", buff);
-		return FALSE;
+		return false;
 	    }
-	    HadCount = TRUE;
+	    HadCount = true;
 	    if (ReadBytecount(*fdp, artsize))
 		continue;
-	    return FALSE;
+	    return false;
 	}
 
 	if (HadCount)
 	    /* Already saw a bytecount -- probably corrupted. */
-	    return FALSE;
+	    return false;
 
 	if (strcmp(buff, "#! cunbatch") == 0) {
 	    if (SawCunbatch) {
                 syswarn("nested_cunbatch");
-		return FALSE;
+		return false;
 	    }
 	    cargv[0] = UNPACK;
 	    cargv[1] = "-d";
 	    cargv[2] = NULL;
 	    *fdp = StartChild(*fdp, _PATH_GZIP, cargv);
 	    if (*fdp < 0)
-		return FALSE;
+		return false;
 	    (*countp)++;
-	    SawCunbatch = TRUE;
+	    SawCunbatch = true;
 	    continue;
 	}
 
@@ -584,15 +584,15 @@ UnpackOne(int *fdp, size_t *countp)
 	    }
 	*fdp = StartChild(*fdp, path, cargv);
 	if (*fdp < 0)
-	    return FALSE;
+	    return false;
 	(*countp)++;
 	continue;
 #else
         warn("bad_format unknown command %s", buff);
-	return FALSE;
+	return false;
 #endif	/* defined(DO_RNEWSPROGS) */
     }
-    return TRUE;
+    return true;
 }
 
 
@@ -786,7 +786,7 @@ static bool OpenRemote(char *server, int port, char *buff)
     else
 	i = NNTPremoteopen(port, &FromServer, &ToServer, buff);
     if (i < 0)
-	return FALSE;
+	return false;
 
     *buff = '\0';
     if (NNTPsendpassword(server, FromServer, ToServer) < 0) {
@@ -794,9 +794,9 @@ static bool OpenRemote(char *server, int port, char *buff)
 	fclose(FromServer);
 	fclose(ToServer);
 	errno = oerrno;
-	return FALSE;
+	return false;
     }
-    return TRUE;
+    return true;
 }
 
 
@@ -864,7 +864,7 @@ int main(int ac, char *av[])
 	    port = atoi(optarg);
 	    break;
 	case 'v':
-	    Verbose = TRUE;
+	    Verbose = true;
 	    break;
 	case 'r':
 	case 'S':

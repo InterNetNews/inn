@@ -707,7 +707,7 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize,
     }
     /* shouldn't be anyone else locking our file, since temp file has unique
        PID-based name ... */
-    if (!inn_lock_file(fd, INN_LOCK_WRITE, FALSE)) {
+    if (!inn_lock_file(fd, INN_LOCK_WRITE, false)) {
 	CAFError(CAF_ERR_IO);
 	close(fd);
 	return -1;
@@ -756,7 +756,7 @@ CAFOpenArtWrite(char *path, ARTNUM *artp, int waitlock, size_t size)
 {
     int fd;
 
-    while (TRUE) {
+    while (true) {
 	/* try to open the file and lock it. */
 	if ((fd = open(path, O_RDWR)) < 0) {
 	    /* if ENOENT, try creating CAF file, otherwise punt. */
@@ -796,7 +796,7 @@ CAFOpenArtWrite(char *path, ARTNUM *artp, int waitlock, size_t size)
 	}
 
 	/* try a nonblocking lock attempt first. */
-	if (inn_lock_file(fd, INN_LOCK_WRITE, FALSE)) break;
+	if (inn_lock_file(fd, INN_LOCK_WRITE, false)) break;
 
 	if (!waitlock) {
 	    CAFError(CAF_ERR_FILEBUSY);
@@ -804,7 +804,7 @@ CAFOpenArtWrite(char *path, ARTNUM *artp, int waitlock, size_t size)
 	    return -1;
 	}
 	/* wait around to try and get a lock. */
-	inn_lock_file(fd, INN_LOCK_WRITE, TRUE);
+	inn_lock_file(fd, INN_LOCK_WRITE, true);
 	/*
         ** and then close and reopen the file, in case someone changed the
 	** file out from under us.
@@ -1150,9 +1150,9 @@ CAFRemoveMultArts(char *path, unsigned int narts, ARTNUM *artnums)
     ARTNUM art;
     unsigned int numblksfreed, i, j;
     off_t curblk;
-    int errorfound = FALSE;
+    int errorfound = false;
 
-    while (TRUE) {
+    while (true) {
 	/* try to open the file and lock it */
 	if ((fd = open(path, O_RDWR)) < 0) {
 	    /* if ENOENT, CAF file isn't there, so return ARTNOTHERE, otherwise it's an I/O error. */
@@ -1165,10 +1165,10 @@ CAFRemoveMultArts(char *path, unsigned int narts, ARTNUM *artnums)
 	    }
 	}
 	/* try a nonblocking lock attempt first. */
-	if (inn_lock_file(fd, INN_LOCK_WRITE, FALSE)) break;
+	if (inn_lock_file(fd, INN_LOCK_WRITE, false)) break;
 
 	/* wait around to try and get a lock. */
-	inn_lock_file(fd, INN_LOCK_WRITE, TRUE);
+	inn_lock_file(fd, INN_LOCK_WRITE, true);
 	/*
         ** and then close and reopen the file, in case someone changed the
 	** file out from under us.
@@ -1193,7 +1193,7 @@ CAFRemoveMultArts(char *path, unsigned int narts, ARTNUM *artnums)
 	/* Is the requested article even in the file? */
 	if (art < head.Low || art > head.High) {
 	    CAFError(CAF_ERR_ARTNOTHERE);
-	    errorfound = TRUE; 
+	    errorfound = true; 
 	    continue; /* don't abandon the whole remove if just one art is missing */
 	}
 
@@ -1205,7 +1205,7 @@ CAFRemoveMultArts(char *path, unsigned int narts, ARTNUM *artnums)
 
 	if (tocent.Size == 0) {
 	    CAFError(CAF_ERR_ARTNOTHERE);
-	    errorfound = TRUE; 
+	    errorfound = true; 
 	    continue; /* don't abandon the whole remove if just one art is missing */
 	}
 
@@ -1255,7 +1255,7 @@ CAFRemoveMultArts(char *path, unsigned int narts, ARTNUM *artnums)
 	return -1;
     }
 
-    if (CAFClean(path, 0, 10.0) < 0) errorfound=TRUE;
+    if (CAFClean(path, 0, 10.0) < 0) errorfound=true;
 
     return errorfound ? -1 : 0;
 }
@@ -1371,7 +1371,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 
     /* allocate buffer for newpath */
     newpath = xmalloc(strlen(path) + 10);
-    while (TRUE) {
+    while (true) {
 	/* try to open the file and lock it. */
 	if ((fdin = open(path, O_RDWR)) < 0) {
 	    /*
@@ -1387,10 +1387,10 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 	}
 
 	/* try a nonblocking lock attempt first. */
-	if (inn_lock_file(fdin, INN_LOCK_WRITE, FALSE)) break;
+	if (inn_lock_file(fdin, INN_LOCK_WRITE, false)) break;
 
 	/* wait around to try and get a lock. */
-	inn_lock_file(fdin, INN_LOCK_WRITE, TRUE);
+	inn_lock_file(fdin, INN_LOCK_WRITE, true);
 	/*
         ** and then close and reopen the file, in case someone changed the
 	** file out from under us.

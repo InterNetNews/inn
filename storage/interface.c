@@ -32,10 +32,10 @@ static STORAGE_SUB      *subscriptions = NULL;
 static unsigned int     typetoindex[256];
 int                     SMerrno;
 char                    *SMerrorstr = NULL;
-static bool             ErrorAlloc = FALSE;
-static bool             Initialized = FALSE;
-bool			SMopenmode = FALSE;
-bool			SMpreopen = FALSE;
+static bool             ErrorAlloc = false;
+static bool             Initialized = false;
+bool			SMopenmode = false;
+bool			SMpreopen = false;
 
 /*
 ** Checks to see if the token is valid
@@ -44,22 +44,22 @@ bool IsToken(const char *text) {
     const char          *p;
     
     if (!text)
-	return FALSE;
+	return false;
     
     if (strlen(text) != (sizeof(TOKEN) * 2) + 2)
-	return FALSE;
+	return false;
     
     if (text[0] != '@')
-	return FALSE;
+	return false;
 
     if (text[(sizeof(TOKEN) * 2) + 1] != '@')
-	return FALSE;
+	return false;
 
     for (p = text + 1; *p != '@'; p++)
 	if (!isxdigit((int)*p))
-	    return FALSE;
+	    return false;
     
-    return TRUE;
+    return true;
 }
 
 /*
@@ -129,7 +129,7 @@ ToWireFmt(const char *article, size_t len, size_t *newlen)
     char *newart;
     const char *p;
     char  *dest;
-    bool atstartofline=TRUE;
+    bool atstartofline=true;
 
     /* First go thru article and count number of bytes we need. */
     for (bytes = 0, p=article ; p < &article[len] ; ++p) {
@@ -137,9 +137,9 @@ ToWireFmt(const char *article, size_t len, size_t *newlen)
 	++bytes;
 	if (*p == '\n') {
 	    ++bytes; /* need another byte for CR */
-	    atstartofline = TRUE; /* next char starts new line */
+	    atstartofline = true; /* next char starts new line */
 	} else {
-	    atstartofline = FALSE;
+	    atstartofline = false;
 	}
     }
     bytes += 3; /* for .\r\n */
@@ -147,16 +147,16 @@ ToWireFmt(const char *article, size_t len, size_t *newlen)
     *newlen = bytes;
 
     /* now copy the article, making changes */
-    atstartofline = TRUE;
+    atstartofline = true;
     for (p=article, dest=newart ; p < &article[len] ; ++p) {
 	if (*p == '\n') {
 	    *dest++ = '\r';
 	    *dest++ = '\n';
-	    atstartofline = TRUE;
+	    atstartofline = true;
 	} else {
 	    if (atstartofline && *p == '.') *dest++ = '.'; /* add extra . */
 	    *dest++ = *p;
-	    atstartofline = FALSE;
+	    atstartofline = false;
 	}
     }
     *dest++ = '.';
@@ -173,7 +173,7 @@ FromWireFmt(const char *article, size_t len, size_t *newlen)
     char *newart;
     const char *p;
     char *dest;
-    bool atstartofline = TRUE;
+    bool atstartofline = true;
 
     /* First go thru article and count number of bytes we need */
     for (bytes = 0, p=article ; p < &article[len] ; ) {
@@ -184,15 +184,15 @@ FromWireFmt(const char *article, size_t len, size_t *newlen)
 	if (atstartofline && p < &article[len-1] && *p == '.' && p[1] == '.') {
 	    bytes++; /* only output 1 byte */
 	    p+=2; 
-	    atstartofline = FALSE;
+	    atstartofline = false;
 	} else if (p < &article[len-1] && *p == '\r' && p[1] == '\n') { 
 	    bytes++; /* \r\n counts as only one byte in output */
 	    p += 2;
-	    atstartofline = TRUE;
+	    atstartofline = true;
 	} else {
 	    bytes++;
 	    p++;
-	    atstartofline = FALSE;
+	    atstartofline = false;
 	}
     }
     newart = xmalloc(bytes + 1);
@@ -204,14 +204,14 @@ FromWireFmt(const char *article, size_t len, size_t *newlen)
 	if (atstartofline && p < &article[len-1] && *p == '.' && p[1] == '.') {
 	    *dest++ = '.';
 	    p += 2;
-	    atstartofline = FALSE;
+	    atstartofline = false;
 	} else if (p < &article[len-1] && *p == '\r' && p[1] == '\n') {
 	    *dest++ = '\n';
 	    p += 2;
-	    atstartofline = TRUE;
+	    atstartofline = true;
 	} else {
 	    *dest++ = *p++;
-	    atstartofline = FALSE;
+	    atstartofline = false;
 	}
     }
     *dest = '\0';
@@ -235,11 +235,11 @@ GetXref(ARTHANDLE *art)
   q = p;
   for (p1 = NULL; p < art->data + art->len; p++) {
     if (p1 != (char *)NULL && *p1 == '\r' && *p == '\n') {
-      Nocr = FALSE;
+      Nocr = false;
       break;
     }
     if (*p == '\n') {
-      Nocr = TRUE;
+      Nocr = true;
       break;
     }
     p1 = p;
@@ -377,13 +377,13 @@ SMreadconfig(void)
     if (innconf == NULL) {
         if (!innconf_read(NULL)) {
 	    SMseterror(SMERR_INTERNAL, "ReadInnConf() failed");
-	    return FALSE;
+	    return false;
 	}
     }
 
     for (i = 0; i < NUM_STORAGE_METHODS; i++) {
 	method_data[i].initialized = INIT_NO;
-	method_data[i].configured = FALSE;
+	method_data[i].configured = false;
     }
     path = concatpath(innconf->pathetc, _PATH_STORAGECTL);
     f = CONFfopen(path);
@@ -391,7 +391,7 @@ SMreadconfig(void)
 	SMseterror(SMERR_UNDEFINED, NULL);
 	syslog(L_ERROR, "SM Could not open %s: %m", path);
         free(path);
-	return FALSE;
+	return false;
     }
     free(path);
     
@@ -401,18 +401,18 @@ SMreadconfig(void)
 	    if (tok->type != SMmethod) {
 		SMseterror(SMERR_CONFIG, "Expected 'method' keyword");
 		syslog(L_ERROR, "SM expected 'method' keyword, line %d", f->lineno);
-		return FALSE;
+		return false;
 	    }
 	    if ((tok = CONFgettoken(0, f)) == NULL) {
 		SMseterror(SMERR_CONFIG, "Expected method name");
 		syslog(L_ERROR, "SM expected method name, line %d", f->lineno);
-		return FALSE;
+		return false;
 	    }
 	    method = xstrdup(tok->name);
 	    if ((tok = CONFgettoken(smtoks, f)) == NULL || tok->type != SMlbrace) {
 		SMseterror(SMERR_CONFIG, "Expected '{'");
 		syslog(L_ERROR, "SM Expected '{', line %d", f->lineno);
-		return FALSE;
+		return false;
 	    }
 	    inbrace = 1;
 	    /* initialize various params to defaults. */
@@ -423,7 +423,7 @@ SMreadconfig(void)
 	    options = NULL;
 	    minexpire = 0;
 	    maxexpire = 0;
-	    exactmatch = FALSE;
+	    exactmatch = false;
 
 	} else {
 	    type = tok->type;
@@ -433,7 +433,7 @@ SMreadconfig(void)
 		if ((tok = CONFgettoken(0, f)) == NULL) {
 		    SMseterror(SMERR_CONFIG, "Keyword with no value");
 		    syslog(L_ERROR, "SM keyword with no value, line %d", f->lineno);
-		    return FALSE;
+		    return false;
 		}
 		p = tok->name;
 		switch(type) {
@@ -467,13 +467,13 @@ SMreadconfig(void)
 		    break;
 		  case SMexactmatch:
 		    if (caseEQ(p, "true") || caseEQ(p, "yes") || caseEQ(p, "on"))
-			exactmatch = TRUE;
+			exactmatch = true;
 		    break;
 		  default:
 		    SMseterror(SMERR_CONFIG, "Unknown keyword in method declaration");
 		    syslog(L_ERROR, "SM Unknown keyword in method declaration, line %d: %s", f->lineno, tok->name);
 		    free(method);
-		    return FALSE;
+		    return false;
 		    break;
 		}
 	    }
@@ -485,7 +485,7 @@ SMreadconfig(void)
 	    for (i = 0; i < NUM_STORAGE_METHODS; i++) {
 		if (!strcasecmp(method, storage_methods[i].name)) {
 		    sub->type = storage_methods[i].type;
-		    method_data[i].configured = TRUE;
+		    method_data[i].configured = true;
 		    break;
 		}
 	    }
@@ -494,14 +494,14 @@ SMreadconfig(void)
 		syslog(L_ERROR, "SM no configured storage methods are named '%s'", method);
 		free(options);
 		free(sub);
-		return FALSE;
+		return false;
 	    }
 	    if (!pattern) {
 		SMseterror(SMERR_CONFIG, "pattern not defined");
 		syslog(L_ERROR, "SM no pattern defined");
 		free(options);
 		free(sub);
-		return FALSE;
+		return false;
 	    }
             sub->pattern = pattern;
 	    sub->minsize = minsize;
@@ -526,7 +526,7 @@ SMreadconfig(void)
     
     CONFfclose(f);
 
-    return TRUE;
+    return true;
 }
 
 /*
@@ -534,7 +534,7 @@ SMreadconfig(void)
 */
 bool SMsetup(SMSETUP type, void *value) {
     if (Initialized)    
-	return FALSE;
+	return false;
     switch (type) {
     case SM_RDWR:
 	SMopenmode = *(bool *)value;
@@ -543,30 +543,30 @@ bool SMsetup(SMSETUP type, void *value) {
 	SMpreopen = *(bool *)value;
 	break;
     default:
-	return FALSE;
+	return false;
     }
-    return TRUE;
+    return true;
 }
 
 /*
 ** Calls the setup function for all of the configured methods and returns
-** TRUE if they all initialize ok, FALSE if they don't
+** true if they all initialize ok, false if they don't
 */
 bool SMinit(void) {
     int                 i;
-    bool		allok = TRUE;
-    static		bool once = FALSE;
+    bool		allok = true;
+    static		bool once = false;
     SMATTRIBUTE		smattr;
 
     if (Initialized)
-	return TRUE;
+	return true;
     
-    Initialized = TRUE;
+    Initialized = true;
     
     if (!SMreadconfig()) {
 	SMshutdown();
-	Initialized = FALSE;
-	return FALSE;
+	Initialized = false;
+	return false;
     }
 
     for (i = 0; i < NUM_STORAGE_METHODS; i++) {
@@ -577,29 +577,29 @@ bool SMinit(void) {
 		method_data[i].expensivestat = smattr.expensivestat;
 	    } else {
 		method_data[i].initialized = INIT_FAIL;
-		method_data[i].selfexpire = FALSE;
-		method_data[i].expensivestat = TRUE;
+		method_data[i].selfexpire = false;
+		method_data[i].expensivestat = true;
 		syslog(L_ERROR, "SM storage method '%s' failed initialization", storage_methods[i].name);
-		allok = FALSE;
+		allok = false;
 	    }
 	}
 	typetoindex[storage_methods[i].type] = i;
     }
     if (!allok) {
 	SMshutdown();
-	Initialized = FALSE;
+	Initialized = false;
 	SMseterror(SMERR_UNDEFINED, "one or more storage methods failed initialization");
 	syslog(L_ERROR, "SM one or more storage methods failed initialization");
-	return FALSE;
+	return false;
     }
     if (!once && atexit(SMshutdown) < 0) {
 	SMshutdown();
-	Initialized = FALSE;
+	Initialized = false;
 	SMseterror(SMERR_UNDEFINED, NULL);
-	return FALSE;
+	return false;
     }
-    once = TRUE;
-    return TRUE;
+    once = true;
+    return true;
 }
 
 static bool InitMethod(STORAGETYPE method) {
@@ -607,33 +607,33 @@ static bool InitMethod(STORAGETYPE method) {
 
     if (!Initialized)
 	if (!SMreadconfig()) {
-	    Initialized = FALSE;
-	    return FALSE;
+	    Initialized = false;
+	    return false;
 	}
-    Initialized = TRUE;
+    Initialized = true;
     
     if (method_data[method].initialized == INIT_DONE)
-	return TRUE;
+	return true;
 
     if (method_data[method].initialized == INIT_FAIL)
-	return FALSE;
+	return false;
 
     if (!method_data[method].configured) {
 	method_data[method].initialized = INIT_FAIL;
 	SMseterror(SMERR_UNDEFINED, "storage method is not configured.");
-	return FALSE;
+	return false;
     }
     if (!storage_methods[method].init(&smattr)) {
 	method_data[method].initialized = INIT_FAIL;
-	method_data[method].selfexpire = FALSE;
-	method_data[method].expensivestat = TRUE;
+	method_data[method].selfexpire = false;
+	method_data[method].expensivestat = true;
 	SMseterror(SMERR_UNDEFINED, "Could not initialize storage method late.");
-	return FALSE;
+	return false;
     }
     method_data[method].initialized = INIT_DONE;
     method_data[method].selfexpire = smattr.selfexpire;
     method_data[method].expensivestat = smattr.expensivestat;
-    return TRUE;
+    return true;
 }
 
 static bool
@@ -794,16 +794,16 @@ void SMfreearticle(ARTHANDLE *article) {
 bool SMcancel(TOKEN token) {
     if (!SMopenmode) {
 	SMseterror(SMERR_INTERNAL, "read only storage api");
-	return FALSE;
+	return false;
     }
     if (method_data[typetoindex[token.type]].initialized == INIT_FAIL) {
 	SMseterror(SMERR_UNINIT, NULL);
-	return FALSE;
+	return false;
     }
     if (method_data[typetoindex[token.type]].initialized == INIT_NO && !InitMethod(typetoindex[token.type])) {
 	SMseterror(SMERR_UNINIT, NULL);
 	syslog(L_ERROR, "SM can't cancel article with uninitialized method");
-	return FALSE;
+	return false;
     }
     return storage_methods[typetoindex[token.type]].cancel(token);
 }
@@ -818,49 +818,49 @@ bool SMprobe(PROBETYPE type, TOKEN *token, void *value) {
     case SMARTNGNUM:
 	if (method_data[typetoindex[token->type]].initialized == INIT_FAIL) {
 	    SMseterror(SMERR_UNINIT, NULL);
-	    return FALSE;
+	    return false;
 	}
 	if (method_data[typetoindex[token->type]].initialized == INIT_NO && !InitMethod(typetoindex[token->type])) {
 	    SMseterror(SMERR_UNINIT, NULL);
 	    syslog(L_ERROR, "SM can't cancel article with uninitialized method");
-	    return FALSE;
+	    return false;
 	}
 	if ((ann = (struct artngnum *)value) == NULL)
-	    return FALSE;
+	    return false;
 	ann->groupname = NULL;
 	if (storage_methods[typetoindex[token->type]].ctl(type, token, value)) {
 	    if (ann->artnum != 0) {
 		/* set by storage method */
-		return TRUE;
+		return true;
 	    } else {
 		art = storage_methods[typetoindex[token->type]].retrieve(*token, RETR_HEAD);
 		if (art == NULL) {
 		    if (ann->groupname != NULL)
 			free(ann->groupname);
 		    storage_methods[typetoindex[token->type]].freearticle(art);
-		    return FALSE;
+		    return false;
 		}
 		if ((ann->groupname = GetXref(art)) == NULL) {
 		    if (ann->groupname != NULL)
 			free(ann->groupname);
 		    storage_methods[typetoindex[token->type]].freearticle(art);
-		    return FALSE;
+		    return false;
 		}
 		storage_methods[typetoindex[token->type]].freearticle(art);
 		if ((ann->artnum = GetGroups(ann->groupname)) == 0) {
 		    if (ann->groupname != NULL)
 			free(ann->groupname);
-		    return FALSE;
+		    return false;
 		}
-		return TRUE;
+		return true;
 	    }
 	} else {
-	    return FALSE;
+	    return false;
 	}
     case EXPENSIVESTAT:
 	return (method_data[typetoindex[token->type]].expensivestat);
     default:
-	return FALSE;
+	return false;
     }
 }
 
@@ -872,7 +872,7 @@ bool SMflushcacheddata(FLUSHTYPE type) {
 	    !storage_methods[i].flushcacheddata(type))
 	    syslog(L_ERROR, "SM can't flush cached data method '%s'", storage_methods[i].name);
     }
-    return TRUE;
+    return true;
 }
 
 void SMprintfiles(FILE *file, TOKEN token, char **xref, int ngroups) {
@@ -898,7 +898,7 @@ void SMshutdown(void) {
 	if (method_data[i].initialized == INIT_DONE) {
 	    storage_methods[i].shutdown();
 	    method_data[i].initialized = INIT_NO;
-	    method_data[i].configured = FALSE;
+	    method_data[i].configured = false;
 	}
     while (subscriptions) {
 	old = subscriptions;
@@ -907,14 +907,14 @@ void SMshutdown(void) {
 	free(old->options);
 	free(old);
     }
-    Initialized = FALSE;
+    Initialized = false;
 }
 
 void SMseterror(int errornum, char *error) {
     if (ErrorAlloc)
 	free(SMerrorstr);
 
-    ErrorAlloc = FALSE;
+    ErrorAlloc = false;
     
     if ((errornum == SMERR_UNDEFINED) && (errno == ENOENT))
 	errornum = SMERR_NOENT;
@@ -925,7 +925,7 @@ void SMseterror(int errornum, char *error) {
 	switch (SMerrno) {
 	case SMERR_UNDEFINED:
 	    SMerrorstr = xstrdup(strerror(errno));
-	    ErrorAlloc = TRUE;
+	    ErrorAlloc = true;
 	    break;
 	case SMERR_INTERNAL:
 	    SMerrorstr = "Internal error";
@@ -959,7 +959,7 @@ void SMseterror(int errornum, char *error) {
 	}
     } else {
 	SMerrorstr = xstrdup(error);
-	ErrorAlloc = TRUE;
+	ErrorAlloc = true;
     }
 }
 

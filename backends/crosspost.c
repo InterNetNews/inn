@@ -29,8 +29,8 @@
 
 static char	*Dir;
 
-static int	debug = FALSE;
-static int	syncfiles = TRUE;
+static int	debug = false;
+static int	syncfiles = true;
 
 static unsigned long STATTime    = 0;
 static unsigned long STATMissing = 0; /* Source file missing */
@@ -66,7 +66,7 @@ ProcessStats()
 }
 
 /*
-**  Try to make one directory.  Return FALSE on error.
+**  Try to make one directory.  Return false on error.
 */
 static bool
 MakeDir(Name)
@@ -76,7 +76,7 @@ MakeDir(Name)
 
     if (mkdir(Name, GROUPDIR_MODE) >= 0) {
         STATMkdir++;
-	return TRUE;
+	return true;
     }
 
     /* See if it failed because it already exists. */
@@ -85,7 +85,7 @@ MakeDir(Name)
 
 
 /*
-**  Make spool directory.  Return FALSE on error.
+**  Make spool directory.  Return false on error.
 */
 static bool
 MakeSpoolDir(Name)
@@ -96,7 +96,7 @@ MakeSpoolDir(Name)
 
     /* Optimize common case -- parent almost always exists. */
     if (MakeDir(Name))
-	return TRUE;
+	return true;
 
     /* Try to make each of comp and comp/foo in turn. */
     for (p = Name; *p; p++)
@@ -106,7 +106,7 @@ MakeSpoolDir(Name)
 	    *p = '/';
 	    if (!made) {
 	        STATMdError++;
-	        return FALSE;
+	        return false;
 	    }
 	}
 
@@ -181,7 +181,7 @@ ProcessIncoming(qp)
 		if (path[j] == '/') {
 		    path[j] = '\0';
 		    /* try making parent dir */
-		    if (MakeSpoolDir(path) == FALSE) {
+		    if (MakeSpoolDir(path) == false) {
 			fprintf(stderr, "crosspost cant mkdir %s\n",
 				path);
 		    }
@@ -304,10 +304,10 @@ main(ac, av)
 	    Dir = optarg;	/* specify spool path */
 	    break;
 	case 'd':
-	    debug = TRUE;
+	    debug = true;
 	    break;
 	case 's':
-	    syncfiles = FALSE;	/* do not fsync articles */
+	    syncfiles = false;	/* do not fsync articles */
 	    break;
 	}
     ac -= optind;

@@ -86,7 +86,7 @@ main(ac, av)
 
     /* Set defaults. */
     mesgid[0] = '\0';
-    PostMode = FALSE;
+    PostMode = false;
     message_program_name = "feedone";
 
     /* Parse JCL. */
@@ -102,7 +102,7 @@ main(ac, av)
                 mesgid = concat("<", optarg, ">", (char *) 0);
 	    break;
 	case 'p':			/* Use Post, not ihave	*/
-	    PostMode = TRUE;
+	    PostMode = true;
 	    break;
 	case 'r':			/* Random Message-ID	*/
             length = snprintf(NULL, 0, "<%ld@%ld>", (long) getpid(),
@@ -112,7 +112,7 @@ main(ac, av)
                      (long) time(NULL));
 	    break;
 	case 't':
-	    Tracing = TRUE;
+	    Tracing = true;
 	    break;
 	}
     ac -= optind;

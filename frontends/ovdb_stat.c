@@ -918,7 +918,7 @@ Usage:\n\
 		int ret;
 		struct groupinfo gi;
 
-                ret = ovdb_getgroupinfo(argv[o], &gi, FALSE, NULL, 0);
+                ret = ovdb_getgroupinfo(argv[o], &gi, false, NULL, 0);
 		if (ret != 0) {
                     warn("%s: ovdb_getgroupinfo error: %s", argv[o],
                          db_strerror(ret));

@@ -32,36 +32,36 @@ ValidLock(char *name, bool JustChecking)
     /* Open the file. */
     if ((fd = open(name, O_RDONLY)) < 0) {
 	if (JustChecking)
-	    return FALSE;
+	    return false;
         syswarn("cannot open %s", name);
-	return TRUE;
+	return true;
     }
 
     /* Read the PID that is written there. */
     if (BinaryLock) {
 	if (read(fd, (char *)&pid, sizeof pid) != sizeof pid) {
 	    close(fd);
-	    return FALSE;
+	    return false;
 	}
     }
     else {
 	if ((i = read(fd, buff, sizeof buff - 1)) <= 0) {
 	    close(fd);
-	    return FALSE;
+	    return false;
 	}
 	buff[i] = '\0';
 	pid = (pid_t) atol(buff);
     }
     close(fd);
     if (pid <= 0)
-	return FALSE;
+	return false;
 
     /* Send the signal. */
     if (kill(pid, 0) < 0 && errno == ESRCH)
-	return FALSE;
+	return false;
 
     /* Either the kill worked, or we're optimistic about the error code. */
-    return TRUE;
+    return true;
 }
 
 
@@ -107,7 +107,7 @@ main(int ac, char *av[])
     /* Set defaults. */
     pid = 0;
     name = NULL;
-    JustChecking = FALSE;
+    JustChecking = false;
     umask(NEWSUMASK);
 
     /* Parse JCL. */
@@ -118,10 +118,10 @@ main(int ac, char *av[])
 	    /* NOTREACHED */
 	case 'b':
 	case 'u':
-	    BinaryLock = TRUE;
+	    BinaryLock = true;
 	    break;
 	case 'c':
-	    JustChecking = TRUE;
+	    JustChecking = true;
 	    break;
 	case 'p':
 	    pid = (pid_t) atol(optarg);
@@ -175,7 +175,7 @@ main(int ac, char *av[])
 
     /* Handle the "-c" flag. */
     if (JustChecking) {
-	if (ValidLock(name, TRUE))
+	if (ValidLock(name, true))
 	    UnlinkAndExit(tmp, 1);
 	UnlinkAndExit(tmp, 0);
     }
@@ -190,7 +190,7 @@ main(int ac, char *av[])
 	    /* NOTREACHED */
 	case EEXIST:
 	    /* File exists; if lock is valid, give up. */
-	    if (ValidLock(name, FALSE))
+	    if (ValidLock(name, false))
 		UnlinkAndExit(tmp, 1);
 	    if (unlink(name) < 0) {
                 syswarn("cannot unlink %s", name);

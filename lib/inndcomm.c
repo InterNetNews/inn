@@ -187,8 +187,8 @@ static bool
 ICCserveralive(pid_t pid)
 {
     if (kill(pid, 0) > 0 || errno != ESRCH)
-	return TRUE;
-    return FALSE;
+	return true;
+    return false;
 }
 
 

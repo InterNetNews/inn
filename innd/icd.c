@@ -76,8 +76,8 @@ void
 ICDsetup(StartSites)
     bool	StartSites;
 {
-    if (ICDneedsetup == TRUE) {
-	ICDneedsetup = FALSE;
+    if (ICDneedsetup == true) {
+	ICDneedsetup = false;
     }
     else {
 	ICDcloseactive();
@@ -143,10 +143,10 @@ ICDrenumberactive(void)
 
     for (i = nGroups, ngp = Groups; --i >= 0; ngp++)
 	if (!NGrenumber(ngp))
-	    return FALSE;
+	    return false;
     if (i < 0)
 	ICDwrite();
-    return TRUE;
+    return true;
 }
 
 
@@ -242,7 +242,7 @@ bailout:
 	 free(newvp);
     }
     if (oerrno != 0)
-	 return FALSE;
+	 return false;
 
 #else /* !__CYGWIN__, do it the Unix way. */
 
@@ -252,7 +252,7 @@ bailout:
 	oerrno = errno;
 	syslog(L_ERROR, "%s cant open %s %m", LogName, NEWACT);
 	IOError(WHEN, oerrno);
-	return FALSE;
+	return false;
     }
 
     /* Write it. */
@@ -261,7 +261,7 @@ bailout:
 	syslog(L_ERROR, "%s cant write %s %m", LogName, NEWACT);
 	IOError(WHEN, oerrno);
 	close(fd);
-	return FALSE;
+	return false;
     }
 
     /* Close it. */
@@ -273,7 +273,7 @@ bailout:
 	syslog(L_ERROR, "%s cant rename %s to %s %m",
 	       LogName, NEWACT, ICDactpath);
 	IOError(WHEN, oerrno);
-	return FALSE;
+	return false;
     }
 
 #endif /* __CYGWIN__ */
@@ -283,13 +283,13 @@ bailout:
 
     /* Restore in-core pointers. */
     if (Mode != OMrunning) {
-	ICDneedsetup = TRUE;
+	ICDneedsetup = true;
 	/* Force the active file into memory. */
 	NGparsefile();
     }
     else
-	ICDsetup(TRUE);
-    return TRUE;
+	ICDsetup(true);
+    return true;
 }
 
 
@@ -328,7 +328,7 @@ ICDchangegroup(NEWSGROUP *ngp, char *Rest)
     if (ret) {
 	if (innconf->enableoverview && !OVgroupadd(Name, 0, Last, Rest)) {
 	    free(Name);
-	    return FALSE;
+	    return false;
 	}
     }
     free(Name);
@@ -349,7 +349,7 @@ ICDnewgroup(char *Name, char *Rest)
     /* Set up the scatter/gather vectors. */
     if (strlen(Name) + strlen(Rest) > SMBUF - 24) {
 	syslog(L_ERROR, "%s too_long %s", LogName, MaxLength(Name, Name));
-	return FALSE;
+	return false;
     }
     snprintf(buff, sizeof(buff), "%s 0000000000 0000000001 %s\n", Name, Rest);
     ICDiovset(&iov[0], ICDactpointer, ICDactsize);
@@ -360,7 +360,7 @@ ICDnewgroup(char *Name, char *Rest)
     ICDiovrelease(&iov[1]);
     if (ret) {
 	if (innconf->enableoverview && !OVgroupadd(Name, 1, 0, Rest))
-	    return FALSE;
+	    return false;
     }
     return ret;
 }
@@ -379,9 +379,9 @@ ICDrmgroup(NEWSGROUP *ngp)
 
     /* Don't let anyone remove newsgroups that INN requires exist. */
     if (EQ(ngp->Name, "junk") || EQ(ngp->Name, "control"))
-        return FALSE;
+        return false;
     if (innconf->mergetogroups && EQ(ngp->Name, "to"))
-        return FALSE;
+        return false;
 
     Name = xstrdup(ngp->Name);
     /* If this is the first group in the file, write everything after. */
@@ -393,7 +393,7 @@ ICDrmgroup(NEWSGROUP *ngp)
 	if (ret) {
 	    if (innconf->enableoverview && !OVgroupdel(Name)) {
 		free(Name);
-		return FALSE;
+		return false;
 	    }
 	}
 	free(Name);
@@ -410,7 +410,7 @@ ICDrmgroup(NEWSGROUP *ngp)
 	if (ret) {
 	    if (innconf->enableoverview && !OVgroupdel(Name)) {
 		free(Name);
-		return FALSE;
+		return false;
 	    }
 	}
 	free(Name);
@@ -426,7 +426,7 @@ ICDrmgroup(NEWSGROUP *ngp)
     if (ret) {
 	if (innconf->enableoverview && !OVgroupdel(Name)) {
 	    free(Name);
-	    return FALSE;
+	    return false;
 	}
     }
     free(Name);

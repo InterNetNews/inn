@@ -105,7 +105,7 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
        size, determine one ourselves from the size of the text history file.
        Note that this will still use the defaults in dbz if the text file is
        empty, since size will still be left set to 0. */
-    if (IgnoreOld == TRUE && size == 0) {
+    if (IgnoreOld == true && size == 0) {
 	size = Countlines();
 	size += (size / 10);
         if (size > 0)
@@ -268,8 +268,8 @@ main(int argc, char **argv)
     TextFile = concatpath(innconf->pathdb, _PATH_HISTORY);
     HISTORY = concatpath(innconf->pathdb, _PATH_HISTORY);
     HistoryDir = innconf->pathdb;
-    IgnoreOld = FALSE;
-    Overwrite = FALSE;
+    IgnoreOld = false;
+    Overwrite = false;
 
     while ((i = getopt(argc, argv, "s:iof:")) != EOF) {
 	switch (i) {
@@ -280,13 +280,13 @@ main(int argc, char **argv)
 	    break;
 	case 's':
 	    size = atol(optarg);
-	    IgnoreOld = TRUE;
+	    IgnoreOld = true;
 	    break;
 	case 'o':
-	    Overwrite = TRUE;
+	    Overwrite = true;
 	    break;
 	case 'i':
-	    IgnoreOld = TRUE;
+	    IgnoreOld = true;
 	    break;
 	}
     }

@@ -39,7 +39,7 @@ void    PerlUnSilence(void);
 void    xs_init(void);
 
 /* Whether Perl filtering is currently active. */
-bool PerlFilterActive = FALSE;
+bool PerlFilterActive = false;
 
 /* The filter sub called (filter_art or filter_post). */
 CV *perl_filter_cv;
@@ -146,7 +146,7 @@ void PERLsetup (char *startupfile, char *filterfile, const char *function)
         if (SvTRUE(ERRSV))     /* check $@ */ {
             syslog(L_ERROR,"SERVER perl loading %s failed: %s",
 		   startupfile, SvPV(ERRSV, PL_na)) ;
-            PerlFilter (FALSE) ;
+            PerlFilter (false) ;
     
         } else {
             PERLreadfilter (filterfile,function) ;
@@ -176,13 +176,13 @@ int PERLreadfilter(char *filterfile, const char *function)
     argv[0] = filterfile ;
     argv[1] = NULL ;
     
-    if (perl_get_cv("filter_before_reload", FALSE) != NULL)    {
+    if (perl_get_cv("filter_before_reload", false) != NULL)    {
         perl_call_argv("filter_before_reload",G_EVAL|G_DISCARD|G_NOARGS,NULL);
         if (SvTRUE(ERRSV))     /* check $@ */ {
             syslog (L_ERROR,"SERVER perl function filter_before_reload died: %s",
                     SvPV(ERRSV, PL_na)) ;
             (void)POPs ;
-            PerlFilter (FALSE) ;
+            PerlFilter (false) ;
         }
     }
 
@@ -193,7 +193,7 @@ int PERLreadfilter(char *filterfile, const char *function)
     if (SvTRUE(ERRSV))     /* check $@ */ {
         syslog (L_ERROR,"SERVER perl loading %s failed: %s",
                 filterfile, SvPV(ERRSV, PL_na)) ;
-        PerlFilter (FALSE) ;
+        PerlFilter (false) ;
         
         /* If the reload failed we don't want the old definition hanging
            around. */
@@ -206,17 +206,17 @@ int PERLreadfilter(char *filterfile, const char *function)
                     function, SvPV(ERRSV, PL_na)) ;
         }
         free (argv[0]) ;
-    } else if ((perl_filter_cv = perl_get_cv(function, FALSE)) == NULL) {
-        PerlFilter (FALSE) ;
+    } else if ((perl_filter_cv = perl_get_cv(function, false)) == NULL) {
+        PerlFilter (false) ;
     }
     
-    if (perl_get_cv("filter_after_reload", FALSE) != NULL) {
+    if (perl_get_cv("filter_after_reload", false) != NULL) {
         perl_call_argv("filter_after_reload", G_EVAL|G_DISCARD|G_NOARGS, NULL);
         if (SvTRUE(ERRSV))     /* check $@ */ {
             syslog (L_ERROR,"SERVER perl function filter_after_reload died: %s",
                     SvPV(ERRSV, PL_na)) ;
             (void)POPs ;
-            PerlFilter (FALSE) ;
+            PerlFilter (false) ;
         }
     }
 
@@ -234,7 +234,7 @@ void PerlClose(void)
 {
    perl_destruct(PerlCode);
    perl_free(PerlCode);
-   PerlFilterActive = FALSE;
+   PerlFilterActive = false;
 }
 
 /*

@@ -26,13 +26,13 @@
 **
 **  The precondition that must be fulfilled is that DoMatch will consume at
 **  least one character in text.  This is true if *p is neither '*' nor '\0'.)
-**  The last return has ABORT instead of FALSE to avoid quadratic behaviour in
-**  cases like pattern "*a*b*c*d" with text "abcxxxxx".  With FALSE, each
+**  The last return has ABORT instead of false to avoid quadratic behaviour in
+**  cases like pattern "*a*b*c*d" with text "abcxxxxx".  With false, each
 **  star-loop has to run to the end of the text; with ABORT only the last one
 **  does.
 **
 **  Once the control of one instance of DoMatch enters the star-loop, that
-**  instance will return either TRUE or ABORT, and any calling instance will
+**  instance will return either true or ABORT, and any calling instance will
 **  therefore return immediately after (without calling recursively again).
 **  In effect, only one star-loop is ever active.  It would be possible to
 **  modify the code to maintain this context explicitly, eliminating all

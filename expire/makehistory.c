@@ -60,7 +60,7 @@ struct history *History;
 FILE *Overchan;
 bool DoOverview;
 bool Fork;
-bool Cutofflow = FALSE;
+bool Cutofflow = false;
 char *TmpDir;
 int OverTmpSegSize, OverTmpSegCount;
 FILE *OverTmpFile;
@@ -391,7 +391,7 @@ ARTreadschema(bool Overview)
     ARTOVERFIELD                *fp;
     int                         i;
     char                        buff[SMBUF];
-    bool                        foundxreffull = FALSE;
+    bool                        foundxreffull = false;
 
     if (Overview) {
 	/* Open file, count lines. */
@@ -416,11 +416,11 @@ ARTreadschema(bool Overview)
 		fp->NeedHeadername = EQ(p, "full");
 	    }
 	    else
-		fp->NeedHeadername = FALSE;
+		fp->NeedHeadername = false;
 	    fp->Headername = xstrdup(buff);
 	    fp->HeadernameLength = strlen(buff);
 	    fp->Header = (char *)NULL;
-	    fp->HasHeader = FALSE;
+	    fp->HasHeader = false;
 	    fp->HeaderLength = 0;
 	    if (caseEQn(buff, DATE, STRLEN(DATE)-1))
 		Datep = fp;
@@ -449,38 +449,38 @@ ARTreadschema(bool Overview)
 	Missfields = xmalloc(Missfieldsize * sizeof(ARTOVERFIELD));
         fp = Missfields;
 	if (Msgidp == (ARTOVERFIELD *)NULL) {
-	    fp->NeedHeadername = FALSE;
+	    fp->NeedHeadername = false;
 	    fp->Headername = xstrdup(MESSAGEID);
 	    fp->HeadernameLength = strlen(MESSAGEID)-1;
 	    fp->Header = (char *)NULL;
-	    fp->HasHeader = FALSE;
+	    fp->HasHeader = false;
 	    fp->HeaderLength = 0;
 	    Msgidp = fp++;
 	}
 	if (Datep == (ARTOVERFIELD *)NULL) {
-	    fp->NeedHeadername = FALSE;
+	    fp->NeedHeadername = false;
 	    fp->Headername = xstrdup(DATE);
 	    fp->HeadernameLength = strlen(DATE)-1;
 	    fp->Header = (char *)NULL;
-	    fp->HasHeader = FALSE;
+	    fp->HasHeader = false;
 	    fp->HeaderLength = 0;
 	    Datep = fp++;
 	}
 	if (Expp == (ARTOVERFIELD *)NULL) {
-	    fp->NeedHeadername = FALSE;
+	    fp->NeedHeadername = false;
 	    fp->Headername = xstrdup(EXPIRES);
 	    fp->HeadernameLength = strlen(EXPIRES)-1;
 	    fp->Header = (char *)NULL;
-	    fp->HasHeader = FALSE;
+	    fp->HasHeader = false;
 	    fp->HeaderLength = 0;
 	    Expp = fp++;
 	}
         if (Overview && Xrefp == (ARTOVERFIELD *)NULL) {
-	    fp->NeedHeadername = FALSE;
+	    fp->NeedHeadername = false;
 	    fp->Headername = xstrdup(XREF);
 	    fp->HeadernameLength = strlen(XREF)-1;
 	    fp->Header = (char *)NULL;
-	    fp->HasHeader = FALSE;
+	    fp->HasHeader = false;
 	    fp->HeaderLength = 0;
 	    Xrefp = fp++;
 	}
@@ -515,7 +515,7 @@ DoArt(ARTHANDLE *art)
 	    fp->Header = 0;
 	}
 	fp->HeaderLength = 0;
-	fp->HasHeader = FALSE;
+	fp->HasHeader = false;
     }
     if (Missfieldsize > 0) {
 	for (fp = Missfields, i = 0; i < Missfieldsize; i++, fp++) {
@@ -523,13 +523,13 @@ DoArt(ARTHANDLE *art)
 		fp->Header = 0;
 	    }
 	    fp->HeaderLength = 0;
-	    fp->HasHeader = FALSE;
+	    fp->HasHeader = false;
 	}
     }
     for (fp = ARTfields, i = 0; i < ARTfieldsize; i++, fp++) {
         fp->Header = wire_findheader(art->data, art->len, fp->Headername);
         if (fp->Header != NULL) {
-	    fp->HasHeader = TRUE;
+	    fp->HasHeader = true;
             p = wire_endheader(fp->Header, art->data + art->len - 1);
             if (p == NULL)
 		continue;
@@ -542,7 +542,7 @@ DoArt(ARTHANDLE *art)
 	} else if (RetrMode == RETR_ALL && strcmp(fp->Headername, "Bytes") == 0)
 	{
 		snprintf(bytes, sizeof(bytes), "%d", art->len);
-		fp->HasHeader = TRUE;
+		fp->HasHeader = true;
 		fp->Header = bytes;
 		fp->HeaderLength = strlen(bytes);
 	}
@@ -551,7 +551,7 @@ DoArt(ARTHANDLE *art)
 	for (fp = Missfields, i = 0; i < Missfieldsize; i++, fp++) {
             fp->Header = wire_findheader(art->data, art->len, fp->Headername);
             if (fp->Header != NULL) {
-		fp->HasHeader = TRUE;
+		fp->HasHeader = true;
                 p = wire_endheader(fp->Header, art->data + art->len - 1);
                 if (p == NULL)
                     continue;
@@ -749,11 +749,11 @@ main(int argc, char **argv)
 
     OverTmpSegSize = DEFAULT_SEGSIZE;
     OverTmpSegCount = 0;
-    NukeBadArts = FALSE;
-    DoOverview = FALSE;
-    Fork = FALSE;
-    AppendMode = FALSE;
-    NoHistory = FALSE;
+    NukeBadArts = false;
+    DoOverview = false;
+    Fork = false;
+    AppendMode = false;
+    NoHistory = false;
     RetrMode = RETR_HEAD;
 
     while ((i = getopt(argc, argv, "aebf:Il:OT:xFs:")) != EOF) {
@@ -762,28 +762,28 @@ main(int argc, char **argv)
 	    TmpDir = optarg;
 	    break;
 	case 'x':
-	    NoHistory = TRUE;
+	    NoHistory = true;
 	    break;
 	case 'a':
-	    AppendMode = TRUE;
+	    AppendMode = true;
 	    break;
 	case 'b':
-	    NukeBadArts = TRUE;
+	    NukeBadArts = true;
 	    break;
 	case 'f':
 	    HistoryPath = optarg;
 	    break;
 	case 'I':
-	    Cutofflow = TRUE;
+	    Cutofflow = true;
 	    break;
 	case 'l':
 	    OverTmpSegSize = atoi(optarg);
 	    break;
 	case 'O':
-	    DoOverview = TRUE;
+	    DoOverview = true;
 	    break;
 	case 'F':
-	    Fork = TRUE;
+	    Fork = true;
 	    break;
 	case 'e':
 	    RetrMode = RETR_ALL;
@@ -846,7 +846,7 @@ main(int argc, char **argv)
     }
 
     /* Init the Storage Manager */
-    val = TRUE;
+    val = true;
     if (!SMsetup(SM_RDWR, (void *)&val) || !SMsetup(SM_PREOPEN, (void *)&val))
         sysdie("cannot set up storage manager");
     if (!SMinit())

@@ -408,7 +408,7 @@ int main(int argc, char **argv)
     ovdb_close_berkeleydb();
     ovdb_releaselock();
 
-    if(ovdb_check_pidfile(OVDB_MONITOR_PIDFILE) == FALSE) {
+    if(ovdb_check_pidfile(OVDB_MONITOR_PIDFILE) == false) {
         notice("starting ovdb monitor");
 	switch(fork()) {
 	case -1:
@@ -425,7 +425,7 @@ int main(int argc, char **argv)
         warn("ovdb_monitor already running");
 
     if(ovdb_conf.readserver) {
-	if(ovdb_check_pidfile(OVDB_SERVER_PIDFILE) == FALSE) {
+	if(ovdb_check_pidfile(OVDB_SERVER_PIDFILE) == false) {
             notice("starting ovdb server");
 	    switch(fork()) {
 	    case -1:

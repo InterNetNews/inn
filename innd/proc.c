@@ -37,7 +37,7 @@ PROCreap(void)
 	}
 	for (pp = PROCtable, i = PROCtablesize; --i >= 0; pp++)
 	    if (pp->Pid == pid) {
-		PROCneedscan = TRUE;
+		PROCneedscan = true;
 		pp->Status = WEXITSTATUS(status);
 		pp->State = PSdead;
 		pp->Collected = Now.time;
@@ -78,7 +78,7 @@ PROCscan(void)
 		SITEprocdied(&Sites[pp->Site], pp - PROCtable, pp);
 	    pp->State = PSfree;
 	}
-    PROCneedscan = FALSE;
+    PROCneedscan = false;
 }
 
 

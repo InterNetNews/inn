@@ -45,7 +45,7 @@ DateString(void)
 
 
 /*
-**  Try to make one directory.  Return FALSE on error.
+**  Try to make one directory.  Return false on error.
 */
 static bool
 MakeDir(char *Name)
@@ -53,7 +53,7 @@ MakeDir(char *Name)
     struct stat		Sb;
 
     if (mkdir(Name, GROUPDIR_MODE) >= 0)
-	return TRUE;
+	return true;
 
     /* See if it failed because it already exists. */
     return stat(Name, &Sb) >= 0 && S_ISDIR(Sb.st_mode);
@@ -62,7 +62,7 @@ MakeDir(char *Name)
 
 /*
 **  Given an entry, comp/foo/bar/1123, create the directory and all
-**  parent directories needed.  Return FALSE on error.
+**  parent directories needed.  Return false on error.
 */
 static bool
 MakeArchiveDirectory(char *Name)
@@ -78,7 +78,7 @@ MakeArchiveDirectory(char *Name)
     if (MakeDir(Name)) {
 	if (save)
 	    *save = '/';
-	return TRUE;
+	return true;
     }
 
     /* Try to make each of comp and comp/foo in turn. */
@@ -90,7 +90,7 @@ MakeArchiveDirectory(char *Name)
 	    if (!made) {
 		if (save)
 		    *save = '/';
-		return FALSE;
+		return false;
 	    }
 	}
 
@@ -102,7 +102,7 @@ MakeArchiveDirectory(char *Name)
 
 
 /*
-**  Copy a file.  Return FALSE if error.
+**  Copy a file.  Return false if error.
 */
 static bool
 Copy(char *src, char *dest)
@@ -119,13 +119,13 @@ Copy(char *src, char *dest)
 	if ((p = strrchr(dest, '/')) != NULL) {
 	    if (!MakeArchiveDirectory(dest)) {
                 syswarn("cannot mkdir for %s", dest);
-		return FALSE;
+		return false;
 	    }
 	    out = fopen(dest, "w");
 	}
 	if (p == NULL || out == NULL) {
             syswarn("cannot open %s for writing", dest);
-	    return FALSE;
+	    return false;
 	}
     }
 
@@ -134,7 +134,7 @@ Copy(char *src, char *dest)
         syswarn("cannot open %s for reading", src);
 	fclose(out);
 	unlink(dest);
-	return FALSE;
+	return false;
     }
 
     /* Write the data. */
@@ -144,7 +144,7 @@ Copy(char *src, char *dest)
 	    fclose(in);
 	    fclose(out);
 	    unlink(dest);
-	    return FALSE;
+	    return false;
 	}
     fclose(in);
 
@@ -153,15 +153,15 @@ Copy(char *src, char *dest)
         syswarn("cannot flush %s", dest);
 	unlink(dest);
 	fclose(out);
-	return FALSE;
+	return false;
     }
     if (fclose(out) == EOF) {
         syswarn("cannot close %s", dest);
 	unlink(dest);
-	return FALSE;
+	return false;
     }
 
-    return TRUE;
+    return true;
 }
 
 
@@ -185,13 +185,13 @@ CopyArt(ARTHANDLE *art, char *dest, bool Concat)
 	if ((p = strrchr(dest, '/')) != NULL) {
 	    if (!MakeArchiveDirectory(dest)) {
                 syswarn("cannot mkdir for %s", dest);
-		return FALSE;
+		return false;
 	    }
 	    out = fopen(dest, mode);
 	}
 	if (p == NULL || out == NULL) {
             syswarn("cannot open %s for writing", dest);
-	    return FALSE;
+	    return false;
 	}
     }
 
@@ -227,7 +227,7 @@ CopyArt(ARTHANDLE *art, char *dest, bool Concat)
 	fclose(out);
 	if (!Concat) unlink(dest);
 	free(article);
-	return FALSE;
+	return false;
     }
     free(article);
 
@@ -236,15 +236,15 @@ CopyArt(ARTHANDLE *art, char *dest, bool Concat)
         syswarn("cannot flush %s", dest);
 	if (!Concat) unlink(dest);
 	fclose(out);
-	return FALSE;
+	return false;
     }
     if (fclose(out) == EOF) {
         syswarn("cannot close %s", dest);
 	if (!Concat) unlink(dest);
-	return FALSE;
+	return false;
     }
 
-    return TRUE;
+    return true;
 }
 
 
@@ -309,7 +309,7 @@ CrackXref(const char *xref, unsigned int *lenp) {
     }
     /* skip next spaces */
     for (p++; *p == ' ' ; p++) ;
-    while (TRUE) {
+    while (true) {
 	/* check for EOL */
 	/* shouldn't ever hit null w/o hitting a \r\n first, but best to be paranoid */
 	if (*p == '\n' || *p == '\r' || *p == 0) {
@@ -356,7 +356,7 @@ CrackGroups(char *group, unsigned int *lenp) {
 
     /* skip leading spaces */
     for (p=group; *p == ' ' ; p++) ;
-    while (TRUE) {
+    while (true) {
 	/* check for EOL */
 	/* shouldn't ever hit null w/o hitting a \r\n first, but best to be paranoid */
 	if (*p == '\n' || *p == '\r' || *p == 0) {
@@ -415,10 +415,10 @@ main(int ac, char *av[])
     /* Set defaults. */
     if (!innconf_read(NULL))
         exit(1);
-    Concat = FALSE;
-    Flat = FALSE;
+    Concat = false;
+    Flat = false;
     Index = NULL;
-    Redirect = TRUE;
+    Redirect = true;
     umask(NEWSUMASK);
     ERRLOG = concatpath(innconf->pathlog, _PATH_ERRLOG);
     Archive = innconf->patharchive;
@@ -435,11 +435,11 @@ main(int ac, char *av[])
 	    Archive = optarg;
 	    break;
 	case 'c':
-	    Flat = TRUE;
-	    Concat = TRUE;
+	    Flat = true;
+	    Concat = true;
 	    break;
 	case 'f':
-	    Flat = TRUE;
+	    Flat = true;
 	    break;
 	case 'i':
 	    Index = optarg;
@@ -448,7 +448,7 @@ main(int ac, char *av[])
 	    groups = CrackGroups(optarg, &numgroups);
 	    break;
 	case 'r':
-	    Redirect = FALSE;
+	    Redirect = false;
 	    break;
 	}
 
@@ -525,13 +525,13 @@ main(int ac, char *av[])
 		if (numgroups > 0) {
 		    *p = '\0';
 		    ng = xrefs[i];
-		    doit = FALSE;
+		    doit = false;
 		    for (j=0; (unsigned)j<numgroups && !doit; j++) {
-			if (uwildmat(ng, groups[j]) != 0) doit=TRUE;
+			if (uwildmat(ng, groups[j]) != 0) doit=true;
 		    }
 		}
 		else {
-		    doit = TRUE;
+		    doit = true;
 		}
 		*p = '/';
 		if (doit) {

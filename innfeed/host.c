@@ -504,8 +504,8 @@ HostParams newHostParams(HostParams p)
       params->closePeriod=CLOSE_PERIOD;
       params->dynamicMethod=METHOD_STATIC;
       params->wantStreaming=STREAM;
-      params->dropDeferred=FALSE;
-      params->minQueueCxn=FALSE;
+      params->dropDeferred=false;
+      params->minQueueCxn=false;
       params->lowPassLow=NOCHECKLOW;
       params->lowPassHigh=NOCHECKHIGH;
       params->lowPassFilter=FILTERVALUE;
@@ -515,7 +515,7 @@ HostParams newHostParams(HostParams p)
       params->dynBacklogFilter = BACKLOGFILTER ;
       params->dynBacklogLowWaterMark = BACKLOGLWM;
       params->dynBacklogHighWaterMark = BACKLOGHWM;
-      params->backlogFeedFirst=FALSE;
+      params->backlogFeedFirst=false;
       params->username=NULL;
       params->password=NULL;
     }

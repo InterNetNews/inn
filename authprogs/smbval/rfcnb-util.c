@@ -314,7 +314,7 @@ int RFCNB_Session_Req(struct RFCNB_Con *con,
 
     case RFCNB_SESSION_RETARGET:   /* Go elsewhere                */
 
-      *redirect = TRUE;       /* Copy port and ip addr       */
+      *redirect = true;       /* Copy port and ip addr       */
 
       memcpy(Dest_IP, (resp + RFCNB_Pkt_IP_Offset), sizeof(struct in_addr));
       *port = SVAL(resp, RFCNB_Pkt_Port_Offset);

@@ -29,7 +29,7 @@ fdreserve(int fdnum)
 	}
 	Maxfd = -1;
 	allocated = 0;
-	return TRUE;
+	return true;
     }
     if (Reserved_fd == NULL) {
 	Reserved_fd = xmalloc(fdnum * sizeof(FILE *));
@@ -52,11 +52,11 @@ fdreserve(int fdnum)
 	    Reserved_fd = NULL;
 	    allocated = 0;
 	    Maxfd = -1;
-	    return FALSE;
+	    return false;
 	}
     }
     Maxfd = fdnum;
-    return TRUE;
+    return true;
 }
 
 FILE *

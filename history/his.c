@@ -231,12 +231,12 @@ HIScheck(struct history *h, const char *key)
     switch (his_cachelookup(h, hash)) {
     case HIScachehit:
 	h->stats.hitpos++;
-	r = TRUE;
+	r = true;
 	break;
 
     case HIScachemiss:
 	h->stats.hitneg++;
-	r = FALSE;
+	r = false;
 	break;
 
     case HIScachedne:
@@ -267,7 +267,7 @@ HISwrite(struct history *h, const char *key, time_t arrived,
 
 	/* if we successfully wrote it, add it to the cache */
 	hash = HashMessageID(key);
-	his_cacheadd(h, hash, TRUE);
+	his_cacheadd(h, hash, true);
     }
     TMRstop(TMR_HISWRITE);
 
@@ -288,7 +288,7 @@ HISremember(struct history *h, const char *key, time_t arrived)
 
 	/* if we successfully wrote it, add it to the cache */
 	hash = HashMessageID(key);
-	his_cacheadd(h, hash, TRUE);
+	his_cacheadd(h, hash, true);
     }
     TMRstop(TMR_HISWRITE);
 
@@ -309,7 +309,7 @@ HISreplace(struct history *h, const char *key, time_t arrived,
 
 	/* if we successfully wrote it, add it to the cache */
 	hash = HashMessageID(key);
-	his_cacheadd(h, hash, TRUE);
+	his_cacheadd(h, hash, true);
     }
     return r;
 }

@@ -63,7 +63,7 @@ typedef short	SITEIDX;
 */
 
 /* Used for storing group subscriptions for feeds. */
-#define SUB_DEFAULT		FALSE
+#define SUB_DEFAULT		false
 #define SUB_NEGATE		'!'
 #define SUB_POISON		'@'
 

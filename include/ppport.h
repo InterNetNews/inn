@@ -159,7 +159,7 @@ __DATA__
 #endif
 
 #ifndef ERRSV
-#	define ERRSV perl_get_sv("@",FALSE)
+#	define ERRSV perl_get_sv("@",false)
 #endif
 
 #if (PERL_VERSION < 4) || ((PERL_VERSION == 4) && (PERL_SUBVERSION <= 4))

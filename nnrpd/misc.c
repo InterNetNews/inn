@@ -99,26 +99,26 @@ bool PERMmatch(char **Pats, char **list)
 {
     int	                i;
     char	        *p;
-    int                 match = FALSE;
+    int                 match = false;
 
     if (Pats == NULL || Pats[0] == NULL)
-	return TRUE;
+	return true;
 
     for ( ; *list; list++) {
 	for (i = 0; (p = Pats[i]) != NULL; i++) {
 	    if (p[0] == '!') {
 		if (uwildmat(*list, ++p))
-		    match = FALSE;
+		    match = false;
 	    }
 	    else if (uwildmat(*list, p))
-		match = TRUE;
+		match = true;
 	}
 	if (match)
 	    /* If we can read it in one group, we can read it, period. */
-	    return TRUE;
+	    return true;
     }
 
-    return FALSE;
+    return false;
 }
 
 
@@ -133,31 +133,31 @@ PERMartok(void)
     char		*p, **grp;
 
     if (!PERMspecified)
-	return FALSE;
+	return false;
 
     if ((p = GetHeader("Xref")) == NULL) {
 	/* in case article does not include Xref */
 	if ((p = GetHeader("Newsgroups")) != NULL) {
 	    if (!NGgetlist(&grplist, p))
 		/* No newgroups or null entry. */
-		return TRUE;
+		return true;
 	} else {
-	    return TRUE;
+	    return true;
 	}
     } else {
 	/* skip path element */
 	if ((p = strchr(p, ' ')) == NULL)
-	    return TRUE;
+	    return true;
 	for (p++ ; *p == ' ' ; p++);
 	if (*p == '\0')
-	    return TRUE;
+	    return true;
 	if (!NGgetlist(&grplist, p))
 	    /* No newgroups or null entry. */
-	    return TRUE;
+	    return true;
 	/* chop ':' and article number */
 	for (grp = grplist ; *grp != NULL ; grp++) {
 	    if ((p = strchr(*grp, ':')) == NULL)
-		return TRUE;
+		return true;
 	    *p = '\0';
 	}
     }
@@ -167,12 +167,12 @@ PERMartok(void)
         char    *reply;
 
 	/* Authorize user at a Python authorization module */
-	if (PY_authorize(ClientHost, ClientIpString, ServerHost, PERMuser, p, FALSE, &reply) < 0) {
+	if (PY_authorize(ClientHost, ClientIpString, ServerHost, PERMuser, p, false, &reply) < 0) {
 	    syslog(L_NOTICE, "PY_authorize(): authorization skipped due to no Python authorization method defined.");
 	} else {
 	    if (reply != NULL) {
 	        syslog(L_TRACE, "PY_authorize() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, ClientHost, p, reply);
-		return TRUE;
+		return true;
 	    }
 	}
     }
@@ -183,7 +183,7 @@ PERMartok(void)
 
 
 /*
-**  Parse a newsgroups line, return TRUE if there were any.
+**  Parse a newsgroups line, return true if there were any.
 */
 bool
 NGgetlist(argvp, list)
@@ -240,7 +240,7 @@ InitBackoffConstants()
   struct stat st;
 
   /* Default is not to enable this code */
-  BACKOFFenabled = FALSE;
+  BACKOFFenabled = false;
   
   /* Read the runtime config file to get parameters */
 
@@ -266,7 +266,7 @@ InitBackoffConstants()
     return;
   }
 
-  BACKOFFenabled = TRUE;
+  BACKOFFenabled = true;
 
   return;
 }
@@ -312,7 +312,7 @@ char
 
      snprintf(dirbuff, sizeof(dirbuff), "%s/%03d%03d/%03d",
          postrec_dir, quads[3], quads[2], quads[1]);
-     if (!MakeDirectory(dirbuff,TRUE)) {
+     if (!MakeDirectory(dirbuff,true)) {
        syslog(L_ERROR, "%s Unable to create postrec directories '%s': %s",
                ClientHost, dirbuff, strerror(errno));
        return NULL;

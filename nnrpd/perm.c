@@ -163,7 +163,7 @@ extern bool PerlLoaded;
 	int byte, offset; \
 	offset = a % 8; \
 	byte = (a - offset) / 8; \
-	b = ((ConfigBit[byte] & (1 << offset)) != 0) ? TRUE : FALSE; \
+	b = ((ConfigBit[byte] & (1 << offset)) != 0) ? true : false; \
     }
 #define SET_CONFIG(a) \
     { \
@@ -430,7 +430,7 @@ static ACCESSGROUP *copy_accessgroup(ACCESSGROUP *orig)
 static void SetDefaultAuth(AUTHGROUP *curauth UNUSED)
 {
 #ifdef HAVE_SSL
-        curauth->require_ssl = FALSE;
+        curauth->require_ssl = false;
 #endif
 }
 
@@ -438,12 +438,12 @@ void SetDefaultAccess(ACCESSGROUP *curaccess)
 {
     curaccess->allownewnews = innconf->allownewnews;;
     curaccess->allowihave = false;
-    curaccess->locpost = FALSE;
-    curaccess->allowapproved = FALSE;
-    curaccess->localtime = FALSE;
-    curaccess->strippath = FALSE;
-    curaccess->nnrpdperlfilter = TRUE;
-    curaccess->nnrpdpythonfilter = TRUE;
+    curaccess->locpost = false;
+    curaccess->allowapproved = false;
+    curaccess->localtime = false;
+    curaccess->strippath = false;
+    curaccess->nnrpdperlfilter = true;
+    curaccess->nnrpdpythonfilter = true;
     curaccess->fromhost = NULL;
     if (innconf->fromhost)
 	curaccess->fromhost = xstrdup(innconf->fromhost);
@@ -483,7 +483,7 @@ void SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->backoff_trigger = innconf->backofftrigger;
     curaccess->nnrpdcheckart = innconf->nnrpdcheckart;
     curaccess->nnrpdauthsender = innconf->nnrpdauthsender;
-    curaccess->virtualhost = FALSE;
+    curaccess->virtualhost = false;
     curaccess->newsmaster = NULL;
     curaccess->maxbytespersecond = 0;
 }
@@ -559,7 +559,7 @@ static void ReportError(CONFFILE *f, const char *err)
     syslog(L_ERROR, "%s syntax error in %s(%d), %s", ClientHost,
       f->filename, f->lineno, err);
     Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
-    ExitWithStats(1, TRUE);
+    ExitWithStats(1, true);
 }
 
 static void method_parse(METHOD *method, CONFFILE *f, CONFTOKEN *tok, int auth)
@@ -623,9 +623,9 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
     }
 
     if (caseEQ(tok->name, "on") || caseEQ(tok->name, "true") || caseEQ(tok->name, "yes"))
-	boolval = TRUE;
+	boolval = true;
     else if (caseEQ(tok->name, "off") || caseEQ(tok->name, "false") || caseEQ(tok->name, "no"))
-	boolval = FALSE;
+	boolval = false;
     else
 	boolval = -1;
 
@@ -766,9 +766,9 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	ReportError(f, buff);
     }
     if (caseEQ(tok->name, "on") || caseEQ(tok->name, "true") || caseEQ(tok->name, "yes"))
-	boolval = TRUE;
+	boolval = true;
     else if (caseEQ(tok->name, "off") || caseEQ(tok->name, "false") || caseEQ(tok->name, "no"))
-	boolval = FALSE;
+	boolval = false;
     else
 	boolval = -1;
 
@@ -1042,7 +1042,7 @@ static void PERMreadfile(char *filename)
     if ((cf->f = CONFfopen(filename)) == NULL) {
 	syslog(L_ERROR, "%s cannot open %s: %m", ClientHost, filename);
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
-	ExitWithStats(1, TRUE);
+	ExitWithStats(1, true);
     }
     cf->parent	= 0;
 
@@ -1268,7 +1268,7 @@ static void PERMreadfile(char *filename)
 
 		if (curauth->name
 #ifdef HAVE_SSL
-		    && ((curauth->require_ssl == FALSE) || (ClientSSL == TRUE))
+		    && ((curauth->require_ssl == false) || (ClientSSL == true))
 #endif
 		    && MatchHost(curauth->hosts, ClientHost, ClientIpString)) {
 		    if (!MatchHost(curauth->localaddress, ServerHost, ServerIpString)) {
@@ -1333,8 +1333,8 @@ void PERMgetaccess(char *nnrpaccess)
     access_realms   = NULL;
     success_auth    = NULL;
 
-    PERMcanread	    = PERMcanpost   = FALSE;
-    PERMreadlist    = PERMpostlist  = FALSE;
+    PERMcanread	    = PERMcanpost   = false;
+    PERMreadlist    = PERMpostlist  = false;
     PERMaccessconf = NULL;
 
     if (ConfigBit == NULL) {
@@ -1354,7 +1354,7 @@ void PERMgetaccess(char *nnrpaccess)
 	syslog(L_NOTICE, "%s no_permission", ClientHost);
 	Printf("%d You have no permission to talk.  Goodbye.\r\n",
 	  NNTP_ACCESS_VAL);
-	ExitWithStats(1, TRUE);
+	ExitWithStats(1, true);
     }
 
     /* auth_realms are all expected to match the user. */
@@ -1365,7 +1365,7 @@ void PERMgetaccess(char *nnrpaccess)
     uname = 0;
     while (!uname && i--) {
 	if ((uname = ResolveUser(auth_realms[i])) != NULL)
-	    PERMauthorized = TRUE;
+	    PERMauthorized = true;
 	if (!uname && auth_realms[i]->default_user)
 	    uname = auth_realms[i]->default_user;
     }
@@ -1378,7 +1378,7 @@ void PERMgetaccess(char *nnrpaccess)
 	    strcat(PERMuser, "@");
 	    strcat(PERMuser, auth_realms[i]->default_domain);
 	}
-	PERMneedauth = FALSE;
+	PERMneedauth = false;
 	success_auth = auth_realms[i];
 	syslog(L_TRACE, "%s res %s", ClientHost, PERMuser);
     } else if (!canauthenticate) {
@@ -1386,9 +1386,9 @@ void PERMgetaccess(char *nnrpaccess)
 	syslog(L_NOTICE, "%s no_user", ClientHost);
 	Printf("%d Could not get your access name.  Goodbye.\r\n",
 	  NNTP_ACCESS_VAL);
-	ExitWithStats(1, TRUE);
+	ExitWithStats(1, true);
     } else {
-	PERMneedauth = TRUE;
+	PERMneedauth = true;
     }
     /* check maximum allowed permissions for any host that matches (for
      * the greeting string) */
@@ -1401,7 +1401,7 @@ void PERMgetaccess(char *nnrpaccess)
     if (!i) {
 	/* no applicable access groups. Zeroing all these makes INN 
 	 * return permission denied to client. */
-	PERMcanread = PERMcanpost = PERMneedauth = FALSE;
+	PERMcanread = PERMcanpost = PERMneedauth = false;
     }
 }
 
@@ -1421,7 +1421,7 @@ void PERMlogin(char *uname, char *pass, char *errorstr)
     /* The check in CMDauthinfo uses the value of PERMneedauth to know if
      * authentication succeeded or not.  By default, authentication doesn't
      * succeed. */
-    PERMneedauth = TRUE;
+    PERMneedauth = true;
 
     if(auth_realms != NULL) {
 	for (i = 0; auth_realms[i]; i++) {
@@ -1442,8 +1442,8 @@ void PERMlogin(char *uname, char *pass, char *errorstr)
 	    strcat(PERMuser, "@");
 	    strcat(PERMuser, auth_realms[i]->default_domain);
 	}
-	PERMneedauth = FALSE;
-	PERMauthorized = TRUE;
+	PERMneedauth = false;
+	PERMauthorized = true;
 	success_auth = auth_realms[i];
     }
 }
@@ -1527,7 +1527,7 @@ void PERMgetpermissions()
       } else {
         syslog(L_ERROR, "No script specified in auth method.\n");
         Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
-        ExitWithStats(1, TRUE);
+        ExitWithStats(1, true);
       }
       free(cpp);
       free(args);
@@ -1571,25 +1571,25 @@ void PERMgetpermissions()
 		ClientHost, access_realms[i]->rejectwith);
 	    Reply("%d Permission denied:  %s\r\n",
 		NNTP_ACCESS_VAL, access_realms[i]->rejectwith);
-	    ExitWithStats(1, TRUE);
+	    ExitWithStats(1, true);
 	}
 	if (access_realms[i]->read) {
 	    cp = xstrdup(access_realms[i]->read);
 	    PERMspecified = NGgetlist(&PERMreadlist, cp);
 	    free(cp);
-	    PERMcanread = TRUE;
+	    PERMcanread = true;
 	} else {
 	    syslog(L_TRACE, "%s no_read %s", ClientHost, access_realms[i]->name);
-	    PERMcanread = FALSE;
+	    PERMcanread = false;
 	}
 	if (access_realms[i]->post) {
 	    cp = xstrdup(access_realms[i]->post);
 	    NGgetlist(&PERMpostlist, cp);
 	    free(cp);
-	    PERMcanpost = TRUE;
+	    PERMcanpost = true;
 	} else {
 	    syslog(L_TRACE, "%s no_post %s", ClientHost, access_realms[i]->name);
-	    PERMcanpost = FALSE;
+	    PERMcanpost = false;
 	}
 	PERMaccessconf = access_realms[i];
 	MaxBytesPerSecond = PERMaccessconf->maxbytespersecond;
@@ -1598,7 +1598,7 @@ void PERMgetpermissions()
 		syslog(L_ERROR, "%s virtualhost needs domain parameter(%s)",
 		    ClientHost, PERMaccessconf->name);
 		Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
-		ExitWithStats(1, TRUE);
+		ExitWithStats(1, true);
 	    }
 	    if (VirtualPath)
 		free(VirtualPath);
@@ -1609,7 +1609,7 @@ void PERMgetpermissions()
 		    syslog(L_ERROR, "%s domain parameter(%s) in readers.conf must be different from the one in inn.conf",
 			ClientHost, PERMaccessconf->name);
 		    Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
-		    ExitWithStats(1, TRUE);
+		    ExitWithStats(1, true);
 		}
                 VirtualPath = concat(PERMaccessconf->domain, "!", (char *) 0);
 	    } else {
@@ -1632,18 +1632,18 @@ void PERMgetpermissions()
 static void CompressList(char *list)
 {
     char *cpto;
-    bool inword = FALSE;
+    bool inword = false;
 
     for (cpto = list; *list; ) {
 	if (strchr("\n \t,", *list) != NULL) {
 	    list++;
 	    if(inword) {
 		*cpto++ = ',';
-		inword = FALSE;
+		inword = false;
 	    }
 	} else {
 	    *cpto++ = *list++;
-	    inword = TRUE;
+	    inword = true;
 	}
     }
     *cpto = '\0';
@@ -1652,7 +1652,7 @@ static void CompressList(char *list)
 static bool MatchHost(char *hostlist, char *host, char *ip)
 {
     char    **list;
-    bool    ret	= FALSE;
+    bool    ret	= false;
     char    *cp;
     int	    iter;
     char    *pat, 
@@ -1661,7 +1661,7 @@ static bool MatchHost(char *hostlist, char *host, char *ip)
     /*	If no hostlist are specified, by default they match.   */
 
     if (hostlist == NULL) {
-	return(TRUE);
+	return(true);
     }
 
     list    = 0;
@@ -1705,18 +1705,18 @@ static bool MatchHost(char *hostlist, char *host, char *ip)
                             continue;
 		    }
 		    if ((ia.s_addr & mask) == (net.s_addr & mask))
-			ret = TRUE;
+			ret = true;
 		}
 #ifdef HAVE_INET6
                 else if (inet_pton(AF_INET6, ip, &ia6) && 
 			 inet_pton(AF_INET6, pat, &net6)) {
 		    mask = atoi(p+1);
-		    ret = TRUE;
+		    ret = true;
 		    /* do a prefix match byte by byte */
 		    for (c = 0; c*8 < mask && c < sizeof(ia6); c++) {
 			if ( (c+1)*8 <= mask &&
 			    ia6.s6_addr[c] != net6.s6_addr[c] ) {
-			    ret = FALSE;
+			    ret = false;
 			    break;
 			} else if ( (c+1)*8 > mask ) {
                             unsigned int b;
@@ -1725,7 +1725,7 @@ static bool MatchHost(char *hostlist, char *host, char *ip)
 				bits8 |= (1 << (7 - b));
 			    if ((ia6.s6_addr[c] & bits8) !=
 			    	(net6.s6_addr[c] & bits8) ) {
-				ret = FALSE;
+				ret = false;
 				break;
 			    }
 			}
@@ -1738,7 +1738,7 @@ static bool MatchHost(char *hostlist, char *host, char *ip)
 	    break;
     }
     if (ret && list[iter][0] == '!')
-	ret = FALSE;
+	ret = false;
     free(list[0]);
     free(list);
     free(cp);

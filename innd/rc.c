@@ -16,7 +16,7 @@
 
 #define TEST_CONFIG(a, b) \
     { \
-	b = ((peer_params.Keysetbit & (1 << a)) != 0) ? TRUE : FALSE; \
+	b = ((peer_params.Keysetbit & (1 << a)) != 0) ? true : false; \
     }
 
 #define SET_CONFIG(a) \
@@ -111,7 +111,7 @@ static int		remotecount;
 static int		remotefirst;
 
 /*
- * Check that the client has the right identd. Return TRUE if is the
+ * Check that the client has the right identd. Return true if is the
  * case, false, if not.
  */
 static bool
@@ -130,18 +130,18 @@ GoodIdent(int fd, char *identd)
     char buf[80], *buf2;
 
     if(identd[0] == '\0') {
-         return TRUE;
+         return true;
     }
     
     len = sizeof( ss_local );
     if ((getsockname(fd,s_local,&len)) < 0) {
 	syslog(L_ERROR, "can't do getsockname for identd");
-	return FALSE;
+	return false;
     }
     len = sizeof( ss_distant );
     if ((getpeername(fd,s_distant,&len)) < 0) {
 	syslog(L_ERROR, "can't do getsockname for identd");
-	return FALSE;
+	return false;
     }
 #ifdef HAVE_INET6
     if( s_local->sa_family == AF_INET6 )
@@ -169,19 +169,19 @@ GoodIdent(int fd, char *identd)
     } else
     {
 	syslog(L_ERROR, "Bad address family: %d\n", s_local->sa_family );
-	return FALSE;
+	return false;
     }
     if (ident_fd < 0) {
 	syslog(L_ERROR, "can't open socket for identd (%m)");
-	return FALSE;
+	return false;
     }
     if (bind(ident_fd,s_local,SA_LEN(s_local)) < 0) {
 	syslog(L_ERROR, "can't bind socket for identd (%m)");
-	return FALSE;
+	return false;
     }
     if (connect(ident_fd,s_distant,SA_LEN(s_distant)) < 0) {
 	syslog(L_ERROR, "can't connect to identd (%m)");
-	return FALSE;
+	return false;
     }
 
     snprintf(buf,sizeof(buf),"%d,%d\r\n",port2, port1);
@@ -192,7 +192,7 @@ GoodIdent(int fd, char *identd)
     {
 	syslog(L_ERROR, "error reading from ident server: %m" );
 	close( ident_fd );
-	return FALSE;
+	return false;
     }
     buf[lu]='\0';
     if ((lu>0) && (strstr(buf,"ERROR")==NULL)
@@ -329,14 +329,14 @@ RCaddressmatch(const struct sockaddr_storage *cp, const struct sockaddr_storage 
 	if (IN6_IS_ADDR_V4MAPPED(&sin6_cp->sin6_addr) &&
 		memcmp(&sin6_cp->sin6_addr.s6_addr[12],
 		    &sin_rp->sin_addr.s_addr, sizeof(struct in_addr)) == 0)
-	    return TRUE;
+	    return true;
     } else if (cp->ss_family == AF_INET && rp->ss_family == AF_INET6) {
 	sin_cp = (struct sockaddr_in *)cp;
 	sin6_rp = (struct sockaddr_in6 *)rp;
 	if (IN6_IS_ADDR_V4MAPPED(&sin6_rp->sin6_addr) &&
 		memcmp(&sin6_rp->sin6_addr.s6_addr[12],
 		    &sin_cp->sin_addr.s_addr, sizeof(struct in_addr)) == 0)
-	    return TRUE;
+	    return true;
     } else if (cp->ss_family == AF_INET6 && rp->ss_family == AF_INET6) {
 #ifdef HAVE_BROKEN_IN6_ARE_ADDR_EQUAL
 	if (!memcmp(&((struct sockaddr_in6 *)cp)->sin6_addr,
@@ -346,14 +346,14 @@ RCaddressmatch(const struct sockaddr_storage *cp, const struct sockaddr_storage 
 	if (IN6_ARE_ADDR_EQUAL( &((struct sockaddr_in6 *)cp)->sin6_addr,
 				&((struct sockaddr_in6 *)rp)->sin6_addr))
 #endif
-	    return TRUE;
+	    return true;
     } else
 #endif /* INET6 */
 	if (((struct sockaddr_in *)cp)->sin_addr.s_addr ==
 	     ((struct sockaddr_in *)rp)->sin_addr.s_addr)
-	    return TRUE;
+	    return true;
 
-    return FALSE;
+    return false;
 }
 
 /*
@@ -368,10 +368,10 @@ RCauthorized(CHANNEL *cp, char *pass)
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
 	if (RCaddressmatch(&cp->Address, &rp->Address)) {
 	    if (rp->Password[0] == '\0' || EQ(pass, rp->Password))
-		return TRUE;
+		return true;
 	    syslog(L_ERROR, "%s (%s) bad_auth", rp->Label,
 		   sprint_sockaddr((struct sockaddr *)&cp->Address));
-	    return FALSE;
+	    return false;
 	}
 
     if (!AnyIncoming)
@@ -379,7 +379,7 @@ RCauthorized(CHANNEL *cp, char *pass)
 	syslog(L_ERROR, "%s not_found", sprint_sockaddr((struct sockaddr *)&cp->Address));
 
     /* Anonymous hosts should not authenticate. */
-    return FALSE;
+    return false;
 }
 
 /*
@@ -396,7 +396,7 @@ RCnolimit(CHANNEL *cp)
             return !rp->MaxCnx;
 
     /* Not found in our table; this can't happen. */
-    return FALSE;
+    return false;
 }
 
 /*
@@ -652,7 +652,7 @@ RCreader(CHANNEL *cp)
 	    }
 	}
 	
-	if ((new = NCcreate(fd, rp->Password[0] != '\0', FALSE)) != NULL) {
+	if ((new = NCcreate(fd, rp->Password[0] != '\0', false)) != NULL) {
             new->Streaming = rp->Streaming;
             new->Skip = rp->Skip;
             new->NoResendId = rp->NoResendId;
@@ -676,7 +676,7 @@ RCreader(CHANNEL *cp)
 	    }
 	}
     } else if (AnyIncoming && !rp->Skip) {
-	if ((new = NCcreate(fd, FALSE, FALSE)) != NULL) {
+	if ((new = NCcreate(fd, false, false)) != NULL) {
 	    NCwritereply(new, (char *)NCgreeting);
 	}
     } else if (!innconf->noreader) {
@@ -738,13 +738,13 @@ RCreaddata(int *num, FILE *F, bool *toolong)
   char	*word;
   bool	flag;
 
-  *toolong = FALSE;
+  *toolong = false;
   if (*RCbuff == '\0') {
     if (feof (F)) return (NULL);
     fgets(RCbuff, sizeof RCbuff, F);
     (*num)++;
     if (strlen (RCbuff) == sizeof RCbuff) {
-      *toolong = TRUE;
+      *toolong = true;
       return (NULL); /* Line too long */
     }
   }
@@ -758,13 +758,13 @@ RCreaddata(int *num, FILE *F, bool *toolong)
 	   *p = '\0';
      }
      for (p = RCbuff; *p == ' ' || *p == '\t' ; p++);
-     flag = TRUE;
+     flag = true;
      if (*p == '\0' && !feof (F)) {
-       flag = FALSE;
+       flag = false;
        fgets(RCbuff, sizeof RCbuff, F);
        (*num)++;
        if (strlen (RCbuff) == sizeof RCbuff) {
-	 *toolong = TRUE;
+	 *toolong = true;
 	 return (NULL); /* Line too long */
        }
        continue;
@@ -782,7 +782,7 @@ RCreaddata(int *num, FILE *F, bool *toolong)
 	fgets(t, sizeof RCbuff - strlen (RCbuff), F);
 	(*num)++;
 	if (strlen (RCbuff) == sizeof RCbuff) {
-	  *toolong = TRUE;
+	  *toolong = true;
 	  return (NULL); /* Line too long */
 	}
 	if ((s = strchr(t, '\n')) != NULL)
@@ -905,10 +905,10 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     rp->Identd = xstrdup(NOIDENTD);
     rp->Patterns = NULL;
     rp->MaxCnx = 0;
-    rp->Streaming = TRUE;
-    rp->Skip = FALSE;
-    rp->NoResendId = FALSE;
-    rp->Nolist = FALSE;
+    rp->Streaming = true;
+    rp->Skip = false;
+    rp->NoResendId = false;
+    rp->Nolist = false;
     rp->HoldTime = 0;
     rp++;
     (*count)++;
@@ -919,10 +919,10 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     groupcount = 0; /* no group defined yet */
     groups = 0;
     peer_params.Label = NULL;
-    default_params.Streaming = TRUE;
-    default_params.Skip = FALSE;
-    default_params.NoResendId = FALSE;
-    default_params.Nolist = FALSE;
+    default_params.Streaming = true;
+    default_params.Skip = false;
+    default_params.NoResendId = false;
+    default_params.Nolist = false;
     default_params.MaxCnx = 0;
     default_params.HoldTime = 0;
     default_params.Password = xstrdup(NOPASS);
@@ -1265,10 +1265,10 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  break;
 	}
 	if (!strcmp (word, "true"))
-	  flag = TRUE;
+	  flag = true;
 	else
 	  if (!strcmp (word, "false"))
-	    flag = FALSE;
+	    flag = false;
 	  else {
 	    syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
 	    break;
@@ -1297,10 +1297,10 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  break;
 	}
 	if (!strcmp (word, "true"))
-	  flag = TRUE;
+	  flag = true;
 	else
 	  if (!strcmp (word, "false"))
-	    flag = FALSE;
+	    flag = false;
 	  else {
 	    syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
 	    break;
@@ -1329,10 +1329,10 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  break;
 	}
 	if (!strcmp (word, "true"))
-	  flag = TRUE;
+	  flag = true;
 	else
 	  if (!strcmp (word, "false"))
-	    flag = FALSE;
+	    flag = false;
 	  else {
 	    syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
 	    break;
@@ -1361,10 +1361,10 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  break;
 	}
 	if (!strcmp (word, "true"))
-	  flag = TRUE;
+	  flag = true;
 	else
 	  if (!strcmp (word, "false"))
-	    flag = FALSE;
+	    flag = false;
 	  else {
 	    syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
 	    break;
@@ -1777,7 +1777,7 @@ RCreadlist(void)
 
     if (INNDHOSTS == NULL)
 	INNDHOSTS = concatpath(innconf->pathetc, _PATH_INNDHOSTS);
-    StreamingOff = FALSE;
+    StreamingOff = false;
     RCreadfile(&RCpeerlistfile, &RCpeerlist, &RCnpeerlist, INNDHOSTS);
     /* RCwritelist("/tmp/incoming.conf.new"); */
 }

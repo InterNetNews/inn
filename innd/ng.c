@@ -75,7 +75,7 @@ NGparseentry(NEWSGROUP *ngp, const char *p, char *end)
     ARTNUM		lo;
 
     if ((q = strchr(p, ' ')) == NULL)
-	return FALSE;
+	return false;
     i = q - p;
 
     ngp->NameLength = i;
@@ -86,13 +86,13 @@ NGparseentry(NEWSGROUP *ngp, const char *p, char *end)
 
     ngp->LastString = ++q;
     if ((q = strchr(q, ' ')) == NULL || q > end)
-	return FALSE;
+	return false;
     ngp->Lastwidth = q - ngp->LastString;
     if ((q = strchr(q, ' ')) == NULL || q > end)
-	return FALSE;
+	return false;
     lo = (ARTNUM)atol(q + 1);
     if ((q = strchr(q + 1, ' ')) == NULL || q > end)
-	return FALSE;
+	return false;
     ngp->Rest = ++q;
     /* We count on atoi() to stop at the space after the digits! */
     ngp->Last = atol(ngp->LastString);
@@ -109,7 +109,7 @@ NGparseentry(NEWSGROUP *ngp, const char *p, char *end)
     for (p = ngp->Name, ngpp = htp->Groups, i = htp->Used; --i >= 0; ngpp++)
 	if (*p == ngpp[0]->Name[0] && EQ(p, ngpp[0]->Name)) {
 	    syslog(L_ERROR, "%s duplicate_group %s", LogName, p);
-	    return FALSE;
+	    return false;
 	}
     if (htp->Used >= htp->Size) {
 	htp->Size += NGHbuckets;
@@ -118,9 +118,9 @@ NGparseentry(NEWSGROUP *ngp, const char *p, char *end)
     htp->Groups[htp->Used++] = ngp;
 
     if (innconf->enableoverview && !OVgroupadd(ngp->Name, lo, ngp->Last, ngp->Rest))
-	return FALSE;
+	return false;
 
-    return TRUE;
+    return true;
 }
 
 
@@ -177,10 +177,10 @@ NGparsefile(void)
 	}
 
     /* Count the number of sites. */
-    SawMe = FALSE;
-    for (strings = SITEreadfile(TRUE), i = 0; (p = strings[i]) != NULL; i++)
+    SawMe = false;
+    for (strings = SITEreadfile(true), i = 0; (p = strings[i]) != NULL; i++)
 	if (*p == 'M' && *++p == 'E' && *++p == ':')
-	    SawMe = TRUE;
+	    SawMe = true;
     if (i == 0 || (i == 1 && SawMe)) {
 	syslog(L_ERROR, "%s bad_newsfeeds no feeding sites", LogName);
 	NGHcount = 1;
@@ -338,12 +338,12 @@ NGrenumber(NEWSGROUP *ngp)
     long		l;
     char		*dummy;
 
-    if (!innconf->enableoverview) return TRUE; /* can't do anything w/o overview */
+    if (!innconf->enableoverview) return true; /* can't do anything w/o overview */
 
     /* Get a valid offset into the active file. */
     if (ICDneedsetup) {
 	syslog(L_ERROR, "%s unsynched must reload before renumber", LogName);
-	return FALSE;
+	return false;
     }
     start = ICDreadactive(&dummy) + ngp->Start;
 
@@ -353,14 +353,14 @@ NGrenumber(NEWSGROUP *ngp)
      || (f4 = strchr(++f3, ' ')) == NULL) {
 	syslog(L_ERROR, "%s bad_format active %s",
 	    LogName, MaxLength(start, start));
-	return FALSE;
+	return false;
     }
     himark = atol(f2);
     lomark = himark + 1;
     /* note these will be the low and himarks if the group turns out to be empty. */
 
     /* Check overview data for the group. */
-    if (!OVgroupstats(ngp->Name, &low, &high, &count, &flag)) return FALSE;
+    if (!OVgroupstats(ngp->Name, &low, &high, &count, &flag)) return false;
     if (count != 0) {
 	/* non-empty group, so set low/himarks from overview. */
 	lomark = low;
@@ -371,7 +371,7 @@ NGrenumber(NEWSGROUP *ngp)
 	syslog(L_NOTICE, RENUMBER, LogName, ngp->Name, "hi", l, himark);
 	if (!FormatLong(f2, himark, f3 - f2 - 1)) {
 	    syslog(L_ERROR, NORENUMBER, LogName, ngp->Name, "hi");
-	    return FALSE;
+	    return false;
 	}
 	ngp->Last = himark;
 	ICDactivedirty++;
@@ -382,11 +382,11 @@ NGrenumber(NEWSGROUP *ngp)
 	    syslog(L_NOTICE, RENUMBER, LogName, ngp->Name, "lo", l, lomark);
 	if (!FormatLong(f3, lomark, f4 - f3)) {
 	    syslog(L_ERROR, NORENUMBER, LogName, ngp->Name, "lo");
-	    return FALSE;
+	    return false;
 	}
 	ICDactivedirty++;
     }
-    return TRUE;
+    return true;
 }
 
 /*
@@ -408,7 +408,7 @@ NGlowmark(NEWSGROUP *ngp, long lomark)
      || (f4 = strchr(++f3, ' ')) == NULL) {
         syslog(L_ERROR, "%s bad_format active %s",
             LogName, MaxLength(start, start));
-        return FALSE;
+        return false;
     }
     l = atol(f3);
     if (lomark != l) {
@@ -416,9 +416,9 @@ NGlowmark(NEWSGROUP *ngp, long lomark)
             syslog(L_NOTICE, RENUMBER, LogName, ngp->Name, "lo", l, lomark);
         if (!FormatLong(f3, lomark, f4 - f3)) {
             syslog(L_ERROR, NORENUMBER, LogName, ngp->Name, "lo");
-            return FALSE;
+            return false;
         }
         ICDactivedirty++;
     }
-    return TRUE;
+    return true;
 }

@@ -13,7 +13,7 @@
 
 
 /*
-**  Read a big amount, looping until it is all done.  Return TRUE if
+**  Read a big amount, looping until it is all done.  Return true if
 **  successful.
 */
 int xread(int fd, char *p, off_t i)
