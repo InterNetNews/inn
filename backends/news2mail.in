@@ -31,7 +31,7 @@
 #
 #	- Brian Kantor, UCSD Aug 1998
 
-require 5.002;
+require 5.006;
 
 use FileHandle;
 use Sys::Syslog;
