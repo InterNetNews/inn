@@ -45,7 +45,7 @@ tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h
 
 libinn.la:	$(OBJECTS) $(LOBJECTS)
-	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) \
+	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) $(LIBS) \
 	    -rpath $(PATHLIB) -version-info 2:0:0
 
 libinn.a:       $(OBJECTS)
