@@ -2283,6 +2283,8 @@ static void hostStartSpooling (Host host)
 {
   ASSERT (host->spoolTime == 0) ;
 
+  queuesToTape (host) ;
+
   hostLogStats (host,true) ;
   
   host->spoolTime = theTime() ;
