@@ -65,8 +65,7 @@ if [ -z "${HISTDIR}" -o X"." = X"${HISTDIR}" -o ! -d "${HISTDIR}" ]; then
 	HISTDIR="${PATHETC}"
     fi
 fi
-ENABLEOVERVIEW=`echo X${ENABLEOVERVIEW} | tr ${AZ} ${az}`
-if [ ${ENABLEOVERVIEW} = x"true" -o ${ENABLEOVERVIEW} = x"yes" -o ${ENABLEOVERVIEW} = x"on" ]; then
+if [ "${ENABLEOVERVIEW}" = "true" ]; then
     DOEXPIREOVER=true
     RMFILE=${MOST_LOGS}/expire.rm
 fi
@@ -78,9 +77,8 @@ REASON=
 SCANARG=
 DOGROUPBASEEXPIRY=false
 
-GROUPBASEEXPIRY=`echo X${GROUPBASEEXPIRY} | tr ${AZ} ${az}`
-if [ ${GROUPBASEEXPIRY} = x"true" -o ${GROUPBASEEXPIRY} = x"yes" -o ${GROUPBASEEXPIRY} = x"on" ]; then
-    if [ ${ENABLEOVERVIEW} = x"true" -o ${ENABLEOVERVIEW} = x"yes" -o ${ENABLEOVERVIEW} = x"on" ]; then
+if [ "${GROUPBASEEXPIRY}" = "true" ];
+    if [ "${ENABLEOVERVIEW}" = "true" ];
 	DOGROUPBASEEXPIRY=true
     else
 	DOEXPIREOVER=false
@@ -267,7 +265,7 @@ if [ ${DOGROUPBASEEXPIRY} = true -a ${DOEXPIREOVER} = true ] ; then
     test -n "${LOWMARKFILE}" && {
 	echo "lowmarkrenumber begin `date`: (${LOWMARKFILE})"   >>${EXPLOG}
 	ctlinnd -s -t`wc -l <${ACTIVE}` lowmark ${LOWMARKFILE} 2>&1
-	echo "lowmarkrenumber end `date`"                           >>${EXPLOG}
+	echo "lowmarkrenumber end `date`"                       >>${EXPLOG}
 	rm -f ${MOST_LOGS}/expire.lastlowmark
 	mv ${LOWMARKFILE} ${MOST_LOGS}/expire.lastlowmark
     }
@@ -440,7 +438,7 @@ if [ ${DOEXPIRE} = true -a ${DOGROUPBASEEXPIRY} != true ] ; then
 	test -n "${LOWMARKFILE}" && {
 	    echo "lowmarkrenumber begin `date`: (${LOWMARKFILE})"   >>${EXPLOG}
 	    ctlinnd -s -t`wc -l <${ACTIVE}` lowmark ${LOWMARKFILE} 2>&1
-	    echo "lowmarkrenumber end `date`"                           >>${EXPLOG}
+	    echo "lowmarkrenumber end `date`"                       >>${EXPLOG}
 	    rm -f ${MOST_LOGS}/expire.lastlowmark
 	    mv ${LOWMARKFILE} ${MOST_LOGS}/expire.lastlowmark
 	}
