@@ -1,34 +1,27 @@
 /*  $Revision$
 **
+**  Open a connection to a remote NNTP server.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
+#include <arpa/inet.h>
 #include <errno.h>
-#include <sys/socket.h>
-#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
-#include <sys/un.h>
-#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
-#include <netinet/in.h>
 #include <netdb.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
+# include <sys/un.h>
+#endif
+
+#include "libinn.h"
 #include "nntp.h"
 #include "paths.h"
-#include "libinn.h"
 
 /* Error returns from inet_addr. */
 #ifndef INADDR_NONE
 # define INADDR_NONE 0xffffffff
 #endif
-
-#if	!defined(ntohs) && !defined(NETSWAP)
-extern unsigned short	ntohs();
-#endif	/* !defined(ntohs) && !defined(NETSWAP) */
-
-#if	!defined(htons) && !defined(NETSWAP)
-extern unsigned short	htons();
-#endif	/* !defined(ntohs) && !defined(NETSWAP) */
 
 /*
 **  Open a connection to an NNTP server and create stdio FILE's for talking
