@@ -935,7 +935,7 @@ check_all_perms
     foreach ( keys %prog_modes ) {
 	&checkperm($paths{$_}, $prog_modes{$_});
     }
-    &checkperm($paths{'inndstart'}, 04550);
+    &checkperm($paths{'inndstart'}, 04550, 'root', $newsgroup);
     foreach ( keys %paths ) {
 	&checkperm($paths{$_}, $modes{$_})
 	    if defined $modes{$_};
