@@ -355,8 +355,8 @@ If set, restricts the overview data stored by INN to only the newsgroups
 matching this comma-separated list of wildmat expressions.  Newsgroups not
 matching this setting may not be readable, and if I<groupbaseexpiry> is
 set to true and the storage method for these newsgroups does not have
-self-expire functionality, storing overview data will fail.  This is a
-boolean value and the default is false.
+self-expire functionality, storing overview data will fail.
+The default is unset.
 
 =item I<ovmethod>
 
