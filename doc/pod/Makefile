@@ -13,7 +13,7 @@ TEXT	= ../../HACKING ../../INSTALL ../../NEWS ../../README ../hook-perl \
 MAN1	= ../man/ckpasswd.1 ../man/convdate.1 ../man/fastrm.1 \
 	../man/innmail.1
 
-MAN3	= ../man/qio.3 ../man/uwildmat.3 ../man/libinnhist.3
+MAN3	= ../man/libinnhist.3 ../man/qio.3 ../man/uwildmat.3
 
 MAN5	= ../man/inn.conf.5 ../man/newsfeeds.5 ../man/ovdb.5 \
 	../man/passwd.nntp.5 ../man/readers.conf.5 ../man/sasl.conf.5 \
@@ -21,7 +21,8 @@ MAN5	= ../man/inn.conf.5 ../man/newsfeeds.5 ../man/ovdb.5 \
 
 MAN8	= ../man/expireover.8 ../man/innd.8 ../man/inndf.8 \
 	../man/inndstart.8 ../man/makehistory.8 ../man/ovdb_init.8 \
-	../man/ovdb_monitor.8 ../man/ovdb_server.8 ../man/ovdb_stat.8
+	../man/ovdb_monitor.8 ../man/ovdb_server.8 ../man/ovdb_stat.8 \
+	../man/tdx-util.8
 
 all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 
@@ -38,9 +39,9 @@ all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 ../man/fastrm.1:	fastrm.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/innmail.1:	innmail.pod		; $(POD2MAN) -s 1 $? > $@
 
+../man/libinnhist.3:	libinnhist.pod		; $(POD2MAN) -s 3 $? > $@
 ../man/qio.3:		qio.pod			; $(POD2MAN) -s 3 $? > $@
 ../man/uwildmat.3:	uwildmat.pod		; $(POD2MAN) -s 3 $? > $@
-../man/libinnhist.3:	libinnhist.pod		; $(POD2MAN) -s 3 $? > $@
 
 ../man/inn.conf.5:	inn.conf.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/newsfeeds.5:	newsfeeds.pod		; $(POD2MAN) -s 5 $? > $@
@@ -59,3 +60,4 @@ all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 ../man/ovdb_monitor.8:	ovdb_monitor.pod	; $(POD2MAN) -s 8 $? > $@
 ../man/ovdb_server.8:	ovdb_server.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/ovdb_stat.8:	ovdb_stat.pod		; $(POD2MAN) -s 8 $? > $@
+../man/tdx-util.8:	tdx-util.pod		; $(POD2MAN) -s 8 $? > $@
