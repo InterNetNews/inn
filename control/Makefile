@@ -2,7 +2,7 @@
 
 include ../Makefile.global
 
-ALL	      = controlbatch controlchan docheckgroups gpgverify pgpverify
+ALL	      = controlbatch controlchan docheckgroups gpgverify pgpverify \
 		signcontrol
 
 INSTALLED     = $(D)$(PATHBIN)/controlbatch	\
