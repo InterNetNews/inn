@@ -41,7 +41,6 @@ extern char PERMuser[];
 extern char **OtherHeaders;
 extern int OtherCount;
 extern bool HeadersModified;
-static int HeaderLen;
 
 extern bool PerlLoaded;
 
@@ -58,7 +57,7 @@ char *HandleHeaders(char *article)
    HV		*hdr;
    SV           *body;
    int		rc;
-   char		*p;
+   char		*p, *q;
    static char	buf[256];
    register int   i;
    register char *s,*t;
@@ -123,7 +122,6 @@ char *HandleHeaders(char *article)
    HeadersModified = FALSE;
    if (SvTRUE(modswitch)) {
      HeadersModified = TRUE;
-     HeaderLen = 0;
      i = 0;
 
 #ifdef DEBUG_MODIFY     
@@ -142,9 +140,16 @@ char *HandleHeaders(char *article)
        /* See if it's a table header */
        for (hp = Table; hp < EndOfTable; hp++) {
          if (caseEQn(p, hp->Name, hp->Size)) {
-	   char *copy = COPY(s);
-	   HDR_SET(hp - Table, copy);
-           HeaderLen += strlen(s) + hp->Size + 3;
+           char *copy = COPY(s);
+           HDR_SET(hp - Table, copy);
+           hp->Len = TrimSpaces(hp->Value);
+           for (q = hp->Value ; ISWHITE(*q) || *q == '\n' ; q++)
+             continue;
+           hp->Body = q;
+           if (hp->Len == 0) {
+             DISPOSE(hp->Value);
+             hp->Value = hp->Body = NULL;
+           }
            break;
          }
        }
@@ -157,7 +162,6 @@ char *HandleHeaders(char *article)
        }
        t = concat(p, ": ", s, (char *) 0);
        OtherHeaders[i++] = t;
-       HeaderLen += strlen(t) + 1;
      }
      OtherCount = i;
 #ifdef DEBUG_MODIFY
