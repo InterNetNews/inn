@@ -43,13 +43,13 @@
 */
 #include "config.h"
 #include "clibrary.h"
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <syslog.h>
 #include <errno.h>
 #include <grp.h>
 #include <pwd.h>
 #include <sys/stat.h>
-#include <netinet/in.h>
 #include <sys/socket.h>
 
 #ifdef HAVE_FCNTL_H
