@@ -340,9 +340,9 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
         return FALSE;
 
     TMRstart(TMR_HISWRITE);
-    if (paths != NULL && paths[0] != '\0')
-	HISslashify(paths);
-    else
+    if (paths != NULL && paths[0] != '\0') {
+	if (!innconf->storageapi) HISslashify(paths);
+    } else
 	paths = NOPATHS;
 
     offset = ftell(HISwritefp);
