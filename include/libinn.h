@@ -107,11 +107,11 @@ extern const int        inn_version[3];
 extern const char       inn_version_extra[];
 extern const char       inn_version_string[];
 
-/* This function is deprecated.  Nothing in INN should use it, and it may
-   eventually go away entirely. */
-extern const char *     INNVersion(void);
+/* Earlier versions of INN didn't have <inn/version.h> and some source is
+   intended to be portable to different INN versions; it can use this macro
+   to determine whether <inn/version.h> is available. */
+#define HAVE_INN_VERSION_H 1
 
-#define HAVE_INN_VERSION_H
 
 /*
 **  WILDMAT MATCHING
