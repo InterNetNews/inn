@@ -323,6 +323,7 @@ incoming_conf
     'wanttrash',                0,
     'wireformat',               0,
     'xrefslave',                0,
+    'nfswriter',                0,
 
     'allownewnews',             0,
     'articlemmap',              0,
@@ -333,6 +334,8 @@ incoming_conf
     'noreader',                 0,
     'readerswhenstopped',       0,
     'readertrack',              0,
+    'nfsreader',                0,
+    'tradindexedmmap',          0,
 
     'keywords',                 0,
     'keyartlimit',              0,

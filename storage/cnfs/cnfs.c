@@ -818,6 +818,18 @@ static bool CNFSread_config(void) {
     return TRUE;
 }
 
+/* Figure out what page an address is in and flush those pages */
+static void
+mapcntl(void *p, size_t length, int flags)
+{
+    char *start, *end;
+
+    start = (char *)((size_t)p & ~(size_t)(pagesize - 1));
+    end = (char *)((size_t)((char *)p + length + pagesize) &
+		   ~(size_t)(pagesize - 1));
+    msync(start, end - start, flags);
+}
+
 /*
 **	Bit arithmetic by brute force.
 **
@@ -836,6 +848,7 @@ static int CNFSUsedBlock(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset,
     int	i;
     ULONG		bitlong, on, off, mask;
     static ULONG	onarray[64], offarray[64];
+    ULONG		*where;
 
     if (uninitialized) {
 	on = 1;
@@ -874,8 +887,12 @@ static int CNFSUsedBlock(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset,
     blocknum = offset / CNFS_BLOCKSIZE;
     longoffset = blocknum / (longsize * 8);
     bitoffset = blocknum % (longsize * 8);
-    bitlong = *((ULONG *) cycbuff->bitfield + (CNFS_BEFOREBITF / longsize)
-		+ longoffset);
+    where = (ULONG *)cycbuff->bitfield + (CNFS_BEFOREBITF / longsize)
+	+ longoffset;
+    if (innconf->nfsreader) {
+	mapcntl(where, sizeof *where, MS_INVALIDATE);
+    }
+    bitlong = *where;
     if (set_operation) {
 	if (setbitvalue) {
 	    mask = onarray[bitoffset];
@@ -884,8 +901,10 @@ static int CNFSUsedBlock(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset,
 	    mask = offarray[bitoffset];
 	    bitlong &= mask;
 	}
-	*((ULONG *) cycbuff->bitfield + (CNFS_BEFOREBITF / longsize)
-	  + longoffset) = bitlong;
+	*where = bitlong;
+	if (innconf->nfswriter) {
+	    mapcntl(where, sizeof *where, MS_ASYNC);
+	}
 	return 2;	/* XXX Clean up return semantics */
     }
     /* It's a read operation */

@@ -108,6 +108,7 @@ bool tradindexed_open(int mode) {
     struct stat         sb;
     int                 fdlimit;
     int                 flag = 0;
+    int                 openmode;
 
     OV3mode = mode;
     if (!(OV3mode & OV_WRITE))
@@ -130,19 +131,18 @@ bool tradindexed_open(int mode) {
 #ifdef SYNCGINDEXMMAP
     strncpy(GROUPfn, groupfn, PATH_MAX);
 #endif
-#ifndef NFSREADER
-    GROUPfd = open(groupfn, O_RDWR | O_CREAT, ARTFILE_MODE);
+    if (mode & OV_WRITE) {
+	openmode = O_RDWR | O_CREAT;
+    } else {
+	openmode = O_RDONLY;
+    }
+    GROUPfd = open(groupfn, openmode, ARTFILE_MODE);
     if (GROUPfd < 0) {
 	syslog(L_FATAL, "tradindexed: could not create %s: %m", groupfn);
-#else
-    GROUPfd = open(groupfn, O_RDONLY, ARTFILE_MODE);
-    if (GROUPfd < 0) {
-	syslog(L_FATAL, "tradindexed: could not open %s: %m", groupfn);
-#endif
 	DISPOSE(groupfn);
 	return FALSE;
     }
-    
+
     if (fstat(GROUPfd, &sb) < 0) {
 	syslog(L_FATAL, "tradindexed: could not fstat %s: %m", groupfn);
 	DISPOSE(groupfn);
@@ -150,32 +150,36 @@ bool tradindexed_open(int mode) {
 	return FALSE;
     }
     if (sb.st_size > sizeof(GROUPHEADER)) {
-#ifndef NFSREADER
-	if (mode & OV_READ)
-	    flag |= PROT_READ;
-	if (mode & OV_WRITE) {
-	    /* 
-	     * Note: below mapping of groupheader won't work unless we have 
-	     * both PROT_READ and PROT_WRITE perms.
-	     */
-	    flag |= PROT_WRITE|PROT_READ;
+	if (innconf->tradindexedmmap) {
+	    if (mode & OV_READ)
+		flag |= PROT_READ;
+	    if (mode & OV_WRITE) {
+		/* 
+		 * Note: below mapping of groupheader won't work
+		 * unless we have both PROT_READ and PROT_WRITE perms.
+		 */
+		flag |= PROT_WRITE|PROT_READ;
+	    }
 	}
-#endif
 	GROUPcount = (sb.st_size - sizeof(GROUPHEADER)) / sizeof(GROUPENTRY);
-#ifndef NFSREADER
-	if ((GROUPheader = (GROUPHEADER *)mmap(0, GROUPfilesize(GROUPcount), flag,
-					       MAP_SHARED, GROUPfd, 0)) == (GROUPHEADER *) -1) {
-	    syslog(L_FATAL, "tradindexed: could not mmap %s in tradindexed_open: %m", groupfn);
-#else
-	GROUPheader = NEW(GROUPHEADER *, GROUPfilesize(GROUPcount));
+	if (innconf->tradindexedmmap) {
+	    if ((GROUPheader = (GROUPHEADER *)mmap(0, GROUPfilesize(GROUPcount), flag,
+						   MAP_SHARED, GROUPfd, 0)) == (GROUPHEADER *) -1) {
+		syslog(L_FATAL, "tradindexed: could not mmap %s in tradindexed_open: %m", groupfn);
+		DISPOSE(groupfn);
+		close(GROUPfd);
+		return FALSE;
+	    }
+	} else {
+	    GROUPheader = NEW(GROUPHEADER *, GROUPfilesize(GROUPcount));
 
-	if (GROUPfilesize(GROUPcount) != read(GROUPfd, (void *)GROUPheader, GROUPfilesize(GROUPcount))) {
-	    syslog(L_FATAL, "tradindexed: could not read %s in tradindexed_open: %m", groupfn);
-	    DISPOSE(GROUPheader);
-#endif
-	    DISPOSE(groupfn);
-	    close(GROUPfd);
-	    return FALSE;
+	    if (GROUPfilesize(GROUPcount) != read(GROUPfd, (void *)GROUPheader, GROUPfilesize(GROUPcount))) {
+		syslog(L_FATAL, "tradindexed: could not read %s in tradindexed_open: %m", groupfn);
+		DISPOSE(GROUPheader);
+		DISPOSE(groupfn);
+		close(GROUPfd);
+		return FALSE;
+	    }
 	}
 
 	GROUPentries = (GROUPENTRY *)((char *)GROUPheader + sizeof(GROUPHEADER));
@@ -284,30 +288,32 @@ static bool GROUPremapifneeded(GROUPLOC loc) {
 	return TRUE;
 
     if (GROUPheader) {
-#ifndef NFSREADER
-	if (munmap((void *)GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
-	    syslog(L_FATAL, "tradindexed: could not munmap group.index in GROUPremapifneeded: %m");
-	    return FALSE;
+	if (innconf->tradindexedmmap) {
+	    if (munmap((void *)GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
+		syslog(L_FATAL, "tradindexed: could not munmap group.index in GROUPremapifneeded: %m");
+		return FALSE;
+	    }
+	} else {
+	    DISPOSE(GROUPheader);
 	}
-#else
-	DISPOSE(GROUPheader);
-#endif
     }
 
     GROUPcount = (sb.st_size - sizeof(GROUPHEADER)) / sizeof(GROUPENTRY);
-#ifndef NFSREADER
-    GROUPheader = (GROUPHEADER *)mmap(0, GROUPfilesize(GROUPcount),
-				     PROT_READ | PROT_WRITE, MAP_SHARED, GROUPfd, 0);
-    if (GROUPheader == (GROUPHEADER *) -1) {
-	syslog(L_FATAL, "tradindexed: could not mmap group.index in GROUPremapifneeded: %m");
-#else
+    if (innconf->tradindexedmmap) {
+	GROUPheader = (GROUPHEADER *)mmap(0, GROUPfilesize(GROUPcount),
+					  PROT_READ | PROT_WRITE, MAP_SHARED, GROUPfd, 0);
+	if (GROUPheader == (GROUPHEADER *) -1) {
+	    syslog(L_FATAL, "tradindexed: could not mmap group.index in GROUPremapifneeded: %m");
+	    return FALSE;
+	}
+    } else {
 	GROUPheader = NEW(GROUPHEADER *, GROUPfilesize(GROUPcount));
 
 	if (GROUPfilesize(GROUPcount) != read(GROUPfd, (void *)GROUPheader, GROUPfilesize(GROUPcount))) {
 	    syslog(L_FATAL, "tradindexed: could not read group.index in GROUPremapifneeded: %m");
 	    DISPOSE(GROUPheader);
-#endif
 	    return FALSE;
+	}
     }
     GROUPentries = (GROUPENTRY *)((char *)GROUPheader + sizeof(GROUPHEADER));
     return TRUE;
@@ -319,43 +325,45 @@ static bool GROUPexpand(int mode) {
     int                 flag = 0;
     
     if (GROUPheader) {
-#ifndef NFSREADER
-	if (munmap((void *)GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
-	    syslog(L_FATAL, "tradindexed: could not munmap group.index in GROUPexpand: %m");
-	    return FALSE;
+	if (innconf->tradindexedmmap) {
+	    if (munmap((void *)GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
+		syslog(L_FATAL, "tradindexed: could not munmap group.index in GROUPexpand: %m");
+		return FALSE;
+	    }
+	} else {
+	    DISPOSE(GROUPheader);
 	}
-#else
-	DISPOSE(GROUPheader);
-#endif
     }
     GROUPcount += 1024;
     if (ftruncate(GROUPfd, GROUPfilesize(GROUPcount)) < 0) {
 	syslog(L_FATAL, "tradindexed: could not extend group.index: %m");
 	return FALSE;
     }
-#ifndef NFSREADER
-    if (mode & OV_READ)
-	flag |= PROT_READ;
-    if (mode & OV_WRITE) {
-	/* 
-	 * Note: below check of magic won't work unless we have both PROT_READ
-	 * and PROT_WRITE perms.
-	 */
-	flag |= PROT_WRITE|PROT_READ;
-    }
-    GROUPheader = (GROUPHEADER *)mmap(0, GROUPfilesize(GROUPcount),
-				     flag, MAP_SHARED, GROUPfd, 0);
-    if (GROUPheader == (GROUPHEADER *) -1) {
-	syslog(L_FATAL, "tradindexed: could not mmap group.index in GROUPexpand: %m");
-#else
+    if (innconf->tradindexedmmap) {
+	if (mode & OV_READ)
+	    flag |= PROT_READ;
+	if (mode & OV_WRITE) {
+	    /* 
+	     * Note: below check of magic won't work unless we have
+	     * both PROT_READ and PROT_WRITE perms.
+	     */
+	    flag |= PROT_WRITE|PROT_READ;
+	}
+	GROUPheader = (GROUPHEADER *)mmap(0, GROUPfilesize(GROUPcount),
+					  flag, MAP_SHARED, GROUPfd, 0);
+	if (GROUPheader == (GROUPHEADER *) -1) {
+	    syslog(L_FATAL, "tradindexed: could not mmap group.index in GROUPexpand: %m");
+	    return FALSE;
+	}
+    } else {
 	GROUPheader = NEW(GROUPHEADER *, GROUPfilesize(GROUPcount));
 
 	if (GROUPfilesize(GROUPcount) != read(GROUPfd, (void *)GROUPheader, GROUPfilesize(GROUPcount))) {
 	    syslog(L_FATAL, "tradindexed: could not read group.index in GROUPexpand: %m");
 	    DISPOSE(GROUPheader);
-#endif
 	    return FALSE;
 	}
+    }
     GROUPentries = (GROUPENTRY *)((char *)GROUPheader + sizeof(GROUPHEADER));
     if (GROUPheader->magic != GROUPHEADERMAGIC) {
 	GROUPheader->magic = GROUPHEADERMAGIC;
@@ -465,46 +473,46 @@ static bool OV3mmapgroup(GROUPHANDLE *gh) {
 	gh->indexmem = (INDEXENTRY *)-1;
 	return TRUE;
     }
-#ifndef NFSREADER
-    if (!gh->datamem) {
-	if ((gh->datamem = (char *)mmap(0, gh->datalen, PROT_READ, MAP_SHARED,
-					gh->datafd, 0)) == (char *)-1) {
-	    syslog(L_ERROR, "tradindexed: could not mmap data file for %s: %m", gh->group);
+    if (innconf->tradindexedmmap) {
+	if (!gh->datamem) {
+	    if ((gh->datamem = (char *)mmap(0, gh->datalen, PROT_READ, MAP_SHARED,
+					    gh->datafd, 0)) == (char *)-1) {
+		syslog(L_ERROR, "tradindexed: could not mmap data file for %s: %m", gh->group);
+		return FALSE;
+	    }
+	}
+    } else {
+	if (gh->datamem)
+	    free (gh->datamem);
+
+	gh->datamem = NEW(char, gh->datalen);
+	if (gh->datalen != read(gh->datafd, (void *)gh->datamem, gh->datalen)) {
+	    syslog(L_ERROR, "tradindexed: could not read data file for %s: %m", gh->group);
+	    DISPOSE(gh->datamem);
 	    return FALSE;
 	}
     }
-#else
-    if (gh->datamem)
-	free (gh->datamem);
+    if (innconf->tradindexedmmap) {
+	if (!gh->indexmem) {
+	    if ((gh->indexmem = (INDEXENTRY *)mmap(0, gh->indexlen, PROT_READ, MAP_SHARED, 
+						   gh->indexfd, 0)) == (INDEXENTRY *)-1) {
+		syslog(L_ERROR, "tradindexed: could not mmap index file for  %s: %m", gh->group);
+		munmap(gh->datamem, gh->datalen);
+		return FALSE;
+	    }
+	}
+    } else {
+	if (gh->indexmem)
+	    DISPOSE(gh->indexmem);
 
-    gh->datamem = NEW(char *, gh->datalen);
-    if (gh->datalen != read(gh->datafd, (void *)gh->datamem, gh->datalen)) {
-	syslog(L_ERROR, "tradindexed: could not read data file for %s: %m", gh->group);
-	DISPOSE(gh->datamem);
-	return FALSE;
-    }
-#endif
-#ifndef NFSREADER
-    if (!gh->indexmem) {
-	if ((gh->indexmem = (INDEXENTRY *)mmap(0, gh->indexlen, PROT_READ, MAP_SHARED, 
-					       gh->indexfd, 0)) == (INDEXENTRY *)-1) {
-	    syslog(L_ERROR, "tradindexed: could not mmap index file for  %s: %m", gh->group);
-	    munmap(gh->datamem, gh->datalen);
+	gh->indexmem = NEW(char, gh->indexlen);
+	if (gh->indexlen != read(gh->indexfd, (void *)gh->indexmem, gh->indexlen)) {
+	    syslog(L_ERROR, "tradindexed: could not read index file for  %s: %m", gh->group);
+	    DISPOSE(gh->indexmem);
+	    DISPOSE(gh->datamem);
 	    return FALSE;
 	}
     }
-#else
-    if (gh->indexmem)
-	DISPOSE(gh->indexmem);
-
-    gh->indexmem = NEW(INDEXENTRY *, gh->indexlen);
-    if (gh->indexlen != read(gh->indexfd, (void *)gh->indexmem, gh->indexlen)) {
-	syslog(L_ERROR, "tradindexed: could not read index file for  %s: %m", gh->group);
-	DISPOSE(gh->indexmem);
-	DISPOSE(gh->datamem);
-	return FALSE;
-    }
-#endif
     return TRUE;
 }
 
@@ -517,7 +525,8 @@ static GROUPHANDLE *OV3opengroupfiles(char *group) {
     GROUPHANDLE         *gh;
     int                 i, j;
     struct stat         sb;
-    
+    int                 openmode;
+
     sepgroup = COPY(group);
     for (p = sepgroup; *p != '\0'; p++)
 	if (*p == '.')
@@ -540,11 +549,13 @@ static GROUPHANDLE *OV3opengroupfiles(char *group) {
 
     gh = NEW(GROUPHANDLE, 1);
     memset(gh, '\0', sizeof(GROUPHANDLE));
-#ifndef NFSREADER
-    if ((gh->datafd = open(DATpath, O_RDWR| O_APPEND | O_CREAT, 0660)) < 0) {
-#else
-    if ((gh->datafd = open(DATpath, O_RDONLY, 0660)) < 0) {
-#endif
+    if (OV3mode & OV_WRITE) {
+	openmode = O_RDWR | O_CREAT;
+    } else {
+	openmode = O_RDONLY;
+    }
+    gh->datafd = open(DATpath, openmode | O_APPEND, 0660);
+    if (gh->datafd < 0) {
 	p = strrchr(IDXpath, '/');
 	*p = '\0';
 	if (!MakeDirectory(IDXpath, TRUE)) {
@@ -552,11 +563,8 @@ static GROUPHANDLE *OV3opengroupfiles(char *group) {
 	    return NULL;
 	}
 	*p = '/';
-#ifndef NFSREADER
-	if ((gh->datafd = open(DATpath, O_RDWR| O_APPEND | O_CREAT, 0660)) < 0) {
-#else
-	if ((gh->datafd = open(DATpath, O_RDONLY, 0660)) < 0) {
-#endif
+	gh->datafd = open(DATpath, openmode | O_APPEND, 0660);
+	if (gh->datafd < 0) {
 	    DISPOSE(gh);
 	    if (errno == ENOENT)
 		return NULL;
@@ -564,11 +572,8 @@ static GROUPHANDLE *OV3opengroupfiles(char *group) {
 	    return NULL;
 	}
     }
-#ifndef NFSREADER
-    if ((gh->indexfd = open(IDXpath, O_RDWR | O_CREAT, 0660)) < 0) {
-#else
-    if ((gh->indexfd = open(IDXpath, O_RDONLY, 0660)) < 0) {
-#endif
+    gh->indexfd = open(IDXpath, openmode, 0660);
+    if (gh->indexfd < 0) {
 	close(gh->datafd);
 	DISPOSE(gh);
 	syslog(L_ERROR, "tradindexed: could not open %s: %m", IDXpath);
@@ -595,17 +600,17 @@ static void OV3closegroupfiles(GROUPHANDLE *gh) {
     close(gh->indexfd);
     close(gh->datafd);
     if (gh->indexmem)
-#ifndef NFSREADER
+    if (innconf->tradindexedmmap) {
 	munmap((void *)gh->indexmem, gh->indexlen);
-#else
+    } else {
 	DISPOSE(gh->indexmem);
-#endif
+    }
     if (gh->datamem)
-#ifndef NFSREADER
+    if (innconf->tradindexedmmap) {
 	munmap(gh->datamem, gh->datalen);
-#else
+    } else {
 	DISPOSE(gh->datamem);
-#endif
+    }
     if (gh->group)
 	DISPOSE(gh->group);
     DISPOSE(gh);
@@ -1248,13 +1253,12 @@ void tradindexed_close(void) {
     close(GROUPfd);
 
     if (GROUPheader) {
-#ifndef NFSREADER
-	if (munmap((void *)GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
-	    syslog(L_FATAL, "tradindexed: could not munmap group.index in tradindexed_close: %m");
-	    return;
+	if (innconf->tradindexedmmap) {
+	    if (munmap((void *)GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
+		syslog(L_FATAL, "tradindexed: could not munmap group.index in tradindexed_close: %m");
+	    }
+	} else {
+	    DISPOSE(GROUPheader);
 	}
-#else
-        DISPOSE(GROUPheader);
-#endif
     }
 }

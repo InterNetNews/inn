@@ -158,6 +158,7 @@ SetDefaults(void)
     innconf->domain = NULL;
     innconf->hiscachesize = 0;
     innconf->xrefslave = FALSE;
+    innconf->nfswriter = FALSE;
     innconf->complaints = NULL;
     innconf->spoolfirst = FALSE;
     innconf->immediatecancel = FALSE;
@@ -202,6 +203,8 @@ SetDefaults(void)
     innconf->sourceaddress6 = NULL;
     innconf->port = NNTP_PORT;
     innconf->readertrack = FALSE;
+    innconf->nfsreader = FALSE;
+    innconf->tradindexedmmap = TRUE;
     innconf->strippostcc = FALSE;
     innconf->keywords = FALSE;		
     innconf->keylimit = 512 ;		
@@ -492,6 +495,11 @@ ReadInnConf(void)
 		if (!bit && boolval != -1) innconf->xrefslave = boolval;
 		SET_CONFIG(CONF_VAR_XREFSLAVE);
 	    } else
+	    if (EQ (ConfigBuff,_CONF_NFSWRITER)) {
+		TEST_CONFIG(CONF_VAR_NFSWRITER, bit);
+		if (!bit && boolval != -1) innconf->nfswriter = boolval;
+		SET_CONFIG(CONF_VAR_NFSWRITER);
+	    } else
 	    if (EQ(ConfigBuff,_CONF_COMPLAINTS)) {
 		TEST_CONFIG(CONF_VAR_COMPLAINTS, bit);
 		if (!bit) innconf->complaints = COPY(p);
@@ -691,6 +699,16 @@ ReadInnConf(void)
 		TEST_CONFIG(CONF_VAR_READERTRACK, bit);
 		if (!bit && boolval != -1) innconf->readertrack = boolval;
 		SET_CONFIG(CONF_VAR_READERTRACK);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_NFSREADER)) {
+		TEST_CONFIG(CONF_VAR_NFSREADER, bit);
+		if (!bit && boolval != -1) innconf->nfsreader = boolval;
+		SET_CONFIG(CONF_VAR_NFSREADER);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_TRADINDEXEDMMAP)) {
+		TEST_CONFIG(CONF_VAR_TRADINDEXEDMMAP, bit);
+		if (!bit && boolval != -1) innconf->tradindexedmmap = boolval;
+		SET_CONFIG(CONF_VAR_TRADINDEXEDMMAP);
 	    } else 
 	    if (EQ(ConfigBuff,_CONF_NNRPPERLAUTH)) {
 		TEST_CONFIG(CONF_VAR_NNRPPERLAUTH, bit);

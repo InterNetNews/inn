@@ -462,6 +462,33 @@ parameter set should generally only have one upstream feed, and should
 always have I<nnrpdposthost> set to hand locally posted articles off to
 the master server.  This is a boolean value and the default is false.
 
+=item I<nfswriter>
+
+For servers writing articles, determine whether the article spool is
+on NFS storage.  If set, INN attempts to flush articles to the spool
+in a more timely manner, rather than relying on the operating system
+to flush things such as the CNFS article bitmaps.  You should only set
+this parameter if you are attempting to use a shared NFS spool on a
+machine acting as a single writer within a cluster.  This is a boolean
+value and the default is false.
+
+=item I<nfsreader>
+
+For servers reading articles, determine whether the article spool is
+on NFS storage.  If set, INN will attempt to force articles and
+overviews to be read directly from the NFS spool rather than from
+cached copies.  You should only set this parameter if you are
+attempting to use a shared NFS spool on a machine acting a reader a
+cluster.  This is a boolean value and the default is false.
+
+=item I<tradindexedmmap>
+
+Whether to attempt to mmap() tradindexed overviews articles.  Setting
+this to true will give better performance on most systems, but some
+systems have problems with mmap().  If this is set to false, overviews
+will be read into memory before being sent to readers.  This is a
+boolean value and the default is true.
+
 =back
 
 =head2 Reading

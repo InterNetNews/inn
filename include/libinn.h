@@ -223,6 +223,7 @@ struct conf_vars {
     int useoverchan;            /* overchan write the overview, not innd? */
     int wireformat;             /* Store tradspool artilces in wire format? */
     int xrefslave;              /* Act as a slave of another server? */
+    int nfswriter;		/* Use NFS writer functionality */
 
     /* Reading */
     int allownewnews;           /* Allow use of the NEWNEWS command */
@@ -234,6 +235,8 @@ struct conf_vars {
     int noreader;               /* Refuse to fork nnrpd for readers? */
     int readerswhenstopped;     /* Allow nnrpd when server is paused */
     int readertrack;            /* Use the reader tracking system? */
+    int nfsreader;              /* Use NFS reader functionality */
+    int tradindexedmmap;        /* Whether to mmap for tradindexed */
 
     /* Reading -- Keyword Support */
     char keywords;              /* Generate keywords in overview? */

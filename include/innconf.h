@@ -347,6 +347,15 @@ struct conf_rec conf_defaults[] = {
     { _CONF_BINDADDRESS6,			"",	1, 0 },
 #define _CONF_SOURCEADDRESS6			"sourceaddress6"
 #define CONF_VAR_SOURCEADDRESS6			111
-    { _CONF_SOURCEADDRESS6,			"",	1, 0 }
+    { _CONF_SOURCEADDRESS6,			"",	1, 0 },
+#define _CONF_NFSREADER				"nfsreader"
+#define CONF_VAR_NFSREADER			112
+    { _CONF_NFSREADER,				"",	2, 0 },
+#define _CONF_NFSWRITER				"nfswriter"
+#define CONF_VAR_NFSWRITER			113
+    { _CONF_NFSWRITER,				"",	2, 0 },
+#define _CONF_TRADINDEXEDMMAP			"tradindexedmmap"
+#define CONF_VAR_TRADINDEXEDMMAP		114
+    { _CONF_TRADINDEXEDMMAP,			"",	2, 0 },
 };
-#define MAX_CONF_VAR 112
+#define MAX_CONF_VAR 115

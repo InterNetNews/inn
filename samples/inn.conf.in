@@ -67,6 +67,7 @@ storeonxref:            false
 useoverchan:            false
 wireformat:             false
 xrefslave:              false
+nfswriter:              false
 
 # Reading
 
@@ -79,6 +80,8 @@ nnrppythonauth:         false
 noreader:               false
 readerswhenstopped:     false
 readertrack:            false
+nfsreader:              false
+tradindexedmmap:        true
 
 # Reading -- Keyword Support
 #

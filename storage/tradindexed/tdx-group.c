@@ -96,10 +96,6 @@
 #include "tdx-private.h"
 #include "tdx-structure.h"
 
-#ifndef NFSREADER
-# define NFSREADER 0
-#endif
-
 /* Returned to callers as an opaque data type, this stashes all of the
    information about an open group.index file. */
 struct group_index {
@@ -194,12 +190,12 @@ index_lock_group(int fd, ptrdiff_t offset, enum inn_locktype type)
 static bool
 index_map(struct group_index *index)
 {
-    if (NFSREADER && index->writable) {
+    if (!innconf->tradindexedmmap && index->writable) {
         warn("tradindexed: cannot open for writing without mmap");
         return false;
     }
 
-    if (NFSREADER) {
+    if (!innconf->tradindexedmmap) {
         ssize_t header_size;
         ssize_t entry_size;
 
@@ -285,7 +281,7 @@ index_unmap(struct group_index *index)
 {
     if (index->header == NULL)
         return;
-    if (NFSREADER) {
+    if (!innconf->tradindexedmmap) {
         free(index->header);
         free(index->entries);
     } else {

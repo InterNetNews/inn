@@ -31,10 +31,6 @@
 #include "tdx-private.h"
 #include "tdx-structure.h"
 
-#ifndef NFSREADER
-# define NFSREADER 0
-#endif
-
 /* Returned to callers as an opaque data type, this holds the information
    needed to manage a search in progress. */
 struct search {
@@ -243,7 +239,7 @@ map_file(int fd, size_t length, const char *base, const char *suffix)
     if (length == 0)
         return NULL;
 
-    if (NFSREADER) {
+    if (!innconf->tradindexedmmap) {
         ssize_t status;
 
         data = xmalloc(length);
@@ -310,7 +306,7 @@ unmap_file(void *data, off_t length, const char *base, const char *suffix)
 {
     if (data == NULL)
         return;
-    if (NFSREADER)
+    if (!innconf->tradindexedmmap)
         free(data);
     else {
         if (munmap(data, length) < 0)
