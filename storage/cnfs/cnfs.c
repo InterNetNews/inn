@@ -1227,7 +1227,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, RETRTYPE amount) {
 	    } else
 		break;
 	} else {
-	    for (middle = cycbuff->minartoffset ;middle < cycbuff->free;
+	    for (middle = priv.offset ;middle < cycbuff->free;
 		middle += CNFS_BLOCKSIZE) {
 		if (CNFSUsedBlock(cycbuff, middle, FALSE, FALSE) != 0)
 		    break;
