@@ -880,7 +880,6 @@ main(int argc, char *argv[])
 
 	/* Set signal handle to care for dead children */
 	(void)xsignal(SIGCHLD, WaitChild);
-	SetupDaemon();
  
 	TITLEset("nnrpd: accepting connections");
  	
@@ -895,7 +894,6 @@ main(int argc, char *argv[])
 	    for (i = 0; (pid = fork()) < 0; i++) {
 		if (i == MAX_FORKS) {
 		    syslog(L_FATAL, "cant fork %m -- giving up");
-		    OVclose();
 		    exit(1);
 		}
 		syslog(L_NOTICE, "cant fork %m -- waiting");
@@ -912,6 +910,7 @@ main(int argc, char *argv[])
 	close(fd);
 	dup2(0, 1);
 	dup2(0, 2);
+	SetupDaemon();
 
 	/* if we are a daemon innd didn't make us nice, so be nice kids */
 	if (innconf->nicekids) {
