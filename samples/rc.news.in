@@ -83,4 +83,4 @@ for F in ${RMFILE} ${RMFILE}.*; do
 	) | eval ${MAIL}
 	${NEWSBIN}/expirerm ${F}
     fi
-done
+done &
