@@ -150,10 +150,11 @@ clean::
 	$(RM) Makefile.BAK
 	$(RM) innfeed startinnfeed uio_maxiov listing.ps logfile
 	$(RM) innfeed-convcfg procbatch
+	$(RM) -rf .libs
 
 realclean:: clean 
 	$(RM) y.tab.c y.tab.h lex.yy.c config_y.c config_y.h
-	$(RM) -r $(TARDIR)
+	$(RM) -rf $(TARDIR)
 	$(RM) $(TARBALL)
 
 clobber distclean:: realclean
