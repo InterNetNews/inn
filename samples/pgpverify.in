@@ -167,12 +167,12 @@ print if $test;
 #     1024 bits, Key ID B88DA9C1, Created 1996-04-10
 #      "news.announce.newgroups"
 
-if (/Good signature from user(:  (.*)| "(.*)"\.)/ ||
+if (/Bad signature /) {
+  $ok = 3;
+} elsif (/Good signature from user(:  (.*)| "(.*)"\.)/ ||
     /Good signature made .* by key:\n.+\n +"(.*)"/) {
   $ok = 0;
   $signer = $+;
-} elsif (/Bad signature /) {
-  $ok = 3;
 } elsif (/Keyring file '(.*)' does not exist/) {
   &fail("$0: couldn't access $1.  Bad \$HOME or \$PGPPATH?\n");
 }
