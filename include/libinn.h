@@ -238,6 +238,11 @@ extern char	*GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group);
 extern int ReadInnConf();
 extern char *cpcatpath(char *p, char *f);
 
+#define	TEMPORARYOPEN	0
+#define	INND_HISTORY	1
+#define	DBZ_DIR		2
+#define	DBZ_BASE	3
+
 /* Time functions. */
 typedef struct _TIMEINFO {
     time_t	time;
@@ -261,15 +266,15 @@ HASH TextToHash(const char *text);
 int HashCompare(const HASH *h1, const HASH *h2);
 
 /* Overview handling */
-typedef enum {OVER_CTL, OVER_DIR, OVER_NEWDIR, OVER_MODE, OVER_NEWMODE, OVER_MMAP} OVERSETUP;
-#define OVERINDEXPACKSIZE      (4 + sizeof(HASH))
+typedef enum {OVER_CTL, OVER_DIR, OVER_NEWDIR, OVER_MODE, OVER_NEWMODE, OVER_MMAP, OVER_BUFFERED} OVERSETUP;
+#define OVERINDEXPACKSIZE      (sizeof(unsigned long) + sizeof(HASH))
 typedef struct _OVERINDEX {
     unsigned long       artnum;
     HASH                hash;
 } OVERINDEX;
 
-extern void OVERsetoffset(TOKEN *token, int *offset, unsigned char *overindex);
-extern void OVERmaketoken(TOKEN *token, int offset, unsigned char overindex);
+extern void OVERsetoffset(TOKEN *token, OFFSET_T *offset, unsigned char *overindex);
+extern void OVERmaketoken(TOKEN *token, OFFSET_T offset, unsigned char overindex);
 extern BOOL OVERsetup(OVERSETUP type, void *value);
 extern BOOL OVERinit(void);
 extern BOOL OVERnewinit(void);
@@ -285,6 +290,7 @@ void PackOverIndex(OVERINDEX *index, char *packedindex);
 void UnpackOverIndex(char *packedindex, OVERINDEX *index);
 
 /* Miscellaneous. */
+extern int	dbzneedfilecount(void);
 extern BOOL     MakeDirectory(char *Name, BOOL Recurse);
 extern int	getfdcount(void);
 extern int	wildmat(const char *text, const char *p);
@@ -302,3 +308,6 @@ extern char	*ReadInDescriptor(int fd, struct stat *Sbp);
 extern char	*ReadInFile(const char *name, struct stat *Sbp);
 extern void	TempName(char *dir, char *buff);
 extern FILE	*xfopena(const char *p);
+extern BOOL	fdreserve(int fdnum);
+extern FILE	*Fopen(const char *p, char *type, int index);
+extern int	Fclose(FILE *fp);
