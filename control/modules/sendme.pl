@@ -19,7 +19,9 @@ sub control_sendme {
         my $tempfile = "$inn::tmpdir/sendme.$$";
         open(GREPHIST, "|grephistory -s > $tempfile")
             or logdie("Cannot run grephistory: $!");
-        print GREPHIST "$_\n" foreach @$body;
+	foreach (@$body) {
+            print GREPHIST "$_\n";
+	}
         close GREPHIST or logdie("Cannot run grephistory: $!");
 
         if (-s $tempfile and $site =~ /^[a-zA-Z0-9.-_]+$/) {

@@ -19,7 +19,9 @@ sub control_ihave {
         my $tempfile = "$inn::tmpdir/ihave.$$";
         open(GREPHIST, "|grephistory -i > $tempfile")
             or logdie('Cannot run grephistory: ' . $!);
-        print GREPHIST "$_\n" foreach @$body;
+	foreach (@$body) {
+            print GREPHIST "$_\n";
+        }
         close GREPHIST;
 
         if (-s $tempfile) {
