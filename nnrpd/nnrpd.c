@@ -1,11 +1,14 @@
 /*  $Revision$
 **
 **  NNTP server for readers (NNRP) for InterNetNews.
+**
 **  This server doesn't do any real load-limiting, except for what has
 **  proven empirically necesary (i.e., look at GRPscandir).
 */
+
 #include "config.h"
 #include "clibrary.h"
+#include "portable/wait.h"
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
@@ -17,24 +20,24 @@
 #include <pwd.h>
 #include <grp.h>
 #include <signal.h>
-#if	defined(_HPUX_SOURCE)
-#include <sys/pstat.h>
-#endif	/* defined(_HPUX_SOURCE) */
+#if defined(_HPUX_SOURCE)
+# include <sys/pstat.h>
+#endif
 #if HAVE_GETSPNAM
-#  include <shadow.h>
-#endif /* HAVE_GETSPNAM */
+# include <shadow.h>
+#endif
 
 #ifdef HAVE_SSL
-#include <openssl/ssl.h>
-#include <openssl/err.h>
-#include <openssl/bio.h>
-#include <openssl/pem.h>
-#include "tls.h"
+# include <openssl/ssl.h>
+# include <openssl/err.h>
+# include <openssl/bio.h>
+# include <openssl/pem.h>
+# include "tls.h"
 extern SSL *tls_conn;
 int nnrpd_starttls_done = 0;
 #endif 
 
-#if defined(hpux) || defined(__hpux) || defined(_SCO_DS)
+#if NEED_HERRNO_DECLARATION
 extern int h_errno;
 #endif
 
@@ -663,19 +666,17 @@ CatchPipe(s)
 /*
 **  Got a signal; wait for children.
 */
-STATIC SIGHANDLER
-WaitChild(s)
-    int		s;
+static SIGHANDLER
+WaitChild(int s)
 {
-    int status;
     int pid;
 
     for (;;) {
-       pid = waitnb(&status);
+       pid = waitpid(-1, &status, WNOHANG);
        if (pid <= 0)
        	    break;
     }
-#ifndef HAVE_SIGACTION
+#if !HAVE_SIGACTION
     xsignal(s, WaitChild);
 #endif
 }
