@@ -16,7 +16,7 @@ static int getconfline(CONFFILE *F, char *buffer, int length) {
       return 1;
     }
   } else if (F->array) {
-    strncpy(buffer, F->array[F->lineno], length);
+    strlcpy(buffer, F->array[F->lineno], F->sbuf);
   }
   F->lineno++;
   if (strlen (F->buf) == F->sbuf) {

@@ -1511,7 +1511,6 @@ void PERMgetpermissions()
         free(perl_path);
 
         uname = COPY(PERMuser);
-        DISPOSE(args);        
         
         access_vec = vector_new();
 

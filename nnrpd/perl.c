@@ -204,7 +204,7 @@ void perlAccess(char *clientHost, char *clientIP, char *serverHost, char *user, 
   HV              *attribs;
   SV              *sv;
   int             rc, i;
-  char            *p, *key, *val;
+  char            *p, *key, *val, *buffer;
 
   if (!PerlFilterActive)
     return;
@@ -245,22 +245,23 @@ void perlAccess(char *clientHost, char *clientIP, char *serverHost, char *user, 
 
   vector_resize(access_vec, (rc / 2));
 
+  buffer = NEW(char, BIG_BUFFER);
+
   for (i = (rc / 2); i >= 1; i--) {
     sv = POPs;
-    p = SvPV(sv, PL_na);
-    val = COPY(p);
+    val = SvPV(sv, PL_na);
     sv = POPs;
-    p = SvPV(sv, PL_na);
-    key = COPY(p);
+    key = SvPV(sv, PL_na);
 
-    key = strcat(key, ": \"");
-    key = strcat(key, val);
-    key = strcat(key, "\"\n");
-    vector_add(access_vec, key);
-
-    free(key);
-    free(val);
+    strlcpy(buffer, key, BIG_BUFFER);
+    strlcat(buffer, ": \"", BIG_BUFFER);
+    strlcat(buffer, val, BIG_BUFFER);
+    strlcat(buffer, "\"\n", BIG_BUFFER);
+ 
+    vector_add(access_vec, COPY(buffer));
   }
+
+  free(buffer);
 
   PUTBACK;
   FREETMPS;
