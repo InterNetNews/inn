@@ -1161,9 +1161,12 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 		/* skip path element */
 		if ((xrefhdr = strchr(xrefhdr, ' ')) == NULL) {
 		    art->groups = NULL;
+		    art->groupslen = 0;
 		} else {
 		    for (xrefhdr++; *xrefhdr == ' '; xrefhdr++);
 		    art->groups = xrefhdr;
+		    for (p = xrefhdr ; (*p != '\n') && (*p != '\r') ; p++);
+		    art->groupslen = p - xrefhdr;
 		}
 	    }
 	} else if (innconf->storeonxref) {
