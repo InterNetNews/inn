@@ -287,7 +287,7 @@ static void STATUSsummary(void)
     fprintf (F, "want streaming: %s\n",
 	     status[j].can_stream ? "Yes" : "No");
     fprintf (F, "   rejected: %-7ld  ",      status[j].rejected);
-    fprintf (F, "         filtred: %-7ld ",  status[j].Unwanted_f);
+    fprintf (F, "        filtered: %-7ld ",  status[j].Unwanted_f);
     fprintf (F, "  is streaming: %s\n",
 	     (status[j].Check || status[j].Takethis) ? "Yes" : "No");
     fprintf (F, "       size: %-8s ",        PrettySize(status[j].Size, str));
