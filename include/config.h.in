@@ -323,6 +323,9 @@
 /* Define if you have the <stdarg.h> header file.  */
 #undef HAVE_STDARG_H
 
+/* Define if you have the <stdbool.h> header file.  */
+#undef HAVE_STDBOOL_H
+
 /* Define if you have the <stddef.h> header file.  */
 #undef HAVE_STDDEF_H
 
@@ -433,6 +436,9 @@
 
 /* Define if <netdb.h> does not declare h_errno. */
 #undef NEED_HERRNO_DECLARATION
+
+/* Define if inet_aton isn't declared in the system headers. */
+#undef NEED_DECLARATION_INET_ATON
 
 /* Define if inet_ntoa isn't declared in the system headers. */
 #undef NEED_DECLARATION_INET_NTOA

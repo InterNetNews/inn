@@ -8,8 +8,8 @@ dnl versions of autoconf so that we can stop supporting them.  This means,
 dnl for example, that code excerpts should probably follow the GNU coding
 dnl standards rather than INN's.
 dnl
-dnl The macro archive is at <http://research.cys.de/autoconf-archive/>.  Due
-dnl to the submission format and significant changes to autoconf's internal
+dnl The macro archive is at <http://cryp.to/autoconf-archive/>.  Due to the
+dnl submission format and significant changes to autoconf's internal
 dnl architecture and building-block macros, I'm waiting until autoconf 2.50
 dnl is released and we can convert this file into a bunch of separate files
 dnl before submitting macros to that archive.
@@ -803,8 +803,8 @@ AC_HEADER_TIME
 AC_HEADER_SYS_WAIT
 
 dnl Generic checks for header files.
-AC_CHECK_HEADERS(crypt.h inttypes.h limits.h ndbm.h stddef.h stdint.h \
-                 string.h sys/bitypes.h sys/filio.h sys/param.h \
+AC_CHECK_HEADERS(crypt.h inttypes.h limits.h ndbm.h stdbool.h stddef.h \
+                 stdint.h string.h sys/bitypes.h sys/filio.h sys/param.h \
                  sys/select.h sys/sysinfo.h sys/time.h unistd.h)
 
 dnl Some Linux systems have db1/ndbm.h instead of ndbm.h.
@@ -874,6 +874,9 @@ if test $inn_cv_decl_needed_$1 = yes ; then
 else
     AC_MSG_RESULT(no)
 fi])
+INN_NEED_DECLARATION(inet_aton, [NEED_DECLARATION_INET_ATON],
+[#include <netinet/in.h>
+#include <arpa/inet.h>])
 INN_NEED_DECLARATION(inet_ntoa, [NEED_DECLARATION_INET_NTOA],
 [#include <netinet/in.h>
 #include <arpa/inet.h>])
