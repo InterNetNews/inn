@@ -1524,13 +1524,14 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 FUNCTYPE CMDxover(int ac, char *av[])
 {
     char	        *p;
-    ARTNUM	        i;
+    int	                i, j;
     BOOL	        Opened;
     BOOL	        DidReply;
     ARTRANGE		range;
     char		buff[SPOOLNAMEBUFF];
     struct timeval	stv, etv;
     int			linelen;
+    BOOL                checkart;
 
     if (!PERMcanread) {
 	Printf("%s\r\n", NOACCESS);
@@ -1555,8 +1556,14 @@ FUNCTYPE CMDxover(int ac, char *av[])
 
     OVERcount++;
     Reply("%d data follows\r\n", NNTP_OVERVIEW_FOLLOWS_VAL);
-    i = ARTfind(range.Low, innconf->storageapi && innconf->nnrpdcheckart);
-    for (Opened = OVERopen(); (i < ARTsize) && (ARTnumbers[i].ArtNum <= range.High) && (range.High > 0); i++) {
+    /* Find the first article in the group that actually exists */
+    checkart = (innconf->storageapi && innconf->nnrpdcheckart);
+    for (; ((i = ARTfind(range.Low, checkart)) < 0) && (range.Low <= range.High);
+	range.Low++);
+
+    for (Opened = OVERopen();
+	 (i >= 0) && (i < ARTsize) && (ARTnumbers[i].ArtNum <= range.High) && (range.High > 0);
+	 i++) {
 	if (!ARTinstore(i)) {
 	    if (innconf->storageapi)
 		OVERmiss++;
