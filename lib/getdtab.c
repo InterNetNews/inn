@@ -31,11 +31,13 @@ int getfdcount(void)
     static int		size;
     struct rlimit	rl;
 
+#if	defined(HAVE_RLIMIT)
     if (size <= 0) {
 	if (getrlimit(RLIMIT_NOFILE, &rl) < 0)
 	    return -1;
 	size = rl.rlim_cur;
     }
+#endif	/* defined(HAVE_RLIMIT) */
     return size;
 }
 #endif	/* defined(FDCOUNT_GETRLIMIT) */

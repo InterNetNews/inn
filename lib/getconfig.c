@@ -272,6 +272,7 @@ void SetDefaults()
     innconf->noreader = FALSE;
     innconf->nnrpdauthsender = FALSE;
     innconf->cnfscheckfudgesize = 0L;
+    innconf->rlimitnofile = -1;
 }
 
 void ClearInnConf()
@@ -989,6 +990,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_CNFSCHECKFUDGESIZE, bit);
 		if (!bit) innconf->cnfscheckfudgesize = atol(p);
 		SET_CONFIG(CONF_VAR_CNFSCHECKFUDGESIZE);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_RLIMITNOFILE)) {
+		TEST_CONFIG(CONF_VAR_RLIMITNOFILE, bit);
+		if (!bit) innconf->rlimitnofile = atoi(p);
+		SET_CONFIG(CONF_VAR_RLIMITNOFILE);
 	    }
 	}
 	(void)Fclose(F);
