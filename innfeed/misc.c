@@ -140,6 +140,7 @@ static void dolog (int level, const char *fmt, va_list args)
   p = malloc (out + 10) ;
   vsprintf (p,fmt,args) ;
   syslog (level,"%s",p) ;
+  free (p) ;
 }
 
 void logOrPrint (int level, FILE *fp, const char *fmt, ...)
