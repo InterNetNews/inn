@@ -90,6 +90,8 @@ INN_ARG_DIR(control, bin/control, CONTROLDIR,
     [  --with-control-dir=PATH Path for control programs [PREFIX/bin/control]])
 INN_ARG_DIR(db, db, DBDIR,
     [  --with-db-dir=PATH      Path for news database files [PREFIX/db]])
+INN_ARG_DIR(doc, doc, DOCDIR,
+    [  --with-doc-dir=PATH     Path for news documentation [PREFIX/doc]])
 INN_ARG_DIR(etc, etc, ETCDIR,
     [  --with-etc-dir=PATH     Path for news config files [PREFIX/etc]])
 INN_ARG_DIR(filter, bin/filter, FILTERDIR,
