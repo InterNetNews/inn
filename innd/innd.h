@@ -183,7 +183,6 @@ typedef struct _ARTDATA {
   size_t	  Body;			/* where body begins in article
 					   it indicates offset from bp->Data */
   char	      *   Poster;		/* Sender otherwise From in article */
-  char	      *   Replyto;		/* Reply-To otherwise From in article */
   time_t	  Posted;		/* when article posted */
   time_t	  Arrived;		/* when article arrived */
   time_t	  Expires;		/* when article should be expired */

@@ -1085,10 +1085,6 @@ ARTclean(ARTDATA *data, char *buff)
     data->Poster = HDR(HDR__SENDER);
   else
     data->Poster = HDR(HDR__FROM);
-  if (HDR_FOUND(HDR__REPLY_TO))
-    data->Replyto = HDR(HDR__REPLY_TO);
-  else
-    data->Replyto = HDR(HDR__FROM);
 
   TMRstop(TMR_ARTCLEAN);
   return true;
