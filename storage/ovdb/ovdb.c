@@ -175,19 +175,19 @@ static DB *groupaliases = NULL;
 #define OVDBshmkey	12
 
 static CONFTOKEN toks[] = {
-  { OVDBtxn_nosync, "txn_nosync" },
-  { OVDBnumdbfiles, "numdbfiles" },
-  { OVDBpagesize, "pagesize" },
-  { OVDBcachesize, "cachesize" },
-  { OVDBminkey, "minkey" },
-  { OVDBmaxlocks, "maxlocks" },
-  { OVDBnocompact, "nocompact" },
-  { OVDBreadserver, "readserver" },
-  { OVDBnumrsprocs, "numrsprocs" },
-  { OVDBmaxrsconn, "maxrsconn" },
-  { OVDBuseshm, "useshm" },
-  { OVDBshmkey, "shmkey" },
-  { 0, NULL },
+    { OVDBtxn_nosync,   (char *) "txn_nosync"   },
+    { OVDBnumdbfiles,   (char *) "numdbfiles"   },
+    { OVDBpagesize,     (char *) "pagesize"     },
+    { OVDBcachesize,    (char *) "cachesize"    },
+    { OVDBminkey,       (char *) "minkey"       },
+    { OVDBmaxlocks,     (char *) "maxlocks"     },
+    { OVDBnocompact,    (char *) "nocompact"    },
+    { OVDBreadserver,   (char *) "readserver"   },
+    { OVDBnumrsprocs,   (char *) "numrsprocs"   },
+    { OVDBmaxrsconn,    (char *) "maxrsconn"    },
+    { OVDBuseshm,       (char *) "useshm"       },
+    { OVDBshmkey,       (char *) "shmkey"       },
+    { 0,                NULL                    }
 };
 
 #define _PATH_OVDBCONF "ovdb.conf"

@@ -336,16 +336,16 @@ static time_t ParseTime(char *tmbuf)
 #define SMexactmatch 16
 
 static CONFTOKEN smtoks[] = {
-  { SMlbrace,	"{" },
-  { SMrbrace,	"}" },
-  { SMmethod,	"method" },
-  { SMgroups,	"newsgroups:" },
-  { SMsize,	"size:" },
-  { SMclass,	"class:" },
-  { SMexpire,	"expires:" },
-  { SMoptions,	"options:" },
-  { SMexactmatch,	"exactmatch:" },
-  { 0, 0 }
+    { SMlbrace,         (char *) "{"            },
+    { SMrbrace,         (char *) "}"            },
+    { SMmethod,         (char *) "method"       },
+    { SMgroups,         (char *) "newsgroups:"  },
+    { SMsize,           (char *) "size:"        },
+    { SMclass,          (char *) "class:"       },
+    { SMexpire,         (char *) "expires:"     },
+    { SMoptions,        (char *) "options:"     },
+    { SMexactmatch,     (char *) "exactmatch:"  },
+    { 0,                NULL                    }
 };
 
 /* Open the config file and parse it, generating the policy data */

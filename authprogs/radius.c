@@ -74,18 +74,18 @@ typedef struct _sending_t {
 #define RADsource  18
 
 static CONFTOKEN radtoks[] = {
-  { RADlbrace,   "{" },
-  { RADrbrace,   "}" },
-  { RADserver,   "server" },
-  { RADhost,     "radhost:" },
-  { RADsecret,   "secret:" },
-  { RADport,     "radport:" },
-  { RADlochost,  "lochost:" },
-  { RADlocport,  "locport:" },
-  { RADprefix,   "prefix:" },
-  { RADsuffix,   "suffix:" },
-  { RADsource,   "ignore-source:" },
-  { 0, 0 }
+    { RADlbrace,        (char *) "{"                    },
+    { RADrbrace,        (char *) "}"                    },
+    { RADserver,        (char *) "server"               },
+    { RADhost,          (char *) "radhost:"             },
+    { RADsecret,        (char *) "secret:"              },
+    { RADport,          (char *) "radport:"             },
+    { RADlochost,       (char *) "lochost:"             },
+    { RADlocport,       (char *) "locport:"             },
+    { RADprefix,        (char *) "prefix:"              },
+    { RADsuffix,        (char *) "suffix:"              },
+    { RADsource,        (char *) "ignore-source:"       },
+    { 0,                NULL                            }
 };
 
 static rad_config_t *get_radconf(void)
