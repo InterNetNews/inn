@@ -7,12 +7,16 @@ The file
 .I <pathetc in inn.conf>/expire.ctl
 is the default control file for the
 .IR expire (8)
-program, which reads it at start-up.
+or
+.IR expireover (8)
+program, which read it at start-up.
 It serves two purposes: it defines how long history entries for expired or
 rejected articles are retained, and it determines how long articles not
 stored in a self-expiring storage method are retained.
 If all of the storage methods used by the server are self-expiring (such
-as CNFS), only the /remember/ setting described below is necessary or
+as CNFS) or ``groupbaseexpiry'' in
+.I inn.conf
+is ``true'', only the /remember/ setting described below is necessary or
 used.
 .PP
 Blank lines and lines beginning with a number sign (``#'') are ignored.
@@ -48,18 +52,60 @@ default) to ensure the server never accepts duplicates.
 .PP
 This setting does not affect article expirations.
 .PP
-Most of the lines in this file will be in the second format, four
-colon-separated fields as follows:
+Most of the lines in this file will be in the second format, either four
+or five colon-separated fields as follows:
 .RS
 .nf
 classnum:keep:default:purge
 .fi
 .RE
+or
+.RS
+.nf
+pattern:modflag:keep:default:purge
+.fi
+.RE
+The former is used for class based expiry which means ``groupbaseexpiry'' in
+.I inn.conf
+is ``false'', and the latter is used for group based expiry which
+means ``groupbaseexpiry'' in
+.I inn.conf
+is ``true''.
+.PP
 Where
-.I classnum 
-is the number that you specified in
+.IR classnum
+field used for class based expiry is the number that you specified in
 .IR storage.conf (5).
-The next three fields are used to determine how long an article
+.PP
+The
+.I pattern
+field used for group based expiry is a list of
+.IR wildmat (3)-style
+patterns, separated by commas.
+This field specifies the newsgroups to which the line is applied.
+Note that the file is interpreted in order and the last line that
+matches will be used, so general patterns (like a single asterisk to set
+the defaults) should appear at the beginning of the file, before more
+specific settings.
+.PP
+The
+.I modflag
+field used for group based expiry can be used to further limit newsgroups to
+which the line applies, and should be chosen from the following set:
+.RS
+.nf
+M	Only moderated groups
+U	Only unmoderated groups
+A	All groups
+X	Removes the article from all groups that it appears in
+.fi
+.RE
+(The X flag is special; normally articles are not completely deleted until
+they expire out of every group they were posted to, but if an article is
+expired by a line with an X, it is deleted out of all newsgroups it was
+posted to immediately.)
+.PP
+The rest of three fields are used to determine how long an article
 should be kept.
 Each field should be either a number of days (fractions like ``8.5'' are
 allowed) or the word ``never.''
@@ -161,5 +207,6 @@ This is revision \\$3, dated \\$4.
 .R$ $Id$
 .SH "SEE ALSO"
 expire(8),
+expireover(8),
 inn.conf(5),
 storage.conf(5).
