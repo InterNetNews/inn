@@ -1,0 +1,92 @@
+=head1 NAME
+
+ovdb_stat - Display information from the ovdb database
+
+=head1 SYNOPSYS
+
+B<ovdb_stat> B<-Hgci> [B<-r> I<artnumrange>] newsgroup [newsgroup ...]
+
+B<ovdb_stat> B<-Hklmtv> [B<-d> I<database>]
+
+=head1 DESCRIPTION
+
+B<ovdb_stat> displays information from the ovdb database: BerkeleyDB
+statistics, newsgroup data, and overview records; and optionally
+outputs in HTML format.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-g>
+
+Newsgroup himark, lowmark, article count, and flag for the given newsgroups
+(as stored in the ovdb "groupinfo" database) are displayed.
+
+=item B<-c>
+
+Similar to B<-g>, except the himark, lowmark, and count are calculated
+by actually iterating over the overview records and counting them.
+
+=item B<-i>
+
+Internal data regarding the given newsgroups is displayed.
+
+=item B<-r> I<artnumrange>
+
+Overview records are retrieved.  The I<artnumrange> parameter may be
+a single article number, or a range of articles in the format C<low-hi>.
+
+=item B<-H>
+
+Output is presented in HTML format.
+
+=item B<-k>
+
+Displays lock region statistics, as returned by the BerkeleyDB lock_stat()
+call.
+
+=item B<-l>
+
+Displays log region statistics, as returned by the BerkeleyDB log_stat()
+call.
+
+=item B<-m>
+
+Displays global memory pool statistics, as returned by the
+BerkeleyDB memp_stat() call.
+
+=item B<-M>
+
+Same as B<-m>, except also displays memory pool statistics for each
+database file.
+
+=item B<-t>
+
+Displays log region statistics, as returned by the BerkeleyDB txn_stat()
+call.
+
+=item B<-v>
+
+Displays ovdb version, and BerkeleyDB version.
+
+=item B<-d> I<database>
+
+Displays information about the given database, as returned by the
+BerkeleyDB db->stat() call.
+
+=back
+
+=head1 WARNINGS
+
+Only run this command as the news user, and never as root.
+
+=head1 HISTORY
+
+Written by Heath Kehoe E<lt>hakehoe@avalon.netE<gt> for InterNetNews.
+
+=head1 SEE ALSO
+
+ovdb(5)
+
+=cut

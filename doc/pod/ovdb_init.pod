@@ -1,0 +1,140 @@
+=head1 NAME
+
+ovdb_init - Prepare ovdb database for use
+
+=head1 SYNOPSYS
+
+ovdb_init [C<-u>|C<-r>]
+
+=head1 DESCRIPTION
+
+This command must be run before any other process can access the
+overview database.  It performs the following steps:
+
+=over 4
+
+=item 1
+
+Creates the database environment, if necessary
+
+=item 2
+
+If the database is idle (and if the C<-u> option is not specified),
+it performs a normal recovery.  The recovery will remove stale locks,
+recreate the memory pool cache, and repair any damage caused by a system
+crash or improper shutdown.
+
+=item 3
+
+If the C<-u> option is specified, it performs any necessary upgrades
+to the database.  See the UPGRADING section below.
+
+=item 4
+
+Starts the DB housekeeping processes (ovdb_monitor) if they're not
+already running. (Unless the C<-r> option is specified).
+
+=back
+
+Returns exit status of 0 if all steps were completed successfully.
+In the event of an error, messages are written to syslog and/or stderr.
+
+If a recovery was attempted but it failed, the database may be
+damaged beyond repair, requiring a rebuild with makehistory(8).
+
+This command is normally invoked automatically by rc.news(8).
+
+It is OK to run this command multiple times.
+
+=head1 OPTIONS
+
+=over 4
+
+=item C<-r>
+
+Perform recovery only.  C<ovdb_monitor> is not started.
+
+=item C<-u>
+
+Perform any needed upgrades.  Recovery is not attempted.
+C<ovdb_monitor> is started if the upgrade succeeded.
+
+=back
+
+=head1 UPGRADING
+
+There are two situations in which the database will need to be
+upgraded:
+
+=over 4
+
+=item *
+
+You upgrade the BerkeleyDB library to a newer version, for example
+from 2.7.7 to 3.1.17.  In this case, the BerkeleyDB db->upgrade()
+method is used.
+
+=item *
+
+You upgrade ovdb to a newer major version; i.e., ovdb-1.0 to ovdb-2.0.
+
+=back
+
+In both of these cases, the database is upgraded in-place; and the
+upgrade can not be undone.  Do not interrupt the upgrade process once
+it has started, because there is a risk of irrepairable corruption.
+The upgrade may take several minutes to complete.
+If an upgrade does get interrupted, try running the upgrade again.
+
+Here's an example procedure to upgrade a database created with BerkeleyDB
+2.x to use BerkeleyDB 3.x:
+
+=over 4
+
+=item 1
+
+Build and install the BerkeleyDB 3.x
+
+=item 2
+
+Run configure in the INN source tree and make sure it picks up the
+right BerkeleyDB directory (e.g., /usr/local/BerkeleyDB.3.1)
+
+=item 3
+
+Do a C<make>
+
+=item 4
+
+Shut down INN (e.g., with C<rc.news stop>).  Be sure to kill all nnrpds as
+well.
+
+=item 5
+
+Do a C<make update> to install the new binaries.
+
+=item 6
+
+Run C<ovdb_init -u> as the news user.
+
+=item 7
+
+Start INN with C<rc.news>
+
+=back
+
+It is OK to specify C<-u> even if no upgrades are needed.
+
+=head1 WARNINGS
+
+Always run this command as the news user, and never as root.
+
+=head1 HISTORY
+
+Written by Heath Kehoe E<lt>hakehoe@avalon.netE<gt> for InterNetNews.
+
+=head1 SEE ALSO
+
+ovdb(5), makehistory(8)
+
+=cut

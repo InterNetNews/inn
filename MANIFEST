@@ -106,7 +106,6 @@ doc/man/convdate.1                    Manpage for convdate utility
 doc/man/ctlinnd.8                     Manpage for ctlinnd frontend
 doc/man/cvtbatch.8                    Manpage for cvtbatch utility
 doc/man/cycbuff.conf.5                Manpage for cycbuff.conf config file
-doc/man/dbprocs.8                     Manpage for dbprocs
 doc/man/dbz.3                         Manpage for DBZ database interface
 doc/man/distrib.pats.5                Manpage for distrib.pats config file
 doc/man/expire.8                      Manpage for expire
@@ -155,8 +154,9 @@ doc/man/nntpget.1                     Manpage for nntpget frontend
 doc/man/nntpsend.8                    Manpage for nntpsend
 doc/man/nntpsend.ctl.5                Manpage for nntpsend.ctl config file
 doc/man/ovdb.5                        Manpage for the ovdb storage module
-doc/man/ovdb_recover.8                Manpage for ovdb_recover utility
-doc/man/ovdb_upgrade.8                Manpage for ovdb_upgrade
+doc/man/ovdb_init.8                   Manpage for ovdb_init
+doc/man/ovdb_monitor.8                Manpage for ovdb_monitor
+doc/man/ovdb_stat.8                   Manpage for ovdb_stat
 doc/man/overchan.8                    Manpage for overchan backend
 doc/man/overview.fmt.5                Manpage for overview.fmt config file
 doc/man/parsedate.3                   Manpage for parsedate library routine
@@ -183,7 +183,6 @@ doc/man/writelog.8                    Manpage for writelog
 doc/pod                               POD documentation (Directory)
 doc/pod/Makefile                      Maintainer rules for derived files
 doc/pod/convdate.pod                  Master file for convdate.1
-doc/pod/dbprocs.pod                   Master file for dbprocs.8
 doc/pod/hacking.pod                   Master file for HACKING
 doc/pod/hook-perl.pod                 Master file for README.perl_hook
 doc/pod/inn.conf.pod                  Master file for inn.conf.5
@@ -193,8 +192,9 @@ doc/pod/qio.pod                       Master file for qio.3
 doc/pod/makehistory.pod               Master file for makehistory.8
 doc/pod/news.pod                      Master file for NEWS
 doc/pod/ovdb.pod                      Master file for ovdb.5
-doc/pod/ovdb_recover.pod              Master file for ovdb_recover.8
-doc/pod/ovdb_upgrade.pod              Master file for ovdb_upgrade.8
+doc/pod/ovdb_init.pod                 Master file for ovdb_init.8
+doc/pod/ovdb_monitor.pod              Master file for ovdb_monitor.8
+doc/pod/ovdb_stat.pod                 Master file for ovdb_stat.8
 doc/pod/readers.conf.pod              Master file for readers.conf.5
 doc/pod/readme.pod                    Master file for README
 doc/pod/sasl.conf.pod                 Master file for sasl.conf.5
@@ -224,7 +224,9 @@ frontends/getlist.c                   Get active or other list from server
 frontends/inews.c                     Send article to local NNTP server
 frontends/innconfval.c                Get an INN configuration parameter
 frontends/mailpost.in                 Mail to news gateway
-frontends/ovdb_recover.c              OVDB crash recovery tool
+frontends/ovdb_init.c                 Prepare ovdb database for use
+frontends/ovdb_monitor.c              Database maintainance for ovdb
+frontends/ovdb_stat.c                 Display information from ovdb database
 frontends/pullnews.in                 Sucking news feeder
 frontends/rnews.c                     UUCP unbatcher
 frontends/scanspool.in                Scan spool directory for trash
@@ -455,7 +457,6 @@ samples/version.in                    version handler
 samples/version.pl                    version controlchan handler
 scripts                               Various utilities (Directory)
 scripts/Makefile                      Makefile for script files
-scripts/dbprocs.in                    Start or stop ovdb housekeeping procs
 scripts/inncheck.in                   Syntax-check INN config files
 scripts/innmail.in                    Perl front-end to sendmail
 scripts/innreport.in                  Script to analyze INN logs
@@ -503,6 +504,7 @@ storage/ovdb                          ovdb overview method (Directory)
 storage/ovdb/Makefile                 Makefile for ovdb overview method
 storage/ovdb/ovdb.c                   ovdb (Berkeley DB) overview method
 storage/ovdb/ovdb.h                   Header for ovdb (Berkeley DB) overview
+storage/ovdb/ovdb-private.h           Private header file for ovdb
 storage/ovdb/ovmethod.config          ovbuildconfig definition
 storage/ovinterface.h                 Overview API interface
 storage/timecaf                       timecaf storage method (Directory)

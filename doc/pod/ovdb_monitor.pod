@@ -1,0 +1,30 @@
+=head1 NAME
+
+ovdb_monitor - Database maintenance
+
+=head1 SYNOPSYS
+
+Use C<ovdb_init> to start ovdb_monitor
+
+=head1 DESCRIPTION
+
+When started (by C<ovdb_init>), C<ovdb_monitor> forks three processes
+that perform routine database maintenance tasks.  These are:
+transaction checkpointing, deadlock detection, and transaction log
+removal.  The process ID of the parent is written to
+F<I<pathrun>/ovdb_monitor.pid>.  This PID is used by other INN
+commands to verify that ovdb_monitor is running.
+
+To shut down ovdb_monitor, send a TERM signal to the process ID
+in F<I<pathrun>/ovdb_monitor.pid> .  The parent process will shut
+down the three children and wait for their exit before exiting itself.
+
+=head1 HISTORY
+
+Written by Heath Kehoe E<lt>hakehoe@avalon.netE<gt> for InterNetNews.
+
+=head1 SEE ALSO
+
+ovdb(5), ovdb_init(8)
+
+=cut
