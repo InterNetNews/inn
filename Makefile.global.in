@@ -101,6 +101,7 @@ UPLIBLD         = $(UPLIBTOOLLD) $(CC)
 ##  needed by libstorage.
 
 LIBINN          = ../lib/libinn.$(EXTLIB)
+LIBHIST         = ../history/libinnhist.$(EXTLIB)
 LIBSTORAGE      = ../storage/libstorage.$(EXTLIB)
 EXTSTORAGELIBS  = @BERKELEY_DB_LIB@
 

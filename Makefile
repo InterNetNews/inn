@@ -16,7 +16,7 @@ INSTDIRS      = $(PATHNEWS) $(PATHBIN) $(PATHAUTH) $(PATHAUTHRESOLV) \
 ##  and make install runs in all ALLDIRS.  Nothing runs in test except the
 ##  test target itself and the clean targets.  Currently, include is built
 ##  before anything else but nothing else runs in it except clean targets.
-LIBDIRS     = lib storage
+LIBDIRS     = lib storage history
 PROGDIRS    = innd nnrpd innfeed control expire frontends backends authprogs \
               scripts
 UPDATEDIRS  = $(LIBDIRS) $(PROGDIRS) doc
@@ -42,11 +42,12 @@ all: all-include all-libraries all-programs
 	cd samples && $(MAKE) all
 	cd site    && $(MAKE) all
 
-all-libraries:	all-lib all-storage
+all-libraries:	all-lib all-storage all-history
 
 all-include:			; cd include   && $(MAKE) all
 all-lib:	all-include	; cd lib       && $(MAKE) all
 all-storage:	all-include	; cd storage   && $(MAKE) all
+all-history:	all-include	; cd history   && $(MAKE) all
 
 all-programs:	all-innd all-nnrpd all-innfeed all-control all-expire \
 		all-frontends all-backends all-authprogs all-scripts
