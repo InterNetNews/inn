@@ -1362,15 +1362,12 @@ void hostChkCxns(TimeoutId tid, void *data) {
     } else 
       dprintf(1, "hostChkCxns doing nothing, Chngs %f\n", currAPS - lastAPS);
   }
-  if(host->nextCxnTimeChk <= 480)
-    host->nextCxnTimeChk *= 2;
+  if(host->nextCxnTimeChk <= 240) host->nextCxnTimeChk *= 2;
+  else host->nextCxnTimeChk = 300;
   dprintf(1, "prepareSleep hostChkCxns, %d\n", host->nextCxnTimeChk);
   host->ChkCxnsId = prepareSleep(hostChkCxns, host->nextCxnTimeChk, host);
 }
 #endif
-
-
-
 
 
 /*
