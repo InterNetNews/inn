@@ -56,7 +56,6 @@ char *TmpDir;
 int OverTmpSegSize, OverTmpSegCount;
 FILE *OverTmpFile;
 char *OverTmpPath = NULL;
-BOOL UpdateMode;
 BOOL NoHistory;
 OVSORTTYPE sorttype;
 
@@ -631,10 +630,6 @@ DoArt(ARTHANDLE *art)
      */
     key = HashMessageID(MessageID);
     hash = HashToText(key);
-    if (UpdateMode) {
-	if (art->arrived > Now.time || dbzexists(key))
-	    return;
-    }
 
     if (!Datep->HasHeader) {
 	Posted = Arrived;
@@ -797,16 +792,12 @@ main(int argc, char **argv)
     DoOverview = FALSE;
     Fork = FALSE;
     AppendMode = FALSE;
-    UpdateMode = FALSE;
     NoHistory = FALSE;
 
-    while ((i = getopt(argc, argv, "abf:Il:OT:uxF")) != EOF) {
+    while ((i = getopt(argc, argv, "abf:Il:OT:xF")) != EOF) {
 	switch(i) {
 	case 'T':
 	    TmpDir = optarg;
-	    break;
-	case 'u':
-	    UpdateMode = TRUE;
 	    break;
 	case 'x':
 	    NoHistory = TRUE;
@@ -886,26 +877,6 @@ main(int argc, char **argv)
     if (!SMinit()) {
 	fprintf(stderr, "makehistory: Can't initialize storage manager: %s\n", SMerrorstr);
 	exit(1);
-    }
-
-    /* if update mode, start mapping old history file */
-    if (UpdateMode) {
-	/* check if we're trying to write to oldhistory file, and if so complain */
-	if (!NoHistory && strcmp(HistoryPath, OldHistoryPath) == 0) {
-	    fprintf(stderr, "makehistory: can't write to main history file in -u mode, specify another file with -f\n");
-	    exit(1);
-	}
-	/* turn on mmaping of pag, since we'll be doing a lot of lookups. */
-	dbzgetoptions(&opt);
-	opt.pag_incore = INCORE_MMAP;
-#ifndef	DO_TAGGED_HASH
-	opt.exists_incore = INCORE_MMAP;
-#endif
-	dbzsetoptions(opt);
-	if (!dbzinit(OldHistoryPath)) {
-	    fprintf(stderr, "makehistory: can't open dbz for %s\n", OldHistoryPath);
-	    exit(1);
-	}
     }
 
     if (!NoHistory) {
