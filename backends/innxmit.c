@@ -22,11 +22,12 @@
 #endif
 
 #include "dbz.h"
+#include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
 #include "paths.h"
-#include "qio.h"
+#include "storage.h"
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H

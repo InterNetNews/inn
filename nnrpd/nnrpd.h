@@ -25,11 +25,12 @@
 # endif
 #endif
 
+#include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
 #include "paths.h"
-#include "qio.h"
+#include "storage.h"
 
 
 /*

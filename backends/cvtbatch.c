@@ -8,10 +8,11 @@
 #include <syslog.h>  
 #include <sys/stat.h>
 
+#include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
-#include "qio.h"
+#include "storage.h"
 
 
 /*
