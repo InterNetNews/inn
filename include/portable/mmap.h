@@ -60,8 +60,7 @@
 #if MMAP_MISSES_WRITES
 # define mmap_invalidate(p, l)  msync((p), (l), MS_INVALIDATE)
 #else
-# define mmap_invalidate(p, l)  \
-	((innconf->nfsreader) ? msync((p), (l), MS_INVALIDATE) : 0)
+# define mmap_invalidate(p, l)  /* empty */
 #endif
 
 #endif /* PORTABLE_MMAP_H */
