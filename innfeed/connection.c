@@ -1398,6 +1398,7 @@ static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
     {
       errno = endPointErrno (cxn->myEp) ;
       syslog (LOG_ERR, BANNER_READ_FAILED, peerName, cxn->ident) ;
+      hostIpFailed (cxn->myHost) ;
 
       cxnSleepOrDie (cxn) ;
     }
@@ -1434,12 +1435,14 @@ static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
 
           case 400:
             cxnSleepOrDie (cxn) ;
+            hostIpFailed (cxn->myHost) ;
             hostCxnBlocked (cxn->myHost, cxn, rest) ;
             break ;
 
           case 502:
             syslog (LOG_NOTICE,NO_TALK_NNRPD,peerName,cxn->ident,p) ;
             cxnSleepOrDie (cxn) ;
+            hostIpFailed (cxn->myHost) ;
             hostCxnBlocked (cxn->myHost, cxn, rest) ;
             break ;
 
@@ -1448,6 +1451,7 @@ static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
             d_printf (1,"%s:%d Unknown response code: %d: %s\n",
                      hostPeerName (cxn->myHost),cxn->ident, code, p) ;
             cxnSleepOrDie (cxn) ;
+            hostIpFailed (cxn->myHost) ;
             hostCxnBlocked (cxn->myHost, cxn, rest) ;
             break ;
         }
