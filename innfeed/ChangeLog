@@ -1,3 +1,6 @@
+This file contains only those changes that predate the incorporation of
+innfeed into INN.
+
 Mon Mar  3 14:13:42 1997  James Brister  <brister@vix.com>
 
 	* configfile.l: Removed unused rule.
