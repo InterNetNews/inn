@@ -4,19 +4,19 @@ include ../Makefile.global
 
 CFLAGS        = $(GCFLAGS)
 
-ALL           = ckpasswd domain ident pwcheck radius auth_smb
+ALL           = auth_smb ckpasswd domain ident pwcheck radius
 
 LIBSMB	      = smbval/smbvalid.a
 
 LIBAUTH       = libauth.o
 
-SOURCES       = ckpasswd.c domain.c ident.c libauth.c pwcheck.c radius.c \
-		auth_smb.c
+SOURCES       = auth_smb.c ckpasswd.c domain.c ident.c libauth.c pwcheck.c \
+		radius.c
 
-INSTALLED     = $(D)$(PATHAUTHPASSWD)/ckpasswd \
+INSTALLED     = $(D)$(PATHAUTHPASSWD)/auth_smb \
+		$(D)$(PATHAUTHPASSWD)/ckpasswd \
 		$(D)$(PATHAUTHPASSWD)/pwcheck \
 		$(D)$(PATHAUTHPASSWD)/radius \
-		$(D)$(PATHAUTHPASSWD)/auth_smb \
 		$(D)$(PATHAUTHRESOLV)/domain \
 		$(D)$(PATHAUTHRESOLV)/ident
 
@@ -44,12 +44,12 @@ AUTH_INN	= $(LIBINN) $(LIBAUTH)
 CK_LIBS		= $(DBMLIB) $(AUTHLIBS)
 RAD_LIBS	= $(AUTH_INN) $(LIBS)
 
+auth_smb:	auth_smb.o  $(LIBSMB)	; $(LINK) auth_smb.o $(LIBSMB) $(LIBS)
 ckpasswd:	ckpasswd.o  $(LIBAUTH)	; $(LINK) ckpasswd.o $(CK_LIBS)
 domain:		domain.o    $(LIBINN)	; $(LINK) domain.o   $(NEWSLIBS)
 ident:		ident.o     $(LIBAUTH)	; $(LINK) ident.o    $(AUTHLIBS)
 pwcheck:	pwcheck.o   $(LIBAUTH)	; $(LINK) pwcheck.o  $(AUTHLIBS)
 radius:		radius.o    $(AUTH_INN)	; $(LINK) radius.o   $(RAD_LIBS)
-auth_smb:	auth_smb.o  $(LIBSMB)	; $(LINK) auth_smb.o $(LIBSMB) $(LIBS)
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
@@ -75,6 +75,8 @@ depend: Makefile $(SOURCES)
 	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
+auth_smb.o: auth_smb.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h smbval/valid.h
 ckpasswd.o: ckpasswd.c libauth.h ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h
 domain.o: domain.c ../include/config.h ../include/inn/defines.h \
@@ -88,7 +90,5 @@ pwcheck.o: pwcheck.c libauth.h ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h
 radius.o: radius.c libauth.h ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/inn/md5.h \
- ../include/macros.h ../include/libinn.h ../include/nntp.h \
+ ../include/libinn.h ../include/macros.h ../include/nntp.h \
  ../include/paths.h
-auth_smb.o: auth_smb.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h smbval/valid.h
