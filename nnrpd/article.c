@@ -251,7 +251,6 @@ BOOL ARTreadschema(void)
 	fp->HasHeader = FALSE;
 	fp->Header = COPY(buff);
 	fp->Length = strlen(buff);
-	fp++;
 	if (caseEQ(buff, "Xref")) {
 	    foundxref = TRUE;
 	    foundxreffull = fp->NeedsHeader;
@@ -259,8 +258,8 @@ BOOL ARTreadschema(void)
 	    fp->HasHeader = FALSE;
 	    fp->Header = COPY("Newsgroups");
 	    fp->Length = strlen("Newsgroups");
-	    fp++;
 	}
+	fp++;
     }
     ARTfieldsize = fp - ARTfields;
     (void)fclose(F);
