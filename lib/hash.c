@@ -26,7 +26,7 @@ static HASH empty= { { 0, 0, 0, 0, 0, 0, 0, 0,
  *
  * Returns: pointer into s, or NULL for "nowhere"
  */
-static char *
+static const char *
 cipoint(const char *s, size_t size)
 {
     char *p;
@@ -61,25 +61,26 @@ HASH
 HashMessageID(const char *MessageID)
 {
     char                *new = NULL;
-    char                *cip;
-    char                *p;
+    const char          *cip, *p = NULL;
+    char                *q;
     int                 len;
     HASH                hash;
 
     len = strlen(MessageID);
-    if ((cip = cipoint(MessageID, len))) {
-	for (p = cip + 1; *p; p++) {
-	    if (!islower(*p)) {
-		if (!new) {
-		    new = xstrdup(MessageID);
-		    p = new + (p - MessageID);
-		}
-		*p = tolower(*p);
-	    }
-	}
+    cip = cipoint(MessageID, len);
+    if (cip != NULL) {
+        for (p = cip + 1; *p != '\0'; p++) {
+            if (!CTYPE(islower, *p)) {
+                new = xstrdup(MessageID);
+                break;
+            }
+        }
     }
+    if (new != NULL)
+        for (q = new + (cip - p); *p != '\0'; q++)
+            *q = tolower(*q);
     hash = Hash(new ? new : MessageID, len);
-    if (new)
+    if (new != NULL)
 	free(new);
     return hash;
 }
