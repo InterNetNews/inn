@@ -485,21 +485,19 @@ if ($HTML) {
     my $file = &GetValue ($output{'default'}{'html_header_file'});
     $file = $HTML_dir . "/" . $file;
     open (F, $file) && do {
-      $/ = '';
+      local $/ = undef;
       $HTML_header = <F>;
-      close (F);
-      $/ = "\n";
+      close F;
     };
   }
   if (defined $output{'default'}{'html_footer_file'}) {
     my $file = &GetValue ($output{'default'}{'html_footer_file'});
     $file = $HTML_dir . "/" . $file;
     open (F, $file) && do {
-      $/ = '';
+      local $/ = undef;
       $HTML_footer = <F>;
-      close (F);
-      $/ = "\n";
-    }
+      close F;
+    };
   }
 }
 
