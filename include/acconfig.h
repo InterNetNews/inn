@@ -217,11 +217,6 @@ typedef unsigned long           ARTNUM;
    should be moved there (or made dynamic). */
 #define FEED_MAXFLAGS           20
 
-/* Moved to inn.conf, but nnrpd is still using this value and the inn.conf
-   code is using it as a default.  Maximum number of times to try forking
-   before giving up. */
-#define MAX_FORKS               10
-
 /* Maximum length of argv vectors used in innd/site.c.  This should be moved
    out of here into that file, or even better hard-coded rather than
    defined; this value isn't affected by user data and the right value can
