@@ -149,6 +149,8 @@ inndcomm.o: inndcomm.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/time.h \
  ../include/portable/socket.h ../include/inn/innconf.h \
  ../include/inndcomm.h ../include/libinn.h ../include/paths.h
+list.o: list.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/list.h
 localopen.o: localopen.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/innconf.h ../include/libinn.h \
  ../include/nntp.h ../include/paths.h

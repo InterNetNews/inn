@@ -85,7 +85,8 @@ article.o: article.c ../include/config.h ../include/inn/defines.h \
  cache.h
 cache.o: cache.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/innconf.h ../include/inn/tst.h \
- ../include/libinn.h ../include/storage.h cache.h
+ ../include/inn/list.h ../include/libinn.h ../include/storage.h \
+ cache.h
 group.o: group.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/innconf.h nnrpd.h \
  ../include/portable/socket.h ../include/portable/time.h \
@@ -105,6 +106,13 @@ line.o: line.c ../include/config.h ../include/inn/defines.h \
  ../include/inn/qio.h ../include/libinn.h ../include/nntp.h \
  ../include/paths.h ../include/storage.h ../include/inn/vector.h \
  ../include/inn/timer.h
+list.o: list.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h nnrpd.h ../include/portable/socket.h \
+ ../include/portable/time.h ../include/inn/qio.h ../include/libinn.h \
+ ../include/nntp.h ../include/paths.h ../include/storage.h \
+ ../include/inn/vector.h ../include/inn/timer.h ../include/ov.h \
+ ../include/inn/history.h ../include/inn/innconf.h \
+ ../include/inn/messages.h
 misc.o: misc.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/innconf.h nnrpd.h \
  ../include/portable/socket.h ../include/portable/time.h \
@@ -153,7 +161,7 @@ python.o: python.c ../include/config.h ../include/inn/defines.h \
  ../include/portable/socket.h ../include/portable/time.h \
  ../include/inn/qio.h ../include/libinn.h ../include/nntp.h \
  ../include/paths.h ../include/storage.h ../include/inn/vector.h \
- ../include/inn/timer.h
+ ../include/inn/timer.h ../include/inn/hashtab.h
 sasl_config.o: sasl_config.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h \
  ../include/inn/innconf.h nnrpd.h ../include/portable/socket.h \
