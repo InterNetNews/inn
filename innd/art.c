@@ -1070,7 +1070,7 @@ ARTreject(buff, article)
 **  matches the user who posted the article, return the list of filenames
 **  otherwise return NULL.
 */
-STATIC char *ARTcancelverify(ARTDATA Data, HASH MessageID)
+STATIC char *ARTcancelverify(ARTDATA *Data, HASH MessageID)
 {
     register char	*files;
     register char	*p;
