@@ -3,6 +3,7 @@ lib/date
 lib/error
 lib/inet_aton
 lib/inet_ntoa
+lib/md5
 lib/memcmp
 lib/pread
 lib/pwrite
