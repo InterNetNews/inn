@@ -110,9 +110,6 @@ IhaveSendme(STRING History, char What)
     BOOL		More;
     char		buff[BUFSIZ];
     char		Name[SPOOLNAMEBUFF];
-#ifndef DO_TAGGED_HASH
-    idxrec		ionevalue;
-#endif
 
     /* Open history. */
     if (!dbzinit(History)) {
@@ -138,16 +135,11 @@ IhaveSendme(STRING History, char What)
 	*++q = '\0';
 
 	key = HashMessageID(p);
-#ifdef	DO_TAGGED_HASH
-	offset = dbzfetch(key);
-#else
-	if (!dbzfetch(key, &ionevalue)) {
+	if (!dbzfetch(key, &offset)) {
 	    if (What == 'i')
 		(void)printf("%s\n", p);
 	    continue;
 	}
-	offset = ionevalue.offset;
-#endif
 
 	/* Ihave -- say if we want it, and continue. */
 	if (What == 'i') {
@@ -197,13 +189,6 @@ main(int ac, char *av[])
     BOOL		More;
     char		What;
     char		Name[SPOOLNAMEBUFF];
-#ifndef DO_TAGGED_HASH
-    BOOL		val;
-    idxrec		ionevalue;
-    TOKEN		token;
-    int			len;
-    char		*p, *q;
-#endif
 
     /* First thing, set up logging and our identity. */
     openlog("grephistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
@@ -216,11 +201,7 @@ main(int ac, char *av[])
     What = '?';
 
     /* Parse JCL. */
-#ifdef	DO_TAGGED_HASH
     while ((i = getopt(ac, av, "f:ehiltnqs")) != EOF)
-#else
-    while ((i = getopt(ac, av, "f:ehiloTtnqs")) != EOF)
-#endif
 	switch (i) {
 	default:
 	    Usage();
@@ -236,16 +217,8 @@ main(int ac, char *av[])
 	case 'n':
 	case 'q':
 	case 's':
-#ifndef	DO_TAGGED_HASH
-	case 'o':
-	case 'T':
-#endif
 	    if (What != '?') {
-#ifdef	DO_TAGGED_HASH
 		(void)fprintf(stderr, "Only one [eiltnqs] flag allowed.\n");
-#else
-		(void)fprintf(stderr, "Only one [eiloTtnqs] flag allowed.\n");
-#endif
 		exit(1);
 	    }
 	    What = (char)i;
@@ -295,20 +268,11 @@ main(int ac, char *av[])
     }
 
     /* Not found. */
-#ifdef	DO_TAGGED_HASH
-    if ((offset = dbzfetch(key)) < 0) {
+    if (!dbzfetch(key, &offset)) {
 	if (What == 'n')
 	    (void)fprintf(stderr, "Not found.\n");
 	exit(1);
     }
-#else
-    if (!dbzfetch(key, &ionevalue)) {
-	if (What == 'n')
-	    (void)fprintf(stderr, "Not found.\n");
-	exit(1);
-    }
-    offset = ionevalue.offset;
-#endif
 
     /* Simple case? */
     if (What == 'q')
@@ -319,19 +283,6 @@ main(int ac, char *av[])
       (void)printf("%lu\n", offset);
       exit(0);
     }
-
-#ifndef	DO_TAGGED_HASH
-    /* Just give offset into overview */
-    if (What == 'T') {
-      (void)printf("Overview offset is not available.\n");
-      exit(0);
-    }
-
-    /* Get overview */
-    if (What == 'o') {
-      (void)printf("Overview offset is not available.\n");
-    }
-#endif
 
     /* Open the text file, go to the entry. */
     if ((F = fopen(History, "r")) == NULL) {

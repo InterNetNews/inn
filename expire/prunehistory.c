@@ -98,9 +98,6 @@ main(ac, av)
     STRING		History;
     BUFFER		Line;
     BOOL		Passing;
-#ifndef DO_TAGGED_HASH
-    idxrec		ionevalue;
-#endif
 
     /* First thing, set up logging and our identity. */
     openlog("prunehistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);      
@@ -182,20 +179,11 @@ main(ac, av)
 
 	/* Look up the article. */
 	key = HashMessageID(buff);
-#ifdef	DO_TAGGED_HASH
-	if ((where = dbzfetch(key)) < 0) {
+	if (!dbzfetch(key, &where)) {
 	    (void)fprintf(stderr, "No entry for \"%s\", %s\n",
-		    buff, strerror(errno));
+		buff, strerror(errno));
 	    continue;
 	}
-#else
-	    if (!dbzfetch(key, &ionevalue)) {
-		(void)fprintf(stderr, "No entry for \"%s\", %s\n",
-		    buff, strerror(errno));
-		continue;
-	    }
-	    where = ionevalue.offset;
-#endif
 
 	if (fseek(rfp,  where, SEEK_SET) == -1) {
 	    (void)fprintf(stderr, "Can't fseek for \"%s\", %s\n",

@@ -520,10 +520,6 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length)
     TOKEN		token;
     char		*tokentext;
     enum KR             kr;
-#ifndef	DO_TAGGED_HASH
-    void	*ivalue;
-    idxrec	ionevalue;
-#endif
 
     /* Split up the major fields. */
     i = EXPsplit(line, HIS_FIELDSEP, fields, SIZEOF(fields));
@@ -679,19 +675,10 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length)
      * since it had to have been clean to get in there. */
     if (EXPverbose > 4)
 	(void)printf("\tdbz %s@%ld\n", fields[0], where);
-#ifdef	DO_TAGGED_HASH
     if (dbzstore(key, where) == DBZSTORE_ERROR) {
 	fprintf(stderr, "Can't store key, \"%s\"\n", strerror(errno));
 	return FALSE;
     }
-#else
-    ionevalue.offset = where;
-    ivalue = (void *)&ionevalue;
-    if (dbzstore(key, ivalue) == DBZSTORE_ERROR) {
-	fprintf(stderr, "Can't store key, \"%s\"\n", strerror(errno));
-	return FALSE;
-    }
-#endif
     return TRUE;
 }
 
@@ -975,10 +962,8 @@ int main(int ac, char *av[])
 		    NHistory, NHistorydir, NHistoryindex, NHistoryhash);
 #endif
 	dbzgetoptions(&opt);
-#ifdef	DO_TAGGED_HASH
 	opt.pag_incore = INCORE_MEM;
-#else
-	opt.idx_incore = INCORE_MEM;
+#ifndef	DO_TAGGED_HASH
 	opt.exists_incore = INCORE_MEM;
 #endif
 	dbzsetoptions(opt);

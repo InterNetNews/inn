@@ -105,10 +105,8 @@ STATIC void Rebuild(OFFSET_T size, BOOL IgnoreOld, BOOL Overwrite)
 
     /* Open the new database, using the old file if desired and possible. */
     dbzgetoptions(&opt);
-#ifdef	DO_TAGGED_HASH
     opt.pag_incore = INCORE_MEM;
-#else
-    opt.idx_incore = INCORE_MEM;
+#ifndef	DO_TAGGED_HASH
     opt.exists_incore = INCORE_MEM;
 #endif
     dbzsetoptions(opt);
@@ -148,20 +146,12 @@ STATIC void Rebuild(OFFSET_T size, BOOL IgnoreOld, BOOL Overwrite)
 		continue;
 	    }
 	    key = TextToHash(p+1);
-#ifndef	DO_TAGGED_HASH
-	    ionevalue.offset = where;
-	    ivalue = (void *)&ionevalue;
-#endif
 	    break;
 	default:
 	    fprintf(stderr, "Invalid message-id \"%s\" in history text\n", p);
 	    continue;
 	}
-#ifdef	DO_TAGGED_HASH
 	switch (dbzstore(key, (OFFSET_T)where)) {
-#else
-	switch (dbzstore(key, ivalue)) {
-#endif
 	case DBZSTORE_EXISTS:
             fprintf(stderr, "Duplicate message-id \"%s\" in history text\n", p);
 	    break;

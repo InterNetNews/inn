@@ -706,7 +706,7 @@ main(int argc, char **argv)
 	    OverTmpSegSize = atoi(optarg);
 	    break;
 	case 'O':
-	    DoOverview = TRUE;
+	    DoOverview = FALSE;
 	    break;
 	default:
 	    Usage();
@@ -762,10 +762,8 @@ main(int argc, char **argv)
 	}
 	/* turn on mmaping of pag, since we'll be doing a lot of lookups. */
 	dbzgetoptions(&opt);
-#ifdef	DO_TAGGED_HASH
 	opt.pag_incore = INCORE_MMAP;
-#else
-	opt.idx_incore = INCORE_MMAP;
+#ifndef	DO_TAGGED_HASH
 	opt.exists_incore = INCORE_MMAP;
 #endif
 	dbzsetoptions(opt);
