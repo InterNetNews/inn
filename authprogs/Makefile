@@ -37,7 +37,7 @@ radius:	$(P) radius.o
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ radius.o $(LIBS) $(LIBNEWS)
 
 ckpasswd:	$(P) ckpasswd.o
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ ckpasswd.o $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ ckpasswd.o $(LIBS) $(DBMLIB)
 
 ident:	$(P) ident.o
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ ident.o $(LIBS)

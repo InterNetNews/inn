@@ -2,13 +2,20 @@
  *
  * ckpasswd.c - The default username/password authenticator.
  */
+#include "config.h"
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <clibrary.h>
 #include <configdata.h>
 #include <pwd.h>
+#ifdef HAVE_NDBM_H
 #include <ndbm.h>
+#else
+#ifdef HAVE_DB1_NDBM_H
+#include <db1/ndbm.h>
+#endif
+#endif
 #include <fcntl.h>
 #if HAVE_GETSPNAM
 #include <shadow.h>

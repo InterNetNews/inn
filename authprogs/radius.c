@@ -2,6 +2,7 @@
  *
  * radius.c - Authenticate a user against a remote radius server.
  */
+#include "config.h"
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/socket.h>
@@ -12,7 +13,13 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
+#ifdef HAVE_NDBM_H
 #include <ndbm.h>
+#else
+#ifdef HAVE_DB1_NDBM_H
+#include <db1/ndbm.h>
+#endif
+#endif
 #include <fcntl.h>
 #include <stdlib.h>
 
