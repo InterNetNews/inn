@@ -108,7 +108,7 @@ static bool inited = false ;
 void listenerLogStatus (FILE *fp)
 {
   fprintf (fp,"%sListener Status:%s\n",
-           genHtml ? "<H2>" : "", genHtml ? "</H2>" : "") ;
+           genHtml ? "<B>" : "", genHtml ? "</B>" : "") ;
   fprintf (fp,"    Dropped article file: %s\n",dropArtFile) ;
   fprintf (fp,"   Dropped article count: %ld\n",(long) droppedCount) ;
   fprintf (fp,"\n") ;

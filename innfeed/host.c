@@ -421,7 +421,6 @@ int hostConfigLoadCbk (void *data)
   else
     genHtml = GEN_HTML ;
   
-  
   if (getString (topScope,"status-file",&p,NO_INHERIT))
     {
       hostSetStatusFile (p) ;
@@ -3043,7 +3042,15 @@ static void hostLogStatus (void)
       strcpy (timeString,ctime (&now)) ;
 
       if (genHtml)
-        fprintf (fp,"<HTML><META HTTP-EQUIV=\"Refresh\" CONTENT=\"300;\"><PRE>\n\n") ;
+        {
+          fprintf (fp, "<HTML>\n"
+		       "<HEAD>\n"
+		       "<META HTTP-EQUIV=\"Refresh\" CONTENT=\"300;\">\n"
+		       "</HEAD>\n"
+		       "<BODY>\n") ;
+	  fprintf (fp, "\n");
+	  fprintf (fp, "<PRE>\n");
+	}
 
       fprintf (fp,"%s\npid %d started %s\nUpdated: %s",
                versionInfo,(int) myPid,startTime,timeString) ;
@@ -3054,11 +3061,13 @@ static void hostLogStatus (void)
       
       if (genHtml)
       {
-        fprintf (fp,"<UL>");
+        fprintf (fp, "</PRE>\n");
+        fprintf (fp,"<UL>\n");
         for (h = gHostList ; h != NULL ; h = h->next)
-          fprintf (fp,"<LI><A href=\"#%s\">%s</A></LI>",
+          fprintf (fp,"<LI><A href=\"#%s\">%s</A></LI>\n",
                    h->params->peerName, h->params->peerName);
         fprintf (fp,"</UL>\n\n");
+        fprintf (fp,"<PRE>\n");
       }
 
       mainLogStatus (fp) ;
@@ -3078,7 +3087,7 @@ Default peer configuration parameters:
      backlog factor: 1.1
 */
       fprintf(fp,"%sDefault peer configuration parameters:%s\n",
-              genHtml ? "<H2>" : "", genHtml ? "</H2>" : "") ;
+              genHtml ? "<B>" : "", genHtml ? "</B>" : "") ;
       fprintf(fp,"    article timeout: %-5d     initial connections: %d\n",
 	    defaultParams->articleTimeout,
 	    defaultParams->initialConnections) ;
@@ -3113,7 +3122,7 @@ Default peer configuration parameters:
 
       fprintf (fp,"\n") ;
       fprintf(fp,"%sglobal (process)%s\n",
-              genHtml ? "<H2>" : "", genHtml ? "</H2>" : "") ;
+              genHtml ? "<B>" : "", genHtml ? "</B>" : "") ;
       
       fprintf (fp, "   seconds: %ld\n", sec) ;
       if (sec == 0) sec = 1 ;
@@ -3165,7 +3174,11 @@ Default peer configuration parameters:
         hostPrintStatus (h,fp) ;
 
       if (genHtml) 
-        fprintf (fp,"</PRE></HTML>\n") ;
+	{
+          fprintf (fp,"</PRE>\n") ;
+          fprintf (fp,"</BODY>\n") ;
+          fprintf (fp,"</HTML>\n") ;
+	}
       
       fclose (fp) ;
     }
@@ -3213,7 +3226,7 @@ static void hostPrintStatus (Host host, FILE *fp)
   ASSERT (fp != NULL) ;
 
   if (genHtml)
-    fprintf (fp,"<A name=\"%s\"><H2>%s</H2></A>",host->params->peerName,
+    fprintf (fp,"<A name=\"%s\"><B>%s</B></A>",host->params->peerName,
              host->params->peerName);
   else
     fprintf (fp,"%s",host->params->peerName);
