@@ -1,9 +1,10 @@
 $Id$
 
 The following are outstanding issues regarding INN's compliance with the
-NNTP standard.  The reference document used in this analysis is the
-current NNTP IETF Working Group draft (draft-ietf-nntpext-base-13.txt or
-later), not RFC 977 (which is woefully out of date).
+NNTP standard.  The reference documents used in this analysis are the
+current NNTP IETF Working Group draft (draft-ietf-nntpext-base-15.txt at
+the time of the last check of this audit) or RFC 2980, not RFC 977 (which
+is woefully out of date).
 
 This file documents only compliance issues with the latest version of the
 standard NNTP protocol.  It does not cover INN's private extensions or
@@ -14,8 +15,8 @@ RFC 2980.
 ------------------------------
 
   Summary: innd doesn't require whitespace between commands and arguments
- Standard: draft-ietf-nntpext-base-13.txt, section 4
-  Version: 1.0 to CURRENT 2001-07-04
+ Standard: draft-ietf-nntpext-base-15.txt, section 4
+  Version: 1.0 to CURRENT 2002-12-26
 Reference: innd/nc.c NCproc() and command handlers
  Severity: Accepts invalid input
 
@@ -50,8 +51,8 @@ break interoperability with that code.
 ------------------------------
 
   Summary: INN doesn't check argument length
- Standard: draft-ietf-nntpext-base-13.txt, section 4
-  Version: 1.0 to CURRENT 2001-07-04
+ Standard: draft-ietf-nntpext-base-15.txt, section 4
+  Version: 1.0 to CURRENT 2002-12-26
 Reference: innd/nc.c and nnrpd/nnrpd.c
  Severity: Accepts invalid input
 
@@ -71,8 +72,8 @@ hurt to check this along with everything else.
 ------------------------------
 
   Summary: Reply codes other than x9x used for private extensions
- Standard: draft-ietf-nntpext-base-13.txt, section 4.1
-  Version: 1.0 to CURRENT 2001-07-04
+ Standard: draft-ietf-nntpext-base-15.txt, section 4.1
+  Version: 1.0 to CURRENT 2002-12-26
 Reference: include/nntp.h
  Severity: Violates SHOULD
 
@@ -102,8 +103,8 @@ worth the effort.
 ------------------------------
 
   Summary: innd may return 480 instead of 500 for unrecognized commands
- Standard: draft-ietf-nntpext-base-13.txt, section 4.1.1
-  Version: 1.0 to CURRENT 2001-07-04
+ Standard: draft-ietf-nntpext-base-15.txt, section 4.1.1
+  Version: 1.0 to CURRENT 2002-12-26
 Reference: innd/nc.c NCauthinfo()
  Severity: Violates MUST
 
@@ -133,8 +134,8 @@ special handling in NCauthinfo.  This should also simplify the code.
 ------------------------------
 
   Summary: innd always sends 200 for an accepted connection
- Standard: draft-ietf-nntpext-base-13.txt, section 7.1
-  Version: 1.0 to CURRENT 2001-07-04
+ Standard: draft-ietf-nntpext-base-15.txt, section 7.1
+  Version: 1.0 to CURRENT 2002-12-26
 Reference: innd/nc.c NCsetup() and rc.c RCreader()
  Severity: Violates MUST
 
@@ -188,8 +189,8 @@ allowed reading connections.
 ------------------------------
 
   Summary: innd doesn't support LIST EXTENSIONS
- Standard: draft-ietf-nntpext-base-13.txt, section 8.1
-  Version: 1.0 to CURRENT 2001-07-04
+ Standard: draft-ietf-nntpext-base-15.txt, section 8.1
+  Version: 1.0 to CURRENT 2002-12-26
 Reference: innd/nc.c NClist()
  Severity: Not a violation
 
@@ -198,13 +199,15 @@ Support for LIST EXTENSIONS is optional, and innd's current behavior
 innd cannot advertise any of the extensions that it supports.  Since this
 will eventually include streaming, support should be added.
 
-Suggested fix:  Add support for LIST EXTENSIONS to NClist().
+Suggested fix:  Add support for LIST EXTENSIONS to NClist() as soon as
+innd supports a registered extension or as soon as there is documentation
+for INN's extensions that specify an extension name (beginning with X).
 
 ------------------------------
 
   Summary: Xref slaving causes problems with article numbers
- Standard: draft-ietf-nntpext-base-13.txt, section 9.1
-  Version: 2.0 to CURRENT 2001-07-04
+ Standard: draft-ietf-nntpext-base-15.txt, section 9.1
+  Version: 2.0 to CURRENT 2002-12-26
 Reference: innd/art.c ARTxrefslave() and innfeed
  Severity: Violates a MUST
 
@@ -235,8 +238,8 @@ before new articles.
 ------------------------------
 
   Summary: Articles without Message-ID headers can't be retrieved
- Standard: draft-ietf-nntpext-base-13.txt, section 9.2.1.1
-  Version: 1.0 to CURRENT 2001-07-04
+ Standard: draft-ietf-nntpext-base-15.txt, section 9.2.1.1
+  Version: 1.0 to CURRENT 2002-12-26
 Reference: nnrpd/article.c CMDfetch()
  Severity: Lack of robustness
 
@@ -244,10 +247,8 @@ The standard says:
 
     The second parameter is the message-id of the article (within angle
     brackets).  This is taken from the message-id header line of the
-    article (required by RFC 1036).
-
-    If there is no such line, the message-id "<0>" MUST be used instead
-    (without the double quotes).
+    article (required by RFC 1036).  If there is no such line, the
+    message-id "<0>" MUST be used instead (without the double quotes).
 
 nnrpd instead returns a 423 error response if the selected article doesn't
 contain a Message-ID header.
@@ -258,7 +259,9 @@ required for them, but it's possible to use the NNTP protocol for other
 purposes.
 
 Suggested fix:  Return the article anyway with the above special
-message-id as part of the command return.
+message-id as part of the command return.  The standard doesn't specify
+the same behavior for NEXT and LAST, but it should probably be used there
+as well.
 
 Impact of fix:  An article could be returned that didn't satisfy the
 netnews article format standard, but the rest of INN currently won't
@@ -268,8 +271,8 @@ administrator is already doing something special.
 ------------------------------
 
   Summary: nnrpd doesn't return 420 errors when there is no overview info
- Standard: draft-ietf-nntpext-base-13.txt, section 9.5.2.2
-  Version: 1.4 to CURRENT 2001-07-07
+ Standard: draft-ietf-nntpext-base-15.txt, section 9.5.2.2
+  Version: 1.4 to CURRENT 2002-12-26
 Reference: nnrpd/article.c CMDxover()
  Severity: Violates a protocol description
 
@@ -285,9 +288,11 @@ Impact:  Less information is communicated to the client about why there
 are no overview records returned.  An error response indicating there are
 no valid articles in that range is possibly more informative.
 
-Suggested fix:  Don't print out the initial 224 message until at least one
-overview entry has been found, so that CMDxover() can print a 420 response
-instead if no overview records are found.
+Suggested fix:  Do nothing for now, as this portion of the draft is still
+being actively discussed.  If this remains the wording of the draft, don't
+print out the initial 224 message until at least one overview entry has
+been found, so that CMDxover() can print a 420 response instead if no
+overview records are found.
 
 Impact of fix:  May confuse some clients that don't expect to get 420
 errors back from overview queries.  It may be necessary to do something
@@ -298,30 +303,32 @@ existing behavior.
 ------------------------------
 
   Summary: innd doesn't generate overview correctly for non-printing chars
- Standard: draft-ietf-nntpext-base-13.txt, section 9.5.2.2
-  Version: 1.4 to CURRENT 2001-07-07
-Reference: innd/art.c ARTmakeoverview()
+ Standard: draft-ietf-nntpext-base-15.txt, section 9.5.2.2
+  Version: 1.4 to CURRENT 2002-12-26
+Reference: innd/art.c ARTmakeoverview() and expire/makehistory.c DoArt()
  Severity: Violates a MUST
 
 The standard says:
 
-    Any sequence of US-ASCII space or non-printing characters in a field
-    MUST be replaced by a single US-ASCII space.
+    The content of the rest of the fields is formed by taking the original
+    header content (such as the raw subject line from the article),
+    removing all US-ASCII CRLF pairs, and then replacing each remaining
+    US-ASCII NUL, TAB, CR, or LF character with a single US-ASCII space.
 
 innd has always just replaced tabs, newlines, and CRs with spaces in a
 one-to-one fashion (although older versions did, through an accident of
 implementation, collapse CRLF into a single space) and has never collapsed
 consecutive whitespace.
 
-Banning ESC mangles ISO-2022-JP subjects.
+Impact:  The headers are not unfolded properly, resulting in extraneous
+spaces in the overview version of the header that are not properly part of
+the content of the header.  NUL is also not handled correctly, but at
+present INN cannot handle NUL in article headers or bodies, so this is
+only part of a larger issue.
 
-Impact:  Control characters could be passed back to a client not prepared
-to handle them.
-
-Suggested fix:  Clarify the standard to require RFC 2822 unfolding and
-otherwise leave characters other than CR, LF, TAB, and NUL alone.  Modify
-ARTmakeoverview() to remove CRLF pairs completely (RFC 2822 unfolding) and
-otherwise do the same as it does now.
+Suggested fix:  Modify ARTmakeoverview() to remove CRLF pairs completely
+(RFC 2822 unfolding) and otherwise do the same as it does now.  The
+overview_build() function does this properly.
 
 Impact of fix:  After an upgrade, overview will have to be rebuilt from
 the spool in order to make all of the overview consistent again for folded
@@ -330,8 +337,8 @@ headers.  This probably isn't significant enough to worry about.
 ------------------------------
 
   Summary: HDR can return message IDs rather than article numbers
- Standard: draft-ietf-nntpext-base-13.txt, section 9.5.3.1
-  Version: 1.0 to CURRENT 2001-07-07
+ Standard: draft-ietf-nntpext-base-15.txt, section 9.5.3.1
+  Version: 1.0 to CURRENT 2002-12-26
 Reference: nnrpd/article.c CMDpat()
  Severity: Violates a protocol description
 
@@ -366,8 +373,8 @@ draft and it's not clear that the current text is the intended meaning.
 ------------------------------
 
   Summary: innd improperly caches DNS returns
- Standard: draft-ietf-nntpext-base-13.txt, section 14.3
-  Version: 1.0 to CURRENT 2001-07-07
+ Standard: draft-ietf-nntpext-base-15.txt, section 14.4
+  Version: 1.0 to CURRENT 2002-12-26
 Reference: innd/rc.c RCreadfile() and elsewhere
  Severity: Violates a MUST
 
@@ -397,7 +404,7 @@ amount of additional complexity.
 
   Summary: innd doesn't diagnose repeated AUTHINFO USER commands
  Standard: RFC 2980, section 3.1.1
-  Version: 1.0 to CURRENT 2002-12-02
+  Version: 1.0 to CURRENT 2002-12-26
 Reference: innd/nc.c NCauthinfo()
  Severity: Violates a protocol description
 
