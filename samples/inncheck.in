@@ -375,7 +375,8 @@ incoming_conf
     'useoverchan',		0,
     'wireformat',		0,
     'addnntppostinghost',	0,
-    'addnntppostingdate',	0
+    'addnntppostingdate',	0,
+    'ovmmapthreshold',	0
 );
 %inn_conf'optionals = (
     'innflags',			0,
