@@ -2,18 +2,22 @@
 **
 **  Parse input to add to news overview database.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <string.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
 #include <errno.h>
+#include <syslog.h>
+
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#else
+# include <time.h>
+#endif
+
 #include "libinn.h"
 #include "macros.h"
+#include "ov.h"
 #include "paths.h"
 #include "qio.h"
-#include <syslog.h>  
-#include "ov.h"
 
 unsigned int NumArts;
 unsigned int StartTime;
@@ -49,7 +53,6 @@ static unsigned gettime(void)
 STATIC void ProcessIncoming(QIOSTATE *qp)
 {
     char                *Data;
-    char		*texttoken;
     char		*p;
     TOKEN		token;
     unsigned int 	starttime, endtime;
@@ -90,7 +93,6 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
 
 int main(int ac, char *av[])
 {
-    int 	        i;
     QIOSTATE		*qp;
     unsigned int	now;
 

@@ -3,13 +3,15 @@
 **  Produce reliable locks for shell scripts, by Peter Honeyman as told
 **  to Rich $alz.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
 #include <errno.h>
-#include <fcntl.h>
+#include <signal.h>
 #include <sys/stat.h>
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
 
 
 STATIC BOOL	BinaryLock;
@@ -209,4 +211,5 @@ main(ac, av)
 
     UnlinkAndExit(tmp, 0);
     /* NOTREACHED */
+    return 1;
 }

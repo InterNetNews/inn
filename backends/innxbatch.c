@@ -1,7 +1,4 @@
-/*
-**  innxbatch.c
-**
-**  $Id$
+/*  $Id$
 **
 **  Transmit batches to remote site, using the XBATCH command
 **  Modelled after innxmit.c and nntpbatch.c
@@ -27,34 +24,35 @@
 **	-T	Timeout for batch transfers.
 **  We do not use any file locking. At worst, a batch could be transmitted
 **  twice in parallel by two independant invocations of innxbatch.
-**  To prevent this, innxbatch should e invoked by a shell script that uses
+**  To prevent this, innxbatch should be invoked by a shell script that uses
 **  shlock(1) to achieve mutual exclusion.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
 #include <setjmp.h>
+#include <signal.h>
+#include <syslog.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#if	defined(DO_NEED_TIME)
-#include <time.h>
-#endif	/* defined(DO_NEED_TIME) */
-#include <sys/time.h>
-/*#include <sys/uio.h>*/
-#include "nntp.h"
-#include <syslog.h>
-#include <signal.h>
-#include "libinn.h"
-#include "macros.h"
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif
+
+#include "libinn.h"
+#include "macros.h"
+#include "nntp.h"
 
 /*
 ** Syslog formats - collected together so they remain consistent

@@ -1,28 +1,28 @@
-/*  $Revision$
+/*  $Id$
 **
-**  Parse input to add links for cross posted articles
-**  Input format is one line per article.  Dots '.' are changed to 
-**  '/'.  Commas ',' or blanks ' ' separate entries.  Typically this
-**  is via a channel feed from innd though an edit of the history file
-**  can also be used for recovery purposes.  Sample newsfeeds entry:
+**  Parse input to add links for cross posted articles.  Input format is one
+**  line per article.  Dots '.' are changed to '/'.  Commas ',' or blanks
+**  ' ' separate entries.  Typically this is via a channel feed from innd
+**  though an edit of the history file can also be used for recovery
+**  purposes.  Sample newsfeeds entry:
 **
 **	# Create the links for cross posted articles
 **	crosspost:*:Tc,Ap,WR:/usr/local/newsbin/crosspost
-**  
+**
+**  WARNING: This no longer works with the current INN; don't use it
+**  currently.  It still exists in the source tree in case someone will
+**  want to clean it up and make it useable again.
 */
-#include <stdio.h>
+#include "config.h"
+#include "clibrary.h"
 #include <errno.h>
-#include <sys/types.h>
-#include "configdata.h"
-#if     defined(DO_NEED_TIME)
-#include <time.h>
-#endif  /* defined(DO_NEED_TIME) */
 #include <syslog.h>
 #include <sys/stat.h>
-#include <sys/uio.h>
-#include <fcntl.h>
-#include "clibrary.h"
-#include <syslog.h> 
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"

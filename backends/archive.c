@@ -1,23 +1,23 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Read batchfiles on standard input and archive them.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
-#include <sys/stat.h>
-#if	defined(DO_NEED_TIME)
-#include <time.h>
-#endif	/* defined(DO_NEED_TIME) */
-#include <sys/time.h>
-#include "paths.h"
-#include "libinn.h"
-#include "qio.h"
-#include "macros.h"
 #include <syslog.h> 
+#include <sys/stat.h>
+#include <time.h>
+
+#ifdef TM_IN_SYS_TIME
+# include <sys/time.h>
+#endif
+
+#include "libinn.h"
+#include "macros.h"
+#include "paths.h"
+#include "qio.h"
 
 
 STATIC char	*Archive = NULL;
@@ -425,7 +425,6 @@ main(ac, av)
     BOOL		Redirect;
     BOOL		Concat;
     char		*Index;
-    char		*last;
     char		buff[BUFSIZ];
     char		temp[BUFSIZ];
     char		dest[BUFSIZ];
@@ -434,7 +433,6 @@ main(ac, av)
     char		*xrefhdr;
     ARTHANDLE		*art;
     TOKEN		token;
-    struct stat		Sb;
     unsigned int	numgroups, numxrefs;
     int			j;
     char		*base = NULL;

@@ -1,25 +1,23 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Read batchfiles on standard input and spew out batches.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
-#include <fcntl.h>
 #include <ctype.h>
 #include <errno.h>
-#include <sys/stat.h>
-#if	defined(DO_NEED_TIME)
-#include <time.h>
-#endif	/* defined(DO_NEED_TIME) */
-#include <sys/time.h>
-#include "paths.h"
-#include "libinn.h"
-#include "qio.h"
-#include <syslog.h> 
-#include "macros.h"
 #include <signal.h>
+#include <syslog.h> 
+#include <sys/stat.h>
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
+#include "libinn.h"
+#include "macros.h"
+#include "paths.h"
+#include "qio.h"
 
 
 /*
@@ -222,15 +220,13 @@ main(ac, av)
     char	*data;
     char	line[BUFSIZ];
     char	buff[BUFSIZ];
-    long	BytesInArt;
+    int		BytesInArt;
     long	BytesInCB;
     OFFSET_T	Cookie;
     SIZE_T	datasize;
     int		i;
-    int		artfd;
     int		ArtsInCB;
     int		length;
-    struct stat	Sb;
     TOKEN	token;
     ARTHANDLE	*art;
     char	*artdata;

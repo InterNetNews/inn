@@ -1,31 +1,38 @@
-/*  $Revision$
+/*  $Id$
+**
 **  Connect to a remote site, and get news from it to offer to our local
 **  server.  Read list on stdin, or get it via NEWNEWS command.  Writes
 **  list of articles still needed to stdout.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
+#include <errno.h>
+#include <syslog.h>  
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <errno.h>
-#if	defined(DO_NEED_TIME)
-#include <time.h>
-#endif	/* defined(DO_NEED_TIME) */
-#include <sys/time.h>
 #include <sys/uio.h>
-#include "paths.h"
-#include "libinn.h"
-#include "dbz.h"
-#include "nntp.h"
-#include "macros.h"
-#include <syslog.h>  
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif
+
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+
+#include "dbz.h"
+#include "libinn.h"
+#include "macros.h"
+#include "nntp.h"
+#include "paths.h"
 
 /*
 **  All information about a site we are connected to.
