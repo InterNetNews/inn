@@ -23,11 +23,6 @@
 #include "libinn.h"
 #include "macros.h"
 
-#include <EXTERN.h>
-#include <perl.h>
-#include <XSUB.h>
-#include "ppport.h"
-
 #include "innperl.h"
 
 /* Provided by DynaLoader but not declared in Perl's header files. */
