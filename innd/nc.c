@@ -225,6 +225,10 @@ NCpostit(cp)
 		cp->Received, cp->Refused, cp->Rejected);
 	    cp->Reported = 0;
 	}
+	if (Mode == OMthrottled) {
+	    NCwriteshutdown(cp, ModeReason);
+	    break;
+	}
 	cp->State = CSgetcmd;
 	NCwritereply(cp, response);
 	break;
