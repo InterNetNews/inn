@@ -1,4 +1,4 @@
-=head1 NEWS
+=head1 NAME
 
 inews - Post a Usenet article to the local news server
 
