@@ -67,6 +67,7 @@ contrib/format_overview.pl  1 Format output of count_overview.pl
 contrib/listoi.c            1 Display an overview.index file
 contrib/makeexpctl.pl       1 Create expire.ctl based on recently read articles
 contrib/makestorconf.pl     1 Create storage.conf based on recently read arts
+contrib/mkbuf               1 Create cycbuff for HP-UX
 contrib/newsbot             1 Grep articles and trigger actions
 contrib/pathinfo            1 Scan news headers for various information
 contrib/pullart.c           1 Recover text articles from cyclic buffers
