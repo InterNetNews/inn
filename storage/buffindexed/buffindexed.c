@@ -1611,10 +1611,10 @@ STATIC BOOL ovgroupmmap(GROUPENTRY *ge, GROUPINDEXBLOCK **gibp, int low, int hig
       base = gib->baseoffset;
     else
       base = low - (gib->base - gib->baseoffset);
-    if (high > gib->base - gib->baseoffset + OVINDEXMAX)
+    if (high >= gib->base - gib->baseoffset + OVINDEXMAX - 1)
       limit = OVINDEXMAX;
     else
-      limit = high - (gib->base - gib->baseoffset);
+      limit = high - (gib->base - gib->baseoffset - 1);
     for (i = base ; i < limit ; i++) {
       ov.index = gib->ovblock->ovindex[i].index;
       ov.blocknum = gib->ovblock->ovindex[i].blocknum;
