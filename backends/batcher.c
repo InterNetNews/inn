@@ -122,7 +122,7 @@ RequeueAndExit(Cookie, line, BytesInArt)
 
     /* Last batch exit okay? */
     if (BATCHstatus == 0) {
-	if (feof(stdin) && Cookie == -1) {
+	if (feof(stdin) && Cookie != -1) {
 	    /* Yes, and we're all done -- remove input and exit. */
 	    (void)fclose(stdin);
 	    if (Input)
