@@ -44,7 +44,7 @@ cache_add(const HASH h, const TOKEN t)
 	if (!msgidcache)
 	    msgidcache = tst_init(innconf->msgidcachesize / 10);
 	if (msgidcache) {
-	    TOKEN *token = malloc(sizeof *token);
+	    TOKEN *token = xmalloc(sizeof *token);
 
 	    if (token) {
 		const unsigned char *p;
