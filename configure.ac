@@ -426,7 +426,7 @@ AC_CHECK_FUNCS([getrlimit getdtablesize ulimit], [break])
 dnl Probe for the appropriate stat functions.
 AC_CHECK_FUNCS([statvfs], ,
     [AC_CHECK_FUNCS([statfs])
-     AC_CHECK_HEADERS([sys/vfs.h sys/mount.h])])
+     AC_CHECK_HEADERS([sys/vfs.h sys/param.h sys/mount.h])])
 
 dnl If we can't find any of the following, we have replacements for them.
 AC_REPLACE_FUNCS(getaddrinfo getpagesize hstrerror inet_aton mkstemp pread \

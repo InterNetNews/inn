@@ -309,6 +309,9 @@
    */
 #undef HAVE_SYS_NDIR_H
 
+/* Define to 1 if you have the <sys/param.h> header file. */
+#undef HAVE_SYS_PARAM_H
+
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
@@ -440,13 +443,13 @@
 /* Define to `int' if <sys/types.h> does not define. */
 #undef pid_t
 
-/* Define to `int' if <sys/types.h> does not define. */
+/* Define to int if <signal.h> does not define. */
 #undef sig_atomic_t
 
 /* Define to `unsigned' if <sys/types.h> does not define. */
 #undef size_t
 
-/* Define to `int' if <sys/types.h> does not define. */
+/* Define to int if <sys/socket.h> does not define. */
 #undef socklen_t
 
 /* Define to int if <sys/types.h> does not define. */
