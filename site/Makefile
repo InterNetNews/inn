@@ -53,7 +53,7 @@ MOST	= rc.news checkgroups default ihave newgroup \
 	sendbatch inncheck innstat pgpverify innwatch innreport \
 	innshellvars innshellvars.pl innshellvars.tcl \
 	scanspool innmail checkgroups.pl ihave.pl newgroup.pl rmgroup.pl \
-	sendme.pl sendsys.pl senduuname.pl version.pl cnfsstat \
+	sendme.pl sendsys.pl senduuname.pl version.pl cnfsstat cnfsheadconf \
 	mod-active simpleftp mailpost news2mail pullnews
 
 ##  Scripts from above, plus site-specific config files.
@@ -80,7 +80,7 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(CTLBIN)/checkgroups \
 	$D$(PATHBIN)/innstat $D$(PATHBIN)/pgpverify $D$(PATHBIN)/innwatch \
 	$D$(PATHBIN)/controlbatch $D$(PATHBIN)/innreport $D$(PATH_SHELLVARS) \
 	$D$(PATH_PERL_SHELLVARS) $D$(PATH_TCL_SHELLVARS) \
-	$D$(PATHBIN)/scanspool $D$(PATHBIN)/cnfsstat \
+	$D$(PATHBIN)/scanspool $D$(PATHBIN)/cnfsstat $D$(PATHBIN)/cnfsheadconf\
 	$D$(PATHBIN)/mod-active $D$(PATHBIN)/simpleftp \
 	$D$(CTLBIN)/checkgroups.pl $D$(CTLBIN)/ihave.pl \
 	$D$(PATHBIN)/mailpost $D$(PATHBIN)/news2mail $D$(PATHBIN)/pullnews \
@@ -211,6 +211,7 @@ $D$(PATHBIN)/send-uucp:	send-uucp	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/inncheck:	inncheck	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/innstat:	innstat		; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/pgpverify:	pgpverify	; $(COPY_XPRI) $? $@
+$D$(PATHBIN)/cnfsheadconf:	cnfsheadconf	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/cnfsstat:	cnfsstat	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/innwatch:	innwatch	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/mod-active: mod-active	; $(COPY_XPUB) $? $@
@@ -331,6 +332,7 @@ tally.control:	../samples/tally.control	; $(COPY) $? $@
 version:	../samples/version		; $(COPY) $? $@
 version.pl:	../samples/version.pl		; $(COPY) $? $@
 cnfsstat:	../samples/cnfsstat		; $(COPY) $? $@
+cnfsheadconf:	../samples/cnfsheadconf		; $(COPY) $? $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES)
