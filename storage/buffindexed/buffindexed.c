@@ -1369,124 +1369,40 @@ STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
   return TRUE;
 }
 
-BOOL buffindexed_add(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
-  char		*next;
-  static char	*xrefdata, *patcheck;
-  char		*xrefstart;
-  static int	datalen = 0;
-  BOOL		found = FALSE;
-  int		xreflen;
-  int		i;
-  char		*group;
-  ARTNUM	artnum;
+BOOL buffindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires) {
   GROUPLOC	gloc;
   GROUPENTRY	*ge;
-  char		overdata[BIG_BUFFER];
 
-  /*
-   * find last Xref: in the overview line.  Note we need to find the *last*
-   * Xref:, since there have been corrupted articles on Usenet with Xref:
-   * fragments stuck in other header lines.  The last Xref: is guaranteed
-   * to be from our server.
-   */
-
-  for (next = data; ((len - (next - data)) > 6 ) && ((next = memchr(next, 'X', len - (next - data))) != NULL); ) {
-    if (memcmp(next, "Xref: ", 6) == 0) {
-      found =  TRUE;
-      xrefstart = next;
-    }
-    next++;
+  if (len > OV_BLOCKSIZE) {
+    syslog(L_ERROR, "%s: overview data is too large %d", LocalLogName, len);
+    return TRUE;
   }
 
-  if (!found)
-    return FALSE;
-
-  next = xrefstart;
-  for (i = 0; (i < 2) && (next < (data + len)); i++) {
-    if ((next = memchr(next, ' ', len - (next - data))) == NULL)
-      return FALSE;
-    next++;
+  gloc = GROUPfind(group, FALSE);
+  if (GROUPLOCempty(gloc)) {
+    return TRUE;
   }
-  xreflen = len - (next - data);
-  if (datalen == 0) {
-    datalen = BIG_BUFFER;
-    xrefdata = NEW(char, datalen);
-    if (innconf->ovgrouppat != NULL)
-      patcheck = NEW(char, datalen);
-  }
-  if (xreflen > datalen) {
-    datalen = xreflen;
-    RENEW(xrefdata, char, datalen + 1);
-    if (innconf->ovgrouppat != NULL)
-      RENEW(patcheck, char, datalen + 1);
-  }
-  if (innconf->ovgrouppat != NULL) {
-    memcpy(patcheck, next, xreflen);
-    patcheck[xreflen] = '\0';
-    for (group = patcheck; group && *group; group = memchr(next, ' ', next - patcheck)) {
-      while (isspace((int)*group))
-	group++;
-      if ((next = memchr(group, ':', xreflen - (group - xrefdata))) == NULL)
-	return FALSE;
-      *next++ = '\0';
-      if (!OVgroupmatch(group)) {
-	if (!SMprobe(SELFEXPIRE, &token, NULL) && innconf->groupbaseexpiry)
-	  /* this article will never be expired, since it does not have self
-	     expiry function in stored method and groupbaseexpiry is true */ 
-	  return FALSE;
-	return TRUE;
-      }
-    }
-  }
-  memcpy(xrefdata, next, xreflen);
-  xrefdata[xreflen] = '\0';
-  for (group = xrefdata; group && *group; group = memchr(next, ' ', xreflen - (next - xrefdata))) {
-    /* Parse the xref part into group name and article number */
-    while (isspace((int)*group))
-      group++;
-    if ((next = memchr(group, ':', xreflen - (group - xrefdata))) == NULL)
-      return FALSE;
-    *next++ = '\0';
-    artnum = strtoul(next, NULL, 10);
-    if (artnum <= 0)
-      continue;
-
-    sprintf(overdata, "%lu\t", artnum);
-    i = strlen(overdata);
-    memcpy(overdata + i, data, len);
-    i += len;
-    memcpy(overdata + i, "\r\n", 2);
-    i += 2;
-    if (i > OV_BLOCKSIZE) {
-      syslog(L_ERROR, "%s: overview data is too large %d", LocalLogName, i);
-      continue;
-    }
-
-    gloc = GROUPfind(group, FALSE);
-    if (GROUPLOCempty(gloc)) {
-      continue;
-    }
-    GROUPlock(gloc, LOCK_WRITE);
-    /* prepend block(s) if needed. */
-    ge = &GROUPentries[gloc.recno];
-    if (Cutofflow && ge->low > artnum) {
-      GROUPlock(gloc, LOCK_UNLOCK);
-      continue;
-    }
-#ifdef OV_DEBUG
-    if (!ovaddrec(ge, artnum, token, overdata, i, arrived, expires, NULL)) {
-#else
-    if (!ovaddrec(ge, artnum, token, overdata, i, arrived, expires)) {
-#endif /* OV_DEBUG */
-      if (Nospace) {
-	GROUPlock(gloc, LOCK_UNLOCK);
-	syslog(L_ERROR, "%s: no space left for buffer, adding '%s'", LocalLogName, group);
-	return FALSE;
-      }
-      syslog(L_ERROR, "%s: could not add overview for '%s'", LocalLogName, group);
-    }
+  GROUPlock(gloc, LOCK_WRITE);
+  /* prepend block(s) if needed. */
+  ge = &GROUPentries[gloc.recno];
+  if (Cutofflow && ge->low > artnum) {
     GROUPlock(gloc, LOCK_UNLOCK);
+    return TRUE;
   }
+#ifdef OV_DEBUG
+  if (!ovaddrec(ge, artnum, token, data, len, arrived, expires, NULL)) {
+#else
+  if (!ovaddrec(ge, artnum, token, data, len, arrived, expires)) {
+#endif /* OV_DEBUG */
+    if (Nospace) {
+      GROUPlock(gloc, LOCK_UNLOCK);
+      syslog(L_ERROR, "%s: no space left for buffer, adding '%s'", LocalLogName, group);
+      return FALSE;
+    }
+    syslog(L_ERROR, "%s: could not add overview for '%s'", LocalLogName, group);
+  }
+  GROUPlock(gloc, LOCK_UNLOCK);
+
   return TRUE;
 }
 
