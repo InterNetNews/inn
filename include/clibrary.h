@@ -73,6 +73,11 @@ extern void *memset();
 # include <stdint.h>
 #endif
 
+/* SCO OpenServer gets int32_t from here. */
+#ifdef HAVE_SYS_BITYPES_H
+# include <sys/bitypes.h>
+#endif
+
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif
