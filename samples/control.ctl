@@ -1563,6 +1563,8 @@ newgroup:news@stardivision.de:staroffice.*:verify-staroffice.admin
 rmgroup:news@stardivision.de:staroffice.*:verify-staroffice.admin
 
 ## STGT (Stuttgart, Germany)
+# URL: http://news.uni-stuttgart.de/hierarchie/stgt/stgt-control.txt
+# *PGP*   See comment at start of file.
 newgroup:*:stgt.*:drop
 rmgroup:*:stgt.*:drop
 checkgroups:stgt-control@news.uni-stuttgart.de:stgt.*:verify-stgt-control
