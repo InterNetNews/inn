@@ -46,7 +46,7 @@ libstorage.a:         $(P) $(OBJECTS)
 	ar r $@ $(OBJECTS) objs/*
 	$(RANLIB) libstorage.a
 
-.c.o: $*.c
+.c.o:
 	$(LIBCC) $(CFLAGS) -c $*.c -o $@
 
 ovtest: ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
