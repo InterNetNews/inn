@@ -1317,9 +1317,11 @@ CCreload(char *av[])
     p = av[0];
     if (*p == '\0' || strcmp(p, "all") == 0) {
 	SITEflushall(false);
-	InndHisClose();
+        if (Mode == OMrunning)
+	    InndHisClose();
 	RCreadlist();
-	InndHisOpen();
+	if (Mode == OMrunning)
+	    InndHisOpen();
 	ICDwrite();
 	ICDsetup(true);
 	if (!ARTreadschema())
@@ -1345,6 +1347,8 @@ CCreload(char *av[])
 	ICDsetup(true);
     }
     else if (strcmp(p, "history") == 0) {
+        if (Mode != OMrunning)
+            return CCnotrunning;
 	InndHisClose();
 	InndHisOpen();
     }
