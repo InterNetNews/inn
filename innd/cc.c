@@ -243,24 +243,19 @@ CCaddhist(av)
     HASH                hash;
     int			i;
     TOKEN		token;
-    OFFSET_T		offset;
-    unsigned char	index;
-    unsigned short	len;
 
     /* Check to see if we were passed a hash first. */
     i = strlen(av[0]);
     if (av[0][0]=='[' && av[0][i-1] == ']') {
 	if (i != ((sizeof(HASH) * 2) + 2))
 	    return "1 Bad Hash";
-	index = OVER_NONE;
-	offset = 0;
-	len = 0;
-	OVERmaketoken(&token, offset, index, len);
 	if (av[4] != NULL && *av[4] != '\0') {
 	    if (!IsToken(av[4]))
 		return "1 Bad Token";
 	    else
 		token = TextToToken(av[4]);
+	} else {
+	    OVERmaketoken(&token, (OFFSET_T)0, OVER_NONE, 0);
 	}
         hash = TextToHash(&av[0][1]);
 	/* Put something bogus in here.  This should never be referred
