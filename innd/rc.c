@@ -63,7 +63,8 @@ static char		*RCnntpd = NULL;
  * Should an index number be passed from innd.c to CHANcreate()
  * by RCsetup? What about a null-terminated array?
  */
-static CHANNEL		*RCchan;
+static CHANNEL		**RCchan;
+static int		chanlimit;
 static REMOTEHOST_DATA	*RCpeerlistfile;
 static REMOTEHOST	*RCpeerlist;
 static int		RCnpeerlist;
@@ -228,12 +229,12 @@ GoodIdent(int fd, char *identd)
 char **
 RCCommaSplit(char *text)
 {
-    register int        i;
-    register char       *p;
-    register char       *q;
-    register char       *r;
-    register char       **av;
-    char                **save;
+    int		i;
+    char	*p;
+    char	*q;
+    char	*r;
+    char	**av;
+    char	**save;
  
     /* How much space do we need? */
     for (i = 2, p = text, q = r = COPY(text); *p; p++) {
@@ -362,10 +363,10 @@ RCaddressmatch(const struct sockaddr_storage *cp, const struct sockaddr_storage 
 **  See if the site properly entered the password.
 */
 bool
-RCauthorized(register CHANNEL *cp, char *pass)
+RCauthorized(CHANNEL *cp, char *pass)
 {
-    register REMOTEHOST	*rp;
-    register int	i;
+    REMOTEHOST	*rp;
+    int		i;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
 	if (RCaddressmatch(&cp->Address, &rp->Address)) {
@@ -388,10 +389,10 @@ RCauthorized(register CHANNEL *cp, char *pass)
 **  See if a host is limited or not.
 */
 bool
-RCnolimit(register CHANNEL *cp)
+RCnolimit(CHANNEL *cp)
 {
-    register REMOTEHOST	*rp;
-    register int	i;
+    REMOTEHOST	*rp;
+    int		i;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
 	if (RCaddressmatch(&cp->Address, &rp->Address))
@@ -405,10 +406,10 @@ RCnolimit(register CHANNEL *cp)
 **  Return the limit (max number of connections) for a host.
 */
 int
-RClimit(register CHANNEL *cp)
+RClimit(CHANNEL *cp)
 {
-    register REMOTEHOST	*rp;
-    register int	i;
+    REMOTEHOST	*rp;
+    int		i;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
 	if (RCaddressmatch(&cp->Address, &rp->Address))
@@ -433,7 +434,7 @@ RCrejectreader(CHANNEL *cp)
 **  Write-done function for rejects.
 */
 static void
-RCrejectwritedone(register CHANNEL *cp)
+RCrejectwritedone(CHANNEL *cp)
 {
     switch (cp->State) {
     default:
@@ -517,9 +518,13 @@ RCreader(CHANNEL *cp)
     CHANNEL		tempchan;
     char		buff[SMBUF];
 
-    if (cp != RCchan) {
-	syslog(L_ERROR, "%s internal RCreader wrong channel 0x%p not 0x%p",
-	    LogName, cp, RCchan);
+    for (i = 0 ; i < chanlimit ; i++) {
+	if (RCchan[i] == cp) {
+	    break;
+	}
+    }
+    if (i == chanlimit) {
+	syslog(L_ERROR, "%s internal RCreader wrong channel 0x%p", LogName, cp);
 	return;
     }
 
@@ -733,11 +738,11 @@ RCwritedone(CHANNEL *unused)
 char *
 RCreaddata(int *num, FILE *F, bool *toolong)
 {
-  register char *p;
-  register char *s;
-  register char *t;
-  char          *word;
-  register bool flag;
+  char	*p;
+  char	*s;
+  char	*t;
+  char	*word;
+  bool	flag;
 
   *toolong = FALSE;
   if (*RCbuff == '\0') {
@@ -1639,7 +1644,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 void
 RCwritelistindent(FILE *F, int c)
 {
-    register int		i;
+    int		i;
 
     for (i = 0; i < c; i++)
         fprintf(F, "   ");
@@ -1665,12 +1670,12 @@ RCwritelistvalue(FILE *F, char *value)
 void
 RCwritelist(char *filename)
 {
-    register FILE               *F;
-    register int		i;
-    register int		inc;
-    register char		*p;
-    register char		*q;
-    register char		*r;
+    FILE	*F;
+    int		i;
+    int		inc;
+    char	*p;
+    char	*q;
+    char	*r;
 
     if ((F = Fopen(filename, "w", TEMPORARYOPEN)) == NULL) {
         syslog(L_FATAL, "%s cant write %s: %m", LogName, filename);
@@ -1810,11 +1815,11 @@ RCreadlist(void)
 **  Find the name of a remote host we've connected to.
 */
 char *
-RChostname(register const CHANNEL *cp)
+RChostname(const CHANNEL *cp)
 {
-    static char		buff[SMBUF];
-    register REMOTEHOST	*rp;
-    register int	i;
+    static char	buff[SMBUF];
+    REMOTEHOST	*rp;
+    int		i;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
 	if (RCaddressmatch(&cp->Address, &rp->Address))
@@ -1881,11 +1886,13 @@ RCcanpost(CHANNEL *cp, char *group)
 **  Create the channel.
 */
 void
-RCsetup(register int i)
+RCsetup(int i)
 {
 #if	defined(SO_REUSEADDR)
-    int			on;
+    int		on;
 #endif	/* defined(SO_REUSEADDR) */
+    int		j;
+    CHANNEL	*rcchan;
 
     /* This code is called only when inndstart is not being used */
     if (i < 0) {
@@ -1932,9 +1939,34 @@ RCsetup(register int i)
 	exit(1);
     }
 
-    RCchan = CHANcreate(i, CTremconn, CSwaiting, RCreader, RCwritedone);
-    syslog(L_NOTICE, "%s rcsetup %s", LogName, CHANname(RCchan));
-    RCHANadd(RCchan);
+    rcchan = CHANcreate(i, CTremconn, CSwaiting, RCreader, RCwritedone);
+    syslog(L_NOTICE, "%s rcsetup %s", LogName, CHANname(rcchan));
+    RCHANadd(rcchan);
+
+    for (j = 0 ; j < chanlimit ; j++ ) {
+	if (RCchan[j] == NULL) {
+	    break;
+	}
+    }
+    if (j < chanlimit) {
+	RCchan[j] = rcchan;
+    } else if (chanlimit == 0) {
+	/* assuming two file descriptors(AF_INET and AF_INET6) */
+	chanlimit = 2;
+        RCchan = NEW(CHANNEL **, chanlimit);
+	for (j = 0 ; j < chanlimit ; j++ ) {
+	    RCchan[j] = NULL;
+	}
+	RCchan[0] = rcchan;
+    } else {
+	/* extend to double size */
+	RENEW(RCchan, CHANNEL **, chanlimit * 2);
+	for (j = chanlimit ; j < chanlimit * 2 ; j++ ) {
+	    RCchan[j] = NULL;
+	}
+	RCchan[chanlimit] = rcchan;
+	chanlimit *= 2;
+    }
 
     /* Get the list of hosts we handle. */
     RCreadlist();
@@ -1947,11 +1979,20 @@ RCsetup(register int i)
 void
 RCclose(void)
 {
-    register REMOTEHOST	*rp;
-    register int	i;
+    REMOTEHOST	*rp;
+    int		i;
 
-    CHANclose(RCchan, CHANname(RCchan));
+    for (i = 0 ; i < chanlimit ; i++) {
+	if (RCchan[i] != NULL) {
+	    CHANclose(RCchan[i], CHANname(RCchan[i]));
+	} else {
+	    break;
+	}
+    }
+    if (chanlimit != 0)
+	DISPOSE(RCchan);
     RCchan = NULL;
+    chanlimit = 0;
     if (RCpeerlist) {
 	for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++) {
 	    DISPOSE(rp->Name);
