@@ -2,25 +2,35 @@
 **
 **  Here be declarations of functions in the InterNetNews library.
 */
-#ifndef LIBINN_H
-#define LIBINN_H
+#ifndef __LIBINN_H__
+#define __LIBINN_H__
 
-#include "config.h"
+/* We've probably already included this; only include it if we need it. */
+#ifndef __CONFIG_H__
+# include "config.h"
+#endif
 
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
-#include <storage.h>
 
+/* Tell C++ not to mangle prototypes. */
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
-/* Memory allocation. */
-extern ALIGNPTR	xmalloc(unsigned int i);
-extern ALIGNPTR	xrealloc(char *p, unsigned int i);
+/*
+**  MEMORY MANAGEMENT
+*/
+extern void *   xmalloc(size_t size);
+extern void *   xrealloc(void *p, size_t size);
 
+/* This function is called whenever a memory allocation fails. */
+extern int (*xmemfailure)(const char *, size_t);
+
+
+/* String handling. */
 #if defined(STDC_HEADERS) || defined(HAVE_STDARG_H)
 extern void *   concat(const char *first, ...);
 #else
@@ -241,12 +251,6 @@ extern pid_t	waitnb(int *statusp);
 extern int	xread(int fd, char *p, OFFSET_T i);
 extern int	xwrite(int fd, char *p, int i);
 extern int	xwritev(int fd, struct iovec *vp, int vpcount);
-#ifndef HAVE_PREAD
-extern OFFSET_T pread(int fd, void *buf, OFFSET_T nbyte, OFFSET_T offset);
-#endif /* HAVE_PREAD */
-#ifndef HAVE_PWRITE
-extern OFFSET_T pwrite(int fd, void *buf, OFFSET_T nbyte, OFFSET_T offset);
-#endif /* HAVE_PWRITE */
 extern int	GetResourceUsage(double *usertime, double *systime);
 extern int	SetNonBlocking(int fd, BOOL flag);
 extern void	CloseOnExec(int fd, int flag);
