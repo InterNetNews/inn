@@ -406,7 +406,7 @@ char *HISgetent(HASH *key, BOOL flag, OFFSET_T *off)
     }
     stv = etv;
     if (flag && (off == NULL)) {
-	if ((i = read(fileno(hfp), buff, sizeof buff)) == NULL) {
+	if ((i = read(fileno(hfp), buff, sizeof buff)) < 0) {
 	    syslog(L_ERROR, "%s cant read from %ld %m", ClientHost, offset);
 	    return NULL;
 	}

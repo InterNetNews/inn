@@ -937,6 +937,9 @@ listen_loop:
 	close(fd);
 	dup2(0, 1);
 	dup2(0, 2);
+
+	/* Only automatically reap children in the listening process */
+	(void)signal(SIGCHLD, SIG_DFL);
  
     }  /* DaemonMode */
 
