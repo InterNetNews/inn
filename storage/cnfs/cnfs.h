@@ -14,6 +14,7 @@ void cnfs_freearticle(ARTHANDLE *article);
 BOOL cnfs_cancel(TOKEN token);
 BOOL cnfs_ctl(PROBETYPE type, TOKEN *token, void *value);
 BOOL cnfs_flushcacheddata(FLUSHTYPE type);
+void cnfs_printfiles(FILE *file, TOKEN token, char **xref, int ngroups);
 void cnfs_shutdown(void);
 
 #endif
