@@ -220,6 +220,7 @@ void SetDefaults()
 	innconf->bindaddress = COPY(p);
 	SET_CONFIG(CONF_VAR_BINDADDRESS);
     }
+    innconf->sourceaddress = NULL;
     innconf->port = NNTP_PORT;
     innconf->readertrack = FALSE;
     innconf->strippostcc = FALSE;
@@ -287,6 +288,7 @@ void ClearInnConf()
     if (innconf->mta != NULL) DISPOSE(innconf->mta);
     if (innconf->mailcmd != NULL) DISPOSE(innconf->mailcmd);
     if (innconf->bindaddress != NULL) DISPOSE(innconf->bindaddress);
+    if (innconf->sourceaddress != NULL) DISPOSE(innconf->sourceaddress);
     if (innconf->overviewname != NULL) DISPOSE(innconf->overviewname);
     if (innconf->nnrpdposthost != NULL) DISPOSE(innconf->nnrpdposthost);
 
@@ -952,6 +954,15 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_NOREADER, bit);
 		if (!bit && boolval != -1) innconf->noreader = boolval;
 		SET_CONFIG(CONF_VAR_NOREADER);
+	    if (EQ(ConfigBuff,_CONF_SOURCEADDRESS)) {
+		TEST_CONFIG(CONF_VAR_SOURCEADDRESS, bit);
+		if (!bit) {
+		if (EQ(p,"all") || EQ(p,"any"))
+		    innconf->sourceaddress =  NULL;
+		else
+		    innconf->sourceaddress = COPY(p);
+		}
+		SET_CONFIG(CONF_VAR_SOURCEADDRESS);
 	    }
 	}
 	(void)Fclose(F);

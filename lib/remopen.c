@@ -45,7 +45,7 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
     struct hostent	*hp;
     struct hostent	fakehp;
     struct in_addr	quadaddr;
-    struct sockaddr_in	server;
+    struct sockaddr_in	server, client;
 
     buff = errbuff ? errbuff : mybuff;
     *buff = '\0';
@@ -79,12 +79,28 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
     (void)memset((POINTER)&server, 0, sizeof server);
     server.sin_family = hp->h_addrtype;
     server.sin_port = htons(port);
+    /* Source IP address to which we bind. */
+    (void)memset((POINTER)&client, 0, sizeof client);
+    client.sin_family = AF_INET;
+    if (innconf->sourceaddress) {
+	client.sin_addr.s_addr = inet_addr(innconf->sourceaddress);
+	if (server.sin_addr.s_addr == INADDR_NONE)
+	    return -1;
+    } else
+	client.sin_addr.s_addr = htonl(INADDR_ANY);
   
     /* Loop through the address list, trying to connect. */
     for (; ap && *ap; ap++) {
 	/* Make a socket and try to connect. */
 	if ((i = socket(hp->h_addrtype, SOCK_STREAM, 0)) < 0)
 	    break;
+	/* Bind to the source address we want. */
+	if (bind(i, (struct sockaddr *)&client, sizeof client) < 0) {
+	    oerrno = errno;
+	    (void)close(i);
+	    errno = oerrno;
+	    continue;
+	}
 	/* Copy the address via inline memcpy:
 	 *	(void)memcpy((POINTER)&server.sin_addr, (POINTER)*ap,
 			(int)hp->h_length); */
