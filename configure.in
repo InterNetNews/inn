@@ -14,10 +14,6 @@ test "x$exec_prefix" = xNONE && exec_prefix=$ac_default_prefix
 
 dnl Parse the arguments
 
-AC_ARG_ENABLE(controlchan,
-	[  --enable-controlchan    use external control channel], 
-	AC_DEFINE(USE_CONTROLCHAN) )
-
 AC_ARG_ENABLE(pgp-verify,
 	[  --enable-pgp-verify     use pgp control verification], 
 	DO_PGP=DO, 
@@ -230,9 +226,6 @@ AC_SUBST(LOG_COMPRESSEXT)
 dnl
 AC_ARG_ENABLE(tagged-hash,[  --enable-tagged-hash    use tagged hash table for history], DO_DBZ_TAGGED_HASH=DO, DO_DBZ_TAGGED_HASH=DONT)
 AC_SUBST(DO_DBZ_TAGGED_HASH)
-dnl
-AC_ARG_ENABLE(merge-to-groups,[  --enable-merge-to-groups     merge to groups], DO_MERGE_TO_GROUPS=DO, DO_MERGE_TO_GROUPS=DONT)
-AC_SUBST(DO_MERGE_TO_GROUPS)
 dnl Automatic check for Mail is frequently wrong.  Use innmail to have
 dnl a single interface.
 dnl AC_ENSURE_PATH_PROG(ac_cv_subst_path_mail,Mail)
@@ -999,11 +992,13 @@ AC_OUTPUT(
 	innfeed/procbatch
 	samples/actsync.cfg 
 	samples/checkgroups
+	samples/checkgroups.pl
 	samples/controlchan
 	samples/default
 	samples/docheckgroups
 	samples/expirerm
 	samples/ihave
+	samples/ihave.pl
 	samples/inn.conf
 	samples/inncheck 
 	samples/innmail
@@ -1033,12 +1028,16 @@ AC_OUTPUT(
 	samples/send-uucp
 	samples/sendbatch
 	samples/sendme
+	samples/sendme.pl
 	samples/sendsys
+	samples/sendsys.pl
 	samples/senduuname
+	samples/senduuname.pl
 	samples/signcontrol
 	samples/startup.tcl 
 	samples/tally.control
 	samples/version
+	samples/version.pl
 	samples/writelog
 	storage/buildconfig 
 	syslog/syslog.conf

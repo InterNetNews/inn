@@ -54,6 +54,7 @@ configure.in                1 File to create configure
 contrib                     1 External contributions (Directory)
 contrib/README.contrib      1 README file for the contrib contents.
 contrib/cleanoi             1 Script to clean overview index files
+contrib/cnfsstat.pl         1 Show cycbuff status
 contrib/expirectl           1 Generate expire.ctl from template
 contrib/findmissing.pl      1 locate articles not in history.
 contrib/fixhist             1 Script to clean history
@@ -138,6 +139,7 @@ doc/shlock.1                1 Manpage for shlock backend utility
 doc/shrinkfile.1            1 Manpage for shrinkfile
 doc/sm.8                    1 Manpage for sm
 doc/startinnfeed.1          1 Manpage for startinnfeed
+doc/storage.conf.5          1 Manpage for storage.conf config file
 doc/storage.ctl.5           1 Manpage for storage.ctl config file
 doc/strcasecmp.3            1 Manpage for strcasecmp library routine (BSD)
 doc/subst.1                 1 Manpage for subst
@@ -178,6 +180,7 @@ frontends/sys2nf.c          1 Sys file to newsfeeds conversion aide
 iftrue.sh                   1 Execute command if test(1) is true
 include                     1 Header files (Directory)
 include/clibrary.h.in       1 C library declarations
+include/conffile.h          1 Header file for reading *.conf files
 include/config.h.in         1 Template configuration data 
 include/configdata.h        1 Configuration data, used by everyone
 include/dbz.h               1 Header file for DBZ
@@ -270,6 +273,7 @@ lib/cleanfrom.c             1 Clean out a From line
 lib/clientactive.c          1 Client access to the active file
 lib/clientlib.c             1 Replacements for nntp1.5 "clientlib" routines.
 lib/closeonexec.c           1 Make a descriptor close-on-exec
+lib/conffile.c              1 Reading *.conf files routines
 lib/dbz.c                   1 DBZ database library
 lib/defdist.c               1 Determine default Distribution header
 lib/endian.c                1 Determine system's endian
@@ -357,6 +361,7 @@ samples                     1 Prototype InterNetNews files (Directory)
 samples/actsync.cfg.in      1 Config file for actsync
 samples/actsync.ign         1 Ignore file for actsync
 samples/checkgroups.in      1 Checkgroups control message handler
+samples/checkgroups.pl.in   1 Checkgroups control message handler for controlchan
 samples/control.ctl         1 Access control for control messages
 samples/controlchan.in      1 Channel program for control messages
 samples/cycbuff.conf        1 Sample cycbuff.conf(5) file
@@ -369,6 +374,7 @@ samples/filter.tcl          1 Sample tcl filter
 samples/filter_innd.pl      1 Sample perl filter for innd
 samples/filter_nnrpd.pl     1 Sample perl filter for nnrpd
 samples/ihave.in            1 Ihave control message handler
+samples/ihave.pl.in         1 Ihave control message handler for controlchan
 samples/incoming.conf       1 Sample incoming.conf(5) file
 samples/inn.conf.in         1 Sample inn.conf(5) file
 samples/inncheck.in         1 Perl script to syntax-check INN config files
@@ -410,14 +416,19 @@ samples/send-nntp.in        1 Shell script to call innxmit
 samples/send-uucp.in        1 Script to call batcher
 samples/sendbatch.in        1 B News-like script to send UUCP batches
 samples/sendme.in           1 Sendme control message handler
+samples/sendme.pl.in        1 Sendme control message handler for controlchan
 samples/sendsys.in          1 Sendsys control message handler
+samples/sendsys.pl.in       1 Sendsys control message handler for controlchan
 samples/senduuname.in       1 Senduuname control message handler
+samples/senduuname.pl.in    1 Senduuname control message handler for controlchan
 samples/signcontrol.in      1 pgp control message signing program.
 samples/startup.tcl.in      1 tcl startup code.
 samples/startup_innd.pl     1 perl startup code for innd
+samples/storage.conf        1 Sample storage.conf(5) file
 samples/storage.ctl         1 Sample storage.ctl(5) file
 samples/tally.control.in    1 Count newgroup/rmgroup messages
 samples/version.in          1 Version control message handler
+samples/version.pl.in          1 Version control message handler for controlchan
 samples/writelog.in         1 Write a log entry or mail it
 site                        1 Site-local files (Directory)
 site/Makefile               1 Makefile for site-local files
