@@ -8,6 +8,7 @@ typedef struct {
     char *buf;
     int sbuf;
     int lineno;
+    char *filename;
 } CONFFILE;
 
 typedef struct {
