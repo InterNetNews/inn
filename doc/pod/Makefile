@@ -15,9 +15,9 @@ MAN1	= ../man/ckpasswd.1 ../man/convdate.1 ../man/fastrm.1 \
 
 MAN3	= ../man/libinnhist.3 ../man/qio.3 ../man/uwildmat.3
 
-MAN5	= ../man/inn.conf.5 ../man/newsfeeds.5 ../man/ovdb.5 \
-	../man/passwd.nntp.5 ../man/readers.conf.5 ../man/sasl.conf.5 \
-	../man/subscriptions.5
+MAN5	= ../man/control.ctl.5 ../man/inn.conf.5 ../man/newsfeeds.5 \
+	../man/ovdb.5 ../man/passwd.nntp.5 ../man/readers.conf.5 \
+	../man/sasl.conf.5 ../man/subscriptions.5
 
 MAN8	= ../man/expireover.8 ../man/innd.8 ../man/inndf.8 ../man/nnrpd.8 \
 	../man/inndstart.8 ../man/innupgrade.8 ../man/makehistory.8 \
@@ -45,6 +45,7 @@ all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 ../man/qio.3:		qio.pod			; $(POD2MAN) -s 3 $? > $@
 ../man/uwildmat.3:	uwildmat.pod		; $(POD2MAN) -s 3 $? > $@
 
+../man/control.ctl.5:	control.ctl.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/inn.conf.5:	inn.conf.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/newsfeeds.5:	newsfeeds.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/ovdb.5:		ovdb.pod		; $(POD2MAN) -s 5 $? > $@

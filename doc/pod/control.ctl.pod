@@ -1,0 +1,188 @@
+=head1 NAME
+
+control.ctl - Specify handling of Usenet control messages
+
+=head1 DESCRIPTION
+
+F<control.ctl> in I<pathetc> is used to determine what action is taken
+when a control message is received.  It is read by B<controlchan>, which
+is normally invoked as a channel program by B<innd>.  When F<control.ctl>
+is modified, B<controlchan> notices this automatically and reloads it.
+
+Blank lines and lines beginning with a number sign (C<#>) are ignored.
+All other lines should consist of four fields separated by colons:
+
+    <type>:<from>:<newsgroups>:<action>
+
+The first field, <type>, is the type of control message for which this
+line is valid.  It should either be the name of a control message or the
+word C<all> to indicate that it applies to all control messages.
+
+The second field, <from>, is a shell-style pattern that matches the e-mail
+address of the person posting the message (with the address first
+converted to lowercase).  The matching is done with rules equivalent to
+those of the shell's I<case> statement; see sh(1) for more details.
+
+If the control message is a newgroup or rmgroup, the third field,
+<newsgroups>, is a shell-style pattern matching the newsgroup affected by
+the control message.  If the control message is a checkgroups, the third
+field is a shell-style pattern matching the newsgroups that should be
+processed for checking.  If the control message is of any other type, the
+third field is ignored.
+
+The fourth field, <action>, specifies what action to take with control
+messages that match this line.  The following actions are understood:
+
+=over 4
+
+=item B<doit>
+
+The action requested by the control message should be performed.  In some
+cases, the control script will also send mail to the news administrator
+(the argument to --with-news-master given at configure time, C<usenet> by
+default), but if notification of the action should always be sent, use
+C<doit=mail> instead (see below).
+
+=item B<doifarg>
+
+If the control message has an argument, this is equivalent to B<doit>.  If
+it does not have an argument, this is equivalent to B<mail>.  This is only
+useful for entries for sendsys control messages, allowing a site to
+request its own F<newsfeeds> entry by posting a C<sendsys mysite> control
+message, but not allowing the entire F<newsfeeds> file to be sent.  This
+was intended to partially counter so-called "sendsys bombs," where forged
+sendsys control messages were used to mailbomb people.
+
+Processing sendsys control messages is not recommended even with this
+work-around unless they are authenticated in some fashion.  The risk of
+having news servers turned into anonymous mail bombing services is too
+high.
+
+=item B<doit>=I<file>
+
+The action is performed as in B<doit>, and additionally a log entry is
+written to the specified log file I<file>.  If I<file> is the word
+C<mail>, the log entry is mailed to the news administrator instead.  An
+empty string is equivalent to /dev/null and says to log nothing.
+
+If I<file> starts with a slash, it is taken as the absolute filename to
+use for the log file.  Otherwise, the filename is formed by prepending
+I<pathlog> and a slash and appending C<.log>.  In other words, an action
+of C<doit=newgroup> will log to I<pathlog>/newgroup.log.
+
+=item B<drop>
+
+No action is taken and the message is ignored.
+
+=item B<verify-*>
+
+If the action starts with the string C<verify->, as in:
+
+    verify-news.announce.newgroups
+
+then PGP verification of the control message will be done and the user ID
+of the key of the authenticated signer will be checked against the
+expected identity defined by the rest of the string
+(C<news.announce.newgroups> in the above example.  This verification is
+done via B<pgpverify>; see pgpverify(8) for more details.
+
+If no logging is specified (with =I<file> as mentioned below),
+notification of successful newgroup and rmgroup control messages and the
+output of checkgroups messages will be mailed to the news administrator.
+
+=item B<verify-*>=I<file>
+
+PGP verification is done as for the B<verify-*> action described above,
+and a log entry is written to the specified file as described in
+B<doit>=I<file> above.  (In the case of checkgroups messages, this means
+that the shell script output of the checkgroups message will be written to
+that file.)
+
+=item B<log>
+
+A one-line log message is sent to standard error.  B<innd> normally
+directs this to I<pathlog>/errlog.
+
+=item B<log>=I<file>
+
+A log entry is written to the specified log file, which is interpreted as
+in B<doit>=I<file> described above.
+
+=item B<mail>
+
+A mail message is sent to the news administrator.
+
+=back
+
+Processing of a checkgroups message will never actually change the
+F<active> file (the list of groups carried by the server).  The difference
+between a B<doit> or B<verify> action and a B<mail> action for a
+checkgroups control message lies only in what e-mail is sent; B<doit> or
+B<verify> will mail the news administrator a shell script to create,
+delete, or modify newsgroups to match the checkgroups message, whereas
+B<mail> will just mail the entire message.  In either case, the news
+administrator will have to take action to implement the checkgroups
+message, and if that mail is ignored, nothing will be changed.
+
+Lines are matched in order and the last matching line in the file will be
+used.
+
+Use of the B<verify> action for processing newgroup, rmgroup, and
+checkgroups messages is STRONGLY recommended.  Abuse of control messages
+is rampant, and authentication via PGP signature is currently the only
+reliable way to be sure that a control message comes from who it claims to
+be from.  Most major hierarchies are now issuing PGP-authenticated control
+messages.
+
+In order to use B<verify> actions, the PGP key ring of the news user must
+be populated with the PGP keys of the hierarchy maintainers whose control
+messages you want to honor.  For more details on PGP-authenticated control
+messages and the URL for downloading the PGP keys of major hierarchies,
+see pgpverify(8).
+
+Control messages of type cancel are handled internally by B<innd> and
+cannot be controlled by any of the mechanisms described here.
+
+=head1 EXAMPLE
+
+With the following three lines in F<control.ctl>:
+
+    newgroup:*:*:drop
+    newgroup:group-admin@isc.org:comp.*:verify-news.announce.newgroups
+    newgroup:kre@munnari.oz.au:aus.*:mail
+
+a newgroup coming from C<group-admin@isc.org> will be honored if it is for
+a newsgroup in the comp.* hierarchy and if it has a valid signature
+corresponding to the PGP key with a user ID of C<news.announce.newgroups>.
+If any newgroup claiming to be from C<kre@munnari.oz.au> for a newsgroup
+in the aus.* hierarchy is received, it too will be honored.  All other
+newgroup messages will be ignored.
+
+=head1 WARNINGS
+
+The third argument for a line affecting checkgroups does B<not> affect
+whether the line matches.  It is only used after a matching line is found,
+to filter out which newsgroups listed in the checkgroups will be
+processed.  This means that a line like:
+
+    checkgroups:*:*binaries*:drop
+
+will cause B<all> checkgroups control messages to be dropped unless they
+match a line after this one in F<control.ctl>, not just ignore newsgroups
+containing C<binaries> in the name.  The general rule is to never use C<*>
+in the second field for a line matching checkgroups messages.  There is
+unfortunately no way to do what the author of a line like the above
+probably intended to do (yet).
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Rewritten in
+POD by Russ Allbery <rra@stanford.edu>.
+
+$Id$
+
+=head1 SEE ALSO
+
+controlchan(8), inn.conf(5), innd(8), newsfeeds(5), pgpverify(8), sh(1).
+
+=cut
