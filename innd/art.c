@@ -1141,7 +1141,6 @@ ARTreject(code, cp, buff, article)
 }
 
 
-#if	defined(DO_VERIFY_CANCELS)
 /*
 **  Verify if a cancel message is valid.  If the user posting the cancel
 **  matches the user who posted the article, return the list of filenames
@@ -1182,7 +1181,6 @@ STATIC char *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const H
     DISPOSE(local);
     return files;
 }
-#endif	/* defined(DO_VERIFY_CANCELS) */
 
 
 /*
@@ -1214,28 +1212,22 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const BOOL Trusted)
     if (!HIShavearticle(hash)) {
 	/* Article hasn't arrived here, so write a fake entry using
 	 * most of the information from the cancel message. */
-#if	defined(DO_VERIFY_CANCELS)
 	if (innconf->verifycancels && !Trusted) {
 	    TMRstop(TMR_ARTCNCL);
 	    return;
 	}
-#endif	/* defined(DO_VERIFY_CANCELS) */
 	HISremember(hash);
 	(void)sprintf(buff, "Cancelling %s", MaxLength(MessageID, MessageID));
 	ARTlog(Data, ART_CANC, buff);
 	TMRstop(TMR_ARTCNCL);
 	return;
     }
-#if	defined(DO_VERIFY_CANCELS)
     if (innconf->verifycancels) {
 	files = Trusted ? HISfilesfor(hash)
 	    : ARTcancelverify(Data, MessageID, hash);
     } else {
 	files = HISfilesfor(hash);
     }
-#else
-    files = HISfilesfor(hash);
-#endif	/* !defined(DO_VERIFY_CANCELS) */
     if (files == NULL) {
 	TMRstop(TMR_ARTCNCL);
 	return;
@@ -1712,7 +1704,6 @@ STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list, 
 
 
 
-#if	defined(DO_KEYWORDS)
 
 /*
 ** Additional code for sake of manufacturing Keywords: headers out of air
@@ -1962,7 +1953,6 @@ out:
     /* We must dispose of the original strdup'd text area. */
     free(orig_text);
 }
-#endif	/* defined(DO_KEYWORDS) */
 
 
 
@@ -1978,10 +1968,8 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
     ARTHEADER		        *hp;
     char		        *p;
     int		                i;
-#if	defined(DO_KEYWORDS)
     char			*key_old_value = NULL;
     int				key_old_length = 0;
-#endif	/* defined(DO_KEYWORDS) */
 
 
     if (ARTfields == NULL) {
@@ -2002,7 +1990,6 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
 	    BUFFappend(&Overview, SEP, STRLEN(SEP));
 	hp = fp->Header;
 
-#if	defined(DO_KEYWORDS)
 	if (innconf->keywords) {
 	    /* Ensure that there are Keywords: to shovel. */
 	    if (hp == &ARTheaders[_keywords]) {
@@ -2012,7 +1999,6 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
 		hp->Found++;	/* now faked, whether present before or not. */
 	    }
 	}
-#endif	/* defined(DO_KEYWORDS) */
 
 	if (!hp->Found)
 	    continue;
@@ -2022,7 +2008,6 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
 	}
 	i = Overview.Left;
 
-#if	defined(DO_KEYWORDS)
 	if (innconf->keywords) {
 	    if (key_old_value) {
 		if (hp->Value)
@@ -2033,7 +2018,6 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
 		key_old_value = NULL;
 	    }
 	}
-#endif	/* defined(DO_KEYWORDS) */
 
 	BUFFappend(&Overview, hp->Value, hp->Length);
 	for (p = &Overview.Data[i]; i < Overview.Left; p++, i++)

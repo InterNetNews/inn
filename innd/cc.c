@@ -485,10 +485,8 @@ CCcancel(av)
 	ARTcancel(&Data, Data.MessageID, TRUE);
 	HISclose();
     }
-#if	defined(DO_LOG_CANCEL_COMMANDS)
     if (innconf->logcancelcomm)
 	syslog(L_NOTICE, "%s cancelled %s", LogName, Data.MessageID);
-#endif	/* defined(DO_LOG_CANCEL_COMMANDS) */
     return NULL;
 }
 
