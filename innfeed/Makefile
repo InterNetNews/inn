@@ -48,15 +48,15 @@ EXTRAS		= testListener.pl inet_addr.c uio_maxiov.c configfile.y \
 OBJS		= $(SRC:.c=.o) $(EXTRA_SRC:.c=.o) \
 		  config_l.o config_y.o
 
-INNFEED_BIN	= $(PATHBIN)/innfeed
+INNFEED_BIN	= $D$(PATHBIN)/innfeed
 
-STARTINNFEED	= $(PATHBIN)/startinnfeed
+STARTINNFEED	= $D$(PATHBIN)/startinnfeed
 
 
-ALL_INSTALLED	= $(PATHBIN)/innfeed $(PATHBIN)/startinnfeed \
-		  $(PATHBIN)/procbatch $(PATHBIN)/convertconfig
+ALL_INSTALLED	= $D$(PATHBIN)/innfeed $D$(PATHBIN)/startinnfeed \
+		  $D$(PATHBIN)/procbatch $D$(PATHBIN)/convertconfig
 
-MAN_INSTALLED   = $(MANDIR)/man1/innfeed.1 $(MANDIR)/man5/innfeed.conf.5
+MAN_INSTALLED   = $D$(MANDIR)/man1/innfeed.1 $D$(MANDIR)/man5/innfeed.conf.5
 
 ALL_GCC_WARNINGS = -pedantic -W -Waggregate-return -Wcast-align \
 		   -Wcast-qual -Wcomment -Wformat \
