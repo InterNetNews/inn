@@ -43,6 +43,8 @@ The length of this path should be within 63 letters.
 \&``Buffer_size'' is the length of buffer file in kilobytes
 in decimal (1KB = 1024 bytes).  If the ``file_name'' is not a special
 device, the file must be buffer_size * 1024 bytes.
+You can NOT use buffers over 2GB even if you specify --with-largefiles
+at configure time.  Or buffers will be broken.  It'll be fixed in the future.
 .PP
 To create new overview buffer, there are two different methods for creating
 the files.
