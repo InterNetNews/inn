@@ -261,7 +261,10 @@ static bool Process(char *article)
     /* Get a reply, see if they want the article. */
     if (fgets(buff, sizeof buff, FromServer) == NULL) {
         free(wirefmt);
-        syswarn("cannot fgets after ihave");
+        if (ferror(FromServer))
+            syswarn("cannot fgets after ihave");
+        else
+            warn("unexpected EOF from server after ihave");
 	return false;
     }
     REMclean(buff);
@@ -312,7 +315,10 @@ static bool Process(char *article)
 
     /* Process server reply code. */
     if (fgets(buff, sizeof buff, FromServer) == NULL) {
-        syswarn("cant fgets after article");
+        if (ferror(FromServer))
+            syswarn("cannot fgets after article");
+        else
+            warn("unexpected EOF from server after article");
 	return false;
     }
     REMclean(buff);
