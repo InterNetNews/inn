@@ -35,13 +35,9 @@ nnrpd:		$(P) $(OBJECTS) $(LIBNEWS)
 	@rm -f $@
 	$(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBNEWS) $(LIBS) $(PERLLIB)
 
-lint:		$(ALL)
-	@rm -f lint
-	-lint $(LINTFLAGS) $(SOURCES) $(LINTLIB) $(LINTFILTER) >lint
-
 ../include/dbz.h:
 	(cd ../lib ; $(MAKE) ../include/dbz.h)
-$(LIBNEWS) $(LINTLIB):
+$(LIBNEWS):
 	(cd ../lib ; $(MAKE) install )
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.

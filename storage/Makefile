@@ -28,10 +28,6 @@ methods:
 
 install:		all ../libstorage.a 
 
-lint:	all ../libstorage.a
-	@rm -f lint
-	-lint $(LINTFLAGS) $(SOURCES)  $(LINTLIB) $(LINTFILTER)  >lint
-
 clobber clean:
 	rm -f *.o objs/* libstorage.a *~
 	rm -f methods.c methods.h qiotest

@@ -54,14 +54,10 @@ innd:		$(P) $(OBJECTS) $(LIBNEWS)
 inndstart:	$(P) inndstart.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ inndstart.o $(LIBNEWS) $(LIBS)
 
-lint:		$(ALL)
-	@rm -f lint
-	-lint $(LINTFLAGS) $(SOURCES)  $(LINTLIB) $(LINTFILTER)  >lint
-	-lint $(LINTFLAGS) inndstart.c $(LINTLIB) $(LINTFILTER) >>lint
-
 ../include/dbz.h:
 	(cd ../lib ; $(MAKE) ../include/dbz.h)
-$(LIBNEWS) $(LINTLIB):
+
+$(LIBNEWS):
 	(cd ../lib ; $(MAKE) install)
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.

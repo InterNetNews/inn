@@ -87,23 +87,7 @@ shrinkfile:	$(P) shrinkfile.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ shrinkfile.o $(LIBNEWS) $(LIBS)
 
 
-lint:		$(ALL)
-	@rm -f lint
-	-lint $(LINTFLAGS) actsync.c        $(LINTLIB) $(LINTFILTER)  >lint
-	-lint $(LINTFLAGS) archive.c        $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) batcher.c        $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) buffchan.c map.c $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) cvtbatch.c       $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) filechan.c map.c $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) nntpget.c        $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) innxmit.c        $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) innxbatch.c       $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) overchan.c       $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) crosspost.c       $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) shlock.c         $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) shrinkfile.c     $(LINTLIB) $(LINTFILTER) >>lint
-
-$(LIBNEWS) $(LINTLIB):
+$(LIBNEWS):
 	(cd ../lib ; $(MAKE) install)
 
 ##  Dependencies.  Default list, below, is probably good enough.

@@ -54,20 +54,7 @@ newsrequeue:	$(P) newsrequeue.o $(LIBNEWS)
 prunehistory:	$(P) prunehistory.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ prunehistory.o $(LIBNEWS) $(LIBS)
 
-lint:		$(ALL)
-	@rm -f lint
-	-lint $(LINTFLAGS) convdate.c     $(LINTLIB) $(LINTFILTER)  >lint
-	-lint $(LINTFLAGS) expire.c       $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) expireover.c   $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) expireindex.c  $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) fastrm.c       $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) grephistory.c  $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) makeactive.c   $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) makehistory.c  $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) newsrequeue.c  $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) prunehistory.c $(LINTLIB) $(LINTFILTER) >>lint
-
-$(LIBNEWS) $(LINTLIB):
+$(LIBNEWS):
 	(cd ../lib ; $(MAKE) install)
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.

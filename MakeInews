@@ -40,7 +40,6 @@ MAKE	= make
 DEFS	=
 CFLAGS	= $(DEFS) -g
 LDFLAGS	= -Bstatic
-LINTFLAGS=-b -h $(DEFS)
 
 ##  Manual pages -- install as appropriate for your system
 DOC	= distrib.pats.5 inews.1 moderators.5 inn.conf.5
@@ -79,9 +78,6 @@ install:	all
 clobber clean:
 	rm -f inews core tags lint a.out *.o
 	rm -f parsedate.c
-
-lint:           inews
-	lint $(LINTFLAGS) inews.c $(SOURCES) >lint
 
 inews:		inews.o $(OBJECTS)
 	rm -f inews

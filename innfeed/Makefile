@@ -209,9 +209,6 @@ diffdir::
 		echo No such directory $$dir;\
 	fi
 
-lint:	$(OBJECTS)
-	-lint -u $(LINTFLAGS) $(SRC) > lint.log
-
 config_y.c config_y.h: configfile.y
 	$(YACC) -d $?
 	mv y.tab.h config_y.h

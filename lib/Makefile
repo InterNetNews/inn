@@ -52,14 +52,6 @@ libinn.a:		$(P) $(OBJECTS)
 	ar r $@ $(OBJECTS)
 	$(RANLIB) libinn.a
 
-llib-linn.ln:		lint
-	-$(SHELL) ./makellib.sh $(LINTLIBSTYLE) "$(LINTFLAGS)" $(SOURCES)
-
-lint:			$(P) $(OBJECTS)
-	@rm -f lint
-	-lint -u $(LINTFLAGS) $(SOURCES) $(LINTFILTER) >lint.all
-	-grep -v yaccpar <lint.all >lint
-
 ##  Profiling.  The rules are a bit brute-force, but good enough.
 profiled:		../libinn_p.a
 	date >$@

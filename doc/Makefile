@@ -99,14 +99,6 @@ clobber clean:
 tags ctags:
 	cp /dev/null tags
 
-##  Checknr dies on some systems.
-lint:		$(P) $(ALL)
-	@rm -f lint
-	-checknr -c.BI.IR.IB.RI.BR.SS.UC    $(SEC1) $(LINTFILTER)  >lint
-	-checknr -c.BI.IR.IB.RI.BR.SS.UC.BY $(SEC3) $(LINTFILTER) >>lint
-	-checknr -c.BI.IR.IB.RI.BR.SS.UC    $(SEC5) $(LINTFILTER) >>lint
-	-checknr -c.BI.IR.IB.RI.BR.SS.UC    $(SEC8) $(LINTFILTER) >>lint
-
 profiled:
 	cp /dev/null profiled
 

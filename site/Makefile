@@ -137,9 +137,6 @@ clobber:	clean
 tags ctags:
 	cp /dev/null tags
 
-lint:
-	cp /dev/null lint
-
 profiled:
 	cp /dev/null profiled
 

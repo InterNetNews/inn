@@ -34,7 +34,6 @@ MAKE	= make
 DEFS	=
 CFLAGS	= $(DEFS) -g
 LDFLAGS	= -Bstatic
-LINTFLAGS=-b -h -u $(DEFS)
 RANLIB	= ranlib
 
 ##  Manual pages -- install as appropriate for your system
@@ -63,9 +62,6 @@ clobber clean:
 libinn.a:		$(OBJECTS)
 	ar r $@ $(OBJECTS)
 	$(RANLIB) $@
-
-lint:			$(OBJECTS)
-	-lint -u $(LINTFLAGS) $(SOURCES) >lint
 
 subst:		subst.c subst.sh
 	make c || make sh || { rm -f subst ; echo Failed 1>&2 ; }

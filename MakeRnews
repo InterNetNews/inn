@@ -37,7 +37,6 @@ MAKE	= make
 DEFS	=
 CFLAGS	= $(DEFS) -g
 LDFLAGS	= -Bstatic
-LINTFLAGS=-b -h $(DEFS)
 
 ##  Manual pages -- install as appropriate for your system
 DOC	= rnews.1 inn.conf.5
@@ -71,9 +70,6 @@ install:	all
 ##  Clean up, remove non-essentials.
 clobber clean:
 	rm -f rnews core tags lint a.out *.o
-
-lint:           rnews
-	lint $(LINTFLAGS) $(SOURCES) >lint
 
 rnews:		$(OBJECTS)
 	rm -f rnews

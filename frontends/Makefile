@@ -50,18 +50,7 @@ sys2nf:		sys2nf.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ sys2nf.o $(LIBNEWS) $(LIBS)
 
 
-lint:		$(ALL)
-	@rm -f lint
-	-lint $(LINTFLAGS) inews.c      $(LINTLIB) $(LINTFILTER)  >lint
-	-lint $(LINTFLAGS) rnews.c      $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) ctlinnd.c    $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) sm.c		$(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) innconfval.c $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) getlist.c    $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) decode.c     $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) encode.c     $(LINTLIB) $(LINTFILTER) >>lint
-
-$(LIBNEWS) $(LINTLIB):
+$(LIBNEWS):
 	(cd ../lib ; $(MAKE) install)
 
 profiled:
