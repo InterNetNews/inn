@@ -97,7 +97,7 @@ if (1) {
     # denial-of-service attacks, don't process.
     if ($hdrcount{control} > 1) {
            print (scalar localtime,
-                 ": Multiple control headers in in article $msgid");
+                 ": Multiple control headers in in article $msgid\n");
         next CHANITEM;
     }
 
