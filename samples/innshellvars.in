@@ -7,7 +7,7 @@
 ## innshellvars.pl and innshellvars.tcl and innshellvars.csh
 
 NEWSHOME=@prefix@
-SPOOL=@SPOOLDIR@
+SPOOLBASE=@SPOOLDIR@
 MOST_LOGS=@LOGDIR@
 export NEWSHOME SPOOL MOST_LOGS
 
@@ -20,13 +20,13 @@ export NEWSBIN NEWSLIB INNDDIR NEWSHOME
 ERRLOG=${MOST_LOGS}/errlog
 LOG=${MOST_LOGS}/news
 
-ARCHIVEDIR=${SPOOL}/archive
-SPOOL=${SPOOL}/articles
-BATCH=${SPOOL}/out.going
-INCOMING=${SPOOL}/in.coming
-OVERVIEWDIR=${SPOOL}/over.view
-SPOOLNEWS=${SPOOL}/in.coming
-BADNEWS=${SPOOL}/in.coming/bad
+ARCHIVEDIR=${SPOOLBASE}/archive
+SPOOL=${SPOOLBASE}/articles
+BATCH=${SPOOLBASE}/out.going
+INCOMING=${SPOOLBASE}/in.coming
+OVERVIEWDIR=${SPOOLBASE}/over.view
+SPOOLNEWS=${SPOOLBASE}/in.coming
+BADNEWS=${SPOOLBASE}/in.coming/bad
 
 ACTIVE=${NEWSLIB}/active
 ACTIVETIMES=${NEWSLIB}/active.times

@@ -6,7 +6,7 @@ IFTRUE	= @$(SHELL) ../iftrue.sh
 ##  =()<P	= @<P>@>()=
 P	= 
 ##  =()<PERLINC = @<PERL_INC>@>()=
-PERLINC = 
+PERLINC = -I/CORE
 
 ##  =()<LINTLIBSTYLE	= @<LINTLIBSTYLE>@>()=
 LINTLIBSTYLE	= NONE

@@ -1,0 +1,73 @@
+#! /bin/sh
+##  $Revision$
+##  Script to make INN directories.
+
+. samples/innshellvars
+
+##  Some systems don't support -x, so we have to use -f.
+CHOWN=chown
+if [ ${CHOWN} = chown ] ; then
+    if [ -f /sbin/chown ] ; then
+	CHOWN=/sbin/chown
+    else
+	if [ -f /etc/chown ] ; then
+	    CHOWN=/etc/chown
+	else
+	    if [ -f /usr/etc/chown ] ; then
+		CHOWN=/usr/etc/chown
+	    fi
+	fi
+    fi
+fi
+
+MAN1=@MANDIR@/man1
+MAN3=@MANDIR@/man3
+MAN5=@MANDIR@/man5
+MAN8=@MANDIR@/man8
+MAN=`echo $MAN8 | sed -e 's@\(.*\)/[^/]*@\1@'`
+
+PATH_AUTHDIR=${NEWSBIN}/auth
+RNEWSPROGS=${NEWSBIN}/rnews.libexec
+
+NEWSETC=${NEWSBIN}/bin/rc.news
+NEWSETC="`dirname ${NEWSETC}`"
+
+NEWSHIST=${NEWSLIB}/history
+NEWSHIST="`dirname ${NEWSHIST}`"
+
+NEWSTMP=${TMPDIR}
+
+NEWSUSER=@NEWSUSER@
+NEWSGROUP=@NEWSGRP@
+
+PFLAG="$1"
+umask 0
+set -x
+
+for F in \
+${MAN} ${MAN1} ${MAN3} ${MAN5} ${MAN8} \
+${NEWSHOME} ${NEWSETC} ${NEWSHIST} ${NEWSTMP} ${NEWSLBIN} \
+${SPOOL} ${OVERVIEWDIR} ${ARCHIVEDIR} ${BATCHDIR} ${LOCKS} \
+${MOST_LOGS} ${MOST_LOGS}/OLD \
+${SPOOLNEWS} ${BADNEWS} ${SPOOLTEMP} \
+${NEWSLIB} ${INNDDIR} ${LOCKS} \
+${NEWSBIN} ${CONTROLPROGS} ${RNEWSPROGS} \
+${PATH_AUTHDIR} ; do
+
+    if [ ! -d ${F} ] ; then
+	mkdir ${PFLAG} ${DESTDIR}${F} || exit 1
+	${CHOWN} ${NEWSUSER} ${DESTDIR}${F} || exit 1
+	chgrp ${NEWSGROUP} ${DESTDIR}${F} || exit 1
+	case ${F} in
+	${INNDDIR})
+	    chmod 0770 ${DESTDIR}${F} || exit 1
+	    ;;
+	*)
+	    chmod 0775 ${DESTDIR}${F} || exit 1
+	    ;;
+	esac
+    fi
+
+done
+
+exit 0

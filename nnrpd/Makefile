@@ -5,9 +5,9 @@
 P	= 
 
 ##  =()<PERLLIB = @<PERL_LIB>@>()=
-PERLLIB = 
+PERLLIB = -L/CORE 
 ##  =()<PERLINC = @<PERL_INC>@>()=
-PERLINC = 
+PERLINC = -I/CORE
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
 LINTFLAGS	= -b -h -z  -I../include $(DEFS)
 ##  =()<LINTFILTER	= @<LINTFILTER>@>()=

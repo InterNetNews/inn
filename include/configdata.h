@@ -325,7 +325,7 @@ typedef int		BOOL;
 */
 
     /* =()<#define @<PERL_SUPPORT>@_PERL>()= */
-#define DONT_PERL
+#define DO_PERL
 
 
 #endif /* ! defined (__configdata_h__) */

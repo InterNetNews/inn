@@ -4,9 +4,9 @@
 ##  =()<P	= @<P>@>()=
 P	= 
 ##  =()<PERLLIB = @<PERL_LIB>@>()=
-PERLLIB = 
+PERLLIB = -L/CORE 
 ##  =()<PERLINC = @<PERL_INC>@>()=
-PERLINC = 
+PERLINC = -I/CORE
 ##  =()<TCLINC	= @<TCL_INC>@>()=
 TCLINC	= 
 
