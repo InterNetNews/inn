@@ -66,12 +66,12 @@ The tradindexed overview method has been completely rewritten and should
 be considerably more robust in the face of system crashes.  A new utility,
 B<tdx-util>, is provided to examine the contents of the overview database,
 repair inconsistencies, and rebuild the overview for particular groups
-from a tradspool news spool.
+from a tradspool news spool.  See tdx-util(8) for more details.
 
 =item *
 
 The Perl and Python authentication hooks for readers have been extensively
-overhauled and integrated better with F<readers.conf>.  See the changes
+overhauled and integrated better with F<readers.conf>.  See the Changes
 sections in F<doc/hook-perl> and F<doc/hook-python> for more details.
 
 =item *
