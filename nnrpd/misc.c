@@ -278,9 +278,6 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
     struct stat		Sb;
     struct timeval	stv, etv;
     static int		entrysize = 0;
-#ifndef DO_TAGGED_HASH
-    idxrec		ionevalue;
-#endif
 
     if (entrysize == 0) {
 	HASH hash;
@@ -306,8 +303,7 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
 	gettimeofday(&stv, NULL);
     } else {
 	gettimeofday(&stv, NULL);
-#ifdef	DO_TAGGED_HASH
-	if ((offset = dbzfetch(*key)) < 0) {
+	if (!dbzfetch(*key, &offset)) {
 	    if (innconf->nnrpdoverstats) {
 		gettimeofday(&etv, NULL);
 		OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
@@ -315,17 +311,6 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
 	    }
 	    return NULL;
 	}
-#else
-	    if (!dbzfetch(*key, &ionevalue)) {
-		if (innconf->nnrpdoverstats) {
-		    gettimeofday(&etv, NULL);
-		    OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
-		    OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
-		}
-		return NULL;
-	    }
-	    offset = ionevalue.offset;
-#endif
 	if (innconf->nnrpdoverstats) {
 	    gettimeofday(&etv, NULL);
 	    OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
