@@ -44,7 +44,11 @@ static int open_db(DB **db, const char *name, int type)
 	warn("db_create failed: %s\n", db_strerror(ret));
 	return ret;
     }
+#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
+    ret = (*db)->open(*db, NULL, name, NULL, type, DB_CREATE, 0666);
+#else
     ret = (*db)->open(*db, name, NULL, type, DB_CREATE, 0666);
+#endif
     if (ret != 0) {
 	(*db)->close(*db, 0);
         warn("%s->open failed: %s", name, db_strerror(ret));

@@ -119,7 +119,11 @@ static void checkpoint(void)
         warn("OVDB: checkpoint: db_create: %s", db_strerror(ret));
         _exit(1);
     }
+#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
+    ret = db->open(db, NULL, "version", NULL, DB_BTREE, DB_CREATE, 0666);
+#else
     ret = db->open(db, "version", NULL, DB_BTREE, DB_CREATE, 0666);
+#endif
     if (ret != 0) {
         db->close(db, 0);
         warn("OVDB: checkpoint: version open: %s", db_strerror(ret));
@@ -136,9 +140,14 @@ static void checkpoint(void)
 	ret = txn_checkpoint(OVDBenv, 2048, 1);
 #elif DB_VERSION_MAJOR == 3
 	ret = txn_checkpoint(OVDBenv, 2048, 1, 0);
-#else
+#elif DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR < 1
 	ret = OVDBenv->txn_checkpoint(OVDBenv, 2048, 1, 0);
+#else
+	OVDBenv->txn_checkpoint(OVDBenv, 2048, 1, 0);
 #endif
+#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
+	sleep(30);
+#else
 	if(ret != 0 && ret != DB_INCOMPLETE) {
             warn("OVDB: txn_checkpoint: %s", db_strerror(ret));
 	    status = 1;
@@ -148,6 +157,7 @@ static void checkpoint(void)
 	    sleep(2);
 	else
 	    sleep(30);
+#endif
     }
 
     ovdb_close_berkeleydb();

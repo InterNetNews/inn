@@ -556,7 +556,7 @@ void read_ovdb_conf(void)
 
 
 /* Function that db will use to report errors */
-static void OVDBerror(char *db_errpfx UNUSED, char *buffer)
+static void OVDBerror(const char *db_errpfx UNUSED, char *buffer)
 {
     switch(ovdb_errmode) {
     case OVDB_ERR_SYSLOG:
@@ -599,8 +599,13 @@ static int open_db_file(int which)
     if(ovdb_conf.pagesize > 0)
 	(dbs[which])->set_pagesize(dbs[which], ovdb_conf.pagesize);
 
+#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
+    ret = (dbs[which])->open(dbs[which], NULL, name, NULL, DB_BTREE, _db_flags,
+                             0666);
+#else
     ret = (dbs[which])->open(dbs[which], name, NULL, DB_BTREE, _db_flags,
                              0666);
+#endif
     if (ret != 0) {
 	(dbs[which])->close(dbs[which], 0);
 	dbs[which] = NULL;
@@ -1198,7 +1203,11 @@ static int check_version(void)
 	syslog(L_FATAL, "OVDB: open: db_create: %s", db_strerror(ret));
 	return ret;
     }
+#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
+    ret = vdb->open(vdb, NULL, "version", NULL, DB_BTREE, _db_flags, 0666);
+#else
     ret = vdb->open(vdb, "version", NULL, DB_BTREE, _db_flags, 0666);
+#endif
     if (ret != 0) {
 	vdb->close(vdb, 0);
 	syslog(L_FATAL, "OVDB: open: version->open: %s", db_strerror(ret));
@@ -1445,8 +1454,13 @@ bool ovdb_open(int mode)
 	syslog(L_FATAL, "OVDB: open: db_create: %s", db_strerror(ret));
 	return false;
     }
+#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
+    ret = groupinfo->open(groupinfo, NULL, "groupinfo", NULL, DB_BTREE,
+                          _db_flags, 0666);
+#else
     ret = groupinfo->open(groupinfo, "groupinfo", NULL, DB_BTREE,
                           _db_flags, 0666);
+#endif
     if (ret != 0) {
 	groupinfo->close(groupinfo, 0);
 	syslog(L_FATAL, "OVDB: open: groupinfo->open: %s", db_strerror(ret));
@@ -1457,8 +1471,13 @@ bool ovdb_open(int mode)
 	syslog(L_FATAL, "OVDB: open: db_create: %s", db_strerror(ret));
 	return false;
     }
+#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
+    ret = groupaliases->open(groupaliases, NULL, "groupaliases", NULL, DB_HASH,
+                             _db_flags, 0666);
+#else
     ret = groupaliases->open(groupaliases, "groupaliases", NULL, DB_HASH,
                              _db_flags, 0666);
+#endif
     if (ret != 0) {
 	groupaliases->close(groupaliases, 0);
 	syslog(L_FATAL, "OVDB: open: groupaliases->open: %s", db_strerror(ret));

@@ -237,7 +237,13 @@ static void end_table(void)
 
 static struct datatab LOCK_tab[] = {
 #if DB_VERSION_MAJOR >= 3
- { INT32, F(st_lastid),        -1, -1,           "Last allocated locker ID" },
+ { INT32,
+#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
+   F(st_id),
+#else
+   F(st_lastid),
+#endif
+   -1, -1,           "Last allocated locker ID" },
 #endif
  { INT32, F(st_maxlocks),      -1, -1,           "Maximum number of locks possible" },
 #if DB_VERSION_MAJOR >= 4 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 2)
@@ -310,7 +316,11 @@ static struct datatab LOG_tab[] = {
 #if DB_VERSION_MAJOR >= 3
  { BYTES, F(st_lg_bsize),          -1, -1, "Log record cache size" },
 #endif
+#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
+ { BYTES, F(st_lg_size),           -1, -1, "The current log file size" },
+#else
  { BYTES, F(st_lg_max),            -1, -1, "Max log file size" },
+#endif
  { BYTES, F(st_w_bytes), F(st_w_mbytes), -1, "Log bytes written" },
  { BYTES, F(st_wc_bytes), F(st_wc_mbytes), -1, "Log bytes written since last checkpoint" },
  { INT32, F(st_wcount),            -1, -1, "Total log writes" },
@@ -328,7 +338,9 @@ static struct datatab LOG_tab[] = {
 #endif
  { BYTES, F(st_regsize),           -1, -1, "Log region size" },
 #if DB_VERSION_MAJOR >= 4
+#if DB_VERSION_MINOR < 1
  { INT32, F(st_flushcommit),       -1, -1, "Flushes containing a commit"},
+#endif
  { INT32, F(st_maxcommitperflush), -1, -1, "Max number of commits in a flush"},
  { INT32, F(st_mincommitperflush), -1, -1, "Min number of commits in a flush"},
 #endif
@@ -457,7 +469,9 @@ static int txn_compare(const void *a, const void *b)
 
 static struct datatab TXN_tab[] = {
  { LSN, F(st_last_ckp),     -1, -1, "File/offset for last checkpoint LSN" },
+#if DB_VERSION_MAJOR < 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR < 1)
  { LSN, F(st_pending_ckp),  -1, -1, "File/offset for last pending checkpoint LSN" },
+#endif
  { TIME, F(st_time_ckp),    -1, -1, "Checkpoint timestamp" },
  { HEX32, F(st_last_txnid), -1, -1, "Last transaction ID allocated" },
  { INT32, F(st_maxtxns),    -1, -1, "Maximum active transactions possible" },
@@ -656,7 +670,11 @@ static int display_db(char *dbfile)
 #else
     if(db_create(&db, OVDBenv, 0))
 	return 1;
+#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
+    if(db->open(db, NULL, dbfile, NULL, DB_UNKNOWN, DB_RDONLY, 0))
+#else
     if(db->open(db, dbfile, NULL, DB_UNKNOWN, DB_RDONLY, 0))
+#endif
 	return 1;
 #endif
 

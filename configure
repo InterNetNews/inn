@@ -5817,7 +5817,7 @@ else
 echo "configure:5818: checking for BerkeleyDB location" >&5
     if test x"$BERKELEY_DB_DIR" = xyes ; then
         for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1 BerkeleyDB.3.2 \
-                 BerkeleyDB.3.3 BerkeleyDB.4.0 ; do
+                 BerkeleyDB.3.3 BerkeleyDB.4.0 BerkeleyDB.4.1 ; do
             for d in $prefix /usr/local /opt /usr ; do
                 if test -d "$d/$v" ; then
                     BERKELEY_DB_DIR="$d/$v"
