@@ -717,7 +717,7 @@ int main(int ac, char *av[])
 
     if (innconf->enableoverview) {
 	if (!OVopen(OV_WRITE)) {
-	    syslog(L_FATAL, "%s cant open ov3", LogName);
+	    syslog(L_FATAL, "%s cant open overview method", LogName);
 	    exit(1);
 	}
     }
