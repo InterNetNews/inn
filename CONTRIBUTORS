@@ -64,7 +64,8 @@ Scott Fritchie:
 	Wrote the CNFS storage back end.
 
 Fabien Tassin:
-	Wrote the innreport package.
+	Wrote the innreport package. Implemented the new incoming.conf
+	configuration file.
 
 Dave Hayes:
 	Along with some bugfixes, Dave wrote the posting-backoff code for 
@@ -76,10 +77,14 @@ Joe Greco:
 Sang-yong Suh:
 	Provided the fuzzy offset technique to dbz.
 
+Katsuhiro Kondou:
+	Provided unified overview as well has hundreds of fixes
+	to clean up defects as changes were made.  Did a large
+	amount of man page documentation and clean up.
 
 Also:
 
-Davs Barr:
+Dave Barr:
 	Kept INN alive after Rich Salz didn't have the time anymore but 
 	before the ISC took over. He released 4 unofficial versions that 
 	provided a good boost to what the ISC started with.
