@@ -71,6 +71,9 @@
 /* Define if you have a working `mmap' system call.  */
 #undef HAVE_MMAP
 
+/* Define if you have a working `madvise' system call.  */
+#undef HAVE_MADVISE
+
 /* Define if you have setbuffer() */
 #undef HAVE_SETBUFFER
 
