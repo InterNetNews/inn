@@ -1969,18 +1969,16 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 		memcpy(&ovd, val.data, sizeof ovd);
 
 		ah = NULL;
-		if (SMprobe(SELFEXPIRE, &ovd.token, NULL)) {
+		if (!SMprobe(EXPENSIVESTAT, &token, NULL) || OVstatall) {
 		    if((ah = SMretrieve(ovd.token, RETR_STAT)) == NULL) { 
 			delete = 1;
-		    }
+		    } else
+			SMfreearticle(ah);
 		} else {
-		    if (!innconf->groupbaseexpiry
-			    && !OVhisthasmsgid((char *)val.data + sizeof(ovd))) {
+		    if (!OVhisthasmsgid((char *)val.data + sizeof(ovd))) {
 			delete = 1;
 		    }
 		}
-		if(ah)
-		    SMfreearticle(ah);
 		if (!delete && innconf->groupbaseexpiry &&
 			    OVgroupbasedexpire(ovd.token, group,
 				    (char *)val.data + sizeof(ovd),
