@@ -2133,6 +2133,7 @@ STRING ARTpost(CHANNEL *cp)
     int			oerrno;
     TOKEN               token;
     int			canpost;
+    char		*groupbuff[2];
 #if defined(DO_PERL)
     char		*perlrc;
 #endif /* DO_PERL */
@@ -2349,6 +2350,28 @@ STRING ARTpost(CHANNEL *cp)
 	LikeNewgroup = EQ(ControlWord, "newgroup")
 		    || EQ(ControlWord, "rmgroup");
 
+	if (innconf->ignorenewsgroups && LikeNewgroup) {
+	    for (p++; *p && ISWHITE(*p); p++);
+	    groupbuff[0] = p;
+	    for (p++; *p; p++) {
+		if (NG_ISSEP(*p)) {
+		    *p = '\0';
+		    break;
+		}
+	    }
+	    p = groupbuff[0];
+	    for (p++; *p; p++) {
+		if (ISWHITE(*p)) {
+		    *p = '\0';
+		    break;
+		}
+	    }
+	    groupbuff[1] = NULL;
+	    groups = groupbuff;
+	    Data.Groupcount = 2;
+	    if (Data.Followcount == 0)
+		Data.Followcount = Data.Groupcount;
+	}
 	/* Control messages to "foo.ctl" are treated as if they were
 	 * posted to "foo".  I should probably apologize for all the
 	 * side-effects in the if. */
