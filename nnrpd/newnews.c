@@ -6,13 +6,12 @@
 #include "clibrary.h"
 
 #include "inn/innconf.h"
+#include "inn/messages.h"
 #include "nnrpd.h"
 #include "ov.h"
+#include "cache.h"
 
 #define GROUP_LIST_DELTA	10
-#define OVFMT_UNINIT	-2
-#define OVFMT_NOMSGID	-1
-#define OVFMT_NOXREF	-1
 
 static bool FindHeader(ARTHANDLE *art, const char **pp, const char **qp,
     const char* hdr, size_t hdrlen)
@@ -52,27 +51,7 @@ static char *GetXref(ARTHANDLE *art) {
 
   if (!FindHeader(art, &p, &q, "xref", sizeof("xref")))
     return NULL;
-  if (p - q > BIG_BUFFER - 1)
-    return NULL;
-  memcpy(buff, q, p - q);
-  buff[p - q] = '\0';
-  return buff;
-}
-
-/*
-**  get Message-ID header
-*/
-static char *GetMsgid(ARTHANDLE *art) {
-  const char		*p, *q;
-  static char	buff[BIG_BUFFER];
-
-  if (!FindHeader(art, &p, &q, "message-id", sizeof("message-id")))
-    return NULL;
-  if (p - q > BIG_BUFFER - 1)
-    return NULL;
-  memcpy(buff, q, p - q);
-  buff[p - q] = '\0';
-  return buff;
+  return xstrndup(q, p - q);
 }
 
 /*
@@ -91,11 +70,7 @@ static char **GetGroups(char *p) {
     size = GROUP_LIST_DELTA;
     list = NEW(char*, size + 1);
   }
-  if ((Xref = strstr(Xref, "Xref:")) != NULL) {
-    if ((Xref = strchr(Xref, ' ')) == NULL)
-      return NULL;
-  } else
-    Xref = p;
+  Xref = p;
   for (Xref++; *Xref == ' '; Xref++);
   if ((Xref = strchr(Xref, ' ')) == NULL)
     return NULL;
@@ -143,178 +118,186 @@ static bool HaveSeen(bool AllGroups, char *group, char **groups, char **xrefs) {
   return FALSE;
 }
 
+static char **groups;
+
+void
+process_newnews(char *group, bool AllGroups, time_t date)
+{
+    char **xrefs;
+    int count;
+    void *handle;
+    char *p;
+    time_t arrived;
+    ARTHANDLE *art = NULL;
+    TOKEN token;
+    char *data;
+    int i, len;
+    char *grplist[2];
+    time_t now;
+
+    grplist[0] = group;
+    grplist[1] = NULL;
+    if (PERMspecified && !PERMmatch(PERMreadlist, grplist))
+	return;
+    if (!AllGroups && !PERMmatch(groups, grplist))
+	return;
+    if (!OVgroupstats(group, &ARTlow, &ARThigh, &count, NULL))
+	return;
+    if ((handle = OVopensearch(group, ARTlow, ARThigh)) != NULL) {
+	ARTNUM artnum;
+	unsigned long artcount = 0;
+	struct cvector *vector = NULL;
+
+	if (innconf->nfsreader) {
+	    time(&now);
+	    /* move the start time back nfsreaderdelay seconds */
+	    if (date >= innconf->nfsreaderdelay)
+		date -= innconf->nfsreaderdelay;
+	}
+	while (OVsearch(handle, &artnum, &data, &len, &token, &arrived)) {
+	    if (innconf->nfsreader && arrived + innconf->nfsreaderdelay > now)
+		continue;
+	    if (len == 0 || date > arrived)
+		continue;
+
+	    vector = overview_split(data, len, NULL, vector);
+	    if (overhdr_xref == -1) {
+		if ((art = SMretrieve(token, RETR_HEAD)) == NULL)
+		    continue;
+		p = GetXref(art);
+		SMfreearticle(art);
+		if (p == NULL)
+		    continue;
+	    } else {
+		if (PERMaccessconf->nnrpdcheckart && 
+		    !ARTinstorebytoken(token))
+		    continue;
+		/* We only care about the newsgroup list here, virtual
+		 * hosting isn't relevant */
+		p = overview_getheader(vector, overhdr_xref, OVextra);
+/*xstrndup(vector->strings[overhdr_xref],
+  vector->strings[overhdr_xref + 1] - vector->strings[overhdr_xref] - 1);*/
+	    }
+	    xrefs = GetGroups(p);
+	    free(p);
+	    if (xrefs == NULL)
+		continue;
+	    if (HaveSeen(AllGroups, group, groups, xrefs))
+		continue;
+	    p = overview_getheader(vector, OVERVIEW_MESSAGE_ID, OVextra);
+/*	    p = xstrndup(vector->strings[OVERVIEW_MESSAGE_ID],
+	    vector->strings[OVERVIEW_MESSAGE_ID + 1] - vector->strings[OVERVIEW_MESSAGE_ID] - 1);*/
+	    if (p == NULL)
+		continue;
+
+	    ++artcount;
+	    cache_add(HashMessageID(p), token);
+	    Printf("%s\r\n", p);
+	    free(p);
+	}
+	OVclosesearch(handle);
+	notice("%s newnews %s %lu", ClientHost, group, artcount);
+	if (vector)
+	    cvector_free(vector);
+    }
+}
+
 /*
 **  NEWNEWS newsgroups date time ["GMT"]
 **  Return the Message-ID of any articles after the specified date
 */
 void CMDnewnews(int ac, char *av[]) {
-  static char	**groups;
-  char		*group;
   char		*p, *q;
   char          *path;
   bool		AllGroups;
-  char		**xrefs;
   char		line[BIG_BUFFER];
   time_t	date;
-  TOKEN		token;
-  ARTHANDLE	*art = NULL;
   QIOSTATE	*qp;
-  char		*grplist[2];
-  int		count;
-  void		*handle;
-  time_t	arrived;
-  char		*data;
-  int		i, len;
-  static int	Msgid = OVFMT_UNINIT;
-  static int	Xref = OVFMT_UNINIT;
+  int		i;
   bool          local;
 
   if (!PERMaccessconf->allownewnews) {
-    Reply("%d NEWNEWS command disabled by administrator\r\n", NNTP_ACCESS_VAL);
-    return;
+      Reply("%d NEWNEWS command disabled by administrator\r\n", NNTP_ACCESS_VAL);
+      return;
   }
 
   if (!PERMcanread) {
-    Reply("%s\r\n", NNTP_ACCESS);
-    return;
+      Reply("%s\r\n", NNTP_ACCESS);
+      return;
   }
 
   /* Make other processes happier if someone uses NEWNEWS */
-  if (innconf->nicenewnews > 0)
-    nice(innconf->nicenewnews);
+  if (innconf->nicenewnews > 0) {
+      nice(innconf->nicenewnews);
+      innconf->nicenewnews = 0;
+  }
 
-  snprintf(line, sizeof(line), "%s %s %s %s %s", av[1], av[2], av[3],
-    (ac >= 5 && (*av[4] == 'G' || *av[4] == 'U')) ? "GMT" : "local",
-    (ac >= 5 && *av[ac - 1] == '<') ? av[ac - 1] : "none");
-  syslog(L_NOTICE, "%s newnews %s", ClientHost, line);
+  snprintf(line, sizeof(line), "%s %s %s %s", av[1], av[2], av[3],
+	   (ac >= 5 && (*av[4] == 'G' || *av[4] == 'U')) ? "GMT" : "local");
+  notice("%s newnews %s", ClientHost, line);
 
   TMRstart(TMR_NEWNEWS);
   /* Optimization in case client asks for !* (no groups) */
   if (EQ(av[1], "!*")) {
-    Reply("%s\r\n", NNTP_NEWNEWSOK);
-    Printf(".\r\n");
-    TMRstop(TMR_NEWNEWS);
-    return;
+      Reply("%s\r\n", NNTP_NEWNEWSOK);
+      Printf(".\r\n");
+      TMRstop(TMR_NEWNEWS);
+      return;
   }
 
   /* Parse the newsgroups. */
   AllGroups = EQ(av[1], "*");
   if (!AllGroups && !NGgetlist(&groups, av[1])) {
-    Reply("%d Bad newsgroup specifier %s\r\n", NNTP_SYNTAX_VAL, av[1]);
-    TMRstop(TMR_NEWNEWS);
-    return;
+      Reply("%d Bad newsgroup specifier %s\r\n", NNTP_SYNTAX_VAL, av[1]);
+      TMRstop(TMR_NEWNEWS);
+      return;
   }
 
   /* Parse the date. */
   local = !(ac > 4 && caseEQ(av[4], "GMT"));
   date = parsedate_nntp(av[2], av[3], local);
   if (date == (time_t) -1) {
-    Reply("%d Bad date\r\n", NNTP_SYNTAX_VAL);
-    TMRstop(TMR_NEWNEWS);
-    return;
+      Reply("%d Bad date\r\n", NNTP_SYNTAX_VAL);
+      TMRstop(TMR_NEWNEWS);
+      return;
   }
 
-  path = concatpath(innconf->pathdb, _PATH_ACTIVE);
-  qp = QIOopen(path);
-  if (qp == NULL) {
-    if (errno == ENOENT) {
-      Reply("%d Can't open active\r\n", NNTP_TEMPERR_VAL);
-    } else {
-      syslog(L_ERROR, "%s cant fopen %s %m", ClientHost, path);
-      Reply("%d Can't open active\r\n", NNTP_TEMPERR_VAL);
-    }
-    free(path);
-    TMRstop(TMR_NEWNEWS);
-    return;
-  }
-  free(path);
+  if (strcspn(av[1], "\\!*[?]") == strlen(av[1])) {
+      /* optimise case - don't need to scan the active file pattern
+       * matching */
+      Reply("%s\r\n", NNTP_NEWNEWSOK);
+      for (i = 0; groups[i]; ++i) {
+	  process_newnews(groups[i], AllGroups, date);
+      }
+  } else {
+      path = concatpath(innconf->pathdb, _PATH_ACTIVE);
+      qp = QIOopen(path);
+      if (qp == NULL) {
+	  if (errno == ENOENT) {
+	      Reply("%d Can't open active\r\n", NNTP_TEMPERR_VAL);
+	  } else {
+	      syswarn("%s cant fopen %s", ClientHost, path);
+	      Reply("%d Can't open active\r\n", NNTP_TEMPERR_VAL);
+	  }
+	  free(path);
+	  TMRstop(TMR_NEWNEWS);
+	  return;
+      }
+      free(path);
 
-  Reply("%s\r\n", NNTP_NEWNEWSOK);
+      Reply("%s\r\n", NNTP_NEWNEWSOK);
 
-  if (Msgid == OVFMT_UNINIT) {
-    for (Msgid = OVFMT_NOMSGID, i = 0; i < ARTfieldsize; i++) {
-      if (caseEQ(ARTfields[i].Header, "Message-ID")) {
-	Msgid = i;
-	break;
+      while ((p = QIOread(qp)) != NULL) {
+	  for (q = p; *q != '\0'; q++) {
+	      if (*q == ' ' || *q == '\t') {
+		  *q = '\0';
+		  break;
+	      }
+	  }
+	  process_newnews(p, AllGroups, date);
       }
-    }
-    for (Xref = OVFMT_NOXREF, i = 0; i < ARTfieldsize; i++) {
-      if (caseEQ(ARTfields[i].Header, "Xref")) {
-	Xref = i;
-	break;
-      }
-    }
+      (void)QIOclose(qp);
   }
-
-  while ((p = QIOread(qp)) != NULL) {
-    for (q = p; *q != '\0'; q++) {
-      if (*q == ' ' || *q == '\t') {
-	*q = '\0';
-	break;
-      }
-    }
-    grplist[0] = group = p;
-    grplist[1] = NULL;
-    if (PERMspecified && !PERMmatch(PERMreadlist, grplist))
-      continue;
-    if (!AllGroups && !PERMmatch(groups, grplist))
-      continue;
-    if (!OVgroupstats(group, &ARTlow, &ARThigh, &count, NULL))
-      continue;
-    if ((handle = OVopensearch(group, ARTlow, ARThigh)) != NULL) {
-      while (OVsearch(handle, NULL, &data, &len, &token, &arrived)) {
-	if (len == 0 || date > arrived)
-	  continue;
-	if (Msgid == OVFMT_NOMSGID || Xref == OVFMT_NOXREF) {
-	  if ((art = SMretrieve(token, RETR_HEAD)) == NULL)
-	    continue;
-	  if (Msgid != OVFMT_NOMSGID && Xref != OVFMT_NOXREF)
-	    SMfreearticle(art);
-	} else if (PERMaccessconf->nnrpdcheckart && !ARTinstorebytoken(token))
-	  continue;
-	if (Xref != OVFMT_NOXREF) {
-	  if ((p = OVERGetHeader(data, len, Xref)) == NULL) {
-	    if (Msgid == OVFMT_NOMSGID)
-	      SMfreearticle(art);
-	    continue;
-	  }
-	} else {
-	  if ((p = GetXref(art)) == NULL) {
-	    SMfreearticle(art);
-	    continue;
-	  }
-	}
-	if ((xrefs = GetGroups(p)) == NULL) {
-	  if (Msgid == OVFMT_NOMSGID)
-	    SMfreearticle(art);
-	  continue;
-	}
-	if (HaveSeen(AllGroups, group, groups, xrefs)) {
-	  if (Msgid == OVFMT_NOMSGID)
-	    SMfreearticle(art);
-	  continue;
-	}
-	if (Msgid != OVFMT_NOMSGID) {
-	  if ((p = OVERGetHeader(data, len, Msgid)) == NULL) {
-	    continue;
-	  }
-	} else {
-	  if ((p = GetMsgid(art)) == NULL) {
-	    SMfreearticle(art);
-	    continue;
-	  }
-	  SMfreearticle(art);
-	}
-	if (innconf->nfsreader &&
-	    !HISlookup(History, p, NULL, NULL, NULL, NULL))
-	  continue;
-	Printf("%s\r\n", p);
-      }
-      OVclosesearch(handle);
-    }
-    continue;
-  }
-  (void)QIOclose(qp);
   Printf(".\r\n");
   TMRstop(TMR_NEWNEWS);
 }
