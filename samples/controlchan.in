@@ -258,8 +258,8 @@ if (1) {
     else {                      # old style
         $progname = $inn::controlprogs . '/' . $progname ;
     	if (-e $progname) {
-            system("'$progname' '$hdrval{Sender}' " .
-                   "'$hdrval{'Reply-To'}' '$token' '$sitepath'");
+            system("'$progname', '$hdrval{Sender}' ",
+                   "'$hdrval{'Reply-To'}', '$token', '$sitepath'");
         }
         else {                  # This replaces the 'default' script.
             if ($logname) {
