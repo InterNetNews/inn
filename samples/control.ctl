@@ -559,8 +559,8 @@ rmgroup:billmcc@akita.com:seattle.*:doit=rmgroup
 rmgroup:graham@ee.washington.edu:seattle.*:doit=rmgroup
 
 ## SFNET newsgroups (Finland)
-newgroup:wirzeniu@cs.helsinki.fi:sfnet.*:doit=newgroup
-rmgroup:wirzeniu@cs.helsinki.fi:sfnet.*:doit=rmgroup
+newgroup:hmj@kuukkeli.cs.tut.fi:sfnet.*:doit=newgroup
+rmgroup:hmj@kuukkeli.cs.tut.fi:sfnet.*:doit=rmgroup
 
 ## SHAMASH (Jewish)
 newgroup:archives@israel.nysernet.org:shamash.*:doit=newgroup
