@@ -133,6 +133,8 @@ typedef struct host_param_s
   double dynBacklogFilter ;
   double dynBacklogLowWaterMark ;
   double dynBacklogHighWaterMark ;
+  char *username;
+  char *password;
 } *HostParams ;
 
 struct host_s 
@@ -531,6 +533,8 @@ HostParams newHostParams(HostParams p)
       params->dynBacklogFilter = BACKLOGFILTER ;
       params->dynBacklogLowWaterMark = BACKLOGLWM;
       params->dynBacklogHighWaterMark = BACKLOGHWM;
+      params->username=NULL;
+      params->password=NULL;
     }
   return (params);
 }
@@ -2418,6 +2422,22 @@ const char *hostPeerName (Host host)
   return host->params->peerName ;
 }
 
+/*
+ * get the username and password for authentication
+ */
+const char *hostUsername (Host host)
+{
+  ASSERT (host != NULL) ;
+
+  return host->params->username ;
+}
+const char *hostPassword (Host host)
+{
+  ASSERT (host != NULL) ;
+
+  return host->params->password ;
+}
+
 
 /* return true if the Connections for this host should attempt to do
    streaming. */
@@ -2573,6 +2593,17 @@ static HostParams hostDetails (scope *s,
 	  else
 	    p->ipName = xstrdup (name) ;
         }
+
+      if (getString (s,"username",&q,NO_INHERIT))
+	p->username = q;
+      if (getString (s,"password",&q,NO_INHERIT))
+	p->password = q;
+
+      if (p->username != NULL && p->password == NULL)
+	logOrPrint (LOG_ERR,fp,"cannot find password for %s",p->peerName);
+      if (p->username == NULL && p->password != NULL)
+	logOrPrint (LOG_ERR,fp,"cannot find username for %s",p->peerName);
+
     }
 
 

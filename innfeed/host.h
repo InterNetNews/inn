@@ -175,6 +175,10 @@ bool hostGimmeArticle (Host host, Connection cxn) ;
 /* get the name that INN uses for this host */
 const char *hostPeerName (Host host) ;
 
+/* get the username and password for authentication */
+const char *hostUsername (Host host) ;
+const char *hostPassword (Host host) ;
+
 /* if VAL is true then each time the host logs its stats all its
    connections will too. */
 void hostLogConnectionStats (bool val) ;

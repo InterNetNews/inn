@@ -209,6 +209,7 @@ struct connection_s
     bool loggedNoCr ;           /* true if we logged the NOCR_MSG */
     bool immedRecon ;           /* true if we recon immediately after flushing. */
     bool doesStreaming ;        /* true if remote will handle streaming */
+    bool authenticated ;        /* true if remote authenticated */
     bool quitWasIssued ;          /* true if QUIT command was sent. */
     bool needsChecks ;          /* true if we issue CHECK commands in
                                    streaming mode (rather than just sending
@@ -264,12 +265,16 @@ static Buffer crlfBuffer ;
 /* I/O Callbacks */
 static void connectionDone (EndPoint e, IoStatus i, Buffer *b, void *d) ;
 static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d) ;
+static void getAuthUserResponse (EndPoint e, IoStatus i, Buffer *b, void *d) ;
+static void getAuthPassResponse (EndPoint e, IoStatus i, Buffer *b, void *d) ;
 static void getModeResponse (EndPoint e, IoStatus i, Buffer *b, void *d) ;
 static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d) ;
 static void quitWritten (EndPoint e, IoStatus i, Buffer *b, void *d) ;
 static void ihaveBodyDone (EndPoint e, IoStatus i, Buffer *b, void *d) ;
 static void commandWriteDone (EndPoint e, IoStatus i, Buffer *b, void *d) ;
 static void modeCmdIssued (EndPoint e, IoStatus i, Buffer *b, void *d) ;
+static void authUserIssued (EndPoint e, IoStatus i, Buffer *b, void *d) ;
+static void authPassIssued (EndPoint e, IoStatus i, Buffer *b, void *d) ;
 static void writeProgress (EndPoint e, IoStatus i, Buffer *b, void *d) ;
 
 
@@ -329,6 +334,10 @@ static void decrFilter (Connection cxn) ;
 static bool writesNeeded (Connection cxn) ;
 static void validateConnection (Connection cxn) ;
 static const char *stateToString (CxnState state) ;
+
+static void issueModeStream (EndPoint e, Connection cxn) ;
+static void issueAuthUser (EndPoint e, Connection cxn) ;
+static void issueAuthPass (EndPoint e, Connection cxn) ;
 
 static void prepareReopenCbk (Connection cxn) ;
 
@@ -1209,6 +1218,8 @@ void printCxnInfo (Connection cxn, FILE *fp, unsigned int indentAmt)
   fprintf (fp,"%s    max-checks : %d\n",indent,cxn->maxCheck) ;
   fprintf (fp,"%s    does-streaming : %s\n",indent,
            boolToString (cxn->doesStreaming)) ;
+  fprintf (fp,"%s    authenticated : %s\n",indent,
+           boolToString (cxn->authenticated)) ;
   fprintf (fp,"%s    quitWasIssued : %s\n",indent,
            boolToString (cxn->quitWasIssued)) ;
   fprintf (fp,"%s    needs-checks : %s\n",indent,
@@ -1400,7 +1411,7 @@ static void connectionDone (EndPoint e, IoStatus i, Buffer *b, void *d)
  */
 static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
 {
-  Buffer *modeCmdBuffers, *readBuffers ;
+  Buffer *readBuffers ;
   Connection cxn = (Connection) d ;
   char *p = bufferBase (b[0]) ;
   int code ;
@@ -1482,45 +1493,324 @@ static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
         }
 
       if ( isOk )
-        {
-          Buffer modeBuffer ;
+	{
+	  if (hostUsername (cxn->myHost) != NULL
+	      && hostPassword (cxn->myHost) != NULL)
+	    issueAuthUser (e,cxn);
+	  else
+	    issueModeStream (e,cxn);
+	}
+    }
+  freeBufferArray (b) ;
+}
+
+
+
+
+
+static void issueAuthUser (EndPoint e, Connection cxn)
+{
+  Buffer authUserBuffer;
+  Buffer *authUserCmdBuffers,*readBuffers;
+  size_t lenBuff = 0 ;
+  char *t ;
+
+  /* 17 == strlen("AUTHINFO USER \r\n\0") */
+  lenBuff = (17 + strlen (hostUsername (cxn->myHost))) ;
+  authUserBuffer = newBuffer (lenBuff) ;
+  t = bufferBase (authUserBuffer) ;
+
+  sprintf (t, "AUTHINFO USER %s\r\n", hostUsername (cxn->myHost)) ;
+  bufferSetDataSize (authUserBuffer, strlen (t)) ;
+
+  authUserCmdBuffers = makeBufferArray (authUserBuffer, NULL) ;
+
+  if ( !prepareWriteWithTimeout (e, authUserCmdBuffers, authUserIssued,
+				 cxn) )
+    {
+      syslog (LOG_ERR, PREPARE_WRITE_FAILED,
+	      hostPeerName (cxn->myHost), cxn->ident) ;
+      die ("Prepare write for authinfo user failed") ;
+    }
+
+  bufferSetDataSize (cxn->respBuffer, 0) ;
+
+  readBuffers = makeBufferArray (bufferTakeRef(cxn->respBuffer),NULL);
+
+  if ( !prepareRead (e, readBuffers, getAuthUserResponse, cxn, 1) )
+    {
+      syslog (LOG_ERR, PREPARE_READ_FAILED,
+	      hostPeerName (cxn->myHost), cxn->ident) ;
+      freeBufferArray (readBuffers) ;
+      cxnSleepOrDie (cxn) ;
+    }
+
+}
+
+
+
+
+
+
+static void issueAuthPass (EndPoint e, Connection cxn)
+{
+  Buffer authPassBuffer;
+  Buffer *authPassCmdBuffers,*readBuffers;
+  size_t lenBuff = 0 ;
+  char *t ;
+
+  /* 17 == strlen("AUTHINFO PASS \r\n\0") */
+  lenBuff = (17 + strlen (hostPassword (cxn->myHost))) ;
+  authPassBuffer = newBuffer (lenBuff) ;
+  t = bufferBase (authPassBuffer) ;
+
+  sprintf (t, "AUTHINFO PASS %s\r\n", hostPassword (cxn->myHost)) ;
+  bufferSetDataSize (authPassBuffer, strlen (t)) ;
+
+  authPassCmdBuffers = makeBufferArray (authPassBuffer, NULL) ;
+
+  if ( !prepareWriteWithTimeout (e, authPassCmdBuffers, authPassIssued,
+				 cxn) )
+    {
+      syslog (LOG_ERR, PREPARE_WRITE_FAILED,
+	      hostPeerName (cxn->myHost), cxn->ident) ;
+      die ("Prepare write for authinfo pass failed") ;
+    }
+
+  bufferSetDataSize (cxn->respBuffer, 0) ;
+
+  readBuffers = makeBufferArray (bufferTakeRef(cxn->respBuffer),NULL);
+
+  if ( !prepareRead (e, readBuffers, getAuthPassResponse, cxn, 1) )
+    {
+      syslog (LOG_ERR, PREPARE_READ_FAILED,
+	      hostPeerName (cxn->myHost), cxn->ident) ;
+      freeBufferArray (readBuffers) ;
+      cxnSleepOrDie (cxn) ;
+    }
+
+}
+
+
+
+
+
+
+static void issueModeStream (EndPoint e, Connection cxn)
+{
+  Buffer *modeCmdBuffers,*readBuffers ;
+  Buffer modeBuffer ;
+  char *p;
 
 #define  MODE_CMD "MODE STREAM\r\n"
 
-          modeBuffer = newBuffer (strlen (MODE_CMD) + 1) ;
-          p = bufferBase (modeBuffer) ;
+  modeBuffer = newBuffer (strlen (MODE_CMD) + 1) ;
+  p = bufferBase (modeBuffer) ;
 
-          /* now issue the MODE STREAM command */
-          d_printf (1,"%s:%d Issuing the streaming command: %s\n",
-                   hostPeerName (cxn->myHost),cxn->ident,MODE_CMD) ;
+  /* now issue the MODE STREAM command */
+  d_printf (1,"%s:%d Issuing the streaming command: %s\n",
+	    hostPeerName (cxn->myHost),cxn->ident,MODE_CMD) ;
 
-          strcpy (p, MODE_CMD) ;
+  strcpy (p, MODE_CMD) ;
 
-          bufferSetDataSize (modeBuffer, strlen (p)) ;
+  bufferSetDataSize (modeBuffer, strlen (p)) ;
 
-          modeCmdBuffers = makeBufferArray (modeBuffer, NULL) ;
+  modeCmdBuffers = makeBufferArray (modeBuffer, NULL) ;
 
-          if ( !prepareWriteWithTimeout (e, modeCmdBuffers, modeCmdIssued,
-                                         cxn) )
-            {
-              syslog (LOG_ERR, PREPARE_WRITE_FAILED, peerName, cxn->ident) ;
-              die ("Prepare write for mode stream failed") ;
-            }
-
-          bufferSetDataSize (cxn->respBuffer, 0) ;
-
-          readBuffers = makeBufferArray (bufferTakeRef(cxn->respBuffer),NULL);
-
-          if ( !prepareRead (e, readBuffers, getModeResponse, cxn, 1) )
-            {
-              syslog (LOG_ERR, PREPARE_READ_FAILED, peerName, cxn->ident) ;
-              freeBufferArray (readBuffers) ;
-              cxnSleepOrDie (cxn) ;
-            }
-        }
+  if ( !prepareWriteWithTimeout (e, modeCmdBuffers, modeCmdIssued,
+				 cxn) )
+    {
+      syslog (LOG_ERR, PREPARE_WRITE_FAILED,
+	      hostPeerName (cxn->myHost), cxn->ident) ;
+      die ("Prepare write for mode stream failed") ;
     }
 
-  freeBufferArray (b) ;
+  bufferSetDataSize (cxn->respBuffer, 0) ;
+
+  readBuffers = makeBufferArray (bufferTakeRef(cxn->respBuffer),NULL);
+
+  if ( !prepareRead (e, readBuffers, getModeResponse, cxn, 1) )
+    {
+      syslog (LOG_ERR, PREPARE_READ_FAILED,
+	      hostPeerName (cxn->myHost), cxn->ident) ;
+      freeBufferArray (readBuffers) ;
+      cxnSleepOrDie (cxn) ;
+    }
+}
+
+
+
+
+
+/*
+ *
+ */
+static void getAuthUserResponse (EndPoint e, IoStatus i, Buffer *b, void *d)
+{
+  Connection cxn = (Connection) d ;
+  int code ;
+  char *p = bufferBase (b[0]) ;
+  Buffer *buffers ;
+  const char *peerName ;
+
+  ASSERT (e == cxn->myEp) ;
+  ASSERT (b [0] == cxn->respBuffer) ;
+  ASSERT (b [1] == NULL) ;      /* only ever one buffer on this read */
+  ASSERT (cxn->state == cxnConnectingS) ;
+  VALIDATE_CONNECTION (cxn) ;
+
+  peerName = hostPeerName (cxn->myHost) ;
+
+  bufferAddNullByte (b[0]) ;
+
+  d_printf (1,"%s:%d Processing authinfo user response: %s", /* no NL */
+	    hostPeerName (cxn->myHost), cxn->ident, p) ;
+
+  if (i == IoDone && writeIsPending (cxn->myEp))
+    {
+      /* badness. should never happen */
+      syslog (LOG_ERR, AUTHINFO_WRITE_PENDING, peerName, cxn->ident) ;
+
+      cxnSleepOrDie (cxn) ;
+    }
+  else if (i != IoDone)
+    {
+      if (i != IoEOF)
+	{
+	  errno = endPointErrno (e) ;
+	  syslog (LOG_ERR, RESPONSE_READ_FAILED, peerName, cxn->ident) ;
+	}
+      cxnSleepOrDie (cxn) ;
+    }
+  else if (strchr (p, '\n') == NULL)
+    {
+      /* partial read */
+      expandBuffer (b [0], BUFFER_EXPAND_AMOUNT) ;
+
+      buffers = makeBufferArray (bufferTakeRef (b [0]), NULL) ;
+      if ( !prepareRead (e, buffers, getAuthUserResponse, cxn, 1) )
+	{
+	  syslog (LOG_ERR, PREPARE_READ_FAILED, peerName, cxn->ident) ;
+	  freeBufferArray (buffers) ;
+	  cxnSleepOrDie (cxn) ;
+	}
+    }
+  else
+    {
+      clearTimer (cxn->readBlockedTimerId) ;
+
+      if ( !getNntpResponse (p, &code, NULL) )
+	{
+	  syslog (LOG_ERR, BAD_AUTH_USER_RESPONSE, peerName, cxn->ident, p) ;
+
+	  cxnSleepOrDie (cxn) ;
+	}
+      else
+	{
+	  syslog (LOG_NOTICE,CONNECTED,peerName, cxn->ident) ;
+
+	  switch (code)
+	    {
+	    case 381:
+	      issueAuthPass (e,cxn);
+	      break ;
+
+	    default:
+	      syslog (LOG_ERR, BAD_AUTH_USER_RESPONSE, peerName, cxn->ident, p) ;
+	      cxn->authenticated = true;
+	      issueModeStream (e,cxn);
+	      break ;
+	    }
+
+	}
+    }
+}
+
+
+
+
+
+/*
+ *
+ */
+static void getAuthPassResponse (EndPoint e, IoStatus i, Buffer *b, void *d)
+{
+  Connection cxn = (Connection) d ;
+  int code ;
+  char *p = bufferBase (b[0]) ;
+  Buffer *buffers ;
+  const char *peerName ;
+
+  ASSERT (e == cxn->myEp) ;
+  ASSERT (b [0] == cxn->respBuffer) ;
+  ASSERT (b [1] == NULL) ;      /* only ever one buffer on this read */
+  ASSERT (cxn->state == cxnConnectingS) ;
+  VALIDATE_CONNECTION (cxn) ;
+
+  peerName = hostPeerName (cxn->myHost) ;
+
+  bufferAddNullByte (b[0]) ;
+
+  d_printf (1,"%s:%d Processing authinfo pass response: %s", /* no NL */
+	    hostPeerName (cxn->myHost), cxn->ident, p) ;
+
+  if (i == IoDone && writeIsPending (cxn->myEp))
+    {
+      /* badness. should never happen */
+      syslog (LOG_ERR, AUTHINFO_WRITE_PENDING, peerName, cxn->ident) ;
+
+      cxnSleepOrDie (cxn) ;
+    }
+  else if (i != IoDone)
+    {
+      if (i != IoEOF)
+	{
+	  errno = endPointErrno (e) ;
+	  syslog (LOG_ERR, RESPONSE_READ_FAILED, peerName, cxn->ident) ;
+	}
+      cxnSleepOrDie (cxn) ;
+    }
+  else if (strchr (p, '\n') == NULL)
+    {
+      /* partial read */
+      expandBuffer (b [0], BUFFER_EXPAND_AMOUNT) ;
+
+      buffers = makeBufferArray (bufferTakeRef (b [0]), NULL) ;
+      if ( !prepareRead (e, buffers, getAuthPassResponse, cxn, 1) )
+	{
+	  syslog (LOG_ERR, PREPARE_READ_FAILED, peerName, cxn->ident) ;
+	  freeBufferArray (buffers) ;
+	  cxnSleepOrDie (cxn) ;
+	}
+    }
+  else
+    {
+      clearTimer (cxn->readBlockedTimerId) ;
+
+      if ( !getNntpResponse (p, &code, NULL) )
+	{
+	  syslog (LOG_ERR, BAD_AUTH_PASS_RESPONSE, peerName, cxn->ident, p) ;
+
+	  cxnSleepOrDie (cxn) ;
+	}
+      else
+	{
+	  switch (code)
+	    {
+	    case 281:
+	      syslog (LOG_NOTICE,AUTHENTICATED,peerName, cxn->ident) ;
+	      cxn->authenticated = true ;
+	      issueModeStream (e,cxn);
+	      break ;
+
+	    default:
+	      syslog (LOG_ERR, BAD_AUTH_PASS_RESPONSE, peerName, cxn->ident, p) ;
+	      cxnSleepOrDie (cxn) ;
+	      break ;
+	    }
+
+	}
+    }
 }
 
 
@@ -1593,7 +1883,8 @@ static void getModeResponse (EndPoint e, IoStatus i, Buffer *b, void *d)
         }
       else
         {
-          syslog (LOG_NOTICE,CONNECTED,peerName, cxn->ident) ;
+	  if (!cxn->authenticated)
+	    syslog (LOG_NOTICE,CONNECTED,peerName, cxn->ident) ;
           
           switch (code)
             {
@@ -1622,10 +1913,9 @@ static void getModeResponse (EndPoint e, IoStatus i, Buffer *b, void *d)
             cxnIdle (cxn) ;
           else
             cxn->state = cxnFeedingS ;
-
           
               /* one for the connection and one for the buffer array */
-          ASSERT (bufferRefCount (cxn->respBuffer) == 2) ;
+          ASSERT (cxn->authenticated || bufferRefCount (cxn->respBuffer) == 2) ;
           
           /* there was only one line in there, right? */
           bufferSetDataSize (cxn->respBuffer, 0) ;
@@ -2152,6 +2442,72 @@ static void modeCmdIssued (EndPoint e, IoStatus i, Buffer *b, void *d)
 
   freeBufferArray (b) ;
 }
+
+
+
+
+
+/*
+ * Called when the AUTHINFO USER command has been written down the pipe.
+ */
+static void authUserIssued (EndPoint e, IoStatus i, Buffer *b, void *d)
+{
+  Connection cxn = (Connection) d ;
+
+  ASSERT (e == cxn->myEp) ;
+
+  clearTimer (cxn->writeBlockedTimerId) ;
+
+  /* The authinfo user command has been sent, so start the response timer */
+  initReadBlockedTimeout (cxn) ;
+
+  if (i != IoDone)
+    {
+      d_printf (1,"%s:%d AUTHINFO USER command failed to write\n",
+               hostPeerName (cxn->myHost), cxn->ident) ;
+
+      syslog (LOG_ERR,AUTHINFO_USER_FAILED,hostPeerName (cxn->myHost),
+              cxn->ident) ;
+
+      cxnSleepOrDie (cxn) ;
+    }
+
+  freeBufferArray (b) ;
+}
+
+
+
+
+
+
+/*
+ * Called when the AUTHINFO USER command has been written down the pipe.
+ */
+static void authPassIssued (EndPoint e, IoStatus i, Buffer *b, void *d)
+{
+  Connection cxn = (Connection) d ;
+
+  ASSERT (e == cxn->myEp) ;
+
+  clearTimer (cxn->writeBlockedTimerId) ;
+
+  /* The authinfo pass command has been sent, so start the response timer */
+  initReadBlockedTimeout (cxn) ;
+
+  if (i != IoDone)
+    {
+      d_printf (1,"%s:%d AUTHINFO PASS command failed to write\n",
+               hostPeerName (cxn->myHost), cxn->ident) ;
+
+      syslog (LOG_ERR,AUTHINFO_PASS_FAILED,hostPeerName (cxn->myHost),
+              cxn->ident) ;
+
+      cxnSleepOrDie (cxn) ;
+    }
+
+  freeBufferArray (b) ;
+}
+
 
 
 
@@ -3459,6 +3815,7 @@ static void resetConnection (Connection cxn)
   cxn->maxCheck = 1 ;
   cxn->immedRecon = false ;
   cxn->doesStreaming = false ;  /* who knows, next time around maybe... */
+  cxn->authenticated = false ;
   cxn->quitWasIssued = false ;
   cxn->needsChecks = true ;
   cxn->timeCon = 0 ;
