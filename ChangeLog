@@ -1,3 +1,50 @@
+Wed Aug 25 12:58:47 1999  <kondou>
+
+  * nnrpd/newnews.c (1.9.2.3):
+    nnrpd/newnews.c:
+	    - comparing dist was incorrect
+
+Wed Aug 25 08:57:02 1999 James Brister <brister>
+
+  * ChangeLog (1.1.2.4):
+    Removed all entries prior to 1999. File was way too big
+
+Wed Aug 25 07:50:40 1999 Russ Allbery <rra>
+
+  * samples/cnfsstat.in (1.3.2.7):
+    Protect the shell against special characters in the message ID when
+    running
+    grephistory.  Reported by Mike Bird <mgb@yosemite.net>.
+
+Wed Aug 25 04:14:33 1999  <kondou>
+
+  * samples/cnfsstat.in (1.3.2.6):
+    samples/cnfsstat.in:
+	    - From: Mike Bird <mgb@yosemite.net>
+	    - In INN 2.2, the last loop in the cnfsstat file, which scans
+    for
+	      oldest article, revises $update if a more recent time is
+    found.
+	      However, this has no effect as $nupdate_str and $nago_str
+    have
+	      already been created from $update.  The line which does this
+    should
+	      be moved after the loop, e.g.  just before the close(BUFF).
+	    - If two articles with identical timestamps are found the same
+    loop
+	      incorrectly treats the latter as the oldest timestamp ... a
+    "<"
+	      should be changed to a "<=".  NOTE: This necessarily slows
+    cnfsstat
+	      considerably for cycbuffs containing very large articles.
+	    - do not claim if the same class is multiply defined
+
+Tue Aug 24 21:49:51 1999 James Brister <brister>
+
+  * ChangeLog (1.1.2.3):
+    Completely regenerated the contents to try and remove non-STABLE
+    log messages.
+
 Tue Aug 24 00:23:48 1999 David C Lawrence <tale>
 
   * nnrpd/misc.c (1.28.2.5):
