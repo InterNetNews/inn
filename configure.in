@@ -148,7 +148,7 @@ dnl don't change it!
 echo using $ac_cv_subst_path_sendmail for sendmail
 else
   AC_PATH_PROG(ac_cv_subst_path_sendmail,sendmail)
-  if test "x$ac_subst_path_sendmail" = x
+  if test "x$ac_cv_subst_path_sendmail" = x
   then
     echo No sendmail in path.  Looking in likely places.
     PATH=$PATH:/usr/lib:/usr/sbin:/usr/ucblib

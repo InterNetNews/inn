@@ -1617,7 +1617,7 @@ else
   echo "$ac_t""no" 1>&6
 fi
 
-  if test "x$ac_subst_path_sendmail" = x
+  if test "x$ac_cv_subst_path_sendmail" = x
   then
     echo No sendmail in path.  Looking in likely places.
     PATH=$PATH:/usr/lib:/usr/sbin:/usr/ucblib
