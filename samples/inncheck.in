@@ -355,12 +355,11 @@ incoming_conf
     'activedenable',		0,
     'activedupdate',		0,
     'activedport',		0,
-    'backoffauth',	0,
-    'backoffdb',	0,
-    'backoffk',	0,
-    'backoffpostfast',	0,
-    'backoffpostslow',	0,
-    'backofftrigger',	0
+    'backoff_auth',		0,
+    'backoff_db',		0,
+    'backoff_postfast',		0,
+    'backoff_postslow',		0,
+    'backoff_trigger',		0
 );
 %inn_conf'optionals = (
     'innflags',			0,
@@ -386,8 +385,10 @@ inn_conf
 	    next input;
 	}
 	if ( !defined $inn_conf'fields{$k} ) {
-	    print "$file:$line: Invalid field `$k'\n";
-	    next input;
+	    if ( !defined $inn_conf'optionals{$k} ) {
+		print "$file:$line: Invalid field `$k'\n";
+		next input;
+	    }	
 	}
 	if ( ++$inn_conf'fields{$k} > 1 ) {
 	    print "$file:$line: Duplicate field `$k'\n";
