@@ -102,6 +102,10 @@ controlchan!\
 
 ##  OUTGOING SPECIAL FEED EXAMPLES
 
+# Accumulate Path header statistics.  See ninpaths(8) for more details on
+# how to set this up.
+#inpaths!:*:Tc,WP:@prefix@/bin/ninpaths -p -d @LOGDIR@/path/inpaths.%d
+
 # Feed all moderated source postings to an archiver.
 #source-archive!:!*,*sources*,!*wanted*,!*.d\
 #	:Tc,Wn:@prefix@/bin/archive -f -i @SPOOLDIR@/archive/INDEX
