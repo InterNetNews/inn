@@ -23,7 +23,7 @@ main(void)
 #endif
     ok_string(3, "Error code 77777", test_strerror(77777));
     ok_string(4, "Error code -4000", test_strerror(-4000));
-    ok_string(5, "", test_strerror(-100000));
+    ok_string(5, "Error code -100000", test_strerror(-100000));
 
     return 0;
 }
