@@ -139,9 +139,6 @@
     /* How your DBZ be compiled? Use tagged-hash or splitted tables */
     /* =()<#define @<DBZ_TAGGED_HASH>@_TAGGED_HASH>()= */
 #define DONT_TAGGED_HASH
-    /* Do you have shadow file? */
-    /* =()<#define @<HAVE_SHADOW>@_HAVE_SHADOW @<HAVE_SHADOW>@>()= */
-#define DO_HAVE_SHADOW DO
 
 
     /* Function that returns no value, and a pointer to it. */

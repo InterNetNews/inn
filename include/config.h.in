@@ -119,6 +119,9 @@
 /* Define if you have sys/mount.h */
 #undef HAVE_SYS_MOUNT_H
 
+/* Define if you have getspnam() */
+#undef HAVE_GETSPNAM
+
 /* if I understand how configure does this, if 'const' isn't valid, 
  * it will remove the 'const' declarations from the typedef's below 
  * <scrappy@hub.org 
