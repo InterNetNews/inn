@@ -5,6 +5,7 @@ ckpasswd - nnrpd password authenticator
 =head1 SYNOPSIS
 
 B<ckpasswd> [B<-s>] [B<-d> I<database>] [B<-f> I<filename>]
+[B<-u> I<username> B<-p> I<password>]
 
 =head1 DESCRIPTION
 
@@ -14,14 +15,17 @@ more information on how to configure an nnrpd authenticator.
 
 B<ckpasswd> accepts a username and password from nnrpd and tells nnrpd(8)
 whether that's the correct password for that username.  By default, when
-given no arguments, it checks the password against the password field
-returned by getpwnam(3).  Note that these days most systems no longer make
-real passwords available via getpwnam(3) (some still do if and only if the
-program calling getpwnam(3) is running as root).
+given no arguments, it tries to check the password using PAM if support
+for PAM was found when INN was built.  Failing that, it tries to check the
+password against the password field returned by getpwnam(3).  Note that
+these days most systems no longer make real passwords available via
+getpwnam(3) (some still do if and only if the program calling getpwnam(3)
+is running as root).
 
 Note that B<ckpasswd> expects all passwords to be stored encrypted by the
 system crypt(3) function and calls crypt(3) on the supplied password
-before comparing it to the expected password.
+before comparing it to the expected password (when using any method other
+than PAM).
 
 =head1 OPTIONS
 
@@ -57,7 +61,8 @@ so.  Something like:
 
 Note that this will echo back the password when typed; there are obvious
 improvements that could be made to this, but it should be a reasonable
-start.
+start.  Sometimes a program like this will be available with the name
+B<dbmpasswd>.
 
 This option will not be available on systems without dbm or ndbm
 libraries.
@@ -72,9 +77,20 @@ vaguely.  That means each line should look something like:
 
 (and each line may have an additional colon after the encrypted password
 and additional data; that data will be ignored by B<ckpasswd>).  Lines
-starting with a number sign (`#') are ignored.  INN does
-not come with a utility to create the encrypted passwords, but it's a
-quick job with Perl (see the example script under B<-d>).
+starting with a number sign (`#') are ignored.  INN does not come with a
+utility to create the encrypted passwords, but B<htpasswd> (which comes
+with Apache) can do so and it's a quick job with Perl (see the example
+script under B<-d>).  If using Apache's B<htpasswd> program, be sure to
+give it the B<-d> option so that it will use crypt(3).
+
+=item B<-p> I<password>
+
+Use I<password> as the password for authentication rather than reading a
+password using the nnrpd authenticator protocol.  This option is useful
+only for testing your authentication system (particularly since it
+involves putting a password on the command line), and does not work when
+B<ckpasswd> is run by B<nnrpd>.  If this option is given, B<-u> must also
+be given.
 
 =item B<-s>
 
@@ -97,6 +113,13 @@ you up to the risk of password sniffing.  If you do use system passwords
 to authenticate connections, you should seriously consider only doing NNTP
 through ssh tunnels or over SSL.
 
+=item B<-u> I<username>
+
+Authenticate as I<username>.  This option is useful only for testing (so
+that you can test your authentication system easily) and does not work
+when B<ckpasswd> is run by B<nnrpd>.  If this option is given, B<-p> must
+also be given.
+
 =back
 
 =head1 EXAMPLES
@@ -106,7 +129,7 @@ that uses B<ckpasswd> to check passwords.
 
 =head1 HISTORY
 
-Written by Russ Allbery E<lt>rra@stanford.eduE<gt> for InterNetNews.
+Written by Russ Allbery <rra@stanford.edu> for InterNetNews.
 
 $Id$
 
