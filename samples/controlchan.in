@@ -14,7 +14,7 @@
 # controlchan\
 #    :!*,control,control.*,!control.cancel\
 #    :Tc,Wnm\
-#    :/news/bin/controlchan
+#    :@prefix@/bin/controlchan
 #
 # And don't forget to comment out the dispatch stuff in art.c!
 ###########################################################################
@@ -26,7 +26,7 @@ require "@LIBDIR@/innshellvars.pl" ;
 
 
 my $lastctl = 0;
-my $newctldir = "$inn::newsbin/newcontrol";
+my $newctldir = "$inn::newsbin/control";
 
 my (@headers, %hdrcount, %hdrval, $msgid, $token, $progname, @progparams,
     $pathhost, @ctllist, $action, $logname, $act_log, $errmsg, @ctlprogs,
