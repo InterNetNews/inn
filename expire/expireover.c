@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
 	}
     }
 
-    if (!ovge.delayrm && SMsetup(SM_RDWR, (void *)&val)) {
+    if (!ovge.delayrm && !SMsetup(SM_RDWR, (void *)&val)) {
 	fprintf(stderr, "expireover: cant setup storage method");
 	exit(1);
     }
