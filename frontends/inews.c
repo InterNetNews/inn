@@ -7,13 +7,11 @@
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
-#if HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
+#include <fcntl.h>
 #include <grp.h>
 #include <pwd.h>
-#include <syslog.h>  
 #include <sys/stat.h>
+#include <syslog.h>  
 
 #ifdef TM_IN_SYS_TIME
 # include <sys/time.h>
@@ -636,7 +634,7 @@ ProcessHeaders(AddOrg, linecount, pwp)
     }
 
     /* Set Date. */
-    if (!makedate(0, FALSE, buff, sizeof(buff))) {
+    if (!makedate(-1, false, buff, sizeof(buff))) {
         fprintf(stderr, "Can't generate \"Date\" header\n");
         QuitServer(1);
     }

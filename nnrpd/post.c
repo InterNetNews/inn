@@ -380,11 +380,11 @@ ProcessHeaders(int linecount, char *idbuff)
 
     /* Set Date.  datebuff is used later for NNTP-Posting-Date, so we have
        to set it and it has to be the UTC date. */
-    if (!makedate(0, FALSE, datebuff, sizeof(datebuff)))
+    if (!makedate(-1, false, datebuff, sizeof(datebuff)))
         return "Can't generate date header";
     if (HDR(_date) == NULL) {
         if (PERMaccessconf->localtime) {
-            if (!makedate(0, TRUE, localdatebuff, sizeof(localdatebuff)))
+            if (!makedate(-1, true, localdatebuff, sizeof(localdatebuff)))
                 return "Can't generate local date header";
 	    HDR(_date) = localdatebuff;
 	} else {
