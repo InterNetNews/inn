@@ -168,6 +168,9 @@
 /* Define if you have the setproctitle function.  */
 #undef HAVE_SETPROCTITLE
 
+/* Define if you have OpenSSL available. */
+#undef HAVE_SSL
+
 /* Define if <sys/un.h> defines the SUN_LEN macro.  */
 #undef HAVE_SUN_LEN
 
