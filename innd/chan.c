@@ -161,6 +161,8 @@ CHANNEL *CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
     cp->Rest=0;
     cp->SaveUsed=0;
     cp->Lastch=0;
+    cp->MaxCnx=0;
+    cp->ActiveCnx=0;
     HashClear(&cp->CurrentMessageIDHash);
     memset(cp->PrecommitWIP, '\0', sizeof(cp->PrecommitWIP));
     cp->PrecommitiCachenext=0;
