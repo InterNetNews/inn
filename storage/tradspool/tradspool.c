@@ -549,7 +549,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
     unsigned int numxrefs;
     char *ng, *p;
     unsigned long artnum;
-    char *path, *linkpath;
+    char *path, *linkpath, *dirname;
     int fd;
     int i;
     
@@ -641,41 +641,34 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	    if (link(path, linkpath) < 0) {
 		p = strrchr(linkpath, '/');
 		*p = '\0';
-		if (!MakeDirectory(linkpath, TRUE)) {
-		    syslog(L_ERROR, "tradspool: could not make directory %s %m", path);
+		dirname = COPY(linkpath);
+		*p = '/';
+		if (!MakeDirectory(linkpath, TRUE) || link(path, linkpath) < 0) {
+#if !defined(HAVE_SYMLINK)
+		    SMseterror(SMERR_UNDEFINED, NULL);
+		    syslog(L_ERROR, "tradspool: could not link %s to %s %m", path, linkpath);
 		    token.type = TOKEN_EMPTY;
+		    DISPOSE(dirname);
 		    DISPOSE(linkpath);
 		    DISPOSE(path);
-		    SMseterror(SMERR_UNDEFINED, NULL);
 		    for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
 		    DISPOSE(xrefs);
 		    return token;
-		} else {
-		    *p = '/';
-		    if (link(path, linkpath) < 0) {
-#if !defined(HAVE_SYMLINK)
-			SMseterror(SMERR_UNDEFINED, NULL);
-			syslog(L_ERROR, "tradspool: could not link %s to %s %m", path, linkpath);
-			token.type = TOKEN_EMPTY;
-			DISPOSE(linkpath);
-			DISPOSE(path);
-			for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
-			DISPOSE(xrefs);
-			return token;
 #else
-		    } else if (symlink(path, linkpath) < 0) {
-			SMseterror(SMERR_UNDEFINED, NULL);
-			syslog(L_ERROR, "tradspool: could not symlink %s to %s %m", path, linkpath);
-			token.type = TOKEN_EMPTY;
-			DISPOSE(linkpath);
-			DISPOSE(path);
-			for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
-			DISPOSE(xrefs);
-			return token;
+		} else if (symlink(path, linkpath) < 0) {
+		    SMseterror(SMERR_UNDEFINED, NULL);
+		    syslog(L_ERROR, "tradspool: could not symlink %s to %s %m", path, linkpath);
+		    token.type = TOKEN_EMPTY;
+		    DISPOSE(dirname);
+		    DISPOSE(linkpath);
+		    DISPOSE(path);
+		    for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
+		    DISPOSE(xrefs);
+		    return token;
 #endif  /* !defined(HAVE_SYMLINK) */
-		    }
 		}
 	    }
+	    DISPOSE(dirname);
 	    DISPOSE(linkpath);
 	}
     }
@@ -1074,6 +1067,7 @@ FreeNGTree(void) {
 	    nextngtp = ngtp->next;
 	    DISPOSE(ngtp->ngname);
 	    DISPOSE(ngtp->node);
+	    DISPOSE(ngtp);
 	}
 	NGTable[i] = NULL;
     }
