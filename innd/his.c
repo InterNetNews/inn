@@ -174,6 +174,10 @@ char *HISfilesfor(const HASH MessageID)
     int	                i;
 
     TMRstart(TMR_HISGREP);
+    
+    if (HISwritefp == NULL)
+    	return NULL;
+    
     /* Get the seek value into the history file. */
     if ((offset = dbzfetch(MessageID)) < 0) {
 	return NULL;
@@ -246,6 +250,8 @@ BOOL HIShavearticle(const HASH MessageID)
     }
 
     TMRstart(TMR_HISHAVE);
+    if (HISwritefp == NULL)
+    	return FALSE;
     switch (HIScachelookup(MessageID)) {
     case HIScachehit:
 	TMRstop(TMR_HISHAVE);
@@ -297,6 +303,9 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
     static char		NOPATHS[] = "";
     long		offset;
     int			i;
+    
+    if (HISwritefp == NULL)
+        return FALSE;
 
     TMRstart(TMR_HISWRITE);
     if (paths != NULL && paths[0] != '\0')
@@ -317,6 +326,7 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
 		    (unsigned long)Data->Arrived, HIS_SUBFIELDSEP,
 		    HIS_NOEXP, HIS_SUBFIELDSEP,
 		    (unsigned long)Data->Posted, HIS_FIELDSEP, paths);
+#if 0		    
     if (i == EOF || fflush(HISwritefp) == EOF) {
 	/* The history line is now an orphan... */
 	i = errno;
@@ -325,7 +335,7 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
 	TMRstop(TMR_HISWRITE);
 	return FALSE;
     }
-
+#endif
     /* Set up the database values and write them. */
     if (!dbzstore(hash, offset)) {
 	i = errno;
@@ -351,12 +361,17 @@ BOOL HISremember(const HASH hash)
     int			i;
 
     TMRstart(TMR_HISWRITE);
+    
+    if (HISwritefp == NULL)
+        return NULL;
+    
     offset = ftell(HISwritefp);
     /* Convert the hash to hex */
     i = fprintf(HISwritefp, "[%s]%c%lu%c%s%c%lu\n",
 		HashToText(hash), HIS_FIELDSEP,
 		(unsigned long)Now.time, HIS_SUBFIELDSEP,
 		HIS_NOEXP, HIS_SUBFIELDSEP, (unsigned long)Now.time);
+#if 0		
     if (i == EOF || fflush(HISwritefp) == EOF) {
 	/* The history line is now an orphan... */
 	i = errno;
@@ -365,6 +380,7 @@ BOOL HISremember(const HASH hash)
 	TMRstop(TMR_HISWRITE);
 	return FALSE;
     } 
+#endif    
 
     /* Set up the database values and write them. */
     if (!dbzstore(hash, offset)) {
