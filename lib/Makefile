@@ -28,7 +28,7 @@ OBJECTS = $(LIBOBJS) \
 
 LOBJECTS= $(OBJECTS:.o=.lo)
 
-all:		libinn.$(EXTLIB) perl.o ../include/autoconfig.h
+all:		libinn.$(EXTLIB) perl.o
 
 install:	all $(D)$(PATHLIB)/libinn.$(EXTLIB)
 
@@ -82,7 +82,7 @@ $(D)$(PATHLIB)/libinn.$(EXTLIB): libinn.$(EXTLIB)
 
 ##  Dependencies.  Default list, below, is probably good enough.
 
-depend: Makefile $(SOURCES) ../include/autoconfig.h
+depend: Makefile $(SOURCES)
 	$(MAKEDEPEND) $(CFLAGS) $(PERLINC) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
