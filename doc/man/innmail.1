@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "INNMAIL 1"
-.TH INNMAIL 1 "2001-01-23" "INN 2.4.0" "InterNetNews Documentation"
+.TH INNMAIL 1 "2002-12-03" "INN 2.4.0" "InterNetNews Documentation"
 .SH "NAME"
 innmail \- Simple mail\-sending program
 .SH "SYNOPSIS"
@@ -143,7 +143,7 @@ problems.  It takes the body of a mail message on standard input and sends
 it to the specified addresses by invoking the value of \fImta\fR in
 \&\fIinn.conf\fR.
 .PP
-At least one address (formatted for the \s-1MTA\s0 specified in \fIinn.conf\fR if it
+At least one address (formatted for the \s-1MTA\s0 specified in \fIinn.conf\fR, if it
 matters) is required.  \fBinnmail\fR will sanitize the addresses so that they
 contain only alphanumerics and the symbols \f(CW\*(C`@\*(C'\fR, \f(CW\*(C`.\*(C'\fR, \f(CW\*(C`\-\*(C'\fR, \f(CW\*(C`+\*(C'\fR, \f(CW\*(C`_\*(C'\fR,
 and \f(CW\*(C`%\*(C'\fR.

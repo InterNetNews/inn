@@ -17,7 +17,7 @@ Setup
         You want to be careful that things in that directory stay owned by
         "news" -- but you can't just "chown -R news.news" after the install,
         because you may have binaries that are SUID root.  You can do the
-        build as any users, because "make install" will set the permissions
+        build as any user, because "make install" will set the permissions
         correctly.  After that point, though, you may want to "su news" to
         avoid creating any files as root.  (For routine maintenance once INN
         is working, you can generally be root.)
@@ -53,9 +53,9 @@ Compile
     *   Download the INN tarball and unpack.
 
     *   Work out configure options ("./configure --help" for a list).  If
-        you aren't working out /usr/local/news, or want to put some files on
-        a different partition, you can set the directories now (or later in
-        inn.conf if you change your mind.)
+        you aren't working out of /usr/local/news, or want to put some files
+        on a different partition, you can set the directories now (or later
+        in inn.conf if you change your mind).
 
         You probably want "--with-perl".  If you're not using NetBSD with
         cycbuffs or OpenBSD, perhaps "--with-tagged-hash".  You might want

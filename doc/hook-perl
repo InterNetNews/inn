@@ -16,7 +16,8 @@ INN Perl Filtering and Authentication Support
     accept or reject the article, and can optionally do other, more
     complicated processing (such as add history entries, cancel articles,
     spool local posts into a holding area, or even modify the headers of
-    locally submitted posts).
+    locally submitted posts).  The Perl authentication hooks allow you to
+    replace or supplement the readers.conf mechanism used by nnrpd.
 
     For Perl filtering support, you need to have Perl version 5.004 or
     newer.  Earlier versions of Perl will fail with a link error at
@@ -37,8 +38,8 @@ The innd Perl Filter
     filter code can be specified at configure time by giving the flag
     --with-filter-dir to configure.
 
-    INN doesn't care what Perl functions you define in what files.  The only
-    thing that's different about the two files is when they're loaded. 
+    INN doesn't care what Perl functions you define in which files.  The
+    only thing that's different about the two files is when they're loaded. 
     startup_innd.pl is loaded only once, when innd first starts, and is
     never reloaded as long as innd is running.  Any modifications to that
     file won't be noticed by innd; only stopping and restarting innd can
@@ -178,16 +179,16 @@ The innd Perl Filter
 
     The state of the Perl interpretor in which all of these Perl functions
     run is preserved over the lifetime of innd.  In other words, it's
-    allowed for the Perl code to create its own global Perl variables, data
-    structures, saved state, and the like, and all of that will be available
-    to filter_art() and filter_messageid() each time they're called.  The
-    only variable INN fiddles with (or pays any attention to at all) is
-    %hdr, which is cleared after each call to filter_art().
+    permissible for the Perl code to create its own global Perl variables,
+    data structures, saved state, and the like, and all of that will be
+    available to filter_art() and filter_messageid() each time they're
+    called.  The only variable INN fiddles with (or pays any attention to at
+    all) is %hdr, which is cleared after each call to filter_art().
 
     Perl filtering can be turned off with "ctlinnd perl n" and back on again
     with "ctlinnd perl y".  Perl filtering is turned off automatically if
     loading of the filter fails or if the filter code returns any sort of a
-    fatal error (either due to Perl itself or due to a die in the Perl
+    fatal error (either due to Perl itself or due to a "die" in the Perl
     code).
 
 Supported innd Callbacks
@@ -199,12 +200,13 @@ Supported innd Callbacks
         Adds *messageid* to the history database.  All of the arguments
         except the first one are optional; the times default to the current
         time and the paths field defaults to the empty string.  (For those
-        unfamiliar with the fields of a history database entry, the
+        unfamiliar with the fields of a history(5) database entry, the
         *arrival* is normally the time at which the server accepts the
         article, the *articledate* is from the Date header of the article,
         the *expire* is from the Expires header of the article, and the
-        *paths* field is the storage API token.)  Returns true on success,
-        false otherwise.
+        *paths* field is the storage API token.  All three times as measured
+        as a time_t since the epoch.)  Returns true on success, false
+        otherwise.
 
     INN::article(*messageid*)
         Returns the full article (as a simple string) identified by
@@ -262,7 +264,7 @@ Common Callbacks
 
 The nnrpd Posting Filter
 
-    Whenever perl support is needed in nnrpd, it first loads the file
+    Whenever Perl support is needed in nnrpd, it first loads the file
     _PATH_PERL_FILTER_NNRPD (defined in include/paths.h, by default
     filter_nnrpd.pl).  This file must be located in the directory specified
     by pathfilter in inn.conf (/usr/local/news/bin/filter by default).  The
@@ -272,9 +274,9 @@ The nnrpd Posting Filter
     If filter_nnrpd.pl loads successfully and defines the Perl function
     filter_post(), Perl filtering is turned on.  Otherwise, it's turned off.
     If filter_post() ever returns a fatal error (either from Perl or from a
-    die in the Perl code), Perl filtering is turned off for the life of that
-    nnrpd process and any further posts made during that session won't go
-    through the filter.
+    "die" in the Perl code), Perl filtering is turned off for the life of
+    that nnrpd process and any further posts made during that session won't
+    go through the filter.
 
     While Perl filtering is on, every article received by nnrpd via the POST
     command is passed to the filter_post() Perl function before it is passed
@@ -288,7 +290,7 @@ The nnrpd Posting Filter
     the headers of the article.  (Unlike the innd Perl filter, %hdr for the
     nnrpd Perl filter contains *all* of the headers, not just the standard
     ones.  If any of the headers are duplicated, though, %hdr will contain
-    only the value of the second occurance of the header.  nnrpd will reject
+    only the value of the last occurance of the header.  nnrpd will reject
     the article before the filter runs if any of the standard headers are
     duplicated.)  It also has access to the full body of the article in the
     variable $body, and if the poster authenticated via AUTHINFO (or if
@@ -334,14 +336,15 @@ Changes to Perl Authentication Support for nnrpd
     should however go to inn-bugs@isc.org, not Erik.
 
     The remainder of this section is an introduction to the new mechanism
-    (which uses the perl_auth: and perl_access: readers.conf parameters) for
-    people familiar with the old mechanism (identifiable by the
-    nnrpperlauth: parameter in inn.conf).  Other people should skip this
-    section.
+    (which uses the perl_auth: and perl_access: readers.conf parameters)
+    with porting/migration suggestions for people familiar with the old
+    mechanism (identifiable by the nnrpperlauth: parameter in inn.conf).
 
-    The perl_auth parameter allows the use of perl to authenticate a user. 
-    It works in the same manner as the auth parameter (part of
-    readers.conf):
+    Other people should skip this section.
+
+    The perl_auth parameter allows the use of Perl to authenticate a user. 
+    Scripts (like those from the old mechanism) are listed in readers.conf
+    using perl_auth in the same manner other authenticators are using auth:
 
             perl_auth: "/path/to/script/auth1.pl"
 
@@ -361,14 +364,14 @@ Changes to Perl Authentication Support for nnrpd
 
     The perl_access parameter (described below) is also new; it allows the
     dynamic generation of an access group for an incoming connection using a
-    perl script.  If a connection matches an auth group with a perl_access
-    parameter, all access groups in readers.conf are ignored and the
-    procedure described below is used to generate an access group.  This
-    concept is due to Jeffrey M. Vinocur.
+    Perl script.  If a connection matches an auth group which has a
+    perl_access parameter, all access groups in readers.conf are ignored;
+    instead the procedure described below is used to generate an access
+    group.  This concept is due to Jeffrey M. Vinocur.
 
     The new functionality should provide all of the existing capabilities of
-    the perl hook, in combination with the flexibility of readers.conf and
-    the use of other authentication and resolving programs.  To use an perl
+    the Perl hook, in combination with the flexibility of readers.conf and
+    the use of other authentication and resolving programs.  To use an Perl
     authentication code that predates the readers.conf mechanism, you would
     need to modify the code slightly (see below for the new specification)
     and supply a simple readers.conf file.  If you don't want to modify your
@@ -376,24 +379,24 @@ Changes to Perl Authentication Support for nnrpd
     nnrpd_access_wrapper.pl which should allow you to use your old code
     without needing to change it.
 
-    However, before trying to use your old perl code, you may want to
-    consider replacing it entirely with non-perl authentication.  (With
+    However, before trying to use your old Perl code, you may want to
+    consider replacing it entirely with non-Perl authentication.  (With
     readers.conf and the regular authenticator and resolver programs, much
-    of what once required perl can be done directly.)  Even if the
-    functionality is not available directly, you may prefer writing a new
+    of what once required Perl can be done directly.)  Even if the
+    functionality is not available directly, you may wish to write a new
     authenticator or resolver (which can be done in whatever language you
-    prefer) to working in perl.
+    prefer) to working in Perl.
 
 Perl Authentication Support for nnrpd
 
-    Support for authentication via perl is provided in nnrpd by the
+    Support for authentication via Perl is provided in nnrpd by the
     inclusion of a perl_auth: parameter in a readers.conf auth group.
-    perl_auth: works exactly like the auth: parameter in readers.conf, the
-    only difference is that it calls the script given as argument using the
-    perl hook rather then treating it as an external program.
+    perl_auth: works exactly like the auth: parameter in readers.conf,
+    except that it calls the script given as argument using the Perl hook
+    rather then treating it as an external program.
 
     If the processing of readers.conf requires that a perl_auth: statement
-    be used for authentication, perl is loaded (if it has yet to be) and the
+    be used for authentication, Perl is loaded (if it has yet to be) and the
     file given as argument to the perl_auth: parameter is loaded as well. If
     a Perl function auth_init() is defined by that file, it is called
     immediately after the file is loaded.  It takes no arguments and returns
@@ -432,12 +435,12 @@ Perl Authentication Support for nnrpd
 
 Dynamic Generation of Access Groups
 
-    A perl script may be used to dynamically generate an access group which
+    A Perl script may be used to dynamically generate an access group which
     is then used to determine the access rights of the client. This occurs
     whenever the perl_access: is specified in an auth group which has
     successfully matched the client.
 
-    When a perl_access: parameter is encountered, perl is loaded (if it has
+    When a perl_access: parameter is encountered, Perl is loaded (if it has
     yet to be) and the file given as argument is loaded as well. Provided
     the file loads without errors, and a Perl function access() is defined,
     access() will then be called. access() takes no arguments, but it has
@@ -449,17 +452,29 @@ Dynamic Generation of Access Groups
     If it is available, $attributes{username} will contain the provided
     username and domain (in username@domain form).
 
-    access() returns a hash, containing the desired  access parameters and
-    values. Here is a trivial example:
+    access() returns a hash, containing the desired access parameters and
+    values.  Here is an untested example showing how to dynamically generate
+    a list of newsgroups based on the client's username and domain.
+
+         my %hosts = ( "example.com" => "example.*", "isc.org" => "isc.*" );
 
          sub access {
-          %return_hash = (
-              "read" => "*",
-              "post" => "local.*",
-              "virtualhost" => "true",
+            %return_hash = (
+               "max_rate" => "10000",
+               "addnntppostinghost" => "true",
          #     ...
-          );
-          return %return_hash;
+            );
+            if( defined $attributes{username} &&
+                $attributes{username} =~ /.*@(.*)/ )
+            {
+               $return_hash{"virtualhost"} = "true";
+               $return_hash{"path"} = $1;
+               $return_hash{"newsgroups"} = $hosts{$1};
+            } else {
+               $return_hash{"read"} = "*";
+               $return_hash{"post"} = "local.*"
+            }
+            return %return_hash;
          }
 
     Note that both the keys and values are quoted strings. These values are
@@ -470,7 +485,7 @@ Dynamic Generation of Access Groups
     While you may include the users: parameter in a dynamically generated
     access group, some care should be taken (unless your pattern is just *
     which is equivalent to leaving the parameter out). The group created
-    with the values returned from the perl script is the only one considered
+    with the values returned from the Perl script is the only one considered
     when nnrpd attempts to find an access group matching the connection. If
     a users: parameter is included and it doesn't match the connection, then
     the client will be denied access since there are no other access groups

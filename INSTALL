@@ -5,7 +5,7 @@ Welcome to INN 2.4!
 
     If you are upgrading from a previous major release of INN, it is
     recommended that you make copies of your old configuration files and use
-    them as guides for doing a clean installation and configuration of 2.3. 
+    them as guides for doing a clean installation and configuration of 2.4. 
     Many config files have changed, some have been added, and some have been
     removed.  You'll find it much easier to start with a fresh install than
     to try to update your old installation.  This is particularly true if
@@ -19,37 +19,37 @@ Welcome to INN 2.4!
     after building INN and then comparing the new sample configuration files
     with your current ones to see if anything has changed.  If you take this
     route, the old binaries, scripts, and man pages will be saved with an
-    extension of .OLD so that you can easily back out.  Be sure to configure
-    INN with the same options that you used previously if you take this
-    approach (in particular, INN compiled with --enable-largefiles can't
-    read the data structures written by INN compiled without that flag and
-    vice versa).  If you don't remember what options you used but you have
-    your old build tree, look at the comments at the beginning of
+    extension of ".OLD" so that you can easily back out.  Be sure to
+    configure INN with the same options that you used previously if you take
+    this approach (in particular, INN compiled with --enable-largefiles
+    can't read the data structures written by INN compiled without that
+    flag, and vice versa).  If you don't remember what options you used but
+    you have your old build tree, look at the comments at the beginning of
     config.status.
 
     For more information about recent changes, see NEWS.
 
 Supported Systems
 
-    So far as possible, INN is written in portable C and should work on any
-    Unix platform.  It does, however, make extensive use of mmap() and
+    As much as possible, INN is written in portable C and should work on any
+    Unix platform.  It does, however, make extensive use of mmap(2) and
     certain other constructs that may be poorly or incompletely implemented,
     particularly on very old operating systems.
 
     INN has been confirmed to work on the following operating systems:
 
-      AIX 4.3
-      FreeBSD 2.2.x and up
-      HP-UX 10.20 and up
-      Linux 2.x (tested with libc 5.4 or glibc 2.0 and up)
-      OpenBSD 2.8 and up
-      SCO 5.0.4 (tested with gcc 2.8.1 and cc)
-      Solaris 2.5.x and up
-      UnixWare 7.1
-      UX/4800 R11 and up
+        AIX 4.3
+        FreeBSD 2.2.x and up
+        HP-UX 10.20 and up
+        Linux 2.x (tested with libc 5.4, glibc 2.0 and up)
+        OpenBSD 2.8 and up
+        SCO 5.0.4 (tested with gcc 2.8.1, cc)
+        Solaris 2.5.x and up
+        UnixWare 7.1
+        UX/4800 R11 and up
 
     If you have gotten INN working on an operating system other than the
-    ones listed above, please let us know at inn-bugs@isc.org.
+    ones listed above, please let us know at <inn-bugs@isc.org>.
 
 Before You Begin
 
@@ -69,7 +69,9 @@ Before You Begin
       it's generally recommended that you install the latest stable
       distribution of Perl before compiling INN.  For instructions on
       obtaining and installing Perl, see
-      <http://www.perl.com/pub/language/info/software.html>.
+      <http://www.perl.com/pub/language/info/software.html>.  Note that you
+      may need to use the same compiler and options (particularly largefile
+      support) for Perl and INN.
 
       If you're using a version of Perl prior to 5.6.0, you may need to make
       sure that the Perl versions of your system header files have been
@@ -92,12 +94,12 @@ Before You Begin
       make to build INN should be sufficient.
 
     * If you want to enable support for authenticated control messages (this
-      is not required but is highly recommended) then you will need to
-      install some version of PGP.  The recommended version is GnuPG, since
-      it's actively developed, supports OpenPGP, is freely available and
-      free to use for any purpose (including in the US), and (as of version
-      1.0.4 at least) supports RSA signatures used by most current control
-      message senders.
+      is not required, but is highly recommended for systems carrying public
+      Usenet hierarchies) then you will need to install some version of PGP.
+      The recommended version is GnuPG, since it's actively developed,
+      supports OpenPGP, is freely available and free to use for any purpose
+      (in the US and elsewhere), and (as of version 1.0.4 at least) supports
+      the RSA signatures used by most current control message senders.
 
       Alternately, you can install PGP from <http://www.pgp.com/> or one of
       the international versions of it.  Be warned, however, that the
@@ -115,26 +117,27 @@ Before You Begin
 Unpacking the Distribution
 
     Released versions of INN are available from ftp.isc.org in /isc/inn. 
-    New major releases will be announed on inn-announce@isc.org (see README)
-    when they're made.
+    New major releases will be announed on <inn-announce@isc.org> (see
+    README) when they're made.
 
-    If you want more a more cutting edge version, you can obtain current
+    If you want more a more cutting-edge version, you can obtain current
     snapshots from from ftp.isc.org in directory /isc/inn/snapshots.  These
-    are snapshots of the current INN CVS tree taken daily; there are two
-    snapshots made every night (one of the current development branch, and
-    one of the stable branch consisting of bug fixes to the previous major
-    release).  They are stored in date format; in other words the snapshots
-    from April 6th, 2000, would be named inn-CURRENT-20000406.tar.gz and
-    inn-STABLE-20000406.tar.gz.  Choose the newest file.
+    are snapshots of the INN CVS tree taken daily; there are two snapshots
+    made each night (one of the current development branch, and one of the
+    stable branch consisting of bug fixes to the previous major release). 
+    They are stored in date format; in other words the snapshots from April
+    6th, 2000, would be named inn-CURRENT-20000406.tar.gz and
+    inn-STABLE-20000406.tar.gz.  Choose the newest file of whichever branch
+    you prefer.  (Note that the downloading, configuring, and compiling
+    steps can be done while logged in as any user.)
 
     The distribution is in gzip compressed tar archive format.  To extract
     it, execute:
 
         gunzip -c <inn-src-file> | tar -xf -
 
-    Extracting the source distribution will create a directory named inn
-    (followed by a version number, -CURRENT, or -STABLE) where the source
-    resides.
+    Extracting the source distribution will create a directory named
+    inn-<version> or inn-<BRANCH>-<date> where the source resides.
 
 Installing INN
 
@@ -143,7 +146,7 @@ Installing INN
     to a group called "news".  The home directory of this user should be set
     to the directory under which you wish to install INN (/usr/local/news is
     the default and is a good choice).  INN will install itself as this user
-    and group.  You can change these if you want but these are the defaults
+    and group.  You can change these if you want, but these are the defaults
     and it's easier to stick with them on a new installation.
 
     WARNING: By default, INN installs various configuration files as
@@ -167,7 +170,11 @@ Installing INN
     be readable by the server.  Particularly avoid doing anything in the
     news spool itself as root, and make sure you fix the ownership of any
     created files if you have to.  INN doesn't like files in the news spool
-    owned by a user other than the news user.
+    owned by a user other than the news user.  However, since certain
+    binaries need to be setuid root, indiscriminate use of "chown news" is
+    not the solution.  (If you don't like to log in to system accounts,
+    careful use of "chmod g+s" on directories and a umask of 002 or 007 may
+    suffice.)
 
     INN uses GNU autoconf and a generated configure script to make
     configuration rather painless.  Unless you have a rather abnormal setup,
@@ -193,10 +200,10 @@ Installing INN
     --with-db-dir=PATH
         Sets the prefix for INN database files.  The default is PREFIX/db,
         where PREFIX is /usr/local/news unless overridden with the option
-        above.  This history and active files will be stored in this
+        above.  The history and active files will be stored in this
         directory, and writes to those files are an appreciable percentage
         of INN's disk activity.  The history file can also be quite large
-        (requiring up to 2GB or more during nightly expire), so this is a
+        (requiring up to 2 GB or more during nightly expire), so this is a
         common portion of INN to move to a different file system.
 
     --with-spool-dir=PATH
@@ -212,7 +219,8 @@ Installing INN
         INN doesn't take care to avoid symlink attacks and other security
         problems possible with a world-writeable directory.  This directory
         should be reserved for the exclusive use of INN and only writeable
-        by the news user.
+        by the news user.  Usage is generally light, so this is unlikely to
+        need a separate partition.
 
         It's also possible to set the paths for most other sections of the
         INN installation independently; see "./configure --help" and look
@@ -242,8 +250,8 @@ Installing INN
         good spam filters are written in Perl.  See doc/hook-perl for all
         the details.
 
-        Even if you do not use this option, INN still requires Perl to
-        build.
+        Even if you do not use this option, INN still requires Perl as
+        mentioned above.
 
     --with-python
         Enables support for Python, allowing you to install filter and
@@ -262,12 +270,12 @@ Installing INN
         installed.  See doc/hook-tcl for all the details.
 
     --with-innd-port=PORT
-        By default, inndstart refuses to bind to any port under 1024 other
-        than 119 and 433 for security reasons (to prevent attacks on
-        rsh-based commands and replacing standard system daemons).  If you
-        want to run innd on a different port under 1024, you'll need to tell
-        configure what port you intend to use.  (You'll also still need to
-        set the port number in inn.conf or by giving it to inndstart on the
+        By default, inndstart(8) refuses to bind to any port under 1024
+        other than 119 and 433 for security reasons (to prevent attacks on
+        rsh(1)-based commands and replacing standard system daemons).  If
+        you want to run innd on a different port under 1024, you'll need to
+        tell configure what port you intend to use.  (You'll also still need
+        to set the port number in inn.conf or give it to inndstart on the
         command line.)
 
     --with-syslog-facility=FACILITY
@@ -351,7 +359,7 @@ Installing INN
         supporting programs.  This option should be considered developmental
         at present.  For more information see doc/IPv6-info (and if you have
         any particularly good or bad news to report, please let us know at
-        inn-bugs@isc.org).
+        <inn-bugs@isc.org>).
 
     For the most common installation, a standalone news server, a suggested
     set of options is:
@@ -377,25 +385,27 @@ Installing INN
         make install
 
     You will need to run this command as root so that INN can create the
-    directories it needs and install a couple of setuid wrapper scripts
-    needed to raise resource limits and allow innd to bind to port 119. 
-    This will install INN under the install directory (/usr/local/news,
-    unless you specified something else to the configure script.)
+    directories it needs, change ownerships (if you did not compile as the
+    news user) and install a couple of setuid wrapper programs needed to
+    raise resource limits and allow innd to bind to ports under 1024.  This
+    step will install INN under the install directory (/usr/local/news,
+    unless you specified something else to the configure script).
 
-    If you use SSL support for nnrp, you must make a certificate and private
-    key at least once.  Type:
+    If you are configuring SSL support for newsreaders, you must make a
+    certificate and private key at least once.  Type:
 
         make cert
 
     as root in order to do this.
 
-    You are now ready for the really fun part: configuring your copy of INN!
+    You are now ready for the really fun part:  configuring your copy of
+    INN!
 
 Choosing an Article Storage Format
 
     The first thing to decide is how INN should store articles on your
-    system.  There are four different methods for you to choose from, all of
-    which have their own advantages and disadvantages.  INN can support all
+    system.  There are four different methods for you to choose from, each
+    of which has its own advantages and disadvantages.  INN can support all
     four at the same time, so you can store certain newsgroups in one method
     and other newsgroups in another method.
 
@@ -468,9 +478,9 @@ Choosing an Article Storage Format
 
         Disadvantages:  Article retention times are more difficult to
         control because old articles are overwritten automatically.  Attacks
-        on Usenet, such as flooding or massive amounts of spam, can cause
-        wanted articles to expire much faster than you intended with no
-        warning.
+        on Usenet, such as flooding or massive amounts of spam, can result
+        in wanted articles expiring much faster than you intended (with no
+        warning).
 
     Some general recommendations:  If you are installing a transit news
     server (one that just accepts news and sends it out again to other
@@ -485,16 +495,16 @@ Choosing an Article Storage Format
     never expire in tradspool.
 
     If your news server will be supporting readers, you'll also need to
-    choose an overview storage mechanism (by setting ovmethod in inn.conf). 
-    There are three overview mechanisms to choose from:  tradindexed,
-    buffindexed, and ovdb.  tradindexed is very fast for readers, but it has
-    to update two files for every incoming article and can be quite slow to
-    write.  buffindexed can keep up with a large feed more easily, since it
-    uses large buffers to store all overview information in, but it's
-    somewhat slower for readers (although not as slow as the unified
-    overview in INN 2.2).  ovdb stores overview data in a Berkeley DB
-    database; it's fast and very robust, but requires more disk space.  See
-    the ovdb(5) man page for more information on it.
+    choose an overview storage mechanism (by setting *ovmethod* in
+    inn.conf).  There are three overview mechanisms to choose from: 
+    tradindexed, buffindexed, and ovdb.  tradindexed is very fast for
+    readers, but it has to update two files for each incoming article and
+    can be quite slow to write.  buffindexed can keep up with a large feed
+    more easily, since it uses large buffers to store all overview
+    information, but it's somewhat slower for readers (although not as slow
+    as the unified overview in INN 2.2).  ovdb stores overview data in a
+    Berkeley DB database; it's fast and very robust, but requires more disk
+    space.  See the ovdb(5) man page for more information on it.
 
     Note that ovdb has not been as widely tested as the other overview
     mechanisms and should be considered experimental.
@@ -509,13 +519,13 @@ Configuring INN
     All documentation from this point on assumes that you have set up the
     news user on your system as suggested in "Installing INN" so that the
     root of your INN installation is ~news/.  If you've moved things around
-    by using options with configure, you'll need to adjust the instructions
-    to account for that.
+    by using options with "configure", you'll need to adjust the
+    instructions to account for that.
 
     All of INN's configuration files are located in ~news/etc.  Unless noted
     otherwise, any files referred to below are in this directory.  When you
-    first install INN, samples of each file (containing lots of comments)
-    are installed in ~news/etc; refer to them for concrete examples of
+    first install INN, a sample of each file (containing lots of comments)
+    is installed in ~news/etc; refer to these for concrete examples of
     everything discussed in this section.
 
     All of INN's configuration files, all of the programs that come with it,
@@ -531,7 +541,7 @@ Configuring INN
 
         man -M ~news/man inn.conf
 
-    to see the man page for inn.conf (for example).
+    to see the inn.conf(5) man page (for example).
 
     Before we begin, it is worth mentioning the wildmat pattern matching
     syntax used in many configuration files.  These are simple wildcard
@@ -567,17 +577,18 @@ Configuring INN
     See uwildmat(3) for full details on wildmat patterns.
 
     In all INN configuration files, blank lines and lines beginning with a
-    "#" symbol are considered comments and are ignored.
+    "#" symbol are considered comments and are ignored.  Be careful, not all
+    files permit comments to begin in the middle of the line.
 
   inn.conf
 
     The first, and most important file is inn.conf.  This file is organized
     as a series of parameter-value pairs, one per line.  The parameter is
-    first, followed by a colon and one or more whitespace characters and the
-    value itself.  For some parameters the value is a string or a number;
-    for others it is true or false.  (True values can be written as "yes",
-    "true", or "on", whichever you prefer.  Similarly, false values can be
-    written as "no", "false", or "off".)
+    first, followed by a colon and one or more whitespace characters, and
+    then the value itself.  For some parameters the value is a string or a
+    number; for others it is true or false.  (True values can be written as
+    "yes", "true", or "on", whichever you prefer.  Similarly, false values
+    can be written as "no", "false", or "off".)
 
     inn.conf contains dozens of changeable parameters (see inn.conf(5) for
     full details), but only a few really need to be edited during normal
@@ -588,11 +599,11 @@ Configuring INN
         readers.  While this can be an expensive operation, its speed has
         been improved considerably as of INN 2.3 and it's probably safe to
         turn on without risking excessive server load.  The default is true.
-        (Note that the access: setting in readers.conf overrides this value;
-        see readers.conf(5) for more details.)
+        (Note that the *access:* setting in readers.conf overrides this
+        value; see readers.conf(5) for more details.)
 
     complaints
-        Used to set the value of the X-Complaints-To: header which is added
+        Used to set the value of the X-Complaints-To: header, which is added
         to all articles posted locally.  The usual value would be something
         like "abuse@example.com" or "postmaster@example.com".  If not
         specified, the newsmaster email address will be used.
@@ -601,22 +612,25 @@ Configuring INN
         Sets the domain name for your server.  Normally this is determined
         automatically by INN, but in some cases it is necessary to set it
         manually.  For example, if you are running NIS on a SunOS system
-        *and* your hostnames are not fully-qualified (ie, your systems are
+        *and* your hostnames are not fully-qualified (i.e., your systems are
         named "host" instead of "host.example.com") then you will need to
         use this option to set your domain name manually.  If in doubt,
-        leave this option commented out or remove it completely.
+        leave this option commented out (or remove it completely).  See
+        *domain* in readers.conf(5) if you want to affect the righthand side
+        of autogenerated Message-IDs.
 
     hiscachesize
-        The memory in kilobytes to allocate for a cache of recently used
-        history file entries.  Setting this to 0 disables history caching. 
-        History caching can greatly increase the number of articles per
-        second that your server is capable of processing.  A value of 256 is
-        a good default choice.
+        The amount of memory (in kilobytes) to allocate for a cache of
+        recently used history file entries.  Setting this to 0 disables
+        history caching.  History caching can greatly increase the number of
+        articles per second that your server is capable of processing.  A
+        value of 256 is a good default choice.
 
     logipaddr
-        If set to true (the default), INN will log the IP address of the
-        remote host from which it received an article.  If set to false, the
-        trailing Path: header entry is logged instead.  If you are using
+        If set to true (the default), INN will log the IP address (or
+        hostname, if the host is listed in incoming.conf with a hostname) of
+        the remote host from which it received an article.  If set to false,
+        the trailing Path: header entry is logged instead.  If you are using
         controlchan (see below) and need to process ihave/sendme control
         messages (this is very, very unlikely, so if you don't know what
         this means, don't worry about it), make sure you set this to false,
@@ -624,17 +638,17 @@ Configuring INN
 
     organization
         Set this to the name of your organization as you want it to appear
-        in the Organization: header of all articles posted locally not
+        in the Organization: header of all articles posted locally and not
         already containing that header.  This will be overridden by the
         value of the ORGANIZATION environment variable (if it exists).  If
         neither this parameter nor the environment variable or set, no
-        Organization: header will be added to posts without one.
+        Organization: header will be added to posts which lack one.
 
     pathhost
         This is the name of your news server as you wish it to appear in the
         Path: header of all postings which travel through your server (this
         includes local posts and incoming posts that you forward out to
-        other sites).  If no pathhost is specified then the fully-qualified
+        other sites).  If this parameter is unspecified, the fully-qualified
         domain name (FQDN) of the machine will be used instead.  Please use
         the FQDN of your server or an alias for your server unless you have
         a very good reason not to; a future version of the news RFCs may
@@ -660,8 +674,8 @@ Configuring INN
 
     newsfeeds determines how incoming articles are redistributed to your
     peers and to other INN processes.  newsfeeds is very versatile and
-    contains dozens of options; we will touch on just the basics here. 
-    newsfeeds(5) contains more detailed information.
+    contains dozens of options; we will touch on just the basics here.  The
+    manpage contains more detailed information.
 
     newsfeeds is organized as a series of feed entries.  Each feed entry is
     composed of four fields separated by colons.  Entries may span multiple
@@ -686,9 +700,9 @@ Configuring INN
 
     The second field specifies a set of desired newsgroups and distribution
     lists, given as newsgroup-pattern/distribution-list.  The distribution
-    list is not described here; newsfeeds(5) for information (it's not used
-    that frequently in practice).  The newsgroup pattern is a wildmat-style
-    pattern list as described above (supporting "@").
+    list is not described here; see newsfeeds(5) for information (it's not
+    used that frequently in practice).  The newsgroup pattern is a
+    wildmat-style pattern list as described above (supporting "@").
 
     The third field is a comma-separated list of flags that determine both
     the type of feed entry and sets certain parameters for the entry.  See
@@ -709,8 +723,8 @@ Configuring INN
     program to run and feed references to articles.
 
     Now that you have a rough idea of the file layout, we'll begin to add
-    the actual feed entries.  First we'll set up the special ME entry.  This
-    entry is required and serves two purposes:  the newsgroup pattern
+    the actual feed entries.  First, we'll set up the special ME entry. 
+    This entry is required and serves two purposes:  the newsgroup pattern
     specified here is prepended to the newsgroup list of all other feeds,
     and the distribution pattern for this entry determines what
     distributions (from the Distribution: header of incoming articles) are
@@ -722,21 +736,21 @@ Configuring INN
     may want to just exclude it specifically from every feed instead.
 
     The ME entry tends to confuse a lot of people, so this point is worth
-    repeating:  The newsgroup patterns set the default subscription for
+    repeating:  the newsgroup patterns set the default subscription for
     *outgoing* feeds, and the distribution patterns set the acceptable
     Distribution: header entries for *incoming* articles.  This is confusing
     enough that it may change in later versions of INN.
 
     There are two basic ways to feed articles to remote sites.  The most
     common for large sites and particularly for transit news servers is
-    innfeed, which sends articles to remote sites in real time (the article
-    goes out to all peers that are supposed to receive it immediately after
-    your server accepts it).  For smaller sites, particularly sites where
-    the only outgoing messages will be locally posted articles, it's more
-    common to batch outgoing articles and send them every ten minutes or so
-    from cron using nntpsend and innxmit.  Batching gives you more control
-    and tends to be extremely stable and reliable, but it's much slower and
-    can't handle lots of articles well.
+    innfeed(8), which sends articles to remote sites in real time (the
+    article goes out to all peers that are supposed to receive it
+    immediately after your server accepts it).  For smaller sites,
+    particularly sites where the only outgoing messages will be locally
+    posted articles, it's more common to batch outgoing articles and send
+    them every ten minutes or so from cron using nntpsend(8) and innxmit(8).
+    Batching gives you more control and tends to be extremely stable and
+    reliable, but it's much slower and can't handle high volume very well.
 
     Batching outgoing posts is easy to set up; for each peer, add an entry
     to newsfeeds that looks like:
@@ -747,19 +761,19 @@ Configuring INN
 
     where <newsgroups> is the wildmat pattern for the newsgroups that site
     wants.  In this example, the actual name of the remote site is
-    remote.example.com, but it puts news.example.com in the Path: header. 
-    If the remote site puts its actual hostname in the Path: header, you
-    won't need the "/news.example.com" part.
+    "remote.example.com", but it puts "news.example.com" in the Path:
+    header.  If the remote site puts its actual hostname in the Path:
+    header, you won't need the "/news.example.com" part.
 
     This entry will cause innd to write out a file in ~news/spool/outgoing
-    named remote.example.com and containing the message ID and storage token
+    named remote.example.com and containing the Message-ID and storage token
     of each message to send to that site.  (The storage token is INN's
     internal pointer to where an article is stored; to retrieve an article
-    given its storage token, use the program sm).  innxmit knows how to read
-    this format of file and send those articles to the remote site.  For
-    information on setting it up to run periodically, see "Setting Up the
-    Cron Jobs" below.  You will also need to set up a config file for
-    nntpsend; see the man page for nntpsend.ctl for more information.
+    given its storage token, use sm(8)).  innxmit knows how to read files of
+    this format and send those articles to the remote site.  For information
+    on setting it up to run periodically, see "Setting Up the Cron Jobs"
+    below.  You will also need to set up a config file for nntpsend; see the
+    man page for nntpsend.ctl(5) for more information.
 
     If instead you want to use innfeed to send outgoing messages
     (recommended for sites with more than a couple of peers), you need some
@@ -767,7 +781,8 @@ Configuring INN
     of your peers, but rather than writing out batch files, they all
     "funnel" into a special innfeed entry.  That special entry collects all
     of the separate funnel feeds and sends the data through a special sort
-    of feed to an external program, called a channel feed.
+    of feed to an external program (innfeed in this case); this is a
+    "channel" feed.
 
     First, the special channel feed entry for innfeed that will collect all
     the funnel feeds:
@@ -776,12 +791,12 @@ Configuring INN
             :!*\
             :Tc,Wnm*:/usr/local/news/bin/startinnfeed -y
 
-    (adjust the path to startinnfeed if you installed it elsewhere).  Note
-    that we don't feed this entry any articles directly (its newsgroup
+    (adjust the path to startinnfeed(1) if you installed it elsewhere). 
+    Note that we don't feed this entry any articles directly (its newsgroup
     pattern is "!*").  Note also that the name of this entry ends in an
     exclamation point.  This is a standard convention for all special feeds;
     since the delimiter for the Path: header is "!", no site name containing
-    that character can match the name of a real site.
+    that character can ever match the name of a real site.
 
     Next, set up entries for each remote site to which you will be feeding
     articles.  All of these entries should be of the form:
@@ -791,15 +806,15 @@ Configuring INN
             :Tm:innfeed!
 
     specifying that they funnel into the "innfeed!" feed.  As in the
-    previous example for batching, remote.example.com is the actual name of
-    the remote peer, news.example.com is what they put in the Path: header
-    (if different than the actual name of the server), and <newsgroups> is
-    the wildmat pattern of newsgroups they want.
+    previous example for batching, "remote.example.com" is the actual name
+    of the remote peer, "news.example.com" is what it puts in the Path:
+    header (if different than the actual name of the server), and
+    <newsgroups> is the wildmat pattern of newsgroups to be sent.
 
-    As an alternative to NNTP, inn may also be fed to an IMAP server, by
-    creating a new executable almost identical to innfeed called imapfeed. 
-    The startinnfeed process is modified such that it can be told to start
-    imapfeed instead of innfeed.  The feed entry for this is as follows:
+    As an alternative to NNTP, INN may also feed news out to an IMAP server,
+    by using imapfeed(8), which is almost identical to innfeed.  The
+    startinnfeed process can be told to start imapfeed instead of innfeed. 
+    The feed entry for this is as follows:
 
         imapfeed!\
             :!*\
@@ -811,14 +826,13 @@ Configuring INN
             :<newsgroups>\
             :Tm:imapfeed!
 
-    For more information on imapfeed, look at the imap_connection.c in the
-    innfeed directory.  For more information on IMAP in general, look at RFC
-    2060.
+    For more information on imapfeed, look at the innfeed/imap_connection.c.
+    For more information on IMAP in general, see RFC 2060.
 
-    Finally, there is a special entry for controlchan for processing
-    newsgroup control messages that should always be in newsfeeds unless you
-    never want to honor any newsgroup control messages.  This entry should
-    look like:
+    Finally, there is a special entry for controlchan(8), which processes
+    newsgroup control messages, that should always be in newsfeeds unless
+    you never want to honor any control messages.  This entry should look
+    like:
 
         controlchan!\
             :!*,control,control.*,!control.cancel\
@@ -828,21 +842,22 @@ Configuring INN
     else).  See "Processing Control Messages" for more details.
 
     For those of you upgrading from earlier versions of INN, note that the
-    functionality of overchan and crosspost is now incorporated into INN and
-    neither of those programs are necessary.  Unfortunately, crosspost
+    functionality of overchan(8) and crosspost is now incorporated into INN
+    and neither of those programs is necessary.  Unfortunately, crosspost
     currently will not work even with the tradspool storage method.  You can
-    still use overchan if you make sure to set useoverchan to true in
+    still use overchan if you make sure to set *useoverchan* to true in
     inn.conf so that innd doesn't write overview data itself, but be
-    careful; innd may accept articles faster than overchan can process the
+    careful:  innd may accept articles faster than overchan can process the
     data.
 
   incoming.conf
 
-    This file specifies which machines are permitted to connect to your host
-    and feed it articles.  Remote servers you peer with should be listed
-    here.  Connections from hosts not listed in this file will (if you don't
-    allow readers) be rejected or (if you allow readers) be handed off to
-    nnrpd and checked against the access restrictions in readers.conf.
+    incoming.conf file specifies which machines are permitted to connect to
+    your host and feed it articles.  Remote servers you peer with should be
+    listed here.  Connections from hosts not listed in this file will (if
+    you don't allow readers) be rejected or (if you allow readers) be handed
+    off to nnrpd and checked against the access restrictions in
+    readers.conf.
 
     Start with the sample incoming.conf and, for each remote peer, add an
     entry like:
@@ -850,24 +865,25 @@ Configuring INN
         peer remote.example.com { }
 
     This uses the default parameters for that feed and allows incoming
-    connections from a machine named remote.example.com.  If that peer could
-    be connecting from several different machines, instead use an entry
-    like:
+    connections from a machine named "remote.example.com".  If that peer
+    could be connecting from several different machines, instead use an
+    entry like:
 
          peer remote.example.com {
             hostname: "remote.example.com, news.example.com"
          }
 
-    This will allow either remote.example.com or news.example.com to feed
-    articles to you.  (In general, you should add new peer lines for each
-    separate remote site you peer with, and list multiple host names using
-    the hostname key if one particular remote site uses multiple servers.)
+    This will allow either "remote.example.com" or "news.example.com" to
+    feed articles to you.  (In general, you should add new peer lines for
+    each separate remote site you peer with, and list multiple host names
+    using the *hostname* key if one particular remote site uses multiple
+    servers.)
 
-    You can restrict the newsgroups a remote site is allowed to send you
-    using the same sort of pattern that newsfeeds uses.  For example, if you
-    want to prevent example.com hosts from sending you any articles in the
-    local.* hierarchy (even if they're crossposted to other groups), change
-    the above to:
+    You can restrict the newsgroups a remote site is allowed to send you,
+    using the same sort of pattern that newsfeeds(5) uses.  For example, if
+    you want to prevent "example.com" hosts from sending you any articles in
+    the "local.*" hierarchy (even if they're crossposted to other groups),
+    change the above to:
 
         peer remote.example.com {
             patterns: "*, @local.*"
@@ -884,27 +900,27 @@ Configuring INN
     of connections the remote host will be allowed.  See incoming.conf(5)
     for all the details.
 
-    Note for those familiar with older versions of INN:  This file replaces
+    Note for those familiar with older versions of INN:  this file replaces
     the old hosts.nntp configuration file.
 
   cycbuff.conf
 
-    This configuration file is only required if CNFS is used.  If you aren't
-    using CNFS, skip this section.
+    cycbuff.conf is only required if CNFS is used.  If you aren't using
+    CNFS, skip this section.
 
-    CNFS stores articles in logical objects called metacycbuffs.  Each of
-    the metacycbuffs is in turn composed of one or more physical buffers
-    called cycbuffs.  As articles are written to the metacycbuff each
-    article is written to the next cycbuff in the list in a round-robin
-    fashion (unless sequential mode is specified, in which case each cycbuff
-    is filled before moving on to the next).  This is so that you can
-    distribute the individual cycbuffs across multiple physical disks and
-    balance the load between them.
+    CNFS stores articles in logical objects called *metacycbuffs*.  Each
+    metacycbuff is in turn composed of one or more physical buffers called
+    *cycbuffs*.  As articles are written to the metacycbuff, each article is
+    written to the next cycbuff in the list in a round-robin fashion (unless
+    "sequential" mode is specified, in which case each cycbuff is filled
+    before moving on to the next).  This is so that you can distribute the
+    individual cycbuffs across multiple physical disks and balance the load
+    between them.
 
     There are two ways to create your cycbuffs:
 
     1.  Use a raw disk partition (best).  This will give you the most speed,
-        but it requires your OS support mmap() on a block device.  Solaris
+        but it requires your OS support mmap(2) on a block device.  Solaris
         supports this, FreeBSD and Linux (without patches) do not.  Also on
         many PC-based Unixes it is difficult to create more than eight
         partitions, which may limit your options.
@@ -917,23 +933,24 @@ Configuring INN
 
     Now you need to decide on the sizes of your cycbuffs and metacycbuffs. 
     You'll probably want to separate the heavy-traffic groups
-    (alt.binaries.* and maybe a few other things like *.jobs* and
-    news.lists.filters) into their own metacycbuff so that they don't
+    ("alt.binaries.*" and maybe a few other things like "*.jobs*" and
+    "news.lists.filters") into their own metacycbuff so that they don't
     overrun the server and push out articles on the more useful groups.  If
     you have any local groups that you want to stay around for a while then
     you should put them in their own metacycbuff as well, so that they don't
-    get pushed out by other traffic.  (Or store them in one of the other
-    storage methods, such as tradspool.)
+    get pushed out by other traffic.  (Or you might store them in one of the
+    other storage methods, such as tradspool.)
 
     For each metacycbuff, you now need to determine how many cycbuffs will
-    make up the metacycbuff, the size of those cycbuffs and where they will
-    be stored.  Some OSes do not support files larger than 2GB which will
-    force all of your cycbuffs to be < 2GB.  Some versions of Linux are
-    known to have this limitation, FreeBSD does not.  Some OSes that support
-    large files don't support block access to large raw partitions (Solaris
-    prior to Solaris 7 or not running in 64-bit mode is in this category);
-    on those OSes, if you want cycbuffs over 2GB, you'll have to use regular
-    files.  If in doubt, keep your cycbuffs smaller than 2GB.  Also when
+    make up the metacycbuff, the size of those cycbuffs, and where they will
+    be stored.  Some OSes do not support files larger than 2 GB, which will
+    limit the size you can make a single cycbuff, but you can still combine
+    many cycbuffs into each metacycbuff.  Some versions of Linux are known
+    to have this limitation; FreeBSD does not.  Some OSes that support large
+    files don't support block access to large raw partitions (Solaris prior
+    to Solaris 7, or not running in 64-bit mode, is in this category); on
+    those OSes, if you want cycbuffs over 2 GB, you'll have to use regular
+    files.  If in doubt, keep your cycbuffs smaller than 2 GB.  Also, when
     laying out your cycbuffs, you will want to try to arrange them across as
     many physical disks as possible (or use a striped disk array and put
     them all on that).
@@ -947,7 +964,7 @@ Configuring INN
     Something simple like "BUFF00", "BUFF01", etc. is a decent choice, or
     you may want to use something that includes the SCSI target and slice
     number of the partition.  SIZE is the buffer size in kilobytes (if
-    you're trying to stay under 2GB, keep your sizes below 2097152).
+    you're trying to stay under 2 GB, keep your sizes below 2097152).
 
     Now, you need to tell INN how to group your cycbuffs into metacycbuffs. 
     This is similar to creating cycbuff entries:
@@ -999,7 +1016,7 @@ Configuring INN
     special method "trash" that accepts the article and throws it away).
 
     The first parameter is a wildmat pattern in the same format used by the
-    newsfeeds file, and determines what newsgroups are accepted by this
+    newsfeeds(5) file, and determines what newsgroups are accepted by this
     storage class.
 
     The second parameter is a unique number identifying this storage class
@@ -1007,12 +1024,14 @@ Configuring INN
     expiration, and for timehash and timecaf will set the top-level
     directory in which articles accepted by this storage class are stored. 
     The easiest way to deal with this parameter is to just number all
-    storage classes in storage.conf sequentially.
+    storage classes in storage.conf sequentially.  The assignment of a
+    particular number to a storage class is arbitrary but *permanent* (since
+    it is used in storage tokens).
 
     The third parameter can be used to accept only articles in a certain
-    size range into this storage class.  A <maxsize> of zero (or a missing
+    size range into this storage class.  A <maxsize> of 0 (or a missing
     <maxsize>) means no upper limit (and of course a <minsize> of 0 would
-    mean no lower limit, because an article is always great than zero bytes
+    mean no lower limit, because all articles are more than zero bytes
     long).  If you don't want to limit the size of articles accepted by this
     storage class, leave this parameter out entirely.
 
@@ -1027,9 +1046,8 @@ Configuring INN
     articles in this storage class.
 
     If you're using CNFS exclusively, just create one storage class for each
-    metacycbuff that you have defined (in cycbuff.conf) and set the
-    newsgroups pattern according to what newsgroups should be stored in that
-    buffer.
+    metacycbuff that you have defined in cycbuff.conf and set the newsgroups
+    pattern according to what newsgroups should be stored in that buffer.
 
     If you're using timehash or timecaf, the storage class IDs are used to
     store articles in separate directory trees, which you can take advantage
@@ -1038,16 +1056,22 @@ Configuring INN
     you will need to divide up your newsgroups based on how long you want to
     retain articles in those groups and create a storage class for each such
     collection of newsgroups.  Make note of the storage class IDs you assign
-    as they will be needed when you edit the expire.ctl file a bit later.
+    as they will be needed when you edit expire.ctl a bit later.
 
   expire.ctl
 
-    This file sets the expiration policy for articles stored on the server. 
+    expire.ctl sets the expiration policy for articles stored on the server.
+    Be careful, since the default configuration will expire most articles
+    after 10 days; in most circumstances this deletion is *permanent*, so
+    read this whole section carefully if you want to keep local hierarchies
+    forever.  (See archive(8) for a way to automate backups of important
+    articles.)
+
     Only one entry is required for all storage classes; it looks like:
 
         /remember/:10
 
-    This entry says how long to keep the message IDs for articles that have
+    This entry says how long to keep the Message-IDs for articles that have
     already expired in the history file so that the server doesn't accept
     them again.  Occasionally, fairly old articles will get regurgitated
     somewhere and offered to you again, so even after you've expired
@@ -1055,14 +1079,15 @@ Configuring INN
     file for a little while to ensure you don't get duplicates.
 
     INN will reject any articles more than a certain number of days old (the
-    artcutoff parameter in inn.conf, defaulting to 10); the number on the
+    *artcutoff* parameter in inn.conf, defaulting to 10); the number on the
     "/remember/" line should match that.
 
     CNFS makes no further use of expire.ctl, since articles stored in CNFS
-    buffers expire automatically when the buffer runs out of free space. 
-    For other storage methods, there are two different syntaxes of this
-    file, depending on whether "groupbaseexpiry" is set in inn.conf.  If it
-    is set to false, expire.ctl takes entries of the form:
+    buffers expire automatically when the buffer runs out of free space (but
+    see the "-N" option in expireover(8) if you really want to expire them
+    earlier).  For other storage methods, there are two different syntaxes
+    of this file, depending on *groupbaseexpiry* in inn.conf.  If it is set
+    to false, expire.ctl takes entries of the form:
 
         <storage_class>:<keep>:<default>:<purge>
 
@@ -1072,9 +1097,9 @@ Configuring INN
     don't have an Expires: header, those are the only two values that
     matter.  For articles with an Expires: header, the other two values come
     into play; the date given in the Expires: header of an article will be
-    honored subject to the contraints set by <keep> and <purge>.  All
+    honored, subject to the contraints set by <keep> and <purge>.  All
     articles in this storage class will be kept for at least <keep> days,
-    regardless of their Expires: header, and all articles in this storage
+    regardless of their Expires: headers, and all articles in this storage
     class will be expired after <purge> days, even if their Expires: headers
     specify a longer life.
 
@@ -1092,22 +1117,22 @@ Configuring INN
         <wildmat>:<flag>:<keep>:<default>:<purge>
 
     <wildmat> is a wildmat expression ("!" and "@" not permitted, and only a
-    single expression, not a comma-separated set of them.  Each expiration
+    single expression, not a comma-separated set of them).  Each expiration
     line applies to groups matching the wildmat expression.  <flag> is "M"
     for moderated groups, "U" for unmoderated groups, and "A" for groups
-    with any moderation status; the line only matches groups with a matching
-    expiration status.  All of the other fields have the same meaning as
-    above.
+    with any moderation status; the line only matches groups with the
+    indicated expiration status.  All of the other fields have the same
+    meaning as above.
 
   readers.conf
 
-    Provided that noreader is set to false in inn.conf, any connection from
-    a host that doesn't match an entry in incoming.conf (and any connection
-    from a host that does match such an entry but that then issues a MODE
-    READER command) will be handed off to nnrpd, the part of INN that
-    supports newsreading clients.  nnrpd uses readers.conf to determine
+    Provided that *noreader* is set to false in inn.conf, any connection
+    from a host that doesn't match an entry in incoming.conf (as well as any
+    connection from a host that does match such an entry, but has issued a
+    MODE READER command) will be handed off to nnrpd(8), the part of INN
+    that supports newsreading clients.  nnrpd uses readers.conf to determine
     whether a given connection is allowed to read news, and if so what
-    newsgroups they can read and post to.
+    newsgroups the client can read and post to.
 
     There are a variety of fairly complicated things that one can do with
     readers.conf, things like run external authentication programs that can
@@ -1126,14 +1151,13 @@ Configuring INN
         access "all" {
             users: "*@example.com"
             newsgroups: "*"
-            access: "Read Post"
         }
 
     If you're running a server for one particular domain, want to allow all
     hosts within that domain to read and post to any group on the server,
     and want to deny access to anyone outside that domain, just use the
     above and change "example.com" in the above to your domain and you're
-    all set.  Lots of examples of more complicated things are in the example
+    all set.  Lots of examples of more complicated things are in the sample
     file.
 
 Creating the Article Spool (CNFS only)
@@ -1141,7 +1165,7 @@ Creating the Article Spool (CNFS only)
     If you are using actual files as your CNFS buffers, you will need to
     pre-create those files, ensuring they're the right size.  The easiest
     way to do this is with dd.  For each cycbuff in cycbuff.conf, create the
-    buffer with the following commands as the news user:
+    buffer with the following commands (as the news user):
 
         dd if=/dev/zero of=/path/to/buffer bs=1k count=BUFFERSIZE
         chmod 664 /path/to/buffer
@@ -1150,28 +1174,28 @@ Creating the Article Spool (CNFS only)
     specified in cycbuff.conf.  This will create a zero-filled file of the
     correct size; it may take a while, so be prepared to wait.
 
-    Here's a command that will print out the dd commands that you should
+    Here's a command that will print out the dd(1) commands that you should
     run:
 
         awk -F: \
         '/^cy/ { printf "dd if=/dev/zero of=%s bs=1k count=%s\n", $3, $4 }' \
-        cycbuff.conf
+        ~news/etc/cycbuff.conf
 
     If you are using raw devices, you don't technically have to do anything
     at all (since INN is capable of using the devices in /dev), but you
     probably want to create special device files for those devices somewhere
-    for INN's private use.  Not only is it more convenient to keep all of
-    INN's stuff together, the device files used by INN really should be
-    owned by the news user and group and you may not want to do that with
-    the files in /dev.
+    for INN's private use.  It s more convenient to keep all of INN's stuff
+    together, but more importantly, the device files used by INN really
+    should be owned by the news user and group, and you may not want to do
+    that with the files in /dev.
 
-    To create the device files for INN, use mknod with a type of b, getting
-    the major and minor device numbers from the existing devices in /dev. 
-    There's a small shell script in cycbuff.conf(5) that may help with this.
-    Make sure to create the device files in the location INN expects them
-    (specified in cycbuff.conf).
+    To create the device files for INN, use mknod(8) with a type of "b",
+    getting the major and minor device numbers from the existing devices in
+    /dev.  There's a small shell script in cycbuff.conf(5) that may help
+    with this.  Make sure to create the device files in the location INN
+    expects them (specified in cycbuff.conf).
 
-    Solaris users please note:  On Solaris, do not use raw devices that
+    Solaris users please note:  on Solaris, do not use raw devices that
     include the first cylinder of the disk.  Solaris doesn't protect the
     superblock from being overwritten by an application writing to raw
     devices and includes it in the first cylinder of the disk, so unless you
@@ -1182,13 +1206,13 @@ Creating the Article Spool (CNFS only)
 Creating the Database Files
 
     At this point, you need to set up the news database directory
-    (~news/db).  This directory will hold the active file (the list of
-    newsgroups you carry), the active.times file (the creator and creation
-    time of newsgroups created since the server was initialized), the
-    newsgroups file (descriptions for all the newsgroups you carry), and the
-    history file (a record of every article the server currently has or has
-    seen in the past few days, used to decide whether to accept or refuse
-    new incoming messages).
+    (~news/db).  This directory will hold the active(5) file (the list of
+    newsgroups you carry), the active.times(5) file (the creator and
+    creation time of newsgroups created since the server was initialized),
+    the newsgroups(5) file (descriptions for all the newsgroups you carry),
+    and the history(5) file (a record of every article the server currently
+    has or has seen in the past few days, used to decide whether to accept
+    or refuse new incoming messages).
 
     Before starting to work on this, make sure you're logged on as the news
     user, since all of these files need to be owned by that user.  This is a
@@ -1207,15 +1231,17 @@ Creating the Database Files
     that, go to <ftp://ftp.isc.org/pub/usenet/CONFIG/> and download active
     and newsgroups from there; that will start you off with reasonably
     complete files.  If you plan to only carry a small set of groups, the
-    default minimal active file installed by INN is a good place to start
-    and you can create additional groups after the server is running by
-    using "ctlinnd newgroup".
+    default minimal active file installed by INN is a good place to start;
+    you can create additional groups after the server is running by using
+    "ctlinnd newgroup".  (Another option is to use actsync(8) to synchronize
+    your newsgroup list to that of another server.)
 
     "control" and "junk" must exist as newsgroups in your active file for
     INN to start, and creating pseudogroups for the major types of control
     messages is strongly encouraged for all servers that aren't standalone. 
-    "to" must also exist as a newsgroup if you have mergetogroups set in
-    inn.conf.
+    If you don't want these groups to be visible to clients, do *not* delete
+    them; simply hide them in readers.conf.  "to" must also exist as a
+    newsgroup if you have mergetogroups set in inn.conf.
 
     Next, you need to create an empty history database.  To do this, type:
 
@@ -1261,7 +1287,7 @@ Configuring syslog
     don't copy and paste from these instructions.  Type it in by hand and
     make sure you use a tab, or you'll get mysterious failures.  You'll also
     want to make sure that news log messages don't fill your other log files
-    (INN generates a lot of log traffic); for every entry in
+    (INN generates a lot of log traffic); so for every entry in
     /etc/syslog.conf that starts with "*", add ";news.none" to the end of
     the first column.  For example, if you have a line like:
 
@@ -1290,8 +1316,8 @@ Configuring syslog
 
 Setting Up the Cron Jobs
 
-    INN requires a special cron job to be set up on your system to run the
-    news.daily script, which performs daily server maintenance tasks such as
+    INN requires a special cron job to be set up on your system to run
+    news.daily(8) which performs daily server maintenance tasks such as
     article expiration and the processing and rotation of the server logs. 
     Since it will slow the server down while it is running, it should be run
     during periods of low server usage, such as in the middle of the night. 
@@ -1309,7 +1335,7 @@ Setting Up the Cron Jobs
     option list for news.daily.
 
     If you use the batching method to send news, also set up a cron job to
-    run nntpsend every ten minutes.  nntpsend will run innxmit for all
+    run nntpsend(8) every ten minutes.  nntpsend will run innxmit for all
     non-empty pending batch files to send pending news to your peers.  That
     cron entry should look something like:
 
@@ -1321,34 +1347,34 @@ Setting Up the Cron Jobs
 
     The parameters passed to news.daily in the above example are the most
     common (and usually the most efficient) ones to use.  More information
-    on what these parameters do can be found in the news.daily man page.
+    on what these parameters do can be found in the news.daily(8) man page.
 
 File Descriptor Limits
 
     INN likes to use a lot of file descriptors, particularly if you have a
     lot of peers.  Depending on what your system defaults are, you may need
-    to make sure the default limit is increased for INN (particularly innd
-    and innfeed).  This is vital on Solaris, which defaults (at least as of
-    2.6) to an absurdly low limit of 64 file descriptors per process.
+    to make sure the default limit is increased for INN (particularly for
+    innd and innfeed).  This is vital on Solaris, which defaults (at least
+    as of 2.6) to an absurdly low limit of 64 file descriptors per process.
 
     One way to increase the number of file descriptors is to set
-    rlimitnofile in inn.conf to a higher value.  This will cause
-    startinnfeed and inndstart, the setuid root wrapper scripts that start
-    innfeed and innd respectively, to increase the file descriptor limits
+    *rlimitnofile* in inn.conf to a higher value.  This will cause both
+    startinnfeed and inndstart (the setuid root wrapper scripts that start
+    innfeed and innd, respectively) to increase the file descriptor limits
     before they run the regular INN programs.  Note, however, that INN won't
     be able to increase the limits above the hard limits set by your
-    operating system; on some systems, that hard limit is 256 file
+    operating system; on some systems, that hard limit is normally 256 file
     descriptors (Linux, for example).  On others, like Solaris, it's 1024. 
     Increasing the limit beyond that value may require serious system
     configuration work.  (On some operating systems, it requires patching
     and recompiling the kernel.  On Solaris it can be changed in
     /etc/system, but for 2.6 or earlier the limit cannot be increased beyond
-    1024 without breaking select() and thereby breaking all of INN.  For
+    1024 without breaking select(2) and thereby breaking all of INN.  For
     current versions of Linux, you may be able to change the maximum by
     writing to /proc/sys/fs/file-max.)
 
     256 file descriptors will probably be enough for all but the largest
-    site.  There is no harm in setting the limits higher than you actually
+    sites.  There is no harm in setting the limits higher than you actually
     need (provided they're set to something lower than or equal to your
     system hard limit).  256 is therefore a reasonable value to try.
 

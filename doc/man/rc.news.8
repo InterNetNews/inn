@@ -128,77 +128,89 @@
 .rm #[ #] #H #V #F C
 .\" ========================================================================
 .\"
-.IX Title "INNUPGRADE 8"
-.TH INNUPGRADE 8 "2002-12-03" "INN 2.4.0" "InterNetNews Documentation"
+.IX Title "RC.NEWS 8"
+.TH RC.NEWS 8 "2002-12-02" "INN 2.4.0" "InterNetNews Documentation"
 .SH "NAME"
-innupgrade \- Upgrade INN configuration files
+rc.news \- Start or stop INN daemons
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
-\&\fBinnupgrade\fR \fIdirectory\fR
-.PP
-\&\fBinnupgrade\fR [\fB\-t\fR \fItype\fR] \fB\-f\fR \fIfile\fR
+\&\fBrc.news\fR [start | stop]
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-\&\fBinnupgrade\fR is intended to be run during a major upgrade of \s-1INN\s0 to fix
-the configuration files with any required changes.  If given a directory,
-it will scan that directory for any files that it has updates defined for,
-try to perform those updates, and replace the files with updated versions
-if applying the updates resulted in any changes.  The old versions of the
-files will be saved with a \f(CW\*(C`.OLD\*(C'\fR extension.
+\&\fBrc.news\fR can be used to start or stop \fBinnd\fR and supporting programs.
+It checks to make sure \s-1INN\s0 is not already running, handles cases of
+unclean shutdown, finishes up tasks which might have been interrupted by
+the preceeding shutdown, emails certain boot-time warnings to
+\&\fInewsmaster\fR (as set in \fIinn.conf\fR), and is generally safer and easier
+than starting and stopping everything directly.  It needs to be run as the
+news user so that files in \fIpathrun\fR are created with the right ownership
+(though this is less important for \f(CW\*(C`rc.news stop\*(C'\fR), and therefore
+requires that \fIinndstart\fR be setuid root, see \fIinndstart\fR\|(8) for
+discussion.
 .PP
-If the \fB\-f\fR flag is used, only that file will be updated.  If the file
-name doesn't match the standard file name of an \s-1INN\s0 configuration file,
-the optional \fB\-t\fR flag may be given to specify the type.  See
-\&\*(L"\s-1EXAMPLES\s0\*(R" for an example of this.
-.PP
-Currently, \fBinnupgrade\fR knows how to apply the following updates:
-.IP "\(bu" 2
-\&\fIinn.conf\fR:  Quote values with whitespace and comment out keys with no
-values, required for the change in configuration parsers introduced in \s-1INN\s0
-2.4.  The new format is not backward compatible with the previous parser,
-since the previous parser will include the double-quotes in the value of
-the parameter.
-.PP
-Normally, \fBinnupgrade\fR should be run on the \fIpathetc\fR directory after
-any upgrade of \s-1INN\s0 other than a patch release (any upgrade that changes
-the first or second version numbers).  This may occur automatically during
-the upgrade process.
+Programs run and stopped by this script include:
+.IP "\(bu" 4
+Always:  \fBinndstart\fR is run, and \fBinnd\fR is stopped.
+.IP "\(bu" 4
+If \fIdoinnwatch\fR is true in \fIinn.conf\fR:  \fBinnwatch\fR is started and
+stopped.
+.IP "\(bu" 4
+If \fIdocnfsstat\fR is true in \fIinn.conf\fR:  \fBovdb_init\fR is run;
+\&\fBovdb_server\fR and \fBovdb_monitor\fR are stopped.
+.IP "\(bu" 4
+If \fIrc.news.local\fR exists in \fIpathbin\fR:  \fBrc.news.local\fR is run with
+argument \f(CW\*(C`start\*(C'\fR or \f(CW\*(C`stop\*(C'\fR (to perform site-specific startup or shutdown
+tasks).
 .SH "OPTIONS"
 .IX Header "OPTIONS"
-.IP "\fB\-f\fR \fIfile\fR" 4
-.IX Item "-f file"
-Only act on \fIfile\fR rather than working on an entire directory.
-.IP "\fB\-t\fR \fItype\fR" 4
-.IX Item "-t type"
-For a file specified with \fB\-f\fR, parse it and upgrade it as if it were
-named \fItype\fR.  Used for upgrading files with the same syntax as normal
-\&\s-1INN\s0 configuration files but with different names.  Only makes sense in
-combination with \fB\-f\fR.
+.ie n .IP """start""" 4
+.el .IP "\f(CWstart\fR" 4
+.IX Item "start"
+If the first argument is \f(CW\*(C`start\*(C'\fR, or no first argument is given,
+\&\fBrc.news\fR initiates \s-1INN\s0 startup.
+.ie n .IP """stop""" 4
+.el .IP "\f(CWstop\fR" 4
+.IX Item "stop"
+If the first argument is \f(CW\*(C`stop\*(C'\fR, \fBrc.news\fR initiates \s-1INN\s0 shutdown.  It
+is recommended to throttle the server first as described in \fIctlinnd\fR\|(8).
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
-Upgrade any configuration files found in \fI/usr/local/news/etc\fR:
+To start \s-1INN\s0 and leave certain error messages going to the terminal:
 .PP
 .Vb 1
-\&    innupgrade /usr/local/news/etc
+\&       su - news -c ~news/bin/rc.news
 .Ve
 .PP
-Upgrade only \fI/news/etc/inn.conf\fR:
+To run \s-1INN\s0 at startup time from appropriate system boot scripts:
 .PP
 .Vb 1
-\&    innupgrade -f /news/etc/inn.conf
+\&       su - news -c ~news/bin/rc.news >/dev/console
 .Ve
 .PP
-Upgrade a file named \fIinn\-special.conf\fR that should have the same syntax
-as \fIinn.conf\fR:
+To stop \s-1INN\s0 (throttling first):
 .PP
-.Vb 1
-\&    innupgrade -t inn.conf -f inn-special.conf
+.Vb 2
+\&       ~news/bin/ctlinnd throttle reason
+\&       su - news -c '~news/bin/rc.news stop'
 .Ve
-.PP
-Any upgrade rules that apply to \fIinn.conf\fR will be applied to the
-alternate file.
+.SH "BUGS"
+.IX Header "BUGS"
+Running \f(CW\*(C`rc.news start\*(C'\fR as root is never the right thing to do, so we
+should at minimum check for this and error, or perhaps change effective
+user \s-1ID\s0.
 .SH "HISTORY"
 .IX Header "HISTORY"
-Written by Russ Allbery <rra@stanford.edu> for InterNetNews.
+// \s-1FIXME:\s0  any attribution for rc.news itself?
+.PP
+This manual page written by Jeffrey M. Vinocur <jeff@litech.org> for
+InterNetNews.
 .PP
 $Id$
+.SH "SEE ALSO"
+.IX Header "SEE ALSO"
+\&\fIctlinnd\fR\|(8),
+\&\fIcnfsstat\fR\|(8),
+\&\fIinn.conf\fR\|(5),
+\&\fIinndstart\fR\|(8),
+\&\fIinnwatch\fR\|(8),
+\&\fIovdb\fR\|(5).

@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "NEWSFEEDS 5"
-.TH NEWSFEEDS 5 "2002-08-24" "INN 2.4.0" "InterNetNews Documentation"
+.TH NEWSFEEDS 5 "2002-12-03" "INN 2.4.0" "InterNetNews Documentation"
 .SH "NAME"
 newsfeeds \- Determine where Usenet articles are sent
 .SH "DESCRIPTION"
@@ -399,7 +399,7 @@ exists in the active file.
 .IP "f" 3
 .IX Item "f"
 Don't send articles rejected by filters.  This is only useful when
-\&\fIdontrejectfiltered\fR is set in \fIinn.conf\fR\|(5).  With that variable set, this
+\&\fIdontrejectfiltered\fR is set in \fIinn.conf\fR.  With that variable set, this
 lets one accept all articles but not propagate filtered ones to some
 sites.
 .IP "o" 3
@@ -468,7 +468,7 @@ The flag specifies the size of the internal buffer for a file feed.  If
 there are more file feeds than allowed by the system, they will be
 buffered internally in least-recently-used order.  If the internal buffer
 grows bigger then \fIsize\fR bytes, however, the data will be written out to
-the appropriate file.  The default value is 16KB.
+the appropriate file.  The default value is 16 \s-1KB\s0.
 .IP "\fBN\fR \fIstatus\fR" 4
 .IX Item "N status"
 Restricts the articles sent to this site to those in newsgroups with the
@@ -561,7 +561,7 @@ The time the article was posted a seconds since epoch.
 .IX Item "s"
 The site that fed the article to the server.  This is taken from either
 the Path: header or the \s-1IP\s0 address of the sending site depending on the
-value of \fIlogipaddr\fR in \fIinn.conf\fR\|(5).  If \fIlogipaddr\fR is true and the \s-1IP\s0
+value of \fIlogipaddr\fR in \fIinn.conf\fR.  If \fIlogipaddr\fR is true and the \s-1IP\s0
 address is \f(CW0.0.0.0\fR (meaning that the article was fed from localhost by
 a program like \fIrnews\fR\|(8)), the Path: header value will be sent instead.
 .IP "t" 3
@@ -841,8 +841,9 @@ messages described in \fIinnd\fR\|(8) will send it all control messages except f
 cancel messages provided that control.cancel exists.  In this case, we
 also exclude any article with a distribution of \f(CW\*(C`collabra\-internal\*(C'\fR.
 \&\fBcontrolchan\fR gets the storage \s-1API\s0 token, the name of the sending site
-(for processing old-style ihave and sendme control messages), and the
-message \s-1ID\s0 for each article.
+(for processing old-style ihave and sendme control messages, be sure to
+read about \fIlogipaddr\fR in \fIcontrolchan\fR\|(8)), and the message \s-1ID\s0 for each
+article.
 .PP
 For many other examples, including examples of the special \f(CW\*(C`ME\*(C'\fR site
 entry, see the example newsfeeds file distributed with \s-1INN\s0.  Also see the

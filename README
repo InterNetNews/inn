@@ -26,7 +26,7 @@ What is INN?
     servers pass the articles along to their peers, and so on, resulting in
     "flood fill" propagation of news articles.
 
-    A news server performs three basic functions:  It accepts articles from
+    A news server performs three basic functions:  it accepts articles from
     other servers and stores them on disk, sends articles it has received
     out to other servers, and offers stored news articles to readers on
     demand.  It additionally has to perform some periodic maintenance tasks,
@@ -95,8 +95,8 @@ Prerequisites
     recommended.
 
     If you want to enable PGP verification of control messages (highly
-    recommended), you will need to have PGP installed.  See INSTALL for more
-    details.
+    recommended), you will need to have a PGP implementation installed.  See
+    INSTALL for more details.
 
 Getting Started
 
@@ -128,8 +128,8 @@ Reporting Bugs
 
         inn-bugs@isc.org
 
-    Even if you post to Usenet, please CC the above address.  All other INN
-    mail should go to
+    (patches are certainly welcome, see below).  Even if you post to Usenet,
+    please CC the above address.  All other INN mail should go to
 
         inn@isc.org
 
@@ -150,13 +150,18 @@ Contributing Code
 
         inn-patches@isc.org
 
+    in the body of the message (not as an attachment), or put it on a
+    webpage and send a link.  Patches included with a bug report as
+    described above should follow the same procedure, but need not be sent
+    to both addresses (either will do).
+
     Have fun!
 
 Mailing Lists
 
     There are various INN-related mailing lists you can join or send
     messages to if you like.  Some of them you must be a member of before
-    you can send mail to them (thank the Spam gods for that policy), and one
+    you can send mail to them (thank the spammers for that policy), and one
     of them is read-only (no postings allowed).
 
     inn-announce@isc.org    Where announcements about INN are set (only
@@ -268,9 +273,9 @@ Supporting the INN Effort
     Note that INN is supported by the Internet Software Consortium, and
     although it is free for use and redistribution and incorporation into
     vendor products and export and anything else you can think of, it costs
-    money to produce.  That money comes from ISP's, hardware and software
+    money to produce.  That money comes from ISPs, hardware and software
     vendors, companies who make extensive use of the software, and generally
-    kind hearted folk such as yourself.
+    kind-hearted folk such as yourself.
 
     The Internet Software Consortium has also commissioned a DHCP server
     implementation, handles the official support/release of BIND, and

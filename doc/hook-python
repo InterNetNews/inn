@@ -258,11 +258,11 @@ FUNCTIONS SUPPLIED BY THE BUILT-IN INND MODULE
 PYTHON AUTHENTICATION AND AUTHORIZATION SUPPORT FOR NNRPD
 
     Python authentication and authorization support in nnrpd along with
-    filtering support in innd may be compiled in by giving "--with-python"
-    command line flag to configure script. Python authentication and
-    authorization may be turned on by nnrppythonauth setting in inn.conf.
+    filtering support in innd may be compiled in by passing "--with-python"
+    "configure".  Python authentication and authorization may be enabled
+    with the nnrppythonauth setting in inn.conf.
 
-    If nnrppythonauth is set to true in inn.conf, nnrpd will load the Python
+    If nnrppythonauth in inn.conf is set to true, nnrpd will load the Python
     module defined in include/paths.h and located in the directory specified
     by pathfilter in inn.conf.  Once that module is loaded, nnrpd will
     authenticate and authorize readers by calling a Python methods rather

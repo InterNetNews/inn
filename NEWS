@@ -4,11 +4,11 @@ Upgrading from 2.3 to 2.4
     change, options in inn.conf that contain whitespace or a few other
     special characters must be quoted with double quotes, and empty
     parameters (parameters with no value) are not allowed.  INN 2.4 comes
-    with a script, innupgrade, that is run automatically on "make update"
+    with a script, innupgrade(8), run automatically during "make update",
     that will attempt to fix any problems that it finds with your inn.conf
     file, saving the original as inn.conf.OLD.
 
-    This change is the beginning of standardizing the parsing and syntax
+    This change is the beginning of standardization of parsing and syntax
     across all of INN's configuration files.
 
     The history subsystem now has a standard API that allows other backends
@@ -20,8 +20,8 @@ Upgrading from 2.3 to 2.4
     will tell INN to use the same history backend as was used in previous
     versions.
 
-    If you use Perl authentication for nnrpd (if nnrpdperlauth in inn.conf
-    is true), however, there have been major changes.  See "Changes to Perl
+    If you use Perl authentication for nnrpd (if *nnrpdperlauth* in inn.conf
+    is true), there have been major changes.  See "Changes to Perl
     Authentication Support for nnrpd" in doc/hook-perl for details.
 
     The wildmat API has been renamed (to uwildmat and friends; see
@@ -50,8 +50,8 @@ Changes from 2.3 to 2.4
       other parts of INN.
 
     * Variables can now be used in the newsfeeds file to make it easier to
-      specify a lot of similar feeds or feed patterns.  See the newsfeeds(5)
-      man page for more details.
+      specify many similar feeds or feed patterns.  See the newsfeeds(5) man
+      page for more details.
 
     * Local connections to INN support a new special mode, MODE CANCEL, that
       allows efficient batch cancellation of messages.  This is intended to
@@ -59,8 +59,8 @@ Changes from 2.3 to 2.4
       NoCeM.
 
     * Thanks to code contributed by CMU, innfeed can now feed an IMAP server
-      as well as other NNTP servers.  See the man page for innfeed for more
-      information.
+      as well as other NNTP servers.  See the man page for innfeed(8) for
+      more information.
 
     * An authenticator that checks a username and password against a remote
       Samba server is now included.
@@ -73,7 +73,7 @@ Changes from 2.3 to 2.4
 
     * The interface between external authenticators and nnrpd is now wrapped
       in a library, which should make it easier to write additional
-      authenticators.
+      authenticators.  For example, see authprogs/domain.c.
 
     * INN now checks to ensure that the configured temporary directory is
       not world-writeable.  Additionally, most (if not all) of the temporary
@@ -81,7 +81,7 @@ Changes from 2.3 to 2.4
       properly and safely.
 
     * Two configure options have changed names:  --with-tmp-path is now
-      --with-tmp-dir and --with-largefiles is now --enable-largefiles to
+      --with-tmp-dir, and --with-largefiles is now --enable-largefiles to
       improve consistency and better match the autoconf option guidelines.
 
     * Preliminary IPv6 support has been added, it is off by default.  Build
@@ -90,25 +90,25 @@ Changes from 2.3 to 2.4
       been made to data structures even when IPv6 is disabled.  Further
       information is available in doc/IPv6-info.
 
-    * A new option tradindexedmmap has been added to inn.conf.  If set to
-      true (the default) then the tradindexed overview method will use
-      mmap() to access its overview data (in 2.3 you couldn't control this,
+    * A new option, *tradindexedmmap*, has been added to inn.conf.  If set
+      to true (the default), then the tradindexed overview method will use
+      mmap() to access its overview data (in 2.3 you couldn't control this;
       it always used mmap).
 
-    * Two new options nfsreader and nfswriter have been added to inn.conf to
-      aid in building NFS based shared reader/writer platforms.  On the
-      writer server configure nfswriter to true and on all of the readers
-      configure nfsreader to true; these options add calls to force data out
-      to the NFS server and force it to be read directly from the NFS server
-      at the appropriate moments.  Note that it has only been tested on
-      Solaris 8, using CNFS as the storage mechanism and tradindexed as the
-      overview method.
+    * Two new options, *nfsreader* and *nfswriter*, have been added to
+      inn.conf to aid in building NFS based shared reader/writer platforms. 
+      On the writer server configure nfswriter to true and on all of the
+      readers configure nfsreader to true; these options add calls to force
+      data out to the NFS server and force it to be read directly from the
+      NFS server at the appropriate moments.  Note that it has only been
+      tested on Solaris 8, using CNFS as the storage mechanism and
+      tradindexed as the overview method.
 
-    * nnrpd now supports article injection via IHAVE. Any articles injected
-      this way must have Date, From, Message-ID, Newsgroups, Path and
+    * nnrpd now supports article injection via IHAVE.  Any articles injected
+      this way must have Date, From, Message-ID, Newsgroups, Path, and
       Subject headers.  X-Trace and X-Complaints-To headers will be added if
       the appropriate options are set in readers.conf, but other headers
-      will not be modified/inserted (i.e. NNTP-Posting-Host,
+      will not be modified/inserted (e.g. NNTP-Posting-Host,
       NNTP-Posting-Date, Organization, Lines, Cc, Bcc and To headers).
 
     * nnrpd now handles arbitrarily long lines in POST and IHAVE;
@@ -119,7 +119,7 @@ Changes from 2.3 to 2.4
       argument to the NEWGROUPS command specifying the "distributions" that
       the command was supposed to apply to.
 
-      Clients that use that argument will break.  There is not believed to
+      Clients that use that argument will break.  There are not believed to
       be any such clients, and it's easy enough to just filter the returned
       list of newsgroups (which is generally fairly short) to achieve the
       same results.
@@ -145,33 +145,32 @@ Upgrading from 2.2 to 2.3
 
     If you want to allow readers, or if you want to expire based on
     newsgroup name, you need to tell INN to generate overview data and pick
-    an overview method by setting ovmethod in inn.conf.  See INSTALL and
+    an overview method by setting *ovmethod* in inn.conf.  See INSTALL and
     inn.conf(5) for more details.
 
     The code that generates the dbz index files has been split into a
     seperate program, makedbz.  makehistory still generates the base history
     file and the overview information, but some of its options have been
-    changed.  To rebuild the history and overview files, use:
+    changed.  To rebuild the history and overview files, use something like:
 
         makehistory -b -f history.n -O -T/usr/local/news/tmp -l 600000
 
-    (Change the /usr/local/news/tmp path to some directory that has plenty
+    (change the /usr/local/news/tmp path to some directory that has plenty
     of temporary space, and leave off -O if you're running a transit-only
     server and don't intend to expire based on group name, and therefore
-    don't need overview.)  Or use:
+    don't need overview.)  Or if your overview is buffindexed, use:
 
         makehistory -b -f history.n -O -F
 
-    (This is suitable for the "buffindexed" overview backend.)  Both will
-    generate a new history file as history.n and rebuild overview at the
-    same time.  If you want to preseve a record of expired message IDs in
-    the history file, run:
+    Both will generate a new history file as history.n and rebuild overview
+    at the same time.  If you want to preseve a record of expired message
+    IDs in the history file, run:
 
         awk 'NF==2 { print; }' < history >> history.n
 
-    to append them to the newly created history file.  Look over the new
-    history file and make sure it looks right, then generate the new index
-    files and move them into place:
+    to append them to the new history file you created above.  Look over the
+    new history file and make sure it looks right, then generate the new
+    index files and move them into place:
 
         makedbz -s `wc -l <history.n` -f history.n
         mv history.n history
@@ -182,19 +181,19 @@ Upgrading from 2.2 to 2.3
     (Rather than .hash and .index files, you may have a .pag file if you're
     using tagged hash.)
 
-    For a reader machine, nnrp.access has been replaced by readers.conf. 
+    For reader machines, nnrp.access has been replaced by readers.conf. 
     There currently isn't a program to convert between the old format and
     the new format (if you'd like to contribute one, it would be welcomed
-    gratefully).  The new file is unfortunately considerably more complex to
-    support its new capabilities; please carefully read the example
+    gratefully).  The new file is unfortunately considerably more complex as
+    a result of its new capabilities; please carefully read the example
     readers.conf provided and the man page when setting up your initial
     configuration.  The provided commented-out examples cover the most
     common installation (IP-based authentication for all machines on the
     local network).
 
-    INN makes extensive use of mmap for the new overview mechanisms, so at
-    the present time NFS-mounting the spool and overview from one central
-    server on multiple reader machines probably isn't feasible in this
+    INN makes extensive use of mmap(2) for the new overview mechanisms, so
+    at the present time NFS-mounting the spool and overview on multiple
+    reader machines from one central server probably isn't feasible in this
     version.  mmap tends to interact poorly with NFS (at the least, NFS
     clients won't see updates to the mapped files in situations where they
     should).  (The preferred way to fix this would, rather than backing out
@@ -219,7 +218,8 @@ Upgrading from 2.2 to 2.3
     directly from the old spool.  It's more reliable and ensures that
     everything gets put into the right place.  The easiest way to do this is
     to generate, on your old server, a list of all of your existing article
-    files and then feed that list to innxmit.
+    files and then feed that list to innxmit.  Further details can be found
+    in the FAQ at *http://www.eyrie.org/~eagle/faqs/inn.html*.
 
     If you are using a version of Cleanfeed that still has a line in it
     like:
@@ -246,7 +246,7 @@ Changes from 2.2 to 2.3
       separate files for each group and can handle a higher incoming article
       rate while still being fast for readers.  The third (ovdb) uses
       Berkeley DB to store overview information (so you need to have
-      Berkeley DB installed to use it).  The ovmethod key in inn.conf
+      Berkeley DB installed to use it).  The *ovmethod* key in inn.conf
       chooses the overview method to use.
 
       Note that ovdb has not been as widely tested as the other overview
@@ -288,12 +288,12 @@ Changes from 2.2 to 2.3
       configured.)
 
     * The build and installation system has been substantially overhauled. 
-      make update now updates scripts as well as binaries and documentation,
-      there is better support for parallel builds (with make -j), there is
-      less needless make recursion, and far more of the system-dependent
-      configuration is handled directly by autoconf.  libtool build support
-      (including shared library support) should be better than previous
-      releases.
+      "make update" now updates scripts as well as binaries and
+      documentation, there is better support for parallel builds ("make
+      -j"), there is less make recursion, and far more of the
+      system-dependent configuration is handled directly by autoconf. 
+      libtool build support (including shared library support) should be
+      better than previous releases.
 
     * All of the applicable bug fixes from the INN 2.2 STABLE series are
       also included in INN 2.3.
@@ -316,7 +316,7 @@ Changes from 2.1 to 2.2
     * Some options to configure are now moved to inn.conf (merge-to-groups
       and pgp-verify).
 
-    * inndf, a portable version of df(1) is supplied.
+    * inndf, a portable version of df(1), is supplied.
 
     * New cnfsstat program to show stats of cnfs buffers.
 

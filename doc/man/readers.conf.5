@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "READERS.CONF 5"
-.TH READERS.CONF 5 "2002-11-13" "INN 2.4.0" "InterNetNews Documentation"
+.TH READERS.CONF 5 "2002-12-03" "INN 2.4.0" "InterNetNews Documentation"
 .SH "NAME"
 readers.conf \- Access control and configuration for nnrpd
 .SH "DESCRIPTION"
@@ -137,7 +137,8 @@ readers.conf \- Access control and configuration for nnrpd
 \&\fIreaders.conf\fR in \fIpathetc\fR specifies access control for \fInnrpd\fR\|(8).  It
 controls who is allowed to connect as a news reader and what they're
 allowed to do after they connect.  nnrpd reads this file when it starts
-up.
+up.  (The location \fIpathetc\fR/readers.conf is only the default; the same
+format applies to any file specified with \f(CW\*(C`nnrpd \-c\*(C'\fR.)
 .PP
 There are two types of entries in \fIreaders.conf\fR:  parameter/value pairs
 and configuration groups.  Blank lines and anything after a number sign
@@ -181,10 +182,13 @@ not significant.
 There are two basic types of configuration groups, auth and access.  The
 auth group provides mechanisms to establish the identity of the user, who
 they are.  The access group determines, given the user's identity, what
-they're permitted to do.  Writing a \fIreaders.conf\fR file for your setup is
-a two-step process, first assigning an identity to each incoming
-connection using auth groups, and then giving each identity appropriate
-privileges with access group.
+that user ispermitted to do.  Writing a \fIreaders.conf\fR file for your
+setup is a two-step process:  first assigning an identity to each
+incoming connection using auth groups, and then giving each identity
+appropriate privileges with access group.  We recommend \fInot\fR
+intermingling auth groups and access groups in the config file; it is
+often more sensible (in the absence of the \fIkey\fR parameter) to put all
+of the auth groups first, and all of the access groups below.
 .PP
 A user identity, as established by an auth group, looks like an e\-mail
 address; in other words, it's in the form \*(L"<username>@<domain>\*(R" (or
@@ -204,7 +208,10 @@ An auth group definition looks like:
 .Ve
 .PP
 The <name> is used as a label for the group and is only for documentation
-purposes.
+purposes.  (If your syslog configuration records the \f(CW\*(C`news.debug\*(C'\fR
+facility, the <name> will appear in the debugging output of nnrpd.
+Examining that output can be very helpful in understanding why your
+configuration doesn't do what you expect it to.)
 .PP
 A given auth group applies only to hosts whose name or \s-1IP\s0 address matches
 the wildmat expression given with the hosts: parameter (comma\-separated
@@ -218,23 +225,25 @@ ssl_required: parameter set to true only applies if the incoming
 connection is using \s-1SSL\s0.
 .PP
 For any connection from a host that matches that wildmat expression or
-netblock, <res\-program> (the program given with the res: parameter, if
-present) is run to determine the identity of the user just from the
-connection information.  If it fails, or if the res: parameter isn't
-present, the user is assigned an identity of \*(L"<defuser>@<defdomain>\*(R"; in
-other words, the values of the default: and default\-domain: parameters are
-used.  If <res\-program> only returns a username, <defdomain> is used as
-the domain.
+netblock, each <res\-program> (multiple res: lines may be present in a
+block; they are run in sequence until one succeeds), if any, is run to
+determine the identity of the user just from the connection information.
+If all the resolvers fail, or if the res: parameter isn't present, the
+user is assigned an identity of \*(L"<defuser>@<defdomain>\*(R"; in other words,
+the values of the default: and default\-domain: parameters are used.  If
+<res\-program> only returns a username, <defdomain> is used as the
+domain.
 .PP
 If the user later authenticates via the \s-1AUTHINFO\s0 \s-1USER/PASS\s0 commands, the
-provided username and password is passed to <auth\-program>, the value of
-the auth: or perl_auth: parameter (if present).  If this succeeds and
+provided username and password are passed to each <auth\-program>
+(multiple auth: or perl_auth: lines may be present in a block; they are
+run in sequence until one succeeds), if any.  If one succeeds and
 returns a different identity than the one assigned at the time of the
-connection, it is matched against the available access groups again
-and the actions the user is authorized to do may change.
+connection, it is matched against the available access groups again and
+the actions the user is authorized to do may change.
 .PP
 When matching auth groups, the last auth group in the file that matches a
-given connection or username/password combination is used.
+given connection and username/password combination is used.
 .PP
 An access group definition usually looks like:
 .PP
@@ -263,15 +272,15 @@ use the form:
 and matching users will be able to read any group that matches
 <read\-wildmat> and post to any group that matches <post\-wildmat>.  You can
 also set several other things in the access group as well as override
-various \fIinn.conf\fR\|(5) parameters for just that group of users.
+various \fIinn.conf\fR\|(5) parameters for just a particular group of users.
 .PP
 Just like with auth groups, when matching access groups the last matching
-one in the file is used to determine the user's permissions. There is
+one in the file is used to determine the user's permissions.  There is
 an exception to this rule: if the auth group which matched the client
 contains the perl_access: parameter then the perl script given as
-argument is used to dynamically generate an access group. This new
+argument is used to dynamically generate an access group.  This new
 access group is then used to determine the access rights of the
-client.
+client; the access groups in the file are ignored.
 .PP
 There is one additional special case to be aware of.  When forming
 particularly complex authentication and authorization rules, it is
@@ -300,12 +309,13 @@ This is done with the key: parameter.  For example:
 In this case, the two key: parameters bind this auth group with this
 access group.  For any incoming connection matching \*(L"*.example.com\*(R"
 (assuming there isn't any later auth group that also matches such hosts),
-no access group that doesn't have \*(L"key: special\*(R" will even be checked.
+no access group that doesn't have \*(L"key: special\*(R" will even be considered.
 Similarly, the above access group will only be checked if the user was
 authenticated with an auth group containing \*(L"key: special\*(R".  This
-mechanism normally isn't useful.
+mechanism normally isn't useful; there is almost always a better way to
+achieve the same result.
 .PP
-Also note in the above that there's no default\-domain: parameter, which
+Also note in the example that there's no default\-domain: parameter, which
 means that no domain is appended to the default username and the identity
 for such connections is just \*(L"<\s-1SPECIAL\s0>\*(R".  Note that some additional
 add-ons to \s-1INN\s0 may prefer that authenticated identities always return a
@@ -346,45 +356,46 @@ All local addresses match if this parameter is not given.
 .IX Item "res:"
 A simple command line for a user resolver (shell metacharacters are not
 supported).  If a full path is not given, the program executed must be in
-\&\fIpathbin\fR/auth/resolv.  A resolver is an authentication program which
-attempts to figure out the identity of the connecting user using nothing
-but the connection information (in other words, a username and password
-aren't used).  An examples of a resolver would be a program that gets the
-username from an ident callback or from the user's hostname.
+the \fIpathbin\fR/auth/resolv directory.  A resolver is an authentication
+program which attempts to figure out the identity of the connecting user
+using nothing but the connection information (in other words, the user
+has not provided a username and password).  An examples of a resolver
+would be a program that assigns an identity from an ident callback or
+from the user's hostname.
 .Sp
 One auth group can have multiple res: parameters, and they will be tried
-in the order they're listed in and the results of the first successful one
+in the order they're listed.  The results of the first successful one
 will be used.
 .IP "\fBauth:\fR" 4
 .IX Item "auth:"
 A simple command line for a user authenticator (shell metacharacters are
 not supported).  If a full path is not given, the program executed must be
-located in \fIpathbin\fR/auth/passwd.  An authenticator is a program used to
-handle a user-supplied username and password, via a mechanism such as
-\&\s-1AUTHINFO\s0 \s-1USER/PASS\s0.  Like with res:, one auth group can have multiple
-auth: parameters; they will be tried in order and the results of the first
-successful one will be used.
+located in the \fIpathbin\fR/auth/passwd directory.  An authenticator is a
+program used to handle a user-supplied username and password, via a
+mechanism such as \s-1AUTHINFO\s0 \s-1USER/PASS\s0.  Like with res:, one auth group
+can have multiple auth: parameters; they will be tried in order and the
+results of the first successful one will be used.  See also perl_auth:
+below.
 .IP "\fBperl_auth:\fR" 4
 .IX Item "perl_auth:"
-A path to a perl script for authentication. perl_auth: works exactly
-like auth:, the only difference is that it calls the script given as
-argument using the perl hook rather then an external
-program. Multiple/mixed use of auth: and perl_auth: is permitted
-within any auth group. Each method is tried in order as they appear in
-the auth group. perl_auth: has some advantages over auth: in that it
-provides the authentication program with additional information about
-the client and the ability to return an error string. This parameter
-is only valid if \s-1INN\s0 is compiled with Perl support (\fB\-\-with\-perl\fR
-passed to configure). More information may be found in the file
-\&\fIdoc/hook\-perl\fR.
+A path to a perl script for authentication.  The perl_auth: parameter
+works exactly like auth:, except that it calls the named script using
+the perl hook rather then an external program.  Multiple/mixed use of
+auth: and perl_auth: is permitted within any auth group; each method is
+tried in order listed in \fIreaders.conf\fR.  perl_auth: has more power
+than auth: in that it provides the authentication program with
+additional information about the client and the ability to return an
+error string.  This parameter is only valid if \s-1INN\s0 is compiled with Perl
+support (\fB\-\-with\-perl\fR passed to configure).  More information may be
+found in \fIdoc/hook\-perl\fR.
 .IP "\fBdefault:\fR" 4
 .IX Item "default:"
 The default username for connections matching this auth group.  This is
 the username assigned to the user at connection time if all resolvers fail
 or if there are no res: parameters.  Note that it can be either a bare
-username, in which case default\-domain: is appended after an \f(CW\*(C`@\*(C'\fR if set,
-or a full identity string containing an \f(CW\*(C`@\*(C'\fR, in which case it will be
-used verbatim.
+username, in which case default\-domain: (if present) is appended after
+an \f(CW\*(C`@\*(C'\fR, or a full identity string containing an \f(CW\*(C`@\*(C'\fR, in which case it
+will be used verbatim.
 .IP "\fBdefault\-domain:\fR" 4
 .IX Item "default-domain:"
 The default domain string for this auth group.  If a user resolver or
@@ -396,8 +407,8 @@ no need to use this parameter.)
 .IP "\fBkey:\fR" 4
 .IX Item "key:"
 If this parameter is present, any connection matching this auth group will
-have its privileges determined only by access groups containing a matching
-key parameter.
+have its privileges determined only by the subset of access groups
+containing a matching key parameter.
 .IP "\fBrequire_ssl:\fR" 4
 .IX Item "require_ssl:"
 If set to true, an incoming connection only matches this auth group if
@@ -405,15 +416,15 @@ it is encrypted using \s-1SSL\s0.  This parameter is only valid if \s-1INN\s0 is
 compiled with \s-1SSL\s0 support (\fB\-\-with\-openssl\fR passed to configure).
 .IP "\fBperl_access:\fR" 4
 .IX Item "perl_access:"
-A path to a perl script for dynamically generating an access group. If
-an auth group is successful and contains a perl_access parameter, then
-the argument perl script will be used to create an access group. This
-group will then be used to determine the access rights of the client,
-overriding any access groups in readers.conf. If and only if a sucessful
-auth group contains the perl_access parameter, then readers.conf
+A path to a perl script for dynamically generating an access group.  If
+an auth group matches successfully and contains a perl_access parameter,
+then the argument perl script will be used to create an access group.
+This group will then determine the access rights of the client,
+overriding any access groups in \fIreaders.conf\fR.  If and only if a
+sucessful auth group contains the perl_access parameter, \fIreaders.conf\fR
 access groups are ignored and the client's rights are instead determined
-dynamically. This parameter is only valid if \s-1INN\s0 is compiled with Perl
-support (\fB\-\-with\-perl\fR passed to configure). More information may be
+dynamically.  This parameter is only valid if \s-1INN\s0 is compiled with Perl
+support (\fB\-\-with\-perl\fR passed to configure).  More information may be
 found in the file \fIdoc/hook\-perl\fR.
 .SH "ACCESS GROUP PARAMETERS"
 .IX Header "ACCESS GROUP PARAMETERS"
@@ -431,8 +442,8 @@ newsgroups matching this comma-separated list of wildmat patterns.
 .IX Item "read:"
 Like the newsgroups: parameter, but the client is only given permission to
 read the matching newsgroups.  This parameter is often used with post:
-(below) and cannot be used in the same access group with a newsgroups:
-parameter.
+(below) to specify some read-only groups; it cannot be used in the same
+access group with a newsgroups: parameter.
 .IP "\fBpost:\fR" 4
 .IX Item "post:"
 Like the newsgroups: parameter, but the client is only given permission to
@@ -472,7 +483,7 @@ The client may post to newsgroups that are set to disallow local posting
 .RE
 .RS 4
 .Sp
-Note that if this parameter is given, \fIallownewnews\fR in \fIinn.conf\fR\|(5) is
+Note that if this parameter is given, \fIallownewnews\fR in \fIinn.conf\fR is
 ignored for connections matching this access group and the ability of the
 client to use \s-1NEWNEWS\s0 is entirely determined by the presence of \f(CW\*(C`N\*(C'\fR in
 the access string.  If you want to support \s-1NEWNEWS\s0, make sure to include
@@ -496,8 +507,8 @@ parameter.
 .IX Item "reject_with:"
 If this parameter is present, a client matching this block will be
 disconnected with a \*(L"Permission denied\*(R" message containing the contents
-(a \*(L"reason\*(R") of this parameter.  Some newsreaders will then display the 
-reason to the user.
+(a \*(L"reason\*(R" string) of this parameter.  Some newsreaders will then
+display the reason to the user.
 .IP "\fBmax_rate:\fR" 4
 .IX Item "max_rate:"
 If this parameter is present (and nonzero) it is used for nnrpd's 
@@ -512,7 +523,7 @@ will be formatted in local time instead.  This is a boolean value and the
 default is false.
 .IP "\fBnewsmaster:\fR" 4
 .IX Item "newsmaster:"
-Used as the contact address in the help message returned by \fInnrpd\fR\|(8) if
+Used as the contact address in the help message returned by \fInnrpd\fR\|(8), if
 the virtualhost: parameter is set to true.
 .IP "\fBstrippath:\fR" 4
 .IX Item "strippath:"
@@ -532,17 +543,17 @@ default is true.
 .IP "\fBvirtualhost:\fR" 4
 .IX Item "virtualhost:"
 If set to true, \fInnrpd\fR\|(8) will behave as if it's running on a server with a
-different name.  This affects the Path:, Message\-ID:, and X\-Trace: headers
+different name.  This may affect Path:, Message\-ID:, and X\-Trace: headers
 of posted articles, as well as the apparent Path: and Xref: headers of all
-articles read by the client.  One of pathhost: or domain: must be set in
-the same access group if this parameter is set to true, and \fInnrpd\fR\|(8) will
+articles read by the client.  Either pathhost: or domain: must be present
+in the same access group if this parameter is set to true.  \fInnrpd\fR\|(8) will
 act as if the server name is the value of pathhost:, or domain: if
-pathhost: isn't set or is set to the same value as in \fIinn.conf\fR\|(5).  One of
+pathhost: isn't set or is set to the same value as in \fIinn.conf\fR.  One of
 these parameters must be set to something different than that set in
-inn.conf.
+\&\fIinn.conf\fR.
 .PP
 In addition, all of the following parameters are valid in access groups
-and override the global setting in \fIinn.conf\fR\|(5).  See \fIinn.conf\fR\|(5) for the
+and override the global setting in \fIinn.conf\fR.  See \fIinn.conf\fR\|(5) for the
 descriptions of these parameters:  addnntppostingdate, addnntppostinghost,
 backoff_auth, backoff_db, backoff_k, backoff_postfast, backoff_postslow,
 backoff_trigger, checkincludedtext, clienttimeout, complaints, domain,
@@ -553,13 +564,14 @@ pathhost, readertrack, spoolfirst, and strippostcc.
 .IX Header "SUMMARY"
 Here's a basic summary of what happens when a client connects:
 .IP "\(bu" 2
-All auth groups are scanned and the ones that don't match the client \s-1IP\s0
-address are eliminated.
+All auth groups are scanned and the ones that don't match the client
+(due to hosts:, localaddress:, ssl_required:, etc) are eliminated.
 .IP "\(bu" 2
-Each remaining auth group is scanned from the last to the first, and an
+The remaining auth groups are scanned from the last to the first, and an
 attempt is made to apply it to the current connection.  This means running
 res: programs, if any, and otherwise applying default:.  The first auth
-group to return a valid user is kept as the active auth group.
+group (starting from the bottom) to return a valid user is kept as the
+active auth group.
 .IP "\(bu" 2
 If no auth groups yield a valid user (none have default: parameters or
 successful res: programs) but some of the auth groups have auth: lines
@@ -569,21 +581,30 @@ permissions), the connection is considered to have no valid auth group
 connection isn't closed.  Instead, 480 is returned for everything until
 the user authenticates.
 .IP "\(bu" 2
-When the user authenticates, all auth groups with auth: or perl_auth:
-lines are then checked from the bottom up and the first one that
-returns a valid user is kept as the default auth group.
+When the user authenticates, the auth groups are rescanned, and only the
+matching ones which contain at least one auth: or perl_auth: line are
+considered.  These auth groups are scanned from the last to the first,
+running auth: programs and perl_auth: scripts.  The first auth group
+(starting from the bottom) to return a valid user is kept as the active
+auth group.
 .IP "\(bu" 2
-Regardless of how an auth group is established, as soon as one is, the
-user permissions are granted by scanning the access groups from bottom up
-and finding the first match. Unless the established auth group
-contains the perl_access: parameter, in which case the dyanmically
-generated access group returned by the perl script is used.
+Regardless of how an auth group is established, as soon as one is, that
+auth group is used to assign a user identity by taking the result of the
+successful res:, auth, or perl_auth: line (or the default: if necessary),
+and appending the default\-domain: if necessary.  (If the perl_access:
+parameter is present, see below.)
+.IP "\(bu" 2
+Finally, an access group is selected by scanning the access groups from
+bottom up and finding the first match.  (If the established auth group
+contained a perl_access: line, the dynamically generated access group
+returned by the Perl script is used instead.)  User permissions are granted
+based on the established access group.
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
-Here is probably the simplest useful example of a complete readers.conf.
-This gives permissions to read and post to all groups to any connections
-from the example.com domain, and no privileges for anyone connecting from
-anywhere else:
+Probably the simplest useful example of a complete \fIreaders.conf\fR,
+this gives permissions to read and post to all groups to any connections
+from the \*(L"example.com\*(R" domain, and no privileges for anyone connecting
+elsewhere:
 .PP
 .Vb 4
 \&    auth example.com {
@@ -600,7 +621,7 @@ anywhere else:
 .PP
 Note that the access realm has no users: key and therefore applies to any
 user identity.  The only available auth realm only matches hosts in the
-example.com domain, though, so any connections from other hosts will be
+\&\*(L"example.com\*(R" domain, though, so any connections from other hosts will be
 rejected immediately.
 .PP
 If you have some systems that should only have read-only access to the
@@ -623,12 +644,12 @@ auth and access group:
 .PP
 If those are put in the file after the above example, they'll take
 precedence (because they're later in the file) for any user coming from a
-machine in the lab.example.com domain, and those users will only have read
+machine in the lab.example.com domain, everyone will only have read
 access, not posting access.
 .PP
 Here's a similar example for a news server that accepts connections from
 anywhere but requires the user to specify a username and password.  The
-username and password is first checked against an external database of
+username and password are first checked against an external database of
 usernames and passwords, and then against the system shadow password file:
 .PP
 .Vb 4
@@ -648,26 +669,37 @@ usernames and passwords, and then against the system shadow password file:
 When the user first connects, there are no res: keys and no default, so
 they don't receive any valid identity and the connection won't match any
 access groups (even ones with \f(CW\*(C`users: *\*(C'\fR).  Such users receive nothing
-but authentication required responses from nnrpd until they authenticate.
+but authentication-required responses from nnrpd until they authenticate.
 .PP
 If they then later authenticate, the username and password are checked
 first by running \fBckpasswd\fR with the \fB\-d\fR option for an external dbm
 file of encrypted passwords, and then with the \fB\-s\fR option to check the
-shadow password database (note that ckpasswd may have to be setgid to a
-shadow group to use this option).  If both of those fail, the user will
-continue to have no identity; otherwise, they will acquire some other
-identity string (whatever username they specified, since the password was
-valid) and the access group will match, giving them full access.
+shadow password database (note that this option may require ckpasswd to
+be setgid to a shadow group, and there are security considerations; see
+\&\fIckpasswd\fR\|(8) for details).  If both of those fail, the user will continue
+to have no identity; otherwise, an identity will be assigned (usually
+the supplied username, perhaps with a domain appended, although an
+authenticator technically can provide a completely different username
+for the identity), and the access group will match, giving full access.
+.PP
+It may be educational to consider how to combine the above examples;
+general groups always go first.  The order of the auth groups actually
+doesn't matter, since the \*(L"hosts: example.com\*(R" one only matches
+connections before username/password is sent, and the \*(L"auth: ckpasswd\*(R"
+one only matches after; order would matter if either group applied to
+both cases.  The order of the access groups in this case does matter,
+provided the newsgroups: lines differ; the access group with no users:
+line needs to be first, with the \*(L"users: <\s-1LOCAL\s0>\*(R" group after.
 .PP
 Finally, here's a very complicated example.  This is for an organization
-that has an internal hierarchy example.* only available to local shell
-users, who are on machines where identd can be trusted.  Dialup users have
-to use a username and password, which is then checked against \s-1RADIUS\s0.
+that has an internal hierarchy \*(L"example.*\*(R" only available to local shell
+users, who are on machines where identd can be trusted.  Dialup users must
+provide a username and password, which is then checked against \s-1RADIUS\s0.
 Remote users have to use a username and password that's checked against a
 database on the news server.  Finally, the admin staff (users \*(L"joe\*(R" and
-\&\*(L"jane\*(R") can post anywhere, including the example.admin.* groups that are
-read-only for everyone else, and are exempted from the Perl filter.  For
-an additional twist, posts from dialup users have their Sender header
+\&\*(L"jane\*(R") can post anywhere (including the \*(L"example.admin.*\*(R" groups that are
+read-only for everyone else), and are exempted from the Perl filter.  For
+an additional twist, posts from dialup users have their Sender: header
 replaced by their authenticated identity.
 .PP
 Since this organization has some internal moderated newsgroups, the admin
@@ -742,13 +774,13 @@ cannot.
 .PP
 Note the use of different domains to separate dialup from shell users
 easily.  Another way to do that would be with key: parameters, but this
-provides slightly more intuitive identity strings.  Note also that the
+way provides slightly more intuitive identity strings.  Note also that the
 fail access group catches not only failing connections from external users
 but also failed authentication of shell and dialup users and dialup users
 before they've authenticated.  The identity string given for, say, dialup
 users before \s-1RADIUS\s0 authentication has been attempted matches both the
 dialup access group and the fail access group, since it's
-<\s-1FAIL\s0>@dialup.example.com, but the fail group is last so it takes
+\&\*(L"<\s-1FAIL\s0>@dialup.example.com\*(R", but the fail group is last so it takes
 precedence.
 .PP
 The shell auth group has an auth: parameter so that users joe and jane
@@ -763,6 +795,40 @@ Also note that if the users joe and jane are using their own accounts,
 they get their special privileges regardless of how they connect, whether
 the dialups, the shell machines, or even externally with a username and
 password.
+.SH "SECURITY CONSIDERATIONS"
+.IX Header "SECURITY CONSIDERATIONS"
+In general, separate passwords should be used for \s-1NNTP\s0 wherever
+possible; the \s-1NNTP\s0 protocol itself does not protect passwords from
+casual interception, and many implementations (including this one) do
+not \*(L"lock out\*(R" accounts or otherwise discourage password-guessing
+attacks.  So it is best to ensure that a compromised password has
+minimal effects.
+.PP
+Authentication using the \s-1AUTHINFO\s0 \s-1USER/PASS\s0 commands passes unencrypted
+over the network.  Extreme caution should therefore be used especially
+with system passwords (e.g. \f(CW\*(C`auth: ckpasswd \-s\*(C'\fR).  Passwords can be
+protected by using \s-1NNTP\s0 over \s-1SSL\s0 or through ssh tunnels, and this usage
+can be enforced by a well-considered server configuration that only
+permits certain auth groups to be applied in certain cases.  Here are
+some ideas:
+.IP "\(bu" 4
+To restrict connections on the standard nntp port (119) to use \s-1SSL\s0 for
+some (or all) of the auth groups to match, use the ssl_required:
+parameter.
+.IP "\(bu" 4
+If you consider your local network (but not the internet) secure, have
+some auth groups with a restrictive hosts: parameter; they would go
+above, with ones having global applicability below.
+.IP "\(bu" 4
+Consider running a \f(CW\*(C`nnrpd \-S\*(C'\fR (with \f(CW\*(C`\-D\*(C'\fR, or out of \*(L"super\-server\*(R"
+like inetd) on the nntps port (563) for clients that support \s-1SSL\s0.  You
+can use the ssl_required: parameter, or \f(CW\*(C`\-c\*(C'\fR to specify an alternate
+\&\fIreaders.conf\fR if you want a substantially different configuration for
+this case.
+.IP "\(bu" 4
+If you want to restrict an auth group to only match loopback connections
+(for users running newsreaders on localhost or connecting via an ssh
+tunnel), use the localaddress: parameter.
 .SH "HISTORY"
 .IX Header "HISTORY"
 Written by Aidan Cully <aidan@panix.com> for InterNetNews.  Substantially
