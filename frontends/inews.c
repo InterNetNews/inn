@@ -1103,7 +1103,6 @@ Spoolit(article, Length, deadfile)
     SIZE_T		Length;
     char		*deadfile;
 {
-    static char		SPOOLTEMP[] = _PATH_SPOOLTEMP;
     register HEADER	*hp;
     register FILE	*F;
     register int	i;
@@ -1114,7 +1113,7 @@ Spoolit(article, Length, deadfile)
     /* Try to write to the spool dir, else the deadfile. */
     if ((stat(innconf->pathincoming, &Sb) >= 0 && S_ISDIR(Sb.st_mode))
      || (F = xfopena(deadfile)) == NULL) {
-	TempName(SPOOLTEMP, temp);
+	TempName(innconf->pathtmp, temp);
 	(void)umask(0);
 	if ((i = open(temp, O_WRONLY | O_CREAT, BATCHFILE_MODE)) < 0
 	 || (F = fdopen(i, "w")) == NULL)

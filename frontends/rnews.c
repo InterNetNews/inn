@@ -35,7 +35,6 @@ STATIC BOOL	Verbose;
 STATIC char	*InputFile = "stdin";
 STATIC char	*UUCPHost;
 STATIC char	*PATHBADNEWS = NULL;
-STATIC char	SPOOLTEMP[] = _PATH_SPOOLTEMP;
 STATIC FILE	*FromServer;
 STATIC FILE	*ToServer;
 STATIC char	UNPACK[] = "compress";
@@ -703,7 +702,7 @@ Spool(fd, mode)
 
     if(mode == 'N')
 	exit(9);
-    TempName(SPOOLTEMP, temp);
+    TempName(innconf->pathtmp, temp);
     (void)umask(0);
     if ((spfd = open(temp, O_WRONLY | O_CREAT, BATCHFILE_MODE)) < 0) {
 	syslog(L_FATAL, "cant open %s %m", temp);
