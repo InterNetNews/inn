@@ -51,6 +51,7 @@ timer:			0
 allowreaders:		yes
 extendeddbz:		no
 nnrpdoverstats:		no
+storeonxref:		yes
 backoff_auth:		no
 backoff_db:		@DBDIR@/backoff
 backoff_postfast:	0L
