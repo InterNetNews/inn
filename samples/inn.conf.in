@@ -46,6 +46,7 @@ strippostcc:		false
 status:			0
 timer:			0
 readerswhenstopped:	true
+noreader:		false
 extendeddbz:		false
 nnrpdoverstats:		false
 storeonxref:		true
