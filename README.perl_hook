@@ -13,9 +13,8 @@ article received by innd from a peer, or by nnrpd from a reader. The
 subroutine causes nnrpd or innd to accept or reject the article. This will
 be most useful for spam killing.
 
-To include Perl support, you need to have perl 5.003. For dynamic loading
-support, you will definitely need 5.004 or later. Version 5.001 will most
-certainly not work at all, and 5.002 might, but has not bee tested. Go to
+To include Perl support, you need to have perl 5.004. Other Version before
+5.004, you will get link error at compilation time. Go to
 http://www.perl.com/CPAN for the latest Perl goodies.
 
 In config.dist there is a section (#17) devoted to Perl. You must set
