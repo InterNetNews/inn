@@ -5428,9 +5428,10 @@ else
 fi
 
 if test $NBIO_STYLE = unknown; then
+NBIO_STYLE=pre_test
 if test $ac_cv_header_sys_filio_h = yes; then
 	cat > conftest.$ac_ext <<EOF
-#line 5434 "configure"
+#line 5435 "configure"
 #include "confdefs.h"
 #include <sys/filio.h>
 #ifdef FIONBIO
@@ -5463,9 +5464,9 @@ fi
 
 
 echo $ac_n "checking log level for news""... $ac_c" 1>&6
-echo "configure:5467: checking log level for news" >&5
+echo "configure:5468: checking log level for news" >&5
 cat > conftest.$ac_ext <<EOF
-#line 5469 "configure"
+#line 5470 "configure"
 #include "confdefs.h"
 #include <syslog.h>
 #ifdef LOG_NEWS
@@ -5488,12 +5489,12 @@ rm -f conftest*
 
 
 echo $ac_n "checking generic pointer""... $ac_c" 1>&6
-echo "configure:5492: checking generic pointer" >&5
+echo "configure:5493: checking generic pointer" >&5
 if eval "test \"`echo '$''{'ac_cv_type_generic'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 5497 "configure"
+#line 5498 "configure"
 #include "confdefs.h"
 #ifdef _AIX41
 #include <stdlib.h>
@@ -5508,7 +5509,7 @@ int main() {
 void *a; a = malloc(sizeof(a))
 ; return 0; }
 EOF
-if { (eval echo configure:5512: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:5513: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_type_generic=void
 else

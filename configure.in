@@ -729,6 +729,7 @@ else
 fi
 
 if test $NBIO_STYLE = unknown; then
+NBIO_STYLE=pre_test
 if test $ac_cv_header_sys_filio_h = yes; then
 	AC_EGREP_CPP(yes, [#include <sys/filio.h>
 #ifdef FIONBIO
