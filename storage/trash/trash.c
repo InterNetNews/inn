@@ -7,9 +7,9 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <sys/types.h>
+#include <configdata.h>
 #include <clibrary.h>
 #include <macros.h>
-#include <configdata.h>
 #include <libinn.h>
 #include <methods.h>
 #include "paths.h"
