@@ -411,7 +411,8 @@ ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount) {
 	SMseterror(SMERR_BADTOKEN, NULL);
 	return NULL;
     }
-    if (method_data[start].initialized == INIT_NO && !InitMethod(start)) {
+    if (method_data[start].initialized == INIT_NO && method_data[i].configured
+      && !InitMethod(start)) {
 	SMseterror(SMERR_UNINIT, NULL);
 	return NULL;
     }
