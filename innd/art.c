@@ -982,8 +982,14 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
     if (*p) {
 	Data->MessageID = p;
 	Data->MessageIDLength = strlen(p);
-	if (error == NULL && !ARTidok(p))
+	if (error == NULL && !ARTidok(p)) {
 		error = "Bad \"Message-ID\" header";
+		Data->MessageID = NULL;
+		Data->MessageIDLength = 0;
+	}
+    } else {
+	Data->MessageID = NULL;
+	Data->MessageIDLength = 0;
     }
 
     if (error)
@@ -2139,6 +2145,12 @@ STRING ARTpost(CHANNEL *cp)
     article = &cp->In;
     if ((error = ARTclean(article, &Data)) != NULL) {
 	sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, error);
+	if (innconf->remembertrash && Data.MessageID && (Mode == OMrunning)) {
+	    hash = HashMessageID(Data.MessageID);
+	    if (!HIShavearticle(hash) && !HISremember(hash))
+		syslog(L_ERROR, "%s cant write history %s %m", LogName,
+		    Data.MessageID);
+	}
 	return buff;
     }
     Data.MessageID = HDR(_message_id);
