@@ -1,0 +1,9 @@
+Path: news.example.com!not-for-mail
+Newsgroups: example.test,example.config
+Subject: Test article #3 with a |	| tab
+From: user@example.com
+Date: Sat, 06 Mar 2004 21:40:54 -0800
+Message-ID: <example-3@example.com>
+Xref: news.example.com example.test:2 example.config:2
+
+This is an example crossposted message.

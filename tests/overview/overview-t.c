@@ -497,18 +497,25 @@ main(void)
 
     test_init(21);
 
+    if (access("../data/overview/basic", F_OK) == 0)
+        chdir("../data");
+    else if (access("data/overview/basic", F_OK) == 0)
+        chdir("data");
+    else if (access("tests/data/overview/basic", F_OK) == 0)
+        chdir("tests/data");
+
     fake_innconf();
     if (!overview_init())
         die("Opening the overview database failed, cannot continue");
     ok(1, true);
 
-    groups = overview_load("data/basic");
+    groups = overview_load("overview/basic");
     ok(2, true);
     status = true;
     hash_traverse(groups, overview_verify_groups, &status);
     ok(3, status);
-    ok(4, overview_verify_data("data/basic"));
-    ok(5, overview_verify_search("data/basic"));
+    ok(4, overview_verify_data("overview/basic"));
+    ok(5, overview_verify_search("overview/basic"));
     hash_free(groups);
     OVclose();
     ok(6, true);
@@ -517,13 +524,13 @@ main(void)
         die("Opening the overview database failed, cannot continue");
     ok(7, true);
 
-    groups = overview_load("data/reversed");
+    groups = overview_load("overview/reversed");
     ok(8, true);
     status = true;
     hash_traverse(groups, overview_verify_groups, &status);
     ok(9, status);
-    ok(10, overview_verify_data("data/basic"));
-    ok(11, overview_verify_search("data/basic"));
+    ok(10, overview_verify_data("overview/basic"));
+    ok(11, overview_verify_search("overview/basic"));
     hash_free(groups);
     OVclose();
     ok(12, true);
@@ -532,10 +539,10 @@ main(void)
         die("Opening the overview database failed, cannot continue");
     ok(13, true);
 
-    groups = overview_load("data/high-numbered");
+    groups = overview_load("overview/high-numbered");
     ok(14, true);
-    ok(15, overview_verify_data("data/high-numbered"));
-    ok(16, overview_verify_full_search("data/high-numbered"));
+    ok(15, overview_verify_data("overview/high-numbered"));
+    ok(16, overview_verify_full_search("overview/high-numbered"));
     hash_free(groups);
     OVclose();
     ok(17, true);
@@ -544,9 +551,9 @@ main(void)
         die("Opening the overview database failed, cannot continue");
     ok(18, true);
 
-    groups = overview_load("data/bogus");
+    groups = overview_load("overview/bogus");
     ok(19, true);
-    ok(20, overview_verify_data("data/bogus"));
+    ok(20, overview_verify_data("overview/bogus"));
     hash_free(groups);
     OVclose();
     system("/bin/rm -r ov-tmp");

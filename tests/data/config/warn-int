@@ -1,0 +1,21 @@
+parameter: "foo"
+===
+config/tmp:1: parameter is not an integer
+===
+# Check that line numbers are right.
+key: value; parameter: foobar
+===
+config/tmp:2: parameter is not an integer
+===
+parameter: 999999999999999999999999999999999999999999999999999999999999
+===
+config/tmp:1: parameter doesn't convert to an integer
+===
+parameter: []
+===
+config/tmp:1: parameter is not an integer
+===
+parameter: [ 10 ]
+===
+config/tmp:1: parameter is not an integer
+===

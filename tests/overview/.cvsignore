@@ -2,5 +2,4 @@
 .pure
 api.t
 buffindexed.t
-ov-tmp
 tradindexed.t

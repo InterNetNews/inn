@@ -1,0 +1,24 @@
+# Make sure line numbering copes with a leading comment.
+parameter: value
+parameter: value
+===
+config/tmp:3: duplicate parameter parameter
+===
+# Line numbering and Macs.
+parameter: value
+parameter: value
+===
+config/tmp:3: duplicate parameter parameter
+===
+# Line numbering and Windows.
+parameter: value
+parameter: value
+===
+config/tmp:3: duplicate parameter parameter
+===
+# Duplicate parameter checking with vectors.
+parameter: value
+parameter: [ value ]
+===
+config/tmp:3: duplicate parameter parameter
+===

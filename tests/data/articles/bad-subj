@@ -1,0 +1,8 @@
+Path: news.example.com!not-for-mail
+Newsgroups: example.test
+From: user@example.com
+Date: Sat, 06 Mar 2004 21:39:44 -0800
+Message-ID: <example-bad-subj@example.com>
+Xref: news.example.com example.test:3
+
+This is a test message to example.test with no Subject header.

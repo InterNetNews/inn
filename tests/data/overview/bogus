@@ -1,0 +1,9 @@
+..foo..:7498	Bogus newsgroup name	Russ Allbery <rra@stanford.edu>	Sat, 02 Feb 2002 12:51:44 -0800	<test-1@example.com>		481	16	Xref: inn.example.com ..foo..:7498
+../..:7498	Bogus newsgroup name	Russ Allbery <rra@stanford.edu>	Sat, 02 Feb 2002 12:51:44 -0800	<test-2@example.com>		481	16	Xref: inn.example.com ../..:7498
+/:7498	Bogus newsgroup name	Russ Allbery <rra@stanford.edu>	Sat, 02 Feb 2002 12:51:44 -0800	<test-3@example.com>		481	16	Xref: inn.example.com /:7498
+bar..:7498	Bogus newsgroup name	Russ Allbery <rra@stanford.edu>	Sat, 02 Feb 2002 12:51:44 -0800	<test-4@example.com>		481	16	Xref: inn.example.com bar..:7498
+bar../:7498	Bogus newsgroup name	Russ Allbery <rra@stanford.edu>	Sat, 02 Feb 2002 12:51:44 -0800	<test-5@example.com>		481	16	Xref: inn.example.com bar../:7498
+/../foo:1	Bogus newsgroup name	Russ Allbery <rra@stanford.edu>	Sat, 02 Feb 2002 12:51:44 -0800	<test-6@example.com>		481	16	Xref: inn.example.com /../foo:1
+.:1	Bogus newsgroup name	Russ Allbery <rra@stanford.edu>	Sat, 02 Feb 2002 12:51:44 -0800	<test-7@example.com>		481	16	Xref: inn.example.com .:1
+////:7498	Bogus newsgroup name	Russ Allbery <rra@stanford.edu>	Sat, 02 Feb 2002 12:51:44 -0800	<test-8@example.com>		481	16	Xref: inn.example.com ////:7498
+foo..bar:1	Bogus newsgroup name	Russ Allbery <rra@stanford.edu>	Sat, 02 Feb 2002 12:51:44 -0800	<test-9@example.com>		481	16	Xref: inn.example.com foo..bar:1

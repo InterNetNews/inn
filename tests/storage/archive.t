@@ -37,7 +37,7 @@ compare () {
 # Find the right directory.
 sm="../../frontends/sm"
 archive="../../backends/archive"
-dirs='. storage tests/storage'
+dirs='../data data data/storage'
 for dir in $dirs ; do
     if [ -r "$dir/articles/1" ] ; then
         cd $dir

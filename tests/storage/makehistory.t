@@ -24,7 +24,7 @@ compare () {
 # Find the right directory.
 sm="../../frontends/sm"
 makehistory="../../expire/makehistory"
-dirs='. storage tests/storage'
+dirs='../data data tests/data'
 for dir in $dirs ; do
     if [ -r "$dir/articles/1" ] ; then
         cd $dir

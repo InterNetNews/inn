@@ -18,34 +18,34 @@ const struct {
     const char *path;
     const char *error;
 } articles[] = {
-    { "../storage/articles/1",         "" },
-    { "../storage/articles/2",         "" },
-    { "../storage/articles/3",         "" },
-    { "../storage/articles/4",         "" },
-    { "../storage/articles/5",         "" },
-    { "../storage/articles/bad-msgid", "" },
-    { "../storage/articles/bad-subj",  "" },
-    { "../storage/articles/6",
+    { "../data/articles/1",         "" },
+    { "../data/articles/2",         "" },
+    { "../data/articles/3",         "" },
+    { "../data/articles/4",         "" },
+    { "../data/articles/5",         "" },
+    { "../data/articles/bad-msgid", "" },
+    { "../data/articles/bad-subj",  "" },
+    { "../data/articles/6",
       "437 Article of 8193 bytes exceeds local limit of 8192 bytes" },
-    { "../storage/articles/bad-empty",
+    { "../data/articles/bad-empty",
       "437 Empty article" },
-    { "../storage/articles/bad-hdr-nospc",
+    { "../data/articles/bad-hdr-nospc",
       "437 No colon-space in \"Test:<-he: re\" header" },
-    { "../storage/articles/bad-hdr-space",
+    { "../data/articles/bad-hdr-space",
       "437 Space before colon in \"Test\" header" },
-    { "../storage/articles/bad-hdr-trunc",
+    { "../data/articles/bad-hdr-trunc",
       "437 No colon-space in \"Test:\" header" },
-    { "../storage/articles/bad-long-cont",
+    { "../data/articles/bad-long-cont",
       "437 Header line too long (1025 bytes)" },
-    { "../storage/articles/bad-long-hdr",
+    { "../data/articles/bad-long-hdr",
       "437 Header line too long (1025 bytes)" },
-    { "../storage/articles/bad-no-body",
+    { "../data/articles/bad-no-body",
       "437 No body" },
-    { "../storage/articles/bad-no-header",
+    { "../data/articles/bad-no-header",
       "437 No headers" },
-    { "../storage/articles/bad-nul-body",
+    { "../data/articles/bad-nul-body",
       "437 Nul character in body" },
-    { "../storage/articles/bad-nul-header",
+    { "../data/articles/bad-nul-header",
       "437 Nul character in header" }
 };
 
@@ -62,7 +62,7 @@ fake_innconf(void)
     innconf = xmalloc(sizeof(*innconf));
     innconf->logipaddr = false;
     innconf->maxartsize = 8 * 1024;
-    innconf->pathetc = xstrdup("../storage/etc");
+    innconf->pathetc = xstrdup("../data/etc");
 }
 
 /* Create a fake channel with just enough data filled in to be able to use it
@@ -85,8 +85,8 @@ fake_channel(void)
 static void
 initialize(void)
 {
-    if (access("../storage/etc/overview.fmt", F_OK) < 0)
-        if (access("storage/etc/overview.fmt", F_OK) == 0)
+    if (access("../data/etc/overview.fmt", F_OK) < 0)
+        if (access("data/etc/overview.fmt", F_OK) == 0)
             if (chdir("innd") != 0)
                 sysdie("Cannot cd to innd");
     fake_innconf();

@@ -1,0 +1,21 @@
+parameter: "yes"
+===
+config/tmp:1: parameter is not a boolean
+===
+parameter: False
+===
+config/tmp:1: parameter is not a boolean
+===
+foo: bar
+parameter: 0
+===
+config/tmp:2: parameter is not a boolean
+===
+parameter: []
+===
+config/tmp:1: parameter is not a boolean
+===
+parameter: [ true ]
+===
+config/tmp:1: parameter is not a boolean
+===

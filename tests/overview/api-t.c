@@ -507,14 +507,14 @@ overview_tests(int n)
         die("Opening the overview database failed, cannot continue");
     ok(n++, true);
 
-    groups = overview_load("data/basic", overview);
+    groups = overview_load("overview/basic", overview);
     ok(n++, true);
     verify.status = true;
     verify.overview = overview;
     hash_traverse(groups, overview_verify_groups, &verify);
     ok(n++, verify.status);
-    ok(n++, overview_verify_data("data/basic", overview));
-    ok(n++, overview_verify_search("data/basic", overview));
+    ok(n++, overview_verify_data("overview/basic", overview));
+    ok(n++, overview_verify_search("overview/basic", overview));
     hash_free(groups);
     overview_close(overview);
     ok(n++, true);
@@ -524,14 +524,14 @@ overview_tests(int n)
         die("Opening the overview database failed, cannot continue");
     ok(n++, true);
 
-    groups = overview_load("data/reversed", overview);
+    groups = overview_load("overview/reversed", overview);
     ok(n++, true);
     verify.status = true;
     verify.overview = overview;
     hash_traverse(groups, overview_verify_groups, &verify);
     ok(n++, verify.status);
-    ok(n++, overview_verify_data("data/basic", overview));
-    ok(n++, overview_verify_search("data/basic", overview));
+    ok(n++, overview_verify_data("overview/basic", overview));
+    ok(n++, overview_verify_search("overview/basic", overview));
     hash_free(groups);
     overview_close(overview);
     ok(n++, true);
@@ -541,10 +541,10 @@ overview_tests(int n)
         die("Opening the overview database failed, cannot continue");
     ok(n++, true);
 
-    groups = overview_load("data/high-numbered", overview);
+    groups = overview_load("overview/high-numbered", overview);
     ok(n++, true);
-    ok(n++, overview_verify_data("data/high-numbered", overview));
-    ok(n++, overview_verify_full_search("data/high-numbered", overview));
+    ok(n++, overview_verify_data("overview/high-numbered", overview));
+    ok(n++, overview_verify_full_search("overview/high-numbered", overview));
     hash_free(groups);
     overview_close(overview);
     ok(n++, true);
@@ -554,9 +554,9 @@ overview_tests(int n)
         die("Opening the overview database failed, cannot continue");
     ok(n++, true);
 
-    groups = overview_load("data/bogus", overview);
+    groups = overview_load("overview/bogus", overview);
     ok(n++, true);
-    ok(n++, overview_verify_data("data/bogus", overview));
+    ok(n++, overview_verify_data("overview/bogus", overview));
     hash_free(groups);
     overview_close(overview);
     system("/bin/rm -r ov-tmp");
@@ -580,7 +580,7 @@ overview_mmap_tests(int n)
         die("Opening the overview database failed, cannot continue");
     ok(n++, true);
 
-    groups = overview_load("data/basic", overview);
+    groups = overview_load("overview/basic", overview);
     ok(n++, true);
     overview_close(overview);
     innconf->tradindexedmmap = false;
@@ -591,8 +591,8 @@ overview_mmap_tests(int n)
     verify.overview = overview;
     hash_traverse(groups, overview_verify_groups, &verify);
     ok(n++, verify.status);
-    ok(n++, overview_verify_data("data/basic", overview));
-    ok(n++, overview_verify_search("data/basic", overview));
+    ok(n++, overview_verify_data("overview/basic", overview));
+    ok(n++, overview_verify_search("overview/basic", overview));
     hash_free(groups);
     overview_close(overview);
     ok(n++, true);
@@ -603,7 +603,7 @@ overview_mmap_tests(int n)
         die("Opening the overview database failed, cannot continue");
     ok(n++, true);
 
-    groups = overview_load("data/reversed", overview);
+    groups = overview_load("overview/reversed", overview);
     ok(n++, true);
     overview_close(overview);
     innconf->tradindexedmmap = false;
@@ -614,8 +614,8 @@ overview_mmap_tests(int n)
     verify.overview = overview;
     hash_traverse(groups, overview_verify_groups, &verify);
     ok(n++, verify.status);
-    ok(n++, overview_verify_data("data/basic", overview));
-    ok(n++, overview_verify_search("data/basic", overview));
+    ok(n++, overview_verify_data("overview/basic", overview));
+    ok(n++, overview_verify_search("overview/basic", overview));
     hash_free(groups);
     overview_close(overview);
     ok(n++, true);
@@ -626,15 +626,15 @@ overview_mmap_tests(int n)
         die("Opening the overview database failed, cannot continue");
     ok(n++, true);
 
-    groups = overview_load("data/high-numbered", overview);
+    groups = overview_load("overview/high-numbered", overview);
     ok(n++, true);
     overview_close(overview);
     innconf->tradindexedmmap = false;
     overview = overview_open(OV_READ);
     if (overview == NULL)
         die("Opening the overview database failed, cannot continue");
-    ok(n++, overview_verify_data("data/high-numbered", overview));
-    ok(n++, overview_verify_full_search("data/high-numbered", overview));
+    ok(n++, overview_verify_data("overview/high-numbered", overview));
+    ok(n++, overview_verify_full_search("overview/high-numbered", overview));
     hash_free(groups);
     overview_close(overview);
     ok(n++, true);
@@ -645,14 +645,14 @@ overview_mmap_tests(int n)
         die("Opening the overview database failed, cannot continue");
     ok(n++, true);
 
-    groups = overview_load("data/bogus", overview);
+    groups = overview_load("overview/bogus", overview);
     ok(n++, true);
     overview_close(overview);
     innconf->tradindexedmmap = false;
     overview = overview_open(OV_READ);
     if (overview == NULL)
         die("Opening the overview database failed, cannot continue");
-    ok(n++, overview_verify_data("data/bogus", overview));
+    ok(n++, overview_verify_data("overview/bogus", overview));
     hash_free(groups);
     overview_close(overview);
     system("/bin/rm -r ov-tmp");
@@ -664,6 +664,13 @@ int
 main(void)
 {
     int n = 1;
+
+    if (access("../data/overview/basic", F_OK) == 0)
+        chdir("../data");
+    else if (access("data/overview/basic", F_OK) == 0)
+        chdir("data");
+    else if (access("tests/data/overview/basic", F_OK) == 0)
+        chdir("tests/data");
 
     test_init(21 * 3);
 

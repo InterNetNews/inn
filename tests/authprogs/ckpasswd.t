@@ -57,8 +57,8 @@ runfailure () {
 }
 
 # Make sure we're in the right directory.
-for dir in . authprogs tests/authprogs ; do
-    test -f "$dir/passwd" && cd $dir
+for dir in ../data data tests/data ; do
+    test -f "$dir/etc/passwd" && cd $dir
 done
 ckpasswd=../../authprogs/ckpasswd
 
@@ -66,15 +66,15 @@ ckpasswd=../../authprogs/ckpasswd
 echo 7
 
 # First, run the tests that we expect to succeed.
-runsuccess "foo" "foopass" "-f passwd" "User:foo"
-runsuccess "bar" "barpass" "-f passwd" "User:bar"
-runsuccess "baz" ""        "-f passwd" "User:baz"
-runpipe "foo" "foopass" "-f passwd" "User:foo"
+runsuccess "foo" "foopass" "-f etc/passwd" "User:foo"
+runsuccess "bar" "barpass" "-f etc/passwd" "User:bar"
+runsuccess "baz" ""        "-f etc/passwd" "User:baz"
+runpipe "foo" "foopass" "-f etc/passwd" "User:foo"
 
 # Now, run the tests that we expect to fail.
-runfailure "foo" "barpass" "-f passwd" \
+runfailure "foo" "barpass" "-f etc/passwd" \
     "ckpasswd: invalid password for user foo"
-runfailure "who" "foopass" "-f passwd" \
+runfailure "who" "foopass" "-f etc/passwd" \
     "ckpasswd: user who unknown"
-runfailure "" "foopass" "-f passwd" \
+runfailure "" "foopass" "-f etc/passwd" \
     "ckpasswd: null username"

@@ -59,10 +59,13 @@ main(void)
     ok(9, wire_findbody(p, 1) == NULL);
     ok(10, wire_findbody(p, 0) == NULL);
 
-    if (access("articles/strange", F_OK) < 0)
-        if (access("lib/articles/strange", F_OK) == 0)
-            chdir("lib");
-    article = read_file("articles/strange", &st);
+    if (access("../data/articles/wire-strange", F_OK) == 0)
+        chdir("../data");
+    else if (access("data/articles/wire-strange", F_OK) == 0)
+        chdir("data");
+    else if (access("tests/data/articles/wire-strange", F_OK) == 0)
+        chdir("tests/data");
+    article = read_file("articles/wire-strange", &st);
 
     p = wire_findbody(article, st.st_size);
     ok(11, strncmp(p, "Path: This is", strlen("Path: This is")) == 0);
@@ -98,18 +101,18 @@ main(void)
     ok(26, p == NULL);
 
     free(article);
-    article = read_file("articles/no-body", &st);
+    article = read_file("articles/wire-no-body", &st);
 
     ok(27, wire_findbody(article, st.st_size) == NULL);
     p = wire_findheader(article, st.st_size, "message-id");
-    ok(28, strncmp(p, "<id1@example.com>\r\n",
-                   strlen("<id1@example.com>\r\n")) == 0);
+    ok(28, strncmp(p, "<bad-body@example.com>\r\n",
+                   strlen("<bad-body@example.com>\r\n")) == 0);
     end = wire_endheader(p, article + st.st_size - 1);
     ok(29, end == article + st.st_size - 1);
     ok(30, wire_nextline(p, article + st.st_size - 1) == NULL);
 
     free(article);
-    article = read_file("articles/truncated", &st);
+    article = read_file("articles/wire-truncated", &st);
 
     ok(31, wire_findbody(article, st.st_size) == NULL);
     p = wire_findheader(article, st.st_size, "date");

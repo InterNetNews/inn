@@ -1,0 +1,8 @@
+parameter: "\c"
+===
+config/tmp:1: unrecognized escape '\c'
+===
+parameter: [ value ]
+===
+config/tmp:1: parameter is not a string
+===

@@ -1,0 +1,4 @@
+group test <simple>
+group {
+  value: 10
+  group test <  simple  >}

@@ -287,9 +287,12 @@ main(void)
 
     test_init(345);
 
-    if (access("config/valid", F_OK) < 0)
-        if (access("lib/config/valid", F_OK) == 0)
-            chdir("lib");
+    if (access("../data/config/valid", F_OK) == 0)
+        chdir("../data");
+    else if (access("data/config/valid", F_OK) == 0)
+        chdir("data");
+    else if (access("tests/data/config/valid", F_OK) == 0)
+        chdir("tests/data");
     group = config_parse_file("config/valid");
     ok(1, group != NULL);
     if (group == NULL)

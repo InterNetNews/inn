@@ -42,7 +42,7 @@ compare () {
 
 # Find the right directory.
 innupgrade="../../scripts/innupgrade"
-dirs='. util tests/util'
+dirs='../data data tests/data'
 for dir in $dirs ; do
     if [ -r "$dir/upgrade/inn.conf" ] ; then
         cd $dir

@@ -715,28 +715,68 @@ tests/TESTS                           List of tests to run
 tests/authprogs                       Test suite for auth programs (Directory)
 tests/authprogs/ckpasswd.t            Tests for authprogs/ckpasswd
 tests/authprogs/domain.t              Tests for authprogs/domain
-tests/authprogs/passwd                Password data for ckpasswd tests
+tests/data                            Data for the test suite (Directory)
+tests/data/articles                   Testing news articles (Directory)
+tests/data/articles/1                 News article for testing
+tests/data/articles/2                 News article for testing
+tests/data/articles/3                 News article for testing
+tests/data/articles/4                 News article for testing
+tests/data/articles/5                 News article for testing
+tests/data/articles/6                 News article for testing
+tests/data/articles/bad-empty         Empty news article
+tests/data/articles/bad-hdr-empty     News article with empty required header
+tests/data/articles/bad-hdr-nospc     News article with header without ": "
+tests/data/articles/bad-hdr-space     News article with space before colon
+tests/data/articles/bad-hdr-trunc     News article with colon then newline
+tests/data/articles/bad-long-cont     News article with long continuation line
+tests/data/articles/bad-long-hdr      News article with long header
+tests/data/articles/bad-msgid         News article without a message ID
+tests/data/articles/bad-no-body       News article without a body
+tests/data/articles/bad-no-header     News article without a header
+tests/data/articles/bad-nul-body      News article with a nul in the body
+tests/data/articles/bad-nul-header    News article with a nul in the header
+tests/data/articles/bad-subj          News article without a Subject
+tests/data/articles/wire-no-body      Wire article without a body
+tests/data/articles/wire-strange      Wire article with CR and LF in headers
+tests/data/articles/wire-truncated    Wire article truncated in the headers
+tests/data/config                     Testing config files (Directory)
+tests/data/config/errors              Various config files with errors
+tests/data/config/line-ending         A config file with varied line endings
+tests/data/config/no-newline          A config file without an ending newline
+tests/data/config/null                A config file containing a nul character
+tests/data/config/simple              A simple config file
+tests/data/config/valid               Various valid config parameters
+tests/data/config/warn-bool           Invalid boolean parameters
+tests/data/config/warn-int            Invalid integer parameters
+tests/data/config/warnings            Various config files with warnings
+tests/data/db                         Skeleton database for testing (Directory)
+tests/data/db/active                  Skeleton active file for testing
+tests/data/etc                        Configuration for testing (Directory)
+tests/data/etc/buffindexed.conf       buffindexed configuration for testing
+tests/data/etc/inn.conf               Basic inn.conf file for testing
+tests/data/etc/overview.fmt           Overview configuration for testing
+tests/data/etc/passwd                 Password data for ckpasswd tests
+tests/data/etc/storage.conf           Storage configuration for testing
+tests/data/overview                   Test overview data (Directory)
+tests/data/overview/1-4               Overview info for test articles 1-4
+tests/data/overview/basic             Basic set of overview test data
+tests/data/overview/bogus             Bad newsgroup name test data
+tests/data/overview/high-numbered     High-numbered article test data
+tests/data/overivew/munge-data        Support script to generate test data
+tests/data/overview/reversed          Same as basic, but in reverse order
+tests/data/upgrade                    innupgrade test files (Directory)
+tests/data/upgrade/inn.conf           inn.conf file that needs fixing
+tests/data/upgrade/inn.conf.ok        Fixed inn.conf file
+tests/data/upgrade/newsfeeds          newsfeeds file that needs fixing
+tests/data/upgrade/newsfeeds.ok       Fixed newsfeeds file
+tests/data/upgrade/sasl.conf          Obsolete sasl.conf config file
 tests/innd                            Test suite for innd (Directory)
 tests/innd/artparse-t.c               Tests for ARTparse in innd
 tests/innd/fakeinnd.c                 Provide symbols defined by innd/innd.c
 tests/lib                             Test suite for libinn (Directory)
-tests/lib/articles                    Testing news articles (Directory)
-tests/lib/articles/no-body            An article without a body
-tests/lib/articles/strange            An article with CR and LF in headers
-tests/lib/articles/truncated          An article truncated in the headers
 tests/lib/buffer-t.c                  Tests for lib/buffer.c
 tests/lib/concat-t.c                  Tests for lib/concat.c
 tests/lib/conffile-t.c                Tests for lib/conffile.c
-tests/lib/config                      Testing config files (Directory)
-tests/lib/config/errors               Various config files with errors
-tests/lib/config/line-endings         A config file with varied line endings
-tests/lib/config/no-newline           A config file without an ending newline
-tests/lib/config/null                 A config file containing a nul character
-tests/lib/config/simple               A simple config file
-tests/lib/config/valid                Various valid config parameters
-tests/lib/config/warn-bool            Invalid boolean parameters
-tests/lib/config/warn-int             Invalid integer parameters
-tests/lib/config/warnings             Various config files with warnings
 tests/lib/confparse-t.c               Tests for lib/confparse.c
 tests/lib/date-t.c                    Tests for lib/date.c
 tests/lib/dispatch-t.c                Tests for lib/dispatch.c
@@ -772,54 +812,13 @@ tests/lib/xwrite-t.c                  Tests for lib/xwrite.c
 tests/libtest.c                       Helper library for writing tests
 tests/libtest.h                       Interface to libtest
 tests/overview                        Test suite for overview (Directory)
-tests/overview/etc                    Configuration for testing (Directory)
-tests/overview/etc/buffindexed.conf   buffindexed configuration for testing
-tests/overview/data                   Test overview data (Directory)
-tests/overview/data/basic             Basic set of overview test data
-tests/overview/data/bogus             Bad newsgroup name test data
-tests/overview/data/high-numbered     High-numbered article test data
-tests/overview/data/reversed          Same as basic, but in reverse order
-tests/overview/munge-data             Support script to generate test data
+tests/overview/api-t.c                Basic tests for overview API
 tests/overview/overview-t.c           Basic tests for overview methods
 tests/runtests.c                      The test suite driver program
 tests/storage                         Test suite for storage (Directory)
 tests/storage/archive.t               Tests for backends/archive
-tests/storage/articles                Testing news articles (Directory)
-tests/storage/articles/1              News article for testing
-tests/storage/articles/2              News article for testing
-tests/storage/articles/3              News article for testing
-tests/storage/articles/4              News article for testing
-tests/storage/articles/5              News article for testing
-tests/storage/articles/6              News article for testing
-tests/storage/articles/bad-empty      Empty news article
-tests/storage/articles/bad-hdr-empty  News article with empty required header
-tests/storage/articles/bad-hdr-nospc  News article with header without ": "
-tests/storage/articles/bad-hdr-space  News article with space before colon
-tests/storage/articles/bad-hdr-trunc  News article with colon then newline
-tests/storage/articles/bad-long-cont  News article with long continuation line
-tests/storage/articles/bad-long-hdr   News article with long header
-tests/storage/articles/bad-msgid      News article without a message ID
-tests/storage/articles/bad-no-body    News article without a body
-tests/storage/articles/bad-no-header  News article without a header
-tests/storage/articles/bad-nul-body   News article with a nul in the body
-tests/storage/articles/bad-nul-header News article with a nul in the header
-tests/storage/articles/bad-subj       News article without a Subject
-tests/storage/db                      Skeleton database for testing (Directory)
-tests/storage/db/active               Skeleton active file for testing
-tests/storage/etc                     Configuration for testing (Directory)
-tests/storage/etc/inn.conf            Basic inn.conf file for testing
-tests/storage/etc/overview.fmt        Overview configuration for testing
-tests/storage/etc/storage.conf        Storage configuration for testing
-tests/storage/overview                Testing overview information (Directory)
-tests/storage/overview/1-4            Overview info for test articles 1-4
 tests/storage/sm.t                    Tests for frontends/sm
 tests/util                            Test suite for utilities (Directory)
 tests/util/convdate.t                 Tests for expire/convdate
 tests/util/innbind-t.c                Tests for backends/innbind
 tests/util/innupgrade.t               Tests for scripts/innupgrade
-tests/util/upgrade                    innupgrade test files (Directory)
-tests/util/upgrade/inn.conf           inn.conf file that needs fixing
-tests/util/upgrade/inn.conf.ok        Fixed inn.conf file
-tests/util/upgrade/newsfeeds          newsfeeds file that needs fixing
-tests/util/upgrade/newsfeeds.ok       Fixed newsfeeds file
-tests/util/upgrade/sasl.conf          Obsolete sasl.conf config file
