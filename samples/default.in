@@ -4,8 +4,6 @@
 ##  $Revision$
 ##  Default control-message handler
 
-. @LIBDIR@/innshellvars
-
 ##  Set prog to null; that will leave the name of the message in $1
 PROG=default
 ##  Some shells don't pass in $* unless we explicitly pass it in here.
