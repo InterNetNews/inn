@@ -207,6 +207,45 @@ deserves a lion's share of the credit for writing INN in the first place
 and making it the most popular news server software on the planet (no NNTP
 yet to the moon, but we plan to be there first).
 
+=head1 Related Packages
+
+INN users may also be interested in the following software packages that
+work with INN or are based on it.  Please note that none of this software
+is developed or maintained by ISC; we don't support it and generally can't
+answer questions about it.
+
+=over 4
+
+=item CleanFeed
+
+URL: <http://www.exit109.com/~jeremy/news/cleanfeed.html>
+
+CleanFeed is an extremely powerful spam filter, probably the most widely
+used spam filter on Usenet currently.  It catches excessive multiposting
+and a host of other things, and is highly configurable.  Note that it
+requires that INN be built with Perl support (the B<--with-perl> option to
+configure).
+
+=item PersonalINN
+
+URL: <http://www.ritual.org/summer/pinn/>
+
+PersonalINN is a version of INN modified for personal use and with a
+friendly GUI built on top of it.  It is available for NeXTSTEP or OPENSTEP
+only, unfortunately.
+
+=item suck
+
+URL: <http://home.att.net/~bobyetman/>
+
+suck is a separate package for downloading a news feed via a reading
+connection (rather than via a direct NNTP or UUCP feed) and sending
+outgoing local posts via POST.  It's intended primarily for personal or
+small-organization news servers who get their news via an ISP and are too
+small to warrant setting up a regular news feed.
+
+=back
+
 =head1 Supporting the INN Effort
 
 Note that INN is supported by the Internet Software Consortium, and
