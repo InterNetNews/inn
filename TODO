@@ -66,6 +66,9 @@ Scheduled for INN 2.4:
   least a report on the differences and preferrably all issues fixed.
   [Russ plans on doing this.]
 
+* Switch at least nnrpd over to using the new wildmat routines rather than
+  breaking apart strings on commas and matching each expression separately.
+
 
 Scheduled for INN 2.5:
 
@@ -234,6 +237,11 @@ Future Projects:
 * Add portable/mmap.h, centralizing all of the system-specific mmap mess
   and providing macros that can be used without any additional
   system-specific stuff in the source code.  [Russ is working on this.]
+
+* tradspool currently uses stdio to write out tradspool.map, which can
+  cause problems if more than 256 file descriptors are in use for other
+  things (such as incoming connections or tradindexed overview cache).
+  It should use write() instead.
 
 * All the old packages in unoff-contrib should be reviewed for integration
   into INN.
