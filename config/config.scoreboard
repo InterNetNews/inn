@@ -149,8 +149,9 @@
 [IN1.7=@6][WDF=autoconf][WOR=no][P=high]
   ||##  Should we msync when using mmap? Pick DO or DONT. Useful
   ||##  with some slightly broken mmap implementations. (like HPUX and BSD/OS).
+  ||##[autoconf]
   ||#### =()<MMAP_SYNC		@<MMAP_SYNC>@>()=
-  ||MMAP_SYNC		DONT
+  ||MMAP_SYNC		@ac_cv_subst_mmap_sync@
 [IN1.7=@6][WDF=confparam][WOR=no][P=low]
   ||##  Do clients use our NNTP-server-open routine, or the one in NNTP?
   ||##  INND is nicer, but you must install inn.conf files everywhere; NNTP
