@@ -637,11 +637,12 @@ DoArt(ARTHANDLE *art)
 void
 Usage(void)
 {
-    fprintf(stderr, "Usage: makehistory [-b] [-f file] [-O] [-l overtmpsegsize [-a] [-u] [-x] [-T tmpdir]\n");
+    fprintf(stderr, "Usage: makehistory [-b] [-f file] [-O] [-I] [-l overtmpsegsize [-a] [-u] [-x] [-T tmpdir]\n");
     fprintf(stderr, "\t-b -- delete bad articles from spool\n");
     fprintf(stderr, "\t-f -- write history entries to file (default $pathdb/history)\n");
     fprintf(stderr, "\t-a -- open output history file in append mode\n");
     fprintf(stderr, "\t-O -- create overview entries for articles\n");
+    fprintf(stderr, "\t-I -- do not create overview entries for articles below lowmark in active\n");
     fprintf(stderr, "\t-l nnn -- set size of batches too do overview updates in (default 100000)\n");
     fprintf(stderr, "\t-u -- 'update mode' assume server running, only output to file\n");
     fprintf(stderr,"\t\tentries not already in main history file.\n");
