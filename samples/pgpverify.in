@@ -354,7 +354,7 @@ errmsg
         }
       }
       
-      ($facility, $level) = ($syslog =~ /^(w+)\.(\w+)$/);
+      ($facility, $level) = ($syslog =~ /^(\w+)\.(\w+)$/);
 
       # unfortunately, there is no way to definitively know in this program if
       # the message was logged.  I wish there were a way to send a message
