@@ -12,6 +12,7 @@
 #include "clibrary.h"
 #include <ctype.h>
 #include <dirent.h>
+#include <pwd.h>
 #include <sys/stat.h>
 
 #include "inn/buffer.h"
@@ -345,6 +346,25 @@ group_rebuild(const char *group, const char *path)
 
 
 /*
+**  Change to the news user if possible, and if not, die.  Used for operations
+**  that may change the overview files so as not to mess up the ownership.
+*/
+static void
+setuid_news(void)
+{
+    struct passwd *pwd;
+
+    pwd = getpwnam(NEWSUSER);
+    if (pwd == NULL)
+        die("can't resolve %s to a UID (account doesn't exist?)", NEWSUSER);
+    if (getuid() == 0)
+        setuid(pwd->pw_uid);
+    if (getuid() != pwd->pw_uid)
+        die("must be run as %s", NEWSUSER);
+}
+
+
+/*
 **  Main routine.  Load inn.conf, parse the arguments, and dispatch to the
 **  appropriate function.
 */
@@ -424,9 +444,11 @@ main(int argc, char *argv[])
         tdx_index_audit(false);
         break;
     case 'F':
+        setuid_news();
         tdx_index_audit(true);
         break;
     case 'R':
+        setuid_news();
         group_rebuild(newsgroup, path);
         break;
     case 'i':
