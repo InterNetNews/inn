@@ -18,7 +18,6 @@
 #define FLUSH_ERROR(F)		(fflush((F)) == EOF || ferror((F)))
 #define HEADER_DELTA		20
 
-extern int RARTenable;
 extern int LLOGenable;
 
 STATIC char     *tmpPtr ;
@@ -1097,7 +1096,7 @@ ARTpost(article, idbuff)
     }
 
     /* Tracking */
-    if (RARTenable) {
+    if (innconf->readertrack) {
 	strcat(TrackID,HDR(_messageid));
 	if ((ftd=fopen(TrackID,"w")) != NULL) {
 		for (hp = Table; hp < ENDOF(Table); hp++)

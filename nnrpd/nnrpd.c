@@ -94,7 +94,6 @@ extern FUNCTYPE	CMDxpat();
 extern FUNCTYPE	CMDxpath();
 extern FUNCTYPE	CMD_unimp();
 
-extern int RARTenable;
 extern int LLOGenable;
 extern int TrackClient();
 
@@ -181,7 +180,7 @@ ExitWithStats(x)
 	ClientHost, usertime, systime, STATfinish - STATstart);
     /* Tracking code - Make entries in the logfile(s) to show that we have
 	finished with this session */
-    if (RARTenable) {
+    if (innconf->readertrack) {
 	syslog(L_NOTICE, "%s Tracking Disabled (%s)", ClientHost, Username);
 	if (LLOGenable) {
 		fprintf(locallog, "%s Tracking Disabled (%s)\n", ClientHost, Username);
@@ -795,14 +794,13 @@ main(argc, argv, env)
     /* Parse arguments.   Must COPY() optarg if used because the
      * TITLEset() routine would clobber it! */
     Reject = NULL;
-    RARTenable=FALSE;
     LLOGenable=FALSE;
 
     openlog("nnrpd", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
     if (ReadInnConf() < 0) exit(1);
 
-    while ((i = getopt(argc, argv, "b:Di:g:lop:Rr:s:t")) != EOF)
+    while ((i = getopt(argc, argv, "b:Di:g:op:Rr:s:t")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -823,9 +821,6 @@ main(argc, argv, env)
 #endif /* HAVE_GETSPNAM */
 	case 'i':			/* Initial command */
 	    PushedBack = COPY(optarg);
-	    break;
-	case 'l':			/* Tracking */
-	    RARTenable=TRUE;
 	    break;
 	case 'o':
 	    Offlinepost = TRUE;		/* Offline posting only */
@@ -1037,10 +1032,10 @@ listen_loop:
 	ExitWithStats(0);
     }
 
-    if (RARTenable)
-	RARTenable=TrackClient(ClientHost,Username);
+    if (innconf->readertrack)
+	innconf->readertrack=TrackClient(ClientHost,Username);
 
-    if (RARTenable) {
+    if (innconf->readertrack) {
 	syslog(L_NOTICE, "%s Tracking Enabled (%s)", ClientHost, Username);
 	pid=getpid();
 	gettimeofday(&tv,NULL);

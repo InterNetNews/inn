@@ -73,7 +73,6 @@ STATIC SENDDATA		SENDhead = {
 
 extern unsigned int RARTtable[];
 extern int RARTcount;
-extern int RARTenable;
 
 /*
 **  Overview state information.
@@ -866,7 +865,7 @@ FUNCTYPE CMDfetch(int ac, char *av[])
 		ARTsendmmap(what->Type);
 	    else
 		ARTsendqio(what->Type);
-    	    if (tart != 0 && RARTenable && RARTcount < ART_MAX)
+    	    if (tart != 0 && innconf->readertrack && RARTcount < ART_MAX)
 	        RARTtable[RARTcount++]=tart;
 	}
 	ARTclose();
@@ -916,7 +915,7 @@ FUNCTYPE CMDfetch(int ac, char *av[])
 	    ARTsendmmap(what->Type);
 	else
 	    ARTsendqio(what->Type);
-    	    if (tart != 0 && RARTenable && RARTcount < ART_MAX)
+    	    if (tart != 0 && innconf->readertrack && RARTcount < ART_MAX)
 	        RARTtable[RARTcount++]=tart;
     }
     if (ac > 1)

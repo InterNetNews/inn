@@ -43,7 +43,6 @@ STATIC int		NRequestID;
 
 unsigned int	RARTtable[ART_MAX];
 int		RARTcount=0;
-int		RARTenable=FALSE;
 int 		LLOGenable=FALSE;
 
 void
@@ -805,7 +804,7 @@ GRPreport()
 	syslog(L_NOTICE, "%s group %s %ld", ClientHost, buff, GRParticles);
 	GRParticles = 0;
 	repbuff[0]='\0';
-	if (RARTenable && (RARTcount > 0)) {
+	if (innconf->readertrack && (RARTcount > 0)) {
 		for (pp=0;pp<RARTcount; pp++) {
 			sprintf(tmpbuff, "%ld", RARTtable[pp]);
 			strcat(repbuff, tmpbuff);

@@ -20,6 +20,9 @@ typedef struct _LISTINFO {
 } LISTINFO;
 
 
+extern int LLOGenable;
+
+
 STATIC LISTINFO		INFOactive = {
     NULL, _PATH_ACTIVE, TRUE, "active newsgroups",
     "Newsgroups in form \"group high low flags\""
@@ -274,6 +277,14 @@ CMDauthinfo(ac, av)
 #endif /* DO_PERL */
 	    if (EQ(User, PERMuser) && EQ(Password, PERMpass)) {
 		syslog(L_NOTICE, "%s user %s", ClientHost, User);
+		if (LLOGenable) {
+			fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, User);
+			fflush(locallog);
+		}
+		if (LLOGenable) {
+			fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, User);
+			fflush(locallog);
+		}
 		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
 		PERMneedauth = FALSE;
 		PERMauthorized = TRUE;
@@ -283,6 +294,10 @@ CMDauthinfo(ac, av)
 			   accesslist, NNRPACCESS)) {
 		PERMspecified = NGgetlist(&PERMlist, accesslist);
 		syslog(L_NOTICE, "%s user %s", ClientHost, User);
+		if (LLOGenable) {
+			fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, User);
+			fflush(locallog);
+		}
 		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
 		PERMneedauth = FALSE;
 		PERMauthorized = TRUE;
