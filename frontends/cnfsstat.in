@@ -17,6 +17,7 @@
 use vars qw($opt_l $opt_h $opt_a $opt_s);
 use Getopt::Long;
 use Math::BigInt;
+use Math::BigFloat;
 use English;
 
 my($conffile) = "$inn::pathetc/cycbuff.conf";
@@ -324,7 +325,7 @@ sub human_readable {
     my $factor = 1024;
 
     my $unit = -1;
-    my $oldscaled = $val / $base;
+    my $oldscaled = Math::BigFloat->new ($val) / $base;
     my $scaled = $oldscaled;
     while ( ( int($scaled) > 0 ) && ( $unit < $#name ) ) {
 	$oldscaled = $scaled;
