@@ -1,21 +1,23 @@
 ;;  $Revision$
 ;;  List of InterNetNews files that are fed to subst.
 ;;  Lines beginning with a semi-colon are comment lines.
+;; Files which are no longer config.data subst victims
+;; are marked ;subst clean.  mibsoft@mibsoftware.com
 ../backends/Makefile
 ../backends/actsync.c
 ../backends/actmerge.sh
 ../backends/actsyncd.sh
 ../backends/sendxbatches.sh
 ../doc/Makefile
-../doc/active.5
-../doc/actsync.8
-../doc/archive.8
-../doc/batcher.8
-../doc/buffchan.8
-../doc/control.ctl.5
-../doc/crosspost.8
-../doc/ctlinnd.8
-../doc/cvtbatch.8
+;subst clean ../doc/active.5
+;subst clean ../doc/actsync.8
+;subst clean ../doc/archive.8
+;subst clean ../doc/batcher.8
+;subst clean ../doc/buffchan.8
+;subst clean ../doc/control.ctl.5
+;subst clean ../doc/crosspost.8
+;subst clean ../doc/ctlinnd.8
+;subst clean ../doc/cvtbatch.8
 ../doc/distrib.pats.5
 ../doc/expire.8
 ../doc/expire.ctl.5
