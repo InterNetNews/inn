@@ -203,6 +203,14 @@ ExitWithStats(int x)
     
     OVclose();
 
+#ifdef DO_PYTHON
+    if (innconf->nnrppythonauth) {
+        if (PY_close() < 0) {
+	    syslog(L_NOTICE, "PY_close(): close method not invoked because it is not defined in Python authenticaton module.");
+	}
+    }
+#endif	/* DO_PYTHON */
+
     exit(x);
 }
 
@@ -438,8 +446,28 @@ STATIC void StartConnection()
 	PERMpostlist = PERMreadlist;
     } else {
 #endif	/* DO_PERL */
+
+#ifdef DO_PYTHON
+    if (innconf->nnrppythonauth) {
+        if ((code = PY_authenticate(ClientHost, ClientIp, ServerHost, NULL, NULL, accesslist)) < 0) {
+	    syslog(L_NOTICE, "PY_authenticate(): authentication skipped due to no Python authentication method defined.");
+	} else {
+	    if (code == 502) {
+	        syslog(L_NOTICE, "%s no_access", ClientHost);
+		Printf("%d You are not in my access file. Goodbye.\r\n",
+		       NNTP_ACCESS_VAL);
+		ExitWithStats(1);
+	    }
+	    PERMspecified = NGgetlist(&PERMreadlist, accesslist);
+	    PERMpostlist = PERMreadlist;
+	}
+    } else {
+#endif	/* DO_PYTHON */
 	PERMgetaccess();
 	PERMgetpermissions();
+#ifdef DO_PYTHON
+    }
+#endif /* DO_PYTHON */
 #ifdef DO_PERL
     }
 #endif /* DO_PERL */
@@ -552,6 +580,13 @@ STATIC void SetupDaemon(void) {
 	PerlFilter(TRUE);
     }
 #endif /* defined(DO_PERL) */
+
+#ifdef	DO_PYTHON
+    /* Load the Python code */
+    if (innconf->nnrppythonauth) {
+        PY_setup();
+    }
+#endif /* defined(DO_PYTHON) */
     
     val = TRUE;
     if (SMsetup(SM_PREOPEN, (void *)&val) && !SMinit()) {

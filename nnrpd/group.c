@@ -42,6 +42,23 @@ FUNCTYPE CMDgroup(int ac, char *av[])
 	return;
     }
 
+#ifdef DO_PYTHON
+    if (innconf->nnrppythonauth) {
+        char    *reply;
+
+	/* Authorize user at a Python authorization module */
+	if (PY_authorize(ClientHost, ClientIp, ServerHost, PERMuser, group, FALSE, &reply) < 0) {
+	    syslog(L_NOTICE, "PY_authorize(): authorization skipped due to no Python authorization method defined.");
+	} else {
+	    if (reply != NULL) {
+	        syslog(L_TRACE, "PY_authorize() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, ClientHost, group, reply);
+		Reply("%d %s\r\n", NNTP_ACCESS_VAL, reply);
+		return;
+	    }
+	}
+    }
+#endif /* DO_PYTHON */
+
     /* If permission is denied, pretend group doesn't exist. */
     if (PERMspecified) {
 	grplist[0] = group;

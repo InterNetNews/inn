@@ -174,3 +174,8 @@ char *HandleHeaders(char *article);
 int perlConnect(char *ClientHost, char *ClientIP, char *ServerHost, char *accesslist);
 int perlAuthenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *user, char *passwd, char *accesslist);
 BOOL ARTinstorebytoken(TOKEN token);
+
+#ifdef	DO_PYTHON
+int PY_authenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *Username, char *Password, char *accesslist);
+int PY_authorize(char *ClientHost, char *ClientIP, char *ServerHost, char *Username, char *NewsGroup, int PostFlag, char **reply_message);
+#endif	/* DO_PYTHON */

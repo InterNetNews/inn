@@ -303,6 +303,36 @@ CMDauthinfo(ac, av)
 	    }
 	} else {
 #endif /* DO_PERL */
+
+#ifdef DO_PYTHON
+	    if (innconf->nnrppythonauth) {
+	        if ((code = PY_authenticate(ClientHost, ClientIp, ServerHost, User, Password, accesslist)) < 0) {
+		    syslog(L_NOTICE, "PY_authenticate(): authentication skipped due to no Python authentication method defined.");
+		} else {
+		    if (code == NNTP_AUTH_OK_VAL) {
+		        PERMspecified = NGgetlist(&PERMreadlist, accesslist);
+			PERMpostlist = PERMreadlist;
+			syslog(L_NOTICE, "%s user %s", ClientHost, User);
+			if (LLOGenable) {
+			    fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, User);
+			    fflush(locallog);
+			}
+			Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
+			/* save these values in case you need them later */
+			strcpy(PERMuser, User);
+			strcpy(PERMpass, Password);
+			PERMneedauth = FALSE;
+			PERMauthorized = TRUE;
+			return;
+		    } else {
+		        syslog(L_NOTICE, "%s bad_auth", ClientHost);
+			Reply("%d Authentication error\r\n", NNTP_ACCESS_VAL);
+			ExitWithStats(1);
+		    }
+		}
+	    } else {
+#endif /* DO_PYTHON */
+
 	    if (EQ(User, PERMuser) && EQ(Password, PERMpass)) {
 		syslog(L_NOTICE, "%s user %s", ClientHost, User);
 		if (LLOGenable) {
@@ -327,6 +357,9 @@ CMDauthinfo(ac, av)
 		PERMauthorized = TRUE;
 		return;
 	    }
+#ifdef	DO_PYTHON
+	}
+#endif	/* DO_PYTHON */
 #ifdef DO_PERL
 	}
 #endif /* DO_PERL */

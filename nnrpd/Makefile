@@ -7,11 +7,11 @@ NNRPD	= ${PATHBIN}/nnrpd
 
 SOURCES	= \
 	article.c group.c commands.c misc.c newnews.c nnrpd.c \
-	perl.c perm.c post.c loadave.c track.c 
+	perl.c perm.c post.c loadave.c track.c python.c
 
 OBJECTS	= \
 	article.o group.o commands.o misc.o newnews.o \
-	perl.o perm.o post.o loadave.o track.o 
+	perl.o perm.o post.o loadave.o track.o python.o
 
 ALL	= nnrpd
 
@@ -19,6 +19,9 @@ all:		$(ALL)
 
 perl.o: perl.c
 	$(CC) $(CFLAGS) $(PERLINC) -c perl.c
+
+python.o: python.c
+	$(CC) $(CFLAGS) $(PYTHONINC) -c python.c -o $@
 
 install:	$D$(NNRPD)
 
@@ -37,9 +40,9 @@ tags ctags:	$(SOURCES)
 
 nnrpd:		$(P) nnrpd.o $(OBJECTS) $(LIBNEWS)
 	@rm -f $@
-#	$(LIBTOOL) ./quantify $(CC) $(LDFLAGS) -o $@ $@.o $(OBJECTS) $(LIBNEWS) $(PERLLIB) $(LIBS) 
-#	$(LIBTOOL) purify $(CC) $(LDFLAGS) -o $@ $@.o $(OBJECTS) $(LIBNEWS) $(PERLLIB) $(LIBS) 
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $@.o $(OBJECTS) $(LIBNEWS) $(PERLLIB) $(LIBS) 
+#	$(LIBTOOL) ./quantify $(CC) $(LDFLAGS) -o $@ $@.o $(OBJECTS) $(LIBNEWS) $(PERLLIB) $(PYTHONLIB) $(LIBS) 
+#	$(LIBTOOL) purify $(CC) $(LDFLAGS) -o $@ $@.o $(OBJECTS) $(LIBNEWS) $(PERLLIB) $(PYTHONLIB) $(LIBS) 
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $@.o $(OBJECTS) $(LIBNEWS) $(PERLLIB) $(PYTHONLIB) $(LIBS) 
 
 $(LIBNEWS):
 	(cd ../lib ; $(MAKE) )

@@ -143,6 +143,22 @@ PERMartok()
 	/* No newgroups or null entry. */
 	return 1;
 
+#ifdef DO_PYTHON
+    if (innconf->nnrppythonauth) {
+        char    *reply;
+
+	/* Authorize user at a Python authorization module */
+	if (PY_authorize(ClientHost, ClientIp, ServerHost, PERMuser, p, FALSE, &reply) < 0) {
+	    syslog(L_NOTICE, "PY_authorize(): authorization skipped due to no Python authorization method defined.");
+	} else {
+	    if (reply != NULL) {
+	        syslog(L_TRACE, "PY_authorize() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, ClientHost, p, reply);
+		return 1;
+	    }
+	}
+    }
+#endif /* DO_PYTHON */
+
     return PERMmatch(PERMreadlist, grplist);
 }
 
