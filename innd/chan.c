@@ -620,7 +620,7 @@ CHANreadtext(cp)
 **  a good chunk value.
 */
 STATIC int
-largewrite(fd, p, length)
+CHANwrite(fd, p, length)
     register int	fd;
     register char	*p;
     register int	length;
@@ -659,7 +659,7 @@ WCHANflush(cp)
 
     /* Write it. */
     for (bp = &cp->Out; bp->Left > 0; bp->Left -= i, bp->Used += i) {
-	i = largewrite(cp->fd, &bp->Data[bp->Used], bp->Left);
+	i = CHANwrite(cp->fd, &bp->Data[bp->Used], bp->Left);
 	if (i < 0) {
 	    syslog(L_ERROR, "%s cant flush count %d %m",
 		CHANname(cp), bp->Left);
@@ -906,7 +906,7 @@ CHANreadloop()
 		    bp = &cp->Out;
 		    if (bp->Left) {
 			cp->LastActive = Now.time;
-			i = largewrite(fd, &bp->Data[bp->Used], bp->Left);
+			i = CHANwrite(fd, &bp->Data[bp->Used], bp->Left);
 			if (i <= 0) {
 			    oerrno = errno;
 			    p = CHANname(cp);
