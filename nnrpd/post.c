@@ -919,7 +919,7 @@ ARTpost(article, idbuff)
     char		*TrackID;
     char		*DirTrackID;
     FILE		*ftd;
-    int			result, len;
+    int			len;
     char		SDir[255];
 
     /* Set up the other headers list. */
@@ -1157,7 +1157,7 @@ ARTpost(article, idbuff)
 	sprintf(TrackID, "%s/trackposts/track.%s", innconf->pathlog, HDR(HDR__MESSAGEID));
 	if ((ftd = fopen(TrackID,"w")) == NULL) {
 	    DirTrackID = NEW(char, len);
-	    sprintf(DirTrackID, "%s/trackposts", innconf->pathlog, HDR(HDR__MESSAGEID));
+	    sprintf(DirTrackID, "%s/trackposts", innconf->pathlog);
 	    MakeDirectory(DirTrackID, FALSE);
 	    DISPOSE(DirTrackID);
 	}
@@ -1182,8 +1182,7 @@ ARTpost(article, idbuff)
 	    (void)fprintf(ftd,"%s\r\n",OtherHeaders[i]);
 	(void)fprintf(ftd,"\r\n");
 	(void)NNTPsendarticle(article, ftd, TRUE);
-	fclose(ftd);
-	if (result != EOF) {
+	if (fclose(ftd) != EOF) {
 	    syslog(L_NOTICE, "%s (%s) posttrack ok %s",
 		ClientHost, Username, TrackID);
 	    if (LLOGenable)
