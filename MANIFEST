@@ -342,7 +342,6 @@ lib/inet_aton.c                       Extra source for inet_aton routine
 lib/inet_ntoa.c                       Convert inaddr to string (BSD)
 lib/inndcomm.c                        Library routines to talk to innd
 lib/localopen.c                       Open a local NNTP connection
-lib/lock.c                            Replacement for libcnews/lock.c
 lib/lockfile.c                        Try to lock a file descriptor
 lib/makedir.c                         Make directory recursively
 lib/malloc.c                          A debugging malloc package
@@ -351,7 +350,6 @@ lib/memchr.c                          Find a byte in a buffer (BSD)
 lib/memcmp.c                          Compare two buffers (BSD)
 lib/memmove.c                         Copy two (overlapping) buffers (BSD)
 lib/memset.c                          Set a buffer to a value (BSD)
-lib/mkfifo.c                          Make a FIFO
 lib/mkversion                         Generate version.c with INN version
 lib/nonblocking.c                     Set or clear non-blocking I/O
 lib/parsedate.y                       Date parsing
