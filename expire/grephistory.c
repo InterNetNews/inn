@@ -228,9 +228,9 @@ main(int ac, char *av[])
 
     /* Parse JCL. */
 #ifdef	DO_TAGGED_HASH
-    while ((i = getopt(ac, av, "f:eiltnqs")) != EOF)
+    while ((i = getopt(ac, av, "f:ehiltnqs")) != EOF)
 #else
-    while ((i = getopt(ac, av, "f:eiloTtnqs")) != EOF)
+    while ((i = getopt(ac, av, "f:ehiloTtnqs")) != EOF)
 #endif
 	switch (i) {
 	default:
@@ -240,6 +240,7 @@ main(int ac, char *av[])
 	    History = optarg;
 	    break;
 	case 'e':
+	case 'h':
 	case 'i':
 	case 'l':
 	case 't':
@@ -280,13 +281,6 @@ main(int ac, char *av[])
     if (ac != 1)
 	Usage();
 
-    /* Open the history file, do the lookup. */
-    if (!dbzinit(History)) {
-	(void)fprintf(stderr, "Can't open history database, %s\n",
-		strerror(errno));
-	exit(1);
-    }
-    
     keystr = av[0];
     if (*av[0] == '[') {
 	key = TextToHash(&av[0][1]);
@@ -297,6 +291,18 @@ main(int ac, char *av[])
 	    (void)sprintf(keystr, "<%s>", av[0]);
 	}
 	key = HashMessageID(keystr);
+    }
+
+    if (What == 'h') {
+	(void)printf("[%s]\n", HashToText(key));
+	exit(0);
+    }
+
+    /* Open the history file, do the lookup. */
+    if (!dbzinit(History)) {
+	(void)fprintf(stderr, "Can't open history database, %s\n",
+		strerror(errno));
+	exit(1);
     }
 
     /* Not found. */
