@@ -1316,7 +1316,7 @@ CCreload(av)
 	HISclose();
 	HISsetup();
     }
-    else if (EQ(p, "hosts.nntp"))
+    else if (EQ(p, "incoming.conf"))
 	RCreadlist();
     else if (EQ(p, "overview.fmt")) {
 	if (!ARTreadschema())
