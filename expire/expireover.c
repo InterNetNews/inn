@@ -82,7 +82,7 @@ main(int argc, char *argv[])
             ovge.earliest = true;
             break;
         case 'f':
-            active_path = optarg;
+            active_path = xstrdup(optarg);
             break;
         case 'k':
             ovge.keep = true;
