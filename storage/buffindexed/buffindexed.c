@@ -197,8 +197,8 @@ typedef struct _GDB {
 
 typedef struct {
   char			*group;
-  int			lo;
-  int			hi;
+  ARTNUM		lo;
+  ARTNUM		hi;
   int			cur;
   bool			needov;
   GROUPLOC		gloc;
@@ -244,7 +244,7 @@ static bool GROUPlockhash(enum inn_locktype type);
 static bool GROUPlock(GROUPLOC gloc, enum inn_locktype type);
 static off_t GROUPfilesize(int count);
 static bool GROUPexpand(int mode);
-static void *ovopensearch(char *group, int low, int high, bool needov);
+static void *ovopensearch(char *group, ARTNUM low, ARTNUM high, bool needov);
 static void ovclosesearch(void *handle, bool freeblock);
 static OVINDEX	*Gib;
 static GIBLIST	*Giblist;
@@ -426,8 +426,9 @@ static char *offt2hex(off_t offset, bool leadingzeros) {
   static char	buf[24];
   char	*p;
 
-  if (sizeof(off_t) <= 4) {
-    snprintf(buf, sizeof(buf), (leadingzeros) ? "%016lx" : "%lx", offset);
+  if (sizeof(off_t) <= sizeof(unsigned long)) {
+    snprintf(buf, sizeof(buf), (leadingzeros) ? "%016lx" : "%lx",
+             (unsigned long) offset);
   } else {
     int	i;
 
@@ -525,7 +526,8 @@ static bool ovbuffinit_disks(void) {
   OVBUFF	*ovbuff = ovbufftab;
   char		buf[64];
   OVBUFFHEAD	*rpx;
-  int		i, fd;
+  int		fd;
+  unsigned int  i;
   off_t         tmpo;
 
   /*
@@ -563,7 +565,7 @@ static bool ovbuffinit_disks(void) {
         buf[OVBUFFLASIZ] = '\0';
 	i = hex2offt(buf);
 	if (i != ovbuff->index) {
-	    syslog(L_ERROR, "%s: Mismatch: index '%d' for buffindexed %s",
+	    syslog(L_ERROR, "%s: Mismatch: index '%u' for buffindexed %s",
 		   LocalLogName, i, ovbuff->path);
 	    ovlock(ovbuff, INN_LOCK_UNLOCK);
 	    return false;
@@ -695,8 +697,8 @@ static void ovnextblock(OVBUFF *ovbuff) {
 
 static OVBUFF *getovbuff(OV ov) {
   OVBUFF	*ovbuff = ovbufftab;
-  for (; ovbuff != (OVBUFF *)NULL; ovbuff = ovbuff->next) {
-    if (ovbuff->index == ov.index)
+  for (; ovbuff != NULL; ovbuff = ovbuff->next) {
+    if (ovbuff->index == (unsigned int) ov.index)
       return ovbuff;
   }
   return NULL;
@@ -1475,15 +1477,15 @@ static GROUPDATABLOCK *searchgdb(OV *ov) {
 }
 
 static int INDEXcompare(const void *p1, const void *p2) {
-  OVINDEX	*oi1;
-  OVINDEX	*oi2;
- 
-  oi1 = (OVINDEX *)p1;
-  oi2 = (OVINDEX *)p2;  
+  const OVINDEX *oi1 = p1;
+  const OVINDEX *oi2 = p2;
+
   return oi1->artnum - oi2->artnum;
 }
 
-static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
+static bool
+ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
+{
   OV			ov = ge->baseindex;
   OVBUFF		*ovbuff;
   GROUPDATABLOCK	*gdb;
@@ -1493,7 +1495,7 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
   void *		addr;
   GIBLIST		*giblist;
 
-  if (high - low < 0) {
+  if (low > high) {
     Gibcount = 0;
     return true;
   }
@@ -1594,7 +1596,9 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
   return true;
 }
 
-static void *ovopensearch(char *group, int low, int high, bool needov) {
+static void *
+ovopensearch(char *group, ARTNUM low, ARTNUM high, bool needov)
+{
   GROUPLOC		gloc;
   GROUPENTRY		*ge;
   OVSEARCH		*search;
