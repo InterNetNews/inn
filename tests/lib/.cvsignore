@@ -1,5 +1,6 @@
 .libs
 .pure
+buffer.t
 concat.t
 confparse.t
 date.t
