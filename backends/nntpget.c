@@ -20,6 +20,7 @@
 #include "dbz.h"
 #include "nntp.h"
 #include "macros.h"
+#include "logging.h" 
 
 
 /*
@@ -216,6 +217,9 @@ main(ac, av)
     BOOL	Verbose = FALSE;
     char	*Update;
     char	*p;
+
+    /* First thing, set up logging and our identity. */
+    openlog("nntpget", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);           
 
     /* Set defaults. */
     distributions = NULL;

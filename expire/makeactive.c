@@ -15,6 +15,7 @@
 #include "libinn.h"
 #include "mydir.h"
 #include "macros.h"
+#include "logging.h" 
 
 
 STATIC char	*ACTIVE = NULL;
@@ -309,6 +310,9 @@ main(int ac, char *av[])
     int	i;
     BOOL		OldFile;
     BOOL		ComputeMarks;
+
+    /* First thing, set up logging and our identity. */
+    openlog("makeactive", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
 
     /* Set defaults. */
     OldFile = FALSE;

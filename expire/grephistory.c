@@ -17,6 +17,7 @@
 #include "libinn.h"
 #include "dbz.h"
 #include "macros.h"
+#include "logging.h" 
 
 
 /*
@@ -214,6 +215,9 @@ main(int ac, char *av[])
     int			len;
     char		*p, *q;
 #endif
+
+    /* First thing, set up logging and our identity. */
+    openlog("grephistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);

@@ -18,6 +18,7 @@
 #include "mydir.h"
 #include "macros.h"
 #include "libinn.h"
+#include "logging.h" 
 
 #define MAX_LINE_SIZE	1024
 #define SHORT_NAME	16

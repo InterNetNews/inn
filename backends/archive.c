@@ -17,6 +17,7 @@
 #include "libinn.h"
 #include "qio.h"
 #include "macros.h"
+#include "logging.h"
 
 
 STATIC char	*Archive = NULL;
@@ -259,6 +260,9 @@ main(ac, av)
     char		temp[BUFSIZ];
     char		dest[BUFSIZ];
     struct stat		Sb;
+
+    /* First thing, set up logging and our identity. */
+    openlog("archive", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);

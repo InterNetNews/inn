@@ -21,6 +21,7 @@
 #include "paths.h"
 #include "libinn.h"
 #include "macros.h"
+#include "logging.h" 
 
 
 #define FLUSH_ERROR(F)		(fflush((F)) == EOF || ferror((F)))
@@ -1180,6 +1181,9 @@ main(ac, av)
     BOOL		DoSignature;
     BOOL		AddOrg;
     SIZE_T		Length;
+
+    /* First thing, set up logging and our identity. */
+    openlog("inews", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);      
 
     /* Find out who we are. */
     if ((i = geteuid()) < 0)

@@ -13,6 +13,7 @@
 #include "inndcomm.h"
 #include "paths.h"
 #include "macros.h"
+#include "logging.h" 
 
 
 /*
@@ -195,6 +196,9 @@ int main(int ac, char *av[])
     char		*nv[4];
     struct stat		Sb;
     char		buff[SMBUF];
+
+    /* First thing, set up logging and our identity. */
+    openlog("ctlinnd", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);        
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);

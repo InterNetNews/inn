@@ -16,6 +16,7 @@
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
+#include "logging.h" 
 
 
 #define	START_LIST_SIZE	128
@@ -583,6 +584,9 @@ int main(int ac, char *av[])
     QIOSTATE		*qp;
     BOOL		SortedInput;
     char		*Dir;
+
+    /* First thing, set up logging and our identity. */
+    openlog("expireindex", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);

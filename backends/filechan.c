@@ -14,6 +14,7 @@
 #include "paths.h"
 #include "libinn.h"
 #include "macros.h"
+#include "logging.h" 
 
 extern void	MAPread();
 extern char	*MAPname();
@@ -36,6 +37,9 @@ main(ac, av)
     UID_T		uid;
     GID_T		gid;
     UID_T		myuid;
+
+    /* First thing, set up logging and our identity. */
+    openlog("filechan", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);           
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);

@@ -24,6 +24,7 @@
 #include "qio.h"
 #include "macros.h"
 #include "mydir.h"
+#include "logging.h" 
 
 
 typedef struct _BUFFER {
@@ -1402,6 +1403,9 @@ main(int ac, char *av[])
     ARTHANDLE		*art = (ARTHANDLE *)NULL;
     FILE		*index = (FILE *)NULL;
 
+    /* First thing, set up logging and our identity. */
+    openlog("makehistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
+	
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
     HISTORY = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));

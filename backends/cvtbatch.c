@@ -16,6 +16,7 @@
 #include "qio.h"
 #include "libinn.h"
 #include "macros.h"
+#include "logging.h" 
 
 
 /*
@@ -44,6 +45,9 @@ main(ac, av)
     register char	*p;
     register BOOL	Dirty;
     struct stat		Sb;
+
+    /* First thing, set up logging and our identity. */
+    openlog("cvtbatch", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);           
 
     if (ReadInnConf() < 0) exit(1);
     /* Parse JCL. */

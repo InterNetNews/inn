@@ -12,6 +12,7 @@
 #include "libinn.h"
 #include "dbz.h"
 #include "macros.h"
+#include "logging.h" 
 
 
 /*
@@ -101,6 +102,9 @@ main(ac, av)
     idxrec		ionevalue;
     idxrecext		iextvalue;
 #endif
+
+    /* First thing, set up logging and our identity. */
+    openlog("prunehistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);      
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);

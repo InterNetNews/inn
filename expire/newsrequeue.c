@@ -18,6 +18,7 @@
 #include "dbz.h"
 #include "qio.h"
 #include "macros.h"
+#include "logging.h" 
 
 
 /*
@@ -800,6 +801,9 @@ main(ac, av)
     char		name[SPOOLNAMEBUFF];
     char		save;
     int			nntplinklog;
+
+    /* First thing, set up logging and our identity. */
+    openlog("newsrequeue", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);

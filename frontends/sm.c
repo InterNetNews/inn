@@ -12,6 +12,7 @@
 #include "macros.h"
 #include "paths.h"
 #include "qio.h"
+#include "logging.h" 
 
 #define MAXOVERLINE	4096
 
@@ -32,6 +33,9 @@ int main(int argc, char **argv) {
     TOKEN		token;
     int			linelen;
     
+    /* First thing, set up logging and our identity. */
+    openlog("sm", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
+
     if (ReadInnConf() < 0) { exit(1); }
 
     while ((c = getopt(argc, argv, "qrdo")) != EOF) {

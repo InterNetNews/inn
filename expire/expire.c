@@ -19,6 +19,7 @@
 #include "dbz.h"
 #include "qio.h"
 #include "macros.h"
+#include "logging.h" 
 
 
 /*
@@ -1520,6 +1521,9 @@ int main(int ac, char *av[])
     BOOL		val;
     time_t		TimeWarp;
     dbzoptions          opt;
+
+    /* First thing, set up logging and our identity. */
+    openlog("expire", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
 
     /* Set defaults. */
     Server = TRUE;

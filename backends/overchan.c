@@ -15,6 +15,7 @@
 #include "macros.h"
 #include "paths.h"
 #include "qio.h"
+#include "logging.h" 
 
 /*
 **  Try to make one directory.  Return FALSE on error.
@@ -305,6 +306,9 @@ int main(int ac, char *av[])
     QIOSTATE		*qp;
     char		*Dir;
 
+    /* First thing, set up logging and our identity. */
+    openlog("overchan", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);           
+	
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
     Dir = innconf->pathoverview;

@@ -16,6 +16,7 @@
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
+#include "logging.h" 
 
 
 #define	START_LIST_SIZE	128
@@ -1146,6 +1147,9 @@ int main(int ac, char *av[])
     BOOL		SortedInput;
     char		*Dir;
     char		*Name;
+
+    /* First thing, set up logging and our identity. */
+    openlog("expireover", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
 
     /* Set defaults. */
     AddEntries = FALSE;

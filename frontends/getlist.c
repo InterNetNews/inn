@@ -11,6 +11,7 @@
 #include "qio.h"
 #include "paths.h"
 #include "macros.h"
+#include "logging.h" 
 
 
 /*
@@ -43,6 +44,9 @@ main(ac, av)
     char	buff[512 + 1];
     int		port;
     int		i;
+
+    /* First thing, set up logging and our identity. */
+    openlog("getlist", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
 
     if (ReadInnConf() < 0) exit(1);
 

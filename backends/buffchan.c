@@ -13,6 +13,7 @@
 #include "libinn.h"
 #include "qio.h"
 #include "macros.h"
+#include "logging.h" 
 
 extern void	MAPread();
 extern char	*MAPname();
@@ -384,6 +385,9 @@ main(ac, av)
     BOOL		Redirect;
     FILE		*F;
     char		*ERRLOG;
+
+    /* First thing, set up logging and our identity. */
+    openlog("buffchan", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);           
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);

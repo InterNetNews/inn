@@ -9,6 +9,7 @@
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
+#include "logging.h" 
 
 /* Global and initialized; to work around SunOS -Bstatic bug, sigh. */
 STATIC char		ConfigBuff[SMBUF] = "";
@@ -105,6 +106,9 @@ main(ac, av)
     register char	*val;
     register BOOL	File;
     register int	i;
+
+    /* First thing, set up logging and our identity. */
+    openlog("innconfval", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
 
     /* Parse JCL. */
     File = FALSE;
