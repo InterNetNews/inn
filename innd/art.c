@@ -2292,6 +2292,20 @@ STRING ARTpost(CHANNEL *cp)
     p = HDR(_distribution);
     distributions = *p ? CommaSplit(p) : NULL;
     if (distributions) {
+      if (distributions[0] == '\0') {
+	(void)sprintf(buff, "%d bogus distribution \"%s\"",
+		NNTP_REJECTIT_VAL,
+		MaxLength(p, p));
+	ARTlog(&Data, ART_REJECT, buff);
+#if	defined(DO_REMEMBER_TRASH)
+        if (Mode == OMrunning && !HISwrite(&Data, ""))
+            syslog(L_ERROR, "%s cant write history %s %m",
+                   LogName, Data.MessageID);
+#endif	/* defined(DO_REMEMBER_TRASH) */
+	DISPOSE(distributions);
+	ARTreject(buff, article);
+	return buff;
+      } else {
 	DISTparse(distributions, &Data);
 	if (ME.Distributions
 	 && !DISTwantany(ME.Distributions, distributions)) {
@@ -2307,6 +2321,7 @@ STRING ARTpost(CHANNEL *cp)
 	    ARTreject(REJECT_DISTRIB, cp, buff, article);
 	    return buff;
 	}
+      }
     }
     else {
 	Data.Distribution = "?";
