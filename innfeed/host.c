@@ -2301,9 +2301,9 @@ void hostSetStatusFile (const char *filename)
 
   if ((fp = fopen (statusFile,"w")) == NULL)
     {
-      FREE (statusFile) ;
-      syslog (LOG_ERR,"Status file is not a valie pathname: %s",
+      syslog (LOG_ERR,"Status file is not a valid pathname: %s",
               statusFile) ;
+      FREE (statusFile) ;
       statusFile = NULL ;
     }
   else

@@ -1975,11 +1975,6 @@ static void commandWriteDone (EndPoint e, IoStatus i, Buffer *b, void *d)
 
   clearTimer (cxn->writeBlockedTimerId) ;
 
-  /* Some(?) hosts return the 439 response even before we're done
-     sending, so don't go idle until here */
-  if (cxn->state == cxnFeedingS && cxn->articleQTotal == 0)
-    cxnIdle (cxn) ;
-
   if (i != IoDone)
     {
       errno = endPointErrno (e) ;
@@ -1994,16 +1989,24 @@ static void commandWriteDone (EndPoint e, IoStatus i, Buffer *b, void *d)
         }
       else
         {
+	  /* XXX - so cxnSleep() doesn't die in VALIDATE_CONNECTION () */
           deferAllArticles (cxn) ;
           cxnIdle (cxn) ;
+
           cxnSleep (cxn) ;
         }
     }
   else
     {
-      /* The command set has been sent, so start the response timer.
-         XXX - we'd like finer grained control */
-      initReadBlockedTimeout (cxn) ;
+      /* Some(?) hosts return the 439 response even before we're done
+         sending, so don't go idle until here */
+      if (cxn->state == cxnFeedingS && cxn->articleQTotal == 0)
+        cxnIdle (cxn) ;
+      else
+        /* The command set has been sent, so start the response timer.
+           XXX - we'd like finer grained control */
+        initReadBlockedTimeout (cxn) ;
+
       if ( cxn->doesStreaming )
         doSomeWrites (cxn) ;        /* pump data as fast as possible */
                                     /* XXX - will clear the read timeout */
