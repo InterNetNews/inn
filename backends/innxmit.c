@@ -20,11 +20,17 @@
 #include <sys/uio.h>
 #include "nntp.h"
 #include "paths.h"
-#include <syslog.h> 
+#include <syslog.h>
+#include <signal.h>
 #include "libinn.h"
 #include "qio.h"
 #include "dbz.h"
 #include "macros.h"
+
+/* Needed on AIX 4.1 to get fd_set and friends. */
+#ifdef HAVE_SYS_SELECT_H
+# include <sys/select.h>
+#endif
 
 #define OUTPUT_BUFFER_SIZE	(16 * 1024)
 
@@ -104,9 +110,9 @@ STATIC FILE		*BATCHfp;
 STATIC int		FromServer;
 STATIC int		ToServer;
 STATIC QIOSTATE		*BATCHqp;
-STATIC SIGVAR		GotAlarm;
-STATIC SIGVAR		GotInterrupt;
-STATIC SIGVAR		JMPyes;
+STATIC sig_atomic_t	GotAlarm;
+STATIC sig_atomic_t	GotInterrupt;
+STATIC sig_atomic_t	JMPyes;
 STATIC jmp_buf		JMPwhere;
 STATIC char		*REMbuffer;
 STATIC char		*REMbuffptr;

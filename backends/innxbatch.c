@@ -46,9 +46,15 @@
 #include <sys/time.h>
 /*#include <sys/uio.h>*/
 #include "nntp.h"
-#include <syslog.h> 
+#include <syslog.h>
+#include <signal.h>
 #include "libinn.h"
 #include "macros.h"
+
+/* Needed on AIX 4.1 to get fd_set and friends. */
+#ifdef HAVE_SYS_SELECT_H
+# include <sys/select.h>
+#endif
 
 /*
 ** Syslog formats - collected together so they remain consistent
@@ -72,9 +78,9 @@ STATIC double		STATend;
 STATIC char		*XBATCHname;
 STATIC int		FromServer;
 STATIC int		ToServer;
-STATIC SIGVAR		GotAlarm;
-STATIC SIGVAR		GotInterrupt;
-STATIC SIGVAR		JMPyes;
+STATIC sig_atomic_t	GotAlarm;
+STATIC sig_atomic_t	GotInterrupt;
+STATIC sig_atomic_t	JMPyes;
 STATIC jmp_buf		JMPwhere;
 STATIC unsigned long	STATaccepted;
 STATIC unsigned long	STAToffered;
