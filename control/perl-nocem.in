@@ -500,7 +500,7 @@ The Newsgroups pseudo header is not checked, but this can be done in
 local_want_cancel_id().
 The Hierarchies header is ignored.
 
-=head1 AUTHORS
+=head1 HISTORY
 
 Copyright 2000 by Miquel van Smoorenburg <miquels@cistron.nl>.
 
