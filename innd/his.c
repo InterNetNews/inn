@@ -326,7 +326,7 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
 		    (unsigned long)Data->Arrived, HIS_SUBFIELDSEP,
 		    HIS_NOEXP, HIS_SUBFIELDSEP,
 		    (unsigned long)Data->Posted, HIS_FIELDSEP, paths);
-#if 0		    
+
     if (i == EOF || fflush(HISwritefp) == EOF) {
 	/* The history line is now an orphan... */
 	i = errno;
@@ -335,7 +335,7 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
 	TMRstop(TMR_HISWRITE);
 	return FALSE;
     }
-#endif
+
     /* Set up the database values and write them. */
     if (dbzstore(hash, offset) == DBZSTORE_ERROR) {
 	i = errno;
@@ -371,7 +371,7 @@ BOOL HISremember(const HASH hash)
 		HashToText(hash), HIS_FIELDSEP,
 		(unsigned long)Now.time, HIS_SUBFIELDSEP,
 		HIS_NOEXP, HIS_SUBFIELDSEP, (unsigned long)Now.time);
-#if 0		
+
     if (i == EOF || fflush(HISwritefp) == EOF) {
 	/* The history line is now an orphan... */
 	i = errno;
@@ -380,7 +380,6 @@ BOOL HISremember(const HASH hash)
 	TMRstop(TMR_HISWRITE);
 	return FALSE;
     } 
-#endif    
 
     /* Set up the database values and write them. */
     if (dbzstore(hash, offset) == DBZSTORE_ERROR) {
