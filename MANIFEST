@@ -241,6 +241,7 @@ include/configdata.h                  Obsolete header
 include/dbz.h                         Header file for DBZ
 include/inn                           Additional header files (Directory)
 include/inn/defines.h                 Portable defs for installed headers
+include/inn/qio.h                     Header file for quick I/O package
 include/innconf.h                     Header file for inn.conf
 include/inndcomm.h                    innd control channel commands
 include/libinn.h                      INN library declarations
@@ -250,7 +251,6 @@ include/nntp.h                        NNTP command and reply codes
 include/ov.h                          Header file for overview
 include/paths.h.in                    Paths to common programs and files
 include/ppport.h                      Header file for Perl support
-include/qio.h                         Header file for quick I/O package
 include/rwlock.h                      Header file for rwlock
 include/storage.h                     Header file for storage API
 innd                                  Server (Directory)
@@ -556,6 +556,7 @@ tests/lib/inet_ntoa-t.c               Tests for lib/inet_ntoa.c
 tests/lib/memcmp-t.c                  Tests for lib/memcmp.c
 tests/lib/pread-t.c                   Tests for lib/pread.c
 tests/lib/pwrite-t.c                  Tests for lib/pwrite.c
+tests/lib/qio-t.c                     Tests for lib/qio.c
 tests/lib/setenv-t.c                  Tests for lib/setenv.c
 tests/lib/setenv.t                    Wrapper for setenv tests
 tests/lib/strerror-t.c                Tests for lib/strerror.c
