@@ -648,8 +648,6 @@ BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, char *d
 	ge->high = artnum;
     ge->count++;
     ge->base = base;
-    if (ge->high - ge->low + 1 > ge->count)
-	ge->count = ge->high - ge->low + 1;	
     return TRUE;
 }
 
