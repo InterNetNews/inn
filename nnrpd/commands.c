@@ -26,7 +26,7 @@ typedef struct {
 
 
 extern int LLOGenable;
-
+extern char *NNRPinstance;
 
 static LISTINFO		INFOactive = {
     NULL, _PATH_ACTIVE, TRUE, "active newsgroups",
@@ -784,8 +784,9 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 	if (VirtualPathlen > 0) {
 	    q = p;
 	    if ((p = strchr(p, '@')) != NULL) {
-		*++p = '\0';
-		sprintf(idbuff, "%s%s>", q, PERMaccessconf->domain);
+		*p = '\0';
+		sprintf(idbuff, "%s%s@%s>", q, NNRPinstance,
+			PERMaccessconf->domain);
 	    }
 	} else {
 	    strcpy(idbuff, p);

@@ -93,6 +93,7 @@ static const char	*ShadowGroup;
 #endif
 static const char 	*HostErrorStr;
 bool GetHostByAddr = TRUE;      /* formerly DO_NNRP_GETHOSTBYADDR */
+char *NNRPinstance = "";
 
 #ifdef DO_PERL
 bool   PerlLoaded = FALSE;
@@ -238,6 +239,7 @@ CMDhelp(int ac UNUSED, char *av[] UNUSED)
 {
     CMDENT	*cp;
     char	*p, *q;
+    static const char *newsmaster = NEWSMASTER;
 
     Reply("%s\r\n", NNTP_HELP_FOLLOWS);
     for (cp = CMDtable; cp->Name; cp++)
@@ -255,26 +257,26 @@ CMDhelp(int ac UNUSED, char *av[] UNUSED)
 		    PERMaccessconf->newsmaster);
 	    }
 	} else {
-	    /* sigh, pickup from NEWSMASTER anyway */
-	    if ((p = strchr(NEWSMASTER, '@')) == NULL)
+	    /* sigh, pickup from newsmaster anyway */
+	    if ((p = strchr(newsmaster, '@')) == NULL)
 		Printf("Report problems to <%s@%s>\r\n",
-		    NEWSMASTER, PERMaccessconf->domain);
+		    newsmaster, PERMaccessconf->domain);
 	    else {
-		q = NEW(char, p - NEWSMASTER + 1);
-		strncpy(q, NEWSMASTER, p - NEWSMASTER);
-		q[p - NEWSMASTER] = '\0';
+		q = NEW(char, p - newsmaster + 1);
+		strncpy(q, newsmaster, p - newsmaster);
+		q[p - newsmaster] = '\0';
 		Printf("Report problems to <%s@%s>\r\n",
 		    q, PERMaccessconf->domain);
 		DISPOSE(q);
 	    }
 	}
     } else {
-	if (strchr(NEWSMASTER, '@') == NULL)
+	if (strchr(newsmaster, '@') == NULL)
 	    Printf("Report problems to <%s@%s>\r\n",
-		NEWSMASTER, innconf->fromhost);
+		newsmaster, innconf->fromhost);
 	else
 	    Printf("Report problems to <%s>\r\n",
-		NEWSMASTER);
+		newsmaster);
     }
     Reply(".\r\n");
 }
@@ -872,9 +874,9 @@ main(int argc, char *argv[])
     if (ReadInnConf() < 0) exit(1);
 
 #ifdef HAVE_SSL
-    while ((i = getopt(argc, argv, "c:b:Dfi:g:nop:Rr:s:tS")) != EOF)
+    while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nop:Rr:s:tS")) != EOF)
 #else
-    while ((i = getopt(argc, argv, "c:b:Dfi:g:nop:Rr:s:t")) != EOF)
+    while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nop:Rr:s:t")) != EOF)
 #endif /* HAVE_SSL */
 	switch (i) {
 	default:
@@ -900,6 +902,9 @@ main(int argc, char *argv[])
 #endif /* HAVE_GETSPNAM */
 	case 'i':			/* Initial command */
 	    PushedBack = COPY(optarg);
+	    break;
+	case 'I':			/* Instance */
+	    NNRPinstance = COPY(optarg);
 	    break;
 	case 'n':			/* No DNS lookups */
 	    GetHostByAddr = FALSE;
