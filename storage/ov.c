@@ -23,7 +23,8 @@
 STATIC OV_METHOD	ov;
 
 BOOL OVopen(int mode) {
-    int			i;
+    int	i;
+    BOOL val;
 
     if (ov.open)
 	/* already opened */
@@ -45,7 +46,12 @@ BOOL OVopen(int mode) {
 	return FALSE;
     }
     ov = ov_methods[i];
-    return ((*ov.open)(mode));
+    val = (*ov.open)(mode);
+    if (atexit(OVclose) < 0) {
+	OVclose();
+	return FALSE;
+    }
+    return val;
 }
 
 BOOL OVgroupstats(char *group, int *lo, int *hi, int *count, int *flag) {
