@@ -43,7 +43,7 @@ STATIC CNFSEXPIRERULES	*metaexprulestab = (CNFSEXPIRERULES *)NULL;
 STATIC long		pagesize = 0;
 
 STATIC TOKEN CNFSMakeToken(char *cycbuffname, CYCBUFF_OFF_T offset,
-		       INT32_T cycnum, STORAGECLASS class) {
+		       U_INT32_T cycnum, STORAGECLASS class) {
     TOKEN               token;
     INT32_T		int32;
 
@@ -68,7 +68,7 @@ STATIC TOKEN CNFSMakeToken(char *cycbuffname, CYCBUFF_OFF_T offset,
 */
 
 STATIC BOOL CNFSBreakToken(TOKEN token, char *cycbuffname,
-			   CYCBUFF_OFF_T *offset, INT32_T *cycnum) {
+			   CYCBUFF_OFF_T *offset, U_INT32_T *cycnum) {
     INT32_T	int32;
 
     if (cycbuffname == NULL || offset == NULL || cycnum == NULL) {
@@ -219,13 +219,14 @@ STATIC METACYCBUFF *CNFSgetmetacycbuffbyname(char *name) {
 }
 
 STATIC BOOL CNFSflushhead(CYCBUFF *cycbuff) {
-  int			fd;
   int			b;
   CYCBUFFEXTERN		rpx;
 
+  if (!cycbuff->needflush)
+    return TRUE;
   memset(&rpx, 0, sizeof(CYCBUFFEXTERN));
-  if ((fd = open(cycbuff->path, O_WRONLY)) < 0) {
-    syslog(L_ERROR, "%s: CNFSflushhead: open failed: %m", LocalLogName);
+  if (CNFSseek(cycbuff->fdrdwr, (CYCBUFF_OFF_T) 0, SEEK_SET) < 0) {
+    syslog(L_ERROR, "CNFSflushhead: magic CNFSseek failed: %m");
     return FALSE;
   }
   if (cycbuff->magicver == 3) {
@@ -238,16 +239,16 @@ STATIC BOOL CNFSflushhead(CYCBUFF *cycbuff) {
     strncpy(rpx.freea, CNFSofft2hex(cycbuff->free, TRUE), CNFSLASIZ);
     strncpy(rpx.cyclenuma, CNFSofft2hex(cycbuff->cyclenum, TRUE), CNFSLASIZ);
     strncpy(rpx.updateda, CNFSofft2hex(cycbuff->updated, TRUE), CNFSLASIZ);
-    if ((b = write(fd, &rpx, sizeof(CYCBUFFEXTERN))) != sizeof(CYCBUFFEXTERN)) {
+    if ((b = write(cycbuff->fdrdwr, &rpx, sizeof(CYCBUFFEXTERN))) != sizeof(CYCBUFFEXTERN)) {
       syslog(L_ERROR, "%s: CNFSflushhead: write failed (%d bytes): %m", LocalLogName, b);
       return FALSE;
     }
+    cycbuff->needflush = FALSE;
   } else {
     syslog(L_ERROR, "%s: CNFSflushhead: bogus magicver for %s: %d",
       LocalLogName, cycbuff->name, cycbuff->magicver);
     return FALSE;
   }
-  close(fd);
   return TRUE;
 }
 
@@ -265,10 +266,20 @@ STATIC void CNFSflushallheads(void) {
 **	free pointer and cycle number.  Return 1 on success, 0 otherwise.
 */
 
-STATIC BOOL CNFSReadFreeAndCycle(CYCBUFF *cycbuff) {
+STATIC void CNFSReadFreeAndCycle(CYCBUFF *cycbuff) {
     CYCBUFFEXTERN	rpx;
     char		buf[64];
 
+    if (CNFSseek(cycbuff->fdrd, (CYCBUFF_OFF_T) 0, SEEK_SET) < 0) {
+	syslog(L_ERROR, "CNFSReadFreeAndCycle: magic lseek failed: %m");
+	SMseterror(SMERR_UNDEFINED, NULL);
+	return;
+    }
+    if (read(cycbuff->fdrd, &rpx, sizeof(CYCBUFFEXTERN)) != sizeof(rpx)) {
+	syslog(L_ERROR, "CNFSReadFreeAndCycle: magic read failed: %m");
+	SMseterror(SMERR_UNDEFINED, NULL);
+	return;
+    }
     /* Sanity checks are not needed since CNFSinit_disks() has already done. */
     buf[CNFSLASIZ] = '\0';
     strncpy(buf, rpx.freea, CNFSLASIZ);
@@ -279,7 +290,7 @@ STATIC BOOL CNFSReadFreeAndCycle(CYCBUFF *cycbuff) {
     buf[CNFSLASIZ] = '\0';
     strncpy(buf, rpx.cyclenuma, CNFSLASIZ);
     cycbuff->cyclenum = CNFShex2offt(buf);
-    return TRUE;
+    return;
 }
 
 STATIC BOOL CNFSparse_part_line(char *l) {
@@ -329,6 +340,7 @@ STATIC BOOL CNFSparse_part_line(char *l) {
   cycbuff->fdrd = -1;
   cycbuff->fdrdwr = -1;
   cycbuff->next = (CYCBUFF *)NULL;
+  cycbuff->needflush = FALSE;
   /*
   ** The minimum article offset will be the size of the bitfield itself,
   ** len / (blocksize * 8), plus however many additional blocks the CYCBUFF
@@ -480,8 +492,11 @@ STATIC BOOL CNFSinit_disks(void) {
   */
 
   for (cycbuff = cycbufftab; cycbuff != (CYCBUFF *)NULL; cycbuff = cycbuff->next) {
-    if (strcmp(cycbuff->path, "/dev/null") == 0)
-      continue;
+    if (strcmp(cycbuff->path, "/dev/null") == 0) {
+	syslog(L_ERROR, "%s: ERROR opening '%s' is not available",
+		LocalLogName, cycbuff->path);
+	return FALSE;
+    }
     if (cycbuff->fdrd < 0) {
 	if ((fd = open(cycbuff->path, O_RDONLY)) < 0) {
 	    syslog(L_ERROR, "%s: ERROR opening '%s' O_RDONLY : %m",
@@ -539,9 +554,15 @@ STATIC BOOL CNFSinit_disks(void) {
 		   LocalLogName, CNFSofft2hex(tmpo, FALSE), cycbuff->path);
 	    return FALSE;
 	}
-	if (! CNFSReadFreeAndCycle(cycbuff)) {
-	    return FALSE;
-	}
+	buf[CNFSLASIZ] = '\0';
+	strncpy(buf, rpx.freea, CNFSLASIZ);
+	cycbuff->free = CNFShex2offt(buf);
+	buf[CNFSLASIZ] = '\0';
+	strncpy(buf, rpx.updateda, CNFSLASIZ);
+	cycbuff->updated = CNFShex2offt(buf);
+	buf[CNFSLASIZ] = '\0';
+	strncpy(buf, rpx.cyclenuma, CNFSLASIZ);
+	cycbuff->cyclenum = CNFShex2offt(buf);
     } else {
 	syslog(L_NOTICE,
 		"%s: No magic cookie found for cycbuff %s, initializing",
@@ -550,11 +571,10 @@ STATIC BOOL CNFSinit_disks(void) {
 	cycbuff->free = cycbuff->minartoffset;
 	cycbuff->updated = 0;
 	cycbuff->cyclenum = 1;
+	cycbuff->needflush = TRUE;
 	if (!CNFSflushhead(cycbuff))
 	    return FALSE;
     }
-    strcpy(buf, ctime(&cycbuff->updated));
-    buf[strlen(buf) - 1] = '\0';	/* Zap newline */
     errno = 0;
     fd = cycbuff->fdrdwr;
     if ((cycbuff->bitfield =
@@ -764,13 +784,13 @@ STATIC void CNFSmunmapbitfields(void) {
     }
 }
 
-STATIC int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, INT32_T cycnum) {
+STATIC int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, U_INT32_T cycnum) {
     static	count = 0;
     CYCBUFF	*tmp;
 
     if (++count % 1000 == 0) {	/* XXX 1K articles is just a guess */
 	for (tmp = cycbufftab; tmp != (CYCBUFF *)NULL; tmp = tmp->next) {
-	    (void)CNFSReadFreeAndCycle(tmp);
+	    CNFSReadFreeAndCycle(tmp);
 	}
     }
     /*
@@ -778,8 +798,10 @@ STATIC int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, INT32_T cycn
     ** checked it, so use a ">=" check instead of "==".  Our intent is
     ** avoid a false negative response, *not* a false positive response.
     */
-    if (! (cycnum >= cycbuff->cyclenum ||
-	(cycnum == cycbuff->cyclenum - 1 && offset > cycbuff->free))) {
+    if (! (cycnum == cycbuff->cyclenum ||
+	(cycbuff->cyclenum == 0 && cycnum + 1 == cycbuff->cyclenum) ||
+	(cycnum == cycbuff->cyclenum - 1 && offset > cycbuff->free) ||
+	(cycnum == 0 && cycbuff->cyclenum == 2 && offset > cycbuff->free))) {
 	/* We've been overwritten */
 	return 0;
     }
@@ -839,7 +861,7 @@ TOKEN cnfs_store(const ARTHANDLE article, STORAGECLASS class) {
     int			chars = 0;
     char		*artcycbuffname;
     CYCBUFF_OFF_T	artoffset, middle;
-    INT32_T		artcyclenum;
+    U_INT32_T		artcyclenum;
     CNFSARTHEADER	cah;
     struct iovec	iov[2];
     int			tonextblock;
@@ -869,6 +891,7 @@ TOKEN cnfs_store(const ARTHANDLE article, STORAGECLASS class) {
 	cycbuff->cyclenum++;
 	if (cycbuff->cyclenum == 1)
 	    cycbuff->cyclenum++;		/* cnfs_next() needs this */
+	cycbuff->needflush = TRUE;
 	(void)CNFSflushhead(cycbuff);		/* Flush, just for giggles */
 	syslog(L_NOTICE, "%s: cycbuff %s rollover to cycle 0x%x... remain calm",
 	       LocalLogName, cycbuff->name, cycbuff->cyclenum);
@@ -905,6 +928,7 @@ TOKEN cnfs_store(const ARTHANDLE article, STORAGECLASS class) {
 	token.type = TOKEN_EMPTY;
 	return token;
     }
+    cycbuff->needflush = TRUE;
 
     /* Now that the article is written, advance the free pointer & flush */
     cycbuff->free += (CYCBUFF_OFF_T) article.len + sizeof(cah);
@@ -937,7 +961,7 @@ TOKEN cnfs_store(const ARTHANDLE article, STORAGECLASS class) {
 ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
     char		cycbuffname[9];
     CYCBUFF_OFF_T	offset;
-    INT32_T		cycnum;
+    U_INT32_T		cycnum;
     CYCBUFF		*cycbuff;
     ARTHANDLE   	*art;
     CNFSARTHEADER	cah;

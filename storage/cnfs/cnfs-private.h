@@ -45,6 +45,8 @@ typedef struct _CYCBUFF {
   caddr_t	bitfield;	/* Bitfield for article in use */
   CYCBUFF_OFF_T	minartoffset;	/* The minimum offset allowed for article
 				   storage */
+  BOOL		needflush;	/* true if CYCBUFFEXTERN is needed to be
+				   flushed */
   struct _CYCBUFF	*next;
 } CYCBUFF;
 
