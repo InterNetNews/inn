@@ -81,7 +81,7 @@
 #define _PATH_SORT              "@_PATH_SORT@"
 
 /* Absolute paths. */
-#define _PATH_TMP		"@TMPPATH@"
+#define _PATH_TMP		"@tmpdir@"
 #define _PATH_RNEWS_DUP_LOG	"/dev/null"
 
 /* Always relative to pathcontrol. */

@@ -170,4 +170,4 @@ pathoutgoing:           @SPOOLDIR@/outgoing
 pathoverview:           @SPOOLDIR@/overview
 pathrun:                @RUNDIR@
 pathspool:              @SPOOLDIR@
-pathtmp:                @TMPPATH@
+pathtmp:                @tmpdir@
