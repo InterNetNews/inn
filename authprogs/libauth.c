@@ -39,17 +39,15 @@ get_connection_info(FILE *stream, struct res_info *res, struct auth_info *auth)
     char *cip = NULL, *sip = NULL, *cport = NULL, *sport = NULL;
 #ifdef HAVE_INET6
     struct addrinfo *r, hints;
-    int ret;
 #else
-    struct sockaddr_in *loc_sin = xmalloc(sizeof(struct sockaddr_in));
-    struct sockaddr_in *cli_sin = xmalloc(sizeof(struct sockaddr_in));
+    struct sockaddr_in *loc_sin, *cli_sin;
 #endif
 
     /* Zero fields first (anything remaining NULL after is missing data) */
     if (res != NULL) {
+        res->clienthostname = NULL;
         res->client = NULL;
         res->local = NULL;
-        res->clienthostname = NULL;
     }
     if (auth != NULL) {
         auth->username = NULL;
@@ -80,8 +78,10 @@ get_connection_info(FILE *stream, struct res_info *res, struct auth_info *auth)
             sport = xstrdup(buff + strlen(LOCPORT));
         else if (res != NULL && strncmp(buff, CLIHOST, strlen(CLIHOST)) == 0)
             res->clienthostname = xstrdup(buff + strlen(CLIHOST));
+        else if (strncmp(buff, ".", 2) == 0)
+            break;      /* This isn't in the spec, but nnrpd sends it... */
         else {
-            warn("libauth: unexpected data from nnrpd");
+            warn("libauth: unexpected data from nnrpd: \"%s\"", buff);
             goto error;
         }
     }
@@ -95,38 +95,45 @@ get_connection_info(FILE *stream, struct res_info *res, struct auth_info *auth)
     }
 
     /* Generate sockaddrs from IP and port strings */
+    if (res != NULL) {
+        res->client = xmalloc(sizeof(struct sockaddr));
+        res->local = xmalloc(sizeof(struct sockaddr));
+
 #ifdef HAVE_INET6
-    memset( &hints, 0, sizeof( hints ) );
-    hints.ai_flags = AI_NUMERICHOST;
-    hints.ai_socktype = SOCK_STREAM;
+        memset( &hints, 0, sizeof( hints ) );
+        hints.ai_flags = AI_NUMERICHOST;
+        hints.ai_socktype = SOCK_STREAM;
 
-    hints.ai_family = strchr( cip, ':' ) != NULL ? PF_INET6 : PF_INET;
-    if( getaddrinfo( cip, cport, &hints, &r ) == 0)
-        goto error;
-    memcpy( cli, r->ai_addr, SA_LEN( r->ai_addr ) );
-    freeaddrinfo( r );
+        hints.ai_family = strchr( cip, ':' ) != NULL ? PF_INET6 : PF_INET;
+        if( getaddrinfo( cip, cport, &hints, &r ) != 0)
+            goto error;
+        memcpy( res->client, r->ai_addr, SA_LEN( r->ai_addr ) );
+        freeaddrinfo( r );
 
-    hints.ai_family = strchr( sip, ':' ) != NULL ? PF_INET6 : PF_INET;
-    if( getaddrinfo( sip, sport, &hints, &r ) == 0)
-        goto error;
-    memcpy( loc, res->ai_addr, SA_LEN( r->ai_addr ) );
-    freeaddrinfo( r );
+        hints.ai_family = strchr( sip, ':' ) != NULL ? PF_INET6 : PF_INET;
+        if( getaddrinfo( sip, sport, &hints, &r ) != 0)
+            goto error;
+        memcpy( res->local, r->ai_addr, SA_LEN( r->ai_addr ) );
+        freeaddrinfo( r );
 #else
-    cli_sin->sin_family = AF_INET;
-    if( ( cli_sin->sin_addr.s_addr = inet_addr( cip ) ) == INADDR_NONE )
-        goto error;
-    cli_sin->sin_port = htons( atoi(cport) );
+        cli_sin = (struct sockaddr_in *)(res->client);
+        loc_sin = (struct sockaddr_in *)(res->local);
+        cli_sin->sin_family = AF_INET;
+        if( ( cli_sin->sin_addr.s_addr = inet_addr( cip ) ) == INADDR_NONE )
+            goto error;
+        cli_sin->sin_port = htons( atoi(cport) );
 
-    loc_sin->sin_family = AF_INET;
-    if( ( loc_sin->sin_addr.s_addr = inet_addr( sip ) ) == INADDR_NONE )
-        goto error;
-    loc_sin->sin_port = htons( atoi(sport) );
+        loc_sin->sin_family = AF_INET;
+        if( ( loc_sin->sin_addr.s_addr = inet_addr( sip ) ) == INADDR_NONE )
+            goto error;
+        loc_sin->sin_port = htons( atoi(sport) );
 #endif
 
-    free(sip);
-    free(sport);
-    free(cip);
-    free(cport);
+        free(sip);
+        free(sport);
+        free(cip);
+        free(cport);
+    }
 
     return true;
 
@@ -138,8 +145,8 @@ error:
     if (cip != NULL)                                free(cip);
     if (cport != NULL)                              free(cport);
     if (res != NULL && res->clienthostname != NULL) free(res->clienthostname);
-    free(loc_sin);
-    free(cli_sin);
+    if (res != NULL && res->client != NULL)         free(res->client);
+    if (res != NULL && res->local != NULL)          free(res->local);
     return false;
 }
 
