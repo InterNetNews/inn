@@ -373,6 +373,8 @@ LINE: while (!eof ()) {
   my $res;
   my ($day, $hour, $prog, $left) =
     $_ =~ /^(\S+\s+\S+) (\S+) \S+ (\S+): (.*)$/o;
+  ($day, $hour, $prog, $left) =
+    $_ =~ /^(\S+\s+\S+) (\S+) \d+ \S+ (\S+): (.*)$/o unless $day;
 
   unless ($day) {
     ($day, $hour, $res, $left) = $_ =~ /^(\S+\s+\S+) (\S+)\.\d+ (\S+) (.*)$/o;
