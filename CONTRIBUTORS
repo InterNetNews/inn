@@ -1,0 +1,66 @@
+The following is a list of the people who've helped out by contributing
+code since I took over the project.  More people have contributed code to
+INN before I started managing it. If anyone's name has been left out
+(probably), or if I've not correctly attributed something to you (ditto),
+please let me know (don't be embarrased). Same goes for past contributors.
+
+Rich Salz:
+	Designed and wrote most of it.
+
+Bob Halley:
+	Did the TCL extension.
+
+Christophe Wolfhugel:
+	Did the Perl extension.
+
+Doug Needham:
+	Made nnrpd spool if innd is unavailable.
+	Made nnrpd handle the LIST SUBSCRIPTIONS command.
+	Added the rebilding of control connections to innd (SIGUSR1 handling)
+	Got inews to ask the nntp peer for moderator info instead of
+	   digging it out of a local file.
+
+David Lawrence: 
+	Did the hooks for PGP verificiation of control messages.
+
+John Stapleton:
+	Wrote the poison newsgroup code ('@') for newsfeeds(5).
+	Wrote the too-many-connects support ('-X -H -T' flags to innd).
+	
+Landon Curt Noll:
+	Wrote actsync, nntpsend, shrinkfile.
+
+John Levine:
+	Wrote the '-e' support for expire (expire on shortest time).
+
+Matthias Urlichs:
+	Made rnews recognise gzip compression.
+	Made newsfeeds(5) take the 'Wp' flag.
+
+Stefan Petri:
+	Did the original XBATCH support
+
+Russel Street:
+	Did more XBATCH support.
+
+Alan Barrett:
+	Did the work-limiter in the select loop to stop streaming from
+	   killing performance.
+
+Greg Patten:
+	Wrote the perl innlog
+
+
+The following people helped above and beyond the call of duty with
+testing (provided patches, bug reports, suggestions etc):
+
+Paul Vixie, Robert Elz, Evan Champion, Robert Keller, Barry Bouwsma,
+markd@mira.net.au, Ollivier Robert, Kevin Jameson, Heiko W. Rupp, Fletcher
+Mattox, Matus Uhlar, Gabor Kiss, Joe Greco, Matthias Scheler, Richard
+Michael Todd, Fabien Tassin, Trevor Riley, Katsuhiro Kondou, Alex Bligh,
+J. Porter Clark, Alan Brown, Bert Hyman, Petter Nilsen, Gary E. Miller, Kim
+Culhan, Marc Baudoin, Neal Becker, Bjorn Knutsson, Stephen Marquard,
+Frederick Korz, Benedict Lofstedt, Dan Ellis, Joe Ramey, Odd Einar Aurbakken,
+Jon Lewis, Dan Riley, Peter Eriksson, Ken Lalonde, Sven Paulus, Koichi
+Mouri, J. Richard Sladkey, Trine Krogstad, Holger Burbach, Per Hedeland,
+Larry Rosenman, Andrew Burgess, Michael Brunnbauer

@@ -1,0 +1,75 @@
+This directory contains sample authorization programs for use with the
+'authinfo generic' command in nnrpd.
+
+The first program in here is from Doug Needham I have successfully
+tested this program when connecting to nnrpd by hand, but I've not
+taken the time to figure out how to get my newsreader to use
+'authinfo generic'.  There is no Makefile here and no serious
+testing of it, so it's not integrated. If you have success using
+it and care to share what you've done. Please drop me a note
+(<inn@isc.org>). Thanks.
+
+
+---------------------------------------------------------------------------
+
+Replied: Fri, 26 Jul 1996 19:29:17 +0200
+Replied: Douglas Wade Needham <dneedham@dneedham.inhouse.compuserve.com>
+Received: by gw.home.vix.com id UAA05867; Thu, 25 Jul 1996 20:45:27 -0700 (PDT)
+Received: (from dneedham@localhost) by dneedham.inhouse.compuserve.com (8.7.4/8.6.9) id XAA21103; Thu, 25 Jul 1996 23:45:25 -0400 (EDT)
+From: Douglas Wade Needham <dneedham@dneedham.inhouse.compuserve.com>
+Message-Id: <199607260345.XAA21103@dneedham.inhouse.compuserve.com>
+Subject: A sample program for authinfo generic (for inn 1.5)
+To: inn-workers@vix.com (INN Gurus/Workers)
+Date: Thu, 25 Jul 1996 23:45:25 -0400 (EDT)
+Cc: inn@isc.org, brister@vix.com (James A. Brister)
+X-Mailer: ELM [version 2.4 PL25]
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary=%#%record%#%
+Status: U
+
+--%#%record%#%
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Length: 1894      
+
+Hi folks...
+
+Finally started to get some time to clear some things from my todo list...Here
+is a sample program which can be used by "authinfo generic" to validate a user
+against the password file on the news host.  While not a great example, it does
+demonstrate how you can write an authentication program.  All I ask is that
+credit be given.
+
+A couple of notes that I have found out about these programs for those of you
+who may be interested in writing your own...
+
+1) These programs have stdin and stdout connected all the way back to the
+   reader, so they can carry on a dialog in whatever fashion they want to 
+   with the user's news reader.  This can include passing Kerberos tickets,
+   encrypted or hashed passwords, or doing a challenge-response type session
+   for authenticating the user rather than passing the password in clear-text 
+   across the network.
+
+2) Regardless of the outcome, the authentication program must send NNRPD a
+   record such as is found in nnrp.access by writing it to stderr.
+
+3) Successful authentication is indicated by a zero exit status, and
+   unsuccessful authentication is indicated by a non-zero exit status.
+
+4) Need I say it (again)...these programs can be a security hole unless care is
+   taken to avoid SUID programs and those that transmit/recieve passwords in
+   the clear (especially those that use login passwords).  We should give some
+   thought to doing a similiar program for Kerberos authentication (what sort
+   of instance should we use???) and other authentication methods such as
+   Compuserve's Distributed Authentication (guess I should do this one once the
+   standard is finialized with the IETF 8) ).
+
+Also, a question for the list as a whole... what readers easily support
+authinfo generic (including running a program at the reader's end to do things
+like challenge-response)???
+
+Well...here it is...enjoy 8)...
+
+- doug
+
+#### See auth_pass.c #####

@@ -1,0 +1,502 @@
+Newsgroups: news.software.nntp,news.software.b,news.answers
+Subject: INN FAQ Part 1/9: General Information
+Followup-To: news.software.nntp
+Approved: hwr@pilhuhn.de
+Summary: This article is part 1 of a multi-part FAQ:
+	Part 1: Common questions about INN itself, useful to people that do not currently run INN.  
+
+Posted-By: post_faq 2.10
+Archive-name: usenet/software/inn-faq/part1
+Last Changed: $Date$ $Revision$
+
+                  Part 1 of 9
+
+INN FAQ Part 1: General and questions from people that don't (yet) run INN
+INN FAQ Part 2: Specific notes for specific operating systems
+INN FAQ Part 3: Reasons why INN isn't starting
+INN FAQ Part 4: The debugging tutorial (setup of feeds etc.)
+INN FAQ Part 5: Other error messages and what they mean
+INN FAQ Part 6: Day-to-day operation and changes to the system
+INN FAQ Part 7: Problems with INN already running
+INN FAQ Part 8: Appendix A: Norman's install guide
+INN FAQ Part 9: Appendix B: Configurations for certain systems
+
+
+
+------------------------------
+
+Subject:  Table Of Contents for Part 1/9
+
+=====================================================================
+        TABLE OF CONTENTS FOR PART 1/9
+=====================================================================
+
+QUESTIONS FROM PEOPLE THAT DON'T (YET) RUN INN:
+	1.1 What is INN?
+	1.2 I thought Rich Salz maintains INN ...
+	1.3 What's the future of unoff releases?
+	1.4 Where can I get the INN software?
+	1.5 Where can I get the latest copy of this FAQ?
+	1.6 Where may I find additional information?
+	1.7 What machines does it run on?
+	1.8 INN must be really complicated since this FAQ is so long!
+	1.9 Can I run C News with INN?
+	1.10 Can I run NNTP with INN?
+	1.11 Can I run the reference implementation (NNTP1.5) with INN?
+	1.12 Can I run INN on my UUCP-only machine?
+	1.13 Suppose I have a 286 machine?
+	1.14 Does INN implement NOV, xthread (trn) or xuser/xmotd (tin) commands?
+	1.15 Is an ident or authorization protocol supported?
+	1.16 Does INN do UUCP batching like C News?
+	1.17 Help!  How do I configure this beast?
+	1.18 How do I thank the FAQ maintainer?
+	1.19 What has Netscape's Newsserver to do with INN?
+	1.20 How do I submit additional informations for the FAQ?
+
+
+The FAQ was written by Rich $alz <rsalz@rodan.uu.net>, was maintained 
+for a long time by Tom Limoncelli <tal@plts.org> and is now
+maintained by Heiko W.Rupp <hwr@pilhuhn.de>
+
+These documents would not exist if it weren't for the people that have
+submitted questions and (most importantly) answers.  THANK YOU ALL!
+
+
+=====================================================================
+           QUESTIONS FROM PEOPLE THAT DON'T (YET) RUN INN
+=====================================================================
+
+
+------------------------------
+
+Subject: (1.1) What is INN?
+
+For a complete answer, why not read the Usenix paper that introduced
+INN to the world?  It's available as
+ftp://ftp.uu.net/networking/news/nntp/inn/inn.usenix.ps.Z
+
+InterNetNews is a complete Usenet system.  The cornerstone of the package
+is innd, an NNTP server that multiplexes all I/O.  Think of it as an nntpd
+merged with the B News inews, or as a C News relaynews that reads multiple
+NNTP streams.  Newsreading is handled by a separate server, nnrpd, that is
+spawned for each client.  Both innd and nnrpd have some slight variances
+from the NNTP protocol (although in normal use you will never notice); see
+the manpages.  INN separates hosts that feed you news from those that have
+users reading news.  If you need to support a mixed environment you will have
+to do some extra work; the installation manual gives some hints.
+
+------------------------------
+
+Subject: (1.2) I thought Rich Salz maintains INN ...
+
+Rich did for a very long time .. 
+
+From an announcement (<4k5pn3$ii9@paperboy.osf.org>) :
+
+| I am pleased to announce that the Internet Software Consortium
+| (http://www.isc.org/isc) will be responsible for future official INN
+| releases, starting with INN1.5.  I am sure they will be posting a notice
+| about their plans here fairly soon.
+
+| The interest and support (both financial and emotional) they have given
+| me over the past few years has been immeasurable.  It was this interest,
+| as much as their ability to commit top-flight engineering talent, that
+| makes me feel confident that I'm leaving "my baby" in good hands.
+
+| I will still be involved with INN development, although more in an archi-
+| tectural and philosophical role (i.e., "do it this way") rather than
+| programming (i.e., "here's the code").
+
+| If you've found INN useful, I'm glad.  (By my count several thousand people
+| still owe me a postcard. :)  If you expect to find it useful in the future,
+| please support the ISC and their efforts.  I know I will.
+|         /rich $alz
+
+For the postcards, Rich adds in (<565e4r$5v2@paperboy.osf.org>):
+
+| No no no.  James gets the postcard.  This means you have to track down
+| his current physical address; perhaps in-care-of the ISC would work. :)
+ 
+| The rules are actually pretty complicated:
+|         If you're installing 1.4sec2 or earlier, send yourself a postcard
+|         saying you should upgrade.
+ 
+|         If you're installing 1.5 or later, for the first time with INN,
+|         send James the postcard.
+
+|         If you're upgrading from 1.4 to 1.5, pro-rate your news volume
+|         and send us each the appropriate fraction. :)
+
+
+------------------------------
+
+Subject: (1.3) What's the future of unoff releases?
+
+Q: As Rich no longer does inn - what's the future on unoff releases?
+
+Dave Barr wrote:
+
+| As it stands now I have decided to stop releasing any more unoff versions
+| unless someone can convince me otherwise.  I am redirecting my efforts
+| towards helping 1.5 see the light.  The code base has drifted enough
+| already -- releasing unoff5 while 1.5 is trying to integrate unoff4
+| stuff would be counterproductive.
+
+| To put it another way, consider the INN1.4unoff to be under a
+| code freeze.  Only bug fixes (and even then only to unoff-specific
+| code, like streaming) will be accepted.
+
+------------------------------
+
+Subject: (1.4) Where can I get the INN software?
+
+The official archive site is ftp.uu.net in the directory
+networking/news/nntp/inn.  Archie current lists over 30 archive sites;
+three other international sites are ftp.univ-lyon1.fr in
+pub/unix/news/inn, munnari.oz.au in pub/news/inn, and src.doc.ic.ac.uk
+in computing/usenet/software/transport
+
+The latest version of INN is 1.4sec.  This is rev. 1.4 with a slight
+modification of certain shell scripts to fix a security hole.  Do
+not run 1.4 without the patch (see part 6/9 of this FAQ).
+
+Patches for INN are at: ftp://ftp.math.psu.edu/pub/INN/patches
+    and                 ftp://ftp.math.psu.edu/pub/INN/patches/OLD
+Add-ons for INN are at: ftp://ftp.math.psu.edu/pub/INN/contrib
+("Add-ons" include "Gup" and other interesting tools)
+
+Dave Barr made a fourth unofficial release containing many patches. From the 
+announcement:
+
+| There's lots of new features, bug fixes, and one security fix in this
+| release over the previous "unoff3" release.
+
+You can get the release from:
+
+ftp://ftp.math.psu.edu/pub/INN/inn1.4unoff4.tar.gz
+
+or one of the following mirrors:
+ 
+USA:
+ftp://ftp.orst.edu/pub/mirrors/ftp.math.psu.edu/INN
+ftp://wuarchive.wustl.edu/packages/news/transport/inn_unoff/
+ftp://ftp.fibr.net/pub/software/UNIX/INN
+In Europe:
+ftp://ftp.oleane.net/pub/mirrors/unix/inn-unoff/    (France)
+ftp://ftp.univ-lyon1.fr/pub/mirrors/unix/inn-unoff/ (France)
+ftp://ftp.belnet.be:/packages/INN                   (Belgium)
+ftp://ftp.xlink.net/pub/news/server/                (Germany)
+South Africa (GMT+2):
+ftp://ftp.is.co.za/networking/news/inn/
+Japan:
+ftp://ftp.nisiq.net/news/inn
+Taiwan:
+ftp://NCTUCCCA.edu.tw/packages/news/inn-unoff
+
+
+------------------------------
+
+Subject: (1.5) Where can I get the latest copy of this FAQ?
+
+0.  If you are reading this document, then you already have part 1 of it.
+	So look around where you found this if the other parts are also there.
+
+1.  This nine-part FAQ is available via FTP at any FTP site that carries
+	INN itself.
+
+2.  This FAQ is also posted to news.software.nntp, news.software.b and
+	news.answers about every week.
+
+3.  A htmlized version can be found under 
+    <http://www.cis.ohio-state.edu/hypertext/faq/usenet/inn-faq/top.html> or
+    <http://www.smartpages.com/faqs/usenet/software/inn-faq/>
+
+	These are grabbed from news.answers - so they might be a bit out
+	of date :-(
+
+4. If you don't find it in one of the above places, then try
+   ftp://ftp.xlink.net/pub/news/docs/
+   (on this server I put the newest FAQ after posting it -hwr).
+
+------------------------------
+
+Subject: (1.6) Where may I find additional information?
+
+The Usenix paper from Rich $alz:
+	ftp://ftp.uu.net/networking/news/nntp/inn/inn.usenix.ps.Z
+
+The Web site of the new maintainers, the Internet Software Consortium
+    http://www.isc.org/isc
+
+A good overview for those not familiar with news (from Tom Podnar 
+<tpodnar@bones.wcupa.edu>):
+	ftp://bones.wcupa.edu/pub/nntp.ps 
+
+A FAQ in french - maintained by Fabien Tassin <tassin@eerie.fr>
+	at http://www.eerie.fr/~news/faq.html
+
+RFC's important to News:
+	RFC 977: NNTP (Phil Lapsley and Brian Kantor)
+	RFC 1036: Standard for Interchange of USENET Messages 
+		(M.Horton, Rick Adams)
+
+The O'Reilly Book (only for C News ; new version is in work)
+	Managing UUCP and Usenet (Tim O'Reilly and Grace Todino)
+
+The newsgroup news.software.nntp; please look around in this group. Often
+	you'll find there the answer to the question you were going to ask. 
+	But don't hesitate to ask.
+	If you can't post to news.software.nntp you can send mail to
+	inn-questions@pilhuhn.de which will post the your mail in that group.
+
+Dave Barr has put togheter some informations about his unoff releases. 
+	This page is also a entry for the patch archive:
+	<http://www.math.psu.edu/barr/INN.html>
+
+The overview database with its XOVER nntp extension is described in 
+	ftp://ftp.internic.net/internet-drafts/draft-barber-nntp-imp-01.txt
+This is superseeded by 
+    draft-barber-nntp-imp-02.txt  on the same site.
+and will be superseeded by version 3 soon, which you also might get from
+    ftp://ftp.academ.com/pub/nntp/private/nntp.extensions.draft.txt
+    (This one is now at the 4th update)
+
+There is no special book on INN out at the moment, but it is said,
+that Dave Lawrence and Henry Spencer are currently writing one for
+O'Reilly.
+
+------------------------------
+
+Subject: (1.7) What machines does it run on?
+
+If you have socket() and select() then INN will probably run on your
+machine.  In addition to the common platforms found around the Internet
+(SunOS and Ultrix, for example), INN runs on IBM's AIX, Apple's A/UX,
+NeXT, Solaris 2.x, most SVR4 platforms, BSDI, most free BSD systems 
+(NetBSD, FreeBSD, ...) and a host of others.  It might require a
+little bit of tweaking of some free BSD platforms that have really bad
+shells.
+
+INN has not been ported to Windows NT.  There are no plans to do so.
+However, someone has written a package called NNS (Usenet Network News
+Server) which is a NNTP-compliant news server for Windows NT.  For
+information write to nns@jeck.wa.com.
+
+------------------------------
+
+Subject: (1.8) INN must be really complicated since this FAQ is so long!
+
+No, it's just that the FAQ is very complete.
+
+A lot of the material could be integrated into the Install.ms doc.
+
+Please post questions to news.software.nntp.  Do not send
+email to Heiko W.Rupp directly.  By posting your question,
+a group of 10 or so people will be trying to help you.
+On the other hand -- if you have a solution that should be included,
+then send it to the maintainer, so that he can't miss it in the news.
+See also #1.20 and #9.1.
+
+------------------------------
+
+Subject: (1.9) Can I run C News with INN?
+
+No.  INN handles all article reception, filing, forwarding, and
+expiration.  You will get a corrupted database if you try to
+run INN with any other news system.  For testing, you can probably shut
+down your old system, bring up INN, and then reverse the process.  (INN
+uses the C News history file and DBZ database, so if you don't run C News
+you will have to do some fiddling around with those files.)
+
+------------------------------
+
+Subject: (1.10) Can I run NNTP with INN?
+
+There's a confusion here.  NNTP is a protocol, defined in RFC 977.  There
+is also an implementation of the protocol, NNTP1.5, that many people call
+NNTP.  When there was only one implementation of the protocol, that was
+okay, but now that there are other implementations (for example, INN) it
+is getting confusing.  It would be as if "sendmail" were named "smtp."
+Please try to be clear -- do you mean the NNTP protocol, or the NNTP
+reference implementation currently maintained by Stan Barber?
+
+------------------------------
+
+Subject: (1.11) Can I run the reference implementation (NNTP1.5) with INN?
+
+The quick answer is no.  INN listens on the NNTP port and handles all
+incoming traffic.  It receives articles, files them, and arranges for
+them to be forwarded to your peers.  If a site connects that is not
+listed as a peer (e.g., a local workstation that does newsreading) then
+the INN server hands the connection off to another program that handles
+just the NNTP commands that newsreaders use.  By default, this is nnrpd
+(notice the "r"), which implements the NNTP protocol for newsreaders
+(for example, it includes the POST command but not the IHAVE command).
+You can run the reference implementation server instead of nnrpd if you
+want.  Doing this can be useful if you have clients that want to do
+both reading and article transfer.
+
+------------------------------
+
+Subject: (1.12) Can I run INN on my UUCP-only machine?
+
+Sure.  While not designed for this, several people are running INN on
+machines that do not have IP-connectivity (such as UUCP-only hosts) and
+are quite happy with it.  You might want to give it a try, especially if
+you think you will be joining the Internet some day.
+
+------------------------------
+
+Subject: (1.13) Suppose I have a 286 machine?
+
+Won't work.  INN is designed to be a memory hog; a server that has been up
+for a few days while will have a working set size of a few to several
+megabytes, although not all of it will be resident.  For example, the
+server keeps the active file and list of who gets what in memory, as well
+as all articles that it is receiving.  Unless you can do things like
+"malloc(64 * 1024)" without pain, INN won't work on your machine.
+
+------------------------------
+
+Subject: (1.14) Does INN implement NOV, xthread (trn) or xuser/xmotd (tin) commands?
+
+Newsreaders all need some way to quickly grab data from
+a range of articles.  trn, tin, nn, and others each developed
+their own database format, and their own extensions to the NNTP
+protocol for clients to read the database.  Then, Geoff Collyer
+invented NOV, the database to end all other databases.
+
+Rather than support a different database format for each newsreader,
+INN supports Geoff Collyer's news overview database, NOV.  INN includes
+everything you need to create/maintain/expire NOV's .overview files.
+You only need Geoff's distribution (available via FTP on ftp.std.com
+src/news/nov.dist.tar.Z) if you want to see how he implements things,
+or to get his client library (useful when building some newsreaders).
+
+It is very easy to configure INN to use NOV.  Read Part 4/9 of
+this faq: Subject: Cookbook example of setting up NOV ("overchan")
+NB: The NOV code in INN 1.3 is buggy.  Use 1.4 or higher.
+
+The xover command is used for querying the NOV database.  The xover
+command is very smart in that if the article has been canceled, the
+data isn't given out.  If the article is so new that it's data isn't in
+the NOV database, nnrpd opens the article and digs out the data.  xhrd
+and xpat make every effort to use NOV data before they dig the data out
+of the actual articles, thus making them considerably faster than other
+implementations.  The "xoverview" command does not exist.  If your
+server supports this command you need to upgrade.
+
+What about TRN's xthread command?
+
+The xthread command has code but it is not supported; look at
+$inn/nnrpd/nnrpd.h.  This code will probably vanish after 1.4.
+
+What about TIN's many commands?
+
+Tin commands are not supported.  However, other people have
+added TIN support.  See the next section.
+
+------------------------------
+
+Subject: (1.15) Is an ident or authorization protocol supported?
+
+An unsupported patch for nnrpd to add ident support can be found via
+FTP at ftp://ftp.csie.nctu.edu.tw/pub/News/packages/nnrpd-ident.tar.gz  It
+includes patches to add tin's xuser and xmotd commands as well as a
+list subscription system. (skhuang@csie.nctu.edu.tw)
+
+Remember: ident information is only as valid as the server you connect
+to.  Any fool with root access (or anyone with a PC or Mac) can create
+a bogus ident server that will give out whatever information they want
+you to see.  It's not an authorization or identification protocol, it's
+just informational.
+
+The authd protocol is added to nnrpd by <nhiro@isci.kyutech.ac.jp>.
+This unsupported patch can be found in
+ftp://ftp.eos.hokudai.ac.jp/pub/network/news/inn/patches/authd-patch-1.3.tar.gz
+The documentation is in Japanese.  Good luck.
+
+In a future release, you will be able to log all POST commands with
+ident information if you so choose.  (Maybe INN 1.5)
+
+------------------------------
+
+Subject: (1.16) Does INN do UUCP batching like C News?
+
+Not as part of the standard distribution.  The batching system right
+now is better than B News, but Rich has said he will be working on
+improving that part of INN in a future release.  Christophe Wolfhugel
+<Christophe.Wolfhugel@grasp.insa-lyon.fr> has written a package that is
+very much like the C News batching system, however.  You can find it at 
+ftp://ftp.univ-lyon1.fr/pub/unix/news/inn/contrib/
+
+Version 3 of Christophe's package includes a shell version and a Perl
+version.  Version 4, not yet planned will only be in Perl.  The
+configuration file has evolved from older releases in order to support
+new features like "minimum batching".
+
+------------------------------
+
+Subject: (1.17) Help!  How do I configure this beast?
+
+READ AND FOLLOW THE "Install.ms" FILE.  This FAQ is meant to add to
+what Install.ms says not replace it. Even if a already configured or
+pre installed INN comes with your OS, you should at least glance at
+Install.ms to see where is what and why.
+
+Many people that thought the Install.ms doc was incomplete later
+re-read the "First Time Installation" portion and were amazed how much
+they missed (or just plain skipped) the first time.
+
+You should also purchase the O'Reilly And Associates book on Managing
+Usenet to give yourself a good grounding on how to run a site.
+
+------------------------------
+
+Subject: (1.18) How do I thank the FAQ maintainer?
+
+If you find this document useful, please consider making a donation to
+the maintainer's favorite charity:
+
+|	The Personal Liberty Fund
+|	PO Box 11335
+|	New Brunswick, NJ 08906-1335
+|	USA
+
+The PLF is a legal and educational organization which helps people in
+New Jersey, USA.  They have many on-going projects which range from
+combating youth suicide to legal advocacy.  Their Anti-Violence Project
+runs a phone hotline for reporting gay-bashing which helps hundreds of
+people a year.  The PLF is an all-volunteer organization and couldn't
+survive without donations.  The PLF is recognized by the IRS as a
+501(c)3 tax-exempt charity.  Donations are tax deductible to the
+fullest extent of the law (U.S. citizens only).  Please write "INN" in
+the memo field of the check.  Fifteen, fifty, or five hundred dollars...
+every penny is appreciated!
+
+------------------------------
+
+Subject: (1.19) What has Netscape's Newsserver to do with INN?
+
+Netscape took INN as the original source base for their server and
+added their own extensions. As revisions go by they will differ more.
+Rich $alz adds:  
+
+| netscape did not get any special consideration for INN.  Anyone who 
+| wants to commercialize it is free to do so.Read the COPYRIGHT file.
+
+You can get answers to problems with the Netscape Server in
+snews://secnews.netscape.com/netscape.server.news
+
+------------------------------
+
+Subject: (1.20)  How do I submit additional informations for the FAQ?
+
+If you have an addition to the FAQ then send it to the actual
+maintainer Heiko W.Rupp <hwr@pilhuhn.de>. Please try to bring your
+submission in the style of the actual FAQ (Especially if you submit an
+entry for part9 then please follow #9.1). If you put (along others) 
+'inn' in the subject, you will get an automatic acknowledge of
+receipt.
+
+

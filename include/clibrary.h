@@ -1,0 +1,151 @@
+/*  $Revision$
+**
+**  Here be declarations of routines and variables in the C library.
+**  You must #include <sys/types.h> and <stdio.h> before this file.
+*/
+
+#if	defined(DO_HAVE_UNISTD)
+#include <unistd.h>
+#endif	/* defined(DO_HAVE_UNISTD) */
+
+#if	defined(DO_HAVE_VFORK)
+#include <vfork.h>
+#endif	/* defined(DO_HAVE_VFORK) */
+
+#include <sys/time.h>
+
+    /* Generic pointer, used by memcpy, malloc, etc. */
+    /* =()<typedef @<POINTER>@ *POINTER;>()= */
+typedef void *POINTER;
+    /* Const generic pointer, used by qsort. */
+    /* =()<typedef const @<POINTER>@ *CPOINTER;>()= */
+typedef const void *CPOINTER;
+    /* What is a file offset?  Will not work unless long! */
+    /* =()<typedef @<OFFSET_T>@ OFFSET_T;>()= */
+typedef long OFFSET_T;
+    /* What is the type of an object size? */
+    /* =()<typedef @<SIZE_T>@ SIZE_T;>()= */
+typedef size_t SIZE_T;
+    /* What is the type of a passwd uid and gid, for use in chown(2)? */
+    /* =()<typedef @<UID_T>@ UID_T;>()= */
+typedef uid_t UID_T;
+    /* =()<typedef @<GID_T>@ GID_T;>()= */
+typedef gid_t GID_T;
+    /* =()<typedef @<PID_T>@ PID_T;>()= */
+typedef pid_t PID_T;
+    /* =()<typedef @<U_INT32_T>@ U_INT32_T;>()= */
+typedef unsigned int U_INT32_T;
+    /* =()<typedef @<INT32_T>@ INT32_T;>()= */
+typedef int INT32_T;
+
+#include <signal.h>
+    /* What should a signal handler return? */
+    /* =()<#define SIGHANDLER	@<SIGHANDLER>@>()= */
+#define SIGHANDLER	void
+
+#if	defined(SIG_DFL)
+    /* What types of variables can be modified in a signal handler? */
+    /* =()<typedef @<SIGVAR>@ SIGVAR;>()= */
+typedef sig_atomic_t SIGVAR;
+#endif	/* defined(SIG_DFL) */
+
+/* =()<#include @<STR_HEADER>@>()= */
+#include <string.h>
+/* =()<#include @<MEM_HEADER>@>()= */
+#include <memory.h>
+#include <stdlib.h>
+
+
+/*
+**  It's a pity we have to go through these contortions, for broken
+**  systems that have fd_set but not the FD_SET.
+*/
+#if	defined(FD_SETSIZE)
+#define FDSET		fd_set
+#else
+#include <sys/param.h>
+#if	!defined(NOFILE)
+	error -- #define NOFILE to the number of files allowed on your machine!
+#endif	/* !defined(NOFILE) */
+#if	!defined(howmany)
+#define howmany(x, y)	(((x) + ((y) - 1)) / (y))
+#endif	/* !defined(howmany) */
+#define FD_SETSIZE	NOFILE
+#define NFDBITS		(sizeof (long) * 8)
+typedef struct _FDSET {
+    long	fds_bits[howmany(FD_SETSIZE, NFDBITS)];
+} FDSET;
+#define FD_SET(n, p)	(p)->fds_bits[(n) / NFDBITS] |= (1 << ((n) % NFDBITS))
+#define FD_CLR(n, p)	(p)->fds_bits[(n) / NFDBITS] &= ~(1 << ((n) % NFDBITS))
+#define FD_ISSET(n, p)	((p)->fds_bits[(n) / NFDBITS] & (1 << ((n) % NFDBITS)))
+#define FD_ZERO(p)	(void)memset((POINTER)(p), 0, sizeof *(p))
+#endif	/* defined(FD_SETSIZE) */
+
+
+#if	!defined(SEEK_SET)
+#define SEEK_SET	0
+#endif	/* !defined(SEEK_SET) */
+#if	!defined(SEEK_END)
+#define SEEK_END	2
+#endif	/* !defined(SEEK_END) */
+
+/*
+**  We must use #define to set FREEVAL, since "typedef void FREEVAL;" doesn't
+**  work on some broken compilers, sigh.
+*/
+/* =()<#define FREEVAL @<FREEVAL>@>()= */
+#define FREEVAL void
+
+extern int		optind;
+extern char		*optarg;
+#if	!defined(__STDC__)
+extern int		errno;
+#endif	/* !defined(__STDC__) */
+
+extern char		*crypt();
+extern char		*getenv();
+extern char		*inet_ntoa();
+extern char		*mktemp();
+#if	!defined(strerror)
+extern char		*strerror();
+#endif	/* !defined(strerror) */
+extern long		atol();
+extern time_t		time();
+extern unsigned long	inet_addr();
+extern FREEVAL		free();
+extern POINTER		malloc();
+extern POINTER		realloc();
+
+#if	defined (ACT_MMAP) || defined(MMAP)
+/* =()<typedef @<MMAP_PTR>@ MMAP_PTR;>()= */
+typedef caddr_t MMAP_PTR;
+extern MMAP_PTR mmap();
+#endif /* defined (ACT_MMAP) || defined(MMAP) */	
+
+/* Some backward systems need this. */
+extern FILE	*popen();
+
+/* This is in <mystring.h>, but not in some system string headers,
+ * so we put it here just in case. */
+extern int	strncasecmp();
+
+/* =()<extern @<ABORTVAL>@	abort();>()= */
+extern void	abort();
+/* =()<extern @<ALARMVAL>@	alarm();>()= */
+extern unsigned int	alarm();
+/* =()<extern @<EXITVAL>@	exit();>()= */
+extern void	exit();
+/* =()<extern @<GETPIDVAL>@	getpid();>()= */
+extern pid_t	getpid();
+/* =()<extern @<LSEEKVAL>@	lseek();>()= */
+extern off_t	lseek();
+/* =()<extern @<QSORTVAL>@	qsort();>()= */
+extern void	qsort();
+/* =()<extern @<SLEEPVAL>@	sleep();>()= */
+extern unsigned int	sleep();
+/* =()<extern @<_EXITVAL>@	_exit();>()= */
+extern void	_exit();
+
+#if defined(DO_HAVE_SETPROCTITLE)
+extern void	setproctitle();
+#endif	/* defined(DO_HAVE_SETPROCTITLE) */

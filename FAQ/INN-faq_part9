@@ -1,0 +1,533 @@
+Newsgroups: news.software.nntp,news.software.b,news.answers
+Approved: hwr@pilhuhn.de
+Subject: INN FAQ Part 9/9: Appendix B: Configurations for certain systems
+Followup-To: news.software.nntp
+Summary: This article is part 9 of a multi-part FAQ:
+    Part 9: Configurations for certain systems
+
+Posted-By: post_faq 2.10
+Archive-name: usenet/software/inn-faq/part9
+Last Changed: $Date$ $Revision$
+
+
+				Part 9 of 9
+
+INN FAQ Part 1: General and questions from people that don't (yet) run INN
+INN FAQ Part 2: Specific notes for specific operating systems
+INN FAQ Part 3: Reasons why INN isn't starting
+INN FAQ Part 4: The debugging tutorial (setup of feeds etc.)
+INN FAQ Part 5: Other error messages and what they mean
+INN FAQ Part 6: Day-to-day operation and changes to the system
+INN FAQ Part 7: Problems with INN already running
+INN FAQ Part 8: Appendix A: Norman's install guide
+INN FAQ Part 9: Appendix B: Configurations for certain systems
+
+
+------------------------------
+
+Subject: Table Of Contents for Part 9/9
+
+=====================================================================
+	TABLE OF CONTENTS for Part 9/9: Configurations for certain systems
+=====================================================================
+
+	9.1 Comments for this part of the FAQ
+	9.2 NetBSD1.0/i386
+	9.3 Solaris 2.4 on x86 Hardware
+	9.4 Irix 5.[23]
+	9.5 DEC Alpha with OSF/1 v3.2
+	9.6 AIX 3.2.5
+	9.7 Linux (Versions >= 1.3.57)
+	9.8 BSD/OS 2.1 + sharedactive
+	9.9 HP-UX 10.01
+	9.10 Fujitsu DS/90 running UXP/DS(V20L10)
+
+Note: See also part2 of the FAQ
+
+------------------------------
+
+Subject: (9.1) Comments for this part of the FAQ
+
+  This part of the Faq is to provide some example configurations which
+worked at least for some sites. I want to collect more then what is below;
+this is just meant as a starting point.
+If you want to submit an entry put the following in:
+	- Name and Email  
+	- a diff of config.data against config.dist leaving out changes to
+	  local paths (except where they are relevant for work i.e. path to
+	  egrep)  Please send me diffs as you find them below, not
+	  entire config.data files. Please strip the diff to only include
+	  the changed lines (see the entries below to see what I mean).
+ 	- the software environnement it runs on (OS name and version, vendor 
+	  patches to OS applied 
+	- compiler (version?) and compiling environement.
+	- other changes you made
+
+Please see the entries below first to get the impression before you submit
+an entry. Send new entries to me (hwr@pilhuhn.de) and questions about 
+specific configurations to the submitter of the entry. See also #1.20
+and #1.8
+
+------------------------------
+
+Subject: (9.2) NetBSD1.0
+
+##FROM: Heiko W.Rupp <hwr@pilhuhn.de>
+##DIFF:
+
+++ config.data	changes for NetBSD1.0
+USE_CHAR_CONST		DO
+OFFSET_T			off_t
+SIZE_T			size_t
+UID_T			uid_t
+GID_T			gid_t
+PID_T			pid_t
+POINTER			void
+HAVE_UNISTD	DO
+HAVE_SETSID		DO
+HAVE_WAITPID		DO
+NOFILE_LIMIT		250
+ABORTVAL		void
+ALARMVAL		unsigned int
+GETPIDVAL		pid_t
+SLEEPVAL		unsigned int
+QSORTVAL		void
+LSEEKVAL		off_t
+FREEVAL			void
+_EXITVAL		void
+MISSING_SRC		
+MISSING_OBJ	
+_PATH_SENDMAIL		/usr/sbin/sendmail -t
+_PATH_EGREP		/usr/bin/egrep
+_PATH_MAILCMD		/usr/bin/Mail
+
+##OS: NetBSD 1.0 on i486 hardware. The six very first kernel pathes applied
+	after 1.0 came out
+
+##COMPILER: gcc 2.4.5 as supplied with NetBSD 1.0
+##MISC:
+
+------------------------------
+
+Subject: (9.3) Solaris 2.4 on x86
+
+##FROM:  lev@keep.therealm.com (Lloyd Vancil)
+##DIFF:
+
+DEFS                    -I../include -DSUNOS5
+CC                      gcc
+USE_CHAR_CONST          DO
+CFLAGS                  -O $(DEFS)
+LDFLAGS
+LIBS                    -lsocket -lnsl -lelf -lresolv
+LINTLIBSTYLE            NONE
+LINTFLAGS
+LINTFILTER
+SIZE_T                  size_t
+UID_T                   uid_t
+GID_T                   gid_t
+PID_T                   pid_t
+POINTER                 void
+ALIGNPTR                long
+LOCK_STYLE              FCNTL
+HAVE_UNISTD     DO
+HAVE_SETSID             DO
+HAVE_TM_GMTOFF          DONT
+HAVE_WAITPID            DO
+USE_UNION_WAIT          DONT
+HAVE_VFORK              DONT
+BIND_USE_SIZEOF         DONT
+CLX_STYLE               FCNTL
+RES_STYLE               TIMES
+FDCOUNT_STYLE           SYSCONF
+CTYPE                   isXXXXX((c))
+ABORTVAL                void
+ALARMVAL                unsigned
+GETPIDVAL               pid_t
+SLEEPVAL                unsigned
+LSEEKVAL                off_t
+FREEVAL                 void
+_EXITVAL                void
+MISSING_SRC
+MISSING_OBJ
+ACT_STYLE               MMAP
+CHECK_INCLUDED_TEXT             DONT
+INND_NICE_KIDS          DO
+VERIFY_CANCELS          DO
+LOG_CANCEL_COMMANDS     DO
+DEFAULT_TIMEOUT         900
+_PATH_COMPRESS          /usr/bin/compress
+_PATH_EGREP             /usr/local/bin/egrep
+_PATH_AWK               /usr/local/bin/gawk
+_PATH_SED               /usr/local/bin/sed
+_PATH_RNEWS             /usr/local/bin/rnews
+_PATH_MAILCMD           /usr/bin/mailx
+
+##OS: Solaris 2.4 for x86, Jumbo Kernel Patch 101945-23, sol24-23.patch to
+	solve setsockopt problems.
+##COMPILER: gcc2.6.3
+##MISC: this config file assumes that the following GNU tools are 
+	available on the system: GCC,RANLIB,SED,GREP,GAWK
+	The tm_gmtoff thing was unavailaiable for 2.4 the includes on 
+	x86 2.4 MUST MUST include ucbinclude...
+
+------------------------------
+
+Subject: (9.4) Irix 5.[23]
+
+##FROM: Robert Keller <rck@fangio.asd.sgi.com>
+##DIFF:
+
+USE_CHAR_CONST		DO
+CFLAGS			$(DEFS) -O2 -w
+LDFLAGS		
+LIBS		-lmld
+LINTLIBSTYLE		NONE
+LINTFLAGS		$(DEFS)
+LINTFILTER		| sed -n -f ../sedf.sysv
+RANLIB			echo
+VAR_STYLE		STDARGS
+SIZE_T			size_t
+UID_T			uid_t
+GID_T			gid_t
+PID_T			pid_t
+POINTER			void
+LOCK_STYLE		FCNTL
+HAVE_UNISTD	DO
+HAVE_SETSID		DO
+HAVE_TM_GMTOFF		DONT
+HAVE_ST_BLKSIZE		DONT
+HAVE_WAITPID		DO
+USE_UNION_WAIT		DONT
+FORK			fork
+HAVE_VFORK		DONT
+CLX_STYLE		FCNTL
+ABORTVAL		void
+ALARMVAL		uint
+GETPIDVAL		pid_t
+SLEEPVAL		uint
+QSORTVAL		void
+LSEEKVAL		off_t
+FREEVAL			void
+_EXITVAL		void
+MISSING_SRC	
+MISSING_OBJ	
+_PATH_EGREP		/usr/bin/egrep
+_PATH_MAILCMD		/usr/sbin/Mail
+
+##OS: Irix 5.2 and Irix 5.3
+
+##COMPILER: Supplied
+
+##MISC:
+
+------------------------------
+
+Subject: (9.5) DEC Alpha with OSF/1 v3.2
+
+##FROM: Chantelle Keller <ckeller@ithaca.edu>
+##DIFF:
+
+CFLAGS                $(DEFS) -g3 -O2
+PROF                  -p
+LDFLAGS               -g -O2
+LINTLIBSTYLE          SYSV
+LINTFLAGS             -b -u -x -wkD $(DEFS)
+LINTFILTER            | sed -n -f ../sedf.sysv
+SIZE_T                unsigned long
+POINTER               void
+USE_UNION_WAIT        DONT
+ALARMVAL              unsigned int
+SLEEPVAL              unsigned int
+QSORTVAL              void
+LSEEKVAL              off_t
+FREEVAL               void
+_EXITVAL              void
+_PATH_COMPRESS        /usr/bin/compress
+_PATH_EGREP           /usr/bin/egrep
+_PATH_AWK             /usr/bin/awk
+_PATH_SED             /usr/bin/sed
+_PATH_MAILCMD         /usr/bin/Mail
+
+##OS: DEC Alpha with OSF/1 v3.2
+
+##COMPILER: standard Digital-supplied cc compiler
+
+##MISC:
+
+I also had to make the following changes:
+   - In innd/rc.c, lib/remopen.c, backends/rcompress.c, and 
+include/clibrary.h, had to change all inet_addr references from 
+"unsigned long" to "unsigned int".
+   - In innd/rc.c, had to change "extern unsigned long htonl();" to 
+"extern unsigned int htonl();"
+   - In lib/makellib.sh, had to change "exec lint ${FLAGS} -u -v -x -o 
+inn $* >/dev/null" to "exec lint ${FLAGS} -u -v -x -oinn $* >/dev/null" 
+(i.e. remove space between "-o" and "inn")
+
+
+------------------------------
+
+Subject: (9.6) AIX 3.2.5
+
+##From: "Scott J. Ellentuch" <tuc@valhalla.stormking.com>
+##DIFF:
+
+LIBS			-lbsd
+LINTLIBSTYLE		NONE
+LINTFLAGS		-b -h -wkD $(DEFS)
+LINTFILTER		| sed -n -f ../sedf.aix
+HAVE_TM_GMTOFF		DONT
+USE_UNION_WAIT		DONT
+NEED_TIME		DO
+_PATH_EGREP		/bin/egrep
+_PATH_AWK		/bin/awk
+_PATH_SED		/bin/sed
+
+##OS: AIX 3.2.5 from IBM
+
+##Compiler: xlc 1.3
+ 
+##MISC: See also Install.ms
+
+------------------------------
+
+Subject: (9.7) Linux (Versions >= 1.3.57)
+
+##FROM: Gary E. Miller <gem@rellim.com>
+##DIFF:
+
+CC			gcc
+USE_CHAR_CONST		DO
+CFLAGS			$(DEFS) -O -fomit-frame-pointer
+PROF			-p
+LDFLAGS			-O 
+LINTLIBSTYLE		NONE
+LINTFLAGS		
+LINTFILTER		
+VAR_STYLE		STDARGS
+SIZE_T			size_t
+UID_T			uid_t
+GID_T			gid_t
+PID_T			pid_t
+POINTER			void
+SIGVAR		sig_atomic_t
+HAVE_UNISTD	DO
+HAVE_SETSID		DO
+HAVE_TM_GMTOFF		DONT
+HAVE_WAITPID		DO
+USE_UNION_WAIT		DONT
+HAVE_VFORK		DONT
+BIND_USE_SIZEOF		DONT
+CLX_STYLE		FCNTL
+NBIO_STYLE		IOCTL
+FDCOUNT_STYLE		SYSCONF
+CTYPE			isXXXXX((c))
+ABORTVAL		void
+ALARMVAL		unsigned int
+GETPIDVAL		pid_t
+SLEEPVAL		unsigned int
+QSORTVAL		void
+FREEVAL			void
+_EXITVAL		void
+MISSING_SRC		
+MISSING_OBJ		
+ACT_STYLE		MMAP
+_PATH_EGREP		/usr/bin/egrep
+_PATH_MAILCMD		/bin/Mail
+
+##OS: Linux V. >= 1.3.57
+
+##Compiler: gcc 
+
+#MISC: You also need libc >=5.2.18. If you have older versions of Linux
+and/or libc, you have to turn off mmap() support.
+
+------------------------------
+
+Subject: (9.8) BSD/OS 2.1 + sharedactive
+
+##FROM: Erik R. Leo <erikl@sover.net>
+##DIFF:
+
+CC			gcc2
+CFLAGS			$(DEFS) -O2
+DBZCFLAGS			$(CFLAGS) -DMMAP
+LDFLAGS			-lipc
+MAN1			/usr/contrib/man/man1
+MAN3			/usr/contrib/man/man3
+MAN5			/usr/contrib/man/man5
+MAN8			/usr/contrib/man/man8
+NEWSMASTER		news
+SIZE_T			size_t
+UID_T			uid_t
+GID_T			gid_t
+PID_T			pid_t
+POINTER			void
+HAVE_UNISTD	DO
+HAVE_SETSID		DO
+HAVE_WAITPID		DO
+HAVE_VFORK		DONT
+ABORTVAL		void
+ALARMVAL		u_int
+GETPIDVAL		pid_t
+SLEEPVAL		unsigned
+QSORTVAL		void
+LSEEKVAL		off_t
+FREEVAL			void
+_EXITVAL		void
+MISSING_SRC		
+MISSING_OBJ		
+INND_NICE_KIDS		DO
+INND_NICE_VALUE	4
+_PATH_SENDMAIL		/usr/sbin/sendmail -t
+_PATH_EGREP		/usr/bin/egrep
+_PATH_MAILCMD		/usr/bin/Mail
+_PATH_OVERVIEWDIR	/var/spool/news/over.view
+
+##OS: BSD/OS 2.1; P90 hardware; patches K210-001 thru K210-007,
+K210-revoke, U210-001 thru U210-005, U210-007 thru U210-015 ;
+K210-revoke seems to have been "released" as K210-008 (and K210-009, I
+think)
+
+##COMPILER: gcc version 2.7.2
+
+##MISC: 256MB RAM (!); using kernel options: maxusers 256,
+DFLDSIZ="\(64*1024*1024\)", MAXDSIZ="\(128*1024*1024\)",
+CHILD_MAX="256", KMEMSIZE="\(16*1024*1024\)",
+DFLSSIZ="\(4*1024*1024\)" and NMBCLUSTERS="1024"; 
+newest sharedactive patch applied (and modified with MAX_ACTIVE_SIZE 1000000, 
+MAX_GROUPS 30000 and RELOAD_DELAY 60); 
+using "su -m news -c /var/news/etc/rc.news >/dev/console" to start.
+
+------------------------------
+
+Subject: (9.9) HP-UX 10.01
+
+##FROM: Paul Wouters <paul@ns.via.nl>
+##DIFF:
+
+YACC			bison -y
+UID_T			uid_t
+GID_T			gid_t
+PID_T			pid_t
+LOCK_STYLE		LOCKF
+HAVE_UNISTD	DO
+HAVE_SETSID		DO
+HAVE_TM_GMTOFF		DONT
+HAVE_ST_BLKSIZE		DONT
+HAVE_WAITPID		DO
+USE_UNION_WAIT		DONT
+HAVE_VFORK		DONT
+FDCOUNT_STYLE		GETRLIMIT
+ABORTVAL		void
+ALARMVAL		unsigned int
+GETPIDVAL		pid_t
+SLEEPVAL		unsigned int
+QSORTVAL		void
+LSEEKVAL		off_t
+FREEVAL			void
+_EXITVAL		void
+MISSING_SRC		
+MISSING_OBJ	
+_PATH_COMPRESS		/usr/bin/compress
+_PATH_MAILCMD		/usr/bin/mailx
+
+##OS: HP-UX hp9000 B.10.01 A 9000/801
+##COMPILER: gcc 2.6.3
+GNU bison 1.22
+
+##MISC: 
+Some minor notes on getting it to compile. My syslog.h is not in <sys/syslog.h>
+but <syslog.h>, and it doesn't contain LOG_NEWS. A new syslog is probably
+much wanted on the standard hpux-10.01. I used the one from a recent berkeley
+syslog.h :
+#define LOG_NEWS        (7<<3)  /* network news subsystem */
+Also, HPUX doesn't come with yacc. I tried byacc 3.0 but it didn't work, so
+I used bison -y. Finally, HPUX doens't have egrep, i used the GNU version.
+
+  -----
+Daryl Gaumer (darylg@cup.hp.com) adds:
+I use the syslog that is shipped as part of HP-UX.  I have the
+following in
+my config.data file:
+
+LOG_INN_SERVER          LOG_LOCAL7
+LOG_INN_PROG            LOG_LOCAL7
+FYI.
+
+The full blown C/ANSII-C compiler is a separate product.  I think yacc comes
+with this product.
+
+Corrections:
+    egrep ships with HP-UX (as part of the "core-OS"). It is /usr/bin/egrep on 
+	a system running 9.05 (and on my workstation with is running HP-UX 10.01).
+
+------------------------------
+
+Subject: (9.10) Fujitsu DS/90 running UXP/DS(V20L10)
+
+#FROM: Fumio MORIYA <momo@yk.fujitsu.co.jp>
+#DIFF:
+
+DEFS                    -I../include -DUXPDSV20
+USE_CHAR_CONST          DO
+CFLAGS                  $(DEFS) -O
+PROF                    -p
+LIBS                    -lnsl -lsocket -lelf -lresolv
+LINTLIBSTYLE            SYSV
+LINTFLAGS               -b -h $(DEFS)
+LINTFILTER              | sed -n -f ../sedf.sysv
+RANLIB                  echo
+VAR_STYLE               STDARGS
+SIZE_T                  size_t
+UID_T                   uid_t
+GID_T                   gid_t
+PID_T                   pid_t
+POINTER                 void
+LOCK_STYLE              LOCKF
+HAVE_UNISTD     DO
+HAVE_SETBUFFER          DONT
+HAVE_SETSID             DO
+HAVE_TM_GMTOFF          DONT
+HAVE_WAITPID            DO
+USE_UNION_WAIT          DONT
+HAVE_VFORK              DONT
+CLX_STYLE               FCNTL
+RES_STYLE               TIMES
+FDCOUNT_STYLE           SYSCONF
+> CTYPE			(isascii((c)) && isXXXXX((c)))
+ABORTVAL                void
+ALARMVAL                unsigned
+GETPIDVAL               pid_t
+SLEEPVAL                unsigned
+QSORTVAL                void
+LSEEKVAL                off_t
+FREEVAL                 void
+_EXITVAL                void
+MISSING_OBJ             
+_PATH_SENDMAIL          /usr/ucblib/sendmail -t
+_PATH_COMPRESS          /usr/bin/compress
+_PATH_EGREP             /usr/bin/egrep
+_PATH_MAILCMD           /usr/bin/mailx
+
+##OS: UXP/DS V20L10 (SVR4.2)
+#COMPILER:  supplied.
+##MISC:
+
+*** nc.c.orig   Fri Aug 30 11:47:19 1996
+--- nc.c        Fri Aug 30 11:20:52 1996
+***************
+*** 1216,1220 ****
+      NCclearwip(&NCwip[cp->fd]);
+  #if   defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF) 
+! #ifndef SUNOS5
+      i = 24 * 1024;
+      if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char *)&i, sizeof i) < 0)
+--- 1216,1220 ----
+      NCclearwip(&NCwip[cp->fd]);
+  #if   defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF) 
+! #if !defined(SUNOS5) && !defined(UXPDSV20)
+      i = 24 * 1024;
+      if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char *)&i, sizeof i) < 0)
+

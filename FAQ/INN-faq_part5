@@ -1,0 +1,665 @@
+Newsgroups: news.software.nntp,news.software.b,news.answers
+Approved: hwr@pilhuhn.de
+Subject: INN FAQ Part 5/9: Other error messages and what they mean
+Followup-To: news.software.nntp
+Summary: This article is part 5 of a multi-part FAQ:
+	Part 5:  A list of error messages and what they mean.
+
+Posted-By: post_faq 2.10
+Archive-name: usenet/software/inn-faq/part5
+Last Changed: $Date$ $Revision$
+
+                  Part 5 of 9
+
+INN FAQ Part 1: General and questions from people that don't (yet) run INN
+INN FAQ Part 2: Specific notes for specific operating systems
+INN FAQ Part 3: Reasons why INN isn't starting
+INN FAQ Part 4: The debugging tutorial (setup of feeds etc.)
+INN FAQ Part 5: Other error messages and what they mean
+INN FAQ Part 6: Day-to-day operation and changes to the system
+INN FAQ Part 7: Problems with INN already running
+INN FAQ Part 8: Appendix A: Norman's install guide
+INN FAQ Part 9: Appendix B: Configurations for certain systems
+ 
+ 
+------------------------------
+ 
+Subject:  Table Of Contents for Part 5/9
+ 
+=====================================================================
+     TABLE OF CONTENTS FOR PART 5/9
+=====================================================================
+
+OTHER ERROR MESSAGES AND WHAT THEY MEAN:
+	5.1 ld.so: Undefined symbol: _dbzwritethrough
+	5.2 Bad file number writing history file -- throttling
+	5.3 log file fills with "<site> <article-id> 436 No space"
+	5.4 Why does my innd often die with the message "Can't sync history..."
+	5.5 Reply from ctlinnd: Can't send XXX command (sendto failure) 
+	5.6 syslog msg: ME cant sendto CCreader bytes 4 No such file or directory.
+	5.7 syslog: cant symlink
+	5.8 syslog: cant read Connection reset by peer
+	5.9 inews says "bad message-id"
+	5.10 Why do all these "readclose" messages show up in my syslog?
+	5.11 "File exists writing symlinking article file -- throttling"
+	5.12 "cant fopen <newsgroup>/.thread No such file or directory"
+	5.13 news.daily reports: "Expire had problems removing articles"
+	5.14 syslog: nnrpd[22560]: ? cant gethostbyaddr 198.3.24.3 Permission denied
+	5.15 syslog: ME cant nonblock 15 Operation not supported. 
+	5.16 innd: ME cant renumber ... lo too wide
+	5.17 innd: ME cant update_active control
+	5.18 syslog message: innxmit[1234]: max connect failed Error 0
+	5.19 Can't open "/usr/local/news/shlock955", Permission denied
+	5.20 INND: PID file exists -- unclean shutdown!
+	5.21 cant fopen /usr/lib/news/distributions
+	5.22 cant fopen /usr/lib/news/distrib.pats
+	5.23 ME cant exec in /usr/lib/news/capture No such file or directory
+	5.24 ME cant remalloc xx bytes Cannot allocate memory
+	5.25 innxmit says: Ignoring line "news/group/name/art_num art_id"
+	5.26 innxmit says; Can't connect to news.foo.bar Permission denied
+	5.27 innd: s  (s might be replace by other letters) (in syslog )
+	5.28 innd: site: closed 5:closed seconds 123 accepted 3 rejected 4 refused 5
+	5.29 syslog: nnrpd[13]: '1.2.3.4' bad_auth
+	5.30 Not a directory writing article file -- throttling
+	5.31 syslog: nntpd[13]: cant open ...../subscriptions ...
+	5.32 syslog: nntpd[13]: post ok ^A
+	5.33 news.daily: Can't open a/b/.LCK.overview, No such file or directory
+
+
+=====================================================================
+               OTHER ERROR MESSAGES AND WHAT THEY MEAN
+=====================================================================
+
+
+------------------------------
+
+Subject: (5.1) ld.so: Undefined symbol: _dbzwritethrough
+
+> Everything compiles correctly, but when I try to test rc.local I get:
+>
+> hermes# sh /usr/local/etc/rc.news
+> ld.so: Undefined symbol: _dbzwritethrough
+>
+> What am I doing wrong?
+
+This means that you are using a $INN/lib/dbz.c file that hasn't been
+patched with the $INN/lib/dbz.pch patch.
+
+The patching is automatic.  Running "make" should do the patch without
+you even noticing.  To force the code to be re-patched (i.e. copy the
+original to dbz.c and apply the patch to it), simply delete
+$INN/lib/dbz.c and run the usual "make".  The Makefile does everything
+for you.
+
+Why might the patch fail and leave you with an unpatched dbz.c?
+
+1)  You don't have Larry Wall's (or the FSF's) "patch" program
+installed.  It is available at ftp://prep.ai.mit.edu/pub/gnu/patch-2.1.tar.gz
+
+2)  Most C++ compilers based on USL's cfront come with a program called
+"patch" that does something completely different than Larry Wall's (or
+the FSF's) "patch" program.  If your path is configured so that this
+program is found before Larry Wall's (or the FSF's) "patch" program,
+you will get an unpatched dbz.c.  To fix this, delete $INN/lib/dbz.c,
+change your path, and do the usual "make".  If this file is deleted the
+Makefile will do everything for you.
+
+See also section "5.2 The DBZ package" of the Install.ms document.
+
+------------------------------
+
+Subject: (5.2) Bad file number writing history file -- throttling
+
+The system ulimit was set restrict files from growing beyond a certain
+size and the history file was to large for the limit. Check the ulimit
+setting for the news user.
+
+The ulimit should be set to infinite.  You need to figure out how to
+set this for user "news" no matter if the user logged in, is running
+from cron, or was run at boot up.
+
+------------------------------
+
+Subject: (5.3) log file fills with "<site> <article-id> 436 No space"
+
+innd issues this message if it cannot create a directory for a group,
+_no matter what the reason for the failure_.  In most cases,
+/usr/spool/news (and the mount point it is symlinked to, if any)
+accidentally has permissions and ownerships that do not permit write
+access by innd (which runs as "news").  After chowning them to news,
+and setting the permissions to 755, everything should work fine.
+
+------------------------------
+
+Subject: (5.4) Why does my innd often die with the message "Can't sync history,
+		interrupted system call"
+
+Are you running SunOS?  See "Known Problems" section of the
+installation manual."  To the best of my knowledge, nobody has seen
+this problem on any other system.
+
+------------------------------
+
+Subject: (5.5) Reply from ctlinnd: Can't send XXX command (sendto failure) 
+
+The socket sendto wants to write to isn't available. This can either
+come from a dead server (e.g. send a ctlinnd shutdown twice) or from a
+process (find -exec rm{} comes to mind) that removed the socket from
+the filesystem.
+
+Look after _PATH_NEWSCONTROL in config.data and find out if all components
+of the path exist and are accessible. (inncheck could be of help ...)
+
+------------------------------
+
+Subject:  (5.6) syslog msg: ME cant sendto CCreader bytes 4 No such file or directory
+
+(Rich Salz replies:) It usually means that some ctlinnd command timed
+out and gave up before innd could get around to replying.  Always a
+problem with datagrams.  :-)  Usually not a problem in real life
+however.  In INN1.3, the timeout stuff is handled better so most of
+these should go away.
+
+You can ignore the messages, but if it bothers you, edit news.daily and
+find this line:
+
+	ctlinnd -s -t`wc -l <${ACTIVE}` renumber '' 2>&1
+You can rewrite it to be something like this:
+	COUNT=`wc -l <${ACTIVE}`
+	ctlinnd -s -t`expr ${COUNT} \* 5` renumber '' 2>&1
+
+------------------------------
+
+Subject: (5.7) syslog: cant symlink
+
+This usually means an intermediate directory doesn't exist.  Usually
+"ctlinnd renumber" clears this problem, but doesn't remove the cause.
+
+This is usually an indication of some larger problem.  Often it means
+that you have opted to use MMAP on an operating system (like Ultrix)
+that doesn't have a working mmap() function.  However, this would only
+be the cause if you ignored the Install.ms *and* part 2 of this FAQ.
+So, obviously, this isn't the cause :-).
+
+------------------------------
+
+Subject: (5.8) syslog: cant read Connection reset by peer
+
+This means that the client vanished or deliberately aborted the nnrpd
+TCP stream rather than closing it gracefully.  This is a common
+situation, and it does not normally indicate a problem.
+
+Most, or all, of these messages are due to clients crashing or being
+aborted in the middle of a dialogue with nnrpd.  For example, a PC or
+Mac user shuts off their machine at 5pm.  Or, you are seeing the
+results of a bad design decision in the NewsWatcher newsreading program
+for the Mac.  Future versions of NewsWatcher will be (hopefully) more
+graceful about closing connections.  In other words, they should
+send "QUIT\r\n" on the socket, then close it.
+
+------------------------------
+
+Subject: (5.9) inews says "bad message-id"
+
+If this is a Solaris 2.x system, you didn't delete the lines mentioned
+in "SVR4, Solaris 2.x, and SCO ODT 3.0" in part 2 of this FAQ.
+
+------------------------------
+
+Subject: (5.10) Why do all these "readclose" messages show up in my syslog?
+
+Chris Schmidt <cs@germany.eu.net> says:
+
+The "readclose" message indicates that a remote connection to your
+server was not correctly terminated with the server-command "quit".
+This can have two reasons.  First the line your feed uses to connect to
+you might be instable so that the connection drops every now and then.
+Solution:  either ignore theses messages or find out why the line is
+unstable.  The second reason for these messages could be a
+missconfigured client-program at your feed.  This means the program
+(e.g nntplink) does close the connection without sending the "quit"
+first.  If you configure a lower number for the exit-timeout (-e) than
+the close-timeout (-C) in nntplink then exactly this will happen.
+Solution:  ask your feed to fix its nntplink-setup.  Let me repeat
+that:  If you are using "nntplink" your -e value must be higher than
+your -C value.
+
+------------------------------
+
+Subject: (5.11) "File exists writing symlinking article file -- throttling"
+
+QUESTION: I'm running INN 1.4, and the server throttles itself, saying
+"File exists writing symlinking article file -- throttling".  Why?  I
+have no clue, other than to note that the message is being emitted
+while innd/art.c tries to link a crossposted group.
+
+ANSWER:  Innd wrote the article to comp/foo/123 and then tried to
+symlink it to alt/bar/128 and found that the symlink failed with errno
+== EEXIST.  This generally only happens when your active file does not
+match your file/directory use.  The three most common cases of that are:
+
+		Trying to use MMAP on Ultrix
+		Trying to use MMAP on (older) Linux
+		Some strange interaction with tind.
+
+If you are using Ultrix or Linux, turn off MMAP.  You don't have a choice in
+this.  The Ultrix mmap() function does something completely different
+than the Sun/BSD mmap() function.  The Linux function gives you some
+of the functionality that Sun/BSD mmap() function has, but not enough.
+(The Linux people expect to have it fully up to spec eventually, yeah right.)
+
+At least one person has reported problems with ICL DRS6000 SVR4 Unix
+when using MMAP.  Try turning off MMAP if you find problems.
+
+Some people have also seen this, when the filesystem has problems.
+Shuting down the system and running fsck helped in that case.
+
+It has been reported that tind writes to the active file and this
+confuses innd (innd assumes it is the only process writing to the
+active file).  If you are using tin, upgrade to the newest version of
+tin, it can read the NOV database rather than the "tin" database.
+
+To fix the active file (which may be corrupted), make sure nobody
+else is writing to the active file, then do
+		ctlinnd renumber ''
+to get things synchronized again.
+
+If your history file is corrupt, you should do:
+		ctlinnd renumber ''
+		makehistory -buv          (or -bunv  see #6.6 for it)
+		ctlinnd renumber ''
+(Note: the "makehistory" will take hours to run.)
+
+IF YOU IGNORE THIS PROBLEM LONG ENOUGH (by issuing the "go" command via
+ctlinnd) you will eventually get a "innd: ME cant update_active
+control" message in syslog.  The cause of this error is dealt with
+elsewhere in this FAQ (#5.17).
+
+------------------------------
+
+Subject: (5.12) "cant fopen <newsgroup>/.thread No such file or directory"
+
+Q: nnrpd logs "cant fopen <newsgroup>/.thread No such file or
+   directory" hundreds of times a day although I installed trn-3 and
+   maintain an overview database.  Why doesn't trn use overview files
+   instead of mthreads data?
+
+A: trn-3 tries to open .thread files (or use XTHREAD) first because
+   $spooldir/db.init still exists.  Delete it.
+
+------------------------------
+
+Subject: (5.13) news.daily reports: "Expire had problems removing articles"
+
+This message tells you that you need to look in the file
+${MOST_LOGS}/expire.log to find out what really happened.
+
+On the other hand...
+
+Expire reports this if it goes through the entire expire process and
+didn't find any articles to remove.  It is normal to get this error the
+first few days you are running INN.  For example, if the smallest
+integer that appears in the 4th field of your expire.ctl is a "4", then
+you're sure to see this error the first four days you get an news.daily
+report.
+
+However, those first four days are when you are still learning the
+system and it can be very shocking to see the error.  "Eeek!  Did I do
+something wrong?"  Nope, news.daily is just telling you that you have a
+virginal system.
+
+Rich writes a more technical explanation:
+| When using the "delayrm" keyword, news.daily calls expirerm to
+| actually remove the articles that expire listed in its "-z" file.
+| As distributed, expirerm calls fastrm with the "-e" flag.  This
+| flag says "exit non-zero if nothing was removed."  In the normal
+| case, it is an error if expire doesn't find anything to remove.
+
+...and a system being 4 days old isn't the normal case.  So you
+get the error.  Ignore it.
+
+------------------------------
+
+Subject: (5.14) syslog: nnrpd[22560]: ? cant gethostbyaddr 198.3.24.3 Permission denied
+
+When someone connects to nnrpd, nnrpd does a reverse lookup on the
+clients IP address so it can look up the hostname in nnrpd.access.  If
+the client's DNS information is incorrect, you will get this error.
+Make sure your SOA record is correct, as well as your in-addr.arpa
+data.
+
+Derek <ddl@clipper.ssb.com> adds that another cause for this problem,
+at least under SunOS 4.1.x, is that nnrpd wasn't linked with the proper
+resolver library (statically or dynamically).  Even when you've
+replaced Sun's fershlugger libresolv.a you've still gotta remind
+yourself to _use_ it properly.
+
+------------------------------
+
+Subject: (5.15) syslog: ME cant nonblock 15 Operation not supported.
+
+I get the following "syslog" message in /var/adm/messages:
+
+Dec  2 20:40:04 venus innd: ME cant nonblock 15 Operation not supported
+
+Answer: (from paulr@umbc4.umbc.edu (Paul Riddle))
+
+It turns out that this is happening because /usr/spool/news on the
+machine running innd is an NFS-mounted filesystem, and innd is trying
+to do an FIONBIO on my feed file, which is under /usr/spool/news/out.going.
+
+(tal@plts.org adds:)
+All news transports (INN, C news, B news) want the spool partition to
+be local.  Newsreader can read from an NFS mounted partition without
+any problems but innd should only see local partitions.  NFS has a
+blatant disregard for many of the file semantics that are needed for a
+good netnews implementation.  If you don't agree, please feel free to
+prove the authors of B news, C news, and INN wrong.  Include source
+code. :-)
+
+Greg Andrews <gerg@netcom.com> adds:
+
+The spool can certainly be kept on an NFS filesystem without anything
+breaking, as the FAQ suggests.  I've kept the spool on an NFS server,
+split between two NFS servers, and split between a local filesystem
+and two NFS servers.  Reads and writes over NFS tend to be slower
+than over local disk, even if the NFS backbone is 100BaseT or CDDI.
+
+The out.going filesystem can be put on an NFS server, but the file
+locking becomes a problem on some Unixes.  I bypassed that by
+borrowing the lockfile technique I saw in the old "cleanup" release 
+of C-News, and writing a replacement for nntpsend in Perl.  I also 
+eliminated the numerous 'ctlinnd flush' commands that can choke a 
+busy server.  The lockfile technique is pretty simple and seems to 
+work well for multiple machines mounting a common out.going filesystem 
+via NFS.
+The nntpsend replacement script creates a lockfile unique to itself
+(using the machine name and PID), and locks sites by hard linking
+site lockfiles to its own lockfile.
+
+The newslib filesystem can also be put on the NFS server, though
+the only advantage is a minor one:  If everything's on the same
+NFS server, you only need to mount one filesystem on the client
+machines.
+
+Systems without unix-domain sockets sometimes see this error.  Just
+ignore it.
+
+------------------------------
+
+Subject: (5.16) innd: ME cant renumber ... lo too wide
+
+When you try to renumber your active there are articles in your spool 
+with numbers higher than what will fit in the fields in the active.
+Look under innd: ME cant update_active control below for how to fix it.
+
+------------------------------
+
+Subject: (5.17) innd: ME cant update_active control
+
+What does "innd: ME cant update_active control" mean?
+
+Look at your active file.  One of the fields is "99999" and has to be
+incremented to "100000" but there is no space.  Shut down innd
+("ctlinnd shutdown x").  Edit your active file (see the "Safe way to
+edit the "active" file?" question in INN FAQ part 6) to add more
+leading zeroes to all the numbers.  You can use the following for this:
+
+1. ctlinnd throttle 'updating active'
+2. awk '{printf "%s %.10d %.10d %s\n", $1, $2, $3, $4}' active > active.new
+
+if your awk printf spaves instead of leading zeroes in this step,
+then try the following instead of step 2: 
+
+awk '{printf "%s %010d %010d %s\n", $1, $2, $3, $4}' active > active.new
+
+or
+
+perl -lane 'split;printf "%s %.10d %.10d %s\n", @F' active > active.new
+
+3. mv active.new active
+4. ctlinnd reload active updated
+5. ctlinnd go 'updating active'
+
+See also #5.11.
+
+------------------------------
+
+Subject: (5.18) syslog message: innxmit[1234]: max connect failed Error 0
+
+John Line <jml4@cus.cam.ac.uk> writes:
+
+If you get syslog messages like "innxmit[1234]: max connect failed
+Error 0" when using nntpsend, it probably means you messed up a line in
+nntpsend.ctl (specifically, missed out one of the first two fields).
+While nntpsend.ctl is an obvious place to look for an nntpsend problem,
+there is nothing obvious to link the error message directly to the
+problem, because the text "max" is actually something invented by
+nntpsend when processing the file, and doesn't exist in nntpsend.ctl.
+It means the next-to-last field was null, but was the second field when
+it should have been the third!
+
+NB Remember to try inncheck when you have problems like this. I only
+just thought of it, after finding the problem the hard way, and it
+immediately reported "nntpsend.ctl:18: malformed line."
+
+------------------------------
+
+Subject: (5.19) Can't open "/usr/local/news/shlock955", Permission denied
+
+This usually means you don't have /usr/local/news owned by "news".  The
+first time you run "make install" it should set the proper ownership if
+you run "make install" as "root".
+
+------------------------------
+
+Subject: (5.20) INND: PID file exists -- unclean shutdown!
+
+This just means your machine crashed or you didn't shutdown innd
+properly and THEREFORE rc.news is doing a bit of cleanup work before it
+starts innd.
+
+There is not much for you to do. You might run makehistoy or fixhist.pl
+to find articles that are on disk, but not in history.
+
+------------------------------
+
+Subject: (5.21) cant fopen /usr/lib/news/distributions
+
+Step 1:  Can you "cat" this file?
+
+Step 2:  You can't?  Does it exist?
+
+Step 3:  It doesn't?  That's because you have to create it yourself.
+It should list every distribution your users might want to know a
+description of, starting with the local one.
+
+Step 4:  Here's a sample file to start from.  It's appropriate for
+a New Jersey site:
+
+nj	New Jersey
+ny	New York
+nyc	New York City
+ne	North East, USA
+usa	United States of America
+na	North America
+
+------------------------------
+
+Subject: (5.22) cant fopen /usr/lib/news/distrib.pats
+
+A sample distrib.pats comes with the distribution and should
+be in your $inn/site directory automatically. 
+The sample needs the following modification:
+
+Remove the line:
+10:news.software.nntp:inet
+
+News.software.nntp has moved from inet groups to normal groups 
+end 1994/begin 1995.
+
+If you get this error it sounds like something was badly configured 
+on your machine.
+
+------------------------------
+
+Subject: (5.23) ME cant exec in /usr/lib/news/capture No such file or directory
+
+The newsfeeds file includes lines that looks like this:
+
+## Capture all Foo, Incorporated, postings
+#capture\
+#       :*/foo\
+#       :Tp,H2:/usr/lib/news/capture %s
+
+That's just a sample of how one might capture articles.  There is no
+capture program that comes with INN.  It's just an example of how to
+use the Tp,H2 flags.
+
+Don't uncomment anything that you don't want to activate!
+
+------------------------------
+
+Subject: (5.24) ME cant remalloc xx bytes Cannot allocate memory
+
+This probably means that innd wants to grow bigger than what the
+actual limit for a single process is.
+To solve this either rebuild your kernel with a different default max, 
+or add "unlimit datasize" to the beginning on your rc.news file.
+On some OS (e.g. FreeBSD 2.1.x) there might be some problems when
+using the supplied malloc. Linking with -lgnumalloc helped (after Joe
+Greco <jgreco@ns.sol.net>).
+
+For HP-UP see also 'HP-UX tips' in part2 of the FAQ (#2.6).
+
+------------------------------
+
+Subject: (5.25) innxmit says: Ignoring line "news/group/name/art_num art_id"
+
+Q: Innxmit logs the above error message - what does this mean?
+
+You set the parameters for the feed wrong in newsfeeds - try Wnm instead
+of Wmn. See also newsfeeds(5) and innxmit(8) for further information.
+
+------------------------------
+
+Subject: (5.26) innxmit says; Can't connect to news.foo.bar Permission denied
+
+If you get this error, then first look if permissions of all files are
+correct. If yes try out innxmit <ip-number of news.foo.bar> foo.togo 
+If this works you have some problems with name resolution. You might 
+use the ip-number in nntpsend.ctl instead of the hostname next time.
+
+------------------------------
+
+Subject: (5.27) innd: s  (s might be replace by other letters) (in syslog )
+
+Q: What do these innd: s   (or other innd: <letter>) mean?
+
+Innd logs to syslog when it receives a command from ctlinnd. The letter 
+corresponds to the command that is send to innd. For a list of commands,
+refer to include/inndcomm.h
+
+------------------------------
+
+Subject: (5.28) innd: site: closed 5:closed seconds 12 accepted 3 rejected 4 refused 5
+
+This isn't really an error but an informative message of inn. It also
+appears with 'checkpoint' instead of 'closed'. This message tells you how
+long a connections from the remote existed, how many articles were accepted
+from this remote site, how many innd already had of those offered and how
+many were rejected of some reason (see below). Ifyou get a lots of rejects
+from a site then you should investigate, as there might be some problems.
+
+Erland Sommarskog, <sommar@algonet.se> explains further:
+  Rejected articles are articles in groups that you don't have in your active 
+  file, or you ban in hosts.nntp. This could be groups you have missed to add, 
+  it could be groups you don't want. Also articles which are already too old
+  for you to accept (-c switch to innd) fall in this part. 
+
+If you get many rejects then you might also check out the clocks on
+the sender and receiver machines as it might be that with wrong clock
+settings articles get refused which seem to be to old or posted in
+future.
+
+  Refused articles are articles that are already present in your
+  history file, and which for some reason are being offered to  
+  you again. If you have more than one incoming feed, you are
+  likely to get a fairly high number in the Refused column. If
+  you are a leaf site with only one incoming feed you can still
+  get high numbers in this column, if you have a longer expiration
+  time (including /remember/) than you feed has. 
+
+------------------------------
+
+Subject: (5.29) syslog: nnrpd[13]: '1.2.3.4' bad_auth
+
+A Newsreader that could be allowed via nnrp.access did send bad
+authinfo commands. This could either be that the client has a password
+in nnrp.access and sends a wrong one or the client needs no password
+and sends one even if it does not need to.
+
+------------------------------
+
+Subject: (5.30) Not a directory writing article file -- throttling
+
+This typically means that in the spool there is a directory in 
+the spool that thinks it is a file.  This seems to happen when
+the machine running innd crashes, and the spool gets corrupted.
+Fsck then tries to make sense of the mess it finds; somtetimes
+it guesses wrong.
+
+Here is a little script that finds the offending file and disposes
+of if:
+
+#!/bin/sh
+#  
+# change this line to your news spool
+NEWS_LOC=/var/spool/news
+ 
+find ${NEWS_LOC} -type f -print |  # list all files
+        tr -d [0-9] |              # get rid of numbers
+        grep -v "overview" |       # get rid of .overview files
+        egrep -v "/$" |            # everything w/ / at end of line
+        sed -s "s/^/rm /" |        # put rm in front of file
+        sh -s                      # it's history
+or alternatively:
+
+find ${NEWS_LOC} -type f -name "[a-z]*" -print | xargs rm
+
+(From: Carlso Castro <carlos@mci.net> and Matthias Urlichs <urlichs@noris.net>)
+
+------------------------------
+
+Subject: (5.31) syslog: nntpd[13]: cant open ...../subscriptions ...
+
+This is a new option in unoff4. First look if _PATH_NNRPSUBS is
+correctly set. If yes, then just fill it with information ...
+.
+The subscriptions file contains what the NNTP "LIST SUBSCRIPTIONS"
+command returns.  Some newsreaders, such as tin, use this command
+to get a default set of groups that people are subscribed to if
+they do not have a .newsrc.  If you don't want to use it, there are
+no side-effects that I know of beyond the messages in your log.
+
+------------------------------
+
+Subject: (5.32) syslog: nntpd[13]: post ok ^A
+
+Q: What is this? Normally posting lines look like nntpd[13]: post ok <id>.
+
+A: Your posting was posted to a moderated group and is now sent by mail
+to the moderator who will (or not) post it to news. See also: #6.7, #6.8
+
+------------------------------
+
+Subject: (5.33) news.daily: Can't open a/b/.LCK.overview, No such file or directory
+
+Expireover goes through the active file and tries to remove old entries
+of overchan records from the spool. If now a group exists, that is new
+i.e. that exists in active, but for which no articles have been received, 
+then there is no spool dir for that group. Expireover tries to make
+a lock file in the directory, which fails, so it prints the above message.
+
+See also #4.19, #6.30, #7.21
+

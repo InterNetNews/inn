@@ -1,0 +1,13 @@
+##  $Revision$
+##  distrib.pats -- specify default Distribution header for newsgroups
+##  Format:
+##	<weight>:<pattern>:<value>
+##  All articles are matched against all patterns, value to be used is the
+##  one with the highest weight.
+##	<weight>	The weight assigned to this match, integer
+##	<pattern>	Newsgroup name or single wildmat(3) pattern
+##	<value>		Value of Distribution header.
+##
+##
+## Uncomment to default all local.* groups to a distribution of local.
+#10:local.*:local

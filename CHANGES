@@ -1,0 +1,1611 @@
+From backends/ChangeLog
+
+Mon Dec 16 20:51:30 1996  James A. Brister  <brister@vix.com>
+
+	* actsync.c: UNION_WAIT vs. DO_USE_UNION_WAIT fixup.
+
+Tue Dec 10 22:44:23 1996  James A. Brister  <brister@vix.com>
+
+	* nntpget.c: Fixed unitialized variable. (J. Richard Sladkey)
+	Fixed offering an article to a server that doesn't
+	want it (J. Richard Sladkey)
+
+	* innxmit.c: Added '-l' option to turn off logging of 437
+	response.
+
+Fri Nov 29 15:16:59 1996  James A. Brister  <brister@vix.com>
+
+	* actsync.c: subst update.
+
+Thu Nov 28 21:09:28 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Dropped the secs program.
+
+Tue Nov 26 14:36:36 1996  James Brister  <brister@vix.com>
+
+	* innxmit.c: Try to keep offered count more-correct when not
+	issuing CHECK commands. (Dan Riley)
+
+	* actsync.c:
+	Fixed bad parameter name in WEXITSTATUS and WTERMSIG macros.
+
+Tue Nov 19 20:19:43 1996  James Brister  <brister@vix.com>
+
+	* crosspost.c: Check end of string against '\0' and not NULL.
+
+	* crosspost.c: More include line swapping, this time for DEC Unix.
+
+	* actmerge.sh, actsync.c, actsyncd.sh: chongo's updates
+
+Mon Nov 18 23:05:41 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Dropped the secs.sh program from the distribution.
+	Fixed up a typo in one of the lint commands.
+
+Thu Nov 14 01:08:59 1996  James Brister  <brister@vix.com>
+
+	* crosspost.c: Swap #include lines for the sake of Ultrix.
+
+	* actsyncd.sh: Fix permissions of created active file (Evan Champion)
+
+Wed Nov  6 19:06:20 1996  James Brister  <brister@vix.com>
+
+	* actmerge.sh: Bug fix in if condition
+
+Sun Oct 27 17:19:14 1996  James Brister  <brister@vix.com>
+
+	* actsync.c:
+	Use DO_USE_UNION_WAIT instead of UNION_WAIT. (korz@bach.cs.columbia.edu)
+
+Sun Oct 20 15:30:20 1996  James Brister  <brister@vix.com>
+
+	* crosspost.c: Optimize out the second link(2) if the first one
+	fails due to EXDEV.
+
+Fri Oct 18 12:17:25 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Fixed lint rules to ignore return status.
+
+Wed Oct 16 15:14:20 1996  James Brister  <brister@vix.com>
+
+	* actsync.c, archive.c, batcher.c, buffchan.c, crosspost.c, cvtbatch.c, filechan.c, innxbatch.c, innxmit.c, map.c, nntpget.c, overchan.c, rcompress.c, shlock.c, shrinkfile.c:
+	cleanup of compiler warnings (evanc@synapse.net)
+
+Fri Sep 27 22:13:24 1996  James Brister  <brister@vix.com>
+
+	* innxmit.c: Fix check of MessageID length when it's NULL.
+
+	* actsync.c: include signal.h so sig_atomic_t is seen when
+	necessary.
+
+Mon Sep 16 14:00:16 1996  James Brister  <brister@vix.com>
+
+	* ChangeLog: snapshot for 1.5a3
+
+Fri Sep 13 19:38:42 1996  James Brister  <brister@vix.com>
+
+	* shrinkfile.c: chongo's updates.
+
+Tue Sep 10 19:40:24 1996  James Brister  <brister@vix.com>
+
+	* Makefile: config variable substitution changes
+
+Fri Sep  6 06:57:41 1996  James Brister  <brister@vix.com>
+
+	* actmerge.sh, sendxbatches.sh, Makefile:
+	config variable substitution changes
+
+Sun Aug 25 17:48:34 1996  James Brister  <brister@vix.com>
+
+	* actsyncd.sh: Cleanup of some variable definitions.
+
+Mon Aug 12 06:59:29 1996  James Brister  <brister@vix.com>
+
+	* actsync.c: update from chongo
+
+Wed Aug  7 12:52:49 1996  James Brister  <brister@vix.com>
+
+	* innxmit.c: Explicitly catch response code 480.
+
+Wed Jul 17 20:09:43 1996  James Brister  <brister@vix.com>
+
+	* ChangeLog: Initial revision
+
+Tue Jul 16 13:04:17 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Include innxbatch and sendxbatches.
+
+Fri Jul 12 23:25:03 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Added actmerge to ALL.
+
+	* Makefile: actsync updates.
+
+	* actmerge.sh: Subst update and binary location change.
+
+	* innxmit.c: More robust handling of confused peers.
+
+	* actsync.c: Chongo's update.
+
+Tue Jul  9 19:50:10 1996  James Brister  <brister@vix.com>
+
+	* innxmit.c: Less syslog'ing when getting a NNTP_RESENDIT_VAL or a
+	NNTP_GOODBYE_VAL.
+
+Mon Jul  8 20:30:02 1996  James Brister  <brister@vix.com>
+
+	* crosspost.c: Don't open file if not fsync'ing.
+
+
+
+==================================
+From config/ChangeLog
+
+Mon Dec 16 20:53:50 1996  James A. Brister  <brister@vix.com>
+
+	* fixinterps.pl: Typo fixes.
+
+	* Makefile: Default for 'all' is now 'quiet'.
+	Building 'quiet' now includes the interpreter
+	rule.
+
+Wed Dec 11 22:51:21 1996  James A. Brister  <brister@vix.com>
+
+	* config.dist: subst formatting
+
+	* config.dist: new MAIL_BADCONTROLS and TCL_INC variables.
+
+Thu Dec  5 00:11:00 1996  James A. Brister  <brister@vix.com>
+
+	* config.dist: Fixed missing tabs.
+
+Fri Nov 29 15:16:59 1996  James A. Brister  <brister@vix.com>
+
+	* files.list: Added actsync.c and actsync.8
+
+	* cmpconfigs.sh: Initial revision
+
+Tue Nov 26 14:11:17 1996  James Brister  <brister@vix.com>
+
+	* config.dist: Added MSYNC_3_ARG variable.
+	Added _PATH_SORT variable.
+	Changed default for WANT_PGPVERIFY.
+	Fixed some typos.
+
+	* Makefile: Dropped signcontrol from the interpreter fixup list.
+
+Sun Nov 10 20:58:56 1996  James Brister  <brister@vix.com>
+
+	* files.list: Added new docs. Removed some unnecessaries.
+
+	* config.dist: Drop PATCH.
+	32-bit integer types.
+	Added MMAP_SYNC, SET_SOCKOPT, _PATH_CSH_SHELLVARS,.
+
+	* Makefile: Added interpreter fixup code.
+
+Fri Nov  8 21:29:50 1996  James Brister  <brister@vix.com>
+
+	* fixinterps.pl: Initial revision
+
+Wed Oct 16 15:14:20 1996  James Brister  <brister@vix.com>
+
+	* config.dist, subst.c:
+	cleanup of compiler warnings (evanc@synapse.net)
+
+Tue Oct 15 16:30:45 1996  James Brister  <brister@vix.com>
+
+	* config.dist: Comment fix.
+	Added RNEWS_GROUP for certain systems that don't have a group uucp.
+
+	* subst.c: NetBSD fix.
+
+Thu Oct 10 19:52:46 1996  James Brister  <brister@vix.com>
+
+	* config.dist: Comment for NetBSD and FreeBSD.
+	Type clarification ('unsigned int' instead of just
+	unsigned).
+
+	* config.dist: Added the PATCH variable.
+
+	* config.dist:
+	Added setproctitle support for BSD/OS (evanc@synapse.net)
+
+	* config.dist: Added L suffix to some
+	numbers. (evanc@synapse.net)
+
+Sat Sep 28 16:53:33 1996  James Brister  <brister@vix.com>
+
+	* config.dist: Reduce CLIENT_TIMEOUT.
+	ALLOW_NEWNEWS to DONT
+	Some spool path changes.
+
+Fri Sep 13 16:56:40 1996  James Brister  <brister@vix.com>
+
+	* config.dist: Added perl section.
+
+Tue Sep 10 19:41:50 1996  James Brister  <brister@vix.com>
+
+	* config.dist: Added _PATH_PERL.
+	config variable substitution changes
+
+Fri Sep  6 09:14:33 1996  James Brister  <brister@vix.com>
+
+	* files.list: Added actmerge.sh actsyncd.sh sendxbatches.sh
+	Added innshellvars.pl innshellvars.tcl
+
+	* config.dist:
+	Added INNWATCH_DF INNWATCH_INODES and INNWATCH_BLOCKS variables.
+	Added MMAP_PTR LIKE_PULLERS LOG_SIZE.
+	Changed default value for IPADDR_LOG.
+
+Tue Sep  3 14:57:54 1996  James Brister  <brister@vix.com>
+
+	* config.dist: Path name cleanup (Evan Champion <evanc@synapse.net>).
+	Some changes to match bsd/os defaults.
+
+Wed Jul 17 20:09:43 1996  James Brister  <brister@vix.com>
+
+	* files.list: include innxbatch.8.
+
+Tue Jul 16 13:07:09 1996  James Brister  <brister@vix.com>
+
+	* config.dist: Include BSD4.4 style manpage in comment.
+	Make PATH_XBATCHES same as PATH_SPOOLNEWS.
+
+Fri Jul 12 23:15:06 1996  James Brister  <brister@vix.com>
+
+	* files.list: Added in the actsync config and ignore files.
+
+	* config.dist: Added Actsync section and _PATH_TEMPMODERATORS.
+
+Wed Jul 10 09:56:38 1996  James Brister  <brister@vix.com>
+
+	* Makefile: NONE-checkout rule change. chongo sez:
+
+	    On a number of systems, such as IRIX, doing a chmod u+w
+	    results in files with mode 0420 in the site directory.
+
+Tue Jul  9 19:52:58 1996  James Brister  <brister@vix.com>
+
+	* config.dist: Added a local configuration section.
+
+	* files.list: Added pgpverify.
+
+	* config.dist: PGP off as default.
+	Added _PATH_PGP variable.
+
+Mon Jul  8 20:54:59 1996  James Brister  <brister@vix.com>
+
+	* config.dist: Added _PATH_GZIP
+
+Mon Jul  8 17:53:09 1996  James Brister  <brister@vix.com>
+
+	* config.dist: Added _PATH_XBATCHES, ALLOW_NEWNEWS, Tcl support
+	and PGP support.
+
+
+
+==================================
+From doc/ChangeLog
+
+Tue Dec 17 10:11:49 1996  James A. Brister  <brister@vix.com>
+
+	* newsfeeds.5: Clarified description of behaviour of Ap.
+
+Mon Dec 16 22:25:02 1996  James A. Brister  <brister@vix.com>
+
+	* actsync.8: Typo fix.
+
+Wed Dec 11 22:09:18 1996  James A. Brister  <brister@vix.com>
+
+	* getlist.1: Use proper subst variables for distributions and
+	newsgroups locations.
+
+Tue Dec 10 23:44:48 1996  James A. Brister  <brister@vix.com>
+
+	* news.daily.8: Cleanup of description of the notdaily keyword.
+
+	* innxmit.8: Document the new '-l' flag.
+
+Fri Dec  6 14:57:23 1996  James A. Brister  <brister@vix.com>
+
+	* innd.8: Fixed typo (Volker Schmidt)
+
+Fri Nov 29 15:16:59 1996  James A. Brister  <brister@vix.com>
+
+	* actsync.8: subst update.
+
+Thu Nov 28 12:47:25 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Added some more missing doc files and tidied up a
+	little bit.
+
+Wed Nov 27 18:54:59 1996  James Brister  <brister@vix.com>
+
+	* hosts.nntp.5: Fixed bogus reference to innd's `-c'
+	flag. (J. Porter Clark).
+
+Tue Nov 26 13:46:12 1996  James Brister  <brister@vix.com>
+
+	* makehistory.8, innxmit.8: Typo fixes.
+
+	* innwatch.8: Added HISTORY section.
+
+	* Makefile: Install new doc files.
+
+Tue Nov 19 13:51:00 1996  James Brister  <brister@vix.com>
+
+	* actsync.8: chongo's updates
+
+Wed Nov 13 21:23:24 1996  James Brister  <brister@vix.com>
+
+	* shrinkfile.1: Fixed description of return value when using -n.
+
+Fri Nov  8 23:52:56 1996  James Brister  <brister@vix.com>
+
+	* rnews.1: Documented the -N flag.
+
+	* grephistory.1: Added '-t' documentation.
+
+Thu Nov  7 11:26:00 1996  James Brister  <brister@vix.com>
+
+	* makehistory.8: Updated for -A and -a options.
+
+Tue Oct 29 23:25:05 1996  James Brister  <brister@vix.com>
+
+	* active.5, archive.8, batcher.8, buffchan.8, convdate.1, ctlinnd.8, cvtbatch.8, expire.8, expire.ctl.5, expireover.8, fastrm.8, filechan.8, getlist.1, grephistory.1, inews.1, innconfval.1, innd.8, innxmit.8, installit.1, makeactive.8, news-recovery.8, news.daily.8, newslog.8, newsrequeue.8, nnrpd.8, nntpget.1, nntpsend.8, overchan.8, prunehistory.8, rnews.1, shlock.1, shrinkfile.1, subst.1:
+	Formatting updates
+
+	* expirerm.8, inncheck.8, innlog.pl.8, innstat.8, innwatch.8, makehistory.8, scanlogs.8, tally.control.8, tally.unwanted.8, writelog.8:
+	Initial revision
+
+Thu Oct 24 20:08:07 1996  James Brister  <brister@vix.com>
+
+	* nnrpd.8: Added the subscriptions section to the LIST command.
+
+Mon Oct 14 15:45:57 1996  James Brister  <brister@vix.com>
+
+	* crosspost.8: Typo in example.
+
+Sat Sep 28 17:31:09 1996  James Brister  <brister@vix.com>
+
+	* archive.8, batcher.8, buffchan.8, expireover.8, filechan.8, innxbatch.8, innxmit.8, newsfeeds.5, nntpsend.8, overchan.8, rnews.1:
+	config.data changes.
+
+Fri Sep 27 21:51:58 1996  James Brister  <brister@vix.com>
+
+	* news.daily.8: notdaily keyword documented.
+
+Fri Sep 13 19:56:57 1996  James Brister  <brister@vix.com>
+
+	* nntpsend.ctl.5, nntpsend.8, shrinkfile.1: chongo's updates.
+
+	* ctlinnd.8: Perl support.
+
+Wed Sep 11 04:16:00 1996  James Brister  <brister@vix.com>
+
+	* innd.8: too-many-connects support (stapes@mro.dec.com)
+
+Tue Sep 10 19:44:59 1996  James Brister  <brister@vix.com>
+
+	* archive.8, crosspost.8, ctlinnd.8, innd.8, innxbatch.8, newsfeeds.5, newslog.5, overchan.8, rnews.1:
+	config variable substitution changes
+
+Fri Sep  6 10:40:50 1996  James Brister  <brister@vix.com>
+
+	* Makefile, active.5, archive.8, batcher.8, buffchan.8, control.ctl.5, crosspost.8, ctlinnd.8, cvtbatch.8, distrib.pats.5, expire.ctl.5, expireover.8, filechan.8, getlist.1, history.5, hosts.nntp.5, inn.conf.5, innd.8, innwatch.ctl.5, innxbatch.8, innxmit.8, moderators.5, news-recovery.8, newsfeeds.5, newslog.5, nnrp.access.5, nntpsend.8, nntpsend.ctl.5, overchan.8, overview.fmt.5, passwd.nntp.5, prunehistory.8, rnews.1:
+	config variable substitution changes
+
+	* expire.8: Described '-e' option.
+	Config variable changes.
+
+Thu Aug  8 20:38:47 1996  James Brister  <brister@vix.com>
+
+	* newsfeeds.5: Poison newsgroup support
+	changes. (stapes@mro.dec.com).
+
+Wed Aug  7 13:00:27 1996  James Brister  <brister@vix.com>
+
+	* innxbatch.8: subst changes
+
+
+
+==================================
+From expire/ChangeLog
+
+Mon Dec 16 22:27:23 1996  James A. Brister  <brister@vix.com>
+
+	* expireover.c: Fixed parameter types for qsort callable functions.
+	Fixed bug with handling folded
+	headers (HolgerBurbach)
+
+	* Makefile: Build dbz.o with no MMAP for expire and
+	makehistory (Per Hedeland and Larry Rosenman)
+
+Tue Nov 26 14:22:14 1996  James Brister  <brister@vix.com>
+
+	* makehistory.c: Fixed bug in call to dbzfresh.
+
+Thu Nov 21 14:14:13 1996  James Brister  <brister@vix.com>
+
+	* fastrm.c, expire.c, expireover.c: Added usage of CPOINTER
+
+Mon Nov 18 16:06:08 1996  James Brister  <brister@vix.com>
+
+	* expire.c: Force an abort if multiple default lines seen
+	(otherwise it would ignore further lines in the
+	file) (Dan Riley).
+
+Thu Nov 14 00:31:20 1996  James Brister  <brister@vix.com>
+
+	* expire.c: Permit comments anywhere on the control.ctl lines
+	(Michael Shields)
+
+Sun Nov 10 21:00:28 1996  James Brister  <brister@vix.com>
+
+	* fastrm.c, expireover.c:
+	Have qsort-callable function have const parmeters.
+
+Fri Nov  8 23:34:21 1996  James Brister  <brister@vix.com>
+
+	* grephistory.c: Added the '-t' flag for printing offset of
+	record. (Odd Einar Aurbakken).
+
+Thu Nov  7 00:50:51 1996  James Brister  <brister@vix.com>
+
+	* makehistory.c: Usage fixup.
+
+Sun Oct 27 17:38:09 1996  James Brister  <brister@vix.com>
+
+	* expire.c: Protect atof if it's a macro (Frederick Korz).
+	Make the qsort-callable function have const
+	params.
+
+Sun Oct 20 14:36:43 1996  James Brister  <brister@vix.com>
+
+	* expireover.c: Memory allocation bug (off-by-one)
+	fixed. (bill@twwells.com)
+
+Fri Oct 18 12:17:25 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Fixed lint rules to ignore return status.
+
+Wed Oct 16 15:14:20 1996  James Brister  <brister@vix.com>
+
+	* convdate.c, expire.c, expireover.c, fastrm.c, grephistory.c, makeactive.c, makehistory.c, newsrequeue.c, prunehistory.c:
+	cleanup of compiler warnings (evanc@synapse.net)
+
+Tue Oct 15 14:13:42 1996  James Brister  <brister@vix.com>
+
+	* expireover.c: Handle multi-line headers properly
+	<kondou@uxd.fc.nec.co.jp>
+
+Fri Oct 11 22:42:13 1996  James Brister  <brister@vix.com>
+
+	* fastrm.c: Put newlines on printfs when chdir() doesn't
+	work. (J. Porter Clark).
+
+Mon Sep 23 20:01:18 1996  James Brister  <brister@vix.com>
+
+	* expire.c: Bump NGH_SIZE for speed (stapes@mro.dec.com).
+
+Wed Sep 18 14:50:52 1996  James Brister  <brister@vix.com>
+
+	* expireover.c: Casts for those systems where iov_base is (correctly)
+	a void (rck@fangio.asd.sgi.com)
+
+Tue Sep 10 19:47:32 1996  James Brister  <brister@vix.com>
+
+	* Makefile: config variable substitution changes
+
+Tue Sep  3 13:28:36 1996  James Brister  <brister@vix.com>
+
+	* expire.c: Support for '-e' flag (John R Levine
+	<johnl@iecc.com>)
+
+Tue Jul  9 15:27:32 1996  James Brister  <brister@vix.com>
+
+	* makehistory.c:
+	cd into the directory where the history file is, and not into NEWSLIB
+	(which can be different).
+
+	* expire.c:
+	cd into directory where history is, not NEWSLIB (may be different).
+
+Mon Jul  8 20:38:35 1996  James Brister  <brister@vix.com>
+
+	* makehistory.c: Don't DISPOSE of a static buffer.
+
+	* fastrm.c: printf argument fix.
+
+	* expire.c: Fixed History path construction in the '-d' case.
+
+Wed Jun 26 14:56:15 1996  James Brister  <brister@vix.com>
+
+	* expire.c: Make sure new history is built in _PATH_HISTORY.n
+	instead of history.n.
+
+
+
+==================================
+From innd/ChangeLog
+
+Tue Dec 17 00:16:26 1996  James A. Brister  <brister@vix.com>
+
+	* perl.c: Pass full Path into script.
+	Fixed bug with return value being freed before being
+	passed back out to ARTpost (Andrew Burgess and
+	Christophe Wolfhugel)
+
+	* art.c: Pass the full Path into the Perl script.
+
+	* Makefile: Added usage of TCLINC.
+	Better use of whoami(1).
+
+Tue Dec 10 23:39:39 1996  James A. Brister  <brister@vix.com>
+
+	* nc.c: Fixed bug in handling TAKETHIS with missing
+	argument.
+
+	* rc.c: syslog the address when "think it's a dotquad"
+
+Fri Nov 29 18:50:36 1996  James Brister  <brister@vix.com>
+
+	* newsfeeds.c: Initialize Site buffer properly. (Peter Eriksson)
+
+Tue Nov 26 14:09:55 1996  James Brister  <brister@vix.com>
+
+	* nc.c: Fixed reversed test for DO_SET_SOCKOPT.
+
+	* icd.c: Add 3 arg version of msync().
+
+	* art.c: Added Keywords as a standard header so it
+	can go into overview (Karl Kleinpaste)
+
+Mon Nov 25 14:47:08 1996  James Brister  <brister@vix.com>
+
+	* perl.c: Perl memory leaks plugged. (Christophe Wolfhugel)
+
+	* art.c: Go back to checking Subject for 'cmsg' if no
+	control header.
+
+Thu Nov 21 14:13:38 1996  James Brister  <brister@vix.com>
+
+	* art.c, ng.c: Added usage of CPOINTER
+
+Sun Nov 10 21:46:21 1996  James Brister  <brister@vix.com>
+
+	* tcl.c: Use defined 32-bit types.
+
+	* ng.c: compiler warning cleanup.
+
+	* icd.c: msync usage updates.
+
+	* art.c: compiler warning cleanup.
+
+	* Makefile: Handle missing whoami(1) somewhat gracefully.
+
+Wed Oct 30 14:46:38 1996  James Brister  <brister@vix.com>
+
+	* nc.c: Bug fix in searching for command in
+	NCquietlist. (John Stapleton).
+
+Sun Oct 27 21:28:53 1996  James Brister  <brister@vix.com>
+
+	* chan.c: Fix of too many calls to
+	ICDwriteactive(). (Richard Michael Todd)
+
+Sun Oct 20 22:04:18 1996  James Brister  <brister@vix.com>
+
+	* icd.c: Added msync to ICDwriteactive and deal with 2-arg
+	vs. 3-arg version.
+
+	* chan.c: Compact BUFFER if large enough gap appears at the
+	beginning. (rmtodd@mailhost.ecn.ou.edu)
+
+Fri Oct 18 14:47:09 1996  James Brister  <brister@vix.com>
+
+	* nc.c: Fix search through NCquietlist on non-existant
+	command. (stapes@mro.dec.com)
+
+	* Makefile: Fixed lint rules to ignore return status.
+	Straightned out the PERL defines and usage.
+
+Wed Oct 16 15:14:20 1996  James Brister  <brister@vix.com>
+
+	* art.c, cc.c, chan.c, his.c, icd.c, innd.c, innd.h, inndstart.c, lc.c, nc.c, newsfeeds.c, ng.c, perl.c, proc.c, rc.c, site.c, tcl.c:
+	cleanup of compiler warnings (evanc@synapse.net)
+
+Tue Oct 15 16:53:34 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Install inndstart root.news instead of just root.
+
+Fri Oct 11 20:34:09 1996  James Brister  <brister@vix.com>
+
+	* nc.c: Bug fix with huge articles. (tale@uu.net).
+
+Thu Oct 10 18:52:34 1996  James Brister  <brister@vix.com>
+
+	* art.c: Fixed typo.
+
+	* innd.c: Const-casting fix. (tassin@eerie.fr>
+
+	* perl.c: Const-casting fix. (tassin@eerie.fr>
+	NULL vs. FALSE fix (tassin@eerie.fr>
+
+Sat Sep 28 16:50:56 1996  James Brister  <brister@vix.com>
+
+	* cc.c: Bug fix on constructing inndcomm messages.
+
+Fri Sep 27 21:36:26 1996  James Brister  <brister@vix.com>
+
+	* innd.c: Fix const-incorrectness.
+
+Tue Sep 24 20:28:09 1996  James Brister  <brister@vix.com>
+
+	* art.c: Do REMEMBER_TRASH in more spots.
+
+Mon Sep 16 12:06:48 1996  James Brister  <brister@vix.com>
+
+	* innd.c: Turn on perl filtering after initial loading.
+
+Fri Sep 13 17:15:44 1996  James Brister  <brister@vix.com>
+
+	* innd.c: Perl support (wolf@pasteur.fr)
+
+	* art.h: Initial revision
+
+	* art.c: Perl support (wolf@pasteur.fr)
+
+	* Makefile: Perl support.
+
+	* cc.c: Perl support (wolf@pasteur.fr)
+
+	* perl.c: Initial revision
+
+Wed Sep 11 04:57:43 1996  James Brister  <brister@vix.com>
+
+	* rc.c: Don't limit (via `-X') those hosts in
+	hosts.nntp.nolimit.
+
+	* cc.c, chan.c, innd.c, innd.h, rc.c:
+	too-many-connects support (stapes@mro.dec.com)
+
+Tue Sep 10 20:02:06 1996  James Brister  <brister@vix.com>
+
+	* Makefile: install innd and inndstart mode 550.
+	print message about chown needing to be done.
+
+	* inndstart.c: set HOME to _PATH_NEWSHOME instead of _PATH_NEWSLIB
+
+	* rc.c: Removed htonl prototype as it break on 64-bit machines.
+
+	* art.c: Include article body as a TCL variable.
+	Log article size to syslog.
+
+Fri Sep  6 10:12:48 1996  James Brister  <brister@vix.com>
+
+	* innd.h: bug fix on SITE and NOSITE defs. (stapes@mro.dec.com)
+
+Thu Sep  5 16:28:32 1996  James Brister  <brister@vix.com>
+
+	* chan.c, nc.c: Use POLL_BUG define instead of SUNOS5
+
+	* Makefile: config variable substitution changes
+
+	* newsfeeds.c: poison patch bugfix.
+
+	* rc.c, site.c: wildmat call optimization (markd@mira.net.au)
+
+Tue Sep  3 13:03:18 1996  James Brister  <brister@vix.com>
+
+	* proc.c: Initialize new PROCtable entries
+	(fletcher@cs.utexas.edu).
+
+Thu Aug  8 22:28:53 1996  James Brister  <brister@vix.com>
+
+	* newsfeeds.c, site.c, ng.c, innd.h, cc.c: Poison newsgroup support
+	changes. (stapes@mro.dec.com).
+
+	* art.c: Poison newsgroup support changes. (stapes@mro.dec.com)
+
+Wed Aug  7 12:48:42 1996  James Brister  <brister@vix.com>
+
+	* innd.c: Removed the unused 'X' option.
+
+	* ng.c: Boosted hash table size (stapes).
+
+	* cc.c: Fixed up the non-UNIX domain system handling of
+	ctlinnd connection (brister).
+
+	* art.c: REMEMBER_TRASH when TCL function is rejecting an
+	article.
+
+Wed Jul 17 20:09:43 1996  James Brister  <brister@vix.com>
+
+	* nc.c: Typo fix.
+
+Tue Jul 16 15:53:44 1996  James Brister  <brister@vix.com>
+
+	* innd.c, chan.c, rc.c, nc.c: Support for the ``/s'' hosts.nntp prefix.
+
+Mon Jul 15 13:40:47 1996  James Brister  <brister@vix.com>
+
+	* innd.h, innd.c, art.c: Makes the Always Cross-posted option '-x' the
+	default. This results in the Xref header being
+	added to all article files regardless of whether
+	or not they are cross-posted. (dneedham).
+
+	* cc.c: Catch SIGUSR1 so that we can recreate the control
+	channel when needed (i.e. something has deleted
+	our named socket (dneedham).
+
+	* rc.c, nc.c: set keepalive on sockets used by network
+	connections to help detect a broken connection and
+	disconnect it (dneedham).
+
+	* nc.c: check for wip overflow.
+
+Tue Jul  9 20:03:31 1996  James Brister  <brister@vix.com>
+
+	* inndstart.c:
+	Call setgroups after getting the news groups id (so innd doesn't 
+	inherit any root groups).
+
+	* cc.c: Logging level change.
+
+Tue Jul  9 07:00:34 1996  James Brister  <brister@vix.com>
+
+	* art.c: multiple cancels.
+	Ignore 'cmsg' in Subject.
+
+Sat Jun 29 00:40:57 1996  James Brister  <brister@vix.com>
+
+	* cc.c (CCreader): Support for message-length and protcol version
+	prefix on control-socket messages.
+
+Fri Jun 28 20:30:55 1996  James Brister  <brister@vix.com>
+
+	* site.c (SITEbuffer): Added 'p' support for Wxxx newsfeeds entry
+	(time posted).
+
+	* rc.c (RCreadfile): Fixed memory leak.
+
+Tue Jun 25 12:26:24 1996  James Brister  <brister@vix.com>
+
+	* chan.c: Added Alan Barrett work-limiter for the select loop.
+
+
+
+
+
+==================================
+From lib/ChangeLog
+
+Tue Dec 17 00:18:40 1996  James A. Brister  <brister@vix.com>
+
+	* xmalloc.c: Added an ifdef'ed out memset() of the memory.
+
+	* remopen.c: Fixed incorrect usage of htons
+	vs. ntohs. (tale@uunet)
+
+Mon Nov 18 08:15:25 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Don't quit make when makellib.sh fails.
+
+Wed Nov 13 23:43:26 1996  James Brister  <brister@vix.com>
+
+	* getmodaddr.c: GMAclose instead of fclose (Andrew Vasilyev).
+
+Mon Nov 11 13:24:11 1996  James Brister  <brister@vix.com>
+
+	* gettime.c: Fixed error in timezone calculation (Paul Eggert).
+
+Sun Nov 10 21:46:38 1996  James Brister  <brister@vix.com>
+
+	* Makefile: drop PATCH config.data variable
+
+Wed Nov  6 10:57:58 1996  James Brister  <brister@vix.com>
+
+	* qio.c: QIOread fix when read from non-file doesn't give
+	full amount and buffer not full. (Richard Michael
+	Todd)
+
+Sun Oct 20 21:17:37 1996  James Brister  <brister@vix.com>
+
+	* inndcomm.c: Code reorganization to get around IRIX c compiler
+	optimizer bug (Robert Keller).
+
+	* defdist.c: Handle the case where the distributions file has
+	size 0.
+
+Fri Oct 18 12:19:03 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Fixed lint rules to ignore return status.
+	Straightned out the PERL defines and usage.
+
+Wed Oct 16 15:14:20 1996  James Brister  <brister@vix.com>
+
+	* checkart.c, cleanfrom.c, clientactive.c, clientlib.c, closeonexec.c, dbzalt.c, defdist.c, findheader.c, genid.c, getconfig.c, getdtab.c, getfqdn.c, getmodaddr.c, getopt.c, gettime.c, inet_ntoa.c, inndcomm.c, innvers.c, localopen.c, lock.c, lockfile.c, malloc.c, memchr.c, memcmp.c, memcpy.c, memset.c, mkfifo.c, nonblocking.c, parsedate.y, perl.c, qio.c, radix32.c, readin.c, remopen.c, sendpass.c, strcasecmp.c, strchr.c, strerror.c, strrchr.c, strspn.c, strtok.c, tempname.c, waitnb.c, wildmat.c, writev.c, xfopena.c, xmalloc.c, xmemerr.c, xrealloc.c, xwrite.c, xwritev.c:
+	cleanup of compiler warnings (evanc@synapse.net)
+
+Tue Oct 15 19:23:51 1996  James Brister  <brister@vix.com>
+
+	* memmove.c: Initial revision
+
+Fri Oct 11 19:07:57 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Remove dbz.c if patching it fails (so rebuild will
+	try to patch again).
+
+Thu Oct 10 17:44:23 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Make patch(1) locattion and usage be configurable.
+
+	* perl.c: Fixed a NULL vs. FALSE bug. (tassin@eerie.fr)
+
+Sat Sep 28 16:50:14 1996  James Brister  <brister@vix.com>
+
+	* inndcomm.c: Include netinet/in.h
+
+Fri Sep 27 23:46:19 1996  James Brister  <brister@vix.com>
+
+	* dbz.pch: minor cleanups (evanc@synapse.net)
+
+Wed Sep 18 14:50:45 1996  James Brister  <brister@vix.com>
+
+	* xwritev.c: Casts for those systems where iov_base is (correctly)
+	a void (rck@fangio.asd.sgi.com)
+
+Mon Sep 16 11:27:42 1996  James Brister  <brister@vix.com>
+
+	* perl.c: Bug fix in use of ENTER and SAVETMPs.
+	More robust handling of 'perl y' when filter not
+	defined.
+
+Fri Sep 13 17:17:42 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Perl support (wolf@pasteur.fr)
+
+	* parsedate.y: Added some defines to make varaables static (due
+	to clash with Perl yacc from Perl hooks).
+
+	* perl.c: Major code rearrangement.
+
+	* perl.c: Initial revision
+
+Wed Aug  7 12:42:35 1996  James Brister  <brister@vix.com>
+
+	* inndcomm.c: Fixed up the non-UNIX domain system handling of
+	ctlinnd connection (brister).
+
+Tue Jul 16 16:00:12 1996  James Brister  <brister@vix.com>
+
+	* tempname.c: Initial revision
+
+Mon Jul 15 21:45:16 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Add in TempName function source.
+	ranlib the library to stop some makes from
+	relinking everything.
+
+Fri Jul 12 23:06:38 1996  James Brister  <brister@vix.com>
+
+	* getmodaddr.c: Doug Needham's support for accessing moderators
+	file on a remote machines.
+
+Tue Jul  9 13:30:01 1996  James Brister  <brister@vix.com>
+
+	* inndcomm.c: Fixed usage of RECVorREAD.
+
+	* inndcomm.c:
+	Support for new message format <protocol>, <length>, <data>.
+
+
+==================================
+From nnrpd/ChangeLog
+
+Tue Dec 17 00:22:46 1996  James A. Brister  <brister@vix.com>
+
+	* post.c: Fixed problem with buffer passed to syslog not
+	being initialized when posted article was for a
+	moderated group.
+
+	* perl.c: Fixed bug in perl script return value being freed
+	before begin passed back to ARTpost() (Andrew
+	Burgess and Christophe Wolfhugel).
+
+	* nnrpd.c: Typo in syslog format parameter.
+
+Tue Dec 10 14:27:41 1996  James A. Brister  <brister@vix.com>
+
+	* post.c: Spooling race condition fixes (Ken Lalonde)
+
+Thu Nov 28 12:48:26 1996  James Brister  <brister@vix.com>
+
+	* post.c: Added code (but ifdef's out) for changing Path on
+	POST.
+
+Tue Nov 26 14:26:17 1996  James Brister  <brister@vix.com>
+
+	* commands.c: Fixed up some defines for the Next machine.
+
+Mon Nov 25 19:58:00 1996  James Brister  <brister@vix.com>
+
+	* article.c: Do some alarm() calls to catch clients who
+	disappear while nnrpd is sending article
+	data. (Matt Thomas)
+
+	* post.c: If no Control header and Subject starts with
+	"cmsg" then add appropriate Control
+	header. Subject is not changed if Control header
+	exists.
+
+Fri Nov 22 18:42:17 1996  James Brister  <brister@vix.com>
+
+	* nnrpd.c: Syslog message typo.
+
+Thu Nov 21 14:13:38 1996  James Brister  <brister@vix.com>
+
+	* group.c: Added usage of CPOINTER
+
+Sun Nov 10 21:54:33 1996  James Brister  <brister@vix.com>
+
+	* nnrpd.c: cleanup help message for LIST command.
+
+	* group.c: compiler warning cleanup.
+
+Sun Oct 27 21:04:51 1996  James Brister  <brister@vix.com>
+
+	* commands.c: Change help message for INFOschema
+	Fix for old OS's that don't have S_IXUSR (Fred
+	Korz).
+
+Sun Oct 20 20:22:17 1996  James Brister  <brister@vix.com>
+
+	* article.c: Fixed up uninitialized structure member (J Porter
+	Clark).
+
+	* post.c: Dont spool failed article posting if remote didn't
+	acutally want it.
+
+	* newnews.c: Protection against Exchange Web Service. (J Porter
+	Clark)
+
+Fri Oct 18 18:07:03 1996  James Brister  <brister@vix.com>
+
+	* commands.c: Fixed bad handling of tabs in CMDlist: J. Porter
+	Clark.
+
+	* newnews.c: Fixed double increment in GetFiles: (J. Porter Clark)
+
+	* Makefile: Fixed lint rules to ignore return status.
+	Straightned out the PERL defines and usage.
+
+Wed Oct 16 15:14:20 1996  James Brister  <brister@vix.com>
+
+	* article.c, commands.c, group.c, loadave.c, misc.c, newnews.c, nnrpd.c, nnrpd.h, perl.c, post.c:
+	cleanup of compiler warnings (evanc@synapse.net)
+
+Tue Oct 15 16:55:10 1996  James Brister  <brister@vix.com>
+
+	* nnrpd.h, nnrpd.c: Change LogName type.
+
+	* misc.c: Better PERMmatch'ing <rsalz@osf.org>
+
+Fri Oct 11 18:51:39 1996  James Brister  <brister@vix.com>
+
+	* group.c: Include the group name in the "No such group"
+	reply.
+
+Thu Oct 10 17:55:44 1996  James Brister  <brister@vix.com>
+
+	* perl.c: Const-casting fix. (tassin@eerie.fr>
+
+	* nnrpd.c: Added setproctitle support for BSD/OS (evanc@synapse.net)
+
+Mon Sep 16 11:33:11 1996  James Brister  <brister@vix.com>
+
+	* perl.c: Added LogName so the lib/perl.c can do logging for
+	innd and nnrpd.
+	Made type of extern PerlFilterActive consistent.
+
+	* nnrpd.c: Added LogName so the lib/perl.c can do logging for
+	innd and nnrpd.
+	Turn on perl filtering automatically at startup.
+
+	* nnrpd.h: Added LogName so the lib/perl.c can do logging for
+	innd and nnrpd.
+
+	* post.c: Slight code rearrangement.
+
+Fri Sep 13 17:19:41 1996  James Brister  <brister@vix.com>
+
+	* post.h: Initial revision
+
+	* post.c, nnrpd.c, Makefile: Perl support (wolf@pasteur.fr)
+
+	* perl.c: Initial revision
+
+Wed Sep 11 04:16:00 1996  James Brister  <brister@vix.com>
+
+	* nnrpd.c: too-many-connects support (stapes@mro.dec.com)
+
+Tue Sep 10 20:08:22 1996  James Brister  <brister@vix.com>
+
+	* Makefile: config variable substitution changes
+
+	* article.c: Put in a delay on ARTICLE HEAD and BODY commands.
+
+Fri Sep  6 09:13:36 1996  James Brister  <brister@vix.com>
+
+	* Makefile: config variable substitution changes
+
+Wed Aug  7 12:51:29 1996  James Brister  <brister@vix.com>
+
+	* nnrpd.c: Set the ClientHost to a non-null string "?" when
+	getpeername fails, so that log file entries are
+	consistent.
+
+Tue Jul 16 16:03:20 1996  James Brister  <brister@vix.com>
+
+	* post.c: Spool articles for rnews to get if innd not
+	accepting. (dneedham).
+
+Fri Jul 12 23:20:04 1996  James Brister  <brister@vix.com>
+
+	* post.c: Use new GetModeratorAddress function.
+
+	* nnrpd.c: Update the HELP output to reflect reality and to
+	include LIST MODERATORS.
+
+	* commands.c: Support the LIST MODERATORS command.
+
+Tue Jul  9 05:45:48 1996  James Brister  <brister@vix.com>
+
+	* post.c: Stop messing with the Subject on control messages.
+
+	* nnrpd.c: List subscriptions.
+
+	* newnews.c: Permit disabling of newnews command.
+
+	* misc.c: include <time.h> and <sys/time.h> for linux.
+
+	* loadave.c: Linux load average support.
+
+	* commands.c: minor bug fix.
+
+	* article.c: Continuation lines in overview generation.
+
+Wed Jun 26 16:46:59 1996  James Brister  <brister@vix.com>
+
+	* loadave.c: Added linux version of load average from
+	<coneill@premier.net> 
+
+
+
+==================================
+From sample-configs/ChangeLog
+
+Mon Dec 16 13:24:28 1996  James A. Brister  <brister@vix.com>
+
+	* README: update
+
+	* config.defaults: removed some variables
+
+	* config.data-solaris2.3-4: set HAVE_SETPROCTITLE to DONT
+
+Thu Dec 12 10:45:25 1996  James A. Brister  <brister@vix.com>
+
+	* config.data-newsos-4.2.1: Initial revision
+
+Wed Dec 11 23:24:52 1996  James A. Brister  <brister@vix.com>
+
+	* config.data-linux-2.0.18, config.data-DU4.0, config.data-FreeBSD-2.0, config.data-OSF1.3a, config.data-OSF3.0, config.data-aix-4.1.4, config.data-aux3.1, config.data-dynixptx2.1, config.data-irix-5.2, config.data-next3.2, config.data-solaris2.3-4, config.data-sunos-4.1.x, config.data-ultrix4.3, config.data-ux4800, config.data-uxpds:
+	Subst updates
+
+	* config.data-sunos-4.1.x: Initial revision
+
+Fri Dec  6 14:08:11 1996  James A. Brister  <brister@vix.com>
+
+	* Makefile: Initial revision
+
+	* config.data-DU4.0, config.data-FreeBSD-2.0, config.data-OSF1.3a, config.data-OSF3.0, config.data-aix-4.1.4, config.data-aux3.1, config.data-dynixptx2.1, config.data-irix-5.2, config.data-linux-2.0.18, config.data-next3.2, config.data-solaris2.3-4, config.data-ultrix4.3, config.data-ux4800, config.data-uxpds:
+	updates for 1.5
+
+	* config.defaults, config.data-ux4800: Initial revision
+
+Fri Nov 29 15:00:47 1996  James A. Brister  <brister@vix.com>
+
+	* README: Add note about bsd/os.
+
+Thu Nov 28 21:33:26 1996  James A. Brister  <brister@vix.com>
+
+	* README: README for the sample configs.
+
+	* config.data-aix-4.1.4, config.data-irix-5.2, config.data-linux-2.0.18, config.data-uxpds:
+	Initial revision
+
+	* config.data-DU4.0: fixed email address
+
+Mon Nov 11 13:58:31 1996  James A. Brister  <brister@vix.com>
+
+	* config.data-DU4.0: Initial revision
+
+Fri Nov  8 20:26:19 1996  James A. Brister  <brister@vix.com>
+
+	* README, config.data-FreeBSD-2.0, config.data-OSF1.3a, config.data-OSF3.0, config.data-aux3.1, config.data-dynixptx2.1, config.data-next3.2, config.data-solaris2.3-4, config.data-ultrix4.3:
+	Initial revision
+
+
+==================================
+From samples/ChangeLog
+
+Tue Dec 17 13:17:35 1996  James A. Brister  <brister@vix.com>
+
+	* innlog.pl: Bug fix in handling of $[ with an array
+	assignment.
+
+	* version: new version 1.5.1
+
+	* sendsys: Quote the slash inside the character class.
+
+	* scanlogs: Handle HP's broken sort(1) which adds a newline to
+	empty input.
+
+	* parsecontrol: Fixed security hold with variable contents (Matt
+	Power).
+	Only do mailing of broken control messages if
+	config.data variable used.
+
+	* newsfeeds: Tidied up the ME entry a bit.
+
+	* hosts.nntp: Dropped foo.com sample as that's a valid domain
+	name.
+
+Thu Dec 12 23:21:17 1996  James A. Brister  <brister@vix.com>
+
+	* control.ctl: Spelling correction and dropped the lines for kre
+	and Erik Fair.
+
+Tue Dec 10 23:36:14 1996  James A. Brister  <brister@vix.com>
+
+	* rc.news: Turn on innwatch by default.
+	Locate all unfinished expirerm input files.
+
+	* send-ihave: Fixed generated Subject header.
+
+	* ihave: Added missing Subject header (Koichi Mouri)
+
+	* scanlogs: Process the new control and pgp related log files.
+
+	* filter_nnrpd.pl, filter_innd.pl, startup_innd.pl:
+	Fixes to 'my' statements (Ollivier Robert)
+
+Thu Dec  5 00:45:19 1996  James A. Brister  <brister@vix.com>
+
+	* innshellvars, innshellvars.csh, innshellvars.pl, innshellvars.tcl:
+	Added MAIL_BADCONTROLS
+
+Thu Nov 28 23:45:10 1996  James Brister  <brister@vix.com>
+
+	* news.daily: Fixed args to expireover to handle renamed RMFILE.
+
+	* version: new version 1.5
+
+	* scanlogs: Add report on unwanted sites (Dan Riley).
+
+	* pgpverify: Deal with missing pgp executable more robustly.
+
+	* parsecontrol: Removed mailing of bad control headers and
+	writelog them to badcontrol.log instead
+
+	* innshellvars, innshellvars.csh, innshellvars.pl, innshellvars.tcl:
+	Default of WANT_PGPVERIFY changed.
+
+	* innlog.pl: Added catching a logmode message.
+	Fixed bogus variable reference (Christophe
+	Wolfhugel).
+
+Tue Nov 26 15:42:39 1996  James Brister  <brister@vix.com>
+
+	* news.daily:
+	Added a message before second call to innstat (for the confused).
+	Rename the RMFILE so that new news.daily doesn't
+	prematurely blast old files.
+
+	* innstat: Check overview dir for space too.
+
+	* innshellvars.pl, innshellvars.tcl: Added sort variable.
+
+	* innshellvars.csh, innshellvars:
+	Set some things inside quotes so multiwords values in
+	config.data does not break things.
+	Added SORT variable
+
+	* inncheck: Now groks the '-v' flag inside nntpsend.
+	Also handles the optional '/s' suffix in hosts.nntp.
+
+	* filter_innd.pl: Added some sample code from Christophe Wolfhugel.
+
+	* control.ctl: Make pgpverify the default behaviour where
+	possible.
+
+Mon Nov 25 22:29:34 1996  James Brister  <brister@vix.com>
+
+	* sendbatch: Use the COMPRESS variable as it is in innshellvars
+
+Tue Nov 19 13:05:46 1996  James Brister  <brister@vix.com>
+
+	* innlog.pl: Greg's updates.
+
+	* innlog.pl: Some Perl-hook-logging related fixes
+	and a few potential bugs-in-the-making
+	removed (Christophe Wolfhugel).
+
+Mon Nov 18 21:22:04 1996  James Brister  <brister@vix.com>
+
+	* innshellvars, innshellvars.csh, innshellvars.pl, innshellvars.tcl:
+	Added overview dir to contents (John Stapleton)
+
+	* parsecontrol: Fixed so that messages that fail pgp authentication
+	get mailed. (Dan Riley).
+
+Thu Nov 14 08:55:08 1996  James Brister  <brister@vix.com>
+
+	* inncheck: Verify alias is a non-empty string.
+
+Mon Nov 11 23:29:35 1996  James Brister  <brister@vix.com>
+
+	* control.ctl: Removed Karl Kleinpaste from gnu.* at his request.
+
+	* innlog.pl: new updates from greg patten
+
+Sun Nov 10 22:22:03 1996  James Brister  <brister@vix.com>
+
+	* actsync.clari.cfg, actsync.clari.ign, actsync.uunet.cfg, actsync.uunet.ign:
+	Initial revision
+
+	* filter_innd.pl, filter_nnrpd.pl:
+	Expanded sample code (Ollivier Robert)
+
+	* scanlogs: Removed out-of-date comment.
+
+	* nntpsend: Pre-sort data appended to batchfile. (Matus Uhlar)
+
+	* newsfeeds: Include poison character in sample.
+	Describe working of the sample ME patterns.
+
+	* news.daily: Use full hostname on mail subject lines.
+
+	* innshellvars: Added comment about innshellvars.csh
+
+Sat Nov  9 00:13:00 1996  James Brister  <brister@vix.com>
+
+	* version: new version 1.5b2
+
+Fri Nov  8 21:55:28 1996  James Brister  <brister@vix.com>
+
+	* innlog.pl: Don't report innxmit 'rejected' messages as
+	unknown.
+
+Thu Nov  7 22:06:23 1996  James Brister  <brister@vix.com>
+
+	* innlog.pl: Changes from greg and chongo.
+
+	* innwatch.ctl: Check overview disk space too.
+
+	* control.ctl: Heaps o' updates from Simon Lyall
+
+	* moderators: Regional updates from Simon Lyall.
+
+Wed Oct 30 14:31:41 1996  James Brister  <brister@vix.com>
+
+	* innlog.pl: Report on fast-connecting clients (Matus Uhlar).
+
+Sun Oct 27 22:14:06 1996  James Brister  <brister@vix.com>
+
+	* news.daily: Change date(1) usage as not all systems do
+	strftime-style formatting.
+
+	* parsecontrol: Change handling of pgpverify return status due to
+	some broken shells.
+
+Thu Oct 24 16:12:35 1996  James Brister  <brister@vix.com>
+
+	* nntpsend: Handle the '-s' flag
+	(tmiller@carfax.ims.advantis.com).
+
+	* innshellvars.csh: Initial revision
+
+Sun Oct 20 19:32:07 1996  James Brister  <brister@vix.com>
+
+	* pgpverify: David's update for handling ViaCrypt PGP.
+
+	* control.ctl: Australia changes.
+
+	* innlog.pl: Catch syslog lines that say "SERVER" instead of
+	"ME".
+
+Fri Oct 18 12:22:54 1996  James Brister  <brister@vix.com>
+
+	* innshellvars.tcl, innshellvars.pl:
+	Fixed a bunch of subst-related errors.
+	Synched up with innshellvers.
+
+	* innshellvars: Added PERL and TCL sections.
+
+Tue Oct 15 16:58:32 1996  James Brister  <brister@vix.com>
+
+	* news.daily: Fixed use of hostname for svr4 systems.
+	Slightly more sane mail subject line generation.
+
+	* innlog.pl: Fixed substitution of debugging syslog entries.
+
+	* control.ctl: Added fr.* groups.
+
+Fri Oct 11 22:37:34 1996  James Brister  <brister@vix.com>
+
+	* innshellvars.pl: Fixed syntax bug. (kondou@uxd.fc.nec.co.jp)
+
+	* innshellvars.pl: Typo on subst line.
+
+	* innlog.pl: Ignore some of the Perl filtering messages.
+
+	* send-ihave: Add a subject header to inews input as inews no
+	longer adds one to control messages.
+
+	* scanlogs: Remove a sed pass over log file as the new perl
+	version handles that.
+
+Thu Oct 10 19:51:43 1996  James Brister  <brister@vix.com>
+
+	* innshellvars, innshellvars.pl, innshellvars.tcl:
+	Add a configured value for df(1).
+
+	* innstat: Use a configured version of df.
+
+	* nntpsend: Variable name typo fixed.
+
+	* control.ctl: Log instead of mail the alt.* newgroup and rmgroup
+	requests.
+
+Sat Sep 28 17:28:13 1996  James Brister  <brister@vix.com>
+
+	* inncheck, innshellvars, innshellvars.pl, innshellvars.tcl, innwatch.ctl:
+	config.data changes.
+
+	* news.daily: Set REASON correctly when expdir flag NOT used.
+
+	* version: new version 1.5b1
+
+Fri Sep 27 22:33:02 1996  James Brister  <brister@vix.com>
+
+	* filter_innd.pl: Use 'my' where appropriate.
+	Comment out most of bodies.
+
+	* filter_nnrpd.pl: Use 'my' where appropriate.
+	Comment out most of body.
+
+	* innlog.pl: Format changes from chongo.
+
+	* news.daily: Fixed up mail subject lines a bit. (dneedham)
+	Check if server throttles during expire. (dneedham)
+	Added a 'notdaily' flag. (dneedham)
+
+Mon Sep 23 19:57:49 1996  James Brister  <brister@vix.com>
+
+	* innlog.pl: Greg's updates
+
+Fri Sep 13 21:44:39 1996  James Brister  <brister@vix.com>
+
+	* nnrp.access: Added 127.0.0.1
+
+	* nnrp.access: Let localhost read.
+
+	* nntpsend: Minor typo.
+
+	* nntpsend.ctl, nntpsend: chongo's updates.
+
+	* scanlogs: Include the '-a' flag to innlog.pl.
+
+	* startup_innd.pl: Initial revision
+
+	* filter_innd.pl: Strip out debugging prints.
+
+	* filter_innd.pl, filter_nnrpd.pl: Initial revision
+
+Wed Sep 11 05:18:37 1996  James Brister  <brister@vix.com>
+
+	* innlog.pl: Patch to fix double counting. (wolf@pasteur.fr)
+
+	* hosts.nntp.nolimit: Initial revision
+
+	* innlog.pl: too-many-connects support (stapes@mro.dec.com)
+
+Tue Sep 10 20:17:52 1996  James Brister  <brister@vix.com>
+
+	* inncheck, scanspool: config variable substitution changes
+
+	* innshellvars.tcl: config variable substitution changes
+	fixed broken subst line.
+
+	* innshellvars: config variable substitution changes
+	Added PERL.
+
+	* scanlogs: Call innlog.pl with args to generate reader stats.
+
+	* innshellvars.pl: Fixed broken subst lines.
+	Finished with a '1;' so it can be required properly.
+
+	* overview.fmt: Turn Xref on by default.
+
+	* newsfeeds: Added !junk,!control*,!local* to ME entry.
+	path config subst. changes.
+
+Thu Sep  5 16:06:03 1996  James Brister  <brister@vix.com>
+
+	* version: version number update
+
+	* actsync.cfg, checkgroups, default, distrib.pats, docheckgroups, expirerm, hosts.nntp, ihave, inncheck, innshellvars, innshellvars.pl, innshellvars.tcl, innstat, innwatch, makegroup, newgroup, news.daily, nntpsend, parsecontrol, rc.news, rmgroup, scanlogs, scanspool, send-ihave, send-nntp, send-uucp, sendbatch, sendme, sendsys, senduuname, tally.control, tally.unwanted, version, writelog:
+	Config variable substitution changes.
+
+	* innwatch.ctl: Use new config variables.
+
+Sun Aug 25 11:07:07 1996  James Brister  <brister@vix.com>
+
+	* inncheck: Removed innlog.awk (depreciated).
+
+	* filter.tcl: Commented out most of filter_news body. All it does
+	now is return "accept".
+
+	* control.ctl: Changed GNU groups per Len Tower
+	<tower@gnu.ai.mit.edu>.
+
+Sat Aug 24 23:05:58 1996  James Brister  <brister@vix.com>
+
+	* innshellvars.tcl, innshellvars.pl: Stripped out testing code.
+
+	* innshellvars.pl, innshellvars.tcl: Initial revision
+
+Wed Aug  7 12:40:27 1996  James Brister  <brister@vix.com>
+
+	* moderators: Changed the UUNET mailing address.
+
+	* inn.conf: Make localhost be the default server value.
+
+	* hosts.nntp: Removed news.foo.com and put in localhost, which
+	is more likely to be correct.
+
+	* distrib.pats: Stripped out old stuff.
+
+	* innlog.awk: Handle log messages of response 480 from remote
+	(chongo).
+
+Thu Jul 18 06:39:16 1996  James Brister  <brister@vix.com>
+
+	* innlog.awk: Fixed long lines that got newlines inserted somehow.
+
+Wed Jul 17 20:09:43 1996  James Brister  <brister@vix.com>
+
+	* inncheck: Typo fix.
+
+Tue Jul 16 12:55:28 1996  James Brister  <brister@vix.com>
+
+	* inncheck: Fixed mode extraction expression for directories.
+
+	* inncheck: Bug fix on regexp usage.
+	Fixed mode extraction expression.
+
+Mon Jul 15 12:04:36 1996  James Brister  <brister@vix.com>
+
+	* rmgroup: Fix grep-expression so period in argument only
+	matches period in active file.
+
+	* news.daily, logwatch, innwatch: Do some mail tilde-character fix-up.
+
+Fri Jul 12 23:03:03 1996  James Brister  <brister@vix.com>
+
+	* inncheck: Added innlog.pl.
+
+	* actsync.cfg, actsync.ign: Initial revision
+
+Tue Jul  9 19:48:50 1996  James Brister  <brister@vix.com>
+
+	* innshellvars: Include more variables from config.data.
+	Expand PATH to include the local bin directory NEWSLBIN.
+
+	* inncheck: Update subst value.
+
+	* innlog.awk: Chongo's updated version.
+
+	* innstat: Update from chongo.
+
+	* innshellvars: Make WANT_PGPVERIFY default to DONT.
+
+	* signcontrol, sample.control: Initial revision
+
+	* pgpverify: Make subst-ready.
+
+	* pgpverify: Initial revision
+
+	* parsecontrol: pgp verification support.
+
+	* nnrp.access: Add 'stdin' reader.
+
+	* innshellvars, inncheck: pgp verification support.
+
+	* expirerm: Argument sanity checks.
+
+	* ctlrun: No more checking of Subject for 'cmsg'.
+
+	* control.ctl: pgp verification support.
+
+Tue Jun 25 15:22:32 1996  James Brister  <brister@vix.com>
+
+	* inncheck: Add check for pgp verify action in control.ctl
+
+	* parsecontrol: Added David Lawrence's PGP verification of control
+	messages patch (with slight mods).
+
+
+
+==================================
+From site/ChangeLog
+
+Tue Dec 17 00:31:17 1996  James A. Brister  <brister@vix.com>
+
+	* Makefile: Added an empty default rule for '.csh:' as DEC
+	Unix has such a rule with breaks things badly.
+
+Tue Nov 26 14:29:15 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Added innshellvars.csh
+
+	* do-subst.sh: Be smarter in handling RCS files.
+
+Mon Nov 11 14:49:20 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Dropped makegroup.
+
+Sun Nov 10 22:10:10 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Include new innshellvars.csh.
+	Install sample.control.
+
+Fri Oct 11 20:54:59 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Install scanspool that was being ignored before.
+
+Mon Sep 16 11:34:16 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Added the necessary bits for the perl filters.
+
+Wed Sep 11 05:32:36 1996  James Brister  <brister@vix.com>
+
+	* Makefile: install a hosts.nntp.nolimit file
+
+Tue Sep 10 20:18:40 1996  James Brister  <brister@vix.com>
+
+	* Makefile: config variable substitution changes
+	No longer install innlog.awk
+
+Fri Sep  6 13:18:28 1996  James Brister  <brister@vix.com>
+
+	* Makefile: config variable substitution changes
+
+Fri Jul 12 23:20:53 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Include actsync rules.
+
+Tue Jul  9 06:30:45 1996  James Brister  <brister@vix.com>
+
+	* Makefile: Added pgpverify support.
+
+Tue Jun 25 15:37:01 1996  James Brister  <brister@vix.com>
+
+	* Makefile (pgpverify): Added rules for pgpverify installation.
+
+
+

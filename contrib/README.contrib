@@ -1,0 +1,29 @@
+This directory contains unsupported contributions to INN. Programs in here
+may or may not have been tested by me on the latest version of INN, so keep
+that in mind when trying them out. I cannot accept bug reports on them--I
+suggest you send them to the original author.
+
+			 -------------------------
+
+expirectl:	Automatically builds expire.ctl file based on current disk 
+		space and a template.
+
+newsbot:	instantly grep and trigger actions on news articles
+
+		Go look in
+
+			ftp://frmug.org/newsbot/
+			http://frmug.org/newsbot/
+
+		for the latest version.
+
+innreport:	innlog-like perl script that generates HTML output.
+
+		Go to
+
+			ftp://anais.eerie.fr/pub/usenet/innreport/innreport.pl
+
+		for the latest version.
+
+findmissing.pl:	a perl script for locating articles in your spool that are
+		not in your history file.

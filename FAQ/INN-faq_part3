@@ -1,0 +1,287 @@
+Newsgroups: news.software.nntp,news.software.b,news.answers
+Approved: hwr@pilhuhn.de
+Subject: INN FAQ Part 3/9: Reasons why INN isn't starting
+Followup-To: news.software.nntp
+Summary: This article is part 3 of a multi-part FAQ:
+	Part 3:  This includes help with getting innd to start.
+
+Posted-By: post_faq 2.10
+Archive-name: usenet/software/inn-faq/part3
+Last Changed: $Date$ $Revision$
+
+                  Part 3 of 9
+
+INN FAQ Part 1: General and questions from people that don't (yet) run INN
+INN FAQ Part 2: Specific notes for specific operating systems
+INN FAQ Part 3: Reasons why INN isn't starting
+INN FAQ Part 4: The debugging tutorial (setup of feeds etc.)
+INN FAQ Part 5: Other error messages and what they mean
+INN FAQ Part 6: Day-to-day operation and changes to the system
+INN FAQ Part 7: Problems with INN already running
+INN FAQ Part 8: Appendix A: Norman's install guide
+INN FAQ Part 9: Appendix B: Configurations for certain systems
+ 
+------------------------------
+ 
+Subject:  Table Of Contents for Part 3/9
+ 
+=====================================================================
+     TABLE OF CONTENTS FOR PART 3/9
+=====================================================================
+
+REASONS WHY INN ISN'T STARTING:
+	3.1 What runs as what?
+	3.2 Why does innd just exit right away with no message?  
+	3.3 syslog message: inndstart: inndstart cant bind Address already in use
+	3.4 syslog message: ME internal no to group
+	3.5 syslog message: ME internal no control and/or junk group
+	3.6 syslog message: Can't setup communication (bind failure)
+	3.7 syslog message: ME bad_newsfeeds no feeding sites
+	3.8 syslog message: ME cant GetConfigValue
+	3.9 syslog message: ME cant accept RCreader
+	3.10 syslog message: ME cant ioctl(TIOCNOTTY) Invalid argument
+	3.11 syslog message: ME cant fork /some/tool Resource temporarily unavailable
+	3.12 /usr/local/etc/rc.news: (M-i)^P^L^A.Gd: not found
+	3.13 syslog message: ME cant dbminit /usr/local/news/history
+
+=====================================================================
+                   REASONS WHY INN ISN'T STARTING
+=====================================================================
+ 
+------------------------------
+
+Subject: (3.1) What runs as what?
+
+1.  The first "make install" MUST RUN AS ROOT.
+2.  Other "make install" runs as "root", but sometimes "news" will work.
+3.  "rc.news" runs as "root".
+4.  "news.daily" runs as "news".
+5.  ALL CRON JOBS (sendbatch, sendnntp, send-ihave, etc.) run as "news".
+
+HOW TO REMEMBER THIS:
+    EVERYTHING RUNS AS "NEWS" EXCEPT:
+        "rc.news" runs as root, since it runs from rc.local (which
+            runs as root) and since it runs things that start out
+            as root but become "news" after doing special things.
+        "make install" runs as "root" because it has to do "chown" to
+          set up files securely.
+
+------------------------------
+
+Subject: (3.2) Why does innd just exit right away with no message?
+
+First, fix your syslog: innd (nearly) always logs a message before it exits.  
+(The INN distribution includes a version of the current UCB syslog, along 
+with instructions on how to install it. Ultrix systems might want to look at
+the syslog that is available on gatekeeper.dec.com). If innd doesn't
+syslog, then it did dump a core file, that you can inspect.
+
+Second, the most common cause of this is that you do not have a history
+file (or no history database).  You will see a message like this:
+
+	ME cant dbminit /usr/local/news/history No such file or directory
+
+( Note that in versions > INN1.5, the word ``ME'' is replaced by
+``SERVER'' ).
+This means that you do not have a history database (or no history.dir
+and history.pag files).  If you are just installing INN for your first
+time, you might want to run the BUILD script in your INN source tree.
+Or, you can read about makehistory in doc/news-recovery.8; if you do
+the latter, make sure to rename the database files (pay attention to
+the two "mv" commands).
+
+Another possibility is a bad active file; e.g. one line only has three
+fields instead of four. You can find such lines by running expire:
+
+expire -n -x -t
+
+which will then show you which lines are bad.
+
+------------------------------
+
+Subject: (3.3) syslog message: inndstart: inndstart cant bind Address already in use
+
+>I try to start INN but got this error in my syslog file:
+>       inndstart: inndstart cant bind Address already in use
+>Can anyone give me a hint on how to fix it ?
+
+Something else is already using port 119.  Comment out the line in
+/etc/inetd.conf for port 119 and "kill -HUP" the inetd program (which
+makes it re-read the configuration file).
+
+Remember, there are two ways for programs to take control over an
+incoming port.  (1) the program runs and grabs the port (which has to
+be done as root) and then handles all incoming connections, or (2) the
+program is listed in /etc/inetd.conf and inetd grabs the port and hands
+off any incoming connections to the program specified in
+/etc/inetd.conf (i.e. one process gets started for every incoming
+connection.)
+
+If you do (1) and (2) at the same time, the inetd will grab the port
+and then anyone else that grabs the port will get an "Address already
+in use" error.
+
+INN's "innd" program is type (1).  C News+NNTP uses something that is
+type (2).
+
+Most people that get this error ran C News+NNTP a long time ago and
+forgot to remove the line from their /etc/inetd.conf file.
+
+------------------------------
+
+Subject: (3.4) syslog message: ME internal no to group
+
+If you set MERGE_TO_GROUPS to "DO", you have to have a "to" group
+listed in your "active" file or you will get the above syslog message
+and innd will not start.  You can edit the active file directly if innd
+isn't running (see also #6.3).
+
+------------------------------
+
+Subject: (3.5) syslog message: ME internal no control and/or junk group
+
+You must have a newsgroup named "control" and a newsgroup named
+"junk" for innd to start.  Since innd isn't running, you can edit
+the active file directly
+
+Add these lines:
+
+control 0000000000 0000000000 y
+junk 0000000000 0000000000 y
+
+--tal
+
+------------------------------
+
+Subject: (3.6) syslog message: Can't setup communication (bind failure)
+
+The message "Can't setup communication (bind failure) Permission denied"
+means that the permissions on your _PATH_NEWSCONTROL directory
+are wrong.  You might want to delete the directory and "make install"
+to create it again.
+
+------------------------------
+
+Subject: (3.7) syslog message: ME bad_newsfeeds no feeding sites
+
+(Rich Salz replies:) The syslog message is telling you that you are not
+feeding news to any sites.  You have to have at least one feed.  (You
+may consider this to be a bug, it's just that I'm too lazy to make
+everything work right if you don't have any newsfeeds.)
+
+Until you go into production and start feeding sites, add a line like this:
+		dummy-feed:!*::
+
+------------------------------
+
+Subject: (3.8) syslog message: ME cant GetConfigValue
+
+Jan 12 17:38:06 galaxy innd: ME cant GetConfigValue pathhost Error 0
+                                                    ^^^^^^^^
+
+This means you don't have "pathhost:" in your inn.conf.
+
+GetConfigValue is the routine that gets data out of the inn.conf file.
+If you get the above error, it means you don't have a particular value
+in your inn.conf.  Run "inncheck -v" usually will tell you what you
+need to do.
+
+Note that there might be a slightly different message:
+
+Nov  1 15:39:30 serv nnrpd[5973]: cant getconfigvalue Error 0
+
+In that case the host where nnrpd was running had DNS resolving 
+problems. Getting DNS to work correctly again solved the problem.
+
+------------------------------
+
+Subject: (3.9) syslog message: ME cant accept RCreader
+
+Situation:  INN 1.4sec on ICS2.0 or Interactive Unix System V Release
+3.2 or one of the many SVR4 Unix's.  You get syslog messages like:
+
+Jul 14 12:07:44 isdn.IFNS.DE innd: ME cant accept RCreader No more
+Jul 14 12:07:44 isdn.IFNS.DE innd: ME cant accept RCreader Protocol error
+May  7 12:05:07 salyko.cube.net innd: ME cant accept RCreader Protocol error
+
+when you connect to innd from a remote machine, but not from the
+local host.
+
+Problem:  Well, that's just another bug in the SVR4 networking code.
+
+Chris Munonye <munonye@ifns.de> reports that this patch fixed the
+problem:
+
+*** RCS/rc.c     Sun Jul 18 15:02:50 1993
+--- rc.c Sun Jul 18 15:04:35 1993
+***************
+*** 173,178 ****
+--- 173,181 ----
+
+      /* Get the connection. */
+      size = sizeof remote;
++     if (SetNonBlocking(cp->fd, FALSE) < 0)
++        syslog(L_ERROR, "%s cant un-nonblock %d in RCreader(errno %d) %m :",
++               LogName, cp->fd, errno);
+      if ((fd = accept(cp->fd, (struct sockaddr *)&remote, &size)) < 0) {
+         syslog(L_ERROR, "%s cant accept RCreader %m", LogName);
+         return;
+
+
+------------------------------
+
+Subject: (3.10) syslog message: ME cant ioctl(TIOCNOTTY) Invalid argument
+
+Most likely a botched config.data - TIOCNOTTY is a BSDism and
+probably doesn't work on SVR4-based system.  (If you aren't sure
+if your Unix is SVR4-based, get out of the netnews business).
+
+------------------------------
+
+Subject: (3.11) syslog message: ME cant fork /some/tool Resource temporarily unavailable
+
+User news ran out of processes and wasn't able to fork off the specific tool.
+You need either just raise the limit on the number of processes in the
+shell which starts innd (e.g in rc.news :
+
+unlimit maxproc
+
+or if that doesn't help raise the number of processes in the kernelconfig
+(modt often by raising maxusers and also raising the # of processes per user).
+
+------------------------------
+
+Subject: (3.12) /usr/local/etc/rc.news: (M-i)^P^L^A.Gd: not found
+
+Q:  rc.news reports "/usr/local/etc/rc.news: (M-i)^P^L^A.Gd: not found"
+
+A:  Bob Izenberg <bei@io.com> reports:
+
+Here's an unlikely possibility that bit us once.  In an almost all-Sun
+environment, I requested and got /bin/ksh as my shell.  When I logged
+in, I got a burst of control characters and a closed connection after a
+few seconds.  It turned out that ksh followed about fifteen symbolic
+links to a file that had been moved/removed.
+
+Therefore, make sure that the first line in rc.news refers to a shell
+that really exists.  If you run "sh /usr/local/etc/rc.news" make sure
+you don't have anything else named "sh" in your path.  (And if you
+have something named "sh" in your path that isn't a Bourne Shell or
+a clone, worry!)
+
+------------------------------
+
+Subject: (3.13) syslog message: ME cant dbminit /usr/local/news/history
+
+That means that some of the history files are missing -- See #3.2 
+
+There is also a message: cant dbminit ME Math argument out of domain of func
+This means that your history.dir file is not formatted correctly. It should 
+look something like this: (from James Brister)
+
+dbz 3 2579 9 C 128 127 24 4 3 2 1 0
+4677 1706 1706 0 0 0 0 0 0 0 0
+
+(i.e. two lines of ascii, most of it being numbers).
+
+

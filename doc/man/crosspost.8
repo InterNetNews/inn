@@ -1,0 +1,85 @@
+.\" $Revision$
+.TH CROSSPOST 8
+.SH NAME
+crosspost \- create the links for cross posted articles
+.SH SYNOPSIS
+.B crosspost
+[
+.BI \-D " dir"
+]
+[
+.B \-s
+]
+[
+.I file...
+]
+.SH DESCRIPTION
+.I Crosspost
+reads group and article number data from
+.I files
+or standard input if none are specified.
+(A single dash in the file list means to read standard input.)
+It uses this information to create the hard, or symbolic, links for
+cross posted articles.
+.I Crosspost
+is designed to be used by InterNetNews
+to create the links as the articles come in.
+Normally innd creates the links but by having
+.I crosspost
+create the links innd spends less time waiting for disk IO.
+In this mode one would start
+.I innd(8)
+using the ``\-L'' flag.
+.PP
+.I Crosspost
+expects input in the form:
+.sp
+.RS
+group.name/123 group2.name/456 group3.name/789
+.RE
+.sp
+with one line per article.  Any dots in the input are translated
+into "/" to translate the news group into a pathname.
+The first field is assumed to be the name of an existing copy of the
+article.
+.I Crosspost
+will attempt to link all the subsequent entries to the first using
+hard links if possible or symbolic links if that fails.
+.PP
+By default,
+.I crosspost
+processes its input as an INN channel feed written as a ``WR'' entry
+in the
+.IR newsfeeds (5)
+file, for example:
+.sp
+.RS
+.\" =()<crosspost:*:Tc,Ap,WR:@<_PATH_NEWSBIN>@/crosspost>()=
+crosspost:*:Tc,Ap,WR:/usr/news/bin/crosspost
+.RE
+.sp
+.PP
+To process the history file and re-create all the links for all articles
+use:
+.sp
+.RS
+awk <history -F'	' '(NF > 2){print $3}' | crosspost
+.RE
+.sp
+(where the -F is followed by a tab character.)
+.PP
+The ``\-D'' flag can be used to specify where the article spool is stored.
+The default directory is
+.\" =()<.IR @<_PATH_SPOOL>@ .>()=
+.IR /var/news/spool/articles .
+.PP
+By default
+.I crosspost
+will fsync(2) each article after updating the links.  The ``\-s'' flag
+can be used
+to prevent this.
+.SH HISTORY
+Written by Jerry Aguirre <jerry@ATC.Olivetti.Com>.
+.SH "SEE ALSO"
+newsfeeds(5),
+innd(8).

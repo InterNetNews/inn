@@ -1,0 +1,1072 @@
+Newsgroups: news.software.nntp,news.software.b,news.answers
+Approved: hwr@pilhuhn.de
+Followup-To: news.software.nntp
+Subject: INN FAQ Part 7/9: Problems with INN already running
+Summary: This article is part 7 of a multi-part FAQ:
+	Part 7: Day-to-day operational questions.  This includes general questions asked once INN is running for a while.
+
+Posted-By: post_faq 2.10
+Archive-name: usenet/software/inn-faq/part7
+Last Changed: $Date$ $Revision$
+
+                  Part 7 of 9
+ 
+INN FAQ Part 1: General and questions from people that don't (yet) run INN
+INN FAQ Part 2: Specific notes for specific operating systems
+INN FAQ Part 3: Reasons why INN isn't starting
+INN FAQ Part 4: The debugging tutorial (setup of feeds etc.)
+INN FAQ Part 5: Other error messages and what they mean
+INN FAQ Part 6: Day-to-day operation and changes to the system
+INN FAQ Part 7: Problems with INN already running
+INN FAQ Part 8: Appendix A: Norman's install guide
+INN FAQ Part 9: Appendix B: Configurations for certain systems
+
+ 
+------------------------------
+ 
+Subject:  Table Of Contents for Part 7/9
+ 
+=====================================================================
+  TABLE OF CONTENTS FOR PART 7/9
+=====================================================================
+
+INN IS RUNNING, BUT I HAVE THIS SMALL PROBLEM...:
+	7.1 XHDR says Bad Article Number
+	7.2 Everything I receive, I re-feed to the feeder
+	7.3 Suddenly my active and history files are owned by root!
+	7.4 How come my host name comes out twice in the Path line?
+	7.5 Expire had problems last night, and while I fixed the problem,
+	7.6 Expire says "Group not matched (removed?) -- Using default ..."
+	7.7 Expire reports 'Can't replace history files, Cross-device link'
+	7.8 Why doesn't this newsfeeds entry do what I want?
+	7.9 Why am I forwarding cancel messages for articles in comp.foo
+	7.10 Debugging someone that is feeding you.
+	7.11 Feeds suddenly can't connect anymore!
+	7.12 I'm getting groups sent to me that I don't want.
+	7.13 When my feeder connects, I get articles but they don't take what's waiting for them.
+	7.14 Directories are being created with wrong permissions.
+	7.15 Why am I getting alt.sex.pictures even though I have...
+	7.16 More about the "to.*" groups
+	7.17 What's a decent syslog.conf configuration?
+	7.18 INN batcher writing "#!rnews 0" separators
+	7.19 Posting while throttled doesn't work
+	7.20 I am not getting all the articles, but my feeder is sending a full feed
+	7.21 overchan can't keep up.
+	7.22 "newgroup" control messages aren't being executed
+	7.23 What do these history.n.* files do?
+	7.24 Out of inodes but still space left on disk
+	7.25 Server throttled No space left on device writing article file
+	7.26 Is there a automatic way to update newsfeeds?
+	7.27 Reloading hosts.nntp is slow.
+	7.28 What are these "xforte" or "xindex" commands that appear in my logs?
+	7.29 My active is not updated frequently enough
+	7.30 Feedentries in newsfeeds are ignored
+	7.31 Help, my active file got corrupted (or deleted)!
+	7.32 Help, my history file is getting real big!
+	7.33 Help, INND gets real big.
+	7.34 Help, my history file got deleted!
+	7.35 I'm seeing duplicate message-id's in my history database!
+	7.36 Getting lots of duplicate articles
+	7.37 Inn send mail to 'rmgroup' or 'newgroup'
+	7.38 Ctlinnd cancel doesn't cancel my articles ..
+	7.39 Inn hangs during renumbering the active file
+	7.40 Local postings don't make it to remote, but others do
+	7.41 Expire does no longer work
+	7.42 news.daily complains about unknown entries from syslog
+	7.43 Innd writes to syslog: DEBUG ERROR SITEspool: trashed
+	7.44 My feed does have different groups in active
+	7.45 INN is only slowly responding
+	7.46 What does 'Reserved Expiring process xxx' mean?
+	7.47 What happens to cancles if they arrive before the article ?
+
+
+=====================================================================
+          INN IS RUNNING, BUT I HAVE THIS SMALL PROBLEM...
+=====================================================================
+
+------------------------------
+
+Subject: (7.1) XHDR says Bad Article Number
+
+Q: When I do a XHDR command the INN NNTP server may give
+me article numbers which is not valid (get 403 Bad Article Number
+when requesting the article text). Is this normal?
+
+A: Absolutely not!
+
+Perhaps DIR_STYLE is wrong?
+
+------------------------------
+
+Subject: (7.2) Everything I receive, I re-feed to the feeder
+
+"It seems that all the articles sent to me are resent back to my
+provider.  I only want to post those articles which have been locally
+generated at my site back to my news feed provider."
+
+or "I feed a site named foo.bar, but it puts something besides foo.bar
+in their Path: header"
+
+Let's look at a typical Path: line:
+
+Path: plts!sdl!newsgw.mentorg.com!uunet!gatech!howland.reston.ans.net!agate!barrnet.net!jfrank.com!usenet
+
+As a post goes from system to system, each site prepends their sitename
+to the line.  Usually a site uses their FQDN, but sometimes they register
+something with the UUCP Mapping Project which makes sure no two sites use
+the same name.  In the above, we see a couple FQDN's and a couple sites
+that are registered with the UUCP Mapping Project.
+
+INN will not feed this article to any feed who's name appears in the Path:
+header.
+
+Suppose you have a feed to/from barrnet.net that looks like this:
+
+netnews.barrnet.net:*,!control,!junk:Tf,Wnm:
+
+This means "send all newsgroups except control and junk, but not if the
+Path: line includes 'netnews.barrnet.net'".  That's fine, but as we see
+in the above Path: example, BarrNet puts "barrnet.net" in the path,
+even though their netnews machine is called "netnews.barrnet.net".
+
+Therefore, we change the newsfeeds file to include a "/barrnet.net"
+which means "exclude posts that have gone through barrnet.net".
+
+netnews.barrnet.net/barrnet.net:*,!control,!junk:Tf,Wnm:
+
+Now you won't feed to netnews.barrnet.net articles that have already
+gone through barrnet.
+
+The best way to solve this problem is:
+	1.  Read the Path: line from an article that has passed
+		through that site already.
+	2.  Insert that sitename into the feeds description in newsfeeds.
+	3.  "ctlinnd reload newsfeeds fixed_feed"
+
+OTHER USES:
+
+Suppose two sites have very reliable NNTP feeds from uunet and psinet
+but still want a feed between each other to increase redundancy.  They
+might set up feeds like:
+
+othersite/uunet,uupsi:...
+
+so that they aren't sending articles that have already reached two of
+the biggest sites on Usenet (and therefore must have gotten good
+distribution already), but will pass on everything else.
+
+------------------------------
+
+Subject: (7.3) Suddenly my active and history files are owned by root!
+
+rc.news runs from root.  After that, everything else should run as
+news.  It sounds like you've run news.daily as root by mistake.  Make
+sure all your cron jobs run as news and you'll be fine.
+
+If you have an old "cron" system, you might consider replacing yours
+with one of the many public domain replacements.  If you can't create
+a different "crontab" for each user, the idiom is:
+
+0 * * * * * su news -c '/do/this/as/news'
+
+------------------------------
+
+Subject: (7.4) How come my host name comes out twice in the Path line?
+
+The INN server puts its name in the Path line of every article that it
+receives.  Obviously, it has to do this.  The default configuration has
+inews put the local host in the Path header.  If nobody posts on the
+server and you use fully-qualified domain names on your workstations,
+then everything works the right way.  (If `hostname` doesn't give an
+FQDN on your machine, you can work-around this by setting the "domain"
+value in inn.conf; remember that innd never re-reads inn.conf.  You
+must "ctlinnd shutdown x" and then re-start the server).  Many people
+don't want the client machines to put their name in the Path header.
+To do this, set INEWS_PATH to DONT.  Finally, let me say that it is
+probably a mistake to have a "pathhost" line on any machine other than
+your server if you set INEWS_PATH to DO.  If you doubt this, please
+trace the article flow for yourself.  If you are curious about the
+effect of INEWS_PATH, read the nroff source -- not the formatted
+output -- of doc/inews.1
+
+------------------------------
+
+Subject: (7.5) Expire had problems last night, and while I fixed the
+			problem, it still won't run.
+
+When expire starts up it "reserves" the server so that nobody else can
+pause or throttle it.  This prevents anyone else from coming in and
+modifying the history database.  If expire bails out because of a bad
+error (e.g., your expire.ctl has syntax errors) it leaves the server
+reserved so that no maintenance will be done until a good expire run has
+occurred.  To unblock the server, use the ctlinnd "reserve" command with
+an empty string argument. See also #7.46.
+
+------------------------------
+
+Subject: (7.6) Expire says "Group not matched (removed?) -- Using default ..."
+
+Expire says:
+Group not matched (removed?) alt.techno-shamanism -- Using default expiration
+Group not matched (removed?) misc.computers.forsale -- Using default expiration
+Group not matched (removed?) de.rec.sf.startrek -- Using default expiration
+
+YOU DID NOTHING WRONG!
+
+That just means that you've removed those newsgroups groups and expire
+is slowly removing articles from the spool as they expire.  Eventually
+the articles will all have been deleted and so will these messages.
+
+Here's a neat trick to make deleted groups go away at the next expire
+instead of hanging around waiting for their articles to expire in a
+timely manner.  Using this combination of lines at the *start* of
+expire.ctl:
+	*:A:0:0:0
+	*:U:0:7:31
+	*:M:0:14:365
+will cause groups which are neither moderated nor unmoderated to be
+discarded - the only such groups are deleted ones.  Thanks to
+Ian Phillipps <idickins@fore.com> for this tip!
+
+------------------------------
+
+Subject: (7.7) Expire reports "Can't replace history files, Cross-device link"
+
+If your directory where your history is does not have enough space left
+for two copies of the history, you can also expire in another directory.
+But you must tell expire to do so - failing to do so produces the above
+message. You can either tell it news.daily by adding a expdir=/some/dir
+flag or by adding the -d flag when starting expire. In news.daily,
+there is a variable called 'EXPDIR' which you can set.   This way you
+never accidentally run an news.daily by hand and forget the expdir option.
+
+------------------------------
+
+Subject:  (7.8) Why doesn't this newsfeeds entry do what I want?
+			"foo.com:alt,!alt.sex"
+
+A newsfeeds entry is not a sys file (C News) entry.  Please read
+newsfeeds.5.  You might also find the sys2nf program in the frontends
+directory useful, as well as the inncheck Perl script that is found in
+the samples directory.  The INN Configuration FAQ has cook-book
+examples of the steps required to install a NNTP feed, UUCP feed, and
+NNTP via nntplink feed.
+
+------------------------------
+
+Subject: (7.9) Why am I forwarding cancel messages for articles in comp.foo
+			when I explicitly have !comp.foo in the newsfeeds entry?
+
+Control messages can be explicitly forwarded, so a control message to
+comp.foo is forwarded to sites that receive either comp.foo or control.
+Please see the "Control Messages" section of innd.8.  As that
+documentation says, you probably want to put "!control" in the
+subscription list for most of your newsfeeds.
+
+------------------------------
+
+Subject: (7.10) Debugging someone that is feeding you.
+
+David Myers <dem@meaddata.com> suggests that if a neighbor complains
+that their feed to you doesn't work: (1) make sure they've read the man
+pages, and (2) have them send a copy of their newsfeeds file.
+
+Truly sage advice!
+
+------------------------------
+
+Subject: (7.11) Feeds suddenly can't connect anymore!
+
+Q:  How come feeds tell me they can't connect to me any more?
+
+A:  When innd starts up it reads the hosts.nntp file and looks up the
+IP addresses for all the entries mentioned there.  The problem is that
+this data is dynamic (sometimes people change IP addresses), and innd
+never goes back to check.  If your system stays up for days and one of
+your feeds changes their IP address (or has a new CNAME), innd will
+reject them.  Rich planed to handle this in INN1.5, but for now you
+might find it useful to do a "ctlinnd reload hosts.nntp" out of cron
+every day or so or when you notice there's a problem.
+
+Here is a sample crontab entry to use: (news should run this)
+
+55 7,12,17,22 * * * /usr/local/newsbin/ctlinnd -s reload hosts.nntp crontab
+
+I hope people vary the time this runs.  If a huge number of INN hosts,
+many running NTP so their clocks are within a few ms., all kick off DNS
+lookups at exactly the same time, the internet traffic could get
+"interesting".  Try setting the minutes value to the time you added
+this entry to crontab rather than everyone using "55".  In fact, if
+everyone used their birthday plus 1 if they are born on an odd month,
+that would spread it out just fine.
+
+------------------------------
+
+Subject: (7.12) I'm getting groups sent to me that I don't want.
+
+Tell the system administrator(s) of the machine(s) that feed news to
+you to stop sending those groups.  There is no other way to do it.  (In
+B or C News, the groups would end up in junk; at least with INN they
+are not taking up space.  You should compile with WANT_JUNK set to
+DONT).
+
+If the people that feed you use B news or C news, remember that they
+don't use a "newsfeeds" file.  They use a file called "sys" which has a
+completely different format for specifying newsgroups.
+
+------------------------------
+
+Subject: (7.13) When my feeder connects, I get articles but they don't take what's waiting for them.
+
+I hate to say this, but this really shows that you haven't RTFMed very
+much.
+
+News is not automaticly bidirectional (it's like SMTP, not UUCP).  If
+you want to send things out you will have to make sure that you run
+send-nntp or nntpsend from cron.  nntpsend is easier and elsewhere in
+this document there are cookbook examples of what to add every time you
+set up a new feed.
+
+------------------------------
+
+Subject: (7.14) Directories are being created with wrong permissions.
+
+> Question:
+>When I received news for /var/spool/news/foo/bar for the first
+>time, the directories got created:
+>
+># ls -lgR foo
+>total 1
+>d-wx-w-rwx  2 news     news          512 Feb  9 00:03 bar/
+>
+>What did I do wrong?
+>
+>##  Mode that directories are created under.
+>#### =()<GROUPDIR_MODE          @<GROUPDIR_MODE>@>()=
+>GROUPDIR_MODE           2775
+
+  Answer:
+You forgot a zero in front of this number, for the C compiler to interpret it
+as octal instead of decimal.
+
+------------------------------
+
+Subject: (7.15) Why am I getting alt.sex.pictures even though I have
+			"ME:!alt.sex.pictures" in my newsfeeds file?
+
+The active file is the definitive list of what newsgroups you receive.
+INN's ME entry is different from C News and B News; please see
+newsfeeds.5.  If you do not want to receive alt.sex.pictures, ask the
+system(s) that send you news not to send it to you.  (You would have to do
+that no matter what news system you are running.)
+
+------------------------------
+
+Subject: (7.16) More about the "to.*" groups
+
+(Thanks to jmalcolm@sura.net (Joseph Malcolm) for supplying
+these answers.)
+
+>1) Why did my local INN act on the sendsys posted to to.neighbor?
+
+to.* groups aren't magic to INN.  Your system received the message,
+it acted on it.
+
+>2) Why did my neighbor send the cmsg to all of his neighbors?
+
+See 3.
+
+>3) Is is related to having the "control" group in our newsgroups patterns?
+
+Yes.
+
+>   The INN docs say you probably don't want to do this, but they don't say
+>   why.
+
+Actually, they do. This is from innd(8):
+
+	Sites may explicitly have the ``control'' newsgroup in their
+	subscription  list,  although  it is usually best to exclude
+	it.  If a control message is posted to a  group  whose  name
+	ends  with  the  four characters ``.ctl'' then the suffix is
+	stripped off and what is left is used  as  the  group  name.
+	For  example,  a cancel message posted to ``news.admin.misc.ctl''
+	will be sent to all sites that subscribe to  ``control''  or
+	``news.admin.misc''.
+
+There is also a pointer to this in newsfeeds(5).
+
+>   But I still need it in my active file, right?
+
+Yes.
+
+------------------------------
+
+Subject: (7.17) What's a decent syslog.conf configuration?
+
+The configuration will be different for each site, but here is what
+Greg Earle recommends as the lines for the "news.*" related part.
+Remember that most syslog's require tabs, not spaces.
+
+Greg's canonical SunOS 4.1.x INN-related syslog.conf entries (which can
+be merged into your current configuration):
+
+#
+# INN stuff
+#
+##  Send critical messages to everyone who is logged in and to the console.
+news.crit               *
+news.crit               /dev/console
+
+##  Log news messages to separate files.
+##  Note that each level includes all of the above it.
+## =()<news.crit        @<_PATH_MOST_LOGS>@/news.crit>()=
+news.crit               /var/log/news/news.crit
+## =()<news.err         @<_PATH_MOST_LOGS>@/news.err>()=
+news.err                /var/log/news/news.err
+## =()<news.notice      @<_PATH_MOST_LOGS>@/news.notice>()=
+news.notice             /var/log/news/news.notice
+
+If you don't want /var/log/messages to be crowded by messages from news
+add the following to the line, where /var/log/messages get logged:
+news.none so that the line reads (as an example):
+
+*.err;kern.debug;auth.notice;mail.crit,news.none       /dev/console
+
+------------------------------
+
+Subject: (7.18) INN batcher writing "#!rnews 0" separators
+
+>Outgoing UUCP batches from here are going out with "#!rnews 0" at
+>the head of each article.
+ 
+Most common cause:  your newsfeeds entry has "Wnm" not "Wnb".
+
+Other reasons:
+
+batchfiles have something other than a single space between article
+filename and size
+
+batchfiles lack size information (all the articles sizes will be read
+from the batch file as zero)
+
+------------------------------
+
+Subject: (7.19) Posting while throttled doesn't work
+
+>I want to be able to allow my users to be able to post articles when
+>innwatch has throttled the system when the spool disk is "full".
+
+Cannot be done in 1.4.
+
+In 1.5 nnrpd will spool the post for the user. When the server is
+running again, then running rnews -U will feed them to innd.
+
+------------------------------
+
+Subject: (7.20) I am not getting all the articles, but my feeder is sending a full feed
+
+(From Carlos Castro <carlos@mci.net>)
+
+  Either your feeder is not keeping up with its feeders, or you are
+not keeping up with the news flow.  
+
+  Disk IO is probably the biggest news bottleneck.  Usually a full feed 
+is more than a single Fast SCSI II disk can handle.  Having 2 or more disks 
+for the spool is suggested in either a striped configuration (using ODS 
+for Solaris or MD for Linux) or a split spool.  It is also recomended to
+have the disks spread out over multiple controllers.
+
+  It is best to compile your system with MMAP if it can support it.
+
+  Run innd at a priority of -5 or -10 and see if it performs better.
+
+  Setting NICE_KIDS to 10 will also give innd more CPU on news servers
+heavily loaded with many nntplinks and nnrps.
+
+  If you have many outgoing feeds you might want to keep the size of the
+out.going files relatively small....  It takes quite a bit of effort to
+write to the end of a very long file.
+
+------------------------------
+
+Subject: (7.21) overchan can't keep up.
+
+> About once a month or so, I get the following warning messages:
+> 
+> Jan 20 07:20:22 optima innd: overview!:31:proc:9193 cant flush count 14639 Operation would block
+> Jan 20 07:20:22 optima innd: overview! spooling 14639 bytes
+
+or
+
+> there's a file "overview!" in /usr/spool/news/out.going with stuff in it.
+> 
+> Should I be doing anything more with this than ignoring it, and maybe
+> occasionally deleting it (it just grows)?
+
+This happens because innd is feeding info to overchan faster than
+overchan can process it.  The overflow is sent to the file
+"overview!".  This file can be deleted, as nnrpd will grab the missing
+data out of the articles "manually".  The slow-down won't be noticed,
+much.  You can "expireover -a" to "fill in the holes".
+
+To prevent this in the future, you need to make overchan run faster.
+This is easy to do.  There are two things to do:
+
+1.  Increase the size of many of your kernel buffers.  In particular,
+increase buffers relating to directory caches (the "namei" cache", to
+mention one).  If you use SunOS, change "maxusers" to 200.  Ignore the
+variable's name.  This variable is used to calculate most of the other
+buffer sizes, etc. and 200 is good for a system that is as overworked
+as, say, a machine running netnews. Do this only if you have enough RAM.
+I can't exactly say what is 'enough' but for a machine with 48MB 200 seems
+to be too big (64 is ok here). The problem seems to be that the kernel then
+needs too much space and runs out of it.
+
+2.  (this is more important than #1) Move the .overview files out of
+the /var/spool/news hierarchy.  For example, moving the overview files
+into /var/spool/news/over.view made things fast enough on one machine
+that the problem went away.  To do this:  change "_PATH_OVERVIEWDIR" in
+"config.data", recompile, and "make install".  You will need to
+recompile any newsreaders that read via NFS or off the local disk.
+
+For really great performance, put the NOV files on a separate disk.
+(Not just a separate partition, a separate disk or spindle.)
+
+This one-liner will generate a shell script that will move your NOV files:
+	awk '{ print $1 }' /usr/lib/news/active | tr . / | awk '{ print "mkdir -p /new/location/" $1 ; print "mv " $1 "/.overview /new/location/" $1 "/.overview" }'
+
+WHY THIS WORKS:
+
+Why does doing all this speed up overchan?  overchan works by opening
+the proper ".overview" file, appending 1 line to it, then closing the
+file.  If you have the ".overview" file in the same directory as 10000
+articles then opening the ".overview" file will take a huge amount of
+time.  The open() call literally searches though about 5000 (half of
+10000) file names to find ".overview".  If you move your ".overview"
+files so that each one is in it's own directory, (say,
+/usr/spool/news/over.view/{group}/{name}/.overview) then open() is
+searching through 3 files ( ".", "..", and ".overview") to find 1
+file.  ( O(N/2) where N=10000 vs. N=3... and you thought those first
+year CS classes would never be useful!)
+
+There isn't much you can do to make the "append" and "close" steps much
+faster, except maybe install a PrestoServe or similar write-cache, and
+that won't help very much.
+
+Profiling overchan (with PureSoft's Quantify product) found that the
+open() call was around 80% of the execution time of overchan.  That was
+reduced to 40% when I moved the ".overview" files to their own
+directory.  With the change, overview's profiling statistics are pretty
+flat. (which is good).
+
+IF YOU CAN'T DO THE ABOVE CHANGES:
+Run "expireover -a" to fix the problem temporarily.  However, it will
+come back.
+
+DO NOT try feeding the "overview!" file to overchan manually.
+	(1) overchan doesn't do any locking and you'll have two overchan's
+		running at once.
+	(2) overchan only appends to the ".overview" files.  If you've gotten
+		any articles since the "overview!" file was created (you will
+		have) then you'll be appending told old entries that are out of
+		order.  Your ".overview" files must be in sorted order for the
+		other utilities to work right.
+
+See also #4.19, #5.33, #6.30
+
+------------------------------
+
+Subject: (7.22) "newgroup" control messages aren't being executed
+
+> "newgroup" control messages aren't be executed
+
+The usual blame for this is _PATH_EGREP points to a grep that doesn't
+understand regular expressions.  For example, GNU grep only understands
+regular expressions if it is called "egrep" (i.e. not "gnuegrep" or
+"egnugrep").
+
+Make sure you have a link or symlink between egnugrep and egrep.  You
+then need to modify config.data so that _PATH_EGREP is
+/your/local/path/egrep and NOT /your/local/path/egnuegrep.  Then
+recompile and "make install" to have the new binaries and shell
+scripts installed.
+
+You also want to check the syntax of your control.ctl file.
+
+------------------------------
+
+Subject: (7.23) What do these history.n.* files do?
+
+Q: There are history.n, history.n.dir and history.n.pag lying around -
+   what are they good for?
+
+These files come from expire and are the new history. Without errors 
+these files should disappear after expire is done. If they stay after
+expire is finished, you most certainly have a problem with disk space
+on the disk where history.* is or if not a broken line in history, which
+caused expire to bail out.
+
+------------------------------
+
+Subject: (7.24) Out of inodes but still space left on disk
+
+If you have still space on your disk but no more inodes then you should 
+consider rebuilding the partition on which your spool is.
+Default options for filesystems are mostly to use 4k / inode. For a newsfs
+this isn't appropriate, as articles are in average under 3k. So create
+your newsspool with 2k per inode. 
+If you rebuild you also could adjust the values for block-/fragsize 
+to 4096/512 so you'll get more space out of your disk than on 8192/1024
+(this will be a bit slower than 8k/1k for articles bigger than 4k, which 
+are a minority so don't use it on a partition dedicated to alt.binaries)
+
+------------------------------
+
+Subject: (7.25) Server throttled No space left on device writing article file
+
+If df still shows you plenty of space then look if you have enough
+inodes free. If not then refer to "Out of inodes but still space left on disk"
+
+------------------------------
+
+Subject: (7.26) Is there a automatic way to update newsfeeds?
+
+>Does anyone know of a way to automatically update the newsfeeds file?
+>I'm looking for something that will allow a site to send a request
+
+We use gup at various locations with big success. You can find it in
+ftp://ftp.math.psu.edu/pub/INN/contrib
+
+One sends a mail to gup, which gets processed and a new group list for
+the site is written. Then from cron gupdate runs and gathers all site
+files to your newsfeeds.
+
+------------------------------
+
+Subject: (7.27) Reloading hosts.nntp is slow.
+ 
+>" but I need to reload hosts.nntp each time I add
+>a feed.  That takes about 15-25 minutes to happen.
+
+Write a small script/program that parses hosts.nntp.txt and writes
+only IP addresses to hosts.nntp and innd will reload it nearly
+instantaneously.
+
+or you can  lookup on each of the hosts before doing a ctlinnd reload.
+Then it should be almost instantaneous. One could write up a script for that.
+
+Somebody has to take the time to convert FQDN's to IP addresses, but
+there's no requirement that it be innd.
+
+------------------------------
+
+Subject: (7.28) What are these "xforte" or "xindex" commands that appear in my logs?
+
+Q: I see "xforte" commands in syslog as unknown commands - where do they
+come from?
+
+Version 0.55 of Forte Free Agent uses this to make it so a news
+server will not timeout even if the user is idle.  It appears to
+happen once per minute when the user is idle.
+
+After Version 0.55 Forte uses the help command as the anti-idle
+command. So if you are just annoyed by the messages in syslog, encourage 
+your users to upgrade to a newer version. In versions 1.0 and 0.99+ 
+this feature can be turned off.
+
+These anti-idle commands are a very bad behaviour, as the news reader does 
+not disconnect, but occupies resources.
+
+Pine seems to do this behaviour via 'NOOP'.
+
+Xindex,Xuser,spooldir and xmotd come from tin. It is documented in the 
+sources that these commands don't work with inn. You can disable them via
+-DDONT_HAVE_NNTP_EXTS (tin 1.2) -- look in the INSTALL document. In tin1.3
+they are disabled by default.
+
+------------------------------
+
+Subject: (7.29) My active is not updated frequently enough
+
+This is on hp9000/350 with MMAP enabled, but could surely also be used
+with other configurations:
+
+>the active file does not seem to flushed to disk frequently enough.
+>So that when I use nn to access the newserver through nntp it does
+>not see the new articles posted until a few (up to 5) hours later.
+
+First of all check the value of ICD_SYNC_COUNT in config.data.
+
+froh@devnull.franken.de (Frohwalt Egerer) writes:
+
+  In the source look for the place where INN would write the active file
+back to disk if MMAP was turned off. At that place I added a 'msync()'
+to the 'MMAP' branch to make it work on my university's HPs.
+
+------------------------------
+
+Subject: (7.30) Feedentries in newsfeeds are ignored
+
+> I have the following newsfeeds and INND says no feeding sites:
+
+## xlink/xlink.net,xlink1,xlink1.xlink.net,blackbush.xlink.net:\
+xlink/xlink.net,xlink1:comp.*:Tf,Wnm:
+
+The solution is that - although the first line of the two is a 
+comment - the line continuation at the end still works -- so the
+valid entry for xlink is within the comment and therefore ignored.
+
+------------------------------
+
+Subject: (7.31) Help, my active file got corrupted (or deleted)!
+
+First off, do NOT run makeactive(8) to make a new one!  Not only does this
+command take a long time to run, but the result is usually garbage.  Groups
+that should be marked as moderated aren't, and you'll usually create lots
+of spurious groups which were deleted previously or didn't exist.  You'll
+end up spending a lot of time cleaning up your active file when you're done.
+
+Every time news.daily runs, it saves a compressed copy of the current
+active file in _PATH_MOST_LOGS/OLD/ (e.g. /var/log/news/OLD).  Also,
+every time a newgroup or rmgroup command is issued, the previous copy
+of the active file is saved as "active.old".   Should your active file
+get corrupted or deleted, you have lots of backup copies lying around.
+You should also include your _PATH_NEWSLIB in your daily backups,
+so that your history and active files get backed up to tape.  If
+you get a catastrophic disk failure, you can get back in business
+much much faster if you have tape backups of these files.
+
+The easiest way to recover from a corrupted active file is this:
+1. Shut down INN
+2. mv active active.corrupt
+3. cp active.old active
+   OR
+   cp /var/log/news/OLD/active.1.Z .   (or .gz if you use gzip)
+   uncompress active.1                 (or gunzip if you use gzip)
+   mv active.1 active
+4. Restart INN
+If INN does not do a renumber on startup (you'll know if it does if
+'ctlinnd mode' hangs for several minutes on startup), then force
+a renumber of the active file with:
+5. ctlinnd renumber ''
+
+------------------------------
+
+Subject: (7.32) Help, my history file is getting real big!
+
+It's supposed to be big.  You want it to be big.  Don't ever run
+makehistory to build a new database!  It will take hours or days
+to run.  The resulting database will be smaller, but that's because
+you have removed entries for expired articles, leaving yourself
+vulnerable to duplicates.  It's hard to estimate exactly how much
+you'll need, since it depends a lot on how much news you carry
+as well as for how long.
+
+The partition which holds your history datebase must have at least
+enough room for two copies of the database, since expire(8) needs
+to build a new one while the old one is still in use. If you can't 
+afford free space on this partition for two copies, but have plenty
+of space elsewhere, then you might use the "-d" flag to expire.
+
+------------------------------
+
+Subject: (7.33) Help, INND gets real big
+
+Q: Innd gets real big over time - is there any way to prevent this?
+
+This comes at least partly from the design goal to get it fast, so it
+trades memory vs. I/O.
+There are some configuration options and patches which could reduce
+this a bit.
+
+If you have lots of stdin nntplinks, you should incorporate the 
+innd.spool.pathc which is in unoff[23] already.
+Then the value of DBZINCORE also changes the way INND behaves:
+        ##  Value of dbzincore(FLAG) call in innd.  Pick 1 or 0.
+        #### =()<INND_DBZINCORE         @<INND_DBZINCORE>@>()=
+        INND_DBZINCORE          1
+  Both innd and nnrpd have the option of keeping the DBZ
+  hash table in memory, under the control of the INND_DBZINCORE and
+  NNRP_DBZINCORE_DELAY parameters, respectively.
+  This can consume lots of RAM proportional to the size of your history
+  database, but it can also avoid a great deal of disk I/O.
+  You should probably see the DBZ manpage in the doc directory
+  for some (brief) additional discussion of this issue. (From Rich Salz)
+Matthias Urlichs <urlichs@noris.de> adds:
+If you still find that INND grows beyond all bounds, eg. after a week days
+it's twice as big than after three days, you may have a problem with your
+system malloc.
+Many malloc implementations try to coalesce free blocks, and to split big
+chunks into smaller ones. It can be shown that no matter what strategy you
+use to split and combine blocks, there's an allocation sequence which lets
+your used-up space grow without bounds.
+To fix this problem, use the malloc that comes with INND. It wastes a bit
+more space initially (around 25%, to be exact), but behaves a lot better --
+INND allocates more memory pages, but actually needs fewer to do its job. 
+
+------------------------------
+
+Subject: (7.34) Help, my history file got deleted!
+
+One way to get back in action is to restore the history
+file from last night's backup and run 'makehistory -bu'.  That
+will add back the articles that arrive since the backup to the database.
+You can even add the '-n' option to not throttle the server and
+you can do this while still accepting news, however you'll probably
+get some duplicate articles (which may not be all that bad given
+the alternative of extra downtime).
+
+What, you don't have a backup?  Too bad.  If you still have the
+news articles on disk, you can do one of two things:  run makehistory
+to make an entirely new database, or newfs the news spool and start
+over.  The first option will probably take at least a day or more,
+the second option a few minutes.
+
+[ One neat idea in this case would be to write a program which took
+  the output of findmissing.pl and into another program which read
+  each article (a la makehistory) and sent "ctlinnd addhist"'s.
+  This would be a lot faster since 'makehistory -bu' still opens
+  every article in the spool. ]
+
+------------------------------
+
+Subject: (7.35) I'm seeing duplicate message-id's in my history database!
+
+Something is wrong with your history database.  This is one of those
+things that "can never happen".  In order to verify that something
+is really wrong with your database, run the following command:
+
+awk -F' ' '{ print $1 }' < history|grephistory -i
+
+(that first thing in quotes is a tab, not a space)
+
+This will take a while to run, but the result _should_ contain no output.
+
+If it does output anything then the dbz database is hosed.  You'll need
+to rebuild the dbz files from the history file using the "-r" flag to
+"makehistory" using the process as described in the news-recovery(8)
+man page.
+
+If you still have problems after this, then it could be due to some
+garbage in your history file which is causing problems with dbz.
+There really isn't a good tool (yet!) to fix this.  What needs to
+be written is a history file "sanitizer", which examines each line
+of the file and checks it for nulls, wacko dates, huge lines,
+and the like.  ( Some of this already has been integrated into expire(8)
+in the "1.4unoff" release, however more could be done.  At least
+now expire doesn't crash when it encounters garbage. )  If you
+do write such a program, please submit it to barr@math.psu.edu (Dave Barr).
+
+If you do fix your database, but problems re-appear later then perhaps
+your O/S is at fault.  Make sure your O/S has been patched to fix any
+bugs related to mmap().  In your config.data try turning off -DMMAP in
+DBZCFLAGS and recompile.  If you still have problems, reset DBZINCORE
+to 0.
+
+------------------------------
+
+Subject: (7.36) Getting lots of duplicate articles 
+
+Q: I have lots ot 437 - Duplicate article  messages in my logfile -
+I thought nntp would prevent this? I have /remeber/ set to 14.
+
+This usually happens when you have some heavily lagged sites 
+feeding you. Increase /remember/ to 15 days or start up innd
+with the c flag set to 13. When i had both set at 14, it appeared
+that most old articles arrived shorly after expire finished writing 
+the new history file. this is probably due to inaccurate date headers,
+now if everyone used NTP ..... (from: rr@eel.ufl.edu (Mahesh Ramachandran))
+
+------------------------------
+
+Subject: (7.37) Inn send mail to 'rmgroup' or 'newgroup'
+
+On some installations the newssystem sends mail to a user newgroup.
+This is the case if the mailer used in PATH_MAILCMD does not understand
+the '-s' option which is used to specify a subject on the command line.
+On some Linux /bin/mail seem to miss this option, as on some Sys V. 
+Try using /usr/ucb/Mail instead (if it exists).
+
+------------------------------
+
+Subject: (7.38) Ctlinnd cancel doesn't cancel my articles ..
+
+Q: I did cancel an article with ctlinnd cancel <message-id>, but it
+is still in spool
+
+Dave Barr:
+Did you sufficiently quote the message-id (with ''s) so that your
+shell (whatever it is) doesn't interpret any metacharacters?
+Try using "echo '<messgage-id>'" to see if ctlinnd is getting the
+characters you think it is getting.
+
+------------------------------
+
+Subject: (7.39) Inn hangs during renumbering the active file
+
+Q: Is it normal for INN to hang during a renumber?
+
+Yes. Innd doesn't accept incoming articles as they might change the
+contents of a directory / the number count in active while renumber
+tries to adjust these numbers. If it would accept these articles then you
+would get '400 File exists writing article file' errors, which you could get
+rid of by ctlinnd renumber ...
+
+Internally, renumber is a loop the calls NGrenumber on each group in 
+active. NGrenumber then renumbers the group. So while Innd is in this
+loop it can't accept connections.
+
+If you are worried by the long time the server does not accept
+connections,
+then do something like (from news.daily):
+
+        while read GROUP hi lo flag ; do
+            ctlinnd -s renumber ${GROUP} 2>&1
+            sleep ${RENUMBER}
+        done <${ACTIVE}
+
+This will renumber separately each group leaving the possibility to
+get connections while sleep()ing.
+
+------------------------------
+
+Subject: (7.40) some local postings don't make it to remote, but others do
+
+Q: My feeds are set up and postings that come from tin make it to the
+remote while others e.g. from nn or netscape don't.
+I have the following in newsfeeds:
+
+news:*:Tf,Wnm:news.foo.bar.com
+
+A: nn and netscape produce the following path line:
+
+>Path: host!news
+
+while tin gives
+
+>Path: host!user
+
+Now the entry ``news'' in newsfeeds collides with the news in the
+Path: header. Change your newsfeeds entry to news.some.com:*:Tf... and
+it should work.
+
+------------------------------
+
+Subject: (7.41) Expire does no longer work
+
+Q: Expire suddenly stops with : Can't store key
+
+There were some cancel articles posted recently that tried to cancel
+more than one message at a time. Dbz code doesn't like this. One
+solution is the following:
+
+Grab the Perl 'fixhist' script off http://www.math.psu.edu/barr/INN.html 
+and follow the instructions at the top of the file.  That will clean
+out the cruft from your history database and allow expire to run
+without crashing.
+
+------------------------------
+
+Subject: (7.42) news.daily complains about unknown entries from syslog
+
+Q: news.daily complains:
+ Syslog summary:
+ Unknown entries from news log file:
+ Mar 25 06:46:57 xx innd: some.do.main:9 NCmode "mode stream" received
+What's wrong?
+
+A: Inn1.4unoff4 now logs when a site connects that is able to send
+streaming nntp. This is for debugging purposes, but the local version
+of innlog has not been changed to catch up with this.
+Try to use the innlog.awk that comes with unoff4.
+
+------------------------------
+
+Subject: (7.43) Innd writes to syslog: DEBUG ERROR SITEspool: trashed
+
+Dave Barr: This is apparently due to the innd.spool patch. As far as I
+can tell the message is "mostly harmless". I have tracked it down as
+far as WCHANflush() getting called with the handle of a channel (which
+is a socket), except as the comment to the function says it's only
+supposed to be used on file channels.
+
+------------------------------
+
+Subject: (7.44) My feed does have different groups in active
+
+Q: The groups in my active are not in sync with those of my feeds
+
+A: Matt Midboe <matt@oscar.snsnet.net> wrote a script to get the
+active in sync whith the feeds you can find it via ftp in
+ftp://ftp.math.psu.edu/pub/INN/contrib/sync-active.tar.gz
+
+In v1.5 of INN there will also be actsync, actsyncd for this job.
+
+------------------------------
+
+Subject: (7.45) INN is only slowly responding
+
+(From: Erland Sommarskog <sommar@sophocles.algonet.se>)
+Q: We started a new news server just a month ago. SS-20, lots of memory,
+   23 GB of news spool. The first week it ran fast as a jaguar, but now
+   it crawls like a snail. It takes forever to connect, we can't keep
+   up with our feeds which have to flush our queues, it takes to forever
+   to connect. When we monitor the box it spends an awful lot of time
+   in kernel mode, and seems to be doing a tremendous amount of disk
+   access. Where did we go wrong? If it matters, we're not running
+   expire, but dexpire and histtrim.
+
+A: The problem is with the history database. This database consists of
+   three files: history, history.pag and history.dir. The dir files
+   contains a hash table. For optimal performance, the hash file must
+   not be too small, or you will get many collisions. The initial size
+   of the history database is based on Usenet traffic as it was a
+   couple of years ago, and no one was considering a 23 GB spool. Now,
+   for people who is running expire this is not a problem, because when
+   you run expire, the history file is rebuilt, and the size for the
+   new database is taken from the old one. But if you are running
+   dexpire and histtrim, this never happens, and innd will spend most
+   of its time reading overflow buckets.
+     What to do then? Rebuild the history database. And the simlpest
+   way to do it, is to run expire. A simple approach is to run expire 
+   every now and then, with an expire.ctl that safe won't expire very 
+   many articles. (But add a short expiration time on some junk group,
+   so that expire get something to work with.) 
+   A better approach is to discontinue use of histtrim, and run expire 
+   daily basis. Dexpires produces an output which you easily can trans-
+   form into an expire.ctl. I discourage use of histtrim, since it
+   may delete articles from history and yet are on the system.
+See also: #7.6, #7.7 and #7.41
+
+------------------------------
+
+Subject: (7.46) What does 'Reserved Expiring process xxx' mean?
+
+Q: While trying 'ctlinnd mode' I get this line :
+Reserved Expiring process 23386
+
+Any idea about what does it mean exactly and how to correct this problem?
+
+A: When expire is running it reserves the server so that it can safely
+pause and unpause it. This prevents other processes from grabbing the
+server and rendring (some parts of) expire worthless.
+
+While expire is running this is no problem. If expire is no longer running
+and the server is still reserved, then you type "ctlinnd reserve ''".
+
+See also #5.13, #7.5, #7.7.
+
+------------------------------
+
+Subject: (7.47) What happens to cancles if they arrive before the article ?
+
+Q: What happens if a cancel message arrives before the article it is
+supposed to cancel?
+
+A: (From Rich $alz)  
+| If VERIFY_CANCELS is set to DO, then early cancel messages are ignored.
+| If it is not set to DO, then early cancel messages cause a history line
+| to be written for the article being cancelled.  Subsequent offers of the
+| real article will be rejected.
+

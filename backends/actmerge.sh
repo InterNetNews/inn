@@ -1,0 +1,215 @@
+#!/bin/sh
+# @(#) $Id$
+# @(#) Under RCS control in /usr/local/news/src/inn/local/RCS/actmerge.sh,v
+#
+# actmerge - merge two active files
+#
+# usage:
+#	actmerge [-s] ign1 ign2 host1 host2 
+#
+#	-s	- write status on stderr even if no fatal error
+#	ign1	- ignore file for host1
+#	ign2	- ignore file for host2
+#	host1	- 1st active file or host
+#	host2	- 2nd active file or host
+#
+# The merge of two active files are sent to stdout.  The status is
+# written to stderr.
+
+# By: Landon Curt Noll  	chongo@toad.com		(chongo was here /\../\)
+#
+# Copyright (c) Landon Curt Noll, 1996.
+# All rights reserved.
+#
+# Permission to use and modify is hereby granted so long as this 
+# notice remains.  Use at your own risk.  No warranty is implied.
+
+# preset vars
+#
+# =()<. @<_PATH_SHELLVARS>@>()=
+. /var/news/etc/innshellvars
+# Our lock file
+LOCK=${LOCKS}/LOCK.actmerge
+# where actsync is located
+ACTSYNC=${NEWSBIN}/actsync
+# exit value of actsync if unable to get an active file
+NOSYNC=127
+# args used by actsync a fetch of an active file
+FETCH="-b 0 -d 0 -g 0 -o aK -p 0 -q 12 -s 0 -t 0 -v 2"
+# args used to merge two active files
+MERGE="-b 0 -d 0 -g 0 -m -o aK -p 0 -q 12 -s 0 -t 0 -v 3"
+# unless -q
+QUIET=true
+
+# parse args
+#
+if [ $# -gt 1 ]; then
+    if [ X"-s" = X"$1" ]; then
+	QUIET=
+	shift
+    fi
+fi
+if [ $# -ne 4 ]; then
+    echo "usage: $0 ign1 ign2 host1 host2" 1>&2
+    exit 1
+fi
+ign1="$1"
+if [ ! -s "$ign1" ]; then
+    echo "$0: host1 ignore file not found or empty: $ign1" 1>&2
+    exit 2
+fi
+ign2="$2"
+if [ ! -s "$ign2" ]; then
+    echo "$0: host2 ignore file not found or empty: $ign2" 1>&2
+    exit 3
+fi
+host1="$3"
+host2="$4"
+
+
+# Lock out others
+#
+trap 'rm -f ${LOCK}; exit 1' 0 1 2 3 15
+shlock -p $$ -f ${LOCK} || {
+    echo "$0: Locked by `cat ${LOCK}`" 1>&2
+    exit 4
+}
+
+# setup
+#
+tmp="$TMPDIR/.merge$$"
+act1="$TMPDIR/.act1$$"
+act2="$TMPDIR/.act2$$"
+trap "rm -f $tmp ${LOCK} $act1 $act2; exit" 0 1 2 3 15
+rm -f "$tmp"
+touch "$tmp"
+chmod 0600 "$tmp"
+rm -f "$act1"
+touch "$act1"
+chmod 0600 "$act1"
+rm -f "$act2"
+touch "$act2"
+chmod 0600 "$act2"
+
+# try to fetch the first active file
+#
+echo "=-= fetching $host1" >>$tmp
+eval "$ACTSYNC -i $ign1 $FETCH /dev/null $host1 > $act1 2>>$tmp"
+status=$?
+if [ "$status" -ne 0 ]; then
+
+    # We failed on our first try, so we will trice knock 3 times after
+    # waiting 5 minutes.
+    #
+    for loop in 1 2 3; do
+
+	# wait 5 minutes
+	sleep 300
+
+	# try #1
+	eval "$ACTSYNC -i $ign1 $FETCH /dev/null $host1 > $act1 2>>$tmp"
+	status=$?
+	if [ "$status" -eq "$NOSYNC" ]; then
+	    break;
+	fi
+
+	# try #2
+	eval "$ACTSYNC -i $ign1 $FETCH /dev/null $host1 > $act1 2>>$tmp"
+	status=$?
+	if [ "$status" -eq "$NOSYNC" ]; then
+	    break;
+	fi
+
+	# try #3
+	eval "$ACTSYNC -i $ign1 $FETCH /dev/null $host1 > $act1 2>>$tmp"
+	status=$?
+	if [ "$status" -eq "$NOSYNC" ]; then
+	    break;
+	fi
+    done
+
+    # give up
+    #
+    if [ "$status" -ne 0 ]; then
+	echo "=-= `date` merge $host1 $host2 exit $status" 1>&2
+	sed -e 's/^/    /' < "$tmp" 1>&2
+	exit "$status"
+    fi
+fi
+if [ ! -s "$act1" ]; then
+    echo "$0: host1 active file not found or empty: $act1" 1>&2
+    exit 5
+fi
+
+# try to fetch the second active file
+#
+echo "=-= fetching $host2" >>$tmp
+eval "$ACTSYNC -i $ign2 $FETCH /dev/null $host2 > $act2 2>>$tmp"
+status=$?
+if [ "$status" -ne 0 ]; then
+
+    # We failed on our first try, so we will trice knock 3 times after
+    # waiting 5 minutes.
+    #
+    for loop in 1 2 3; do
+
+	# wait 5 minutes
+	sleep 300
+
+	# try #1
+	eval "$ACTSYNC -i $ign2 $FETCH /dev/null $host2 > $act2 2>>$tmp"
+	status=$?
+	if [ "$status" -eq "$NOSYNC" ]; then
+	    break;
+	fi
+
+	# try #2
+	eval "$ACTSYNC -i $ign2 $FETCH /dev/null $host2 > $act2 2>>$tmp"
+	status=$?
+	if [ "$status" -eq "$NOSYNC" ]; then
+	    break;
+	fi
+
+	# try #3
+	eval "$ACTSYNC -i $ign2 $FETCH /dev/null $host2 > $act2 2>>$tmp"
+	status=$?
+	if [ "$status" -eq "$NOSYNC" ]; then
+	    break;
+	fi
+    done
+
+    # give up
+    #
+    if [ "$status" -ne 0 ]; then
+	echo "=-= `date` merge $host1 $host2 exit $status" 1>&2
+	sed -e 's/^/    /' < "$tmp" 1>&2
+	exit "$status"
+    fi
+fi
+if [ ! -s "$act2" ]; then
+    echo "$0: host2 active file not found or empty: $act2" 1>&2
+    exit 6
+fi
+
+# merge the 2 active files to stdout
+#
+echo "=-= merging $host1 and $host2" >>$tmp
+eval "$ACTSYNC $MERGE $act1 $act2" 2>>$tmp
+status=$?
+if [ "$status" -ne 0 ]; then
+    echo "=-= `date` merge $host1 $host2 exit $status" 1>&2
+    sed -e 's/^/    /' < "$tmp" 1>&2
+    exit "$status"
+fi
+
+# if not -q, send status to stderr
+#
+if [ -z "$QUIET" ]; then
+    echo "=-= `date` merge $host1 $host2 successful" 1>&2
+    sed -e 's/^/    /' < "$tmp" 1>&2
+fi
+
+# all done
+#
+rm -f "${LOCK}"
+exit 0

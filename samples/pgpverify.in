@@ -1,0 +1,148 @@
+#! /usr/bin/perl -w
+# written April 1996, tale@uunet.uu.net (David C Lawrence)
+# Version 1.2
+
+## =()<$pgp = '@<_PATH_PGP>@' ;>()=
+$pgp = '/usr/local/bin/pgp' ;
+
+# if you keep your keyring somewhere that is not the default used by pgp,
+# uncomment the next line and set appropriately.
+# $ENV{'PGPPATH'} = '/path/to/your/pgp/config';
+
+$tmp = "/tmp/pgp$$";
+
+### Exit value:
+### 0  good signature
+### 1  no signature
+### 2  unknown signature
+### 3  bad signature
+### 255 problem not directly related to pgp analysis of signature
+
+die "Usage: $0 < message\n" if @ARGV != 0;
+
+$0 =~ s(^.*/)();                # trim /path/to/prog to prog
+
+# this is, by design, case-sensitive with regards to the headers it checks.
+# it's also insistent about the colon-space rule.
+while (<>) {
+  chop;
+  last if /^$/;
+  if (/^(\S+):[ \t](.+)/) {
+    ($label, $value) = ($1, $2);
+    $dup{$label} = 1 if $header{$label};
+    $header{$label} = $value;
+  } elsif (/^\s/) {
+    &fail("$0: non-header line at $_\n") unless $label;
+    $header{$label} .= "\n$_";
+  } else {
+    &fail("$0: non-header line at $_\n");
+  }
+}
+
+$pgpheader = "X-PGP-Sig";
+exit 1 unless $_ = $header{$pgpheader}; # no signature
+
+# this regexp might be too strict about the structure of pgp signature lines
+$sep = "\n[ \t]+";
+$r64 = '[a-zA-Z0-9+/]';
+&fail("$0: $pgpheader not in expected format\n")
+  unless /^(\S+) (\S+)(($sep$r64{64})+$sep$r64+=?=$sep=$r64{4})$/;
+
+($version, $signed_headers, $signature) = ($1, $2, $3);
+$signature =~ s/\n[ \t]+/\n/g;
+
+$message  = "-----BEGIN PGP SIGNED MESSAGE-----\n\n";
+$message .= "X-Signed-Headers: $signed_headers\n";
+foreach $label (split(",", $signed_headers)) {
+  &fail("$0: duplicate signed $label header, can't verify\n")
+    if $dup{$label};
+  $message .= "$label: ";
+  $message .= "$header{$label}" if $header{$label};
+  $message .= "\n";
+}
+$message .= "\n";               # end of headers
+
+while (<>) {                    # read body lines
+  s/^-/- -/;                    # pgp quote ("ASCII armor") dashes
+  $message .= $_;               # append to output string
+}
+
+$message .= "\n-----BEGIN PGP SIGNATURE-----\n";
+$message .= "Version: $version\n";
+$message .= $signature;
+$message .= "\n-----END PGP SIGNATURE-----\n";
+
+open(TMP,"> $tmp") || &fail("$0: open > $tmp: $!\n");
+print TMP $message;
+close(TMP) || warn "$0: close > $tmp: $!\n";
+&fail("$0: write error for message to check\n")
+  if -s $tmp != length($message);
+
+&fail("$0: $pgp does not exist.\n") if ( ! -f $pgp ) ;
+&fail("$0: $pgp is not executable\n") if ( ! -x $pgp ) ;
+
+$ENV{'LANGUAGE'} = 'en';        # force English for pgp messages
+$ok = 2;                        # unknown signature result is default
+open(PGP,"$pgp -f < $tmp 2>&1 >/dev/null |") ||
+  &fail("$0: failed to execute pgp: $!\n");
+
+$/ = "\n";
+while (<PGP>) {
+  # MIT PGP 2.6.2:
+  #   Good signature from user "Robert Braver <rbraver@ohww.norman.ok.us>".
+  # ViaCrypt PGP 4.0:
+  #   Good signature from user:  Robert Braver <rbraver@ohww.norman.ok.us>
+  if (/^Good signature from user(:  (.*)| "(.*)"\.)$/) {
+    $ok = 0;
+    $signer = $+;
+  } elsif (/^Bad signature /) {
+    $ok = 3;
+  }
+}
+close(PGP) || warn "$0: closing pgp pipe returned status $?\n";
+unlink("$tmp") || warn "$0: unlink $tmp: $!\n";
+
+print "$signer\n" if $signer;
+exit $ok;
+
+sub
+fail
+
+{
+  unlink($tmp);
+  print STDERR $_[0];
+  exit 255;
+}
+
+# Our lawyer told me to include the following.  The upshot of it is
+# that you can use the software for free as much as you like.
+
+# Copyright (c) 1996 UUNET Technologies, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. All advertising materials mentioning features or use of this software
+#    must display the following acknowledgement:
+#      This product includes software developed by UUNET Technologies, Inc.
+# 4. The name of UUNET Technologies ("UUNET") may not be used to endorse or
+#    promote products derived from this software without specific prior
+#    written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY UUNET ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL UUNET BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+# OF THE POSSIBILITY OF SUCH DAMAGE.

@@ -1,0 +1,6 @@
+## $Revision$
+## 
+## Any hosts listed in this file will be permitted to connect past the
+## limits set up by the `-i' and `-X' flags to innd.
+##
+localhost

@@ -1,0 +1,85 @@
+#! /bin/sh
+##  $Revision$
+##  News boot script.  Runs as "news" user.  Requires inndstart be
+##  setuid root.  Run from rc.whatever as:
+##     su news -c /path/to/rc.news >/dev/console
+
+
+##  =()<. @<_PATH_SHELLVARS>@>()=
+. /var/news/etc/innshellvars
+
+##  Pick ${INND} or ${INNDSTART}
+WHAT=${INNDSTART}
+##  Set to true or false
+DOINNWATCH=true
+MAIL="${MAILCMD} -s 'Boot-time Usenet warning on `hostname`' ${NEWSMASTER}"
+
+##  RFLAG is set below; set FLAGS as appropriate.
+RFLAG=""
+FLAGS="-i0"
+
+##  Clean shutdown?
+if [ -f ${SERVERPID} ] ; then
+    echo 'INND:  PID file exists -- unclean shutdown!'
+    RFLAG="-r"
+fi
+
+if [ ! -f ${NEWSLIB}/.news.daily ] ; then
+    echo 'No .news.daily file; need to run news.daily?' | eval ${MAIL}
+else
+    case `find ${NEWSLIB}/.news.daily -mtime +1 -print 2>/dev/null` in
+    "")
+	;;
+    *)
+	echo 'Old .news.daily file; need to run news.daily?' | eval ${MAIL}
+	;;
+    esac
+fi
+
+##  Active file recovery.
+if [ ! -s ${ACTIVE} ] ; then
+    if [ -s ${NEWACTIVE} ] ; then
+	mv ${NEWACTIVE} ${ACTIVE}
+    else
+	if [ -s ${OLDACTIVE} ] ; then
+	    cp ${OLDACTIVE} ${ACTIVE}
+	else
+	    echo 'INND:   No active file!'
+	    exit 1
+	fi
+    fi
+    RFLAG="-r"
+    # You might want to rebuild the DBZ database, too:
+    #cd ${NEWSLIB} \
+    #		&& makehistory -r \
+    #		&& mv history.n.dir history.dir \
+    #		&& mv history.n.pag history.pag
+fi
+
+##  Remove temporary batchfiles and lock files.
+( cd ${BATCH} && rm -f bch* )
+( cd ${LOCKS} && rm -f LOCK* )
+( cd ${TEMPSOCKDIR} && rm -f ${TEMPSOCK} )
+rm -f ${NEWSCONTROL} ${NNTPCONNECT} ${SERVERPID}
+
+##  Start the show.
+echo 'Starting innd.'
+eval ${WHAT} ${RFLAG} ${FLAGS}
+
+# Gee, looks like lisp, doesn't it?
+${DOINNWATCH} && {
+    ( sleep 60 ; ${INNWATCH} ) &
+}
+
+RMFILE=${MOST_LOGS}/expire.rm
+for F in ${RMFILE} ${RMFILE}.*; do
+    if [ -f $F -a -s $F ] ; then
+	echo "Removing articles from pre-downtime expire run (${F})."
+	(
+	    echo 'System shut down during expire.' \
+		'Unlinking articles listed in'
+	    echo ${F}
+	) | eval ${MAIL}
+	${NEWSBIN}/expirerm ${F}
+    fi
+done

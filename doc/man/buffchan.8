@@ -1,0 +1,200 @@
+.\" $Revision$
+.TH BUFFCHAN 8
+.SH NAME
+buffchan \- buffered file-writing backend for InterNetNews
+.SH SYNOPSIS
+.B buffchan
+[
+.B \-b
+]
+[
+.BI \-c " lines"
+]
+[
+.BI \-C " seconds"
+]
+[
+.BI \-d " directory"
+]
+[
+.BI \-f " fields"
+]
+[
+.BI \-m " map"
+]
+[
+.BI \-p " pidfile"
+]
+[
+.BI \-l " lines"
+]
+[
+.BI \-L " seconds"
+]
+[
+.B \-r
+]
+[
+.BI \-s " file_format"
+]
+[
+.B \-u
+]
+.SH DESCRIPTION
+.I Buffchan
+reads lines from standard input and copies certain fields in
+each line into files named by other fields within the line.
+.I Buffchan
+is intended to be called by
+.IR innd (8)
+as an exploder feed.
+.SH OPTIONS
+.TP
+.B \-b
+Once
+.I buffchan
+opens a file it keeps it open.
+The input must therefore never specify more files than can the
+number of available descriptors can keep open.
+If the ``\fB\-b\fP'' flag is used, the program will allocate a buffer and
+attach it to the file using
+.IR setbuf (3).
+.TP
+.B \-c
+If the ``\fB\-c\fP'' flag is used with a number
+.IR n ,
+then
+.I buffchan
+will close, and re-open, a file after every
+.I n
+lines are written to a file.
+.TP
+.B \-C
+Similarly, the ``\fB\-C\fP'' flag may be used to specify that all files should
+be closed and re-opened every
+.I n
+seconds.
+.TP
+.B \-d
+The ``\fB\-d\fP'' flag may be used to specify a directory the program should
+change to before starting.
+If this flag is used, then the default for the ``\fB\-s\fP'' flag is changed to
+be a simple ``%s.''
+.TP
+.B \-f
+Buffchan
+input is interpreted as a set of lines.
+Each line contains a fixed number of initial fields, followed by a
+variable number of filename fields.
+All fields in a line are separated by whitespace.
+The default number of initial fields is one; the ``\fB\-f\fP''
+flag may be
+used to specify a different number of fields.
+See
+.IR filechan (8)
+for an example.
+.TP
+.B \-p
+If the ``\fB\-p\fP'' flag is used, the program will write a line containing
+its process ID (in text) to the specified file.
+.TP
+.B \-l
+If the ``\fB\-l\fP'' flag is used with a number
+.IR n ,
+then
+.I buffchan
+will call
+.IR fflush (3)
+after every
+.I n
+lines are written to a file.
+.TP
+.B \-L
+If the ``\fB\-L\fP'' flag is used with a number
+.IR n ,
+then all files will be flushed every
+.I n
+seconds.
+.TP
+.B \-r
+By default, the program sets its standard error to
+.\" =()<.IR @<_PATH_ERRLOG>@ .>()=
+.IR /var/log/news/errlog .
+To suppress this redirection, use the ``\fB\-r\fP'' flag.
+.TP
+.B \-s
+After the initial fields, each remaining field names a file to
+write.
+The ``\fB\-s\fP'' flag may be used to specify a format string that maps
+the field to a file name.
+This is a
+.IR sprintf (3)
+format string which should have a single ``%s'' parameter which will be given
+the field.
+The default value is
+.\" =()<.IR @<_PATH_BATCHDIR>@/ %s.>()=
+.IR /var/news/spool/out.going/ %s.
+See the description of this flag in
+.IR filechan (8).
+.TP
+.B \-u
+If the ``\fB\-u\fP'' flag is used, the program will request unbuffered output.
+.PP
+.I Buffchan
+can be invoked as an exploder feed (see
+.IR newsfeeds (5)).
+As such, if a line starts with an exclamation point it will be treated
+as a command.
+There are three commands, described below:
+.TP
+.B flush
+The ``flush'' command closes and re-opens
+all open files; ``flush\ xxx'' which flushes only the specified site.
+These are analogous to the
+.IR ctlinnd (8)
+\&``flush'' command, 
+and can be achieved by doing a ``send\ "flush\ xxx"'' command.
+Applications can tell that the ``flush'' has completed by renaming the
+file before issuing the command;
+.I buffchan
+has completed the command when the original filename re-appears.
+.\" =()<.if '@<HAVE_FCHMOD>@'DO' \{\>()=
+.if 'DO'DO' \{\
+.IP 
+.I Buffchan
+also changes the access permissions of the file from read-only for
+everyone to read-write for owner and group as it flushes or closes each
+output file.
+It will change the modes back to read-only if it re-opens the same file.\}
+.TP
+.B drop
+The ``drop'' command is similar to the ``flush'' command except that any
+files are not re-opened.
+If given an argument, then the specified site is dropped, otherwise all
+sites are dropped.
+(Note that the site will be restarted if the input stream mentions the
+site.)
+When a
+.I ctlinnd
+\&``drop site'' command is sent,
+.I innd
+will automatically forward the command to
+.I buffchan
+if the site is a funnel that feeds into this exploder.
+To drop all sites, use the
+.I ctlinnd
+\&``send buffchan-site drop'' command.
+.TP
+.B readmap
+The map file (specified with the ``\-m'' flag) is reloaded.
+.SH HISTORY
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+.SH "SEE ALSO"
+ctlinnd(8),
+filechan(8),
+innd(8),
+newsfeeds(5).

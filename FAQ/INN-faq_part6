@@ -1,0 +1,1068 @@
+Newsgroups: news.software.nntp,news.software.b,news.answers
+Approved: hwr@pilhuhn.de
+Followup-To: news.software.nntp
+Subject: INN FAQ Part 6/9: Day-to-day operation and changes to the system
+Summary: This article is part 6 of a multi-part FAQ:
+	Part 6: Day-to-day operational questions.  Some big changes you can make, bug warnings for 1.4, 1.3, 1.2.
+
+Posted-By: post_faq 2.10
+Archive-name: usenet/software/inn-faq/part6
+Last Changed: $Date$ $Revision$
+
+                  Part 6 of 9
+ 
+INN FAQ Part 1: General and questions from people that don't (yet) run INN
+INN FAQ Part 2: Specific notes for specific operating systems
+INN FAQ Part 3: Reasons why INN isn't starting
+INN FAQ Part 4: The debugging tutorial (setup of feeds etc.)
+INN FAQ Part 5: Other error messages and what they mean
+INN FAQ Part 6: Day-to-day operation and changes to the system
+INN FAQ Part 7: Problems with INN already running
+INN FAQ Part 8: Appendix A: Norman's install guide
+INN FAQ Part 9: Appendix B: Configurations for certain systems
+
+ 
+------------------------------
+ 
+Subject:  Table Of Contents for Part 6/9
+ 
+=====================================================================
+  TABLE OF CONTENTS FOR PART 6/9
+=====================================================================
+
+DAY-TO-DAY OPERATIONAL QUESTIONS:
+	6.1 How do I create all those directories in the newsspool?
+	6.2 Why is /usr/lib/news/newsgroups not found?
+	6.3 Safe way to edit the "active" file?
+	6.4 What's the best way to upgrade to a new version of INN?
+	6.5 How do I talk to innd from C or Perl?
+	6.6 After a crash.
+	6.7 How do I moderate a mailing list?
+	6.8 How do I configure the /usr/lib/news/moderators file?
+	6.9 Listing every article
+	6.10 How does /remember/ in expire.ctl work?
+	6.11 What does the output of expire -v mean?
+HOW DO I... (Big changes you can make to the system):
+	6.12 How do I set up a delayed IHAVE/SENDME over NNTP?
+	6.13 I want compressed news, but do not have uucp
+	6.14 Can I use gzip with INN?
+	6.15 What do I do if /var/spool/news is split over multiple partitions?
+	6.16 Sun Online Disk Suite for news spool?
+	6.17 Add local newsgroups?
+	6.18 Archiving expired articles
+	6.19 How do I restrict access on certain newsgroups (like alt.sex)
+	6.20 INN on one machine, UUCP modem on a different one
+	6.21 Setting up proxy-nntp to talk through a firewall
+	6.22 How do I set up inpaths with INN?
+	6.23 Fill different types of control messages in different directories?
+	6.24 Use more than ~100 Feeds on SunOS 4.1 ?
+	6.25 Speed up NNTP Transfers ("Streaming NNTP")
+	6.26 I don't want all those reject messages from rnews in syslog
+BUGS IN 1.4:
+	6.27 Security Patch
+	6.28 Looping Select Patch
+BUGS IN 1.3 and 1.2: 
+	6.29 7-bit encoded batches are not correctly processed. Why is this?
+	6.30 NOV (overchan) doesn't work well.
+	6.31 Why doesn't nntpget work?
+
+
+=====================================================================
+                  DAY-TO-DAY OPERATIONAL QUESTIONS
+=====================================================================
+
+
+------------------------------
+
+Subject: (6.1) How do I create all those directories in the newsspool?
+
+Q:  For example, if you receive comp.sys.amiga.applications, do you
+have to mkdir /var/spool/news/comp/sys/amiga/applications?
+
+A:  Nope.  innd creates the directory for you the first time you
+receive an article for that newsgroup.
+
+------------------------------
+
+Subject: (6.2) Why is /usr/lib/news/newsgroups not found?
+
+The latest rev is in:
+        ftp://ftp.uu.net/networking/news/config/newsgroups.Z
+or in	ftp://ftp.sunet.se/pub/news/config/
+Get it and install it.
+
+------------------------------
+
+Subject: (6.3) Safe way to edit the "active" file?
+
+First of all, you could manipulate the active file using the ctlinnd
+"newgroup", "rmgroup" and "changegroup" commands.  However, sometimes
+you just need to do a lot of editing all at once:
+
+The following sequence is the shortest:
+
+	ctlinnd pause "edit active"
+	[do something to the active file]
+	inncheck
+	ctlinnd reload active "edit active"
+	ctlinnd go "edit active"
+
+Simple!  No need to "flush" since the "pause" does that.
+
+> What if I need to delete 3000 lines from my active file?
+
+I would definitely edit the active file manually (using
+the above procedure).
+
+> What if I need to delete 10 lines from my active file?
+
+For a couple quick changes, I recommend using "ctlinnd".  This is a
+little slow because all channels are closed and reopened after each
+"rmgroup", "newgroup", and "changegroup".  However, it's easier than
+remembering the above sequence.
+
+DO NOT THROTTLE THE SERVER WHEN DOING MULTIPLE rmgroup COMMANDS.  There
+is a bug in INN (all versions) that will shred your active file if you
+do multiple "rmgroup" messages while the server if throttled.  This is
+a common mistake.  People think the "rmgroup"'s will go faster if the
+server is throttled.  It will go faster, it will also shred your active
+file.
+
+If you have a large number of groups to remove or create, you can use
+awk to write a script to do the work for you.
+
+	% cat thelist
+	alt.foo.bar
+	alt.delete.me
+	comp.sys.mac
+	% awk <thelist '{ print "ctlinnd rmgroup " $1 }'
+	ctlinnd rmgroup alt.foo.bar
+	ctlinnd rmgroup alt.delete.me
+	ctlinnd rmgroup comp.sys.mac
+
+Now, you can either send the output of that to "| sh -x",
+or you can redirect the output to a file, and "source" the
+file.
+
+If you want to create a bunch of newsgroups, the awk
+command might be like this:
+
+	% awk <thelist \
+	'{ print "ctlinnd newgroup " $1 " y user@host" }' | sh -x
+
+Be aware that news.daily also throttles the server at some time so
+verify the state of the server before doing ctlinnd {rm,new}group.
+
+------------------------------
+
+Subject: (6.4) What's the best way to upgrade to a new version of INN?
+
+First, you should read the README and the Install.ms (yes, read
+them both... again).   Things change in new versions.
+
+Second, the README explains how to do an upgrade.  This document
+is redundant, but explains the procedure in more detail.
+
+STEP 1:  Copy the values in the old config.data to your new config.data.
+You can do this automaticly with this trick:
+
+	% cd config
+	% make subst
+	% cp config.dist config.data
+	% ./subst -f {OLDFILE} config.data
+where "{OLDFILE}" names your old config.data file.
+
+STEP 2:  Edit the config.data to see if you want to change any of
+the new settings that didn't exist in the old version's config.data
+file.
+
+STEP 3: Compile everything:
+
+	% cd $INN
+	% make all
+(you can run "make world", which also runs "lint".  If you don't
+know what "lint" is, just ignore anything it outputs.  If it bombs,
+run "make all" instead.)
+
+STEP 4: When you feel you are ready to install the new files shut down
+	the old daemon:
+
+	% ctlinnd shutdown 'upgrade in progress'
+	[ kill innwatch by hand if you need to ]
+
+STEP 4: Install the new files:
+
+	% cd $INN
+	% make update
+
+STEP 5: Now update all your $INN/site files to be the same as they were
+for your old software.  "cd $INN/site ; make diff-installed" will tell
+you what's different between the files in /usr/lib/news and $INN/site.
+If you only make changes in the $INN/site directory and use "make
+install" to copy them into place you'll save your self a lot of
+trouble.  Read $INN/site/Makefile for more interesting things that
+"make" can do.
+
+STEP 6: When you feel you are ready to install the new $INN/site files:
+
+	# cd $INN/site
+	# make install
+
+STEP 7: Re-start the system:
+
+	% sh /usr/lib/news/etc/rc.news
+
+STEP 8: If everything was done right you should be up and running.
+Parts 3 and 4 of the FAQ gives tips on testing your configuration.
+
+
+------------------------------
+
+Subject: (6.5) How do I talk to innd from C or Perl?
+
+Rich Salz says:
+
+If you are writing C, look at doc/inndcomm.3 and include/inndcomm.h;
+they include all you need to do any ctlinnd command (in fact, ctlinnd
+itself is little more than a call to the library).
+
+Hacking up a Perl subroutine that spoke to innd's Unix-domain control
+socket should be fairly straightforward but hasn't yet been written.
+
+------------------------------
+
+Subject: (6.6) After a crash.
+
+"What do I do after a system crash?"
+
+INN handles crashes pretty well.  If there are any problems they
+get cleaned up by the nightly expire.  About once a month you
+might want to run "makehistory -buv" to look for "lost" articles.
+Check the man page for "makehistory" for more information.
+(The man page for "makehistory" is in the news-recovery man
+page until INN 1.4). 
+The manpage is a little unclear about the '-n' flag. If used alone 
+(e.g. makehistory -n) it does not rebuild the dbz files. But if used 
+in conjunction with -bu (e.g. makehistory -bunv) it does not pause 
+the server.
+
+See also #5.11.
+
+------------------------------
+
+Subject: (6.7) How do I moderate a mailing list?
+
+Ask your news administrator.  If you are the news administrator, read
+RFC 1036.  (also, refer to "How do I configure the
+/usr/lib/news/moderators file?")
+
+Hint: The relevant part of RFC 1036 is " 2.2.11 Approved ".
+
+See also #5.32, #6.8
+
+------------------------------
+
+Subject: (6.8) How do I configure the /usr/lib/news/moderators file?
+
+Q: The 'moderators' file that comes with INN has only the following
+lines:
+
+	gnu.*:%s@tut.cis.ohio-state.edu
+	*:%s@uunet.uu.net
+
+Should this be changed?  That is, if at Usenet site, does the news
+admin have to configure this file in order for INN to email the local
+posts to moderated newsgroups to the correct moderator?  In this case
+then, every time a new moderated group is created, and/or changes its
+moderator, it should be necessary to change this file.
+
+A: Fortunately not! But also see below.
+
+First of all, the default configuration says, "The moderator for
+foo.bar is foo-bar@uunet.uu.net".  The good people at UUNET keep mail
+aliases for all the moderated newsgroups so that as moderators come and
+go, they will always forward to the correct person.
+
+A: But it also wouldn't be bad ...
+
+The default entry could/should be changed to:
+
+*:%s@moderators.uu.net
+
+as this points to several servers around the world which have the
+records. This is good to balance the load on the servers. See the MX
+entry to see what servers there are. Be careful with that change, as
+the response packet is too large for a UDP response and the nameserver
+has to switch to TCP connections in order to get the response;
+unfortunately not all nameservers are able to do this.
+
+Refer to the "How to Construct the Mailpaths File" FAQ, for an
+explanation of the moderation mechanism.  This article explains the
+'mailpaths' file from C News, which is similar in nature to the INN's
+'moderators' file although with a different syntax.
+
+The file 'moderators' could be modified, though, according to that
+article.  For example, there are other sites that do what UUNET does,
+and they might be closer to you.
+
+Also, you might want to take a look to the inn.conf(5) man page to read
+the 'moderatormailer' parameter description.
+
+See also: #6.7, #5.32
+
+------------------------------
+
+Subject: (6.9) Listing every article
+
+People often ask for a way to list every file in the newsspool.  There
+are a couple ways of doing this.  They work well for INN as well as C
+News:
+
+1. Here's the fastest way.  However, it only lists the files that are
+actually in the history file and if an article is crossposted it only
+gets listed once:
+
+#!/bin/sh
+. /usr/lib/news/innshellvars
+cd ${SPOOL}
+awk '(NF > 2){print $3}' < ${HISTORY} | tr . /
+
+Sorting the output will improve directory cache efficiency.
+
+2. This lists any article file no matter how many links
+you have, etc. and even if it is not listed in the history
+file:
+
+	cd /var/spool/news
+	gfind . -regex '.*/[0-9][0-9]*$' -print
+
+NOTE: GNU find will execute this much faster than the "find" that
+comes with most versions of Unix (including SunOS).
+
+3. If you need to do something fancier than what find can do, consider
+using perl's find2perl program.  Given a find command line, find2perl
+will output the perl code to do the same thing.  You can then modify
+the output to do what you want.  For example:
+
+	find2perl . -mtime +30 -name '[0-9][0-9]*$' -exec '/bin/rm {}'
+
+outputs a perl script that deletes any article that is over 30 days old
+(except the regular expression is output as wrong...  change it to:
+
+	/^[0-9]+$/ &&
+
+and it should work just fine.
+
+4. Another efficient way to scan all articles in the spool, including
+those that for some reason aren't in the history file, is to read the
+active file for a list of newsgroup names, and chdir() to each
+directory to scan for files.  Remember *not* to do a recursive treewalk
+for each directory.
+
+------------------------------
+
+Subject: (6.10) How does /remember/ in expire.ctl work?
+
+(from Jerry Aguirre)
+The /remember/ time specifies how long a history only (i.e. a entry that 
+only is in history, but where the article is no longer there) entry will
+be kept measured from the arrival time.  If the expire value is 14 days
+and the /remember/ time is 5 then entries will be kept for 15 days.
+This is because the /remember/ only applies to entries after that
+articles have expired.  It can not force a history entry to be removed
+before the article is expired.  The extra day beyond expire might be
+considered a harmless bug in expire.
+
+------------------------------
+
+Subject: (6.11) What does the output of ``expire -v1'' mean?
+
+(Based on a submission from Chris Johnson <cj@sra.com>)
+
+Running expire with -v1 option produces output like:
+
+        Removed approximately    764913k
+        Article lines processed  1044872
+        Articles retained         872883
+        Entries expired           171989
+        Files unlinked            239657
+        Old entries dropped            0
+        Old entries retained      103038
+
+"Article lines processed": the number of lines in the the history file
+	that were read by the expire program (it reads through the entire
+	history file when it runs)
+
+"Articles retained": the lines left in the history file after some of the 
+	lines (entries) are dropped.
+
+"Entries expired": the number of entries/articles listed in the history 
+	file that were deemed old enough to be deleted; this equals
+	"Article lines processed" - "Articles retained"
+
+"Files unlinked": the number of files deleted from the file system where 
+	1 file equals 1 article; however, this number can be much higher than 
+	"Entries expired" because a single entry can be posted to multiple groups
+	and you get 1 file for each group it is posted to
+
+"Old entries dropped": lines deleted from the history file that are only 
+	present because of the value of /remember/ in expire.ctl
+
+"Old entries retained": lines left in the history file for articles that 
+	have already expired
+
+(Note that running expire with -t option articles are not deleted from
+filesystem and the output changes slightly to: Would remove
+approximately 103623k). Running expire with -z option also does not
+remove files, but writes a list of files to be removed (see entries
+about "delayrm" and "fastrm" in this FAQ) See also the manpage for
+expire ...
+
+=====================================================================
+        HOW DO I... (Big changes you can make to the system)
+=====================================================================
+
+------------------------------
+
+Subject: (6.12) How do I set up a delayed IHAVE/SENDME over NNTP?
+
+Christophe Wolfhugel <Christophe.Wolfhugel@grasp.insa-lyon.fr> writes:
+
+Having some of your NNTP newsfeeds delayed by a fixed amount of time is
+a good way to reduce your bandwidth requirements, or a good way to set
+up a backup-feed.  By including a Wt flag in your newsfeeds file, INN
+will insert timestamp entries in that batchfile, channels, or
+exploders.  This timestamp can be used to implement delayed
+ihave/sendme processing.  INN's senders (like innxmit) do not use that
+data yet.  However, NNTPLINK does support this delayed IHAVE/SENDME
+mechanism since release 3.3  (NNTPLINK can be found on
+shape.mps.ohio-state.edu:/pub/nntplink/nntplink.tar.gz).
+
+HOW TO DO IT:
+
+The syntax that you would use in your newsfeeds file would be:
+
+	site:*:Tf,Wtmn:
+
+and run this command now and then:
+
+	nntplink -i batchfile -y 300 -b site news.site.fr
+
+The delayed IHAVE/SENDME is expected to allow bandwidth savings in
+situations where all sites use nntplink in following topology:
+
+	Your site -- 64k -----------+-----------  Site 1
+	                            |               |
+	                            |              2mb
+	                            |               |
+	                            +------------ Site 2
+
+   Site 1 and 2 are in the same metropolitan area, you feed them both.
+   With the standard nntplink layout, you generally send all articles
+   twice, which is a waste even if you're at 2 Meg/s link and even if
+   Site 1 and 2 do nntplinks, you're faster.
+
+   The delayed link would be used between your site and Site 2.  A 2 or
+   3 minute delay allows Site 1 to feed Site 2 before you, and in case
+   of a Site 1 outage the backup starts nearly immediately.
+
+   Reasonable delays are still kept as You -> 1 -> 2 should take less
+   than one minute (or just 300 ms disk to disk if using nntplink -i ? :)).
+
+Experiences seem to show that a 2 to 3 minutes delay is
+a reasonable choice.
+
+Chris
+
+------------------------------
+
+Subject: (6.13) I want compressed news, but do not have uucp
+
+There is an extension to the nntp Protocol called XBatch. XBatch
+lets you tunnel binary data through a nntp connection. The batches
+will be put in a separate directory on the receiving host, where they
+can then be fed into rnews.
+
+Before trying xbatch make sure, that you can get news via nntp!!!
+
+To be able to receive XBatch batches you have to patch innd with the
+following patch:
+
+ftp://ftp.math.psu.edu/pub/INN/contrib/innxbatch-for-inn-1.4.tar.gz
+
+The remote has to to install the innxbatch binary, which also is in 
+the patch.
+
+After successfully patching inn, you can check that the server really 
+accepts xbatch (from a host which is in your hosts.nntp):
+
+132 % telnet your.news.host.pilhuhn.de nntp
+xbatch 3  <-- you type
+339			result code
+abc       <-- you type
+239		    successfully accepted
+
+You then want to install the following, which processes incoming 
+batches (put it in the crontab for news):
+
+cd /usr/spool/news/in.coming/xbatch
+mv * ..
+rnews -U
+
+There is a unxbatch coming with the patch, but I find the above more
+useful.
+
+The remote creates the batches as it would do for uucp, but instead
+of feeding them to uux they write it to a file, where is then fetched
+by innxbatch (there is a sendxbatches script in the Patch):
+
+% batcher -p "(echo \"#! cunbatch\" > /news/x.batch/$site.\$\$; compress >> /news/x.batch/$site.\$\$)" $site $site.togo
+% innxbatch  "$host" /news/x.batch/$site.*
+
+/news/x.batch is here a directory, where these outgoing batches are stored
+until transmission.
+
+------------------------------
+
+Subject: (6.14) Can I use gzip with INN?
+
+[this was written with the help of Michael Brouwer
+<michael@tar.wft.stack.urc.tue.nl>]
+
+There are three things that can be effected by using gzip:  Compression
+of old logs, compressing batches to send out, and decompressing batches
+that come in.
+
+With INN 1.4 all you need to do is change two lines in config.data to
+something like this:
+
+COMPRESS                /usr/local/bin/gzip
+DOTZ                    .gz
+
+If you rebuild INN with these options set, all logs will be gzipped, and rnews
+will use gzip to decompress news.
+
+gzip will automaticly and transparently decompress UNIX Compress, SCO
+UNIX Compress (I'm told it's 99% compatible with UNIX Compress), Pack,
+and gzip.  Therefore, you can now receive batches compressed with any
+of the above listed formats.  Let's say your site is now has "a
+universal decompresser".
+
+It has been reported that if you hardlink gzip to be zcat, and make
+sure that it is the zcat that INN uses, you can get the "universal
+decompresser" without having to use gzip for your logs.  (Though, gzip
+for your logs is a big win, so why make trouble for yourself?)
+
+`send-uucp' will still use compress for outgoing batches, so the sites
+you feed won't suddenly start getting data they don't understand.
+
+Before you can send gzipped batches, you should make sure that the
+sites that you feed have made the above changes so that they have the
+"universal decompresser" too.
+
+Edit send-uucp to use gzip instead of compress for certain hosts (see
+example of using compress -b12 for the host esac in send-uucp),
+outgoing batches will be gzipped.
+
+If you use sendbatch, you will have to edit the file so that COMPRESS
+is set to "gzip" and COMPFLAGS is set to "-9vc".
+
+------------------------------
+
+Subject: (6.15) What do I do if /var/spool/news is split over multiple partitions?
+
+READ THIS ENTIRE SECTION BEFORE YOU BEGIN.
+
+First of all, you can do this by either mounting a filesystem at
+/var/spool/news/comp (for example) or by mounting a filesystem anywhere
+and making /var/spool/news/comp a symbolic link to the new partition.
+
+Articles will be written as normal, but cross-posts have to be handled
+specially now.  Usually INN handles crossposts by writing the article
+to the first newssgroup, and then creating hard links to all the other
+places where the article should appear.  Hard links do not take up
+additional disk space (except making your directories longer).  Hard
+links also have the advantage that the file data doesn't get deleted
+until the last hard link is gone (and they can be deleted in any
+order).  Therefore, you can expire each newsgroup at a different rate,
+but the file data won't delete until it is expired from the last
+newsgroup.
+
+The problem is that two hard linked files must both be on the same
+filesystem (partition).
+
+When INN sees that it can not make a hard link (because an article is
+cross-posted across two partitions) it will try to make a symbolic
+link.  If your system can not do symbolic links, set HAVE_SYMLINKS to
+DONT in your config.data file.  This will make INN write a second
+(or third, etc.) copy of the file instead.  (NOTE: INN 1.4 doesn't
+make the extra files.  This feature is planned for INN 1.5.)
+
+Anyway, even though INN will automatically create symbolic links, you
+have to give expire the "-l" flag so that it will know to modify its
+behavior.  Suppose that a message is posted to rec.photo and
+alt.cameras and suppose that rec.photo expires more quickly then the
+alt group.  If this happens, then you will be left with a dangling
+symlink.  The -l flag prevents this from happening by not removing
+the file from rec.photos until alt.cameras expire time permits it
+from being deleted.
+
+To inform expire that your spool is split across multiple partitions:
+
+In news.daily, change:
+	EXPIREFLAGS="-v1"
+to read
+	EXPIREFLAGS="-v1 -l"
+
+In expirerm, change:
+	RMPROC="fastrm -e -u -s ${SPOOL}"
+to read
+	RMPROC="fastrm -e -s ${SPOOL}"
+
+Now edit innwatch.ctl so that it checks all the spool disks, not just
+".".  See the lines with "No space (spool)".
+
+Lastly, edit innstat (the line with the "df") so that all spool disks
+are included.  After that, you're done!
+
+If you ever need to run "makehistory" you should pay attention to the
+caveat in makehistory(8) (NB: This man page is called "news-recovery"
+in releases before INN 1.5):
+ 
+MOVING THE FILES:
+
+Here is an example of moving /var/spool/news/rec to its own
+partition:
+	(mount the new disk onto /mnt)
+	cd /var/spool/news/rec
+	tar cf - . | ( cd /mnt && tar xpvf - )
+	If you are confident you did it right, "rm -rf /var/spool/news/rec"
+	then "mkdir /var/spool/news/rec".
+	umount /mnt
+	mount /var/spool/news/rec
+
+If you are moving >50% of the spool, you might use dump instead of tar:
+	dump 0f - /var/spool/news | ( cd /mnt && restore xf - rec)
+But try it out first if it is really faster - some people had much better 
+success with using a tar-pipe (as above) using GnuTar (10 times faster). 
+If you don't mind about article loss, just deleting the articles would 
+be fastest:
+	cd /var/spool/news
+	mv rec rec.o
+	mkdir rec
+	mount /dev/newdisk /var/spool/news/rec
+	rm -rf rec.o
+
+Remember:  If you screw up the /etc/fstab, SunOS and many other UNIXs
+won't boot.  fstab can't have any blank lines in many UNIXs either.
+Double check the file after you modify it.
+
+------------------------------
+
+Subject: (6.16) Sun Online Disk Suite for news spool?
+
+Another way under SunOS 4.1.[34] not to use multiple partitions is 
+to use the Sun Online Disk Suite. 
+Several sites use this and have spool capacities up to 12 GB. It has 
+been reported that using a stripe size of 1 cylinder gives the best
+performance for the article filesystem.
+Chris Schmidt <cs@germany.eu.net> elaborates more:
+
+  "You add several physical volumes to get a logical volume. We have 
+a meta partition made out of three 2GB disks with one partition each.
+df shows:
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/md1a            5878350 4831490  752943    87%    /EUnet/news/spool
+
+With the Online Disk Suite you also can do striping to balance the 
+load among the used disks: the first cylinder is on the first disk, 
+the second on the second one, the third on the third one and the 
+fourth on the first disk again .."
+
+------------------------------
+
+Subject: (6.17) Add local newsgroups?
+
+Q: Does anyone have a cookbook example on how to create a local news group?
+
+These are the steps ..
+
+1) Make sure your innd is running
+2) Add the group with: ctlinnd newgroup local.group
+3) Add entries to newsfeeds to restrict the local groups to your 
+   organization:
+	ME:!local.*::
+
+	out.going.site:*,!local.*:Tf,Wnm:
+4) Add a descriptive entry to newsgroups
+5) Ready :)
+
+Please consider, that local is a very common name for local groups, so
+if a user crossposts to local.test and misc.test the article will show
+up in all local.test over the world. So please choose a 'better' name.
+
+------------------------------
+
+Subject: (6.18) Archiving expired articles
+
+In <2hmomh$262@news.iastate.edu> rod@iastate.edu writes:
+>What options do I have in INN for archiving local newsgroups?
+>Any help would be appreciated. Any cookbook examples would also help.
+
+See doc/archive.8.  You could also put "never:never:never" in your
+expire.ctl file.
+
+Here's a cookbook example of an archive feed:
+	# Feed all moderated source postings to an archiver
+	source-archive!:!*,*sources*,!*wanted*,!*.d\
+		:Tc,Nm,Wn:/usr/local/bin/archive -f -i /usr/spool/news.archive/INDEX
+
+Ulf Kieber <uk1@irz.inf.tu-dresden.de> writes:
+The INN 1.4 newsfeeds(5) man page show how to set up a /program/ feed
+for archive.  The "archive" program currently does NOT support this
+method.  i.e. do not use Tp in "newsfeeds" for an archive feed.
+
+Even if "archive" supported being used as a program feed, you would not
+want to use it as such if you intended to use the ``-i'' flag as
+archive does not do any file locking on it's index file.  The index
+file might get corrupted by multiple concurrently running instances of
+archive, as may happen with a program feed.
+
+------------------------------
+
+Subject: (6.19) How do I restrict access on certain newsgroups (like alt.sex)
+
+>If I were running a news server, and some of my users complained that they
+>didn't want their kids being able to access some of the newsgroups, would it
+>be possible to block access to specific newsgroups on a per-user basis?
+
+>I'm not asking if it's easy, just _possible_.
+
+If they are not using NNTP for reading, you can make a /etc/group entry
+for a group called something special, like "horny" and give only users
+in group horny access to read that directory:
+
+	chown news /var/spool/news/alt/sex
+	chgrp horny /var/spool/news/alt/sex
+	chmod 750 /var/spool/news/alt/sex
+	chmod 750 /var/spool/news/over.view/alt/sex	# your NOV data
+	chmod 770 /var/spool/news/in.coming
+	chmod 770 /var/spool/news/out.going
+
+Now only people in the group "horny" can read that newsgroup.  Everyone
+can subscribe to it, but only horny people can read it.  innd (which
+runs as "news") will still be able to do its business.
+
+Inn 1.4 has a authentication scheme called authinfo for use with NNTP. 
+The user must supply a name and a password. if they match an entry in 
+nnrp.access then the user may read the groups specific to this entry. 
+An example entry for nnrpd.access:
+
+----------
+*.pilhuhn.de:R P:::*,!pilhuhn.foo
+:R P:hwr:XXX:*
+----------
+
+Here users from hosts *.pilhuhn.de may read and post in all groups
+besides pilhuhn.foo. If a user authenticates a user hwr with password
+XXX then he or she might also read pilhuhn.foo.
+In order to be able to authenticate as user ``hwr'' in the above
+example, the host where this ``hwr'' connects from also must have read
+rights. So this
+
+---------
+:R P:hwr:XXX:*
+---------
+as only entry in nnrpd.access won't work, but the following will work:
+
+---------
+*:R:::*,!pilhuhn.foo
+:R P:hwr:XXX:*
+---------
+
+Note that those 'password entries' need to be last in nnrp.access.
+There is a bug in inn1.4 which allows users to post to such a protected 
+group if they know the name of the group even if they can't read it. 
+nnrp.access-auth.patch (on the usual patch site) cures this.
+
+If the newsreader software doesn't support this then you can still restrict 
+access on a per-host basis.  To read a specific group you then need to be
+on a specific machine (but then everybody on that machine can read the group).
+
+In 1.5 there will be a better protocol for doing this and it should
+gain better acceptance than the current protocol.
+
+------------------------------
+
+Subject:  (6.20) INN on one machine, UUCP modem on a different one
+
+Say you have a machine named "newsy" and "modemhead".  "newsy" runs INN
+but only "modemhead" has any modems.
+
+A quick overview:  config.data has a variable called "RNEWSLOCALCONNECT".
+If it is set to "DO", "rnews" will expect to be running on the same
+machine as "innd".  On the other hand, if "RNEWSLOCALCONNECT" is set to
+"DONT" then "rnews" will connect to the machine listed in "inn.conf".
+Sending batches is a little more complicated.
+
+Receiving batches on modemhead:  Make sure config.data has
+"RNEWSLOCALCONNECT" set to "DONT", recompile, and copy /bin/rnews and
+/usr/lib/news/inn.conf to modemhead.  The unbatching will be done on
+modemhead, but the articles will be sent to newsy.  It will work like
+magic.  When /bin/rnews runs, it will open an NNTP connection to newsy
+and feed the batch (one article at a time) to newsy... newsy thinks
+it's just getting a regular NNTP feed.  (which means modemhead has to
+be listed in hosts.nntp).  If newsy and modemhead are different platforms
+(i.e. Ultrix vs. SunOS) you can use the MakeRnews script (mentioned
+in Install.ms) to generate just rnews for the modemhead machine.
+
+Sending batches via modemhead:  The "sendbatch" program calls $(UUX).
+Change ${UUX} to be something like "rsh modemhead uux" instead of "uux".
+You'll have to do a little hacking on sendbatch.  For example, the part
+that checks to see if the queue is full might have to be re-written.
+Anyway... now the batches will be generated and send via modemhead's
+UUCP system.
+
+Pretty neat, eh?
+
+Other advice:
+
+I set UUX to 'rsh uucphost uux' (note no pipe [|]).
+Also, we have no 'uuq' command, but even if we did, it would have
+	returned bogus info as $SITE is not known to UUCP on newshost.
+	Thus I created a stupid 'uuq' that does 'echo 0 0 0 0 0 0 0'
+	to satisfy the awk script.  However, we have no way to monitor
+	queue length (though its of little importance to us as we only have
+	3 feeds and they are partial)
+Finally, the /etc/passwd entry for 'news' on 'uucphost' MUST list /bin/sh;
+	/bin/csh results in 'rnews: event not found' and escaping the '!'
+	inside sendbatch had no effect.
+
+------------------------------
+
+Subject: (6.21) Setting up proxy-nntp to talk through a firewall
+
+Try ftp.cs.cmu.edu:misc/dnntpd/dnntpd.tar.Z
+
+or look at backends/rcompressed.c in the INN distribution.
+
+------------------------------
+
+Subject: (6.22) How do I set up inpaths with INN?
+
+inpaths should work just fine with INN as it ships.  However, you can
+make it run faster by using the following shell script.  Edit it to
+your tastes.  It replaces the long "(cd /var/spool/news ;
+/usr/local/bin/gfind . -type f -print | /usr/lib/news/local/inpaths sdl
+| /usr/ucb/mail admin,pathsurvey@pathsurvey.eu.org)" which people usually
+use.
+
+#!/bin/sh
+. /usr/lib/news/innshellvars
+cd ${SPOOL}
+awk '(NF > 2){print $3}' < ${HISTORY} | tr . / | sort | \
+inpaths `innconfval pathhost` | \
+${MAILCMD} newsmaster,pathsurvey@pathsurvey.eu.org
+
+If the inpaths people would include this information in the
+README, I could delete it from this FAQ.
+
+------------------------------
+
+Subject: (6.23) Fill different types of control messages in different directories?
+
+If you want to keep newgroup messages longer and expire cancel messages after
+half a day you can do the following:
+
+Create the groups control.newgroup and control.cancel
+
+ctlinnd newgroup control.newgroup
+ctlinnd newgroup control.cancel
+
+Add the following to expire.ctl:
+
+control.*:A:1:2:4
+control.sendsys:A:10:15:21
+control.newgroup:A:10:15:21
+
+so all control messages typically expire after 2 days, but sendsys and 
+newgroup messages are normally kept for 15 days.
+You should also change newsfeeds appropriately to reflect the changes that
+control now is a group and a hierarchy.
+
+------------------------------
+
+Subject: (6.24) Use more than ~100 Feeds on SunOS 4.1 ?
+
+SunOS 4.1 normally has a limit of 256 file descriptors per process. But
+unfortunately there is a bug in stdio (the use of a _signed_ char ) which
+lets one only use 128 file descriptors.
+One way would be to use an exploder feed (like bufchan).
+The other is:
+   There is a stdio replacement called sfio which you can get from 
+http://netlib.att.com/netlib/attgifts/sfio.shar.Z
+Just compile it as indicated in the package. After that, you must tweak
+config.data a bit to use sfio:
+
+DEFS            -I../include -I/usr/local/include/sfio
+CC              gcc
+CFLAGS          $(DEFS) -O2
+DBZCFLAGS      $(CFLAGS) -DMMAP
+LDFLAGS         (empty)
+LIBS            -L/usr/local/lib/sfio -lsfio
+VAR_STYLE       STDARGS (important! sfio doesn't like varargs if compiled ANSI)
+NOFILE_LIMIT    -1
+EXITVAL         volatile void
+_EXITVAL        volatile void
+
+Just recompile inn then and go for it.
+
+If you even need more than 256 descriptors, then you can use SunDBE (the
+Sun Databese Excelerator) which raises the limit from 256 to 1024.
+Thanks to Christopher Davis <ckd@loiosh.kei.com> for this tip.
+
+------------------------------
+
+Subject: (6.25) Speed up NNTP Transfers ("Streaming NNTP")
+
+Normal NNTP uses the folling scheme to transfr articles:
+
+Sender                    Receiver
+  ---> Ihave <some Message>
+   Ok send it to mee       <---
+  --->  sends the actual message 
+   Says 'this was ok'    <---
+
+This procedure uses 2*RTT on the link (rtt = round trip time) plus time
+for the actual article transfer. Jerry Aguirre has rewritten NNTP code
+so that it now sends a list of message ids to remote which checks it and
+returns a value if it is to be sent. With each message sent Streaming NNTP
+also sends a new message-id to check so that the flow of news keeps 
+streaming.
+
+Advantages of Streaming NNTP are
+- Fast even on lines with a high rtt (e.g. satelite links)
+- faster than normal nntp
+- compatible as innxmit has a autofallback to normal nntp
+
+Disadvanatges are
+- INN gets more compute intensive
+- Streaming NNTP can fill a 64kB line that much that working 
+over it via telnet gets a real pain.
+
+------------------------------
+
+Subject: (6.26) I don't want all those reject messages from rnews in syslog
+
+Rnews is logging those rejects via syslog. The level is determined
+at compile time via what you tell it in config.data:
+
+#  Informational notice, usually not worth caring about.
+### =()<L_NOTICE               @<L_NOTICE>@>()=
+L_NOTICE                LOG_WARNING
+
+So in this case you need to tell you syslogd to log only messages
+above level warning.
+
+=====================================================================
+                           INFO ABOUT 1.5
+=====================================================================
+
+INN 1.5 hasn't been released yet.  However, people constantly mis-type
+"INN 1.5" when they mean "INN 1.4".  The bug is in the human posting
+the message, not the software.
+
+Release date for 1.5:  Unknown by even the author. Currently it is in
+beta stage.
+
+New features in 1.5:
+
+1)  Fix memory leaks in makehistory, thereby speeding it up.
+
+2)  Posting always allowed, even when server is throttled.
+
+3)  Operating systems that require HAVE_UNIX_DOMAIN set to DONT won't
+	be so, uh, handicapped.
+
+4)  A global killfile controlled by a function you write in TCL.
+	(Start learning TCL now if you want to stay totally hip.)
+	These Scripts can be issued on every article you receive.
+	Also a perl version is available.
+
+5)  More interesting ways to control access to nnrpd.
+
+6)  More support for systems that don't have symbolic links.
+
+7)  Free beer.
+
+8)  Just kidding about #6 and #7.
+
+None of these features prevent you from having a happy,
+healthy and productive life with INN 1.4sec or one of the unoff
+versions.
+
+DO NOT ASK RICH ABOUT 1.5.  IT WILL BE RELEASED WHEN IT IS DONE, NOT
+WHEN SUFFICIENT NUMBERS OF PEOPLE HAVE ASKED WHEN IT WILL BE FINISHED.
+Post to news.software.nntp if you have questions about features.
+As you can find elsewhere in this faq: Rich isn't even maintaining it
+any longer (but someone else is ..)
+
+=====================================================================
+                             BUGS IN 1.4
+=====================================================================
+
+UNOFFICIAL patches for INN 1.4 are available via anonymous FTP at
+ftp://ftp.math.psu.edu/pub/INN/patches
+
+The file ftp://ftp.math.psu.edu/pub/INN/patches/README describes
+each of the UNOFFICIAL patches.
+
+The ones that are highly recommended are:
+
+1.4-to-1.4sec     -- Fixes the major security hole in INN.
+1.4sec-to-1.4sec2 -- Fixes the remaining known security hole in INN.
+select-loop-bug.patch -- Under some circumstances innd can lose track
+		of a file descriptor and end up sitting in a select()
+		loop.  If your INN suddenly is using up tons of CPU
+		time and not getting much done, install this UNOFFICIAL
+		patch.  Some OSs are more susceptible to this bug.
+
+THERE ARE MANY MORE at that site, many add some useful features.
+
+There is a replacement for innwatch that is written in Perl.  Get it from
+"ftp://ftp.univ-lyon1.fr/pub/unix/news/inn/contrib/innwatch-beta2.pl.gz".
+This directory is mirrored on ftp://ftp.math.psu.edu/pub/INN/contrib
+
+
+=====================================================================
+                             BUGS IN 1.3 and 1.2
+                 (Hey, it's 1996!  Upgrade already!)
+=====================================================================
+
+
+------------------------------
+
+Subject: (6.29) 7-bit encoded batches are not correctly processed. Why is this?
+
+Chris Schmidt <cs@germany.eu.net> replies:
+
+The decode program that comes with INN up to version 1.3 is broken.
+Because of that the last article in a 7bit encoded batch will not
+correctly be decoded (the last characters are screwed up).  This is
+fixed in INN 1.4.
+
+------------------------------
+
+Subject: (6.30) NOV (overchan) doesn't work well.
+
+Correct.  The NOV support in 1.3 didn't have all the bugs worked out.
+Don't use NOV under INN 1.3.  Better yet, upgrade to at least 1.4sec 
+and get all the benefits!
+
+------------------------------
+
+Subject: (6.31) Why doesn't nntpget work?
+
+The nntpget in INN 1.2 doesn't work.  Period.  Upgrade to the latest
+version of INN.
+

@@ -1,0 +1,26 @@
+#! /bin/sh
+##  $Revision$
+##  Sendme control-message handler
+
+PROG=sendme
+##  Some shells don't pass in $* unless we explicitly pass it in here.
+##  =()<. @<_PATH_PARSECTL>@ "$@">()=
+. /var/news/etc/parsecontrol "$@"
+
+case ${ACTION} in
+mail)
+    sed -e 's/^~/~~/' <${ARTICLE} \
+	| ${MAILCMD} -s "sendme by ${FROM}" ${NEWSMASTER}
+    ;;
+doit)
+    ##  Scan the message body.
+    ${SED} -e '1,/^$/d' <${ARTICLE} | grephistory -s >${TEMP}
+    if [ -s ${TEMP} ]; then
+	## xxx Need to lock the work file?
+	cat ${TEMP} >>${BATCH}/${PATHHOST}.work
+    fi
+    rm -f ${TEMP}
+    ;;
+esac
+
+exit

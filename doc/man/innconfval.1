@@ -1,0 +1,37 @@
+.\" $Revision$
+.TH INNCONFVAL 1
+.SH NAME
+innconfval \- get an InterNetNews configuration parameter
+.SH SYNOPSIS
+.B innconfval
+[
+.B \-f
+]
+[
+.I parameter...
+]
+.SH DESCRIPTION
+.I Innconfval
+prints the values of the parameters specified on the command line.
+Values are retrieved from the
+.IR inn.conf (5)
+file and are described there.
+.SH OPTIONS
+.TP
+.B \-f
+Values are retrieved by using the
+.I GetFileConfigValue
+if the ``\fB\-f\fP'' flag is used. Otherwise the 
+.I GetConfigValue
+routine is used.
+Both are described in
+.IR libinn (3).
+.SH HISTORY
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+.SH "SEE ALSO"
+libinn(3),
+inn.conf(5).

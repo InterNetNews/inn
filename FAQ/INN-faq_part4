@@ -1,0 +1,1168 @@
+Newsgroups: news.software.nntp,news.software.b,news.answers
+Approved: hwr@pilhuhn.de
+Subject: INN FAQ Part 4/9: Debugging & Configuring Information
+Followup-To: news.software.nntp
+Summary: This article is part 4 of a multi-part FAQ:
+	Part 4: Read this AFTER you've read and followed the directions in Install.ms.  This includes a tutorial on debugging posting/access problems. 
+
+Posted-By: post_faq 2.10
+Archive-name: usenet/software/inn-faq/part4
+Last Changed: $Date$ $Revision$
+
+                  Part 4 of 9
+
+INN FAQ Part 1: General and questions from people that don't (yet) run INN
+INN FAQ Part 2: Specific notes for specific operating systems
+INN FAQ Part 3: Reasons why INN isn't starting
+INN FAQ Part 4: The debugging tutorial (setup of feeds etc.)
+INN FAQ Part 5: Other error messages and what they mean
+INN FAQ Part 6: Day-to-day operation and changes to the system
+INN FAQ Part 7: Problems with INN already running
+INN FAQ Part 8: Appendix A: Norman's install guide
+INN FAQ Part 9: Appendix B: Configurations for certain systems
+ 
+ 
+------------------------------
+ 
+Subject:  Table Of Contents for Part 4/9
+ 
+=====================================================================
+     TABLE OF CONTENTS FOR PART 4/9:  Debugging Guide & Tutorial
+=====================================================================
+
+THE DEBUGGING TUTORIAL:
+	4.1 Should I read the Install.ms file in its entirety before reading this document?
+	4.2 Terminology used in the rest of this document.
+	4.3 How does it all fit together?
+	4.4 What should I monitor as I debug INN problems?
+	4.5 My innd won't start!
+	4.6 Connecting to a TCP/IP server.
+	4.7 Make sure that "feeders" can connect.
+	4.8 Make sure that "readers" can connect.
+	4.9 Make sure that clients can post.
+	4.10 "client" doesn't have the software needed to post.
+	4.11 Introduction to the "newsfeeds" file
+	4.12 The ME line in the newsfeeds file.
+	4.13 How does the "ME" line interact with the other lines?
+	4.14 Cookbook example of an outgoing NNTP feed.
+	4.15 Cookbook example of an outgoing UUCP feed.
+	4.16 Cookbook example of an outgoing UUCP-over-TCP feed.
+	4.17 Testing an outgoing feed (your "newsfeeds" configuration).
+	4.18 Other cron jobs.
+	4.19 Cookbook example of setting up NOV ("overchan").
+	4.20 How do I use nntplink with INN?
+	4.21 How do I use innfeed with INN ?
+	4.22 How do I gate news to mail and/or mail to news?
+
+
+=====================================================================
+                       THE DEBUGGING TUTORIAL
+                (or, What do I do after Install.ms?)
+=====================================================================
+
+
+------------------------------
+
+Subject: (4.1) Should I read the Install.ms file in its entirety before reading this document?
+
+YES!  Install.ms tells you how to compile and install the software.
+This document walks you through debugging the *configuration* of the
+software once it is installed.
+
+This document takes you from where install.ms leaves off, gives you a
+quick overview of how all the pieces fit together, and then takes you
+through specific debugging tasks.
+
+Debugging INN problems is often difficult because one needs to be an
+experienced netnews person to do it well.  You can only get experience
+by having a properly running system.  This is a catch-22.  This
+tutorial attempts to take you through the basics.  The rest you'll
+figure out.
+
+Newsgroups you should know exist:
+news:news.software.nntp  -- INN questions go here.
+news:news.software.b     -- Discussions about any of the many software
+	packages that support the "B news" format (i.e. INN, C news,
+	ANU-NEWS, etc.)
+
+This document also takes you through the process of verifying that your
+system is properly configured.  When you are done, you should:
+
+1.  be sure that when feeders connect they are treated as feeders.
+
+2.  be sure that when clients connect they are treated as clients.
+
+3.  be sure that posting works.
+
+4.  be sure that your out-bound feeds are properly configured.
+
+
+------------------------------
+
+Subject: (4.2) Terminology used in the rest of this document.
+
+We will pretend that your machine is named "nntphost" or
+"nntphost.do.main" and that there is a client named "client" or
+"client.do.main".
+
+Some machines connect to you to try to feed you new articles.  We'll
+call these machines "feeders".  Some machines try to connect to you to
+read and/or post articles.  We'll call these machines "readers".
+
+
+------------------------------
+
+Subject: (4.3) How does it all fit together?
+
+Here is a fantastic overview of the workings of INN.
+
+From: Ken Hornstein <kenh@leps5.phys.psu.edu>
+
+I discovered that the biggest problem I had with INN was understanding how
+everything fits together (since I had no experience with B or C news).
+Here's a (hopefully) simple description of how everything fits
+together:
+
+After running rc.news (as "root"), you should have the "innd" daemon
+running ("ps" will show the process to be owned by "news").  This is
+the Master Daemon.  It handles incoming connections, stores the
+articles on your disk, but does _not_ send any articles out itself.  It
+directs other programs to do that.  Exactly where articles are sent and
+how they are sent is determined by the "newsfeeds" file.  Setting up
+your newsfeeds file will be the hardest part of configuring INN.  Here
+are some example entries from my newsfeeds file:
+
+ra/ra.nrl.navy.mil\
+		:*,!psu.*/!psu\
+		:Tf,Wnm:
+
+Looks complicated?  It isn't.  Here's what it means:
+
+"ra" is the name of the feed.  "/ra.nrl.navy.mil" is an alias for ra.
+This is important because INN uses the "Path" header to insure the
+articles are not sent to sites where they have already been.  Thus, any
+article that has "ra" or "ra.nrl.navy.mil" in the Path header will NOT
+be sent to this site.  We know that no other site inserts "ra.nrl.navy.mil"
+because it is a FQDN (Fully Qualified Domain Name).  We know that no
+other site inserts "ra" because it is registered in the UUCP Maps.
+(Ok, "ra" isn't registered so I'm just taking a small gamble.)
+
+The second line tells what articles will be sent out to this site.
+"*,!psu.*" means that articles for (all newsgroups minus those that
+match "psu.*") will be sent to ra.  The details of the pattern matching
+is found in the wildmat(3) man page.  The "/!psu" means that articles
+with a "Distribution" header of psu will also not be sent to ra.
+
+The last field specifies exactly what _kind_ of feeds.  "Tf" means this
+is a file feed.  Unless you have unusual requirements, all of your
+feeds will be file feeds.  "Wnm" means that the relative path name and
+the Message-ID of the article will be written to this file.  The "n"
+means "relative path name", the "m" means "Message-ID of the article".
+The newsfeeds(5) man page explains all the letters you can use with
+"W".  By default, the output file is called the same name as your feed
+file, and is in your out.going directory.  So on my system, every
+article destined to ra will have its filename and Message-ID written to
+the file "/var/spool/news/out.going/ra".
+
+So how do the articles actually GET to ra?  You run a program that
+reads the feeds file and transmits the article.  Two such programs are
+included with INN -- "send-nntp" and "nntpsend".  My personal
+preference is for nntpsend.  If you are going to use nntpsend, you will
+need to add a similar line to your nntpsend.ctl file:
+
+ra:ra.nrl.navy.mil
+
+This tells nntpsend that articles in the feed file "ra" should be sent
+to the site "ra.nrl.navy.mil".  I run nntpsend out of cron every 10
+minutes with this line:
+
+(in "news"'s cron)
+0,10,20,30,40,50 * * * * /usr/local/news/bin/nntpsend
+
+Or, if you use an old-style cron (like Ultrix does):
+0,10,20,30,40,50 * * * * /bin/su news -c '/usr/local/news/bin/nntpsend'
+
+UUCP feeds work similarly and are described in a different section.
+
+As each article comes in (note that hosts feeding you _must_ be listed
+in the hosts.nntp file), innd will examine it and distribute to your
+listed feeds based on the above-described selection criteria.
+
+Another important thing to do is to make sure your articles get
+expired.  This is done from the "news.daily" script.  The "expire.ctl"
+file describes how long you want each article to last.  Here are some
+sample lines from my expire.ctl:
+
+/remember/:14
+
+This line tells expire to keep history entries for articles at least 14
+days.
+
+*:A:1:7:21
+
+This is the default line.  This says that by default, an article is
+kept a minimum of one day, the default expiration time is 7 days (this
+applies if there is no "Expires" header), and the very maximum that the
+article is kept is 21 days.
+
+psu.*:A:1:14:28
+
+This line applies to groups only in Penn State.  By default, those
+articles will last 14 days, 28 days at the most.
+
+Note that lines in expire.ctl should have the most general entries
+first, with the most specific entries last.
+
+Lastly, where do newsreaders fit in?  When a newsreader connects to the
+innd process, it sees that this is not a feeder (the hosts.nntp file
+lists only sitest that feed YOU) so it forks a nnrpd process and hands
+the connection to it.  This way innd can concentrate on newsfeeds.
+Some newsreaders don't open a connection, but instead read the articles
+out of "/usr/spool/news" (and gets meta data from "/usr/lib/news").
+INN doesn't need to do anything about those readers except to make
+sure the right data is where they expect it.
+
+
+------------------------------
+
+Subject: (4.4) What should I monitor as I debug INN problems?
+
+1.  run "tail -f /var/adm/messages" to see if any syslog messages are
+being generated.
+
+2.  run "tail -f /var/log/news/news.err" to see if any fatal errors
+happen. 
+
+3.  Check for incoming email constantly (especially when trying to post
+from "nn").
+
+
+------------------------------
+
+Subject: (4.5) My innd won't start!
+
+Keep a "tail -f /var/adm/messages" running.  INN reports most errors
+via syslog.  The syslog messages usually explain what is wrong.
+Elsewhere in this document are details about some of the less obvious
+syslog messages.
+
+Chances are, INN is starting, finding a misconfigured "ME" line in the
+newsfeeds file, and exiting.  You might want to read the section on
+configuring your "newsfeeds" file first.
+
+Rich Salz says a common reason is that you ran makehistory but didn't
+rename the DBZ files.  "makehistory" generates history.n.dir
+and history.n.pag.  They must be renamed:
+	mv history.n.dir history.dir
+	mv history.n.pag history.pag
+(In the future, you could run "makehistory -f history", which is a
+little more risky... so read the man page before you use it.  "makehistory"
+is part of the man page "news-recovery".  This will change in 1.5.)
+
+Izar Tarandach <izar@cs.huji.ac.il> suggests that another common
+mistake is that innd wasn't being started by the correct uid.  innd
+(and therefore rc.news) must be started from "root" (not "news").  It
+immediately turns itself in user "news" once certain tasks are
+completed.
+
+If you use a suid root inndstart, you can run it as any user.
+
+
+------------------------------
+
+Subject: (4.6) Connecting to a TCP/IP server.
+
+You know that "telnet"'ing to a machine lets you log into it.  You are
+actually connecting on the "telnet" port (port 23).  Many TCP/IP
+services allow you to "telnet" into their port and talk directly to
+them.  Try "telnet nntphost 21".  This means log into port #21 (the
+"ftp" port) instead of the usual remote login port.
+
+Once you are in, you'll get no prompt.  Type "help" and press RETURN.
+You should get a list of commands.  If you know what the commands are,
+you can talk to this server.  Type "quit" and press RETURN to get out.
+
+After every command you should get some kind of status message.  Each
+line will begin with a number.  Each message has a unique number.
+Errors are defined as anything that starts with a number >= 400.
+Positive (non-error) messages are <400.
+
+SMTP (mail) and NNTP (netnews) work the same way.  Telnet into their
+port and issue commands and data.  "quit" always gets you out.
+
+We'll use this to debug INN configurations by "telnet"'ing into the
+innd server and seeing the raw error messages it gives us.
+
+Try "telnet"'ing into the NNTP port (#119) of a working NNTP server to
+see what it's like.
+
+
+------------------------------
+
+Subject: (4.7) Make sure that "feeders" can connect.
+
+"feeders" are listed in hosts.nntp.  "readers" are listed in
+nnrp.access.  This section deals with "feeders" and hosts.nntp.
+
+When a machine connects to the NNTP port of nntphost, it connects to
+the innd process.  innd knows the internet address of the machine that
+is making this connection, and sees if it matches the internet
+addresses many of the machines listed in the hosts.nntp file.
+
+If the machine is not listed in hosts.nntp, it is assumed that this
+machine is not a "feeder" and forks off a nnrpd to handle this
+connection as a "reader".  If you didn't know that, you didn't read
+enough of the INN installation documentation.  Go back and read it
+now.
+
+Read the man page hosts.nntp to get a complete understanding of what's
+going on.  nnrpd uses its own authentication scheme, which is
+described in the next section.
+
+Since I know you didn't read that man page, I'll give you one more
+chance to read it now.
+
+Let's configure hosts.nntp.  Just enter the names of all the machines
+that feed you:
+
+feeder1.do.main:
+feeder2.do.main:
+
+I don't use passwords yet.  If you do, add them after the ":".
+
+Now let's test to see if the feeder can connect properly.
+
+Log into to the feeder and "telnet nntphost 119".
+
+If you can't log into a feeder, configure your own machine as a feeder
+(i.e. feeder to itself) for testing purposes.  Once you can see that
+INN is treating that machine as a feeder you can replace the machine's
+name with the name of a real feed.
+
+If you are given an error message and booted out, check the error
+message to see what's wrong.  Maybe the machine is running maintenance
+at the time and you have to try again later.  Maybe the machine doesn't
+recognize you at all and you have to edit "hosts.nntp" (and don't
+forget the "ctlinnd reload hosts.nntp" command!).
+
+Run "inncheck" to tell you if you have made any obvious mistakes.
+
+If your "history" file or other files have the wrong ownership or
+protections INN will mention the offending file in the error message.
+Another common mistake is that people try to use wildcards in
+hosts.nntp (which is not supported).  Remember, there are very few
+machines that you consider to be "feeders", so you don't want to use a
+wildcard.
+
+To test a "feeder":  If "feeder1" can send an "ihave" command and get a
+"335" as a response, you know that "nntphost" is permitting "feeder1"
+to transfer news as a "feeder".  "ihave" requires an operand.  I
+usually type "ihave <1@test>" and press RETURN.  "<1@test>" is a
+Message-ID that I know doesn't exist.  If I get "500 What?" I know that
+innd assumed that I'm a "reader" (so I have to edit my "hosts.nntp"
+file and add this client).  If I get "335" and then a blank prompt,
+then INN is expecting to be fed an article.  I usually just "^]"
+(control-]) and "quit" out; I know that it was willing to accept the
+article.  If I get some other error message, it usually gives me enough
+information to debug the problem.
+
+
+------------------------------
+
+Subject: (4.8) Make sure that "readers" can connect.
+
+As I wrote before, if a connection comes from a machine that isn't
+listed in the hosts.nntp file, it is assumed to be a "reader".  A
+"feeder" can also issue the "mode reader" command to become a
+"reader".  If you have "telnet"'ed in as a "feeder", try issuing this
+command.
+
+Note: If a site is going to feed *and* read, you'll have to link
+readers with innd's client library. The reason for this is that the
+clients must tell innd that they want to read using the "mode reader"
+command.  The library does that automagically.  It is rare that you
+have a machine that is a reader and a feeder (since people will want to
+read on their local machine, not yours.)  News readers are now
+being packaged as "INN ready" so this will be less and less of a
+problem.
+
+Once the connection has been handed off to nnrpd, nnrpd checks to make
+sure you are authorized.  It does that by reading the nnrp.access
+file.
+
+There is a problem with what you enter in that file.  Namely, I might
+call the client machine "client", but that doesn't matter.  What
+matters is what "nntphost" thinks "client" is called.  Maybe "nntphost"
+thinks its name is "client.do.main" or even "137.202.177.3".  It
+doesn't matter what *you* call "client", permissions in the nnrp.access
+file have to be specified based on what "nntphost" calls "client".
+Technically, nnrpd uses gethostbyaddr() to reverse-lookup the name.
+gethostbyaddr() uses DNS or, if you are on a brain-dead Sun running
+Sun's NIS/DNS hack, it uses NIS, or DNS, or whatever the hell Sun was
+thinking when they created that cruft.
+
+To find out what "nntphost" thinks your machine is called, do the
+following:  Telnet from "client" to "nntphost" and execute the "finger"
+command (just "finger" alone on the command line).  The last column is
+what "nntphost" thinks your machine is called.
+
+If you don't have an account on both machines things are more
+difficult, consult your NIS or DNS expert to tell you what the answer
+would be.
+
+There is one exception to this technique.  If you are using SunOS and
+braindead NIS you get just the machine name (like "milk") instead of
+the FQDN (like "milk.warren.mentorg.com") then you must tack on a
+period then the domain of the machine.
+
+So, with this knowledge (what your nntphost thinks client's name is)
+and a copy of the man page, edit nnrp.access and add "nntphost"'s name
+for "client" to the file.  Unlike hosts.nntp, nnrp.access can have
+wildcards (for example, "*.sjc.mentorg.com").  You'll want to include
+wildcards for all the domains that should be allowed to read/post.
+
+Here are some decent examples from my nnrp.access file:
+
+-------------------------------------- Tom's nnrp.access file START
+## Default is no access, no way to authentication, and no groups.
+*:: -no- : -no- :!*
+*.mentorg.com:Read:::*
+*.mentor.com:Read:::*
+*.warren.mentorg.com:Read Post:::*
+-------------------------------------- Tom's nnrp.access file END
+
+The second field of "nnrp.access" is case sensitive.  "read post" does
+not mean the same as "Read Post".  If you know this already it's
+because you read the man page.
+
+Note:  nnrpd will append the domain to a name that is not a FQDN.
+There is no need to try to find a wildcard that will match non-FQDN
+names (i.e. machines in your local NIS cluster).  Previously this FAQ
+had reported that "*[^.]*" would match these short names but that was
+wrong (the wildcard matches everything, oi!).  nnrpd turns non-FQDN's
+into FQDNs.
+
+After you change "nnrp.access" you don't have do "ctlinnd reload" since
+the file is read by each nnrpd as they start up.
+
+Now "nntphost" should be letting "client" read.  Let's test this out:
+
+Log into to the reader and "telnet nntphost 119".
+
+To test a "reader":  Give the "mode reader" command and see how it
+it goes.  If it doesn't give an error, then nnrp.access is letting you
+through.  To read an article (or just get the header) type "head
+<2@test>" and press RETURN.  Again, "<2@test>" is a message-id that I
+know doesn't exist.  If you are allowed to read at all, it will tell
+you that it can't find that article.  You should try the command with an
+message-id that you know exists and make sure you see the article's
+header.
+
+If reading works you can skip to the next section.  The rest of this
+section helps you debug reading problems.
+
+If "mode reader" gives an error (and rudely disconnects you) then you
+have a typo in nnrp.access OR you didn't issue the "ctlinnd reload"
+command correctly (or at all) OR nntphost thinks that "client" is
+called yet something else OR innd can't exec nnrpd for one reason or
+another -- see the syslog output or the innd.err log file.  Check all
+of those things then go to the beginning of this section and start
+over.
+
+Note: Some telnet implementations are Real Stupid and disconnect you
+before showing the error message.
+
+You can also run nnrpd by hand if you have
+	stdin:Read Post:::*
+in your nnrp.access file.  Just run nnrpd and type interactively.  This
+is useful for making sure it's compiled right.
+
+------------------------------
+
+Subject: (4.9) Make sure that clients can post.
+
+The "inews" command (usually in /usr/local/bin) takes a post from a
+user, adds any missing headers, appends the file
+"~/.signature" (see below), and possibly replaces any headers that
+are obviously forged.  "inews" will also reject a message if the
+message is seriously botched.  "inews -h" expects a post on stdin
+beginning with headers, then a blank line, then the body.  "inews -h
+-D" doesn't post the message, but outputs what it would have posted.
+The minimum headers one can feed is "Newsgroups:" (which is plural) and
+"Subject:" (which is singular).
+
+The "~/.signature" handling has some specific rules:  INN's inews exits
+with an error if ~/.signature is (1) more than 4 lines long, (2)
+exists, but is not readable, or (3) is longer than 4k chars.  inews
+exits with an error (rather than silently reading only the first 4
+lines) to avoid a flurry of posts asking, "Why did my .signature get cut off?"
+
+By the way, a header looks like "Header-Name: data".  That is, after
+the header name there is exactly one colon then exactly one space.  The
+space is a space, not a tab.  Another picky detail is that list of
+newsgroups on the "Newsgroups:" line is a comma separated list, with no
+spaces.  There are no spaces before the colon.  If there is nothing
+after the colon or if there is only whitespace after the colon then
+that header will be removed by "inews".  Sites that don't remove such
+"empty" headers have broken software.  Get it?  Got it?  Good.
+
+Here's the test message I constantly use:
+------------------------ cut here 8<
+inews -h -D
+Newsgroups: foo.test
+Subject: test of inn posting
+
+this is a test
+------------------------ cut here 8<
+
+Exciting huh?
+
+You might also use the 'feedone' program in the frontends directory.
+Do "cd $inn/frontends ; make feedone" to get it built.  To run it, do
+
+		feedone -t -r /tmp/inews.input
+
+This will (-t) trace all I/O with the server and (-r) use a random
+message-id each time.  If you want to test posting from a newsreading
+host (i.e., one that connects to nnrpd and uses the POST command) use
+the -p flag.
+
+If inews was able to get to the /usr/lib/news/inn.conf file (for
+defaults) you should get a nice post on your screen.  If you don't,
+here are my suggestions:
+
+1 -- You have an old inews from C news or B news laying around
+2 -- inews will give you an error message saying what's wrong.
+
+You might want to look around the usual places to make sure that there
+are no old versions of "relaynews" or "inews".  People trying to use
+the "inews" from C news will get a message about "can't open
+redirection" or similar.  Make sure they are running the programs
+included with INN.  There is something called "mini-inews" which should
+just take a post and send it to the nntp server.  Delete that and
+replace it with INN's inews.  INN's inews is mini-inews and regular
+inews, it is the ying and then yang of inewses.  It is the one true
+inews.  It is the one inews to end all inewses and all others are false
+idols.
+
+Note:  False idol worshipper and heathen David Myers <dem@meaddata.com>
+reports that mini-inews works fine.  He stays with mini-inews...
+"because INN inews needs to access not only inn.conf, but moderators,
+too.  Installing and maintaining these files in a ~1000 client,
+multiple administrative domain setup like ours is too much of a pain.
+Most (all?) of the work done by INN inews is done by in.nnrpd during
+posting, anyway."
+
+Kenji Rikitake <kenji@rcac.tdi.co.jp> reports:
+"Keep in mind that INN inews refers to many environment variables.
+Beware of _inherited_ variables especially when you do su to maintain
+your news server.
+I got trapped and wasted a day with NNTPSERVER.  I tried to post to a
+local newsgroup, and inews kept refusing it and sending me 'no such
+newsgroups...' error message.  I finally found out that inews was
+looking up a wrong server, _implicitly_ specified by
+'setenv NNTPSERVER ...' in my .login script.  It took a day to find
+such a subtle misconfiguration, after a whole recompilation of entire
+INN kit, active and history rebuilding, and all possible configuration
+checking.  *sigh*"
+
+"inews -h" sometimes reports: 'Warning, can't connect to server'
+What server is it trying to connect to?  Remember, inews uses
+the NNTPSERVER environmental variable and (if that isn't set) looks
+in /usr/lib/news/inn.conf.
+
+INN's inews sometimes prints the error: "Can't get list of newsgroups,
+No such file or directory.".  inews called CAlistactive() to get a
+local copy of the active file.  If it can't reach the active file you
+get this error.  Look at your PATH_TEMPACTIVE and see if it makes
+sense; i.e., if it is a valid /tmp directory.
+
+"inews -h" sometimes reports:
+	Can't send article to the server:
+	441 480 Transfer permission denied
+This means that you set HAVE_UNIX_DOMAIN to DONT and you don't have
+your news server in its own hosts.nntp file.  (nnrpd gets a POST,
+connects to innd over a TCP socket and sends an IHAVE.) (thanks to
+Chris Jackson <cjj@sun.com> for pointing this out).  Add your news
+server's name and "localhost" to hosts.nntp and do "ctlinnd reload
+hosts.nntp".  (For the reason why, read "Warnings to people that must
+set HAVE_UNIX_DOMAIN to DONT" in part2)
+
+Chuck Huber <chuck_huber@microbilt.com> adds that this same error 
+may be caused by setting REM_STYLE to NNTP in config.data, but not
+replacing INN's clientlib.o with the reference implementation's version.
+
+
+"inews -h" sometimes reports:
+	Warning Text unavailable -- Article will be spooled.  
+This means that inews could not connect to the server, but errno
+had nothing useful, and no reply came from the server.  "It just
+didn't work."
+
+If it still doesn't work, look through your syslog to see the name
+of the host that innd got, and why it handed off to nnrpd.  Perhaps
+there is a DNS/NIS/hosts-file mismatch.  (suggested by Rich Salz)
+
+Other problems are usually the result of not being able to find the
+"inn.conf" file (copy it to the client or make it available via NFS) or
+you are using Sun's brain-dead NIS/DNS stuff which doesn't do reverse
+name lookups well.  If inews tells you that it can't generate a
+Message-ID, ("441 Can't generate Message-ID, Resource temporary unavailable."
+or such ) this is because it can't figure out your domain (which is used 
+in making the message-id string). Inews requires that gethostbyname
+returns FQDN and if doesn't then GetFQDN() fails.
+Force it to know your domain by adding a "domain:" line in "inn.conf".  
+Solaris 2.x users will get a "can't generate message-id" error if they 
+didn't follow the advice about getfqdn.c mentioned in another part of 
+this FAQ (#2.14).
+
+If you get something like:
+	500 "GROUP"" not implemented; try "help".
+This implies that the client host is in hosts.nntp, not nnrp.access.
+However, if you need to have this machine in in the hosts.nntp file
+(i.e. it is a feeder or you have an operating system that requires you
+to set HAVE_UNIX_DOMAIN to DONT) then your newsreader must send a "mode
+reader" to the server when it connects.
+
+Once you get "inews -h -D" working, do the same test without the "-D" option
+and let it actually post the message.  If it can't post, it will tell
+you why.  If the answer isn't clear enough, "telnet nntphost 119", give
+the "mode reader" command, then the "post" command.  Enter lines of
+text like you would to "inews -h" and then type "." on a line by itself
+(and press RETURN).
+
+If posting via "telnet nntphost 119" DOES work and posting via "inews -h"
+DOES NOT work, you know that (1) "inews" is compiled wrong, or more likely,
+(2) you aren't using INN's inews.  Either way, if this is happening
+you know you have narrowed your problems down to the inews program.
+
+By the way, posting to misc.test is pretty useless considering that the
+entire world doesn't need to see your message.  Post to a local
+newsgroup or even a state-wide newsgroup like "nj.test" (assuming you
+are in New Jersey).  There are lots of people that reply to every test
+message they see, so expect to get tons of stupid email.  (though, if
+you don't get any email consider yourself lucky).  Also, there is no
+newsgroup called "news.test" so don't post there.  Many try, try fail.
+By the way, if you are one of those people that reply to every test
+message they see, get a real hobby.  The convention is that replies
+are not sent to test messages with the word "IGNORE" in the Subject:.
+
+Do *NOT* post your test message to a non-test newsgroup.  You will get
+many angry replies from all over the world.  ...including the FAQ maintainer.
+
+Look at the posted message in the news spool (if you post a message to
+nj.test, "cd /var/spool/news/nj/test" and cat the highest numbered file
+you see).  If your site name is listed multiple times in the "Path:"
+header, put your server's name on the "pathhost:" line of "inn.conf"
+and recompile INN with "INEWS_PATH" set to "DONT".  (I don't know why
+Rich likes that as the default!)
+
+REMEMBER:  inn.conf is read into innd only once.  After it is changed,
+the innd daemon must be shutdown and restarted.  (use "ctlinnd shutdown x"
+and then run rc.news as root).
+
+If "inews -h" posts a message, smile because most of the battle is over.
+
+------------------------------
+
+Subject: (4.10) "client" doesn't have the software needed to post.
+
+If the client doesn't have "inews" at all, copy it from the server (if
+they are compatible machines) or check the INN installation manual to
+find out how to compile just the client programs for a machine.  There
+is a special gimmick included with INN to compile inews for the various
+other OS's and versions of Unix without having to compile the entire
+INN package.
+
+Since nnpost, Pnews, postnews, and all other news posting software
+shouldn't do anything but ask for header information, let you add a
+body, and then pipe the whole thing to "inews -h", you can be pretty
+certain that if "inews -h" works, your news posting programs will
+work.  Think again!  Post from each of them and make sure they all get
+posted.  You might find that they access a copy of "inews" that was
+part of C news, mini-inews, or heavens knows what.
+
+I highly recommend that people use "find" or "gnufind" to seek out and
+replace all old versions of "inews" with symbolic links to the one
+"official".
+
+Something like:
+
+gnufind / /usr /usr/local /usr/lib -xdev -follow -name inews\* -print
+
+Then, for every file found, do the following:
+
+mv inews inews.cnews
+ln -s /usr/local/bin/inews inews
+
+Now you only have to update /usr/local/bin/inews, rather than
+chasing may copies.
+
+"nn" and "nnpost" create a file called "~/.nn/params" right before you
+post with tons of useful information.  While posting you can shell out
+of the editor and view the file.  The file is deleted after the message
+is posted.  I had to view this file while shelled out of my editor to
+find which "inews" was being used by "nnpost".
+
+It's also a good idea to check your mail now and then while you are
+doing this.  Some newsreaders (like "nn" notify you of a posting
+problem via mail.
+
+On non-INN systems, "inews" returns pretty quickly.  Actually they fork
+a process to do the actual posting in the background.  When those
+"inews" return, you don't know if the post was successful or not.
+These "inews"'s have a "-W" option which turns off this forking feature
+(i.e. Wait for the post to complete).
+
+INN's "inews" never forks because the wait is never that long.  When
+"inews" returns you know if the post was successful or not.  INN's
+"inews" accepts the "-W" option for compatibility.
+
+This may seem obvious, but when posting a test message, consider
+including the machine you are posting from and the program you are
+using.  Even though you may check to see if the message got posted
+after every test, this will help you later when you go back to see what
+you have done.
+
+------------------------------
+
+Subject: (4.11) Introduction to the "newsfeeds" file
+
+Outgoing news is controlled by the "newsfeeds" file.  The INN 1.2 man
+page for this file is a bit complex.  The man page in 1.3 (and beyond)
+gives better examples.  Here's a "cookbook" of examples that should
+cover most of your needs.  Debugging tips are also included.
+
+Always remember that newsfeeds uses "wildmat" matches, not the
+semi-regular expressions that C news uses.  This means that if you want
+to get comp.foo and the subgroups under it (comp.foo.bar, comp.foo.baz,
+etc.) you have to use a statement like:
+
+comp.foo,comp.foo.*
+
+OR
+
+comp.foo*
+
+BUT NOT
+
+comp.foo.*
+
+However, "comp.foo*" will match "comp.foobar", as well as
+"comp.foo.bang".
+
+
+------------------------------
+
+Subject: (4.12) The ME line in the newsfeeds file.
+
+The "ME" entry is a bit confusing.  Be careful when you
+read the man page.
+
+Here is the "ME" line that I use in my "newsfeeds" file.  I find
+it works quite well, but you might want to remove the distributions
+that you don't need (i.e. New Jersey).  Since my site has clients
+reading from all over the world I try to have every distribution I
+can find.  However, I hear of a new distribution almost daily so this
+list is always changing.
+
+ME:!*/\
+news,gnu,comp,biz,alt,rec,misc,sci,soc,talk,inet,world,worldwide,all,\
+aus,su,uk,york,eunet,na,can,qc,tor,us,usa,mn,oh,chi,ca,ba,tx,pnw,il,ne,\
+ny,nyc,phl,bl,nj,warren::
+
+If you want to blindly accept all distributions, try this:
+
+ME:!*::
+
+See also the next subject on this.
+
+------------------------------
+
+Subject: (4.13) How does the "ME" line interact with the other lines?
+
+> I'm still a little confused about the ME line's second field.
+
+The man page as of INN 1.3 is much more clear on this.  Basically, the
+second field of the "ME" line specifies the default for the rest of the
+feeds.  Otherwise, it isn't used.  The "active" file declares which
+newsgroups you accept and don't accept.
+
+Here are some examples:
+
+ME:!*:::
+foo:!junk:...        --send no newsgroups
+
+ME:*:::
+foo:!junk:...        --send all newsgroups except junk
+
+ME:!*:::
+foo:*,!junk:...      --send all newsgroups except junk
+
+By the way, generally you do not want to send "junk" or "control*" to
+your neighbors.
+
+In unoff2 (and later unoffs) the ME line also can be used to reject 
+articles which have certain sites in their path header.
+
+------------------------------
+
+Subject: (4.14) Cookbook example of an outgoing NNTP feed:
+
+This example involves a machine named oddball.mentorg.com, that has an
+alias of oddball.sjc.mentorg.com, which should receive all posts (but
+control & junk should never be passed on) and not certain
+distributions.  Add the following line to newsfeeds:
+
+oddball.mentorg.com/oddball.sjc.mentorg.com:*,!control*,!junk/!local,!warren:Tf,Wnm:
+
+Have the user "news" run the following via cron:
+
+3,23,43 * * * *  /usr/lib/news/bin/nntpsend >/dev/null 2>&1
+
+(this only needs to be added once.  nntpsend refers to a file
+called nntpsend.ctl to find out what to do).
+
+Add the following to nntpsend.ctl:
+
+oddball.mentorg.com:oddball.mentorg.com::
+
+Done!
+
+------------------------------
+
+Subject: (4.15) Cookbook example of an outgoing UUCP feed:
+
+Example:  A site named "plts" that can not get the "clari" newsgroups
+or distribution "warren".
+
+Add the following to the newsfeeds file:
+
+plts:*,!clari.*,!junk*,!control*/!warren:Tf,Wnb:
+
+Add the following to the cron tab (as user "news"):
+
+0 0-5,16-23 * * 1-5       /usr/lib/news/bin/sendbatch -c plts >/dev/null 2>&1
+
+NOTE: I know that "plts" is unique and won't conflict with
+some other site named "plts" because it is registered
+in the UUCP Maps (see comp.mail.maps).
+
+If your feeder is sending you netnews via UUCP (which is usually the
+case, since it isn't useful to just feed articles and not receive any)
+you must configure your UUCP to allow the remote system to execute
+rnews.  Your UUCP documentation should tell you how to set up a UUCP
+connection and how to change the allowed commands.  That means that
+uucico will execute /bin/rnews on every incoming batch.  INN comes with
+a perfectly serviceable "rnews" program that can handle all the standard
+batched and compressed news formats.  The INN rnews will uncompress and
+unbatch as necessary and then pass each article to innd for
+processing.  (Thanks to Jerry Aguirre <jerry@roma.ATC.Olivetti.Com> for
+this paragraph)
+
+------------------------------
+
+Subject: (4.16) Cookbook example of an outgoing UUCP-over-TCP feed:
+
+Jerry Aguirre <jerry@strobe.ATC.Olivetti.Com> writes:
+
+People ask about this like it was something exotic requiring special
+setup.  Kind of like: "I know how to use a wheel barrow and I know how
+to shovel sand but how do I shovel sand in a wheel barrow?"
+
+Step 1:  Set up a UUCP/TCP connection between you and the destination
+site.  How?  Read your UUCP documentation.  If your machine's UUCP,
+and the destination machine's UUCP both supports UUCP/TCP then it will
+be documented.  If not then get a better version of UUCP.  For example,
+Taylor UUCP.
+
+Every OS sets up UUCP differently:  YOU HAVE TO READ THE DOCUMENTATION.
+
+The point is to get the UUCP/TCP link working before even thinking
+about sending news over it.  This is true of any news feed over UUCP;
+even dialup.  Try using "uucp" to copy some scratch file to the other
+end.  When you have that working then you are ready for the next step.
+
+The only "gotcha" here that I can think of is that the destination host
+may not be accepting UUCP/TCP connections.  Before wasting your time
+trying to debug do a "telnet destination.host.name uucp" and see what
+happens.  If the connection is accepted and you see a "login" banner
+then it is ready for you.  If not then ask the admin of that site to
+enable UUCP/TCP.  This is typically done by uncommenting it in
+/etc/inetd.conf and -HUPing inetd (on REAL versions of Unix).
+
+Step 2.  Set up a standard compressed news feed to the UUCP name of the
+destination site.  How?  Read your news documentation.  Setting up UUCP
+feeds is a standard, documented, procedure.  In this FAQ you'll find it
+in "Cookbook example of an outgoing UUCP feed".  Doing compression is
+nothing special, it's part of the procedure you would be doing anyway.
+It's either a flag or a slightly different command.  The news system has
+NO knowledge that this is UUCP/TCP.  For all it knows this is a
+standard dialup connection.  In fact is is possible to have the UUCP
+connection fall back to dialup if the TCP connection fails.  The news
+batching software just doesn't care.
+
+The only variation here I can think of is to make the batch size bigger
+than the default.  The 50K default was picked back in the days when
+modems were 1200 BPS (or even 300).  It is no longer appropriate for
+todays 9600 BPS or faster connections.  Using a bigger batch size cuts
+down on dead time in the connection and lets compress do a better job.
+I would go to at least 200K batches.
+
+Now maybe it would be nice to have a "cookbook", step by step, set of
+instructions on how to do this.  But UUCP seems to vary a bit between
+different versions so what might work at one place would be useless at
+another.  And setting up the news feed is going to be different between
+the different versions of news (B, C, and INN).
+
+I suggest that if people are having trouble setting up a UUCP/TCP
+connection that they post their configuration to the net and ask how it
+is done on their versions of Unix and UUCP.
+
+
+------------------------------
+
+Subject: (4.17) Testing an outgoing feed (your "newsfeeds" configuration).
+
+Here is a decent game-plan for testing your newsfeeds configuration:
+
+Suppose your site is in New Jersey and you have a distribution called
+"mentorg" which should be used by people that want to make sure that
+their post will not leave their company (Mentor Graphics).  You should
+do a test post to "nj.test" with no "Distribution:" header, and with
+"Distribution: nj" and "Distribution: mentorg".  After posting, do a
+"ctlinnd flush ''" and make sure that the /var/spool/news/out.going
+files for all your sites did/didn't queue up those three messages as
+appropriate.
+
+IMPORTANT:  Remember to do a "ctlinnd reload newsfeeds x" command every
+time you update your "newsfeeds" file!
+
+Finally, for checking out changes to newsfeeds, I've found "ctlinnd
+checkfile" handy.   "inncheck" will verify that most of your
+configuration is sane.
+
+------------------------------
+
+Subject: (4.18) Other cron jobs.
+
+Once a night you should run the "news.daily" script which will
+expire old articles, run the daily reports, etc.  It should run
+as "news" and look something like this:
+
+40 23 * * *               /usr/lib/news/bin/news.daily delayrm
+
+You should also have a line like this:
+20 * * * *                /bin/rnews -U
+
+This processes any batches or posts that came in while innd was down.
+(i.e. when users post and get a message like, "Server down, spooling
+locally" this command picks up those files and posts them).  It can't
+hurt to run this more often, but once an hour should be fine.
+
+------------------------------
+
+Subject: (4.19) Cookbook example of setting up NOV ("overchan").
+
+Now that you have your other feeds working, you might want to set up a
+NOV feed so that your NOV database is built.  Newsreaders use the NOV
+database to speed up their queries.
+
+Christophe.Wolfhugel@grasp.insa-lyon.fr (Christophe Wolfhugel) (with
+many modifications from Tom Limoncelli and further input from
+davek@melita.com (Dave Kennedy) ) writes:
+
+Step 1:  Upgrade to INN 1.4 or higher:  Most of the bugs in 1.3 were
+related with overchan.  In fact, the only reason why many people used
+1.3 without any problems was due to the fact that they were not using
+overchan (and they didn't hit on some of the bugs that appeared for
+SVR4 users, all of which were fixed in 1.4)
+
+Step 1.5:  Make sure _PATH_OVERVIEWDIR in config.data is NOT set to
+"/var/spool/news".  There is a big performance boost to be realized by
+putting the NOV files outside the /var/spool/news hierarchy.
+
+To find out why, read "Subject: overchan can't keep up." in part 7 of
+this FAQ.  You might want to read this anyway since it gives advice
+about other things to do to get better NOV performance.
+
+"/var/spool/news/over.view" is becoming the standard place to put put
+your ".overview" files.  If you do not use this location, make
+/var/spool/news/over.view a symbolic link to the correct place.  For
+performance reasons, it is a good idea to set _PATH_OVERVIEWDIR to the
+actual location of the files.  NB:  if you change config.data, you must
+do a "make all" and "make install". It is not sufficient to just give
+the -D option to overchan and expireover, as nnrpd also needs to know
+where overview data is. If it doesn't, it won't complain nor use your 
+overview data, but assume, there is none and generate it on the fly 
+which is noticeable slower than using the database.
+
+Step 2:  Make sure INN is working.  Get everything else working before
+you try to get overchan to work.  You'll only confuse yourself.
+
+Step 3:  Ponder if you have enough disk space.  NOV uses up an
+additional 10%-20% of your news spool.  This is a good 100 Mb if you
+have a full feed.  The real space savings come when you delete your
+separate databases for trn, nn, and tin and use one unified database.
+All serious newsreaders have NOV support.
+
+Step 4:  Edit "overview.fmt" (it's in the $INN/site directory, or you can
+edit it where it was installed, in /usr/lib/news ) to include
+"Xref:full" as the last line.  (i.e. uncomment out the last line).
+
+Step 5:  Add this entry to your "newsfeeds" file.  overchan gets it's data
+from a special feed.
+
+# This feeds header data to NOV:
+OVERVIEW!:*:Tc,WO:/usr/local/news/bin/overchan
+
+Read the "newsfeeds" man to make sure you understand what you've
+just done.  Do a "ctlinnd checkfile" to make sure the newsfeeds
+file has the proper syntax, then do a "ctlinnd reload newsfeeds nov"
+to make it official.
+
+Step 6: If you changed your $inn/site files, then:
+	% cd $inn/site
+	% make install
+
+Step 7: Let innd know that files have been updated:
+	% ctlinnd reload overview.fmt "Enabled XRef:"
+	% ctlinnd reload newsfeeds "Added OVERVIEW - overchan entry"
+
+Step 8: You must run "expireover -s" at least once a month.  Once a
+week is even better. This is necessary to remove overview data of
+for some reason or other left over entries. Here is a good crontab entry 
+for "news" to run:
+0 5 * * 1 /usr/lib/news/bin/expireover -s
+
+
+Step 9:  (optional) To create the original database:
+
+	(run this as "news")
+	% /usr/local/news/bin/expireover -a
+
+This step will take a long time depending on the number of articles
+already in your system.  But, if you skip this step, client access
+will be slow for articles that came in before you started "overchan".
+This is not a serious problem; you will get a lot of warnings in your
+"news.daily" output until you have received at least one new article
+in each newsgroup.
+
+Note:  "a lot of warnings" means one for every newsgroup.  This can
+make your news.daily report >6000 lines.  The lines will all look like:
+
+overchan cant open clari/local/washington/.overview, No such file or directory
+overchan cant open clari/local/sfbay/.overview, No such file or directory
+overchan cant open uc/news/.overview, No such file or directory
+
+Step 9:  Change the invocation of news.daily:
+
+In the crontab file for "news", edit the "news.daily" line to be
+something like:
+
+   news.daily delayrm expireover
+
+(the expireover is required if you use overchan)
+
+Step 10:  Inform your users that you now support "NOV, the News OverView
+database" and suggest that people switch to newsreaders that use
+newsreaders that are compliant with the Overview format.
+
+Step 11:  You are done.
+
+Step 12:  In a few weeks, drop support for mthreads, nnmaster, etc.
+(assuming you've upgraded to replacements that use NOV).  Delete all
+those old databases that might have been maintained and enjoy the newly
+gained functionality and regained disk space!
+
+Step 13: If you are running tin (mostly the 1.2 versions) then you
+will get "bad overview" messages. These don't come from inn, but from
+tin. Solution edit the source (art.c) to increase the buffer size for 
+overview information from 1024 bytes to at least 4096 bytes.
+
+------------------------------
+
+Subject: (4.20) How do I use nntplink with INN?
+
+First of all, I don't personally recommend using this program.  I feel
+that it is a gimmick.  However, if you decide to join the INN Instant
+Party, I suggest that you first run the feed using nntpsend (included
+with INN) FOR AT LEAST A WEEK.  Once you are confident that functioning
+properly, consider to switching to nntplink ONLY IF:
+
+	0.  You have read all documentation about innd and nntplink
+	1.  You have more than 3 outgoing feeds.
+	2.  You have gobs and gobs of real memory.
+	3.  Your OS has a superior mmap() & disk IO system (like SunOS)
+
+If you decide to switch, here's a cookbook example of an newsfeeds
+entry using nntplink:
+
+PLEASE make sure traditional "nntpsend"-style feeds work reliably
+before you switch to nntplink.
+
+netcomsv.netcom.com\
+	:*,!junk/!ParcPlace\
+	:Tc,Wnm,S1024:/usr/local/news/bin/nntplink -i stdin netcomsv.netcom.com
+
+INN 1.2 users should have an explicit S value (i.e. S1024 or S16384).
+Without it innd 1.2 can choke and lose data if the receiver is jammed.
+(fixed in INN 1.3).
+
+The latest version of nntplink is available from
+ftp://ftp.math.ohio-state.edu:/pub/nntplink/3.3pl2.tar.gz  (3.3 is still 
+in beta testing)
+
+Ian Phillipps <ian@dial.pipex.com> notes some criteria for using
+nntplink rather than nnptsend:
+
+> (1) If you have more than one backbone feed, you can save a lot of
+> bandwidth, without risk, if you use nntplink (less duplication of
+> articles over nearly-parallel paths).
+
+> (2) More important, if you have a large number of feeds, nntplink
+> permits them to be fed simultaneously with the same articles.  No big
+> deal, until you think of the what's going on in the pagedaemon and the
+> disk cache.
+
+> A "ps uaxr" rarely catches nntplink in the act ("D"), despite my having
+> 17 of them last time I counted. Our biggest outgoing newsfeed delivered
+> 16398 articles yesterday, using a total of 380 seconds CPU on a Sun
+> IPC, and no disk time :-)
+
+An additional note: when using nntplink in stdin mode it is fastest and
+can make use of the fact that the article might still be in disk buffers 
+when it is to be transferred. But when the remote isn't able to keep up
+than innd buffers the informations and gets bigger and bigger. If this
+happens - try using nntplink in logfile mode. 
+
+------------------------------
+
+Subject: (4.21) How do I use innfeed with INN ?
+
+Innfeed is a new feeding tool by James Brister that is a combination
+of straeming nntp and nntplink with some other nice features. This
+tool is still in beta test.
+If you have already several nntplinks successful running, then you
+might to consider testing innfeed. Else stick on using nntpsend or
+send-nntp. Sources might be obtained via http://www.isc.org/isc/
+
+------------------------------
+
+Subject: (4.22) How do I gate news to mail and/or mail to news?
+
+You might use newsgate.
+
+Rich Salz also turned over the maintenance for newsgate to ISC.
+So look out at http://www.isc.org/isc/ for a copy of it.
+
+Installation instructions (sample /usr/lib/news/newsfeeds and
+/etc/aliases entries are provided in the documentation for newsgate.
+But even if documentation tells you otherwise you should use 
+rnews instaed of inews with it.
+
+Also be careful not to produce loops!
+
+NB: newsgate includes mail2news and news2mail.
+
+

@@ -1,0 +1,30 @@
+.TH EXPIRERM
+.SH NAME
+expirerm \- remove articles that have been expired.
+.SH SYNOPSIS
+.B expirerm
+.I file
+.SH DESCRIPTION
+.I Expirerm
+is a script that removes a list of files.
+The specified
+.I file
+lists the files.
+It is sorted, and then fed into a pipeline responsible for doing
+the removal, normally
+.IR fastrm (8).
+If there seemed to be a problem removing the files, then mail is sent to
+the news administrator.
+If there were no problems, then
+.I file
+is renamed to
+.\" =()<.I @<_PATH_MOST_LOGS>@/expire.list>()=
+.I /var/log/news/expire.list
+where it is kept (for safety) until the next day's expiration.
+.SH HISTORY
+Written by Landon Curt Noll <chongo@toad.com> and
+Rich $alz <rsalz@uunet.uu.net>
+.SH "SEE ALSO"
+expire(8),
+fastrm(8)
+

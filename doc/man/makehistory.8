@@ -1,0 +1,244 @@
+.\" $Revision$
+.TH MAKEHISTORY 8
+.SH NAME
+makehistory \- tools to recover Usenet history database.
+.SH SYNOPSIS
+.B makehistory
+[
+.BI \-A " oldtmp"
+]
+[
+.BI \-a " active"
+]
+[
+.B \-b
+]
+[
+.BI \-f " filename"
+]
+[
+.B \-i
+]
+[
+.B \-n
+]
+[
+.B \-o
+]
+[
+.B \-r
+]
+[
+.BI \-s " size"
+]
+[
+.BI \-T " tmpdir"
+]
+[
+.B \-u
+[
+.B \-v
+]
+]
+.SH DESCRIPTION
+.PP
+.I Makehistory
+rebuilds the
+.IR history (5)
+text file and the associated
+.IR dbz (3)
+database.
+The default name of the text file is
+.\" =()<.IR @<_PATH_HISTORY>@ ;>()=
+.IR /var/news/etc/history ;
+to specify a different name, use the ``\fB\-f\fP'' flag.
+.I Makehistory
+scans the
+.IR active (5)
+file to determine which newsgroup directories within the spool directory,
+.\" =()<.IR @<_PATH_SPOOL>@ ,>()=
+.IR /var/news/spool/articles ,
+should be scanned.
+(If a group is removed, but its spool directory still exists,
+.I makehistory
+will ignore it.)
+The program reads each file found and writes a history line for it.
+.PP
+After the text file is written,
+.I makehistory
+will build the
+.I dbz
+database.
+.SH OPTIONS
+.TP
+.B \-A
+If the ``\fB\-A\fP'' flag is used then the argument given is the pathname
+.I makehistory
+can use to store a copy of the history file as it's being built. It will be
+appended to, so existing data will not be lost (and so should be valid
+history entries).
+.TP
+.B \-a
+If the ``\fB\-a\fP'' flag is given then the argument is the active file to
+use rather than the default one of
+.\" =()<.IR @<_PATH_ACTIVE>@ .>()=
+.IR /var/news/etc/active .
+.TP
+.B \-b
+If the ``\-b'' flag is used, then
+.I makehistory
+will remove any articles that do not have valid Message-ID headers in them.
+.TP
+.B \-f
+If the ``\fB\-f\fP'' flag is used, then the database files are named
+.I file.dir
+and
+.IR file.pag .
+If the ``\fB\-f\fP'' flag is not used, then a temporary link to the name
+.I history.n
+is made and the database files are written as
+.I history.n.pag
+and
+.IR history.n.dir .
+.TP
+.B \-o
+If the ``\fB\-o\fP'' flag is used, then the link is not made and any existing
+history files are overwritten.
+If the old database exists,
+.I makehistory
+will use it to determine the size of the new database.
+.TP
+.B \-i
+To ignore the old database use the ``\fB\-i\fP'' flag.
+Using the ``\fB\-o\fP'' flag implies the ``\fB\-i\fP'' flag.
+.TP
+.B \-s
+The program will also ignore any old database if the ``\fB\-s\fP'' flag is used
+to specify the approximate number of entries in the new database.
+Accurately specifying the size is an optimization that will create a more
+efficient database.
+(The size should be the estimated eventual size of the file, typically
+the size of the old file.)
+For more information, see the discussion of
+.I dbzfresh
+and
+.I dbzsize
+in
+.IR dbz (3).
+.TP
+.B \-u
+If the ``\fB\-u\fP'' flag is given, then
+.I makehistory
+assumes that
+.I innd
+is running.
+It will pause the server while scanning, and then
+send ``addhist'' commands (see
+.IR ctlinnd (8))
+to the server for any article that is not found in the
+.I dbz
+database.
+The command ``makehistory\ \-bu'' is useful after a system crash, to delete
+any mangled articles and bring the article database back into a more
+consistent state.
+.TP
+.B \-v
+If the ``\fB\-v\fP'' flag is used with the ``\fB\-u\fP'' flag, then
+.I makehistory
+will put a copy of all added lines on its standard output.
+.TP
+.B \-n
+To scan the spool directory without rebuilding the
+.I dbz
+files, use the ``\fB\-n\fP'' flag.
+If used with ``\fB-u\fP'', the server will not be paused while scanning.
+.TP
+.B \-r
+To just build the
+.I dbz
+files from an existing text file, use the ``\fB\-r\fP'' flag.
+The ``\fB\-i\fP'' or ``\fB\-s\fP'' flags can be useful if there are no valid
+.I dbz
+files to use.
+.TP
+.B \-T
+.I Makehistory
+needs to create a temporary file that contains one line for each article
+it finds, which can become very large.
+This file is created in the
+.\" =()<.I @<_PATH_TMP>@>()=
+.I /var/tmp
+directory.  The ``TMPDIR'' environment variable may be used to specify a
+different directory.  Alternatively, the ``\fB\-T\fP'' flag may be used to
+specify a temporary directory.  In addition, the
+.IR sort (1)
+that is invoked during the build writes large temporary files (often to
+.IR /var/tmp
+but see your system manpages).  If the ``\fB\-T\fP'' flag is used, then the
+flag and its value will be passed to
+.IR sort .
+On most systems this will change the temporary directory that
+.I sort
+uses.
+if used, this flag and its value will be passed on to the
+.IR sort (1)
+command that is invoked during the build.
+.SH EXAMPLES
+.PP
+A typical way to use this program is with the following
+.I /bin/sh
+commands:
+.PP
+.RS
+.nf
+ctlinnd throttle "Rebuilding history file"
+.\" =()<cd @<_PATH_NEWSLIB>@>()=
+cd /var/news/etc
+if makehistory \-n \-f history.n ; then
+    :
+else
+    echo Error creating history file!
+    exit 1
+f\&i
+# The following line can be used to retain expired history
+# It is not necessary for the history file to be sorted.
+# awk 'NF==2 { print; }' <history >>history.n
+# View history file for mistakes.
+if makehistory \-r \-s `wc \-l <history` \-f history.n; then
+    mv history.n history
+    mv history.n.dir history.dir
+    mv history.n.pag history.pag
+f\&i
+ctlinnd go ''
+.fi
+.RE
+.SH BUGS AND LIMITATIONS
+.PP
+.I Makehistory
+does not handle symbolic links.
+If the news spool area is split across multiple partitions, the following
+commands should probably be run before the database is regenerated:
+.RS
+.nf
+.\" =()<cd @<_PATH_SPOOL>@>()=
+cd /var/news/spool/articles
+find . -type l -name '[1-9]*' -print | xargs -t rm
+.fi
+.RE
+Make sure to run the command on all the appropriate partitions!
+.SH HISTORY
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+.SH "SEE ALSO"
+active(5),
+ctlinnd(8),
+dbz(3),
+filechan(8),
+history(5),
+innd(8),
+newsfeeds(5),
+makeactive(8),
+newsrequeue(8).

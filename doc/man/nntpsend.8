@@ -1,0 +1,234 @@
+.TH NNTPSEND 8
+.SH NAME
+nntpsend \- send Usenet articles to remote site
+.SH SYNOPSIS
+.B nntpsend
+[
+.B \-a
+]
+[
+.B \-c
+]
+[
+.B \-d
+]
+[
+.B \-D
+]
+[
+.B \-p
+]
+[
+.B \-r
+]
+[
+.B \-S
+]
+[
+.B \-l
+]
+[
+.B \-n
+]
+[
+.BI \-s " size"
+]
+[
+.BI \-t " timeout"
+]
+[
+.BI \-T " timelimit"
+]
+[
+.BI \-P " portnum"
+]
+[
+.I sitename
+.I fqdn
+] ...
+.SH DESCRIPTION
+.I Nntpsend
+is a front-end that invokes
+.IR innxmit (1)
+to send Usenet articles to a remote NNTP site.
+.PP
+The sites to be fed may be specified by giving
+.I sitename
+.I fqdn
+pairs on the command line.
+If no such pairs are given,
+.I nntpsend
+defaults to the information given in the
+.IR nntpsend.ctl (5)
+config file.
+.PP
+The
+.I sitename
+should be the name of the site as specified in the
+.IR newsfeeds (5) 
+file.
+The 
+.I fqdn 
+should be the hostname or IP address of the remote site.
+.PP
+An
+.I innxmit
+is launched for sites with queued news.
+All
+.I innxmit
+processes are spawned in the background and the script waits for
+them all to finish before returning.
+Output is sent to the file
+.\" =()<.IR @<_PATH_MOST_LOGS>@/nntpsend.log .>()=
+.IR /var/log/news/nntpsend.log .
+In order to keep from overwhelming the local system, 
+.I nntpsend
+waits five seconds before spawned each child.
+.PP
+.I Nntpsend
+expects that the batchfile for a site is named
+.\" =()<.IR @<_PATH_BATCHDIR>@/sitename .>()=
+.IR /var/news/spool/out.going/sitename .
+To prevent batchfile corruption,
+.IR shlock (1)
+is used to ``lock'' these files.
+.PP
+When
+.I sitename
+.I fqdn
+pairs are given on the command line, 
+any flags given on the command completely describe how
+.I innxmit
+and
+.I shrinkfile
+operate.
+When no such pairs are given on the command line, then
+the information found in
+.I nntpsend.ctl
+becomes the default flags for that site.
+Any flags given on the command line override the default flags
+for the site.
+.SH OPTIONS
+.TP
+.B \-c
+
+.TP
+.B "\-d \-D"
+The ``\-d'' flag causes
+.I nntpsend
+to send output to stdout rather than the log file
+.\" =()<.IR @<_PATH_MOST_LOGS>@/nntpsend.log .>()=
+.IR /var/log/news/nntpsend.log .
+The ``\-D'' flag does the same
+and it passes ``\-d'' to all
+.I innxmit
+invocatins which in turn causes
+.I innxmit
+to go into debug mode.
+.TP
+.B \-s
+If the ``\-s'' flag is used, then
+.IR shrinkfile (1)
+will be invoked to perform a tail truncation on the batchfile and the flag
+will be passed to it.
+.TP
+.B \-l
+If the ``\-l'' (lazy) flag is specified, then the script will be more
+aggressive about deciding there is nothing to be done.
+This can be useful when using
+.I nntpsend
+as a backup for a site fed by
+.IR nntplink .
+.TP
+.B "\-a \-p \-r \-S \-t \-T"
+The ``\fB\-a\fP'', ``\fB\-p\fP'', ``\fB\-P\fP'', ``\fB\-r\fP'',
+\``\fP\-S\fP'', ``\fB\-t\fP'', and ``\fB\-T\fP'' flags are passed on to the
+child
+.I innxmit
+program. See 
+.IR innxmit (8)
+for more details.
+Note that if the ``\-p'' flag is used then no connection is made and
+no articles are fed to the remote site.
+It is useful to have
+.IR cron (8)
+invoke
+.I nntpsend
+with this flag in case a site cannot be reached for an extended period of time.
+.SH EXAMPLES
+With the following control file:
+.PP
+.RS
+.nf
+nsavax:erehwon.nsavax.gov::-S -t60
+group70:group70.org::
+walldrug:walldrug.com:4m-1m:-T1800 -t300
+kremvax:kremvax.cis:2m:
+.fi
+.RE
+.PP
+The command:
+.PP
+.RS
+nntpsend
+.PP
+.RE
+will result in the following:
+.PP
+.RS
+.nf
+Sitename        Truncation      Innxmit flags
+nsavax          (none)          \-a \-S \-t60
+group70         (none)          \-a \-t180
+walldrug        1m if >4m       \-a \-T1800 \-t300
+kremvax         2m              \-a \-t180
+.fi
+.RE
+.PP
+The command:
+.PP
+.RS
+nntpsend \-d \-T1200
+.RE
+.PP
+will result in the following:
+.PP
+.RS
+.nf
+Sitename        Truncation      Innxmit flags
+nsavax          (none)          \-a \-d \-S \-T1200 \-t60
+group70         (none)          \-a \-d \-T1200 \-t180
+walldrug        1m if >4m       \-a \-d \-T1200 \-t300
+kremvax         2m              \-a \-d \-T1200 \-t180
+.fi
+.RE
+.PP
+The command:
+.PP
+.RS
+nntpsend \-s 5m \-T1200 nsavax erehwon.nsavax.gov group70 group70.org
+.PP
+.RE
+will result in the following:
+.PP
+.RS
+.nf
+Sitename        Truncation      Innxmit flags
+nsavax          5m              \-a \-T1200 \-t180
+group70         5m              \-a \-T1200 \-t180
+.fi
+.RE
+.PP
+Remember that ``\-a'' is always given, and ``\-t'' defaults to 180.
+.SH HISTORY
+Written by Landon Curt Noll <chongo@toad.com>
+and Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+.SH "SEE ALSO"
+innxmit(1), 
+newsfeeds(5),
+nntpsend.ctl(5),
+shrinkfile(1).

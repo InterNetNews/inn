@@ -1,0 +1,109 @@
+This is $Revision$ dated $Date$.
+
+innd and nnrpd now support some amount of Perl filtering of articles
+received from another peer or from a newsreader. This code is based very
+heavily on work Christophe Wolfhugel <wolf@pasteur.fr> did. He in turn was
+inspired by the existing TCL support. Send me (<inn@isc.org>) and not
+Christophe any bug reports, as I fiddled with the code, and am probably the
+cause of any problems.
+
+What you get with the Perl support is described in more detail below, but
+basically you can supply a perl subroutine that will be invoked on every
+article received by innd from a peer, or by nnrpd from a reader. The
+subroutine causes nnrpd or innd to accept or reject the article. This will
+be most useful for spam killing.
+
+To include Perl support you need to have version perl 5.003. Version 5.001
+defintely doesn't work. 5.002 might, but hasn't been tried. Go to
+http://www.perl.com/CPAN for the latest Perl goodies.
+
+In config.dist there is a section (#17) devoted to Perl. You must set
+PERL_SUPPORT to DO and PERL_INC and PERL_LIB to the appropriate values for
+your system for the compilation to work properly.
+
+--------------------------------------------------
+
+Innd:
+	When innd starts it loads the file _PATH_PERL_STARTUP_INND, next it
+loads _PATH_PERL_FILTER_INND. Everytime, before _PATH_PERL_FILTER_INND is
+loaded, including the first time, if the perl subroutine
+``filter_before_reload'' is defined, then it will be called with no
+arguments, and it is not expected to return any values. After the
+_PATH_PERL_FILTER_INND is loaded the routine ``filter_after_reload'' is
+executed in the same way. These two functions are normally defined in
+_PATH_PERL_STARTUP_INND. They could be used for doing things like flushing
+cached data to disk, or loading up a cache etc.
+
+	Whenever ctlinnd is run with the command ``reload'' and the
+first argument ``filter.perl'' or ``all'', the filter file
+_PATH_PERL_FILTER_INND is reloaded with the before and after functions
+being run as just described. If the subroutine ``filter_art'' is defined
+after the file has been reloaded, then filtering is turned on. If is not
+defined, then filtering is turned of.
+	
+	Whenever ctlinnd is run with the command ``throttle'', or ``pause''
+or ``go'', then the perl function ``filter_mode'' is called. It recives no
+arguments and returns no value. It has access to a global associative array
+called ``%mode'', which has three keyed values:
+
+	'Mode' ==> the current mode (``throttled'', ``paused'', or ``running'')
+	'NewMode' ==> the new mode.
+	'reason' ==> the reason given for the mode change.
+
+	Whenever an article is received from a peer via IHAVE or TAKETHIS,
+and filtering is turned on, the perl subroutine ``filter_art'' is
+called. It receives no arguments and returns a single scalar value or the
+undefined value. It has access to a global associative array called
+``%hdr'', which contains values for all standard headers with a non-null
+value of the article. The standard headers are:
+
+	Approved, Control, Date, Distribution, Expires, From, Lines,
+	Message-ID, Newsgroups, Path, Reply-To, Sender, Subject, Supersedes,
+	Bytes, Also-Control, References
+
+For example:
+
+   %hdr = ('Subject', 'MAKE MONEY FAST!!', 
+	   'From', 'Joe Spamer <him@aol.com>',
+	   'Date', '10 Sep 1996 15:32:28 UTC',
+	   'Newsgroups', 'alt.test',
+	   'Path', 'data.ramona.vix.com!gw.home.vix.com!not-for-mail',
+	   'Organization', 'Spammers Anonymous',
+	   'Lines' '5',
+	   'Distribution', 'world'
+	   'Message-ID', '<6.20232.842369548@home.octet.com.au>'
+	   )
+
+
+If ``filter_art'' returns a null string (not a zero), then the article is
+accepted. If it returns a non-zero value, then it is rejected, and the
+value returned (typically a string) is used to log the reason why it was
+rejected.
+
+--------------------------------------------------
+
+nnrpd:
+
+	When nnrpd starts it load the file _PATH_PERL_FILTER_NNRPD. If the
+function ``filter_post'' is defined, then filtering is turned on. If it
+isn't, then filtering is turned off. When filtering is on, every article
+received via the POST command is given to the ``filter_post'' subroutine in
+exactly the same manner as for filter_art in innd. The return value must be
+a null string to accept the article, anything else will cause the article
+to be rejected and the reason sent back to the client will be the returned
+value of the ``filter_post'' function.
+
+--------------------------------------------------
+
+Some notes:
+
+In the samples directory there are filter_inn.pl, filter_nnrpd.pl and
+startup_innd.pl, with some simplistic examples on how to use them. Note
+that all perl evaluation is done inside an implicit ``eval'', so calling
+die() will not kill the innd or nnrpd process, nor any other sort of syntax
+or functional error.
+
+You should always do 'perl -c -w file' before starting or reloading. If you
+change the file after innd is running, and then reload it, filtering wil be
+disabled if there was an error in the file. At which point you'll have to
+fix the file and reload it.

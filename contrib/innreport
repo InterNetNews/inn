@@ -1,0 +1,4018 @@
+#!/usr/local/bin/perl --
+
+##########################################################################
+#
+#   innreport.pl : Perl script to summarize INN log files (with optional
+#                  HTML output).
+#
+# version : 2.1b6
+#
+# Copyright (c) 1996, Fabien TASSIN (tassin@eerie.fr).
+#
+##########################################################################
+#
+# Usage: innreport.pl [-[no]options]
+#   where options are :
+#     -h (or -help)      : this help page
+#     -html              : HTML output [default]
+#     -g                 : want graphs [default]
+#     -graph             : an alias for option -g
+#     -d directory       : directory for Web pages
+#                          [default=/var/www/News/stats]
+#     -dir directory     : an alias for option -d
+#     -p directory       : pictures path (file space)
+#                          [default=/var/www/News/stats/pics]
+#     -path directory    : an alias for option -p
+#     -w directory       : pictures path (web space) [default=pics]
+#     -webpath directory : an alias for option -w
+#     -a                 : want to archive HTML results [default]
+#     -archive           : an alias for option -a
+#     -c number          : how many report files to keep (0 = all)
+#                          [default=0]
+#     -cycle number      : an alias for option -c
+#     -m number          : how many lines to display in the
+#                          "Newsgroup request counts (by ng)" section
+#                          (-1 = all, 0 = no report) [default=-1]
+#     -maxng number      : an alias for option -m
+#     -badart number     : how many lines to display in the
+#                          "Bad articles" section
+#                          (-1 = all, 0 = no report) [default=20]
+#     -t                 : client timeouts report [default]
+#     -timeout           : an alias for option -t
+#     -prgtab            : program log report [default]
+#     -s char            : separator for filename [default=":"]
+#     -separator char    : an alias for option -s
+#     -curious           : curious explorers report [default]
+#     -gethost           : "Gethostbyaddr Failure" report [default]
+#     -readership        : "NNRP Readership summary" report [default]
+#     -sortreadership    : sort (alphabetic order) the readership report
+#     -category          : "Newsgroup request counts (by category)" [default]
+#     -unknown           : Unknown entries from news log file
+#     -casesensitive     : Case sensitive
+#
+# Use no in front of boolean options to unset them.
+# For example, "-html" is set by default. Use "-nohtml" to remove this
+# feature.
+#
+##########################################################################
+#
+# Changes:
+#
+# 12/12/96: 2.1b6 - xmotd + innfeed changes.
+# 12/09/96: 2.1b5 - New log entries added (innfeed 0.9.2).
+# 12/06/96: 2.1b4a- Small (typo) bug corrected (thanx to LAB).
+# 11/13/96: 2.1b4 - New options (-unknown, -casesensitive, ....). Less bugs.
+# 11/11/96: 2.1b3c- Typo + one minor change + one small bug (thanx to GWB).
+# 11/06/96: 2.1b3b- Yet other log entries supported.
+# 11/04/96: 2.1b3a- Tiny typo problem. oups.. 
+# 11/03/96: 2.1b3 - More options, more log entries supported. A lot of new
+#                   things. Some bugs fixed (thanx to JPC).
+# 10/20/96: 2.1b2 - More INN 1.5 log entries supported.
+# 10/15/96: 2.1b1 - Options on command line. INN 1.5x logs.
+# 10/15/96: 2.0   - stable with INN 1.4xx. No change.
+# 10/03/96: 2.0b6a- typo error corrected.
+# 10/01/96: 2.0b6 - date problem in the index page fixed.
+#                   A lot of new options.
+#                   innfeed (0.9.1) results ajusted.
+# 09/28/96: 2.0b5 - fix some minor bugs
+#                   Corrected the "last messages repeted" stuff.
+# 09/06/96: 2.0b4 - index bug corrected.
+# 09/05/96: 2.0b3 - new log entries from the latest innfeed.
+# 09/04/96: 2.0b2 - minor bugs corrected. Features added by request.
+# 08/29/96: 2.0b1 - New name to avoid confusion with another innlog.pl.
+#                   New index. A lot of new options.
+# 08/26/96: 1.1b3 - possibility to use HTML without graphs.
+#                   Rotation of reports + index + different new options.
+# 08/23/96: 1.1b2 - minor changes with graphs. Index.
+#                   small bug (corrected) for pics path (thanx, wolf :)
+# 08/23/96: 1.1b1 - major changes. Graphs (need GD and Perl5).
+#                   Archives.
+# 08/21/96: 1.0b4 - minor changes for innfeed and nnntplink.
+#                   support for inndstart, rnews and batcher.
+# 08/03/96: 1.0b3 - minor changes for innd. 
+#                   Table for unrecognize commands.
+# 08/02/96: 1.0b2 - support for nntplink and innfeed.
+#                   fixed for Perl4 users.
+# 08/01/96: 1.0b1 - creation.
+# 
+##########################################################################
+#
+# ABSOLUTELY NO WARRANTY WITH THIS PACKAGE. USE IT AT YOUR OWN RISKS.
+#
+# Notes : You need the Perl graphic library GD.pm
+#         GD is available on all good CPAN ftp sites :
+#             [CPAN_DIR]/authors/id/LDS/GD-1.14.tar.gz
+#           or directly to :
+#             http://www-genome.wi.mit.edu/pub/software/WWW/GD.html
+#
+# Install: - check the Perl location (first line). Require Perl 5.002
+#            or better because of GetOpts::Long problems.
+#          - look at the parameters or use -h to obtain the help message.
+#          - copy this script into ${NEWSLIB}/innreport.pl
+#          - be sure that news can use it (chmod 755 or 750)
+#          - in "scanlog", comment the line containing innlog and add :
+#                ${NEWSLIB}/innreport.pl < ${OLD_SYSLOG}
+#
+# Report : please report bugs directly to the author.
+#          Please also report unknown entries.
+#          Be sure your are using the latest version of this script.
+#          (check ftp://anais.eerie.fr/pub/usenet/innreport/)
+# 
+##########################################################################
+
+## Uncomment next line if you want to create a Web page
+$HTML = "comment_or_uncomment";
+
+## Uncomment these two lines if you want graphs (need $HTML too).
+$GRAPH = "comment_or_uncomment";
+use GD;
+
+## Directory for the Web pages (used only if the previous line is active)
+$HTML_dir = "/var/www/News/stats";
+
+## Directory for the GIF pictures (need HTML support) in the file space
+$IMG_dir = "$HTML_dir/pics";
+
+## Directory for the GIF pictures (need HTML support) in the Web space
+## (can be relative or global)
+$IMG_pth = "pics";
+
+## Uncomment next line if you want to archive HTML results (& pics)
+## [ will add a date in each names ]. 
+$ARCHIVE = "comment_or_uncomment";
+
+## index page will be called :
+$index = "index.html";
+
+## How many report files to keep (0 = all).
+$CYCLE = 0;
+
+## How many lines to display in the "Newsgroup request counts (by ng)" section.
+## (-1 = all, 0 = no report for this)
+$NGMAX = -1;
+
+# How many lines to display in the "Bad articles" section.
+## (-1 = all, 0 = no report for this)
+$BADART = 20;
+
+## Comment next line to skip client timeouts report
+$TIMEOUT = "comment_or_uncomment";
+
+## Uncomment next line if you want the "Program log" tab
+$PRGTAB = "comment_or_uncomment";
+
+## separator between hours-minutes-seconds in filenames
+## (normaly a ":" but some web-browsers (MS-IE, Mosaic) can't read it)
+## Warning : never use "/". Use only a _valid_ filename chars.
+$SEPARATOR=":"; 
+
+## Comment next line to skip "Curious Client" report
+$WANT_CURIOUS = "comment_or_uncomment";
+
+## Comment next line to skip "Gethostbyaddr Failure" report
+$WANT_GETHOSTFAILED = "comment_or_uncomment";
+
+## Comment next line to skip "NNRP Readership Summary" report
+$WANT_READERSHIP = "comment_or_uncomment";
+
+## Comment next line to sort Readership report by connection
+# (else sort by alphabetic order)
+# $READERSHIP_ORDER = "comment_or_uncomment";
+
+## Comment next line to skip "Newsgroup Request Counts (by category)"
+## report
+$WANT_CATEGORY = "comment_or_uncomment";
+
+## Comment next line to skip "Unknown entries from news log file"
+## report
+$WANT_UNKNOWN = "comment_or_uncomment";
+
+## Comment next line to be case insensitive
+$CASE_SENSITIVE = "comment_or_uncomment";
+
+###############################################
+## THERE'S NOTHING TO CHANGE AFTER THIS LINE ##
+###############################################
+
+$version = "2.1b6";
+
+# Required for Getopt::Long
+require 5.002;
+
+use Getopt::Long;
+
+GetOptions qw(-h -help
+	      -html!
+	      -g! -graph!
+	      -d=s -dir=s
+	      -p=s -path=s
+	      -w=s -webpath=s
+	      -a! -archive!
+	      -c=i -cycle=i
+	      -m=i -maxng=i
+	      -t! -timeout!
+	      -prgtab!
+	      -s=s -separator=s
+	      -curious!
+	      -gethost!
+	      -readership!
+	      -sortreadership!
+	      -category!
+	      -badarticle=i
+	      -unknown!
+	      -casesensitive!
+	      );
+
+&Usage if (($opt_h) || ($opt_help));
+
+$HTML = 0 if (defined ($opt_html));
+$HTML = 1 if ($opt_html);
+
+$GRAPH = 0 if (defined ($opt_g) || defined ($opt_graph));
+$GRAPH = 1 if (($opt_g) || ($opt_graph));
+
+$HTML_dir = $opt_d if defined ($opt_d);
+$HTML_dir = $opt_dir if defined ($opt_dir);
+
+$IMG_dir = $opt_p if defined ($opt_p);
+$IMG_dir = $opt_path if defined ($opt_path);
+
+$IMG_pth = $opt_w if defined ($opt_w);
+$IMG_pth = $opt_webpath if defined ($opt_webpath);
+
+$ARCHIVE = 0 if (defined ($opt_a) || defined ($opt_archive));
+$ARCHIVE = 1 if ((($opt_a) || ($opt_archive)) && ($HTML));
+
+$CYCLE = $opt_c if (defined ($opt_c));
+$CYCLE = $opt_cycle if ($opt_cycle);
+
+$NGMAX = $opt_m if (defined ($opt_m));
+$NGMAX = $opt_maxng if ($opt_maxng);
+
+$BADART = $opt_badart if (defined ($opt_badart));
+
+$TIMEOUT = $opt_t if (defined ($opt_t));
+$TIMEOUT = $opt_timeout if (defined ($opt_timeout));
+
+$PRGTAB = 0 if (defined ($opt_prgtab));
+$PRGTAB = $opt_prgtab if ($opt_prgtab);
+
+$SEPARATOR = $opt_s if (defined ($opt_s));
+$SEPARATOR = $opt_separator if ($opt_separator);
+
+$WANT_CURIOUS = 0 if (defined ($opt_curious));
+$WANT_CURIOUS = 1 if ($opt_curious);
+
+$WANT_GETHOSTFAILED = 0 if (defined ($opt_gethost));
+$WANT_GETHOSTFAILED = 1 if ($opt_gethost);
+
+$WANT_READERSHIP = 0 if (defined ($opt_readership));
+$WANT_READERSHIP = 1 if ($opt_readership);
+
+$READERSHIP_ORDER = 0 if (defined ($opt_sortreadership));
+$READERSHIP_ORDER = 1 if ($opt_sortreadership);
+
+$WANT_CATEGORY = 0 if (defined ($opt_category));
+$WANT_CATEGORY = 1 if ($opt_category);
+
+$WANT_UNKNOWN = 0 if (defined ($opt_unknown));
+$WANT_UNKNOWN = 1 if ($opt_unknown);
+
+$CASE_SENSITIVE = 0 if (defined ($opt_casesensitive));
+$CASE_SENSITIVE = 1 if ($opt_casesensitive);
+
+umask (022);
+
+if ($HTML)
+{
+  if ($GRAPH)
+  {
+    $IMG_pth .= "/" if ($IMG_pth);
+    $IMG_pth =~ s|/+|/|g;
+    $IMG_dir =~ s|/+|/|g;
+    die "Error : cant open $IMG_dir\n" unless (-w $IMG_dir);
+  }
+  die "Error : cant open $HTML_dir\n" unless (-w $HTML_dir);
+
+  # Create a new filename (unique and _sortable_)
+  if ($ARCHIVE)
+  {
+    ($ts, $tm, $th, $dd, $dm, $dy) = localtime;
+    $dm++; # January = 0 not 1
+    $suffix = sprintf (".%02d.%02d.%02d-%02d$SEPARATOR%02d$SEPARATOR%02d",
+		       $dy, $dm, $dd, $th, $tm, $ts);
+  }
+  else
+  {
+    $suffix = "";
+  }
+  $HTML_output = "$HTML_dir" . "/news-notice" . "$suffix" . ".html";
+  $HTML_output =~ s|/+|/|g;
+}
+
+if ($HTML)
+{
+  open (HTML, "> $HTML_output") || die "Error : cant open $HTML_output\n";
+  print HTML "<HTML>\n<HEAD>\n<TITLE>Daily Usenet report</TITLE>\n";
+}
+
+$unrecognize_max = 0;
+
+%ctlinnd = ('a', 'addhist',     'D', 'allow',
+	    'b', 'begin',       'c', 'cancel',
+	    'u', 'changegroup', 'd', 'checkfile',
+	    'e', 'drop',        'f', 'flush',
+	    'g', 'flushlogs',   'h', 'go',
+	    'i', 'hangup',      's', 'mode',
+	    'j', 'name',        'k', 'newgroup',
+	    'l', 'param',       'm', 'pause',
+	    'v', 'readers',     't', 'refile',
+	    'C', 'reject',      'o', 'reload',
+	    'n', 'renumber',    'z', 'reserve',
+	    'p', 'rmgroup',     'A', 'send',
+	    'q', 'shutdown',    'B', 'signal',
+	    'r', 'throttle',    'w', 'trace',
+	    'x', 'xabort',      'y', 'xexec', );
+
+$repeated = 1;
+$save_line = <STDIN>;
+LINE: while (!eof (STDIN))
+{
+  if ($repeated)                
+  {
+     $repeated--;
+     $_ = $save_line;
+  }
+  else
+  {
+    $_ = <STDIN>;
+    if ($_ =~ /last message repeated \d+ times$/)
+    {
+       ($repeated) = $_ =~ /last message repeated (\d+) times$/;
+       $_ = $save_line;
+    }
+    else
+    {
+       $save_line = $_;
+    }
+  }
+  # skip empty lines
+  next LINE if ($_ =~ /^$/);
+
+  ($day, $hour, $prog, $left) = $_ =~ /^(\S+\s+\S+) (\S+) \S+ (\S+): (.*)$/;
+  unless ($day)
+  {
+    # Unrecognize line... skip
+    $unrecognize[$unrecognize_max++] = $_;
+    next LINE;
+  }
+  $first_date = "$day $hour" unless ($first_date);
+
+  ########
+  ## Program name (usually innd or nnrpd)
+  # word[7164] -> word
+  $prog =~ s/\[\d+\]$//;
+  # word: -> word
+  $prog =~ s/:$//;
+  # wordX -> word   (where X is a digit)
+  $prog =~ s/\d+$//;
+
+  $prog_type{$prog}++;
+  ########
+
+  ########
+  ## innd
+  if ($prog eq "innd")
+  {  
+    ## Note for innd logs :
+    ## there's a lot of entries detected but still not used
+    ## (because of a lack of interest).
+
+    # think it's a dotquad
+    next LINE if ($left =~ /^think it\'s a dotquad$/);
+    # SERVER perl filtering enabled
+    next LINE if ($left =~ /^SERVER perl filtering enabled$/);
+    # SERVER perl filtering disabled
+    next LINE if ($left =~ /^SERVER perl filtering disabled$/);
+    # SERVER cancelled +id
+    next LINE if ($left =~ /^SERVER cancelled .*/);
+    # closed lost
+    next LINE if ($left =~ /^\S+ closed lost \d+$/);
+    # control command (by letter)
+    ($command) = $left =~ /^(\w)$/;
+    if ($command)
+    {
+      $cmd = $ctlinnd{$command};
+      $innd_control{"$cmd"}++;
+      next LINE;
+    }
+    # control command (letter + reason)
+    ($command) = $left =~ /^(\w):.*$/;
+    if ($command)
+    {
+      $cmd = $ctlinnd{$command};
+      $innd_control{"$cmd"}++;
+      next LINE;
+    }
+    # opened
+    next LINE if ($server) = $left =~ /(\S+) opened \S+:\d+:file$/;
+    # buffered
+    next LINE if ($server) = $left =~ /(\S+) bufferd$/;
+    # spawned
+    ($server) = $left =~ /(\S+) spawned \S+:\d+:proc:\d+$/;
+    if ($server)
+    {
+      # Skipped..
+      next LINE;
+    }
+    # running
+    ($server) = $left =~ /(\S+) running$/;
+    if ($server)
+    {
+      # Skipped..
+      next LINE;
+    }
+    # sleeping
+    ($server) = $left =~ /(\S+):\d+:\proc:\d+ sleeping$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innd_blocked{$server}++;
+      next LINE;
+    }
+    # blocked sleeping
+    ($server) = $left =~ /(\S+):\d+:\proc:\d+ blocked sleeping/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innd_blocked{$server}++;
+      next LINE;
+    }
+    ($server) = $left =~ /(\S+):\d+ blocked sleeping/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innd_blocked{$server}++;
+      next LINE;
+    }
+    # restarted
+    ($server) = $left =~ /(\S+) restarted$/;
+    if ($server)
+    {
+      # Skipped..
+      next LINE;
+    }
+    # starting
+    next LINE if ($server)= $left =~ /(\S+) starting$/;
+    # readclose
+    ($server) = $left =~ /(\S+):(\d+) readclose+$/;
+    if ($server)
+    {
+      # Skipped..
+      next LINE;
+    }
+    # connected
+    ($server) = $left =~ /(\S+) connected \d+.*$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innd_connect{$server}++;
+      next LINE;
+    }
+    # closed (with times)
+    ($server, $seconds, $accepted, $refused, $rejected) = $left =~ 
+      /(\S+):\d+ closed seconds (\d+) accepted (\d+) refused (\d+) rejected (\d+)$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innd_seconds{$server} += $seconds;
+      $innd_accepted{$server} += $accepted;
+      $innd_refused{$server} += $refused;
+      $innd_rejected{$server} += $rejected;
+      next LINE;
+    }
+    # closed (without times (?))
+    ($server) = $left =~ /(\S+) closed$/;
+    if ($server)
+    {
+      # Skipped...
+      next LINE;
+    }
+    # checkpoint
+    ($server, $seconds, $accepted, $refused, $rejected) = $left =~ 
+      /(\S+):\d+ checkpoint seconds (\d+) accepted (\d+) refused (\d+) rejected (\d+)$/;
+    if ($server)
+    {
+      # Skipped...
+      # $innd_seconds{$server} += $seconds;
+      # $innd_accepted{$server} += $accepted;
+      # $innd_refused{$server} += $refused;
+      # $innd_rejected{$server} += $rejected;
+      next LINE;
+    }
+    # flush
+    ($server) = $left =~ /(\S+) flush$/;
+    if ($server)
+    {
+      # Skipped...
+      next LINE;
+    }
+    # exit
+    ($server) = $left =~ /(\S+) exit \d+ .*$/;
+    if ($server)
+    {
+      # ex: overview exit 0 elapsed 23 pid 28461 
+      # Skipped...
+      next LINE;
+    }
+    
+    # internal rejecting huge article
+    ($server) = $left =~ /(\S+) internal rejecting huge article.*/;
+    if ($server)
+    {
+      $server =~ s/:\d+$//;
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innd_huge{$server}++;
+      next LINE;
+    }
+    # internal (other)
+    next LINE if ($server) = $left =~ /(\S+) internal/;
+
+    # wakeup
+    next LINE if ($server) = $left =~ /(\S+) wakeup$/;
+    # throttle
+    next LINE if ($server) = $left =~ /(\S+) throttle /;
+    # bad_hosts (appears after a "cant gesthostbyname"
+    #           from a feed)
+    next LINE if ($server) = $left =~ /(\S+) bad_hosts /;
+    # cant read 
+    next LINE if ($server) = $left =~ /(\S+) cant read/;
+    # cant write
+    next LINE if ($server) = $left =~ /(\S+) cant write/;
+    # cant flush
+    next LINE if ($server) = $left =~ /(\S+) cant flush/;
+    # spoolwake
+    next LINE if ($server) = $left =~ /(\S+) spoolwake$/;
+    # spooling
+    next LINE if ($server) = $left =~ /(\S+) spooling/;
+    # DEBUG
+    next LINE if ($server) = $left =~ /^(DEBUG) /;
+    # NCmode
+    next LINE if ($server) = $left =~ /(\S+) NCmode /;
+    # outgoing
+    next LINE if ($server) = $left =~ /(\S+) outgoing/;
+    # inactive
+    next LINE if ($server) = $left =~ /(\S+) inactive/;
+    # timeout
+    next LINE if ($server) = $left =~ /(\S+) timeout/;
+    # lcsetup
+    next LINE if ($server) = $left =~ /(\S+) lcsetup/;
+    # rcsetup
+    next LINE if ($server) = $left =~ /(\S+) rcsetup/;
+    # flush_all
+    next LINE if ($server) = $left =~ /(\S+) flush_all/;
+    # descriptors
+    next LINE if ($server) = $left =~ /(\S+) descriptors/;
+    # ccsetup
+    next LINE if ($server) = $left =~ /(\S+) ccsetup/;
+    # renumbering
+    next LINE if ($server) = $left =~ /(\S+) renumbering/;
+    # renumber
+    next LINE if ($server) = $left =~ /(\S+) renumber /;
+
+    # newgroup
+    next LINE if ($server) = $left =~ /(\S+) newgroup /;
+    # rmgroup
+    next LINE if ($server) = $left =~ /(\S+) rmgroup/;
+    # paused
+    next LINE if ($server) = $left =~ /(\S+) paused/;
+    # throttled
+    next LINE if ($server) = $left =~ /(\S+) throttled/;
+    # reload
+    next LINE if ($server) = $left =~ /(\S+) reload/;
+    # change_group
+    next LINE if ($server) = $left =~ /(\S+) change_group/;
+    # shutdown
+    next LINE if ($server) = $left =~ /(\S+) shutdown/;
+    # SERVER servermode paused
+    next LINE if ($server) = $left =~ /(\S+) servermode paused$/;
+    # SERVER servermode running
+    next LINE if ($server) = $left =~ /(\S+) servermode running$/;
+    # SERVER flushlogs paused
+    next LINE if ($server) = $left =~ /(\S+) flushlogs paused$/;
+    # bad_ihave
+    ($server) = $left =~ /(\S+) bad_ihave /;
+    if ($server)
+    {
+      $server =~ s/:\d+$//;
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innd_bad_ihave{$server}++;
+      next LINE;
+    }
+    # bad_messageid
+    ($server) = $left =~ /(\S+) bad_messageid/;
+    if ($server)
+    {
+      $server =~ s/:\d+$//;
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innd_bad_msgid{$server}++;
+      next LINE;
+    }
+    # bad_sendme
+    ($server) = $left =~ /(\S+) bad_sendme /;
+    if ($server)
+    {
+      $server =~ s/:\d+$//;
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innd_bad_sendme{$server}++;
+      next LINE;
+    }
+    # bad_command
+    ($server) = $left =~ /(\S+) bad_command /;
+    if ($server)
+    {
+      $server =~ s/:\d+$//;
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innd_bad_command{$server}++;
+      next LINE;
+    }
+    # bad_newsgroup
+    ($server) = $left =~ /(\S+) bad_newsgroup /;
+    if ($server)
+    {
+      $server =~ s/:\d+$//;
+      $innd_bad_newsgroup{$server}++;
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      next LINE;
+    }
+    # cant (other) skipped - not particularly interesting
+    next LINE if ($server) = $left =~ /(\S+) cant /;
+  }
+  ########
+  ## innfeed
+  if ($prog eq "innfeed")
+  {
+    # connected
+    ($server) = $left =~ /(\S+):\d+ connected$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innfeed_connect{$server}++;
+      next LINE;
+    }
+    # closed periodic
+    ($server) = $left =~ /(\S+):\d+ closed periodic$/;
+    if ($server)
+    {
+      # Skipped...
+      next LINE;
+    }
+    # final (child)
+    ($server, $seconds, $offered, $accepted, $refused, $rejected) = $left =~ 
+      /(\S+):\d+ final seconds (\d+) offered (\d+) accepted (\d+) refused (\d+) rejected (\d+)$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $t_innfeed_seconds{$server} += $seconds;
+      $t_innfeed_offered{$server} += $offered;
+      $t_innfeed_accepted{$server} += $accepted;
+      $t_innfeed_refused{$server} += $refused;
+      $t_innfeed_rejected{$server} += $rejected;
+      next LINE;
+    }
+    # final (real)
+    ($server, $seconds, $offered, $accepted, $refused, 
+     $rejected, $missing, $spooled) = $left =~ 
+      /(\S+) final seconds (\d+) offered (\d+) accepted (\d+) refused (\d+) rejected (\d+) missing (\d+) spooled (\d+)$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innfeed_seconds{$server} += $seconds;
+      $innfeed_offered{$server} += $offered;
+      $innfeed_accepted{$server} += $accepted;
+      $innfeed_refused{$server} += $refused;
+      $innfeed_rejected{$server} += $rejected;
+      $innfeed_missing{$server} += $missing;
+      $innfeed_spooled{$server} += $spooled;
+      $t_innfeed_seconds{$server} = 0;
+      $t_innfeed_offered{$server} = 0;
+      $t_innfeed_accepted{$server} = 0;
+      $t_innfeed_refused{$server} = 0;
+      $t_innfeed_rejected{$server} = 0;
+
+      next LINE;
+    }
+    # final (only seconds & spooled)
+    ($server, $seconds, $spooled) = $left =~ 
+      /(\S+) final seconds (\d+) spooled (\d+)$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innfeed_seconds{$server} += $seconds;
+      $innfeed_spooled{$server} += $spooled;
+      next LINE;
+    }
+    # checkpoint
+    ($server) = $left =~ /(\S+) checkpoint seconds.*$/;
+    if ($server)
+    {
+      # see final
+      # Skipped...
+      next LINE;
+    }
+    # cxnsleep
+    ($server) = $left =~ /(\S+) cxnsleep .*$/;
+    if ($server)
+    {
+      # $server =~ /:\d+$/;
+      # $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      # $innfeed_cxnsleep{$server}++;
+      # Collected but not used. perhaps later.
+      next LINE;
+    }
+    # idle
+    ($server) = $left =~ /(\S+) idle tearing down connection$/;
+    if ($server)
+    {
+      # $server =~ s/:\d+$//;
+      # $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      # $innfeed_idle{$server}++;
+      next LINE;
+    }
+    # remote
+    ($server) = $left =~ /(\S+) remote .*$/;
+    if ($server)
+    {
+      # $server =~ s/:\d+$//;
+      # $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      # $innfeed_remote{$server}++;
+      # Collected but not used. perhaps later.
+      next LINE;
+    }
+    # spooling
+    ($server) = $left =~ /(\S+) spooling no active connections$/;
+    if ($server)
+    {
+      # $server =~ s/:\d+$//;
+      # $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      # $innfeed_spooling{$server}++;
+      # Collected but not used. perhaps later.
+      next LINE;
+    }
+    # ME articles total
+    ($ME, $total, $bytes) = $left =~ 
+                  /(SERVER|ME) articles total (\d+) bytes (\d+)/;
+    if ($ME)
+    {
+      # Skipped...
+      next LINE;
+    }
+    # ME articles active
+    ($ME, $active, $bytes) = $left =~ 
+                  /(SERVER|ME) articles active (\d+) bytes (\d+)/;
+    if ($ME)
+    {
+      # Skipped...
+      next LINE;
+    }
+    # internal QUIT while write pending
+    next LINE if ($left =~ /internal QUIT while write pending/);
+    # ME source lost . Exiting
+    next LINE if ($left =~ /(SERVER|ME) source lost . Exiting/);
+    # ME starting innfeed (+version & date)
+    next LINE if ($left =~ /(SERVER|ME) starting innfeed/);
+    # ME finishing at (date)
+    next LINE if ($left =~ /(SERVER|ME) finishing at /);
+    # mode no-CHECK entered
+    next LINE if ($left =~ /mode no-CHECK entered/);
+    # mode no-CHECK exited
+    next LINE if ($left =~ /mode no-CHECK exited/);
+    # closed
+    next LINE if ($left =~ /^(\S+) closed$/);
+    # global (+ seconds offered accepted refused rejected missing)
+    next LINE if ($left =~ /^(\S+) global/);
+    # idle connection still has articles
+    next LINE if ($left =~ /^(\S+) idle connection still has articles$/);
+    # missing article for IHAVE-body
+    next LINE if ($left =~ /^(\S+) missing article for IHAVE-body$/);
+    # ME internal bad data in checkpoint file
+    next LINE if ($left =~ /(SERVER|ME) internal bad data in checkpoint file/);
+    # ME two filenames for same article
+    next LINE if ($left =~ /(SERVER|ME) two filenames for same article/);
+    # ME unconfigured peer
+    next LINE if ($left =~ /(SERVER|ME) unconfigured peer/);
+    # exceeding maximum article size
+    next LINE if ($left =~ /(SERVER|ME) exceeding maximum article byte limit/);
+    # no space left on device errors
+    next LINE if ($left =~ /(SERVER|ME) ioerr fclose/);
+    next LINE if ($left =~ /(SERVER|ME) lock failed for host/);
+    next LINE if ($left =~ /(SERVER|ME) lock file pid-write/);
+    next LINE if ($left =~ /(SERVER|ME) locked cannot setup peer/);
+    # unconfigured peer
+    next LINE if ($left =~ /(SERVER|ME) unconfigured peer/);
+    # ME lock
+    next LINE if ($left =~ /(SERVER|ME) lock/);
+    # ME exception: getsockopt (0): Socket operation on non-socket
+    next LINE 
+      if ($left =~ 
+	  /ME exception: getsockopt \(0\): Socket operation on non-socket/);
+    # ME config aborting fopen (...) Permission denied
+    next LINE 
+      if ($left =~ /(SERVER|ME) config aborting fopen .* Permission denied/);
+    # ME cant chmod innfeed.pid....
+    next LINE if ($left =~ /(SERVER|ME) cant chmod \S+\/innfeed.pid/);
+    # loading path_to_config_file/innfeed.conf
+    next LINE if ($left =~ /loading \S+\/innfeed.conf$/);
+  }
+  ########
+  ## innxmit
+  if ($prog eq "innxmit")
+  {
+    # 437 Duplicate article
+    ($server) = $left =~ /(\S+) rejected <.*> \(.*\) 437 Duplicate article$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innxmit_badart{$server}++;
+      $innxmit_duplicate{$server}++;
+      next LINE;
+    }
+    # 437 Unapproved for
+    ($server, $group) = $left =~ 
+      /(\S+) rejected <.*> \(.*\) 437 Unapproved for \"(.*)\"$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innxmit_badart{$server}++;
+      $innxmit_unapproved{$server}++;
+      $innxmit_unapproved_g{$group}++;
+      next LINE;
+    }
+    # 437 Too old -- ...
+    ($server) = $left =~ /(\S+) rejected <.*> \(.*\) 437 Too old -- /;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innxmit_badart{$server}++;
+      $innxmit_tooold{$server}++;
+      next LINE;
+    }
+    # 437 Unwanted site ... in path
+    ($server, $site) = $left =~ 
+      /(\S+) rejected <.*> \(.*\) 437 Unwanted site (\S+) in path$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innxmit_badart{$server}++;
+      $innxmit_uw_site{$server}++;
+      $innxmit_site_path{$site}++;
+      next LINE;
+    }
+    # 437 Unwanted newsgroup "..."
+    ($server, $group) = $left =~ 
+      /(\S+) rejected <.*> \(.*\) 437 Unwanted newsgroup \"(\S+)\"$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innxmit_badart{$server}++;
+      $innxmit_uw_ng_s{$server}++;
+      $innxmit_uw_ng{$group}++;
+      next LINE;
+    }
+    # 437 Unwanted distribution "..."
+    ($server, $dist) = $left =~ 
+      /(\S+) rejected <.*> \(.*\) 437 Unwanted distribution \"(\S+)\"$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innxmit_badart{$server}++;
+      $innxmit_uw_dist_s{$server}++;
+      $innxmit_uw_dist{$dist}++;
+      next LINE;
+    }
+    # 437 Linecount x != y +- z
+    ($server) = $left =~ /(\S+) rejected <.*> \(.*\) 437 Linecount/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innxmit_badart{$server}++;
+      $innxmit_linecount{$server}++;
+      next LINE;
+    }
+    ## next LINE if ($left =~ / 437 Linecount \d+ != \d+ \+- \d+/);
+
+    # Streaming retries
+    next LINE if ($left =~ /\d+ Streaming retries$/);
+    # ihave failed
+    ($server) = $left =~ /(\S+) ihave failed/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innxmit_ihfail{$server} = 1;
+      if ($left = /436 \S+ NNTP \S+ out of space/)
+      {
+	$innxmit_nospace{$server}++;
+	next LINE;
+      }
+      if ($left = /400 \S+ space/)
+      {
+	$innxmit_nospace{$server}++;
+	next LINE;
+      }
+      if ($left = /400 Bad file/)
+      {
+	$innxmit_crefused{$server}++;
+	next LINE;
+      }
+    }
+    # stats
+    ($server, $offered, $accepted, $refused, $rejected) = $left =~
+      /(\S+) stats offered (\d+) accepted (\d+) refused (\d+) rejected (\d+)$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innxmit_offered{$server} += $offered - $innxmit_ihfail{$server};
+      $innxmit_accepted{$server} += $accepted;
+      $innxmit_refused{$server} += $refused;
+      $innxmit_rejected{$server} += $rejected;
+      $innxmit_site{$server}++;
+      $innxmit_ihfail{$server} = 0;
+      next LINE;
+    }
+    # times
+    ($server, $user, $system, $elapsed) = $left =~ 
+             /(\S+) times user (\S+) system (\S+) elapsed (\S+)$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innxmit_times{$server} += $elapsed;
+      next LINE;
+    } 
+    # connect & no space
+    ($server) = $left =~ /(\S+) connect \S+ 400 No space/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innxmit_nospace{$server}++;
+      $innxmit_site{$server}++;
+      next LINE;
+    }
+    # connect & NNTP no space
+    ($server) = $left =~ /(\S+) connect \S+ 400 \S+ out of space/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innxmit_nospace{$server}++;
+      $innxmit_site{$server}++;
+      next LINE;
+    }
+    # connect & loadav
+    ($server) = $left =~ /(\S+) connect \S+ 400 loadav/;
+    if (($server) && ($left =~ /[Ee][Xx][Pp][Ii][Rr]/))
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innxmit_expire{$server}++;
+      $innxmit_site{$server}++;
+      next LINE;
+    }
+    # connect 400 (other)
+    ($server) = $left =~ /(\S+) connect \S+ 400/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innxmit_crefused{$server}++;
+      $innxmit_site{$server}++;
+      next LINE;
+    }
+    # connect failed
+    ($server) = $left =~ /(\S+) connect failed/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innxmit_cfail_host{$server}++;
+      $innxmit_site{$server}++;
+      next LINE;
+    }
+    # authenticate failed
+    ($server) = $left =~ /(\S+) authenticate failed/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      #$innxmit_afail{$server}++;
+      $innxmit_site{$server}++;
+      next LINE;
+    }
+    # ihave failed
+    next LINE if (($server) = $left =~ /(\S+) ihave failed/);
+    # requeued (....) 436 No space
+    next LINE if (($server) = $left =~ /(\S+) requeued \S+ 436 No space/);
+    # requeued (....) 400 No space
+    next LINE if (($server) = $left =~ /(\S+) requeued \S+ 400 No space/);
+    # requeued (....) 436 Can't write history
+     next LINE if (($server) = $left =~ /(\S+) requeued \S+ 436 Can\'t write history/);
+  }
+  ########
+  ## nntplink
+  if ($prog eq "nntplink")
+  {
+    $left =~ s/^(\S+):/$1/;
+    # EOF
+    ($server) = $left =~ /(\S+) EOF .*$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nntplink_site{$server}++;
+      $nntplink_eof{$server}++;
+      next LINE;
+    }
+    # Broken pipe
+    ($server) = $left =~ /(\S+) Broken pipe$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nntplink_site{$server}++;
+      $nntplink_bpipe{$server}++;
+      next LINE;
+    }
+    # already running - won't die
+    ($server) = $left =~ /(\S+) nntplink.* already running .*$/;
+    if ($server)
+    {
+      # Skipped...
+      next LINE;
+    }
+    # connection timed out
+    ($server) = $left =~ /(\S+) connection timed out/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nntplink_site{$server}++;
+      $nntplink_bpipe{$server}++;
+      next LINE;
+    }
+    # greeted us with 400 No space
+    ($server) = $left =~ /(\S+) greeted us with 400 No space/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nntplink_site{$server}++;
+      $nntplink_nospace{$server}++;
+      next LINE;
+    }
+    # greeted us with 400 loadav
+    ($server) = $left =~ /(\S+) greeted us with 400 loadav/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nntplink_site{$server}++;
+      $nntplink_hiload{$server}++;
+      next LINE;
+    }
+    # greeted us with 400 (other)
+    ($server) = $left =~ /(\S+) greeted us with 400/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nntplink_site{$server}++;
+      if ($left =~ /[Ee][Xx][Pp][Ii][Rr]/)
+      {
+	$nntplink_expire{$server}++;
+      }
+      else
+      {
+	$nntplink_fail{$server}++;
+      }
+      next LINE;
+    }
+    # greeted us with 502
+    ($server) = $left =~ /(\S+) greeted us with 502/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nntplink_site{$server}++;
+      $nntplink_auth{$server}++;
+      next LINE;
+    }
+    # sent authinfo
+    ($server) = $left =~ /(\S+) sent authinfo/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nntplink_site{$server}++;
+      $nntplink_auth{$server}++;
+      next LINE;
+    }
+    # socket()
+    ($server) = $left =~ /(\S+) socket\(\): /;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nntplink_site{$server}++;
+      $nntplink_sockerr{$server}++;
+      next LINE;
+    }
+    # select()
+    ($server) = $left =~ /(\S+) select\(\) /;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nntplink_site{$server}++;
+      $nntplink_selecterr{$server}++;
+      next LINE;
+    }
+    # sent IHAVE
+    ($server) = $left =~ /(\S+) sent IHAVE/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nntplink_ihfail{$server}++;
+      if (($left =~ / 436 /) && ($left =~ / out of space /))
+      {
+	$nntplink_fake_connects{$server}++;
+	$nntplink_nospace{$server}++;
+      }
+      next LINE;
+    }
+    # article .... failed(saved): 436 No space
+    ($server) = $left =~ /(\S+) .* failed\(saved\): 436 No space$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nntplink_nospace{$server}++;
+      next LINE;
+    }
+    # article .... 400 No space left on device writing article file -- throttling
+    ($server) = $left =~ /(\S+) .* 400 No space left on device writing article file -- throttling$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nntplink_nospace{$server}++;
+      next LINE;
+    }
+    # stats
+    ($server, $offered, $accepted, $rejected, $failed, $connects) = $left =~
+      /(\S+) stats (\d+) offered (\d+) accepted (\d+) rejected (\d+) failed (\d+) connects$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nntplink_offered{$server} += $offered - $nntplink_ihfail{$server}++;
+      $nntplink_accepted{$server} += $accepted;
+      $nntplink_rejected{$server} += $rejected;
+      $nntplink_failed{$server} += $failed;
+      $nntplink_connects{$server} += $connects;
+      $nntplink_ihfail{$server} = 0;
+      if ($nntplink_fake_connects{$server})
+      {
+	$nntplink_site{$server} += $nntplink_fake_connects{$server};
+	$nntplink_fake_connects{$server} = 0;
+      }
+      else
+      {
+	$nntplink_site{$server}++;
+      }
+      next LINE;
+    }
+    # xmit
+    ($server, $user, $system, $elapsed) = $left =~ 
+             /(\S+) xmit user (\S+) system (\S+) elapsed (\S+)$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nntplink_times{$server} += $elapsed;
+      next LINE;
+    }
+    # xfer
+    ($server) = $left =~ /(\S+) xfer/;
+    if ($server)
+    {
+      # Skipped..
+      next LINE;
+    }
+    # Links down
+    ($server, $hours) = $left =~ /(\S+) Links* down \S+ (\d+)/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nntplink_down{$server} += $hours;
+      next LINE;
+    }
+    # 503 Timeout
+    ($server) = $left =~ /^(\S+) \S+ \S+ \S+ 503 Timeout/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nntplink_timeout{$server}++;
+      next LINE;
+    }
+    # Password file xxxx not found
+    next LINE if ($left =~ /^\S+ Password file \S+ not found/);
+    # No such
+    next LINE if ($left =~ /^\S+ \S+ \S+ No such/);
+    # already running
+    next LINE if ($left =~ /^\S+ \S+ already running/);
+    # error reading version from datafile
+    next LINE if ($left =~ /error reading version from datafile/);
+  }
+  ########
+  ## nnrpd
+  if ($prog eq "nnrpd")
+  { 
+    # Fix a small bug of nnrp (inn 1.4xxx)
+    $left =~ s/^ /\? /;
+    # Another bug (in INN 1.5b1)
+    next LINE if ($left =~ /^\^P\^Bm$/);
+    next LINE if ($left =~ /^m$/);
+    # bad_history at num for <ref>
+    next LINE if ($left =~ /bad_history at \d+ for /);
+    # timeout short
+    next LINE if ($left =~ /\S+ timeout short$/);
+    # < or > + (blablabla)
+    next LINE if ($left =~ /^\S+ [\<\>] /);
+    # cant opendir ... I/O error
+    next LINE if ($server) = $left =~ /(\S+) cant opendir \S+ I\/O error$/;
+    # perl filtering enabled
+    next LINE if ($left =~ /perl filtering enabled$/);
+    # connect
+    ($server) = $left =~ /(\S+) connect$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nnrpd_connect{$server}++;
+      next LINE;
+    }      
+    # group
+    ($server, $group, $num) = $left =~ /(\S+) group (\S+) (\d+)$/;
+    if ($server)
+    {
+      $nnrpd_group{$group} += $num;
+      ($hierarchy) = $group =~ /^([^\.]+).*$/;
+      $nnrpd_hierarchy{$hierarchy} += $num;
+      next LINE;
+    }
+    # post failed 
+    ($server, $error) = $left =~ /(\S+) post failed (.*)$/;
+    if ($server)
+    {
+      $nnrpd_post_error{$error}++;
+      next LINE;
+    }
+    # post ok
+    ($server) = $left =~ /(\S+) post ok/;
+    if ($server)
+    {
+      # Skipped...
+      next LINE;
+    }
+    # posts
+    ($server, $received, $rejected) = $left =~ 
+             /(\S+) posts received (\d+) rejected (\d+)$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nnrpd_post_ok{$server} += $received;
+      $nnrpd_post_rej{$server} += $rejected;
+      next LINE;
+    }
+    # noperm post without permission
+    ($server) = $left =~ /(\S+) noperm post without permission$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nnrpd_post_rej{$server} ++;
+    }
+    # no_permission
+    ($server) = $left =~ /(\S+) no_permission$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nnrpd_no_permission{$server}++;
+      next LINE;
+    }
+    # bad_auth
+    ($server) = $left =~ /(\S+) bad_auth$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nnrpd_no_permission{$server}++;
+      next LINE;
+    }
+    # unrecognized + command
+    ($server, $error) = $left =~ /(\S+) unrecognized (.*)$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $error = "_null command_" if ($error !~ /\S/);
+      $error =~ s/^(xmotd) .*$/$1/i if ($error =~ /^xmotd .*$/i);
+      $nnrpd_unrecognized{$server}++;
+      $nnrpd_unrecogn_cmd{$error}++;
+      next LINE;
+    }
+    # exit
+    ($server, $articles, $groups) = $left =~ 
+              /(\S+) exit articles (\d+) groups (\d+)$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nnrpd_groups{$server} += $groups;
+      $nnrpd_articles{$server} += $articles;
+      next LINE;
+    }
+    # times
+    ($server, $user, $system, $elapsed) = $left =~ 
+             /(\S+) times user (\S+) system (\S+) elapsed (\S+)$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nnrpd_times{$server} += $elapsed;
+      next LINE;
+    }
+    # timeout
+    ($server) = $left =~ /(\S+) timeout$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nnrpd_timeout{$server}++;
+      next LINE;
+    }
+    # timeout in post
+    ($server) = $left =~ /(\S+) timeout in post$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nnrpd_timeout{$server}++;
+      next LINE;
+    }
+    # cant read Connection timed out
+    ($server) = $left =~ /(\S+) cant read Connection timed out$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nnrpd_timeout{$server}++;
+      next LINE;
+    }
+    # cant read Operation timed out
+    ($server) = $left =~ /(\S+) cant read Operation timed out$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nnrpd_timeout{$server}++;
+      next LINE;
+    }
+    # cant read Connection reset by peer
+    ($server) = $left =~ /(\S+) cant read Connection reset by peer$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $nnrpd_reset_peer{$server}++;
+      next LINE;
+    }
+    # cant gethostbyaddr
+    ($ip) = $left =~ /\? cant gethostbyaddr (\S+) .*$/;
+    if ($ip)
+    {
+      $nnrpd_gethostbyaddr{$ip}++;
+      next LINE;
+    }
+    # cant getpeername
+    if ($left =~ /\? cant getpeername/)
+    {
+      $nnrpd_getpeername++;
+      next LINE;
+    }
+    # newnews (interesting but ignored till now)
+    next LINE if ($left =~ /^\S+ newnews /);
+    # cant fopen (ignored too)
+    next LINE if ($left =~ /^\S+ cant fopen /);
+    # cant read No route to host
+    next LINE if ($left =~ /cant read No route to host/);
+  }
+  ########
+  ## inndstart
+  if ($prog eq "inndstart")
+  {
+    # cant bind Address already in use
+    next LINE if ($left =~ /cant bind Address already in use/);
+  }
+  ########
+  ## batcher
+  if ($prog eq "batcher")
+  {
+    # times
+    ($server, $user, $system, $elapsed) = 
+      $left =~ /(\S+) times user (\S+) system (\S+) elapsed (\S+)$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $batcher_user{$server} += $user;
+      $batcher_system{$server} += $system;
+      $batcher_elapsed{$server} += $elapsed;
+      next LINE;
+    }
+    # stats
+    ($server, $batches, $articles, $bytes) =
+      $left =~ /(\S+) stats batches (\d+) articles (\d+) bytes (\d+)$/;
+    if ($server)
+    {
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $batcher_offered{$server} += $batches;
+      $batcher_articles{$server} += $articles;
+      $batcher_bytes{$server} += $bytes;
+      next LINE;
+    }
+  }
+  ########
+  ## rnews
+  if ($prog eq "rnews")
+  {
+    # rejected connection
+    ($reason) = $left =~ /rejected connection (.*)$/;
+    if ($reason)
+    {
+      $rnews_rejected{$reason}++;
+      next LINE;
+    }
+    # rejected 437 Unwanted newsgroup
+    ($newsgroup) = $left =~ /rejected 437 Unwanted newsgroup (.*)$/;
+    if ($newsgroup)
+    {
+      $rnews_bogus_ng{$newsgroup}++;
+      next LINE;
+    }
+    # rejected 437 Unwanted distribution
+    ($distribution) = $left =~ /rejected 437 Unwanted distribution (.*)$/;
+    if ($distribution)
+    {
+      $rnews_bogus_dist{$distribution}++;
+      next LINE;
+    }
+    # rejected 437 Bad "Date"
+    ($date) = $left =~ /rejected 437 Bad \"Date\" (.*)$/;
+    if ($date)
+    {
+      $rnews_bogus_date{$date}++;
+      next LINE;
+    }
+    # offered
+    ($host) = $left =~ /^offered \S+ (\S+)/;
+    if ($host)
+    {
+      $rnews_host{$host}++;
+      next LINE;
+    }
+  }
+
+  # Ignore following programs :
+  next LINE if ($prog eq "ncmspool");
+  next LINE if ($prog eq "uxfxn");
+  next LINE if ($prog eq "beverage");
+
+  $unrecognize[$unrecognize_max++] = $_;
+}
+
+foreach $server (sort keys (%t_innfeed_seconds))
+{
+  $innfeed_seconds{$server} += $t_innfeed_seconds{$server};
+  $innfeed_offered{$server} += $t_innfeed_offered{$server};
+  $innfeed_accepted{$server} += $t_innfeed_accepted{$server};
+  $innfeed_refused{$server} += $t_innfeed_refused{$server};
+  $innfeed_rejected{$server} += $t_innfeed_rejected{$server};
+}
+
+$| = 1;
+
+$last_date = "$day $hour";
+if ($HTML)
+{
+  print HTML "</HEAD>\n<BODY>\n<CENTER><H2>Daily Usenet report</H2>\n";
+  print HTML "<H3>$first_date -- $last_date</H3>\n";
+  print HTML "</CENTER>\n<P><HR><P>\n";
+  
+  # Index
+  print HTML "<UL>\n";
+  print HTML "<LI><A HREF=\"#unrecognize\">Unknown entries from news log file</A>\n"
+    if ((@unrecognize) && ($WANT_UNKNOWN));
+  print HTML "<LI><A HREF=\"#prog_type\">Log entries by programs</A>\n"
+    if ((%prog_type) && ($PRGTAB));
+  print HTML "<LI><A HREF=\"#innd_control\">Control commands to INND</A>\n"
+    if (%innd_control);
+  print HTML "<LI><A HREF=\"#innd_connect\">Articles received by server</A>\n"
+    if (%innd_connect);
+  print HTML "<LI><A HREF=\"#innd_bad_ihave\">Miscellaneous innd statistics</A>\n"
+    if ((%innd_bad_ihave) || (%innd_bad_msgid) || 
+	(%innd_bad_sendme) || (%innd_bad_command) || (%innd_bad_newsgroup));
+  print HTML "<LI><A HREF=\"#innd_blocked\">Blocked server feeds</A>\n"
+    if (%innd_blocked);
+  print HTML "<LI><A HREF=\"#innd_huge\">Servers sending huge articles</A>\n"
+    if (%innd_huge);
+  print HTML "<LI><A HREF=\"#innfeed_seconds\">Articles sent by innfeed</A>\n"
+    if (%innfeed_seconds);
+  print HTML "<LI><A HREF=\"#nntplink_connects\">Articles sent by nntplink</A>\n"
+    if (%nntplink_connects);
+  print HTML "<LI><A HREF=\"#innxmit_times\">Articles sent by innxmit</A>\n"
+    if (%innxmit_times);
+  print HTML "<LI><A HREF=\"#batcher_elapsed\">UUCP batches created</A>\n"
+    if (%batcher_elapsed);
+  print HTML "<LI><A HREF=\"#rnews_host\">Rnews articles offered</A>\n"
+    if (%rnews_host);
+  print HTML "<LI><A HREF=\"#rnews_rejected\">Rnews connections rejected</A>\n"
+    if (%rnews_rejected);
+  print HTML "<LI><A HREF=\"#rnews_bogus_ng\">Rnews bad articles</A>\n"
+    if ((%rnews_bogus_ng) || (%rnews_bogus_dist) || (%rnews_bogus_date));
+  print HTML "<LI><A HREF=\"#nnrpd_groups\">NNRP readership statistics</A>\n"
+    if ((%nnrpd_groups) && ($WANT_READERSHIP));
+  print HTML "<LI><A HREF=\"#nnrpd_groups2\">Curious NNRP server explorers</A>\n"
+    if (%nnrpd_groups2);
+  print HTML "<LI><A HREF=\"#nnrpd_no_permission\">NNRP no permission clients</A>\n"
+    if (%nnrpd_no_permission);
+  print HTML "<LI><A HREF=\"#nnrpd_gethostbyaddr\">NNRP gethostbyaddr failures</A>\n"
+    if ((%nnrpd_gethostbyaddr) && ($WANT_GETHOSTFAILED));
+  print HTML "<LI><A HREF=\"#nnrpd_getpeername\">NNRP getpeername failures</A>\n"
+    if (%nnrpd_getpeername);
+  print HTML "<LI><A HREF=\"#nnrpd_unrecognized\">NNRP unrecognized commands</A>\n"
+    if (%nnrpd_unrecognized);
+  print HTML "<LI><A HREF=\"#nnrpd_timeout\">NNRP client timeouts</A>\n"
+    if (%nnrpd_timeout);
+  print HTML "<LI><A HREF=\"#innxmit_unwanted\">Bad Articles</A>\n"
+    if (%innxmit_badart);
+  print HTML "<LI><A HREF=\"#nnrpd_hierarchy\">Newsgroup request counts (by category)</A>\n"
+    if ((%nnrpd_hierarchy) && ($WANT_CATEGORY));
+  print HTML "<LI><A HREF=\"#nnrpd_group\">Newsgroup request counts (by newsgroup)</A>\n"
+    if ((%nnrpd_group) && ($NGMAX));
+
+  print HTML "</UL><P><HR><P>\n";
+}
+
+if ((@unrecognize) && ($WANT_UNKNOWN))
+{
+  print HTML "<A NAME=\"unrecognize\">\n" if ($HTML);
+  print "Unknown entries from news log file :\n";
+  print HTML "<B>Unknown entries from news log file :</B><P>\n" if ($HTML);
+  for $l (0 .. $#unrecognize)
+  {
+    print "$unrecognize[$l]";
+    if ($HTML)
+    {
+      $unrecognize[$l] =~ s/&/\&amp;/g;
+      $unrecognize[$l] =~ s/</\&lt;/g;
+      $unrecognize[$l] =~ s/>/\&gt;/g;
+      print HTML "$unrecognize[$l]<BR>";
+    }
+  }
+  print "\n";
+  print HTML "<P><HR><P>\n" if ($HTML);
+}
+
+if ((%prog_type) && ($PRGTAB))
+{
+  print HTML "<A NAME=\"prog_type\">\n" if ($HTML);
+  print "Log entries by :\n";
+  print "Program name                                                      Number\n";
+  if ($HTML)
+  {
+    print HTML "<B>Log entries by :</B><P>\n" ;
+    print HTML "<CENTER><TABLE BORDER=1>\n";
+    print HTML "<TR><TH> Program name </TH><TH> Number </TH></TR>\n<TR></TR>\n";
+  }
+  foreach $prg (sort(keys (%prog_type)))
+  {
+    printf STDOUT ("%-64.64s %7d\n", $prg, $prog_type{$prg});
+    printf HTML ("<TR><TD ALIGN=CENTER>%s</TD><TD ALIGN=RIGHT>%d</TD></TR>\n", 
+		 $prg, $prog_type{$prg}) if ($HTML);
+  }
+  print HTML "</TABLE></CENTER><P><HR><P>\n" if ($HTML);
+  print "\n";
+}
+
+if (%innd_control)
+{
+  print HTML "<A NAME=\"innd_control\">\n" if ($HTML);
+  print "Control commands to INND :\n";
+  print "Command                                 Number\n";
+  if ($HTML)
+  {
+    print HTML "<B>Control commands to INND :</B><P>\n" ;
+    print HTML "<CENTER><TABLE BORDER=1>\n";
+    print HTML "<TR><TH> Command </TH><TH> Number </TH></TR>\n<TR></TR>\n";
+  }
+  foreach $cmd (sort(keys (%innd_control)))
+  {
+    printf STDOUT ("%-40.40s %5d\n", $cmd, $innd_control{$cmd});
+    printf HTML ("<TR><TD ALIGN=CENTER>%s</TD><TD ALIGN=RIGHT>%d</TD></TR>\n", 
+		 $cmd, $innd_control{$cmd}) if ($HTML);
+  }
+  print HTML "</TABLE></CENTER><P><HR><P>\n" if ($HTML);
+  print "\n";
+  
+}
+
+if (%innd_connect)
+{
+  print HTML "<A NAME=\"innd_connect\">\n" if ($HTML);
+  # Graph size..
+  $xmax = 500;
+  $ymax = 300;
+  $h_max = 0;
+  $nb_max = 0;
+  $i = 0;
+
+  print "Articles received by server :\n";
+  print "Server                 Connects Offered    Took  Refuse   Rejct Accpt   Elapsed\n";
+  if ($HTML)
+  {
+    print HTML "<B>Articles received by server :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> Server </TH>";
+    print HTML "<TH> Connects </TH>";
+    print HTML "<TH> Offered </TH><TH> Took </TH>";
+    print HTML "<TH> Refused </TH><TH> Rejected </TH><TH> Accepted </TH>";
+    print HTML "<TH ALIGN=CENTER> Elapsed </TH></TR>\n<TR></TR>\n";
+  }
+  $tt = 0;
+  foreach $serv (sort (keys (%innd_connect)))
+  {
+    $tt += $innd_seconds{$serv};
+    $t = &second2time ($innd_seconds{$serv});
+    $offrd = $innd_accepted{$serv} + $innd_refused{$serv} + 
+      $innd_rejected{$serv};
+
+    # Compute graph size..
+    $nb_max++;
+    $h_max = $offrd if ($offrd > $h_max);
+
+    if ($offrd == 0)
+    {
+      printf STDOUT ("%-25.25s %5d %7d %7d %7d %7d %4d%% %9s\n", 
+	      $serv, $innd_connect{$serv}, $offrd,
+	      $innd_accepted{$serv}, $innd_refused{$serv}, 
+	      $innd_rejected{$serv}, 0, $t);
+      if ($HTML)
+      {
+	printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $serv, $innd_connect{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $offrd, $innd_accepted{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $innd_refused{$serv}, $innd_rejected{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d%% </TD><TD ALIGN=CENTER> %s </TD></TR>\n",
+		     0, $t);
+      }
+    }
+    else
+    {
+      printf STDOUT ("%-25.25s %5d %7d %7d %7d %7d %4d%% %9s\n", 
+	      $serv, $innd_connect{$serv}, $offrd,
+	      $innd_accepted{$serv}, $innd_refused{$serv}, 
+	      $innd_rejected{$serv}, $innd_accepted{$serv} / $offrd * 100, $t);
+      if ($HTML)
+      {
+	printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $serv, $innd_connect{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $offrd, $innd_accepted{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $innd_refused{$serv}, $innd_rejected{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d%% </TD><TD ALIGN=CENTER> %s </TD></TR>\n", 
+		     $innd_accepted{$serv} / $offrd * 100, $t);
+      }
+    }
+    $innd_connect  += $innd_connect{$serv};
+    $innd_accepted += $innd_accepted{$serv};
+    $innd_refused  += $innd_refused{$serv};
+    $innd_rejected += $innd_rejected{$serv};
+  }
+  print "\n";
+  $offrd = $innd_accepted + $innd_refused + $innd_rejected;
+  $tempo = 0;
+  $tempo = $innd_accepted / $offrd * 100 if ($offrd);
+  $t = &second2time ($tt);
+  printf STDOUT ("%-25.25s %5d %7d %7d %7d %7d %4d%% %9s\n", 
+	  "TOTAL", $innd_connect, $offrd,
+	  $innd_accepted, $innd_refused, 
+	  $innd_rejected, $tempo, $t);
+  print "\n";
+  if ($HTML)
+  {
+    print HTML "<TR></TR>\n";
+    printf HTML ("<TR><TH ALIGN=LEFT> %s </TH><TD ALIGN=RIGHT> %d </TD>",
+		 "TOTAL", $innd_connect);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		 $offrd, $innd_accepted);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		 $innd_refused, $innd_rejected);
+    printf HTML ("<TD ALIGN=RIGHT> %d%% </TD><TD ALIGN=CENTER> %s </TD></TR>\n",
+		 $tempo, $t);
+    
+    print HTML "</TABLE></CENTER><P>\n";
+    
+    if (($GRAPH) && ($offrd))
+    {
+      # Draw graph...
+      $marginx = 20;
+      $marginy = 30;
+      $inter = 20;
+
+      # To avoid division by 0
+      $nb_max = 1 unless ($nb_max);
+      $h_max = 1 unless ($h_max);
+
+      $w = sprintf ("%d", (($xmax - 2 * $marginx) - 
+		     ($nb_max - 1) * ($inter)) / ($nb_max));
+      if ($w < 5)
+      {
+	$w = 5;
+	$xmax = 2 * $marginx + ($inter + $w) * $nb_max - $inter;
+      }
+      if ($w > 50)
+      {
+	$w = 50;
+	$marginx = ($xmax - $nb_max * $w) / ($nb_max + 1);
+	$inter = $marginx;
+      }
+      $ratio = ($ymax - 2 * $marginy) / $h_max;
+      $image = new GD::Image($xmax, $ymax);
+      $white = $image->colorAllocate (255, 255, 255);
+      $black = $image->colorAllocate (  0,   0,   0);
+      $red   = $image->colorAllocate (255,   0,   0);
+      $blue  = $image->colorAllocate (  0,   0, 255);
+      $green = $image->colorAllocate (  0, 255,   0);
+      $image->transparent ($white);
+      foreach $host (sort (keys (%innd_connect)))
+      {
+	$image->stringUp (gdSmallFont, 
+			  $marginx + $i * ($w + $inter) - 14 , $ymax - $marginy,
+			  "$host", $black);
+	$image->rectangle ($marginx + $i * ($w + $inter), 
+			   $ymax - $marginy - $innd_accepted{$host} * $ratio,
+			   $marginx + $i * ($w + $inter) + $w,
+			   $ymax - $marginy, $black);
+	$image->rectangle ($marginx + $i * ($w + $inter),
+			   $ymax - $marginy - 
+			   ($innd_accepted{$host} + 
+			    $innd_refused{$host}) * $ratio,
+			   $marginx + $i * ($w + $inter) + $w,
+			   $ymax - $marginy - 
+			   $innd_accepted{$host} * $ratio, $black);
+	$image->rectangle ($marginx + $i * ($w + $inter),
+			   $ymax - $marginy - ($innd_accepted{$host} +
+					       $innd_refused{$host} + 
+					       $innd_rejected{$host}) * $ratio,
+			   $marginx + $i * ($w + $inter) + $w,
+			   $ymax - $marginy -
+			   ($innd_accepted{$host} + 
+			    $innd_refused{$host}) * $ratio,
+			   $black);
+      
+	$image->fill ($marginx + $i * ($w + $inter) + 1, 
+		      $ymax - $marginy - 1, $blue)
+	  if ($innd_accepted{$host} * $ratio > 2);
+	$image->fill ($marginx + $i * ($w + $inter) + 1, 
+		      $ymax - $marginy - $innd_accepted{$host} * $ratio  - 1, 
+		      $red)
+	  if ($innd_refused{$host} * $ratio > 2);
+	$image->fill ($marginx + $i * ($w + $inter) + 1,
+		      $ymax - $marginy -
+		      ($innd_accepted{$host} + $innd_refused{$host}) * 
+		      $ratio - 1, $green)
+	  if ($innd_rejected{$host} * $ratio > 2);
+	
+	$i++;
+      }
+      $marginx = 20;
+      $image->rectangle ($marginx, 5, $marginx + 15, 20, $black);
+      $image->fill ($marginx + 1, 6, $blue);
+      $image->string (gdSmallFont, 
+		      $marginx + 20, 13.5 - gdSmallFont->height / 2,
+		      "Articles accepted", $black);
+      
+      $image->rectangle ($xmax / 2 - 50, 5, $xmax / 2 - 35, 20, $black);
+      $image->fill ($xmax / 2 - 49, 6, $red);
+      $image->string (gdSmallFont, 
+		      $xmax / 2 - 30, 13.5 - gdSmallFont->height / 2,
+		      "Articles refused", $black);
+      
+      $image->rectangle ($xmax - 160, 5, $xmax - 145, 20, $black);
+      $image->fill ($xmax - 159, 6, $green);
+      $image->string (gdSmallFont, 
+		      $xmax - 140, 13.5 - gdSmallFont->height / 2,
+		      "Articles rejected", $black);
+      $image->rectangle (0, 0, $xmax - 1, 25, $black);
+      $image->rectangle (0, 0, $xmax - 1, $ymax - 1, $black);
+      $image->string (gdSmallFont, 170, $ymax - 5 - gdSmallFont->height,
+		      "Articles received by server", $black);
+      print HTML "<CENTER><IMG SRC=\"$IMG_pth"."innd$suffix.gif\"></CENTER><P>\n";
+      close (HTML);
+      open (IMG, "> $IMG_dir/innd$suffix.gif") || die "Can't create img\n";
+      print IMG $image->gif;
+      close (IMG);
+      open (HTML, ">> $HTML_output") || 
+	die "Error : cant open $HTML_output\n";
+    }
+    print HTML "<HR><P>\n";
+  }
+}
+
+if ((%innd_bad_ihave) || (%innd_bad_msgid) || 
+    (%innd_bad_sendme) || (%innd_bad_command) || (%innd_bad_newsgroup))
+{
+  print HTML "<A NAME=\"innd_bad_ihave\">\n" if ($HTML);
+  print "Miscellaneous innd statistics :\n";
+  $misc = 0;
+  if ($HTML)
+  {
+    print HTML "<B>Miscellaneous innd statistics :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n";
+    print HTML "<TR><TH ALIGN=LEFT> Reason </TH><TH ALIGN=CENTER> System </TH><TH ALIGN=CENTER> Number </TH></TR>\n";
+  }
+  if (%innd_bad_ihave)
+  {
+    print "Bad ihave control messages received :\n";
+    print HTML 
+      ("<TR><TD ALIGN=LEFT>Bad ihave control messages received</TD></TR>\n" )
+	if ($HTML);
+    foreach $host (sort keys %innd_bad_ihave)
+    {
+      $misc += $innd_bad_ihave{$host};
+      printf STDOUT (" %-64.64s %5d\n", $host, $innd_bad_ihave{$host});
+      printf HTML ("<TR><TD> %s </TD><TD> %5d </TD></TR>\n", 
+	      $host, $innd_bad_ihave{$host}) if ($HTML);
+    }
+  }
+  if (%innd_bad_msgid)
+  {
+    print "Bad Message-ID's offered :\n";
+    print HTML 
+      "<TR><TD ALIGN=LEFT>Bad Message-ID's offered</TD></TR>\n"
+	if ($HTML);
+    foreach $host (sort keys %innd_bad_msgid)
+    {
+      $misc += $innd_bad_msgid{$host};
+      printf STDOUT (" %-64.64s %5d\n", $host, $innd_bad_msgid{$host});
+      printf HTML 
+	("<TR><TD></TD><TD> %s </TD><TD ALIGN=RIGHT> %5d </TD></TR>\n", 
+	      $host, $innd_bad_msgid{$host}) if ($HTML);
+    }
+  }
+  if (%innd_bad_sendme)
+  {
+    print "Ignored sendme control messages received :\n";
+    print HTML 
+      "<TR><TD ALIGN=LEFT>Ignored sendme control messages received</TD></TR>\n"
+	if ($HTML);
+    foreach $host (sort keys %innd_bad_sendme)
+    {
+      $misc += $innd_bad_sendme{$host};
+      printf STDOUT (" %-64.64s %5d\n", $host, $innd_bad_sendme{$host});
+      printf HTML 
+	("<TR><TD></TD><TD> %s </TD><TD ALIGN=RIGHT> %5d </TD></TR>\n", 
+	      $host, $innd_bad_sendme{$host}) if ($HTML);
+    }
+  }
+  if (%innd_bad_command)
+  {
+    print "Bad command received :\n";
+    print HTML 
+      "<TR><TD ALIGN=LEFT>Bad command received</TD></TR>\n"
+	if ($HTML);
+    foreach $host (sort keys %innd_bad_command)
+    {
+      $misc += $innd_bad_command{$host};
+      printf STDOUT (" %-64.64s %5d\n", $host, $innd_bad_command{$host});
+      printf HTML 
+	("<TR><TD></TD><TD> %s </TD><TD ALIGN=RIGHT> %5d </TD></TR>\n", 
+	      $host, $innd_bad_command{$host}) if ($HTML);
+    }
+  }
+  if (%innd_bad_newsgroup)
+  {
+    print "Bad newsgroups received :\n";
+    print HTML 
+      "<TR><TD ALIGN=LEFT>Bad newsgroups received</TD></TR>\n"
+       if ($HTML);
+    foreach $host (sort keys %innd_bad_newsgroup)
+    {
+      $misc += $innd_bad_newsgroup{$host};
+      printf STDOUT (" %-64.64s %5d\n", $host, $innd_bad_newsgroup{$host});
+      printf HTML 
+       ("<TR><TD></TD><TD> %s </TD><TD ALIGN=RIGHT> %5d </TD></TR>\n", 
+             $host, $innd_bad_newsgroup{$host}) if ($HTML);
+    }
+  }
+
+  print "\n";
+  printf STDOUT ("%-64.64s  %5d\n", "TOTAL", $misc); 
+  print "\n";
+  printf HTML 
+    ("<TR><TH ALIGN=LEFT> TOTAL </TH><TD> </TD><TD ALIGN=RIGHT> %5d </TD></TR>\n", 
+     $misc) if ($HTML);
+
+  print HTML "</TABLE></CENTER><P><HR><P>\n" if ($HTML);
+}
+
+if (%innd_blocked)
+{
+  print HTML "<A NAME=\"innd_blocked\">\n" if ($HTML);
+  print "Blocked server feeds :\n";
+  if ($HTML)
+  {
+    print HTML "<B>Blocked server feeds :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> System </TH>";
+    print HTML "<TH> Number </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  foreach $serv (sort(keys (%innd_blocked)))
+  {
+    printf STDOUT ("%-64.64s %5d\n", 
+	    $serv, $innd_blocked{$serv});
+    if ($HTML)
+    {
+      printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		   $serv, $innd_blocked{$serv});
+    }
+  }
+  print "\n";
+  print HTML "</TABLE></CENTER><P><HR><P>\n" if ($HTML);
+}
+
+if (%innd_huge)
+{
+  print HTML "<A NAME=\"innd_huge\">\n" if ($HTML);
+  print "Servers sending huge articles :\n";
+  print "System                                                        Articles\n";
+  if ($HTML)
+  {
+    print HTML "<B>Server sending huge articles :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> System </TH>";
+    print HTML "<TH> Articles </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  foreach $serv (sort(keys (%innd_huge)))
+  {
+    printf STDOUT ("%-64.64s %5d\n", 
+	    $serv, $innd_huge{$serv});
+    if ($HTML)
+    {
+      printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		   $serv, $innd_huge{$serv});
+    }
+  }
+  print "\n";
+  print HTML "</TABLE></CENTER><P><HR><P>\n" if ($HTML);
+}
+
+if (%innfeed_seconds)
+{
+  print HTML "<A NAME=\"innfeed_seconds\">\n" if ($HTML);
+
+  # Graph size..
+  $xmax = 500;
+  $ymax = 300;
+  $h_max = 0;
+  $nb_max = 0;
+
+  print "Articles sent by innfeed :\n";
+  print "Server               Offered    Took  Refuse  Rejct Miss   Spool Accpt  Elapsed \n";
+  if ($HTML)
+  {
+    print HTML "<B>Articles sent by innfeed :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> Server </TH>";
+    print HTML "<TH> Offered </TH>";
+    print HTML "<TH> Took </TH><TH> Refused </TH><TH> Rejected </TH>";
+    print HTML "<TH> Missing </TH><TH> Spooled </TH><TH> Accepted </TH>";
+    print HTML "<TH ALIGN=CENTER> Elapsed </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  $tt = 0;
+  foreach $serv (sort(keys (%innfeed_offered)))
+  {
+    $tt += $innfeed_seconds{$serv};
+    $t = &second2time ($innfeed_seconds{$serv});
+
+    # Compute graph size..
+    $nb_max++;
+    $h_max = $innfeed_offered{$serv} if ($innfeed_offered{$serv} > $h_max);
+
+    if ($innfeed_offered{$serv} == 0)
+    {
+      printf STDOUT ("%-20.20s %7d %7d %7d %6d %4d %7d %3d%% %9s\n", 
+	      $serv, $innfeed_offered{$serv},
+	      $innfeed_accepted{$serv}, $innfeed_refused{$serv}, 
+	      $innfeed_rejected{$serv},
+	      $innfeed_missing{$serv}, $innfeed_spooled{$serv}, 0, $t);
+      if ($HTML)
+      {
+	printf HTML ("<TR><TD> %s </TD>",
+		     $serv);
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD>",
+		     $innfeed_offered{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $innfeed_accepted{$serv}, $innfeed_refused{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $innfeed_rejected{$serv}, $innfeed_missing{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d%% </TD>",
+		     $innfeed_spooled{$serv}, 0);
+	printf HTML ("<TD ALIGN=CENTER> %s </TD></TR>\n", $t);
+      }
+    }
+    else
+    {
+      printf STDOUT ("%-20.20s %7d %7d %7d %6d %4d %7d %3d%% %9s\n", 
+	      $serv, $innfeed_offered{$serv},
+	      $innfeed_accepted{$serv}, $innfeed_refused{$serv}, 
+	      $innfeed_rejected{$serv}, $innfeed_missing{$serv},
+	      $innfeed_spooled{$serv},
+	      $innfeed_accepted{$serv} / $innfeed_offered{$serv} * 100, $t);
+      if ($HTML)
+      {
+	printf HTML ("<TR><TD> %s </TD>",
+		     $serv);
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD>",
+		     $innfeed_offered{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $innfeed_accepted{$serv}, $innfeed_refused{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $innfeed_rejected{$serv}, $innfeed_missing{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d%% </TD>",
+		     $innfeed_spooled{$serv}, 
+		     $innfeed_accepted{$serv} / $innfeed_offered{$serv} * 100);
+	printf HTML ("<TD ALIGN=CENTER> %s </TD></TR>\n", $t);		 
+      }
+    }
+    $innfeed_offered  += $innfeed_offered{$serv};
+    $innfeed_connect  += $innfeed_connect{$serv};
+    $innfeed_accepted += $innfeed_accepted{$serv};
+    $innfeed_refused  += $innfeed_refused{$serv};
+    $innfeed_rejected += $innfeed_rejected{$serv};
+    $innfeed_missing  += $innfeed_missing{$serv};
+    $innfeed_spooled  += $innfeed_spooled{$serv};
+  }
+  print "\n";
+  $t = &second2time ($tt);
+
+  # To avoid division by 0
+  $innfeed_offered2 = $innfeed_offered;
+  $innfeed_offered2 = 1 unless ($innfeed_offered);
+
+  printf STDOUT ("%-20.20s %7d %7d %7d %6d %4d %7d %3d%% %9s\n", 
+	  "TOTAL", $innfeed_offered, $innfeed_accepted,
+	  $innfeed_refused, $innfeed_rejected, $innfeed_missing,
+	  $innfeed_spooled, $innfeed_accepted / $innfeed_offered2 * 100, $t);
+  print "\n";
+  if ($HTML)
+  {
+    print HTML "<TR></TR>\n";
+    printf HTML ("<TR><TH ALIGN=LEFT> %s </TH>",
+		 "TOTAL");
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD>", $innfeed_offered);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		 $innfeed_accepted, $innfeed_refused);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		 $innfeed_rejected, $innfeed_missing);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d%% </TD>",
+		 $innfeed_spooled, 
+		 $innfeed_accepted / $innfeed_offered2 * 100);
+    printf HTML ("<TD ALIGN=CENTER> %s </TD></TR>\n", $t);
+    print HTML "</TABLE></CENTER><P>\n";
+    if ($GRAPH)
+    {
+      # Draw graph...
+      $marginx = 20;
+      $marginy = 30;
+      $inter = 20;
+      $i = 0;
+      
+      $w = sprintf ("%d", 
+		    (($xmax - 2 * $marginx) - 
+		     ($nb_max - 1) * ($inter)) / ($nb_max));
+      if ($w < 5)
+      {
+	$w = 5;
+	$xmax = 2 * $marginx + ($inter + $w) * $nb_max - $inter;
+      }
+      if ($w > 50)
+      {
+	$w = 50;
+	$marginx = ($xmax - $nb_max * $w) / ($nb_max + 1);
+	$inter = $marginx;
+      }
+
+      # To avoid division by 0
+      $h_max = 1 unless ($h_max);
+
+      $ratio = ($ymax - 2 * $marginy) / $h_max;
+      $img2 = new GD::Image($xmax, $ymax);
+      $white = $img2->colorAllocate (255, 255, 255);
+      $black = $img2->colorAllocate (  0,   0,   0);
+      $red   = $img2->colorAllocate (255,   0,   0);
+      $blue  = $img2->colorAllocate (  0,   0, 255);
+      $img2->transparent ($white);
+      foreach $host (sort (keys (%innfeed_offered)))
+      {
+	$img2->stringUp (gdSmallFont, 
+			 $marginx + $i * ($w + $inter) - 14 , $ymax - $marginy,
+			 "$host", $black);
+	$img2->rectangle ($marginx + $i * ($w + $inter), 
+			  $ymax - $marginy - $innfeed_accepted{$host} * $ratio,
+			  $marginx + $i * ($w + $inter) + $w,
+			  $ymax - $marginy, $black);
+	$img2->rectangle ($marginx + $i * ($w + $inter),
+			  $ymax - $marginy - 
+			  $innfeed_offered{$host} * $ratio,
+			  $marginx + $i * ($w + $inter) + $w,
+			  $ymax - $marginy - $innfeed_accepted{$host} * $ratio,
+			  $black);
+	$img2->fill ($marginx + $i * ($w + $inter) + 1, 
+		     $ymax - $marginy - 1, $blue)
+	  if ($innfeed_accepted{$host} * $ratio > 2);
+	$img2->fill ($marginx + $i * ($w + $inter) + 1, 
+		     $ymax - $marginy - $innfeed_accepted{$host} * $ratio  - 1, 
+		     $red)
+	  if (($innfeed_offered{$host} - 
+	       $innfeed_accepted{$host}) * $ratio > 2);
+	$i++;
+      }
+      $marginx = 30;
+      $img2->rectangle ($marginx, 5, $marginx + 15, 20, $black);
+      $img2->fill ($marginx + 1, 6, $blue);
+      $img2->string (gdSmallFont, 
+		     $marginx + 20, 13.5 - gdSmallFont->height / 2,
+		     "Articles accepted", $black);
+      
+      $img2->rectangle ($xmax - 160, 5, $xmax - 145, 20, $black);
+      $img2->fill ($xmax - 159, 6, $red);
+      $img2->string (gdSmallFont, 
+		     $xmax - 140, 13.5 - gdSmallFont->height / 2,
+		     "Others", $black);
+      
+      $img2->rectangle (0, 0, $xmax - 1, 25, $black);
+      $img2->rectangle (0, 0, $xmax - 1, $ymax - 1, $black);
+      $img2->string (gdSmallFont, 170, $ymax - 5 - gdSmallFont->height,
+		     "Articles sent by innfeed", $black);
+      print HTML 
+	"<CENTER><IMG SRC=\"$IMG_pth"."innfeed$suffix.gif\"></CENTER><P>\n";
+      close (HTML);
+      open (IMG, "> $IMG_dir/innfeed$suffix.gif") || die "Can't create img\n";
+      print IMG $img2->gif;
+      close (IMG);
+      open (HTML, ">> $HTML_output") || 
+	die "Error : cant open $HTML_output\n";
+    }
+    print HTML "<HR><P>\n";
+  }
+}
+
+if (%nntplink_connects)
+{
+  print HTML "<A NAME=\"nntplink_connects\">\n" if ($HTML);
+  # Graph size..
+  $xmax = 500;
+  $ymax = 300;
+  $h_max = 0;
+  $nb_max = 0;
+
+  print "Articles sent by nntplink :\n";
+  print "Server                    Offered    Took   Rejct  Failed Accpt   Elapsed\n";
+  if ($HTML)
+  {
+    print HTML "<B>Articles sent by nntplink :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> Server </TH>";
+    print HTML "<TH> Offered </TH>";
+    print HTML "<TH> Took </TH><TH> Rejected </TH>";
+    print HTML "<TH> Failed </TH><TH> Accepted </TH>";
+    print HTML "<TH ALIGN=CENTER> Elapsed </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  $tt = 0;
+
+  foreach $serv (sort(keys (%nntplink_site)))
+  {
+    $tt += $nntplink_times{$serv};
+    $t = &second2time ($nntplink_times{$serv});
+
+    # Compute graph size..
+    $nb_max++;
+    $h_max = $nntplink_offered{$serv} if ($nntplink_offered{$serv} > $h_max);
+
+    if ($nntplink_offered{$serv} == 0)
+    {
+      printf STDOUT ("%-25.25s %7d %7d %7d %7d %4d%% %9s\n", 
+	      $serv, $nntplink_offered{$serv},
+	      $nntplink_accepted{$serv}, $nntplink_rejected{$serv},
+	      $nntplink_failed{$serv}, 0, $t);
+      if ($HTML)
+      {
+	printf HTML ("<TR><TD> %s </TD>",
+		     $serv);
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD>",
+		     $nntplink_offered{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD>",
+		     $nntplink_accepted{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $nntplink_rejected{$serv}, $nntplink_failed{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d%% </TD><TD ALIGN=CENTER> %s </TD>",
+		     0, $t);
+	printf HTML ("</TR>\n");
+      }
+    }
+    else
+    {
+      printf STDOUT ("%-25.25s %7d %7d %7d %7d %4d%% %9s\n", 
+	      $serv, $nntplink_offered{$serv},
+	      $nntplink_accepted{$serv},
+	      $nntplink_rejected{$serv}, $nntplink_failed{$serv},
+	      $nntplink_accepted{$serv} / $nntplink_offered{$serv} * 100, $t);
+      if ($HTML)
+      {
+	printf HTML ("<TR><TD> %s </TD>",
+		     $serv);
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD>",
+		     $nntplink_offered{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD>",
+		     $nntplink_accepted{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $nntplink_rejected{$serv}, $nntplink_failed{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d%% </TD><TD ALIGN=CENTER> %s </TD>",
+		     $nntplink_accepted{$serv} / $nntplink_offered{$serv} * 
+		     100, $t);
+	printf HTML ("</TR>\n");
+      }
+    }
+    $nntplink_offered  += $nntplink_offered{$serv};
+    $nntplink_connect  += $nntplink_connect{$serv};
+    $nntplink_accepted += $nntplink_accepted{$serv};
+    $nntplink_rejected += $nntplink_rejected{$serv};
+    $nntplink_failed += $nntplink_failed{$serv};
+  }
+  print "\n";
+  $t = &second2time ($tt);
+
+  # To avoid division by 0
+  $nntplink_offered2 = $nntplink_offered;
+  $nntplink_offered2 = 1 unless ($nntplink_offered);
+
+  printf STDOUT ("%-25.25s %7d %7d %7d %7d %4d%% %9s\n", 
+	  "TOTAL", $nntplink_offered, $nntplink_accepted,
+	  $nntplink_rejected, $nntplink_failed,
+	  $nntplink_accepted / $nntplink_offered2 * 100, $t);
+  print "\n";
+  if ($HTML)
+  {
+    print HTML "<TR></TR>\n";
+    printf HTML ("<TR><TH ALIGN=LEFT> %s </TH>",
+		 "TOTAL");
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD>",
+		 $nntplink_offered);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD>",
+		 $nntplink_accepted);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		 $nntplink_rejected, $nntplink_failed);
+    printf HTML ("<TD ALIGN=RIGHT> %d%% </TD><TD ALIGN=CENTER> %s </TD></TR>\n",
+		 $nntplink_accepted / $nntplink_offered2 * 100, $t);
+    
+    print HTML "</TABLE></CENTER><P>\n";
+
+    if ($GRAPH)
+    {
+      # Draw graph...
+      $marginx = 20;
+      $marginy = 30;
+      $inter = 20;
+      $i = 0;
+      
+      $w = sprintf ("%d", 
+		    (($xmax - 2 * $marginx) - 
+		     ($nb_max - 1) * ($inter)) / ($nb_max));
+      if ($w < 5)
+      {
+	$w = 5;
+	$xmax = 2 * $marginx + ($inter + $w) * $nb_max - $inter;
+      }
+      if ($w > 50)
+      {
+	$w = 50;
+	$marginx = ($xmax - $nb_max * $w) / ($nb_max + 1);
+	$inter = $marginx;
+      }
+
+      $h_max = 1 unless ($h_max);
+      $ratio = ($ymax - 2 * $marginy) / $h_max;
+      $img2 = new GD::Image($xmax, $ymax);
+      $white = $img2->colorAllocate (255, 255, 255);
+      $black = $img2->colorAllocate (  0,   0,   0);
+      $red   = $img2->colorAllocate (255,   0,   0);
+      $blue  = $img2->colorAllocate (  0,   0, 255);
+      $img2->transparent ($white);
+      foreach $host (sort (keys (%nntplink_site)))
+      {
+	$img2->stringUp (gdSmallFont, 
+			 $marginx + $i * ($w + $inter) - 14 , $ymax - $marginy,
+			 "$host", $black);
+	$img2->rectangle ($marginx + $i * ($w + $inter), 
+			  $ymax - $marginy - 
+			  $nntplink_accepted{$host} * $ratio,
+			  $marginx + $i * ($w + $inter) + $w,
+			  $ymax - $marginy, $black);
+	$img2->rectangle ($marginx + $i * ($w + $inter),
+			  $ymax - $marginy - 
+			  $nntplink_offered{$host} * $ratio,
+			  $marginx + $i * ($w + $inter) + $w,
+			  $ymax - $marginy -
+			  $nntplink_accepted{$host} * $ratio,
+			  $black);
+	$img2->fill ($marginx + $i * ($w + $inter) + 1, 
+		     $ymax - $marginy - 1, $blue)
+	  if ($nntplink_accepted{$host} * $ratio > 2);
+	$img2->fill ($marginx + $i * ($w + $inter) + 1, 
+		     $ymax - $marginy - 
+		     $nntplink_accepted{$host} * $ratio  - 1, 
+		     $red)
+	  if (($nntplink_offered{$host} - 
+	       $nntplink_accepted{$host}) * $ratio > 2);
+	$i++;
+      }
+      $marginx = 30;
+      $img2->rectangle ($marginx, 5, $marginx + 15, 20, $black);
+      $img2->fill ($marginx + 1, 6, $blue);
+      $img2->string (gdSmallFont, 
+		     $marginx + 20, 13.5 - gdSmallFont->height / 2,
+		     "Articles accepted", $black);
+      
+      $img2->rectangle ($xmax - 160, 5, $xmax - 145, 20, $black);
+      $img2->fill ($xmax - 159, 6, $red);
+      $img2->string (gdSmallFont, 
+		     $xmax - 140, 13.5 - gdSmallFont->height / 2,
+		     "Others", $black);
+      
+      $img2->rectangle (0, 0, $xmax - 1, 25, $black);
+      $img2->rectangle (0, 0, $xmax - 1, $ymax - 1, $black);
+      $img2->string (gdSmallFont, 170, $ymax - 5 - gdSmallFont->height,
+		     "Articles sent by nntplink", $black);
+      $fname = "$IMG_pth" . "nntplink$suffix.gif";
+      print HTML 
+	"<CENTER><IMG SRC=\"$fname\"></CENTER><P>\n";
+#      print HTML 
+#	"<CENTER><IMG SRC=\"$IMG_pth"."nntplink$suffix.gif\"></CENTER><P>\n";
+      close (HTML);
+      open (IMG, "> $IMG_dir/nntplink$suffix.gif") || die "Can't create img\n";
+      print IMG $img2->gif;
+      close (IMG);
+      open (HTML, ">> $HTML_output") || 
+	die "Error : cant open $HTML_output\n";
+    }
+  }
+  print "Transmission Connection Attempts        ------errors-------\n";
+  print "Server               Conn   Ok EOF Sock Slct Load Bpip Spce  Exp Auth Othr   Pct\n";
+  if ($HTML)
+  {
+    print HTML "<B>Transmission Connection Attempts :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> Server </TH>";
+    print HTML "<TH ALIGN=CENTER> Connects </TH>";
+    print HTML "<TH> Ok </TH><TH> EOF </TH>";
+    print HTML "<TH> Socket </TH><TH> <I>Select</I> </TH><TH><I> Load</I> </TH>";
+    print HTML "<TH> <I>BPipe</I> </TH><TH> <I>Space</I> </TH><TH> Exp </TH><TH>";
+    print HTML " Auth </TH><TH> Other </TH><TH> Pct </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  $tt = 0;
+  foreach $serv (sort(keys (%nntplink_site)))
+  {
+    $errors = $nntplink_eof{$serv} + $nntplink_sockerr{$serv} +
+	    $nntplink_selecterr{$serv} + $nntplink_hiload{$serv} + 
+	    $nntplink_bpipe{$serv} + $nntplink_nospace{$serv} + 
+	    $nntplink_auth{$serv} + $nntplink_expire{$serv} + 
+	    $nntplink_fail{$serv};
+    $ok = $nntplink_site{$serv} - $errors;
+    if ($nntplink_offered{$serv} == 0)
+    {
+      printf STDOUT ("%-20.20s %4d %4d %3d %4d %4d %4d %4d %4d %4d %4d %4d %4d%%\n", 
+	      $serv, $nntplink_site{$serv}, $ok, $nntplink_eof{$serv},
+	      $nntplink_sockerr{$serv}, $nntplink_selecterr{$serv},
+	      $nntplink_hiload{$serv}, $nntplink_bpipe{$serv}, 
+	      $nntplink_nospace{$serv}, $nntplink_expire{$serv}, 
+	      $nntplink_auth{$serv}, $nntplink_fail{$serv}, 0);
+      if ($HTML)
+      {
+	printf HTML ("<TR><TD> %s </TD>",
+		     $serv);
+	printf HTML ("<TD ALIGN=RIGHT> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $nntplink_site{$serv}, $ok);
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $nntplink_eof{$serv}, $nntplink_sockerr{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $nntplink_selecterr{$serv}, $nntplink_hiload{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $nntplink_bpipe{$serv}, $nntplink_nospace{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $nntplink_expire{$serv}, $nntplink_auth{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD>", $nntplink_fail{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d%% </TD></TR>\n", 0);
+      }
+    }
+    else
+    {
+      printf STDOUT ("%-20.20s %4d %4d %3d %4d %4d %4d %4d %4d %4d %4d %4d %4d%%\n", 
+	      $serv, $nntplink_site{$serv}, $ok, $nntplink_eof{$serv},
+	      $nntplink_sockerr{$serv}, $nntplink_selecterr{$serv},
+	      $nntplink_hiload{$serv}, $nntplink_bpipe{$serv}, 
+	      $nntplink_nospace{$serv}, $nntplink_expire{$serv}, 
+	      $nntplink_auth{$serv}, $nntplink_fail{$serv},
+	      100.0 * $ok / $nntplink_site{$serv});
+      if ($HTML)
+      {
+	printf HTML ("<TR><TD> %s </TD>",
+		     $serv);
+	printf HTML ("<TD ALIGN=RIGHT> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $nntplink_site{$serv}, $ok);
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $nntplink_eof{$serv}, $nntplink_sockerr{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $nntplink_selecterr{$serv}, $nntplink_hiload{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $nntplink_bpipe{$serv}, $nntplink_nospace{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $nntplink_expire{$serv}, $nntplink_auth{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD>", $nntplink_fail{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d%% </TD></TR>\n",
+		     100.0 * $ok / $nntplink_site{$serv});
+      }
+    }
+    $nntplink_site += $nntplink_site{$serv};
+    $ok_tot += $ok;
+    $nntplink_eof += $nntplink_eof{$serv};
+    $nntplink_sockerr += $nntplink_sockerr{$serv};
+    $nntplink_selecterr += $nntplink_selecterr{$serv};
+    $nntplink_hiload += $nntplink_hiload{$serv};
+    $nntplink_bpipe += $nntplink_bpipe{$serv};
+    $nntplink_nospace += $nntplink_nospace{$serv};
+    $nntplink_expire += $nntplink_expire{$serv};
+    $nntplink_auth += $nntplink_auth{$serv};
+    $nntplink_fail += $nntplink_fail{$serv};
+    
+  }
+  print "\n";
+
+  $nntplink_site2 = $nntplink_site;
+  $nntplink_site2 = 1 unless ($nntplink_site);
+
+  printf STDOUT ("%-20.20s %4d %4d %3d %4d %4d %4d %4d %4d %4d %4d %4d %4d%%\n", 
+	  "TOTAL", $nntplink_site, $ok_tot, $nntplink_eof,
+	  $nntplink_sockerr, $nntplink_selecterr,
+	  $nntplink_hiload, $nntplink_bpipe, 
+	  $nntplink_nospace, $nntplink_expire, 
+	  $nntplink_auth, $nntplink_fail, 
+	  100.0 * $ok_tot / $nntplink_site2);
+  print "\n";
+  if ($HTML)
+  {
+    printf HTML ("<TR><TH ALIGN=LEFT> %s </TH>",
+		 "TOTAL");
+    printf HTML ("<TD ALIGN=RIGHT> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		 $nntplink_site, $ok_tot);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		 $nntplink_eof, $nntplink_sockerr);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		 $nntplink_selecterr, $nntplink_hiload);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		 $nntplink_bpipe, $nntplink_nospace);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		 $nntplink_expire, $nntplink_auth);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD>", $nntplink_fail);
+    printf HTML ("<TD ALIGN=RIGHT> %d%% </TD></TR>\n",
+		 100.0 * $ok_tot / $nntplink_site2);
+    print HTML "</TABLE></CENTER><P><HR><P>\n";
+  }
+}
+
+if (%innxmit_times)
+{
+  print HTML "<A NAME=\"innxmit_times\">\n" if ($HTML);
+  # Graph size..
+  $xmax = 500;
+  $ymax = 300;
+  $h_max = 0;
+  $nb_max = 0;
+
+  print "Articles sent by innxmit :\n";
+  print "System                      Offrd    Took  Refuse   Rejct Accpt   Elapsed\n";
+  if ($HTML)
+  {
+    print HTML "<B>Articles sent by innxmit :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> System </TH>";
+    print HTML "<TH> Offered </TH><TH> Took </TH>";
+    print HTML "<TH> Refused </TH>";
+    print HTML "<TH> Rejected </TH><TH> Accepted </TH><TH> Elapsed </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  $tt = 0;
+  foreach $serv (sort(keys (%innxmit_times)))
+  {
+    $tt += $innxmit_times{$serv};
+    $t = &second2time ($innxmit_times{$serv});
+
+    # Compute graph size..
+    $nb_max++;
+    $h_max = $innxmit_offered{$serv} if ($innxmit_offered{$serv} > $h_max);
+
+    if ($innxmit_offered{$serv} == 0)
+    {
+      printf STDOUT ("%-25.25s %7d %7d %7d %7d %4d%% %9s\n", 
+	      $serv, $innxmit_offered{$serv},
+	      $innxmit_accepted{$serv}, $innxmit_refused{$serv}, 
+	      $innxmit_rejected{$serv}, 0, $t);
+      if ($HTML)
+      {
+	printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $serv, $innxmit_offered{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $innxmit_accepted{$serv}, $innxmit_refused{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d%% </TD>",
+		     $innxmit_rejected{$serv}, 0);
+	printf HTML ("<TD ALIGN=CENTER> %s </TD></TR>\n", $t);
+      }
+    }
+    else
+    {
+      printf STDOUT ("%-25.25s %7d %7d %7d %7d %4d%% %9s\n", 
+	      $serv, $innxmit_offered{$serv},
+	      $innxmit_accepted{$serv}, $innxmit_refused{$serv}, 
+	      $innxmit_rejected{$serv}, 
+	      $innxmit_accepted{$serv} / $innxmit_offered{$serv} * 100, $t);
+      if ($HTML)
+      {
+	printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $serv, $innxmit_offered{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $innxmit_accepted{$serv}, $innxmit_refused{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d%% </TD>",
+		     $innxmit_rejected{$serv}, 100 *
+		     $innxmit_accepted{$serv} / $innxmit_offered{$serv});
+	printf HTML ("<TD ALIGN=CENTER> %s </TD></TR>\n", $t);
+      }
+    }
+    $innxmit_offered  += $innxmit_offered{$serv};
+    $innxmit_accepted += $innxmit_accepted{$serv};
+    $innxmit_refused  += $innxmit_refused{$serv};
+    $innxmit_rejected += $innxmit_rejected{$serv};
+  }
+  print "\n";
+  $t = &second2time ($tt);
+
+  $innxmit_offered2 = $innxmit_offered;
+  $innxmit_offered2 = 1 unless ($innxmit_offered);
+
+  $offrd = $innxmit_accepted + $innxmit_refused + $innxmit_rejected;
+  printf STDOUT ("%-25.25s %7d %7d %7d %7d %4d%% %9s\n", 
+	  "TOTAL", $innxmit_offered,
+	  $innxmit_accepted, $innxmit_refused, $innxmit_rejected,
+	  $innxmit_accepted / $innxmit_offered2 * 100, $t);
+  print "\n";
+  if ($HTML)
+  {
+    print HTML "<TR></TR>\n";
+    printf HTML ("<TR><TH ALIGN=LEFT> %s </TH><TD ALIGN=RIGHT> %d </TD>",
+		 "TOTAL", $innxmit_offered);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		 $innxmit_accepted, $innxmit_refused);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d%% </TD>",
+		 $innxmit_rejected, 
+		 $innxmit_accepted / $innxmit_offered2 * 100);
+    printf HTML ("<TD ALIGN=CENTER> %s </TD></TR>\n", $t);
+    print HTML "</TABLE></CENTER><P>\n";
+    if ($GRAPH)
+    {
+      # Draw graph...
+      $marginx = 20;
+      $marginy = 30;
+      $inter = 20;
+      $i = 0;
+      
+      $w = sprintf ("%d", 
+		    (($xmax - 2 * $marginx) - 
+		     ($nb_max - 1) * ($inter)) / ($nb_max));
+      if ($w < 5)
+      {
+	$w = 5;
+	$xmax = 2 * $marginx + ($inter + $w) * $nb_max - $inter;
+      }
+      if ($w > 50)
+      {
+	$w = 50;
+	$marginx = ($xmax - $nb_max * $w) / ($nb_max + 1);
+	$inter = $marginx;
+      }
+
+      $h_max = 1 unless ($h_max);
+
+      $ratio = ($ymax - 2 * $marginy) / $h_max;
+      $img2 = new GD::Image($xmax, $ymax);
+      $white = $img2->colorAllocate (255, 255, 255);
+      $black = $img2->colorAllocate (  0,   0,   0);
+      $red   = $img2->colorAllocate (255,   0,   0);
+      $blue  = $img2->colorAllocate (  0,   0, 255);
+      $img2->transparent ($white);
+      foreach $host (sort (keys (%innxmit_offered)))
+      {
+	$img2->stringUp (gdSmallFont, 
+			 $marginx + $i * ($w + $inter) - 14 , $ymax - $marginy,
+			 "$host", $black);
+	$img2->rectangle ($marginx + $i * ($w + $inter), 
+			  $ymax - $marginy - $innxmit_accepted{$host} * $ratio,
+			  $marginx + $i * ($w + $inter) + $w,
+			  $ymax - $marginy, $black);
+	$img2->rectangle ($marginx + $i * ($w + $inter),
+			  $ymax - $marginy - 
+			  $innxmit_offered{$host} * $ratio,
+			  $marginx + $i * ($w + $inter) + $w,
+			  $ymax - $marginy - $innxmit_accepted{$host} * $ratio,
+			  $black);
+	$img2->fill ($marginx + $i * ($w + $inter) + 1, 
+		     $ymax - $marginy - 1, $blue)
+	  if ($innxmit_accepted{$host} * $ratio > 2);
+	$img2->fill ($marginx + $i * ($w + $inter) + 1, 
+		     $ymax - $marginy - $innxmit_accepted{$host} * $ratio - 1, 
+		     $red)
+	  if (($innxmit_offered{$host} - 
+	       $innxmit_accepted{$host}) * $ratio > 2);
+	$i++;
+      }
+      $marginx = 30;
+      $img2->rectangle ($marginx, 5, $marginx + 15, 20, $black);
+      $img2->fill ($marginx + 1, 6, $blue);
+      $img2->string (gdSmallFont, 
+		     $marginx + 20, 13.5 - gdSmallFont->height / 2,
+		     "Articles accepted", $black);
+      
+      $img2->rectangle ($xmax - 160, 5, $xmax - 145, 20, $black);
+      $img2->fill ($xmax - 159, 6, $red);
+      $img2->string (gdSmallFont, 
+		     $xmax - 140, 13.5 - gdSmallFont->height / 2,
+		     "Others", $black);
+      
+      $img2->rectangle (0, 0, $xmax - 1, 25, $black);
+      $img2->rectangle (0, 0, $xmax - 1, $ymax - 1, $black);
+      $img2->string (gdSmallFont, 170, $ymax - 5 - gdSmallFont->height,
+		     "Articles sent by innxmit", $black);
+      print HTML
+	"<CENTER><IMG SRC=\"$IMG_pth"."innxmit$suffix.gif\"></CENTER><P>\n";
+      close (HTML);
+      open (IMG, "> $IMG_dir/innxmit$suffix.gif") || die "Can't create img\n";
+      print IMG $img2->gif;
+      close (IMG);
+      open (HTML, ">> $HTML_output") ||
+	die "Error : cant open $HTML_output\n";
+    }
+  }
+
+  print "Transmission Connection Attempts              ------errors-------------------\n";
+  print "Server                    Conn   Ok Auth Load Space Expire Connct Other   Pct\n";
+  if ($HTML)
+  {
+    print HTML "<B>Transmission Connection Attempts :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> Server </TH>";
+    print HTML "<TH ALIGN=CENTER> Connects </TH>";
+    print HTML "<TH> Ok </TH><TH>Auth</TH><TH>Load</TH><TH><I>Space</I></TH>";
+    print HTML "<TH> <I>Expire</I> </TH><TH><I> Connect</I> </TH>";
+    print HTML "<TH> <I>Other</I> </TH><TH> <I>Pct</I> </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  $tt = 0;
+  foreach $serv (sort(keys (%innxmit_site)))
+  {
+    $errors = $innxmit_afail_host{$serv} + $innxmit_hiload{$serv} +
+      $innxmit_nospace{$serv} + $innxmit_cfail_host{$serv} + 
+	$innxmit_expire{$serv} + $innxmit_crefused{$serv};
+    
+    $ok = $innxmit_site{$serv} - $errors;
+    if ($innxmit_site{$serv} == 0)
+    {
+      printf STDOUT ("%-25.25s %4d %4d %4d %4d %5d  %5d  %5d %5d %4d%%\n", 
+	      $serv, $innxmit_site{$serv}, $ok, $innxmit_afail_host{$serv},
+	      $innxmit_hiload{$serv}, $innxmit_nospace{$serv},
+	      $innxmit_expire{$serv}, $innxmit_cfail_host{$serv}, 
+	      $innxmit_crefused{$serv}, 0);
+      if ($HTML)
+      {
+	printf HTML ("<TR><TD> %s </TD>",
+		     $serv);
+	printf HTML ("<TD ALIGN=RIGHT> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $innxmit_site{$serv}, $ok);
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $innxmit_afail_host{$serv}, $innxmit_hiload{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $innxmit_nospace{$serv}, $innxmit_expire{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD>",
+		     $innxmit_cfail_host{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD>",
+		     $innxmit_crefused{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d%% </TD></TR>\n", 0);
+      }
+    }
+    else
+    {
+      printf STDOUT ("%-25.25s %4d %4d %4d %4d %5d  %5d  %5d %5d %4d%%\n", 
+	      $serv, $innxmit_site{$serv}, $ok, $innxmit_afail_host{$serv},
+	      $innxmit_hiload{$serv}, $innxmit_nospace{$serv},
+	      $innxmit_expire{$serv}, $innxmit_cfail_host{$serv}, 
+	      $innxmit_crefused{$serv}, 100.0 * $ok / $innxmit_site{$serv});
+      if ($HTML)
+      {
+	printf HTML ("<TR><TD> %s </TD>",
+		     $serv);
+	printf HTML ("<TD ALIGN=RIGHT> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $innxmit_site{$serv}, $ok);
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $innxmit_afail_host{$serv}, $innxmit_hiload{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $innxmit_nospace{$serv}, $innxmit_expire{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD>",
+		     $innxmit_cfail_host{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d </TD>",
+		     $innxmit_crefused{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %d%% </TD></TR>\n",
+		     100.0 * $ok / $innxmit_site{$serv});
+      }
+    }
+    $innxmit_site += $innxmit_site{$serv};
+    $ok_tot += $ok;
+    $innxmit_hiload += $innxmit_hiload{$serv};
+    $innxmit_nospace += $innxmit_nospace{$serv};
+    $innxmit_expire += $innxmit_expire{$serv};
+    $innxmit_auth += $innxmit_auth{$serv};
+    $innxmit_crefused += $innxmit_crefused{$serv};
+    $innxmit_afail_host += $innxmit_afail_host{$serv};
+    $innxmit_cfail_host += $innxmit_cfail_host{$serv};
+
+  }
+  print "\n";
+
+  $innxmit_site2 = $innxmit_site;
+  $innxmit_site2 = 1 unless ($innxmit_site);
+
+  printf STDOUT ("%-25.25s %4d %4d %4d %4d %5d  %5d  %5d %5d %4d%%\n", 
+	  "TOTAL", $innxmit_site, $ok_tot, $innxmit_afail_host,
+	      $innxmit_hiload, $innxmit_nospace,
+	      $innxmit_expire, $innxmit_cfail_host, 
+	      $innxmit_crefused, 100.0 * $ok_tot / $innxmit_site2);
+  print "\n";
+  if ($HTML)
+  {
+    printf HTML ("<TR><TH ALIGN=LEFT> %s </TH>",
+		 "TOTAL");
+    printf HTML ("<TD ALIGN=RIGHT> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		 $innxmit_site, $ok_tot);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		 $innxmit_afail_host, $innxmit_hiload);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		 $innxmit_nospace, $innxmit_expire);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD>",
+		 $innxmit_cfail_host);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD>",
+		 $innxmit_crefused);
+    printf HTML ("<TD ALIGN=RIGHT> %d%% </TD></TR>\n",
+		 100.0 * $ok_tot / $innxmit_site2);
+    print HTML "</TABLE></CENTER><P><HR><P>\n";
+  }
+}
+
+if (%batcher_elapsed)
+{
+  print HTML "<A NAME=\"batcher_elapsed\">\n" if ($HTML);
+  print "UUCP batches created :\n";
+  print "System                    Offered Articles      Bytes   Elapsed\n";
+  if ($HTML)
+  {
+    print HTML "<B>UUCP batches created :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> System </TH>";
+    print HTML "<TH> Offered </TH><TH> Articles </TH>";
+    print HTML "<TH> Bytes </TH>";
+    print HTML "<TH> Elapsed </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  $tt = 0;
+  foreach $serv (sort(keys (%batcher_elapsed)))
+  {
+    $tt += $batcher_elapsed{$serv};
+    $t = &second2time ($batcher_elapsed{$serv});
+    if ($batcher_offered{$serv} == 0)
+    {
+      printf STDOUT ("%-25.25s %7d %8d %10d %9s\n", 
+	      $serv, $batcher_offered{$serv},
+	      $batcher_articles{$serv}, $batcher_bytes{$serv}, $t);
+      if ($HTML)
+      {
+	printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $serv, $batcher_offered{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $batcher_articles{$serv}, $batcher_bytes{$serv});
+	printf HTML ("<TD ALIGN=CENTER> %s </TD></TR>\n", $t);
+      }
+    }
+    else
+    {
+      printf STDOUT ("%-25.25s %7d %8d %10d %9s\n", 
+	      $serv, $batcher_offered{$serv},
+	      $batcher_articles{$serv}, $batcher_bytes{$serv}, $t);
+      if ($HTML)
+      {
+	printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $serv, $batcher_offered{$serv});
+	printf HTML ("<TD ALIGN=RIGHT> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		     $batcher_articles{$serv}, $batcher_bytes{$serv});
+	printf HTML ("<TD ALIGN=CENTER> %s </TD></TR>\n", $t);
+      }
+    }
+    $batcher_offered  += $batcher_offered{$serv};
+    $batcher_articles += $batcher_articles{$serv};
+    $batcher_bytes  += $batcher_bytes{$serv};
+    $batcher_elapsed += $batcher_elapsed{$serv};
+  }
+  print "\n";
+  $t = &second2time ($tt);
+  printf STDOUT ("%-25.25s %7d %8d %10d %9s\n", 
+	  "TOTAL", $batcher_offered,
+	  $batcher_articles, $batcher_bytes, $t);
+  print "\n";
+  if ($HTML)
+  {
+    print HTML "<TR></TR>\n";
+    printf HTML ("<TR><TH ALIGN=LEFT> %s </TH><TD ALIGN=RIGHT> %d </TD>",
+		 "TOTAL", $batcher_offered);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		 $batcher_articles, $batcher_bytes);
+    printf HTML ("<TD ALIGN=CENTER> %s </TD></TR>\n", $t);
+    print HTML "</TABLE></CENTER><P><HR><P>\n";
+  }
+}
+
+if (%rnews_host)
+{
+  print HTML "<A NAME=\"rnews_host\">\n" if ($HTML);
+  print "Rnews articles offered from :\n";
+  print "System                    Offered\n";
+  if ($HTML)
+  {
+    print HTML "<B>Rnews articles offered from :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> System </TH>";
+    print HTML "<TH> Offered </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  foreach $serv (sort(keys (%rnews_host)))
+  {
+    printf STDOUT ("%-25.25s %7d\n", $serv, $rnews_host{$serv});
+    if ($HTML)
+    {
+      printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		   $serv, $rnews_host{$serv});
+    }
+    $rnews_host  += $rnews_host{$serv};
+  }
+  print "\n";
+  printf STDOUT ("%-25.25s %7d\n", 
+	  "TOTAL", $rnews_host);
+  print "\n";
+  if ($HTML)
+  {
+    print HTML "<TR></TR>\n";
+    printf HTML ("<TR><TH ALIGN=LEFT> %s </TH><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		 "TOTAL", $rnews_host);
+    print HTML "</TABLE></CENTER><P>\n";
+    print HTML "<HR><P>\n" unless ((%rnews_rejected) || (%rnews_bogus_ng)
+			    || (%rnews_bogus_dist) || (%rnews_bogus_date));
+  }
+}
+
+if (%rnews_rejected)
+{
+  print HTML "<A NAME=\"rnews_rejected\">\n" if ($HTML);
+  print "Rnews connections rejected :\n";
+  print "Reason                     Connections\n";
+  if ($HTML)
+  {
+    print HTML "<B>Rnews connections rejected :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> Reason </TH>";
+    print HTML "<TH> Connections </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  foreach $serv (sort(keys (%rnews_rejected)))
+  {
+    printf STDOUT ("%-30.30s %7d\n", $serv, $rnews_rejected{$serv});
+    if ($HTML)
+    {
+      printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		   $serv, $rnews_rejected{$serv});
+    }
+    $rnews_rejected  += $rnews_rejected{$serv};
+  }
+  print "\n";
+  printf STDOUT ("%-30.30s %7d\n", 
+	  "TOTAL", $rnews_rejected);
+  print "\n";
+  if ($HTML)
+  {
+    print HTML "<TR></TR>\n";
+    printf HTML ("<TR><TH ALIGN=LEFT> %s </TH><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		 "TOTAL", $rnews_rejected);
+    print HTML "</TABLE></CENTER><P>\n";
+    print HTML "<HR><P>\n" unless ((%rnews_bogus_ng)
+			    || (%rnews_bogus_dist) || (%rnews_bogus_date));
+  }
+}
+
+if ((%rnews_bogus_ng) || (%rnews_bogus_dist) || (%rnews_bogus_date))
+{
+  print HTML "<A NAME=\"rnews_bogus_ng\">\n" if ($HTML);
+  print "Rnews bad articles :\n";
+  print "Reason                      Element             Number\n";
+  if ($HTML)
+  {
+    print HTML "<B>Rnews bad articles :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> Reason </TH>";
+    print HTML "<TH> Element </TH><TH> Number </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  if (%rnews_bogus_ng)
+  {
+    print "Unwanted newsgroups\n";
+    print HTML "<TR><TD> Unwanted newsgroups </TD></TR>\n" if ($HTML);
+    foreach $ng (sort(keys (%rnews_bogus_ng)))
+    {
+      printf STDOUT ("%-27.27s %-20.20s %5d\n", " --", $ng, $rnews_bogus_ng{$ng});
+      if ($HTML)
+      {
+	printf HTML ("<TR><TD></TD><TD> %s </TD><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		     $ng, $rnews_bogus_ng{$ng});
+      }
+      $rnews_bogus += $rnews_bogus_ng{$ng};
+    }
+  }
+  if (%rnews_bogus_dist)
+  {
+    print "Unwanted distributions\n";
+    print HTML "<TR><TD> Unwanted distributions </TD></TR>\n" if ($HTML);
+    foreach $dist (sort(keys (%rnews_bogus_dist)))
+    {
+      printf STDOUT ("%-27.27s %-20.20s %5d\n", " --", $dist, $rnews_bogus_dist{$dist});
+      if ($HTML)
+      {
+	printf HTML ("<TR><TD></TD><TD> %s </TD><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		     $dist, $rnews_bogus_dist{$dist});
+      }
+      $rnews_bogus += $rnews_bogus_dist{$dist};
+    }
+  }
+  if (%rnews_bogus_date)
+  {
+    print "Bad Date\n";
+    print HTML "<TR><TD> Bad Date </TD></TR>\n" if ($HTML);
+    foreach $date (sort(keys (%rnews_bogus_date)))
+    {
+      printf STDOUT ("%-27.27s %-20.20s %5d\n", " --", $date, 
+		     $rnews_bogus_date{$date});
+      if ($HTML)
+      {
+	printf HTML ("<TR><TD></TD><TD> %s </TD><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		     $date, $rnews_bogus_date{$date});
+      }
+      $rnews_bogus += $rnews_bogus_date{$date};
+    }
+  }
+  printf STDOUT ("\n%-27.27s %-20.20s %5d\n", "TOTAL", "--", $rnews_bogus);
+  printf HTML ("<TR><TH ALIGN=left> %-27.27s </TH><TH> %-20.20s </TH> <TH ALIGN=RIGHT> %5d </TH></TR>\n",
+	       "TOTAL", "", $rnews_bogus);
+  print "\n";
+  print HTML "</TABLE></CENTER><P>\n";
+  print HTML "<HR><P>\n";
+}
+
+
+if ((%nnrpd_groups) && ($WANT_READERSHIP))
+{
+  $reader = 0;
+  print HTML "<A NAME=\"nnrpd_groups\">\n" if ($HTML);
+  print "NNRP readership statistics :\n";
+  print "System                                 Conn   Arts Groups Post  Rej   Elapsed\n";
+  if ($HTML)
+  {
+    print HTML "<B>NNRP readership statistics :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> System </TH>";
+    print HTML "<TH> Connections </TH><TH ALIGN=CENTER> Articles </TH>";
+    print HTML "<TH> Groups </TH>";
+    print HTML "<TH> Posted </TH><TH> Rejected </TH><TH> Elapsed </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  $tt = 0;
+  $reader = 0;
+  if ($READERSHIP_ORDER)
+  {
+    foreach $serv (sort (keys (%nnrpd_groups)))
+    {
+      if (($nnrpd_groups{$serv} != 0) || ($nnrpd_post_ok{$serv} != 0))
+      {
+	$reader++;
+	$tt += $nnrpd_times{$serv};
+	$t = &second2time ($nnrpd_times{$serv});
+	printf STDOUT ("%-38.38s %4d %6d %6d %4d %4d %9s\n", 
+		       $serv, $nnrpd_connect{$serv}, $nnrpd_articles{$serv},
+		       $nnrpd_groups{$serv}, $nnrpd_post_ok{$serv},
+		       $nnrpd_post_rej{$serv} + $nnrpd_post_error{$serv}, $t);
+	if ($HTML)
+	{
+	  printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		       $serv, $nnrpd_connect{$serv});
+	  printf HTML ("<TD ALIGN=RIGHT> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		       $nnrpd_articles{$serv}, $nnrpd_groups{$serv});
+	  printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		       $nnrpd_post_ok{$serv}, 
+		       $nnrpd_post_rej{$serv} + $nnrpd_post_error{$serv});
+	  printf HTML ("<TD ALIGN=CENTER> %s </TD></TR>\n", $t);
+	}
+	$nnrpd_connect += $nnrpd_connect{$serv};
+	$nnrpd_articles += $nnrpd_articles{$serv};
+	$nnrpd_groups += $nnrpd_groups{$serv};
+	$nnrpd_post_ok += $nnrpd_post_ok{$serv};
+	$nnrpd_post_rej += $nnrpd_post_rej{$serv} + $nnrpd_post_error{$serv};
+      }
+    }
+  }
+  else
+  {
+    foreach $serv (sort {$nnrpd_connect{$b} <=> $nnrpd_connect{$a}}
+		   (keys (%nnrpd_groups)))
+    {
+      if (($nnrpd_groups{$serv} != 0) || ($nnrpd_post_ok{$serv} != 0))
+      {
+	$reader++;
+	$tt += $nnrpd_times{$serv};
+	$t = &second2time ($nnrpd_times{$serv});
+	printf STDOUT ("%-38.38s %4d %6d %6d %4d %4d %9s\n", 
+		       $serv, $nnrpd_connect{$serv}, $nnrpd_articles{$serv},
+		       $nnrpd_groups{$serv}, $nnrpd_post_ok{$serv},
+		       $nnrpd_post_rej{$serv} + $nnrpd_post_error{$serv}, $t);
+	if ($HTML)
+	{
+	  printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		       $serv, $nnrpd_connect{$serv});
+	  printf HTML ("<TD ALIGN=RIGHT> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		       $nnrpd_articles{$serv}, $nnrpd_groups{$serv});
+	  printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		       $nnrpd_post_ok{$serv}, 
+		       $nnrpd_post_rej{$serv} + $nnrpd_post_error{$serv});
+	  printf HTML ("<TD ALIGN=CENTER> %s </TD></TR>\n", $t);
+	}
+	$nnrpd_connect += $nnrpd_connect{$serv};
+	$nnrpd_articles += $nnrpd_articles{$serv};
+	$nnrpd_groups += $nnrpd_groups{$serv};
+	$nnrpd_post_ok += $nnrpd_post_ok{$serv};
+	$nnrpd_post_rej += $nnrpd_post_rej{$serv} + $nnrpd_post_error{$serv};
+      }
+    }
+  }
+  print "\n";
+  $t = &second2time ($tt);
+  printf STDOUT ("%-38.38s %4d %6d %6d %4d %4d %9s\n", 
+	  "TOTAL : $reader", $nnrpd_connect, $nnrpd_articles,
+	  $nnrpd_groups, $nnrpd_post_ok,
+	  $nnrpd_post_rej, $t);
+  print "\n";
+  if ($HTML)
+  {
+    print HTML "<TR></TR>\n";
+    printf HTML ("<TR><TH ALIGN=LEFT> %s </TH><TD ALIGN=RIGHT> %d </TD>",
+		 "TOTAL : $reader", $nnrpd_connect);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		 $nnrpd_articles, $nnrpd_groups);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD><TD ALIGN=RIGHT> %d </TD>",
+		 $nnrpd_post_ok, $nnrpd_post_rej);
+    printf HTML ("<TD ALIGN=CENTER> %s </TD></TR>\n", $t);
+    print HTML "</TABLE></CENTER><P><HR><P>\n";
+  }
+}
+
+# Look for curious explorers
+if (%nnrpd_groups)
+{
+  print HTML "<A NAME=\"nnrpd_groups2\">\n" if ($HTML);
+  foreach $serv (sort{$nnrpd_connect{$b} <=> $nnrpd_connect{$a}}
+		 (keys (%nnrpd_groups)))
+  {
+    $curious = "ok"
+      if (($nnrpd_groups{$serv} == 0) && ($nnrpd_post_ok{$serv} == 0));
+  }
+  if (($curious eq "ok") && ($WANT_CURIOUS))
+  {
+    print "Curious NNRP server explorers :\n";
+    print "System                                                            Conn\n";
+    if ($HTML)
+    {
+      print HTML "<B>Curious NNRP server explorers :</B><P>\n";
+      print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> System </TH>";
+      print HTML "<TH> Connections </TH>";
+      print HTML "</TR>\n<TR></TR>\n";
+    }
+    foreach $serv (sort {$nnrpd_connect{$b} <=> $nnrpd_connect{$a}}
+			(keys (%nnrpd_groups)))
+    {
+      if (($nnrpd_groups{"$serv"} == 0) && ($nnrpd_post_ok{"$serv"} == 0))
+      {
+	printf STDOUT ("%-64.64s %5d\n", 
+		$serv, $nnrpd_connect{"$serv"});
+	if ($HTML)
+	{
+	  printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		       $serv, $nnrpd_connect{"$serv"});
+	}
+      }
+    }
+    print "\n";
+    print HTML "</TABLE></CENTER><P><HR><P>\n" if ($HTML);
+  }
+}
+
+if (%nnrpd_no_permission)
+{
+  print HTML "<A NAME=\"nnrpd_no_permission\">\n" if ($HTML);
+  print "NNRP no permission clients :\n";
+  print "System                                                            Conn\n";
+  if ($HTML)
+  {
+    print HTML "<B>NNRP no permission clients :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> System </TH>";
+    print HTML "<TH> Connections </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  foreach $client (sort {$nnrpd_no_permission{$b} <=> $nnrpd_no_permission{$a}}
+		   (keys (%nnrpd_no_permission)))
+  {
+    printf STDOUT ("%-64.64s %5d\n", 
+	    $client, $nnrpd_no_permission{$client});
+    if ($HTML)
+    {
+      printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		   $client, $nnrpd_no_permission{$client});
+    }
+  }
+  print "\n";
+  print HTML "</TABLE></CENTER><P><HR><P>\n" if ($HTML);
+}
+
+if ((%nnrpd_gethostbyaddr) && ($WANT_GETHOSTFAILED))
+{
+  print HTML "<A NAME=\"nnrpd_gethostbyaddr\">\n" if ($HTML);
+  print "NNRP gethostbyaddr failures :\n";
+  print "IP                                                                Conn\n";
+  if ($HTML)
+  {
+    print HTML "<B>NNRP gethostbyaddr failures :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> IP </TH>";
+    print HTML "<TH> Connections </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  foreach $ip (sort(keys (%nnrpd_gethostbyaddr)))
+  {
+    printf STDOUT ("%-64.64s %5d\n", 
+	    $ip, $nnrpd_gethostbyaddr{$ip});
+    if ($HTML)
+    {
+      printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		   $ip, $nnrpd_gethostbyaddr{$ip});
+    }
+  }
+  print "\n";
+  print HTML "</TABLE></CENTER><P><HR><P>\n" if ($HTML);
+}
+
+if ($nnrpd_getpeername != 0)
+{
+  print HTML "<A NAME=\"nnrpd_getpeername\">\n" if ($HTML);
+  print "NNRP getpeername failures :   $nnrpd_getpeername\n";
+  print "\n";
+  if ($HTML)
+  {
+    print HTML "<B>NNRP getpeername failures : </B> $nnrpd_getpeername\n";
+    print HTML "<P><HR><P>\n";
+  }
+}
+
+if (%nnrpd_unrecognized)
+{
+  print HTML "<A NAME=\"nnrpd_unrecognized\">\n" if ($HTML);
+  print "NNRP unrecognized commands (by host) :\n";
+  print "System                                                        Commands\n";
+  if ($HTML)
+  {
+    print HTML "<B>NNRP unrecognized commands (by host) :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> System </TH>";
+    print HTML "<TH> Commands </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  foreach $client (sort(keys (%nnrpd_unrecognized)))
+  {
+    printf STDOUT ("%-64.64s %5d\n", 
+	    $client, $nnrpd_unrecognized{$client});
+    if ($HTML)
+    {
+      printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		   $client, $nnrpd_unrecognized{$client});
+    }
+  }
+  print "\n";
+  print HTML "</TABLE></CENTER><P>\n" if ($HTML);
+  print "NNRP unrecognized commands (by command):\n";
+  print "Command                                   Hits\n";
+  if ($HTML)
+  {
+    print HTML "<B>NNRP unrecognized commands (by command) :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> Commands </TH>";
+    print HTML "<TH> Hits </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  foreach $cmd (sort(keys (%nnrpd_unrecogn_cmd)))
+  {
+    printf STDOUT ("%-40.40s %5d\n", 
+	    $cmd, $nnrpd_unrecogn_cmd{$cmd});
+    if ($HTML)
+    {
+      printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		   $cmd, $nnrpd_unrecogn_cmd{$cmd});
+    }
+  }
+  print "\n";
+  print HTML "</TABLE></CENTER><P><HR><P>\n" if ($HTML);
+}
+
+if ((%nnrpd_timeout) && ($TIMEOUT))
+{
+  $t_o = 0;
+  $t_p = 0;
+  $t_c = 0;
+  print HTML "<A NAME=\"nnrpd_timeout\">\n" if ($HTML);
+  print "NNRP client timeouts :\n";
+  print "System                                                            Conn  Peer\n";
+  if ($HTML)
+  {
+    print HTML "<B>NNRP client timeouts :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> System </TH>";
+    print HTML "<TH> Timeouts </TH><TH> Reset by Peer </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  foreach $client (sort(keys (%nnrpd_timeout)))
+  {
+    $t_o += $nnrpd_timeout{$client};
+    $t_p += $nnrpd_reset_peer{$client};
+    $t_c++;
+    printf STDOUT ("%-64.64s %5d %5d\n", 
+	    $client, $nnrpd_timeout{$client}, $nnrpd_reset_peer{$client});
+    if ($HTML)
+    {
+      printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		   $client, $nnrpd_timeout{$client});
+      printf HTML ("<TD ALIGN=RIGHT> %d </TD></TR>\n",
+		   $nnrpd_reset_peer{$client});
+    }
+  }
+  print "\n";
+  printf STDOUT ("%-64.64s %5d %5d\n", "TOTAL : $t_c", $t_o, $t_p);
+  print "\n";
+  if ($HTML)
+  {
+    print  HTML "<TR></TR>\n";
+    printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD>",
+		   "<B>TOTAL</B> : $t_c", $t_o);
+    printf HTML ("<TD ALIGN=RIGHT> %d </TD></TR>\n", $t_p);
+    print  HTML "</TABLE></CENTER><P><HR><P>\n";
+  }
+}
+
+if (%innxmit_badart)
+{
+  print HTML "<A NAME=\"innxmit_unwanted\">\n" if ($HTML);
+  print "Sites sending bad articles :\n";
+
+  print "Server                      Total   Group  Dist  Dup Unapp TooOld  Site Line\n";
+  if ($HTML)
+  {
+    print HTML "<B>Sites sending bad articles :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT>Server</TH>";
+    print HTML "<TH>Total</TH><TH>Group</TH><TH>Distrib</TH>";
+    print HTML "<TH>Duplicate</TH><TH>Unapproved</TH><TH>Too Old</TH>";
+    print HTML "<TH>Site</TH><TH>Linecount</TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  foreach $host (sort {$innxmit_badart{$b} <=> $innxmit_badart{$a}} 
+		      (keys (%innxmit_badart)))
+  {
+    printf STDOUT ("%-25.25s %7d %7d %5d %4d %5d %6d %5d %4d\n",
+		   $host, $innxmit_badart{$host}, $innxmit_uw_ng_s{$host},
+		   $innxmit_uw_dist_s{$host}, $innxmit_duplicate{$host},
+		   $innxmit_unapproved{$host}, $innxmit_tooold{$host},
+		   $innxmit_uw_site{$host}, $innxmit_linecount{$host});
+    if ($HTML)
+    {
+      printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT>%d</TD>",
+		   $host, $innxmit_badart{$host});
+      printf HTML ("<TD ALIGN=RIGHT>%d</TD><TD ALIGN=RIGHT>%d</TD>",
+		   $innxmit_uw_ng_s{$host}, $innxmit_uw_dist_s{$host});
+      printf HTML ("<TD ALIGN=RIGHT>%d</TD><TD ALIGN=RIGHT>%d</TD>",
+		   $innxmit_duplicate{$host}, $innxmit_unapproved{$host});
+      printf HTML ("<TD ALIGN=RIGHT>%d</TD><TD ALIGN=RIGHT>%d</TD>",
+		   $innxmit_tooold{$host}, $innxmit_uw_site{$host});
+      printf HTML ("<TD ALIGN=RIGHT>%d</TD></TR>\n",
+		   $innxmit_linecount{$host});
+    }
+  }
+  print "\n";
+  if ($HTML)
+  {
+    print HTML "</TABLE></CENTER><P><HR><P>\n";
+  }
+  if (%innxmit_uw_ng)
+  {
+    print "Unwanted newsgroups [Top $BADART] :\n";
+    if ($HTML)
+    {
+      print HTML "<B>Unwanted newsgroups</B> [Top $BADART] :<P>\n";
+      print HTML
+	"<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> Newsgroup</TH>";
+      print HTML "<TH> Hits </TH>";
+      print HTML "</TR>\n<TR></TR>\n";
+    }
+    $i = 0;
+    $max = 0;
+    foreach $ng (sort {$innxmit_uw_ng{$b} <=> $innxmit_uw_ng{$a}} 
+		   (keys (%innxmit_uw_ng)))
+    {
+      if ($i < $BADART)
+      {
+	printf STDOUT ("%-50.50s %7d\n", $ng, $innxmit_uw_ng{$ng});
+	printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT>%d</TD></TR>\n",
+		     $ng, $innxmit_uw_ng{$ng}) if ($HTML);
+      }
+      $i++;
+      $max += $innxmit_uw_ng{$ng};
+    }
+    print "\n";
+    printf STDOUT ("%-50.50s %7d\n", "TOTAL : $i", $max);
+    print "\n";
+    if ($HTML)
+    {
+      print  HTML "<TR></TR>\n";
+      printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		   "<B>TOTAL</B> : $i", $max);
+      print  HTML "</TABLE></CENTER><P><HR><P>\n";
+    }
+  }
+  if (%innxmit_uw_dist)
+  {
+    print "Unwanted distribution [Top $BADART] :\n";
+    if ($HTML)
+    {
+      print HTML "<B>Unwanted distribution</B> [Top $BADART] :<P>\n";
+      print HTML
+	"<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> Distribution </TH>";
+      print HTML "<TH> Hits </TH>";
+      print HTML "</TR>\n<TR></TR>\n";
+    }
+    $i = 0;
+    $max = 0;
+    foreach $dist (sort {$innxmit_uw_dist{$b} <=> $innxmit_uw_dist{$a}} 
+		   (keys (%innxmit_uw_dist)))
+    {
+      if ($i < $BADART)
+      {
+	printf STDOUT ("%-50.50s %7d\n", $dist, $innxmit_uw_dist{$dist});
+	printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT>%d</TD></TR>\n",
+		     $dist, $innxmit_uw_dist{$dist}) if ($HTML);
+      }
+      $i++;
+      $max += $innxmit_uw_dist{$dist};
+    }
+    print "\n";
+    printf STDOUT ("%-50.50s %7d\n", "TOTAL : $i", $max);
+    print "\n";
+    if ($HTML)
+    {
+      print  HTML "<TR></TR>\n";
+      printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		   "<B>TOTAL</B> : $i", $max);
+      print  HTML "</TABLE></CENTER><P><HR><P>\n";
+    }
+  }
+}
+
+if ((%nnrpd_hierarchy) && ($WANT_CATEGORY))
+{
+  print HTML "<A NAME=\"nnrpd_hierarchy\">\n" if ($HTML);
+  $max = 0;
+
+  print "Newsgroup request counts (by category) :\n";
+  if ($HTML)
+  {
+    print HTML "<B>Newsgroup request counts (by category) :</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> Category </TH>";
+    print HTML "<TH> Hits </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  foreach $hierarchy (sort {$nnrpd_hierarchy{$b} <=> $nnrpd_hierarchy{$a}} 
+		      (keys (%nnrpd_hierarchy)))
+  {
+    printf STDOUT ("%-50.50s %7d\n", 
+	    $hierarchy, $nnrpd_hierarchy{$hierarchy});
+    if ($HTML)
+    {
+      printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		   $hierarchy, $nnrpd_hierarchy{$hierarchy});
+    }
+    $max += $nnrpd_hierarchy{$hierarchy};
+  }
+  print "\n";
+  if ($HTML)
+  {
+    print HTML "</TABLE></CENTER><P>\n";
+    print HTML 
+      "<CENTER><IMG SRC=\"$IMG_pth"."hierarchy$suffix.gif\"></CENTER><P>\n"
+	if ($GRAPH);
+    print HTML "<HR><P>\n";
+    if ($GRAPH)
+    {
+      close (HTML);
+      &PieChart ("$IMG_dir/hierarchy$suffix.gif", 
+	   "Newsgroup request counts (by category)", $max, %nnrpd_hierarchy);
+      open (HTML, ">> $HTML_output") || die "Error : cant open $HTML_output\n";
+    }
+  }
+}
+
+if ((%nnrpd_group) && ($NGMAX))
+{
+  $total_grp = 0;
+  $total_acc = 0;
+  $msg = "";
+  $msg = "[Top $NGMAX] " if ($NGMAX > 0);
+  print HTML "<A NAME=\"nnrpd_group\">\n" if ($HTML);
+  print "Newsgroup request counts (by newsgroup) $msg:\n";
+  if ($HTML)
+  {
+    print HTML "<B>Newsgroup request counts (by newsgroup) $msg:</B><P>\n";
+    print HTML "<CENTER><TABLE BORDER=1>\n<TR><TH ALIGN=LEFT> Newsgroup </TH>";
+    print HTML "<TH> Hits </TH>";
+    print HTML "</TR>\n<TR></TR>\n";
+  }
+  foreach $group (sort {$nnrpd_group{$b} <=> $nnrpd_group{$a}} 
+		  (keys (%nnrpd_group)))
+  {
+    $total_grp++;
+    $total_acc += $nnrpd_group{$group};
+    if (($total_grp <= $NGMAX) || ($NGMAX == -1))
+    {
+      printf STDOUT ("%-50.50s %7d\n", 
+	      $group, $nnrpd_group{$group});
+      if ($HTML)
+      {
+	printf HTML ("<TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		     $group, $nnrpd_group{$group});
+      }
+    }
+  }
+  print "\n";
+  printf STDOUT ("%-50.50s %7d\n", 
+	  "TOTAL : $total_grp", $total_acc);
+  if ($HTML)
+  {
+    printf HTML ("<TR></TR><TR><TD> %s </TD><TD ALIGN=RIGHT> %d </TD></TR>\n",
+		 "<B>TOTAL<B> : $total_grp", $total_acc);
+    }
+  
+  print HTML "</TABLE></CENTER><P><HR>\n" if ($HTML);
+}
+
+if ($HTML)
+{
+  print HTML "\n<A HREF=\"ftp://anais.eerie.fr/pub/usenet/innreport/\">innreport";
+  print HTML "</A> $version -- ";
+  print HTML "Report bugs to <A HREF=\"mailto:tassin\@eerie.fr\">";
+  print HTML "tassin\@eerie.fr</A>.\n</BODY>\n</HTML>\n";
+  close (HTML);
+}
+
+if ($ARCHIVE)
+{
+  &rotate ($CYCLE, "$HTML_dir", "news-notice", ".html");
+  &rotate ($CYCLE, "$IMG_dir", "innd", ".gif");
+  &rotate ($CYCLE, "$IMG_dir", "innfeed", ".gif");
+  &rotate ($CYCLE, "$IMG_dir", "nntplink", ".gif");
+  &rotate ($CYCLE, "$IMG_dir", "innxmit", ".gif");
+  &rotate ($CYCLE, "$IMG_dir", "hierarchy", ".gif");
+  &make_index ("$HTML_dir", "$index");
+}
+
+
+################
+# End of report.
+###################################################################
+
+######
+# Misc...
+
+# Convert : seconds to hh:mm:ss
+sub second2time
+{
+  local ($temp);
+  local ($t);
+  ($t) = @_;
+  # Hours
+  $temp = sprintf ("%02d", $t / 3600);
+  $chaine = "$temp:";
+  $t %= 3600;
+  # Min
+  $temp = sprintf ("%02d", $t / 60);
+  $chaine .= "$temp:";
+  $t %= 60;
+  # Sec
+  $chaine .= sprintf ("%02d", $t);
+  return ($chaine);
+}
+
+# Rotate the archive files..
+sub rotate 
+{
+  # Usage : &rotate ($max_files, "$directory", "prefix", "suffix");
+  local ($max, $rep, $prefix, $suffix) = @_;
+  local ($file, $num, $a, $b, %files);
+
+  return 1 unless ($max);
+  opendir (DIR, "$rep") || die "Cant open directory \"$rep\"\n";
+  
+  FILE : while ($file = readdir (DIR))
+  {
+    next FILE 
+      unless ($file =~ /^$prefix\.\d\d\.\d\d\.\d\d\-\d\d$SEPARATOR\d\d$SEPARATOR\d\d$suffix$/);
+    $files{$file}++;
+  }
+  closedir (DIR);
+  $num = 0;
+  foreach $file (sort {$b cmp $a} (keys (%files)))
+  {
+    unlink ("$rep/$file") if (($num++ >= $max) && (-f "$rep/$file"));
+  }
+  return 1;
+}
+
+# convert a date to a number of seconds
+sub convdate
+{
+  # usage : $num = &convdate ($date);
+  # date format is Aug 22 01:49:40
+  local ($T) = @_;
+  local ($m, $d, $h, $mn, $s) = $T =~ /^(\S+)\s+(\d+)\s+(\d+):(\d+):(\d+)$/;
+  local ($out);
+  $out = $s + 60 * $mn + 3600 * $h + 86400 * $d;
+  # this will works from now to July 97.. then you will have to
+  # find something better or delete all the previous files.
+  $out += 86400 * 365
+    if (index ("JanFebMarAprMayJunJulAugSepOctNovDec", $m) < 21);
+  $m = substr("000031059090120151181212243273304334", 
+	      index ("JanFebMarAprMayJunJulAugSepOctNovDec", $m), 3);
+  $out += $m * 86400;
+  return ($out);
+}
+
+# make an index for archive pages
+sub make_index
+{
+  # Usage :   &make_index ("$HTML_dir", "$index");
+
+  local ($rep, $name) = @_;
+  local ($d);
+  
+  open (INDEX, "> $rep/$name") || die "Unable to create $rep/$name\n";
+
+  print INDEX "<HTML>\n<HEAD>\n";
+  print INDEX "<TITLE>News report : index</TITLE>\n";
+  print INDEX "</HEAD>\n<BODY>\n";
+  print INDEX "<HR ALIGN=CENTER SIZE=4 WIDTH=100%>\n";
+  print INDEX "<BR><CENTER><FONT SIZE=+2>\n";
+  print INDEX "<B>Daily Usenet report - archives</B>\n";
+  print INDEX "</FONT></CENTER>\n";
+  print INDEX "<BR CLEAR=ALL>\n";
+  print INDEX "</CENTER>\n";
+  print INDEX "<HR ALIGN=CENTER SIZE=4 WIDTH=100%>\n";
+  print INDEX "<P>\n";
+  if ($GRAPH)
+  {
+    print INDEX "<CENTER><IMG SRC=\"$IMG_pth"."received.gif\"></CENTER><P>\n";
+    print INDEX "<HR><P>\n";
+  }
+  print INDEX "<UL>\n";
+
+  opendir (DIR, "$rep") || die "Cant open directory \"$rep\"\n";
+  
+  File : while ($file = readdir (DIR))
+  {
+    next File
+      unless ($file =~ /^news-notice\.\d\d\.\d\d\.\d\d\-\d\d$SEPARATOR\d\d$SEPARATOR\d\d\.html$/);
+    $files{$file}++;
+  }
+  closedir (DIR);
+  $num = 0;
+  $maxy = 0;
+  $max = 0;
+  $min = 126144000000; # 4000 years !!
+  foreach $file (sort {$b cmp $a} (keys (%files)))
+  {
+    open (FILE, "$rep/$file") || next;
+    $n = 0;
+    $line = <FILE>;
+    while (($line !~ /^<H3>(.*)<\/H3>$/) && !(eof (FILE)))
+    {
+      $line = <FILE>;
+    }
+    ($dd) = $line =~ /^<H3>(.*)<\/H3>$/;
+    while (($line !~ /^<A NAME=\"innd_connect\">$/) && !(eof (FILE)))
+    {
+      $line = <FILE>;
+    }
+    if ($line =~ /^<A NAME=\"innd_connect\">$/)
+    {
+      while (($line !~ /^<TR><TH ALIGN=LEFT> TOTAL <\/TH>/) && !(eof (FILE)))
+      {
+	$line = <FILE>;
+      }
+      ($n) = $line =~ /TOTAL \S+ \S+ \d+ \S+ \S+ \d+ \S+ \S+ (\d+) /
+	unless (eof (FILE));
+    }
+    close (FILE);
+    if ($dd)
+    {
+      print INDEX "<LI><A HREF=\"$file\">$dd</A> : $n articles received\n";
+      if ($GRAPH)
+      {
+	($d_1, $d_2) = $dd =~ /^(.*) -- (.*)$/;
+	$d_1 = &convdate ($d_1);
+	$d_2 = &convdate ($d_2);
+	$max = $d_2 if ($max < $d_2);
+	$min = $d_1 if ($min > $d_1);
+
+	# The following line sometimes produces a division by 0.
+	# I don't know why.
+	# $k = $n / ($d_2 - $d_1);
+	$k = $d_2 - $d_1;
+	unless ($k)
+	{
+	  $k = 1;
+	  print STDERR "Warning : an error occured\n" .
+	    "Please, help me to catch this bug.\n" .
+	      "send the me the result of the following command :\n\n" .
+		"grep '\<H3\>' $HTML_dir/*.html | mail tassin\@eerie.fr\n";
+	}
+	$k = $n / $k;
+
+	$maxy = $k if ($maxy < $k);
+	if ($g_d{$d_1} < $d_2 - $d_1)
+	{
+	  $g_n{$d_1} = $n;
+	  $g_d{$d_1} = $d_2 - $d_1;
+	}
+      }
+    }
+  }
+  print INDEX "</UL>\n";
+  print INDEX "<HR><A HREF=\"ftp://anais.eerie.fr/pub/usenet/innreport/\">innreport";
+  print INDEX "</A> $version -- ";
+  print INDEX "Report bugs to <A HREF=\"mailto:tassin\@eerie.fr\">";
+  print INDEX "tassin\@eerie.fr</A>.\n</BODY>\n</HTML>\n";
+  close (INDEX);
+  if ($GRAPH)
+  {
+    # Draw graph...
+    $xmax = 400;
+    $ymax = 250;
+    $marginx = 30;
+    $marginy = 40;
+    
+    $yratio = ($ymax - 2 * $marginy) / $maxy;
+    $xratio = ($xmax - 2 * $marginx) / ($max - $min);
+    $image = new GD::Image($xmax, $ymax);
+    $white = $image->colorAllocate (255, 255, 255);
+    $black = $image->colorAllocate (  0,   0,   0);
+    $red   = $image->colorAllocate (255,   0,   0);
+    $blue  = $image->colorAllocate (  0,   0, 255);
+    $image->transparent ($white);
+    foreach $key (keys (%g_n))
+    {
+      $image->filledRectangle ($marginx + ($key - $min) * $xratio,
+			 $ymax - $marginy - $g_n{$key} / $g_d{$key} * $yratio, 
+			 $marginx + ($key + $g_d{$key} - $min) * $xratio,
+			 $ymax - $marginy, $red);
+      $image->rectangle ($marginx + ($key - $min) * $xratio,
+			 $ymax - $marginy - $g_n{$key} / $g_d{$key} * $yratio, 
+			 $marginx + ($key + $g_d{$key} - $min) * $xratio,
+			 $ymax - $marginy, $black)
+	unless ($g_d{$key} * $xratio < 2);
+
+    }
+
+    # Axes..
+    $image->line ($marginx, $marginy - 15, $marginx, $ymax - $marginy, $black);
+    $image->line ($marginx, $ymax - $marginy , $xmax - $marginx + 15, 
+		  $ymax - $marginy, $black);
+    
+    $image->line ($xmax - $marginx, $ymax - $marginy, $xmax - $marginx,
+		  $ymax - $marginy + 5, $black);
+    $image->string (gdSmallFont, $xmax - $marginx - 1.5 * gdSmallFont->width,
+		    $ymax - $marginy + 10, "Now", $black);
+    $arts = sprintf ("%d", $maxy * 60);
+    $image->line ($marginx - 5, $ymax - $marginy - $arts * $yratio / 60, 
+		  $marginx,
+		  $ymax - $marginy - $arts * $yratio / 60, $black);
+    $image->line ($marginx - 5, $ymax - $marginy, $marginx,
+		  $ymax - $marginy, $black);
+    $image->string (gdSmallFont, 5, $ymax - $marginy, "0", $black);
+    $image->string (gdSmallFont, 5, $ymax - $marginy - $arts * $yratio / 60, 
+		    "$arts", $black);
+    
+    $days = sprintf ("%d days", ($max - $min) / 86400);
+    $day = sprintf ("%d", ($max - $min) / 86400);
+    $abs = $max - $day * 86400;
+
+    $image->line ($marginx + ($abs - $min) * $xratio, $ymax - $marginy,
+		  $marginx + ($abs - $min) * $xratio, $ymax - $marginy + 5, 
+		  $black);
+    $image->string (gdSmallFont, $marginx + ($abs - $min) * $xratio 
+		    - 3 * gdSmallFont->width, 
+		    $ymax - $marginy + 10, "$days", $black);
+
+    $image->rectangle (0, 0, $xmax - 1, $ymax - 1, $black);
+    $image->string (gdSmallFont, ($xmax - 27 * gdSmallFont->width) / 2, 
+		    $ymax - 5 - gdSmallFont->height,
+		    "Articles received (art/min)", $black);
+    open (IMG, "> $IMG_dir/received.gif") || die "Can't create img\n";
+    print IMG $image->gif;
+    close (IMG);
+  }
+  return 1;
+}
+
+sub PieChart
+{
+  # options
+  local ($Filename, $Title, $max, %Hash) = @_;
+
+  local ($xmax, $ymax, $marginx, $marginy, $image, $white, $black);
+  local (@color1, @color2, $TextWidth, $TextHeight, $a, $old_a, $x, $y);
+  local ($coeffdist, $thickness, $col, $nbline, $angle, $ang, $H, $R);
+  local ($Cad, $posTx, $posTy);
+
+  # Graph size..
+  $xmax = 500;
+  $ymax = 300;
+
+  $marginx = 20;
+  $marginy = 30;
+  
+  $image = new GD::Image($xmax, $ymax);
+
+  $white = $image->colorAllocate (255, 255, 255);
+  $black = $image->colorAllocate (  0,   0,   0);
+  
+  $color1[0] = $image->colorAllocate (255,   0, 255);
+  $color2[0] = $image->colorAllocate (200,   0, 200);
+  
+  $color1[1] = $image->colorAllocate (255,   0,   0);
+  $color2[1] = $image->colorAllocate (200,   0,   0);
+  $color1[2] = $image->colorAllocate (255, 255,   0);
+  $color2[2] = $image->colorAllocate (200, 200,   0);
+  $color1[3] = $image->colorAllocate (  0,   0, 255);
+  $color2[3] = $image->colorAllocate (  0,   0, 200);
+  $color1[4] = $image->colorAllocate (  0, 255,   0);
+  $color2[4] = $image->colorAllocate (  0, 200,   0);
+  
+  $image->transparent ($white);
+  
+  ($TextWidth, $TextHeight) = (gdSmallFont->width, gdSmallFont->height);
+  $a = 270;
+  $x = 300;
+  $y = 200;
+  $old_a = 0;
+  $coeffdist = 1.1 / 2.0;
+  $thickness = 30;
+  $col = 0;
+  
+  $image->arc ($xmax / 2, $ymax / 2, $x, $y, 0, 360, $black);
+  $image->fill ($xmax / 2, $ymax / 2, $color1[$col]);
+  $image->arc ($xmax / 2, $ymax / 2 + 30, $x, $y, 0, 180, $black);
+  $image->line ($xmax / 2 - $x / 2, $ymax / 2, $xmax / 2 - $x / 2, 
+		$ymax / 2 + 30, $black);
+  $image->line ($xmax / 2 + $x / 2, $ymax / 2, $xmax / 2 + $x / 2,
+		$ymax / 2 + 30, $black);
+  $image->fill ($xmax / 2, $ymax /2 + 25 + $y / 2, $color2[$col]);
+  $col++;
+  $nbline = 0;
+
+  foreach $Key (sort {$Hash{$b} <=> $Hash{$a}} (keys (%Hash)))
+  {
+    $nbline++;
+    $angle = $Hash{$Key} / $max * 360;
+    $ang = $a + $angle / 2;
+    $H = sin (($ang - 270) / 180 * 3.14);
+    $R = cos (($ang - 270) / 180 * 3.14);
+    $Cad = 0;
+    $Cad = 1 if (($H >= 0.0) && ($R >= 0.0));
+    $Cad = 2 if (($H >= 0.0) && ($R <  0.0));
+    $Cad = 3 if (($H <  0.0) && ($R <  0.0));
+    $Cad = 4 if (($H <  0.0) && ($R >= 0.0));
+
+    if ($angle > 10)
+    {
+      $image->line ($xmax / 2, $ymax /2, 
+		    $xmax / 2 - $x / 2 * sin ($a / 180 * 3.14),
+		    $ymax / 2 - $y / 2 * cos ($a / 180 * 3.14), $black)
+	unless ($Hash{$Key} == $max);
+      $image->line ($xmax / 2, $ymax /2, 
+		    $xmax / 2 - $x / 2 * sin (($a + $angle) / 180 * 3.14),
+		    $ymax / 2 - $y / 2 * cos (($a + $angle) / 180 * 3.14),
+		    $black) unless ($Hash{$Key} == $max);
+      $image->fill ($xmax / 2 - 
+		    $x / 4 * sin (($a + $angle / 2) / 180 * 3.14),
+		    $ymax / 2 - 
+		    $y / 4 * cos (($a + $angle / 2 ) / 180 * 3.14),
+		    $color1[$col]);
+
+      $image->line ($xmax / 2 - $x / 2 * sin (($a + $angle) / 180 * 3.14),
+		    $ymax / 2 - $y / 2 * cos (($a + $angle) / 180 * 3.14),
+		    $xmax / 2 - $x / 2 * sin (($a + $angle) / 180 * 3.14),
+		    $ymax / 2 - $y / 2 * cos (($a + $angle) / 180 * 3.14) +
+		    $thickness, $black)
+	unless (($a + $angle> 270) && ($a + $angle < 450));
+
+      $image->fill ($xmax / 2 - 
+		    $x / 2 * sin (($a + $angle - 4) / 180 * 3.14),
+		    $ymax / 2 - 
+		    $y / 2 * cos (($a + $angle - 4) / 180 * 3.14) + 
+		    $thickness / 2, $color2[$col])
+	unless ((($a + $angle > 270) && ($a + $angle < 450)) ||
+		(($a + $angle > 610) && ($nbline != 1)));
+
+      $image->fill ($xmax / 2 - $x / 2 * sin (($a + $angle / 2) / 180 * 3.14),
+		    $ymax / 2 - $y / 2 * cos (($a + $angle / 2) / 180 * 3.14) +
+		    $thickness / 2, $color2[$col])
+	if (($a + $angle > 610) && ($nbline != 1));
+      $image->fill ($xmax / 2, $ymax / 2 + $y / 2 + $thickness / 2, 
+		    $color2[$col]) if ($angle == 360);
+      
+      if ($Cad == 1)
+      {
+        $posTx = $xmax / 2 - $x * $coeffdist * sin ($ang / 180 * 3.14);
+        $posTy = $ymax / 2 - $y * $coeffdist * cos ($ang / 180 * 3.14) 
+	         - $TextHeight;
+      }
+      
+      if ($Cad == 2)
+      { 
+        $posTx = $xmax / 2 - $x * $coeffdist * sin ($ang / 180 * 3.14)
+                 - $TextWidth * length ($Key);
+	$posTy = $ymax / 2 - $y * $coeffdist * cos ($ang / 180 * 3.14) 
+                 - $TextHeight;
+      }
+ 
+      if ($Cad == 3) 
+      { 
+        $posTx = $xmax / 2 - $x * $coeffdist * sin ($ang / 180 * 3.14) 
+                 - $TextWidth * length ($Key);
+ 
+        $posTy = $ymax / 2 - $y * $coeffdist * cos ($ang / 180 * 3.14)
+                 + 3 / 4 * $thickness;
+      }
+
+      if ($Cad == 4)
+      {
+        $posTx = $xmax / 2 - $x * $coeffdist *  sin ($ang / 180 * 3.14);
+        $posTy = $ymax / 2 - $y * $coeffdist *  cos ($ang / 180 * 3.14)
+                 + 3 / 4 * $thickness;
+      }
+      
+      $image->string (gdSmallFont, $posTx, $posTy, "$Key", $black);
+    }
+    else
+    {
+      $old_a = $a if ($old_a == 0);
+    }
+    $a += $angle;
+    $col++;
+    $col = 1 if ($col == 5);
+  }
+
+  if ($old_a != 0)
+  {
+    $angle = $a + $angle - $old_a;
+    $a = $old_a;
+
+    if (cos(($ang - 270) / 180 * 3.14) > 0)
+    {
+      $posTx = $xmax / 2 - $x * $coeffdist *  sin ($ang / 180 * 3.14);
+    }
+    else
+    {
+      $posTx = $xmax / 2
+               - $x * $coeffdist *  sin ($ang / 180 * 3.14)
+               - $TextWidth * length ("others");
+    }
+    $posTy = $ymax / 2 - $y * $coeffdist * cos ($ang / 180 * 3.14) +
+             3 / 4 * $thickness;
+    $image->string (gdSmallFont, $posTx, $posTy, "others", $black);
+  }
+  $image->rectangle (0, 0, $xmax - 1, $ymax - 1, $black);
+  $image->string (gdSmallFont, 5, 5, "$Title", $black);
+  
+  open (IMG, "> $Filename") || die "Can't create img\n";
+  print IMG $image->gif;
+  close (IMG);
+}
+
+sub Usage
+{
+  local ($base) = $0 =~ /([^\/]+)$/;
+  print "Usage: $base [-[no]options]\n";
+  print "  where options are :\n";
+  print "    -h (or -help)      : this help page\n";
+  print "    -html              : HTML output";
+  print " [default]" if ($HTML);
+  print "\n";
+  print "    -g                 : want graphs";
+  print " [default]" if ($GRAPH);
+  print "\n";
+  print "    -graph             : an alias for option -g\n";
+  print "    -d directory       : directory for Web pages";
+  print "\n                         [default=$HTML_dir]"
+    if (defined ($HTML_dir));
+  print "\n";
+  print "    -dir directory     : an alias for option -d\n";
+  print "    -p directory       : pictures path (file space)";
+  print "\n                         [default=$IMG_dir]" 
+    if (defined ($IMG_dir));
+  print "\n";
+  print "    -path directory    : an alias for option -p\n";
+  print "    -w directory       : pictures path (web space)";
+  print " [default=$IMG_pth]" if (defined ($IMG_pth));
+  print "\n";
+  print "    -webpath directory : an alias for option -w\n";
+  print "    -a                 : want to archive HTML results";
+  print " [default]" if ($ARCHIVE);
+  print "\n";
+  print "    -archive           : an alias for option -a\n";
+  print "    -c number          : how many report files to keep (0 = all)\n";
+  print "                         [default=$CYCLE]"
+    if (defined ($CYCLE));
+  print "\n";
+  print "    -cycle number      : an alias for option -c\n";
+  print "    -m number          : how many lines to display in the\n";
+  print "                         \"Newsgroup request counts (by ng)\" section\n";
+  print "                         (-1 = all, 0 = no report)";
+  print " [default=$NGMAX]" if (defined ($NGMAX));
+  print "\n";
+  print "    -maxng number      : an alias for option -m\n";
+  print "    -badart number     : how many lines to display in the\n";
+  print "                         \"Bad articles\" section\n";
+  print "                         (-1 = all, 0 = no report)";
+  print " [default=$BADART]" if (defined ($BADART));
+  print "\n";
+
+  print "    -t                 : client timeouts report";
+  print " [default]" if ($TIMEOUT);
+  print "\n";
+  print "    -timeout           : an alias for option -t\n";
+  print "    -prgtab            : program log report";
+  print " [default]" if ($PRGTAB);
+  print "\n";
+  print "    -s char            : separator for filename";
+  print " [default=\"$SEPARATOR\"]\n";
+  print "    -separator char    : an alias for option -s\n";
+  print "    -curious           : curious explorers report";
+  print " [default]" if ($WANT_CURIOUS);
+  print "\n";
+  print "    -gethost           : \"Gethostbyaddr Failure\" report";
+  print " [default]" if ($WANT_GETHOSTFAILED);
+  print "\n";
+  print "    -readership        : \"NNRP Readership Summary\" report";
+  print " [default]" if ($WANT_READERSHIP);
+  print "\n";
+  print "    -sortreadership    : \"sort (alphabetic order) the readership\n";
+  print "                         report";
+  print " [default]" if ($READERSHIP_ORDER);
+  print "\n";
+  print "    -category          : \"Newsgroup Request Counts (by category)\"\n";
+  print "                         report";
+  print " [default]" if ($WANT_CATEGORY);
+  print "\n";
+  print "    -unknown           : \"Unknown entries from news log file\"\n";
+  print "                         report";
+  print " [default]" if ($WANT_UNKNOWN);
+  print "\n";
+  print "    -casesensitive     : \"Case sensitive\"";
+  print " [default]" if ($CASE_SENSITIVE);
+  print "\n\n";
+  print "Use no in front of boolean options to unset them.\n";
+  print "For example, \"-html\" is set by default. Use \"-nohtml\" to remove this\n";
+  print "feature.\n";
+  exit (0);
+}
+
+######################### End of File ##########################
+

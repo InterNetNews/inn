@@ -1,0 +1,92 @@
+
+         List of PGP Public Keys for Newsgroup Administration
+
+This is a list of keys known to be used for maintaining various
+parts of the newsgroup namespace. They are listed
+alphabetically by the hierarchies they are used for, along with
+the email address they are sent by (for use in control.ctl) and
+the group that people should follow if they are interested in
+tracking announcements about the hierarchy. The "Check also"
+references point to locations that should have identical public
+key blocks; it is best if you confirm the block listed here by
+checking against the others.
+
+The existence of key here only means that I, David Lawrence, trust
+the person who uses it to be a responsible maintainer of that
+particular hierarchy of groups. You are solely responsible for
+deciding whether you will use the keys here at your own site.
+       
+         _____________________________________________________________
+       
+  COMP, HUMANITIES, MISC, NEWS, REC, SCI, SOC, TALK
+
+       Control message sender: tale@uunet.uu.net
+       Administrative group: news.announce.newgroups
+       Check also:
+          + ftp://ftp.uu.net/usenet/news.announce.newgroups/PGP.PUBLICKEY
+          + pgp-public-keys-beta@pgp.ai.mit.edu
+                ("Subject: GET 0xB88DA9C1", empty body)
+
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: 2.7
+
+mQCNAjFsLmQAAAEEAKPbDQI6oDtYJYPvYxt7I4PMxThaq51Z/5kqfW7C3dMn6vPL
+d+UsXHfRzMaQXkLBR4nIaQj5OHVtbKCjVTVIMtgfgsPeh9GRSONW870S5HUTQcB7
+eDhQqvvst1ZEowhTf/CX01chaxOfWq3ZPB09VVohQTmvRJn2BMJdOtO4janBAAUR
+tBduZXdzLmFubm91bmNlLm5ld2dyb3Vwc4kAlQIFEDF33BHCXTrTuI2pwQEBiJQD
+/1uiv20adyB2a3tzBYESEEhKtugAVHGRJQJE4Ar5PrcnovF3aNpLFumslIaAzCwP
+XlCANMjFHg140IB6SgJ8W8XH15u+1cMOmqTbk0wtmVgeLOLaSMgNWt65FV4AUn7e
+RZdhK8j/JKxE0a+6gKu4S0PiUDrvnCEWUPjlXiqsbnjR
+=E8K8
+-----END PGP PUBLIC KEY BLOCK-----
+   
+         _____________________________________________________________
+  FR
+
+       Control message sender: control@usenet.fr.net
+       Administrative group: fr.announce.newgroups
+       Check also:
+          + pgp-public-keys-beta@pgp.ai.mit.edu
+                ("Subject: GET 0x382B64FD", empty body)
+
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: 2.6.2i
+
+mQCNAzF41OMAAAEEAOnjgblNPQ+Xhnxw3K/EMz1vm2sfi2Ci/XG8HsWg2yc+hQla
+fMGQbQciSDFsBK0Kmy7gNvC9c7qAsQfeqpvQqJ+3hJiUvbQIi6bj2ZOSqE58Vh80
+7Y+Fx71R/AKGZ88dGbysUg1r5770aw6JP1wn6Ve29PRTdS7yasmXGhU4K2T9AAUT
+tBVmci5hbm5vdW5jZS5uZXdncm91cHOJAJUDBRAxf8MhyZcaFTgrZP0BAZ0ZA/0S
+nxzmcN/yI858v+80ZpWaMkO/OtdF49gCfv/yv8xrRQfdGkjLFIl+Gry/H9236MZD
+rTSjb5R2PaicExO3b0tcRAAGOXyrRwc1squDdSvldko2ewQE9giZ4T1+fJRou1yO
+hbwPmaOBOt2EropUpvRPfKNeu/vjdKv1GEREkhIZTQ==
+=o/05
+-----END PGP PUBLIC KEY BLOCK-----
+
+         _____________________________________________________________
+       
+  HUMANITIES
+   See the comp hierarchy entry.
+         _____________________________________________________________
+       
+  MISC
+   See the comp hierarchy entry.
+         _____________________________________________________________
+       
+  NEWS
+   See the comp hierarchy entry.
+         _____________________________________________________________
+       
+  REC
+   See the comp hierarchy entry.
+         _____________________________________________________________
+       
+  SCI
+   See the comp hierarchy entry.
+         _____________________________________________________________
+       
+  SOC
+   See the comp hierarchy entry.
+         _____________________________________________________________
+       
+  TALK
+   See the comp hierarchy entry.

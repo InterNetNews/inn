@@ -1,0 +1,30 @@
+# $Id$
+#
+# Sample actsync ignore_file.
+
+# For now by default do not sync
+#
+i *
+
+# sync on the 8 majors
+#
+c comp.*
+c gnu.*
+c misc.*
+c news.*
+c rec.*
+c sci.*
+c soc.*
+c talk.*
+
+# don't compare to.* groups as they will differ
+#
+i to.*
+
+# we always want our special top level groups
+#
+i control
+i general
+i junk
+i test
+i to

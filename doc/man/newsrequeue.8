@@ -1,0 +1,114 @@
+.\" $Revision$
+.TH NEWSREQUEUE 8
+.SH NAME
+newsrequeue \- tool to rewrite batchfiles.
+.SH SYNOPSIS
+.B newsrequeue
+[
+.BI \-a " active"
+]
+[
+.BI \-h " history"
+]
+[
+.BI \-d " days"
+]
+[
+.B \-l
+]
+[
+.BI \-n " newsfeeds"
+]
+[
+.I input
+]
+.SH DESCRIPTION
+.PP
+.I Newsrequeue
+can be used to rewrite batchfiles after a system crash.
+It operates in two modes.
+In the first mode, it first reads the
+.I active (5)
+and
+.IR newsfeeds (5)
+files to determine where the different newsgroups are to be distributed.
+It then opens the
+.I history
+database.
+Once the files are opened,
+.I newsrequeue
+reads from the specified
+.I input
+file, or standard input if no file is specified.
+Each line should have a single Message-ID, surrounded in angle brackets;
+any other text on the line is ignored.
+For example, the history file (or trailing subset of it) is acceptable
+input to the program operating in this mode.
+.PP
+.I Newsrequeue
+uses the first two fields of the
+.I newsfeed
+entry \(em the sitename and the excludes field, and the patterns and
+distribs field.
+It ignores all flags in the third field except for the ``N'' field, and
+also ignores the fourth field altogether.
+.PP
+The output of
+.I newsrequeue
+consists of one line for each article that should be forwarded.
+Each such line contains the Message-ID, the filename, and the list of
+sites that should receive the article.
+The output is suitable for piping into
+.IR filechan (8).
+.PP
+The second mode is used if the ``\fB\-l\fP'' flag is given.
+In this mode, it reads from the specified
+.I input
+file, or standard input if no file is specified.
+Each line should look like an
+.I innd
+log entry.
+It parses entries for accepted articles, looks up the Message-ID in the
+history database to get the filename, and then scans the list of
+sites.
+.SH OPTIONS
+.TP
+.B \-a
+To specify alternate locations for the active file, use the ``\fB\-a\fP'' 
+flag.
+.TP
+.B \-n
+Use the ``\fB\-n\fP'' flag to specify an alternate location for the 
+.I newsfeeds(8)
+file.
+.TP
+.B \-h
+Use the ``\fB\-h\fP'' flag to specify a different location for
+the history database, 
+.TP
+.B \-d
+If the ``\fB\-d\fP'' flag is used, then only articles that were received
+within the specified number of
+.I days
+will be processed.
+.TP 
+.B \-l
+Read 
+.I innd
+type log entries instead of a history-file like entries.
+.SH HISTORY
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+.SH "SEE ALSO"
+active(5),
+ctlinnd(8),
+dbz(3),
+filechan(8),
+history(5),
+innd(8),
+newsfeeds(5),
+makeactive(8),
+makehistory(8).
