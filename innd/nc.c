@@ -774,7 +774,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		int j;
 		char *tmpstr;
 
-		tmpstr = NEW(char, bp->Used);
+		tmpstr = NEW(char, bp->Used + 1);
 		memcpy(tmpstr, bp->Data, bp->Used);
 		tmpstr[bp->Used] = '\0';
 		
