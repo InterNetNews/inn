@@ -300,8 +300,13 @@ static bool GROUPremapifneeded(GROUPLOC loc) {
 
     GROUPcount = (sb.st_size - sizeof(GROUPHEADER)) / sizeof(GROUPENTRY);
     if (innconf->tradindexedmmap) {
+	int flag = PROT_READ;
+
+	if (OV3mode & OV_WRITE) {
+	    flag |= PROT_WRITE;
+	}
 	GROUPheader = (GROUPHEADER *)mmap(0, GROUPfilesize(GROUPcount),
-					  PROT_READ | PROT_WRITE, MAP_SHARED, GROUPfd, 0);
+					  flag, MAP_SHARED, GROUPfd, 0);
 	if (GROUPheader == (GROUPHEADER *) -1) {
 	    syslog(L_FATAL, "tradindexed: could not mmap group.index in GROUPremapifneeded: %m");
 	    return FALSE;
