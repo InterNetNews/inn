@@ -1,0 +1,169 @@
+=head1 NAME
+
+batcher - Article batching for InterNetNews
+
+=head1 SYNOPSIS
+
+B<batcher> [B<-rv>] [B<-a> I<articles>] [B<-A> I<total-articles>]
+[B<-b> I<size>] [B<-B> I<total-size>] [B<-i> I<string>]
+[B<-N> I<batches>] [B<-p> I<process>] [B<-s> I<separator>]
+[B<-S> I<spool>] I<host> [I<input>]
+
+=head1 DESCRIPTION
+
+B<batcher> reads a list of files and prepares news batches for the
+specified host.  It is generally used to prepare UUCP feeds, but the
+resulting batches can be used by any application that uses rnews(8) to
+inject the articles.  It is normally invoked by a script run out of cron
+that uses B<shlock> to lock the host, followed by B<ctlinnd> to flush the
+batch file.  See send-uucp(8) for a front-end for B<batcher>.
+
+B<batcher> reads the file I<input>, or standard input if no file is given.
+If I<input> is a relative file name, it is assumed to be in
+I<pathoutgoing> as set in F<inn.conf>.  Blank lines and lines starting
+with a number sign (C<#>) are ignored.  All other lines in the input
+should consist of one or two fields separated by a single space.  The
+first field is either the storage API token of an article or the name of a
+file holding an article.  If it is not an absolute pathname or a storage
+API token, it is taken to be a file name relative to I<patharticles> in
+F<inn.conf>.  The second field, if present, specifies the size of the
+article in bytes.
+
+By default, batches are written to standard output (which isn't very
+useful if more than one batch is output), but see the B<-p> option.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-a> I<articles>
+
+This flag limits the number of articles included in each batch.  The
+default is no limit.  A new batch will be started when either the total
+bytes or the number of articles written exceeds the specified limits.
+
+=item B<-A> I<total-articles>
+
+Limits the total number of articles written for all batches.  As soon as
+the total number of articles written to batches reaches or exceeds
+I<total-articles>, all additional articles in the input will be deferred.
+The default is no limit.
+
+=item B<-b> I<size>
+
+This flag sets the size limit for each batch; as soon as at least this
+much data has been written out, a new batch will be started.  The default
+size is 60KB.  Using C<-b 0> will allow unlimited batch sizes.
+
+=item B<-B> I<total-size>
+
+Limits the total number of bytes written for all batches.  As soon as the
+total bytes written to batches reaches or exceeds I<total-size>, all
+additional articles in the input will be deferred.  The default is no
+limit.
+
+=item B<-i> I<string>
+
+A batch starts with an identifying line to specify the unpacking method to
+be used on the receiving end.  When this flag is used, I<string>, followed
+by a newline, will be output at the start of each batch.  The default is
+to have no initial string (under the assumption that either the processor
+specified with the B<-p> flag or some other later process will add the
+appropriate line).
+
+=item B<-N> I<batches>
+
+Limits the total number of batches written.  As soon as the number of
+batches written reaches or exceeds I<baches>, all additional articles in
+the input will be deferred.  The default is no limit.
+
+=item B<-p> I<process>
+
+By default, batches are written to standard output, which is not useful
+when more than one output batch is created.  If this option is given, each
+batch will instead be fed via a pipe to the shell command I<process>.  The
+I<process> argument must be an sprintf(3) format string, which may have a
+single C<%s> parameter that will be replaced with the host name.
+
+A common value is:
+
+    ( echo '#! gunbatch' ; exec gzip -c ) | uux - -r -z %s!rnews
+
+which generates gzip-compressed batches and feeds them to B<uux>.
+
+=item B<-r>
+
+By default, B<batcher> reports errors to I<pathlog>/errlog.  To suppress
+this redirection and report errors to standard error, use the B<-r> flag.
+
+=item B<-s> I<separator>
+
+Each article in a batch starts with a separator line that indicates the
+size of the article.  I<separator> must be an sprintf(3) string, which may
+have a single C<%ld> in the string that will be replaced with the size of
+the article.  If the separator is not empty, a newline will also be
+appended to it when it is added to the beginning of each article.
+
+The default separator is:
+
+    #! rnews %ld
+
+and this should rarely be changed.
+
+=item B<-S> I<spool>
+
+Specifies an additional spool directory to search in for articles.  If
+this option is given, the first field of an input line is a relative path
+name, and the article isn't found in I<patharticles>, it is also looked
+for under I<spool>.
+
+=item B<-v>
+
+Upon exit, B<batcher> reports statistics via syslog.  With this flag, the
+statistics will also be printed to standard output.
+
+=back
+
+=head1 EXIT STATUS
+
+If the input is exhausted and all batches are created successfully,
+B<batcher> will exit with a zero status.
+
+If any of the limits specified with B<-A>, B<-B>, or B<-N> flags are
+reached, or if there is an error in writing a batch, B<batcher> will try
+to spool the remaining input by copying it to a file as follows:
+
+=over 2
+
+=item *
+
+If there was no input filename, the remaining input will be copied to
+I<pathoutgoing>/I<host>.
+
+=item *
+
+If an input filename was given, the remaining input will be copied to a
+temporary file named by appending C<.bch> to the end of I<input> (and
+qualified by adding I<pathoutgoing> if I<input> was not a fully qualified
+path).  If this happens successfully, B<batcher> will then try to rename
+this temporary file to I<input> (thus replacing I<input> with a copy of
+itself with all of lines for the successfully batched articles removed).
+
+=back
+
+Upon receipt of an interrupt or termination signal, B<batcher> will finish
+batching the current article, close the batch, and then rewrite the batch
+file as described above.
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Rewritten by
+Russ Allbery <rra@stanford.edu> in POD.
+
+$Id$
+
+=head1 SEE ALSO
+
+ctlinnd(8), inn.conf(5), newsfeeds(5), rnews(8), send-uucp(8), shlock(1)
+
+=cut
