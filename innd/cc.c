@@ -340,18 +340,17 @@ CCallow(av)
 **  Do the work needed to start feeding a (new) site.
 */
 STATIC STRING
-CCbegin(av)
-    char		*av[];
+CCbegin(char *av[])
 {
-    SITE		*sp;
-    register int	i;
-    register int	length;
-    register STRING	p;
-    register char	**strings;
-    register NEWSGROUP	*ngp;
-    STRING		error;
-    char		*subbed;
-    char		*poison;
+    SITE	*sp;
+    int		i;
+    int		length;
+    STRING	p;
+    char	**strings;
+    NEWSGROUP	*ngp;
+    STRING	error;
+    char	*subbed;
+    char	*poison;
 
     /* If site already exists, drop it. */
     if (SITEfind(av[0]) != NULL && (p = CCdrop(av)) != NULL)
@@ -395,7 +394,7 @@ CCbegin(av)
     DISPOSE(subbed);
     DISPOSE(poison);
     if (error != NULL) {
-	DISPOSE(p);
+	DISPOSE((void *)p);
 	syslog(L_ERROR, "%s bad_newsfeeds %s", av[0], error);
 	return "1 Parse error";
     }

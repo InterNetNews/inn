@@ -101,6 +101,7 @@ void
 ICDwrite()
 {
     HISsync();
+    SMflushcacheddata(SM_ALL);
 
     if (ICDactivedirty) {
 	ICDwriteactive();

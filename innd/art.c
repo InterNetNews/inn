@@ -1074,31 +1074,16 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const BOOL Trusted)
 	return;
     }
     
-    /* Get the files where the message is stored and and zap them. */
-    for ( ; *files; files = p + 1) {
-	/* Snip off next name, turn dots to slashes. */
-	for (p = files; ISWHITE(*p); p++)
-	    continue;
-	for (files = p; *p && *p != ' '; p++)
-	    if (*p == '.')
-		*p = '/';
-	more = *p == ' ';
-	if (more)
-	    *p = '\0';
-
-	if (IsToken(files)) {
-	    if (!SMcancel(TextToToken(files + 1)) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
-		syslog(L_ERROR, "%s cant cancel %s", LogName, files);
-	} else {
-	    /* Remove this file, go back for the next one if there's more. */
-	    if (unlink(files) < 0 && errno != ENOENT)
-		syslog(L_ERROR, "%s cant unlink %s %m", LogName, files);
-	}
-	if (!more)
-	    break;
-    }
-    (void)sprintf(buff, "Cancelling %s", MaxLength(MessageID, MessageID));
-    ARTlog(Data, ART_CANC, buff);
+    /* Get stored message and zap them. */
+    if (IsToken(files)) {
+	if (!SMcancel(TextToToken(files + 1)) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
+	    syslog(L_ERROR, "%s cant cancel %s", LogName, files);
+	if (innconf->immediatecancel && !SMflushcacheddata(SM_CANCELEDART))
+	    syslog(L_ERROR, "%s cant cancel cached %s", LogName, files);
+	(void)sprintf(buff, "Cancelling %s", MaxLength(MessageID, MessageID));
+	ARTlog(Data, ART_CANC, buff);
+    } else
+	    syslog(L_ERROR, "%s cant cancel %s (not token)", LogName, files);
     TMRstop(TMR_ARTCNCL);
 }
 
