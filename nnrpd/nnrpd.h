@@ -6,12 +6,6 @@
 #include <errno.h>
 #include <ctype.h>
 #include <sys/file.h>
-#if	defined(VAR_VARARGS)
-#include <varargs.h>
-#endif	/* defined(VAR_VARARGS) */
-#if	defined(VAR_STDARGS)
-#include <stdarg.h>
-#endif	/* defined(VAR_STDARGS) */
 #include <syslog.h>
 #include <fcntl.h>
 #include <sys/socket.h>
@@ -41,9 +35,6 @@
 */
 typedef struct in_addr	INADDR;
 #define Printf		printf
-#if	defined(VAR_NONE)
-#define Reply		printf
-#endif	/* defined(VAR_NONE) */
 
 
 /*
@@ -158,12 +149,16 @@ extern BOOL		PERMmatch();
 extern BOOL		ParseDistlist();
 extern READTYPE		READline();
 extern char		*OVERGetHeader(char *p, int field);
-#if	defined(VAR_STDARGS)
-extern void		Reply(char *, ...);
-#endif	/* defined(VAR_STDARGS) */
-#if	defined(VAR_VARARGS)
-extern void		Reply();
-#endif	/* defined(VAR_VARARGS) */
+
+#if defined(STDC_HEADERS) || defined(HAVE_STDARG_H)
+extern void             Reply(const char *fmt, ...);
+#else
+# ifdef HAVE_VARARGS_H
+extern void             Reply();
+# else
+#  define Reply printf
+# endif
+#endif
 
 char *HandleHeaders(char *article);
 int perlConnect(char *ClientHost, char *ClientIP, char *ServerHost, char *accesslist);

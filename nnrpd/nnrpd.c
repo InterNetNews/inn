@@ -4,8 +4,8 @@
 **  This server doesn't do any real load-limiting, except for what has
 **  proven empirically necesary (i.e., look at GRPscandir).
 */
-#include <stdio.h>
-#include <sys/types.h>
+#include "config.h"
+#include "clibrary.h"
 #ifdef HAVE_WAIT_H
 # include <wait.h>
 #else
@@ -13,8 +13,6 @@
 #endif
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-#include "configdata.h"
-#include "clibrary.h"
 #include "libinn.h"
 #include "ov.h"
 #define MAINLINE
@@ -452,62 +450,53 @@ STATIC void StartConnection()
 }
 
 
-#if	!defined(VAR_NONE)
-
-#if	!defined(VAR_NONE)
-#if	defined(VAR_VARARGS)
-#if	defined(lint)
-#define START_VARARG(fmt, vp, type)	va_start(vp); fmt = NULL
+#if defined(STDC_HEADERS) || defined(HAVE_STDARG_H)
+# include <stdarg.h>
+# define VA_PARAM(type, param)  (type param, ...)
+# define VA_START(param)        (va_start(args, param))
 #else
-#define START_VARARG(fmt, vp, type)	va_start(vp); fmt = va_arg(vp, type)
-#endif	/* defined(lint) */
-#endif	/* defined(VAR_VARARGS) */
-#if	defined(VAR_STDARGS)
-#define START_VARARG(fmt, vp, type)	va_start(vp, fmt)
-#endif	/* defined(VAR_STDARGS) */
-#endif /* defined(VAR_NONE) */
+# ifdef HAVE_VARARGS_H
+#  include <varargs.h>
+#  define VA_PARAM(type, param) (param, va_alist) type param; va_dcl
+#  define VA_START(param)       (va_start(args))
+# endif
+#endif
+
+/* Only compile this function if we have a variadic function mechanism. */
+#ifdef VA_PARAM
 
 /*
 **  Send a reply, possibly with debugging output.
 */
-/*VARARGS*/
 void
-#if	defined(VAR_VARARGS)
-Reply(va_alist)
-    va_dcl
-#endif	/* defined(VAR_VARARGS) */
-#if	defined(VAR_STDARGS)
-Reply(char *fmt, ...)
-#endif	/* defined(VAR_STDARGS) */
+Reply VA_PARAM(const char *, fmt)
 {
-    register int	oerrno;
-    register char	*p;
-    va_list		vp;
-    char		buff[2048];
-#if	defined(VAR_VARARGS)
-    register char	*fmt;
-#endif	/* defined(VAR_VARARGS) */
+    va_list     args;
+    int         oerrno;
+    char *      p;
+    char        buff[2048];
 
-    START_VARARG(fmt, vp, char*);
-    (void)vprintf(fmt, vp);
-    va_end(vp);
+    VA_START(fmt);
+    vprintf(fmt, args);
+    va_end(args);
 
     if (Tracing) {
-	oerrno = errno;
-	START_VARARG(fmt, vp, char*);
+        oerrno = errno;
+        VA_START(fmt);
 
-	/* Copy output, but strip trailing CR-LF. */
-	(void)vsprintf(buff, fmt, vp);
-	p = buff + strlen(buff) - 1;
-	while (p >= buff && (*p == '\n' || *p == '\r'))
-	    *p-- = '\0';
-	syslog(L_TRACE, "%s > %s", ClientHost, buff);
+        /* Copy output, but strip trailing CR-LF.  Note we're assuming here
+           that no output line can ever be longer than 2045 characters. */
+        vsprintf(buff, fmt, args);
+        va_end(args);
+        p = buff + strlen(buff) - 1;
+        while (p >= buff && (*p == '\n' || *p == '\r'))
+            *p-- = '\0';
+        syslog(L_TRACE, "%s > %s", ClientHost, buff);
 
-	va_end(vp);
-	errno = oerrno;
+        errno = oerrno;
     }
 }
-#endif	/* !defined(VAR_NONE) */
+#endif /* VA_PARAM */
 
 
 /*
