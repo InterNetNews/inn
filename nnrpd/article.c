@@ -750,26 +750,18 @@ void CMDnextlast(int ac UNUSED, char *av[])
     }
 
     save = ARTnumber;
-    ARTnumber += delta;
-    if (ARTnumber < ARTlow || ARTnumber > ARThigh) {
-	Reply("%d No %s to retrieve.\r\n", errcode, message);
-	ARTnumber = save;
-	return;
-    }
-
-    while (!ARTopen(ARTnumber)) {
-	ARTnumber += delta;
-	if (ARTnumber < ARTlow || ARTnumber > ARThigh) {
-	    Reply("%d No %s article to retrieve.\r\n", errcode, message);
-	    ARTnumber = save;
-	    return;
-	}
-    }
-
-    if ((msgid = GetHeader("Message-ID")) == NULL) {
-        Reply("%s\r\n", ARTnoartingroup);
-        return;
-    }
+    msgid = NULL;
+    do {
+        ARTnumber += delta;
+        if (ARTnumber < ARTlow || ARTnumber > ARThigh) {
+            Reply("%d No %s to retrieve.\r\n", errcode, message);
+            ARTnumber = save;
+            return;
+        }
+        if (!ARTopen(ARTnumber))
+            continue;
+        msgid = GetHeader("Message-ID");
+    } while (msgid == NULL);
 
     ARTclose();
     Reply("%d %d %s Article retrieved; request text separately.\r\n",

@@ -234,23 +234,6 @@ before new articles.
 
 ------------------------------
 
-  Summary: nnrpd can respond with 423 to a NEXT or LAST command
- Standard: draft-ietf-nntpext-base-13.txt, section 9.1.1.2.1
-  Version: 2.2 to CURRENT 2001-07-04
-Reference: nnrpd/article.c CMDnextlast()
- Severity: Violates a MUST under unusual conditions
-
-423 is not a defined response to a NEXT or LAST command, but nnrpd returns
-that reply code under unusual circumstances (an article with a given
-article number is found, but doesn't contain a Message-ID header).
-
-Impact:  A client could become confused.
-
-Suggested fix:  Move the retrieval of the message ID inside the loop so
-that such articles are just skipped over like articles that don't exist.
-
-------------------------------
-
   Summary: nnrpd improperly handles zero-argument ARTICLE w/missing articles
  Standard: draft-ietf-nntpext-base-13.txt, section 9.2.1
   Version: 1.0 to CURRENT 2001-07-04
