@@ -68,6 +68,7 @@ $(D)$(PATHBIN)/inncheck:            inncheck            ; $(CP_XPRI) $? $@
 $(D)$(PATHBIN)/innmail:             innmail             ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/innreport:           innreport           ; $(CP_XPRI) $? $@
 $(D)$(PATHBIN)/innstat:             innstat             ; $(CP_XPRI) $? $@
+$(D)$(PATHBIN)/innupgrade:          innupgrade		; $(CP_XPRI) $? $@
 $(D)$(PATHBIN)/innwatch:            innwatch            ; $(CP_XPRI) $? $@
 $(D)$(PATHBIN)/news.daily:          news.daily          ; $(CP_XPRI) $? $@
 $(D)$(PATHBIN)/rc.news:             rc.news             ; $(CP_XPRI) $? $@
