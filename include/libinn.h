@@ -56,7 +56,7 @@ extern int      LockFile(int fd, BOOL block);
 #ifdef HAVE_FCNTL
 typedef enum { LOCK_READ, LOCK_WRITE, LOCK_UNLOCK } LOCKTYPE;
 
-extern int      LockRange(int fd, LOCKTYPE type, BOOL block,
+extern BOOL     LockRange(int fd, LOCKTYPE type, BOOL block,
                           OFFSET_T offset, OFFSET_T size);
 #endif
     
