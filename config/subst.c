@@ -523,6 +523,8 @@ main(ac, av)
 	    ctlfile = optarg;
 	    break;
 	}
+    if (ctlfile == NULL)
+	Usage();
     ac -= optind;
     av += optind;
 
