@@ -633,7 +633,7 @@ FUNCTYPE CMDfetch(int ac, char *av[])
 	    Reply("%s\r\n", NOACCESS);
 	    return;
 	}
-	Reply("%d %ld %s %s\r\n", what->ReplyCode, art, what->Item, av[1]);
+	Reply("%d %ld %s %s\r\n", what->ReplyCode, art, av[1], what->Item);
 	if (what->Type != STstat)
 	    if (ARTmem) 
 		ARTsendmmap(what->Type);
