@@ -76,6 +76,8 @@ STATIC char		ARTcclass[256];
 #define ARTatomchar(c)	((ARTcclass[(unsigned char)(c)] & CC_MSGID_ATOM) != 0)
 #define ARThostchar(c)	((ARTcclass[(unsigned char)(c)] & CC_HOSTNAME) != 0)
 
+STATIC int	CRwithoutLF;
+STATIC int	LFwithoutCR;
 
 /*
 **  The header table.  Not necessarily sorted, but the first character
@@ -767,11 +769,16 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
 	    *hp->Value = '\0';
 	hp->Found = 0;
     }
+    CRwithoutLF = LFwithoutCR = 0;
     for (error = NULL, in = out = Article->Data; ; out += delta, in = p) {
 	if (*in == '\0') {
 	    error = "No body";
 	    break;
 	}
+	if (in[0] == '\r' && in[1] != '\n')
+	    CRwithoutLF++;
+	if (in[0] == '\n' && in > Article->Data && in[-1] != '\r')
+	    LFwithoutCR++;
 	if (((*in == '\n' || (in[0] == '\r' && in[1] == '\n'))
              && out > Article->Data && out[-1] == '\n'))
 	    /* Found the header separator; break out. */
@@ -811,6 +818,10 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
 
     /* Scan the body, counting lines. */
     for (i = 0; *in; ) {
+	if (in[0] == '\r' && in[1] != '\n')
+	    CRwithoutLF++;
+	if (in[0] == '\n' && in[-1] != '\r')
+	    LFwithoutCR++;
 	if (*in == '\n')
 	    i++;
 	*out++ = *in++;
@@ -2499,6 +2510,15 @@ STRING ARTpost(CHANNEL *cp)
     }
     
     /* Start logging, then propagate the article. */
+    if (CRwithoutLF > 0 || LFwithoutCR > 0) {
+	if (CRwithoutLF > 0 && LFwithoutCR == 0)
+	    (void)sprintf(buff, "%d article includes CR withtout LF(%d)", NNTP_REJECTIT_VAL, CRwithoutLF);
+	else if (CRwithoutLF == 0 && LFwithoutCR > 0)
+	    (void)sprintf(buff, "%d article includes LF withtout CR(%d)", NNTP_REJECTIT_VAL, LFwithoutCR);
+	else
+	    (void)sprintf(buff, "%d article includes CR withtout LF(%d) and LF withtout CR(%d)", NNTP_REJECTIT_VAL, CRwithoutLF, LFwithoutCR);
+	ARTlog(&Data, ART_STRSTR, buff);
+    }
     ARTlog(&Data, Accepted ? ART_ACCEPT : ART_JUNK, (char *)NULL);
     if ((innconf->nntplinklog) &&
     	(fprintf(Log, " (%s)", Data.Name) == EOF || ferror(Log))) {
