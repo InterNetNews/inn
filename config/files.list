@@ -62,6 +62,7 @@
 ../include/macros.h
 ../include/paths.h
 ../innd/Makefile
+../innfeed/Makefile
 ../lib/Makefile
 ../makedirs.sh
 ../nnrpd/Makefile
