@@ -48,9 +48,9 @@ connecting to a non-standard port.
 
 =item I<secret>
 
-The shared secret with the RADIUS server.  Be careful not to include a
-C<#> in your secret, since this will be taken to be the beginning of a
-comment rather than part of the secret.  This parameter must be set.
+The shared secret with the RADIUS server.  If your secret includes spaces,
+tabs, or C<#>, be sure to include it in double quotes.  This parameter
+must be set.
 
 =item I<prefix>
 
