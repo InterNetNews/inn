@@ -7,6 +7,7 @@
 #include "clibrary.h"
 #include "portable/mmap.h"
 #include "portable/time.h"
+#include "portable/setproctitle.h"
 #include "portable/socket.h"
 #include "portable/wait.h"
 #include <errno.h>
