@@ -1,3 +1,10 @@
+Changes from 2.3.3 to 2.3.4
+[ in progress ]
+
+    * Two bugs in pgpverify were fixed when using GnuPG; it no
+      correctly checks for gpgv (rather than pgp) when using it and
+      expects the keyring to be pubring.gpg (not pubring.pgp)
+
 Changes from 2.3.2 to 2.3.3
 
     * pgpverify now supports using GnuPG to check signatures (rather than
