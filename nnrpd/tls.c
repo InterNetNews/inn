@@ -67,6 +67,7 @@
 
 /* outside the ifdef so `make depend` works even ifndef HAVE_SSL */
 #include "tls.h"
+#include "sasl_config.h"
 
 #ifdef HAVE_SSL
 
