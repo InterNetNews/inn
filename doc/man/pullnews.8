@@ -10,10 +10,13 @@ to another.
 .BI \-c " config"
 ]
 [
-.BI \-s " downstream-server"
+.B \-p " port"
 ]
 [
 .B \-q
+]
+[
+.BI \-s " downstream-server"
 ]
 [ remote-server ... ]
 .SH DESCRIPTION
@@ -50,14 +53,17 @@ Normally the config file is stored in $HOME/.pullnews for the user running the
 .I pullnews
 program. The ``\fB\-c\fP'' flag lets you change that.
 .TP
+.B \-p
+The ``\fB\-p\fP'' flag can be used to change connecting port other than 119.
+.TP
+.B \-q
+The ``\fB\-q\fP'' flag can be used to make things run more quietly.
+.TP
 .B \-s 
 Normally 
 .I pullnews
 will feed the articles it retrieves to the news server running on
 ``\fBlocalhost\fP''. The ``\fB\-s\fP'' flag lets you change that. 
-.TP
-.B \-q
-The ``\fB\-q\fP'' flag can be used to make things run more quietly.
 .SH "CONFIG FILE"
 .PP
 The config file for
