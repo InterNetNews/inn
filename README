@@ -210,8 +210,8 @@ Supporting the INN Effort
     implementation, handles the official support/release of BIND, and
     supports the Kerberos Version 5 effort at MIT.  You can learn more about
     the ISC's goals and accomplishments from the web page at
-    <http://www.isc.org/isc/>.
+    <http://www.isc.org/>.
 
-James Brister
-inn@isc.org
-
+                                            Russ Allbery
+                                            Katsuhiro Kondou
+                                            <inn@isc.org>
