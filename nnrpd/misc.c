@@ -146,16 +146,34 @@ BOOL
 PERMartok()
 {
     static char		**grplist;
-    char		*p;
+    char		*p, **grp;
 
     if (!PERMspecified)
 	return FALSE;
 
-    if ((p = GetHeader("Newsgroups", FALSE)) == NULL)
-        return 1;
-    if (NGgetlist(&grplist, p))
-	/* No newgroups or null entry. */
-	return 1;
+    if ((p = GetHeader("Xref", FALSE)) == NULL) {
+	/* in case article does not include Xref */
+	if ((p = GetHeader("Newsgroups", FALSE)) == NULL)
+	    if (!NGgetlist(&grplist, p))
+		/* No newgroups or null entry. */
+		return TRUE;
+    } else {
+	/* skip path element */
+	if ((p = strchr(p, ' ')) == NULL)
+	    return TRUE;
+	for (p++ ; *p == ' ' ; p++);
+	if (*p == '\0')
+	    return TRUE;
+	if (!NGgetlist(&grplist, p))
+	    /* No newgroups or null entry. */
+	    return TRUE;
+	/* chop ':' and article number */
+	for (grp = grplist ; *grp != NULL ; grp++) {
+	    if ((p = strchr(*grp, ':')) == NULL)
+		return TRUE;
+	    *p = '\0';
+	}
+    }
 
 #ifdef DO_PYTHON
     if (innconf->nnrppythonauth) {
@@ -167,7 +185,7 @@ PERMartok()
 	} else {
 	    if (reply != NULL) {
 	        syslog(L_TRACE, "PY_authorize() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, ClientHost, p, reply);
-		return 1;
+		return TRUE;
 	    }
 	}
     }
