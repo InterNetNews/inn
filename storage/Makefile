@@ -52,6 +52,8 @@ libstorage.a:         $(P) $(OBJECTS)
 ovtest: ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
 	$(PURE) $(CC) $(CFLAGS) -I/shared/include -D_TEST_ -o ovtest ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB) -L/shared/lib -ldb -lnsl -lsocket
 
+methods.h: autoconfig
+
 autoconfig:
 	@./buildconfig `find . -name method.config -print`
 	@./ovbuildconfig `find . -name ovmethod.config -print`
