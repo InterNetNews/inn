@@ -50,14 +50,10 @@ static int		metabuff_update = METACYCBUFF_UPDATE;
 static int		refresh_interval = REFRESH_INTERVAL;
 
 static TOKEN CNFSMakeToken(char *cycbuffname, CYCBUFF_OFF_T offset,
-		       uint32_t cycnum, STORAGECLASS class, TOKEN *oldtoken) {
+		       uint32_t cycnum, STORAGECLASS class) {
     TOKEN               token;
     int32_t		int32;
 
-    if (oldtoken == (TOKEN *)NULL)
-	memset(&token, '\0', sizeof(token));
-    else
-	memcpy(&token, oldtoken, sizeof(token));
     /*
     ** XXX We'll assume that TOKENSIZE is 16 bytes and that we divvy it
     ** up as: 8 bytes for cycbuffname, 4 bytes for offset, 4 bytes
@@ -1186,7 +1182,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	CNFSUsedBlock(cycbuff, middle, TRUE, FALSE);
     }
     if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
-    return CNFSMakeToken(artcycbuffname, artoffset, artcyclenum, class, article.token);
+    return CNFSMakeToken(artcycbuffname, artoffset, artcyclenum, class);
 }
 
 ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
@@ -1653,7 +1649,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
     tonextblock = CNFS_BLOCKSIZE - (private->offset & (CNFS_BLOCKSIZE - 1));
     private->offset += (CYCBUFF_OFF_T) tonextblock;
     art->arrived = ntohl(cah.arrived);
-    token = CNFSMakeToken(cycbuff->name, offset, (offset > cycbuff->free) ? cycbuff->cyclenum - 1 : cycbuff->cyclenum, cah.class, (TOKEN *)NULL);
+    token = CNFSMakeToken(cycbuff->name, offset, (offset > cycbuff->free) ? cycbuff->cyclenum - 1 : cycbuff->cyclenum, cah.class);
     art->token = &token;
     if (innconf->articlemmap) {
 	offset += sizeof(cah) + plusoffset;
