@@ -1930,7 +1930,11 @@ RCsetup(int i)
 
     /* Set it up to wait for connections. */
     if (listen(i, MAXLISTEN) < 0) {
+	j = errno;
 	syslog(L_FATAL, "%s cant listen RCreader %m", LogName);
+	/* some IPv6 systems already listening on any address will 
+	   return EADDRINUSE when trying to listen on the IPv4 socket */
+	if ( j = EADDRINUSE ) return -1;
 	exit(1);
     }
 

@@ -227,8 +227,9 @@ main(int argc, char *argv[])
 			    addr->ai_protocol)) < 0)
 		continue; /* ignore */
 #ifdef SO_REUSEADDR
-	    if (setsockopt(i, SOL_SOCKET, SO_REUSEADDR, (char *)&i,
-			sizeof i) < 0)
+	    j = 1;
+	    if (setsockopt(i, SOL_SOCKET, SO_REUSEADDR, (char *)&j,
+			sizeof j) < 0)
 		syswarn("can't set SO_REUSEADDR");
 #endif
 	    if (bind(i, addr->ai_addr, addr->ai_addrlen) < 0) {
