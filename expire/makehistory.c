@@ -262,7 +262,15 @@ FlushOverTmpFile(void)
 	Fork ? _exit(1) : exit(1);
     }
 
-    for (count = 1; (line = QIOread(qp)) != NULL ; ++count) {
+    for (count = 1; ; ++count) {
+	line = QIOread(qp);
+	if (line == NULL) {
+	    if (QIOtoolong(qp)) {
+		fprintf(stderr, "makehistory: Line %d is too long\n", count);
+		continue;
+	    } else
+		break;
+	}
 	if ((p = strchr(line, '\t')) == NULL 
 	    || (q = strchr(p+1, '\t')) == NULL
 	    || (r = strchr(q+1, '\t')) == NULL) {
@@ -304,11 +312,6 @@ FlushOverTmpFile(void)
 	}
     }
     /* Check for errors and close. */
-    if (QIOtoolong(qp)) {
-	fprintf(stderr, "makehistory: Line %d is too long\n", count);
-	OVclose();
-	Fork ? _exit(1) : exit(1);
-    }
     if (QIOerror(qp)) {
 	(void)fprintf(stderr, "makehistory: Can't read sorted tmp file %s, %s\n", 
 		      SortedTmpPath, strerror(errno));
@@ -530,7 +533,7 @@ void
 DoArt(ARTHANDLE *art)
 {
     ARTOVERFIELD		*fp;
-    char			*p, *p1, *p2;
+    char			*p, *p1;
     static BUFFER 		Buff;
     static char			SEP[] = "\t";
     static char			NUL[] = "\0";
@@ -566,19 +569,17 @@ DoArt(ARTHANDLE *art)
     for (i = ARTfieldsize, fp = ARTfields; --i >= 0;fp++) {
 	if ((fp->Header = (char *)HeaderFindMem(art->data, art->len, fp->Headername, fp->HeadernameLength)) != (char *)NULL) {
 	    fp->HasHeader = TRUE;
-	    for (p = fp->Header, p1 = p2 = (char *)NULL; p < art->data + art->len; p++) {
-		if (p2 != (char *)NULL && *p2 == '\r' &&
-		    p1 != (char *)NULL && *p1 == '\n' &&
+	    for (p = fp->Header, p1 = (char *)NULL; p < art->data + art->len; p++) {
+		if (p1 != (char *)NULL && (*p1 == '\r' || *p1 == '\n') &&
 		    !ISWHITE(*p))
 		    break;
-		p2 = p1;
 		p1 = p;
 	    }
 	    if (p >= art->data + art->len) {
 		/* not found for this header */
 		continue;
 	    }
-            fp->HeaderLength = p2 - fp->Header;
+            fp->HeaderLength = p1 - fp->Header;
 	} else if (RetrMode == RETR_ALL && strcmp(fp->Headername, "Bytes") == 0)
 	{
 		sprintf(bytes, "%d", art->len);
@@ -591,19 +592,17 @@ DoArt(ARTHANDLE *art)
 	for (i = Missfieldsize, fp = Missfields; --i >= 0;fp++) {
 	    if ((fp->Header = (char *)HeaderFindMem(art->data, art->len, fp->Headername, fp->HeadernameLength)) != (char *)NULL) {
 		fp->HasHeader = TRUE;
-		for (p = fp->Header, p1 = p2 = (char *)NULL; p < art->data + art->len; p++) {
-		    if (p2 != (char *)NULL && *p2 == '\r' &&
-			p1 != (char *)NULL && *p1 == '\n' &&
-			!ISWHITE(*p))
-		        break;
-		    p2 = p1;
+		for (p = fp->Header, p1 = (char *)NULL; p < art->data + art->len; p++) {
+		    if (p1 != (char *)NULL && (*p1 == '\r' || *p1 == '\n') &&
+		        !ISWHITE(*p))
+		    break;
 		    p1 = p;
 		}
 		if (p >= art->data + art->len) {
 		    /* not found for this header */
 		  continue;
 		}
-		fp->HeaderLength = p2 - fp->Header;
+		fp->HeaderLength = p1 - fp->Header;
 	    }
 	}
     }
