@@ -242,7 +242,9 @@ TMRstart(unsigned int timer)
 void
 TMRstop(unsigned int timer)
 {
-    if (timer != timer_current->id)
+    if (timer_current == NULL)
+        warn("timer %u stopped when no timer was running", timer);
+    else if (timer != timer_current->id)
         warn("timer %u stopped doesn't match running timer %u", timer,
              timer_current->id);
     else {
@@ -290,12 +292,12 @@ TMRsumone(const char *const *labels, struct timer *timer, char *buf,
         return 0;
     }
 
-    node->total = 0;
-    node->count = 0;
-    if (node->child != NULL)
-        off += TMRsumone(labels, node->child, buf + off, len - off);
-    if (node->brother != NULL)
-        off += TMRsumone(labels, node->brother, buf + off, len - off);
+    timer->total = 0;
+    timer->count = 0;
+    if (timer->child != NULL)
+        off += TMRsumone(labels, timer->child, buf + off, len - off);
+    if (timer->brother != NULL)
+        off += TMRsumone(labels, timer->brother, buf + off, len - off);
     return off;
 }
 
