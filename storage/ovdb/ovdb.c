@@ -242,7 +242,7 @@ static int crecv(void *data, int n)
 /* Attempt to connect to the readserver.  If anything fails, we
    return -1 so that ovdb_open can open the database directly. */
 
-static int client_connect()
+static int client_connect(void)
 {
     ssize_t r;
     size_t p = 0;
@@ -894,8 +894,8 @@ static bool delete_old_stuff(int forgotton)
     DB_TXN *tid;
     struct groupinfo gi;
     char **dellist = NULL;
-    int listlen, listcount;
-    int i, ret;
+    int listlen, listcount = 0;
+    int i, ret = 0;
 
     TXN_START(t_dellist, tid);
     if (dellist != NULL) {
@@ -1191,7 +1191,7 @@ bool ovdb_releaselock(void)
     return r;
 }
 
-bool ovdb_check_pidfile(char *file)
+bool ovdb_check_pidfile(const char *file)
 {
     int f, pid;
     char buf[SMBUF];
@@ -2629,8 +2629,9 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 		    }
 		}
 		newcount++;
-		if(lowest != -1 && (lowest == 0 || artnum < lowest))
-		    lowest = artnum;
+                if (lowest != (u_int32_t) -1)
+                    if (lowest == 0 || artnum < lowest)
+                        lowest = artnum;
 	    }
 	}
 	/* end of for loop */
@@ -2639,7 +2640,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 	    TXN_RETRY(t_expgroup_loop, tid);
 	}
 
-	if(lowest != 0 && lowest != -1)
+	if(lowest != 0 && lowest != (u_int32_t) -1)
 	    gi.low = lowest;
 
 	if(done) {
@@ -2673,7 +2674,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 
 	currentcount += newcount;
 	if(lowest != 0)
-	    lowest = -1;
+	    lowest = (u_int32_t) -1;
 
 	if(done)
 	    break;
