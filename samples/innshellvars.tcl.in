@@ -93,6 +93,6 @@ set env(TMPDIR) "$inn_pathtmp"
 set inn_tmpdir "$inn_pathtmp"
 set inn_spooltemp "$inn_pathtmp"
 
-scan "02" "%o" inn_umask
+scan "@NEWSUMASK@" "%o" inn_umask
 
 set env(PATH) "$inn_newslbin:$inn_newsbin:$env(PATH):/bin:/usr/bin:/usr/ucb"

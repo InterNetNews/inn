@@ -94,7 +94,7 @@ SPOOLTEMP=${PATHTMP}
 NEWSLBIN=${NEWSHOME}/local
 export NEWSLBIN
 
-umask 02
+umask @NEWSUMASK@
 
 PATH=${NEWSLBIN}:${NEWSBIN}:${PATH}:/bin:/usr/bin:/usr/ucb
 export PATH
