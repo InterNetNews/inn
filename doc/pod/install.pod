@@ -533,7 +533,7 @@ operation:
 If set to true then INN will support the NEWNEWS command for news readers.
 While this can be an expensive operation, its speed has been improved
 considerably as of INN 2.3 and it's probably safe to turn on without
-risking excessive server load.  The default is false.
+risking excessive server load.  The default is true.
 
 =item complaints
 
