@@ -74,6 +74,13 @@ bool buffer_find_string(struct buffer *, const char *, size_t start,
    buffer.  Return the number of characters read. */
 ssize_t buffer_read(struct buffer *, int fd);
 
+/* Read from a file descriptor into a buffer until end of file is reached. */
+bool buffer_read_all(struct buffer *, int fd);
+
+/* Read the contents of a file into a buffer.  This should be used instead of
+   buffer_read_all when fstat can be called on the file descriptor. */
+bool buffer_read_file(struct buffer *, int fd);
+
 END_DECLS
 
 #endif /* INN_BUFFER_H */

@@ -25,8 +25,9 @@ main(void)
     ssize_t count;
     size_t offset;
 
-    puts("57");
+    puts("77");
 
+    /* buffer_set, buffer_append, buffer_swap */
     buffer_set(&one, test_string1, sizeof(test_string1));
     ok_int(1, 1024, one.size);
     ok_int(2, 0, one.used);
@@ -66,6 +67,7 @@ main(void)
     one.size = 0;
     two.size = 0;
 
+    /* buffer_resize */
     three = buffer_new();
     ok(22, three != NULL);
     ok_int(23, 0, three->size);
@@ -77,6 +79,7 @@ main(void)
     ok_int(26, 2048, three->size);
     buffer_free(three);
 
+    /* buffer_read, buffer_find_string, buffer_compact */
     fd = open("buffer-test", O_RDWR | O_CREAT | O_TRUNC, 0666);
     if (fd < 0)
         sysdie("cannot create buffer-test");
@@ -123,6 +126,7 @@ main(void)
     free(data);
     buffer_free(three);
 
+    /* buffer_sprintf */
     three = buffer_new();
     buffer_sprintf(three, true, "testing %d testing", 6);
     ok_int(46, 0, three->used);
@@ -149,6 +153,52 @@ main(void)
     ok_int(56, 1049, three->left);
     buffer_append(three, "", 1);
     ok_string(57, data, three->data);
+    free(data);
+    buffer_free(three);
+
+    /* buffer_read_all */
+    fd = open("buffer-test", O_RDWR | O_CREAT | O_TRUNC, 0666);
+    if (fd < 0)
+        sysdie("cannot create buffer-test");
+    data = xmalloc(2049);
+    memset(data, 'a', 2049);
+    if (xwrite(fd, data, 2049) < 2049)
+        sysdie("cannot write to buffer-test");
+    if (lseek(fd, 0, SEEK_SET) == (off_t) -1)
+        sysdie("cannot rewind buffer-test");
+    three = buffer_new();
+    ok(58, buffer_read_all(three, fd));
+    ok_int(59, 0, three->used);
+    ok_int(60, 2049, three->left);
+    ok_int(61, 4096, three->size);
+    ok(62, memcmp(data, three->data, 2049) == 0);
+    if (lseek(fd, 0, SEEK_SET) == (off_t) -1)
+        sysdie("cannot rewind buffer-test");
+    ok(63, buffer_read_all(three, fd));
+    ok_int(64, 0, three->used);
+    ok_int(65, 4098, three->left);
+    ok_int(66, 8192, three->size);
+    ok(67, memcmp(data, three->data + 2049, 2049) == 0);
+
+    /* buffer_read_file */
+    if (lseek(fd, 0, SEEK_SET) == (off_t) -1)
+        sysdie("cannot rewind buffer-test");
+    buffer_free(three);
+    three = buffer_new();
+    ok(68, buffer_read_file(three, fd));
+    ok_int(69, 0, three->used);
+    ok_int(70, 2049, three->left);
+    ok_int(71, 3072, three->size);
+    ok(72, memcmp(data, three->data, 2049) == 0);
+
+    /* buffer_read_all and buffer_read_file errors */
+    close(fd);
+    ok(73, !buffer_read_all(three, fd));
+    ok_int(74, 3072, three->size);
+    ok(75, !buffer_read_file(three, fd));
+    ok_int(76, 3072, three->size);
+    ok_int(77, 2049, three->left);
+    unlink("buffer-test");
     free(data);
     buffer_free(three);
 

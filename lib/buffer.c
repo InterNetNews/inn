@@ -17,6 +17,7 @@
 #include "config.h"
 #include "clibrary.h"
 #include <errno.h>
+#include <sys/stat.h>
 
 #include "inn/buffer.h"
 #include "libinn.h"
@@ -229,4 +230,47 @@ buffer_read(struct buffer *buffer, int fd)
     if (count > 0)
         buffer->left += count;
     return count;
+}
+
+
+/*
+**  Read from a file descriptor until end of file is reached, doubling the
+**  buffer size as necessary to hold all of the data.  Returns true on
+**  success, false on failure (in which case errno will be set).
+*/
+bool
+buffer_read_all(struct buffer *buffer, int fd)
+{
+    ssize_t count;
+
+    if (buffer->size == 0)
+        buffer_resize(buffer, 1024);
+    do {
+        size_t used = buffer->used + buffer->left;
+        if (buffer->size <= used)
+            buffer_resize(buffer, buffer->size * 2);
+        count = buffer_read(buffer, fd);
+    } while (count > 0);
+    return (count == 0);
+}
+
+
+/*
+**  Read the entire contents of a file into a buffer.  This is a slight
+**  optimization over buffer_read_all because it can stat the file descriptor
+**  first and size the buffer appropriately.  buffer_read_all will still
+**  handle the case where the file size changes while it's being read.
+**  Returns true on success, false on failure (in which case errno will be
+**  set).
+*/
+bool
+buffer_read_file(struct buffer *buffer, int fd)
+{
+    struct stat st;
+    size_t used = buffer->used + buffer->left;
+
+    if (fstat(fd, &st) < 0)
+        return false;
+    buffer_resize(buffer, st.st_size + used);
+    return buffer_read_all(buffer, fd);
 }
