@@ -885,7 +885,7 @@ EXPdoline(out, line, length, arts, krps)
     value.dsize = sizeof where;
     if (EXPverbose > 4)
 	(void)printf("\tdbz %s@%ld\n", key.dptr, where);
-    if (dbzstore(key, value) < 0) {
+    if (!dbzstore(key, value)) {
 	(void)fprintf(stderr, "Can't store key, %s\n", strerror(errno));
 	return FALSE;
     }
@@ -992,6 +992,7 @@ main(ac, av)
     BOOL		Writing;
     BOOL		UnlinkFile;
     time_t		TimeWarp;
+    dbzoptions          opt;
 
     /* Set defaults. */
     Server = TRUE;
@@ -1149,15 +1150,18 @@ main(ac, av)
 	if (EXPverbose > 3)
 	    (void)printf("created: %s %s %s\n",
 		    NHistory, NHistorydir, NHistorypag);
-	(void)dbzincore(1);
+	dbzgetoptions(&opt);
+	opt.idx_incore = INCORE_MEM;
+	opt.exists_incore = INCORE_MEM;
+	dbzsetoptions(opt);
 	if (IgnoreOld) {
-	    if (dbzfresh(NHistory, dbzsize(0L)) < 0) {
+	    if (!dbzfresh(NHistory, dbzsize(0L), 0)) {
 		(void)fprintf(stderr, "Can't create database, %s\n",
 			strerror(errno));
 		exit(1);
 	    }
 	}
-	else if (dbzagain(NHistory, HistoryDB) < 0) {
+	else if (!dbzagain(NHistory, HistoryDB)) {
 	    (void)fprintf(stderr, "Can't dbzagain, %s\n", strerror(errno));
 	    exit(1);
 	}
@@ -1226,7 +1230,7 @@ main(ac, av)
 		NHistory, strerror(errno));
 	    Bad = TRUE;
 	}
-	if (dbmclose() < 0) {
+	if (!dbmclose()) {
 	    (void)fprintf(stderr, "Can't close history, %s\n",
 		    strerror(errno));
 	    Bad = TRUE;

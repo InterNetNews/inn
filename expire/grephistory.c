@@ -130,7 +130,7 @@ IhaveSendme(History, What)
     char		Name[SPOOLNAMEBUFF];
 
     /* Open history. */
-    if (dbminit(History) < 0) {
+    if (!dbminit(History)) {
 	(void)fprintf(stderr, "Can't open history database, %s\n",
 		strerror(errno));
 	exit(1);
@@ -253,7 +253,7 @@ main(ac, av)
 	Usage();
 
     /* Open the history file, do the lookup. */
-    if (dbminit(History) < 0) {
+    if (!dbminit(History)) {
 	(void)fprintf(stderr, "Can't open history database, %s\n",
 		strerror(errno));
 	exit(1);

@@ -57,8 +57,8 @@ tags ctags:	$(SOURCES)
 convdate:	$(P) convdate.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ convdate.o $(LIBNEWS) $(LIBS)
 
-expire:		$(P) expire.o dbz.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ expire.o dbz.o $(LIBNEWS) $(LIBS)
+expire:		$(P) expire.o $(LIBNEWS)
+	$(CC) $(LDFLAGS) -o $@ expire.o $(LIBNEWS) $(LIBS)
 
 expireover:	$(P) expireover.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ expireover.o $(LIBNEWS) $(LIBS)
@@ -72,8 +72,8 @@ grephistory:	$(P) grephistory.o $(LIBNEWS)
 makeactive:	$(P) makeactive.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ makeactive.o $(LIBNEWS) $(LIBS)
 
-makehistory:	$(P) makehistory.o dbz.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ makehistory.o dbz.o $(LIBNEWS) $(LIBS)
+makehistory:	$(P) makehistory.o $(LIBNEWS)
+	$(CC) $(LDFLAGS) -o $@ makehistory.o $(LIBNEWS) $(LIBS)
 
 newsrequeue:	$(P) newsrequeue.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ newsrequeue.o $(LIBNEWS) $(LIBS)
@@ -93,14 +93,6 @@ lint:		$(ALL)
 	-lint $(LINTFLAGS) newsrequeue.c  $(LINTLIB) $(LINTFILTER) >>lint
 	-lint $(LINTFLAGS) prunehistory.c $(LINTLIB) $(LINTFILTER) >>lint
 
-# Build our own version of dbz.o for expire and makehistory, to avoid
-# any -DMMAP in DBZCFLAGS - using mmap() for dbz in expire can slow it
-# down really bad, and has no benefits as it pertains to the *new* .pag.
-dbz.o:		../lib/dbz.c
-	$(CC) $(CFLAGS) -c ../lib/dbz.c
-
-../include/dbz.h:
-	(cd ../lib ; $(MAKE) ../include/dbz.h)
 $(LIBNEWS) $(LINTLIB):
 	(cd ../lib ; $(MAKE) install)
 
@@ -156,7 +148,6 @@ convdate.o:	../include/clibrary.h
 convdate.o:	../include/configdata.h
 convdate.o:	../include/libinn.h
 convdate.o:	../include/macros.h
-dbz.o:		../include/dbz.h
 expire.o:	../include/clibrary.h
 expire.o:	../include/configdata.h
 expire.o:	../include/dbz.h

@@ -14,8 +14,6 @@ DEFS	= -I../include
 PERLINC = 
 ##  =()<CFLAGS	= @<CFLAGS>@ $(PERLINC)>()=
 CFLAGS	= $(DEFS) -g $(PERLINC)
-##  =()<DBZCFLAGS	= @<DBZCFLAGS>@>()=
-DBZCFLAGS	= $(CFLAGS)
 ##  =()<LDFLAGS	= @<LDFLAGS>@>()=
 LDFLAGS	= 
 ##  =()<LINTLIBSTYLE	= @<LINTLIBSTYLE>@>()=
@@ -33,6 +31,8 @@ PROF	= -pg
 
 ##  =()<RANLIB	= @<RANLIB>@>()=
 RANLIB	= ranlib
+##  =()<LIBS	= @<LIBS>@>()=
+LIBS	= 
 
 ##  For OSx systems, get these from the ATT Universe libc.
 ##  See the rule for version.o, below.
@@ -62,12 +62,12 @@ OBJECTS = $(MISSING_OBJ) \
 
 all:			libinn.a
 
-install:		../libinn.a ../llib-linn.ln
+install:		../libinn.a ../llib-linn.ln ../include/autoconfig.h
 
 clobber clean:
 	rm -f *.o libinn.a llib-linn.ln
 	rm -f parsedate parsedate.c
-	rm -f profiled libinn_p.a
+	rm -f profiled libinn_p.a endian
 	rm -f all install lint lint.all
 
 tags ctags:	$(SOURCES)
@@ -95,6 +95,12 @@ profiled:		../libinn_p.a
 	mv libinn.a ../libinn_p.a
 	$(RANLIB) ../libinn_p.a
 	rm -f $(OBJECTS)
+
+endian: endian.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ endian.c
+
+../include/autoconfig.h: endian
+	./endian >../include/autoconfig.h
 
 parsedate.c:		parsedate.y
 	@echo Expect 6 shift/reduce conflicts
@@ -161,7 +167,7 @@ innvers.o:	../include/patchlevel.h
 localopen.o:	../include/macros.h
 localopen.o:	../include/nntp.h
 localopen.o:	../include/paths.h
-md5.o:		../include/md5.h
+md5.o:		../include/md5.h ../include/autoconfig.h
 parsedate.o:	../include/macros.h
 qio.o:		../include/macros.h
 qio.o:		../include/qio.h

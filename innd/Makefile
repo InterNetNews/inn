@@ -101,7 +101,7 @@ ccenter:	$(SOURCES)
 $D$(INND):	innd
 	$(SHELL) ../installit.sh $(OWNER) -m 0550 -b .OLD $? $@
 $D$(INNDSTART):	inndstart
-	$(SHELL) ../installit.sh -O root -G $(NEWSGROUP) -m 4550 -b .OLD $? $@
+	-$(SHELL) ../installit.sh -O root -G $(NEWSGROUP) -m 4550 -b .OLD $? $@
 	@ME=`(whoami || /usr/ucb/whoami) 2> /dev/null` ;\
 	if [ "X$$ME" = Xroot ]; then \
 		echo $@ has been installed setuid root. ;\

@@ -151,7 +151,7 @@ HistorySeek(MessageID)
 
     /* Open the history file. */
     if (F == NULL) {
-	if (dbminit(History) < 0) {
+	if (!dbminit(History)) {
 	    (void)fprintf(stderr, "Can't set up \"%s\" database, %s\n",
 		    History, strerror(errno));
 	    exit(1);

@@ -95,6 +95,7 @@ Rebuild(size, IgnoreOld, Overwrite)
     datum		key;
     datum		value;
     char		temp[SMBUF];
+    dbzoptions          opt;
 
     xchdir(HISTORYDIR);
 
@@ -124,10 +125,12 @@ Rebuild(size, IgnoreOld, Overwrite)
     }
 
     /* Open the new database, using the old file if desired and possible. */
-    (void)dbzincore(1);
+    dbzgetoptions(&opt);
+    opt.idx_incore = INCORE_MEM;
+    opt.exists_incore = INCORE_MEM;
+    dbzsetoptions(opt);
     if (IgnoreOld) {
-        /* 70 == average history file line length */
-	if (dbzfresh(p, dbzsize(size)) < 0) {
+	if (!dbzfresh(p, dbzsize(size), 0)) {
 	    (void)fprintf(stderr, "Can't do dbzfresh, %s\n",
 		    strerror(errno));
 	    if (temp[0])
@@ -136,7 +139,7 @@ Rebuild(size, IgnoreOld, Overwrite)
 	}
     }
     else {
-	if (dbzagain(p, HISTORY) < 0) {
+	if (!dbzagain(p, HISTORY)) {
 	    (void)fprintf(stderr, "Can't do dbzagain, %s\n", strerror(errno));
 	    if (temp[0])
 		(void)unlink(temp);
@@ -161,7 +164,7 @@ Rebuild(size, IgnoreOld, Overwrite)
 	*save = '\0';
 	key.dptr = p;
 	key.dsize = save - p + 1;
-	if (dbzstore(key, value) < 0) {
+	if (!dbzstore(key, value)) {
 	    (void)fprintf(stderr, "Can't store \"%s\", %s\n",
 		    p, strerror(errno));
 	    if (temp[0])
@@ -185,7 +188,7 @@ Rebuild(size, IgnoreOld, Overwrite)
 
     /* Close files. */
     QIOclose(qp);
-    if (dbmclose() < 0) {
+    if (!dbmclose()) {
 	(void)fprintf(stderr, "Can't close history, %s\n", strerror(errno));
 	if (temp[0])
 	    (void)unlink(temp);
@@ -712,7 +715,7 @@ main(ac, av)
 		    strerror(errno));
 	    exit(1);
 	}
-	if (dbminit(TextFile) == -1) {
+	if (!dbminit(TextFile)) {
 	    (void)fprintf(stderr, "Can't open dbz file, %s\n",
 		    strerror(errno));
 	    ErrorExit(TRUE, DoRebuild);
@@ -759,7 +762,7 @@ main(ac, av)
 
     if (Update) {
 	INNDrunning = TRUE;
-	if (dbmclose() < 0) {
+	if (!dbmclose()) {
 	    (void)fprintf(stderr, "Can't close DBZ file, %s\n",
 		    strerror(errno));
 	    ErrorExit(Update, DoRebuild);

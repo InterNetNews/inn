@@ -76,6 +76,7 @@ void
 HISsetup()
 {
     char *HIScachesizestr;
+    dbzoptions opt;
     
     if (HISwritefp == NULL) {
 	/* Open the history file for appending formatted I/O. */
@@ -93,9 +94,12 @@ HISsetup()
 	CloseOnExec(HISreadfd, TRUE);
 
 	/* Open the DBZ file. */
-	(void)dbzincore(HISincore);
-	(void)dbzwritethrough(1);
-	if (dbminit(HIShistpath) < 0) {
+	dbzgetoptions(&opt);
+	opt.writethrough = TRUE;
+	opt.idx_incore = INCORE_NO;
+	opt.exists_incore = INCORE_MMAP;
+	dbzsetoptions(opt);
+	if (!dbminit(HIShistpath)) {
 	    syslog(L_FATAL, "%s cant dbminit %s %m", HIShistpath, LogName);
 	    exit(1);
 	}
@@ -121,7 +125,7 @@ void
 HISsync()
 {
     if (HISdirty) {
-	if (dbzsync()) {
+	if (!dbzsync()) {
 	    syslog(L_FATAL, "%s cant dbzsync %m", LogName);
 	    exit(1);
 	}
@@ -137,10 +141,8 @@ void
 HISclose()
 {
     if (HISwritefp != NULL) {
-	/* Since dbmclose calls dbzsync we could replace this line with
-	 * "HISdirty = 0;".  Oh well, it keeps the abstraction clean. */
 	HISsync();
-	if (dbmclose() < 0)
+	if (!dbmclose())
 	    syslog(L_ERROR, "%s cant dbmclose %m", LogName);
 	if (fclose(HISwritefp) == EOF)
 	    syslog(L_ERROR, "%s cant fclose history %m", LogName);
@@ -273,7 +275,7 @@ HIShavearticle(MessageID)
     char	*MessageID;
 {
     datum	   key;
-    datum	   val;
+    BOOL	   val;
     int            index;
     hash_t	   hash;
     STATIC time_t  lastlog;       /* Last time that we logged stats */   
@@ -290,13 +292,13 @@ HIShavearticle(MessageID)
     	    return FALSE;
     }
     HISsetkey(MessageID, &key);
-    val = dbzfetch(key);
-    HIScacheadd(MessageID, strlen(MessageID), (val.dptr != NULL));
-    if (val.dptr != NULL)
+    val = dbzexists(key);
+    HIScacheadd(MessageID, strlen(MessageID), val);
+    if (val)
 	HISmisses++;
     else
 	HISdne++;
-    return val.dptr != NULL;
+    return val;
 }
 
 
@@ -368,7 +370,7 @@ HISwrite(Data, paths)
     /* Set up the database values and write them. */
     val.dptr = (char *)&offset;
     val.dsize = sizeof offset;
-    if (dbzstore(key, val) < 0) {
+    if (!dbzstore(key, val)) {
 	i = errno;
 	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
 	IOError("history database", i);

@@ -1,5 +1,5 @@
 /*
-  dbz.c  V4.0
+  dbz.c  V6.0
 
 Copyright 1988 Jon Zeeff (zeeff@b-tech.ann-arbor.mi.us)
 You can use this code in any manner, as long as you leave my name on it
@@ -20,104 +20,114 @@ now <david.robinson@sun.com> (January, 1993).
 
 Major reworking by Clayton O'Neill (coneill@oneill.net).  Removed all the
 C News and backwards compatible cruft.  Ripped out all the tagmask stuff
-and replaced it with hashed .pag entries.  This totally removes the need
-for base file access.  Primary bottleneck now appears to be the hash
-algorithm and search().  With 5 million entries in the .pag file and a 6
-byte hash, the chance of collision is about 1 in 40 million.  You can
-change DBZ_HASH_SIZE in dbz.h to increase the size of the stored hash
+and replaced it with hashed .pag entries.  This removes the need for
+base file access.  Primary bottleneck now appears to be the hash
+algorithm and search().  You can change DBZ_INTERNAL_HASH_SIZE in
+dbz.h to increase the size of the stored hash.
 
 These routines replace dbm as used by the usenet news software
 (it's not a full dbm replacement by any means).  It's fast and
 simple.  It contains no AT&T code.
 
-In general, dbz's files are 1/20 the size of dbm's.  Lookup performance
-is somewhat better, while file creation is spectacularly faster, especially
-if the incore facility is used.
+The dbz database exploits the fact that when news stores a <key,value>
+tuple, the `value' part is a seek offset into a text file, pointing to
+a copy of the `key' part.  This avoids the need to store a copy of
+the key in the dbz files.  However, the text file *must* exist and be
+consistent with the dbz files, or things will fail.
+
+The basic format of the database is two hash tables, each in it's own
+file. One contains the offsets into the history text file , and the
+other contains a hash of the message id.  A value is stored by
+indexing into the tables using a hash value computed from the key;
+collisions are resolved by linear probing (just search forward for an
+empty slot, wrapping around to the beginning of the table if
+necessary).  Linear probing is a performance disaster when the table
+starts to get full, so a complication is introduced.  Each file actually
+contains one *or more* tables, stored sequentially in the files, and
+the length of the linear-probe sequences is limited.  The search (for
+an existing item or an empy slot always starts in the first table of
+the hash file, and whenever MAXRUN probes have been done in table N,
+probing continues in table N+1.  It is best not to overflow into more
+than 1-2 tables or else massive performance degradation may occur.
+Choosing the size of the database is extremely important because of this.
+
+The table size is fixed for any particular database, but is determined
+dynamically when a database is rebuilt.  The strategy is to try to pick
+the size so the first table will be no more than 2/3 full, that being
+slightly before the point where performance starts to degrade.  (It is
+desirable to be a bit conservative because the overflow strategy tends
+to produce files with holes in them, which is a nuisance.)
 
 */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <ctype.h>
 #include <errno.h>
 #include <netinet/in.h>
-#include <dbz.h>
+#include <sys/mman.h>
 #include <md5.h>
 #include <clibrary.h>
+#include <configdata.h>
+#include <libinn.h>
+#include <macros.h>
+#include <dbz.h>
 
 /*
  * "LIA" = "leave it alone unless you know what you're doing".
  *
- * NMEMORY	number of days of memory for use in sizing new table (LIA)
- * INCORE	backward compatibility with old dbz; use dbzincore() instead
- * NONBLOCK     enable non-blocking writes for non-mmapped i/o
  * DBZDEBUG	enable debugging
- * DEFSIZE	default table size (not as critical as in old dbz)
- * NPAGBUF	size of .pag buffer, in longs (LIA)
- * MAXRUN	length of run which shifts to next table (see below) (LIA)
- * MMAP		Use SunOS style mmap() for efficient incore
  * DBZTEST      Generate a standalone program for testing and benchmarking
+ * DEFSIZE	default table size (not as critical as in old dbz)
+ * NMEMORY	number of days of memory for use in sizing new table (LIA)
+ * MAXRUN	length of run which shifts to next table (see below) (LIA)
  */
 
-static int dbzversion = 5;	/* for validating .dir file format */
+static int dbzversion = 6;	/* for validating .dir file format */
 
-/*
- * The dbz database exploits the fact that when news stores a <key,value>
- * tuple, the `value' part is a seek offset into a text file, pointing to
- * a copy of the `key' part.  This avoids the need to store a copy of
- * the key in the dbz files.  However, the text file *must* exist and be
- * consistent with the dbz files, or things will fail.
- *
- * The basic format of the database is a simple hash table containing the
- * values.  A value is stored by indexing into the table using a hash value
- * computed from the key; collisions are resolved by linear probing (just
- * search forward for an empty slot, wrapping around to the beginning of
- * the table if necessary).  Linear probing is a performance disaster when
- * the table starts to get full, so a complication is introduced.  The
- * database is actually one *or more* tables, stored sequentially in the
- * .pag file, and the length of linear-probe sequences is limited.  The
- * search (for an existing item or an empty slot) always starts in the
- * first table, and whenever MAXRUN probes have been done in table N,
- * probing continues in table N+1.  This behaves reasonably well even in
- * cases of massive overflow.  There are some other small complications
- * added, see comments below.
- *
- * The table size is fixed for any particular database, but is determined
- * dynamically when a database is rebuilt.  The strategy is to try to pick
- * the size so the first table will be no more than 2/3 full, that being
- * slightly before the point where performance starts to degrade.  (It is
- * desirable to be a bit conservative because the overflow strategy tends
- * to produce files with holes in them, which is a nuisance.)
- */
+#ifdef MAP_FILE
+#define MAP__ARG	(MAP_FILE | MAP_SHARED)
+#else
+#define MAP__ARG	(MAP_SHARED)
+#endif
 
 /* Old dbz used a long as the record type for dbz entries, which became
- * really gross in places because of mixed references.  We define this to
- * make it a bit clearer.
+ * really gross in places because of mixed references.  We define these to
+ * make it a bit easier if we want to store more in here.
  */
 
 #ifdef __GNUC__
 #define PACKED __attribute__ ((packed))
-#else
-#define PACKED 
 #endif
 
+#ifdef __SUNPRO_C
+#pragma pack(1)
+typedef struct {
+    char               hash[DBZ_INTERNAL_HASH_SIZE];
+} erec;
 typedef struct {
     unsigned long      offset;
-    hash_t             hash;
-} PACKED dbzrec;
-
-static dbzrec empty_hash_t = { 0, { { 0, 0, 0, 0, 0, 0 } } };
-#define	VACANT(x)	((x.offset == 0) && !memcmp(&empty_hash_t, &x.hash, sizeof(hash_t)))
+} idxrec;
+#pragma pack()
+#else
+typedef struct {
+    char               hash[DBZ_INTERNAL_HASH_SIZE];
+} PACKED erec;
+typedef struct {
+    unsigned long      offset;
+} PACKED idxrec;
+#endif
 
 /* A new, from-scratch database, not built as a rebuild of an old one,
  * needs to know table size.  Normally the user supplies this info,
  * but there have to be defaults.
  */
 #ifndef DEFSIZE
-#define	DEFSIZE	120011		/* 300007 might be better */
+#define	DEFSIZE        7500000
 #endif
 
 /*
@@ -138,78 +148,13 @@ typedef struct {
     long tsize;		        /* table size */
     long used[NUSEDS];          /* entries used today, yesterday, ... */
     int valuesize;		/* size of table values, == sizeof(dbzrec) */
+    int fillpercent;            /* fillpercent/100 is the percent full we'll
+				   try to keep the .pag file */
 } dbzconfig;
 
 static dbzconfig conf;
-static int getconf(FILE *df, FILE *pf, dbzconfig *cp);
-static long getno(FILE *f, int *ep);
-static int putconf(FILE *f, dbzconfig *cp);
-static datum fetch(datum key);
-
-/*
- * Using mmap() is a more efficent way of keeping the .pag file incore.  On
- * average, it cuts the number of system calls and buffer copies in half.
- * It also allows one copy to be shared among many processes without
- * consuming any extra resources.
- */
-#ifdef MMAP
-#include <sys/mman.h>
-#ifdef MAP_FILE
-#define MAP__ARG	(MAP_FILE | MAP_SHARED)
-#else
-#define MAP__ARG	(MAP_SHARED)
-#endif
-#ifndef INCORE
-#define INCORE
-#endif
-#endif
-
-/* 
- * For a program that makes many, many references to the database, it
- * is a large performance win to keep the table in core, if it will fit.
- * Note that this does hurt robustness in the event of crashes, and
- * dbmclose() *must* be called to flush the in-core database to disk.
- * The code is prepared to deal with the possibility that there isn't
- * enough memory.  There *is* an assumption that a size_t is big enough
- * to hold the size (in bytes) of one table, so dbminit() tries to figure
- * out whether this is possible first.
- *
- * The preferred way to ask for an in-core table is to do dbzincore(1)
- * before dbminit().  The default is not to do it, although -DINCORE
- * overrides this for backward compatibility with old dbz.
- *
- * We keep only the first table in core.  This greatly simplifies the
- * code, and bounds memory demand.  Furthermore, doing this is a large
- * performance win even in the event of massive overflow.
- */
-#ifdef INCORE
-static int incore = 1;
-#else
-static int incore = 0;
-#endif
-
-/*
- * Write to filesystem even if incore?  This replaces a single multi-
- * megabyte write when doing a dbzsync with a multi-byte write each
- * time an article is added.  On most systems, this will give an overall
- * performance boost.
- */
-static int writethrough = 0;
-
-/*
- * Stdio buffer for .pag reads.  Buffering more than about 16 does not help
- * significantly at the densities we try to maintain, and the much larger
- * buffers that most stdios default to are much more expensive to fill.
- * With small buffers, stdio is performance-competitive with raw read(),
- * and it's much more portable.
- */
-#ifndef NPAGBUF
-#define	NPAGBUF	16
-#endif
-
-#ifdef _IOFBF
-static char pagbuf[NPAGBUF*sizeof(dbzrec)];
-#endif
+/* Default to write through off, index from disk, exists mmap'ed and non-blocking writes */
+static dbzoptions options = { FALSE, INCORE_NO, INCORE_MMAP, TRUE };
 
 /*
  * Data structure for recording info about searches.
@@ -221,15 +166,12 @@ typedef struct {
 #		ifndef MAXRUN
 #		define	MAXRUN	100
 #		endif
-    hash_t hash;	        /* the key's hash code (for optimization) */
-    unsigned int shorthash;     /* integer version of the hash */
+    hash_t hash;	        /* the key's hash code */
+    unsigned long shorthash;    /* integer version of the hash, used for
+				   determining the entries location */
     int aborted;		/* has i/o error aborted search? */
 } searcher;
-static void start(searcher *sp, datum *kp, searcher *osp);
 #define	FRESH	((searcher *)NULL)
-static dbzrec *search();
-#define	NOTFOUND	(NULL)
-static int set();
 
 /*
  * Arguably the searcher struct for a given routine ought to be local to
@@ -248,115 +190,142 @@ static searcher *prevp;	/* &srch or FRESH */
  */
 #ifdef DBZDEBUG
 static int debug;			/* controlled by dbzdebug() */
-#define DEBUG(args) if (debug) { (void) printf args ; } else
+#define DEBUG(args) if (debug) { printf args ; } else
 #else
 #define	DEBUG(args)	;
 #endif
 
-/* externals used */
-extern void CloseOnExec();
+/* Structure for hash tables */
+typedef struct {
+    FILE *f;                    /* FILE with a small buffer for hash reads */
+    int fd;                     /* Non-blocking descriptor for writes */
+    int pos;                    /* Current offset into the table */
+    int reclen;                 /* Length of records in the table */
+    dbz_incore_val incore;      /* What we're using core for */
+    void *core;                 /* Pointer to in-core table */
+} hash_table;
+
+/* central data structures */
+static BOOL opendb = FALSE;     /* Indicates if a database is currently open */
+static FILE *dirf;		/* descriptor for .dir file */
+static BOOL readonly;		/* database open read-only? */
+static hash_table idxtab;       /* index hash table, used for data retrieval */
+static hash_table etab;         /* existance hash table, used for existance checks */
+static BOOL dirty;		/* has a store() been done? */
+static erec empty_rec;          /* empty rec to compare against
+				   initalized in dbminit */
 
 /* misc. forwards */
 static char *mapcase(char *dest, char *src, size_t size);
+static char *enstring(const char *s1, const char *s2);
+static BOOL getcore(hash_table *tab);
+static BOOL putcore(hash_table *tab);
+static BOOL getconf(FILE *df, dbzconfig *cp);
+static int putconf(FILE *f, dbzconfig *cp);
+static void start(searcher *sp, const datum *kp, searcher *osp);
+static BOOL search(searcher *sp);
+static BOOL set(searcher *sp, hash_table *tab, void *value);
 
 /* file-naming stuff */
 static char dir[] = ".dir";
-static char pag[] = ".pag";
-static char *enstring();
-
-/* central data structures */
-static FILE *dirf;		/* descriptor for .dir file */
-static int dirronly;		/* dirf open read-only? */
-static FILE *pagf = NULL;	/* descriptor for .pag file */
-static int pagfd = -1;          /* non-blocking fd for .pag writes */
-static off_t pagpos;		/* posn in pagf; only search may set != -1 */
-static int pagronly;		/* pagf open read-only? */
-static dbzrec *corepag;		/* incore version of .pag file, if any */
-static FILE *bufpagf;		/* well-buffered pagf, for incore rewrite */
-static dbzrec *getcore();
-#ifndef MMAP
-static int putcore();
-#endif
-static int written;		/* has a store() been done? */
+static char idx[] = ".index";
+static char exists[] = ".hash";
 
 /* dbzfresh - set up a new database, no historical info
  * Return 0 for success, -1 for failure
  * name - base name; .dir and .pag must exist
  * size - table size (0 means default)
+ * fillpercent - target percentage full
  */
-int dbzfresh(char *name, long size)
+BOOL dbzfresh(const char *name, const long size, const int fillpercent)
 {
     char *fn;
     dbzconfig c;
     FILE *f;
 
-    if (pagf != NULL) {
+    if (opendb) {
 	DEBUG(("dbzfresh: database already open\n"));
-	return(-1);
+	return FALSE;
     }
     if (size != 0 && size < 2) {
 	DEBUG(("dbzfresh: preposterous size (%ld)\n", size));
-	return(-1);
+	return FALSE;
     }
 
     /* get default configuration */
-    if (getconf((FILE *)NULL, (FILE *)NULL, &c) < 0)
-	return(-1);	/* "can't happen" */
+    if (!getconf((FILE *)NULL, &c))
+	return FALSE;	/* "can't happen" */
 
-    /* and mess with it as specified */
+    /* set the size as specified, make sure we get at least 2 bytes
+       of implicit hash */
     if (size != 0)
-	c.tsize = size;
+	c.tsize = size > (64 * 1024) ? size : 64 * 1024;
 
     /* write it out */
-    fn = enstring(name, dir);
-    if (fn == NULL)
-	return(-1);
+    if ((fn = enstring(name, dir)) == NULL)
+	return FALSE;
     f = fopen(fn, "w");
-    free((POINTER)fn);
+    DISPOSE(fn);
     if (f == NULL) {
 	DEBUG(("dbzfresh: unable to write config\n"));
-	return(-1);
+	return FALSE;
     }
     if (putconf(f, &c) < 0) {
-	(void) fclose(f);
-	return(-1);
+	fclose(f);
+	return FALSE;
     }
     if (fclose(f) == EOF) {
 	DEBUG(("dbzfresh: fclose failure\n"));
-	return(-1);
+	return FALSE;
     }
 
-    /* create/truncate .pag */
-    fn = enstring(name, pag);
-    if (fn == NULL)
-	return(-1);
+    /* create/truncate .index */
+    if ((fn = enstring(name, idx)) == NULL)
+	return FALSE;
     f = fopen(fn, "w");
-    free((POINTER)fn);
+    DISPOSE(fn);
     if (f == NULL) {
 	DEBUG(("dbzfresh: unable to create/truncate .pag file\n"));
-	return(-1);
+	return FALSE;
     } else
-	(void) fclose(f);
+        fclose(f);
 
+    /* create/truncate .hash */
+    if ((fn = enstring(name, exists)) == NULL)
+	return FALSE;
+    f = fopen(fn, "w");
+    DISPOSE(fn);
+    if (f == NULL) {
+	DEBUG(("dbzfresh: unable to create/truncate .pag file\n"));
+	return FALSE;
+    } else
+        fclose(f);
     /* and punt to dbminit for the hard work */
-    return(dbminit(name));
+    return dbminit(name);
 }
 
 /*
  * dbzsize  - what's a good table size to hold this many entries?
  * contents - size of table (0 means return the default)
  */
-long dbzsize(long contents) {
+long dbzsize(const long contents) {
     long n;
 
     if (contents <= 0) {	/* foulup or default inquiry */
 	DEBUG(("dbzsize: preposterous input (%ld)\n", contents));
-	return(DEFSIZE);
+	return DEFSIZE;
     }
-    n = (contents/2)*3;	/* try to keep table at most 2/3 full */
+    if ((conf.fillpercent > 0) && (conf.fillpercent < 100))
+	n = (contents * conf.fillpercent) / 100;
+    else 
+	n = (contents * 3) / 2;	/* try to keep table at most 2/3 full */
     DEBUG(("dbzsize: final size %ld\n", n));
 
-    return(n);
+    /* Make sure that we get at least 2 bytes of implicit hash */
+    if (n < (64 * 1024))
+	n = 64 * 1024;
+    
+    return n;
 }
 
 /* dbzagain - set up a new database to be a rebuild of an old one
@@ -364,36 +333,36 @@ long dbzsize(long contents) {
  * name - base name; .dir and .pag must exist
  * oldname - basename, all must exist
  */
-int dbzagain(char *name, char *oldname)
+BOOL dbzagain(const char *name, const char *oldname)
 {
     char *fn;
     dbzconfig c;
+    BOOL result;
     int i;
     long top;
     FILE *f;
     int newtable;
     off_t newsize;
 
-    if (pagf != NULL) {
+    if (opendb) {
 	DEBUG(("dbzagain: database already open\n"));
-	return(-1);
+	return FALSE;
     }
 
     /* pick up the old configuration */
-    fn = enstring(oldname, dir);
-    if (fn == NULL)
-	return(-1);
+    if ((fn = enstring(oldname, dir))== NULL)
+	return FALSE;
     f = fopen(fn, "r");
-    free((POINTER)fn);
+    DISPOSE(fn);
     if (f == NULL) {
 	DEBUG(("dbzagain: cannot open old .dir file\n"));
-	return(-1);
+	return FALSE;
     }
-    i = getconf(f, (FILE *)NULL, &c);
-    (void) fclose(f);
-    if (i < 0) {
+    result = getconf(f, &c);
+    fclose(f);
+    if (!result) {
 	DEBUG(("dbzagain: getconf failed\n"));
-	return(-1);
+	return FALSE;
     }
 
     /* tinker with it */
@@ -419,34 +388,105 @@ int dbzagain(char *name, char *oldname)
     /* write it out */
     fn = enstring(name, dir);
     if (fn == NULL)
-	return(-1);
+	return FALSE;
     f = fopen(fn, "w");
-    free((POINTER)fn);
+    DISPOSE(fn);
     if (f == NULL) {
 	DEBUG(("dbzagain: unable to write new .dir\n"));
-	return(-1);
+	return FALSE;
     }
     i = putconf(f, &c);
-    (void) fclose(f);
+    fclose(f);
     if (i < 0) {
 	DEBUG(("dbzagain: putconf failed\n"));
-	return(-1);
+	return FALSE;
     }
 
-    /* create/truncate .pag */
-    fn = enstring(name, pag);
+    /* create/truncate .index */
+    fn = enstring(name, idx);
     if (fn == NULL)
-	return(-1);
+	return FALSE;
     f = fopen(fn, "w");
-    free((POINTER)fn);
+    DISPOSE(fn);
     if (f == NULL) {
 	DEBUG(("dbzagain: unable to create/truncate .pag file\n"));
-	return(-1);
+	return FALSE;
     } else
-	(void) fclose(f);
+	fclose(f);
+
+    /* create/truncate .hash */
+    fn = enstring(name, exists);
+    if (fn == NULL)
+	return FALSE;
+    f = fopen(fn, "w");
+    DISPOSE(fn);
+    if (f == NULL) {
+	DEBUG(("dbzagain: unable to create/truncate .pag file\n"));
+	return FALSE;
+    } else
+	fclose(f);
 
     /* and let dbminit do the work */
-    return(dbminit(name));
+    return dbminit(name);
+}
+
+static BOOL openhashtable(const char *name, hash_table *tab,
+			  const size_t reclen, const dbz_incore_val incore) {
+    if ((tab->f = fopen(name, "rb+")) == NULL) {
+	tab->f = fopen(name, "rb");
+	if (tab->f == NULL) {
+	    DEBUG(("openhashtable: open failed\n"));
+	    return FALSE;
+	}
+	readonly = TRUE;
+    } else if (readonly) {
+	readonly =TRUE;
+    } else 
+
+    if ((tab->fd = open(name, readonly ? O_RDONLY : O_RDWR)) < 0) {
+	DEBUG(("openhashtable: could not open raw\n"));
+	fclose(tab->f);
+	errno = EDOM;
+	return FALSE;
+    }
+
+    tab->reclen = reclen;
+    CloseOnExec(fileno(tab->f), 1);
+    CloseOnExec(tab->fd, 1);
+    tab->pos = -1;
+
+    /* get first table into core, if it looks desirable and feasible */
+    tab->incore = incore;
+    if (tab->incore != INCORE_NO) {
+	if (!getcore(tab)) {
+	    DEBUG(("openhashtable: getcore failure\n"));
+	    fclose(tab->f);
+	    close(tab->fd);
+	    errno = EDOM;
+	    return FALSE;
+	}
+    }
+
+    if (options.nonblock && (SetNonBlocking(tab->fd, TRUE) < 0)) {
+	DEBUG(("fcntl: could not set nonblock\n"));
+	fclose(tab->f);
+	close(tab->fd);
+	errno = EDOM;
+	return FALSE;
+    }
+    return TRUE;
+}
+
+void closehashtable(hash_table *tab) {
+    fclose(tab->f);
+    close(tab->fd);
+    if (tab->incore == INCORE_MEM)
+	DISPOSE(tab->core);
+    if (tab->incore == INCORE_MMAP) {
+	if (munmap((MMAP_PTR) tab->core, (int)conf.tsize * tab->reclen) == -1) {
+	    DEBUG(("closehashtable: munmap failed\n"));
+	}
+    }
 }
 
 /*
@@ -456,208 +496,163 @@ int dbzagain(char *name, char *oldname)
  * functions permit this, since many people consult it if dbminit() fails.
  * return 0 for success, -1 for failure
  */
-int dbminit(char *name) {
-    size_t s;
-    char *dirfname;
-    char *pagfname;
+int dbminit(const char *name) {
+    char *fname;
 
-    if (pagf != NULL) {
+    if (opendb) {
 	DEBUG(("dbminit: dbminit already called once\n"));
 	errno = 0;
-	return(-1);
+	return FALSE;
     }
 
     /* open the .dir file */
-    dirfname = enstring(name, dir);
-    if (dirfname == NULL)
-	return(-1);
-    dirf = fopen(dirfname, "r+");
-    if (dirf == NULL) {
-	dirf = fopen(dirfname, "r");
-	dirronly = 1;
+    if ((fname = enstring(name, dir)) == NULL)
+	return FALSE;
+    if ((dirf = fopen(fname, "r+")) == NULL) {
+	dirf = fopen(fname, "r");
+	readonly = TRUE;
     } else
-	dirronly = 0;
-    free((POINTER)dirfname);
+	readonly = FALSE;
+    DISPOSE(fname);
     if (dirf == NULL) {
 	DEBUG(("dbminit: can't open .dir file\n"));
-	return(-1);
+	return FALSE;
     }
-    CloseOnExec((int)fileno(dirf), 1);
-
-    /* open the .pag file */
-    pagfname = enstring(name, pag);
-    if (pagfname == NULL) {
-	(void) fclose(dirf);
-	return(-1);
-    }
-    pagf = fopen(pagfname, "r+b");
-    if (pagf == NULL) {
-	pagf = fopen(pagfname, "rb");
-	if (pagf == NULL) {
-	    DEBUG(("dbminit: .pag open failed\n"));
-	    (void) fclose(dirf);
-	    free((POINTER)pagfname);
-	    return(-1);
-	}
-	pagronly = 1;
-    } else if (dirronly) {
-	pagronly = 1;
-    } else {
-	pagronly = 0;
-	if ((pagfd = open(pagfname, O_WRONLY)) < 0) {
-	    DEBUG(("dbminit: could not open pagf\n"));
-	    fclose(pagf);
-	    fclose(dirf);
-	    free((POINTER)pagfname);
-	    pagf = NULL;
-	    errno = EDOM;
-	    return (-1);
-	}
-#ifdef NONBLOCK
-	if (fcntl(pagfd, F_SETFL, O_NONBLOCK) < 0) {
-	    DEBUG(("fcntl: could not set nonblock\n"));
-	    fclose(pagf);
-	    fclose(dirf);
-	    free((POINTER)pagfname);
-	    pagf = NULL;
-	    errno = EDOM;
-	    return (-1);
-	}
-#endif
-    }
-    
-
-    if (pagf != NULL)
-	CloseOnExec((int)fileno(pagf), 1);
-#ifdef _IOFBF
-    (void) setvbuf(pagf, (char *)pagbuf, _IOFBF, sizeof(pagbuf));
-#endif
-    pagpos = -1;
-    /* don't free pagfname, need it below */
+    CloseOnExec(fileno(dirf), 1);
 
     /* pick up configuration */
-    if (getconf(dirf, pagf, &conf) < 0) {
+    if (!getconf(dirf, &conf)) {
 	DEBUG(("dbminit: getconf failure\n"));
-	(void) fclose(pagf);
-	(void) fclose(dirf);
-	free((POINTER)pagfname);
-	pagf = NULL;
+	fclose(dirf);
 	errno = EDOM;	/* kind of a kludge, but very portable */
-	return(-1);
+	return FALSE;
     }
 
-    /* get first table into core, if it looks desirable and feasible */
-    s = (size_t)conf.tsize * sizeof(dbzrec);
-    if (incore && (off_t)(s / sizeof(dbzrec)) == conf.tsize) {
-	bufpagf = fopen(pagfname, (pagronly) ? "rb" : "r+b");
-	if (bufpagf != NULL) {
-	    corepag = getcore(bufpagf);
-	    CloseOnExec(fileno(bufpagf), 1);
-	}
-    } else {
-	bufpagf = NULL;
-	corepag = NULL;
+    /* open the .index file */
+    if ((fname = enstring(name, idx)) == NULL) {
+	fclose(dirf);
+	return FALSE;
     }
-    free((POINTER)pagfname);
+
+    if (!openhashtable(fname, &idxtab, sizeof(idxrec), options.idx_incore)) {
+	fclose(dirf);
+	DISPOSE(fname);
+	return FALSE;
+    }
+    DISPOSE(fname);
+    
+    /* open the .hash file */
+    if ((fname = enstring(name, exists)) == NULL) {
+	fclose(dirf);
+	return FALSE;
+    }
+
+    if (!openhashtable(fname, &etab, sizeof(erec), options.exists_incore)) {
+	fclose(dirf);
+	DISPOSE(fname);
+	closehashtable(&idxtab);
+	return FALSE;
+    }
+    DISPOSE(fname);
 
     /* misc. setup */
-    written = 0;
+    dirty = FALSE;
+    opendb = TRUE;
     prevp = FRESH;
+    memset(&empty_rec, '\0', sizeof(empty_rec));
     DEBUG(("dbminit: succeeded\n"));
-    return(0);
+    return TRUE;
 }
 
-/* enstring - concatenate two strings into a malloced area
+/* enstring - concatenate two strings into newly allocated memory
  * Returns NULL on failure
  */
-static char *enstring(char *s1, char *s2)
+static char *enstring(const char *s1, const char *s2)
 {
     char *p;
 
-    p = malloc((size_t)strlen(s1) + (size_t)strlen(s2) + 1);
-    if (p != NULL) {
-	(void) strcpy(p, s1);
-	(void) strcat(p, s2);
-    } else {
-	DEBUG(("enstring(%s, %s) out of memory\n", s1, s2));
-    }
-    return(p);
+    p = NEW(char, strlen(s1) + strlen(s2) + 1);
+    strcpy(p, s1);
+    strcat(p, s2);
+    return p;
 }
 
 /* dbmclose - close a database
  */
-int dbmclose(void)
+BOOL dbmclose(void)
 {
-    int ret = 0;
+    BOOL ret = TRUE;
 
-    if (pagf == NULL) {
+    if (!opendb) {
 	DEBUG(("dbmclose: not opened!\n"));
-	return(-1);
+	return FALSE;
     }
 
-    if (fclose(pagf) == EOF) {
-	DEBUG(("dbmclose: fclose(pagf) failed\n"));
-	ret = -1;
-    }
     if (dbzsync() < 0)
-	ret = -1;
-    if (bufpagf != NULL && fclose(bufpagf) == EOF) {
-	DEBUG(("dbmclose: fclose(bufpagf) failed\n"));
-	ret = -1;
-    }
-    if (corepag != NULL)
-#ifdef MMAP
-	if (munmap((MMAP_PTR) corepag, (int)conf.tsize * sizeof(dbzrec)) == -1) {
-	    DEBUG(("dbmclose: munmap failed\n"));
-	    ret = -1;
-	}
-#else
-    free((POINTER)corepag);
-#endif
-    corepag = NULL;
-    pagf = NULL;
+	ret = FALSE;
+
+    closehashtable(&idxtab);
+    closehashtable(&etab);
+
     if (fclose(dirf) == EOF) {
 	DEBUG(("dbmclose: fclose(dirf) failed\n"));
-	ret = -1;
+	ret = FALSE;
     }
 
     DEBUG(("dbmclose: %s\n", (ret == 0) ? "succeeded" : "failed"));
-    return(ret);
+    if (ret)
+	opendb = FALSE;
+    return ret;
 }
 
 /* dbzsync - push all in-core data out to disk
  */
-int dbzsync(void)
+BOOL dbzsync(void)
 {
-    int ret = 0;
+    BOOL ret = TRUE;
 
-    if (pagf == NULL) {
+    if (!opendb) {
 	DEBUG(("dbzsync: not opened!\n"));
-	return(-1);
+	return FALSE;
     }
-    if (pagfd != -1)
-	fsync(pagfd);
-    if (!written)
-	return(0);
 
-#ifndef MMAP
-    if (corepag != NULL && !writethrough) {
-	if (putcore(corepag, bufpagf) < 0) {
+    if (!dirty)
+	return TRUE;;
+
+    if (!options.writethrough) {
+	if (!putcore(&idxtab) || !putcore(&etab)) {
 	    DEBUG(("dbzsync: putcore failed\n"));
-	    ret = -1;
+	    ret = FALSE;;
 	}
     }
-#endif
-    if (putconf(dirf, &conf) < 0)
-	ret = -1;
 
-    DEBUG(("dbzsync: %s\n", (ret == 0) ? "succeeded" : "failed"));
-    return(ret);
+    if (putconf(dirf, &conf) < 0)
+	ret = FALSE;
+
+    DEBUG(("dbzsync: %s\n", ret ? "succeeded" : "failed"));
+    return ret;
+}
+
+/* dbzexists - check if the given message-id is in the database */
+BOOL dbzexists(const datum key) {
+    datum mappedkey;
+    char buffer[DBZMAXKEY + 1];
+    
+    if (!opendb) {
+	DEBUG(("dbzexists: database not open!\n"));
+	return FALSE;
+    }
+
+    prevp = FRESH;
+    mappedkey.dsize = (key.dsize < DBZMAXKEY) ? key.dsize : DBZMAXKEY;
+    mappedkey.dptr = mapcase(buffer, key.dptr, mappedkey.dsize);
+    start(&srch, &mappedkey, FRESH);
+    return search(&srch);
 }
 
 /* dbzfetch - fetch() with case mapping built in
  */
-datum dbzfetch(datum key)
+datum dbzfetch(const datum key)
 {
     char buffer[DBZMAXKEY + 1];
     datum mappedkey;
@@ -670,7 +665,7 @@ datum dbzfetch(datum key)
     mappedkey.dptr = mapcase(buffer, key.dptr, mappedkey.dsize);
     buffer[mappedkey.dsize] = '\0';	/* just a debug aid */
 
-    return(fetch(mappedkey));
+    return fetch(mappedkey);
 }
 
 /* fetch - get an entry from the database
@@ -682,8 +677,7 @@ datum dbzfetch(datum key)
  * Returns: dtr == NULL && dsize == 0 on failure.
  */
 datum fetch(datum key) {
-    char buffer[DBZMAXKEY + 1];
-    static dbzrec *key_ptr;		/* return value points here */
+    static unsigned long offset;
     datum output;
 
     DEBUG(("fetch: (%s)\n", key.dptr));
@@ -691,28 +685,47 @@ datum fetch(datum key) {
     output.dsize = 0;
     prevp = FRESH;
 
-    if (pagf == NULL) {
+    if (!opendb) {
 	DEBUG(("fetch: database not open!\n"));
-	return(output);
+	return output;
     }
 
     start(&srch, &key, FRESH);
-    if ((key_ptr = search(&srch)) != NOTFOUND) {
-	output.dptr = (char *)&key_ptr->offset;
-	output.dsize = sizeof(key_ptr->offset);
+    if (search(&srch) == TRUE) {
+	/* Actually get the data now */
+	if ((options.idx_incore != INCORE_NO) && (srch.place < conf.tsize)) {
+	    memcpy(&offset, &((idxrec *)idxtab.core)[srch.place], sizeof(idxrec));
+	    offset = ntohl(offset);
+	} else {
+	    if (lseek(idxtab.fd, srch.place * idxtab.reclen, SEEK_SET) < 0) {
+		DEBUG(("fetch: seek failed\n"));
+		idxtab.pos = -1;
+		srch.aborted = 1;
+		return output;
+	    }
+	    if (read(idxtab.fd, &offset, sizeof(offset)) != sizeof(offset)) {
+		DEBUG(("fetch: read failed\n"));
+		idxtab.pos = -1;
+		srch.aborted = 1;
+		return output;
+	    }
+	    offset = ntohl(offset);
+	}
+	output.dptr = (char *)&offset;
+	output.dsize = sizeof(offset); 
 	DEBUG(("fetch: successful\n"));
-	return(output);
+	return output;
     }
 
     /* we didn't find it */
     DEBUG(("fetch: failed\n"));
     prevp = &srch;			/* remember where we stopped */
-    return(output);
+    return output;
 }
 
 /* dbzstore - store() with case mapping built in
  */
-int dbzstore(datum key, datum data)
+BOOL dbzstore(const datum key, const datum data)
 {
     char buffer[DBZMAXKEY + 1];
     datum mappedkey;
@@ -725,73 +738,57 @@ int dbzstore(datum key, datum data)
     mappedkey.dptr = mapcase(buffer, key.dptr, mappedkey.dsize);
     buffer[mappedkey.dsize] = '\0';	/* just a debug aid */
 
-    return(store(mappedkey, data));
+    return store(mappedkey, data);
 }
 
 /*
  * store - add an entry to the database
  * returns 0 for sucess and -1 for failure 
  */
-int store(datum key, datum data)
+BOOL store(const datum key, const datum data)
 {
-    dbzrec value;
+    idxrec ivalue;
+    erec   evalue;
+    int offset;
 
-    if (pagf == NULL) {
+    if (!opendb) {
 	DEBUG(("store: database not open!\n"));
-	return(-1);
+	return FALSE;
     }
-    if (pagronly) {
+    if (readonly) {
 	DEBUG(("store: database open read-only\n"));
-	return(-1);
+	return FALSE;
     }
-    if (data.dsize != sizeof(value.offset)) {
+    if (data.dsize != sizeof(ivalue)) {
 	DEBUG(("store: value size wrong (%d)\n", data.dsize));
-	return(-1);
+	return FALSE;
     }
     if (key.dsize >= DBZMAXKEY) {
 	DEBUG(("store: key size too big (%d)\n", key.dsize));
-	return(-1);
+	return FALSE;
     }
 
     /* find the place, exploiting previous search if possible */
     start(&srch, &key, prevp);
-    while (search(&srch) != NOTFOUND)
-	continue;
+    if (search(&srch) == TRUE)
+	return FALSE;
 
     prevp = FRESH;
     conf.used[0]++;
     DEBUG(("store: used count %ld\n", conf.used[0]));
-    written = 1;
+    dirty = TRUE;
 
     /* copy the value in to ensure alignment */
-    memcpy((POINTER)&value.offset, (POINTER)data.dptr, data.dsize);
-    DEBUG(("store: (%s, %ld)\n", key.dptr, (long)value));
-    value.offset = htonl(value.offset);
-    value.hash = srch.hash;
-    
-    return(set(&srch, value));
-}
+    memcpy(&offset, (POINTER)data.dptr, data.dsize);
+    offset = htonl(offset);
+    memcpy(&ivalue.offset, &offset, sizeof(offset));
+    memcpy(&evalue.hash, &srch.hash,
+	   sizeof(evalue.hash) < sizeof(srch.hash) ? sizeof(evalue.hash) : sizeof(srch.hash));
 
-/* dbzincore - control attempts to keep .pag file in core
- * Return the old setting.
- */
-int dbzincore(int value) {
-    int old = incore;
-
-#ifndef MMAP
-    incore = value;
-#endif
-    return(old);
-}
-
-/* dbzwritethrough - write through the pag file in core
- * Returns the old setting
- */
-int dbzwritethrough(int value) {
-    int old = writethrough;
-
-    writethrough = value;
-    return(old);
+    /* Set the value in the index first since we don't care if it's out of date */
+    if (!set(&srch, &idxtab, &ivalue))
+	return FALSE;
+    return (set(&srch, &etab, &evalue));
 }
 
 /*
@@ -800,87 +797,43 @@ int dbzwritethrough(int value) {
  *   pf    - NULL means don't care about .pag 
  *   returns 0 for success, -1 for failure
  */
-static int getconf(FILE *df, FILE *pf, dbzconfig *cp) {
-    int c;
+static BOOL getconf(FILE *df, dbzconfig *cp) {
     int i;
-    int err = 0;
 
-    c = (df != NULL) ? getc(df) : EOF;
-    if (c == EOF) {		/* empty file, no configuration known */
+    if (df == NULL) {		/* empty file, no configuration known */
 	cp->tsize = DEFSIZE;
 	for (i = 0; i < NUSEDS; i++)
 	    cp->used[i] = 0;
-	cp->valuesize = sizeof(dbzrec);
+	cp->valuesize = sizeof(idxrec) + sizeof(erec);
+	cp->fillpercent = 66;
 	DEBUG(("getconf: defaults (%ld)\n", cp->tsize));
-	return(0);
+	return TRUE;
     }
-    (void) ungetc(c, df);
 
-    /* first line, the vital stuff */
-    if (getc(df) != 'd' || getc(df) != 'b' || getc(df) != 'z')
-	err = -1;
-    if (getno(df, &err) != dbzversion)
-	err = -1;
-    cp->tsize = getno(df, &err);
-    cp->valuesize = getno(df, &err);
-    if (cp->valuesize != sizeof(dbzrec)) {
-	DEBUG(("getconf: wrong of_t size (%d)\n", cp->valuesize));
-	err = -1;
-	cp->valuesize = sizeof(dbzrec);	/* to protect the loops below */
+    i = fscanf(df, "dbz 6 %ld %d %d\n", &cp->tsize, &cp->valuesize, &cp->fillpercent);
+    if (i != 3) {
+	DEBUG(("getconf error"));
+	return FALSE;
     }
-    if (getc(df) != '\n')
-	err = -1;
-#ifdef DBZDEBUG
+    
+    if (cp->valuesize != (sizeof(idxrec) + sizeof(erec))) {
+	DEBUG(("getconf: wrong of_t size (%d)\n", cp->valuesize));
+	return FALSE;
+    }
+
     DEBUG(("size %ld\n", cp->tsize));
-#endif
 
     /* second line, the usages */
     for (i = 0; i < NUSEDS; i++)
-	cp->used[i] = getno(df, &err);
-    if (getc(df) != '\n')
-	err = -1;
+	if (!fscanf(df, "%ld", &cp->used[i])) {
+	    DEBUG(("getconf error\n"));
+	    return FALSE;
+	}
+	    
+
     DEBUG(("used %ld %ld %ld...\n", cp->used[0], cp->used[1], cp->used[2]));
 
-    if (err < 0) {
-	DEBUG(("getconf error\n"));
-	return(-1);
-    }
-    return(0);
-}
-
-/*
- * getno - get a long
- */
-static long getno(FILE *f, int *ep) {
-    char *p;
-#	define	MAXN	50
-    char getbuf[MAXN];
-    int c;
-
-    while ((c = getc(f)) == ' ')
-	continue;
-    if (c == EOF || c == '\n') {
-	DEBUG(("getno: missing number\n"));
-	*ep = -1;
-	return(0);
-    }
-    p = getbuf;
-    *p++ = c;
-    while ((c = getc(f)) != EOF && c != '\n' && !isspace(c))
-	if (p < &getbuf[MAXN-1])
-	    *p++ = c;
-    if (c == EOF) {
-	DEBUG(("getno: EOF\n"));
-	*ep = -1;
-    } else
-	(void) ungetc(c, f);
-    *p = '\0';
-
-    if (strspn(getbuf, "-1234567890") != strlen(getbuf)) {
-	DEBUG(("getno: `%s' non-numeric\n", getbuf));
-	*ep = -1;
-    }
-    return(atol(getbuf));
+    return TRUE;
 }
 
 /* putconf - write configuration to .dir file
@@ -894,8 +847,8 @@ static int putconf(FILE *f, dbzconfig *cp) {
 	DEBUG(("fseek failure in putconf\n"));
 	ret = -1;
     }
-    fprintf(f, "dbz %d %ld %d\n", dbzversion, cp->tsize,
-		   cp->valuesize);
+    fprintf(f, "dbz %d %ld %d %d\n", dbzversion, cp->tsize,
+		   cp->valuesize, cp->fillpercent);
     for (i = 0; i < NUSEDS; i++)
 	fprintf(f, "%ld%c", cp->used[i], (i < NUSEDS-1) ? ' ' : '\n');
 
@@ -904,85 +857,89 @@ static int putconf(FILE *f, dbzconfig *cp) {
 	ret = -1;
 
     DEBUG(("putconf status %d\n", ret));
-    return(ret);
+    return ret;
 }
 
 /* getcore - try to set up an in-core copy of .pag file
  *
  * Returns: pointer to copy of .pag or NULL on errror
  */
-static dbzrec *getcore(FILE *f) {
-    dbzrec *p;
-    size_t i;
-    size_t nread;
+static BOOL getcore(hash_table *tab) {
     char *it;
-#ifdef MMAP
+    int nread;
+    int i;
     struct stat st;
 
-    if (fstat(fileno(f), &st) == -1) {
-	DEBUG(("getcore: fstat failed\n"));
-	return(NULL);
-    }
-    if (((size_t)conf.tsize * sizeof(dbzrec)) > st.st_size) {
-	/* file too small; extend it */
-	if (ftruncate((int)fileno(f), conf.tsize * sizeof(dbzrec)) == -1) {
-	    DEBUG(("getcore: ftruncate failed\n"));
-	    return(NULL);
+    if (tab->incore == INCORE_MMAP) {
+	if (fstat(tab->fd, &st) == -1) {
+	    DEBUG(("getcore: fstat failed\n"));
+	    return FALSE;
 	}
-    }
-    it = mmap((caddr_t)0, (size_t)conf.tsize * sizeof(dbzrec), 
-	      pagronly ? PROT_READ : PROT_WRITE | PROT_READ, MAP__ARG,
-	      (int)fileno(f), (off_t)0);
-    if (it == (char *)-1) {
-	DEBUG(("getcore: mmap failed\n"));
-	return(NULL);
-    }
+	if ((conf.tsize * tab->reclen) > st.st_size) {
+	    /* file too small; extend it */
+	    if (ftruncate(tab->fd, conf.tsize * tab->reclen) == -1) {
+		DEBUG(("getcore: ftruncate failed\n"));
+		return FALSE;
+	    }
+	}
+	it = mmap((caddr_t)0, (size_t)conf.tsize * tab->reclen,
+		   readonly ? PROT_READ : PROT_WRITE | PROT_READ, MAP__ARG,
+		   tab->fd, (off_t)0);
+	if (it == (char *)-1) {
+	    DEBUG(("getcore: mmap failed\n"));
+	    return FALSE;
+	}
 #if defined (MADV_RANDOM)                           
-    /* not present in all versions of mmap() */
-    madvise(it, (size_t)conf.tsize * sizeof(dbzrec), MADV_RANDOM);
+	/* not present in all versions of mmap() */
+	madvise(it, (size_t)conf.tsize * sizeof(dbzrec), MADV_RANDOM);
 #endif
-#else
-    it = malloc((size_t)conf.tsize * sizeof(dbzrec));
-    if (it == NULL) {
-	DEBUG(("getcore: malloc failed\n"));
-	return(NULL);
+    } else {
+	it = NEW(char, conf.tsize * tab->reclen);
+	
+	nread = read(tab->fd, (POINTER)it, tab->reclen * conf.tsize);
+	if (nread < 0) {
+	    DEBUG(("getcore: read failed\n"));
+	    DISPOSE(it);
+	    return FALSE;
+	}
+	
+	i = (size_t)conf.tsize - nread;
+	memset(it, '\0', i * tab->reclen);
     }
 
-    nread = fread((POINTER)it, sizeof(dbzrec), conf.tsize, f);
-    if (ferror(f)) {
-	DEBUG(("getcore: read failed\n"));
-	free((POINTER)it);
-	return(NULL);
-    }
-
-    p = (dbzrec *)it + nread;
-    i = (size_t)conf.tsize - nread;
-    memset(p, '\0', i * sizeof(dbzrec));
-#endif
-    return((dbzrec *)it);
+    tab->core = it;
+    return TRUE;
 }
 
-#ifndef MMAP
 /* putcore - try to rewrite an in-core table
  *
- * Returns 0 on success, -1 on failure
+ * Returns TRUE on success, FALSE on failure
  */
-static int putcore(dbzrec *tab, FILE *f) {
-    if (fseek(f, (off_t)0, SEEK_SET) != 0) {
-	DEBUG(("fseek failure in putcore\n"));
-	return(-1);
+static BOOL putcore(hash_table *tab) {
+    int size;
+    
+    if (tab->incore == INCORE_MEM) {
+	SetNonBlocking(tab->fd, FALSE);
+	if (lseek(tab->fd, (off_t)0, SEEK_SET) != 0) {
+	    DEBUG(("fseek failure in putcore\n"));
+	    return FALSE;
+	}
+	size = tab->reclen * conf.tsize;
+	if (write(tab->fd, (POINTER)tab->core, size) != size) {
+	    SetNonBlocking(tab->fd, options.nonblock);
+	    return FALSE;
+	}
+	SetNonBlocking(tab->fd, options.nonblock);
     }
-    fwrite((POINTER)tab, sizeof(dbzrec), (size_t)conf.tsize, f);
-    fflush(f);
-    return((ferror(f)) ? -1 : 0);
+    return TRUE;
 }
-#endif
 
 /* start - set up to start or restart a search
  * osp == NULL is acceptable
  */
-static void start(searcher *sp, datum *kp, searcher *osp) {
+static void start(searcher *sp, const datum *kp, searcher *osp) {
     hash_t h;
+    int tocopy;
 
     h = dbzhash(kp->dptr, kp->dsize);
     if (osp != FRESH && !memcmp(&osp->hash, &h, sizeof(h))) {
@@ -992,8 +949,10 @@ static void start(searcher *sp, datum *kp, searcher *osp) {
 	DEBUG(("search restarted\n"));
     } else {
 	sp->hash = h;
-	memcpy(&sp->shorthash, &h,
-	       (sizeof(h) < sizeof(sp->shorthash) ? sizeof(h) : sizeof(sp->shorthash)));
+	tocopy = sizeof(h) < sizeof(sp->shorthash) ? sizeof(h) : sizeof(sp->shorthash);
+	/* Copy the bottom half of thhe hash into sp->shorthash */
+	memcpy(&sp->shorthash, (char *)&h + (sizeof(h) - tocopy), tocopy);
+	sp->shorthash >>= 1;
 	sp->tabno = 0;
 	sp->run = -1;
 	sp->aborted = 0;
@@ -1002,68 +961,70 @@ static void start(searcher *sp, datum *kp, searcher *osp) {
 
 /* search - conduct part of a search
  *
- * return NOTFOUND if we hit VACANT or error
+ * return FALSE if we hit vacant rec's or error
  */
-static dbzrec *search(searcher *sp) {
-    static dbzrec value;
-
+static BOOL search(searcher *sp) {
+    erec value;
+    unsigned long taboffset = 0;
+    
     if (sp->aborted)
-	return(NOTFOUND); 
+	return FALSE;
 
     for (;;) {
 	/* go to next location */
 	if (sp->run++ == MAXRUN) {
 	    sp->tabno++;
 	    sp->run = 0;
+	    taboffset = sp->tabno * conf.tsize;
 	}
 
-	sp->place = ((sp->shorthash + sp->run) % conf.tsize) + (sp->tabno * conf.tsize);  
+	sp->place = ((sp->shorthash + sp->run) % conf.tsize) + taboffset;
 	DEBUG(("search @ %ld\n", sp->place));
 
 	/* get the value */
-	if ((corepag != NULL) && (sp->place < conf.tsize)) {
+	if ((options.exists_incore != INCORE_NO) && (sp->place < conf.tsize)) {
 	    DEBUG(("search: in core\n"));
-	    memcpy(&value, &corepag[sp->place], sizeof(value)); 
+	    memcpy(&value, &((erec *)etab.core)[sp->place], sizeof(erec)); 
 	} else {
 	    off_t dest = 0;
 	    /* seek, if necessary */
-	    dest = sp->place * sizeof(dbzrec);
-	    if (pagpos != dest) {
-		if (fseek(pagf, dest, SEEK_SET) != 0) {
+	    dest = sp->place * sizeof(erec);
+	    if (etab.pos != dest) {
+		if (fseek(etab.f, dest, SEEK_SET) != 0) {
 		    DEBUG(("search: seek failed\n"));
-		    pagpos = -1;
+		    etab.pos = -1;
 		    sp->aborted = 1;
-		    return(NOTFOUND);
+		    return FALSE;
 		}
-		pagpos = dest;
+		etab.pos = dest;
 	    }
 
 	    /* read it */
-	    if (fread((POINTER)&value, sizeof(value), 1, pagf) != 1) {
-		if (ferror(pagf)) {
+	    if (fread((POINTER)&value, sizeof(erec), 1, etab.f) != 1) {
+		if (ferror(etab.f)) {
 		    DEBUG(("search: read failed\n"));
-		    pagpos = -1;
+		    etab.pos = -1;
 		    sp->aborted = 1;
-		    return(NOTFOUND);
+		    return FALSE;
 		} else {
-		    memset(&value, '\0', sizeof(value));
+		    memset(&value, '\0', sizeof(erec));
 		}
 	    }
 
 	    /* and finish up */
-	    pagpos += sizeof(value);
+	    etab.pos += sizeof(erec);
 	}
 
-	if (VACANT(value)) {
+	/* Check for an empty record */
+	if (!memcmp(&value, &empty_rec, sizeof(erec))) {
 	    DEBUG(("search: empty slot\n"));
-	    return(NOTFOUND);
+	    return FALSE;
 	}
 
 	/* check the value */
 	DEBUG(("got 0x%lx\n", value));
-	if (!memcmp(&value.hash, &sp->hash, sizeof(hash_t))) {
-	    value.offset = ntohl(value.offset);
-	    return(&value);
+	if (!memcmp(&value.hash, &sp->hash, DBZ_INTERNAL_HASH_SIZE)) {
+	    return TRUE;
 	}
     }
     /* NOTREACHED */
@@ -1071,74 +1032,69 @@ static dbzrec *search(searcher *sp) {
 
 /* set - store a value into a location previously found by search
  *
- * Returns:  0 success, -1 failure
+ * Returns:  TRUE success, FALSE failure
  */
-static int set(searcher *sp, dbzrec value) {
+static BOOL set(searcher *sp, hash_table *tab, void *value) {
     if (sp->aborted)
-	return(-1);
-
-    DEBUG(("value is 0x%lx\n", value));
+	return FALSE;
 
     /* If we have the index file in memory, use it */
-    if (corepag != NULL && sp->place < conf.tsize) {
-	memcpy(&corepag[sp->place], &value, sizeof(value));
+    if ((tab->incore != INCORE_NO) && (sp->place < conf.tsize)) {
+	memcpy(tab->core + (sp->place * tab->reclen), value, tab->reclen);
 	DEBUG(("set: incore\n"));
-#ifdef MMAP	
-	return(0);
-#else
-	if (!writethrough)
-	    return(0);
-#endif
+	if (tab->incore == INCORE_MMAP)
+	    return TRUE;
+	if (!options.writethrough)
+	    return TRUE;
     }
 
     /* seek to spot */
-    pagpos = -1;		/* invalidate position memory */
-    if (lseek(pagfd, (off_t)(sp->place * sizeof(dbzrec)), SEEK_SET) == -1) {
+    tab->pos = -1;		/* invalidate position memory */
+    if (lseek(tab->fd, (off_t)(sp->place * tab->reclen), SEEK_SET) == -1) {
 	DEBUG(("set: seek failed\n"));
 	sp->aborted = 1;
-	return(-1);
+	return FALSE;
     }
 
     /* write in data */
-    while (write(pagfd, (POINTER)&value, sizeof(dbzrec)) != sizeof(dbzrec)) {
+    if (write(tab->fd, (POINTER)value, tab->reclen) != tab->reclen) {
 	if (errno == EINTR) {
-	    if (lseek(pagfd, (off_t)(sp->place * sizeof(dbzrec)), SEEK_SET) == -1) {
+	    if (lseek(tab->fd, (off_t)(sp->place * tab->reclen), SEEK_SET) == -1) {
 		DEBUG(("set: seek failed\n"));
 		sp->aborted = 1;
-		return(-1);
+		return FALSE;
 	    }
 	}
 	if (errno == EAGAIN) {
 	    fd_set writeset;
-	    int result;
 	    
 	    FD_ZERO(&writeset);
-	    FD_SET(pagfd, &writeset);
-	    if (select(pagfd + 1, NULL, &writeset, NULL, NULL) < 1) {
+	    FD_SET(tab->fd, &writeset);
+	    if (select(tab->fd + 1, NULL, &writeset, NULL, NULL) < 1) {
 		DEBUG(("set: select failed\n"));
 		sp->aborted = 1;
-		return(-1);
+		return FALSE;
 	    }
-	    if (lseek(pagfd, (off_t)(sp->place * sizeof(dbzrec)), SEEK_SET) == -1) {
+	    if (lseek(tab->fd, (off_t)(sp->place * tab->reclen), SEEK_SET) == -1) {
 		DEBUG(("set: seek failed\n"));
 		sp->aborted = 1;
-		return(-1);
+		return FALSE;
 	    }
 	}
 	DEBUG(("set: write failed\n"));
 	sp->aborted = 1;
-	return(-1);
+	return FALSE;
     }
 
     DEBUG(("set: succeeded\n"));
-    return(0);
+    return TRUE;
 }
 
 /* dbzhash - Variant of md5
  *
  * Returns: hash_t with the sizeof(hash_t) bytes of hash
  */
-hash_t dbzhash(char *value, int size) {
+hash_t dbzhash(const char *value, const int size) {
     MD5_CTX context;
     static hash_t hash;
 
@@ -1146,8 +1102,8 @@ hash_t dbzhash(char *value, int size) {
     MD5Update(&context, value, size);
     MD5Final(&context);
     memcpy(&hash,
-	   &context.buf,
-	   (sizeof(hash) < sizeof(context.buf)) ? sizeof(hash) : sizeof(context.buf));
+	   &context.digest,
+	   (sizeof(hash) < sizeof(context.digest)) ? sizeof(hash) : sizeof(context.digest));
     return hash;
 }
 
@@ -1168,12 +1124,12 @@ static char *cipoint(char *s, size_t size) {
     char *p;
 
     if ((p = memchr(s, '@', size))== NULL)			/* no local/domain split */
-	return(NULL);		/* assume all local */
+	return NULL;		/* assume all local */
     if (!strncasecmp("postmaster", s+1, 10)) {
 	/* crazy -- "postmaster" is case-insensitive */
-	return(s);
+	return s;
     }
-    return(p);
+    return p;
 }
 
 /* mapcase - do case-mapped copy
@@ -1188,34 +1144,43 @@ static char *mapcase(char *dest, char *src, size_t size) {
     char *c;
 
     if ((c = cipoint(src, size)) == NULL)
-	return(src);
+	return src;
 
     memcpy(dest, src, c-src);
     for (s = c, d = dest + (c-src); s < (src + size); s++, d++)
 	*d = tolower(*s);
 
-    return(dest);
+    return dest;
+}
+
+/* dbzsetoptions - set runtime options for the database.
+ */
+void dbzsetoptions(const dbzoptions o) {
+    options = o;
+}
+
+/* dbzgetoptions - get runtime options for the database.
+ */
+void dbzgetoptions(dbzoptions *o) {
+    *o = options;
 }
 
 
 /* dbzdebug - control dbz debugging at run time
- *
  * Returns: old value for dbzdebug
- *
  */
 #ifdef DBZDEBUG
-int dbzdebug(int value) {
-    int old = debug;
+int dbzdebug(const BOOL value) {
+    BOOL old = debug;
 
     debug = value;
-    return(old);
+    return old;
 }
 #endif
 
 
 #ifdef DBZTEST
-void CloseOnExec(int i, int j) {
-}
+#define FULLRATIO 66
 
 int timediffms(struct timeval start, struct timeval end) {
     return (((end.tv_sec - start.tv_sec) * 1000) +
@@ -1225,17 +1190,21 @@ int timediffms(struct timeval start, struct timeval end) {
 void RemoveDBZ(char *filename) {
     char fn[1024];
 
-    sprintf(fn, "%s.pag", filename);
+    sprintf(fn, "%s.exists", filename);
+    unlink(fn);
+    sprintf(fn, "%s.index", filename);
     unlink(fn);
     sprintf(fn, "%s.dir", filename);
     unlink(fn);
 }
 
 int main(int argc, char **argv) {
-    char msgid[DBZMAXKEY];
     datum key, data;
-    int i;
+    int *i;
+    char msgid[sizeof(int)];
     struct timeval start, end;
+    int numiter = 5000000;
+    dbzoptions opt;
     
     if (argc < 2) {
 	fprintf(stderr, "usage: dbztest dbzfile\n");
@@ -1244,18 +1213,24 @@ int main(int argc, char **argv) {
 
     RemoveDBZ(argv[1]);
 
+    dbzgetoptions(&opt);
+    opt.idx_incore = TRUE;
+    dbzsetoptions(opt);
+
     gettimeofday(&start, NULL);
-    if (dbzfresh(argv[1], 5000000) != 0) {
+    if (dbzfresh(argv[1], numiter, 0) != 0) {
 	perror("dbminit");
 	exit(1);
     }
     gettimeofday(&end, NULL);
-    printf("dbzfresh(%s, 5000000): %d ms\n", argv[1], timediffms(start, end));
+    printf("dbzfresh(%s, %d): %d ms\n", argv[1], numiter,
+	   timediffms(start, end));
 
-    key.dptr = (POINTER)&i;
-    key.dsize = sizeof(i);
+    i = (int *)msgid;
+    key.dptr = (POINTER)&msgid;
+    key.dsize = sizeof(msgid);
     gettimeofday(&start, NULL);
-    for (i = 0; i < 100000; i++) {
+    for (*i = 0; *i < 100000; (*i)++) {
 	dbzfetch(key);
     }
     gettimeofday(&end, NULL);
@@ -1263,25 +1238,33 @@ int main(int argc, char **argv) {
 	   timediffms(start, end)/(float)100000);
 
     gettimeofday(&start, NULL);
-    for (i = 0; i < 100000; i++) {
+    for (*i = 0; *i < 750000; (*i)++) {
 	dbzfetch(key);
     }
     gettimeofday(&end, NULL);
     printf("dbzfetch() from memory: %0.5f ms\n",
-	   timediffms(start, end)/(float)100000);
+	   timediffms(start, end)/(float)750000);
 
     gettimeofday(&start, NULL);
-    data.dsize = sizeof(i);
-    data.dptr = (POINTER)&i;
-    for (i = 0; i < 333333; i++) {
+    for (*i = 0; *i < 750000; (*i)++) {
+	dbzexists(key);
+    }
+    gettimeofday(&end, NULL);
+    printf("dbzexists() from memory: %0.5f ms\n",
+	   timediffms(start, end)/(float)750000);
+
+    gettimeofday(&start, NULL);
+    data.dsize = sizeof(msgid);
+    data.dptr = (POINTER)&msgid;
+    for (*i = 0; *i < ((numiter * FULLRATIO) / 100); (*i)++) {
 	dbzstore(key, data);
     }
     gettimeofday(&end, NULL);
     printf("Time to fill database 2/3's full: %0.5f ms\n",
-	   timediffms(start, end)/(float)333333);
+	   timediffms(start, end)/(float) ((numiter * FULLRATIO) / 100));
    
     gettimeofday(&start, NULL);
-    for (i = 0; i < 100000; i++) {
+    for (*i = 0; *i < 100000; (*i)++) {
 	dbzfetch(key);
     }
     gettimeofday(&end, NULL);
@@ -1289,35 +1272,34 @@ int main(int argc, char **argv) {
 	   timediffms(start, end)/(float)100000);
 
     printf("Checking dbz integrity\n");
-    for (i = 0; i < 333; i++) {
+    for (*i = 0; *i < ((numiter * FULLRATIO) / 100); (*i)++) {
 	data = dbzfetch(key);
 	if (data.dptr == NULL) {
-	    printf("Could not find an entry for %d\n", i);
+	    printf("Could not find an entry for %d\n", *i);
 	    continue;
 	}
-	if (data.dsize != sizeof(i)) {
+	if (data.dsize != sizeof(msgid)) {
 	    printf("dsize is wrong for %d (%d != %d)\n",
-		   i, data.dsize, sizeof(i));
+		   *i, data.dsize, sizeof(msgid));
 	}
 	/* '@' is handled differently by the case mapping, so we avoid
 	   checking this case for correctness */
-	if (memchr(data.dptr, '@', sizeof(i)) != NULL)
+	if (memchr(data.dptr, '@', sizeof(msgid)) != NULL)
 	    continue;
-	if (memcmp(data.dptr, &i, sizeof(i))) {
+	if (memcmp(data.dptr, msgid, sizeof(msgid))) {
 	    hash_t hash1, hash2;
-	    hash1 = dbzhash((char *)&i, sizeof(i));
+	    hash1 = dbzhash((char *)msgid, sizeof(msgid));
 	    hash2 = dbzhash((char *)data.dptr, data.dsize);
 	    if (memcmp(&hash1, &hash2, sizeof(hash_t))) {
 		printf("data is wrong for %d (%d != %d)\n",
-		       i, i, *(int *)data.dptr);
+		       *i, *i, *(int *)data.dptr);
 	    } else {
 		printf("hash collision for %d, %d\n",
-		       i, *(int *)data.dptr);
+		       *i, *(int *)data.dptr);
 	    }
 	}
     }
 
-    
     dbmclose();
     RemoveDBZ(argv[1]);
 

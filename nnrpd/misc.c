@@ -236,9 +236,6 @@ HISgetent(msg_id, fulldata)
     BOOL		fulldata;
 {
     static BOOL		setup;
-#if	NNRP_DBZINCORE_DELAY > 0
-    static int		count = NNRP_DBZINCORE_DELAY;
-#endif	/* NNRP_DBZINCORE_DELAY > 0 */
     static FILE		*hfp;
     static char		path[BIG_BUFFER];
     register char	*p;
@@ -251,17 +248,8 @@ HISgetent(msg_id, fulldata)
     datum		value;
     struct stat		Sb;
 
-#if	NNRP_DBZINCORE_DELAY > 0
-    if (count && --count == 0) {
-	if (setup) {
-	    (void)dbmclose();
-	    setup = FALSE;
-	}
-	(void)dbzincore(1);
-    }
-#endif	/* NNRP_DBZINCORE_DELAY > 0 */
     if (!setup) {
-	if (dbminit(HISTORY) < 0) {
+	if (!dbminit(HISTORY)) {
 	    syslog(L_ERROR, "%s cant dbminit %s %m", ClientHost, HISTORY);
 	    return NULL;
 	}
