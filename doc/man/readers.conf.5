@@ -450,6 +450,16 @@ default is true.
 If set to false, posts made by these users do not pass through the Python
 filter even if it is otherwise enabled.  This is a boolean value and the
 default is true.
+.Ip "\fBvirtualhost:\fR" 4
+If set to true, \fInnrpd\fR\|(8) behaves as a different news server, and also domain
+cannot be unset.  If pathhost is same as in inn.conf, domain is used as
+pathhost.  And if pathhost is same as in inn.conf in this case, \fInnrpd\fR\|(8) fails
+to start.  If virtualhost is enabled, some of \fIheaders\fR\|(Path, Message-\s-1ID\s0 and
+X\-Trace) of posted articles will be changed for the virtual host.  And also
+some of \fIheaders\fR\|(Path and Xref) of retrieved artilces will be changed for it.
+.Ip "\fBnewsmaster:\fR" 4
+This is used for contact address listed in help message when virtualhost
+is enabled.
 .PP
 In addition, all of the following parameters are valid in access groups
 and override the global setting in \fIinn.conf\fR\|(5).  See \fIinn.conf\fR\|(5) for the
