@@ -131,6 +131,7 @@ clobber realclean distclean:
 	@echo ''
 	rm -f LIST.* Makefile.global TAGS tags config.cache config.log
 	rm -f config.status libtool support/fixconfig support/fixscript
+	rm -f config.status.lineno configure.lineno
 
 maintclean: distclean
 	rm -rf $(TARDIR)
