@@ -430,6 +430,7 @@ samples/pgpverify.in        1 Sample pgpverify program.
 samples/pullnews.in	    1 sucking feeder
 samples/rc.news.in          1 News boot script
 samples/rmgroup.in          1 Rmgroup control message handler
+samples/readers.conf        1 Sample readers.conf(5) file
 samples/rmgroup.pl.in       1 Rmgroup control message handler for controlchan
 samples/sample.control      1 Control message for testing PGP.
 samples/scanlogs.in         1 Summarize log files
