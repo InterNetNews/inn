@@ -19,10 +19,26 @@
 # define MAP_FAILED     ((void *) -1)
 #endif
 
+/* Solaris 8 (at least) prototypes munmap, msync, and madvise as taking char *
+   (actually a caddr_t, which is a typedef for a char *) instead of void * as
+   is required by the standard.  This macro adds a cast that silences compiler
+   warnings on Solaris 8 without adversely affecting other platforms.  (ISO C
+   allows macro definitions of this sort; this macro is not recursive.) */
+#define munmap(p, l)            munmap((void *)(p), (l))
+
 /* On some platforms, msync only takes two arguments.  (ANSI C allows macro
    definitions of this sort; this macro is not recursive.) */
-#if !HAVE_MSYNC_3_ARG
-# define msync(start, length, flags)     msync((start), (length))
+#if HAVE_MSYNC_3_ARG
+# define msync(p, l, f)         msync((void *)(p), (l), (f))
+#else
+# define msync(p, l, f)         msync((void *)(p), (l))
+#endif
+
+/* Turn calls to madvise into a no-op if that call isn't available. */
+#if HAVE_MADVISE
+# define madvise(p, l, o)       madvise((void *)(p), (l), (o))
+#else
+# define madvise(p, l, o)       /* empty */
 #endif
 
 /* Some platforms don't flush data written to a memory mapped region until
@@ -44,11 +60,6 @@
 # define mmap_invalidate(p, l)  msync((p), (l), MS_INVALIDATE)
 #else
 # define mmap_invalidate(p, l)  /* empty */
-#endif
-
-/* Turn calls to madvise into a no-op if that call isn't available. */
-#if !HAVE_MADVISE
-# define madvise(p, l, o)       /* empty */
 #endif
 
 #endif /* PORTABLE_MMAP_H */
