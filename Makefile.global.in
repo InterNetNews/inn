@@ -103,8 +103,11 @@ LIBHIST         = $(builddir)/history/libinnhist.$(EXTLIB)
 LIBSTORAGE      = $(builddir)/storage/libstorage.$(EXTLIB)
 EXTSTORAGELIBS  = @BERKELEY_DB_LIB@
 
+CRYPTLIB        = @CRYPT_LIB@
 DBMLIB          = @DBM_LIB@
 PAMLIB          = @PAM_LIB@
+REGEXLIB        = @REGEX_LIB@
+SHADOWLIB       = @SHADOW_LIB@
 
 ##  Embedding support.  Additional flags and libraries used when compiling
 ##  or linking portions of INN that support embedded interpretors, set by
