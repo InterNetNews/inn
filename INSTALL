@@ -343,6 +343,13 @@ Installing INN
         you'll still need to make a certificate and private key to use SSL. 
         See below for details on how to do that.
 
+    --enable-ipv6
+        Enables support for IPv6 in innd, innfeed, nnrpd, and several of the
+        supporting programs.  This option should be considered developmental
+        at present.  For more information see doc/IPv6-info (and if you have
+        any particularly good or bad news to report, please let us know at
+        inn-bugs@isc.org).
+
     For the most common installation, a standalone news server, a suggested
     set of options is:
 
