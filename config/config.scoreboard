@@ -379,6 +379,13 @@
   ||#### =()<CYCBUFF_OFF_T		@<CYCBUFF_OFF_T>@>()=
   ||CYCBUFF_OFF_T		off_t
 [IN1.7=@NO][WDF=autoconf][WOR=no]
+  ||##  Page boundary on which to mmap() the CNFS article usage header.  Should
+  ||##  be a multiple of the pagesize for all the architectures you expect might
+  ||##  need access to your CNFS buffer.  If you don't expect to share your
+  ||##  buffer across several platforms, you can use 'pagesize' here.
+  ||#### =()<CNFS_HDR_PAGESIZE		@<CNFS_HDR_PAGESIZE>@>()=
+  ||CNFS_HDR_PAGESIZE		16384
+[IN1.7=@NO][WDF=autoconf][WOR=no]
   ||##  Which seek system call to use?  If CYCBUFF_OFF_T is "off_t", then lseek().
   ||##  If, like Solaris, CYCBUFF_OFF_T is bigger than "off_t", then we must
   ||##  use a different system call, namedly llseek().
