@@ -363,7 +363,7 @@ ProcessHeaders(linecount, idbuff)
 	 * unauthenticated data. */
 	if (PERMauthorized && HDR(_sender) == NULL) {
 	    (void)sprintf(sendbuff, "%s@%s",
-		PERMuser ? PERMuser : "UNKNOWN", ClientHost);
+		PERMuser[0] ? PERMuser : "UNKNOWN", ClientHost);
 	    HDR(_sender) = sendbuff;
 	}
 	else if (!PERMauthorized)
