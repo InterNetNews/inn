@@ -2643,7 +2643,7 @@ static HostParams getHostInfo (void)
   bool isGood = false ;
 
   if (topScope == NULL)
-    return false ;
+    return p;
   
   while ((v = getNextPeer (&idx)) != NULL) 
     {
