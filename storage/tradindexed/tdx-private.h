@@ -9,7 +9,11 @@
 #include "config.h"
 #include <sys/types.h>
 
+#include "libinn.h"
 #include "storage.h"
+
+/* Opaque data structure used by the cache. */
+struct cache;
 
 /* Opaque data structure returned by group index functions. */
 struct group_index;
@@ -30,6 +34,7 @@ struct group_data {
     off_t indexlen;
     off_t datalen;
     ino_t indexinode;
+    int refcount;
 };
 
 /* All of the data about an article, used as the return of the search
@@ -46,6 +51,25 @@ struct article {
 
 BEGIN_DECLS
 
+/* tdx-cache.c */
+
+/* Create a new cache with the given number of entries. */
+struct cache *tdx_cache_create(unsigned int size);
+
+/* Look up a given newsgroup hash in the cache, returning the group_data
+   struct for its open data files if present. */
+struct group_data *tdx_cache_lookup(struct cache *, HASH);
+
+/* Insert a new group_data struct into the cache. */
+void tdx_cache_insert(struct cache *, HASH, struct group_data *);
+
+/* Delete a group entry from the cache. */
+void tdx_cache_delete(struct cache *, HASH);
+
+/* Free the cache and its resources. */
+void tdx_cache_free(struct cache *);
+
+
 /* tdx-group.c */
 
 /* Open the group index and return an opaque data structure to use for further
@@ -53,11 +77,9 @@ BEGIN_DECLS
 struct group_index *tdx_index_open(int mode);
 
 /* Return the stored information about a single newsgroup. */
-const struct group_entry *tdx_index_entry(struct group_index *,
-                                          const char *group);
+struct group_entry *tdx_index_entry(struct group_index *, const char *group);
 
-/* Print the contents of a single group entry to stdout in human-readable
-   form. */
+/* Print the contents of a single group entry in human-readable form. */
 void tdx_index_print(const char *name, const struct group_entry *);
 
 /* Add a new newsgroup to the index file. */
@@ -78,8 +100,8 @@ struct group_data *tdx_data_open(struct group_index *, const char *group,
                                  struct group_entry *);
 
 /* Add a new overview entry. */
-bool tdx_data_add(struct group_index *, const char *group,
-                  const struct article *);
+bool tdx_data_add(struct group_index *, struct group_entry *,
+                  struct group_data *, const struct article *);
 
 
 /* tdx-data.c */
@@ -92,10 +114,11 @@ bool tdx_data_open_files(struct group_data *);
 
 /* Return the metadata about a particular article in a group. */
 const struct index_entry *tdx_article_entry(struct group_data *,
-                                            ARTNUM article);
+                                            ARTNUM article, ARTNUM high);
 
 /* Create, perform, and close a search. */
-struct search *tdx_search_open(struct group_data *, ARTNUM low, ARTNUM high);
+struct search *tdx_search_open(struct group_data *, ARTNUM start, ARTNUM end,
+                               ARTNUM high);
 bool tdx_search(struct search *, struct article *);
 void tdx_search_close(struct search *);
 

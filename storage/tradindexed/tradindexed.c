@@ -14,6 +14,7 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include "libinn.h"
 #include "ov.h"
 #include "storage.h"
 #include "tdx-private.h"
@@ -25,6 +26,7 @@
    overview API is more object-oriented. */
 struct tradindexed {
     struct group_index *index;
+    struct cache *cache;
     bool cutoff;
 };
 
@@ -33,11 +35,53 @@ static struct tradindexed *tradindexed;
 
 
 /*
+**  Helper function to open a group_data structure via the cache, inserting it
+**  into the cache if it wasn't found in the cache.
+*/
+static struct group_data *
+data_cache_open(struct tradindexed *global, const char *group,
+                struct group_entry *entry)
+{
+    struct group_data *data;
+
+    data = tdx_cache_lookup(global->cache, entry->hash);
+    if (data == NULL) {
+        data = tdx_data_open(global->index, group, entry);
+        if (data == NULL)
+            return NULL;
+        tdx_cache_insert(global->cache, entry->hash, data);
+    }
+    return data;
+}
+
+
+/*
+**  Helper function to reopen the data files and remove the old entry from the
+**  cache if we think that might help better fulfill a search.
+*/
+static struct group_data *
+data_cache_reopen(struct tradindexed *global, const char *group,
+                  struct group_entry *entry)
+{
+    struct group_data *data;
+
+    tdx_cache_delete(global->cache, entry->hash);
+    data = tdx_data_open(global->index, group, entry);
+    if (data == NULL)
+        return NULL;
+    tdx_cache_insert(global->cache, entry->hash, data);
+    return data;
+}
+
+
+/*
 **  Open the overview method.
 */
 bool
 tradindexed_open(int mode)
 {
+    unsigned int cache_size, fdlimit;
+
     if (tradindexed != NULL) {
         warn("tradindexed: overview method already open");
         return false;
@@ -45,6 +89,18 @@ tradindexed_open(int mode)
     tradindexed = xmalloc(sizeof(struct tradindexed));
     tradindexed->index = tdx_index_open(mode);
     tradindexed->cutoff = false;
+
+    /* Use a cache size of two for read-only connections. */
+    cache_size = (mode & OV_WRITE) ? innconf->overcachesize : 1;
+    fdlimit = getfdlimit();
+    if (fdlimit > 0 && fdlimit < cache_size * 2) {
+        warn("tradindexed: not enough file descriptors for an overview cache"
+             " size of %u; increase rlimitnofile or decrease overcachesize"
+             " to at most %u", cache_size, fdlimit / 2);
+        cache_size = (fdlimit > 2) ? fdlimit / 2 : 1;
+    }
+    tradindexed->cache = tdx_cache_create(cache_size);
+
     return (tradindexed->index == NULL) ? false : true;
 }
 
@@ -115,6 +171,8 @@ tradindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data,
                 int length, time_t arrived, time_t expires)
 {
     struct article article;
+    struct group_data *group_data;
+    struct group_entry *entry;
 
     if (tradindexed == NULL || tradindexed->index == NULL) {
         warn("tradindexed: overview method not initialized");
@@ -126,7 +184,15 @@ tradindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data,
     article.token = token;
     article.arrived = arrived;
     article.expires = expires;
-    return tdx_data_add(tradindexed->index, group, &article);
+
+    /* Open the appropriate data structures, using the cache. */
+    entry = tdx_index_entry(tradindexed->index, group);
+    if (entry == NULL)
+        return false;
+    group_data = data_cache_open(tradindexed, group, entry);
+    if (group_data == NULL)
+        return false;
+    return tdx_data_add(tradindexed->index, entry, group_data, &article);
 }
 
 
@@ -150,16 +216,26 @@ tradindexed_cancel(TOKEN token UNUSED)
 void *
 tradindexed_opensearch(char *group, int low, int high)
 {
+    struct group_entry *entry;
     struct group_data *data;
 
     if (tradindexed == NULL || tradindexed->index == NULL) {
         warn("tradindexed: overview method not initialized");
         return NULL;
     }
-    data = tdx_data_open(tradindexed->index, group, NULL);
+    entry = tdx_index_entry(tradindexed->index, group);
+    if (entry == NULL)
+        return NULL;
+    data = data_cache_open(tradindexed, group, entry);
     if (data == NULL)
         return NULL;
-    return tdx_search_open(data, low, high);
+    if (entry->base != data->base)
+        if (data->base > (ARTNUM) low && entry->base < data->base) {
+            data = data_cache_reopen(tradindexed, group, entry);
+            if (data == NULL)
+                return NULL;
+        }
+    return tdx_search_open(data, low, high, entry->high);
 }
 
 
@@ -210,24 +286,31 @@ tradindexed_closesearch(void *handle)
 bool
 tradindexed_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
 {
+    struct group_entry *entry;
     struct group_data *data;
-    const struct index_entry *entry;
+    const struct index_entry *index_entry;
 
     if (tradindexed == NULL || tradindexed->index == NULL) {
         warn("tradindexed: overview method not initialized");
         return false;
     }
-    data = tdx_data_open(tradindexed->index, group, NULL);
+    entry = tdx_index_entry(tradindexed->index, group);
+    if (entry == NULL)
+        return false;
+    data = data_cache_open(tradindexed, group, entry);
     if (data == NULL)
         return false;
-    entry = tdx_article_entry(data, artnum);
-    if (entry == NULL) {
-        tdx_data_close(data);
+    if (entry->base != data->base)
+        if (data->base > artnum && entry->base <= artnum) {
+            data = data_cache_reopen(tradindexed, group, entry);
+            if (data == NULL)
+                return false;
+        }
+    index_entry = tdx_article_entry(data, artnum, entry->high);
+    if (index_entry == NULL)
         return false;
-    }
     if (token != NULL)
-        *token = entry->token;
-    tdx_data_close(data);
+        *token = index_entry->token;
     return true;
 }
 
@@ -296,6 +379,8 @@ tradindexed_close(void)
     if (tradindexed != NULL) {
         if (tradindexed->index != NULL)
             tdx_index_close(tradindexed->index);
+        if (tradindexed->cache != NULL)
+            tdx_cache_free(tradindexed->cache);
         free(tradindexed);
         tradindexed = NULL;
     }
