@@ -1,79 +1,79 @@
-/*
-  dbz.c  V6.1.1
-
-Copyright 1988 Jon Zeeff (zeeff@b-tech.ann-arbor.mi.us)
-You can use this code in any manner, as long as you leave my name on it
-and don't hold me responsible for any problems with it.
-
-Hacked on by gdb@ninja.UUCP (David Butler); Sun Jun  5 00:27:08 CDT 1988
-
-Various improvments + INCORE by moraes@ai.toronto.edu (Mark Moraes)
-
-Major reworking by Henry Spencer as part of the C News project.
-
-Minor lint and CodeCenter (Saber) fluff removal by Rich $alz (March, 1991).
-Non-portable CloseOnExec() calls added by Rich $alz (September, 1991).
-Added "writethrough" and tagmask calculation code from
-<rob@violet.berkeley.edu> and <leres@ee.lbl.gov> by Rich $alz (December, 1992).
-Merged in MMAP code by David Robinson, formerly <david@elroy.jpl.nasa.gov>
-now <david.robinson@sun.com> (January, 1993).
-
-Major reworking by Clayton O'Neill (coneill@oneill.net).  Removed all the
-C News and backwards compatible cruft.  Ripped out all the tagmask stuff
-and replaced it with hashed .pag entries.  This removes the need for
-base file access.  Primary bottleneck now appears to be the hash
-algorithm and search().  You can change DBZ_INTERNAL_HASH_SIZE in
-dbz.h to increase the size of the stored hash.
-
-These routines replace dbm as used by the usenet news software
-(it's not a full dbm replacement by any means).  It's fast and
-simple.  It contains no AT&T code.
-
-The dbz database exploits the fact that when news stores a <key,value>
-tuple, the `value' part is a seek offset into a text file, pointing to
-a copy of the `key' part.  This avoids the need to store a copy of
-the key in the dbz files. 
-
-The basic format of the database is two hash tables, each in it's own
-file. One contains the offsets into the history text file , and the
-other contains a hash of the message id.  A value is stored by
-indexing into the tables using a hash value computed from the key;
-collisions are resolved by linear probing (just search forward for an
-empty slot, wrapping around to the beginning of the table if
-necessary).  Linear probing is a performance disaster when the table
-starts to get full, so a complication is introduced.  Each file actually
-contains one *or more* tables, stored sequentially in the files, and
-the length of the linear-probe sequences is limited.  The search (for
-an existing item or an empy slot always starts in the first table of
-the hash file, and whenever MAXRUN probes have been done in table N,
-probing continues in table N+1.  It is best not to overflow into more
-than 1-2 tables or else massive performance degradation may occur.
-Choosing the size of the database is extremely important because of this.
-
-The table size is fixed for any particular database, but is determined
-dynamically when a database is rebuilt.  The strategy is to try to pick
-the size so the first table will be no more than 2/3 full, that being
-slightly before the point where performance starts to degrade.  (It is
-desirable to be a bit conservative because the overflow strategy tends
-to produce files with holes in them, which is a nuisance.)
-
-Tagged hash + offset fuzzy technique merged by Sang-yong Suh (Nov, 1997)
-
-Fixed a bug handling larger than 1Gb history offset by Sang-yong Suh(1998)
-Similar fix was suggested by Mike Hucka <hucka@umich.edu> (Jan, 1998) for
-dbz-3.3.2.
-
-Limited can't tag warnings once per dbzinit() by Sang-yong Suh (May, 1998)
-
+/*  $Id$
+**
+**  dbz database implementation V6.1.1
+**
+**  Copyright 1988 Jon Zeeff (zeeff@b-tech.ann-arbor.mi.us)
+**  You can use this code in any manner, as long as you leave my name on it
+**  and don't hold me responsible for any problems with it.
+**  
+**  Hacked on by gdb@ninja.UUCP (David Butler); Sun Jun  5 00:27:08 CDT 1988
+**  Various improvments + INCORE by moraes@ai.toronto.edu (Mark Moraes)
+**  Major reworking by Henry Spencer as part of the C News project.
+**  
+**  Minor lint and CodeCenter (Saber) fluff removal by Rich $alz
+**    (March, 1991).
+**  Non-portable CloseOnExec() calls added by Rich $alz (September, 1991).
+**  Added "writethrough" and tagmask calculation code from
+**    <rob@violet.berkeley.edu> and <leres@ee.lbl.gov> by Rich $alz
+**    (December, 1992).
+**  Merged in MMAP code by David Robinson, formerly <david@elroy.jpl.nasa.gov>
+**    now <david.robinson@sun.com> (January, 1993).
+**  
+**  Major reworking by Clayton O'Neill (coneill@oneill.net).  Removed all the
+**  C News and backwards compatible cruft.  Ripped out all the tagmask stuff
+**  and replaced it with hashed .pag entries.  This removes the need for base
+**  file access.  Primary bottleneck now appears to be the hash algorithm and
+**  search().  You can change DBZ_INTERNAL_HASH_SIZE in dbz.h to increase the
+**  size of the stored hash.
+**  
+**  These routines replace dbm as used by the usenet news software (it's not a
+**  full dbm replacement by any means).  It's fast and simple.  It contains no
+**  AT&T code.
+**  
+**  The dbz database exploits the fact that when news stores a <key,value>
+**  tuple, the "value" part is a seek offset into a text file, pointing to a
+**  copy of the "key" part.  This avoids the need to store a copy of the key
+**  in the dbz files.
+**  
+**  The basic format of the database is two hash tables, each in it's own
+**  file.  One contains the offsets into the history text file, and the other
+**  contains a hash of the message id.  A value is stored by indexing into the
+**  tables using a hash value computed from the key; collisions are resolved
+**  by linear probing (just search forward for an empty slot, wrapping around
+**  to the beginning of the table if necessary).  Linear probing is a
+**  performance disaster when the table starts to get full, so a complication
+**  is introduced.  Each file actually contains one *or more* tables, stored
+**  sequentially in the files, and the length of the linear-probe sequences is
+**  limited.  The search (for an existing item or an empy slot always starts
+**  in the first table of the hash file, and whenever MAXRUN probes have been
+**  done in table N, probing continues in table N+1.  It is best not to
+**  overflow into more than 1-2 tables or else massive performance degradation
+**  may occur.  Choosing the size of the database is extremely important
+**  because of this.
+**  
+**  The table size is fixed for any particular database, but is determined
+**  dynamically when a database is rebuilt.  The strategy is to try to pick
+**  the size so the first table will be no more than 2/3 full, that being
+**  slightly before the point where performance starts to degrade.  (It is
+**  desirable to be a bit conservative because the overflow strategy tends to
+**  produce files with holes in them, which is a nuisance.)
+**  
+**  Tagged hash + offset fuzzy technique merged by Sang-yong Suh (Nov, 1997)
+**  
+**  Fixed a bug handling larger than 1Gb history offset by Sang-yong Suh
+**  (1998) Similar fix was suggested by Mike Hucka <hucka@umich.edu> (Jan,
+**  1998) for dbz-3.3.2.
+**  
+**  Limited can't tag warnings once per dbzinit() by Sang-yong Suh (May, 1998)
 */
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/mmap.h"
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 
@@ -1272,9 +1272,9 @@ getcore(hash_table *tab)
 	    syswarn("dbz: getcore: mmap failed");
 	    return false;
 	}
-#if defined (MADV_RANDOM) && defined(HAVE_MADVISE)
+#ifdef MADV_RANDOM
 	/* not present in all versions of mmap() */
-	madvise(it, (size_t)conf.tsize * sizeof(tab->reclen), MADV_RANDOM);
+	madvise(it, conf.tsize * sizeof(tab->reclen), MADV_RANDOM);
 #endif
 #else
 	warn("dbz: getcore: can't mmap files");
