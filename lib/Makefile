@@ -16,7 +16,7 @@ SOURCES = $(MISSING_SRC) \
 	md5.c nonblocking.c parsedate.c perl.c qio.c radix32.c readin.c \
 	remopen.c reservedfd.c resource.c rwlock.c sendarticle.c \
 	sendpass.c tempname.c waitnb.c wildmat.c version.c xfopena.c \
-	xmalloc.c xsignal.c xwrite.c xwritev.c
+	xmalloc.c xsignal.c xwrite.c
 
 OBJECTS = $(MISSING_OBJ) \
 	argparse.o checkart.o cleanfrom.o clientactive.o clientlib.o \
@@ -26,7 +26,7 @@ OBJECTS = $(MISSING_OBJ) \
 	md5.o nonblocking.o parsedate.o qio.o radix32.o readin.o \
 	remopen.o reservedfd.o resource.o rwlock.o sendarticle.o \
 	sendpass.o tempname.o waitnb.o wildmat.o version.o xfopena.o \
-	xmalloc.o xsignal.o xwrite.o xwritev.o
+	xmalloc.o xsignal.o xwrite.o
 
 LOBJECTS= $(OBJECTS:.o=.lo)
 
@@ -97,8 +97,6 @@ depend: Makefile $(SOURCES) ../include/autoconfig.h
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 setenv.o: setenv.c ../include/configdata.h ../include/config.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
-hstrerror.o: hstrerror.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h
 argparse.o: argparse.c ../include/configdata.h ../include/config.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
 checkart.o: checkart.c ../include/configdata.h ../include/config.h \
@@ -190,7 +188,5 @@ xfopena.o: xfopena.c ../include/configdata.h ../include/config.h \
  ../include/clibrary.h
 xmalloc.o: xmalloc.c ../include/config.h ../include/libinn.h
 xsignal.o: xsignal.c ../include/config.h ../include/libinn.h
-xwrite.o: xwrite.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h
-xwritev.o: xwritev.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h
+xwrite.o: xwrite.c ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h ../include/macros.h
