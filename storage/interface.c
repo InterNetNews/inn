@@ -168,7 +168,7 @@ static BOOL SMreadconfig(void) {
 	method_data[i].initialized = INIT_NO;
 	method_data[i].configured = FALSE;
     }
-    if ((f = fopen(cpcatpath(innconf->pathetc, _PATH_STORAGECTL), "r")) == NULL) {
+    if ((f = Fopen(cpcatpath(innconf->pathetc, _PATH_STORAGECTL), "r", TEMPORARYOPEN)) == NULL) {
 	SMseterror(SMERR_UNDEFINED, NULL);
 	syslog(L_ERROR, "SM Could not open %s: %m",
 			cpcatpath(innconf->pathetc, _PATH_STORAGECTL));
@@ -192,6 +192,7 @@ static BOOL SMreadconfig(void) {
 	if ((p = strchr(line, ':')) == NULL) {
 	    SMseterror(SMERR_CONFIG, "Could not find end of the first field");
 	    syslog(L_ERROR, "SM could not find end of first field, line %d", linenum);
+	    (void)Fclose(f);
 	    return FALSE;
 	}
 	method = line;
@@ -247,6 +248,7 @@ static BOOL SMreadconfig(void) {
 	    syslog(L_ERROR, "SM no configured storage methods are named '%s'", method);
 	    DISPOSE(options);
 	    DISPOSE(sub);
+	    (void)Fclose(f);
 	    return FALSE;
 	}
 	sub->minsize = minsize;
@@ -272,7 +274,7 @@ static BOOL SMreadconfig(void) {
 	sub->next = NULL;
     }
     
-    fclose(f);
+    (void)Fclose(f);
 
     return TRUE;
 }

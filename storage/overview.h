@@ -1,9 +1,16 @@
+/*  $Id$
+**
+**  unified overview processing header
+*/
+
 #ifndef __OVERVIEW_H__
 #define __OVERVIEW_H__
 
 typedef enum {OVER_DONE, OVER_NULL, OVER_ERROR} OVERCONFIG;
 
 typedef struct _UNIOVER {
+    int			fd;		/* fd for this overview */
+    int			newfd;		/* new fd for this overview */
     FILE		*fp;		/* FILE handler for this overview */
     FILE		*newfp;		/* new FILE handler for this overview */
     int			index;		/* Number of the overview index for this
@@ -13,8 +20,10 @@ typedef struct _UNIOVER {
 					   the groups to determine if the
 					   article should go to this index */
     char		*addr;		/* mmapped address */
-    long		size;		/* overview size */
-    int			offset;		/* overview offset */
+    OFFSET_T		size;		/* overview size */
+    OFFSET_T		newsize;	/* new overview size */
+    OFFSET_T		offset;		/* overview offset */
+    OFFSET_T		newoffset;	/* newoverview offset */
     struct _UNIOVER	*next;
 } UNIOVER;
 
