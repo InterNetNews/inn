@@ -211,6 +211,7 @@ EXTERN struct history *History;
 EXTERN struct line NNTPline;
 EXTERN struct vector *OVextra;
 EXTERN int	overhdr_xref;
+EXTERN bool     LLOGenable;
 
 extern const char	*ARTpost(char *article, char *idbuff, bool ihave,
 				 bool *permanent);

@@ -94,7 +94,6 @@ static ACCESSGROUP **access_realms;
 static char	*ConfigBit;
 static int	ConfigBitsize;
 
-extern int LLOGenable;
 extern bool PerlLoaded;
 
 #define PERMlbrace		1

@@ -19,7 +19,6 @@ typedef struct {
 } GROUPDATA;
 
 
-extern int LLOGenable;
 extern const char *NNRPinstance;
 
 /* returns:
