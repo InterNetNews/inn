@@ -325,12 +325,12 @@ lib/dbz.c                             DBZ database library
 lib/defdist.c                         Determine default Distribution header
 lib/endian.c                          Determine system's endianness
 lib/error.c                           Error reporting
+lib/fdlimit.c                         File descriptor limits
 lib/findheader.c                      Find a header in an article
 lib/fseeko.c                          fseeko replacement
 lib/ftello.c                          ftello replacement
 lib/genid.c                           Generate a message ID
 lib/getconfig.c                       Parse the inn.conf file
-lib/getdtab.c                         Get number of allowable open files
 lib/getfqdn.c                         Get FQDN of local host
 lib/getmodaddr.c                      Get a moderator's address
 lib/getopt.c                          Help parse command line
@@ -551,6 +551,7 @@ tests/lib/concat-t.c                  Tests for lib/concat.c
 tests/lib/date-t.c                    Tests for lib/date.c
 tests/lib/error-t.c                   Tests for lib/error.c
 tests/lib/fakewrite.c                 Helper functions for xwrite tests
+tests/lib/hstrerror-t.c               Tests for lib/hstrerror.c
 tests/lib/inet_aton-t.c               Tests for lib/inet_aton.c
 tests/lib/inet_ntoa-t.c               Tests for lib/inet_ntoa.c
 tests/lib/memcmp-t.c                  Tests for lib/memcmp.c
