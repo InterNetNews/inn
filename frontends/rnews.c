@@ -787,12 +787,11 @@ int main(int ac, char *av[])
     message_handlers_warn(1, message_log_syslog_err);
     message_handlers_die(1, message_log_syslog_err);
 
-#if !defined(__FreeBSD__) && !defined(__bsdi__) && !defined (__NetBSD__)
     if (setgid(getegid()) < 0)
         die("cannot setgid to %lu", (unsigned long) getegid());
     if (setuid(geteuid()) < 0)
         die("cannot setuid to %lu", (unsigned long) geteuid());
-#endif
+
      if (ReadInnConf() < 0) exit(1);
      UUCPHost = getenv(_ENV_UUCPHOST);
      PathBadNews = concatpath(innconf->pathincoming, _PATH_BADNEWS);
