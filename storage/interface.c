@@ -204,7 +204,7 @@ static BOOL SMreadconfig(void) {
     char                *p;
     char                *q;
     char                *method;
-    char                *patterns = 0;
+    char                *patterns = NULL;
     int                 minsize;
     int                 maxsize;
     time_t		minexpire;
@@ -330,6 +330,13 @@ static BOOL SMreadconfig(void) {
 		DISPOSE(sub);
 		return FALSE;
 	    }
+	    if (!patterns) {
+		SMseterror(SMERR_CONFIG, "patterns not defined");
+		syslog(L_ERROR, "SM no patterns defined");
+		DISPOSE(options);
+		DISPOSE(sub);
+		return FALSE;
+	    }
 	    sub->minsize = minsize;
 	    sub->maxsize = maxsize;
 	    sub->class = class;
@@ -353,7 +360,7 @@ static BOOL SMreadconfig(void) {
 	    for (i = 0, p = strtok(patterns, ","); p != NULL; i++, p = strtok(NULL, ","))
 		sub->patterns[i] = COPY(p);
 	    DISPOSE(patterns);
-	    patterns = 0;
+	    patterns = NULL;
 
 	    if (prev)
 		prev->next = sub;
