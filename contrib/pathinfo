@@ -1,0 +1,604 @@
+#!/usr/bin/perl
+
+# pathinfo -- Scan news headers, record and print various bits of information
+#
+#   Author: Brad Knowles <blk@skynet.be>
+#     Date: Mon Jun 14 19:45:53 MET DST 1999
+#
+# Inspired by a conversation with Keni Lorber
+# Additional ideas from Mark Filteau and Miquel van Smoorenburg
+#
+#============================================================
+#
+# Copyright (c) 1998 by Belgacom Skynet, all rights reserved.
+#
+# This program is provided as-is, with absolutely no
+# warranty or suitability for any purpose implied.
+#
+# This program is not even guaranteed to run or compile, and
+# you use it entirely at your own risk!
+#
+# No support will be provided, although comments and
+# suggestions are appreciated, and attempts will be made to
+# fold in improvements and make them available under the
+# same terms as the rest of the program.
+#
+# This program is provided as freely available and
+# distributable Perl source code only, and you are free
+# to make whatever modifications you like, so long as you
+# contribute them back to me and do not make the modified
+# versions available to other persons without express prior
+# consent.
+#
+#============================================================
+#
+# NOTE: This program is a *major* memory hog!  I use multi-
+# dimensional hashes, and this program is assumed to be
+# processing some fairly large size log files.  A log file
+# of around 95,000 lines can result in over 13MB virtual
+# RAM used by the process, and 10MB actually resident.
+#
+# With ~500,000-800,000 articles per day on a full feed, I
+# can only imagine how much RAM would be required to process
+# a "Path:" header file that covers 24 hours.  And the mind
+# boggles at the potential RAM requirements to process an
+# entire week.
+#
+#
+# It would be nice to be able to tie this hash to a dbm file.
+# Although this would greatly increase the amount of disk
+# I/O necessary to process the data, this would at least let
+# the program run in a lot less memory.
+# 
+# However, until then, USE AT YOUR OWN RISK!!!
+#
+#============================================================
+
+
+
+############################################################
+############################################################
+###                                                      ###
+###     DEFAULT SETTINGS FOR IMPORTANT VARIABLES         ###
+###                                                      ###
+############################################################
+############################################################
+
+$default_min_report||=35;
+#
+# $min_report is the minimum number of times a particular news site
+# has to be seen before it can potentially show up on the "Top ##"
+# reports.  We do this because we do things like calculate mean and
+# standard deviation on how many news peers it is away from us, and
+# statistics like this are not meaningful if the sample size is not
+# large enough.  Typically, at least thirty-two samples are required
+# before the data is likely to be statistically significant, but we
+# choose to use thirty-five for simplicity's sake.
+# 
+
+$default_top||=30;
+#
+# $top is the maximum number of sites we'll display in our various 
+# reports.  If set to thirty, then we'll display the "Top 30" and
+# "Bottom 30" in each category.
+#
+
+$default_headers||="/usr/local/news/log/path/today";
+#
+# $headers is assumed to be a file that contains all the "Path:"
+# headers that this site has seen in the previous reporting
+# period (usually a day).  If this file exists, then we use it
+# to save a *BOATLOAD* of I/O that would be required to read in
+# all the various news articles, parse their headers, and pull
+# out the "Path:" headers ourselves.
+#
+#
+# If you're using INN 2.x, you can create this file by specifying
+# the following line in your "etc/newsfeeds" file (typically
+# already present, merely commented out):
+#
+# path!\
+#   :*,!junk,!control,!control.*\
+#   :Tc,WH\
+#   :/usr/local/news/bin/pathgrep path.log
+#
+# The "pathgrep" script looks something like this:
+#
+# #!/bin/sh
+# # =()<. @<_PATH_SHELLVARS>@> ()=
+# . /usr/local/news/lib/innshellvars
+# PATH_LOG="$MOST_LOGS/$1"
+# $EGREP '^Path:' >> "$PATH_LOG"
+#
+#
+# Or, you could create it as a direct file feed, like so:
+#
+# path!:*:Tf,Ap,WP:/usr/local/news/log/path/today
+#
+
+$default_dir||="/var/news/spool/articles/";
+#
+# $dir is scanned for news articles to be parsed, if the file
+# in $headers does not exist.  If $dir is a file instead, it is
+# assumed to contain a list of directories/files to be scanned,
+# as opposed to actually being read and parsed in and of itself.
+#
+
+$default_file||="";
+#$default_file||="/usr/local/news/etc/search.hosts";
+#
+# $file is assumed to contain a list of hosts for which we are
+# looking for information on.  This could be a list of your
+# local news peers, so you can see if any of them are getting
+# screwed up and you're getting news from them that is not
+# coming in directly to you.  Or, it could be a list of Freenix
+# Top 1000 hosts that you're interested in checking out, so you
+# can see which ones are "close" to you and which ones are not,
+# and therefore which ones you might be interested in setting up
+# a peering arrangement.
+#
+# If this value is empty (per the default), then we assume that
+# you want to consider all sites
+#
+
+$default_sleep||=0;
+#
+# $sleep is the amount of time we want to sleep between processing
+# files as defined by $file.  Since this is a huge amount of I/O,
+# we may want to spread this out over a longer period of time and
+# create a lower impact per unit of time on the news server.  We
+# would *very* much prefer that an archive file of collected
+# headers instead be fed to this program, so by default we assume
+# that there shouldn't be any sleeping between the files as defined
+# by $file.
+
+############################################################
+############################################################
+###                                                      ###
+### NO MODIFICATIONS BELOW THIS LINE SHOULD BE NECESSARY ###
+###                                                      ###
+############################################################
+############################################################
+
+use Getopt::Std;
+use Sys::Hostname;
+use POSIX;
+use BSD::Resource;
+
+if (!getopts('DIVS:d:f:h:m:s:t:'))
+{
+    usage();
+    exit 1;
+}
+
+if (defined $opt_D)
+{
+    $validate_dns=$opt_D;
+    $validate=$opt_D;
+}
+
+if (defined $opt_I)
+{
+    $skip_ip=$opt_I;
+}
+
+if (defined $opt_V)
+{
+    $validate=$opt_V;
+}
+
+$sleep||=$default_sleep;
+if (defined $opt_S)
+{
+    $sleep=$opt_S;
+    if ($sleep < 0)
+    {
+        $sleep=1;
+    }
+}
+
+$dir||=$default_dir;
+if (defined $opt_d)
+{
+    $dir=$opt_d;
+}
+
+if ($default_file ne "")
+{
+    $file||=$default_file;
+    if (defined $opt_f)
+    {
+        $file=$opt_f;
+    }
+}
+
+$headers||=$default_headers;
+if (defined $opt_h)
+{
+    $headers=$opt_h;
+}
+
+$min_report||=$default_min_report;
+if (defined $opt_m)
+{
+    $min_report=$opt_m;
+    if ($min_report < 0)
+    {
+        $min_report=$default_min_report;
+    }
+}
+
+if (defined $opt_s)
+{
+    $skip=$opt_s;
+}
+
+$top||=$default_top;
+if (defined $opt_t)
+{
+    $top=$opt_t;
+    if ($top < 0)
+    {
+        $top=$default_top;
+    }
+}
+
+$host=hostname();
+$now=POSIX::strftime("%a %b %d %T %Z %Y", localtime());
+
+setpriority (PRIO_PROCESS, $$self, PRIO_MAX);
+
+if (-f $file)
+{
+    my $input = "< " . $file;
+    open (INPUT, $input);
+    while (<INPUT>)
+    {
+        tr/A-Z/a-z/;
+        chop;
+        @hosts=split;
+        for my $i (0 .. $#hosts)
+        {
+            my $j = $hosts[$i];
+            next if (defined $hosts{$j}{name});
+            $hosts{$j}{name}=$j;
+        }
+    }
+    close INPUT;
+}
+
+if (-f $headers)
+{
+    snarf($headers);
+}
+elsif (-f $dir)
+{
+    my $input = "< " . $input;
+    open (INPUT, $input);
+    while (<INPUT>)
+    {
+        chop;
+        my $myfile = $_;
+        next if ((! -d $myfile) && (! -f $myfile));
+        recurse($myfile);
+    }
+    close INPUT;
+}
+elsif (-d $dir)
+{
+    recurse($dir);
+}
+else
+{
+    print "ERROR: $headers doesn't exist and $dir is not readable, not a
+directory, or not a normal file.";
+    usage();
+    exit 2;
+}
+
+foreach $site (keys %path)
+{
+    if ($path{$site}{count} != 0)
+    {
+        $path{$site}{mean}=$path{$site}{distance} / $path{$site}{count};
+    }
+    else
+    {
+        $path{$site}{mean}=0
+    }
+}
+
+print_data($top,$min_report,"Mean",sort bymean keys %path);
+print_data($top,$min_report,"Reverse Mean",reverse sort bymean keys %path);
+print_data($top,$min_report,"Min",sort bymin keys %path);
+print_data($top,$min_report,"Reverse Min",reverse sort bymin keys %path);
+print_data($top,$min_report,"Max",sort bymax keys %path);
+print_data($top,$min_report,"Reverse Max",reverse sort bymax keys %path);
+print_data($top,$min_report,"Count",sort bycount keys %path);
+print_data($top,$min_report,"Reverse Count",reverse sort bycount keys %path);
+print_data($top,$min_report,"Number of Articles Sourced",sort bysource
+keys %path);
+print_data($top,$min_report,"Reverse Number of Articles Sourced", reverse
+sort bysource keys %path);
+print_data($top,$min_report,"Reverse Count",reverse sort bycount keys %path);
+print_data($top,$min_report,"Total Distance",sort bydist keys %path);
+print_data($top,$min_report,"Reverse Total Distance",reverse sort bydist
+keys %path);
+
+sub usage
+{
+    my @prog=split(/\//, $0);
+    my $prog=$prog[$#prog];
+    print "Usage: $prog [-DIV] [-S <S>] [-d <p>] [-f <f>] [-h <h>] [-m
+<m>] [-s <s>] [-t <t>]\n";
+    print "\n";
+    print "Where:\n";
+    print " <S> = # of seconds to sleep between processing each file in <p>\n";
+    print "               (default=$default_sleep)\n";
+    print " <p> = /path/to/news/spool/or/subdirectory/to/be/processed\n";
+    print "               or file containing list of directories or files\n";
+    print "               (default=$default_dir)\n";
+    print " <f> = File containing names of sites to search for\n";
+    print "               If <f> does not exist, consider all sites\n";
+    print "               (default=$default_file)\n";
+    print " <h> = File containing archive of 'Path:' headers to be processed\n";
+    print "               (default=$default_headers)\n";
+    print " <m> = Minimum # of references required for site to show up on
+reports\n";
+    print "               (default=$default_min_report)\n";
+    print " <s> = Site names to skip (substring)\n";
+    print "               (default=<none>)\n";
+    print " <t> = Show only the top # of sites\n";
+    print "               (default=$default_top)\n";
+    print "\n";
+    print "Use '-I' if you want to ignore raw IP addresses, including
+those of the format\n";
+    print "       192.168.0.1.MISMATCH or 10.0.0.1.POSTED\n";
+    print "Use '-V' if you want a fast but simple validation scheme\n";
+    print "Use '-D' if you want to validate w/ DNS only those that pass
+the simpler test\n";
+    print "\n";
+    print "Notes:\n";
+    print "-D implies -V, but no harm is done if you use -DV\n";
+    print "-I is independant of both -D and -V\n";
+    print "-h is preferred over -d.  If both are specified and exist,\n";
+    print "\tthe argument to -d will get silently ignored.\n";
+}
+
+sub recurse
+{
+    my $dir = shift;
+
+    if (-f $dir)
+    {
+        snarf($dir);
+    }
+    elsif (-d $dir)
+    {
+        opendir DIR, $dir or return;
+        @allfiles = readdir DIR;
+        closedir(DIR);
+        for $i (0 .. $#allfiles)
+        {
+            my $name = $allfiles[$i];
+            next if $name =~ /\.\.?/;
+            my $fullname=$dir . "/" . $name;
+            if (-f $fullname)
+            {
+                snarf($fullname);
+            }
+            elsif (-d $fullname)
+            {
+                recurse($fullname);
+            }
+            if (defined $sleep)
+            {
+                sleep $sleep;
+            }
+        }
+    }
+    else
+    {
+        print "WARNING: $dir is not readable, not a directory, or not a
+normal file.";
+    }
+    return;
+}
+
+sub snarf
+{
+    my $input = shift;
+    
+    $input = "< " . $input;
+    open (INPUT, $input);
+    while (<INPUT>)
+    {
+        chop;
+        next if !((/^[A-Za-z0-9]+[A-Za-z0-9\.\!\-]*[A-Za-z0-9]+$/o) ||
+(/^Path: /o));
+        if ((/^[A-Za-z0-9]+[A-Za-z0-9\.\!\-]*[A-Za-z0-9]+$/o) || (/^Path: /o))
+        {
+            s/^Path: //;
+            s/\.(POSTED|MISMATCH)//;
+            tr/A-Z/a-z/;
+            @route = split (/!/);
+            for $i (0 .. $#route)
+            {
+                $site=$route[$i];
+
+                next if ((defined $file) && (!defined $hosts{$site}{name}));
+                    # Grab only those sites we're told to look for
+                next if ((defined $skip) && ($site =~ $skip));
+                    # Skip all of our own servers
+
+                next if ((defined $skip_ip) && ($site =~ /^[0-9\.]*$/));
+                    # Skip if numeric IP
+
+                if (defined $validate)
+                {
+                    my @tld = split(/\./, $site);
+                    my $j = $#tld;
+
+                    next if ($j < 1);
+                        # Require at least one dot
+
+                    my $k = $tld[$j];
+                    my $l = length $k;
+
+                    next if ($l > 3 || $l < 2);
+                    # Pretty lame check to see if the TLD is legit
+                }
+
+
+                if (defined $validate_dns) # Actually look up in DNS
+                {
+                    if (!defined $addr{$site})
+                    {
+                        $addr{$site} = gethostbyname $site;
+                    }
+                    next if ($addr{$site} =~ /^$/);
+                }
+
+                if (!defined $path{$site})
+                {
+                    $path{$site}{name}=$site;
+                }
+                $path{$site}{count}++;
+                $path{$site}{source}++;
+                if ( $i > 0)
+                {
+                    $path{$route[$i - 1]}{source}--;
+                }
+                $path{$site}{distance}+=$i;
+                $path{$site}{distsq}+=($i * $i);
+                if ($path{$site}{min} > $i || $path{$site}{min} == 0)
+                {
+                    $path{$site}{min}=$i;
+                }
+                if ($path{$site}{max} < $i)
+                {
+                    $path{$site}{max}=$i;
+                }
+            }
+        }
+    }
+    close INPUT;
+}
+
+sub bymean
+{
+    $path{$a}{mean} <=> $path{$b}{mean}
+}
+
+sub bymin
+{
+    $path{$a}{min} <=> $path{$b}{min}
+}
+
+sub bymax
+{
+    $path{$a}{max} <=> $path{$b}{max}
+}
+
+sub bycount
+{
+    $path{$a}{count} <=> $path{$b}{count}
+}
+
+sub bydist
+{
+    $path{$a}{distance} <=> $path{$b}{distance}
+}
+
+sub bysource
+{
+    $path{$a}{source} <=> $path{$b}{source}
+}
+
+sub print_data
+{
+
+my ($top, $min_report, @path, $label, $top_label, $site, $current, $sd);
+($top, $min_report, $label, @path) = @_;
+
+format HEADER1 =
+@||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+$top_label
+
+Site: @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  Date: @>>>>>>>>>>>>>>>>>>>>>>>>>>
+$host, $now
+.
+format SPOOL =
+Spool: @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+$dir
+.
+format HEADERS =
+Header file: @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+$headers
+.
+format FILE =
+Searching for sites in: @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+$file
+.
+format HEADER2 =
+
+                               Articles    Site   Art.    Mean         Distance
+Site                            Sourced    Dist / Count = Dist (s.d.)  Min  Max
+-------------------------------------------------------------------------------
+.
+format BODY =
+@<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< @###### @###### @###### @##.## @##.## @### @###
+$path{$site}{name}, $path{$site}{source}, $path{$site}{distance},
+$path{$site}{count}, $path{$site}{mean}, $sd, $path{$site}{min},
+$path{$site}{max}
+.
+format TRAILER=
+
+.
+
+    $~ = "HEADER1";
+    $top_label = "Top $top Sites Sorted by $label";
+    write;
+    if ((defined $headers) && (-f $headers))
+    {
+        $~ = "HEADERS";
+        write;
+    }
+    elsif ((defined $dir) && (-d $dir))
+    {
+        $~ = "SPOOL";
+        write;
+    }
+    if ((defined $file) && (-f $file))
+    {
+        $~ = "FILE";
+        write;
+    }
+    $~ = "HEADER2";
+    write;
+
+    $current = 0;
+
+    $~ = "BODY";
+    foreach $site (@path)
+    {
+        if ($path{$site}{count} >= $min_report)
+        {
+            if ($path{$site}{count} > 1)
+            {
+                my $var=$path{$site}{distsq} / $path{$site}{count} - ($md
+* $md);
+                $sd=sqrt($var);
+            }
+            else
+            {
+                $sd=0;
+            }
+            write;
+            $current++;
+        }
+        last if $current > $top;
+    }
+    $~ = "TRAILER";
+    write;
+}
