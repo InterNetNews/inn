@@ -28,15 +28,17 @@ shlock -p $$ -f ${LOCK} || {
 if [ -n "$1" ] ; then
     LIST="$*"
 else
-    LIST=""
-    case `date +%H` in
-    01|04|07|21|23)
-	LIST="kurz-ai aoa clsib21 leafusa metasoft"
-	;;
-    06|12|15|17|20)
-	LIST="esca"
-	;;
-    esac
+#    LIST=""
+#    case `date +%H` in
+#    01|04|07|21|23)
+#	LIST="kurz-ai aoa clsib21 leafusa metasoft"
+#	;;
+#    06|12|15|17|20)
+#	LIST="esca"
+#	;;
+#    esac
+    echo "${PROGNAME}: [$$] no sites specified"
+    exit 1
 fi
 
 case ${HAVE_UUSTAT} in
@@ -87,11 +89,12 @@ for SITE in ${LIST}; do
     ##  Get the compression flags.
     echo "${PROGNAME}: [$$] begin ${SITE}"
     case "${SITE}" in
-    esca)
-	COMPRESS="compress -b12"
-	;;
+#    esca)
+#	COMPRESS="compress -b12"
+#	;;
     *)
-	COMPRESS="compress"
+	# The default is set in innshelvars
+	# COMPRESS="compress"
 	;;
     esac
 

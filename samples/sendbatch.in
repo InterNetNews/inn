@@ -5,7 +5,7 @@
 . @prefix@/etc/innshellvars
 
 ##  Place to run a df, and amount of space needed.
-UUSPOOL=/usr/spool/uucp
+UUSPOOL=/var/spool/uucp
 SPOOLFREE=20000
 ##  Program names and flags.  Most can be set on the command-line.
 C7=
@@ -140,13 +140,16 @@ do
     fi
 
     ##  Check free space on the partition?
-    if [ -n "${UUSPOOL}" ] ; then
-	FREE=`(cd ${UUSPOOL}; df . | ${AWK} '
-		$6 == "'${UUSPOOL}'" { print $4 ; exit }
-		$1 == "'${UUSPOOL}'" && NF == 7 { print $4 ; exit }
-		$2 == "'${UUSPOOL}'" { print $5 ; exit }
-		$1 == "'${UUSPOOL}'" { print $3 ; exit }
-	    ')`
+#    if [ -n "${UUSPOOL}" ] ; then
+#	FREE=`(cd ${UUSPOOL}; df . | ${AWK} '
+#		$6 == "'${UUSPOOL}'" { print $4 ; exit }
+#		$1 == "'${UUSPOOL}'" && NF == 7 { print $4 ; exit }
+#		$2 == "'${UUSPOOL}'" { print $5 ; exit }
+#		$1 == "'${UUSPOOL}'" { print $3 ; exit }
+#	    ')`
+## = ()<	POS=@<INNWATCH_BLOCKS>@>()=
+	POS=4
+	FREE=`${INNDF} ${UUSPOOL} | ${AWK} '/^\// { print $POS; exit }'`
 	if [ -n "${FREE}" -a "${FREE}" -lt ${SPOOLFREE} ] ; then
 	    echo "${PROG}:  No space on ${UUSPOOL} for ${SITE} (${FREE})."
 	    rm -f ${LOCK}
@@ -164,7 +167,7 @@ do
 
 	else
 	    ##  Get queue size from uuq command.
-	    QUEUE=`uuq -l -s${SITE} | ${AWK} '{print $4; exit }'`
+	    QUEUE=`uuq -l -s${SITE} 2>/dev/null | ${AWK} '{print $4; exit }'`
 	fi
 	test -z "${QUEUE}" && QUEUE=0
 	if [ "${QUEUE}" -gt ${BYTESQUEUED} ] ; then
