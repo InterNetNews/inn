@@ -12,6 +12,12 @@
 #include "innd.h"
 #include "ov.h"
 
+/* If we fork and exec under Cygwin, children hold onto the mmap */
+/* of active, and Windows won't let us resize or replace it.     */
+#ifdef __CYGWIN__
+# undef HAVE_MMAP
+#endif
+
 static char		*ICDactpath = NULL;
 static char		*ICDactpointer;
 static int		ICDactfd;
@@ -155,6 +161,12 @@ ICDwritevactive(struct iovec *vp, int vpcount)
     static char		WHEN[] = "backup active";
     int	                fd;
     int			oerrno;
+#ifdef __CYGWIN__
+    size_t		newactsize, padactsize, wrote;
+    struct iovec	*newvp;
+    char		*filler;
+    int			i;
+#endif
 
     if (BACKUP == NULL)
 	BACKUP = concatpath(innconf->pathdb, _PATH_OLDACTIVE);
@@ -182,6 +194,57 @@ ICDwritevactive(struct iovec *vp, int vpcount)
 	syslog(L_ERROR, "%s cant close %s %m", LogName, BACKUP);
 	IOError(WHEN, oerrno);
     }
+
+#ifdef __CYGWIN__
+    /* If we are shrinking active, junk will be at the end between the */
+    /* writev and ftruncate.  Clobber it with values that overview and */
+    /* nnrpd can ignore. */
+    for (newactsize = 0, i = 0; i < vpcount; i++)
+	 newactsize += vp[i].iov_len;
+    if (newactsize < ICDactsize) {
+	 padactsize = ICDactsize - newactsize;
+	 newvp = NEW(struct iovec, vpcount + 1);
+	 for (i = 0; i < vpcount; i++)
+	      newvp[i] = vp[i];
+	 filler = NEW(char, padactsize);
+	 memset(filler, '\0', padactsize);
+	 *filler = '.';
+	 filler[padactsize - 1] = '\n';
+	 newvp[vpcount].iov_base = filler;
+	 newvp[vpcount].iov_len = padactsize;
+	 vpcount++;
+    }
+    else {
+	 padactsize = 0;
+	 newvp = vp;
+    }
+    oerrno = 0;
+    if (lseek(ICDactfd, 0, SEEK_SET) == -1) {
+        oerrno = errno;
+	syslog(L_ERROR, "%s cant rewind %s %m", LogName, ICDactpath);
+	IOError(WHEN, oerrno);
+	goto bailout;
+    }
+    if (xwritev(ICDactfd, newvp, vpcount) < 0) {
+	oerrno = errno;
+	syslog(L_ERROR, "%s cant write %s %m", LogName, ICDactpath);
+	IOError(WHEN, oerrno);
+	goto bailout;
+    }
+    if (newactsize < ICDactsize && ftruncate(ICDactfd, newactsize) != 0) {
+	oerrno = errno;
+	syslog(L_ERROR, "%s cant truncate %s", LogName, ICDactpath);
+    }
+
+bailout:
+    if (padactsize != 0) {
+	 DISPOSE(filler);
+	 DISPOSE(newvp);
+    }
+    if (oerrno != 0)
+	 return FALSE;
+
+#else /* !__CYGWIN__, do it the Unix way. */
 
     /* Open the active file. */
     fd = open(NEWACT, O_WRONLY | O_TRUNC | O_CREAT, ARTFILE_MODE);
@@ -212,6 +275,8 @@ ICDwritevactive(struct iovec *vp, int vpcount)
 	IOError(WHEN, oerrno);
 	return FALSE;
     }
+
+#endif /* __CYGWIN__ */
 
     /* Invalidate in-core pointers. */
     ICDcloseactive();

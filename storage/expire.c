@@ -220,6 +220,8 @@ BuildGroups(char *active)
             (void)fprintf(stderr, "%s: line %d missing newline\n", ACTIVE, lines);
             exit(1);
         }
+	if (*p == '.')
+	     continue;
         *q = '\0';
         if (EXPsplit(p, ' ', fields, SIZEOF(fields)) != 4) {
             (void)fprintf(stderr, "%s: line %d wrong number of fields\n", ACTIVE, lines);
