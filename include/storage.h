@@ -72,19 +72,19 @@ extern "C" {
 
 char *          TokenToText(const TOKEN token);
 TOKEN           TextToToken(const char *text);
-BOOL            IsToken(const char *text);
+bool            IsToken(const char *text);
 char *          ToWireFmt(const char *article, int len, int *newlen);
 char *          FromWireFmt(const char *article, int len, int *newlen);
 
-BOOL            SMsetup(SMSETUP type, void *value);
-BOOL            SMinit(void);
+bool            SMsetup(SMSETUP type, void *value);
+bool            SMinit(void);
 TOKEN           SMstore(const ARTHANDLE article);
 ARTHANDLE *     SMretrieve(const TOKEN token, const RETRTYPE amount);
 ARTHANDLE *     SMnext(const ARTHANDLE *article, const RETRTYPE amount);
 void            SMfreearticle(ARTHANDLE *article);
-BOOL            SMcancel(TOKEN token);
-BOOL            SMprobe(PROBETYPE type, TOKEN *token, void *value);
-BOOL            SMflushcacheddata(FLUSHTYPE type);
+bool            SMcancel(TOKEN token);
+bool            SMprobe(PROBETYPE type, TOKEN *token, void *value);
+bool            SMflushcacheddata(FLUSHTYPE type);
 void            SMshutdown(void);
 
 #ifdef __cplusplus
