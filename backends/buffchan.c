@@ -69,19 +69,6 @@ STATIC SITEHASH	SITEtable[SITE_SIZE];
 STATIC TIMEINFO	Now;
 
 
-#if !defined(HAVE_FCHMOD)
-/*
-**  A dummy fchmod.
-*/
-/* ARGSUSED */
-int
-fchmod(i)
-    int		i;
-{
-}
-#endif	/* !defined(HAVE_FCHMOD) */
-
-
 /*
 **  Set up the site information.  Basically creating empty buckets.
 */
