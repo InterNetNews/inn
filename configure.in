@@ -723,7 +723,8 @@ if test x"$ac_cv_func_statvfs" = xno ; then
 fi
 
 dnl If we can't find any of the following, we have replacements for them.
-AC_REPLACE_FUNCS(getopt inet_aton pread pwrite strcasecmp strerror strspn)
+AC_REPLACE_FUNCS(getopt inet_aton inet_ntoa pread pwrite strcasecmp \
+                 strerror strspn)
 
 MISSING_OBJ="$LIBOBJS"
 MISSING_SRC=`echo "$MISSING_OBJ" | sed 's/\.o/.c/g'`

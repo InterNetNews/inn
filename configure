@@ -5787,15 +5787,16 @@ done
 
 fi
 
-for ac_func in getopt inet_aton pread pwrite strcasecmp strerror strspn
+for ac_func in getopt inet_aton inet_ntoa pread pwrite strcasecmp \
+                 strerror strspn
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:5794: checking for $ac_func" >&5
+echo "configure:5795: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 5799 "configure"
+#line 5800 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -5818,7 +5819,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:5822: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:5823: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -5859,12 +5860,12 @@ fi
 
 
 echo $ac_n "checking if mmap() sees write()s""... $ac_c" 1>&6
-echo "configure:5863: checking if mmap() sees write()s" >&5
+echo "configure:5864: checking if mmap() sees write()s" >&5
 if test "$cross_compiling" = yes; then
   result="yes" 
 else
   cat > conftest.$ac_ext <<EOF
-#line 5868 "configure"
+#line 5869 "configure"
 #include "confdefs.h"
 #include <stdlib.h>
     #include <unistd.h>
@@ -5896,7 +5897,7 @@ else
     }
     
 EOF
-if { (eval echo configure:5900: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:5901: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
    result="yes"
 else
@@ -5920,7 +5921,7 @@ fi
 
 
 echo $ac_n "checking for working mmap""... $ac_c" 1>&6
-echo "configure:5924: checking for working mmap" >&5
+echo "configure:5925: checking for working mmap" >&5
 if eval "test \"`echo '$''{'ac_cv_func_mmap_shared'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -5928,7 +5929,7 @@ else
   ac_cv_func_mmap_shared=no
 else
   cat > conftest.$ac_ext <<EOF
-#line 5932 "configure"
+#line 5933 "configure"
 #include "confdefs.h"
 
 /* test shared mmap */
@@ -6028,7 +6029,7 @@ main()
 }
 
 EOF
-if { (eval echo configure:6032: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:6033: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   ac_cv_func_mmap_shared=yes
 else
@@ -6052,12 +6053,12 @@ EOF
     for ac_func in madvise
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:6056: checking for $ac_func" >&5
+echo "configure:6057: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 6061 "configure"
+#line 6062 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -6080,7 +6081,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:6084: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:6085: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -6107,7 +6108,7 @@ done
 fi
 
 echo $ac_n "checking whether msync is needed""... $ac_c" 1>&6
-echo "configure:6111: checking whether msync is needed" >&5
+echo "configure:6112: checking whether msync is needed" >&5
 if eval "test \"`echo '$''{'ac_cv_func_need_msync'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -6115,7 +6116,7 @@ else
   ac_cv_func_need_msync=no
 else
   cat > conftest.$ac_ext <<EOF
-#line 6119 "configure"
+#line 6120 "configure"
 #include "confdefs.h"
 
 /* test shared mmap (msync) */
@@ -6227,7 +6228,7 @@ main()
 }
 
 EOF
-if { (eval echo configure:6231: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:6232: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   ac_cv_func_need_msync=yes
 else
@@ -6252,12 +6253,12 @@ fi
 
 if test $ac_cv_lib_regex_regexec = no; then
     echo $ac_n "checking for regexec""... $ac_c" 1>&6
-echo "configure:6256: checking for regexec" >&5
+echo "configure:6257: checking for regexec" >&5
 if eval "test \"`echo '$''{'ac_cv_func_regexec'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 6261 "configure"
+#line 6262 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char regexec(); below.  */
@@ -6280,7 +6281,7 @@ regexec();
 
 ; return 0; }
 EOF
-if { (eval echo configure:6284: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:6285: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_regexec=yes"
 else
@@ -6305,12 +6306,12 @@ fi
 fi
 
 echo $ac_n "checking for three argument msync""... $ac_c" 1>&6
-echo "configure:6309: checking for three argument msync" >&5
+echo "configure:6310: checking for three argument msync" >&5
 if eval "test \"`echo '$''{'inn_cv_func_msync_3_args'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 6314 "configure"
+#line 6315 "configure"
 #include "confdefs.h"
 
 #include <sys/types.h>
@@ -6319,7 +6320,7 @@ int main() {
 char *p; int psize; msync(p,psize,MS_ASYNC); 
 ; return 0; }
 EOF
-if { (eval echo configure:6323: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:6324: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   inn_cv_func_msync_3_args=yes
 else
@@ -6340,9 +6341,9 @@ EOF
 fi
 
 echo $ac_n "checking for Unix domain sockets""... $ac_c" 1>&6
-echo "configure:6344: checking for Unix domain sockets" >&5
+echo "configure:6345: checking for Unix domain sockets" >&5
 cat > conftest.$ac_ext <<EOF
-#line 6346 "configure"
+#line 6347 "configure"
 #include "confdefs.h"
 
 #include <sys/socket.h>
@@ -6374,7 +6375,7 @@ rm -f conftest*
 # Extract the first word of "uname", so it can be a program name with args.
 set dummy uname; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:6378: checking for $ac_word" >&5
+echo "configure:6379: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_uname_prog'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -6408,7 +6409,7 @@ else
 fi
 
 echo $ac_n "checking operating system""... $ac_c" 1>&6
-echo "configure:6412: checking operating system" >&5
+echo "configure:6413: checking operating system" >&5
 if eval "test \"`echo '$''{'inn_cv_sys_os'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -6437,7 +6438,7 @@ case "$inn_cv_sys_os" in
        *-belf*) 
           
   echo $ac_n "checking -belf""... $ac_c" 1>&6
-echo "configure:6441: checking -belf" >&5
+echo "configure:6442: checking -belf" >&5
   OLD_CFLAGS="$CFLAGS"
   if eval "test \"`echo '$''{'inn_cv_option_sco_belf_option'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -6448,11 +6449,11 @@ else
   inn_cv_option_sco_belf_option=no
 else
   cat > conftest.$ac_ext <<EOF
-#line 6452 "configure"
+#line 6453 "configure"
 #include "confdefs.h"
 int main(){exit(0);}
 EOF
-if { (eval echo configure:6456: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:6457: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   inn_cv_option_sco_belf_option=yes
 else
@@ -6481,7 +6482,7 @@ fi
        *)
           
   echo $ac_n "checking -belf""... $ac_c" 1>&6
-echo "configure:6485: checking -belf" >&5
+echo "configure:6486: checking -belf" >&5
   OLD_CFLAGS="$CFLAGS"
   if eval "test \"`echo '$''{'inn_cv_option_sco_belf_option'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -6492,11 +6493,11 @@ else
   inn_cv_option_sco_belf_option=no
 else
   cat > conftest.$ac_ext <<EOF
-#line 6496 "configure"
+#line 6497 "configure"
 #include "confdefs.h"
 int main(){exit(0);}
 EOF
-if { (eval echo configure:6500: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:6501: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   inn_cv_option_sco_belf_option=yes
 else
@@ -6540,10 +6541,10 @@ esac
 
 
 echo $ac_n "checking log facility for news""... $ac_c" 1>&6
-echo "configure:6544: checking log facility for news" >&5
+echo "configure:6545: checking log facility for news" >&5
 if test x"$SYSLOG_FACILITY" = xnone ; then
     cat > conftest.$ac_ext <<EOF
-#line 6547 "configure"
+#line 6548 "configure"
 #include "confdefs.h"
 
 #include <syslog.h>
