@@ -267,8 +267,10 @@ static int display_lock()
 
 #if DB_VERSION_MAJOR == 2
     if(lock_stat(OVDBenv->lk_info, &sp, NULL) != 0)
-#else
+#elif DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR <= 2
     if(lock_stat(OVDBenv, &sp, NULL) != 0)
+#else
+    if(lock_stat(OVDBenv, &sp) != 0)
 #endif
 	return 1;
 
@@ -312,8 +314,10 @@ static int display_log()
 
 #if DB_VERSION_MAJOR == 2
     if(log_stat(OVDBenv->lg_info, &sp, NULL) != 0)
-#else
+#elif DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR <= 2
     if(log_stat(OVDBenv, &sp, NULL) != 0)
+#else
+    if(log_stat(OVDBenv, &sp) != 0)
 #endif
 	return 1;
 
@@ -385,8 +389,10 @@ static int display_mem(int all)
 
 #if DB_VERSION_MAJOR == 2
     if(memp_stat(OVDBenv->mp_info, &gsp, &fsp, NULL) != 0)
-#else
+#elif DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR <= 2
     if(memp_stat(OVDBenv, &gsp, &fsp, NULL) != 0)
+#else
+    if(memp_stat(OVDBenv, &gsp, &fsp) != 0)
 #endif
 	return 1;
 
@@ -458,8 +464,10 @@ static int display_txn()
 
 #if DB_VERSION_MAJOR == 2
     if(txn_stat(OVDBenv->tx_info, &sp, NULL) != 0)
-#else
+#elif DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR <= 2
     if(txn_stat(OVDBenv, &sp, NULL) != 0)
+#else
+    if(txn_stat(OVDBenv, &sp) != 0)
 #endif
         return 1;
 
@@ -528,8 +536,13 @@ static int display_btree(DB *db)
 {
     DB_BTREE_STAT *sp;
 
+#if DB_VERSION_MAJOR >= 3 && DB_VERSION_MINOR >= 3
+    if(db->stat(db, &sp, 0))
+	return 1;
+#else
     if(db->stat(db, &sp, NULL, 0))
 	return 1;
+#endif
 
     display_heading("Btree Statistics");
     display_data(sp, BTREE_tab);
@@ -582,8 +595,13 @@ static int display_hash(DB *db)
 #else
     DB_HASH_STAT *sp;
 
+#if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR <= 2
     if(db->stat(db, &sp, NULL, 0))
 	return 1;
+#else
+    if(db->stat(db, &sp, 0))
+	return 1;
+#endif
 
     display_heading("Hash Information");
     display_data(sp, HASH_tab);

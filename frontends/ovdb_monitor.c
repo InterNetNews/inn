@@ -217,8 +217,10 @@ static void logremover(void)
     while(!signalled) {
 #if DB_VERSION_MAJOR == 2
 	ret = log_archive(OVDBenv->lg_info, &listp, DB_ARCH_ABS, malloc);
-#else
+#elif DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR <= 2
 	ret = log_archive(OVDBenv, &listp, DB_ARCH_ABS, malloc);
+#else
+	ret = log_archive(OVDBenv, &listp, DB_ARCH_ABS);
 #endif
 	if(ret != 0) {
 	    syslog(L_ERROR, "OVDB: log_archive: %s", db_strerror(ret));
