@@ -62,6 +62,7 @@ char *overview_getheader(const struct cvector *vector, unsigned int element,
 			 const struct vector *extra);
 
 /* offsets into vectors for standard overview headers */
+#ifndef INN_OVERVIEW_H
 enum {
     OVERVIEW_SUBJECT,
     OVERVIEW_FROM,
@@ -72,6 +73,7 @@ enum {
     OVERVIEW_LINES,
     OVERVIEW_MAX
 };
+#endif
 
 #ifdef __cplusplus
 }

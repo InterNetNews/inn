@@ -17,7 +17,8 @@ TESTS	= innd/artparse.t lib/buffer.t lib/concat.t lib/conffile.t \
 	lib/messages.t lib/mkstemp.t lib/pread.t lib/pwrite.t lib/qio.t \
 	lib/snprintf.t lib/strerror.t lib/strlcat.t lib/strlcpy.t lib/tst.t \
 	lib/uwildmat.t lib/vector.t lib/wire.t lib/xwrite.t \
-	overview/buffindexed.t overview/tradindexed.t util/innbind.t
+	overview/api.t overview/buffindexed.t overview/tradindexed.t \
+	util/innbind.t
 
 ##  Extra stuff that needs to be built before tests can be run.
 
@@ -204,6 +205,9 @@ lib/xwrite.o: ../lib/xwrite.c
 
 lib/xwrite.t: lib/xwrite-t.o lib/xwrite.o lib/fakewrite.o libtest.o $(LIBINN)
 	$(LINK) lib/xwrite-t.o lib/xwrite.o lib/fakewrite.o libtest.o $(LIBINN)
+
+overview/api.t: overview/api-t.o libtest.o $(STORAGEDEPS)
+	$(LINK) overview/api-t.o libtest.o $(STORAGELIBS) $(LIBS)
 
 overview/buffindexed-t.o: overview/overview-t.c
 	$(CC) $(CFLAGS) -DOVTYPE=buffindexed -c -o $@ overview/overview-t.c

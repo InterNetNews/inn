@@ -5,8 +5,8 @@ include ../Makefile.global
 top	      = ..
 CFLAGS	      = $(GCFLAGS) -I. $(BERKELEY_DB_CFLAGS)
 
-SOURCES	      = expire.c interface.c methods.c ov.c overdata.c ovmethods.c \
-		$(METHOD_SOURCES)
+SOURCES	      = expire.c interface.c methods.c ov.c overdata.c overview.c \
+		ovmethods.c $(METHOD_SOURCES)
 OBJECTS	      = $(SOURCES:.c=.o)
 LOBJECTS      = $(OBJECTS:.o=.lo)
 

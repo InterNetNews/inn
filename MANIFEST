@@ -375,6 +375,7 @@ include/inn/mmap.h                    Header file for mmap() functions
 include/inn/nntp.h                    Header file for NNTP functions and codes
 include/inn/network.h                 Header file for network functions
 include/inn/options.h                 Header file for compile-time options
+include/inn/overview.h                Header file for the overview API
 include/inn/qio.h                     Header file for quick I/O package
 include/inn/sequence.h                Header file for sequence space arithmetic
 include/inn/timer.h                   Header file for generic timers
@@ -661,6 +662,7 @@ storage/ovdb/ovdb.c                   ovdb (Berkeley DB) overview method
 storage/ovdb/ovdb.h                   Header for ovdb (Berkeley DB) overview
 storage/ovdb/ovmethod.config          buildconfig definition
 storage/overdata.c                    Overview data manipulation
+storage/overview.c                    Overview API glue implementation
 storage/ovinterface.h                 Overview API interface
 storage/timecaf                       timecaf storage method (Directory)
 storage/timecaf/README.CAF            README the CAF file format

@@ -32,6 +32,7 @@ lib/vector
 lib/wire
 lib/xmalloc
 lib/xwrite
+overview/api
 overview/buffindexed
 overview/tradindexed
 storage/archive
