@@ -230,7 +230,7 @@ $D$(PATH_SHELLVARS):	innshellvars	; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_SHELLVARS): innshellvars.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_TCL_SHELLVARS): innshellvars.tcl ; $(COPY_RPRI) $? $@
 $D$(PATH_CSH_SHELLVARS): innshellvars.csh ; $(COPY_RPRI) $? $@
-$D$(NEWSBIN)/innreport.pl: innreport.pl	; $(COPY_RPRI) $? $@
+$D$(NEWSBIN)/innreport.pl: innreport.pl	; $(COPY_XPRI) $? $@
 $D$(NEWSLIB)/innreport_inn.pm: innreport_inn.pm	; $(COPY_RPRI) $? $@
 $D$(NEWSLIB)/innreport.conf: innreport.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_STORAGECTL): storage.ctl	; $(COPY_RPRI) $? $@
