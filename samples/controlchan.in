@@ -171,10 +171,17 @@ if (1) {
     }
 
     # Do we want to process the message?  Let's check the permissions.
-    ($action, $logname) = split(/=/, ctlperm($progname,
+    ($action, $logname, $newsgrouppats) = split(/=/, ctlperm($progname,
             $hdrval{Sender}, $progparams[0], $token));
     $act_log = $action;
     if ($logname) { $act_log .= "=" . $logname }
+    if ($newsgrouppats) {
+        $newsgrouppats =~ s/\$\|/\|/g;
+        $newsgrouppats =~ s/[^\\]\.[^*]/\?/g;
+        $newsgrouppats =~ s/^(.*)\$/$1/g;
+        $newsgrouppats =~ s/\.\*/*/g;
+        $newsgrouppats =~ s/\\([\@\$\+\.])/$1/g;
+    }
 
     #print(scalar localtime,
     #       ": $progname:$hdrval{Sender}:@progparams:$action=$logname\n");
@@ -211,9 +218,14 @@ if (1) {
 	    ", $hdrval{Sender}, $hdrval{'Reply-To'}, $token, ",
 	    "$sitepath, $act_log, $hdrcount{approved}\n";
 	}
+        if ($progname eq "checkgroups" and $act_log =~ /^doit/) {
+            if ($act_log !~ /^doit=.+/) {
+                $act_log = "doit=mail";
+            }
+        }
         &$subfind (join(" ", @progparams), $hdrval{Sender},
 	           $hdrval{'Reply-To'}, $token, $sitepath,
-	           $act_log, $hdrcount{approved});
+	           $act_log, $hdrcount{approved}, $newsgrouppats);
     }
     else {                      # old style
         $progname = $inn::controlprogs . '/' . $progname ;
@@ -305,6 +317,12 @@ sub ctlperm {
             $action = $ctlline[3];
             $action =~ s/.(.+)./$1/;
             $action =~ s/\\//g;
+            if ($controltype eq "checkgroups") {
+                if ($action !~ /=/) {
+                    $action .= "=";
+                }
+                $action .= "=" . $ctlline[2];
+            }
         }
     }
 

@@ -108,7 +108,7 @@ keymaxwords:		250
 innflags:		
 doinnwatch:		true
 innwatchsleeptime:	600
-pgpverify:		false
+pgpverify:		@pgpverify@
 controlfailnotice:	false
 logcycles:		3
 #

@@ -141,6 +141,7 @@ while read MESSAGE FROM_PAT NG_PAT ACT_PAT ; do
 	    ;;
 	*)
 	    ACTION=${ACT_PAT}
+	    NEWSGROUPPATS=${NG_PAT}
 	    ;;
 	esac
     ;;
@@ -148,6 +149,9 @@ while read MESSAGE FROM_PAT NG_PAT ACT_PAT ; do
 done
 rm -f ${TEMP}
 IFS="`echo stn | tr stn ' \011\012'`"
+if [ X${NEWSGROUPPATS} != X ]; then
+    NEWSGROUPPATS=`echo ${NEWSGROUPPATS} | ${SED} -e 's/^/^/' -e 's/\|/\|^/'`
+fi
 
 LOGFILE=mail
 case ${ACTION} in
