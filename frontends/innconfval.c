@@ -37,7 +37,7 @@ printit(char *v, char *val)
 	case 1:   /* sh */
 	    v = upit(v);
 	    if (strchr(val, ' ') == NULL)
-	    	printf("%s=%s; export %sl;\n", v, val, v);
+	    	printf("%s=%s; export %s;\n", v, val, v);
 	    else
 	    	printf("%s=\"%s\"; export %s;\n", v, val, v);
 	    break;
@@ -49,9 +49,9 @@ printit(char *v, char *val)
 	    break;
 	case 3:   /* perl */
 	    if (isnum(val))
-	    	printf("$%s = %s\n", v, val);
+	    	printf("$%s = %s;\n", v, val);
 	    else
-	    	printf("$%s = \"%s\"\n", v, val);
+	    	printf("$%s = \"%s\";\n", v, val);
 	    break;
 	case 4:   /* tcl */
 	    if (isnum(val))
