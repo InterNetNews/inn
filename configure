@@ -4711,11 +4711,8 @@ done
 
 echo $ac_n "checking for AF_UNIX""... $ac_c" 1>&6
 echo "configure:4714: checking for AF_UNIX" >&5
-if eval "test \"`echo '$''{'ac_cv_subst_have_unix_domain'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  cat > conftest.$ac_ext <<EOF
-#line 4719 "configure"
+cat > conftest.$ac_ext <<EOF
+#line 4716 "configure"
 #include "confdefs.h"
 #include <sys/socket.h>
 #ifdef AF_UNIX
@@ -4725,24 +4722,23 @@ EOF
 if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
   egrep "yes" >/dev/null 2>&1; then
   rm -rf conftest*
-  ac_cv_subst_have_unix_domain=DO
+  cat >> confdefs.h <<\EOF
+#define HAVE_UNIX_DOMAIN_SOCKETS 1
+EOF
+ echo "$ac_t""yes" 1>&6
 else
   rm -rf conftest*
-  ac_cv_subst_have_unix_domain=DONT
+  echo "$ac_t""no" 1>&6
 fi
 rm -f conftest*
 
-fi
-
-echo "$ac_t""$ac_cv_subst_have_unix_domain" 1>&6
-
 
 echo $ac_n "checking for close on exec style""... $ac_c" 1>&6
-echo "configure:4742: checking for close on exec style" >&5
+echo "configure:4738: checking for close on exec style" >&5
 CLX_STYLE=pre_test
 if test $ac_cv_header_fcntl_h = yes; then
 	cat > conftest.$ac_ext <<EOF
-#line 4746 "configure"
+#line 4742 "configure"
 #include "confdefs.h"
 #include <fcntl.h>
 #ifdef FD_CLOEXEC
@@ -4775,7 +4771,7 @@ then
 CLX_STYLE=pre_test
 if test $ac_cv_header_sys_filio_h = yes; then
 	cat > conftest.$ac_ext <<EOF
-#line 4779 "configure"
+#line 4775 "configure"
 #include "confdefs.h"
 #include <sys/filio.h>
 #ifdef FIOCLEX
@@ -4807,11 +4803,11 @@ fi
 
 
 echo $ac_n "checking for nbio style""... $ac_c" 1>&6
-echo "configure:4811: checking for nbio style" >&5
+echo "configure:4807: checking for nbio style" >&5
 NBIO_STYLE=pre_test
 if test $ac_cv_header_fcntl_h = yes; then
 	cat > conftest.$ac_ext <<EOF
-#line 4815 "configure"
+#line 4811 "configure"
 #include "confdefs.h"
 #include <fcntl.h>
 #ifdef O_NONBLOCK
@@ -4838,7 +4834,7 @@ fi
 if test $NBIO_STYLE = unknown; then
 if test $ac_cv_header_sys_filio_h = yes; then
 	cat > conftest.$ac_ext <<EOF
-#line 4842 "configure"
+#line 4838 "configure"
 #include "confdefs.h"
 #include <sys/filio.h>
 #ifdef FIONBIO
@@ -4871,9 +4867,9 @@ fi
 
 
 echo $ac_n "checking log level for news""... $ac_c" 1>&6
-echo "configure:4875: checking log level for news" >&5
+echo "configure:4871: checking log level for news" >&5
 cat > conftest.$ac_ext <<EOF
-#line 4877 "configure"
+#line 4873 "configure"
 #include "confdefs.h"
 #include <syslog.h>
 #ifdef LOG_NEWS
@@ -4884,22 +4880,24 @@ EOF
 if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
   egrep "yes" >/dev/null 2>&1; then
   rm -rf conftest*
-  LOGNEWS=LOG_NEWS echo "$ac_t""LOG_NEWS" 1>&6
+  cat >> confdefs.h <<\EOF
+#define FACILITY_NEWS 1
+EOF
+ echo "$ac_t""LOG_NEWS" 1>&6
 else
   rm -rf conftest*
-  LOGNEWS=LOG_LOCAL1 echo "$ac_t""LOG_LOCAL1" 1>&6
+  echo "$ac_t""LOG_LOCAL1" 1>&6
 fi
 rm -f conftest*
 
 
-
 echo $ac_n "checking generic pointer""... $ac_c" 1>&6
-echo "configure:4898: checking generic pointer" >&5
+echo "configure:4896: checking generic pointer" >&5
 if eval "test \"`echo '$''{'ac_cv_type_generic'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 4903 "configure"
+#line 4901 "configure"
 #include "confdefs.h"
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
@@ -4910,7 +4908,7 @@ int main() {
 void *a; a = malloc(sizeof(a))
 ; return 0; }
 EOF
-if { (eval echo configure:4914: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:4912: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_type_generic=void
 else
@@ -5386,8 +5384,6 @@ s%@ac_cv_type_qsort@%$ac_cv_type_qsort%g
 s%@ac_cv_type_free@%$ac_cv_type_free%g
 s%@ac_cv_type_exit@%$ac_cv_type_exit%g
 s%@ac_cv_type__exit@%$ac_cv_type__exit%g
-s%@ac_cv_subst_have_unix_domain@%$ac_cv_subst_have_unix_domain%g
-s%@LOGNEWS@%$LOGNEWS%g
 s%@ac_cv_type_generic@%$ac_cv_type_generic%g
 s%@ac_cv_subst_uid_t@%$ac_cv_subst_uid_t%g
 s%@ac_cv_subst_gid_t@%$ac_cv_subst_gid_t%g

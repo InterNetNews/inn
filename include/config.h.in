@@ -119,10 +119,17 @@ typedef char * const    CSTRING;
 
 /* Syslog Related Settings */
 /* Facility innd should log under. */
-#define LOG_INN_SERVER		@LOGNEWS@
+#undef FACILITY_NEWS
+#ifdef FACILITY_NEWS
+# define LOG_FACILITY	LOG_NEWS
+#else
+# define LOG_FACILITY	LOG_LOCAL1
+#endif
+
+#define LOG_INN_SERVER		LOG_FACILITY
 
 /* Facility all other programs should log under. */
-#define LOG_INN_PROG		@LOGNEWS@
+#define LOG_INN_PROG		LOG_FACILITY
 
 /* Flags to use in opening the logs; some programs add LOG_PID. */
 #define L_OPENLOG_FLAGS		(LOG_CONS | LOG_NDELAY)
