@@ -703,13 +703,14 @@ the Content-Transfer-Encoding header.
 The default value is ``7bit.''
 .TP
 .I spoolfirst
-If this is true then nnrpd will spool new articles with out attempting
+If this is true then nnrpd will spool new articles without attempting
 to send them to innd first.  If this is false then nnrpd will spool
 new articles only after receiving an error trying to send them to
 innd.  Setting this to true can be useful if you want nnrpd to
 respond to the client as fast as possible, however, nnrpd will not
 report articles that are not accepted by innd to the client if they
-are spool.
+are spool.  And the posted article is never handed to innd by nnrpd, if this
+is true.  ``rnews -U'' should be used to pass that article to innd.
 This is boolean value and the default is ``false''.
 .TP
 .I complaints
@@ -870,4 +871,4 @@ This is revision \\$3, dated \\$4.
 .R$ $Id$
 .SH "SEE ALSO"
 history(5), libinn(3), moderators(5), makehistory(8), news.daily(8),
-newsrequeue(8), nnrpd(8), scanlogs(8).
+newsrequeue(8), nnrpd(8), rnews(8), scanlogs(8).
