@@ -7,7 +7,7 @@
 #include "libinn.h"
 #include "methods.h"
 
-BOOL trash_init(SMATTRIBUTE *attr) {
+bool trash_init(SMATTRIBUTE *attr) {
     if (attr == NULL) {
 	SMseterror(SMERR_INTERNAL, "attr is NULL");
 	return FALSE;
@@ -43,12 +43,12 @@ ARTHANDLE *trash_retrieve(const TOKEN token, const RETRTYPE amount) {
 void trash_freearticle(ARTHANDLE *article) {
 }
 
-BOOL trash_cancel(TOKEN token) {
+bool trash_cancel(TOKEN token) {
     SMseterror(SMERR_NOENT, NULL);
     return FALSE;
 }
 
-BOOL trash_ctl(PROBETYPE type, TOKEN *token, void *value) {
+bool trash_ctl(PROBETYPE type, TOKEN *token, void *value) {
     switch (type) {
     case SMARTNGNUM:
     default:
@@ -56,7 +56,7 @@ BOOL trash_ctl(PROBETYPE type, TOKEN *token, void *value) {
     }
 }
 
-BOOL trash_flushcacheddata(FLUSHTYPE type) {
+bool trash_flushcacheddata(FLUSHTYPE type) {
     return TRUE;
 }
 

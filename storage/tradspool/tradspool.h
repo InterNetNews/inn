@@ -9,14 +9,14 @@
 #include "config.h"
 #include "interface.h"
 
-BOOL tradspool_init(SMATTRIBUTE *attr);
+bool tradspool_init(SMATTRIBUTE *attr);
 TOKEN tradspool_store(const ARTHANDLE article, const STORAGECLASS class);
 ARTHANDLE *tradspool_retrieve(const TOKEN token, const RETRTYPE amount);
 ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount);
 void tradspool_freearticle(ARTHANDLE *article);
-BOOL tradspool_cancel(TOKEN token);
-BOOL tradspool_ctl(PROBETYPE type, TOKEN *token, void *value);
-BOOL tradspool_flushcacheddata(FLUSHTYPE type);
+bool tradspool_cancel(TOKEN token);
+bool tradspool_ctl(PROBETYPE type, TOKEN *token, void *value);
+bool tradspool_flushcacheddata(FLUSHTYPE type);
 void tradspool_shutdown(void);
 
 #endif
