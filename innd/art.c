@@ -1246,6 +1246,7 @@ ARTcontrol(ARTDATA *data, char *Control, CHANNEL *cp)
 
   /* Nip off the first word into lowercase. */
   strncpy(ControlWord, HDR(HDR__CONTROL), sizeof ControlWord);
+  ControlWord[sizeof ControlWord - 1] = '\0';
   for (p = ControlWord; *p && !ISWHITE(*p); p++)
     if (CTYPE(isupper, *p))
       *p = tolower(*p);
