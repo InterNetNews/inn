@@ -5,9 +5,9 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include "configdata.h"
-#include "clibrary.h"
 #define DEFINE_DATA
 #include "innd.h"
+#include "clibrary.h"
 #include <sys/ioctl.h>
 #include <sys/uio.h>
 #if	NOFILE_LIMIT > 0

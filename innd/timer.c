@@ -9,9 +9,9 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
-#include "clibrary.h"
 #include "configdata.h"
 #include "innd.h"
+#include "clibrary.h"
 #include "logging.h"
 
 unsigned	start[TMR_MAX];

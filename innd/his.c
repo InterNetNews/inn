@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include "configdata.h"
-#include "clibrary.h"
 #include "innd.h"
+#include "clibrary.h"
 #include "dbz.h"
 
 typedef struct __HISCACHE {

@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include "configdata.h"
-#include "clibrary.h"
 #include "innd.h"
+#include "clibrary.h"
 #include "dbz.h"
 
 #define WIPTABLESIZE        1024

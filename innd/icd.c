@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include "configdata.h"
-#include "clibrary.h"
 #include "innd.h"
+#include "clibrary.h"
 #if	defined(ACT_MMAP)
 #include <sys/mman.h>
 #endif	/* defined(ACT_MMAP) */

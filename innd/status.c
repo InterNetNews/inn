@@ -7,9 +7,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "clibrary.h"
 #include "configdata.h"
 #include "innd.h"
+#include "clibrary.h"
 #include "logging.h"
 
 #define MAX_PEER     100
