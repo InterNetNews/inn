@@ -881,7 +881,7 @@ BOOL cnfs_init(BOOL *selfexpire) {
 	if ((pagesize > CNFS_HDR_PAGESIZE) || (CNFS_HDR_PAGESIZE % pagesize)) {
 	    syslog(L_ERROR, "%s: CNFS_HDR_PAGESIZE (%d) is not a multiple of pagesize (%d)", LocalLogName, CNFS_HDR_PAGESIZE, pagesize);
 	    SMseterror(SMERR_INTERNAL, "CNFS_HDR_PAGESIZE not multiple of pagesize");
-	    return NULL;
+	    return FALSE;
 	}
     }
     if (STORAGE_TOKEN_LENGTH < 16) {
