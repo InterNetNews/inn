@@ -213,10 +213,6 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
     return -1;
 }
 
-
-
-#if	defined(REM_INND)
-
 int NNTPremoteopen(int port, FILE **FromServerp, FILE **ToServerp, char *errbuff)
 {
     char		*p;
@@ -228,49 +224,3 @@ int NNTPremoteopen(int port, FILE **FromServerp, FILE **ToServerp, char *errbuff
     }
     return NNTPconnect(p, port, FromServerp, ToServerp, errbuff);
 }
-
-#endif	/* defined(REM_INND) */
-
-
-
-#if	defined(REM_NNTP)
-
-
-/*
-**  Open a connection to an NNTP server using the "clientlib" routines in
-**  the NNTP distribution.  We also create stdio FILE's for talking over
-**  the connection (which is easy since clientlib has them as globals.)
-**  Return -1 on error.
-*/
-int NNTPremoteopen(int port, FromServerp, ToServerp, buff)
-    FILE		**FromServerp;
-    FILE		**ToServerp;
-    char		*buff;
-{
-    extern FILE		*ser_rd_fp;
-    extern FILE		*ser_wr_fp;
-    extern char		*getserverbyfile();
-    char		*p;
-    int			i;
-    static char		*pathserver = NULL;
-
-    if (buff)
-	(void)strcpy(buff, "Text unavailable");
-    if (pathserver == NULL)
-	pathserver = concatpath(innconf->pathetc, _PATH_SERVER);
-    if ((p = getserverbyfile(pathserver)) == NULL)
-	return -1;
-    if ((i = server_init(p, port)) < 0)
- 	return -1;
-    if (i != NNTP_POSTOK_VAL && i != NNTP_NOPOSTOK_VAL) {
-	errno = EPERM;
-	return -1;
-    }
-    if (ser_rd_fp == NULL || ser_wr_fp == NULL)
-	return -1;
-
-    *FromServerp = ser_rd_fp;
-    *ToServerp = ser_wr_fp;
-    return 0;
-}
-#endif	/* defined(REM_NNTP) */
