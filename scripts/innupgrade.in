@@ -59,6 +59,7 @@ sub fix_inn_conf {
             next;
         }
         $hismethod = 1 if $key eq 'hismethod';
+        $value =~ s/\s+$//;
         if ($value =~ /[\s;\"<>\[\]\\{}]/ && $value !~ /^\".*\"\s*$/) {
             $value =~ s/([\"\\])/\\$1/g;
             $value = '"' . $value . '"';
