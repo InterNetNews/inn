@@ -403,6 +403,9 @@ if ${DOEXPIRE} ; then
     }
     # expire overview lines for files we just removed
     if ${DOEXPIREOVER}; then
+	if [ X${SAPI} = X"true" ]; then
+	    sort -u -o ${INDEXFILE} ${INDEXFILE}
+	fi
 	if ${DOEXPLOG}; then
 	    echo "	${EXPIREOVER} start `date`" >>${EXPLOG}
 	fi
@@ -410,6 +413,10 @@ if ${DOEXPIRE} ; then
 	    grep -v 'No such file or directory'
 	if ${DOEXPLOG}; then
 	    echo "	${EXPIREOVER} end `date`" >>${EXPLOG}
+	fi
+	if [ X${SAPI} = X"true" ]; then
+	    rm -f ${MOST_LOGS}/expire.lastindex
+	    mv ${INDEXFILE} ${MOST_LOGS}/expire.lastindex
 	fi
     fi
 fi
