@@ -240,14 +240,6 @@ expire_ctl
 	##  Could check for conflicting lines, but that's hard.
 	if ($groupbaseexpiry =~ /^true$/ || $groupbaseexpiry =~ /^yes$/ ||
 	    $groupbaseexpiry =~ /^on$/) {
-	    unless ( ($class, $keep, $default, $purge) =
-	     /^(\d+):([\d\.]+|never):([\d\.]+|never):([\d\.]+|never)$/ ) {
-		print "$file:$line: malformed line.\n";
-		next input;
-	    }
-	    print "$file:$line: invalid class\n"
-		if $class < 0;
-	} else {
 	    unless ( ($pat, $flag, $keep, $default, $purge) =
 	     /^([^:])+:([^:]+):([\d\.]+|never):([\d\.]+|never):([\d\.]+|never)$/ ) {
 		print "$file:$line: malformed line.\n";
@@ -257,6 +249,14 @@ expire_ctl
 		if $pat eq "*" && $flag eq "a" && $def++;
 	    print "$file:$line: unknown modflag `$flag'\n"
 		if $flag !~ /[mMuUaAxX]/;
+	} else {
+	    unless ( ($class, $keep, $default, $purge) =
+	     /^(\d+):([\d\.]+|never):([\d\.]+|never):([\d\.]+|never)$/ ) {
+		print "$file:$line: malformed line.\n";
+		next input;
+	    }
+	    print "$file:$line: invalid class\n"
+		if $class < 0;
 	}
 	print "$file:$line: purge `$purge' younger than default `$default'.\n"
 	    if $purge ne "never" && $default > $purge;
