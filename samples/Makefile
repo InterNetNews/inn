@@ -9,9 +9,8 @@
 
 include ../Makefile.global
 
-ALL           = checkgroups default docheckgroups ihave newgroup \
-		nnrpd_auth.pl parsecontrol rmgroup sendme sendsys \
-		senduuname version
+ALL           = checkgroups default ihave newgroup nnrpd_auth.pl \
+		parsecontrol rmgroup sendme sendsys senduuname version
 
 EXTRA         = inn.conf innreport.conf newsfeeds sasl.conf
 
@@ -32,7 +31,6 @@ FIX             = $(FIXSCRIPT)
 
 checkgroups:	checkgroups.in   $(FIX)	; $(FIX) checkgroups.in
 default:	default.in       $(FIX)	; $(FIX) default.in
-docheckgroups:	docheckgroups.in $(FIX)	; $(FIX) docheckgroups.in
 ihave:		ihave.in         $(FIX)	; $(FIX) ihave.in
 newgroup:	newgroup.in      $(FIX)	; $(FIX) newgroup.in
 nnrpd_auth.pl:	nnrpd_auth.pl.in $(FIX)	; $(FIX) nnrpd_auth.pl.in
