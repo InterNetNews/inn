@@ -1,4 +1,4 @@
-#!@_PATH_PERL@ --
+#! @PERL@ --
 ##  $Revision$
 ##  Sanity-check the configuration of an INN system
 ##  by Brendan Kehoe <brendan@cygnus.com> and Rich $alz.
