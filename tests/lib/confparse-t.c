@@ -7,20 +7,155 @@
 
 #include "inn/confparse.h"
 #include "libinn.h"
+#include "libtest.h"
 
+/* Used to accumulate error messages from the parser. */
+static char *errors = NULL;
+
+/* Error handler that appends errors to the errors global. */
 static void
-ok(int n, int success)
+string_error(int len, const char *format, va_list args, int error UNUSED)
 {
-    printf("%sok %d\n", success ? "" : "not ", n);
+    char *message;
+
+    message = xmalloc(len + 1);
+    vsnprintf(message, len + 1, format, args);
+    if (errors == NULL) {
+        errors = concat(message, "\n", (char *) 0);
+    } else {
+        char *new_errors;
+
+        new_errors = concat(errors, message, "\n", (char *) 0);
+        free(errors);
+        errors = new_errors;
+    }
+    free(message);
 }
 
-static void
-ok_string(int n, const char *saw, const char *expected)
+/* Given a FILE *, read from that file, putting the results into a newly
+   allocated buffer, until encountering a line consisting solely of "===".
+   Returns the buffer, NULL on end of file, dies on error. */
+static char *
+read_section(FILE *file)
 {
-    if (strcmp(saw, expected) == 0)
-        printf("ok %d\n", n);
-    else
-        printf("not ok %d\n  saw: %s\n  not: %s\n", n, saw, expected);
+    char buf[1024] = "";
+    char *data = NULL;
+    char *status;
+
+    status = fgets(buf, sizeof(buf), file);
+    if (status == NULL)
+        return false;
+    while (1) {
+        if (status == NULL)
+            die("Unexpected end of file while reading tests");
+        if (strcmp(buf, "===\n") == 0)
+            break;
+        if (data == NULL) {
+            data = xstrdup(buf);
+        } else {
+            char *new_data;
+
+            new_data = concat(data, buf, (char *) 0);
+            free(data);
+            data = new_data;
+        }
+        status = fgets(buf, sizeof(buf), file);
+    }
+    return data;
+}
+
+/* Read from the given file a configuration file and write it out to
+   config/tmp.  Returns true on success, false on end of file, and dies on
+   any error. */
+static bool
+write_test_config(FILE *file)
+{
+    FILE *tmp;
+    char *config;
+
+    config = read_section(file);
+    if (config == NULL)
+        return false;
+    tmp = fopen("config/tmp", "w");
+    if (tmp == NULL)
+        sysdie("Cannot create config/tmp");
+    if (fputs(config, tmp) == EOF)
+        sysdie("Write error while writing to config/tmp");
+    fclose(tmp);
+    free(config);
+    return true;
+}
+
+/* Read in a configuration file from the provided FILE *, write it to disk,
+   parse the temporary config file, and return the resulting config_group in
+   the pointer passed as the second parameter.  Returns true on success,
+   false on end of file.  The group is parsed with a warning handler that
+   saves any warning messages into the errors global. */
+static bool
+parse_test_config(FILE *file, config_group *group)
+{
+    if (!write_test_config(file))
+        return false;
+
+    if (errors != NULL) {
+        free(errors);
+        errors = NULL;
+    }
+    warn_set_handlers(1, string_error);
+
+    *group = config_parse_file("config/tmp");
+    unlink("config/tmp");
+    return true;
+}
+
+/* Test the error test cases in config/errors, ensuring that they all fail
+   to parse and match the expected error messages.  Takes the current test
+   count and returns the new test count. */
+static int
+test_errors(int n)
+{
+    FILE *errfile;
+    char *expected;
+    config_group group;
+
+    errfile = fopen("config/errors", "r");
+    if (errfile == NULL)
+        sysdie("Cannot open config/errors");
+    while (parse_test_config(errfile, &group)) {
+        expected = read_section(errfile);
+        if (expected == NULL)
+            die("Unexpected end of file while reading error tests");
+        ok(n++, group == NULL);
+        ok_string(n++, expected, errors);
+        free(expected);
+    }
+    fclose(errfile);
+    return n;
+}
+
+/* Test the warning test cases in config/warningss, ensuring that they all
+   parse successfully and match the expected error messages.  Takes the
+   current test count and returns the new test count. */
+static int
+test_warnings(int n)
+{
+    FILE *warnfile;
+    char *expected;
+    config_group group;
+
+    warnfile = fopen("config/warnings", "r");
+    if (warnfile == NULL)
+        sysdie("Cannot open config/warnings");
+    while (parse_test_config(warnfile, &group)) {
+        expected = read_section(warnfile);
+        if (expected == NULL)
+            die("Unexpected end of file while reading error tests");
+        ok(n++, group != NULL);
+        ok_string(n++, expected, errors);
+        free(expected);
+    }
+    fclose(warnfile);
+    return n;
 }
 
 int
@@ -30,8 +165,9 @@ main(void)
     bool b_value = false;
     long l_value = 1;
     const char *s_value;
+    int n;
 
-    puts("39");
+    puts("61");
 
     if (access("config/valid", F_OK) < 0)
         if (access("lib/config/valid", F_OK) == 0)
@@ -91,5 +227,10 @@ main(void)
     ok_string(39, s_value, "lost \nyet?");
 
     config_free(group);
+
+    /* Errors. */
+    n = test_errors(40);
+    n = test_warnings(n);
+
     return 0;
 }

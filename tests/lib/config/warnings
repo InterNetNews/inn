@@ -1,0 +1,6 @@
+# Make sure line numbering copes with a leading comment.
+parameter: value
+parameter: value
+===
+config/tmp:3: duplicate parameter parameter
+===
