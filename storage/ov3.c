@@ -448,10 +448,6 @@ STATIC GROUPHANDLE *OV3opengroupfiles(char *group) {
     *p = '\0';
     freeargify(&groupparts);
 
-    if (!MakeDirectory(IDXpath, TRUE)) {
-	syslog(L_ERROR, "Could not create directory %s", IDXpath);
-	return NULL;
-    }
     sprintf(p, "%s.DAT", group);
     strcpy(DATpath, IDXpath);
     sprintf(p, "%s.IDX", group);
@@ -459,11 +455,20 @@ STATIC GROUPHANDLE *OV3opengroupfiles(char *group) {
     gh = NEW(GROUPHANDLE, 1);
     memset(gh, '\0', sizeof(GROUPHANDLE));
     if ((gh->datafd = open(DATpath, O_RDWR| O_APPEND | O_CREAT, 0660)) < 0) {
-	DISPOSE(gh);
-	if (errno == ENOENT)
+	p = strrchr(IDXpath, '/');
+	*p = '\0';
+	if (!MakeDirectory(IDXpath, TRUE)) {
+	    syslog(L_ERROR, "Could not create directory %s", IDXpath);
 	    return NULL;
-	syslog(L_ERROR, "OV3 could not open %s: %m", DATpath);
-	return NULL;
+	}
+	*p = '/';
+	if ((gh->datafd = open(DATpath, O_RDWR| O_APPEND | O_CREAT, 0660)) < 0) {
+	    DISPOSE(gh);
+	    if (errno == ENOENT)
+		return NULL;
+	    syslog(L_ERROR, "OV3 could not open %s: %m", DATpath);
+	    return NULL;
+	}
     }
     if ((gh->indexfd = open(IDXpath, O_RDWR | O_CREAT, 0660)) < 0) {
 	close(gh->datafd);
