@@ -41,16 +41,16 @@ character in the text, with the exception of the following metacharacters:
 
 =over 8
 
-=item B<?>
+=item ?
 
 Matches any single character (including a single UTF-8 multibyte
 character, so C<?> can match more than one byte).
 
-=item B<*>
+=item *Z<>
 
 Matches any sequence of zero or more characters.
 
-=item B<\>
+=item \
 
 Turns off any special meaning of the following character; the following
 character will match itself in the text.  C<\> will escape any character,
@@ -58,7 +58,7 @@ including another backslash or a comma that otherwise would separate a
 pattern from the next pattern in an expression.  Note that C<\> is not
 special inside a character range (no metacharacters are).
 
-=item B<[...]>
+=item [...]
 
 A character set, which matches any single character that falls within that
 set.  The presence of a character between the brackets adds that character
@@ -77,7 +77,7 @@ set, it must be either the first or the last character of the set.
 Backslashes have no special meaning inside a character set, nor do any
 other of the wildmat metacharacters.
 
-=item B<[^...]>
+=item [^...]
 
 A negated character set.  Follows the same rules as a character set above,
 but matches any character B<not> contained in the set.  So, for example,
