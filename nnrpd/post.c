@@ -29,47 +29,29 @@ static const char * const BadDistribs[] = {
 HEADER	Table[] = {
     /* 	Name			Canset	Type	Size  Value */
     {	"Path",			TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-#define HDR__PATH	      0
     {	"From",			TRUE,	HTreq,  0,    NULL,    NULL, 0 },
-#define HDR__FROM	      1
     {	"Newsgroups",	 	TRUE,	HTreq,  0,    NULL,    NULL, 0 },
-#define HDR__NEWSGROUPS	      2
     {	"Subject",		TRUE,	HTreq,  0,    NULL,    NULL, 0 },
-#define HDR__SUBJECT	      3
     {	"Control",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-#define HDR__CONTROL	      4
     {	"Supersedes",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
     {	"Followup-To",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-#define HDR__FOLLOWUPTO	      6
     {	"Date",			TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-#define HDR__DATE	      7
     {	"Organization",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-#define HDR__ORGANIZATION     8
     {	"Lines",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-#define HDR__LINES	      9
     {	"Sender",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-#define HDR__SENDER	     10
     {	"Approved",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-#define HDR__APPROVED	     11
     {	"Distribution",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-#define HDR__DISTRIBUTION    12
     {	"Expires",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-#define HDR__EXPIRES	     13
     {	"Message-ID",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
-#define HDR__MESSAGEID	     14
     {	"References",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
     {	"Reply-To",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
     {	"NNTP-Posting-Host",	FALSE,	HTstd,  0,    NULL,    NULL, 0 },
-#define HDR__NNTPPOSTINGHOST 17
     {	"Mime-Version",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
     {	"Content-Type",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
     {	"Content-Transfer-Encoding", TRUE, HTstd,  0,    NULL,    NULL, 0 },
     {   "X-Trace",              FALSE, HTstd,  0,    NULL,    NULL, 0 },
-#define HDR__XTRACE          21
     {   "X-Complaints-To",	FALSE, HTstd,  0,    NULL,    NULL, 0 },
-#define HDR__XCOMPLAINTSTO   22
     {   "NNTP-Posting-Date",	FALSE, HTstd,  0,    NULL,    NULL, 0 },
-#define HDR__NNTPPOSTINGDATE 23
     {	"Xref",			FALSE,	HTstd,  0,    NULL,    NULL, 0 },
     {	"Summary",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
     {	"Keywords",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
@@ -79,11 +61,8 @@ HEADER	Table[] = {
     {	"Posting-Version",	FALSE,	HTobs,  0,    NULL,    NULL, 0 },
     {	"Relay-Version",	FALSE,	HTobs,  0,    NULL,    NULL, 0 },
     {   "Cc",			TRUE, HTstd,  0,    NULL,    NULL, 0 },
-#define HDR__CC		     32
     {   "Bcc",			TRUE, HTstd,  0,    NULL,    NULL, 0 },
-#define HDR__BCC		    33
     {   "To",			TRUE, HTstd,  0,    NULL,    NULL, 0 },
-#define HDR__TO		     34
 };
 
 HEADER *EndOfTable = ENDOF(Table);
@@ -1151,7 +1130,9 @@ ARTpost(char *article,
         SendQuit(FromServer, ToServer);
 	if (i != NNTP_HAVEIT_VAL)
 	    return Spoolit(article, Error);
-	*permanent = false;
+	if (i == NNTP_REJECTIT_VAL || i == NNTP_RESENDIT_VAL) {
+	    *permanent = false;
+	}
         return Error;
     }
     if (Tracing)
@@ -1215,7 +1196,9 @@ ARTpost(char *article,
 	syslog(L_TRACE, "%s server rejects %s from %s", ClientHost, HDR(HDR__MESSAGEID), HDR(HDR__PATH));
 	if (i != NNTP_REJECTIT_VAL && i != NNTP_HAVEIT_VAL)
 	    return Spoolit(article, Error);
-	*permanent = false;
+	if (i == NNTP_REJECTIT_VAL || i == NNTP_RESENDIT_VAL) {
+	    *permanent = false;
+	}
 	return Error;
     }
 

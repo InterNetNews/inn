@@ -141,7 +141,8 @@ char *HandleHeaders(char *article)
        /* See if it's a table header */
        for (hp = Table; hp < EndOfTable; hp++) {
          if (caseEQn(p, hp->Name, hp->Size)) {
-           hp->Value = COPY(s);
+	   char *copy = COPY(s);
+	   HDR_SET(hp - Table, copy);
            HeaderLen += strlen(s) + hp->Size + 3;
            break;
          }
