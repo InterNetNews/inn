@@ -533,10 +533,9 @@ rmgroup:newgroups-request@fido7.ru:fido7.*:verify-fido7.announce.newgroups
 # rmgroup:news@wing.matsim.udmurtia.su:fido7.*:doit=rmgroup
 
 ## FJ (Japan and Japanese language)
-newgroup:fj-committee@etl.go.jp:fj.*:doit=newgroup
-newgroup:fj-committee@cow.nara.sharp.co.jp:fj.*:doit=newgroup
-rmgroup:fj-committee@etl.go.jp:fj.*:doit=rmgroup
-rmgroup:fj-committee@cow.nara.sharp.co.jp:fj.*:doit=rmgroup
+checkgroups:fj-committee@cow.nara.sharp.co.jp:fj.*:verify-fj.news.announce
+newgroup:fj-committee@cow.nara.sharp.co.jp:fj.*:verify-fj.news.announce
+rmgroup:fj-committee@cow.nara.sharp.co.jp:fj.*:verify-fj.news.announce
 
 ## FL (Florida, USA )
 newgroup:hgoldste@news1.mpcs.com:fl.*:doit=newgroup
@@ -555,12 +554,12 @@ rmgroup:news@news.rediris.es:flora.*:verify-flora-news
 
 ## FR (French Language)
 # *PGP*   See comment at top of file.
-checkgroups:control@usenet.fr.net:fr.*:verify-fr.announce.newgroups
-newgroup:control@usenet.fr.net:fr.*:verify-fr.announce.newgroups
-rmgroup:control@usenet.fr.net:fr.*:verify-fr.announce.newgroups
+checkgroups:control@usenet-fr.news.eu.org:fr.*:verify-control@usenet-fr.news.eu.org
+newgroup:control@usenet-fr.news.eu.org:fr.*:verify-control@usenet-fr.news.eu.org
+rmgroup:control@usenet-fr.news.eu.org:fr.*:verify-control@usenet-fr.news.eu.org
 
-# newgroup:control@usenet.fr.net:fr.*:doit=newgroup
-# rmgroup:control@usenet.fr.net:fr.*:doit=rmgroup
+# newgroup:control@usenet-fr.news.eu.org:fr.*:doit=newgroup
+# rmgroup:control@usenet-fr.news.eu.org:fr.*:doit=rmgroup
 
 
 ## FREE
