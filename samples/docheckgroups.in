@@ -1,7 +1,7 @@
 #!@_PATH_SH@
 ##  $Revision$
 ##  Script to execute checkgroups text; results to stdout.
-. @ETCDIR@/innshellvars
+. @LIBDIR@/innshellvars
 
 T=${TMPDIR}
 

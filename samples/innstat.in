@@ -3,7 +3,7 @@
 ##  Display status of INN.
 ##  Written by Landon Curt Noll <chongo@toad.com>.
 
-. @ETCDIR@/innshellvars
+. @LIBDIR@/innshellvars
 
 SYSLOG_CRIT=news.crit
 SYSLOG_ERR=news.err

@@ -63,7 +63,7 @@ die "Usage: $0 < message\n" if @ARGV != 0;
 
 $0 =~ s%^.*/%%;                 # trim /path/to/prog to prog
 
-do '@ETCDIR@/innshellvars.pl';
+do '@LIBDIR@/innshellvars.pl';
 $pgp = $inn'pgp if $inn'pgp && $inn'pgp ne "no-pgp-found-during-configure";
 $tmp = ($inn'pathtmp ? $inn'pathtmp : $tmpdir) . "/pgp$$";
 

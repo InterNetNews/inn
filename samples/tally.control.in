@@ -6,7 +6,7 @@
 ##  often each group has been newgroup'd or rmgroup'd.  This is run by
 ##  scanlogs, which prepares this from the control-message handlers if
 ##  control.ctl specifies logging.
-. @ETCDIR@/innshellvars
+. @LIBDIR@/innshellvars
 
 CONTROL=${MOST_LOGS}/control.log
 CONTROL_NEW=${CONTROL}.new

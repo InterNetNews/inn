@@ -2,7 +2,7 @@
 ##  $Revision$
 ##  SH script to send UUCP batches out.  By Mike Cooper and Rich $alz.
 ##  Based on B News sendbatch 1.22 10/29/89.
-. @ETCDIR@/innshellvars
+. @LIBDIR@/innshellvars
 
 ##  Place to run a df, and amount of space needed.
 UUSPOOL=/var/spool/uucp

@@ -20,7 +20,8 @@ set inn_most_logs = ${inn_pathlog}
 set inn_errlog = ${inn_most_logs}/errlog
 set inn_log = ${inn_most_logs}/news
 
-set inn_newslib = ${inn_pathetc}
+set inn_newsetc = ${inn_pathetc}
+set inn_newslib = ${inn_pathlib}
 set inn_newsbin = ${inn_pathbin}
 set inn_locks = ${inn_pathrun}
 set inn_innddir = ${inn_pathrun}
@@ -35,18 +36,18 @@ set inn_incoming = ${inn_pathincoming}
 
 set inn_active = ${inn_pathdb}/active
 set inn_activetimes = ${inn_pathdb}/active.times
-set inn_ctlfile = ${inn_newslib}/control.ctl
-set inn_ctlwatch = ${inn_newslib}/innwatch.ctl
+set inn_ctlfile = ${inn_newsetc}/control.ctl
+set inn_ctlwatch = ${inn_newsetc}/innwatch.ctl
 set inn_history = ${inn_pathdb}/history
 set inn_newactive = ${inn_pathdb}/active.tmp
 set inn_localgroups = ${inn_pathdb}/localgroups
-set inn_newsfeeds = ${inn_newslib}/newsfeeds
+set inn_newsfeeds = ${inn_newsetc}/newsfeeds
 set inn_newsgroups = ${inn_pathdb}/newsgroups
 set inn_oldactive = ${inn_pathdb}/active.old
-set inn_path_motd = ${inn_newslib}/motd.news
-set inn_path_storagectl = ${inn_newslib}/storage.ctl
-set inn_path_overviewctl = ${inn_newslib}/overview.ctl
-set inn_expirectl = ${inn_newslib}/expire.ctl
+set inn_path_motd = ${inn_newsetc}/motd.news
+set inn_path_storagectl = ${inn_newsetc}/storage.ctl
+set inn_path_overviewctl = ${inn_newsetc}/overview.ctl
+set inn_expirectl = ${inn_newsetc}/expire.ctl
 
 set inn_path_tcl_startup = ${inn_pathfilter}/startup.tcl
 set inn_path_tcl_filter = ${inn_pathfilter}/filter.tcl

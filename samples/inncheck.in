@@ -3,7 +3,7 @@
 ##  Sanity-check the configuration of an INN system
 ##  by Brendan Kehoe <brendan@cygnus.com> and Rich $alz.
 
-require "@ETCDIR@/innshellvars.pl" ;
+require "@LIBDIR@/innshellvars.pl" ;
 
 $ST_MODE = 2;
 $ST_UID  = 4;
@@ -35,7 +35,8 @@ $newsgroup = '@NEWSGRP@';
     'newsboot',		"$inn::pathbin/rc.news",
     'newsfeeds',	"$inn::pathetc/newsfeeds",
     'overview.fmt',	"$inn::pathetc/overview.fmt",
-    'newslib',		"$inn::pathetc",
+    'newsetc',		"$inn::pathetc",
+    'newslib',		"$inn::pathlib",
     'nnrp.access',	"$inn::pathetc/nnrp.access",
     'nnrpd',		"$inn::pathbin/nnrpd",
     'nntpsend.ctl',	"$inn::pathetc/nntpsend.ctl",
@@ -349,10 +350,10 @@ incoming_conf
     'pathuniover',		0,
     'storeonxref',		0,
     'refusecybercancels',	0,
-    'nnrpdcheckart,		0,
-    'activedenable,		0,
-    'activedupdate,		0,
-    'activedport,		0,
+    'nnrpdcheckart',		0,
+    'activedenable',		0,
+    'activedupdate',		0,
+    'activedport',		0,
     'backoffauth',	0,
     'backoffdb',	0,
     'backoffk',	0,
@@ -609,7 +610,7 @@ newsfeeds
 	}
 	if ( $type eq "f" && $param =~ m@/@ ) {
 	    $dir = $param;
-	    $dir =~ s@(.*)/.*@\1@;
+	    $dir =~ s@(.*)/.*@$1@;
 	    $dir = $paths{'batchdir'} . "/" . $dir
 		unless $dir =~ m@^/@;
 	    print "$file:$start: directory `$dir' does not exist for $site\n"
@@ -790,9 +791,9 @@ checkperm
     }
     else {
 	@sb = stat _;
-	$owner = (getpwuid(@sb[$ST_UID]))[0];
-	$group = (getgrgid(@sb[$ST_GID]))[0];
-	$mode  = @sb[$ST_MODE] & ~0770000;
+	$owner = (getpwuid($sb[$ST_UID]))[0];
+	$group = (getgrgid($sb[$ST_GID]))[0];
+	$mode  = $sb[$ST_MODE] & ~0770000;
 
 	##  Ignore setgid bit on directories.
 	$mode &= ~0777000
@@ -847,7 +848,7 @@ intersect
 
 @directories = (
     'archive', 'badnews', 'batchdir', 'ctlprogs', 'most_logs', 'newsbin',
-    'newslib', 'oldlogs', 'rnewsprogs', 'spooltemp', 'spool', 'spoolnews'
+    'newsetc', 'newslib', 'oldlogs', 'rnewsprogs', 'spooltemp', 'spool', 'spoolnews'
 );
 @control_scripts = (
     'checkgroups', 'default', 'docheckgroups', 'ihave', 'newgroup', 'rmgroup',

@@ -2,7 +2,7 @@
 ##  $Revision$
 ##  Rmgroup control-message handler
 
-. @ETCDIR@/innshellvars
+. @LIBDIR@/innshellvars
 
 PROG=rmgroup
 ##  Some shells don't pass in $* unless we explicitly pass it in here.

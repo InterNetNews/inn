@@ -2,7 +2,7 @@
 ##  $Revision$
 ##  Default control-message handler
 
-. @ETCDIR@/innshellvars
+. @LIBDIR@/innshellvars
 
 ##  Set prog to null; that will leave the name of the message in $1
 PROG=default

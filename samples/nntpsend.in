@@ -17,7 +17,7 @@
 ##	host fqdn	send to host and qualified domain (def: nntpsend.ctl)
 ##  If no "host fqdn" pairs appear on the command line, then ${CTLFILE}
 ##  file is read.
-. @ETCDIR@/innshellvars
+. @LIBDIR@/innshellvars
 
 PROGNAME=`basename $0`
 LOCK=${LOCKS}/LOCK.${PROGNAME}

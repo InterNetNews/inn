@@ -1,7 +1,7 @@
 #!@_PATH_SH@
 ##  $Revision$
 ##  Sendme control-message handler
-. @ETCDIR@/innshellvars
+. @LIBDIR@/innshellvars
 
 PROG=sendme
 . ${PATHBIN}/parsecontrol "$@"

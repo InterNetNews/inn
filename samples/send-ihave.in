@@ -1,7 +1,7 @@
 #!@_PATH_SH@
 ##  $Revision$
 ##  SH script to send IHAVE batches out.
-. @ETCDIR@/innshellvars
+. @LIBDIR@/innshellvars
 
 PROGNAME=`basename $0`
 LOG=${MOST_LOGS}/${PROGNAME}.log

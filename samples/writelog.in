@@ -5,7 +5,7 @@
 ##	writelog name text... <input
 ##  where
 ##	name	is 'mail' to mail it, or filename to append to.
-. @ETCDIR@/innshellvars
+. @LIBDIR@/innshellvars
 
 MAXTRY=60
 

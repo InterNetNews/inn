@@ -2,7 +2,7 @@
 ##  Remove articles listed by expire -z.
 ##  Remove all files specified in the input file.
 
-. @ETCDIR@/innshellvars
+. @LIBDIR@/innshellvars
 
 MAIL="${MAILCMD} -s 'Problem removing expired files' ${NEWSMASTER}"
 

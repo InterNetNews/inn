@@ -14,7 +14,7 @@ $0 =~ s!.*/!! ;
 require 5.001 ;
 require 'getopts.pl' ;
 
-require "@ETCDIR@/innshellvars.pl" ;
+require "@LIBDIR@/innshellvars.pl" ;
 
 die "$0: No \$inn::mta  variable defined.\n" 
     if ! defined ($inn::mta);
