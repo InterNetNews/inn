@@ -1,4 +1,4 @@
-#!_PATH_PERL -ws
+#!@_PATH_PERL -ws
 # written April 1996, tale@isc.org (David C Lawrence)
 # Version 1.8
 #

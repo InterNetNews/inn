@@ -1,4 +1,4 @@
-#!_PATH_PERL
+#!@_PATH_PERL
 # 
 # Author:       James Brister <brister@vix.com> -- berkeley-unix --
 # Start Date:   Fri, 25 Apr 1997 14:11:23 +0200

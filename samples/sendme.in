@@ -4,8 +4,6 @@
 . _INNSHELLVARS_
 
 PROG=sendme
-##  Some shells don't pass in $* unless we explicitly pass it in here.
-##  =()<. @<_PATH_PARSECTL>@ "$@">()=
 . ${PATHBIN}/parsecontrol "$@"
 
 case ${ACTION} in
