@@ -2,9 +2,8 @@
 /* Fake write and writev functions for testing xwrite and xwritev. */
 
 #include "config.h"
-
+#include "clibrary.h"
 #include <errno.h>
-#include <sys/types.h>
 #include <sys/uio.h>
 
 #include "libinn.h"

@@ -2,10 +2,8 @@
 /* setenv test suite. */
 
 #include "config.h"
-
+#include "clibrary.h"
 #include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #include "inn/messages.h"
 #include "libinn.h"
