@@ -5,22 +5,17 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/mmap.h"
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <syslog.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <time.h>
-
-#ifdef HAVE_LIMITS_H
+#if HAVE_LIMITS_H
 # include <limits.h>
 #endif
-
-#ifndef MAP_FAILED
-# define MAP_FAILED     (caddr_t) -1
-#endif
+#include <syslog.h>
+#include <sys/stat.h>
+#include <time.h>
 
 #include "libinn.h"
 #include "macros.h"
@@ -359,17 +354,19 @@ static bool ovparse_part_line(char *l) {
 */
 
 static bool ovbuffread_config(void) {
-  char		*config, *from, *to, **ctab = (char **)NULL;
+  char		*path, *config, *from, *to, **ctab = (char **)NULL;
   int		ctab_free = 0;  /* Index to next free slot in ctab */
   int		ctab_i;
 
-  if ((config = ReadInFile(cpcatpath(innconf->pathetc, _PATH_OVBUFFCONFIG),
-	(struct stat *)NULL)) == NULL) {
-    syslog(L_ERROR, "%s: cannot read %s", LocalLogName,
-	cpcatpath(innconf->pathetc, _PATH_OVBUFFCONFIG), NULL);
+  path = concatpath(innconf->pathetc, _PATH_OVBUFFCONFIG);
+  config = ReadInFile(path, NULL);
+  if (config == NULL) {
+    syslog(L_ERROR, "%s: cannot read %s", LocalLogName, path);
     DISPOSE(config);
+    free(path);
     return FALSE;
   }
+  free(path);
   for (from = to = config; *from; ) {
     if (*from == '#') {	/* Comment line? */
       while (*from && *from != '\n')
@@ -513,13 +510,7 @@ static void ovflushhead(OVBUFF *ovbuff) {
   strncpy(rpx.freea, offt2hex(ovbuff->freeblk, TRUE), OVBUFFLASIZ);
   strncpy(rpx.updateda, offt2hex(ovbuff->updated, TRUE), OVBUFFLASIZ);
   memcpy(ovbuff->bitfield, &rpx, sizeof(OVBUFFHEAD));
-#if defined (MMAP_NEEDS_MSYNC)
-#if defined (HAVE_MSYNC_3_ARG)
-  msync(ovbuff->bitfield, ovbuff->base, MS_ASYNC);
-#else
-  msync(ovbuff->bitfield, ovbuff->base);
-#endif
-#endif
+  mmap_flush(ovbuff->bitfield, ovbuff->base);
   ovbuff->needflush = FALSE;
   return;
 }
