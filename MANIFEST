@@ -17,6 +17,7 @@ README.perl_hook                      Christophe Wolfhugel's Perl hook notes
 README.python_auth_hook               Python authentication notes
 README.python_hook                    Greg Andruk's Python hook notes
 README.tcl_hook                       Bob Halley's TCL hook notes
+TODO                                  The list of pending INN projects
 aclocal.m4                            M4 macro for libtool
 authprogs                             The authentication programs (Directory)
 authprogs/Makefile                    Makefile for auth programs
