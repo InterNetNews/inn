@@ -140,10 +140,11 @@ extern bool     lock_range(int fd, enum locktype type, bool block,
 **  MISCELLANEOUS UTILITY FUNCTIONS
 */
 extern void *   concat(const char *first, ...);
-int             getfdlimit(void);
-int             setfdlimit(int limit);
-ssize_t         xwrite(int fd, const void *buffer, size_t size);
-ssize_t         xwritev(int fd, const struct iovec iov[], int iovcnt);
+extern int      getfdlimit(void);
+extern int      setfdlimit(int limit);
+extern void     (*xsignal(int signum, void (*sigfunc)(int)))(int);
+extern ssize_t  xwrite(int fd, const void *buffer, size_t size);
+extern ssize_t  xwritev(int fd, const struct iovec iov[], int iovcnt);
 
 
 /* Headers. */
@@ -334,7 +335,6 @@ int HashCompare(const HASH *h1, const HASH *h2);
 /* Miscellaneous. */
 extern int	dbzneedfilecount(void);
 extern BOOL     MakeDirectory(char *Name, BOOL Recurse);
-extern pid_t	waitnb(int *statusp);
 extern int	xread(int fd, char *p, OFFSET_T i);
 extern int	GetResourceUsage(double *usertime, double *systime);
 extern int	SetNonBlocking(int fd, BOOL flag);
@@ -347,7 +347,6 @@ extern FILE	*xfopena(const char *p);
 extern BOOL	fdreserve(int fdnum);
 extern FILE	*Fopen(const char *p, char *type, int index);
 extern int	Fclose(FILE *fp);
-extern void	(*xsignal(int signum, void (*sigfunc)(int )))(int );
 
 const char  *Aliasgetnamebyhash(const HASH hash);
 HASH Aliasgethashbyhash(const HASH hash);
