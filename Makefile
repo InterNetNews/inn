@@ -89,9 +89,9 @@ install: directories
 directories:
 	@chmod +x support/install-sh
 	for D in $(INSTDIRS) ; do \
-	    support/install-sh $(OWNER) -m 0755 -d $$D ; \
+	    support/install-sh $(OWNER) -m 0755 -d $(D)$$D ; \
 	done
-	support/install-sh $(OWNER) -m 0750 -d $(PATHRUN)
+	support/install-sh $(OWNER) -m 0750 -d $(D)$(PATHRUN)
 
 update: 
 	@chmod +x support/install-sh
