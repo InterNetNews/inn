@@ -1473,11 +1473,11 @@ void lineIsRead (EndPoint myEp, IoStatus status, Buffer *buffer, void *d)
   newInputBuffer = newBuffer (BUFF_SIZE) ;
   
   p = bufferBase (newBuff1) ; 
-  strcpy (p, "Thanks for that \"") ;
+  strlcpy (p, "Thanks for that \"", bufferSize (newBuff1)) ;
   bufferSetDataSize (newBuff1,strlen (p)) ;
   
   p = bufferBase (newBuff2) ;
-  strcpy (p,"\" very tasty\n") ;
+  strlcpy (p,"\" very tasty\n", bufferSize (newBuff2)) ;
   bufferSetDataSize (newBuff2,strlen (p)) ;
 
   writeBuffers = makeBufferArray (newBuff1,buffer[0],newBuff2,NULL) ;

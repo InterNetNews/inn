@@ -1587,7 +1587,7 @@ static void issueModeStream (EndPoint e, Connection cxn)
   d_printf (1,"%s:%d Issuing the streaming command: %s\n",
 	    hostPeerName (cxn->myHost),cxn->ident,MODE_CMD) ;
 
-  strcpy (p, MODE_CMD) ;
+  strlcpy (p, MODE_CMD, bufferSize (modeBuffer)) ;
 
   bufferSetDataSize (modeBuffer, strlen (p)) ;
 
@@ -4395,7 +4395,7 @@ static void issueQUIT (Connection cxn)
   else
     {
       quitBuffer = newBuffer (7) ;
-      strcpy (bufferBase (quitBuffer), "QUIT\r\n") ;
+      strlcpy (bufferBase (quitBuffer), "QUIT\r\n", 7) ;
       bufferSetDataSize (quitBuffer, 6) ;
 
       writeArray = makeBufferArray (quitBuffer, NULL) ;
