@@ -23,6 +23,9 @@ innconfval \- get an InterNetNews configuration parameter
 .B \-t
 ]
 [
+.B \-v
+]
+[
 .I parameter...
 ]
 .SH DESCRIPTION
@@ -30,7 +33,14 @@ innconfval \- get an InterNetNews configuration parameter
 prints the values of the parameters specified on the command line.
 Values are retrieved from the
 .IR inn.conf (5)
-file and are described there. If no parameters are specified, all
+file and are described there except for ``version''.
+\&``Version'' cannot be set at
+.IR inn.conf (5)
+and retrieved from
+.I INNVersion()
+in
+.IR libinn (3).
+If no parameters are specified, all
 the values are printed on separate lines. This is most useful with
 the other options for setting up assignment of variables.
 .SH OPTIONS
@@ -60,6 +70,9 @@ Print values as shell set commands
 .TP
 .B \-t
 Print values as tcl assignment commands
+.TP
+.B \-v
+Print inn version
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 .de R$

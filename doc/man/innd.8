@@ -339,9 +339,12 @@ on the Path line.
 .PP
 If
 .I <usecontrolchan in inn.conf> 
-is ``true'', all control messages except for the cancel are processed by
+is ``true'', all control messages except for the cancel will never processed
+by external program fork'ed by innd.  Instead they can be processed by
 .I controlchan 
-script which is invoked as channel program by innd.
+script which is invoked as channel program by innd, and you need to setup
+.IR newsfeeds (5)
+to use this script.
 Processing by
 .I controlchan
 can reduce excessive load if many control messages arrive in a short time.
