@@ -780,7 +780,7 @@ CAFOpenArtWrite(char *path, ARTNUM *artp, int waitlock, size_t size)
 		** article # to 1.
 		*/
 		fd = CAFCreateCAFFile(path, (*artp ? *artp : 1),
-                                      CAF_DEFAULT_TOC_SIZE, 0, 0, NULL);
+                                      CAF_DEFAULT_TOC_SIZE, 0, 0, NULL, 0);
 		/*
 		** XXX possible race condition here, so we check to see if
 		** create failed because of EEXIST.  If so, we go back to top

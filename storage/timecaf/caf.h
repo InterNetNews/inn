@@ -119,7 +119,7 @@ extern int CAFOpenArtWrite(char *cfpath, ARTNUM *art, int WaitLock, size_t size)
 extern int CAFStartWriteFd(int fd, ARTNUM *art, size_t size);
 extern int CAFFinishWriteFd(int fd);
 extern int CAFFinishArtWrite(int fd);
-extern int CAFCreateCAFFile(char *cfpath, ARTNUM lowart, ARTNUM tocsize, size_t cfsize, int nolink, char *temppath);
+extern int CAFCreateCAFFile(char *cfpath, ARTNUM lowart, ARTNUM tocsize, size_t cfsize, int nolink, char *temppath, size_t pathlen);
 extern const char *CAFErrorStr(void);
 extern CAFTOCENT *CAFReadTOC(char *cfpath, CAFHEADER *ch);
 extern int CAFRemoveMultArts(char *cfpath, unsigned int narts, ARTNUM *arts);
