@@ -201,7 +201,7 @@ TMRstart(unsigned int timer)
     struct timer *search;
 
     if (timer_count == 0) {
-        warn("timer %u started before TMRinit was called", timer);
+        /* this should happen if innconf->timer == 0 */
         return;
     }
     if (timer >= timer_count) {
