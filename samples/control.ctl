@@ -76,9 +76,10 @@
 ##  but they are meant to use a consistent syntax to allow eventual parsing
 ##  by scripts into a better database format.  Please follow the syntax of
 ##  existing entries when providing new ones.  The recognized "fields" are
-##  Contact (contact e-mail address), URL, Key URL (URL for PGP key), Key
-##  fingerprint, Key mail (address to mail for PGP key), and Syncable server
-##  (for actsync or a similar tool).
+##  Contact (contact e-mail address), Admin group (the administrative group
+##  for the hierarchy), URL, Key URL (URL for PGP key), Key fingerprint, Key
+##  mail (address to mail for PGP key), and Syncable server (for actsync or
+##  a similar tool).
 
 ## -------------------------------------------------------------------------
 ##	DEFAULT
@@ -121,49 +122,32 @@ version:*:*:log=version
 newgroup:*:*:mail
 rmgroup:*:*:mail
 
-## COMP, HUMANITIES, MISC, NEWS, REC, SCI, SOC, TALK (The Big 8)
-# Contact: group-admin@isc.org
-# Key fingerprint = F5 35 58 D3 55 64 10 14  07 C6 95 53 13 6F D4 07
-# *PGP*   See comment at top of file.
-newgroup:*:comp.*|humanities.*|misc.*|news.*|rec.*|sci.*|soc.*|talk.*:drop
-rmgroup:*:comp.*|humanities.*|misc.*|news.*|rec.*|sci.*|soc.*|talk.*:drop
-newgroup:group-admin@isc.org:*:drop
-newgroup:tale@*uu.net:*:drop
-rmgroup:group-admin@isc.org:*:drop
-rmgroup:tale@*uu.net:*:drop
-checkgroups:group-admin@isc.org:*:verify-news.announce.newgroups
-newgroup:group-admin@isc.org:comp.*|misc.*:verify-news.announce.newgroups
-newgroup:group-admin@isc.org:humanities.*:verify-news.announce.newgroups
-newgroup:group-admin@isc.org:news.*|rec.*|sci.*:verify-news.announce.newgroups
-newgroup:group-admin@isc.org:soc.*|talk.*:verify-news.announce.newgroups
-rmgroup:group-admin@isc.org:comp.*|misc.*:verify-news.announce.newgroups
-rmgroup:group-admin@isc.org:humanities.*:verify-news.announce.newgroups
-rmgroup:group-admin@isc.org:news.*|rec.*|sci.*:verify-news.announce.newgroups
-rmgroup:group-admin@isc.org:soc.*|talk.*:verify-news.announce.newgroups
-
 ## ACS & OSU (*LOCAL* -- Ohio State University, USA)
 # Contact: Albert J. School <school.1@osu.edu>
-# Secondary contact: Harpal Chohan <chohan+@osu.edu>
-# For local use only, contact the above addresses for information.
-newgroup:*@*:acs.*|osu.*:mail
-rmgroup:*@*:acs.*|osu.*:doit
+# Contact: Harpal Chohan <chohan+@osu.edu>
+# For local use only, contact the above address for information.
+newgroup:*:acs.*|osu.*:mail
+rmgroup:*:acs.*|osu.*:doit
 
 ## AHN (Athens-Clarke County, Georgia, USA)
+checkgroups:greg@*.ucns.uga.edu:ahn.*:doit
 newgroup:greg@*.ucns.uga.edu:ahn.*:doit
 rmgroup:greg@*.ucns.uga.edu:ahn.*:doit
 
 ## AIR (*DEFUNCT* -- Stanford University, USA)
 # Contact: news@news.stanford.edu
-# Defunct hierarchy, please remove any groups that you carry.
-newgroup:*@*:air.*:mail
-rmgroup:*@*:air.*:doit
+# This hierarchy is defunct.  Please remove it.
+newgroup:*:air.*:mail
+rmgroup:*:air.*:doit
 
 ## AKR (Akron, Ohio, USA)
+checkgroups:red@redpoll.mrfs.oh.us:akr.*:doit
 newgroup:red@redpoll.mrfs.oh.us:akr.*:doit
 rmgroup:red@redpoll.mrfs.oh.us:akr.*:doit
 
 ## ALABAMA & HSV (Huntsville, Alabama, USA)
 # Contact: jpc@suespammers.org
+# Admin group: alabama.config
 # *PGP*   See comment at top of file.
 newgroup:*:alabama.*|hsv.*:drop
 rmgroup:*:alabama.*|hsv.*:drop
@@ -171,11 +155,11 @@ checkgroups:jpc@suespammers.org:alabama.*|hsv.*:verify-alabama-group-admin
 newgroup:jpc@suespammers.org:alabama.*|hsv.*:verify-alabama-group-admin
 rmgroup:jpc@suespammers.org:alabama.*|hsv.*:verify-alabama-group-admin
 
-## ALIVE (*DEFUNCT*)
+## ALIVE (*DEFUNCT* -- ?)
 # Contact: thijs@kink.xs4all.nl
-# Defunct hierarchy, please remove any groups that you carry.
-newgroup:*@*:alive.*:mail
-rmgroup:*@*:alive.*:doit
+# This hierarchy is defunct.  Please remove it.
+newgroup:*:alive.*:mail
+rmgroup:*:alive.*:doit
 
 ## ALT
 #
@@ -203,24 +187,25 @@ newgroup:tale@*uu.net:alt.*:drop
 rmgroup:*:alt.*:drop
 
 ## AR (Argentina)
+checkgroups:jorge_f@nodens.fisica.unlp.edu.ar:ar.*:doit
 newgroup:jorge_f@nodens.fisica.unlp.edu.ar:ar.*:doit
 rmgroup:jorge_f@nodens.fisica.unlp.edu.ar:ar.*:doit
 
 ## ARC (*LOCAL* -- NASA Ames Research Center, USA)
 # Contact: news@arc.nasa.gov
-# For internal use only, contact above address for questions
-newgroup:*@*:arc.*:mail
-rmgroup:*@*:arc.*:doit
+# For local use only, contact the above address for information.
+newgroup:*:arc.*:mail
+rmgroup:*:arc.*:doit
 
 ## ARKANE (Arkane Systems, UK)
 # Contact: newsbastard@arkane.demon.co.uk
 # URL: http://www.arkane.demon.co.uk/Newsgroups.html
-checkgroups:newsbastard@arkane.demon.co.uk:arkane.*:mail
+checkgroups:newsbastard@arkane.demon.co.uk:arkane.*:doit
 newgroup:newsbastard@arkane.demon.co.uk:arkane.*:doit
 rmgroup:newsbastard@arkane.demon.co.uk:arkane.*:doit
 
 ## AT (Austria)
-checkgroups:control@usenet.backbone.at:at.*:mail
+checkgroups:control@usenet.backbone.at:at.*:doit
 newgroup:control@usenet.backbone.at:at.*:doit
 rmgroup:control@usenet.backbone.at:at.*:doit
 
@@ -236,23 +221,25 @@ newgroup:ausadmin@aus.news-admin.org:aus.*:verify-ausadmin@aus.news-admin.org
 rmgroup:ausadmin@aus.news-admin.org:aus.*:verify-ausadmin@aus.news-admin.org
 
 ## AUSTIN (Texas, USA)
-checkgroups:fletcher@cs.utexas.edu:austin.*:doit
 checkgroups:chip@unicom.com:austin.*:doit
+checkgroups:fletcher@cs.utexas.edu:austin.*:doit
 checkgroups:pug@pug.net:austin.*:doit
-newgroup:fletcher@cs.utexas.edu:austin.*:doit
 newgroup:chip@unicom.com:austin.*:doit
+newgroup:fletcher@cs.utexas.edu:austin.*:doit
 newgroup:pug@pug.net:austin.*:doit
-rmgroup:fletcher@cs.utexas.edu:austin.*:doit
 rmgroup:chip@unicom.com:austin.*:doit
+rmgroup:fletcher@cs.utexas.edu:austin.*:doit
 rmgroup:pug@pug.net:austin.*:doit
 
 ## AZ (Arizona, USA)
+checkgroups:system@asuvax.eas.asu.edu:az.*:doit
 newgroup:system@asuvax.eas.asu.edu:az.*:doit
 rmgroup:system@asuvax.eas.asu.edu:az.*:doit
 
 ## BA (San Francisco Bay Area, USA)
 # Contact: ba-mod@nas.nasa.gov
 # URL: http://ennui.org/ba/
+# Admin group: ba.news.config
 # Key URL: http://ennui.org/ba/ba-mod.asc
 # *PGP*   See comment at top of file.
 newgroup:*:ba.*:drop
@@ -263,13 +250,14 @@ rmgroup:ba-mod@nas.nasa.gov:ba.*:verify-ba.news.config
 
 ## BACKBONE (*LOCAL* -- ruhr.de/ruhrgebiet.individual.net in Germany)
 # Contact: admin@ruhr.de
-# For internal use only, contact above address for questions
-newgroup:*@*:backbone.*:mail
-rmgroup:*@*:backbone.*:doit
+# For local use only, contact the above address for information.
+newgroup:*:backbone.*:mail
+rmgroup:*:backbone.*:doit
 
 ## BAYNET (Bayerische Buergernetze, Deutschland)
 # Contact: news@mayn.de
 # URL: http://www.mayn.de/users/news/
+# Admin group: baynet.announce
 # Key URL: http://home.mayn.de/news/pubkey-news.mayn.de
 # Key fingerprint = F7 AD 96 D8 7A 3F 7E 84  02 0C 83 9A DB 8F EB B8
 # Syncable server: news.mayn.de (contact news@mayn.de if permission denied)
@@ -281,17 +269,19 @@ newgroup:news@mayn.de:baynet.*:verify-news.mayn.de
 rmgroup:news@mayn.de:baynet.*:verify-news.mayn.de
 
 ## BC (British Columbia, Canada)
-checkgroups:bc_van_usenet@fastmail.ca:bc.*:mail
+checkgroups:bc_van_usenet@fastmail.ca:bc.*:doit
 newgroup:bc_van_usenet@fastmail.ca:bc.*:doit
 rmgroup:bc_van_usenet@fastmail.ca:bc.*:doit
 
 ## BDA (German groups?)
+checkgroups:news@*netuse.de:bda.*:doit
 newgroup:news@*netuse.de:bda.*:doit
 rmgroup:news@*netuse.de:bda.*:doit
 
 ## BE (Belgique/Belgie/Belgien/Belgium)
 # Contact: be-hierarchy-admin@usenet.be
 # URL: http://usenet.be/
+# Admin group: be.announce.newgroups
 # Key URL: http://usenet.be/be.announce.newgroups.asc
 # Key fingerprint = 30 2A 45 94 70 DE 1F D5  81 8C 58 64 D2 F7 08 71
 # *PGP*   See comment at top of file.
@@ -301,40 +291,43 @@ checkgroups:group-admin@usenet.be:be.*:verify-be.announce.newgroups
 newgroup:group-admin@usenet.be:be.*:verify-be.announce.newgroups
 rmgroup:group-admin@usenet.be:be.*:verify-be.announce.newgroups
 
-## BERMUDA
+## BERMUDA (Bermuda)
+checkgroups:news@*ibl.bm:bermuda.*:doit
 newgroup:news@*ibl.bm:bermuda.*:doit
 rmgroup:news@*ibl.bm:bermuda.*:doit
 
 ## BES (*PRIVATE* -- Bejing Electron Spectrometer)
 # Contact: news@news.stanford.edu
-# Limited distribution hierarchy, contact the above address for information.
+# For private use only, contact the above address for information.
 newgroup:news@news.stanford.edu:bes.*:mail
 rmgroup:news@news.stanford.edu:bes.*:doit
 
 ## BEST (*LOCAL* -- Best Internet Communications, Inc.)
 # Contact: news@best.net
 # For local use only, contact the above address for information.
-newgroup:*@*:best.*:mail
-rmgroup:*@*:best.*:doit
+newgroup:*:best.*:mail
+rmgroup:*:best.*:doit
 
 ## BIONET (Biology Network)
 # URL: http://www.bio.net/
+# Admin group: bionet.general
 # Key fingerprint = EB C0 F1 BA 26 0B C6 D6  FB 8D ED C4 AE 5D 10 54
 # *PGP*   See comment at top of file.
 newgroup:*:bionet.*:drop
 rmgroup:*:bionet.*:drop
 checkgroups:Biosci-control-key@net.bio.net:bionet.*:verify-Biosci-control-key@net.bio.net
-newgroup:Biosci-control-key@net.bio.net:bionet.*:verify-Biosci-control-key@net.bio.net=newgroup
-rmgroup:Biosci-control-key@net.bio.net:bionet.*:verify-Biosci-control-key@net.bio.net=rmgroup
+newgroup:Biosci-control-key@net.bio.net:bionet.*:verify-Biosci-control-key@net.bio.net
+rmgroup:Biosci-control-key@net.bio.net:bionet.*:verify-Biosci-control-key@net.bio.net
 
 ## BIRK (*LOCAL* -- University of Oslo, Norway)
 # Contact: birk-admin@ping.uio.no
-# For private use only, contact the above address for information.
-newgroup:*@*:birk.*:drop
-rmgroup:*@*:birk.*:doit
+# For local use only, contact the above address for information.
+newgroup:*:birk.*:mail
+rmgroup:*:birk.*:doit
 
 ## BIT (Gatewayed Mailing lists)
 # URL: http://www.newsadmin.com/bit/bit.htm
+# Admin group: bit.admin
 # *PGP*   See comment at top of file.
 newgroup:*:bit.*:drop
 rmgroup:*:bit.*:drop
@@ -343,41 +336,46 @@ newgroup:bit@newsadmin.com:bit.*:verify-bit@newsadmin.com
 rmgroup:bit@newsadmin.com:bit.*:verify-bit@newsadmin.com
 
 ## BIZ (Business Groups)
+checkgroups:edhew@xenitec.on.ca:biz.*:doit
 newgroup:edhew@xenitec.on.ca:biz.*:doit
 rmgroup:edhew@xenitec.on.ca:biz.*:doit
 
 ## BLGTN (Bloomington, In, USA)
+checkgroups:control@news.bloomington.in.us:blgtn.*:doit
 newgroup:control@news.bloomington.in.us:blgtn.*:doit
 rmgroup:control@news.bloomington.in.us:blgtn.*:doit
 
 ## BLN (Berlin, Germany)
-checkgroups:news@*fu-berlin.de:bln.*:mail
+checkgroups:news@*fu-berlin.de:bln.*:doit
 newgroup:news@*fu-berlin.de:bln.*:doit
 rmgroup:news@*fu-berlin.de:bln.*:doit
 
 ## BOFH (*PRIVATE* -- Bastard Operator From Hell)
 # Contact: myname@myhost.mydomain.com
 # For private use only, contact the above address for information.
-newgroup:*@*:bofh.*:mail
-rmgroup:*@*:bofh.*:doit
+newgroup:*:bofh.*:mail
+rmgroup:*:bofh.*:doit
 
 ## CA (California, USA)
 # Contact: ikluft@thunder.sbay.org
 # URL: http://www.sbay.org/ca/
+checkgroups:ikluft@thunder.sbay.org:ca.*:doit
 newgroup:ikluft@thunder.sbay.org:ca.*:doit
 rmgroup:ikluft@thunder.sbay.org:ca.*:doit
 
 ## CAIS (*LOCAL* -- Capital Area Internet Services)
 # Contact: news@cais.com
 # For local use only, contact the above address for information.
-newgroup:*@*:cais.*:mail
-rmgroup:*@*:cais.*:doit
+newgroup:*:cais.*:mail
+rmgroup:*:cais.*:doit
 
 ## CALSTATE (California State University)
+checkgroups:*@*calstate.edu:calstate.*:doit
 newgroup:*@*calstate.edu:calstate.*:doit
 rmgroup:*@*calstate.edu:calstate.*:doit
 
 ## CAPDIST (Albany, The Capital District, New York, USA)
+checkgroups:danorton@albany.net:capdist.*:doit
 newgroup:danorton@albany.net:capdist.*:doit
 rmgroup:danorton@albany.net:capdist.*:doit
 
@@ -386,22 +384,22 @@ newgroup:news@cunews.carleton.ca:carleton.*:doit
 newgroup:news@cunews.carleton.ca:carleton*class.*:mail
 rmgroup:news@cunews.carleton.ca:carleton.*:doit
 
-## CD-ONLINE (*LOCAL*)
+## CD-ONLINE (*LOCAL* -- ?)
 # Contact: newsmaster@worldonline.nl
 # For local use only, contact the above address for information.
-newgroup:*@*:cd-online.*:mail
-rmgroup:*@*:cd-online.*:doit
+newgroup:*:cd-online.*:mail
+rmgroup:*:cd-online.*:doit
 
 ## CENTRAL (*LOCAL* -- The Internet Company of New Zealand, Wellington, NZ)
 # Contact: usenet@iconz.co.nz
 # For local use only, contact the above address for information.
-newgroup:*@*:central.*:mail
-rmgroup:*@*:central.*:doit
+newgroup:*:central.*:mail
+rmgroup:*:central.*:doit
 
 ## CERN (*PRIVATE* -- CERN European Laboratory for Particle Physics)
 # Contact: Dietrich Wiegandt <News.Support@cern.ch>
 # For private use only, contact the above address for information.
-newgroup:News.Support@cern.ch:cern.*:doit
+newgroup:News.Support@cern.ch:cern.*:mail
 rmgroup:News.Support@cern.ch:cern.*:doit
 
 ## CH (Switzerland)
@@ -418,31 +416,34 @@ rmgroup:felix.rauch@nice.ch:ch.*:verify-ch-news-admin@use-net.ch
 
 ## CHAVEN (*LOCAL* -- Celestian Haven ISP, Midwest, USA)
 # Contact: news@chaven.com
-# For internal use only, contact above address for questions
-newgroup:*@*:chaven.*:drop
-rmgroup:*@*:chaven.*:doit
-
-## CHRISTNET (Christian Discussion)
-checkgroups:news@fdma.com:christnet.*:mail
-newgroup:news@fdma.com:christnet.*:doit
-rmgroup:news@fdma.com:christnet.*:doit
+# For local use only, contact the above address for information.
+newgroup:*:chaven.*:mail
+rmgroup:*:chaven.*:doit
 
 ## CHI (Chicago, USA)
-newgroup:lisbon@*interaccess.com:chi.*:doit
+checkgroups:lisbon@*chi.il.us:chi.*:doit
+checkgroups:lisbon@*interaccess.com:chi.*:doit
 newgroup:lisbon@*chi.il.us:chi.*:doit
-rmgroup:lisbon@*interaccess.com:chi.*:doit
+newgroup:lisbon@*interaccess.com:chi.*:doit
 rmgroup:lisbon@*chi.il.us:chi.*:doit
+rmgroup:lisbon@*interaccess.com:chi.*:doit
 
 ## CHILE (Chile and Chilean affairs)
 # Contact: mod-cga@webhost.cl
 # URL: http://www.webhost.cl/~mod-cga
-checkgroups:mod-cga@*webhost.cl:chile.*:mail
+checkgroups:mod-cga@*webhost.cl:chile.*:doit
 newgroup:mod-cga@*webhost.cl:chile.*:doit
 rmgroup:mod-cga@*webhost.cl:chile.*:doit
 
 ## CHINESE (China and Chinese language groups)
+checkgroups:pinghua@stat.berkeley.edu:chinese.*:doit
 newgroup:pinghua@stat.berkeley.edu:chinese.*:doit
 rmgroup:pinghua@stat.berkeley.edu:chinese.*:doit
+
+## CHRISTNET (Christian Discussion)
+checkgroups:news@fdma.com:christnet.*:doit
+newgroup:news@fdma.com:christnet.*:doit
+rmgroup:news@fdma.com:christnet.*:doit
 
 ## CITYSCAPE & DEMON (Cityscape Internet Services & Demon Internet, UK)
 # Contact: Dave Williams <newsmaster@demon.net>
@@ -458,17 +459,19 @@ rmgroup:newsmaster@demon.net:cityscp.*:verify-demon.news
 # Contact: koordination@cl-netz.de
 # URL: http://www.cl-netz.de/
 # Key URL: http://www.cl-netz.de/control.txt
-# For internal use only, contact above address for questions.
+# For private use only, contact above address for questions.
 # *PGP*   See comment at top of file.
-newgroup:*@*:cl.*:drop
-rmgroup:*@*:cl.*:doit
+newgroup:*:cl.*:drop
+rmgroup:*:cl.*:doit
 # The following three lines are only for authorized cl.* sites.
 #checkgroups:koordination@cl-netz.de:cl.*:verify-cl.netz.infos
 #newgroup:koordination@cl-netz.de:cl.*:verify-cl.netz.infos
 #rmgroup:koordination@cl-netz.de:cl.*:verify-cl.netz.infos
 
-## CLARINET (Features and News, available on a commercial basis)
+## CLARI (Features and News, available on a commercial basis)
 # Contact: support@clari.net
+# Admin group: clari.net.admin
+# Key URL: http://www.clari.net/tech/clarikey.txt
 # *PGP*   See comment at top of file.
 newgroup:*:clari.*:drop
 rmgroup:*:clari.*:drop
@@ -478,14 +481,14 @@ rmgroup:cl*@clarinet.com:clari.*:verify-ClariNet.Group
 
 ## CMI (*LOCAL* -- Champaign County, IL, USA)
 # Contact: news@uiuc.edu
-# For internal use only, contact above address for questions.
-newgroup:*:cmi.*:drop
+# For local use only, contact the above address for information.
+newgroup:*:cmi.*:mail
 rmgroup:*:cmi.*:doit
 
 ## CMU (*LOCAL* -- Carnegie-Mellon University, Pennsylvania, USA)
 # Contact: Daniel Edward Lovinger <del+@CMU.EDU>
-# For internal use only, contact above address for questions.
-newgroup:*:cmu.*:drop
+# For local use only, contact the above address for information.
+newgroup:*:cmu.*:mail
 rmgroup:*:cmu.*:doit
 
 ## CN (China)
@@ -497,16 +500,12 @@ newgroup:control@bentium.com:cn.*:verify-cn.admin.news.announce
 rmgroup:control@bentium.com:cn.*:verify-cn.admin.news.announce
 
 ## CN.BBS (China)
-# Key URL: http://news.zixia.net/pubkey-cn.bbs.admin.announce
 # *PGP*   See comment at top of file.
+newgroup:*:cn.bbs.*:drop
+rmgroup:*:cn.bbs.*:drop
+checkgroups:news@zixia.net:cn.bbs.*:verify-cn.bbs.admin.announce
 newgroup:news@zixia.net:cn.bbs.*:verify-cn.bbs.admin.announce
 rmgroup:news@zixia.net:cn.bbs.*:verify-cn.bbs.admin.announce
-
-## CUHK (*LOCAL* -- Chinese University of Hong Kong)
-# Contact: shlam@ie.cuhk.edu.hk (Alan S H Lam)
-# For internal use only, contact above address for questions.
-newgroup:*:cuhk.*:drop
-rmgroup:*:cuhk.*:doit
 
 ## CO (Colorado, USA)
 # Contact: coadmin@boyznoyz.com (Bill of Denver)
@@ -519,59 +518,91 @@ checkgroups:news@supernews.net:codewarrior.*:doit
 newgroup:news@supernews.net:codewarrior.*:doit
 rmgroup:news@supernews.net:codewarrior.*:doit
 
+## COMP, HUMANITIES, MISC, NEWS, REC, SCI, SOC, TALK (The Big 8)
+# Contact: group-admin@isc.org
+# Key fingerprint = F5 35 58 D3 55 64 10 14  07 C6 95 53 13 6F D4 07
+# *PGP*   See comment at top of file.
+newgroup:*:comp.*|humanities.*|misc.*|news.*|rec.*|sci.*|soc.*|talk.*:drop
+rmgroup:*:comp.*|humanities.*|misc.*|news.*|rec.*|sci.*|soc.*|talk.*:drop
+newgroup:group-admin@isc.org:*:drop
+newgroup:tale@*uu.net:*:drop
+rmgroup:group-admin@isc.org:*:drop
+rmgroup:tale@*uu.net:*:drop
+checkgroups:group-admin@isc.org:*:verify-news.announce.newgroups
+newgroup:group-admin@isc.org:comp.*|misc.*:verify-news.announce.newgroups
+newgroup:group-admin@isc.org:humanities.*:verify-news.announce.newgroups
+newgroup:group-admin@isc.org:news.*|rec.*|sci.*:verify-news.announce.newgroups
+newgroup:group-admin@isc.org:soc.*|talk.*:verify-news.announce.newgroups
+rmgroup:group-admin@isc.org:comp.*|misc.*:verify-news.announce.newgroups
+rmgroup:group-admin@isc.org:humanities.*:verify-news.announce.newgroups
+rmgroup:group-admin@isc.org:news.*|rec.*|sci.*:verify-news.announce.newgroups
+rmgroup:group-admin@isc.org:soc.*|talk.*:verify-news.announce.newgroups
+
 ## COMPUTER42 (Computer 42, Germany)
 # Contact: Dirk Schmitt <news@computer42.org>
+checkgroups:news@computer42.org:computer42.*:doit
 newgroup:news@computer42.org:computer42.*:doit
 rmgroup:news@computer42.org:computer42.*:doit
 
 ## CONCORDIA (Concordia University, Montreal, Canada)
-# URL: General University info at http://www.concordia.ca/
 # Contact: newsmaster@concordia.ca
+# URL: General University info at http://www.concordia.ca/
+checkgroups:news@newsflash.concordia.ca:concordia.*:doit
 newgroup:news@newsflash.concordia.ca:concordia.*:doit
 rmgroup:news@newsflash.concordia.ca:concordia.*:doit
 
-## COURTS (*DEFUNCT*)
+## COURTS (*DEFUNCT* -- Court discussion)
 # Contact: trier@ins.cwru.edu
-# Defunct hierarchy as of mid-1998, please remove any groups that you carry.
-newgroup:*@*:courts.*:mail
-rmgroup:*@*:courts.*:doit
+# This hierarchy is defunct.  Please remove it.
+newgroup:*:courts.*:mail
+rmgroup:*:courts.*:doit
 
-## CPCUIIA (American Institute for Chartered Property Casulty
-## Underwriter/Insurance Institute of America, USA)
+## CPCUIIA (Chartered Prop. Casulty Underwriter/Insurance Institute of America)
 # Contact: miller@cpcuiia.org
 # URL: http://www.aicpcu.org/
-checkgroups:miller@cpcuiia.org:cpcuiia.*:mail
+checkgroups:miller@cpcuiia.org:cpcuiia.*:doit
 newgroup:miller@cpcuiia.org:cpcuiia.*:doit
 rmgroup:miller@cpcuiia.org:cpcuiia.*:doit
 
 ## CU (*LOCAL* -- University of Colorado)
 # Contact: Doreen Petersen <news@colorado.edu>
 # For local use only, contact the above address for information.
-newgroup:*@*:cu.*:mail
-rmgroup:*@*:cu.*:doit
+newgroup:*:cu.*:mail
+rmgroup:*:cu.*:doit
+
+## CUHK (*LOCAL* -- Chinese University of Hong Kong)
+# Contact: shlam@ie.cuhk.edu.hk (Alan S H Lam)
+# For local use only, contact the above address for information.
+newgroup:*:cuhk.*:mail
+rmgroup:*:cuhk.*:doit
 
 ## CZ (Czech Republic)
 # URL: ftp://ftp.vslib.cz/pub/news/config/cz/newsgroups (text)
-# URL: http://www.ces.net/cgi-bin/newsgroups.p?cz (HTML)
-checkgroups:petr.kolar@vslib.cz:cz.*:mail
+checkgroups:petr.kolar@vslib.cz:cz.*:doit
 newgroup:petr.kolar@vslib.cz:cz.*:doit
 rmgroup:petr.kolar@vslib.cz:cz.*:doit
 
 ## DC (Washington, D.C., USA)
-checkgroups:news@mattress.atww.org:dc.*:mail
+checkgroups:news@mattress.atww.org:dc.*:doit
 newgroup:news@mattress.atww.org:dc.*:doit
 rmgroup:news@mattress.atww.org:dc.*:doit
 
 ## DE (German language)
+# Admin group: de.admin.news.announce
 # *PGP*   See comment at top of file.
 newgroup:*:de.*:drop
 rmgroup:*:de.*:drop
 checkgroups:moderator@dana.de:de.*:verify-de.admin.news.announce
 newgroup:moderator@dana.de:de.*:verify-de.admin.news.announce
-newgroup:*@*:de.alt.*:doit
 rmgroup:moderator@dana.de:de.*:verify-de.admin.news.announce
 
+## DE.ALT (German language alternative hierarchy)
+# *PGP*   See comment at top of file.
+newgroup:*:de.alt.*:doit
+rmgroup:moderator@dana.de:de.alt.*:verify-de.admin.news.announce
+
 ## DFW (Dallas/Fort Worth, Texas, USA)
+checkgroups:eric@*cirr.com:dfw.*:doit
 newgroup:eric@*cirr.com:dfw.*:doit
 rmgroup:eric@*cirr.com:dfw.*:doit
 
@@ -589,12 +620,12 @@ rmgroup:news@news.dknet.dk:dk.*:verify-news@news.dknet.dk
 ## DUKE (*LOCAL* -- Duke University, USA)
 # Contact: news@newsgate.duke.edu
 # For local use only, contact the above address for information.
-newgroup:*@*:duke.*:mail
-rmgroup:*@*:duke.*:doit
+newgroup:*:duke.*:mail
+rmgroup:*:duke.*:doit
 
 ## EASYNET (Easynet PLC, UK)
 # Contact: Christiaan Keet <newsmaster@easynet.net>
-# URL: ftp://ftp.easynet.net/pub/usenet/easynet.control.txt
+# Admin group: easynet.support
 # *PGP*   See comment at top of file.
 newgroup:*:easynet.*:drop
 rmgroup:*:easynet.*:drop
@@ -614,32 +645,39 @@ newgroup:news@news.ut.ee:ee.*:verify-ee.news
 rmgroup:news@news.ut.ee:ee.*:verify-ee.news
 
 ## EFN & EUG (Eugene Free Computer Network, Eugene/Springfield, Oregon, USA)
+# Admin group: eug.config
 # *PGP*   See comment at top of file.
-newgroup:*:eug.*:drop
-rmgroup:*:eug.*:drop
+newgroup:*:efn.*|eug.*:drop
+rmgroup:*:efn.*|eug.*:drop
 checkgroups:newsadmin@efn.org:efn.*|eug.*:verify-eug.config
 newgroup:newsadmin@efn.org:efn.*|eug.*:verify-eug.config
 rmgroup:newsadmin@efn.org:efn.*|eug.*:verify-eug.config
 
 ## EHIME-U (? University, Japan ?)
+checkgroups:news@cc.nias.ac.jp:ehime-u.*:doit
+checkgroups:news@doc.dpc.ehime-u.ac.jp:ehime-u.*:doit
 newgroup:news@cc.nias.ac.jp:ehime-u.*:doit
 newgroup:news@doc.dpc.ehime-u.ac.jp:ehime-u.*:doit
 rmgroup:news@cc.nias.ac.jp:ehime-u.*:doit
 rmgroup:news@doc.dpc.ehime-u.ac.jp:ehime-u.*:doit
 
-## ENGLAND
+## ENGLAND (England)
 # Contact: admin@england.news-admin.org
 # URL: http://www.england.news-admin.org/newsadminsfaq.html
+# Admin group: england.news.policy
+# Key URL: http://www.england.news-admin.org/pgpkey.html
 # Key fingerprint = DA 3E C2 01 46 E5 61 CB  A2 43 09 CA 13 6D 31 1F
 # *PGP*   See comment at top of file.
+newgroup:*:england.*:drop
+rmgroup:*:england.*:drop
+checkgroups:admin@england.news-admin.org:england.*:verify-england-usenet
 newgroup:admin@england.news-admin.org:england.*:verify-england-usenet
 rmgroup:admin@england.news-admin.org:england.*:verify-england-usenet
-checkgroups:admin@england.news-admin.org:england.*:verify-england-usenet
 
 ## ES (Spain)
 # Contact: david.martinez@rediris.es
 # URL: http://www.rediris.es/netnews/infonews/config.es.html
-# URL: http://news.rediris.es/~moderador/grupos/newsgroups.es
+# Admin group: es.news
 # *PGP*   See comment at top of file.
 newgroup:*:es.*:drop
 rmgroup:*:es.*:drop
@@ -658,20 +696,24 @@ newgroup:mod-ena@ennui.org:esp.*:verify-esp.news.administracion
 rmgroup:mod-ena@ennui.org:esp.*:verify-esp.news.administracion
 
 ## EUNET (Europe)
+checkgroups:news@noc.eu.net:eunet.*:doit
 newgroup:news@noc.eu.net:eunet.*:doit
 rmgroup:news@noc.eu.net:eunet.*:doit
 
 ## EUROPA (Europe)
 # URL: http://www.europa.usenet.eu.org/
+# Admin group: europa.usenet.admin
 # Key fingerprint = 3A 05 A8 49 FB 16 29 25  75 E3 DE BB 69 E0 1D B4
 # *PGP*   See comment at top of file.
+newgroup:*:europa.*:drop
+rmgroup:*:europa.*:drop
+checkgroups:group-admin@usenet.eu.org:europa.*:verify-group-admin@usenet.eu.org
 newgroup:group-admin@usenet.eu.org:europa.*:verify-group-admin@usenet.eu.org
 rmgroup:group-admin@usenet.eu.org:europa.*:verify-group-admin@usenet.eu.org
-checkgroups:group-admin@usenet.eu.org:europa.*:verify-group-admin@usenet.eu.org
 
 ## EXAMPLE (Bogus hierarchy reserved for standards documents)
-newgroup:*@*:example.*:mail
-rmgroup:*@*:example.*:doit
+newgroup:*:example.*:mail
+rmgroup:*:example.*:doit
 
 ## FA (*DEFUNCT* -- "From ARPA" gatewayed mailing lists)
 # Removed in the "Great Renaming" of 1988.
@@ -680,15 +722,17 @@ rmgroup:*@*:example.*:doit
 # mailing lists into fa.* newsgroups, but that site does not appear to be
 # issuing any control messages for those groups.
 #
-newgroup:*@*:fa.*:mail
-rmgroup:*@*:fa.*:doit
+newgroup:*:fa.*:mail
+rmgroup:*:fa.*:doit
 
 ## FIDO (FidoNet)
+checkgroups:root@mbh.org:fido.*:doit
 newgroup:root@mbh.org:fido.*:doit
 rmgroup:root@mbh.org:fido.*:doit
 
-## FIDO.BELG.* (FidoNet)
+## FIDO.BELG (FidoNet)
 # URL: http://www.z2.fidonet.org/news/fido.belg.news/
+# Admin group: fido.belg.news
 # *PGP*   See comment at top of file.
 newgroup:*:fido.belg.*:drop
 rmgroup:*:fido.belg.*:drop
@@ -696,7 +740,8 @@ checkgroups:fidobelg@mail.z2.fidonet.org:fido.belg.*:verify-fido.belg.news
 newgroup:fidobelg@mail.z2.fidonet.org:fido.belg.*:verify-fido.belg.news
 rmgroup:fidobelg@mail.z2.fidonet.org:fido.belg.*:verify-fido.belg.news
 
-## FIDO7
+## FIDO7 (FidoNet)
+# Admin group: fido7.postmasters
 # *PGP*   See comment at top of file.
 newgroup:*:fido7.*:drop
 rmgroup:*:fido7.*:drop
@@ -705,14 +750,16 @@ newgroup:newgroups-request@fido7.ru:fido7.*:verify-fido7.announce.newgroups
 rmgroup:newgroups-request@fido7.ru:fido7.*:verify-fido7.announce.newgroups
 
 ## FINET (Finland and Finnish language alternative newsgroups)
-# The alt.* of Finland.
+checkgroups:*@*.fi:finet.*:doit
 newgroup:*@*.fi:finet.*:doit
 rmgroup:*@*.fi:finet.*:doit
 
 ## FJ (Japan and Japanese language)
 # Contact: committee@fj-news.org
 # URL: http://www.is.tsukuba.ac.jp/~yas/fj/
+# Admin group: fj.news.announce
 # Key URL: http://www.is.tsukuba.ac.jp/~yas/fj/fj.asc
+# *PGP*   See comment at top of file.
 newgroup:*:fj.*:drop
 rmgroup:*:fj.*:drop
 checkgroups:committee@fj-news.org:fj.*:verify-fj.news.announce
@@ -720,6 +767,8 @@ newgroup:committee@fj-news.org:fj.*:verify-fj.news.announce
 rmgroup:committee@fj-news.org:fj.*:verify-fj.news.announce
 
 ## FL (Florida, USA)
+checkgroups:hgoldste@news1.mpcs.com:fl.*:doit
+checkgroups:scheidell@fdma.fdma.com:fl.*:doit
 newgroup:hgoldste@news1.mpcs.com:fl.*:doit
 newgroup:scheidell@fdma.fdma.com:fl.*:doit
 rmgroup:hgoldste@news1.mpcs.com:fl.*:doit
@@ -728,15 +777,16 @@ rmgroup:scheidell@fdma.fdma.com:fl.*:doit
 ## FLORA (FLORA Community WEB, Canada)
 # Contact: russell@flora.org
 # URL: http://news.flora.org/
-# Key URL: http://www.flora.org/russell/
+# Admin group: flora.general
 # *PGP*   See comment at top of file.
 newgroup:*:flora.*:drop
 rmgroup:*:flora.*:drop
 checkgroups:news@flora.ottawa.on.ca:flora.*:verify-flora-news
-newgroup:news@news.rediris.es:flora.*:verify-flora-news
-rmgroup:news@news.rediris.es:flora.*:verify-flora-news
+newgroup:news@flora.ottawa.on.ca:flora.*:verify-flora-news
+rmgroup:news@flora.ottawa.on.ca:flora.*:verify-flora-news
 
 ## FR (French Language)
+# Admin group: fr.usenet.forums.annonces
 # *PGP*   See comment at top of file.
 newgroup:*:fr.*:drop
 rmgroup:*:fr.*:drop
@@ -751,16 +801,18 @@ newgroup:tale@*uu.net:free.*:drop
 rmgroup:*:free.*:drop
 
 ## FUDAI (Japanese ?)
+checkgroups:news@picard.cs.osakafu-u.ac.jp:fudai.*:doit
 newgroup:news@picard.cs.osakafu-u.ac.jp:fudai.*:doit
 rmgroup:news@picard.cs.osakafu-u.ac.jp:fudai.*:doit
 
 ## FUR (*PRIVATE* -- furrynet)
 # Contact: fur-config@news.furry.net
-# Please contact the above address before adding these groups.
-newgroup:*@*:fur.*:mail
-rmgroup:*@*:fur.*:doit
+# For private use only, contact the above address for information.
+newgroup:*:fur.*:mail
+rmgroup:*:fur.*:doit
 
 ## GER & HANNET & HANNOVER & HILDESHEIM & HISS (Hannover, Germany)
+checkgroups:fifi@hiss.han.de:ger.*|hannover.*|hannet.*|hildesheim.*|hiss.*:doit
 newgroup:fifi@hiss.han.de:ger.*|hannover.*|hannet.*|hildesheim.*|hiss.*:doit
 rmgroup:fifi@hiss.han.de:ger.*|hannover.*|hannet.*|hildesheim.*|hiss.*:doit
 
@@ -770,14 +822,15 @@ newgroup:news@news.gatech.edu:git*class.*:mail
 rmgroup:news@news.gatech.edu:git.*:doit
 
 ## GNU (Free Software Foundation)
+checkgroups:gnu@prep.ai.mit.edu:gnu.*:doit
+checkgroups:news@*ai.mit.edu:gnu.*:doit
 newgroup:gnu@prep.ai.mit.edu:gnu.*:doit
 newgroup:news@*ai.mit.edu:gnu.*:doit
 rmgroup:gnu@prep.ai.mit.edu:gnu.*:doit
 rmgroup:news@*ai.mit.edu:gnu.*:doit
 
 ## GOV (Government Information)
-# URL: http://www.govnews.org/govnews/
-# Key URL: http://www.govnews.org/govnews/site-setup/gov.pgpkeys
+# Admin group: gov.usenet.announce
 # *PGP*   See comment at top of file.
 newgroup:*:gov.*:drop
 rmgroup:*:gov.*:drop
@@ -787,25 +840,31 @@ rmgroup:gov-usenet-announce-moderator@govnews.org:gov.*:verify-gov.usenet.announ
 
 ## GWU (George Washington University, Washington, DC)
 # Contact: Sweth Chandramouli <news@nit.gwu.edu>
+checkgroups:news@nit.gwu.edu:gwu.*:doit
 newgroup:news@nit.gwu.edu:gwu.*:doit
 rmgroup:news@nit.gwu.edu:gwu.*:doit
 
 ## HAMILTON (Canadian)
+checkgroups:news@*dcss.mcmaster.ca:hamilton.*:doit
 newgroup:news@*dcss.mcmaster.ca:hamilton.*:doit
 rmgroup:news@*dcss.mcmaster.ca:hamilton.*:doit
 
 ## HAMSTER (Hamster, a Win32 news and mail proxy server)
 # Contact: hamster-contact@snafu.de
 # URL: http://www.nethamster.org
+# Admin group: hamster.de.config
 # Key URL: http://www.nethamster.org/control/hamster.asc
-# Key fingerprint = 12 75 A9 42 8A D6 1F 77 6A CF B4 0C 79 15 5F 93
+# Key fingerprint = 12 75 A9 42 8A D6 1F 77  6A CF B4 0C 79 15 5F 93
 # *PGP*   See comment at top of file.
+newgroup:*:hamster.*:drop
+rmgroup:*:hamster.*:drop
 checkgroups:hamster-control@snafu.de:hamster.*:verify-hamster-control@snafu.de
 newgroup:hamster-control@snafu.de:hamster.*:verify-hamster-control@snafu.de
 rmgroup:hamster-control@snafu.de:hamster.*:verify-hamster-control@snafu.de
 
 ## HAN (Korean Hangul)
 # Contact: newgroups-request@usenet.or.kr
+# Admin group: han.news.admin
 # Key URL: ftp://ftp.usenet.or.kr/pub/korea/usenet/pgp/PGPKEY.han
 # *PGP*   See comment at top of file.
 newgroup:*:han.*:drop
@@ -815,16 +874,18 @@ newgroup:newgroups-request@usenet.or.kr:han.*:verify-han.news.admin
 rmgroup:newgroups-request@usenet.or.kr:han.*:verify-han.news.admin
 
 ## HARVARD (Harvard University, Cambridge, MA)
+checkgroups:*@*.harvard.edu:harvard.*:doit
 newgroup:*@*.harvard.edu:harvard.*:doit
 rmgroup:*@*.harvard.edu:harvard.*:doit
 
-## HAWAII
+## HAWAII (Hawaii, USA)
+checkgroups:news@lava.net:hawaii.*:doit
 newgroup:news@lava.net:hawaii.*:doit
 rmgroup:news@lava.net:hawaii.*:doit
 
-## HIVNET (HIVNET Foundation, for HIV+/AIDS information)
+## HIV (HIVNET Foundation, for HIV+/AIDS information)
 # Contact: news@hivnet.org
-# Key URL: ftp://ftp.hivnet.org/pub/usenet/pgpkey.hivnet
+# Admin group: hiv.config
 # Key fingerprint = 5D D6 0E DC 1E 2D EA 0B  B0 56 4D D6 52 53 D7 A4
 # Syncable server: news.hivnet.org
 # *PGP*   See comment at top of file.
@@ -835,10 +896,12 @@ newgroup:news@hivnet.org:hiv.*:verify-news@hivnet.org
 rmgroup:news@hivnet.org:hiv.*:verify-news@hivnet.org
 
 ## HK (Hong Kong)
+checkgroups:hknews@comp.hkbu.edu.hk:hk.*:doit
 newgroup:hknews@comp.hkbu.edu.hk:hk.*:doit
 rmgroup:hknews@comp.hkbu.edu.hk:hk.*:doit
 
 ## HOUSTON (Houston, Texas, USA)
+# Admin group: houston.usenet.config
 # *PGP*   See comment at top of file.
 newgroup:*:houston.*:drop
 rmgroup:*:houston.*:drop
@@ -846,12 +909,12 @@ checkgroups:news@academ.com:houston.*:verify-houston.usenet.config
 newgroup:news@academ.com:houston.*:verify-houston.usenet.config
 rmgroup:news@academ.com:houston.*:verify-houston.usenet.config
 
-## HUMANITYQUEST
+## HUMANITYQUEST (Humanities discussion)
 # Contact: news-admin@humanityquest.com
 # URL: http://www.humanityquest.com/projects/newsgroups/
 # Key URL: http://www.humanityquest.com/projects/newsgroups/PGP.htm
 # Key fingerprint = BA3D B306 B6F5 52AA BA8F 32F0 8C4F 5040 16F9 C046
-# *PGP*  See comment at top of file.
+# *PGP*   See comment at top of file.
 newgroup:*:humanityquest.*:drop
 rmgroup:*:humanityquest.*:drop
 checkgroups:news-admin@humanityquest.com:humanityquest.*:verify-humanityquest.admin.config
@@ -859,6 +922,9 @@ newgroup:news-admin@humanityquest.com:humanityquest.*:verify-humanityquest.admin
 rmgroup:news-admin@humanityquest.com:humanityquest.*:verify-humanityquest.admin.config
 
 ## HUN (Hungary)
+# Admin group: hun.admin.news
+# Key URL: http://gatling.ikk.sztaki.hu/~kissg/news/hun.admin.news.asc
+# *PGP*   See comment at top of file.
 newgroup:*:hun.*:drop
 rmgroup:*:hun.*:drop
 checkgroups:hun-mnt@news.sztaki.hu:hun.*:verify-hun.admin.news
@@ -866,28 +932,31 @@ newgroup:hun-mnt@news.sztaki.hu:hun.*:verify-hun.admin.news
 rmgroup:hun-mnt@news.sztaki.hu:hun.*:verify-hun.admin.news
 
 ## IA (Iowa, USA)
+checkgroups:skunz@iastate.edu:ia.*:doit
 newgroup:skunz@iastate.edu:ia.*:doit
 rmgroup:skunz@iastate.edu:ia.*:doit
 
-## IBMNET (*LOCAL*)
+## IBMNET (*LOCAL* -- ?)
 # Contact: news@ibm.net
 # For local use only, contact the above address for information.
-newgroup:*@*:ibmnet.*:mail
-rmgroup:*@*:ibmnet.*:doit
+newgroup:*:ibmnet.*:mail
+rmgroup:*:ibmnet.*:doit
 
 ## ICONZ (*LOCAL* -- The Internet Company of New Zealand, New Zealand)
 # Contact: usenet@iconz.co.nz
 # For local use only, contact the above address for information.
-newgroup:*@*:iconz.*:mail
-rmgroup:*@*:iconz.*:doit
+newgroup:*:iconz.*:mail
+rmgroup:*:iconz.*:doit
 
 ## IDOCTRA (Idoctra Translation Software, Translation Discussion)
 # Contact: support@idoctra.com
+checkgroups:support@idoctra.com:idoctra.*:doit
 newgroup:support@idoctra.com:idoctra.*:doit
 rmgroup:support@idoctra.com:idoctra.*:doit
 
 ## IE (Ireland)
 # Contact: control@usenet.ie
+# Admin group: ie.news.group
 # *PGP*   See comment at top of file.
 newgroup:*:ie.*:drop
 rmgroup:*:ie.*:drop
@@ -897,16 +966,18 @@ rmgroup:control@usenet.ie:ie.*:verify-control@usenet.ie
 
 ## IEEE (*DEFUNCT* -- Institute of Electrical and Electronic Engineers)
 # Contact: <postoffice@ieee.org>
-# Defunct hierarchy, please remove any groups that you carry.
-newgroup:*@*:ieee.*:mail
-rmgroup:*@*:ieee.*:doit
+# This hierarchy is defunct.  Please remove it.
+newgroup:*:ieee.*:mail
+rmgroup:*:ieee.*:doit
 
-## INFO newsgroups
+## INFO (Gatewayed mailing lists)
+checkgroups:rjoyner@uiuc.edu:info.*:doit
 newgroup:rjoyner@uiuc.edu:info.*:doit
 rmgroup:rjoyner@uiuc.edu:info.*:doit
 
 ## IS (Iceland)
 # Contact: Marius Olafsson <news@isnet.is>
+# Admin group: is.isnet
 # *PGP*   See comment at top of file.
 newgroup:*:is.*:drop
 rmgroup:*:is.*:drop
@@ -915,6 +986,7 @@ newgroup:news@isnet.is:is.*:verify-is.isnet
 rmgroup:news@isnet.is:is.*:verify-is.isnet
 
 ## ISC (Japanese ?)
+checkgroups:news@sally.isc.chubu.ac.jp:isc.*:doit
 newgroup:news@sally.isc.chubu.ac.jp:isc.*:doit
 rmgroup:news@sally.isc.chubu.ac.jp:isc.*:doit
 
@@ -925,6 +997,7 @@ rmgroup:news@news.biu.ac.il:israel.*|il.*:doit
 ## IT (Italian)
 # Contact: gcn@news.nic.it
 # URL: http://www.news.nic.it/
+# Admin group: it.news.annunci
 # Key URL: http://www.news.nic.it/pgp.txt
 # Key fingerprint = 94 A4 F7 B5 46 96 D6 C7  A6 73 F2 98 C4 8C D0 E0
 # *PGP*   See comment at top of file.
@@ -937,6 +1010,7 @@ rmgroup:gcn@news.nic.it:it.*:verify-gcn@news.nic.it
 ## ITALIA (Italy)
 # Contact: news@news.cineca.it
 # URL: http://news.cineca.it/italia/
+# Admin group: italia.announce.newgroups
 # Key URL: http://news.cineca.it/italia/italia-pgp.txt
 # Key fingerprint = 0F BB 71 62 DA 5D 5D B8  D5 86 FC 28 02 67 1A 6B
 # *PGP*   See comment at top of file.
@@ -956,8 +1030,8 @@ rmgroup:root@usenet.ucs.indiana.edu:iu.*:doit
 ## JAPAN (Japan)
 # Contact: Tsuneo Tanaka <tt+null@efnet.com>
 # URL: http://www.asahi-net.or.jp/~AE5T-KSN/japan-e.html
+# Admin group: japan.admin.announce
 # Key URL: http://grex.cyberspace.org/~tt/japan.admin.announce.asc
-# Key URL: http://www.asahi-net.or.jp/~AE5T-KSN/japan/japan.admin.announce.asc
 # Key fingerprint = 6A FA 19 47 69 1B 10 74  38 53 4B 1B D8 BA 3E 85
 # *PGP*   See comment at top of file.
 newgroup:*:japan.*:drop
@@ -967,23 +1041,22 @@ newgroup:japan.admin.announce@news.efnet.com:japan.*:verify-japan.admin.announce
 rmgroup:japan.admin.announce@news.efnet.com:japan.*:verify-japan.admin.announce@news.efnet.com
 
 ## K12 (US Educational Network)
+checkgroups:braultr@*csmanoirs.qc.ca:k12.*:doit
 newgroup:braultr@*csmanoirs.qc.ca:k12.*:doit
 rmgroup:braultr@*csmanoirs.qc.ca:k12.*:doit
 
 ## KA (*PRIVATE* -- Karlsruhe, Germany)
 # Contact: usenet@karlsruhe.org
-# URL: http://www.karlsruhe.org/             (German only)
-# URL: http://www.karlsruhe.org/newsgroups   (newsgroup list)
+# URL: http://www.karlsruhe.org/
 # Key fingerprint =  DE 19 BB 25 76 19 81 17  F0 67 D2 23 E8 C8 7C 90
 # For private use only, contact the above address for information.
 # *PGP*   See comment at top of file.
 newgroup:*:ka.*:drop
 rmgroup:*:ka.*:drop
-checkgroups:usenet@karlsruhe.org:ka.*:verify-usenet@karlsruhe.org
-newgroup:usenet@karlsruhe.org:ka.*:verify-usenet@karlsruhe.org
+newgroup:usenet@karlsruhe.org:ka.*:mail
 rmgroup:usenet@karlsruhe.org:ka.*:verify-usenet@karlsruhe.org
 
-## KANTO
+## KANTO (?)
 # *PGP*   See comment at top of file.
 rmgroup:*:kanto.*:drop
 checkgroups:ty@kamoi.imasy.or.jp:kanto.*:verify-kanto.news.network
@@ -992,7 +1065,6 @@ newgroup:*@*.jp:kanto.*:doit
 rmgroup:ty@kamoi.imasy.or.jp:kanto.*:verify-kanto.news.network
 
 ## KASSEL (Kassel, Germany)
-# Key mail: pgp-public-keys@keys.de.pgp.net Subject: GET 0xC4D30EE5
 # *PGP*   See comment at top of file.
 newgroup:*:kassel.*:drop
 rmgroup:*:kassel.*:drop
@@ -1001,28 +1073,31 @@ newgroup:dirk.meyer@dinoex.sub.org:kassel.*:verify-kassel-admin
 rmgroup:dirk.meyer@dinoex.sub.org:kassel.*:verify-kassel-admin
 
 ## KC (Kansas City, Kansas/Missouri, USA)
+checkgroups:dan@sky.net:kc.*:doit
 newgroup:dan@sky.net:kc.*:doit
 rmgroup:dan@sky.net:kc.*:doit
 
 ## KIEL (Kiel, Germany)
-checkgroups:kris@white.schulung.netuse.de:kiel.*:mail
+checkgroups:kris@white.schulung.netuse.de:kiel.*:doit
 newgroup:kris@white.schulung.netuse.de:kiel.*:doit
 rmgroup:kris@white.schulung.netuse.de:kiel.*:doit
 
 ## KRST (*LOCAL* -- University of Oslo, Norway)
 # Contact: jani@ifi.uio.no
-# For private use only, contact the above address for information.
-newgroup:*@*:krst.*:drop
-rmgroup:*@*:krst.*:doit
+# For local use only, contact the above address for information.
+newgroup:*:krst.*:mail
+rmgroup:*:krst.*:doit
 
 ## KWNET (*LOCAL* -- Kitchener-Waterloo?)
 # Contact: Ed Hew <edhew@xenitec.on.ca>
-# For private use only, contact the above address for information.
-newgroup:*@*:kwnet.*:mail
-rmgroup:*@*:kwnet.*:doit
+# For local use only, contact the above address for information.
+newgroup:*:kwnet.*:mail
+rmgroup:*:kwnet.*:doit
 
 ## LAW (?)
 # Contact: Jim Burke <jburke@kentlaw.edu>
+checkgroups:*@*.kentlaw.edu:law.*:doit
+checkgroups:*@*.law.vill.edu:law.*:doit
 newgroup:*@*.kentlaw.edu:law.*:doit
 newgroup:*@*.law.vill.edu:law.*:doit
 rmgroup:*@*.kentlaw.edu:law.*:doit
@@ -1030,8 +1105,9 @@ rmgroup:*@*.law.vill.edu:law.*:doit
 
 ## LINUX (Gated Linux mailing lists)
 # Contact: Marco d'Itri <md@toglimi.linux.it>
+# Admin group: linux.admin.news
 # Key fingerprint = 81 B3 27 99 4F CE 32 D1  1B C9 01 0D BB B3 2E 41
-# *PGP*  See comment at top of file.
+# *PGP*   See comment at top of file.
 newgroup:*:linux.*:drop
 rmgroup:*:linux.*:drop
 checkgroups:linux-admin@bofh.it:linux.*:verify-linux-admin@bofh.it
@@ -1041,12 +1117,14 @@ rmgroup:linux-admin@bofh.it:linux.*:verify-linux-admin@bofh.it
 ## LOCAL (Local-only groups)
 # It is not really a good idea for sites to use these since they may occur
 # on many unconnected sites.
-newgroup:*@*:local.*:mail
-rmgroup:*@*:local.*:drop
+newgroup:*:local.*:mail
+rmgroup:*:local.*:drop
 
 ## MALTA (Nation of Malta)
 # Contact: cmeli@cis.um.edu.mt
 # URL: http://www.malta.news-admin.org/
+# Admin group: malta.config
+# Key URL: http://www.cis.um.edu.mt/news-malta/PGP.PUBLICKEY
 # Key fingerprint = 20 17 01 5C F0 D0 1A 42  E4 13 30 58 0B 14 48 A6
 # *PGP*   See comment at top of file.
 newgroup:*:malta.*:drop
@@ -1058,42 +1136,47 @@ rmgroup:cmeli@cis.um.edu.mt:malta.*:verify-malta.config
 ## MANAWATU (*LOCAL* -- Manawatu district, New Zealand)
 # Contact: alan@manawatu.gen.nz or news@manawatu.gen.nz
 # For local use only, contact the above address for information.
-newgroup:*@*:manawatu.*:mail
-rmgroup:*@*:manawatu.*:doit
+newgroup:*:manawatu.*:mail
+rmgroup:*:manawatu.*:doit
 
 ## MAUS (MausNet, Germany)
-# Key fingerprint: 82 52 C7 70 26 B9 72 A1  37 98 55 98 3F 26 62 3E
+# Admin group: maus.info
+# Key fingerprint = 82 52 C7 70 26 B9 72 A1  37 98 55 98 3F 26 62 3E
 # *PGP*   See comment at top of file.
 newgroup:*:maus.*:drop
 rmgroup:*:maus.*:drop
-checkgroups:guenter@gst0hb.north.de:maus.*:verify-maus-info
 checkgroups:guenter@gst0hb.hb.provi.de:maus.*:verify-maus-info
-newgroup:guenter@gst0hb.north.de:maus.*:verify-maus-info
+checkgroups:guenter@gst0hb.north.de:maus.*:verify-maus-info
 newgroup:guenter@gst0hb.hb.provi.de:maus.*:verify-maus-info
-rmgroup:guenter@gst0hb.north.de:maus.*:verify-maus-info
+newgroup:guenter@gst0hb.north.de:maus.*:verify-maus-info
 rmgroup:guenter@gst0hb.hb.provi.de:maus.*:verify-maus-info
+rmgroup:guenter@gst0hb.north.de:maus.*:verify-maus-info
 
 ## MCMASTER (*LOCAL* -- McMaster University, Ontario)
 # Contact: Brian Beckberger <news@informer1.cis.mcmaster.ca>
 # For local use only, contact the above address for information.
-newgroup:*@*:mcmaster.*:mail
-rmgroup:*@*:mcmaster.*:doit
+newgroup:*:mcmaster.*:mail
+rmgroup:*:mcmaster.*:doit
 
-## MCOM (Netscape Inc, USA)
-newgroup:*@*:mcom.*:mail
-rmgroup:*@*:mcom.*:doit
+## MCOM (*LOCAL* -- Netscape Inc, USA)
+# For local use only.
+newgroup:*:mcom.*:mail
+rmgroup:*:mcom.*:doit
 
 ## ME (Maine, USA)
+checkgroups:kerry@maine.maine.edu:me.*:doit
 newgroup:kerry@maine.maine.edu:me.*:doit
 rmgroup:kerry@maine.maine.edu:me.*:doit
 
 ## MEDLUX (All-Russia medical teleconferences)
 # URL: ftp://ftp.medlux.ru/pub/news/medlux.grp
-checkgroups:neil@new*.medlux.ru:medlux.*:mail
+checkgroups:neil@new*.medlux.ru:medlux.*:doit
 newgroup:neil@new*.medlux.ru:medlux.*:doit
 rmgroup:neil@new*.medlux.ru:medlux.*:doit
 
 ## MELB (Melbourne, Australia)
+checkgroups:kre@*mu*au:melb.*:doit
+checkgroups:revdoc@*uow.edu.au:melb.*:doit
 newgroup:kre@*mu*au:melb.*:doit
 newgroup:revdoc@*uow.edu.au:melb.*:doit
 rmgroup:kre@*mu*au:melb.*:doit
@@ -1101,6 +1184,7 @@ rmgroup:revdoc@*uow.edu.au:melb.*:doit
 
 ## MENSA (The Mensa Organisation)
 # Contact: usenet@newsgate.mensa.org
+# Admin group: mensa.config
 # Key fingerprint = A7 57 24 49 C0 D4 47 33  84 A0 52 6E F1 A4 00 5B
 # *PGP*   See comment at top of file.
 newgroup:*:mensa.*:drop
@@ -1110,19 +1194,20 @@ newgroup:usenet@newsgate.mensa.org:mensa.*:verify-mensa.config
 rmgroup:usenet@newsgate.mensa.org:mensa.*:verify-mensa.config
 
 ## METOCEAN (ISP in Japan)
+checkgroups:fwataru@*.metocean.co.jp:metocean.*:doit
 newgroup:fwataru@*.metocean.co.jp:metocean.*:doit
 rmgroup:fwataru@*.metocean.co.jp:metocean.*:doit
 
-## METROPOLIS (*LOCAL*)
+## METROPOLIS (*LOCAL* -- ?)
 # Contact: newsmaster@worldonline.nl
 # For local use only, contact the above address for information.
-newgroup:*@*:metropolis.*:mail
-rmgroup:*@*:metropolis.*:doit
+newgroup:*:metropolis.*:mail
+rmgroup:*:metropolis.*:doit
 
 ## MI (Michigan, USA)
 # Contact: Steve Simmons <scs@lokkur.dexter.mi.us>
 # URL: http://www.inland-sea.com/mi-news.html
-checkgroups:scs@lokkur.dexter.mi.us:mi.*:mail
+checkgroups:scs@lokkur.dexter.mi.us:mi.*:doit
 newgroup:scs@lokkur.dexter.mi.us:mi.*:doit
 rmgroup:scs@lokkur.dexter.mi.us:mi.*:doit
 
@@ -1142,20 +1227,22 @@ rmgroup:*:microsoft.*:drop
 ## MILW (Milwaukee, Wisconsin, USA)
 # Contact: milw@usenet.mil.wi.us
 # URL: http://usenet.mil.wi.us
-# Key fingerprint = 6E 9B 9F 70 98 AB 9C E5  C3 C0 05 82 21 5B F4 9E
 # Key URL: http://usenet.mil.wi.us/pgpkey
+# Key fingerprint = 6E 9B 9F 70 98 AB 9C E5  C3 C0 05 82 21 5B F4 9E
 # *PGP*   See comment at top of file.
+newgroup:*:milw.*:drop
+rmgroup:*:milw.*:drop
 checkgroups:milw@usenet.mil.wi.us:milw.*:verify-milw.config
 newgroup:milw@usenet.mil.wi.us:milw.*:verify-milw.config
 rmgroup:milw@usenet.mil.wi.us:milw.*:verify-milw.config
 
 ## MOD (*DEFUNCT* -- Original top level moderated hierarchy)
-# Removed in the "Great Renaming" of 1988.
-# Possible revival attempt in mid-97, so watch this space..
-newgroup:*@*:mod.*:mail
-rmgroup:*@*:mod.*:doit
+# This hierarchy is defunct.  Please remove it.
+newgroup:*:mod.*:mail
+rmgroup:*:mod.*:doit
 
-## MUC (Munchen (Munich), Germany)
+## MUC (Munchen [Munich], Germany)
+# Admin group: muc.admin
 # Key fingerprint = 43 C7 0E 7C 45 C7 06 E0  BD 6F 76 CE 07 39 5E 66
 # *PGP*   See comment at top of file.
 newgroup:*:muc.*:drop
@@ -1165,21 +1252,21 @@ newgroup:muc-cmsg@muenchen.pro-bahn.org:muc.*:verify-muc.admin
 rmgroup:muc-cmsg@muenchen.pro-bahn.org:muc.*:verify-muc.admin
 
 ## NAGASAKI-U (Nagasaki University, Japan ?)
+checkgroups:root@*nagasaki-u.ac.jp:nagasaki-u.*:doit
 newgroup:root@*nagasaki-u.ac.jp:nagasaki-u.*:doit
 rmgroup:root@*nagasaki-u.ac.jp:nagasaki-u.*:doit
 
-## NAS (*LOCAL* -- Numerican Aerodynamic Simulation Facility,
-## NASA Ames Research Center, USA)
+## NAS (*LOCAL* -- NAS, NASA Ames Research Center, USA)
 # Contact: news@nas.nasa.gov
-# For internal use only, contact above address for questions.
-newgroup:*@*:nas.*:mail
-rmgroup:*@*:nas.*:doit
+# For local use only, contact the above address for information.
+newgroup:*:nas.*:mail
+rmgroup:*:nas.*:doit
 
 ## NASA (*LOCAL* -- National Aeronautics and Space Administration, USA)
 # Contact: news@nas.nasa.gov
-# For internal use only, contact above address for questions.
-newgroup:*@*:nasa.*:mail
-rmgroup:*@*:nasa.*:doit
+# For local use only, contact the above address for information.
+newgroup:*:nasa.*:mail
+rmgroup:*:nasa.*:doit
 
 ## NC (North Carolina, USA)
 #
@@ -1193,27 +1280,30 @@ rmgroup:*@*:nasa.*:doit
 ## NCF (*LOCAL* -- National Capital Freenet, Ottawa, Ontario, Canada)
 # Contact: news@freenet.carleton.ca
 # For local use only, contact the above address for information.
-newgroup:*@*:ncf.*:mail
-rmgroup:*@*:ncf.*:doit
+newgroup:*:ncf.*:mail
+rmgroup:*:ncf.*:doit
 
-## NCTU newsgroups (Taiwan)
+## NCTU (Taiwan)
+checkgroups:chen@cc.nctu.edu.tw:nctu.*:doit
 newgroup:chen@cc.nctu.edu.tw:nctu.*:doit
 rmgroup:chen@cc.nctu.edu.tw:nctu.*:doit
 
 ## NCU (*LOCAL* -- National Central University, Taiwan)
 # Contact: Ying-Hao Chang <aqlott@db.csie.ncu.edu.tw>
 # Contact: <runn@news.ncu.edu.tw>
-# For local use only, contact the above addresses for information.
-newgroup:*@*:ncu.*:mail
-rmgroup:*@*:ncu.*:doit
+# For local use only, contact the above address for information.
+newgroup:*:ncu.*:mail
+rmgroup:*:ncu.*:doit
 
 ## NERSC (National Energy Research Scientific Computing Center)
 # Contact: <usenet@nersc.gov>
-# newgroup:*@*:nersc.*:mail
-# rmgroup:*@*:nersc.*:doit
+# newgroup:*:nersc.*:mail
+# rmgroup:*:nersc.*:doit
 
-## NET newsgroups (Usenet 2)
+## NET (Usenet 2)
 # URL: http://www.usenet2.org
+# Admin group: net.config
+# Key URL: http://www.usenet2.org/control@usenet2.org.asc
 # Key fingerprint = D7 D3 5C DB 18 6A 29 79  BF 74 D4 58 A3 78 9D 22
 # *PGP*   See comment at top of file.
 newgroup:*:net.*:drop
@@ -1222,10 +1312,16 @@ checkgroups:control@usenet2.org:net.*:verify-control@usenet2.org
 newgroup:control@usenet2.org:net.*:verify-control@usenet2.org
 rmgroup:control@usenet2.org:net.*:verify-control@usenet2.org
 
+## NETINS (*LOCAL* -- netINS, Inc)
+# Contact: news@netins.net
+# For local use only, contact the above address for information.
+newgroup:*:netins.*:mail
+rmgroup:*:netins.*:doit
+
 ## NETSCAPE (Netscape Communications Corp)
 # Contact: news@netscape.com
 # URL: http://www.mozilla.org/community.html
-# URL: http://www.mozilla.org/newsfeeds.html
+# Admin group: netscape.public.admin
 # Key fingerprint = B7 80 55 12 1F 9C 17 0B  86 66 AD 3B DB 68 35 EC
 # *PGP*   See comment at top of file.
 newgroup:*:netscape.*:drop
@@ -1234,32 +1330,30 @@ checkgroups:news@netscape.com:netscape.*:verify-netscape.public.admin
 newgroup:news@netscape.com:netscape.*:verify-netscape.public.admin
 rmgroup:news@netscape.com:netscape.*:verify-netscape.public.admin
 
-## NETINS (*LOCAL* -- netINS, Inc)
-# Contact: news@netins.net
-# For local use only, contact the above address for information.
-newgroup:*@*:netins.*:mail
-rmgroup:*@*:netins.*:doit
-
 ## NIAGARA (Niagara Peninsula, USA/Canada)
+checkgroups:news@niagara.com:niagara.*:doit
 newgroup:news@niagara.com:niagara.*:doit
 rmgroup:news@niagara.com:niagara.*:doit
 
 ## NIAS (Japanese ?)
+checkgroups:news@cc.nias.ac.jp:nias.*:doit
 newgroup:news@cc.nias.ac.jp:nias.*:doit
 rmgroup:news@cc.nias.ac.jp:nias.*:doit
 
 ## NIGERIA (Nigeria)
+checkgroups:news@easnet.net:nigeria.*:doit
 newgroup:news@easnet.net:nigeria.*:doit
 rmgroup:news@easnet.net:nigeria.*:doit
 
 ## NIHON (Japan)
+checkgroups:ktomita@jade.dti.ne.jp:nihon.*:doit
 newgroup:ktomita@jade.dti.ne.jp:nihon.*:doit
 rmgroup:ktomita@jade.dti.ne.jp:nihon.*:doit
 
 ## NL (Netherlands)
 # Contact: nl-admin@nic.surfnet.nl
-# URL: http://www.xs4all.nl/~egavic/NL/ (Dutch)
 # URL: http://www.kinkhorst.com/usenet/nladmin.en.html (English)
+# Admin group: nl.newsgroups
 # Key fingerprint = 45 20 0B D5 A1 21 EA 7C  EF B2 95 6C 25 75 4D 27
 # *PGP*   See comment at top of file.
 newgroup:*:nl.*:drop
@@ -1275,18 +1369,19 @@ rmgroup:nl-admin@nic.surfnet.nl:nl.*:verify-nl.newsgroups
 # *PGP*   See comment at top of file.
 rmgroup:*:nl-alt.*:drop
 checkgroups:nl-alt-janitor@surfer.xs4all.nl:nl-alt.*:verify-nl-alt.config.admin
-newgroup:*@*:nl-alt.*:doit
+newgroup:*:nl-alt.*:doit
 rmgroup:nl-alt-janitor@surfer.xs4all.nl:nl-alt.*:verify-nl-alt.config.admin
 rmgroup:news@kink.xs4all.nl:nl-alt.*:verify-nl-alt.config.admin
 
 ## NLNET (Netherlands ISP)
+checkgroups:beheer@nl.net:nlnet.*:doit
 newgroup:beheer@nl.net:nlnet.*:doit
 rmgroup:beheer@nl.net:nlnet.*:doit
 
 ## NLO (Open Source / Free Software, hosted by nl.linux.org)
 # URL: http://news.nl.linux.org/doc/nlo.html
 # Key fingerprint = 63 DC B2 51 0A F3 DD 72  C2 BD C6 FD C1 C5 44 CF
-# *PGP*  See comment at top of file.
+# *PGP*   See comment at top of file.
 newgroup:*:nlo.*:drop
 rmgroup:*:nlo.*:drop
 checkgroups:news@nl.linux.org:nlo.*:verify-nlo.newsgroups
@@ -1294,18 +1389,27 @@ newgroup:news@nl.linux.org:nlo.*:verify-nlo.newsgroups
 rmgroup:news@nl.linux.org:nlo.*:verify-nlo.newsgroups
 
 ## NM (New Mexico, USA)
+checkgroups:news@tesuque.cs.sandia.gov:nm.*:doit
 newgroup:news@tesuque.cs.sandia.gov:nm.*:doit
 rmgroup:news@tesuque.cs.sandia.gov:nm.*:doit
 
 ## NO (Norway)
 # URL: http://www.usenet.no/
+# Admin group: no.news.diverse
+# Key URL: http://www.usenet.no/pgp-key.txt
 # *PGP*   See comment at top of file.
 newgroup:*:no.*:drop
 rmgroup:*:no.*:drop
 checkgroups:control@usenet.no:no.*:verify-no-hir-control
 newgroup:control@usenet.no:no.*:verify-no-hir-control
-newgroup:*@*.no:no.alt.*:doit
 rmgroup:control@usenet.no:no.*:verify-no-hir-control
+
+## NO.ALT (Norway alternative hierarchy)
+# *PGP*   See comment at top of file.
+newgroup:*:no.alt.*:drop
+rmgroup:*:no.alt.*:drop
+newgroup:*@*.no:no.alt.*:doit
+rmgroup:control@usenet.no:no.alt.*:verify-no-hir-control
 
 ## NORD (Northern Germany)
 # thilo@own.deceiver.org no longer a valid address
@@ -1313,24 +1417,28 @@ rmgroup:control@usenet.no:no.*:verify-no-hir-control
 # rmgroup:thilo@own.deceiver.org:nord.*:doit
 
 ## NV (Nevada)
-newgroup:doctor@netcom.com:nv.*:doit
+checkgroups:cshapiro@netcom.com:nv.*:doit
+checkgroups:doctor@netcom.com:nv.*:doit
 newgroup:cshapiro@netcom.com:nv.*:doit
-rmgroup:doctor@netcom.com:nv.*:doit
+newgroup:doctor@netcom.com:nv.*:doit
 rmgroup:cshapiro@netcom.com:nv.*:doit
+rmgroup:doctor@netcom.com:nv.*:doit
 
 ## NY (New York State, USA)
-newgroup:root@ny.psca.com:ny.*:mail
-rmgroup:root@ny.psca.com:ny.*:mail
+checkgroups:root@ny.psca.com:ny.*:doit
+newgroup:root@ny.psca.com:ny.*:doit
+rmgroup:root@ny.psca.com:ny.*:doit
 
 ## NYC (New York City)
 # Contact: Perry E. Metzger <perry@piermont.com>
+checkgroups:perry@piermont.com:nyc.*:doit
 newgroup:perry@piermont.com:nyc.*:doit
 rmgroup:perry@piermont.com:nyc.*:doit
 
 ## NZ (New Zealand)
 # Contact: root@usenet.net.nz
-# URL: http://usenet.net.nz
 # URL: http://www.faqs.org/faqs/usenet/nz-news-hierarchy
+# Admin group: nz.net.announce
 # Key fingerprint = 07 DF 48 AA D0 ED AA 88  16 70 C5 91 65 3D 1A 28
 # *PGP*   See comment at top of file.
 newgroup:*:nz.*:drop
@@ -1340,58 +1448,73 @@ newgroup:root@usenet.net.nz:nz.*:verify-nz-hir-control
 rmgroup:root@usenet.net.nz:nz.*:verify-nz-hir-control
 
 ## OC (Orange County, California, USA)
+checkgroups:bob@tsunami.sugarland.unocal.com:oc.*:doit
 newgroup:bob@tsunami.sugarland.unocal.com:oc.*:doit
 rmgroup:bob@tsunami.sugarland.unocal.com:oc.*:doit
 
 ## OH (Ohio, USA)
+checkgroups:trier@ins.cwru.edu:oh.*:doit
 newgroup:trier@ins.cwru.edu:oh.*:doit
 rmgroup:trier@ins.cwru.edu:oh.*:doit
 
 ## OK (Oklahoma, USA)
+checkgroups:quentin@*qns.com:ok.*:doit
 newgroup:quentin@*qns.com:ok.*:doit
 rmgroup:quentin@*qns.com:ok.*:doit
 
 ## OKINAWA (Okinawa, Japan)
+checkgroups:news@opus.or.jp:okinawa.*:doit
 newgroup:news@opus.or.jp:okinawa.*:doit
 rmgroup:news@opus.or.jp:okinawa.*:doit
 
 ## ONT (Ontario, Canada)
+checkgroups:pkern@gpu.utcc.utoronto.ca:ont.*:doit
 newgroup:pkern@gpu.utcc.utoronto.ca:ont.*:doit
 rmgroup:pkern@gpu.utcc.utoronto.ca:ont.*:doit
 
 ## OPERA (Opera Software, Oslo, Norway)
 # Contact: usenet@opera.com
 # URL: http://news.opera.com/
-# Key URL: http://news.opera.com/pgpkey-opera-group-admin
 # *PGP*   See comment at top of file.
+newgroup:*:opera.*:drop
+rmgroup:*:opera.*:drop
+checkgroups:*@opera.com:opera.*:verify-opera-group-admin
 newgroup:*@opera.com:opera.*:verify-opera-group-admin
 rmgroup:*@opera.com:opera.*:verify-opera-group-admin
-checkgroups:*@opera.com:opera.*:verify-opera-group-admin
 
 ## OTT (Ottawa, Ontario, Canada)
 # Contact: onag@pinetree.org
 # URL: http://www.pinetree.org/ONAG/
-newgroup:news@bnr.ca:ott.*:doit
-newgroup:news@nortel.ca:ott.*:doit
+checkgroups:clewis@ferret.ocunix.on.ca:ott.*:doit
+checkgroups:dave@revcan.ca:ott.*:doit
+checkgroups:gordon@*pinetree.org:ott.*:doit
+checkgroups:news@*pinetree.org:ott.*:doit
+checkgroups:news@bnr.ca:ott.*:doit
+checkgroups:news@ferret.ocunix.on.ca:ott.*:doit
+checkgroups:news@nortel.ca:ott.*:doit
 newgroup:clewis@ferret.ocunix.on.ca:ott.*:doit
-newgroup:news@ferret.ocunix.on.ca:ott.*:doit
-newgroup:news@*pinetree.org:ott.*:doit
-newgroup:gordon@*pinetree.org:ott.*:doit
 newgroup:dave@revcan.ca:ott.*:doit
-rmgroup:news@bnr.ca:ott.*:doit
-rmgroup:news@nortel.ca:ott.*:doit
+newgroup:gordon@*pinetree.org:ott.*:doit
+newgroup:news@*pinetree.org:ott.*:doit
+newgroup:news@bnr.ca:ott.*:doit
+newgroup:news@ferret.ocunix.on.ca:ott.*:doit
+newgroup:news@nortel.ca:ott.*:doit
 rmgroup:clewis@ferret.ocunix.on.ca:ott.*:doit
-rmgroup:news@ferret.ocunix.on.ca:ott.*:doit
-rmgroup:news@*pinetree.org:ott.*:doit
-rmgroup:gordon@*pinetree.org:ott.*:doit
 rmgroup:dave@revcan.ca:ott.*:doit
+rmgroup:gordon@*pinetree.org:ott.*:doit
+rmgroup:news@*pinetree.org:ott.*:doit
+rmgroup:news@bnr.ca:ott.*:doit
+rmgroup:news@ferret.ocunix.on.ca:ott.*:doit
+rmgroup:news@nortel.ca:ott.*:doit
 
 ## PA (Pennsylvania, USA)
 # URL: http://www.netcom.com/~rb1000/pa_hierarchy/
+checkgroups:fxp@epix.net:pa.*:doit
 newgroup:fxp@epix.net:pa.*:doit
 rmgroup:fxp@epix.net:pa.*:doit
 
 ## PGH (Pittsburgh, Pennsylvania, USA)
+# Admin group: pgh.config
 # *PGP*   See comment at top of file.
 newgroup:*:pgh.*:drop
 rmgroup:*:pgh.*:drop
@@ -1400,19 +1523,24 @@ newgroup:pgh-config@psc.edu:pgh.*:verify-pgh.config
 rmgroup:pgh-config@psc.edu:pgh.*:verify-pgh.config
 
 ## PHL (Philadelphia, Pennsylvania, USA)
+checkgroups:news@vfl.paramax.com:phl.*:doit
 newgroup:news@vfl.paramax.com:phl.*:doit
 rmgroup:news@vfl.paramax.com:phl.*:doit
 
 ## PIN (Personal Internauts' NetNews)
+checkgroups:pin-admin@forus.or.jp:pin.*:doit
 newgroup:pin-admin@forus.or.jp:pin.*:doit
 rmgroup:pin-admin@forus.or.jp:pin.*:doit
 
 ## PIPEX (UUNET WorldCom UK)
 # Contact: Russell Vincent <news-control@ops.pipex.net>
+checkgroups:news-control@ops.pipex.net:pipex.*:doit
 newgroup:news-control@ops.pipex.net:pipex.*:doit
 rmgroup:news-control@ops.pipex.net:pipex.*:doit
 
 ## PITT (University of Pittsburgh, PA)
+checkgroups:news+@pitt.edu:pitt.*:doit
+checkgroups:news@toads.pgh.pa.us:pitt.*:doit
 newgroup:news+@pitt.edu:pitt.*:doit
 newgroup:news@toads.pgh.pa.us:pitt.*:doit
 rmgroup:news+@pitt.edu:pitt.*:doit
@@ -1420,6 +1548,7 @@ rmgroup:news@toads.pgh.pa.us:pitt.*:doit
 
 ## PL (Poland and Polish language)
 # URL: http://www.ict.pwr.wroc.pl/doc/news-pl-new-site-faq.html
+# Admin group: pl.news.admin
 # *PGP*   See comment at top of file.
 newgroup:*:pl.*:drop
 rmgroup:*:pl.*:drop
@@ -1433,37 +1562,40 @@ rmgroup:newgroup@usenet.pl:pl.*:verify-pl.announce.newgroups
 ## PLANET (*LOCAL* -- PlaNet FreeNZ co-operative, New Zealand)
 # Contact: office@pl.net
 # For local use only, contact the above address for information.
-newgroup:*@*:planet.*:mail
-rmgroup:*@*:planet.*:doit
+newgroup:*:planet.*:mail
+rmgroup:*:planet.*:doit
 
 ## PRIMA (*LOCAL* -- prima.ruhr.de/Prima e.V. in Germany)
 # Contact: admin@prima.ruhr.de
-# For internal use only, contact above address for questions
-newgroup:*@*:prima.*:mail
-rmgroup:*@*:prima.*:doit
+# For local use only, contact the above address for information.
+newgroup:*:prima.*:mail
+rmgroup:*:prima.*:doit
 
 ## PSU (*LOCAL* -- Penn State University, USA)
 # Contact: Dave Barr (barr@math.psu.edu)
-# For internal use only, contact above address for questions
-newgroup:*@*:psu.*:mail
-rmgroup:*@*:psu.*:doit
+# For local use only, contact the above address for information.
+newgroup:*:psu.*:mail
+rmgroup:*:psu.*:doit
 
 ## PT (Portugal and Portuguese language)
+# Admin group: pt.internet.usenet
+# Key URL: http://www.usenet-pt.org/control@usenet-pt.org.asc
+# *PGP*   See comment at top of file.
 newgroup:*:pt.*:drop
 rmgroup:*:pt.*:drop
 checkgroups:pmelo@*.inescc.pt:pt.*:verify-control@usenet-pt.org
 newgroup:pmelo@*.inescc.pt:pt.*:verify-control@usenet-pt.org
 rmgroup:pmelo@*.inescc.pt:pt.*:verify-control@usenet-pt.org
 
-## PUBNET (*DEFUNCT*)
+## PUBNET (*DEFUNCT* -- ?)
 # URL: ftp://ftp.isc.org/pub/usenet/control/pubnet/pubnet.config.Z
-# Defunct hierarchy, please remove any groups that you carry.
-newgroup:*@*:pubnet.*:mail
-rmgroup:*@*:pubnet.*:doit
+# This hierarchy is defunct.  Please remove it.
+newgroup:*:pubnet.*:mail
+rmgroup:*:pubnet.*:doit
 
 ## RELCOM (Commonwealth of Independent States)
-# The official list of relcom groups is supposed to be available from
 # URL: ftp://kiarchive.relcom.ru/pub/relcom/netinfo/
+# Admin group: relcom.netnews
 # *PGP*   See comment at top of file.
 newgroup:*:relcom.*:drop
 rmgroup:*:relcom.*:drop
@@ -1474,24 +1606,29 @@ rmgroup:coord@new*.relcom.ru:relcom.*:verify-relcom.newsgroups
 ## RPI (*LOCAL* -- Rensselaer Polytechnic Institute, Troy, NY, USA)
 # Contact: sofkam@rpi.edu
 # For local use only, contact the above address for information.
-newgroup:*@*:rpi.*:mail
-rmgroup:*@*:rpi.*:doit
+newgroup:*:rpi.*:mail
+rmgroup:*:rpi.*:doit
 
 ## SAAR (Saarland Region, Germany)
 # URL: http://www.saar-admin-news.de/
+# Admin group: saar.admin.news
 # Key URL: http://www.saar-admin-news.de/saar-control.asc
 # *PGP*   See comment at top of file.
+newgroup:*:saar.*:drop
+rmgroup:*:saar.*:drop
+checkgroups:control@saar-admin-news.de:saar.*:verify-saar-control
 newgroup:control@saar-admin-news.de:saar.*:verify-saar-control
 rmgroup:control@saar-admin-news.de:saar.*:verify-saar-control
-checkgroups:control@saar-admin-news.de:saar.*:verify-saar-control
 
 ## SACHSNET (German)
+checkgroups:root@lusatia.de:sachsnet.*:doit
 newgroup:root@lusatia.de:sachsnet.*:doit
 rmgroup:root@lusatia.de:sachsnet.*:doit
 
 ## SAT (San Antonio, Texas, USA)
 # Contact: satgroup@endicor.com
 # URL: http://www.endicor.com/~satgroup/
+# Admin group: sat.usenet.config
 # *PGP*   See comment at top of file.
 newgroup:*:sat.*:drop
 rmgroup:*:sat.*:drop
@@ -1500,15 +1637,18 @@ newgroup:satgroup@endicor.com:sat.*:verify-satgroup@endicor.com
 rmgroup:satgroup@endicor.com:sat.*:verify-satgroup@endicor.com
 
 ## SBAY (South Bay/Silicon Valley, California)
-newgroup:steveh@grafex.sbay.org:sbay.*:doit
+checkgroups:ikluft@thunder.sbay.org:sbay.*:doit
+checkgroups:steveh@grafex.sbay.org:sbay.*:doit
 newgroup:ikluft@thunder.sbay.org:sbay.*:doit
-rmgroup:steveh@grafex.sbay.org:sbay.*:mail
-rmgroup:ikluft@thunder.sbay.org:sbay.*:mail
+newgroup:steveh@grafex.sbay.org:sbay.*:doit
+rmgroup:ikluft@thunder.sbay.org:sbay.*:doit
+rmgroup:steveh@grafex.sbay.org:sbay.*:doit
 
-## SCHULE
+## SCHULE (?)
 # Contact: schule-admin@roxel.ms.sub.org
 # URL: http://home.pages.de/~schule-admin/
-# Key URL: http://home.pages.de/~schule-admin/schule.asc
+# Admin group: schule.konfig
+# Key URL: http://www.afaik.de/usenet/admin/schule/control/schule.asc
 # Key fingerprint = 64 06 F0 AE E1 46 85 0C  BD CA 0E 53 8B 1E 73 D2
 # *PGP*   See comment at top of file.
 newgroup:*:schule.*:drop
@@ -1518,22 +1658,21 @@ newgroup:newsctrl@schule.de:schule.*:verify-schule.konfig
 rmgroup:newsctrl@schule.de:schule.*:verify-schule.konfig
 
 ## SDNET (Greater San Diego Area, California, USA)
-# URL: http://www-rohan.sdsu.edu/staff/wk/w/sdnet.html
-# URL: http://www-rohan.sdsu.edu/staff/wk/w/config.html
-# URL: ftp://ftp.csu.net/pub/news/active
+# URL: http://www-rohan.sdsu.edu/~wk/sdnet/sdnet.html
+checkgroups:wkronert@sunstroke.sdsu.edu:sdnet.*:doit
 newgroup:wkronert@sunstroke.sdsu.edu:sdnet.*:doit
 rmgroup:wkronert@sunstroke.sdsu.edu:sdnet.*:doit
 
 ## SDSU (*LOCAL* -- San Diego State University, CA)
 # Contact: Craig R. Sadler <usenet@sdsu.edu>
 # For local use only, contact the above address for information.
-newgroup:*@*:sdsu.*:mail
-rmgroup:*@*:sdsu.*:doit
+newgroup:*:sdsu.*:mail
+rmgroup:*:sdsu.*:doit
 
 ## SE (Sweden)
 # Contact: usenet@usenet-se.net
 # URL: http://www.usenet-se.net/
-# URL: http://www.usenet-se.net/index_eng.html  (English version)
+# Admin group: se.internet.news.meddelanden
 # Key URL: http://www.usenet-se.net/pgp-key.txt
 # Key fingerprint = 68 03 F0 FD 0C C3 4E 69  6F 0D 0C 60 3C 58 63 96
 # *PGP*   See comment at top of file.
@@ -1544,20 +1683,25 @@ newgroup:usenet@usenet-se.net:se.*:verify-usenet-se
 rmgroup:usenet@usenet-se.net:se.*:verify-usenet-se
 
 ## SEATTLE (Seattle, Washington, USA)
+checkgroups:billmcc@akita.com:seattle.*:doit
+checkgroups:graham@ee.washington.edu:seattle.*:doit
 newgroup:billmcc@akita.com:seattle.*:doit
 newgroup:graham@ee.washington.edu:seattle.*:doit
 rmgroup:billmcc@akita.com:seattle.*:doit
 rmgroup:graham@ee.washington.edu:seattle.*:doit
 
 ## SFNET (Finland)
+checkgroups:sfnet@*.cs.tut.fi:sfnet.*:doit
 newgroup:sfnet@*.cs.tut.fi:sfnet.*:doit
 rmgroup:sfnet@*.cs.tut.fi:sfnet.*:doit
 
 ## SHAMASH (Jewish)
+checkgroups:archives@israel.nysernet.org:shamash.*:doit
 newgroup:archives@israel.nysernet.org:shamash.*:doit
 rmgroup:archives@israel.nysernet.org:shamash.*:doit
 
 ## SI (The Republic of Slovenia)
+# Admin group: si.news.announce.newsgroups
 # *PGP*   See comment at top of file.
 newgroup:*:si.*:drop
 rmgroup:*:si.*:drop
@@ -1566,31 +1710,34 @@ newgroup:news-admin@arnes.si:si.*:verify-si.news.announce.newsgroups
 rmgroup:news-admin@arnes.si:si.*:verify-si.news.announce.newsgroups
 
 ## SK (Slovakia)
-checkgroups:uhlar@ccnews.ke.sanet.sk:sk.*:mail
+checkgroups:uhlar@ccnews.ke.sanet.sk:sk.*:doit
 newgroup:uhlar@ccnews.ke.sanet.sk:sk.*:doit
 rmgroup:uhlar@ccnews.ke.sanet.sk:sk.*:doit
 
 ## SLAC (*PRIVATE* -- Stanford Linear Accelerator Center, Stanford, USA)
 # Contact: news@news.stanford.edu
-# Limited distribution hierarchy, contact the above address for information.
+# For private use only, contact the above address for information.
 newgroup:news@news.stanford.edu:slac.*:mail
 rmgroup:news@news.stanford.edu:slac.*:doit
 
 ## SLO (San Luis Obispo, CA)
+checkgroups:news@punk.net:slo.*:doit
 newgroup:news@punk.net:slo.*:doit
 rmgroup:news@punk.net:slo.*:doit
 
 ## SOLENT (Solent region, England)
+checkgroups:news@tcp.co.uk:solent.*:doit
 newgroup:news@tcp.co.uk:solent.*:doit
 rmgroup:news@tcp.co.uk:solent.*:doit
 
 ## SPOKANE (Spokane, Washington, USA)
+checkgroups:usenet@news.spokane.wa.us:spokane.*:doit
 newgroup:usenet@news.spokane.wa.us:spokane.*:doit
 rmgroup:usenet@news.spokane.wa.us:spokane.*:doit
 
 ## STAROFFICE (StarOffice business suite, Sun Microsystems, Inc.)
 # Contact: news@stardivision.de
-# URL: http://www.sun.com/products/staroffice/newsgroups.html
+# Admin group: staroffice.admin
 # Key fingerprint = F6 6A 5C 57 77 1F 63 26  F2 43 02 41 75 2A 04 1C
 # Syncable server: starnews.sun.com
 # *PGP*   See comment at top of file.
@@ -1602,7 +1749,7 @@ rmgroup:news@stardivision.de:staroffice.*:verify-staroffice.admin
 
 ## STGT (Stuttgart, Germany)
 # URL: http://news.uni-stuttgart.de/hierarchie/stgt/stgt-control.txt
-# *PGP*   See comment at start of file.
+# *PGP*   See comment at top of file.
 newgroup:*:stgt.*:drop
 rmgroup:*:stgt.*:drop
 checkgroups:stgt-control@news.uni-stuttgart.de:stgt.*:verify-stgt-control
@@ -1610,66 +1757,73 @@ newgroup:stgt-control@news.uni-stuttgart.de:stgt.*:verify-stgt-control
 rmgroup:stgt-control@news.uni-stuttgart.de:stgt.*:verify-stgt-control
 
 ## STL (Saint Louis, Missouri, USA)
+checkgroups:news@icon-stl.net:stl.*:doit
 newgroup:news@icon-stl.net:stl.*:doit
 rmgroup:news@icon-stl.net:stl.*:doit
 
 ## SU (*LOCAL* -- Stanford University, USA)
 # Contact: news@news.stanford.edu
 # For local use only, contact the above address for information.
-newgroup:*@*:su.*:mail
-rmgroup:*@*:su.*:doit
+newgroup:*:su.*:mail
+rmgroup:*:su.*:doit
 
 ## SUNET (Swedish University Network)
+checkgroups:ber@*.sunet.se:sunet.*:doit
 newgroup:ber@*.sunet.se:sunet.*:doit
 rmgroup:ber@*.sunet.se:sunet.*:doit
 
 ## SURFNET (Dutch Universities network)
+checkgroups:news@info.nic.surfnet.nl:surfnet.*:doit
 newgroup:news@info.nic.surfnet.nl:surfnet.*:doit
 rmgroup:news@info.nic.surfnet.nl:surfnet.*:doit
 
 ## SWNET (Sverige, Sweden)
+checkgroups:ber@sunic.sunet.se:swnet.*:doit
 newgroup:ber@sunic.sunet.se:swnet.*:doit
 rmgroup:ber@sunic.sunet.se:swnet.*:doit
 
+## T-NETZ (*DEFUNCT* -- Germany)
+# This hierarchy is defunct.  Please remove it.
+newgroup:*:t-netz.*:mail
+rmgroup:*:t-netz.*:doit
+
 ## TAMU (Texas A&M University)
 # Contact: Philip Kizer <news@tamu.edu>
+checkgroups:news@tamsun.tamu.edu:tamu.*:doit
 newgroup:news@tamsun.tamu.edu:tamu.*:doit
 rmgroup:news@tamsun.tamu.edu:tamu.*:doit
 
 ## TAOS (Taos, New Mexico, USA)
 # Contact: Chris Gunn <cgunn@laplaza.org>
+checkgroups:cgunn@laplaza.org:taos.*:doit
 newgroup:cgunn@laplaza.org:taos.*:doit
 rmgroup:cgunn@laplaza.org:taos.*:doit
 
 ## TCFN (Toronto Free Community Network, Canada)
+checkgroups:news@t-fcn.net:tcfn.*:doit
 newgroup:news@t-fcn.net:tcfn.*:doit
 rmgroup:news@t-fcn.net:tcfn.*:doit
 
-## T-NETZ (*DEFUNCT* -- Germany)
-# Defunct, use z-netz.*.
-newgroup:*@*:t-netz.*:mail
-rmgroup:*@*:t-netz.*:doit
-
 ## TELE (*LOCAL* -- Tele Danmark Internet)
 # Contact: usenet@tdk.net
-# For internal use only, contact above address for questions.
-newgroup:*@*:tele.*:mail
-rmgroup:*@*:tele.*:doit
+# For local use only, contact the above address for information.
+newgroup:*:tele.*:mail
+rmgroup:*:tele.*:doit
 
 ## TERMVAKT (*LOCAL* -- University of Oslo, Norway)
 # Contact: jani@ifi.uio.no
-# For private use only, contact the above address for information.
-newgroup:*@*:termvakt.*:drop
-rmgroup:*@*:termvakt.*:doit
+# For local use only, contact the above address for information.
+newgroup:*:termvakt.*:mail
+rmgroup:*:termvakt.*:doit
 
 ## TEST (Local test hierarchy)
 # It is not really a good idea for sites to use these since they may occur
 # on many unconnected sites.
-newgroup:*@*:test.*:mail
-rmgroup:*@*:test.*:mail
+newgroup:*:test.*:mail
+rmgroup:*:test.*:mail
 
 ## THUR (Thuringia, Germany)
-# Key Fingerprint: 7E 3D 73 13 93 D4 CA 78  39 DE 3C E7 37 EE 22 F1
+# Key fingerprint = 7E 3D 73 13 93 D4 CA 78  39 DE 3C E7 37 EE 22 F1
 # *PGP*   See comment at top of file.
 newgroup:*:thur.*:drop
 rmgroup:*:thur.*:drop
@@ -1678,30 +1832,43 @@ newgroup:usenet@thur.de:thur.*:verify-thur.net.news.groups
 rmgroup:usenet@thur.de:thur.*:verify-thur.net.news.groups
 
 ## TNN (The Network News, Japan)
-newgroup:tnn@iij-mc.co.jp:tnn.*:doit
+checkgroups:netnews@news.iij.ad.jp:tnn.*:doit
+checkgroups:tnn@iij-mc.co.jp:tnn.*:doit
 newgroup:netnews@news.iij.ad.jp:tnn.*:doit
-rmgroup:tnn@iij-mc.co.jp:tnn.*:doit
+newgroup:tnn@iij-mc.co.jp:tnn.*:doit
 rmgroup:netnews@news.iij.ad.jp:tnn.*:doit
+rmgroup:tnn@iij-mc.co.jp:tnn.*:doit
 
 ## TRIANGLE (Research Triangle, Central North Carolina, USA)
+checkgroups:jfurr@acpub.duke.edu:triangle.*:doit
+checkgroups:news@news.duke.edu:triangle.*:doit
+checkgroups:tas@concert.net:triangle.*:doit
 newgroup:jfurr@acpub.duke.edu:triangle.*:doit
-newgroup:tas@concert.net:triangle.*:doit
 newgroup:news@news.duke.edu:triangle.*:doit
+newgroup:tas@concert.net:triangle.*:doit
 rmgroup:jfurr@acpub.duke.edu:triangle.*:doit
-rmgroup:tas@concert.net:triangle.*:doit
 rmgroup:news@news.duke.edu:triangle.*:doit
+rmgroup:tas@concert.net:triangle.*:doit
 
 ## TUM (Technische Universitaet Muenchen)
+checkgroups:news@informatik.tu-muenchen.de:tum.*:doit
 newgroup:news@informatik.tu-muenchen.de:tum.*:doit
 rmgroup:news@informatik.tu-muenchen.de:tum.*:doit
 
 ## TW (Taiwan)
+checkgroups:ltc@news.cc.nctu.edu.tw:tw.*:doit
 newgroup:ltc@news.cc.nctu.edu.tw:tw.*:doit
-newgroup:k-12@news.nchu.edu.tw:tw.k-12.*:doit
 rmgroup:ltc@news.cc.nctu.edu.tw:tw.*:doit
-rmgroup:k-12@news.nchu.edu.tw:tw.k-12*:doit
+
+## TW.K-12 (Taiwan K-12 Discussion)
+checkgroups:k-12@news.nchu.edu.tw:tw.k-12.*:doit
+newgroup:k-12@news.nchu.edu.tw:tw.k-12.*:doit
+rmgroup:k-12@news.nchu.edu.tw:tw.k-12.*:doit
 
 ## TX (Texas, USA)
+checkgroups:eric@cirr.com:tx.*:doit
+checkgroups:fletcher@cs.utexas.edu:tx.*:doit
+checkgroups:usenet@academ.com:tx.*:doit
 newgroup:eric@cirr.com:tx.*:doit
 newgroup:fletcher@cs.utexas.edu:tx.*:doit
 newgroup:usenet@academ.com:tx.*:doit
@@ -1711,6 +1878,7 @@ rmgroup:usenet@academ.com:tx.*:doit
 
 ## UCB (University of California Berkeley, USA)
 # Contact: Chris van den Berg <usenet@agate.berkeley.edu>
+# *PGP*   See comment at top of file.
 newgroup:*:ucb.*:drop
 rmgroup:*:ucb.*:drop
 checkgroups:usenet@agate.berkeley.edu:ucb.*:verify-ucb.news
@@ -1718,14 +1886,17 @@ newgroup:usenet@agate.berkeley.edu:ucb.*:verify-ucb.news
 rmgroup:usenet@agate.berkeley.edu:ucb.*:verify-ucb.news
 
 ## UCD (University of California Davis, USA)
-newgroup:usenet@rocky.ucdavis.edu:ucd.*:doit
+checkgroups:usenet@mark.ucdavis.edu:ucd.*:doit
+checkgroups:usenet@rocky.ucdavis.edu:ucd.*:doit
 newgroup:usenet@mark.ucdavis.edu:ucd.*:doit
-rmgroup:usenet@rocky.ucdavis.edu:ucd.*:doit
+newgroup:usenet@rocky.ucdavis.edu:ucd.*:doit
 rmgroup:usenet@mark.ucdavis.edu:ucd.*:doit
+rmgroup:usenet@rocky.ucdavis.edu:ucd.*:doit
 
 ## UFRA (Unterfranken, Deutschland)
 # Contact: news@mayn.de
 # URL: http://www.mayn.de/users/news/
+# Admin group: ufra.admin
 # Key fingerprint = F7 AD 96 D8 7A 3F 7E 84  02 0C 83 9A DB 8F EB B8
 # Syncable server: news.mayn.de (contact news@mayn.de if permission denied)
 # *PGP*   See comment at top of file.
@@ -1737,11 +1908,12 @@ rmgroup:news@mayn.de:ufra.*:verify-news.mayn.de
 
 ## UIUC (*LOCAL* -- University of Illinois at Urbana-Champaign, USA)
 # Contact: usenet@uiuc.edu
-# For internal use only, contact above address for questions.
-newgroup:*@*:uiuc.*:mail
-rmgroup:*@*:uiuc.*:doit
+# For local use only, contact the above address for information.
+newgroup:*:uiuc.*:mail
+rmgroup:*:uiuc.*:doit
 
 ## UK (United Kingdom of Great Britain and Northern Ireland)
+# Admin group: uk.net.news.announce
 # *PGP*   See comment at top of file.
 newgroup:*:uk.*:drop
 rmgroup:*:uk.*:drop
@@ -1750,10 +1922,12 @@ newgroup:control@usenet.org.uk:uk.*:verify-uk.net.news.announce
 rmgroup:control@usenet.org.uk:uk.*:verify-uk.net.news.announce
 
 ## UKR (Ukraine)
+checkgroups:ay@sita.kiev.ua:ukr.*:doit
 newgroup:ay@sita.kiev.ua:ukr.*:doit
 rmgroup:ay@sita.kiev.ua:ukr.*:doit
 
 ## UMICH (University of Michigan, USA)
+checkgroups:*@*.umich.edu:umich.*:doit
 newgroup:*@*.umich.edu:umich.*:doit
 rmgroup:*@*.umich.edu:umich.*:doit
 
@@ -1770,6 +1944,7 @@ rmgroup:Michael.E.Hedman-1@umn.edu:umn.*:doit
 
 ## UN (The United Nations)
 # URL: http://www.itu.int/Conferences/un/
+# Admin group: un.public.usenet.admin
 # *PGP*   See comment at top of file.
 newgroup:*:un.*:drop
 rmgroup:*:un.*:drop
@@ -1778,11 +1953,12 @@ newgroup:news@news.itu.int:un.*:verify-ungroups@news.itu.int
 rmgroup:news@news.itu.int:un.*:verify-ungroups@news.itu.int
 
 ## UO (University of Oregon, Eugene, Oregon, USA)
+checkgroups:newsadmin@news.uoregon.edu:uo.*:doit
 newgroup:newsadmin@news.uoregon.edu:uo.*:doit
 rmgroup:newsadmin@news.uoregon.edu:uo.*:doit
 
 ## US (United States of America)
-checkgroups:uscontrol@earthlink.net:us.*:mail
+checkgroups:uscontrol@earthlink.net:us.*:doit
 newgroup:uscontrol@earthlink.net:us.*:doit
 rmgroup:uscontrol@earthlink.net:us.*:doit
 
@@ -1792,6 +1968,7 @@ rmgroup:uscontrol@earthlink.net:us.*:doit
 # rmgroup:news@ecf.toronto.edu:ut.*:doit
 
 ## UTA (Finnish)
+checkgroups:news@news.cc.tut.fi:uta.*:doit
 newgroup:news@news.cc.tut.fi:uta.*:doit
 rmgroup:news@news.cc.tut.fi:uta.*:doit
 
@@ -1805,65 +1982,74 @@ rmgroup:news@geraldo.cc.utexas.edu:utexas.*:doit
 
 ## UTWENTE (*LOCAL* -- University of Twente, Netherlands)
 # Contact: newsmaster@utwente.nl
-# For internal use only, contact above address for questions
-newgroup:*@*:utwente.*:mail
-rmgroup:*@*:utwente.*:doit
+# For local use only, contact the above address for information.
+newgroup:*:utwente.*:mail
+rmgroup:*:utwente.*:doit
 
 ## UVA (*LOCAL* -- University of Virginia, USA)
 # Contact: usenet@virginia.edu
-# For internal use only, contact above address for questions.
-newgroup:*@*:uva.*:mail
-rmgroup:*@*:uva.*:doit
+# For local use only, contact the above address for information.
+newgroup:*:uva.*:mail
+rmgroup:*:uva.*:doit
 
 ## UW (University of Waterloo, Canada)
+checkgroups:bcameron@math.uwaterloo.ca:uw.*:doit
 newgroup:bcameron@math.uwaterloo.ca:uw.*:doit
 rmgroup:bcameron@math.uwaterloo.ca:uw.*:doit
 
 ## UWARWICK (*LOCAL* -- University of Warwick, UK)
 # Contact: Jon Harley <news@csv.warwick.ac.uk>
-# For internal use only, contact above address for questions.
-newgroup:*@*:uwarwick.*:mail
-rmgroup:*@*:uwarwick.*:doit
+# For local use only, contact the above address for information.
+newgroup:*:uwarwick.*:mail
+rmgroup:*:uwarwick.*:doit
 
 ## UWO (University of Western Ontario, London, Canada)
+checkgroups:reggers@julian.uwo.ca:uwo.*:doit
 newgroup:reggers@julian.uwo.ca:uwo.*:doit
 rmgroup:reggers@julian.uwo.ca:uwo.*:doit
 
 ## VAN (Vancouver, British Columbia, Canada)
-checkgroups:bc_van_usenet@fastmail.ca:van.*:mail
+checkgroups:bc_van_usenet@fastmail.ca:van.*:doit
 newgroup:bc_van_usenet@fastmail.ca:van.*:doit
 rmgroup:bc_van_usenet@fastmail.ca:van.*:doit
 
 ## VEGAS (Las Vegas, Nevada, USA)
+checkgroups:cshapiro@netcom.com:vegas.*:doit
+checkgroups:doctor@netcom.com:vegas.*:doit
 newgroup:cshapiro@netcom.com:vegas.*:doit
 newgroup:doctor@netcom.com:vegas.*:doit
 rmgroup:cshapiro@netcom.com:vegas.*:doit
 rmgroup:doctor@netcom.com:vegas.*:doit
 
 ## VGC (Japan groups?)
+checkgroups:news@isl.melco.co.jp:vgc.*:doit
 newgroup:news@isl.melco.co.jp:vgc.*:doit
 rmgroup:news@isl.melco.co.jp:vgc.*:doit
 
 ## VMSNET (VMS Operating System)
+checkgroups:cts@dragon.com:vmsnet.*:doit
 newgroup:cts@dragon.com:vmsnet.*:doit
 rmgroup:cts@dragon.com:vmsnet.*:doit
 
 ## WADAI (Japanese ?)
+checkgroups:kohe-t@*wakayama-u.ac.jp:wadai.*:doit
 newgroup:kohe-t@*wakayama-u.ac.jp:wadai.*:doit
 rmgroup:kohe-t@*wakayama-u.ac.jp:wadai.*:doit
 
 ## WALES (Wales)
 # Contact: committee@wales-usenet.org
 # URL: http://www.wales-usenet.org/
+# Admin group: wales.usenet.config
 # Key fingerprint = 2D 9E DE DF 12 DA 34 5C  49 E1 EE 28 E3 AB 0D AD
 # *PGP*   See comment at top of file.
 newgroup:*:wales.*:drop
 rmgroup:*:wales.*:drop
+checkgroups:control@wales-usenet.org:wales.*:verify-wales-usenet
 newgroup:control@wales-usenet.org:wales.*:verify-wales-usenet
 rmgroup:control@wales-usenet.org:wales.*:verify-wales-usenet
-checkgroups:control@wales-usenet.org:wales.*:verify-wales-usenet
 
 ## WASH (Washington State, USA)
+checkgroups:graham@ee.washington.edu:wash.*:doit
 newgroup:graham@ee.washington.edu:wash.*:doit
 rmgroup:graham@ee.washington.edu:wash.*:doit
 
@@ -1875,38 +2061,43 @@ newgroup:bryan27@hgo.net:west-virginia.*:doit
 rmgroup:mark@bluefield.net:west-virginia.*:doit
 rmgroup:bryan27@hgo.net:west-virginia.*:doit
 
-## WORLDONLINE (*LOCAL*)
+## WORLDONLINE (*LOCAL* -- ?)
 # Contact: newsmaster@worldonline.nl
 # For local use only, contact the above address for information.
-newgroup:*@*:worldonline.*:mail
-rmgroup:*@*:worldonline.*:doit
+newgroup:*:worldonline.*:mail
+rmgroup:*:worldonline.*:doit
 
 ## WPG (Winnipeg, Manitoba, Canada)
 # Contact: Gary Mills <mills@cc.umanitoba.ca>
+checkgroups:mills@cc.umanitoba.ca:wpg.*:doit
 newgroup:mills@cc.umanitoba.ca:wpg.*:doit
 rmgroup:mills@cc.umanitoba.ca:wpg.*:doit
 
 ## WPI (Worcester Polytechnic Institute, Worcester, MA)
+checkgroups:aej@*.wpi.edu:wpi.*:doit
 newgroup:aej@*.wpi.edu:wpi.*:doit
 rmgroup:aej@*.wpi.edu:wpi.*:doit
 
 ## WU (Washington University at St. Louis, MO)
+checkgroups:*@*.wustl.edu:wu.*:doit
 newgroup:*@*.wustl.edu:wu.*:doit
 rmgroup:*@*.wustl.edu:wu.*:doit
 
 ## XS4ALL (XS4ALL, Netherlands)
 # Contact: Cor Bosman <news@xs4all.nl>
+checkgroups:news@*xs4all.nl:xs4all.*:doit
 newgroup:news@*xs4all.nl:xs4all.*:doit
 rmgroup:news@*xs4all.nl:xs4all.*:doit
 
 ## YORK (*LOCAL* -- York University, Toronto, ON)
 # Contact: Peter Marques <news@yorku.ca>
 # For local use only, contact the above address for information.
-newgroup:*@*:york.*:mail
-rmgroup:*@*:york.*:doit
+newgroup:*:york.*:mail
+rmgroup:*:york.*:doit
 
 ## Z-NETZ (German non-Internet based network)
 # Contact: teko@dinoex.sub.org
+# Admin group: z-netz.koordination.user+sysops
 # Key URL: ftp://ftp.dinoex.de/pub/keys/z-netz.koordination.user+sysops.asc
 # *PGP*   See comment at top of file.
 newgroup:*:z-netz.*:drop
@@ -1916,12 +2107,14 @@ newgroup:teko@dinoex.sub.org:z-netz.*:verify-z-netz.koordination.user+sysops
 rmgroup:teko@dinoex.sub.org:z-netz.*:verify-z-netz.koordination.user+sysops
 
 ## ZA (South Africa)
-newgroup:root@duvi.eskom.co.za:za.*:doit
+checkgroups:ccfj@hippo.ru.ac.za:za.*:doit
+checkgroups:root@duvi.eskom.co.za:za.*:doit
 newgroup:ccfj@hippo.ru.ac.za:za.*:doit
-rmgroup:root@duvi.eskom.co.za:za.*:doit
+newgroup:root@duvi.eskom.co.za:za.*:doit
 rmgroup:ccfj@hippo.ru.ac.za:za.*:doit
+rmgroup:root@duvi.eskom.co.za:za.*:doit
 
 ## ZER (*DEFUNCT* -- Germany)
-# Defunct, use z-netz.*.
-newgroup:*@*:zer.*:mail
-rmgroup:*@*:zer.*:doit
+# This hierarchy is defunct.  Please remove it.
+newgroup:*:zer.*:mail
+rmgroup:*:zer.*:doit
