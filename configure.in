@@ -80,7 +80,7 @@ dnl it takes the name of the directory, the path relative to $prefix if
 dnl none given to configure, the variable to set, and the help string.
 AC_DEFUN([INN_ARG_DIR],
 [AC_ARG_WITH([$1-dir], [$4], [$3=$with_$1_dir], [$3=$prefix/$2])
-AC_SUBST($4)])
+AC_SUBST($3)])
 
 dnl And here are all the paths.
 dnl

@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.184 
+# From configure.in Revision: 1.185 
 
 
 ## libtool.m4 - Configure libtool for the target system. -*-Shell-script-*-
@@ -7051,14 +7051,14 @@ s%@LIBTOOL@%$LIBTOOL%g
 s%@EXTLIB@%$EXTLIB%g
 s%@EXTOBJ@%$EXTOBJ%g
 s%@UPLIBTOOL@%$UPLIBTOOL%g
-s%@--with-control-dir=PATH Path for control programs PREFIX/bin/control@%$--with-control-dir=PATH Path for control programs PREFIX/bin/control%g
-s%@--with-db-dir=PATH      Path for news database files PREFIX/db@%$--with-db-dir=PATH      Path for news database files PREFIX/db%g
-s%@--with-etc-dir=PATH     Path for news config files PREFIX/etc@%$--with-etc-dir=PATH     Path for news config files PREFIX/etc%g
-s%@--with-filter-dir=PATH  Path for embedded filters PREFIX/bin/filter@%$--with-filter-dir=PATH  Path for embedded filters PREFIX/bin/filter%g
-s%@--with-lib-dir=PATH     Path for news library files PREFIX/lib@%$--with-lib-dir=PATH     Path for news library files PREFIX/lib%g
-s%@--with-log-dir=PATH     Path for news logs PREFIX/log@%$--with-log-dir=PATH     Path for news logs PREFIX/log%g
-s%@--with-run-dir=PATH     Path for news PID/runtime files PREFIX/run@%$--with-run-dir=PATH     Path for news PID/runtime files PREFIX/run%g
-s%@--with-spool-dir=PATH   Path for news storage PREFIX/spool@%$--with-spool-dir=PATH   Path for news storage PREFIX/spool%g
+s%@CONTROLDIR@%$CONTROLDIR%g
+s%@DBDIR@%$DBDIR%g
+s%@ETCDIR@%$ETCDIR%g
+s%@FILTERDIR@%$FILTERDIR%g
+s%@LIBDIR@%$LIBDIR%g
+s%@LOGDIR@%$LOGDIR%g
+s%@RUNDIR@%$RUNDIR%g
+s%@SPOOLDIR@%$SPOOLDIR%g
 s%@TMPPATH@%$TMPPATH%g
 s%@NEWSUSER@%$NEWSUSER%g
 s%@NEWSGRP@%$NEWSGRP%g
