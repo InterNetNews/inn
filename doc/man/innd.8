@@ -454,6 +454,7 @@ mon dd hh:mm:ss.mmm + feed <Message-ID> site...
 mon dd hh:mm:ss.mmm j feed <Message-ID> site...
 mon dd hh:mm:ss.mmm c feed <Message-ID> site...
 mon dd hh:mm:ss.mmm - feed <Message-ID> reason...
+mon dd hh:mm:ss.mmm ? feed <Message-ID> reason...
 .fi
 .RE
 .PP
@@ -505,6 +506,13 @@ Whitespace in "Newsgroups" header -- "%s"
 .fi
 .RE
 Where ``%s'', above, is replaced by more specific information.
+.PP
+If the fourth field is the letter ``?'', then the article includes strange
+strings which is CR without LF or LF without CR.  Those characters are used
+together as ``CRLF'' to indicate end of line.  Currently this log entry just
+indicates the weirdness of article, and
+.I innd
+never rejects it for this reason.
 .PP
 Note that if an article is accepted, and <wanttrash in inn.conf> is
 set to ``yes'' and none of the newsgroups are valid, it will be logged
