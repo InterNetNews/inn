@@ -12,7 +12,7 @@
 #include <time.h>
 #endif	/* defined(DO_NEED_TIME) */
 #include <sys/time.h>
-
+#include "ov3.h"
 #include "post.h"
 
 #define FLUSH_ERROR(F)		(fflush((F)) == EOF || ferror((F)))
@@ -406,10 +406,6 @@ ProcessHeaders(linecount, idbuff)
             if ((error = CheckControl(HDR(_control))) != NULL)
                 return error;
         }
-#if	0
-	if (EQn(p, "Re: ", 4) && HDR(_references) == NULL)
-	    return "Article starts with \"Re: \" but has no references";
-#endif	/* 0 */
     }
 
     /* Set Message-ID */
@@ -421,19 +417,6 @@ ProcessHeaders(linecount, idbuff)
     if (HDR(_path) == NULL) {
 	/* Note that innd will put host name here for us. */
 	HDR(_path) = PATHMASTER;
-    } else {
-#if 0
-        /* Here's where to do Path changes for new Posts. */
-        char *newpath;
-        if ((newpath = strrchr(HDR(_path), '!')) != NULL) {
-            newpath++;
-            if (*newpath == '\0') {
-                HDR(_path) = NEWSMASTER;
-            } else {
-                HDR(_path) = newpath;
-            }
-        }
-#endif
     }
     
 
@@ -497,8 +480,10 @@ ProcessHeaders(linecount, idbuff)
     /* Supersedes; left alone. */
 
     /* NNTP-Posting host; set. */
+    if (innconf->addnntppostinghost) 
     HDR(_nntpposthost) = ClientHost;
     /* NNTP-Posting-Date - not in RFC (yet) */
+    if (innconf->addnntppostingdate)
     HDR(_nntppostdate) = datebuff;
 
     /* X-Trace; set */
@@ -657,20 +642,17 @@ MailArticle(group, article)
 **  Check the newsgroups and make sure they're all valid, that none are
 **  moderated, etc.
 */
-STATIC STRING
-ValidNewsgroups(hdr, modgroup)
-    char		*hdr;
-    char		**modgroup;
+STATIC STRING ValidNewsgroups(char *hdr, char **modgroup)
 {
     static char		distbuff[SMBUF];
-    register char	*groups;
-    register char	*p;
-    register GROUPENTRY	*gp;
-    register BOOL	approved;
+    char	        *groups;
+    char	        *p;
+    BOOL	        approved;
     struct _DDHANDLE	*h;
     char      *grplist[2];
     BOOL		IsNewgroup;
     BOOL		FoundOne;
+    int                 flag;
 
     p = HDR(_control);
     IsNewgroup = p && EQn(p, "newgroup", 8);
@@ -694,31 +676,30 @@ ValidNewsgroups(hdr, modgroup)
 		sprintf(Error, "You are not allowed to post to %s\r\n", p);
 	    }
         }
-	if ((gp = GRPfind(p)) == NULL)
+	if (!OV3groupstats(p, NULL, NULL, NULL, &flag))
 	    continue;
 	FoundOne = TRUE;
 	DDcheck(h, p);
-	switch (GPFLAG(gp)) {
+	switch (flag) {
 	case NF_FLAG_OK:
 	    break;
 	case NF_FLAG_MODERATED:
 	    if (!approved && !*modgroup) {
-		*modgroup = COPY(GPNAME(gp));
+		*modgroup = COPY(p);
 	    }
 	    break;
 	case NF_FLAG_IGNORE:
 	case NF_FLAG_NOLOCAL:
 	    if (!PERMlocpost)
 		(void)sprintf(Error, "Postings to \"%s\" are not allowed here.",
-				GPNAME(gp));
+			      p);
 	    break;
 	case NF_FLAG_EXCLUDED:
 	    /* Do NOT return an error. */
 	    break;
 	case NF_FLAG_ALIAS:
 	    (void)sprintf(Error,
-		    "The newsgroup \"%s\" has been renamed to \"%s\".\n",
-		    p, GPALIAS(gp));
+		    "The newsgroup \"%s\" has been renamed.\n", p);
 	    break;
 	}
     } while ((p = strtok((char *)NULL, NGSEPS)) != NULL);

@@ -191,7 +191,7 @@ char *HandleHeaders(char *article)
    return NULL;
 }
 
-int perlConnect(char *ClientHost, char *ClientIP, char *accesslist) {
+int perlConnect(char *ClientHost, char *ClientIP, char *ServerHost, char *accesslist) {
     dSP;
     HV              *attribs;
     int             rc;
@@ -207,6 +207,7 @@ int perlConnect(char *ClientHost, char *ClientIP, char *accesslist) {
     attribs = perl_get_hv("attributes", TRUE);
     hv_store(attribs, "type", 4, newSVpv("connect", 0), 0);
     hv_store(attribs, "hostname", 8, newSVpv(ClientHost, 0), 0);
+    hv_store(attribs, "interface", 9, newSVpv(ServerHost, 0), 0);
     hv_store(attribs, "ipaddress", 9, newSVpv(ClientIP, 0), 0);
     
     PUSHMARK(SP);
@@ -221,12 +222,13 @@ int perlConnect(char *ClientHost, char *ClientIP, char *accesslist) {
 	ExitWithStats(1);
     }
 
-    if (rc != 4) {
+    if (rc != 5) {
 	syslog(L_ERROR, "Perl function authenticate returned wrong number of results: %d", rc);
 	Reply("%d Internal Error (2).  Goodbye\r\n", NNTP_ACCESS_VAL);
 	ExitWithStats(1);
     }
 
+    MaxBytesPerSecond = POPi;
     p = POPp;
     strcpy(accesslist, p); 
     sv = POPs; PERMcanpost = SvTRUE(sv);
@@ -248,7 +250,7 @@ int perlConnect(char *ClientHost, char *ClientIP, char *accesslist) {
     return code;
 }
 
-int perlAuthInit(char *ClientHost, char *ClientIP, char *accesslist) {
+int perlAuthInit(void) {
     dSP;
     int             rc;
     
@@ -282,7 +284,7 @@ int perlAuthInit(char *ClientHost, char *ClientIP, char *accesslist) {
     
 }
 
-int perlAuthenticate(char *ClientHost, char *ClientIP, char *user, char *passwd, char *accesslist) {
+int perlAuthenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *user, char *passwd, char *accesslist) {
     dSP;
     HV              *attribs;
     int             rc;
@@ -299,6 +301,7 @@ int perlAuthenticate(char *ClientHost, char *ClientIP, char *user, char *passwd,
     hv_store(attribs, "type", 4, newSVpv("authenticate", 0), 0);
     hv_store(attribs, "hostname", 8, newSVpv(ClientHost, 0), 0);
     hv_store(attribs, "ipaddress", 9, newSVpv(ClientIP, 0), 0);
+    hv_store(attribs, "interface", 9, newSVpv(ServerHost, 0), 0);
     hv_store(attribs, "username", 8, newSVpv(user, 0), 0);
     hv_store(attribs, "password", 8, newSVpv(passwd, 0), 0);
     
@@ -314,12 +317,13 @@ int perlAuthenticate(char *ClientHost, char *ClientIP, char *user, char *passwd,
 	ExitWithStats(1);
     }
 
-    if (rc != 4) {
+    if (rc != 5) {
 	syslog(L_ERROR, "Perl function authenticate returned wrong number of results: %d", rc);
 	Reply("%d Internal Error (2).  Goodbye\r\n", NNTP_ACCESS_VAL);
 	ExitWithStats(1);
     }
 
+    MaxBytesPerSecond = POPi;
     p = POPp;
     strcpy(accesslist, p); 
     sv = POPs; PERMcanpost = SvTRUE(sv);

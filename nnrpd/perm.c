@@ -343,7 +343,6 @@ static CONFTOKEN PERMtoks[] = {
 static void method_parse(METHOD *method, CONFFILE *f, CONFTOKEN *tok, int auth)
 {
     int oldtype;
-    int i;
 
     oldtype = tok->type;
     tok = CONFgettoken(0, f);
@@ -374,7 +373,6 @@ static void method_parse(METHOD *method, CONFFILE *f, CONFTOKEN *tok, int auth)
 static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 {
     int oldtype;
-    int i;
     METHOD *m;
 
     oldtype = tok->type;
@@ -522,8 +520,6 @@ static void PERMreadfile(char *filename)
     AUTHGROUP *curauth;
     int oldtype;
     char *str;
-    int i;
-    char errorstr[SMBUF];
 
     cf = NEW(CONFCHAIN, 1);
     cf->f = CONFfopen(filename);
@@ -1148,7 +1144,7 @@ static void GetProgInput(EXECSTUFF *prog)
 {
     fd_set rfds, tfds;
     int maxfd;
-    int got, curpos;
+    int got;
     struct timeval tmout;
     pid_t tmp;
     int status;
@@ -1215,7 +1211,6 @@ static char *ResolveUser(AUTHGROUP *auth)
     char *arg0;
     char *resdir;
     EXECSTUFF *foo;
-    int tmp, status;
     int done;
     char buf[BIG_BUFFER];
 
@@ -1281,7 +1276,6 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password)
     char *arg0;
     char *resdir;
     EXECSTUFF *foo;
-    int tmp, status;
     int done;
     char buf[BIG_BUFFER];
 

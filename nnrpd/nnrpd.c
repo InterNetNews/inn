@@ -12,8 +12,11 @@
 # include <sys/wait.h>
 #endif
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include "configdata.h"
 #include "clibrary.h"
+#include "libinn.h"
+#include "ov3.h"
 #define MAINLINE
 #include "nnrpd.h"
 #include <netdb.h>
@@ -94,7 +97,7 @@ extern FUNCTYPE	CMDxpat();
 extern FUNCTYPE	CMDxpath();
 extern FUNCTYPE	CMD_unimp();
 
-extern int LLOGenable;
+int LLOGenable;
 extern int TrackClient();
 
 STATIC char	CMDfetchhelp[] = "[MessageID|Number]";
@@ -154,8 +157,7 @@ STATIC CMDENT	CMDtable[] = {
 **  Log a summary status message and exit.
 */
 NORETURN
-ExitWithStats(x)
-    int			x;
+ExitWithStats(int x)
 {
     TIMEINFO		Now;
     double		usertime;
@@ -203,7 +205,9 @@ ExitWithStats(x)
  	close(STDOUT);
  	close(STDERR);    	
      }
-            
+    
+    OV3close();
+
     exit(x);
 }
 
@@ -347,7 +351,7 @@ Address2Name(ap, hostname, i)
 
     /* Make all lowercase, for wildmat. */
     for (p = hostname; *p; p++)
-	if (CTYPE(isupper, *p))
+	if (CTYPE(isupper, (int)*p))
 	    *p = tolower(*p);
     return TRUE;
 }
@@ -370,30 +374,17 @@ STATIC void StartConnection()
     length = sizeof sin;
     ClientAddr = NULL;
     if (getpeername(STDIN, (struct sockaddr *)&sin, &length) < 0) {
-#ifndef DEBUG
       if (!isatty(STDIN)) {
 	    syslog(L_TRACE, "%s cant getpeername %m", "?");
             (void)strcpy(ClientHost, "?"); /* so stats generation looks correct. */
 	    Printf("%d I can't get your name.  Goodbye.\r\n", NNTP_ACCESS_VAL);
 	    ExitWithStats(1);
 	}
-#endif
 	(void)strcpy(ClientHost, "stdin");
         ClientIP = 0L;
+	ServerHost[0] = '\0';
     }
-#if defined(AF_DECnet)
-    else if (sin.sin_family == AF_DECnet) {
-	char *p;
-	(void) strcpy(ClientHost, getenv("REMNODE"));
-	for (p = ClientHost; *p; p++)
-	    if (CTYPE(isupper, *p))
-		*p = tolower(*p);
-	if (innconf->decnetdomain != NULL) {
-	    (void)strcat(ClientHost, ".");
-	    (void)strcat(ClientHost, innconf->decnetdomain);
-	}
-    }
-#endif
+
     else {
 	if (sin.sin_family != AF_INET) {
 	    syslog(L_ERROR, "%s bad_address_family %ld",
@@ -422,6 +413,18 @@ STATIC void StartConnection()
         ClientIP = inet_addr(ClientHost);
 #endif /* defined(DO_NNRP_GETHOSTBYADDR) */
 	(void)strncpy(ClientIp, inet_ntoa(sin.sin_addr), sizeof(ClientIp));
+	length = sizeof sin;
+	if (getsockname(STDIN, (struct sockaddr *)&sin, &length) < 0) {
+	    syslog(L_NOTICE, "%s can't getsockname %m", ClientHost);
+	    Printf("%d Can't figure out where you connected to.  Goodbye\r\n", NNTP_ACCESS_VAL);
+	    ExitWithStats(1);
+	}
+	if (!Address2Name(&sin.sin_addr, ServerHost, sizeof(ServerHost))) {
+	    strcpy(ServerHost, inet_ntoa(sin.sin_addr));
+	    syslog(L_NOTICE,
+		   "? cant gethostbyaddr %s %m -- using IP address for access",
+		   ClientHost);
+	}
     }
 
     strncpy (LogName,ClientHost,sizeof(LogName) - 1) ;
@@ -430,7 +433,7 @@ STATIC void StartConnection()
     syslog(L_NOTICE, "%s connect", ClientHost);
 #ifdef DO_PERL
     if (innconf->nnrpperlauth) {
-	if ((code = perlConnect(ClientHost, ClientIp, accesslist)) == 502) {
+	if ((code = perlConnect(ClientHost, ClientIp, ServerHost, accesslist)) == 502) {
 	    syslog(L_NOTICE, "%s no_access", ClientHost);
 	    Printf("%d You are not in my access file. Goodbye.\r\n",
 		   NNTP_ACCESS_VAL);
@@ -561,8 +564,15 @@ STATIC void SetupDaemon(void) {
 #endif /* defined(DO_PERL) */
     
     val = TRUE;
-    if (innconf->storageapi && SMsetup(SM_PREOPEN, (void *)&val) && !SMinit()) {
+    if (SMsetup(SM_PREOPEN, (void *)&val) && !SMinit()) {
 	syslog(L_NOTICE, "%s cant initialize storage method, %s", ClientHost, SMerrorstr);
+	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+	ExitWithStats(1);
+    }
+    ARTreadschema();
+    if (!OV3open(1, OV3_READ)) {
+	/* This shouldn't really happen. */
+	syslog(L_NOTICE, "%s cant open overview %m", ClientHost);
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
 	ExitWithStats(1);
     }
@@ -581,10 +591,7 @@ Usage()
 
 /* ARGSUSED0 */
 int
-main(argc, argv, env)
-    int			argc;
-    char		*argv[];
-    char		*env[];
+main(int argc, char *argv[], char *env[])
 {
 #if	NNRP_LOADLIMIT > 0
     int			load;
@@ -595,11 +602,9 @@ main(argc, argv, env)
     int			ac;
     READTYPE		r;
     TIMEINFO		Now;
-    register int	i;
+    int			i;
     char		*Reject;
     int			timeout;
-    BOOL		val;
-    char		*p;
     int			vid=0; 
     int 		count=123456789;
     struct		timeval tv;
@@ -630,6 +635,8 @@ main(argc, argv, env)
      * TITLEset() routine would clobber it! */
     Reject = NULL;
     LLOGenable=FALSE;
+    GRPcur = NULL;
+    MaxBytesPerSecond = 0;
 
     openlog("nnrpd", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
@@ -792,32 +799,31 @@ main(argc, argv, env)
 	fclose(pidfile);
 
 	/* Set signal handle to care for dead children */
-	(void)signal(SIGCHLD, WaitChild);
+	(void)signal(SIGCHLD, SIG_IGN);
 	SetupDaemon();
  
 	TITLEset("nnrpd: accepting connections");
  	
-	listen(lfd, 5);	
+	listen(lfd, 128);	
 
-listen_loop:
-	clen = sizeof(csa);
-	fd = accept(lfd, (struct sockaddr *) &csa, &clen);
-	if (fd < 0)
-		goto listen_loop;
-    
-	for (i = 0; (pid = fork()) < 0; i++) {
-	    if (i == MAX_FORKS) {
-		syslog(L_FATAL, "cant fork %m -- giving up");
-		exit(1);
+	do {
+	    clen = sizeof(csa);
+	    fd = accept(lfd, (struct sockaddr *) &csa, &clen);
+	    if (fd < 0)
+		continue;
+	    
+	    for (i = 0; (pid = fork()) < 0; i++) {
+		if (i == MAX_FORKS) {
+		    syslog(L_FATAL, "cant fork %m -- giving up");
+		    OV3close();
+		    exit(1);
+		}
+		syslog(L_NOTICE, "cant fork %m -- waiting");
+		(void)sleep(1);
 	    }
-	    syslog(L_NOTICE, "cant fork %m -- waiting");
-	    (void)sleep(1);
-	}
-
-	if (pid != 0) {
+	    if (pid != 0)
 		close(fd);
-		goto listen_loop;
-	}
+	} while (pid != 0);
 
 	/* child process starts here */
 	TITLEset("nnrpd: connected");
@@ -843,20 +849,12 @@ listen_loop:
     /* Setup. */
     if (GetTimeInfo(&Now) < 0) {
 	syslog(L_FATAL, "cant gettimeinfo %m");
+	OV3close();
 	exit(1);
     }
     STATstart = TIMEINFOasDOUBLE(Now);
 
     PERMnewnews = innconf->allownewnews;
-
-    if (innconf->overviewmmap)
-	val = TRUE;
-    else
-	val = FALSE;
-    if (!OVERsetup(OVER_MMAP, &val) || !OVERsetup(OVER_MODE, "r")) {
-	syslog(L_FATAL, "cant setup unified overview");
-	ExitWithStats(1);
-    }
 
 #if	NNRP_LOADLIMIT > 0
     if ((load = GetLoadAverage()) > NNRP_LOADLIMIT) {
@@ -867,9 +865,6 @@ listen_loop:
 #endif	/* NNRP_LOADLIMIT > 0 */
 
     strcpy (LogName, "?");
-
-    OVERindex = NULL;
-    OVERicount = 0;
 
     /* Catch SIGPIPE so that we can exit out of long write loops */
     (void)signal(SIGPIPE, CatchPipe);
@@ -914,14 +909,6 @@ listen_loop:
 	} else {
 		syslog(L_NOTICE, "%s Local Logging failed (%s) %s", ClientHost, Username, LocalLogFileName);
 	}
-    }
-
-    ARTreadschema();
-    if (!GetGroupList()) {
-	/* This shouldn't really happen. */
-	syslog(L_NOTICE, "%s cant getgrouplist %m", ClientHost);
-	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
-	ExitWithStats(1);
     }
 
     Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",

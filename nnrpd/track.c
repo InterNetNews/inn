@@ -5,12 +5,12 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <dirent.h>
+#include <sys/time.h>
+#include <string.h>
 #include "configdata.h"
 #include "clibrary.h"
 #include "nnrpd.h"
-#include "mydir.h"
-#include <sys/time.h>
-#include <string.h>
 
 #define MAX_LEN 180
 

@@ -13,7 +13,7 @@
 #define GET_DATE(p, line)	\
 	((p = strchr(line, HIS_FIELDSEP)) == NULL ? 0 : atol(++p))
 
-
+#if 0
 /*
 **  Open an article and see if its distribution is in the list.
 */
@@ -211,7 +211,7 @@ FindLinesAfter(long date, char *line, int linesize, FILE *F)
     return FALSE;
 }
 
-
+#endif
 /*
 **  NEWNEWS newsgroups date time ["GMT"] [<distributions>]
 **  Return the Message-ID of any articles after the specified date,
@@ -237,10 +237,13 @@ CMDnewnews(int ac, char *av[])
     BOOL		overviewinitialized = FALSE;
     BOOL		overviewfailed = FALSE;
 
+#if 0
     if (!PERMnewnews) {
+#endif
 	Reply("%d NEWNEWS command disabled by administrator\r\n",
           NNTP_ACCESS_VAL);
 	return;
+#if 0
     }
 
     if (!PERMcanread) {
@@ -387,5 +390,6 @@ CMDnewnews(int ac, char *av[])
 
     (void)fclose(F);
     Printf(".\r\n");
+#endif
 }
 

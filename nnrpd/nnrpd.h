@@ -20,12 +20,9 @@
 #include <time.h>
 #endif	/* defined(DO_NEED_TIME) */
 #include <sys/time.h>
-#if defined(OVER_MMAP) || defined(ART_MMAP)
-#include <sys/mman.h>
-#endif
+#include <syslog.h> 
 #include "paths.h"
 #include "nntp.h"
-#include <syslog.h> 
 #include "libinn.h"
 #include "qio.h"
 #include "macros.h"
@@ -50,22 +47,6 @@ typedef struct in_addr	INADDR;
 
 
 /*
-**  A group entry.
-*/
-typedef struct _GROUPENTRY {
-#ifdef NOTDEF
-    char	*Name;
-    ARTNUM	High;
-    ARTNUM	Low;
-    char	Flag;
-    char	*Alias;
-#endif
-    char        *Ptr;   
-    struct _GROUPENTRY *Next;
-} GROUPENTRY;
-
-
-/*
 **  A range of article numbers.
 */
 typedef struct _ARTRANGE {
@@ -83,15 +64,6 @@ typedef enum _READTYPE {
     RTlong,
     RTtimeout
 } READTYPE;
-
-typedef struct _ARTLIST {
-    ARTNUM              ArtNum;
-    char                (*Index)[OVERINDEXPACKSIZE];
-    TOKEN		Token;            /* for overview */
-    OFFSET_T		Offset;           /* Offset into history file */
-    BOOL		Tokenretrieved; 
-} ARTLIST;
-
 
 #if	defined(MAINLINE)
 #define EXTERN	/* NULL */
@@ -111,6 +83,7 @@ EXTERN BOOL 	Offlinepost;
 EXTERN char	**PERMreadlist;
 EXTERN char	**PERMpostlist;
 EXTERN char	ClientHost[SMBUF];
+EXTERN char     ServerHost[SMBUF];
 EXTERN char	Username[SMBUF];
 EXTERN char     ClientIp[20];
 EXTERN char	LogName[256] ;
@@ -123,12 +96,12 @@ extern char	NOACCESS[];
 EXTERN int	SPOOLlen;
 EXTERN char	PERMpass[SMBUF];
 EXTERN char	PERMuser[SMBUF];
-EXTERN ARTLIST	*ARTcache;
-EXTERN ARTLIST	*ARTnumbers;
 EXTERN FILE	*locallog;
-EXTERN int	ARTindex;
-EXTERN int	ARTsize;
-EXTERN long	ARTcount;
+EXTERN int	ARTnumber;	/* Current article number */
+EXTERN int	ARThigh;	/* Current high number for group */
+EXTERN int	ARTlow;		/* Current low number for group */
+EXTERN long	ARTcount;	/* Current number of articles in group */
+EXTERN long	MaxBytesPerSecond; /* maximum bytes per sec a client can use, defaults to 0 */
 EXTERN long	ARTget;
 EXTERN long	ARTgettime;
 EXTERN long	ARTgetsize;
@@ -142,12 +115,9 @@ EXTERN long	OVERdbz;	/* number of ms spent reading dbz data	*/
 EXTERN long	OVERseek;	/* number of ms spent seeking history	*/
 EXTERN long	OVERget;	/* number of ms spent reading history	*/
 EXTERN long	OVERartcheck;	/* number of ms spent article check	*/
-/* Pointer to memory containing overview index, may be read only */
-EXTERN char     (*OVERindex)[][OVERINDEXPACKSIZE];
-EXTERN int      OVERicount;      /* Number of OVERINDEX entries at OVERindex */
 EXTERN long	GRParticles;
 EXTERN long	GRPcount;
-EXTERN char	GRPlast[SPOOLNAMEBUFF];
+EXTERN char	*GRPcur;
 EXTERN long	POSTreceived;
 EXTERN long	POSTrejected;
 
@@ -167,10 +137,7 @@ extern NORETURN		ExitWithStats();
 extern BOOL		GetGroupList();
 extern char		*GetHeader();
 extern void		GRPreport();
-extern GROUPENTRY	*GRPfind();
-extern GROUPENTRY	*GRPlocalfind();
 extern void		HIScheck();
-extern BOOL		OVERgetent();
 extern char		*HISgetent();
 extern long		LOCALtoGMT();
 extern BOOL		NGgetlist();
@@ -179,7 +146,6 @@ extern BOOL		PERMartok();
 extern BOOL		PERMmatch();
 extern BOOL		ParseDistlist();
 extern READTYPE		READline();
-extern void		OVERclose();
 #if	defined(VAR_STDARGS)
 extern void		Reply(char *, ...);
 #endif	/* defined(VAR_STDARGS) */
@@ -187,13 +153,8 @@ extern void		Reply(char *, ...);
 extern void		Reply();
 #endif	/* defined(VAR_VARARGS) */
 
-char *GPNAME(GROUPENTRY *gp);   
-ARTNUM GPLOW(GROUPENTRY *gp);
-ARTNUM GPHIGH(GROUPENTRY *gp);
-char GPFLAG(GROUPENTRY *gp);
-char *GPALIAS(GROUPENTRY *gp); 
 char *HandleHeaders(char *article);
-int perlConnect(char *ClientHost, char *ClientIP, char *accesslist);
-int perlAuthenticate(char *ClientHost, char *ClientIP, char *user, char *passwd, char *accesslist);
-
+int perlConnect(char *ClientHost, char *ClientIP, char *ServerHost, char *accesslist);
+int perlAuthenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *user, char *passwd, char *accesslist);
+BOOL ARTinstorebytoken(TOKEN token);
 

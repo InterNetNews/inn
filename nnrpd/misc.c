@@ -263,50 +263,6 @@ void HIScheck(void)
     }
 }
 
-#ifndef DO_TAGGED_HASH
-/*
-**  Get overview offset
-*/
-BOOL OVERgetent(HASH *key, TOKEN *token, OFFSET_T *offset)
-{
-    struct timeval	stv, etv;
-    idxrec		ionevalue;
-    idxrecext		iextvalue;
-
-    if (!setup) {
-	if (!dbzinit(HISTORY)) {
-	    syslog(L_ERROR, "%s cant dbzinit %s %m", ClientHost, HISTORY);
-	    return FALSE;
-	}
-	setup = TRUE;
-    }
-
-    /* Set the key value, fetch the entry. */
-    if (innconf->extendeddbz) {
-	if (innconf->nnrpdoverstats)
-	    gettimeofday(&stv, NULL);
-	if (!dbzfetch(*key, &iextvalue)) {
-	    if (innconf->nnrpdoverstats) {
-		gettimeofday(&etv, NULL);
-		OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
-		OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
-	    }
-	    return FALSE;
-	}
-	if (innconf->nnrpdoverstats) {
-	    gettimeofday(&etv, NULL);
-	    OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
-	    OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
-	}
-	OVERmaketoken(token, iextvalue.offset[OVEROFFSET], iextvalue.overindex, iextvalue.overlen);
-	if (offset)
-	    *offset = iextvalue.offset[HISTOFFSET];
-	return TRUE;
-    }
-    return FALSE;
-}
-#endif
-
 /*
 **  Return the path name of an article if it is in the history file.
 **  Return a pointer to static data.
@@ -322,25 +278,19 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
     struct stat		Sb;
     struct timeval	stv, etv;
     static int		entrysize = 0;
-    int			i;
 #ifndef DO_TAGGED_HASH
     idxrec		ionevalue;
-    idxrecext		iextvalue;
 #endif
 
     if (entrysize == 0) {
-	if (innconf->storageapi) {
-	    HASH hash;
-	    time_t dummy = ~(time_t)0;
-	    TOKEN token;
-	    sprintf(buff, "[%s]%c%lu%c%lu%c%lu%c%s\n", HashToText(hash),
+	HASH hash;
+	time_t dummy = ~(time_t)0;
+	TOKEN token;
+	sprintf(buff, "[%s]%c%lu%c%lu%c%lu%c%s\n", HashToText(hash),
 		HIS_FIELDSEP, dummy, HIS_SUBFIELDSEP,
 		dummy, HIS_SUBFIELDSEP,
 		dummy, HIS_FIELDSEP, TokenToText(token));
-	    entrysize = strlen(buff);
-	} else {
-	    entrysize = sizeof(buff) - 1;
-	}
+	entrysize = strlen(buff);
     }
     if (!setup) {
 	if (!dbzinit(HISTORY)) {
@@ -366,17 +316,6 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
 	    return NULL;
 	}
 #else
-	if (innconf->extendeddbz) {
-	    if (!dbzfetch(*key, &iextvalue)) {
-		if (innconf->nnrpdoverstats) {
-		    gettimeofday(&etv, NULL);
-		    OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
-		    OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
-		}
-		return NULL;
-	    }
-	    offset = iextvalue.offset[HISTOFFSET];
-	} else {
 	    if (!dbzfetch(*key, &ionevalue)) {
 		if (innconf->nnrpdoverstats) {
 		    gettimeofday(&etv, NULL);
@@ -386,7 +325,6 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
 		return NULL;
 	    }
 	    offset = ionevalue.offset;
-	}
 #endif
 	if (innconf->nnrpdoverstats) {
 	    gettimeofday(&etv, NULL);
@@ -416,18 +354,14 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
     }
 
     /* Seek and read. */
-    if (lseek(fileno(hfp), offset, SEEK_SET) == -1) {
-	syslog(L_ERROR, "%s cant lseek to %ld %m", ClientHost, offset);
-	return NULL;
-    }
     if (innconf->nnrpdoverstats) {
 	gettimeofday(&etv, NULL);
 	OVERseek+=(etv.tv_sec - stv.tv_sec) * 1000;
 	OVERseek+=(etv.tv_usec - stv.tv_usec) / 1000;
     }
     stv = etv;
-    if (read(fileno(hfp), buff, entrysize) < 0) {
-	syslog(L_ERROR, "%s cant read from %ld %m", ClientHost, offset);
+    if (pread(fileno(hfp), buff, entrysize, offset) < 0) {
+	syslog(L_ERROR, "%s cant pread from %ld %m", ClientHost, offset);
 	return NULL;
     }
     buff[entrysize] = '\0';
@@ -461,14 +395,7 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
     /* Want the full data? */
     if ((useoffset == TRUE) && (off == NULL)) {
 	/* this is the case for called by CMDxpath() */
-	if (innconf->storageapi)
-	    return NULL;
-	(void)strcpy(path, save);
-	for (p = path; *p; p++) {
-	    if (*p == '.')
-		*p = '/';
-	}
-	return path;
+	return NULL;
     }
 
     /* Want something we can open; loop over all entries. */
@@ -540,11 +467,7 @@ ParseDistlist(argvp, list)
 **  For NNTP commands, this limit is 512 (or 510 without the CR LF),
 **  and for POST data (article) lines it's 1000 (or 998 without the CR LF).
 */
-READTYPE
-READline(start, size, timeout)
-    char		*start;
-    int			size;
-    int			timeout;
+READTYPE READline(char *start, int  size, int timeout)
 {
     static int		count;
     static char		buffer[BUFSIZ];
@@ -644,10 +567,6 @@ static char postrec_dir[SMBUF];   /* Where is the post record directory? */
 void
 InitBackoffConstants()
 {
-  static char                   buff[SMBUF];
-  long                          x,i;
-  char *s;
-  FILE *fp;
   struct stat st;
 
   /* Default is not to enable this code */
@@ -656,7 +575,7 @@ InitBackoffConstants()
   /* Read the runtime config file to get parameters */
 
   if ((innconf->backoff_db == NULL) ||
-    !(innconf->backoff_k > 1L && innconf->backoff_postfast > 0L && innconf->backoff_postslow > 1L))
+    !(innconf->backoff_k >= 0L && innconf->backoff_postfast >= 0L && innconf->backoff_postslow >= 1L))
     return;
 
   /* Need this database for backing off */
@@ -819,7 +738,6 @@ StorePostRecord(path, lastpost, lastsleep, lastn)
      long                         lastsleep;
      long                         lastn;
 {
-     static char                   buff[SMBUF];
      FILE                         *fp;
 
      fp = fopen(path,"w");

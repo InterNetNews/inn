@@ -5,11 +5,11 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <time.h>
 #include "configdata.h"
 #include "clibrary.h"
 #include "nnrpd.h"
-#include <time.h>
-
+#include "ov3.h"
 
 typedef struct _LISTINFO {
     STRING	Path;
@@ -18,6 +18,13 @@ typedef struct _LISTINFO {
     STRING	Items;
     STRING	Format;
 } LISTINFO;
+
+typedef struct {
+    char                *name;
+    int                 high;
+    int                 low;
+    int                 count;
+} GROUPDATA;
 
 
 extern int LLOGenable;
@@ -275,7 +282,7 @@ CMDauthinfo(ac, av)
 
 #ifdef DO_PERL
 	if (innconf->nnrpperlauth) {
-	    code = perlAuthenticate(ClientHost, ClientIp, User, Password, accesslist);
+	    code = perlAuthenticate(ClientHost, ClientIp, ServerHost, User, Password, accesslist);
 	    if (code == NNTP_AUTH_OK_VAL) {
 		PERMspecified = NGgetlist(&PERMreadlist, accesslist);
 		PERMpostlist = PERMreadlist;
@@ -362,52 +369,33 @@ CMDdate(ac, av)
 */
 /* ARGSUSED0 */
 FUNCTYPE
-CMDlist(ac, av)
-    int			ac;
-    char		*av[];
+CMDlist(int ac, char *av[])
 {
-    register QIOSTATE	*qp;
-    register char	*p;
-    register char	*save;
+    QIOSTATE	*qp;
+    char	*p;
+    char	*save;
     char		*q;
     char		*grplist[2];
     LISTINFO		*lp;
     char		*wildarg = NULL;
     char		savec;
+    int			lo, hi, flag;
 
     p = av[1];
     if (p == NULL || caseEQ(p, "active")) {
-	static time_t	last_time;
 	time_t		now;
 	(void)time(&now);
 	lp = &INFOactive;
-	if (ac < 3 || now > last_time + NNRP_RESCAN_DELAY * 3) {
-	    if (last_time && !GetGroupList()) {
-		syslog(L_NOTICE, "%s cant getgroupslist for list %m", ClientHost);
-		Reply("%d Group update failed. Try later.\r\n", NNTP_TEMPERR_VAL);
-		ExitWithStats(1);
-	    }
-	    last_time = now;
-	}
 	if (ac == 3) {
-	    GROUPENTRY *gp = GRPfind(av[2]);
-	    if (gp) {
-		grplist[0] = av[2];
-		grplist[1] = NULL;
-		Reply("%d list:\r\n", NNTP_LIST_FOLLOWS_VAL);
-		if (PERMmatch(PERMreadlist, grplist))
-			Printf("%s %ld %ld %c%s\r\n.\r\n",
-		      		GPNAME(gp), (long)GPHIGH(gp), (long)GPLOW(gp),
-		      		GPFLAG(gp), GPALIAS(gp) ? GPALIAS(gp) : "");
-		else
-			Printf(".\r\n");
+	    wildarg = av[2];
+	    if (OV3groupstats(wildarg, &lo, &hi, NULL, &flag)) {
+		syslog(L_NOTICE, "%s shortcut list active %s", ClientHost, wildarg);
+		Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);
+		printf("%s %010d %010d %c\r\n.\r\n", wildarg, hi, lo, flag);
 		return;
 	    }
-	    wildarg = av[2];
 	}
-	lp = &INFOactive;
-    }
-    else if (caseEQ(p, "active.times"))
+    } else if (caseEQ(p, "active.times"))
 	lp = &INFOactivetimes;
     else if (caseEQ(p, "distributions"))
 	lp = &INFOdistribs;
@@ -435,8 +423,7 @@ CMDlist(ac, av)
 	return;
     }
     lp->Path = innconf->pathetc;
-    if ((strstr(lp->File, "active") != NULL) ||
-	(strstr(lp->File, "newsgroups") != NULL))
+    if ((strstr(lp->File, "active") != NULL) || (strstr(lp->File, "newsgroups") != NULL))
 		lp->Path = innconf->pathdb;
     if (strchr(lp->File, '/') != NULL)
 	lp->Path = "";
@@ -544,27 +531,37 @@ CMDmode(ac, av)
 	Reply("%d What?\r\n", NNTP_BAD_COMMAND_VAL);
 }
 
+STATIC int GroupCompare(const void *a1, const void* b1) {
+    const GROUPDATA     *a = a1;
+    const GROUPDATA     *b = b1;
+
+    return strcmp(a->name, b->name);
+}
 
 /*
 **  Display new newsgroups since a given date and time for specified
 **  <distributions>.
 */
-FUNCTYPE
-CMDnewgroups(ac, av)
-    int			ac;
-    char		*av[];
+FUNCTYPE CMDnewgroups(int ac, char *av[])
 {
     static char		USAGE[] =
 	"NEWGROUPS yymmdd hhmmss [\"GMT\"] [<distributions>]";
     static char		**distlist;
-    register char	*p;
-    register char	*q;
-    register char	**dp;
-    register QIOSTATE	*qp;
-    register GROUPENTRY	*gp;
+    char	        *p;
+    char	        *q;
+    char	        **dp;
+    QIOSTATE	        *qp;
     BOOL		All;
     long		date;
     char		*grplist[2];
+    int                 hi, lo, count, flag;
+    GROUPDATA           *grouplist = NULL;
+    GROUPDATA           key;
+    GROUPDATA           *gd;
+    int                 listsize = 0;
+    int                 numgroups = 0;
+    int                 numfound = 0;
+    int                 i;
 
     /* Parse the date. */
     date = NNTPtoGMT(av[1], av[2]);
@@ -591,29 +588,18 @@ CMDnewgroups(ac, av)
 	All = FALSE;
     }
 
-    if (!GetGroupList()) {
-	syslog(L_NOTICE, "%s cant getgroupslist for list %m", ClientHost);
-	Reply("%d Group update failed. Try later.\r\n", NNTP_TEMPERR_VAL);
-	ExitWithStats(1);
-    }
-
     if ((qp = QIOopen(ACTIVETIMES)) == NULL) {
-	syslog(L_ERROR, "%s cant fopen %s %m",
-	    ClientHost, ACTIVETIMES);
+	syslog(L_ERROR, "%s cant fopen %s %m", ClientHost, ACTIVETIMES);
 	Reply("%d Cannot open newsgroup date file.\r\n", NNTP_TEMPERR_VAL);
 	return;
     }
-    Reply("%d New newsgroups follow.\r\n", NNTP_NEWGROUPS_FOLLOWS_VAL);
-
-    /* Set up group list terminator. */
-    grplist[1] = NULL;
 
     /* Read the file, ignoring long lines. */
     while ((p = QIOread(qp)) != NULL) {
 	if ((q = strchr(p, ' ')) == NULL)
 	    continue;
 	*q++ = '\0';
-	if (atol(q) < date || (gp = GRPfind(p)) == NULL)
+	if ((atol(q) < date) || !OV3groupstats(p, &lo, &hi, &count, &flag))
 	    continue;
 
 	if (PERMspecified) {
@@ -636,10 +622,50 @@ CMDnewgroups(ac, av)
 	    if (*dp == NULL)
 		continue;
 	}
-	Printf("%s %ld %ld %c%s\r\n",
-	    p, (long)GPHIGH(gp), (long)GPLOW(gp),
-	    GPFLAG(gp), GPALIAS(gp) ? GPALIAS(gp) : "");
+	if (grouplist == NULL) {
+	    grouplist = NEW(GROUPDATA, 1000);
+	    listsize = 1000;
+	}
+	if (listsize >= (numgroups - 1)) {
+	    listsize += 1000;
+	    grouplist = RENEW(grouplist, GROUPDATA, listsize);
+	}
+
+	grouplist[numgroups].high = hi;
+	grouplist[numgroups].low = lo;
+	grouplist[numgroups].count = count;
+	grouplist[numgroups].name = COPY(p);
+	numgroups++;
     }
+    QIOclose(qp);
+
+    if ((qp = QIOopen(ACTIVE)) == NULL) {
+	syslog(L_ERROR, "%s cant fopen %s %m", ClientHost, ACTIVE);
+	Reply("%d Cannot open active file.\r\n", NNTP_TEMPERR_VAL);
+	return;
+    }
+    qsort(grouplist, numgroups, sizeof(GROUPDATA), GroupCompare);
+    Reply("%d New newsgroups follow.\r\n", NNTP_NEWGROUPS_FOLLOWS_VAL);
+    for (numfound = numgroups; (p = QIOread(qp)) && numfound;) {
+	if ((q = strchr(p, ' ')) == NULL)
+	    continue;
+	*q++ = '\0';
+	if ((q = strchr(q, ' ')) == NULL)
+	    continue;
+	q++;
+	if ((q = strchr(q, ' ')) == NULL)
+	    continue;
+	q++;
+	key.name = p;
+	if ((gd = bsearch(&key, grouplist, numgroups, sizeof(GROUPDATA), GroupCompare)) == NULL)
+	    continue;
+	Printf("%s %d %d %s\r\n", p, gd->high, gd->low, q);
+	numfound--;
+    }
+    for (i = 0; i < numgroups; i++) {
+	DISPOSE(grouplist[i].name);
+    }
+    DISPOSE(grouplist);
     QIOclose(qp);
     Printf(".\r\n");
 }
@@ -816,14 +842,5 @@ CMDxpath(ac, av)
     int		ac;
     char	*av[];
 {
-    char	*p;
-    HASH	hash = HashMessageID(av[1]);
-
-    if (innconf->storageapi) {
-	Reply("%d Syntax error or bad command\r\n", NNTP_BAD_COMMAND_VAL);
-    } else if ((p = HISgetent(&hash, TRUE, NULL)) == NULL) {
-	Reply("%d Don't have it\r\n", NNTP_DONTHAVEIT_VAL);
-    } else {
-	Reply("%d %s\r\n", NNTP_NOTHING_FOLLOWS_VAL, p);
-    }
+    Reply("%d Syntax error or bad command\r\n", NNTP_BAD_COMMAND_VAL);
 }
