@@ -32,11 +32,14 @@
 #include "md5.h"
 #include "libinn.h"
 #include "nntp.h"
+#include "paths.h"
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif
+
+#define RADIUS_LOCAL_PORT       NNTP_PORT
 
 #define AUTH_VECTOR_LEN 16
 
@@ -55,6 +58,7 @@ typedef struct _rad_config_t {
     char *radhost;	/* parameters for talking to the remote radius sever */
     int radport;
     char *lochost;
+    int locport;
 
     char *prefix, *suffix;	/* futz with the username, if necessary */
     int ignore_source;
@@ -105,46 +109,25 @@ int read_config(FILE *f, rad_config_t *radconfig)
 
         /* what are we setting? */
 	if (!strcmp(keyword, "secret")) {
-	    if (radconfig->secret) {
-		fprintf(stderr, "already found shared secret in rad_config, line %d\n",
-		  lineno);
-		exit(1);
-	    }
+	    if (radconfig->secret) continue;
 	    radconfig->secret = COPY(iter);
 	} else if (!strcmp(keyword, "radhost")) {
-	    if (radconfig->radhost) {
-		fprintf(stderr, "already found radhost in rad_config, line %d\n",
-		  lineno);
-		exit(1);
-	    }
+	    if (radconfig->radhost) continue;
 	    radconfig->radhost = COPY(iter);
 	} else if (!strcmp(keyword, "radport")) {
-	    if (radconfig->radport) {
-		fprintf(stderr, "already found radport in rad_config, line %d\n",
-		  lineno);
-		exit(1);
-	    }
+	    if (radconfig->radport) continue;
 	    radconfig->radport = atoi(iter);
 	} else if (!strcmp(keyword, "lochost")) {
-	    if (radconfig->lochost) {
-		fprintf(stderr, "already found lochost in rad_config, line %d\n",
-		  lineno);
-		exit(1);
-	    }
+	    if (radconfig->lochost) continue;
 	    radconfig->lochost = COPY(iter);
+	} else if (!strcmp(keyword, "locport")) {
+	    if (radconfig->locport) continue;
+	    radconfig->locport = atoi(iter);
 	} else if (!strcmp(keyword, "prefix")) {
-	    if (radconfig->prefix) {
-		fprintf(stderr, "already found prefix in rad_config, line %d\n",
-		  lineno);
-		exit(1);
-	    }
+	    if (radconfig->prefix) continue;
 	    radconfig->prefix = COPY(iter);
 	} else if (!strcmp(keyword, "suffix")) {
-	    if (radconfig->suffix) {
-		fprintf(stderr, "already found suffix in rad_config, line %d\n",
-		  lineno);
-		exit(1);
-	    }
+	    if (radconfig->suffix) continue;
 	    radconfig->suffix = COPY(iter);
 	} else if (!strcmp(keyword, "ignore-source")) {
 	    if (!strcasecmp(iter, "true"))
@@ -170,6 +153,8 @@ int read_config(FILE *f, rad_config_t *radconfig)
 #define PW_AUTHENTICATION_REQUEST 1
 #define		PW_USER_NAME 1
 #define		PW_PASSWORD 2
+#define		RAD_NAS_IP_ADDRESS	4	/* IP address */
+#define		RAD_NAS_PORT		5	/* Integer */
 #define		PW_SERVICE_TYPE 6
 #define			PW_SERVICE_AUTH_ONLY 8
 #define PW_AUTHENTICATION_ACK 2
@@ -194,6 +179,44 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     struct timeval tmout;
     int got;
     fd_set rdfds;
+    uint32_t nvalue;
+
+    /* first, build the sockaddrs */
+    memset(&sinl, '\0', sizeof(sinl));
+    memset(&sinr, '\0', sizeof(sinr));
+    sinl.sin_family = AF_INET;
+    sinr.sin_family = AF_INET;
+    if (config->lochost == NULL) {
+	if (gethostname(secbuf, sizeof(secbuf)) != 0) {
+	    fprintf(stderr, "radius: cant get localhostname\n");
+	    return(-1);
+	}
+	config->lochost = COPY(secbuf);
+    }
+    if (config->lochost) {
+	if (inet_aton(config->lochost, &sinl.sin_addr) != 1) {
+	    if ((hent = gethostbyname(config->lochost)) == NULL) {
+		fprintf(stderr, "radius: cant gethostbyname lochost %s\n",
+		        config->lochost);
+		return(-1);
+	    }
+	    memcpy(&sinl.sin_addr.s_addr, hent->h_addr,
+                   sizeof(struct in_addr));
+	}
+    }
+    if (inet_aton(config->radhost, &sinr.sin_addr) != 1) {
+	if ((hent = gethostbyname(config->radhost)) == NULL) {
+	    fprintf(stderr, "radius: cant gethostbyname radhost %s\n",
+	            config->radhost);
+	    return(-1);
+	}
+	memcpy(&sinr.sin_addr.s_addr, hent->h_addr_list[0],
+               sizeof(struct in_addr));
+    }
+    if (config->radport)
+	sinr.sin_port = htons(config->radport);
+    else
+	sinr.sin_port = htons(PW_AUTH_UDP_PORT);
 
     /* seed the random number generator for the auth vector */
     gettimeofday(&seed, 0);
@@ -241,6 +264,20 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 	req.data[req.datalen+passlen+2+strlen(pass)] = '\0';
     req.datalen += req.data[req.datalen+1];
 
+    /* Add NAS_PORT and NAS_IP_ADDRESS into request */
+    if ((nvalue = config->locport) == 0)
+        nvalue = RADIUS_LOCAL_PORT;
+    req.data[req.datalen++] = RAD_NAS_PORT;
+    req.data[req.datalen++] = sizeof(nvalue) + 2;
+    nvalue = htonl(nvalue);
+    memcpy(req.data + req.datalen, &nvalue, sizeof(nvalue));
+    req.datalen += sizeof(nvalue);
+    req.data[req.datalen++] = RAD_NAS_IP_ADDRESS;
+    req.data[req.datalen++] = sizeof(struct in_addr) + 2;
+    memcpy(req.data + req.datalen, &sinl.sin_addr.s_addr,
+           sizeof(struct in_addr));
+    req.datalen += sizeof(struct in_addr);
+
     /* we're only doing authentication */
     req.data[req.datalen] = PW_SERVICE_TYPE;
     req.data[req.datalen+1] = 6;
@@ -263,7 +300,8 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 	if (jlen == sizeof(HASH)) {
 	    /* Recalculate the digest from the HASHed previous */
 	    strcpy(secbuf, config->secret);
-	    memcpy(secbuf+strlen(config->secret), &req.data[passstart+2+i], sizeof(HASH));
+	    memcpy(secbuf+strlen(config->secret), &req.data[passstart+2+i],
+                   sizeof(HASH));
 	    MD5Init(&ctx);
 	    MD5Update(&ctx, secbuf, strlen(config->secret)+sizeof(HASH));
 	    MD5COUNT(&ctx, strlen(config->secret)+sizeof(HASH));
@@ -275,34 +313,6 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     req.length = htons(req.length);
     /* YAYY! The auth_req is ready to go! Build the reply socket and send out
      * the message. */
-
-    /* first, build the sockaddrs */
-    bzero(&sinl, sizeof(sinl));
-    sinl.sin_family = AF_INET;
-    bzero(&sinr, sizeof(sinr));
-    sinr.sin_family = AF_INET;
-    if (config->lochost) {
-	if (inet_aton(config->lochost, &sinl.sin_addr) != 1) {
-	    if ((hent = gethostbyname(config->lochost)) == NULL) {
-		fprintf(stderr, "radius: cant gethostbyname lochost %s\n",
-		        config->lochost);
-		return(-1);
-	    }
-	    memcpy(&sinl.sin_addr.s_addr, hent->h_addr, sizeof(struct in_addr));
-	}
-    }
-    if (inet_aton(config->radhost, &sinr.sin_addr) != 1) {
-	if ((hent = gethostbyname(config->radhost)) == NULL) {
-	    fprintf(stderr, "radius: cant gethostbyname radhost %s\n",
-	            config->radhost);
-	    return(-1);
-	}
-	memcpy(&sinr.sin_addr.s_addr, hent->h_addr_list[0], sizeof(struct in_addr));
-    }
-    if (config->radport)
-	sinr.sin_port = htons(config->radport);
-    else
-	sinr.sin_port = htons(PW_AUTH_UDP_PORT);
 
     /* now, build the sockets */
     if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -395,6 +405,7 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 #define RAD_HAVE_PREFIX 4
 #define RAD_HAVE_SUFFIX 8
 #define RAD_HAVE_LOCHOST 16
+#define RAD_HAVE_LOCPORT 32
 
 int main(int argc, char *argv[])
 {
@@ -411,7 +422,7 @@ int main(int argc, char *argv[])
     bzero(&radconfig, sizeof(rad_config_t));
     haveother = havefile = 0;
 
-    while ((opt = getopt(argc, argv, "f:h:p:q:s:l:S")) != -1) {
+    while ((opt = getopt(argc, argv, "f:h:p:P:q:s:l:S")) != -1) {
 	switch (opt) {
 	  case 'f':
 	    if (haveother) {
@@ -453,6 +464,14 @@ int main(int argc, char *argv[])
 	    haveother |= RAD_HAVE_PORT;
 	    radconfig.radport = atoi(optarg);
 	    break;
+	  case 'P':
+	    if (haveother & RAD_HAVE_LOCPORT) {
+		fprintf(stderr, "two -P options.\n");
+		exit(1);
+	    }
+	    haveother |= RAD_HAVE_LOCPORT;
+	    radconfig.locport = atoi(optarg);
+	    break;
 	  case 'q':
 	    if (haveother & RAD_HAVE_PREFIX) {
 		fprintf(stderr, "two -q options.\n");
@@ -490,6 +509,15 @@ int main(int argc, char *argv[])
     }
     if (argc != optind)
 	exit(2);
+    if (!havefile) {
+	if (!(f = fopen(_PATH_RADIUS_CONFIG, "r"))) {
+	    fprintf(stderr, "couldn't open config file %s: %s\n", optarg,
+                    strerror(errno));
+	} else {
+            read_config(f, &radconfig);
+            fclose(f);
+        }
+    }
     if (!radconfig.radhost) {
 	fprintf(stderr, "No radius host to authenticate against.\n");
 	exit(1);
