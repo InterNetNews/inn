@@ -10,7 +10,7 @@ Bob Halley:
         Did the TCL extension.
 
 Christophe Wolfhugel:
-        Did the Perl extension.
+        Did the Perl extension and provided several other fixes.
 
 Doug Needham:
         Made nnrpd spool if innd is unavailable.
@@ -20,7 +20,9 @@ Doug Needham:
            digging it out of a local file.
 
 David Lawrence: 
-        Did the hooks for PGP verificiation of control messages.
+        Did the hooks for PGP verificiation of control messages, added
+        actived support for syncing against an active file obtained via
+        ftp.
 
 John Stapleton:
         Wrote the poison newsgroup code ('@') for newsfeeds(5).
@@ -58,6 +60,9 @@ Clayton O'Neill:
         modifications to dbz.  Integrating innfeed, adding Xref slaving,
         the history cache, the WIP rewrite and various speedups were
         also his doing.  Provided the tradindexed overview mechanism.
+        Implemented the O flag in newsfeeds.  Did a bunch of early work on
+        the CVS repository, reorganization of the code, and committing
+        patches from others.
 
 Vincent Archer:
         Wrote the initial autoconf scripts.
@@ -72,6 +77,15 @@ Scott Fritchie:
 Fabien Tassin:
         Wrote the innreport package.  Implemented the new incoming.conf
         configuration file.
+
+Jeremy Nixon:
+        Wrote the initial patch for Perl filtering of message IDs on IHAVE
+        or CHECK and other patches related to the filtering code.
+
+Karl Kleinpaste:
+        Wrote the experimental code for automatically generating keywords
+        from incoming articles and putting those keywords in the overview
+        for the use of readers.
 
 Dave Hayes:
         Along with some bugfixes, Dave wrote the posting-backoff code for 
@@ -102,10 +116,14 @@ Darrell Fuhriman:
         Provided various bug fixes and contributed to the pre-SM CNFS
         development.
 
-Steve Carrue:
-        Modified nnrpd to allow detailed client tracking.
+Steve Carrie:
+        Modified nnrpd to allow detailed client tracking, added the -R
+        flag to nnrpd.
 
-Adian Cully
+Ed Mooring:
+        Wrote the first Perl filter callbacks into INN.
+
+Aidan Cully
         Provided the patches to support the new readers.conf file, and
         wrote the initial user authenticators and resolvers for the
         readers.conf.  Provided the patches to support the new
@@ -113,11 +131,26 @@ Adian Cully
         the Expires header.  Also added the '@' article exclusion code to
         incoming.conf.
 
+Andrew Gierth:
+        Contributed improvements to the nnrpd Perl filtering support to
+        give access to message bodies and support the DROP and SPOOL
+        keywords in filter returns.
+
 Russ Allbery:
         Has done large amounts of clean-up on various pieces of the system
         (especially the documentation and build system), and has helped
         with the CVS pool maintenance.  Improved the speed and portability
-        of the Perl filter.
+        of the Perl filter, and rewrote inndstart and startinnfeed for
+        security.
+
+Kai Henningsen:
+        Implemented the C and U flags in newsfeeds.
+
+Julio Sanchez:
+        Wrote the initial libtool support for INN.
+
+Igor Timkin:
+        Added min-queue-connection support to innfeed.
 
 Heath Kehoe:
         Various portability and bug fixes, wrote the ovdb overview
@@ -135,11 +168,11 @@ Greg Andruk
 Brian Kantor
         Wrote the news2mail gateway.
 
-Kenichi OKADA
-        Added SSL and SASL support for nnrpd.
-
 Ilya Etingof
         Added Python authentication support for nnrpd.
+
+Kenichi OKADA
+        Added SSL and SASL support for nnrpd.
 
 Also:
 
@@ -151,7 +184,9 @@ Dave Barr:
 
 Marc Fournier:
         Provided various bug fixes and did a lot of work integrating other
-        peoples patches and looking after the CVS pool. 
+        peoples patches and looking after the CVS pool.  Helped
+        significantly with the conversion to autoconf.  Added the ability
+        to set connection limits on a per-host basis.
 
 Joshua M. Thompson
         Wrote the original INSTALL documentation.
@@ -161,7 +196,7 @@ The following people helped above and beyond the call of duty with testing
 
 Paul Vixie, Robert Elz, Evan Champion, Robert Keller, Barry Bouwsma,
 markd@mira.net.au, Ollivier Robert, Kevin Jameson, Heiko W. Rupp,
-Fletcher Mattox, Matus Uhlar, Gabor Kiss, Joe Greco, Matthias Scheler,
+Fletcher Mattox, Matus Uhlar, Gabor Kiss, Matthias Scheler,
 Richard Michael Todd, Trevor Riley, Alex Bligh, J. Porter Clark,
 Alan Brown, Bert Hyman, Petter Nilsen, Gary E. Miller, Kim Culhan,
 Marc Baudoin, Neal Becker, Bjorn Knutsson, Stephen Marquard,
@@ -169,5 +204,11 @@ Frederick Korz, Benedict Lofstedt, Dan Ellis, Joe Ramey,
 Odd Einar Aurbakken, Jon Lewis, Dan Riley, Peter Eriksson, Ken Lalonde,
 Sven Paulus, Koichi Mouri, J. Richard Sladkey, Trine Krogstad,
 Holger Burbach, Per Hedeland, Larry Rosenman, Andrew Burgess,
-Michael Brunnbauer, Mohan Kokal <mki@primenet.com>, Robert R. Collier,
-Mark Hittinger, Miquel van Smoorenburg, Boyd Lynn Gerber
+Michael Brunnbauer, Mohan Kokal, Robert R. Collier, Mark Hittinger,
+Miquel van Smoorenburg, Boyd Lynn Gerber, Yury B. Razbegin,
+Joe St. Sauver, Heiko Schlichting, John P. Speno, Scott Gifford,
+Steve Parr, Robert Kiessling, Francis Swasey, Paul Tomblin,
+Florian La Roche, Curt Welch, Olaf Titz, Thomas Mike Michlmayr,
+KIZU Takashi, Michael Hall, Jeff King, Edward S. Marshall,
+Michael Schroeder, George Lindholm, Don Lewis, Christopher Masto,
+Hiroaki Sengoku
