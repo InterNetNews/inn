@@ -164,12 +164,6 @@ static int canttag_warned;		/* flag to control can't tag warning */
 
 #endif	/* DO_TAGGED_HASH */
 
-#ifdef MAP_FILE
-#define MAP__ARG	(MAP_FILE | MAP_SHARED)
-#else
-#define MAP__ARG	(MAP_SHARED)
-#endif
-
 /* Old dbz used a long as the record type for dbz entries, which became
  * really gross in places because of mixed references.  We define these to
  * make it a bit easier if we want to store more in here.
