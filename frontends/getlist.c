@@ -108,7 +108,7 @@ main(ac, av)
     }
 
     /* Set up to read it quickly. */
-    if ((qp = QIOfdopen((int)fileno(active), QIO_BUFFER)) == NULL) {
+    if ((qp = QIOfdopen((int)fileno(active))) == NULL) {
 	(void)fprintf(stderr, "Can't read temp file, %s\n", strerror(errno));
 	(void)fclose(FromServer);
 	(void)fclose(ToServer);

@@ -32,6 +32,7 @@ extern int      server_init(char *host, int port);
 /* Opening the active file on a client. */
 extern FILE	*CAopen(FILE *FromServer, FILE *ToServer);
 extern FILE	*CAlistopen(FILE *FromServer, FILE *ToServer, char *request);
+extern FILE     *CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer, char *request);
 extern void	CAclose(void);
 
 /* Parameter retrieval. */
@@ -61,6 +62,7 @@ BOOL HashEmpty(const HASH hash);
 void HashClear(HASH *hash);
 char *HashToText(const HASH hash);
 HASH TextToHash(const char *text);
+int HashCompare(const HASH *h1, const HASH *h2);
 
 /* Miscellaneous. */
 typedef struct _OVERINDEX {
@@ -69,7 +71,8 @@ typedef struct _OVERINDEX {
     off_t   offset;
     int     size;
 } OVERINDEX;
- 
+
+extern BOOL     MakeDirectory(char *Name, BOOL Recurse);
 extern int	getfdcount(void);
 extern int	wildmat(const char *text, const char *p);
 extern PID_T	waitnb(int *statusp);

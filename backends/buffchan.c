@@ -474,7 +474,7 @@ main(ac, av)
     SITEsetup();
 
     /* Read input. */
-    for (qp = QIOfdopen((int)fileno(stdin), 0); !GotInterrupt ; ) {
+    for (qp = QIOfdopen((int)fileno(stdin)); !GotInterrupt ; ) {
 	if ((line = QIOread(qp)) == NULL) {
 	    if (QIOerror(qp)) {
 		(void)fprintf(stderr, "buffchan cant read %s\n",

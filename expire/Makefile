@@ -30,7 +30,7 @@ OWNER	= -O news -G news
 
 ##  =()<LIBS	= @<LIBS>@>()=
 LIBS	= 
-LIBNEWS	= ../libinn.a
+LIBNEWS	= ../libstorage.a ../libinn.a
 LINTLIB	= ../llib-linn.ln
 
 SOURCES	=	convdate.c expire.c expireover.c fastrm.c grephistory.c \

@@ -372,6 +372,7 @@ EXTERN BOOL		XrefSlave;
 EXTERN BOOL		WireFormat;
 EXTERN BOOL		TimeSpool;
 EXTERN BOOL             WriteLinks;
+EXTERN BOOL             StorageAPI;
 EXTERN int		SeqNum;
 EXTERN int              TimerInterval;
 EXTERN STRING		path;
@@ -444,8 +445,8 @@ extern void		xchown();
 
 extern BOOL		ARTidok(const char *MessageID);
 extern BOOL		ARTreadschema(void);
-extern char		*ARTreadarticle(char *files);
-extern char		*ARTreadheader(char *files);
+extern const char       *ARTreadarticle(char *files);
+extern char             *ARTreadheader(char *files);
 extern STRING		ARTpost(CHANNEL *cp);
 extern void		ARTcancel(const ARTDATA *Data, const char *MessageID, const HASH hash, const BOOL Trusted);
 extern void		ARTclose(void);

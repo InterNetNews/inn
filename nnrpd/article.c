@@ -1114,7 +1114,7 @@ OVERgen(name)
 
     lines = 0;
     /* Open article. */
-    if ((qp = QIOopen(name, QIO_BUFFER)) == NULL)
+    if ((qp = QIOopen(name)) == NULL)
 	return NULL;
     if ((p = strrchr(name, '/')) != NULL)
 	name = p + 1;

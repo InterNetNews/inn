@@ -1078,7 +1078,7 @@ get_active(host, hostid, len, grp, errs)
 	is_file = 1;
 
 	/* setup to read the local file quickly */
-	if ((qp = QIOopen(host, QIO_BUFFER)) == NULL) {
+	if ((qp = QIOopen(host)) == NULL) {
 	    (void) fprintf(stderr,
 		"%s: can't read active file, %s\n", program, strerror(errno));
 	    exit(NOT_REACHED);
@@ -1109,7 +1109,7 @@ get_active(host, hostid, len, grp, errs)
 	}
 
 	/* setup to read the retrieved data quickly */
-	if ((qp = QIOfdopen((int)fileno(active), QIO_BUFFER)) == NULL) {
+	if ((qp = QIOfdopen((int)fileno(active))) == NULL) {
 	    (void) fprintf(stderr,
 		"%s: can't read temp file, %s\n", program, strerror(errno));
 	    (void) fclose(FromServer);
@@ -1669,7 +1669,7 @@ get_ignore(filename, len)
     max = CHUNK;
 
     /* setup to read the ignore file data quickly */
-    if ((qp = QIOopen(filename, QIO_BUFFER)) == NULL) {
+    if ((qp = QIOopen(filename)) == NULL) {
 	(void) fprintf(stderr,
 	    "%s: can't read ignore file: %s\n",
 	    program, filename);

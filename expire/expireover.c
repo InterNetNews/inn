@@ -475,7 +475,7 @@ STATIC char *OVERgen(char *name)
     char			value[10];
 
     /* Open article. */
-    if ((qp = QIOopen(name, QIO_BUFFER)) == NULL)
+    if ((qp = QIOopen(name)) == NULL)
 	return NULL;
     if ((p = strrchr(name, '/')) != NULL)
 	name = p + 1;
@@ -1105,7 +1105,7 @@ GetOverviewList(group, numentries)
 
     /* Open the file. */
     (void)sprintf(file, "%s/%s", group, _PATH_OVERVIEW);
-    if ((qp = QIOopen(file, QIO_BUFFER)) == NULL)
+    if ((qp = QIOopen(file)) == NULL)
 	return NULL;
 
     /* Setup the article list. */
@@ -1299,8 +1299,8 @@ SpoolUpdate(AddEntries, Name)
 
     /* Open file. */
     if (EQ(Name, "-"))
-	qp = QIOfdopen(STDIN, QIO_BUFFER);
-    else if ((qp = QIOopen(Name, QIO_BUFFER)) == NULL) {
+	qp = QIOfdopen(STDIN);
+    else if ((qp = QIOopen(Name)) == NULL) {
 	(void)fprintf(stderr, "Can't open %s, %s\n", Name, strerror(errno));
 	exit(1);
     }
@@ -1471,12 +1471,12 @@ main(ac, av)
     if (ReadSpool)
 	SpoolUpdate(AddEntries, Name);
     if (ac == 0)
-	Expire(SortedInput, QIOfdopen(STDIN, QIO_BUFFER));
+	Expire(SortedInput, QIOfdopen(STDIN));
     else {
 	for ( ; *av; av++)
 	    if (EQ(*av, "-"))
-		Expire(SortedInput, QIOfdopen(STDIN, QIO_BUFFER));
-	    else if ((qp = QIOopen(*av, QIO_BUFFER)) == NULL)
+		Expire(SortedInput, QIOfdopen(STDIN));
+	    else if ((qp = QIOopen(*av)) == NULL)
 		(void)fprintf(stderr, "Can't open %s, %s\n",
 			*av, strerror(errno));
 	    else

@@ -7,6 +7,7 @@
 #include "configdata.h"
 #include "clibrary.h"
 #include "innd.h"
+#include "storage.h"
 #include "dbz.h"
 #include "art.h"
 #include <sys/uio.h>
@@ -345,47 +346,54 @@ void ARTclose(void)
 /*
 **  Read in a file, return a pointer to static space that is reused.
 */
-STATIC char *
-ARTreadfile(name)
-    char		*name;
+STATIC const char *ARTreadfile(char *name)
 {
     static BUFFER	File;
     struct stat		Sb;
     int			fd;
     int			oerrno;
+    static ARTHANDLE    *art = NULL;
 
-    /* Open the file, get its size. */
-    if ((fd = open(name, O_RDONLY)) < 0)
-	return NULL;
-    if (fstat(fd, &Sb) < 0) {
-	oerrno = errno;
+    if (IsToken(name)) {
+	if (art != NULL)
+	    SMfreearticle(art);
+	if ((art = SMretrieve(TextToToken(name + 1), RETR_ALL)) == NULL)
+	    return NULL;
+	return art->data;
+    } else {
+	/* Open the file, get its size. */
+	if ((fd = open(name, O_RDONLY)) < 0)
+	    return NULL;
+	if (fstat(fd, &Sb) < 0) {
+	    oerrno = errno;
+	    (void)close(fd);
+	    errno = oerrno;
+	    return NULL;
+	}
+	
+	/* Make sure we have enough space. */
+	if (File.Size == 0) {
+	    File.Size = Sb.st_size;
+	    File.Data = NEW(char, File.Size + 1);
+	}
+	else if (File.Size <= Sb.st_size) {
+	    File.Size = Sb.st_size + 16;
+	    RENEW(File.Data, char, File.Size + 1);
+	}
+	
+	/* Read in the file. */
+	if (xread(fd, File.Data, Sb.st_size) < 0) {
+	    oerrno = errno;
+	    (void)close(fd);
+	    errno = oerrno;
+	    return NULL;
+	}
+	
+	/* Clean up and return the data. */
+	File.Data[Sb.st_size] = '\0';
 	(void)close(fd);
-	errno = oerrno;
-	return NULL;
+	return File.Data;
     }
-
-    /* Make sure we have enough space. */
-    if (File.Size == 0) {
-	File.Size = Sb.st_size;
-	File.Data = NEW(char, File.Size + 1);
-    }
-    else if (File.Size <= Sb.st_size) {
-	File.Size = Sb.st_size + 16;
-	RENEW(File.Data, char, File.Size + 1);
-    }
-
-    /* Read in the file. */
-    if (xread(fd, File.Data, Sb.st_size) < 0) {
-	oerrno = errno;
-	(void)close(fd);
-	errno = oerrno;
-	return NULL;
-    }
-
-    /* Clean up and return the data. */
-    File.Data[Sb.st_size] = '\0';
-    (void)close(fd);
-    return File.Data;
 }
 
 
@@ -393,11 +401,11 @@ ARTreadfile(name)
 **  Open the article file and return a copy of it.  The files parameter is
 **  actually a whitespace-separated list of names.
 */
-char *ARTreadarticle(char *files)
+const char *ARTreadarticle(char *files)
 {
     char	        *p;
     BOOL	        more;
-    char		*art;
+    const char		*art;
 
     if (files == NULL)
 	return NULL;
@@ -430,8 +438,9 @@ char *ARTreadarticle(char *files)
 */
 char *ARTreadheader(char *files)
 {
-    char	        *p;
-    char	        *head;
+    const char	        *p;
+    const char	        *head;
+    static char         *header = NULL;
 
     if ((head = ARTreadarticle(files)) == NULL)
 	return NULL;
@@ -439,11 +448,14 @@ char *ARTreadheader(char *files)
     /* Find \n\n which means the end of the header. */
     for (p = head; (p = strchr(p, '\n')) != NULL; p++)
 	if (p[1] == '\n' || ((p[1] == '\r') && (p[2] == '\n'))) {
-	    p[1] = '\0';
-	    return head;
+	    if (header)
+		DISPOSE(header);
+	    header = NEW(char, p - head + 1);
+	    memcpy(header, head, p - head);
+	    header[p - head + (WireFormat ? 1 : 0)] = '\0';
+	    return header;
 	}
     syslog(L_NOTICE, "%s bad_article %s is all headers", LogName, files);
-    DISPOSE(head);
     return NULL;
 }
 
@@ -496,6 +508,109 @@ STATIC char **ARTparsepath(char *p, int *countp)
     return hosts;
 }
 
+/* Write an article using the storage api.  Put it together in memory and
+   call out to the api. */
+STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
+    char                *path;
+    char                *p;
+    char                *end;
+    int                 size;
+    char                *artbuff;
+    ARTHANDLE           arth;
+    int                 i;
+    TOKEN               result;
+    char		bytesbuff[SMBUF];
+    static BUFFER	Headers;
+
+    result.type = TOKEN_EMPTY;
+
+    if (((path = (char *)HeaderFind(Article->Data, "Path", 4)) == NULL)
+	|| (path == Article->Data)) {
+	/* This should not happen */
+	syslog(L_ERROR, "%s internal %s no Path header",
+	       Data->MessageID, LogName);
+	return result;
+    }
+
+    size = Article->Used + 6 + ARTheaders[_xref].Length + 4 + 3 + Path.Used + 64;
+    p =  artbuff = NEW(char, size);
+    
+    if (strncmp(Path.Data, path, Path.Used != 0)) {
+	memcpy(p, Article->Data, path - Article->Data);
+	p += path - Article->Data;
+	memcpy(p, Path.Data, Path.Used);
+	p += Path.Used;
+	memcpy(p, path, Data->Body - path - 1);
+	p += Data->Body - path - 1;
+    } else {
+	memcpy(p, Article->Data, Data->Body - Article->Data - 1);
+	p += Data->Body - Article->Data - 1;
+    }
+
+    if (ARTheaders[_lines].Found == 0) {
+	sprintf(Data->Lines, "Lines: %d\r\n", Data->LinesValue);
+	i = strlen(Data->Lines);
+	memcpy(p, Data->Lines, i);
+	p += i;
+	/* Install in header table; STRLEN("Lines: ") == 7. */
+	strcpy(ARTheaders[_lines].Value, Data->Lines + 7);
+	ARTheaders[_lines].Length = i - 9;
+	ARTheaders[_lines].Found = 1;
+    }
+    
+    memcpy(p, "Xref: ", 6);
+    p += 6;
+    memcpy(p, HDR(_xref), ARTheaders[_xref].Length);
+    end = p += ARTheaders[_xref].Length;
+    memcpy(p, "\r\n\r\n", 4);
+    p += 4;
+    memcpy(p, Data->Body, &Article->Data[Article->Used] - Data->Body);
+    p += &Article->Data[Article->Used] - Data->Body;
+    memcpy(p, ".\r\n", 3);
+    p += 3;
+
+    Data->SizeValue = p - artbuff;
+    sprintf(Data->Size, "%ld", Data->SizeValue);
+    Data->SizeLength = strlen(Data->Size);
+    HDR(_bytes) = Data->Size;
+    ARTheaders[_bytes].Length = Data->SizeLength;
+    ARTheaders[_bytes].Found = 1;
+
+    arth.data = artbuff;
+    arth.len = Data->SizeValue;
+
+    result = SMstore(arth);
+    if (result.type == TOKEN_EMPTY) {
+	DISPOSE(artbuff);
+	return result;
+    }
+
+    if (!NeedHeaders) {
+	DISPOSE(artbuff);
+	return result;
+    }
+
+        /* Figure out how much space we'll need and get it. */
+    (void)sprintf(bytesbuff, "Bytes: %ld%s\n", 
+        size, WireFormat ? "\r" : "");
+
+    if (Headers.Data == NULL) {
+	Headers.Size = end - artbuff;
+	Headers.Data = NEW(char, Headers.Size + 1);
+    }
+    else if (Headers.Size <= (end - artbuff)) {
+	Headers.Size = end - artbuff;
+	RENEW(Headers.Data, char, Headers.Size + 1);
+    }
+
+    /* Add the data. */
+    BUFFset(&Headers, bytesbuff, strlen(bytesbuff));
+    BUFFappend(&Headers, artbuff, end - artbuff);
+    Data->Headers = &Headers;
+
+    DISPOSE(artbuff);
+    return result;
+}
 
 /*
 **  Write an article using writev.  The article is split into pieces,
@@ -555,6 +670,7 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
     vp->iov_base = p;
     vp->iov_len  = Data->Body - p - (WireFormat == 1);
     size += (vp++)->iov_len;
+
     if (NeedPath) {
 	Data->Path = p;
 	for (i = Data->Body - p; --i >= 0; p++)
@@ -562,6 +678,7 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
 		break;
 	Data->PathLength = p - Data->Path;
     }
+
     if (ARTheaders[_lines].Found == 0) {
 	(void)sprintf(Data->Lines, "Lines: %d%s\n", Data->LinesValue, WireFormat ? "\r" : "");
 	i = strlen(Data->Lines);
@@ -1066,8 +1183,8 @@ STATIC char *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const H
 	return NULL;
 
     /* Get the author header. */
-    if ((local = HeaderFind(head, "Sender", 6)) == NULL
-     && (local = HeaderFind(head, "From", 4)) == NULL) {
+    if ((local = (char *)HeaderFind(head, "Sender", 6)) == NULL
+     && (local = (char *)HeaderFind(head, "From", 4)) == NULL) {
 	syslog(L_ERROR, "%s bad_article [%s] checking cancel",
 	    LogName, HashToText(hash));
 	return NULL;
@@ -1142,10 +1259,15 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const HASH hash, cons
 	more = *p == ' ';
 	if (more)
 	    *p = '\0';
-	
-	/* Remove this file, go back for the next one if there's more. */
-	if (unlink(files) < 0 && errno != ENOENT)
-	    syslog(L_ERROR, "%s cant unlink %s %m", LogName, files);
+
+	if (IsToken(files)) {
+	    if (!SMcancel(TextToToken(files + 1)))
+		syslog(L_ERROR, "%s cant cancel %s", LogName, files);
+	} else {
+	    /* Remove this file, go back for the next one if there's more. */
+	    if (unlink(files) < 0 && errno != ENOENT)
+		syslog(L_ERROR, "%s cant unlink %s %m", LogName, files);
+	}
 	if (!more)
 	    break;
     }
@@ -1715,6 +1837,7 @@ STRING ARTpost(CHANNEL *cp)
     char		ControlWord[SMBUF];
     int			ControlHeader;
     int			oerrno;
+    TOKEN               token;
 #if defined(DO_PERL)
     char		*perlrc;
 #endif /* DO_PERL */
@@ -1991,10 +2114,10 @@ STRING ARTpost(CHANNEL *cp)
 	    if (*isp >= 0)
 		Sites[*isp].Poison = TRUE;
 
-        /* Check if we accept articles in this group from this peer, after
-           poisoning.  This means that articles that we accept from them will
-           be handled correctly if they're crossposted. */
-        if (!RCcanpost(cp, p))
+	/* Check if we accept articles in this group from this peer, after
+	   poisoning.  This means that articles that we accept from them will
+	   be handled correctly if they're crossposted. */
+	if (!RCcanpost(cp, p))
 	    continue;
 
 	/* Valid group, feed it to that group's sites. */
@@ -2140,80 +2263,104 @@ STRING ARTpost(CHANNEL *cp)
 	ICDwriteactive();
 	ICDactivedirty = 0;
     }
-    Data.Name[0] = '\0';
-    p = Files.Data;
-    *p = '\0';
-    for (i = 0; (ngp = GroupPointers[i]) != NULL; i++) {
-	if (!ngp->PostCount)
-	    continue;
-	ngp->PostCount = 0;
+    if (StorageAPI) {
+	TMRstart(TMR_ARTWRITE);
+	for (i = 0; (ngp = GroupPointers[i]) != NULL; i++)
+	    ngp->PostCount = 0;
 
-	if (Data.Name[0] == '\0') {
-	    TMRstart(TMR_ARTWRITE);
-	    /* Write the article the first time. */
-	    if (TimeSpool) {
-	    	i--;
-	    	ngp->PostCount = 1;
-		/* Pull the bottom 14 bits off and split them into two levels of hierarchy */
-		sprintf(dirname, "time/%02x/%02x", (Now.time >> 13) &0x7f, (Now.time >> 6) & 0x7f);
-	    	sprintf(Data.Name, "%s/%08x-%04x", dirname, Now.time, SeqNum);
-	    	SeqNum = (SeqNum + 1) % (64*1024);
-	    } else {
-	        sprintf(Data.Name, "%s/%lu", ngp->Dir, ngp->Filenum);
-	        strcpy(dirname, ngp->Dir);
-	    }	    if (ARTwrite(Data.Name, article, &Data) < 0
-	     && (!MakeSpoolDirectory(dirname)
-	      || ARTwrite(Data.Name, article, &Data) < 0)) {
-		i = errno;
-		syslog(L_ERROR, "%s cant write %s %m", LogName, Data.Name);
-		(void)sprintf(buff, "%d cant write article %s, %s",
-			NNTP_RESENDIT_VAL, Data.Name, strerror(i));
-		ARTlog(&Data, ART_REJECT, buff);
-#if	defined(DO_REMEMBER_TRASH)
-                if (Data.MessageID && (Mode == OMrunning) && !HISremember(hash))
-                    syslog(L_ERROR, "%s cant write history %s %m",
-                           LogName, Data.MessageID);
-#endif	/* defined(DO_REMEMBER_TRASH) */
-		if (distributions)
-		    DISPOSE(distributions);
-		ARTreject(buff, article);
-		TMRstop(TMR_ARTWRITE);
-		return buff;
-	    }
+	token = ARTstore(article, &Data);
+	if (token.type == TOKEN_EMPTY) {
+	    syslog(L_ERROR, "%s cant store article", LogName);
+	    sprintf(buff, "%d cant store article", NNTP_RESENDIT_VAL);
+	    ARTlog(&Data, ART_REJECT, buff);
+	    if (Data.MessageID && (Mode == OMrunning) && !HISremember(hash))
+		syslog(L_ERROR, "%s cant write history %s %m",
+		       LogName, Data.MessageID);
+	    if (distributions)
+		DISPOSE(distributions);
+	    ARTreject(buff, article);
 	    TMRstop(TMR_ARTWRITE);
-	    p += strlen(strcpy(p, Data.Name));
-	    Data.NameLength = strlen(Data.Name);
-	} else {
-	    TMRstart(TMR_ARTLINK);
-	    /* Link to the main article. */
-	    (void)sprintf(linkname, "%s/%lu", ngp->Dir, ngp->Filenum);
-	    if (DoLinks && link(Data.Name, linkname) < 0
-	     && (!MakeSpoolDirectory(ngp->Dir)
-	      || link(Data.Name, linkname) < 0)) {
-#if	defined(DONT_HAVE_SYMLINK)
-		oerrno = errno;
-		syslog(L_ERROR, "%s cant link %s and %s %m",
-		    LogName, Data.Name, linkname);
-		IOError("linking article", oerrno);
+	}
+	TMRstop(TMR_ARTWRITE);
+        strcpy(Files.Data, TokenToText(token));
+	strcpy(Data.Name, Files.Data);
+	Data.NameLength = strlen(Data.Name);
+    } else {
+	p = Files.Data;
+	*p = '\0';
+	Data.Name[0] = '\0';
+	for (i = 0; (ngp = GroupPointers[i]) != NULL; i++) {
+	    if (!ngp->PostCount)
 		continue;
-#else
-		/* Try to make a symbolic link to the full pathname. */
-		FileGlue(buff, SPOOL, '/', Data.Name);
-		if (symlink(buff, linkname) < 0
-		 && (!MakeSpoolDirectory(ngp->Dir)
-		  || symlink(buff, linkname) < 0)) {
-		    oerrno = errno;
-		    syslog(L_ERROR, "%s cant symlink %s and %s %m",
-			LogName, buff, linkname);
-		    IOError("symlinking article", oerrno);
-		    continue;
+	    ngp->PostCount = 0;
+	    
+	    if (Data.Name[0] == '\0') {
+		TMRstart(TMR_ARTWRITE);
+		/* Write the article the first time. */
+		if (TimeSpool) {
+		    i--;
+		    ngp->PostCount = 1;
+		    /* Pull the bottom 14 bits off and split them into two levels of hierarchy */
+		    sprintf(dirname, "time/%02x/%02x", (Now.time >> 13) &0x7f, (Now.time >> 6) & 0x7f);
+		    sprintf(Data.Name, "%s/%08x-%04x", dirname, Now.time, SeqNum);
+		    SeqNum = (SeqNum + 1) % (64*1024);
+		} else {
+		    sprintf(Data.Name, "%s/%lu", ngp->Dir, ngp->Filenum);
+		    strcpy(dirname, ngp->Dir);
+		}	    if (ARTwrite(Data.Name, article, &Data) < 0
+				&& (!MakeDirectory(dirname, TRUE)
+				    || ARTwrite(Data.Name, article, &Data) < 0)) {
+		    i = errno;
+		    syslog(L_ERROR, "%s cant write %s %m", LogName, Data.Name);
+		    (void)sprintf(buff, "%d cant write article %s, %s",
+				  NNTP_RESENDIT_VAL, Data.Name, strerror(i));
+		    ARTlog(&Data, ART_REJECT, buff);
+#if	defined(DO_REMEMBER_TRASH)
+		    if (Data.MessageID && (Mode == OMrunning) && !HISremember(hash))
+			syslog(L_ERROR, "%s cant write history %s %m",
+			       LogName, Data.MessageID);
+#endif	/* defined(DO_REMEMBER_TRASH) */
+		    if (distributions)
+			DISPOSE(distributions);
+		    ARTreject(buff, article);
+		    TMRstop(TMR_ARTWRITE);
+		    return buff;
 		}
+		TMRstop(TMR_ARTWRITE);
+		p += strlen(strcpy(p, Data.Name));
+		Data.NameLength = strlen(Data.Name);
+	    } else {
+		TMRstart(TMR_ARTLINK);
+		/* Link to the main article. */
+		(void)sprintf(linkname, "%s/%lu", ngp->Dir, ngp->Filenum);
+		if (DoLinks && link(Data.Name, linkname) < 0
+		    && (!MakeDirectory(ngp->Dir, TRUE)
+			|| link(Data.Name, linkname) < 0)) {
+#if	defined(DONT_HAVE_SYMLINK)
+		    oerrno = errno;
+		    syslog(L_ERROR, "%s cant link %s and %s %m",
+			   LogName, Data.Name, linkname);
+		    IOError("linking article", oerrno);
+		    continue;
+#else
+		    /* Try to make a symbolic link to the full pathname. */
+		    FileGlue(buff, SPOOL, '/', Data.Name);
+		    if (symlink(buff, linkname) < 0
+			&& (!MakeDirectory(ngp->Dir, TRUE)
+			    || symlink(buff, linkname) < 0)) {
+			oerrno = errno;
+			syslog(L_ERROR, "%s cant symlink %s and %s %m",
+			       LogName, buff, linkname);
+			IOError("symlinking article", oerrno);
+			continue;
+		    }
 #endif	/* defined(DONT_HAVE_SYMLINK) */
-	    }
-	    TMRstop(TMR_ARTLINK);
-	    if (WriteLinks) {
-		*p++ = ' ';
-		p += strlen(strcpy(p, linkname));
+		}
+		TMRstop(TMR_ARTLINK);
+		if (WriteLinks) {
+		    *p++ = ' ';
+		    p += strlen(strcpy(p, linkname));
+		}
 	    }
 	}
     }

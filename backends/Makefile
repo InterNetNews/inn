@@ -30,7 +30,7 @@ OWNER	= -O news -G news
 NNTPLIB	= 
 ##  =()<LIBS	= @<LIBS>@>()=
 LIBS	= 
-LIBNEWS	= ../libinn.a
+LIBNEWS	= ../libstorage.a ../libinn.a
 LINTLIB	= ../llib-linn.ln
 
 SOURCES	=	archive.c batcher.c buffchan.c cvtbatch.c filechan.c \

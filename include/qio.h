@@ -3,6 +3,8 @@
 **  Quick I/O package -- optimized for reading through a file.
 */
 
+#include <storage.h>
+
 
 /*
 **  State for a quick open file.
@@ -15,8 +17,9 @@ typedef struct _QIOSTATE {
     char	*Buffer;
     char	*End;
     char	*Start;
-    long	Count;
+    long	Count;          /* Number of bytes read so far */
     int         WireFormat;
+    ARTHANDLE   *handle;        /* Storage API handle for the open article */
 } QIOSTATE;
 
     /* A reasonable buffersize to use. */
@@ -33,8 +36,8 @@ typedef struct _QIOSTATE {
 #define QIOlength(qp)		((qp)->Length)
 #define QIOfileno(qp)		((qp)->fd)
 
-extern char	*QIOread();
-extern QIOSTATE	*QIOopen();
-extern QIOSTATE	*QIOfdopen();
-extern void	QIOclose();
-extern int	QIOrewind();
+extern QIOSTATE	*QIOopen(const char *name);
+extern QIOSTATE	*QIOfdopen(const int fd);
+extern char	*QIOread(QIOSTATE *qp);
+extern void	QIOclose(QIOSTATE *qp);
+extern int	QIOrewind(QIOSTATE *qp);

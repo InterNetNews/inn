@@ -907,7 +907,7 @@ static void start(searcher *sp, const HASH hash, searcher *osp) {
  *
  * return FALSE if we hit vacant rec's or error
  */
-static search(searcher *sp) {
+static BOOL search(searcher *sp) {
     erec value;
     unsigned long taboffset = 0;
     

@@ -833,7 +833,7 @@ main(ac, av)
 	}
 	break;
     }
-    qp = QIOfdopen((int)fileno(stdin), QIO_BUFFER);
+    qp = QIOfdopen((int)fileno(stdin));
 
     /* Open the history file. */
     if (!dbminit(History)) {

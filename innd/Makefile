@@ -40,7 +40,7 @@ NEWSGROUP	= news
 
 ##  =()<LIBS	= @<LIBS>@>()=
 LIBS	= 
-LIBNEWS	= ../libinn.a
+LIBNEWS	= ../libinn.a ../libstorage.a
 LINTLIB	= ../llib-linn.ln
 ## =()<TCL_LIB	= @<TCL_LIB>@>()=
 TCL_LIB	= 

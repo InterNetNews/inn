@@ -991,7 +991,7 @@ CCnewgroup(av)
 	for (p = Name; *p; p++)
 	    if (*p == '.')
 		*p = '/';
-	if (!MakeSpoolDirectory(Name))
+	if (!MakeDirectory(Name, TRUE))
 	    syslog(L_NOTICE, "%s cant mkdir %s %m", LogName, Name);
     }
     return NULL;

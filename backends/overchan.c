@@ -313,12 +313,12 @@ main(ac, av)
     }
 
     if (ac == 0)
-	ProcessIncoming(INNinput, QIOfdopen(STDIN, QIO_BUFFER));
+	ProcessIncoming(INNinput, QIOfdopen(STDIN));
     else {
 	for ( ; *av; av++)
 	    if (EQ(*av, "-"))
-		ProcessIncoming(INNinput, QIOfdopen(STDIN, QIO_BUFFER));
-	    else if ((qp = QIOopen(*av, QIO_BUFFER)) == NULL)
+		ProcessIncoming(INNinput, QIOfdopen(STDIN));
+	    else if ((qp = QIOopen(*av)) == NULL)
 		(void)fprintf(stderr, "overchan cant open %s %s\n",
 			*av, strerror(errno));
 	    else

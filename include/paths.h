@@ -192,6 +192,8 @@
    /* if 0 or false then don't monitor performance,
       otherwise, the reporting interval */
 #define _CONF_TIMER             "timer"
+   /* Whether or not to use the storage api */
+#define _CONF_STORAGEAPI        "storageapi"
      
 /*
 **  13.  TCL Support

@@ -99,7 +99,7 @@ WriteIndex(FullName, ShortName)
     char		MessageID[BUFSIZ];
 
     /* Open the file. */
-    if ((qp = QIOopen(FullName, QIO_BUFFER)) == NULL) {
+    if ((qp = QIOopen(FullName)) == NULL) {
 	(void)printf("%s <open error> %s\n", ShortName, strerror(errno));
 	return;
     }

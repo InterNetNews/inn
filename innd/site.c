@@ -912,15 +912,12 @@ SITEflushall(Restart)
 **  Run down the site's pattern list and see if it wants the specified
 **  newsgroup.
 */
-BOOL
-SITEwantsgroup(sp, name)
-    register SITE	*sp;
-    register char	*name;
+BOOL SITEwantsgroup(SITE *sp, char *name)
 {
-    register BOOL	match;
-    register BOOL	subvalue;
-    register char	*pat;
-    register char	**argv;
+    BOOL	        match;
+    BOOL	        subvalue;
+    char	        *pat;
+    char	        **argv;
 
     match = SUB_DEFAULT;
     if (ME.Patterns) {

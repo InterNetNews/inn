@@ -38,7 +38,7 @@ ROWNER	= -O news -G uucp
 NNTPLIB	= 
 ##  =()<LIBS	= @<LIBS>@>()=
 LIBS	= 
-LIBNEWS	= ../libinn.a
+LIBNEWS	= ../libstorage.a ../libinn.a
 LINTLIB	= ../llib-linn.ln
 
 SOURCES	= ctlinnd.c inews.c rnews.c

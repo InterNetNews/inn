@@ -584,17 +584,14 @@ RChostname(cp)
 /*
 **  Is the remote site allowed to post to this group?
 */
-BOOL
-RCcanpost(cp, group)
-    register CHANNEL	*cp;
-    register char	*group;
+BOOL RCcanpost(CHANNEL *cp, char *group)
 {
-    register REMOTEHOST	*rp;
-    register BOOL	match;
-    register BOOL	subvalue;
-    register char	**argv;
-    register char	*pat;
-    register int	i;
+    REMOTEHOST	        *rp;
+    BOOL	        match;
+    BOOL	        subvalue;
+    char	        **argv;
+    char	        *pat;
+    int	                i;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++) {
 	/* SUPPRESS 112 *//* Retrieving long where char is stored */

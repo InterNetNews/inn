@@ -265,12 +265,12 @@ main(ac, av)
     }
 
     if (ac == 0)
-	ProcessIncoming(QIOfdopen(STDIN, QIO_BUFFER));
+	ProcessIncoming(QIOfdopen(STDIN));
     else {
 	for ( ; *av; av++)
 	    if (EQ(*av, "-"))
-		ProcessIncoming(QIOfdopen(STDIN, QIO_BUFFER));
-	    else if ((qp = QIOopen(*av, QIO_BUFFER)) == NULL)
+		ProcessIncoming(QIOfdopen(STDIN));
+	    else if ((qp = QIOopen(*av)) == NULL)
 		(void)fprintf(stderr, "crosspost cant open %s %s\n",
 			*av, strerror(errno));
 	    else

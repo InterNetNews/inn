@@ -356,7 +356,7 @@ CMDlist(ac, av)
 	return;
     }
 
-    if ((qp = QIOopen(lp->File, QIO_BUFFER)) == NULL) {
+    if ((qp = QIOopen(lp->File)) == NULL) {
 	if (!lp->Required && errno == ENOENT) {
 	    Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);
 	    Printf(".\r\n");
@@ -488,7 +488,7 @@ CMDnewgroups(ac, av)
 	ExitWithStats(1);
     }
 
-    if ((qp = QIOopen(ACTIVETIMES, QIO_BUFFER)) == NULL) {
+    if ((qp = QIOopen(ACTIVETIMES)) == NULL) {
 	syslog(L_ERROR, "%s cant fopen %s %m",
 	    ClientHost, ACTIVETIMES);
 	Reply("%d Cannot open newsgroup date file.\r\n", NNTP_TEMPERR_VAL);

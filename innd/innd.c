@@ -347,55 +347,6 @@ xchown(p)
 
 
 /*
-**  Try to make one directory.  Return FALSE on error.
-*/
-STATIC BOOL
-MakeDir(Name)
-    char		*Name;
-{
-    struct stat		Sb;
-
-    if (mkdir(Name, GROUPDIR_MODE) >= 0) {
-	if (AmRoot)
-	    xchown(Name);
-	return TRUE;
-    }
-
-    /* See if it failed because it already exists. */
-    return stat(Name, &Sb) >= 0 && S_ISDIR(Sb.st_mode);
-}
-
-
-/*
-**  Given a directory, comp/foo/bar, create that directory and all
-**  intermediate directories needed.  Return 0 if ok, else -1.
-*/
-BOOL
-MakeSpoolDirectory(Name)
-    register char	*Name;
-{
-    register char	*p;
-    BOOL		made;
-
-    /* Optimize common case -- parent almost always exists. */
-    if (MakeDir(Name))
-	return TRUE;
-
-    /* Try to make each of comp and comp/foo in turn. */
-    for (p = Name; *p; p++)
-	if (*p == '/') {
-	    *p = '\0';
-	    made = MakeDir(Name);
-	    *p = '/';
-	    if (!made)
-		return FALSE;
-	}
-
-    return MakeDir(Name);
-}
-
-
-/*
 **  Flush one log file, with pessimistic size of working filename buffer.
 */
 void
@@ -769,6 +720,8 @@ int main(int ac, char *av[])
        history file */
     WriteLinks = GetBooleanConfigValue(_CONF_WRITELINKS, TRUE);
 
+    StorageAPI = GetBooleanConfigValue(_CONF_STORAGEAPI, FALSE);
+
     /* Get the Path entry. */
     if ((path = GetConfigValue(_CONF_PATHHOST)) == NULL) {
 	syslog(L_FATAL, "%s cant GetConfigValue %s %m",
@@ -902,6 +855,13 @@ int main(int ac, char *av[])
     NCsetup(i);
     ARTsetup();
     ICDsetup(TRUE);
+    if (StorageAPI) {
+	WireFormat = TRUE;
+	if (!SMinit()) {
+	    syslog(L_FATAL, "%s cant initialize the storage subsystem %m");
+	    exit(1);
+	}
+    }
 #if	defined(_DEBUG_MALLOC_INC)
     m.i = 1;
     dbmallopt(MALLOC_CKCHAIN, &m);

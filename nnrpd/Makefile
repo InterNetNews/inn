@@ -34,7 +34,7 @@ OWNER	= -O news -G news
 
 ##  =()<LIBS	= @<LIBS>@>()=
 LIBS	= 
-LIBNEWS	= ../libinn.a
+LIBNEWS	= ../libstorage.a ../libinn.a
 LINTLIB	= ../llib-linn.ln
 
 SOURCES	= \

@@ -77,7 +77,7 @@ main(ac, av)
     }
 
     /* Loop over all input. */
-    qp = QIOfdopen((int)fileno(stdin), 0);
+    qp = QIOfdopen((int)fileno(stdin));
     while ((line = QIOread(qp)) != NULL) {
 	if (line[0] == '/'
 	 && line[STRLEN(SPOOL)] == '/'
@@ -90,7 +90,7 @@ main(ac, av)
 		break;
 	    }
 
-	if ((artp = QIOopen(line, 0)) == NULL)
+	if ((artp = QIOopen(line)) == NULL)
 	    /* Non-existant article. */
 	    continue;
 

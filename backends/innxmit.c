@@ -981,11 +981,11 @@ takethis(i)
 
     if (!stbuf[i].st_qp) { /* should already be open but ... */
 	/* Open the article. */
-	if (!(stbuf[i].st_qp = QIOopen(stbuf[i].st_fname, QIO_BUFFER))) {
+	if (!(stbuf[i].st_qp = QIOopen(stbuf[i].st_fname))) {
 	    /* can not open it. Should check AltPath */
 	    if (AltPath && (*(stbuf[i].st_fname) != '/')) {
 		(void)sprintf(AltPath, "%s/%s", AltSpool, stbuf[i].st_fname);
-		stbuf[i].st_qp = QIOopen(AltPath, QIO_BUFFER);
+		stbuf[i].st_qp = QIOopen(AltPath);
 	    }
 	    if (!(stbuf[i].st_qp)) {
 		strel(i);
@@ -1230,7 +1230,7 @@ main(ac, av)
 	(void)sprintf(BATCHname, "%s/%s", BATCHDIR, av[1]);
     }
     if ((i = open(BATCHname, O_RDWR)) < 0
-     || (BATCHqp = QIOfdopen(i, QIO_BUFFER)) == NULL) {
+     || (BATCHqp = QIOfdopen(i)) == NULL) {
 	(void)fprintf(stderr, "Can't open \"%s\", %s\n",
 		BATCHname, strerror(errno));
 	exit(1);
@@ -1449,11 +1449,11 @@ main(ac, av)
         }
 
 	/* Open the article. */
-	if ((qp = QIOopen(Article, QIO_BUFFER)) == NULL
+	if ((qp = QIOopen(Article)) == NULL
 	 && AltSpool
 	 && *Article != '/') {
 	    (void)sprintf(AltPath, "%s/%s", AltSpool, Article);
-	    qp = QIOopen(AltPath, QIO_BUFFER);
+	    qp = QIOopen(AltPath);
 	}
 
 	if (qp == NULL) {

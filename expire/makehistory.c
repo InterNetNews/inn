@@ -87,9 +87,7 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 {
     QIOSTATE	        *qp;
     char	        *p;
-    char                *q;
     char	        *save;
-    int                 i;
     long	        count;
     long		where;
     HASH		key;
@@ -100,7 +98,7 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
     xchdir(HISTORYDIR);
 
     /* Open the text file. */
-    qp = QIOopen(TextFile, QIO_BUFFER);
+    qp = QIOopen(TextFile);
     if (qp == NULL) {
 	(void)fprintf(stderr, "Can't open \"%s\", %s\n",
 		TextFile, strerror(errno));
@@ -183,6 +181,7 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 	    if (temp[0])
 		(void)unlink(temp);
 	    exit(1);
+	default:
 	}
     }
     if (QIOerror(qp)) {
@@ -480,7 +479,7 @@ DoNewsgroup(group, out, RemoveBad, Update)
 	}
 
 	/* Open the article. */
-	if ((qp = QIOopen(p, QIO_BUFFER)) == NULL) {
+	if ((qp = QIOopen(p)) == NULL) {
 	    (void)fprintf(stderr, "Can't open %s, %s\n",
 		    buff, strerror(errno));
 	    continue;
@@ -737,7 +736,7 @@ main(ac, av)
     }
 
     /* Start scanning the directories. */
-    if ((qp = QIOopen(ACTIVE, QIO_BUFFER)) == NULL) {
+    if ((qp = QIOopen(ACTIVE)) == NULL) {
 	(void)fprintf(stderr, "Can't open %s, %s\n", ACTIVE, strerror(errno));
 	exit(1);
     }
@@ -806,7 +805,7 @@ main(ac, av)
     }
 
     /* Open the sorted file, get ready to write the final text file. */
-    if ((qp = QIOopen(temp, QIO_BUFFER)) == NULL) {
+    if ((qp = QIOopen(temp)) == NULL) {
 	(void)fprintf(stderr, "Can't open work file \"%s\", %s\n",
 		temp, strerror(errno));
 	ErrorExit(Update, DoRebuild);

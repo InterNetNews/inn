@@ -29,10 +29,12 @@ STATIC HASH empty= { { 0, 0, 0, 0, 0, 0, 0, 0,
  */
 STATIC char *cipoint(char *s, size_t size) {
     char *p;
+    static char post[] = "postmaster";
+    static int plen = sizeof(post) - 1;
 
     if ((p = memchr(s, '@', size))== NULL)			/* no local/domain split */
 	return NULL;		/* assume all local */
-    if (!strncasecmp("postmaster", s+1, 10)) {
+    if ((p - (s + 1) == plen) && !strncasecmp(post, s+1, plen)) {
 	/* crazy -- "postmaster" is case-insensitive */
 	return s;
     }
@@ -53,20 +55,27 @@ HASH Hash(const void *value, const size_t len) {
 }
 
 HASH HashMessageID(const char *MessageID) {
-    char                *new;
+    static char         *new = NULL;
+    static int          newlen = 0;
     char                *cip;
     char                *p;
     int                 len;
     HASH                hash;
 
-    new = COPY(MessageID);
-    len = strlen(new);
+    len = strlen(MessageID);
+    if (newlen < len) {
+	if (new)
+	    new = RENEW(new, char, len + 1);
+	else
+	    new = NEW(char, len + 1);
+	newlen = len + 1;
+    }
+    strcpy(new, MessageID);
     if ((cip = cipoint(new, len))) {
-	for (p = new; p != cip; p++)
+	for (p = cip + 1; *p; p++)
 	    *p = tolower(*p);
     }
     hash = Hash(new, len);
-    DISPOSE(new);
     return hash;
 }
 

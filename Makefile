@@ -17,7 +17,7 @@ DESTDIR	=
 RCSCOFLAGS	= -u
 
 ##  The first two directories must be config and lib.
-PROGS	= config lib frontends innd nnrpd backends expire doc
+PROGS	= config lib storage frontends innd nnrpd backends expire doc
 DIRS	= $(PROGS) site
 
 ##  We invoke an extra process and set this to be what to make.
@@ -33,7 +33,7 @@ SEDDIRCMDS = -e '1,2d' -e '/(Directory)/!d' -e 's/ .*//' -e 's;^;$(TARDIR)/;'
 all:
 	@for D in $(DIRS) ; do \
 	    TARGET=$(WHAT_TO_MAKE); \
-	    case $$D in lib) TARGET=install ;; esac ; \
+	    case $$D in lib|storage) TARGET=install ;; esac ; \
 	    echo "" ; \
 	    echo "cd $$D ; $(MAKE) $(FLAGS) $$TARGET ; cd .." ; \
 	    cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) $$TARGET || exit 1 ; cd .. ; \
@@ -59,7 +59,7 @@ etags:
 
 clean:
 	@$(MAKE) $(FLAGS) WHAT_TO_MAKE=$@ common
-	rm -f *~ libinn.a libinn_p.a llib-linn.ln FILELIST
+	rm -f *~ libstorage.a libinn.a libinn_p.a llib-linn.ln FILELIST
 
 ##  Common target.
 common:

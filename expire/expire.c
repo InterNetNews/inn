@@ -898,7 +898,7 @@ EXPdoline(out, line, length, arts, krps)
      * since it had to have been clean to get in there. */
     if (EXPverbose > 4)
 	(void)printf("\tdbz %s@%ld\n", fields[0], where);
-    if (dbzstore(key, where) == DBZSTORE_ERROR) {
+    if (!dbzstore(key, where)) {
 	fprintf(stderr, "Can't store key, \"%s\"\n", strerror(errno));
 	return FALSE;
     }
@@ -1195,7 +1195,7 @@ main(ac, av)
     /* Main processing loop. */
     arts = NEW(char*, nGroups);
     krps = NEW(enum KRP, nGroups);
-    if ((qp = QIOopen(HistoryText, QIO_BUFFER)) == NULL) {
+    if ((qp = QIOopen(HistoryText)) == NULL) {
 	(void)fprintf(stderr, "Can't open history file, %s\n",
 		strerror(errno));
 	CleanupAndExit(Server, FALSE, 1);

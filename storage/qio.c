@@ -13,12 +13,13 @@
 #include "libinn.h"
 #include "qio.h"
 #include "macros.h"
+#include "paths.h"
 
 
 /*
 **  Open a quick file from a descriptor.
 */
-QIOSTATE *QIOfdopen(int fd, int size)
+QIOSTATE *QIOfdopen(const int fd)
 {
     QIOSTATE	*qp;
 #if	defined(DO_HAVE_ST_BLKSIZE)
@@ -29,18 +30,16 @@ QIOSTATE *QIOfdopen(int fd, int size)
     qp->flag = QIO_ok;
     qp->fd = fd;
 #if	defined(DO_HAVE_ST_BLKSIZE)
-    if (size == 0)
-	size = fstat(fd, &Sb) >= 0 ? (int)Sb.st_blksize : QIO_BUFFER;
+    qp->Size = fstat(fd, &Sb) >= 0 ? (int)Sb.st_blksize : QIO_BUFFER;
 #else
-    if (size == 0)
-	size = QIO_BUFFER;
+    qp->Size = QIO_BUFFER;
 #endif	/* defined(DO_HAVE_ST_BLKSIZE) */
-    qp->Size = size;
-    qp->Buffer = NEW(char, size);
+    qp->Buffer = NEW(char, qp->Size);
     qp->Count = 0;
     qp->Start = qp->Buffer;
     qp->End = qp->Buffer;
     qp->WireFormat = -1;
+    qp->handle = NULL;
 
     return qp;
 }
@@ -49,14 +48,32 @@ QIOSTATE *QIOfdopen(int fd, int size)
 /*
 **  Open a file for reading.
 */
-QIOSTATE *QIOopen(char *name, int size)
+QIOSTATE *QIOopen(const char *name)
 {
     int		fd;
+    QIOSTATE    *qp;
 
+    /* If we were passed a storage token then open it using the api */
+    if (IsToken(name)) {
+	qp = NEW(QIOSTATE, 1);
+	if ((qp->handle = SMretrieve(TextToToken(name), RETR_ALL)) == NULL) {
+	    DISPOSE(qp);
+	    return NULL;
+	}
+	qp->flag = QIO_ok;
+	qp->fd = -1;
+	qp->Size = QIO_BUFFER;
+	qp->Buffer = NEW(char, qp->Size);
+	qp->Start = qp->Buffer;
+	qp->End = qp->Buffer;
+	qp->WireFormat = 1;
+	return qp;
+    }
+    
     /* Open the file, read in the first chunk. */
     if ((fd = open(name, O_RDONLY)) < 0)
 	return NULL;
-    return QIOfdopen(fd, size);
+    return QIOfdopen(fd);
 }
 
 
@@ -65,7 +82,10 @@ QIOSTATE *QIOopen(char *name, int size)
 */
 void QIOclose(QIOSTATE *qp)
 {
-    (void)close(qp->fd);
+    if (qp->handle) 
+	SMfreearticle(qp->handle);
+    else
+	(void)close(qp->fd);
     DISPOSE(qp->Buffer);
     DISPOSE(qp);
 }
@@ -78,14 +98,19 @@ int QIOrewind(QIOSTATE *qp)
 {
     int		i;
 
-    if (lseek(qp->fd, (OFFSET_T) 0, SEEK_SET) == -1)
-	return -1;
-    i = read(qp->fd, qp->Buffer, (SIZE_T)qp->Size);
-    if (i < 0)
-	return i;
-    qp->Count = i;
+    if (qp->handle) {
+	qp->Count = (qp->Size < qp->handle->len) ? qp->Size : qp->handle->len;
+	memcpy(qp->Buffer, qp->handle->data, qp->Count);
+    } else {
+	if (lseek(qp->fd, (OFFSET_T) 0, SEEK_SET) == -1)
+	    return -1;
+	i = read(qp->fd, qp->Buffer, (SIZE_T)qp->Size);
+	if (i < 0)
+	    return i;
+	qp->Count = i;
+    }
     qp->Start = qp->Buffer;
-    qp->End = &qp->Buffer[i];
+    qp->End = &qp->Buffer[qp->Count];
     return 0;
 }
 
@@ -133,13 +158,17 @@ char *QIOread(QIOSTATE *qp)
         }
         else
             p = qp->Buffer;
-
         /* Read data, reset the pointers. */
-        i = read(qp->fd, p, (SIZE_T)(&qp->Buffer[qp->Size] - p));
-        if (i < 0) {
-            qp->flag = QIO_error;
-            return NULL;
-        }
+	if (qp->handle) {
+	    i = (qp->Size < (qp->handle->len - qp->Count)) ? qp->Size : (qp->handle->len - qp->Count);
+	    memcpy(p, qp->handle->data, i);
+	} else {
+	    i = read(qp->fd, p, (SIZE_T)(&qp->Buffer[qp->Size] - p));
+	    if (i < 0) {
+		qp->flag = QIO_error;
+		return NULL;
+	    }
+	}
         if (i == 0) {
             qp->flag = QIO_ok;
             return NULL;
@@ -197,7 +226,9 @@ main(ac, av)
     char	*p;
     long	where;
 
-    h = QIOopen(ac > 1 ? av[1] : "/usr/lib/news/history", 0);
+    SMinit();
+    
+    h = QIOopen(ac > 1 ? av[1] : _PATH_HISTORY);
     if (h == NULL) {
 	perror("Can't open file");
 	exit(1);

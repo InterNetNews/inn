@@ -325,16 +325,14 @@ NGsplit(p)
 /*
 **  Renumber a group.
 */
-BOOL
-NGrenumber(ngp)
-    NEWSGROUP		*ngp;
+BOOL NGrenumber(NEWSGROUP *ngp)
 {
     static char		NORENUMBER[] = "%s cant renumber %s %s too wide";
     static char		RENUMBER[] = "%s renumber %s %s from %ld to %ld";
-    register DIR	*dp;
-    register DIRENTRY	*ep;
-    register char	*f2;
-    register char	*p;
+    DIR	                *dp;
+    DIRENTRY	        *ep;
+    char	        *f2;
+    char	        *p;
     char		*f3;
     char		*f4;
     char		*start;
@@ -342,6 +340,8 @@ NGrenumber(ngp)
     long		himark;
     long		lomark;
     char		*dummy;
+    FILE                *fi;
+    OVERINDEX           index;
 
     /* Get a valid offset into the active file. */
     if (ICDneedsetup) {
@@ -361,19 +361,36 @@ NGrenumber(ngp)
     himark = atol(f2);
     lomark = himark + 1;
 
-    /* Scan the directory. */
-    if ((dp = opendir(ngp->Dir)) != NULL) {
-	while ((ep = readdir(dp)) != NULL) {
-	    p = ep->d_name;
-	    if (!CTYPE(isdigit, p[0]) || strspn(p, "0123456789") != strlen(p)
-	     || (l = atol(p)) == 0)
-		continue;
-	    if (l < lomark)
-		lomark = l;
-	    if (l > himark)
-		himark = l;
+    if (StorageAPI) {
+	p = NEW(char, strlen(_PATH_OVERVIEWDIR) + strlen(ngp->Dir) + strlen(_PATH_OVERVIEW) + 32);
+	sprintf(p, "%s/%s/%s.index", _PATH_OVERVIEWDIR, ngp->Dir, _PATH_OVERVIEW);
+	if ((fi = fopen(p, "r")) == NULL) {
+	    DISPOSE(p);
+	    return TRUE;
 	}
-	(void)closedir(dp);
+	DISPOSE(p);
+	while (fread(&index, sizeof(index), 1, fi) == 1) {
+	    if (index.artnum < lomark)
+		lomark = index.artnum;
+	    if (index.artnum > himark)
+		himark = index.artnum;
+	}
+	fclose(fi);
+    } else {
+        /* Scan the directory. */
+	if ((dp = opendir(ngp->Dir)) != NULL) {
+	    while ((ep = readdir(dp)) != NULL) {
+		p = ep->d_name;
+		if (!CTYPE(isdigit, p[0]) || strspn(p, "0123456789") != strlen(p)
+		    || (l = atol(p)) == 0)
+		    continue;
+		if (l < lomark)
+		    lomark = l;
+		if (l > himark)
+		    himark = l;
+	    }
+	    (void)closedir(dp);
+	}
     }
     l = atol(f2);
     if (himark != l) {
