@@ -45,6 +45,7 @@ PATH_INNFEEDCTL		= ${PATHETC}/innfeed.conf
 PATH_BUFFINDEXED	= ${PATHETC}/buffindexed.conf
 PATH_RADIUS_CONF	= ${PATHETC}/radius.conf
 PATH_OVDB_CONF		= ${PATHETC}/ovdb.conf
+PATH_SASL_CONF		= ${PATHETC}/sasl.conf
 
 ##  Order:  innd, control, expire, inews, sending, misc
 MOST	= checkgroups default ihave newgroup \
@@ -63,7 +64,7 @@ REST		= \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
 	filter_innd.py INN.py \
 	startup.tcl filter.tcl nnrpd_auth.pl news2mail.cf readers.conf \
-	radius.conf nnrpd_auth.py ovdb.conf
+	radius.conf nnrpd_auth.py ovdb.conf sasl.conf
 
 ALL		= $(MOST) $(REST)
 
@@ -91,7 +92,8 @@ REST_INSTALLED	= \
 	$D$(PATH_PYTHON_FILTER_INND) $D$(PATH_PYTHON_INN_MODULE) \
 	$D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER) \
 	$D$(PATH_NNRPAUTH) $D$(PATHETC)/news2mail.cf $D$(PATH_READERSCONF) \
-	$D$(PATH_RADIUS_CONF) $D$(PATH_NNRPYAUTH) $D$(PATH_OVDB_CONF)
+	$D$(PATH_RADIUS_CONF) $D$(PATH_NNRPYAUTH) $D$(PATH_OVDB_CONF) \
+	$D$(PATH_SASL_CONF)
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
 
@@ -202,6 +204,7 @@ $D$(PATH_ACTSYNC_CFG): actsync.cfg	; $(COPY_RPRI) $? $@
 $D$(PATH_ACTSYNC_IGN): actsync.ign	; $(COPY_RPRI) $? $@
 $D$(PATH_MOTD): motd.news		; $(COPY_RPRI) $? $@
 $D$(PATH_INNFEEDCTL): innfeed.conf	; $(COPY_RPRI) $? $@
+$D$(PATH_SASL_CONF):	sasl.conf	; $(COPY_RPRI) $? $@
 
 REASON	= 'Installing site config files from site/Makefile'
 go pause:
@@ -268,6 +271,7 @@ startup.tcl:	../samples/startup.tcl		; $(COPY) $? $@
 startup_innd.pl: ../samples/startup_innd.pl	; $(COPY) $? $@
 version:	../samples/version		; $(COPY) $? $@
 version.pl:	../samples/version.pl		; $(COPY) $? $@
+sasl.conf:	../samples/sasl.conf		; $(COPY) $? $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES)
