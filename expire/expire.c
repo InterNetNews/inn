@@ -84,7 +84,7 @@ STATIC int		nGroups;
 STATIC FILE		*EXPunlinkfile;
 STATIC NEWSGROUP	*Groups;
 STATIC NEWSGROUP	EXPdefault;
-STATIC EXPIRECLASS      EXPclasses[NUM_STORAGE_CLASSES];
+STATIC EXPIRECLASS      EXPclasses[NUM_STORAGE_CLASSES+1];
 STATIC STRING		EXPreason;
 STATIC time_t		EXPremember;
 STATIC time_t		Now;
@@ -272,8 +272,10 @@ STATIC BOOL EXPreadfile(FILE *F)
     /* XXX disabled until we find a way to re-enable ng-based expire. */
     patterns = NEW(char*, nGroups);
 #endif
-    for (i = 0; i < NUM_STORAGE_CLASSES; i++)
-	EXPclasses[i].ReportedMissing = EXPclasses[i].Missing = TRUE;
+    for (i = 0; i <= NUM_STORAGE_CLASSES; i++) {
+	EXPclasses[i].ReportedMissing = FALSE;
+        EXPclasses[i].Missing = TRUE;
+    }
     
     for (i = 1; fgets(buff, sizeof buff, F) != NULL; i++) {
 	if ((p = strchr(buff, '\n')) == NULL) {
@@ -316,10 +318,20 @@ STATIC BOOL EXPreadfile(FILE *F)
 
 	/* Storage class line? */
 	if (j == 4) {
-	    j = atoi(fields[0]);
-	    if ((j < 0) || (j > NUM_STORAGE_CLASSES)) {
-		fprintf(stderr, "Line %d bad storage class %d\n", i, j);
-	    }
+            /* Is this the default line? */
+            if (fields[0][0] == '*' && fields[0][1] == '\0') {
+                if (SawDefault) {
+                    (void)fprintf(stderr, "Line %d duplicate default\n", i);
+                    return FALSE;
+                }
+                j = NUM_STORAGE_CLASSES;
+                SawDefault = TRUE;
+            } else {
+                j = atoi(fields[0]);
+                if ((j < 0) || (j >= NUM_STORAGE_CLASSES)) {
+                    fprintf(stderr, "Line %d bad storage class %d\n", i, j);
+                }
+            }
 	
 	    if (!EXPgetnum(i, fields[1], &EXPclasses[j].Keep,    "keep")
 		|| !EXPgetnum(i, fields[2], &EXPclasses[j].Default, "default")
@@ -419,13 +431,20 @@ STATIC enum KR EXPkeepit(TOKEN token, time_t when, time_t Expires)
 
     class = EXPclasses[token.class];
     if (class.Missing) {
-	if (!class.ReportedMissing) {
-	    fprintf(stderr, "Class definition %d is missing from control file, assuming zero expiration\n",
-		    token.class);
-	} else {
-	    EXPclasses[token.class].ReportedMissing = TRUE;
-	}
-	return Remove;
+        if (EXPclasses[NUM_STORAGE_CLASSES].Missing) {
+            /* no default */
+            if (!class.ReportedMissing) {
+                fprintf(stderr, "Class definition %d is missing from control file, assuming zero expiration\n",
+                        token.class);
+            } else {
+                EXPclasses[token.class].ReportedMissing = TRUE;
+            }
+            return Remove;
+        } else {
+            /* use the default */
+            class = EXPclasses[NUM_STORAGE_CLASSES];
+            EXPclasses[token.class] = class;
+        }
     }
     /* Bad posting date? */
     if (when > (RealNow + 86400)) {
