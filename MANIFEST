@@ -61,6 +61,7 @@ backends/map.c                        Site name to filename mapping routines
 backends/map.h                        Headers for backends/map.c
 backends/mod-active.in                Batch do active file modifications
 backends/news2mail.in                 News to mail gateway
+backends/ninpaths.c                   Path statistics accumulation program
 backends/nntpget.c                    Get articles from remote site
 backends/nntpsend.in                  Invoke all innxmit's at once
 backends/overchan.c                   Update news overview database
@@ -68,6 +69,7 @@ backends/send-ihave.in                Script to post ihave messages
 backends/send-nntp.in                 Shell script to call innxmit
 backends/send-uucp.in                 Script to call batcher
 backends/sendbatch.in                 B News-like script to send UUCP batches
+backends/sendinpaths.in               Send accumulated Path statistics
 backends/sendxbatches.in              Shell wrapper around innxbatch
 backends/shlock.c                     Program to make lockfiles in scripts
 backends/shrinkfile.c                 Shrink file from beginning
@@ -92,11 +94,6 @@ contrib/makestorconf.in               Create storage.conf from read groups
 contrib/mkbuf                         Create cycbuff for HP-UX
 contrib/mlockfile.c                   Lock files into memory using mlock
 contrib/newsresp.c                    Measure responsiveness of remote server
-contrib/ninpaths                      ninpaths Path survey software (Directory)
-contrib/ninpaths/Makefile             Makefile for ninpaths
-contrib/ninpaths/README               Documentation for ninpaths
-contrib/ninpaths/ninpaths.c           Statistics accumulation program
-contrib/ninpaths/sendinpaths.in       Script to submit accumulated data
 contrib/pullart.c                     Recover articles from cyclic buffers
 contrib/reset-cnfs.c                  Reset the state parts of a CNFS buffer
 contrib/respool.c                     Respool articles in the storage manager
@@ -199,6 +196,7 @@ doc/man/news.daily.8                  Manpage for news.daily
 doc/man/news2mail.8                   Manpage for news2mail
 doc/man/newsfeeds.5                   Manpage for newsfeeds config file
 doc/man/newslog.5                     Manpage for log files
+doc/man/ninpaths.8                    Manpage for ninpaths
 doc/man/nnrpd.8                       Manpage for nnrpd daemon
 doc/man/nnrpd.track.5                 Manpage for nnrpd.track config file
 doc/man/nntpget.1                     Manpage for nntpget frontend
@@ -224,6 +222,7 @@ doc/man/rnews.1                       Manpage for rnews frontend
 doc/man/sasl.conf.5                   Manpage for sasl.conf config file
 doc/man/scanlogs.8                    Manpage for scanlogs
 doc/man/send-uucp.8                   Manpage for send-uucp
+doc/man/sendinpaths.8                 Manpage for sendinpaths
 doc/man/shlock.1                      Manpage for shlock backend utility
 doc/man/shrinkfile.1                  Manpage for shrinkfile utility
 doc/man/simpleftp.1                   Manpage for simpleftp utility
@@ -256,6 +255,7 @@ doc/pod/libinnhist.pod                Master file for libinnhist.3
 doc/pod/makehistory.pod               Master file for makehistory.8
 doc/pod/news.pod                      Master file for NEWS
 doc/pod/newsfeeds.pod                 Master file for newsfeeds.5
+doc/pod/ninpaths.pod                  Master file for ninpaths.8
 doc/pod/ovdb.pod                      Master file for ovdb.5
 doc/pod/ovdb_init.pod                 Master file for ovdb_init.8
 doc/pod/ovdb_monitor.pod              Master file for ovdb_monitor.8
@@ -266,6 +266,7 @@ doc/pod/qio.pod                       Master file for qio.3
 doc/pod/readers.conf.pod              Master file for readers.conf.5
 doc/pod/readme.pod                    Master file for README
 doc/pod/sasl.conf.pod                 Master file for sasl.conf.5
+doc/pod/sendinpaths.pod               Master file for sendinpaths.8
 doc/pod/subscriptions.pod             Master file for subscriptions.5
 doc/pod/tdx-util.pod                  Master file for tdx-util.8
 doc/pod/uwildmat.pod                  Master file for uwildmat.3

@@ -1,20 +1,19 @@
-/*
-  ninpaths.c - new inpaths reporting program
-
-  Idea, data structures and part of code based on inpaths 2.5
-  by Brian Reid, Landon Curt Noll
-
-  This version written by Olaf Titz, Feb. 1997. Public domain.
+/*  $Id$
+**
+**  New inpaths reporting program.
+**
+**  Idea, data structures and part of code based on inpaths 2.5
+**  by Brian Reid, Landon Curt Noll
+**
+**  This version written by Olaf Titz, Feb. 1997.  Public domain.
 */
 
+#include "config.h"
+#include "clibrary.h"
 #include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <time.h>
-#include <unistd.h>
 
-const char id[]="$Id$";
+#define VERSION "3.1.1"
 
 #define MAXFNAME 1024	/* max length of file name */
 #define MAXLINE 1024	/* max length of Path line */

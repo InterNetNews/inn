@@ -1,0 +1,127 @@
+=head1 NAME
+
+ninpaths - Report Usenet Path statistics (new inpaths)
+
+=head1 SYNOPSIS
+
+B<ninpaths> B<-p> B<-d> I<dumpfile>
+
+B<ninpaths> B<-r> I<site> B<-u> I<dumpfile> [B<-u> I<dumpfile> ...] B<-v>
+I<level>
+
+=head1 DESCRIPTION
+
+This is an efficient and space-saving inpaths reporting program.  It works
+as follows:  you feed it the Path lines via an INN channel feed or some
+other similar method, and from time to time the program writes all its
+internal counters accumulated so far to a dump file.  Another instance of
+the program picks up all the dump files, adds them up and formats them
+into the report.  The purpose of the final report is to summarize the
+frequency of occurrence of sites in the Path headers of articles.
+
+Some central sites accumulate the Path data from many news servers running
+this program or one like it, and then report statistics on the most
+frequently seen news servers in Usenet article Path lines.  The
+B<sendinpaths> shell script can be run once a month to mail the
+accumulated statistics to such a site and remove the old dump files.
+
+You can get a working setup by doing the following:
+
+=over 4
+
+=item 1.
+
+Create a directory at I<pathlog>/path (replacing I<pathlog> here and in
+all steps that follow with the full path to your INN log directory).
+
+=item 2.
+
+Set up a channel feed using an entry like:
+
+    inpaths!:*:Tc,WP:<pathbin>/ninpaths -p -d <pathlog>/path/inpaths.%d
+
+if your version of INN supports WP (2.0 and later all do).  Replace
+<pathbin> with the full path to your INN binaries directory and <pathlog>
+with the full path to your INN log directory.
+
+=item 3.
+
+Enter into your news user crontab something like:
+
+    6 6 * * *   ctlinnd flush inpaths!
+
+(the actual time doesn't matter).  This will force B<ninpaths> to generate
+a dump file once a day.
+
+=item 4.
+
+Once per month, run the B<sendinpaths> script, which collects the dumps,
+makes a report, and then deletes the old dumps.  (You can generate a
+report without mailing it and without deleting it with C<sendinpaths -n>.)
+
+=back
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-d> I<dumpfile>
+
+Save dumps in I<dumpfile>.  Any C<%d> in I<dumpfile> will be replaced with
+the current system time when the dump is made.  This option should be used
+with B<-p>.
+
+=item B<-p>
+
+Read Path lines from standard input.
+
+=item B<-r> I<site>
+
+Generate a report for I<site>.  Generally I<site> should be the value of
+I<pathhost> from F<inn.conf>.
+
+=item B<-u> I<dumpfile>
+
+Read data from I<dumpfile>.  This option can be repeated to read data from
+multiple dump files.
+
+=item B<-v> I<level>
+
+Set the verbosity level of the report.  Valid values for I<level> are 0,
+1, and 2, with 2 being the default.
+
+=back
+
+=head1 NOTES
+
+If your INN doesn't have the WP feed flag (1.5 does not, 1.6 does, 1.7 I
+don't know, 2.0 and later all do), use the following newsfeeds entry:
+
+   inpaths!:*:Tc,WH:<pathbin>/ginpaths
+
+where B<ginpaths> is the following script:
+
+    #!/bin/sh
+    exec egrep '^Path: ' | ninpaths -p -d <pathlog>/path/inpaths.%d
+
+replacing <pathbin> and <pathlog> as above.
+
+=head1 SEE ALSO
+
+newsfeeds(5), sendinpaths(8)
+
+This is a slightly modified version of Olaf Titz's original ninpaths
+program, which is posted to alt.sources and kept on his WWW archive under
+L<http://sites.inka.de/~bigred/sw/>.
+
+=head1 AUTHOR
+
+Olaf Titz <olaf@bigred.inka.de>
+
+=head1 HISTORY
+
+The idea and some implementation details for ninpaths come from the
+original inpaths program, but most of the code has been rewritten for
+clarity.  This program is in the public domain.
+
+=cut

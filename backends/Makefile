@@ -7,12 +7,13 @@ CFLAGS        = $(GCFLAGS)
 
 ALL           = actmerge actsync actsyncd archive batcher buffchan \
 		cvtbatch filechan inndf innxmit innxbatch mod-active \
-		news2mail nntpget nntpsend overchan send-ihave send-nntp \
-		send-uucp sendbatch sendxbatches shlock shrinkfile
+		news2mail ninpaths nntpget nntpsend overchan send-ihave \
+		send-nntp send-uucp sendbatch sendinpaths sendxbatches \
+		shlock shrinkfile
 
 SOURCES       = actsync.c archive.c batcher.c buffchan.c cvtbatch.c \
-		filechan.c inndf.c innxbatch.c innxmit.c map.c nntpget.c \
-		overchan.c shlock.c shrinkfile.c
+		filechan.c inndf.c innxbatch.c innxmit.c map.c ninpaths.c \
+		nntpget.c overchan.c shlock.c shrinkfile.c
 
 INSTALLED     = $(D)$(PATHBIN)/actmerge		\
 		$(D)$(PATHBIN)/actsync		\
@@ -27,6 +28,7 @@ INSTALLED     = $(D)$(PATHBIN)/actmerge		\
 		$(D)$(PATHBIN)/innxbatch	\
 		$(D)$(PATHBIN)/mod-active	\
 		$(D)$(PATHBIN)/news2mail	\
+		$(D)$(PATHBIN)/ninpaths		\
 		$(D)$(PATHBIN)/nntpget		\
 		$(D)$(PATHBIN)/nntpsend		\
 		$(D)$(PATHBIN)/overchan		\
@@ -34,6 +36,7 @@ INSTALLED     = $(D)$(PATHBIN)/actmerge		\
 		$(D)$(PATHBIN)/send-nntp	\
 		$(D)$(PATHBIN)/send-uucp	\
 		$(D)$(PATHBIN)/sendbatch	\
+		$(D)$(PATHBIN)/sendinpaths	\
 		$(D)$(PATHBIN)/sendxbatches	\
 		$(D)$(PATHBIN)/shlock		\
 		$(D)$(PATHBIN)/shrinkfile
@@ -71,6 +74,7 @@ cvtbatch:	cvtbatch.o   $(BOTH)	; $(LINK) cvtbatch.o   $(STORELIBS)
 inndf:		inndf.o      $(BOTH)	; $(LINK) inndf.o      $(STORELIBS)
 innxbatch:	innxbatch.o  $(LIBINN)	; $(LINK) innxbatch.o  $(INNLIBS)
 innxmit:	innxmit.o    $(BOTH)	; $(LINK) innxmit.o    $(STORELIBS)
+ninpaths:	ninpaths.o		; $(LINK) ninpaths.o
 nntpget:	nntpget.o    $(BOTH)	; $(LINK) nntpget.o    $(STORELIBS)
 overchan:	overchan.o   $(BOTH)	; $(LINK) overchan.o   $(STORELIBS)
 shlock:		shlock.o     $(LIBINN)	; $(LINK) shlock.o     $(INNLIBS)
@@ -91,6 +95,7 @@ send-ihave:	send-ihave.in    $(FIX)	; $(FIX) send-ihave.in
 send-nntp:	send-nntp.in     $(FIX)	; $(FIX) send-nntp.in
 send-uucp:	send-uucp.in     $(FIX)	; $(FIX) send-uucp.in
 sendbatch:	sendbatch.in     $(FIX)	; $(FIX) sendbatch.in
+sendinpaths:	sendinpaths.in   $(FIX) ; $(FIX) sendinpaths.in
 sendxbatches:	sendxbatches.in  $(FIX)	; $(FIX) sendxbatches.in
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
@@ -115,6 +120,7 @@ $(D)$(PATHBIN)/innxbatch:           innxbatch           ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/innxmit:             innxmit             ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/mod-active:          mod-active          ; $(CP_XPRI) $? $@
 $(D)$(PATHBIN)/news2mail:           news2mail           ; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/ninpaths:            ninpaths		; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/nntpget:             nntpget             ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/nntpsend:            nntpsend            ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/overchan:            overchan            ; $(LI_XPRI) $? $@
@@ -122,6 +128,7 @@ $(D)$(PATHBIN)/send-ihave:          send-ihave          ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/send-nntp:           send-nntp           ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/send-uucp:           send-uucp           ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/sendbatch:           sendbatch           ; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/sendinpaths:         sendinpaths		; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/sendxbatches:        sendxbatches        ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/shlock:              shlock              ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/shrinkfile:          shrinkfile          ; $(LI_XPUB) $? $@
