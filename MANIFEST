@@ -1,7 +1,7 @@
    File Name		Archive #	Description
 ----------------------------------------------------------
 .now_do                     1 Notification file used by configure
-CHANGES			    1 RCS logs
+CHANGES                     1 RCS logs
 CONTRIBUTORS                1 Contributors info.
 COPYRIGHT                   1 Legal mumbo-jumbo
 HISTORY                     1 Messages of historical significance
@@ -12,7 +12,7 @@ MakeLib                     1 Make an NNTP clientlib distribution kit
 MakeRnews                   1 Make an rnews distribution kit
 Makefile                    1 Top-level makefile
 Makefile.global.in          1 Template Makefile included by all Makefile
-NEWS			    1 Info about changes since last version
+NEWS                        1 Info about changes since last version
 README                      1 Assorted notes
 README.perl_hook            1 Notes on Christophe Wolfhugel's perl hook.
 README.tcl_hook             1 Bob Halley's TCL hook notes.
@@ -23,6 +23,8 @@ authprogs/README.auth_pass  1 The authprogs README
 authprogs/auth_pass.c       1 A sample prog for use with authinfo generic.
 authprogs/ckpasswd.c        1 Prog for checking password
 authprogs/ident.c           1 Prog for checking ident
+authprogs/pwcheck.c         1 Prog for checking password thru socket
+authprogs/radius.c          1 Prog for checking thru radius server
 backends                    1 Outgoing feed programs (Directory)
 backends/Makefile           1 Makefile for outgoing feed programs
 backends/actmerge.sh.in     1 Merge two active files to stdout.
@@ -120,10 +122,11 @@ doc/libinn.3                1 Manpage for InterNetNews library routines
 doc/libstorage.3            1 Manpage for storageAPI library routines
 doc/makeactive.8            1 Manpage for makeactive
 doc/makehistory.8           1 Manpage for makhistory
-doc/mailpost.8		    1 Manpage for mailpost
+doc/mailpost.8              1 Manpage for mailpost
+doc/mod-active.8            1 Manpage for mod-active
 doc/moderators.5            1 Manpage for moderators mail addresses file
 doc/motd.news.5             1 Manpage for motd.news config file
-doc/news2mail.8		    1 Manpage for news2mail
+doc/news2mail.8             1 Manpage for news2mail
 doc/news-recovery.8         1 Manpage for recovery programs
 doc/news.daily.8            1 Manpage for news.daily
 doc/newsfeeds.5             1 Manpage for innd's newsfeeds file
@@ -143,14 +146,16 @@ doc/parsedate.3             1 Manpage for parsedate library routine
 doc/passwd.nntp.5           1 Manpage for passwd.nntp config file
 doc/pgpverify.8             1 Manpage for pgpverify
 doc/prunehistory.8          1 Manpage for prunehistory
-doc/pullnews.8		    1 Manpage for pullnews
+doc/pullnews.8              1 Manpage for pullnews
 doc/putman.sh               1 Install a manpage
 doc/qio.3                   1 Manpage for part of InterNetNews library
+doc/readers.conf.5          1 Manpage for readers.conf
 doc/rnews.1                 1 Manpage for rnews frontend
 doc/scanlogs.8              1 Manpage for scanlogs
 doc/send-uucp.8             1 Manpage for send-uucp
 doc/shlock.1                1 Manpage for shlock backend utility
 doc/shrinkfile.1            1 Manpage for shrinkfile
+doc/simpleftp.1             1 Manpage for simpleftp
 doc/sm.8                    1 Manpage for sm
 doc/startinnfeed.1          1 Manpage for startinnfeed
 doc/storage.conf.5          1 Manpage for storage.conf config file
@@ -236,7 +241,6 @@ innd/status.c               1 Status routines for innd
 innd/tcl.c                  1 Bob Halley's tcl hook.
 innd/timer.c                1 Timer routines for innd
 innd/wip.c                  1 Wip routines for innd
-installit.sh                1 File/directory installation tool
 innfeed                     1 Innfeed (Directory)
 innfeed/ChangeLog           1 History of changes
 innfeed/INSTALL             1 Simple documentation for introducing innfeed
@@ -407,14 +411,14 @@ samples/innshellvars.tcl.in 1 TCL Script to set config parameters
 samples/innstat.in          1 Display INN status snapshot
 samples/innwatch.ctl.in     1 Sample innwatch.ctl(5) file
 samples/innwatch.in         1 Throttle innd based on load and disk space
-samples/mailpost.in	    1 Email to news gateway
+samples/mailpost.in         1 Email to news gateway
 samples/mod-active.in       1 Batch do ctlinnd newgroup/rmgroup/changegroup
 samples/moderators          1 Sample moderators(5) file
 samples/motd.news           1 Sample motd.news(5) file
 samples/newgroup.in         1 Newgroup control message handler
 samples/newgroup.pl.in      1 Newgroup control message handler for controlchan
-samples/news2mail.cf	    1 news2mail config file
-samples/news2mail.in	    1 News to mail gateway
+samples/news2mail.cf        1 news2mail config file
+samples/news2mail.in        1 News to mail gateway
 samples/news.daily.in       1 Front-end script to run expire, etc.
 samples/newsfeeds.in        1 Sample newsfeeds(5) file
 samples/nnrp.access         1 Sample nnrp.access(5) file
@@ -427,7 +431,7 @@ samples/overview.fmt        1 Format of news overview database
 samples/parsecontrol.in     1 Initial parsing of control messages
 samples/passwd.nntp         1 Sample passwd.nntp(5) file
 samples/pgpverify.in        1 Sample pgpverify program.
-samples/pullnews.in	    1 sucking feeder
+samples/pullnews.in         1 sucking feeder
 samples/rc.news.in          1 News boot script
 samples/rmgroup.in          1 Rmgroup control message handler
 samples/readers.conf        1 Sample readers.conf(5) file
