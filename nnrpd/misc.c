@@ -20,7 +20,7 @@ STATIC ino_t		ino = 0;
 
 #define ASCtoNUM(c)		((c) - '0')
 #define CHARStoINT(c1, c2)	(ASCtoNUM((c1)) * 10 + ASCtoNUM((c2)))
-#define DaysInYear(y)		((y % 4 ? 365 : 366))
+#define DaysInYear(y) ((y) % 4 ? 365 : (y) % 100 ? 366 : (y) % 400 ? 365 : 366)
 
 
 /*
@@ -166,23 +166,45 @@ NNTPtoGMT(av1, av2)
     int			hour;
     int			mins;
     int			secs;
+    int			datelen;
     register int	i;
     long		seconds;
-    char		buff[6 + 6 + 1];
+    char		buff[8 + 6 + 1];
 
-    if (strlen(av1) != 6 || strlen(av2) != 6)
+    /* Y2K: accept YYMMDD, YYYMMDD or YYYYMMDD.
+            First is strict NNTP spec,
+	    Second is broken clients that do "printf %02d tm_year",
+	    Third is people trying to do the right date thing
+	          despite the spec. */
+    datelen = strlen(av1);
+    if ((datelen < 6 || datelen > 8) || strlen(av2) != 6)
 	return -1;
     (void)sprintf(buff, "%s%s", av1, av2);
     for (p = buff; *p; p++)
 	if (!CTYPE(isdigit, (int)*p))
 	    return -1;
 
-    year  = CHARStoINT(buff[ 0], buff[ 1]);
-    month = CHARStoINT(buff[ 2], buff[ 3]);
-    day   = CHARStoINT(buff[ 4], buff[ 5]);
-    hour  = CHARStoINT(buff[ 6], buff[ 7]);
-    mins  = CHARStoINT(buff[ 8], buff[ 9]);
-    secs  = CHARStoINT(buff[10], buff[11]);
+    p = buff + datelen - 6;
+
+    year  = CHARStoINT(p[ 0], p[ 1]);
+    month = CHARStoINT(p[ 2], p[ 3]);
+    day   = CHARStoINT(p[ 4], p[ 5]);
+    hour  = CHARStoINT(p[ 6], p[ 7]);
+    mins  = CHARStoINT(p[ 8], p[ 9]);
+    secs  = CHARStoINT(p[10], p[11]);
+
+    if (datelen == 6) {		/* YYMMDD */
+	if (year > 70)
+	    year += 1900;
+	else
+	    year += 2000;
+    } else {
+        year += ASCtoNUM(*--p) * 100;
+	if (datelen == 7)	/* YYYMMDD */
+	    year += 1900;
+	else
+	    year += ASCtoNUM(*--p) * 1000; /* YYYYMMDD */
+    }
 
     if (month < 1 || month > 12
      || day < 1 || day > 31
@@ -196,10 +218,7 @@ NNTPtoGMT(av1, av2)
     else if (hour < 0 || hour > 23)
 	return -1;
 
-    if (year < 50)
-      year += 100 ;
-    
-    for (seconds = 0, year += 1900, i = 1970; i < year; i++)
+    for (seconds = 0, i = 1970; i < year; i++)
 	seconds += DaysInYear(i);
     if (DaysInYear(year) == 366 && month > 2)
 	seconds++;
