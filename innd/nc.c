@@ -560,11 +560,19 @@ NClist(CHANNEL *cp)
     if (caseEQ(p, "newsgroups")) {
 	trash = p = ReadInFile(cpcatpath(innconf->pathdb, _PATH_NEWSGROUPS),
 			(struct stat *)NULL);
+	if (p == NULL) {
+	    NCwritereply(cp, NCdot);
+	    return;
+	}
 	end = p + strlen(p);
     }
     else if (caseEQ(p, "active.times")) {
 	trash = p = ReadInFile(cpcatpath(innconf->pathdb, _PATH_ACTIVETIMES),
 			(struct stat *)NULL);
+	if (p == NULL) {
+	    NCwritereply(cp, NCdot);
+	    return;
+	}
 	end = p + strlen(p);
     }
     else if (*p == '\0' || (caseEQ(p, "active"))) {
