@@ -626,7 +626,7 @@ extern void		STATUSinit(void);
 extern void             STATUSmainloophook(void);
 
 extern void             TMRinit(void);
-extern void             TMRmainloophook(void);
+extern int              TMRmainloophook(void);
 extern void             TMRstart(TMRTYPE t);
 extern void             TMRstop(TMRTYPE t);
 

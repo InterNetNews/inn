@@ -105,18 +105,21 @@ static void dosummary(unsigned secs)
 }
 
 
-void TMRmainloophook(void)
+int
+TMRmainloophook(void)
 {
     unsigned now;
     
     if (!innconf->timer)
-	return;
+	return 0;
     now = gettime();
     
-    if (now - last_summary > (innconf->timer * 1000)) {
+    if (now - last_summary >= (innconf->timer * 1000)) {
 	dosummary(now - last_summary);
 	last_summary = now;
+        return 0;
     }
+    return innconf->timer - (now - last_summary) / 1000;
 }
 
 

@@ -867,12 +867,13 @@ void CHANreadloop(void)
 	MyRead = RCHANmask;
 	MyWrite = WCHANmask;
 	MyTime = TimeOut;
+        i = TMRmainloophook();
+        if (i != 0) MyTime.tv_sec = i;
 	TMRstart(TMR_IDLE);
 	count = select(CHANlastfd + 1, &MyRead, &MyWrite, (FDSET *)NULL,
 		&MyTime);
 	TMRstop(TMR_IDLE);
 
-	TMRmainloophook();
 	STATUSmainloophook();
 	if (GotTerminate) {
 	    (void)write(2, EXITING, STRLEN(EXITING));
