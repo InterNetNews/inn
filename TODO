@@ -297,6 +297,9 @@ Code Cleanup Projects:
   compiled with -fno-strict-aliasing on gcc and move the relevant casts
   to within function calls.  [Russ knows about this.]
 
+* Switch nnrpd over to using lib/timer.c instead of its own messy 
+  timing code.  [Jeff knows about this.]
+
 
 Needed Bug Fixes:
 
