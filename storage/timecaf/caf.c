@@ -654,7 +654,7 @@ CAFFindOptimalBlocksize(ARTNUM tocsize UNUSED, size_t cfsize)
 */
 int
 CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize,
-                 size_t estcfsize, int nolink, char *temppath)
+                 size_t estcfsize, int nolink, char *temppath, size_t pathlen)
 {
     CAFHEADER head;
     int fd;
@@ -726,7 +726,7 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize,
 
     if (nolink) {
 	if (temppath != NULL) {
-	    strcpy(temppath, path);
+	    strlcpy(temppath, path, pathlen);
 	}
 	return fd;
     }
@@ -1355,6 +1355,7 @@ int
 CAFClean(char *path, int verbose, double PercentFreeThreshold)
 {
     char *newpath;
+    size_t pathlen;
     CAFHEADER head, newhead;
     int fdin, fdout;
     ARTNUM newlow;
@@ -1382,7 +1383,8 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 #endif
 
     /* allocate buffer for newpath */
-    newpath = xmalloc(strlen(path) + 10);
+    pathlen = strlen(path) + 10;
+    newpath = xmalloc(pathlen);
     while (true) {
 	/* try to open the file and lock it. */
 	if ((fdin = open(path, O_RDWR)) < 0) {
@@ -1630,7 +1632,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     /* try to create new CAF file with some temp. pathname */
     /* note: new CAF file is created in flocked state. */
     if ((fdout = CAFCreateCAFFile(path, newlow, newtocsize,
-                                  statbuf.st_size, 1, newpath)) < 0) {
+                                  statbuf.st_size, 1, newpath, pathlen)) < 0) {
 	fclose(infile);
 	free(tocarray);
 	free(newpath);
