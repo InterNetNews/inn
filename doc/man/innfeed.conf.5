@@ -455,7 +455,7 @@ number to use when connecting to the remote.
 .TP
 .B drop-deferred
 This key requires a boolean value. By default it is set to false. When
-set to true, and a peer replies with code 431 (try again later) just
+set to true, and a peer replies with code 431 or 436 (try again later) just
 drop the article and don't try to re-send it. This is useful for some
 peers that keep on deferring articles for a long time to prevent innfeed
 from trying to offer the same article over and over again.
