@@ -180,6 +180,8 @@ break that auth group into multiple auth groups, each with a portion of
 the hosts listed in its hosts: parameter, and each assigning the same user
 identity.
 
+All hosts match, if this parameter does not exist.
+
 =item B<res:>
 
 A command line for a user resolver.  The program executed must be located
@@ -413,6 +415,7 @@ usernames and passwords, and then against the system shadow password file:
     auth all {
         auth: "ckpasswd -d /usr/local/news/db/newsusers"
         auth: "ckpasswd -s"
+        default: <NOPASSWD>
     }
 
     access fail {
@@ -436,7 +439,7 @@ shadow password database (note that ckpasswd may have to be setgid to a
 shadow group to use this option).  If both of those fail, the user will
 keep the empty identity; otherwise, they will acquire some other identity
 string (whatever username they specified, since the password was valid)
-and the first access group will match, giving them full access.
+and the second access group will match, giving them full access.
 
 Note that the order of the access groups is significant.  If the fail
 access group were last, it would always match, and no one would ever get
