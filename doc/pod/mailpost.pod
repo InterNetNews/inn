@@ -1,0 +1,97 @@
+=head1 NAME
+
+mailpost - feed an email message into a news group
+
+=head1 SYNOPSIS
+
+B<mailpost> [B<-a> I<addr>] [B<-b> I<database>] [B<-c> I<wait-time>]
+[B<-d> I<distribution>] [B<-f> I<addr>] [B<-m> I<mailing-list>]
+[B<-r> I<addr>] [B<-x> I<header>[B<:>I<header>...]] [I<newsgroups> ...]
+
+=head1 DESCRIPTION
+
+The B<mailpost> program reads a properly formatted email message from stdin
+and feeds it to inews for posting to a news server. I<newsgroups> is a
+whitespace-separated list of group names to which to post the article.
+
+Before feeding the article to inews, it checks that the article has not
+been seen before, and it changes some headers (cleans up some address
+headers and puts ``X-'' in front of unknown headers).
+
+If the article has been seen before (B<mailpost> records the message-id of
+each articles it handles), then the article will be silently dropped. Other
+errors will cause the article to be mailed to the newsmaster.
+
+Normally mailpost is run by sendmail(8) via an alias entry:
+
+local-mail-wreck-bikes: "|<pathbin in inn.conf>/mailpost
+         -d local local.mail.rec.bicycles.racing"
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-a> I<addr>
+
+If the B<-a> flag is used the value given is added to the article 
+as an Approved header.
+
+=item B<-b> I<database>
+
+If the B<-b> flag is used, then it defines the location of the database 
+used to store the message ids of articles sent on. This is to prevent articles
+looping around if a news to mail gateway sends them back here. This option may
+be required if the mailpost process doesn't have write access to the news tmp
+directory (the value of I<pathtmp> in inn.conf(5)).
+
+=item B<-c> I<wait-time>
+
+The B<-c> flag indicates a length of time to sleep before posting.  If
+duplicate messages are received in this interval (by any instance of
+B<mailpost> using the same database), the article is only posted once, but
+with Newsgroups: header modified to crosspost the article to all indicated
+groups.
+
+=item B<-d> I<distribution>
+
+If the B<-d> flag is used the value given is added to the article as a
+Distribution: header.
+
+=item B<-f> I<addr>
+
+The B<-f> flag is a synonym for the B<-r> flag.
+
+=item B<-m> I<mailing-list>
+
+If the B<-m> flag is used the value given is added to the articles in a 
+Mailing-List: header, if such a header doesn't already exist.
+
+=item B<-r> I<addr>
+
+A heuristic is used to determine a reasonable value for the Path: header.
+The B<-r> flag indicates what to use if no other value can be determined.
+
+=item B<-x> I<header>[B<:>I<header>...]
+
+A B<:> separated list of additional headers which should be treated as known
+headers; these headers will be passed through to inews(1) without being
+``X-'' prefixed.
+
+=head1 HISTORY
+
+Written by Paul Vixie long ago and then hacked up by James Brister for INN 
+integration.
+
+$Id$
+
+=head1 FILES
+
+<pathdb in inn.conf>/mailpost-msgid.db	database file
+
+=head1 BUGS
+
+Is lacking in configurability.
+
+=head1 SEE ALSO
+
+active(5), inn.conf(5), nnrpd(8), uwildmat(3).

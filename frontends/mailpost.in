@@ -39,10 +39,11 @@ my $prog = $usage ;
 openlog $usage, "pid", $inn::syslog_facility ;
 
 $usage .= "[ -r addr ][ -f addr ][ -a approved ][ -d distribution ]" .
-    " [ -m mailing-list ][ -b database ][ -o output-path ] [ -c wait-time ] newsgroups" ;
+    " [ -m mailing-list ][ -b database ][ -o output-path ] [ -c wait-time ]" .
+    " [ -x header [:header...] ] newsgroups" ;
 
-use vars qw($opt_r $opt_f $opt_a $opt_d $opt_m $opt_b $opt_n $opt_o $opt_h $opt_c) ;
-getopts("hr:f:a:d:m:b:no:c:") || die "usage: $usage\n" ;
+use vars qw($opt_r $opt_f $opt_a $opt_d $opt_m $opt_b $opt_n $opt_o $opt_h $opt_c $opt_x ) ;
+getopts("hr:f:a:d:m:b:no:c:x:") || die "usage: $usage\n" ;
 die "usage: $usage\n" if $opt_h ;
 
 #
@@ -104,6 +105,11 @@ if ($opt_d) {
 if ($opt_m) {
     $mailing_list = "<" . $opt_m . "> /dev/null";
     push @errorText, "((mailing_list: $mailing_list))\n";
+}
+
+my $exclude = 'Organization|Distribution';
+if ($opt_x) {
+    $exclude .= '|' . join('|', split(/:/, $opt_x));
 }
 
 $newsgroups = join ",", @ARGV ;
@@ -183,7 +189,7 @@ for (;;) {
     next if /^Approved:\s/sio && defined($approved);
     next if /^Distribution:\s/sio && defined($distribution);
 
-    if (/^(Organization|Distribution):\s*/sio) {
+    if (/^($exclude):\s*/sio) {
 	$real_news_hdrs .= "$_\n";
 	next;
     }
