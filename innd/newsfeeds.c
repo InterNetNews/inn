@@ -379,6 +379,7 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 		case FEED_FULLNAME:		/* Full filename	*/
 		case FEED_HASH:			/* Hash			*/
 		case FEED_HDR_DISTRIB:		/* Distribution header	*/
+		case FEED_STOREDGROUP:		/* stored newsgroup	*/
 		case FEED_HDR_NEWSGROUP:	/* Newsgroup header	*/
 		case FEED_MESSAGEID:		/* Message-ID		*/
 		case FEED_NAME:			/* Filename		*/

@@ -352,6 +352,8 @@ typedef struct _ARTDATA {
     int		PathLength;
     STRING	Replic;
     int		ReplicLength;
+    STRING	StoredGroup;
+    int		StoredGroupLength;
     HASH	*Hash;
     BUFFER	*Headers;
     BUFFER	*Overview;

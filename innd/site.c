@@ -392,6 +392,11 @@ STATIC void SITEwritefromflags(SITE *sp, ARTDATA *Data)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
 	    BUFFappend(bp, Data->Replic, Data->ReplicLength);
 	    break;
+	case FEED_STOREDGROUP:
+	    if (Dirty)
+		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
+	    BUFFappend(bp, Data->StoredGroup, Data->StoredGroupLength);
+	    break;
 	case FEED_TIMERECEIVED:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
