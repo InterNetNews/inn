@@ -127,7 +127,6 @@ EXTERN ARTLIST	*ARTnumbers;
 EXTERN FILE	*locallog;
 EXTERN int	ARTindex;
 EXTERN int	ARTsize;
-extern int	PERMdefault;
 EXTERN long	ARTcount;
 EXTERN long	ARTget;
 EXTERN long	ARTgettime;
@@ -193,4 +192,8 @@ ARTNUM GPLOW(GROUPENTRY *gp);
 ARTNUM GPHIGH(GROUPENTRY *gp);
 char GPFLAG(GROUPENTRY *gp);
 char *GPALIAS(GROUPENTRY *gp); 
+char *HandleHeaders(char *article);
+int perlConnect(char *ClientHost, char *ClientIP, char *accesslist);
+int perlAuthenticate(char *ClientHost, char *ClientIP, char *user, char *passwd, char *accesslist);
+
 
