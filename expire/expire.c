@@ -1921,7 +1921,6 @@ int main(int ac, char *av[])
 		    if (OverPath) {
 			(void)sprintf(buff, "%s/overview.done", OverPath);
 			(void)fclose(EXPfopen(FALSE, buff, "w"));
-			CleanupAndExit(Server, FALSE, 0);
 		    } else {
 			if (!OVERreplace()) {
 			    (void)fprintf(stderr, "Can't replace overview data, %s\n",
@@ -1930,6 +1929,7 @@ int main(int ac, char *av[])
 			}
 		    }
 		}
+		CleanupAndExit(Server, FALSE, 0);
 	    }
 
 	    if (rename(NHistory, HistoryText) < 0
