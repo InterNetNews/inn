@@ -190,9 +190,13 @@ flags.  A value of zero turns off checking.  The default is 0.
 .B \-i
 To limit the number of incoming NNTP connections, use the ``\fB\-i\fP'' flag.
 A value of zero will suppress this check.
-The default is 50, but can also be changed with the ``maxconnections''
+The default is 50, if the ``maxconnections'' option in
+.IR inn.conf (5)
+is not specified.
+The ``maxconnections''
 option in
 .IR inn.conf (5)
+is changed with this value.
 .TP
 .B \-I
 This option allows you to bind innd to a specific interface IP address.
