@@ -109,6 +109,7 @@ static int upgrade_v1_to_v2(void)
     char group[MAXHEADERSIZE];
     u_int32_t v2 = 2;
     int ret;
+    char *p;
 
     printf("ovdb_init: Upgrading data to version 2\n");
     ret = open_db(&groupstats, "groupstats", DB_BTREE);
@@ -215,7 +216,7 @@ static int upgrade_v1_to_v2(void)
     groupinfo->close(groupinfo, 0);
     vdb->close(vdb, 0);
     
-#if DB_VERSION_MAJOR == 3
+#if DB_VERSION_MAJOR >= 3
     ret = db_create(&groupstats, OVDBenv, 0);
     if (ret != 0)
 	return ret;
