@@ -712,7 +712,7 @@ FUNCTYPE CMDfetch(int ac, char *av[])
 	    Reply("%s\r\n", ARTnocurrart);
 	    return;
 	}
-	(void)sprintf(buff, "%ld", ARTnumber);
+	(void)sprintf(buff, "%d", ARTnumber);
 	tart=ARTnumber;
     }
     else {
@@ -730,7 +730,7 @@ FUNCTYPE CMDfetch(int ac, char *av[])
 	    Reply("%s\r\n", ARTnoartingroup);
 	    return;
 	}
-	(void)sprintf(buff, "%ld", ARTnumber);
+	(void)sprintf(buff, "%d", ARTnumber);
 	tart=ARTnumber;
     }
     if (ac > 1)
@@ -1265,7 +1265,7 @@ FUNCTYPE CMDxpat(int ac, char *av[])
                 continue;
             p = GetHeader(header, FALSE);
 	    if (p && wildmat(p, pattern)) {
-		sprintf(buff, "%lu ", i);
+		sprintf(buff, "%d ", i);
 		SendIOb(buff, strlen(buff));
 		SendIOb(p, strlen(p));
 		SendIOb("\r\n", 2);

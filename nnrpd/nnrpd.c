@@ -211,10 +211,10 @@ ExitWithStats(int x, BOOL readconf)
 	}
     }
     if (ARTget)
-        syslog(L_NOTICE, "%s artstats get %d time %d size %ld", ClientHost,
+        syslog(L_NOTICE, "%s artstats get %ld time %ld size %ld", ClientHost,
             ARTget, ARTgettime, ARTgetsize);
     if (!readconf && PERMaccessconf && PERMaccessconf->nnrpdoverstats && OVERcount)
-        syslog(L_NOTICE, "%s overstats count %d hit %d miss %d time %d size %d dbz %d seek %d get %d artcheck %d", ClientHost,
+        syslog(L_NOTICE, "%s overstats count %ld hit %ld miss %ld time %ld size %ld dbz %ld seek %ld get %ld artcheck %ld", ClientHost,
             OVERcount, OVERhit, OVERmiss, OVERtime, OVERsize, OVERdbz, OVERseek, OVERget, OVERartcheck);
 
      if (DaemonMode) {
@@ -1096,7 +1096,7 @@ main(int argc, char *argv[])
 	vid = tv.tv_sec ^ tv.tv_usec ^ pid ^ count;
 	len = strlen("innconf->pathlog") + strlen("/tracklogs/log-") + BUFSIZ;
 	LocalLogFileName = NEW(char, len);
-	sprintf(LocalLogFileName, "%s/tracklogs/log-%ld", innconf->pathlog, vid);
+	sprintf(LocalLogFileName, "%s/tracklogs/log-%u", innconf->pathlog, vid);
 	if ((locallog = fopen(LocalLogFileName, "w")) == NULL) {
 	    LocalLogDirName = NEW(char, len);
 	    sprintf(LocalLogDirName, "%s/tracklogs", innconf->pathlog);
