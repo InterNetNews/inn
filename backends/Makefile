@@ -57,22 +57,25 @@ tags ctags: $(SOURCES)
 
 ##  Compilation rules.
 
+BOTH		= $(LIBSTORAGE) $(LIBINN)
+
 LINK 		= $(LIBTOOL) $(CC) $(LDFLAGS) -o $@
-LIB_S_I		= $(LIBSTORAGE) $(LIBINN)
-ES		= $(EXTSTORAGELIBS)
+INNLIBS		= $(LIBINN) $(LIBS)
+STORELIBS	= $(BOTH) $(EXTSTORAGELIBS) $(LIBS)
+
 FIX		= $(FIXSCRIPT)
 
-actsync:	actsync.o    $(LIBINN)	; $(LINK) actsync.o    $(LIBINN) $(LIBS)
-archive:	archive.o    $(LIB_S_I)	; $(LINK) archive.o    $(LIB_S_I) $(ES) $(LIBS)
-batcher:	batcher.o    $(LIB_S_I)	; $(LINK) batcher.o    $(LIB_S_I) $(ES) $(LIBS)
-cvtbatch:	cvtbatch.o   $(LIB_S_I)	; $(LINK) cvtbatch.o   $(LIB_S_I) $(ES) $(LIBS)
-inndf:		inndf.o      $(LIB_S_I)	; $(LINK) inndf.o      $(LIB_S_I) $(ES) $(LIBS)
-innxbatch:	innxbatch.o  $(LIBINN)	; $(LINK) innxbatch.o  $(LIBINN) $(LIBS)
-innxmit:	innxmit.o    $(LIB_S_I)	; $(LINK) innxmit.o    $(LIB_S_I) $(ES) $(LIBS)
-nntpget:	nntpget.o    $(LIBINN)	; $(LINK) nntpget.o    $(LIBINN) $(LIBS)
-overchan:	overchan.o   $(LIB_S_I)	; $(LINK) overchan.o   $(LIB_S_I) $(ES) $(LIBS)
+actsync:	actsync.o    $(LIBINN)	; $(LINK) actsync.o    $(INNLIBS)
+archive:	archive.o    $(BOTH)	; $(LINK) archive.o    $(STORELIBS)
+batcher:	batcher.o    $(BOTH)	; $(LINK) batcher.o    $(STORELIBS)
+cvtbatch:	cvtbatch.o   $(BOTH)	; $(LINK) cvtbatch.o   $(STORELIBS)
+inndf:		inndf.o      $(BOTH)	; $(LINK) inndf.o      $(STORELIBS)
+innxbatch:	innxbatch.o  $(LIBINN)	; $(LINK) innxbatch.o  $(INNLIBS)
+innxmit:	innxmit.o    $(BOTH)	; $(LINK) innxmit.o    $(STORELIBS)
+nntpget:	nntpget.o    $(LIBINN)	; $(LINK) nntpget.o    $(INNLIBS)
+overchan:	overchan.o   $(BOTH)	; $(LINK) overchan.o   $(STORELIBS)
 shlock:		shlock.o		; $(LINK) shlock.o
-shrinkfile:	shrinkfile.o $(LIBINN)	; $(LINK) shrinkfile.o $(LIBINN) $(LIBS)
+shrinkfile:	shrinkfile.o $(LIBINN)	; $(LINK) shrinkfile.o $(INNLIBS)
 
 buffchan:	buffchan.o map.o $(LIBINN)
 	$(LINK) buffchan.o map.o $(LIBINN) $(LIBS)
@@ -92,10 +95,8 @@ send-uucp:	send-uucp.in     $(FIX)	; $(FIX) send-uucp.in
 sendbatch:	sendbatch.in     $(FIX)	; $(FIX) sendbatch.in
 sendxbatches:	sendxbatches.in  $(FIX)	; $(FIX) sendxbatches.in
 
-$(LIBINN):
-	(cd ../lib ; $(MAKE))
-$(LIBSTORAGE):
-	(cd ../storage ; $(MAKE))
+$(LIBINN):	; (cd ../lib ; $(MAKE))
+$(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
 
 
 ##  Installation rules.  Installation commands set in Makefile.global.
@@ -131,68 +132,43 @@ $(D)$(PATHBIN)/shrinkfile:          shrinkfile          ; $(LI_XPUB) $? $@
 
 
 ##  Dependencies.  Default list, below, is probably good enough.
-depend:		Makefile $(SOURCES)
-	makedepend $(DEFS) $(SOURCES)
+
+depend:	Makefile $(SOURCES)
+	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-actsync.o:	../include/clibrary.h
-actsync.o:	../include/configdata.h
-actsync.o:	../include/libinn.h
-actsync.o:	../include/macros.h
-actsync.o:	../include/paths.h
-actsync.o:	../include/qio.h
-archive.o:	../include/clibrary.h
-archive.o:	../include/configdata.h
-archive.o:	../include/libinn.h
-archive.o:	../include/macros.h
-archive.o:	../include/paths.h
-archive.o:	../include/qio.h
-batcher.o:	../include/clibrary.h
-batcher.o:	../include/configdata.h
-batcher.o:	../include/libinn.h
-batcher.o:	../include/macros.h
-batcher.o:	../include/paths.h
-buffchan.o:	../include/clibrary.h
-buffchan.o:	../include/configdata.h
-buffchan.o:	../include/libinn.h
-buffchan.o:	../include/macros.h
-buffchan.o:	../include/paths.h
-buffchan.o:	../include/qio.h
-cvtbatch.o:	../include/clibrary.h
-cvtbatch.o:	../include/configdata.h
-cvtbatch.o:	../include/libinn.h
-cvtbatch.o:	../include/macros.h
-cvtbatch.o:	../include/paths.h
-cvtbatch.o:	../include/qio.h
-filechan.o:	../include/clibrary.h
-filechan.o:	../include/configdata.h
-filechan.o:	../include/libinn.h
-filechan.o:	../include/macros.h
-filechan.o:	../include/paths.h
-innxbatch.o:	../include/clibrary.h
-innxbatch.o:	../include/configdata.h
-innxbatch.o:	../include/libinn.h
-innxbatch.o:	../include/macros.h
-innxbatch.o:	../include/nntp.h 
-innxmit.o:	../include/clibrary.h
-innxmit.o:	../include/configdata.h
-innxmit.o:	../include/dbz.h
-innxmit.o:	../include/libinn.h
-innxmit.o:	../include/macros.h
-innxmit.o:	../include/nntp.h
-innxmit.o:	../include/paths.h
-innxmit.o:	../include/qio.h
-nntpget.o:	../include/clibrary.h
-nntpget.o:	../include/configdata.h
-nntpget.o:	../include/dbz.h
-nntpget.o:	../include/libinn.h
-nntpget.o:	../include/macros.h
-nntpget.o:	../include/nntp.h
-nntpget.o:	../include/paths.h
-shlock.o:	../include/clibrary.h
-shlock.o:	../include/configdata.h
-shrinkfile.o:	../include/clibrary.h
-shrinkfile.o:	../include/configdata.h
-shrinkfile.o:	../include/libinn.h
-shrinkfile.o:	../include/macros.h
-inndf.o:	../include/config.h
+actsync.o: actsync.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h ../include/libinn.h ../include/qio.h \
+ ../include/paths.h ../include/macros.h
+archive.o: archive.c ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h ../include/macros.h ../include/paths.h \
+ ../include/qio.h
+batcher.o: batcher.c ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h ../include/macros.h ../include/paths.h \
+ ../include/qio.h
+buffchan.o: buffchan.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h ../include/paths.h ../include/libinn.h \
+ ../include/qio.h ../include/macros.h
+cvtbatch.o: cvtbatch.c ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h ../include/macros.h ../include/paths.h \
+ ../include/qio.h
+filechan.o: filechan.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h ../include/paths.h ../include/libinn.h \
+ ../include/macros.h
+inndf.o: inndf.c ../include/config.h ../include/configdata.h \
+ ../include/clibrary.h ../include/libinn.h ../include/storage.h \
+ ../include/paths.h ../include/qio.h ../include/ov.h
+innxbatch.o: innxbatch.c ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h ../include/macros.h ../include/nntp.h
+innxmit.o: innxmit.c ../include/config.h ../include/clibrary.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h ../include/qio.h
+nntpget.o: nntpget.c ../include/config.h ../include/clibrary.h \
+ ../include/dbz.h ../include/libinn.h ../include/macros.h \
+ ../include/nntp.h ../include/paths.h
+overchan.o: overchan.c ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h ../include/macros.h ../include/ov.h \
+ ../include/storage.h ../include/paths.h ../include/qio.h
+shlock.o: shlock.c ../include/config.h ../include/clibrary.h
+shrinkfile.o: shrinkfile.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h
