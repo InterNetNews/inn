@@ -45,6 +45,8 @@ not comprehensively):
    Internet Service Providers and other entities for internal purposes.
    See the beginning of the file for full details.
 
+   authprogs/smbval/* are all under the GNU General Public License.
+
    backends/pgpverify.in and frontends/signcontrol.in are under a license
    very similar to the above but with UUNET Technologies, Inc. as the
    copyright holder.  See the end of those files for details.
