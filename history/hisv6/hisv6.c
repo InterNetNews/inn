@@ -349,9 +349,12 @@ hisv6_reopen(struct hisv6 *h)
 	}
 	dbzsetoptions(opt);
 	if (h->flags & HIS_CREAT) {
+	    size_t npairs;
+		
 	    /* must only do this once! */
 	    h->flags &= ~HIS_CREAT;
-	    if (!dbzfresh(h->histpath, h->npairs)) {
+	    npairs = (h->npairs == -1) ? 0 : h->npairs;
+	    if (!dbzfresh(h->histpath, npairs)) {
 		hisv6_seterror(h, concat("can't dbzfresh ", h->histpath, " ",
 					  strerror(errno), NULL));
 		hisv6_closefiles(h);
@@ -440,7 +443,7 @@ hisv6_new(const char *path, int flags)
     struct hisv6 *h;
 
     h = xmalloc(sizeof *h);
-    h->histpath = COPY(path);
+    h->histpath = path ? COPY(path) : NULL;
     h->flags = flags;
     h->writefp = NULL;
     h->readfd = -1;
@@ -460,26 +463,23 @@ hisv6_new(const char *path, int flags)
 **  open the history database identified by path in mode flags
 */
 void *
-hisv6_open(const char *path, int flags, const struct histopts *opts)
+hisv6_open(const char *path, int flags)
 {
     struct hisv6 *h;
 
     his_logger("HISsetup begin", S_HISsetup);
 
     h = hisv6_new(path, flags);
-    if (opts) {
-	h->statinterval = opts->u.hisv6.statinterval * 1000;
-	h->npairs = opts->npairs;
+    if (path) {
+	if (hisv6_dbzowner == NULL) {
+	    /* if there's no current dbz owner, claim it here */
+	    hisv6_dbzowner = h;
+	}
+	if (!hisv6_reopen(h)) {
+	    hisv6_dispose(h);
+	    h = NULL;
+	}
     }
-    if (hisv6_dbzowner == NULL) {
-	/* if there's no current dbz owner, claim it here */
-	hisv6_dbzowner = h;
-    }
-    if (!hisv6_reopen(h)) {
-	hisv6_dispose(h);
-	h = NULL;
-    }
-
     his_logger("HISsetup end", S_HISsetup);
     return h;
 }
@@ -518,7 +518,7 @@ hisv6_sync(void *history)
 				      strerror(errno), NULL));
 	    r = false;
 	}
-	if (h == hisv6_dbzowner) {
+	if (h->dirty && h == hisv6_dbzowner) {
 	    if (!dbzsync()) {
 		hisv6_seterror(h, concat("can't dbzsync ", h->histpath,
 					  " ", strerror(errno), NULL));
@@ -720,6 +720,49 @@ hisv6_formatline(char *s, const HASH *hash, time_t arrived,
 
 
 /*
+**  write the hash and offset to the dbz
+*/
+static bool
+hisv6_writedbz(struct hisv6 *h, const HASH *hash, off_t offset)
+{
+    bool r;
+    char hisline[HISV6_MAXLINE + 1];
+    char location[HISV6_MAX_LOCATION];
+    const char *error;
+
+    /* store the offset in the database */
+    switch (dbzstore(*hash, offset)) {
+    case DBZSTORE_EXISTS:
+	error = "dbzstore duplicate message-id ";
+	/* not `false' so that we duplicate the pre-existing
+	   behaviour */
+	r = true;
+	break;
+
+    case DBZSTORE_ERROR:
+	error = "dbzstore error ";
+	r = false;
+	break;
+
+    default:
+	error = NULL;
+	r = true;
+	break;
+    }
+    if (error) {
+	hisv6_errloc(location, (size_t)-1, offset);
+	hisv6_seterror(h, concat(error, h->histpath,
+				  ":[", HashToText(*hash), "]",
+				  location, " ", strerror(errno), NULL));
+    }
+    if (r && h->synccount != 0 && ++h->dirty >= h->synccount)
+	r = hisv6_sync(h);
+
+    return r;
+}
+
+
+/*
 **  write a history entry, hash, with times arrived, posted and
 **  expires, and storage token.
 */
@@ -732,7 +775,6 @@ hisv6_writeline(struct hisv6 *h, const HASH *hash, time_t arrived,
     off_t offset;
     char hisline[HISV6_MAXLINE + 1];
     char location[HISV6_MAX_LOCATION];
-    const char *error;
 
     if (h != hisv6_dbzowner) {
 	hisv6_seterror(h, concat("dbz not open for this history file ",
@@ -765,34 +807,7 @@ hisv6_writeline(struct hisv6 *h, const HASH *hash, time_t arrived,
 	goto fail;
     }
 
-    /* store the offset in the database */
-    switch (dbzstore(*hash, offset)) {
-    case DBZSTORE_EXISTS:
-	error = "dbzstore duplicate message-id ";
-	/* not `false' so that we duplicate the pre-existing
-	   behaviour */
-	r = true;
-	break;
-
-    case DBZSTORE_ERROR:
-	error = "dbzstore error ";
-	r = false;
-	break;
-
-    default:
-	error = NULL;
-	r = true;
-	break;
-    }
-    if (error) {
-	hisv6_errloc(location, (size_t)-1, offset);
-	hisv6_seterror(h, concat(error, h->histpath,
-				  ":[", HashToText(*hash), "]",
-				  location, " ", strerror(errno), NULL));
-    }
-
-    if (r && h->synccount != 0 && ++h->dirty >= h->synccount)
-	r = hisv6_sync(h);
+    r = hisv6_writedbz(h, hash, offset);
  fail:
     return r;
 }
@@ -998,6 +1013,55 @@ hisv6_traverse(struct hisv6 *h, struct hisv6_walkstate *cookie,
 
 
 /*
+**  open control channel to server and reserve it
+*/
+static bool
+hisv6_reserve(struct hisv6 *h, const char *reason)
+{
+    bool r = true;
+
+    if (ICCopen() < 0) {
+	hisv6_seterror(h, concat("can't open channel to server ",
+				 h->histpath, strerror(errno), NULL));
+	r = false;
+    } else if (ICCreserve(reason) != 0) {
+	hisv6_seterror(h, concat("can't reserve server ",
+				 h->histpath, NULL));
+	r = false;
+	ICCclose();
+    }
+    return r;
+}
+
+
+/*
+**  unpause server if necessary and unreserve it
+*/
+static bool
+hisv6_unreserve(struct hisv6 *h, const char *reason, bool paused)
+{
+    bool r;
+
+    if (ICCreserve("") != 0) {
+	hisv6_seterror(h, concat("can't unreserve server ",
+				  h->histpath, strerror(errno), NULL));
+	r = false;
+    }
+    if (paused && ICCgo(reason) != 0) {
+	hisv6_seterror(h, concat("can't unpause server ",
+				  h->histpath, strerror(errno), NULL));
+	r = false;
+    }
+    if (ICCclose() < 0) {
+	hisv6_seterror(h, concat("can't close connection to server ",
+				  h->histpath, strerror(errno), NULL));
+	r = false;
+    }
+    return r;
+}
+
+
+/*
 **  internal callback used during hisv6_traverse; we just pass on the
 **  parameters the user callback expects
 **/
@@ -1018,7 +1082,7 @@ hisv6_traversecb(struct hisv6 *h, void *cookie, const HASH *hash,
 **  history API interface to the database traversal routine
 */
 bool
-hisv6_walk(void *history, void *cookie,
+hisv6_walk(void *history, const char *reason, void *cookie,
 	   bool (*callback)(void *, time_t, time_t, time_t,
 			    const TOKEN *))
 {
@@ -1031,7 +1095,18 @@ hisv6_walk(void *history, void *cookie,
     hiscookie.cb.walk = callback;
     hiscookie.cookie = cookie;
 
+    if (reason) {
+	r = hisv6_reserve(h, reason);
+	if (r == false)
+	    goto fail;
+    }
+
     r = hisv6_traverse(h, &hiscookie, NULL, hisv6_traversecb);
+
+    if (reason && !hisv6_unreserve(h, reason, hiscookie.paused))
+	r = false;
+
+ fail:
     return r;
 }
 
@@ -1048,11 +1123,11 @@ hisv6_expirecb(struct hisv6 *h, void *cookie, const HASH *hash,
     bool r = true;
 
     /* check if we've seen this message id already */
-    if (dbzexists(*hash)) {
+    if (hiscookie->new && dbzexists(*hash)) {
 	/* continue after duplicates, it serious, but not fatal */
-	hisv6_seterror(h, concat("duplicate message-id [\"",
-				  HashToText(*hash), "\"] in history ",
-				  hiscookie->new->histpath, NULL));
+	hisv6_seterror(h, concat("duplicate message-id [",
+				 HashToText(*hash), "] in history ",
+				 hiscookie->new->histpath, NULL));
     } else {
 	struct hisv6_walkstate *hiscookie = cookie;
 	TOKEN ltoken, *t;
@@ -1078,7 +1153,8 @@ hisv6_expirecb(struct hisv6 *h, void *cookie, const HASH *hash,
 	} else {
 	    t = NULL;
 	}
-	if (t != NULL || arrived >= hiscookie->threshold) {
+	if (hiscookie->new &&
+	    (t != NULL || arrived >= hiscookie->threshold)) {
 	    r = hisv6_writeline(hiscookie->new, hash,
 				 arrived, posted, expires, t);
 	}
@@ -1164,7 +1240,7 @@ hisv6_rename(struct hisv6 *hold, struct hisv6 *hnew)
 */
 bool
 hisv6_expire(void *history, const char *path, const char *reason,
-	     void *cookie, time_t threshold,
+	     bool writing, void *cookie, time_t threshold,
 	     bool (*exists)(void *, time_t, time_t, time_t, TOKEN *))
 {
     struct hisv6 *h = history, *hnew = NULL;
@@ -1172,72 +1248,80 @@ hisv6_expire(void *history, const char *path, const char *reason,
     dbzoptions opt;
     bool r;
     struct hisv6_walkstate hiscookie;
+    bool reserved = false;
 
     /* this flag is always tested in the fail clause, so initialise it
        now */
     hiscookie.paused = false;
 
-    if (h->flags & HIS_RDWR) {
+    if (writing && (h->flags & HIS_RDWR)) {
 	hisv6_seterror(h, concat("can't expire from read/write history ",
-				  h->histpath, NULL));
+				 h->histpath, NULL));
 	r = false;
 	goto fail;
     }
 
     if (reason) {
-	if (ICCopen() < 0) {
-	    hisv6_seterror(h, concat("can't open channel to server ",
-				      h->histpath, strerror(errno), NULL));
+	r = hisv6_reserve(h, reason);
+	if (r == false)
+	    goto fail;
+	else
+	    reserved = true;
+    }
+
+    if (writing) {
+	/* form base name for new history file */
+	if (path) {
+	    nhistory = concat(path, ".n", NULL);
+	} else {
+	    nhistory = concat(h->histpath, ".n", NULL);
+	}
+
+	/* this is icky... we can only have one dbz open at a time; we
+	   really want to make dbz take a state structure. For now we'll
+	   just close the existing one and create our new one they way we
+	   need it */
+	if (!hisv6_dbzclose(h)) {
 	    r = false;
 	    goto fail;
 	}
-	if (ICCreserve(reason) != 0) {
-	    hisv6_seterror(h, concat("can't reserve server ",
-				      h->histpath, NULL));
+	hisv6_dbzowner = NULL;
+
+	hnew = hisv6_new(nhistory, HIS_RDWR | HIS_INCORE);
+	if (!hisv6_reopen(hnew)) {
+	    hisv6_dispose(hnew);
 	    r = false;
 	    goto fail;
 	}
-    }
+	hisv6_dbzowner = hnew;
 
-    /* form base name for new history file */
-    if (path) {
-	nhistory = concat(path, ".n", NULL);
-    } else {
-	nhistory = concat(h->histpath, ".n", NULL);
-    }
-
-    /* this is icky... we can only have one dbz open at a time; we
-       really want to make dbz take a state structure. For now we'll
-       just close the existing one and create our new one they way we
-       need it */
-    if (!hisv6_dbzclose(h)) {
-	r = false;
-	goto fail;
-    }
-    hisv6_dbzowner = NULL;
-
-    hnew = hisv6_new(nhistory, HIS_RDWR | HIS_INCORE);
-    if (!hisv6_reopen(hnew)) {
-	hisv6_dispose(hnew);
-	r = false;
-	goto fail;
-    }
-    hisv6_dbzowner = hnew;
-
-    dbzgetoptions(&opt);
-    opt.writethrough = false;
-    opt.pag_incore = INCORE_MEM;
+	dbzgetoptions(&opt);
+	opt.writethrough = false;
+	opt.pag_incore = INCORE_MEM;
 #ifndef	DO_TAGGED_HASH
-    opt.exists_incore = INCORE_MEM;
+	opt.exists_incore = INCORE_MEM;
 #endif
-    dbzsetoptions(opt);
+	dbzsetoptions(opt);
 
-    if (!dbzagain(hnew->histpath, h->histpath)) {
-	hisv6_seterror(h, concat("can't dbzagain ",
-				  hnew->histpath, ":", h->histpath, 
-				  strerror(errno), NULL));
-	r = false;
-	goto fail;
+	if (h->npairs == 0) {
+	    if (!dbzagain(hnew->histpath, h->histpath)) {
+		hisv6_seterror(h, concat("can't dbzagain ",
+					 hnew->histpath, ":", h->histpath, 
+					 strerror(errno), NULL));
+		r = false;
+		goto fail;
+	    }
+	} else {
+	    size_t npairs;
+
+	    npairs = (h->npairs == -1) ? 0 : h->npairs;
+	    if (!dbzfresh(hnew->histpath, dbzsize(npairs))) {
+		hisv6_seterror(h, concat("can't dbzfresh ",
+					 hnew->histpath, ":", h->histpath, 
+					 strerror(errno), NULL));
+		r = false;
+	    }
+	}
     }
 
     /* set up the callback handler */
@@ -1248,52 +1332,43 @@ hisv6_expire(void *history, const char *path, const char *reason,
     r = hisv6_traverse(h, &hiscookie, reason, hisv6_expirecb);
 
  fail:
-    if (hnew && !hisv6_closefiles(hnew)) {
-	/* error will already have been set */
-	r = false;
-    }
-
-    /* reopen will synchronise the dbz stuff for us */
-    if (!hisv6_closefiles(h)) {
-	/* error will already have been set */
-	r = false;
-    }
-
-    if (r) {
-	/* if the new path was explicitly specified don't move the
-	   files around, our caller is planning to do it out of
-	   band */
-	if (nhistory != path) {
-	    /* unlink the old files */
-	    r = hisv6_unlink(h);
-	    
-	    if (r) {
-		r = hisv6_rename(hnew, h);
-	    }
+    if (writing) {
+	if (hnew && !hisv6_closefiles(hnew)) {
+	    /* error will already have been set */
+	    r = false;
 	}
-    } else if (hnew) {
-	/* something went pear shaped, unlink the new files */
-	hisv6_unlink(hnew);
-    }
 
-    if (reason)
-	ICCreserve("");
-    if (hiscookie.paused && ICCgo(reason) != 0) {
-	hisv6_seterror(h, concat("can't unpause server ",
-				  h->histpath, strerror(errno), NULL));
-	r = false;
-    }
-    if (reason && ICCclose() < 0) {
-	hisv6_seterror(h, concat("can't close connection to server ",
-				  h->histpath, strerror(errno), NULL));
-	r = false;
-    }
+	/* reopen will synchronise the dbz stuff for us */
+	if (!hisv6_closefiles(h)) {
+	    /* error will already have been set */
+	    r = false;
+	}
 
-    /* re-enable dbz on the old history file */
-    hisv6_dbzowner = h;
-    if (!hisv6_reopen(h)) {
-	hisv6_closefiles(h);
+	if (r) {
+	    /* if the new path was explicitly specified don't move the
+	       files around, our caller is planning to do it out of
+	       band */
+	    if (nhistory != path) {
+		/* unlink the old files */
+		r = hisv6_unlink(h);
+	    
+		if (r) {
+		    r = hisv6_rename(hnew, h);
+		}
+	    }
+	} else if (hnew) {
+	    /* something went pear shaped, unlink the new files */
+	    hisv6_unlink(hnew);
+	}
+
+	/* re-enable dbz on the old history file */
+	hisv6_dbzowner = h;
+	if (!hisv6_reopen(h)) {
+	    hisv6_closefiles(h);
+	}
     }
+    if (reserved && !hisv6_unreserve(h, reason, hiscookie.paused))
+	r = false;
 
     if (hnew && !hisv6_dispose(hnew))
 	r = false;
@@ -1304,7 +1379,7 @@ hisv6_expire(void *history, const char *path, const char *reason,
 
 
 /*
-** return current error status to caller
+**  return current error status to caller
 */
 const char *
 hisv6_error(void *history)
@@ -1312,4 +1387,67 @@ hisv6_error(void *history)
     struct hisv6 *h = history;
 
     return h->error;
+}
+
+
+/*
+**  control interface
+*/
+bool
+hisv6_ctl(void *history, int selector, void *val)
+{
+    struct hisv6 *h = history;
+    bool r = true;
+
+    switch (selector) {
+    case HISCTLG_PATH:
+	*(char **)val = h->histpath;
+	break;
+
+    case HISCTLS_PATH:
+	if (h->histpath) {
+	    hisv6_seterror(h, concat("path already set in handle", NULL));
+	    r = false;
+	} else {
+	    h->histpath = COPY((char *)val);
+	    if (hisv6_dbzowner == NULL) {
+		/* if there's no current dbz owner, claim it here */
+		hisv6_dbzowner = h;
+	    }
+	    if (!hisv6_reopen(h)) {
+		free(h->histpath);
+		h->histpath = NULL;
+		r = false;
+	    }
+	}
+	break;
+
+    case HISCTLS_STATINTERVAL:
+	h->statinterval = *(time_t *)val * 1000;
+	break;
+
+    case HISCTLS_SYNCCOUNT:
+	h->synccount = *(size_t *)val;
+	break;
+
+    case HISCTLS_NPAIRS:
+	h->npairs = (ssize_t)*(size_t *)val;
+	break;
+
+    case HISCTLS_IGNOREOLD:
+	if (h->npairs == 0 && *(bool *)val) {
+	    h->npairs = -1;
+	} else if (h->npairs == -1 && !*(bool *)val) {
+	    h->npairs = 0;
+	}
+	break;
+
+    default:
+	/* deliberately doesn't call hisv6_seterror as we don't want
+	 * to spam the error log if someone's passing in stuff which
+	 * would be relevant to a different history manager */
+	r = false;
+	break;
+    }
+    return r;
 }

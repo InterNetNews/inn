@@ -9,7 +9,7 @@
 struct token;
 struct histopts;
 
-void *hisv6_open(const char *path, int flags, const struct histopts *opts);
+void *hisv6_open(const char *path, int flags);
 
 bool hisv6_close(void *);
 
@@ -26,16 +26,19 @@ bool hisv6_write(void *, const char *key, time_t arrived,
 bool hisv6_replace(void *, const char *key, time_t arrived,
 		 time_t posted, time_t expires, const struct token *token);
 
-bool hisv6_expire(void *, const char *, const char *,
+bool hisv6_expire(void *, const char *, const char *, bool,
 		  void *, time_t threshold,
 		  bool (*exists)(void *, time_t, time_t, time_t,
 				 struct token *));
 
-bool hisv6_walk(void *, void *,
+bool hisv6_walk(void *, const char *, void *,
 		bool (*)(void *, time_t, time_t, time_t,
 			 const struct token *));
 
 const char *hisv6_error(void *);
 
 bool hisv6_remember(void *, const char *key, time_t arrived);
+
+bool hisv6_ctl(void *, int, void *);
+
 #endif

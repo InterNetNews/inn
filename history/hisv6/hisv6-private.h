@@ -46,7 +46,7 @@ struct hisv6 {
     time_t statinterval;
     size_t synccount;
     size_t dirty;
-    off_t npairs;
+    ssize_t npairs;
     int readfd;
     int flags;
     struct stat st;
