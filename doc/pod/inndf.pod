@@ -4,9 +4,7 @@ inndf - Report free disk, inodes, and overview information
 
 =head1 SYNOPSIS
 
-B<inndf> [B<-hi>] I<directory> [I<directory> ...]
-
-B<inndf> [B<-i>] [B<-f> I<filename>] [B<-F>] I<directory> [I<directory> ...]
+B<inndf> [B<-Fhi>] [B<-f> I<filename>] I<directory> [I<directory> ...]
 
 B<inndf> B<-n>
 
@@ -38,13 +36,17 @@ database (for those overview methods where this is a meaningful question).
 
 =item B<-f> I<filename>
 
-I<filename> should contain a list of directories to use in addition to those
-given by the arguments. Syntax of this file is that blank lines are ignored
-and everything after a '#' is ignored.
+I<filename> should contain a list of directories to use in addition to
+those given by the arguments, one per line.  Blank lines and anything
+after C<#> on any line are ignored.
 
 =item B<-F>
 
-B<-F> is like B<-f> execpt that the filename is I<pathetc>/inndf.conf.
+Like B<-f> execpt that the filename is I<pathetc>/filesystems and it is
+not an error if this file doesn't exist.  (This option is used primarily
+by such things as innstat(8), so that the news administrator can add
+additional file systems to check to I<pathetc>/filesystems without having
+to modify the script.)
 
 =item B<-h>
 
@@ -80,6 +82,10 @@ designed for human readability:
 
     inndf -i /usr/local/news /news/spool
 
+The same, but also add in all file systems in I<pathetc>/filesystems:
+
+    inndf -i -F /usr/local/news /news/spool
+
 Print out the number of overview records and the percentage space used by
 a buffindexed overview database:
 
@@ -101,6 +107,10 @@ also to the following folks for ports, patches, and comments:
 
 and to all the other folks I met and worked with during my 10 years as a
 newsadmin.
+
+Katsuhiro Kondou added the B<-n> and B<-o> options.  Russ Allbery added
+reporting of percentage free disk space.  Support for B<-f> and B<-F> was
+added by Fabien Tassin <fta@sofaraway.org>.
 
 =head1 SEE ALSO
 
