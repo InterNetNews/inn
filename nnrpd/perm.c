@@ -547,7 +547,7 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
     int oldtype;
     METHOD *m;
     BOOL bit;
-    char buff[SMBUF], *oldname;
+    char buff[SMBUF], *oldname, *p;
 
     oldtype = tok->type;
     oldname = tok->name;
@@ -572,6 +572,14 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	curauth->hosts = COPY(tok->name);
 	CompressList(curauth->hosts);
 	SET_CONFIG(PERMhost);
+
+        /* nnrpd.c downcases the names of connecting hosts.  We should
+           therefore also downcase the wildmat patterns to make sure there
+           aren't any surprises.  DNS is case-insensitive. */
+        for (p = curauth->hosts; *p; p++)
+            if (CTYPE(isupper, (unsigned char) *p))
+                *p = tolower((unsigned char) *p);
+
 	break;
       case PERMdefdomain:
 	curauth->default_domain = COPY(tok->name);
