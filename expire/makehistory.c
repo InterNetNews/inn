@@ -243,9 +243,6 @@ FlushOverTmpFile(void)
 	    OVclose();
 	    _exit(1);
 	}
-
-	if(first)
-	    OverAddAllNewsgroups();
     }
 
     sprintf(temp, "%s/hisTXXXXXX", TmpDir);
