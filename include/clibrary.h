@@ -137,14 +137,6 @@ extern int              vsnprintf(char *, size_t, const char *, va_list);
 # define strtoul(a, b, c) (unsigned long) strtol((a), (b), (c))
 #endif
 
-/* mmap() flags.  This really doesn't belong in this header file; it should
-   be moved to a header file specifically for mmap-related things. */
-#ifdef MAP_FILE
-# define MAP__ARG (MAP_FILE | MAP_SHARED)
-#else
-# define MAP__ARG (MAP_SHARED)
-#endif
-
 /* This almost certainly isn't necessary, but it's not hurting anything.
    gcc assumes that if SEEK_SET isn't defined none of the rest are either,
    so we certainly can as well. */
