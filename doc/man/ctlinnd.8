@@ -283,9 +283,54 @@ Print the server's operating mode as a multi-line summary of the parameters
 and operating state.
 .TP
 .BI name " nnn"
-Print the name of channel number
+Print the name and relevant information of channel number
 .I nnn
-or of all channels if it is an empty string.
+or of all channels if it is an empty string.  Format is:
+.sp 1
+.in +0.5i
+.nf
+f1:f2:f3:f4:f5
+.fi
+.in -0.5i
+.sp 1
+And meaning of each field is:
+.sp 1
+.in +0.5i
+.nf
+f1	name of this channel
+f2	channel number
+f3	channel type
+f4	idle time for this channel(nntp type)
+	or process id(process type)
+f5	channel status(nntp type)
+.fi
+.in -0.5i
+.sp 1
+F3 is one of followings:
+.sp 1
+.in +0.5i
+.nf
+control		control channel which is used
+			for ctlinnd
+file			file channel which is used for
+			file feed
+localconn		local channel which is used for
+			nnrpd or rnews
+nntp			nntp channel which is used for
+			current remote connection
+proc			process channel which is used
+			for process feed
+remconn		remote channel which will be
+			used for nntp
+.fi
+.in -0.5i
+.sp 1
+Channel status shows if the channel is paused or not.  Nothing is
+shown unless the channel is paused.  Or ``paused'' is shown.
+\&``Paused'' status happens, if the number of remote connection
+for that label in
+.IR incoming.conf (5)
+is beyond ``max-connections'' for ``hold-time'' seconds.
 .TP
 .BI newgroup " group rest creator"
 Create the specified newsgroup.
