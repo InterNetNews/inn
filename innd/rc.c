@@ -825,11 +825,8 @@ RCadddata(REMOTEHOST_DATA **d, int *count, int Key, int Type, char* Value)
 
 /*
 **  Read in the file listing the hosts we take news from, and fill in the
-**  global list of their Internet addresses.  On modern systems a host can
-**  have multiple addresses, so we take care to add all of them to the list.
-**  We can distinguish between the two because h_addr is a #define for the
-**  first element of the address list in modern systems, while it's a field
-**  name in old ones.
+**  global list of their Internet addresses.  A host can have multiple
+**  addresses, so we take care to add all of them to the list.
 */
 static void
 RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count, 
@@ -1151,7 +1148,6 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	      continue;
 	    }
 
-#if	    defined(h_addr)
 	    /* Count the adresses and see if we have to grow the list */
 	    for (i = 0; hp->h_addr_list[i]; i++)
 	      continue;
@@ -1238,26 +1234,6 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	      rp->HoldTime = peer_params.HoldTime;
 	      rp++;
 	    }
-#else
-	    /* Old-style, single address, just add it. */
-	    make_sin( (struct sockaddr_in *)&rp->Address,
-			    (struct in_addr *)hp->h_addr );
-	    rp->Name = COPY(*q);
-	    rp->Label = COPY (peer_params.Label);
-	    rp->Email = COPY(peer_params.Email);
-	    rp->Comment = COPY(peer_params.Comment);
-	    rp->Streaming = peer_params.Streaming;
-	    rp->Skip = peer_params.Skip;
-	    rp->NoResendId = peer_params.NoResendId;
-	    rp->Nolist = peer_params.Nolist;
-	    rp->Password = COPY(peer_params.Password);
-	    rp->Identd = COPY(peer_params.Identd);
-	    rp->Patterns = peer_params.Pattern != NULL ?
-	      RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
-	    rp->MaxCnx = peer_params.MaxCnx;
-	    rp->HoldTime = peer_params.HoldTime;
-	    rp++;
-#endif	    /* defined(h_addr) */
 #endif /* HAVE_INET6 */
 	  }
 	  DISPOSE(r[0]);

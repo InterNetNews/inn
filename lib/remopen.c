@@ -117,17 +117,8 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
 	fakelist[1] = NULL;
 	ap = fakelist;
     }
-    else if ((hp = gethostbyname(host)) != NULL) {
-	/* Symbolic host name. */
-#if	defined(h_addr)
+    else if ((hp = gethostbyname(host)) != NULL)
 	ap = hp->h_addr_list;
-#else
-	/* Fake up an address list for old systems. */
-	fakelist[0] = (char *)hp->h_addr;
-	fakelist[1] = NULL;
-	ap = fakelist;
-#endif	/* defined(h_addr) */
-    }
     else
 	/* Not a host name. */
 	return -1;

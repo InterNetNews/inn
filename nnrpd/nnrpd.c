@@ -380,9 +380,7 @@ Address2Name(INADDR *ap, char *hostname, int i)
     char		*p;
     struct hostent	*hp;
     static char		mismatch_error[] = "reverse lookup validation failed";
-#if	defined(h_addr)
     char		**pp;
-#endif
 
     /* Get the official hostname, store it away. */
     if ((hp = gethostbyaddr((char *)ap, sizeof *ap, AF_INET)) == NULL) {
@@ -399,8 +397,6 @@ Address2Name(INADDR *ap, char *hostname, int i)
     }
 
     /* Make sure one of those addresses is the address we got. */
-#if	defined(h_addr)
-    /* We have many addresses */
     for (pp = hp->h_addr_list; *pp; pp++)
 	if (EQn((const char *)&ap->s_addr, *pp, hp->h_length))
 	    break;
@@ -409,14 +405,6 @@ Address2Name(INADDR *ap, char *hostname, int i)
 	HostErrorStr = mismatch_error;
 	return FALSE;
     }
-#else
-    /* We have one address. */
-    if (!EQn(&ap->s_addr, hp->h_addr, hp->h_length))
-    {
-	HostErrorStr = mismatch_error;
-	return FALSE;
-    }
-#endif
 
     /* Only needed for misconfigured YP/NIS systems. */
     if (ap->s_addr != INADDR_LOOPBACK && strchr(hostname, '.') == NULL
