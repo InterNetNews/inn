@@ -365,7 +365,7 @@ CheckCancel(msgid, JustReturn)
     HeaderCleanFrom(localfrom);
 
     /* Is the right person cancelling? */
-    if (!EQ(localfrom, remotefrom)) {
+    if (!caseEQ(localfrom, remotefrom)) {
 	(void)fprintf(stderr,
 		"Article was posted by \"%s\" and you are \"%s\".\n",
 		remotefrom, localfrom);
