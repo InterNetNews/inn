@@ -1,6 +1,11 @@
 /*  $Id$
 **
-**  Expire overview database.
+**  Expire the overview database.
+**
+**  This program handles the nightly expiration of overview information.  If
+**  groupbaseexpiry is true, this program also handles the removal of
+**  articles that have expired.  It's separate from the process that scans
+**  and expires the history file.
 */
 
 #include "config.h"
@@ -16,172 +21,190 @@
 #include "paths.h"
 #include "storage.h"
 
-void usage(void) {
-    fprintf(stderr, "Usage: expireover [flags]\n");
-	exit(1);
-}
+static const char usage[] = "\
+Usage: expireover [-ekNpqs] [-w offset] [-z rmfile] [-Z lowmarkfile]\n";
 
-static int signalled = 0;
-void sigfunc(int sig)
+/* Set to 1 if we've received a signal; expireover then terminates after
+   finishing the newsgroup that it's working on (this prevents corruption of
+   the overview by killing expireover). */
+static volatile sig_atomic_t signalled = 0;
+
+
+/*
+**  Handle a fatal signal and set signalled.  Restore the default signal
+**  behavior after receiving a signal so that repeating the signal will kill
+**  the program immediately.
+*/
+RETSIGTYPE
+fatal_signal(int sig)
 {
     signalled = 1;
     xsignal(sig, SIG_DFL);
 }
 
-int main(int argc, char *argv[]) {
-    int		i;
-    char        activefn[BIG_BUFFER] = "";
-    QIOSTATE	*qp;
-    char	*line;
-    char	*p;
-    int		lo;
-    FILE	*F;
-    bool	val, Nonull, statart, LowmarkFile = FALSE;
-    char	*lofile;
-    OVGE	ovge;
+
+int
+main(int argc, char *argv[])
+{
+    int option, low;
+    char *line, *p;
+    QIOSTATE *qp;
+    bool value;
+    OVGE ovge;
+    char *active_path = NULL;
+    char *lowmark_path = NULL;
+    FILE *lowmark = NULL;
+    bool purge_deleted = false;
+    bool always_stat = false;
 
     /* First thing, set up logging and our identity. */
-    openlog("expireover", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
+    openlog("expireover", LOG_PID, LOG_INN_PROG);
+    error_program_name = "expireover";
 
-    ovge.earliest = FALSE;
-    ovge.keep = FALSE;
-    ovge.ignoreselfexpire = FALSE;
-    ovge.usepost = FALSE;
-    ovge.quiet = FALSE;
+    /* Set up some default options for group-based expiration, although none
+       of these will be used if groupbaseexpiry isn't true. */
+    ovge.earliest = false;
+    ovge.keep = false;
+    ovge.ignoreselfexpire = false;
+    ovge.usepost = false;
+    ovge.quiet = false;
     ovge.timewarp = 0;
     ovge.filename = NULL;
-    ovge.delayrm = FALSE;
-    val = TRUE;
-    statart = FALSE;
-    while ((i = getopt(argc, argv, "ef:kNpqsw:z:Z:")) != EOF) {
-	switch (i) {
-	case 'e':
-	    ovge.earliest = TRUE;
-	    break;
-	case 'f':
-	    strcpy(activefn, optarg);
-		    break;
-	case 'k':
-	    ovge.keep = TRUE;
-	    break;
-	case 'N':
-	    ovge.ignoreselfexpire = TRUE;
-	    break;
-	case 'p':
-	    ovge.usepost = TRUE;
-	    break;
-	case 'q':
-	    ovge.quiet = TRUE;
-	    break;
-	case 's':
-	    statart = TRUE;
-	    break;
-	case 'w':
-	    ovge.timewarp = (time_t)(atof(optarg) * 86400.);
+    ovge.delayrm = false;
+
+    /* Parse the command-line options. */
+    while ((option = getopt(argc, argv, "ef:kNpqsw:z:Z:")) != EOF) {
+        switch (option) {
+        case 'e':
+            ovge.earliest = true;
             break;
-	case 'z':
-	    ovge.filename = optarg;
-	    ovge.delayrm = TRUE;
-	    break;
-	case 'Z':
-	    LowmarkFile = TRUE;
-	    lofile = COPY(optarg);
-		break;
-	default:
-	    usage();
-	    }
+        case 'f':
+            active_path = optarg;
+            break;
+        case 'k':
+            ovge.keep = true;
+            break;
+        case 'N':
+            ovge.ignoreselfexpire = true;
+            break;
+        case 'p':
+            ovge.usepost = true;
+            break;
+        case 'q':
+            ovge.quiet = true;
+            break;
+        case 's':
+            always_stat = true;
+            break;
+        case 'w':
+            ovge.timewarp = (time_t) (atof(optarg) * 86400.);
+            break;
+        case 'z':
+            ovge.filename = optarg;
+            ovge.delayrm = true;
+            break;
+        case 'Z':
+            lowmark_path = optarg;
+            break;
+        default:
+            fprintf(stderr, "%s", usage);
+            exit(1);
+        }
     }
-    if (ovge.earliest && ovge.keep) {
-	fprintf(stderr, "expireover: -e and -k cannot be specified at the same time\n");
-	exit(1);
+    if (ovge.earliest && ovge.keep)
+        die("-e and -k cannot be specified at the same time");
+
+    /* Initialize innconf. */
+    if (ReadInnConf() < 0)
+        exit(1);
+
+    /* Initialize the lowmark file, if one was requested. */
+    if (lowmark_path != NULL) {
+        if (unlink(lowmark_path) < 0 && errno != ENOENT)
+            syswarn("can't remove %s", lowmark_path);
+        lowmark = fopen(lowmark_path, "a");
+        if (lowmark == NULL)
+            sysdie("can't open %s", lowmark_path);
     }
 
-    if (ReadInnConf() < 0) exit(1);
-
-    if (LowmarkFile) {
-	if (unlink(lofile) < 0 && errno != ENOENT)
-	    (void)fprintf(stderr, "Warning: expireover can't remove %s, %s\n",
-		    lofile, strerror(errno));
-	if ((F = fopen(lofile, "a")) == NULL) {
-	    (void)fprintf(stderr, "expireover: can't open %s, %s\n",
-		    lofile, strerror(errno));
-	    exit(1);
-	}
+    /* Set up the path to the list of newsgroups we're going to use and open
+       that file.  This could be stdin. */
+    if (active_path == NULL) {
+        active_path = concatpath(innconf->pathdb, _PATH_ACTIVE);
+        purge_deleted = true;
     }
-
-    if (!ovge.delayrm && !SMsetup(SM_RDWR, (void *)&val)) {
-	fprintf(stderr, "expireover: cant setup storage method");
-	exit(1);
+    if (EQ(active_path, "-")) {
+        qp = QIOfdopen(fileno(stdin));
+        if (qp == NULL)
+            sysdie("can't reopen stdin");
+    } else {
+        qp = QIOopen(active_path);
+        if (qp == NULL)
+            sysdie("can't open active file (%s)", active_path);
     }
-    i = 1;
-    if (SMsetup(SM_PREOPEN, (void *)&i) && !SMinit()) {
-	fprintf(stderr, "expireover: cant initialize storage method, %s",SMerrorstr);
-	exit(1);
+        
+    /* Initialize the storage manager.  We only need to initialize it in
+       read/write mode if we're not going to be writing a separate file for
+       the use of fastrm. */
+    if (!ovge.delayrm) {
+        value = true;
+        if (!SMsetup(SM_RDWR, &value))
+            die("can't setup storage manager read/write");
     }
+    value = true;
+    if (!SMsetup(SM_PREOPEN, &value))
+        die("can't setup storage manager");
+    if (!SMinit())
+        die("can't initialize storage manager: %s", SMerrorstr);
 
-    xsignal(SIGTERM, sigfunc);
-    xsignal(SIGINT, sigfunc);
-    xsignal(SIGHUP, sigfunc);
-
-    if (!OVopen(OV_READ | OV_WRITE)) {
-	fprintf(stderr, "expireover: could not open OV database\n");
-	exit(1);
-    }
+    /* Initialize and configure the overview subsystem. */
+    if (!OVopen(OV_READ | OV_WRITE))
+        die("can't open overview database");
     if (innconf->groupbaseexpiry) {
-	(void)time(&ovge.now);
-	if (!OVctl(OVGROUPBASEDEXPIRE, (void *)&ovge)) {
-	    fprintf(stderr, "expireover: OVctl(OVGROUPBASEDEXPIRE) failed\n");
-	    exit(1);
-	}
+        time(&ovge.now);
+        if (!OVctl(OVGROUPBASEDEXPIRE, &ovge))
+            die("can't configure group-based expire");
     }
-    if (!OVctl(OVSTATALL, (void *)&statart)) {
-	fprintf(stderr, "expireover: OVctl(OVSTATALL) failed\n");
-	exit(1);
-    }
+    if (!OVctl(OVSTATALL, &always_stat))
+        die("can't configure overview stat behavior");
 
-    if (activefn[0] == '\0') {
-	strcpy(activefn, cpcatpath(innconf->pathdb, _PATH_ACTIVE));
-	Nonull = FALSE;
-    } else {
-	Nonull = TRUE;
-    }
-    if (strcmp(activefn, "-") == 0) {
-	qp = QIOfdopen(fileno(stdin));
-    } else {
-	if ((qp = QIOopen(activefn)) == NULL) {
-	    fprintf(stderr, "expireover: could not open active file (%s)\n", activefn);
-		OVclose();
-		exit(1);
-	}
-    }
-    while ((line = QIOread(qp)) != NULL) {
-	if(signalled)
-	    break;
-	if ((p = strchr(line, ' ')) != NULL)
-	    *p = '\0';
-	if ((p = strchr(line, '\t')) != NULL)
-	    *p = '\0';
+    /* We want to be careful about being interrupted from this point on, so
+       set up our signal handlers. */
+    xsignal(SIGTERM, fatal_signal);
+    xsignal(SIGINT, fatal_signal);
+    xsignal(SIGHUP, fatal_signal);
 
-	if (OVexpiregroup(line, &lo)) {
-	    if (LowmarkFile && lo != 0) {
-		(void)fprintf(F, "%s %u\n", line, lo);
-	    }
-	} else {
-	    fprintf(stderr, "expireover: could not expire %s\n", line);
-	}
+    /* Loop through each line of the input file and process each group,
+       writing data to the lowmark file if desired. */
+    line = QIOread(qp);
+    while (line != NULL && !signalled) {
+        p = strchr(line, ' ');
+        if (p != NULL)
+            *p = '\0';
+        p = strchr(line, '\t');
+        if (p != NULL)
+            *p = '\0';
+        if (!OVexpiregroup(line, &low))
+            warn("can't expire %s", line);
+        else if (lowmark != NULL && low != 0)
+            fprintf(lowmark, "%s %u\n", line, low);
+        line = QIOread(qp);
     }
-    /* purge deleted newsgroups */
-    if (!signalled && !Nonull && !OVexpiregroup(NULL, NULL)) {
-	fprintf(stderr, "expireover: could not expire purged newsgroups\n");
-    }
-    if(signalled)
-	fprintf(stderr, "expireover: received signal; exiting\n");
+    if (signalled)
+        warn("received signal, exiting");
 
+    /* If desired, purge all deleted newsgroups. */
+    if (!signalled && purge_deleted)
+        if (!OVexpiregroup(NULL, NULL))
+            warn("can't expire deleted newsgroups");
+
+    /* Close everything down in an orderly fashion. */
     QIOclose(qp);
-
     OVclose();
-    if (LowmarkFile && (fclose(F) == EOF)) {
-	(void)fprintf(stderr, "expireover: can't close %s, %s\n", lofile, strerror(errno));
-    }
+    SMshutdown();
+    if (lowmark != NULL)
+        if (fclose(lowmark) == EOF)
+            syswarn("can't close %s", lowmark_path);
+
     return 0;
 }
