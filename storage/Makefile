@@ -37,6 +37,7 @@ tags ctags:	$(SOURCES)
 
 libstorage.la:	$(OBJECTS) $(LOBJECTS)
 	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) \
+	    $(LIBINN) $(EXTSTORAGELIBS) $(LIBS) \
 	    -rpath $(PATHLIB) -version-info 2:0:0
 
 libstorage.a:	$(OBJECTS)
