@@ -861,7 +861,7 @@ CCmode(char *unused[] UNUSED)
     *p++ = '\n';
     p += strlen(strcpy(p, "Readers "));
     if (innconf->readerswhenstopped)
-	p += strlen(strcpy(p, "separate "));
+	p += strlen(strcpy(p, "independent "));
     else
 	p += strlen(strcpy(p, "follow "));
     if (NNRPReason == NULL)
