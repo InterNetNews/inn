@@ -35,14 +35,22 @@ char *upit(char *v)
 void
 printit(char *v, const char *val)
 {
+    const char *letter;
+
     switch (format) {
 	case 0: printf("%s\n", val); break;
 	case 1:   /* sh */
 	    v = upit(v);
-	    if ((strchr(val, ' ') == NULL) && *val)
-	    	printf("%s=%s; export %s;\n", v, val, v);
-	    else
-	    	printf("%s=\"%s\"; export %s;\n", v, val, v);
+            printf("%s='", v);
+            for (letter = val; letter != NULL && *letter != '\0'; letter++) {
+                if (*letter == '\'')
+                    fputs("'\\''", stdout);
+                else if (*letter == '\\')
+                    fputs("\\\\", stdout);
+                else
+                    fputc(*letter, stdout);
+            }
+            printf("'; export %s;\n", v);
 	    break;
 	case 2:   /* csh */
 	    if ((strchr(val, ' ') == NULL) && *val)
