@@ -56,8 +56,9 @@ STATIC STRING	CCrmgroup();
 STATIC STRING	CCsend();
 STATIC STRING	CCshutdown();
 STATIC STRING	CCsignal();
+STATIC STRING	CCstatus();
 STATIC STRING	CCthrottle();
-STATIC STRING   CCtimer();
+STATIC STRING	CCtimer();
 STATIC STRING	CCtrace();
 STATIC STRING	CCxabort();
 STATIC STRING	CCxexec();
@@ -115,6 +116,7 @@ STATIC CCDISPATCH	CCcommands[] = {
     {	SC_SEND,	2, CCsend	},
     {	SC_SHUTDOWN,	1, CCshutdown	},
     {	SC_SIGNAL,	2, CCsignal	},
+    {	SC_STATUS,	1, CCstatus	},
     {	SC_THROTTLE,	1, CCthrottle	},
     {   SC_TIMER,       1, CCtimer      },
     {	SC_TRACE,	2, CCtrace	},
@@ -1045,6 +1047,7 @@ CCparam(av)
 {
     static char	BADVAL[] = "1 Bad value";
     char	*p;
+    int		temp;
 
     p = av[1];
     switch (av[0][0]) {
@@ -1083,10 +1086,15 @@ CCparam(av)
 	syslog(L_NOTICE, "%s changed -H %d", LogName, RemoteLimit);
 	break;
     case 'T':
-	RemoteTotal = atoi(p);
-	if (RemoteTotal > REMOTETABLESIZE)
-	    RemoteTotal = REMOTETABLESIZE;
-	syslog(L_NOTICE, "%s changed -T %d", LogName, RemoteTotal);
+        temp = atoi(p);
+	if (temp > REMOTETABLESIZE) {
+	    syslog(L_NOTICE, "%s -T must be lower than %d",
+		   LogName, REMOTETABLESIZE+1);
+	    temp = REMOTETABLESIZE;
+	}
+	syslog(L_NOTICE, "%s changed -T from %d to %d",
+	       LogName, RemoteTotal, temp);
+	RemoteTotal = temp;
 	break;
     case 'X':
 	RemoteTimer = (time_t) atoi(p);
@@ -1553,6 +1561,25 @@ STATIC STRING CCtimer(char *av[]) {
     return NULL;
 }
 
+/*
+**  Turn innd status creation on or off
+*/
+STATIC STRING CCstatus(char *av[]) {
+    int                 value;
+    char                *p;
+    
+    if (EQ(av[0], "off"))
+	value = 0;
+    else {
+	for (p = av[0]; *p; p++) {
+	    if (!isdigit(*p))
+		return "1 parameter should be a number or 'off'";
+	}
+	value = atoi(av[0]);
+    }
+    StatusInterval = value;
+    return NULL;
+}
 
 /*
 **  Add or remove tracing.

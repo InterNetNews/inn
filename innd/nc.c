@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Routines for the NNTP channel.  Other channels get the descriptors which
 **  we turn into NNTP channels, and over which we speak NNTP.
@@ -205,6 +205,7 @@ NCpostit(cp)
 	    cp->Received++;
 	    if (cp->Sendid.Size > 3) { /* We be streaming */
 		char buff[4];
+		cp->Takethis_Ok++;
 		(void)sprintf(buff, "%d", NNTP_OK_RECID_VAL);
 		cp->Sendid.Data[0] = buff[0];
 		cp->Sendid.Data[1] = buff[1];
@@ -423,7 +424,7 @@ NChelp(cp)
     WCHANappend(cp, NCterm,STRLEN(NCterm));
     for (dp = NCcommands; dp < ENDOF(NCcommands); dp++)
 	if (dp->Function != NC_unimp) {
-            if (!StreamingOff || cp->Streaming ||
+            if ((!StreamingOff && cp->Streaming) ||
                 (dp->Function != NCcheck && dp->Function != NCtakethis)) {
                 WCHANappend(cp, "\t", 1);
                 WCHANappend(cp, dp->Name, dp->Size);
@@ -447,6 +448,7 @@ NCihave(cp)
 {
     register char	*p;
 
+    cp->Ihave++;
     if (AmSlave && !XrefSlave) {
 	NCwritereply(cp, NCbadcommand);
 	return;
@@ -460,12 +462,15 @@ NCihave(cp)
 
     if (HIShavearticle(HashMessageID(p))) {
 	cp->Refused++;
+	cp->Ihave_Duplicate++;
 	NCwritereply(cp, NNTP_HAVEIT);
     }
     else if (WIPinprogress(p, cp, FALSE)) {
+	cp->Ihave_Deferred++;
 	NCwritereply(cp, NNTP_RESENDIT_LATER);
     }
     else {
+	cp->Ihave_SendIt++;
 	NCwritereply(cp, NNTP_SENDIT);
 	cp->State = CSgetarticle;
     }
@@ -589,7 +594,7 @@ NCmode(cp)
     if (caseEQ(p, "reader"))
 	h = HOnnrpd;
     else if (caseEQ(p, "stream") &&
-             (!StreamingOff || (StreamingOff && cp->Streaming))) {
+             (!StreamingOff && cp->Streaming)) {
 	char buff[16];
 	(void)sprintf(buff, "%d StreamOK.", NNTP_OK_STREAM_VAL);
 	NCwritereply(cp, buff);
@@ -840,6 +845,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		cp->State = CSgetcmd;
 		if (cp->Sendid.Size > 3) { /* We be streaming */
 		    char buff[4];
+		    cp->Takethis_Err++;
 		    (void)sprintf(buff, "%d", NNTP_ERR_FAILID_VAL);
 		    cp->Sendid.Data[0] = buff[0];
 		    cp->Sendid.Data[1] = buff[1];
@@ -1248,6 +1254,7 @@ NCcheck(cp)
     register char	*p;
     int			msglen;
 
+    cp->Check++;
     if (AmSlave && !XrefSlave) {
 	NCwritereply(cp, NCbadcommand);
 	return;
@@ -1274,12 +1281,15 @@ NCcheck(cp)
 
     if (HIShavearticle(HashMessageID(p))) {
 	cp->Refused++;
+	cp->Check_got++;
 	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
 	NCwritereply(cp, cp->Sendid.Data);
     } else if (WIPinprogress(p, cp, TRUE)) {
+	cp->Check_deferred++;
 	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_RESENDID_VAL, p);
 	NCwritereply(cp, cp->Sendid.Data);
     } else {
+	cp->Check_send++;
 	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_OK_SENDID_VAL, p);
 	NCwritereply(cp, cp->Sendid.Data);
     }
@@ -1296,6 +1306,7 @@ STATIC FUNCTYPE NCtakethis(CHANNEL *cp)
     int			msglen;
     WIP                 *wp;
 
+    cp->Takethis++;
     /* Snip off the Message-ID. */
     for (p = cp->In.Data + STRLEN("takethis"); ISWHITE(*p); p++)
 	continue;

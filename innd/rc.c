@@ -30,13 +30,24 @@ extern unsigned long	htonl(); /* nobody should really need this anymore */
 **  A remote host has an address and a password.
 */
 typedef struct _REMOTEHOST {
-    char	*Name;
-    INADDR	Address;
-    char	*Password;
-    BOOL	Streaming ;
-    int         MaxIncoming;
-    char	**Patterns;
+    char	*Label;         /* Peer label */
+    char	*Name;          /* Hostname */
+    INADDR	Address;        /* List of ip adresses */
+    char	*Password;      /* Optionnnal password */
+    BOOL	Streaming;      /* Streaming allowed ? */
+    BOOL	Skip;	        /* Skip this peer ? */
+    int		MaxCnx;		/* Max connections (per peer) */
+    char	**Patterns;	/* List of groups allowed */
+    char	*Pattern;       /* List of groups allowed (string) */
+    char        *Email;         /* Email(s) of contact */
+    char	*Comment;	/* Commentary [max size = MAXBUFF] */
 } REMOTEHOST;
+
+typedef struct _REMOTEHOST_DATA {
+    int         key;            /* Key (as defined in the _Keywords enum) */
+    int         type;           /* Type of the value (see _Type enum) */
+    char        *value;         /* Value */
+} REMOTEHOST_DATA;
 
 typedef struct _REMOTETABLE {
     INADDR	Address;
@@ -49,10 +60,37 @@ STATIC char		*RCslaveflag;
 STATIC char		RCnnrpd[] = _PATH_NNRPD;
 STATIC char		RCnntpd[] = _PATH_NNTPD;
 STATIC CHANNEL		*RCchan;
+STATIC REMOTEHOST_DATA	*RCpeerlistfile;
 STATIC REMOTEHOST	*RCpeerlist;
 STATIC int		RCnpeerlist;
-STATIC REMOTEHOST	*RCnolimitlist;
-STATIC int		RCnnolimitlist;
+
+#define PEER	        "peer"
+#define GROUP	        "group"
+#define HOSTNAME        "hostname:"
+#define STREAMING       "streaming:"
+#define MAX_CONN        "max-connections:"
+#define PASSWORD        "password:"
+#define PATTERNS        "patterns:"
+#define EMAIL	        "email:"
+#define COMMENT	        "comment:"
+#define SKIP		"skip:"
+
+typedef enum {K_END, K_BEGIN_PEER, K_BEGIN_GROUP, K_END_PEER, K_END_GROUP,
+	      K_STREAM, K_HOSTNAME, K_MAX_CONN, K_PASSWORD, K_EMAIL,
+	      K_PATTERNS, K_COMMENT, K_SKIP} _Keywords;
+
+typedef enum {T_STRING, T_BOOLEAN, T_INTEGER} _Types;
+
+#define GROUP_NAME	"%s can't get group name in %s line %d"
+#define PEER_IN_PEER	"%s peer can't contain peer in %s line %d"
+#define PEER_NAME	"%s can't get peer name in %s line %d"
+#define LEFT_BRACE	"%s '{' expected in %s line %d"
+#define RIGHT_BRACE	"%s '}' unexpected line %d in %s"
+#define INCOMPLETE_PEER "%s incomplete peer (%s) in %s line %d"
+#define INCOMPLETE_GROUP "%s incomplete group (%s) in %s line %d"
+#define MUST_BE_BOOL    "%s Must be 'true' or 'false' in %s line %d"
+#define MUST_BE_INT	"%s Must be an integer value in %s line %d"
+#define HOST_NEEDED     "%s 'hostname' needed in %s line %d"
 
 /*
 ** Stuff needed for limiting incoming connects.
@@ -62,6 +100,44 @@ STATIC REMOTETABLE	remotetable[REMOTETABLESIZE];
 STATIC int		remotecount;
 STATIC int		remotefirst;
 
+
+/*
+ * Split text into comma-separated fields.  Return an allocated
+ * NULL-terminated array of the fields within the modified argument that
+ * the caller is expected to save or free.  We don't use strchr() since
+ * the text is expected to be either relatively short or "comma-dense."
+ * (This function is different from CommaSplit because spaces are allowed
+ * and removed here)
+ */
+
+char **RCCommaSplit(char *text)
+{
+    register int        i;
+    register char       *p;
+    register char       *q;
+    register char       *r;
+    register char       **av;
+    char                **save;
+ 
+    /* How much space do we need? */
+    for (i = 2, p = text, q = r = COPY(text); *p; p++) {
+        if (*p != ' ' && *p != '\t' && *p != '\n')
+	    *q++ = *p;
+        if (*p == ',')
+            i++;
+    }
+    *q = '\0';
+    DISPOSE (text);
+    for (text = r, av = save = NEW(char*, i), *av++ = p = text; *p; )
+        if (*p == ',') {
+            *p++ = '\0';
+	    *av++ = p;
+        }
+        else
+            p++;
+    *av = NULL;
+    return save;
+}
 
  /*
   * Routine to disable IP-level socket options. This code was taken from 4.4BSD
@@ -80,9 +156,7 @@ STATIC int		remotefirst;
 #endif
 
 int
-RCfix_options(fd, remote)
-int fd;
-struct sockaddr_in	*remote;
+RCfix_options(int fd, struct sockaddr_in *remote)
 {
 #if IP_OPTIONS
     unsigned char optbuf[BUFSIZ / 3], *cp;
@@ -117,19 +191,17 @@ struct sockaddr_in	*remote;
 **  See if the site properly entered the password.
 */
 BOOL
-RCauthorized(cp, pass)
-    register CHANNEL	*cp;
-    char		*pass;
+RCauthorized(register CHANNEL *cp, char *pass)
 {
     register REMOTEHOST	*rp;
     register int	i;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
-	/* SUPPRESS 112 *//* Retrieving long where char is stored */
 	if (cp->Address.s_addr == rp->Address.s_addr) {
 	    if (rp->Password[0] == '\0' || EQ(pass, rp->Password))
 		return TRUE;
-	    syslog(L_ERROR, "%s bad_auth", inet_ntoa(cp->Address));
+	    syslog(L_ERROR, "%s (%s) bad_auth", rp->Label,
+		   inet_ntoa(cp->Address));
 	    return FALSE;
 	}
 
@@ -143,20 +215,38 @@ RCauthorized(cp, pass)
 
 
 /*
-**  See if a host is in the "nolimit" file.
+**  See if a host is limited or not.
 */
 BOOL
-RCnolimit(cp)
-    register CHANNEL	*cp;
+RCnolimit(register CHANNEL *cp)
 {
     register REMOTEHOST	*rp;
     register int	i;
 
-    for (rp = RCnolimitlist, i = RCnnolimitlist; --i >= 0; rp++)
-	/* SUPPRESS 112 *//* Retrieving long where char is stored */
+    for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
 	if (cp->Address.s_addr == rp->Address.s_addr)
-	    return TRUE;
+	    if (rp->MaxCnx)
+	        return FALSE;
+            else
+	        return TRUE;
+    /* Not found in our table; this can't happen. */
     return FALSE;
+}
+
+/*
+**  Return the limit (max number of connections) for a host.
+*/
+int
+RClimit(register CHANNEL *cp)
+{
+    register REMOTEHOST	*rp;
+    register int	i;
+
+    for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
+	if (cp->Address.s_addr == rp->Address.s_addr)
+	    return (rp->MaxCnx);
+    /* Not found in our table; this can't happen. */
+    return RemoteLimit;
 }
 
 
@@ -164,15 +254,13 @@ RCnolimit(cp)
 **  Is this an address of the master?
 */
 BOOL
-RCismaster(addr)
-    INADDR		addr;
+RCismaster(INADDR addr)
 {
     register INADDR	*ip;
     register int	i;
 
     if (AmSlave)
 	for (i = RCnmaster, ip = RCmaster; --i >= 0; ip++)
-	    /* SUPPRESS 112 *//* Retrieving long where char is stored */
 	    if (addr.s_addr == ip->s_addr)
 		return TRUE;
     return FALSE;
@@ -182,12 +270,11 @@ RCismaster(addr)
 /*
 **  Called when input is ready to read.  Shouldn't happen.
 */
-/* ARGSUSED0 */
 STATIC FUNCTYPE
-RCrejectreader(cp)
-    CHANNEL	*cp;
+RCrejectreader(CHANNEL *cp)
 {
-    syslog(L_ERROR, "%s internal RCrejectreader", LogName);
+    syslog(L_ERROR, "%s internal RCrejectreader (%s)", LogName,
+	   inet_ntoa(cp->Address));
 }
 
 
@@ -195,8 +282,7 @@ RCrejectreader(cp)
 **  Write-done function for rejects.
 */
 STATIC FUNCTYPE
-RCrejectwritedone(cp)
-    register CHANNEL	*cp;
+RCrejectwritedone(register CHANNEL *cp)
 {
     switch (cp->State) {
     default:
@@ -214,9 +300,7 @@ RCrejectwritedone(cp)
 **  Hand off a descriptor to NNRPD.
 */
 void
-RChandoff(fd, h)
-    int		fd;
-    HANDOFF	h;
+RChandoff(int fd, HANDOFF h)
 {
     STRING	argv[6];
     char	buff[SMBUF];
@@ -261,8 +345,7 @@ RChandoff(fd, h)
 **  or spawn an nnrpd to handle it.
 */
 STATIC FUNCTYPE
-RCreader(cp)
-    CHANNEL		*cp;
+RCreader(CHANNEL *cp)
 {
     int			fd;
     struct sockaddr_in	remote;
@@ -392,18 +475,18 @@ RCreader(cp)
 
     /* See if it's one of our servers. */
     for (name = NULL, rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
-	/* SUPPRESS 112 *//* Retrieving long where char is stored */
 	if (rp->Address.s_addr == remote.sin_addr.s_addr) {
 	    name = rp->Name;
 	    break;
 	}
 
     /* If not a server, and not allowing anyone, hand him off. */
-    if (i >= 0) {
+    if ((i >= 0) && !rp->Skip) {
 	new = NCcreate(fd, rp->Password[0] != '\0', FALSE);
-        new->Streaming = rp->Streaming ;
-        new->MaxIncoming = rp->MaxIncoming ;
-    } else if (AnyIncoming) {
+        new->Streaming = rp->Streaming;
+        new->Skip = rp->Skip;
+        new->MaxCnx = rp->MaxCnx;
+    } else if (AnyIncoming && !rp->Skip) {
 	new = NCcreate(fd, FALSE, FALSE);
     } else {
 	RChandoff(fd, HOnntpd);
@@ -412,12 +495,10 @@ RCreader(cp)
 	return;
     }
 
-    /* SUPPRESS 112 *//* Retrieving long where char is stored */
     new->Address.s_addr = remote.sin_addr.s_addr;
-    syslog(L_NOTICE, "%s connected %d streaming %s MaxIncoming %d",
+    syslog(L_NOTICE, "%s connected %d streaming %s",
            name ? name : inet_ntoa(new->Address), new->fd,
-           (!StreamingOff || new->Streaming) ? "allowed" : "not allowed",
-           new->MaxIncoming);
+           (!StreamingOff && new->Streaming) ? "allowed" : "not allowed");
 }
 
 
@@ -430,6 +511,100 @@ RCwritedone()
     syslog(L_ERROR, "%s internal RCwritedone", LogName);
 }
 
+/*
+ *  New config file style. Old hosts.nntp and hosts.nntp.nolimit are merged
+ *  into one file called incoming.conf (to avoid confusion).
+ *  See ../samples/incoming.conf for the new syntax.
+ *
+ *  Fabien Tassin <tassin@eerie.fr>, 21-Dec-1997.
+ */
+
+
+/*
+ * Read something (a word or a double quoted string) from a file.
+ */
+char *RCreaddata (int *num, FILE *F)
+{
+  register char *p;
+  register char *s;
+  register char *t;
+  char          *word;
+  static   char  buff[SMBUF];
+  register BOOL flag;
+
+  if (*buff == '\0') {
+    if (feof (F)) return (NULL);
+    fgets(buff, sizeof buff, F);
+    (*num)++;
+    if (strlen (buff) == sizeof buff)
+      return (NULL); /* Line too long */
+  }
+  p = buff;
+  do {
+     /* Ignore blank and comment lines. */
+     if ((p = strchr(buff, '\n')) != NULL)
+       *p = '\0';
+     if ((p = strchr(buff, COMMENT_CHAR)) != NULL) {
+       if (p == buff || (p > buff && *(p - 1) != '\\'))
+	   *p = '\0';
+     }
+     for (p = buff; *p == ' ' || *p == '\t' ; p++);
+     flag = TRUE;
+     if (*p == '\0' && !feof (F)) {
+       flag = FALSE;
+       fgets(buff, sizeof buff, F);
+       (*num)++;
+       if (strlen (buff) == sizeof buff)
+	 return (NULL); /* Line too long */
+       continue;
+     }
+     break;
+  } while (!feof (F) || !flag);
+
+  if (*p == '"') { /* double quoted string ? */
+    p++;
+    do {
+      for (t = p; (*t != '"' || (*t == '"' && *(t - 1) == '\\')) &&
+	     *t != '\0'; t++);
+      if (*t == '\0') {
+	*t++ = '\n';
+	fgets(t, sizeof buff - strlen (buff), F);
+	(*num)++;
+	if (strlen (buff) == sizeof buff)
+	  return (NULL); /* Line too long */
+	if ((s = strchr(t, '\n')) != NULL)
+	  *s = '\0';
+      }
+      else 
+	break;
+    } while (!feof (F));
+    *t++ = '\0';
+  }
+  else {
+    for (t = p; *t != ' ' && *t != '\t' && *t != '\0'; t++);
+    if (*t != '\0')
+      *t++ = '\0';
+  }
+  if (*p == '\0' && feof (F)) return (NULL);
+  word = COPY (p);
+  for (p = buff; *t != '\0'; t++)
+    *p++ = *t;
+  *p = '\0';
+
+  return (word);
+}
+
+/*
+ *  Add all data into RCpeerlistfile.
+ */
+void RCadddata(REMOTEHOST_DATA **d, int *count, int Key, int Type, char* Value)
+{
+  (*d)[*count].key = Key;
+  (*d)[*count].type = Type;
+  (*d)[*count].value = Value;
+  (*count)++;
+  RENEW(*d, REMOTEHOST_DATA, *count + 1);
+}
 
 /*
 **  Read in the file listing the hosts we take news from, and fill in the
@@ -440,31 +615,40 @@ RCwritedone()
 **  name in old ones.
 */
 STATIC void
-RCreadfile(list, count, filename)
-    REMOTEHOST		**list;
-    int			*count;
-    char		*filename;
+RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count, 
+	    char *filename)
 {
-    static char		NOPASS[] = "";
-    char		buff[SMBUF];
-    register FILE	*F;
-    register char	*p;
-    struct hostent	*hp;
-    register int	i;
-    register REMOTEHOST	*rp;
-    register int	j;
-    int			k ;
-    char		*pass;
-    char		*pats;
-    char		*maxconn;
-    int			errors;
+    static char			NOPASS[] = "";
+    static char			NOEMAIL[] = "";
+    static char			NOCOMMENT[] = "";
+    register FILE		*F;
+    register char 		*p;
+    register char 		**q;
+    register char 		**r;
+    struct hostent		*hp;
+    register int		i;
+    register int		j;
+    int				linecount;
+    int				infocount;
+    register int		groupcount;
+    register int		maxgroup;
+    register REMOTEHOST_DATA 	*dt;
+    register REMOTEHOST		*rp;
+    register char		*word;
+    register REMOTEHOST		*groups;
+    register REMOTEHOST		*group_params;
+    register REMOTEHOST		peer_params;
+    register REMOTEHOST		default_params;
+    BOOL			bool;
 
-    /* Free anything that might have been there. */
+
     if (*list) {
 	for (rp = *list, i = *count; --i >= 0; rp++) {
 	    DISPOSE(rp->Name);
+	    DISPOSE(rp->Label);
+	    DISPOSE(rp->Email);
+	    DISPOSE(rp->Comment);
 	    DISPOSE(rp->Password);
-	    DISPOSE(rp->MaxIncoming);
 	    if (rp->Patterns) {
 		DISPOSE(rp->Patterns[0]);
 		DISPOSE(rp->Patterns);
@@ -474,161 +658,624 @@ RCreadfile(list, count, filename)
 	*list = NULL;
 	*count = 0;
     }
+    if (*data) {
+        for (i = 0; (*data)[i].key != K_END; i++)
+	    if ((*data)[i].value != NULL)
+	        DISPOSE((*data)[i].value);
+        DISPOSE(*data);
+	*data = NULL;
+    }
 
-    /* Open the server file, count the lines. */
+    *count = 0;
+    maxgroup = 0;
+    /* Open the server file. */
     if ((F = fopen(filename, "r")) == NULL) {
-	syslog(L_FATAL, "%s cant read %s %m", LogName, filename);
+	syslog(L_FATAL, "%s cant read %s: %m", LogName, filename);
 	exit(1);
     }
-    for (i = 1; fgets(buff, sizeof buff, F) != NULL; )
-	if (buff[0] != COMMENT_CHAR && buff[0] != '\n')
-	    i++;
-    *count = i;
-    rp = *list = NEW(REMOTEHOST, *count);
+    dt = *data = NEW(REMOTEHOST_DATA, 1);
+    rp = *list = NEW(REMOTEHOST, 1);
+
 #if	!defined(DO_HAVE_UNIX_DOMAIN)
     rp->Address.s_addr = inet_addr(LOOPBACK_HOST);
     rp->Name = COPY("localhost");
+    rp->Label = COPY("localhost");
+    rp->Email = COPY(NOEMAIL);
+    rp->Comment = COPY(NOCOMMENT);
     rp->Password = COPY(NOPASS);
     rp->Patterns = NULL;
-    rp->MaxIncoming = NULL;
+    rp->MaxCnx = 0;
+    rp->Streaming = TRUE;
+    rp->Skip = FALSE;
     rp++;
+    (*count)++;
 #endif	/* !defined(DO_HAVE_UNIX_DOMAIN) */
 
-    /* Now read the file to add all the hosts. */
-    (void)fseek(F, (OFFSET_T)0, SEEK_SET);
-    for (errors = 0; fgets(buff, sizeof buff, F) != NULL; ) {
-	/* Ignore blank and comment lines. */
-	if ((p = strchr(buff, '\n')) != NULL)
-	    *p = '\0';
-	if ((p = strchr(buff, COMMENT_CHAR)) != NULL)
-	    *p = '\0';
-	if (buff[0] == '\0')
-	    continue;
-	if ((pass = strchr(buff, ':')) != NULL) {
-	    *pass++ = '\0';
-	    if ((pats = strchr(pass, ':')) != NULL) {
-		*pats++ = '\0';
-		if ((maxconn = strchr(pats, ':')) != NULL) 
-		    *maxconn++ = '\0';
-		else 
-		    maxconn = NULL;
-	    } else {
-		pats = NULL;
-		maxconn = NULL;
+    linecount = 0;
+    infocount = 0;
+    groupcount = 0; /* no group defined yet */
+    peer_params.Label = NULL;
+    default_params.Streaming = TRUE;
+    default_params.Skip = FALSE;
+    default_params.MaxCnx = 0;
+    default_params.Password = COPY(NOPASS);
+    default_params.Email = COPY(NOEMAIL);
+    default_params.Comment = COPY(NOCOMMENT);
+    default_params.Pattern = NULL;
+
+    /* Read the file to add all the hosts. */
+    while ((word = RCreaddata (&linecount, F)) != NULL) {
+
+      /* group */
+      if (!strncmp (word, GROUP,  sizeof GROUP)) {
+	DISPOSE(word);
+	/* name of the group */
+	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	  syslog(L_ERROR, GROUP_NAME, LogName, filename, linecount);
+	  break;
+	}
+	RCadddata(data, &infocount, K_BEGIN_GROUP, T_STRING, word);
+	groupcount++;
+	if (groupcount == 1) {
+	  group_params = groups = NEW(REMOTEHOST, 1);
+	}
+	else if (groupcount >= maxgroup) {
+	  RENEW(groups, REMOTEHOST, groupcount + 4); /* alloc 5 groups */
+	  maxgroup += 5;
+	  group_params = groups + groupcount - 1;
+	}
+	group_params->Label = word;
+	group_params->Skip = groupcount > 1 ?
+	  groups[groupcount - 2].Skip : default_params.Skip;
+	group_params->Streaming = groupcount > 1 ?
+	  groups[groupcount - 2].Streaming : default_params.Streaming;
+	group_params->Email = groupcount > 1 ?
+	  groups[groupcount - 2].Email : default_params.Email;
+	group_params->Comment = groupcount > 1 ?
+	  groups[groupcount - 2].Comment : default_params.Comment;
+	group_params->Pattern = groupcount > 1 ?
+	  groups[groupcount - 2].Pattern : default_params.Pattern;
+	group_params->Password = groupcount > 1 ?
+	  groups[groupcount - 2].Password : default_params.Password;
+	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	  syslog(L_ERROR, LEFT_BRACE, LogName, filename, linecount);
+	  break;
+	}
+	/* left brace */
+	if (strncmp (word, "{", 1)) {
+	  DISPOSE(word);
+	  syslog(L_ERROR, LEFT_BRACE, LogName, filename, linecount);
+	  break;
+	}
+	else
+	  DISPOSE(word);
+	continue;
+      }
+
+      /* peer */
+      if (!strncmp (word, PEER, sizeof PEER)) {
+	DISPOSE(word);
+	if (peer_params.Label != NULL) {
+	  /* peer can't contain peer */
+	  syslog(L_ERROR, PEER_IN_PEER, LogName, 
+	      filename, linecount);
+	  break;
+	}
+	if ((word = RCreaddata (&linecount, F)) == NULL)
+	{
+	  syslog(L_ERROR, PEER_NAME, LogName, filename, linecount);
+	  break;
+	}
+	RCadddata(data, &infocount, K_BEGIN_PEER, T_STRING, word);
+	/* name of the peer */
+	peer_params.Label = word;
+	peer_params.Name = NULL;
+	peer_params.Skip = groupcount > 0 ?
+	  group_params->Skip : default_params.Skip;
+	peer_params.Streaming = groupcount > 0 ?
+	  group_params->Streaming : default_params.Streaming;
+	peer_params.Email = groupcount > 0 ?
+	  group_params->Email : default_params.Email;
+	peer_params.Comment = groupcount > 0 ?
+	  group_params->Comment : default_params.Comment;
+	peer_params.Pattern = groupcount > 0 ?
+	  group_params->Pattern : default_params.Pattern;
+	peer_params.Password = groupcount > 0 ?
+	  group_params->Password : default_params.Password;
+
+	if ((word = RCreaddata (&linecount, F)) == NULL)
+	{
+	  syslog(L_ERROR, LEFT_BRACE, LogName, filename, linecount);
+	  break;
+	}
+	/* left brace */
+	if (strncmp (word, "{", 1)) {
+	  syslog(L_ERROR, LEFT_BRACE, LogName, filename, linecount);
+	  DISPOSE(word);
+	  break;
+	}
+	else
+	  DISPOSE(word);
+	continue;
+      }
+
+      /* right brace */
+      if (!strncmp (word, "}", 1)) {
+	DISPOSE(word);
+	if (peer_params.Label != NULL) {
+	  RCadddata(data, &infocount, K_END_PEER, T_STRING, NULL);
+
+	  /* Hostname */
+	  if (peer_params.Name == NULL) {
+	    syslog(L_ERROR, HOST_NEEDED, LogName, filename, linecount);
+	    break;
+	  }
+	  for(r = q = RCCommaSplit(COPY(peer_params.Name)); *q != NULL; q++) {
+	    (*count)++;
+
+	    /* Grow the array */
+	    j = rp - *list;
+	    RENEW (*list, REMOTEHOST, *count);
+	    rp = *list + j;
+
+	    /* Was host specified as a dotted quad ? */
+	    if ((rp->Address.s_addr = inet_addr(*q)) != (unsigned int) -1) {
+	      /* syslog(LOG_NOTICE, "think it's a dotquad: %s", *q); */
+	      rp->Name = COPY (*q);
+	      rp->Label = COPY (peer_params.Label);
+	      rp->Password = COPY(peer_params.Password);
+	      rp->Skip = peer_params.Skip;
+	      rp->Streaming = peer_params.Streaming;
+	      rp->Email = COPY(peer_params.Email);
+	      rp->Comment = COPY(peer_params.Comment);
+	      rp->Patterns = peer_params.Pattern != NULL ?
+		    RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
+	      rp->MaxCnx = peer_params.MaxCnx;
+	      rp++;
+	      continue;
 	    }
+	    
+	    /* Host specified as a text name ? */
+	    if ((hp = gethostbyname(*q)) == NULL) {
+	      syslog(L_ERROR, "%s cant gethostbyname %s %m", LogName, *q);
+	      continue;
+	    }
+
+#if	    defined(h_addr)
+	    /* Count the adresses and see if we have to grow the list */
+	    for (i = 0; hp->h_addr_list[i]; i++)
+	      continue;
+	    if (i == 0) {
+	      syslog(L_ERROR, "%s no_address %s %m", LogName, *q);
+	      continue;
+	    }
+	    if (i == 1) {
+	      char **r;
+	      int    t = 0;
+	      /* Strange DNS ? try this.. */
+	      for (r = hp->h_aliases; *r != 0; r++) {
+		if (inet_addr(*r) == (unsigned int) -1) /* IP address ? */
+		  continue;
+		(*count)++;
+		/* Grow the array */
+		j = rp - *list;
+		RENEW (*list, REMOTEHOST, *count);
+		rp = *list + j;
+
+		rp->Address.s_addr = inet_addr(*r);
+		rp->Name = COPY (*q);
+		rp->Label = COPY (peer_params.Label);
+		rp->Email = COPY(peer_params.Email);
+		rp->Comment = COPY(peer_params.Comment);
+		rp->Streaming = peer_params.Streaming;
+		rp->Skip = peer_params.Skip;
+		rp->Password = COPY(peer_params.Password);
+		rp->Patterns = peer_params.Pattern != NULL ?
+		  RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
+		rp->MaxCnx = peer_params.MaxCnx;
+		rp++;
+		t++;
+	      }
+	      if (t == 0) {
+		/* Just one, no need to grow. */
+		COPYADDR(&rp->Address, hp->h_addr_list[0]);
+		rp->Name = COPY (*q);
+		rp->Label = COPY (peer_params.Label);
+		rp->Email = COPY(peer_params.Email);
+		rp->Comment = COPY(peer_params.Comment);
+		rp->Streaming = peer_params.Streaming;
+		rp->Skip = peer_params.Skip;
+		rp->Password = COPY(peer_params.Password);
+		rp->Patterns = peer_params.Pattern != NULL ?
+		  RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
+		rp->MaxCnx = peer_params.MaxCnx;
+		rp++;
+		continue;
+	      }
+	    }
+	    /* Grow the array */
+	    j = rp - *list;
+	    *count += i - 1;
+	    RENEW (*list, REMOTEHOST, *count);
+	    rp = *list + j;
+
+	    /* Add all the hosts. */
+	    for (i = 0; hp->h_addr_list[i]; i++) {
+	      COPYADDR(&rp->Address, hp->h_addr_list[i]);
+	      rp->Name = COPY (*q);
+	      rp->Label = COPY (peer_params.Label);
+	      rp->Email = COPY(peer_params.Email);
+	      rp->Comment = COPY(peer_params.Comment);
+	      rp->Streaming = peer_params.Streaming;
+	      rp->Skip = peer_params.Skip;
+	      rp->Password = COPY(peer_params.Password);
+	      rp->Patterns = peer_params.Pattern != NULL ?
+		RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
+	      rp->MaxCnx = peer_params.MaxCnx;
+	      rp++;
+	    }
+#else
+	    /* Old-style, single address, just add it. */
+	    COPYADDR(&rp->Address, hp->h_addr);
+	    rp->Name = COPY(*q);
+	    rp->Label = COPY (peer_params.Label);
+	    rp->Email = COPY(peer_params.Email);
+	    rp->Comment = COPY(peer_params.Comment);
+	    rp->Streaming = peer_params.Streaming;
+	    rp->Skip = peer_params.Skip;
+	    rp->Password = COPY(peer_params.Password);
+	    rp->Patterns = peer_params.Pattern != NULL ?
+	      RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
+	    rp->MaxCnx = peer_params.MaxCnx;
+	    rp++;
+#endif	    /* defined(h_addr) */
+	  }
+	  DISPOSE(r[0]);
+	  DISPOSE(r);
+	  peer_params.Label = NULL;
+	}
+	else if (groupcount > 0 && group_params->Label != NULL) {
+	  RCadddata(data, &infocount, K_END_GROUP, T_STRING, NULL);
+	  group_params->Label = NULL;
+	  groupcount--;
+	  if (groupcount == 0)
+	    DISPOSE(groups);
+	  else
+	    group_params--;
 	}
 	else {
-	    pass = NOPASS;
-	    pats = NULL;
+	  syslog(L_ERROR, RIGHT_BRACE, LogName, linecount, filename);
 	}
+	continue;
+      }
 
-        /* Check if MaxConnections was set, make 0 if not */
-	rp->MaxIncoming = 0;
-	if ((maxconn != NULL) && (atoi(maxconn) > 0)) {
-	    rp->MaxIncoming = atoi(maxconn);
-	    syslog(L_NOTICE, "%s added with %d MaxIncoming set", buff, rp->MaxIncoming);
-        }
-
-        /* Check if the host name ends with '/s' which means that streaming is
-           specifically permitted (as opposed to defaulted). The default
-           for the global StreamingOff is FALSE, meaning any host can use
-           streaming commands. If any entry is hosts.nntp has a suffix of
-           '/s' then StreamingOff is set to TRUE, and then only those
-           hosts.nntp entries with '/s' can use streaming commands. */
-        rp->Streaming = FALSE;
-        if ((k = strlen(buff)) > 2) {
-            if (buff[k - 1] == 's' && buff[k - 2] == '/') {
-                buff[k - 2] = '\0';
-                rp->Streaming = TRUE;
-                StreamingOff = TRUE ;
-            }
-        }
-
-	/* Was host specified as as dotted quad? */
-	if ((rp->Address.s_addr = inet_addr(buff)) != (unsigned int) -1) {
- 	  syslog(LOG_NOTICE, "think it's a dotquad: %s",buff);
-	    rp->Name = COPY(buff);
-	    rp->Password = COPY(pass);
-	    rp->Patterns = (pats && *pats) ? CommaSplit(COPY(pats)) : NULL;
-	    rp++;
-	    continue;
+      /* streaming */
+      if (!strncmp (word, STREAMING, sizeof STREAMING)) {
+	DISPOSE(word);
+	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	  break;
 	}
+	if (!strcmp (word, "true"))
+	  bool = TRUE;
+	else
+	  if (!strcmp (word, "false"))
+	    bool = FALSE;
+	  else {
+	    syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
+	    break;
+	  }
+	RCadddata(data, &infocount, K_STREAM, T_STRING, word);
+	if (peer_params.Label != NULL)
+	  peer_params.Streaming = bool;
+	else
+	  if (groupcount > 0 && group_params->Label != NULL)
+	    group_params->Streaming = bool;
+	  else
+	    default_params.Streaming = bool;
+	continue;
+      }
 
-	/* Host specified as a text name? */
-	if ((hp = gethostbyname(buff)) == NULL) {
-	    syslog(L_ERROR, "%s cant gethostbyname %s %m", LogName, buff);
-	    errors++;
-	    continue;
+      /* skip */
+      if (!strncmp (word, SKIP, sizeof SKIP)) {
+	DISPOSE(word);
+	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	  break;
 	}
+	if (!strcmp (word, "true"))
+	  bool = TRUE;
+	else
+	  if (!strcmp (word, "false"))
+	    bool = FALSE;
+	  else {
+	    syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
+	    break;
+	  }
+	RCadddata(data, &infocount, K_SKIP, T_STRING, word);
+	if (peer_params.Label != NULL)
+	  peer_params.Skip = bool;
+	else
+	  if (groupcount > 0 && group_params->Label != NULL)
+	    group_params->Skip = bool;
+	  else
+	    default_params.Skip = bool;
+	continue;
+      }
 
-#if	defined(h_addr)
-	/* Count the addresses and see if we have to grow the list. */
-	for (i = 0; hp->h_addr_list[i]; i++)
-	    continue;
-	if (i == 0) {
-	    syslog(L_ERROR, "%s no_address %s %m", LogName, buff);
-	    errors++;
-	    continue;
+      /* max-connections */
+      if (!strncmp (word, MAX_CONN, sizeof MAX_CONN)) {
+	DISPOSE(word);
+	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	  break;
 	}
-	if (i == 1) {
-	    /* Just one, no need to grow. */
-	    COPYADDR(&rp->Address, hp->h_addr_list[0]);
-	    rp->Name = COPY(hp->h_name);
-	    rp->Password = COPY(pass);
-	    rp->Patterns = (pats && *pats) ? CommaSplit(COPY(pats)) : NULL;
-	    rp++;
-	    continue;
+	RCadddata(data, &infocount, K_MAX_CONN, T_STRING, word);
+	for (p = word; isdigit(*p) && *p != '\0'; p++);
+	if (!strcmp (word, "none") || !strcmp (word, "unlimited")) {
+	  peer_params.MaxCnx = 0;
+	  continue;
 	}
+	if (*p != '\0') {
+	  syslog(L_ERROR, MUST_BE_INT, LogName, filename, linecount);
+	  break;
+	}
+	peer_params.MaxCnx = atoi(word);
+	continue;
+      }
 
-	/* Note the relative position, grow the array, and restore it. */
-	j = rp - *list;
-	*count += i - 1;
-	RENEW(*list, REMOTEHOST, *count);
-	rp = *list + j;
-
-	/* Add all the hosts. */
-	for (i = 0; hp->h_addr_list[i]; i++) {
-	    COPYADDR(&rp->Address, hp->h_addr_list[i]);
-	    rp->Name = COPY(hp->h_name);
-	    rp->Password = COPY(pass);
-	    rp->Patterns = (pats && *pats) ? CommaSplit(COPY(pats)) : NULL;
-            rp->Streaming = (*list + j)->Streaming ;
-	    rp++;
+      /* hostname */
+      if (!strncmp (word, HOSTNAME, sizeof HOSTNAME)) {
+	DISPOSE(word);
+	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	  break;
 	}
-#else
-	/* Old-style, single address, just add it. */
-	COPYADDR(&rp->Address, hp->h_addr);
-	rp->Name = COPY(hp->h_name);
-	rp->Password = COPY(pass);
-	rp->Patterns = (pats && *pats) ? CommaSplit(COPY(pats)) : NULL;
-	rp++;
-#endif	/* defined(h_addr) */
+	RCadddata(data, &infocount, K_HOSTNAME, T_STRING, word);
+	peer_params.Name = word;
+	continue;
+      }
+
+      /* password */
+      if (!strncmp (word, PASSWORD, sizeof PASSWORD)) {
+	DISPOSE(word);
+	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	  break;
+	}
+	RCadddata(data, &infocount, K_PASSWORD, T_STRING, word);
+	if (peer_params.Label != NULL)
+	  peer_params.Password = word;
+	else
+	  if (groupcount > 0 && group_params->Label != NULL)
+	    group_params->Password = word;
+	  else
+	    default_params.Password = word;
+	continue;
+      }
+
+      /* patterns */
+      if (!strncmp (word, PATTERNS, sizeof PATTERNS)) {
+	DISPOSE(word);
+	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	  break;
+	}
+	RCadddata(data, &infocount, K_PATTERNS, T_STRING, word);
+	if (peer_params.Label != NULL)
+	  peer_params.Pattern = word;
+	else
+	  if (groupcount > 0 && group_params->Label != NULL)
+	    group_params->Pattern = word;
+	  else
+	    default_params.Pattern = word;
+	continue;
+      }
+
+      /* email */
+      if (!strncmp (word, EMAIL, sizeof EMAIL)) {
+	DISPOSE(word);
+	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	  break;
+	}
+	RCadddata(data, &infocount, K_EMAIL, T_STRING, word);
+	if (peer_params.Label != NULL)
+	  peer_params.Email = word;
+	else
+	  if (groupcount > 0 && group_params->Label != NULL)
+	    group_params->Email = word;
+	  else
+	    default_params.Email = word;
+	continue;
+      }
+
+      /* comment */
+      if (!strncmp (word, COMMENT, sizeof COMMENT)) {
+	DISPOSE(word);
+	if ((word = RCreaddata (&linecount, F)) == NULL) {
+	  break;
+	}
+	RCadddata(data, &infocount, K_COMMENT, T_STRING, word);
+	if (peer_params.Label != NULL)
+	  peer_params.Comment = word;
+	else
+	  if (groupcount > 0 && group_params->Label != NULL)
+	    group_params->Comment = word;
+	  else
+	    default_params.Comment = word;
+	continue;
+      }
+
+      syslog(L_ERROR, "%s Unknown value line %d: %s",
+	     LogName, linecount, filename);
+      DISPOSE(word);
+      break;
     }
-    *count = rp - *list;
+    DISPOSE(default_params.Email);
+    DISPOSE(default_params.Comment);
+    RCadddata(data, &infocount, K_END, T_STRING, NULL);
+
+    if (feof (F)) {
+      if (peer_params.Label != NULL)
+	syslog(L_ERROR, INCOMPLETE_PEER, LogName, peer_params.Label,
+	       filename, linecount);
+      if (groupcount > 0 && group_params->Label != NULL)
+	syslog(L_ERROR, INCOMPLETE_GROUP, LogName, group_params->Label,
+	       filename, linecount);
+    }
+    else
+      syslog(L_ERROR, "%s Syntax error in %s at or before line %d", LogName, 
+	     filename, linecount);
 
     if (fclose(F) == EOF)
 	syslog(L_ERROR, "%s cant fclose %s %m", LogName, filename);
 
-    if (errors)
-	syslog(L_ERROR, "%s bad_hosts %d in %s", LogName, errors, filename);
+    DISPOSE(default_params.Password);
 }
 
+
+/*
+**  Indent a line with 3 * c blanks.
+**  Used by RCwritelist().
+*/
+void
+RCwritelistindent(FILE *F, int c)
+{
+    register int		i;
+
+    for (i = 0; i < c; i++)
+        fprintf(F, "   ");
+}
+
+/*
+**  Add double quotes around a string, if needed.
+**  Used by RCwritelist().
+*/
+void
+RCwritelistvalue(FILE *F, char *value)
+{
+    if (*value == '\0' || strchr (value, '\n') ||
+	strchr (value, ' ') || strchr (value, '\t'))
+	fprintf(F, "\"%s\"", value);
+    else
+        fprintf(F, "%s", value);
+}
+
+/*
+**  Write the incoming configuration (memory->disk)
+*/
+void
+RCwritelist(char *filename)
+{
+    register FILE               *F;
+    register int		i;
+    register int		inc;
+    register char		*p;
+    register char		*q;
+    register char		*r;
+
+    if ((F = fopen(filename, "w")) == NULL) {
+        syslog(L_FATAL, "%s cant write %s: %m", LogName, filename);
+        return;
+    }
+
+    /* Write a standard header.. */
+
+    /* Find the filename */
+    p = NEW (char, sizeof _PATH_INNDHOSTS);
+    (void)strcpy (p, _PATH_INNDHOSTS);
+    for (r = q = p; *p; p++)
+        if (*p == '/')
+	   q = p + 1;
+
+    fprintf (F, "##  $Revision$\n");
+    fprintf (F, "##  %s - names and addresses that feed us news\n", q);
+    DISPOSE(r);
+    fprintf (F, "##\n\n");
+
+    /* ... */
+
+    inc = 0;
+    for (i = 0; RCpeerlistfile[i].key != K_END; i++) {
+        switch (RCpeerlistfile[i].key) {
+	  case K_BEGIN_PEER:
+	    fputc ('\n', F);
+	    RCwritelistindent (F, inc);
+	    fprintf(F, "%s %s {\n", PEER, RCpeerlistfile[i].value);
+	    inc++;
+	    break;
+	  case K_BEGIN_GROUP:
+	    fputc ('\n', F);
+	    RCwritelistindent (F, inc);
+	    fprintf(F, "%s %s {\n", GROUP, RCpeerlistfile[i].value);
+	    inc++;
+	    break;
+	  case K_END_PEER:
+	  case K_END_GROUP:
+	    inc--;
+	    RCwritelistindent (F, inc);
+	    fprintf(F, "}\n");
+	    break;
+	  case K_STREAM:
+	    RCwritelistindent (F, inc);
+	    fprintf(F, "%s\t", STREAMING);
+	    RCwritelistvalue (F, RCpeerlistfile[i].value);
+	    fputc ('\n', F);
+	    break;
+	  case K_SKIP:
+	    RCwritelistindent (F, inc);
+	    fprintf(F, "%s\t", SKIP);
+	    RCwritelistvalue (F, RCpeerlistfile[i].value);
+	    fputc ('\n', F);
+	    break;
+	  case K_HOSTNAME:
+	    RCwritelistindent (F, inc);
+	    fprintf(F, "%s\t", HOSTNAME);
+	    RCwritelistvalue (F, RCpeerlistfile[i].value);
+	    fputc ('\n', F);
+	    break;
+	  case K_MAX_CONN:
+	    RCwritelistindent (F, inc);
+	    fprintf(F, "%s\t", MAX_CONN);
+	    RCwritelistvalue (F, RCpeerlistfile[i].value);
+	    fputc ('\n', F);
+	    break;
+	  case K_PASSWORD:
+	    RCwritelistindent (F, inc);
+	    fprintf(F, "%s\t", PASSWORD);
+	    RCwritelistvalue (F, RCpeerlistfile[i].value);
+	    fputc ('\n', F);
+	    break;
+	  case K_EMAIL:
+	    RCwritelistindent (F, inc);
+	    fprintf(F, "%s\t", EMAIL);
+	    RCwritelistvalue (F, RCpeerlistfile[i].value);
+	    fputc ('\n', F);
+	    break;
+	  case K_PATTERNS:
+	    RCwritelistindent (F, inc);
+	    fprintf(F, "%s\t", PATTERNS);
+	    RCwritelistvalue (F, RCpeerlistfile[i].value);
+	    fputc ('\n', F);
+	    break;
+	  case K_COMMENT:
+	    RCwritelistindent (F, inc);
+	    fprintf(F, "%s\t", COMMENT);
+	    RCwritelistvalue (F, RCpeerlistfile[i].value);
+	    fputc ('\n', F);
+	    break;
+	  default:
+	    fprintf(F, "# ***ERROR***\n");
+	}
+    }
+    if (fclose(F) == EOF)
+        syslog(L_ERROR, "%s cant fclose %s %m", LogName, filename);
+
+}
 
 void
 RCreadlist()
 {
     static char	INNDHOSTS[] = _PATH_INNDHOSTS;
-    char	name[sizeof _PATH_INNDHOSTS + sizeof ".nolimit"];
-    struct stat	Sb;
 
-    StreamingOff = FALSE ;
-    RCreadfile(&RCpeerlist, &RCnpeerlist, INNDHOSTS);
-    FileGlue(name, INNDHOSTS, '.', "nolimit");
-    if (stat(name, &Sb) >= 0)
-	RCreadfile(&RCnolimitlist, &RCnnolimitlist, name);
+    StreamingOff = FALSE;
+    RCreadfile(&RCpeerlistfile, &RCpeerlist, &RCnpeerlist, INNDHOSTS);
+    /* RCwritelist("/tmp/incoming.conf.new"); */
 }
-
-
 
 /*
 **  Find the name of a remote host we've connected to.
@@ -642,7 +1289,6 @@ RChostname(cp)
     register int	i;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
-	/* SUPPRESS 112 *//* Retrieving long where char is stored */
 	if (cp->Address.s_addr == rp->Address.s_addr)
 	    return rp->Name;
     (void)strcpy(buff, inet_ntoa(cp->Address));
@@ -663,7 +1309,6 @@ BOOL RCcanpost(CHANNEL *cp, char *group)
     int	                i;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++) {
-	/* SUPPRESS 112 *//* Retrieving long where char is stored */
 	if (cp->Address.s_addr != rp->Address.s_addr)
 	    continue;
 	if (rp->Patterns == NULL)
@@ -786,13 +1431,25 @@ RCclose()
     if (RCpeerlist) {
 	for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++) {
 	    DISPOSE(rp->Name);
+	    DISPOSE(rp->Label);
+	    DISPOSE(rp->Email);
 	    DISPOSE(rp->Password);
-	    if (rp->Patterns)
+	    if (rp->Patterns) {
+		DISPOSE(rp->Patterns[0]);
 		DISPOSE(rp->Patterns);
+	    }
 	}
 	DISPOSE(RCpeerlist);
 	RCpeerlist = NULL;
 	RCnpeerlist = 0;
+    }
+
+    if (RCpeerlistfile) {
+        for (i = 0; RCpeerlistfile[i].key != K_END; i++)
+        if (RCpeerlistfile[i].value != NULL)
+	   DISPOSE(RCpeerlistfile[i].value);
+	DISPOSE(RCpeerlistfile);
+	RCpeerlistfile = NULL;
     }
 
     if (RCmaster) {

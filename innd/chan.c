@@ -8,9 +8,8 @@
 #include "clibrary.h"
 #include "innd.h"
 
-#define MAX_CONNECT_PER_SITE            3
 /* Minutes - basically, keep the connection open but idle */
-#define PAUSE_BEFORE_DROP               5  
+#define PAUSE_BEFORE_DROP               5
 
 /* Divisor of the BUFFER size. If the amount free at the beginning of the
    buffer is bigger than the quotient, then it is compacted in the
@@ -142,7 +141,14 @@ CHANNEL *CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
     cp->fd = fd;
     cp->Type = Type;
     cp->State = State;
-    cp->Streaming = FALSE ;
+    cp->Streaming = FALSE;
+    cp->Skip = FALSE;
+    cp->Ihave = cp->Ihave_Duplicate = cp->Ihave_Deferred = cp->Ihave_SendIt = 0;
+    cp->Check = cp->Check_send = cp->Check_deferred = cp->Check_got = 0;
+    cp->Takethis = cp->Takethis_Ok = cp->Takethis_Err = 0;
+    cp->Size = cp->Duplicate = 0;
+    cp->Unwanted_s = cp->Unwanted_f = cp->Unwanted_d = 0;
+    cp->Unwanted_g = cp->Unwanted_u = cp->Unwanted_o = 0;
     cp->Reader = Reader;
     cp->WriteDone = WriteDone;
     cp->Started = cp->LastActive = Now.time;
@@ -744,11 +750,12 @@ void CHANreadloop(void)
     char		*p;
     time_t		LastUpdate;
     CHANNEL             *tempchan;
-    int                 tfd;
+    int                 j;
     int                 found;
     char                *tempname;
 
     TMRinit();
+    STATUSinit();
     
     LastUpdate = GetTimeInfo(&Now) < 0 ? 0 : Now.time;
     for ( ; ; ) {
@@ -765,6 +772,7 @@ void CHANreadloop(void)
 	TMRstop(TMR_IDLE);
 
 	TMRmainloophook();
+	STATUSmainloophook();
 	if (GotTerminate) {
 	    (void)write(2, EXITING, STRLEN(EXITING));
 	    CleanupAndExit(0, (char *)NULL);
@@ -833,34 +841,27 @@ void CHANreadloop(void)
 	do {
 	    cp = &CHANtable[fd];
 
-            if(cp->MaxIncoming > 0) {
-                if((cp->fd > 0) && 
-                   (cp->Type == CTnntp) && 
-                   (cp->ActiveConnects == 0)) {
-                    found=1;
-                    for(tfd = 0; tfd < CHANlastfd; tfd++) {
-                       tempchan = &CHANtable[tfd];
-                       if(cp->Address.s_addr == tempchan->Address.s_addr) {
-                          if(tempchan->ActiveConnects == found)
-                            found++;
-                       }
-                    }
-                    cp->ActiveConnects = found;
-                }
-            
-                if((cp->ActiveConnects > cp->MaxIncoming) && (cp->fd > 0)) {
-                    if(cp->Started + (PAUSE_BEFORE_DROP * 60) < Now.time) {
+            if (cp->MaxCnx > 0) {
+	        found = 0;
+	        for (j = 0; (tempchan = CHANiter(&j, CTnntp)) != NULL; ) {
+		    if (cp->Address.s_addr == tempchan->Address.s_addr)
+		       found++;
+		    cp->ActiveCnx = found;
+	        }
+
+                if((cp->ActiveCnx > cp->MaxCnx) && (cp->fd > 0)) {
+		    if(cp->Started + (PAUSE_BEFORE_DROP * 60) < Now.time) {
                         CHANclose(cp, CHANname(cp));
                     } else {
                         if (fd >= lastfd)
                             fd = 0;
                         else
-                            fd++; 
+                            fd++;
                     }
                     continue;
                 }
             }
-
+	    
 	    /* Anything to read? */
 	    if (FD_ISSET(fd, &RCHANmask) && FD_ISSET(fd, &MyRead)) {
 		count--;

@@ -59,6 +59,11 @@ STATIC char		ARTctl[] = "control";
 STATIC char		ARTjnk[] = "junk";
 STATIC char		*ARTpathme;
 
+/*
+**  Different types of rejected articles.
+*/
+typedef enum {REJECT_DUPLICATE, REJECT_SITE, REJECT_FILTER, REJECT_DISTRIB,
+	      REJECT_GROUP, REJECT_UNAPP, REJECT_OTHER} Reject_type;
 
 /*
 **  Flag array, indexed by character.  Character classes for Message-ID's.
@@ -1038,14 +1043,45 @@ ARTlog(Data, code, text)
 
 /*
 **  We are going to reject an article, record the reason and
-**  and the article.  For now, this is just a placeholder.
+**  and the article.
 */
-/* ARGSUSED0 */
 STATIC void
-ARTreject(buff, article)
+ARTreject(code, cp, buff, article)
+    Reject_type code;
+    CHANNEL     *cp;
     char	*buff;
     BUFFER	*article;
 {
+  /* Remember why the article was rejected (for the status file) */
+
+  switch (code) {
+    case REJECT_DUPLICATE:
+      cp->Duplicate++;
+      break;
+    case REJECT_SITE:
+      cp->Unwanted_s++;
+      break;
+    case REJECT_FILTER:
+      cp->Unwanted_f++;
+      break;
+    case REJECT_DISTRIB:
+      cp->Unwanted_d++;
+      break;
+    case REJECT_GROUP:
+      cp->Unwanted_g++;
+      break;
+    case REJECT_UNAPP:
+      cp->Unwanted_u++;
+      break;
+    case REJECT_OTHER:
+      cp->Unwanted_o++;
+    default:
+      /* should never be here */
+      syslog(L_NOTICE, "%s unknown reject type received by ARTreject()",
+	     LogName);
+      break;
+  }
+      /* error */
 }
 
 
@@ -1689,6 +1725,7 @@ STRING ARTpost(CHANNEL *cp)
     int			hopcount;
     char		**distributions;
     STRING		error;
+    int			error_code;
     char		ControlWord[SMBUF];
     int			ControlHeader;
     int			oerrno;
@@ -1729,7 +1766,7 @@ STRING ARTpost(CHANNEL *cp)
     if (HIShavearticle(hash)) {
 	sprintf(buff, "%d Duplicate", NNTP_REJECTIT_VAL);
 	ARTlog(&Data, ART_REJECT, buff);
-	ARTreject(buff, article);
+	ARTreject(REJECT_DUPLICATE, cp, buff, article);
 	return buff;
     }
 
@@ -1738,6 +1775,7 @@ STRING ARTpost(CHANNEL *cp)
         if( ListHas(hops, ME.Exclusions[j]) ) {
             sprintf(ControlWord, "Unwanted site %s in path", ME.Exclusions[j]);
             error = ControlWord;
+	    error_code = REJECT_SITE;
             break;
         }
     }
@@ -1751,7 +1789,7 @@ STRING ARTpost(CHANNEL *cp)
 		syslog(L_ERROR, "%s cant write history %s %m",
 		       LogName, Data.MessageID);
 #endif	/* defined(DO_REMEMBER_TRASH) */
-	ARTreject(buff, article);
+	ARTreject(error_code, cp, buff, article);
 	return buff;
     }
 
@@ -1766,7 +1804,7 @@ STRING ARTpost(CHANNEL *cp)
             syslog(L_ERROR, "%s cant write history %s %m",
                    LogName, Data.MessageID);
 #endif	/* defined(DO_REMEMBER_TRASH) */
-        ARTreject(buff, article);
+        ARTreject(REJECT_FILTER, cp, buff, article);
         return buff;
     }
 #endif /* DO_PERL */
@@ -1810,7 +1848,7 @@ STRING ARTpost(CHANNEL *cp)
                     syslog(L_ERROR, "%s cant write history %s %m",
                            LogName, Data.MessageID);
 #endif	/* defined(DO_REMEMBER_TRASH) */
-		ARTreject(buff, article);
+		ARTreject(REJECT_FILTER, cp, buff, article);
 		return buff;
 	    }
 	} else {
@@ -1854,7 +1892,7 @@ STRING ARTpost(CHANNEL *cp)
                        LogName, Data.MessageID);
 #endif	/* defined(DO_REMEMBER_TRASH) */
 	    DISPOSE(distributions);
-	    ARTreject(buff, article);
+	    ARTreject(REJECT_DISTRIB, cp, buff, article);
 	    return buff;
 	}
     }
@@ -1960,7 +1998,7 @@ STRING ARTpost(CHANNEL *cp)
 #endif	/* defined(DO_REMEMBER_TRASH) */
 	    if (distributions)
 		DISPOSE(distributions);
-	    ARTreject(buff, article);
+	    ARTreject(REJECT_UNAPP, cp, buff, article);
 	    return buff;
 	}
 
@@ -2037,7 +2075,7 @@ STRING ARTpost(CHANNEL *cp)
 #endif	/* defined(DO_REMEMBER_TRASH) */
 	    if (distributions)
 		DISPOSE(distributions);
-	    ARTreject(buff, article);
+	    ARTreject(REJECT_GROUP, cp, buff, article);
 	    return buff;
 #else
 	    /* if !GroupMissing, then all the groups the article was posted
@@ -2053,7 +2091,7 @@ STRING ARTpost(CHANNEL *cp)
 #endif	/* defined(DO_REMEMBER_TRASH) */
 		if (distributions)
 		    DISPOSE(distributions);
-		ARTreject(buff, article);
+		ARTreject(REJECT_GROUP, cp, buff, article);
 		return buff;
 	    }
 #endif	/* defined(DONT_WANT_TRASH) */
@@ -2105,7 +2143,7 @@ STRING ARTpost(CHANNEL *cp)
             ARTlog(&Data, ART_REJECT, buff);
 	    if (distributions)
 	        DISPOSE(distributions);
-	    ARTreject(buff, article);
+	    ARTreject(REJECT_OTHER, cp, buff, article);
 	    return buff;
     	}
     } else {
@@ -2132,7 +2170,7 @@ STRING ARTpost(CHANNEL *cp)
 		       LogName, Data.MessageID);
 	    if (distributions)
 		DISPOSE(distributions);
-	    ARTreject(buff, article);
+	    ARTreject(REJECT_OTHER, cp, buff, article);
 	    TMRstop(TMR_ARTWRITE);
 	    return buff;
 	}
@@ -2180,7 +2218,7 @@ STRING ARTpost(CHANNEL *cp)
 #endif	/* defined(DO_REMEMBER_TRASH) */
 		    if (distributions)
 			DISPOSE(distributions);
-		    ARTreject(buff, article);
+		    ARTreject(REJECT_OTHER, cp, buff, article);
 		    TMRstop(TMR_ARTWRITE);
 		    return buff;
 		}
@@ -2232,7 +2270,7 @@ STRING ARTpost(CHANNEL *cp)
 	ARTlog(&Data, ART_REJECT, buff);
 	if (distributions)
 	    DISPOSE(distributions);
-	ARTreject(buff, article);
+	ARTreject(REJECT_OTHER, cp, buff, article);
 	return buff;
     }
     /* If we just flushed the active (above), now flush history. */
@@ -2262,6 +2300,7 @@ STRING ARTpost(CHANNEL *cp)
 #endif	/* defined(DO_NNTPLINK_LOG) */
 
 #if defined(DO_LOG_SIZE)
+    cp->Size += Data.SizeValue;
     if (fprintf(Log, " %ld",Data.SizeValue) == EOF || ferror (Log)) {
         oerrno = errno;
 	syslog(L_ERROR, "%s cant write log_nntplink %m", LogName);

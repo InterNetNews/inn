@@ -57,6 +57,9 @@ typedef short  SITEIDX;
 */
 typedef struct in_addr	INADDR;
 
+#ifndef u_long
+#define u_long		unsigned long
+#endif
 
 /*
 **  Server's operating mode.
@@ -133,8 +136,28 @@ typedef enum _CHANNELSTATE {
 typedef struct _CHANNEL {
     CHANNELTYPE		Type;
     CHANNELSTATE	State;
-    BOOL		Streaming ; /* had an '/s' on the end of hosts.nntp entry */
+    BOOL		Skip;
+    BOOL		Streaming;
     int			fd;
+    u_long		Duplicate;
+    u_long		Unwanted_s;
+    u_long		Unwanted_f;
+    u_long		Unwanted_d;
+    u_long		Unwanted_g;
+    u_long		Unwanted_u;
+    u_long		Unwanted_o;
+    u_long		Size;
+    u_long		Check;
+    u_long		Check_send;
+    u_long		Check_deferred;
+    u_long		Check_got;
+    u_long		Takethis;
+    u_long		Takethis_Ok;
+    u_long		Takethis_Err;
+    u_long		Ihave;
+    u_long		Ihave_Duplicate;
+    u_long		Ihave_Deferred;
+    u_long		Ihave_SendIt;
     int			Reported;
     long		Received;
     long		Refused;
@@ -166,8 +189,8 @@ typedef struct _CHANNEL {
     int			Lastch;
     int			Rest;
     int			SaveUsed;
-    int                 ActiveConnects; /* Used by Per-Host Restrictions */
-    int			MaxIncoming;
+    int			ActiveCnx;
+    int			MaxCnx;
 } CHANNEL;
 
 
@@ -381,6 +404,7 @@ EXTERN BOOL             WriteLinks;
 EXTERN BOOL             StorageAPI;
 EXTERN int              Overfdcount;
 EXTERN int		SeqNum;
+EXTERN int		StatusInterval;
 EXTERN int              TimerInterval;
 EXTERN STRING		path;
 EXTERN BUFFER		Path;
@@ -531,6 +555,7 @@ extern void		PROCunwatch();
 extern void		PROCscan();
 extern void		PROCsetup();
 
+extern int		RClimit();
 extern BOOL		RCnolimit();
 extern BOOL		RCauthorized();
 extern BOOL		RCcanpost();
@@ -561,6 +586,9 @@ extern void		SITEparsefile();
 extern void		SITEprocdied();
 extern void		SITEsend();
 extern void		SITEwrite();
+
+extern void		STATUSinit(void);
+extern void             STATUSmainloophook(void);
 
 extern void             TMRinit(void);
 extern void             TMRmainloophook(void);

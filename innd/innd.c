@@ -713,6 +713,15 @@ int main(int ac, char *av[])
     } else
 	TimerInterval = 0;
     
+    if (GetBooleanConfigValue(_CONF_STATUS, TRUE) == TRUE) {
+	if ((p = GetConfigValue(_CONF_STATUS)) == NULL) {
+	    StatusInterval = 0;
+	} else {
+	    StatusInterval = atoi(p);
+	}
+    } else
+	StatusInterval = 0;
+    
     /* Get the setting for Wireformat */
     WireFormat = GetBooleanConfigValue(_CONF_WIREFORMAT, FALSE);
     /* Get the setting for Xref slaving */

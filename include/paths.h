@@ -84,6 +84,8 @@
 */
     /* =()<#define _PATH_NEWSLIB	"@<_PATH_NEWSLIB>@">()= */
 #define _PATH_NEWSLIB	"/var/news/etc"
+    /* =()<#define _PATH_MOST_LOGS		"@<_PATH_MOST_LOGS>@">()= */
+#define _PATH_MOST_LOGS	"/var/log/news"
     /* =()<#define _PATH_LOGFILE		"@<_PATH_LOGFILE>@">()= */
 #define _PATH_LOGFILE		"/var/log/news/news"
     /* =()<#define _PATH_ERRLOG	"@<_PATH_ERRLOG>@">()= */
@@ -197,7 +199,10 @@
 #define _CONF_WRITELINKS        "writelinks"
    /* if 0 or false then don't monitor performance,
       otherwise, the reporting interval */
-#define _CONF_TIMER             "timer"
+#define _CONF_TIMER		"timer"
+   /* if 0 or false then don't update status file,
+      otherwise, the reporting interval */
+#define _CONF_STATUS		"status"
    /* Whether or not to use the storage api */
 #define _CONF_STORAGEAPI        "storageapi"
    /* Whether or not to mmap articles */
