@@ -365,6 +365,7 @@ incoming_conf
     'innwatchlibspace',		0,
     'innwatchspoolnodes',	0,
     'nnrpperlauth',		0,
+    'nnrppythonauth',		0,
     'docnfsstat',		0,
     'nnrpdauthsender',		0,
     'cnfscheckfudgesize',	0,
