@@ -250,21 +250,6 @@ is ``true'',
 .I wireformat
 is discarded and articles are always stored in wire format.
 .TP
-.I timespool
-This makes the normal hierarchy a shadow of a time based hierarchy.
-The time based hierarchy is two levels.  The first level is upper part
-of the time that the article was received in hex, and the second level
-is lower part of the same.
-
-The article name name is of the format tttttttt-ssss, where tttttttt
-is the time the article was recieved in time_t format, and ssss is a
-sequence number to distinguish article that were received in the same second.
-If 
-.I storageapi
-is ``true'', 
-.I timespool
-is discarded.
-.TP
 .I writelinks
 If this is true innd will write all the crossposts of an article to
 the history file, else it will write just the first.  This can be

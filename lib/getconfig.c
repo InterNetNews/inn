@@ -127,7 +127,6 @@ if (p = getenv(_ENV_FROMHOST)) { innconf->fromhost = COPY(p); }
     innconf->hiscachesize = 0;
     innconf->wireformat = FALSE;
     innconf->xrefslave = FALSE;
-    innconf->timespool = FALSE;
     innconf->complaints = NULL;
     innconf->spoolfirst = FALSE;
     innconf->writelinks = TRUE;
@@ -257,9 +256,6 @@ if (innconf->fromhost == NULL) { innconf->fromhost = COPY(p); }
 	    } else
 	    if (EQ (ConfigBuff,_CONF_XREFSLAVE)) {
 		if (boolval != -1) innconf->xrefslave = boolval;
-	    } else
-	    if (EQ(ConfigBuff,_CONF_TIMESPOOL)) {
-		if (boolval != -1) innconf->timespool = boolval;
 	    } else
 	    if (EQ(ConfigBuff,_CONF_COMPLAINTS)) {
 		innconf->complaints = COPY(p);

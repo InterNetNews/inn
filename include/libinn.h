@@ -82,7 +82,6 @@ struct conf_vars {
 	int hiscachesize;	/* Size of the history cache in kB */
 	int wireformat;		/* Toggle for wireformat articles */
 	int xrefslave;		/* Toggle for Xref: slaving */
-	int timespool;		/* Toggle for the time spool format */
 	char *complaints;	/* Addr for X-Complaints-To: header */
 	int spoolfirst;		/* Spool newly posted article or only on error*/
 	int writelinks;		/* Write crossposts to the history */

@@ -2119,10 +2119,6 @@ STRING ARTpost(CHANNEL *cp)
     *ngptr = NULL;
     j++;
 
-    /* Add enough extra room for time pathname */
-    if (innconf->timespool)
-        j += 48;
-
     /* Allocate exactly enough space for the textual representation */
     if (innconf->storageapi)
 	j = (sizeof(TOKEN) * 2) + 3;
@@ -2201,19 +2197,11 @@ STRING ARTpost(CHANNEL *cp)
 	    if (Data.Name[0] == '\0') {
 		TMRstart(TMR_ARTWRITE);
 		/* Write the article the first time. */
-		if (innconf->timespool) {
-		    i--;
-		    ngp->PostCount = 1;
-		    /* Pull the bottom 14 bits off and split them into two levels of hierarchy */
-		    sprintf(dirname, "time/%02lx/%02lx", (Now.time >> 13) &0x7f, (Now.time >> 6) & 0x7f);
-		    sprintf(Data.Name, "%s/%08lx-%04x", dirname, Now.time, SeqNum);
-		    SeqNum = (SeqNum + 1) % (64*1024);
-		} else {
-		    sprintf(Data.Name, "%s/%lu", ngp->Dir, ngp->Filenum);
-		    strcpy(dirname, ngp->Dir);
-		}	    if (ARTwrite(Data.Name, article, &Data) < 0
-				&& (!MakeDirectory(dirname, TRUE)
-				    || ARTwrite(Data.Name, article, &Data) < 0)) {
+		sprintf(Data.Name, "%s/%lu", ngp->Dir, ngp->Filenum);
+		strcpy(dirname, ngp->Dir);
+		if (ARTwrite(Data.Name, article, &Data) < 0
+			&& (!MakeDirectory(dirname, TRUE)
+			|| ARTwrite(Data.Name, article, &Data) < 0)) {
 		    i = errno;
 		    syslog(L_ERROR, "%s cant write %s %m", LogName, Data.Name);
 		    (void)sprintf(buff, "%d cant write article %s, %s",
