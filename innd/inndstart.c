@@ -90,7 +90,7 @@ int main(int ac, char *av[])
 	syslog(L_FATAL, "inndstart getpwnam(%s): %s", NEWSUSER, strerror(errno));
 	exit(1);
     } else if (pwd->pw_gid != Sb.st_gid) {
-	syslog(L_FATAL, "inndstart %s must have group %s", innconf->pathrun, NEWSUSER);
+	syslog(L_FATAL, "inndstart %s must have group %s", innconf->pathrun, NEWSGRP);
 	exit(1);
     } else if (pwd->pw_uid != Sb.st_uid) {
 	syslog(L_FATAL, "inndstart %s must be owned by %s", innconf->pathrun, NEWSUSER);
