@@ -812,17 +812,17 @@ STATIC void CNFSmunmapbitfields(void) {
 }
 
 STATIC int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, U_INT32_T cycnum) {
-    static int	count = 0;
+    time_t      lastupdate = 0;
     CYCBUFF	*tmp;
 
     if (SMpreopen) {
-	if (++count % 1000 == 0) {	/* XXX 1K articles is just a guess */
+	if ((time(NULL) - lastupdate) > 30) {	/* XXX Changed to refresh every 30sec - cmo*/
 	    for (tmp = cycbufftab; tmp != (CYCBUFF *)NULL; tmp = tmp->next) {
 		CNFSReadFreeAndCycle(tmp);
 	    }
+	    lastupdate = time(NULL);
 	} else if (cycnum == cycbuff->cyclenum + 1) {	/* rollover ? */
 	    CNFSReadFreeAndCycle(cycbuff);
-	    count = 0;
 	}
     }
     /*
