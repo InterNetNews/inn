@@ -49,6 +49,7 @@ char	HISTORY[] = _PATH_HISTORY;
 char	NEWSGROUPS[] = _PATH_NEWSGROUPS;
     /* Default permission -- change with adb. */
 BOOL	PERMdefault = FALSE;
+BOOL	ForceReadOnly = FALSE;
 
 STATIC double	STATstart;
 STATIC double	STATfinish;
@@ -385,6 +386,7 @@ PERMinfile(hp, ip, user, pass, accesslist, accessfile)
 
 	PERMcanread = strchr(fields[1], 'R') != NULL;
 	PERMcanpost = strchr(fields[1], 'P') != NULL;
+	if (ForceReadOnly) PERMcanpost=FALSE;
 	(void)strcpy(PERMuser, user ? user : fields[2]);
 	(void)strcpy(PERMpass, pass ? pass : fields[3]);
 	(void)strcpy(accesslist, fields[4]);
@@ -600,7 +602,7 @@ main(argc, argv, env)
     /* Parse arguments.   Must COPY() optarg if used because the
      * TITLEset() routine would clobber it! */
     Reject = NULL;
-    while ((i = getopt(argc, argv, "S:r:s:t")) != EOF)
+    while ((i = getopt(argc, argv, "Rr:s:S:t")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -618,6 +620,9 @@ main(argc, argv, env)
 	    break;
 	case 'r':			/* Reject connection message */
 	    Reject = COPY(optarg);
+	    break;
+	case 'R':			/* Ignore 'P' option in access file */
+	    ForceReadOnly = TRUE;
 	    break;
 	}
     argc -= optind;
