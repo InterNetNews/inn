@@ -637,7 +637,7 @@ STATIC BOOL CNFS_setcurrent(METACYCBUFF *metacycbuff) {
   for (i = 0 ; i < metacycbuff->count ; i++) {
     cycbuff = metacycbuff->members[i];
     if (strncmp(cycbuff->metaname, metacycbuff->name, CNFSNASIZ) != 0) {
-      /* this cycbuff is moved from other metacycbuff */
+      /* this cycbuff is moved from other metacycbuff , or is new */
       cycbuff->order = i + 1;
       cycbuff->currentbuff = FALSE;
       strncpy(cycbuff->metaname, metacycbuff->name, CNFSLASIZ);
@@ -658,6 +658,10 @@ STATIC BOOL CNFS_setcurrent(METACYCBUFF *metacycbuff) {
       cycbuff->order = i + 1;
       cycbuff->needflush = TRUE;
     }
+  }
+  /* If no current cycbuff found (say, all our cycbuffs are new) default to 0 */
+  if (foundcurrent == FALSE) {
+    currentcycbuff = 0;
   }
   for (i = 0 ; i < metacycbuff->count ; i++) {
     cycbuff = metacycbuff->members[i];
