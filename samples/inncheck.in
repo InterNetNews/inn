@@ -61,8 +61,8 @@ $newsgroup = '@NEWSGRP@';
     'newsfeeds',	'newsfeeds',
     'overview.fmt',	'overview_fmt',
     'nntpsend.ctl',	'nntpsend_ctl',
-    'passwd.nntp',	'passwd_nntp'
-    'readers.conf',	'readers_conf',
+    'passwd.nntp',	'passwd_nntp',
+    'readers.conf',	'readers_conf'
 );
 
 ##  The modes of the config files we can check.
@@ -76,8 +76,8 @@ $newsgroup = '@NEWSGRP@';
     'newsfeeds',	0644,
     'overview.fmt',	0644,
     'nntpsend.ctl',	0640,
-    'passwd.nntp',	0640
-    'readers.conf',	0640,
+    'passwd.nntp',	0640,
+    'readers.conf',	0640
 );
 
 
@@ -344,6 +344,7 @@ incoming_conf
     'logsitename',		0,
     'pathhttp',			0,
     'nnrpdposthost',		0,
+    'nnrpdpostport',		0,
     'extendeddbz',		0,
     'nnrpdoverstats',		0,
     'decnetdomain',		0,
