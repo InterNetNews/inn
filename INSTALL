@@ -315,7 +315,7 @@ Configuring INN
                        your history database and memory then you should set
                        this to "yes".
 
-  nntpdoverstats       If set to "yes" then nnrpd will log statistics about
+  nnrpdoverstats       If set to "yes" then nnrpd will log statistics about
                        how much time was spent during the various stages of
                        reading article overview information. Not terribly
                        useful unless you are trying to track down news reader
@@ -332,6 +332,11 @@ Configuring INN
                        faster with this.  Note that on some systems (NextStep
                        and IRIX-6.5 are reported so far) it would be worse than
                        ever.  For those systems overviewmmap should be "no".
+
+  usecontrolchan       All control messages except for the cancel will never
+                       processed by external program fork'ed by innd.  To
+                       reduce excessive load when many control messages arrive
+                       in a short time, this is useful and recommended.
 
   2. newsfeeds (REQUIRED)
 
@@ -387,14 +392,15 @@ Configuring INN
   receive any distributions except those marked as "local" (any such articles
   are probably being leaked out by a misconfigured server).
 
-  Next we'll set up special entries for the overchan, innfeed and (if you're
-  not using cnfs or timehash) crosspost programs. There are already entries
-  for these programs in the default newsfeeds file; you need only uncomment
-  them and edit the pathnames to the programs to match your setup (there are
-  two entries for overchan, one for use with the Storage Manager API and one
-  for use without it; uncomment only the one matching your setup) . Assuming
-  you installed INN under the default path of /usr/local/news then the
-  appropriate feed entries would look like this:
+  Next we'll set up special entries for the overchan, innfeed, controlchan(if
+  you set 'usecontrolchan: true' in inn.conf) and (if you're not using cnfs or
+  timehash) crosspost programs. There are already entries for these programs in
+  the default newsfeeds file; you need only uncomment them and edit the
+  pathnames to the programs to match your setup (there are two entries for
+  overchan, one for use with the Storage Manager API and one for use without
+  it; uncomment only the one matching your setup) . Assuming you installed INN
+  under the default path of /usr/local/news then the appropriate feed entries
+  would look like this:
 
   For traditional storage method:
 
@@ -427,6 +433,14 @@ Configuring INN
   site name as well). The newsgroup list can be left empty if the default
   newsgroup pattern from your ME entry is sufficient; otherwise, set the
   newsgroup pattern appropriately. The last line should not be modified.
+
+  As for controlchan, this is useful and strongly recommended to setup.
+  Processing by controlchan can reduce excessive load if many control messages
+  arrive in a short time.  To enable controlchan:
+
+         controlchan!\
+                 :!*,control,control.*,!control.cancel\
+                 :Tc,Wnsm:/usr/local/news/bin/controlchan
 
   3. incoming.conf (REQUIRED)
 
