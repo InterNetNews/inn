@@ -8,7 +8,7 @@ This is $Revision$, dated $Date$.
 
     For this filter to work successfully, you will need to have Python
     1.5.2 (the latest at this writing) installed.  You can obtain it
-    from <URL:http://www.python.org/>.
+    from <URL:http://www.python.org>.
 
 
 NOTE TO RED HAT LINUX USERS:
@@ -19,17 +19,18 @@ NOTE TO RED HAT LINUX USERS:
     kit from the above URL and build it yourself.  Be sure when
     installing Python on Red Hat, to run configure with
     '--prefix=/usr' so that there are no version conflicts with the
-    "factory" installation.
+    "factory" installation.  You can also find a selection of well
+    made RPMs at <URL:ftp://starship.python.net/pub/crew/andrich/>
 
 
 INSTALLATION:
 
-    Once you have built and installed Python, you can ask INN to use
+    Once you have built and installed Python, you can cause INN to use
     it by adding the '--with-python' switch to your configure command.
 
     See the ctlinnd(8) manual page to learn how to enable, disable and
     reload Python filters on a running server ('ctlinnd mode',
-    'ctlinnd python y|n' and 'ctlinnd reload filter.python').
+    'ctlinnd python y|n', 'ctlinnd reload filter.python').
 
     Also, see the example filter_innd.py script in your filters
     directory for a demonstration of how to get all this working.
@@ -37,24 +38,35 @@ INSTALLATION:
 
 WRITING AN INND FILTER:
 
-    You need to create a filter_innd.py module in INN's bin/filters
-    directory.  A heavily-commented sample is provided that you can
-    use as a template for your own filter.  There is also an INN.py
-    module there which is not actually used by INN; it is just there
-    so you can test your module interactively.
+    You need to create a filter_innd.py module in INN's filter
+    directory (see the pathfilter setting in inn.conf).  A
+    heavily-commented sample is provided that you can use as a
+    template for your own filter.  There is also an INN.py module
+    there which is not actually used by INN; it is there so you
+    can test your module interactively.
 
     First, define a class containing the methods you want to provide
     to innd.  Methods innd will use if present are:
 
         __init__(self):
-            Not explicitly called by innd, but will be run whenever
-            the filter is (re)loaded.
+            Not explicitly called by innd, but will run whenever the
+            filter module is (re)loaded.  This is a good place to
+            initialize constants or pick up where filter_before_reload
+            or filter_close left off.
+
+        filter_before_reload(self):
+            This will execute any time a 'ctlinnd reload all' or
+            'ctlinnd reload filter.python' command is issued.  You can
+            use it to save statistics or reports for use after
+            reloading.
+
+        filter_close(self):
+            This will run when a 'ctlinnd shutdown' command is received.
 
         filter_art(self, art):
             art is a dictionary containing an article's headers and
             body.  This method is called every time innd receives an
-            article.  Not all keys need be present, but the following
-            can be defined:
+            article.  The following can be defined.
             
                 Approved, Control, Date, Distribution, Expires, From,
                 Lines, Message-ID, Newsgroups, Path, Reply-To, Sender,
@@ -65,38 +77,44 @@ WRITING AN INND FILTER:
                 X-Newsposter, X-Cancelled-By, X-Canceled-By,
                 Cancel-Key, __LINES__, __BODY__
 
-            __BODY__ is a string containing the article's entire body,
-            and __LINES__ is an int holding innd's reckoning of the
-            number of lines in the article.  All the other elements
-            will be strings with the contents of the same-named
-            article headers.
+            All the above values will be buffer objects holding the
+            contents of the same named article headers, except for the
+            special __BODY__ and __LINES__ items.  Items not present
+            in the article will contain None.
 
-            If you want to accept an article, return nothing, or an
-            empty string.  To reject, return a non-empty string.  The
+            __BODY__ is a buffer object containing the article's
+            entire body, and __LINES__ is an int holding innd's
+            reckoning of the number of lines in the article.  All the
+            other elements will be buffers with the contents of the
+            same-named article headers.
+
+            If you want to accept an article, return None or an empty
+            string.  To reject, return a non-empty string.  The
             rejection strings will be shown to local clients and your
             peers, so keep that in mind when phrasing your rejection
             responses.
 
         filter_messageid(self, msgid):
-            msgid is a string containing the ID of an article being
-            offered by IHAVE or CHECK.  Like with filter_art(), the
-            message will be refused if you return a non-empty string.
-            If you use this feature, keep it light because it is
-            called at a rather busy place in innd's main loop.  Also,
-            do not rely on this function alone to reject by ID; you
-            should repeat the tests in filter_art() to catch articles
-            sent with TAKETHIS but no CHECK.
+            msgid is a buffer object containing the ID of an article
+            being offered by IHAVE or CHECK.  Like with filter_art(),
+            the message will be refused if you return a non-empty
+            string.  If you use this feature, keep it light because it
+            is called at a rather busy place in innd's main loop.
+            Also, do not rely on this function alone to reject by ID;
+            you should repeat the tests in filter_art() to catch
+            articles sent with TAKETHIS but no CHECK.
 
         filter_mode(self, oldmode, newmode, reason):
             When the operator issues a ctlinnd pause, throttle or go
             command, this function can be used to do something
-            sensible in accordance with the state change.  Stamp a
-            log file, save your state on throttle, etc.  oldmode and
+            sensible in accordance with the state change.  Stamp a log
+            file, save your state on throttle, etc.  oldmode and
             newmode will be strings containing one of the values in
-            ('running', 'throttled', 'paused') -- oldmode is the state
-            innd was in before ctlinnd was run, newmode is the state
-            innd will be in after the command finishes.  reason is the
-            comment string provided on the ctlinnd command line.
+            ('running', 'throttled', 'paused', 'unknown') -- oldmode
+            is the state innd was in before ctlinnd was run, newmode
+            is the state innd will be in after the command finishes.
+            reason is the comment string provided on the ctlinnd
+            command line.
 
     To register your methods with innd, you need to create an instance
     of your class, import the built-in INN module, and pass the
@@ -124,47 +142,88 @@ WRITING AN INND FILTER:
     silently otherwise.
 
     Also, remember to try importing your module interactively before
-    loading it, to ensure there are no syntax or variable errors.  One
-    typo can ruin your whole filter.  A dummy INND.py module is
-    provided to facilitate testing outside the server.
+    loading it, to ensure there are no obvious errors.  One typo can
+    ruin your whole filter.  A dummy INND.py module is provided to
+    facilitate testing outside the server.  To test, change into your
+    filter directory and use a command like:
+
+        python -ic 'import INN, filter_innd'
 
     You can define as many or few of the methods listed above as you
     want in your filter class (it's fine to define more methods for
     your own use; innd won't use them but your filter can).  If you
-    *do* define these methods, GET THE PARAMETER COUNTS RIGHT.  There
-    are checks in innd to see if the methods exist and are callable,
-    but if you define one and get the parameter counts wrong, INND
-    WILL DIE.  You have been warned.  Be careful with your return
-    values, too.  the filter_art() and filter_messageid() methods have
-    to return strings, or nothing at all.  If you return something
+    *do* define the above methods, GET THE PARAMETER COUNTS RIGHT.
+    There are checks in innd to see if the methods exist and are
+    callable, but if you define one and get the parameter counts
+    wrong, INND WILL DIE.  You have been warned.  Be careful with your
+    return values, too.  The filter_art() and filter_messageid()
+    methods have to return strings, or None.  If you return something
     like an int, innd will *not* be happy.
+
+
+WHAT'S THE DEAL WITH THESE BUFFER OBJECTS?
+
+    Buffer objects are cousins of strings, new in Python 1.5.2.  They
+    are supported, but at this writing you won't yet find much about
+    them in the Python documentation.  Using buffer objects may take
+    some getting used to, but we can create buffers much faster and
+    with less memory than strings.
+
+    For most of the operations you will perform in filters (like
+    re.search, string.find, md5.digest) you can treat buffers just
+    like strings, but there are a few important differences you should
+    know about:
+
+        # Make a string and a two buffers.
+        s = "abc"
+        b = buffer("def")
+        bs = buffer("abc")
+
+        s == bs          # - This is false because the types differ...
+        buffer(s) == bs  # - ...but this is true, the types now agree.
+        s == str(bs)     # - This is also true, but buffer() is faster.
+        s[:2] == bs[:2]  # - True.  Buffer slices are strings.
+
+        # While most string methods will take either a buffer or string,
+        # string.join insists on using only strings.
+        string.join([str(b), s], '.')   # returns 'def.abc'
+
+        e = s + b        # This raises a TypeError, but...
+
+        # ...these two both return the string 'abcdef'. The first one
+        # is faster -- choose buffer() over str() whenever you can.
+        e = buffer(s) + b
+        f = s + str(b)
+
+        g = b + '>'      # This is legal, returns the string 'def>'.
 
 
 FUNCTIONS SUPPLIED BY THE BUILT-IN INN MODULE:
 
-    Not only can innd use your Python code, but your Python code can
-    use some of innd's features too.  Here is some sample Python code
-    to show what you get:
+    Not only can innd use Python, but your filter can use some of
+    innd's features too.  Here is some sample Python code to show what
+    you get:
 
     import INN
 
-    # Python's native syslog module doesn't work inside innd, so the
-    # INN module provides a replacement.  The first parameter tells
-    # the Unix syslogger what severity to use; you can abbreviate down
-    # to one letter and it's case insensitive.  Available levels are
-    # (in increasing levels of seriousness) Debug, Info, Notice,
-    # Warning, Err, Crit, and Alert. (If you provide any other string,
-    # it will be defaulted to Notice.)  the second parameter is the
-    # message text.  The syslog entries will go to the same log files
-    # innd itself uses, with a 'python:' prefix.
-    syslog('warning', 'I will not by this record.  It is scratched.')
+    # Python's native syslog module isn't compiled in by default,
+    # so the INN module provides a replacement.  The first parameter
+    # tells the Unix syslogger what severity to use; you can
+    # abbreviate down to one letter and it's case insensitive.
+    # Available levels are (in increasing levels of seriousness)
+    # Debug, Info, Notice, Warning, Err, Crit, and Alert. (If you
+    # provide any other string, it will be defaulted to Notice.)  The
+    # second parameter is the message text.  The syslog entries will
+    # go to the same log files innd itself uses, with a 'python:'
+    # prefix.
+    syslog('warning', 'I will not buy this record.  It is scratched.')
     animals = 'eels'
     vehicle = 'hovercraft'
     syslog('N', 'My %s is full of %s.' % (vehicle, animals))
 
     # Let's cancel an article!  This only deletes the message on the
     # local server; it doesn't send out a control message or anything
-    # scary like that.
+    # scary like that.  Returns 1 if successful, else 0.
     if INN.cancel('<meow$123.456@solvangpastries.edu>'):
         canceled = "yup"
     else:
@@ -174,16 +233,16 @@ FUNCTIONS SUPPLIED BY THE BUILT-IN INN MODULE:
     # necessarily mean the article is on your spool; canceled and
     # expired articles hang around in history for a while, and
     # rejected articles will be in there if you have enabled
-    # remember_trash in inn.conf.
-    if INN.havehist('<z456$789.abc@isc.org'):
+    # remember_trash in inn.conf. Returns 1 if found, else 0.
+    if INN.havehist('<z456$789.abc@isc.org>'):
         comment = "*yawn* I've already seen this article."
     else:
         comment = 'Mmm, fresh news.'
 
     # Here we are running a local spam filter, so why eat all those
     # cancels?  We can add fake entries to history so they'll get
-    # refused.  Returns 1 on success, 0 on failure
-    canceled_id = "<meow$123.456@isc.org>"
+    # refused.  Returns 1 on success, 0 on failure.
+    canceled_id = buffer('<meow$123.456@isc.org>')
     if INN.addhist("<cancel." + canceled_id[1:]):
         thought = "Eat my dust, roadkill!"
     else:
@@ -192,12 +251,13 @@ FUNCTIONS SUPPLIED BY THE BUILT-IN INN MODULE:
     # We can look at the header or all of an article already on spool,
     # too.  Might be useful for long-memory despamming or
     # authentication things.  Each is returned (if present) as a
-    # string; otherwise you'll end up with an empty string.    
+    # string object; otherwise you'll end up with an empty string.
     artbody = INN.article('<foo$bar.baz@bungmunch.edu>')
     artheader = INN.head('<foo$bar.baz@bungmunch.edu>')
 
     # Finally, do you want to see if a given newsgroup is moderated or
-    # whatever?
+    # whatever?  INN.newsgroup returns the last field of a group's
+    # entry in active as a string.
     froupflag = INN.newsgroup('alt.fan.karl-malden.nose')
     if froupflag == '':
         moderated = 'no such newsgroup'
