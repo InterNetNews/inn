@@ -43,6 +43,21 @@ SIGHANDLER buserr(int dummy)
     exit(0);
 }
 
+/*
+ * some compiler recognize the code unwantedly
+ * to avoid this the code is separated and call store() and load_and_store()
+ */
+void
+store(unsigned long *p, unsigned long val)
+{
+    *p = val;
+}
+void
+load_and_store(unsigned long *p, unsigned long val)
+{
+    *p += val;
+}
+
 
 /* byte order array */
 char byte[8] = { (char)0x12, (char)0x36, (char)0x48, (char)0x59,
@@ -80,8 +95,8 @@ int main()
     /* mis-align our long fetches */
     for (i=0; i < sizeof(long); ++i) {
 	p = (unsigned long *)(byte+i);
-	*p = i;
-	*p += 1;
+	store(p, i);
+	load_and_store(p, 1);
     }
 
     /* if we got here, then we can mis-align longs */
