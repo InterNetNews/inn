@@ -81,6 +81,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "innlistener.h"
 
 #include <configdata.h>
+#include <storage.h>
 
 #define INHERIT 1
 #define NO_INHERIT 0
@@ -151,6 +152,7 @@ int main (int argc, char **argv)
   char *copt = NULL ;
   bool checkConfig = false ;
   struct rlimit rl;
+  bool val;
 
 
   strcpy (dateString,ctime(&now)) ;
@@ -316,6 +318,11 @@ int main (int argc, char **argv)
       syslog (LOG_NOTICE,STARTING_PROGRAM,versionInfo,dateString) ;
     }
 
+  val = TRUE;
+  if (!SMsetup(SM_RDWR, (void *)&val) || !SMsetup(SM_PREOPEN, (void *)&val)) {
+      syslog(LOG_ERR, "cant setup the storage subsystem\n");
+      exit(1);
+  }
   if (!SMinit()) {
       d_printf(0, "Storage manager initialization failed\n");
       syslog(LOG_ERR, "Storage manager initialization failed\n");

@@ -105,7 +105,7 @@
 **
 */
 
-#if defined (sun) && defined (__svr4__)
+#if defined (sun) && defined (__SVR4)
 /* #define DO_NEED_STRERROR 1 */  /* this is needed for version < 2.5 */
 #define GETSOCKOPT_ARG  char *
 #define MAX_WRITEV_VEC  16
@@ -123,7 +123,7 @@
 ** SunOS 4.x
 */
 
-#if defined (sun) && ! defined (__svr4__)
+#if defined (sun) && ! defined (__SVR4)
 #define MAX_WRITEV_VEC 16
 #define DO_NEED_STRERROR 1
 #define HAVE_MMAP
