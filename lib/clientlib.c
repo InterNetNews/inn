@@ -1,14 +1,12 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Routines compatible with the NNTP "clientlib" routines.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
-#include "nntp.h"
-#include "paths.h"
+
 #include "libinn.h"
+#include "nntp.h"
 
 
 FILE	*ser_rd_fp = NULL;
@@ -39,6 +37,11 @@ char *getserverbyfile(char *file)
 int server_init(char *host, int port)
 {
     char	line2[NNTP_STRLEN];
+
+    /* This interface may be used by clients that assume C News behavior and
+       won't read inn.conf themselves. */
+    if (innconf == NULL)
+        if (ReadInnConf() < 0) exit(1);
 
     if (NNTPconnect(host, port, &ser_rd_fp, &ser_wr_fp, ser_line) < 0) {
 	if (ser_line[0] == '\0')
