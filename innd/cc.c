@@ -788,7 +788,7 @@ CChangup(char *av[])
 **  Return our operating mode.
 */
 static const char *
-CCmode(char *unused[])
+CCmode(char *unused[] UNUSED)
 {
     char	*p;
     int		i;
@@ -797,8 +797,6 @@ CCmode(char *unused[])
 #if defined(DO_PERL)
     char        *stats;
 #endif /* defined(DO_PERL) */
-
-    unused = unused;		/* ARGSUSED */
 
     /* FIXME: We assume here that BUFSIZ is >= 512, and that none of
      * ModeReason, RejectReason, Reservation, NNRPReason, or the Perl filter
@@ -893,6 +891,7 @@ CCmode(char *unused[])
     /* Perl filter status. */
     stats = PLstats();
     if (stats != NULL) {
+        *p++ = '\n';
         p += strlen(strcpy(p, "Perl filter stats: "));
         p += strlen(strcpy(p, stats));
         free(stats);
