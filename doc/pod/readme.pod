@@ -77,7 +77,8 @@ vendor non-ANSI compilers, however, so if you're stuck with one,
 installing gcc is highly recommended.  Not only will it let you build INN,
 it will make installing lots of other software much easier.  You may also
 need GNU make (particularly if your system make is BSD-derived), although
-most SysV make programs should work fine.
+most SysV make programs should work fine.  Compiling INN also currently
+requires a yacc implementation (bison will do fine).
 
 INN uses GNU autoconf to probe the capabilities of your system, and
 therefore should compile on nearly any Unix system.  It does, however,
