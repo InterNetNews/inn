@@ -62,9 +62,9 @@ static const char * const gai_errors[] = {
 
 /* Value representing all of the hint flags set. */
 #if TESTING
-# define AI_INTERNAL_ALL 0x008f
+# define AI_INTERNAL_ALL 0x00ff
 #else
-# define AI_INTERNAL_ALL 0x004f
+# define AI_INTERNAL_ALL 0x007f
 #endif
 
 /* Macro to set the len attribute of sockaddr_in. */
