@@ -935,8 +935,7 @@ Use a raw disk partition (best).  This will give you the most speed, but
 it requires your OS support mmap() on a block device.  Solaris supports
 this, FreeBSD and Linux (without patches) do not.  Also on many PC-based
 Unixes it is difficult to create more than eight partitions, which may
-limit your options.  See L<Creating the Article Spool> for more discussion
-of how to set this up.
+limit your options.
 
 =item 2.
 
@@ -1001,6 +1000,9 @@ the metacycbuff line.  This may give noticeably better performance when
 using multiple cycbuffs on the same spindle (such as partitions or slices
 of a larger disk), but will probably give worse performance if your
 cycbuffs are spread out across a lot of spindles.
+
+Finally, you have to create the cycbuffs.  See L<Creating the Article
+Spool> for more information on how to do that.
 
 =head2 storage.conf
 
