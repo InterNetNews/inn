@@ -90,6 +90,9 @@
 #include "ovinterface.h"
 #include "ovdb.h"
 
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
+# include <sys/un.h>
+#endif
 
 #ifdef HAVE_INN_VERSION_H
 #include "inn/version.h"
@@ -266,22 +269,35 @@ static int crecv(void *data, int n)
 static int client_connect()
 {
     int r, p = 0;
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
+    struct sockaddr_un sa;
+#else
     struct sockaddr_in sa;
+#endif
     char banner[sizeof(OVDB_SERVER_BANNER)];
     fd_set fds;
     struct timeval timeout;
 
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
+    clientfd = socket(AF_UNIX, SOCK_STREAM, 0);
+#else
     clientfd = socket(AF_INET, SOCK_STREAM, 0);
+#endif
     if(clientfd < 0) {
 	syslog(LOG_ERR, "OVDB: rc: socket: %m");
 	return -1;
     }
+
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
+    sa.sun_family = AF_UNIX;
+    strcpy(sa.sun_path, cpcatpath(innconf->pathrun, OVDB_SERVER_SOCKET));
+#else
     sa.sin_family = AF_INET;
     sa.sin_port = 0;
     sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     bind(clientfd, (struct sockaddr *) &sa, sizeof sa);
-
     sa.sin_port = htons(OVDB_SERVER_PORT);
+#endif
     if((r = connect(clientfd, (struct sockaddr *) &sa, sizeof sa)) != 0) {
 	syslog(LOG_ERR, "OVDB: rc: cant connect to server: %m");
 	close(clientfd);

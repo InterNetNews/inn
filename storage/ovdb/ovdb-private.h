@@ -120,7 +120,8 @@ BOOL ovdb_check_user(void);
 #define RPLY_ERROR	0x10
 #define OVDB_SERVER	(1<<4)
 #define OVDB_SERVER_BANNER "ovdb read protocol 1"
-#define OVDB_SERVER_PORT 32323	/* FIXME: make this configurable */
+#define OVDB_SERVER_PORT 32323	/* only used if don't have unix domain sockets */
+#define OVDB_SERVER_SOCKET "ovdb.server"
 
 struct rs_cmd {
     uint32_t	what;

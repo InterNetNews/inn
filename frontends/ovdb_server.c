@@ -24,6 +24,10 @@
 # include <sys/mman.h>
 #endif
 
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
+# include <sys/un.h>
+#endif
+
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
@@ -677,11 +681,34 @@ reap(void)
     return 0;
 }
 
+#ifndef MAP_ANON
+#ifdef MAP_ANONYMOUS
+#define MAP_ANON MAP_ANONYMOUS
+#endif
+#endif
+
+void *
+sharemem(size_t len)
+{
+#ifdef MAP_ANON
+    return mmap(0, len, PROT_READ|PROT_WRITE, MAP_ANON|MAP_SHARED, -1, 0);
+#else
+    int fd = open("/dev/zero", O_RDWR, 0);
+    char *ptr = mmap(0, len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    close(fd);
+    return ptr;
+#endif
+}
+
 int
 main(int argc, char *argv[])
 {
     int i, salen, ret;
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
+    struct sockaddr_un sa;
+#else
     struct sockaddr_in sa;
+#endif
     struct timeval tv;
     fd_set rdset;
 
@@ -707,7 +734,11 @@ main(int argc, char *argv[])
 
     read_ovdb_conf();
 
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
+    listensock = socket(AF_UNIX, SOCK_STREAM, 0);
+#else
     listensock = socket(AF_INET, SOCK_STREAM, 0);
+#endif
     if(listensock < 0) {
 	fprintf(stderr, "ovdb_server: socket: %s\n", strerror(errno));
 	exit(1);
@@ -715,11 +746,27 @@ main(int argc, char *argv[])
 
     nonblocking(listensock, 1);
 
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
+    sa.sun_family = AF_UNIX;
+    strcpy(sa.sun_path, cpcatpath(innconf->pathrun, OVDB_SERVER_SOCKET));
+    unlink(sa.sun_path);
+    ret = bind(listensock, (struct sockaddr *)&sa, sizeof sa);
+#else
     sa.sin_family = AF_INET;
     sa.sin_port = htons(OVDB_SERVER_PORT);
     sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     
-    if(bind(listensock, (struct sockaddr *)&sa, sizeof sa) != 0) {
+    ret = bind(listensock, (struct sockaddr *)&sa, sizeof sa);
+
+    if(ret != 0 && errno == EADDRNOTAVAIL) {
+	sa.sin_family = AF_INET;
+	sa.sin_port = htons(OVDB_SERVER_PORT);
+	sa.sin_addr.s_addr = INADDR_ANY;
+	ret = bind(listensock, (struct sockaddr *)&sa, sizeof sa);
+    }
+#endif
+
+    if(ret != 0) {
 	fprintf(stderr, "ovdb_server: bind: %s\n", strerror(errno));
 	exit(1);
     }
@@ -740,10 +787,10 @@ main(int argc, char *argv[])
     xrsignal(SIGCHLD, childsig);
     parent = getpid();
 
-    children = mmap(0, sizeof(struct child) * (ovdb_conf.numrsprocs+1),
-		PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_SHARED, -1, 0);
+    children = sharemem(sizeof(struct child) * (ovdb_conf.numrsprocs+1));
+
     if(children == NULL) {
-	fprintf(stderr, "ovdb_server: mmap: %s\n");
+	fprintf(stderr, "ovdb_server: mmap: %s\n", strerror(errno));
 	exit(1);
     }
     for(i = 0; i < ovdb_conf.numrsprocs+1; i++) {
