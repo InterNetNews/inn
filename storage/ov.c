@@ -362,10 +362,18 @@ BOOL OVctl(OVCTLTYPE type, void *val) {
 	    (void)fprintf(stderr, "OVGROUPBASEDEXPIRE is not allowed if groupbaseexpiry if false");
 	    return FALSE;
 	}
-	if (((OVGE *)val)->delayrm && ((((OVGE *)val)->filename == NULL) || strlen(((OVGE *)val)->filename) == 0)) {
-	    syslog(L_ERROR, "file name must be specified");
-	    (void)fprintf(stderr, "file name must be specified");
-	    return FALSE;
+	if (((OVGE *)val)->delayrm) {
+	    if ((((OVGE *)val)->filename == NULL) || (strlen(((OVGE *)val)->filename) == 0)) {
+		syslog(L_ERROR, "file name must be specified");
+		(void)fprintf(stderr, "file name must be specified");
+	  	return FALSE;
+	    }
+	    if ((EXPunlinkfile = fopen(((OVGE *)val)->filename, "w")) == NULL) {
+		syslog(L_ERROR, "fopen: %s failed: %m", ((OVGE *)val)->filename);
+		(void)fprintf(stderr, "fopen: %s failed: %s", ((OVGE *)val)->filename, 
+			      strerror(errno));
+		return FALSE;
+	    }
 	}
 	OVdelayrm = ((OVGE *)val)->delayrm;
 	OVusepost = ((OVGE *)val)->usepost;
@@ -375,11 +383,6 @@ BOOL OVctl(OVCTLTYPE type, void *val) {
 	OVkeep = ((OVGE *)val)->keep;
 	OVearliest = ((OVGE *)val)->earliest;
 	OVignoreselfexpire = ((OVGE *)val)->ignoreselfexpire;
-	if (((OVGE *)val)->filename != NULL && (EXPunlinkfile = fopen(((OVGE *)val)->filename, "w")) == NULL) {
-	    syslog(L_ERROR, "fopen: %s failed: %m", ((OVGE *)val)->filename);
-	    (void)fprintf(stderr, "fopen: %s failed: %s", ((OVGE *)val)->filename, strerror(errno));
-	    return FALSE;
-	}
 	return TRUE;
     }
     return ((*ov.ctl)(type, val));
