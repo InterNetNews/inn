@@ -34,18 +34,21 @@ daemonize(const char *path)
     else if (status > 0)
         _exit(0);
 
-#ifdef TIOCNOTTY
+    /* setsid() should take care of disassociating from the controlling
+       terminal, and FreeBSD at least doesn't like TIOCNOTTY if you don't
+       already have a controlling terminal.  So only use the older TIOCNOTTY
+       method if setsid() isn't available. */
+#if HAVE_SETSID
+    if (setsid() < 0)
+        syswarn("cant become session leader");
+#elif defined(TIOCNOTTY)
     fd = open("/dev/tty", O_RDWR);
     if (fd >= 0) {
         if (ioctl(fd, TIOCNOTTY, NULL) < 0)
             syswarn("cant disassociate from the terminal");
         close(fd);
     }
-#endif /* TIOCNOTTY */
-
-#if HAVE_SETSID
-    setsid();
-#endif
+#endif /* defined(TIOCNOTTY) */
 
     if (chdir(path) < 0)
         syswarn("cant chdir to %s", path);
