@@ -1678,8 +1678,8 @@ STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list, 
 
 	if ((sp->Hops && hopcount > sp->Hops)
 	 || (!sp->IgnorePath && ListHas(hops, sp->Name))
-	 || (sp->Groupcount && Groupcount > sp->Groupcount))
-	 || (sp->Followcount && Followcount > sp->Followcount))
+	 || (sp->Groupcount && Groupcount > sp->Groupcount)
+	 || (sp->Followcount && Followcount > sp->Followcount)
 	 || (sp->Crosscount && Crosscount > sp->Crosscount))
 	    /* Site already saw the article; path too long; or too much
 	     * cross-posting. */
