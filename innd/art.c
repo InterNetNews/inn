@@ -1090,6 +1090,7 @@ ARTreject(code, cp, buff, article)
       break;
     case REJECT_OTHER:
       cp->Unwanted_o++;
+      break;
     default:
       /* should never be here */
       syslog(L_NOTICE, "%s unknown reject type received by ARTreject()",
