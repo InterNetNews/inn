@@ -44,7 +44,7 @@ sub control_ihave {
         }
     }
     elsif ($action eq "doit") {
-        open(GREPHIST, "|grephistory -s > $tempfile");
+        open(GREPHIST, "|grephistory -s -i > $tempfile");
         open(ARTICLE, "$SM $token|");
         SMHEAD2: while(<ARTICLE>) { last SMHEAD2 if /^$/ }
         while (<ARTICLE>) { print GREPHIST $_ }
