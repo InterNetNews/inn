@@ -825,7 +825,7 @@ ARTparse(CHANNEL *cp)
 	    data->NullHeader = true;
 	    break;
 	  case '\r':
-            if (data->LastCR >= cp->Start && data->LastCR != (size_t) -1)
+            if (data->LastCR >= cp->Start)
 	      data->CRwithoutLF++;
 	    data->LastCR = i;
 	    break;
@@ -849,7 +849,7 @@ ARTparse(CHANNEL *cp)
 	      }
 	      if (data->LastCRLF + MAXHEADERSIZE < i)
 		snprintf(cp->Error, sizeof(cp->Error),
-                         "%d Too long line in header %d bytes",
+                         "%d Too long line in header %ld bytes",
                          NNTP_REJECTIT_VAL, i - data->LastCRLF);
 	      else if (data->LastCRLF + 2 == i) {
 		/* header ends */
@@ -907,7 +907,7 @@ bodyprocessing:
 	/* rest of the line */
 	switch (bp->data[i]) {
 	  case '\r':
-            if (data->LastCR >= cp->Start && data->LastCR != (size_t) -1)
+            if (data->LastCR >= cp->Start)
 	      data->CRwithoutLF++;
 	    data->LastCR = i;
 	    break;
@@ -985,7 +985,7 @@ sizecheck:
   size = i - cp->Start;
   fudge = data->HeaderLines + data->Lines + 4;
   if (innconf->maxartsize > 0)
-    if (size > fudge && size - fudge > (size_t) innconf->maxartsize)
+    if (size > fudge && size - fudge > innconf->maxartsize)
         cp->State = CSeatarticle;
   cp->Next = i;
   return;

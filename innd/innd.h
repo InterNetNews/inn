@@ -358,9 +358,9 @@ typedef struct _CHANNEL {
   int		       HoldTime;
   time_t	       ArtBeg;
   int		       ArtMax;
-  size_t	       Start;		/* where current cmd/article starts
+  long		       Start;		/* where current cmd/article starts
 					   it indicates offset from bp->Data */
-  size_t	       Next;		/* next pointer to read
+  long		       Next;		/* next pointer to read
 					   it indicates offset from bp->Data */
   char		       Error[SMBUF];	/* error buffer */
   ARTDATA	       Data;		/* used for processing article */
