@@ -36,13 +36,13 @@ typedef struct {
     BOOL		rollover;	/* true if the search is rollovered */
 } PRIV_CNFS;
 
-static char LocalLogName[] = "CNFS-sm";
-static CYCBUFF		*cycbufftab = (CYCBUFF *)NULL;
-static METACYCBUFF 	*metacycbufftab = (METACYCBUFF *)NULL;
-static CNFSEXPIRERULES	*metaexprulestab = (CNFSEXPIRERULES *)NULL;
-static long		pagesize = 0;
+STATIC char LocalLogName[] = "CNFS-sm";
+STATIC CYCBUFF		*cycbufftab = (CYCBUFF *)NULL;
+STATIC METACYCBUFF 	*metacycbufftab = (METACYCBUFF *)NULL;
+STATIC CNFSEXPIRERULES	*metaexprulestab = (CNFSEXPIRERULES *)NULL;
+STATIC long		pagesize = 0;
 
-static TOKEN CNFSMakeToken(char *cycbuffname, CYCBUFF_OFF_T offset,
+STATIC TOKEN CNFSMakeToken(char *cycbuffname, CYCBUFF_OFF_T offset,
 		       INT32_T cycnum, STORAGECLASS class) {
     TOKEN               token;
     INT32_T		int32;
@@ -67,7 +67,7 @@ static TOKEN CNFSMakeToken(char *cycbuffname, CYCBUFF_OFF_T offset,
 ** NOTE: We assume that cycbuffname is 9 bytes long.
 */
 
-static BOOL CNFSBreakToken(TOKEN token, char *cycbuffname,
+STATIC BOOL CNFSBreakToken(TOKEN token, char *cycbuffname,
 			   CYCBUFF_OFF_T *offset, INT32_T *cycnum) {
     INT32_T	int32;
 
@@ -86,7 +86,7 @@ static BOOL CNFSBreakToken(TOKEN token, char *cycbuffname,
     return TRUE;
 }
 
-static char hextbl[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+STATIC char hextbl[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 			'a', 'b', 'c', 'd', 'e', 'f'};
 
 /*
@@ -96,7 +96,7 @@ static char hextbl[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 **	If "leadingzeros" is true, the number returned will have leading 0's.
 */
 
-static char * CNFSofft2hex(CYCBUFF_OFF_T offset, BOOL leadingzeros) {
+STATIC char * CNFSofft2hex(CYCBUFF_OFF_T offset, BOOL leadingzeros) {
     static char	buf[24];
     char	*p;
 
@@ -129,7 +129,7 @@ static char * CNFSofft2hex(CYCBUFF_OFF_T offset, BOOL leadingzeros) {
 **	of a CYCBUFF_OFF_T, return a CYCBUFF_OFF_T.
 */
 
-static CYCBUFF_OFF_T CNFShex2offt(char *hex) {
+STATIC CYCBUFF_OFF_T CNFShex2offt(char *hex) {
     if (sizeof(CYCBUFF_OFF_T) <= 4) {
 	CYCBUFF_OFF_T	rpofft;
 	/* I'm lazy */
@@ -161,7 +161,7 @@ static CYCBUFF_OFF_T CNFShex2offt(char *hex) {
     }
 }
 
-static void CNFScleancycbuff(void) {
+STATIC void CNFScleancycbuff(void) {
     CYCBUFF	*cycbuff, *nextcycbuff;
 
     for (cycbuff = cycbufftab; cycbuff != (CYCBUFF *)NULL;) {
@@ -172,7 +172,7 @@ static void CNFScleancycbuff(void) {
     cycbufftab = (CYCBUFF *)NULL;
 }
 
-static void CNFScleanmetacycbuff(void) {
+STATIC void CNFScleanmetacycbuff(void) {
     METACYCBUFF	*metacycbuff, *nextmetacycbuff;
 
     for (metacycbuff = metacycbufftab; metacycbuff != (METACYCBUFF *)NULL;) {
@@ -185,7 +185,7 @@ static void CNFScleanmetacycbuff(void) {
     metacycbufftab = (METACYCBUFF *)NULL;
 }
 
-static void CNFScleanexpirerule(void) {
+STATIC void CNFScleanexpirerule(void) {
     CNFSEXPIRERULES	*metaexprule, *nextmetaexprule;
 
     for (metaexprule = metaexprulestab; metaexprule != (CNFSEXPIRERULES *)NULL;) {
@@ -196,7 +196,7 @@ static void CNFScleanexpirerule(void) {
     metaexprulestab = (CNFSEXPIRERULES *)NULL;
 }
 
-static CYCBUFF *CNFSgetcycbuffbyname(char *name) {
+STATIC CYCBUFF *CNFSgetcycbuffbyname(char *name) {
     CYCBUFF	*cycbuff;
  
     if (name == NULL)
@@ -207,7 +207,7 @@ static CYCBUFF *CNFSgetcycbuffbyname(char *name) {
     return NULL;
 }
 
-static METACYCBUFF *CNFSgetmetacycbuffbyname(char *name) {
+STATIC METACYCBUFF *CNFSgetmetacycbuffbyname(char *name) {
   METACYCBUFF	*metacycbuff;
 
   if (name == NULL)
@@ -218,10 +218,10 @@ static METACYCBUFF *CNFSgetmetacycbuffbyname(char *name) {
   return NULL;
 }
 
-static BOOL CNFSflushhead(CYCBUFF *cycbuff) {
+STATIC BOOL CNFSflushhead(CYCBUFF *cycbuff) {
   int			fd;
   int			b;
-  static CYCBUFFEXTERN	rpx;
+  CYCBUFFEXTERN		rpx;
 
   memset(&rpx, 0, sizeof(CYCBUFFEXTERN));
   if ((fd = open(cycbuff->path, O_WRONLY)) < 0) {
@@ -251,7 +251,7 @@ static BOOL CNFSflushhead(CYCBUFF *cycbuff) {
   return TRUE;
 }
 
-static void CNFSflushallheads(void) {
+STATIC void CNFSflushallheads(void) {
   CYCBUFF	*cycbuff;
 
   for (cycbuff = cycbufftab; cycbuff != (CYCBUFF *)NULL; cycbuff = cycbuff->next) {
@@ -265,7 +265,7 @@ static void CNFSflushallheads(void) {
 **	free pointer and cycle number.  Return 1 on success, 0 otherwise.
 */
 
-static BOOL CNFSReadFreeAndCycle(CYCBUFF *cycbuff) {
+STATIC BOOL CNFSReadFreeAndCycle(CYCBUFF *cycbuff) {
     CYCBUFFEXTERN	rpx;
     char		buf[64];
 
@@ -282,7 +282,7 @@ static BOOL CNFSReadFreeAndCycle(CYCBUFF *cycbuff) {
     return TRUE;
 }
 
-static BOOL CNFSparse_part_line(char *l) {
+STATIC BOOL CNFSparse_part_line(char *l) {
   char		*p;
   struct stat	sb;
   CYCBUFF_OFF_T	len, minartoffset;
@@ -328,6 +328,7 @@ static BOOL CNFSparse_part_line(char *l) {
   cycbuff->len = len;
   cycbuff->fdrd = -1;
   cycbuff->fdrdwr = -1;
+  cycbuff->next = (CYCBUFF *)NULL;
   /*
   ** The minimum article offset will be the size of the bitfield itself,
   ** len / (blocksize * 8), plus however many additional blocks the CYCBUFF
@@ -348,7 +349,7 @@ static BOOL CNFSparse_part_line(char *l) {
   return TRUE;
 }
 
-static BOOL CNFSparse_metapart_line(char *l) {
+STATIC BOOL CNFSparse_metapart_line(char *l) {
   char		*p, *cycbuff;
   int		rpi;
   CYCBUFF	*rp;
@@ -364,6 +365,7 @@ static BOOL CNFSparse_metapart_line(char *l) {
   metacycbuff->members = (CYCBUFF **)NULL;
   metacycbuff->count = 0;
   metacycbuff->name = COPY(l);
+  metacycbuff->next = (METACYCBUFF *)NULL;
   l = ++p;
 
   /* Cycbuff list */
@@ -419,7 +421,7 @@ static BOOL CNFSparse_metapart_line(char *l) {
   return TRUE;
 }
 
-static BOOL CNFSparse_groups_line() {
+STATIC BOOL CNFSparse_groups_line() {
   METACYCBUFF	*mrp;
   STORAGE_SUB	*sub = (STORAGE_SUB *)NULL;
   CNFSEXPIRERULES	*metaexprule, *tmp;
@@ -464,7 +466,7 @@ static BOOL CNFSparse_groups_line() {
 ** bad things will happen.
 */
 
-static BOOL CNFSinit_disks(void) {
+STATIC BOOL CNFSinit_disks(void) {
   char		buf[64];
   CYCBUFFEXTERN	rpx;
   int		i, fd, bytes;
@@ -583,7 +585,7 @@ static BOOL CNFSinit_disks(void) {
 ** C all that often anymore....
 */
 
-static BOOL CNFSread_config(void) {
+STATIC BOOL CNFSread_config(void) {
     char	*config, *from, *to, **ctab = (char **)NULL;
     int		ctab_free = 0;	/* Index to next free slot in ctab */
     int		ctab_i;
@@ -679,7 +681,7 @@ static BOOL CNFSread_config(void) {
 
 typedef unsigned long	ULONG;
 
-static int CNFSUsedBlock(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset,
+STATIC int CNFSUsedBlock(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset,
 	      BOOL set_operation, BOOL setbitvalue) {
     CYCBUFF_OFF_T	blocknum;
     CYCBUFF_OFF_T	longoffset;
@@ -751,7 +753,7 @@ static int CNFSUsedBlock(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset,
 **	previously mmap()'ed.
 */
 
-static void CNFSmunmapbitfields(void) {
+STATIC void CNFSmunmapbitfields(void) {
     CYCBUFF	*cycbuff;
 
     for (cycbuff = cycbufftab; cycbuff != (CYCBUFF *)NULL; cycbuff = cycbuff->next) {
@@ -762,7 +764,7 @@ static void CNFSmunmapbitfields(void) {
     }
 }
 
-static int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, INT32_T cycnum) {
+STATIC int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, INT32_T cycnum) {
     static	count = 0;
     CYCBUFF	*tmp;
 
@@ -999,10 +1001,10 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
     private = NEW(PRIV_CNFS, 1);
     art->private = (void *)private;
     art->arrived = cah.arrived;
-    private->len = cah.size;
     offset += sizeof(cah);
     pagefudge = offset % pagesize;
     mmapoffset = offset - pagefudge;
+    private->len = pagefudge + cah.size;
     if ((private->base = mmap((MMAP_PTR)0, private->len, PROT_READ, MAP__ARG,
 			      cycbuff->fdrd, mmapoffset)) == (MMAP_PTR) -1) {
         SMseterror(SMERR_UNDEFINED, "mmap failed");
@@ -1149,10 +1151,10 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, RETRTYPE amount) {
     art->arrived = cah.arrived;
     token = CNFSMakeToken(cycbuff->name, offset, cycbuff->cyclenum, cah.class);
     art->token = &token;
-    private->len = cah.size;
     offset += sizeof(cah);
     pagefudge = offset % pagesize;
     mmapoffset = offset - pagefudge;
+    private->len = pagefudge + cah.size;
     if ((private->base = mmap((MMAP_PTR)0, private->len, PROT_READ, MAP__ARG,
 	cycbuff->fdrd, mmapoffset)) == (MMAP_PTR) -1) {
 	art->data = NULL;
