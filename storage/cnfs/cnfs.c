@@ -998,7 +998,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	cah.arrived = htonl(time(NULL));
     else
 	cah.arrived = htonl(article.arrived);
-    cah.class = htonl(class);
+    cah.class = class;
 
     if (CNFSseek(cycbuff->fd, artoffset, SEEK_SET) < 0) {
 	SMseterror(SMERR_INTERNAL, "CNFSseek() failed");
