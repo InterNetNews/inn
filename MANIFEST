@@ -1,5 +1,5 @@
 File Name                             Description
-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 CONTRIBUTORS                          List of contributors
 HACKING                               Docs for INN coders and maintainers
 INSTALL                               INN installation instructions
@@ -271,6 +271,7 @@ frontends/signcontrol.in              PGP control message signing program
 frontends/sm.c                        Get article or overview data from token
 frontends/sys2nf.c                    Sys file to newsfeeds conversion aide
 include                               Header files (Directory)
+include/Makefile                      Makefile for header files
 include/acconfig.h                    Master file for config.h.in
 include/clibrary.h                    C library portability
 include/conffile.h                    Header file for reading *.conf files
@@ -388,7 +389,6 @@ lib/makedir.c                         Make directory recursively
 lib/malloc.c                          A debugging malloc package
 lib/md5.c                             MD5 checksum calculation
 lib/memcmp.c                          memcmp replacement
-lib/mkversion                         Generate inn/version.h with INN version
 lib/nonblocking.c                     Set or clear non-blocking I/O
 lib/parsedate.y                       Date parsing
 lib/perl.c                            Perl hook support for nnrpd and innd
@@ -583,6 +583,8 @@ support/ltconfig                      Configure libtool
 support/ltmain.sh                     Source for libtool utility
 support/makedepend                    Generate dependencies for C files
 support/mkchangelog                   Generate ChangeLog from CVS
+support/mksystem                      Generate <inn/system.h> from config.h
+support/mkversion                     Generate <inn/version.h> with INN version
 tests                                 Test suite for INN (Directory)
 tests/Makefile                        Makefile for test suite
 tests/TESTS                           List of tests to run
