@@ -855,7 +855,9 @@ dnl Libraries and flags for embedded Perl.  Some distributions of Linux have
 dnl Perl linked with gdbm but don't normally have gdbm installed, so on that
 dnl platform only strip -lgdbm out of the Perl libraries.  Leave it in on
 dnl other platforms where it may be necessary (it isn't on Linux; Linux
-dnl shared libraries can manage their own dependencies).
+dnl shared libraries can manage their own dependencies).  Strip -lc out, which
+dnl is added on some platforms, is unnecessary, and breaks compiles with
+dnl -pthread (which may be added by Python).
 dnl
 dnl If we aren't compiling with large-file support, strip out the large file
 dnl flags from inn_perl_core_flags; otherwise, innd/cc.c and lib/qio.c
@@ -868,6 +870,7 @@ if test x"$DO_PERL" = xDO ; then
     inn_perl_core_flags=`$_PATH_PERL -MExtUtils::Embed -e ccopts`
     inn_perl_core_libs=`$_PATH_PERL -MExtUtils::Embed -e ldopts 2>&1 | tail -1`
     inn_perl_core_libs=" $inn_perl_core_libs "
+    inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/ -lc / /'`
     for i in $LIBS ; do
         inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed "s/ $i / /"`
     done
