@@ -612,12 +612,14 @@ if test x"$DO_PYTHON" = xdefine ; then
     py_ver=`$_PATH_PYTHON -c 'import sys; print sys.version[[:3]]'`
     py_libdir="${py_prefix}/lib/python${py_ver}"
     PYTHON_INC="-I${py_prefix}/include/python${py_ver}"
-    py_libs=`grep '^LIBS=' $py_libdir/config/Makefile | sed -e 's/^.*=//'`
-    py_libc=`grep '^LIBC=' $py_libdir/config/Makefile | sed -e 's/^.*=//'`
-    py_libm=`grep '^LIBM=' $py_libdir/config/Makefile | sed -e 's/^.*=//'`
-    py_liblocalmod=`grep '^LOCALMODLIBS=' $py_libdir/config/Makefile | sed -e 's/^.*=//'`
-    py_libbasemod=`grep '^BASEMODLIBS=' $py_libdir/config/Makefile | sed -e 's/^.*=//'`
-    PYTHON_LIB="-L$py_libdir/config $py_libs $py_libc $py_libm -lpython$py_ver $py_liblocalmod $py_libbasemod"
+    py_linkage=""
+    for py_linkpart in LIBS LIBC LIBM LOCALMODLIBS BASEMODLIBS \
+                       LINKFORSHARED LDFLAGS ; do
+        py_linkage="$py_linkage "`grep "^${py_linkpart}=" \
+                                       $py_libdir/config/Makefile \
+                                  | sed -e 's/^.*=//'`
+    done
+    PYTHON_LIB="-L$py_libdir/config -lpython$py_ver $py_linkage"
     PYTHON_LIB=`echo $PYTHON_LIB | sed -e 's/[ \\t]*/ /g'`
     AC_MSG_RESULT($py_libdir)
 else
