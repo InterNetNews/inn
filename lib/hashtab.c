@@ -84,7 +84,7 @@ hash_create(size_t size, hash_func hash_f, hash_key_func key_f,
     hash->delete = delete_f;
     hash->size = hash_size(size);
     hash->mask = hash->size - 1;
-    hash->table = xcalloc(size, sizeof(void *));
+    hash->table = xcalloc(hash->size, sizeof(void *));
     return hash;
 }
 
