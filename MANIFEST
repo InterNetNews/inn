@@ -77,6 +77,7 @@ configure.ac                          Source file for configure
 contrib                               External contributions (Directory)
 contrib/Makefile                      Makefile for contrib programs
 contrib/README                        Contents of the contrib directory
+contrib/analyze-traffic.pl            Track which groups are getting traffic
 contrib/archivegz.in                  Compressing version of archive
 contrib/auth_pass.README              README corresponding to auth_pass.c
 contrib/auth_pass.c                   Sample for use with AUTHINFO GENERIC
@@ -95,6 +96,7 @@ contrib/makeexpctl.in                 Create expire.ctl from read groups
 contrib/makestorconf.in               Create storage.conf from read groups
 contrib/mkbuf                         Create cycbuff for HP-UX
 contrib/mlockfile.c                   Lock files into memory using mlock
+contrib/mm_ckpasswd                   Check passwords against Mailman db
 contrib/newsresp.c                    Measure responsiveness of remote server
 contrib/pullart.c                     Recover articles from cyclic buffers
 contrib/reset-cnfs.c                  Reset the state parts of a CNFS buffer
@@ -140,7 +142,6 @@ doc/man/Makefile                      Makefile for nroff documentation
 doc/man/active.5                      Manpage for active database
 doc/man/active.times.5                Manpage for active.times file
 doc/man/actsync.8                     Manpage for active file synch program
-doc/man/actsyncd.8                    Manpage for active synch daemon
 doc/man/archive.8                     Manpage for archive backend
 doc/man/auth_krb5.8                   Manpage for auth_krb5 authenticator
 doc/man/auth_smb.8                    Manpage for auth_smb authenticator
@@ -372,8 +373,8 @@ include/inn/list.h                    Header file for list routines
 include/inn/md5.h                     Header file for MD5 digests
 include/inn/messages.h                Header file for message functions
 include/inn/mmap.h                    Header file for mmap() functions
-include/inn/nntp.h                    Header file for NNTP functions and codes
 include/inn/network.h                 Header file for network functions
+include/inn/nntp.h                    Header file for NNTP functions and codes
 include/inn/options.h                 Header file for compile-time options
 include/inn/overview.h                Header file for the overview API
 include/inn/qio.h                     Header file for quick I/O package
@@ -550,6 +551,7 @@ m4/socket.m4                          Autoconf macros to check socket support
 m4/syslog.m4                          Autoconf macro for syslog facility
 m4/users.m4                           Autoconf macro for INN users
 m4/vamacros.m4                        Autoconf macro to check variadic macros
+m4/zlib.m4                            Autoconf macro for zlib
 nnrpd                                 Reader server (Directory)
 nnrpd/Makefile                        Makefile for nnrpd
 nnrpd/article.c                       Article-related routines
@@ -698,8 +700,8 @@ storage/trash/trash.h                 Header file for trash storage
 support                               Tools for building INN (Directory)
 support/config.guess                  Determine system type for libtool
 support/config.sub                    Canonicalize system type for libtool
-support/fixlog                        Clean up CVS log messages for cvs2cl
 support/fixconfig.in                  Config file path fixup script
+support/fixlog                        Clean up CVS log messages for cvs2cl
 support/fixscript.in                  Interpreter path fixup script
 support/indent                        A mostly working wrapper around indent
 support/install-sh                    Installation utility
@@ -741,13 +743,21 @@ tests/data/articles/wire-strange      Wire article with CR and LF in headers
 tests/data/articles/wire-truncated    Wire article truncated in the headers
 tests/data/config                     Testing config files (Directory)
 tests/data/config/errors              Various config files with errors
-tests/data/config/line-ending         A config file with varied line endings
+tests/data/config/groups              A config file with groups
+tests/data/config/include             A config file to test includes
+tests/data/config/line-endings        A config file with varied line endings
+tests/data/config/lists               A config file with list values
 tests/data/config/no-newline          A config file without an ending newline
 tests/data/config/null                A config file containing a nul character
+tests/data/config/reals               A config file with real numbers
+tests/data/config/recurse             Invalid due to recursive includes
 tests/data/config/simple              A simple config file
+tests/data/config/symlink             Symlink target for recursion testing
 tests/data/config/valid               Various valid config parameters
 tests/data/config/warn-bool           Invalid boolean parameters
 tests/data/config/warn-int            Invalid integer parameters
+tests/data/config/warn-real           Invalid real parameters
+tests/data/config/warn-string         Invalid string parameters
 tests/data/config/warnings            Various config files with warnings
 tests/data/db                         Skeleton database for testing (Directory)
 tests/data/db/active                  Skeleton active file for testing
@@ -762,7 +772,7 @@ tests/data/overview/1-4               Overview info for test articles 1-4
 tests/data/overview/basic             Basic set of overview test data
 tests/data/overview/bogus             Bad newsgroup name test data
 tests/data/overview/high-numbered     High-numbered article test data
-tests/data/overivew/munge-data        Support script to generate test data
+tests/data/overview/munge-data        Support script to generate test data
 tests/data/overview/reversed          Same as basic, but in reverse order
 tests/data/upgrade                    innupgrade test files (Directory)
 tests/data/upgrade/inn.conf           inn.conf file that needs fixing
@@ -817,6 +827,7 @@ tests/overview/overview-t.c           Basic tests for overview methods
 tests/runtests.c                      The test suite driver program
 tests/storage                         Test suite for storage (Directory)
 tests/storage/archive.t               Tests for backends/archive
+tests/storage/makehistory.t           Tests for expire/makehistory
 tests/storage/sm.t                    Tests for frontends/sm
 tests/util                            Test suite for utilities (Directory)
 tests/util/convdate.t                 Tests for expire/convdate
