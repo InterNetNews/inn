@@ -785,10 +785,6 @@ int dbzinit(const char *name) {
     tagboth = tagbits | taghere;
     canttag_warned = 0;
 #else
-    if ((innconf == NULL) && (ReadInnConf() < 0)) {
-	Fclose(dirf);
-	return FALSE;
-    }
     if (!openhashtable(name, idx, &idxtab, sizeof(of_t), options.pag_incore)) {
 	Fclose(dirf);
 	return FALSE;
