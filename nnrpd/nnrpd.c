@@ -34,6 +34,10 @@ extern SSL *tls_conn;
 int nnrpd_starttls_done = 0;
 #endif 
 
+#if defined(hpux) || defined(__hpux) || defined(_SCO_DS)
+extern int h_errno;
+#endif
+
 /*
 ** Here is some defensive code to protect the news server from hosts,
 ** mostly PC's, that sometimes make a connection and then never give
