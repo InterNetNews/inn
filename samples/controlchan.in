@@ -20,6 +20,13 @@
 
 require 5.004;
 
+my ($arg);
+while ($arg = shift @ARGV) {
+    if ($arg eq "-l") {
+	$logout = shift @ARGV;
+    }
+}
+
 use IPC::Open2; # Makes mailing easier.
 
 $ENV{'PATH'} = '/bin:/usr/bin';
@@ -445,6 +452,12 @@ sub logmsg {
   if ($use_syslog) {
     syslog($lvl, $fmt, @_);
   } else {
-    printf("%s: $fmt\n", scalar localtime, @_);
+    if (defined($logout)) {
+      open(LOGOUT, ">>$logout");
+      printf LOGOUT ("%s: $fmt\n", scalar localtime, @_);
+      close(LOGOUT);
+    } else {
+      printf("%s: $fmt\n", scalar localtime, @_);
+    }
   }
 }
