@@ -6,6 +6,7 @@ lib/inet_ntoa
 lib/memcmp
 lib/pread
 lib/pwrite
+lib/qio
 lib/setenv
 lib/strerror
 lib/xmalloc
