@@ -691,17 +691,20 @@ STORAGE_SUB *SMgetsub(const ARTHANDLE article) {
 
     if (innconf->storeonxref) {
 	if ((groups = (char *)HeaderFindMem(article.data, article.len, "Xref", 4)) == NULL) {
+	    errno = 0;
 	    SMseterror(SMERR_UNDEFINED, "Could not find Xref header");
 	    return NULL;
 	}
 	/* skip pathhost */
 	if ((groups = strchr(groups, ' ')) == NULL) {
+	    errno = 0;
 	    SMseterror(SMERR_UNDEFINED, "Could not find pathhost in Xref header");
 	    return NULL;
 	}
 	for (groups++; *groups == ' '; groups++);
     } else {
 	if ((groups = (char *)HeaderFindMem(article.data, article.len, "Newsgroups", 10)) == NULL) {
+	    errno = 0;
 	    SMseterror(SMERR_UNDEFINED, "Could not find Newsgroups header");
 	    return NULL;
 	}
@@ -735,7 +738,8 @@ STORAGE_SUB *SMgetsub(const ARTHANDLE article) {
 		return sub;
 	}
     }
-    SMseterror(SMERR_UNDEFINED, "No entry in storage.conf matched token");
+    errno = 0;
+    SMseterror(SMERR_UNDEFINED, "no matching entry in storage.conf");
     return NULL;
 }
 
