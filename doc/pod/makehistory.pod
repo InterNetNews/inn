@@ -4,7 +4,7 @@ makehistory - Initialize or rebuild INN history database
 
 =head1 SYNOPSIS
 
-B<makehistory> [B<-abFIOux>] [B<-f> I<filename>] [B<-l> I<count>]
+B<makehistory> [B<-abFIOx>] [B<-f> I<filename>] [B<-l> I<count>]
 [B<-T> I<tmpdir>]
 
 =head1 DESCRIPTION
@@ -19,11 +19,8 @@ The default name of the history text file is I<pathdb>/history; to specify
 a different name, use the B<-f> flag.
 
 By default, B<makehistory> will scan the entire spool, using the storage
-manager, and write a history line for every article.  If you want to only
-write history lines for articles not already in the history file, use
-B<-u> (this only makes sense in combination with the B<-f> flag so that
-you can then append the additional entries to your history file).  To also
-generate overview information, use the B<-O> flag.
+manager, and write a history line for every article.  To also generate
+overview information, use the B<-O> flag.
 
 =head1 OPTIONS
 
@@ -43,7 +40,7 @@ headers in them.
 =item B<-f> I<filename>
 
 Rather than writing directly to I<pathdb>/history, instead write to
-I<filename>.  This option must be used if B<-u> is used.
+I<filename>.
 
 =item B<-F>
 
@@ -91,23 +88,6 @@ process of writing overview information since sorted overview information
 writes faster).  By default, sort usually uses /var/tmp; see the man page
 for sort on your system to be sure.
 
-=item B<-u>
-
-This option enables "update" mode.  In this mode, B<makehistory> will only
-generate history (and overview if B<-O> is given) data for articles not
-already found in the history file.  This can be useful after a system
-crash, particularly in combination with B<-b> to delete any mangled
-articles.  Note that B<-u> will not throttle innd(8) even if it's running,
-and the B<-f> option is mandatory to specify the file to which the
-additional history entries are written.  If B<-O> is given, overview
-information will be updated as B<makehistory> is running; this is safe as
-the overview storage methods lock against multiple updates.
-
-The most useful thing to do with the new history entries, after
-B<makehistory> finishes, is to throttle innd with ctlinnd(8), append the
-history entries to the end of the history file, run makedbz(8) to rebuild
-the indexes, and then unthrottle innd.
-
 =item B<-x>
 
 If this option is given, B<makehistory> won't write out history file
@@ -145,12 +125,10 @@ to unthrottle innd.
 
 For a simpler example:
 
-    makehistory -bu -f history.n -I -O
+    makehistory -b -f history.n -I -O
 
 will scan the spool, removing broken articles and generating history and
-overview entries for articles missing from history.  After running this,
-you can throttle innd, append F<history.n> to F<history>, run B<makedbz>,
-and unthrottle innd as described under B<-u>.
+overview entries for articles missing from history.
 
 =head1 FILES
 
@@ -162,10 +140,7 @@ Read for I<pathdb> and I<pathtmp>.
 
 =item I<pathdb>/history
 
-This and its associated indexes is used as the current history database if
-the B<-u> option is given (to check found articles against to see if a
-history entry should be generated).  This is also the default output file
-for B<makehistory>.
+This is the default output file for B<makehistory>.
 
 =item I<pathtmp>
 
