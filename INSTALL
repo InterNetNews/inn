@@ -114,7 +114,7 @@ Choosing an Article Storage Format
 
 Installing INN
 
-  Before beginning installation you should make sure that there is is a user
+  Before beginning installation you should make sure that there is a user
   on your system named 'news', and that this user's primary group is set to
   a group called 'news'. The home directory of this user should be set to
   the directory under which you wish to install INN ("/usr/local/news" is the
@@ -376,7 +376,7 @@ Configuring INN
 
   For cnfs or timehash storage method:
 
-        overview!:*:Tc,WhR:/usr/local/news/bin/overchan
+        overview!:*:Tc,Ao,WhR:/usr/local/news/bin/overchan
 
         innfeed!:\
                 !*\
