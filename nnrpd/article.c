@@ -102,7 +102,7 @@ Again:
 
 static void
 PushIOvRateLimited(void) {
-    struct timeval      start, end;
+    double              start, end, elapsed, target;
     struct iovec        newiov[IOV_MAX > 1024 ? 1024 : IOV_MAX];
     int                 newiov_len;
     int                 sentiov;
@@ -110,8 +110,6 @@ PushIOvRateLimited(void) {
     int                 bytesfound;
     int                 chunkbittenoff;
     struct timeval      waittime;
-    int                 targettime;
-    TIMEINFO		Start, End;
 
     while (queued_iov) {
 	bytesfound = newiov_len = 0;
@@ -131,29 +129,19 @@ PushIOvRateLimited(void) {
 	    }
 	}
 	assert(sentiov <= queued_iov);
-	gettimeofday(&start, NULL);
+        start = TMRnow_double();
 	PushIOvHelper(newiov, &newiov_len);
-	gettimeofday(&end, NULL);
-	/* Normalize it so we can just do straight subtraction */
-	if (end.tv_usec < start.tv_usec) {
-	    end.tv_usec += 1000000;
-	    end.tv_sec -= 1;
-	}
-	waittime.tv_usec = end.tv_usec - start.tv_usec;
-	waittime.tv_sec = end.tv_sec - start.tv_sec;
-	targettime = (float)1000000 * (float)bytesfound / (float)MaxBytesPerSecond;
-	if ((waittime.tv_sec < 1) && (waittime.tv_usec < targettime)) {
-	    waittime.tv_usec = targettime - waittime.tv_usec;
-	    gettimeofday(&start, NULL);
+        end = TMRnow_double();
+        target = (double) bytesfound / MaxBytesPerSecond;
+        elapsed = end - start;
+        if (elapsed < 1 && elapsed < target) {
+            waittime.tv_sec = 0;
+            waittime.tv_usec = (target - elapsed) * 1e6;
+            start = TMRnow_double();
 	    if (select(0, NULL, NULL, NULL, &waittime) != 0)
-		syslog(L_ERROR, "%s: select in PushIOvRateLimit failed %m(%d)",
-		       ClientHost, errno);
-	    gettimeofday(&end, NULL);
-	    Start.time = start.tv_sec;
-	    Start.usec = start.tv_usec;
-	    End.time = end.tv_sec;
-	    End.usec = end.tv_usec;
-	    IDLEtime += TIMEINFOasDOUBLE(End) - TIMEINFOasDOUBLE(Start);
+                syswarn("%s: select in PushIOvRateLimit failed", ClientHost);
+            end = TMRnow_double();
+            IDLEtime += end - start;
 	}
 	memmove(iov, &iov[sentiov], (queued_iov - sentiov) * sizeof(struct iovec));
 	queued_iov -= sentiov;

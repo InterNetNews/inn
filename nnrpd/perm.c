@@ -2009,7 +2009,7 @@ static void GetProgInput(EXECSTUFF *prog)
     pid_t tmp;
     int status;
     char rdbuf[BIG_BUFFER], errbuf[BIG_BUFFER];
-    TIMEINFO		Start, End;
+    double start, end;
 
     FD_ZERO(&rfds);
     FD_SET(prog->rdfd, &rfds);
@@ -2019,15 +2019,11 @@ static void GetProgInput(EXECSTUFF *prog)
     tmout.tv_sec = 5;
     tmout.tv_usec = 0;
     rdbuf[0] = errbuf[0] = '\0';
-    gettimeofday(&stv, NULL);
+    start = TMRnow_double();
     while ((got = select(maxfd+1, &tfds, 0, 0, &tmout)) >= 0) {
-	gettimeofday(&etv, NULL);
-	Start.time = stv.tv_sec;
-	Start.usec = stv.tv_usec;
-	End.time = etv.tv_sec;
-	End.usec = etv.tv_usec;
-	IDLEtime += TIMEINFOasDOUBLE(End) - TIMEINFOasDOUBLE(Start);
-	stv = etv;
+        end = TMRnow_double();
+	IDLEtime += end - start;
+        start = end;
 	tmout.tv_sec = 5;
 	tmout.tv_usec = 0;
 	if (got > 0) {
@@ -2050,12 +2046,8 @@ static void GetProgInput(EXECSTUFF *prog)
 	}
 	tfds = rfds;
     }
-    gettimeofday(&etv, NULL);
-    Start.time = stv.tv_sec;
-    Start.usec = stv.tv_usec;
-    End.time = etv.tv_sec;
-    End.usec = etv.tv_usec;
-    IDLEtime += TIMEINFOasDOUBLE(End) - TIMEINFOasDOUBLE(Start);
+    end = TMRnow_double();
+    IDLEtime += end - start;
     /* wait for it if he's toast. */
     do {
 	tmp = waitpid(prog->pid, &status, 0);
