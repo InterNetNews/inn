@@ -1,7 +1,7 @@
 ##########################################################
 # INN module for innreport (3.0.0 and more).
 #
-# Sample file tested with INN 1.8current and 1.5.1
+# Sample file tested with INN 2.3, 2.2 and 1.5.1
 #
 # (c) 1997-1998 by Fabien Tassin <fta@oleane.net>
 # version 2.1.9_7
@@ -51,6 +51,8 @@ $innd_time_times = 0;        # ...
 sub collect
 {
   my ($day, $hour, $prog, $res, $left, $CASE_SENSITIVE) = @_;
+
+  return 1 if $left =~ /Reading config from (\S+)$/o;
 
   ########
   ## inn (from the "news" log file - not from "news.notice")
@@ -257,23 +259,28 @@ sub collect
       return 1;
     }
     # restarted
-    return 1 if $left =~ m/\S+ restarted$/o;
+    return 1 if $left =~ m/^\S+ restarted$/o;
     # starting
-    return 1 if $left =~ m/\S+ starting$/o;
+    return 1 if $left =~ m/^\S+ starting$/o;
     # readclose
-    return 1 if $left =~ m/\S+:\d+ readclose+$/o;
-    # rejected 505
-    if ($left =~ m/(\S+) rejected 505$/)
+    return 1 if $left =~ m/^\S+:\d+ readclose+$/o;
+    # rejected 502
+    if ($left =~ m/^(\S+) rejected 502$/)
     {
       my $server = $1;
-      if ($server =~ m/^\D+$/) {
-        $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
-        $innd_no_permission{$server}++;
-        return 1;
-      }
+      $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $innd_no_permission{$server}++;
+      return 1;
+    }
+    # rejected 505
+    if ($left =~ m/^(\S+) rejected 505$/) {
+      my $server = $1;
+      $server = lc $server unless $CASE_SENSITIVE;
+      $innd_too_many_connects_per_minute{$server}++;
+      return 1;
     }
     # connected
-    if ($left =~ /(\S+) connected \d+/o)
+    if ($left =~ /^(\S+) connected \d+/o)
     {
       my $server = $1;
       $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
@@ -615,26 +622,22 @@ sub collect
     if ($left =~ m/ cant /o)
     {
       # cant select Bad file number
-      if ($left =~ / cant select Bad file number/o)
-      {
+      if ($left =~ / cant select Bad file number/o) {
 	$innd_misc{"Bad file number"}++;
 	return 1;
       }
       # cant gethostbyname
-      if ($left =~ / cant gethostbyname/o)
-      {
+      if ($left =~ / cant gethostbyname/o) {
 	$innd_misc{"gethostbyname error"}++;
 	return 1;
       }
       # cant accept RCreader
-      if ($left =~ / cant accept RCreader /o)
-      {
+      if ($left =~ / cant accept RCreader /o) {
 	$innd_misc{"RCreader"}++;
 	return 1;
       }
       # cant sendto CCreader
-      if ($left =~ / cant sendto CCreader /o)
-      {
+      if ($left =~ / cant sendto CCreader /o) {
 	$innd_misc{"CCreader"}++;
 	return 1;
       }
@@ -662,6 +665,20 @@ sub collect
     return 1 if $left =~ m/\S+:\d+ closed periodic$/o;
     # periodic close
     return 1 if $left =~ m/\S+:\d+ periodic close$/o;
+    # final (child) (new format)
+    if ($left =~ /(\S+):\d+ final seconds (\d+) offered (\d+) accepted (\d+) refused (\d+) rejected (\d+) accsize (\d+) rejsize (\d+)/o) {
+      my ($server, $seconds, $offered, $accepted, $refused, $rejected, $accepted_size, $rejected_size) =
+	($1, $2, $3, $4, $5, $6, $7, $8);
+      $server = lc $server unless $CASE_SENSITIVE;
+      $t_innfeed_seconds{$server} += $seconds;
+      $t_innfeed_offered{$server} += $offered;
+      $t_innfeed_accepted{$server} += $accepted;
+      $t_innfeed_refused{$server} += $refused;
+      $t_innfeed_rejected{$server} += $rejected;
+      $t_innfeed_accepted_size{$server} += $accepted_size;
+      $t_innfeed_rejected_size{$server} += $rejected_size;
+      return 1;
+    }
     # final (child)
     if ($left =~ /(\S+):\d+ final seconds (\d+) offered (\d+) accepted (\d+) refused (\d+) rejected (\d+)/o)
     {
@@ -673,6 +690,29 @@ sub collect
       $t_innfeed_accepted{$server} += $accepted;
       $t_innfeed_refused{$server} += $refused;
       $t_innfeed_rejected{$server} += $rejected;
+      return 1;
+    }
+    # final (real) (new format)
+    if ($left =~ /(\S+) final seconds (\d+) offered (\d+) accepted (\d+) refused (\d+) rejected (\d+) missing (\d+) accsize (\d+) rejsize (\d+) spooled (\d+)/o) {
+      my ($server, $seconds, $offered, $accepted, $refused, $rejected,
+	  $missing, $accepted_size, $rejected_size, $spooled) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+      $server = lc $server unless $CASE_SENSITIVE;
+      $innfeed_seconds{$server} += $seconds;
+      $innfeed_offered{$server} += $offered;
+      $innfeed_accepted{$server} += $accepted;
+      $innfeed_refused{$server} += $refused;
+      $innfeed_rejected{$server} += $rejected;
+      $innfeed_missing{$server} += $missing;
+      $innfeed_spooled{$server} += $spooled;
+      $innfeed_accepted_size{$server} += $accepted_size;
+      $innfeed_rejected_size{$server} += $rejected_size;
+      $t_innfeed_seconds{$server} = 0;
+      $t_innfeed_offered{$server} = 0;
+      $t_innfeed_accepted{$server} = 0;
+      $t_innfeed_refused{$server} = 0;
+      $t_innfeed_rejected{$server} = 0;
+      $t_innfeed_accepted_size{$server} = 0;
+      $t_innfeed_rejected_size{$server} = 0;
       return 1;
     }
     # final (real)
@@ -810,8 +850,7 @@ sub collect
   }
   ########
   ## innxmit
-  if ($prog eq "innxmit")
-  {
+  if ($prog eq "innxmit") {
     # 437 Duplicate article
     if ($left =~ /(\S+) rejected <[^>]+> \(.*?\) 437 Duplicate article$/o)
     {
@@ -909,26 +948,41 @@ sub collect
       my $server = $1;
       $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
       $innxmit_ihfail{$server} = 1;
-      if ($left = /436 \S+ NNTP \S+ out of space/o)
-      {
+      if ($left = /436 \S+ NNTP \S+ out of space/o) {
 	$innxmit_nospace{$server}++;
 	return 1;
       }
-      if ($left = /400 \S+ space/o)
-      {
+      if ($left = /400 \S+ space/o) {
 	$innxmit_nospace{$server}++;
 	return 1;
       }
-      if ($left = /400 Bad file/o)
-      {
+      if ($left = /400 Bad file/o) {
 	$innxmit_crefused{$server}++;
 	return 1;
       }
-      if ($left = /480 Transfer permission denied/o)
-      {
+      if ($left = /480 Transfer permission denied/o) {
 	$innxmit_crefused{$server}++;
 	return 1;
       }
+    }
+    # stats (new format)
+    if ($left =~
+      /(\S+) stats offered (\d+) accepted (\d+) refused (\d+) rejected (\d+) missing (\d+) accsize (\d+) rejsize (\d+)$/o) {
+      my ($server, $offered, $accepted, $refused, $rejected, $missing, $accbytes, $rejbytes) =
+	($1, $2, $3, $4, $5, $6, $7, $8);
+      $server = lc $server unless $CASE_SENSITIVE;
+      $innxmit_offered{$server} += $offered;
+      $innxmit_offered{$server} -= $innxmit_ihfail{$server}
+        if ($innxmit_ihfail{$server});
+      $innxmit_accepted{$server} += $accepted;
+      $innxmit_refused{$server} += $refused;
+      $innxmit_rejected{$server} += $rejected;
+      $innxmit_missing{$server} += $missing;
+      $innxmit_accepted_size{$server} += $accbytes;
+      $innxmit_rejected_size{$server} += $rejbytes;
+      $innxmit_site{$server}++;
+      $innxmit_ihfail{$server} = 0;
+      return 1;
     }
     # stats
     if ($left =~
@@ -977,8 +1031,7 @@ sub collect
     if ($left =~ /(\S+) connect \S+ 400 loadav/o)
     {
       my $server = $1;
-      if ($left =~ /expir/i)
-      {
+      if ($left =~ /expir/i) {
 	$server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
 	$innxmit_expire{$server}++;
 	$innxmit_site{$server}++;
@@ -1034,8 +1087,7 @@ sub collect
 
   ########
   ## nntplink
-  if ($prog eq "nntplink")
-  {
+  if ($prog eq "nntplink") {
     $left =~ s/^(\S+):/$1/;
     # EOF
     if ($left =~ /(\S+) EOF /o)
@@ -1090,12 +1142,9 @@ sub collect
       my $server = $1;
       $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
       $nntplink_site{$server}++;
-      if ($left =~ /expir/i)
-      {
+      if ($left =~ /expir/i) {
 	$nntplink_expire{$server}++;
-      }
-      else
-      {
+      } else {
 	$nntplink_fail{$server}++;
       }
       return 1;
@@ -1142,8 +1191,7 @@ sub collect
       my $server = $1;
       $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
       $nntplink_ihfail{$server}++;
-      if (($left =~ / 436 /) && ($left =~ / out of space /))
-      {
+      if (($left =~ / 436 /) && ($left =~ / out of space /)) {
 	$nntplink_fake_connects{$server}++;
 	$nntplink_nospace{$server}++;
       }
@@ -1177,13 +1225,10 @@ sub collect
       $nntplink_failed{$server} += $failed;
       $nntplink_connects{$server} += $connects;
       $nntplink_ihfail{$server} = 0;
-      if ($nntplink_fake_connects{$server})
-      {
+      if ($nntplink_fake_connects{$server}) {
 	$nntplink_site{$server} += $nntplink_fake_connects{$server};
 	$nntplink_fake_connects{$server} = 0;
-      }
-      else
-      {
+      } else {
 	$nntplink_site{$server}++;
       }
       return 1;
@@ -1337,6 +1382,13 @@ sub collect
       my ($server, $user, $system, $elapsed) = ($1, $2, $3, $4);
       $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
       $nnrpd_times{$server} += $elapsed;
+      return 1;
+    }
+    # artstats
+    if ($left =~ /(\S+) artstats get (\d+) time (\d+) size (\d+)$/o) {
+      my ($server, $articles, $time, $bytes) = ($1, $2, $3, $4);
+      $server = lc $server unless $CASE_SENSITIVE;
+      $nnrpd_bytes{$server} += $bytes;
       return 1;
     }
     # timeout
@@ -1506,10 +1558,20 @@ sub collect
       $rnews_linecount++;
       return 1;
     }
+    # rejected 437 Duplicate
+    if ($left =~ /rejected 437 Duplicate$/o) {
+      $rnews_duplicate++;
+      return 1;
+    }
     # rejected 437 Duplicate article
     if ($left =~ /rejected 437 (Duplicate article)/o)
     {
       $rnews_duplicate++;
+      return 1;
+    }
+    # rejected 437 No colon-space ...
+    if ($left =~ /rejected 437 No colon-space in \"(.*)\" header$/o) {
+      $rnews_no_colon_space++;
       return 1;
     }
     # duplicate <msg-id> path..
@@ -1519,10 +1581,9 @@ sub collect
       return 1;
     }
     # offered <msg-id> feed
-    if ($left =~ /^offered \S+ (\S+)/o)
-    {
+    if ($left =~ /^offered \S+ (\S+)/o) {
       my $host = $1;
-      $host =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
+      $host = lc $host unless $CASE_SENSITIVE;
       # Small hack used to join article spooled when innd is throttle.
       # In this situation, the hostname is a 8 hex digits string
       # To avoid confusions with real feeds, the first character is forced
@@ -1687,6 +1748,7 @@ sub collect
   return 1 if ($prog eq "newsx");
   return 1 if ($prog eq "demmf");
   return 1 if ($prog eq "nnnn");
+  return 1 if ($prog eq "slurp");
   return 0;
 }
 
@@ -1715,6 +1777,8 @@ sub adjust
       $innfeed_accepted{$server} += $t_innfeed_accepted{$server}; 
       $innfeed_refused{$server} += $t_innfeed_refused{$server};
       $innfeed_rejected{$server} += $t_innfeed_rejected{$server};
+      $innfeed_accepted_size{$server} += $t_innfeed_accepted_size{$server}; 
+      $innfeed_rejected_size{$server} += $t_innfeed_rejected_size{$server};
     }
   }
   
@@ -1726,10 +1790,8 @@ sub adjust
     if (%nnrpd_connect)
     {
       my $c = keys (%nnrpd_connect);
-      foreach $serv (keys (%nnrpd_connect))
-      {
-	if ($nnrpd_no_permission{$serv})
-	{
+      foreach $serv (keys (%nnrpd_connect)) {
+	if ($nnrpd_no_permission{$serv}) {
 	  undef ($nnrpd_connect{$serv});
 	  undef ($nnrpd_groups{$serv});
 	  undef ($nnrpd_times{$serv});
@@ -1760,10 +1822,8 @@ sub adjust
     
     
     # adjust min/max of innd timer stats.
-    if (%innd_time_min)
-    {
-      foreach $key (keys (%innd_time_min))
-      {
+    if (%innd_time_min) {
+      foreach $key (keys (%innd_time_min)) {
 	$innd_time_min{$key} = 0 if ($innd_time_min{$key} == $MIN);
 	$innd_time_max{$key} = 0 if ($innd_time_max{$key} == $MAX);
 	
@@ -1782,10 +1842,8 @@ sub adjust
     }
     
     # adjust the crosspost stats.
-    if (%crosspost)
-    {
-      foreach $key (keys (%crosspost))
-      {
+    if (%crosspost) {
+      foreach $key (keys (%crosspost)) {
 	$crosspost_times{$key} = $crosspost_time ? 
 	  sprintf "%.2f", $crosspost{$key} / $crosspost_time * 60 : "?";
       }
@@ -1936,75 +1994,59 @@ sub adjust
       $innd_misc_stat{$msg}{$key} = $innd_bad_newsgroup{$key};
     }
   }
-  if (%innd_posted_future)
-  {
+  if (%innd_posted_future) {
     my $key;
     my $msg = 'Article posted in the future';
-    foreach $key (keys %innd_posted_future)
-    {
+    foreach $key (keys %innd_posted_future) {
       $innd_misc_stat{$msg}{$key} = $innd_posted_future{$key};
     }
   }
-  if (%innd_no_colon_space)
-  {
+  if (%innd_no_colon_space) {
     my $key;
     my $msg = 'No colon-space in header';
-    foreach $key (keys %innd_no_colon_space)
-    {
+    foreach $key (keys %innd_no_colon_space) {
       $innd_misc_stat{$msg}{$key} = $innd_no_colon_space{$key};
     }
   }
-  if (%innd_huge)
-  {
+  if (%innd_huge) {
     my $key;
     my $msg = 'Huge articles';
-    foreach $key (keys %innd_huge)
-    {
+    foreach $key (keys %innd_huge) {
       $innd_misc_stat{$msg}{$key} = $innd_huge{$key};
     }
   }
-  if (%innd_blocked)
-  {
+  if (%innd_blocked) {
     my $key;
     my $msg = 'Blocked server feeds';
-    foreach $key (keys %innd_blocked)
-    {
+    foreach $key (keys %innd_blocked) {
       $innd_misc_stat{$msg}{$key} = $innd_blocked{$key};
     }
   }
-  if (%rnews_bogus_ng)
-  {
+  if (%rnews_bogus_ng) {
     my $key;
     my $msg = 'Unwanted newsgroups';
-    foreach $key (keys %rnews_bogus_ng)
-    {
+    foreach $key (keys %rnews_bogus_ng) {
       $rnews_misc{$msg}{$key} = $rnews_bogus_ng{$key};
     }
   }
-  if (%rnews_bogus_dist)
-  {
+  if (%rnews_bogus_dist) {
     my $key;
     my $msg = 'Unwanted distributions';
-    foreach $key (keys %rnews_bogus_dist)
-    {
+    foreach $key (keys %rnews_bogus_dist) {
       $rnews_misc{$msg}{$key} = $rnews_bogus_dist{$key};
     }
   }
-  if (%rnews_unapproved)
-  {
+  if (%rnews_unapproved) {
     my $key;
     my $msg = 'Articles unapproved';
-    foreach $key (keys %rnews_unapproved)
-    {
+    foreach $key (keys %rnews_unapproved) {
       $rnews_misc{$msg}{$key} = $rnews_unapproved{$key};
     }
   }
-  if (%rnews_bogus_date)
-  {
+  if (%rnews_bogus_date) {
     my $key;
     my $msg = 'Bad Date';
-    foreach $key (keys %rnews_bogus_date)
-    {
+    foreach $key (keys %rnews_bogus_date) {
       $rnews_misc{$msg}{$key} = $rnews_bogus_date{$key};
     }
   }
@@ -2012,15 +2054,13 @@ sub adjust
   $rnews_misc{'Too old'}{'--'} = $rnews_too_old if $rnews_too_old;
   $rnews_misc{'Bad linecount'}{'--'} = $rnews_linecount if $rnews_linecount;
   $rnews_misc{'Duplicate articles'}{'--'} = $rnews_duplicate if $rnews_duplicate;
+  $rnews_misc{'No colon-space'}{'--'} = $rnews_no_colon_space if $rnews_no_colon_space;
   
-  if (%nnrpd_groups)
-  {
+  if (%nnrpd_groups) {
     my $key;
-    foreach $key (keys (%nnrpd_connect))
-    {
+    foreach $key (keys (%nnrpd_connect)) {
       unless ($nnrpd_groups{"$key"} || $nnrpd_post_ok{"$key"} ||
-	      $nnrpd_articles{"$key"})
-      {
+	      $nnrpd_articles{"$key"}) {
 	$nnrpd_curious{$key} = $nnrpd_connect{$key};
 	undef $nnrpd_connect{$key};
       }
@@ -2032,8 +2072,7 @@ sub report_unwanted_ng
 {
   my $file = shift;
   open (FILE, "$file") && do {
-    while (<FILE>)
-    {
+    while (<FILE>) {
       my ($c, $n) = $_ =~ m/^\s*(\d+)\s+(.*)$/;
       next unless defined $n;
       $n =~ s/^newsgroup //o; # for pre 1.8 logs

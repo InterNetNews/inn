@@ -2,7 +2,7 @@
 # Configuration file for innreport (3.0.0 and more).
 #
 # Sample file for INN.
-# Tested with INN 1.8current, 1.7 and 1.5.1.
+# Tested with INN 2.3, 2.1, 1.7 and 1.5.1.
 #
 # (c) 1997, 1998 by Fabien Tassin <fta@oleane.net>
 # version 2.1.9_7
@@ -51,10 +51,15 @@ section index {
 	};
 	column {
 		title	"Outgoing feeds";
-		name	"Offered|Accepted";
+		name	"Offered|Accepted|Volume";
 		value	"total(%innfeed_offered) + total(%nntplink_offered) +
-                         total(%innxmit_offered) | total(%innfeed_accepted) +
-                         total(%nntplink_accepted) + total(%innxmit_accepted)";
+			 total(%innxmit_offered) | total(%innfeed_accepted) +
+			 total(%nntplink_accepted) + total(%innxmit_accepted) |
+			 bytes(total(%innfeed_accepted_size) +
+			 total(%innfeed_rejected_size) +
+			 total(%innxmit_bytes) +
+			 total(%innxmit_accepted_size) +
+			 total(%innxmit_rejected_size))";
 	};
 	graph {
 	        title         "Incoming feeds";
@@ -65,12 +70,12 @@ section index {
 		          name    "Offered";
 			  color   "#50A0D0";
 			  value   "val2";       # Incoming feeds: Offered
-                };
+		};
 		data {
 		          name    "Accepted";
 			  color   "#0000FF";
 			  value   "val3";       # Incoming feeds: Accepted
-                };
+		};
 	};
 	graph {
 	        title         "Outgoing feeds";
@@ -81,12 +86,12 @@ section index {
 		          name    "Offered";
 			  color   "#50A0D0";
 			  value   "val5";       # Outgoing feeds: Offered
-                };
+		};
 		data {
 		          name    "Accepted";
 			  color   "#0000FF";
 			  value   "val6";       # Outgoing feeds: Accepted
-                };
+		};
 	};
 };
 		
@@ -364,6 +369,72 @@ section inn_flow {
 			  factor  3686400;   # 3600 * 1024
 			  value   "%inn_flow_size";
                 };
+        };
+};
+
+section cnfsstat {
+        title   "CNFS buffer status:";
+        data    "%cnfsstat";
+        column {
+                name          "Buffer";
+                format        "%-13.13s";
+                value         "$key";
+                format_total  "TOTAL: %-6.6s";
+                total         "$num";
+        };
+        column {
+                name          "Class";
+                format        "%-13.13s";
+                value         "$cnfsstat{$key}";
+                format_total  "-%12s";
+                total         "";
+        };
+        column {
+                name          "Size";
+                format        "%9s";
+                value         "bytes($cnfsstat_size{$key})";
+                total         "bytes(total(%cnfsstat_size))";
+        };
+        column {
+                name          "Used";
+                format        "%9s";
+                value         "bytes($cnfsstat_used{$key})";
+                total         "bytes(total(%cnfsstat_used))";
+        };
+        column {
+                name          "%Used";
+                format_name   "%7s";
+                value         "$cnfsstat_used{$key} /
+                                       $cnfsstat_size{$key} * 100";
+                format        "%6.1f%%";
+                total         "total(%cnfsstat_used) /
+                                       total(%cnfsstat_size) * 100";
+        };
+        column {
+                name          "Cycles";
+                format_name   "%6s";
+                format        "%6d";
+                value         "$cnfsstat_cycles{$key}";
+                total         "total(%cnfsstat_cycles)";
+        };
+        column {
+                name          "KB/sec";
+                format_name   "%7s";
+                value         "$cnfsstat_rate{$key} / 
+                                       $cnfsstat_samples{$key} / 1024";
+                format        "%7.2f";
+                total         "total(%cnfsstat_rate) /
+                                       total(%cnfsstat_samples) / 1024";
+        };
+        column {
+                name          "Days";
+                format_name   "%8s";
+                value         "$cnfsstat_size{$key} /
+                                 ($cnfsstat_rate{$key} /
+                                    $cnfsstat_samples{$key}) / 86400";
+                format        "%8.2f";
+                format_total  "%7s-";
+                total         "";
         };
 };
 
@@ -757,6 +828,46 @@ section innd_no_permission {
         };
 };
 
+section innd_no_permission {
+	title	"INND no permission servers:";
+	data	"%innd_no_permission";
+	sort	"$innd_no_permission{$b} <=> $innd_no_permission{$a}";
+	column {
+		name		"System";
+		format		"%-71.71s";
+		value		"$key";
+		format_total	"TOTAL: %-64.64s";
+		total		"$num";
+	};
+	column {
+		name		"Conn";
+		format_name	"%7s";
+		format		"%7d";
+		value		"$innd_no_permission{$key}";
+		total		"total(%innd_no_permission)";
+	};
+};
+
+section innd_too_many_connects_per_minute {
+	title	"INND too many connects per minute:";
+	data	"%innd_too_many_connects_per_minute";
+	sort	"$innd_too_many_connects_per_minute{$b} <=> $innd_too_many_connects_per_minute{$a}";
+	column {
+		name		"System";
+		format		"%-71.71s";
+		value		"$key";
+		format_total	"TOTAL: %-64.64s";
+		total		"$num";
+	};
+	column {
+		name		"Conn";
+		format_name	"%7s";
+		format		"%7d";
+		value		"$innd_too_many_connects_per_minute{$key}";
+		total		"total(%innd_too_many_connects_per_minute)";
+	};
+};
+
 section innd_misc {
         title   "INND misc events:";
 	data    "%innd_misc";
@@ -809,9 +920,9 @@ section innd_misc_stat {
 };
 
 section innfeed_connect {
-        title   "Outgoing Feeds (innfeed):";
-	data    "%innfeed_offered";
-	sort    "$innfeed_accepted{$b} <=> $innfeed_accepted{$a}";
+	title	"Outgoing Feeds (innfeed) by Articles:";
+	data	"%innfeed_offered";
+	sort	"$innfeed_accepted{$b} <=> $innfeed_accepted{$a}";
 	numbering true;
         column {
                 name          "Server";
@@ -879,7 +990,7 @@ section innfeed_connect {
 		total         "time(total(%innfeed_seconds))";
         };
 	graph {
-	        title         "Outgoing feeds (innfeed)";
+	        title         "Outgoing feeds (innfeed) by Articles";
 		type          histo3d;
 		sort	      "%innfeed_accepted";
 		data {
@@ -907,6 +1018,78 @@ section innfeed_connect {
 			  color   "#AF00FF";
 			  value   "%innfeed_spooled,";
                 };
+	};
+};
+
+section innfeed_volume {
+	title	"Outgoing Feeds (innfeed) by Volume:";
+	data	"%innfeed_offered";
+	sort	"$innfeed_accepted_size{$b} <=> $innfeed_accepted_size{$a}";
+	numbering true;
+	column {
+		name		"Server";
+		format		"%-17.17s";
+		value		"$key";
+		format_total	"TOTAL: %-10.10s";
+		total		"$num";
+	};
+	column {
+		name		"AcceptVol";
+		format		"%9s";
+		value		"bytes($innfeed_accepted_size{$key})";
+		total		"bytes(total(%innfeed_accepted_size))";
+	};
+	column {
+		name		"RejectVol";
+		format		"%9s";
+		value		"bytes($innfeed_rejected_size{$key})";
+		total		"bytes(total(%innfeed_rejected_size))";
+	};
+	column {
+		name		"TotalVol";
+		format		"%9s";
+		value		"bytes($innfeed_accepted_size{$key}+$innfeed_rejected_size{$key})";
+		total		"bytes(total(%innfeed_accepted_size)+total(%innfeed_rejected_size))";
+	};
+	column {
+		name		"Volume/sec";
+		format_name	"%11s";
+		format		"%9s/s";
+		value		"bytes(($innfeed_accepted_size{$key}+$innfeed_rejected_size{$key})/$innfeed_seconds{$key})";
+		total		"bytes((total(%innfeed_accepted_size)+total(%innfeed_rejected_size))/total(%innfeed_seconds))";
+	};
+	column {
+		name		"Vol/Art";
+		format		"%9s";
+		value		"bytes(($innfeed_accepted_size{$key}+$innfeed_rejected_size{$key})/($innfeed_accepted{$key}+$innfeed_rejected{$key}))";
+		total		"bytes((total(%innfeed_accepted_size)+total(%innfeed_rejected_size))/(total(%innfeed_accepted)+total(%innfeed_rejected)))";
+	};
+	column {
+		name		"Elapsed";
+		format_name	"%8s";
+		format		"%9s";
+		value		"time($innfeed_seconds{$key})";
+		total		"time(total(%innfeed_seconds))";
+	};
+	graph {
+		title		"Outgoing feeds (innfeed) by Volume";
+		type		histo3d;
+		sort		"%innfeed_accepted_size";
+		data {
+			name	"Accepted";
+			color	"#0000FF";
+			value	"%innfeed_accepted_size";
+		};
+		data {
+			name	"Rejected";
+			color	"#FFAF00";
+			value	"%innfeed_rejected_size";
+		};
+		data {
+			name	"Total";
+			color	"#00FF00";
+			value	"%innfeed_accepted_size+%innfeed_rejected_size";
+		};
 	};
 };
 
@@ -1135,7 +1318,7 @@ section nntplink_connect2 {
 };
 
 section innxmit_connect {
-        title   "Outgoing Feeds (innxmit):";
+	title	"Outgoing Feeds (innxmit) by Articles:";
 	data    "%innxmit_times";
 	sort    "$innxmit_accepted{$b} <=> $innxmit_accepted{$a}";
 	numbering true;
@@ -1148,36 +1331,43 @@ section innxmit_connect {
         };
         column {
                 name          "Offered";
-		format_name   "%8s";
-		format        "%8d";
+		format_name   "%7s";
+		format        "%7d";
 		value         "$innxmit_offered{$key}";
 		total         "total(%innxmit_offered)";
         };
         column {
                 name          "Taken";
-		format_name   "%8s";
-		format        "%8d";
+		format_name   "%7s";
+		format        "%7d";
 		value         "$innxmit_accepted{$key}";
 		total         "total(%innxmit_accepted)";
         };
         column {
                 name          "Refused";
-		format_name   "%8s";
-		format        "%8d";
+		format_name   "%7s";
+		format        "%7d";
 		value         "$innxmit_refused{$key}";
 		total         "total(%innxmit_refused)";
         };
         column {
-                name          "Rejected";
-		format_name   "%8s";
-		format        "%8d";
+                name          "Reject";
+		format_name   "%7s";
+		format        "%7d";
 		value         "$innxmit_rejected{$key}";
 		total         "total(%innxmit_rejected)";
         };
+	column {
+		name	      "Miss";
+		format_name   "%5s";
+		format	      "%5d";
+		value	      "$innxmit_missing{$key}";
+		total	      "total(%innxmit_rejected)";
+	};
         column {
-                name          "%Accpt";
-		format_name   "%6s";
-		format        "%5d%%";
+                name          "%Acc";
+		format_name   "%4s";
+		format        "%3d%%";
 		value         "$innxmit_offered{$key} == 0 ? 0 :
 		       $innxmit_accepted{$key} / $innxmit_offered{$key} * 100";
 		total         "total(%innxmit_offered) == 0 ? 0 :
@@ -1208,6 +1398,82 @@ section innxmit_connect {
 			  color   "#FF0000";
 			  value   "%innxmit_rejected";
                 };
+		data {
+		          name    "Articles missing";
+			  color   "#00FF00";
+			  value   "%innxmit_missing";
+                };
+	};
+};
+
+section innxmit_volume {
+	title	"Outgoing Feeds (innxmit) by Volume:";
+	data	"%innxmit_times";
+	sort	"$innxmit_accepted_size{$b} <=> $innxmit_accepted_size{$a}";
+	numbering true;
+	column {
+		name		"Server";
+		format		"%-24.24s";
+		value		"$key";
+		format_total	"TOTAL: %-17.17s";
+		total		"$num";
+	};
+	column {
+		name		"AcceptVol";
+		format		"%9s";
+		value		"bytes($innxmit_accepted_size{$key})";
+		total		"bytes(total(%innxmit_accepted_size))";
+	};
+	column {
+		name		"RejectVol";
+		format		"%9s";
+		value		"bytes($innxmit_rejected_size{$key})";
+		total		"bytes(total(%innxmit_rejected_size))";
+	};
+	column {
+		name		"TotalVol";
+		format		"%9s";
+		value		"bytes($innxmit_accepted_size{$key}+$innxmit_rejected_size{$key}+$innxmit_bytes{$key})";
+		total		"bytes(total(%innxmit_accepted_size)+total(%innxmit_rejected_size)+total(%innxmit_bytes))";
+	};
+	column {
+		name		"KB/s";
+		format_name	"%5s";
+		format		"%5.1f";
+		value		"($innxmit_accepted_size{$key}+$innxmit_rejected_size{$key}+$innxmit_bytes{$key})/$innxmit_times{$key}/1024";
+		total		"(total(%innxmit_accepted_size)+total(%innxmit_rejected_size)+total(%innxmit_bytes))/total(%innxmit_times)/1024";
+	};
+	column {
+		name		"Vol/Art";
+		format		"%9s";
+		value		"bytes(($innxmit_accepted_size{$key}+$innxmit_rejected_size{$key}+$innxmit_bytes{$key})/($innxmit_accepted{$key}+$innxmit_rejected{$key}))";
+		total		"bytes((total(%innxmit_accepted_size)+total(%innxmit_rejected_size)+total(%innxmit_bytes))/(total(%innxmit_accepted)+total(%innxmit_rejected)))";
+	};
+	column {
+		name		"Elapsed";
+		format		"%8s";
+		value		"time($innxmit_times{$key})";
+		total		"time(total(%innxmit_times))";
+	};
+	graph {
+		title		"Outgoing Feeds (innxmit)";
+		type		histo3d;
+		sort		"%innxmit_accepted";
+		data {
+			name	"Articles accepted";
+			color	"#0000FF";
+			value	"%innxmit_accepted_size";
+		};
+		data {
+			name	"Articles rejected";
+			color	"#FFAF00";
+			value	"%innxmit_rejected_size";
+		};
+		data {
+			name	"Total";
+			color	"#FF0000";
+			value	"%innxmit_missing";
+		};
 	};
 };
 
@@ -1526,9 +1792,9 @@ section nnrpd_groups {
 	numbering true;
         column {
                 name          "System";
-                format        "%-40.40s";
+                format        "%-30.30s";
 		value         "$key";
-		format_total  "TOTAL: %-33.33s";
+		format_total  "TOTAL: %-23.23s";
 		total         "$num";
         };
         column {
@@ -1544,6 +1810,12 @@ section nnrpd_groups {
                 format        "%6d";
 		value         "$nnrpd_articles{$key}";
 		total         "total(%nnrpd_articles)";
+        };
+	column {
+		name	      "Size";
+		format	      "%9s";
+		value	      "bytes($nnrpd_bytes{$key})";
+		total	      "bytes(total(%nnrpd_bytes))";
         };
         column {
                 name          "Groups";
@@ -1752,6 +2024,46 @@ section nnrpd_group {
 		value         "$nnrpd_group{$key}";
 		total         "total(%nnrpd_group)";
         };
+};
+
+section ihave_site {
+	title	"IHAVE messages offered from:";
+	data	"%controlchan_ihave_site";
+	sort	"$controlchan_ihave_site{$b} <=> $controlchan_ihave_site{$a}";
+	column {
+		name		"System";
+		format		"%-71.71s";
+		value		"$key";
+		format_total	"TOTAL: %-64.64s";
+		total		"$num";
+	};
+	column {
+		name		"Offered";
+		format_name	"%7s";
+		format		"%7d";
+		value		"$controlchan_ihave_site{$key}";
+		total		"total(%controlchan_ihave_site)";
+	};
+};
+
+section sendme_site {
+	title	"SENDME messages offered from:";
+	data	"%controlchan_sendme_site";
+	sort	"$controlchan_sendme_site{$b} <=> $controlchan_sendme_site{$a}";
+	column {
+		name		"System";
+		format		"%-71.71s";
+		value		"$key";
+		format_total	"TOTAL: %-64.64s";
+		total		"$num";
+	};
+	column {
+		name		"Offered";
+		format_name	"%7s";
+		format		"%7d";
+		value		"$controlchan_sendme_site{$key}";
+		total		"total(%controlchan_sendme_site)";
+	};
 };
 
 section ihave_site {
