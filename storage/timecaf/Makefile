@@ -11,7 +11,7 @@ ROBJECTS = caf.$(EXTOBJ) timecaf.$(EXTOBJ)
 
 all:			$(OBJECTS) moveobjs
 
-.c.o: $*.c
+.c.o:
 	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
 
 moveobjs: $(OBJECTS)
