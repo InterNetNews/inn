@@ -17,6 +17,7 @@
 #define PORTABLE_SOCKET_H 1
 
 #include "config.h"
+#include <sys/types.h>
 
 /* BSDI needs <netinet/in.h> before <arpa/inet.h>. */
 #include <netinet/in.h>
