@@ -216,8 +216,8 @@ Installing INN
 
             ram > 10 * tablesize
 
-                  ram:  Amount of system RAM
-            tablesize:  3rd field on the 1st line of history.dir
+                  ram:  Amount of system RAM (in bytes)
+            tablesize:  3rd field on the 1st line of history.dir (bytes)
 
         If you don't have at least that much RAM, try rebuilding INN with
         tagged hash enabled.
