@@ -305,14 +305,6 @@ typedef int             BOOL;
 # endif
 #endif
 
-/* Check TIME_WITH_SYS_TIME rather than DO_NEED_TIME, or even better rewrite
-   the time includes to use the correct autoconf results depending on
-   whether you just need struct tm or really need struct timeval or struct
-   timezone. */
-#ifdef TIME_WITH_SYS_TIME
-# define DO_NEED_TIME
-#endif
-
 /* Only used in innd/art.c, should be moved there. */
 #define ART_ACCEPT              '+'
 #define ART_CANC                'c'
