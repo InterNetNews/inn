@@ -764,7 +764,7 @@ sub Make_Index
   my $result = sprintf <<EOF;
 <HTML><HEAD>
 <TITLE>$Title: index</TITLE>
-</HEAD><BODY$body>
+</HEAD><BODY $body>
 $HTML_header
 <HR ALIGN=CENTER SIZE=\"4\" WIDTH=\"100%%\">
 <BR><CENTER><FONT SIZE=\"+2\">
@@ -1769,7 +1769,7 @@ sub Write_all_results
     print HTML "<HTML>\n<HEAD>\n<TITLE>$Title: $first_date</TITLE>\n";
     print HTML "<!-- innreport $version -->\n";
     
-    print HTML "</HEAD>\n<BODY$body>\n";
+    print HTML "</HEAD>\n<BODY $body>\n";
     print HTML "$HTML_header\n";
     print HTML "<CENTER><H1>$title</H1>\n";
     print HTML "<H3>$first_date -- $last_date</H3>\n";
