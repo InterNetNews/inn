@@ -158,9 +158,10 @@ extern int              vsnprintf(char *, size_t, const char *, va_list);
    checks for this with as part of AC_HEADER_STDC, so if autoconf doesn't
    think our headers are standard, check isascii() first. */
 #if STDC_HEADERS
-# define CTYPE(isXXXXX, c) (isXXXXX((c)))
+# define CTYPE(isXXXXX, c) (isXXXXX((unsigned char)(c)))
 #else
-# define CTYPE(isXXXXX, c) (isascii((c)) && isXXXXX((c)))
+# define CTYPE(isXXXXX, c) \
+    (isascii((unsigned char)(c)) && isXXXXX((unsigned char)(c)))
 #endif
 
 /* POSIX.1g requires <sys/un.h> to define a SUN_LEN macro for determining
