@@ -1956,6 +1956,7 @@ int main(int ac, char *av[])
 			CleanupAndExit(Server, FALSE, 1);
 		    }
 		}
+		CleanupAndExit(Server, FALSE, 0);
 	    }
 	}
     }
