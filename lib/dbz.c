@@ -1,5 +1,5 @@
 /*
-  dbz.c  V6.0
+  dbz.c  V6.1.1
 
 Copyright 1988 Jon Zeeff (zeeff@b-tech.ann-arbor.mi.us)
 You can use this code in any manner, as long as you leave my name on it
@@ -57,6 +57,8 @@ slightly before the point where performance starts to degrade.  (It is
 desirable to be a bit conservative because the overflow strategy tends
 to produce files with holes in them, which is a nuisance.)
 
+Tagged hash + offset fuzzy technique merged by Sang-yong Suh (Nov, 1997)
+
 */
 
 #include <stdio.h>
@@ -88,6 +90,69 @@ to produce files with holes in them, which is a nuisance.)
 
 static int dbzversion = 6;	/* for validating .dir file format */
 
+#define of_t		long
+#define	SOF		(sizeof(of_t))
+#define	NOTFOUND	((OFFSET_T)-1)
+#ifdef	DO_TAGGED_HASH
+
+#define OVERFLOW
+#ifdef OVERFLOW
+#include <limits.h>
+#endif
+
+/* MAXDROPBITS is the maximum number of bits dropped from the offset value.
+   The least significant bits are dropped.  The space is used to
+   store hash additional bits, thereby increasing the possibility of the
+   hash detection */
+#define MAXDROPBITS	4	/* max # of bits to drop from the offset */
+
+/* MAXFUZZYLENGTH is the maximum in the offset value due to the MAXDROPBITS */
+#define MAXFUZZYLENGTH ((1 << MAXDROPBITS) - 1)
+
+/*
+ * We assume that unused areas of a binary file are zeros, and that the
+ * bit pattern of `(of_t)0' is all zeros.  The alternative is rather
+ * painful file initialization.  Note that okayvalue(), if OVERFLOW is
+ * defined, knows what value of an offset would cause overflow.
+ */
+#define VACANT		((OFFSET_T)0)
+#define BIAS(o)		((o)+1)		/* make any valid of_t non-VACANT */
+#define UNBIAS(o)	((o)-1)		/* reverse BIAS() effect */
+
+#define HASTAG(o)	((o)&taghere)
+#define TAG(o)		((o)&tagbits)
+#define NOTAG(o)	((o)&~tagboth)
+#define CANTAG(o)	(((o)&tagboth) == 0)
+#define MKTAG(v)	(((v)<<conf.tagshift)&tagbits)
+
+#ifndef NOTAGS
+#define TAGENB		0x80	/* tag enable is top bit, tag is next 7 */
+#define TAGMASK 	0x7f
+#define TAGSHIFT	24
+#else
+#define TAGENB		0	/* no tags */
+#define TAGMASK 	0
+#define TAGSHIFT	0
+#endif
+
+/*
+ * Stdio buffer for base-file reads.  Message-IDs (all news ever needs to
+ * read) are essentially never longer than 64 bytes, and the typical stdio
+ * buffer is so much larger that it is much more expensive to fill.
+ */
+#ifndef SHISTBUF
+#define SHISTBUF	64
+#endif
+#ifdef	_IOFBF
+static char basebuf[SHISTBUF];          /* only needed if _IOFBF exists */
+#endif
+
+static OFFSET_T tagbits;		/* pre-shifted tag mask */
+static OFFSET_T taghere;		/* pre-shifted tag-enable bit */
+static OFFSET_T tagboth;		/* tagbits|taghere */
+
+#endif	/* DO_TAGGED_HASH */
+
 #ifdef MAP_FILE
 #define MAP__ARG	(MAP_FILE | MAP_SHARED)
 #else
@@ -103,19 +168,15 @@ static int dbzversion = 6;	/* for validating .dir file format */
 #define PACKED __attribute__ ((packed))
 #endif
 
-#if defined(__SUNPRO_C) || defined(_nec_ews) || defined (sgi)
-#if !defined(lint) && defined(__SUNPRO_C)
+#if defined(__SUNPRO_C) || defined(_nec_ews)
 #pragma pack(1)
-#endif /* nor lint, nor sgi, nor _nec_ews */
 typedef struct {
     char               hash[DBZ_INTERNAL_HASH_SIZE];
 } erec;
 typedef struct {
     unsigned long      offset;
 } idxrec;
-#if !defined(lint) && defined(__SUNPRO_C)
 #pragma pack()
-#endif /* nor lint, nor sgi, nor _nec_ews */
 #else
 typedef struct {
     char               hash[DBZ_INTERNAL_HASH_SIZE];
@@ -130,9 +191,14 @@ typedef struct {
  * but there have to be defaults.
  */
 #ifndef DEFSIZE
-#define	DEFSIZE        7500000
+
+#ifdef	DO_TAGGED_HASH
+#define DEFSIZE		5000011		/* I need a prime number */
+#else
+#define	DEFSIZE		7500000
 #endif
 
+#endif	/* DEFSIZE */
 /*
  * We read configuration info from the .dir file into this structure,
  * so we can avoid wired-in assumptions for an existing database.
@@ -150,14 +216,27 @@ typedef struct {
 typedef struct {
     long tsize;		        /* table size */
     long used[NUSEDS];          /* entries used today, yesterday, ... */
+    long vused[NUSEDS];		/* ditto for text size */
     int valuesize;		/* size of table values, == sizeof(dbzrec) */
     int fillpercent;            /* fillpercent/100 is the percent full we'll
 				   try to keep the .pag file */
+    of_t tagenb;		/* unshifted tag-enable bit */
+    of_t tagmask;		/* unshifted tag mask */
+    int tagshift;		/* shift count for tagmask and tagenb */
+    int dropbits;		/* number of bits to discard from offset */
+    int lenfuzzy;		/* num of fuzzy characters in offset */
 } dbzconfig;
-
 static dbzconfig conf;
-/* Default to write through off, index from disk, exists mmap'ed and non-blocking writes */
-static dbzoptions options = { FALSE, INCORE_NO, INCORE_MMAP, TRUE };
+
+/*
+ * Default dbzoptions to
+ */
+static dbzoptions options = {
+    FALSE,		/* write through off */
+    INCORE_NO,		/* index/pag from disk */
+    INCORE_MMAP,	/* exists mmap'ed. ignored in tagged hash mode */
+    TRUE		/* non-blocking writes */
+};
 
 /*
  * Data structure for recording info about searches.
@@ -169,9 +248,11 @@ typedef struct {
 #		ifndef MAXRUN
 #		define	MAXRUN	100
 #		endif
-    HASH hash;	        /* the key's hash code */
+    HASH hash;			/* the key's hash code */
     unsigned long shorthash;    /* integer version of the hash, used for
-				   determining the entries location */
+				   determining the entries location.
+				   Tagged_hash stores the 31-bit hash here */
+    OFFSET_T tag;		/* tag we are looking for */
     int aborted;		/* has i/o error aborted search? */
 } searcher;
 #define	FRESH	((searcher *)NULL)
@@ -204,7 +285,7 @@ typedef struct {
     int fd;                     /* Non-blocking descriptor for writes */
     int pos;                    /* Current offset into the table */
     int reclen;                 /* Length of records in the table */
-    DBZ_INCORE incore;          /* What we're using core for */
+    dbz_incore_val incore;      /* What we're using core for */
     void *core;                 /* Pointer to in-core table */
 } hash_table;
 
@@ -212,8 +293,14 @@ typedef struct {
 static BOOL opendb = FALSE;     /* Indicates if a database is currently open */
 static FILE *dirf;		/* descriptor for .dir file */
 static BOOL readonly;		/* database open read-only? */
+#ifdef	DO_TAGGED_HASH
+static FILE *basef;		/* descriptor for base file */
+static char *basefname;		/* name for not-yet-opened base file */
+static hash_table pagtab;       /* pag hash table, stores hash + offset */
+#else
 static hash_table idxtab;       /* index hash table, used for data retrieval */
 static hash_table etab;         /* existance hash table, used for existance checks */
+#endif
 static BOOL dirty;		/* has a store() been done? */
 static erec empty_rec;          /* empty rec to compare against
 				   initalized in dbminit */
@@ -223,27 +310,106 @@ static char *enstring(const char *s1, const char *s2);
 static BOOL getcore(hash_table *tab);
 static BOOL putcore(hash_table *tab);
 static BOOL getconf(FILE *df, dbzconfig *cp);
-static int putconf(FILE *f, dbzconfig *cp);
+static int  putconf(FILE *f, dbzconfig *cp);
 static void start(searcher *sp, const HASH hash, searcher *osp);
+#ifdef	DO_TAGGED_HASH
+static OFFSET_T search(searcher *sp);
+static BOOL set_pag(searcher *sp, OFFSET_T value);
+#else
 static BOOL search(searcher *sp);
+#endif
 static BOOL set(searcher *sp, hash_table *tab, void *value);
 
 /* file-naming stuff */
 static char dir[] = ".dir";
+#ifdef	DO_TAGGED_HASH
+static char pag[] = ".pag";
+#else
 static char idx[] = ".index";
 static char exists[] = ".hash";
+#endif
+
+#ifdef	DO_TAGGED_HASH
+/*
+ - dbzconfbase - reconfigure dbzconf from base file size.
+ */
+static void config_by_text_size(dbzconfig *c, of_t basesize) {
+    int i;
+    of_t m;
+
+    /* if no tag requested, just return. */
+    if ((c->tagmask | c->tagenb) == 0)
+	return;
+
+    /* Use 10 % larger base file size.  Sometimes the offset overflows */
+    basesize += basesize / 10;
+
+    /* calculate tagging from old file */
+    for (m = 1, i = 0; m < basesize; i++, m <<= 1)
+	continue;
+ 
+    /* if we had more tags than the default, use the new data */
+    c->dropbits = 0;
+    while (m > (1 << TAGSHIFT)) {
+	if (c->dropbits >= MAXDROPBITS)
+	    break;
+	c->dropbits++;
+	m >>= 1;
+	i--;
+    }
+    c->tagenb = TAGENB;
+    c->tagmask = TAGMASK;
+    c->tagshift = TAGSHIFT;
+    if ((c->tagmask | c->tagenb) && m > (1 << TAGSHIFT)) {
+	c->tagshift = i;
+	c->tagmask = (~(unsigned long)0) >> (i + 1);
+	c->tagenb = (c->tagmask << 1) & ~c->tagmask;
+    }
+    c->lenfuzzy = (int)(1 << c->dropbits) - 1;
+
+    m = (c->tagmask | c->tagenb) << c->tagshift;
+    if (m & (basesize >> c->dropbits)) {
+	fprintf(stderr, "m 0x%lx size 0x%lx\n", m, basesize);
+	exit(1);
+    }
+}
+#endif	/* DO_TAGGED_HASH */
+
+/*
+ - create and truncate .pag, .idx, or .hash files
+ - return FALSE on error
+ */
+static BOOL create_truncate(const char *name, const char *pag) {
+    char *fn;
+    FILE *f;
+
+    if ((fn = enstring(name, pag)) == NULL)
+	return FALSE;
+    f = fopen(fn, "w");
+    DISPOSE(fn);
+    if (f == NULL) {
+	DEBUG(("dbz.c create_truncate: unable to create/truncate %s\n", pag));
+	return FALSE;
+    } else
+        fclose(f);
+    return TRUE;
+}
 
 /* dbzfresh - set up a new database, no historical info
  * Return TRUE for success, FALSE for failure
  * name - base name; .dir and .pag must exist
  * size - table size (0 means default)
- * fillpercent - target percentage full
+ * fillpercent - target percentage full ***** inactive
  */
 BOOL dbzfresh(const char *name, const long size, const int fillpercent)
 {
     char *fn;
     dbzconfig c;
     FILE *f;
+#ifdef	DO_TAGGED_HASH
+    struct stat sb;
+    of_t m;
+#endif
 
     if (opendb) {
 	DEBUG(("dbzfresh: database already open\n"));
@@ -258,10 +424,30 @@ BOOL dbzfresh(const char *name, const long size, const int fillpercent)
     if (!getconf((FILE *)NULL, &c))
 	return FALSE;	/* "can't happen" */
 
+#ifdef	DO_TAGGED_HASH
+    /* and mess with it as specified */
+    if (size != 0)
+	c.tsize = size;
+    m = c.tagmask;
+    c.tagshift = 0;
+    while (!(m & 1)) {
+	m >>= 1;
+	c.tagshift++;
+    }
+    c.tagmask = m;
+    c.tagenb = (m << 1) & ~m;
+    c.dropbits = 0;
+    c.lenfuzzy = 0;
+
+    /* if big enough basb file exists, update config */
+    if (stat(name, &sb) != -1)
+	config_by_text_size(&c, sb.st_size);
+#else
     /* set the size as specified, make sure we get at least 2 bytes
        of implicit hash */
     if (size != 0)
 	c.tsize = size > (64 * 1024) ? size : 64 * 1024;
+#endif
 
     /* write it out */
     if ((fn = enstring(name, dir)) == NULL)
@@ -281,30 +467,51 @@ BOOL dbzfresh(const char *name, const long size, const int fillpercent)
 	return FALSE;
     }
 
-    /* create/truncate .index */
-    if ((fn = enstring(name, idx)) == NULL)
+    /* create and truncate .pag, or .index/.hash files */
+#ifdef	DO_TAGGED_HASH
+    if (!create_truncate(name, pag))
 	return FALSE;
-    f = fopen(fn, "w");
-    DISPOSE(fn);
-    if (f == NULL) {
-	DEBUG(("dbzfresh: unable to create/truncate .pag file\n"));
+#else
+    if (!create_truncate(name, idx))
 	return FALSE;
-    } else
-        fclose(f);
+    if (!create_truncate(name, exists))
+	return FALSE;
+#endif	/* DO_TAGGED_HASH */
 
-    /* create/truncate .hash */
-    if ((fn = enstring(name, exists)) == NULL)
-	return FALSE;
-    f = fopen(fn, "w");
-    DISPOSE(fn);
-    if (f == NULL) {
-	DEBUG(("dbzfresh: unable to create/truncate .pag file\n"));
-	return FALSE;
-    } else
-        fclose(f);
     /* and punt to dbminit for the hard work */
     return dbminit(name);
 }
+
+#ifdef	DO_TAGGED_HASH
+/*
+ - isprime - is a number prime?
+ */
+static BOOL isprime(long x) {
+    static int quick[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 0 };
+    int *ip;
+    long div, stop;
+
+    /* hit the first few primes quickly to eliminate easy ones */
+    /* this incidentally prevents ridiculously small tables */
+    for (ip = quick; (div = *ip) != 0; ip++)
+	if (x % div == 0) {
+	    DEBUG(("isprime: quick result on %ld\n", (long)x));
+	    return FALSE;
+	}
+
+    /* approximate square root of x */
+    for (stop = x; x/stop < stop; stop >>= 1)
+	continue;
+    stop <<= 1;
+
+    /* try odd numbers up to stop */
+    for (div = *--ip; div < stop; div += 2)
+	if (x%div == 0)
+	    return FALSE;
+
+    return TRUE;
+}
+#endif
 
 /*
  * dbzsize  - what's a good table size to hold this many entries?
@@ -317,16 +524,25 @@ long dbzsize(const long contents) {
 	DEBUG(("dbzsize: preposterous input (%ld)\n", contents));
 	return DEFSIZE;
     }
+
     if ((conf.fillpercent > 0) && (conf.fillpercent < 100))
-	n = (contents * 100) / conf.fillpercent;
+	n = (contents / conf.fillpercent) * 100;
     else 
-	n = (contents * 3) / 2;	/* try to keep table at most 2/3 full */
-    DEBUG(("dbzsize: final size %ld\n", n));
+	n = contents * 2;	/* try to keep table at most half full */
 
     /* Make sure that we get at least 2 bytes of implicit hash */
     if (n < (64 * 1024))
 	n = 64 * 1024;
-    
+
+#ifdef	DO_TAGGED_HASH
+    if (!(n & 1))
+        n += 1;			/* make it odd */
+    DEBUG(("dbzsize: tentative size %ld\n", n));
+    while (!isprime(n))		/* look for a prime */
+	n += 2;
+#endif
+
+    DEBUG(("dbzsize: final size %ld\n", n));
     return n;
 }
 
@@ -345,6 +561,10 @@ BOOL dbzagain(const char *name, const char *oldname)
     FILE *f;
     int newtable;
     OFFSET_T newsize;
+#ifdef	DO_TAGGED_HASH
+    long vtop;
+    struct stat sb;
+#endif
 
     if (opendb) {
 	DEBUG(("dbzagain: database already open\n"));
@@ -383,6 +603,29 @@ BOOL dbzagain(const char *name, const char *oldname)
     for (i = NUSEDS-1; i > 0; i--)
 	c.used[i] = c.used[i-1];
     c.used[0] = 0;
+
+#ifdef	DO_TAGGED_HASH
+    vtop = 0;
+    for (i = 0; i < NUSEDS; i++) {
+	if (vtop < c.vused[i])
+	    vtop = c.vused[i];
+	if (c.vused[i] == 0)
+	    newtable = 1;	/* hasn't got full usage history yet */
+    }
+    if (top != 0 && vtop == 0) {
+	DEBUG(("dbzagain: old table has no contents!\n"));
+	newtable = 1;
+    }
+    for (i = NUSEDS-1; i > 0; i--)
+	c.vused[i] = c.vused[i-1];
+    c.vused[0] = 0;
+
+    /* calculate tagging from old file */
+    if (stat(oldname, &sb) != -1 && vtop < sb.st_size)
+	vtop = sb.st_size;
+    config_by_text_size(&c, vtop);
+#endif
+
     newsize = dbzsize(top);
     if (!newtable || newsize > c.tsize)	/* don't shrink new table */
 	c.tsize = newsize;
@@ -404,40 +647,33 @@ BOOL dbzagain(const char *name, const char *oldname)
 	return FALSE;
     }
 
-    /* create/truncate .index */
-    fn = enstring(name, idx);
-    if (fn == NULL)
+    /* create and truncate .pag, or .index/.hash files */
+#ifdef	DO_TAGGED_HASH
+    if (!create_truncate(name, pag))
 	return FALSE;
-    f = fopen(fn, "w");
-    DISPOSE(fn);
-    if (f == NULL) {
-	DEBUG(("dbzagain: unable to create/truncate .pag file\n"));
+#else
+    if (!create_truncate(name, idx))
 	return FALSE;
-    } else
-	fclose(f);
-
-    /* create/truncate .hash */
-    fn = enstring(name, exists);
-    if (fn == NULL)
+    if (!create_truncate(name, exists))
 	return FALSE;
-    f = fopen(fn, "w");
-    DISPOSE(fn);
-    if (f == NULL) {
-	DEBUG(("dbzagain: unable to create/truncate .pag file\n"));
-	return FALSE;
-    } else
-	fclose(f);
+#endif
 
     /* and let dbminit do the work */
     return dbminit(name);
 }
 
-static BOOL openhashtable(const char *name, hash_table *tab,
-			  const size_t reclen, const DBZ_INCORE incore) {
+static BOOL openhashtable(const char *base, const char *ext, hash_table *tab,
+			  const size_t reclen, const dbz_incore_val incore) {
+    char *name;
+
+    if ((name = enstring(base, ext)) == NULL)
+	return FALSE;
+
     if ((tab->f = fopen(name, "rb+")) == NULL) {
 	tab->f = fopen(name, "rb");
 	if (tab->f == NULL) {
 	    DEBUG(("openhashtable: open failed\n"));
+	    DISPOSE(name);
 	    return FALSE;
 	}
 	readonly = TRUE;
@@ -448,9 +684,11 @@ static BOOL openhashtable(const char *name, hash_table *tab,
     if ((tab->fd = open(name, readonly ? O_RDONLY : O_RDWR)) < 0) {
 	DEBUG(("openhashtable: could not open raw\n"));
 	fclose(tab->f);
+	DISPOSE(name);
 	errno = EDOM;
 	return FALSE;
     }
+    DISPOSE(name);
 
     tab->reclen = reclen;
     CloseOnExec(fileno(tab->f), 1);
@@ -479,7 +717,7 @@ static BOOL openhashtable(const char *name, hash_table *tab,
     return TRUE;
 }
 
-void closehashtable(hash_table *tab) {
+static void closehashtable(hash_table *tab) {
     fclose(tab->f);
     close(tab->fd);
     if (tab->incore == INCORE_MEM)
@@ -490,6 +728,30 @@ void closehashtable(hash_table *tab) {
 	}
     }
 }
+
+#ifdef	DO_TAGGED_HASH
+static BOOL openbasefile(const char *name) {
+    basef = fopen(name, "r");
+    if (basef == NULL) {
+	DEBUG(("dbminit: basefile open failed\n"));
+	basefname = enstring(name, "");
+	if (basefname == NULL) {
+	    (void) fclose(pagtab.f);
+	    (void) fclose(dirf);
+	    pagtab.f = NULL;
+	    return FALSE;
+	}
+    } else
+	basefname = NULL;
+    if (basef != NULL)
+	CloseOnExec((int)fileno(basef), 1);
+#ifdef _IOFBF
+    if (basef != NULL)
+	(void) setvbuf(basef, basebuf, _IOFBF, sizeof(basebuf));
+#endif
+    return TRUE;
+}
+#endif	/* DO_TAGGED_HASH */
 
 /*
  * dbminit - open a database, creating it (using defaults) if necessary
@@ -530,32 +792,33 @@ int dbminit(const char *name) {
 	return FALSE;
     }
 
-    /* open the .index file */
-    if ((fname = enstring(name, idx)) == NULL) {
+    /* open pag or idx/exists file */
+#ifdef	DO_TAGGED_HASH
+    if (!openhashtable(name, pag, &pagtab, SOF, options.pag_incore)) {
 	fclose(dirf);
 	return FALSE;
     }
-
-    if (!openhashtable(fname, &idxtab, sizeof(idxrec), options.idx_incore)) {
-	fclose(dirf);
-	DISPOSE(fname);
-	return FALSE;
-    }
-    DISPOSE(fname);
-    
-    /* open the .hash file */
-    if ((fname = enstring(name, exists)) == NULL) {
+    if (!openbasefile(name)) {
+	fclose(pagtab.f);
+	close(pagtab.fd);
 	fclose(dirf);
 	return FALSE;
     }
-
-    if (!openhashtable(fname, &etab, sizeof(erec), options.exists_incore)) {
+    tagbits = conf.tagmask << conf.tagshift;
+    taghere = conf.tagenb << conf.tagshift;
+    tagboth = tagbits | taghere;
+#else
+    if (!openhashtable(name, idx, &idxtab, sizeof(idxrec),
+		options.idx_incore)) {
 	fclose(dirf);
-	DISPOSE(fname);
-	closehashtable(&idxtab);
 	return FALSE;
     }
-    DISPOSE(fname);
+    if (!openhashtable(name, exists, &etab, sizeof(erec),
+		options.exists_incore)) {
+	fclose(dirf);
+	return FALSE;
+    }
+#endif
 
     /* misc. setup */
     dirty = FALSE;
@@ -593,8 +856,19 @@ BOOL dbmclose(void)
     if (dbzsync() < 0)
 	ret = FALSE;
 
+#ifdef	DO_TAGGED_HASH
+    closehashtable(&pagtab);
+    if (fclose(basef) == EOF) {
+	fprintf(stderr, "dbmclose: fclose(basef) failed\n");
+	ret = FALSE;
+    }
+    if (basefname != NULL)
+	free((POINTER)basefname);
+    basef = NULL;
+#else
     closehashtable(&idxtab);
     closehashtable(&etab);
+#endif
 
     if (fclose(dirf) == EOF) {
 	DEBUG(("dbmclose: fclose(dirf) failed\n"));
@@ -622,7 +896,11 @@ BOOL dbzsync(void)
 	return TRUE;;
 
     if (!options.writethrough) {
+#ifdef	DO_TAGGED_HASH
+	if (!putcore(&pagtab)) {
+#else
 	if (!putcore(&idxtab) || !putcore(&etab)) {
+#endif
 	    DEBUG(("dbzsync: putcore failed\n"));
 	    ret = FALSE;;
 	}
@@ -635,8 +913,27 @@ BOOL dbzsync(void)
     return ret;
 }
 
+#ifdef	DO_TAGGED_HASH
+/*
+ - okayvalue - check that a value can be stored
+ */
+static int okayvalue(of_t value) {
+    if (HASTAG(value))
+	return(0);
+#ifdef OVERFLOW
+    if (value == LONG_MAX)	/* BIAS() and UNBIAS() will overflow */
+	return(0);
+#endif
+    return(1);
+}
+#endif
+
 /* dbzexists - check if the given message-id is in the database */
 BOOL dbzexists(const HASH key) {
+
+#ifdef	DO_TAGGED_HASH
+    return (dbzfetch(key) != NOTFOUND);
+#else
     
     if (!opendb) {
 	DEBUG(("dbzexists: database not open!\n"));
@@ -646,27 +943,100 @@ BOOL dbzexists(const HASH key) {
     prevp = FRESH;
     start(&srch, key, FRESH);
     return search(&srch);
+#endif
 }
 
-/* dbzfetch - get an entry from the database
+/*
+ * dbzfetch - get offset of an entry from the database
  *
- * Disgusting fine point, in the name of backward compatibility:  if the
- * last character of "key" is a NUL, that character is (effectively) not
- * part of the comparison against the stored keys.
- *
- * Returns: dtr == NULL && dsize == 0 on failure.
+ * Returns the offset of the text file for input key,
+ * or -1 if NOTFOUND or error occurs.
  */
-OFFSET_T dbzfetch(HASH key) {
-    unsigned long offset = -1;
+OFFSET_T dbzfetch(const HASH key) {
+#ifdef	DO_TAGGED_HASH
+#define	MAX_NB2RD	(DBZMAXKEY + MAXFUZZYLENGTH + 2)
+#define MIN_KEY_LENGTH	6	/* strlen("<1@a>") + strlen("\t") */
+    char *bp, buffer[MAX_NB2RD];
+    int keylen, j, nb2r;
+    HASH hishash;
+    char *keytext = NULL;
+#endif
+    OFFSET_T offset = NOTFOUND;
 
     prevp = FRESH;
 
     if (!opendb) {
-	DEBUG(("fetch: database not open!\n"));
-	return offset;
+	DEBUG(("dbzfetch: database not open!\n"));
+	return NOTFOUND;
     }
 
     start(&srch, key, FRESH);
+#ifdef	DO_TAGGED_HASH
+    /*
+     * nb2r: number of bytes to read from history file.
+     *       It can be reduced if history text is written as hashes only.
+     */
+    nb2r = sizeof(buffer) - 1;
+
+    while ((offset = search(&srch)) != NOTFOUND) {
+	DEBUG(("got 0x%lx\n", key_ptr));
+
+	/* fetch the key */
+	offset <<= conf.dropbits;
+	if (offset)		/* backspace 1 character to read '\n' */
+	    offset--;
+	if (fseek(basef, offset, SEEK_SET) != 0) {
+	    DEBUG(("fetch: seek failed\n"));
+	    return NOTFOUND;
+	}
+	keylen = fread((POINTER)buffer, 1, nb2r, basef);
+	if (keylen < MIN_KEY_LENGTH) {
+	    DEBUG(("fetch: read failed\n"));
+	    return NOTFOUND;
+	}
+	buffer[keylen] = '\0';	/* terminate the string */
+
+	if (offset) {		/* find the '\n', the previous EOL */
+	    if (keylen > conf.lenfuzzy)
+		keylen = conf.lenfuzzy; /* keylen is fuzzy distance now */
+	    for (j=0,bp=buffer; j<keylen; j++,bp++)
+		if (*bp == '\n')
+		    break;
+	    if (*bp != '\n') {
+		DEBUG(("dbzfetch: can't locate EOL\n"));
+		/* pag entry should be deleted, but I'm lazy... */
+		continue;
+	    }
+	    offset++;
+	    bp++;	/* now *bp is the start of key */
+	} else {
+	    j = 0;	/* We are looking for the first history line. */
+	    bp = buffer;
+	}
+
+	/* Does this history line really have same key? */
+	if (*bp == '[') {
+	    if (!keytext)
+		keytext = HashToText(key);
+	    if (memcmp(keytext, bp+1, sizeof(HASH)*2) != 0)
+		continue;
+	} else if (*bp == '<') {
+	    char *p = strchr(bp+1, '\t');
+	    if (!p)		/* history has a corrupted line */
+		continue;
+	    *p = '\0';
+	    hishash = HashMessageID(bp);
+	    if (memcmp(&key, &hishash, sizeof(HASH)) != 0)
+		continue;
+	} else
+	    continue;
+
+	/* we found it */
+	offset += j;
+	DEBUG(("fetch: successful\n"));
+	return offset;
+    }
+#else	/* DO_TAGGED_HASH */
     if (search(&srch) == TRUE) {
 	/* Actually get the data now */
 	if ((options.idx_incore != INCORE_NO) && (srch.place < conf.tsize)) {
@@ -677,44 +1047,79 @@ OFFSET_T dbzfetch(HASH key) {
 		DEBUG(("fetch: seek failed\n"));
 		idxtab.pos = -1;
 		srch.aborted = 1;
-		return offset;
+		return NOTFOUND;
 	    }
 	    if (read(idxtab.fd, &offset, sizeof(offset)) != sizeof(offset)) {
 		DEBUG(("fetch: read failed\n"));
 		idxtab.pos = -1;
 		srch.aborted = 1;
-		return offset;
+		return NOTFOUND;
 	    }
 	    offset = ntohl(offset);
 	}
 	DEBUG(("fetch: successful\n"));
 	return offset;
     }
+#endif
 
     /* we didn't find it */
     DEBUG(("fetch: failed\n"));
     prevp = &srch;			/* remember where we stopped */
-    return offset;
+    return NOTFOUND;
 }
 
 /*
  * dbzstore - add an entry to the database
- * returns TRUE for success and FALSE for failure 
+ * returns TRUE for success and FALSE for failure
  */
-DBZSTORE_RESULT dbzstore(const HASH key, const OFFSET_T data)
-{
-    idxrec ivalue;
-    erec   evalue;
-    int offset;
+DBZSTORE_RESULT dbzstore(const HASH key, const OFFSET_T data) {
+#ifdef	DO_TAGGED_HASH
+    OFFSET_T value;
+#else
+    idxrec   ivalue;
+    erec     evalue;
+    int	     offset;
+#endif
 
     if (!opendb) {
-	DEBUG(("store: database not open!\n"));
+	DEBUG(("dbzstore: database not open!\n"));
 	return DBZSTORE_ERROR;
     }
     if (readonly) {
-	DEBUG(("store: database open read-only\n"));
+	DEBUG(("dbzstore: database open read-only\n"));
 	return DBZSTORE_ERROR;
     }
+
+#ifdef	DO_TAGGED_HASH
+    /* copy the value in to ensure alignment */
+    (void) memcpy((POINTER)&value, (POINTER)&data, SOF);
+
+    /* update maximum offset value if necessary */
+    if (value > conf.vused[0])
+	conf.vused[0] = value;
+
+    /* now value is in fuzzy format */
+    value >>= conf.dropbits;
+    DEBUG(("dbzstore: (%ld)\n", (long)value));
+
+    if (!okayvalue(value)) {
+	DEBUG(("dbzstore: reserved bit or overflow in 0x%lx\n", value));
+	return DBZSTORE_ERROR;
+    }
+
+    /* find the place, exploiting previous search if possible */
+    start(&srch, key, prevp);
+    while (search(&srch) != NOTFOUND)
+	continue;
+
+    prevp = FRESH;
+    conf.used[0]++;
+    DEBUG(("store: used count %ld\n", conf.used[0]));
+    dirty = 1;
+    if (!set_pag(&srch, value))
+        return DBZSTORE_ERROR;
+    return DBZSTORE_OK;
+#else	/* DO_TAGGED_HASH */
 
     /* find the place, exploiting previous search if possible */
     start(&srch, key, prevp);
@@ -737,8 +1142,9 @@ DBZSTORE_RESULT dbzstore(const HASH key, const OFFSET_T data)
     if (!set(&srch, &idxtab, &ivalue))
 	return DBZSTORE_ERROR;
     if (!set(&srch, &etab, &evalue))
-    	return DBZSTORE_ERROR;
+        return DBZSTORE_ERROR;
     return DBZSTORE_OK;
+#endif	/* DO_TAGGED_HASH */
 }
 
 /*
@@ -750,7 +1156,41 @@ DBZSTORE_RESULT dbzstore(const HASH key, const OFFSET_T data)
 static BOOL getconf(FILE *df, dbzconfig *cp) {
     int i;
 
-    if (df == NULL) {		/* empty file, no configuration known */
+    /* empty file, no configuration known */
+#ifdef	DO_TAGGED_HASH
+    if (df == NULL) {
+	cp->tsize = DEFSIZE;
+	for (i = 0; i < NUSEDS; i++)
+	    cp->used[i] = 0;
+	for (i = 0; i < NUSEDS; i++)
+	    cp->vused[i] = 0;
+	cp->valuesize = sizeof(OFFSET_T);
+	cp->fillpercent = 50;
+	cp->tagenb = TAGENB;
+	cp->tagmask = TAGMASK;
+	cp->tagshift = TAGSHIFT;
+	cp->dropbits = 0;
+	cp->lenfuzzy = 0;
+	DEBUG(("getconf: defaults (%ld, %c, (0x%lx/0x%lx<<%d %d))\n",
+	cp->tsize, cp->casemap, cp->tagenb, 
+	cp->tagmask, cp->tagshift, cp->dropbits));
+	return TRUE;
+    }
+
+    i = fscanf(df, "dbz 6 %ld %d %d %ld %ld %d %d\n", &cp->tsize,
+		&cp->valuesize, &cp->fillpercent, &cp->tagenb,
+		&cp->tagmask, &cp->tagshift, &cp->dropbits);
+    if (i != 7) {
+	DEBUG(("getconf error"));
+	return FALSE;
+    }
+    if (cp->valuesize != sizeof(OFFSET_T)) {
+	DEBUG(("getconf: wrong of_t size (%d)\n", cp->valuesize));
+	return FALSE;
+    }
+    cp->lenfuzzy = (int)(1 << cp->dropbits) - 1;
+#else	/* DO_TAGGED_HASH */
+    if (df == NULL) {
 	cp->tsize = DEFSIZE;
 	for (i = 0; i < NUSEDS; i++)
 	    cp->used[i] = 0;
@@ -760,17 +1200,17 @@ static BOOL getconf(FILE *df, dbzconfig *cp) {
 	return TRUE;
     }
 
-    i = fscanf(df, "dbz 6 %ld %d %d\n", &cp->tsize, &cp->valuesize, &cp->fillpercent);
+    i = fscanf(df, "dbz 6 %ld %d %d\n", &cp->tsize,
+		&cp->valuesize, &cp->fillpercent);
     if (i != 3) {
 	DEBUG(("getconf error"));
 	return FALSE;
     }
-    
     if (cp->valuesize != (sizeof(idxrec) + sizeof(erec))) {
 	DEBUG(("getconf: wrong of_t size (%d)\n", cp->valuesize));
 	return FALSE;
     }
-
+#endif	/* DO_TAGGED_HASH */
     DEBUG(("size %ld\n", cp->tsize));
 
     /* second line, the usages */
@@ -779,9 +1219,17 @@ static BOOL getconf(FILE *df, dbzconfig *cp) {
 	    DEBUG(("getconf error\n"));
 	    return FALSE;
 	}
-	    
-
     DEBUG(("used %ld %ld %ld...\n", cp->used[0], cp->used[1], cp->used[2]));
+
+#ifdef	DO_TAGGED_HASH
+    /* third line, the text usages */
+    for (i = 0; i < NUSEDS; i++)
+	if (!fscanf(df, "%ld", &cp->vused[i])) {
+	    DEBUG(("getconf error\n"));
+	    return FALSE;
+	}
+    DEBUG(("vused %ld %ld %ld...\n", cp->vused[0], cp->vused[1], cp->vused[2]));
+#endif	/* DO_TAGGED_HASH */
 
     return TRUE;
 }
@@ -797,10 +1245,23 @@ static int putconf(FILE *f, dbzconfig *cp) {
 	DEBUG(("fseek failure in putconf\n"));
 	ret = -1;
     }
+
+#ifdef	DO_TAGGED_HASH
+    fprintf(f, "dbz %d %ld %d %d %ld %ld %d %d\n", dbzversion, cp->tsize,
+		cp->valuesize, cp->fillpercent, cp->tagenb,
+		cp->tagmask, cp->tagshift, cp->dropbits);
+#else	/* DO_TAGGED_HASH */
     fprintf(f, "dbz %d %ld %d %d\n", dbzversion, cp->tsize,
 		   cp->valuesize, cp->fillpercent);
+#endif	/* DO_TAGGED_HASH */
+
     for (i = 0; i < NUSEDS; i++)
 	fprintf(f, "%ld%c", cp->used[i], (i < NUSEDS-1) ? ' ' : '\n');
+
+#ifdef	DO_TAGGED_HASH
+    for (i = 0; i < NUSEDS; i++)
+	fprintf(f, "%ld%c", cp->vused[i], (i < NUSEDS-1) ? ' ' : '\n');
+#endif
 
     fflush(f);
     if (ferror(f))
@@ -839,7 +1300,7 @@ static BOOL getcore(hash_table *tab) {
 	    DEBUG(("getcore: mmap failed\n"));
 	    return FALSE;
 	}
-#if defined (MADV_RANDOM) && !defined(_nec_ews)
+#if defined (MADV_RANDOM)
 	/* not present in all versions of mmap() */
 	madvise(it, (size_t)conf.tsize * sizeof(tab->reclen), MADV_RANDOM);
 #endif
@@ -853,8 +1314,8 @@ static BOOL getcore(hash_table *tab) {
 	    return FALSE;
 	}
 	
-	i = (size_t)conf.tsize - nread;
-	memset(it, '\0', i * tab->reclen);
+	i = (size_t)(conf.tsize * tab->reclen) - nread;
+	memset(it + nread, '\0', i);
     }
 
     tab->core = it;
@@ -884,10 +1345,42 @@ static BOOL putcore(hash_table *tab) {
     return TRUE;
 }
 
+#ifdef	DO_TAGGED_HASH
+/*
+ - makehash31 : make 31-bit hash from HASH
+ */
+static unsigned int makehash31(const HASH *hash) {
+    unsigned int h;
+    memcpy(&h, hash, sizeof(h));
+    return (h >> 1);
+}
+#endif
+
 /* start - set up to start or restart a search
  * osp == NULL is acceptable
  */
 static void start(searcher *sp, const HASH hash, searcher *osp) {
+#ifdef	DO_TAGGED_HASH
+    long h;
+
+    h = makehash31(&hash);
+    if (osp != FRESH && osp->shorthash == h) {
+	if (sp != osp)
+	    *sp = *osp;
+	sp->run--;
+	DEBUG(("search restarted\n"));
+    } else {
+	sp->shorthash = h;
+	sp->tag = MKTAG(h / conf.tsize);
+	sp->place = h % conf.tsize;
+	DEBUG(("hash %8.8lx tag %8.8lx place %ld\n",
+	    sp->shorthash, sp->tag, sp->place));
+	sp->tabno = 0;
+	sp->run = -1;
+	sp->aborted = 0;
+    }
+
+#else	/* DO_TAGGED_HASH */
     int tocopy;
 
     if (osp != FRESH && !memcmp(&osp->hash, &hash, sizeof(hash))) {
@@ -905,7 +1398,88 @@ static void start(searcher *sp, const HASH hash, searcher *osp) {
 	sp->run = -1;
 	sp->aborted = 0;
     }
+#endif	/* DO_TAGGED_HASH */
 }
+
+#ifdef	DO_TAGGED_HASH
+/*
+ - search - conduct part of a search
+ */
+static OFFSET_T			/* NOTFOUND if we hit VACANT or error */
+search(searcher *sp)
+{
+    OFFSET_T value;
+    unsigned long taboffset = 0;
+
+    if (sp->aborted)
+	return(NOTFOUND);
+
+    for (;;) {
+	/* go to next location */
+	if (sp->run++ == MAXRUN) {
+	    sp->tabno++;
+	    sp->run = 0;
+	    taboffset = sp->tabno * conf.tsize;
+	}
+	sp->place = ((sp->shorthash + sp->run) % conf.tsize) + taboffset;
+	DEBUG(("search @ %ld\n", place));
+
+	/* get the tagged value */
+	if ((options.pag_incore != INCORE_NO) && (sp->place < conf.tsize)) {
+	    DEBUG(("search: in core\n"));
+	    value = ((OFFSET_T *)pagtab.core)[sp->place];
+	} else {
+	    OFFSET_T dest;
+	    /* seek, if necessary */
+	    dest = sp->place * SOF;
+	    if (pagtab.pos != dest) {
+		if (fseek(pagtab.f, dest, SEEK_SET) != 0) {
+		    DEBUG(("search: seek failed\n"));
+		    pagtab.pos = -1;
+		    sp->aborted = 1;
+		    return(NOTFOUND);
+		}
+		pagtab.pos = dest;
+	    }
+
+	    /* read it */
+	    if (fread((POINTER)&value, sizeof(value), 1, pagtab.f) != 1) {
+		if (ferror(pagtab.f)) {
+		    DEBUG(("search: read failed\n"));
+		    pagtab.pos = -1;
+		    sp->aborted = 1;
+		    return(NOTFOUND);
+		} else
+		    value = VACANT;
+	    }
+
+	    /* and finish up */
+	    pagtab.pos += sizeof(value);
+	}
+
+	/* vacant slot is always cause to return */
+	if (value == VACANT) {
+	    DEBUG(("search: empty slot\n"));
+	    return(NOTFOUND);
+	};
+
+	/* check the tag */
+	value = UNBIAS(value);
+	DEBUG(("got 0x%lx\n", value));
+	if (!HASTAG(value)) {
+	    DEBUG(("tagless\n"));
+	    return(value);
+	} else if (TAG(value) == sp->tag) {
+	    DEBUG(("match\n"));
+	    return(NOTAG(value));
+	} else {
+	    DEBUG(("mismatch 0x%lx\n", TAG(value)));
+	}
+    }
+    /* NOTREACHED */
+}
+
+#else	/* DO_TAGGED_HASH */
 
 /* search - conduct part of a search
  *
@@ -914,7 +1488,7 @@ static void start(searcher *sp, const HASH hash, searcher *osp) {
 static BOOL search(searcher *sp) {
     erec value;
     unsigned long taboffset = 0;
-    
+
     if (sp->aborted)
 	return FALSE;
 
@@ -977,6 +1551,7 @@ static BOOL search(searcher *sp) {
     }
     /* NOTREACHED */
 }
+#endif	/* DO_TAGGED_HASH */
 
 /* set - store a value into a location previously found by search
  *
@@ -1040,6 +1615,33 @@ static BOOL set(searcher *sp, hash_table *tab, void *value) {
     return TRUE;
 }
 
+#ifdef	DO_TAGGED_HASH
+/*
+ - set_pag - store a value into a location previously found by search
+ -       on the pag table.
+ - Returns: TRUE success, FALSE failure
+ */
+static BOOL set_pag(searcher *sp, OFFSET_T value) {
+    OFFSET_T v = value;
+
+    if (CANTAG(v)) {
+	v |= sp->tag | taghere;
+	if (v != UNBIAS(VACANT))	/* BIAS(v) won't look VACANT */
+#ifdef OVERFLOW
+	    if (v != LONG_MAX)		/* and it won't overflow */
+#endif
+		value = v;
+    } else {
+	fprintf(stderr, "dbz.c(set): can't tag value 0x%lx", v);
+	fprintf(stderr, " tagboth = 0x%lx\n", tagboth);
+    }
+    DEBUG(("tagged value is 0x%lx\n", value));
+    value = BIAS(value);
+
+    return set(sp, &pagtab, &value);
+}
+#endif	/* DO_TAGGED_HASH */
+
 /* dbzsetoptions - set runtime options for the database.
  */
 void dbzsetoptions(const dbzoptions o) {
@@ -1065,141 +1667,143 @@ int dbzdebug(const BOOL value) {
 }
 #endif
 
-
 #ifdef DBZTEST
-#define FULLRATIO 66
+void CloseOnExec(int i, int j) {}
 
 int timediffms(struct timeval start, struct timeval end) {
     return (((end.tv_sec - start.tv_sec) * 1000) +
-	    ((end.tv_usec - start.tv_usec)) / 1000);
+	((end.tv_usec - start.tv_usec)) / 1000);
 }
 
 void RemoveDBZ(char *filename) {
     char fn[1024];
 
+#ifdef	DO_TAGGED_HASH
+    sprintf(fn, "%s.pag", filename);
+    unlink(fn);
+#else
     sprintf(fn, "%s.exists", filename);
     unlink(fn);
     sprintf(fn, "%s.index", filename);
     unlink(fn);
+#endif
     sprintf(fn, "%s.dir", filename);
     unlink(fn);
 }
 
-int main(int argc, char **argv) {
-    datum key, data;
-    int *i;
-    char msgid[sizeof(int)];
-    struct timeval start, end;
-    int numiter = 5000000;
-    dbzoptions opt;
-    
-    if (argc < 2) {
-	fprintf(stderr, "usage: dbztest dbzfile\n");
-	exit(1);
-    }
+static void usage()
+{
+    fprintf(stderr, "usage: dbztest [-i] [-n|m] [-s size] <history>\n");
+    fprintf(stderr, "  -i       initialize history. deletes .pag files\n");
+    fprintf(stderr, "  -n or m  use INCORE_NO, INCORE_/MMAP. default = INCORE_MEM\n");
+    fprintf(stderr, "  -s size  number of history lines[2500000]\n");
+    fprintf(stderr, "  history  history text file\n");
+    exit(1);
+}
 
-    RemoveDBZ(argv[1]);
+int main(argc, argv)
+int  argc;
+char *argv[];
+{
+    int  i, line;
+    FILE *fpi;
+    char ibuf[2048], *p;
+    HASH key;
+    long where, val;
+    int  initialize = 0, size = 2500000;
+    char *history = NULL;
+    dbzoptions opt;
+    dbz_incore_val incore = INCORE_MEM;
+    struct timeval start, end;
+
+    for (i=1; i<argc; i++)
+	if (strcmp(argv[i], "-i") == 0)
+	    initialize = 1;
+	else if (strcmp(argv[i], "-n") == 0)
+	    incore = INCORE_NO;
+	else if (strcmp(argv[i], "-m") == 0)
+	    incore = INCORE_MMAP;
+	else if (strcmp(argv[i], "-s") == 0)
+	    size = atoi(argv[++i]);
+	else if (*argv[i] != '-' && history == NULL)
+	    history = argv[i];
+	else
+	    usage();
+
+    if (history == NULL)
+	usage();
+    if ((fpi = fopen(history, "r")) == NULL) {
+	fprintf(stderr, "can't open %s\n", history);
+	usage();
+    }
 
     dbzgetoptions(&opt);
-    opt.idx_incore = TRUE;
+#ifdef	DO_TAGGED_HASH
+    opt.pag_incore = incore;
+#else
+    opt.idx_incore = incore;
+#endif
     dbzsetoptions(opt);
 
-    gettimeofday(&start, NULL);
-    if (dbzfresh(argv[1], numiter, 0) != 0) {
-	perror("dbminit");
-	exit(1);
-    }
-    gettimeofday(&end, NULL);
-    printf("dbzfresh(%s, %d, 0): %d ms\n", argv[1], numiter,
-	   timediffms(start, end));
-
-    i = (int *)msgid;
-    key.dptr = (POINTER)&msgid;
-    key.dsize = sizeof(msgid);
-    gettimeofday(&start, NULL);
-    for (*i = 0; *i < 100000; (*i)++) {
-	dbzfetch(key);
-    }
-    gettimeofday(&end, NULL);
-    printf("dbzfetch() off of disk: %0.5f ms\n",
-	   timediffms(start, end)/(float)100000);
-
-    gettimeofday(&start, NULL);
-    for (*i = 0; *i < 750000; (*i)++) {
-	dbzfetch(key);
-    }
-    gettimeofday(&end, NULL);
-    printf("dbzfetch() from memory: %0.5f ms\n",
-	   timediffms(start, end)/(float)750000);
-
-    gettimeofday(&start, NULL);
-    for (*i = 0; *i < 750000; (*i)++) {
-	if (dbzexists(key))
-	    printf("Error, %d was found\n", *i);
-    }
-    gettimeofday(&end, NULL);
-    printf("dbzexists() from memory: %0.5f ms\n",
-	   timediffms(start, end)/(float)750000);
-
-    gettimeofday(&start, NULL);
-    data.dsize = sizeof(msgid);
-    data.dptr = (POINTER)&msgid;
-    for (*i = 0; *i < ((numiter * FULLRATIO) / 100); (*i)++) {
-	dbzstore(key, data);
-    }
-    gettimeofday(&end, NULL);
-    printf("Time to fill database 2/3's full: %0.5f ms\n",
-	   timediffms(start, end)/(float) ((numiter * FULLRATIO) / 100));
-   
-    gettimeofday(&start, NULL);
-    for (*i = 0; *i < 100000; (*i)++) {
-	if (!dbzexists(key))
-	    printf("Could not find %d\n", *i);
-    }
-    gettimeofday(&end, NULL);
-    printf("dbzexists() from memory w/data: %0.5f ms\n",
-	   timediffms(start, end)/(float)100000);
-
-    gettimeofday(&start, NULL);
-    for (*i = 0; *i < 100000; (*i)++) {
-	dbzfetch(key);
-    }
-    gettimeofday(&end, NULL);
-    printf("dbzfetch() from memory w/data: %0.5f ms\n",
-	   timediffms(start, end)/(float)100000);
-
-    printf("Checking dbz integrity\n");
-    for (*i = 0; *i < ((numiter * FULLRATIO) / 100); (*i)++) {
-	data = dbzfetch(key);
-	if (data.dptr == NULL) {
-	    printf("Could not find an entry for %d\n", *i);
-	    continue;
+    if (initialize) {
+	RemoveDBZ(history);
+	gettimeofday(&start, NULL);
+	if (dbzfresh(history, dbzsize(size), 0) < 0) {
+	    fprintf(stderr, "cant dbzfresh %s\n", history);
+	    exit(1);
 	}
-	if (data.dsize != sizeof(msgid)) {
-	    printf("dsize is wrong for %d (%d != %d)\n",
-		   *i, data.dsize, sizeof(msgid));
+	gettimeofday(&end, NULL);
+	printf("dbzfresh: %d msec\n", timediffms(start, end));
+    } else {
+#ifdef	DBZDEBUG
+	dbzdebug(1);
+#endif
+	gettimeofday(&start, NULL);
+	if (dbminit(history) < 0) {
+	    fprintf(stderr, "cant dbminit %s\n", history);
+	    exit(1);
 	}
-	/* '@' is handled differently by the case mapping, so we avoid
-	   checking this case for correctness */
-	if (memchr(data.dptr, '@', sizeof(msgid)) != NULL)
+	gettimeofday(&end, NULL);
+	printf("dbminit: %d msec\n", timediffms(start, end));
+    }
+
+    gettimeofday(&start, NULL);
+    where = ftell(fpi);
+    for (line=1; fgets(ibuf, sizeof(ibuf), fpi); line++, where=ftell(fpi)) {
+	if (*ibuf == '<') {
+	    if ((p = strchr(ibuf, '\t')) == NULL) {
+		fprintf(stderr, "ignoreing bad line: %s\n", ibuf);
+		continue;
+	    }
+	    *p = '\0';
+	    key = HashMessageID(ibuf);
+	} else if (*ibuf == '[')
+	    key = TextToHash(ibuf+1);
+	else
 	    continue;
-	if (memcmp(data.dptr, msgid, sizeof(msgid))) {
-	    HASH hash1, hash2;
-	    hash1 = Hash((char *)msgid, sizeof(msgid));
-	    hash2 = Hash((char *)data.dptr, data.dsize);
-	    if (memcmp(&hash1, &hash2, sizeof(HASH))) {
-		printf("data is wrong for %d (%d != %d)\n",
-		       *i, *i, *(int *)data.dptr);
-	    } else {
-		printf("hash collision for %d, %d\n",
-		       *i, *(int *)data.dptr);
+	if (initialize) {
+	    if (dbzstore(key, where) < 0) {
+		fprintf(stderr, "cant store %s\n", ibuf);
+		exit(1);
+	    }
+	} else {
+	    val = dbzfetch(key);
+	    if (val == NOTFOUND) {
+		fprintf(stderr, "line %d can't fetch %s\n", line, ibuf);
+		exit(1);
 	    }
 	}
     }
+    gettimeofday(&end, NULL);
+    i = timediffms(start, end);
+    printf("%s: %d lines %.3f msec/id\n",
+	(initialize) ? "dbzstore" : "dbzfetch",
+	line, (double)i / (double)line);
 
+    gettimeofday(&end, NULL);
     dbmclose();
-    RemoveDBZ(argv[1]);
-
-    return 0;
+    gettimeofday(&end, NULL);
+    printf("dbmclose: %d msec\n", timediffms(start, end));
+    return(0);
 }
-#endif
+#endif	/* DBZTEST */

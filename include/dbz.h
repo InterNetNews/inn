@@ -10,11 +10,15 @@
  * effects collision rate.  The table index is used as an implicit
  * part of the hash value stored also.
  */
+#ifdef	DO_TAGGED_HASH
+#define DBZMAXKEY	255
+#define DBZ_INTERNAL_HASH_SIZE   4
+#else
 #define DBZ_INTERNAL_HASH_SIZE   6
-
-typedef enum {INCORE_NO, INCORE_MEM, INCORE_MMAP} DBZ_INCORE;
+#endif
 
 typedef enum {DBZSTORE_OK, DBZSTORE_EXISTS, DBZSTORE_ERROR} DBZSTORE_RESULT;
+typedef enum {INCORE_NO, INCORE_MEM, INCORE_MMAP} dbz_incore_val;
 
 typedef struct {
     /* Whether to write to the filesystem in addition to updating the incore
@@ -22,8 +26,12 @@ typedef struct {
        called.  */
     BOOL             writethrough;
     /* Whether to do hash lookups from disk, memory or a mmap'ed file */
-    DBZ_INCORE       idx_incore;      
-    DBZ_INCORE       exists_incore;
+#ifdef	DO_TAGGED_HASH
+    dbz_incore_val   pag_incore;
+#else
+    dbz_incore_val   idx_incore;
+#endif
+    dbz_incore_val   exists_incore;
     /* Whether dbzstore should update the database async or sync.  This
        is only applicable if you're not mmaping the database */
     BOOL             nonblock;
