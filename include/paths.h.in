@@ -89,9 +89,6 @@
 #define _PATH_TMP		"@tmpdir@"
 #define _PATH_RNEWS_DUP_LOG	"/dev/null"
 
-/* Always relative to pathcontrol. */
-#define _PATH_BADCONTROLPROG	"default"
-
 /* Always relative to pathtmp. */
 #define _PATH_TEMPACTIVE	"activeXXXXXX"
 #define _PATH_TEMPMODERATORS	"moderatorsXXXXXX"
