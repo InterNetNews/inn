@@ -386,6 +386,7 @@ include/nntp.h                        NNTP command and reply codes
 include/ov.h                          Header file for overview
 include/paths.h.in                    Paths to common programs and files
 include/portable                      Portability wrappers (Directory)
+include/portable/alloca.h             alloca replacement header
 include/portable/getaddrinfo.h        getaddrinfo replacement header
 include/portable/mmap.h               Wrapper for <sys/mman.h>
 include/portable/setproctitle.h       Portable setup for setproctitle
@@ -446,6 +447,7 @@ innfeed/tape.h                        Public interface to the Tape class
 innfeed/testListener.pl               Script to hand articles to innfeed
 lib                                   INN library routines (Directory)
 lib/Makefile                          Makefile for library
+lib/alloca.c                          alloca replacement
 lib/buffer.c                          Reusable counted buffer
 lib/cleanfrom.c                       Clean out a From line
 lib/clientactive.c                    Client access to the active file
