@@ -395,6 +395,8 @@ tdx_search(struct search *search, struct article *artdata)
 void
 tdx_search_close(struct search *search)
 {
+    if (search->data != NULL)
+        tdx_data_close(search->data);
     free(search);
 }
 
