@@ -138,8 +138,7 @@ struct endpoint_s
     int myFd ;                  /* the file descriptor we're handling */
     int myErrno ;               /* the errno when I/O fails */
     
-    long timesSelected ;        /* incremented every time selected */
-    long timesReady ;           /* incremented every time ready for I/O */
+    double selectHits ;		/* indicates how often it's ready */
 };
 
 
@@ -217,6 +216,7 @@ static fd_set usedFds ;
 static int keepSelecting ;
 
 static TimerElem timeoutQueue ;
+static TimerElem timeoutPool ;
 static TimeoutId nextId ;
 static int timeoutQueueLength ;
 
@@ -340,8 +340,7 @@ EndPoint newEndPoint (int fd)
   ep->myFd = fd ;
   ep->myErrno = 0 ;
 
-  ep->timesSelected = 1 ;
-  ep->timesReady = 0 ;
+  ep->selectHits = 0.0 ;
 
   endPoints [fd] = ep ;
   priorityList [priorityCount++] = ep ;
@@ -621,7 +620,8 @@ bool removeTimeout (TimeoutId tid)
   else
     p->next = n->next ;
 
-  FREE (n) ;
+  n->next = timeoutPool ;
+  timeoutPool = n ;
 
   timeoutQueueLength-- ;
   
@@ -694,7 +694,7 @@ void Run (void)
         {
           IoStatus rval ;
           int readyCount = sval ;
-          int timesThrough = 0 ;
+          int endpointsServiced = 0 ;
           
           handleSignals() ;
           
@@ -706,14 +706,13 @@ void Run (void)
               if (readyCount > 0 && ep != NULL) 
                 {
                   int fd = ep->myFd ;
+                  int selectHit = 0, readMiss = 0, writeMiss = 0 ;
 
-                  timesThrough++ ;
-                  
-                  /* Every SELECT_RATIO times around this loop we check to
-                     see if the mainEndPoint fd is ready to read or
-                     write. If so we process it and do the current endpoint
-                     next time around. */
-                  if (((timesThrough % SELECT_RATIO) == 0) &&
+                  /* Every SELECT_RATIO times we service an endpoint in this
+                     loop we check to see if the mainEndPoint fd is ready to
+                     read or write. If so we process it and do the current
+                     endpoint next time around. */
+                  if (((endpointsServiced % SELECT_RATIO) == 0) &&
                       ep != mainEndPoint && mainEndPoint != NULL &&
                       !mainEpIsReg)
                     {
@@ -763,22 +762,20 @@ void Run (void)
                             fd = ep->myFd ; /* back to original fd. */
                         }
                     }
-                      
-                  ep->timesSelected += (FD_ISSET (fd,&wrSet) ? 1 : 0) ;
-                  ep->timesSelected += (FD_ISSET (fd,&rdSet) ? 1 : 0) ;
-  
+
                   FD_CLR (fd, &exSet) ;
 
                   if (FD_ISSET (fd,&rSet))
                     {
-                      FD_CLR (fd, &rdSet) ;
-
-                      ep->timesReady++ ;
                       readyCount-- ;
+                      endpointsServiced++ ;
+                      selectHit = 1 ;
                       
                       if ((rval = doRead (ep)) != IoIncomplete)
                         {
                           Buffer *buff = ep->inBuffer ;
+
+                          FD_CLR (fd, &rdSet) ;
 
                           /* incase callback wants to issue read */
                           ep->inBuffer = NULL ; 
@@ -790,11 +787,12 @@ void Run (void)
                         }
                       else
                         {
-                          FD_SET (ep->myFd, &rdSet) ;
                           if ( InputFile == NULL )
                             FD_SET (ep->myFd, &exSet) ;
                         }
                     }
+                  else if (FD_ISSET(fd,&rdSet))
+                    readMiss = 1;
 
                   /* get it again as the read callback may have deleted the */
                   /* endpoint */
@@ -805,14 +803,15 @@ void Run (void)
                   
                   if (readyCount > 0 && ep != NULL && FD_ISSET (fd,&wSet))
                     {
-                      FD_CLR (fd, &wrSet) ;
-
-                      ep->timesReady++ ;
                       readyCount-- ;
+                      endpointsServiced++ ;
+                      selectHit = 1 ;
                       
                       if ((rval = doWrite (ep)) != IoIncomplete)
                         {
                           Buffer *buff = ep->outBuffer ;
+
+                          FD_CLR (fd, &wrSet) ;
 
                           /* incase callback wants to issue a write */
                           ep->outBuffer = NULL ;        
@@ -824,11 +823,12 @@ void Run (void)
                         }
                       else
                         {
-                          FD_SET (ep->myFd, &wrSet) ;
                           FD_SET (ep->myFd, &exSet) ;
                         }
                     }
-                  
+                  else if (FD_ISSET(fd,&wrSet))
+                    writeMiss = 1;
+
                   /* get it again as the write callback may have deleted the */
                   /* endpoint */
                   if (specialCheck)
@@ -836,6 +836,15 @@ void Run (void)
                   else
                     ep = priorityList [idx] ;
 
+                  if (ep != NULL)
+                    {
+                      ep->selectHits *= 0.9 ;
+                      if (selectHit)
+                        ep->selectHits += 1.0 ;
+                      else if (readMiss && writeMiss)
+                        ep->selectHits -= 1.0 ;
+                    }
+                    
                   if (readyCount > 0 && ep != NULL && FD_ISSET (fd,&eSet))
                     doExcept (ep) ;
                 }
@@ -926,7 +935,8 @@ void freeTimeoutQueue (void)
   while (p)
     {
       n = p->next ;
-      FREE (p) ;
+      p->next = timeoutPool ;
+      timeoutPool = p;
       p = n ;
       timeoutQueueLength-- ;
     }
@@ -1225,21 +1235,10 @@ static int hitCompare (const void *v1, const void *v2)
 {
   const EndPoint e1 = *((const EndPoint *) v1) ;
   const EndPoint e2 = *((const EndPoint *) v2) ;
-  double e1Hit = 0.0 ;
-  double e2Hit = 0.0 ;
+  double e1Hit = e1->selectHits ;
+  double e2Hit = e2->selectHits ;
 
-  if (e1 != NULL && e1->timesSelected != 0)
-    e1Hit = ((double) e1->timesReady) / ((double) e1->timesSelected) ;
-  if (e2 != NULL && e2->timesSelected != 0)
-    e2Hit = ((double) e2->timesReady) / ((double) e2->timesSelected) ;
-
-  if (e1 == NULL && e2 == NULL)
-    return 0 ;
-  else if (e1 == NULL)
-    return 1 ;
-  else if (e2 == NULL)
-    return -1 ;
-  else if (e1 == mainEndPoint)
+  if (e1 == mainEndPoint)
     return -1 ;
   else if (e2 == mainEndPoint)
     return 1 ;
@@ -1258,19 +1257,53 @@ static int hitCompare (const void *v1, const void *v2)
    active endpoints. */
 static void reorderPriorityList (void)
 {
-  qsort (priorityList, (size_t)priorityCount, sizeof (EndPoint), &hitCompare);
+  int i, j ;
+  static int thisTime = 4;
 
-  while (priorityCount > 0 && priorityList [priorityCount - 1] == NULL)
-    priorityCount-- ;
+  /* only sort every 4th time since it's so expensive */
+  if (--thisTime > 0)
+    return ;
+
+  thisTime = 4;
+
+  for (i = j = 0; i < priorityCount; i++)
+    if (priorityList [i] != NULL)
+      {
+        if (i != j)
+          priorityList [j] = priorityList [i] ;
+        j++ ;
+      }
+
+  for (i = j; i < priorityCount; i++)
+    priorityList [ i ] = NULL;
+
+  priorityCount = j;
+
+  qsort (priorityList, (size_t)priorityCount, sizeof (EndPoint), &hitCompare);
 }
 
 
-
+#define TIMEOUT_POOL_SIZE ((4096 - 2 * (sizeof (void *))) / (sizeof (TimerElemStruct)))
 
 /* create a new timeout data structure properly initialized. */
 static TimerElem newTimerElem (TimeoutId i, time_t w, EndpTCB f, void *d)
 {
-  TimerElem p = CALLOC (TimerElemStruct,1) ;
+  TimerElem p ;
+
+  if (timeoutPool == NULL)
+    {
+      int i ;
+
+      timeoutPool = ALLOC (TimerElemStruct, TIMEOUT_POOL_SIZE) ;
+      ASSERT (timeoutPool != NULL) ;
+
+      for (i = 0; i < TIMEOUT_POOL_SIZE - 1; i++)
+        timeoutPool[i] . next = &(timeoutPool [i + 1]) ;
+      timeoutPool [TIMEOUT_POOL_SIZE-1] . next = NULL ;
+    }
+
+  p = timeoutPool ;
+  timeoutPool = timeoutPool->next ;
 
   ASSERT (p != NULL) ;
   
@@ -1366,7 +1399,8 @@ static void doTimeout (void)
 
   timeoutQueue = timeoutQueue->next ;
 
-  FREE (p) ;
+  p->next = timeoutPool ;
+  timeoutPool = p ;
 
   timeoutQueueLength-- ;
   

@@ -1238,9 +1238,6 @@ void hostSendArticle (Host host, Article article)
       
       extraRef = artTakeRef (article) ; /* the referrence we give away */
       
-      /* stick on the queue of articles we've handed off--we're hopeful. */
-      queueArticle (article,&host->processed,&host->processedTail) ;
-
       /* first we try to give it to one of our active connections. We
          simply start at the bottom and work our way up. This way
          connections near the end of the list will get closed sooner from
@@ -1252,7 +1249,9 @@ void hostSendArticle (Host host, Article article)
             taken = cxnTakeArticle (host->connections [idx],extraRef) ;
         }
 
-      if ( !taken )
+      if ( taken )
+        queueArticle (article,&host->processed,&host->processedTail) ;
+      else
         {
           /* Wasn't taken so try to give it to one of the waiting
              connections. */
@@ -1261,7 +1260,10 @@ void hostSendArticle (Host host, Article article)
                 host->connections[idx] != host->notThisCxn)
               {
                 if (cxnTakeArticle (host->connections [idx], extraRef))
-                  break ;
+                  {
+                    queueArticle (article,&host->processed,&host->processedTail) ;
+                    break ;
+                  }
                 else
                   dprintf (1,"%s Inactive connection %d refused an article\n",
                            host->peerName,idx) ;
@@ -1275,7 +1277,6 @@ void hostSendArticle (Host host, Article article)
               
               delArticle (extraRef) ;
                   
-              remArticle (article,&host->processed,&host->processedTail) ;
               queueArticle (article,&host->queued,&host->queuedTail) ;
               
               host->backlog++ ;
@@ -2710,15 +2711,32 @@ static void queuesToTape (Host host)
 
 
 
+#define QUEUE_ELEM_POOL_SIZE ((4096 - 2 * (sizeof (void *))) / (sizeof (struct proc_q_elem)))
+
+static ProcQElem queueElemPool ;
+
 /*
  * Add an article to the given queue.
  */
 static void queueArticle (Article article, ProcQElem *head, ProcQElem *tail)
 {
   ProcQElem elem ;
-  
-  elem = ALLOC (struct proc_q_elem, 1) ;
+
+  if (queueElemPool == NULL)
+    {
+      int i ;
+
+      queueElemPool = ALLOC (struct proc_q_elem, QUEUE_ELEM_POOL_SIZE) ;
+      ASSERT (queueElemPool != NULL) ;
+
+      for (i = 0; i < QUEUE_ELEM_POOL_SIZE - 1; i++)
+        queueElemPool[i] . next = &(queueElemPool [i + 1]) ;
+      queueElemPool [QUEUE_ELEM_POOL_SIZE-1] . next = NULL ;
+    }
+
+  elem = queueElemPool ;
   ASSERT (elem != NULL) ;
+  queueElemPool = queueElemPool->next ;
 
   elem->article = article ;
   elem->next = NULL ;
@@ -2762,7 +2780,8 @@ static bool remArticle (Article article, ProcQElem *head, ProcQElem *tail)
       if (*tail == elem)
         *tail = elem->prev ;
 
-      FREE (elem) ;
+      elem->next = queueElemPool ;
+      queueElemPool = elem ;
       
       return true ;
     }
@@ -2802,7 +2821,8 @@ static Article remHead (ProcQElem *head, ProcQElem *tail)
   if (*tail == elem)
     *tail = NULL ;
 
-  FREE (elem) ;
+  elem->next = queueElemPool ;
+  queueElemPool = elem ;
 
   return art ;
 }

@@ -93,6 +93,7 @@ struct hash_entry_s {
     struct hash_entry_s *prev ;
     struct hash_entry_s *nextTime ;
     struct hash_entry_s *prevTime ;
+    u_int hash ;
     Article article ;
 };
 
@@ -198,7 +199,9 @@ static TimeoutId articleStatsId ; /* The timer callback id. */
 static HashEntry *hashTable ;   /* the has table itself */
 static HashEntry chronList ;    /* chronologically ordered. Points at newest */
 
-#define TABLE_SIZE 256          /* XXX should probably be a prime number */
+#define TABLE_SIZE 2048          /* MUST be a power of 2 */
+#define HASH_MASK (TABLE_SIZE - 1)
+#define TABLE_ENTRY(hash) ((hash) & HASH_MASK)
 
 
 
@@ -217,6 +220,7 @@ Article newArticle (const char *filename, const char *msgid)
     {                           /* first-time through initialization. */
       int i ;
       
+      ASSERT ((TABLE_SIZE & HASH_MASK) == 0) ;
       hashTable = ALLOC (HashEntry, TABLE_SIZE) ;
       ASSERT (hashTable != NULL) ;
       
@@ -939,15 +943,15 @@ static bool artFreeContents (Article art)
 
 
 
-  /* XXX need a better hash function than this... */
+  /* Hash function lifted from perl 5 */
 static u_int hashString (const char *string)
 {
   u_int i ;
 
   for (i = 0 ; string && *string ; string++)
-    i += *string ;
+    i = 33 * i + (u_char) *string ;
 
-  return (i % TABLE_SIZE) ;
+  return i ;
 }
 
 
@@ -957,8 +961,8 @@ static Article hashFindArticle (const char *msgid)
   u_int hash = hashString (msgid) ;
   HashEntry h ;
 
-  for (h = hashTable [hash] ; h != NULL ; h = h->next)
-    if (strcmp (msgid,h->article->msgid) == 0)
+  for (h = hashTable [TABLE_ENTRY(hash)] ; h != NULL ; h = h->next)
+    if (hash == h->hash && strcmp (msgid,h->article->msgid) == 0)
       break ;
 
   return (h == NULL ? NULL : h->article) ;
@@ -972,19 +976,20 @@ static void hashAddArticle (Article article)
   HashEntry h ;
   HashEntry ne ;
 
-  h = hashTable [hash] ;
+  h = hashTable [TABLE_ENTRY(hash)] ;
 
   ne = ALLOC (struct hash_entry_s, 1) ;
   ASSERT (ne != NULL) ;
 
   ne->article = article ;
-  ne->next = hashTable [hash] ;
+  ne->hash = hash ;
+  ne->next = hashTable [TABLE_ENTRY(hash)] ;
   ne->prev = NULL ;
 
   if (h != NULL)
     h->prev = ne ;
 
-  hashTable [hash] = ne ;
+  hashTable [TABLE_ENTRY(hash)] = ne ;
 
   ne->nextTime = chronList ;
   ne->prevTime = NULL ;
@@ -1003,16 +1008,16 @@ static bool hashRemoveArticle (Article article)
   u_int hash = hashString (article->msgid) ;
   HashEntry h ;
 
-  for (h = hashTable [hash] ; h != NULL ; h = h->next)
-    if (strcmp (h->article->msgid,article->msgid) == 0)
+  for (h = hashTable [TABLE_ENTRY(hash)] ; h != NULL ; h = h->next)
+    if (hash == h->hash && strcmp (article->msgid,h->article->msgid) == 0)
       break ;
 
   if (h == NULL)
     return false ;
 
-  if (h == hashTable [hash])
+  if (h == hashTable [TABLE_ENTRY(hash)])
     {
-      hashTable [hash] = h->next ;
+      hashTable [TABLE_ENTRY(hash)] = h->next ;
       if (h->next != NULL)
         h->next->prev = NULL ;
     }
@@ -1041,15 +1046,21 @@ static bool hashRemoveArticle (Article article)
   return true ;
 }
 
+#define HASH_VALIDATE_BUCKET_COUNT 1 /* hash buckets to check per call */
 
 static void hashValidateTable (void)
 {
+  static int hbn = 0 ;
   int i ;
   HashEntry he ;
 
 #if ! defined (NDEBUG)
-  for (i = 0 ; i < TABLE_SIZE ; i++)
-    for (he = hashTable [i] ; he != NULL ; he = he->next)
-      ASSERT (he->article->refCount > 0) ;
+  for (i = 0 ; i < HASH_VALIDATE_BUCKET_COUNT ; i++)
+    {
+      for (he = hashTable [hbn] ; he != NULL ; he = he->next)
+        ASSERT (he->article->refCount > 0) ;
+      if (++hbn >= TABLE_SIZE)
+        hbn = 0 ;
+    }
 #endif
 }

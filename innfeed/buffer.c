@@ -48,6 +48,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 
 
 static Buffer gBufferList = NULL ;
+static Buffer bufferPool = NULL ;
 static u_int bufferCount = 0 ;
 static u_int bufferByteCount = 0 ;
 
@@ -60,13 +61,34 @@ struct buffer_s
     size_t dataSize ;           /* amount that has actual data in it. */
     bool deletable ;
     struct buffer_s *next ;
+    struct buffer_s *prev ;
 };
-    
+
+#define BUFFER_POOL_SIZE ((4096 - 2 * (sizeof (void *))) / (sizeof (struct buffer_s)))
+
+static Buffer fillBufferPool (void)
+{
+  int i ;
+
+  bufferPool = ALLOC (struct buffer_s, BUFFER_POOL_SIZE) ;
+  ASSERT (bufferPool != NULL) ;
+
+  for (i = 0; i < BUFFER_POOL_SIZE - 1; i++)
+    bufferPool[i] . next = &(bufferPool [i + 1]) ;
+  bufferPool [BUFFER_POOL_SIZE-1] . next = NULL ;
+}
+
 
 Buffer newBuffer (size_t size)
 {
-  Buffer nb = CALLOC (struct buffer_s, 1) ;
+  Buffer nb ;
+
+  if (bufferPool == NULL)
+    fillBufferPool() ;
+
+  nb = bufferPool;
   ASSERT (nb != NULL) ;
+  bufferPool = bufferPool->next ;
 
   nb->refCount = 1 ;
 
@@ -82,6 +104,9 @@ Buffer newBuffer (size_t size)
   bufferCount++ ;
 
   nb->next = gBufferList ;
+  nb->prev = NULL;
+  if (gBufferList != NULL)
+     gBufferList->prev = nb ;
   gBufferList = nb ;
   
 #if 0
@@ -94,8 +119,14 @@ Buffer newBuffer (size_t size)
 
 Buffer newBufferByCharP (const char *ptr, size_t size, size_t dataSize)
 {
-  Buffer nb = CALLOC (struct buffer_s, 1) ;
+  Buffer nb ;
+
+  if (bufferPool == NULL)
+    fillBufferPool() ;
+
+  nb = bufferPool;
   ASSERT (nb != NULL) ;
+  bufferPool = bufferPool->next ;
   
   nb->refCount = 1 ;
   nb->mem = (char *) ptr ;      /* cast away const */
@@ -104,6 +135,9 @@ Buffer newBufferByCharP (const char *ptr, size_t size, size_t dataSize)
   nb->deletable = false ;
 
   nb->next = gBufferList ;
+  nb->prev = NULL;
+  if (gBufferList != NULL)
+     gBufferList->prev = nb ;
   gBufferList = nb ;
 
   bufferCount++ ;
@@ -134,21 +168,18 @@ void delBuffer (Buffer buff)
           buff->mem = NULL ;
         }
 
-      for (p = gBufferList, q = NULL ; p != NULL ; q = p, p = p->next)
+      if (buff->next != NULL)
+        buff->next->prev = buff->prev ;
+      if (buff->prev != NULL)
+        buff->prev->next = buff->next ;
+      else
         {
-          if (p == buff)
-            {
-              if (p == gBufferList)
-                gBufferList = p->next ;
-              else
-                q->next = p->next ;
-              break ;
-            }
+          ASSERT(gBufferList == buff) ;
+          gBufferList = buff->next ;
         }
 
-      ASSERT (p != NULL) ;
-      
-      FREE (buff) ;
+      buff->next = bufferPool ;
+      bufferPool = buff ;
     }
 }
 
@@ -430,25 +461,34 @@ bool expandBuffer (Buffer buff, size_t amt)
      line. */
 bool nntpPrepareBuffer (Buffer buffer)
 {
-  int newlines, dots, msize, newDsize, dsize, i, j, extra ;
-  char *base ;
+  int msize, newDsize, dsize, extra ;
+  char *base, p, *src, *dst ;
   bool needfinal = false ;
 
   ASSERT (buffer != NULL) ;
 
-  newlines = 0 ;
-  dots = 0 ;
   dsize = buffer->dataSize ;
   msize = buffer->memSize - 1 ;
   base = buffer->mem ;
 
-  for (i = 0 ; i < dsize ; i++)
-    if (base [i] == '\n')
-      newlines++ ;
-    else if (base [i] == '.' && i > 0 && base [i - 1] == '\n')
-      dots++ ;
-
-  extra = newlines + dots ;
+  extra = 0 ;
+  p = '\0' ;
+  for (src = base + dsize - 1 ; src > base ; )
+    {
+      if (*src == '\n')
+        {
+          extra++ ;
+          if (p == '.')
+            extra++ ;
+        }
+      p = *src-- ;
+    }
+  if (*src == '\n')
+    {
+      extra++ ;
+      if (p == '.')
+        extra++ ;
+    }
 
   if (dsize > 0 && base [dsize - 1] != '\n')
     {
@@ -480,15 +520,35 @@ bool nntpPrepareBuffer (Buffer buffer)
       base [newDsize - 1] = '\n' ;
       base [newDsize - 2] = '\r' ;
       newDsize -= 2 ;
+      extra -= 2 ;
     }
   
-  for (j = dsize -  1, i = newDsize - 1 ; extra && i >= 0 ; i--, j--) 
+  if (extra)
     {
-      base [i] = base [j] ;
-      if (base [i] == '\n')
-        base [--i] = '\r' ;
-      else if (base [i] == '.' && i > 0 && base [j - 1] == '\n')
-        base [--i] = '.' ;
+      p = '\0';
+      src = base + dsize - 1 ;
+      dst = base + newDsize - 1 ;
+      while (1)
+        {
+          if (*src == '\n')
+            {
+              if (p == '.')
+                {
+                  *dst-- = '.' ;
+                  extra-- ;
+                }
+              *dst-- = '\n' ;
+              *dst = '\r' ;
+              if (--extra <= 0)
+                 break ;
+              p = '\0' ;
+              dst-- ;
+              src-- ;
+            }
+          else
+            p = *dst-- = *src-- ;
+        }
+      ASSERT(dst >= base && src >= base) ; 
     }
 
   if (needfinal)
