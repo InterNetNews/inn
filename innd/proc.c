@@ -5,6 +5,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/wait.h"
 #include <netinet/in.h>
 
 #include "innd.h"
@@ -27,7 +28,7 @@ PROCreap()
     register PID_T	pid;
 
     for ( ; ; ) {
-	pid = waitnb(&status);
+	pid = waitpid(-1, &status, WNOHANG);
 	if (pid == 0)
 	    break;
 	if (pid < 0) {
@@ -38,7 +39,7 @@ PROCreap()
 	for (pp = PROCtable, i = PROCtablesize; --i >= 0; pp++)
 	    if (pp->Pid == pid) {
 		PROCneedscan = TRUE;
-		pp->Status = status;
+		pp->Status = WEXITSTATUS(status);
 		pp->State = PSdead;
 		pp->Collected = Now.time;
 		break;
