@@ -1593,7 +1593,7 @@ sub collect
                     (\ article\ size\ min/max:\ \d+/\d+)?
                     \ Buffer\ (\S+),
                     \ len:\ (\d+)\s+Mbytes,
-                    \ used:\ ([\d.]+)\ Mbytes\ \([\d.]+%\)
+                    \ used:\ ([\d.]+)\ Mbytes\ \(\s*[\d.]+%\)
                     \s+(\d+)\ cycles
                  $|ox)
     {
