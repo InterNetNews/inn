@@ -15,7 +15,7 @@ ALL	=	archive batcher buffchan cvtbatch filechan \
 
 all:		$(ALL)
 
-install:	
+install:	all
 	for i in ${ALL}; \
 		do $(LIBTOOL) ../installit.sh $(OWNER) -m 0555 \
 			-b .OLD $${i} $D${PATHBIN}/$${i}; \
