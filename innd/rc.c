@@ -34,6 +34,7 @@ typedef struct _REMOTEHOST {
     INADDR	Address;
     char	*Password;
     BOOL	Streaming ;
+    int         MaxIncoming;
     char	**Patterns;
 } REMOTEHOST;
 
@@ -453,6 +454,7 @@ RCreadfile(list, count, filename)
     int			k ;
     char		*pass;
     char		*pats;
+    char		*maxconn;
     int			errors;
 
     /* Free anything that might have been there. */
@@ -460,6 +462,7 @@ RCreadfile(list, count, filename)
 	for (rp = *list, i = *count; --i >= 0; rp++) {
 	    DISPOSE(rp->Name);
 	    DISPOSE(rp->Password);
+	    DISPOSE(rp->MaxIncoming);
 	    if (rp->Patterns) {
 		DISPOSE(rp->Patterns[0]);
 		DISPOSE(rp->Patterns);
@@ -485,6 +488,7 @@ RCreadfile(list, count, filename)
     rp->Name = COPY("localhost");
     rp->Password = COPY(NOPASS);
     rp->Patterns = NULL;
+    rp->MaxIncoming = NULL;
     rp++;
 #endif	/* !defined(DO_HAVE_UNIX_DOMAIN) */
 
@@ -500,15 +504,28 @@ RCreadfile(list, count, filename)
 	    continue;
 	if ((pass = strchr(buff, ':')) != NULL) {
 	    *pass++ = '\0';
-	    if ((pats = strchr(pass, ':')) != NULL)
+	    if ((pats = strchr(pass, ':')) != NULL) {
 		*pats++ = '\0';
-	    else
+		if ((maxconn = strchr(pats, ':')) != NULL) 
+		    *maxconn++ = '\0';
+		else 
+		    maxconn = NULL;
+	    } else {
 		pats = NULL;
+		maxconn = NULL;
+	    }
 	}
 	else {
 	    pass = NOPASS;
 	    pats = NULL;
 	}
+
+        /* Check if MaxConnections was set, make 0 if not */
+	rp->MaxIncoming = 0;
+	if ((maxconn != NULL) && (atoi(maxconn) > 0)) {
+	    rp->MaxIncoming = atoi(maxconn);
+	    syslog(L_NOTICE, "%s added with %d MaxIncoming set", buff, rp->MaxIncoming);
+        }
 
         /* Check if the host name ends with '/s' which means that streaming is
            specifically permitted (as opposed to defaulted). The default
