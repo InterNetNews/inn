@@ -9,13 +9,65 @@
 #include "innd.h"
 #include "dbz.h"
 
+typedef struct __HISCACHE {
+    unsigned int        Hash;      /* Hash value of the message-id using dbzhash() */
+    BOOL		Found;     /* Whether this entry is in the dbz file yet */
+} _HIScache;
 
-STATIC char	HIShistpath[] = _PATH_HISTORY;
-STATIC FILE	*HISwritefp;
-STATIC int	HISreadfd;
-STATIC int	HISdirty;
-STATIC int	HISincore = INND_DBZINCORE;
+typedef enum {HIScachehit, HIScachemiss, HIScachedne} HISresult;
 
+STATIC char		HIShistpath[] = _PATH_HISTORY;
+STATIC FILE		*HISwritefp;
+STATIC int		HISreadfd;
+STATIC int		HISdirty;
+STATIC int		HISincore = INND_DBZINCORE;
+STATIC _HIScache	*HIScache;
+STATIC int              HIScachesize; /* Number of entries in HIScache */
+STATIC int              HIShitpos; /* The entry existed in the cache and in history */
+STATIC int              HIShitneg; /* The entry existed in the cache but not in history */
+STATIC int              HISmisses; /* The entry was not in the cache, but was in the history file */
+STATIC int              HISdne;    /* The entry was not in cache or history */
+
+/*
+** Put an entry into the history cache 
+*/
+void HIScacheadd(char *MessageID, int len, BOOL Found) {
+    unsigned int  i, hash;
+    hash_t h;
+
+    if (HIScache == NULL)
+	return;
+    h = dbzhash(MessageID, len);
+    memcpy(&hash, &h, (sizeof(h) < sizeof(hash) ? sizeof(h) : sizeof(hash)));
+    i = hash % HIScachesize;
+    HIScache[i].Hash = hash;
+    HIScache[i].Found = Found;
+}
+
+/*
+** Lookup an entry in the history cache
+*/
+HISresult HIScachelookup(char *MessageID, int len) {
+    unsigned int i, hash;
+    hash_t h;
+
+    if (HIScache == NULL)
+	return HIScachedne;
+    h = dbzhash(MessageID, len);
+    memcpy(&hash, &h, (sizeof(h) < sizeof(hash) ? sizeof(h) : sizeof(hash)));
+    i = hash % HIScachesize;
+    if (HIScache[i].Hash == hash) {
+        if (HIScache[i].Found) {
+            HIShitpos++;
+            return HIScachehit;
+        } else {
+            HIShitneg++;
+            return HIScachemiss;
+        }
+    } else {
+        return HIScachedne;
+    }
+}
 
 /*
 **  Set up the history files.
@@ -23,6 +75,8 @@ STATIC int	HISincore = INND_DBZINCORE;
 void
 HISsetup()
 {
+    char *HIScachesizestr;
+    
     if (HISwritefp == NULL) {
 	/* Open the history file for appending formatted I/O. */
 	if ((HISwritefp = fopen(HIShistpath, "a")) == NULL) {
@@ -46,6 +100,17 @@ HISsetup()
 	    exit(1);
 	}
     }
+    if ((HIScachesizestr = GetConfigValue(_CONF_HISCACHESIZE)) == NULL) {
+	HIScache = NULL;
+	HIScachesize = 0;
+    } else {
+	HIScachesize = atoi(HIScachesizestr);
+	if (HIScache != NULL)
+	    free(HIScache);
+	HIScache = NEW(_HIScache, HIScachesize);
+	memset((void *)&HIScache, '\0', sizeof(HIScache));
+    }
+    HIShitpos = HIShitneg = HISmisses = HISdne = 0;
 }
 
 
@@ -83,6 +148,11 @@ HISclose()
 	if (close(HISreadfd) < 0)
 	    syslog(L_ERROR, "%s cant close history %m", LogName);
 	HISreadfd = -1;
+    }
+    if (HIScache) {
+	free(HIScache);
+	HIScache = NULL;
+	HIScachesize = 0;
     }
 }
 
@@ -188,6 +258,13 @@ HISfilesfor(MessageID)
     return dest;
 }
 
+STATIC void HISlogstats() {
+    syslog(LOG_INFO, "ME HISstats %d hitpos %d hitneg %d missed %d dne",
+	   HIShitpos, HIShitneg, HISmisses, HISdne);
+    HIShitpos = HIShitneg = HISmisses = HISdne = 0;
+}
+
+
 
 /*
 **  Have we already seen an article?
@@ -196,11 +273,30 @@ BOOL
 HIShavearticle(MessageID)
     char	*MessageID;
 {
-    datum	key;
-    datum	val;
+    datum	   key;
+    datum	   val;
+    int            index;
+    hash_t	   hash;
+    STATIC time_t  lastlog;       /* Last time that we logged stats */   
+    
 
+    if ((Now.time - lastlog) > 3600) {
+	HISlogstats();
+	lastlog = Now.time;
+    }
+    switch (HIScachelookup(MessageID, strlen(MessageID))) {
+    	case HIScachehit:
+    	    return TRUE;
+    	case HIScachemiss:
+    	    return FALSE;
+    }
     HISsetkey(MessageID, &key);
     val = dbzfetch(key);
+    HIScacheadd(MessageID, strlen(MessageID), (val.dptr != NULL));
+    if (val.dptr != NULL)
+	HISmisses++;
+    else
+	HISdne++;
     return val.dptr != NULL;
 }
 
@@ -241,6 +337,7 @@ HISwrite(Data, paths)
     datum		key;
     datum		val;
     int			i;
+    hash_t              hash;
 
     HISsetkey(Data->MessageID, &key);
     if (paths != NULL && paths[0] != '\0')
@@ -278,7 +375,8 @@ HISwrite(Data, paths)
 	IOError("history database", i);
 	return FALSE;
     }
-
+    HIScacheadd((char *)Data->MessageID, strlen(Data->MessageID), TRUE);
+    
     if (++HISdirty >= ICD_SYNC_COUNT)
 	HISsync();
     return TRUE;

@@ -177,6 +177,8 @@
 #define _CONF_CONTENTTYPE	"mime-contenttype"
     /* Default encoding */
 #define _CONF_ENCODING		"mime-encoding"
+    /* Size of the history cache in kilobytes */
+#define _CONF_HISCACHESIZE	"hiscachesize"
 
 
 /*
