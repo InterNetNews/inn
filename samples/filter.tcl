@@ -2,7 +2,7 @@
 #
 # $Revision$
 #
-# A TCL procedure that will be run over every article. See README.tcl_hook
+# A TCL procedure that will be run over every article. See doc/hook-tcl
 # for more details.
 
 proc filter_news {} {

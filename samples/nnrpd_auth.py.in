@@ -2,7 +2,7 @@
 #
 # This is a sample authentication and authorization module for nnrpd hook
 #
-# For details, see the file README.python_auth_hook that came with INN.
+# For details, see the file doc/hook-python that came with INN.
 #
 
 #

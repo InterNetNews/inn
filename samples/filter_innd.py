@@ -3,7 +3,7 @@
 #
 # This is a sample filter for the Python innd hook.
 #
-# For details, see the file README.python_hook that came with INN.
+# For details, see the file doc/hook-python that came with INN.
 #
 
 import re
