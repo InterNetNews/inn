@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.195 
+# From configure.in Revision: 1.196 
 ## libtool.m4 - Configure libtool for the target system. -*-Shell-script-*-
 ## Copyright (C) 1996-1999 Free Software Foundation, Inc.
 ## Originally by Gordon Matzigkeit <gord@gnu.ai.mit.edu>, 1996
@@ -3471,34 +3471,34 @@ fi
 fi
 
 
-echo $ac_n "checking for library containing inet_aton resolv""... $ac_c" 1>&6
-echo "configure:3476: checking for library containing inet_aton resolv" >&5
-if eval "test \"`echo '$''{'ac_cv_search_inet_aton resolv'+set}'`\" = set"; then
+echo $ac_n "checking for library containing inet_aton""... $ac_c" 1>&6
+echo "configure:3476: checking for library containing inet_aton" >&5
+if eval "test \"`echo '$''{'ac_cv_search_inet_aton'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   ac_func_search_save_LIBS="$LIBS"
-ac_cv_search_inet_aton resolv="no"
+ac_cv_search_inet_aton="no"
 cat > conftest.$ac_ext <<EOF
 #line 3483 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
     builtin and then its argument prototype would still apply.  */
-char inet_aton resolv();
+char inet_aton();
 
 int main() {
-inet_aton resolv()
+inet_aton()
 ; return 0; }
 EOF
 if { (eval echo configure:3494: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
-  ac_cv_search_inet_aton resolv="none required"
+  ac_cv_search_inet_aton="none required"
 else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
 fi
 rm -f conftest*
-test "$ac_cv_search_inet_aton resolv" = "no" && for i in ; do
+test "$ac_cv_search_inet_aton" = "no" && for i in resolv; do
 LIBS="-l$i  $ac_func_search_save_LIBS"
 cat > conftest.$ac_ext <<EOF
 #line 3505 "configure"
@@ -3506,15 +3506,15 @@ cat > conftest.$ac_ext <<EOF
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
     builtin and then its argument prototype would still apply.  */
-char inet_aton resolv();
+char inet_aton();
 
 int main() {
-inet_aton resolv()
+inet_aton()
 ; return 0; }
 EOF
 if { (eval echo configure:3516: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
-  ac_cv_search_inet_aton resolv="-l$i"
+  ac_cv_search_inet_aton="-l$i"
 break
 else
   echo "configure: failed program was:" >&5
@@ -3525,9 +3525,9 @@ done
 LIBS="$ac_func_search_save_LIBS"
 fi
 
-echo "$ac_t""$ac_cv_search_inet_aton resolv" 1>&6
-if test "$ac_cv_search_inet_aton resolv" != "no"; then
-  test "$ac_cv_search_inet_aton resolv" = "none required" || LIBS="$ac_cv_search_inet_aton resolv $LIBS"
+echo "$ac_t""$ac_cv_search_inet_aton" 1>&6
+if test "$ac_cv_search_inet_aton" != "no"; then
+  test "$ac_cv_search_inet_aton" = "none required" || LIBS="$ac_cv_search_inet_aton $LIBS"
   
 else :
   

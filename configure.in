@@ -625,7 +625,7 @@ dnl Check for inet_aton.  We have our own, but on Solaris the version in
 dnl libresolv is more lenient in ways that Solaris's internal DNS resolution
 dnl code requires, so if we use our own *and* link with libresolv (which may
 dnl be forced by Perl) DNS resolution fails.
-AC_SEARCH_LIBS(inet_aton resolv)
+AC_SEARCH_LIBS(inet_aton, resolv)
 
 dnl FIXME: These shouldn't go into the global LIBS variable.  getspnam() is
 dnl only used by the authentication programs.
