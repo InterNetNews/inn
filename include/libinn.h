@@ -224,7 +224,9 @@ struct conf_vars {
 	char *nnrpdposthost;
 #define	CONF_VAR_EXTENDEDDBZ 75
 	int extendeddbz;
-#define	MAX_CONF_VAR 76
+#define	CONF_VAR_NNRPDOVERSTATS 76
+	int nnrpdoverstats;
+#define	MAX_CONF_VAR 77
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;

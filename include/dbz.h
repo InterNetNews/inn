@@ -43,7 +43,7 @@ typedef struct {
 #define PACKED __attribute__ ((packed))
 #endif
 
-#if defined(__SUNPRO_C) || defined(_nec_ews) || defined(sgi) || defined(sun)
+#if defined(__SUNPRO_C) || defined(_nec_ews) || defined(sgi) || defined(sun) || defined(_HPUX_SOURCE)
 #if !defined(lint) && defined(__SUNPRO_C)
 #pragma pack(1)
 #endif /* nor lint, nor sgi, nor _nec_ews */

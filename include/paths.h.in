@@ -225,6 +225,8 @@
 #define _CONF_NNRPDPOSTHOST     "nnrpdposthost"
     /* Whether or not to make DBZ have extra data */
 #define _CONF_EXTENDEDDBZ       "extendeddbz"
+    /* Whether or not to report nnrpd overview stats */
+#define _CONF_NNRPDOVERSTATS    "nnrpdoverstats"
 
    /* Enable keyword overview data to be generated (if compiled in) */
 #define _CONF_KEYWORDS		"keywords"
