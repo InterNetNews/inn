@@ -1042,7 +1042,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
     static int		iovcnt;
     int			tonextblock;
     CNFSEXPIRERULES	*metaexprule;
-    size_t		left;
+    off_t		left;
 
     for (metaexprule = metaexprulestab; metaexprule != (CNFSEXPIRERULES *)NULL; metaexprule = metaexprule->next) {
 	if (metaexprule->class == class)
