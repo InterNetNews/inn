@@ -26,6 +26,7 @@ run_test(test_function_t function, char *buf, size_t buflen)
     int fds[2];
     pid_t child;
     ssize_t count, status;
+    int rval;
 
     /* Flush stdout before we start to avoid odd forking issues. */
     fflush(stdout);
@@ -59,10 +60,10 @@ run_test(test_function_t function, char *buf, size_t buflen)
                 count += status;
         } while (status > 0);
         buf[count < 0 ? 0 : count] = '\0';
-        if (waitpid(child, &status, 0) == (pid_t) -1)
+        if (waitpid(child, &rval, 0) == (pid_t) -1)
             sysdie("waitpid failed");
     }
-    return status;
+    return rval;
 }
 
 /* Test functions. */
