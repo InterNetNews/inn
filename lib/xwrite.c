@@ -44,7 +44,8 @@ xwrite(int fd, const void *buffer, size_t size)
     for (total = 0; total < size; total += status) {
         if (++count > 10) break;
         status = write(fd, (const char *) buffer + total, size - total);
-        if (status > 0) count = 0;
+        if (status > 0)
+            count = 0;
         if (status < 0) {
             if (errno != EINTR) break;
             status = 0;
@@ -57,7 +58,7 @@ ssize_t
 xwritev(int fd, const struct iovec iov[], int iovcnt)
 {
     ssize_t total, status = 0;
-    size_t left;
+    size_t left, offset;
     int iovleft, i, count;
     struct iovec *tmpiov;
 
@@ -70,20 +71,25 @@ xwritev(int fd, const struct iovec iov[], int iovcnt)
        times with no forward progress. */
     count = 0;
     do {
-        if (++count > 10) break;
+        if (++count > 10)
+            break;
         status = writev(fd, iov, iovcnt);
-        if (status > 0) count = 0;
+        if (status > 0)
+            count = 0;
     } while (status < 0 && errno == EINTR);
-    if (status < 0) return -1;
-    if (status == total) return total;
+    if (status < 0)
+        return -1;
+    if (status == total)
+        return total;
 
     /* If we fell through to here, the first write partially succeeded.
        Figure out how far through the iov array we got, and then duplicate
        the rest of it so that we can modify it to reflect how much we manage
        to write on successive tries. */
-    left = total - status;
-    for (i = 0; (size_t)status >= iov[i].iov_len; i++)
-        status -= iov[i].iov_len;
+    offset = status;
+    left = total - offset;
+    for (i = 0; offset >= (size_t) iov[i].iov_len; i++)
+        offset -= iov[i].iov_len;
     iovleft = iovcnt - i;
     tmpiov = xmalloc(iovleft * sizeof(struct iovec));
     memcpy(tmpiov, iov + i, iovleft * sizeof(struct iovec));
@@ -94,20 +100,24 @@ xwritev(int fd, const struct iovec iov[], int iovcnt)
        bytes written out at the beginning of the set of iovec structs. */
     i = 0;
     do {
-        if (++count > 10) break;
+        if (++count > 10)
+            break;
 
         /* Skip any leading data that has been written out. */
-        if (status < 0) status = 0;
-        for (; (size_t)status >= tmpiov[i].iov_len && iovleft > 0;
-	     i++, iovleft--)
-            status -= tmpiov[i].iov_len;
-        tmpiov[i].iov_base = (char *) tmpiov[i].iov_base + status;
-        tmpiov[i].iov_len -= status;
+        for (; offset >= (size_t) tmpiov[i].iov_len && iovleft > 0; i++) {
+            offset -= tmpiov[i].iov_len;
+            iovleft--;
+        }
+        tmpiov[i].iov_base = (char *) tmpiov[i].iov_base + offset;
+        tmpiov[i].iov_len -= offset;
 
         /* Write out what's left and return success if it's all written. */
         status = writev(fd, tmpiov + i, iovleft);
-        if (status > 0) {
-            left -= status;
+        if (status <= 0)
+            offset = 0;
+        else {
+            offset = status;
+            left -= offset;
             count = 0;
         }
     } while (left > 0 && (status >= 0 || errno == EINTR));
