@@ -36,9 +36,6 @@
 #include <stdarg.h>
 #include <sys/types.h>
 
-#define false 0
-#define true  1
-
 /* These typedefs are all here because C is too stupid to let me multiply
    define typedefs to the same things (as C++ will). Hence I can't redeclare
    the typedefs to get around recursive header file includes (like host.h and
