@@ -701,7 +701,7 @@ _PATH_NEWSFEEDS		/var/news/etc/newsfeeds
 _PATH_HISTORY		/var/news/etc/history
 ##  File listing the sites that feed us news.
 #### =()<_PATH_INNDHOSTS		@<_PATH_INNDHOSTS>@>()=
-_PATH_INNDHOSTS		/var/news/etc/hosts.nntp
+_PATH_INNDHOSTS		/var/news/etc/incoming.conf
 ##  The active file, on the server host.
 #### =()<_PATH_ACTIVE		@<_PATH_ACTIVE>@>()=
 _PATH_ACTIVE		/var/news/etc/active
