@@ -9,16 +9,16 @@ Upgrading from 2.3 to 2.4
     to inn.conf).
 
     If you use Perl authentication for nnrpd (if nnrpdperlauth in inn.conf
-    is true), however, there have been major changes.  See ""Changes to Perl
-    Authentication Support for nnrpd"" in doc/hook-perl for details.
+    is true), however, there have been major changes.  See "Changes to Perl
+    Authentication Support for nnrpd" in doc/hook-perl for details.
 
     The wildmat API has been renamed (to uwildmat and friends; see
     uwildmat(3) for the interfaces) to distinguish it from Rich $alz's
     original version, since it now supports UTF-8.  This may require changes
     in other software packages that link against INN's libraries.
 
-    If you are upgrading from a version prior to INN 2.3, see ""Upgrading
-    from 2.2 to 2.3"".
+    If you are upgrading from a version prior to INN 2.3, see "Upgrading
+    from 2.2 to 2.3".
 
 Changes from 2.3 to 2.4
 
