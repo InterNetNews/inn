@@ -1,7 +1,7 @@
 ##  $Revision$
 include ../Makefile.global
 
-CFLAGS = $(GCFLAGS)
+CFLAGS = $(GCFLAGS) $(PYTHONINC)
 
 SOURCES	= \
 	art.c cc.c chan.c his.c icd.c innd.c lc.c nc.c newsfeeds.c ng.c \
@@ -23,9 +23,6 @@ cc.o: cc.c
 
 perl.o: perl.c
 	$(CC) $(PERLINC) $(CFLAGS) -c perl.c
-
-python.o: python.c
-	$(CC) $(PYTHONINC) $(CFLAGS) -c python.c
 
 tcl.o: tcl.c
 	$(CC) $(TCLINC) $(CFLAGS) -c tcl.c
