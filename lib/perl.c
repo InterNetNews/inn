@@ -106,7 +106,7 @@ static void PerlParse (void)
     /* We can't call 'eval' and 'do' directly for some reason, so we define
        some wrapper functions to give us access. */
         
-    perl_parse (PerlCode,xs_init,5,argv,NULL) ;
+    perl_parse (PerlCode,xs_init,5,(char **)argv,NULL) ;
 }
 
 

@@ -949,8 +949,8 @@ static int mainOptionsProcess (void *data)
 
 static void mainCleanup (void)
 {
-  free (configFile) ;
-  free (pidFile) ;
+  free ((void *)configFile) ;
+  free ((void *)pidFile) ;
   free (logFile) ;
   free (newsspool) ;
   configFile = NULL ;
