@@ -171,7 +171,7 @@ do
 
 	else
 	    ##  Get queue size from uuq command.
-	    QUEUE=`uuq -l -s${SITE} 2>/dev/null | ${AWK} '{print $4; exit }'`
+	    QUEUE=`QUEUE=`uustat -s${SITE} -Sq 2>/dev/null | ${AWK} 'BEGIN {printf "expr "} /queued/ {printf "%s + ", $(NF-1)} END {printf "0\n"}' | sh`
 	fi
 	test -z "${QUEUE}" && QUEUE=0
 	if [ "${QUEUE}" -gt ${BYTESQUEUED} ] ; then
