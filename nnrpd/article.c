@@ -44,7 +44,6 @@ static char		ARTnotingroup[] = NNTP_NOTINGROUP;
 static char		ARTnoartingroup[] = NNTP_NOARTINGRP;
 static char		ARTnocurrart[] = NNTP_NOCURRART;
 static ARTHANDLE        *ARThandle = NULL;
-static int              ARTxreffield = 0;
 static SENDDATA		SENDbody = {
     STbody,	NNTP_BODY_FOLLOWS_VAL,		"body"
 };
@@ -502,7 +501,8 @@ static void ARTsendmmap(SENDTYPE what)
 */
 char *GetHeader(const char *header)
 {
-    char		*p, *q, *r, *s, *t, prevchar;
+    const char		*p, *q, *r, *s, *t;
+    char		*w, prevchar;
     /* Bogus value here to make sure that it isn't initialized to \n */
     char		lastchar = ' ';
     const char		*limit;
@@ -600,9 +600,9 @@ char *GetHeader(const char *header)
 		    memcpy(retval, p, q - p);
 		    *(retval + (int)(q - p)) = '\0';
 		}
-		for (p = retval; *p; p++)
-		    if (*p == '\n' || *p == '\r')
-			*p = ' ';
+		for (w = retval; *w; w++)
+		    if (*w == '\n' || *w == '\r')
+			*w = ' ';
 		return retval;
 	    }
 	}
@@ -826,7 +826,7 @@ static bool CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
 **  Apply virtual hosting to an Xref field.
 */
 static char *
-vhost_xref(const char *p)
+vhost_xref(char *p)
 {
     char *space;
     size_t offset;
@@ -859,7 +859,7 @@ void CMDxover(int ac, char *av[])
     struct timeval	stv, etv;
     ARTNUM		artnum;
     void		*handle;
-    char		*data;
+    char		*data, *r;
     const char		*p, *q;
     int			len, useIOb = 0;
     TOKEN		token;
@@ -931,9 +931,9 @@ void CMDxover(int ac, char *av[])
 	    OVERsize += len;
 	}
 	vector = overview_split(data, len, NULL, vector);
-	p = overview_getheader(vector, OVERVIEW_MESSAGE_ID, OVextra);
-	cache_add(HashMessageID(p), token);
-	free(p);
+	r = overview_getheader(vector, OVERVIEW_MESSAGE_ID, OVextra);
+	cache_add(HashMessageID(r), token);
+	free(r);
 	if (VirtualPathlen > 0 && overhdr_xref != -1) {
 	    p = vector->strings[overhdr_xref] + sizeof("Xref: ") - 1;
 	    while ((p < data + len) && *p == ' ')
@@ -986,7 +986,7 @@ void CMDxover(int ac, char *av[])
 
 }
 
-bool
+static bool
 build_groups(char *buff)
 {
     char *next, *p, *q, *newsgroupbuff;
