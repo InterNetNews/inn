@@ -341,7 +341,7 @@ incoming_conf
     'backoffpostslow',          0,
     'backofftrigger',           0,
 
-    'doinnwatch',               0
+    'doinnwatch',               0,
     'innwatchbatchspace',       0,
     'innwatchhiload',           0,
     'innwatchlibspace',         0,
