@@ -389,13 +389,16 @@ enum timer {
     TMR_HISSYNC,                /* Syncing history to disk. */
     TMR_ARTCLEAN,               /* Analyzing an incoming article. */
     TMR_ARTWRITE,               /* Writing an article. */
-    TMR_ARTLINK,                /* Linking an article (tradspool). */
     TMR_ARTCTRL,                /* Processing a control message. */
     TMR_ARTCNCL,                /* Processing a cancel message. */
     TMR_SITESEND,               /* Sending an article to feeds. */
     TMR_OVERV,                  /* Generating overview information. */
+#if defined(DO_PERL)
     TMR_PERL,                   /* Perl filter. */
+#endif
+#if defined(DO_PYTHON)
     TMR_PYTHON,                 /* Python filter. */
+#endif
     TMR_MAX
 };
 

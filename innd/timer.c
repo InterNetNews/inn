@@ -42,8 +42,14 @@
    the definition of enum timer in innd.h. */
 static const char * const timer_name[TMR_MAX] = {
     "idle", "hishave", "hisgrep", "hiswrite", "hissync",
-    "artclean", "artwrite", "artlink", "artctrl", "artcncl",
-    "sitesend", "overv", "perl", "python"
+    "artclean", "artwrite", "artctrl", "artcncl",
+    "sitesend", "overv"
+#if defined(DO_PERL)
+    , "perl"
+#endif
+#if defined(DO_PYTHON)
+    , "python"
+#endif
 };
 
 /* Timer values.  start stores the time (relative to the last summary) at
@@ -103,13 +109,15 @@ summarize(void)
 
     length -= sprintf(buffer, "ME time %ld ", get_time(true));
     for (i = 0; i < TMR_MAX; i++) {
-        length -= sprintf(result, "%s %lu(%lu) ", timer_name[i],
-                          cumulative[i], count[i]);
-        if (length < 0)
-            break;
-        strcat(buffer, result);
-        cumulative[i] = 0;
-        count[i] = 0;
+	if (cumulative[i] != 0 || count[i] != 0) {
+	    length -= sprintf(result, "%s %lu(%lu) ", timer_name[i],
+			      cumulative[i], count[i]);
+	    if (length < 0)
+		break;
+	    strcat(buffer, result);
+	    cumulative[i] = 0;
+	    count[i] = 0;
+        }
     }
     syslog(LOG_NOTICE, "%s", buffer);
 }
