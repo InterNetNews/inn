@@ -1161,6 +1161,7 @@ bool tradindexed_expiregroup(char *group, int *lo) {
 
 bool tradindexed_ctl(OVCTLTYPE type, void *val) {
     int *i;
+    bool *boolval;
     OVSORTTYPE *sorttype;
     switch (type) {
     case OVSPACE:
@@ -1177,6 +1178,11 @@ bool tradindexed_ctl(OVCTLTYPE type, void *val) {
     case OVSTATICSEARCH:
 	i = (int *)val;
 	*i = FALSE;
+	return TRUE;
+    case OVCACHEKEEP:
+    case OVCACHEFREE:
+	boolval = (bool *)val;
+	*boolval = FALSE;
 	return TRUE;
     default:
 	return FALSE;

@@ -2233,6 +2233,7 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 BOOL ovdb_ctl(OVCTLTYPE type, void *val)
 {
     int *i;
+    bool *boolval;
     OVSORTTYPE *sorttype;
     switch (type) {
     case OVSPACE:
@@ -2250,6 +2251,11 @@ BOOL ovdb_ctl(OVCTLTYPE type, void *val)
 	i = (int *)val;
 	*i = TRUE;
 	return TRUE;
+    case OVCACHEKEEP:
+    case OVCACHEFREE:
+        boolval = (bool *)val;
+        *boolval = FALSE;
+        return TRUE;
     default:
         return FALSE;
     }
