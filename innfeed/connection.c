@@ -241,7 +241,8 @@ struct connection_s
 
     double onThreshold ;        /* for no-CHECK mode */
     double offThreshold ;       /* for no-CHECK mode */
-    double filterValue ;
+    double filterValue ;        /* current value of IIR filter */
+    double lowPassFilter ;      /* time constant for IIR filter */
 
     Connection next ;           /* for global list. */
 };
@@ -410,7 +411,8 @@ Connection newConnection (Host host,
                           u_int respTimeout,
                           u_int flushTimeout,
                           double lowPassLow,
-                          double lowPassHigh)
+                          double lowPassHigh,
+			  double lowPassFilter)
 {
   Connection cxn ;
   bool croak = false ;
@@ -464,8 +466,9 @@ Connection newConnection (Host host,
   cxn->flushTimeout = fudgeFactor (flushTimeout) ;
   cxn->flushTimerId = 0 ;
 
-  cxn->onThreshold = lowPassHigh ;
-  cxn->offThreshold = lowPassLow ;
+  cxn->onThreshold = lowPassHigh * lowPassFilter / 100.0 ;
+  cxn->offThreshold = lowPassLow * lowPassFilter / 100.0 ;
+  cxn->lowPassFilter = lowPassFilter;
 
   cxn->sleepTimerId = 0 ;
   cxn->sleepTimeout = init_reconnect_period ;
@@ -1140,6 +1143,8 @@ void printCxnInfo (Connection cxn, FILE *fp, u_int indentAmt)
            cxn->onThreshold) ;
   fprintf (fp,"%s    low-pass lower limit : %0.6f\n", indent,
            cxn->offThreshold) ;
+  fprintf (fp,"%s    low-pass filter tc : %0.6f\n", indent,
+           cxn->lowPassFilter) ;
   fprintf (fp,"%s    low-pass filter : %0.6f\n", indent,
            cxn->filterValue) ;
 
@@ -1762,15 +1767,17 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
           {
             if ((cxn->filterValue > cxn->onThreshold) && cxn->needsChecks)
               hostLogNoCheckMode (cxn->myHost, !(cxn->needsChecks = false),
-				  cxn->offThreshold/FILTERVALUE,
-				  cxn->filterValue/FILTERVALUE,
-				  cxn->onThreshold/FILTERVALUE) ; /* on and log */
+				  cxn->offThreshold/cxn->lowPassFilter,
+				  cxn->filterValue/cxn->lowPassFilter,
+				  cxn->onThreshold/cxn->lowPassFilter) ;
+	      /* on and log */
             else if ((cxn->filterValue < cxn->offThreshold) &&
                      !cxn->needsChecks)
               hostLogNoCheckMode (cxn->myHost, !(cxn->needsChecks = true),
-				  cxn->offThreshold/FILTERVALUE,
-				  cxn->filterValue/FILTERVALUE,
-				  cxn->onThreshold/FILTERVALUE) ; /* off and log */
+				  cxn->offThreshold/cxn->lowPassFilter,
+				  cxn->filterValue/cxn->lowPassFilter,
+				  cxn->onThreshold/cxn->lowPassFilter) ;
+	      /* off and log */
           }
 
         /* Now handle possible remaining partial reponse and set up for
@@ -2591,12 +2598,19 @@ static void processResponse239 (Connection cxn, char *response)
  */
 
 void cxnSetCheckThresholds (Connection cxn,
-			    double lowFilter, double highFilter)
+			    double lowFilter, double highFilter,
+			    double lowPassFilter)
 {
+  /* Adjust current value for new scaling */
+  if (cxn->lowPassFilter > 0.0)
+    cxn->filterValue = cxn->filterValue / cxn->lowPassFilter * lowPassFilter;
+
+  /* Stick in new values */
   if (highFilter >= 0)
-    cxn->onThreshold = highFilter ;
+    cxn->onThreshold = highFilter * lowPassFilter / 100.0;
   if (lowFilter >= 0)
-    cxn->offThreshold = lowFilter ;
+    cxn->offThreshold = lowFilter * lowPassFilter / 100.0;
+  cxn->lowPassFilter = lowPassFilter;
 }
 
 
@@ -3986,7 +4000,7 @@ static void delConnection (Connection cxn)
  */
 static void incrFilter (Connection cxn)
 {
-  cxn->filterValue *= (1.0 - (1.0 / FILTERVALUE)) ;
+  cxn->filterValue *= (1.0 - (1.0 / cxn->lowPassFilter)) ;
   cxn->filterValue += 1.0 ;
 }
 
@@ -3999,7 +4013,7 @@ static void incrFilter (Connection cxn)
  */
 static void decrFilter (Connection cxn)
 {
-  cxn->filterValue *= (1.0 - (1.0 / FILTERVALUE)) ;
+  cxn->filterValue *= (1.0 - (1.0 / cxn->lowPassFilter)) ;
 }
 
 

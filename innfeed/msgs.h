@@ -99,10 +99,7 @@
 #define HOST_STATS_MSG          "%s %s seconds %ld offered %d accepted %d refused %d rejected %d missing %d spooled %d on_close %d unspooled %d deferred %d requeued %d queue %.1f/%d:%.0f,%.0f,%.0f,%.0f,%.0f,%.0f"
 #define HOST_SPOOL_STATS        "%s %s seconds %ld spooled %d on_close %d sleeping %d"
 
-#ifdef DYNAMIC_CONNECTIONS
-#define HOST_MAX_CONNECTIONS    "%s hostChkCxn - now: %.2f, prev: %.2f, abs: %d, curr: %d"
-#endif
-
+#define HOST_MAX_CONNECTIONS    "%s hostChkCxns - maxConnections was %d now %d"
 
 #define REMOTE_BLOCKED          "%s remote cannot accept articles initial : %s"
 #define REMOTE_STILL_BLOCKED    "%s remote cannot accept articles still : %s"
@@ -188,7 +185,7 @@
 #define PARSE_FAILURE           "ME config aborting Error parsing config file"
 #define NO_HOST			"ME locked cannot setup peer %s"
 #define NO_X_AND_S              "ME usage aborting Can't use both '-s' and '-x'"
-#define SETRLIM_FAILED		"ME oserr setrlimit(RLIM_NOFILE,%ld,%ld): %m"
+#define SETRLIM_FAILED		"ME oserr setrlimit(RLIM_NOFILE,%ld): %m"
 #define GETRLIM_FAILED		"ME oserr getrlimit(RLIM_NOFILE): %m"
 #define PIPE_FAILURE            "ME fatal pipe: %m"
 #define FORK_FAILURE            "ME fatal fork: %m"

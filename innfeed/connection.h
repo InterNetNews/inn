@@ -81,7 +81,8 @@ Connection newConnection (Host host,
                           u_int respTimeout,
                           u_int closePeriod,
                           double lowPassLow,
-                          double lowPassHigh) ;
+                          double lowPassHigh,
+			  double lowPassFilter) ;
 
   /* Causes the Connection to build the network connection. */
 bool cxnConnect (Connection cxn) ;
@@ -126,7 +127,8 @@ size_t cxnQueueSpace (Connection cxn) ;
 
   /* adjust the mode no-CHECK filter values */
 void cxnSetCheckThresholds (Connection cxn,
-			    double lowFilter, double highFilter) ;
+			    double lowFilter, double highFilter,
+			    double lowPassFilter) ;
 
   /* print some debugging info. */
 void gPrintCxnInfo (FILE *fp, u_int indentAmt) ;
@@ -136,4 +138,9 @@ void printCxnInfo (Connection cxn, FILE *fp, u_int indentAmt) ;
 int cxnConfigLoadCbk (void *data) ;
 
 #endif /* connection_h__ */
+
+
+
+
+
 

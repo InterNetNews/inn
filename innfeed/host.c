@@ -76,6 +76,23 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #define VALUE_MISSING 3
 #define VALUE_WRONG_TYPE 4
 
+#define METHOD_STATIC 0
+#define METHOD_APS 1
+#define METHOD_QUEUE 2
+#define METHOD_COMBINED 3
+
+/* the limit of number of connections open when a host is
+   set to 0 to mean "infinite" */
+#define MAXCON 500
+#define MAXCONLIMIT(xx) ((xx==0)?MAXCON:xx)
+
+#define BACKLOGFILTER 0.7
+#define BACKLOGLWM 20.0
+#define BACKLOGHWM 50.0
+
+/* time between retrying blocked hosts in seconds */
+#define TRYBLOCKEDHOSTPERIOD 120
+
 extern char *configFile ;
 extern mainLogStatus (FILE *fp) ;
 
@@ -87,34 +104,49 @@ typedef struct proc_q_elem
     struct proc_q_elem *prev ;
 } *ProcQElem ;
 
+typedef struct host_param_s
+{
+  char *peerName;
+  char *ipName;
+  u_int articleTimeout;
+  u_int responseTimeout;
+  u_int initialConnections;
+  u_int absMaxConnections;
+  u_int maxChecks;
+  u_short portNum;
+  u_int closePeriod;
+  u_int dynamicMethod;
+  bool wantStreaming;
+  double lowPassLow; /* as percentages */
+  double lowPassHigh;
+  double lowPassFilter;
+  u_int backlogLimit ;
+  u_int backlogLimitHigh ;
+  double backlogFactor ;
+  double dynBacklogFilter ;
+  double dynBacklogLowWaterMark ;
+  double dynBacklogHighWaterMark ;
+} *HostParams ;
+
 struct host_s 
 {
     InnListener listener ;      /* who created me. */
-    char *peerName ;            /* name INN calls the remote */
-    char *ipName ;              /* IP name/address from config file. */
     char **ipAddrs ;		/* the ip addresses of the remote */
     char **nextIpAddr ;		/* the next ip address to hand out */
 
     Connection *connections ;   /* NULL-terminated list of all connections */
     bool *cxnActive ;           /* true if the corresponding cxn is active */
     bool *cxnSleeping ;         /* true if the connection is sleeping */
-    u_int maxConnections ;      /* max # of connections to set up */
+    u_int maxConnections;       /* maximum no of cxns controlled by method */
     u_int activeCxns ;          /* number of connections currently active */
     u_int sleepingCxns ;        /* number of connections currently sleeping */
-    u_int initialCxns ;         /* number of connections to create at start */
     Connection blockedCxn ;     /* the first connection to get the 400 banner*/
     Connection notThisCxn ;	/* don't offer articles to this connection */
-    double lowPassLow ;		/* value of low-pass filter off threshold */
-    double lowPassHigh ;	/* value of low-pass filter on threshold */
 
-    bool wantStreaming ;        /* true if config file says to stream. */
+    HostParams params;          /* Parameters from config file */
+
     bool remoteStreams ;        /* true if remote supports streaming */
     
-    u_int maxChecks ;           /* max number of CHECK commands to send */
-    u_int articleTimeout ;      /* max time to wait for new article */
-    u_int responseTimeout ;     /* max time to wait for response from remote */
-    u_short port ;              /* port the remote listens on */
-
     ProcQElem queued ;          /* articles done nothing with yet. */
     ProcQElem queuedTail ;
 
@@ -122,9 +154,7 @@ struct host_s
     ProcQElem processedTail ;
     
     TimeoutId statsId ;         /* timeout id for stats logging. */
-#ifdef DYNAMIC_CONNECTIONS
     TimeoutId ChkCxnsId ;     /* timeout id for dynamic connections */
-#endif
 
     Tape myTape ;
     
@@ -136,7 +166,10 @@ struct host_s
 
     bool loggedBacklog ;        /* true if we already logged the fact */
     bool notifiedChangedRemBlckd ; /* true if we logged a new response 400 */
-    bool removeOnReload ;	/* set to false when host is in config */
+    bool removeOnReload ;	/* true if host should be removed at end of
+				 * config reload
+				 */
+    bool isDynamic;             /* true if host created dynamically */
 
     /* these numbers get reset periodically (after a 'final' logging). */
     u_int artsOffered ;         /* # of articles we offered to remote. */
@@ -152,17 +185,18 @@ struct host_s
     u_int artsHostClose ;       /* # of articles caught by closing host */
     u_int artsFromTape ;        /* # of articles we pulled off tape */
 
-#ifdef DYNAMIC_CONNECTIONS
     /* Dynamic Peerage - MGF */
-    u_int absMaxConnections ;   /* perHost limit on number of connections */
     u_int artsProcLastPeriod ;  /* # of articles processed in last period */
     u_int secsInLastPeriod ;    /* Number of seconds in last period */
     u_int lastCheckPoint ;      /* total articles at end of last period */
+    u_int lastSentCheckPoint ;  /* total articles sent end of last period */
+    u_int lastTotalCheckPoint ; /* total articles total end of last period */
     bool maxCxnChk ;            /* check for maxConnections */
     time_t lastMaxCxnTime ;     /* last time a maxConnections increased */
     time_t lastChkTime;         /* last time a check was made for maxConnect */
     u_int nextCxnTimeChk ;      /* next check for maxConnect */
-#endif
+
+    double backlogFilter;        /* IIR filter for size of backlog */
 
     /* These numbers are as above, but for the life of the process. */
     u_int gArtsOffered ;        
@@ -201,22 +235,11 @@ struct host_s
 
 /* A holder for the info we got out of the config file, but couldn't create
    the Host object for (normally due to lock-file problems).*/
+
 typedef struct host_holder_s
 {
-    char *name ;
-    char *ipname ;
-    u_int arttout ;
-    u_int resptout ;
-    u_int initcxns ;
-    u_int maxcxns ;
-    u_int maxchecks ;
-    bool stream ;
-    double lowf ;
-    double highf ;
-    u_short portnum ;
-    u_int backloglim ;
-
-    struct host_holder_s *next ;
+  HostParams params;
+  struct host_holder_s *next ;
 } *HostHolder ;
 
 
@@ -229,22 +252,12 @@ long procArtsRejected ;
 long procArtsDeferred ;
 long procArtsMissing ;
 
+static HostParams defaultParams=NULL;
 
-static u_int defaultArticleTimeout ;
-static u_int defaultResponseTimeout ;
-static u_int defaultInitialConnections ;
-static u_int defaultMaxConnections ;
-static u_int defaultMaxChecks ;
-static bool defaultStreaming ;
-static double defaultLowFilter ;
-static double defaultHighFilter ;
-static u_short defaultPortNumber ;
-static u_int defaultBacklogLimit ;
-static u_int defaultBacklogLimitHigh ;
-static double defaultBacklogFactor ;
 static bool factorSet ;
 
 static HostHolder blockedHosts ; /* lists of hosts we can't lock */
+static TimeoutId tryBlockedHostsId = 0 ;
 static time_t lastStatusLog ;
 
   /*
@@ -261,26 +274,34 @@ static bool amClosing (Host host) ;
 static void hostLogStatus (void) ;
 static void hostPrintStatus (Host host, FILE *fp) ;
 static int validateBool (FILE *fp, const char *name,
-                         int required, bool setval);
+                         int required, bool setval,
+			 scope * sc, u_int inh);
 static int validateReal (FILE *fp, const char *name, double low,
-                          double high, int required, double setval);
+			 double high, int required, double setval,
+			 scope * sc, u_int inh);
 static int validateInteger (FILE *fp, const char *name,
-                     long low, long high, int required, long setval);
+			    long low, long high, int required, long setval,
+			    scope * sc, u_int inh);
 
-static bool getHostInfo (char **name,
-                         char **ipname,
-                         u_int *articleTimeout,
-                         u_int *responseTimeout,
-                         u_int *initialConnections,
-                         u_int *maxConnections,
-                         u_int *maxChecks,
-                         bool *streaming,
-                         double *lowFilter,
-                         double *highFilter,
-                         u_short *portNumber) ;
+static HostParams newHostParams(HostParams p);
+static void freeHostParams(HostParams params);
+
+static HostHolder FindBlockedHost(const char *name);
+static void addBlockedHost(HostParams params);
+static void tryBlockedHosts(TimeoutId tid, void *data);
+static Host newHost (InnListener listener, HostParams p);
+
+static HostParams getHostInfo (void);
+static HostParams hostDetails (scope *s,
+			       char *name,
+			       bool isDefault,
+			       FILE *fp);
+
 static Host findHostByName (char *name) ;
 static void hostCleanup (void) ;
-
+static void hostAlterMaxConnections(Host host,
+				    u_int absMaxCxns, u_int maxCxns,
+				    bool makeConnect);
 
 /* article queue management functions */
 static Article remHead (ProcQElem *head, ProcQElem *tail) ;
@@ -318,7 +339,6 @@ static pid_t myPid ;
 static char *statusFile = NULL ;
 static u_int dnsRetPeriod ;
 static u_int dnsExpPeriod ;
-static u_int defClosePeriod ;
 
 static bool genHtml = false ;
 
@@ -330,13 +350,20 @@ static bool genHtml = false ;
 /* function called when the config file is loaded */
 int hostConfigLoadCbk (void *data)
 {
-  int rval = 1, vival, bval ;
+  int rval = 1, bval ;
   long iv ;
   FILE *fp = (FILE *) data ;
-  value *v ;
-  double l, h ;
   char *p ;
-  
+
+
+  dprintf(1,"hostConfigLoadCbk\n");
+
+  if (defaultParams)
+    {
+      freeHostParams(defaultParams);
+      defaultParams=NULL;
+    }
+   
   /* get optional global defaults */
   if (getInteger (topScope,"dns-retry",&iv,NO_INHERIT))
     {
@@ -367,22 +394,6 @@ int hostConfigLoadCbk (void *data)
     iv = DNS_EXPIRE_PERIOD ;
   dnsExpPeriod = (u_int) iv ;
 
-
-  if (getInteger (topScope,"close-period",&iv,NO_INHERIT))
-    {
-      if (iv < 1)
-        {
-          rval = 0 ;
-          logOrPrint (LOG_ERR,fp,LESS_THAN_ONE,"close-period",iv,
-                      "global scope",(long)CLOSE_PERIOD) ;
-          iv = CLOSE_PERIOD ;
-        }
-    }
-  else
-    iv = CLOSE_PERIOD ;
-  defClosePeriod = CLOSE_PERIOD ;
-  
-  
   if (getBool (topScope,"gen-html",&bval,NO_INHERIT))
     genHtml = (bval ? true : false) ;
   else
@@ -447,142 +458,139 @@ int hostConfigLoadCbk (void *data)
     iv = STATS_RESET_PERIOD ;
   statsResetPeriod = (u_int) iv ;
   
-  
-  /* check required global defaults are there and have good values */
-  
-#define ERROR_CHECK                                     \
-  do{                                                   \
-    if(vival==VALUE_WRONG_TYPE)                         \
-      {                                                 \
-        logOrPrint(LOG_CRIT,fp,"cannot continue");      \
-        exit(1);                                        \
-      }                                                 \
-    else if(vival != VALUE_OK)                              \
-      rval = 0;                                         \
-  } while(0)
-
-  vival = validateInteger(fp,"article-timeout",0,LONG_MAX,REQ,ARTTOUT);
-  ERROR_CHECK ;
-  iv = 0 ;
-  (void) getInteger (topScope,"article-timeout",&iv,NO_INHERIT) ;
-  defaultArticleTimeout = (u_int) iv ;
-  
-  vival = validateInteger(fp,"response-timeout",0,LONG_MAX,REQ,RESPTOUT) ;
-  ERROR_CHECK ;
-  iv = 0 ;
-  (void) getInteger (topScope,"response-timeout",&iv,NO_INHERIT) ;
-  defaultResponseTimeout = (u_int) iv ;
-    
-  vival = validateInteger(fp,"initial-connections",0,LONG_MAX,REQ,INIT_CXNS) ;
-  ERROR_CHECK ;
-  iv = 0 ;
-  (void) getInteger (topScope,"initial-connections",&iv,NO_INHERIT) ;
-  defaultInitialConnections = (u_int) iv ;
-  
-  vival = validateInteger (fp,"max-connections",1,LONG_MAX,REQ,MAX_CXNS) ;
-  ERROR_CHECK ;
-  iv = 0 ;
-  (void) getInteger (topScope,"max-connections",&iv,NO_INHERIT) ;
-  defaultMaxConnections = (u_int) iv ;
-  
-  vival = validateInteger (fp,"max-queue-size",1,LONG_MAX,REQ,MAX_Q_SIZE) ;
-  ERROR_CHECK ;
-  iv = 0 ;
-  (void) getInteger (topScope,"max-queue-size",&iv,NO_INHERIT) ;
-  defaultMaxChecks = (u_int) iv ;
-  
-  vival = validateBool (fp,"streaming",REQ,STREAM) ;
-  ERROR_CHECK ;
-  bval = 0 ;
-  (void) getBool (topScope,"streaming",&bval,NO_INHERIT) ;
-  defaultStreaming = (bval ? true : false)  ;
-  
-  vival = validateReal (fp,"no-check-high",0.0,100.0,REQ,NOCHECKHIGH) ;
-  ERROR_CHECK ;
-  l = 0.0 ;
-  (void) getReal (topScope,"no-check-high",&l,NO_INHERIT) ;
-  defaultHighFilter = l * (FILTERVALUE/100.0) ;
-
-  vival = validateReal (fp,"no-check-low",0.0,100.0,REQ,NOCHECKLOW) ;
-  ERROR_CHECK ;
-  l = 0.0 ;
-  (void) getReal (topScope,"no-check-low",&l,NO_INHERIT) ;
-  defaultLowFilter = l * (FILTERVALUE/100.0)  ;
-
-  vival = validateInteger (fp,"port-number",0,LONG_MAX,REQ,PORTNUM) ;
-  ERROR_CHECK ;
-  iv = 0 ;
-  (void) getInteger (topScope,"port-number",&iv,NO_INHERIT) ;
-  defaultPortNumber = (u_int) iv ;
-  
-  if (findValue (topScope,"backlog-factor",NO_INHERIT) == NULL &&
-      findValue (topScope,"backlog-limit-high",NO_INHERIT) == NULL)
-    {
-      logOrPrint (LOG_ERR,fp,NOFACTORHIGH,"backlog-factor",LIMIT_FUDGE) ;
-      addReal (topScope,"backlog-factor",LIMIT_FUDGE) ;
-      rval = 0 ;
-    }
-  
-  vival = validateInteger (fp,"backlog-limit",0,LONG_MAX,REQ,BLOGLIMIT) ;
-  ERROR_CHECK ;
-  iv = 0 ;
-  (void) getInteger (topScope,"backlog-limit",&iv,NO_INHERIT) ;
-  defaultBacklogLimit = (u_int) iv ;
-
-  vival = validateInteger (fp,"backlog-limit-high",0,LONG_MAX,
-                           NOTREQNOADD,BLOGLIMIT_HIGH) ;
-  ERROR_CHECK ;
-  iv = 0 ;
-  (void) getInteger (topScope,"backlog-limit-high",&iv,NO_INHERIT) ;
-  defaultBacklogLimitHigh = (u_int) iv ;
-
-  vival = validateReal (fp,"backlog-factor",1.0,DBL_MAX,
-                        NOTREQNOADD,LIMIT_FUDGE) ;
-  ERROR_CHECK ;
-  factorSet = (vival == VALUE_OK ? true : false) ;
-  l = 0.0 ;
-  (void) getReal (topScope,"backlog-factor",&l,NO_INHERIT) ;
-  defaultBacklogFactor = l ;
-
-  if (getReal (topScope,"no-check-low",&l,NO_INHERIT) &&
-      getReal (topScope,"no-check-high",&h,NO_INHERIT))
-    {
-      if (l > h)
-        {
-          logOrPrint (LOG_ERR,fp,NOCK_LOWVSHIGH,l,h,NOCHECKLOW,NOCHECKHIGH) ;
-          rval = 0 ;
-          v = findValue (topScope,"no-check-now",NO_INHERIT) ;
-          v->v.real_val = NOCHECKLOW ;
-          v = findValue (topScope,"no-check-high",NO_INHERIT) ;
-          v->v.real_val = NOCHECKHIGH ;
-        }
-      else if (h - l < 5.0)
-        logOrPrint (LOG_WARNING,fp,NOCK_LOWHIGHCLOSE,l,h) ;
-    }
-
+  defaultParams=hostDetails(topScope, NULL, true, fp);
+  ASSERT(defaultParams!=NULL);
 
   return rval ;
 }
 
+/*
+ * make a new HostParams structure copying an existing one
+ * or from compiled defaults
+ */
+
+HostParams newHostParams(HostParams p)
+{
+  HostParams params;
+
+  params = ALLOC (struct host_param_s,1) ;
+  ASSERT (params != NULL);
+
+  if (p != NULL)
+    {
+      /* Copy old stuff in */
+      memcpy ((char *) params, (char *) p, sizeof(struct host_param_s));
+      if (params->peerName)
+	params->peerName = strdup(params->peerName);
+      if (params->ipName)
+	params->ipName = strdup(params->ipName);
+    }
+  else
+    {
+      /* Fill in defaults */
+      params->peerName=NULL;
+      params->ipName=NULL;
+      params->articleTimeout=ARTTOUT;
+      params->responseTimeout=RESPTOUT;
+      params->initialConnections=INIT_CXNS;
+      params->absMaxConnections=MAX_CXNS;
+      params->maxChecks=MAX_Q_SIZE;
+      params->portNum=PORTNUM;
+      params->closePeriod=CLOSE_PERIOD;
+      params->dynamicMethod=METHOD_STATIC;
+      params->wantStreaming=STREAM;
+      params->lowPassLow=NOCHECKLOW;
+      params->lowPassHigh=NOCHECKHIGH;
+      params->lowPassFilter=FILTERVALUE;
+      params->backlogLimit=BLOGLIMIT;
+      params->backlogLimitHigh=BLOGLIMIT_HIGH ;
+      params->backlogFactor=LIMIT_FUDGE ;
+      params->dynBacklogFilter = BACKLOGFILTER ;
+      params->dynBacklogLowWaterMark = BACKLOGLWM;
+      params->dynBacklogHighWaterMark = BACKLOGHWM;
+    }
+  return (params);
+}
+            
+/*
+ * Free up a param structure
+ */
+
+void freeHostParams(HostParams params)
+{
+  ASSERT(params != NULL);
+  if (params->peerName)
+    FREE (params->peerName) ;
+  if (params->ipName)
+    FREE (params->ipName) ;
+  FREE (params) ;
+}  
+
+void hostReconfigure(Host h, HostParams params)
+{
+  u_int i, absMaxCxns ;
+  double oldBacklogFilter ;
+  
+  if (strcmp(h->params->ipName, params->ipName) != 0)
+    {
+      FREE (h->params->ipName) ;
+      h->params->ipName = strdup (params->ipName) ;
+      h->nextIpLookup = theTime () ;
+    }
+  
+  /* Put in new parameters
+     Unfortunately we can't blat on top of absMaxConnections
+     as we need to do some resizing here
+     */
+  
+  ASSERT (h->params != NULL);
+  
+  oldBacklogFilter = h->params->dynBacklogFilter;
+  i = h->params->absMaxConnections; /* keep old value */
+  absMaxCxns = params->absMaxConnections;
+  /* Use this set of params and allocate, and free
+   * up the old
+   */
+  freeHostParams(h->params);
+  h->params = params;
+  h->params->absMaxConnections = i; /* restore old value */
+  
+  /* If the backlog filter value has changed, reset the
+   * filter as the value therein will be screwy
+   */
+  if (h->params->dynBacklogFilter != oldBacklogFilter)
+    h->backlogFilter = ((h->params->dynBacklogLowWaterMark
+			 + h->params->dynBacklogHighWaterMark)
+			/200.0 /(1.0-h->params->dynBacklogFilter));
+  
+  /* We call this anyway - it does nothing if the values
+   * haven't changed. This is because doing things like
+   * just changing "dynamic-method" requires this call
+   * to be made
+   */
+  hostAlterMaxConnections(h, absMaxCxns, h->maxConnections, false);
+  
+  for ( i = 0 ; i < MAXCONLIMIT(h->params->absMaxConnections) ; i++ )
+    if (h->connections[i] != NULL)
+      cxnSetCheckThresholds (h->connections[i],
+			     h->params->lowPassLow,
+			     h->params->lowPassHigh,
+			     h->params->lowPassFilter) ;
+  
+  /* XXX how to handle initCxns change? */
+}
 
 
-
 void configHosts (bool talkSelf)
 {
   Host nHost, h, q ;
-  char *name = NULL, *ipName = NULL ;
-  u_int artTout, respTout, initCxns, maxCxns, maxChecks ;
-  double lowFilter, highFilter ;
-  bool streaming ;
-  u_short portNum ;
   HostHolder hh, hi ;
+  HostParams params;
 
-  name = ipName = NULL ;
-
+  /* Remove the current blocked host list */
   for (hh = blockedHosts, hi = NULL ; hh != NULL ; hh = hi)
     {
-      FREE (hh->name) ;
-      FREE (hh->ipname) ;
+      freeHostParams(hh->params);
       hi = hh->next ;
       FREE (hh) ;
     }
@@ -590,152 +598,39 @@ void configHosts (bool talkSelf)
 
   closeDroppedArticleFile () ;
   openDroppedArticleFile () ;
-
-  while (getHostInfo (&name, &ipName, &artTout, &respTout, &initCxns,
-                      &maxCxns, &maxChecks, &streaming, &lowFilter,
-                      &highFilter,&portNum))
+  
+  while ((params = getHostInfo ()) !=NULL )
     {
-      h = findHostByName (name) ;
+      h = findHostByName (params->peerName) ;
+      /* We know the host isn't blocked as we cleared the blocked list */
+      /* Have we already got this host up and running ?*/
       if ( h != NULL )
-        {
-	  u_int i ;
-
-	  if (strcmp(h->ipName, ipName) != 0)
-	    {
-	      FREE (h->ipName) ;
-	      h->ipName = strdup (ipName) ;
-	      h->nextIpLookup = theTime () ;
-	    }
-
-	  h->articleTimeout = artTout ;
-	  h->responseTimeout = respTout ;
-	  h->maxChecks = maxChecks ;
-	  h->wantStreaming = streaming ;
-	  h->port = portNum ;
-	  h->removeOnReload = false ;
- 	  h->lowPassLow = lowFilter ;   /* the off threshold */
- 	  h->lowPassHigh = highFilter ; /* the on threshold */
-
-	  if (maxCxns != h->maxConnections)
-	    {
-	      if (maxCxns < h->maxConnections)
-		{
-		  for ( i = h->maxConnections ; i > maxCxns ; i-- )
-		    {
-		      /* XXX this is harsh, and arguably there could be a
-			 cleaner way of doing it.  the problem being addressed
-			 by doing it this way is that eventually a connection
-			 closed cleanly via cxnClose can end up ultimately
-			 calling hostCxnDead after h->maxConnections has
-			 been lowered and the relevant arrays downsized.
-			 If trashing the old, unallocated space in
-			 hostCxnDead doesn't kill the process, the
-			 ASSERT against h->maxConnections surely will.
-		       */
-                      if (h->connections[i - 1] != NULL)
-                        cxnNuke (h->connections[i-1]) ;
-		    }
-		  h->maxConnections = maxCxns ;
-		}
-
-	      h->connections =
-		REALLOC (h->connections, Connection, maxCxns + 1);
-	      ASSERT (h->connections != NULL) ;
-	      h->cxnActive = REALLOC (h->cxnActive, bool, maxCxns) ;
-	      ASSERT (h->cxnActive != NULL) ;
-	      h->cxnSleeping = REALLOC (h->cxnSleeping, bool, maxCxns) ;
-	      ASSERT (h->cxnSleeping != NULL) ;
-
-	      /* if maximum was raised, establish the new connexions
-		 (but don't start using them).
-		 XXX maybe open them based on initCxns? */
-	      if (maxCxns > h->maxConnections)
-		{
-		  i = h->maxConnections ;
-		  /* need to set h->maxConnections before cxnWait() */
-#ifndef DYNAMIC_CONNECTIONS
-		  h->maxConnections = maxCxns ;
-#else
-                  if(maxCxns != 1)
-                    h->absMaxConnections = maxCxns ;
-                  else
-                    h->absMaxConnections = 0 ;
-                  h->maxConnections = maxCxns = 1 ;
-#endif
-		  while ( i < maxCxns )
-		    {
-		      /* XXX this does essentially the same thing that happens
-			 in newHost, so they should probably be combined
-			 to one new function */
-		      h->connections [i] =
-			newConnection (h, i,
-				       h->ipName,
-				       h->articleTimeout,
-				       h->port,
-				       h->responseTimeout,
-				       defClosePeriod, lowFilter, highFilter) ;
-		      h->cxnActive [i] = false ;
-		      h->cxnSleeping [i] = false ;
-		      cxnWait (h->connections [i]) ;
-		      i++ ;
-		    }
-		}
-	    }
-
-	  for ( i = 0 ; i < maxCxns ; i++ )
-            if (h->connections[i] != NULL)
-              cxnSetCheckThresholds (h->connections[i],lowFilter,highFilter) ;
-
-	  /* XXX how to handle initCxns change? */
-        }
+	{
+	  hostReconfigure(h, params);
+	  h->removeOnReload = false ; /* Don't remove at the end */
+	}
       else
         {
-	  nHost = newHost (mainListener,name,ipName,artTout,respTout,initCxns,
-			   maxCxns,maxChecks,portNum,CLOSE_PERIOD,
-			   streaming,lowFilter,highFilter) ;
+	    
+	  /* It's a host we haven't seen from the config file before */
+	  nHost = newHost (mainListener, params);
 
 	  if (nHost == NULL)
 	    {
-              /* this is where we'll die if the locks are still held. */
-              hh = ALLOC (struct host_holder_s,1) ;
-
-              hh->name = name ; name = NULL ;
-              hh->ipname = ipName ; ipName = NULL ;
-              hh->arttout = artTout ;
-              hh->resptout = respTout ;
-              hh->initcxns = initCxns ;
-              hh->maxcxns = maxCxns ;
-              hh->maxchecks = maxChecks ;
-              hh->stream = streaming ;
-              hh->lowf = lowFilter ;
-              hh->highf = highFilter ;
-              hh->portnum = portNum ;
-              hh->backloglim = 0 ;
-
-              hh->next = blockedHosts ;
-              blockedHosts = hh ;
+	      addBlockedHost(params);
                
-	      syslog (LOG_ERR,NO_HOST,hh->name) ;
+	      syslog (LOG_ERR,NO_HOST,params->peerName) ;
 	    }
 	  else 
 	    {
-	      if (initCxns == 0 && talkSelf)
-		syslog (LOG_NOTICE,BATCH_AND_NO_CXNS,name) ;
-	      
-	      dprintf (1,"Adding %s %s article (%d) response (%d) initial (%d) max con (%d) max checks (%d) portnumber (%d) streaming (%s) lowFilter (%.2f) highFilter (%.2f)\n",
-		       name, ipName, artTout, respTout, initCxns, maxCxns,
-		       maxChecks, portNum, streaming ? "true" : "false",
-		       lowFilter, highFilter) ;
+	      if (params->initialConnections == 0 && talkSelf)
+		syslog (LOG_NOTICE,BATCH_AND_NO_CXNS,params->peerName) ;
 
-              FREE (name) ;
-              FREE (ipName) ;
-              
 	      if ( !listenerAddPeer (mainListener,nHost) )
 		die ("failed to add a new peer\n") ;
 	    }
 	}
 
-      name = ipName = NULL ;
     }
   
 
@@ -743,7 +638,23 @@ void configHosts (bool talkSelf)
     {
       q = h->next ;
       if (h->removeOnReload)
-        hostClose (h) ;         /* h may be deleted in here. */
+	{
+	  if (h->isDynamic)
+	    {
+	      /* change to the new default parameters */
+	      params = newHostParams(defaultParams);
+	      ASSERT(params->peerName == NULL);
+	      ASSERT(params->ipName == NULL);
+	      ASSERT(h->params->peerName != NULL);
+	      ASSERT(h->params->ipName != NULL);
+	      params->peerName = strdup(h->params->peerName);
+	      params->ipName = strdup(h->params->ipName);
+	      hostReconfigure(h, params);
+	      h->removeOnReload = true;
+	    }
+	  else
+	    hostClose (h) ;         /* h may be deleted in here. */
+	}
       else
         /* prime it for the next config file read */
         h->removeOnReload = true ;
@@ -752,77 +663,322 @@ void configHosts (bool talkSelf)
   hostLogStatus () ;
 }
 
+
+void hostAlterMaxConnections(Host host,
+			     u_int absMaxCxns, u_int maxCxns,
+			     bool makeConnect)
+{
+  u_int lAbsMaxCxns;
+  u_int i;
+  
+  /* Fix 0 unlimited case */
+  lAbsMaxCxns = MAXCONLIMIT(absMaxCxns);
+  
+  /* Don't accept 0 for maxCxns */
+  maxCxns=MAXCONLIMIT(maxCxns);
+  
+  if ( host->params->dynamicMethod == METHOD_STATIC)
+    {
+      /* If running static, ignore the maxCxns passed in, we'll
+	 just use absMaxCxns
+	 */
+      maxCxns = lAbsMaxCxns;
+    }
+  
+  if ( maxCxns > lAbsMaxCxns)
+    {
+      /* ensure maxCxns is of the correct form */
+      maxCxns = lAbsMaxCxns;
+    }
+
+  if ((maxCxns < host->maxConnections) && (host->connections != NULL))
+    {
+      /* We are going to have to nuke some connections, as the current
+         max is now greater than the new max
+	 */
+      for ( i = host->maxConnections ; i > maxCxns ; i-- )
+	{
+	  /* XXX this is harsh, and arguably there could be a
+	     cleaner way of doing it.  the problem being addressed
+	     by doing it this way is that eventually a connection
+	     closed cleanly via cxnClose can end up ultimately
+	     calling hostCxnDead after h->maxConnections has
+	     been lowered and the relevant arrays downsized.
+	     If trashing the old, unallocated space in
+	     hostCxnDead doesn't kill the process, the
+	     ASSERT against h->maxConnections surely will.
+	     */
+	  if (host->connections[i - 1] != NULL)
+	    {
+	      cxnNuke (host->connections[i-1]) ;
+	      host->connections[i-1] = NULL;
+	    }
+	}
+      host->maxConnections = maxCxns ;
+    }
+  
+  if (host->connections)
+    for (i = host->maxConnections ; i <= MAXCONLIMIT(host->params->absMaxConnections) ; i++)
+      {
+	/* Ensure we've got an empty values only beyond the maxConnection
+	   water mark.
+	   */
+	ASSERT (host->connections[i] == NULL);
+      }
+  
+  if ((lAbsMaxCxns != MAXCONLIMIT(host->params->absMaxConnections)) ||
+      (host->connections == NULL))
+    {
+      /* we need to change the size of the connection array */
+      if (host->connections == NULL)
+	{
+	  /* not yet allocated */
+	  
+	  host->connections = CALLOC (Connection, lAbsMaxCxns + 1) ;
+	  ASSERT (host->connections != NULL) ;
+	  
+	  ASSERT (host->cxnActive == NULL);
+	  host->cxnActive = CALLOC (bool, lAbsMaxCxns) ;
+	  ASSERT (host->cxnActive != NULL) ;
+	  
+	  ASSERT (host->cxnSleeping == NULL) ;
+	  host->cxnSleeping = CALLOC (bool, lAbsMaxCxns) ;
+	  ASSERT (host->cxnSleeping != NULL) ;
+	  
+	  for (i = 0 ; i < lAbsMaxCxns ; i++)
+	    {
+	      host->connections [i] = NULL ;
+	      host->cxnActive[i] = NULL;
+	      host->cxnSleeping[i] = NULL;
+	    }
+	  host->connections[lAbsMaxCxns] = NULL;
+	}
+      else
+	{
+	  host->connections =
+	    REALLOC (host->connections, Connection, lAbsMaxCxns + 1);
+	  ASSERT (host->connections != NULL) ;
+	  host->cxnActive = REALLOC (host->cxnActive, bool, lAbsMaxCxns) ;
+	  ASSERT (host->cxnActive != NULL) ;
+	  host->cxnSleeping = REALLOC (host->cxnSleeping, bool, lAbsMaxCxns) ;
+	  ASSERT (host->cxnSleeping != NULL) ;
+
+	  if (lAbsMaxCxns > MAXCONLIMIT(host->params->absMaxConnections))
+	    {
+	      for (i = MAXCONLIMIT(host->params->absMaxConnections) ;
+		   i < lAbsMaxCxns ; i++)
+		{
+		  host->connections[i+1] = NULL; /* array always 1 larger */
+		  host->cxnActive[i] = NULL;
+		  host->cxnSleeping[i] = NULL;
+		}
+	    }
+	}
+      host->params->absMaxConnections = absMaxCxns;
+    }    
+  /* if maximum was raised, establish the new connexions
+     (but don't start using them).
+     */
+  if ( maxCxns > host->maxConnections)
+    {
+      i = host->maxConnections ;
+      /* need to set host->maxConnections before cxnWait() */
+      host->maxConnections = maxCxns;
+
+      while ( i < maxCxns )
+	{
+	  host->cxnActive [i] = false ;
+	  host->cxnSleeping [i] = false ;
+	  /* create a new connection */
+	  host->connections [i] =
+	    newConnection (host, i,
+			   host->params->ipName,
+			   host->params->articleTimeout,
+			   host->params->portNum,
+			   host->params->responseTimeout,
+			   host->params->closePeriod,
+			   host->params->lowPassLow,
+			   host->params->lowPassHigh,
+			   host->params->lowPassFilter) ;
+
+	  /* connect if low enough numbered, or we were forced to */
+	  if ((i < host->params->initialConnections) || makeConnect)
+	    cxnConnect (host->connections [i]) ;
+	  else
+	    cxnWait (host->connections [i]) ;
+	  i++ ;
+	}
+    }
+
+}
+
 /*
- * Create a new Host object. Called by the InnListener.
+ * Find a host on the blocked host list
+ */
+
+static HostHolder FindBlockedHost(const char *name)
+{
+  HostHolder hh = blockedHosts;
+  while (hh != NULL)
+    if ((hh->params) && (hh->params->peerName) &&
+	(strcmp(name,hh->params->peerName) == 0))
+      return hh;
+    else
+      hh=hh->next;
+  return NULL;
+}
+
+static void addBlockedHost(HostParams params)
+{
+  HostHolder hh;
+
+  hh = ALLOC (struct host_holder_s,1) ;
+  /* Use this set of params */
+	  
+  hh->params = params;
+  
+  hh->next = blockedHosts ;
+  blockedHosts = hh ;
+}
+
+/*
+ * We iterate through the blocked host list and try and reconnect ones
+ * where we couldn't get a lock
+ */
+static void tryBlockedHosts(TimeoutId tid /*unused*/ , void *data /*unused*/ )
+{
+  HostHolder hh,hi;
+  HostParams params;
+  
+  hh = blockedHosts; /* Get start of our queue */
+  blockedHosts = NULL ; /* remove them all from the queue of hosts */
+
+  while (hh != NULL)
+    {
+      params = hh->params;
+      hi= hh->next;
+      FREE(hh);
+      hh = hi;
+
+      if (params && params->peerName)
+	{
+	  if (findHostByName(params->peerName)!=NULL)
+	    {
+	      /* Wierd, someone's managed to start it when it's on
+	       * the blocked list. Just silently discard.
+	       */
+	      freeHostParams(params);
+	    }
+	  else
+	    {
+	      Host nHost;
+	      nHost = newHost (mainListener, params);
+
+	      if (nHost == NULL)
+		{
+		  addBlockedHost(params);
+               
+		  syslog (LOG_ERR,NO_HOST,params->peerName) ;
+		}
+	      else 
+		{
+		  dprintf(1,"Unblocked host %s\n",params->peerName);
+
+		  if (params->initialConnections == 0 &&
+		      listenerIsDummy(mainListener) /*talk to self*/)
+		    syslog (LOG_NOTICE,BATCH_AND_NO_CXNS,params->peerName) ;
+
+		  if ( !listenerAddPeer (mainListener,nHost) )
+		    die ("failed to add a new peer\n") ;
+		}
+	    }
+	}
+    }
+  tryBlockedHostsId = prepareSleep(tryBlockedHosts,
+				   TRYBLOCKEDHOSTPERIOD, NULL);
+}
+
+
+/*
+ * Create a new Host object with default parameters. Called by the
+ * InnListener.
+ */
+
+Host newDefaultHost (InnListener listener,
+		     const char *name) 
+{
+  HostParams p;
+  Host h;
+
+  if (FindBlockedHost(name)==NULL)
+    {
+
+      p=newHostParams(defaultParams);
+      ASSERT(p!=NULL);
+
+      /* relies on fact listener and names are null in default*/
+      p->peerName=strdup(name);
+      p->ipName=strdup(name);
+      
+      h=newHost (listener,p);
+      h->isDynamic = true;
+      h->removeOnReload = true;
+
+      if (h==NULL)
+	{
+	  /* Couldn't get a lock - add to list of blocked peers */
+	  addBlockedHost(p);
+	  
+	  syslog (LOG_ERR,NO_HOST,p->peerName) ;
+
+	  return NULL;
+	}
+
+      syslog (LOG_NOTICE,DYNAMIC_PEER,p->peerName) ;
+
+    }
+  return h;
+}
+
+/*
+ * Create a new host and attach the supplied param structure
  */
 
 static bool inited = false ;
-Host newHost (InnListener listener,
-              const char *name, 
-              const char *ipName,
-              u_int artTimeout, 
-              u_int respTimeout,
-              u_int initialCxns,
-              u_int maxCxns,
-              u_int maxCheck,
-              u_short portNum,
-              u_int closePeriod,
-              bool streaming,
-              double lowPassLow,
-              double lowPassHigh) 
+Host newHost (InnListener listener, HostParams p)
 {
-  u_int i ;
   Host nh ; 
 
-  ASSERT (maxCxns > 0) ;
-  ASSERT (maxCheck > 0) ;
+  ASSERT (p->maxChecks > 0) ;
 
   if (!inited)
     {
       inited = true ;
       atexit (hostCleanup) ;
     }
-  
+
+  /*
+   * Once only, init the first blocked host check
+   */
+  if (tryBlockedHostsId==0)
+    tryBlockedHostsId = prepareSleep(tryBlockedHosts,
+				     TRYBLOCKEDHOSTPERIOD, NULL);
 
   nh =  CALLOC (struct host_s, 1) ;
   ASSERT (nh != NULL) ;
 
-  nh->listener = listener ;
-  nh->peerName = strdup (name) ;
-  nh->ipName = strdup (ipName) ;
+  nh->params = p;
+  nh->listener = listener;
 
-  nh->connections = CALLOC (Connection, maxCxns + 1) ;
-  ASSERT (nh->connections != NULL) ;
+  nh->connections = NULL; /* We'll get these allocated later */
+  nh->cxnActive = NULL;
+  nh->cxnSleeping = NULL;
 
-  nh->cxnActive = CALLOC (bool, maxCxns) ;
-  ASSERT (nh->cxnActive != NULL) ;
-
-  nh->cxnSleeping = CALLOC (bool, maxCxns) ;
-  ASSERT (nh->cxnSleeping != NULL) ;
-
-#ifndef DYNAMIC_CONNECTIONS
-  nh->maxConnections = maxCxns ;
-#else
-  /* if maxCxns == 1, then no limit on maxConnections */
-  if(maxCxns != 1)
-    nh->absMaxConnections = maxCxns ;
-  else
-    nh->absMaxConnections = 0 ;
-  nh->maxConnections = maxCxns = 1;
-#endif
   nh->activeCxns = 0 ;
   nh->sleepingCxns = 0 ;
-  nh->initialCxns = initialCxns ;
-  nh->lowPassLow = lowPassLow ;
-  nh->lowPassHigh = lowPassHigh ;
 
   nh->blockedCxn = NULL ;
   nh->notThisCxn = NULL ;
-  nh->maxChecks = maxCheck ;
-  nh->articleTimeout = artTimeout ;
-  nh->responseTimeout = respTimeout ;
-  nh->port = portNum ;
-  nh->wantStreaming = streaming ;
 
   nh->queued = NULL ;
   nh->queuedTail = NULL ;
@@ -831,21 +987,18 @@ Host newHost (InnListener listener,
   nh->processedTail = NULL ;
   
   nh->statsId = 0 ;
-#ifdef DYNAMIC_CONNECTIONS
   nh->ChkCxnsId = 0 ;
-#endif
 
-  nh->myTape = newTape (name,listenerIsDummy (listener)) ;
+  nh->myTape = newTape (nh->params->peerName,
+			listenerIsDummy (nh->listener)) ;
   if (nh->myTape == NULL)
     {                           /* tape couldn't be locked, probably */
-      FREE (nh->peerName) ;
-      FREE (nh->ipName) ;
       FREE (nh->connections) ;
       FREE (nh->cxnActive) ;
       FREE (nh->cxnSleeping) ;
       
       FREE (nh) ;
-      return NULL ;
+      return NULL ; /* note we don't free up p */
     }
 
   nh->backedUp = false ;
@@ -855,7 +1008,8 @@ Host newHost (InnListener listener,
   nh->loggedModeOn = false ;
   nh->loggedModeOff = false ;
   nh->notifiedChangedRemBlckd = false ;
-  nh->removeOnReload = false ;
+  nh->removeOnReload = false ; /* ready for config file reload */
+  nh->isDynamic = false ;
 
   nh->artsOffered = 0 ;
   nh->artsAccepted = 0 ;
@@ -870,15 +1024,18 @@ Host newHost (InnListener listener,
   nh->artsHostClose = 0 ;
   nh->artsFromTape = 0 ;
 
-#ifdef DYNAMIC_CONNECTIONS
   nh->artsProcLastPeriod = 0;
   nh->secsInLastPeriod = 0;
   nh->lastCheckPoint = 0;
+  nh->lastSentCheckPoint = 0;
+  nh->lastTotalCheckPoint = 0;
   nh->maxCxnChk = true;
   nh->lastMaxCxnTime = time(0);
   nh->lastChkTime = time(0);
   nh->nextCxnTimeChk = 30;
-#endif
+  nh->backlogFilter = ((nh->params->dynBacklogLowWaterMark
+			+ nh->params->dynBacklogHighWaterMark)
+		       /200.0 /(1.0-nh->params->dynBacklogFilter));
 
   nh->gArtsOffered = 0 ;
   nh->gArtsAccepted = 0 ;
@@ -905,28 +1062,14 @@ Host newHost (InnListener listener,
   nh->blAccum = 0;
   nh->blCount = 0;
 
-  /* Create all the connections, but only the initial ones connect
-     immediately */
-  for (i = 0 ; i < maxCxns ; i++)
-    {
-      nh->cxnActive [i] = false ;
-      nh->cxnSleeping [i] = false ;
-      nh->connections [i] = newConnection (nh,
-                                           i,
-                                           nh->ipName,
-                                           nh->articleTimeout,
-                                           nh->port,
-                                           nh->responseTimeout,
-                                           closePeriod,
-                                           nh->lowPassLow,
-                                           nh->lowPassHigh) ;
-      if (i < initialCxns)
-        cxnConnect (nh->connections [i]) ;
-      else
-        cxnWait (nh->connections [i]) ;
-    }
 
-  nh->connections [maxCxns] = NULL ;
+  nh->maxConnections = 0; /* we currently have no connections allocated */
+
+  /* Note that the following will override the initialCxns specified as
+     maxCxns if we are on non-dyamic feed
+   */
+  hostAlterMaxConnections(nh, nh->params->absMaxConnections,
+			  nh->params->initialConnections, false);
 
   nh->next = gHostList ;
   gHostList = nh ;
@@ -939,10 +1082,10 @@ Host newHost (InnListener listener,
       myPid = getpid() ;
     }
   
-  if (strlen (nh->ipName) > maxIpNameLen)
-    maxIpNameLen = strlen (nh->ipName) ;
-  if (strlen (nh->peerName) > maxPeerNameLen)
-    maxPeerNameLen = strlen (nh->peerName) ;
+  if (strlen (nh->params->ipName) > maxIpNameLen)
+    maxIpNameLen = strlen (nh->params->ipName) ;
+  if (strlen (nh->params->peerName) > maxPeerNameLen)
+    maxPeerNameLen = strlen (nh->params->peerName) ;
   
   return nh ;
 }
@@ -955,15 +1098,17 @@ struct in_addr *hostIpAddr (Host host)
   struct in_addr ipAddr, *returnAddr ;
   struct hostent *hostEnt ;
 
+  ASSERT(host->params != NULL);
+
   /* check to see if need to look up the host name */
   if (host->nextIpLookup <= theTime())
     {
       /* see if the ipName we're given is a dotted quad */
-      if ( !inet_aton (host->ipName,&ipAddr) )
+      if ( !inet_aton (host->params->ipName,&ipAddr) )
 	{
-	  if ((hostEnt = gethostbyname (host->ipName)) == NULL)
-	    syslog (LOG_ERR, HOST_RESOLV_ERROR, host->peerName, host->ipName,
-		    host_err_str ()) ;
+	  if ((hostEnt = gethostbyname (host->params->ipName)) == NULL)
+	    syslog (LOG_ERR, HOST_RESOLV_ERROR, host->params->peerName,
+		    host->params->ipName, host_err_str ()) ;
 	  else
 	    {
 	      /* figure number of pointers that need space */
@@ -1064,21 +1209,52 @@ void printHostInfo (Host host, FILE *fp, u_int indentAmt)
       return ;
     }
   
-  fprintf (fp,"%s    peer-name : %s\n",indent,host->peerName) ;
-  fprintf (fp,"%s    ip-name : %s\n",indent,host->ipName) ;
-  fprintf (fp,"%s    max-connections : %d\n",indent,host->maxConnections) ;
+  fprintf (fp,"%s    peer-name : %s\n",indent,host->params->peerName) ;
+  fprintf (fp,"%s    ip-name : %s\n",indent,host->params->ipName) ;
+  fprintf (fp,"%s    abs-max-connections : %d\n",indent,
+	   host->params->absMaxConnections) ;
   fprintf (fp,"%s    active-connections : %d\n",indent,host->activeCxns) ;
   fprintf (fp,"%s    sleeping-connections : %d\n",indent,host->sleepingCxns) ;
+  fprintf (fp,"%s    initial-connections : %d\n",indent,
+	   host->params->initialConnections) ;
+  fprintf (fp,"%s    want-streaming : %s\n",indent,
+           boolToString (host->params->wantStreaming)) ;
   fprintf (fp,"%s    remote-streams : %s\n",indent,
            boolToString (host->remoteStreams)) ;
-  fprintf (fp,"%s    max-checks : %d\n",indent,host->maxChecks) ;
-  fprintf (fp,"%s    article-timeout : %d\n",indent,host->articleTimeout) ;
-  fprintf (fp,"%s    response-timeout : %d\n",indent,host->responseTimeout) ;
-  fprintf (fp,"%s    port : %d\n",indent,host->port) ;
+  fprintf (fp,"%s    max-checks : %d\n",indent,host->params->maxChecks) ;
+  fprintf (fp,"%s    article-timeout : %d\n",indent,
+	   host->params->articleTimeout) ;
+  fprintf (fp,"%s    response-timeout : %d\n",indent,
+	   host->params->responseTimeout) ;
+  fprintf (fp,"%s    close-period : %d\n",indent,
+	   host->params->closePeriod) ;
+  fprintf (fp,"%s    port : %d\n",indent,host->params->portNum) ;
+  fprintf (fp,"%s    dynamic-method : %d\n",indent,
+	   host->params->dynamicMethod) ;
+  fprintf (fp,"%s    dynamic-backlog-filter : %2.1f\n",indent,
+	   host->params->dynBacklogFilter) ;
+  fprintf (fp,"%s    dynamic-backlog-lwm : %2.1f\n",indent,
+	   host->params->dynBacklogLowWaterMark) ;
+  fprintf (fp,"%s    dynamic-backlog-hwm : %2.1f\n",indent,
+	   host->params->dynBacklogHighWaterMark) ;
+  fprintf (fp,"%s    no-check on : %2.1f\n",indent,
+	   host->params->lowPassHigh) ;
+  fprintf (fp,"%s    no-check off : %2.1f\n",indent,
+	   host->params->lowPassLow) ;
+  fprintf (fp,"%s    no-check filter : %2.1f\n",indent,
+	   host->params->lowPassFilter) ;
+  fprintf (fp,"%s    backlog-limit : %d\n",indent,
+	   host->params->backlogLimit) ;
+  fprintf (fp,"%s    backlog-limit-high : %d\n",indent,
+	   host->params->backlogLimitHigh) ;
+  fprintf (fp,"%s    backlog-factor : %2.1f\n",indent,
+	   host->params->backlogFactor) ;
+  fprintf (fp,"%s    max-connections : %d\n",indent,
+	   host->maxConnections) ;
+
+
   fprintf (fp,"%s    statistics-id : %d\n",indent,host->statsId) ;
-#ifdef DYNAMIC_CONNECTIONS
   fprintf (fp,"%s    ChkCxns-id : %d\n",indent,host->ChkCxnsId) ;
-#endif
   fprintf (fp,"%s    backed-up : %s\n",indent,boolToString (host->backedUp));
   fprintf (fp,"%s    backlog : %d\n",indent,host->backlog) ;
   fprintf (fp,"%s    loggedModeOn : %s\n",indent,
@@ -1233,7 +1409,7 @@ void hostClose (Host host)
   u_int i ;
   u_int cxnCount ;
 
-  dprintf (1,"Closing host %s\n",host->peerName) ;
+  dprintf (1,"Closing host %s\n",host->params->peerName) ;
   
   queuesToTape (host) ;
   delTape (host->myTape) ;
@@ -1242,9 +1418,7 @@ void hostClose (Host host)
   hostLogStats (host,true) ;
 
   clearTimer (host->statsId) ;
-#ifdef DYNAMIC_CONNECTIONS
   clearTimer (host->ChkCxnsId) ;
-#endif
   
   host->connectTime = 0 ;
 
@@ -1261,116 +1435,145 @@ void hostClose (Host host)
 }
 
 
-#ifdef DYNAMIC_CONNECTIONS
 /*
  * check if host should get more connections opened, or some closed...
  */
-void hostChkCxns(TimeoutId tid, void *data) {
+void hostChkCxns(TimeoutId tid /*unused*/, void *data) {
   Host host = (Host) data;
-  u_int absMaxCxns, currArticles ;
-  float lastAPS, currAPS ;
+  u_int currArticles, currSentArticles, currTotalArticles, newMaxCxns ;
+  double lastAPS, currAPS, percentTaken, ratio ;
+  double backlogRatio, backlogMult;
 
   if(!host->maxCxnChk)
     return;
+
+  ASSERT(host->params != NULL);
 
   if(host->secsInLastPeriod > 0) 
     lastAPS = host->artsProcLastPeriod / (host->secsInLastPeriod * 1.0);
   else
     lastAPS = host->artsProcLastPeriod * 1.0;
 
-  
+  newMaxCxns = host->maxConnections;
 
-  currArticles = (host->gArtsAccepted + host->gArtsRejected +
-                 (host->gArtsNotWanted / 4)) - host->lastCheckPoint ;
+  currArticles =        (host->gArtsAccepted + host->gArtsRejected +
+                        (host->gArtsNotWanted / 4)) - host->lastCheckPoint ;
+
+  host->lastCheckPoint = (host->gArtsAccepted + host->gArtsRejected +
+			 (host->gArtsNotWanted / 4));
+
+  currSentArticles = host->gArtsAccepted + host->gArtsRejected
+                      - host->lastSentCheckPoint ;
+
+  host->lastSentCheckPoint = host->gArtsAccepted + host->gArtsRejected;
+
+  currTotalArticles = host->gArtsAccepted + host->gArtsRejected
+                      + host->gArtsRejected + host->gArtsQueueOverflow
+		      - host->lastTotalCheckPoint ;
+
+  host->lastTotalCheckPoint = host->gArtsAccepted + host->gArtsRejected
+                      + host->gArtsRejected + host->gArtsQueueOverflow ;
 
   currAPS = currArticles / (host->nextCxnTimeChk * 1.0) ;
 
-  host->lastCheckPoint = host->gArtsAccepted +
-                         host->gArtsRejected +
-                        (host->gArtsNotWanted / 4) ;
+  percentTaken = currSentArticles * 1.0 /
+    ((currTotalArticles==0)?1:currTotalArticles);
 
-  if(!host->absMaxConnections) absMaxCxns = host->maxConnections + 1 ;
-  else absMaxCxns = host->absMaxConnections ;
+  /* Get how full the queue is currently */
+  backlogRatio = (host->backlog * 1.0 / hostHighwater);
+  backlogMult = 1.0/(1.0-host->params->dynBacklogFilter);
 
-  syslog(LOG_NOTICE, HOST_MAX_CONNECTIONS,
-         host->peerName, currAPS, lastAPS, absMaxCxns, host->maxConnections);
- 
-  dprintf(1, "hostChkCxns: Chngs %f\n", currAPS - lastAPS);
- 
-  if(((currAPS - lastAPS) >= 0.1) && (host->maxConnections < absMaxCxns)) {
-    u_int ii = host->maxConnections ;
-    double lowFilter = host->lowPassLow ;   /* the off threshold */
-    double highFilter = host->lowPassHigh ; /* the on threshold */
- 
-    dprintf(1, "hostChkCxns increasing, Chngs %f\n", currAPS - lastAPS);
- 
-    host->maxConnections += (int)(currAPS - lastAPS) + 1 ;
- 
-    host->connections =
-      REALLOC (host->connections, Connection, host->maxConnections + 1);
-    ASSERT (host->connections != NULL) ;
-    host->cxnActive = REALLOC (host->cxnActive, bool,
-                               host->maxConnections) ;
-    ASSERT (host->cxnActive != NULL) ;
-    host->cxnSleeping = REALLOC (host->cxnSleeping, bool,
-                                 host->maxConnections) ;
-    ASSERT (host->cxnSleeping != NULL) ;
- 
-    dprintf(1, "hostChkCxns %s maxC %d ii %d\n", host->ipName,
-            host->maxConnections, ii);
-    while(ii < host->maxConnections) {
- 
-      /* XXX this does essentially the same thing that happens
-         in newHost, so they should probably be combined
-         to one new function */
-      dprintf(1, "hostChkCxns newConnection %d\n", ii);
-      host->connections [ii] = newConnection (host,
-                                              ii,
-                                              host->ipName,
-                                              host->articleTimeout,
-                                              host->port,
-                                              host->responseTimeout,
-                                              defClosePeriod,
-                                              lowFilter,
-                                              highFilter) ;
-      host->cxnActive [ii] = false ;
-      host->cxnSleeping [ii] = false ;
-      cxnConnect (host->connections [ii]) ;
-      ii++;
-      host->artsProcLastPeriod = currArticles;
-      host->secsInLastPeriod = host->nextCxnTimeChk ;
+  dprintf(1,"%s hostChkCxns - entry filter=%3.3f blmult=%3.3f blratio=%3.3f",host->params->peerName,host->backlogFilter, backlogMult, backlogRatio);
+
+  ratio = 0.0; /* ignore APS by default */
+
+  switch (host->params->dynamicMethod)
+    {
+      case METHOD_COMBINED:
+        /* When a high % of articles is being taken, take notice of the
+	 * APS values. However for smaller %s, quickly start to ignore this
+	 * and concentrate on queue sizes
+	 */
+        ratio = percentTaken * percentTaken;
+	/* nobreak; */
+      case METHOD_QUEUE:
+        /* backlogFilter is an IIR filtered version of the backlogRatio.
+	 */
+        host->backlogFilter *= host->params->dynBacklogFilter;
+	/* Penalise anything over the backlog HWM twice as severely
+	 * (otherwise we end up feeding some sites constantly
+	 * just below the HWM. This way random noise makes
+	 * such sites jump to one more connection
+	 *
+	 * Use factor (1-ratio) so if ratio is near 1 we ignore this
+	 */
+	if (backlogRatio>host->params->dynBacklogLowWaterMark/100.0)
+	  host->backlogFilter += (backlogRatio+1.0)/2.0 * (1.0-ratio);
+	else
+	  host->backlogFilter += backlogRatio * (1.0-ratio);
+
+	/*
+	 * Now bump it around for APS too
+	 */
+	if ((currAPS - lastAPS) >= 0.1)
+	  host->backlogFilter += ratio*((currAPS - lastAPS) + 1.0);
+	else if ((currAPS - lastAPS) < -.2)
+	  host->backlogFilter -= ratio;
+	
+	dprintf(1,"%s hostChkCxns - entry hwm=%3.3f lwm=%3.3f new=%3.3f [%3.3f,%3.3f]",
+	       host->params->peerName,host->params->dynBacklogHighWaterMark,
+	       host->params->dynBacklogLowWaterMark,host->backlogFilter, 
+	       (host->params->dynBacklogLowWaterMark * backlogMult / 100.0),
+	       (host->params->dynBacklogHighWaterMark * backlogMult / 100.0));
+
+        if (host->backlogFilter <
+	    (host->params->dynBacklogLowWaterMark * backlogMult / 100.0))
+	  newMaxCxns--;
+	else if (host->backlogFilter >
+		 (host->params->dynBacklogHighWaterMark * backlogMult / 100.0))
+	  newMaxCxns++;
+	break;
+      case METHOD_STATIC:
+	/* well not much to do, just check maxConnection = absMaxConnections */
+	ASSERT (host->maxConnections == MAXCONLIMIT(host->params->absMaxConnections));
+	break;
+      case METHOD_APS:
+	if ((currAPS - lastAPS) >= 0.1)
+	  newMaxCxns += (int)(currAPS - lastAPS) + 1 ;
+	else if ((currAPS - lastAPS) < -.2)
+	  newMaxCxns--;
+	break;
     }
-  } else {
-    if ((currAPS - lastAPS) < -.2) {
-      dprintf(1, "hostChkCxns decreasing, Chngs %f\n", currAPS - lastAPS);
-      if(host->maxConnections != 1) {
+
+  dprintf(1, "hostChkCxns: Chngs %f\n", currAPS - lastAPS);
+
+  if (newMaxCxns < 1) newMaxCxns=1;
+  if (newMaxCxns > MAXCONLIMIT(host->params->absMaxConnections))
+    newMaxCxns = MAXCONLIMIT(host->params->absMaxConnections);
+
+  if (newMaxCxns != host->maxConnections)
+    {
+      syslog(LOG_NOTICE, HOST_MAX_CONNECTIONS,
+	     host->params->peerName, host->maxConnections,newMaxCxns);
  
-        u_int ii = host->maxConnections;
-
-        if (host->connections[ii - 1] != NULL)
-          cxnNuke (host->connections[ii - 1]) ;
-        host->maxConnections--;
-        ii = host->maxConnections;
-
-        host->connections =
-          REALLOC (host->connections, Connection, ii + 1);
-        ASSERT (host->connections != NULL) ;
-        host->cxnActive = REALLOC (host->cxnActive, bool, ii) ;
-        ASSERT (host->cxnActive != NULL) ;
-        host->cxnSleeping = REALLOC (host->cxnSleeping, bool, ii) ;
-        ASSERT (host->cxnSleeping != NULL) ;
-      } 
+      host->backlogFilter= ((host->params->dynBacklogLowWaterMark
+			     + host->params->dynBacklogHighWaterMark)
+			    /200.0 * backlogMult);
       host->artsProcLastPeriod = currArticles ;
       host->secsInLastPeriod = host->nextCxnTimeChk ;
-    } else 
-      dprintf(1, "hostChkCxns doing nothing, Chngs %f\n", currAPS - lastAPS);
+
+      /* Alter MaxConnections and in doing so ensure we connect new
+	 cxns immediately if we are adding stuff
+       */
+      hostAlterMaxConnections(host, host->params->absMaxConnections,
+			      newMaxCxns, true);
   }
+
   if(host->nextCxnTimeChk <= 240) host->nextCxnTimeChk *= 2;
   else host->nextCxnTimeChk = 300;
   dprintf(1, "prepareSleep hostChkCxns, %d\n", host->nextCxnTimeChk);
   host->ChkCxnsId = prepareSleep(hostChkCxns, host->nextCxnTimeChk, host);
 }
-#endif
 
 
 /*
@@ -1378,6 +1581,7 @@ void hostChkCxns(TimeoutId tid, void *data) {
  */
 void hostSendArticle (Host host, Article article)
 {
+  ASSERT(host->params != NULL);
   if (host->spoolTime > 0)
     {                           /* all connections are asleep */
       host->artsHostSleep++ ;
@@ -1420,7 +1624,7 @@ void hostSendArticle (Host host, Article article)
               return ;
             else
               dprintf (1,"%s Inactive connection %d refused an article\n",
-                       host->peerName,idx) ;
+                       host->params->peerName,idx) ;
           }
 
       /* this'll happen if all connections are feeding and all
@@ -1452,6 +1656,7 @@ void hostSendArticle (Host host, Article article)
  */
 void hostCxnBlocked (Host host, Connection cxn, char *reason)
 {
+  ASSERT(host->params != NULL);
 #ifndef NDEBUG
   {
     u_int i ;
@@ -1468,16 +1673,16 @@ void hostCxnBlocked (Host host, Connection cxn, char *reason)
   if (host->activeCxns == 0 && host->spoolTime == 0)
     {
       host->blockedCxn = cxn ;  /* to limit log notices */
-      syslog (LOG_NOTICE,REMOTE_BLOCKED, host->peerName, reason) ;
+      syslog (LOG_NOTICE,REMOTE_BLOCKED, host->params->peerName, reason) ;
     }
   else if (host->activeCxns > 0 && !host->notifiedChangedRemBlckd)
     {
-      syslog (LOG_NOTICE,CHANGED_REMOTE_BLOCKED, host->peerName,reason) ;
+      syslog (LOG_NOTICE,CHANGED_REMOTE_BLOCKED, host->params->peerName,reason) ;
       host->notifiedChangedRemBlckd = true ;
     }
   else if (host->spoolTime != 0 && host->blockedCxn == cxn)
     {
-      syslog (LOG_NOTICE,REMOTE_STILL_BLOCKED, host->peerName, reason) ;
+      syslog (LOG_NOTICE,REMOTE_STILL_BLOCKED, host->params->peerName, reason) ;
     }
   
 }
@@ -1508,12 +1713,12 @@ void hostRemoteStreams (Host host, Connection cxn, bool doesStreaming)
   
   if (host->connectTime == 0)   /* first connection for this cycle. */
     {
-      if (doesStreaming && host->wantStreaming)
-        syslog (LOG_NOTICE, REMOTE_DOES_STREAMING, host->peerName);
+      if (doesStreaming && host->params->wantStreaming)
+        syslog (LOG_NOTICE, REMOTE_DOES_STREAMING, host->params->peerName);
       else if (doesStreaming)
-        syslog (LOG_NOTICE, REMOTE_STREAMING_OFF, host->peerName);
+        syslog (LOG_NOTICE, REMOTE_STREAMING_OFF, host->params->peerName);
       else
-        syslog (LOG_NOTICE, REMOTE_NO_STREAMING, host->peerName);
+        syslog (LOG_NOTICE, REMOTE_NO_STREAMING, host->params->peerName);
 
       if (host->spoolTime > 0)
         hostStopSpooling (host) ;
@@ -1523,20 +1728,18 @@ void hostRemoteStreams (Host host, Connection cxn, bool doesStreaming)
         clearTimer (host->statsId) ;
       host->statsId = prepareSleep (hostStatsTimeoutCbk, statsPeriod, host) ;
 
-#ifdef DYNAMIC_CONNECTIONS
       if (host->ChkCxnsId != 0)
       clearTimer (host->ChkCxnsId);
       host->ChkCxnsId = prepareSleep (hostChkCxns, 30, host) ;
-#endif
 
-      host->remoteStreams = (host->wantStreaming ? doesStreaming : false) ;
+      host->remoteStreams = (host->params->wantStreaming ? doesStreaming : false) ;
 
       host->connectTime = theTime() ;
       if (host->firstConnectTime == 0)
         host->firstConnectTime = host->connectTime ;
     }
-  else if (host->remoteStreams != doesStreaming && host->wantStreaming)
-    syslog (LOG_NOTICE,STREAMING_CHANGE,host->peerName) ;
+  else if (host->remoteStreams != doesStreaming && host->params->wantStreaming)
+    syslog (LOG_NOTICE,STREAMING_CHANGE,host->params->peerName) ;
 
   for (i = 0 ; i < host->maxConnections ; i++)
     if (host->connections [i] == cxn)
@@ -1581,9 +1784,7 @@ void hostCxnDead (Host host, Connection cxn)
             if (!amClosing (host) && host->activeCxns == 0)
               {
                 clearTimer (host->statsId) ;
-#ifdef DYNAMIC_CONNECTIONS
                 clearTimer (host->ChkCxnsId) ;
-#endif
                 hostLogStats (host,true) ;
                 host->connectTime = 0 ;
               }
@@ -1685,7 +1886,7 @@ bool hostCxnGone (Host host, Connection cxn)
     if (host->connections [i] == cxn)
       {
         if (!amClosing (host))
-          syslog (LOG_ERR,CONNECTION_DISAPPEARING,host->peerName,i) ;
+          syslog (LOG_ERR,CONNECTION_DISAPPEARING,host->params->peerName,i) ;
         host->connections [i] = NULL ;
         if (host->cxnActive [i])
           {
@@ -1709,7 +1910,7 @@ bool hostCxnGone (Host host, Connection cxn)
 
       if (host->firstConnectTime > 0)
         syslog (LOG_NOTICE,REALLY_FINAL_STATS,
-                host->peerName,
+                host->params->peerName,
                 (long) (now - host->firstConnectTime),
                 host->gArtsOffered, host->gArtsAccepted,
                 host->gArtsNotWanted, host->gArtsRejected,
@@ -1913,7 +2114,7 @@ void hostArticleIsMissing (Host host, Connection cxn, Article article)
   const char *filename = artFileName (article) ;
   const char *msgid = artMsgId (article) ;
 
-  dprintf (5, "%s article is missing %s %s\n", host->peerName, msgid, filename) ;
+  dprintf (5, "%s article is missing %s %s\n", host->params->peerName, msgid, filename) ;
     
   host->artsMissing++ ;
   host->gArtsMissing++ ;
@@ -1946,13 +2147,13 @@ bool hostGimmeArticle (Host host, Connection cxn)
 
   if (amClosing (host))
     {
-      dprintf (5,"%s no article to give due to closing\n",host->peerName) ;
+      dprintf (5,"%s no article to give due to closing\n",host->params->peerName) ;
 
       return false ;
     }
 
   if (amtToGive == 0)
-    dprintf (5,"%s Queue space is zero....\n",host->peerName) ;
+    dprintf (5,"%s Queue space is zero....\n",host->params->peerName) ;
   
   while (amtToGive > 0)
     {
@@ -2010,7 +2211,7 @@ const char *hostPeerName (Host host)
 {
   ASSERT (host != NULL) ;
     
-  return host->peerName ;
+  return host->params->peerName ;
 }
 
 
@@ -2018,12 +2219,12 @@ const char *hostPeerName (Host host)
    streaming. */
 bool hostWantsStreaming (Host host)
 {
-  return host->wantStreaming ;
+  return host->params->wantStreaming ;
 }
 
 u_int hostMaxChecks (Host host)
 {
-  return host->maxChecks ;
+  return host->params->maxChecks ;
 }
 
 
@@ -2061,12 +2262,12 @@ void hostLogNoCheckMode (Host host, bool on, double low, double cur, double high
 {
   if (on && host->loggedModeOn == false)
     {
-      syslog (LOG_NOTICE, STREAMING_MODE_SWITCH, host->peerName, low, cur, high) ;
+      syslog (LOG_NOTICE, STREAMING_MODE_SWITCH, host->params->peerName, low, cur, high) ;
       host->loggedModeOn = true ;
     }
   else if (!on && host->loggedModeOff == false) 
     {
-      syslog (LOG_NOTICE, STREAMING_MODE_UNDO, host->peerName, low, cur, high) ;
+      syslog (LOG_NOTICE, STREAMING_MODE_UNDO, host->params->peerName, low, cur, high) ;
       host->loggedModeOff = true ;
     }
 }
@@ -2116,187 +2317,143 @@ void hostSetStatusFile (const char *filename)
 #define NO_INHERIT 0
 
 
-static void hostDetails (scope *s,
-                         char *name,
-                         char **iname,
-                         u_int *articleTimeout,
-                         u_int *responseTimeout,
-                         u_int *initialConnections,
-                         u_int *maxConnections,
-                         u_int *maxChecks,
-                         bool *streaming,
-                         double *lowFilter,
-                         double *highFilter,
-                         u_short *portNumber)
+static HostParams hostDetails (scope *s,
+			       char *name,
+			       bool isDefault,
+			       FILE *fp)
 {
   long iv ;
-  int bv ;
-  char *p ;
-  double rv ;
+  int bv, vival, inherit ;
+  HostParams p;
+  char * q;
+  double rv, l, h ;
+  value * v;
 
+  p=newHostParams(isDefault?NULL:defaultParams);
+
+  if (isDefault)
+    {
+      ASSERT (name==NULL);
+    }
+  else
+    {
+      if (name)
+	{
+	  p->peerName=strdup(name);
+	}
   
-  if (s != NULL)
-    if (getString (s,IP_NAME,&p,NO_INHERIT))
-      *iname = p ;
-    else
-      *iname = strdup (name) ;
+      if (s != NULL)
+	if (getString (s,IP_NAME,&q,NO_INHERIT))
+	  p->ipName = q ;
+	else
+	  p->ipName = strdup (name) ;
+    }
 
-      
-  if (!getInteger (s,ARTICLE_TIMEOUT,&iv,INHERIT))
-    {
-      syslog (LOG_ERR,NO_PEER_FIELD_INT,ARTICLE_TIMEOUT,name,(long) ARTTOUT) ;
-      iv = ARTTOUT ;
-    }
-  else if (iv < 1)
-    {
-      syslog (LOG_ERR,LESS_THAN_ONE,ARTICLE_TIMEOUT,iv,name,(long)ARTTOUT) ;
-      iv = ARTTOUT ;
-    }
-  *articleTimeout = (u_int) iv ;
-      
 
-  
-  if (!getInteger (s,RESP_TIMEOUT,&iv,INHERIT))
-    {
-      syslog (LOG_ERR,NO_PEER_FIELD_INT,RESP_TIMEOUT,name,(long)RESPTOUT) ;
-      iv = RESPTOUT ;
-    }
-  else if (iv < 1)
-    {
-      syslog (LOG_ERR,LESS_THAN_ONE,RESP_TIMEOUT,iv,name,(long)RESPTOUT) ;
-      iv = RESPTOUT ;
-    }
-  *responseTimeout = (u_int) iv ;
-
-      
-
-  if (!getInteger (s,INITIAL_CONNECTIONS,&iv,INHERIT))
-    {
-      syslog (LOG_ERR,NO_PEER_FIELD_INT,INITIAL_CONNECTIONS,name,
-              (long)INIT_CXNS) ;
-      iv = INIT_CXNS ;
-    }
-  else if (iv < 0)
-    {
-      syslog (LOG_ERR,LESS_THAN_ZERO,INITIAL_CONNECTIONS,iv,
-              name,(long)INIT_CXNS);
-      iv = INIT_CXNS ;
-    }
-  *initialConnections = (u_int) iv ;
-
-      
-
-  if (!getInteger (s,MAX_CONNECTIONS,&iv,INHERIT))
-    {
-      syslog (LOG_ERR,NO_PEER_FIELD_INT,MAX_CONNECTIONS,name,(long)MAX_CXNS) ;
-      iv = MAX_CXNS ;
-    }
-  else if (iv < 1)
-    {
-      syslog (LOG_ERR,LESS_THAN_ONE,MAX_CONNECTIONS,iv,name,(long)1) ;
-      iv = 1 ;
-    }
-  else if (iv > MAX_CONNECTION_COUNT)
-    {
-      syslog (LOG_ERR,INT_TOO_LARGE,MAX_CONNECTIONS,iv,name,(long)MAX_CXNS) ;
-      iv = MAX_CXNS ;
-    }
-  *maxConnections = (u_int) iv ;
-
+  /* check required global defaults are there and have good values */
   
 
-  if (!getInteger (s,MAX_QUEUE_SIZE,&iv,INHERIT))
-    {
-      syslog (LOG_ERR,NO_PEER_FIELD_INT,MAX_QUEUE_SIZE,name,(long)MAX_Q_SIZE) ;
-      iv = MAX_Q_SIZE ;
-    }
-  else if (iv < 1)
-    {
-      syslog(LOG_ERR,LESS_THAN_ONE,MAX_QUEUE_SIZE,iv,name,(long)MAX_Q_SIZE);
-      iv = MAX_Q_SIZE ;
-    }
-  *maxChecks = (u_int) iv ;
-      
+#define GETINT(sc,f,n,min,max,req,val,inh)              \
+  vival = validateInteger(f,n,min,max,req,val,sc,inh);  \
+  if (isDefault) do{                                    \
+    if(vival==VALUE_WRONG_TYPE)                         \
+      {                                                 \
+        logOrPrint(LOG_CRIT,fp,"cannot continue");      \
+        exit(1);                                        \
+      }                                                 \
+    else if(vival != VALUE_OK)                          \
+      val = 0;                                          \
+  } while(0);                                           \
+  iv = 0 ;                                              \
+  (void) getInteger (sc,n,&iv,inh) ;                    \
+  val = (u_int) iv ;                                    \
 
+#define GETREAL(sc,f,n,min,max,req,val,inh)             \
+  vival = validateReal(f,n,min,max,req,val,sc,inh);     \
+  if (isDefault) do{                                    \
+    if(vival==VALUE_WRONG_TYPE)                         \
+      {                                                 \
+        logOrPrint(LOG_CRIT,fp,"cannot continue");      \
+        exit(1);                                        \
+      }                                                 \
+    else if(vival != VALUE_OK)                          \
+      rv = 0;                                           \
+  } while(0);                                           \
+  rv = 0 ;                                              \
+  (void) getReal (sc,n,&rv,inh) ;                       \
+  val = rv ;                                            \
 
-  if (!getBool (s,STREAMING,&bv,INHERIT))
-    {
-      syslog(LOG_ERR,NO_PEER_FIELD_BOOL,STREAMING,name,(STREAM ? "true" : "false"));
-      bv = STREAM ;
-    }
-  *streaming = (bv ? true : false) ;
-  
-      
+#define GETBOOL(sc,f,n,req,val,inh)                     \
+  vival = validateBool(f,n,req,val,sc,inh);             \
+  if (isDefault) do{                                    \
+    if(vival==VALUE_WRONG_TYPE)                         \
+      {                                                 \
+        logOrPrint(LOG_CRIT,fp,"cannot continue");      \
+        exit(1);                                        \
+      }                                                 \
+    else if(vival != VALUE_OK)                          \
+      bv = 0;                                           \
+  } while(0);                                           \
+  bv = 0 ;                                              \
+  (void) getBool (sc,n,&bv,inh)  ;                      \
+  val = (bv ? true : false);                            \
 
-  if (!getReal (s,NO_CHECK_LOW,&rv,INHERIT))
-    {
-      syslog (LOG_ERR,NO_PEER_FIELD_REAL,NO_CHECK_LOW,name,NOCHECKLOW) ;
-      rv = NOCHECKLOW ;
-    }
-  else if (rv < 0.0 || rv > 100.0)
-    {
-      syslog (LOG_ERR,
-              "ME %s value (%.2f) in peer %s must be in range [0.0, 100.0]",
-              NO_CHECK_LOW,rv,name) ;
-      rv = NOCHECKLOW ;
-    }
-  *lowFilter = rv * (FILTERVALUE/100.0) ;
-      
+  inherit = isDefault?NO_INHERIT:INHERIT;
+  GETINT(s,fp,"article-timeout",0,LONG_MAX,REQ,p->articleTimeout, inherit);
+  GETINT(s,fp,"response-timeout",0,LONG_MAX,REQ,p->responseTimeout, inherit);
+  GETINT(s,fp,"close-period",0,LONG_MAX,REQ,p->closePeriod, inherit);
+  GETINT(s,fp,"initial-connections",0,LONG_MAX,REQ,p->initialConnections, inherit);
+  GETINT(s,fp,"max-connections",0,LONG_MAX,REQ,p->absMaxConnections, inherit);
+  GETINT(s,fp,"max-queue-size",1,LONG_MAX,REQ,p->maxChecks, inherit);
+  GETBOOL(s,fp,"streaming",REQ,p->wantStreaming, inherit);
+  GETREAL(s,fp,"no-check-high",0.0,100.0,REQ,p->lowPassHigh, inherit);
+  GETREAL(s,fp,"no-check-low",0.0,100.0,REQ,p->lowPassLow, inherit);
+  GETREAL(s,fp,"no-check-filter",0.1,DBL_MAX,REQ,p->lowPassFilter, inherit);
+  GETINT(s,fp,"port-number",0,LONG_MAX,REQ,p->portNum, inherit);
+  GETINT(s,fp,"backlog-limit",0,LONG_MAX,REQ,p->backlogLimit, inherit);
 
-  if (!getReal (s,NO_CHECK_HIGH,&rv,INHERIT))
+  if (findValue (s,"backlog-factor",inherit) == NULL &&
+      findValue (s,"backlog-limit-high",inherit) == NULL)
     {
-      syslog (LOG_ERR,NO_PEER_FIELD_REAL,NO_CHECK_HIGH,name,NOCHECKHIGH) ;
-      rv = NOCHECKHIGH ;
+      logOrPrint (LOG_ERR,fp,NOFACTORHIGH,"backlog-factor",LIMIT_FUDGE) ;
+      addReal (s,"backlog-factor",LIMIT_FUDGE) ;
+      rv = 0 ;
     }
-  else if (rv < 0.0 || rv > 100.0)
-    {
-      syslog (LOG_ERR,
-              "ME %s value (%.2f) in peer %s must be in range [0.0, 100.0]",
-              NO_CHECK_HIGH,rv,name) ;
-      rv = NOCHECKHIGH ;
-    }
-  else if ((rv * (FILTERVALUE/100.0)) < *lowFilter)
-    {
-      syslog (LOG_ERR,
-              "ME %s's value (%.2f) in peer %s cannot be smaller than %s's value (%.2f)",
-              NO_CHECK_HIGH, rv, name, NO_CHECK_LOW, *lowFilter);
-      rv = 100.0 ;
-    }
-  *highFilter = rv * (FILTERVALUE/100.0) ;
-      
 
-  if (!getInteger (s,PORT_NUMBER,&iv,INHERIT))
+  GETINT(s,fp,"backlog-limit-high",0,LONG_MAX,NOTREQNOADD,p->backlogLimitHigh, inherit);
+  GETREAL(s,fp,"backlog-factor",1.0,DBL_MAX,NOTREQNOADD,p->backlogFactor, inherit);
+
+  GETINT(s,fp,"dynamic-method",0,3,REQ,p->dynamicMethod, inherit);
+  GETREAL(s,fp,"dynamic-backlog-filter",0.0,DBL_MAX,REQ,p->dynBacklogFilter, inherit);
+  GETREAL(s,fp,"dynamic-backlog-low",0.0,100.0,REQ,p->dynBacklogLowWaterMark, inherit);
+  GETREAL(s,fp,"dynamic-backlog-high",0.0,100.0,REQ,p->dynBacklogHighWaterMark, inherit);
+
+  l=p->lowPassLow;
+  h=p->lowPassHigh;
+  if (l > h)
     {
-      syslog (LOG_ERR,NO_PEER_FIELD_INT,PORT_NUMBER,name,(long)PORTNUM) ;
-      iv = PORTNUM ;
+      logOrPrint (LOG_ERR,fp,NOCK_LOWVSHIGH,l,h,NOCHECKLOW,NOCHECKHIGH) ;
+      rv = 0 ;
+      v = findValue (s,"no-check-low",NO_INHERIT) ;
+      v->v.real_val = p->lowPassLow = NOCHECKLOW ;
+      v = findValue (s,"no-check-high",NO_INHERIT) ;
+      v->v.real_val = p->lowPassHigh = NOCHECKHIGH ;
     }
-  else if (iv < 1)
-    {
-      syslog (LOG_ERR,"ME %s value (%ld) in peer %s cannot be less than 1",
-              PORT_NUMBER,iv,name) ;
-      iv = PORTNUM ;
-    }
-  *portNumber = (u_short) iv ;
+  else if (h - l < 5.0)
+    logOrPrint (LOG_WARNING,fp,NOCK_LOWHIGHCLOSE,l,h) ;
+
+  return p;
 }
 
 
 
 
-static bool getHostInfo (char **name,
-                         char **ipName,
-                         u_int *articleTimeout,
-                         u_int *responseTimeout,
-                         u_int *initialConnections,
-                         u_int *maxConnections,
-                         u_int *maxChecks,
-                         bool *streaming,
-                         double *lowFilter,
-                         double *highFilter,
-                         u_short *portNumber)
+static HostParams getHostInfo (void)
 {
   static int idx = 0 ;
   value *v ;
   scope *s ;
+  HostParams p=NULL;
 
   bool isGood = false ;
 
@@ -2309,11 +2466,8 @@ static bool getHostInfo (char **name,
         continue ;
 
       s = v->v.scope_val ;
-      *name = strdup (v->name) ;
 
-      hostDetails(s,*name,ipName,articleTimeout,responseTimeout,
-                  initialConnections,maxConnections,maxChecks,streaming,
-                  lowFilter,highFilter,portNumber) ;
+      p=hostDetails(s,v->name,false,NULL);
 
       isGood = true ;
       
@@ -2323,42 +2477,7 @@ static bool getHostInfo (char **name,
   if (v == NULL)
     idx = 0 ;                   /* start over next time around */
 
-  return isGood ;
-}
-
-
-
-void getHostDefaults (u_int *articleTout,
-                      u_int *respTout,
-                      u_int *initialCxns,
-                      u_int *maxCxns,
-                      u_int *maxChecks,
-                      bool *streaming,
-                      double *lowFilter,
-                      double *highFilter,
-                      u_short *portNum)
-{
-  ASSERT (defaultMaxConnections > 0) ;
-  
-  ASSERT (articleTout != NULL) ;
-  ASSERT (respTout != NULL) ;
-  ASSERT (initialCxns != NULL) ;
-  ASSERT (maxCxns != NULL) ;
-  ASSERT (maxChecks != NULL) ;
-  ASSERT (portNum != NULL) ;
-  ASSERT (streaming != NULL) ;
-  ASSERT (lowFilter != NULL) ;
-  ASSERT (highFilter != NULL) ;
-  
-  *articleTout = defaultArticleTimeout ;
-  *respTout = defaultResponseTimeout ;
-  *initialCxns = defaultInitialConnections ;
-  *maxCxns = defaultMaxConnections ;
-  *maxChecks = defaultMaxChecks ;
-  *streaming = defaultStreaming ;
-  *lowFilter = defaultLowFilter ;
-  *highFilter = defaultHighFilter ;
-  *portNum = defaultPortNumber ;
+  return p;
 }
 
 
@@ -2386,8 +2505,8 @@ void delHost (Host host)
   FREE (host->connections) ;
   FREE (host->cxnActive) ;
   FREE (host->cxnSleeping) ;
-  FREE (host->peerName) ;
-  FREE (host->ipName) ;
+  FREE (host->params->peerName) ;
+  FREE (host->params->ipName) ;
 
   if (host->ipAddrs)
     FREE (host->ipAddrs) ;
@@ -2403,7 +2522,7 @@ static Host findHostByName (char *name)
   Host h;
 
   for (h = gHostList; h != NULL; h = h->next)
-    if ( strcmp(h->peerName, name) == 0 )
+    if ( strcmp(h->params->peerName, name) == 0 )
       return h;
 
   return NULL;
@@ -2472,7 +2591,7 @@ static void hostStartSpooling (Host host)
   if (SPOOL_LOG_PERIOD > 0 &&
       (host->spoolTime - host->lastSpoolTime) > SPOOL_LOG_PERIOD)
     {
-      syslog (LOG_NOTICE,SPOOLING,host->peerName) ;
+      syslog (LOG_NOTICE,SPOOLING,host->params->peerName) ;
       host->lastSpoolTime = host->spoolTime ;
     }
   
@@ -2509,12 +2628,12 @@ static void hostLogStats (Host host, bool final)
     final = true ;
   
   if (host->spoolTime != 0)
-    syslog (LOG_NOTICE, HOST_SPOOL_STATS, host->peerName,
+    syslog (LOG_NOTICE, HOST_SPOOL_STATS, host->params->peerName,
             (final ? "final" : "checkpoint"),
             (long) (now - host->spoolTime), host->artsToTape,
             host->artsHostClose, host->artsHostSleep) ;
   else
-    syslog (LOG_NOTICE, HOST_STATS_MSG, host->peerName, 
+    syslog (LOG_NOTICE, HOST_STATS_MSG, host->params->peerName, 
             (final ? "final" : "checkpoint"),
             (long) (now - host->connectTime),
             host->artsOffered, host->artsAccepted,
@@ -2646,18 +2765,49 @@ static void hostLogStatus (void)
 
       mainLogStatus (fp) ;
       listenerLogStatus (fp) ;
+
+/*
+Default peer configuration parameters:
+    article timeout: 600       initial connections: 1
+   response timeout: 300           max connections: 5
+       close period: 6000               max checks: 25
+     want streaming: true           dynamic method: 1
+        no-check on: 95.0%     dynamic backlog low: 25%
+       no-check off: 90.0%    dynamic backlog high: 50%
+    no-check filter: 50.0   dynamic backlog filter: 0.7
+  backlog low limit: 1024                 port num: 119
+ backlog high limit: 1280
+     backlog factor: 1.1
+*/
       
       fprintf(fp,"Default peer configuration parameters:\n") ;
       fprintf(fp,"    article timeout: %-5d     initial connections: %d\n",
-	       defaultArticleTimeout, defaultInitialConnections) ;
+	    defaultParams->articleTimeout,
+	    defaultParams->initialConnections) ;
       fprintf(fp,"   response timeout: %-5d         max connections: %d\n",
-	       defaultResponseTimeout, defaultMaxConnections) ;
-      fprintf(fp,"         max checks: %-5d               streaming: %s\n",
-	       defaultMaxChecks, (defaultStreaming ? "true" : "false")) ;
-      fprintf(fp,"       on threshold: %-2.1f%%                port num: %d\n",
-	       (defaultHighFilter * 100.0 / FILTERVALUE), defaultPortNumber) ;
-      fprintf(fp,"      off threshold: %-2.1f%%\n\n",
-	       (defaultLowFilter * 100.0 / FILTERVALUE)) ;
+	    defaultParams->responseTimeout,
+	    defaultParams->absMaxConnections) ;
+      fprintf(fp,"       close period: %-5d              max checks: %d\n",
+	    defaultParams->closePeriod,
+	    defaultParams->maxChecks) ;
+      fprintf(fp,"     want streaming: %-5s          dynamic method: %d\n",
+	    defaultParams->wantStreaming ? "true " : "false",
+	    defaultParams->dynamicMethod) ;
+      fprintf(fp,"        no-check on: %-2.1f%%     dynamic backlog low: %-2.1f%%\n",
+	    defaultParams->lowPassHigh,
+	    defaultParams->dynBacklogLowWaterMark) ;
+      fprintf(fp,"       no-check off: %-2.1f%%    dynamic backlog high: %-2.1f%%\n",
+	    defaultParams->lowPassLow,
+	    defaultParams->dynBacklogHighWaterMark) ;
+      fprintf(fp,"    no-check filter: %-2.1f   dynamic backlog filter: %-2.1f\n",
+	    defaultParams->lowPassFilter,
+	    defaultParams->dynBacklogFilter) ;
+      fprintf(fp,"  backlog limit low: %-5d\n",
+	    defaultParams->backlogLimit);
+      fprintf(fp," backlog limit high: %-5d\n",
+	    defaultParams->backlogLimitHigh);
+      fprintf(fp,"     backlog factor: %1.1f\n\n",
+	    defaultParams->backlogFactor);
 
       tapeLogGlobalStatus (fp) ;
 
@@ -2683,7 +2833,6 @@ static void hostLogStatus (void)
     }
 }
 
-
 /*
  * This prints status information for each host.  An example of the
  * format of the output is:
@@ -2694,14 +2843,14 @@ static void hostLogStatus (void)
  *  accepted: 178     want streaming: yes      active cxns: 6
  *   refused: 948       is streaming: yes    sleeping cxns: 0
  *  rejected: 31          max checks: 25      initial cxns: 5
- *   missing: 0         on threshold: 95.0%      idle cxns: 4
- *  deferred: 0        off threshold: 95.0%       max cxns: 10
- *  requeued: 0                               queue length: 0
+ *   missing: 0          no-check on: 95.0%      idle cxns: 4
+ *  deferred: 0         no-check off: 95.0%       max cxns: 8/10
+ *  requeued: 0        no-check fltr: 50.0    queue length: 0
  *   spooled: 0                                      empty: 100.0%
- *[overflow]: 0                                    >0%-25%: 0.0%
- *[on_close]: 0                                    25%-50%: 0.0%
- *[sleeping]: 0                                    50%-75%: 0.0%
- * unspooled: 0                                  75%-<100%: 0.0%
+ *[overflow]: 0        dyn b'log low: 25%          >0%-25%: 0.0%
+ *[on_close]: 0       dyn b'log high: 50%          25%-50%: 0.0%
+ *[sleeping]: 0       dyn b'log stat: 37%          50%-75%: 0.0%
+ * unspooled: 0       dyn b'log fltr: 0.7        75%-<100%: 0.0%
  *                                                    full: 0.0%
  *                 backlog low limit: 1000000
  *                backlog high limit: 2000000     (factor 2.0)
@@ -2716,7 +2865,7 @@ static void hostPrintStatus (Host host, FILE *fp)
   ASSERT (host != NULL) ;
   ASSERT (fp != NULL) ;
 
-  fprintf (fp,"%s",host->peerName);
+  fprintf (fp,"%s",host->params->peerName);
 
   if (host->blockedReason != NULL)
     fprintf (fp,"  (remote status: ``%s'')",host->blockedReason) ;
@@ -2725,14 +2874,15 @@ static void hostPrintStatus (Host host, FILE *fp)
 
   fprintf (fp, "   seconds: %-7ld   art. timeout: %-5d        ip name: %s\n",
 	   host->firstConnectTime > 0 ? (long)(now - host->firstConnectTime) : 0,
-	   host->articleTimeout, host->ipName) ;
+	   host->params->articleTimeout, host->params->ipName) ;
            
   fprintf (fp, "   offered: %-7ld  resp. timeout: %-5d           port: %d\n",
-	   (long) host->gArtsOffered, host->responseTimeout, host->port);
+	   (long) host->gArtsOffered, host->params->responseTimeout,
+	   host->params->portNum);
 
   fprintf (fp, "  accepted: %-7ld want streaming: %s      active cxns: %d\n",
 	   (long) host->gArtsAccepted, 
-           (host->wantStreaming ? "yes" : "no "),
+           (host->params->wantStreaming ? "yes" : "no "),
 	   host->activeCxns) ;
 
   fprintf (fp, "   refused: %-7ld   is streaming: %s    sleeping cxns: %d\n",
@@ -2741,34 +2891,45 @@ static void hostPrintStatus (Host host, FILE *fp)
 	   host->sleepingCxns) ;
 
   fprintf (fp, "  rejected: %-7ld     max checks: %-5d   initial cxns: %d\n",
-	   (long) host->gArtsRejected, host->maxChecks,
-	   host->initialCxns) ;
+	   (long) host->gArtsRejected, host->params->maxChecks,
+	   host->params->initialConnections) ;
 
-  fprintf (fp, "   missing: %-7ld   on threshold: %-3.1f%%      idle cxns: %d\n",
-	   (long) host->gArtsMissing, (host->lowPassHigh * 100.0 / FILTERVALUE),
+  fprintf (fp, "   missing: %-7ld    no-check on: %-3.1f%%      idle cxns: %d\n",
+	   (long) host->gArtsMissing, host->params->lowPassHigh,
            host->maxConnections - (host->activeCxns + host->sleepingCxns)) ;
 
-  fprintf (fp, "  deferred: %-7ld  off threshold: %-3.1f%%       max cxns: %d\n",
-	   (long) host->gArtsDeferred, (host->lowPassLow * 100.0 / FILTERVALUE),
-	   host->maxConnections) ;
+  fprintf (fp, "  deferred: %-7ld   no-check off: %-3.1f%%       max cxns: %d/%d\n",
+	   (long) host->gArtsDeferred, host->params->lowPassLow,
+	   host->maxConnections, host->params->absMaxConnections) ;
 
-  fprintf (fp, "  requeued: %-7ld                         queue length: %-3.1f\n",
-	   (long) host->gArtsCxnDrop, (double)host->blAccum / cnt) ;
+  fprintf (fp, "  requeued: %-7ld  no-check fltr: %-3.1f    queue length: %-3.1f\n",
+	   (long) host->gArtsCxnDrop, host->params->lowPassFilter,
+	   (double)host->blAccum / cnt) ;
 
-  fprintf (fp, "   spooled: %-7ld                                empty: %-3.1f%%\n",
-	   (long) host->gArtsToTape, 100.0 * host->blNone / cnt) ;
+  fprintf (fp, "   spooled: %-7ld dynamic method: %-5d          empty: %-3.1f%%\n",
+	   (long) host->gArtsToTape,
+	   host->params->dynamicMethod,
+	   100.0 * host->blNone / cnt) ;
 
-  fprintf (fp, "[overflow]: %-7ld                              >0%%-25%%: %-3.1f%%\n",
-	   (long) host->gArtsQueueOverflow, 100.0 * host->blQuartile[0] / cnt) ;
+  fprintf (fp, "[overflow]: %-7ld  dyn b'log low: %-3.1f%%        >0%%-25%%: %-3.1f%%\n",
+	   (long) host->gArtsQueueOverflow, 
+	   host->params->dynBacklogLowWaterMark,
+	   100.0 * host->blQuartile[0] / cnt) ;
 
-  fprintf (fp, "[on_close]: %-7ld                              25%%-50%%: %-3.1f%%\n",
-	   (long) host->gArtsHostClose, 100.0 * host->blQuartile[1] / cnt) ;
+  fprintf (fp, "[on_close]: %-7ld dyn b'log high: %-3.1f%%        25%%-50%%: %-3.1f%%\n",
+	   (long) host->gArtsHostClose,
+	   host->params->dynBacklogHighWaterMark,
+	   100.0 * host->blQuartile[1] / cnt) ;
 
-  fprintf (fp, "[sleeping]: %-7ld                              50%%-75%%: %-3.1f%%\n",
-	   (long) host->gArtsHostSleep, 100.0 * host->blQuartile[2] / cnt) ;
+  fprintf (fp, "[sleeping]: %-7ld dyn b'log stat: %-3.1f%%        50%%-75%%: %-3.1f%%\n",
+	   (long) host->gArtsHostSleep,
+	   host->backlogFilter*100.0*(1.0-host->params->dynBacklogFilter),
+	   100.0 * host->blQuartile[2] / cnt) ;
 
-  fprintf (fp, " unspooled: %-7ld                            75%%-<100%%: %-3.1f%%\n",
-	   (long) host->gArtsFromTape, 100.0 * host->blQuartile[3] / cnt) ;
+  fprintf (fp, " unspooled: %-7ld dyn b'log fltr: %-3.1f       75%%-<100%%: %-3.1f%%\n",
+	   (long) host->gArtsFromTape,
+	   host->params->dynBacklogLowWaterMark,
+	   100.0 * host->blQuartile[3] / cnt) ;
 
   fprintf (fp, "                                                    full: %-3.1f%%\n",
 	   100.0 * host->blFull / cnt) ;
@@ -2817,7 +2978,7 @@ static void backlogToTape (Host host)
       if (!host->loggedBacklog)
 	{
 #if 0               /* this message is pretty useless and confuses people */
-	  syslog (LOG_NOTICE,BACKLOG_TO_TAPE,host->peerName /* ,host->backlog */) ;
+	  syslog (LOG_NOTICE,BACKLOG_TO_TAPE,host->params->peerName /* ,host->backlog */) ;
 #endif
 	  host->loggedBacklog = true ;
 	}
@@ -3007,17 +3168,18 @@ static Article remHead (ProcQElem *head, ProcQElem *tail)
 
 
 static int validateInteger (FILE *fp, const char *name,
-                     long low, long high, int required, long setval)
+                     long low, long high, int required, long setval,
+		     scope * sc, u_int inh)
 {
   int rval = VALUE_OK ;
   value *v ;
   scope *s ;
   char *p = strrchr (name,':') ;
   
-  v = findValue (topScope,name,NO_INHERIT) ;
+  v = findValue (sc,name,inh) ;
   if (v == NULL && required != NOTREQNOADD)
     {
-      s = findScope (topScope,name,0) ;
+      s = findScope (sc,name,0) ;
       addInteger (s,p ? p + 1 : name,setval) ;
       if (required == REQ)
         {
@@ -3053,17 +3215,18 @@ static int validateInteger (FILE *fp, const char *name,
 
 
 static int validateReal (FILE *fp, const char *name, double low,
-                         double high, int required, double setval)
+                         double high, int required, double setval,
+			 scope * sc, u_int inh)
 {
   int rval = VALUE_OK ;
   value *v ;
   scope *s ;
   char *p = strrchr (name,':') ;
   
-  v = findValue (topScope,name,NO_INHERIT) ;
+  v = findValue (sc,name,inh) ;
   if (v == NULL && required != NOTREQNOADD)
     {
-      s = findScope (topScope,name,0) ;
+      s = findScope (sc,name,0) ;
       addReal (s,p ? p + 1 : name,setval) ;
       if (required == REQ)
         {
@@ -3094,17 +3257,18 @@ static int validateReal (FILE *fp, const char *name, double low,
 
 
 
-static int validateBool (FILE *fp, const char *name, int required, bool setval)
+static int validateBool (FILE *fp, const char *name, int required, bool setval,
+			 scope * sc, u_int inh)
 {
   int rval = VALUE_OK ;
   value *v ;
   scope *s ;
   char *p = strrchr (name,':') ;
   
-  v = findValue (topScope,name,NO_INHERIT) ;
+  v = findValue (sc,name,inh) ;
   if (v == NULL && required != NOTREQNOADD)
     {
-      s = findScope (topScope,name,0) ;
+      s = findScope (sc,name,0) ;
       addBoolean (s,p ? p + 1 : name, setval ? 1 : 0)  ;
       if (required == REQ)
         {

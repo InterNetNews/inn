@@ -151,13 +151,6 @@ void unlockFile (const char *lockfile) ;
 /* return true if file1 is older than file2 */
 bool isOlder (const char *file1, const char *file2) ;
 
-  /* lives in main.c */
-void getHostDefaults (u_int *articleTout, u_int *respTout, u_int *initialCxns,
-                      u_int *maxCxns, u_int *maxChecks, bool *streaming,
-                      double *lowFilter, double *highFilter,
-                      u_short *portNum) ;
-
-
 /* converts val into a printable string */
 const char *boolToString (bool val) ;
 

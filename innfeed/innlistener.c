@@ -100,9 +100,6 @@ static void giveArticleToPeer (InnListener lis,
 static void newArticleCommand (EndPoint ep, IoStatus i,
                                Buffer *buffs, void *data) ;
 static void wakeUp (TimeoutId id, void *data) ;
-static void logBadPeer (const char *peer) ;
-static bool isBadPeer (const char *peer) ;
-static void rememberBadPeer (const char *peer) ;
 static void writeCheckPoint (int offsetAdjust) ;
 static void dropArticle (const char *peer, Article article) ;
 static void listenerCleanup (void) ;
@@ -581,51 +578,6 @@ static void wakeUp (TimeoutId id, void *data)
   prepareRead (lis->myep,readArray,newArticleCommand,lis,1) ;
 }
 
-/*
- * Log the name of the bad peer. One time only.
- */
-static char **peers ;
-static u_int peerLen ;
-static u_int peerIdx ;
-
-static void rememberBadPeer (const char *peer)
-{
-  if (isBadPeer (peer))         /* check if we already logged it. */
-    return ;
-  
-  if (peerIdx == peerLen)
-    {
-      peerLen += 10 ;
-      if (peers != NULL)
-        peers = REALLOC (peers, char *, peerLen) ;
-      else
-        peers = ALLOC (char *, peerLen) ;
-    }
-
-  peers [peerIdx++] = strdup (peer) ;
-}
-
-static void logBadPeer (const char *peer)
-{
-  if (isBadPeer (peer))
-    return ;
-  
-  rememberBadPeer (peer) ;
-  syslog (LOG_ERR,UNKNOWN_PEER,peer) ;
-}
-
-
-static bool isBadPeer (const char *peer)
-{
-  u_int i ;
-  
-  for (i = 0 ; i < peerIdx ; i++)
-    if (strcmp (peer,peers [i]) == 0)
-      return true ;
-
-  return false ;
-}
-
 
 /* Find the Host object for the peer and hand off a reference to the
    article for it to transmit. */
@@ -647,53 +599,33 @@ static void giveArticleToPeer (InnListener lis,
     {
       dprintf (1,"Failed to give article to peer: -%s-\n", peerName) ;
       
-      if (lis->dynamicPeers && !isBadPeer (peerName))
-        {
-          u_int articleTout ;
-          u_int respTout ;
-          u_int initialCxns ;
-          u_int maxCxns ;
-          u_int maxChecks ;
-          bool streaming ;
-          double lowFilter ;
-          double highFilter ;
-          u_short portNum ;
-          Host newHostObj ;
+      if (lis->dynamicPeers)
+	{
+	  Host newHostObj;
 
           dprintf (1, "Adding peer dynamically\n") ;
           
-          syslog (LOG_NOTICE,DYNAMIC_PEER,peerName) ;
-
-          getHostDefaults (&articleTout, &respTout, &initialCxns,
-                           &maxCxns, &maxChecks, &streaming,
-                           &lowFilter, &highFilter, &portNum) ;
-
-          newHostObj = newHost (lis, peerName, peerName,
-                                articleTout, respTout, initialCxns,
-                                maxCxns, maxChecks, portNum, CLOSE_PERIOD,
-                                streaming, lowFilter, highFilter);
+          newHostObj = newDefaultHost (lis, peerName);
 
           if (newHostObj == NULL)
             {
-              /* XXX I need to handle this better. */
-              rememberBadPeer (peerName) ;
-              syslog (LOG_ERR,NO_HOST,peerName) ;
+              /* Most likely we couldn't get the lock, i.e. the
+		 peer is blocked.
+	       */
               dropArticle (peerName,article) ;
             }
           else if ( !listenerAddPeer (lis, newHostObj) )
             {
               /* XXX need to remember we've gone over the limit and not try
                  to add any more. */
-              rememberBadPeer (peerName) ;
               syslog (LOG_ERR, TOO_MANY_HOSTS, lis->hostLen) ;
               dropArticle (peerName,article) ;
             }
           else
-            hostSendArticle (newHostObj,artTakeRef (article)) ;
+	    syslog (LOG_NOTICE,DYNAMIC_PEER,peerName) ;
         }
       else
         {
-          logBadPeer (peerName) ;
           dropArticle (peerName,article) ;
         }
     }

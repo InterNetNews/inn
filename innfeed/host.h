@@ -78,20 +78,6 @@
  * LOWPASSHIGH is the high value for the low-pass filter.
  * LOWPASSLOW is the low value for the low-pass filter.
  */
-Host newHost (InnListener listener,
-              const char *peerName,     
-              const char *ipName,
-              u_int artTimeout, 
-              u_int respTimeout,
-              u_int initialCxns,
-              u_int maxCxns,
-              u_int maxCheck,
-              u_short portNum,
-              u_int closePeriod,
-              bool streaming,
-              double lowPassLow,
-              double lowPassHigh) ;
-
 
 void configHosts (bool talkSelf) ;
 
@@ -102,6 +88,10 @@ void printHostInfo (Host host, FILE *fp, u_int indentAmt) ;
 /* Delete the host object. Drops all the active connections immediately
    (i.e. no QUIT) . */
 void delHost (Host host) ;
+
+/* Get a new default host object */
+Host newDefaultHost (InnListener listener,
+		     const char *name); 
 
 /* gently close down all the host's connections (issue QUITs). */
 void hostClose (Host host) ;
@@ -190,6 +180,9 @@ void hostSetStatsPeriod (u_int period) ;
 /* return whether or not the Connections should attempt to stream. */
 bool hostWantsStreaming (Host host) ;
 
+/* return maxChecks */
+u_int hostmaxChecks (Host host);
+
 /* return the maximum number of CHECKs that can be outstanding */
 u_int hostMaxChecks (Host host) ;
 
@@ -208,7 +201,9 @@ int hostConfigLoadCbk (void *data) ;
 
 #endif /* host_h__ */
 
-#ifdef DYNAMIC_CONNECTIONS
 void hostChkCxns(TimeoutId tid, void *data);
-#endif
+
+
+
+
 
